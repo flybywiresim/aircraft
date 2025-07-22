@@ -30,6 +30,7 @@ import {
   FailuresConsumer,
   FrequencyMode,
   MsfsFlightModelEvents,
+  NXDataStore,
   NXLogicConfirmNode,
   NXLogicMemoryNode,
   NXLogicPulseNode,
@@ -63,6 +64,8 @@ import { FwsAuralVolume, FwsSoundManager } from 'systems-host/systems/FlightWarn
 import { FwcFlightPhase, FwsFlightPhases } from 'systems-host/systems/FlightWarningSystem/FwsFlightPhases';
 import { A380Failure } from '@failures';
 import { FuelSystemEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
+import { FmsMessageVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsMessagePublisher';
+import { FwsSystemDisplayLogic } from './FwsSystemDisplayLogic';
 
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));
@@ -86,7 +89,13 @@ export enum FwcAuralWarning {
 
 export class FwsCore {
   public readonly sub = this.bus.getSubscriber<
-    PseudoFwcSimvars & StallWarningEvents & MfdSurvEvents & FuelSystemEvents & KeyEvents & MsfsFlightModelEvents
+    PseudoFwcSimvars &
+      StallWarningEvents &
+      MfdSurvEvents &
+      FuelSystemEvents &
+      KeyEvents &
+      MsfsFlightModelEvents &
+      FmsMessageVars
   >();
 
   private subs: Subscription[] = [];
@@ -108,9 +117,6 @@ export class FwsCore {
   public readonly soundManager = new FwsSoundManager(this.bus, this.startupCompleted, this.audioFunctionLost);
 
   private readonly flightPhases = new FwsFlightPhases(this);
-
-  /** Time to inhibit master warnings and cautions during startup in ms */
-  private static readonly FWC_STARTUP_TIME = 5000;
 
   /** Time to inhibit SCs after one is trigger in ms */
   private static readonly AURAL_SC_INHIBIT_TIME = 2000;
@@ -207,7 +213,7 @@ export class FwsCore {
   );
 
   // SD STATUS NORMAL
-  private readonly statusNormal = MappedSubject.create(
+  public readonly statusNormal = MappedSubject.create(
     ([limAll, limAppr, inopAll, inopAppr]) => !limAll && !limAppr && !inopAll && !inopAppr,
     this.ewdLimitationsAllPhasesLines[0],
     this.ewdLimitationsApprLdgLines[0],
@@ -238,10 +244,10 @@ export class FwsCore {
   /** Keys/IDs of the active abnormal non-sensed procedures */
   public readonly activeAbnormalNonSensedKeys: SetSubject<number> = SetSubject.create([]);
 
-  /** Map to hold all failures which are currently active */
+  /** Map to hold all failures which are currently active and not cleared, i.e. presented on the EWD. */
   public readonly presentedAbnormalProceduresList = MapSubject.create<string, ChecklistState>();
 
-  /** Map to hold all failures which are currently active */
+  /** Map to hold all failures which are currently active, but already cleared. */
   public readonly clearedAbnormalProceduresList = MapSubject.create<string, ChecklistState>();
 
   /** Map to hold all deferred procs which are currently active */
@@ -320,8 +326,6 @@ export class FwsCore {
 
   public readonly compMesgCount = Subject.create(0);
 
-  public readonly fmsSwitchingKnob = Subject.create(0);
-
   public readonly landAsapRed = Subject.create(false);
 
   public readonly ndXfrKnob = Subject.create(0);
@@ -372,9 +376,9 @@ export class FwsCore {
 
   public readonly pack2On = Subject.create(false);
 
-  public readonly pack1Off = Subject.create(false);
+  public readonly pack1OffConfirmTime = Subject.create(false);
 
-  public readonly pack2Off = Subject.create(false);
+  public readonly pack2OffConfirmTime = Subject.create(false);
 
   public readonly pack1And2Fault = Subject.create(false);
 
@@ -558,6 +562,8 @@ export class FwsCore {
 
   public readonly approachCapabilityDowngradeDebouncePulse = new NXLogicPulseNode(false);
 
+  public readonly autoThrustEngaged = Subject.create(false);
+
   public readonly autoThrustDisengagedInstantPulse = new NXLogicPulseNode(false);
 
   public readonly autoThrustInstinctiveDiscPressed = new NXLogicTriggeredMonostableNode(1.5, true); // Save event for 1.5 sec
@@ -575,6 +581,12 @@ export class FwsCore {
   public readonly autoThrustOffInvoluntary = Subject.create(false);
 
   public autoThrustOffVoluntaryMemoInhibited = false;
+
+  public readonly fmsSwitchingKnob = Subject.create(0);
+
+  public readonly fmsSwitchingNotNorm = this.fmsSwitchingKnob.map((v) => v !== 1);
+
+  public readonly fmsDestEfob = ConsumerSubject.create(this.sub.on('destEfobBelowMin'), false);
 
   /* 23 - COMMUNICATION */
   public readonly rmp1Fault = Subject.create(false);
@@ -718,6 +730,9 @@ export class FwsCore {
 
   public readonly altn2LawConfirmNodeOutput = Subject.create(false);
 
+  public readonly altnLawCondition = Subject.create(false);
+  public readonly altn1ALawCondition = Subject.create(false);
+
   public readonly directLawCondition = Subject.create(false);
 
   public readonly elac1HydConfirmNode = new NXLogicConfirmNode(3, false);
@@ -757,9 +772,7 @@ export class FwsCore {
   public readonly lrElevFaultCondition = Subject.create(false);
 
   public readonly sec1Healthy = Subject.create(false);
-
   public readonly sec2Healthy = Subject.create(false);
-
   public readonly sec3Healthy = Subject.create(false);
 
   public readonly sec1FaultCondition = Subject.create(false);
@@ -774,9 +787,12 @@ export class FwsCore {
   public readonly sec3OffThenOnPulseNode = new NXLogicPulseNode(true);
   public readonly sec3OffThenOnMemoryNode = new NXLogicMemoryNode();
 
+  public readonly prim1Healthy = Subject.create(false);
   public readonly prim2Healthy = Subject.create(false);
-
   public readonly prim3Healthy = Subject.create(false);
+
+  public readonly allPrimFailed = Subject.create(false);
+  public readonly allPrimAndSecFailed = Subject.create(false);
 
   public readonly showLandingInhibit = Subject.create(false);
 
@@ -860,9 +876,18 @@ export class FwsCore {
 
   public readonly rudderTrimPosition = Subject.create(0);
 
+  public readonly lowerRudderFault = Subject.create(false);
+  public readonly upperRudderFault = Subject.create(false);
+
   public readonly flapsLeverNotZero = Subject.create(false);
 
   public readonly flapsBaulkActiveWord = Arinc429Register.empty();
+
+  // FIXME implement
+  public readonly flapSys1Fault = Subject.create(false);
+  public readonly flapSys2Fault = Subject.create(false);
+  public readonly slatSys1Fault = Subject.create(false);
+  public readonly slatSys2Fault = Subject.create(false);
 
   public readonly speedBrakeCommand5sConfirm = new NXLogicConfirmNode(5, true);
 
@@ -1229,7 +1254,7 @@ export class FwsCore {
 
   public readonly nwSteeringDisc = Subject.create(false);
 
-  public readonly parkBrake = Subject.create(false);
+  public readonly parkBrakeSet = Subject.create(false);
 
   private readonly parkBrake2sConfNode = new NXLogicConfirmNode(2);
 
@@ -1383,13 +1408,16 @@ export class FwsCore {
 
   /* SURVEILLANCE */
 
-  public readonly gpwsFlapModeOff = Subject.create(false);
+  public readonly tawsFlapModeOff = Subject.create(false);
 
-  public readonly gpwsSysOff = Subject.create(false);
+  public readonly tawsGpwsOff = Subject.create(false);
 
-  public readonly gpwsGsOff = Subject.create(false);
+  public readonly tawsGsOff = Subject.create(false);
 
-  public readonly gpwsTerrOff = Subject.create(false);
+  public readonly tawsTerrOff = Subject.create(false);
+
+  public readonly gpws1Failed = Subject.create(false);
+  public readonly gpws2Failed = Subject.create(false);
 
   public readonly xpdrAltReportingRequest = ConsumerSubject.create(this.sub.on('mfd_xpdr_set_alt_reporting'), true); // fixme signal should come from XPDR?
 
@@ -1422,6 +1450,14 @@ export class FwsCore {
   private readonly tcasStandbyMemo3sConfNode = new NXLogicConfirmNode(3);
 
   public readonly tcasStandbyMemo = Subject.create(false);
+
+  public readonly terrSys1Failed = Subject.create(false);
+  public readonly terrSys2Failed = Subject.create(false);
+
+  public readonly taws1Failed = Subject.create(false);
+  public readonly taws2Failed = Subject.create(false);
+
+  public readonly tawsWxrSelected = Subject.create(0);
 
   /** 35 OXYGEN */
   public readonly paxOxyMasksDeployed = Subject.create(false);
@@ -1588,10 +1624,10 @@ export class FwsCore {
 
   public readonly iceSevereDetectedTimerStatus = Subject.create(false);
 
-  private static pushKeyUnique(val: () => string[] | undefined, pushTo: string[]) {
+  private static pushKeyUnique(val: (state?: boolean[]) => string[] | undefined, pushTo: string[], state?: boolean[]) {
     if (val) {
       // Push only unique keys
-      for (const key of val()) {
+      for (const key of val(state)) {
         if (key && !pushTo.includes(key)) {
           pushTo.push(key);
         }
@@ -1603,6 +1639,7 @@ export class FwsCore {
   public readonly normalChecklists = new FwsNormalChecklists(this);
   public readonly abnormalNonSensed = new FwsAbnormalNonSensed(this);
   public readonly abnormalSensed = new FwsAbnormalSensed(this);
+  public readonly systemDisplayLogic = new FwsSystemDisplayLogic(this);
   public ewdAbnormal: EwdAbnormalDict;
 
   constructor(
@@ -1618,9 +1655,19 @@ export class FwsCore {
       this.abnormalNonSensed.ewdAbnormalNonSensed,
     );
 
+    if (this.fwsNumber === 1) {
+      this.subs.push(this.dcESSBusPowered.sub((v) => this.handlePowerChange(v), true));
+    } else {
+      this.subs.push(this.dc2BusPowered.sub((v) => this.handlePowerChange(v), true));
+    }
+
     this.subs.push(
       this.startupCompleted.sub((v) => {
         if (v) {
+          this.init();
+
+          this.fwcOut126.setSsm(Arinc429SignStatusMatrix.NormalOperation);
+
           this.normalChecklists.reset(null);
           this.abnormalNonSensed.reset();
           this.activeDeferredProceduresList.clear();
@@ -1630,8 +1677,10 @@ export class FwsCore {
           this.allCurrentFailures.length = 0;
           this.presentedFailures.length = 0;
           this.recallFailures.length = 0;
+        } else {
+          FwsCore.sendFailureWarning(this.bus);
         }
-      }),
+      }, true),
     );
 
     // Not a lot of references on which parts of the FWS to reset when
@@ -1651,94 +1700,6 @@ export class FwsCore {
           this.recallFailures.length = 0;
         }
       }),
-    );
-
-    this.ewdMessageLinesLeft.forEach((ls, i) =>
-      this.subs.push(
-        ls.sub((l) => {
-          SimVar.SetSimVarValue(FwsCore.ewdMessageSimVarsLeft[i], 'string', l ?? '');
-        }),
-      ),
-    );
-
-    this.ewdMessageLinesRight.forEach((ls, i) =>
-      this.subs.push(
-        ls.sub((l) => {
-          SimVar.SetSimVarValue(FwsCore.ewdMessageSimVarsRight[i], 'string', l ?? '');
-        }),
-      ),
-    );
-
-    this.pfdMemoLines.forEach((ls, i) =>
-      this.subs.push(
-        ls.sub((l) => {
-          SimVar.SetSimVarValue(FwsCore.pfdMemoSimVars[i], 'string', l ?? '');
-        }),
-      ),
-    );
-
-    this.sdStatusInfoLines.forEach((ls, i) =>
-      this.subs.push(
-        ls.sub((l) => {
-          SimVar.SetSimVarValue(FwsCore.sdStatusInfoSimVars[i], 'string', l ?? '');
-        }),
-      ),
-    );
-
-    this.sdStatusInopAllPhasesLines.forEach((ls, i) =>
-      this.subs.push(
-        ls.sub((l) => {
-          SimVar.SetSimVarValue(FwsCore.sdStatusInopAllPhasesSimVars[i], 'string', l ?? '');
-        }),
-      ),
-    );
-
-    this.sdStatusInopApprLdgLines.forEach((ls, i) =>
-      this.subs.push(
-        ls.sub((l) => {
-          SimVar.SetSimVarValue(FwsCore.sdStatusInopApprLdgSimVars[i], 'string', l ?? '');
-        }),
-      ),
-    );
-
-    this.pfdLimitationsLines.forEach((ls, i) =>
-      this.subs.push(
-        ls.sub((l) => {
-          SimVar.SetSimVarValue(FwsCore.pfdLimitationsSimVars[i], 'string', l ?? '');
-        }),
-      ),
-    );
-
-    this.ewdLimitationsAllPhasesLines.forEach((ls, i) =>
-      this.subs.push(
-        ls.sub((l) => {
-          SimVar.SetSimVarValue(FwsCore.ewdLimitationsAllPhasesSimVars[i], 'string', l ?? '');
-        }),
-      ),
-    );
-
-    this.ewdLimitationsApprLdgLines.forEach((ls, i) =>
-      this.subs.push(
-        ls.sub((l) => {
-          SimVar.SetSimVarValue(FwsCore.ewdLimitationsApprLdgSimVars[i], 'string', l ?? '');
-        }),
-      ),
-    );
-
-    this.subs.push(this.statusNormal.sub((s) => SimVar.SetSimVarValue('L:A32NX_STATUS_NORMAL', 'boolean', s), true));
-
-    this.subs.push(
-      this.ecamEwdShowStsIndication.sub(
-        (s) => this.bus.getPublisher<FwsEwdEvents>().pub('fws_show_sts_indication', s, true),
-        true,
-      ),
-    );
-
-    this.subs.push(
-      this.ecamEwdShowFailurePendingIndication.sub(
-        (s) => this.bus.getPublisher<FwsEwdEvents>().pub('fws_show_failure_pending', s, true),
-        true,
-      ),
     );
 
     const ecamMemoKeys = Object.keys(EcamMemos);
@@ -1805,9 +1766,13 @@ export class FwsCore {
       this.engine2AboveIdle,
       this.engine1CoreAtOrAboveMinIdle,
       this.engine2CoreAtOrAboveMinIdle,
+      this.fmsSwitchingNotNorm,
     );
   }
 
+  /**
+   * Called after startup
+   */
   init(): void {
     Promise.all([
       KeyEventManager.getManager(this.bus),
@@ -1817,10 +1782,8 @@ export class FwsCore {
       this.registerKeyEvents();
     });
 
-    this.sub
-      .on('key_intercept')
-      .atFrequency(50)
-      .handle((keyData) => {
+    this.subs.push(
+      this.sub.on('key_intercept').handle((keyData) => {
         switch (keyData.key) {
           case 'A32NX.AUTO_THROTTLE_DISCONNECT':
             this.autoThrottleInstinctiveDisconnect();
@@ -1831,7 +1794,8 @@ export class FwsCore {
             this.autoPilotInstinctiveDisconnect();
             break;
         }
-      });
+      }),
+    );
 
     this.subs.push(
       this.toConfigNormal.sub((normal) => SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool', normal)),
@@ -1888,28 +1852,114 @@ export class FwsCore {
       }, true),
     );
 
-    // FIXME depend on FWC state
-    this.fwcOut126.setSsm(Arinc429SignStatusMatrix.NormalOperation);
+    this.ewdMessageLinesLeft.forEach((ls, i) =>
+      this.subs.push(
+        ls.sub((l) => {
+          SimVar.SetSimVarValue(FwsCore.ewdMessageSimVarsLeft[i], 'string', l ?? '');
+        }, true),
+      ),
+    );
+
+    this.ewdMessageLinesRight.forEach((ls, i) =>
+      this.subs.push(
+        ls.sub((l) => {
+          SimVar.SetSimVarValue(FwsCore.ewdMessageSimVarsRight[i], 'string', l ?? '');
+        }, true),
+      ),
+    );
+
+    this.pfdMemoLines.forEach((ls, i) =>
+      this.subs.push(
+        ls.sub((l) => {
+          SimVar.SetSimVarValue(FwsCore.pfdMemoSimVars[i], 'string', l ?? '');
+        }, true),
+      ),
+    );
+
+    this.sdStatusInfoLines.forEach((ls, i) =>
+      this.subs.push(
+        ls.sub((l) => {
+          SimVar.SetSimVarValue(FwsCore.sdStatusInfoSimVars[i], 'string', l ?? '');
+        }, true),
+      ),
+    );
+
+    this.sdStatusInopAllPhasesLines.forEach((ls, i) =>
+      this.subs.push(
+        ls.sub((l) => {
+          SimVar.SetSimVarValue(FwsCore.sdStatusInopAllPhasesSimVars[i], 'string', l ?? '');
+        }, true),
+      ),
+    );
+
+    this.sdStatusInopApprLdgLines.forEach((ls, i) =>
+      this.subs.push(
+        ls.sub((l) => {
+          SimVar.SetSimVarValue(FwsCore.sdStatusInopApprLdgSimVars[i], 'string', l ?? '');
+        }, true),
+      ),
+    );
+
+    this.pfdLimitationsLines.forEach((ls, i) =>
+      this.subs.push(
+        ls.sub((l) => {
+          SimVar.SetSimVarValue(FwsCore.pfdLimitationsSimVars[i], 'string', l ?? '');
+        }, true),
+      ),
+    );
+
+    this.ewdLimitationsAllPhasesLines.forEach((ls, i) =>
+      this.subs.push(
+        ls.sub((l) => {
+          SimVar.SetSimVarValue(FwsCore.ewdLimitationsAllPhasesSimVars[i], 'string', l ?? '');
+        }, true),
+      ),
+    );
+
+    this.ewdLimitationsApprLdgLines.forEach((ls, i) =>
+      this.subs.push(
+        ls.sub((l) => {
+          SimVar.SetSimVarValue(FwsCore.ewdLimitationsApprLdgSimVars[i], 'string', l ?? '');
+        }, true),
+      ),
+    );
+
+    this.subs.push(this.statusNormal.sub((s) => SimVar.SetSimVarValue('L:A32NX_STATUS_NORMAL', 'boolean', s), true));
+
+    this.subs.push(
+      this.ecamEwdShowStsIndication.sub(
+        (s) => this.bus.getPublisher<FwsEwdEvents>().pub('fws_show_sts_indication', s, true),
+        true,
+      ),
+    );
+
+    this.subs.push(
+      this.ecamEwdShowFailurePendingIndication.sub(
+        (s) => this.bus.getPublisher<FwsEwdEvents>().pub('fws_show_failure_pending', s, true),
+        true,
+      ),
+    );
+
+    this.fwcOut126.setSsm(
+      this.startupCompleted.get() ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.FailureWarning,
+    );
 
     // Inhibit single chimes for the first two seconds after power-on
     this.auralSingleChimeInhibitTimer.schedule(
       () => (this.auralSingleChimePending = false),
       FwsCore.AURAL_SC_INHIBIT_TIME,
     );
-
-    if (this.fwsNumber === 1) {
-      this.subs.push(this.dcESSBusPowered.sub((v) => this.handlePowerChange(v), true));
-    } else {
-      this.subs.push(this.dc2BusPowered.sub((v) => this.handlePowerChange(v), true));
-    }
   }
 
   private handlePowerChange(powered: boolean) {
     if (powered) {
+      // Real time is 60 seconds, i.e. 60_000 ms; Real setting for DMC self test in EFB is 12 seconds.
+      const startupTime = parseInt(NXDataStore.get('CONFIG_SELF_TEST_TIME', '12')) * 5_000;
+
       this.startupTimer.schedule(() => {
         this.startupCompleted.set(true);
         console.log('PseudoFWC startup completed.');
-      }, FwsCore.FWC_STARTUP_TIME);
+      }, startupTime);
     } else {
       this.startupTimer.clear();
       this.startupCompleted.set(false);
@@ -2208,9 +2258,9 @@ export class FwsCore {
     this.N1IdleEng.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_IDLE_N1', 'number'));
 
     // Flaps
-    this.flapsAngle.set(SimVar.GetSimVarValue('L:A32NX_LEFT_FLAPS_ANGLE', 'degrees'));
+    this.flapsAngle.set(SimVar.GetSimVarValue('L:A32NX_FLAPS_IPPU_ANGLE', 'degrees'));
     this.flapsHandle.set(SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum'));
-    this.slatsAngle.set(SimVar.GetSimVarValue('L:A32NX_LEFT_SLATS_ANGLE', 'degrees'));
+    this.slatsAngle.set(SimVar.GetSimVarValue('L:A32NX_SLATS_IPPU_ANGLE', 'degrees'));
     this.flapsBaulkActiveWord.setFromSimVar('L:A32NX_SFCC_SLAT_FLAP_SYSTEM_STATUS_WORD');
 
     // FIXME move out of acquisition to logic below
@@ -2634,8 +2684,8 @@ export class FwsCore {
     this.lgciu2DiscreteWord1.setFromSimVar('L:A32NX_LGCIU_2_DISCRETE_WORD_1');
     this.lgciu1DiscreteWord2.setFromSimVar('L:A32NX_LGCIU_1_DISCRETE_WORD_2');
     this.lgciu2DiscreteWord2.setFromSimVar('L:A32NX_LGCIU_2_DISCRETE_WORD_2');
-    const parkBrakeSet = SimVar.GetSimVarValue('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool');
-    this.parkBrake.set(parkBrakeSet);
+    const parkBrakeSet = SimVar.GetSimVarValue('L:A32NX_PARK_BRAKE_LEVER_POS', 'Number') === 1;
+    this.parkBrakeSet.set(parkBrakeSet);
     this.lgParkBrkOn.set(this.parkBrake2sConfNode.write(parkBrakeSet, deltaTime));
     this.configParkBrakeOn.set(
       this.confingParkBrakeOnMemoryNode.write(phase3 && parkBrakeSet, !parkBrakeSet || phase6),
@@ -2815,6 +2865,7 @@ export class FwsCore {
 
     // A/THR OFF
     const aThrEngaged = this.autoThrustStatus.get() === 2 || this.autoThrustMode.get() !== 0;
+    this.autoThrustEngaged.set(aThrEngaged);
     this.autoThrustDisengagedInstantPulse.write(aThrEngaged, deltaTime);
     this.autoThrustInstinctiveDiscPressed.write(false, deltaTime);
 
@@ -3170,8 +3221,8 @@ export class FwsCore {
     this.pack1On.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_1_PB_IS_ON', 'bool'));
     this.pack2On.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_2_PB_IS_ON', 'bool'));
 
-    this.pack1Off.set(!this.pack1On.get() && this.phase8ConfirmationNode60.read());
-    this.pack2Off.set(!this.pack2On.get() && this.phase8ConfirmationNode60.read());
+    this.pack1OffConfirmTime.set(!this.pack1On.get() && this.phase8ConfirmationNode60.read());
+    this.pack2OffConfirmTime.set(!this.pack2On.get() && this.phase8ConfirmationNode60.read());
 
     // TODO: Add fault when on ground, with one engine running and one door open
     // TODO: Add pack overheat
@@ -3433,8 +3484,13 @@ export class FwsCore {
     const fcdc1DiscreteWord5 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_1_DISCRETE_WORD_5');
     const fcdc2DiscreteWord5 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_2_DISCRETE_WORD_5');
 
+    this.prim1Healthy.set(SimVar.GetSimVarValue('L:A32NX_PRIM_1_HEALTHY', 'bool'));
     this.prim2Healthy.set(SimVar.GetSimVarValue('L:A32NX_PRIM_2_HEALTHY', 'bool'));
     this.prim3Healthy.set(SimVar.GetSimVarValue('L:A32NX_PRIM_3_HEALTHY', 'bool'));
+    this.allPrimFailed.set(!this.prim1Healthy.get() && !this.prim2Healthy.get() && !this.prim3Healthy.get());
+    this.allPrimAndSecFailed.set(
+      this.allPrimFailed.get() && !this.sec1Healthy.get() && !this.sec2Healthy.get() && !this.sec3Healthy.get(),
+    );
 
     // ELAC 1 FAULT computation
     const se1f =
@@ -3518,6 +3574,11 @@ export class FwsCore {
     // ALTN LAW 1 computation
     const SPA1 = fcdc1DiscreteWord1.bitValueOr(12, false) || fcdc2DiscreteWord1.bitValueOr(12, false);
     this.altn1LawConfirmNodeOutput.set(this.altn1LawConfirmNode.write(SPA1 && !flightPhase112, deltaTime));
+
+    this.altnLawCondition.set((this.altn1LawConfirmNode.read() || this.altn2LawConfirmNode.read()) && !flightPhase112);
+    this.altn1ALawCondition.set(
+      (fcdc1DiscreteWord1.bitValueOr(14, false) || fcdc2DiscreteWord1.bitValueOr(14, false)) && !flightPhase112,
+    );
 
     // DIRECT LAW computation
     const SPBUL =
@@ -3696,6 +3757,10 @@ export class FwsCore {
     this.rudderTrimNotToAudio.set(rudderTrimConfigTestInPhase129 || rudderTrimConfigInPhase3or4or5);
     this.rudderTrimNotToWarning.set(rudderTrimConfigTestInPhase129 || this.rudderTrimConfigInPhase3or4or5Sr.read());
 
+    // Rudder faults FIXME add
+    // this.lowerRudderFault.set();
+    // this.upperRudderFault.set();
+
     // flaps lvr not zero
     this.flapsLeverNotZero.set(
       (adr1PressureAltitude.valueOr(0) >= 22000 ||
@@ -3853,11 +3918,13 @@ export class FwsCore {
       !((flightPhase8 && !allRaInvalid) || flightPhase4567) && (this.lgNotDownNoCancel.get() || this.lgNotDown.get());
     this.lgLeverRedArrow.set(redArrow);
 
-    // 32 - Surveillance Logic
-    this.gpwsFlapModeOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_FLAPS_OFF', 'Bool'));
-    this.gpwsTerrOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_TERR_OFF', 'Bool'));
-    this.gpwsGsOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_GS_OFF', 'Bool'));
-    this.gpwsSysOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_SYS_OFF', 'Bool'));
+    // 34 - Surveillance Logic
+    this.tawsFlapModeOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_FLAPS_OFF', 'Bool'));
+    this.tawsTerrOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_TERR_OFF', 'Bool'));
+    this.tawsGsOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_GS_OFF', 'Bool'));
+    this.tawsGpwsOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_SYS_OFF', 'Bool'));
+    this.gpws1Failed.set(SimVar.GetSimVarValue('L:A32NX_GPWS_1_FAILED', 'Bool'));
+    this.gpws2Failed.set(SimVar.GetSimVarValue('L:A32NX_GPWS_2_FAILED', 'Bool'));
 
     // fix me check for fault condition when implemented
     const transponder1State = SimVar.GetSimVarValue('TRANSPONDER STATE:1', 'Enum');
@@ -3933,6 +4000,14 @@ export class FwsCore {
         this.radioHeight2.valueOr(Infinity) > 1500 &&
         this.radioHeight3.valueOr(Infinity) > 1500,
     );
+
+    this.terrSys1Failed.set(!!SimVar.GetSimVarValue('L:A32NX_TERR_1_FAILED', SimVarValueType.Bool));
+    this.terrSys2Failed.set(!!SimVar.GetSimVarValue('L:A32NX_TERR_2_FAILED', SimVarValueType.Bool));
+
+    this.taws1Failed.set(!!SimVar.GetSimVarValue('L:A32NX_TAWS_1_FAILED', SimVarValueType.Bool));
+    this.taws2Failed.set(!!SimVar.GetSimVarValue('L:A32NX_TAWS_2_FAILED', SimVarValueType.Bool));
+
+    this.tawsWxrSelected.set(SimVar.GetSimVarValue('L:A32NX_WXR_TAWS_SYS_SELECTED', SimVarValueType.Number));
 
     /* 26 - FIRE */
 
@@ -4188,7 +4263,7 @@ export class FwsCore {
       }
 
       if (faultIsActiveConsideringFaultSuppression(value)) {
-        const itemsChecked = value.whichItemsChecked().map((v, i) => (proc.items[i].sensed === false ? false : !!v));
+        const itemsChecked = value.whichItemsChecked().map((v, i) => (!proc.items[i]?.sensed ? false : !!v));
         const itemsToShow = value.whichItemsToShow ? value.whichItemsToShow() : Array(itemsChecked.length).fill(true);
         const itemsActive = value.whichItemsActive ? value.whichItemsActive() : Array(itemsChecked.length).fill(true);
         ProcedureLinesGenerator.conditionalActiveItems(proc, itemsChecked, itemsActive);
@@ -4242,9 +4317,7 @@ export class FwsCore {
               EcamDeferredProcedures[deferredKey].fromAbnormalProcs.includes(key) &&
               this.abnormalSensed.ewdDeferredProcs[deferredKey]
             ) {
-              const deferredItemsActive = deferredValue.whichItemsActive
-                ? deferredValue.whichItemsActive()
-                : Array(deferredValue.whichItemsChecked().length).fill(false);
+              const deferredItemsActive = Array(deferredValue.whichItemsChecked().length).fill(false); // not activated, hence all false
               const deferredItemsChecked = deferredValue.whichItemsChecked
                 ? deferredValue.whichItemsChecked()
                 : Array(deferredValue.whichItemsChecked().length).fill(true);
@@ -4317,12 +4390,17 @@ export class FwsCore {
         allFailureKeys.push(key);
 
         // Add keys for STS page
-        FwsCore.pushKeyUnique(value.info, stsInfoKeys);
-        FwsCore.pushKeyUnique(value.inopSysAllPhases, stsInopAllPhasesKeys);
-        FwsCore.pushKeyUnique(value.inopSysApprLdg, stsInopApprLdgKeys);
-        FwsCore.pushKeyUnique(value.limitationsAllPhases, ewdLimitationsAllPhasesKeys);
-        FwsCore.pushKeyUnique(value.limitationsApprLdg, ewdLimitationsApprLdgKeys);
-        FwsCore.pushKeyUnique(value.limitationsPfd, pfdLimitationsKeys);
+        const checkedState = this.presentedAbnormalProceduresList.has(key)
+          ? this.presentedAbnormalProceduresList.getValue(key).itemsChecked
+          : this.clearedAbnormalProceduresList.has(key)
+            ? this.clearedAbnormalProceduresList.getValue(key).itemsChecked
+            : undefined;
+        FwsCore.pushKeyUnique(value.info, stsInfoKeys, checkedState);
+        FwsCore.pushKeyUnique(value.inopSysAllPhases, stsInopAllPhasesKeys, checkedState);
+        FwsCore.pushKeyUnique(value.inopSysApprLdg, stsInopApprLdgKeys, checkedState);
+        FwsCore.pushKeyUnique(value.limitationsAllPhases, ewdLimitationsAllPhasesKeys, checkedState);
+        FwsCore.pushKeyUnique(value.limitationsApprLdg, ewdLimitationsApprLdgKeys, checkedState);
+        FwsCore.pushKeyUnique(value.limitationsPfd, pfdLimitationsKeys, checkedState);
 
         // Push LAND ASAP or LAND ANSA to limitations
         FwsCore.pushKeyUnique(() => {
@@ -4338,47 +4416,6 @@ export class FwsCore {
           }
         }
       }
-
-      // Update deferred procedures
-      this.activeDeferredProceduresList.get().forEach((value, key) => {
-        const proc = EcamDeferredProcedures[key];
-        const itemsChecked = this.abnormalSensed.ewdDeferredProcs[key]
-          .whichItemsChecked()
-          .map((v, i) => (proc.items[i].sensed === false ? false : !!v));
-        const itemsToShow = this.abnormalSensed.ewdDeferredProcs[key].whichItemsToShow
-          ? this.abnormalSensed.ewdDeferredProcs[key].whichItemsToShow()
-          : Array(itemsChecked.length).fill(true);
-        const itemsActive = this.abnormalSensed.ewdDeferredProcs[key].whichItemsActive
-          ? this.abnormalSensed.ewdDeferredProcs[key].whichItemsActive()
-          : Array(itemsChecked.length).fill(true);
-
-        const fusedChecked = [...value.itemsChecked].map((val, index) =>
-          proc.items[index].sensed ? itemsChecked[index] : !!val,
-        );
-
-        ProcedureLinesGenerator.conditionalActiveItems(proc, fusedChecked, itemsActive);
-        this.deferredUpdatedItems.set(key, []);
-        proc.items.forEach((item, idx) => {
-          if (
-            value.itemsToShow[idx] !== itemsToShow[idx] ||
-            value.itemsActive[idx] !== itemsActive[idx] ||
-            (value.itemsChecked[idx] !== fusedChecked[idx] && item.sensed)
-          ) {
-            this.deferredUpdatedItems.get(key).push(idx);
-          }
-        });
-
-        if (this.deferredUpdatedItems.has(key) && this.deferredUpdatedItems.get(key).length > 0) {
-          this.activeDeferredProceduresList.setValue(key, {
-            id: key,
-            procedureActivated: value.procedureActivated,
-            procedureCompleted: value.procedureCompleted,
-            itemsChecked: fusedChecked,
-            itemsActive: [...value.itemsActive].map((_, index) => itemsActive[index]),
-            itemsToShow: [...value.itemsToShow].map((_, index) => itemsToShow[index]),
-          });
-        }
-      });
 
       if (value.auralWarning?.get() === FwcAuralWarning.Crc) {
         if (!this.auralCrcKeys.includes(key)) {
@@ -4398,6 +4435,49 @@ export class FwsCore {
         this.soundManager.enqueueSound('cavalryChargeCont');
       }
     }
+
+    // Update deferred procedures
+    this.activeDeferredProceduresList.get().forEach((value, key) => {
+      const proc = EcamDeferredProcedures[key];
+      const itemsChecked = this.abnormalSensed.ewdDeferredProcs[key]
+        .whichItemsChecked()
+        .map((v, i) => (proc.items[i].sensed === false ? false : !!v));
+      const itemsToShow = this.abnormalSensed.ewdDeferredProcs[key].whichItemsToShow
+        ? this.abnormalSensed.ewdDeferredProcs[key].whichItemsToShow()
+        : Array(itemsChecked.length).fill(true);
+      const itemsActive = this.abnormalSensed.ewdDeferredProcs[key].whichItemsActive
+        ? value.procedureActivated
+          ? this.abnormalSensed.ewdDeferredProcs[key].whichItemsActive()
+          : Array(itemsChecked.length).fill(false)
+        : Array(itemsChecked.length).fill(value.procedureActivated);
+
+      const fusedChecked = [...value.itemsChecked].map((val, index) =>
+        proc.items[index].sensed ? itemsChecked[index] : !!val,
+      );
+
+      ProcedureLinesGenerator.conditionalActiveItems(proc, fusedChecked, itemsActive);
+      this.deferredUpdatedItems.set(key, []);
+      proc.items.forEach((item, idx) => {
+        if (
+          value.itemsToShow[idx] !== itemsToShow[idx] ||
+          value.itemsActive[idx] !== itemsActive[idx] ||
+          (value.itemsChecked[idx] !== fusedChecked[idx] && item.sensed)
+        ) {
+          this.deferredUpdatedItems.get(key).push(idx);
+        }
+      });
+
+      if (this.deferredUpdatedItems.has(key) && this.deferredUpdatedItems.get(key).length > 0) {
+        this.activeDeferredProceduresList.setValue(key, {
+          id: key,
+          procedureActivated: value.procedureActivated,
+          procedureCompleted: value.procedureCompleted,
+          itemsChecked: fusedChecked,
+          itemsActive: [...value.itemsActive].map((_, index) => itemsActive[index]),
+          itemsToShow: [...value.itemsToShow].map((_, index) => itemsToShow[index]),
+        });
+      }
+    });
 
     // Retrieve all active deferred procedure keys, delete inactive
     const deferredProcedureKeys: string[] = [];
@@ -4571,10 +4651,9 @@ export class FwsCore {
     this.ewdLimitationsAllPhasesLines.forEach((l, i) => l.set(sortedEwdLimitationsAllPhasesKeys[i]));
     this.ewdLimitationsApprLdgLines.forEach((l, i) => l.set(sortedEwdLimitationsApprLdgKeys[i]));
 
-    // For now, also push EWD limitations to PFD, until we find out which is displayed where
-    const pfdLimitationsCombined = [
-      ...new Set(pfdLimitationsKeys.concat(sortedEwdLimitationsAllPhasesKeys).concat(sortedEwdLimitationsApprLdgKeys)),
-    ].sort((a, b) => this.messagePriority(EcamLimitations[a]) - this.messagePriority(EcamLimitations[b]));
+    const pfdLimitationsCombined = [...new Set(pfdLimitationsKeys)].sort(
+      (a, b) => this.messagePriority(EcamLimitations[a]) - this.messagePriority(EcamLimitations[b]),
+    );
     if (pfdLimitationsCombined.includes('1') && pfdLimitationsCombined.includes('2')) {
       pfdLimitationsCombined.splice(pfdLimitationsCombined.indexOf('2'), 1);
     }
@@ -4612,6 +4691,7 @@ export class FwsCore {
     this.normalChecklists.update();
     this.abnormalSensed.update();
     this.abnormalNonSensed.update();
+    this.systemDisplayLogic.update(deltaTime);
     this.updateRowRopWarnings();
 
     // Orchestrate display of normal or abnormal proc display
@@ -4741,7 +4821,7 @@ export class FwsCore {
   }
 
   static sendFailureWarning(bus: EventBus) {
-    // In case of FWS1+2, populate output with FW messages
+    // In case of FWS1+2 failure, populate output with FW messages
     SimVar.SetSimVarValue('L:A32NX_STATUS_NORMAL', SimVarValueType.Bool, true);
     SimVar.SetSimVarValue('L:A32NX_ECAM_FAILURE_ACTIVE', SimVarValueType.Bool, false);
     SimVar.SetSimVarValue('L:A32NX_ECAM_SFAIL', SimVarValueType.Number, -1);

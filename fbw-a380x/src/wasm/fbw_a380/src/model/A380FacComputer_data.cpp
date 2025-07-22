@@ -1996,6 +1996,13 @@ A380FacComputer::Parameters_A380FacComputer_T A380FacComputer::A380FacComputer_P
   0.0F,
   0.0F,
   0.1101F,
+
+  { 340.0F, 245.0F, 243.0F, 219.0F, 186.0F, 263.0F, 222.0F, 220.0F, 216.0F, 184.0F, 220.0F, 218.0F, 216.0F, 196.0F,
+    182.0F },
+
+  { 0.0F, 108.28F, 154.65F, 194.03F, 218.91F },
+
+  { 0.0F, 247.27F, 284.65F },
   0.0F,
   0.0F,
   0.0F,
@@ -2037,6 +2044,8 @@ A380FacComputer::Parameters_A380FacComputer_T A380FacComputer::A380FacComputer_P
   { 7U, 1U, 5U },
 
   { 1U, 8U, 16U },
+
+  { 4U, 2U },
   false,
   false,
   false,

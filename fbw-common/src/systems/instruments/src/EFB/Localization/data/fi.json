@@ -92,12 +92,14 @@
   },
   "Dispatch": {
     "Ofp": {
-      "ImportSimBriefData": "Tuo tiedot SimBriefistä",
       "TT": {
         "IncreaseFontSize": "Suurenna fonttikokoa",
+        "NextLoadsheetSection": "Next loadsheet section",
+        "PreviousLoadsheetSection": "Previous loadsheet section",
         "ReduceFontSize": "Pienennä fonttikokoa"
       },
       "Title": "OFP",
+      "UnavailableLoadsheetSection": "Info not available or section not enabled in Simbrief.",
       "YouHaveNotYetImportedAnySimBriefData": "Et ole vielä tuonut dataa SimBriefistä."
     },
     "Overview": {
@@ -287,6 +289,7 @@
   "Performance": {
     "Data": "Data",
     "Landing": {
+      "Airport": "Airport",
       "AirportIcao": "Lentokentän ICAO ",
       "ApproachSpeed": "Lähestymisnopeus",
       "ApproachSpeedUnit": "solmua",
@@ -295,8 +298,10 @@
       "Clear": "Tyhjennä",
       "DropDownNo": "Ei",
       "DropDownYes": "Kyllä",
+      "EnterManually": "Enter Manually",
       "FillDataFrom": "Täytä tiedot kohteesta",
       "FlapsConfiguration": "Laippa-asetus",
+      "LandingWeight": "Landing Weight",
       "Low": "Matala",
       "MaximumManual": "Suurin manuaalinen",
       "Medium": "Keskitaso",
@@ -305,6 +310,7 @@
       "OverweightProcedure": "Menettelytapa ylipainoisena",
       "Qnh": "Vallitseva paine (QNH)",
       "ReverseThrust": "Moottorijarru",
+      "Runway": "Runway",
       "RunwayAltitude": "Kiitotien korkeus",
       "RunwayAltitudeUnit": "Jalkaa merenpinnan yläpuolella",
       "RunwayCondition": "Kiitotien kunto",
@@ -316,6 +322,8 @@
         "MediumPoor": "Melko heikko (2)",
         "Poor": "Huono (1)"
       },
+      "RunwayElevation": "Runway Elevation",
+      "RunwayElevationUnit": "ft AMSL",
       "RunwayHeading": "Kiitotien suunta",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "Käytettävissä oleva kiitotie (LDA)",
@@ -331,6 +339,7 @@
       "UnitFt": "Jalkaa",
       "UnitMeter": "metriä",
       "Weight": "Paino",
+      "Wind": "Wind",
       "WindDirection": "Tuulen suunta",
       "WindDirectionUnit": "°",
       "WindMagnitude": "Tuulen voimakkuus",
@@ -396,6 +405,8 @@
       },
       "RunwayElevation": "Runway Elevation",
       "RunwayElevationUnit": "ft",
+      "RunwayHeading": "Runway Heading",
+      "RunwayHeadingUnit": "°",
       "RunwayLengthUnitFt": "ft",
       "RunwayLengthUnitMeter": "m",
       "RunwaySlope": "Runway Slope",
@@ -556,6 +567,8 @@
       "AlignAdirs": "Kohdista ADIRS välittömästi",
       "AutoBrightness": "Kytke automaattinen kirkkaudensäätö päälle/pois",
       "Brightness": "Aseta flyPadin kirkkaus",
+      "CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+      "CabinLighting": "Set Cabin Lighting",
       "FinishBoarding": "Suorita koneeseen nousu välittömästi",
       "OnScreenKeyboard": "Kytke näyttönäppäimistö päälle/pois päältä",
       "PauseAtTod": "Arm or Disarm pause at Top of Descent",
@@ -567,8 +580,6 @@
     },
     "Title": "Pika-asetukset"
   },
-  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
-  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "Tietoja"
@@ -651,11 +662,10 @@
       "Active": "Aktiivinen",
       "Auto": "Automaattinen",
       "Both": "Synkronoitu",
+      "CabinAutoBrightness": "Auto Cabin Lighting",
+      "CabinManualBrightness": "Cabin Lighting Brightness",
       "Calibrate": "Kalibroi",
-      "Captain": "Kapteeni",
-      "CockpitSeatUsedToControl": "Ohjaamon istuin, jota käytetään ohjaamiseen",
       "ConesEnabled": "Varoituskartiot",
-      "Copilot": "Lentoperämies",
       "DefaultBarometerUnit": "Paineen oletusyksikkö",
       "DynamicRegistrationDecal": "Dynaaminen rekisteröintimerkintä",
       "EnableSimBridge": "Yhdistä Simbridgeen (yhdistysyritykset loppuvat 5 minuutin kuluttua, jos yhdistäminen ei onnistu)",
@@ -667,6 +677,7 @@
       "Left": "Left",
       "LoadOnly": "Vain lataus",
       "None": "Ei mitään",
+      "OansPerformanceMode": "OANS Performance Mode (Unload Airport Map When Not Used)",
       "Off": "Pois päältä",
       "PilotSeat": "Pilot Seat for Control",
       "Right": "Right",
@@ -697,6 +708,7 @@
         "SettingTitle": "Navigraph Account Link",
         "SubscriptionStatus": {
           "None": "None",
+          "Standard": "Navigraph Standard",
           "Unknown": "Unknown",
           "Unlimited": "Navigraph Unlimited"
         },
@@ -704,6 +716,7 @@
       },
       "OverrideSimBriefUserID": "Override SimBrief User ID",
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
+      "SimbriefLoadsheetNavigationEnabled": "Simbrief Loadsheet Navigation",
       "TT": {
         "OverrideSimBriefUserID": "Alternative SimBrief user ID to use instead of the linked Navigraph Account"
       },
@@ -735,6 +748,9 @@
       "TogaOnAxis": "TOGA On Axis"
     },
     "Title": "Asetukset",
+    "Troubleshooting": {
+      "Title": "Troubleshooting"
+    },
     "Unrealistic": "Epärealistinen",
     "flyPad": {
       "AutoBrightness": "Automaattinen kirkkaus",
@@ -743,7 +759,6 @@
       "Blue": "Sininen",
       "Brightness": "Kirkkaus",
       "Dark": "Tumma",
-      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "Kieli",
       "Light": "Vaalea",
       "Local": "Paikallinen",
@@ -760,8 +775,6 @@
       "UtcAndLocal": "UTC ja paikallinen"
     }
   },
-  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
-  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "Huhti",
     "Aug": "Elo",

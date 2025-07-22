@@ -175,6 +175,22 @@ export class FwsMemos {
       codesToReturn: ['220000002'],
       memoInhibit: () => false,
     },
+    // FMS SWTG
+    221000001: {
+      flightPhaseInhib: [],
+      simVarIsActive: this.fws.fmsSwitchingNotNorm,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['221000001'],
+      memoInhibit: () => false,
+    },
+    // DEST EFOB
+    221000002: {
+      flightPhaseInhib: [],
+      simVarIsActive: this.fws.fmsDestEfob,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['221000002'],
+      memoInhibit: () => false,
+    },
     '230000002': {
       // F/O ON RMP 3
       flightPhaseInhib: [],
@@ -284,7 +300,7 @@ export class FwsMemos {
       // RAT OUT
       flightPhaseInhib: [],
       simVarIsActive: this.fws.ratDeployed.map((v) => v > 0),
-      whichCodeToReturn: () => [this.fws.flightPhase1211.get() ? 1 : 0],
+      whichCodeToReturn: () => [this.fws.flightPhase1211.get() ? 0 : 1],
       codesToReturn: ['242000001', '242000002'],
       memoInhibit: () => false,
     },
@@ -368,7 +384,7 @@ export class FwsMemos {
     '320000002': {
       // PARK BRK ON
       flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10],
-      simVarIsActive: this.fws.parkBrake,
+      simVarIsActive: this.fws.parkBrakeSet,
       whichCodeToReturn: () => [0],
       codesToReturn: ['320000002'],
       memoInhibit: () => false,
@@ -496,7 +512,7 @@ export class FwsMemos {
     '341000001': {
       // GPWS OFF
       flightPhaseInhib: [1, 12],
-      simVarIsActive: this.fws.gpwsSysOff,
+      simVarIsActive: this.fws.tawsGpwsOff,
       whichCodeToReturn: () => [0],
       codesToReturn: ['341000001'],
       memoInhibit: () => this.fws.toMemo.get() === 1 || this.fws.ldgMemo.get() === 1,
@@ -504,7 +520,7 @@ export class FwsMemos {
     '341000002': {
       // TAWS FLAP MODE OFF
       flightPhaseInhib: [1, 12],
-      simVarIsActive: this.fws.gpwsFlapModeOff,
+      simVarIsActive: this.fws.tawsFlapModeOff,
       whichCodeToReturn: () => [0],
       codesToReturn: ['341000002'],
       memoInhibit: () => this.fws.toMemo.get() === 1 || this.fws.ldgMemo.get() === 1,
@@ -512,7 +528,7 @@ export class FwsMemos {
     '341000003': {
       // TAWS G/S MODE OFF
       flightPhaseInhib: [1, 12],
-      simVarIsActive: this.fws.gpwsGsOff,
+      simVarIsActive: this.fws.tawsGsOff,
       whichCodeToReturn: () => [0],
       codesToReturn: ['341000003'],
       memoInhibit: () => this.fws.toMemo.get() === 1 || this.fws.ldgMemo.get() === 1,

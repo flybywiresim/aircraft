@@ -1,4 +1,5 @@
 use crate::air_conditioning::AdirsToAirCondInterface;
+use crate::shared::InternationalStandardAtmosphere;
 use crate::simulation::{InitContext, VariableIdentifier};
 use crate::{
     overhead::{IndicationLight, OnOffFaultPushButton},
@@ -25,6 +26,7 @@ use uom::si::{
     length::foot,
     pressure::hectopascal,
     ratio::ratio,
+    time::second,
     velocity::{foot_per_minute, knot},
 };
 
@@ -241,11 +243,16 @@ struct AdirsSimulatorData {
     angle_of_attack: Angle,
 
     baro_correction_1_id: VariableIdentifier,
-    baro_correction_1: Pressure,
+    /// Baro Correction for captain's side in hPa from the FCU
+    baro_correction_1: Arinc429Word<f64>,
+
+    baro_correction_2_id: VariableIdentifier,
+    /// Baro correction for fo's side in hPa from the FCU
+    baro_correction_2: Arinc429Word<f64>,
 }
 impl AdirsSimulatorData {
     const MACH: &'static str = "AIRSPEED MACH";
-    const VERTICAL_SPEED: &'static str = "VELOCITY WORLD Y";
+    const INERTIAL_VERTICAL_SPEED: &'static str = "VELOCITY WORLD Y";
     const TRUE_AIRSPEED: &'static str = "AIRSPEED TRUE";
     const LATITUDE: &'static str = "PLANE LATITUDE";
     const LONGITUDE: &'static str = "PLANE LONGITUDE";
@@ -261,14 +268,15 @@ impl AdirsSimulatorData {
     const GROUND_SPEED: &'static str = "GPS GROUND SPEED";
     const TOTAL_AIR_TEMPERATURE: &'static str = "TOTAL AIR TEMPERATURE";
     const ANGLE_OF_ATTACK: &'static str = "INCIDENCE ALPHA";
-    const BARO_CORRECTION_1_HPA: &'static str = "KOHLSMAN SETTING MB:1";
+    const BARO_CORRECTION_1_HPA: &'static str = "FCU_LEFT_EIS_BARO_HPA";
+    const BARO_CORRECTION_2_HPA: &'static str = "FCU_RIGHT_EIS_BARO_HPA";
 
     fn new(context: &mut InitContext) -> Self {
         Self {
             mach_id: context.get_identifier(Self::MACH.to_owned()),
             mach: Default::default(),
 
-            vertical_speed_id: context.get_identifier(Self::VERTICAL_SPEED.to_owned()),
+            vertical_speed_id: context.get_identifier(Self::INERTIAL_VERTICAL_SPEED.to_owned()),
             vertical_speed: Default::default(),
 
             true_airspeed_id: context.get_identifier(Self::TRUE_AIRSPEED.to_owned()),
@@ -318,7 +326,10 @@ impl AdirsSimulatorData {
             angle_of_attack: Default::default(),
 
             baro_correction_1_id: context.get_identifier(Self::BARO_CORRECTION_1_HPA.to_owned()),
-            baro_correction_1: Default::default(),
+            baro_correction_1: Arinc429Word::new(1013., SignStatus::FailureWarning),
+
+            baro_correction_2_id: context.get_identifier(Self::BARO_CORRECTION_2_HPA.to_owned()),
+            baro_correction_2: Arinc429Word::new(1013., SignStatus::FailureWarning),
         }
     }
 }
@@ -346,8 +357,8 @@ impl SimulationElement for AdirsSimulatorData {
         self.ground_speed = reader.read(&self.ground_speed_id);
         self.total_air_temperature = reader.read(&self.total_air_temperature_id);
         self.angle_of_attack = reader.read(&self.angle_of_attack_id);
-        self.baro_correction_1 =
-            Pressure::new::<hectopascal>(reader.read(&self.baro_correction_1_id));
+        self.baro_correction_1 = reader.read_arinc429(&self.baro_correction_1_id);
+        self.baro_correction_2 = reader.read_arinc429(&self.baro_correction_2_id);
     }
 }
 
@@ -923,6 +934,9 @@ struct AirDataReference {
     angle_of_attack: AdirsData<Angle>,
     discrete_word_1: AdirsData<u32>,
 
+    static_pressure_filter: LowPassFilter<Pressure>,
+    vertical_speed_filter: LowPassFilter<f64>,
+
     remaining_initialisation_duration: Option<Duration>,
 }
 impl AirDataReference {
@@ -950,6 +964,13 @@ impl AirDataReference {
     const MINIMUM_CAS: f64 = 30.;
     const MINIMUM_MACH: f64 = 0.1;
     const MINIMUM_CAS_FOR_AOA: f64 = 60.;
+    const MINIMUM_VALID_ALTITUDE: f64 = -2000.;
+    const MAXIMUM_VALID_ALTITUDE: f64 = 50000.;
+
+    // Approx 8 Hz filter
+    const STATIC_PORT_TIME_CONSTANT: Duration = Duration::from_millis(125);
+    // 1 second filter
+    const VERTICAL_SPEED_TIME_CONSTANT: Duration = Duration::from_secs(1);
 
     fn new(context: &mut InitContext, number: usize, vmo: Velocity, mmo: MachNumber) -> Self {
         Self {
@@ -1005,6 +1026,12 @@ impl AirDataReference {
             angle_of_attack: AdirsData::new_adr(context, number, Self::ANGLE_OF_ATTACK),
             discrete_word_1: AdirsData::new_adr(context, number, Self::DISCRETE_WORD_1),
 
+            static_pressure_filter: LowPassFilter::new_with_init_value(
+                Self::STATIC_PORT_TIME_CONSTANT,
+                InternationalStandardAtmosphere::ground_pressure(),
+            ),
+            vertical_speed_filter: LowPassFilter::new(Self::VERTICAL_SPEED_TIME_CONSTANT),
+
             // Start fully initialised.
             remaining_initialisation_duration: Some(Duration::from_secs(0)),
         }
@@ -1046,6 +1073,37 @@ impl AirDataReference {
         );
     }
 
+    fn calculate_baro_alt_correction(baro_correction: f64) -> Length {
+        Length::new::<foot>(-145442.15 * (1. - (baro_correction / 1013.25).powf(0.192263)))
+    }
+
+    fn update_altitude_word(altitude: Length, output: &mut AdirsData<Length>) {
+        // the output is 17 bits with 1 foot resolution, and we're already clamping the value on the next line
+        let rounded_alt = Length::new::<foot>(altitude.get::<foot>().round());
+        if rounded_alt >= Length::new::<foot>(Self::MINIMUM_VALID_ALTITUDE)
+            && rounded_alt <= Length::new::<foot>(Self::MAXIMUM_VALID_ALTITUDE)
+        {
+            output.set_normal_operation_value(rounded_alt);
+        } else {
+            output.set_value(Length::default(), SignStatus::FailureWarning);
+        }
+    }
+
+    fn calculate_altitude_from_static_pressure(static_pressure: Pressure) -> Length {
+        // Use the ADR formula to calculate altitude.
+        // We do not use the InternationalStandardAtmosphere functions as they do not match,
+        // and are only valid in the troposphere.
+        Length::new::<foot>(if static_pressure.get::<hectopascal>() >= 226.323 {
+            145442.156
+                * (1.
+                    - (static_pressure.get::<hectopascal>()
+                        / InternationalStandardAtmosphere::ground_pressure().get::<hectopascal>())
+                    .powf(0.190263))
+        } else {
+            148897.4 - 47907.18 * static_pressure.get::<hectopascal>().log10()
+        })
+    }
+
     fn update_values(&mut self, context: &UpdateContext, simulator_data: AdirsSimulatorData) {
         // For now some of the data will be read from the context. Later the context will no longer
         // contain this information (and instead all usages will be replaced by requests to the ADIRUs).
@@ -1069,39 +1127,97 @@ impl AirDataReference {
             self.static_air_temperature.set_failure_warning();
             self.angle_of_attack.set_failure_warning();
             self.is_overspeed = false;
+
+            self.static_pressure_filter
+                .reset(context.ambient_pressure());
+            self.vertical_speed_filter.reset(0.);
         } else {
             // If it is on and initialized, output normal values.
-            self.baro_correction_1_hpa
-                .set_normal_operation_value(simulator_data.baro_correction_1);
-            self.baro_correction_1_inhg
-                .set_normal_operation_value(simulator_data.baro_correction_1);
-            // Fixme: Get data from F/O altimeter when available
-            self.baro_correction_2_hpa
-                .set_normal_operation_value(simulator_data.baro_correction_1);
-            self.baro_correction_2_inhg
-                .set_normal_operation_value(simulator_data.baro_correction_1);
 
-            let pressure_alt = Length::new::<foot>(
-                ((context.pressure_altitude().get::<foot>() * 2.).round() / 2.)
-                    .clamp(-131072., 131072.),
-            );
+            // This filter is not reset when invalid, as we want to keep the last valid value.
+            let last_valid_static_pressure = self.static_pressure_filter.output();
+            let static_pressure = self
+                .static_pressure_filter
+                .update(context.delta(), context.ambient_pressure());
 
-            // FIXME split sides and do the correction ourselves
-            // FIXME this currently returns pressure alt when STD mode is selected on the FCU
-            let baro_alt = Length::new::<foot>(
-                ((context.indicated_altitude().get::<foot>() * 2.).round() / 2.)
-                    .clamp(-131072., 131072.),
-            );
+            let pressure_altitude =
+                AirDataReference::calculate_altitude_from_static_pressure(static_pressure);
+            let last_valid_pressure_altitude =
+                AirDataReference::calculate_altitude_from_static_pressure(
+                    last_valid_static_pressure,
+                );
+
+            AirDataReference::update_altitude_word(pressure_altitude, &mut self.altitude);
+
+            if simulator_data.baro_correction_1.is_normal_operation()
+                || simulator_data.baro_correction_1.is_functional_test()
+            {
+                let correction_1 = AirDataReference::calculate_baro_alt_correction(
+                    simulator_data.baro_correction_1.value(),
+                );
+
+                AirDataReference::update_altitude_word(
+                    pressure_altitude + correction_1,
+                    &mut self.baro_corrected_altitude_1,
+                );
+
+                self.baro_correction_1_hpa.set_value(
+                    Pressure::new::<hectopascal>(simulator_data.baro_correction_1.value()),
+                    simulator_data.baro_correction_1.ssm(),
+                );
+                self.baro_correction_1_inhg.set_value(
+                    Pressure::new::<hectopascal>(simulator_data.baro_correction_1.value()),
+                    simulator_data.baro_correction_1.ssm(),
+                );
+            } else {
+                self.baro_corrected_altitude_1
+                    .set_value(Default::default(), SignStatus::NoComputedData);
+                self.baro_correction_1_hpa
+                    .set_value(Default::default(), SignStatus::NoComputedData);
+                self.baro_correction_1_inhg
+                    .set_value(Default::default(), SignStatus::NoComputedData);
+            }
+
+            if simulator_data.baro_correction_2.is_normal_operation()
+                || simulator_data.baro_correction_2.is_functional_test()
+            {
+                let correction_2 = AirDataReference::calculate_baro_alt_correction(
+                    simulator_data.baro_correction_2.value(),
+                );
+
+                AirDataReference::update_altitude_word(
+                    pressure_altitude + correction_2,
+                    &mut self.baro_corrected_altitude_2,
+                );
+
+                self.baro_correction_2_hpa.set_value(
+                    Pressure::new::<hectopascal>(simulator_data.baro_correction_2.value()),
+                    simulator_data.baro_correction_2.ssm(),
+                );
+                self.baro_correction_2_inhg.set_value(
+                    Pressure::new::<hectopascal>(simulator_data.baro_correction_2.value()),
+                    simulator_data.baro_correction_2.ssm(),
+                );
+            } else {
+                self.baro_corrected_altitude_2
+                    .set_value(Default::default(), SignStatus::NoComputedData);
+                self.baro_correction_2_hpa
+                    .set_value(Default::default(), SignStatus::NoComputedData);
+                self.baro_correction_2_inhg
+                    .set_value(Default::default(), SignStatus::NoComputedData);
+            }
 
             self.corrected_average_static_pressure
-                .set_normal_operation_value(context.ambient_pressure());
-            self.altitude.set_normal_operation_value(pressure_alt);
-            self.baro_corrected_altitude_1
-                .set_normal_operation_value(baro_alt);
-            self.baro_corrected_altitude_2
-                .set_normal_operation_value(baro_alt);
+                .set_normal_operation_value(static_pressure);
+
+            let delta_alt = pressure_altitude - last_valid_pressure_altitude;
+            if context.delta() > Duration::default() {
+                let raw_vs = (delta_alt / Time::new::<second>(context.delta_as_secs_f64()))
+                    .get::<foot_per_minute>();
+                self.vertical_speed_filter.update(context.delta(), raw_vs);
+            }
             self.barometric_vertical_speed
-                .set_normal_operation_value(simulator_data.vertical_speed.get::<foot_per_minute>());
+                .set_normal_operation_value(self.vertical_speed_filter.output());
 
             // If CAS is below 30kn, output as 0 with SSM = NCD
             let computed_airspeed = context.indicated_airspeed();
@@ -1278,6 +1394,7 @@ impl From<f64> for AlignTime {
 
 bitflags! {
     #[derive(Default)]
+    #[cfg_attr(test, derive(Debug, PartialEq))]
     struct IrMaintFlags: u32 {
         const ALIGNMENT_NOT_READY = 0b0000000000000000001;
         const REV_ATT_MODE = 0b0000000000000000010;
@@ -1595,7 +1712,7 @@ impl InertialReference {
                 || (overhead.mode_of(self.number) == InertialReferenceMode::Navigation
                     && self
                         .remaining_align_duration
-                        .map_or(false, |duration| duration.as_secs() < 120)));
+                        .is_some_and(|duration| duration.as_secs() < 120)));
 
         let true_heading_ssm = if heading_available {
             SignStatus::NormalOperation
@@ -2133,8 +2250,7 @@ mod tests {
                 test_bed: SimulationTestBed::new(TestAircraft::new),
             };
             adirs_test_bed.move_all_mode_selectors_to(InertialReferenceMode::Navigation);
-
-            adirs_test_bed
+            adirs_test_bed.altimeter_setting_of(Pressure::new::<hectopascal>(1013.25))
         }
 
         fn and(self) -> Self {
@@ -2168,9 +2284,9 @@ mod tests {
             self
         }
 
-        fn vertical_speed_of(mut self, velocity: Velocity) -> Self {
+        fn inertial_vertical_speed_of(mut self, velocity: Velocity) -> Self {
             self.write_by_name(
-                AdirsSimulatorData::VERTICAL_SPEED,
+                AdirsSimulatorData::INERTIAL_VERTICAL_SPEED,
                 velocity.get::<foot_per_minute>(),
             );
             self
@@ -2272,9 +2388,15 @@ mod tests {
         }
 
         fn altimeter_setting_of(mut self, altimeter: Pressure) -> Self {
-            self.write_by_name(
+            self.write_arinc429_by_name(
                 AdirsSimulatorData::BARO_CORRECTION_1_HPA,
                 altimeter.get::<hectopascal>(),
+                SignStatus::NormalOperation,
+            );
+            self.write_arinc429_by_name(
+                AdirsSimulatorData::BARO_CORRECTION_2_HPA,
+                altimeter.get::<hectopascal>(),
+                SignStatus::NormalOperation,
             );
             self
         }
@@ -3301,7 +3423,8 @@ mod tests {
             let mut test_bed = all_adirus_aligned_test_bed();
             test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(1013.));
 
-            test_bed.run();
+            // let the filter run a bit
+            test_bed.run_iterations_with_delta(5, Duration::from_millis(250));
 
             assert_about_eq!(
                 test_bed
@@ -3363,14 +3486,23 @@ mod tests {
         #[case(2)]
         #[case(3)]
         fn altitude_is_supplied_by_adr(#[case] adiru_number: usize) {
+            use uom::si::pressure::pascal;
+
             let mut test_bed = all_adirus_aligned_test_bed();
-            test_bed.set_pressure_altitude(Length::new::<foot>(38000.));
+            // set_pressure_altitude is only valid in the troposhere (due to InternationalStandardAtmosphere::pressure_at_altitude)
+            // test_bed.set_pressure_altitude(Length::new::<foot>(41000.));
+            test_bed.set_ambient_pressure(Pressure::new::<pascal>(17874.)); // 41000 feet
 
-            test_bed.run();
+            test_bed.run_iterations_with_delta(10, Duration::from_millis(250));
 
-            assert_eq!(
-                test_bed.altitude(adiru_number).normal_value().unwrap(),
-                Length::new::<foot>(38000.)
+            assert_about_eq!(
+                test_bed
+                    .altitude(adiru_number)
+                    .normal_value()
+                    .unwrap()
+                    .get::<foot>(),
+                41000.,
+                2.,
             );
         }
 
@@ -3380,16 +3512,18 @@ mod tests {
         #[case(3)]
         fn baro_corrected_altitude_1_is_supplied_by_adr(#[case] adiru_number: usize) {
             let mut test_bed = all_adirus_aligned_test_bed();
-            test_bed.set_indicated_altitude(Length::new::<foot>(10000.));
+            test_bed.set_pressure_altitude(Length::new::<foot>(10000.));
 
-            test_bed.run();
+            test_bed.run_iterations_with_delta(10, Duration::from_millis(250));
 
-            assert_eq!(
+            assert_about_eq!(
                 test_bed
                     .baro_corrected_altitude_1(adiru_number)
                     .normal_value()
-                    .unwrap(),
-                Length::new::<foot>(10000.)
+                    .unwrap()
+                    .get::<foot>(),
+                10000.,
+                2.,
             );
         }
 
@@ -3399,16 +3533,18 @@ mod tests {
         #[case(3)]
         fn baro_corrected_altitude_2_is_supplied_by_adr(#[case] adiru_number: usize) {
             let mut test_bed = all_adirus_aligned_test_bed();
-            test_bed.set_indicated_altitude(Length::new::<foot>(10000.));
+            test_bed.set_pressure_altitude(Length::new::<foot>(10000.));
 
-            test_bed.run();
+            test_bed.run_iterations_with_delta(10, Duration::from_millis(250));
 
-            assert_eq!(
+            assert_about_eq!(
                 test_bed
                     .baro_corrected_altitude_2(adiru_number)
                     .normal_value()
-                    .unwrap(),
-                Length::new::<foot>(10000.)
+                    .unwrap()
+                    .get::<foot>(),
+                10000.,
+                2.,
             );
         }
 
@@ -3603,15 +3739,23 @@ mod tests {
         #[case(3)]
         fn barometric_vertical_speed_is_supplied_by_adr(#[case] adiru_number: usize) {
             let vertical_speed = Velocity::new::<foot_per_minute>(300.);
-            let mut test_bed = all_adirus_aligned_test_bed_with().vertical_speed_of(vertical_speed);
-            test_bed.run();
+            let mut test_bed = all_adirus_aligned_test_bed_with();
+            let mut altitude = Length::new::<foot>(0.);
+            for _ in 0..5 {
+                test_bed.set_pressure_altitude(altitude);
+                test_bed.run();
 
-            assert_eq!(
+                altitude += vertical_speed * Time::new::<second>(1.);
+            }
+
+            assert_about_eq!(
                 test_bed
                     .barometric_vertical_speed(adiru_number)
                     .normal_value()
-                    .unwrap(),
-                vertical_speed
+                    .unwrap()
+                    .get::<foot_per_minute>(),
+                vertical_speed.get::<foot_per_minute>(),
+                10.
             );
         }
 
@@ -4369,7 +4513,7 @@ mod tests {
         ) {
             let vs = Velocity::new::<foot_per_minute>(500.);
             let mut test_bed = all_adirus_aligned_test_bed_with()
-                .vertical_speed_of(vs)
+                .inertial_vertical_speed_of(vs)
                 .and()
                 .ground_speed_of(Velocity::new::<knot>(
                     InertialReference::MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS,
@@ -4398,7 +4542,7 @@ mod tests {
         ) {
             let vs = Velocity::new::<foot_per_minute>(500.);
             let mut test_bed = all_adirus_aligned_test_bed_with()
-                .vertical_speed_of(vs)
+                .inertial_vertical_speed_of(vs)
                 .and()
                 .ground_speed_of(Velocity::new::<knot>(
                     InertialReference::MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS - 0.01,
@@ -4417,7 +4561,8 @@ mod tests {
         #[case(3)]
         fn vertical_speed_is_supplied_by_ir(#[case] adiru_number: usize) {
             let vertical_speed = Velocity::new::<foot_per_minute>(300.);
-            let mut test_bed = all_adirus_aligned_test_bed_with().vertical_speed_of(vertical_speed);
+            let mut test_bed =
+                all_adirus_aligned_test_bed_with().inertial_vertical_speed_of(vertical_speed);
             test_bed.run();
 
             assert_eq!(
