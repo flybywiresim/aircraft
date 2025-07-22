@@ -323,10 +323,26 @@
 
 .oit-avncs-navigator-left::-webkit-scrollbar-track {
   background: $display-mfd-darker-grey;
+  border: 3px solid $display-dark-grey;
 }
 
 .oit-avncs-navigator-left::-webkit-scrollbar-thumb {
-  background: $display-light-grey;
+  background: $display-dark-grey;
+  border: 3px solid $display-light-grey;
+}
+
+.oit-avncs-navigator-left::-webkit-scrollbar-button {
+  background: no-repeat $display-dark-grey;
+  background-size: 0.75em;
+  background-position: center bottom;
+}
+
+.oit-avncs-navigator-left::-webkit-scrollbar-button:vertical:decrement {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='25' height='25' fill='#c4c6cf'><polygon points='0,12.5 25,12.5 12.5,0'/></svg>");
+}
+
+.oit-avncs-navigator-left::-webkit-scrollbar-button:vertical:increment {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='25' height='25' fill='#c4c6cf'><polygon points='0,0 25,0 12.5,12.5'/></svg>");
 }
 
 .oit-avncs-navigator-right {
