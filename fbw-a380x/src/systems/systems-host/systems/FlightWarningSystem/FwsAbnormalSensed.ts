@@ -4086,7 +4086,7 @@ export class FwsAbnormalSensed {
     701800029: {
       // ENG 1 FAIL
       simVarIsActive: this.fws.eng1Fail,
-      flightPhaseInhib: [],
+      flightPhaseInhib: [5, 6],
       notActiveWhenFaults: [],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -4096,7 +4096,7 @@ export class FwsAbnormalSensed {
     701800030: {
       // ENG 2 FAIL
       simVarIsActive: this.fws.eng2Fail,
-      flightPhaseInhib: [],
+      flightPhaseInhib: [5, 6],
       notActiveWhenFaults: [],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -4106,7 +4106,7 @@ export class FwsAbnormalSensed {
     701800031: {
       // ENG 3 FAIL
       simVarIsActive: this.fws.eng3Fail,
-      flightPhaseInhib: [],
+      flightPhaseInhib: [5, 6],
       notActiveWhenFaults: [],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -4116,7 +4116,7 @@ export class FwsAbnormalSensed {
     701800032: {
       // ENG 4 FAIL
       simVarIsActive: this.fws.eng4Fail,
-      flightPhaseInhib: [],
+      flightPhaseInhib: [5, 6],
       notActiveWhenFaults: [],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
