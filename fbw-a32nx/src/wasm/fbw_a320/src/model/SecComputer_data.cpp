@@ -274,6 +274,10 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
 
   0.5,
 
+  2.0,
+
+  2.0,
+
   30.0,
 
   30.0,
