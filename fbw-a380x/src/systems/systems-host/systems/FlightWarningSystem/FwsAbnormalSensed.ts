@@ -3940,6 +3940,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.Apu,
       inopSysAllPhases: () => ['490300001'],
+    },
     // SECONDARY FAILURES
     999800001: {
       // *F/CTL
