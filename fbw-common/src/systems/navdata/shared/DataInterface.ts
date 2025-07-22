@@ -163,12 +163,12 @@ export interface DataInterface {
   getAirways(idents: string[]): Promise<Airway[]>;
 
   /**
-   * Retrieve airways to/from a given fix
+   * Retrieve an airway to/from a given fix
    * @param ident fix identifier
    * @param icaoCode 2-letter ICAO region code of the fix (to uniquely identify it)
-   * @param airwayIdent optional airway identifier to filter results by, no filter is applied if undefined
+   * @param airwayIdent airway identifier to fetch
    */
-  getAirwaysByFix(ident: string, icaoCode: string, airwayIdent?: string): Promise<Airway[]>;
+  getAirwayByFix(ident: string, icaoCode: string, airwayIdent: string): Promise<Airway[]>;
 
   createNearbyFacilityMonitor(type: NearbyFacilityType): NearbyFacilityMonitor;
 
