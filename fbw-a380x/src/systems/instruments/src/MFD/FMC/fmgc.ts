@@ -136,16 +136,20 @@ export class FmgcData {
     (v) => v !== null,
   );
 
+  public readonly destEfobBelowMin = Subject.create(false);
+
   public readonly paxNumber = Subject.create<number | null>(null);
 
   /** in kg. null if not set. */
   public readonly jettisonGrossWeight = Subject.create<number | null>(null);
 
+  public readonly alternateExists = Subject.create(false);
+
   /** in kg. null if not set. */
   public readonly alternateFuelPilotEntry = Subject.create<number | null>(null);
 
   /** in kg. null if not set. */
-  public readonly alternateFuelCalculated = Subject.create<number | null>(null);
+  public readonly alternateFuelCalculated = this.alternateExists.map((v) => (v ? 6_500 : null)); // FIXME Hardcoded value. Derive from FMS predictions.
 
   public readonly alternateFuel = MappedSubject.create(
     ([calc, pe]) => (pe !== null ? pe : calc),
@@ -159,7 +163,7 @@ export class FmgcData {
   public readonly finalFuelWeightPilotEntry = Subject.create<number | null>(null);
 
   /** in kg. null if not set. */
-  public readonly finalFuelWeightCalculated = Subject.create<number | null>(null);
+  public readonly finalFuelWeightCalculated = Subject.create<number | null>(4_650); // FIXME Hardcoded value. Derive from configured final time based on hold at 1500ft with flaps 1.
 
   public readonly finalFuelWeight = MappedSubject.create(
     ([calc, pe]) => (pe !== null ? pe : calc),
@@ -190,8 +194,18 @@ export class FmgcData {
     this.alternateFuel,
   );
 
+  public readonly minFuelAtDestTon = this.minimumFuelAtDestination.map((v) => (v ? v / 1000 : null));
+
   public readonly minimumFuelAtDestinationIsPilotEntered = this.minimumFuelAtDestinationPilotEntry.map(
     (it) => it !== null,
+  );
+
+  public readonly pilotEntryMinFuelBelowAltnPlusFinal = MappedSubject.create(
+    ([minFuel, altnFuel, finalFuel]) =>
+      minFuel != null && altnFuel != null && finalFuel != null && minFuel < altnFuel + finalFuel,
+    this.minimumFuelAtDestinationPilotEntry,
+    this.alternateFuel,
+    this.finalFuelWeight,
   );
 
   /** in feet. null if not set. */
@@ -354,13 +368,13 @@ export class FmgcDataService implements Fmgc {
   public getGrossWeight(): number | null {
     // Value received from FQMS, or falls back to entered ZFW + entered FOB
     const zfw = this.data.zeroFuelWeight.get();
-    const fob = this.getFOB() * 1_000; // getFOB returns tons
+    const fob = this.getFOB();
 
-    if (zfw == null || fob === undefined) {
+    if (zfw == null || fob === null) {
       return null;
     }
 
-    return (zfw + fob) / 1_000;
+    return (zfw + fob * 1000) / 1_000;
   }
 
   /** in kilograms */
@@ -373,15 +387,15 @@ export class FmgcDataService implements Fmgc {
    *
    * @returns fuel on board in tonnes (i.e. 1000 x kg)
    */
-  getFOB(): number {
-    let fob = this.data.blockFuel.get() ?? 0;
+  getFOB(): number | null {
+    let fob = this.data.blockFuel.get();
     if (this.isAnEngineOn()) {
       fob =
         SimVar.GetSimVarValue('FUEL TOTAL QUANTITY', 'gallons') *
         SimVar.GetSimVarValue('FUEL WEIGHT PER GALLON', 'kilograms');
     }
 
-    return fob / 1_000; // Needs to be returned in tonnes
+    return fob !== null ? fob / 1_000 : null; // Needs to be returned in tonnes
   }
 
   /** in knots */
@@ -606,22 +620,26 @@ export class FmgcDataService implements Fmgc {
   }
 
   /** in tons */
-  getDestEFOB(useFob: boolean): number {
+  getDestEFOB(useFob: boolean): number | null {
     // Metric tons
     const efob = this.guidanceController?.vnavDriver?.getDestinationPrediction()?.estimatedFuelOnBoard; // in Pounds
     if (useFob && efob !== undefined) {
       return Units.poundToKilogram(efob) / 1000.0;
     }
-    return 0;
+    return null;
   }
 
   /** in tons */
-  getAltEFOB(useFOB = false): number {
+  getAltEFOB(): number | null {
     // TODO estimate alternate fuel
-    if (this.getDestEFOB(useFOB) === 0) {
-      return 0;
+
+    const destEfob = this.getDestEFOB(true);
+    const alternateFuel = this.data.alternateFuel.get();
+
+    if (destEfob === null || alternateFuel === null) {
+      return null;
     }
-    return this.getDestEFOB(useFOB) - 1.0 > 0 ? this.getDestEFOB(useFOB) - 1.0 : 0;
+    return destEfob - alternateFuel / 1000;
   }
 
   /** in feet. null if not set */
