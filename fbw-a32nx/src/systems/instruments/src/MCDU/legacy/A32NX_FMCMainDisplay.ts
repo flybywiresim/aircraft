@@ -2693,7 +2693,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public getGrossWeight() {
     const fob = this.getFOB(FlightPlanIndex.Active);
 
-    if (this.zeroFuelWeight === null || fob === undefined) {
+    if (this.zeroFuelWeight === null || fob === null) {
       return null;
     }
 
@@ -4532,10 +4532,10 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   /**
    * Retrieves current fuel on boad in tons.
-   * @returns current fuel on board in tons, or undefined if fuel readings are not available.
+   * @returns current fuel on board in tons, or null if fuel readings are not available.
    */
   //TODO: Can this be util?
-  public getFOB(forPlan: FlightPlanIndex): number | undefined {
+  public getFOB(forPlan: FlightPlanIndex): number | null {
     const useFqi = this.isAnEngineOn();
 
     const plan = this.getFlightPlan(forPlan);
@@ -4543,7 +4543,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     // If an engine is not running, use pilot entered block fuel to calculate fuel predictions
     return useFqi
       ? (SimVar.GetSimVarValue('FUEL TOTAL QUANTITY WEIGHT', 'pound') * 0.4535934) / 1000
-      : plan.performanceData.blockFuel.get() ?? undefined;
+      : plan.performanceData.blockFuel.get() ?? null;
   }
 
   /**
@@ -5306,9 +5306,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
     // EFOB
     computations.destinationFuelOnBoard =
-      fob !== undefined
-        ? fob - computations.tripFuel - (!this.isFlying() ? plan.performanceData.taxiFuel.get() : 0)
-        : null;
+      fob !== null ? fob - computations.tripFuel - (!this.isFlying() ? plan.performanceData.taxiFuel.get() : 0) : null;
     computations.alternateDestinationFuelOnBoard =
       computations.destinationFuelOnBoard !== null && alternateFuel !== null
         ? computations.destinationFuelOnBoard - alternateFuel
@@ -5320,7 +5318,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       computations.destinationFuelOnBoard !== null ? zfw + computations.destinationFuelOnBoard : null;
 
     // Extra fuel
-    if (fob === undefined && this.isFuelPlanningInProgress(forPlan)) {
+    if (fob === null && this.isFuelPlanningInProgress(forPlan)) {
       // For fuel planning to work
       computations.extraFuel = 0;
       computations.extraTime = 0;

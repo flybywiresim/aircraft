@@ -59,6 +59,7 @@ import { FmsSymbolsPublisher } from 'instruments/src/ND/FmsSymbolsPublisher';
 
 CpiomAvailableSimvarPublisher;
 import { AircraftNetworkServerUnit } from 'systems-host/systems/InformationSystems/AircraftNetworkServerUnit';
+import { FmsMessagePublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FmsMessagePublisher';
 
 class SystemsHost extends BaseInstrument {
   private readonly bus = new ArincEventBus();
@@ -138,6 +139,8 @@ class SystemsHost extends BaseInstrument {
   private readonly switchingPanelPublisher = new SwitchingPanelPublisher(this.bus);
 
   private readonly efisTawsBridge = new EfisTawsBridge(this.bus, this, this.failuresConsumer);
+
+  private readonly fmsMessagePublisher = new FmsMessagePublisher(this.bus);
 
   private readonly fws1ResetPbStatus = ConsumerSubject.create(this.sub.on('a380x_reset_panel_fws1'), false);
   private readonly fws2ResetPbStatus = ConsumerSubject.create(this.sub.on('a380x_reset_panel_fws2'), false);
@@ -225,6 +228,7 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('IrBusPublisher', this.irBusPublisher);
     this.backplane.addPublisher('AesuPublisher', this.aesuBusPublisher);
     this.backplane.addPublisher('SwitchingPanelPublisher', this.switchingPanelPublisher);
+    this.backplane.addPublisher('fmsMessage', this.fmsMessagePublisher);
     this.backplane.addInstrument('nssAnsu1', this.nssAnsu1, true);
     this.backplane.addInstrument('nssAnsu2', this.nssAnsu2, true);
     this.backplane.addInstrument('fltOpsAnsu1', this.fltOpsAnsu1, true);
