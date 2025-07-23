@@ -106,8 +106,10 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
     this.fuelWeightPerGallon,
     this.userWeight,
   );
-  private readonly fuelWeightText = this.fuelWeight.map((fw) =>
-    (Math.round(NXUnits.kgToUser(fw) / 100) * 100).toFixed(0),
+  private readonly fuelWeightText = MappedSubject.create(
+    ([fw, _uw]) => (Math.round(NXUnits.kgToUser(fw) / 100) * 100).toFixed(0),
+    this.fuelWeight,
+    this.userWeight,
   );
 
   // FIXME replace with FQMS implementation
@@ -121,9 +123,12 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
     this.fuelWeight,
   );
 
-  private readonly gwText = this.grossWeight.map((gw) =>
-    gw === 0 || gw === null ? '--\xa0\xa0' : (Math.round(NXUnits.kgToUser(gw) / 100) * 100).toFixed(0),
+  private readonly gwText = MappedSubject.create(
+    ([gw, _uw]) => (gw === 0 || gw === null ? '--\xa0\xa0' : (Math.round(NXUnits.kgToUser(gw) / 100) * 100).toFixed(0)),
+    this.grossWeight,
+    this.userWeight,
   );
+
   private readonly gwClass = this.grossWeight.map((gw) =>
     gw === 0 || gw === null ? 'F27 Cyan EndAlign' : 'F27 Green EndAlign',
   );
