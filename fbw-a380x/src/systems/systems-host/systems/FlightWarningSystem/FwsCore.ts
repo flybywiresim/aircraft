@@ -3361,6 +3361,7 @@ export class FwsCore {
       this.cabVsLimitationMemoryNode.write(false, true);
       this.cabVerticalSpeedLimitationActive.set(false);
     }
+
     // 0: Man, 1: Low, 2: Norm, 3: High
     this.flowSelectorKnob.set(SimVar.GetSimVarValue('L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position', 'number'));
 
