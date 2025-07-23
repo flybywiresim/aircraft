@@ -64,6 +64,7 @@ import { FwsAuralVolume, FwsSoundManager } from 'systems-host/systems/FlightWarn
 import { FwcFlightPhase, FwsFlightPhases } from 'systems-host/systems/FlightWarningSystem/FwsFlightPhases';
 import { A380Failure } from '@failures';
 import { FuelSystemEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
+import { FmsMessageVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsMessagePublisher';
 import { FwsSystemDisplayLogic } from './FwsSystemDisplayLogic';
 
 export function xor(a: boolean, b: boolean): boolean {
@@ -88,7 +89,13 @@ export enum FwcAuralWarning {
 
 export class FwsCore {
   public readonly sub = this.bus.getSubscriber<
-    PseudoFwcSimvars & StallWarningEvents & MfdSurvEvents & FuelSystemEvents & KeyEvents & MsfsFlightModelEvents
+    PseudoFwcSimvars &
+      StallWarningEvents &
+      MfdSurvEvents &
+      FuelSystemEvents &
+      KeyEvents &
+      MsfsFlightModelEvents &
+      FmsMessageVars
   >();
 
   private subs: Subscription[] = [];
@@ -318,8 +325,6 @@ export class FwsCore {
   public readonly attKnob = Subject.create(0);
 
   public readonly compMesgCount = Subject.create(0);
-
-  public readonly fmsSwitchingKnob = Subject.create(0);
 
   public readonly landAsapRed = Subject.create(false);
 
@@ -576,6 +581,12 @@ export class FwsCore {
   public readonly autoThrustOffInvoluntary = Subject.create(false);
 
   public autoThrustOffVoluntaryMemoInhibited = false;
+
+  public readonly fmsSwitchingKnob = Subject.create(0);
+
+  public readonly fmsSwitchingNotNorm = this.fmsSwitchingKnob.map((v) => v !== 1);
+
+  public readonly fmsDestEfob = ConsumerSubject.create(this.sub.on('destEfobBelowMin'), false);
 
   /* 23 - COMMUNICATION */
   public readonly rmp1Fault = Subject.create(false);
@@ -1744,6 +1755,7 @@ export class FwsCore {
       this.engine2AboveIdle,
       this.engine1CoreAtOrAboveMinIdle,
       this.engine2CoreAtOrAboveMinIdle,
+      this.fmsSwitchingNotNorm,
     );
   }
 
