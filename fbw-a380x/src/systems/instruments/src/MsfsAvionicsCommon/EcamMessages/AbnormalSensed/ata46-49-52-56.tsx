@@ -1,7 +1,7 @@
 ﻿// Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { AbnormalProcedure } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import { AbnormalProcedure, ChecklistLineStyle } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 
 // Convention for IDs:
 // First two digits: ATA chapter
@@ -17,4 +17,53 @@ import { AbnormalProcedure } from 'instruments/src/MsfsAvionicsCommon/EcamMessag
 //    9 for ABN non-sensed procedures
 
 /** All abnormal sensed procedures (alerts, via ECL) should be here. */
-export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } = {};
+export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } = {
+  // ATA 49 APU
+  490800001: {
+    title: '\x1b<4m\x1b4mAPU\x1bm FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'EMER SHUTDOWN',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+      },
+      {
+        name: 'AUTO SHUTDOWN',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+      },
+      {
+        name: 'IF APU NOT ABSOLUTELY RQRD:',
+        sensed: false,
+        condition: true,
+      },
+      {
+        name: 'APU MASTER SW',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  490800002: {
+    title: '\x1b<4m\x1b4mAPU\x1bm MACH LIMIT EXCEEDED',
+    sensed: true,
+    items: [
+      {
+        name: 'IF APU NOT ABSOLUTELY RQRD:',
+        sensed: false,
+        condition: true,
+      },
+      {
+        name: 'APU MASTER SW',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  490800003: {
+    title: '\x1b<4m\x1b4mAPU\x1bm OIL FILTER CLOGGED',
+    sensed: true,
+    items: [],
+  },
+};
