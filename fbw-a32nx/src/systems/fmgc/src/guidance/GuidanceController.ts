@@ -41,7 +41,7 @@ const GEOMETRY_RECOMPUTATION_TIMER = 5_000;
 
 export interface Fmgc {
   getZeroFuelWeight(): number;
-  getFOB(): number;
+  getFOB(): number | null;
   getGrossWeight(): number | null;
   getV2Speed(): Knots;
   getTropoPause(): Feet;
@@ -70,7 +70,7 @@ export interface Fmgc {
   getApproachWind(): FmcWindVector | null;
   getApproachQnh(): number;
   getApproachTemperature(): number;
-  getDestEFOB(useFob: boolean): number; // Metric tons
+  getDestEFOB(useFob: boolean): number | null; // Metric tons
   getDepartureElevation(): Feet | null;
   getDestinationElevation(): Feet;
 }
