@@ -28,7 +28,7 @@ export class SecuredCommunicationInterface implements Instrument {
     this.sub.on('a32nx_fwc_discrete_word_126_1'),
   );
 
-  public readonly onGround = this.fwcDiscreteWord126.map((dw) => dw.bitValueOr(28, false));
+  public readonly onGround = this.fwcDiscreteWord126.map((dw) => dw.bitValueOr(28, true));
 
   public readonly doorsOpen = ConsumerSubject.create(this.sub.on('cabinDoorOpen'), 0);
 

@@ -26,10 +26,13 @@ export class AnsuOps extends AircraftNetworkServerUnit {
   private readonly onBlockConfNode = new NXLogicConfirmNode(10);
 
   /** @inheritdoc */
-  init(): void {}
+  init(): void {
+    super.init();
+  }
 
   /** @inheritdoc */
   onUpdate(): void {
+    super.onUpdate();
     const _deltaTime = this.lastUpdateTime === undefined ? 0 : Date.now() - this.lastUpdateTime;
     this.lastUpdateTime = Date.now();
 
@@ -65,12 +68,6 @@ export class AnsuOps extends AircraftNetworkServerUnit {
     if (this.inBlockTime.get() === null && this.onBlockTime.get() !== null && this.sci.parkBrakeSet.get()) {
       this.inBlockTime.set(Date.now());
       this.inBlockFob.set(this.sci.fuelWeight.get());
-    }
-  }
-
-  destroy() {
-    for (const s of this.subscriptions) {
-      s.destroy();
     }
   }
 }

@@ -1,16 +1,14 @@
 //  Copyright (c) 2025 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { ClockEvents, FSComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { AbstractOitAvncsPageProps, OisDomain } from '../../../OIT';
+import { ClockEvents, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
+import { AbstractOitAvncsPageProps } from '../../../OIT';
 import { RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
 import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
 import { FmsData, NXDataStore, NXUnits } from '@flybywiresim/fbw-sdk';
 import { OitSimvars } from '../../../OitSimvarPublisher';
 
-interface OitAvncsCompanyComFlightLogProps extends AbstractOitAvncsPageProps {
-  readonly avncsOrFltOps: Subscribable<OisDomain>;
-}
+interface OitAvncsCompanyComFlightLogProps extends AbstractOitAvncsPageProps {}
 
 const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 
@@ -19,7 +17,7 @@ export abstract class OitAvncsCompanyComFlightLog extends DestroyableComponent<O
 
   private readonly sub = this.props.bus.getSubscriber<FmsData & ClockEvents & OitSimvars>();
 
-  private readonly flightSelectionSelectedIndex = Subject.create<number | null>(null);
+  private readonly flightSelectionSelectedIndex = Subject.create<number | null>(0);
 
   // FIXME maybe this should come from the ATC/ATSU when it's integrated
   private readonly fltNumberText = this.sci.fltNumber.map((number) => (number ? number : '----------'));
@@ -57,22 +55,26 @@ export abstract class OitAvncsCompanyComFlightLog extends DestroyableComponent<O
   );
 
   private readonly outBlockFobText = MappedSubject.create(
-    ([weight, unit]) => (weight !== null ? `$${NXUnits.kgToUser(weight)} ${unit}` : '----- ---'),
+    ([weight, unit]) =>
+      weight !== null ? `${NXUnits.kgToUser(weight).toFixed(0).padStart(6, ' ')} ${unit}` : '----- ---',
     this.props.container.ansu.outBlockFob,
     this.userWeight,
   );
   private readonly offBlockFobText = MappedSubject.create(
-    ([weight, unit]) => (weight !== null ? `$${NXUnits.kgToUser(weight)} ${unit}` : '----- ---'),
+    ([weight, unit]) =>
+      weight !== null ? `${NXUnits.kgToUser(weight).toFixed(0).padStart(6, ' ')} ${unit}` : '----- ---',
     this.props.container.ansu.offBlockFob,
     this.userWeight,
   );
   private readonly onBlockFobText = MappedSubject.create(
-    ([weight, unit]) => (weight !== null ? `$${NXUnits.kgToUser(weight)} ${unit}` : '----- ---'),
+    ([weight, unit]) =>
+      weight !== null ? `${NXUnits.kgToUser(weight).toFixed(0).padStart(6, ' ')} ${unit}` : '----- ---',
     this.props.container.ansu.onBlockFob,
     this.userWeight,
   );
   private readonly inBlockFobText = MappedSubject.create(
-    ([weight, unit]) => (weight !== null ? `$${NXUnits.kgToUser(weight)} ${unit}` : '----- ---'),
+    ([weight, unit]) =>
+      weight !== null ? `${NXUnits.kgToUser(weight).toFixed(0).padStart(6, ' ')} ${unit}` : '----- ---',
     this.props.container.ansu.inBlockFob,
     this.userWeight,
   );

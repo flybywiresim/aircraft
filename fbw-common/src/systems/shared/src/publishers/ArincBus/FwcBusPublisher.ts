@@ -51,7 +51,7 @@ export class FwcBusPublisher extends SimVarPublisher<FwcBusPublisherEvents> {
       [
         'a32nx_fwc_discrete_word_124',
         {
-          name: 'L:_FWC_#index#_DISCRETE_WORD_124',
+          name: 'L:A32NX_FWC_#index#_DISCRETE_WORD_124',
           type: SimVarValueType.Enum,
           indexed: true,
         },
@@ -59,7 +59,7 @@ export class FwcBusPublisher extends SimVarPublisher<FwcBusPublisherEvents> {
       [
         'a32nx_fwc_discrete_word_126',
         {
-          name: 'L:_FWC_#index#_DISCRETE_WORD_126',
+          name: 'L:A32NX_FWC_#index#_DISCRETE_WORD_126',
           type: SimVarValueType.Enum,
           indexed: true,
         },

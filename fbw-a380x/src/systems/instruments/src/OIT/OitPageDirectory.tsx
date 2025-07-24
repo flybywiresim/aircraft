@@ -12,6 +12,7 @@ import { OitFltOpsContainer } from './OitFltOpsContainer';
 import { OitAvncsContainer } from './OitAvncsContainer';
 import { OitAvncsCompanyCom } from './Pages/NssAvncs/CompanyCom/OitAvncsCompanyCom';
 import { OitAvncsMenu } from './Pages/NssAvncs/OitAvncsMenu';
+import { OitAvncsCompanyComFlightLog } from './Pages/NssAvncs/CompanyCom/OitAvncsCompanyComFlightLog';
 
 // Page imports
 // eslint-disable-next-line jsdoc/require-jsdoc
@@ -59,16 +60,21 @@ export function avncsPageForUrl(
 }
 
 // eslint-disable-next-line jsdoc/require-jsdoc
-export function avncsCompanyComPageForUrl(url: string, bus: EventBus, uiService: OitUiService): VNode {
+export function avncsCompanyComPageForUrl(
+  url: string,
+  bus: EventBus,
+  uiService: OitUiService,
+  container: OitAvncsContainer,
+): VNode {
   switch (url) {
     case 'nss-avncs/company-com/inbox':
       return <></>; // Placeholder for future implementation
     case 'nss-avncs/company-com/pre-flight/flight-log':
-      return <></>; // Placeholder for future implementation
+      return <OitAvncsCompanyComFlightLog bus={bus} uiService={uiService} container={container} />;
     case 'nss-avncs/company-com/in-flight/flight-log':
-      return <></>; // Placeholder for future implementation
+      return <OitAvncsCompanyComFlightLog bus={bus} uiService={uiService} container={container} />; // Placeholder for future implementation
     case 'nss-avncs/company-com/post-flight/flight-log':
-      return <></>; // Placeholder for future implementation
+      return <OitAvncsCompanyComFlightLog bus={bus} uiService={uiService} container={container} />; // Placeholder for future implementation
 
     default:
       return <OitNotFound uiService={uiService} />;

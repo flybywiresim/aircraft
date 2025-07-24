@@ -19,8 +19,8 @@ export class OitAvncsCompanyCom extends DestroyableComponent<OitAvncsCompanyComP
   private activePage: VNode = (<></>) as VNode;
 
   private activeUriChanged(uri: OitUriInformation) {
-    if (uri.uri.match(/nss-avncs\/company-com\/\S*/gm)) {
-      // Handle special case for company-com, where the sub-navigation is handled by the OitAvncsCompanyCom component.
+    if (!uri.uri.match(/nss-avncs\/company-com\/\S*/gm)) {
+      // Navigate somewhere else outside of the company com section
       return;
     }
 
@@ -40,11 +40,22 @@ export class OitAvncsCompanyCom extends DestroyableComponent<OitAvncsCompanyComP
         `${uri.sys}/${uri.page}/${uri.extra}`,
         this.props.bus,
         this.props.uiService,
+        this.props.container,
       );
     } else if (uri.page) {
-      this.activePage = avncsCompanyComPageForUrl(`${uri.sys}/${uri.page}`, this.props.bus, this.props.uiService);
+      this.activePage = avncsCompanyComPageForUrl(
+        `${uri.sys}/${uri.page}`,
+        this.props.bus,
+        this.props.uiService,
+        this.props.container,
+      );
     } else {
-      this.activePage = avncsCompanyComPageForUrl(`${uri.sys}`, this.props.bus, this.props.uiService);
+      this.activePage = avncsCompanyComPageForUrl(
+        `${uri.sys}`,
+        this.props.bus,
+        this.props.uiService,
+        this.props.container,
+      );
     }
 
     FSComponent.render(this.activePage, this.activePageRef?.getOrDefault());

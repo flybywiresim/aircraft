@@ -40,7 +40,11 @@ export class OitAvncsCompanyComMenu extends DestroyableComponent<OitAvncsCompany
             <OitFile name={Subject.create('Free Text')} uiService={this.props.uiService} />
             <OitFile name={Subject.create('ASR Notification')} uiService={this.props.uiService} />
           </OitFolder>
-          <OitFile name={Subject.create('Flight Log')} uiService={this.props.uiService} />
+          <OitFile
+            name={Subject.create('Flight Log')}
+            uiService={this.props.uiService}
+            navigationTarget="nss-avncs/company-com/in-flight/flight-log"
+          />
         </OitFolder>
         <OitFolder name={Subject.create('In-flight')} initExpanded={true}>
           <OitFolder name={Subject.create('Requests')} initExpanded={false}>
@@ -53,7 +57,11 @@ export class OitAvncsCompanyComMenu extends DestroyableComponent<OitAvncsCompany
             <OitFile name={Subject.create('ETA')} uiService={this.props.uiService} />
             <OitFile name={Subject.create('Free Text')} uiService={this.props.uiService} />
           </OitFolder>
-          <OitFile name={Subject.create('Flight Log')} uiService={this.props.uiService} />
+          <OitFile
+            name={Subject.create('Flight Log')}
+            uiService={this.props.uiService}
+            navigationTarget="nss-avncs/company-com/in-flight/flight-log"
+          />
         </OitFolder>
         <OitFolder name={Subject.create('Post-flight')} initExpanded={true}>
           <OitFolder name={Subject.create('Requests')} initExpanded={false}></OitFolder>
@@ -63,7 +71,11 @@ export class OitAvncsCompanyComMenu extends DestroyableComponent<OitAvncsCompany
             <OitFile name={Subject.create('Free Text')} uiService={this.props.uiService} />
             <OitFile name={Subject.create('Gate Delay')} uiService={this.props.uiService} />
           </OitFolder>
-          <OitFile name={Subject.create('Flight Log')} uiService={this.props.uiService} />
+          <OitFile
+            name={Subject.create('Flight Log')}
+            uiService={this.props.uiService}
+            navigationTarget="nss-avncs/company-com/post-flight/flight-log"
+          />
         </OitFolder>
       </>
     );
