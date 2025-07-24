@@ -524,9 +524,9 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
   private async tryUpdateAltitudeConstraint(newAlt?: number) {
     if (
-      this.checkLegModificationAllowed() &&
-      this.altConstraintTypeRadioSelected.get() !== null &&
-      this.selectedAltitudeConstraintOption.get() !== null
+      !this.checkLegModificationAllowed() ||
+      this.altConstraintTypeRadioSelected.get() === null ||
+      this.selectedAltitudeConstraintOption.get() === null
     ) {
       return;
     }
