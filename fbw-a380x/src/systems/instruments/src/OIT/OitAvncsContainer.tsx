@@ -81,7 +81,7 @@ export abstract class OitAvncsContainer extends DisplayComponent<OitAvncsContain
       this.hideContainer,
     );
 
-    this.uiService.navigateTo('nss-avncs');
+    this.uiService.navigateTo('nss-avncs/company-com/pre-flight/flight-log');
   }
 
   private activeUriChanged(uri: OitUriInformation) {

@@ -33,6 +33,7 @@ export class OitUiService {
   });
 
   private navigationStack: string[] = [];
+  private navigationForwardStack: string[] = [];
 
   public readonly fltOpsLoginScreenVisible = Subject.create(true);
   public readonly nssAvncsLoginScreenVisible = Subject.create(true);
@@ -69,10 +70,21 @@ export class OitUiService {
       if (this.navigationStack.length < 2) {
         return;
       }
-      this.navigationStack.pop();
+      const nextPage = this.navigationStack.pop();
+      if (nextPage) {
+        this.navigationForwardStack.push(nextPage);
+      }
+      nextUri = this.navigationStack[this.navigationStack.length - 1];
+    } else if (uri === 'forward') {
+      const nextPage = this.navigationForwardStack.pop();
+      if (!nextPage) {
+        return;
+      }
+      this.navigationStack.push(nextPage);
       nextUri = this.navigationStack[this.navigationStack.length - 1];
     } else {
       this.navigationStack.push(uri);
+      this.navigationForwardStack = []; // Clear forward stack
       nextUri = uri;
     }
 
@@ -85,5 +97,12 @@ export class OitUiService {
    */
   public canGoBack() {
     return this.navigationStack.length > 1;
+  }
+
+  /*
+   * Whether one can navigate forward
+   */
+  public canGoForward() {
+    return this.navigationForwardStack.length > 0;
   }
 }

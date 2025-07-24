@@ -1,7 +1,7 @@
 //  Copyright (c) 2025 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { DisplayComponent, FSComponent, Subscription, VNode } from '@microsoft/msfs-sdk';
+import { DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { OitUiService } from '../../OitUiService';
 
@@ -17,8 +17,18 @@ export abstract class OitAvncsSubHeader extends DisplayComponent<OitAvncsSubHead
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
   protected readonly subs = [] as Subscription[];
 
+  private readonly canGoBack = Subject.create(false);
+  private readonly canGoForward = Subject.create(false);
+
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+
+    this.subs.push(
+      this.props.uiService.activeUri.sub(() => {
+        this.canGoBack.set(this.props.uiService.canGoBack());
+        this.canGoForward.set(this.props.uiService.canGoForward());
+      }),
+    );
   }
 
   public destroy(): void {
@@ -41,14 +51,14 @@ export abstract class OitAvncsSubHeader extends DisplayComponent<OitAvncsSubHead
         />
         <Button
           label={'BACK'}
-          disabled={this.props.uiService.canGoBack()}
+          disabled={this.canGoBack}
           onClick={() => this.props.uiService.navigateTo('back')}
           buttonStyle="width: 130px; font-size: 28px; height: 50px; margin-left: 10px;"
         />
         <Button
           label={'FORWARD'}
-          disabled={true}
-          onClick={() => {}}
+          disabled={this.canGoForward}
+          onClick={() => this.props.uiService.navigateTo('forward')}
           buttonStyle="width: 130px; font-size: 28px; height: 50px; margin-left: 10px;"
         />
         <Button
@@ -59,7 +69,7 @@ export abstract class OitAvncsSubHeader extends DisplayComponent<OitAvncsSubHead
         />
         <Button
           label={'UPDATE'}
-          disabled={true}
+          disabled={false}
           onClick={() => {}}
           buttonStyle="width: 130px; font-size: 28px; height: 50px; margin-left: 10px;"
         />
