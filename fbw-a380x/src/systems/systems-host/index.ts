@@ -58,6 +58,7 @@ import { EfisTawsBridge } from './systems/EfisTawsBridge';
 import { FmsSymbolsPublisher } from 'instruments/src/ND/FmsSymbolsPublisher';
 
 CpiomAvailableSimvarPublisher;
+import { FmsMessagePublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FmsMessagePublisher';
 
 class SystemsHost extends BaseInstrument {
   private readonly bus = new ArincEventBus();
@@ -138,6 +139,8 @@ class SystemsHost extends BaseInstrument {
 
   private readonly efisTawsBridge = new EfisTawsBridge(this.bus, this, this.failuresConsumer);
 
+  private readonly fmsMessagePublisher = new FmsMessagePublisher(this.bus);
+
   private readonly fws1ResetPbStatus = ConsumerSubject.create(this.sub.on('a380x_reset_panel_fws1'), false);
   private readonly fws2ResetPbStatus = ConsumerSubject.create(this.sub.on('a380x_reset_panel_fws2'), false);
 
@@ -213,6 +216,7 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('IrBusPublisher', this.irBusPublisher);
     this.backplane.addPublisher('AesuPublisher', this.aesuBusPublisher);
     this.backplane.addPublisher('SwitchingPanelPublisher', this.switchingPanelPublisher);
+    this.backplane.addPublisher('fmsMessage', this.fmsMessagePublisher);
     this.backplane.addInstrument('AutoThsTrimmer', this.autoThsTrimmer);
 
     this.hEventPublisher = new HEventPublisher(this.bus);

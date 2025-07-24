@@ -69,6 +69,7 @@ export const EcamMemos: { [n: string]: string } = {
   '220000001': '\x1b<2mAP OFF',
   '220000002': '\x1b<4mA/THR OFF',
   '221000001': '\x1b<3mFMS SWTG',
+  '221000002': '\x1b<4mDEST EFOB',
   '240000001': '\x1b<3mCOMMERCIAL PART SHED',
   '241000001': '\x1b<4mELEC EXT PWR',
   '241000002': '\x1b<3mELEC EXT PWR',
