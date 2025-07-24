@@ -465,6 +465,10 @@
     - Position (0-2)
     - 0 is BOTH ON 2, 1 is NORM, 2 is BOTH ON 1
 
+- A380X_FMS_DEST_EFOB_BELOW_MIN
+    - Bool
+    - Indicates if the FMS predicted fuel at destination is below minimum.
+
 ## Communications ATA 23
 
 ### Placeholder Types
