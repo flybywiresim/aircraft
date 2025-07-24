@@ -14,35 +14,38 @@ import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
 import { A380Failure } from '@failures';
 import { ResetPanelSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/ResetPanelPublisher';
 import { OitSimvars } from '../OitSimvarPublisher';
+import { SecuredCommunicationInterface } from './SecuredCommunicationInterface';
 
 type AnsuIndex = 1 | 2;
 
 type AnsuType = 'nss-avncs' | 'flt-ops';
 
 export class AircraftNetworkServerUnit implements Instrument {
-  private readonly subscriptions: Subscription[] = [];
+  protected readonly subscriptions: Subscription[] = [];
 
-  private readonly sub = this.bus.getSubscriber<ResetPanelSimvars & OitSimvars>();
+  protected readonly sub = this.bus.getSubscriber<ResetPanelSimvars & OitSimvars>();
 
-  private readonly failureKey =
+  protected readonly failureKey =
     this.type === 'flt-ops' && this.index === 1
       ? A380Failure.FltOpsAnsu
       : this.index === 1
         ? A380Failure.NssAnsu1
         : A380Failure.NssAnsu2;
 
-  private readonly powered = Subject.create(false);
+  protected readonly powered = Subject.create(false);
 
-  private readonly _isHealthy = Subject.create(false);
+  protected readonly _isHealthy = Subject.create(false);
   public readonly isHealthy = this._isHealthy as Subscribable<boolean>;
-  private readonly isHealthySimVar = `L:A32NX_${this.type === 'nss-avncs' ? 'NSS' : 'FLTOPS'}_ANSU_${this.index.toFixed(0)}_IS_HEALTHY`;
+  protected readonly isHealthySimVar = `L:A32NX_${this.type === 'nss-avncs' ? 'NSS' : 'FLTOPS'}_ANSU_${this.index.toFixed(0)}_IS_HEALTHY`;
 
-  private readonly nssMasterOff = ConsumerSubject.create(this.sub.on('nssMasterOff'), false);
+  protected readonly nssMasterOff = ConsumerSubject.create(this.sub.on('nssMasterOff'), false);
 
-  private readonly resetPbStatus = ConsumerSubject.create(
+  protected readonly resetPbStatus = ConsumerSubject.create(
     this.sub.on(this.type === 'flt-ops' ? 'a380x_reset_panel_nss_flt_ops' : 'a380x_reset_panel_nss_avncs'),
     false,
   );
+
+  public readonly sci = new SecuredCommunicationInterface(this.bus);
 
   constructor(
     private readonly bus: EventBus,

@@ -1,7 +1,7 @@
 //  Copyright (c) 2025 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { EventBus, Subject } from '@microsoft/msfs-sdk';
+import { Subject } from '@microsoft/msfs-sdk';
 
 export enum OitSystem {
   None = '',
@@ -23,10 +23,7 @@ export interface OitUriInformation {
  * Handles navigation (and potentially other aspects) for OIT pages
  */
 export class OitUiService {
-  constructor(
-    public captOrFo: 'CAPT' | 'FO',
-    private readonly bus: EventBus,
-  ) {}
+  constructor(public captOrFo: 'CAPT' | 'FO') {}
 
   public readonly activeUri = Subject.create<OitUriInformation>({
     uri: '',
@@ -52,8 +49,8 @@ export class OitUiService {
 
   /**
    * Navigate to OIT page.
-   * @param uri The URI to navigate to. Format: sys/category/page, e.g. fms/active/init represents ACTIVE/INIT page from the FMS. Use URI 'back' for returning to previous page.
-   * In theory, one can use anything after a third slash for intra-page deep linking: fms/active/perf/appr could link to the approach PERF page.
+   * @param uri The URI to navigate to. Use URI 'back' for returning to previous page.
+   * Sometimes (e.g. for nss-avncs/company-com), another local navigator will handle the sub-navigation.
    */
   public navigateTo(uri: string): void {
     let nextUri: string;

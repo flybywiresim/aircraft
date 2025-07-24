@@ -24,12 +24,14 @@ import { OitAvncsHeader } from './Pages/NssAvncs/OitAvncsHeader';
 import { OitAvncsFooter } from './Pages/NssAvncs/OitAvncsFooter';
 import { OitAvncsLoadingScreen } from './Pages/NssAvncs/OitAvncsLoadingScreen';
 import { OitAvncsLogin } from './Pages/NssAvncs/OitAvncsLogin';
+import { AnsuOps } from './System/AnsuOps';
 
 interface OitAvncsContainerProps {
   readonly bus: EventBus;
   readonly displayUnitRef: NodeReference<OitDisplayUnit>;
   readonly captOrFo: 'CAPT' | 'FO';
   readonly avncsOrFltOps: Subscribable<OisDomain>;
+  readonly ansu: AnsuOps;
 }
 
 export abstract class OitAvncsContainer extends DisplayComponent<OitAvncsContainerProps> {
@@ -38,10 +40,14 @@ export abstract class OitAvncsContainer extends DisplayComponent<OitAvncsContain
 
   private readonly sub = this.props.bus.getSubscriber<OitSimvars>();
 
-  #uiService = new OitUiService(this.props.captOrFo, this.props.bus);
+  #uiService = new OitUiService(this.props.captOrFo);
 
   get uiService() {
     return this.#uiService;
+  }
+
+  get ansu() {
+    return this.props.ansu;
   }
 
   public readonly hEventConsumer = this.props.bus.getSubscriber<InternalKbdKeyEvent>().on('kbdKeyEvent');
@@ -79,6 +85,11 @@ export abstract class OitAvncsContainer extends DisplayComponent<OitAvncsContain
   }
 
   private activeUriChanged(uri: OitUriInformation) {
+    if (uri.uri.match(/nss-avncs\/company-com\/\S*/gm)) {
+      // Handle special case for company-com, where the sub-navigation is handled by the OitAvncsCompanyCom component.
+      return;
+    }
+
     // Remove and destroy old OIT page
     if (this.activePageRef.getOrDefault()) {
       while (this.activePageRef.instance.firstChild) {

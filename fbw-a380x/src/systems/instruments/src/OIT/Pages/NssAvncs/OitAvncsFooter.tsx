@@ -1,11 +1,12 @@
 //  Copyright (c) 2025 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { DisplayComponent, FSComponent, Subscribable, Subscription, VNode } from '@microsoft/msfs-sdk';
+import { FSComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
 import { OitUiService } from '../../OitUiService';
 import { OisDomain } from '../../OIT';
+import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
 
 interface OitAvncsFooterProps {
   readonly uiService: OitUiService;
@@ -15,21 +16,9 @@ interface OitAvncsFooterProps {
 /*
  * Complete header for the ATCCOM system
  */
-export abstract class OitAvncsFooter extends DisplayComponent<OitAvncsFooterProps> {
-  // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
-  protected readonly subs = [] as Subscription[];
-
+export abstract class OitAvncsFooter extends DestroyableComponent<OitAvncsFooterProps> {
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-  }
-
-  public destroy(): void {
-    // Destroy all subscriptions to remove all references to this instance.
-    for (const s of this.subs) {
-      s.destroy();
-    }
-
-    super.destroy();
   }
 
   render(): VNode {

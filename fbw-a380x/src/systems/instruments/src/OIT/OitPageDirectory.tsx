@@ -57,3 +57,20 @@ export function avncsPageForUrl(
       return <OitNotFound uiService={uiService} />;
   }
 }
+
+// eslint-disable-next-line jsdoc/require-jsdoc
+export function avncsCompanyComPageForUrl(url: string, bus: EventBus, uiService: OitUiService): VNode {
+  switch (url) {
+    case 'nss-avncs/company-com/inbox':
+      return <></>; // Placeholder for future implementation
+    case 'nss-avncs/company-com/pre-flight/flight-log':
+      return <></>; // Placeholder for future implementation
+    case 'nss-avncs/company-com/in-flight/flight-log':
+      return <></>; // Placeholder for future implementation
+    case 'nss-avncs/company-com/post-flight/flight-log':
+      return <></>; // Placeholder for future implementation
+
+    default:
+      return <OitNotFound uiService={uiService} />;
+  }
+}

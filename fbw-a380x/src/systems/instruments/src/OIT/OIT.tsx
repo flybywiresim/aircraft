@@ -20,6 +20,7 @@ import { OitFltOpsContainer } from './OitFltOpsContainer';
 import { OitUiService } from './OitUiService';
 import { OitAvncsContainer } from './OitAvncsContainer';
 import { OitSimvars } from './OitSimvarPublisher';
+import { AnsuOps } from './System/AnsuOps';
 
 export interface AbstractOitFltOpsPageProps extends ComponentProps {
   bus: EventBus;
@@ -41,6 +42,7 @@ export interface OitProps {
   readonly captOrFo: 'CAPT' | 'FO';
   readonly failuresConsumer: FailuresConsumer;
   readonly laptop: OisLaptop;
+  readonly avncsAnsu: AnsuOps;
 }
 
 export class OIT extends DisplayComponent<OitProps> {
@@ -92,6 +94,7 @@ export class OIT extends DisplayComponent<OitProps> {
         />
         <OitAvncsContainer
           bus={this.props.bus}
+          ansu={this.props.avncsAnsu}
           displayUnitRef={this.displayUnitRef}
           captOrFo={this.props.captOrFo}
           avncsOrFltOps={this.avncsOrFltOps}

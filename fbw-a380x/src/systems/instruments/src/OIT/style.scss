@@ -397,6 +397,52 @@
   margin-right: 7px;
 }
 
+.oit-centered {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.oit-labeled-box-container {
+  position: relative;
+  border: 1px solid $display-light-grey;
+  display: flex;
+  flex-direction: column;
+  margin: 20px 0px 20px 0px;
+  padding: 15px;
+}
+
+.oit-labeled-box-label {
+  position: absolute;
+  left: 10px;
+  top: -10px;
+  text-align: right;
+  align-self: center;
+  background-color: #000000;
+  padding: 0px 2px 0px 2px;
+}
+
+.oit-ccom-headline {
+  font-size: 30px;
+}
+
+.oit-green-text {
+  color: $display-green;
+}
+
+.oit-ccom-flight-log-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: auto;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.oit-ccom-flight-log-oooi-table {
+  display: grid;
+  grid-template-columns: 1fr 2fr 2fr;
+}
+
 $font-file-path: '/Fonts/fbw-a380x/EFB';
 
 @import "../../../../../../fbw-common/src/systems/instruments/src/EFB/Assets/Efb.scss";

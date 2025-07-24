@@ -1,21 +1,13 @@
 //  Copyright (c) 2025 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import {
-  ConsumerSubject,
-  DisplayComponent,
-  EventBus,
-  FSComponent,
-  Subject,
-  Subscribable,
-  Subscription,
-  VNode,
-} from '@microsoft/msfs-sdk';
+import { ConsumerSubject, EventBus, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
 import { OitUiService } from '../../OitUiService';
 import { OisDomain } from '../../OIT';
 import { FmsData } from '@flybywiresim/fbw-sdk';
+import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
 
 interface OitAvncsHeaderProps {
   readonly bus: EventBus;
@@ -26,10 +18,7 @@ interface OitAvncsHeaderProps {
 /*
  * Complete header for the OIS system, both AVNCS and FLT OPS.
  */
-export abstract class OitAvncsHeader extends DisplayComponent<OitAvncsHeaderProps> {
-  // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
-  protected readonly subscriptions = [] as Subscription[];
-
+export abstract class OitAvncsHeader extends DestroyableComponent<OitAvncsHeaderProps> {
   private readonly sub = this.props.bus.getSubscriber<FmsData>();
 
   // FIXME maybe this should come from the ATC/ATSU when it's integrated
@@ -40,15 +29,6 @@ export abstract class OitAvncsHeader extends DisplayComponent<OitAvncsHeaderProp
     super.onAfterRender(node);
 
     this.subscriptions.push(this.fltNumber, this.fltNumberText);
-  }
-
-  public destroy(): void {
-    // Destroy all subscriptions to remove all references to this instance.
-    for (const s of this.subscriptions) {
-      s.destroy();
-    }
-
-    super.destroy();
   }
 
   render(): VNode {

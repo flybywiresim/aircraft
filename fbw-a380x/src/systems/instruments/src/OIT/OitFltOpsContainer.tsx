@@ -42,7 +42,7 @@ export abstract class OitFltOpsContainer extends DisplayComponent<OitFltOpsConta
 
   private readonly sub = this.props.bus.getSubscriber<OitSimvars>();
 
-  #uiService = new OitUiService(this.props.captOrFo, this.props.bus);
+  #uiService = new OitUiService(this.props.captOrFo);
 
   get uiService() {
     return this.#uiService;
