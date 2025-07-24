@@ -70,7 +70,10 @@ export class Navigation implements NavigationProvider {
 
   ppos: Coordinates = { lat: 0, long: 0 };
 
+  // TODO get from IR
   groundSpeed: Knots = 0;
+
+  private trueTrack: DegreesTrue | null = 0;
 
   private radioHeight: number | null = null;
 
@@ -158,6 +161,8 @@ export class Navigation implements NavigationProvider {
     this.updateCurrentPerformance();
 
     this.updatePosition();
+    this.updateGroundSpeed();
+    this.updateTrueTrack();
     this.updateRadioHeight();
     this.updateAirData();
 
@@ -227,9 +232,17 @@ export class Navigation implements NavigationProvider {
   private updatePosition(): void {
     this.ppos.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
     this.ppos.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
-    this.groundSpeed = SimVar.GetSimVarValue('GPS GROUND SPEED', 'knots');
 
     this.nearbyAirportMonitor.setLocation(this.ppos.lat, this.ppos.long);
+  }
+
+  private updateGroundSpeed(): void {
+    this.groundSpeed = SimVar.GetSimVarValue('GPS GROUND SPEED', 'knots');
+  }
+
+  private updateTrueTrack(): void {
+    // TODO
+    this.trueTrack = SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree');
   }
 
   public getBaroCorrectedAltitude(): number | null {
@@ -245,6 +258,10 @@ export class Navigation implements NavigationProvider {
     return this.ppos;
   }
 
+  public getTrueTrack(): number | null {
+    return this.trueTrack;
+  }
+
   public getPressureAltitude(): number | null {
     return this.pressureAltitude.get();
   }
@@ -255,6 +272,10 @@ export class Navigation implements NavigationProvider {
 
   public getTrueAirspeed(): number | null {
     return this.trueAirspeed;
+  }
+
+  public getGroundSpeed(): number | null {
+    return this.groundSpeed;
   }
 
   public getStaticAirTemperature(): number | null {
