@@ -55,7 +55,6 @@ This list is divided into standardized ATA chapters, if there are no noteworthy 
 ### ATA 27 Flight Controls
 
 - Completely migrated SLAT/FLAP CTL implementation (adapted A32NX computers at the moment)
-- Automatic THS setting on ground
 
 ### ATA 28 Fuel
 
@@ -84,7 +83,6 @@ This list is divided into standardized ATA chapters, if there are no noteworthy 
 - CDS / displays (automatic) reconfiguration
 - PFD backup scales
 - Interactive ND
-- Vertical Display: Only fixed vertical range (until FL240) w/o FMS trajectory
 - Independent QNH
 - KCCU soft keyboard
 - ECAM: Completely accurate STS page implementation
@@ -103,10 +101,6 @@ This list is divided into standardized ATA chapters, if there are no noteworthy 
   - Basic braking distance calculations
   - No glide slope adaptation
   - No handling of brakes/OANS errors
-
-### ATA 33 Lights
-
-- Push button in overhead for logo lights
 
 ### ATA 34 Navigation
 
@@ -144,7 +138,6 @@ This list is divided into standardized ATA chapters, if there are no noteworthy 
 
 - Custom engine model (current model is modified LEAP-1A)
 - ACUTE
-- METOTS
 - Reversers: Electrical system for triple lock safety system
 
 <!-- ### Misc / Sim specifics -->
