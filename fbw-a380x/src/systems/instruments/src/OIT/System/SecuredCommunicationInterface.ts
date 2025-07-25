@@ -1,7 +1,7 @@
 // Copyright (c) 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { ConsumerSubject, EventBus, Instrument, MappedSubject, Subscription } from '@microsoft/msfs-sdk';
+import { ClockEvents, ConsumerSubject, EventBus, Instrument, MappedSubject, Subscription } from '@microsoft/msfs-sdk';
 import { AdrBusEvents, Arinc429LocalVarConsumerSubject, FmsData, FwcBusEvents } from '@flybywiresim/fbw-sdk';
 import { ResetPanelSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/ResetPanelPublisher';
 import { OitSimvars } from '../OitSimvarPublisher';
@@ -10,12 +10,14 @@ export class SecuredCommunicationInterface implements Instrument {
   private readonly subscriptions: Subscription[] = [];
 
   private readonly sub = this.bus.getSubscriber<
-    ResetPanelSimvars & OitSimvars & FmsData & AdrBusEvents & FwcBusEvents
+    ResetPanelSimvars & OitSimvars & FmsData & AdrBusEvents & FwcBusEvents & ClockEvents
   >();
 
   private readonly nssDataToAvncsOff = ConsumerSubject.create(this.sub.on('nssDataToAvncsOff'), false);
 
   // Data from avionics
+  public readonly zuluTime = ConsumerSubject.create(this.sub.on('simTime'), Date.now());
+
   public readonly fltNumber = ConsumerSubject.create(this.sub.on('fmsFlightNumber'), null);
   public readonly fltOrigin = ConsumerSubject.create(this.sub.on('fmsOrigin'), null);
   public readonly fltDestination = ConsumerSubject.create(this.sub.on('fmsDestination'), null);

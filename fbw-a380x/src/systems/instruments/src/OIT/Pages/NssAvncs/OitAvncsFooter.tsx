@@ -3,7 +3,6 @@
 
 import { FSComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
-import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
 import { OitUiService } from '../../OitUiService';
 import { OisDomain } from '../../OIT';
 import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
@@ -24,14 +23,12 @@ export abstract class OitAvncsFooter extends DestroyableComponent<OitAvncsFooter
   render(): VNode {
     return (
       <div class="oit-header-row">
-        <IconButton icon={'single-left'} containerStyle="width: 60px; height: 50px; padding: 17.5px;" />
         <Button
           label={'COMPANY COM'}
           onClick={() => this.props.uiService.navigateTo('nss-avncs/company-com')}
           buttonStyle="width: 225px; font-size: 28px; height: 50px;"
         />
         <div style="flex-grow: 1" />
-        <IconButton icon={'single-right'} containerStyle="width: 60px; height: 50px; padding: 17.5px;" />
       </div>
     );
   }

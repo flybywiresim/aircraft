@@ -72,9 +72,9 @@ export function avncsCompanyComPageForUrl(
     case 'nss-avncs/company-com/pre-flight/flight-log':
       return <OitAvncsCompanyComFlightLog bus={bus} uiService={uiService} container={container} />;
     case 'nss-avncs/company-com/in-flight/flight-log':
-      return <OitAvncsCompanyComFlightLog bus={bus} uiService={uiService} container={container} />; // Placeholder for future implementation
+      return <OitAvncsCompanyComFlightLog bus={bus} uiService={uiService} container={container} />;
     case 'nss-avncs/company-com/post-flight/flight-log':
-      return <OitAvncsCompanyComFlightLog bus={bus} uiService={uiService} container={container} />; // Placeholder for future implementation
+      return <OitAvncsCompanyComFlightLog bus={bus} uiService={uiService} container={container} />;
 
     default:
       return <OitNotFound uiService={uiService} />;

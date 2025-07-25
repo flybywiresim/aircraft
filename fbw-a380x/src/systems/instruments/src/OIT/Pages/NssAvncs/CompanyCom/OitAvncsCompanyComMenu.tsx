@@ -24,7 +24,7 @@ export class OitAvncsCompanyComMenu extends DestroyableComponent<OitAvncsCompany
         <OitFile name={Subject.create('Inbox (0)')} uiService={this.props.uiService} />
         <OitFile name={Subject.create('Outbox (0)')} uiService={this.props.uiService} />
         <OitFile name={Subject.create('Sent')} uiService={this.props.uiService} />
-        <OitFolder name={Subject.create('Pre-flight')} initExpanded={true}>
+        <OitFolder name={Subject.create('Pre-flight')} initExpanded={true} hideFolderOpener={true}>
           <OitFile name={Subject.create('INIT Data')} uiService={this.props.uiService} />
           <OitFolder name={Subject.create('Requests')} initExpanded={false}>
             <OitFile name={Subject.create('Weather')} uiService={this.props.uiService} />
@@ -43,10 +43,10 @@ export class OitAvncsCompanyComMenu extends DestroyableComponent<OitAvncsCompany
           <OitFile
             name={Subject.create('Flight Log')}
             uiService={this.props.uiService}
-            navigationTarget="nss-avncs/company-com/in-flight/flight-log"
+            navigationTarget="nss-avncs/company-com/pre-flight/flight-log"
           />
         </OitFolder>
-        <OitFolder name={Subject.create('In-flight')} initExpanded={true}>
+        <OitFolder name={Subject.create('In-flight')} initExpanded={true} hideFolderOpener={true}>
           <OitFolder name={Subject.create('Requests')} initExpanded={false}>
             <OitFile name={Subject.create('Weather')} uiService={this.props.uiService} />
             <OitFile name={Subject.create('Notam')} uiService={this.props.uiService} />
@@ -63,7 +63,7 @@ export class OitAvncsCompanyComMenu extends DestroyableComponent<OitAvncsCompany
             navigationTarget="nss-avncs/company-com/in-flight/flight-log"
           />
         </OitFolder>
-        <OitFolder name={Subject.create('Post-flight')} initExpanded={true}>
+        <OitFolder name={Subject.create('Post-flight')} initExpanded={true} hideFolderOpener={true}>
           <OitFolder name={Subject.create('Requests')} initExpanded={false}></OitFolder>
           <OitFolder name={Subject.create('Reports')} initExpanded={false}>
             <OitFile name={Subject.create('ASR Notification')} uiService={this.props.uiService} />

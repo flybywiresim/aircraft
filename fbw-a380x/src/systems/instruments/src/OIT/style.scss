@@ -307,7 +307,6 @@
 }
 
 .oit-avncs-navigator-left {
-  flex: 0.25;
   display: flex;
   flex-direction: column;
   border: 2px solid #c4c6cf;
@@ -315,6 +314,7 @@
   margin-top: 10px;
   overflow: auto;
   max-height: 795px;
+  width: 300px;
 }
 
 .oit-avncs-navigator-left::-webkit-scrollbar {
@@ -360,13 +360,35 @@
   display: block;
 }
 
+.oit-avncs-navigator-folder-icon {
+  font-size: 0.1px;
+  color: transparent;
+  width: 35px;
+  height: 35px;
+  background-color: transparent;
+  background-image: url('/Images/fbw-a380x/oit/folder.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
 .oit-avncs-navigator-folder-children {
   display: block;
 }
 
 .oit-avncs-navigator-file {
-  display: block;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
   padding: 5px 5px 5px 25px;
+  min-height: 35px;
+}
+
+.oit-avncs-navigator-file-name {
+  background-color: transparent;
+}
+
+.oit-avncs-navigator-file-name.selected {
+  background-color: $display-light-grey;
 }
 
 .oit-avncs-navigator-right-exit-ois {
@@ -383,7 +405,7 @@
   flex-direction: column;
 }
 
-.oit-avncs-icon-folder {
+.oit-avncs-icon-folder-opener {
   width: 10px;
   height: 10px;
   border-radius: 2px;
@@ -397,6 +419,17 @@
   margin-right: 7px;
 }
 
+.oit-avncs-icon-folder {
+  font-size: 0.1px;
+  color: transparent;
+  width: 68px;
+  height: 74px;
+  background-color: transparent;
+  background-image: url('/Images/fbw-a380x/oit/folder.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
 .oit-centered {
   display: flex;
   justify-content: center;
@@ -404,11 +437,12 @@
 }
 
 .oit-labeled-box-container {
+  align-self: stretch;
   position: relative;
   border: 1px solid $display-light-grey;
   display: flex;
   flex-direction: column;
-  margin: 20px 0px 20px 0px;
+  margin: 20px 20px 20px 20px;
   padding: 15px;
 }
 
@@ -419,11 +453,37 @@
   text-align: right;
   align-self: center;
   background-color: #000000;
-  padding: 0px 2px 0px 2px;
+  padding: 0px 8px 0px 8px;
+}
+
+.oit-align-right-sp25 {
+  display: flex;
+  justify-content: flex-end;
+  padding-right: 25px;
+}
+
+.mt20 {
+  margin-top: 20px;
+}
+
+.mr15 {
+  margin-right: 15px;
+}
+
+.tc {
+  text-align: center;
 }
 
 .oit-ccom-headline {
-  font-size: 30px;
+  align-self: stretch;
+  font-size: 26px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-bottom: 20px;
+  padding-top: 10px;
+  margin-bottom: 10px;
+  border-bottom: 2px solid $display-light-grey;
 }
 
 .oit-green-text {
@@ -435,12 +495,60 @@
   grid-template-columns: repeat(4, 1fr);
   grid-template-rows: auto;
   gap: 10px;
-  margin-top: 20px;
+  margin: 10px 0px 10px 0px;
 }
 
 .oit-ccom-flight-log-oooi-table {
+  width: 400px;
   display: grid;
   grid-template-columns: 1fr 2fr 2fr;
+  border: 2px solid $display-light-grey;
+}
+
+.oit-ccom-flight-log-oooi-table-header {
+  background-color: $display-grey;
+  text-align: center;
+}
+
+.oit-table-ib {
+  border-bottom: 1px solid $display-light-grey;
+  border-right: 1px solid $display-light-grey;
+}
+
+.oit-ccom-flight-log-bottom-structure {
+  display: flex;
+  align-self: stretch;
+  flex-direction: row;
+  border-bottom: 1px solid $display-light-grey;
+  padding-bottom: 40px;
+}
+.oit-ccom-flight-log-bottom-structure-left {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 100px;
+}
+
+.oit-ccom-flight-log-bottom-structure-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+
+}
+
+.oit-ccom-flight-log-bottom-structure-right1 {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding-left: 25px;
+}
+
+.oit-ccom-flight-log-bottom-structure-right2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin: 125px 150px 0px 100px;
 }
 
 $font-file-path: '/Fonts/fbw-a380x/EFB';

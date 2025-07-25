@@ -65,6 +65,8 @@ export abstract class OitAvncsContainer extends DisplayComponent<OitAvncsContain
 
   private readonly hideContainer = this.props.avncsOrFltOps.map((mode) => mode === 'flt-ops');
 
+  private readonly renderedUri = Subject.create<OitUriInformation | null>(null);
+
   private readonly activePageRef = FSComponent.createRef<HTMLDivElement>();
 
   private activePage: VNode = (<OitNotFound uiService={this.uiService} />);
@@ -81,12 +83,15 @@ export abstract class OitAvncsContainer extends DisplayComponent<OitAvncsContain
       this.hideContainer,
     );
 
-    this.uiService.navigateTo('nss-avncs/company-com/pre-flight/flight-log');
+    this.uiService.navigateTo('nss-avncs');
   }
 
   private activeUriChanged(uri: OitUriInformation) {
-    if (uri.uri.match(/nss-avncs\/company-com\/\S*/gm)) {
-      // Handle special case for company-com, where the sub-navigation is handled by the OitAvncsCompanyCom component.
+    if (
+      uri.uri.match(/nss-avncs\/company-com\/\S*/gm) &&
+      this.renderedUri.get()?.uri.match(/nss-avncs\/company-com/gm)
+    ) {
+      // Handle special case for company-com, where the sub-navigation is handled by the OitAvncsCompanyCom component and we're already on the right page.
       return;
     }
 
@@ -108,6 +113,7 @@ export abstract class OitAvncsContainer extends DisplayComponent<OitAvncsContain
     }
 
     FSComponent.render(this.activePage, this.activePageRef?.getOrDefault());
+    this.renderedUri.set(uri);
   }
 
   public destroy(): void {
