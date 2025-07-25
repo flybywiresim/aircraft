@@ -137,6 +137,7 @@ struct SimInputAutopilot {
   double AP_1_push;
   double AP_2_push;
   double AP_disconnect;
+  double secondary_AP_disconnect;
   double HDG_push;
   double HDG_pull;
   double ALT_push;
