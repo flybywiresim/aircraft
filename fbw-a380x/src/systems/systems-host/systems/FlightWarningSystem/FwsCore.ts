@@ -64,6 +64,7 @@ import { FwsAuralVolume, FwsSoundManager } from 'systems-host/systems/FlightWarn
 import { FwcFlightPhase, FwsFlightPhases } from 'systems-host/systems/FlightWarningSystem/FwsFlightPhases';
 import { A380Failure } from '@failures';
 import { FuelSystemEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
+import { FmsMessageVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsMessagePublisher';
 import { FwsSystemDisplayLogic } from './FwsSystemDisplayLogic';
 import { FwsInopSys, FwsInopSysPhases } from './FwsInopSys';
 import { FwsInformation } from './FwsInformation';
@@ -109,6 +110,7 @@ export class FwsCore {
       FuelSystemEvents &
       KeyEvents &
       MsfsFlightModelEvents &
+      FmsMessageVars &
       FGVars
   >();
 
@@ -339,8 +341,6 @@ export class FwsCore {
   public readonly attKnob = Subject.create(0);
 
   public readonly compMesgCount = Subject.create(0);
-
-  public readonly fmsSwitchingKnob = Subject.create(0);
 
   public readonly landAsapRed = Subject.create(false);
 
@@ -597,6 +597,12 @@ export class FwsCore {
   public readonly autoThrustOffInvoluntary = Subject.create(false);
 
   public autoThrustOffVoluntaryMemoInhibited = false;
+
+  public readonly fmsSwitchingKnob = Subject.create(0);
+
+  public readonly fmsSwitchingNotNorm = this.fmsSwitchingKnob.map((v) => v !== 1);
+
+  public readonly fmsDestEfob = ConsumerSubject.create(this.sub.on('destEfobBelowMin'), false);
 
   /* 23 - COMMUNICATION */
   public readonly rmp1Fault = Subject.create(false);
@@ -1884,6 +1890,7 @@ export class FwsCore {
       this.engine2AboveIdle,
       this.engine1CoreAtOrAboveMinIdle,
       this.engine2CoreAtOrAboveMinIdle,
+      this.fmsSwitchingNotNorm,
     );
   }
 
@@ -1899,10 +1906,8 @@ export class FwsCore {
       this.registerKeyEvents();
     });
 
-    this.sub
-      .on('key_intercept')
-      .atFrequency(50)
-      .handle((keyData) => {
+    this.subs.push(
+      this.sub.on('key_intercept').handle((keyData) => {
         switch (keyData.key) {
           case 'A32NX.AUTO_THROTTLE_DISCONNECT':
             this.autoThrottleInstinctiveDisconnect();
@@ -1913,7 +1918,8 @@ export class FwsCore {
             this.autoPilotInstinctiveDisconnect();
             break;
         }
-      });
+      }),
+    );
 
     this.subs.push(
       this.toConfigNormal.sub((normal) => SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool', normal)),
@@ -1974,7 +1980,7 @@ export class FwsCore {
       this.subs.push(
         ls.sub((l) => {
           SimVar.SetSimVarValue(FwsCore.ewdMessageSimVarsLeft[i], 'string', l ?? '');
-        }),
+        }, true),
       ),
     );
 
@@ -1982,7 +1988,7 @@ export class FwsCore {
       this.subs.push(
         ls.sub((l) => {
           SimVar.SetSimVarValue(FwsCore.ewdMessageSimVarsRight[i], 'string', l ?? '');
-        }),
+        }, true),
       ),
     );
 
@@ -1990,7 +1996,7 @@ export class FwsCore {
       this.subs.push(
         ls.sub((l) => {
           SimVar.SetSimVarValue(FwsCore.pfdMemoSimVars[i], 'string', l ?? '');
-        }),
+        }, true),
       ),
     );
 
@@ -1998,7 +2004,7 @@ export class FwsCore {
       this.subs.push(
         ls.sub((l) => {
           SimVar.SetSimVarValue(FwsCore.sdStatusInfoSimVars[i], 'string', l ?? '');
-        }),
+        }, true),
       ),
     );
 
@@ -2006,7 +2012,7 @@ export class FwsCore {
       this.subs.push(
         ls.sub((l) => {
           SimVar.SetSimVarValue(FwsCore.sdStatusInopAllPhasesSimVars[i], 'string', l ?? '');
-        }),
+        }, true),
       ),
     );
 
@@ -2014,7 +2020,7 @@ export class FwsCore {
       this.subs.push(
         ls.sub((l) => {
           SimVar.SetSimVarValue(FwsCore.sdStatusInopApprLdgSimVars[i], 'string', l ?? '');
-        }),
+        }, true),
       ),
     );
 
@@ -2022,7 +2028,7 @@ export class FwsCore {
       this.subs.push(
         ls.sub((l) => {
           SimVar.SetSimVarValue(FwsCore.pfdLimitationsSimVars[i], 'string', l ?? '');
-        }),
+        }, true),
       ),
     );
 
@@ -2030,7 +2036,7 @@ export class FwsCore {
       this.subs.push(
         ls.sub((l) => {
           SimVar.SetSimVarValue(FwsCore.ewdLimitationsAllPhasesSimVars[i], 'string', l ?? '');
-        }),
+        }, true),
       ),
     );
 
@@ -2038,7 +2044,7 @@ export class FwsCore {
       this.subs.push(
         ls.sub((l) => {
           SimVar.SetSimVarValue(FwsCore.ewdLimitationsApprLdgSimVars[i], 'string', l ?? '');
-        }),
+        }, true),
       ),
     );
 
