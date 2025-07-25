@@ -353,7 +353,7 @@ export class FwsCore {
 
   public readonly compMesgCount = Subject.create(0);
 
-  public readonly landAsapRed = Subject.create(false);
+  public readonly landAsap = Subject.create(false);
 
   public readonly ndXfrKnob = Subject.create(0);
 
@@ -374,6 +374,8 @@ export class FwsCore {
   public readonly wingAntiIce = Subject.create(false);
 
   public readonly voiceVhf3 = Subject.create(false);
+
+  public readonly smokeFumesActivated = this.activeAbnormalNonSensedKeys.map((set) => set.has(260900097));
 
   /* 21 - AIR CONDITIONING AND PRESSURIZATION */
 
@@ -4610,7 +4612,7 @@ export class FwsCore {
 
     // Output logic
 
-    this.landAsapRed.set(
+    this.landAsap.set(
       !this.aircraftOnGround.get() &&
         (this.apuFireDetected.get() ||
           this.eng1FireDetected.get() ||
@@ -4618,8 +4620,7 @@ export class FwsCore {
           this.eng3FireDetected.get() ||
           this.eng4FireDetected.get() ||
           this.mlgFireDetected.get() ||
-          this.emergencyGeneratorOn.get() ||
-          (this.engine1State.get() === 0 && this.engine2State.get() === 0)),
+          this.smokeFumesActivated.get()),
     );
 
     const flightPhase = this.flightPhase.get();

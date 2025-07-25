@@ -1956,7 +1956,6 @@ export class FwsAbnormalSensed {
       failure: 3,
       sysPage: SdPages.Eng,
       inopSysAllPhases: () => ['260300002', '260300006'],
-      limitationsAllPhases: () => [this.fws.fireButtonEng1.get() ? '260400001' : ''],
     },
     260800006: {
       // ENG 2 FIRE (IN FLIGHT)
@@ -4028,7 +4027,7 @@ export class FwsAbnormalSensed {
       // ENG 1 SHUTDOWN
       flightPhaseInhib: [5, 6],
       simVarIsActive: this.fws.eng1ShutDown,
-      notActiveWhenFaults: [],
+      notActiveWhenItemActive: [],
       whichItemsToShow: () => [
         !this.fws.tcasInop.get(),
         this.fws.flightPhase.get() === 7,
@@ -4056,7 +4055,7 @@ export class FwsAbnormalSensed {
       // ENG 2 SHUTDOWN
       flightPhaseInhib: [5, 6],
       simVarIsActive: this.fws.eng2ShutDown,
-      notActiveWhenFaults: [],
+      notActiveWhenItemActive: [],
       whichItemsToShow: () => [
         !this.fws.tcasInop.get(),
         this.fws.flightPhase.get() === 7,
@@ -4086,7 +4085,7 @@ export class FwsAbnormalSensed {
       // ENG 3 SHUTDOWN
       flightPhaseInhib: [5, 6],
       simVarIsActive: this.fws.eng3ShutDown,
-      notActiveWhenFaults: [],
+      notActiveWhenItemActive: [],
       whichItemsToShow: () => [
         !this.fws.tcasInop.get(),
         this.fws.flightPhase.get() === 7,
@@ -4116,7 +4115,7 @@ export class FwsAbnormalSensed {
       // ENG 4 SHUTDOWN
       flightPhaseInhib: [5, 6],
       simVarIsActive: this.fws.eng4ShutDown,
-      notActiveWhenFaults: [],
+      notActiveWhenItemActive: [],
       whichItemsToShow: () => [
         !this.fws.tcasInop.get(),
         this.fws.flightPhase.get() === 7,
@@ -4145,7 +4144,7 @@ export class FwsAbnormalSensed {
       // ENG 1 FAIL
       simVarIsActive: this.fws.eng1Fail,
       flightPhaseInhib: [5, 6],
-      notActiveWhenFaults: [],
+      notActiveWhenItemActive: [],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
       sysPage: SdPages.Eng,
@@ -4155,7 +4154,7 @@ export class FwsAbnormalSensed {
       // ENG 2 FAIL
       simVarIsActive: this.fws.eng2Fail,
       flightPhaseInhib: [5, 6],
-      notActiveWhenFaults: [],
+      notActiveWhenItemActive: [],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
       sysPage: SdPages.Eng,
@@ -4165,7 +4164,7 @@ export class FwsAbnormalSensed {
       // ENG 3 FAIL
       simVarIsActive: this.fws.eng3Fail,
       flightPhaseInhib: [5, 6],
-      notActiveWhenFaults: [],
+      notActiveWhenItemActive: [],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
       sysPage: SdPages.Eng,
@@ -4175,7 +4174,7 @@ export class FwsAbnormalSensed {
       // ENG 4 FAIL
       simVarIsActive: this.fws.eng4Fail,
       flightPhaseInhib: [5, 6],
-      notActiveWhenFaults: [],
+      notActiveWhenItemActive: [],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
       sysPage: SdPages.Eng,
