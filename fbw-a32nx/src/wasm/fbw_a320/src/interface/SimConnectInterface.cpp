@@ -301,6 +301,8 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTOPILOT_DISENGAGE_SET, "AUTOPILOT_DISENGAGE_SET", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTOPILOT_DISENGAGE_TOGGLE, "AUTOPILOT_DISENGAGE_TOGGLE", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::TOGGLE_FLIGHT_DIRECTOR, "TOGGLE_FLIGHT_DIRECTOR", true);
+  result &=
+      addInputDataDefinition(hSimConnect, 0, Events::A32NX_SECONDARY_AP_INSTINCTIVE_DISC, "A32NX.SECONDARY_AP_INSTINCTIVE_DISC", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_AUTOPILOT_DISENGAGE, "A32NX.AUTOPILOT_DISENGAGE", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_AP_1_PUSH, "A32NX.FCU_AP_1_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_AP_2_PUSH, "A32NX.FCU_AP_2_PUSH", false);
@@ -1173,6 +1175,7 @@ void SimConnectInterface::resetSimInputAutopilot() {
   simInputAutopilot.AP_1_push = 0;
   simInputAutopilot.AP_2_push = 0;
   simInputAutopilot.AP_disconnect = 0;
+  simInputAutopilot.secondary_AP_disconnect = 0;
   simInputAutopilot.HDG_push = 0;
   simInputAutopilot.HDG_pull = 0;
   simInputAutopilot.ALT_push = 0;
@@ -1963,6 +1966,12 @@ void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, c
       fcuEfisPanelInputs[0].fd_button_pushed = 1;
       fcuEfisPanelInputs[1].fd_button_pushed = 1;
       std::cout << "WASM: event triggered: TOGGLE_FLIGHT_DIRECTOR:" << static_cast<long>(data0) << std::endl;
+      break;
+    }
+
+    case Events::A32NX_SECONDARY_AP_INSTINCTIVE_DISC: {
+      simInputAutopilot.secondary_AP_disconnect = 1;
+      std::cout << "WASM: event triggered: A32NX_SECONDARY_AP_INSTINCTIVE_DISC" << std::endl;
       break;
     }
 

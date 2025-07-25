@@ -725,9 +725,6 @@ void FlyByWireInterface::setupLocalVariables() {
   idHydGreenPressurised = std::make_unique<LocalVariable>("A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE_SWITCH");
   idHydBluePressurised = std::make_unique<LocalVariable>("A32NX_HYD_BLUE_SYSTEM_1_SECTION_PRESSURE_SWITCH");
 
-  idCaptPriorityButtonPressed = std::make_unique<LocalVariable>("A32NX_PRIORITY_TAKEOVER:1");
-  idFoPriorityButtonPressed = std::make_unique<LocalVariable>("A32NX_PRIORITY_TAKEOVER:2");
-
   idAttHdgSwtgKnob = std::make_unique<LocalVariable>("A32NX_ATT_HDG_SWITCHING_KNOB");
   idAirDataSwtgKnob = std::make_unique<LocalVariable>("A32NX_AIR_DATA_SWITCHING_KNOB");
 
@@ -1420,6 +1417,9 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
   const int oppElacIndex = elacIndex == 0 ? 1 : 0;
   SimData simData = simConnectInterface.getSimData();
   SimInput simInput = simConnectInterface.getSimInput();
+  SimInputAutopilot simInputAutopilot = simConnectInterface.getSimInputAutopilot();
+
+  const bool leftIsPrimary = idSideStickPrimarySide->get() == 0;
 
   elacs[elacIndex].modelInputs.in.time.dt = sampleTime;
   elacs[elacIndex].modelInputs.in.time.simulation_time = simData.simulationTime;
@@ -1457,14 +1457,15 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
   elacs[elacIndex].modelInputs.in.discrete_inputs.r_elev_servo_failed = idElevFaultRight[elacIndex]->get();
   elacs[elacIndex].modelInputs.in.discrete_inputs.ths_override_active = idThsOverrideActive->get();
   elacs[elacIndex].modelInputs.in.discrete_inputs.yellow_low_pressure = !idHydYellowPressurised->get();
-  elacs[elacIndex].modelInputs.in.discrete_inputs.capt_priority_takeover_pressed = idCaptPriorityButtonPressed->get();
-  elacs[elacIndex].modelInputs.in.discrete_inputs.fo_priority_takeover_pressed = idFoPriorityButtonPressed->get();
+  elacs[elacIndex].modelInputs.in.discrete_inputs.capt_priority_takeover_pressed =
+      leftIsPrimary ? simInputAutopilot.AP_disconnect : simInputAutopilot.secondary_AP_disconnect;
+  elacs[elacIndex].modelInputs.in.discrete_inputs.fo_priority_takeover_pressed =
+      !leftIsPrimary ? simInputAutopilot.AP_disconnect : simInputAutopilot.secondary_AP_disconnect;
   elacs[elacIndex].modelInputs.in.discrete_inputs.blue_low_pressure = !idHydBluePressurised->get();
   elacs[elacIndex].modelInputs.in.discrete_inputs.green_low_pressure = !idHydGreenPressurised->get();
   elacs[elacIndex].modelInputs.in.discrete_inputs.elac_engaged_from_switch = idElacPushbuttonPressed[elacIndex]->get();
   elacs[elacIndex].modelInputs.in.discrete_inputs.normal_powersupply_lost = false;
 
-  const bool leftIsPrimary = idSideStickPrimarySide->get() == 0;
   elacs[elacIndex].modelInputs.in.analog_inputs.capt_pitch_stick_pos = -(leftIsPrimary ? simInput.inputs[0] : simInput.secondaryInputs[0]);
   elacs[elacIndex].modelInputs.in.analog_inputs.fo_pitch_stick_pos = -(!leftIsPrimary ? simInput.inputs[0] : simInput.secondaryInputs[0]);
   elacs[elacIndex].modelInputs.in.analog_inputs.capt_roll_stick_pos = -(leftIsPrimary ? simInput.inputs[1] : simInput.secondaryInputs[1]);
@@ -1563,6 +1564,9 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
   const int oppSecIndex = secIndex == 0 ? 1 : 0;
   SimData simData = simConnectInterface.getSimData();
   SimInput simInput = simConnectInterface.getSimInput();
+  SimInputAutopilot simInputAutopilot = simConnectInterface.getSimInputAutopilot();
+
+  const bool leftIsPrimary = idSideStickPrimarySide->get() == 0;
 
   secs[secIndex].modelInputs.in.time.dt = sampleTime;
   secs[secIndex].modelInputs.in.time.simulation_time = simData.simulationTime;
@@ -1618,12 +1622,14 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
     secs[secIndex].modelInputs.in.discrete_inputs.r_spoiler_2_servo_failed = false;
   }
 
-  secs[secIndex].modelInputs.in.discrete_inputs.capt_priority_takeover_pressed = idCaptPriorityButtonPressed->get();
-  secs[secIndex].modelInputs.in.discrete_inputs.fo_priority_takeover_pressed = idFoPriorityButtonPressed->get();
+  secs[secIndex].modelInputs.in.discrete_inputs.capt_priority_takeover_pressed =
+      leftIsPrimary ? simInputAutopilot.AP_disconnect : simInputAutopilot.secondary_AP_disconnect;
+  secs[secIndex].modelInputs.in.discrete_inputs.fo_priority_takeover_pressed =
+      !leftIsPrimary ? simInputAutopilot.AP_disconnect : simInputAutopilot.secondary_AP_disconnect;
 
   if (secIndex < 2) {
-    secs[secIndex].modelInputs.in.analog_inputs.capt_pitch_stick_pos = -simInput.inputs[0];
-    secs[secIndex].modelInputs.in.analog_inputs.fo_pitch_stick_pos = 0;
+    secs[secIndex].modelInputs.in.analog_inputs.capt_pitch_stick_pos = -(leftIsPrimary ? simInput.inputs[0] : simInput.secondaryInputs[0]);
+    secs[secIndex].modelInputs.in.analog_inputs.fo_pitch_stick_pos = -(!leftIsPrimary ? simInput.inputs[0] : simInput.secondaryInputs[0]);
     double leftElevPos = -idLeftElevatorPosition->get();
     double rightElevPos = -idRightElevatorPosition->get();
     secs[secIndex].modelInputs.in.analog_inputs.left_elevator_pos_deg = leftElevPos * 30;
@@ -1640,8 +1646,8 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
     secs[secIndex].modelInputs.in.analog_inputs.load_factor_acc_1_g = 0;
     secs[secIndex].modelInputs.in.analog_inputs.load_factor_acc_2_g = 0;
   }
-  secs[secIndex].modelInputs.in.analog_inputs.capt_roll_stick_pos = -simInput.inputs[1];
-  secs[secIndex].modelInputs.in.analog_inputs.fo_roll_stick_pos = 0;
+  secs[secIndex].modelInputs.in.analog_inputs.capt_roll_stick_pos = -(leftIsPrimary ? simInput.inputs[1] : simInput.secondaryInputs[1]);
+  secs[secIndex].modelInputs.in.analog_inputs.fo_roll_stick_pos = -(!leftIsPrimary ? simInput.inputs[1] : simInput.secondaryInputs[1]);
   secs[secIndex].modelInputs.in.analog_inputs.spd_brk_lever_pos =
       spoilersHandler->getIsArmed() ? -0.05 : spoilersHandler->getHandlePosition();
   secs[secIndex].modelInputs.in.analog_inputs.thr_lever_1_pos = thrustLeverAngle_1->get();
