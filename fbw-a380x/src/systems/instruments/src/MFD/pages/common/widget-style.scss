@@ -435,6 +435,10 @@
   border: 2px outset $display-cyan;
 }
 
+.mfd-radio-button.amber {
+  color:  $display-amber
+}
+
 .mfd-context-menu {
   font-family: "FBW-Display-EIS-A380-SlashedZero", monospace;
   background-color: $display-mfd-darker-grey;
