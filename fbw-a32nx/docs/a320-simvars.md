@@ -3570,6 +3570,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Note that multiple SFCC are not yet implemented, thus no {number} in the name.
     - The Flap FPPU angle ranges from 0° to 360°
 
+- A32NX_SFCC_FAP_{num}
+    - Flap actual position discrete output
+    - {num} is from 1 to 7
+
 ## Flight Controls (ATA 27)
 
 - A32NX_FLIGHT_CONTROLS_TRACKING_MODE
@@ -4410,6 +4414,17 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
         - 1.0
 
 ## Non-Systems Related
+
+- `L:FBW_BUILD_EDITION`
+    - Enum
+    - Read-Only
+    - Current aircraft build edition (same meaning as package.json edition property).
+      Description | Value
+      ------------ | -
+      Unknown      | 0
+      Stable       | 1
+      Development  | 2
+      Experimental | 3
 
 - `L:FBW_PILOT_SEAT`
   - Enum
