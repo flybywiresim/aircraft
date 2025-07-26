@@ -232,12 +232,32 @@ export class Navigation implements NavigationProvider {
     this.nearbyAirportMonitor.setLocation(this.ppos.lat, this.ppos.long);
   }
 
+  public setPilotRnp(rnp: number | null) {
+    if (rnp) {
+      this.requiredPerformance.setPilotRnp(rnp);
+    } else {
+      this.requiredPerformance.clearPilotRnp();
+    }
+  }
+
+  public isPilotRnp(): boolean {
+    return this.requiredPerformance.manualRnp;
+  }
+
+  public isAcurracyHigh(): boolean {
+    return this.accuracyHigh;
+  }
+
   public getBaroCorrectedAltitude(): number | null {
     return this.baroAltitude;
   }
 
   public getEpe(): number {
     return this.currentPerformance ?? Infinity;
+  }
+
+  public getActiveRnp(): number {
+    return this.requiredPerformance.activeRnp;
   }
 
   public getPpos(): Coordinates | null {
@@ -267,6 +287,10 @@ export class Navigation implements NavigationProvider {
 
   public getNavaidTuner(): NavaidTuner {
     return this.navaidTuner;
+  }
+
+  public getRequiredPerformance(): RequiredPerformance {
+    return this.requiredPerformance;
   }
 
   private resetSelectedNavaid(i: number): void {

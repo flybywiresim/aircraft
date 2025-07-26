@@ -1619,3 +1619,36 @@ export class RadiusFormat implements DataEntryFormat<number> {
     }
   }
 }
+
+export class RnpFormat implements DataEntryFormat<number> {
+  public placeholder = '--.-';
+
+  public maxDigits = 4;
+
+  private minValue = 0.01;
+
+  private maxValue = 20.0;
+
+  public format(value: number) {
+    if (value === null || value === undefined) {
+      return [this.placeholder, null, null] as FieldFormatTuple;
+    }
+    return [value > 10.0 ? value.toFixed(1) : value.toFixed(2), null, 'NM'] as FieldFormatTuple;
+  }
+
+  public async parse(input: string) {
+    if (input === '') {
+      return null;
+    }
+
+    const nbr = Number(input);
+    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
+      return nbr;
+    }
+    if (nbr > this.maxValue || nbr < this.minValue) {
+      throw new FmsError(FmsErrorType.EntryOutOfRange);
+    } else {
+      throw new FmsError(FmsErrorType.FormatError);
+    }
+  }
+}
