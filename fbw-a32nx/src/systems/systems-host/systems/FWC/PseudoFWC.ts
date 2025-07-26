@@ -3477,6 +3477,7 @@ export class PseudoFWC {
       failure: 3,
       sysPage: -1,
       side: 'LEFT',
+      monitorConfirmTime: 0,
     },
     2200010: {
       // AP OFF Voluntary Master Warning
@@ -3489,6 +3490,7 @@ export class PseudoFWC {
       failure: 3,
       sysPage: -1,
       side: 'RIGHT',
+      monitorConfirmTime: 0,
     },
     // These two should not be affected by CLR and RCL, only EMER CANC and cancel.
     2200012: {
@@ -3507,6 +3509,7 @@ export class PseudoFWC {
       failure: 0,
       sysPage: -1,
       side: 'RIGHT',
+      monitorConfirmTime: 0,
     },
     2200015: {
       // AP OFF Voluntary Special Line
@@ -3518,6 +3521,7 @@ export class PseudoFWC {
       failure: 0,
       sysPage: -1,
       side: 'RIGHT',
+      monitorConfirmTime: 0,
     },
     2200020: {
       // A/THR OFF Voluntary Master Caution
@@ -3529,6 +3533,7 @@ export class PseudoFWC {
       failure: 2,
       sysPage: -1,
       side: 'RIGHT',
+      monitorConfirmTime: 0,
     },
     2200021: {
       // A/THR OFF Voluntary Special Line
@@ -3540,6 +3545,7 @@ export class PseudoFWC {
       failure: 0,
       sysPage: -1,
       side: 'RIGHT',
+      monitorConfirmTime: 0,
     },
     2200022: {
       // A/THR OFF Involuntary Text
@@ -3556,6 +3562,7 @@ export class PseudoFWC {
       failure: 2,
       sysPage: -1,
       side: 'LEFT',
+      monitorConfirmTime: 0,
     },
     2200024: {
       // A/THR LIMITED
