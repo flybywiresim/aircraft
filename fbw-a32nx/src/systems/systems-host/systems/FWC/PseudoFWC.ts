@@ -72,6 +72,8 @@ interface EWDItem {
   side: string;
   /** Cancel flag for level 3 warning audio (only emergency cancel can cancel if false), defaults to true. */
   cancel?: boolean;
+  /** The monitor confirm time in seconds. Defaults to 0.3 s. */
+  monitorConfirmTime?: number;
 }
 
 interface EWDMessageDict {
@@ -3176,8 +3178,11 @@ export class PseudoFWC {
         continue;
       }
 
-      // consider monitor input confirm time (0.3 sec)
-      if (value.simVarIsActive.get() && simTime >= (this.ewdFailureActivationTime.get(key) ?? 0) + 0.3) {
+      if (
+        value.simVarIsActive.get() &&
+        // consider monitor input confirm time (0.3 sec by default)
+        simTime >= (this.ewdFailureActivationTime.get(key) ?? 0) + (value.monitorConfirmTime ?? 0.3)
+      ) {
         if (newWarning) {
           if (value.side === 'LEFT') {
             failureKeysLeft.push(key);
