@@ -185,6 +185,13 @@ export class A320_Neo_CDU_MainDisplay
     AOCFreeText: 76,
     StepAltsPage: 77,
     ATCDepartReq: 78,
+    ATCCommMenu: 79,
+    ATCText: 80,
+    ATCProcedureRequest: 81,
+    ATCVertRequest: 82,
+    ATCLatRequest: 83,
+    ATCMessageModifyUM131: 84,
+    ATCContactRequest: 85,
   };
 
   private mcduServerClient?: McduServerClient;
@@ -1392,6 +1399,10 @@ export class A320_Neo_CDU_MainDisplay
 
   private onLsk(fncAction, fncActionDelay = this.getDelayBasic) {
     if (!fncAction) {
+      if (this.activeSystem === 'ATSU' && this.isDatalinkATCPage(this.page.Current)) {
+        //FIXME Should be handled by the subsystem itself
+        this.setScratchpadMessage(NXSystemMessages.keyNotActive);
+      }
       return;
     }
 
@@ -1629,6 +1640,34 @@ export class A320_Neo_CDU_MainDisplay
 
   public logTroubleshootingError(msg: any) {
     this.bus.pub('troubleshooting_log_error', String(msg), true, false);
+  }
+
+  private isDatalinkATCPage(page: number): boolean {
+    return (
+      page === this.page.ATCMenu ||
+      page === this.page.ATCAtis ||
+      page === this.page.ATCMessageRecord ||
+      page == this.page.ATCMessageMonitoring ||
+      page === this.page.ATCConnection ||
+      page === this.page.ATCConnectionStatus ||
+      page === this.page.ATCPositionReport1 ||
+      page === this.page.ATCPositionReport2 ||
+      page === this.page.ATCPositionReport3 ||
+      page === this.page.ATCFlightRequest ||
+      page === this.page.ATCUsualRequest ||
+      page === this.page.ATCGroundRequest ||
+      page === this.page.ATCReports ||
+      page === this.page.ATCEmergency ||
+      page === this.page.ATCComLastId ||
+      page === this.page.ATCDepartReq ||
+      page === this.page.ATCCommMenu ||
+      page === this.page.ATCText ||
+      page === this.page.ATCProcedureRequest ||
+      page === this.page.ATCVertRequest ||
+      page === this.page.ATCLatRequest ||
+      page === this.page.ATCMessageModifyUM131 ||
+      page === this.page.ATCContactRequest
+    );
   }
 }
 // registerInstrument('a320-neo-cdu-main-display', A320_Neo_CDU_MainDisplay);

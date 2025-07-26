@@ -50,6 +50,7 @@ export class CDUAtcLatRequestFansB {
 
   static ShowPage(mcdu: LegacyAtsuPageInterface, data = CDUAtcLatRequestFansB.CreateDataBlock()) {
     mcdu.clearDisplay();
+    mcdu.page.Current = mcdu.page.ATCLatRequest;
 
     let weatherDeviation = '{cyan}[  ]{end}';
     if (data.weatherDeviation) {
