@@ -91,7 +91,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
       return;
     }
 
-    this.costIndex.set(this.loadedFlightPlan.performanceData.costIndex);
+    this.costIndex.set(this.loadedFlightPlan.performanceData.costIndex.get());
 
     this.updateDestAndAltnPredictions();
   }
