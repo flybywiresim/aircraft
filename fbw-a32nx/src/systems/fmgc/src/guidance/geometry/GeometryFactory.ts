@@ -362,7 +362,7 @@ function getMagCorrection(legIndex: number, plan: BaseFlightPlan): number {
 }
 
 function getApproachMagCorrection(legIndex: number, plan: BaseFlightPlan): number | undefined {
-  const approachType = plan.approach.type;
+  const approachType = plan.approach?.type ?? ApproachType.Unknown;
   const currentLeg = plan.legElementAt(legIndex);
 
   // we use station declination for VOR/DME approaches
