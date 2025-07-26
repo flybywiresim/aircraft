@@ -91,6 +91,7 @@ interface OitFileProps extends OitNavigatorItemProps {
   readonly uiService: OitUiService;
   readonly navigationTarget?: string;
   readonly showFileSymbol?: boolean;
+  readonly disabled?: boolean;
 }
 
 export class OitFile extends DestroyableComponent<OitFileProps> {
@@ -135,7 +136,15 @@ export class OitFile extends DestroyableComponent<OitFileProps> {
             <path d="m33.75,16.125l-11,-9.625l4.25,-5.125" stroke="#fff" fill="none" stroke-width="2" />
           </g>
         </svg>
-        <span class={{ 'oit-avncs-navigator-file-name': true, selected: this.selected }}>{this.props.name}</span>
+        <span
+          class={{
+            'oit-avncs-navigator-file-name': true,
+            selected: this.selected,
+            disabled: this.props.disabled ?? false,
+          }}
+        >
+          {this.props.name}
+        </span>
       </div>
     );
   }

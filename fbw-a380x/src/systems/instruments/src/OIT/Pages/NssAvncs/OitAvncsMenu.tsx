@@ -38,6 +38,7 @@ export class OitAvncsMenu extends DestroyableComponent<OitAvncsMenuPageProps> {
                     uiService={this.props.uiService}
                     navigationTarget="nss-avncs/refuel"
                     showFileSymbol={false}
+                    disabled={true}
                   />
                 </OitFolder>
                 <OitFolder name={Subject.create('UTILITIES')} initExpanded={false} hideFolderIcon />

@@ -26,23 +26,23 @@ export class OitAvncsCompanyComMenu extends DestroyableComponent<OitAvncsCompany
           uiService={this.props.uiService}
           navigationTarget="nss-avncs/company-com/inbox"
         />
-        <OitFile name={Subject.create('Outbox (0)')} uiService={this.props.uiService} />
-        <OitFile name={Subject.create('Sent')} uiService={this.props.uiService} />
+        <OitFile name={Subject.create('Outbox (0)')} uiService={this.props.uiService} disabled={true} />
+        <OitFile name={Subject.create('Sent')} uiService={this.props.uiService} disabled={true} />
         <OitFolder name={Subject.create('Pre-flight')} initExpanded={true} hideFolderOpener={true}>
-          <OitFile name={Subject.create('INIT Data')} uiService={this.props.uiService} />
+          <OitFile name={Subject.create('INIT Data')} uiService={this.props.uiService} disabled={true} />
           <OitFolder name={Subject.create('Requests')} initExpanded={false}>
-            <OitFile name={Subject.create('Weather')} uiService={this.props.uiService} />
-            <OitFile name={Subject.create('NOTAM')} uiService={this.props.uiService} />
+            <OitFile name={Subject.create('Weather')} uiService={this.props.uiService} disabled={true} />
+            <OitFile name={Subject.create('NOTAM')} uiService={this.props.uiService} disabled={true} />
           </OitFolder>
           <OitFolder name={Subject.create('Reports')} initExpanded={false}>
-            <OitFile name={Subject.create('Fuel Figures')} uiService={this.props.uiService} />
-            <OitFile name={Subject.create('Refuelling')} uiService={this.props.uiService} />
-            <OitFile name={Subject.create('Loadsheet Acceptance')} uiService={this.props.uiService} />
-            <OitFile name={Subject.create('Departure Delay')} uiService={this.props.uiService} />
-            <OitFile name={Subject.create('Take Off Delay')} uiService={this.props.uiService} />
-            <OitFile name={Subject.create('Delay Code')} uiService={this.props.uiService} />
-            <OitFile name={Subject.create('Free Text')} uiService={this.props.uiService} />
-            <OitFile name={Subject.create('ASR Notification')} uiService={this.props.uiService} />
+            <OitFile name={Subject.create('Fuel Figures')} uiService={this.props.uiService} disabled={true} />
+            <OitFile name={Subject.create('Refuelling')} uiService={this.props.uiService} disabled={true} />
+            <OitFile name={Subject.create('Loadsheet Acceptance')} uiService={this.props.uiService} disabled={true} />
+            <OitFile name={Subject.create('Departure Delay')} uiService={this.props.uiService} disabled={true} />
+            <OitFile name={Subject.create('Take Off Delay')} uiService={this.props.uiService} disabled={true} />
+            <OitFile name={Subject.create('Delay Code')} uiService={this.props.uiService} disabled={true} />
+            <OitFile name={Subject.create('Free Text')} uiService={this.props.uiService} disabled={true} />
+            <OitFile name={Subject.create('ASR Notification')} uiService={this.props.uiService} disabled={true} />
           </OitFolder>
           <OitFile
             name={Subject.create('Flight Log')}
@@ -52,14 +52,14 @@ export class OitAvncsCompanyComMenu extends DestroyableComponent<OitAvncsCompany
         </OitFolder>
         <OitFolder name={Subject.create('In-flight')} initExpanded={true} hideFolderOpener={true}>
           <OitFolder name={Subject.create('Requests')} initExpanded={false}>
-            <OitFile name={Subject.create('Weather')} uiService={this.props.uiService} />
-            <OitFile name={Subject.create('Notam')} uiService={this.props.uiService} />
-            <OitFile name={Subject.create('Ramp Service')} uiService={this.props.uiService} />
+            <OitFile name={Subject.create('Weather')} uiService={this.props.uiService} disabled={true} />
+            <OitFile name={Subject.create('Notam')} uiService={this.props.uiService} disabled={true} />
+            <OitFile name={Subject.create('Ramp Service')} uiService={this.props.uiService} disabled={true} />
           </OitFolder>
           <OitFolder name={Subject.create('Reports')} initExpanded={false}>
-            <OitFile name={Subject.create('Diversion')} uiService={this.props.uiService} />
-            <OitFile name={Subject.create('ETA')} uiService={this.props.uiService} />
-            <OitFile name={Subject.create('Free Text')} uiService={this.props.uiService} />
+            <OitFile name={Subject.create('Diversion')} uiService={this.props.uiService} disabled={true} />
+            <OitFile name={Subject.create('ETA')} uiService={this.props.uiService} disabled={true} />
+            <OitFile name={Subject.create('Free Text')} uiService={this.props.uiService} disabled={true} />
           </OitFolder>
           <OitFile
             name={Subject.create('Flight Log')}
@@ -70,10 +70,10 @@ export class OitAvncsCompanyComMenu extends DestroyableComponent<OitAvncsCompany
         <OitFolder name={Subject.create('Post-flight')} initExpanded={true} hideFolderOpener={true}>
           <OitFolder name={Subject.create('Requests')} initExpanded={false}></OitFolder>
           <OitFolder name={Subject.create('Reports')} initExpanded={false}>
-            <OitFile name={Subject.create('ASR Notification')} uiService={this.props.uiService} />
-            <OitFile name={Subject.create('Flight Summary')} uiService={this.props.uiService} />
-            <OitFile name={Subject.create('Free Text')} uiService={this.props.uiService} />
-            <OitFile name={Subject.create('Gate Delay')} uiService={this.props.uiService} />
+            <OitFile name={Subject.create('ASR Notification')} uiService={this.props.uiService} disabled={true} />
+            <OitFile name={Subject.create('Flight Summary')} uiService={this.props.uiService} disabled={true} />
+            <OitFile name={Subject.create('Free Text')} uiService={this.props.uiService} disabled={true} />
+            <OitFile name={Subject.create('Gate Delay')} uiService={this.props.uiService} disabled={true} />
           </OitFolder>
           <OitFile
             name={Subject.create('Flight Log')}

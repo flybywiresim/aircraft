@@ -428,6 +428,10 @@
   background-color: $display-light-grey;
 }
 
+.oit-avncs-navigator-file-name.disabled {
+  color: $display-dark-grey;
+}
+
 .oit-avncs-navigator-right-exit-ois {
   position: relative;
   left: 10px;
