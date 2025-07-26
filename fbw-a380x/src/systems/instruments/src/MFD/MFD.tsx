@@ -341,6 +341,10 @@ export class MfdComponent
     // Will be called if the FMC providing all the data has changed.
   }
 
+  public logTroubleshootingError(msg: any) {
+    this.props.bus.pub('troubleshooting_log_error', String(msg), true, false);
+  }
+
   destroy(): void {
     this.topRef.getOrDefault()?.removeEventListener('mousemove', this.onMouseMoveHandler);
     this.mouseCursorRef.getOrDefault()?.destroy();
