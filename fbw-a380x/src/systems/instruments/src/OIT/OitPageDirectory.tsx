@@ -13,6 +13,7 @@ import { OitAvncsContainer } from './OitAvncsContainer';
 import { OitAvncsCompanyCom } from './Pages/NssAvncs/CompanyCom/OitAvncsCompanyCom';
 import { OitAvncsMenu } from './Pages/NssAvncs/OitAvncsMenu';
 import { OitAvncsCompanyComFlightLog } from './Pages/NssAvncs/CompanyCom/OitAvncsCompanyComFlightLog';
+import { OitAvncsCompanyComInbox } from './Pages/NssAvncs/CompanyCom/OitAvncsCompanyComInbox';
 
 // Page imports
 // eslint-disable-next-line jsdoc/require-jsdoc
@@ -68,7 +69,7 @@ export function avncsCompanyComPageForUrl(
 ): VNode {
   switch (url) {
     case 'nss-avncs/company-com/inbox':
-      return <></>; // Placeholder for future implementation
+      return <OitAvncsCompanyComInbox bus={bus} uiService={uiService} container={container} />;
     case 'nss-avncs/company-com/pre-flight/flight-log':
       return <OitAvncsCompanyComFlightLog bus={bus} uiService={uiService} container={container} />;
     case 'nss-avncs/company-com/in-flight/flight-log':

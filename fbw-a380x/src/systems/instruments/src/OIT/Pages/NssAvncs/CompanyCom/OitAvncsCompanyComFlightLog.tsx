@@ -7,10 +7,9 @@ import { RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/R
 import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
 import { FmsData, NXDataStore, NXUnits } from '@flybywiresim/fbw-sdk';
 import { OitSimvars } from '../../../OitSimvarPublisher';
+import { AnsuOps } from '../../../System/AnsuOps';
 
 interface OitAvncsCompanyComFlightLogProps extends AbstractOitAvncsPageProps {}
-
-const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 
 export abstract class OitAvncsCompanyComFlightLog extends DestroyableComponent<OitAvncsCompanyComFlightLogProps> {
   private readonly sci = this.props.container.ansu.sci;
@@ -30,19 +29,10 @@ export abstract class OitAvncsCompanyComFlightLog extends DestroyableComponent<O
 
   private readonly scheduledDateText = Subject.create('----');
 
-  formatDateTime(t: number | null): string {
-    if (t === null) {
-      return '------ --:--';
-    }
-
-    const date = new Date(t);
-    return `${String(date.getUTCDate()).padStart(2, '0')}-${months[date.getUTCMonth()]} ${String(date.getUTCHours()).padStart(2, '0')}:${String(date.getUTCMinutes()).padStart(2, '0')}`;
-  }
-
-  private readonly outBlockTimeText = this.props.container.ansu.outBlockTime.map((t) => this.formatDateTime(t));
-  private readonly offBlockTimeText = this.props.container.ansu.offBlockTime.map((t) => this.formatDateTime(t));
-  private readonly onBlockTimeText = this.props.container.ansu.onBlockTime.map((t) => this.formatDateTime(t));
-  private readonly inBlockTimeText = this.props.container.ansu.inBlockTime.map((t) => this.formatDateTime(t));
+  private readonly outBlockTimeText = this.props.container.ansu.outBlockTime.map((t) => AnsuOps.formatDateTime(t));
+  private readonly offBlockTimeText = this.props.container.ansu.offBlockTime.map((t) => AnsuOps.formatDateTime(t));
+  private readonly onBlockTimeText = this.props.container.ansu.onBlockTime.map((t) => AnsuOps.formatDateTime(t));
+  private readonly inBlockTimeText = this.props.container.ansu.inBlockTime.map((t) => AnsuOps.formatDateTime(t));
 
   private readonly userWeight = Subject.create<'KG' | 'LBS'>(NXUnits.userWeightUnit());
 
@@ -142,7 +132,7 @@ export abstract class OitAvncsCompanyComFlightLog extends DestroyableComponent<O
         .handle((time) => {
           const date = new Date(time);
           this.scheduledDateText.set(
-            `${String(date.getUTCDate()).padStart(2, '0')}-${months[date.getUTCMonth()]}-${String(date.getUTCFullYear()).substring(2)}`,
+            `${String(date.getUTCDate()).padStart(2, '0')}-${AnsuOps.months[date.getUTCMonth()]}-${String(date.getUTCFullYear()).substring(2)}`,
           );
         }),
     );

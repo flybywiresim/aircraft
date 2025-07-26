@@ -21,7 +21,11 @@ export class OitAvncsCompanyComMenu extends DestroyableComponent<OitAvncsCompany
   render(): VNode {
     return (
       <>
-        <OitFile name={Subject.create('Inbox (0)')} uiService={this.props.uiService} />
+        <OitFile
+          name={Subject.create('Inbox (0)')}
+          uiService={this.props.uiService}
+          navigationTarget="nss-avncs/company-com/inbox"
+        />
         <OitFile name={Subject.create('Outbox (0)')} uiService={this.props.uiService} />
         <OitFile name={Subject.create('Sent')} uiService={this.props.uiService} />
         <OitFolder name={Subject.create('Pre-flight')} initExpanded={true} hideFolderOpener={true}>

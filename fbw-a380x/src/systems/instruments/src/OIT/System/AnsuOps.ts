@@ -116,4 +116,15 @@ export class AnsuOps extends AircraftNetworkServerUnit {
       }
     }
   }
+
+  static months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+
+  static formatDateTime(t: number | null): string {
+    if (t === null) {
+      return '------ --:--';
+    }
+
+    const date = new Date(t);
+    return `${String(date.getUTCDate()).padStart(2, '0')}-${AnsuOps.months[date.getUTCMonth()]} ${String(date.getUTCHours()).padStart(2, '0')}:${String(date.getUTCMinutes()).padStart(2, '0')}`;
+  }
 }

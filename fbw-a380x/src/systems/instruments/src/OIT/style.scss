@@ -43,6 +43,53 @@
   display: none;
 }
 
+.fr {
+  display: flex;
+  flex-direction: row;
+}
+
+.fc {
+  display: flex;
+  flex-direction: column;
+}
+
+.jc {
+  justify-content: center;
+}
+
+.aic {
+  align-items: center;
+}
+
+.ass {
+  align-self: stretch;
+}
+
+.mt20 {
+  margin-top: 20px;
+}
+
+.mr15 {
+  margin-right: 15px;
+}
+
+.tc {
+  text-align: center;
+}
+
+.w5 {
+  width: 5%;
+}
+
+.w15 {
+  width: 15%;
+}
+
+.f1 {
+  flex: 1;
+}
+
+
 .oit-page-container {
   display: flex;
   flex: 1 1 auto;
@@ -115,16 +162,6 @@
   width: 100%;
   flex-direction: row;
   justify-content: space-between;
-}
-
-.fr {
-  display: flex;
-  flex-direction: row;
-}
-
-.fc {
-  display: flex;
-  flex-direction: column;
 }
 
 .oit-flt-ops-menu-column {
@@ -309,7 +346,7 @@
 .oit-avncs-navigator-left {
   display: flex;
   flex-direction: column;
-  border: 2px solid #c4c6cf;
+  border: 3px solid #c4c6cf;
   margin-bottom: 10px;
   margin-top: 10px;
   overflow: auto;
@@ -462,18 +499,6 @@
   padding-right: 25px;
 }
 
-.mt20 {
-  margin-top: 20px;
-}
-
-.mr15 {
-  margin-right: 15px;
-}
-
-.tc {
-  text-align: center;
-}
-
 .oit-ccom-headline {
   align-self: stretch;
   font-size: 26px;
@@ -482,8 +507,9 @@
   align-items: center;
   padding-bottom: 20px;
   padding-top: 10px;
-  margin-bottom: 10px;
-  border-bottom: 2px solid $display-light-grey;
+  margin: 10px 0px 10px 0px;
+  border: 2px solid $display-light-grey;
+  border-left: none;
 }
 
 .oit-green-text {
@@ -549,6 +575,50 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   margin: 125px 150px 0px 100px;
+}
+
+.oit-ccom-inbox-msg-table {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  border: 2px solid $display-light-grey;
+  border-left: none;
+  min-height: 200px;
+  overflow: auto;
+}
+
+.oit-ccom-inbox-msg-table-header {
+  background-color: $display-grey;
+  text-align: center;
+  height: 30px;
+}
+
+.oit-ccom-inbox-msg-details {
+  align-self: stretch;
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  margin: 5px 10px 10px 10px;
+}
+
+.oit-ccom-inbox-msg-box {
+  align-self: stretch;
+  display: block;
+  border: 2px solid $display-light-grey;
+  border-left: none;
+  min-height: 400px;
+  overflow: auto;
+  padding: 5px;
+}
+
+.oit-ccom-inbox-msg-table-line {
+  display: flex;
+  height: 40px;
+  align-items: center;
+}
+
+.oit-ccom-inbox-msg-table-line.selected {
+  background-color: $display-white;
+  color: $display-background;
 }
 
 $font-file-path: '/Fonts/fbw-a380x/EFB';
