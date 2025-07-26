@@ -6,7 +6,7 @@ import { AdrBusEvents, Arinc429LocalVarConsumerSubject, FmsData, FwcBusEvents } 
 import { ResetPanelSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/ResetPanelPublisher';
 import { OitSimvars } from '../OitSimvarPublisher';
 
-export class SecuredCommunicationInterface implements Instrument {
+export class SecureCommunicationInterface implements Instrument {
   private readonly subscriptions: Subscription[] = [];
 
   private readonly sub = this.bus.getSubscriber<

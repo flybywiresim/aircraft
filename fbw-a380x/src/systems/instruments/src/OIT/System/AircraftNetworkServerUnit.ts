@@ -14,7 +14,7 @@ import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
 import { A380Failure } from '@failures';
 import { ResetPanelSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/ResetPanelPublisher';
 import { OitSimvars } from '../OitSimvarPublisher';
-import { SecuredCommunicationInterface } from './SecuredCommunicationInterface';
+import { SecureCommunicationInterface } from './SecuredCommunicationInterface';
 
 type AnsuIndex = 1 | 2;
 
@@ -45,7 +45,7 @@ export class AircraftNetworkServerUnit implements Instrument {
     false,
   );
 
-  public readonly sci = new SecuredCommunicationInterface(this.bus);
+  public readonly sci = new SecureCommunicationInterface(this.bus);
 
   constructor(
     private readonly bus: EventBus,
