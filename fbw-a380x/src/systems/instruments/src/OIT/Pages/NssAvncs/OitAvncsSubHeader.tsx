@@ -25,9 +25,9 @@ export abstract class OitAvncsSubHeader extends DisplayComponent<OitAvncsSubHead
 
     this.subs.push(
       this.props.uiService.activeUri.sub(() => {
-        this.canGoBack.set(this.props.uiService.canGoBack());
-        this.canGoForward.set(this.props.uiService.canGoForward());
-      }),
+        this.canGoBack.set(!this.props.uiService.canGoBack());
+        this.canGoForward.set(!this.props.uiService.canGoForward());
+      }, true),
     );
   }
 
