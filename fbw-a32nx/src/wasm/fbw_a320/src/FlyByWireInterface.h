@@ -194,8 +194,11 @@ class FlyByWireInterface {
 
   std::unique_ptr<LocalVariable> idFdrEvent;
 
-  std::unique_ptr<LocalVariable> idSideStickPositionX;
-  std::unique_ptr<LocalVariable> idSideStickPositionY;
+  std::unique_ptr<LocalVariable> idSideStickLPositionX;
+  std::unique_ptr<LocalVariable> idSideStickLPositionY;
+  std::unique_ptr<LocalVariable> idSideStickRPositionX;
+  std::unique_ptr<LocalVariable> idSideStickRPositionY;
+  std::unique_ptr<LocalVariable> idSideStickPrimarySide;
   std::unique_ptr<LocalVariable> idRudderPedalPosition;
 
   std::unique_ptr<LocalVariable> idFmLateralPlanAvail;
@@ -513,9 +516,6 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idHydYellowPressurised;
   std::unique_ptr<LocalVariable> idHydGreenPressurised;
   std::unique_ptr<LocalVariable> idHydBluePressurised;
-
-  std::unique_ptr<LocalVariable> idCaptPriorityButtonPressed;
-  std::unique_ptr<LocalVariable> idFoPriorityButtonPressed;
 
   std::unique_ptr<LocalVariable> idAttHdgSwtgKnob;
   std::unique_ptr<LocalVariable> idAirDataSwtgKnob;

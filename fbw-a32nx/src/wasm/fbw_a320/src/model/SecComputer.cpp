@@ -252,8 +252,8 @@ void SecComputer::step()
       SecComputer_MATLABFunction_e_Reset(&SecComputer_DWork.sf_MATLABFunction_ndv);
       SecComputer_MATLABFunction_e_Reset(&SecComputer_DWork.sf_MATLABFunction_gf);
       SecComputer_MATLABFunction_e_Reset(&SecComputer_DWork.sf_MATLABFunction_h);
-      SecComputer_MATLABFunction_g_Reset(&SecComputer_DWork.sf_MATLABFunction_g4b);
-      SecComputer_MATLABFunction_g_Reset(&SecComputer_DWork.sf_MATLABFunction_nu);
+      SecComputer_MATLABFunction_e_Reset(&SecComputer_DWork.sf_MATLABFunction_d5w);
+      SecComputer_MATLABFunction_e_Reset(&SecComputer_DWork.sf_MATLABFunction_n5);
       SecComputer_DWork.pLeftStickDisabled = false;
       SecComputer_DWork.pRightStickDisabled = false;
       SecComputer_MATLABFunction_e_Reset(&SecComputer_DWork.sf_MATLABFunction_j2);
@@ -557,10 +557,12 @@ void SecComputer::step()
       &SecComputer_DWork.sf_MATLABFunction_h);
     rtb_BusAssignment_f_logic_ir_computation_data_n_z_g = rtb_n_z;
     rtb_BusAssignment_f_logic_ir_computation_data_theta_dot_deg_s = rtb_theta_dot;
-    SecComputer_MATLABFunction_e(SecComputer_U.in.discrete_inputs.capt_priority_takeover_pressed,
-      SecComputer_P.PulseNode_isRisingEdge, &rtb_AND1_h, &SecComputer_DWork.sf_MATLABFunction_g4b);
-    SecComputer_MATLABFunction_e(SecComputer_U.in.discrete_inputs.fo_priority_takeover_pressed,
-      SecComputer_P.PulseNode1_isRisingEdge, &rtb_NOT_bl, &SecComputer_DWork.sf_MATLABFunction_nu);
+    SecComputer_MATLABFunction_n(SecComputer_U.in.discrete_inputs.capt_priority_takeover_pressed,
+      SecComputer_U.in.time.dt, SecComputer_P.ConfirmNode2_isRisingEdge_f, SecComputer_P.ConfirmNode2_timeDelay_e,
+      &rtb_AND1_h, &SecComputer_DWork.sf_MATLABFunction_d5w);
+    SecComputer_MATLABFunction_n(SecComputer_U.in.discrete_inputs.fo_priority_takeover_pressed, SecComputer_U.in.time.dt,
+      SecComputer_P.ConfirmNode3_isRisingEdge, SecComputer_P.ConfirmNode3_timeDelay, &rtb_NOT_bl,
+      &SecComputer_DWork.sf_MATLABFunction_n5);
     if (rtb_AND1_h) {
       SecComputer_DWork.pRightStickDisabled = true;
       SecComputer_DWork.pLeftStickDisabled = false;
@@ -704,7 +706,7 @@ void SecComputer::step()
       u0_0 = SecComputer_P.Saturation_LowerSat_h;
     }
 
-    SecComputer_MATLABFunction_e((SecComputer_B.in_flight != 0.0), SecComputer_P.PulseNode_isRisingEdge_h, &rtb_y_b5,
+    SecComputer_MATLABFunction_e((SecComputer_B.in_flight != 0.0), SecComputer_P.PulseNode_isRisingEdge, &rtb_y_b5,
       &SecComputer_DWork.sf_MATLABFunction_b4);
     rtb_AND1_e_tmp = (SecComputer_U.in.discrete_inputs.pitch_not_avail_elac_1 &&
                       SecComputer_U.in.discrete_inputs.pitch_not_avail_elac_2);
@@ -780,7 +782,7 @@ void SecComputer::step()
     SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_2,
       SecComputer_P.BitfromLabel7_bit_ms, &rtb_Switch7_c);
     SecComputer_MATLABFunction_e((rtb_y_a || (rtb_AND1_h && (rtb_Switch7_c != 0U))),
-      SecComputer_P.PulseNode1_isRisingEdge_k, &rtb_y_ji, &SecComputer_DWork.sf_MATLABFunction_a);
+      SecComputer_P.PulseNode1_isRisingEdge, &rtb_y_ji, &SecComputer_DWork.sf_MATLABFunction_a);
     rtb_NOT_bl = (SecComputer_U.in.analog_inputs.spd_brk_lever_pos < SecComputer_P.CompareToConstant_const_m);
     rtb_AND1_h = ((((SecComputer_U.in.analog_inputs.spd_brk_lever_pos > SecComputer_P.CompareToConstant15_const) ||
                     rtb_NOT_bl) && ((SecComputer_U.in.analog_inputs.thr_lever_1_pos <
@@ -807,7 +809,7 @@ void SecComputer::step()
       SecComputer_P.BitfromLabel3_bit_m, &rtb_Switch7_c);
     SecComputer_Y.out.discrete_outputs.batt_power_supply = (rtb_Switch7_c != 0U);
     SecComputer_MATLABFunction_e((rtb_y_a || (rtb_AND4_a || (rtb_Switch7_c != 0U))),
-      SecComputer_P.PulseNode_isRisingEdge_hj, &rtb_y_g, &SecComputer_DWork.sf_MATLABFunction_e3);
+      SecComputer_P.PulseNode_isRisingEdge_h, &rtb_y_g, &SecComputer_DWork.sf_MATLABFunction_e3);
     SecComputer_DWork.Delay_DSTATE_n = (rtb_AND1_h && (rtb_y_g || SecComputer_DWork.Delay_DSTATE_n));
     rtb_AND4_a = (SecComputer_U.in.analog_inputs.thr_lever_2_pos <= SecComputer_P.CompareToConstant8_const);
     SecComputer_DWork.Delay2_DSTATE = (rtb_NOT_bl && ((SecComputer_U.in.analog_inputs.thr_lever_1_pos <=
