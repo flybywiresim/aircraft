@@ -46,3 +46,9 @@ export enum RunwayDesignator {
   Right,
   True,
 }
+
+export function isRunway(o: any): o is Runway {
+  return (
+    typeof o === 'object' && o.sectionCode === SectionCode.Airport && o.subSectionCode === AirportSubsectionCode.Runways
+  );
+}

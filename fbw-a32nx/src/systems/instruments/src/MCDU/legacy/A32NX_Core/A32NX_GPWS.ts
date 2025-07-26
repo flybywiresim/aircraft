@@ -213,12 +213,10 @@ export class A32NX_GPWS {
     const isFlapModeOff = SimVar.GetSimVarValue('L:A32NX_GPWS_FLAP_OFF', 'Bool') === 1;
     const isLdgFlap3On = SimVar.GetSimVarValue('L:A32NX_GPWS_FLAPS3', 'Bool') === 1;
 
-    const sfccPositionWord = Arinc429Word.fromSimVarValue('L:A32NX_SFCC_SLAT_FLAP_ACTUAL_POSITION_WORD');
-    const isFlapsFull = sfccPositionWord.bitValueOr(22, false);
-    const isFlaps3 = sfccPositionWord.bitValueOr(21, false) && !isFlapsFull;
+    const sfccFap5 = SimVar.GetSimVarValue('L:A32NX_SFCC_FAP_5', 'Bool') === 1; // Flaps > 19deg
+    const sfccFap1 = SimVar.GetSimVarValue('L:A32NX_SFCC_FAP_1', 'Bool') === 1; // Flaps > 39deg
 
-    const areFlapsInLandingConfig =
-      !sfccPositionWord.isNormalOperation() || isFlapModeOff || (isLdgFlap3On ? isFlaps3 : isFlapsFull);
+    const areFlapsInLandingConfig = isFlapModeOff || (isLdgFlap3On ? sfccFap5 : sfccFap1);
     const isGearDownLocked = SimVar.GetSimVarValue('L:A32NX_LGCIU_1_LEFT_GEAR_DOWNLOCKED', 'Bool') === 1;
 
     // TODO only use this in the air?

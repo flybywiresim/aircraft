@@ -33,7 +33,7 @@ export class FixInfoLayer implements MapLayer<NdSymbol> {
       if (radials) {
         for (const radial of radials) {
           if (Number.isFinite(radial)) {
-            this.drawFixInfoRadial(context, rx, ry, Math.round(radial), mapParameters, '#000', 3.25);
+            this.drawFixInfoRadial(context, rx, ry, radial, mapParameters, '#000', 3.25);
           }
         }
       }
@@ -71,7 +71,7 @@ export class FixInfoLayer implements MapLayer<NdSymbol> {
       if (radials) {
         for (const radial of radials) {
           if (Number.isFinite(radial)) {
-            this.drawFixInfoRadial(context, rx, ry, Math.round(radial), mapParameters, '#0ff', 1.75);
+            this.drawFixInfoRadial(context, rx, ry, radial, mapParameters, '#0ff', 1.75);
           }
         }
       }

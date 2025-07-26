@@ -753,7 +753,7 @@ export class VerticalProfileManager {
     const isDesOrApprPhase = flightPhase === FmgcFlightPhase.Descent || flightPhase === FmgcFlightPhase.Approach;
     const isCruisePhase = flightPhase === FmgcFlightPhase.Cruise;
     const isCloseToDestination =
-      ((this.constraintReader.distanceToEnd ?? Infinity) > 150 && isCruisePhase) || isDesOrApprPhase;
+      ((this.constraintReader.distanceToEnd ?? Infinity) < 150 && isCruisePhase) || isDesOrApprPhase;
 
     if (!isManagedLateralMode || !isCloseToDestination) {
       return false;
