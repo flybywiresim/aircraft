@@ -194,6 +194,7 @@ export class CDUAtcVertRequestFansA {
 
   static ShowPage1(mcdu: LegacyAtsuPageInterface, data = CDUAtcVertRequestFansA.CreateDataBlock()) {
     mcdu.clearDisplay();
+    mcdu.page.currentStation = mcdu.page.ATCVertRequest;
 
     let climbTo = '[   ][color]cyan';
     let descentTo = '[   ][color]cyan';
@@ -446,6 +447,7 @@ export class CDUAtcVertRequestFansA {
 
   static ShowPage2(mcdu: LegacyAtsuPageInterface, data = CDUAtcVertRequestFansA.CreateDataBlock()) {
     mcdu.clearDisplay();
+    mcdu.page.Current = mcdu.page.ATCVertRequest;
 
     let climbStart = '[   ]/[   ][color]cyan';
     if (data.climbStart) {

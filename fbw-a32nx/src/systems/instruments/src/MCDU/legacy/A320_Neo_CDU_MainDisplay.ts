@@ -185,6 +185,13 @@ export class A320_Neo_CDU_MainDisplay
     AOCFreeText: 76,
     StepAltsPage: 77,
     ATCDepartReq: 78,
+    ATCCommMenu: 79,
+    ATCText: 80,
+    ATCProcedureRequest: 81,
+    ATCVertRequest: 82,
+    ATCLatRequest: 83,
+    ATCMessageModifyUM131: 84,
+    ATCContactRequest: 85,
   };
 
   private mcduServerClient?: McduServerClient;
@@ -1392,7 +1399,7 @@ export class A320_Neo_CDU_MainDisplay
 
   private onLsk(fncAction, fncActionDelay = this.getDelayBasic) {
     if (!fncAction) {
-      if (this.activeSystem === 'ATSU' && this.isDatalinkPage(this.page.Current)) {
+      if (this.activeSystem === 'ATSU' && this.isDatalinkATCPage(this.page.Current)) {
         //FIXME Should be handled by the subsystem itself
         this.setScratchpadMessage(NXSystemMessages.keyNotActive);
       }
@@ -1635,7 +1642,7 @@ export class A320_Neo_CDU_MainDisplay
     this.bus.pub('troubleshooting_log_error', String(msg), true, false);
   }
 
-  private isDatalinkPage(page: number): boolean {
+  private isDatalinkATCPage(page: number): boolean {
     return (
       page === this.page.ATCMenu ||
       page === this.page.ATCAtis ||
@@ -1653,7 +1660,13 @@ export class A320_Neo_CDU_MainDisplay
       page === this.page.ATCEmergency ||
       page === this.page.ATCComLastId ||
       page === this.page.ATCDepartReq ||
-      page === this.page.ATSUDatalinkStatus
+      page === this.page.ATCCommMenu ||
+      page === this.page.ATCText ||
+      page === this.page.ATCProcedureRequest ||
+      page === this.page.ATCVertRequest ||
+      page === this.page.ATCLatRequest ||
+      page === this.page.ATCMessageModifyUM131 ||
+      page === this.page.ATCContactRequest
     );
   }
 }
