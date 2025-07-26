@@ -79,6 +79,7 @@ export class ATCCOMMessage extends McduMessage {
  */
 export const NXSystemMessages = {
   awyWptDisagree: new TypeIMessage('AIRWAY / WPT DISAGREE'),
+  crzFlAboveMaxFL: new TypeIIMessage('CRZ FL ABOVE MAX FL', false),
   cancelAtisUpdate: new TypeIMessage('CANCEL AUTO UPDATE FIRST'),
   checkMinFuelAtDest: new TypeIIMessage('CHECK MIN FUEL AT DEST'),
   checkSpeedMode: new TypeIIMessage('CHECK SPD MODE'),
