@@ -9,6 +9,9 @@ import { OitSimvars } from '../OitSimvarPublisher';
 export class SecureCommunicationInterface implements Instrument {
   private readonly subscriptions: Subscription[] = [];
 
+  private readonly fromAircraftSubscriptions: Subscription[] = [];
+  private readonly toAircraftSubscriptions: Subscription[] = [];
+
   private readonly sub = this.bus.getSubscriber<
     ResetPanelSimvars & OitSimvars & FmsData & AdrBusEvents & FwcBusEvents & ClockEvents
   >();
@@ -47,7 +50,9 @@ export class SecureCommunicationInterface implements Instrument {
 
   /** @inheritdoc */
   init(): void {
-    this.subscriptions.push(
+    this.subscriptions.push(this.nssDataToAvncsOff, this.zuluTime);
+
+    this.fromAircraftSubscriptions.push(
       this.fltNumber,
       this.fltOrigin,
       this.fltDestination,
@@ -55,7 +60,13 @@ export class SecureCommunicationInterface implements Instrument {
       this.airspeed,
       this.fwcDiscreteWord126,
       this.onGround,
+      this.doorsOpen,
+      this.fuelQuantity,
+      this.fuelWeightPerGallon,
+      this.fuelWeight,
     );
+
+    this.nssDataToAvncsOff.sub((v) => this.toAircraftSubscriptions.forEach((s) => (v ? s.pause() : s.resume())));
   }
 
   /** @inheritdoc */
@@ -63,6 +74,14 @@ export class SecureCommunicationInterface implements Instrument {
 
   destroy() {
     for (const s of this.subscriptions) {
+      s.destroy();
+    }
+
+    for (const s of this.fromAircraftSubscriptions) {
+      s.destroy();
+    }
+
+    for (const s of this.toAircraftSubscriptions) {
       s.destroy();
     }
   }

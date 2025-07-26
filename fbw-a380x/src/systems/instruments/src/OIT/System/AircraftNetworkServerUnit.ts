@@ -14,7 +14,7 @@ import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
 import { A380Failure } from '@failures';
 import { ResetPanelSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/ResetPanelPublisher';
 import { OitSimvars } from '../OitSimvarPublisher';
-import { SecureCommunicationInterface } from './SecuredCommunicationInterface';
+import { SecureCommunicationInterface } from './SecureCommunicationInterface';
 
 type AnsuIndex = 1 | 2;
 
