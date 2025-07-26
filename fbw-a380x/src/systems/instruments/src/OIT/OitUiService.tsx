@@ -1,11 +1,11 @@
 //  Copyright (c) 2025 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { EventBus, Subject } from '@microsoft/msfs-sdk';
+import { Subject } from '@microsoft/msfs-sdk';
 
 export enum OitSystem {
   None = '',
-  Nss = 'nss',
+  NssAvncs = 'nss-avncs',
   FltOps = 'flt-ops',
 }
 
@@ -23,10 +23,7 @@ export interface OitUriInformation {
  * Handles navigation (and potentially other aspects) for OIT pages
  */
 export class OitUiService {
-  constructor(
-    public captOrFo: 'CAPT' | 'FO',
-    private readonly bus: EventBus,
-  ) {}
+  constructor(public captOrFo: 'CAPT' | 'FO') {}
 
   public readonly activeUri = Subject.create<OitUriInformation>({
     uri: '',
@@ -36,6 +33,10 @@ export class OitUiService {
   });
 
   private navigationStack: string[] = [];
+  private navigationForwardStack: string[] = [];
+
+  public readonly fltOpsLoginScreenVisible = Subject.create(true);
+  public readonly nssAvncsLoginScreenVisible = Subject.create(true);
 
   public parseUri(uri: string): OitUriInformation {
     const uriParts = uri.split('/');
@@ -49,8 +50,8 @@ export class OitUiService {
 
   /**
    * Navigate to OIT page.
-   * @param uri The URI to navigate to. Format: sys/category/page, e.g. fms/active/init represents ACTIVE/INIT page from the FMS. Use URI 'back' for returning to previous page.
-   * In theory, one can use anything after a third slash for intra-page deep linking: fms/active/perf/appr could link to the approach PERF page.
+   * @param uri The URI to navigate to. Use URI 'back' for returning to previous page.
+   * Sometimes (e.g. for nss-avncs/company-com), another local navigator will handle the sub-navigation.
    */
   public navigateTo(uri: string): void {
     let nextUri: string;
@@ -69,10 +70,21 @@ export class OitUiService {
       if (this.navigationStack.length < 2) {
         return;
       }
-      this.navigationStack.pop();
+      const nextPage = this.navigationStack.pop();
+      if (nextPage) {
+        this.navigationForwardStack.push(nextPage);
+      }
+      nextUri = this.navigationStack[this.navigationStack.length - 1];
+    } else if (uri === 'forward') {
+      const nextPage = this.navigationForwardStack.pop();
+      if (!nextPage) {
+        return;
+      }
+      this.navigationStack.push(nextPage);
       nextUri = this.navigationStack[this.navigationStack.length - 1];
     } else {
       this.navigationStack.push(uri);
+      this.navigationForwardStack = []; // Clear forward stack
       nextUri = uri;
     }
 
@@ -85,5 +97,12 @@ export class OitUiService {
    */
   public canGoBack() {
     return this.navigationStack.length > 1;
+  }
+
+  /*
+   * Whether one can navigate forward
+   */
+  public canGoForward() {
+    return this.navigationForwardStack.length > 0;
   }
 }

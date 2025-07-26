@@ -130,6 +130,11 @@
       "A380X.TOOLTIPS.DOORS_OPEN_CLOSE": "Open or close passenger door",
       "A380X.TOOLTIPS.DOORS_ARM_DISARM": "Arm or disarm slides for passenger door",
 
+      "A380X.TOOLTIPS.OIT_SIDE_NSS_AVNCS": "OIT side set to NSS AVNCS (company com)",
+      "A380X.TOOLTIPS.OIT_SIDE_NSS_FLTOPS": "OIT side set to FLT OPS (charts, performance calc., OFP)",
+      "A380X.TOOLTIPS.OIT_LAPTOP_POWER_ON": "Laptop used for OIT FLT OPS is switched on",
+      "A380X.TOOLTIPS.OIT_LAPTOP_POWER_OFF": "Laptop used for OIT FLT OPS is switched off",
+
       "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "Adjust selected heading to the left (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
       "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "Adjust selected heading to the right  (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)"
     }
