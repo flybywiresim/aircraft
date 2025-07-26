@@ -3153,7 +3153,7 @@ export class PseudoFWC {
 
     // Update failuresLeft list in case failure has been resolved
     for (const [key, value] of Object.entries(this.ewdMessageFailures)) {
-      if (!value.simVarIsActive.get() || value.flightPhaseInhib.some((e) => e === flightPhase)) {
+      if (!value.simVarIsActive.get()) {
         failureKeysLeft = failureKeysLeft.filter((e) => e !== key);
         recallFailureKeys = recallFailureKeys.filter((e) => e !== key);
       }
@@ -3167,14 +3167,14 @@ export class PseudoFWC {
 
     // Failures first
     for (const [key, value] of Object.entries(this.ewdMessageFailures)) {
-      if (value.flightPhaseInhib.some((e) => e === flightPhase)) {
-        continue;
-      }
-
       // new warning?
       const newWarning =
         (value.side === 'LEFT' && !this.failuresLeft.includes(key) && !recallFailureKeys.includes(key)) ||
         (value.side === 'RIGHT' && !this.failuresRight.includes(key));
+
+      if (newWarning && value.flightPhaseInhib.some((e) => e === flightPhase)) {
+        continue;
+      }
 
       // consider monitor input confirm time (0.3 sec)
       if (value.simVarIsActive.get() && simTime >= (this.ewdFailureActivationTime.get(key) ?? 0) + 0.3) {
