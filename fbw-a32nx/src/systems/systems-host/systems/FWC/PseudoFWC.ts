@@ -4002,6 +4002,7 @@ export class PseudoFWC {
       failure: 3,
       sysPage: -1,
       side: 'LEFT',
+      monitorConfirmTime: 0,
     },
     2700085: {
       // SLATS NOT IN TO CONFIG
