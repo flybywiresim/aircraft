@@ -53,6 +53,7 @@ export class CDUAtcProcedureRequest {
 
   static ShowPage(mcdu: LegacyAtsuPageInterface, data = CDUAtcProcedureRequest.CreateDataBlock()) {
     mcdu.clearDisplay();
+    mcdu.page.Current = mcdu.page.ATCProcedureRequest;
 
     let sid = '[   ][color]cyan';
     let star = '[   ][color]cyan';

@@ -41,6 +41,7 @@ export class CDUAtcTextFansB {
 
   static ShowPage(mcdu: LegacyAtsuPageInterface, messages, data = CDUAtcTextFansB.CreateDataBlock()) {
     mcdu.clearDisplay();
+    mcdu.page.Current = mcdu.page.ATCText;
 
     let erase = '\xa0ERASE';
     let reqDisplay = 'DCDU\xa0[color]cyan';

@@ -49,6 +49,7 @@ export class CDUAtcVertRequestFansB {
 
   static ShowPage(mcdu: LegacyAtsuPageInterface, data = CDUAtcVertRequestFansB.CreateDataBlock()) {
     mcdu.clearDisplay();
+    mcdu.page.Current = mcdu.page.ATCVertRequest;
 
     let climbTo = '[   ][color]cyan';
     let descentTo = '[   ][color]cyan';

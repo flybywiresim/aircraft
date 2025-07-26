@@ -29,6 +29,7 @@ export class CDUAtcMessageModifyUM131 {
     let cancel = '\xa0CANCEL';
     let addText = 'ADD TEXT\xa0';
     let transfer = 'DCDU\xa0';
+    mcdu.page.Current = mcdu.page.ATCMessageModifyUM131;
     if (CDUAtcMessageModifyUM131.CanUpdateMessage(data)) {
       cancel = '*CANCEL';
       addText = 'ADD TEXT>';

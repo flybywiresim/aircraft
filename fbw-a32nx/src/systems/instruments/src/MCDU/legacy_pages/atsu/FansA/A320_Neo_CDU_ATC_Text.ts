@@ -99,6 +99,7 @@ export class CDUAtcTextFansA {
 
   static ShowPage1(mcdu: LegacyAtsuPageInterface, messages = [], data = CDUAtcTextFansA.CreateDataBlock()) {
     mcdu.clearDisplay();
+    mcdu.page.Current = mcdu.page.ATCText;
 
     let erase = '\xa0ERASE';
     let reqDisplay = 'DCDU\xa0[color]cyan';
@@ -286,6 +287,7 @@ export class CDUAtcTextFansA {
 
   static ShowPage2(mcdu: LegacyAtsuPageInterface, messages = [], data = CDUAtcTextFansA.CreateDataBlock()) {
     mcdu.clearDisplay();
+    mcdu.page.Current = mcdu.page.ATCText;
 
     let freetext1 =
       '[\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0][color]cyan';
