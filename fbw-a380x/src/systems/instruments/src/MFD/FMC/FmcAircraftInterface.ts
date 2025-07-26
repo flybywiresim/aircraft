@@ -1732,10 +1732,13 @@ export class FmcAircraftInterface {
     }
 
     if (!Number.isFinite(fl)) {
-      this.fmc.addMessageToQueue(NXSystemMessages.notAllowed, undefined, undefined);
+      this.fmc.addMessageToQueue(NXSystemMessages.formatError, undefined, undefined);
       return false;
     }
-    if (fl > (this.fmc.getRecMaxFlightLevel() ?? maxCertifiedAlt / 100)) {
+
+    const flBelowMinOrMax = fl <= 0 || fl > maxCertifiedAlt / 100;
+
+    if (flBelowMinOrMax) {
       this.fmc.addMessageToQueue(NXSystemMessages.entryOutOfRange, undefined, undefined);
       return false;
     }
@@ -1749,12 +1752,10 @@ export class FmcAircraftInterface {
       return false;
     }
 
-    if (fl <= 0 || fl > (this.fmc.getRecMaxFlightLevel() ?? maxCertifiedAlt / 100)) {
-      this.fmc.addMessageToQueue(NXSystemMessages.entryOutOfRange, undefined, undefined);
-      return false;
-    }
-
     this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', fl);
+    if (fl > (this.fmc.getRecMaxFlightLevel() ?? -Infinity)) {
+      this.fmc.addMessageToQueue(NXSystemMessages.crzFlAboveMaxFL, undefined, undefined);
+    }
     this.onUpdateCruiseLevel(fl);
 
     return true;
