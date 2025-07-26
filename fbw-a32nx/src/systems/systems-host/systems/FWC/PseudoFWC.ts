@@ -32,6 +32,7 @@ import {
   NXLogicMemoryNode,
   NXLogicPulseNode,
   NXLogicTriggeredMonostableNode,
+  RegisteredSimVar,
   UpdateThrottler,
 } from '@flybywiresim/fbw-sdk';
 import { VerticalMode } from '@shared/autopilot';
@@ -99,6 +100,8 @@ export class PseudoFWC {
   >();
 
   private readonly fwsUpdateThrottler = new UpdateThrottler(125); // has to be > 100 due to pulse nodes
+
+  private readonly simTime = RegisteredSimVar.create<number>('E:SIMULATION TIME', SimVarValueType.Seconds);
 
   private keyEventManager: KeyEventManager;
 
@@ -1249,6 +1252,16 @@ export class PseudoFWC {
     private readonly bus: EventBus,
     private readonly instrument: BaseInstrument,
   ) {
+    for (const [key, item] of Object.entries(this.ewdMessageFailures)) {
+      item.simVarIsActive.sub((v) => {
+        if (v) {
+          this.ewdFailureActivationTime.set(key, this.simTime.get());
+        } else {
+          this.ewdFailureActivationTime.delete(key);
+        }
+      }, true);
+    }
+
     this.ewdMessageLinesLeft.forEach((ls, i) =>
       ls.sub((l) => {
         SimVar.SetSimVarValue(PseudoFWC.ewdMessageSimVarsLeft[i], 'string', l ?? '');
@@ -3150,6 +3163,8 @@ export class PseudoFWC {
     this.recallFailures.push(...recallFailureKeys);
     this.nonCancellableWarningCount = 0;
 
+    const simTime = this.simTime.get();
+
     // Failures first
     for (const [key, value] of Object.entries(this.ewdMessageFailures)) {
       if (value.flightPhaseInhib.some((e) => e === flightPhase)) {
@@ -3161,7 +3176,8 @@ export class PseudoFWC {
         (value.side === 'LEFT' && !this.failuresLeft.includes(key) && !recallFailureKeys.includes(key)) ||
         (value.side === 'RIGHT' && !this.failuresRight.includes(key));
 
-      if (value.simVarIsActive.get()) {
+      // consider monitor input confirm time (0.3 sec)
+      if (value.simVarIsActive.get() && simTime >= (this.ewdFailureActivationTime.get(key) ?? 0) + 0.3) {
         if (newWarning) {
           if (value.side === 'LEFT') {
             failureKeysLeft.push(key);
@@ -3435,6 +3451,8 @@ export class PseudoFWC {
       this.requestMasterCautionFromABrkOff = false;
     }
   }
+
+  private readonly ewdFailureActivationTime = new Map<keyof EWDMessageDict, number>();
 
   ewdMessageFailures: EWDMessageDict = {
     // 22 - AUTOFLIGHT
