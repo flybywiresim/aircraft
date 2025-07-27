@@ -2085,7 +2085,8 @@ export class FwsCore {
   private handlePowerChange(powered: boolean) {
     if (powered) {
       // Real time is 60 seconds, i.e. 60_000 ms; Real setting for DMC self test in EFB is 12 seconds.
-      const startupTime = parseInt(NXDataStore.get('CONFIG_SELF_TEST_TIME', '12')) * 5_000;
+      const coldAndDark = SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'bool');
+      const startupTime = coldAndDark ? parseInt(NXDataStore.get('CONFIG_SELF_TEST_TIME', '12')) * 5_000 : 0;
 
       this.startupTimer.schedule(() => {
         this.startupCompleted.set(true);
