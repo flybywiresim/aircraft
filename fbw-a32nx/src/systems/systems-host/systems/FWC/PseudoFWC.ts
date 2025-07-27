@@ -504,8 +504,6 @@ export class PseudoFWC {
 
   public readonly modeReversionMtrig2 = new NXLogicTriggeredMonostableNode(3, true);
 
-  public readonly modeReversionConfNode1 = new NXLogicConfirmNode(0.3, true);
-
   public readonly modeReversion = Subject.create(false);
 
   // AP/FD Capability Change
@@ -3025,10 +3023,7 @@ export class PseudoFWC {
     // AP/FD Reversion Triple Click
     this.modeReversionMtrig1.write(this.fmgc1DiscreteWord4.get().bitValueOr(28, false), deltaTime);
     this.modeReversionMtrig2.write(this.fmgc2DiscreteWord4.get().bitValueOr(28, false), deltaTime);
-
-    // This confirm node simulates the default monitor confirm time.
-    this.modeReversionConfNode1.write(this.modeReversionMtrig1.read() || this.modeReversionMtrig2.read(), deltaTime);
-    this.modeReversion.set(this.modeReversionConfNode1.read());
+    this.modeReversion.set(this.modeReversionMtrig1.read() || this.modeReversionMtrig2.read());
 
     /* SETTINGS */
 
