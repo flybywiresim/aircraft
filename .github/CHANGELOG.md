@@ -101,7 +101,7 @@
 1. [A380X/FMS] Added CHECK MIN FUEL AT DEST & DEST EFOB BELOW MIN message with associated amber EFOB color on MFD pages - @BravoMike99 (bruno_pt99)
 1. [A380X] Fixed wing taxi lights appearing black - @heclak (Heclak)
 1. [A380X] Fixed lighting issues in SU3 - @heclak (Heclak)
-1. [A32NX/FWS] Active warnings are no longer cleared when when entering an inhibited flight phase - @tracernz (Mike)
+1. [A32NX/FWS] Active warnings are no longer cleared when entering an inhibited flight phase - @tracernz (Mike)
 
 ## 0.13.0
 
