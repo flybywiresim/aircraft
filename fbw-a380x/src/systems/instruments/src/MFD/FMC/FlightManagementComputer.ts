@@ -450,7 +450,7 @@ export class FlightManagementComputer implements FmcInterface {
   public getTripFuel(): number | null {
     const destPred = this.guidanceController.vnavDriver.getDestinationPrediction();
     if (destPred) {
-      const fob = this.fmgc.getFOB() * 1_000;
+      const fob = this.fmgc.getFOB()! * 1_000;
       const destFuelKg = Units.poundToKilogram(destPred.estimatedFuelOnBoard);
       return fob - destFuelKg;
     }
@@ -463,7 +463,7 @@ export class FlightManagementComputer implements FmcInterface {
       if (this.flightPhase.get() === FmgcFlightPhase.Preflight) {
         // EXTRA = BLOCK - TAXI - TRIP - MIN FUEL DEST - RTE RSV
         return (
-          (this.enginesWereStarted.get() ? this.fmgc.getFOB() * 1_000 : this.fmgc.data.blockFuel.get() ?? 0) -
+          (this.enginesWereStarted.get() ? this.fmgc.getFOB()! * 1_000 : this.fmgc.data.blockFuel.get() ?? 0) -
           (this.fmgc.data.taxiFuel.get() ?? 0) -
           (this.getTripFuel() ?? 0) -
           (this.fmgc.data.minimumFuelAtDestination.get() ?? 0) -
@@ -996,6 +996,8 @@ export class FlightManagementComputer implements FmcInterface {
         this.acInterface.toSpeedsChecks();
         this.acInterface.checkForStepClimb();
         this.acInterface.checkTooSteepPath();
+        this.acInterface.checkDestEfobBelowMin();
+        this.acInterface.checkDestEfobBelowMinScratchPadMessage(throttledDt);
 
         const toFlaps = this.fmgc.getTakeoffFlapsSetting();
         if (toFlaps) {
@@ -1009,9 +1011,16 @@ export class FlightManagementComputer implements FmcInterface {
 
         const destPred = this.guidanceController.vnavDriver.getDestinationPrediction();
         if (destPred) {
-          this.acInterface.updateMinimums(destPred.distanceFromAircraft);
+          this.acInterface.updateDestinationPredictions(destPred);
+        } else {
+          this.acInterface.resetDestinationPredictions();
         }
         this.acInterface.updateIlsCourse(this.navigation.getNavaidTuner().getMmrRadioTuningStatus(1));
+        this.fmgc.data.alternateExists.set(this.flightPlanService.active.alternateDestinationAirport !== undefined);
+      } else {
+        this.acInterface.resetDestinationPredictions();
+        this.fmgc.data.alternateExists.set(false);
+        this.fmgc.data.alternateFuelPilotEntry.set(null);
       }
       this.checkZfwParams();
       this.updateMessageQueue();
