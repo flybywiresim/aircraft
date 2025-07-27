@@ -808,7 +808,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
     items: [
       // If the APU is off, and the APU battery is on
       {
-        name: 'WHEN APU NOT RQRD:',
+        name: 'WHEN APU NOT RQRD',
         sensed: false,
         condition: true,
       },

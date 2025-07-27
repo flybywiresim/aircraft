@@ -1264,7 +1264,7 @@ export const EcamDeferredProcAta313233: { [n: number]: DeferredProcedure } = {
       {
         name: 'WHEN L/G LOCKED DOWN OR AFTER 120S',
         condition: true,
-        sensed: true,
+        sensed: false,
       },
       {
         name: 'L/G LEVER',

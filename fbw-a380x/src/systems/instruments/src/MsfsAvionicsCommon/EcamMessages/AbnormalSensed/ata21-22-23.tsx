@@ -261,7 +261,7 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
         style: ChecklistLineStyle.Cyan,
       },
       {
-        name: 'WHEN DIFF PRESS<2PSI & FL<100/MEA-MORA :',
+        name: 'WHEN DIFF PRESS<2PSI & FL<100/MEA-MORA',
         sensed: true,
         condition: true,
       },
@@ -780,9 +780,11 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'OVRD',
       },
       {
-        name: 'VLV STILL FULL OPEN AFTER 60 s:',
+        name: 'VLV STILL FULL OPEN',
         sensed: true,
         condition: true,
+        time: 60,
+        appendTimeIfElapsed: false,
       },
       {
         name: 'MAX FL : 100/MEA',
@@ -1002,7 +1004,7 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
         style: ChecklistLineStyle.Cyan,
       },
       {
-        name: 'CAB ALT ABOVE 14000 FT:',
+        name: 'CAB ALT ABOVE 14000 FT',
         sensed: true,
         condition: true,
       },
@@ -1013,7 +1015,7 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
         level: 1,
       },
       {
-        name: 'DESCENT ESTABLISHED:',
+        name: 'DESCENT ESTABLISHED',
         sensed: true,
         condition: true,
       },
@@ -1024,7 +1026,7 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
         level: 1,
       },
       {
-        name: 'DIFF PR<2 PSI & FL < 100/MEA-MORA:',
+        name: 'DIFF PR<2 PSI & FL < 100/MEA-MORA',
         sensed: true,
         condition: true,
       },
@@ -1085,7 +1087,7 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
         style: ChecklistLineStyle.Cyan,
       },
       {
-        name: 'DIFF PRESS < 1 PSI & FL < 100/MEA :',
+        name: 'DIFF PRESS < 1 PSI & FL < 100/MEA ',
         sensed: true,
         condition: true,
       },
@@ -1327,7 +1329,7 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'MONITOR',
       },
       {
-        name: 'DIFF PRESS > 9.6 PSI :',
+        name: 'DIFF PRESS > 9.6 PSI',
         sensed: false,
         condition: true,
       },
@@ -1356,7 +1358,7 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
         level: 1,
       },
       {
-        name: 'WHEN DIFF PR < 2 PSI & FL < 100 / MEA :',
+        name: 'WHEN DIFF PR < 2 PSI & FL < 100 / MEA',
         sensed: false,
         condition: true,
         level: 1,

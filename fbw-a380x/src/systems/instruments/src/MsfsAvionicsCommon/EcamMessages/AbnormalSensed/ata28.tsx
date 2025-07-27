@@ -169,7 +169,7 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [
       {
-        name: 'IF NO FUEL LEAK',
+        name: 'NO FUEL LEAK',
         sensed: false,
         condition: true,
       },
@@ -222,7 +222,7 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [
       {
-        name: 'IF NO FUEL LEAK',
+        name: 'NO FUEL LEAK',
         sensed: false,
         condition: true,
       },
@@ -275,7 +275,7 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [
       {
-        name: 'IF NO FUEL LEAK',
+        name: 'NO FUEL LEAK',
         sensed: false,
         condition: true,
       },
@@ -328,7 +328,7 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [
       {
-        name: 'IF NO FUEL LEAK',
+        name: 'NO FUEL LEAK',
         sensed: false,
         condition: true,
       },
