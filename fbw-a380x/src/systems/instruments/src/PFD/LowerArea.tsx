@@ -618,9 +618,9 @@ class RudderTrimIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
           deltaTime,
         );
 
-        if (this.fwcFlightPhase.get() >= 2 && !gnd && this.engineFailedConfirmNode.read()) {
+        if (this.fwcFlightPhase.get() >= 3 && !gnd && this.engineFailedConfirmNode.read()) {
           this.engineHasFailed = true;
-        } else if (this.engineHasFailed && this.fwcFlightPhase.get() < 2) {
+        } else if (this.engineHasFailed && this.fwcFlightPhase.get() < 3) {
           this.engineHasFailed = false;
         }
 
