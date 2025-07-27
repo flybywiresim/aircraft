@@ -46,7 +46,7 @@ import {
   EcamDeferredProcedures,
   EcamLimitations,
   EcamMemos,
-  IsTimedItem,
+  isTimedItem,
   pfdMemoDisplay,
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { ProcedureLinesGenerator } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/ProcedureLinesGenerator';
@@ -1713,6 +1713,10 @@ export class FwsCore {
   public readonly eng2ShutDown = Subject.create(false);
   public readonly eng3ShutDown = Subject.create(false);
   public readonly eng4ShutDown = Subject.create(false);
+
+  public readonly phase12561112Inhibiion = [1, 2, 5, 6, 11, 12];
+
+  public readonly phase56Inhibition = [5, 6];
 
   public readonly fwdCargoTempRegulatorOff = Subject.create(false);
 
@@ -4520,29 +4524,11 @@ export class FwsCore {
     this.eng3PrimaryAbnormalParams.set(!this.eng3StartOrCrank.get() && this.engine3Master.get() && this.eng3Fail.get());
     this.eng4PrimaryAbnormalParams.set(!this.eng4StartOrCrank.get() && this.engine4Master.get() && this.eng4Fail.get());
 
-    const firePbShutDownPreCond = !this.aircraftOnGround.get() || this.flightPhase12Or1112.get();
-
     // ENG SHUTDOWN
-    this.eng1ShutDown.set(
-      !this.allEngFault.get() &&
-        ((this.fireButtonEng1.get() && firePbShutDownPreCond) ||
-          (!this.engine1Master.get() && !this.flightPhase12Or1112.get())),
-    );
-    this.eng2ShutDown.set(
-      !this.allEngFault.get() &&
-        ((this.fireButtonEng2.get() && firePbShutDownPreCond) ||
-          (!this.engine2Master.get() && !this.flightPhase12Or1112.get())),
-    );
-    this.eng3ShutDown.set(
-      !this.allEngFault.get() &&
-        ((this.fireButtonEng3.get() && firePbShutDownPreCond) ||
-          (!this.engine3Master.get() && !this.flightPhase12Or1112.get())),
-    );
-    this.eng4ShutDown.set(
-      !this.allEngFault.get() &&
-        ((this.fireButtonEng4.get() && firePbShutDownPreCond) ||
-          (!this.engine4Master.get() && !this.flightPhase12Or1112.get())),
-    );
+    this.eng1ShutDown.set(!this.allEngFault.get() && (this.fireButtonEng1.get() || !this.engine1Master.get()));
+    this.eng2ShutDown.set(!this.allEngFault.get() && (this.fireButtonEng2.get() || !this.engine2Master.get()));
+    this.eng3ShutDown.set(!this.allEngFault.get() && (this.fireButtonEng3.get() || !this.engine3Master.get()));
+    this.eng4ShutDown.set(!this.allEngFault.get() && (this.fireButtonEng4.get() || !this.engine4Master.get()));
 
     /* MASTER CAUT/WARN BUTTONS */
     if (masterCautionButtonLeft || masterCautionButtonRight) {
@@ -4781,7 +4767,7 @@ export class FwsCore {
               prevEl.itemsToShow[idx] !== itemsToShow[idx] ||
               prevEl.itemsActive[idx] !== itemsActive[idx] ||
               (prevEl.itemsChecked[idx] !== fusedChecked[idx] && item.sensed) ||
-              (IsTimedItem(item) !== undefined &&
+              (isTimedItem(item) !== undefined &&
                 itemsTimer !== undefined &&
                 prevEl.itemsTimeStamp !== undefined &&
                 prevEl.itemsTimeStamp[idx] !== itemsTimer[idx])

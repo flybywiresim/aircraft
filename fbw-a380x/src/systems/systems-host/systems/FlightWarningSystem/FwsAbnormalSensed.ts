@@ -3330,7 +3330,7 @@ export class FwsAbnormalSensed {
     },
     320800018: {
       // BRAKES HOT
-      flightPhaseInhib: [4, 5, 9, 10],
+      flightPhaseInhib: [4, 5, 9, 10, 11],
       simVarIsActive: this.fws.brakesHot,
       whichItemsToShow: () => [
         this.fws.phase112.get(),
@@ -4025,7 +4025,7 @@ export class FwsAbnormalSensed {
     },
     701800109: {
       // ENG 1 SHUTDOWN
-      flightPhaseInhib: [5, 6],
+      flightPhaseInhib: this.fws.phase12561112Inhibiion,
       simVarIsActive: this.fws.eng1ShutDown,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [
@@ -4053,7 +4053,7 @@ export class FwsAbnormalSensed {
     },
     701800110: {
       // ENG 2 SHUTDOWN
-      flightPhaseInhib: [5, 6],
+      flightPhaseInhib: this.fws.phase12561112Inhibiion,
       simVarIsActive: this.fws.eng2ShutDown,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [
@@ -4083,7 +4083,7 @@ export class FwsAbnormalSensed {
     },
     701800111: {
       // ENG 3 SHUTDOWN
-      flightPhaseInhib: [5, 6],
+      flightPhaseInhib: this.fws.phase12561112Inhibiion,
       simVarIsActive: this.fws.eng3ShutDown,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [
@@ -4113,7 +4113,7 @@ export class FwsAbnormalSensed {
     },
     701800112: {
       // ENG 4 SHUTDOWN
-      flightPhaseInhib: [5, 6],
+      flightPhaseInhib: this.fws.phase12561112Inhibiion,
       simVarIsActive: this.fws.eng4ShutDown,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [
@@ -4143,7 +4143,7 @@ export class FwsAbnormalSensed {
     701800029: {
       // ENG 1 FAIL
       simVarIsActive: this.fws.eng1Fail,
-      flightPhaseInhib: [5, 6],
+      flightPhaseInhib: this.fws.phase56Inhibition,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -4153,7 +4153,7 @@ export class FwsAbnormalSensed {
     701800030: {
       // ENG 2 FAIL
       simVarIsActive: this.fws.eng2Fail,
-      flightPhaseInhib: [5, 6],
+      flightPhaseInhib: this.fws.phase56Inhibition,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -4163,7 +4163,7 @@ export class FwsAbnormalSensed {
     701800031: {
       // ENG 3 FAIL
       simVarIsActive: this.fws.eng3Fail,
-      flightPhaseInhib: [5, 6],
+      flightPhaseInhib: this.fws.phase56Inhibition,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -4173,7 +4173,7 @@ export class FwsAbnormalSensed {
     701800032: {
       // ENG 4 FAIL
       simVarIsActive: this.fws.eng4Fail,
-      flightPhaseInhib: [5, 6],
+      flightPhaseInhib: this.fws.phase56Inhibition,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],

@@ -95,7 +95,7 @@ export class ProcedureLinesGenerator {
     proc: AbnormalProcedure | DeferredProcedure | NormalProcedure,
     itemsChecked: boolean[],
     itemsActive: boolean[],
-    itemsTimed?: number[],
+    itemsTimeStamp?: number[],
   ) {
     // Additional logic for conditions: Modify itemsActive based on condition activation status
     if (proc.items && proc.items.some((v) => isChecklistCondition(v))) {
@@ -110,8 +110,8 @@ export class ProcedureLinesGenerator {
               ? active &&
                 (itemsChecked[recI] ||
                   (isChecklistTimedCondition(parent) &&
-                    itemsTimed !== undefined &&
-                    ProcedureLinesGenerator.hasTimedItemElapsed(itemsTimed[recI], parent)))
+                    itemsTimeStamp !== undefined &&
+                    ProcedureLinesGenerator.hasTimedItemElapsed(itemsTimeStamp[recI], parent)))
               : active;
 
             if (isParentCondition) {
@@ -629,7 +629,7 @@ export class ProcedureLinesGenerator {
     if (item.name.substring(0, 4) === 'WHEN') {
       text += `.${item.name} :`;
     } else {
-      // TODO suport time only text in the future e.g. AFTER 30S
+      // TODO support time only text in the future e.g. AFTER 30S
       let timedText: string | null = undefined;
       const isTimedItem = isChecklistTimedCondition(item) || isChecklistTimedCondition(item);
       if (isTimedItem) {

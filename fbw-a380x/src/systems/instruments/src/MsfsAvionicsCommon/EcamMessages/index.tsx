@@ -667,7 +667,7 @@ export function isChecklistTimedCondition(c: AbstractChecklistItem): c is TimedC
   return isChecklistCondition(c) && (c as TimedChecklistCondition)?.time !== undefined;
 }
 
-export function IsTimedItem(c: AbstractChecklistItem): boolean {
+export function isTimedItem(c: AbstractChecklistItem): boolean {
   return isTimedCheckListAction(c) || isChecklistTimedCondition(c);
 }
 
