@@ -101,6 +101,13 @@
 1. [A380X/FMS] Added CHECK MIN FUEL AT DEST & DEST EFOB BELOW MIN message with associated amber EFOB color on MFD pages - @BravoMike99 (bruno_pt99)
 1. [A380X] Fixed wing taxi lights appearing black - @heclak (Heclak)
 1. [A380X] Fixed lighting issues in SU3 - @heclak (Heclak)
+1. [A380X/FWS] Add several abnormal non-sensed procedures (EMER DESCENT, EMER EVAC, ...) - @flogross89 (floridude)
+1. [A380X] Improve logic and architecture for INOP SYS, LIMITATIONs and INFOs - @flogross89 (floridude)
+1. [A380X/FG] Fix VLS increasing above VAPP for CONF 3 landings - @flogross89 (floridude)
+1. [A380X/FMS] Add DCT capability to AIRWAYS page - @flogross89 (floridude)
+1. [A380X] Various fixes in FMS and ECL - @flogross89 (floridude)
+1. [A380X/SD] Fix unit conversion in SD permanent area - @flogross89 (floridude)
+1. [A380X/OIT] Add initial implementation of OIT AVNCS side, including flight log and inbox page for COMPANY COM app - @flogross89 (floridude)
 
 ## 0.13.0
 
