@@ -35,6 +35,7 @@ import {
   NXLogicMemoryNode,
   NXLogicPulseNode,
   NXLogicTriggeredMonostableNode,
+  RegisteredSimVar,
   UpdateThrottler,
 } from '@flybywiresim/fbw-sdk';
 import { VerticalMode, LateralMode } from '@shared/autopilot';
@@ -577,6 +578,12 @@ export class FwsCore {
   public readonly approachCapabilityDowngradeSuppress = new NXLogicTriggeredMonostableNode(3, true);
 
   public readonly approachCapabilityDowngradeDebouncePulse = new NXLogicPulseNode(false);
+
+  public readonly modeReversionTripleClickSimvar = RegisteredSimVar.create<boolean>(
+    'L:A32NX_FMA_TRIPLE_CLICK_MODE_REVERSION',
+    SimVarValueType.Bool,
+  );
+  public readonly modeReversionTripleClickPulse = new NXLogicPulseNode(true);
 
   public readonly autoThrustEngaged = Subject.create(false);
 
@@ -2984,6 +2991,12 @@ export class FwsCore {
       this.soundManager.enqueueSound('tripleClick');
     }
     this.approachCapability.set(newCapability);
+
+    // FG mode reversion
+    this.modeReversionTripleClickPulse.write(this.modeReversionTripleClickSimvar.get(), deltaTime);
+    if (this.modeReversionTripleClickPulse.read()) {
+      this.soundManager.enqueueSound('tripleClick');
+    }
 
     // A/THR OFF
     const aThrEngaged = this.autoThrustStatus.get() === 2 || this.autoThrustMode.get() !== 0;
