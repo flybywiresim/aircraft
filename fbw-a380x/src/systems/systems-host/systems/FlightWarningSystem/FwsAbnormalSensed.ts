@@ -4023,9 +4023,10 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: -1,
     },
+    // ATA 70 Engines
     701800109: {
       // ENG 1 SHUTDOWN
-      flightPhaseInhib: this.fws.phase12561112Inhibiion,
+      flightPhaseInhib: this.fws.phase56Inhibition, // phase 1,2, 11 & 12 inhibited in logic for inop sys & secondary failures reusing
       simVarIsActive: this.fws.eng1ShutDown,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [
@@ -4053,7 +4054,7 @@ export class FwsAbnormalSensed {
     },
     701800110: {
       // ENG 2 SHUTDOWN
-      flightPhaseInhib: this.fws.phase12561112Inhibiion,
+      flightPhaseInhib: this.fws.phase56Inhibition,
       simVarIsActive: this.fws.eng2ShutDown,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [
@@ -4083,7 +4084,7 @@ export class FwsAbnormalSensed {
     },
     701800111: {
       // ENG 3 SHUTDOWN
-      flightPhaseInhib: this.fws.phase12561112Inhibiion,
+      flightPhaseInhib: this.fws.phase56Inhibition,
       simVarIsActive: this.fws.eng3ShutDown,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [
@@ -4113,7 +4114,7 @@ export class FwsAbnormalSensed {
     },
     701800112: {
       // ENG 4 SHUTDOWN
-      flightPhaseInhib: this.fws.phase12561112Inhibiion,
+      flightPhaseInhib: this.fws.phase56Inhibition,
       simVarIsActive: this.fws.eng4ShutDown,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [
@@ -4180,6 +4181,17 @@ export class FwsAbnormalSensed {
       sysPage: SdPages.Eng,
       failure: 2,
     },
+    701800151: {
+      // ALL ENGINES FAILURE
+      simVarIsActive: this.fws.allEnginesFailure,
+      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 10, 11, 12],
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      sysPage: SdPages.Eng,
+      failure: 3,
+    },
+
     // SECONDARY FAILURES
     999800001: {
       // *F/CTL

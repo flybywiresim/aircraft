@@ -1714,7 +1714,11 @@ export class FwsCore {
   public readonly eng3ShutDown = Subject.create(false);
   public readonly eng4ShutDown = Subject.create(false);
 
-  public readonly phase12561112Inhibiion = [1, 2, 5, 6, 11, 12];
+  public readonly eng1Out = Subject.create(false);
+  public readonly eng2Out = Subject.create(false);
+  public readonly eng3Out = Subject.create(false);
+  public readonly eng4Out = Subject.create(false);
+  public readonly phase12561112Inhibition = [1, 2, 5, 6, 11, 12];
 
   public readonly phase56Inhibition = [5, 6];
 
@@ -1747,7 +1751,7 @@ export class FwsCore {
     this.eng4PrimaryAbnormalParams,
   );
 
-  public readonly allEngFault = Subject.create(false);
+  public readonly allEnginesFailure = Subject.create(false);
 
   public readonly engine1Generator = Subject.create(false);
 
@@ -1854,6 +1858,54 @@ export class FwsCore {
     this.eng3ShutDown,
     this.eng4ShutDown,
   );
+
+  /** Inop SYS */
+
+  // GENERATORS // TODO add generator contractor open, idg disconnect & fault conditions
+  public readonly gen1Inop = MappedSubject.create(
+    ([phase121112, eng1Running]) => !phase121112 && !eng1Running,
+    this.flightPhase12Or1112,
+    this.engine1Running,
+  );
+
+  public readonly gen2Inop = MappedSubject.create(
+    ([phase121112, eng2Running]) => !phase121112 && !eng2Running,
+    this.flightPhase12Or1112,
+    this.engine2Running,
+  );
+
+  public readonly gen3Inop = MappedSubject.create(
+    ([phase121112, eng3Running]) => !phase121112 && !eng3Running,
+    this.flightPhase12Or1112,
+    this.engine3Running,
+  );
+
+  public readonly gen4Inop = MappedSubject.create(
+    ([phase121112, eng4Running]) => !phase121112 && !eng4Running,
+    this.flightPhase12Or1112,
+    this.engine4Running,
+  );
+
+  public readonly reverser2Inop = this.eng2Out; // TODO add power loss conditions, hydraulic loss
+
+  public readonly reverser3Inop = this.eng3Out; // TODO add power loss conditions, hydraulic loss
+
+  public readonly eng1BleedInop = this.eng1Out; // TODO add bleed inop conditions
+
+  public readonly eng2BleedInop = this.eng2Out; // TODO add bleed inop conditions
+
+  public readonly eng3BleedInop = this.eng3Out; // TODO add bleed inop conditions
+
+  public readonly eng4BleedInop = this.gen4Inop; // TODO add bleed inop conditions
+
+  // TODO disable when abnormal hydralic pressure
+  public readonly eng1HydraulicInop = this.gen1Inop;
+
+  public readonly eng2HydraulicInop = this.gen2Inop;
+
+  public readonly eng3HydraulicInop = this.gen3Inop;
+
+  public readonly eng4HydraulicInop = this.gen4Inop;
 
   private static pushKeyUnique(val: (state?: boolean[]) => string[] | undefined, pushTo: string[], state?: boolean[]) {
     if (val) {
@@ -2504,10 +2556,10 @@ export class FwsCore {
     this.engine3State.set(engine3StateSiMVar);
     this.engine4State.set(engine4StateSiMVar);
 
-    this.engine1Running.set(engine1StatesimVar == 1);
-    this.engine2Running.set(engine2StateSimVar == 1);
-    this.engine3Running.set(engine3StateSiMVar == 1);
-    this.engine4Running.set(engine4StateSiMVar == 1);
+    this.engine1Running.set(engine1StatesimVar === engineState.ON);
+    this.engine2Running.set(engine2StateSimVar === engineState.ON);
+    this.engine3Running.set(engine3StateSiMVar === engineState.ON);
+    this.engine4Running.set(engine4StateSiMVar === engineState.ON);
 
     this.oneEngineRunning.set(
       this.engine1Running.get() || this.engine2Running.get() || this.engine3Running.get() || this.engine4Running.get(),
@@ -2543,7 +2595,7 @@ export class FwsCore {
 
     this.apuBleedPbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON', SimVarValueType.Bool));
     const machBelow56 = this.machSelectedFromAdr.get() < 0.56;
-    const apuWithinEnvelope = this.adrPressureAltitude.get() < 22_500 && (machBelow56 || this.allEngFault.get());
+    const apuWithinEnvelope = this.adrPressureAltitude.get() < 22_500 && (machBelow56 || this.allEnginesFailure.get());
     this.apuBleedPbOnOver22500ft.set(this.apuBleedPbOn.get() && !apuWithinEnvelope);
 
     this.eng1BleedAbnormalOff.set(
@@ -3247,24 +3299,16 @@ export class FwsCore {
       engThreeOrFourTakeoffPower || (this.eng3Or4TakeoffPowerConfirm.read() && !raAbove1500),
     );
 
-    this.allEngFault.set(
+    this.allEnginesFailure.set(
       !this.aircraftOnGround.get() &&
-        ((this.fireButtonEng1.get() &&
-          this.fireButtonEng2.get() &&
-          this.fireButtonEng3.get() &&
-          this.fireButtonEng4.get()) ||
-          (!this.engine1ValueSwitch.get() &&
-            !this.engine2ValueSwitch.get() &&
-            !this.engine3ValueSwitch.get() &&
-            !this.engine4ValueSwitch.get()) ||
-          (this.engine1State.get() === 0 &&
-            this.engine2State.get() === 0 &&
-            this.engine3State.get() === 0 &&
-            this.engine4State.get() === 0) ||
-          (!this.engine1CoreAtOrAboveMinIdle.get() &&
-            !this.engine2CoreAtOrAboveMinIdle.get() &&
-            !this.engine3CoreAtOrAboveMinIdle.get() &&
-            !this.engine4CoreAtOrAboveMinIdle.get())),
+        !this.engine1Running.get() &&
+        !this.engine2Running.get() &&
+        !this.engine3Running.get() &&
+        !this.engine4Running.get() &&
+        this.eng1Out.get() &&
+        this.eng2Out.get() &&
+        this.eng3Out.get() &&
+        this.eng4Out.get(),
     );
 
     /* 22 - AUTOFLIGHT */
@@ -4458,7 +4502,7 @@ export class FwsCore {
 
     // ENG FAIL
     this.eng1Fail.set(
-      !this.allEngFault.get() &&
+      !this.allEnginesFailure.get() &&
         this.eng1FailMemoryNode.write(
           this.engine1Master.get() &&
             this.engine1State.get() !== engineState.STARTING &&
@@ -4470,7 +4514,7 @@ export class FwsCore {
     );
 
     this.eng2Fail.set(
-      !this.allEngFault.get() &&
+      !this.allEnginesFailure.get() &&
         this.eng2FailMemoryNode.write(
           this.engine2Master.get() &&
             this.engine2State.get() !== engineState.STARTING &&
@@ -4482,7 +4526,7 @@ export class FwsCore {
     );
 
     this.eng3Fail.set(
-      !this.allEngFault.get() &&
+      !this.allEnginesFailure.get() &&
         this.eng3FailMemoryNode.write(
           this.engine3Master.get() &&
             this.engine3State.get() !== engineState.STARTING &&
@@ -4493,7 +4537,7 @@ export class FwsCore {
         ),
     );
     this.eng4Fail.set(
-      !this.allEngFault.get() &&
+      !this.allEnginesFailure.get() &&
         this.eng4FailMemoryNode.write(
           this.engine4Master.get() &&
             this.engine4State.get() !== engineState.STARTING &&
@@ -4524,11 +4568,18 @@ export class FwsCore {
     this.eng3PrimaryAbnormalParams.set(!this.eng3StartOrCrank.get() && this.engine3Master.get() && this.eng3Fail.get());
     this.eng4PrimaryAbnormalParams.set(!this.eng4StartOrCrank.get() && this.engine4Master.get() && this.eng4Fail.get());
 
+    const engineShutdownPreCondition = !this.allEnginesFailure.get() && !this.flightPhase12Or1112.get();
+
     // ENG SHUTDOWN
-    this.eng1ShutDown.set(!this.allEngFault.get() && (this.fireButtonEng1.get() || !this.engine1Master.get()));
-    this.eng2ShutDown.set(!this.allEngFault.get() && (this.fireButtonEng2.get() || !this.engine2Master.get()));
-    this.eng3ShutDown.set(!this.allEngFault.get() && (this.fireButtonEng3.get() || !this.engine3Master.get()));
-    this.eng4ShutDown.set(!this.allEngFault.get() && (this.fireButtonEng4.get() || !this.engine4Master.get()));
+    this.eng1ShutDown.set(engineShutdownPreCondition && (this.fireButtonEng1.get() || !this.engine1Master.get()));
+    this.eng2ShutDown.set(engineShutdownPreCondition && (this.fireButtonEng2.get() || !this.engine2Master.get()));
+    this.eng3ShutDown.set(engineShutdownPreCondition && (this.fireButtonEng3.get() || !this.engine3Master.get()));
+    this.eng4ShutDown.set(engineShutdownPreCondition && (this.fireButtonEng4.get() || !this.engine4Master.get()));
+
+    this.eng1Out.set(this.eng1ShutDown.get() || this.eng1FailMemoryNode.read());
+    this.eng2Out.set(this.eng2ShutDown.get() || this.eng2FailMemoryNode.read());
+    this.eng3Out.set(this.eng3ShutDown.get() || this.eng3FailMemoryNode.read());
+    this.eng4Out.set(this.eng4ShutDown.get() || this.eng4FailMemoryNode.read());
 
     /* MASTER CAUT/WARN BUTTONS */
     if (masterCautionButtonLeft || masterCautionButtonRight) {

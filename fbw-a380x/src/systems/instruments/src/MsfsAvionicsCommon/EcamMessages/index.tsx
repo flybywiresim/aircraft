@@ -397,6 +397,8 @@ export const EcamInopSys: { [n: string]: string } = {
   240300034: '\x1b<4mTR 1',
   240300035: '\x1b<4mTR 2',
   240300036: '\x1b<4mTR ESS',
+  240300037: '\x1b<4mGEN 1+2',
+  240300038: '\x1b<4mGEN 3+4',
   260300001: '\x1b<4mAPU FIRE DET',
   260300002: '\x1b<4mENG 1 BLEED',
   260300003: '\x1b<4mENG 2 BLEED',
@@ -504,6 +506,10 @@ export const EcamInopSys: { [n: string]: string } = {
   290300020: '\x1b<4mY SYS OVHT DET',
   290300021: '\x1b<4mG HYD SYS',
   290300022: '\x1b<4mY HYD SYS',
+  290300023: '\x1b<4mG ENG 1 PMP A+B',
+  290300024: '\x1b<4mG ENG 2 PMP A+B',
+  290300025: '\x1b<4mY ENG 3 PMP A+B',
+  290300026: '\x1b<4mY ENG 4 PMP A+B',
   310300001: '\x1b<4mAUTO CALLOUT',
   310300002: '\x1b<4mFWS 1',
   310300003: '\x1b<4mFWS 2',
@@ -576,6 +582,9 @@ export const EcamInopSys: { [n: string]: string } = {
   340300046: '\x1b<4mTAWS SYS 1',
   340300047: '\x1b<4mTAWS SYS 2',
   340300048: '\x1b<4mTAWS SYS 1+2',
+  700300001: '\x1b<4mENG 2 REVERSER',
+  700300002: '\x1b<4mENG 3 REVERSER',
+  700300003: '\x1b<4mENG 2+3 REVERSERs',
 };
 
 export enum ChecklistLineStyle {

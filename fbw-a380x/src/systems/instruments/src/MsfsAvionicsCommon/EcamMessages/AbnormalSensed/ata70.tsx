@@ -930,7 +930,7 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   701800151: {
-    title: '\x1b<4m\x1b4mENG\x1bm ALL ENG FLAME OUT',
+    title: '\x1b<4m\x1b4mENG\x1bm ALL ENGINES FAILURE',
     sensed: true,
     items: [],
   },
