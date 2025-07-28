@@ -4891,24 +4891,22 @@ export class FwsCore {
         }
       }
 
-      if (newWarning) {
-        if (value.auralWarning?.get() === FwcAuralWarning.Crc) {
-          if (!this.auralCrcKeys.includes(key)) {
-            this.auralCrcActive.set(true);
-          }
-          auralCrcKeys.push(key);
+      if (value.auralWarning?.get() === FwcAuralWarning.Crc) {
+        if (!this.auralCrcKeys.includes(key)) {
+          this.auralCrcActive.set(true);
         }
+        auralCrcKeys.push(key);
+      }
 
-        if (value.auralWarning?.get() === FwcAuralWarning.SingleChime) {
-          if (!this.auralScKeys.includes(key)) {
-            this.auralSingleChimePending = true;
-          }
-          auralScKeys.push(key);
+      if (value.auralWarning?.get() === FwcAuralWarning.SingleChime) {
+        if (!this.auralScKeys.includes(key)) {
+          this.auralSingleChimePending = true;
         }
+        auralScKeys.push(key);
+      }
 
-        if (value.auralWarning?.get() === FwcAuralWarning.CavalryCharge) {
-          this.soundManager.enqueueSound('cavalryChargeCont');
-        }
+      if (value.auralWarning?.get() === FwcAuralWarning.CavalryCharge) {
+        this.soundManager.enqueueSound('cavalryChargeCont');
       }
     }
 
