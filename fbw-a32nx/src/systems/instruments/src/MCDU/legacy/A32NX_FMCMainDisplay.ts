@@ -437,7 +437,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
     this.navigationDatabaseService.activeDatabase.getDatabaseIdent().then((dbIdent) => (this.navDbIdent = dbIdent));
 
-    this.atsu?.init();
+    // FIXME move ATSU out of FMS. It can only communicate with the FMS by ARINC429 bus.
+    this.atsu = new FmsClient(this, this.flightPlanService);
+    this.atsu.init();
   }
 
   protected initVariables(resetTakeoffData = true) {
@@ -594,9 +596,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.navigation.requiredPerformance.clearPilotRnp();
     }
 
-    // FIXME WTF! Why create a whole new instance each time the FMS is cleared!
-    // ATSU data
-    this.atsu = new FmsClient(this, this.flightPlanService);
+    this.atsu?.onFmsReset();
 
     // Reset SimVars
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'knots', 0);
@@ -719,7 +719,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     //    SimVar.SetSimVarValue("H:A320_Neo_FCU_SPEED_PULL", "boolean", 1);
     // flight plan
     this.resetCoroute();
-    this.atsu.resetAtisAutoUpdate();
     await this.flightPlanService.reset();
     // stored data
     this.dataManager.deleteAllStoredWaypoints();
