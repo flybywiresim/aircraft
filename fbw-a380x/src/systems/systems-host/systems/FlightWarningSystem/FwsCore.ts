@@ -4657,7 +4657,8 @@ export class FwsCore {
           this.eng3FireDetected.get() ||
           this.eng4FireDetected.get() ||
           this.mlgFireDetected.get() ||
-          this.smokeFumesActivated.get()),
+          this.smokeFumesActivated.get() ||
+          this.allEnginesFailure.get()),
     );
 
     const flightPhase = this.flightPhase.get();
