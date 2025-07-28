@@ -68,6 +68,8 @@ export interface FmsErrorMessage {
   onClearOverride: () => void;
 }
 
+export const FMS_CYCLE_TIME = 250; // ms
+
 /*
  * Handles navigation (and potentially other aspects) for MFD pages
  */
@@ -114,7 +116,7 @@ export class FlightManagementComputer implements FmcInterface {
     return this.#fmgc;
   }
 
-  private fmsUpdateThrottler = new UpdateThrottler(250);
+  private fmsUpdateThrottler = new UpdateThrottler(FMS_CYCLE_TIME);
 
   private efisInterfaces = {
     L: new EfisInterface('L', this.flightPlanService),
@@ -1200,12 +1202,34 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   public enterEngineOut() {
-    // Update managed speed targets
+    // Managed speed targets are handled in FmcAircraftInterface.updateManagedSpeed()
+
     // Update drift-down altitude if in CRZ phase
+    // FIXME need to add drift-down PWP to fmsv2
+
     // Delete pre-selected speeds
-    // Delete planned altitude steps
+    this.fmgc.data.climbPreSelSpeed.set(null);
+    this.fmgc.data.cruisePreSelSpeed.set(null);
+    this.fmgc.data.cruisePreSelMach.set(null);
+    this.fmgc.data.descentPreSelSpeed.set(null);
+
+    // Delete planned/future altitude steps
+    this.flightPlanService.active.allLegs
+      .filter(
+        (l, index) =>
+          l.isDiscontinuity === false && index >= this.flightPlanService.active.activeLegIndex && l.cruiseStep,
+      )
+      .forEach((l) => {
+        if (l.isDiscontinuity === false) {
+          l.cruiseStep = undefined;
+        }
+      });
+
     // Delete time constraints
+    // no-op
+
     // Display PERF page
+    this.mfdReference?.uiService.navigateTo('fms/active/perf');
   }
 
   public exitEngineOut() {
