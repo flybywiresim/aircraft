@@ -336,6 +336,9 @@ export class FmgcData {
    */
   public readonly estimatedTakeoffTime = Subject.create<number | null>(null);
 
+  /** Indicates OEI situation */
+  public readonly engineOut = Subject.create(false);
+
   private static readonly DEFAULT_SETTINGS = new FmgcData();
 
   public reset(): void {

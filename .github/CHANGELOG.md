@@ -101,6 +101,8 @@
 1. [A380X/FMS] Added CHECK MIN FUEL AT DEST & DEST EFOB BELOW MIN message with associated amber EFOB color on MFD pages - @BravoMike99 (bruno_pt99)
 1. [A380X] Fixed wing taxi lights appearing black - @heclak (Heclak)
 1. [A380X] Fixed lighting issues in SU3 - @heclak (Heclak)
+1. [A380X/FG] Fix SRS disengagement conditions for eng 3&4 OEI - @flogross89 (floridude)
+1. [A380X/FMS] Add some EO indications for the FMS - @flogross89 (floridude)
 
 ## 0.13.0
 

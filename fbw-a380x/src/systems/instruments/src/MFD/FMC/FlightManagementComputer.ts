@@ -490,8 +490,14 @@ export class FlightManagementComputer implements FmcInterface {
     return Math.min(A380AltitudeUtils.calculateRecommendedMaxAltitude(gw, isaTempDeviation), maxCertifiedAlt) / 100;
   }
 
+  /** @inheritdoc */
   public getOptFlightLevel(): number | null {
-    return Math.floor((0.96 * (this.getRecMaxFlightLevel() ?? maxCertifiedAlt / 100)) / 5) * 5; // TODO remove magic
+    return Math.floor((0.96 * (this.getRecMaxFlightLevel() ?? maxCertifiedAlt / 100)) / 5) * 5; // FIXME remove magic
+  }
+
+  /** @inheritdoc */
+  public getEoMaxFlightLevel(): number | null {
+    return Math.floor((0.8 * (this.getRecMaxFlightLevel() ?? maxCertifiedAlt / 100)) / 5) * 5; // FIXME remove magic
   }
 
   private initSimVars() {
@@ -998,6 +1004,7 @@ export class FlightManagementComputer implements FmcInterface {
         this.acInterface.checkTooSteepPath();
         this.acInterface.checkDestEfobBelowMin();
         this.acInterface.checkDestEfobBelowMinScratchPadMessage(throttledDt);
+        this.acInterface.checkEngineOut();
 
         const toFlaps = this.fmgc.getTakeoffFlapsSetting();
         if (toFlaps) {
@@ -1190,6 +1197,19 @@ export class FlightManagementComputer implements FmcInterface {
       descentProfileVd,
       trackChangesSignificantlyAtDistance,
     );
+  }
+
+  public enterEngineOut() {
+    // Update managed speed targets
+    // Update drift-down altitude if in CRZ phase
+    // Delete pre-selected speeds
+    // Delete planned altitude steps
+    // Delete time constraints
+    // Display PERF page
+  }
+
+  public exitEngineOut() {
+    // Restore long-term guidance targets
   }
 
   async swapNavDatabase(): Promise<void> {

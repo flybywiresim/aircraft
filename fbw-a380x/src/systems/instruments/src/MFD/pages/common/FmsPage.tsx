@@ -26,6 +26,8 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
 
   protected readonly secActive = Subject.create<boolean>(false);
 
+  protected readonly eoActive = Subject.create<boolean>(false);
+
   protected readonly activeFlightPhase = Subject.create<FmgcFlightPhase>(FmgcFlightPhase.Preflight);
 
   // protected mfdInViewConsumer: Consumer<boolean>;
@@ -88,6 +90,13 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
         if (data.planIndex === this.loadedFlightPlan?.index || data.targetPlanIndex === this.loadedFlightPlan?.index) {
           this.onFlightPlanChanged();
         }
+      }),
+    );
+
+    this.subs.push(
+      this.props.fmcService.masterFmcChanged.sub(() => {
+        // Check if master FMC exists, re-route subjects
+        this.props.fmcService.master?.fmgc.data.engineOut.pipe(this.eoActive);
       }),
     );
 
@@ -208,7 +217,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
       <ActivePageTitleBar
         activePage={this.activePageTitle}
         offset={Subject.create('')}
-        eoIsActive={Subject.create(false)}
+        eoIsActive={this.eoActive}
         tmpyIsActive={this.tmpyActive}
       />
     );

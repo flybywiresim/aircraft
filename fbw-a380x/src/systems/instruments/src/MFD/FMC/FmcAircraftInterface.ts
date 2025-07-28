@@ -2057,6 +2057,16 @@ export class FmcAircraftInterface {
             (this.radioAlt.get() ?? 0) > 800)),
     );
   }
+
+  checkEngineOut() {
+    if (!this.fmgc.data.engineOut.get() && this.fmgc.isFlying() && !this.fmgc.isAllEngineOn()) {
+      this.fmgc.data.engineOut.set(true);
+    }
+
+    if (this.fmgc.data.engineOut.get() && this.fmgc.isAllEngineOn()) {
+      this.fmgc.data.engineOut.set(false);
+    }
+  }
 }
 
 class FmArinc429OutputWord extends Arinc429Word {

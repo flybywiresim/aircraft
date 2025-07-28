@@ -47,6 +47,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private activateApprButton = FSComponent.createRef<HTMLDivElement>();
 
+  private clearEoConfirmationDialogVisible = Subject.create<boolean>(false);
+
+  private clearEoButton = FSComponent.createRef<HTMLDivElement>();
+
   private managedSpeedActive = Subject.create<boolean>(false);
 
   private previousFmsFlightPhase: FmgcFlightPhase | null = null;
@@ -59,6 +63,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   private recMaxFl = Subject.create<string>('---');
 
   private optFl = Subject.create<string>('---');
+
+  private eoMaxFl = Subject.create<string>('---');
 
   private flightPhasesSelectedPageIndex = Subject.create(0);
 
@@ -739,6 +745,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     );
 
     this.subs.push(
+      this.eoActive.sub((v) => (this.clearEoButton.instance.style.visibility = v ? 'visible' : 'hidden'), true),
+    );
+
+    this.subs.push(
       this.toSelectedFlapsIndex.sub((v) => {
         // Convert to FlapConf
         if (v != null) {
@@ -1105,7 +1115,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
           {super.render()}
           {/* begin page content */}
           <div class="mfd-page-container">
-            <div style="margin: 15px; display: flex; justify-content: space-between;">
+            <div style="margin: 15px; display: grid; grid-template-columns: 1fr 1fr 1fr; justify-content: space-between;">
               <div class="mfd-label-value-container">
                 <span class="mfd-label mfd-spacing-right">CRZ</span>
                 <InputField<number>
@@ -1129,6 +1139,13 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                 <span class="mfd-label mfd-spacing-right">REC MAX</span>
                 <span class="mfd-label-unit mfd-unit-leading">FL</span>
                 <span class="mfd-value">{this.recMaxFl}</span>
+              </div>
+              <div />
+              <div />
+              <div class="mfd-label-value-container">
+                <span class={{ 'mfd-label': true, 'mfd-spacing-right': true, amber: this.eoActive }}>EO MAX</span>
+                <span class="mfd-label-unit mfd-unit-leading">FL</span>
+                <span class="mfd-value">{this.eoMaxFl}</span>
               </div>
             </div>
             <TopTabNavigator
@@ -2838,6 +2855,20 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                 >
                   {'ACTIVATE APPR ?'}
                 </ConfirmationDialog>
+                <ConfirmationDialog
+                  visible={this.clearEoConfirmationDialogVisible}
+                  cancelAction={() => {
+                    this.clearEoConfirmationDialogVisible.set(false);
+                  }}
+                  confirmAction={() => {
+                    this.clearEoConfirmationDialogVisible.set(false);
+                    this.props.fmcService.master?.fmgc.data.engineOut.set(false);
+                  }}
+                  contentContainerStyle="width: 340px; height: 165px; bottom: -6px; left: -5px;"
+                  amberLabel={true}
+                >
+                  {'CLEAR EO ?<br />(BACK TO ALL ENGs COMPUTATION)'}
+                </ConfirmationDialog>
               </div>
               <div ref={this.activateApprButton} style="margin-right: 5px;">
                 <Button
@@ -2857,6 +2888,22 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
               </div>
               <div>
                 <Button label="POS MONITOR" onClick={() => console.log('POS MONITOR')} />
+              </div>
+              <div ref={this.clearEoButton} style="margin-right: 5px;">
+                <Button
+                  label={Subject.create(
+                    <div style="display: flex; flex-direction: row; justify-content: space-between;">
+                      <span style="text-align: center; vertical-align: center; margin-right: 10px;">
+                        CLEAR
+                        <br />
+                        EO
+                      </span>
+                      <span style="display: flex; align-items: center; justify-content: center;">*</span>
+                    </div>,
+                  )}
+                  onClick={() => this.clearEoConfirmationDialogVisible.set(true)}
+                  buttonStyle="color: #e68000; padding-right: 2px;"
+                />
               </div>
               <div style="flex: 1" />
             </div>
