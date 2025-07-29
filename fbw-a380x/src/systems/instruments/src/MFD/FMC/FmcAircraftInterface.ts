@@ -23,7 +23,6 @@ import {
   HUDSyntheticRunway,
   GenericDataListenerSync,
   NXLogicConfirmNode,
-
 } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { MmrRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
