@@ -41,7 +41,7 @@ export const BingMap: React.FC<BingMapProps> = ({
       const ll = new LatLong(centerLla.lat, centerLla.long);
       const radius = range * RANGE_CONSTANT;
 
-      mapRef.current.setParams({ ll, radius });
+      mapRef.current.setParams({ lla: ll, radius });
 
       console.log(
         `[ReactBingMap (${mapId})] NetBingMap initialized and configured with config id # ${mapRef.current.m_configId} out of ${mapRef.current.m_configs.length} configs`,
@@ -54,7 +54,7 @@ export const BingMap: React.FC<BingMapProps> = ({
       const ll = new LatLong(centerLla.lat, centerLla.long);
       const radius = range * RANGE_CONSTANT;
 
-      mapRef.current.setParams({ ll, radius });
+      mapRef.current.setParams({ lla: ll, radius });
     }
   }, [range, centerLla]);
 
