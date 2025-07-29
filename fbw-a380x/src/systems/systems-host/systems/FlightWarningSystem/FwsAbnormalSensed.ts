@@ -4027,7 +4027,7 @@ export class FwsAbnormalSensed {
     701800109: {
       // ENG 1 SHUTDOWN
       flightPhaseInhib: this.fws.phase56Inhibition, // phase 1,2, 11 & 12 inhibited in logic for inop sys & secondary failures reusing
-      simVarIsActive: this.fws.eng1ShutDown,
+      simVarIsActive: this.fws.eng1ShutdownAbnormalSensed,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [
         !this.fws.tcasInop.get(),
@@ -4055,7 +4055,7 @@ export class FwsAbnormalSensed {
     701800110: {
       // ENG 2 SHUTDOWN
       flightPhaseInhib: this.fws.phase56Inhibition,
-      simVarIsActive: this.fws.eng2ShutDown,
+      simVarIsActive: this.fws.eng2ShutdownAbnormalSensed,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [
         !this.fws.tcasInop.get(),
@@ -4085,7 +4085,7 @@ export class FwsAbnormalSensed {
     701800111: {
       // ENG 3 SHUTDOWN
       flightPhaseInhib: this.fws.phase56Inhibition,
-      simVarIsActive: this.fws.eng3ShutDown,
+      simVarIsActive: this.fws.eng3ShutdownAbnormalSensed,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [
         !this.fws.tcasInop.get(),
@@ -4115,7 +4115,7 @@ export class FwsAbnormalSensed {
     701800112: {
       // ENG 4 SHUTDOWN
       flightPhaseInhib: this.fws.phase56Inhibition,
-      simVarIsActive: this.fws.eng4ShutDown,
+      simVarIsActive: this.fws.eng4ShutdownAbnormalSensed,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [
         !this.fws.tcasInop.get(),

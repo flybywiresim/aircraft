@@ -1641,10 +1641,15 @@ export class FwsCore {
 
   public readonly oneEngineRunning = Subject.create(false);
 
-  public readonly engine1Master = ConsumerSubject.create(this.sub.on('engine_master_1'), 0);
-  public readonly engine2Master = ConsumerSubject.create(this.sub.on('engine_master_2'), 0);
-  public readonly engine3Master = ConsumerSubject.create(this.sub.on('engine_master_3'), 0);
-  public readonly engine4Master = ConsumerSubject.create(this.sub.on('engine_master_4'), 0);
+  public readonly engine1Master = ConsumerSubject.create(this.sub.on('engine_master_1'), false);
+  public readonly engine2Master = ConsumerSubject.create(this.sub.on('engine_master_2'), false);
+  public readonly engine3Master = ConsumerSubject.create(this.sub.on('engine_master_3'), false);
+  public readonly engine4Master = ConsumerSubject.create(this.sub.on('engine_master_4'), false);
+
+  private readonly engine1masterOnPulseNode = new NXLogicPulseNode();
+  private readonly engine2masterOnPulseNode = new NXLogicPulseNode();
+  private readonly engine3masterOnPulseNode = new NXLogicPulseNode();
+  private readonly engine4masterOnPulseNode = new NXLogicPulseNode();
 
   public readonly engine1State = Subject.create(0);
   public readonly engine2State = Subject.create(0);
@@ -1699,20 +1704,56 @@ export class FwsCore {
     this.HPNEng4,
   );
 
+  public readonly allEnginesFailure = Subject.create(false);
+
   public readonly eng1Fail = Subject.create(false);
+  private readonly eng1NotStartingConfNode = new NXLogicConfirmNode(5, false);
+  private readonly eng1WasRunningMemoryNode = new NXLogicMemoryNode();
   private readonly eng1FailMemoryNode = new NXLogicMemoryNode();
+
   public readonly eng2Fail = Subject.create(false);
   private readonly eng2FailMemoryNode = new NXLogicMemoryNode();
+  private readonly eng2NotStartingConfNode = new NXLogicConfirmNode(5, false);
+  private readonly eng2WasRunningMemoryNode = new NXLogicMemoryNode();
 
   public readonly eng3Fail = Subject.create(false);
   private readonly eng3FailMemoryNode = new NXLogicMemoryNode();
+  private readonly eng3NotStartingConfNode = new NXLogicConfirmNode(5, false);
+  private readonly eng3WasRunningMemoryNode = new NXLogicMemoryNode();
+
   public readonly eng4Fail = Subject.create(false);
   private readonly eng4FailMemoryNode = new NXLogicMemoryNode();
+  private readonly eng4NotStartingConfNode = new NXLogicConfirmNode(5, false);
+  private readonly eng4WasRunningMemoryNode = new NXLogicMemoryNode();
 
-  public readonly eng1ShutDown = Subject.create(false);
-  public readonly eng2ShutDown = Subject.create(false);
-  public readonly eng3ShutDown = Subject.create(false);
-  public readonly eng4ShutDown = Subject.create(false);
+  private readonly eng1ShutDown = Subject.create(false);
+  private readonly eng2ShutDown = Subject.create(false);
+  private readonly eng3ShutDown = Subject.create(false);
+  private readonly eng4ShutDown = Subject.create(false);
+
+  public readonly eng1ShutdownAbnormalSensed = MappedSubject.create(
+    ([eng1ShutDown, allEngFailure]) => eng1ShutDown && !allEngFailure,
+    this.eng1ShutDown,
+    this.allEnginesFailure,
+  );
+
+  public readonly eng2ShutdownAbnormalSensed = MappedSubject.create(
+    ([eng2ShutDown, allEngFailure]) => eng2ShutDown && !allEngFailure,
+    this.eng2ShutDown,
+    this.allEnginesFailure,
+  );
+
+  public readonly eng3ShutdownAbnormalSensed = MappedSubject.create(
+    ([eng3ShutDown, allEngFailure]) => eng3ShutDown && !allEngFailure,
+    this.eng3ShutDown,
+    this.allEnginesFailure,
+  );
+
+  public readonly eng4ShutdownAbnormalSensed = MappedSubject.create(
+    ([eng4ShutDown, allEngFailure]) => eng4ShutDown && !allEngFailure,
+    this.eng4ShutDown,
+    this.allEnginesFailure,
+  );
 
   public readonly eng1Out = Subject.create(false);
   public readonly eng2Out = Subject.create(false);
@@ -1750,8 +1791,6 @@ export class FwsCore {
     this.eng3PrimaryAbnormalParams,
     this.eng4PrimaryAbnormalParams,
   );
-
-  public readonly allEnginesFailure = Subject.create(false);
 
   public readonly engine1Generator = Subject.create(false);
 
@@ -3299,18 +3338,6 @@ export class FwsCore {
       engThreeOrFourTakeoffPower || (this.eng3Or4TakeoffPowerConfirm.read() && !raAbove1500),
     );
 
-    this.allEnginesFailure.set(
-      !this.aircraftOnGround.get() &&
-        !this.engine1Running.get() &&
-        !this.engine2Running.get() &&
-        !this.engine3Running.get() &&
-        !this.engine4Running.get() &&
-        this.eng1Out.get() &&
-        this.eng2Out.get() &&
-        this.eng3Out.get() &&
-        this.eng4Out.get(),
-    );
-
     /* 22 - AUTOFLIGHT */
     const fm1DiscreteWord3 = Arinc429Word.fromSimVarValue('L:A32NX_FM1_DISCRETE_WORD_3');
     const fm2DiscreteWord3 = Arinc429Word.fromSimVarValue('L:A32NX_FM2_DISCRETE_WORD_3');
@@ -4501,11 +4528,46 @@ export class FwsCore {
     /** ATA 70- Engines */
 
     // ENG FAIL
+
+    // FIXME Workaround due to starting state only being set when ignitires kick in. Starting state signal from fadec should handle this
+    this.eng1NotStartingConfNode.write(
+      this.engine1State.get() !== engineState.STARTING && this.engine1Running.get(),
+      deltaTime,
+    );
+    this.eng1WasRunningMemoryNode.write(
+      this.eng1NotStartingConfNode.read(),
+      this.engine1masterOnPulseNode.write(this.engine1Master.get(), deltaTime),
+    );
+    this.eng2NotStartingConfNode.write(
+      this.engine2State.get() !== engineState.STARTING && this.engine2Running.get(),
+      deltaTime,
+    );
+    this.eng2WasRunningMemoryNode.write(
+      this.eng2NotStartingConfNode.read(),
+      this.engine2masterOnPulseNode.write(this.engine2Master.get(), deltaTime),
+    );
+    this.eng3NotStartingConfNode.write(
+      this.engine3Master.get() && this.engine3State.get() !== engineState.STARTING,
+      deltaTime,
+    );
+    this.eng3WasRunningMemoryNode.write(
+      this.eng3NotStartingConfNode.read(),
+      this.engine3masterOnPulseNode.write(this.engine3Master.get(), deltaTime),
+    );
+    this.eng4NotStartingConfNode.write(
+      this.engine4Master.get() && this.engine4State.get() !== engineState.STARTING,
+      deltaTime,
+    );
+    this.eng4WasRunningMemoryNode.write(
+      this.eng4NotStartingConfNode.read(),
+      this.engine4masterOnPulseNode.write(this.engine4Master.get(), deltaTime),
+    );
+
     this.eng1Fail.set(
       !this.allEnginesFailure.get() &&
         this.eng1FailMemoryNode.write(
           this.engine1Master.get() &&
-            this.engine1State.get() !== engineState.STARTING &&
+            this.eng1WasRunningMemoryNode.read() &&
             !this.fireButtonEng1.get() &&
             this.HPNEng1.get() < 50,
           this.engine1State.get() === engineState.ON ||
@@ -4517,7 +4579,7 @@ export class FwsCore {
       !this.allEnginesFailure.get() &&
         this.eng2FailMemoryNode.write(
           this.engine2Master.get() &&
-            this.engine2State.get() !== engineState.STARTING &&
+            this.eng2WasRunningMemoryNode.read() &&
             !this.fireButtonEng2.get() &&
             this.HPNEng2.get() < 50,
           this.engine2State.get() === engineState.ON ||
@@ -4529,7 +4591,7 @@ export class FwsCore {
       !this.allEnginesFailure.get() &&
         this.eng3FailMemoryNode.write(
           this.engine3Master.get() &&
-            this.engine3State.get() !== engineState.STARTING &&
+            this.eng3WasRunningMemoryNode.read() &&
             !this.fireButtonEng3.get() &&
             this.HPNEng3.get() < 50,
           this.engine3State.get() === engineState.ON ||
@@ -4540,7 +4602,7 @@ export class FwsCore {
       !this.allEnginesFailure.get() &&
         this.eng4FailMemoryNode.write(
           this.engine4Master.get() &&
-            this.engine4State.get() !== engineState.STARTING &&
+            this.eng4WasRunningMemoryNode.read() &&
             !this.fireButtonEng4.get() &&
             this.HPNEng4.get() < 50,
           this.engine4State.get() === engineState.ON ||
@@ -4568,7 +4630,7 @@ export class FwsCore {
     this.eng3PrimaryAbnormalParams.set(!this.eng3StartOrCrank.get() && this.engine3Master.get() && this.eng3Fail.get());
     this.eng4PrimaryAbnormalParams.set(!this.eng4StartOrCrank.get() && this.engine4Master.get() && this.eng4Fail.get());
 
-    const engineShutdownPreCondition = !this.allEnginesFailure.get() && !this.flightPhase12Or1112.get();
+    const engineShutdownPreCondition = !this.flightPhase12Or1112.get();
 
     // ENG SHUTDOWN
     this.eng1ShutDown.set(engineShutdownPreCondition && (this.fireButtonEng1.get() || !this.engine1Master.get()));
@@ -4580,6 +4642,18 @@ export class FwsCore {
     this.eng2Out.set(this.eng2ShutDown.get() || this.eng2FailMemoryNode.read());
     this.eng3Out.set(this.eng3ShutDown.get() || this.eng3FailMemoryNode.read());
     this.eng4Out.set(this.eng4ShutDown.get() || this.eng4FailMemoryNode.read());
+
+    this.allEnginesFailure.set(
+      !this.aircraftOnGround.get() &&
+        !this.engine1Running.get() &&
+        !this.engine2Running.get() &&
+        !this.engine3Running.get() &&
+        !this.engine4Running.get() &&
+        this.eng1Out.get() &&
+        this.eng2Out.get() &&
+        this.eng3Out.get() &&
+        this.eng4Out.get(),
+    );
 
     /* MASTER CAUT/WARN BUTTONS */
     if (masterCautionButtonLeft || masterCautionButtonRight) {

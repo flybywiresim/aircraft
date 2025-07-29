@@ -29,7 +29,7 @@ export class FwsLimitations {
   constructor(private fws: FwsCore) {}
   /** LIMITATIONS shown on SD */
   limitations: FwsLimitationsDict = {
-    2: {
+    1: {
       simVarIsActive: this.fws.landAsap,
       phase: FwsLimitationsPhases.AllPhases,
       pfd: true,
