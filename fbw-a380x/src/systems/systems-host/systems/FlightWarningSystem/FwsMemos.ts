@@ -1,10 +1,11 @@
-// Copyright (c) 2021-2024 FlyByWire Simulations
+// Copyright (c) 2025 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
 import { EcamMemos } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
-import { MappedSubject, Subscribable, SubscribableMapFunctions } from '@microsoft/msfs-sdk';
+import { MappedSubject, Subscribable, SubscribableMapFunctions, Subscription } from '@microsoft/msfs-sdk';
 import { FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
+import { isSubscription } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
 
 interface EwdMemoItem {
   flightPhaseInhib: number[];
@@ -21,6 +22,8 @@ export interface EwdMemoDict {
 }
 
 export class FwsMemos {
+  public readonly subscriptions: Subscription[] = [];
+
   constructor(private fws: FwsCore) {}
   /** MEMOs on right side of EWD */
   ewdMemos: EwdMemoDict = {
@@ -175,6 +178,22 @@ export class FwsMemos {
       codesToReturn: ['220000002'],
       memoInhibit: () => false,
     },
+    // FMS SWTG
+    221000001: {
+      flightPhaseInhib: [],
+      simVarIsActive: this.fws.fmsSwitchingNotNorm,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['221000001'],
+      memoInhibit: () => false,
+    },
+    // DEST EFOB
+    221000002: {
+      flightPhaseInhib: [],
+      simVarIsActive: this.fws.fmsDestEfob,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['221000002'],
+      memoInhibit: () => false,
+    },
     '230000002': {
       // F/O ON RMP 3
       flightPhaseInhib: [],
@@ -284,7 +303,7 @@ export class FwsMemos {
       // RAT OUT
       flightPhaseInhib: [],
       simVarIsActive: this.fws.ratDeployed.map((v) => v > 0),
-      whichCodeToReturn: () => [this.fws.flightPhase1211.get() ? 1 : 0],
+      whichCodeToReturn: () => [this.fws.flightPhase1211.get() ? 0 : 1],
       codesToReturn: ['242000001', '242000002'],
       memoInhibit: () => false,
     },
@@ -639,4 +658,22 @@ export class FwsMemos {
       leftSide: true,
     },
   };
+
+  public destroy(): void {
+    this.subscriptions.forEach((sub) => sub.destroy());
+
+    for (const key in this.ewdMemos) {
+      const memo = this.ewdMemos[key];
+      if (isSubscription(memo.simVarIsActive)) {
+        memo.simVarIsActive.destroy();
+      }
+    }
+
+    for (const key in this.ewdToLdgMemos) {
+      const memo = this.ewdToLdgMemos[key];
+      if (isSubscription(memo.simVarIsActive)) {
+        memo.simVarIsActive.destroy();
+      }
+    }
+  }
 }

@@ -16,7 +16,7 @@ export class VersionCheck {
   }
 
   public connectedCallback(): void {
-    // empty
+    AircraftGithubVersionChecker.setEditionLocalVar(this.aircraftProjectPrefix);
   }
 
   public startPublish(): void {
