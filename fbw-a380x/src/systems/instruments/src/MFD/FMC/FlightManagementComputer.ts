@@ -332,6 +332,16 @@ export class FlightManagementComputer implements FmcInterface {
       );
 
       this.subs.push(this.shouldBePreflightPhase, this.flightPhase, this.activePage);
+
+      this.subs.push(
+        this.fmgc.data.engineOut.sub((eo) => {
+          if (eo) {
+            this.enterEngineOut();
+          } else {
+            this.exitEngineOut();
+          }
+        }),
+      );
     }
 
     let lastUpdateTime = Date.now();
@@ -1006,7 +1016,7 @@ export class FlightManagementComputer implements FmcInterface {
         this.acInterface.checkTooSteepPath();
         this.acInterface.checkDestEfobBelowMin();
         this.acInterface.checkDestEfobBelowMinScratchPadMessage(throttledDt);
-        this.acInterface.checkEngineOut();
+        this.acInterface.checkEngineOut(throttledDt);
 
         const toFlaps = this.fmgc.getTakeoffFlapsSetting();
         if (toFlaps) {

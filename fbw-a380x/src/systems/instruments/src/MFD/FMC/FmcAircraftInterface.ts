@@ -21,6 +21,7 @@ import {
   NXDataStore,
   VerticalPathCheckpoint,
   NXLogicConfirmNode,
+  NXLogicPulseNode,
 } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { MmrRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
@@ -190,6 +191,8 @@ export class FmcAircraftInterface {
     this.radioAltitudeB,
     this.radioAltitudeC,
   );
+
+  private readonly engineFailurePulseNode = new NXLogicPulseNode();
 
   constructor(
     private bus: EventBus,
@@ -2076,8 +2079,9 @@ export class FmcAircraftInterface {
     );
   }
 
-  checkEngineOut() {
-    if (!this.fmgc.data.engineOut.get() && this.fmgc.isFlying() && !this.fmgc.isAllEngineOn()) {
+  checkEngineOut(deltaTime: number) {
+    this.engineFailurePulseNode.write(this.fmgc.isFlying() && !this.fmgc.isAllEngineOn(), deltaTime);
+    if (!this.fmgc.data.engineOut.get() && this.engineFailurePulseNode.read()) {
       this.fmgc.data.engineOut.set(true);
     }
 

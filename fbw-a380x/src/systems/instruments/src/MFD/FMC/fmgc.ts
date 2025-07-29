@@ -40,6 +40,11 @@ export enum TakeoffAntiIce {
   ENG_WINGS = 2,
 }
 
+export enum CostIndexMode {
+  LRC = 0,
+  ECON = 1,
+}
+
 export enum ClimbDerated {
   NONE = 0,
   D01 = 1,
@@ -289,6 +294,8 @@ export class FmgcData {
 
   /** in feet. null if not set. */
   public readonly noiseEndAltitude = Subject.create<number | null>(null);
+
+  public readonly costIndexMode = Subject.create<CostIndexMode | null>(CostIndexMode.ECON);
 
   public readonly climbDerated = Subject.create<ClimbDerated | null>(ClimbDerated.NONE);
 
@@ -681,7 +688,7 @@ export class FmgcDataService implements Fmgc {
    * @returns {boolean}
    */
   public isEngineOn(index: number): boolean {
-    return SimVar.GetSimVarValue(`L:A32NX_ENGINE_N2:${index}`, 'percent') > 20;
+    return SimVar.GetSimVarValue(`L:A32NX_ENGINE_N2:${index}`, 'number') > 20;
   }
 
   /**
@@ -692,10 +699,10 @@ export class FmgcDataService implements Fmgc {
   }
 
   /**
-   * Returns true only if all engines are running (N2 > 20 for inner engines)
+   * Returns true only if all engines are running (N2 > 20 for all engines)
    */
   isAllEngineOn(): boolean {
-    return this.isEngineOn(2) && this.isEngineOn(3);
+    return this.isEngineOn(1) && this.isEngineOn(2) && this.isEngineOn(3) && this.isEngineOn(4);
   }
 
   isOnGround() {

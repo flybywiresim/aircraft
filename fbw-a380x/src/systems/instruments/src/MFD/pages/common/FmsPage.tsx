@@ -97,7 +97,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
       this.props.fmcService.masterFmcChanged.sub(() => {
         // Check if master FMC exists, re-route subjects
         this.props.fmcService.master?.fmgc.data.engineOut.pipe(this.eoActive);
-      }),
+      }, true),
     );
 
     this.onFlightPlanChanged();
