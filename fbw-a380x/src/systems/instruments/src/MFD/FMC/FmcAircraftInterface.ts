@@ -17,8 +17,9 @@ import {
   MathUtils,
   NXDataStore,
   VerticalPathCheckpoint,
-  // HUDSyntheticRunway,
-  // GenericDataListenerSync,
+  NXLogicConfirmNode,
+  HUDSyntheticRunway,
+  GenericDataListenerSync,
 } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { MmrRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
@@ -113,7 +114,7 @@ export class FmcAircraftInterface {
     this.arincEisWord2,
   ];
 
-  //private syncer: GenericDataListenerSync = new GenericDataListenerSync();
+  private syncer: GenericDataListenerSync = new GenericDataListenerSync();
 
   private readonly speedVs1g = Subject.create(0);
   private readonly speedVls = Subject.create(0);
@@ -612,7 +613,7 @@ export class FmcAircraftInterface {
           cornerCoordinates: cornerCoor,
           centerlineCoordinates: centerLineCoords,
         };
-        //this.syncer.sendEvent('A380X_EFIS_HUD_SYMBOLS', HUDSymbol);
+        this.syncer.sendEvent('A380X_EFIS_HUD_SYMBOLS', HUDSymbol);
       }
     }
   }
