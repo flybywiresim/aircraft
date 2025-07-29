@@ -17,7 +17,6 @@ import {
   MathUtils,
   NXDataStore,
   VerticalPathCheckpoint,
-  NXLogicConfirmNode,
   // HUDSyntheticRunway,
   // GenericDataListenerSync,
 } from '@flybywiresim/fbw-sdk';
