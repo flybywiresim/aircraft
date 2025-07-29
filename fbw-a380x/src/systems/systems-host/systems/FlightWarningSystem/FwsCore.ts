@@ -477,6 +477,14 @@ export class FwsCore {
 
   public readonly diffPressure = Arinc429Register.empty();
 
+  public readonly excessResidualDiffPressure = Subject.create(false);
+
+  public readonly phase10For90sConfirm = new NXLogicConfirmNode(90);
+
+  public readonly inhibitedByDoors = Subject.create(false);
+
+  public readonly cabinDoorOpen = Subject.create(false);
+
   public readonly allOutflowValvesOpen = Subject.create(false);
 
   public readonly ocsm1AutoFailure = Subject.create(false);
@@ -3430,7 +3438,25 @@ export class FwsCore {
 
     this.excessDiffPressure.set(cpcsDiscreteWordToUse.bitValueOr(14, false));
 
+    const diffPressureAbovePoint072 = this.diffPressure.valueOr(0) > 0.072;
+    this.phase10For90sConfirm.write(this.flightPhase.get() >= 10, deltaTime);
+
+    this.excessResidualDiffPressure.set(
+      diffPressureAbovePoint072 && ((this.aircraftOnGround.get() && engNotRunning) || this.phase10For90sConfirm.read()),
+    );
+
     this.diffPressure.setFromSimVar(`L:A32NX_PRESS_CABIN_DELTA_PRESSURE_B${cpcsToUseId}`);
+
+    this.cabinDoorOpen.set(
+      Array.from({ length: 10 }, (_, i) => SimVar.GetSimVarValue(`INTERACTIVE POINT OPEN:${i}`, 'percent') > 0).some(
+        (isOpen) => isOpen,
+      ),
+    );
+
+    this.inhibitedByDoors.set(
+      this.cabinDoorOpen.get() &&
+        (this.throttle2Position.get() >= 45 || (this.throttle2Position.get() >= 35 && flexThrustLimit)),
+    );
 
     const outflowValve1OpenAmount = Arinc429Register.empty();
     const outflowValve2OpenAmount = Arinc429Register.empty();
