@@ -35,6 +35,7 @@ import {
   NXLogicMemoryNode,
   NXLogicPulseNode,
   NXLogicTriggeredMonostableNode,
+  RegisteredSimVar,
   UpdateThrottler,
 } from '@flybywiresim/fbw-sdk';
 import { VerticalMode, LateralMode } from '@shared/autopilot';
@@ -637,6 +638,12 @@ export class FwsCore {
   public readonly approachCapabilityDowngradeSuppress = new NXLogicTriggeredMonostableNode(3, true);
 
   public readonly approachCapabilityDowngradeDebouncePulse = new NXLogicPulseNode(false);
+
+  public readonly modeReversionTripleClickSimvar = RegisteredSimVar.create<boolean>(
+    'L:A32NX_FMA_TRIPLE_CLICK_MODE_REVERSION',
+    SimVarValueType.Bool,
+  );
+  public readonly modeReversionTripleClickPulse = new NXLogicPulseNode(true);
 
   public readonly autoThrustEngaged = Subject.create(false);
 
@@ -2164,7 +2171,8 @@ export class FwsCore {
   private handlePowerChange(powered: boolean) {
     if (powered) {
       // Real time is 60 seconds, i.e. 60_000 ms; Real setting for DMC self test in EFB is 12 seconds.
-      const startupTime = parseInt(NXDataStore.get('CONFIG_SELF_TEST_TIME', '12')) * 5_000;
+      const coldAndDark = SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'bool');
+      const startupTime = coldAndDark ? parseInt(NXDataStore.get('CONFIG_SELF_TEST_TIME', '12')) * 5_000 : 0;
 
       this.startupTimer.schedule(() => {
         this.startupCompleted.set(true);
@@ -3072,6 +3080,12 @@ export class FwsCore {
       this.soundManager.enqueueSound('tripleClick');
     }
     this.approachCapability.set(newCapability);
+
+    // FG mode reversion
+    this.modeReversionTripleClickPulse.write(this.modeReversionTripleClickSimvar.get(), deltaTime);
+    if (this.modeReversionTripleClickPulse.read()) {
+      this.soundManager.enqueueSound('tripleClick');
+    }
 
     // A/THR OFF
     const aThrEngaged = this.autoThrustStatus.get() === 2 || this.autoThrustMode.get() !== 0;
