@@ -1124,6 +1124,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       this.transFlToAlt,
       this.apprLandingWeightFormatted,
       this.apprRadioText,
+      this.clearEoButtonVisibility,
+      this.activateApprButtonVisibility,
     );
   }
 
