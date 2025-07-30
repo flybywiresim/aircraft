@@ -45,11 +45,18 @@ interface MfdFmsPerfProps extends AbstractMfdPageProps {}
 export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   private approachPhaseConfirmationDialogVisible = Subject.create<boolean>(false);
 
-  private activateApprButton = FSComponent.createRef<HTMLDivElement>();
+  private readonly activateApprButtonVisibility = this.activeFlightPhase.map((fp) =>
+    fp === FmgcFlightPhase.Climb ||
+    fp === FmgcFlightPhase.Cruise ||
+    fp === FmgcFlightPhase.Descent ||
+    fp === FmgcFlightPhase.GoAround
+      ? 'visible'
+      : 'hidden',
+  );
 
   private clearEoConfirmationDialogVisible = Subject.create<boolean>(false);
 
-  private clearEoButton = FSComponent.createRef<HTMLDivElement>();
+  private readonly clearEoButtonVisibility = this.eoActive.map((eo) => (eo ? 'visible' : 'hidden'));
 
   private managedSpeedActive = Subject.create<boolean>(false);
 
@@ -730,19 +737,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     // Get flight phase
     this.subs.push(
       this.activeFlightPhase.sub((val) => {
-        if (this.activateApprButton.getOrDefault()) {
-          if (
-            val === FmgcFlightPhase.Climb ||
-            val === FmgcFlightPhase.Cruise ||
-            val === FmgcFlightPhase.Descent ||
-            val === FmgcFlightPhase.GoAround
-          ) {
-            this.activateApprButton.instance.style.visibility = 'visible';
-          } else {
-            this.activateApprButton.instance.style.visibility = 'hidden';
-          }
-        }
-
         if (this.previousFmsFlightPhase) {
           const isSamePhase = this.flightPhasesSelectedPageIndex.get() + 1 === this.previousFmsFlightPhase;
           if (isSamePhase) {
@@ -765,7 +759,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
     this.subs.push(
       this.eoActive.sub((v) => {
-        this.clearEoButton.instance.style.visibility = v ? 'visible' : 'hidden';
         this.costIndexModeLabels.set(v ? ['EO-LRC', 'EO-ECON'] : ['LRC', 'ECON']);
       }, true),
     );
@@ -1718,10 +1711,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   </div>
                 </div>
               </TopTabNavigatorPage>
-              <TopTabNavigatorPage>
+              <TopTabNavigatorPage containerStyle="padding-top: 0px; padding-left: 0px;">
                 {/* CLB */}
                 <div style="display: flex; justify-content: space-between;">
-                  <div class="mfd-label-value-container" style="padding: 15px; margin-bottom: 15px;">
+                  <div class="mfd-label-value-container" style="margin-bottom: 15px;">
                     <DropdownMenu
                       values={this.costIndexModeLabels}
                       selectedIndex={this.props.fmcService.master.fmgc.data.costIndexMode}
@@ -1883,7 +1876,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   <div />
                   <div />
                 </div>
-                <div ref={this.clbNoiseTableRef} class="mfd-fms-perf-to-thrred-noise-grid">
+                <div ref={this.clbNoiseTableRef} class="mfd-fms-perf-to-thrred-noise-grid" style="padding-left: 15px;">
                   <div
                     class="mfd-fms-perf-to-thrred-noise-grid-cell"
                     style="margin-right: 15px; margin-bottom: 15px; width: 125px;"
@@ -2110,10 +2103,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   </div>
                 </div>
               </TopTabNavigatorPage>
-              <TopTabNavigatorPage>
+              <TopTabNavigatorPage containerStyle="padding-top: 0px; padding-left: 0px;">
                 {/* CRZ */}
                 <div style="display: flex; justify-content: space-between;">
-                  <div class="mfd-label-value-container" style="padding: 15px;">
+                  <div class="mfd-label-value-container">
                     <DropdownMenu
                       values={this.costIndexModeLabels}
                       selectedIndex={this.props.fmcService.master.fmgc.data.costIndexMode}
@@ -2357,10 +2350,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   </div>
                 </div>
               </TopTabNavigatorPage>
-              <TopTabNavigatorPage>
+              <TopTabNavigatorPage containerStyle="padding-top: 0px; padding-left: 0px;">
                 {/* DES */}
                 <div style="display: flex; justify-content: space-between;">
-                  <div class="mfd-label-value-container" style="padding: 15px;">
+                  <div class="mfd-label-value-container">
                     <DropdownMenu
                       values={this.costIndexModeLabels}
                       selectedIndex={this.props.fmcService.master.fmgc.data.costIndexMode}
@@ -2893,7 +2886,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   <span class="mfd-label mfd-spacing-right" style="width: 150px; text-align: right;">
                     TRANS
                   </span>
-                  <span class="mfd-value">{this.transAlt}</span>
+                  <span class="mfd-value">{FmgcData.fmcFormatValue(this.transAlt)}</span>
                   <span class="mfd-label-unit mfd-unit-trailing">FT</span>
                 </div>
               </TopTabNavigatorPage>
@@ -2937,7 +2930,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   <span style="color: white;">(BACK TO ALL ENGs COMPUTATION)</span>
                 </ConfirmationDialog>
               </div>
-              <div ref={this.activateApprButton} style="margin-right: 5px;">
+              <div style={{ 'margin-right': '5px', visibility: this.activateApprButtonVisibility }}>
                 <Button
                   label={Subject.create(
                     <div style="display: flex; flex-direction: row; justify-content: space-between;">
@@ -2954,9 +2947,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                 />
               </div>
               <div>
-                <Button label="POS MONITOR" onClick={() => console.log('POS MONITOR')} />
+                <Button label="POS MONITOR" onClick={() => {}} containerStyle="margin-right: 5px;" />
               </div>
-              <div ref={this.clearEoButton} style="margin-right: 5px;">
+              <div style={{ 'margin-right': '5px', visibility: this.clearEoButtonVisibility }}>
                 <Button
                   label={Subject.create(
                     <div style="display: flex; flex-direction: row; justify-content: space-between;">

@@ -106,7 +106,7 @@
 1. [A380X/FWS] Disable startup time for runway spawns - @flogross89 (floridude)
 1. [A380X/PFD] Ignore non-running engines in flight phase 2 for rudder trim indicator visibility - @flogross89 (floridude)
 1. [A380X/FG] Fix SRS disengagement conditions for eng 3&4 OEI - @flogross89 (floridude)
-1. [A380X/FMS] Add some EO indications for the FMS - @flogross89 (floridude)
+1. [A380X/FMS] Add engine-out indications and behavior to FMS - @flogross89 (floridude)
 
 ## 0.13.0
 
