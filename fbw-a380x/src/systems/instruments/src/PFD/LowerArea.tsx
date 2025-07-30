@@ -16,6 +16,7 @@ import {
   Arinc429LocalVarConsumerSubject,
   ArincEventBus,
   MathUtils,
+  NXLogicConfirmNode,
 } from '@flybywiresim/fbw-sdk';
 import { FormattedFwcText } from 'instruments/src/EWD/elements/FormattedFwcText';
 import { FwsPfdSimvars } from '../MsfsAvionicsCommon/providers/FwsPfdPublisher';
@@ -579,6 +580,9 @@ class RudderTrimIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private rudderTrimWasMoved = false;
 
+  private lastUpdateTime: number | null = null;
+  private readonly engineFailedConfirmNode = new NXLogicConfirmNode(5, true); // Confirm eng failures to avoid transient startup issues
+
   private engineHasFailed = false;
 
   private delayStartTime: number = 0;
@@ -596,6 +600,9 @@ class RudderTrimIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
       .on('simTime')
       .atFrequency(4)
       .handle((t) => {
+        const deltaTime = this.lastUpdateTime ? t - this.lastUpdateTime : 0;
+        this.lastUpdateTime = t;
+
         const gnd = this.onGround.get();
         const cas = this.speed.get();
         const rt = this.rudderTrimOrder.get();
@@ -603,16 +610,17 @@ class RudderTrimIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
         const inFlightOrGroundFaster60Exceeds1Deg = (!gnd || (gnd && cas.valueOr(0) > 60)) && Math.abs(rt) > 1;
         const onGroundSlower60Exceeds0p3 = gnd && cas.valueOr(61) < 60 && Math.abs(rt) > 0.3;
 
-        if (
-          this.fwcFlightPhase.get() >= 2 &&
-          !gnd &&
-          (!this.engine1Running.get() ||
+        this.engineFailedConfirmNode.write(
+          !this.engine1Running.get() ||
             !this.engine2Running.get() ||
             !this.engine3Running.get() ||
-            !this.engine4Running.get())
-        ) {
+            !this.engine4Running.get(),
+          deltaTime,
+        );
+
+        if (this.fwcFlightPhase.get() >= 3 && !gnd && this.engineFailedConfirmNode.read()) {
           this.engineHasFailed = true;
-        } else if (this.engineHasFailed && this.fwcFlightPhase.get() < 2) {
+        } else if (this.engineHasFailed && this.fwcFlightPhase.get() < 3) {
           this.engineHasFailed = false;
         }
 
