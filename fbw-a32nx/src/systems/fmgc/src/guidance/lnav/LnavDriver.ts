@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ControlLaw, LateralMode, VerticalMode } from '@shared/autopilot';
-import { MathUtils, TurnDirection } from '@flybywiresim/fbw-sdk';
+import { ControlLaw, LateralMode } from '@shared/autopilot';
+import { Arinc429Register, Constants, LegType, MathUtils, TurnDirection } from '@flybywiresim/fbw-sdk';
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
@@ -23,6 +23,7 @@ import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
 import { GuidanceController } from '../GuidanceController';
 import { GuidanceComponent } from '../GuidanceComponent';
+import { FlightPlanLeg, isLeg } from '../../flightplanning/legs/FlightPlanLeg';
 
 /**
  * Represents the current turn state of the LNAV driver
@@ -45,6 +46,10 @@ export enum LnavTurnState {
 }
 
 export class LnavDriver implements GuidanceComponent {
+  private static readonly NavActiveCaptureZone = 30.0;
+
+  private static readonly MinimumTrackAngleError = 1.0; // degrees
+
   private guidanceController: GuidanceController;
 
   private lastAvail: boolean;
@@ -57,9 +62,15 @@ export class LnavDriver implements GuidanceComponent {
 
   private lastPhi: number;
 
+  private lastNavCaptureCondition: boolean;
+
+  private isNavCaptureInhibited: boolean = false;
+
   public turnState = LnavTurnState.Normal;
 
   public ppos: LatLongAlt = new LatLongAlt();
+
+  private register = Arinc429Register.empty();
 
   private listener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
 
@@ -91,6 +102,10 @@ export class LnavDriver implements GuidanceComponent {
 
     const geometry = this.guidanceController.activeGeometry;
     const activeLegIdx = this.guidanceController.activeLegIndex;
+
+    // this is not the correct groundspeed to use, but it will suffice for now
+    const tas = SimVar.GetSimVarValue('AIRSPEED TRUE', 'Knots');
+    const gs = SimVar.GetSimVarValue('GPS GROUND SPEED', 'knots');
 
     if (geometry && geometry.legs.size > 0) {
       const dtg = geometry.getDistanceToGo(this.guidanceController.activeLegIndex, this.ppos);
@@ -179,10 +194,6 @@ export class LnavDriver implements GuidanceComponent {
       }
 
       // Leg sequencing
-
-      // this is not the correct groundspeed to use, but it will suffice for now
-      const tas = SimVar.GetSimVarValue('AIRSPEED TRUE', 'Knots');
-      const gs = SimVar.GetSimVarValue('GPS GROUND SPEED', 'knots');
 
       const params = geometry.getGuidanceParameters(activeLegIdx, this.ppos, trueTrack, gs, tas);
 
@@ -393,6 +404,8 @@ export class LnavDriver implements GuidanceComponent {
       }
     }
 
+    this.updateNavCaptureCondition(tas, gs);
+
     /* Set FG parameters */
 
     if (!available && this.lastAvail !== false) {
@@ -488,35 +501,8 @@ export class LnavDriver implements GuidanceComponent {
   sequenceDiscontinuity(_leg?: Leg, followingLeg?: Leg): void {
     console.log('[FMGC/Guidance] LNAV - sequencing discontinuity');
 
-    // Lateral mode is NAV
-    const lateralModel = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_MODE', 'Enum');
-    const verticalMode = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'Enum');
-
-    let reverted = false;
-
-    if (lateralModel === LateralMode.NAV) {
-      // Set HDG (current heading)
-      SimVar.SetSimVarValue('H:A320_Neo_FCU_HDG_PULL', 'number', 0);
-      SimVar.SetSimVarValue('L:A32NX_FM_HEADING_SYNC', 'boolean', true);
-      reverted = true;
-    }
-
-    if (verticalMode === VerticalMode.DES) {
-      // revert to V/S
-      SimVar.SetSimVarValue('H:A320_Neo_FCU_VS_PULL', 'number', 0);
-      reverted = true;
-    } else if (verticalMode === VerticalMode.CLB) {
-      // revert to OP CLB
-      SimVar.SetSimVarValue('H:A320_Neo_FCU_ALT_PULL', 'number', 0);
-      reverted = true;
-    }
-
-    if (reverted) {
-      // Triple click
-      Coherent.call('PLAY_INSTRUMENT_SOUND', '3click').catch(console.error);
-    }
-
     this.sequenceLeg(_leg, null);
+    this.disengageNavMode();
 
     // The leg after the disco should become the active leg, so we sequence again
     if (followingLeg) {
@@ -527,4 +513,99 @@ export class LnavDriver implements GuidanceComponent {
   sequenceManual(_leg?: Leg): void {
     console.log('[FMGC/Guidance] LNAV - sequencing MANUAL');
   }
+
+  private disengageNavMode() {
+    this.isNavCaptureInhibited = true;
+    setTimeout(() => {
+      this.isNavCaptureInhibited = false;
+    }, 300);
+  }
+
+  private updateNavCaptureCondition(tas: number, gs: number) {
+    this.setNavCaptureCondition(this.computeNavCaptureCondition(tas, gs));
+  }
+
+  private setNavCaptureCondition(condition: boolean) {
+    if (condition !== this.lastNavCaptureCondition) {
+      SimVar.SetSimVarValue('L:A32NX_FM1_NAV_CAPTURE_CONDITION', 'Bool', condition);
+      SimVar.SetSimVarValue('L:A32NX_FM2_NAV_CAPTURE_CONDITION', 'Bool', condition);
+
+      this.lastNavCaptureCondition = condition;
+    }
+  }
+
+  private canAlwaysCaptureLeg(leg: FlightPlanLeg) {
+    return leg.isVx() || (leg.isCx() && leg.type !== LegType.CF);
+  }
+
+  private cannotCaptureLegType(el: FlightPlanLeg): boolean {
+    // FIXME We probably should not prevent capture of IF legs like this. Instead, we should not even generate any guidance parameters
+    // for IF legs, and then the capture condition will not be met.
+    return el.type === LegType.IF;
+  }
+
+  private isNavModeEngaged(): boolean {
+    // TODO use correct FM
+    return this.register
+      .setFromSimVar('L:A32NX_FMGC_1_DISCRETE_WORD_2')
+      .bitValueOr(
+        12,
+        this.register
+          .setFromSimVar('L:A32NX_FMGC_2_DISCRETE_WORD_2')
+          .bitValueOr(12, SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_MODE', 'number') === LateralMode.NAV),
+      );
+  }
+
+  private computeNavCaptureCondition(trueAirspeed: number, groundSpeed: number): boolean {
+    const plan = this.flightPlanService.active;
+    const geometry = this.guidanceController.activeGeometry;
+    const activeLeg = plan.activeLeg;
+
+    if (!isLeg(activeLeg) || this.cannotCaptureLegType(activeLeg) || this.isNavCaptureInhibited) {
+      return false;
+    } else if (this.canAlwaysCaptureLeg(activeLeg)) {
+      return true;
+    } else if (this.isNavModeEngaged()) {
+      return Math.abs(this.lastXTE) < LnavDriver.NavActiveCaptureZone;
+    } else {
+      const bankAngle = maxBank(trueAirspeed, true);
+      const turnRadius = trueAirspeed ** 2 / Math.tan(bankAngle * MathUtils.DEGREES_TO_RADIANS) / HpathLaw.G;
+
+      if (this.lastTAE * this.lastXTE > 0) {
+        return Math.abs(this.lastXTE) < Math.abs(2 * turnRadius);
+      } else {
+        const unsaturatedTrackAngleError = MathUtils.clamp(
+          this.lastTAE,
+          -HpathLaw.InterceptAngle,
+          HpathLaw.InterceptAngle,
+        );
+
+        const saturatedCaptureZone =
+          Math.sign(this.lastTAE) *
+          turnRadius *
+          (Math.cos(unsaturatedTrackAngleError * MathUtils.DEGREES_TO_RADIANS) -
+            Math.cos(this.lastTAE * MathUtils.DEGREES_TO_RADIANS));
+
+        const activeGeometryLeg = geometry.legs.get(plan.activeLegIndex);
+        const legGs = activeGeometryLeg.predictedGs ?? groundSpeed;
+        const nominalRollAngle = activeGeometryLeg.getNominalRollAngle(groundSpeed) ?? 0;
+        const unsaturatedCaptureZone =
+          (nominalRollAngle / HpathLaw.K2 - unsaturatedTrackAngleError * legGs) / HpathLaw.K1;
+        const optimalCaptureZone = Math.abs(saturatedCaptureZone - unsaturatedCaptureZone);
+        const minCaptureZone = (LnavDriver.MinimumTrackAngleError * legGs) / HpathLaw.K1;
+
+        return Math.abs(this.lastXTE) < Math.max(minCaptureZone, optimalCaptureZone);
+      }
+    }
+  }
+}
+
+class HpathLaw {
+  static readonly Tau = 3; // seconds
+  static readonly Zeta = 0.8; // 1
+  static readonly G = Constants.G * 6997.84; // kts/h
+  static readonly T = this.Tau / 3600; // hours
+  static readonly K1 = 180 / 4 / Math.PI ** 2 / this.Zeta / this.T; // 1 / h
+  static readonly K2 = this.Zeta / Math.PI / this.G / this.T; // 1 / kts
+  static readonly InterceptAngle = 45;
 }
