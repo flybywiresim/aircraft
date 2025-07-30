@@ -924,7 +924,15 @@ export class FmcAircraftInterface {
         case FmgcFlightPhase.Climb: {
           let speed = this.fmgc.getManagedClimbSpeed();
 
-          // EO handling
+          const speedLimit = this.fmgc.getClimbSpeedLimit();
+
+          if (speedLimit !== null && SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') < speedLimit.underAltitude) {
+            speed = Math.min(speed, speedLimit.speed);
+          }
+
+          speed = Math.min(speed, this.getSpeedConstraint());
+
+          // EO handling. Ignore speed constraints or limits.
           if (!this.fmgc.isAllEngineOn()) {
             const verticalMode = this.fmaVerticalMode.get();
             const greenDotSpeed = this.fmgc.data.greenDotSpeed.get();
@@ -935,14 +943,6 @@ export class FmcAircraftInterface {
               speed = cas ? cas - (cas - greenDotSpeed) * (FMS_CYCLE_TIME / 1_000) : greenDotSpeed;
             }
           }
-
-          const speedLimit = this.fmgc.getClimbSpeedLimit();
-
-          if (speedLimit !== null && SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') < speedLimit.underAltitude) {
-            speed = Math.min(speed, speedLimit.speed);
-          }
-
-          speed = Math.min(speed, this.getSpeedConstraint());
 
           [this.managedSpeedTarget, isMach] = this.getManagedTargets(speed, this.fmgc.getManagedClimbSpeedMach());
           vPfd = this.managedSpeedTarget ?? speed;
