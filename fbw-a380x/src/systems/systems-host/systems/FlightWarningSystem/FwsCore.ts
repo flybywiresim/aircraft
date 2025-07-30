@@ -504,6 +504,8 @@ export class FwsCore {
 
   public readonly flowSelectorKnob = Subject.create(0);
 
+  public readonly xBleedSelectorKnob = Subject.create(0);
+
   public readonly manCabinAltMode = Subject.create(false);
 
   private readonly cabinAltitude = Arinc429Register.empty();
@@ -3528,6 +3530,9 @@ export class FwsCore {
 
     // 0: Man, 1: Low, 2: Norm, 3: High
     this.flowSelectorKnob.set(SimVar.GetSimVarValue('L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position', 'number'));
+
+    // 0: Shut, 1: Auto, 2: Open
+    this.xBleedSelectorKnob.set(SimVar.GetSimVarValue('L:A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position', 'number'));
 
     /* 23 - COMMUNICATION */
     const rmp1State = SimVar.GetSimVarValue('L:A380X_RMP_1_STATE', 'number');
