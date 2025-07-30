@@ -12,9 +12,13 @@ import {
 } from '@microsoft/msfs-sdk';
 import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
 import { A380Failure } from '@failures';
+<<<<<<<< HEAD:fbw-a380x/src/systems/instruments/src/OIT/System/AircraftNetworkServerUnit.ts
 import { ResetPanelSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/ResetPanelPublisher';
 import { OitSimvars } from '../OitSimvarPublisher';
 import { SecureCommunicationInterface } from './SecureCommunicationInterface';
+========
+import { AtsuSystem } from 'systems-host/CpiomD/atsu';
+>>>>>>>> master:fbw-a380x/src/systems/systems-host/Ansu/AircraftNetworkServerUnit.ts
 
 type AnsuIndex = 1 | 2;
 
