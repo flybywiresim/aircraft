@@ -4,7 +4,7 @@
 
 import { Subscription } from '@microsoft/msfs-sdk';
 import { EcamInfos } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
-import { FwsCore, FwsSuppressableItem } from 'systems-host/systems/FlightWarningSystem/FwsCore';
+import { FwsCore, FwsSuppressableItem } from 'systems-host/CpiomC/FlightWarningSystem/FwsCore';
 import { isSubscription } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
 
 export interface FwsInfoItem extends FwsSuppressableItem {}
