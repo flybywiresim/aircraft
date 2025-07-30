@@ -163,13 +163,13 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
           this.props.fmcService.master?.acInterface.updateFmsData();
         }),
       );
-
-      this.subs.push(
-        this.eoActive.sub((v) => {
-          this.costIndexModeLabels.set(v ? ['EO-LRC', 'EO-ECON'] : ['LRC', 'ECON']);
-        }, true),
-      );
     }
+
+    this.subs.push(
+      this.eoActive.sub((v) => {
+        this.costIndexModeLabels.set(v ? ['EO-LRC', 'EO-ECON'] : ['LRC', 'ECON']);
+      }, true),
+    );
 
     this.subs.push(
       this.cpnyFplnButtonLabel,
