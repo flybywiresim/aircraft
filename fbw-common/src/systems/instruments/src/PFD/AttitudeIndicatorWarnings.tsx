@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { DisplayComponent, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import { Arinc429RegisterSubject, ArincEventBus } from '@flybywiresim/fbw-sdk';

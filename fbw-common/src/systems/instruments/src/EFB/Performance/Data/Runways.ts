@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { RunwayDesignatorChar } from '@flybywiresim/fbw-sdk';
 
 export interface Runway {

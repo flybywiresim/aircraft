@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { describe, test, expect, vitest } from 'vitest';
 import { FailuresOrchestrator } from '.';
 import { flushPromises } from './test-functions';

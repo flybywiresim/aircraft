@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { FSComponent, DisplayComponent, Subject, VNode, ComponentProps, EventBus } from '@microsoft/msfs-sdk';
 
 import { NDControlEvents } from './NDControlEvents';

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { FSComponent, ConsumerSubject, DisplayComponent, EventBus, VNode, MappedSubject } from '@microsoft/msfs-sdk';
 
 import { GenericTawsEvents, TerrainLevelMode } from './types/GenericTawsEvents';

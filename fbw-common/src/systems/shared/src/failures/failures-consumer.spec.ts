@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { describe, expect, test, vitest } from 'vitest';
 import { FailuresConsumer } from './failures-consumer';
 

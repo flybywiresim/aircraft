@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { FSComponent, DisplayComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
 
 export interface PlanModeUnderlayProps {
