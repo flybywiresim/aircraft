@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { FmsDataInterface } from '@fmgc/flightplanning/interface/FmsDataInterface';
 import { DataManager, PilotWaypoint } from '@fmgc/flightplanning/DataManager';
