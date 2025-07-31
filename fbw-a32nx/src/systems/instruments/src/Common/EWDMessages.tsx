@@ -218,6 +218,8 @@ const EWDMessages = {
   '221070002': '\x1b<5m -TOW AND T.O DATA.CHECK',
   '221071001': '\x1b<4m\x1b4mT.O\x1bm V1/VR/V2 DISAGREE',
   '221072001': '\x1b<4m\x1b4mT.O\x1bm SPEEDS NOT INSERTED',
+  '240060001': '\x1b<4m\x1b4mELEC\x1bm BAT 1 OFF',
+  '240061001': '\x1b<4m\x1b4mELEC\x1bm BAT 2 OFF',
   '260001001': '\x1b<2m\x1b4mENG 1 FIRE\x1bm',
   '260001002': '\x1b<5m -THR LEVER 1.......IDLE',
   '260001003': '\x1b<5m -THR LEVERS........IDLE',
