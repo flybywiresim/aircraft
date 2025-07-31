@@ -89,6 +89,7 @@
 1. [ATSU] Fixed a case where "no active atc" is returned but station is online - @heclak (Heclak)
 1. [A32NX/FMS] Fixed TOO STEEP PATH AHEAD message appearing greater than 150nm from destination - @Jonny23787 (Jonathan)
 1. [A32NX/PFD] Inhibit SPEED SEL when BRK MAX is visible on PFD - @Jonny23787 (Jonathan)
+1. [A380X/PFD] Fixed logic for the flap position display - @HarmanSingh48 (Harman)
 1. [A32NX/FWS] Improve altitude alert logic, add PFD indications, improve AP OFF warning logic - @lukecologne (luke)
 1. [A380X/FMS] Add TL indication for tailwind on APPR PERF - @Jonny23787 (Jonathan)
 1. [A32NX/FMS] Consider pilot-entered tropopause for automatic cruise temperature calculation - @BlueberryKing (BlueberryKing)
@@ -104,6 +105,7 @@
 1. [A380X/FWS] Fix approach capability downgrade triple click - @flogross89 (floridude)
 1. [A380X/FWS] Disable startup time for runway spawns - @flogross89 (floridude)
 1. [A380X/PFD] Ignore non-running engines in flight phase 2 for rudder trim indicator visibility - @flogross89 (floridude)
+1. [EFB] Split jetway and pax stairs button in MSFS2024 to fix jetways not connecting in MSFS2024 - @heclak (Heclak)
 1. [A380X/FWS] Add PRIM abnormal sensed procedures - @BravoMike99 (bruno_pt99)
 
 ## 0.13.0

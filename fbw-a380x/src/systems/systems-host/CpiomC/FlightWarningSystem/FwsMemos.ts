@@ -4,7 +4,7 @@
 
 import { EcamMemos } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { MappedSubject, Subscribable, SubscribableMapFunctions, Subscription } from '@microsoft/msfs-sdk';
-import { FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
+import { FwsCore } from 'systems-host/CpiomC/FlightWarningSystem/FwsCore';
 import { isSubscription } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
 
 interface EwdMemoItem {
