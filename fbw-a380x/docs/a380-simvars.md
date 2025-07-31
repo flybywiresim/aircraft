@@ -8,6 +8,9 @@
   - [Air Conditioning Pressurisation Ventilation ATA 21](#air-conditioning-pressurisation-ventilation-ata-21)
   - [Auto Flight System ATA 22](#auto-flight-system-ata-22)
   - [Flight Management System ATA 22](#flight-management-system-ata-22)
+  - [Communications ATA 23](#communications-ata-23)
+    - [Placeholder Types](#placeholder-types)
+    - [Local Vars](#local-vars)
   - [Electrical ATA 24](#electrical-ata-24)
   - [Fire and Smoke Protection ATA 26](#fire-and-smoke-protection-ata-26)
   - [Flaps / Slats (ATA 27)](#flaps--slats-ata-27)
@@ -462,6 +465,59 @@
     - Position (0-2)
     - 0 is BOTH ON 2, 1 is NORM, 2 is BOTH ON 1
 
+- A380X_FMS_DEST_EFOB_BELOW_MIN
+    - Bool
+    - Indicates if the FMS predicted fuel at destination is below minimum.
+
+## Communications ATA 23
+
+### Placeholder Types
+
+- `{rmp_index}` 1, 2, or 3
+- `{vhf_index}` 1, 2, or 3
+
+### Local Vars
+
+- `L:A380X_RMP_{rmp_index}_STATE`
+    - Enum
+    - Indicates the state of the RMP.
+    -   | State      | Number |
+        |------------|--------|
+        | OffFailed  | 0      |
+        | OffStandby | 1      |
+        | On         | 2      |
+        | OnFailed   | 3      |
+
+- `L:FBW_RMP_FREQUENCY_ACTIVE_{vhf_index}`
+  - Frequency BCD32 (can be read with MHz or any other frequency unit)
+  - Read only!
+  - Contains the active frequency value synced amongst the RMPs for this VHF radio. 0 when invalid. This will contain the actual frequency even in other modes.
+
+- `L:FBW_RMP_FREQUENCY_STANDBY_{vhf_index}`
+  - Frequency BCD32 (can be read with MHz or any other frequency unit)
+  - Read only!
+  - Contains the standby frequency value synced amongst the RMPs for this VHF radio. 0 when invalid. This will contain the actual frequency even in other modes.
+
+- `L:FBW_RMP_MODE_ACTIVE_{vhf_index}`
+    - Enum
+    - Read only!
+    - Indicates the active frequency mode synced amongst the RMPs for this VHF radio.
+    -   | State      | Number |
+        |------------|--------|
+        | Frequency  | 0      |
+        | Data       | 1      |
+        | Emergency  | 2      |
+
+- `L:FBW_RMP_MODE_STANDBY_{vhf_index}`
+    - Enum
+    - Read only!
+    - Indicates the standby frequency mode synced amongst the RMPs for this VHF radio.
+    -   | State      | Number |
+        |------------|--------|
+        | Frequency  | 0      |
+        | Data       | 1      |
+        | Emergency  | 2      |
+
 ## Electrical ATA 24
 
 - A32NX_ELEC_CONTACTOR_{name}_IS_CLOSED
@@ -777,6 +833,42 @@
     - True when the overhead fire test pushbutton is pressed
 
 ## Flight Controls (ATA 27)
+
+- A32NX_{side}_FLAPS_{number}_POSITION_PERCENT
+    - Percent
+    - Indicates the angle of the flaps out of 40 degrees
+    - Side
+        - LEFT
+        - RIGHT
+    - Number
+        - From 1 (inboard) to 3
+
+- A32NX_{side}_SLATS_{number}_POSITION_PERCENT
+    - Percent
+    - Indicates the angle of the slats out of 27 degrees
+    - Side
+        - LEFT
+        - RIGHT
+    - Number
+        - From 1 (inboard) to 8
+
+- A32NX_{side}_FLAPS_{number}_ANGLE
+    - Degrees
+    - The actual angle of the flaps
+    - Side
+        - LEFT
+        - RIGHT
+    - Number
+        - From 1 (inboard) to 3
+
+- A32NX_{side}_SLATS_{number}_ANGLE
+    - Degrees
+    - The actual angle of the slats
+    - Side
+        - LEFT
+        - RIGHT
+    - Number
+        - From 1 (inboard) to 8
 
 - A32NX_FCDC_{number}_DISCRETE_WORD_1
     - Arinc429<Discrete>

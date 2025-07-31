@@ -27,6 +27,7 @@ export const Fuel = () => {
           simbriefUnits={simbriefUnits}
           simbriefPlanRamp={simbriefPlanRamp}
           massUnitForDisplay={massUnitForDisplay}
+          convertUnit={convertUnit}
           isOnGround={isOnGround}
         />
       );

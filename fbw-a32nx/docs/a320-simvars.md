@@ -17,6 +17,7 @@
   - [Pneumatic](#pneumatic)
   - [Autoflight (ATA 22)](#autoflight-ata-22)
     - [Flight Management and Guidance Computer (FMGC, Flight Guidance Section)](#flight-management-and-guidance-computer-fmgc-flight-guidance-section)
+    - [Flight Management and Guidance Computer (FMGC, Flight Management Section)](#flight-management-and-guidance-computer-fmgc-flight-management-section)
     - [Flight Control Unit (FCU)](#flight-control-unit-fcu)
       - [FCU EFIS CP](#fcu-efis-cp)
       - [FCU AFS CP](#fcu-afs-cp)
@@ -1117,6 +1118,24 @@
       0 | Retracted
       1 | Full extension
 
+- A32NX_{side}_FLAPS_{number}_POSITION_PERCENT
+    - Percent
+    - Indicates the angle of the flaps out of 40 degrees
+    - Side
+        - LEFT
+        - RIGHT
+    - Number
+        - From 1 (inboard) to 2
+
+- A32NX_{side}_SLATS_{number}_POSITION_PERCENT
+    - Percent
+    - Indicates the angle of the slats out of 27 degrees
+    - Side
+        - LEFT
+        - RIGHT
+    - Number
+        - From 1 (inboard) to 5
+
 - A32NX_LEFT_FLAPS_POSITION_PERCENT
     - Percent
     - Indicates the angle of the left flaps out of 40 degrees
@@ -1133,6 +1152,24 @@
     - Percent
     - Indicates the angle of the right slats out of 27 degrees
 
+- A32NX_{side}_FLAPS_{number}_ANGLE
+    - Degrees
+    - The actual angle of the flaps
+    - Side
+        - LEFT
+        - RIGHT
+    - Number
+        - From 1 (inboard) to 2
+
+- A32NX_{side}_SLATS_{number}_ANGLE
+    - Degrees
+    - The actual angle of the slats
+    - Side
+        - LEFT
+        - RIGHT
+    - Number
+        - From 1 (inboard) to 5
+
 - A32NX_LEFT_FLAPS_ANGLE
     - Degrees
     - The actual angle of the left flaps
@@ -1148,6 +1185,22 @@
 - A32NX_RIGHT_SLATS_ANGLE
     - Degrees
     - The actual angle of the right slats
+
+- A32NX_FLAPS_IPPU_ANGLE
+    - Degrees
+    - The angle of the flaps IPPU synchro
+
+- A32NX_FLAPS_FPPU_ANGLE
+    - Degrees
+    - The angle of the flaps FPPU synchro
+
+- A32NX_SLATS_IPPU_ANGLE
+    - Degrees
+    - The angle of the slats IPPU synchro
+
+- A32NX_SLATS_FPPU_ANGLE
+    - Degrees
+    - The angle of the slats FPPU synchro
 
 - A32NX_IS_FLAPS_MOVING
     - Boolean
@@ -1941,146 +1994,6 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - {side}
         - L
         - R
-
-- L:A32NX_FM{number}_ACC_ALT
-    - ARINC429<number> (feet MSL)
-    - The acceleration altitude
-    - {number}
-        - 1 - captain's side FMGC
-        - 2 - f/o's side FMGC
-
-- A32NX_FM{number}_DEST_LAT
-    - Destination latitude
-    - Arinc429<Angle>
-    - {number}
-        - 1 - captain's side FMGC
-        - 2 - f/o's side FMGC
-
-- A32NX_FM{number}_DEST_LONG
-    - Destination longitude
-    - Arinc429<Angle>
-    - {number}
-        - 1 - captain's side FMGC
-        - 2 - f/o's side FMGC
-
-- A32NX_FM{number}_DISCRETE_WORD_2
-    - Arinc429<Discrete>
-    - {number}
-        - 1 - captain's side FMGC
-        - 2 - f/o's side FMGC
-    - | Bit |            Description            |
-      |:---:|:---------------------------------:|
-      | 13  | Takeoff flap conf 0               |
-      | 14  | Takeoff flap conf 1               |
-      | 15  | Takeoff flap conf 2               |
-      | 16  | Takeoff flap conf 3               |
-
-- A32NX_FM{number}_DISCRETE_WORD_3
-    - Arinc429<Discrete>
-    - {number}
-        - 1 - captain's side FMGC
-        - 2 - f/o's side FMGC
-    - | Bit |            Description            |
-      |:---:|:---------------------------------:|
-      | 16  | V1/Vr/V2 disagree                 |
-      | 17  | Takeoff speeds too low            |
-      | 18  | Takeoff speeds not inserted       |
-
-- L:A32NX_FM{number}_NAV_DISCRETE
-    - Arinc429<Discrete>
-    - {number}
-        - 1 - captain's side FMGC
-        - 2 - f/o's side FMGC (currently not written)
-    - | Bit |     Description     |
-      |:---:|:-------------------:|
-      | 11  | VOR 1 manually tuned |
-      | 12  | VOR 2 manually tuned |
-      | 13  | ADF 1 manually tuned |
-      | 14  | ADF 2 manually tuned |
-      | 15  | MMR 1 manually tuned |
-      | 16  | MMR 2 manually tuned |
-
-- L:A32NX_FM{number}_EO_ACC_ALT
-    - ARINC429<number> (feet MSL)
-    - The engine out acceleration altitude
-    - {number}
-        - 1 - captain's side FMGC
-        - 2 - f/o's side FMGC
-
-- L:A32NX_FM{number}_LANDING_ELEVATION
-    - ARINC429<number> (feet MSL)
-    - The landing elevation at the active destination
-    - {number}
-        - 1 - captain's side FMGC
-        - 2 - f/o's side FMGC
-
-- L:A32NX_FM{number}_MISSED_ACC_ALT
-    - ARINC429<number> (feet MSL)
-    - The missed approach acceleration altitude
-    - {number}
-        - 1 - captain's side FMGC
-        - 2 - f/o's side FMGC
-
-- L:A32NX_FM{number}_MISSED_EO_ACC_ALT
-    - ARINC429<number> (feet MSL)
-    - The missed approach engine out acceleration altitude
-    - {number}
-        - 1 - captain's side FMGC
-        - 2 - f/o's side FMGC
-
-- L:A32NX_FM{number}_MISSED_THR_RED_ALT
-    - ARINC429<number> (feet MSL)
-    - The missed approach thrust reduction altitude
-    - {number}
-        - 1 - captain's side FMGC
-        - 2 - f/o's side FMGC
-
-- L:A32NX_FM{number}_THR_RED_ALT
-    - ARINC429<number> (feet MSL)
-    - The thrust reduction altitude
-    - {number}
-        - 1 - captain's side FMGC
-        - 2 - f/o's side FMGC
-
-- A32NX_FM{number}_TO_PITCH_TRIM
-    - Takeoff pitch trim set by the pilot on the PERF TO MCDU page
-    - Arinc429<Angle>
-    - {number}
-        - 1 - captain's side FMGC
-        - 2 - f/o's side FMGC
-
-- A32NX_FM{number}_DECISION_HEIGHT
-    - ARINC429<number>
-    - The decision height for an approach in feet, as entered on the PERF page.
-    - Value | Meaning
-       --- | ---
-       0 or greater | The decision height in feet
-       -1 | The pilot has not entered a decision height
-       -2 | The special value "NO" has been explicitly entered as the decision deight
-    - {number}
-        - 1 - captain's side FMGC
-        - 2 - f/o's side FMGC
-
-- A32NX_FM{number}_MINIMUM_DESCENT_ALTITUDE
-    - ARINC429<number>
-    - The minimum descent altitude for a non-precision approach in feet, as entered on the PERF page.
-    - {number}
-        - 1 - captain's side FMGC
-        - 2 - f/o's side FMGC
-
-- A32NX_FM{number}_TRANS_ALT
-    - Arinc429<number>
-    - The transition altitude at the origin in feet
-    - {number}
-        - 1 - captain's side FMGC
-        - 2 - f/o's side FMGC
-
-- A32NX_FM{number}_TRANS_LVL
-    - Arinc429<number>
-    - The transition level the destination as a flight level
-    - {number}
-        - 1 - captain's side FMGC
-        - 2 - f/o's side FMGC
 
 - A32NX_FM_VNAV_TRIGGER_STEP_DELETED
     - Bool
@@ -3114,6 +3027,152 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Indicates if the A/THR instinctive disconnect signal to the FMGC or FWC is high or low
     - Boolean
 
+### Flight Management and Guidance Computer (FMGC, Flight Management Section)
+
+- `L:A32NX_FM{number}_ACC_ALT`
+    - ARINC429<number> (feet MSL)
+    - The acceleration altitude
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+- `L:A32NX_FM{number}_DECISION_HEIGHT`
+    - ARINC429<number>
+    - The decision height for an approach in feet, as entered on the PERF page.
+    - Value | Meaning
+       --- | ---
+       0 or greater | The decision height in feet
+       -1 | The pilot has not entered a decision height
+       -2 | The special value "NO" has been explicitly entered as the decision deight
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+- `L:A32NX_FM{number}_DEST_LAT`
+    - Destination latitude
+    - Arinc429<Angle>
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+- `L:A32NX_FM{number}_DEST_LONG`
+    - Destination longitude
+    - Arinc429<Angle>
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+- `L:A32NX_FM{number}_DISCRETE_WORD_2`
+    - Arinc429<Discrete>
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+    - | Bit |            Description            |
+      |:---:|:---------------------------------:|
+      | 13  | Takeoff flap conf 0               |
+      | 14  | Takeoff flap conf 1               |
+      | 15  | Takeoff flap conf 2               |
+      | 16  | Takeoff flap conf 3               |
+
+- `L:A32NX_FM{number}_DISCRETE_WORD_3`
+    - Arinc429<Discrete>
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+    - | Bit |            Description            |
+      |:---:|:---------------------------------:|
+      | 16  | V1/Vr/V2 disagree                 |
+      | 17  | Takeoff speeds too low            |
+      | 18  | Takeoff speeds not inserted       |
+
+- `L:A32NX_FM{number}_EO_ACC_ALT`
+    - ARINC429<number> (feet MSL)
+    - The engine out acceleration altitude
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+- `L:A32NX_FM{1 | 2}_FLIGHT_NUMBER_{1 | 2 | 3 | 4}`
+  - Arinc429<ISO5>
+  - The flight number encoded as 4 ISO5 words, up to 7 chars total.
+
+- `L:A32NX_FM{number}_LANDING_ELEVATION`
+    - ARINC429<number> (feet MSL)
+    - The landing elevation at the active destination
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+- `L:A32NX_FM{number}_MINIMUM_DESCENT_ALTITUDE`
+    - ARINC429<number>
+    - The minimum descent altitude for a non-precision approach in feet, as entered on the PERF page.
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+- `L:A32NX_FM{number}_MISSED_ACC_ALT`
+    - ARINC429<number> (feet MSL)
+    - The missed approach acceleration altitude
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+- `L:A32NX_FM{number}_MISSED_EO_ACC_ALT`
+    - ARINC429<number> (feet MSL)
+    - The missed approach engine out acceleration altitude
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+- `L:A32NX_FM{number}_MISSED_THR_RED_ALT`
+    - ARINC429<number> (feet MSL)
+    - The missed approach thrust reduction altitude
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+- `L:A32NX_FM{number}_NAV_DISCRETE`
+    - Arinc429<Discrete>
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC (currently not written)
+    - | Bit |     Description     |
+      |:---:|:-------------------:|
+      | 11  | VOR 1 manually tuned |
+      | 12  | VOR 2 manually tuned |
+      | 13  | ADF 1 manually tuned |
+      | 14  | ADF 2 manually tuned |
+      | 15  | MMR 1 manually tuned |
+      | 16  | MMR 2 manually tuned |
+
+- `L:A32NX_FM{number}_THR_RED_ALT`
+    - ARINC429<number> (feet MSL)
+    - The thrust reduction altitude
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+- `L:A32NX_FM{number}_TO_PITCH_TRIM`
+    - Takeoff pitch trim set by the pilot on the PERF TO MCDU page
+    - Arinc429<Angle>
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+- `L:A32NX_FM{number}_TRANS_ALT`
+    - Arinc429<number>
+    - The transition altitude at the origin in feet
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+- `L:A32NX_FM{number}_TRANS_LVL`
+    - Arinc429<number>
+    - The transition level the destination as a flight level
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
 ### Flight Control Unit (FCU)
 
 - A32NX_FCU_HEALTHY
@@ -3510,6 +3569,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Arinc429<Degrees>
     - Note that multiple SFCC are not yet implemented, thus no {number} in the name.
     - The Flap FPPU angle ranges from 0° to 360°
+
+- A32NX_SFCC_FAP_{num}
+    - Flap actual position discrete output
+    - {num} is from 1 to 7
 
 ## Flight Controls (ATA 27)
 
@@ -4018,6 +4081,19 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
       | 27  | LH Nose gear door fully open      |
       | 28  | RH Nose gear door fully open      |
 
+- A32NX_LGCIU_{number}_DISCRETE_WORD_4
+    - Discrete Data word 4 of the LGCIU bus output
+    - Arinc429<Discrete>
+    - {number}
+        - 1
+        - 2
+    - | Bit |             Description             |
+      |:---:|:-----------------------------------:|
+      | 21  | LH flap attachment failure detected |
+      | 22  | LH flap attachment sensor valid     |
+      | 25  | RH flap attachment failure detected |
+      | 26  | RH flap attachment sensor valid     |
+
 - A32NX_LGCIU_{number}_{gear}_GEAR_COMPRESSED
     - Indicates if the shock absorber is compressed (not fully extended)
     - Bool
@@ -4338,6 +4414,17 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
         - 1.0
 
 ## Non-Systems Related
+
+- `L:FBW_BUILD_EDITION`
+    - Enum
+    - Read-Only
+    - Current aircraft build edition (same meaning as package.json edition property).
+      Description | Value
+      ------------ | -
+      Unknown      | 0
+      Stable       | 1
+      Development  | 2
+      Experimental | 3
 
 - `L:FBW_PILOT_SEAT`
   - Enum
