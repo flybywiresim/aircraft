@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // If the consent is not set, show telex page
 
 // Copyright (c) 2024 FlyByWire Simulations

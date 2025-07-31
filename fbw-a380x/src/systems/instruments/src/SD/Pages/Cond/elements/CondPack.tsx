@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import React, { FC } from 'react';
 import { Triangle } from '@instruments/common/Shapes';
 import { useArinc429Var } from '@flybywiresim/fbw-sdk';

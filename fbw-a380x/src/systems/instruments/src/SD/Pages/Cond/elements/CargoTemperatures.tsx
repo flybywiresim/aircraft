@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import React from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { Position } from '@instruments/common/types';

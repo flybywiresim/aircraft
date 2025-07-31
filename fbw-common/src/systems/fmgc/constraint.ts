@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { AltitudeDescriptor, SpeedDescriptor } from '@flybywiresim/fbw-sdk';
 
 // TODO at and atOrAbove do not exist in the airbus (former interpreted as atOrBelow, latter discarded)

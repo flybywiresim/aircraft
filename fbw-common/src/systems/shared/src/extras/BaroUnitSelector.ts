@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
 import { GameStateProvider, Wait } from '@microsoft/msfs-sdk';
 import { NearestSearchType } from '../../../navdata/client/backends/Msfs/FsTypes';

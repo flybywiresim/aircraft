@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import React, { FC } from 'react';
 import { HydraulicPowerSource, PowerSupplyIndication, PowerSupplyType } from './PowerSupply';
 import { useSimVar } from '@flybywiresim/fbw-sdk';

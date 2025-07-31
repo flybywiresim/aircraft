@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { useSimVar } from '@flybywiresim/fbw-sdk';
 import React, { FC } from 'react';
 

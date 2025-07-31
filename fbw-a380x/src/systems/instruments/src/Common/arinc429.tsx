@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { useSimVar } from './simVars';
 

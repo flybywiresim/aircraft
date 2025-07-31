@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
 
 // SI base units

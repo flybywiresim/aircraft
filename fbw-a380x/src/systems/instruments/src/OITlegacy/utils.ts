@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { initialState, setSimbriefData, SimbriefData } from '@flybywiresim/flypad';
 import { PayloadAction } from '@reduxjs/toolkit';
 

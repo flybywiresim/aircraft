@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import React, { FC, useEffect, useState } from 'react';
 import { Position } from '@instruments/common/types';
 import { useSimVar } from '@instruments/common/simVars';

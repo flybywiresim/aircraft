@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { HoldData, HoldType } from '@fmgc/flightplanning/data/flightplan';
 import { LegType, ProcedureLeg } from '@flybywiresim/fbw-sdk';
 

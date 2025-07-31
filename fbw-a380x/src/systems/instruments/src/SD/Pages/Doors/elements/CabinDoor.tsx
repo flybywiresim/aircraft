@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { useSimVar } from '@flybywiresim/fbw-sdk';
 import { Position, CabinDoorProps } from '@instruments/common/types';
 import React from 'react';

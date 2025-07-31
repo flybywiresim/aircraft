@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import React, { FC } from 'react';
 import { ActuatorIndication, ActuatorType, HydraulicPowerSource } from './ActuatorIndication';
 import { MathUtils, useSimVar } from '@flybywiresim/fbw-sdk';

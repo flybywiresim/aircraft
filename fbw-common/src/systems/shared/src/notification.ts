@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { EventBus, KeyEvents, KeyEventManager } from '@microsoft/msfs-sdk';
 
 let nxNotificationsListener: ViewListener.ViewListener;

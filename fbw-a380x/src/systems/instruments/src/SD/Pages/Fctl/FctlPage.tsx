@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import React, { JSX } from 'react';
 import { PageTitle } from '../Generic/PageTitle';
 

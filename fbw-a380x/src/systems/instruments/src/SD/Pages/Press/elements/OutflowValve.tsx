@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import React, { memo } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { EngineNumber, Position, ValidRedundantSystem } from '@instruments/common/types';
