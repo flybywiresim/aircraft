@@ -32,6 +32,14 @@
       "@flybywiresim/clock": ["../../../fbw-common/src/systems/instruments/src/Clock/index.ts"],
       "@flybywiresim/bat": ["../../../fbw-common/src/systems/instruments/src/BAT/index.ts"],
       "@flybywiresim/pfd": ["../../../fbw-common/src/systems/instruments/src/PFD/index.ts"]
-    }
+    },
+    "plugins": [
+      {
+        "name": "typescript-strict-plugin",
+        "exclude": [
+          "**/*",
+        ]
+      }
+    ]
   },
 }

@@ -25,15 +25,15 @@
         "@flybywiresim/bat": ["../../../fbw-common/src/systems/instruments/src/BAT/index.ts"]
       },
       "plugins": [
-      {
-        "name": "typescript-strict-plugin",
-        "include": [
-          "./instruments/MFD/**"
-        ],
-        "exclude": [
-          "**/*",
-        ]
-      }
-    ]
+        {
+          "name": "typescript-strict-plugin",
+          "include": [
+            "./instruments/MFD/**"
+          ],
+          "exclude": [
+            "**/*",
+          ]
+        }
+      ]
     }
 }
