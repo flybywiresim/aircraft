@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 import React, { forwardRef, PropsWithChildren, useCallback, useEffect, useRef, useState } from 'react';
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
 import { DcElectricalBus } from '@shared/electrical';

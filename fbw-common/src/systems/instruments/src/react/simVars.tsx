@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useInteractionEvents, useUpdate } from './hooks';
 

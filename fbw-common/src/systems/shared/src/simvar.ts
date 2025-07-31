@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 export class SimVarCache {
   private simVarCache: { [key: string]: number | null };
 

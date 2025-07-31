@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 import { UpdateThrottler } from '@flybywiresim/fbw-sdk';
 
 class PeriodicSound {

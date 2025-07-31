@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 import { DisplayComponent, FSComponent, NodeReference, Subscribable, VNode } from '@microsoft/msfs-sdk';
 
 interface VerticalTapeProps {

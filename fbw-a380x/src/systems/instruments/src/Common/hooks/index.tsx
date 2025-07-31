@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 import { useEffect, useRef, useState } from 'react';
 
 export const useHover = (): [React.MutableRefObject<any>, boolean, (value: boolean) => void] => {

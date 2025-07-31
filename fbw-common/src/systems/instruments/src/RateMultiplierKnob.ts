@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 export type UpdateValueCallback = (x: number) => void;
 
 /**

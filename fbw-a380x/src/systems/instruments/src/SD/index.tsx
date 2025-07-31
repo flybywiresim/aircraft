@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { getRootElement } from '@instruments/common/defaults.js';

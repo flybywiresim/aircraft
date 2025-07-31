@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 import { MathUtils } from '@microsoft/msfs-sdk';
 
 export class A380AltitudeUtils {

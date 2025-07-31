@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 import React, {
   Children,
   isValidElement,

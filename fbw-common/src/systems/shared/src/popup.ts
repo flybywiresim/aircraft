@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 import { SimVarValueType, Wait } from '@microsoft/msfs-sdk';
 import { v4 as uuidv4 } from 'uuid';
 /**

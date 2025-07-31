@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 import useMouse from '@react-hook/mouse-position';
 import { InputManagerProvider } from '@instruments/common/input';
 import { useSimVar } from '@instruments/common/simVars';

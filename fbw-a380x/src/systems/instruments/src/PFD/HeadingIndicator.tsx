@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 import { DisplayComponent, EventBus, FSComponent, HEvent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { HorizontalTape } from './HorizontalTape';
 import { getSmallestAngle } from './PFDUtils';

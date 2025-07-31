@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 import { Atc } from '@datalink/atc';
 import { Aoc } from '@datalink/aoc';
 import { SimVarHandling } from '@datalink/common';

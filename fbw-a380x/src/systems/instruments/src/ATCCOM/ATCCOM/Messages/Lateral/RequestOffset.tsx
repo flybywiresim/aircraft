@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 import React, { FC } from 'react';
 import { AtsuStatusCodes } from '@atsu/AtsuStatusCodes';
 import { CpdlcMessageElement, CpdlcMessagesDownlink } from '@atsu/messages/CpdlcMessageElements';

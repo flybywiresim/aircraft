@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 import { Arinc429ConsumerSubject } from '@flybywiresim/fbw-sdk';
 import {
   ConsumerSubject,

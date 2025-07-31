@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 import { EventBus, DisplayComponent, FSComponent, NodeReference, VNode, Subscribable } from '@microsoft/msfs-sdk';
 import { Arinc429Values } from './shared/ArincValueProvider';
 

@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 import React from 'react';
 import { getRootElement } from '@instruments/common/defaults';
 import { HashRouter as Router } from 'react-router-dom';

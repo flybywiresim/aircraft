@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 export class BitFlags {
   flags: number[];
 

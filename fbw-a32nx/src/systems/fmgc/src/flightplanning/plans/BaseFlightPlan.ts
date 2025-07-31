@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 // Copyright (c) 2021-2023 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //

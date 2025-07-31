@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 import { Arinc429Values } from 'instruments/src/PFD/shared/ArincValueProvider';
 import {
   ClockEvents,

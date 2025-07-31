@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 import React, { useContext, useEffect, useState } from 'react';
 import { useUpdate } from '@instruments/common/hooks';
 import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';

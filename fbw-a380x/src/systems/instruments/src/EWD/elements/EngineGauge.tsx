@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 import { DisplayComponent, Subscribable, VNode, FSComponent, EventBus } from '@microsoft/msfs-sdk';
 import { AttentionGetter } from 'instruments/src/EWD/elements/AttentionGetter';
 import { EGT } from 'instruments/src/EWD/elements/EGT';

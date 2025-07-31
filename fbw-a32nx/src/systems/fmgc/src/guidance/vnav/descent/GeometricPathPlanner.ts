@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { evaluateAltitudeConstraint } from '@fmgc/guidance/vnav/descent/DescentPathBuilder';
 import { DescentAltitudeConstraint } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';

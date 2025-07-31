@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 import { DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { getDisplayIndex } from 'instruments/src/PFD/PFD';
 import { Arinc429ConsumerSubject, Arinc429Word } from '@flybywiresim/fbw-sdk';

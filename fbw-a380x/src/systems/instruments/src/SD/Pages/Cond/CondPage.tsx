@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 import React from 'react';
 import { useArinc429Var, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
 import { PageTitle } from '../Generic/PageTitle';

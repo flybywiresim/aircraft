@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 import stringify from 'safe-stable-stringify';
 
 export class FlowEventSync {

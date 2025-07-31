@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 /**
  * Lowest selectable Speed Table
  * calls function(gross weight (1000 lb)) which returns CAS, automatically compensates for cg.

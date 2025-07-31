@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 import { EventBus, Subject, Subscribable, Subscription } from '@microsoft/msfs-sdk';
 
 import { BaseFlightPlan } from './BaseFlightPlan';

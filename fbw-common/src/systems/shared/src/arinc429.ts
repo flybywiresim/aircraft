@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 export enum Arinc429SignStatusMatrix {
   FailureWarning = 0b00,
   NoComputedData = 0b01,

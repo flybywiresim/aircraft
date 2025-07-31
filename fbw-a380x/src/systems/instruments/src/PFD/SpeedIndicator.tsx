@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 /* eslint-disable prettier/prettier */
 import {
   ClockEvents,

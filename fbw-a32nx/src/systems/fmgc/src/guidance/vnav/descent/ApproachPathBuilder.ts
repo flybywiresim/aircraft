@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 //  Copyright (c) 2021 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
