@@ -50,7 +50,7 @@ export interface VerticalProfileComputationParameters {
   preselectedClbSpeed: Knots;
   preselectedCruiseSpeed: Knots;
   takeoffFlapsSetting?: FlapConf;
-  estimatedDestinationFuel: Pounds;
+  estimatedDestinationFuel: Pounds | null;
 
   approachQnh: Millibar;
   approachTemperature: Celsius;
@@ -71,6 +71,7 @@ export class VerticalProfileComputationParametersObserver {
   }
 
   update() {
+    const efobKgs = this.fmgc.getDestEFOB(false);
     this.parameters = {
       presentPosition: this.getPresentPosition(),
 
@@ -119,7 +120,7 @@ export class VerticalProfileComputationParametersObserver {
       preselectedClbSpeed: this.fmgc.getPreSelectedClbSpeed(),
       preselectedCruiseSpeed: this.fmgc.getPreSelectedCruiseSpeed(),
       takeoffFlapsSetting: this.fmgc.getTakeoffFlapsSetting() ?? DefaultVerticalProfileParameters.flapsSetting,
-      estimatedDestinationFuel: UnitType.TONNE.convertTo(this.fmgc.getDestEFOB(false), UnitType.POUND),
+      estimatedDestinationFuel: efobKgs !== null ? UnitType.TONNE.convertTo(efobKgs, UnitType.POUND) : null,
 
       approachQnh: this.fmgc.getApproachQnh(),
       approachTemperature: this.fmgc.getApproachTemperature(),
