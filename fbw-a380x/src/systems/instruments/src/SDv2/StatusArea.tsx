@@ -98,6 +98,9 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
   private readonly fm1ZeroFuelWeight = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmZeroFuelWeight_1'));
   private readonly fm2ZeroFuelWeight = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmZeroFuelWeight_2'));
 
+  private readonly fm1ZeroFuelWeightCg = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmZeroFuelWeightCg_1'));
+  private readonly fm2ZeroFuelWeightCg = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmZeroFuelWeightCg_2'));
+
   private readonly fuelQuantity = ConsumerSubject.create(this.sub.on('fuelTotalQuantity'), 0);
   private readonly fuelWeightPerGallon = ConsumerSubject.create(this.sub.on('fuelWeightPerGallon'), 0);
   private readonly fuelWeight = MappedSubject.create(
@@ -114,12 +117,15 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
 
   // FIXME replace with FQMS implementation
   private readonly grossWeight = MappedSubject.create(
-    ([fm1Zfw, fm2Zfw, fuelWeight]) =>
-      !fm1Zfw.isNormalOperation() && !fm2Zfw.isNormalOperation()
-        ? null
-        : (fm1Zfw.isNormalOperation() ? fm1Zfw.value : fm2Zfw.value) + fuelWeight,
+    ([fm1Zfw, fm2Zfw, fm1ZfwCg, fm2ZfwCg, fuelWeight]) =>
+      (fm1Zfw.isNormalOperation() && fm1ZfwCg.isNormalOperation()) ||
+      (fm2Zfw.isNormalOperation() && fm2ZfwCg.isNormalOperation())
+        ? (fm1Zfw.isNormalOperation() ? fm1Zfw.value : fm2Zfw.value) + fuelWeight
+        : null,
     this.fm1ZeroFuelWeight,
     this.fm2ZeroFuelWeight,
+    this.fm1ZeroFuelWeightCg,
+    this.fm2ZeroFuelWeightCg,
     this.fuelWeight,
   );
 
