@@ -9,13 +9,20 @@ import {
   MappedSubject,
   Subject,
   Subscribable,
+  SubscribableMapFunctions,
   VNode,
 } from '@microsoft/msfs-sdk';
 import { ArmedLateralMode, isArmed, LateralMode, VerticalMode } from '@shared/autopilot';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
-import { Arinc429ConsumerSubject, Arinc429Word, Arinc429WordData, ArincEventBus } from '@flybywiresim/fbw-sdk';
+import {
+  Arinc429ConsumerSubject,
+  Arinc429RegisterSubject,
+  Arinc429Word,
+  Arinc429WordData,
+  ArincEventBus,
+} from '@flybywiresim/fbw-sdk';
 
 abstract class ShowForSecondsComponent<T extends ComponentProps> extends DisplayComponent<T> {
   private timeout: number = 0;
@@ -436,7 +443,7 @@ class A2Cell extends DisplayComponent<{ bus: EventBus }> {
 }
 
 class Row3 extends DisplayComponent<{
-  bus: EventBus;
+  bus: ArincEventBus;
   isAttExcessive: Subscribable<boolean>;
   disconnectApForLdg: Subscribable<boolean>;
   unrestrictedClimbDescent: Subscribable<number>;
@@ -1668,54 +1675,99 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
   }
 }
 
-class D3Cell extends DisplayComponent<{ bus: EventBus }> {
-  private textRef = FSComponent.createRef<SVGTextElement>();
+enum MdaMode {
+  None = '',
+  NoDh = 'NO DH',
+  Radio = 'RADIO',
+  Baro = 'BARO',
+}
 
-  private classNameSub = Subject.create('');
+class D3Cell extends DisplayComponent<{ bus: ArincEventBus }> {
+  private readonly textRef = FSComponent.createRef<SVGTextElement>();
+
+  /** bit 29 is NO DH selection */
+  private readonly fmEisDiscrete2 = Arinc429RegisterSubject.createEmpty();
+
+  private readonly mda = Arinc429RegisterSubject.createEmpty();
+
+  private readonly dh = Arinc429RegisterSubject.createEmpty();
+
+  private readonly noDhSelected = this.fmEisDiscrete2.map((r) => r.bitValueOr(29, false));
+
+  private readonly mdaDhMode = MappedSubject.create(
+    ([noDh, dh, mda]) => {
+      if (noDh) {
+        return MdaMode.NoDh;
+      }
+
+      if (!dh.isNoComputedData() && !dh.isFailureWarning()) {
+        return MdaMode.Radio;
+      }
+
+      if (!mda.isNoComputedData() && !mda.isFailureWarning()) {
+        return MdaMode.Baro;
+      }
+
+      return MdaMode.None;
+    },
+    this.noDhSelected,
+    this.dh,
+    this.mda,
+  );
+
+  private readonly mdaDhValueText = MappedSubject.create(
+    ([mdaMode, dh, mda]) => {
+      switch (mdaMode) {
+        case MdaMode.Baro:
+          return Math.round(mda.value).toString().padStart(6, '\xa0');
+        case MdaMode.Radio:
+          return Math.round(dh.value).toString().padStart(4, '\xa0');
+        default:
+          return '';
+      }
+    },
+    this.mdaDhMode,
+    this.dh,
+    this.mda,
+  );
+  private readonly DhModexPos = MappedSubject.create(
+    ([noDhSelected]) => (noDhSelected ? 118.38384 : 103.47),
+    this.noDhSelected,
+  );
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<PFDSimvars>();
+    const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values>();
 
-    sub
-      .on('mda')
-      .whenChanged()
-      .handle((mda) => {
-        this.classNameSub.set(`FontSmallest MiddleAlign White`);
-        if (mda !== 0) {
-          const MDAText = Math.round(mda).toString().padStart(6, ' ');
-
-          this.textRef.instance.innerHTML = `<tspan>BARO</tspan><tspan class="Cyan" xml:space="preserve">${MDAText}</tspan>`;
-        } else {
-          this.textRef.instance.innerHTML = '';
-        }
-      });
-
-    sub
-      .on('dh')
-      .whenChanged()
-      .handle((dh) => {
-        let fontSize = 'FontSmallest';
-
-        if (dh !== -1 && dh !== -2) {
-          const DHText = Math.round(dh).toString().padStart(4, ' ');
-
-          this.textRef.instance.innerHTML = `
-                        <tspan>RADIO</tspan><tspan class="Cyan" xml:space="preserve">${DHText}</tspan>
-                    `;
-        } else if (dh === -2) {
-          this.textRef.instance.innerHTML = '<tspan>NO DH</tspan>';
-          fontSize = 'FontMedium';
-        } else {
-          this.textRef.instance.innerHTML = '';
-        }
-        this.classNameSub.set(`${fontSize} MiddleAlign White`);
-      });
+    sub.on('fmEisDiscreteWord2Raw').handle(this.fmEisDiscrete2.setWord.bind(this.fmEisDiscrete2));
+    sub.on('fmMdaRaw').handle(this.mda.setWord.bind(this.mda));
+    sub.on('fmDhRaw').handle(this.dh.setWord.bind(this.dh));
   }
 
   render(): VNode {
-    return <text ref={this.textRef} class={this.classNameSub} x="118.38384" y="21.104172" />;
+    return (
+      <text
+        ref={this.textRef}
+        class={{
+          FontSmallest: this.noDhSelected.map(SubscribableMapFunctions.not()),
+          FontMedium: this.noDhSelected,
+          MiddleAlign: true,
+          White: true,
+        }}
+        x={this.DhModexPos}
+        y="21.104172"
+      >
+        <tspan>{this.mdaDhMode}</tspan>
+        <tspan
+          class={{ Cyan: true, HiddenElement: this.mdaDhValueText.map((v) => v.length <= 0) }}
+          x="133.425"
+          y="21.104172"
+        >
+          {this.mdaDhValueText}
+        </tspan>
+      </text>
+    );
   }
 }
 
