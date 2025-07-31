@@ -24,9 +24,6 @@
     "plugins": [
       {
         "name": "typescript-strict-plugin",
-        "exclude": [
-          "**/*",
-        ]
       }
     ]
   }

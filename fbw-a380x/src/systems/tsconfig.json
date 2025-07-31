@@ -26,12 +26,6 @@
       "plugins": [
         {
           "name": "typescript-strict-plugin",
-          "include": [
-            "./instruments/MFD/**"
-          ],
-          "exclude": [
-            "**/*",
-          ]
         }
       ]
     }
