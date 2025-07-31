@@ -904,7 +904,11 @@ export class FwsCore {
 
   public readonly twoPrimsFailed = Subject.create(false);
 
-  public readonly primTwoAndThreeFailed = Subject.create(false);
+  public readonly primTwoAndThreeFailed = MappedSubject.create(
+    SubscribableMapFunctions.nand(),
+    this.prim2Healthy,
+    this.prim3Healthy,
+  );
 
   public readonly prim2FailedBeforeTakeoff = new NXLogicMemoryNode();
 
