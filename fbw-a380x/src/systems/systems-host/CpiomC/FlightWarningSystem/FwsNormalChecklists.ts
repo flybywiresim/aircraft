@@ -11,7 +11,7 @@ import {
   Subscription,
 } from '@microsoft/msfs-sdk';
 import { ChecklistState, FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
-import { FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
+import { FwsCore } from 'systems-host/CpiomC/FlightWarningSystem/FwsCore';
 import {
   deferredProcedureIds,
   EcamNormalProcedures,
