@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Arinc429ConsumerSubject, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { splitDecimals } from '../../MsfsAvionicsCommon/gauges';
 import {

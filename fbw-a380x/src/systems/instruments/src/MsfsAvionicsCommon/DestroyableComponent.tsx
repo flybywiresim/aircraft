@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { DisplayComponent, FSComponent, Subscription, VNode } from '@microsoft/msfs-sdk';
 
 export abstract class DestroyableComponent<T> extends DisplayComponent<T> {

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
 
 import {

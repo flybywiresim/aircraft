@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { FSComponent, DisplayComponent, VNode, Subscribable, MappedSubject, ComponentProps } from '@microsoft/msfs-sdk';
 
 export interface LayerProps extends ComponentProps {
