@@ -73,8 +73,8 @@ export const StatusArea = () => {
   });
 
   useEffect(() => {
-    const baroMode = SimVar.GetSimVarValue('L:XMLVAR_Baro1_Mode', 'number');
-    const isInStdMode = baroMode !== 0 && baroMode !== 1;
+    const baroMode = SimVar.GetSimVarValue('L:A32NX_FCU_EFIS_L_DISPLAY_BARO_MODE', 'number');
+    const isInStdMode = baroMode === 0; // 0 = STD, 1 = QNH, 2 = QFE
     const isaShouldBeVisible = isInStdMode && zp.isNormalOperation() && sat.isNormalOperation();
     setIsaVisible(isaShouldBeVisible);
   }, [isa, sat, zp]);

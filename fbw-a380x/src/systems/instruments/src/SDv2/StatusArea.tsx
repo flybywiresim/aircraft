@@ -17,7 +17,7 @@ import './style.scss';
 import '../index.scss';
 import { Arinc429LocalVarConsumerSubject, FmsData, NXDataStore, NXUnits } from '@flybywiresim/fbw-sdk';
 import { SDSimvars } from './SDSimvarPublisher';
-import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
+import { BaroEvents, BaroMode } from 'instruments/src/FCU/Managers/BaroManager';
 
 export interface PermanentDataProps {
   readonly bus: EventBus;
@@ -35,7 +35,7 @@ const getCurrentHHMMSS = (seconds: number) => {
 export class PermanentData extends DisplayComponent<PermanentDataProps> {
   private readonly subscriptions: Subscription[] = [];
 
-  private readonly sub = this.props.bus.getSubscriber<SDSimvars & SimplaneValues & ClockEvents & FmsData>();
+  private readonly sub = this.props.bus.getSubscriber<SDSimvars & ClockEvents & FmsData & BaroEvents>();
 
   private readonly sat = Arinc429LocalVarConsumerSubject.create(this.sub.on('sat'));
 
@@ -43,7 +43,7 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
 
   private readonly zp = Arinc429LocalVarConsumerSubject.create(this.sub.on('altitude'));
 
-  private readonly baroMode = ConsumerSubject.create(this.sub.on('baroMode'), 'STD');
+  private readonly baroMode = ConsumerSubject.create(this.sub.on('baro_mode_1'), BaroMode.Std);
 
   private readonly tatClass = this.tat.map((tat) => `F25 EndAlign ${tat.isNormalOperation() ? 'Green' : 'Amber'}`);
   private readonly tatText = this.tat.map((tat) =>
@@ -65,7 +65,7 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
 
   private readonly isaVisibility = MappedSubject.create(
     ([baroMode, zp, sat]) =>
-      baroMode === 'STD' && zp.isNormalOperation() && sat.isNormalOperation() ? 'inherit' : 'hidden',
+      baroMode === BaroMode.Std && zp.isNormalOperation() && sat.isNormalOperation() ? 'inherit' : 'hidden',
     this.baroMode,
     this.zp,
     this.sat,
