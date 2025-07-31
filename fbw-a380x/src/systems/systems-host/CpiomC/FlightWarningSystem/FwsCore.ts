@@ -905,7 +905,7 @@ export class FwsCore {
   public readonly twoPrimsFailed = Subject.create(false);
 
   public readonly primTwoAndThreeFailed = MappedSubject.create(
-    SubscribableMapFunctions.nand(),
+    ([prim2, prim3]) => !prim2 && !prim3,
     this.prim2Healthy,
     this.prim3Healthy,
   );
@@ -915,7 +915,7 @@ export class FwsCore {
   public readonly dcEhaPowered = Subject.create(false);
 
   public readonly allPrimFailed = MappedSubject.create(
-    SubscribableMapFunctions.nand(),
+    ([prim1, prim2, prim3]) => !prim1 && !prim2 && !prim3,
     this.prim1Healthy,
     this.prim2Healthy,
     this.prim3Healthy,
