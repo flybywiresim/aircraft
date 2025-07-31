@@ -169,6 +169,8 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
       this.timeSS,
       this.fm1ZeroFuelWeight,
       this.fm2ZeroFuelWeight,
+      this.fm1ZeroFuelWeightCg,
+      this.fm2ZeroFuelWeightCg,
       this.fuelQuantity,
       this.fuelWeightPerGallon,
       this.fuelWeight,
