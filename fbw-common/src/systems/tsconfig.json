@@ -20,6 +20,14 @@
       "@flybywiresim/fbw-sdk": ["./index.ts"],
       "@flybywiresim/flypad": ["./instruments/src/EFB/index.ts"],
       "@flybywiresim/checklists": ["./shared/src/checklists/index.ts"]
-    }
+    },
+    "plugins": [
+      {
+        "name": "typescript-strict-plugin",
+        "exclude": [
+          "**/*",
+        ]
+      }
+    ]
   }
 }
