@@ -4010,7 +4010,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.Door,
       limitationsAllPhases: () => [this.fws.cabVerticalSpeedLimitationActive.get() ? '210400001' : null],
-      inopSysAllPhases: (checked) => (checked[1] ? ['213300005', '210300011'] : []),
+      inopSysAllPhases: (checked) => (checked[0] ? ['213300005', '210300011'] : []),
     },
     520800018: {
       flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
@@ -4035,7 +4035,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.Door,
       limitationsAllPhases: () => [this.fws.cabVerticalSpeedLimitationActive.get() ? '210400001' : null],
-      inopSysAllPhases: (checked) => (checked[1] ? ['213300005', '210300011'] : []),
+      inopSysAllPhases: (checked) => (checked[0] ? ['213300005', '210300011'] : []),
     },
     520800019: {
       flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
@@ -4060,7 +4060,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.Door,
       limitationsAllPhases: () => [this.fws.cabVerticalSpeedLimitationActive.get() ? '210400001' : null],
-      inopSysAllPhases: (checked) => (checked[1] ? ['213300005', '210300011'] : []),
+      inopSysAllPhases: (checked) => (checked[0] ? ['213300005', '210300011'] : []),
     },
     520800020: {
       flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
@@ -4085,7 +4085,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.Door,
       limitationsAllPhases: () => [this.fws.cabVerticalSpeedLimitationActive.get() ? '210400001' : null],
-      inopSysAllPhases: (checked) => (checked[1] ? ['213300005', '210300011'] : []),
+      inopSysAllPhases: (checked) => (checked[0] ? ['213300005', '210300011'] : []),
     },
     520800021: {
       flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
@@ -4110,7 +4110,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.Door,
       limitationsAllPhases: () => [this.fws.cabVerticalSpeedLimitationActive.get() ? '210400001' : null],
-      inopSysAllPhases: (checked) => (checked[1] ? ['213300005', '210300011'] : []),
+      inopSysAllPhases: (checked) => (checked[0] ? ['213300005', '210300011'] : []),
     },
     520800022: {
       flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
@@ -4135,7 +4135,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.Door,
       limitationsAllPhases: () => [this.fws.cabVerticalSpeedLimitationActive.get() ? '210400001' : null],
-      inopSysAllPhases: (checked) => (checked[1] ? ['213300005', '210300011'] : []),
+      inopSysAllPhases: (checked) => (checked[0] ? ['213300005', '210300011'] : []),
     },
     520800023: {
       flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
@@ -4160,7 +4160,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.Door,
       limitationsAllPhases: () => [this.fws.cabVerticalSpeedLimitationActive.get() ? '210400001' : null],
-      inopSysAllPhases: (checked) => (checked[1] ? ['213300005', '210300011'] : []),
+      inopSysAllPhases: (checked) => (checked[0] ? ['213300005', '210300011'] : []),
     },
     520800024: {
       flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
@@ -4185,7 +4185,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.Door,
       limitationsAllPhases: () => [this.fws.cabVerticalSpeedLimitationActive.get() ? '210400001' : null],
-      inopSysAllPhases: (checked) => (checked[1] ? ['213300005', '210300011'] : []),
+      inopSysAllPhases: (checked) => (checked[0] ? ['213300005', '210300011'] : []),
     },
     520800025: {
       flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
@@ -4210,7 +4210,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.Door,
       limitationsAllPhases: () => [this.fws.cabVerticalSpeedLimitationActive.get() ? '210400001' : null],
-      inopSysAllPhases: (checked) => (checked[1] ? ['213300005', '210300011'] : []),
+      inopSysAllPhases: (checked) => (checked[0] ? ['213300005', '210300011'] : []),
     },
     520800026: {
       flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
@@ -4235,7 +4235,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.Door,
       limitationsAllPhases: () => [this.fws.cabVerticalSpeedLimitationActive.get() ? '210400001' : null],
-      inopSysAllPhases: (checked) => (checked[1] ? ['213300005', '210300011'] : []),
+      inopSysAllPhases: (checked) => (checked[0] ? ['213300005', '210300011'] : []),
     },
     // SECONDARY FAILURES
     999800001: {
