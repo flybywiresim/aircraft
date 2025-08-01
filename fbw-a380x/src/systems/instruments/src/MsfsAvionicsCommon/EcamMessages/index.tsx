@@ -1,4 +1,4 @@
-// Copyright (c) 2024 FlyByWire Simulations
+// Copyright (c) 2024-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 export const WD_NUM_LINES = 17;
@@ -315,13 +315,10 @@ export const EcamInopSys: { [n: string]: string } = {
   213300018: '\x1b<4mCAB PRESS AUTO CTL 3',
   213300019: '\x1b<4mCAB PRESS AUTO CTL 4',
   220300001: '\x1b<4mA/THR',
-  220300002: '\x1b<4mCAT 3',
   220300004: '\x1b<4mAFS CTL PNL',
   220300005: '\x1b<4mAP 1',
   220300006: '\x1b<4mAP 2',
   220300007: '\x1b<4mAP 1+2',
-  220300008: '\x1b<4mCAT 3 DUAL',
-  220300009: '\x1b<4mCAT 2',
   220300010: '\x1b<4mGLS AUTOLAND',
   220300012: '\x1b<4mCAPT AFS BKUP CTL',
   220300013: '\x1b<4mF/O AFS BKUP CTL',
@@ -471,6 +468,9 @@ export const EcamInopSys: { [n: string]: string } = {
   270300007: '\x1b<4mF/CTL REDUNDANCY',
   270300008: '\x1b<4mUPPR RUDDER',
   270300009: '\x1b<4mLWR RUDDER',
+  270300010: '\x1b<4mPRIM 1',
+  270300011: '\x1b<4mPRIM 2',
+  270300012: '\x1b<4mPRIM 3',
   290100001: '\x1b<4mPART SPLRs',
   290100003: '\x1b<4mFLAPS SYS 1',
   290100004: '\x1b<4mFLAPS SYS 2',
