@@ -101,12 +101,13 @@
 1. [A380X/FWS] Added DEST EFOB & FMS SWTG memos - @BravoMike99 (bruno_pt99)
 1. [A380X/FMS] Added CHECK MIN FUEL AT DEST & DEST EFOB BELOW MIN message with associated amber EFOB color on MFD pages - @BravoMike99 (bruno_pt99)
 1. [A380X] Fixed wing taxi lights appearing black - @heclak (Heclak)
-1. [A380X] Fixed lighting issues in SU3 - @heclak (Heclak)
+1. [A380X] Fixed lighting issues in MSFS2024 - @heclak (Heclak)
 1. [A380X/FWS] Fix approach capability downgrade triple click - @flogross89 (floridude)
 1. [A380X/FWS] Disable startup time for runway spawns - @flogross89 (floridude)
 1. [A380X/PFD] Ignore non-running engines in flight phase 2 for rudder trim indicator visibility - @flogross89 (floridude)
 1. [EFB] Split jetway and pax stairs button in MSFS2024 to fix jetways not connecting in MSFS2024 - @heclak (Heclak)
 1. [A32NX/FWS] Active warnings are no longer cleared when entering an inhibited flight phase - @tracernz (Mike)
+1. [A32NX] Fixed lighting issues in MSFS2024 - @heclak (Heclak)
 
 ## 0.13.0
 
