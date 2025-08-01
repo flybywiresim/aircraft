@@ -1702,13 +1702,12 @@ export class FwsCore {
   private readonly tcasStandbyMemo3sConfNode = new NXLogicConfirmNode(3);
 
   public readonly tcasStandbyMemo = Subject.create(false);
-  
+
   public readonly tcasTaOnly = Subject.create(false);
 
   public readonly terrSys1FaultCond = Subject.create(false);
 
   public readonly terrSys2FaultCond = Subject.create(false);
-
 
   public readonly terrSys1Failed = Subject.create(false);
   public readonly terrSys2Failed = Subject.create(false);
@@ -1967,7 +1966,6 @@ export class FwsCore {
   public readonly iceSevereDetectedTimer = new NXLogicConfirmNode(40, false);
 
   public readonly iceSevereDetectedTimerStatus = Subject.create(false);
-
 
   public readonly fmsPredUnreliablePreCondition = this.aircraftOnGround.map(SubscribableMapFunctions.not());
 
