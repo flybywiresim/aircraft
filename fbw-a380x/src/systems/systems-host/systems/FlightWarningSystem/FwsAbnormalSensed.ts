@@ -3820,8 +3820,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.Door,
       limitationsAllPhases: () => [this.fws.cabVerticalSpeedLimitationActive.get() ? '210400001' : null],
-      inopSysAllPhases: () =>
-        this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3 ? ['213300005', '210300011'] : [],
+      inopSysAllPhases: (checked) => (checked[1] ? ['213300005', '210300011'] : []),
     },
     520800018: {
       flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
