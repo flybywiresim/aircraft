@@ -157,8 +157,7 @@
     "source_location": "cpp"
   },
   "typescript.preferences.quoteStyle": "single",
-  "typescript.preferences.importModuleSpecifier": "project-relative"
-  ,
+  "typescript.preferences.importModuleSpecifier": "project-relative",
   "emeraldwalk.runonsave": {
     "commands": [
            {
@@ -166,5 +165,6 @@
                "cmd": "cargo fmt"
            }
     ]
-}
+  },
+  "typescript.tsdk": "node_modules/typescript/lib"
 }
