@@ -329,7 +329,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
         style: ChecklistLineStyle.Green,
       },
       {
-        name: 'ALL CROSSFEEDS',
+        name: 'CROSSFEED 1+2+3+4',
         sensed: true,
         labelNotCompleted: 'ON',
       },
@@ -399,7 +399,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
         sensed: false,
       },
       {
-        name: 'ALL CROSSFEEDS',
+        name: 'CROSSFEED 1+2+3+4',
         sensed: true,
         labelNotCompleted: 'OFF',
       },
@@ -428,7 +428,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
         sensed: false,
       },
       {
-        name: 'ALL CROSSFEEDS',
+        name: 'CROSSFEED 1+2+3+4',
         sensed: true,
         labelNotCompleted: 'OFF',
       },
@@ -800,7 +800,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
     items: [
       // If the APU is off, and the APU battery is on
       {
-        name: 'WHEN APU NOT RQRD:',
+        name: 'WHEN APU NOT RQRD',
         sensed: false,
         condition: true,
       },
@@ -1057,7 +1057,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [
       {
-        name: 'ALL CROSSFEEDS',
+        name: 'CROSSFEED 1+2+3+4',
         sensed: true,
         labelNotCompleted: 'ON',
       },

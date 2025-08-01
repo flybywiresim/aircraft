@@ -110,6 +110,8 @@
 1. [A32NX/FWS] Active warnings are no longer cleared when entering an inhibited flight phase - @tracernz (Mike)
 1. [A32NX] Fixed lighting issues in MSFS2024 - @heclak (Heclak)
 1. [FMS] Fixed a rare issue where airways failed to load - @tracernz (Mike)
+1. [A380X/FWS] Implement ENG SHUTDOWN abnornal sensed & timer countdown to timed based items - @BravoMike99 (bruno_pt99)
+1. [A380X/CDS] Implement abnormal engine parameters amber attention getting box on the EWD - @BravoMike99 (bruno_pt99)
 
 ## 0.13.0
 

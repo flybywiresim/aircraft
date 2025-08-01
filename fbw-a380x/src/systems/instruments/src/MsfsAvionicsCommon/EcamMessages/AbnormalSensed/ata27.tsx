@@ -397,7 +397,7 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
     items: [
       { name: 'FOR TAXI: FLAP LVR 1', sensed: false },
       { name: 'SEC 1', sensed: true, labelNotCompleted: 'OFF THEN ON' },
-      { name: 'NOT SUCCESSFUL:', condition: true, sensed: true },
+      { name: 'NOT SUCCESSFUL', condition: true, sensed: true },
       { name: 'SEC 1', sensed: true, labelNotCompleted: 'OFF' },
       { name: 'LDG DIST AFFECTED', sensed: false },
     ],
@@ -408,7 +408,7 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
     items: [
       { name: 'FOR TAXI: FLAP LVR 1', sensed: false },
       { name: 'SEC 2', sensed: true, labelNotCompleted: 'OFF THEN ON' },
-      { name: 'NOT SUCCESSFUL:', condition: true, sensed: true },
+      { name: 'NOT SUCCESSFUL', condition: true, sensed: true },
       { name: 'SEC 2', sensed: true, labelNotCompleted: 'OFF' },
       { name: 'SEC 2', sensed: true, labelNotCompleted: 'KEEP ON' },
       { name: 'LDG DIST AFFECTED', sensed: false },
@@ -420,7 +420,7 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
     items: [
       { name: 'FOR TAXI: FLAP LVR 1', sensed: false },
       { name: 'SEC 3', sensed: true, labelNotCompleted: 'OFF THEN ON' },
-      { name: 'NOT SUCCESSFUL:', condition: true, sensed: true },
+      { name: 'NOT SUCCESSFUL', condition: true, sensed: true },
       { name: 'SEC 3', sensed: true, labelNotCompleted: 'OFF' },
       { name: 'LDG DIST AFFECTED', sensed: false },
     ],
@@ -664,9 +664,9 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
       { name: 'USE RUDDER WITH CARE', sensed: false },
       { name: 'USE RUDDER PEDALS TO CENTER RUDDER', sensed: false },
       { name: 'RUDDER TRIM', labelNotCompleted: 'RESET', sensed: false },
-      { name: 'RESET NOT SUCCESSFUL :', condition: true, sensed: false },
+      { name: 'RESET NOT SUCCESSFUL', condition: true, sensed: false },
       { name: 'FOR CONTINUED FLT : CONSIDER AP USE', sensed: false, level: 1 },
-      { name: 'RESET SUCCESSFUL :', condition: true, sensed: false },
+      { name: 'RESET SUCCESSFUL', condition: true, sensed: false },
     ],
   },
   270900003: {
@@ -697,7 +697,7 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
     title: '\x1b<4m\x1b4mF/CTL\x1bm LDG WITH NO SLATS NO FLAPS',
     sensed: false,
     items: [
-      { name: 'FLAPS LEVER JAMMED :', condition: true, sensed: false },
+      { name: 'FLAPS LEVER JAMMED', condition: true, sensed: false },
       { name: 'LDG WITH FLAP LVR JAMMED PROC', labelNotCompleted: 'APPLY', sensed: false, level: 1 },
       { name: 'FLAPS LEVER NOT JAMMED :', condition: true, sensed: false },
       { name: '[MFD SURV] TAWS FLAP MODE', labelNotCompleted: 'OFF', sensed: true, level: 1 },
@@ -726,7 +726,7 @@ export const EcamDeferredProcAta27: { [n: number]: DeferredProcedure } = {
         sensed: false,
       },
       {
-        name: 'MANUAL LANDING ANTICIPATED :',
+        name: 'MANUAL LANDING ANTICIPATED',
         sensed: false,
         condition: true,
       },

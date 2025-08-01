@@ -396,6 +396,8 @@ export const EcamInopSys: { [n: string]: string } = {
   240300034: '\x1b<4mTR 1',
   240300035: '\x1b<4mTR 2',
   240300036: '\x1b<4mTR ESS',
+  240300037: '\x1b<4mGEN 1+2',
+  240300038: '\x1b<4mGEN 3+4',
   260300001: '\x1b<4mAPU FIRE DET',
   260300002: '\x1b<4mENG 1 BLEED',
   260300003: '\x1b<4mENG 2 BLEED',
@@ -503,6 +505,10 @@ export const EcamInopSys: { [n: string]: string } = {
   290300020: '\x1b<4mY SYS OVHT DET',
   290300021: '\x1b<4mG HYD SYS',
   290300022: '\x1b<4mY HYD SYS',
+  290300023: '\x1b<4mG ENG 1 PMP A+B',
+  290300024: '\x1b<4mG ENG 2 PMP A+B',
+  290300025: '\x1b<4mY ENG 3 PMP A+B',
+  290300026: '\x1b<4mY ENG 4 PMP A+B',
   310300001: '\x1b<4mAUTO CALLOUT',
   310300002: '\x1b<4mFWS 1',
   310300003: '\x1b<4mFWS 2',
@@ -575,6 +581,9 @@ export const EcamInopSys: { [n: string]: string } = {
   340300046: '\x1b<4mTAWS SYS 1',
   340300047: '\x1b<4mTAWS SYS 2',
   340300048: '\x1b<4mTAWS SYS 1+2',
+  700300001: '\x1b<4mENG 2 REVERSER',
+  700300002: '\x1b<4mENG 3 REVERSER',
+  700300003: '\x1b<4mENG 2+3 REVERSERs',
 };
 
 export enum ChecklistLineStyle {
@@ -595,9 +604,10 @@ export enum ChecklistLineStyle {
   LandAsap = 'LandAsap',
   LandAnsa = 'LandAnsa',
   ChecklistCondition = 'ChecklistCondition',
+  ChecklistItemInactive = 'ChecklistItemInactive',
 }
 
-interface AbstractChecklistItem {
+export interface AbstractChecklistItem {
   /** The name of the item, displayed at the beginning of the line. Does not accept special formatting tokens. No leading dot. For conditions, don't include the leading "IF" */
   name: string;
   /** Sensed or not sensed item. Sensed items are automatically checked. Non-sensed items will have a checkbox drawn in front of them on the EWD */
@@ -607,6 +617,7 @@ interface AbstractChecklistItem {
   /** Manually define style. standard (cyan when not completed, white/green when completed), or always cyan/green/amber. Standard, if not set. */
   style?: ChecklistLineStyle;
 }
+
 export interface ChecklistAction extends AbstractChecklistItem {
   /** Label at the end of the line if action is not completed. */
   labelNotCompleted: string;
@@ -616,9 +627,26 @@ export interface ChecklistAction extends AbstractChecklistItem {
   colonIfCompleted?: boolean;
 }
 
+export interface TimedChecklistAction extends ChecklistAction {
+  /** The time in seconds to be appended to the name of the item. E.g. AFTER 30 S */
+  time: number;
+
+  sensed: true;
+}
+
 export interface ChecklistCondition extends AbstractChecklistItem {
   /** If this line is a condition. Can be sensed or not sensed (i.e. manually activated). */
   condition: true;
+}
+
+export interface TimedChecklistCondition extends ChecklistCondition {
+  /** The time in seconds to be appended to the name of the item. E.g. AFTER 30 S */
+  time: number;
+
+  /** Wheter to append the time to the name of the item after it elapses*/
+  appendTimeIfElapsed: boolean;
+
+  sensed: true;
 }
 
 export interface ChecklistSpecialItem extends AbstractChecklistItem {}
@@ -627,12 +655,28 @@ export function isChecklistAction(c: AbstractChecklistItem): c is ChecklistActio
   return (c as ChecklistAction)?.labelNotCompleted !== undefined;
 }
 
+export function isTimedCheckListAction(c: AbstractChecklistItem): c is TimedChecklistAction {
+  return isChecklistAction(c) && (c as TimedChecklistAction)?.time !== undefined;
+}
+
 export function isChecklistHeadline(c: AbstractChecklistItem) {
   return [ChecklistLineStyle.SubHeadline, ChecklistLineStyle.CenteredSubHeadline].includes(c.style);
 }
 
 export function isChecklistCondition(c: AbstractChecklistItem): c is ChecklistCondition {
   return (c as ChecklistCondition)?.condition !== undefined;
+}
+
+export function isNonTimedChecklistCondition(c: ChecklistCondition): boolean {
+  return !isChecklistTimedCondition(c);
+}
+
+export function isChecklistTimedCondition(c: AbstractChecklistItem): c is TimedChecklistCondition {
+  return isChecklistCondition(c) && (c as TimedChecklistCondition)?.time !== undefined;
+}
+
+export function isTimedItem(c: AbstractChecklistItem): boolean {
+  return isTimedCheckListAction(c) || isChecklistTimedCondition(c);
 }
 
 export function isAbnormalSensedProcedure(
@@ -647,7 +691,13 @@ export interface AbnormalProcedure {
   /** sensed or not sensed abnormal procedure */
   sensed: boolean;
   /** An array of possible checklist items. */
-  items: (ChecklistAction | ChecklistCondition | ChecklistSpecialItem)[];
+  items: (
+    | ChecklistAction
+    | ChecklistCondition
+    | ChecklistSpecialItem
+    | TimedChecklistAction
+    | TimedChecklistCondition
+  )[];
   /** LAND ASAP or LAND ANSA displayed below title? Optional, don't fill if no recommendation */
   recommendation?: 'LAND ASAP' | 'LAND ANSA';
 }
@@ -715,6 +765,7 @@ export const EcamDeferredProcedures: { [n: string]: DeferredProcedure } = {
 
 /** Used for one common representation of data defining the visual appearance of ECAM lines on the WD (for the ECL part) */
 export interface WdLineData {
+  procedureId?: string;
   activeProcedure: boolean;
   sensed: boolean; // Line is selectable if false
   checked: boolean;

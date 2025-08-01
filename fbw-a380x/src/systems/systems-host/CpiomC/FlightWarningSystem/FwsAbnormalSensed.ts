@@ -31,6 +31,7 @@ export interface EwdAbnormalItem extends FwsSuppressableItem {
   whichItemsChecked: () => boolean[];
   /** Returns a boolean vector (same length as number of items). Optional, defaults to true. If true, item is shown as activated */
   whichItemsActive?: () => boolean[];
+  whichItemsTimer?: () => number[];
   /** 3 = master warning, 2 = master caution */
   failure: number;
   /** Index of ECAM page to be displayed on SD */
@@ -137,6 +138,7 @@ export class FwsAbnormalSensed {
               itemsChecked: val.itemsChecked,
               itemsActive: val.itemsActive,
               itemsToShow: val.itemsToShow,
+              itemsTimeStamp: val.itemsTimeStamp,
             }),
           );
           // Sort by decreasing importance
@@ -1858,6 +1860,7 @@ export class FwsAbnormalSensed {
         this.fws.apuAgentDischarged.get(),
         this.fws.apuMasterSwitch.get() === 0,
       ],
+      whichItemsTimer: () => [undefined, this.fws.apuFireAgent1Discharge10SecondsTimestamp.get(), undefined],
       failure: 3,
       sysPage: SdPages.Apu,
     },
@@ -1908,7 +1911,17 @@ export class FwsAbnormalSensed {
       ),
       auralWarning: this.fws.eng1FireDetectedAural.map((on) => (on ? FwcAuralWarning.Crc : FwcAuralWarning.None)),
       notActiveWhenItemActive: [],
-      whichItemsToShow: () => [true, true, true, true, true, true, true, true, true],
+      whichItemsToShow: () => [
+        true,
+        true,
+        true,
+        this.fws.apuAvail.get(),
+        this.fws.fireButtonEng1.get(),
+        true,
+        true,
+        true,
+        true,
+      ],
       whichItemsChecked: () => [
         // When the fire pb is released, the FADEC is not powered and the throttle position is unknown which resets this condition
         this.fws.throttle1Position.get() == 0 && !this.fws.fireButtonEng1.get(),
@@ -1921,10 +1934,19 @@ export class FwsAbnormalSensed {
         false,
         this.fws.eng1Agent2Discharged.get(),
       ],
+      whichItemsTimer: () => [
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        this.fws.fireEng1Agent1Discharge10sTimeStamp.get(),
+        undefined,
+        this.fws.fireEng1Agent2Discharge30sTimeStamp.get(),
+      ],
       failure: 3,
       sysPage: SdPages.Eng,
       inopSysAllPhases: () => ['260300002', '260300006'],
-      limitationsAllPhases: () => ['260400001'], // Fixme: should only come on when the ENG 1 fire button is pushed
     },
     260800006: {
       // ENG 2 FIRE (IN FLIGHT)
@@ -1946,6 +1968,14 @@ export class FwsAbnormalSensed {
         false,
         false,
         this.fws.eng2Agent2Discharged.get(),
+      ],
+      whichItemsTimer: () => [
+        undefined,
+        undefined,
+        undefined,
+        this.fws.fireEng1Agent1Discharge10sTimeStamp.get(),
+        undefined,
+        this.fws.fireEng2Agent2Discharge30sTimeStamp.get(),
       ],
       failure: 3,
       sysPage: SdPages.Eng,
@@ -1972,6 +2002,14 @@ export class FwsAbnormalSensed {
         false,
         this.fws.eng3Agent2Discharged.get(),
       ],
+      whichItemsTimer: () => [
+        undefined,
+        undefined,
+        undefined,
+        this.fws.fireEng3Agent1Discharge10sTimeStamp.get(),
+        undefined,
+        this.fws.fireEng3Agent2Discharge30sTimeStamp.get(),
+      ],
       failure: 3,
       sysPage: SdPages.Eng,
       inopSysAllPhases: () => ['260300004'],
@@ -1996,6 +2034,14 @@ export class FwsAbnormalSensed {
         false,
         false,
         this.fws.eng4Agent2Discharged.get(),
+      ],
+      whichItemsTimer: () => [
+        undefined,
+        undefined,
+        undefined,
+        this.fws.fireEng4Agent1Discharge10sTimeStamp.get(),
+        undefined,
+        this.fws.fireEng4Agent2Discharge30sTimeStamp.get(),
       ],
       failure: 3,
       sysPage: SdPages.Eng,
@@ -3387,7 +3433,7 @@ export class FwsAbnormalSensed {
     },
     320800018: {
       // BRAKES HOT
-      flightPhaseInhib: [4, 5, 9, 10, 11, 12],
+      flightPhaseInhib: [4, 5, 9, 10, 11],
       simVarIsActive: this.fws.brakesHot,
       whichItemsToShow: () => [
         this.fws.phase112.get(),
@@ -4084,6 +4130,175 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: -1,
     },
+    // ATA 70 Engines
+    701800109: {
+      // ENG 1 SHUTDOWN
+      flightPhaseInhib: this.fws.phase56Inhibition, // phase 1,2, 11 & 12 inhibited in logic for inop sys & secondary failures reusing
+      simVarIsActive: this.fws.eng1ShutdownAbnormalSensed,
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [
+        !this.fws.tcasInop.get(),
+        this.fws.flightPhase.get() === 7,
+        this.fws.fuelOnBoardBetween55And95T.get(),
+        this.fws.fuelOnBoardBetween55And95T.get(),
+        true,
+        true,
+        true,
+        true,
+      ],
+      whichItemsChecked: () => [
+        this.fws.tcasTaOnly.get(),
+        this.fws.gearLeverPos.get(),
+        false,
+        this.fws.crossFeed1ValveOpen.get(),
+        false,
+        this.fws.flowSelectorKnob.get() === 1,
+        this.fws.fwdCargoTempRegulatorOff.get(),
+        false,
+      ],
+      failure: 2,
+      sysPage: -1,
+    },
+    701800110: {
+      // ENG 2 SHUTDOWN
+      flightPhaseInhib: this.fws.phase56Inhibition,
+      simVarIsActive: this.fws.eng2ShutdownAbnormalSensed,
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [
+        !this.fws.tcasInop.get(),
+        this.fws.flightPhase.get() === 7,
+        this.fws.fuelOnBoardBetween55And95T.get(),
+        this.fws.fuelOnBoardBetween55And95T.get(),
+        true,
+        true,
+        true,
+        true,
+        true,
+      ],
+      whichItemsChecked: () => [
+        this.fws.tcasTaOnly.get(),
+        this.fws.gearLeverPos.get(),
+        false,
+        this.fws.crossFeed2ValveOpen.get(),
+        false,
+        this.fws.flowSelectorKnob.get() === 1,
+        this.fws.fwdCargoTempRegulatorOff.get(),
+        false,
+        false,
+      ],
+      failure: 2,
+      sysPage: -1,
+    },
+    701800111: {
+      // ENG 3 SHUTDOWN
+      flightPhaseInhib: this.fws.phase56Inhibition,
+      simVarIsActive: this.fws.eng3ShutdownAbnormalSensed,
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [
+        !this.fws.tcasInop.get(),
+        this.fws.flightPhase.get() === 7,
+        this.fws.fuelOnBoardBetween55And95T.get(),
+        this.fws.fuelOnBoardBetween55And95T.get(),
+        true,
+        true,
+        true,
+        true,
+        true,
+      ],
+      whichItemsChecked: () => [
+        this.fws.tcasTaOnly.get(),
+        this.fws.gearLeverPos.get(),
+        false,
+        this.fws.crossFeed3ValveOpen.get(),
+        false,
+        this.fws.flowSelectorKnob.get() === 1,
+        this.fws.fwdCargoTempRegulatorOff.get(),
+        false,
+        false,
+      ],
+      failure: 2,
+      sysPage: -1,
+    },
+    701800112: {
+      // ENG 4 SHUTDOWN
+      flightPhaseInhib: this.fws.phase56Inhibition,
+      simVarIsActive: this.fws.eng4ShutdownAbnormalSensed,
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [
+        !this.fws.tcasInop.get(),
+        this.fws.flightPhase.get() === 7,
+        this.fws.fuelOnBoardBetween55And95T.get(),
+        this.fws.fuelOnBoardBetween55And95T.get(),
+        true,
+        true,
+        true,
+        true,
+      ],
+      whichItemsChecked: () => [
+        this.fws.tcasTaOnly.get(),
+        this.fws.gearLeverPos.get(),
+        false,
+        this.fws.crossFeed4ValveOpen.get(),
+        false,
+        this.fws.flowSelectorKnob.get() === 1,
+        this.fws.fwdCargoTempRegulatorOff.get(),
+        false,
+      ],
+      failure: 2,
+      sysPage: -1,
+    },
+
+    701800029: {
+      // ENG 1 FAIL
+      simVarIsActive: this.fws.eng1Fail,
+      flightPhaseInhib: this.fws.phase56Inhibition,
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      sysPage: SdPages.Eng,
+      failure: 2,
+    },
+    701800030: {
+      // ENG 2 FAIL
+      simVarIsActive: this.fws.eng2Fail,
+      flightPhaseInhib: this.fws.phase56Inhibition,
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      sysPage: SdPages.Eng,
+      failure: 2,
+    },
+    701800031: {
+      // ENG 3 FAIL
+      simVarIsActive: this.fws.eng3Fail,
+      flightPhaseInhib: this.fws.phase56Inhibition,
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      sysPage: SdPages.Eng,
+      failure: 2,
+    },
+    701800032: {
+      // ENG 4 FAIL
+      simVarIsActive: this.fws.eng4Fail,
+      flightPhaseInhib: this.fws.phase56Inhibition,
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      sysPage: SdPages.Eng,
+      failure: 2,
+    },
+    701800151: {
+      // ALL ENGINES FAILURE
+      simVarIsActive: this.fws.allEnginesFailure,
+      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 10, 11, 12],
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      sysPage: SdPages.Eng,
+      failure: 3,
+    },
+
     // SECONDARY FAILURES
     999800001: {
       // *F/CTL
@@ -4128,7 +4343,7 @@ export class FwsAbnormalSensed {
     999800004: {
       // *ELEC
       flightPhaseInhib: [],
-      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.or()),
+      simVarIsActive: this.fws.elecAcSecondaryFailure,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
@@ -4148,7 +4363,7 @@ export class FwsAbnormalSensed {
     999800006: {
       // *BLEED
       flightPhaseInhib: [],
-      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.or()),
+      simVarIsActive: this.fws.bleedSecondaryFailure,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],

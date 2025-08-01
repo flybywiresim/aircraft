@@ -238,7 +238,7 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [
       {
-        name: 'IF G SYS PRESSURE FLUCTUATES',
+        name: 'G SYS PRESSURE FLUCTUATES',
         sensed: false,
         condition: true,
       },
@@ -268,7 +268,7 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [
       {
-        name: 'IF Y SYS PRESSURE FLUCTUATES',
+        name: 'Y SYS PRESSURE FLUCTUATES',
         sensed: false,
         condition: true,
       },
