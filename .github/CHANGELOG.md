@@ -1,9 +1,14 @@
 # Changelog
 
+<!-- The changelog is used to record user-visible changes since the previous stable release. -->
+<!-- For example a fix for a bug that was only in the dev version, and not the stable, would not be recorded here. -->
+<!-- Code refactoring and similar changes with no user-visible effects would also not be recorded here. -->
+<!-- The text should focus on changes the user would see, rather than code changes that are not visible. -->
 <!-- ⚠⚠ Please follow the format provided ⚠⚠ -->
 <!-- Always use "1." at the start instead of "2. " or "X. " as GitHub will auto renumber everything. -->
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
+<!-- The changed area should be prefixed with "A32NX/" or "A380X/" if only one of them is affected. -->
 
 ## 0.14.0
 
@@ -30,6 +35,7 @@
 1. [FMS] Fix pseudo waypoint transmission for F/O side when EFIS range different from CAPT side - @flogross89 (floridude)
 1. [A380X/SURV] Enable SURV system switching via MFD SURV page; Add ECAM faults for TERR/GPWS - @flogross89 (floridude)
 1. [A380X/MFD] MFD F-PLN page data display improvements when no predictions or flightplan available - @BravoMike99 (bruno_pt99)
+1. [A380X/PFD] Fix FMA to update current AUTO BRK selection during RTO and rollout - @Jonny23787 (Jonathan)
 1. [FMS] Use proper DME location for AF, CD, FD legs on MSFS2024 and add MSFS2020 fallback to improve AF legs - @tracernz (Mike)
 1. [FMS] Improve CR and FC leg geometry - @tracernz (Mike)
 1. [GENERAL] Fixed inconsistency in the PED/NO SMOKING option when it hasn't been set - @tracernz (Mike)
@@ -64,6 +70,7 @@
 1. [EFB] Fixed overflow on settings pages when the page is too long - @heclak (Heclak)
 1. [EFB] Renamed "Weight Unit" pin program to "US Units" to reflect it's actual effect and real-world name - @tracernz (Mike)
 1. [A32NX/MCDU] Fix units on arrival airport runway lenghts - @Lucas-IQ21 (Lucas)
+1. [A32NX/A380X] Handle the MASTER_CAUTION_ACKNOWLEDGE and MASTER_WARNING_ACKNOWLEDGE key events - @tracernz (Mike)
 1. [A32NX/FMS] Fix automatic cruise temperature calculation on INIT A page - @BlueberryKing (BlueberryKing)
 1. [A380X/MODEL] Fixed RMP 1 keypad backlighting - @heclak (Heclak)
 1. [A380X/MODEL] Fixed animations and emissives of some ECAM buttons - @heclak (Heclak)
@@ -81,6 +88,29 @@
 1. [ATSU] Improved Hoppie ACARS connection protocol - @heclak (Heclak)
 1. [ATSU] Fixed a case where "no active atc" is returned but station is online - @heclak (Heclak)
 1. [A32NX/FMS] Fixed TOO STEEP PATH AHEAD message appearing greater than 150nm from destination - @Jonny23787 (Jonathan)
+1. [A32NX/PFD] Inhibit SPEED SEL when BRK MAX is visible on PFD - @Jonny23787 (Jonathan)
+1. [A380X/PFD] Fixed logic for the flap position display - @HarmanSingh48 (Harman)
+1. [A32NX/FWS] Improve altitude alert logic, add PFD indications, improve AP OFF warning logic - @lukecologne (luke)
+1. [A380X/FMS] Add TL indication for tailwind on APPR PERF - @Jonny23787 (Jonathan)
+1. [A32NX/FMS] Consider pilot-entered tropopause for automatic cruise temperature calculation - @BlueberryKing (BlueberryKing)
+1. [FMS] Make sure radials of CR/VR legs use the station declination as magvar - @BlueberryKing (BlueberryKing)
+1. [A32NX/FWS] Implement BAT 1(2) OFF ECAM warning - @BlueberryKing (BlueberryKing)
+1. [A380X] Fixed pink textures in 2024 SU3 caused by invalid texture size - @heclak (Heclak)
+1. [GSX] Added automatic refuel start and cargo door synchronisation for A380X, external power available synchronisation for A380X/A32NX - @Fragtality (Fragtality)
+1. [EFB/FUEL] Added total and ETA for A380X, improved state label on both aircraft - @Fragtality (Fragtality)
+1. [A380X/FWS] Added DEST EFOB & FMS SWTG memos - @BravoMike99 (bruno_pt99)
+1. [A380X/FMS] Added CHECK MIN FUEL AT DEST & DEST EFOB BELOW MIN message with associated amber EFOB color on MFD pages - @BravoMike99 (bruno_pt99)
+1. [A380X] Fixed wing taxi lights appearing black - @heclak (Heclak)
+1. [A380X] Fixed lighting issues in MSFS2024 - @heclak (Heclak)
+1. [A380X/FWS] Fix approach capability downgrade triple click - @flogross89 (floridude)
+1. [A380X/FWS] Disable startup time for runway spawns - @flogross89 (floridude)
+1. [A380X/PFD] Ignore non-running engines in flight phase 2 for rudder trim indicator visibility - @flogross89 (floridude)
+1. [EFB] Split jetway and pax stairs button in MSFS2024 to fix jetways not connecting in MSFS2024 - @heclak (Heclak)
+1. [A32NX/FWS] Active warnings are no longer cleared when entering an inhibited flight phase - @tracernz (Mike)
+1. [A32NX] Fixed lighting issues in MSFS2024 - @heclak (Heclak)
+1. [FMS] Fixed a rare issue where airways failed to load - @tracernz (Mike)
+1. [A380X/FWS] Implement ENG SHUTDOWN abnornal sensed & timer countdown to timed based items - @BravoMike99 (bruno_pt99)
+1. [A380X/CDS] Implement abnormal engine parameters amber attention getting box on the EWD - @BravoMike99 (bruno_pt99)
 
 ## 0.13.0
 
@@ -171,6 +201,7 @@
 1. [A380X/SD] Add brake temperature color change to amber when brakes are hot - @heclak (Heclak)
 1. [A380X/FCU] Fix display of values on FCU during light test - @heclak (Heclak)
 1. [A380X/FMS] Fix VLS computation error for CONF 1, might have lead to FMS crashes during climb out - @flogross89 (floridude)
+1. [A32NX/PFD] Fix Radio DH not displaying correctly when Baro DA is already entered - @MrJigs7 (MrJigs)
 1. [A380X/PFD] Fix PFD DU / ND DU brightness knobs - @MichelZ
 1. [A380X/FCU] Add correct QFE label using the baro preselect display - @heclak (Heclak)
 1. [FMS] Move the speed limit data to performance data, so that it is flight-plan-specific - @BlueberryKing (BlueberryKing)

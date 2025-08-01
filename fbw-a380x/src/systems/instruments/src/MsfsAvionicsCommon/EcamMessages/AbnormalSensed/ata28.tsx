@@ -169,7 +169,7 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [
       {
-        name: 'IF NO FUEL LEAK',
+        name: 'NO FUEL LEAK',
         sensed: false,
         condition: true,
       },
@@ -222,7 +222,7 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [
       {
-        name: 'IF NO FUEL LEAK',
+        name: 'NO FUEL LEAK',
         sensed: false,
         condition: true,
       },
@@ -275,7 +275,7 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [
       {
-        name: 'IF NO FUEL LEAK',
+        name: 'NO FUEL LEAK',
         sensed: false,
         condition: true,
       },
@@ -328,7 +328,7 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [
       {
-        name: 'IF NO FUEL LEAK',
+        name: 'NO FUEL LEAK',
         sensed: false,
         condition: true,
       },
@@ -768,7 +768,7 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
         condition: true,
       },
       {
-        name: 'ALL CROSSFEEDs',
+        name: 'CROSSFEED 1+2+3+4',
         sensed: true,
         labelNotCompleted: 'ON',
         level: 1,
@@ -815,7 +815,7 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
         condition: true,
       },
       {
-        name: 'ALL CROSSFEEDs',
+        name: 'CROSSFEED 1+2+3+4',
         sensed: true,
         labelNotCompleted: 'ON',
         level: 1,
@@ -853,17 +853,17 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
     ],
   },
   280900001: {
-    title: '\x1b<4m\x1b4mFUEL\x1bm JETTISON',
+    title: '\x1b<4m\x1b4mFUEL\x1bm JETTISON (WIP)',
     sensed: false,
     items: [], // TODO
   },
   280900002: {
-    title: '\x1b<4m\x1b4mFUEL\x1bm FUEL LEAK',
+    title: '\x1b<4m\x1b4mFUEL\x1bm FUEL LEAK (WIP)',
     sensed: false,
     items: [], // TODO
   },
   280900003: {
-    title: '\x1b<4m\x1b4mFUEL\x1bm MAN BALANCING PROCEDURE',
+    title: '\x1b<4m\x1b4mFUEL\x1bm MAN BALANCING PROCEDURE (WIP)',
     sensed: false,
     items: [], // TODO
   },

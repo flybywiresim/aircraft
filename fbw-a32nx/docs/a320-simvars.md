@@ -1118,6 +1118,24 @@
       0 | Retracted
       1 | Full extension
 
+- A32NX_{side}_FLAPS_{number}_POSITION_PERCENT
+    - Percent
+    - Indicates the angle of the flaps out of 40 degrees
+    - Side
+        - LEFT
+        - RIGHT
+    - Number
+        - From 1 (inboard) to 2
+
+- A32NX_{side}_SLATS_{number}_POSITION_PERCENT
+    - Percent
+    - Indicates the angle of the slats out of 27 degrees
+    - Side
+        - LEFT
+        - RIGHT
+    - Number
+        - From 1 (inboard) to 5
+
 - A32NX_LEFT_FLAPS_POSITION_PERCENT
     - Percent
     - Indicates the angle of the left flaps out of 40 degrees
@@ -1134,6 +1152,24 @@
     - Percent
     - Indicates the angle of the right slats out of 27 degrees
 
+- A32NX_{side}_FLAPS_{number}_ANGLE
+    - Degrees
+    - The actual angle of the flaps
+    - Side
+        - LEFT
+        - RIGHT
+    - Number
+        - From 1 (inboard) to 2
+
+- A32NX_{side}_SLATS_{number}_ANGLE
+    - Degrees
+    - The actual angle of the slats
+    - Side
+        - LEFT
+        - RIGHT
+    - Number
+        - From 1 (inboard) to 5
+
 - A32NX_LEFT_FLAPS_ANGLE
     - Degrees
     - The actual angle of the left flaps
@@ -1149,6 +1185,22 @@
 - A32NX_RIGHT_SLATS_ANGLE
     - Degrees
     - The actual angle of the right slats
+
+- A32NX_FLAPS_IPPU_ANGLE
+    - Degrees
+    - The angle of the flaps IPPU synchro
+
+- A32NX_FLAPS_FPPU_ANGLE
+    - Degrees
+    - The angle of the flaps FPPU synchro
+
+- A32NX_SLATS_IPPU_ANGLE
+    - Degrees
+    - The angle of the slats IPPU synchro
+
+- A32NX_SLATS_FPPU_ANGLE
+    - Degrees
+    - The angle of the slats FPPU synchro
 
 - A32NX_IS_FLAPS_MOVING
     - Boolean
@@ -3454,10 +3506,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 ## Flaps / Slats (ATA 27)
 
-- A32NX_SFCC_SLAT_FLAP_SYSTEM_STATUS_WORD
+- A32NX_SFCC_{number}_SLAT_FLAP_SYSTEM_STATUS_WORD
+    - {number} is 1 or 2
     - Slat/Flap system status discrete word of the SFCC bus output
     - Arinc429<Discrete>
-    - Note that multiple SFCC are not yet implemented, thus no {number} in the name.
     - | Bit |            Description            |
       |:---:|:---------------------------------:|
       | 11  | Slat Fault                        |
@@ -3480,10 +3532,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
       | 28  | Slat Data Valid                   |
       | 29  | Flap Data Valid                   |
 
-- A32NX_SFCC_SLAT_FLAP_ACTUAL_POSITION_WORD
+- A32NX_SFCC_{number}_SLAT_FLAP_ACTUAL_POSITION_WORD
+    - {number} is 1 or 2
     - Slat/Flap actual position discrete word of the SFCC bus output
     - Arinc429<Discrete>
-    - Note that multiple SFCC are not yet implemented, thus no {number} in the name.
     - | Bit |                Description               |
       |:---:|:----------------------------------------:|
       | 11  | Slat Data Valid                          |
@@ -3506,17 +3558,22 @@ In the variables below, {number} should be replaced with one item in the set: { 
       | 28  | Slat System Jam                          |
       | 29  | Flap System Jam                          |
 
-- A32NX_SFCC_SLAT_ACTUAL_POSITION_WORD
+- A32NX_SFCC_{number}_SLAT_ACTUAL_POSITION_WORD
+    - {number} is 1 or 2
     - Slat actual position word of the SFCC bus output
     - Arinc429<Degrees>
-    - Note that multiple SFCC are not yet implemented, thus no {number} in the name.
     - The Slat FPPU angle ranges from 0° to 360°
 
-- A32NX_SFCC_FLAP_ACTUAL_POSITION_WORD
+- A32NX_SFCC_{number}_FLAP_ACTUAL_POSITION_WORD
+    - {number} is 1 or 2
     - Flap actual position word of the SFCC bus output
     - Arinc429<Degrees>
-    - Note that multiple SFCC are not yet implemented, thus no {number} in the name.
     - The Flap FPPU angle ranges from 0° to 360°
+
+- A32NX_SFCC_{number}_FAP_{id}
+    - {number} is 1 or 2
+    - {id} is from 1 to 7
+    - Flap actual position discrete output
 
 ## Flight Controls (ATA 27)
 
@@ -4358,6 +4415,17 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
         - 1.0
 
 ## Non-Systems Related
+
+- `L:FBW_BUILD_EDITION`
+    - Enum
+    - Read-Only
+    - Current aircraft build edition (same meaning as package.json edition property).
+      Description | Value
+      ------------ | -
+      Unknown      | 0
+      Stable       | 1
+      Development  | 2
+      Experimental | 3
 
 - `L:FBW_PILOT_SEAT`
   - Enum

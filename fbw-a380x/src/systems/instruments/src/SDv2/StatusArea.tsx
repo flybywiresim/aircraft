@@ -84,7 +84,8 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
   private readonly timeHHMM = this.zuluTime.map((seconds) => getCurrentHHMMSS(seconds).substring(0, 6));
   private readonly timeSS = this.zuluTime.map((seconds) => getCurrentHHMMSS(seconds).substring(6));
 
-  private readonly userWeight = Subject.create<'KG' | 'LBS'>('KG');
+  // This call to NXUnits ensures that metricWeightVal is set early on
+  private readonly userWeight = Subject.create<'KG' | 'LBS'>(NXUnits.userWeightUnit());
 
   private readonly configMetricUnitsSub = NXDataStore.getAndSubscribe(
     'CONFIG_USING_METRIC_UNIT',
@@ -100,13 +101,15 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
   private readonly fuelQuantity = ConsumerSubject.create(this.sub.on('fuelTotalQuantity'), 0);
   private readonly fuelWeightPerGallon = ConsumerSubject.create(this.sub.on('fuelWeightPerGallon'), 0);
   private readonly fuelWeight = MappedSubject.create(
-    ([qt, weightPerGallon]) => NXUnits.kgToUser(qt * weightPerGallon),
+    ([qt, weightPerGallon]) => qt * weightPerGallon,
     this.fuelQuantity,
     this.fuelWeightPerGallon,
     this.userWeight,
   );
-  private readonly fuelWeightText = this.fuelWeight.map((fw) =>
-    (Math.round(NXUnits.kgToUser(fw) / 100) * 100).toFixed(0),
+  private readonly fuelWeightText = MappedSubject.create(
+    ([fw, _uw]) => (Math.round(NXUnits.kgToUser(fw) / 100) * 100).toFixed(0),
+    this.fuelWeight,
+    this.userWeight,
   );
 
   // FIXME replace with FQMS implementation
@@ -120,9 +123,12 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
     this.fuelWeight,
   );
 
-  private readonly gwText = this.grossWeight.map((gw) =>
-    gw === 0 || gw === null ? '--\xa0\xa0' : (Math.round(NXUnits.kgToUser(gw) / 100) * 100).toFixed(0),
+  private readonly gwText = MappedSubject.create(
+    ([gw, _uw]) => (gw === 0 || gw === null ? '--\xa0\xa0' : (Math.round(NXUnits.kgToUser(gw) / 100) * 100).toFixed(0)),
+    this.grossWeight,
+    this.userWeight,
   );
+
   private readonly gwClass = this.grossWeight.map((gw) =>
     gw === 0 || gw === null ? 'F27 Cyan EndAlign' : 'F27 Green EndAlign',
   );
