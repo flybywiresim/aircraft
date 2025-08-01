@@ -36,6 +36,7 @@ import {
   NXLogicMemoryNode,
   NXLogicPulseNode,
   NXLogicTriggeredMonostableNode,
+  RegisteredSimVar,
   UpdateThrottler,
 } from '@flybywiresim/fbw-sdk';
 import { VerticalMode, LateralMode } from '@shared/autopilot';
@@ -52,18 +53,18 @@ import {
 import { ProcedureLinesGenerator } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/ProcedureLinesGenerator';
 import PitchTrimUtils from '@shared/PitchTrimUtils';
 import { ChecklistState, FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
-import { FwsMemos } from 'systems-host/systems/FlightWarningSystem/FwsMemos';
-import { FwsNormalChecklists } from 'systems-host/systems/FlightWarningSystem/FwsNormalChecklists';
+import { FwsMemos } from 'systems-host/CpiomC/FlightWarningSystem/FwsMemos';
+import { FwsNormalChecklists } from 'systems-host/CpiomC/FlightWarningSystem/FwsNormalChecklists';
 import {
   EwdAbnormalDict,
   EwdAbnormalItem,
   FwsAbnormalSensed,
-} from 'systems-host/systems/FlightWarningSystem/FwsAbnormalSensed';
-import { FwsAbnormalNonSensed } from 'systems-host/systems/FlightWarningSystem/FwsAbnormalNonSensed';
+} from 'systems-host/CpiomC/FlightWarningSystem/FwsAbnormalSensed';
+import { FwsAbnormalNonSensed } from 'systems-host/CpiomC/FlightWarningSystem/FwsAbnormalNonSensed';
 import { MfdSurvEvents } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
 import { Mle, Mmo, VfeF1, VfeF1F, VfeF2, VfeF3, VfeFF, Vle, Vmo } from '@shared/PerformanceConstants';
-import { FwsAuralVolume, FwsSoundManager } from 'systems-host/systems/FlightWarningSystem/FwsSoundManager';
-import { FwcFlightPhase, FwsFlightPhases } from 'systems-host/systems/FlightWarningSystem/FwsFlightPhases';
+import { FwsAuralVolume, FwsSoundManager } from 'systems-host/CpiomC/FlightWarningSystem/FwsSoundManager';
+import { FwcFlightPhase, FwsFlightPhases } from 'systems-host/CpiomC/FlightWarningSystem/FwsFlightPhases';
 import { A380Failure } from '@failures';
 import { FuelSystemEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
 import { FmsMessageVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsMessagePublisher';
@@ -590,6 +591,12 @@ export class FwsCore {
   public readonly approachCapabilityDowngradeSuppress = new NXLogicTriggeredMonostableNode(3, true);
 
   public readonly approachCapabilityDowngradeDebouncePulse = new NXLogicPulseNode(false);
+
+  public readonly modeReversionTripleClickSimvar = RegisteredSimVar.create<boolean>(
+    'L:A32NX_FMA_TRIPLE_CLICK_MODE_REVERSION',
+    SimVarValueType.Bool,
+  );
+  public readonly modeReversionTripleClickPulse = new NXLogicPulseNode(true);
 
   public readonly autoThrustEngaged = Subject.create(false);
 
@@ -2297,7 +2304,8 @@ export class FwsCore {
   private handlePowerChange(powered: boolean) {
     if (powered) {
       // Real time is 60 seconds, i.e. 60_000 ms; Real setting for DMC self test in EFB is 12 seconds.
-      const startupTime = parseInt(NXDataStore.get('CONFIG_SELF_TEST_TIME', '12')) * 5_000;
+      const coldAndDark = SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'bool');
+      const startupTime = coldAndDark ? parseInt(NXDataStore.get('CONFIG_SELF_TEST_TIME', '12')) * 5_000 : 0;
 
       this.startupTimer.schedule(() => {
         this.startupCompleted.set(true);
@@ -2618,7 +2626,8 @@ export class FwsCore {
     this.flapsAngle.set(SimVar.GetSimVarValue('L:A32NX_FLAPS_IPPU_ANGLE', 'degrees'));
     this.flapsHandle.set(SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum'));
     this.slatsAngle.set(SimVar.GetSimVarValue('L:A32NX_SLATS_IPPU_ANGLE', 'degrees'));
-    this.flapsBaulkActiveWord.setFromSimVar('L:A32NX_SFCC_SLAT_FLAP_SYSTEM_STATUS_WORD');
+    // TODO: add switching between SFCC_1 and SFCC_2
+    this.flapsBaulkActiveWord.setFromSimVar('L:A32NX_SFCC_1_SLAT_FLAP_SYSTEM_STATUS_WORD');
 
     // FIXME move out of acquisition to logic below
     const oneEngineAboveMinPower = this.engine1AboveIdle.get() || this.engine2AboveIdle.get();
@@ -3217,6 +3226,12 @@ export class FwsCore {
       this.soundManager.enqueueSound('tripleClick');
     }
     this.approachCapability.set(newCapability);
+
+    // FG mode reversion
+    this.modeReversionTripleClickPulse.write(this.modeReversionTripleClickSimvar.get(), deltaTime);
+    if (this.modeReversionTripleClickPulse.read()) {
+      this.soundManager.enqueueSound('tripleClick');
+    }
 
     // A/THR OFF
     const aThrEngaged = this.autoThrustStatus.get() === 2 || this.autoThrustMode.get() !== 0;
@@ -3955,9 +3970,9 @@ export class FwsCore {
     this.spoilersArmed.set(fcdc1DiscreteWord4.bitValueOr(27, false) || fcdc2DiscreteWord4.bitValueOr(27, false));
     this.speedBrakeCommand.set(fcdc1DiscreteWord4.bitValueOr(28, false) || fcdc2DiscreteWord4.bitValueOr(28, false));
 
-    // FIXME these should be split between the two systems and the two sides
-    const flapsPos = Arinc429Word.fromSimVarValue('L:A32NX_SFCC_FLAP_ACTUAL_POSITION_WORD');
-    const slatsPos = Arinc429Word.fromSimVarValue('L:A32NX_SFCC_SLAT_ACTUAL_POSITION_WORD');
+    // TODO: add switching between SFCC_1 and SFCC_2
+    const flapsPos = Arinc429Word.fromSimVarValue('L:A32NX_SFCC_1_FLAP_ACTUAL_POSITION_WORD');
+    const slatsPos = Arinc429Word.fromSimVarValue('L:A32NX_SFCC_1_SLAT_ACTUAL_POSITION_WORD');
 
     // WARNING these vary for other variants... A320 CFM LEAP values here
     // flap/slat internal signals

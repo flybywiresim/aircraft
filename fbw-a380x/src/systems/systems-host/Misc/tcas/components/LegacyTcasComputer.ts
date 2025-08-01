@@ -35,7 +35,7 @@ import {
   UpDownAdvisoryStatus,
   TCAS_CONST,
 } from '../lib/TcasConstants';
-import { LegacySoundManager } from 'systems-host/systems/LegacySoundManager';
+import { LegacySoundManager } from 'systems-host/Misc/LegacySoundManager';
 import { ClockEvents, ConsumerSubject, EventBus, GameStateProvider, Instrument, Wait } from '@microsoft/msfs-sdk';
 import { MfdSurvEvents } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
 
