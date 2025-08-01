@@ -302,8 +302,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   ]);
 
   private readonly costIndexModeLabels = ArraySubject.create(['LRC', 'ECON']);
-  private readonly costIndexDisabled = this.props.fmcService.master?.fmgc.data.costIndexMode.map(
-    (mode) => mode === CostIndexMode.LRC,
+  private readonly costIndexDisabled = MappedSubject.create(
+    ([flightPhase, ciMode]) => flightPhase >= FmgcFlightPhase.Descent || ciMode === CostIndexMode.LRC,
+    this.activeFlightPhase,
+    this.props.fmcService.master?.fmgc.data.costIndexMode ?? Subject.create(CostIndexMode.ECON),
   );
 
   private readonly speedConstraintSpeed = Subject.create<number | null>(null);
