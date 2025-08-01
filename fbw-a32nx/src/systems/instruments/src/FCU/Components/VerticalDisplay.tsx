@@ -107,7 +107,7 @@ export class VerticalDisplay extends DisplayComponent<{ x: number; y: number; bu
           <text id="ALT" class="Active" x="256" y="57.6">
             ALT
           </text>
-          <text id="Value" class="Value" x="96" y="163">
+          <text id="Value" class="Value" x="96" y="167">
             {this.altValueSub}
           </text>
         </g>
@@ -131,7 +131,7 @@ export class VerticalDisplay extends DisplayComponent<{ x: number; y: number; bu
           >
             FPA
           </text>
-          <text id="Value" class="Value" x="77" y="163">
+          <text id="Value" class="Value" x="77" y="167">
             {this.vsValueSub}
           </text>
         </g>
