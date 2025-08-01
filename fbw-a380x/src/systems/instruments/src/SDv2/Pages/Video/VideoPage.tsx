@@ -8,12 +8,16 @@ import { PageTitle } from '../Generic/PageTitle';
 import { SdPageProps } from '../../SD';
 
 export class VideoPage extends DestroyableComponent<SdPageProps> {
-  private topSvgStyle = this.props.visible.map((v) => `visibility: ${v ? 'visible' : 'hidden'}`);
+  private readonly topSvgStyle = this.props.visible.map((v) => `visibility: ${v ? 'visible' : 'hidden'}`);
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
     this.subscriptions.push(this.topSvgStyle);
+  }
+
+  destroy(): void {
+    super.destroy();
   }
 
   render() {
