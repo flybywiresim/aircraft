@@ -2393,7 +2393,8 @@ export class FwsCore {
     this.flapsAngle.set(SimVar.GetSimVarValue('L:A32NX_FLAPS_IPPU_ANGLE', 'degrees'));
     this.flapsHandle.set(SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum'));
     this.slatsAngle.set(SimVar.GetSimVarValue('L:A32NX_SLATS_IPPU_ANGLE', 'degrees'));
-    this.flapsBaulkActiveWord.setFromSimVar('L:A32NX_SFCC_SLAT_FLAP_SYSTEM_STATUS_WORD');
+    // TODO: add switching between SFCC_1 and SFCC_2
+    this.flapsBaulkActiveWord.setFromSimVar('L:A32NX_SFCC_1_SLAT_FLAP_SYSTEM_STATUS_WORD');
 
     // FIXME move out of acquisition to logic below
     const oneEngineAboveMinPower = this.engine1AboveIdle.get() || this.engine2AboveIdle.get();
@@ -3757,9 +3758,9 @@ export class FwsCore {
     this.spoilersArmed.set(fcdc1DiscreteWord4.bitValueOr(27, false) || fcdc2DiscreteWord4.bitValueOr(27, false));
     this.speedBrakeCommand.set(fcdc1DiscreteWord4.bitValueOr(28, false) || fcdc2DiscreteWord4.bitValueOr(28, false));
 
-    // FIXME these should be split between the two systems and the two sides
-    const flapsPos = Arinc429Word.fromSimVarValue('L:A32NX_SFCC_FLAP_ACTUAL_POSITION_WORD');
-    const slatsPos = Arinc429Word.fromSimVarValue('L:A32NX_SFCC_SLAT_ACTUAL_POSITION_WORD');
+    // TODO: add switching between SFCC_1 and SFCC_2
+    const flapsPos = Arinc429Word.fromSimVarValue('L:A32NX_SFCC_1_FLAP_ACTUAL_POSITION_WORD');
+    const slatsPos = Arinc429Word.fromSimVarValue('L:A32NX_SFCC_1_SLAT_ACTUAL_POSITION_WORD');
 
     // WARNING these vary for other variants... A320 CFM LEAP values here
     // flap/slat internal signals

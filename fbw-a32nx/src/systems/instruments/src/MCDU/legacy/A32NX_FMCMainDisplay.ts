@@ -5337,6 +5337,10 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     return this.navDbIdent;
   }
 
+  public logTroubleshootingError(msg: any) {
+    this.bus.pub('troubleshooting_log_error', String(msg), true, false);
+  }
+
   // ---------------------------
   // CDUMainDisplay Types
   // ---------------------------
