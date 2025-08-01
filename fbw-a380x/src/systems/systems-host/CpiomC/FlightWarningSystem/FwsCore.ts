@@ -474,6 +474,12 @@ export class FwsCore {
 
   public readonly excessCabinAltitude = Subject.create(false);
 
+  public readonly abnormalCabVerticalSpeed = Subject.create(false);
+
+  public readonly cabVerticalSpeedLimitationActive = Subject.create(false);
+
+  public readonly cabVsLimitationMemoryNode = new NXLogicMemoryNode(false);
+
   public readonly excessDiffPressure = Subject.create(false);
 
   public readonly diffPressure = Arinc429Register.empty();
@@ -1742,6 +1748,21 @@ export class FwsCore {
   public readonly iceSevereDetectedTimer = new NXLogicConfirmNode(40, false);
 
   public readonly iceSevereDetectedTimerStatus = Subject.create(false);
+
+  /* DOOR */
+
+  public readonly cockpitWindowOpen = Subject.create(false);
+
+  public readonly main1LOpen = Subject.create(false);
+  public readonly main1ROpen = Subject.create(false);
+  public readonly main2LOpen = Subject.create(false);
+  public readonly main2ROpen = Subject.create(false);
+  public readonly main3LOpen = Subject.create(false);
+  public readonly main3ROpen = Subject.create(false);
+  public readonly main4LOpen = Subject.create(false);
+  public readonly main4ROpen = Subject.create(false);
+  public readonly main5LOpen = Subject.create(false);
+  public readonly main5ROpen = Subject.create(false);
 
   private static pushKeyUnique(val: (state?: boolean[]) => string[] | undefined, pushTo: string[], state?: boolean[]) {
     if (val) {
@@ -3526,6 +3547,21 @@ export class FwsCore {
         : this.cabinAltitude.valueOr(0)) >= 8550,
     );
 
+    const mancabinVs = SimVar.GetSimVarValue('L:A32NX_PRESS_MAN_CABIN_VS', 'feet per minute');
+    const cabinVsArinc = Arinc429Register.empty().setFromSimVar(`L:A32NX_PRESS_CABIN_VS_B${cpcsToUseId}`);
+    const cabinVs = cabinVsArinc.isNormalOperation() ? cabinVsArinc.value : mancabinVs;
+
+    const isAbnormalVs = (vs: number): boolean => vs > 1800 || vs < -6350;
+    this.abnormalCabVerticalSpeed.set(isAbnormalVs(cabinVs));
+
+    if (this.abnormalCabVerticalSpeed.get() && !this.aircraftOnGround) {
+      this.cabVsLimitationMemoryNode.write(true, false);
+      this.cabVerticalSpeedLimitationActive.set(true);
+    } else if (this.shutDownFor50MinutesCheckListReset.get()) {
+      this.cabVsLimitationMemoryNode.write(false, true);
+      this.cabVerticalSpeedLimitationActive.set(false);
+    }
+
     // 0: Man, 1: Low, 2: Norm, 3: High
     this.flowSelectorKnob.set(SimVar.GetSimVarValue('L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position', 'number'));
 
@@ -4261,6 +4297,23 @@ export class FwsCore {
 
     /* OXYGEN */
     this.paxOxyMasksDeployed.set(SimVar.GetSimVarValue('L:A32NX_OXYGEN_MASKS_DEPLOYED', 'Bool'));
+
+    /* DOOR */
+    this.cockpitWindowOpen.set(
+      SimVar.GetSimVarValue('L:CPT_SLIDING_WINDOW', 'number') === 1 ||
+        SimVar.GetSimVarValue('L:FO_SLIDING_WINDOW', 'number') === 1,
+    );
+
+    this.main1LOpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:0', 'percent') > 0);
+    this.main1ROpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:1', 'percent') > 0);
+    this.main2LOpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:2', 'percent') > 0);
+    this.main2ROpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:3', 'percent') > 0);
+    this.main3LOpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:4', 'percent') > 0);
+    this.main3ROpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:5', 'percent') > 0);
+    this.main4LOpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:6', 'percent') > 0);
+    this.main4ROpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:7', 'percent') > 0);
+    this.main5LOpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:8', 'percent') > 0);
+    this.main5ROpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:9', 'percent') > 0);
 
     /* CABIN READY */
 
