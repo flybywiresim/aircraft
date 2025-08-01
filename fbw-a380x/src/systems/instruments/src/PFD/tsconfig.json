@@ -15,7 +15,6 @@
     "jsx": "react", /* Required for FSComponent framework JSX */
     "paths": {
       "@shared/*": ["./shared/src/*"],
-      "@instruments/common/*": ["./instruments/src/Common/*"],
       "@atsu/*": ["./atsu/src/*"],
       "@fmgc/*": ["../../../fbw-a32nx/src/systems/fmgc/src/*"],
       "@flybywiresim/failures": ["failures"],

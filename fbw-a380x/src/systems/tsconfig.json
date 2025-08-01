@@ -14,7 +14,6 @@
       "jsx": "react",
       "paths": {
         "@shared/*": ["./shared/src/*"],
-        "@instruments/common/*": ["./instruments/src/Common/*"],
         "@fmgc/*": ["../../../fbw-a32nx/src/systems/fmgc/src/*"],
         "@flybywiresim/failures": ["failures"],
         "@simbridge/*": ["../../../fbw-a32nx/src/systems/simbridge-client/src/*"],

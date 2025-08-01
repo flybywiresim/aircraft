@@ -20,7 +20,6 @@
       "@datalink/router": ["../../../fbw-common/src/systems/datalink/router/src/index.ts"],
       "@failures": ["./failures/src/index.ts"],
       "@fmgc/*": ["./fmgc/src/*"],
-      "@instruments/common/*": ["./instruments/src/Common/*"],
       "@localization/*": ["../localization/*"],
       "@sentry/*": ["./sentry-client/src/*"],
       "@simbridge/*": ["./simbridge-client/src/*"],
