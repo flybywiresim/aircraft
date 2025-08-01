@@ -109,6 +109,7 @@
 1. [A32NX/FWS] Active warnings are no longer cleared when entering an inhibited flight phase - @tracernz (Mike)
 1. [A32NX] Fixed lighting issues in MSFS2024 - @heclak (Heclak)
 1. [FMS] Fixed a rare issue where airways failed to load - @tracernz (Mike)
+1. [A380X/Fuel] Enabled gravityfeeding and fixed crossfeed fuel usage from correct tanks - @Maximilian-Reuter (\_chaoz_)
 
 ## 0.13.0
 
