@@ -1,7 +1,11 @@
 ﻿// Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { AbnormalProcedure, ChecklistLineStyle } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import {
+  AbnormalProcedure,
+  ChecklistLineStyle,
+  FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
+} from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 
 // Convention for IDs:
 // First two digits: ATA chapter
@@ -494,11 +498,7 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
         name: 'FUEL CONSUMPT INCRSD',
         sensed: false,
       },
-      {
-        name: 'FMS PRED UNRELIABLE',
-        sensed: false,
-        style: ChecklistLineStyle.Green,
-      },
+      FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
       {
         name: 'LDG DIST AFFECTED',
         sensed: false,
@@ -526,11 +526,7 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
         name: 'FUEL CONSUMPT INCRSD',
         sensed: false,
       },
-      {
-        name: 'FMS PRED UNRELIABLE',
-        sensed: false,
-        style: ChecklistLineStyle.Green,
-      },
+      FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
       {
         name: 'LDG DIST AFFECTED',
         sensed: false,
@@ -649,11 +645,7 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
         name: 'FUEL CONSUMPT INCRSD',
         sensed: false,
       },
-      {
-        name: 'FMS PRED UNRELIABLE',
-        sensed: false,
-        style: ChecklistLineStyle.Green,
-      },
+      FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
       {
         name: 'LDG DIST AFFECTED',
         sensed: false,
