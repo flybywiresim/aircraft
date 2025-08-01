@@ -109,6 +109,11 @@
 1. [A32NX/FWS] Active warnings are no longer cleared when entering an inhibited flight phase - @tracernz (Mike)
 1. [A32NX] Fixed lighting issues in MSFS2024 - @heclak (Heclak)
 1. [FMS] Fixed a rare issue where airways failed to load - @tracernz (Mike)
+1. [ADIRU] Added excess motion and outside latitude limit (> 82° N/S) faults - @tracernz (Mike)
+1. [ADIRU] Added quick re-align function - @tracernz (Mike)
+1. [ADIRU] Changed the IRS alignment times to actual enhanced align times - @tracernz (Mike)
+1. [A32NX/FWC] Added IRS alignment related faults and improved accuracy of time to align logic - @tracernz (Mike)
+1. [A32NX/EWD] Added support for flashing text from FWC - @tracernz (Mike)
 
 ## 0.13.0
 

@@ -386,7 +386,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       a320EfisRangeSettings,
     );
 
-    initComponents(this.navigation, this.guidanceController, this.flightPlanService);
+    initComponents(this.bus, this.navigation, this.guidanceController, this.flightPlanService);
 
     this.guidanceController.init();
     this.efisSymbolsLeft.init();
