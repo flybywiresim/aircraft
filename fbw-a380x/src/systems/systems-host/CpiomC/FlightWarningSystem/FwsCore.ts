@@ -31,6 +31,7 @@ import {
   FrequencyMode,
   MsfsFlightModelEvents,
   NXDataStore,
+  NXLogicClockNode,
   NXLogicConfirmNode,
   NXLogicMemoryNode,
   NXLogicPulseNode,
@@ -46,6 +47,7 @@ import {
   EcamDeferredProcedures,
   EcamLimitations,
   EcamMemos,
+  isTimedItem,
   pfdMemoDisplay,
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { ProcedureLinesGenerator } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/ProcedureLinesGenerator';
@@ -90,6 +92,13 @@ export enum FwcAuralWarning {
   SingleChime,
   Crc,
   CavalryCharge,
+}
+
+enum engineState {
+  OFF = 0,
+  ON = 1,
+  STARTING = 2,
+  SHUTTING = 3,
 }
 
 export interface FwsSuppressableItem {
@@ -252,6 +261,8 @@ export class FwsCore {
 
   /* PSEUDO FWC VARIABLES */
 
+  private readonly publisher = this.bus.getPublisher<FwsEwdEvents>();
+
   /** Keys/IDs of all failures currently active, irrespective they are already cleared or not */
   public readonly allCurrentFailures: string[] = [];
 
@@ -343,7 +354,7 @@ export class FwsCore {
 
   public readonly compMesgCount = Subject.create(0);
 
-  public readonly landAsapRed = Subject.create(false);
+  public readonly landAsap = Subject.create(false);
 
   public readonly ndXfrKnob = Subject.create(0);
 
@@ -364,6 +375,8 @@ export class FwsCore {
   public readonly wingAntiIce = Subject.create(false);
 
   public readonly voiceVhf3 = Subject.create(false);
+
+  public readonly smokeFumesActivated = this.activeAbnormalNonSensedKeys.map((set) => set.has(260900097));
 
   /* 21 - AIR CONDITIONING AND PRESSURIZATION */
 
@@ -690,20 +703,48 @@ export class FwsCore {
 
   public readonly apuAgentDischarged = Subject.create(false);
 
+  private readonly fireEng1Agent1InFlight10SecondsDischClock = Subject.create(false);
+  public readonly fireEng1Agent1Discharge10sTimeStamp = this.fireEng1Agent1InFlight10SecondsDischClock.map((v) =>
+    v ? Date.now() : null,
+  );
+  private readonly eng1FireInFlightFire30SecondsDischClock = Subject.create(false);
+  public readonly fireEng1Agent2Discharge30sTimeStamp = this.eng1FireInFlightFire30SecondsDischClock.map((v) =>
+    v ? Date.now() : null,
+  );
   public readonly eng1Agent1Discharged = Subject.create(false);
-
   public readonly eng1Agent2Discharged = Subject.create(false);
 
+  private readonly fireEng2Agent1InFlight10SecondsDischClock = Subject.create(false);
+  public readonly fireEng2Agent1Discharge10sTimeStamp = this.fireEng2Agent1InFlight10SecondsDischClock.map((v) =>
+    v ? Date.now() : null,
+  );
+  private readonly eng2FireInFlightFire30SecondsDischClock = Subject.create(false);
+  public readonly fireEng2Agent2Discharge30sTimeStamp = this.eng2FireInFlightFire30SecondsDischClock.map((v) =>
+    v ? Date.now() : null,
+  );
   public readonly eng2Agent1Discharged = Subject.create(false);
-
   public readonly eng2Agent2Discharged = Subject.create(false);
 
+  private readonly fireEng3Agent1InFlight10SecondsDischClock = Subject.create(false);
+  public readonly fireEng3Agent1Discharge10sTimeStamp = this.fireEng3Agent1InFlight10SecondsDischClock.map((v) =>
+    v ? Date.now() : null,
+  );
+  private readonly eng3FireInFlightFire30SecondsDischClock = Subject.create(false);
+  public readonly fireEng3Agent2Discharge30sTimeStamp = this.eng3FireInFlightFire30SecondsDischClock.map((v) =>
+    v ? Date.now() : null,
+  );
   public readonly eng3Agent1Discharged = Subject.create(false);
-
   public readonly eng3Agent2Discharged = Subject.create(false);
 
+  private readonly fireEng4Agent1InFlight10SecondsDischClock = Subject.create(false);
+  public readonly fireEng4Agent1Discharge10sTimeStamp = this.fireEng4Agent1InFlight10SecondsDischClock.map((v) =>
+    v ? Date.now() : null,
+  );
+  private readonly eng4FireInFlightFire30SecondsDischClock = Subject.create(false);
+  public readonly fireEng4Agent2Discharge30sTimeStamp = this.eng4FireInFlightFire30SecondsDischClock.map((v) =>
+    v ? Date.now() : null,
+  );
   public readonly eng4Agent1Discharged = Subject.create(false);
-
   public readonly eng4Agent2Discharged = Subject.create(false);
 
   public readonly apuLoopAFault = Subject.create(false);
@@ -767,6 +808,12 @@ export class FwsCore {
   public readonly allFireButtons = Subject.create(false);
 
   public readonly fireTestPb = Subject.create(false);
+
+  public readonly apuFireAgent1Discharge10SecondsClockActive = Subject.create(false);
+
+  public readonly apuFireAgent1Discharge10SecondsTimestamp = this.apuFireAgent1Discharge10SecondsClockActive.map((v) =>
+    v ? Date.now() : null,
+  );
 
   /* 27 - FLIGHT CONTROLS */
 
@@ -1047,7 +1094,8 @@ export class FwsCore {
 
   public readonly fmsZfwOrZfwCgNotSet = Subject.create(false);
 
-  private readonly fuelOnBoard = ConsumerSubject.create(this.sub.on('fuel_on_board'), 0);
+  // TODO signals should come from FQMS
+  private readonly fuelOnBoard = ConsumerSubject.create(this.sub.on('fuel_on_board').whenChangedBy(100), 0);
 
   private readonly refuelPanel = ConsumerSubject.create(this.sub.on('msfs_interactive_point_open_18'), 0);
 
@@ -1555,6 +1603,8 @@ export class FwsCore {
 
   public readonly xpdrAltReporting = Subject.create(false);
 
+  public readonly tcasInop = Subject.create(false);
+
   public readonly tcas1Fault = Subject.create(false);
 
   private readonly tcas1FaultCond = Subject.create(false);
@@ -1581,6 +1631,8 @@ export class FwsCore {
 
   public readonly tcasStandbyMemo = Subject.create(false);
 
+  public readonly tcasTaOnly = Subject.create(false);
+
   public readonly terrSys1Failed = Subject.create(false);
   public readonly terrSys2Failed = Subject.create(false);
 
@@ -1596,10 +1648,15 @@ export class FwsCore {
 
   public readonly oneEngineRunning = Subject.create(false);
 
-  public readonly engine1Master = ConsumerSubject.create(this.sub.on('engine_master_1'), 0);
-  public readonly engine2Master = ConsumerSubject.create(this.sub.on('engine_master_2'), 0);
-  public readonly engine3Master = ConsumerSubject.create(this.sub.on('engine_master_3'), 0);
-  public readonly engine4Master = ConsumerSubject.create(this.sub.on('engine_master_4'), 0);
+  public readonly engine1Master = ConsumerSubject.create(this.sub.on('engine_master_1'), false);
+  public readonly engine2Master = ConsumerSubject.create(this.sub.on('engine_master_2'), false);
+  public readonly engine3Master = ConsumerSubject.create(this.sub.on('engine_master_3'), false);
+  public readonly engine4Master = ConsumerSubject.create(this.sub.on('engine_master_4'), false);
+
+  private readonly engine1masterOnPulseNode = new NXLogicPulseNode();
+  private readonly engine2masterOnPulseNode = new NXLogicPulseNode();
+  private readonly engine3masterOnPulseNode = new NXLogicPulseNode();
+  private readonly engine4masterOnPulseNode = new NXLogicPulseNode();
 
   public readonly engine1State = Subject.create(0);
   public readonly engine2State = Subject.create(0);
@@ -1615,8 +1672,9 @@ export class FwsCore {
   public readonly HPNEng2 = Subject.create(0);
   public readonly HPNEng3 = Subject.create(0);
   public readonly HPNEng4 = Subject.create(0);
-
   public readonly N1IdleEng = Subject.create(0);
+
+  public readonly engine1DischargeTimer = new NXLogicClockNode(10, 0);
 
   // FIXME ECU should provide this in a discrete word
   public readonly engine1AboveIdle = MappedSubject.create(
@@ -1653,7 +1711,93 @@ export class FwsCore {
     this.HPNEng4,
   );
 
-  public readonly allEngFault = Subject.create(false);
+  public readonly allEnginesFailure = Subject.create(false);
+
+  public readonly eng1Fail = Subject.create(false);
+  private readonly eng1NotStartingConfNode = new NXLogicConfirmNode(5, false);
+  private readonly eng1WasRunningMemoryNode = new NXLogicMemoryNode();
+  private readonly eng1FailMemoryNode = new NXLogicMemoryNode();
+
+  public readonly eng2Fail = Subject.create(false);
+  private readonly eng2FailMemoryNode = new NXLogicMemoryNode();
+  private readonly eng2NotStartingConfNode = new NXLogicConfirmNode(5, false);
+  private readonly eng2WasRunningMemoryNode = new NXLogicMemoryNode();
+
+  public readonly eng3Fail = Subject.create(false);
+  private readonly eng3FailMemoryNode = new NXLogicMemoryNode();
+  private readonly eng3NotStartingConfNode = new NXLogicConfirmNode(5, false);
+  private readonly eng3WasRunningMemoryNode = new NXLogicMemoryNode();
+
+  public readonly eng4Fail = Subject.create(false);
+  private readonly eng4FailMemoryNode = new NXLogicMemoryNode();
+  private readonly eng4NotStartingConfNode = new NXLogicConfirmNode(5, false);
+  private readonly eng4WasRunningMemoryNode = new NXLogicMemoryNode();
+
+  private readonly eng1ShutDown = Subject.create(false);
+  private readonly eng2ShutDown = Subject.create(false);
+  private readonly eng3ShutDown = Subject.create(false);
+  private readonly eng4ShutDown = Subject.create(false);
+
+  public readonly eng1ShutdownAbnormalSensed = MappedSubject.create(
+    ([eng1ShutDown, allEngFailure]) => eng1ShutDown && !allEngFailure,
+    this.eng1ShutDown,
+    this.allEnginesFailure,
+  );
+
+  public readonly eng2ShutdownAbnormalSensed = MappedSubject.create(
+    ([eng2ShutDown, allEngFailure]) => eng2ShutDown && !allEngFailure,
+    this.eng2ShutDown,
+    this.allEnginesFailure,
+  );
+
+  public readonly eng3ShutdownAbnormalSensed = MappedSubject.create(
+    ([eng3ShutDown, allEngFailure]) => eng3ShutDown && !allEngFailure,
+    this.eng3ShutDown,
+    this.allEnginesFailure,
+  );
+
+  public readonly eng4ShutdownAbnormalSensed = MappedSubject.create(
+    ([eng4ShutDown, allEngFailure]) => eng4ShutDown && !allEngFailure,
+    this.eng4ShutDown,
+    this.allEnginesFailure,
+  );
+
+  public readonly eng1Out = Subject.create(false);
+  public readonly eng2Out = Subject.create(false);
+  public readonly eng3Out = Subject.create(false);
+  public readonly eng4Out = Subject.create(false);
+  public readonly phase12561112Inhibition = [1, 2, 5, 6, 11, 12];
+
+  public readonly phase56Inhibition = [5, 6];
+
+  public readonly fwdCargoTempRegulatorOff = Subject.create(false);
+
+  public readonly fuelOnBoardBetween55And95T = this.fuelOnBoard.map((v) => v >= 55000 && v <= 95000);
+
+  public readonly eng1StartOrCrank = Subject.create(false);
+  public readonly eng1PrimaryAbnormalParams = Subject.create(false);
+  public readonly eng2StartOrCrank = Subject.create(false);
+  public readonly eng2PrimaryAbnormalParams = Subject.create(false);
+  public readonly eng3StartOrCrank = Subject.create(false);
+  public readonly eng3PrimaryAbnormalParams = Subject.create(false);
+  public readonly eng4StartOrCrank = Subject.create(false);
+  public readonly eng4PrimaryAbnormalParams = Subject.create(false);
+
+  private readonly attentionGetterNormalCollection = MappedSubject.create(
+    ([eng1, eng2, eng3, eng4]) => Array.of(eng1, eng2, eng3, eng4),
+    this.eng1StartOrCrank,
+    this.eng2StartOrCrank,
+    this.eng3StartOrCrank,
+    this.eng4StartOrCrank,
+  );
+
+  private readonly attentionGetterAbnormalPrimaryParams = MappedSubject.create(
+    ([eng1, eng2, eng3, eng4]) => Array.of(eng1, eng2, eng3, eng4),
+    this.eng1PrimaryAbnormalParams,
+    this.eng2PrimaryAbnormalParams,
+    this.eng3PrimaryAbnormalParams,
+    this.eng4PrimaryAbnormalParams,
+  );
 
   public readonly engine1Generator = Subject.create(false);
 
@@ -1665,7 +1809,7 @@ export class FwsCore {
 
   public readonly apuMasterSwitch = Subject.create(0);
 
-  public readonly apuAvail = Subject.create(0);
+  public readonly apuAvail = Subject.create(false);
 
   public readonly radioHeight1 = Arinc429Register.empty();
 
@@ -1742,6 +1886,72 @@ export class FwsCore {
   public readonly iceSevereDetectedTimer = new NXLogicConfirmNode(40, false);
 
   public readonly iceSevereDetectedTimerStatus = Subject.create(false);
+
+  /** Secondary Failures */
+
+  public readonly elecAcSecondaryFailure = MappedSubject.create(
+    SubscribableMapFunctions.or(),
+    this.eng1ShutDown,
+    this.eng2ShutDown,
+    this.eng3ShutDown,
+    this.eng4ShutDown,
+  );
+
+  public readonly bleedSecondaryFailure = MappedSubject.create(
+    SubscribableMapFunctions.or(),
+    this.eng1ShutDown,
+    this.eng2ShutDown,
+    this.eng3ShutDown,
+    this.eng4ShutDown,
+  );
+
+  /** Inop SYS */
+
+  // GENERATORS // TODO add generator contractor open, idg disconnect & fault conditions
+  public readonly gen1Inop = MappedSubject.create(
+    ([phase121112, eng1Running]) => !phase121112 && !eng1Running,
+    this.flightPhase12Or1112,
+    this.engine1Running,
+  );
+
+  public readonly gen2Inop = MappedSubject.create(
+    ([phase121112, eng2Running]) => !phase121112 && !eng2Running,
+    this.flightPhase12Or1112,
+    this.engine2Running,
+  );
+
+  public readonly gen3Inop = MappedSubject.create(
+    ([phase121112, eng3Running]) => !phase121112 && !eng3Running,
+    this.flightPhase12Or1112,
+    this.engine3Running,
+  );
+
+  public readonly gen4Inop = MappedSubject.create(
+    ([phase121112, eng4Running]) => !phase121112 && !eng4Running,
+    this.flightPhase12Or1112,
+    this.engine4Running,
+  );
+
+  public readonly reverser2Inop = this.eng2Out; // TODO add power loss conditions, hydraulic loss
+
+  public readonly reverser3Inop = this.eng3Out; // TODO add power loss conditions, hydraulic loss
+
+  public readonly eng1BleedInop = this.eng1Out; // TODO add bleed inop conditions
+
+  public readonly eng2BleedInop = this.eng2Out; // TODO add bleed inop conditions
+
+  public readonly eng3BleedInop = this.eng3Out; // TODO add bleed inop conditions
+
+  public readonly eng4BleedInop = this.gen4Inop; // TODO add bleed inop conditions
+
+  // TODO disable when abnormal hydralic pressure
+  public readonly eng1HydraulicInop = this.gen1Inop;
+
+  public readonly eng2HydraulicInop = this.gen2Inop;
+
+  public readonly eng3HydraulicInop = this.gen3Inop;
+
+  public readonly eng4HydraulicInop = this.gen4Inop;
 
   private static pushKeyUnique(val: (state?: boolean[]) => string[] | undefined, pushTo: string[], state?: boolean[]) {
     if (val) {
@@ -1897,6 +2107,8 @@ export class FwsCore {
       this.engine2AboveIdle,
       this.engine1CoreAtOrAboveMinIdle,
       this.engine2CoreAtOrAboveMinIdle,
+      this.elecAcSecondaryFailure,
+      this.bleedSecondaryFailure,
       this.fmsSwitchingNotNorm,
     );
   }
@@ -1938,6 +2150,16 @@ export class FwsCore {
           this.flightPhaseEndedPulseNode.write(true, 0);
         }
       }),
+    );
+
+    this.subs.push(
+      this.attentionGetterNormalCollection.sub((v) => this.publisher.pub('fws_normal_attention_getter_eng', v, true)),
+    );
+
+    this.subs.push(
+      this.attentionGetterAbnormalPrimaryParams.sub((v) =>
+        this.publisher.pub('fws_abnormal_primary_engine_parameters_attention_getter', v, true),
+      ),
     );
 
     this.subs.push(
@@ -2058,15 +2280,12 @@ export class FwsCore {
     this.subs.push(this.statusNormal.sub((s) => SimVar.SetSimVarValue('L:A32NX_STATUS_NORMAL', 'boolean', s), true));
 
     this.subs.push(
-      this.ecamEwdShowStsIndication.sub(
-        (s) => this.bus.getPublisher<FwsEwdEvents>().pub('fws_show_sts_indication', s, true),
-        true,
-      ),
+      this.ecamEwdShowStsIndication.sub((s) => this.publisher.pub('fws_show_sts_indication', s, true), true),
     );
 
     this.subs.push(
       this.ecamEwdShowFailurePendingIndication.sub(
-        (s) => this.bus.getPublisher<FwsEwdEvents>().pub('fws_show_failure_pending', s, true),
+        (s) => this.publisher.pub('fws_show_failure_pending', s, true),
         true,
       ),
     );
@@ -2246,10 +2465,24 @@ export class FwsCore {
       return;
     }
 
-    if (!this.fuelingInitiated.get()) {
+    if (
+      !this.fuelingInitiated.get() ||
+      !this.eng1ShutDown.get() ||
+      !this.eng2ShutDown.get() ||
+      !this.eng3ShutDown.get() ||
+      !this.eng4ShutDown.get()
+    ) {
       this.fuelOnBoard.pause();
     } else {
       this.fuelOnBoard.resume();
+    }
+
+    if (!this.aircraftOnGround.get()) {
+      this.fuelingTarget.pause();
+      this.fuelingInitiated.pause();
+    } else {
+      this.fuelingTarget.resume();
+      this.fuelingInitiated.resume();
     }
 
     // A380X hack: Inject healthy messages for some systems which are not yet implemented
@@ -2370,10 +2603,10 @@ export class FwsCore {
     this.engine3State.set(engine3StateSiMVar);
     this.engine4State.set(engine4StateSiMVar);
 
-    this.engine1Running.set(engine1StatesimVar == 1);
-    this.engine2Running.set(engine2StateSimVar == 1);
-    this.engine3Running.set(engine3StateSiMVar == 1);
-    this.engine4Running.set(engine4StateSiMVar == 1);
+    this.engine1Running.set(engine1StatesimVar === engineState.ON);
+    this.engine2Running.set(engine2StateSimVar === engineState.ON);
+    this.engine3Running.set(engine3StateSiMVar === engineState.ON);
+    this.engine4Running.set(engine4StateSiMVar === engineState.ON);
 
     this.oneEngineRunning.set(
       this.engine1Running.get() || this.engine2Running.get() || this.engine3Running.get() || this.engine4Running.get(),
@@ -2405,12 +2638,12 @@ export class FwsCore {
 
     this.apuMasterSwitch.set(SimVar.GetSimVarValue('L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON', 'bool'));
 
-    this.apuAvail.set(SimVar.GetSimVarValue('L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE', 'bool'));
-    this.apuBleedValveOpen.set(SimVar.GetSimVarValue('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'bool'));
+    this.apuAvail.set(SimVar.GetSimVarValue('L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE', 'bool') > 0);
+    this.apuBleedValveOpen.set(SimVar.GetSimVarValue('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'bool') > 0);
 
     this.apuBleedPbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON', SimVarValueType.Bool));
     const machBelow56 = this.machSelectedFromAdr.get() < 0.56;
-    const apuWithinEnvelope = this.adrPressureAltitude.get() < 22_500 && (machBelow56 || this.allEngFault.get());
+    const apuWithinEnvelope = this.adrPressureAltitude.get() < 22_500 && (machBelow56 || this.allEnginesFailure.get());
     this.apuBleedPbOnOver22500ft.set(this.apuBleedPbOn.get() && !apuWithinEnvelope);
 
     this.eng1BleedAbnormalOff.set(
@@ -3118,26 +3351,6 @@ export class FwsCore {
     this.eng1Or2TakeoffPower.set(engOneOrTwoTakeoffPower || (this.eng1Or2TakeoffPowerConfirm.read() && !raAbove1500));
     this.eng3Or4TakeoffPower.set(
       engThreeOrFourTakeoffPower || (this.eng3Or4TakeoffPowerConfirm.read() && !raAbove1500),
-    );
-
-    this.allEngFault.set(
-      !this.aircraftOnGround.get() &&
-        ((this.fireButtonEng1.get() &&
-          this.fireButtonEng2.get() &&
-          this.fireButtonEng3.get() &&
-          this.fireButtonEng4.get()) ||
-          (!this.engine1ValueSwitch.get() &&
-            !this.engine2ValueSwitch.get() &&
-            !this.engine3ValueSwitch.get() &&
-            !this.engine4ValueSwitch.get()) ||
-          (this.engine1State.get() === 0 &&
-            this.engine2State.get() === 0 &&
-            this.engine3State.get() === 0 &&
-            this.engine4State.get() === 0) ||
-          (!this.engine1CoreAtOrAboveMinIdle.get() &&
-            !this.engine2CoreAtOrAboveMinIdle.get() &&
-            !this.engine3CoreAtOrAboveMinIdle.get() &&
-            !this.engine4CoreAtOrAboveMinIdle.get())),
     );
 
     /* 22 - AUTOFLIGHT */
@@ -4076,8 +4289,12 @@ export class FwsCore {
         : transponder1State === 5 || transponder1State === 4,
     ); // mode S or mode C
 
+    this.tcasInop.set(SimVar.GetSimVarValue('L:A32NX_TCAS_FAULT', 'bool'));
     const tcasFaulty = SimVar.GetSimVarValue('L:A32NX_TCAS_FAULT', 'bool');
-    const tcasStandby = !SimVar.GetSimVarValue('L:A32NX_TCAS_MODE', 'Enum');
+    const tcasMode = SimVar.GetSimVarValue('L:A32NX_TCAS_MODE', 'Enum');
+
+    this.tcasTaOnly.set(tcasMode === 1);
+    const tcasStandby = tcasMode === 0;
 
     // FIX ME Verify no XPDR fault once implemented
     this.tcasStandby3sConfNode.write(!tcasFaulty && tcasStandby, deltaTime);
@@ -4211,12 +4428,63 @@ export class FwsCore {
         this.fireButtonEng4.get() &&
         this.fireButtonAPU.get(),
     );
-
     this.apuFireDetectedAural.set(this.apuFireDetected.get() && !this.fireButtonAPU.get());
     this.eng1FireDetectedAural.set(this.eng1FireDetected.get() && !this.fireButtonEng1.get());
     this.eng2FireDetectedAural.set(this.eng2FireDetected.get() && !this.fireButtonEng2.get());
     this.eng3FireDetectedAural.set(this.eng3FireDetected.get() && !this.fireButtonEng3.get());
     this.eng4FireDetectedAural.set(this.eng4FireDetected.get() && !this.fireButtonEng4.get());
+
+    // FIRE Timers
+    this.apuFireAgent1Discharge10SecondsClockActive.set(this.apuFireDetected.get() && this.fireButtonAPU.get());
+    this.fireEng1Agent1InFlight10SecondsDischClock.set(
+      !this.aircraftOnGround.get() &&
+        !this.engine1Master.get() &&
+        this.eng1FireDetected.get() &&
+        !this.eng1Agent1Discharged.get(),
+    );
+    this.eng1FireInFlightFire30SecondsDischClock.set(
+      !this.aircraftOnGround.get() &&
+        this.fireButtonEng1.get() &&
+        this.eng1FireDetected.get() &&
+        this.eng1Agent1Discharged.get(),
+    );
+    this.fireEng2Agent1InFlight10SecondsDischClock.set(
+      !this.aircraftOnGround.get() &&
+        !this.engine2Master.get() &&
+        this.eng2FireDetected.get() &&
+        !this.eng2Agent1Discharged.get(),
+    );
+    this.eng2FireInFlightFire30SecondsDischClock.set(
+      !this.aircraftOnGround.get() &&
+        this.fireButtonEng2.get() &&
+        this.eng2FireDetected.get() &&
+        this.eng2Agent1Discharged.get(),
+    );
+    this.fireEng3Agent1InFlight10SecondsDischClock.set(
+      !this.aircraftOnGround.get() &&
+        !this.engine3Master.get() &&
+        this.eng3FireDetected.get() &&
+        !this.eng3Agent1Discharged.get(),
+    );
+    this.eng3FireInFlightFire30SecondsDischClock.set(
+      !this.aircraftOnGround.get() &&
+        this.fireButtonEng3.get() &&
+        this.eng3FireDetected.get() &&
+        this.eng3Agent1Discharged.get(),
+    );
+
+    this.fireEng4Agent1InFlight10SecondsDischClock.set(
+      !this.aircraftOnGround.get() &&
+        !this.engine4Master.get() &&
+        this.eng4FireDetected.get() &&
+        !this.eng4Agent1Discharged.get(),
+    );
+    this.eng4FireInFlightFire30SecondsDischClock.set(
+      !this.aircraftOnGround.get() &&
+        this.fireButtonEng4.get() &&
+        this.eng4FireDetected.get() &&
+        this.eng4Agent1Discharged.get(),
+    );
 
     this.evacCommand.set(SimVar.GetSimVarValue('L:A32NX_EVAC_COMMAND_TOGGLE', 'bool'));
 
@@ -4271,6 +4539,136 @@ export class FwsCore {
     if (callPushAft || callPushAll || callPushFwd) {
       SimVar.SetSimVarValue('L:A32NX_CABIN_READY', 'bool', 1);
     }
+
+    /** ATA 70- Engines */
+
+    // ENG FAIL
+
+    // FIXME Workaround due to starting state only being set when ignitires kick in. Starting state signal from fadec should handle this
+    this.eng1NotStartingConfNode.write(
+      this.engine1State.get() !== engineState.STARTING && this.engine1Running.get(),
+      deltaTime,
+    );
+    this.eng1WasRunningMemoryNode.write(
+      this.eng1NotStartingConfNode.read(),
+      this.engine1masterOnPulseNode.write(this.engine1Master.get(), deltaTime),
+    );
+    this.eng2NotStartingConfNode.write(
+      this.engine2State.get() !== engineState.STARTING && this.engine2Running.get(),
+      deltaTime,
+    );
+    this.eng2WasRunningMemoryNode.write(
+      this.eng2NotStartingConfNode.read(),
+      this.engine2masterOnPulseNode.write(this.engine2Master.get(), deltaTime),
+    );
+    this.eng3NotStartingConfNode.write(
+      this.engine3Master.get() && this.engine3State.get() !== engineState.STARTING,
+      deltaTime,
+    );
+    this.eng3WasRunningMemoryNode.write(
+      this.eng3NotStartingConfNode.read(),
+      this.engine3masterOnPulseNode.write(this.engine3Master.get(), deltaTime),
+    );
+    this.eng4NotStartingConfNode.write(
+      this.engine4Master.get() && this.engine4State.get() !== engineState.STARTING,
+      deltaTime,
+    );
+    this.eng4WasRunningMemoryNode.write(
+      this.eng4NotStartingConfNode.read(),
+      this.engine4masterOnPulseNode.write(this.engine4Master.get(), deltaTime),
+    );
+
+    this.eng1Fail.set(
+      !this.allEnginesFailure.get() &&
+        this.eng1FailMemoryNode.write(
+          this.engine1Master.get() &&
+            this.eng1WasRunningMemoryNode.read() &&
+            !this.fireButtonEng1.get() &&
+            this.HPNEng1.get() < 50,
+          this.engine1State.get() === engineState.ON ||
+            (this.HPNEng1.get() > 50 && this.engine1State.get() === engineState.STARTING),
+        ),
+    );
+
+    this.eng2Fail.set(
+      !this.allEnginesFailure.get() &&
+        this.eng2FailMemoryNode.write(
+          this.engine2Master.get() &&
+            this.eng2WasRunningMemoryNode.read() &&
+            !this.fireButtonEng2.get() &&
+            this.HPNEng2.get() < 50,
+          this.engine2State.get() === engineState.ON ||
+            (this.HPNEng2.get() > 50 && this.engine2State.get() === engineState.STARTING),
+        ),
+    );
+
+    this.eng3Fail.set(
+      !this.allEnginesFailure.get() &&
+        this.eng3FailMemoryNode.write(
+          this.engine3Master.get() &&
+            this.eng3WasRunningMemoryNode.read() &&
+            !this.fireButtonEng3.get() &&
+            this.HPNEng3.get() < 50,
+          this.engine3State.get() === engineState.ON ||
+            (this.HPNEng3.get() > 50 && this.engine3State.get() === engineState.STARTING),
+        ),
+    );
+    this.eng4Fail.set(
+      !this.allEnginesFailure.get() &&
+        this.eng4FailMemoryNode.write(
+          this.engine4Master.get() &&
+            this.eng4WasRunningMemoryNode.read() &&
+            !this.fireButtonEng4.get() &&
+            this.HPNEng4.get() < 50,
+          this.engine4State.get() === engineState.ON ||
+            (this.HPNEng4.get() > 50 && this.engine4State.get() === engineState.STARTING),
+        ),
+    );
+
+    // Attnetion getting box
+    this.eng1StartOrCrank.set(
+      this.N1Eng1.get() < this.N1IdleEng.get() - 1 && this.engine1State.get() === engineState.STARTING,
+    );
+    this.eng2StartOrCrank.set(
+      this.N1Eng2.get() < this.N1IdleEng.get() - 1 && this.engine2State.get() === engineState.STARTING,
+    );
+    this.eng3StartOrCrank.set(
+      this.N1Eng3.get() < this.N1IdleEng.get() - 1 && this.engine3State.get() === engineState.STARTING,
+    );
+    this.eng4StartOrCrank.set(
+      this.N1Eng4.get() < this.N1IdleEng.get() - 1 && this.engine4State.get() === engineState.STARTING,
+    );
+
+    //TODO add more conditions
+    this.eng1PrimaryAbnormalParams.set(!this.eng1StartOrCrank.get() && this.engine1Master.get() && this.eng1Fail.get());
+    this.eng2PrimaryAbnormalParams.set(!this.eng2StartOrCrank.get() && this.engine2Master.get() && this.eng2Fail.get());
+    this.eng3PrimaryAbnormalParams.set(!this.eng3StartOrCrank.get() && this.engine3Master.get() && this.eng3Fail.get());
+    this.eng4PrimaryAbnormalParams.set(!this.eng4StartOrCrank.get() && this.engine4Master.get() && this.eng4Fail.get());
+
+    const engineShutdownPreCondition = !this.flightPhase12Or1112.get();
+
+    // ENG SHUTDOWN
+    this.eng1ShutDown.set(engineShutdownPreCondition && (this.fireButtonEng1.get() || !this.engine1Master.get()));
+    this.eng2ShutDown.set(engineShutdownPreCondition && (this.fireButtonEng2.get() || !this.engine2Master.get()));
+    this.eng3ShutDown.set(engineShutdownPreCondition && (this.fireButtonEng3.get() || !this.engine3Master.get()));
+    this.eng4ShutDown.set(engineShutdownPreCondition && (this.fireButtonEng4.get() || !this.engine4Master.get()));
+
+    this.eng1Out.set(this.eng1ShutDown.get() || this.eng1FailMemoryNode.read());
+    this.eng2Out.set(this.eng2ShutDown.get() || this.eng2FailMemoryNode.read());
+    this.eng3Out.set(this.eng3ShutDown.get() || this.eng3FailMemoryNode.read());
+    this.eng4Out.set(this.eng4ShutDown.get() || this.eng4FailMemoryNode.read());
+
+    this.allEnginesFailure.set(
+      !this.aircraftOnGround.get() &&
+        !this.engine1Running.get() &&
+        !this.engine2Running.get() &&
+        !this.engine3Running.get() &&
+        !this.engine4Running.get() &&
+        this.eng1Out.get() &&
+        this.eng2Out.get() &&
+        this.eng3Out.get() &&
+        this.eng4Out.get(),
+    );
 
     /* MASTER CAUT/WARN BUTTONS */
     if (masterCautionButtonLeft || masterCautionButtonRight) {
@@ -4340,7 +4738,7 @@ export class FwsCore {
 
     // Output logic
 
-    this.landAsapRed.set(
+    this.landAsap.set(
       !this.aircraftOnGround.get() &&
         (this.apuFireDetected.get() ||
           this.eng1FireDetected.get() ||
@@ -4348,8 +4746,8 @@ export class FwsCore {
           this.eng3FireDetected.get() ||
           this.eng4FireDetected.get() ||
           this.mlgFireDetected.get() ||
-          this.emergencyGeneratorOn.get() ||
-          (this.engine1State.get() === 0 && this.engine2State.get() === 0)),
+          this.smokeFumesActivated.get() ||
+          this.allEnginesFailure.get()),
     );
 
     const flightPhase = this.flightPhase.get();
@@ -4410,6 +4808,11 @@ export class FwsCore {
       const newWarning = !this.presentedFailures.includes(key) && !recallFailureKeys.includes(key);
       const proc = EcamAbnormalProcedures[key];
 
+      if (proc === undefined) {
+        console.warn(`Procedure of id${key} does not exist`);
+        continue;
+      }
+
       if (newWarning && value.flightPhaseInhib.some((e) => e === flightPhase)) {
         continue;
       }
@@ -4418,7 +4821,8 @@ export class FwsCore {
         const itemsChecked = value.whichItemsChecked().map((v, i) => (!proc.items[i]?.sensed ? false : !!v));
         const itemsToShow = value.whichItemsToShow ? value.whichItemsToShow() : Array(itemsChecked.length).fill(true);
         const itemsActive = value.whichItemsActive ? value.whichItemsActive() : Array(itemsChecked.length).fill(true);
-        ProcedureLinesGenerator.conditionalActiveItems(proc, itemsChecked, itemsActive);
+        const itemsTimer = value.whichItemsTimer ? value.whichItemsTimer() : undefined;
+        ProcedureLinesGenerator.conditionalActiveItems(proc, itemsChecked, itemsActive, itemsTimer);
 
         if (newWarning) {
           failureKeys.push(key);
@@ -4462,6 +4866,7 @@ export class FwsCore {
             itemsActive: itemsActive,
             itemsChecked: itemsChecked,
             itemsToShow: itemsToShow,
+            itemsTimeStamp: itemsTimer,
           });
 
           for (const [deferredKey, deferredValue] of ewdDeferredEntries) {
@@ -4496,13 +4901,17 @@ export class FwsCore {
           const fusedChecked = [...prevEl.itemsChecked].map((val, index) =>
             proc.items[index].sensed ? itemsChecked[index] : !!val,
           );
-          ProcedureLinesGenerator.conditionalActiveItems(proc, fusedChecked, itemsActive);
+          ProcedureLinesGenerator.conditionalActiveItems(proc, fusedChecked, itemsActive, itemsTimer);
           this.abnormalUpdatedItems.set(key, []);
           proc.items.forEach((item, idx) => {
             if (
               prevEl.itemsToShow[idx] !== itemsToShow[idx] ||
               prevEl.itemsActive[idx] !== itemsActive[idx] ||
-              (prevEl.itemsChecked[idx] !== fusedChecked[idx] && item.sensed)
+              (prevEl.itemsChecked[idx] !== fusedChecked[idx] && item.sensed) ||
+              (isTimedItem(item) !== undefined &&
+                itemsTimer !== undefined &&
+                prevEl.itemsTimeStamp !== undefined &&
+                prevEl.itemsTimeStamp[idx] !== itemsTimer[idx])
             ) {
               this.abnormalUpdatedItems.get(key).push(idx);
             }
@@ -4516,6 +4925,9 @@ export class FwsCore {
               itemsChecked: fusedChecked,
               itemsActive: [...prevEl.itemsActive].map((_, index) => itemsActive[index]),
               itemsToShow: [...prevEl.itemsToShow].map((_, index) => itemsToShow[index]),
+              itemsTimeStamp: prevEl.itemsTimeStamp
+                ? [...prevEl.itemsTimeStamp].map((_, index) => itemsTimer[index])
+                : undefined,
             });
           }
         }
@@ -4880,15 +5292,14 @@ export class FwsCore {
     this.updateRowRopWarnings();
 
     // Orchestrate display of normal or abnormal proc display
-    const pub = this.bus.getPublisher<FwsEwdEvents>();
     if (this.abnormalNonSensed.showAbnProcRequested.get()) {
       // ABN PROC always shown
       this.abnormalNonSensed.abnProcShown.set(true);
       this.normalChecklists.checklistShown.set(false);
       this.abnormalSensed.abnormalShown.set(false);
 
-      pub.pub('fws_active_item', this.abnormalNonSensed.selectedItem.get(), true);
-      pub.pub('fws_show_from_line', this.abnormalNonSensed.showFromLine.get(), true);
+      this.publisher.pub('fws_active_item', this.abnormalNonSensed.selectedItem.get(), true);
+      this.publisher.pub('fws_show_from_line', this.abnormalNonSensed.showFromLine.get(), true);
       this.ecamEwdShowFailurePendingIndication.set(false);
     } else if (this.normalChecklists.showChecklistRequested.get()) {
       // ECL always shown
@@ -4896,18 +5307,18 @@ export class FwsCore {
       this.normalChecklists.checklistShown.set(true);
       this.abnormalSensed.abnormalShown.set(false);
 
-      pub.pub('fws_active_item', this.normalChecklists.selectedLine.get(), true);
-      pub.pub('fws_active_procedure', this.normalChecklists.activeDeferredProcedureId.get(), true);
-      pub.pub('fws_show_from_line', this.normalChecklists.showFromLine.get(), true);
+      this.publisher.pub('fws_active_item', this.normalChecklists.selectedLine.get(), true);
+      this.publisher.pub('fws_active_procedure', this.normalChecklists.activeDeferredProcedureId.get(), true);
+      this.publisher.pub('fws_show_from_line', this.normalChecklists.showFromLine.get(), true);
       this.ecamEwdShowFailurePendingIndication.set(this.abnormalSensed.showAbnormalSensedRequested.get());
     } else if (this.abnormalSensed.showAbnormalSensedRequested.get()) {
       this.abnormalNonSensed.abnProcShown.set(false);
       this.normalChecklists.checklistShown.set(false);
       this.abnormalSensed.abnormalShown.set(true);
 
-      pub.pub('fws_active_item', this.abnormalSensed.selectedItemIndex.get(), true);
-      pub.pub('fws_active_procedure', this.abnormalSensed.activeProcedureId.get(), true);
-      pub.pub('fws_show_from_line', this.abnormalSensed.showFromLine.get(), true);
+      this.publisher.pub('fws_active_item', this.abnormalSensed.selectedItemIndex.get(), true);
+      this.publisher.pub('fws_active_procedure', this.abnormalSensed.activeProcedureId.get(), true);
+      this.publisher.pub('fws_show_from_line', this.abnormalSensed.showFromLine.get(), true);
       this.ecamEwdShowFailurePendingIndication.set(false);
     } else {
       this.abnormalNonSensed.abnProcShown.set(false);
@@ -4915,9 +5326,9 @@ export class FwsCore {
       this.abnormalSensed.abnormalShown.set(false);
       this.ecamEwdShowFailurePendingIndication.set(false);
     }
-    pub.pub('fws_show_abn_non_sensed', this.abnormalNonSensed.abnProcShown.get(), true);
-    pub.pub('fws_show_abn_sensed', this.abnormalSensed.abnormalShown.get(), true);
-    pub.pub('fws_show_normal_checklists', this.normalChecklists.checklistShown.get(), true);
+    this.publisher.pub('fws_show_abn_non_sensed', this.abnormalNonSensed.abnProcShown.get(), true);
+    this.publisher.pub('fws_show_abn_sensed', this.abnormalSensed.abnormalShown.get(), true);
+    this.publisher.pub('fws_show_normal_checklists', this.normalChecklists.checklistShown.get(), true);
 
     // Reset all buffered inputs
     this.toConfigInputBuffer.write(false, true);
@@ -5019,8 +5430,11 @@ export class FwsCore {
     ar.writeToSimVar('L:A32NX_FWC_1_DISCRETE_WORD_126');
     ar.writeToSimVar('L:A32NX_FWC_2_DISCRETE_WORD_126');
 
-    bus.getPublisher<FwsEwdEvents>().pub('fws_show_sts_indication', false, true);
-    bus.getPublisher<FwsEwdEvents>().pub('fws_show_failure_pending', false, true);
+    const publisher = bus.getPublisher<FwsEwdEvents>();
+    publisher.pub('fws_show_sts_indication', false, true);
+    publisher.pub('fws_show_failure_pending', false, true);
+    publisher.pub('fws_abnormal_primary_engine_parameters_attention_getter', [false, false, false, false]);
+    publisher.pub('fws_normal_attention_getter_eng', [false, false, false, false]);
   }
 
   destroy() {
