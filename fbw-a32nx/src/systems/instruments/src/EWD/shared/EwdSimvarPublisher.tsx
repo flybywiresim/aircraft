@@ -109,9 +109,10 @@ export enum EwdVars {
   flexTemp = 'L:A32NX_AIRLINER_TO_FLEX_TEMP',
   satRaw = 'L:A32NX_ADIRS_ADR_1_STATIC_AIR_TEMPERATURE',
   totalFuel = 'FUEL TOTAL QUANTITY WEIGHT',
-  slatsFlapsStatusRaw = 'L:A32NX_SFCC_SLAT_FLAP_SYSTEM_STATUS_WORD',
-  slatsPositionRaw = 'L:A32NX_SFCC_SLAT_ACTUAL_POSITION_WORD',
-  flapsPositionRaw = 'L:A32NX_SFCC_FLAP_ACTUAL_POSITION_WORD',
+  // TODO: add switching between SFCC_1 and SFCC_2
+  slatsFlapsStatusRaw = 'L:A32NX_SFCC_1_SLAT_FLAP_SYSTEM_STATUS_WORD',
+  slatsPositionRaw = 'L:A32NX_SFCC_1_SLAT_ACTUAL_POSITION_WORD',
+  flapsPositionRaw = 'L:A32NX_SFCC_1_FLAP_ACTUAL_POSITION_WORD',
   ewdLowerLeft1 = 'L:A32NX_Ewd_LOWER_LEFT_LINE_1',
   ewdLowerLeft2 = 'L:A32NX_Ewd_LOWER_LEFT_LINE_2',
   ewdLowerLeft3 = 'L:A32NX_Ewd_LOWER_LEFT_LINE_3',
