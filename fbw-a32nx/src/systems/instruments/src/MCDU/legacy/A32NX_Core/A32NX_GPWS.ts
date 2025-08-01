@@ -213,8 +213,8 @@ export class A32NX_GPWS {
     const isFlapModeOff = SimVar.GetSimVarValue('L:A32NX_GPWS_FLAP_OFF', 'Bool') === 1;
     const isLdgFlap3On = SimVar.GetSimVarValue('L:A32NX_GPWS_FLAPS3', 'Bool') === 1;
 
-    const sfccFap5 = SimVar.GetSimVarValue('L:A32NX_SFCC_FAP_5', 'Bool') === 1; // Flaps > 19deg
-    const sfccFap1 = SimVar.GetSimVarValue('L:A32NX_SFCC_FAP_1', 'Bool') === 1; // Flaps > 39deg
+    const sfccFap5 = SimVar.GetSimVarValue('L:A32NX_SFCC_1_FAP_5', 'Bool') === 1; // Flaps > 19deg
+    const sfccFap1 = SimVar.GetSimVarValue('L:A32NX_SFCC_1_FAP_1', 'Bool') === 1; // Flaps > 39deg
 
     const areFlapsInLandingConfig = isFlapModeOff || (isLdgFlap3On ? sfccFap5 : sfccFap1);
     const isGearDownLocked = SimVar.GetSimVarValue('L:A32NX_LGCIU_1_LEFT_GEAR_DOWNLOCKED', 'Bool') === 1;
