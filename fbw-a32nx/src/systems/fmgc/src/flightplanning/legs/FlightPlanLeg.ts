@@ -12,6 +12,9 @@ import {
   ProcedureLeg,
   Runway,
   WaypointDescriptor,
+  WaypointConstraintType,
+  AltitudeConstraint,
+  SpeedConstraint,
 } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from 'msfs-geo';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/legs/FlightPlanLegDefinition';
@@ -21,7 +24,6 @@ import { FlightPlanSegment } from '@fmgc/flightplanning/segments/FlightPlanSegme
 import { EnrouteSegment } from '@fmgc/flightplanning/segments/EnrouteSegment';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
-import { WaypointConstraintType, AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 import { HoldUtils } from '@fmgc/flightplanning/data/hold';
 import { OriginSegment } from '@fmgc/flightplanning/segments/OriginSegment';
 import { ReadonlyFlightPlanLeg } from '@fmgc/flightplanning/legs/ReadonlyFlightPlanLeg';
@@ -404,7 +406,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
           procedureIdent: '',
           type: LegType.IF,
           overfly: false,
-          waypoint: WaypointFactory.fromRunway(runway),
+          waypoint: runway,
           waypointDescriptor: WaypointDescriptor.Runway,
           magneticCourse: runway?.magneticBearing,
         },
@@ -420,7 +422,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         procedureIdent: '',
         type: LegType.IF,
         overfly: false,
-        waypoint: WaypointFactory.fromAirport(airport),
+        waypoint: airport,
         waypointDescriptor: WaypointDescriptor.Airport,
         magneticCourse: runway?.magneticBearing,
       },
@@ -507,4 +509,8 @@ export type FlightPlanElement = FlightPlanLeg | Discontinuity;
 
 export function isDiscontinuity(o: any): o is Discontinuity {
   return typeof o === 'object' && o.isDiscontinuity === true;
+}
+
+export function isLeg(o: any): o is FlightPlanLeg {
+  return typeof o === 'object' && o.isDiscontinuity === false;
 }
