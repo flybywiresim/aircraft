@@ -40,7 +40,8 @@ export const StatusArea = () => {
   const sat = useArinc429Var(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_STATIC_AIR_TEMPERATURE`, 6000);
   const tat = useArinc429Var(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_TOTAL_AIR_TEMPERATURE`, 6000);
   const zp = useArinc429Var(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_ALTITUDE`, 6000);
-  const fcuDiscreteWord2 = useArinc429Var('L:A32NX_FCU_LEFT_EIS_DISCRETE_WORD_2', 2000);
+  const fcuLeftDiscreteWord2 = useArinc429Var('L:A32NX_FCU_LEFT_EIS_DISCRETE_WORD_2', 2000);
+  const fcuRightDiscreteWord2 = useArinc429Var('L:A32NX_FCU_RIGHT_EIS_DISCRETE_WORD_2', 2000);
   const isa = sat.valueOr(0) + Math.min(36089, zp.valueOr(0)) / 500 - 15;
   const loadFactor = useArinc429Var(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_BODY_NORMAL_ACC`, 300);
 
@@ -75,10 +76,12 @@ export const StatusArea = () => {
   });
 
   useEffect(() => {
-    const isInStdMode = fcuDiscreteWord2.bitValueOr(28, false);
-    const isaShouldBeVisible = isInStdMode && zp.isNormalOperation() && sat.isNormalOperation();
+    const leftIsInStdMode = fcuLeftDiscreteWord2.bitValueOr(28, false);
+    const rightIsInStdMode = fcuRightDiscreteWord2.bitValueOr(28, false);
+    const isaShouldBeVisible =
+      (leftIsInStdMode || rightIsInStdMode) && zp.isNormalOperation() && sat.isNormalOperation();
     setIsaVisible(isaShouldBeVisible);
-  }, [isa, sat, zp, fcuDiscreteWord2]);
+  }, [isa, sat, zp, fcuLeftDiscreteWord2, fcuRightDiscreteWord2]);
 
   const satPrefix = sat.value > 0 ? '+' : '';
   const tatPrefix = tat.value > 0 ? '+' : '';
