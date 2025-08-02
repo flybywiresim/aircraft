@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { FansMode } from '@datalink/common';
 import { CDUAtcConnectionNotification } from './A320_Neo_CDU_ATC_ConnectionNotification';
 import { CDUAtcConnectionStatus } from './A320_Neo_CDU_ATC_ConnectionStatus';

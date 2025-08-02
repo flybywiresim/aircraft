@@ -3506,10 +3506,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 ## Flaps / Slats (ATA 27)
 
-- A32NX_SFCC_SLAT_FLAP_SYSTEM_STATUS_WORD
+- A32NX_SFCC_{number}_SLAT_FLAP_SYSTEM_STATUS_WORD
+    - {number} is 1 or 2
     - Slat/Flap system status discrete word of the SFCC bus output
     - Arinc429<Discrete>
-    - Note that multiple SFCC are not yet implemented, thus no {number} in the name.
     - | Bit |            Description            |
       |:---:|:---------------------------------:|
       | 11  | Slat Fault                        |
@@ -3532,10 +3532,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
       | 28  | Slat Data Valid                   |
       | 29  | Flap Data Valid                   |
 
-- A32NX_SFCC_SLAT_FLAP_ACTUAL_POSITION_WORD
+- A32NX_SFCC_{number}_SLAT_FLAP_ACTUAL_POSITION_WORD
+    - {number} is 1 or 2
     - Slat/Flap actual position discrete word of the SFCC bus output
     - Arinc429<Discrete>
-    - Note that multiple SFCC are not yet implemented, thus no {number} in the name.
     - | Bit |                Description               |
       |:---:|:----------------------------------------:|
       | 11  | Slat Data Valid                          |
@@ -3558,21 +3558,22 @@ In the variables below, {number} should be replaced with one item in the set: { 
       | 28  | Slat System Jam                          |
       | 29  | Flap System Jam                          |
 
-- A32NX_SFCC_SLAT_ACTUAL_POSITION_WORD
+- A32NX_SFCC_{number}_SLAT_ACTUAL_POSITION_WORD
+    - {number} is 1 or 2
     - Slat actual position word of the SFCC bus output
     - Arinc429<Degrees>
-    - Note that multiple SFCC are not yet implemented, thus no {number} in the name.
     - The Slat FPPU angle ranges from 0° to 360°
 
-- A32NX_SFCC_FLAP_ACTUAL_POSITION_WORD
+- A32NX_SFCC_{number}_FLAP_ACTUAL_POSITION_WORD
+    - {number} is 1 or 2
     - Flap actual position word of the SFCC bus output
     - Arinc429<Degrees>
-    - Note that multiple SFCC are not yet implemented, thus no {number} in the name.
     - The Flap FPPU angle ranges from 0° to 360°
 
-- A32NX_SFCC_FAP_{num}
+- A32NX_SFCC_{number}_FAP_{id}
+    - {number} is 1 or 2
+    - {id} is from 1 to 7
     - Flap actual position discrete output
-    - {num} is from 1 to 7
 
 ## Flight Controls (ATA 27)
 

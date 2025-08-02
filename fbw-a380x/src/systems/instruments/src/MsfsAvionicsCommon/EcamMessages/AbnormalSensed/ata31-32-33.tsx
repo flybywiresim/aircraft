@@ -6,6 +6,7 @@ import {
   ChecklistLineStyle,
   DeferredProcedure,
   DeferredProcedureType,
+  FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 
 // Convention for IDs:
@@ -530,17 +531,20 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
       },
       // in flight
       {
-        name: 'IF PERF PERMIT:',
+        name: 'PERF PERMIT',
         sensed: false,
-      },
-      {
-        name: 'MAX SPEED : 250/.55',
-        sensed: false,
+        condition: true,
       },
       {
         name: 'L/G',
         sensed: false,
         labelNotCompleted: 'DOWN FOR COOLG',
+        level: 1,
+      },
+      {
+        name: 'MAX SPEED : 250/.55',
+        sensed: false,
+        level: 1,
       },
     ],
   },
@@ -832,11 +836,7 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
         name: 'FUEL CONSUMPT INCREASD',
         sensed: false,
       },
-      {
-        name: 'FMS PRED UNRELIABLE',
-        sensed: false,
-        style: ChecklistLineStyle.Green,
-      },
+      FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
     ],
   },
   320800037: {
@@ -921,12 +921,7 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
         name: 'FUEL CONSUMPT INCREASD',
         sensed: false,
       },
-      {
-        name: 'FMS PRED UNRELIABLE',
-        sensed: false,
-        style: ChecklistLineStyle.Green,
-      },
-
+      FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
       // if all doors are closed
       {
         name: 'AVOID EXCESS G LOAD',
@@ -1028,11 +1023,7 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
         name: 'FUEL CONSUMPT INCREASD',
         sensed: false,
       },
-      {
-        name: 'FMS PRED UNRELIABLE',
-        sensed: false,
-        style: ChecklistLineStyle.Green,
-      },
+      FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
     ],
   },
   320800045: {
@@ -1261,7 +1252,7 @@ export const EcamDeferredProcAta313233: { [n: number]: DeferredProcedure } = {
       {
         name: 'WHEN L/G LOCKED DOWN OR AFTER 120S',
         condition: true,
-        sensed: true,
+        sensed: false,
       },
       {
         name: 'L/G LEVER',

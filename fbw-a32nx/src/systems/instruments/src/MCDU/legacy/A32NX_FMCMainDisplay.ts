@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023, 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -5335,6 +5336,10 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
    */
   public getNavDatabaseIdent(): DatabaseIdent | null {
     return this.navDbIdent;
+  }
+
+  public logTroubleshootingError(msg: any) {
+    this.bus.pub('troubleshooting_log_error', String(msg), true, false);
   }
 
   // ---------------------------
