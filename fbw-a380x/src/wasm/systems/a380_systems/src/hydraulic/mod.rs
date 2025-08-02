@@ -65,8 +65,10 @@ use systems::{
 
 use std::fmt::Debug;
 
-mod flaps_computer;
-use flaps_computer::SlatFlapComplex;
+mod flaps_channel;
+mod sfcc;
+mod slats_channel;
+use sfcc::SlatFlapComplex;
 mod engine_pump_disc;
 use engine_pump_disc::EnginePumpDisconnectionClutch;
 pub mod autobrakes;
@@ -2003,7 +2005,7 @@ impl A380Hydraulic {
                 left_flaps,
                 right_flaps,
                 Volume::new::<cubic_inch>(0.32),
-                AngularVelocity::new::<radian_per_second>(0.047),
+                AngularVelocity::new::<radian_per_second>(0.046),
                 Angle::new::<degree>(218.912),
                 Ratio::new::<ratio>(140.),
                 Ratio::new::<ratio>(16.632),
@@ -2535,16 +2537,16 @@ impl A380Hydraulic {
 
         self.flap_system.update(
             context,
-            self.slats_flaps_complex.flap_demand(0),
-            self.slats_flaps_complex.flap_demand(1),
+            self.slats_flaps_complex.flap_command(0),
+            self.slats_flaps_complex.flap_command(1),
             self.green_circuit.system_section(),
             self.yellow_circuit.system_section(),
         );
 
         self.slat_system.update(
             context,
-            self.slats_flaps_complex.slat_demand(0),
-            self.slats_flaps_complex.slat_demand(1),
+            self.slats_flaps_complex.slat_command(0),
+            self.slats_flaps_complex.slat_command(1),
             self.green_circuit.system_section(),
             self.green_circuit.system_section(),
         );
