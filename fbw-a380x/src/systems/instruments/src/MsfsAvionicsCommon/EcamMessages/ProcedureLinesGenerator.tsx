@@ -1,4 +1,4 @@
-// Copyright (c) 2024 FlyByWire Simulations
+// Copyright (c) 2024-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { Subject, Subscribable } from '@microsoft/msfs-sdk';
@@ -14,8 +14,13 @@ import {
   isChecklistAction,
   isChecklistCondition,
   isChecklistHeadline,
+  isChecklistTimedCondition,
+  isTimedCheckListAction,
   NormalProcedure,
+  TimedChecklistAction,
+  TimedChecklistCondition,
   WdLineData,
+  AbstractChecklistItem,
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { EcamNormalProcedures } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/NormalProcedures';
 import { ChecklistState } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
@@ -47,7 +52,13 @@ export class ProcedureLinesGenerator {
   public readonly selectedItemIndex = Subject.create(0);
 
   private procedure: AbnormalProcedure | NormalProcedure | DeferredProcedure;
-  private items: (ChecklistAction | ChecklistCondition | ChecklistSpecialItem)[];
+  private items: (
+    | ChecklistAction
+    | ChecklistCondition
+    | ChecklistSpecialItem
+    | TimedChecklistAction
+    | TimedChecklistCondition
+  )[];
 
   constructor(
     public procedureId: string,
@@ -84,6 +95,7 @@ export class ProcedureLinesGenerator {
     proc: AbnormalProcedure | DeferredProcedure | NormalProcedure,
     itemsChecked: boolean[],
     itemsActive: boolean[],
+    itemsTimeStamp?: number[],
   ) {
     // Additional logic for conditions: Modify itemsActive based on condition activation status
     if (proc.items && proc.items.some((v) => isChecklistCondition(v))) {
@@ -92,10 +104,21 @@ export class ProcedureLinesGenerator {
           // Look for parent condition(s)
           let active = true;
           for (let recI = i; recI >= 0; recI--) {
-            const isParentCondition = (proc.items[recI].level ?? 0) < v.level && isChecklistCondition(proc.items[recI]);
-            active = isParentCondition ? active && itemsChecked[recI] : active;
+            const parent = proc.items[recI];
+            const isParentCondition = (parent.level ?? 0) < v.level && isChecklistCondition(parent);
+            active = isParentCondition
+              ? active &&
+                (itemsChecked[recI] ||
+                  (isChecklistTimedCondition(parent) &&
+                    itemsTimeStamp !== undefined &&
+                    ProcedureLinesGenerator.hasTimedItemElapsed(itemsTimeStamp[recI], parent)))
+              : active;
 
             if (isParentCondition) {
+              if (isChecklistTimedCondition(parent)) {
+                itemsChecked[recI] = active; // Enforce checked on the timed condition
+              }
+
               break;
             }
           }
@@ -249,6 +272,8 @@ export class ProcedureLinesGenerator {
       itemsToShow: [...this.checklistState.itemsToShow],
       itemsChecked: [...this.checklistState.itemsChecked],
       itemsActive: [...this.checklistState.itemsActive],
+      itemsTimeStamp:
+        this.checklistState.itemsTimeStamp !== undefined ? [...this.checklistState.itemsTimeStamp] : undefined,
     };
     const shownItemsNoSpecial = this.getActualShownItems().filter((v) => !isNaN(v) && v > HIGHEST_SPECIAL_INDEX);
     const lastItemIndex = shownItemsNoSpecial[shownItemsNoSpecial.length - 1];
@@ -311,7 +336,7 @@ export class ProcedureLinesGenerator {
       return;
     }
 
-    const selectableAndNotChecked = this.selectableItems(false);
+    const selectableAndNotChecked = this.selectableItems(true);
     this.selectedItemIndex.set(
       selectableAndNotChecked[0] !== undefined
         ? selectableAndNotChecked[0] - 1
@@ -322,7 +347,9 @@ export class ProcedureLinesGenerator {
 
   private selectableItems(skipCompletedSensed: boolean) {
     return this.procedure.items
-      .map((_, index: number) => (this.itemIsSelectable(index, skipCompletedSensed) ? index : null))
+      .map((item: AbstractChecklistItem, index: number) =>
+        this.itemIsSelectable(index, skipCompletedSensed, item) ? index : null,
+      )
       .filter((v) => v !== null);
   }
 
@@ -335,12 +362,12 @@ export class ProcedureLinesGenerator {
    * @param skipCompletedSensed Whether sensed item is only selectable if unchecked. Not sensed items can't be skipped.
    * @returns Procedure item is selectable with arrow keys
    */
-  private itemIsSelectable(itemIndex: number, skipCompletedSensed: boolean): boolean {
+  private itemIsSelectable(itemIndex: number, skipCompletedSensed: boolean, item: AbstractChecklistItem): boolean {
     return (
-      (!this.items[itemIndex].sensed || (!skipCompletedSensed && !this.checklistState.itemsChecked[itemIndex])) &&
       this.checklistState.itemsActive[itemIndex] &&
       this.checklistState.itemsToShow[itemIndex] &&
-      !ProcedureLinesGenerator.nonSelectableItemStyles.includes(this.items[itemIndex].style)
+      !ProcedureLinesGenerator.nonSelectableItemStyles.includes(item.style) &&
+      (!item.sensed || !skipCompletedSensed || (skipCompletedSensed && !this.checklistState.itemsChecked[itemIndex]))
     );
   }
 
@@ -423,52 +450,42 @@ export class ProcedureLinesGenerator {
           inactive = true;
         }
 
+        const itemComplete = this.checklistState.itemsChecked[itemIndex];
+        let isCondition = false;
         if (isChecklistAction(item)) {
-          text += '-';
-          text += item.name;
-          if (this.checklistState.itemsChecked[itemIndex] && item.labelCompleted) {
-            text += `${item.colonIfCompleted === false ? ' ' : ' : '}${item.labelCompleted}`;
-          } else if (this.checklistState.itemsChecked[itemIndex] && item.labelNotCompleted) {
-            text += `${item.colonIfCompleted === false ? ' ' : ' : '}${item.labelNotCompleted}`;
-          } else if (!this.checklistState.itemsChecked[itemIndex] && item.labelNotCompleted) {
-            // Pad to 39 characters max
-            const paddingNeeded = Math.max(
-              0,
-              39 - (item.labelNotCompleted.length + item.name.length + (item.level ?? 0) * 1 + 2),
-            );
-
-            text += ` ${'.'.repeat(paddingNeeded)}${item.labelNotCompleted}`;
+          text = ProcedureLinesGenerator.getChecklistActionText(item, itemIndex, itemComplete, this.checklistState);
+          if (
+            (!this.checklistState.itemsActive[itemIndex] || !this.checklistState.procedureActivated) &&
+            clStyle === ChecklistLineStyle.ChecklistItem
+          ) {
+            clStyle = ChecklistLineStyle.ChecklistItemInactive;
           }
+        } else if (isChecklistCondition(item)) {
+          isCondition = true;
+          clStyle = ChecklistLineStyle.ChecklistCondition;
+          text = ProcedureLinesGenerator.getChecklistConditionText(item, itemIndex, itemComplete, this.checklistState);
         } else if (isChecklistHeadline(item)) {
           text += clStyle === ChecklistLineStyle.CenteredSubHeadline ? '.' : '';
           text += item.name;
-        } else if (isChecklistCondition(item)) {
-          clStyle = ChecklistLineStyle.ChecklistCondition;
-          if (item.name.substring(0, 4) === 'WHEN') {
-            text += `.${item.name}`;
-          } else {
-            text += this.checklistState.itemsChecked[itemIndex]
-              ? `.AS ${item.name.substring(0, 2) === 'IF' ? item.name.substring(2) : item.name}`
-              : `.IF ${item.name.substring(0, 2) === 'IF' ? item.name.substring(2) : item.name}`;
-          }
         } else {
           text += `\xa0${item.name}`;
         }
 
         lineData.push({
+          procedureId: this.procedureId,
           abnormalProcedure: isAbnormalOrDeferred,
           activeProcedure: this.procedureIsActive.get(),
-          sensed: isChecklistCondition(item) ? true : item.sensed,
+          sensed: isCondition ? true : item.sensed,
           checked: this.checklistState.itemsChecked[itemIndex],
           text: text.substring(0, 39),
           style: clStyle,
           firstLine: (!this.procedureIsActive.get() && isAbnormal) || this.type === ProcedureType.FwsFailedFallback,
           lastLine: (!this.procedureIsActive.get() && isAbnormal) || this.type === ProcedureType.FwsFailedFallback,
-          originalItemIndex: isChecklistCondition(item) ? undefined : itemIndex,
+          originalItemIndex: !isCondition || (isCondition && item.sensed) ? itemIndex : undefined, // FIXME It should be possible to scroll to non sensed conditions
           inactive: inactive,
         });
 
-        if (isChecklistCondition(item) && !item.sensed) {
+        if (isCondition && !item.sensed) {
           // Insert CONFIRM <condition>, remove trailing colon
           const itemName = item.name.slice(-1) === ':' ? item.name.slice(0, -1) : item.name;
           const confirmText = `${item.level ? '\xa0'.repeat(item.level) : ''}CONFIRM ${itemName.substring(0, 2) === 'IF' ? itemName.substring(2) : itemName}`;
@@ -575,5 +592,95 @@ export class ProcedureLinesGenerator {
     });
 
     return lineData;
+  }
+
+  public static getChecklistActionText(
+    item: ChecklistAction,
+    itemIndex: number,
+    itemComplete: boolean,
+    checklistState: ChecklistState,
+  ) {
+    let text = item.level ? '\xa0'.repeat(item.level) : '';
+    text += '-';
+    text += item.name;
+    if (itemComplete && item.labelCompleted) {
+      text += `${item.colonIfCompleted === false ? ' ' : ' : '}${item.labelCompleted}`;
+    } else if (itemComplete && item.labelNotCompleted) {
+      text += `${item.colonIfCompleted === false ? ' ' : ' : '}${item.labelNotCompleted}`;
+    } else if (!itemComplete && item.labelNotCompleted) {
+      if (isTimedCheckListAction(item)) {
+        text += this.getTimedItemLineText(item, checklistState, itemIndex) ?? '';
+      }
+      // Pad to 39 characters max
+      const paddingNeeded = Math.max(0, 39 - (item.labelNotCompleted.length + text.length + (item.level ?? 0) * 1 + 2));
+
+      text += ` ${'.'.repeat(paddingNeeded)}${item.labelNotCompleted}`;
+    }
+    return text;
+  }
+
+  public static getChecklistConditionText(
+    item: ChecklistCondition | TimedChecklistCondition,
+    itemIndex: number,
+    itemComplete: boolean,
+    checklistState: ChecklistState,
+  ) {
+    let text = item.level ? '\xa0'.repeat(item.level) : '';
+    if (item.name.substring(0, 4) === 'WHEN') {
+      text += `.${item.name} :`;
+    } else {
+      // TODO support time only text in the future e.g. AFTER 30S
+      let timedText: string | null = undefined;
+      const isTimedItem = isChecklistTimedCondition(item) || isChecklistTimedCondition(item);
+      if (isTimedItem) {
+        timedText = ProcedureLinesGenerator.getTimedItemLineText(item, checklistState, itemIndex);
+      }
+
+      const appendText = ' :';
+      text +=
+        itemComplete || timedText === null
+          ? `.AS ${item.name.substring(0, 2) === 'IF' ? item.name.substring(2) : item.name} ${timedText ?? appendText}`
+          : `.IF ${item.name.substring(0, 2) === 'IF' ? item.name.substring(2) : item.name} ${timedText ?? appendText}`;
+    }
+
+    return text;
+  }
+
+  private static getTimedItemLineText(
+    item: TimedChecklistAction | TimedChecklistCondition,
+    checklistState: ChecklistState,
+    itemIndex: number,
+  ): string | null {
+    const timestampArray = checklistState.itemsTimeStamp;
+    if (timestampArray) {
+      const startTimeStamp = checklistState.itemsTimeStamp[itemIndex];
+      let seconds: number;
+      if (startTimeStamp === undefined) {
+        console.warn(`No timestamp entry for timed item on index ${itemIndex} of checklist ${checklistState.id}`);
+        seconds = item.time;
+      } else if (startTimeStamp === null) {
+        seconds = item.time;
+      } else {
+        const diffSeconds = Math.floor((Date.now() - startTimeStamp) / 1000);
+        if (diffSeconds < item.time) {
+          seconds = item.time - diffSeconds;
+        } else {
+          if (isChecklistTimedCondition(item) && item.appendTimeIfElapsed) {
+            seconds = item.time;
+          } else {
+            return null;
+          }
+        }
+      }
+      return ` AFTER ${seconds} S :`;
+    } else {
+      console.warn(`Timestamp collection missing found on a timed item ${item.name} of checklist ${checklistState.id}`);
+    }
+
+    return null;
+  }
+
+  private static hasTimedItemElapsed(timeStamp: number, item: TimedChecklistCondition | TimedChecklistAction): boolean {
+    return timeStamp !== undefined && timeStamp !== null && (Date.now() - timeStamp) / 1000 > item.time;
   }
 }

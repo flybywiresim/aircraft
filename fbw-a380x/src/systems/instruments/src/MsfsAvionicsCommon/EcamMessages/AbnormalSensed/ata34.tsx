@@ -708,7 +708,29 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
   340800062: {
     title: '\x1b<4m\x1b4mNAV\x1bm RA SYS A+B+C FAULT',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'APPR MODE NOT AVAIL',
+        sensed: false,
+        style: ChecklistLineStyle.Green,
+      },
+      {
+        name: 'LOC MODE AVAIL ONLY',
+        sensed: false,
+        style: ChecklistLineStyle.Green,
+      },
+      /*
+      // FIX ME Should be split across two lines end aligned within this item:
+      WHEN L/G DOWN & AP OFF:
+                                  ALTN LAW
+                                  USE MAN PITCH TRIM
+      */
+      {
+        name: 'WHEN L/G DOWN AND & OFF : USE MAN PITCH TRIM',
+        sensed: false,
+        style: ChecklistLineStyle.Green,
+      },
+    ],
   },
   340800063: {
     title: '\x1b<4m\x1b4mNAV\x1bm RESIDUAL AIR SPEED',

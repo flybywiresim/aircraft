@@ -160,7 +160,7 @@ export class FwsAbnormalNonSensed {
     260900097: {
       // SMOKE / FUMES
       flightPhaseInhib: [],
-      simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(260900097)),
+      simVarIsActive: this.fws.smokeFumesActivated,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [true, true, true, true, true, true],
       whichItemsChecked: () => [
@@ -244,7 +244,7 @@ export class FwsAbnormalNonSensed {
         ...(this.fws.flapsHandle.get() < 3 ? ['220400001', '800400004', '800400003'] : ''),
       ],
       inopSysApprLdg: () => ['320300007'],
-      info: () => ['800200001'],
+      info: () => ['220200011'],
     },
     270900005: {
       // F/CTL LDG WITH NO SLATS NO FLAPS
