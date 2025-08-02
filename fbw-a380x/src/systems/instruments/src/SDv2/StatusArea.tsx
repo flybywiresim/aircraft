@@ -17,7 +17,7 @@ import './style.scss';
 import '../index.scss';
 import { Arinc429LocalVarConsumerSubject, FmsData, NXDataStore, NXUnits } from '@flybywiresim/fbw-sdk';
 import { SDSimvars } from './SDSimvarPublisher';
-import { BaroEvents, BaroMode } from 'instruments/src/FCU/Managers/BaroManager';
+import { A380XFcuBusEvents } from '@shared/publishers/A380XFcuBusPublisher';
 
 export interface PermanentDataProps {
   readonly bus: EventBus;
@@ -35,7 +35,7 @@ const getCurrentHHMMSS = (seconds: number) => {
 export class PermanentData extends DisplayComponent<PermanentDataProps> {
   private readonly subscriptions: Subscription[] = [];
 
-  private readonly sub = this.props.bus.getSubscriber<SDSimvars & ClockEvents & FmsData & BaroEvents>();
+  private readonly sub = this.props.bus.getSubscriber<SDSimvars & ClockEvents & FmsData & A380XFcuBusEvents>();
 
   private readonly sat = Arinc429LocalVarConsumerSubject.create(this.sub.on('sat'));
 
@@ -43,7 +43,10 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
 
   private readonly zp = Arinc429LocalVarConsumerSubject.create(this.sub.on('altitude'));
 
-  private readonly baroMode = ConsumerSubject.create(this.sub.on('baro_mode_1'), BaroMode.Std);
+  private readonly fcuEisDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a380x_fcu_eis_discrete_word_2_left'),
+  );
+  isStd = this.fcuEisDiscreteWord2.get().bitValueOr(28, true);
 
   private readonly tatClass = this.tat.map((tat) => `F25 EndAlign ${tat.isNormalOperation() ? 'Green' : 'Amber'}`);
   private readonly tatText = this.tat.map((tat) =>
@@ -64,9 +67,9 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
   private readonly isaText = this.isa.map((isa) => getValuePrefix(isa) + isa.toFixed(0));
 
   private readonly isaVisibility = MappedSubject.create(
-    ([baroMode, zp, sat]) =>
-      baroMode === BaroMode.Std && zp.isNormalOperation() && sat.isNormalOperation() ? 'inherit' : 'hidden',
-    this.baroMode,
+    ([fcuEis, zp, sat]) =>
+      fcuEis.bitValueOr(28, false) && zp.isNormalOperation() && sat.isNormalOperation() ? 'inherit' : 'hidden',
+    this.fcuEisDiscreteWord2,
     this.zp,
     this.sat,
   );
@@ -153,7 +156,7 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
       this.sat,
       this.tat,
       this.zp,
-      this.baroMode,
+      this.fcuEisDiscreteWord2,
       this.tatClass,
       this.tatText,
       this.satClass,
