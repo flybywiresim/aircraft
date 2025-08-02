@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2025 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -386,6 +387,48 @@ export class FwsCore {
 
   public readonly phase8ConfirmationNode180 = new NXLogicConfirmNode(180);
 
+  public readonly cpiomBAgsAppDiscreteWord1 = Arinc429Register.empty();
+  private readonly cpiomBAgsAppDiscreteWord2 = Arinc429Register.empty();
+  private readonly cpiomBAgsAppDiscreteWord3 = Arinc429Register.empty();
+  private readonly cpiomBAgsAppDiscreteWord4 = Arinc429Register.empty();
+
+  private readonly cpiomBVcsAppDiscreteWord1 = Arinc429Register.empty();
+
+  private readonly cpiomBVcsAppDiscreteWord2 = Arinc429Register.empty();
+
+  private readonly cpiomBVcsAppDiscreteWord3 = Arinc429Register.empty();
+
+  private readonly cpiomBVcsAppDiscreteWord4 = Arinc429Register.empty();
+
+  private readonly cpiomBTcsAppDiscreteWord1 = Arinc429Register.empty();
+
+  private readonly cpiomBTcsAppDiscreteWord2 = Arinc429Register.empty();
+
+  private readonly cpiomBTcsAppDiscreteWord3 = Arinc429Register.empty();
+
+  private readonly cpiomBTcsAppDiscreteWord4 = Arinc429Register.empty();
+
+  private readonly cpiomBCpcsAppDiscreteWord1 = Arinc429Register.empty();
+
+  private readonly cpiomBCpcsAppDiscreteWord2 = Arinc429Register.empty();
+
+  private readonly cpiomBCpcsAppDiscreteWord3 = Arinc429Register.empty();
+
+  private readonly cpiomBCpcsAppDiscreteWord4 = Arinc429Register.empty();
+
+  private readonly outflowValve1OpenAmount = Arinc429Register.empty();
+  private readonly outflowValve2OpenAmount = Arinc429Register.empty();
+  private readonly outflowValve3OpenAmount = Arinc429Register.empty();
+  private readonly outflowValve4OpenAmount = Arinc429Register.empty();
+
+  public readonly pack1Ctl1Fault = Subject.create(false);
+
+  public readonly pack1Ctl2Fault = Subject.create(false);
+
+  public readonly pack2Ctl1Fault = Subject.create(false);
+
+  public readonly pack2Ctl2Fault = Subject.create(false);
+
   public readonly fdac1Channel1Failure = Subject.create(false);
 
   public readonly fdac1Channel2Failure = Subject.create(false);
@@ -416,7 +459,11 @@ export class FwsCore {
 
   public readonly cabinAirExtractOn = Subject.create(false);
 
-  public readonly numberOfCabinFanFaults = Subject.create(0);
+  public readonly onePrimaryCabinFanFault = Subject.create(false);
+
+  public readonly twoPrimaryCabinFanFault = Subject.create(false);
+
+  public readonly threePrimaryCabinFanFault = Subject.create(false);
 
   public readonly allCabinFansFault = Subject.create(false);
 
@@ -446,9 +493,9 @@ export class FwsCore {
 
   public readonly hotAir2PbOn = Subject.create(false);
 
-  public readonly taddChannel1Failure = Subject.create(false);
+  public readonly tempCtl1Fault = Subject.create(false);
 
-  public readonly taddChannel2Failure = Subject.create(false);
+  public readonly tempCtl2Fault = Subject.create(false);
 
   public readonly tempCtlFault = Subject.create(false);
 
@@ -460,13 +507,21 @@ export class FwsCore {
 
   public readonly vcmFwdChannel2Failure = Subject.create(false);
 
-  public readonly vcmAftChannel1Failure = Subject.create(false);
+  public readonly fwdVentCtl1Fault = Subject.create(false);
 
-  public readonly vcmAftChannel2Failure = Subject.create(false);
+  public readonly fwdVentCtl2Fault = Subject.create(false);
 
   public readonly fwdVentCtrDegraded = Subject.create(false);
 
   public readonly fwdVentRedundLost = Subject.create(false);
+
+  public readonly vcmAftChannel1Failure = Subject.create(false);
+
+  public readonly vcmAftChannel2Failure = Subject.create(false);
+
+  public readonly aftVentCtl1Fault = Subject.create(false);
+
+  public readonly aftVentCtl2Fault = Subject.create(false);
 
   public readonly aftVentCtrDegraded = Subject.create(false);
 
@@ -544,6 +599,12 @@ export class FwsCore {
   public readonly fmcBFault = Subject.create(false);
 
   public readonly fmcCFault = Subject.create(false);
+
+  public readonly fmcAHealthy = Subject.create(false);
+
+  public readonly fmcBHealthy = Subject.create(false);
+
+  public readonly fmcCHealthy = Subject.create(false);
 
   public readonly fms1Fault = Subject.create(false);
 
@@ -663,6 +724,8 @@ export class FwsCore {
   public readonly dc1BusPowered = Subject.create(false);
 
   public readonly dc2BusPowered = Subject.create(false);
+
+  private readonly dc108PhBusPowered = Subject.create(false);
 
   public readonly extPwrConnected = Subject.create(false);
 
@@ -830,30 +893,6 @@ export class FwsCore {
 
   public readonly directLawCondition = Subject.create(false);
 
-  public readonly elac1HydConfirmNode = new NXLogicConfirmNode(3, false);
-
-  public readonly elac1FaultConfirmNode = new NXLogicConfirmNode(0.6, true);
-
-  public readonly elac1FaultConfirmNodeOutput = Subject.create(false);
-
-  public readonly elac1FaultLine123Display = Subject.create(false);
-
-  public readonly elac1FaultLine45Display = Subject.create(false);
-
-  public readonly elac1HydConfirmNodeOutput = Subject.create(false);
-
-  public readonly elac2FaultConfirmNode = new NXLogicConfirmNode(0.6, true);
-
-  public readonly elac2FaultConfirmNodeOutput = Subject.create(false);
-
-  public readonly elac2FaultLine123Display = Subject.create(false);
-
-  public readonly elac2FaultLine45Display = Subject.create(false);
-
-  public readonly elac2HydConfirmNode = new NXLogicConfirmNode(3, false);
-
-  public readonly elac2HydConfirmNodeOutput = Subject.create(false);
-
   public readonly fcdc1FaultCondition = Subject.create(false);
 
   public readonly fcdc12FaultCondition = Subject.create(false);
@@ -870,14 +909,17 @@ export class FwsCore {
   public readonly sec2Healthy = Subject.create(false);
   public readonly sec3Healthy = Subject.create(false);
 
+  public readonly sec1PbOff = Subject.create(false);
   public readonly sec1FaultCondition = Subject.create(false);
   public readonly sec1OffThenOnPulseNode = new NXLogicPulseNode(true);
   public readonly sec1OffThenOnMemoryNode = new NXLogicMemoryNode();
 
+  public readonly sec2PbOff = Subject.create(false);
   public readonly sec2FaultCondition = Subject.create(false);
   public readonly sec2OffThenOnPulseNode = new NXLogicPulseNode(true);
   public readonly sec2OffThenOnMemoryNode = new NXLogicMemoryNode();
 
+  public readonly sec3PbOff = Subject.create(false);
   public readonly sec3FaultCondition = Subject.create(false);
   public readonly sec3OffThenOnPulseNode = new NXLogicPulseNode(true);
   public readonly sec3OffThenOnMemoryNode = new NXLogicMemoryNode();
@@ -893,7 +935,40 @@ export class FwsCore {
   public readonly prim2Healthy = Subject.create(false);
   public readonly prim3Healthy = Subject.create(false);
 
-  public readonly allPrimFailed = Subject.create(false);
+  public readonly prim1PbOff = Subject.create(false);
+  public readonly prim1FaultCondition = Subject.create(false);
+  public readonly prim1OffThenOnPulseNode = new NXLogicPulseNode(true);
+  public readonly prim1OffThenOnMemoryNode = new NXLogicMemoryNode();
+
+  public readonly prim2PbOff = Subject.create(false);
+  public readonly prim2FaultCondition = Subject.create(false);
+  public readonly prim2OffThenOnPulseNode = new NXLogicPulseNode(true);
+  public readonly prim2OffThenOnMemoryNode = new NXLogicMemoryNode();
+
+  public readonly prim3PbOff = Subject.create(false);
+  public readonly prim3FaultCondition = Subject.create(false);
+  public readonly prim3OffThenOnPulseNode = new NXLogicPulseNode(true);
+  public readonly prim3OffThenOnMemoryNode = new NXLogicMemoryNode();
+
+  public readonly twoPrimsFailed = Subject.create(false);
+
+  public readonly primTwoAndThreeFailed = MappedSubject.create(
+    ([prim2, prim3]) => !prim2 && !prim3,
+    this.prim2Healthy,
+    this.prim3Healthy,
+  );
+
+  public readonly prim2FailedBeforeTakeoff = new NXLogicMemoryNode();
+
+  public readonly dcEhaPowered = Subject.create(false);
+
+  public readonly allPrimFailed = MappedSubject.create(
+    ([prim1, prim2, prim3]) => !prim1 && !prim2 && !prim3,
+    this.prim1Healthy,
+    this.prim2Healthy,
+    this.prim3Healthy,
+  );
+
   public readonly allPrimAndSecFailed = Subject.create(false);
 
   public readonly showLandingInhibit = Subject.create(false);
@@ -1026,8 +1101,6 @@ export class FwsCore {
   public readonly speedBrake5sDelayed = new NXLogicConfirmNode(5, false);
 
   public readonly groundSpoilerNotArmedWarning = Subject.create(false);
-
-  public readonly taxiInFlap0Check = new NXLogicConfirmNode(60, false);
 
   /* FUEL */
 
@@ -1633,8 +1706,16 @@ export class FwsCore {
 
   public readonly tcasTaOnly = Subject.create(false);
 
+  public readonly terrSys1FaultCond = Subject.create(false);
+
+  public readonly terrSys2FaultCond = Subject.create(false);
+
   public readonly terrSys1Failed = Subject.create(false);
   public readonly terrSys2Failed = Subject.create(false);
+
+  public readonly taws1FaultCond = Subject.create(false);
+
+  public readonly taws2FaultCond = Subject.create(false);
 
   public readonly taws1Failed = Subject.create(false);
   public readonly taws2Failed = Subject.create(false);
@@ -1887,6 +1968,14 @@ export class FwsCore {
 
   public readonly iceSevereDetectedTimerStatus = Subject.create(false);
 
+  public readonly fmsPredUnreliablePreCondition = this.aircraftOnGround.map(SubscribableMapFunctions.not());
+
+  public readonly fuelConsumptIncreasePreCondition = MappedSubject.create(
+    ([onGround, engRunning]) => !onGround && engRunning,
+    this.aircraftOnGround,
+    this.oneEngineRunning,
+  );
+
   /** Secondary Failures */
 
   public readonly elecAcSecondaryFailure = MappedSubject.create(
@@ -2107,6 +2196,8 @@ export class FwsCore {
       this.engine2AboveIdle,
       this.engine1CoreAtOrAboveMinIdle,
       this.engine2CoreAtOrAboveMinIdle,
+      this.fmsPredUnreliablePreCondition,
+      this.fuelConsumptIncreasePreCondition,
       this.elecAcSecondaryFailure,
       this.bleedSecondaryFailure,
       this.fmsSwitchingNotNorm,
@@ -2590,6 +2681,8 @@ export class FwsCore {
     this.ac3BusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_3_BUS_IS_POWERED', 'bool') > 0);
     this.ac4BusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_4_BUS_IS_POWERED', 'bool') > 0);
     this.acESSBusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED', 'bool') > 0);
+    this.dc108PhBusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_108PH_BUS_IS_POWERED', 'Bool') > 0);
+    this.dcEhaPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_247PP_BUS_IS_POWERED', 'Bool') > 0);
 
     /* ENGINE AND THROTTLE acquisition */
 
@@ -3440,13 +3533,38 @@ export class FwsCore {
     /** MCDU TO CONF 3 selected */
     const mcduToFlapPos3 = fm1DiscreteWord2.bitValueOr(16, false) || fm2DiscreteWord2.bitValueOr(16, false);
 
-    this.fmcAFault.set(!SimVar.GetSimVarValue('L:A32NX_FMC_A_IS_HEALTHY', 'bool'));
-    this.fmcBFault.set(!SimVar.GetSimVarValue('L:A32NX_FMC_B_IS_HEALTHY', 'bool'));
-    this.fmcCFault.set(!SimVar.GetSimVarValue('L:A32NX_FMC_C_IS_HEALTHY', 'bool'));
+    this.fmcAHealthy.set(SimVar.GetSimVarValue('L:A32NX_FMC_A_IS_HEALTHY', 'bool'));
+    this.fmcBHealthy.set(SimVar.GetSimVarValue('L:A32NX_FMC_B_IS_HEALTHY', 'bool'));
+    this.fmcCHealthy.set(SimVar.GetSimVarValue('L:A32NX_FMC_C_IS_HEALTHY', 'bool'));
+    this.fmcAFault.set(!this.fmcAHealthy.get() && this.dcESSBusPowered.get());
+    this.fmcBFault.set(!this.fmcBHealthy.get() && this.dc2BusPowered.get());
+    this.fmcCFault.set(!this.fmcCHealthy.get() && this.dc1BusPowered.get());
+
     this.fms1Fault.set(this.fmcAFault.get() && this.fmcCFault.get());
     this.fms2Fault.set(this.fmcBFault.get() && this.fmcCFault.get());
 
     /* 21 - AIR CONDITIONING AND PRESSURIZATION */
+
+    // TODO split by different FWS routing once multiple FWS are supported
+    const cpiomB1NotReachable =
+      !SimVar.GetSimVarValue('L:A32NX_AFDX_3_7_REACHABLE', SimVarValueType.Bool) &&
+      !SimVar.GetSimVarValue('L:A32NX_AFDX_13_17_REACHABLE', SimVarValueType.Bool) &&
+      !SimVar.GetSimVarValue('L:A32NX_AFDX_4_7_REACHABLE', SimVarValueType.Bool) &&
+      !SimVar.GetSimVarValue('L:A32NX_AFDX_14_17_REACHABLE', SimVarValueType.Bool);
+
+    const cpiomB2NotReachable =
+      !SimVar.GetSimVarValue('L:A32NX_AFDX_3_5_REACHABLE', SimVarValueType.Bool) &&
+      !SimVar.GetSimVarValue('L:A32NX_AFDX_13_15_REACHABLE', SimVarValueType.Bool) &&
+      !SimVar.GetSimVarValue('L:A32NX_AFDX_4_5_REACHABLE', SimVarValueType.Bool) &&
+      !SimVar.GetSimVarValue('L:A32NX_AFDX_14_15_REACHABLE', SimVarValueType.Bool);
+
+    const cpiomB3NotReachable = cpiomB2NotReachable;
+
+    const cpiomB4NotReachable =
+      !SimVar.GetSimVarValue('L:A32NX_AFDX_3_6_REACHABLE', SimVarValueType.Bool) &&
+      !SimVar.GetSimVarValue('L:A32NX_AFDX_13_16_REACHABLE', SimVarValueType.Bool) &&
+      !SimVar.GetSimVarValue('L:A32NX_AFDX_4_6_REACHABLE', SimVarValueType.Bool) &&
+      !SimVar.GetSimVarValue('L:A32NX_AFDX_14_16_REACHABLE', SimVarValueType.Bool);
 
     this.flightLevel.set(Math.round(this.adrPressureAltitude.get() / 100));
 
@@ -3455,118 +3573,153 @@ export class FwsCore {
     this.phase8ConfirmationNode180.write(this.flightPhase.get() === 8, deltaTime);
 
     this.fdac1Channel1Failure.set(SimVar.GetSimVarValue('L:A32NX_COND_FDAC_1_CHANNEL_1_FAILURE', 'bool'));
+
+    this.pack1Ctl1Fault.set(this.fdac1Channel1Failure.get() && this.acESSBusPowered.get());
+
     this.fdac1Channel2Failure.set(SimVar.GetSimVarValue('L:A32NX_COND_FDAC_1_CHANNEL_2_FAILURE', 'bool'));
+
+    this.pack1Ctl2Fault.set(this.ac2BusPowered.get() && this.fdac1Channel2Failure.get());
+
     this.fdac2Channel1Failure.set(SimVar.GetSimVarValue('L:A32NX_COND_FDAC_2_CHANNEL_1_FAILURE', 'bool'));
+
+    this.pack2Ctl1Fault.set(this.acESSBusPowered.get() && this.fdac2Channel1Failure.get());
+
     this.fdac2Channel2Failure.set(SimVar.GetSimVarValue('L:A32NX_COND_FDAC_2_CHANNEL_2_FAILURE', 'bool'));
 
-    const cpiomBAgsAppDiscreteWord1 = Arinc429Register.empty();
-    const cpiomBAgsAppDiscreteWord2 = Arinc429Register.empty();
-    const cpiomBAgsAppDiscreteWord3 = Arinc429Register.empty();
-    const cpiomBAgsAppDiscreteWord4 = Arinc429Register.empty();
+    this.pack2Ctl2Fault.set(this.ac4BusPowered.get() && this.fdac2Channel2Failure.get());
 
-    cpiomBAgsAppDiscreteWord1.setFromSimVar('L:A32NX_COND_CPIOM_B1_AGS_DISCRETE_WORD');
-    cpiomBAgsAppDiscreteWord2.setFromSimVar('L:A32NX_COND_CPIOM_B2_AGS_DISCRETE_WORD');
-    cpiomBAgsAppDiscreteWord3.setFromSimVar('L:A32NX_COND_CPIOM_B3_AGS_DISCRETE_WORD');
-    cpiomBAgsAppDiscreteWord4.setFromSimVar('L:A32NX_COND_CPIOM_B4_AGS_DISCRETE_WORD');
+    this.populateCpiomBWords(
+      this.cpiomBAgsAppDiscreteWord1,
+      this.cpiomBVcsAppDiscreteWord1,
+      this.cpiomBTcsAppDiscreteWord1,
+      this.cpiomBCpcsAppDiscreteWord1,
+      cpiomB1NotReachable,
+      1,
+    );
+    this.populateCpiomBWords(
+      this.cpiomBAgsAppDiscreteWord2,
+      this.cpiomBVcsAppDiscreteWord2,
+      this.cpiomBTcsAppDiscreteWord2,
+      this.cpiomBCpcsAppDiscreteWord2,
+      cpiomB2NotReachable,
+      2,
+    );
+    this.populateCpiomBWords(
+      this.cpiomBAgsAppDiscreteWord3,
+      this.cpiomBVcsAppDiscreteWord3,
+      this.cpiomBTcsAppDiscreteWord3,
+      this.cpiomBCpcsAppDiscreteWord3,
+      cpiomB3NotReachable,
+      3,
+    );
+    this.populateCpiomBWords(
+      this.cpiomBAgsAppDiscreteWord4,
+      this.cpiomBVcsAppDiscreteWord4,
+      this.cpiomBTcsAppDiscreteWord4,
+      this.cpiomBCpcsAppDiscreteWord4,
+      cpiomB4NotReachable,
+      4,
+    );
 
-    const cpiomBVcsAppDiscreteWord1 = Arinc429Register.empty();
-    const cpiomBVcsAppDiscreteWord2 = Arinc429Register.empty();
-    const cpiomBVcsAppDiscreteWord3 = Arinc429Register.empty();
-    const cpiomBVcsAppDiscreteWord4 = Arinc429Register.empty();
+    let vcsDiscreteWordToUse: Arinc429Register;
 
-    cpiomBVcsAppDiscreteWord1.setFromSimVar('L:A32NX_COND_CPIOM_B1_VCS_DISCRETE_WORD');
-    cpiomBVcsAppDiscreteWord2.setFromSimVar('L:A32NX_COND_CPIOM_B2_VCS_DISCRETE_WORD');
-    cpiomBVcsAppDiscreteWord3.setFromSimVar('L:A32NX_COND_CPIOM_B3_VCS_DISCRETE_WORD');
-    cpiomBVcsAppDiscreteWord4.setFromSimVar('L:A32NX_COND_CPIOM_B4_VCS_DISCRETE_WORD');
-
-    const cpiomBTcsAppDiscreteWord1 = Arinc429Register.empty();
-    const cpiomBTcsAppDiscreteWord2 = Arinc429Register.empty();
-    const cpiomBTcsAppDiscreteWord3 = Arinc429Register.empty();
-    const cpiomBTcsAppDiscreteWord4 = Arinc429Register.empty();
-
-    cpiomBTcsAppDiscreteWord1.setFromSimVar('L:A32NX_COND_CPIOM_B1_TCS_DISCRETE_WORD');
-    cpiomBTcsAppDiscreteWord2.setFromSimVar('L:A32NX_COND_CPIOM_B2_TCS_DISCRETE_WORD');
-    cpiomBTcsAppDiscreteWord3.setFromSimVar('L:A32NX_COND_CPIOM_B3_TCS_DISCRETE_WORD');
-    cpiomBTcsAppDiscreteWord4.setFromSimVar('L:A32NX_COND_CPIOM_B4_TCS_DISCRETE_WORD');
-
-    const cpiomBCpcsAppDiscreteWord1 = Arinc429Register.empty();
-    const cpiomBCpcsAppDiscreteWord2 = Arinc429Register.empty();
-    const cpiomBCpcsAppDiscreteWord3 = Arinc429Register.empty();
-    const cpiomBCpcsAppDiscreteWord4 = Arinc429Register.empty();
-
-    cpiomBCpcsAppDiscreteWord1.setFromSimVar('L:A32NX_COND_CPIOM_B1_CPCS_DISCRETE_WORD');
-    cpiomBCpcsAppDiscreteWord2.setFromSimVar('L:A32NX_COND_CPIOM_B2_CPCS_DISCRETE_WORD');
-    cpiomBCpcsAppDiscreteWord3.setFromSimVar('L:A32NX_COND_CPIOM_B3_CPCS_DISCRETE_WORD');
-    cpiomBCpcsAppDiscreteWord4.setFromSimVar('L:A32NX_COND_CPIOM_B4_CPCS_DISCRETE_WORD');
-
-    let vcsDiscreteWordToUse;
-
-    if (cpiomBVcsAppDiscreteWord1.isNormalOperation()) {
-      vcsDiscreteWordToUse = cpiomBVcsAppDiscreteWord1;
-    } else if (cpiomBVcsAppDiscreteWord2.isNormalOperation()) {
-      vcsDiscreteWordToUse = cpiomBVcsAppDiscreteWord2;
-    } else if (cpiomBVcsAppDiscreteWord3.isNormalOperation()) {
-      vcsDiscreteWordToUse = cpiomBVcsAppDiscreteWord3;
+    if (this.cpiomBVcsAppDiscreteWord1.isNormalOperation() || this.cpiomBVcsAppDiscreteWord1.isFunctionalTest()) {
+      vcsDiscreteWordToUse = this.cpiomBVcsAppDiscreteWord1;
+    } else if (
+      this.cpiomBVcsAppDiscreteWord2.isNormalOperation() ||
+      this.cpiomBVcsAppDiscreteWord2.isFunctionalTest()
+    ) {
+      vcsDiscreteWordToUse = this.cpiomBVcsAppDiscreteWord2;
+    } else if (
+      this.cpiomBVcsAppDiscreteWord3.isNormalOperation() ||
+      this.cpiomBVcsAppDiscreteWord3.isFunctionalTest()
+    ) {
+      vcsDiscreteWordToUse = this.cpiomBVcsAppDiscreteWord3;
     } else {
-      vcsDiscreteWordToUse = cpiomBVcsAppDiscreteWord4;
+      vcsDiscreteWordToUse = this.cpiomBVcsAppDiscreteWord4;
     }
 
-    let tcsDiscreteWordToUse;
+    let tcsDiscreteWordToUse: Arinc429Register;
 
-    if (cpiomBTcsAppDiscreteWord1.isNormalOperation()) {
-      tcsDiscreteWordToUse = cpiomBTcsAppDiscreteWord1;
-    } else if (cpiomBTcsAppDiscreteWord2.isNormalOperation()) {
-      tcsDiscreteWordToUse = cpiomBTcsAppDiscreteWord2;
-    } else if (cpiomBTcsAppDiscreteWord3.isNormalOperation()) {
-      tcsDiscreteWordToUse = cpiomBTcsAppDiscreteWord3;
+    if (this.cpiomBTcsAppDiscreteWord1.isNormalOperation() || this.cpiomBTcsAppDiscreteWord1.isFunctionalTest()) {
+      tcsDiscreteWordToUse = this.cpiomBTcsAppDiscreteWord1;
+    } else if (
+      this.cpiomBTcsAppDiscreteWord2.isNormalOperation() ||
+      this.cpiomBTcsAppDiscreteWord2.isFunctionalTest()
+    ) {
+      tcsDiscreteWordToUse = this.cpiomBTcsAppDiscreteWord2;
+    } else if (
+      this.cpiomBTcsAppDiscreteWord3.isNormalOperation() ||
+      this.cpiomBTcsAppDiscreteWord3.isFunctionalTest()
+    ) {
+      tcsDiscreteWordToUse = this.cpiomBTcsAppDiscreteWord3;
     } else {
-      tcsDiscreteWordToUse = cpiomBTcsAppDiscreteWord4;
+      tcsDiscreteWordToUse = this.cpiomBTcsAppDiscreteWord4;
     }
 
     let cpcsDiscreteWordToUse: Arinc429Register;
-    let cpcsToUseId: number;
+    let cpcsToUseId: number | null = null;
 
-    if (cpiomBCpcsAppDiscreteWord1.isNormalOperation()) {
-      cpcsDiscreteWordToUse = cpiomBCpcsAppDiscreteWord1;
+    if (this.cpiomBCpcsAppDiscreteWord1.isNormalOperation() || this.cpiomBCpcsAppDiscreteWord1.isFunctionalTest()) {
+      cpcsDiscreteWordToUse = this.cpiomBCpcsAppDiscreteWord1;
       cpcsToUseId = 1;
-    } else if (cpiomBCpcsAppDiscreteWord2.isNormalOperation()) {
-      cpcsDiscreteWordToUse = cpiomBCpcsAppDiscreteWord2;
+    } else if (
+      this.cpiomBCpcsAppDiscreteWord2.isNormalOperation() ||
+      this.cpiomBCpcsAppDiscreteWord2.isFunctionalTest()
+    ) {
+      cpcsDiscreteWordToUse = this.cpiomBCpcsAppDiscreteWord2;
       cpcsToUseId = 2;
-    } else if (cpiomBCpcsAppDiscreteWord3.isNormalOperation()) {
-      cpcsDiscreteWordToUse = cpiomBCpcsAppDiscreteWord3;
+    } else if (
+      this.cpiomBCpcsAppDiscreteWord3.isNormalOperation() ||
+      this.cpiomBCpcsAppDiscreteWord3.isFunctionalTest()
+    ) {
+      cpcsDiscreteWordToUse = this.cpiomBCpcsAppDiscreteWord3;
       cpcsToUseId = 3;
     } else {
-      cpcsDiscreteWordToUse = cpiomBCpcsAppDiscreteWord4;
-      cpcsToUseId = 4;
+      cpcsDiscreteWordToUse = this.cpiomBCpcsAppDiscreteWord4;
+      if (this.cpiomBCpcsAppDiscreteWord4.isNormalOperation() || this.cpiomBCpcsAppDiscreteWord4.isFunctionalTest()) {
+        cpcsToUseId = 4;
+      }
     }
 
+    const cpiomB1TcsFailedAndPowered = this.cpiomBTcsAppDiscreteWord1.isFailureWarning() && this.dc1BusPowered.get();
+    const cpiomB2TcsFailedAndPowered =
+      this.cpiomBTcsAppDiscreteWord2.isFailureWarning() && this.dc108PhBusPowered.get();
+    const cpiomB3TcsFailedAndPowered =
+      this.cpiomBTcsAppDiscreteWord3.isFailureWarning() && this.dc108PhBusPowered.get();
+    const cpiomB4TcsFailedAndPowered = this.cpiomBTcsAppDiscreteWord4.isFailureWarning() && this.dc2BusPowered.get();
+
     this.oneTcsAppFailed.set(
-      cpiomBTcsAppDiscreteWord1.isFailureWarning() ||
-        cpiomBTcsAppDiscreteWord2.isFailureWarning() ||
-        cpiomBTcsAppDiscreteWord3.isFailureWarning() ||
-        cpiomBTcsAppDiscreteWord4.isFailureWarning(),
+      !this.tempCtlFault.get() &&
+        (cpiomB1TcsFailedAndPowered ||
+          cpiomB2TcsFailedAndPowered ||
+          cpiomB3TcsFailedAndPowered ||
+          cpiomB4TcsFailedAndPowered),
     );
 
     this.tempCtrDegraded.set(
-      cpiomBTcsAppDiscreteWord1.isFailureWarning() &&
-        cpiomBTcsAppDiscreteWord2.isFailureWarning() &&
-        cpiomBTcsAppDiscreteWord3.isFailureWarning() &&
-        cpiomBTcsAppDiscreteWord4.isFailureWarning(),
+      !this.tempCtlFault.get() &&
+        cpiomB1TcsFailedAndPowered &&
+        cpiomB2TcsFailedAndPowered &&
+        cpiomB3TcsFailedAndPowered &&
+        cpiomB4TcsFailedAndPowered,
     );
 
-    this.pack1Degraded.set(
-      cpiomBAgsAppDiscreteWord1.isFailureWarning() && cpiomBAgsAppDiscreteWord3.isFailureWarning(),
-    );
-    this.pack2Degraded.set(
-      cpiomBAgsAppDiscreteWord2.isFailureWarning() && cpiomBAgsAppDiscreteWord4.isFailureWarning(),
-    );
+    const cpiomB1AgsFailedAndPowered = this.cpiomBAgsAppDiscreteWord1.isFailureWarning() && this.dc1BusPowered.get();
+    const cpiomB3AgsFailedAndPowered =
+      this.cpiomBAgsAppDiscreteWord3.isFailureWarning() && this.dc108PhBusPowered.get();
 
-    this.pack1RedundLost.set(
-      cpiomBAgsAppDiscreteWord1.isFailureWarning() || cpiomBAgsAppDiscreteWord3.isFailureWarning(),
-    );
-    this.pack2RedundLost.set(
-      cpiomBAgsAppDiscreteWord2.isFailureWarning() || cpiomBAgsAppDiscreteWord4.isFailureWarning(),
-    );
+    this.pack1Degraded.set(cpiomB1AgsFailedAndPowered && cpiomB3AgsFailedAndPowered);
+
+    this.pack1RedundLost.set(cpiomB1AgsFailedAndPowered || cpiomB3AgsFailedAndPowered);
+
+    const cpiomB2AgsFailedAndPowered =
+      this.cpiomBAgsAppDiscreteWord2.isFailureWarning() && this.dc108PhBusPowered.get();
+    const cpiomB4AgsFailedAndPowered = this.cpiomBAgsAppDiscreteWord4.isFailureWarning() && this.dc2BusPowered.get();
+
+    this.pack2RedundLost.set(cpiomB2AgsFailedAndPowered || cpiomB4AgsFailedAndPowered);
+
+    this.pack2Degraded.set(cpiomB2AgsFailedAndPowered && cpiomB4AgsFailedAndPowered);
 
     this.pack1On.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_1_PB_IS_ON', 'bool'));
     this.pack2On.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_2_PB_IS_ON', 'bool'));
@@ -3594,11 +3747,39 @@ export class FwsCore {
     const fan3Fault = vcsDiscreteWordToUse.bitValueOr(20, false);
     const fan4Fault = vcsDiscreteWordToUse.bitValueOr(21, false);
 
-    this.numberOfCabinFanFaults.set([fan1Fault, fan2Fault, fan3Fault, fan4Fault].filter((fan) => fan === true).length);
+    // In case of individual cabin fan fault, the ecam is not trigerred if fan not powered as it is handled by the associated AC power loss ecam warning.
+    const fan1FaultyAndpowered = fan1Fault && this.ac1BusPowered.get();
+    const fan2FaultyAndPowered = fan2Fault && this.ac2BusPowered.get();
+    const fan3FaultyAndPowered = fan3Fault && this.ac3BusPowered.get();
+    const fan4FaultyAndPowered = fan4Fault && this.ac4BusPowered.get();
 
-    this.allCabinFansFault.set(fan1Fault && fan2Fault && fan3Fault && fan4Fault);
+    this.onePrimaryCabinFanFault.set(
+      fan1FaultyAndpowered || fan2FaultyAndPowered || fan3FaultyAndPowered || fan4FaultyAndPowered,
+    );
 
-    this.bulkCargoHeaterFault.set(vcsDiscreteWordToUse.bitValueOr(22, false));
+    let numberOfFaultyFans = 0;
+    if (fan1Fault) {
+      numberOfFaultyFans++;
+    }
+    if (fan2Fault) {
+      numberOfFaultyFans++;
+    }
+    if (fan3Fault) {
+      numberOfFaultyFans++;
+    }
+    if (fan4Fault) {
+      numberOfFaultyFans++;
+    }
+
+    this.twoPrimaryCabinFanFault.set(numberOfFaultyFans === 2);
+    this.threePrimaryCabinFanFault.set(numberOfFaultyFans === 3);
+
+    // Inhibited in total AC power loss (handled by ELEC EMER CONFIG)
+    this.allCabinFansFault.set(
+      fan1FaultyAndpowered && fan2FaultyAndPowered && fan3FaultyAndPowered && fan4FaultyAndPowered,
+    );
+
+    this.bulkCargoHeaterFault.set(this.ac4BusPowered.get() && vcsDiscreteWordToUse.bitValueOr(22, false));
     this.fwdIsolValveOpen.set(vcsDiscreteWordToUse.bitValueOr(14, false));
     this.fwdIsolValveFault.set(vcsDiscreteWordToUse.bitValueOr(23, false));
     this.bulkIsolValveOpen.set(vcsDiscreteWordToUse.bitValueOr(16, false));
@@ -3616,11 +3797,14 @@ export class FwsCore {
     this.hotAir1PbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_HOT_AIR_1_PB_IS_ON', 'bool'));
     this.hotAir2PbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_HOT_AIR_2_PB_IS_ON', 'bool'));
 
-    this.taddChannel1Failure.set(SimVar.GetSimVarValue('L:A32NX_COND_TADD_CHANNEL_1_FAILURE', 'bool'));
-    this.taddChannel2Failure.set(SimVar.GetSimVarValue('L:A32NX_COND_TADD_CHANNEL_2_FAILURE', 'bool'));
+    const taddChannel1Failure: boolean = SimVar.GetSimVarValue('L:A32NX_COND_TADD_CHANNEL_1_FAILURE', 'bool');
+    const taddChannel2Failure: boolean = SimVar.GetSimVarValue('L:A32NX_COND_TADD_CHANNEL_2_FAILURE', 'bool');
+
+    this.tempCtl1Fault.set(this.ac2BusPowered.get() && taddChannel1Failure);
+    this.tempCtl2Fault.set(this.ac4BusPowered.get() && taddChannel2Failure);
 
     this.tempCtlFault.set(
-      (this.taddChannel1Failure.get() && this.taddChannel2Failure.get()) ||
+      (taddChannel1Failure && taddChannel2Failure) ||
         (this.fdac1Channel1Failure.get() &&
           this.fdac1Channel2Failure.get() &&
           this.fdac2Channel1Failure.get() &&
@@ -3629,22 +3813,30 @@ export class FwsCore {
 
     this.vcmFwdChannel1Failure.set(SimVar.GetSimVarValue('L:A32NX_VENT_FWD_VCM_CHANNEL_1_FAILURE', 'bool'));
     this.vcmFwdChannel2Failure.set(SimVar.GetSimVarValue('L:A32NX_VENT_FWD_VCM_CHANNEL_2_FAILURE', 'bool'));
+
+    this.fwdVentCtl1Fault.set(this.vcmFwdChannel1Failure.get() && this.dc1BusPowered.get());
+    this.fwdVentCtl2Fault.set(this.vcmFwdChannel2Failure.get() && this.dcESSBusPowered.get());
+
     this.vcmAftChannel1Failure.set(SimVar.GetSimVarValue('L:A32NX_VENT_AFT_VCM_CHANNEL_1_FAILURE', 'bool'));
     this.vcmAftChannel2Failure.set(SimVar.GetSimVarValue('L:A32NX_VENT_AFT_VCM_CHANNEL_2_FAILURE', 'bool'));
 
-    this.fwdVentCtrDegraded.set(
-      !cpiomBVcsAppDiscreteWord1.isNormalOperation() && !cpiomBVcsAppDiscreteWord3.isNormalOperation(),
-    );
-    this.fwdVentRedundLost.set(
-      !cpiomBVcsAppDiscreteWord1.isNormalOperation() || !cpiomBVcsAppDiscreteWord3.isNormalOperation(),
-    );
+    this.aftVentCtl1Fault.set(this.vcmAftChannel1Failure.get() && this.dc2BusPowered.get());
+    this.aftVentCtl2Fault.set(this.vcmAftChannel2Failure.get() && this.dcESSBusPowered.get());
 
-    this.aftVentCtrDegraded.set(
-      !cpiomBVcsAppDiscreteWord2.isNormalOperation() && !cpiomBVcsAppDiscreteWord4.isNormalOperation(),
-    );
-    this.aftVentRedundLost.set(
-      !cpiomBVcsAppDiscreteWord2.isNormalOperation() || !cpiomBVcsAppDiscreteWord4.isNormalOperation(),
-    );
+    const cpiomB1VcsFailedAndPowered = this.cpiomBVcsAppDiscreteWord1.isFailureWarning() && this.dc1BusPowered.get();
+    const cpiomB3VcsFailedAndPowered =
+      this.cpiomBVcsAppDiscreteWord3.isFailureWarning() && this.dc108PhBusPowered.get();
+
+    this.fwdVentCtrDegraded.set(cpiomB1VcsFailedAndPowered && cpiomB3VcsFailedAndPowered);
+
+    this.fwdVentRedundLost.set(cpiomB1VcsFailedAndPowered || cpiomB3VcsFailedAndPowered);
+
+    const cpiomB2VcsFailedAndPowered =
+      this.cpiomBVcsAppDiscreteWord2.isFailureWarning() && this.dc108PhBusPowered.get();
+    const cpiomB4VcsFailedAndPowered = this.cpiomBVcsAppDiscreteWord4.isFailureWarning() && this.dc2BusPowered.get();
+
+    this.aftVentCtrDegraded.set(cpiomB2VcsFailedAndPowered && cpiomB4VcsFailedAndPowered);
+    this.aftVentRedundLost.set(cpiomB2VcsFailedAndPowered || cpiomB4VcsFailedAndPowered);
 
     const engNotRunning =
       !this.engine1Running.get() &&
@@ -3658,23 +3850,32 @@ export class FwsCore {
 
     this.excessDiffPressure.set(cpcsDiscreteWordToUse.bitValueOr(14, false));
 
-    this.diffPressure.setFromSimVar(`L:A32NX_PRESS_CABIN_DELTA_PRESSURE_B${cpcsToUseId}`);
-
-    const outflowValve1OpenAmount = Arinc429Register.empty();
-    const outflowValve2OpenAmount = Arinc429Register.empty();
-    const outflowValve3OpenAmount = Arinc429Register.empty();
-    const outflowValve4OpenAmount = Arinc429Register.empty();
-
-    outflowValve1OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_1_OPEN_PERCENTAGE_B${cpcsToUseId}`);
-    outflowValve2OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_2_OPEN_PERCENTAGE_B${cpcsToUseId}`);
-    outflowValve3OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_3_OPEN_PERCENTAGE_B${cpcsToUseId}`);
-    outflowValve4OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_4_OPEN_PERCENTAGE_B${cpcsToUseId}`);
-
+    if (cpcsToUseId !== null) {
+      this.diffPressure.setFromSimVar(`L:A32NX_PRESS_CABIN_DELTA_PRESSURE_B${cpcsToUseId}`);
+      this.outflowValve1OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_1_OPEN_PERCENTAGE_B${cpcsToUseId}`);
+      this.outflowValve2OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_2_OPEN_PERCENTAGE_B${cpcsToUseId}`);
+      this.outflowValve3OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_3_OPEN_PERCENTAGE_B${cpcsToUseId}`);
+      this.outflowValve4OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_4_OPEN_PERCENTAGE_B${cpcsToUseId}`);
+      if (this.flightPhase12Or1112.get()) {
+        this.cabinAltitude.setFromSimVar(`L:A32NX_PRESS_CABIN_ALTITUDE_B${cpcsToUseId}`);
+      }
+      if (flightPhase8) {
+        this.cabinAltitudeTarget.setFromSimVar(`L:A32NX_PRESS_CABIN_ALTITUDE_TARGET_B${cpcsToUseId}`);
+      }
+    } else {
+      this.diffPressure.setSsm(Arinc429SignStatusMatrix.FailureWarning);
+      this.outflowValve1OpenAmount.setSsm(Arinc429SignStatusMatrix.FailureWarning);
+      this.outflowValve2OpenAmount.setSsm(Arinc429SignStatusMatrix.FailureWarning);
+      this.outflowValve3OpenAmount.setSsm(Arinc429SignStatusMatrix.FailureWarning);
+      this.outflowValve4OpenAmount.setSsm(Arinc429SignStatusMatrix.FailureWarning);
+      this.cabinAltitude.setSsm(Arinc429SignStatusMatrix.FailureWarning);
+      this.cabinAltitudeTarget.setSsm(Arinc429SignStatusMatrix.FailureWarning);
+    }
     this.allOutflowValvesOpen.set(
-      outflowValve1OpenAmount.value > 99 &&
-        outflowValve2OpenAmount.value > 99 &&
-        outflowValve3OpenAmount.value > 99 &&
-        outflowValve4OpenAmount.value > 99,
+      this.outflowValve1OpenAmount.valueOr(0) > 99 &&
+        this.outflowValve2OpenAmount.valueOr(0) > 99 &&
+        this.outflowValve3OpenAmount.valueOr(0) > 99 &&
+        this.outflowValve4OpenAmount.valueOr(0) > 99,
     );
 
     this.ocsm1AutoFailure.set(SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_1_AUTO_PARTITION_FAILURE', 'bool'));
@@ -3682,11 +3883,13 @@ export class FwsCore {
     this.ocsm3AutoFailure.set(SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_3_AUTO_PARTITION_FAILURE', 'bool'));
     this.ocsm4AutoFailure.set(SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_4_AUTO_PARTITION_FAILURE', 'bool'));
 
+    // FIX ME Faults should be inhibited in case of all CPC words FW to handle unpowered states.
+    // Currently these are set as FW if cpiom/cpc is unpowered or normally failed so it's not possible to distinugish between the two cases.
     this.ocsmAutoCtlFault.set(
-      (cpiomBCpcsAppDiscreteWord1.isFailureWarning() &&
-        cpiomBCpcsAppDiscreteWord2.isFailureWarning() &&
-        cpiomBCpcsAppDiscreteWord3.isFailureWarning() &&
-        cpiomBCpcsAppDiscreteWord4.isFailureWarning()) ||
+      (this.cpiomBCpcsAppDiscreteWord1.isFailureWarning() &&
+        this.cpiomBCpcsAppDiscreteWord2.isFailureWarning() &&
+        this.cpiomBCpcsAppDiscreteWord3.isFailureWarning() &&
+        this.cpiomBCpcsAppDiscreteWord4.isFailureWarning()) ||
         (this.ocsm1AutoFailure.get() &&
           this.ocsm2AutoFailure.get() &&
           this.ocsm3AutoFailure.get() &&
@@ -3707,12 +3910,22 @@ export class FwsCore {
     this.ocsm3Failure.set(ocsm3Channel1Failure && ocsm3Channel2Failure);
     this.ocsm4Failure.set(ocsm4Channel1Failure && ocsm4Channel2Failure);
 
-    const numberOfCpcsFaults = [
-      cpiomBCpcsAppDiscreteWord1.isFailureWarning(),
-      cpiomBCpcsAppDiscreteWord2.isFailureWarning(),
-      cpiomBCpcsAppDiscreteWord3.isFailureWarning(),
-      cpiomBCpcsAppDiscreteWord4.isFailureWarning(),
-    ].filter((cpcs) => cpcs === true).length;
+    let numberOfCpcsFaults = 0;
+    if (this.cpiomBCpcsAppDiscreteWord1.isFailureWarning()) {
+      numberOfCpcsFaults++;
+    }
+
+    if (this.cpiomBCpcsAppDiscreteWord2.isFailureWarning()) {
+      numberOfCpcsFaults++;
+    }
+
+    if (this.cpiomBCpcsAppDiscreteWord3.isFailureWarning()) {
+      numberOfCpcsFaults++;
+    }
+
+    if (this.cpiomBCpcsAppDiscreteWord4.isFailureWarning()) {
+      numberOfCpcsFaults++;
+    }
 
     this.pressRedundLost.set(numberOfCpcsFaults > 1);
 
@@ -3722,13 +3935,8 @@ export class FwsCore {
 
     this.manCabinAltMode.set(!SimVar.GetSimVarValue('L:A32NX_OVHD_PRESS_MAN_ALTITUDE_PB_IS_AUTO', 'bool'));
 
-    if (this.flightPhase12Or1112.get()) {
-      this.cabinAltitude.setFromSimVar(`L:A32NX_PRESS_CABIN_ALTITUDE_B${cpcsToUseId}`);
-    }
-
     if (flightPhase8) {
       this.landingElevation.setFromSimVar('L:A32NX_FM1_LANDING_ELEVATION');
-      this.cabinAltitudeTarget.setFromSimVar(`L:A32NX_PRESS_CABIN_ALTITUDE_TARGET_B${cpcsToUseId}`);
     }
 
     // Cabin altitude in phase 1,2 11 or 12
@@ -3840,71 +4048,71 @@ export class FwsCore {
     this.prim1Healthy.set(SimVar.GetSimVarValue('L:A32NX_PRIM_1_HEALTHY', 'bool'));
     this.prim2Healthy.set(SimVar.GetSimVarValue('L:A32NX_PRIM_2_HEALTHY', 'bool'));
     this.prim3Healthy.set(SimVar.GetSimVarValue('L:A32NX_PRIM_3_HEALTHY', 'bool'));
-    this.allPrimFailed.set(!this.prim1Healthy.get() && !this.prim2Healthy.get() && !this.prim3Healthy.get());
+    this.sec1Healthy.set(SimVar.GetSimVarValue('L:A32NX_SEC_1_HEALTHY', 'bool'));
+    this.sec2Healthy.set(SimVar.GetSimVarValue('L:A32NX_SEC_2_HEALTHY', 'bool'));
+    this.sec3Healthy.set(SimVar.GetSimVarValue('L:A32NX_SEC_3_HEALTHY', 'bool'));
     this.allPrimAndSecFailed.set(
       this.allPrimFailed.get() && !this.sec1Healthy.get() && !this.sec2Healthy.get() && !this.sec3Healthy.get(),
     );
 
-    // ELAC 1 FAULT computation
-    const se1f =
-      (fcdc1DiscreteWord1.bitValueOr(19, false) || fcdc2DiscreteWord1.bitValueOr(19, false)) &&
-      (fcdc1DiscreteWord1.bitValueOr(20, false) || fcdc2DiscreteWord1.bitValueOr(20, false));
-    const elac1FaultCondition =
-      !(flightPhase112 && (fcdc1DiscreteWord3.bitValueOr(19, false) || fcdc2DiscreteWord3.bitValueOr(19, false))) &&
-      this.dcESSBusPowered.get() &&
-      (fcdc1DiscreteWord1.bitValueOr(23, false) ||
-        fcdc2DiscreteWord1.bitValueOr(23, false) ||
-        (!this.elac1HydConfirmNodeOutput.get() && se1f));
-    this.elac1FaultLine123Display.set(
-      !(fcdc1DiscreteWord3.bitValueOr(19, false) || fcdc2DiscreteWord3.bitValueOr(19, false)) &&
-        (fcdc1DiscreteWord1.bitValueOr(23, false) || fcdc2DiscreteWord1.bitValueOr(23, false)),
-    );
-    this.elac1HydConfirmNodeOutput.set(this.elac1HydConfirmNode.write(!greenSysPressurised, deltaTime));
-    this.elac1FaultConfirmNodeOutput.set(this.elac1FaultConfirmNode.write(elac1FaultCondition, deltaTime));
+    this.sec1PbOff.set(!SimVar.GetSimVarValue('L:A32NX_SEC_1_PUSHBUTTON_PRESSED', SimVarValueType.Bool));
 
-    // ELAC 2 FAULT computation
-    const se2f =
-      (fcdc1DiscreteWord1.bitValueOr(21, false) || fcdc2DiscreteWord1.bitValueOr(21, false)) &&
-      (fcdc1DiscreteWord1.bitValueOr(22, false) || fcdc2DiscreteWord1.bitValueOr(22, false));
-    const elac2FaultCondition =
-      !(flightPhase112 && (fcdc1DiscreteWord3.bitValueOr(20, false) || fcdc2DiscreteWord3.bitValueOr(20, false))) &&
-      this.dc2BusPowered.get() &&
-      (fcdc1DiscreteWord1.bitValueOr(24, false) ||
-        fcdc2DiscreteWord1.bitValueOr(24, false) ||
-        (!this.elac2HydConfirmNodeOutput.get() && se2f));
-    this.elac2FaultLine123Display.set(
-      !(fcdc1DiscreteWord3.bitValueOr(20, false) || fcdc2DiscreteWord3.bitValueOr(20, false)) &&
-        (fcdc1DiscreteWord1.bitValueOr(24, false) || fcdc2DiscreteWord1.bitValueOr(24, false)),
+    this.sec1FaultCondition.set(
+      !(flightPhase112 && this.sec1PbOff.get()) && !this.sec1Healthy.get() && this.dc108PhBusPowered.get(),
     );
-    this.elac2HydConfirmNodeOutput.set(
-      this.elac2HydConfirmNode.write(!greenSysPressurised || !yellowSysPressurised, deltaTime),
-    );
-    this.elac2FaultConfirmNodeOutput.set(this.elac2FaultConfirmNode.write(elac2FaultCondition, deltaTime));
-
-    this.sec1Healthy.set(SimVar.GetSimVarValue('L:A32NX_SEC_1_HEALTHY', 'bool'));
-    this.sec2Healthy.set(SimVar.GetSimVarValue('L:A32NX_SEC_2_HEALTHY', 'bool'));
-    this.sec3Healthy.set(SimVar.GetSimVarValue('L:A32NX_SEC_3_HEALTHY', 'bool'));
-
-    this.sec1FaultCondition.set(!flightPhase112 && !this.sec1Healthy.get() && this.dcESSBusPowered.get());
-    this.sec1OffThenOnPulseNode.write(
-      SimVar.GetSimVarValue('L:A32NX_SEC_1_PUSHBUTTON_PRESSED', SimVarValueType.Bool),
-      deltaTime,
-    );
+    this.sec1OffThenOnPulseNode.write(!this.sec1PbOff.get(), deltaTime);
     this.sec1OffThenOnMemoryNode.write(this.sec1OffThenOnPulseNode.read(), !this.sec1FaultCondition.get());
 
-    this.sec2FaultCondition.set(!flightPhase112 && !this.sec2Healthy.get() && this.dc2BusPowered.get());
-    this.sec2OffThenOnPulseNode.write(
-      SimVar.GetSimVarValue('L:A32NX_SEC_2_PUSHBUTTON_PRESSED', SimVarValueType.Bool),
-      deltaTime,
+    this.sec2PbOff.set(!SimVar.GetSimVarValue('L:A32NX_SEC_2_PUSHBUTTON_PRESSED', SimVarValueType.Bool));
+    this.sec2FaultCondition.set(
+      !(flightPhase112 && this.sec2PbOff.get()) && !this.sec2Healthy.get() && this.dc2BusPowered.get(),
     );
+    this.sec2OffThenOnPulseNode.write(!this.sec2PbOff.get(), deltaTime);
     this.sec2OffThenOnMemoryNode.write(this.sec2OffThenOnPulseNode.read(), !this.sec2FaultCondition.get());
 
-    this.sec3FaultCondition.set(!flightPhase112 && !this.sec3Healthy.get() && this.dc1BusPowered.get());
-    this.sec3OffThenOnPulseNode.write(
-      SimVar.GetSimVarValue('L:A32NX_SEC_3_PUSHBUTTON_PRESSED', SimVarValueType.Bool),
-      deltaTime,
+    this.sec3PbOff.set(!SimVar.GetSimVarValue('L:A32NX_SEC_3_PUSHBUTTON_PRESSED', SimVarValueType.Bool));
+    this.sec3FaultCondition.set(
+      !(flightPhase112 && this.sec3PbOff.get()) && !this.sec3Healthy.get() && this.dc1BusPowered.get(),
     );
+    this.sec3OffThenOnPulseNode.write(!this.sec3PbOff.get(), deltaTime);
     this.sec3OffThenOnMemoryNode.write(this.sec3OffThenOnPulseNode.read(), !this.sec3FaultCondition.get());
+
+    this.prim1Healthy.set(SimVar.GetSimVarValue('L:A32NX_PRIM_1_HEALTHY', 'Bool'));
+    this.prim2Healthy.set(SimVar.GetSimVarValue('L:A32NX_PRIM_2_HEALTHY', 'bool'));
+    this.prim3Healthy.set(SimVar.GetSimVarValue('L:A32NX_PRIM_3_HEALTHY', 'bool'));
+
+    this.prim1PbOff.set(!SimVar.GetSimVarValue('L:A32NX_PRIM_1_PUSHBUTTON_PRESSED', SimVarValueType.Bool));
+
+    this.prim1FaultCondition.set(
+      !(flightPhase112 && this.prim1PbOff.get()) && !this.prim1Healthy.get() && this.dc108PhBusPowered.get(),
+    );
+    this.prim1OffThenOnPulseNode.write(!this.prim1PbOff.get(), deltaTime);
+    this.prim1OffThenOnMemoryNode.write(this.prim1OffThenOnPulseNode.read(), !this.prim1FaultCondition.get());
+
+    this.prim2PbOff.set(!SimVar.GetSimVarValue('L:A32NX_PRIM_2_PUSHBUTTON_PRESSED', SimVarValueType.Bool));
+    this.prim2FaultCondition.set(
+      !(flightPhase112 && this.prim2PbOff.get()) && !this.prim2Healthy.get() && this.dc2BusPowered.get(),
+    );
+    this.prim2OffThenOnPulseNode.write(!this.prim2PbOff.get(), deltaTime);
+    this.prim2OffThenOnMemoryNode.write(this.prim2OffThenOnPulseNode.read(), !this.prim2FaultCondition.get());
+
+    this.prim3PbOff.set(!SimVar.GetSimVarValue('L:A32NX_PRIM_3_PUSHBUTTON_PRESSED', SimVarValueType.Bool));
+    this.prim3FaultCondition.set(
+      !(flightPhase112 && this.prim3PbOff.get()) && !this.prim3Healthy.get() && this.dc1BusPowered.get(),
+    );
+    this.prim3OffThenOnPulseNode.write(!this.prim3PbOff.get(), deltaTime);
+    this.prim3OffThenOnMemoryNode.write(this.prim3OffThenOnPulseNode.read(), !this.prim3FaultCondition.get());
+
+    this.prim2FailedBeforeTakeoff.write(
+      !this.prim2Healthy.get() && this.flightPhase.get() <= 5,
+      this.prim2Healthy.get() || this.flightPhase.get() === 12,
+    );
+
+    this.twoPrimsFailed.set(
+      (!this.prim1Healthy.get() && !this.prim2Healthy.get()) ||
+        (!this.prim1Healthy.get() && !this.prim3Healthy.get()) ||
+        (!this.prim2Healthy.get() && !this.prim3Healthy.get()),
+    );
 
     // FCDC 1+2 FAULT computation
     const SFCDC1FT =
@@ -4045,9 +4253,6 @@ export class FwsCore {
         !this.toConfigPulseNode.read() &&
         (phase3 || this.toConfigCheckedInPhase2Or3),
     );
-
-    // taxi in flap 0 one minute check
-    this.taxiInFlap0Check.write(this.slatFlapSelectionS0F0 && this.flightPhase.get() == 11, deltaTime);
 
     this.flapsMcduDisagree.set(
       (flapsMcduPos1Disagree || flapsMcduPos2Disagree || flapsMcduPos3Disagree) &&
@@ -4359,12 +4564,17 @@ export class FwsCore {
         this.radioHeight3.valueOr(Infinity) > 1500,
     );
 
+    // TAWS
+    const taws1Powered = this.acESSBusPowered.get();
+    const taws2Powered = this.ac4BusPowered.get();
     this.terrSys1Failed.set(!!SimVar.GetSimVarValue('L:A32NX_TERR_1_FAILED', SimVarValueType.Bool));
+    this.terrSys1FaultCond.set(this.terrSys1Failed.get() && taws1Powered);
     this.terrSys2Failed.set(!!SimVar.GetSimVarValue('L:A32NX_TERR_2_FAILED', SimVarValueType.Bool));
-
+    this.terrSys2FaultCond.set(this.terrSys1Failed.get() && taws2Powered);
     this.taws1Failed.set(!!SimVar.GetSimVarValue('L:A32NX_TAWS_1_FAILED', SimVarValueType.Bool));
     this.taws2Failed.set(!!SimVar.GetSimVarValue('L:A32NX_TAWS_2_FAILED', SimVarValueType.Bool));
-
+    this.taws1FaultCond.set(this.taws1Failed.get() && taws1Powered);
+    this.taws2FaultCond.set(this.taws2Failed.get() && taws2Powered);
     this.tawsWxrSelected.set(SimVar.GetSimVarValue('L:A32NX_WXR_TAWS_SYS_SELECTED', SimVarValueType.Number));
 
     /* 26 - FIRE */
@@ -5435,6 +5645,27 @@ export class FwsCore {
     publisher.pub('fws_show_failure_pending', false, true);
     publisher.pub('fws_abnormal_primary_engine_parameters_attention_getter', [false, false, false, false]);
     publisher.pub('fws_normal_attention_getter_eng', [false, false, false, false]);
+  }
+
+  private populateCpiomBWords(
+    agsDiscreteWord: Arinc429Register,
+    vcsDiscreteWord: Arinc429Register,
+    tcsDiscreteWord: Arinc429Register,
+    cpcsDiscreteWord: Arinc429Register,
+    notReachable: boolean,
+    index: 1 | 2 | 3 | 4,
+  ) {
+    if (notReachable) {
+      agsDiscreteWord.setSsm(Arinc429SignStatusMatrix.FailureWarning);
+      vcsDiscreteWord.setSsm(Arinc429SignStatusMatrix.FailureWarning);
+      tcsDiscreteWord.setSsm(Arinc429SignStatusMatrix.FailureWarning);
+      cpcsDiscreteWord.setSsm(Arinc429SignStatusMatrix.FailureWarning);
+    } else {
+      agsDiscreteWord.setFromSimVar(`L:A32NX_COND_CPIOM_B${index}_AGS_DISCRETE_WORD`);
+      vcsDiscreteWord.setFromSimVar(`L:A32NX_COND_CPIOM_B${index}_VCS_DISCRETE_WORD`);
+      tcsDiscreteWord.setFromSimVar(`L:A32NX_COND_CPIOM_B${index}_TCS_DISCRETE_WORD`);
+      cpcsDiscreteWord.setFromSimVar(`L:A32NX_COND_CPIOM_B${index}_CPCS_DISCRETE_WORD`);
+    }
   }
 
   destroy() {

@@ -295,17 +295,17 @@ export class FwsInopSys {
     },
     270300001: {
       // SEC 1
-      simVarIsActive: this.fws.sec1FaultCondition,
+      simVarIsActive: this.fws.sec1Healthy.map(SubscribableMapFunctions.not()),
       phase: FwsInopSysPhases.AllPhases,
     },
     270300002: {
       // SEC 2
-      simVarIsActive: this.fws.sec2FaultCondition,
+      simVarIsActive: this.fws.sec2Healthy.map(SubscribableMapFunctions.not()),
       phase: FwsInopSysPhases.AllPhases,
     },
     270300003: {
       // SEC 3
-      simVarIsActive: this.fws.sec3FaultCondition,
+      simVarIsActive: this.fws.sec3Healthy.map(SubscribableMapFunctions.not()),
       phase: FwsInopSysPhases.AllPhases,
     },
     270300004: {
@@ -331,22 +331,21 @@ export class FwsInopSys {
       notActiveWhenItemActive: ['270300004'],
       redudancyLoss: true,
     },
-    // FIXME uncomment when Bruno's PR is merged
-    /*270300010: {
+    270300010: {
       // PRIM 1
-      simVarIsActive: this.fws.prim1FaultCondition,
+      simVarIsActive: this.fws.prim1Healthy.map(SubscribableMapFunctions.not()),
       phase: FwsInopSysPhases.AllPhases,
     },
     270300011: {
       // PRIM 2
-      simVarIsActive: this.fws.prim2FaultCondition,
+      simVarIsActive: this.fws.prim2Healthy.map(SubscribableMapFunctions.not()),
       phase: FwsInopSysPhases.AllPhases,
     },
     270300012: {
       // PRIM 3
-      simVarIsActive: this.fws.prim3FaultCondition,
+      simVarIsActive: this.fws.prim3Healthy.map(SubscribableMapFunctions.not()),
       phase: FwsInopSysPhases.AllPhases,
-    },*/
+    },
     290100001: {
       // PART SPLRs
       simVarIsActive: this.partSplrs,

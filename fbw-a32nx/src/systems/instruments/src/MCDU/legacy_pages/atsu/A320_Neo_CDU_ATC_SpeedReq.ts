@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { AtsuStatusCodes, CpdlcMessage, CpdlcMessagesDownlink, FansMode, InputValidation } from '@datalink/common';
 import { Keypad } from '../../legacy/A320_Neo_CDU_Keypad';
 import { CDUAtcFlightReq } from './A320_Neo_CDU_ATC_FlightReq';
