@@ -9,7 +9,6 @@ import { EcamAbNormalSensedSubMenuVector, WD_NUM_LINES } from 'instruments/src/M
 import { AbnormalNonSensedProceduresOverview } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalNonSensedProcedures';
 import { EwdAbnormalDict } from 'systems-host/CpiomC/FlightWarningSystem/FwsAbnormalSensed';
 import { SdPages } from '@shared/EcamSystemPages';
-import { isSubscription } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
 
 export class FwsAbnormalNonSensed {
   private readonly pub = this.fws.bus.getPublisher<FwsEwdEvents>();
@@ -147,11 +146,11 @@ export class FwsAbnormalNonSensed {
 
     for (const key in this.ewdAbnormalNonSensed) {
       const element = this.ewdAbnormalNonSensed[key];
-      if (isSubscription(element.simVarIsActive)) {
+      if ('destroy' in element.simVarIsActive) {
         element.simVarIsActive.destroy();
       }
 
-      if (isSubscription(element.auralWarning)) {
+      if ('destroy' in element.auralWarning) {
         element.auralWarning.destroy();
       }
     }

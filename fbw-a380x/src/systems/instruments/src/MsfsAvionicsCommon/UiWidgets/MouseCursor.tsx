@@ -79,12 +79,6 @@ export class MouseCursor extends DisplayComponent<MouseCursorProps> {
     this.subs.push(this.fillColor, this.rotation);
   }
 
-  destroy(): void {
-    for (const s of this.subs) {
-      s.destroy();
-    }
-  }
-
   render(): VNode {
     return (
       <div ref={this.divRef} class="mfd-mouse-cursor">
