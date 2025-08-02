@@ -21,6 +21,7 @@ import { FmcAircraftInterface } from 'instruments/src/MFD/FMC/FmcAircraftInterfa
 import { FmgcDataService } from 'instruments/src/MFD/FMC/fmgc';
 import { FmcInterface, FmcOperatingModes } from 'instruments/src/MFD/FMC/FmcInterface';
 import {
+  a380EfisRangeSettings,
   DatabaseItem,
   EfisSide,
   Fix,
@@ -29,7 +30,6 @@ import {
   UpdateThrottler,
   VerticalPathCheckpoint,
   Waypoint,
-  a380EfisRangeSettings,
 } from '@flybywiresim/fbw-sdk';
 import {
   McduMessage,
@@ -39,7 +39,7 @@ import {
   TypeIMessage,
 } from 'instruments/src/MFD/shared/NXSystemMessages';
 import { DataManager, LatLonFormatType, PilotWaypoint } from '@fmgc/flightplanning/DataManager';
-import { Coordinates, bearingTo } from 'msfs-geo';
+import { Coordinates, distanceTo, bearingTo } from 'msfs-geo';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { FmcIndex } from 'instruments/src/MFD/FMC/FmcServiceInterface';
@@ -56,6 +56,7 @@ import { EfisSymbols } from '@fmgc/efis/EfisSymbols';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
+import { FlightPlanRpcServer } from '@fmgc/flightplanning/rpc/FlightPlanRpcServer';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
 import { VdAltitudeConstraint } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
 
@@ -84,23 +85,24 @@ export class FlightManagementComputer implements FmcInterface {
     this.#mfdReference = value;
 
     if (value) {
-      this.dataManager = new DataManager(value, { latLonFormat: LatLonFormatType.ExtendedFormat });
+      this.dataManager = new DataManager(this.bus, value, { latLonFormat: LatLonFormatType.ExtendedFormat });
     }
   }
 
-  #operatingMode: FmcOperatingModes;
-
   get operatingMode(): FmcOperatingModes {
     // TODO amend once
-    return this.#operatingMode;
-  }
-
-  set operatingMode(value: FmcOperatingModes) {
-    this.#operatingMode = value;
+    return this._operatingMode;
   }
 
   // FIXME A320 data
-  #flightPlanService = new FlightPlanService(this.bus, new A320FlightPlanPerformanceData(), FpmConfigs.A380);
+  #flightPlanService = new FlightPlanService(
+    this.bus,
+    new A320FlightPlanPerformanceData(),
+    FpmConfigs.A380,
+    this._operatingMode === FmcOperatingModes.Master, // TODO Dynamically change this within `FlightPlanService` (proxy things through to an RPC client?)
+  );
+
+  #rpcServer: FlightPlanRpcServer | undefined;
 
   get flightPlanService() {
     return this.#flightPlanService;
@@ -226,12 +228,11 @@ export class FlightManagementComputer implements FmcInterface {
 
   constructor(
     private instance: FmcIndex,
-    operatingMode: FmcOperatingModes,
+    private _operatingMode: FmcOperatingModes,
     private readonly bus: EventBus,
     private readonly fmcInop: Subscribable<boolean>,
     mfdReference: (FmsDisplayInterface & MfdDisplayInterface) | null,
   ) {
-    this.#operatingMode = operatingMode;
     this.#mfdReference = mfdReference;
 
     const db = new NavigationDatabase(this.bus, NavigationDatabaseBackend.Msfs);
@@ -273,6 +274,8 @@ export class FlightManagementComputer implements FmcInterface {
         a380EfisRangeSettings,
         true,
       );
+
+      this.#rpcServer = new FlightPlanRpcServer(this.bus, this.#flightPlanService);
 
       this.#navigation.init();
       this.efisSymbolsLeft.init();

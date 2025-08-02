@@ -3,18 +3,19 @@
 
 import { Clock, EventBus, HEventPublisher, InstrumentBackplane, SimVarValueType } from '@microsoft/msfs-sdk';
 import {
-  FlightDeckBounds,
-  NotificationManager,
-  PilotSeatManager,
+  BaroUnitSelector,
   ExtrasSimVarPublisher,
+  FlightDeckBounds,
   GPUManagement,
   GsxSimVarPublisher,
   GsxSyncA380X,
+  GroundSupportPublisher,
+  isMsfs2024,
   MsfsElectricsPublisher,
   MsfsFlightModelPublisher,
   MsfsMiscPublisher,
-  GroundSupportPublisher,
-  BaroUnitSelector,
+  NotificationManager,
+  PilotSeatManager,
   TelexCheck,
   PilotSeatPublisher,
 } from '@flybywiresim/fbw-sdk';
@@ -23,6 +24,9 @@ import { A380XKeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
 import { VersionCheck } from './modules/version_check/VersionCheck';
 import { AircraftSync } from 'extras-host/modules/aircraft_sync/AircraftSync';
 import { LightSync } from 'extras-host/modules/light_sync/LightSync';
+import { MsfsFlightPlanSync } from '@fmgc/flightplanning/MsfsFlightPlanSync';
+import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
+import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
 
 /**
  * This is the main class for the extras-host instrument.
@@ -86,6 +90,8 @@ class ExtrasHost extends BaseInstrument {
 
   private readonly pilotSeatManager = new PilotSeatManager(ExtrasHost.flightDeckBounds);
 
+  private readonly msfsFlightPlanSync: MsfsFlightPlanSync;
+
   private readonly telexCheck = new TelexCheck();
   /**interaction point 19 is GPU connection and 4 GPUs in total */
   private readonly gpuManagement = new GPUManagement(this.bus, 19, 4);
@@ -124,6 +130,12 @@ class ExtrasHost extends BaseInstrument {
     this.keyInterceptor = new A380XKeyInterceptor(this.bus, this.notificationManager);
     this.versionCheck = new VersionCheck(process.env.AIRCRAFT_PROJECT_PREFIX, this.bus);
     this.aircraftSync = new AircraftSync(process.env.AIRCRAFT_PROJECT_PREFIX, this.bus);
+
+    if (isMsfs2024()) {
+      NavigationDatabaseService.activeDatabase = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
+
+      this.msfsFlightPlanSync = new MsfsFlightPlanSync(this.bus);
+    }
 
     this.backplane.addPublisher('SimvarPublisher', this.simVarPublisher);
     this.backplane.addPublisher('MsfsElectricsPublisher', this.msfsElectricsPublisher);
