@@ -116,6 +116,11 @@ export interface SimBriefUplinkOptions {
 }
 
 export class SimBriefUplinkAdapter {
+  private static logTroubleshootingError(fms: FmsDisplayInterface, msg: any) {
+    fms.logTroubleshootingError(String(msg));
+    console.warn(msg);
+  }
+
   static async uplinkFlightPlanFromSimbrief<P extends FlightPlanPerformanceData>(
     fms: FmsDataInterface & FmsDisplayInterface,
     flightPlanService: FlightPlanService<P>,
@@ -134,7 +139,10 @@ export class SimBriefUplinkAdapter {
     try {
       await flightPlanService.setAlternate(route.altn, FlightPlanIndex.Uplink);
     } catch (e) {
-      console.error(`[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Failed to set alternate: ${e}`);
+      SimBriefUplinkAdapter.logTroubleshootingError(
+        fms,
+        `[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Failed to set alternate: ${e}`,
+      );
     }
 
     if (doUplinkProcedures) {
@@ -286,7 +294,8 @@ export class SimBriefUplinkAdapter {
               );
               insertHead++;
             } else {
-              console.warn(
+              SimBriefUplinkAdapter.logTroubleshootingError(
+                fms,
                 `[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Found no fixes for "sidEnrouteTransition" chunk: ${chunk.ident}`,
               );
 
@@ -326,7 +335,8 @@ export class SimBriefUplinkAdapter {
             );
             insertHead++;
           } else {
-            console.warn(
+            SimBriefUplinkAdapter.logTroubleshootingError(
+              fms,
               `[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Found no fixes for "waypoint" chunk: ${chunk.ident}`,
             );
 
@@ -380,7 +390,8 @@ export class SimBriefUplinkAdapter {
                 FlightPlanIndex.Uplink,
               );
             } else {
-              console.warn(
+              SimBriefUplinkAdapter.logTroubleshootingError(
+                fms,
                 `[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Found no airways at fix "${airwaySearchFix.ident}" for airway: "${chunk.ident}"`,
               );
               fms.showFmsErrorMessage(FmsErrorType.AwyWptMismatch);
@@ -404,7 +415,8 @@ export class SimBriefUplinkAdapter {
             if (!plan.pendingAirways) {
               // If we have a termination but never started an airway entry (for example if we could not find the airway in the database),
               // we add the termination fix with a disco in between
-              console.warn(
+              SimBriefUplinkAdapter.logTroubleshootingError(
+                fms,
                 `[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Found no pending airways for "airwayTermination" chunk. Inserting discontinuity before ${chunk.ident}`,
               );
 
@@ -433,7 +445,8 @@ export class SimBriefUplinkAdapter {
               await ensureAirwaysFinalized();
             } else {
               // Fixes with the name of the airway termination are found but they're not on that airway
-              console.warn(
+              SimBriefUplinkAdapter.logTroubleshootingError(
+                fms,
                 `[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Airway termination ${chunk.ident} not found on airway ${tailAirway.ident}.`,
               );
 
@@ -456,7 +469,8 @@ export class SimBriefUplinkAdapter {
               break;
             }
           } else {
-            console.warn(
+            SimBriefUplinkAdapter.logTroubleshootingError(
+              fms,
               `[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Found no fixes for "airwayTermination" chunk: ${chunk.ident}. Cancelling airway entry...`,
             );
 

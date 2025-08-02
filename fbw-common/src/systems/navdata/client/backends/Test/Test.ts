@@ -131,7 +131,7 @@ export class TestBackend implements DataInterface {
 
     return ret;
   }
-  async getAirwaysByFix(ident: string, _icaoCode: string, airwayIdent?: string): Promise<Airway[]> {
+  async getAirwayByFix(ident: string, _icaoCode: string, airwayIdent?: string): Promise<Airway[]> {
     const ret: Airway[] = [];
 
     for (const [testAirwayIdent, airway] of Object.entries(FAKE_AIRWAYS)) {

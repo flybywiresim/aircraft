@@ -108,10 +108,10 @@ export class LocalPendingAirways implements ReadonlyPendingAirways {
     return true;
   }
 
-  public async thenTo(waypoint: Fix): Promise<boolean> {
+  public async thenTo(waypoint: Fix, isDct = false): Promise<boolean> {
     const tailElement = this.tailElement;
 
-    if (tailElement.to) {
+    if (isDct || tailElement?.to) {
       // The tail element is already complete, so we do a DCT entry
 
       this.elements.push({ to: waypoint, isDct: true });

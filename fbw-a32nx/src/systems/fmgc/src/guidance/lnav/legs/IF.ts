@@ -71,6 +71,7 @@ export class IFLeg extends XFLeg {
   }
 
   getDistanceToGo(_ppos: Coordinates): NauticalMiles | undefined {
+    // IF legs do not auto sequence and have no geoemtry
     return undefined;
   }
 

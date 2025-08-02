@@ -1,4 +1,4 @@
-// Copyright (c) 2022 FlyByWire Simulations
+// Copyright (c) 2022-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { Clock, EventBus, HEventPublisher, InstrumentBackplane, SimVarValueType } from '@microsoft/msfs-sdk';
@@ -7,6 +7,8 @@ import {
   ExtrasSimVarPublisher,
   FlightDeckBounds,
   GPUManagement,
+  GsxSimVarPublisher,
+  GsxSyncA380X,
   GroundSupportPublisher,
   isMsfs2024,
   MsfsElectricsPublisher,
@@ -15,9 +17,10 @@ import {
   NotificationManager,
   PilotSeatManager,
   TelexCheck,
+  PilotSeatPublisher,
 } from '@flybywiresim/fbw-sdk';
 import { PushbuttonCheck } from 'extras-host/modules/pushbutton_check/PushbuttonCheck';
-import { KeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
+import { A380XKeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
 import { VersionCheck } from './modules/version_check/VersionCheck';
 import { AircraftSync } from 'extras-host/modules/aircraft_sync/AircraftSync';
 import { LightSync } from 'extras-host/modules/light_sync/LightSync';
@@ -75,11 +78,13 @@ class ExtrasHost extends BaseInstrument {
 
   private readonly groundSupportPublisher: GroundSupportPublisher;
 
+  private readonly gsxSimVarPublusher: GsxSimVarPublisher;
+
   private readonly pushbuttonCheck: PushbuttonCheck;
 
   private readonly versionCheck: VersionCheck;
 
-  private readonly keyInterceptor: KeyInterceptor;
+  private readonly keyInterceptor: A380XKeyInterceptor;
 
   private readonly aircraftSync: AircraftSync;
 
@@ -98,6 +103,8 @@ class ExtrasHost extends BaseInstrument {
     SimVar.SetSimVarValue('L:XMLVAR_Baro_Selector_HPA_2', SimVarValueType.Bool, isHpa);
   });
 
+  private readonly gsxSync = new GsxSyncA380X(this.bus);
+
   /**
    * "mainmenu" = 0
    * "loading" = 1
@@ -115,11 +122,12 @@ class ExtrasHost extends BaseInstrument {
     this.msfsFlightModelPublisher = new MsfsFlightModelPublisher(this.bus);
     this.msfsMiscPublisher = new MsfsMiscPublisher(this.bus);
     this.groundSupportPublisher = new GroundSupportPublisher(this.bus);
+    this.gsxSimVarPublusher = new GsxSimVarPublisher(this.bus);
 
     this.notificationManager = new NotificationManager(this.bus);
 
     this.pushbuttonCheck = new PushbuttonCheck(this.bus, this.notificationManager);
-    this.keyInterceptor = new KeyInterceptor(this.bus, this.notificationManager);
+    this.keyInterceptor = new A380XKeyInterceptor(this.bus, this.notificationManager);
     this.versionCheck = new VersionCheck(process.env.AIRCRAFT_PROJECT_PREFIX, this.bus);
     this.aircraftSync = new AircraftSync(process.env.AIRCRAFT_PROJECT_PREFIX, this.bus);
 
@@ -134,11 +142,13 @@ class ExtrasHost extends BaseInstrument {
     this.backplane.addPublisher('MsfsFlightModelPublisher', this.msfsFlightModelPublisher);
     this.backplane.addPublisher('MsfsMiscPublisher', this.msfsMiscPublisher);
     this.backplane.addPublisher('GroundSupportPublisher', this.groundSupportPublisher);
-
+    this.backplane.addPublisher('GsxSimVarPublisher', this.gsxSimVarPublusher);
+    this.backplane.addPublisher('PilotSeatPublisher', new PilotSeatPublisher(this.bus));
     this.backplane.addInstrument('PilotSeatManager', this.pilotSeatManager);
     this.backplane.addInstrument('GPUManagement', this.gpuManagement);
     this.backplane.addInstrument('Clock', this.clock);
     this.backplane.addInstrument('LightSync', this.lightSync);
+    this.backplane.addInstrument('GsxSync', this.gsxSync);
 
     console.log('A380X_EXTRASHOST: Created');
   }
@@ -158,6 +168,7 @@ class ExtrasHost extends BaseInstrument {
   public connectedCallback(): void {
     super.connectedCallback();
 
+    this.versionCheck.connectedCallback();
     this.pushbuttonCheck.connectedCallback();
     this.aircraftSync.connectedCallback();
 
