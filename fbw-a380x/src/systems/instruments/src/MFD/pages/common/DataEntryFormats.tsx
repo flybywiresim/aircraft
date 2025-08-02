@@ -296,7 +296,7 @@ export class RadioAltitudeFormat extends SubscriptionCollector implements DataEn
   private maxValue = maxCertifiedAlt;
 
   constructor(
-    minValue: Subscribable<number> = Subject.create(0),
+    minValue: Subscribable<number> = Subject.create(1),
     maxValue: Subscribable<number> = Subject.create(maxCertifiedAlt),
   ) {
     super();
@@ -324,9 +324,7 @@ export class RadioAltitudeFormat extends SubscriptionCollector implements DataEn
     }
 
     const nbr = Number(input);
-    if (!Number.isNaN(nbr) && nbr === 0) {
-      return RADIO_ALTITUDE_NODH_VALUE;
-    } else if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
+    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {

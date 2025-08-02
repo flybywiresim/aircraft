@@ -2584,9 +2584,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                           condition={this.precisionApproachSelected}
                           componentIfTrue={
                             <InputField<number>
-                              dataEntryFormat={
-                                new RadioAltitudeFormat(Subject.create(0), Subject.create(maxCertifiedAlt))
-                              }
+                              dataEntryFormat={new RadioAltitudeFormat()}
                               dataHandlerDuringValidation={async (v) => {
                                 if (v === null) {
                                   SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -1);
