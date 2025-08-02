@@ -1,0 +1,21 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "jsx": "react",
+    "jsxFactory": "React.createElement",
+    "jsxFragmentFactory": "React.Fragment",
+    "paths": {
+      "@atsu/*": ["./atsu/src/*"],
+      "@flybywiresim/bat": ["../../../fbw-common/src/systems/instruments/src/BAT/index.ts"],
+      "@flybywiresim/checklists": ["../../../fbw-common/src/systems/shared/src/checklists/index.ts"],
+      "@flybywiresim/failures": ["./failures"],
+      "@flybywiresim/fbw-sdk": ["../../../fbw-common/src/systems/index-react.ts"],
+      "@flybywiresim/flypad": ["../../../fbw-common/src/systems/instruments/src/EFB/index.ts"],
+      "@fmgc/*": ["../../../fbw-a32nx/src/systems/fmgc/src/*"],
+      "@instruments/common/*": ["./instruments/src/Common/*"],
+      "@shared/*": ["./shared/src/*"],
+      "@tcas/*": ["./tcas/src/*"],
+      "@typings/*": ["../typings"],
+    }
+  }
+}
