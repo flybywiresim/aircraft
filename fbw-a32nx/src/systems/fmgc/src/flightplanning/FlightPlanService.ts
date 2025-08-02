@@ -422,12 +422,17 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     return plan.continueAirwayEntryViaAirway(airway);
   }
 
-  public async continueAirwayEntryDirectToFix(fix: Fix, planIndex: number, alternate?: boolean): Promise<boolean> {
+  public async continueAirwayEntryToFix(
+    fix: Fix,
+    isDct: boolean,
+    planIndex: number,
+    alternate?: boolean,
+  ): Promise<boolean> {
     const plan = alternate
       ? this.flightPlanManager.get(planIndex).alternateFlightPlan
       : this.flightPlanManager.get(planIndex);
 
-    return plan.continueAirwayEntryDirectToFix(fix);
+    return plan.continueAirwayEntryToFix(fix, isDct);
   }
 
   public async finaliseAirwayEntry(planIndex: number, alternate?: boolean): Promise<void> {

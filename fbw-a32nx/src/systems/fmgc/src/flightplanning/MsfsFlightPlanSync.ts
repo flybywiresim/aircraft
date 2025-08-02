@@ -210,7 +210,7 @@ export class MsfsFlightPlanSync {
         const airway = await NavigationDatabaseService.activeDatabase.searchAirway(leg.via, fix);
 
         await this.rpcClient.continueAirwayEntryViaAirway(airway[0], FlightPlanIndex.Uplink);
-        await this.rpcClient.continueAirwayEntryDirectToFix(fix, FlightPlanIndex.Uplink);
+        await this.rpcClient.continueAirwayEntryToFix(fix, FlightPlanIndex.Uplink);
 
         await this.rpcClient.finaliseAirwayEntry(FlightPlanIndex.Uplink);
       } else {

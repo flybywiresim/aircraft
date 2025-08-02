@@ -282,7 +282,7 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
                 return false;
               }
 
-              const success = await this.props.loadedFlightPlan.continueAirwayEntryDirectToFix(chosenFix, isDct);
+              const success = await this.props.loadedFlightPlan.continueAirwayEntryToFix(chosenFix, isDct);
               if (success) {
                 this.toFieldDisabled.set(true);
                 this.props.nextLineCallback(chosenFix);

@@ -341,8 +341,8 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
     return this.callFunctionViaRpc('continueAirwayEntryViaAirway', airway, planIndex, alternate);
   }
 
-  continueAirwayEntryDirectToFix(fix: Fix, planIndex: number, alternate?: boolean): Promise<boolean> {
-    return this.callFunctionViaRpc('continueAirwayEntryDirectToFix', fix, planIndex, alternate);
+  continueAirwayEntryToFix(fix: Fix, isDct: boolean, planIndex: number, alternate?: boolean): Promise<boolean> {
+    return this.callFunctionViaRpc('continueAirwayEntryToFix', fix, isDct, planIndex, alternate);
   }
 
   finaliseAirwayEntry(planIndex: number, alternate?: boolean): Promise<void> {
