@@ -9,16 +9,12 @@
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
-import { Airway, Fix } from '@flybywiresim/fbw-sdk';
+import { Airway, Fix, ISimbriefData, simbriefDataParser } from '@flybywiresim/fbw-sdk';
 import { Coordinates, distanceTo } from 'msfs-geo';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { FmsErrorType } from '@fmgc/FmsError';
 // FIXME rogue import from EFB
-import {
-  ISimbriefData,
-  simbriefDataParser,
-} from '../../../../../../../fbw-common/src/systems/instruments/src/EFB/Apis/Simbrief';
 import { FmsDataInterface } from '../interface/FmsDataInterface';
 
 const SIMBRIEF_API_URL = 'https://www.simbrief.com/api/xml.fetcher.php?json=1';

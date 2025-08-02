@@ -6,6 +6,7 @@
 import { EcamAbnormalProcedures, WD_NUM_LINES } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
 import {
   MappedSubject,
+  MappedSubscribable,
   SimVarValueType,
   Subject,
   Subscribable,
@@ -14,7 +15,6 @@ import {
   Subscription,
 } from '@microsoft/msfs-sdk';
 import { SdPages } from '@shared/EcamSystemPages';
-import { isSubscription } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
 import {
   ProcedureLinesGenerator,
   ProcedureType,
@@ -25,7 +25,7 @@ import { FwcAuralWarning, FwsCore, FwsSuppressableItem } from 'systems-host/Cpio
 export interface EwdAbnormalItem extends FwsSuppressableItem {
   flightPhaseInhib: number[];
   /** aural warning, defaults to simVarIsActive and SC for level 2 or CRC for level 3 if not provided */
-  auralWarning?: Subscribable<FwcAuralWarning>;
+  auralWarning?: MappedSubscribable<FwcAuralWarning> | Subscribable<FwcAuralWarning>;
   /** Returns a boolean vector (same length as number of items). If true, item is shown in ECAM actions */
   whichItemsToShow: () => boolean[];
   /** Returns a boolean vector (same length as number of items). If true, item is marked as completed */
@@ -329,22 +329,22 @@ export class FwsAbnormalSensed {
 
     for (const key in this.ewdAbnormalSensed) {
       const element = this.ewdAbnormalSensed[key];
-      if (isSubscription(element.simVarIsActive)) {
+      if ('destroy' in element.simVarIsActive) {
         element.simVarIsActive.destroy();
       }
 
-      if (isSubscription(element.auralWarning)) {
+      if ('destroy' in element.auralWarning) {
         element.auralWarning.destroy();
       }
     }
 
     for (const key in this.ewdDeferredProcs) {
       const element = this.ewdDeferredProcs[key];
-      if (isSubscription(element.simVarIsActive)) {
+      if ('destroy' in element.simVarIsActive) {
         element.simVarIsActive.destroy();
       }
 
-      if (isSubscription(element.auralWarning)) {
+      if ('destroy' in element.auralWarning) {
         element.auralWarning.destroy();
       }
     }

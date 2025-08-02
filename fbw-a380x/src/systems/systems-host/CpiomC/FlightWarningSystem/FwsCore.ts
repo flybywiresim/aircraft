@@ -21,6 +21,7 @@ import {
   SetSubject,
   Subscribable,
   Subscription,
+  MappedSubscribable,
 } from '@microsoft/msfs-sdk';
 
 import {
@@ -104,7 +105,7 @@ enum engineState {
 
 export interface FwsSuppressableItem {
   /** INOP SYS line is active */
-  simVarIsActive: Subscribable<boolean>;
+  simVarIsActive: MappedSubscribable<boolean> | Subscribable<boolean>;
   /** This line won't be shown if the following line(s) are active */
   notActiveWhenItemActive?: string[];
 }
