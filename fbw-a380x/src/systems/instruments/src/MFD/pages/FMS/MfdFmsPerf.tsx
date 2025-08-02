@@ -19,6 +19,8 @@ import {
   LengthFormat,
   PercentageFormat,
   QnhFormat,
+  RADIO_ALTITUDE_NODH_VALUE,
+  RadioAltitudeFormat,
   SpeedKnotsFormat,
   SpeedMachFormat,
   TemperatureFormat,
@@ -2582,12 +2584,12 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                           condition={this.precisionApproachSelected}
                           componentIfTrue={
                             <InputField<number>
-                              dataEntryFormat={new AltitudeFormat(Subject.create(0), Subject.create(maxCertifiedAlt))}
+                              dataEntryFormat={
+                                new RadioAltitudeFormat(Subject.create(0), Subject.create(maxCertifiedAlt))
+                              }
                               dataHandlerDuringValidation={async (v) => {
-                                if (v === undefined) {
+                                if (v === null) {
                                   SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -1);
-                                } else if (v === null) {
-                                  SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -2);
                                 } else {
                                   SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', v);
                                 }

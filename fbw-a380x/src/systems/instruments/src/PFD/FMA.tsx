@@ -1,6 +1,7 @@
 /* eslint-disable no-dupe-else-if */
 /* eslint-disable no-constant-condition */
 import {
+  ClockEvents,
   ComponentProps,
   ConsumerSubject,
   DisplayComponent,
@@ -1738,7 +1739,7 @@ class D3Cell extends DisplayComponent<{ bus: ArincEventBus }> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values>();
+    const sub = this.props.bus.getArincSubscriber<ClockEvents & PFDSimvars & Arinc429Values>();
 
     sub.on('fmEisDiscreteWord2Raw').handle(this.fmEisDiscrete2.setWord.bind(this.fmEisDiscrete2));
     sub.on('fmMdaRaw').handle(this.mda.setWord.bind(this.mda));
@@ -1751,8 +1752,9 @@ class D3Cell extends DisplayComponent<{ bus: ArincEventBus }> {
         ref={this.textRef}
         class={{
           FontSmallest: this.noDhSelected.map(SubscribableMapFunctions.not()),
+          StartAlign: this.noDhSelected.map(SubscribableMapFunctions.not()),
           FontMedium: this.noDhSelected,
-          MiddleAlign: true,
+          MiddleAlign: this.noDhSelected,
           White: true,
         }}
         x={this.DhModexPos}
@@ -1760,7 +1762,7 @@ class D3Cell extends DisplayComponent<{ bus: ArincEventBus }> {
       >
         <tspan>{this.mdaDhMode}</tspan>
         <tspan
-          class={{ Cyan: true, HiddenElement: this.mdaDhValueText.map((v) => v.length <= 0) }}
+          class={{ EndAlign: true, Cyan: true, HiddenElement: this.mdaDhValueText.map((v) => v.length <= 0) }}
           x="133.425"
           y="21.104172"
         >
