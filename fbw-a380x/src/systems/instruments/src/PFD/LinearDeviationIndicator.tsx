@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Arinc429ConsumerSubject, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';

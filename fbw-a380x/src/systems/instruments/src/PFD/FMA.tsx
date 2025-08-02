@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 /* eslint-disable no-dupe-else-if */
 /* eslint-disable no-constant-condition */
 import {
