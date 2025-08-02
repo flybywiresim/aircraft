@@ -13,7 +13,13 @@ import {
   SubscribableMapFunctions,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { ArincEventBus, Arinc429Word, Arinc429RegisterSubject, Arinc429Register } from '@flybywiresim/fbw-sdk';
+import {
+  ArincEventBus,
+  Arinc429Word,
+  Arinc429RegisterSubject,
+  Arinc429Register,
+  Arinc429LocalVarConsumerSubject,
+} from '@flybywiresim/fbw-sdk';
 
 import { FgBus } from 'instruments/src/PFD/shared/FgBusProvider';
 import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
@@ -1719,14 +1725,16 @@ enum MdaMode {
 }
 
 class D3Cell extends DisplayComponent<{ bus: ArincEventBus }> {
+  private readonly sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values>();
+
   private readonly textRef = FSComponent.createRef<SVGTextElement>();
 
   /** bit 29 is NO DH selection */
-  private readonly fmEisDiscrete2 = Arinc429RegisterSubject.createEmpty();
+  private readonly fmEisDiscrete2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmEisDiscreteWord2Raw'));
 
-  private readonly mda = Arinc429RegisterSubject.createEmpty();
+  private readonly mda = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmMdaRaw'));
 
-  private readonly dh = Arinc429RegisterSubject.createEmpty();
+  private readonly dh = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmDhRaw'));
 
   private readonly noDhSelected = this.fmEisDiscrete2.map((r) => r.bitValueOr(29, false));
 
@@ -1773,12 +1781,6 @@ class D3Cell extends DisplayComponent<{ bus: ArincEventBus }> {
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-
-    const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values>();
-
-    sub.on('fmEisDiscreteWord2Raw').handle(this.fmEisDiscrete2.setWord.bind(this.fmEisDiscrete2));
-    sub.on('fmMdaRaw').handle(this.mda.setWord.bind(this.mda));
-    sub.on('fmDhRaw').handle(this.dh.setWord.bind(this.dh));
   }
 
   render(): VNode {
