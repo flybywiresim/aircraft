@@ -67,7 +67,7 @@ add_executable(flybywire-a380x-fbw
     src/model/intrp3d_l_pw.cpp
     src/model/look1_binlxpw.cpp
     src/model/look2_binlxpw.cpp
-    src/model/maximum_Abpa9SzA.cpp
+    src/model/maximum_Y6vyn2io.cpp
     src/model/mod_OlzklkXq.cpp
     src/model/MultiWordIor.cpp
     src/model/plook_binx.cpp

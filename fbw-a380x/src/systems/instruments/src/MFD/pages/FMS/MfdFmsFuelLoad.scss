@@ -10,23 +10,43 @@
   margin-bottom: 20px;
 }
 
+.mfd-label.middleGridSmall {
+  text-align: right;
+  margin-bottom: 10px;
+}
+
 .mfd-fms-fuel-load-block-line {
   display: flex;
   flex-direction: row;
-  margin-bottom: 15px;
   padding-bottom: 5px;
-  border-bottom: 1px solid $display-light-grey;
   align-items: center;
 }
 
-.mfd-fms-fuel-load-middle-grid {
-  display: grid;
-  grid-template-columns: 125px 155px 145px 150px auto;
+.mfd-fms-fuel-load-middle-flex {
+  display: flex;
+  flex-direction: row;
+  padding-top: 15px;
   margin-top: 15px;
   margin-bottom: 25px;
+  border-bottom: 1px solid $display-light-grey;
+  border-top: 1px solid $display-light-grey;
+}
+
+.mfd-fms-fuel-load-middle-flex-left {
+  width: 52.5%;
+  display: grid;
+  grid-template-columns: 125px 155px 145px;
   padding-bottom: 5px;
   align-items: center;
-  border-bottom: 1px solid $display-light-grey;
+
+}
+
+.mfd-fms-fuel-load-middle-flex-right {
+  flex: auto;
+  display: grid;
+  grid-template-columns: 150px auto;
+  padding-bottom: 0px;
+  align-items: center;
 }
 
 .mfd-fms-fuel-load-dest-grid-top-cell {
