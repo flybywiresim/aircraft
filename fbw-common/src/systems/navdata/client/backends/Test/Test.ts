@@ -109,7 +109,7 @@ export class TestBackend implements DataInterface {
   async getAirways(_idents: string[]): Promise<Airway[]> {
     return [];
   }
-  async getAirwaysByFix(_ident: string, _icaoCode: string, _airwayIdent?: string): Promise<Airway[]> {
+  async getAirwayByFix(_ident: string, _icaoCode: string, _airwayIdent: string): Promise<Airway[]> {
     return [];
   }
   createNearbyFacilityMonitor(_type: NearbyFacilityType): NearbyFacilityMonitor {

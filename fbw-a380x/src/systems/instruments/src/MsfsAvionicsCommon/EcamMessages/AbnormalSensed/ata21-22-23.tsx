@@ -261,7 +261,7 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
         style: ChecklistLineStyle.Cyan,
       },
       {
-        name: 'WHEN DIFF PRESS<2PSI & FL<100/MEA-MORA :',
+        name: 'WHEN DIFF PRESS<2PSI & FL<100/MEA-MORA',
         sensed: true,
         condition: true,
       },
@@ -780,9 +780,11 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'OVRD',
       },
       {
-        name: 'VLV STILL FULL OPEN AFTER 60 s:',
+        name: 'VLV STILL FULL OPEN',
         sensed: true,
         condition: true,
+        time: 60,
+        appendTimeIfElapsed: false,
       },
       {
         name: 'MAX FL : 100/MEA',
@@ -1002,7 +1004,7 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
         style: ChecklistLineStyle.Cyan,
       },
       {
-        name: 'CAB ALT ABOVE 14000 FT:',
+        name: 'CAB ALT ABOVE 14000 FT',
         sensed: true,
         condition: true,
       },
@@ -1013,7 +1015,7 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
         level: 1,
       },
       {
-        name: 'DESCENT ESTABLISHED:',
+        name: 'DESCENT ESTABLISHED',
         sensed: true,
         condition: true,
       },
@@ -1024,7 +1026,7 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
         level: 1,
       },
       {
-        name: 'DIFF PR<2 PSI & FL < 100/MEA-MORA:',
+        name: 'DIFF PR<2 PSI & FL < 100/MEA-MORA',
         sensed: true,
         condition: true,
       },
@@ -1085,7 +1087,7 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
         style: ChecklistLineStyle.Cyan,
       },
       {
-        name: 'DIFF PRESS < 1 PSI & FL < 100/MEA :',
+        name: 'DIFF PRESS < 1 PSI & FL < 100/MEA ',
         sensed: true,
         condition: true,
       },
@@ -1162,52 +1164,52 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
     items: [
       {
         name: 'AUTO CTL SYS 1+2+3+4 FAULT',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Amber,
       },
       {
         name: 'CAB PRESS IN BACKUP MODE',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Green,
       },
       {
         name: 'CAB PRESS MAN MODES : DO NOT USE',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Cyan,
       },
       {
         name: 'IN DES : CAB ALT REGULATED TO 7000 FT',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Green,
       },
       {
         name: 'BELOW 7000 FT : CAB ALT = ACFT ALT',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Green,
       },
       {
         name: 'BELOW 7000 FT : AVOID HI DES V/S',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Cyan,
       },
       {
         name: 'CABIN ALT REGULATED TO 7500FT',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Green,
       },
       {
         name: 'CAB PRESS MAN MODES : DO NOT USE',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Headline,
       },
       {
         name: 'BELOW 7500 FT : CAB ALT = ACFT ALT',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Green,
       },
       {
         name: 'BELOW 7500 FT : AVOID HI DES V/S',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Cyan,
       },
       {
@@ -1327,8 +1329,8 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'MONITOR',
       },
       {
-        name: 'DIFF PRESS > 9.6 PSI :',
-        sensed: true,
+        name: 'DIFF PRESS > 9.6 PSI',
+        sensed: false,
         condition: true,
       },
       {
@@ -1351,13 +1353,13 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'MAX FL : 100/MEA',
-        sensed: true,
+        sensed: false,
         style: ChecklistLineStyle.Cyan,
         level: 1,
       },
       {
-        name: 'WHEN DIFF PR < 2 PSI & FL < 100 / MEA :',
-        sensed: true,
+        name: 'WHEN DIFF PR < 2 PSI & FL < 100 / MEA',
+        sensed: false,
         condition: true,
         level: 1,
       },
@@ -1375,8 +1377,8 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'BEFORE OPENING ANY CABIN DOOR :',
+        style: ChecklistLineStyle.CenteredSubHeadline,
         sensed: true,
-        condition: true,
       },
       {
         name: 'PACK 1',

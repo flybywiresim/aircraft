@@ -1009,7 +1009,7 @@ export const TakeoffWidget = () => {
                   <Label text={t('Performance.Takeoff.Packs')}>
                     <SelectInput
                       className="w-48"
-                      defaultValue={initialState.takeoff.antiIce}
+                      defaultValue={initialState.takeoff.packs}
                       value={packs}
                       onChange={handlePacks}
                       options={[
