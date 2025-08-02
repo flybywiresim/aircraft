@@ -46,7 +46,6 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
   private readonly fcuEisDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(
     this.sub.on('a380x_fcu_eis_discrete_word_2_left'),
   );
-  isStd = this.fcuEisDiscreteWord2.get().bitValueOr(28, true);
 
   private readonly tatClass = this.tat.map((tat) => `F25 EndAlign ${tat.isNormalOperation() ? 'Green' : 'Amber'}`);
   private readonly tatText = this.tat.map((tat) =>
