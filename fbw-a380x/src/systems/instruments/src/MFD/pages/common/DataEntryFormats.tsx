@@ -310,7 +310,7 @@ export class RadioAltitudeFormat extends SubscriptionCollector implements DataEn
       return [this.placeholder, null, 'FT'] as FieldFormatTuple;
     }
     if (value === RADIO_ALTITUDE_NODH_VALUE) {
-      return ['NO DH', null, 'FT'] as FieldFormatTuple;
+      return ['NO DH', null, null] as FieldFormatTuple;
     }
     return [value.toFixed(0).toString(), null, 'FT'] as FieldFormatTuple;
   }
