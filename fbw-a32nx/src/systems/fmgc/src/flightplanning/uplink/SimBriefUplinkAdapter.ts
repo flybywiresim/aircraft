@@ -440,7 +440,7 @@ export class SimBriefUplinkAdapter {
 
             const airwayFix = pickAirwayFix(tailAirway, fixes);
             if (airwayFix) {
-              await flightPlanService.continueAirwayEntryDirectToFix(airwayFix, FlightPlanIndex.Uplink);
+              await flightPlanService.continueAirwayEntryToFix(airwayFix, FlightPlanIndex.Uplink);
 
               await ensureAirwaysFinalized();
             } else {

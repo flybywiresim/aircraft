@@ -1376,10 +1376,11 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   }
 
   /**
-   * Continues an existing AIRWAYS revision, inserting a DCT fix.
+   * Continues an existing AIRWAYS revision, inserting a fix.
    * @param fix the fix to insert
+   * @param isDct whether the fix is a DCT
    */
-  public async continueAirwayEntryDirectToFix(fix: Fix): Promise<boolean> {
+  public async continueAirwayEntryToFix(fix: Fix, isDct = false): Promise<boolean> {
     if (!this.pendingAirways) {
       throw new Error('[BaseFlightPlan](continueAirwayEntryDirectToFix) No airway entry is pending');
     }
@@ -1390,7 +1391,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       );
     }
 
-    const result = await this.pendingAirways.thenTo(fix);
+    const result = await this.pendingAirways.thenTo(fix, isDct);
 
     this.sendEvent('flightPlan.pendingAirwaysEdit', {
       syncClientID: this.context.syncClientID,

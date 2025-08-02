@@ -63,7 +63,7 @@ describe('a base flight plan', () => {
 
     const terminationFix = await NavigationDatabaseService.activeDatabase.searchWaypoint('DUTIL');
 
-    await fp.continueAirwayEntryDirectToFix(terminationFix[0]);
+    await fp.continueAirwayEntryToFix(terminationFix[0]);
 
     await fp.finaliseAirwayEntry();
 
