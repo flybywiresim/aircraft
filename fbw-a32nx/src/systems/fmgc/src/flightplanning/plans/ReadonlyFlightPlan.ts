@@ -2,9 +2,16 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Airport, Approach, Arrival, Departure, ProcedureTransition, Runway } from '@flybywiresim/fbw-sdk';
+import {
+  Airport,
+  Approach,
+  Arrival,
+  Departure,
+  ProcedureTransition,
+  Runway,
+  WaypointConstraintType,
+} from '@flybywiresim/fbw-sdk';
 import { FlightPlanSegment } from '@fmgc/flightplanning/segments/FlightPlanSegment';
-import { WaypointConstraintType } from '@fmgc/flightplanning/data/constraint';
 import { ReadonlyFlightPlanElement, ReadonlyFlightPlanLeg } from '@fmgc/flightplanning/legs/ReadonlyFlightPlanLeg';
 
 export interface ReadonlyFlightPlan {

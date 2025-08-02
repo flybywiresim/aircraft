@@ -7,6 +7,7 @@ import {
   MappedSubject,
   Subject,
   SubscribableMapFunctions,
+  UnitType,
   VNode,
 } from '@microsoft/msfs-sdk';
 
@@ -25,11 +26,10 @@ import {
 } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
 import { maxCertifiedAlt, Vmo } from '@shared/PerformanceConstants';
-import { WaypointConstraintType } from '@fmgc/flightplanning/data/constraint';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { RadioButtonColor, RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
 import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
-import { AltitudeDescriptor } from '@flybywiresim/fbw-sdk';
+import { AltitudeDescriptor, WaypointConstraintType } from '@flybywiresim/fbw-sdk';
 import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
 import { FmgcData } from 'instruments/src/MFD/FMC/fmgc';
 import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
@@ -453,9 +453,11 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
           this.stepAltsTimes[line].set('--:--');
         }
         this.stepAltsIgnored[line].set(cruiseSteps[i].isIgnored);
+
+        const estGrossWeight = this.getEstimatedGrossWeightAtIndex(cruiseStepLegIndices[i]);
         this.stepAltsAboveMaxFl[line].set(
           cruiseSteps[i].toAltitude / 100 >
-            (this.props.fmcService.master?.getRecMaxFlightLevel() ?? maxCertifiedAlt / 100),
+            (this.props.fmcService.master?.getRecMaxFlightLevel(estGrossWeight ?? undefined) ?? maxCertifiedAlt / 100),
         );
 
         if (this.stepAltsIgnored[line].get()) {
@@ -521,7 +523,11 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   }
 
   private async tryUpdateAltitudeConstraint(newAlt?: number) {
-    if (!this.checkLegModificationAllowed() && this.altConstraintTypeRadioSelected.get() === null) {
+    if (
+      !this.checkLegModificationAllowed() ||
+      this.altConstraintTypeRadioSelected.get() === null ||
+      this.selectedAltitudeConstraintOption.get() === null
+    ) {
       return;
     }
 
@@ -700,7 +706,11 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         .filter((it) => it !== null);
       const isValid = MfdFmsFplnVertRev.checkStepInsertionRules(crzFl, cruiseSteps, legIndex, flightLevel * 100);
 
-      if (flightLevel > (this.props.fmcService.master?.getRecMaxFlightLevel() ?? maxCertifiedAlt / 100)) {
+      const estGrossWeight = this.getEstimatedGrossWeightAtIndex(legIndex);
+      if (
+        flightLevel >
+        (this.props.fmcService.master?.getRecMaxFlightLevel(estGrossWeight ?? undefined) ?? maxCertifiedAlt / 100)
+      ) {
         this.props.fmcService.master?.addMessageToQueue(NXSystemMessages.stepAboveMaxFl, undefined, undefined);
       }
 
@@ -759,6 +769,15 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     }
     this.stepAltsFlightLevel[lineIndex].set(newFlightLevel);
     this.updateCruiseSteps();
+  }
+
+  private getEstimatedGrossWeightAtIndex(legIndex: number): number | null {
+    const zfw = this.props.fmcService.master?.fmgc.data.zeroFuelWeight.get() ?? null;
+    const pred =
+      this.props.fmcService?.master?.guidanceController?.vnavDriver?.mcduProfile?.waypointPredictions?.get(legIndex);
+    return pred !== undefined && zfw !== null
+      ? zfw + UnitType.KILOGRAM.convertFrom(pred.estimatedFuelOnBoard, UnitType.POUND)
+      : null;
   }
 
   public onAfterRender(node: VNode): void {

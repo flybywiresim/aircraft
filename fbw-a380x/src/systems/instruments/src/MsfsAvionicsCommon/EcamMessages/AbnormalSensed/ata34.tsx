@@ -708,7 +708,29 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
   340800062: {
     title: '\x1b<4m\x1b4mNAV\x1bm RA SYS A+B+C FAULT',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'APPR MODE NOT AVAIL',
+        sensed: false,
+        style: ChecklistLineStyle.Green,
+      },
+      {
+        name: 'LOC MODE AVAIL ONLY',
+        sensed: false,
+        style: ChecklistLineStyle.Green,
+      },
+      /*
+      // FIX ME Should be split across two lines end aligned within this item:
+      WHEN L/G DOWN & AP OFF:
+                                  ALTN LAW
+                                  USE MAN PITCH TRIM
+      */
+      {
+        name: 'WHEN L/G DOWN AND & OFF : USE MAN PITCH TRIM',
+        sensed: false,
+        style: ChecklistLineStyle.Green,
+      },
+    ],
   },
   340800063: {
     title: '\x1b<4m\x1b4mNAV\x1bm RESIDUAL AIR SPEED',
@@ -793,18 +815,172 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [],
   },
+  341800020: {
+    title: '\x1b<4m\x1b4mSURV\x1bm TERR SYS 1 FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'WXR & TAWS',
+        sensed: true,
+        labelNotCompleted: 'SYS 2',
+      },
+      {
+        name: '[MFD SURV] STATUS & SWTG PAGE',
+        sensed: false,
+        labelNotCompleted: 'CHECK',
+      },
+      {
+        name: 'WXR & TAWS',
+        sensed: false,
+        labelNotCompleted: 'AS RQRD',
+      },
+    ],
+  },
+  341800021: {
+    title: '\x1b<4m\x1b4mSURV\x1bm TERR SYS 2 FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'WXR & TAWS',
+        sensed: true,
+        labelNotCompleted: 'SYS 1',
+      },
+      {
+        name: '[MFD SURV] STATUS & SWTG PAGE',
+        sensed: false,
+        labelNotCompleted: 'CHECK',
+      },
+      {
+        name: 'WXR & TAWS',
+        sensed: false,
+        labelNotCompleted: 'AS RQRD',
+      },
+    ],
+  },
+  341800022: {
+    title: '\x1b<4m\x1b4mSURV\x1bm TERR SYS 1+2 FAULT',
+    sensed: true,
+    items: [
+      {
+        name: '[MFD SURV] TERR SYS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  341800023: {
+    title: '\x1b<4m\x1b4mSURV\x1bm TAWS 1 FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'WXR & TAWS',
+        sensed: true,
+        labelNotCompleted: 'SYS 2',
+      },
+      {
+        name: '[MFD SURV] STATUS & SWTG PAGE',
+        sensed: false,
+        labelNotCompleted: 'CHECK',
+      },
+    ],
+  },
+  341800024: {
+    title: '\x1b<4m\x1b4mSURV\x1bm TAWS 2 FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'WXR & TAWS',
+        sensed: true,
+        labelNotCompleted: 'SYS 1',
+      },
+      {
+        name: '[MFD SURV] STATUS & SWTG PAGE',
+        sensed: false,
+        labelNotCompleted: 'CHECK',
+      },
+    ],
+  },
+  341800025: {
+    title: '\x1b<4m\x1b4mSURV\x1bm TAWS 1+2 FAULT',
+    sensed: true,
+    items: [
+      {
+        name: '[MFD SURV] TERR SYS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: '[MFD SURV] GPWS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
+  341800026: {
+    title: '\x1b<4m\x1b4mSURV\x1bm GPWS 1 FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'WXR & TAWS',
+        sensed: true,
+        labelNotCompleted: 'SYS 2',
+      },
+      {
+        name: '[MFD SURV] STATUS & SWTG PAGE',
+        sensed: false,
+        labelNotCompleted: 'CHECK',
+      },
+      {
+        name: 'WXR & TAWS',
+        sensed: false,
+        labelNotCompleted: 'AS RQRD',
+      },
+    ],
+  },
+  341800027: {
+    title: '\x1b<4m\x1b4mSURV\x1bm GPWS 2 FAULT',
+    sensed: true,
+    items: [
+      {
+        name: 'WXR & TAWS',
+        sensed: true,
+        labelNotCompleted: 'SYS 1',
+      },
+      {
+        name: '[MFD SURV] STATUS & SWTG PAGE',
+        sensed: false,
+        labelNotCompleted: 'CHECK',
+      },
+      {
+        name: 'WXR & TAWS',
+        sensed: false,
+        labelNotCompleted: 'AS RQRD',
+      },
+    ],
+  },
+  341800028: {
+    title: '\x1b<4m\x1b4mSURV\x1bm GPWS 1+2 FAULT',
+    sensed: true,
+    items: [
+      {
+        name: '[MFD SURV] GPWS',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+    ],
+  },
   340900001: {
-    title: '\x1b<4m\x1b4mNAV\x1bm IR ALIGNMENT IN ATT MODE',
+    title: '\x1b<4m\x1b4mNAV\x1bm IR ALIGNMENT IN ATT MODE (WIP)',
     sensed: false,
     items: [], // TODO
   },
   340900002: {
-    title: '\x1b<4m\x1b4mNAV\x1bm FLUCTUATING VERTICAL SPEED',
+    title: '\x1b<4m\x1b4mNAV\x1bm FLUCTUATING VERTICAL SPEED (WIP)',
     sensed: false,
     items: [], // TODO
   },
   340900003: {
-    title: '\x1b<2m\x1b4mNAV\x1bm UNRELIABLE AIRSPEED INDICATION',
+    title: '\x1b<2m\x1b4mNAV\x1bm UNRELIABLE AIRSPEED INDICATION (WIP)',
     sensed: false,
     items: [], // TODO
   },

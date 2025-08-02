@@ -25,7 +25,9 @@ use systems::{
         brake_circuit::{BrakeAccumulatorCharacteristics, BrakeCircuit, BrakeCircuitController},
         bypass_pin::BypassPin,
         cargo_doors::{CargoDoor, HydraulicDoorController},
-        flap_slat::FlapSlatAssembly,
+        flap_slat::{
+            FlapSlatAssembly, SecondarySurface, SecondarySurfaceSide, SecondarySurfaceType,
+        },
         landing_gear::{GearGravityExtension, GearSystemController, HydraulicGearSystem},
         linear_actuator::{
             Actuator, BoundedLinearLength, ElectroHydrostaticActuatorType,
@@ -1060,6 +1062,28 @@ impl A380RudderFactory {
     }
 }
 
+struct A380FlapsFactory {}
+impl A380FlapsFactory {
+    fn a380_flaps_factory(
+        context: &mut InitContext,
+        side: SecondarySurfaceSide,
+    ) -> SecondarySurface {
+        // 1 is most inboard. 3 is most outboard.
+        SecondarySurface::new(context, side, SecondarySurfaceType::Flaps, 3)
+    }
+}
+
+struct A380SlatsFactory {}
+impl A380SlatsFactory {
+    fn a380_slats_factory(
+        context: &mut InitContext,
+        side: SecondarySurfaceSide,
+    ) -> SecondarySurface {
+        // 1 is most inboard. 8 is most outboard.
+        SecondarySurface::new(context, side, SecondarySurfaceType::Slats, 8)
+    }
+}
+
 struct A380GearDoorFactory {}
 impl A380GearDoorFactory {
     fn a380_nose_gear_door_aerodynamics() -> AerodynamicModel {
@@ -1753,6 +1777,13 @@ impl A380Hydraulic {
             Ratio::new::<ratio>(0.01),
         );
 
+        let left_flaps = A380FlapsFactory::a380_flaps_factory(context, SecondarySurfaceSide::Left);
+        let right_flaps =
+            A380FlapsFactory::a380_flaps_factory(context, SecondarySurfaceSide::Right);
+        let left_slats = A380SlatsFactory::a380_slats_factory(context, SecondarySurfaceSide::Left);
+        let right_slats =
+            A380SlatsFactory::a380_slats_factory(context, SecondarySurfaceSide::Right);
+
         A380Hydraulic {
             eha_backup_inhibit_logic: A380EhaInhibitPlaceholder::new(context),
             nose_steering: SteeringActuator::new(
@@ -1968,7 +1999,9 @@ impl A380Hydraulic {
 
             flap_system: FlapSlatAssembly::new(
                 context,
-                "FLAPS",
+                SecondarySurfaceType::Flaps,
+                left_flaps,
+                right_flaps,
                 Volume::new::<cubic_inch>(0.32),
                 AngularVelocity::new::<radian_per_second>(0.047),
                 Angle::new::<degree>(218.912),
@@ -1981,7 +2014,9 @@ impl A380Hydraulic {
             ),
             slat_system: FlapSlatAssembly::new(
                 context,
-                "SLATS",
+                SecondarySurfaceType::Slats,
+                left_slats,
+                right_slats,
                 Volume::new::<cubic_inch>(0.32),
                 AngularVelocity::new::<radian_per_second>(0.08),
                 Angle::new::<degree>(284.66),
@@ -2500,16 +2535,16 @@ impl A380Hydraulic {
 
         self.flap_system.update(
             context,
-            self.slats_flaps_complex.flap_demand(),
-            self.slats_flaps_complex.flap_demand(),
+            self.slats_flaps_complex.flap_demand(0),
+            self.slats_flaps_complex.flap_demand(1),
             self.green_circuit.system_section(),
             self.yellow_circuit.system_section(),
         );
 
         self.slat_system.update(
             context,
-            self.slats_flaps_complex.slat_demand(),
-            self.slats_flaps_complex.slat_demand(),
+            self.slats_flaps_complex.slat_demand(0),
+            self.slats_flaps_complex.slat_demand(1),
             self.green_circuit.system_section(),
             self.green_circuit.system_section(),
         );
@@ -7858,14 +7893,14 @@ mod tests {
             }
 
             fn on_the_ground(mut self) -> Self {
-                self.set_indicated_altitude(Length::new::<foot>(0.));
+                self.set_pressure_altitude(Length::new::<foot>(0.));
                 self.set_on_ground(true);
                 self.set_indicated_airspeed(Velocity::new::<knot>(5.));
                 self
             }
 
             fn on_the_ground_after_touchdown(mut self) -> Self {
-                self.set_indicated_altitude(Length::new::<foot>(0.));
+                self.set_pressure_altitude(Length::new::<foot>(0.));
                 self.set_on_ground(true);
                 self.set_indicated_airspeed(Velocity::new::<knot>(100.));
                 self
@@ -7883,7 +7918,7 @@ mod tests {
 
             fn in_flight(mut self) -> Self {
                 self.set_on_ground(false);
-                self.set_indicated_altitude(Length::new::<foot>(2500.));
+                self.set_pressure_altitude(Length::new::<foot>(2500.));
                 self.set_indicated_airspeed(Velocity::new::<knot>(180.));
 
                 self.start_eng1(Ratio::new::<percent>(80.))
@@ -8123,19 +8158,49 @@ mod tests {
             }
 
             fn get_flaps_left_position_percent(&mut self) -> f64 {
-                self.read_by_name("LEFT_FLAPS_POSITION_PERCENT")
+                let values: &[f64] = &[
+                    self.read_by_name("LEFT_FLAPS_1_POSITION_PERCENT"),
+                    self.read_by_name("LEFT_FLAPS_2_POSITION_PERCENT"),
+                    self.read_by_name("LEFT_FLAPS_3_POSITION_PERCENT"),
+                ];
+                values.iter().sum::<f64>() / (values.len() as f64)
             }
 
             fn get_flaps_right_position_percent(&mut self) -> f64 {
-                self.read_by_name("RIGHT_FLAPS_POSITION_PERCENT")
+                let values: &[f64] = &[
+                    self.read_by_name("RIGHT_FLAPS_1_POSITION_PERCENT"),
+                    self.read_by_name("RIGHT_FLAPS_2_POSITION_PERCENT"),
+                    self.read_by_name("RIGHT_FLAPS_3_POSITION_PERCENT"),
+                ];
+                values.iter().sum::<f64>() / (values.len() as f64)
             }
 
             fn get_slats_left_position_percent(&mut self) -> f64 {
-                self.read_by_name("LEFT_SLATS_POSITION_PERCENT")
+                let values: &[f64] = &[
+                    self.read_by_name("LEFT_SLATS_1_POSITION_PERCENT"),
+                    self.read_by_name("LEFT_SLATS_2_POSITION_PERCENT"),
+                    self.read_by_name("LEFT_SLATS_3_POSITION_PERCENT"),
+                    self.read_by_name("LEFT_SLATS_4_POSITION_PERCENT"),
+                    self.read_by_name("LEFT_SLATS_5_POSITION_PERCENT"),
+                    self.read_by_name("LEFT_SLATS_6_POSITION_PERCENT"),
+                    self.read_by_name("LEFT_SLATS_7_POSITION_PERCENT"),
+                    self.read_by_name("LEFT_SLATS_8_POSITION_PERCENT"),
+                ];
+                values.iter().sum::<f64>() / (values.len() as f64)
             }
 
             fn get_slats_right_position_percent(&mut self) -> f64 {
-                self.read_by_name("RIGHT_SLATS_POSITION_PERCENT")
+                let values: &[f64] = &[
+                    self.read_by_name("RIGHT_SLATS_1_POSITION_PERCENT"),
+                    self.read_by_name("RIGHT_SLATS_2_POSITION_PERCENT"),
+                    self.read_by_name("RIGHT_SLATS_3_POSITION_PERCENT"),
+                    self.read_by_name("RIGHT_SLATS_4_POSITION_PERCENT"),
+                    self.read_by_name("RIGHT_SLATS_5_POSITION_PERCENT"),
+                    self.read_by_name("RIGHT_SLATS_6_POSITION_PERCENT"),
+                    self.read_by_name("RIGHT_SLATS_7_POSITION_PERCENT"),
+                    self.read_by_name("RIGHT_SLATS_8_POSITION_PERCENT"),
+                ];
+                values.iter().sum::<f64>() / (values.len() as f64)
             }
 
             fn get_real_gear_position(&mut self, wheel_id: GearWheel) -> Ratio {
@@ -8723,6 +8788,71 @@ mod tests {
 
         fn test_bed_in_flight_with() -> A380HydraulicsTestBed {
             test_bed_in_flight()
+        }
+
+        #[test]
+        fn flaps_simvars() {
+            let test_bed = test_bed_on_ground_with().run_one_tick();
+
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_1_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_2_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_3_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_4_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_5_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_6_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_7_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_8_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_POSITION_PERCENT"));
+
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_1_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_2_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_3_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_4_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_5_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_6_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_7_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_8_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_POSITION_PERCENT"));
+
+            assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_1_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_2_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_3_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_POSITION_PERCENT"));
+
+            assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_1_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_2_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_3_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_POSITION_PERCENT"));
+
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_1_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_2_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_3_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_4_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_5_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_6_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_7_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_8_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_ANGLE"));
+
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_1_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_2_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_3_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_4_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_5_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_6_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_7_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_8_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_ANGLE"));
+
+            assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_1_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_2_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_3_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_ANGLE"));
+
+            assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_1_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_2_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_3_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_ANGLE"));
         }
 
         #[test]

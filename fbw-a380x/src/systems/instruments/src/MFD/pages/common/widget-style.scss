@@ -435,6 +435,10 @@
   border: 2px outset $display-cyan;
 }
 
+.mfd-radio-button.amber {
+  color:  $display-amber
+}
+
 .mfd-context-menu {
   font-family: "FBW-Display-EIS-A380-SlashedZero", monospace;
   background-color: $display-mfd-darker-grey;
@@ -540,6 +544,10 @@
 .mfd-input-field-text-input.disabled {
   background-color: $display-mfd-darker-grey;
   color: $display-dark-grey;
+}
+
+div.yellow-when-disabled > div > div > .mfd-input-field-text-input.disabled {
+  color: $display-yellow;
 }
 
 .mfd-input-field-text-input.mandatory {

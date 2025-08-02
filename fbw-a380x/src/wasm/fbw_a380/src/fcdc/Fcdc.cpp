@@ -65,6 +65,7 @@ FcdcBus Fcdc::update(double deltaTime, bool faultActive, bool isPowered) {
   output.efcsStatus1.setBit(12, systemPitchLaw == PitchLaw::AlternateLaw1A || systemPitchLaw == PitchLaw::AlternateLaw1B ||
                                     systemPitchLaw == PitchLaw::AlternateLaw1C);
   output.efcsStatus1.setBit(13, systemPitchLaw == PitchLaw::AlternateLaw2);
+  output.efcsStatus1.setBit(14, systemPitchLaw == PitchLaw::AlternateLaw1A);
   output.efcsStatus1.setBit(15, systemPitchLaw == PitchLaw::DirectLaw);
   output.efcsStatus1.setBit(16, systemLateralLaw == LateralLaw::NormalLaw);
   output.efcsStatus1.setBit(17, systemLateralLaw == LateralLaw::DirectLaw);
@@ -126,6 +127,7 @@ FcdcBus Fcdc::update(double deltaTime, bool faultActive, bool isPowered) {
   output.efcsStatus4.setBit(25, spoilerValid);
   output.efcsStatus4.setBit(26, valueOr(busInputs.prims[masterPrim].left_spoiler_position_deg, 0) < -5);
   output.efcsStatus4.setBit(27, discreteInputs.spoilersArmed);
+  output.efcsStatus4.setBit(28, analogInputs.spoilersLeverPos > 0.9);
 
   output.efcsStatus5.setData(0);
   output.efcsStatus5.setSsm(Arinc429SignStatus::NormalOperation);

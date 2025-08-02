@@ -39,7 +39,6 @@ import { getEtaFromUtcOrPresent as getEtaUtcOrFromPresent, getApproachName } fro
 import { ApproachType } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
-import { FmcWindVector } from '@fmgc/guidance/vnav/wind/types';
 
 interface MfdFmsPerfProps extends AbstractMfdPageProps {}
 
@@ -245,15 +244,15 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private showToThrustSettings(st: TakeoffPowerSetting) {
     if (this.toFlexInputRef.getOrDefault() && this.toDeratedInputRef.getOrDefault()) {
-      if (st === TakeoffPowerSetting.TOGA) {
-        this.toFlexInputRef.instance.style.visibility = 'hidden';
-        this.toDeratedInputRef.instance.style.visibility = 'hidden';
-      } else if (st === TakeoffPowerSetting.FLEX) {
+      if (st === TakeoffPowerSetting.FLEX) {
         this.toFlexInputRef.instance.style.visibility = 'visible';
         this.toDeratedInputRef.instance.style.visibility = 'hidden';
-      } else {
+      } else if (st === TakeoffPowerSetting.DERATED) {
         this.toFlexInputRef.instance.style.visibility = 'hidden';
         this.toDeratedInputRef.instance.style.visibility = 'visible';
+      } else {
+        this.toFlexInputRef.instance.style.visibility = 'hidden';
+        this.toDeratedInputRef.instance.style.visibility = 'hidden';
       }
     }
   }
@@ -410,7 +409,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private destEta = Subject.create<string>('--:--');
 
-  private destEfob = Subject.create<string>('--.-');
+  private destEfob = Subject.create<string>('---.-');
 
   private readonly crzPreSelManagedGreenLine1 = MappedSubject.create(
     ([fp, pSpeed, pMach]) =>
@@ -485,9 +484,15 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private apprIdent = Subject.create<string>('');
 
-  private apprHeadwind = Subject.create<string>('');
+  private readonly towerHeadwind = Subject.create<number | null>(null);
 
   private apprCrosswind = Subject.create<string>('');
+
+  private windDirectionLabel = this.towerHeadwind.map((v) => (v !== null && v < 0 ? 'TL' : 'HD'));
+
+  private windSpeedDisplay = this.towerHeadwind.map((v) =>
+    v === null ? '---' : Math.abs(v).toFixed(0).padStart(3, '0'),
+  );
 
   private apprSelectedFlapsIndex = Subject.create<number | null>(1);
 
@@ -500,14 +505,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   private apprVerticalDeviation = Subject.create<string>('+-----');
 
   private readonly apprRadioText = this.precisionApproachSelected.map((v) => (v ? 'RADIO' : '-----'));
-
-  private readonly apprWindDirectionValue = (
-    this.props.fmcService.master?.fmgc.data.approachWind ?? Subject.create<FmcWindVector | null>(null)
-  ).map((it) => (it ? it.direction : null));
-
-  private readonly apprWindSpeedValue = (
-    this.props.fmcService.master?.fmgc.data.approachWind ?? Subject.create<FmcWindVector | null>(null)
-  ).map((it) => (it ? it.speed : null));
 
   private missedThrRedAlt = Subject.create<number | null>(null);
 
@@ -534,103 +531,73 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       return;
     }
 
-    this.crzFl.set(pd.cruiseFlightLevel);
+    this.crzFl.set(pd.cruiseFlightLevel ?? null);
     this.crzFlIsMandatory.set(
       (this.props.fmcService.master?.fmgc.getFlightPhase() ?? FmgcFlightPhase.Preflight) < FmgcFlightPhase.Descent,
     );
 
-    if (pd.costIndex !== null && pd.costIndex !== undefined) {
-      this.costIndex.set(pd.costIndex);
-    }
+    this.costIndex.set(pd.costIndex ?? null);
 
-    if (fm.takeoffShift) {
-      this.toShift.set(fm.takeoffShift.get());
-    }
+    this.toShift.set(fm.takeoffShift.get() ?? null);
 
-    if (pd.v1) {
-      this.toV1.set(pd.v1);
-    }
+    this.toV1.set(pd.v1 ?? null);
 
-    if (pd.vr) {
-      this.toVR.set(pd.vr);
-    }
+    this.toVR.set(pd.vr ?? null);
 
-    if (pd.v2) {
-      this.toV2.set(pd.v2);
-    }
+    this.toV2.set(pd.v2 ?? null);
 
-    if (fm.takeoffPowerSetting) {
-      this.toSelectedThrustSettingIndex.set(fm.takeoffPowerSetting.get());
-      this.showToThrustSettings(fm.takeoffPowerSetting.get());
-    }
+    this.toSelectedThrustSettingIndex.set(fm.takeoffPowerSetting.get() ?? null);
+    this.showToThrustSettings(fm.takeoffPowerSetting.get() ?? null);
 
-    if (fm.takeoffFlexTemp) {
-      this.toFlexTemp.set(fm.takeoffFlexTemp.get());
-    }
+    this.toFlexTemp.set(fm.takeoffFlexTemp.get() ?? null);
 
-    if (fm.takeoffDeratedSetting) {
-      this.toSelectedDeratedIndex.set(fm.takeoffDeratedSetting.get());
-    }
+    this.toSelectedDeratedIndex.set(fm.takeoffDeratedSetting.get() ?? null);
 
-    if (fm.takeoffFlapsSetting) {
+    if (fm.takeoffFlapsSetting !== undefined && fm.takeoffFlapsSetting.get() !== null) {
       this.toSelectedFlapsIndex.set(fm.takeoffFlapsSetting.get() - 1);
+    } else {
+      this.toSelectedFlapsIndex.set(null);
     }
 
-    if (fm.takeoffPacks) {
-      this.toSelectedPacksIndex.set(fm.takeoffPacks.get());
-    }
+    this.toSelectedPacksIndex.set(fm.takeoffPacks.get() ?? null);
 
-    if (fm.takeoffAntiIce) {
-      this.toSelectedAntiIceIndex.set(fm.takeoffAntiIce.get());
-    }
+    this.toSelectedAntiIceIndex.set(fm.takeoffAntiIce.get() ?? null);
 
     if (pd.thrustReductionAltitudeIsPilotEntered) {
       this.thrRedAltIsPilotEntered.set(pd.thrustReductionAltitudeIsPilotEntered);
     }
 
-    if (pd.thrustReductionAltitude) {
-      this.thrRedAlt.set(pd.thrustReductionAltitude);
-    }
+    this.thrRedAlt.set(pd.thrustReductionAltitude ?? null);
 
     if (pd.accelerationAltitudeIsPilotEntered) {
       this.accelRedAltIsPilotEntered.set(pd.accelerationAltitudeIsPilotEntered);
     }
 
-    if (pd.accelerationAltitude) {
-      this.accelAlt.set(pd.accelerationAltitude);
-    }
+    this.accelAlt.set(pd.accelerationAltitude ?? null);
 
     if (fm.noiseEnabled) {
       this.showNoiseFields(fm.noiseEnabled.get());
     }
 
-    if (fm.noiseEndAltitude) {
-      this.noiseEndAlt.set(fm.noiseEndAltitude.get());
-    }
+    this.noiseEndAlt.set(fm.noiseEndAltitude.get() ?? null);
 
     if (pd.transitionAltitudeIsFromDatabase) {
       this.transAltIsPilotEntered.set(!pd.transitionAltitudeIsFromDatabase);
     }
 
-    if (pd.transitionAltitude) {
-      this.transAlt.set(pd.transitionAltitude);
-    }
+    this.transAlt.set(pd.transitionAltitude ?? null);
 
     if (pd.engineOutAccelerationAltitudeIsPilotEntered) {
       this.eoAccelAltIsPilotEntered.set(pd.engineOutAccelerationAltitudeIsPilotEntered);
     }
 
-    if (pd.engineOutAccelerationAltitude) {
-      this.eoAccelAlt.set(pd.engineOutAccelerationAltitude);
-    }
+    this.eoAccelAlt.set(pd.engineOutAccelerationAltitude ?? null);
 
     if (pd.thrustReductionAltitudeIsPilotEntered) {
       this.thrRedAltIsPilotEntered.set(pd.thrustReductionAltitudeIsPilotEntered);
     }
 
-    if (pd.pilotThrustReductionAltitude) {
-      this.thrRedAlt.set(pd.pilotThrustReductionAltitude);
-    }
+    this.thrRedAlt.set(pd.pilotThrustReductionAltitude ?? null);
 
     this.activeFlightPhase.set(SimVar.GetSimVarValue('L:A32NX_FMGC_FLIGHT_PHASE', 'Enum'));
 
@@ -656,7 +623,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
     this.precisionApproachSelected.set(precisionApproach);
 
-    if (fm.approachFlapConfig) {
+    if (fm.approachFlapConfig !== undefined) {
       this.apprSelectedFlapsIndex.set(fm.approachFlapConfig.get() === 3 ? 0 : 1);
     }
 
@@ -672,25 +639,19 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       this.missedEngineOutAccelAltIsPilotEntered.set(pd.missedEngineOutAccelerationAltitudeIsPilotEntered);
     }
 
-    if (pd.missedEngineOutAccelerationAltitude) {
-      this.missedEngineOutAccelAlt.set(pd.missedEngineOutAccelerationAltitude);
-    }
+    this.missedEngineOutAccelAlt.set(pd.missedEngineOutAccelerationAltitude ?? null);
 
     if (pd.missedThrustReductionAltitude) {
       this.missedThrRedAlt.set(pd.missedThrustReductionAltitude);
     }
 
-    if (pd.missedAccelerationAltitude) {
-      this.missedAccelAlt.set(pd.missedAccelerationAltitude);
-    }
+    this.missedAccelAlt.set(pd.missedAccelerationAltitude ?? null);
 
     if (pd.transitionLevelIsFromDatabase) {
       this.transFlIsPilotEntered.set(!pd.transitionLevelIsFromDatabase);
     }
 
-    if (pd.transitionLevel) {
-      this.transFl.set(pd.transitionLevel);
-    }
+    this.transFl.set(pd.transitionLevel ?? null);
 
     const vDev = this.props.fmcService.master?.guidanceController.vnavDriver.getLinearDeviation();
     if (this.activeFlightPhase.get() >= FmgcFlightPhase.Descent && vDev != null) {
@@ -1027,7 +988,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             );
           }
           this.destEta.set(destEta);
-          this.destEfob.set(this.props.fmcService.master?.fmgc.getDestEFOB(true).toFixed(1) ?? '---.-');
+          this.destEfob.set(this.props.fmcService.master?.fmgc.getDestEFOB(true)?.toFixed(1) ?? '---.-');
 
           // Update DES speed table
           if (this.activeFlightPhase.get() < FmgcFlightPhase.Descent) {
@@ -1072,11 +1033,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
               apprWind.direction,
               this.loadedFlightPlan.destinationRunway.magneticBearing,
             );
-            if (towerHeadwind < 0) {
-              this.apprHeadwind.set(`-${Math.abs(towerHeadwind).toFixed(0).padStart(2, '0')}`);
-            } else {
-              this.apprHeadwind.set(towerHeadwind.toFixed(0).padStart(3, '0'));
-            }
+            this.towerHeadwind.set(towerHeadwind);
+
             const towerCrosswind = A380SpeedsUtils.getHeadwind(
               apprWind.speed,
               apprWind.direction,
@@ -1084,8 +1042,25 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             );
             this.apprCrosswind.set(Math.abs(towerCrosswind).toFixed(0).padStart(3, '0'));
           } else {
-            this.apprHeadwind.set('---');
+            this.towerHeadwind.set(null);
             this.apprCrosswind.set('---');
+          }
+        }),
+      this.windDirectionLabel,
+      this.windSpeedDisplay,
+    );
+
+    // Update VERT DEV on APPR page. Possible optimization to only sub during descent phase
+    this.subs.push(
+      sub
+        .on('realTime')
+        .atFrequency(0.5)
+        .handle((_t) => {
+          if (this.activeFlightPhase.get() >= FmgcFlightPhase.Descent) {
+            const vDev = this.props.fmcService.master?.guidanceController.vnavDriver.getLinearDeviation();
+            if (vDev != null) {
+              this.apprVerticalDeviation.set(vDev >= 0 ? `+${vDev.toFixed(0)}FT` : `${vDev.toFixed(0)}FT`);
+            }
           }
         }),
     );
@@ -1120,8 +1095,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       this.transFlToAlt,
       this.apprLandingWeightFormatted,
       this.apprRadioText,
-      this.apprWindDirectionValue,
-      this.apprWindSpeedValue,
     );
   }
 
@@ -2290,7 +2263,14 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   <span class="mfd-label green bigger">{this.destAirportIdent}</span>
                   <span class="mfd-label green bigger">{this.destEta}</span>
                   <div class="mfd-label-value-container">
-                    <span class="mfd-value">{this.destEfob}</span>
+                    <span
+                      class={{
+                        'mfd-value': true,
+                        amber: this.props.fmcService.master.fmgc.data.destEfobBelowMin,
+                      }}
+                    >
+                      {this.destEfob}
+                    </span>
                     <span class="mfd-label-unit mfd-unit-trailing">T</span>
                   </div>
                   <div style="display: flex; flex-direction: row;">
@@ -2472,7 +2452,14 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   <span class="mfd-label green bigger">{this.destAirportIdent}</span>
                   <span class="mfd-label green bigger">{this.destEta}</span>
                   <div class="mfd-label-value-container">
-                    <span class="mfd-value">{this.destEfob}</span>
+                    <span
+                      class={{
+                        'mfd-value': true,
+                        amber: this.props.fmcService.master.fmgc.data.destEfobBelowMin,
+                      }}
+                    >
+                      {this.destEfob}
+                    </span>
                     <span class="mfd-label-unit mfd-unit-trailing">T</span>
                   </div>
                   <div style="display: flex; flex-direction: row;">
@@ -2506,31 +2493,19 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <div style="display: flex; flex-direction: row;">
                         <span class="mfd-label mfd-spacing-right perf-appr-weather">MAG WIND</span>
                         <div style="border: 1px solid lightgrey; display: flex; flex-direction: row; padding: 2px;">
-                          <InputField<number, number, false>
+                          <InputField<number>
                             dataEntryFormat={new WindDirectionFormat()}
                             mandatory={Subject.create(false)}
-                            readonlyValue={this.apprWindDirectionValue ?? Subject.create(null)}
-                            onModified={(v) =>
-                              this.props.fmcService.master?.fmgc.data.approachWind.set({
-                                direction: v ?? 0,
-                                speed: this.props.fmcService.master.fmgc.data.approachWind.get()?.speed ?? 0,
-                              })
-                            }
+                            value={this.props.fmcService.master?.fmgc.data.approachWindDirection}
                             alignText="center"
                             errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
                             hEventConsumer={this.props.mfd.hEventConsumer}
                             interactionMode={this.props.mfd.interactionMode}
                           />
-                          <InputField<number, number, false>
+                          <InputField<number>
                             dataEntryFormat={new WindSpeedFormat()}
                             mandatory={Subject.create(false)}
-                            readonlyValue={this.apprWindSpeedValue ?? Subject.create(null)}
-                            onModified={(v) =>
-                              this.props.fmcService.master?.fmgc.data.approachWind.set({
-                                direction: this.props.fmcService.master.fmgc.data.approachWind.get()?.direction ?? 0,
-                                speed: v ?? 0,
-                              })
-                            }
+                            value={this.props.fmcService.master.fmgc.data.approachWindSpeed}
                             containerStyle="margin-left: 10px;"
                             alignText="center"
                             errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
@@ -2541,8 +2516,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       </div>
                       <div style="display: flex; flex-direction: row; margin-top: 15px;">
                         <div class="mfd-label-value-container" style="padding: 15px;">
-                          <span class="mfd-label mfd-spacing-right">HD</span>
-                          <span class="mfd-value">{this.apprHeadwind}</span>
+                          <span class="mfd-label mfd-spacing-right">{this.windDirectionLabel}</span>
+                          <span class="mfd-value">{this.windSpeedDisplay}</span>
                           <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                         </div>
                         <div class="mfd-label-value-container" style="padding: 15px;">

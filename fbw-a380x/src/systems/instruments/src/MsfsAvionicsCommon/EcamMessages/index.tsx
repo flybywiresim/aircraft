@@ -1,4 +1,4 @@
-// Copyright (c) 2024 FlyByWire Simulations
+// Copyright (c) 2024-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 export const WD_NUM_LINES = 17;
@@ -9,7 +9,10 @@ import {
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata21-22-23';
 import { EcamAbnormalSensedAta24 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata24';
 import { EcamAbnormalSensedAta26 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata26';
-import { EcamAbnormalSensedAta27 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata27';
+import {
+  EcamAbnormalSensedAta27,
+  EcamDeferredProcAta27,
+} from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata27';
 import { EcamAbnormalSensedAta28 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata28';
 import { EcamAbnormalSensedAta2930 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata29-30';
 import {
@@ -46,10 +49,10 @@ export const EcamMemos: { [n: string]: string } = {
   '000001007': '   \x1b<3m-GND SPLRs ARM',
   '000001008': '   \x1b<5m-FLAPS ........T.O',
   '000001009': '   \x1b<3m-FLAPS : T.O',
-  '000001010': '   \x1b<5m-AUTO BRAKE ...RTO',
-  '000001011': '   \x1b<3m-AUTO BRAKE RTO',
+  '000001010': '   \x1b<5m-AUTO BRK .....RTO',
+  '000001011': '   \x1b<3m-AUTO BRK RTO',
   '000001012': '   \x1b<5m-T.O CONFIG ..TEST',
-  '000001013': '   \x1b<3m-T.O CONFIG NORMAL',
+  '000001013': '   \x1b<3m-T.O CONFIG NORM',
   '000002001': ' \x1b<7m\x1b4mLDG\x1bm',
   '000002002': '   \x1b<5m-SEAT BELTS ....ON',
   '000002003': '   \x1b<3m-SEAT BELTS ON',
@@ -66,6 +69,7 @@ export const EcamMemos: { [n: string]: string } = {
   '220000001': '\x1b<2mAP OFF',
   '220000002': '\x1b<4mA/THR OFF',
   '221000001': '\x1b<3mFMS SWTG',
+  '221000002': '\x1b<4mDEST EFOB',
   '240000001': '\x1b<3mCOMMERCIAL PART SHED',
   '241000001': '\x1b<4mELEC EXT PWR',
   '241000002': '\x1b<3mELEC EXT PWR',
@@ -189,12 +193,18 @@ export const EcamInfos: { [n: string]: string } = {
   220200008: '\x1b<3mLOC MODE AVAIL ONLY',
   220200009: '\x1b<3mWHEN L/G DOWN AND AP OFF: USE MAN PITCH TRIM',
   220200010: '\x1b<3mCAT 1 ONLY',
+  220200011: '\x1b<3mFMS PRED UNRELIABLE', // TODO add without accurate fms penalty once multiple lines supported
+  220200012: '\x1b<3mMINIMIZE XWIND FOR LANDING',
+  220200013: '\x1b<3mAUTOLAND : RECOMMENDED',
   230200001: '\x1b<3mSATCOM DATALINK AVAIL',
   260200001: '\x1b<3mBEFORE CARGO OPENING : PAX DISEMBARK',
-  270200001: '\x1bON DRY RWY ONLY : LDG DIST AFFECTED < 15%',
+  270200001: '\x1b<3mON DRY RWY ONLY : LDG DIST AFFECTED < 15%',
+  270200002: '\x1bGND SPLRs WILL EXTEND AT REV SELECTION',
+  270200003: '\x1bF/CTL BKUP CTL ACTIVE',
   320200001: '\x1b<3mALTN BRK WITH A-SKID',
   320200002: '\x1b<3mBRK PRESS AUTO LIMITED ON ALL L/Gs',
   320200003: '\x1b<3mDELAY BRAKING UNTIL NLG TOUCHDOWN',
+  320200004: '\x1b<3mFOR LDG:USE DIFF BRAKING AS RQRD',
   340200002: '\x1b<3mALTN LAW : PROT LOST',
   340200003: '\x1b<3mFLS LIMITED TO F-APP + RAW',
   340200004: '\x1b<3mDIRECT LAW : PROT LOST',
@@ -202,7 +212,6 @@ export const EcamInfos: { [n: string]: string } = {
   340200006: '\x1b<3mFPV / VV AVAIL',
   340200007: '\x1b<3mCABIN ALT TRGT: SEE FCOM', // TODO add table
   340200008: '\x1b<3mSTANDBY NAV IN TRUE GPS TRK',
-  800200001: '\x1b<3mFMS PRED UNRELIABLE',
   800200002: '\x1b<3mON DRY RWY ONLY : LDG DIST AFFECTED < 15%',
   800200003: '\x1b<3mTAXI WITH CARE',
   800200004: '\x1b<5mAVOID MAX TILLER ANGLE TURN ON WET/CONTAM RWY',
@@ -225,12 +234,17 @@ export const EcamLimitations: { [n: string]: string } = {
   260400001: '\x1b<5mAPU BLEED DO NOT USE',
   260400002: '\x1b<5mMAX SPEED : 250/.55',
   270400001: '\x1b<5mFOR LDG : FLAP LVR 3',
+  270400002: '\x1b<5mMAX SPEED: 310 KT', // for altn law
+  270400003: '\x1b<5mUSE RUDDER WITH CARE',
+  270400004: '\x1b<5mFOR LDG : FLAP LVR 1',
   290400001: '\x1b<5mSLATS SLOW',
   290400002: '\x1b<5mFLAPS SLOW',
   300400001: '\x1b<5mAVOID ICING CONDs',
   320400001: '\x1b<5mMAX SPEED : 220 KT', // for lg extension
   320400002: '\x1b<5mL/G GRVTY EXTN ONLY',
   320400003: '\x1b<5mSTEER ENDUR LIMITED',
+  320400004: '\x1b<5mAUTO BRK:DO NOT USE',
+  700400001: '\x1b<5mREV : SYM USE ONLY',
   800400001: '\x1b<5mFUEL CONSUMPT INCRSD',
   800400002: '\x1b<5mLDG DIST AFFECTED',
   800400003: '\x1b<5mLDG PERF AFFECTED',
@@ -300,13 +314,10 @@ export const EcamInopSys: { [n: string]: string } = {
   213300018: '\x1b<4mCAB PRESS AUTO CTL 3',
   213300019: '\x1b<4mCAB PRESS AUTO CTL 4',
   220300001: '\x1b<4mA/THR',
-  220300002: '\x1b<4mCAT 3',
   220300004: '\x1b<4mAFS CTL PNL',
   220300005: '\x1b<4mAP 1',
   220300006: '\x1b<4mAP 2',
   220300007: '\x1b<4mAP 1+2',
-  220300008: '\x1b<4mCAT 3 DUAL',
-  220300009: '\x1b<4mCAT 2',
   220300010: '\x1b<4mGLS AUTOLAND',
   220300012: '\x1b<4mCAPT AFS BKUP CTL',
   220300013: '\x1b<4mF/O AFS BKUP CTL',
@@ -385,6 +396,8 @@ export const EcamInopSys: { [n: string]: string } = {
   240300034: '\x1b<4mTR 1',
   240300035: '\x1b<4mTR 2',
   240300036: '\x1b<4mTR ESS',
+  240300037: '\x1b<4mGEN 1+2',
+  240300038: '\x1b<4mGEN 3+4',
   260300001: '\x1b<4mAPU FIRE DET',
   260300002: '\x1b<4mENG 1 BLEED',
   260300003: '\x1b<4mENG 2 BLEED',
@@ -453,6 +466,12 @@ export const EcamInopSys: { [n: string]: string } = {
   270300004: '\x1b<4mRUDDER TRIM',
   270300005: '\x1b<4mRUDDER TRIM 1',
   270300006: '\x1b<4mRUDDER TRIM 2',
+  270300007: '\x1b<4mF/CTL REDUNDANCY',
+  270300008: '\x1b<4mUPPR RUDDER',
+  270300009: '\x1b<4mLWR RUDDER',
+  270300010: '\x1b<4mPRIM 1',
+  270300011: '\x1b<4mPRIM 2',
+  270300012: '\x1b<4mPRIM 3',
   290100001: '\x1b<4mPART SPLRs',
   290100003: '\x1b<4mFLAPS SYS 1',
   290100004: '\x1b<4mFLAPS SYS 2',
@@ -486,6 +505,10 @@ export const EcamInopSys: { [n: string]: string } = {
   290300020: '\x1b<4mY SYS OVHT DET',
   290300021: '\x1b<4mG HYD SYS',
   290300022: '\x1b<4mY HYD SYS',
+  290300023: '\x1b<4mG ENG 1 PMP A+B',
+  290300024: '\x1b<4mG ENG 2 PMP A+B',
+  290300025: '\x1b<4mY ENG 3 PMP A+B',
+  290300026: '\x1b<4mY ENG 4 PMP A+B',
   310300001: '\x1b<4mAUTO CALLOUT',
   310300002: '\x1b<4mFWS 1',
   310300003: '\x1b<4mFWS 2',
@@ -555,6 +578,12 @@ export const EcamInopSys: { [n: string]: string } = {
   341300001: '\x1b<4mPRED W/S 1',
   341300002: '\x1b<4mPRED W/S 2',
   341300003: '\x1b<4mPRED W/S 1+2',
+  340300046: '\x1b<4mTAWS SYS 1',
+  340300047: '\x1b<4mTAWS SYS 2',
+  340300048: '\x1b<4mTAWS SYS 1+2',
+  700300001: '\x1b<4mENG 2 REVERSER',
+  700300002: '\x1b<4mENG 3 REVERSER',
+  700300003: '\x1b<4mENG 2+3 REVERSERs',
 };
 
 export enum ChecklistLineStyle {
@@ -565,9 +594,9 @@ export enum ChecklistLineStyle {
   White = 'White',
   Headline = 'Headline',
   SubHeadline = 'SubHeadline',
+  CenteredSubHeadline = 'CenteredSubHeadline',
   SeparationLine = 'SeparationLine',
   ChecklistItem = 'ChecklistItem',
-  ChecklistItemInactive = 'ChecklistItemInactive',
   CompletedChecklist = 'CompletedChecklist',
   CompletedDeferredProcedure = 'CompletedDeferredProcedure',
   DeferredProcedure = 'DeferredProcedure',
@@ -575,9 +604,10 @@ export enum ChecklistLineStyle {
   LandAsap = 'LandAsap',
   LandAnsa = 'LandAnsa',
   ChecklistCondition = 'ChecklistCondition',
+  ChecklistItemInactive = 'ChecklistItemInactive',
 }
 
-interface AbstractChecklistItem {
+export interface AbstractChecklistItem {
   /** The name of the item, displayed at the beginning of the line. Does not accept special formatting tokens. No leading dot. For conditions, don't include the leading "IF" */
   name: string;
   /** Sensed or not sensed item. Sensed items are automatically checked. Non-sensed items will have a checkbox drawn in front of them on the EWD */
@@ -587,6 +617,7 @@ interface AbstractChecklistItem {
   /** Manually define style. standard (cyan when not completed, white/green when completed), or always cyan/green/amber. Standard, if not set. */
   style?: ChecklistLineStyle;
 }
+
 export interface ChecklistAction extends AbstractChecklistItem {
   /** Label at the end of the line if action is not completed. */
   labelNotCompleted: string;
@@ -596,9 +627,26 @@ export interface ChecklistAction extends AbstractChecklistItem {
   colonIfCompleted?: boolean;
 }
 
+export interface TimedChecklistAction extends ChecklistAction {
+  /** The time in seconds to be appended to the name of the item. E.g. AFTER 30 S */
+  time: number;
+
+  sensed: true;
+}
+
 export interface ChecklistCondition extends AbstractChecklistItem {
   /** If this line is a condition. Can be sensed or not sensed (i.e. manually activated). */
   condition: true;
+}
+
+export interface TimedChecklistCondition extends ChecklistCondition {
+  /** The time in seconds to be appended to the name of the item. E.g. AFTER 30 S */
+  time: number;
+
+  /** Wheter to append the time to the name of the item after it elapses*/
+  appendTimeIfElapsed: boolean;
+
+  sensed: true;
 }
 
 export interface ChecklistSpecialItem extends AbstractChecklistItem {}
@@ -607,8 +655,28 @@ export function isChecklistAction(c: AbstractChecklistItem): c is ChecklistActio
   return (c as ChecklistAction)?.labelNotCompleted !== undefined;
 }
 
+export function isTimedCheckListAction(c: AbstractChecklistItem): c is TimedChecklistAction {
+  return isChecklistAction(c) && (c as TimedChecklistAction)?.time !== undefined;
+}
+
+export function isChecklistHeadline(c: AbstractChecklistItem) {
+  return [ChecklistLineStyle.SubHeadline, ChecklistLineStyle.CenteredSubHeadline].includes(c.style);
+}
+
 export function isChecklistCondition(c: AbstractChecklistItem): c is ChecklistCondition {
   return (c as ChecklistCondition)?.condition !== undefined;
+}
+
+export function isNonTimedChecklistCondition(c: ChecklistCondition): boolean {
+  return !isChecklistTimedCondition(c);
+}
+
+export function isChecklistTimedCondition(c: AbstractChecklistItem): c is TimedChecklistCondition {
+  return isChecklistCondition(c) && (c as TimedChecklistCondition)?.time !== undefined;
+}
+
+export function isTimedItem(c: AbstractChecklistItem): boolean {
+  return isTimedCheckListAction(c) || isChecklistTimedCondition(c);
 }
 
 export function isAbnormalSensedProcedure(
@@ -623,7 +691,13 @@ export interface AbnormalProcedure {
   /** sensed or not sensed abnormal procedure */
   sensed: boolean;
   /** An array of possible checklist items. */
-  items: (ChecklistAction | ChecklistCondition | ChecklistSpecialItem)[];
+  items: (
+    | ChecklistAction
+    | ChecklistCondition
+    | ChecklistSpecialItem
+    | TimedChecklistAction
+    | TimedChecklistCondition
+  )[];
   /** LAND ASAP or LAND ANSA displayed below title? Optional, don't fill if no recommendation */
   recommendation?: 'LAND ASAP' | 'LAND ANSA';
 }
@@ -632,16 +706,9 @@ export interface NormalProcedure {
   /** Title of the checklist, e.g. "BEFORE START".  */
   title: string;
   /** An array of possible checklist items.. */
-  items: ChecklistAction[];
+  items: (ChecklistAction | ChecklistCondition | ChecklistSpecialItem)[];
   /** Checklist is only activated by request, deactivated per default */
   onlyActivatedByRequest?: boolean;
-}
-
-export interface AbnormalNonSensedProcedure {
-  /** Title of the checklist, e.g. "BEFORE START".  */
-  title: string;
-  /** An array of possible checklist items.. */
-  items: ChecklistAction[];
 }
 
 export enum DeferredProcedureType {
@@ -692,11 +759,13 @@ export const EcamAbNormalSensedSubMenuVector: AbnormalNonSensedCategory[] = [
 /** All abnormal sensed procedures (alerts, via ECL) should be here. */
 export const EcamDeferredProcedures: { [n: string]: DeferredProcedure } = {
   ...EcamDeferredProcAta212223,
+  ...EcamDeferredProcAta27,
   ...EcamDeferredProcAta313233,
 };
 
 /** Used for one common representation of data defining the visual appearance of ECAM lines on the WD (for the ECL part) */
 export interface WdLineData {
+  procedureId?: string;
   activeProcedure: boolean;
   sensed: boolean; // Line is selectable if false
   checked: boolean;
@@ -707,6 +776,7 @@ export interface WdLineData {
   specialLine?: WdSpecialLine;
   abnormalProcedure?: boolean;
   originalItemIndex?: number;
+  inactive?: boolean;
 }
 
 export enum WdSpecialLine {
@@ -716,3 +786,9 @@ export enum WdSpecialLine {
   Empty,
   SeparationLine,
 }
+
+export const FMS_PRED_UNRELIABLE_CHECKLIST_ITEM: ChecklistSpecialItem = {
+  name: 'FMS PRED UNRELIABLE', // TODO Replace with FMS PRED UNRELIABLE WITHOUT ACCURATE FMS FUEL PENALTY INSERTION once multiple lines supported
+  sensed: false,
+  style: ChecklistLineStyle.ChecklistCondition,
+};

@@ -576,7 +576,7 @@ mod tests {
     mod battery_charge_limiter_tests {
         use std::time::Duration;
 
-        use uom::si::{length::foot, power::watt, velocity::knot};
+        use uom::si::{power::watt, velocity::knot};
 
         use crate::{
             electrical::{
@@ -608,7 +608,7 @@ mod tests {
 
             fn on_the_ground(mut self) -> Self {
                 self.set_on_ground(true);
-                self.set_indicated_altitude(Length::new::<foot>(0.));
+                self.set_pressure_altitude(Length::default());
                 self.gear_down()
             }
 

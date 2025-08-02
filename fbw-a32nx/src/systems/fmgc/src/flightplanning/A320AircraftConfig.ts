@@ -17,6 +17,7 @@ const lnavConfig: LnavConfig = {
   DEFAULT_MIN_PREDICTED_TAS: 160,
   TURN_RADIUS_FACTOR: 1.0,
   NUM_COMPUTED_TRANSITIONS_AFTER_ACTIVE: -1,
+  EMIT_END_OF_VD_MARKER: false,
 };
 
 const vnavConfig: VnavConfig = {
@@ -140,6 +141,7 @@ const engineModelParams: EngineModelParameters = {
 
 const fmsSymbolConfig: FMSymbolsConfig = {
   publishDepartureIdent: false,
+  showRnpArLabel: false,
 };
 
 export const A320AircraftConfig: AircraftConfig = {
