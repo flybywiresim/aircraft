@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { useArinc429Var } from '@flybywiresim/fbw-sdk';
 import { GaugeComponent, GaugeMarkerComponent, ThrottlePositionDonutComponent } from '@instruments/common/gauges';
 import { useSimVar } from '@instruments/common/simVars';
