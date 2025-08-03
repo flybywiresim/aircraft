@@ -1,4 +1,4 @@
-// Copyright (c) 2024 FlyByWire Simulations
+// Copyright (c) 2024-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import {
@@ -11,7 +11,7 @@ import {
   Subscription,
 } from '@microsoft/msfs-sdk';
 import { ChecklistState, FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
-import { FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
+import { FwsCore } from 'systems-host/CpiomC/FlightWarningSystem/FwsCore';
 import {
   deferredProcedureIds,
   EcamNormalProcedures,
@@ -39,7 +39,7 @@ export interface FwsNormalChecklistsDict {
 export class FwsNormalChecklists {
   private readonly pub = this.fws.bus.getPublisher<FwsEwdEvents>();
 
-  private subs: Subscription[] = [];
+  private readonly subscriptions: Subscription[] = [];
 
   public readonly checklistShown = Subject.create(false);
 
@@ -73,7 +73,7 @@ export class FwsNormalChecklists {
   private activeProcedure: ProcedureLinesGenerator;
 
   constructor(private fws: FwsCore) {
-    this.subs.push(
+    this.subscriptions.push(
       this.checklistState.sub(
         (
           map: ReadonlyMap<number, ChecklistState>,
@@ -97,7 +97,7 @@ export class FwsNormalChecklists {
       ),
     );
 
-    this.subs.push(
+    this.subscriptions.push(
       this.checklistId.sub((id) => {
         if (id !== 0 && !deferredProcedureIds.includes(id)) {
           const clState = this.checklistState.getValue(id);
@@ -172,7 +172,7 @@ export class FwsNormalChecklists {
       }, true),
     );
 
-    this.subs.push(
+    this.subscriptions.push(
       this.fws.activeDeferredProceduresList.sub((map: ReadonlyMap<string, ChecklistState>) => {
         const flattened: ChecklistState[] = [];
         map.forEach((val, key) =>
@@ -194,7 +194,7 @@ export class FwsNormalChecklists {
       }),
     );
 
-    this.subs.push(
+    this.subscriptions.push(
       this.activeDeferredProcedureId.sub((id) => {
         if (id !== null && this.deferredProcedures.find((v) => v.procedureId === id)) {
           this.activeProcedure = this.deferredProcedures.find((v) => v.procedureId === id);
@@ -206,7 +206,7 @@ export class FwsNormalChecklists {
       }),
     );
 
-    this.subs.push(
+    this.subscriptions.push(
       this.fws.flightPhase.sub((phase) => {
         if (phase !== 1) {
           this.fws.manualCheckListReset.set(false);
@@ -247,7 +247,7 @@ export class FwsNormalChecklists {
       itemsToShow: Array(Object.keys(EcamNormalProcedures).length).fill(true),
     });
 
-    this.subs.push(this.selectedLine.sub(() => this.scrollToSelectedLine()));
+    this.subscriptions.push(this.selectedLine.sub(() => this.scrollToSelectedLine()));
     this.publishInitialState();
   }
 
@@ -514,7 +514,7 @@ export class FwsNormalChecklists {
   }
 
   destroy() {
-    this.subs.forEach((s) => s.destroy());
+    this.subscriptions.forEach((s) => s.destroy());
   }
 
   public sensedItems: FwsNormalChecklistsDict = {

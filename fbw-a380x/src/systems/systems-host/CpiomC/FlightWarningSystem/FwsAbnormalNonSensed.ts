@@ -1,18 +1,19 @@
-// Copyright (c) 2024 FlyByWire Simulations
+// Copyright (c) 2024-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { MapSubject, SimVarValueType, Subject, Subscription } from '@microsoft/msfs-sdk';
 import { ChecklistState, FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
-import { FwcAuralWarning, FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
+import { FwcAuralWarning, FwsCore } from 'systems-host/CpiomC/FlightWarningSystem/FwsCore';
 import { EcamAbNormalSensedSubMenuVector, WD_NUM_LINES } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { AbnormalNonSensedProceduresOverview } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalNonSensedProcedures';
-import { EwdAbnormalDict } from 'systems-host/systems/FlightWarningSystem/FwsAbnormalSensed';
+import { EwdAbnormalDict } from 'systems-host/CpiomC/FlightWarningSystem/FwsAbnormalSensed';
 import { SdPages } from '@shared/EcamSystemPages';
+import { isSubscription } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
 
 export class FwsAbnormalNonSensed {
   private readonly pub = this.fws.bus.getPublisher<FwsEwdEvents>();
 
-  private subs: Subscription[] = [];
+  private readonly subscriptions: Subscription[] = [];
 
   public readonly abnProcShown = Subject.create(false);
 
@@ -30,7 +31,7 @@ export class FwsAbnormalNonSensed {
   public readonly checklistState = MapSubject.create<number, ChecklistState>();
 
   constructor(private fws: FwsCore) {
-    this.subs.push(
+    this.subscriptions.push(
       this.checklistId.sub((id) => {
         this.pub.pub('fws_abn_non_sensed_id', id, true);
         if (id > 10) {
@@ -141,15 +142,26 @@ export class FwsAbnormalNonSensed {
   }
 
   destroy() {
-    this.subs.forEach((s) => s.destroy());
+    this.subscriptions.forEach((s) => s.destroy());
+
+    for (const key in this.ewdAbnormalNonSensed) {
+      const element = this.ewdAbnormalNonSensed[key];
+      if (isSubscription(element.simVarIsActive)) {
+        element.simVarIsActive.destroy();
+      }
+
+      if (isSubscription(element.auralWarning)) {
+        element.auralWarning.destroy();
+      }
+    }
   }
 
   public ewdAbnormalNonSensed: EwdAbnormalDict = {
     260900097: {
       // SMOKE / FUMES
       flightPhaseInhib: [],
-      simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(260900097)),
-      notActiveWhenFaults: [],
+      simVarIsActive: this.fws.smokeFumesActivated,
+      notActiveWhenItemActive: [],
       whichItemsToShow: () => [true, true, true, true, true, true],
       whichItemsChecked: () => [
         false,
@@ -167,7 +179,7 @@ export class FwsAbnormalNonSensed {
       // F/CTL RUDDER PEDAL JAMMED
       flightPhaseInhib: [],
       simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(270900001)),
-      notActiveWhenFaults: [],
+      notActiveWhenItemActive: [],
       whichItemsToShow: () => [true, true, true, true, true, true, true],
       whichItemsChecked: () => [false, false, false, false, false, false, false],
       failure: 1,
@@ -181,7 +193,7 @@ export class FwsAbnormalNonSensed {
       // F/CTL RUDDER TRIM RUNAWAY
       flightPhaseInhib: [],
       simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(270900002)),
-      notActiveWhenFaults: [],
+      notActiveWhenItemActive: [],
       whichItemsToShow: () => [true, true, true, true, true, true],
       whichItemsChecked: () => [false, false, false, false, false, false],
       failure: 1,
@@ -194,7 +206,7 @@ export class FwsAbnormalNonSensed {
       // F/CTL SPEED BRAKES LEVER JAMMED
       flightPhaseInhib: [],
       simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(270900003)),
-      notActiveWhenFaults: [],
+      notActiveWhenItemActive: [],
       whichItemsToShow: () => [
         this.fws.speedBrakeCommand.get(),
         this.fws.speedBrakeCommand.get(),
@@ -211,7 +223,7 @@ export class FwsAbnormalNonSensed {
       // F/CTL LDG WITH FLAPS LEVER JAMMED
       flightPhaseInhib: [],
       simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(270900004)),
-      notActiveWhenFaults: [],
+      notActiveWhenItemActive: [],
       whichItemsToShow: () => [
         this.fws.flapsHandle.get() <= 2,
         this.fws.flapsHandle.get() === 3,
@@ -232,13 +244,13 @@ export class FwsAbnormalNonSensed {
         ...(this.fws.flapsHandle.get() < 3 ? ['220400001', '800400004', '800400003'] : ''),
       ],
       inopSysApprLdg: () => ['320300007'],
-      info: () => ['800200001'],
+      info: () => ['220200011'],
     },
     270900005: {
       // F/CTL LDG WITH NO SLATS NO FLAPS
       flightPhaseInhib: [],
       simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(270900005)),
-      notActiveWhenFaults: [],
+      notActiveWhenItemActive: [],
       whichItemsToShow: () => [true, true, true, true, true, true, true, true, true, true, true, true, true, true],
       whichItemsChecked: () => [
         false,
@@ -267,7 +279,7 @@ export class FwsAbnormalNonSensed {
       // WHEEL TIRE DAMAGE SUSPECTED
       flightPhaseInhib: [],
       simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(320900006)),
-      notActiveWhenFaults: [],
+      notActiveWhenItemActive: [],
       whichItemsToShow: () => [true, true],
       whichItemsChecked: () => [false, false],
       failure: 1,
@@ -281,7 +293,7 @@ export class FwsAbnormalNonSensed {
       // EMER DESCENT
       flightPhaseInhib: [],
       simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(990900005)),
-      notActiveWhenFaults: [],
+      notActiveWhenItemActive: [],
       whichItemsToShow: () => [
         true,
         true,
@@ -324,7 +336,7 @@ export class FwsAbnormalNonSensed {
       // EMER EVAC
       flightPhaseInhib: [],
       simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(990900006)),
-      notActiveWhenFaults: [],
+      notActiveWhenItemActive: [],
       whichItemsToShow: () => [true, true, true, true, true, true, true, true, true, true, true, true, true, true],
       whichItemsChecked: () => [
         false,
@@ -350,7 +362,7 @@ export class FwsAbnormalNonSensed {
       // OVERWEIGHT LDG
       flightPhaseInhib: [],
       simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(990900009)),
-      notActiveWhenFaults: [],
+      notActiveWhenItemActive: [],
       whichItemsToShow: () => [
         true,
         true,

@@ -6,6 +6,7 @@ import {
   ChecklistLineStyle,
   DeferredProcedure,
   DeferredProcedureType,
+  FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 
 // Convention for IDs:
@@ -229,17 +230,81 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
   271800036: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm PRIM 1 FAULT',
     sensed: true,
-    items: [],
+    items: [
+      { name: 'FOR TAXI: FLAP LVR 1', sensed: false },
+      { name: 'PRIM 1', sensed: true, labelNotCompleted: 'OFF THEN ON' },
+      { name: 'NOT SUCCESSFUL:', condition: true, sensed: true },
+      { name: 'PRIM 1', sensed: true, labelNotCompleted: 'OFF', level: 1 },
+      { name: 'SPD BRK: DO NOT USE', sensed: false },
+      {
+        name: 'FUEL CONSUMPT INCRSD',
+        sensed: false,
+      },
+      FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
+      {
+        name: 'GA THR: TOGA ONLY',
+        sensed: false,
+      },
+      {
+        name: 'FOR LDG: USE DIFF BRAKING AS RQRD',
+        sensed: false,
+        style: ChecklistLineStyle.Green,
+      },
+      { name: 'LDG DIST AFFECTED', sensed: false },
+    ],
   },
   271800037: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm PRIM 2 FAULT',
     sensed: true,
-    items: [],
+    items: [
+      { name: 'FOR TAXI: FLAP LVR 1', sensed: false },
+      { name: 'PRIM 2', sensed: true, labelNotCompleted: 'OFF THEN ON' },
+      { name: 'NOT SUCCESSFUL:', condition: true, sensed: true },
+      { name: 'PRIM 2', sensed: true, labelNotCompleted: 'OFF', level: 1 },
+      { name: 'PRIM 2', sensed: true, labelNotCompleted: 'KEEP ON' },
+      { name: 'SPD BRK: DO NOT USE', sensed: false },
+      {
+        name: 'FUEL CONSUMPT INCRSD',
+        sensed: false,
+      },
+      FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
+      {
+        name: 'GA THR: TOGA ONLY',
+        sensed: false,
+      },
+      {
+        name: 'FOR LDG: USE DIFF BRAKING AS RQRD',
+        sensed: false,
+        style: ChecklistLineStyle.Green,
+      },
+      { name: 'LDG DIST AFFECTED', sensed: false },
+    ],
   },
   271800038: {
-    title: '\x1b<4m\x1b4mF/CTL\x1bm PRIM 3 FAULTT',
+    title: '\x1b<4m\x1b4mF/CTL\x1bm PRIM 3 FAULT',
     sensed: true,
-    items: [],
+    items: [
+      { name: 'FOR TAXI: FLAP LVR 1', sensed: false },
+      { name: 'PRIM 3', sensed: true, labelNotCompleted: 'OFF THEN ON' },
+      { name: 'NOT SUCCESSFUL:', condition: true, sensed: true },
+      { name: 'PRIM 3', sensed: true, labelNotCompleted: 'OFF', level: 1 },
+      { name: 'SPD BRK: DO NOT USE', sensed: false },
+      {
+        name: 'FUEL CONSUMPT INCRSD',
+        sensed: false,
+      },
+      FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
+      {
+        name: 'GA THR: TOGA ONLY',
+        sensed: false,
+      },
+      {
+        name: 'FOR LDG: USE DIFF BRAKING AS RQRD',
+        sensed: false,
+        style: ChecklistLineStyle.Green,
+      },
+      { name: 'LDG DIST AFFECTED', sensed: false },
+    ],
   },
   271800039: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm PRIM 1 RUDDER ACTUATOR FAULT',
@@ -332,7 +397,7 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
     items: [
       { name: 'FOR TAXI: FLAP LVR 1', sensed: false },
       { name: 'SEC 1', sensed: true, labelNotCompleted: 'OFF THEN ON' },
-      { name: 'NOT SUCCESSFUL:', condition: true, sensed: true },
+      { name: 'NOT SUCCESSFUL', condition: true, sensed: true },
       { name: 'SEC 1', sensed: true, labelNotCompleted: 'OFF' },
       { name: 'LDG DIST AFFECTED', sensed: false },
     ],
@@ -343,7 +408,7 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
     items: [
       { name: 'FOR TAXI: FLAP LVR 1', sensed: false },
       { name: 'SEC 2', sensed: true, labelNotCompleted: 'OFF THEN ON' },
-      { name: 'NOT SUCCESSFUL:', condition: true, sensed: true },
+      { name: 'NOT SUCCESSFUL', condition: true, sensed: true },
       { name: 'SEC 2', sensed: true, labelNotCompleted: 'OFF' },
       { name: 'SEC 2', sensed: true, labelNotCompleted: 'KEEP ON' },
       { name: 'LDG DIST AFFECTED', sensed: false },
@@ -355,7 +420,7 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
     items: [
       { name: 'FOR TAXI: FLAP LVR 1', sensed: false },
       { name: 'SEC 3', sensed: true, labelNotCompleted: 'OFF THEN ON' },
-      { name: 'NOT SUCCESSFUL:', condition: true, sensed: true },
+      { name: 'NOT SUCCESSFUL', condition: true, sensed: true },
       { name: 'SEC 3', sensed: true, labelNotCompleted: 'OFF' },
       { name: 'LDG DIST AFFECTED', sensed: false },
     ],
@@ -374,11 +439,7 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
         style: ChecklistLineStyle.Cyan,
         sensed: false,
       },
-      {
-        name: 'FMS PRED UNRELIABLE WITHOUT ACCURATE FMS PENALTY INSERTION',
-        style: ChecklistLineStyle.Green,
-        sensed: false,
-      },
+      FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
     ],
   },
   271800063: {
@@ -603,9 +664,9 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
       { name: 'USE RUDDER WITH CARE', sensed: false },
       { name: 'USE RUDDER PEDALS TO CENTER RUDDER', sensed: false },
       { name: 'RUDDER TRIM', labelNotCompleted: 'RESET', sensed: false },
-      { name: 'RESET NOT SUCCESSFUL :', condition: true, sensed: false },
+      { name: 'RESET NOT SUCCESSFUL', condition: true, sensed: false },
       { name: 'FOR CONTINUED FLT : CONSIDER AP USE', sensed: false, level: 1 },
-      { name: 'RESET SUCCESSFUL :', condition: true, sensed: false },
+      { name: 'RESET SUCCESSFUL', condition: true, sensed: false },
     ],
   },
   270900003: {
@@ -628,11 +689,7 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
       { name: 'NO AUTOLAND', sensed: false },
       { name: 'FOR GA : KEEP S/F CONF', sensed: false },
       { name: 'FUEL CONSUMPT INCRSD', sensed: false },
-      {
-        name: 'FMS PRED UNRELIABLE WITHOUT ACCURATE FMS FUEL PENALTY INSERTION',
-        sensed: false,
-        style: ChecklistLineStyle.Green,
-      },
+      FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
       { name: 'LDG PERF AFFECTED', sensed: false },
     ],
   },
@@ -640,7 +697,7 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
     title: '\x1b<4m\x1b4mF/CTL\x1bm LDG WITH NO SLATS NO FLAPS',
     sensed: false,
     items: [
-      { name: 'FLAPS LEVER JAMMED :', condition: true, sensed: false },
+      { name: 'FLAPS LEVER JAMMED', condition: true, sensed: false },
       { name: 'LDG WITH FLAP LVR JAMMED PROC', labelNotCompleted: 'APPLY', sensed: false, level: 1 },
       { name: 'FLAPS LEVER NOT JAMMED :', condition: true, sensed: false },
       { name: '[MFD SURV] TAWS FLAP MODE', labelNotCompleted: 'OFF', sensed: true, level: 1 },
@@ -669,7 +726,7 @@ export const EcamDeferredProcAta27: { [n: number]: DeferredProcedure } = {
         sensed: false,
       },
       {
-        name: 'MANUAL LANDING ANTICIPATED :',
+        name: 'MANUAL LANDING ANTICIPATED',
         sensed: false,
         condition: true,
       },
