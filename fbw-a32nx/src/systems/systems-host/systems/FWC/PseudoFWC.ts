@@ -677,6 +677,21 @@ export class PseudoFWC {
 
   private readonly dualInput = Subject.create(false);
 
+  // L, R SIDESTICK FAULT BY TAKEOVER
+  private readonly sidestickFaultToConfigMtrig = new NXLogicTriggeredMonostableNode(1.5, true);
+
+  private readonly leftSidestickFaultByTakeoverMemory = new NXLogicMemoryNode(true);
+
+  private readonly leftSidestickFaultByTakeoverWarning = Subject.create(false);
+
+  private readonly leftSidestickFaultByTakeoverAural = Subject.create(false);
+
+  private readonly rightSidestickFaultByTakeoverMemory = new NXLogicMemoryNode(true);
+
+  private readonly rightSidestickFaultByTakeoverWarning = Subject.create(false);
+
+  private readonly rightSidestickFaultByTakeoverAural = Subject.create(false);
+
   private readonly showLandingInhibit = Subject.create(false);
 
   private readonly showTakeoffInhibit = Subject.create(false);
@@ -2596,6 +2611,42 @@ export class PseudoFWC {
     this.dualInputPulse.write(dualInputCondition2, deltaTime);
     this.dualInput.set(this.dualInputPulse.read());
 
+    // L, R SIDESTICK FAULT (BY TAKEOVER)
+    this.sidestickFaultToConfigMtrig.write(toConfigTest, deltaTime);
+
+    const leftSidestickPriorityLocked =
+      fcdc1DiscreteWord1.bitValueOr(19, false) || fcdc2DiscreteWord1.bitValueOr(19, false);
+    const leftSidestickInop = leftSidestickPriorityLocked && this.flightPhase129.get();
+
+    this.leftSidestickFaultByTakeoverMemory.write(
+      leftSidestickPriorityLocked && this.flightPhase34.get(),
+      !leftSidestickPriorityLocked || this.fwcFlightPhase.get() === 5,
+    );
+    this.leftSidestickFaultByTakeoverWarning.set(
+      (leftSidestickInop && this.sidestickFaultToConfigMtrig.read()) || this.leftSidestickFaultByTakeoverMemory.read(),
+    );
+    this.leftSidestickFaultByTakeoverAural.set(
+      (leftSidestickInop && this.sidestickFaultToConfigMtrig.read()) ||
+        (leftSidestickPriorityLocked && this.flightPhase34.get()),
+    );
+
+    const rightSidestickPriorityLocked =
+      fcdc1DiscreteWord1.bitValueOr(20, false) || fcdc2DiscreteWord1.bitValueOr(20, false);
+    const rightSidestickInop = rightSidestickPriorityLocked && this.flightPhase129.get();
+
+    this.rightSidestickFaultByTakeoverMemory.write(
+      rightSidestickPriorityLocked && this.flightPhase34.get(),
+      !rightSidestickPriorityLocked || this.fwcFlightPhase.get() === 5,
+    );
+    this.rightSidestickFaultByTakeoverWarning.set(
+      (rightSidestickInop && this.sidestickFaultToConfigMtrig.read()) ||
+        this.rightSidestickFaultByTakeoverMemory.read(),
+    );
+    this.rightSidestickFaultByTakeoverAural.set(
+      (rightSidestickInop && this.sidestickFaultToConfigMtrig.read()) ||
+        (rightSidestickPriorityLocked && this.flightPhase34.get()),
+    );
+
     // GND SPLRS FAULT status
     const sec1GroundSpoilerFault = fcdc1DiscreteWord5.bitValue(14) || fcdc2DiscreteWord5.bitValue(14);
     const sec2GroundSpoilerFault = fcdc1DiscreteWord5.bitValue(15) || fcdc2DiscreteWord5.bitValue(15);
@@ -3160,6 +3211,8 @@ export class PseudoFWC {
 
     /* T.O. CONFIG CHECK */
     // TODO Note that fuel tank low pressure and gravity feed warnings are not included
+    const sidesticks = leftSidestickInop || rightSidestickInop;
+
     const systemStatus =
       this.engine1Generator.get() &&
       this.engine2Generator.get() &&
@@ -3184,7 +3237,13 @@ export class PseudoFWC {
       this.pitchTrimNotTo.get();
 
     const toConfigSystemStatusNormal =
-      systemStatus && speeds && !this.brakesHot.get() && doors && !this.flapsMcduDisagree.get() && !surfacesNotTo;
+      !sidesticks &&
+      systemStatus &&
+      speeds &&
+      !this.brakesHot.get() &&
+      doors &&
+      !this.flapsMcduDisagree.get() &&
+      !surfacesNotTo;
 
     const toConfigNormal = this.toConfigNormalConf.write(toConfigSystemStatusNormal, deltaTime);
 
@@ -4138,6 +4197,36 @@ export class PseudoFWC {
       simVarIsActive: this.flapConfigWarning,
       whichCodeToReturn: () => [0, 1],
       codesToReturn: ['270009001', '270009002'],
+      memoInhibit: () => false,
+      failure: 3,
+      sysPage: -1,
+      side: 'LEFT',
+    },
+    2700195: {
+      // R SIDESTICK FAULT (BY TAKOVER)
+      flightPhaseInhib: [5, 6, 7, 8],
+      simVarIsActive: this.rightSidestickFaultByTakeoverWarning,
+      auralWarning: MappedSubject.create(
+        ([active]) => (active ? FwcAuralWarning.CavalryCharge : FwcAuralWarning.None),
+        this.rightSidestickFaultByTakeoverAural,
+      ),
+      whichCodeToReturn: () => [0, 1, 2],
+      codesToReturn: ['270019501', '270019502', '270019503'],
+      memoInhibit: () => false,
+      failure: 3,
+      sysPage: -1,
+      side: 'LEFT',
+    },
+    2700196: {
+      // L SIDESTICK FAULT (BY TAKOVER)
+      flightPhaseInhib: [5, 6, 7, 8],
+      simVarIsActive: this.leftSidestickFaultByTakeoverWarning,
+      auralWarning: MappedSubject.create(
+        ([active]) => (active ? FwcAuralWarning.CavalryCharge : FwcAuralWarning.None),
+        this.leftSidestickFaultByTakeoverAural,
+      ),
+      whichCodeToReturn: () => [0, 1, 2],
+      codesToReturn: ['270019601', '270019602', '270019603'],
       memoInhibit: () => false,
       failure: 3,
       sysPage: -1,
