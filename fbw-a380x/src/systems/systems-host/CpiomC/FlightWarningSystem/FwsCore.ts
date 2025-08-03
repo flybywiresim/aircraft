@@ -1091,8 +1091,6 @@ export class FwsCore {
 
   public readonly speedBrakeStillOutWarning = Subject.create(false);
 
-  public readonly spdBrkPositionDisagree = Arinc429Register.empty();
-
   public readonly speedBrakePosLeverDisagree = Subject.create(false);
 
   public readonly amberSpeedBrake = Subject.create(false);
@@ -4188,7 +4186,6 @@ export class FwsCore {
 
     this.spoilersArmed.set(fcdc1DiscreteWord4.bitValueOr(27, false) || fcdc2DiscreteWord4.bitValueOr(27, false));
     this.speedBrakeCommand.set(fcdc1DiscreteWord4.bitValueOr(28, false) || fcdc2DiscreteWord4.bitValueOr(28, false));
-    this.spdBrkPositionDisagree.setFromSimVar('L:A32NX_FCDC_1_DISCRETE_WORD_5');
 
     // TODO: add switching between SFCC_1 and SFCC_2
     const flapsPos = Arinc429Word.fromSimVarValue('L:A32NX_SFCC_1_FLAP_ACTUAL_POSITION_WORD');
@@ -4492,6 +4489,7 @@ export class FwsCore {
       !((flightPhase8 && !allRaInvalid) || flightPhase4567) && (this.lgNotDownNoCancel.get() || this.lgNotDown.get());
     this.lgLeverRedArrow.set(redArrow);
 
+    // load analysis
     if (overspeedWarning) {
       this.overspeedOccurredDuringFlight.set(true);
     }
