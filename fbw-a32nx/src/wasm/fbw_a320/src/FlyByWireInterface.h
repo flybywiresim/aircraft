@@ -517,6 +517,9 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idHydGreenPressurised;
   std::unique_ptr<LocalVariable> idHydBluePressurised;
 
+  std::unique_ptr<LocalVariable> idCaptPriorityButtonPressed;
+  std::unique_ptr<LocalVariable> idFoPriorityButtonPressed;
+
   std::unique_ptr<LocalVariable> idAttHdgSwtgKnob;
   std::unique_ptr<LocalVariable> idAirDataSwtgKnob;
 
