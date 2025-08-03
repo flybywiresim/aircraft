@@ -17,6 +17,7 @@
   - [Indicating-Recording ATA 31](#indicating-recording-ata-31)
   - [ECAM Control Panel ATA 31](#ecam-control-panel-ata-31)
   - [EFIS Control Panel ATA 31](#efis-control-panel-ata-31)
+  - [Display System ATA 31](#display-system-ata-31)
   - [Bleed Air ATA 36](#bleed-air-ata-36)
   - [Integrated Modular Avionics ATA 42](#integrated-modular-avionics-ata-42)
   - [Auxiliary Power Unit ATA 49](#auxiliary-power-unit-ata-49)
@@ -1082,6 +1083,12 @@
     - Pre-selected QNH when in STD mode, or 0 when not displayed.
     - Not for FBW systems use!
     - {side} = L or R
+
+## Display System ATA 31
+
+- A380X_PFD_MSG_FOR_GA_SET_TOGA
+    -Boolean
+    -Indicates if the FOR GA: SET TOGA message is shown on the PFD
 
 ## Bleed Air ATA 36
 

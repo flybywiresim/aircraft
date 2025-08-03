@@ -97,9 +97,27 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
 
   private readonly fwcFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
 
+  private readonly fmgcFlighPhase = ConsumerSubject.create(this.sub.on('fmgcFlightPhase'), 0);
+
   private readonly activeVerticalMode = ConsumerSubject.create(this.sub.on('activeVerticalMode'), 0);
 
   private readonly btvExitMissed = ConsumerSubject.create(this.sub.on('btvExitMissed'), false);
+
+  private readonly fd1Active = ConsumerSubject.create(this.sub.on('fd1Active'), false);
+
+  private readonly fd2Active = ConsumerSubject.create(this.sub.on('fd2Active'), false);
+
+  private readonly slatsFlapsStatusRaw = ConsumerSubject.create(this.sub.on('slatsFlapsStatusRaw'), 0);
+
+  private readonly flapHandleIndex = ConsumerSubject.create(this.sub.on('flapHandleIndex'), 0);
+
+  private readonly tla1 = ConsumerSubject.create(this.sub.on('tla1'), 0);
+
+  private readonly tla2 = ConsumerSubject.create(this.sub.on('tla2'), 0);
+
+  private readonly tla3 = ConsumerSubject.create(this.sub.on('tla3'), 0);
+
+  private readonly tla4 = ConsumerSubject.create(this.sub.on('tla4'), 0);
 
   private readonly disconnectApForLdg = MappedSubject.create(
     ([ap1, ap2, ra, altitude, landingElevation, verticalMode, selectedFpa, selectedVs, approachCapability]) => {
@@ -145,6 +163,48 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
     this.altitude,
   );
 
+  private readonly forGaSetToga = MappedSubject.create(
+    ([
+      ap1,
+      ap2,
+      fd1,
+      fd2,
+      ra,
+      altitude,
+      slatsFlapsStatusRaw,
+      flapHandleIndex,
+      tla1,
+      tla2,
+      tla3,
+      tla4,
+      fmgcFlightPhase,
+    ]) => {
+      return (
+        (ap1 || ap2 || fd1 || fd2) &&
+        (ra.isNormalOperation() ? ra.value < 1000 : altitude.valueOr(Infinity)) &&
+        (slatsFlapsStatusRaw > 0 || flapHandleIndex > 0) &&
+        tla1 === 35 &&
+        tla2 === 35 &&
+        tla3 === 35 &&
+        tla4 === 35 &&
+        fmgcFlightPhase === 5
+      );
+    },
+    this.ap1Active,
+    this.ap2Active,
+    this.fd1Active,
+    this.fd2Active,
+    this.radioHeight,
+    this.altitude,
+    this.slatsFlapsStatusRaw,
+    this.flapHandleIndex,
+    this.tla1,
+    this.tla2,
+    this.tla3,
+    this.tla4,
+    this.fmgcFlighPhase,
+  );
+
   private handleFMABorders() {
     const sharedModeActive =
       this.activeLateralMode === 32 ||
@@ -164,6 +224,7 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
         this.disconnectApForLdg.get(),
         this.unrestrictedClimbDescent.get(),
         this.btvExitMissed.get(),
+        this.forGaSetToga.get(),
       )[0] !== null;
 
     const engineMessage = this.athrModeMessage;
@@ -203,6 +264,8 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
     this.disconnectApForLdg.sub(() => this.handleFMABorders());
 
     this.btvExitMissed.sub(() => this.handleFMABorders());
+
+    this.forGaSetToga.sub(() => this.handleFMABorders());
 
     this.fcdcDiscreteWord1.sub(() => this.handleFMABorders());
     this.fwcFlightPhase.sub(() => this.handleFMABorders());
@@ -280,6 +343,7 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
           disconnectApForLdg={this.disconnectApForLdg}
           unrestrictedClimbDescent={this.unrestrictedClimbDescent}
           btvExitMissed={this.btvExitMissed}
+          forGaSetToga={this.forGaSetToga}
           AB3Message={this.AB3Message}
         />
       </g>
@@ -442,6 +506,7 @@ class Row3 extends DisplayComponent<{
   disconnectApForLdg: Subscribable<boolean>;
   unrestrictedClimbDescent: Subscribable<number>;
   btvExitMissed: Subscribable<boolean>;
+  forGaSetToga: Subscribable<boolean>;
   AB3Message: Subscribable<boolean>;
 }> {
   private cellsToHide = FSComponent.createRef<SVGGElement>();
@@ -471,6 +536,7 @@ class Row3 extends DisplayComponent<{
           disconnectApForLdg={this.props.disconnectApForLdg}
           unrestrictedClimbDescent={this.props.unrestrictedClimbDescent}
           btvExitMissed={this.props.btvExitMissed}
+          forGaSetToga={this.props.forGaSetToga}
           bus={this.props.bus}
         />
         <E3Cell bus={this.props.bus} />
@@ -1406,6 +1472,7 @@ const getBC3Message = (
   disconnectApForLdg: boolean,
   unrestrictedClimbDescent: number,
   exitMissed: boolean,
+  forGaSetToga: boolean,
 ) => {
   const flightPhaseForWarning =
     fwcFlightPhase >= 2 && fwcFlightPhase <= 11 && !(fwcFlightPhase >= 4 && fwcFlightPhase <= 7);
@@ -1419,9 +1486,9 @@ const getBC3Message = (
   if (fcdcWord1.bitValue(15) && !fcdcWord1.isFailureWarning() && flightPhaseForWarning) {
     text = 'USE MAN PITCH TRIM';
     className = 'PulseAmber9Seconds Amber';
-  } else if (false) {
+  } else if (forGaSetToga) {
     text = 'FOR GA: SET TOGA';
-    className = 'PulseAmber9Seconds Amber';
+    className = 'Amber';
   } else if (disconnectApForLdg) {
     text = 'DISCONNECT AP FOR LDG';
     className = 'FontSmall PulseAmber9Seconds Amber';
@@ -1470,6 +1537,7 @@ class BC3Cell extends DisplayComponent<{
   disconnectApForLdg: Subscribable<boolean>;
   unrestrictedClimbDescent: Subscribable<number>;
   btvExitMissed: Subscribable<boolean>;
+  forGaSetToga: Subscribable<boolean>;
   bus: EventBus;
 }> {
   private sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
@@ -1505,6 +1573,7 @@ class BC3Cell extends DisplayComponent<{
       this.props.disconnectApForLdg.get(),
       this.props.unrestrictedClimbDescent.get(),
       this.props.btvExitMissed.get(),
+      this.props.forGaSetToga.get(),
     );
     this.classNameSub.set(`FontMedium MiddleAlign ${className}`);
     if (text !== null) {
