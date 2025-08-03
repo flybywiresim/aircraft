@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2022 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
@@ -104,6 +105,11 @@ type CoRoute = {
 };
 
 export class CoRouteUplinkAdapter {
+  private static logTroubleshootingError(fms: FmsDisplayInterface, msg: any) {
+    fms.logTroubleshootingError(String(msg));
+    console.warn(msg);
+  }
+
   static async uplinkFlightPlanFromCoRoute(
     fms: FmsDataInterface & FmsDisplayInterface,
     flightPlanService: FlightPlanService,
@@ -119,7 +125,10 @@ export class CoRouteUplinkAdapter {
     try {
       await flightPlanService.setAlternate(route.altn, FlightPlanIndex.Uplink);
     } catch (e) {
-      console.error(`[CoRouteUplinkAdapter](uplinkFlightPlanFromCoRoute) Failed to set alternate: ${e}`);
+      CoRouteUplinkAdapter.logTroubleshootingError(
+        fms,
+        `[CoRouteUplinkAdapter](uplinkFlightPlanFromCoRoute) Failed to set alternate: ${e}`,
+      );
     }
 
     const plan = flightPlanService.uplink;
@@ -212,7 +221,8 @@ export class CoRouteUplinkAdapter {
             );
             insertHead++;
           } else {
-            console.warn(
+            CoRouteUplinkAdapter.logTroubleshootingError(
+              fms,
               `[CoRouteUplinkAdapter](uplinkFlightPlanFromCoRoute) Found no fixes for "sidEnrouteTransition" chunk: ${chunk.ident}`,
             );
 
@@ -239,7 +249,8 @@ export class CoRouteUplinkAdapter {
             );
             insertHead++;
           } else {
-            console.warn(
+            CoRouteUplinkAdapter.logTroubleshootingError(
+              fms,
               `[CoRouteUplinkAdapter](uplinkFlightPlanFromCoRoute) Found no fixes for "waypoint" chunk: ${chunk.ident}`,
             );
 
@@ -282,7 +293,8 @@ export class CoRouteUplinkAdapter {
             if (airways.length > 0) {
               plan.pendingAirways.thenAirway(pickAirway(airways, chunk.locationHint));
             } else {
-              console.warn(
+              CoRouteUplinkAdapter.logTroubleshootingError(
+                fms,
                 `[CoRouteUplinkAdapter](uplinkFlightPlanFromCoRoute) Found no airways at fix "${airwaySearchFix.ident}" for airway: "${chunk.ident}"`,
               );
               fms.showFmsErrorMessage(FmsErrorType.AwyWptMismatch);
@@ -304,7 +316,8 @@ export class CoRouteUplinkAdapter {
             if (!plan.pendingAirways) {
               // If we have a termination but never started an airway entry (for example if we could not find the airway in the database),
               // we add the termination fix with a disco in between
-              console.warn(
+              CoRouteUplinkAdapter.logTroubleshootingError(
+                fms,
                 `[CoRouteUplinkAdapter](uplinkFlightPlanFromCoRoute) Found no pending airways for "airwayTermination" chunk. Inserting discontinuity before ${chunk.ident}`,
               );
 
@@ -333,7 +346,8 @@ export class CoRouteUplinkAdapter {
               ensureAirwaysFinalized();
             } else {
               // Fixes with the name of the airway termination are found but they're not on that airway
-              console.warn(
+              CoRouteUplinkAdapter.logTroubleshootingError(
+                fms,
                 `[CoRouteUplinkAdapter](uplinkFlightPlanFromCoRoute) Airway termination ${chunk.ident} not found on airway ${tailAirway.ident}.`,
               );
 
@@ -356,7 +370,8 @@ export class CoRouteUplinkAdapter {
               break;
             }
           } else {
-            console.warn(
+            CoRouteUplinkAdapter.logTroubleshootingError(
+              fms,
               `[CoRouteUplinkAdapter](uplinkFlightPlanFromCoRoute) Found no fixes for "airwayTermination" chunk: ${chunk.ident}. Cancelling airway entry...`,
             );
 

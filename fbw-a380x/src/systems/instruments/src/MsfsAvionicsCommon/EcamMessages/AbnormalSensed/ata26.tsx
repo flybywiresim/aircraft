@@ -28,7 +28,8 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'PUSH',
       },
       {
-        name: 'APU AGENT AFTER 10 S',
+        name: 'APU AGENT',
+        time: 30,
         sensed: true,
         labelNotCompleted: 'DISCH',
       },
@@ -56,7 +57,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   260800005: {
-    title: '\x1b<2m\x1b4mENG 1\x1bm FIRE', // IN FLIGHT
+    title: '\x1b<2m\x1b4mENG 1 FIRE\x1bm', // IN FLIGHT
     sensed: true,
     items: [
       {
@@ -81,12 +82,11 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'APU BLEED : DO NOT USE',
-        sensed: true,
-        style: ChecklistLineStyle.Cyan,
+        sensed: false,
       },
       {
-        // When timer elapsed, this should change to 'AGENT 1...DISCH'
-        name: 'AGENT 1 AFTER 10 S',
+        name: 'ENG 1 AGENT 1',
+        time: 10,
         sensed: true,
         labelNotCompleted: 'DISCH',
       },
@@ -96,13 +96,14 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'NOTIFY',
       },
       {
-        // When timer elapsed, this should change to 'AS STILL FIRE AFTER 30 S'
-        name: 'STILL FIRE AFTER 30 S :',
-        sensed: false,
+        name: 'STILL FIRE',
+        time: 30,
+        sensed: true,
         condition: true,
+        appendTimeIfElapsed: false,
       },
       {
-        name: 'AGENT 2',
+        name: 'ENG 1 AGENT 2',
         sensed: true,
         labelNotCompleted: 'DISCH',
         level: 1,
@@ -111,7 +112,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
     recommendation: 'LAND ASAP',
   },
   260800006: {
-    title: '\x1b<2m\x1b4mENG 2\x1bm FIRE', // IN FLIGHT
+    title: '\x1b<2m\x1b4mENG 2 FIRE\x1bm', // IN FLIGHT
     sensed: true,
     items: [
       {
@@ -130,9 +131,9 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'PUSH',
       },
       {
-        // When timer elapsed, this should change to 'AGENT 1...DISCH'
-        name: 'AGENT 1 AFTER 10 S',
+        name: 'ENG 2 AGENT 1',
         sensed: true,
+        time: 10,
         labelNotCompleted: 'DISCH',
       },
       {
@@ -141,13 +142,14 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'NOTIFY',
       },
       {
-        // When timer elapsed, this should change to 'AS STILL FIRE AFTER 30 S'
-        name: 'STILL FIRE AFTER 30 S :',
-        sensed: false,
+        name: 'STILL FIRE',
+        sensed: true,
         condition: true,
+        appendTimeIfElapsed: false,
+        time: 30,
       },
       {
-        name: 'AGENT 2',
+        name: 'ENG 2 AGENT 2',
         sensed: true,
         labelNotCompleted: 'DISCH',
         level: 1,
@@ -156,7 +158,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
     recommendation: 'LAND ASAP',
   },
   260800007: {
-    title: '\x1b<2m\x1b4mENG 3\x1bm FIRE', // IN FLIGHT
+    title: '\x1b<2m\x1b4mENG 3 FIRE\x1bm', // IN FLIGHT
     sensed: true,
     items: [
       {
@@ -175,8 +177,8 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'PUSH',
       },
       {
-        // When timer elapsed, this should change to 'AGENT 1...DISCH'
-        name: 'AGENT 1 AFTER 10 S',
+        name: 'ENG 3 AGENT 1',
+        time: 10,
         sensed: true,
         labelNotCompleted: 'DISCH',
       },
@@ -186,13 +188,14 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'NOTIFY',
       },
       {
-        // When timer elapsed, this should change to 'AS STILL FIRE AFTER 30 S'
-        name: 'STILL FIRE AFTER 30 S :',
-        sensed: false,
+        name: 'STILL FIRE',
+        sensed: true,
         condition: true,
+        time: 30,
+        appendTimeIfElapsed: false,
       },
       {
-        name: 'AGENT 2',
+        name: 'ENG 3 AGENT 2',
         sensed: true,
         labelNotCompleted: 'DISCH',
         level: 1,
@@ -201,7 +204,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
     recommendation: 'LAND ASAP',
   },
   260800008: {
-    title: '\x1b<2m\x1b4mENG 4\x1bm FIRE', // IN FLIGHT
+    title: '\x1b<2m\x1b4mENG 4 FIRE\x1bm', // IN FLIGHT
     sensed: true,
     items: [
       {
@@ -220,9 +223,9 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'PUSH',
       },
       {
-        // When timer elapsed, this should change to 'AGENT 1...DISCH'
-        name: 'AGENT 1 AFTER 10 S',
+        name: 'ENG 4 AGENT 1',
         sensed: true,
+        time: 10,
         labelNotCompleted: 'DISCH',
       },
       {
@@ -231,13 +234,14 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'NOTIFY',
       },
       {
-        // When timer elapsed, this should change to 'AS STILL FIRE AFTER 30 S'
-        name: 'STILL FIRE AFTER 30 S :',
-        sensed: false,
+        name: 'STILL FIRE',
+        sensed: true,
+        time: 30,
         condition: true,
+        appendTimeIfElapsed: false,
       },
       {
-        name: 'AGENT 2',
+        name: 'ENG 4 AGENT 2',
         sensed: true,
         labelNotCompleted: 'DISCH',
         level: 1,
@@ -246,7 +250,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
     recommendation: 'LAND ASAP',
   },
   260800009: {
-    title: '\x1b<2m\x1b4mENG 1\x1bm FIRE', // ON GROUND
+    title: '\x1b<2m\x1b4mENG 1 FIRE\x1bm', // ON GROUND
     sensed: true,
     items: [
       {
@@ -255,7 +259,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'IDLE',
       },
       {
-        name: 'WHEN ACFT STOPPED :',
+        name: 'WHEN ACFT STOPPED',
         sensed: true,
         condition: true,
       },
@@ -308,7 +312,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         level: 1,
       },
       {
-        name: 'EVAC RQRD :',
+        name: 'EVAC RQRD',
         sensed: false,
         condition: true,
         level: 1,
@@ -332,7 +336,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         level: 2,
       },
       {
-        name: 'EVAC NOT RQRD :',
+        name: 'EVAC NOT RQRD',
         sensed: false,
         condition: true,
         level: 1,
@@ -346,7 +350,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
     ],
   },
   260800010: {
-    title: '\x1b<2m\x1b4mENG 2\x1bm FIRE', // ON GROUND
+    title: '\x1b<2m\x1b4mENG 2 FIRE\x1bm', // ON GROUND
     sensed: true,
     items: [
       {
@@ -355,7 +359,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'IDLE',
       },
       {
-        name: 'WHEN ACFT STOPPED :',
+        name: 'WHEN ACFT STOPPED',
         sensed: true,
         condition: true,
       },
@@ -408,7 +412,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         level: 1,
       },
       {
-        name: 'EVAC RQRD :',
+        name: 'EVAC RQRD',
         sensed: false,
         condition: true,
         level: 1,
@@ -432,7 +436,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         level: 2,
       },
       {
-        name: 'EVAC NOT RQRD :',
+        name: 'EVAC NOT RQRD',
         sensed: false,
         condition: true,
         level: 1,
@@ -446,7 +450,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
     ],
   },
   260800011: {
-    title: '\x1b<2m\x1b4mENG 3\x1bm FIRE', // ON GROUND
+    title: '\x1b<2m\x1b4mENG 3 FIRE\x1bm', // ON GROUND
     sensed: true,
     items: [
       {
@@ -455,7 +459,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'IDLE',
       },
       {
-        name: 'WHEN ACFT STOPPED :',
+        name: 'WHEN ACFT STOPPED',
         sensed: true,
         condition: true,
       },
@@ -508,7 +512,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         level: 1,
       },
       {
-        name: 'EVAC RQRD :',
+        name: 'EVAC RQRD',
         sensed: false,
         condition: true,
         level: 1,
@@ -532,7 +536,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         level: 2,
       },
       {
-        name: 'EVAC NOT RQRD :',
+        name: 'EVAC NOT RQRD',
         sensed: false,
         condition: true,
         level: 1,
@@ -546,7 +550,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
     ],
   },
   260800012: {
-    title: '\x1b<2m\x1b4mENG 4\x1bm FIRE', // ON GROUND
+    title: '\x1b<2m\x1b4mENG 4 FIRE\x1bm', // ON GROUND
     sensed: true,
     items: [
       {
@@ -555,7 +559,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'IDLE',
       },
       {
-        name: 'WHEN ACFT STOPPED :',
+        name: 'WHEN ACFT STOPPED',
         sensed: true,
         condition: true,
       },
@@ -608,7 +612,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         level: 1,
       },
       {
-        name: 'EVAC RQRD :',
+        name: 'EVAC RQRD',
         sensed: false,
         condition: true,
         level: 1,
@@ -632,7 +636,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         level: 2,
       },
       {
-        name: 'EVAC NOT RQRD :',
+        name: 'EVAC NOT RQRD',
         sensed: false,
         condition: true,
         level: 1,
@@ -743,8 +747,8 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'IDLE',
       },
       {
-        name: 'WHEN ACFT STOPPED :',
-        sensed: false,
+        name: 'WHEN ACFT STOPPED',
+        sensed: true,
         condition: true,
       },
       {
@@ -772,7 +776,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         level: 1,
       },
       {
-        name: 'EVAC RQRD :',
+        name: 'EVAC RQRD',
         sensed: false,
         level: 1,
         condition: true,
@@ -802,7 +806,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         level: 2,
       },
       {
-        name: 'EVAC NOT RQRD :',
+        name: 'EVAC NOT RQRD',
         sensed: false,
         level: 1,
         condition: true,
@@ -883,7 +887,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'OFF',
       },
       {
-        name: 'IF NO LIFESTOCK :',
+        name: 'NO LIFESTOCK',
         sensed: false,
         condition: true,
       },
@@ -1070,7 +1074,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'ESTABLISH',
       },
       {
-        name: 'SMOKE PERSISTS :',
+        name: 'SMOKE PERSISTS',
         sensed: false,
         condition: true,
       },
@@ -1119,7 +1123,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'ESTABLISH',
       },
       {
-        name: 'SMOKE PERSISTS :',
+        name: 'SMOKE PERSISTS',
         sensed: false,
         condition: true,
       },
@@ -1169,7 +1173,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
       },
       // When all engines are shut down
       {
-        name: 'IF FWD CRG CLOSED :',
+        name: 'FWD CRG CLOSED',
         sensed: false,
         condition: true,
       },
@@ -1220,7 +1224,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
       },
       // When all engines are shut down
       {
-        name: 'IF AFT+BULK CRG CLOSED :',
+        name: 'AFT+BULK CRG CLOSED',
         sensed: false,
         condition: true,
       },
@@ -1271,7 +1275,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
       },
       // When all engines are shut down
       {
-        name: 'IF AFT+BULK CRG CLOSED :',
+        name: 'AFT+BULK CRG CLOSED',
         sensed: false,
         condition: true,
       },
@@ -1419,7 +1423,7 @@ export const EcamAbnormalSensedAta26: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'ESTABLISH',
       },
       {
-        name: 'FIRE PERSISTS :',
+        name: 'FIRE PERSISTS',
         sensed: false,
         condition: true,
       },

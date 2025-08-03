@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Arinc429Values } from 'instruments/src/PFD/shared/ArincValueProvider';
 import {
   ClockEvents,
@@ -16,6 +17,7 @@ import {
   Arinc429LocalVarConsumerSubject,
   ArincEventBus,
   MathUtils,
+  NXLogicConfirmNode,
 } from '@flybywiresim/fbw-sdk';
 import { FormattedFwcText } from 'instruments/src/EWD/elements/FormattedFwcText';
 import { FwsPfdSimvars } from '../MsfsAvionicsCommon/providers/FwsPfdPublisher';
@@ -212,8 +214,9 @@ class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
       .whenChanged()
       .handle((s) => {
         const flaps = s.valueOr(0);
+        const flapDetctThrshld = 5.0;
 
-        this.flapsOut = flaps > 54.0;
+        this.flapsOut = flaps > flapDetctThrshld;
 
         // Slats and flaps should align with future implementation; do not change
         const xFactor = 0.87;
@@ -226,8 +229,8 @@ class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
         let positionOffset = 0;
         if (flaps >= 0 && flaps < 108.2) {
           synchroOffset = 0;
-          positionFactor = 1.1;
-          positionOffset = 0;
+          positionFactor = 0.37;
+          positionOffset = 5.82;
         } else if (flaps >= 108.2 && flaps < 154.5) {
           synchroOffset = 7.92;
           positionFactor = 0.85;
@@ -251,7 +254,7 @@ class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
         this.flapsPath.set(`M${x},${y} v 2.6 h 3.9 z`);
         this.flapsLinePath.set(`M 31.8 193.1 L ${x},${y}`);
 
-        if ((this.configClean || this.flaps1AutoRetract) && flaps > 54.0) {
+        if ((this.configClean || this.flaps1AutoRetract) && flaps > flapDetctThrshld) {
           this.flapsTargetPos.set(0);
         } else if (this.config1 && !this.flaps1AutoRetract && (flaps < 103.7 || flaps > 112.8)) {
           this.flapsTargetPos.set(1);
@@ -270,10 +273,10 @@ class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
       const inMotion = this.flapsTargetPos.get() !== null || this.slatsTargetPos.get() !== null;
       this.targetVisible.set(this.slatsOut || this.flapsOut || !this.configClean ? 'visible' : 'hidden');
       this.flapExtensionVisible.set(
-        (this.flapsOut || !this.configClean) && this.flapsDataValid.get() ? 'visible' : 'hidden',
+        (this.slatsOut || this.flapsOut || !this.configClean) && this.flapsDataValid.get() ? 'visible' : 'hidden',
       );
       this.slatExtensionVisible.set(
-        (this.slatsOut || !this.configClean) && this.flapsDataValid.get() ? 'visible' : 'hidden',
+        (this.slatsOut || this.flapsOut || !this.configClean) && this.flapsDataValid.get() ? 'visible' : 'hidden',
       );
 
       if (this.slatsFault.get()) {
@@ -579,6 +582,9 @@ class RudderTrimIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private rudderTrimWasMoved = false;
 
+  private lastUpdateTime: number | null = null;
+  private readonly engineFailedConfirmNode = new NXLogicConfirmNode(5, true); // Confirm eng failures to avoid transient startup issues
+
   private engineHasFailed = false;
 
   private delayStartTime: number = 0;
@@ -596,6 +602,9 @@ class RudderTrimIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
       .on('simTime')
       .atFrequency(4)
       .handle((t) => {
+        const deltaTime = this.lastUpdateTime ? t - this.lastUpdateTime : 0;
+        this.lastUpdateTime = t;
+
         const gnd = this.onGround.get();
         const cas = this.speed.get();
         const rt = this.rudderTrimOrder.get();
@@ -603,16 +612,17 @@ class RudderTrimIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
         const inFlightOrGroundFaster60Exceeds1Deg = (!gnd || (gnd && cas.valueOr(0) > 60)) && Math.abs(rt) > 1;
         const onGroundSlower60Exceeds0p3 = gnd && cas.valueOr(61) < 60 && Math.abs(rt) > 0.3;
 
-        if (
-          this.fwcFlightPhase.get() >= 2 &&
-          !gnd &&
-          (!this.engine1Running.get() ||
+        this.engineFailedConfirmNode.write(
+          !this.engine1Running.get() ||
             !this.engine2Running.get() ||
             !this.engine3Running.get() ||
-            !this.engine4Running.get())
-        ) {
+            !this.engine4Running.get(),
+          deltaTime,
+        );
+
+        if (this.fwcFlightPhase.get() >= 3 && !gnd && this.engineFailedConfirmNode.read()) {
           this.engineHasFailed = true;
-        } else if (this.engineHasFailed && this.fwcFlightPhase.get() < 2) {
+        } else if (this.engineHasFailed && this.fwcFlightPhase.get() < 3) {
           this.engineHasFailed = false;
         }
 

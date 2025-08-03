@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { AtsuMessageNetwork, AtsuStatusCodes, FreetextMessage } from '@datalink/common';
 import { Keypad } from '../../legacy/A320_Neo_CDU_Keypad';
 import { CDUAocMenu } from './A320_Neo_CDU_AOC_Menu';

@@ -329,8 +329,8 @@ export class MsfsBackend implements DataInterface {
   }
 
   /** @inheritdoc */
-  public async getAirwaysByFix(ident: string, icaoCode: string, airwayIdent?: string): Promise<Airway[]> {
-    return this.mapping.getAirways(ident, icaoCode, airwayIdent);
+  public async getAirwayByFix(ident: string, icaoCode: string, airwayIdent: string): Promise<Airway[]> {
+    return this.mapping.getAirway(ident, icaoCode, airwayIdent);
   }
 
   public async getVhfNavaidFromId(databaseId: string): Promise<VhfNavaid> {

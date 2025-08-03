@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2024 FlyByWire Simulations
+﻿// Copyright (c) 2024-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { AbnormalProcedure } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
@@ -160,24 +160,24 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   701800029: {
-    title: '\x1b<4m\x1b4mENG\x1bm 1 FAIL',
+    title: '\x1b<4m\x1b4mENG 1\x1bm FAIL',
     sensed: true,
-    items: [],
+    items: [], // TODO
   },
   701800030: {
-    title: '\x1b<4m\x1b4mENG\x1bm 2 FAIL',
+    title: '\x1b<4m\x1b4mENG 2\x1bm FAIL',
     sensed: true,
-    items: [],
+    items: [], // TODO
   },
   701800031: {
-    title: '\x1b<4m\x1b4mENG\x1bm 3 FAIL',
+    title: '\x1b<4m\x1b4mENG 3\x1bm FAIL',
     sensed: true,
-    items: [],
+    items: [], // TODO
   },
   701800032: {
-    title: '\x1b<4m\x1b4mENG\x1bm 4 FAIL',
+    title: '\x1b<4m\x1b4mENG 4\x1bm FAIL',
     sensed: true,
-    items: [],
+    items: [], // TODO
   },
   701800033: {
     title: '\x1b<4m\x1b4mENG\x1bm 1 FUEL FILTER CLOGGED',
@@ -560,24 +560,184 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   701800109: {
-    title: "\x1b<4m\x1b4mENG\x1bm \x1b'm1 SHUT DOWN\x1bm",
+    title: "\x1b<4m\x1B4mENG 1\x1bm \x1b'mSHUT DOWN\x1Bm",
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'TCAS MODE',
+        sensed: true,
+        labelNotCompleted: 'TA ONLY',
+      },
+      {
+        name: 'L/G LEVER',
+        sensed: true,
+        labelNotCompleted: 'UP',
+      },
+      {
+        name: 'NO FUEL LEAK',
+        condition: true,
+        sensed: false,
+      },
+      {
+        name: 'CROSSFEED 1',
+        sensed: true,
+        labelNotCompleted: 'ON',
+        level: 1,
+      },
+      {
+        name: 'MAX THR RQRD',
+        condition: true,
+        sensed: false,
+      },
+      { name: 'AIR FLOW', labelNotCompleted: 'LO', sensed: true, level: 1 },
+      {
+        name: 'FWD CARGO TEMP REGUL',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+        level: 1,
+      },
+      {
+        name: 'FOR GA: TOGA ONLY',
+        sensed: false,
+      },
+    ],
   },
   701800110: {
-    title: "\x1b<4m\x1b4mENG\x1bm \x1b'm2 SHUT DOWN\x1bm",
+    title: "\x1b<4m\x1B4mENG 2\x1bm \x1b'mSHUT DOWN\x1Bm",
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'TCAS MODE',
+        sensed: true,
+        labelNotCompleted: 'TA ONLY',
+      },
+      {
+        name: 'L/G LEVER',
+        sensed: true,
+        labelNotCompleted: 'UP',
+      },
+      {
+        name: 'NO FUEL LEAK',
+        condition: true,
+        sensed: false,
+      },
+      {
+        name: 'CROSSFEED 2',
+        sensed: true,
+        labelNotCompleted: 'ON',
+        level: 1,
+      },
+      {
+        name: 'MAX THR RQRD',
+        condition: true,
+        sensed: false,
+      },
+      { name: 'AIR FLOW', labelNotCompleted: 'LO', sensed: true, level: 1 },
+      {
+        name: 'FWD CARGO TEMP REGUL',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+        level: 1,
+      },
+      {
+        name: 'LDG DIST AFFECTED',
+        sensed: false,
+      },
+      {
+        name: 'FOR GA: TOGA ONLY',
+        sensed: false,
+      },
+    ],
   },
   701800111: {
-    title: "\x1b<4m\x1b4mENG\x1bm \x1b'm3 SHUT DOWN\x1bm",
+    title: "\x1b<4m\x1B4mENG 3\x1bm \x1b'mSHUT DOWN\x1Bm",
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'TCAS MODE',
+        sensed: true,
+        labelNotCompleted: 'TA ONLY',
+      },
+      {
+        name: 'L/G LEVER',
+        sensed: true,
+        labelNotCompleted: 'UP',
+      },
+      {
+        name: 'NO FUEL LEAK',
+        condition: true,
+        sensed: false,
+      },
+      {
+        name: 'CROSSFEED 3',
+        sensed: true,
+        labelNotCompleted: 'ON',
+        level: 1,
+      },
+      {
+        name: 'MAX THR RQRD',
+        condition: true,
+        sensed: false,
+      },
+      { name: 'AIR FLOW', labelNotCompleted: 'LO', sensed: true, level: 1 },
+      {
+        name: 'FWD CARGO TEMP REGUL',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+        level: 1,
+      },
+      {
+        name: 'LDG DIST AFFECTED',
+        sensed: false,
+      },
+      {
+        name: 'FOR GA: TOGA ONLY',
+        sensed: false,
+      },
+    ],
   },
   701800112: {
-    title: "\x1b<4m\x1b4mENG\x1bm \x1b'm4 SHUT DOWN\x1bm",
+    title: "\x1b<4m\x1B4mENG 4\x1bm \x1b'mSHUT DOWN\x1Bm",
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'TCAS MODE',
+        sensed: true,
+        labelNotCompleted: 'TA ONLY',
+      },
+      {
+        name: 'L/G LEVER',
+        sensed: true,
+        labelNotCompleted: 'UP',
+      },
+      {
+        name: 'NO FUEL LEAK',
+        condition: true,
+        sensed: false,
+      },
+      {
+        name: 'CROSSFEED 4',
+        sensed: true,
+        labelNotCompleted: 'ON',
+        level: 1,
+      },
+      {
+        name: 'MAX THR RQRD',
+        condition: true,
+        sensed: false,
+      },
+      { name: 'AIR FLOW', labelNotCompleted: 'LO', sensed: true, level: 1 },
+      {
+        name: 'FWD CARGO TEMP REGUL',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+        level: 1,
+      },
+      {
+        name: 'FOR GA: TOGA ONLY',
+        sensed: false,
+      },
+    ],
   },
   701800113: {
     title: '\x1b<4m\x1b4mENG\x1bm 1 STALL',
@@ -770,9 +930,10 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   701800151: {
-    title: '\x1b<4m\x1b4mENG\x1bm ALL ENG FLAME OUT',
+    title: '\x1b<2m\x1b4mENG\x1bm ALL ENGINES FAILURE',
     sensed: true,
     items: [],
+    recommendation: 'LAND ASAP',
   },
   701800152: {
     title: '\x1b<4m\x1b4mENG\x1bm HI VIBRATIONS',

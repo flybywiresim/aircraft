@@ -126,11 +126,11 @@ export class Database {
     return this.backend.getAirways(idents);
   }
 
-  public async getAirwaysByFix(fix: Fix, airwayIdent?: string): Promise<Airway[]> {
+  public async getAirwayByFix(fix: Fix, airwayIdent: string): Promise<Airway[]> {
     if (fix.sectionCode === SectionCode.Airport && fix.subSectionCode === AirportSubsectionCode.ReferencePoints) {
       return [];
     }
-    return this.backend.getAirwaysByFix(fix.ident, fix.icaoCode, airwayIdent);
+    return this.backend.getAirwayByFix(fix.ident, fix.icaoCode, airwayIdent);
   }
 
   public createNearbyFacilityMonitor(type: NearbyFacilityType): NearbyFacilityMonitor {

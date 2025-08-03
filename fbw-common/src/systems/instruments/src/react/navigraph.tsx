@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { User } from 'navigraph/auth';
 import React, { useState, useEffect, useContext, createContext } from 'react';
 

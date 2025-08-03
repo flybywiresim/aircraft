@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 type SubscribeCallback = (key: string, value: string) => void;
 type SubscribeCancellation = () => void;
 

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { ArraySubject, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 //import { UplinkMessageStateMachine } from '@datalink/atc';
 import { AtsuMessageDirection, AtsuMessageSerializationFormat } from '@datalink/common';
 import { CDUAtcMenu } from './A320_Neo_CDU_ATC_Menu';

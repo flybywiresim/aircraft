@@ -12,7 +12,7 @@ import {
 } from '@microsoft/msfs-sdk';
 
 type BasePseudoFwcSimvars = {
-  engine_master: number;
+  engine_master: boolean;
   engine_state: number;
 
   // auto THS trim simvars
@@ -41,6 +41,8 @@ export class PseudoFwcSimvarPublisher extends SimVarPublisher<PseudoFwcSimvars> 
     const simvars: [keyof PseudoFwcSimvars, SimVarPublisherEntry<any>][] = [
       ['engine_master', { name: 'A:FUELSYSTEM VALVE SWITCH:#index#', type: SimVarValueType.Bool, indexed: true }],
       ['engine_state', { name: 'L:A32NX_ENGINE_STATE:#index#', type: SimVarValueType.Number, indexed: true }],
+
+      // auto THS trim simvars
       ['left_blg_compressed', { name: 'L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED', type: SimVarValueType.Bool }],
       ['right_blg_compressed', { name: 'L:A32NX_LGCIU_1_RIGHT_GEAR_COMPRESSED', type: SimVarValueType.Bool }],
       ['flaps_handle', { name: 'L:A32NX_FLAPS_HANDLE_INDEX', type: SimVarValueType.Number }],

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { DatabaseItem, isFix, isIlsNavaid, isNdbNavaid, isVhfNavaid } from '@flybywiresim/fbw-sdk';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 

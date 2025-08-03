@@ -51,7 +51,8 @@ declare global {
         setReference(ref: EBingReference): void;
         addConfig(config: BingMapsConfig): void;
         setConfig(configId: number): void;
-        setParams(value: any): void;
+        /** Only LatLong works in FS2024! */
+        setParams(value: { lla?: LatLong | LatLongAlt; radius?: number; }): void;
         showIsolines(show: any): void;
         getIsolines(): any;
         showWeather(mode: any, cone: any): void;

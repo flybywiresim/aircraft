@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { UpdateThrottler } from '@flybywiresim/fbw-sdk';
 import { A32NX_Util } from '../../../../../shared/src/A32NX_Util';
 import { A32NX_Refuel } from './A32NX_Refuel';

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import {
   Arinc429Register,
   Arinc429Word,

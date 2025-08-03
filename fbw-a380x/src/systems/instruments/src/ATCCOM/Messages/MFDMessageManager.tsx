@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import React, { createContext, FC, useContext, useRef, useState } from 'react';
 import { MFDMessage, MFDMessageId, MFDMessageType } from './MFDMessage';
 import { MFDMessageTranslation } from './MFDMessageTranslation';

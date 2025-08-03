@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { NXUnits } from '@flybywiresim/fbw-sdk';
 import { getSimBriefOfp } from '../../legacy/A32NX_Core/A32NX_ATSU';
 import { CDUAocMenu } from './A320_Neo_CDU_AOC_Menu';

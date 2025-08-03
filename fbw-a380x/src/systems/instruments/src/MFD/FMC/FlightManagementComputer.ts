@@ -1210,4 +1210,8 @@ export class FlightManagementComputer implements FmcInterface {
       this.navigation.resetState();
     }
   }
+
+  public logTroubleshootingError(msg: any) {
+    this.bus.pub('troubleshooting_log_error', String(msg), true, false);
+  }
 }

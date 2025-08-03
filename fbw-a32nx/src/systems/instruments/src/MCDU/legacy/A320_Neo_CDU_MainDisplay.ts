@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023, 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -1625,10 +1626,6 @@ export class A320_Neo_CDU_MainDisplay
     } else {
       CDUInitPage.ShowPage2(this);
     }
-  }
-
-  public logTroubleshootingError(msg: any) {
-    this.bus.pub('troubleshooting_log_error', String(msg), true, false);
   }
 }
 // registerInstrument('a320-neo-cdu-main-display', A320_Neo_CDU_MainDisplay);

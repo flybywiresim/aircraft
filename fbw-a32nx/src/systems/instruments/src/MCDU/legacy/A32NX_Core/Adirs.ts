@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { AirDataSwitchingKnob, Arinc429Word, AttHdgSwitchingKnob } from '@flybywiresim/fbw-sdk';
 
 export class ADIRS {

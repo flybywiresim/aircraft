@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 /* eslint-disable no-case-declarations */
 // Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0

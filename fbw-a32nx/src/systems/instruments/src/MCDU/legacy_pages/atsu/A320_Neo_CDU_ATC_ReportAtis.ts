@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { AtsuMessageSerializationFormat } from '@datalink/common';
 import { CDUAtcAtisMenu } from './A320_Neo_CDU_ATC_AtisMenu';
 import { NXSystemMessages } from '../../messages/NXSystemMessages';

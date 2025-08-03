@@ -238,8 +238,8 @@
       "AirportDoesNotExist": "O Aeroporto não existe",
       "AuthenticateWithNavigraph": "Autenticar com Navigraph",
       "GoToThirdPartyOptions": {
-        "Button": "3rd Party Options",
-        "Title": "Go to 3rd Party Options to link Navigraph account"
+        "Button": "Opções de terceiros",
+        "Title": "Aceder a 3rd Party Options para ligar a conta Navigraph"
       },
       "InsufficientEnv": "Arquivo .env insuficiente",
       "IntoYourBrowserAndEnterTheCodeBelow": "no seu navegador e insira o código abaixo\n",
@@ -700,28 +700,28 @@
       "GsxFuelEnabled": "Sincronização de abastecimento GSX",
       "GsxPayloadEnabled": "Sincronização de carga GSX",
       "NavigraphAccountLink": {
-        "Connected": "Connected",
-        "Link": "Link Account",
+        "Connected": "Ligado",
+        "Link": "Associar conta",
         "LoginPage": {
-          "Title": "Navigraph Account Login"
+          "Title": "Login dá conta Navigraph"
         },
-        "SettingTitle": "Navigraph Account Link",
+        "SettingTitle": "Ligação da conta Navigraph",
         "SubscriptionStatus": {
-          "None": "None",
+          "None": "Nenhuma",
           "Standard": "Navigraph Standard",
           "Unknown": "Unknown",
           "Unlimited": "Navigraph Unlimited"
         },
-        "Unlink": "Unlink Account"
+        "Unlink": "Desassociar conta"
       },
-      "OverrideSimBriefUserID": "Override SimBrief User ID",
-      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
+      "OverrideSimBriefUserID": "Substituir a ID de utilizador do SimBrief",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Por favor, verifique se introduzir corretamente o seu nome de utilizador ou ID de piloto do SimBrief.",
       "SimbriefLoadsheetNavigationEnabled": "Simbrief Loadsheet Navigation",
       "TT": {
-        "OverrideSimBriefUserID": "Alternative SimBrief user ID to use instead of the linked Navigraph Account"
+        "OverrideSimBriefUserID": "ID de utilizador alternativo do SimBrief a utilizar em vez da conta Navigraph associada"
       },
       "Title": "Opções de terceiros",
-      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "The override SimBrief PilotID has been validated and updated to"
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "A substituição do SimBrief PilotID foi validada e actualizada para"
     },
     "ThrottleConfig": {
       "Apply": "Aplicar",

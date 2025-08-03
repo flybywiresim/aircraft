@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { getSimBriefOfp } from '../legacy/A32NX_Core/A32NX_ATSU';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { NXSystemMessages } from '../messages/NXSystemMessages';

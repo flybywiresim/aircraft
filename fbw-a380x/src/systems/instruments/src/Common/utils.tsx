@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import React, { forwardRef, PropsWithChildren } from 'react';
 import { Position, TwoDimensionalSize } from './types';
 

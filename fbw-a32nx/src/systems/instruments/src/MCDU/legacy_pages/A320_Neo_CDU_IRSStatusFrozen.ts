@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { CDUIRSMonitor } from './A320_Neo_CDU_IRSMonitor';
 import { CDUIRSStatus } from './A320_Neo_CDU_IRSStatus';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';

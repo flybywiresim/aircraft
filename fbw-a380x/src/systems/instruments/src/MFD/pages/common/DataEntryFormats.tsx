@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Subject, Subscribable, Subscription } from '@microsoft/msfs-sdk';
 
 import { Fix } from '@flybywiresim/fbw-sdk';

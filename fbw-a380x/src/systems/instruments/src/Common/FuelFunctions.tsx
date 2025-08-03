@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 export function fuelForDisplay(fuelValue, unitsC, timeUnit = 1, fobMultiplier = 1) {
   const fuelWeight = unitsC === '1' ? fuelValue / timeUnit : fuelValue / timeUnit / 0.4535934;
   const roundValue = unitsC === '1' ? 10 * fobMultiplier : 20 * fobMultiplier;

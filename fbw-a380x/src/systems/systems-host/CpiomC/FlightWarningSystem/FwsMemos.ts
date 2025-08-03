@@ -1,10 +1,11 @@
-// Copyright (c) 2021-2024 FlyByWire Simulations
+// Copyright (c) 2025 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
 import { EcamMemos } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
-import { MappedSubject, Subscribable, SubscribableMapFunctions } from '@microsoft/msfs-sdk';
-import { FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
+import { MappedSubject, Subscribable, SubscribableMapFunctions, Subscription } from '@microsoft/msfs-sdk';
+import { FwsCore } from 'systems-host/CpiomC/FlightWarningSystem/FwsCore';
+import { isSubscription } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
 
 interface EwdMemoItem {
   flightPhaseInhib: number[];
@@ -21,6 +22,8 @@ export interface EwdMemoDict {
 }
 
 export class FwsMemos {
+  public readonly subscriptions: Subscription[] = [];
+
   constructor(private fws: FwsCore) {}
   /** MEMOs on right side of EWD */
   ewdMemos: EwdMemoDict = {
@@ -117,7 +120,7 @@ export class FwsMemos {
       // APU AVAIL
       flightPhaseInhib: [],
       simVarIsActive: MappedSubject.create(
-        ([apuAvail, apuBleedValveOpen]) => apuAvail === 1 && !apuBleedValveOpen,
+        ([apuAvail, apuBleedValveOpen]) => apuAvail && !apuBleedValveOpen,
         this.fws.apuAvail,
         this.fws.apuBleedValveOpen,
       ),
@@ -129,7 +132,7 @@ export class FwsMemos {
       // APU BLEED
       flightPhaseInhib: [],
       simVarIsActive: MappedSubject.create(
-        ([apuAvail, apuBleedValveOpen]) => apuAvail === 1 && apuBleedValveOpen,
+        ([apuAvail, apuBleedValveOpen]) => apuAvail && apuBleedValveOpen,
         this.fws.apuAvail,
         this.fws.apuBleedValveOpen,
       ),
@@ -655,4 +658,22 @@ export class FwsMemos {
       leftSide: true,
     },
   };
+
+  public destroy(): void {
+    this.subscriptions.forEach((sub) => sub.destroy());
+
+    for (const key in this.ewdMemos) {
+      const memo = this.ewdMemos[key];
+      if (isSubscription(memo.simVarIsActive)) {
+        memo.simVarIsActive.destroy();
+      }
+    }
+
+    for (const key in this.ewdToLdgMemos) {
+      const memo = this.ewdToLdgMemos[key];
+      if (isSubscription(memo.simVarIsActive)) {
+        memo.simVarIsActive.destroy();
+      }
+    }
+  }
 }

@@ -894,10 +894,10 @@
       | 28  | FCDC Opposite Fault                      |
       | 29  | SEC 3 Fault                              |
 
-- A32NX_SFCC_SLAT_FLAP_ACTUAL_POSITION_WORD
+- A32NX_SFCC_{number}_SLAT_FLAP_ACTUAL_POSITION_WORD
+    - {number} is 1 or 2
     - Slat/Flap actual position discrete word of the SFCC bus output
     - Arinc429<Discrete>
-    - Note that multiple SFCC are not yet implemented, thus no {number} in the name.
     - | Bit |      Description A380X, if different     |
       |:---:|:----------------------------------------:|
       | 11  | Slat Data Valid                          |

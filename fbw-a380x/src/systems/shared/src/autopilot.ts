@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { ControlLaw } from '@fmgc/guidance/ControlLaws';
 
 enum LateralMode {
