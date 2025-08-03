@@ -576,6 +576,10 @@ impl AdirsMeasurementOutputs for AirDataInertialReferenceSystem {
     fn angle_of_attack(&self, adiru_number: usize) -> Arinc429Word<Angle> {
         self.adirus[adiru_number - 1].angle_of_attack()
     }
+
+    fn computed_airspeed(&self, adiru_number: usize) -> Arinc429Word<Velocity> {
+        self.adirus[adiru_number - 1].computed_airspeed()
+    }
 }
 
 struct AirDataInertialReferenceUnit {
@@ -736,6 +740,10 @@ impl AirDataInertialReferenceUnit {
 
     fn ground_speed(&self) -> Arinc429Word<Velocity> {
         self.ir.ground_speed()
+    }
+
+    fn computed_airspeed(&self) -> Arinc429Word<Velocity> {
+        self.adr.computed_airspeed()
     }
 
     fn true_airspeed(&self) -> Arinc429Word<Velocity> {
@@ -1309,6 +1317,10 @@ impl AirDataReference {
 
     fn computed_airspeed_raw(&self) -> Velocity {
         self.computed_airspeed.value()
+    }
+
+    fn computed_airspeed(&self) -> Arinc429Word<Velocity> {
+        Arinc429Word::new(self.computed_airspeed.value(), self.computed_airspeed.ssm())
     }
 
     fn altitude(&self) -> Arinc429Word<Length> {

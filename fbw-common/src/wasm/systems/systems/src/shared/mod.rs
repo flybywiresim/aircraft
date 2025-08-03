@@ -252,6 +252,7 @@ pub trait AdirsMeasurementOutputs {
     fn vertical_speed(&self, adiru_number: usize) -> Arinc429Word<Velocity>;
     fn altitude(&self, adiru_number: usize) -> Arinc429Word<Length>;
     fn angle_of_attack(&self, adiru_number: usize) -> Arinc429Word<Angle>;
+    fn computed_airspeed(&self, adiru_number: usize) -> Arinc429Word<Velocity>;
 }
 
 pub trait AdirsDiscreteOutputs {
