@@ -725,6 +725,9 @@ void FlyByWireInterface::setupLocalVariables() {
   idHydGreenPressurised = std::make_unique<LocalVariable>("A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE_SWITCH");
   idHydBluePressurised = std::make_unique<LocalVariable>("A32NX_HYD_BLUE_SYSTEM_1_SECTION_PRESSURE_SWITCH");
 
+  idCaptPriorityButtonPressed = std::make_unique<LocalVariable>("A32NX_PRIORITY_TAKEOVER:1");
+  idFoPriorityButtonPressed = std::make_unique<LocalVariable>("A32NX_PRIORITY_TAKEOVER:2");
+
   idAttHdgSwtgKnob = std::make_unique<LocalVariable>("A32NX_ATT_HDG_SWITCHING_KNOB");
   idAirDataSwtgKnob = std::make_unique<LocalVariable>("A32NX_AIR_DATA_SWITCHING_KNOB");
 
@@ -1458,9 +1461,9 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
   elacs[elacIndex].modelInputs.in.discrete_inputs.ths_override_active = idThsOverrideActive->get();
   elacs[elacIndex].modelInputs.in.discrete_inputs.yellow_low_pressure = !idHydYellowPressurised->get();
   elacs[elacIndex].modelInputs.in.discrete_inputs.capt_priority_takeover_pressed =
-      leftIsPrimary ? simInputAutopilot.AP_disconnect : simInputAutopilot.secondary_AP_disconnect;
+      idCaptPriorityButtonPressed->get() || (leftIsPrimary ? (simInputAutopilot.AP_disconnect) : simInputAutopilot.secondary_AP_disconnect);
   elacs[elacIndex].modelInputs.in.discrete_inputs.fo_priority_takeover_pressed =
-      !leftIsPrimary ? simInputAutopilot.AP_disconnect : simInputAutopilot.secondary_AP_disconnect;
+      idFoPriorityButtonPressed->get() || (!leftIsPrimary ? simInputAutopilot.AP_disconnect : simInputAutopilot.secondary_AP_disconnect);
   elacs[elacIndex].modelInputs.in.discrete_inputs.blue_low_pressure = !idHydBluePressurised->get();
   elacs[elacIndex].modelInputs.in.discrete_inputs.green_low_pressure = !idHydGreenPressurised->get();
   elacs[elacIndex].modelInputs.in.discrete_inputs.elac_engaged_from_switch = idElacPushbuttonPressed[elacIndex]->get();
@@ -1623,9 +1626,9 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
   }
 
   secs[secIndex].modelInputs.in.discrete_inputs.capt_priority_takeover_pressed =
-      leftIsPrimary ? simInputAutopilot.AP_disconnect : simInputAutopilot.secondary_AP_disconnect;
+      idCaptPriorityButtonPressed->get() || (leftIsPrimary ? simInputAutopilot.AP_disconnect : simInputAutopilot.secondary_AP_disconnect);
   secs[secIndex].modelInputs.in.discrete_inputs.fo_priority_takeover_pressed =
-      !leftIsPrimary ? simInputAutopilot.AP_disconnect : simInputAutopilot.secondary_AP_disconnect;
+      idFoPriorityButtonPressed->get() || (!leftIsPrimary ? simInputAutopilot.AP_disconnect : simInputAutopilot.secondary_AP_disconnect);
 
   if (secIndex < 2) {
     secs[secIndex].modelInputs.in.analog_inputs.capt_pitch_stick_pos = -(leftIsPrimary ? simInput.inputs[0] : simInput.secondaryInputs[0]);
