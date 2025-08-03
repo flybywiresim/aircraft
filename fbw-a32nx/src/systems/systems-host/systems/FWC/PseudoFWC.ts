@@ -2729,38 +2729,39 @@ export class PseudoFWC {
 
     // L, R SIDESTICK FAULT (BY TAKEOVER)
     this.sidestickFaultToConfigMtrig.write(toConfigTest, deltaTime);
+    const sidestickFaultToConfigTest = toConfigTest || this.sidestickFaultToConfigMtrig.read();
 
-    const leftSidestickPriorityLocked =
-      fcdc1DiscreteWord1.bitValueOr(19, false) || fcdc2DiscreteWord1.bitValueOr(19, false);
-    const leftSidestickInop = leftSidestickPriorityLocked && this.flightPhase129.get();
+    // FIXME The bits are the wrong way around in the FCDC word, 19 should be that the F/O sidestick
+    // has it's priority locked, so the captain's sidestick is inop, and vice versa for the other side.
+    // This needs a fix in the F/CTL software.
+    const foSidestickPriorityLocked =
+      fcdc1DiscreteWord2.bitValueOr(20, false) || fcdc2DiscreteWord2.bitValueOr(20, false);
+    const leftSidestickInop = foSidestickPriorityLocked && this.flightPhase129.get();
 
     this.leftSidestickFaultByTakeoverMemory.write(
-      leftSidestickPriorityLocked && this.flightPhase34.get(),
-      !leftSidestickPriorityLocked || this.fwcFlightPhase.get() === 5,
+      foSidestickPriorityLocked && this.flightPhase34.get(),
+      !foSidestickPriorityLocked || this.fwcFlightPhase.get() === 5,
     );
     this.leftSidestickFaultByTakeoverWarning.set(
-      (leftSidestickInop && this.sidestickFaultToConfigMtrig.read()) || this.leftSidestickFaultByTakeoverMemory.read(),
+      (leftSidestickInop && sidestickFaultToConfigTest) || this.leftSidestickFaultByTakeoverMemory.read(),
     );
     this.leftSidestickFaultByTakeoverAural.set(
-      (leftSidestickInop && this.sidestickFaultToConfigMtrig.read()) ||
-        (leftSidestickPriorityLocked && this.flightPhase34.get()),
+      (leftSidestickInop && sidestickFaultToConfigTest) || (foSidestickPriorityLocked && this.flightPhase34.get()),
     );
 
-    const rightSidestickPriorityLocked =
-      fcdc1DiscreteWord1.bitValueOr(20, false) || fcdc2DiscreteWord1.bitValueOr(20, false);
-    const rightSidestickInop = rightSidestickPriorityLocked && this.flightPhase129.get();
+    const captSidestickPriorityLocked =
+      fcdc1DiscreteWord2.bitValueOr(19, false) || fcdc2DiscreteWord2.bitValueOr(19, false);
+    const rightSidestickInop = captSidestickPriorityLocked && this.flightPhase129.get();
 
     this.rightSidestickFaultByTakeoverMemory.write(
-      rightSidestickPriorityLocked && this.flightPhase34.get(),
-      !rightSidestickPriorityLocked || this.fwcFlightPhase.get() === 5,
+      captSidestickPriorityLocked && this.flightPhase34.get(),
+      !captSidestickPriorityLocked || this.fwcFlightPhase.get() === 5,
     );
     this.rightSidestickFaultByTakeoverWarning.set(
-      (rightSidestickInop && this.sidestickFaultToConfigMtrig.read()) ||
-        this.rightSidestickFaultByTakeoverMemory.read(),
+      (rightSidestickInop && sidestickFaultToConfigTest) || this.rightSidestickFaultByTakeoverMemory.read(),
     );
     this.rightSidestickFaultByTakeoverAural.set(
-      (rightSidestickInop && this.sidestickFaultToConfigMtrig.read()) ||
-        (rightSidestickPriorityLocked && this.flightPhase34.get()),
+      (rightSidestickInop && sidestickFaultToConfigTest) || (captSidestickPriorityLocked && this.flightPhase34.get()),
     );
 
     // GND SPLRS FAULT status
@@ -4401,7 +4402,7 @@ export class PseudoFWC {
       flightPhaseInhib: [5, 6, 7, 8],
       simVarIsActive: this.rightSidestickFaultByTakeoverWarning,
       auralWarning: MappedSubject.create(
-        ([active]) => (active ? FwcAuralWarning.CavalryCharge : FwcAuralWarning.None),
+        ([active]) => (active ? FwcAuralWarning.Crc : FwcAuralWarning.None),
         this.rightSidestickFaultByTakeoverAural,
       ),
       whichCodeToReturn: () => [0, 1, 2],
@@ -4416,7 +4417,7 @@ export class PseudoFWC {
       flightPhaseInhib: [5, 6, 7, 8],
       simVarIsActive: this.leftSidestickFaultByTakeoverWarning,
       auralWarning: MappedSubject.create(
-        ([active]) => (active ? FwcAuralWarning.CavalryCharge : FwcAuralWarning.None),
+        ([active]) => (active ? FwcAuralWarning.Crc : FwcAuralWarning.None),
         this.leftSidestickFaultByTakeoverAural,
       ),
       whichCodeToReturn: () => [0, 1, 2],
