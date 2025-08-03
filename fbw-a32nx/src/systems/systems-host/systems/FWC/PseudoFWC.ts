@@ -4614,6 +4614,7 @@ export class PseudoFWC {
       sysPage: -1,
       side: 'LEFT',
       cancel: false,
+      monitorConfirmTime: 0,
     },
     2700870: {
       // GND SPLR NOT ARMED
@@ -5203,6 +5204,7 @@ export class PseudoFWC {
       sysPage: -1,
       side: 'LEFT',
       cancel: false,
+      monitorConfirmTime: 0,
     },
     3400003: {
       // PRIORITY RIGHT
@@ -5219,6 +5221,7 @@ export class PseudoFWC {
       sysPage: -1,
       side: 'LEFT',
       cancel: false,
+      monitorConfirmTime: 0,
     },
     3400140: {
       // RA 1 FAULT
