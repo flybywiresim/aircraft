@@ -106,8 +106,12 @@
 1. [A380X/FWS] Disable startup time for runway spawns - @flogross89 (floridude)
 1. [A380X/PFD] Ignore non-running engines in flight phase 2 for rudder trim indicator visibility - @flogross89 (floridude)
 1. [EFB] Split jetway and pax stairs button in MSFS2024 to fix jetways not connecting in MSFS2024 - @heclak (Heclak)
+1. [A380X/FWS] Add PRIM abnormal sensed procedures - @BravoMike99 (bruno_pt99)
 1. [A32NX/FWS] Active warnings are no longer cleared when entering an inhibited flight phase - @tracernz (Mike)
 1. [A32NX] Fixed lighting issues in MSFS2024 - @heclak (Heclak)
+1. [FMS] Fixed a rare issue where airways failed to load - @tracernz (Mike)
+1. [A380X/FWS] Implement ENG SHUTDOWN abnornal sensed & timer countdown to timed based items - @BravoMike99 (bruno_pt99)
+1. [A380X/CDS] Implement abnormal engine parameters amber attention getting box on the EWD - @BravoMike99 (bruno_pt99)
 1. [A380X/ECAM] Add ATA 52 (DOOR) ECAM procedures (initial implementation) - @Jonny23787 (Jonathan)
 
 ## 0.13.0

@@ -596,7 +596,7 @@
       "Select": "Select",
       "ThrustReductionHeight": "Thrust Reduction Height (ft)",
       "Title": "Aircraft Options / Pin Programs",
-      "WeightUnit": "Weight Unit"
+      "WeightUnit": "US Units"
     },
     "AtsuAoc": {
       "AtisAtcSource": "ATIS/ATC Source",

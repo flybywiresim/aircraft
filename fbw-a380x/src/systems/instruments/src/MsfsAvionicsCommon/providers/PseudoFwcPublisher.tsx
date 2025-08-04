@@ -12,7 +12,7 @@ import {
 } from '@microsoft/msfs-sdk';
 
 type BasePseudoFwcSimvars = {
-  engine_master: number;
+  engine_master: boolean;
   engine_state: number;
 
   // auto THS trim simvars
