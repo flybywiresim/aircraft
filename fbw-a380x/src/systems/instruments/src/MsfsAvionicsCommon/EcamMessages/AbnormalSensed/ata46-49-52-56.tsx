@@ -41,7 +41,7 @@ export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } =
       },
       {
         name: 'ABNORM CAB V/S :',
-        sensed: true,
+        sensed: false,
         condition: true,
       },
       {
@@ -80,7 +80,7 @@ export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } =
       },
       {
         name: 'ABNORM CAB V/S :',
-        sensed: true,
+        sensed: false,
         condition: true,
       },
       {
@@ -119,7 +119,7 @@ export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } =
       },
       {
         name: 'ABNORM CAB V/S :',
-        sensed: true,
+        sensed: false,
         condition: true,
       },
       {
@@ -158,7 +158,7 @@ export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } =
       },
       {
         name: 'ABNORM CAB V/S :',
-        sensed: true,
+        sensed: false,
         condition: true,
       },
       {
@@ -197,7 +197,7 @@ export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } =
       },
       {
         name: 'ABNORM CAB V/S :',
-        sensed: true,
+        sensed: false,
         condition: true,
       },
       {
@@ -236,7 +236,7 @@ export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } =
       },
       {
         name: 'ABNORM CAB V/S :',
-        sensed: true,
+        sensed: false,
         condition: true,
       },
       {
@@ -275,7 +275,7 @@ export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } =
       },
       {
         name: 'ABNORM CAB V/S :',
-        sensed: true,
+        sensed: false,
         condition: true,
       },
       {
@@ -314,7 +314,7 @@ export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } =
       },
       {
         name: 'ABNORM CAB V/S :',
-        sensed: true,
+        sensed: false,
         condition: true,
       },
       {
@@ -433,7 +433,7 @@ export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } =
       },
       {
         name: 'ABNORM CAB V/S :',
-        sensed: true,
+        sensed: false,
         condition: true,
       },
       {
@@ -472,7 +472,7 @@ export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } =
       },
       {
         name: 'ABNORM CAB V/S :',
-        sensed: true,
+        sensed: false,
         condition: true,
       },
       {
@@ -591,7 +591,7 @@ export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } =
       },
       {
         name: 'ABNORM CAB V/S :',
-        sensed: true,
+        sensed: false,
         condition: true,
       },
       {
@@ -630,7 +630,7 @@ export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } =
       },
       {
         name: 'ABNORM CAB V/S :',
-        sensed: true,
+        sensed: false,
         condition: true,
       },
       {
