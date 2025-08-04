@@ -2061,7 +2061,6 @@ export class FwsCore {
 
   public readonly eng4HydraulicInop = this.gen4Inop;
 
-
   private static pushKeyUnique(val: (state?: boolean[]) => string[] | undefined, pushTo: string[], state?: boolean[]) {
     if (val) {
       // Push only unique keys
