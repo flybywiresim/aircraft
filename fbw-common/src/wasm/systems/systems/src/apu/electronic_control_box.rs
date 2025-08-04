@@ -212,7 +212,8 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
             if self.n.get::<percent>() > 105.
                 || self.n.get::<percent>() < 88.
                 || self.n2.get::<percent>() > 102.
-                || self.egt.get::<degree_celsius>() > 700. {
+                || self.egt.get::<degree_celsius>() > 700.
+            {
                 self.fault = Some(ApuFault::ApuLimitsExceeded);
             }
         }
