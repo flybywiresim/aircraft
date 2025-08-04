@@ -5,6 +5,7 @@
     <Template Name="A32NX_Sidestick_Template">
         <DefaultTemplateParameters>
             <ID>1</ID>
+            <SIDE>L</SIDE>
         </DefaultTemplateParameters>
 
         <UseTemplate Name="A32NX_Sidestick_SubTemplate">
@@ -23,8 +24,8 @@
                 </False>
             </Condition>
 
-            <ANIM_CODE_X>(L:A32NX_SIDESTICK_POSITION_X) 100 * 100 +</ANIM_CODE_X>
-            <ANIM_CODE_Y>(L:A32NX_SIDESTICK_POSITION_Y) 100 * 100 +</ANIM_CODE_Y>
+            <ANIM_CODE_X>(L:A32NX_SIDESTICK_#SIDE#_POSITION_X) 100 * 100 +</ANIM_CODE_X>
+            <ANIM_CODE_Y>(L:A32NX_SIDESTICK_#SIDE#_POSITION_Y) 100 * 100 +</ANIM_CODE_Y>
 
             <ANIM_NAME_YOKE_X>HANDLING_YOKE_Lever_StickLR</ANIM_NAME_YOKE_X>
             <ANIM_NAME_YOKE_Y>HANDLING_YOKE_Lever_StickForeAft</ANIM_NAME_YOKE_Y>

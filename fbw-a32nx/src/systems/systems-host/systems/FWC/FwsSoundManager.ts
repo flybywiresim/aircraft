@@ -39,6 +39,27 @@ interface FwsAural {
 }
 
 export const FwsAuralsList: Record<string, FwsAural> = {
+  priorityLeft: {
+    wwiseEventName: 'priorityleft',
+    length: 1.37,
+    priority: 1,
+    type: FwsAuralWarningType.SyntheticVoice,
+    continuous: false,
+  },
+  priorityRight: {
+    wwiseEventName: 'priorityright',
+    length: 1.311,
+    priority: 1,
+    type: FwsAuralWarningType.SyntheticVoice,
+    continuous: false,
+  },
+  dualInput: {
+    wwiseEventName: 'dualinput',
+    length: 0.857,
+    priority: 1,
+    type: FwsAuralWarningType.SyntheticVoice,
+    continuous: false,
+  },
   continuousRepetitiveChime: {
     localVarName: 'A32NX_FWC_CRC',
     priority: 5,
