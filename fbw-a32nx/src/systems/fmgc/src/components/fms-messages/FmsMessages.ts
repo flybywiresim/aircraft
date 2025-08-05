@@ -26,6 +26,7 @@ import { MapPartlyDisplayedLeft, MapPartlyDisplayedRight } from './MapPartlyDisp
 import { Navigation } from '@fmgc/navigation/Navigation';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { TooSteepPathAhead } from '@fmgc/components/fms-messages/TooSteepPathAhead';
+import { EventBus } from '@microsoft/msfs-sdk';
 
 /**
  * This class manages Type II messages sent from the FMGC.
@@ -48,8 +49,8 @@ export class FmsMessages implements FmgcComponent {
   };
 
   private messageSelectors: FMMessageSelector[] = [
-    new GpsPrimary(),
-    new GpsPrimaryLost(),
+    new GpsPrimary(this.bus),
+    new GpsPrimaryLost(this.bus),
     new MapPartlyDisplayedLeft(),
     new MapPartlyDisplayedRight(),
     new TurnAreaExceedanceLeft(),
@@ -67,6 +68,8 @@ export class FmsMessages implements FmgcComponent {
     new StepDeleted(),
     new TooSteepPathAhead(),
   ];
+
+  constructor(private readonly bus: EventBus) {}
 
   init(navigation: Navigation, guidanceController: GuidanceController, flightPlanService: FlightPlanService): void {
     for (const selector of this.messageSelectors) {

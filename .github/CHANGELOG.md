@@ -117,6 +117,11 @@
 1. [SD] Fix ISA deviation display conditions on status area - @flogross89 (floridude)
 1. [A380X/SD] Display GW, GW CG only when ZFW and ZFW CG are entered - @flogross89 (floridude)
 1. [A380X/SD] Add clamp to CABIN ALT donut - @Jonny23787 (Jonathan)
+1. [ADIRU] Added excess motion and outside latitude limit (> 82° N/S) faults - @tracernz (Mike)
+1. [ADIRU] Added quick re-align function - @tracernz (Mike)
+1. [ADIRU] Changed the IRS alignment times to actual enhanced align times - @tracernz (Mike)
+1. [A32NX/FWC] Added IRS alignment related faults and improved accuracy of time to align logic - @tracernz (Mike)
+1. [A32NX/EWD] Added support for flashing text from FWC - @tracernz (Mike)
 
 ## 0.13.0
 
