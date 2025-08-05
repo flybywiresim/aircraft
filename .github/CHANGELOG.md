@@ -116,6 +116,7 @@
 1. [A380X/FMS] Fix decision height handling in FMS and PFD; Add NO DH/NODH/NONE/NO options - @flogross89 (floridude)
 1. [SD] Fix ISA deviation display conditions on status area - @flogross89 (floridude)
 1. [A380X/SD] Display GW, GW CG only when ZFW and ZFW CG are entered - @flogross89 (floridude)
+1. [A380X/SD] Add clamp to CABIN ALT donut - @Jonny23787 (Jonathan)
 
 ## 0.13.0
 
