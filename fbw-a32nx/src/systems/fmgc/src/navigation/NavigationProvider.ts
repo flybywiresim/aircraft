@@ -27,6 +27,11 @@ export interface NavigationProvider {
    */
   getPpos(): Coordinates | null;
 
+  /** Whether GPS is the primary navigation means and meets accuracy requirements.
+   * @returns true if GPS primary is active.
+   */
+  getGpsPrimary(): boolean;
+
   /**
    * Get the pressure altitude
    * @returns pressure altitude in feet or null if invalid

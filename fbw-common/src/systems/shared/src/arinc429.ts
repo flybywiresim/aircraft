@@ -21,6 +21,8 @@ export interface Arinc429WordData {
 
   isNormalOperation(): boolean;
 
+  isInvalid(): boolean;
+
   valueOr(defaultValue: number | undefined | null): number;
 
   bitValue(bit: number): boolean;
@@ -76,6 +78,12 @@ export class Arinc429Word implements Arinc429WordData {
 
   isNormalOperation() {
     return this.ssm === Arinc429SignStatusMatrix.NormalOperation;
+  }
+
+  isInvalid(): boolean {
+    return (
+      this.ssm !== Arinc429SignStatusMatrix.NormalOperation && this.ssm !== Arinc429SignStatusMatrix.FunctionalTest
+    );
   }
 
   /**
@@ -180,11 +188,17 @@ export class Arinc429Register implements Arinc429WordData {
     return this.ssm === Arinc429SignStatusMatrix.NormalOperation;
   }
 
+  isInvalid(): boolean {
+    return (
+      this.ssm !== Arinc429SignStatusMatrix.NormalOperation && this.ssm !== Arinc429SignStatusMatrix.FunctionalTest
+    );
+  }
+
   /**
    * Returns the value when normal operation, the supplied default value otherwise.
    */
   valueOr(defaultValue: number | undefined | null): number {
-    return this.isNormalOperation() || this.isFunctionalTest() ? this.value : defaultValue;
+    return this.isInvalid() ? defaultValue : this.value;
   }
 
   bitValue(bit: number): boolean {
@@ -192,7 +206,7 @@ export class Arinc429Register implements Arinc429WordData {
   }
 
   bitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean {
-    return this.isNormalOperation() || this.isFunctionalTest() ? ((this.value >> (bit - 1)) & 1) !== 0 : defaultValue;
+    return this.isInvalid() ? defaultValue : ((this.value >> (bit - 1)) & 1) !== 0;
   }
 
   public getIso5Value(): string {
