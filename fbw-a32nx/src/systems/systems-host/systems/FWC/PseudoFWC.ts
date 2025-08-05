@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2025 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -32,6 +33,7 @@ import {
   NXLogicMemoryNode,
   NXLogicPulseNode,
   NXLogicTriggeredMonostableNode,
+  RegisteredSimVar,
   UpdateThrottler,
 } from '@flybywiresim/fbw-sdk';
 import { VerticalMode } from '@shared/autopilot';
@@ -71,6 +73,8 @@ interface EWDItem {
   side: string;
   /** Cancel flag for level 3 warning audio (only emergency cancel can cancel if false), defaults to true. */
   cancel?: boolean;
+  /** The monitor confirm time in seconds. Defaults to 0.3 s. */
+  monitorConfirmTime?: number;
 }
 
 interface EWDMessageDict {
@@ -99,6 +103,8 @@ export class PseudoFWC {
   >();
 
   private readonly fwsUpdateThrottler = new UpdateThrottler(125); // has to be > 100 due to pulse nodes
+
+  private readonly simTime = RegisteredSimVar.create<number>('E:SIMULATION TIME', SimVarValueType.Seconds);
 
   private keyEventManager: KeyEventManager;
 
@@ -498,8 +504,6 @@ export class PseudoFWC {
   public readonly modeReversionMtrig1 = new NXLogicTriggeredMonostableNode(3, true);
 
   public readonly modeReversionMtrig2 = new NXLogicTriggeredMonostableNode(3, true);
-
-  public readonly modeReversionConfNode1 = new NXLogicConfirmNode(0.3, true);
 
   public readonly modeReversion = Subject.create(false);
 
@@ -1249,6 +1253,16 @@ export class PseudoFWC {
     private readonly bus: EventBus,
     private readonly instrument: BaseInstrument,
   ) {
+    for (const [key, item] of Object.entries(this.ewdMessageFailures)) {
+      item.simVarIsActive.sub((v) => {
+        if (v) {
+          this.ewdFailureActivationTime.set(key, this.simTime.get());
+        } else {
+          this.ewdFailureActivationTime.delete(key);
+        }
+      }, true);
+    }
+
     this.ewdMessageLinesLeft.forEach((ls, i) =>
       ls.sub((l) => {
         SimVar.SetSimVarValue(PseudoFWC.ewdMessageSimVarsLeft[i], 'string', l ?? '');
@@ -2493,9 +2507,9 @@ export class PseudoFWC {
     this.flapsHandle.set(SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum'));
     this.slatsAngle.set(SimVar.GetSimVarValue('L:A32NX_SLATS_IPPU_ANGLE', 'degrees'));
 
-    // FIXME these should be split between the two systems and the two sides
-    const flapsPos = Arinc429Word.fromSimVarValue('L:A32NX_SFCC_FLAP_ACTUAL_POSITION_WORD');
-    const slatsPos = Arinc429Word.fromSimVarValue('L:A32NX_SFCC_SLAT_ACTUAL_POSITION_WORD');
+    // TODO: add switching between SFCC_1 and SFCC_2
+    const flapsPos = Arinc429Word.fromSimVarValue('L:A32NX_SFCC_1_FLAP_ACTUAL_POSITION_WORD');
+    const slatsPos = Arinc429Word.fromSimVarValue('L:A32NX_SFCC_1_SLAT_ACTUAL_POSITION_WORD');
 
     // WARNING these vary for other variants... A320 CFM LEAP values here
     // flap/slat internal signals
@@ -3010,10 +3024,7 @@ export class PseudoFWC {
     // AP/FD Reversion Triple Click
     this.modeReversionMtrig1.write(this.fmgc1DiscreteWord4.get().bitValueOr(28, false), deltaTime);
     this.modeReversionMtrig2.write(this.fmgc2DiscreteWord4.get().bitValueOr(28, false), deltaTime);
-
-    // This confirm node simulates the default monitor confirm time.
-    this.modeReversionConfNode1.write(this.modeReversionMtrig1.read() || this.modeReversionMtrig2.read(), deltaTime);
-    this.modeReversion.set(this.modeReversionConfNode1.read());
+    this.modeReversion.set(this.modeReversionMtrig1.read() || this.modeReversionMtrig2.read());
 
     /* SETTINGS */
 
@@ -3140,7 +3151,7 @@ export class PseudoFWC {
 
     // Update failuresLeft list in case failure has been resolved
     for (const [key, value] of Object.entries(this.ewdMessageFailures)) {
-      if (!value.simVarIsActive.get() || value.flightPhaseInhib.some((e) => e === flightPhase)) {
+      if (!value.simVarIsActive.get()) {
         failureKeysLeft = failureKeysLeft.filter((e) => e !== key);
         recallFailureKeys = recallFailureKeys.filter((e) => e !== key);
       }
@@ -3150,18 +3161,24 @@ export class PseudoFWC {
     this.recallFailures.push(...recallFailureKeys);
     this.nonCancellableWarningCount = 0;
 
+    const simTime = this.simTime.get();
+
     // Failures first
     for (const [key, value] of Object.entries(this.ewdMessageFailures)) {
-      if (value.flightPhaseInhib.some((e) => e === flightPhase)) {
-        continue;
-      }
-
       // new warning?
       const newWarning =
         (value.side === 'LEFT' && !this.failuresLeft.includes(key) && !recallFailureKeys.includes(key)) ||
         (value.side === 'RIGHT' && !this.failuresRight.includes(key));
 
-      if (value.simVarIsActive.get()) {
+      if (newWarning && value.flightPhaseInhib.some((e) => e === flightPhase)) {
+        continue;
+      }
+
+      if (
+        value.simVarIsActive.get() &&
+        // consider monitor input confirm time (0.3 sec by default)
+        simTime >= (this.ewdFailureActivationTime.get(key) ?? 0) + (value.monitorConfirmTime ?? 0.3)
+      ) {
         if (newWarning) {
           if (value.side === 'LEFT') {
             failureKeysLeft.push(key);
@@ -3436,6 +3453,8 @@ export class PseudoFWC {
     }
   }
 
+  private readonly ewdFailureActivationTime = new Map<keyof EWDMessageDict, number>();
+
   ewdMessageFailures: EWDMessageDict = {
     // 22 - AUTOFLIGHT
     2200005: {
@@ -3454,6 +3473,7 @@ export class PseudoFWC {
       failure: 3,
       sysPage: -1,
       side: 'LEFT',
+      monitorConfirmTime: 0,
     },
     2200010: {
       // AP OFF Voluntary Master Warning
@@ -3466,6 +3486,7 @@ export class PseudoFWC {
       failure: 3,
       sysPage: -1,
       side: 'RIGHT',
+      monitorConfirmTime: 0,
     },
     // These two should not be affected by CLR and RCL, only EMER CANC and cancel.
     2200012: {
@@ -3484,6 +3505,7 @@ export class PseudoFWC {
       failure: 0,
       sysPage: -1,
       side: 'RIGHT',
+      monitorConfirmTime: 0,
     },
     2200015: {
       // AP OFF Voluntary Special Line
@@ -3495,6 +3517,7 @@ export class PseudoFWC {
       failure: 0,
       sysPage: -1,
       side: 'RIGHT',
+      monitorConfirmTime: 0,
     },
     2200020: {
       // A/THR OFF Voluntary Master Caution
@@ -3506,6 +3529,7 @@ export class PseudoFWC {
       failure: 2,
       sysPage: -1,
       side: 'RIGHT',
+      monitorConfirmTime: 0,
     },
     2200021: {
       // A/THR OFF Voluntary Special Line
@@ -3517,6 +3541,7 @@ export class PseudoFWC {
       failure: 0,
       sysPage: -1,
       side: 'RIGHT',
+      monitorConfirmTime: 0,
     },
     2200022: {
       // A/THR OFF Involuntary Text
@@ -3533,6 +3558,7 @@ export class PseudoFWC {
       failure: 2,
       sysPage: -1,
       side: 'LEFT',
+      monitorConfirmTime: 0,
     },
     2200024: {
       // A/THR LIMITED
@@ -3972,6 +3998,7 @@ export class PseudoFWC {
       failure: 3,
       sysPage: -1,
       side: 'LEFT',
+      monitorConfirmTime: 0,
     },
     2700085: {
       // SLATS NOT IN TO CONFIG

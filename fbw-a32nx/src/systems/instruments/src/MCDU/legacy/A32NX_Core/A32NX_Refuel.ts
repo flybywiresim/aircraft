@@ -6,10 +6,10 @@ import { NXUnits } from '@flybywiresim/fbw-sdk';
 
 const WING_FUELRATE_GAL_SEC = 4.01;
 const CENTER_MODIFIER = 0.4528;
-enum RefuelRate {
-  REAL = '0',
-  FAST = '1',
-  INSTANT = '2',
+enum RefuelRateNumeric {
+  REAL = 0,
+  FAST = 1,
+  INSTANT = 2,
 }
 
 // FIXME move to systems host
@@ -58,7 +58,7 @@ export class A32NX_Refuel {
     const eng1Running = SimVar.GetSimVarValue('ENG COMBUSTION:1', 'Bool');
     const eng2Running = SimVar.GetSimVarValue('ENG COMBUSTION:2', 'Bool');
     const refuelRate = SimVar.GetSimVarValue('L:A32NX_EFB_REFUEL_RATE_SETTING', 'number');
-    if (refuelRate !== RefuelRate.INSTANT) {
+    if (refuelRate !== RefuelRateNumeric.INSTANT) {
       if (!onGround || eng1Running || eng2Running || gs > 0.1 || (!busDC2 && !busDCHot1)) {
         return;
       }
@@ -83,7 +83,7 @@ export class A32NX_Refuel {
     const LOutTarget = LOutTargetSimVar;
     const RInnTarget = RInnTargetSimVar;
     const ROutTarget = ROutTargetSimVar;
-    if (refuelRate == RefuelRate.INSTANT) {
+    if (refuelRate === RefuelRateNumeric.INSTANT) {
       SimVar.SetSimVarValue('FUEL TANK CENTER QUANTITY', 'Gallons', centerTarget);
       SimVar.SetSimVarValue('FUEL TANK LEFT MAIN QUANTITY', 'Gallons', LInnTarget);
       SimVar.SetSimVarValue('FUEL TANK LEFT AUX QUANTITY', 'Gallons', LOutTarget);
@@ -91,7 +91,7 @@ export class A32NX_Refuel {
       SimVar.SetSimVarValue('FUEL TANK RIGHT AUX QUANTITY', 'Gallons', ROutTarget);
     } else {
       let multiplier = 1;
-      if (refuelRate == RefuelRate.FAST) {
+      if (refuelRate === RefuelRateNumeric.FAST) {
         multiplier = 5;
       }
       multiplier *= _deltaTime / 1000;
@@ -174,11 +174,11 @@ export class A32NX_Refuel {
     }
 
     if (
-      centerCurrent == centerTarget &&
-      LInnCurrent == LInnTarget &&
-      LOutCurrent == LOutTarget &&
-      RInnCurrent == RInnTarget &&
-      ROutCurrent == ROutTarget
+      parseInt(centerCurrent) === parseInt(centerTarget) &&
+      parseInt(LInnCurrent) === parseInt(LInnTarget) &&
+      parseInt(LOutCurrent) === parseInt(LOutTarget) &&
+      parseInt(RInnCurrent) === parseInt(RInnTarget) &&
+      parseInt(ROutCurrent) === parseInt(ROutTarget)
     ) {
       // DONE FUELING
       SimVar.SetSimVarValue('L:A32NX_REFUEL_STARTED_BY_USR', 'Bool', false);
