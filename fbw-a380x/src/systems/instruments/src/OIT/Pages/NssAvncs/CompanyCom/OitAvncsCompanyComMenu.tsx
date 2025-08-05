@@ -14,8 +14,8 @@ interface OitAvncsCompanyComMenuProps {
 export class OitAvncsCompanyComMenu extends DestroyableComponent<OitAvncsCompanyComMenuProps> {
   // Make sure to collect all subscriptions in this.subscriptions, otherwise page navigation doesn't work.
 
-  private readonly inboxCount = Subject.create('2');
-  private readonly outboxCount = Subject.create('0');
+  private readonly inboxCount = Subject.create(2);
+  private readonly outboxCount = Subject.create(0);
 
   private readonly inboxLabel = this.inboxCount.map((count) => `Inbox (${count})`);
   private readonly outboxLabel = this.outboxCount.map((count) => `Outbox (${count})`);
