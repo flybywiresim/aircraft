@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2024-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -11,7 +12,7 @@ import {
   Subscription,
 } from '@microsoft/msfs-sdk';
 import { ChecklistState, FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
-import { FwsCore } from 'systems-host/systems/FlightWarningSystem/FwsCore';
+import { FwsCore } from 'systems-host/CpiomC/FlightWarningSystem/FwsCore';
 import {
   deferredProcedureIds,
   EcamNormalProcedures,

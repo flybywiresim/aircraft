@@ -5,7 +5,7 @@
 import { EcamInopSys } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { MappedSubject, SubscribableMapFunctions, Subscription } from '@microsoft/msfs-sdk';
 import { isSubscription } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
-import { FwsCore, FwsSuppressableItem } from 'systems-host/systems/FlightWarningSystem/FwsCore';
+import { FwsCore, FwsSuppressableItem } from 'systems-host/CpiomC/FlightWarningSystem/FwsCore';
 
 export enum FwsInopSysPhases {
   AllPhases,
@@ -134,6 +134,63 @@ export class FwsInopSys {
       simVarIsActive: this.fws.allRmpFault,
       phase: FwsInopSysPhases.AllPhases,
     },
+    240300010: {
+      // GEN 1
+      simVarIsActive: this.fws.gen1Inop,
+      phase: FwsInopSysPhases.AllPhases,
+      notActiveWhenItemActive: ['240300037'],
+    },
+    240300011: {
+      // GEN 2
+      simVarIsActive: this.fws.gen2Inop,
+      phase: FwsInopSysPhases.AllPhases,
+      notActiveWhenItemActive: ['240300037'],
+    },
+
+    240300037: {
+      // GEN 1+2
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.gen1Inop, this.fws.gen2Inop),
+      phase: FwsInopSysPhases.AllPhases,
+    },
+
+    240300012: {
+      // GEN 3
+      simVarIsActive: this.fws.gen3Inop,
+      phase: FwsInopSysPhases.AllPhases,
+      notActiveWhenItemActive: ['240300038'],
+    },
+    240300013: {
+      // GEN 4
+      simVarIsActive: this.fws.gen4Inop,
+      phase: FwsInopSysPhases.AllPhases,
+      notActiveWhenItemActive: ['240300038'],
+    },
+    240300038: {
+      // GEN 3+4
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.gen3Inop, this.fws.gen4Inop),
+      phase: FwsInopSysPhases.AllPhases,
+    },
+    260300002: {
+      // ENG 1 BLEED
+      simVarIsActive: this.fws.eng1BleedInop,
+      phase: FwsInopSysPhases.AllPhases,
+    },
+    260300003: {
+      // ENG 2 BLEED
+      simVarIsActive: this.fws.eng2BleedInop,
+      phase: FwsInopSysPhases.AllPhases,
+    },
+    260300004: {
+      // ENG 3 BLEED
+      simVarIsActive: this.fws.eng3BleedInop,
+      phase: FwsInopSysPhases.AllPhases,
+    },
+    260300005: {
+      // ENG 4 BLEED
+      simVarIsActive: this.fws.eng4BleedInop,
+      phase: FwsInopSysPhases.AllPhases,
+    },
+
     260300010: {
       // ENG 1 FIRE DET
       simVarIsActive: this.fws.eng1FireDetFault,
@@ -238,17 +295,17 @@ export class FwsInopSys {
     },
     270300001: {
       // SEC 1
-      simVarIsActive: this.fws.sec1FaultCondition,
+      simVarIsActive: this.fws.sec1Healthy.map(SubscribableMapFunctions.not()),
       phase: FwsInopSysPhases.AllPhases,
     },
     270300002: {
       // SEC 2
-      simVarIsActive: this.fws.sec2FaultCondition,
+      simVarIsActive: this.fws.sec2Healthy.map(SubscribableMapFunctions.not()),
       phase: FwsInopSysPhases.AllPhases,
     },
     270300003: {
       // SEC 3
-      simVarIsActive: this.fws.sec3FaultCondition,
+      simVarIsActive: this.fws.sec3Healthy.map(SubscribableMapFunctions.not()),
       phase: FwsInopSysPhases.AllPhases,
     },
     270300004: {
@@ -274,22 +331,21 @@ export class FwsInopSys {
       notActiveWhenItemActive: ['270300004'],
       redudancyLoss: true,
     },
-    // FIXME uncomment when Bruno's PR is merged
-    /*270300010: {
+    270300010: {
       // PRIM 1
-      simVarIsActive: this.fws.prim1FaultCondition,
+      simVarIsActive: this.fws.prim1Healthy.map(SubscribableMapFunctions.not()),
       phase: FwsInopSysPhases.AllPhases,
     },
     270300011: {
       // PRIM 2
-      simVarIsActive: this.fws.prim2FaultCondition,
+      simVarIsActive: this.fws.prim2Healthy.map(SubscribableMapFunctions.not()),
       phase: FwsInopSysPhases.AllPhases,
     },
     270300012: {
       // PRIM 3
-      simVarIsActive: this.fws.prim3FaultCondition,
+      simVarIsActive: this.fws.prim3Healthy.map(SubscribableMapFunctions.not()),
       phase: FwsInopSysPhases.AllPhases,
-    },*/
+    },
     290100001: {
       // PART SPLRs
       simVarIsActive: this.partSplrs,
@@ -309,6 +365,26 @@ export class FwsInopSys {
     290300022: {
       // Y HYD SYS
       simVarIsActive: this.fws.yellowAbnormLoPressure,
+      phase: FwsInopSysPhases.AllPhases,
+    },
+    290300023: {
+      // G ENG 1 PMP A+B
+      simVarIsActive: this.fws.eng1HydraulicInop,
+      phase: FwsInopSysPhases.AllPhases,
+    },
+    290300024: {
+      // G ENG 2 PMP A+B
+      simVarIsActive: this.fws.eng2HydraulicInop,
+      phase: FwsInopSysPhases.AllPhases,
+    },
+    290300025: {
+      // Y ENG 3 PMP A+B
+      simVarIsActive: this.fws.eng3HydraulicInop,
+      phase: FwsInopSysPhases.AllPhases,
+    },
+    290300026: {
+      // Y ENG 4 PMP A+B
+      simVarIsActive: this.fws.eng4HydraulicInop,
       phase: FwsInopSysPhases.AllPhases,
     },
     310300002: {
@@ -576,6 +652,29 @@ export class FwsInopSys {
       // TAWS SYS 1+2
       simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.taws1Failed, this.fws.taws2Failed),
       phase: FwsInopSysPhases.AllPhases,
+    },
+
+    700300001: {
+      // ENG 2 REVERSER
+      simVarIsActive: this.fws.reverser2Inop,
+      phase: FwsInopSysPhases.ApprLdg,
+      notActiveWhenItemActive: ['700300003'],
+    },
+    700300002: {
+      // ENG 3 REVERSER
+      simVarIsActive: this.fws.reverser3Inop,
+      phase: FwsInopSysPhases.ApprLdg,
+      notActiveWhenItemActive: ['700300003'],
+    },
+
+    700300003: {
+      // ENG 2 +3  REVERSER
+      simVarIsActive: MappedSubject.create(
+        SubscribableMapFunctions.and(),
+        this.fws.reverser2Inop,
+        this.fws.reverser3Inop,
+      ),
+      phase: FwsInopSysPhases.ApprLdg,
     },
   };
 

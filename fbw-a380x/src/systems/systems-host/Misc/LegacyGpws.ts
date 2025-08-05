@@ -1,9 +1,10 @@
+// @ts-strict-ignore
 import { Arinc429SignStatusMatrix, Arinc429Word, NXDataStore, UpdateThrottler } from '@flybywiresim/fbw-sdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { LegacySoundManager, soundList } from 'systems-host/systems/LegacySoundManager';
+import { LegacySoundManager, soundList } from 'systems-host/Misc/LegacySoundManager';
 import { A380X_DEFAULT_RADIO_AUTO_CALL_OUTS, A380XRadioAutoCallOutFlags } from '../../shared/src/AutoCallOuts';
 import { EventBus, SimVarValueType } from '@microsoft/msfs-sdk';
-import { FwsSoundManagerControlEvents } from 'systems-host/systems/FlightWarningSystem/FwsSoundManager';
+import { FwsSoundManagerControlEvents } from 'systems-host/CpiomC/FlightWarningSystem/FwsSoundManager';
 
 type ModesType = {
   current: number;

@@ -4,7 +4,7 @@
 
 import { Subscription } from '@microsoft/msfs-sdk';
 import { EcamLimitations } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
-import { FwsCore, FwsSuppressableItem } from 'systems-host/systems/FlightWarningSystem/FwsCore';
+import { FwsCore, FwsSuppressableItem } from 'systems-host/CpiomC/FlightWarningSystem/FwsCore';
 import { isSubscription } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
 
 export enum FwsLimitationsPhases {
@@ -29,8 +29,19 @@ export class FwsLimitations {
   constructor(private fws: FwsCore) {}
   /** LIMITATIONS shown on SD */
   limitations: FwsLimitationsDict = {
+    1: {
+      simVarIsActive: this.fws.landAsap,
+      phase: FwsLimitationsPhases.AllPhases,
+      pfd: true,
+    },
+
     230400001: {
       simVarIsActive: this.fws.allRmpFault,
+      phase: FwsLimitationsPhases.AllPhases,
+    },
+    260400001: {
+      // APU bleed do not use
+      simVarIsActive: this.fws.fireButtonEng1,
       phase: FwsLimitationsPhases.AllPhases,
     },
   };

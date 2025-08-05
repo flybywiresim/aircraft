@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { useInputManager } from '@instruments/common/input';
 import React, { Children, FC, isValidElement, useState, useEffect, useRef } from 'react';
 import { useHover } from 'use-events';
