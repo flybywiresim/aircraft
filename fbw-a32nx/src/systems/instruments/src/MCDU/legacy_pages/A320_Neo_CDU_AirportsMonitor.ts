@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { NXSystemMessages } from '../messages/NXSystemMessages';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FmgcFlightPhase } from '@shared/flightphase';
