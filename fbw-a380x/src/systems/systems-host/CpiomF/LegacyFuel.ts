@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { MathUtils, UpdateThrottler } from '@flybywiresim/fbw-sdk';
 import {
   ConsumerSubject,

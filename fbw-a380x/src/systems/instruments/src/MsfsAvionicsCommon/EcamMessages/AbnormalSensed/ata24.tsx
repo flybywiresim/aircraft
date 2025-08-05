@@ -1,7 +1,11 @@
 ﻿// Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { AbnormalProcedure, ChecklistLineStyle } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import {
+  AbnormalProcedure,
+  ChecklistLineStyle,
+  FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
+} from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 
 // Convention for IDs:
 // First two digits: ATA chapter
@@ -55,11 +59,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
         name: 'FUEL CONSUMPT INCRSD',
         sensed: false,
       },
-      {
-        name: 'FMS PRED UNRELIABLE',
-        sensed: false,
-        style: ChecklistLineStyle.Green,
-      },
+      FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
       {
         name: 'LDG DIST: AFFECTED',
         sensed: false,
@@ -286,11 +286,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
         name: 'FUEL CONSUMPT INCRSD',
         sensed: false,
       },
-      {
-        name: 'FMS PRED UNRELIABLE',
-        sensed: false,
-        style: ChecklistLineStyle.Green,
-      },
+      FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
       {
         name: 'IF SEVERE ICE ACCRETION : FLAP LEVER 3 FOR LDG',
         sensed: false,
@@ -333,7 +329,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
         style: ChecklistLineStyle.Green,
       },
       {
-        name: 'ALL CROSSFEEDS',
+        name: 'CROSSFEED 1+2+3+4',
         sensed: true,
         labelNotCompleted: 'ON',
       },
@@ -403,7 +399,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
         sensed: false,
       },
       {
-        name: 'ALL CROSSFEEDS',
+        name: 'CROSSFEED 1+2+3+4',
         sensed: true,
         labelNotCompleted: 'OFF',
       },
@@ -432,7 +428,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
         sensed: false,
       },
       {
-        name: 'ALL CROSSFEEDS',
+        name: 'CROSSFEED 1+2+3+4',
         sensed: true,
         labelNotCompleted: 'OFF',
       },
@@ -594,11 +590,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
         name: 'FUEL CONSUMPT INCRSD',
         sensed: false,
       },
-      {
-        name: 'FMS PRED UNRELIABLE',
-        sensed: false,
-        style: ChecklistLineStyle.Green,
-      },
+      FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
       {
         name: 'LDG DIST: AFFECTED',
         sensed: false,
@@ -808,7 +800,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
     items: [
       // If the APU is off, and the APU battery is on
       {
-        name: 'WHEN APU NOT RQRD:',
+        name: 'WHEN APU NOT RQRD',
         sensed: false,
         condition: true,
       },
@@ -915,11 +907,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
         name: 'FUEL CONSUMPT INCRSD',
         sensed: false,
       },
-      {
-        name: 'FMS PRED UNRELIABLE',
-        sensed: false,
-        style: ChecklistLineStyle.Green,
-      },
+      FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
       {
         name: 'LDG DIST: AFFECTED',
         sensed: false,
@@ -1031,11 +1019,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
         name: 'NO L/G RETRACTION',
         sensed: false,
       },
-      {
-        name: 'FMS PRED UNRELIABLE',
-        sensed: false,
-        style: ChecklistLineStyle.Green,
-      },
+      FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
       {
         name: 'IF SEVERE ICE ACCRETION : FLAP LEVER 3 FOR LDG',
         sensed: false,
@@ -1073,7 +1057,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [
       {
-        name: 'ALL CROSSFEEDS',
+        name: 'CROSSFEED 1+2+3+4',
         sensed: true,
         labelNotCompleted: 'ON',
       },
@@ -1155,11 +1139,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
         name: 'FUEL CONSUMPT INCRSD',
         sensed: false,
       },
-      {
-        name: 'FMS PRED UNRELIABLE',
-        sensed: false,
-        style: ChecklistLineStyle.Green,
-      },
+      FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
       {
         name: 'SLATS SLOW',
         sensed: false,
@@ -1209,11 +1189,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
         name: 'FUEL CONSUMPT INCRSD',
         sensed: false,
       },
-      {
-        name: 'FMS PRED UNRELIABLE',
-        sensed: false,
-        style: ChecklistLineStyle.Green,
-      },
+      FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
       {
         name: 'LDG DIST: AFFECTED',
         sensed: false,
@@ -1831,11 +1807,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
         name: 'FUEL CONSUMPT INCRSD',
         sensed: false,
       },
-      {
-        name: 'FMS PRED UNRELIABLE',
-        sensed: false,
-        style: ChecklistLineStyle.Green,
-      },
+      FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
       {
         name: 'IF SEVERE ICE ACCRETION: FLAP LEVER 3 FOR LDG',
         sensed: false,

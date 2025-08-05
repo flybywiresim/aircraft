@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import React, { FC } from 'react';
 import { useHover } from 'use-events';
 import { Layer } from '../../Components/Layer';
