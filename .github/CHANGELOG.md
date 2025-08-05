@@ -122,6 +122,7 @@
 1. [ADIRU] Changed the IRS alignment times to actual enhanced align times - @tracernz (Mike)
 1. [A32NX/FWC] Added IRS alignment related faults and improved accuracy of time to align logic - @tracernz (Mike)
 1. [A32NX/EWD] Added support for flashing text from FWC - @tracernz (Mike)
+1. [A380X/Fuel] Enabled gravityfeeding and fixed crossfeed fuel usage from correct tanks - @Maximilian-Reuter (\_chaoz_)
 
 ## 0.13.0
 
