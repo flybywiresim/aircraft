@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2024-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -193,7 +194,7 @@ export const EcamInfos: { [n: string]: string } = {
   220200008: '\x1b<3mLOC MODE AVAIL ONLY',
   220200009: '\x1b<3mWHEN L/G DOWN AND AP OFF: USE MAN PITCH TRIM',
   220200010: '\x1b<3mCAT 1 ONLY',
-  220200011: '\x1b<3mFMS PRED UNRELIABLE WITHOUT ACCURATE FMS FUEL PENALTY INSERTION',
+  220200011: '\x1b<3mFMS PRED UNRELIABLE', // TODO add without accurate fms penalty once multiple lines supported
   220200012: '\x1b<3mMINIMIZE XWIND FOR LANDING',
   220200013: '\x1b<3mAUTOLAND : RECOMMENDED',
   230200001: '\x1b<3mSATCOM DATALINK AVAIL',
@@ -212,7 +213,6 @@ export const EcamInfos: { [n: string]: string } = {
   340200006: '\x1b<3mFPV / VV AVAIL',
   340200007: '\x1b<3mCABIN ALT TRGT: SEE FCOM', // TODO add table
   340200008: '\x1b<3mSTANDBY NAV IN TRUE GPS TRK',
-  800200001: '\x1b<3mFMS PRED UNRELIABLE WITHOUT ACCURATE FMS FUEL PENALTY INSERTION',
   800200002: '\x1b<3mON DRY RWY ONLY : LDG DIST AFFECTED < 15%',
   800200003: '\x1b<3mTAXI WITH CARE',
   800200004: '\x1b<5mAVOID MAX TILLER ANGLE TURN ON WET/CONTAM RWY',
@@ -787,3 +787,9 @@ export enum WdSpecialLine {
   Empty,
   SeparationLine,
 }
+
+export const FMS_PRED_UNRELIABLE_CHECKLIST_ITEM: ChecklistSpecialItem = {
+  name: 'FMS PRED UNRELIABLE', // TODO Replace with FMS PRED UNRELIABLE WITHOUT ACCURATE FMS FUEL PENALTY INSERTION once multiple lines supported
+  sensed: false,
+  style: ChecklistLineStyle.ChecklistCondition,
+};

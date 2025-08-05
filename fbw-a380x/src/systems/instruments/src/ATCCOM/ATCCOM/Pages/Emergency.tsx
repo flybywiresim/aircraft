@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import React, { FC } from 'react';
 import { Layer } from '@instruments/common/utils';
 import { SwitchButton } from '../Elements/SwitchButton';
