@@ -6,7 +6,7 @@ import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/Destroy
 import { OitUiService } from '../../OitUiService';
 
 interface OitNavigatorItemProps {
-  readonly name: Subscribable<string>;
+  readonly name: string | Subscribable<string>;
   readonly hidden?: Subscribable<boolean>;
   readonly style?: 'menu' | 'company-com';
 }
