@@ -15,13 +15,7 @@ import {
   Subscription,
   ConsumerSubject,
 } from '@microsoft/msfs-sdk';
-import {
-  ArincEventBus,
-  Arinc429Word,
-  Arinc429WordData,
-  Arinc429RegisterSubject,
-  Arinc429ConsumerSubject,
-} from '@flybywiresim/fbw-sdk';
+import { ArincEventBus, Arinc429Word, Arinc429WordData, Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { VerticalTape } from './VerticalTape';
 import { SimplaneValues } from './shared/SimplaneValueProvider';
@@ -89,7 +83,7 @@ class V1BugElement extends DisplayComponent<{ bus: ArincEventBus }> {
   private sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values>();
   private offsetSub = Subject.create('translate3d(0px, 0px, 0px)');
 
-  private readonly speedAr = Arinc429ConsumerSubject.create(this.sub.on('speedAr'));
+  private readonly speedAr = ConsumerSubject.create(this.sub.on('speedAr'), new Arinc429Word(0));
   private readonly flightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
   private readonly v1Speed = ConsumerSubject.create(this.sub.on('v1'), 0);
 
@@ -137,7 +131,7 @@ class VRBugElement extends DisplayComponent<{ bus: ArincEventBus }> {
   private sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values>();
   private offsetSub = Subject.create('');
 
-  private readonly speedAr = Arinc429ConsumerSubject.create(this.sub.on('speedAr'));
+  private readonly speedAr = ConsumerSubject.create(this.sub.on('speedAr'), new Arinc429Word(0));
   private readonly flightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
   private readonly vrSpeed = ConsumerSubject.create(this.sub.on('vr'), 0);
 
@@ -218,9 +212,9 @@ class AirspeedIndicatorBase extends DisplayComponent<AirspeedIndicatorProps> {
   private airSpeed = new Arinc429Word(0);
   private vfe = new Arinc429Word(0);
 
-  private leftMainGearCompressed: boolean;
+  private leftMainGearCompressed = false;
 
-  private rightMainGearCompressed: boolean;
+  private rightMainGearCompressed = false;
 
   private pathSub = Subject.create('');
 
@@ -992,7 +986,7 @@ class VLsBar extends DisplayComponent<{ bus: ArincEventBus }> {
 
       const VLsPos = ((this.airSpeed.value - this.vls.value) * DistanceSpacing) / ValueSpacing + neutralPos;
       const lowestValue = this.airSpeed.value - DisplayRange;
-      const vLsFloor = Math.max(lowestValue, normalLawActive ? this.vAlphaProt.valueOr(0) : this.vStallWarn.valueOr(0));
+      const vLsFloor = Math.max(lowestValue, normalLawActive ? this.vAlphaProt.value : this.vStallWarn.value);
       const offset = ((this.vls.value - vLsFloor) * DistanceSpacing) / ValueSpacing;
 
       this.vlsPath.set(`m 81 ${VLsPos}h 8.4 v ${offset}`);
@@ -1409,9 +1403,9 @@ class V1Offtape extends DisplayComponent<{ bus: ArincEventBus }> {
 }
 
 interface SpeedStateInfo {
-  pfdTargetSpeed: Arinc429WordData;
-  fcuSelectedSpeed: Arinc429WordData;
-  speed: Arinc429WordData;
+  pfdTargetSpeed: Arinc429RegisterSubject;
+  fcuSelectedSpeed: Arinc429RegisterSubject;
+  speed: Arinc429RegisterSubject;
   fmgcDiscreteWord5: Arinc429Word;
 }
 
@@ -1435,9 +1429,9 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
   private needsUpdate = true;
   private crosswindMode = false;
   private speedState: SpeedStateInfo = {
-    speed: new Arinc429Word(0),
-    pfdTargetSpeed: new Arinc429Word(0),
-    fcuSelectedSpeed: new Arinc429Word(0),
+    speed: Arinc429RegisterSubject.createEmpty(),
+    pfdTargetSpeed: Arinc429RegisterSubject.createEmpty(),
+    fcuSelectedSpeed: Arinc429RegisterSubject.createEmpty(),
     fmgcDiscreteWord5: new Arinc429Word(0),
   };
 
@@ -1505,7 +1499,8 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
       this.needsUpdate = false;
 
       const fmgcPfdSelectedSpeedValid = !(
-        this.speedState.pfdTargetSpeed.isNoComputedData() || this.speedState.pfdTargetSpeed.isFailureWarning()
+        this.speedState.pfdTargetSpeed.get().isNoComputedData() ||
+        this.speedState.pfdTargetSpeed.get().isFailureWarning()
       );
       const isSpeedManaged =
         this.speedState.fmgcDiscreteWord5.bitValueOr(19, false) &&
@@ -1515,11 +1510,11 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
         ? this.speedState.pfdTargetSpeed
         : this.speedState.fcuSelectedSpeed;
 
-      const chosenTargetSpeedFailed = chosenTargetSpeed.isFailureWarning();
-      const chosenTargetSpeedNcd = chosenTargetSpeed.isNoComputedData();
+      const chosenTargetSpeedFailed = chosenTargetSpeed.get().isFailureWarning();
+      const chosenTargetSpeedNcd = chosenTargetSpeed.get().isNoComputedData();
 
       const inRange = this.handleVisibility(
-        chosenTargetSpeed.value,
+        chosenTargetSpeed.get().value,
         chosenTargetSpeedFailed,
         chosenTargetSpeedNcd,
         isSpeedManaged,
@@ -1533,11 +1528,11 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
 
       if (inRange) {
         const multiplier = 100;
-        const currentValueAtPrecision = Math.round(this.speedState.speed.value * multiplier) / multiplier;
-        const offset = ((currentValueAtPrecision - chosenTargetSpeed.value) * DistanceSpacing) / ValueSpacing;
+        const currentValueAtPrecision = Math.round(this.speedState.speed.get().value * multiplier) / multiplier;
+        const offset = ((currentValueAtPrecision - chosenTargetSpeed.get().value) * DistanceSpacing) / ValueSpacing;
         this.speedTargetRef.instance.style.transform = `translate3d(0px, ${offset}px, 0px)`;
       } else {
-        const text = Math.round(chosenTargetSpeed.value).toString().padStart(3, '0');
+        const text = Math.round(chosenTargetSpeed.get().value).toString().padStart(3, '0');
         this.textSub.set(text);
       }
 
@@ -1569,21 +1564,21 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus; mode: WindMode 
       this.upperBoundRef.instance.style.visibility = 'hidden';
       this.speedTargetRef.instance.style.visibility = 'hidden';
       this.spdSelFlagVisible.set(false);
-    } else if (this.speedState.speed.value - currentTargetSpeed > DisplayRange) {
+    } else if (this.speedState.speed.get().value - currentTargetSpeed > DisplayRange) {
       this.lowerBoundRef.instance.style.visibility = 'visible';
       this.upperBoundRef.instance.style.visibility = 'hidden';
       this.speedTargetRef.instance.style.visibility = 'hidden';
       this.BoundBgRef.instance.style.transform = `translate3d(0px, ${(DisplayRange / ValueSpacing) * DistanceSpacing + 15}px, 0px)`;
       this.spdSelFlagVisible.set(false);
       this.currentVisible = this.lowerBoundRef;
-    } else if (this.speedState.speed.value - currentTargetSpeed < -DisplayRange && !this.decelActive) {
+    } else if (this.speedState.speed.get().value - currentTargetSpeed < -DisplayRange && !this.decelActive) {
       this.upperBoundRef.instance.style.visibility = 'visible';
       this.lowerBoundRef.instance.style.visibility = 'hidden';
       this.speedTargetRef.instance.style.visibility = 'hidden';
       this.BoundBgRef.instance.style.transform = `translate3d(0px, ${-(DisplayRange / ValueSpacing) * DistanceSpacing - 15}px, 0px)`;
       this.spdSelFlagVisible.set(false);
       this.currentVisible = this.upperBoundRef;
-    } else if (Math.abs(this.speedState.speed.value - currentTargetSpeed) < DisplayRange) {
+    } else if (Math.abs(this.speedState.speed.get().value - currentTargetSpeed) < DisplayRange) {
       this.upperBoundRef.instance.style.visibility = 'hidden';
       this.lowerBoundRef.instance.style.visibility = 'hidden';
       this.speedTargetRef.instance.style.visibility = 'visible';
@@ -1790,7 +1785,7 @@ export class MachNumber extends DisplayComponent<{ bus: ArincEventBus }> {
         return;
       }
       this.failedRef.instance.style.display = 'none';
-      const machPermille = Math.round(mach.valueOr(0) * 1000);
+      const machPermille = Math.round(mach.value * 1000);
       if (this.showMach && machPermille < 450) {
         this.showMach = false;
         this.machTextSub.set('');

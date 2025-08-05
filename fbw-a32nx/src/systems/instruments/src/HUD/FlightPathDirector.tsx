@@ -12,7 +12,7 @@ import {
   Subscription,
   ConsumerSubject,
 } from '@microsoft/msfs-sdk';
-import { ArincEventBus, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
+import { ArincEventBus, Arinc429Word, Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
 import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
 import { FgBus } from 'instruments/src/PFD/shared/FgBusProvider';
 
@@ -26,12 +26,12 @@ const DistanceSpacing = (1024 / 28) * 5;
 const ValueSpacing = 5;
 
 interface FlightPathVectorData {
-  roll: Arinc429WordData;
-  pitch: Arinc429WordData;
-  fpa: Arinc429WordData;
-  da: Arinc429WordData;
-  rollFdCommand: Arinc429WordData;
-  pitchFdCommand: Arinc429WordData;
+  roll: Arinc429RegisterSubject;
+  pitch: Arinc429RegisterSubject;
+  fpa: Arinc429RegisterSubject;
+  da: Arinc429RegisterSubject;
+  rollFdCommand: Arinc429RegisterSubject;
+  pitchFdCommand: Arinc429RegisterSubject;
   fdEngaged: boolean;
   fdOff: boolean;
 }
@@ -46,16 +46,16 @@ export class FlightPathDirector extends DisplayComponent<{
   >();
   private flightPhase = -1;
   private declutterMode = 0;
-  private fdCueOffRange;
+  private fdCueOffRange = false;
   private sVisibility = Subject.create<String>('');
 
   private data: FlightPathVectorData = {
-    roll: new Arinc429Word(0),
-    pitch: new Arinc429Word(0),
-    fpa: new Arinc429Word(0),
-    da: new Arinc429Word(0),
-    rollFdCommand: new Arinc429Word(0),
-    pitchFdCommand: new Arinc429Word(0),
+    roll: Arinc429RegisterSubject.createEmpty(),
+    pitch: Arinc429RegisterSubject.createEmpty(),
+    fpa: Arinc429RegisterSubject.createEmpty(),
+    da: Arinc429RegisterSubject.createEmpty(),
+    rollFdCommand: Arinc429RegisterSubject.createEmpty(),
+    pitchFdCommand: Arinc429RegisterSubject.createEmpty(),
     fdEngaged: false,
     fdOff: false,
   };
@@ -137,42 +137,42 @@ export class FlightPathDirector extends DisplayComponent<{
 
     this.subscriptions.push(
       this.sub.on('fpa').handle((fpa) => {
-        this.data.fpa = fpa;
+        this.data.fpa.setWord(fpa.rawWord);
         this.needsUpdate = true;
       }),
     );
 
     this.subscriptions.push(
       this.sub.on('da').handle((da) => {
-        this.data.da = da;
+        this.data.da.setWord(da.rawWord);
         this.needsUpdate = true;
       }),
     );
 
     this.subscriptions.push(
       this.sub.on('rollFdCommand').handle((fdp) => {
-        this.data.rollFdCommand = fdp;
+        this.data.rollFdCommand.setWord(fdp.rawWord);
         this.needsUpdate = true;
       }),
     );
 
     this.subscriptions.push(
       this.sub.on('pitchFdCommand').handle((fdr) => {
-        this.data.pitchFdCommand = fdr;
+        this.data.pitchFdCommand.setWord(fdr.rawWord);
         this.needsUpdate = true;
       }),
     );
 
     this.subscriptions.push(
       this.sub.on('rollAr').handle((r) => {
-        this.data.roll = r;
+        this.data.roll.setWord(r.rawWord);
         this.needsUpdate = true;
       }),
     );
 
     this.subscriptions.push(
       this.sub.on('pitchAr').handle((p) => {
-        this.data.pitch = p;
+        this.data.pitch.setWord(p.rawWord);
         this.needsUpdate = true;
       }),
     );
@@ -192,9 +192,11 @@ export class FlightPathDirector extends DisplayComponent<{
   }
 
   private handlePath() {
-    const rollFdInvalid = this.data.rollFdCommand.isFailureWarning() || this.data.rollFdCommand.isNoComputedData();
-    const pitchFdInvalid = this.data.pitchFdCommand.isFailureWarning() || this.data.pitchFdCommand.isNoComputedData();
-    const daAndFpaValid = this.data.fpa.isNormalOperation() && this.data.da.isNormalOperation();
+    const rollFdInvalid =
+      this.data.rollFdCommand.get().isFailureWarning() || this.data.rollFdCommand.get().isNoComputedData();
+    const pitchFdInvalid =
+      this.data.pitchFdCommand.get().isFailureWarning() || this.data.pitchFdCommand.get().isNoComputedData();
+    const daAndFpaValid = this.data.fpa.get().isNormalOperation() && this.data.da.get().isNormalOperation();
     if (
       rollFdInvalid ||
       pitchFdInvalid ||
@@ -215,15 +217,16 @@ export class FlightPathDirector extends DisplayComponent<{
     let xOffsetLim;
 
     if (this.isVisible.get()) {
-      const daLimConv = (this.data.da.value * DistanceSpacing) / ValueSpacing;
+      const daLimConv = (this.data.da.get().value * DistanceSpacing) / ValueSpacing;
       const pitchSubFpaConv =
-        calculateHorizonOffsetFromPitch(this.data.pitch.value) - calculateHorizonOffsetFromPitch(this.data.fpa.value);
-      const rollCos = Math.cos((this.data.roll.value * Math.PI) / 180);
-      const rollSin = Math.sin((-this.data.roll.value * Math.PI) / 180);
+        calculateHorizonOffsetFromPitch(this.data.pitch.get().value) -
+        calculateHorizonOffsetFromPitch(this.data.fpa.get().value);
+      const rollCos = Math.cos((this.data.roll.get().value * Math.PI) / 180);
+      const rollSin = Math.sin((-this.data.roll.get().value * Math.PI) / 180);
 
       //FD Smoothing when close to FPV
       //roll
-      const FDRollOrder = this.data.rollFdCommand.value;
+      const FDRollOrder = this.data.rollFdCommand.get().value;
       let FDRollOrder2 = FDRollOrder;
       let cx, cy, r;
       cx = -30;
@@ -237,7 +240,7 @@ export class FlightPathDirector extends DisplayComponent<{
       const FDRollOrderLim = Math.max(Math.min(FDRollOrder2, 45), -45);
 
       //pitch
-      const FDPitchOrder = this.data.pitchFdCommand.value; //in degrees on pitch scale
+      const FDPitchOrder = this.data.pitchFdCommand.get().value; //in degrees on pitch scale
       let FDPitchOrder2 = FDRollOrder;
 
       cx = -10;

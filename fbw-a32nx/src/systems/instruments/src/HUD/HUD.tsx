@@ -19,6 +19,7 @@ import {
   Arinc429Word,
   Arinc429WordData,
   FailuresConsumer,
+  Arinc429RegisterSubject,
 } from '@flybywiresim/fbw-sdk';
 
 import { A320Failure } from '@failures';
@@ -74,7 +75,7 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
 
   private pitch: Arinc429WordData = Arinc429Register.empty();
 
-  private roll: Arinc429WordData = Arinc429Register.empty();
+  private roll = Arinc429RegisterSubject.createEmpty();
 
   private ownRadioAltitude = new Arinc429Word(0);
 
@@ -143,7 +144,7 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
 
     this.subscriptions.push(
       this.sub.on('rollAr').handle((r) => {
-        this.roll = r;
+        this.roll.setWord(r.rawWord);
       }),
     );
 
@@ -168,7 +169,7 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
           if (
             !this.isAttExcessive.get() &&
             ((this.pitch.isNormalOperation() && (this.pitch.value > 25 || this.pitch.value < -13)) ||
-              (this.roll.isNormalOperation() && Math.abs(this.roll.value) > 45))
+              (this.roll.get().isNormalOperation() && Math.abs(this.roll.get().value) > 45))
           ) {
             this.isAttExcessive.set(true);
           } else if (
@@ -176,8 +177,8 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
             this.pitch.isNormalOperation() &&
             this.pitch.value < 22 &&
             this.pitch.value > -10 &&
-            this.roll.isNormalOperation() &&
-            Math.abs(this.roll.value) < 40
+            this.roll.get().isNormalOperation() &&
+            Math.abs(this.roll.get().value) < 40
           ) {
             this.isAttExcessive.set(false);
           }
