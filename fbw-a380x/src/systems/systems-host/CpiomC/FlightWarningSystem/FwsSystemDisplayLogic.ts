@@ -148,7 +148,8 @@ export class FwsSystemDisplayLogic {
             SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'number') !== 0 ||
             SimVar.GetSimVarValue('L:A32NX_SPOILERS_HANDLE_POSITION', 'percent') !== 0;
 
-          if (isGearExtended && this.fws.adrPressureAltitude.get() < 16000) {
+          const pressureAlt = this.fws.adrPressureAltitude.get() ?? 0;
+          if (isGearExtended && pressureAlt < 16000) {
             this.pageWhenUnselected.set(SdPages.Wheel);
             this.checkApuPage(deltaTime);
             this.checkEnginePage(deltaTime);
