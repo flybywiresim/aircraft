@@ -55,6 +55,8 @@ pub(super) struct A380DirectCurrentElectrical {
     ess_in_flight_sply2: DelayedFalseLogicGate,
     ess_in_flight_contactor: Contactor,
     dc_ess_subbus: ElectricalBus,
+    ess_refuel_bus_contactors: [Contactor; 2],
+    ess_fuel_buses: [ElectricalBus; 2],
 }
 impl A380DirectCurrentElectrical {
     pub fn new(context: &mut InitContext) -> Self {
@@ -126,6 +128,12 @@ impl A380DirectCurrentElectrical {
                 context,
                 ElectricalBusType::DirectCurrentNamed("108PH"),
             ),
+
+            // 20PR + 21PR (using two contactors as the current electrical model doesn't support switches)
+            ess_refuel_bus_contactors: [1, 2]
+                .map(|i| Contactor::new(context, &format!("20PR.{i}"))),
+            ess_fuel_buses: ["501PP", "503PP"]
+                .map(|name| ElectricalBus::new(context, ElectricalBusType::Sub(name))),
         }
     }
 
@@ -336,6 +344,19 @@ impl A380DirectCurrentElectrical {
         electricity.flow(&self.dc_ess_bus, &self.ess_in_flight_contactor);
         // 108PH is powered by 111PH which is powered by DC ESS through the ESS IN FLIGHT contactor
         electricity.flow(&self.ess_in_flight_contactor, &self.dc_ess_subbus);
+
+        // TODO: implement refuel on bat switching
+        let mut refuel_on_bat = false;
+        for c in &mut self.ess_refuel_bus_contactors {
+            c.close_when(refuel_on_bat);
+            refuel_on_bat = !refuel_on_bat;
+
+            for b in &self.ess_fuel_buses {
+                electricity.flow(c, b);
+            }
+        }
+        electricity.flow(&self.dc_ess_bus, &self.ess_refuel_bus_contactors[0]);
+        electricity.flow(&self.hot_bus_ess, &self.ess_refuel_bus_contactors[1]);
     }
 
     #[cfg(test)]

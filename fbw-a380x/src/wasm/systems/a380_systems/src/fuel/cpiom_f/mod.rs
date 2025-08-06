@@ -1,34 +1,68 @@
-use std::{collections::HashMap, time::Duration};
+mod fuel_control;
+mod fuel_measuring;
+mod fuel_transfer;
 
 use super::{
     fuel_quantity_data_concentrator::FuelQuantityDataConcentrator, A380FuelTankType, SetFuelLevel,
 };
 use crate::{
-    avionics_data_communication_network::{
-        A380AvionicsDataCommunicationNetwork, A380AvionicsDataCommunicationNetworkMessageData,
-    },
+    avionics_data_communication_network::A380AvionicsDataCommunicationNetwork,
     systems::simulation::SimulationElement,
 };
+use enum_map::Enum;
+use fuel_measuring::FuelMeasuringApplication;
+use fuel_transfer::FuelTransferApplication;
+use fxhash::{FxHashMap, FxHashSet};
 use serde::Deserialize;
 use serde_with::{serde_as, DisplayFromStr};
+use std::f64::INFINITY;
+use std::{collections::HashMap, time::Duration};
 use systems::{
     fuel::{self, FuelPayload, RefuelRate},
     integrated_modular_avionics::{
-        AvionicsDataCommunicationNetwork, AvionicsDataCommunicationNetworkEndpoint,
-        AvionicsDataCommunicationNetworkMessage, AvionicsDataCommunicationNetworkMessageIdentifier,
+        AvionicsDataCommunicationNetwork, AvionicsDataCommunicationNetworkMessageIdentifier,
     },
     pneumatic::EngineState,
-    shared::{ElectricalBusType, ElectricalBuses},
+    shared::{
+        arinc429::{Arinc429Word, SignStatus},
+        ElectricalBusType, ElectricalBuses, Resolution,
+    },
     simulation::{
         InitContext, Read, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
-        UpdateContext, VariableIdentifier, Write,
+        UpdateContext, VariableIdentifier, Write, Writer,
     },
 };
 use uom::si::{
-    f64::{Mass, Velocity},
-    mass::kilogram,
+    f64::{Length, Mass, Ratio, Velocity},
+    length::foot,
+    mass::{kilogram, pound},
+    ratio::percent,
     velocity::knot,
 };
+
+const FEED_TANKS: [A380FuelTankType; 4] = [
+    A380FuelTankType::FeedOne,
+    A380FuelTankType::FeedTwo,
+    A380FuelTankType::FeedThree,
+    A380FuelTankType::FeedFour,
+];
+
+const WING_TANKS: [A380FuelTankType; 6] = [
+    A380FuelTankType::LeftOuter,
+    A380FuelTankType::RightOuter,
+    A380FuelTankType::LeftMid,
+    A380FuelTankType::RightMid,
+    A380FuelTankType::LeftInner,
+    A380FuelTankType::RightInner,
+];
+
+const INNER_TANKS: [A380FuelTankType; 2] =
+    [A380FuelTankType::LeftInner, A380FuelTankType::RightInner];
+const MID_TANKS: [A380FuelTankType; 2] = [A380FuelTankType::LeftMid, A380FuelTankType::RightMid];
+const OUTER_TANKS: [A380FuelTankType; 2] =
+    [A380FuelTankType::LeftOuter, A380FuelTankType::RightOuter];
+
+const TRIM_TANK: A380FuelTankType = A380FuelTankType::Trim;
 
 #[derive(Clone, Copy)]
 enum ModeSelect {
@@ -37,6 +71,13 @@ enum ModeSelect {
     _ManualRefuel,
     _Defuel,
     _Transfer,
+}
+
+trait FuelQuantityProvider {
+    fn get_tank_quantity(&self, tank: A380FuelTankType) -> Mass;
+    fn get_feed_tank_quantities(&self) -> [Mass; 4] {
+        FEED_TANKS.map(|t| self.get_tank_quantity(t))
+    }
 }
 
 #[derive(Deserialize)]
@@ -603,18 +644,80 @@ impl RefuelDriver {
 }
 impl SimulationElement for RefuelDriver {}
 
-pub struct A380FuelQuantityManagementSystem {
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
+enum TransferSourceTank {
+    #[default]
+    None,
+    Inner,
+    Mid,
+    Trim,
+    Outer,
+}
+impl TransferSourceTank {
+    fn is_some(&self) -> bool {
+        !matches!(self, Self::None)
+    }
+}
+
+#[derive(PartialEq, Eq, Hash)]
+enum TransferGallery {
+    Fwd,
+    Aft,
+}
+
+struct TankQuantities {
+    feed_tank_quantities: [Mass; 4],
+    inner_left_tank_quantity: Mass,
+    inner_right_tank_quantity: Mass,
+    mid_left_tank_quantity: Mass,
+    mid_right_tank_quantity: Mass,
+    outer_left_tank_quantity: Mass,
+    outer_right_tank_quantity: Mass,
+    trim_tank_quantity: Mass,
+}
+
+// TODO: boot time approx. 30sec (reference: FFS)
+pub(super) struct A380FuelQuantityManagementSystem {
+    cpioms_available: [bool; 4],
+    fuel_measuring_application: FuelMeasuringApplication,
     refuel_application: RefuelApplication,
     integrated_refuel_panel: IntegratedRefuelPanel,
+    fuel_transfer_application: FuelTransferApplication,
+    fqdc_fuel_valve_open_words: [Arinc429Word<u32>; 3],
+    fqdc_fuel_valve_closed_words: [Arinc429Word<u32>; 3],
+    fuel_valve_open: [bool; 41],
+    fuel_valve_closed: [bool; 41],
 
-    fuel_tank_quantities_identifier: AvionicsDataCommunicationNetworkMessageIdentifier,
+    _fuel_tank_quantities_identifier: AvionicsDataCommunicationNetworkMessageIdentifier,
+    // TODO: figure out if both FQMS sides get data from both FMS
+    // TODO: should be transmitted over AFDX
+    // fms_weights_ids: [AvionicsDataCommunicationNetworkMessageIdentifier; 2],
+    // fms_remaining_time_ids: [AvionicsDataCommunicationNetworkMessageIdentifier; 2],
+    fms_zero_fuel_weight_id: VariableIdentifier,
+    fms_zero_fuel_weight_cg_id: VariableIdentifier,
+    fms_remaining_time_ids: VariableIdentifier,
+
+    // Output ARINC 429 backup signals
+    total_fuel_onboard_id: VariableIdentifier,
+    total_aircraft_weight_id: VariableIdentifier,
+    center_of_gravity_id: VariableIdentifier,
+    left_fuel_pump_states_id: VariableIdentifier,
+    right_fuel_pump_states_id: VariableIdentifier,
+    fuel_valve_target_state_ids: [VariableIdentifier; 3],
+    fuel_valve_open_ids: [VariableIdentifier; 3],
+    fuel_valve_closed_ids: [VariableIdentifier; 3],
 }
 impl A380FuelQuantityManagementSystem {
-    pub fn new(context: &mut InitContext, adcn: &mut A380AvionicsDataCommunicationNetwork) -> Self {
+    pub(super) fn new(
+        context: &mut InitContext,
+        adcn: &mut A380AvionicsDataCommunicationNetwork,
+    ) -> Self {
         Self {
+            cpioms_available: [false; 4],
             // TODO: This needs to be refactored when CPIOM implementation is done
             // CPIOM_COM_F1, CPIOM_MON_F3 [FQDC_1] -> 501PP
             // CPIOM_COM_F2, CPIOM_MON_F4 [FQDC_2] -> 109PP 101PP 107PP
+            fuel_measuring_application: FuelMeasuringApplication::new(context),
             refuel_application: RefuelApplication::new(
                 context,
                 ElectricalBusType::DirectCurrentEssential, // 501PP
@@ -623,53 +726,101 @@ impl A380FuelQuantityManagementSystem {
                 context,
                 ElectricalBusType::DirectCurrentEssential, // 501PP
             ),
+            fuel_transfer_application: FuelTransferApplication::new(),
 
-            fuel_tank_quantities_identifier: adcn
+            fqdc_fuel_valve_open_words: [Arinc429Word::new(0, SignStatus::FailureWarning); 3],
+            fqdc_fuel_valve_closed_words: [Arinc429Word::new(0, SignStatus::FailureWarning); 3],
+            fuel_valve_open: [false; 41],
+            fuel_valve_closed: [false; 41],
+
+            _fuel_tank_quantities_identifier: adcn
                 .get_message_identifier("FQMS_FUEL_TANK_QUANTITIES".to_owned()),
+
+            // TODO: we only use the values from FMS 1 for now
+            fms_zero_fuel_weight_id: context.get_identifier("FM1_ZERO_FUEL_WEIGHT".to_owned()),
+            fms_zero_fuel_weight_cg_id: context
+                .get_identifier("FM1_ZERO_FUEL_WEIGHT_CG".to_owned()),
+            fms_remaining_time_ids: context.get_identifier("FM1_REMAINING_FLIGHT_TIME".to_owned()),
+
+            total_fuel_onboard_id: context.get_identifier("FQMS_TOTAL_FUEL_ON_BOARD".to_owned()),
+            total_aircraft_weight_id: context.get_identifier("FQMS_GROSS_WEIGHT".to_owned()),
+            center_of_gravity_id: context.get_identifier("FQMS_CENTER_OF_GRAVITY_MAC".to_owned()),
+            left_fuel_pump_states_id: context
+                .get_identifier("FQMS_LEFT_FUEL_PUMPS_RUNNING".to_owned()),
+            right_fuel_pump_states_id: context
+                .get_identifier("FQMS_RIGHT_FUEL_PUMPS_RUNNING".to_owned()),
+
+            fuel_valve_target_state_ids: [1, 2, 3]
+                .map(|i| context.get_identifier(format!("FQMS_VALVE_TARGET_STATE_WORD_{i}"))),
+            fuel_valve_open_ids: [1, 2, 3]
+                .map(|i| context.get_identifier(format!("FQMS_VALVE_OPEN_WORD_{i}"))),
+            fuel_valve_closed_ids: [1, 2, 3]
+                .map(|i| context.get_identifier(format!("FQMS_VALVE_CLOSED_WORD_{i}"))),
         }
     }
 
-    pub fn update(
+    pub(super) fn update(
         &mut self,
         context: &UpdateContext,
         fuel_system: &mut (impl SetFuelLevel + FuelPayload),
-        cpiom: &impl AvionicsDataCommunicationNetworkEndpoint,
         fqdc: &FuelQuantityDataConcentrator,
+        cpioms_available: [bool; 4],
+        //cpiom: &impl AvionicsDataCommunicationNetworkEndpoint,
     ) {
+        self.cpioms_available = cpioms_available;
+
+        // if self.cpioms_available.iter().any(|a| *a) {
+        //     self.fuel_valve_states =
+        //         std::array::from_fn(|index| fqdc.get_valve_state(index).normal_value());
+        // } else {
+        //     self.fuel_valve_states = [None; 41];
+        // }
+
+        self.fuel_measuring_application.update(fqdc);
+
         self.refuel_application
             .update(context, fuel_system, &mut self.integrated_refuel_panel);
 
-        let left_outer_tank_quantity = fqdc.left_outer_tank_quantity();
-        let feed_one_tank_quantity = fqdc.feed_one_tank_quantity();
-        let left_mid_tank_quantity = fqdc.left_mid_tank_quantity();
-        let left_inner_tank_quantity = fqdc.left_inner_tank_quantity();
-        let feed_two_tank_quantity = fqdc.feed_two_tank_quantity();
-        let feed_three_tank_quantity = fqdc.feed_three_tank_quantity();
-        let right_inner_tank_quantity = fqdc.right_inner_tank_quantity();
-        let right_mid_tank_quantity = fqdc.right_mid_tank_quantity();
-        let feed_four_tank_quantity = fqdc.feed_four_tank_quantity();
-        let right_outer_tank_quantity = fqdc.right_outer_tank_quantity();
-        let trim_tank_quantity = fqdc.trim_tank_quantity();
+        // Automatic transfer is not available when the fuel quantity in one feed tank, or more than one tank is/are not available
+        let automatic_transfer_available = !self.integrated_refuel_panel.refuel_is_enabled(context)
+            && self.fuel_measuring_application.all_feed_tanks_valid()
+            && self
+                .fuel_measuring_application
+                .unavailable_tank_quantity_count()
+                < 2;
 
-        let tank_quantities_message_status = left_outer_tank_quantity.ssm().into();
-        let tank_quantities_message_data =
-            A380AvionicsDataCommunicationNetworkMessageData::FuelQuantityDataSystemTankQuantities {
-                left_outer_tank_quantity: left_outer_tank_quantity.value(),
-                feed_one_tank_quantity: feed_one_tank_quantity.value(),
-                left_mid_tank_quantity: left_mid_tank_quantity.value(),
-                left_inner_tank_quantity: left_inner_tank_quantity.value(),
-                feed_two_tank_quantity: feed_two_tank_quantity.value(),
-                feed_three_tank_quantity: feed_three_tank_quantity.value(),
-                right_inner_tank_quantity: right_inner_tank_quantity.value(),
-                right_mid_tank_quantity: right_mid_tank_quantity.value(),
-                feed_four_tank_quantity: feed_four_tank_quantity.value(),
-                right_outer_tank_quantity: right_outer_tank_quantity.value(),
-                trim_tank_quantity: trim_tank_quantity.value(),
-            };
-        let tank_quantities_message = AvionicsDataCommunicationNetworkMessage::new(
-            tank_quantities_message_status,
-            tank_quantities_message_data,
-        );
+        if automatic_transfer_available {
+            self.fuel_transfer_application.update(
+                &self.fuel_measuring_application,
+                self.fuel_measuring_application.total_fuel_onboard(),
+                Some(Duration::from_secs(120 * 60)), // TODO: get this from the FMS
+                false,                               // TODO: get in flight signal
+                false,                               // TODO: get trim tank isolation signal
+                Some(Length::default()),             // TODO: get altitude signal from adiru
+            );
+        } else {
+            self.fuel_transfer_application.reset();
+        }
+
+        // let tank_quantities_message_status = left_outer_tank_quantity.ssm().into();
+        // let tank_quantities_message_data =
+        //     A380AvionicsDataCommunicationNetworkMessageData::FuelQuantityDataSystemTankQuantities {
+        //         left_outer_tank_quantity: left_outer_tank_quantity.value(),
+        //         feed_one_tank_quantity: feed_one_tank_quantity.value(),
+        //         left_mid_tank_quantity: left_mid_tank_quantity.value(),
+        //         left_inner_tank_quantity: left_inner_tank_quantity.value(),
+        //         feed_two_tank_quantity: feed_two_tank_quantity.value(),
+        //         feed_three_tank_quantity: feed_three_tank_quantity.value(),
+        //         right_inner_tank_quantity: right_inner_tank_quantity.value(),
+        //         right_mid_tank_quantity: right_mid_tank_quantity.value(),
+        //         feed_four_tank_quantity: feed_four_tank_quantity.value(),
+        //         right_outer_tank_quantity: right_outer_tank_quantity.value(),
+        //         trim_tank_quantity: trim_tank_quantity.value(),
+        //     };
+        // let tank_quantities_message = AvionicsDataCommunicationNetworkMessage::new(
+        //     tank_quantities_message_status,
+        //     tank_quantities_message_data,
+        // );
         // cpiom.send_value(
         //     &self.fuel_tank_quantities_identifier,
         //     tank_quantities_message,
@@ -677,8 +828,30 @@ impl A380FuelQuantityManagementSystem {
     }
 
     #[allow(dead_code)]
-    pub fn refuel_application(&mut self) -> &mut RefuelApplication {
+    pub(super) fn refuel_application(&mut self) -> &mut RefuelApplication {
         &mut self.refuel_application
+    }
+
+    fn write_arinc429<T: Default>(
+        writer: &mut (impl Writer + Write<T>),
+        identifier: &VariableIdentifier,
+        value: Option<T>,
+        is_powered: bool,
+    ) {
+        let (value, ssm) = if let Some(v) = value {
+            (v, SignStatus::NormalOperation)
+        } else {
+            (Default::default(), SignStatus::NoComputedData)
+        };
+        writer.write_arinc429(
+            identifier,
+            value,
+            if is_powered {
+                ssm
+            } else {
+                SignStatus::FailureWarning
+            },
+        );
     }
 }
 impl SimulationElement for A380FuelQuantityManagementSystem {
@@ -686,5 +859,51 @@ impl SimulationElement for A380FuelQuantityManagementSystem {
         self.refuel_application.accept(visitor);
         self.integrated_refuel_panel.accept(visitor);
         visitor.visit(self);
+    }
+
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.fuel_measuring_application.read_variables(reader);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        // We simply forward the words from the FQDC
+        for (id, value) in self
+            .fuel_valve_open_ids
+            .iter()
+            .chain(&self.fuel_valve_closed_ids)
+            .zip(
+                self.fqdc_fuel_valve_open_words
+                    .iter()
+                    .chain(&self.fqdc_fuel_valve_closed_words),
+            )
+        {
+            writer.write(id, *value);
+        }
+
+        let is_powered = self.cpioms_available[1..=2].iter().any(|a| *a);
+        Self::write_arinc429(
+            writer,
+            &self.total_fuel_onboard_id,
+            self.fuel_measuring_application
+                .total_fuel_onboard()
+                .map(|v| v.get::<kilogram>().resolution(1.)),
+            is_powered,
+        );
+        Self::write_arinc429(
+            writer,
+            &self.total_aircraft_weight_id,
+            self.fuel_measuring_application
+                .total_aircraft_weight()
+                .map(|v| v.get::<kilogram>().resolution(1.)),
+            is_powered,
+        );
+        Self::write_arinc429(
+            writer,
+            &self.center_of_gravity_id,
+            self.fuel_measuring_application
+                .center_of_gravity()
+                .map(|v| v.get::<percent>().resolution(0.1)),
+            is_powered,
+        );
     }
 }
