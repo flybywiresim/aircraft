@@ -60,7 +60,7 @@ impl SlatFlapControlComputer {
         let f = self.flaps_channel.get_demanded_angle();
 
         if s == Angle::default() && f == Angle::default() {
-            return FlapsConf::Conf0;
+            FlapsConf::Conf0
         } else if s == Angle::new::<degree>(247.27) && f == Angle::default() {
             return FlapsConf::Conf1;
         } else if s == Angle::new::<degree>(247.27) && f == Angle::new::<degree>(108.28) {
@@ -300,15 +300,13 @@ impl SlatFlapComplex {
             self.sfcc[idx].flaps_channel.get_feedback_angle(),
         );
         if flaps_in_target_position {
-            return None;
+            None
+        } else if self.sfcc[idx].flaps_channel.get_demanded_angle()
+            > self.sfcc[idx].flaps_channel.get_feedback_angle()
+        {
+            Some(ChannelCommand::Extend)
         } else {
-            if self.sfcc[idx].flaps_channel.get_demanded_angle()
-                > self.sfcc[idx].flaps_channel.get_feedback_angle()
-            {
-                return Some(ChannelCommand::Extend);
-            } else {
-                return Some(ChannelCommand::Retract);
-            }
+            Some(ChannelCommand::Retract)
         }
     }
 
@@ -318,15 +316,13 @@ impl SlatFlapComplex {
             self.sfcc[idx].slats_channel.get_feedback_angle(),
         );
         if slats_in_target_position {
-            return None;
+            None
+        } else if self.sfcc[idx].slats_channel.get_demanded_angle()
+            > self.sfcc[idx].slats_channel.get_feedback_angle()
+        {
+            Some(ChannelCommand::Extend)
         } else {
-            if self.sfcc[idx].slats_channel.get_demanded_angle()
-                > self.sfcc[idx].slats_channel.get_feedback_angle()
-            {
-                return Some(ChannelCommand::Extend);
-            } else {
-                return Some(ChannelCommand::Retract);
-            }
+            Some(ChannelCommand::Retract)
         }
     }
 }

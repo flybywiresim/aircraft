@@ -672,9 +672,7 @@ mod tests {
         }
 
         fn flap_command(&self, requested_position: Option<Angle>) -> Option<ChannelCommand> {
-            let Some(requested_position) = requested_position else {
-                return None;
-            };
+            let requested_position = requested_position?;
 
             let flaps_in_target_position = self.is_approaching_requested_position(
                 requested_position,
@@ -682,13 +680,11 @@ mod tests {
             );
 
             if flaps_in_target_position {
-                return None;
+                None
+            } else if requested_position > self.flaps_slats.position_feedback() {
+                Some(ChannelCommand::Extend)
             } else {
-                if requested_position > self.flaps_slats.position_feedback() {
-                    return Some(ChannelCommand::Extend);
-                } else {
-                    return Some(ChannelCommand::Retract);
-                }
+                Some(ChannelCommand::Retract)
             }
         }
     }
