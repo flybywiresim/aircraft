@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -16,6 +17,7 @@ import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
 import { ArincValueProvider } from './shared/ArincValueProvider';
 import { HUDSimvarPublisher, HUDSimvars, HUDSymbolsPublisher } from './shared/HUDSimvarPublisher';
 import { HudValueProvider } from './shared/HudValueProvider';
+import { PseudoDmc } from './PseudoDmc';
 
 import './style.scss';
 
@@ -48,7 +50,9 @@ class A32NX_HUD extends BaseInstrument {
 
   private readonly fwcPublisher = new FwcPublisher(this.bus);
 
-  private readonly extendedClockProvider = new ExtendedClockEventProvider(this.bus);
+  private readonly pseudoDmc = new PseudoDmc(this.bus, this);
+
+  private readonly extendedClockProvider = new ExtendedClockEventProvider(this.bus, this.pseudoDmc.isAcPowered);
 
   private readonly symbolPublisher = new HUDSymbolsPublisher(this.bus);
 
@@ -74,6 +78,7 @@ class A32NX_HUD extends BaseInstrument {
     this.backplane.addPublisher('Dmc', this.dmcPublisher);
     this.backplane.addPublisher('RopRowOans', this.ropRowOansPublisher);
     this.backplane.addPublisher('Fwc', this.fwcPublisher);
+    this.backplane.addInstrument('PseudoDMC', this.pseudoDmc);
     this.backplane.addInstrument('ExtendedClock', this.extendedClockProvider);
     this.backplane.addInstrument('HudProvider', this.hudProvider);
   }
