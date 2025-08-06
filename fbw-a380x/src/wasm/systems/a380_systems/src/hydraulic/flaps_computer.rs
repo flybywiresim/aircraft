@@ -700,6 +700,7 @@ mod tests {
         vertical_speed: Arinc429Word<Velocity>,
         altitude: Arinc429Word<Length>,
         angle_of_attack: Arinc429Word<Angle>,
+        computed_airspeed: Arinc429Word<Velocity>,
     }
     impl TestAdirs {
         fn new() -> Self {
@@ -711,6 +712,10 @@ mod tests {
                 vertical_speed: Arinc429Word::new(Velocity::default(), SignStatus::FailureWarning),
                 altitude: Arinc429Word::new(Length::default(), SignStatus::FailureWarning),
                 angle_of_attack: Arinc429Word::new(Angle::default(), SignStatus::NormalOperation),
+                computed_airspeed: Arinc429Word::new(
+                    Velocity::default(),
+                    SignStatus::FailureWarning,
+                ),
             }
         }
 
@@ -749,6 +754,10 @@ mod tests {
 
         fn angle_of_attack(&self, _adiru_number: usize) -> Arinc429Word<Angle> {
             self.angle_of_attack
+        }
+
+        fn computed_airspeed(&self, _adiru_number: usize) -> Arinc429Word<Velocity> {
+            self.computed_airspeed
         }
     }
     struct A380FlapsTestBed {

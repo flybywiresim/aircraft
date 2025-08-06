@@ -53,7 +53,7 @@ export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
 
             if (underlined) {
               const d = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-              d.setAttribute('class', `Undeline ${color}Line`);
+              d.setAttribute('class', `Underline ${color}Line`);
               d.setAttribute('strokeLinecap', 'round');
               d.setAttribute(
                 'd',
@@ -64,7 +64,7 @@ export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
 
             if (framed) {
               const d = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-              d.setAttribute('class', `Undeline ${color}Line`);
+              d.setAttribute('class', `Underline ${color}Line`);
               d.setAttribute('strokeLinecap', 'round');
               d.setAttribute(
                 'd',

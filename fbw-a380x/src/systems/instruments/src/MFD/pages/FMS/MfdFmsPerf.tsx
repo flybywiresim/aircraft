@@ -19,6 +19,8 @@ import {
   LengthFormat,
   PercentageFormat,
   QnhFormat,
+  RADIO_ALTITUDE_NODH_VALUE,
+  RadioAltitudeFormat,
   SpeedKnotsFormat,
   SpeedMachFormat,
   TemperatureFormat,
@@ -630,8 +632,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     if (pd.thrustReductionAltitudeIsPilotEntered) {
       this.thrRedAltIsPilotEntered.set(pd.thrustReductionAltitudeIsPilotEntered);
     }
-
-    this.thrRedAlt.set(pd.pilotThrustReductionAltitude ?? null);
 
     this.activeFlightPhase.set(SimVar.GetSimVarValue('L:A32NX_FMGC_FLIGHT_PHASE', 'Enum'));
 
@@ -2662,12 +2662,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                           condition={this.precisionApproachSelected}
                           componentIfTrue={
                             <InputField<number>
-                              dataEntryFormat={new AltitudeFormat(Subject.create(0), Subject.create(maxCertifiedAlt))}
+                              dataEntryFormat={new RadioAltitudeFormat()}
                               dataHandlerDuringValidation={async (v) => {
-                                if (v === undefined) {
+                                if (v === null) {
                                   SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -1);
-                                } else if (v === null) {
-                                  SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -2);
                                 } else {
                                   SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', v);
                                 }
