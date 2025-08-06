@@ -53,11 +53,10 @@ import {
 import { EgpwcBusPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/EgpwcBusPublisher';
 import { FGDataPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
 import { AesuBusPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/AesuBusPublisher';
+import { A380Failure } from '@failures';
 import { AutoThsTrimmer } from 'systems-host/PseudoPRIM/AutoThsTrimmer';
 import { EfisTawsBridge } from 'systems-host/Misc/EfisTawsBridge';
 import { FmsSymbolsPublisher } from 'instruments/src/ND/FmsSymbolsPublisher';
-import { A380Failure } from '@failures';
-import { AircraftNetworkServerUnit } from 'systems-host/Ansu/AircraftNetworkServerUnit';
 import { FmsMessagePublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FmsMessagePublisher';
 
 class SystemsHost extends BaseInstrument {
@@ -172,17 +171,6 @@ class SystemsHost extends BaseInstrument {
   //FIXME add some deltatime functionality to backplane instruments so we dont have to pass SystemHost
   private readonly legacyFuel = new LegacyFuel(this.bus, this);
 
-  // For now, pass ATSU to the ANSUs. In our target architecture, there should be no ATSU
-  private readonly nssAnsu1 = new AircraftNetworkServerUnit(this.bus, 1, 'nss', this.failuresConsumer, this.atsu);
-  private readonly nssAnsu2 = new AircraftNetworkServerUnit(this.bus, 2, 'nss', this.failuresConsumer, this.atsu);
-  private readonly fltOpsAnsu1 = new AircraftNetworkServerUnit(
-    this.bus,
-    1,
-    'flt-ops',
-    this.failuresConsumer,
-    this.atsu,
-  );
-
   // FIXME delete this when PRIM gets the THS auto trim
   private readonly autoThsTrimmer = new AutoThsTrimmer(this.bus, this);
 
@@ -228,9 +216,6 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('AesuPublisher', this.aesuBusPublisher);
     this.backplane.addPublisher('SwitchingPanelPublisher', this.switchingPanelPublisher);
     this.backplane.addPublisher('fmsMessage', this.fmsMessagePublisher);
-    this.backplane.addInstrument('nssAnsu1', this.nssAnsu1, true);
-    this.backplane.addInstrument('nssAnsu2', this.nssAnsu2, true);
-    this.backplane.addInstrument('fltOpsAnsu1', this.fltOpsAnsu1, true);
     this.backplane.addInstrument('AutoThsTrimmer', this.autoThsTrimmer);
 
     this.hEventPublisher = new HEventPublisher(this.bus);

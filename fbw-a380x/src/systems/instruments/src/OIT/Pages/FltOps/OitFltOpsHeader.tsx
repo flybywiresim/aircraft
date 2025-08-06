@@ -1,19 +1,30 @@
-import { DisplayComponent, FSComponent, Subject, SubscribableUtils, Subscription, VNode } from '@microsoft/msfs-sdk';
+//  Copyright (c) 2025 FlyByWire Simulations
+//  SPDX-License-Identifier: GPL-3.0
+
+import {
+  DisplayComponent,
+  FSComponent,
+  Subject,
+  Subscribable,
+  SubscribableUtils,
+  Subscription,
+  VNode,
+} from '@microsoft/msfs-sdk';
 import { PageSelectorDropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/PageSelectorDropdownMenu';
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
-import { OIT } from './OIT';
-import { OitUiService } from './OitUiService';
+import { OitUiService } from '../../OitUiService';
+import { OisDomain } from '../../OIT';
 
-interface OitHeaderHeaderProps {
-  uiService: OitUiService;
-  oit: OIT;
+interface OitFltOpsHeaderProps {
+  readonly uiService: OitUiService;
+  readonly avncsOrFltOps: Subscribable<OisDomain>;
 }
 
 /*
- * Complete header for the ATCCOM system
+ * Complete header for the OIS system, both AVNCS and FLT OPS.
  */
-export abstract class OitHeader extends DisplayComponent<OitHeaderHeaderProps> {
+export abstract class OitFltOpsHeader extends DisplayComponent<OitFltOpsHeaderProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
   protected readonly subs = [] as Subscription[];
 
@@ -58,7 +69,11 @@ export abstract class OitHeader extends DisplayComponent<OitHeaderHeaderProps> {
               separatorBelow: true,
             },
             { label: 'T.O PERF', action: () => this.props.uiService.navigateTo('flt-ops/to-perf'), disabled: true },
-            { label: 'LOADSHEET', action: () => this.props.uiService.navigateTo('flt-ops/loadsheet'), disabled: true },
+            {
+              label: 'LOADSHEET',
+              action: () => this.props.uiService.navigateTo('flt-ops/loadsheet'),
+              disabled: true,
+            },
             { label: 'LDG PERF', action: () => this.props.uiService.navigateTo('flt-ops/ldg-perf'), disabled: true },
             {
               label: 'IN-FLT PERF',
@@ -76,8 +91,11 @@ export abstract class OitHeader extends DisplayComponent<OitHeaderHeaderProps> {
             },
             {
               label: 'EXIT SESSION',
-              action: () => this.props.uiService.navigateTo('flt-ops/exit-session'),
-              disabled: true,
+              action: () => {
+                this.props.uiService.navigateTo('flt-ops');
+                this.props.uiService.fltOpsLoginScreenVisible.set(true);
+              },
+              disabled: false,
             },
           ]}
           idPrefix={`${this.props.uiService.captOrFo}_OIT_menu_menu`}
@@ -92,7 +110,7 @@ export abstract class OitHeader extends DisplayComponent<OitHeaderHeaderProps> {
             {
               label: 'HOME',
               action: () => {
-                if (this.props.oit.operationMode.get() === 'flt-ops') {
+                if (this.props.avncsOrFltOps.get() === 'flt-ops') {
                   this.props.uiService.navigateTo('flt-ops');
                 }
               },
