@@ -1,7 +1,7 @@
 #include "rtwtypes.h"
-#include "maximum_Abpa9SzA.h"
+#include "maximum_Y6vyn2io.h"
 
-real_T maximum_Abpa9SzA(const real_T x[4])
+real_T maximum_Y6vyn2io(const real_T x[4])
 {
   real_T ex;
   ex = x[0];

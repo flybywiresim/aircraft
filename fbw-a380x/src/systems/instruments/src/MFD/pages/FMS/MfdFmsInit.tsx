@@ -1,4 +1,4 @@
-import { FSComponent, MappedSubject, MappedSubscribable, Subject, VNode } from '@microsoft/msfs-sdk';
+import { ArraySubject, FSComponent, MappedSubject, MappedSubscribable, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
@@ -25,6 +25,8 @@ import { AtsuStatusCodes } from '@datalink/common';
 import { FmsRouterMessages } from '@datalink/router';
 
 import './MfdFmsInit.scss';
+import { CostIndexMode } from '../../FMC/fmgc';
+import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
 
 interface MfdFmsInitProps extends AbstractMfdPageProps {}
 
@@ -99,11 +101,15 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
 
   private readonly costIndex = Subject.create<number | null>(null);
 
+  private readonly costIndexModeLabels = ArraySubject.create(['LRC', 'ECON']);
+
   private readonly costIndexDisabled = MappedSubject.create(
-    ([toIcao, fromIcao, flightPhase]) => !toIcao || !fromIcao || flightPhase >= FmgcFlightPhase.Descent,
+    ([toIcao, fromIcao, flightPhase, ciMode]) =>
+      !toIcao || !fromIcao || flightPhase >= FmgcFlightPhase.Descent || ciMode === CostIndexMode.LRC,
     this.fromIcao,
     this.toIcao,
     this.activeFlightPhase,
+    this.props.fmcService.master?.fmgc.data.costIndexMode ?? Subject.create(CostIndexMode.ECON),
   );
 
   private readonly tripWindDisabled = MappedSubject.create(
@@ -158,6 +164,12 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
         }),
       );
     }
+
+    this.subs.push(
+      this.eoActive.sub((v) => {
+        this.costIndexModeLabels.set(v ? ['EO-LRC', 'EO-ECON'] : ['LRC', 'ECON']);
+      }, true),
+    );
 
     this.subs.push(
       this.cpnyFplnButtonLabel,
@@ -475,7 +487,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 disabled={this.altnDisabled}
                 canBeCleared={Subject.create(false)}
                 value={this.crzFl}
-                containerStyle="margin-right: 25px;"
+                containerStyle="margin-right: 100px;"
                 errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
@@ -501,18 +513,15 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
             </div>
 
             <div class="mfd-fms-init-line" style="margin-top: 10px;">
-              <div class="mfd-label init-input-field">CI</div>
-              <InputField<number>
-                dataEntryFormat={new CostIndexFormat()}
-                dataHandlerDuringValidation={async (v) => {
-                  this.loadedFlightPlan?.setPerformanceData('costIndex', v);
-                }}
-                mandatory={Subject.create(true)}
-                disabled={this.costIndexDisabled}
-                value={this.costIndex}
-                containerStyle="width: 70px; margin-right: 90px; justify-content: center;"
-                alignText="center"
-                errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+              <div class="mfd-label init-input-field">MODE</div>
+              <DropdownMenu
+                values={this.costIndexModeLabels}
+                selectedIndex={this.props.fmcService.master.fmgc.data.costIndexMode}
+                idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_initCostIndexModeDropdown`}
+                freeTextAllowed={false}
+                containerStyle="width: 175px; margin-right: 65px; "
+                numberOfDigitsForInputField={7}
+                alignLabels="center"
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
               />
@@ -535,26 +544,45 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
               />
             </div>
             <div class="mfd-fms-init-line trip-wind">
-              <div class="mfd-label init-input-field" style="margin-top: 90px;">
-                TRIP WIND
+              <div class="fc" style="align-self: flex-start; margin-top: 15px;">
+                <div class="mfd-label init-input-field">CI</div>
+                <div class="mfd-label init-input-field" style="margin-top: 27px;">
+                  TRIP WIND
+                </div>
               </div>
-              <InputField<number, number, false>
-                dataEntryFormat={new TripWindFormat()}
-                dataHandlerDuringValidation={async (v) => this.props.fmcService.master?.fmgc.data.tripWind.set(v)}
-                mandatory={Subject.create(false)}
-                disabled={this.tripWindDisabled} // TODO
-                readonlyValue={this.props.fmcService.master.fmgc.data.tripWind}
-                containerStyle="width: 125px; margin-right: 80px; margin-top: 90px;"
-                alignText="center"
-                errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
-                hEventConsumer={this.props.mfd.hEventConsumer}
-                interactionMode={this.props.mfd.interactionMode}
-              />
+              <div class="fc" style="align-self: flex-start; margin-top: 5px;">
+                <InputField<number>
+                  dataEntryFormat={new CostIndexFormat()}
+                  dataHandlerDuringValidation={async (v) => {
+                    this.loadedFlightPlan?.setPerformanceData('costIndex', v);
+                  }}
+                  mandatory={Subject.create(true)}
+                  disabled={this.costIndexDisabled}
+                  value={this.costIndex}
+                  containerStyle="width: 70px; margin-right: 90px; justify-content: center;"
+                  alignText="center"
+                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  hEventConsumer={this.props.mfd.hEventConsumer}
+                  interactionMode={this.props.mfd.interactionMode}
+                />
+                <InputField<number, number, false>
+                  dataEntryFormat={new TripWindFormat()}
+                  dataHandlerDuringValidation={async (v) => this.props.fmcService.master?.fmgc.data.tripWind.set(v)}
+                  mandatory={Subject.create(false)}
+                  disabled={this.tripWindDisabled}
+                  readonlyValue={this.props.fmcService.master.fmgc.data.tripWind}
+                  containerStyle="width: 125px; margin-right: 80px; margin-top: 10px;"
+                  alignText="center"
+                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  hEventConsumer={this.props.mfd.hEventConsumer}
+                  interactionMode={this.props.mfd.interactionMode}
+                />
+              </div>
               <Button
                 disabled={Subject.create(true)}
                 label="WIND"
                 onClick={() => console.log('WIND')}
-                buttonStyle="margin-right: 10px; margin-top: 90px;"
+                buttonStyle="margin-right: 10px; margin-top: 52px;"
               />
               <div style="flex-grow: 1" />
               <Button
