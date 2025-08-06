@@ -2,14 +2,14 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { ArraySubject, DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
-import { AbstractOitPageProps } from '../../OIT';
+import { AbstractOitFltOpsPageProps } from '../../OIT';
 import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
 import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import { AirportFormat, LongAlphanumericFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { OisInternalData } from '../../OisInternalPublisher';
 
-interface OitFltOpsStatusPageProps extends AbstractOitPageProps {}
+interface OitFltOpsStatusPageProps extends AbstractOitFltOpsPageProps {}
 
 export class OitFltOpsStatus extends DisplayComponent<OitFltOpsStatusPageProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
@@ -38,7 +38,7 @@ export class OitFltOpsStatus extends DisplayComponent<OitFltOpsStatusPageProps> 
               <div class="oit-flt-ops-sts-line-left oit-label bigger">ACFT REGISTRATION</div>
               <div class="oit-flt-ops-sts-line-right oit-label bigger">
                 <DropdownMenu
-                  idPrefix={`${this.props.oit.uiService.captOrFo}_OIT_acftRegistration`}
+                  idPrefix={`${this.props.uiService.captOrFo}_OIT_acftRegistration`}
                   selectedIndex={Subject.create<number | null>(0)}
                   values={ArraySubject.create(['F-FBWA'])}
                   freeTextAllowed={false}
@@ -46,8 +46,8 @@ export class OitFltOpsStatus extends DisplayComponent<OitFltOpsStatusPageProps> 
                   alignLabels="center"
                   numberOfDigitsForInputField={6}
                   tmpyActive={Subject.create(false)}
-                  hEventConsumer={this.props.oit.hEventConsumer}
-                  interactionMode={this.props.oit.interactionMode}
+                  hEventConsumer={this.props.container.hEventConsumer}
+                  interactionMode={this.props.container.interactionMode}
                 />
                 <div style="width: 40px;" />
                 <Button
@@ -74,11 +74,11 @@ export class OitFltOpsStatus extends DisplayComponent<OitFltOpsStatusPageProps> 
                 <InputField<string>
                   dataEntryFormat={new LongAlphanumericFormat()}
                   mandatory={Subject.create(true)}
-                  value={this.props.oit.laptopData.fltNumber}
+                  value={this.props.container.laptopData.fltNumber}
                   containerStyle="width: 600px; margin-right: 5px;"
                   alignText="center"
-                  hEventConsumer={this.props.oit.hEventConsumer}
-                  interactionMode={this.props.oit.interactionMode}
+                  hEventConsumer={this.props.container.hEventConsumer}
+                  interactionMode={this.props.container.interactionMode}
                   overrideEmptyMandatoryPlaceholder="[]"
                 />
                 <div style="flex-grow: 1" />
@@ -90,11 +90,11 @@ export class OitFltOpsStatus extends DisplayComponent<OitFltOpsStatusPageProps> 
                 <InputField<string>
                   dataEntryFormat={new AirportFormat()}
                   mandatory={Subject.create(true)}
-                  value={this.props.oit.laptopData.fromAirport}
+                  value={this.props.container.laptopData.fromAirport}
                   containerStyle="width: 250px; margin-right: 5px;"
                   alignText="center"
-                  hEventConsumer={this.props.oit.hEventConsumer}
-                  interactionMode={this.props.oit.interactionMode}
+                  hEventConsumer={this.props.container.hEventConsumer}
+                  interactionMode={this.props.container.interactionMode}
                   overrideEmptyMandatoryPlaceholder="[]"
                 />
                 <div class="oit-label bigger" style="width: 100px; padding-left: 40px;">
@@ -103,11 +103,11 @@ export class OitFltOpsStatus extends DisplayComponent<OitFltOpsStatusPageProps> 
                 <InputField<string>
                   dataEntryFormat={new AirportFormat()}
                   mandatory={Subject.create(true)}
-                  value={this.props.oit.laptopData.toAirport}
+                  value={this.props.container.laptopData.toAirport}
                   containerStyle="width: 250px; margin-right: 5px;"
                   alignText="center"
-                  hEventConsumer={this.props.oit.hEventConsumer}
-                  interactionMode={this.props.oit.interactionMode}
+                  hEventConsumer={this.props.container.hEventConsumer}
+                  interactionMode={this.props.container.interactionMode}
                   overrideEmptyMandatoryPlaceholder="[]"
                 />
                 <div style="flex-grow: 1" />
