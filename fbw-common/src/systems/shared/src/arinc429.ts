@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 export enum Arinc429SignStatusMatrix {
   FailureWarning = 0b00,
   NoComputedData = 0b01,
@@ -22,11 +23,11 @@ export interface Arinc429WordData {
 
   isInvalid(): boolean;
 
-  valueOr(defaultValue: number): number;
+  valueOr(defaultValue: number | undefined | null): number;
 
   bitValue(bit: number): boolean;
 
-  bitValueOr(bit: number, defaultValue: boolean): boolean;
+  bitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean;
 }
 
 /** @deprecated Use {@link Arinc429Register} instead. */
@@ -88,7 +89,7 @@ export class Arinc429Word implements Arinc429WordData {
   /**
    * Returns the value when normal operation, the supplied default value otherwise.
    */
-  valueOr(defaultValue: number) {
+  valueOr(defaultValue: number | undefined | null) {
     return this.isNormalOperation() || this.isFunctionalTest() ? this.value : defaultValue;
   }
 
@@ -96,7 +97,7 @@ export class Arinc429Word implements Arinc429WordData {
     return ((this.value >> (bit - 1)) & 1) !== 0;
   }
 
-  bitValueOr(bit: number, defaultValue: boolean): boolean {
+  bitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean {
     return this.isNormalOperation() || this.isFunctionalTest() ? ((this.value >> (bit - 1)) & 1) !== 0 : defaultValue;
   }
 
@@ -127,8 +128,6 @@ export class Arinc429Register implements Arinc429WordData {
   }
 
   private constructor() {
-    this.ssm = Arinc429SignStatusMatrix.FailureWarning;
-    this.value = 0;
     this.set(0);
   }
 
@@ -198,7 +197,7 @@ export class Arinc429Register implements Arinc429WordData {
   /**
    * Returns the value when normal operation, the supplied default value otherwise.
    */
-  valueOr(defaultValue: number) {
+  valueOr(defaultValue: number | undefined | null): number {
     return this.isInvalid() ? defaultValue : this.value;
   }
 
@@ -206,7 +205,7 @@ export class Arinc429Register implements Arinc429WordData {
     return ((this.value >> (bit - 1)) & 1) !== 0;
   }
 
-  bitValueOr(bit: number, defaultValue: boolean) {
+  bitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean {
     return this.isInvalid() ? defaultValue : ((this.value >> (bit - 1)) & 1) !== 0;
   }
 
@@ -272,7 +271,7 @@ export class Arinc429OutputWord {
     this.word.ssm = ssm;
   }
 
-  public valueOr(defaultValue: number) {
+  public valueOr(defaultValue: number | undefined | null): number {
     return this.word.valueOr(defaultValue);
   }
 
@@ -280,7 +279,7 @@ export class Arinc429OutputWord {
     return this.word.bitValue(bit);
   }
 
-  public bitValueOr(bit: number, defaultValue: boolean) {
+  public bitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean {
     return this.word.bitValueOr(bit, defaultValue);
   }
 
