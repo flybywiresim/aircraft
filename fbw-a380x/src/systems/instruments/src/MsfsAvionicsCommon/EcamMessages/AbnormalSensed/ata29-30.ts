@@ -498,7 +498,7 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
         name: 'FUEL CONSUMPT INCRSD',
         sensed: false,
       },
-      FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
+      { ...FMS_PRED_UNRELIABLE_CHECKLIST_ITEM },
       {
         name: 'LDG DIST AFFECTED',
         sensed: false,
@@ -526,7 +526,7 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
         name: 'FUEL CONSUMPT INCRSD',
         sensed: false,
       },
-      FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
+      { ...FMS_PRED_UNRELIABLE_CHECKLIST_ITEM },
       {
         name: 'LDG DIST AFFECTED',
         sensed: false,
@@ -645,7 +645,7 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
         name: 'FUEL CONSUMPT INCRSD',
         sensed: false,
       },
-      FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
+      { ...FMS_PRED_UNRELIABLE_CHECKLIST_ITEM },
       {
         name: 'LDG DIST AFFECTED',
         sensed: false,

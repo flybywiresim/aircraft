@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 // Copyright (c) 2024-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -661,7 +660,7 @@ export function isTimedCheckListAction(c: AbstractChecklistItem): c is TimedChec
 }
 
 export function isChecklistHeadline(c: AbstractChecklistItem) {
-  return [ChecklistLineStyle.SubHeadline, ChecklistLineStyle.CenteredSubHeadline].includes(c.style);
+  return c.style ? [(ChecklistLineStyle.SubHeadline, ChecklistLineStyle.CenteredSubHeadline)].includes(c.style) : false;
 }
 
 export function isChecklistCondition(c: AbstractChecklistItem): c is ChecklistCondition {
@@ -707,7 +706,13 @@ export interface NormalProcedure {
   /** Title of the checklist, e.g. "BEFORE START".  */
   title: string;
   /** An array of possible checklist items.. */
-  items: (ChecklistAction | ChecklistCondition | ChecklistSpecialItem)[];
+  items: (
+    | ChecklistAction
+    | ChecklistCondition
+    | ChecklistSpecialItem
+    | TimedChecklistAction
+    | TimedChecklistCondition
+  )[];
   /** Checklist is only activated by request, deactivated per default */
   onlyActivatedByRequest?: boolean;
 }
@@ -724,7 +729,13 @@ export interface DeferredProcedure {
   /** (optional, only used from batch 7) Title of the procedure, Accepts special formatting tokens  */
   title?: string;
   /** An array of possible checklist items. */
-  items: (ChecklistAction | ChecklistCondition | ChecklistSpecialItem)[];
+  items: (
+    | ChecklistAction
+    | ChecklistCondition
+    | ChecklistSpecialItem
+    | TimedChecklistAction
+    | TimedChecklistCondition
+  )[];
   type: DeferredProcedureType;
 }
 

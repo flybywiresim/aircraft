@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 // Copyright (c) 2024-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -54,6 +53,8 @@ export class FwsAbnormalNonSensed {
       return AbnormalNonSensedProceduresOverview.map((val) => (val.category === category ? 1 : 0) as number).reduce(
         (accumulator, currentValue) => accumulator + currentValue,
       );
+    } else {
+      return 0;
     }
   }
 
@@ -150,7 +151,7 @@ export class FwsAbnormalNonSensed {
         element.simVarIsActive.destroy();
       }
 
-      if ('destroy' in element.auralWarning) {
+      if (element.auralWarning && 'destroy' in element.auralWarning) {
         element.auralWarning.destroy();
       }
     }

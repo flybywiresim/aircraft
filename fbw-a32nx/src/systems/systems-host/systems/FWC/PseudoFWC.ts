@@ -1721,8 +1721,13 @@ export class PseudoFWC {
     const adr2PressureAltitude = this.adr2PressureAlt.get();
     const adr3PressureAltitude = this.adr3PressureAlt.get();
     // TODO use GPS alt if ADRs not available
-    const pressureAltitude =
-      adr1PressureAltitude.valueOr(null) ?? adr2PressureAltitude.valueOr(null) ?? adr3PressureAltitude.valueOr(null);
+    const pressureAltitude = !adr1PressureAltitude.isInvalid()
+      ? adr1PressureAltitude.value
+      : !adr2PressureAltitude.isInvalid()
+        ? adr2PressureAltitude.value
+        : !adr3PressureAltitude.isInvalid()
+          ? adr3PressureAltitude.value
+          : null;
     const height1: Arinc429Word = Arinc429Word.fromSimVarValue('L:A32NX_RA_1_RADIO_ALTITUDE');
     const height2: Arinc429Word = Arinc429Word.fromSimVarValue('L:A32NX_RA_2_RADIO_ALTITUDE');
     this.height1Failed.set(height1.isFailureWarning());

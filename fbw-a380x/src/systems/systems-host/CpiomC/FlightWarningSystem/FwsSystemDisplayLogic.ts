@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 // Copyright (c) 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -23,7 +22,7 @@ export class FwsSystemDisplayLogic {
   private readonly prevFailPage = Subject.create<SdPages>(SdPages.Door);
   private readonly pageWhenUnselected = Subject.create<SdPages>(SdPages.Door);
 
-  private ecamCycleInterval: NodeJS.Timeout | null = null;
+  private ecamCycleInterval: NodeJS.Timeout | undefined = undefined;
   private readonly startPageAllCycleRef = Subject.create<SdPages>(SdPages.None);
 
   private readonly ecamButtonLightDelayTimer = Subject.create(Number.MIN_SAFE_INTEGER);
@@ -79,7 +78,7 @@ export class FwsSystemDisplayLogic {
     } else if (!ecamAllButtonPushed && this.prevEcamAllButtonState.get()) {
       // ALL button released
       clearInterval(this.ecamCycleInterval);
-      this.ecamCycleInterval = null;
+      this.ecamCycleInterval = undefined;
     } else if (!ecamAllButtonPushed) {
       if (this.userSelectedPage.get() !== SdPages.Status) {
         this.stsPrevPage.set(this.userSelectedPage.get());
