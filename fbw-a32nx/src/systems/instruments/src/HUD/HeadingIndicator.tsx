@@ -219,7 +219,7 @@ interface GroundTrackBugProps {
 class GroundTrackBug extends DisplayComponent<GroundTrackBugProps> {
   private readonly subscriptions: Subscription[] = [];
   private readonly sub = this.props.bus.getArincSubscriber<DmcLogicEvents & HUDSimvars & ClockEvents & HudElems>();
-  private readonly groundTrack = Arinc429ConsumerSubject.create(this.sub.on('track'));
+  private readonly groundTrack = Arinc429ConsumerSubject.create(null);
   private readonly headingTrk = ConsumerSubject.create(this.sub.on('headingTrk'), '');
 
   private isVisibleSub = MappedSubject.create(

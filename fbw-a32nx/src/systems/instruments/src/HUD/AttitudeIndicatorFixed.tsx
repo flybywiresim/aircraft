@@ -172,7 +172,7 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
 
   private fdVisibilitySub = Subject.create('hidden');
 
-  private readonly roll = ConsumerSubject.create(this.sub.on('rollAr'), new Arinc429Word(0));
+  private readonly roll = Arinc429ConsumerSubject.create(this.sub.on('rollAr'));
   private readonly pitch = Arinc429ConsumerSubject.create(this.sub.on('pitchAr'));
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -273,7 +273,7 @@ export class DeclutterIndicator extends DisplayComponent<DeclutterIndicatorProps
   private declutterModeRef = FSComponent.createRef<SVGPathElement>();
 
   private handleFdState(decMode: number) {
-    let text: string = '';
+    let text: string;
     if (decMode == 0) {
       text = 'N';
       this.declutterModeRef.instance.style.visibility = 'visible';

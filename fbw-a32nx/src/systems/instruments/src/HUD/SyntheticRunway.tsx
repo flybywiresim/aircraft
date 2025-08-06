@@ -1,6 +1,7 @@
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
+
 import {
   ClockEvents,
   DisplayComponent,
@@ -20,7 +21,6 @@ import {
   Arinc429RegisterSubject,
   Arinc429Register,
   Arinc429WordData,
-  Arinc429Word,
 } from '@flybywiresim/fbw-sdk';
 
 import { getSmallestAngle, HudElems, MdaMode, calculateHorizonOffsetFromPitch } from './HUDUtils';
@@ -36,26 +36,13 @@ export class SyntheticRunway extends DisplayComponent<{
     HUDSimvars & Arinc429Values & ClockEvents & HUDSymbolData & HudElems
   >();
   private filteredRadioAltitude = 0;
-  private data: HUDSyntheticRunway = {
-    latitude: 0,
-    longitude: 0,
-    location: new LatLong(0, 0),
-    thresholdCrossingHeight: 0,
-    thresholdLocation: new LatLongAlt(0, 0, 0),
-    startLocation: new LatLongAlt(0, 0, 0),
-    gradient: 0,
-    direction: 0,
-    elevation: 0,
-    length: 0,
-    width: 0,
-    cornerCoordinates: [],
-  };
-  private alt: number = -1;
+  private data: HUDSyntheticRunway;
+  private alt: number;
   private logOnce = 0;
-  private lat: number = -1;
-  private long: number = -1;
-  private heading: number = -1;
-  private prevRwyHdg = -1;
+  private lat: number;
+  private long: number;
+  private heading: number;
+  private prevRwyHdg;
   private pathRefs: NodeReference<SVGTextElement>[] = [];
   private centerlinePathRefs: NodeReference<SVGTextElement>[] = [];
 
@@ -67,15 +54,15 @@ export class SyntheticRunway extends DisplayComponent<{
   /** bit 29 is NO DH selection */
   private readonly fmEisDiscrete2 = Arinc429RegisterSubject.createEmpty();
 
-  private readonly altitude = ConsumerSubject.create(this.sub.on('altitudeAr'), new Arinc429Word(0));
-  private readonly ra = ConsumerSubject.create(this.sub.on('chosenRa').whenChanged(), new Arinc429Word(0));
+  private readonly altitude = Arinc429ConsumerSubject.create(this.sub.on('altitudeAr'));
+  private readonly ra = Arinc429ConsumerSubject.create(this.sub.on('chosenRa').whenChanged());
   private readonly syntheticRunwway = ConsumerSubject.create(this.sub.on('syntheticRunwway').whenChanged(), '');
   private readonly mda = Arinc429RegisterSubject.createEmpty();
   private readonly dh = Arinc429RegisterSubject.createEmpty();
   private readonly noDhSelected = this.fmEisDiscrete2.map((r) => r.bitValueOr(29, false));
 
   private readonly pitchAr = Arinc429ConsumerSubject.create(this.sub.on('pitchAr'));
-  private readonly rollAr = ConsumerSubject.create(this.sub.on('rollAr').whenChanged(), new Arinc429Word(0));
+  private readonly rollAr = Arinc429ConsumerSubject.create(this.sub.on('rollAr').whenChanged());
   private readonly mdaDhMode = MappedSubject.create(
     ([noDh, dh, mda]) => {
       if (noDh) {

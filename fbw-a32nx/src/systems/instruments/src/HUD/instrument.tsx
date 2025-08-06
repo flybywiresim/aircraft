@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Clock, FSComponent, HEventPublisher, InstrumentBackplane, Subject } from '@microsoft/msfs-sdk';
-import { ArincEventBus, EfisSide } from '@flybywiresim/fbw-sdk';
+import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { FwcPublisher, RopRowOansPublisher } from '@flybywiresim/msfs-avionics-common';
 
 import { FmsDataPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
@@ -36,11 +36,13 @@ class A32NX_HUD extends BaseInstrument {
 
   private readonly clock = new Clock(this.bus);
 
-  private readonly adirsValueProvider: AdirsValueProvider<HUDSimvars>;
+  // FIXME fit this into the normal backplane pattern
+  private adirsValueProvider: AdirsValueProvider<HUDSimvars>;
 
   private readonly dmcPublisher = new DmcPublisher(this.bus);
 
-  private readonly fmsDataPublisher: FmsDataPublisher;
+  // FIXME fit this into the normal backplane pattern
+  private fmsDataPublisher: FmsDataPublisher;
 
   private readonly ropRowOansPublisher = new RopRowOansPublisher(this.bus);
 
@@ -61,10 +63,6 @@ class A32NX_HUD extends BaseInstrument {
 
   constructor() {
     super();
-    const side: EfisSide = getDisplayIndex() === 1 ? 'L' : 'R';
-    const stateSubject = Subject.create<'L' | 'R'>(side);
-    this.adirsValueProvider = new AdirsValueProvider(this.bus, this.simVarPublisher, side);
-    this.fmsDataPublisher = new FmsDataPublisher(this.bus, stateSubject);
 
     this.backplane.addPublisher('HudSimvars', this.simVarPublisher);
     this.backplane.addPublisher('HUDSymbolsPublisher', this.symbolPublisher);
@@ -95,18 +93,21 @@ class A32NX_HUD extends BaseInstrument {
   public connectedCallback(): void {
     super.connectedCallback();
 
+    this.adirsValueProvider = new AdirsValueProvider(
+      this.bus,
+      this.simVarPublisher,
+      getDisplayIndex() === 1 ? 'L' : 'R',
+    );
+
+    const stateSubject = Subject.create<'L' | 'R'>(getDisplayIndex() === 1 ? 'L' : 'R');
+    this.fmsDataPublisher = new FmsDataPublisher(this.bus, stateSubject);
+
     this.backplane.init();
 
     FSComponent.render(<HUDComponent bus={this.bus} instrument={this} />, document.getElementById('HUD_CONTENT'));
 
     // Remove "instrument didn't load" text
-    const d1 = document.getElementById('HUD_CONTENT');
-    if (d1 !== null) {
-      const d2 = d1.querySelector(':scope > h1');
-      if (d2 !== null) {
-        d2.remove();
-      }
-    }
+    document.getElementById('HUD_CONTENT').querySelector(':scope > h1').remove();
   }
 
   /**

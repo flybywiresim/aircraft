@@ -9,16 +9,9 @@ import {
   MappedSubject,
   Subject,
   Subscribable,
-  SubscribableMapFunctions,
   VNode,
 } from '@microsoft/msfs-sdk';
-import {
-  ArincEventBus,
-  Arinc429Word,
-  Arinc429RegisterSubject,
-  Arinc429Register,
-  Arinc429LocalVarConsumerSubject,
-} from '@flybywiresim/fbw-sdk';
+import { ArincEventBus, Arinc429Word, Arinc429RegisterSubject, Arinc429Register } from '@flybywiresim/fbw-sdk';
 
 import { FgBus } from 'instruments/src/PFD/shared/FgBusProvider';
 import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
@@ -148,8 +141,8 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
   private BC3MessageActive = MappedSubject.create(([BC3Message]) => BC3Message[0] !== null, this.BC3Message);
 
   private A3Message = MappedSubject.create(
-    ([fcuAtsFmaDiscreteWord, ecu1MaintenanceWord6, ecu2MaintenanceWord6, autobrakeMode]) =>
-      getA3Message(fcuAtsFmaDiscreteWord, ecu1MaintenanceWord6, ecu2MaintenanceWord6, autobrakeMode),
+    ([fcuAtsFmaDiscreteWord, ecu1MaintenanceWord6, ecu2MaintenanceWord6, autobrakeMode, AB3Message]) =>
+      getA3Message(fcuAtsFmaDiscreteWord, ecu1MaintenanceWord6, ecu2MaintenanceWord6, autobrakeMode, AB3Message),
     this.fcuAtsFmaDiscreteWord,
     this.ecu1MaintenanceWord6,
     this.ecu2MaintenanceWord6,
@@ -400,6 +393,10 @@ class A2Cell extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private text = Subject.create('');
 
+  private className = Subject.create('FontMediumSmaller Smaller MiddleAlign Green');
+
+  private autoBrkRef = FSComponent.createRef<SVGTextElement>();
+
   private autobrakeActive = false;
 
   private autobrakeMode = 0;
@@ -417,77 +414,58 @@ class A2Cell extends DisplayComponent<{ bus: ArincEventBus }> {
       .on('autoBrakeMode')
       .whenChanged()
       .handle((am) => {
-        this.autobrakeMode = am;
-        this.handleMessage();
+        switch (am) {
+          case 0:
+            this.text.set('');
+            this.isArmed.set('none');
+            break;
+          case 1:
+            this.text.set('BRK LO ');
+            this.isArmed.set('block');
+            break;
+          case 2:
+            this.text.set('BRK MED ');
+            this.isArmed.set('block');
+            break;
+          case 3:
+            // MAX will be shown in 3rd row
+            this.text.set('');
+            break;
+          default:
+            break;
+        }
       });
 
     sub
       .on('autoBrakeActive')
       .whenChanged()
       .handle((am) => {
-        this.autobrakeActive = am;
-        this.handleMessage();
+        if (am) {
+          this.autoBrkRef.instance.style.visibility = 'hidden';
+          this.isArmed.set('none');
+        } else {
+          this.autoBrkRef.instance.style.visibility = 'visible';
+        }
       });
 
     sub
-      .on('fcuAtsDiscreteWord')
+      .on('AThrMode')
       .whenChanged()
-      .handle((word) => {
-        this.fcuAtsDiscreteWord = word;
-        this.handleMessage();
+      .handle((athrMode) => {
+        // ATHR mode overrides BRK LO and MED memo
+        if (athrMode > 0 && athrMode <= 6) {
+          this.autoBrkRef.instance.style.visibility = 'hidden';
+        } else {
+          this.autoBrkRef.instance.style.visibility = 'visible';
+        }
       });
-
-    sub
-      .on('fcuAtsFmaDiscreteWord')
-      .whenChanged()
-      .handle((word) => {
-        this.fcuAtsFmaDiscreteWord = word;
-        this.handleMessage();
-      });
-  }
-
-  handleMessage(): void {
-    const [_isShown, isTwoLine, _text, _amberFlashingBox] = getA1A2CellText(
-      this.fcuAtsDiscreteWord,
-      this.fcuAtsFmaDiscreteWord,
-      0,
-      this.autobrakeMode,
-      this.autobrakeActive,
-    );
-
-    if (this.autobrakeActive || isTwoLine) {
-      this.text.set('');
-
-      return;
-    }
-
-    switch (this.autobrakeMode) {
-      case 0:
-        this.text.set('');
-        this.isArmed.set('none');
-        break;
-      case 1:
-        this.text.set('BRK LO ');
-        this.isArmed.set('block');
-        break;
-      case 2:
-        this.text.set('BRK MED ');
-        this.isArmed.set('block');
-        break;
-      case 3:
-        // MAX will be shown in 3rd row
-        this.text.set('');
-        break;
-      default:
-        break;
-    }
   }
 
   render(): VNode {
     return (
       <g id="A2Cell">
         <path id="dash" display={this.isArmed} class="NormalStroke Green" d="m16 40h140" stroke-dasharray="5 9" />
-        <text class="FontMediumSmaller Smaller MiddleAlign Green" x="83.9" y="68.75" style="white-space: pre">
+        <text ref={this.autoBrkRef} class={this.className} x="83.9" y="68.75" style="white-space: pre">
           {this.text}
         </text>
       </g>
@@ -498,12 +476,9 @@ class A2Cell extends DisplayComponent<{ bus: ArincEventBus }> {
 class Row3 extends DisplayComponent<{
   bus: ArincEventBus;
   isAttExcessive: Subscribable<boolean>;
-  AB3Message: MappedSubject<[Arinc429Register, Arinc429Register, boolean], string[] | null[]>;
-  BC3Message: MappedSubject<
-    [boolean, Arinc429Register, boolean, Arinc429Register, number, boolean, boolean],
-    (string | null)[]
-  >;
-  A3Message: MappedSubject<[Arinc429Register, Arinc429Register, Arinc429Register, number, boolean], (string | null)[]>;
+  AB3Message: Subscribable<string[]>;
+  BC3Message: Subscribable<string[]>;
+  A3Message: Subscribable<string[]>;
 }> {
   private cellsToHide = FSComponent.createRef<SVGGElement>();
 
@@ -664,7 +639,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
 
   private autoBrakeMode = 0;
 
-  constructor(props: CellProps) {
+  constructor(props) {
     super(props, 9);
   }
 
@@ -758,6 +733,7 @@ const getA3Message = (
   ecu1MaintenanceWord6: Arinc429Register,
   ecu2MaintenanceWord6: Arinc429Register,
   autobrakeMode: number,
+  AB3Message: boolean,
 ) => {
   const clbDemand = fcuAtsFmaDiscreteWord.bitValueOr(22, false);
   const mctDemand = fcuAtsFmaDiscreteWord.bitValueOr(23, false);
@@ -786,7 +762,7 @@ const getA3Message = (
   } else if (assymThrust) {
     text = 'LVR ASYM';
     className = 'Amber';
-  } else if (autobrakeMode === 3) {
+  } else if (autobrakeMode === 3 && !AB3Message) {
     text = 'BRK MAX';
     className = 'FontMediumSmaller MiddleAlign Cyan';
   } else {
@@ -797,7 +773,7 @@ const getA3Message = (
 };
 
 interface A3CellProps extends CellProps {
-  A3Message: MappedSubject<[Arinc429Register, Arinc429Register, Arinc429Register, number, boolean], (string | null)[]>;
+  A3Message: Subscribable<string[]>;
 }
 
 class A3Cell extends DisplayComponent<A3CellProps> {
@@ -812,8 +788,8 @@ class A3Cell extends DisplayComponent<A3CellProps> {
   private updateMessage() {
     const className = this.props.A3Message.get()[1];
     const text = this.props.A3Message.get()[0];
-    const t2 = typeof text === 'string' ? text : '';
-    this.textSub.set(t2);
+
+    this.textSub.set(text);
     this.classSub.set(`FontMediumSmaller MiddleAlign ${className}`);
     this.shouldFlash.set(this.props.A3Message.get()[2] !== null);
     this.textSub.get() === null ? this.isArmed.set('none') : this.isArmed.set('block');
@@ -858,10 +834,16 @@ const getAB3Message = (machPresel: Arinc429Register, spdPresel: Arinc429Register
   }
 };
 
-class AB3Cell extends DisplayComponent<{
-  AB3Message: MappedSubject<[Arinc429Register, Arinc429Register, boolean], string[] | null[]>;
-}> {
+class AB3Cell extends DisplayComponent<{ AB3Message: Subscribable<string[]> }> {
   private isArmed = Subject.create('');
+
+  private speedPreselVal = -1;
+
+  private machPreselVal = -1;
+
+  private athrModeMessage = 0;
+
+  private autobrakeMode = 0;
 
   private textSub = Subject.create('');
 
@@ -870,12 +852,8 @@ class AB3Cell extends DisplayComponent<{
   private textXPosSub = Subject.create(0);
 
   private getText() {
-    const txt1 = this.props.AB3Message.get()[0];
-    const txt2 = this.props.AB3Message.get()[1];
-    const t1 = typeof txt1 === 'string' ? txt1 : '';
-    const t2 = typeof txt2 === 'string' ? txt2 : '';
-    this.textSub.set(t1);
-    this.text2Sub.set(t2);
+    this.textSub.set(this.props.AB3Message.get()[0]);
+    this.text2Sub.set(this.props.AB3Message.get()[1]);
 
     if (this.textSub.get() === 'SPEED SEL|   ') {
       this.textXPosSub.set(35.434673);
@@ -1671,14 +1649,7 @@ const getBC3Message = (
   return [text, className, flashingClassName1, flashingClassName2];
 };
 
-class BC3Cell extends DisplayComponent<
-  {
-    BC3Message: MappedSubject<
-      [boolean, Arinc429Register, boolean, Arinc429Register, number, boolean, boolean],
-      (string | null)[]
-    >;
-  } & CellProps
-> {
+class BC3Cell extends DisplayComponent<{ BC3Message: Subscribable<string[]> } & CellProps> {
   private bc3Cell = FSComponent.createRef<SVGTextElement>();
 
   private readonly normalClassNames = Subject.create('');
@@ -1691,12 +1662,8 @@ class BC3Cell extends DisplayComponent<
 
   private fillBC3Cell() {
     this.normalClassNames.set(`${this.props.BC3Message.get()[1]} MiddleAlign`);
-    const txt1 = this.props.BC3Message.get()[2];
-    const t1 = typeof txt1 === 'string' ? txt1 : '';
-    const txt2 = this.props.BC3Message.get()[3];
-    const t2 = typeof txt2 === 'string' ? txt2 : '';
-    this.flashingClassName1.set(t1);
-    this.flashingClassName2.set(t2);
+    this.flashingClassName1.set(this.props.BC3Message.get()[2]);
+    this.flashingClassName2.set(this.props.BC3Message.get()[3]);
     this.isFlashing.set(this.props.BC3Message.get()[2] !== '');
 
     const text = this.props.BC3Message.get()[0];
@@ -1835,16 +1802,14 @@ enum MdaMode {
 }
 
 class D3Cell extends DisplayComponent<{ bus: ArincEventBus }> {
-  private readonly sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values>();
-
   private readonly textRef = FSComponent.createRef<SVGTextElement>();
 
   /** bit 29 is NO DH selection */
-  private readonly fmEisDiscrete2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmEisDiscreteWord2Raw'));
+  private readonly fmEisDiscrete2 = Arinc429RegisterSubject.createEmpty();
 
-  private readonly mda = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmMdaRaw'));
+  private readonly mda = Arinc429RegisterSubject.createEmpty();
 
-  private readonly dh = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmDhRaw'));
+  private readonly dh = Arinc429RegisterSubject.createEmpty();
 
   private readonly noDhSelected = this.fmEisDiscrete2.map((r) => r.bitValueOr(29, false));
 
@@ -1884,10 +1849,15 @@ class D3Cell extends DisplayComponent<{ bus: ArincEventBus }> {
     this.dh,
     this.mda,
   );
-  private readonly DhModexPos = MappedSubject.create(([noDhSelected]) => (noDhSelected ? 592 : 517), this.noDhSelected);
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+
+    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values>();
+
+    sub.on('fmEisDiscreteWord2Raw').handle(this.fmEisDiscrete2.setWord.bind(this.fmEisDiscrete2));
+    sub.on('fmMdaRaw').handle(this.mda.setWord.bind(this.mda));
+    sub.on('fmDhRaw').handle(this.dh.setWord.bind(this.dh));
   }
 
   render(): VNode {
@@ -1895,20 +1865,17 @@ class D3Cell extends DisplayComponent<{ bus: ArincEventBus }> {
       <text
         ref={this.textRef}
         class={{
-          FontSmallest: this.noDhSelected.map(SubscribableMapFunctions.not()),
-          StartAlign: this.noDhSelected.map(SubscribableMapFunctions.not()),
-          FontMedium: this.noDhSelected,
-          MiddleAlign: this.noDhSelected,
-          White: true,
+          FontMediumSmallest: true,
+          MiddleAlign: true,
+          Green: true,
         }}
-        x={this.DhModexPos}
+        x="592"
         y="104.5"
       >
         <tspan>{this.mdaDhMode}</tspan>
         <tspan
-          class={{ EndAlign: true, Cyan: true, HiddenElement: this.mdaDhValueText.map((v) => v.length <= 0) }}
-          x="667"
-          y="104.5"
+          class={{ Cyan: true, HiddenElement: this.mdaDhValueText.map((v) => v.length <= 0) }}
+          style="white-space: pre"
         >
           {this.mdaDhValueText}
         </tspan>

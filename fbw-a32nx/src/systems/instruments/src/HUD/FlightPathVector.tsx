@@ -14,7 +14,14 @@ import {
   MappedSubject,
   Subscription,
 } from '@microsoft/msfs-sdk';
-import { ArincEventBus, Arinc429Word, Arinc429RegisterSubject, Arinc429Register } from '@flybywiresim/fbw-sdk';
+import {
+  ArincEventBus,
+  Arinc429Word,
+  Arinc429WordData,
+  Arinc429Register,
+  Arinc429RegisterSubject,
+  Arinc429ConsumerSubject,
+} from '@flybywiresim/fbw-sdk';
 
 import { SimplaneValues } from 'instruments/src/HUD/shared/SimplaneValueProvider';
 import { Arinc429Values } from './shared/ArincValueProvider';
@@ -28,10 +35,10 @@ const DistanceSpacing = (1024 / 28) * 5;
 const ValueSpacing = 5;
 
 interface FlightPathVectorData {
-  roll: Arinc429RegisterSubject;
-  pitch: Arinc429RegisterSubject;
-  fpa: Arinc429RegisterSubject;
-  da: Arinc429RegisterSubject;
+  roll: Arinc429WordData;
+  pitch: Arinc429WordData;
+  fpa: Arinc429WordData;
+  da: Arinc429WordData;
 }
 
 export class FlightPathVector extends DisplayComponent<{
@@ -42,16 +49,16 @@ export class FlightPathVector extends DisplayComponent<{
   private readonly subscriptions: Subscription[] = [];
   private bird = FSComponent.createRef<SVGGElement>();
   private birdPath = FSComponent.createRef<SVGPathElement>();
-  private birdOffRange = false;
+  private birdOffRange;
   private readonly fpvFlagVisible = Subject.create(false);
 
   private fcuDiscreteWord1 = new Arinc429Word(0);
   //TODO: test Arinc429Register.empty() instead of Arinc429Word(0)
   private data: FlightPathVectorData = {
-    roll: Arinc429RegisterSubject.createEmpty(),
-    pitch: Arinc429RegisterSubject.createEmpty(),
-    fpa: Arinc429RegisterSubject.createEmpty(),
-    da: Arinc429RegisterSubject.createEmpty(),
+    roll: new Arinc429Word(0),
+    pitch: new Arinc429Word(0),
+    fpa: new Arinc429Word(0),
+    da: new Arinc429Word(0),
   };
   private needsUpdate = false;
 
@@ -77,7 +84,7 @@ export class FlightPathVector extends DisplayComponent<{
         .on('fpa')
         .whenChanged()
         .handle((fpa) => {
-          this.data.fpa.setWord(fpa.rawWord);
+          this.data.fpa = fpa;
           this.needsUpdate = true;
         }),
     );
@@ -86,7 +93,7 @@ export class FlightPathVector extends DisplayComponent<{
         .on('da')
         .whenChanged()
         .handle((da) => {
-          this.data.da.setWord(da.rawWord);
+          this.data.da = da;
           this.needsUpdate = true;
         }),
     );
@@ -95,7 +102,7 @@ export class FlightPathVector extends DisplayComponent<{
         .on('rollAr')
         .whenChanged()
         .handle((r) => {
-          this.data.roll.setWord(r.rawWord);
+          this.data.roll = r;
           this.needsUpdate = true;
         }),
     );
@@ -104,7 +111,7 @@ export class FlightPathVector extends DisplayComponent<{
         .on('pitchAr')
         .whenChanged()
         .handle((p) => {
-          this.data.pitch.setWord(p.rawWord);
+          this.data.pitch = p;
           this.needsUpdate = true;
         }),
     );
@@ -116,7 +123,7 @@ export class FlightPathVector extends DisplayComponent<{
       this.needsUpdate = false;
 
       const trkFpaActive = this.fcuDiscreteWord1.bitValueOr(25, true);
-      const daAndFpaValid = this.data.fpa.get().isNormalOperation() && this.data.da.get().isNormalOperation();
+      const daAndFpaValid = this.data.fpa.isNormalOperation() && this.data.da.isNormalOperation();
       if (daAndFpaValid) {
         this.fpvFlagVisible.set(false);
         this.bird.instance.classList.remove('HiddenElement');
@@ -124,7 +131,7 @@ export class FlightPathVector extends DisplayComponent<{
       } else if (!trkFpaActive) {
         this.fpvFlagVisible.set(false);
         this.bird.instance.classList.add('HiddenElement');
-      } else if (this.data.pitch.get().isNormalOperation() && this.data.roll.get().isNormalOperation()) {
+      } else if (this.data.pitch.isNormalOperation() && this.data.roll.isNormalOperation()) {
         this.fpvFlagVisible.set(true);
         this.bird.instance.classList.add('HiddenElement');
       }
@@ -133,12 +140,11 @@ export class FlightPathVector extends DisplayComponent<{
 
   private moveBird() {
     let xOffsetLim;
-    const daLimConv = (this.data.da.get().value * DistanceSpacing) / ValueSpacing;
+    const daLimConv = (this.data.da.value * DistanceSpacing) / ValueSpacing;
     const pitchSubFpaConv =
-      calculateHorizonOffsetFromPitch(this.data.pitch.get().value) -
-      calculateHorizonOffsetFromPitch(this.data.fpa.get().value);
-    const rollCos = Math.cos((this.data.roll.get().value * Math.PI) / 180);
-    const rollSin = Math.sin((-this.data.roll.get().value * Math.PI) / 180);
+      calculateHorizonOffsetFromPitch(this.data.pitch.value) - calculateHorizonOffsetFromPitch(this.data.fpa.value);
+    const rollCos = Math.cos((this.data.roll.value * Math.PI) / 180);
+    const rollSin = Math.sin((-this.data.roll.value * Math.PI) / 180);
 
     const xOffset = daLimConv * rollCos - pitchSubFpaConv * rollSin;
     const yOffset = pitchSubFpaConv * rollCos + daLimConv * rollSin;
@@ -223,7 +229,7 @@ export class SpeedChevrons extends DisplayComponent<{ bus: ArincEventBus }> {
   private onTakeoff = true;
 
   private readonly spdChevrons = ConsumerSubject.create(this.sub.on('flightPathVector').whenChanged(), '');
-  private readonly vCTrend = ConsumerSubject.create(this.sub.on('vCTrend'), new Arinc429Word(0));
+  private readonly vCTrend = Arinc429ConsumerSubject.create(this.sub.on('vCTrend'));
 
   private setPos() {
     if (this.vCTrend.get().isNormalOperation()) {
@@ -295,10 +301,10 @@ export class SpeedChevrons extends DisplayComponent<{ bus: ArincEventBus }> {
 }
 
 interface SpeedStateInfo {
-  pfdTargetSpeed: Arinc429RegisterSubject;
-  fcuSelectedSpeed: Arinc429RegisterSubject;
-  speed: Arinc429RegisterSubject;
-  fmgcDiscreteWord5: Arinc429RegisterSubject;
+  pfdTargetSpeed: Arinc429WordData;
+  fcuSelectedSpeed: Arinc429WordData;
+  speed: Arinc429WordData;
+  fmgcDiscreteWord5: Arinc429Word;
 }
 
 class DeltaSpeed extends DisplayComponent<{ bus: ArincEventBus }> {
@@ -313,10 +319,10 @@ class DeltaSpeed extends DisplayComponent<{ bus: ArincEventBus }> {
   private needsUpdate = true;
 
   private speedState: SpeedStateInfo = {
-    speed: Arinc429RegisterSubject.createEmpty(),
-    pfdTargetSpeed: Arinc429RegisterSubject.createEmpty(),
-    fcuSelectedSpeed: Arinc429RegisterSubject.createEmpty(),
-    fmgcDiscreteWord5: Arinc429RegisterSubject.createEmpty(),
+    speed: new Arinc429Word(0),
+    pfdTargetSpeed: new Arinc429Word(0),
+    fcuSelectedSpeed: new Arinc429Word(0),
+    fmgcDiscreteWord5: new Arinc429Word(0),
   };
 
   onAfterRender(node: VNode): void {
@@ -384,15 +390,14 @@ class DeltaSpeed extends DisplayComponent<{ bus: ArincEventBus }> {
       this.needsUpdate = false;
 
       const fmgcPfdSelectedSpeedValid = !(
-        this.speedState.pfdTargetSpeed.get().isNoComputedData() ||
-        this.speedState.pfdTargetSpeed.get().isFailureWarning()
+        this.speedState.pfdTargetSpeed.isNoComputedData() || this.speedState.pfdTargetSpeed.isFailureWarning()
       );
 
       const chosenTargetSpeed = fmgcPfdSelectedSpeedValid
         ? this.speedState.pfdTargetSpeed
         : this.speedState.fcuSelectedSpeed;
 
-      const deltaSpeed = this.speedState.speed.get().value - chosenTargetSpeed.get().value;
+      const deltaSpeed = this.speedState.speed.value - chosenTargetSpeed.value;
       const sign = Math.sign(deltaSpeed);
       this.speedRefs[1].instance.setAttribute('d', `m 595,512 v ${-deltaSpeed * 3.33} h 12 v ${deltaSpeed * 3.33}`);
 
