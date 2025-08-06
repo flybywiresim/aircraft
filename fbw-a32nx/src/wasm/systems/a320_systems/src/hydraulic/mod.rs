@@ -64,8 +64,8 @@ use systems::{
     },
     shared::{
         arinc429::SignStatus, interpolation, random_from_normal_distribution, random_from_range,
-        update_iterator::MaxStepLoop, AdirsDiscreteOutputs, AirbusElectricPumpId,
-        AirbusEngineDrivenPumpId, ControllerSignal, DelayedFalseLogicGate,
+        update_iterator::MaxStepLoop, AdirsDiscreteOutputs, AdirsMeasurementOutputs,
+        AirbusElectricPumpId, AirbusEngineDrivenPumpId, ControllerSignal, DelayedFalseLogicGate,
         DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
         EmergencyElectricalRatPushButton, EmergencyElectricalState, EmergencyGeneratorControlUnit,
         EmergencyGeneratorPower, EngineFirePushButtons, GearWheel, HydraulicColor,
@@ -1896,7 +1896,7 @@ impl A320Hydraulic {
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         emergency_elec: &(impl EmergencyElectricalState + EmergencyGeneratorPower),
         reservoir_pneumatics: &impl ReservoirAirPressure,
-        adirs: &impl AdirsDiscreteOutputs,
+        adirs: &(impl AdirsDiscreteOutputs + AdirsMeasurementOutputs),
     ) {
         self.core_hydraulic_updater.update(context);
 
@@ -1911,6 +1911,7 @@ impl A320Hydraulic {
             lgcius.lgciu2(),
             engine1,
             engine2,
+            adirs,
         );
 
         for cur_time_step in self.core_hydraulic_updater {
@@ -2159,6 +2160,7 @@ impl A320Hydraulic {
         lgciu2: &impl LgciuInterface,
         engine1: &impl Engine,
         engine2: &impl Engine,
+        adirs: &impl AdirsMeasurementOutputs,
     ) {
         self.nose_steering.update(
             context,
@@ -2233,7 +2235,7 @@ impl A320Hydraulic {
         );
 
         self.slats_flaps_complex
-            .update(context, &self.flap_system, &self.slat_system);
+            .update(context, &self.flap_system, &self.slat_system, adirs);
 
         self.flap_system.update(
             context,
@@ -2264,7 +2266,7 @@ impl A320Hydraulic {
         );
 
         self.slats_flaps_complex
-            .update(context, &self.flap_system, &self.slat_system);
+            .update(context, &self.flap_system, &self.slat_system, adirs);
 
         self.rudder_mechanical_assembly.update(
             context,
@@ -6169,7 +6171,8 @@ mod tests {
             },
             landing_gear::{GearSystemState, LandingGear, LandingGearControlInterfaceUnitSet},
             shared::{
-                EmergencyElectricalState, EmergencyGeneratorControlUnit, LgciuId, PotentialOrigin,
+                arinc429::Arinc429Word, EmergencyElectricalState, EmergencyGeneratorControlUnit,
+                LgciuId, PotentialOrigin,
             },
             simulation::{
                 test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
@@ -6238,6 +6241,43 @@ mod tests {
 
             fn low_speed_warning_4(&self, _: usize) -> bool {
                 self.airspeed.get::<knot>() < 260.
+            }
+        }
+        impl AdirsMeasurementOutputs for A320TestAdirus {
+            fn is_fully_aligned(&self, _adiru_number: usize) -> bool {
+                todo!()
+            }
+
+            fn latitude(&self, _adiru_number: usize) -> Arinc429Word<Angle> {
+                todo!()
+            }
+
+            fn longitude(&self, _adiru_number: usize) -> Arinc429Word<Angle> {
+                todo!()
+            }
+
+            fn heading(&self, _adiru_number: usize) -> Arinc429Word<Angle> {
+                todo!()
+            }
+
+            fn true_heading(&self, _adiru_number: usize) -> Arinc429Word<Angle> {
+                todo!()
+            }
+
+            fn vertical_speed(&self, _adiru_number: usize) -> Arinc429Word<Velocity> {
+                todo!()
+            }
+
+            fn altitude(&self, _adiru_number: usize) -> Arinc429Word<Length> {
+                todo!()
+            }
+
+            fn angle_of_attack(&self, _adiru_number: usize) -> Arinc429Word<Angle> {
+                todo!()
+            }
+
+            fn computed_airspeed(&self, _adiru_number: usize) -> Arinc429Word<Velocity> {
+                todo!()
             }
         }
 
