@@ -596,7 +596,7 @@
       "Select": "선택",
       "ThrustReductionHeight": "추력 감소 고도 (ft)",
       "Title": "항공기 옵션 / 프로그램 설정",
-      "WeightUnit": "무게 단위"
+      "WeightUnit": "미국 단위"
     },
     "AtsuAoc": {
       "AtisAtcSource": "ATIS/ATC 출처",
