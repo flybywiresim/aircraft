@@ -5,7 +5,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { NXDataStore, useSimVar, useUpdate, getSupplier } from '@flybywiresim/fbw-sdk';
 
-import './common.scss';
+import '../Common/common.scss';
 
 type DisplayUnitProps = {
   electricitySimvar: string;

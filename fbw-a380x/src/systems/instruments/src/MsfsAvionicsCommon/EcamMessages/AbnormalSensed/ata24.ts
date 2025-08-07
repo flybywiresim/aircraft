@@ -59,7 +59,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
         name: 'FUEL CONSUMPT INCRSD',
         sensed: false,
       },
-      FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
+      { ...FMS_PRED_UNRELIABLE_CHECKLIST_ITEM },
       {
         name: 'LDG DIST: AFFECTED',
         sensed: false,
@@ -286,7 +286,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
         name: 'FUEL CONSUMPT INCRSD',
         sensed: false,
       },
-      FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
+      { ...FMS_PRED_UNRELIABLE_CHECKLIST_ITEM },
       {
         name: 'IF SEVERE ICE ACCRETION : FLAP LEVER 3 FOR LDG',
         sensed: false,
@@ -590,7 +590,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
         name: 'FUEL CONSUMPT INCRSD',
         sensed: false,
       },
-      FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
+      { ...FMS_PRED_UNRELIABLE_CHECKLIST_ITEM },
       {
         name: 'LDG DIST: AFFECTED',
         sensed: false,
@@ -907,7 +907,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
         name: 'FUEL CONSUMPT INCRSD',
         sensed: false,
       },
-      FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
+      { ...FMS_PRED_UNRELIABLE_CHECKLIST_ITEM },
       {
         name: 'LDG DIST: AFFECTED',
         sensed: false,
@@ -1019,7 +1019,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
         name: 'NO L/G RETRACTION',
         sensed: false,
       },
-      FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
+      { ...FMS_PRED_UNRELIABLE_CHECKLIST_ITEM },
       {
         name: 'IF SEVERE ICE ACCRETION : FLAP LEVER 3 FOR LDG',
         sensed: false,
@@ -1139,7 +1139,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
         name: 'FUEL CONSUMPT INCRSD',
         sensed: false,
       },
-      FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
+      { ...FMS_PRED_UNRELIABLE_CHECKLIST_ITEM },
       {
         name: 'SLATS SLOW',
         sensed: false,
@@ -1189,7 +1189,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
         name: 'FUEL CONSUMPT INCRSD',
         sensed: false,
       },
-      FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
+      { ...FMS_PRED_UNRELIABLE_CHECKLIST_ITEM },
       {
         name: 'LDG DIST: AFFECTED',
         sensed: false,
@@ -1807,7 +1807,7 @@ export const EcamAbnormalSensedAta24: { [n: number]: AbnormalProcedure } = {
         name: 'FUEL CONSUMPT INCRSD',
         sensed: false,
       },
-      FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
+      { ...FMS_PRED_UNRELIABLE_CHECKLIST_ITEM },
       {
         name: 'IF SEVERE ICE ACCRETION: FLAP LEVER 3 FOR LDG',
         sensed: false,

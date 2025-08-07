@@ -1,3 +1,8 @@
 {
-  "extends": "../tsconfig.json"
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "jsx": "react", /* Required for FSComponent framework JSX */
+    "jsxFactory": "FSComponent.buildComponent" /* Required for FSComponent framework JSX */,
+    "jsxFragmentFactory": "FSComponent.Fragment" /* Required for FSComponent framework JSX */,
+  },
 }

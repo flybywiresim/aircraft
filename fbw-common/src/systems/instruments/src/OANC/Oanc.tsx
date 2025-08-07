@@ -34,6 +34,8 @@ import {
   FcuSimVars,
   GenericAdirsEvents,
   Arinc429LocalVarConsumerSubject,
+  OansFmsDataStore,
+  OansMapProjection,
 } from '@flybywiresim/fbw-sdk';
 import {
   bbox,
@@ -53,7 +55,6 @@ import { bearingTo, clampAngle, Coordinates, distanceTo, placeBearingDistance } 
 
 import { OansControlEvents } from './OansControlEventPublisher';
 import { reciprocal } from '@fmgc/guidance/lnav/CommonGeometry';
-import { FmsDataStore } from './OancControlPanelUtils';
 import { OansBrakeToVacateSelection } from './OansBrakeToVacateSelection';
 import { STYLE_DATA } from './style-data';
 import { OancMovingModeOverlay, OancStaticModeOverlay } from './OancMovingModeOverlay';
@@ -63,7 +64,7 @@ import { OancPositionComputer } from './OancPositionComputer';
 import { OancMarkerManager } from './OancMarkerManager';
 import { ResetPanelSimvars } from './ResetPanelPublisher';
 import { NavigraphAmdbClient } from './api/NavigraphAmdbClient';
-import { globalToAirportCoordinates, pointAngle, pointDistance } from './OancMapUtils';
+import { pointAngle } from './OancMapUtils';
 import { LubberLine } from '../ND/pages/arc/LubberLine';
 
 export const OANC_RENDER_WIDTH = 768;
@@ -304,7 +305,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
   public readonly projectedPpos = MappedSubject.create<[Coordinates, Coordinates | undefined], Position>(
     ([ppos, arpCoordinates], previous?: Position | undefined) => {
       if (arpCoordinates) {
-        return globalToAirportCoordinates(arpCoordinates, ppos, [0, 0]);
+        return OansMapProjection.globalToAirportCoordinates(arpCoordinates, ppos, [0, 0]);
       }
 
       return previous ?? [0, 0];
@@ -340,7 +341,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
   private readonly ndModeSwitchDelayDebouncer = new DebounceTimer();
 
-  private readonly fmsDataStore = new FmsDataStore(this.props.bus);
+  private readonly fmsDataStore = new OansFmsDataStore(this.props.bus);
 
   private readonly btvUtils = new OansBrakeToVacateSelection<T>(
     this.props.bus,
@@ -767,7 +768,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     const arpCoordinates = this.arpCoordinates.get();
 
     if (arpCoordinates) {
-      const pxDistanceToCanvasCentre = pointDistance(
+      const pxDistanceToCanvasCentre = MathUtils.pointDistance(
         this.canvasWidth.get() / 2,
         this.canvasHeight.get() / 2,
         this.canvasCentreX.get(),
@@ -1049,7 +1050,12 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
           const existing = this.labelManager.labels.filter((it) => it.text === text);
 
           const shortestDistance = existing.reduce((shortestDistance, label) => {
-            const distance = pointDistance(label.position[0], label.position[1], labelPosition[0], labelPosition[1]);
+            const distance = MathUtils.pointDistance(
+              label.position[0],
+              label.position[1],
+              labelPosition[0],
+              labelPosition[1],
+            );
 
             return distance > shortestDistance ? distance : shortestDistance;
           }, Number.MAX_SAFE_INTEGER);
