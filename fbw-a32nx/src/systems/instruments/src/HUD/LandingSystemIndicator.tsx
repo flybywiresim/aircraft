@@ -386,7 +386,7 @@ class LocalizerIndicator extends DisplayComponent<{ bus: ArincEventBus; instrume
       this.locDiamond.instance.classList.remove('HiddenElement');
       this.rightDiamond.instance.classList.add('HiddenElement');
       this.leftDiamond.instance.classList.add('HiddenElement');
-      this.locDiamond.instance.style.transform = `translate3d(${(dots * 30.221) / 2}px, 0px, 0px)`;
+      this.locDiamond.instance.style.transform = `translate3d(${(dots * 75.221) / 2}px, 0px, 0px)`;
     }
   }
 
@@ -593,7 +593,7 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: ArincEventBus; instrum
       this.upperDiamond.instance.classList.add('HiddenElement');
       this.lowerDiamond.instance.classList.add('HiddenElement');
       this.glideSlopeDiamond.instance.classList.remove('HiddenElement');
-      this.glideSlopeDiamond.instance.style.transform = `translate3d(0px, ${(dots * 30.238) / 2}px, 0px)`;
+      this.glideSlopeDiamond.instance.style.transform = `translate3d(0px, ${(dots * 75.238) / 2}px, 0px)`;
     }
   }
 
@@ -689,9 +689,9 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: ArincEventBus; instrum
   }
   private MoveGlideSlopeGroup() {
     if (this.crosswindMode.get() == false) {
-      this.LSGsRef.instance.style.transform = `translate3d(110px, ${(calculateHorizonOffsetFromPitch(this.data.pitch.value) + (3 * DistanceSpacing) / ValueSpacing) / 2.5}px, 0px)`;
+      this.LSGsRef.instance.style.transform = `translate3d(110px, ${calculateHorizonOffsetFromPitch(this.data.pitch.value)}px, 0px)`;
     } else {
-      this.LSGsRef.instance.style.transform = `translate3d(110px, 0px, 0px)`;
+      this.LSGsRef.instance.style.transform = `translate3d(110px, -110px, 0px)`;
     }
     //DistanceSpacing
   }
@@ -943,7 +943,7 @@ class MarkerBeaconIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
 
   render(): VNode {
     return (
-      <text id="ILSMarkerText" class={this.classNames} x="275" y="631.25">
+      <text id="ILSMarkerText" class={this.classNames} x="125" y="457">
         {this.markerText}
       </text>
     );

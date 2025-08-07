@@ -807,11 +807,11 @@ export class ReverserIndicator extends DisplayComponent<{ bus: ArincEventBus }> 
     return (
       <g id="ReverseIndicator" ref={this.revGroupRef}>
         <path ref={this.rev1Ref} class="LargeStroke Green " d="" />
-        <text ref={this.rev1TxtRef} x="623" y="288.25 " class="FontSmallest MiddleAlign Green ">
+        <text ref={this.rev1TxtRef} x="624" y="288.25 " class="FontSmallest MiddleAlign Green ">
           R
         </text>
         <path ref={this.rev2Ref} class="LargeStroke Green " d="" />
-        <text ref={this.rev2TxtRef} x="657" y="288.25 " class="FontSmallest MiddleAlign Green ">
+        <text ref={this.rev2TxtRef} x="658" y="288.25 " class="FontSmallest MiddleAlign Green ">
           R
         </text>
       </g>

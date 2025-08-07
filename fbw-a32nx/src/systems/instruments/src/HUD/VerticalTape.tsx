@@ -93,7 +93,6 @@ export class VerticalTape extends DisplayComponent<VerticalTapeProps> {
 
           graduationPoints.push(
             <g ref={tickRef} style={`transform: translate3d(0px, ${offset}px, 0px`}>
-              <path class="NormalStroke Green HiddenElement" d="m492.108 348.028 5.659 -4.583 -5.659 -4.583" />
               <path class="NormalStroke Green" d="m556.112 343.481h-8.562" />
               <text class="FontMedium MiddleAlign Green" x="524" y="351">
                 {text}
@@ -168,11 +167,10 @@ export class VerticalTape extends DisplayComponent<VerticalTapeProps> {
               if (this.crosswindMode) {
                 if (Math.abs(currentValueAtPrecision - elementValue) > 200) {
                   this.tickRefs[i].instance.getElementsByTagName('path')[0].classList.add('HiddenElement');
-                  this.tickRefs[i].instance.getElementsByTagName('path')[1].classList.add('HiddenElement');
                   this.tickRefs[i].instance.getElementsByTagName('text')[0].classList.add('HiddenElement');
                 }
               } else {
-                this.tickRefs[i].instance.getElementsByTagName('path')[1].classList.remove('HiddenElement');
+                this.tickRefs[i].instance.getElementsByTagName('path')[0].classList.remove('HiddenElement');
                 this.tickRefs[i].instance.getElementsByTagName('text')[0].classList.remove('HiddenElement');
               }
             }
