@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -220,7 +219,7 @@ interface GroundTrackBugProps {
 class GroundTrackBug extends DisplayComponent<GroundTrackBugProps> {
   private readonly subscriptions: Subscription[] = [];
   private readonly sub = this.props.bus.getArincSubscriber<DmcLogicEvents & HUDSimvars & ClockEvents & HudElems>();
-  private readonly groundTrack = Arinc429ConsumerSubject.create(null);
+  private readonly groundTrack = Arinc429ConsumerSubject.create(this.sub.on('track'));
   private readonly headingTrk = ConsumerSubject.create(this.sub.on('headingTrk'), '');
 
   private isVisibleSub = MappedSubject.create(

@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -8,7 +7,7 @@ import { getDisplayIndex } from 'instruments/src/HUD/HUD';
 import { HUDSimvars } from './HUDSimvarPublisher';
 import { HudMode, PitchscaleMode, HudElems } from '../HUDUtils';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { Arinc429ConsumerSubject, ArincEventBus, Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
+import { ArincEventBus, Arinc429RegisterSubject, Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { Arinc429Values } from './ArincValueProvider';
 
 export class HudValueProvider implements Instrument {
@@ -51,8 +50,8 @@ export class HudValueProvider implements Instrument {
 
   private readonly lmgc = ConsumerSubject.create(this.sub.on('leftMainGearCompressed'), true);
   private readonly rmgc = ConsumerSubject.create(this.sub.on('rightMainGearCompressed'), true);
-  private readonly speed = Arinc429ConsumerSubject.create(this.sub.on('speedAr'));
-  private readonly ra = Arinc429ConsumerSubject.create(this.sub.on('chosenRa'));
+  private readonly speed = ConsumerSubject.create(this.sub.on('speedAr'), new Arinc429Word(0));
+  private readonly ra = ConsumerSubject.create(this.sub.on('chosenRa'), new Arinc429Word(0));
 
   private readonly hudMode = MappedSubject.create(
     ([lmgc, rmgc, speed, ra]) => {
@@ -531,7 +530,7 @@ export class HudValueProvider implements Instrument {
     });
   }
 
-  private setCrossWindMode(value) {
+  private setCrossWindMode(value: boolean) {
     if (this.hudMode.get() === HudMode.NORMAL) {
       if (this.flightPhase === FmgcFlightPhase.Approach) {
         if (this.declutterMode === 2) {

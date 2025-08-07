@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -15,13 +14,7 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
-import {
-  ArincEventBus,
-  Arinc429RegisterSubject,
-  MathUtils,
-  Arinc429WordData,
-  Arinc429Word,
-} from '@flybywiresim/fbw-sdk';
+import { ArincEventBus, Arinc429RegisterSubject, MathUtils } from '@flybywiresim/fbw-sdk';
 
 import { getDisplayIndex } from 'instruments/src/HUD/HUD';
 import { Arinc429Values } from './shared/ArincValueProvider';
@@ -527,10 +520,10 @@ class LocalizerIndicator extends DisplayComponent<{ bus: ArincEventBus; instrume
 }
 
 interface LSPath {
-  roll: Arinc429WordData;
-  pitch: Arinc429WordData;
-  fpa: Arinc429WordData;
-  da: Arinc429WordData;
+  roll: Arinc429RegisterSubject;
+  pitch: Arinc429RegisterSubject;
+  fpa: Arinc429RegisterSubject;
+  da: Arinc429RegisterSubject;
 }
 
 class GlideSlopeIndicator extends DisplayComponent<{ bus: ArincEventBus; instrument: BaseInstrument }> {
@@ -561,10 +554,10 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: ArincEventBus; instrum
   private needsUpdate = false;
 
   private data: LSPath = {
-    roll: new Arinc429Word(0),
-    pitch: new Arinc429Word(0),
-    fpa: new Arinc429Word(0),
-    da: new Arinc429Word(0),
+    roll: Arinc429RegisterSubject.createEmpty(),
+    pitch: Arinc429RegisterSubject.createEmpty(),
+    fpa: Arinc429RegisterSubject.createEmpty(),
+    da: Arinc429RegisterSubject.createEmpty(),
   };
 
   private lagFilter = new LagFilter(1.5);
@@ -633,28 +626,28 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: ArincEventBus; instrum
 
     this.subscriptions.push(
       this.sub.on('fpa').handle((fpa) => {
-        this.data.fpa = fpa;
+        this.data.fpa.setWord(fpa.rawWord);
         this.needsUpdate = true;
       }),
     );
 
     this.subscriptions.push(
       this.sub.on('da').handle((da) => {
-        this.data.da = da;
+        this.data.da.setWord(da.rawWord);
         this.needsUpdate = true;
       }),
     );
 
     this.subscriptions.push(
       this.sub.on('rollAr').handle((r) => {
-        this.data.roll = r;
+        this.data.roll.setWord(r.rawWord);
         this.needsUpdate = true;
       }),
     );
 
     this.subscriptions.push(
       this.sub.on('pitchAr').handle((p) => {
-        this.data.pitch = p;
+        this.data.pitch.setWord(p.rawWord);
         this.needsUpdate = true;
       }),
     );
@@ -663,7 +656,7 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: ArincEventBus; instrum
       this.sub.on('realTime').handle((_t) => {
         if (this.needsUpdate) {
           this.needsUpdate = false;
-          const daAndFpaValid = this.data.fpa.isNormalOperation() && this.data.da.isNormalOperation();
+          const daAndFpaValid = this.data.fpa.get().isNormalOperation() && this.data.da.get().isNormalOperation();
           if (daAndFpaValid) {
             // this.threeDegRef.instance.classList.remove('HiddenElement');
             this.MoveGlideSlopeGroup();
@@ -689,7 +682,7 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: ArincEventBus; instrum
   }
   private MoveGlideSlopeGroup() {
     if (this.crosswindMode.get() == false) {
-      this.LSGsRef.instance.style.transform = `translate3d(110px, ${calculateHorizonOffsetFromPitch(this.data.pitch.value)}px, 0px)`;
+      this.LSGsRef.instance.style.transform = `translate3d(110px, ${calculateHorizonOffsetFromPitch(this.data.pitch.get().value)}px, 0px)`;
     } else {
       this.LSGsRef.instance.style.transform = `translate3d(110px, -110px, 0px)`;
     }
@@ -738,13 +731,15 @@ class GlideSlopeIndicator extends DisplayComponent<{ bus: ArincEventBus; instrum
 }
 
 interface LDevPath {
-  roll: Arinc429WordData;
-  pitch: Arinc429WordData;
-  fpa: Arinc429WordData;
-  da: Arinc429WordData;
+  roll: Arinc429RegisterSubject;
+  pitch: Arinc429RegisterSubject;
+  fpa: Arinc429RegisterSubject;
+  da: Arinc429RegisterSubject;
 }
 
 class VDevIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
+  private readonly subscriptions: Subscription[] = [];
+  private readonly sub = this.props.bus.getSubscriber<Arinc429Values & HUDSimvars & ClockEvents & HEvent>();
   private VDevSymbolLower = FSComponent.createRef<SVGPathElement>();
 
   private VDevSymbolUpper = FSComponent.createRef<SVGPathElement>();
@@ -754,14 +749,13 @@ class VDevIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
   private VDevRef = new NodeReference<SVGGElement>();
 
   private data: LDevPath = {
-    roll: new Arinc429Word(0),
-    pitch: new Arinc429Word(0),
-    fpa: new Arinc429Word(0),
-    da: new Arinc429Word(0),
+    roll: Arinc429RegisterSubject.createEmpty(),
+    pitch: Arinc429RegisterSubject.createEmpty(),
+    fpa: Arinc429RegisterSubject.createEmpty(),
+    da: Arinc429RegisterSubject.createEmpty(),
   };
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-    const sub = this.props.bus.getSubscriber<Arinc429Values & HUDSimvars & ClockEvents & HEvent>();
 
     // TODO use correct simvar once RNAV is implemented
     const deviation = 0;
@@ -782,24 +776,48 @@ class VDevIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
       this.VDevSymbol.instance.style.transform = `translate3d(0px, ${(dots * 30.238) / 2}px, 0px)`;
     }
 
-    sub.on('realTime').handle((_t) => {
-      if (this.needsUpdate) {
-        this.needsUpdate = false;
-        const daAndFpaValid = this.data.fpa.isNormalOperation() && this.data.da.isNormalOperation();
-        if (daAndFpaValid) {
-          // this.threeDegRef.instance.classList.remove('HiddenElement');
-          this.MoveGlideSlopeGroup();
-        } else {
-          // this.threeDegRef.instance.classList.add('HiddenElement');
+    this.subscriptions.push(
+      this.sub.on('fpa').handle((fpa) => {
+        this.data.fpa.setWord(fpa.rawWord);
+        this.needsUpdate = true;
+      }),
+    );
+
+    this.subscriptions.push(
+      this.sub.on('pitchAr').handle((fpa) => {
+        this.data.fpa.setWord(fpa.rawWord);
+        this.needsUpdate = true;
+      }),
+    );
+    this.subscriptions.push(
+      this.sub.on('realTime').handle((_t) => {
+        if (this.needsUpdate) {
+          this.needsUpdate = false;
+          const daAndFpaValid = this.data.fpa.get().isNormalOperation() && this.data.da.get().isNormalOperation();
+          if (daAndFpaValid) {
+            // this.threeDegRef.instance.classList.remove('HiddenElement');
+            this.MoveGlideSlopeGroup();
+          } else {
+            // this.threeDegRef.instance.classList.add('HiddenElement');
+          }
         }
-      }
-    });
+      }),
+    );
   }
 
   private MoveGlideSlopeGroup() {
-    this.VDevRef.instance.style.transform = `translate3d(110px, ${(calculateHorizonOffsetFromPitch(this.data.pitch.value) + (3 * DistanceSpacing) / ValueSpacing) / 2.5}px, 0px)`;
+    this.VDevRef.instance.style.transform = `translate3d(110px, ${(calculateHorizonOffsetFromPitch(this.data.pitch.get().value) + (3 * DistanceSpacing) / ValueSpacing) / 2.5}px, 0px)`;
     //DistanceSpacing
   }
+
+  destroy(): void {
+    for (const s of this.subscriptions) {
+      s.destroy();
+    }
+
+    super.destroy();
+  }
+
   render(): VNode {
     return (
       <g id="VertDevSymbolsGroup" ref={this.VDevRef} display="none">

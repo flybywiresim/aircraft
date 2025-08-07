@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -11,7 +10,7 @@ import {
   VNode,
   Subscription,
 } from '@microsoft/msfs-sdk';
-import { Arinc429ConsumerSubject, ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { HudElems, HudMode } from './HUDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
@@ -25,12 +24,18 @@ export class HudWarnings extends DisplayComponent<HudWarningsProps> {
   private readonly subscriptions: Subscription[] = [];
   private readonly warningGroupRef = FSComponent.createRef<SVGGElement>();
   private readonly sub = this.props.bus.getSubscriber<HUDSimvars & HudElems & Arinc429Values>();
-  private readonly roll = Arinc429ConsumerSubject.create(this.sub.on('rollAr').whenChanged());
-  private readonly vStallWarn = Arinc429ConsumerSubject.create(this.sub.on('vStallWarn').whenChanged());
-  private readonly airSpeed = Arinc429ConsumerSubject.create(this.sub.on('speedAr').whenChanged());
+  private readonly roll = ConsumerSubject.create(this.sub.on('rollAr').whenChanged(), new Arinc429Word(0));
+  private readonly vStallWarn = ConsumerSubject.create(this.sub.on('vStallWarn').whenChanged(), new Arinc429Word(0));
+  private readonly airSpeed = ConsumerSubject.create(this.sub.on('speedAr').whenChanged(), new Arinc429Word(0));
   private readonly hudmode = ConsumerSubject.create(this.sub.on('hudFlightPhaseMode').whenChanged(), 1);
-  private readonly fcdc1DiscreteWord1 = Arinc429ConsumerSubject.create(this.sub.on('fcdc1DiscreteWord1').whenChanged());
-  private readonly fcdc2DiscreteWord1 = Arinc429ConsumerSubject.create(this.sub.on('fcdc2DiscreteWord1').whenChanged());
+  private readonly fcdc1DiscreteWord1 = ConsumerSubject.create(
+    this.sub.on('fcdc1DiscreteWord1').whenChanged(),
+    new Arinc429Word(0),
+  );
+  private readonly fcdc2DiscreteWord1 = ConsumerSubject.create(
+    this.sub.on('fcdc2DiscreteWord1').whenChanged(),
+    new Arinc429Word(0),
+  );
 
   private readonly hudMode = ConsumerSubject.create(this.sub.on('hudFlightPhaseMode').whenChanged(), 0);
   private readonly autoBrakeMode = ConsumerSubject.create(this.sub.on('autoBrakeMode').whenChanged(), 0);
@@ -79,7 +84,7 @@ export class HudWarnings extends DisplayComponent<HudWarningsProps> {
         <text
           x="640"
           y="551"
-          class="FontSmall Green MiddleAlign"
+          class="FontLarge  Green MiddleAlign"
           style={{
             display: MappedSubject.create(([roll]) => {
               return Math.abs(roll.value) > 65;
@@ -91,7 +96,7 @@ export class HudWarnings extends DisplayComponent<HudWarningsProps> {
         <text
           x="640"
           y="624"
-          class="FontSmall Green MiddleAlign"
+          class="FontLarge  Green MiddleAlign"
           style={{
             display: MappedSubject.create(
               ([vStallWarn, airSpeed, fcdc1DiscreteWord1, fcdc2DiscreteWord1, hudmode]) => {
@@ -126,7 +131,7 @@ export class HudWarnings extends DisplayComponent<HudWarningsProps> {
         <text
           x="640"
           y="550"
-          class="FontSmall Green MiddleAlign"
+          class="FontLarge  Green MiddleAlign"
           style={{
             display: MappedSubject.create(
               ([throttle1Position, throttle2Position]) => {
@@ -143,7 +148,7 @@ export class HudWarnings extends DisplayComponent<HudWarningsProps> {
         <text
           x="640"
           y="520"
-          class="FontSmall Green MiddleAlign"
+          class="FontLarge  Green MiddleAlign"
           style={{
             display: MappedSubject.create(
               ([brakePedalInputLeft, brakePedalInputRight, autoBrakeMode, hudMode]) => {

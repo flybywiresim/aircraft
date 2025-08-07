@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -16,7 +15,7 @@ import {
   EventBus,
   Subscription,
 } from '@microsoft/msfs-sdk';
-import { ArincEventBus, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
+import { ArincEventBus, Arinc429Word, Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
 
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { calculateHorizonOffsetFromPitch, LagFilter, HudElems, PitchscaleMode, FIVE_DEG, HudMode } from './HUDUtils';
@@ -32,10 +31,10 @@ const DistanceSpacing = FIVE_DEG;
 const ValueSpacing = 5;
 
 interface LSPath {
-  roll: Arinc429WordData;
-  pitch: Arinc429WordData;
-  fpa: Arinc429WordData;
-  da: Arinc429WordData;
+  roll: Arinc429RegisterSubject;
+  pitch: Arinc429RegisterSubject;
+  fpa: Arinc429RegisterSubject;
+  da: Arinc429RegisterSubject;
 }
 
 class HeadingBug extends DisplayComponent<{
@@ -293,9 +292,7 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
       });
 
     sub.on('realTime').handle(() => {
-      this.filteredLatAccSub.set(
-        this.latAccFilter.step(this.latAcc.valueOr(0), this.props.instrument.deltaTime / 1000),
-      );
+      this.filteredLatAccSub.set(this.latAccFilter.step(this.latAcc.value, this.props.instrument.deltaTime / 1000));
     });
 
     this.filteredLatAccSub.sub(() => {
@@ -418,10 +415,10 @@ class PitchScale extends DisplayComponent<{
     this.flightPhase,
   );
   private data: LSPath = {
-    roll: new Arinc429Word(0),
-    pitch: new Arinc429Word(0),
-    fpa: new Arinc429Word(0),
-    da: new Arinc429Word(0),
+    roll: Arinc429RegisterSubject.createEmpty(),
+    pitch: Arinc429RegisterSubject.createEmpty(),
+    fpa: Arinc429RegisterSubject.createEmpty(),
+    da: Arinc429RegisterSubject.createEmpty(),
   };
 
   private setPitchScale() {
@@ -485,25 +482,25 @@ class PitchScale extends DisplayComponent<{
     );
     this.subscriptions.push(
       this.sub.on('fpa').handle((fpa) => {
-        this.data.fpa = fpa;
+        this.data.fpa.setWord(fpa.rawWord);
         this.needsUpdate = true;
       }),
     );
     this.subscriptions.push(
       this.sub.on('da').handle((da) => {
-        this.data.da = da;
+        this.data.da.setWord(da.rawWord);
         this.needsUpdate = true;
       }),
     );
     this.subscriptions.push(
       this.sub.on('rollAr').handle((r) => {
-        this.data.roll = r;
+        this.data.roll.setWord(r.rawWord);
         this.needsUpdate = true;
       }),
     );
     this.subscriptions.push(
       this.sub.on('pitchAr').handle((p) => {
-        this.data.pitch = p;
+        this.data.pitch.setWord(p.rawWord);
         this.needsUpdate = true;
       }),
     );
@@ -511,7 +508,7 @@ class PitchScale extends DisplayComponent<{
       this.sub.on('realTime').handle((_t) => {
         if (this.needsUpdate) {
           this.needsUpdate = false;
-          const daAndFpaValid = this.data.fpa.isNormalOperation() && this.data.da.isNormalOperation();
+          const daAndFpaValid = this.data.fpa.get().isNormalOperation() && this.data.da.get().isNormalOperation();
           if (daAndFpaValid) {
             // this.threeDegRef.instance.classList.remove('HiddenElement');
             this.MoveThreeDegreeMark();
@@ -524,11 +521,12 @@ class PitchScale extends DisplayComponent<{
   }
 
   private MoveThreeDegreeMark() {
-    const daLimConv = (this.data.da.value * DistanceSpacing) / ValueSpacing;
+    const daLimConv = (this.data.da.get().value * DistanceSpacing) / ValueSpacing;
     const pitchSubFpaConv =
-      calculateHorizonOffsetFromPitch(this.data.pitch.value) - calculateHorizonOffsetFromPitch(this.data.fpa.value);
-    const rollCos = Math.cos((this.data.roll.value * Math.PI) / 180);
-    const rollSin = Math.sin((-this.data.roll.value * Math.PI) / 180);
+      calculateHorizonOffsetFromPitch(this.data.pitch.get().value) -
+      calculateHorizonOffsetFromPitch(this.data.fpa.get().value);
+    const rollCos = Math.cos((this.data.roll.get().value * Math.PI) / 180);
+    const rollSin = Math.sin((-this.data.roll.get().value * Math.PI) / 180);
 
     const xOffset = daLimConv * rollCos - pitchSubFpaConv * rollSin;
     this.threeDegLine.instance.style.transform = `translate3d(${xOffset}px, 0px, 0px)`;
