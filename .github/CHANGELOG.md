@@ -130,7 +130,8 @@
 1. [A32NX/EWD] Added support for flashing text from FWC - @tracernz (Mike)
 1. [A380X/OIT] Add initial implementation of OIT AVNCS side, including flight log and inbox page for COMPANY COM app - @flogross89 (floridude)
 1. [A380X/FG] Fix SRS disengagement conditions for eng 3&4 OEI - @flogross89 (floridude)
-1. [A380X/FMS] Add engine-out indications and behavior to FMS - @flogross89 (floridude)
+1. [A380X/FMS] Add engine-out indications and behavior to FMS - @flogross89 (floridude
+1. [A380X/Flight MOdel] Updates flight model for FS2024 ONLY - @donstim (donbikes#4084)
 
 ## 0.13.0
 
@@ -233,7 +234,7 @@
 1. [A380/PFD] Add DISCONNECT AP FOR LDG FMA message - @BravoMike99 (bruno_pt99)
 1. [A380X/ENG] Adjust climb thrust to be more accurate - @BlueberryKing (BlueberryKing)
 1. [A380X/EWD] Show THR limit in EWD instead of N1 - @flogross89 (floridude)
-1. [A380X/FLIGHT MODEL] Fix pitchup and unrecoverable stall - - @donstim (donbikes#4084)
+1. [A380X/FLIGHT MODEL] Fix pitchup and unrecoverable stall - @donstim (donbikes#4084)
 1. [ATC/TCAS] Fixed TCAS failure on baro corrected altitude going invalid - @tracernz (Mike)
 1. [ATC/TCAS] Fixed TCAS slant range computation - @tracernz (Mike)
 1. [A380X] Add baro unit (hPa/in.Hg) auto selection - @tracernz (Mike)
