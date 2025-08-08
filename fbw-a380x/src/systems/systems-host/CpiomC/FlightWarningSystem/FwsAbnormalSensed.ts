@@ -2659,6 +2659,17 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.Fctl,
     },
+    271800017: {
+      // GND SPLRs NOT ARMED
+      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 10, 11, 12],
+      simVarIsActive: this.fws.groundSpoilerNotArmedWarning,
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 2,
+      sysPage: -1,
+      inopSysAllPhases: () => [],
+    },
     271800058: {
       // SEC 1 FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
@@ -2773,6 +2784,28 @@ export class FwsAbnormalSensed {
       inopSysApprLdg: () => ['220300026'],
       info: () => ['340200002', '220200011', '220200010'],
     },
+    271800064: {
+      // SPEED BRAKES POS/LEVER DISAGREE
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.speedBrakePosLeverDisagree,
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [true],
+      failure: 2,
+      sysPage: SdPages.Fctl,
+      inopSysAllPhases: () => [],
+    },
+    271800065: {
+      // SPEED BRAKES STILL EXTENDED
+      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 10, 11, 12],
+      simVarIsActive: this.fws.speedBrakeStillOutWarning,
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 2,
+      sysPage: -1,
+      inopSysAllPhases: () => [],
+    },
     272800001: {
       // SLAT NOT IN TO CONFIG
       flightPhaseInhib: [5, 6, 7, 8, 9, 10, 12],
@@ -2844,6 +2877,28 @@ export class FwsAbnormalSensed {
       ],
       whichItemsChecked: () => [false, false, false, false, false, false, false],
       failure: 3,
+      sysPage: -1,
+      inopSysAllPhases: () => [],
+    },
+    271800070: {
+      // LOAD ANALYSIS REQUIRED
+      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.fws.loadAnalysysRequired,
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: -1,
+      inopSysAllPhases: () => [],
+    },
+    271800071: {
+      // TAIL STRIKE
+      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 9, 10, 12],
+      simVarIsActive: this.fws.speedbrakesConfigWarning,
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => [],
     },

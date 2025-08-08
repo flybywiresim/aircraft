@@ -1074,7 +1074,7 @@ export class FwsCore {
 
   public readonly speedBrakeCommand5sConfirm = new NXLogicConfirmNode(5, true);
 
-  public readonly speedBrakeCommand50sConfirm = new NXLogicConfirmNode(50, true);
+  public readonly speedBrakeCommand80sConfirm = new NXLogicConfirmNode(80, true);
 
   public readonly speedBrakeCaution1Confirm = new NXLogicConfirmNode(30, true);
 
@@ -1092,6 +1092,8 @@ export class FwsCore {
 
   public readonly speedBrakeStillOutWarning = Subject.create(false);
 
+  public readonly speedBrakePosLeverDisagree = Subject.create(false);
+
   public readonly amberSpeedBrake = Subject.create(false);
 
   public readonly phase104s5Trigger = new NXLogicTriggeredMonostableNode(4.5, false);
@@ -1101,6 +1103,10 @@ export class FwsCore {
   public readonly speedBrake5sDelayed = new NXLogicConfirmNode(5, false);
 
   public readonly groundSpoilerNotArmedWarning = Subject.create(false);
+
+  public readonly taxiInFlap0Check = new NXLogicConfirmNode(60, false);
+
+  public readonly spoilersActiveWord = Arinc429Register.empty();
 
   /* FUEL */
 
@@ -1649,6 +1655,10 @@ export class FwsCore {
   public readonly overspeedVfeConf3 = Subject.create(false);
 
   public readonly overspeedVfeConfFull = Subject.create(false);
+
+  public readonly overspeedOccurredDuringFlight = Subject.create(false);
+
+  public readonly loadAnalysysRequired = Subject.create(false);
 
   public readonly flapsIndex = Subject.create(0);
 
@@ -4330,16 +4340,20 @@ export class FwsCore {
         !this.slatFlapSelectionS0F0,
     );
 
+    // spd brk pos/lvr disagree
+    const spdBrkPositionDisagree = fcdc1DiscreteWord5.bitValue(26) || fcdc2DiscreteWord5.bitValue(26);
+    this.speedBrakePosLeverDisagree.set(spdBrkPositionDisagree);
+
     // spd brk still out
     this.speedBrakeCommand5sConfirm.write(this.speedBrakeCommand.get(), deltaTime);
-    this.speedBrakeCommand50sConfirm.write(this.speedBrakeCommand.get(), deltaTime);
+    this.speedBrakeCommand80sConfirm.write(this.speedBrakeCommand.get(), deltaTime);
     this.engAboveIdleWithSpeedBrakeConfirm.write(
-      this.speedBrakeCommand50sConfirm.read() && !oneEngineAboveMinPower,
+      this.speedBrakeCommand80sConfirm.read() && !oneEngineAboveMinPower,
       deltaTime,
     );
     this.speedBrakeCaution1Confirm.write(
       this.flightPhase.get() === 8 &&
-        this.speedBrakeCommand50sConfirm.read() &&
+        this.speedBrakeCommand80sConfirm.read() &&
         !this.engAboveIdleWithSpeedBrakeConfirm.read(),
       deltaTime,
     );
@@ -4476,6 +4490,17 @@ export class FwsCore {
     const redArrow =
       !((flightPhase8 && !allRaInvalid) || flightPhase4567) && (this.lgNotDownNoCancel.get() || this.lgNotDown.get());
     this.lgLeverRedArrow.set(redArrow);
+
+    // load analysis
+    if (overspeedWarning) {
+      this.overspeedOccurredDuringFlight.set(true);
+    }
+
+    if (this.flightPhase.get() === 1) {
+      this.overspeedOccurredDuringFlight.set(false);
+    }
+
+    this.loadAnalysysRequired.set(this.overspeedOccurredDuringFlight.get());
 
     // 34 - Surveillance Logic
     this.tawsFlapModeOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_FLAPS_OFF', 'Bool'));
