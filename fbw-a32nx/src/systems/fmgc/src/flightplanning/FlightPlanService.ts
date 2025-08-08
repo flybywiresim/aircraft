@@ -93,6 +93,19 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     return this.flightPlanManager.has(FlightPlanIndex.FirstSecondary + index - 1);
   }
 
+  hasDirectToInTmpy() {
+    if (!this.hasTemporary) {
+      return false;
+    }
+
+    const temporaryPlan = this.flightPlanManager.get(FlightPlanIndex.Temporary);
+    const tmpyFromLeg = temporaryPlan.maybeElementAt(temporaryPlan.activeLegIndex - 1);
+    const directToInTmpy =
+      tmpyFromLeg?.isDiscontinuity === false && tmpyFromLeg.flags & FlightPlanLegFlags.DirectToTurningPoint;
+
+    return directToInTmpy && BitFlags.isAny(tmpyFromLeg.flags, FlightPlanLegFlags.PendingDirectToTurningPoint);
+  }
+
   get hasUplink() {
     return this.flightPlanManager.has(FlightPlanIndex.Uplink);
   }
@@ -126,14 +139,8 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
     const tmpyFromLeg = temporaryPlan.maybeElementAt(temporaryPlan.activeLegIndex - 1);
 
-    const directToInTmpy =
-      tmpyFromLeg?.isDiscontinuity === false && tmpyFromLeg.flags & FlightPlanLegFlags.DirectToTurningPoint;
-
-    const directToBeingInserted =
-      directToInTmpy && BitFlags.isAny(tmpyFromLeg.flags, FlightPlanLegFlags.PendingDirectToTurningPoint);
-
     // Update T-P
-    if (directToBeingInserted) {
+    if (this.hasDirectToInTmpy() && tmpyFromLeg instanceof FlightPlanLeg) {
       temporaryPlan.editLegFlags(
         temporaryPlan.activeLegIndex - 1,
         (tmpyFromLeg.flags &= ~FlightPlanLegFlags.PendingDirectToTurningPoint),
