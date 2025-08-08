@@ -243,8 +243,7 @@ impl FlapsChannel {
         }
 
         self.flap_auto_command_active = true;
-        self.flap_auto_command_engaged = self.flap_auto_command_active
-            && self.flap_auto_command_angle == self.conf1_flaps
+        self.flap_auto_command_engaged = self.flap_auto_command_angle == self.conf1_flaps
             && !SlatFlapControlComputerMisc::in_enlarged_target_range(
                 self.flaps_feedback_angle,
                 self.conf1f_flaps,
