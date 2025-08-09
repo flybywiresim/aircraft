@@ -41,7 +41,13 @@ impl From<u8> for FlapsConf {
 
 pub struct SlatFlapControlComputerMisc {}
 impl SlatFlapControlComputerMisc {
+    const POSITIONING_THRESHOLD_DEGREE: f64 = 6.69;
     const ENLARGED_TARGET_THRESHOLD_DEGREE: f64 = 0.8;
+
+    pub fn in_positioning_threshold_range(position: Angle, target_position: Angle) -> bool {
+        let tolerance = Angle::new::<degree>(Self::POSITIONING_THRESHOLD_DEGREE);
+        position > (target_position - tolerance) && position < (target_position + tolerance)
+    }
 
     pub fn below_enlarged_target_range(position: Angle, target_position: Angle) -> bool {
         let tolerance = Angle::new::<degree>(Self::ENLARGED_TARGET_THRESHOLD_DEGREE);
@@ -50,7 +56,7 @@ impl SlatFlapControlComputerMisc {
 
     pub fn in_enlarged_target_range(position: Angle, target_position: Angle) -> bool {
         let tolerance = Angle::new::<degree>(Self::ENLARGED_TARGET_THRESHOLD_DEGREE);
-        position > target_position - tolerance && position < target_position + tolerance
+        position > (target_position - tolerance) && position < (target_position + tolerance)
     }
 
     pub fn in_or_above_enlarged_target_range(position: Angle, target_position: Angle) -> bool {
@@ -242,8 +248,6 @@ pub struct SlatFlapComplex {
 }
 
 impl SlatFlapComplex {
-    const POSITIONING_THRESHOLD_ANGLE: f64 = 6.69;
-
     pub fn new(context: &mut InitContext) -> Self {
         Self {
             sfcc: [
@@ -264,26 +268,16 @@ impl SlatFlapComplex {
         self.sfcc[1].update(context, flaps_feedback, slats_feedback, adirs);
     }
 
-    fn is_approaching_requested_position(
-        &self,
-        synchro_angle_request: Angle,
-        synchro_angle_feedback: Angle,
-    ) -> bool {
-        let angle_threshold = Angle::new::<degree>(Self::POSITIONING_THRESHOLD_ANGLE);
-
-        (synchro_angle_request - synchro_angle_feedback).abs() < angle_threshold
-    }
-
     pub fn flap_command(&self, idx: usize) -> Option<ChannelCommand> {
-        let flaps_in_target_position = self.is_approaching_requested_position(
-            self.sfcc[idx].flaps_channel.get_demanded_angle(),
-            self.sfcc[idx].flaps_channel.get_feedback_angle(),
+        let demanded_angle = self.sfcc[idx].flaps_channel.get_demanded_angle();
+        let feedback_angle = self.sfcc[idx].flaps_channel.get_feedback_angle();
+        let flaps_in_target_position = SlatFlapControlComputerMisc::in_positioning_threshold_range(
+            demanded_angle,
+            feedback_angle,
         );
         if flaps_in_target_position {
             None
-        } else if self.sfcc[idx].flaps_channel.get_demanded_angle()
-            > self.sfcc[idx].flaps_channel.get_feedback_angle()
-        {
+        } else if demanded_angle > feedback_angle {
             Some(ChannelCommand::Extend)
         } else {
             Some(ChannelCommand::Retract)
@@ -291,15 +285,15 @@ impl SlatFlapComplex {
     }
 
     pub fn slat_command(&self, idx: usize) -> Option<ChannelCommand> {
-        let slats_in_target_position = self.is_approaching_requested_position(
-            self.sfcc[idx].slats_channel.get_demanded_angle(),
-            self.sfcc[idx].slats_channel.get_feedback_angle(),
+        let demanded_angle = self.sfcc[idx].slats_channel.get_demanded_angle();
+        let feedback_angle = self.sfcc[idx].slats_channel.get_feedback_angle();
+        let slats_in_target_position = SlatFlapControlComputerMisc::in_positioning_threshold_range(
+            demanded_angle,
+            feedback_angle,
         );
         if slats_in_target_position {
             None
-        } else if self.sfcc[idx].slats_channel.get_demanded_angle()
-            > self.sfcc[idx].slats_channel.get_feedback_angle()
-        {
+        } else if demanded_angle > feedback_angle {
             Some(ChannelCommand::Extend)
         } else {
             Some(ChannelCommand::Retract)
@@ -785,10 +779,10 @@ mod tests {
             demanded_angle: Angle,
             feedback_angle: Angle,
         ) -> bool {
-            self.query(|a| {
-                a.slat_flap_complex
-                    .is_approaching_requested_position(demanded_angle, feedback_angle)
-            })
+            SlatFlapControlComputerMisc::in_positioning_threshold_range(
+                demanded_angle,
+                feedback_angle,
+            )
         }
 
         fn test_flap_conf(
