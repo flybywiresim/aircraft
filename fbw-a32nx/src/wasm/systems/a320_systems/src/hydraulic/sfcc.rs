@@ -417,6 +417,8 @@ mod tests {
 
     #[derive(Default)]
     struct TestAdirus {
+        is_failed: [bool; 3],
+        override_airspeed: [Option<Arinc429Word<Velocity>>; 3],
         computed_airspeed: Arinc429Word<Velocity>,
     }
     impl TestAdirus {
@@ -433,45 +435,53 @@ mod tests {
                     Arinc429Word::new(computed_airspeed, SignStatus::NormalOperation);
             }
         }
+
+        fn set_adiru_status(&mut self, adiru_number: usize, failed: bool) {
+            self.is_failed[adiru_number - 1] = failed;
+        }
+
+        fn set_adiru_speed(&mut self, adiru_number: usize, speed: Option<Arinc429Word<Velocity>>) {
+            self.override_airspeed[adiru_number - 1] = speed;
+        }
     }
     impl AdirsMeasurementOutputs for TestAdirus {
         fn is_fully_aligned(&self, _adiru_number: usize) -> bool {
-            todo!()
+            true
         }
 
-        fn latitude(&self, _adiru_number: usize) -> systems::shared::arinc429::Arinc429Word<Angle> {
-            todo!()
+        fn latitude(&self, _adiru_number: usize) -> Arinc429Word<Angle> {
+            Arinc429Word::new(Angle::default(), SignStatus::NormalOperation)
         }
 
-        fn longitude(
-            &self,
-            _adiru_number: usize,
-        ) -> systems::shared::arinc429::Arinc429Word<Angle> {
-            todo!()
+        fn longitude(&self, _adiru_number: usize) -> Arinc429Word<Angle> {
+            Arinc429Word::new(Angle::default(), SignStatus::NormalOperation)
         }
 
         fn heading(&self, _adiru_number: usize) -> Arinc429Word<Angle> {
-            todo!()
+            Arinc429Word::new(Angle::default(), SignStatus::NormalOperation)
         }
 
         fn true_heading(&self, _adiru_number: usize) -> Arinc429Word<Angle> {
-            todo!()
+            Arinc429Word::new(Angle::default(), SignStatus::NormalOperation)
         }
 
         fn vertical_speed(&self, _adiru_number: usize) -> Arinc429Word<Velocity> {
-            todo!()
+            Arinc429Word::new(Velocity::default(), SignStatus::NormalOperation)
         }
 
         fn altitude(&self, _adiru_number: usize) -> Arinc429Word<Length> {
-            todo!()
+            Arinc429Word::new(Length::default(), SignStatus::NormalOperation)
         }
 
         fn angle_of_attack(&self, _adiru_number: usize) -> Arinc429Word<Angle> {
-            todo!()
+            Arinc429Word::new(Angle::default(), SignStatus::NormalOperation)
         }
 
-        fn computed_airspeed(&self, _adiru_number: usize) -> Arinc429Word<Velocity> {
-            self.computed_airspeed
+        fn computed_airspeed(&self, adiru_number: usize) -> Arinc429Word<Velocity> {
+            if self.is_failed[adiru_number - 1] {
+                return Arinc429Word::new(Velocity::default(), SignStatus::NoComputedData);
+            }
+            self.override_airspeed[adiru_number - 1].unwrap_or(self.computed_airspeed)
         }
     }
 
@@ -625,6 +635,21 @@ mod tests {
             self
         }
 
+        fn set_adiru_failed(mut self, adiru_number: usize) -> Self {
+            self.command(|a| a.adirus.set_adiru_status(adiru_number, true));
+            self
+        }
+
+        fn set_adiru_airspeed(mut self, adiru_number: usize, knots: Option<f64>) -> Self {
+            self.command(|a| {
+                let speed = knots.map(|x| {
+                    Arinc429Word::new(Velocity::new::<knot>(x), SignStatus::NormalOperation)
+                });
+                a.adirus.set_adiru_speed(adiru_number, speed);
+            });
+            self
+        }
+
         fn read_flaps_handle_position(&mut self) -> u8 {
             self.read_by_name("FLAPS_HANDLE_INDEX")
         }
@@ -717,6 +742,14 @@ mod tests {
 
         fn get_slats_fppu_feedback(&self) -> f64 {
             self.query(|a| a.slat_gear.angle().get::<degree>())
+        }
+
+        fn get_flap_auto_command_active(&self, idx: usize) -> bool {
+            self.query(|a| {
+                a.slat_flap_complex.sfcc[idx]
+                    .flaps_channel
+                    .get_flap_auto_command_active()
+            })
         }
 
         fn get_fap_1(&self, idx: usize) -> bool {
@@ -2003,5 +2036,393 @@ mod tests {
             (test_bed.get_slats_fppu_feedback() - test_bed.get_slats_demanded_angle(1)).abs()
                 <= angle_delta
         );
+    }
+
+    #[test]
+    fn flaps_autocommand_active() {
+        let mut test_bed = test_bed_with()
+            .set_green_hyd_pressure()
+            .set_indicated_airspeed(0.)
+            .set_flaps_handle_position(0)
+            .run_one_tick();
+        assert!(!test_bed.get_flap_auto_command_active(0));
+        assert!(!test_bed.get_flap_auto_command_active(1));
+
+        test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
+        assert!(test_bed.get_flap_auto_command_active(0));
+        assert!(test_bed.get_flap_auto_command_active(1));
+
+        test_bed = test_bed.set_flaps_handle_position(2).run_one_tick();
+        assert!(!test_bed.get_flap_auto_command_active(0));
+        assert!(!test_bed.get_flap_auto_command_active(1));
+
+        test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
+        assert!(!test_bed.get_flap_auto_command_active(0));
+        assert!(!test_bed.get_flap_auto_command_active(1));
+
+        test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
+        assert!(!test_bed.get_flap_auto_command_active(0));
+        assert!(!test_bed.get_flap_auto_command_active(1));
+    }
+
+    #[test]
+    fn flaps_autocommand_speed_boundary() {
+        let mut test_bed = test_bed_with()
+            .set_green_hyd_pressure()
+            .set_indicated_airspeed(100.)
+            .set_flaps_handle_position(1)
+            .run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
+
+        test_bed = test_bed.set_indicated_airspeed(101.).run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
+
+        test_bed = test_bed.set_indicated_airspeed(209.).run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
+
+        test_bed = test_bed.set_indicated_airspeed(210.).run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
+
+        test_bed = test_bed.set_indicated_airspeed(100.).run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
+
+        test_bed = test_bed.set_indicated_airspeed(210.).run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
+    }
+
+    #[test]
+    fn flaps_autocommand_speed_boundary_one_adiru() {
+        let mut test_bed = test_bed_with()
+            .set_green_hyd_pressure()
+            .set_indicated_airspeed(99.)
+            .set_flaps_handle_position(1)
+            .set_adiru_failed(1)
+            .run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
+
+        test_bed = test_bed.set_indicated_airspeed(101.).run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
+
+        test_bed = test_bed.set_indicated_airspeed(209.).run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
+
+        test_bed = test_bed.set_indicated_airspeed(210.).run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
+
+        let mut test_bed = test_bed_with()
+            .set_green_hyd_pressure()
+            .set_indicated_airspeed(99.)
+            .set_flaps_handle_position(1)
+            .set_adiru_failed(2)
+            .run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
+
+        test_bed = test_bed.set_indicated_airspeed(101.).run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
+
+        test_bed = test_bed.set_indicated_airspeed(209.).run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
+
+        test_bed = test_bed.set_indicated_airspeed(210.).run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
+
+        let mut test_bed = test_bed_with()
+            .set_green_hyd_pressure()
+            .set_indicated_airspeed(99.)
+            .set_flaps_handle_position(1)
+            .set_adiru_failed(3)
+            .run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
+
+        test_bed = test_bed.set_indicated_airspeed(101.).run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
+
+        test_bed = test_bed.set_indicated_airspeed(209.).run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
+
+        test_bed = test_bed.set_indicated_airspeed(210.).run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
+    }
+
+    #[test]
+    fn flaps_autocommand_speed_boundary_no_adiru() {
+        let mut test_bed = test_bed_with()
+            .set_green_hyd_pressure()
+            .set_indicated_airspeed(99.)
+            .set_flaps_handle_position(1)
+            .set_adiru_failed(1)
+            .set_adiru_failed(2)
+            .run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
+
+        let mut test_bed = test_bed_with()
+            .set_green_hyd_pressure()
+            .set_indicated_airspeed(101.)
+            .set_flaps_handle_position(1)
+            .set_adiru_failed(1)
+            .set_adiru_failed(2)
+            .run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
+
+        let mut test_bed = test_bed_with()
+            .set_green_hyd_pressure()
+            .set_indicated_airspeed(211.)
+            .set_flaps_handle_position(1)
+            .set_adiru_failed(1)
+            .set_adiru_failed(2)
+            .run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
+
+        let mut test_bed = test_bed_with()
+            .set_green_hyd_pressure()
+            .set_indicated_airspeed(211.)
+            .set_flaps_handle_position(1)
+            .run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
+
+        test_bed = test_bed
+            .set_indicated_airspeed(99.)
+            .set_adiru_failed(1)
+            .set_adiru_failed(2)
+            .run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
+
+        let mut test_bed = test_bed_with()
+            .set_green_hyd_pressure()
+            .set_indicated_airspeed(99.)
+            .set_flaps_handle_position(1)
+            .run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
+
+        test_bed = test_bed
+            .set_indicated_airspeed(201.)
+            .set_adiru_failed(1)
+            .set_adiru_failed(2)
+            .run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
+    }
+
+    #[test]
+    fn sfcc_misc_ops() {
+        let target_position = Angle::new::<degree>(10.);
+
+        let position = Angle::new::<degree>(10.);
+        assert!(!SlatFlapControlComputerMisc::below_enlarged_target_range(
+            position,
+            target_position
+        ));
+        assert!(SlatFlapControlComputerMisc::in_enlarged_target_range(
+            position,
+            target_position
+        ));
+        assert!(
+            SlatFlapControlComputerMisc::in_or_above_enlarged_target_range(
+                position,
+                target_position
+            )
+        );
+
+        let position = Angle::new::<degree>(0.);
+        assert!(SlatFlapControlComputerMisc::below_enlarged_target_range(
+            position,
+            target_position
+        ));
+        assert!(!SlatFlapControlComputerMisc::in_enlarged_target_range(
+            position,
+            target_position
+        ));
+        assert!(
+            !SlatFlapControlComputerMisc::in_or_above_enlarged_target_range(
+                position,
+                target_position
+            )
+        );
+
+        let position = Angle::new::<degree>(20.);
+        assert!(!SlatFlapControlComputerMisc::below_enlarged_target_range(
+            position,
+            target_position
+        ));
+        assert!(!SlatFlapControlComputerMisc::in_enlarged_target_range(
+            position,
+            target_position
+        ));
+        assert!(
+            SlatFlapControlComputerMisc::in_or_above_enlarged_target_range(
+                position,
+                target_position
+            )
+        );
+
+        let position = Angle::new::<degree>(10.7);
+        assert!(!SlatFlapControlComputerMisc::below_enlarged_target_range(
+            position,
+            target_position
+        ));
+        assert!(SlatFlapControlComputerMisc::in_enlarged_target_range(
+            position,
+            target_position
+        ));
+        assert!(
+            SlatFlapControlComputerMisc::in_or_above_enlarged_target_range(
+                position,
+                target_position
+            )
+        );
+
+        let position = Angle::new::<degree>(9.3);
+        assert!(!SlatFlapControlComputerMisc::below_enlarged_target_range(
+            position,
+            target_position
+        ));
+        assert!(SlatFlapControlComputerMisc::in_enlarged_target_range(
+            position,
+            target_position
+        ));
+        assert!(
+            SlatFlapControlComputerMisc::in_or_above_enlarged_target_range(
+                position,
+                target_position
+            )
+        );
+    }
+
+    #[test]
+    fn flaps_autocommand_different_adiru_speeds() {
+        let mut test_bed = test_bed_with()
+            .set_green_hyd_pressure()
+            .set_indicated_airspeed(99.)
+            .set_adiru_airspeed(1, Some(101.))
+            .set_flaps_handle_position(1)
+            .run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
+
+        let mut test_bed = test_bed_with()
+            .set_green_hyd_pressure()
+            .set_indicated_airspeed(99.)
+            .set_adiru_airspeed(2, Some(101.))
+            .set_flaps_handle_position(1)
+            .run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
+
+        let mut test_bed = test_bed_with()
+            .set_green_hyd_pressure()
+            .set_indicated_airspeed(99.)
+            .set_adiru_airspeed(3, Some(101.))
+            .set_flaps_handle_position(1)
+            .run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
+
+        let mut test_bed = test_bed_with()
+            .set_green_hyd_pressure()
+            .set_flaps_handle_position(4)
+            .run_for_some_time();
+
+        test_bed = test_bed
+            .set_indicated_airspeed(211.)
+            .set_adiru_airspeed(2, Some(209.))
+            .set_flaps_handle_position(1)
+            .run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
+
+        let mut test_bed = test_bed_with()
+            .set_green_hyd_pressure()
+            .set_flaps_handle_position(3)
+            .run_for_some_time();
+
+        test_bed = test_bed
+            .set_indicated_airspeed(211.)
+            .set_adiru_airspeed(2, Some(209.))
+            .set_flaps_handle_position(1)
+            .run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
+
+        let mut test_bed = test_bed_with()
+            .set_green_hyd_pressure()
+            .set_flaps_handle_position(2)
+            .run_for_some_time();
+
+        test_bed = test_bed
+            .set_indicated_airspeed(211.)
+            .set_adiru_airspeed(2, Some(209.))
+            .set_flaps_handle_position(1)
+            .run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
+
+        let mut test_bed = test_bed_with()
+            .set_green_hyd_pressure()
+            .set_flaps_handle_position(2)
+            .run_one_tick();
+
+        test_bed = test_bed
+            .set_indicated_airspeed(99.)
+            .set_adiru_airspeed(1, Some(101.))
+            .set_flaps_handle_position(1)
+            .run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
+
+        test_bed = test_bed.set_adiru_airspeed(2, Some(80.)).run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
+
+        test_bed = test_bed.set_adiru_airspeed(1, Some(220.)).run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
+
+        let mut test_bed = test_bed_with()
+            .set_green_hyd_pressure()
+            .set_flaps_handle_position(2)
+            .run_one_tick();
+
+        test_bed = test_bed
+            .set_indicated_airspeed(99.)
+            .set_adiru_airspeed(2, Some(101.))
+            .set_flaps_handle_position(1)
+            .run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
+
+        test_bed = test_bed.set_adiru_airspeed(1, Some(80.)).run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
+
+        test_bed = test_bed.set_adiru_airspeed(2, Some(220.)).run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
+
+        let mut test_bed = test_bed_with()
+            .set_green_hyd_pressure()
+            .set_flaps_handle_position(2)
+            .run_for_some_time();
+
+        test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
+
+        test_bed = test_bed
+            .set_indicated_airspeed(211.)
+            .set_adiru_airspeed(1, Some(209.))
+            .set_flaps_handle_position(1)
+            .run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
+
+        test_bed = test_bed.set_adiru_airspeed(2, Some(80.)).run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
+
+        test_bed = test_bed.set_adiru_airspeed(1, Some(220.)).run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
+
+        let mut test_bed = test_bed_with()
+            .set_green_hyd_pressure()
+            .set_flaps_handle_position(2)
+            .run_for_some_time();
+
+        test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
+
+        test_bed = test_bed
+            .set_indicated_airspeed(211.)
+            .set_adiru_airspeed(2, Some(209.))
+            .set_flaps_handle_position(1)
+            .run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
+
+        test_bed = test_bed.set_adiru_airspeed(1, Some(80.)).run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
+
+        test_bed = test_bed.set_adiru_airspeed(2, Some(220.)).run_one_tick();
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
     }
 }
