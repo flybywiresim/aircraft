@@ -138,8 +138,6 @@ pub struct FlapSlatAssembly {
     surface_control_arm_position: Angle,
 
     max_synchro_gear_position: Angle,
-    sfcc_1_request: Option<ChannelCommand>,
-    sfcc_2_request: Option<ChannelCommand>,
     speed: AngularVelocity,
     current_max_speed: LowPassFilter<AngularVelocity>,
     full_pressure_max_speed: AngularVelocity,
@@ -197,8 +195,6 @@ impl FlapSlatAssembly {
             right_surfaces,
             surface_control_arm_position: Angle::ZERO,
             max_synchro_gear_position,
-            sfcc_1_request: None,
-            sfcc_2_request: None,
             speed: AngularVelocity::ZERO,
             current_max_speed: LowPassFilter::<AngularVelocity>::new(
                 Self::LOW_PASS_FILTER_SURFACE_POSITION_TRANSIENT_TIME_CONSTANT,
@@ -224,31 +220,25 @@ impl FlapSlatAssembly {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        sfcc1_surface_position_request: Option<ChannelCommand>,
-        sfcc2_surface_position_request: Option<ChannelCommand>,
+        sfcc_1_request: Option<ChannelCommand>,
+        sfcc_2_request: Option<ChannelCommand>,
         left_pressure: &impl SectionPressure,
         right_pressure: &impl SectionPressure,
     ) {
-        self.sfcc_1_request = sfcc1_surface_position_request;
-        self.sfcc_2_request = sfcc2_surface_position_request;
-
-        let sfcc_1_active = self.sfcc_1_request.is_some();
-        let sfcc_2_active = self.sfcc_2_request.is_some();
-
         self.update_current_max_speed(
-            sfcc_1_active,
-            sfcc_2_active,
+            context,
+            sfcc_1_request,
+            sfcc_2_request,
             left_pressure.pressure_downstream_priority_valve(),
             right_pressure.pressure_downstream_priority_valve(),
-            context,
         );
 
-        self.update_speed_and_position(context);
+        self.update_speed_and_position(context, sfcc_1_request, sfcc_2_request);
 
         self.update_motors_speed(
+            context,
             left_pressure.pressure_downstream_priority_valve(),
             right_pressure.pressure_downstream_priority_valve(),
-            context,
         );
 
         self.update_motors_flow(context);
@@ -258,15 +248,20 @@ impl FlapSlatAssembly {
         self.update_surface_variables();
     }
 
-    fn update_speed_and_position(&mut self, context: &UpdateContext) {
+    fn update_speed_and_position(
+        &mut self,
+        context: &UpdateContext,
+        sfcc_1_request: Option<ChannelCommand>,
+        sfcc_2_request: Option<ChannelCommand>,
+    ) {
         let max_speed = self.max_speed().get::<radian_per_second>();
         let time_delta = context.delta_as_secs_f64();
 
-        let extend_request = self.sfcc_1_request == Some(ChannelCommand::Extend)
-            || self.sfcc_2_request == Some(ChannelCommand::Extend);
+        let extend_request = sfcc_1_request == Some(ChannelCommand::Extend)
+            || sfcc_2_request == Some(ChannelCommand::Extend);
 
-        let retract_request = self.sfcc_1_request == Some(ChannelCommand::Retract)
-            || self.sfcc_2_request == Some(ChannelCommand::Retract);
+        let retract_request = sfcc_1_request == Some(ChannelCommand::Retract)
+            || sfcc_2_request == Some(ChannelCommand::Retract);
 
         if extend_request {
             if !context.aircraft_preset_quick_mode() {
@@ -310,23 +305,28 @@ impl FlapSlatAssembly {
 
     fn update_current_max_speed(
         &mut self,
-        sfcc1_is_active: bool,
-        sfcc2_is_active: bool,
+        context: &UpdateContext,
+        sfcc_1_request: Option<ChannelCommand>,
+        sfcc_2_request: Option<ChannelCommand>,
         left_pressure: Pressure,
         right_pressure: Pressure,
-        context: &UpdateContext,
     ) {
+        let sfcc_1_active = sfcc_1_request.is_some();
+        let sfcc_2_active = sfcc_2_request.is_some();
+
         // Final pressures are the current pressure or 0 if corresponding sfcc is offline
         // This simulates a motor not responding to a failed or offline sfcc
-        let mut final_left_pressure = left_pressure;
-        if !sfcc1_is_active {
-            final_left_pressure = Pressure::ZERO;
-        }
+        let final_left_pressure = if !sfcc_1_active {
+            Pressure::ZERO
+        } else {
+            left_pressure
+        };
 
-        let mut final_right_pressure = right_pressure;
-        if !sfcc2_is_active {
-            final_right_pressure = Pressure::ZERO;
-        }
+        let final_right_pressure = if !sfcc_2_active {
+            Pressure::ZERO
+        } else {
+            right_pressure
+        };
 
         let new_theoretical_max_speed_left_side = AngularVelocity::new::<radian_per_second>(
             0.5 * self.full_pressure_max_speed.get::<radian_per_second>()
@@ -376,9 +376,9 @@ impl FlapSlatAssembly {
 
     fn update_motors_speed(
         &mut self,
+        context: &UpdateContext,
         left_pressure: Pressure,
         right_pressure: Pressure,
-        context: &UpdateContext,
     ) {
         let torque_shaft_speed = AngularVelocity::new::<radian_per_second>(
             self.speed.get::<radian_per_second>() * self.surface_gear_ratio.get::<ratio>(),
