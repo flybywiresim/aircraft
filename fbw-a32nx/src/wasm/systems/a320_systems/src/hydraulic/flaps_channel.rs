@@ -113,6 +113,13 @@ impl FlapsChannel {
         let cas1 = adirs.computed_airspeed(1).normal_value();
         let cas2 = adirs.computed_airspeed(2).normal_value();
 
+        let (cas1, cas2) = match (cas1, cas2) {
+            (Some(cas1), Some(cas2)) => (Some(cas1), Some(cas2)),
+            (Some(cas1), None) => (Some(cas1), Some(cas1)),
+            (None, Some(cas2)) => (Some(cas2), Some(cas2)),
+            (None, None) => (None, None),
+        };
+
         // The match can be shortened by a convoluted if statement however
         // I believe it would make debugging and understanding the state machine harder
         match (cas1, cas2) {
@@ -297,6 +304,11 @@ impl FlapsChannel {
     #[cfg(test)]
     pub fn get_fap(&self, idx: usize) -> bool {
         self.fap[idx]
+    }
+
+    #[cfg(test)]
+    pub fn get_flap_auto_command_active(&self) -> bool {
+        self.flap_auto_command_active
     }
 
     fn flap_actual_position_word(&self) -> Arinc429Word<f64> {
