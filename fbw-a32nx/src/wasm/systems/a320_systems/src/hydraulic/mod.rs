@@ -6220,10 +6220,23 @@ mod tests {
         #[derive(Default)]
         struct A320TestAdirus {
             airspeed: Velocity,
+            computed_airspeed: Arinc429Word<Velocity>,
         }
         impl A320TestAdirus {
+            const MINIMUM_CAS: f64 = 30.;
+
             fn update(&mut self, context: &UpdateContext) {
-                self.airspeed = context.true_airspeed()
+                self.airspeed = context.true_airspeed();
+
+                let computed_airspeed = context.indicated_airspeed();
+                let computed_airspeed_threshold = Velocity::new::<knot>(Self::MINIMUM_CAS);
+                if computed_airspeed < computed_airspeed_threshold {
+                    self.computed_airspeed =
+                        Arinc429Word::new(Velocity::default(), SignStatus::NoComputedData);
+                } else {
+                    self.computed_airspeed =
+                        Arinc429Word::new(computed_airspeed, SignStatus::NormalOperation);
+                }
             }
         }
         impl AdirsDiscreteOutputs for A320TestAdirus {
@@ -6245,39 +6258,39 @@ mod tests {
         }
         impl AdirsMeasurementOutputs for A320TestAdirus {
             fn is_fully_aligned(&self, _adiru_number: usize) -> bool {
-                todo!()
+                true
             }
 
             fn latitude(&self, _adiru_number: usize) -> Arinc429Word<Angle> {
-                todo!()
+                Arinc429Word::new(Angle::default(), SignStatus::NormalOperation)
             }
 
             fn longitude(&self, _adiru_number: usize) -> Arinc429Word<Angle> {
-                todo!()
+                Arinc429Word::new(Angle::default(), SignStatus::NormalOperation)
             }
 
             fn heading(&self, _adiru_number: usize) -> Arinc429Word<Angle> {
-                todo!()
+                Arinc429Word::new(Angle::default(), SignStatus::NormalOperation)
             }
 
             fn true_heading(&self, _adiru_number: usize) -> Arinc429Word<Angle> {
-                todo!()
+                Arinc429Word::new(Angle::default(), SignStatus::NormalOperation)
             }
 
             fn vertical_speed(&self, _adiru_number: usize) -> Arinc429Word<Velocity> {
-                todo!()
+                Arinc429Word::new(Velocity::default(), SignStatus::NormalOperation)
             }
 
             fn altitude(&self, _adiru_number: usize) -> Arinc429Word<Length> {
-                todo!()
+                Arinc429Word::new(Length::default(), SignStatus::NormalOperation)
             }
 
             fn angle_of_attack(&self, _adiru_number: usize) -> Arinc429Word<Angle> {
-                todo!()
+                Arinc429Word::new(Angle::default(), SignStatus::NormalOperation)
             }
 
             fn computed_airspeed(&self, _adiru_number: usize) -> Arinc429Word<Velocity> {
-                todo!()
+                self.computed_airspeed
             }
         }
 
