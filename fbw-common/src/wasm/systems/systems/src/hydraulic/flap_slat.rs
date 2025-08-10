@@ -8,7 +8,6 @@ use crate::simulation::{
     VariableIdentifier, Write,
 };
 
-use uom::si::angular_velocity::degree_per_second;
 use uom::si::{
     angle::{degree, radian},
     angular_velocity::{radian_per_second, revolution_per_minute},
@@ -296,8 +295,9 @@ impl FlapSlatAssembly {
             self.speed = -self.max_speed();
         } else {
             // The positioning precision is 0.18 deg. It's important that the motors slow
-            // down enough that there is a movement of less than 0.18 deg between frames.
-            let minimum_speed = AngularVelocity::new::<degree_per_second>(0.18);
+            // down enough that there is a movement of less than 0.18 deg between frames
+            // otherwise the flaps/slats will start oscillating.
+            let minimum_speed = self.max_speed() * 0.18; // Low speed drive is 18% of high speed drive.
 
             self.speed = if (self.speed * Self::DECEL_FACTOR_WHEN_APROACHING_POSITION).abs()
                 < minimum_speed
