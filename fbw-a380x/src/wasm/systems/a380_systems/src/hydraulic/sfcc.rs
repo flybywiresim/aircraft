@@ -1,7 +1,7 @@
 use crate::systems::shared::arinc429::{Arinc429Word, SignStatus};
 use systems::accept_iterable;
 use systems::hydraulic::command_sensor_unit::{CSUMonitor, CSU};
-use systems::hydraulic::flap_slat::ChannelCommand;
+use systems::hydraulic::flap_slat::ValveBlock;
 use systems::shared::{AdirsMeasurementOutputs, PositionPickoffUnit};
 
 use systems::simulation::{
@@ -11,8 +11,11 @@ use systems::simulation::{
 
 use uom::si::{angle::degree, f64::*, length::foot, velocity::knot};
 
+use super::flaps_channel::FlapsChannel;
+use super::slats_channel::SlatsChannel;
+
 #[derive(Debug, Copy, Clone, PartialEq)]
-enum FlapsConf {
+pub enum FlapsConf {
     Conf0,
     Conf1,
     Conf1F,
@@ -22,6 +25,22 @@ enum FlapsConf {
     ConfFull,
 }
 
+pub struct SlatFlapControlComputerMisc {}
+impl SlatFlapControlComputerMisc {
+    const POSITIONING_THRESHOLD_DEGREE: f64 = 6.69;
+    const TARGET_THRESHOLD_DEGREE: f64 = 0.18;
+
+    pub fn in_positioning_threshold_range(position: Angle, target_position: Angle) -> bool {
+        let tolerance = Angle::new::<degree>(Self::POSITIONING_THRESHOLD_DEGREE);
+        position > (target_position - tolerance) && position < (target_position + tolerance)
+    }
+
+    pub fn in_target_threshold_range(position: Angle, target_position: Angle) -> bool {
+        let tolerance = Angle::new::<degree>(Self::TARGET_THRESHOLD_DEGREE);
+        position > (target_position - tolerance) && position < (target_position + tolerance)
+    }
+}
+
 struct SlatFlapControlComputer {
     flaps_conf_index_id: VariableIdentifier,
     slat_flap_system_status_word_id: VariableIdentifier,
@@ -29,11 +48,9 @@ struct SlatFlapControlComputer {
     slat_actual_position_word_id: VariableIdentifier,
     flap_actual_position_word_id: VariableIdentifier,
 
-    flaps_demanded_angle: Angle,
-    slats_demanded_angle: Angle,
-    flaps_feedback_angle: Angle,
-    slats_feedback_angle: Angle,
-    flaps_handle_position: CSU,
+    pub flaps_channel: FlapsChannel,
+    pub slats_channel: SlatsChannel,
+
     flaps_conf: FlapsConf,
     flap_load_relief_active: bool,
     cruise_baulk_active: bool,
@@ -71,45 +88,15 @@ impl SlatFlapControlComputer {
             flap_actual_position_word_id: context
                 .get_identifier(format!("SFCC_{num}_FLAP_ACTUAL_POSITION_WORD")),
 
-            flaps_demanded_angle: Angle::new::<degree>(0.),
-            slats_demanded_angle: Angle::new::<degree>(0.),
-            flaps_feedback_angle: Angle::new::<degree>(0.),
-            slats_feedback_angle: Angle::new::<degree>(0.),
-            flaps_handle_position: CSU::Conf0,
+            flaps_channel: FlapsChannel::new(),
+            slats_channel: SlatsChannel::new(),
+
             flaps_conf: FlapsConf::Conf0,
             flap_load_relief_active: false,
             cruise_baulk_active: false,
             alpha_speed_lock_active: false,
 
             csu_monitor: CSUMonitor::new(context),
-        }
-    }
-
-    // Returns a flap demanded angle in FPPU reference degree (feedback sensor)
-    // Interpolated from A320 FPPU references, assuming we're using the A320 FPPU
-    fn demanded_flaps_fppu_angle_from_conf(flap_conf: FlapsConf) -> Angle {
-        match flap_conf {
-            FlapsConf::Conf0 => Angle::new::<degree>(0.),
-            FlapsConf::Conf1 => Angle::new::<degree>(0.),
-            FlapsConf::Conf1F => Angle::new::<degree>(108.28),
-            FlapsConf::Conf2 => Angle::new::<degree>(154.65),
-            FlapsConf::Conf2S => Angle::new::<degree>(154.65),
-            FlapsConf::Conf3 => Angle::new::<degree>(194.03),
-            FlapsConf::ConfFull => Angle::new::<degree>(218.91),
-        }
-    }
-
-    // Returns a slat demanded angle in FPPU reference degree (feedback sensor)
-    // Interpolated from A320 FPPU references, assuming we're using the A320 FPPU
-    fn demanded_slats_fppu_angle_from_conf(flap_conf: FlapsConf) -> Angle {
-        match flap_conf {
-            FlapsConf::Conf0 => Angle::new::<degree>(0.),
-            FlapsConf::Conf1 => Angle::new::<degree>(247.27),
-            FlapsConf::Conf1F => Angle::new::<degree>(247.27),
-            FlapsConf::Conf2 => Angle::new::<degree>(247.27),
-            FlapsConf::Conf2S => Angle::new::<degree>(284.65),
-            FlapsConf::Conf3 => Angle::new::<degree>(284.65),
-            FlapsConf::ConfFull => Angle::new::<degree>(284.65),
         }
     }
 
@@ -270,19 +257,17 @@ impl SlatFlapControlComputer {
     ) {
         self.csu_monitor.update(context);
 
-        self.flaps_handle_position = self.csu_monitor.get_current_detent();
         self.flaps_conf = self.generate_configuration(context, adirs);
         self.flap_load_relief_active = self.flap_load_relief_active();
         self.cruise_baulk_active = self.cruise_baulk_active();
         self.alpha_speed_lock_active = self.alpha_speed_lock_active();
 
-        self.flaps_demanded_angle = Self::demanded_flaps_fppu_angle_from_conf(self.flaps_conf);
-        self.slats_demanded_angle = Self::demanded_slats_fppu_angle_from_conf(self.flaps_conf);
-        self.flaps_feedback_angle = flaps_feedback.angle();
-        self.slats_feedback_angle = slats_feedback.angle();
+        self.flaps_channel.update(self.flaps_conf, flaps_feedback);
+        self.slats_channel.update(self.flaps_conf, slats_feedback);
     }
 
     fn slat_flap_system_status_word(&self) -> Arinc429Word<u32> {
+        let flaps_handle_position = self.csu_monitor.get_current_detent();
         let mut word = Arinc429Word::new(0, SignStatus::NormalOperation);
 
         word.set_bit(11, false);
@@ -291,11 +276,11 @@ impl SlatFlapControlComputer {
         word.set_bit(14, false);
         word.set_bit(15, false);
         word.set_bit(16, false);
-        word.set_bit(17, self.flaps_handle_position == CSU::Conf0);
-        word.set_bit(18, self.flaps_handle_position == CSU::Conf1);
-        word.set_bit(19, self.flaps_handle_position == CSU::Conf2);
-        word.set_bit(20, self.flaps_handle_position == CSU::Conf3);
-        word.set_bit(21, self.flaps_handle_position == CSU::ConfFull);
+        word.set_bit(17, flaps_handle_position == CSU::Conf0);
+        word.set_bit(18, flaps_handle_position == CSU::Conf1);
+        word.set_bit(19, flaps_handle_position == CSU::Conf2);
+        word.set_bit(20, flaps_handle_position == CSU::Conf3);
+        word.set_bit(21, flaps_handle_position == CSU::ConfFull);
         word.set_bit(22, self.flap_load_relief_active);
         word.set_bit(23, false);
         word.set_bit(24, self.alpha_speed_lock_active);
@@ -309,32 +294,30 @@ impl SlatFlapControlComputer {
     }
 
     fn slat_flap_actual_position_word(&self) -> Arinc429Word<u32> {
+        let flaps_fppu = self.flaps_channel.get_feedback_angle();
+        let slats_fppu = self.slats_channel.get_feedback_angle();
         let mut word = Arinc429Word::new(0, SignStatus::NormalOperation);
 
         word.set_bit(11, true);
         // Slats retracted
         word.set_bit(
             12,
-            self.slats_feedback_angle > Angle::new::<degree>(-5.0)
-                && self.slats_feedback_angle < Angle::new::<degree>(6.2),
+            slats_fppu > Angle::new::<degree>(-5.0) && slats_fppu < Angle::new::<degree>(6.2),
         );
         // Slats >= 19°
         word.set_bit(
             13,
-            self.slats_feedback_angle > Angle::new::<degree>(234.7)
-                && self.slats_feedback_angle < Angle::new::<degree>(337.),
+            slats_fppu > Angle::new::<degree>(234.7) && slats_fppu < Angle::new::<degree>(337.),
         );
         // Slats >= 22°
         word.set_bit(
             14,
-            self.slats_feedback_angle > Angle::new::<degree>(272.2)
-                && self.slats_feedback_angle < Angle::new::<degree>(337.),
+            slats_fppu > Angle::new::<degree>(272.2) && slats_fppu < Angle::new::<degree>(337.),
         );
         // Slats extended 23°
         word.set_bit(
             15,
-            self.slats_feedback_angle > Angle::new::<degree>(280.)
-                && self.slats_feedback_angle < Angle::new::<degree>(337.),
+            slats_fppu > Angle::new::<degree>(280.) && slats_fppu < Angle::new::<degree>(337.),
         );
         word.set_bit(16, false);
         word.set_bit(17, false);
@@ -342,32 +325,27 @@ impl SlatFlapControlComputer {
         // Flaps retracted
         word.set_bit(
             19,
-            self.flaps_feedback_angle > Angle::new::<degree>(-5.0)
-                && self.flaps_feedback_angle < Angle::new::<degree>(2.5),
+            flaps_fppu > Angle::new::<degree>(-5.0) && flaps_fppu < Angle::new::<degree>(2.5),
         );
         // Flaps >= 7°
         word.set_bit(
             20,
-            self.flaps_feedback_angle > Angle::new::<degree>(102.1)
-                && self.flaps_feedback_angle < Angle::new::<degree>(254.),
+            flaps_fppu > Angle::new::<degree>(102.1) && flaps_fppu < Angle::new::<degree>(254.),
         );
         // Flaps >= 16°
         word.set_bit(
             21,
-            self.flaps_feedback_angle > Angle::new::<degree>(150.0)
-                && self.flaps_feedback_angle < Angle::new::<degree>(254.),
+            flaps_fppu > Angle::new::<degree>(150.0) && flaps_fppu < Angle::new::<degree>(254.),
         );
         // Flaps >= 25°
         word.set_bit(
             22,
-            self.flaps_feedback_angle > Angle::new::<degree>(189.8)
-                && self.flaps_feedback_angle < Angle::new::<degree>(254.),
+            flaps_fppu > Angle::new::<degree>(189.8) && flaps_fppu < Angle::new::<degree>(254.),
         );
         // Flaps extended 32°
         word.set_bit(
             23,
-            self.flaps_feedback_angle > Angle::new::<degree>(218.)
-                && self.flaps_feedback_angle < Angle::new::<degree>(254.),
+            flaps_fppu > Angle::new::<degree>(218.) && flaps_fppu < Angle::new::<degree>(254.),
         );
         word.set_bit(24, false);
         word.set_bit(25, false);
@@ -380,17 +358,13 @@ impl SlatFlapControlComputer {
     }
 
     fn slat_actual_position_word(&self) -> Arinc429Word<f64> {
-        Arinc429Word::new(
-            self.slats_feedback_angle.get::<degree>(),
-            SignStatus::NormalOperation,
-        )
+        let slats_fppu = self.slats_channel.get_feedback_angle();
+        Arinc429Word::new(slats_fppu.get::<degree>(), SignStatus::NormalOperation)
     }
 
     fn flap_actual_position_word(&self) -> Arinc429Word<f64> {
-        Arinc429Word::new(
-            self.flaps_feedback_angle.get::<degree>(),
-            SignStatus::NormalOperation,
-        )
+        let flaps_fppu = self.flaps_channel.get_feedback_angle();
+        Arinc429Word::new(flaps_fppu.get::<degree>(), SignStatus::NormalOperation)
     }
 }
 
@@ -427,8 +401,6 @@ pub struct SlatFlapComplex {
 }
 
 impl SlatFlapComplex {
-    const POSITIONING_THRESHOLD_ANGLE: f64 = 6.69;
-
     pub fn new(context: &mut InitContext) -> Self {
         Self {
             sfcc: [
@@ -449,42 +421,12 @@ impl SlatFlapComplex {
         self.sfcc[1].update(context, adirs, flaps_feedback, slats_feedback);
     }
 
-    fn is_approaching_requested_position(
-        &self,
-        synchro_angle_request: Angle,
-        synchro_angle_feedback: Angle,
-    ) -> bool {
-        let angle_threshold = Angle::new::<degree>(Self::POSITIONING_THRESHOLD_ANGLE);
-
-        (synchro_angle_request - synchro_angle_feedback).abs() < angle_threshold
+    pub fn flap_pcu(&self, idx: usize) -> &impl ValveBlock {
+        &self.sfcc[idx].flaps_channel
     }
 
-    pub fn flap_command(&self, idx: usize) -> Option<ChannelCommand> {
-        let flaps_in_target_position = self.is_approaching_requested_position(
-            self.sfcc[idx].flaps_demanded_angle,
-            self.sfcc[idx].flaps_feedback_angle,
-        );
-        if flaps_in_target_position {
-            None
-        } else if self.sfcc[idx].flaps_demanded_angle > self.sfcc[idx].flaps_feedback_angle {
-            Some(ChannelCommand::Extend)
-        } else {
-            Some(ChannelCommand::Retract)
-        }
-    }
-
-    pub fn slat_command(&self, idx: usize) -> Option<ChannelCommand> {
-        let slats_in_target_position = self.is_approaching_requested_position(
-            self.sfcc[idx].slats_demanded_angle,
-            self.sfcc[idx].slats_feedback_angle,
-        );
-        if slats_in_target_position {
-            None
-        } else if self.sfcc[idx].slats_demanded_angle > self.sfcc[idx].slats_feedback_angle {
-            Some(ChannelCommand::Extend)
-        } else {
-            Some(ChannelCommand::Retract)
-        }
+    pub fn slat_pcu(&self, idx: usize) -> &impl ValveBlock {
+        &self.sfcc[idx].slats_channel
     }
 }
 impl SimulationElement for SlatFlapComplex {
@@ -659,19 +601,19 @@ mod tests {
             match surface_type {
                 "FLAPS"
                     if Self::surface_movement_required(
-                        sfcc.flaps_demanded_angle,
-                        sfcc.flaps_feedback_angle,
+                        sfcc.flaps_channel.get_demanded_angle(),
+                        sfcc.flaps_channel.get_feedback_angle(),
                     ) =>
                 {
-                    Some(sfcc.flaps_demanded_angle)
+                    Some(sfcc.flaps_channel.get_demanded_angle())
                 }
                 "SLATS"
                     if Self::surface_movement_required(
-                        sfcc.slats_demanded_angle,
-                        sfcc.slats_feedback_angle,
+                        sfcc.slats_channel.get_demanded_angle(),
+                        sfcc.slats_channel.get_feedback_angle(),
                     ) =>
                 {
-                    Some(sfcc.slats_demanded_angle)
+                    Some(sfcc.slats_channel.get_demanded_angle())
                 }
                 "FLAPS" | "SLATS" => None,
                 _ => panic!("Not a valid slat/flap surface"),
@@ -857,7 +799,8 @@ mod tests {
         fn get_flaps_demanded_angle(&self, idx: usize) -> f64 {
             self.query(|a| {
                 a.slat_flap_complex.sfcc[idx]
-                    .flaps_demanded_angle
+                    .flaps_channel
+                    .get_demanded_angle()
                     .get::<degree>()
             })
         }
@@ -865,7 +808,8 @@ mod tests {
         fn get_slats_demanded_angle(&self, idx: usize) -> f64 {
             self.query(|a| {
                 a.slat_flap_complex.sfcc[idx]
-                    .slats_demanded_angle
+                    .slats_channel
+                    .get_demanded_angle()
                     .get::<degree>()
             })
         }
@@ -887,12 +831,11 @@ mod tests {
             demanded_angle: Angle,
             feedback_angle: Angle,
         ) -> bool {
-            self.query(|a| {
-                a.slat_flap_complex
-                    .is_approaching_requested_position(demanded_angle, feedback_angle)
-            })
+            SlatFlapControlComputerMisc::in_positioning_threshold_range(
+                demanded_angle,
+                feedback_angle,
+            )
         }
-
         fn test_flap_conf(
             &mut self,
             handle_pos: u8,
