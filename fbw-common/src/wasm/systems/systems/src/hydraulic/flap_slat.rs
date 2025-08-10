@@ -8,6 +8,7 @@ use crate::simulation::{
     VariableIdentifier, Write,
 };
 
+use uom::si::angular_velocity::degree_per_second;
 use uom::si::{
     angle::{degree, radian},
     angular_velocity::{radian_per_second, revolution_per_minute},
@@ -237,6 +238,15 @@ impl FlapSlatAssembly {
         left_pressure: &impl SectionPressure,
         right_pressure: &impl SectionPressure,
     ) {
+        println!(
+            "Speed {:.4} deg/100ms | frame {:.0} ms | sfcc1_cmd {:?} | sfcc2_cmd {:?} | sfcc1_pob {:?} | sfcc2_pob {:?}",
+            self.speed.get::<degree_per_second>()/10.,
+            context.delta_as_secs_f64()*1000.,
+            sfcc_1_request.get_command_status(),
+            sfcc_2_request.get_command_status(),
+            sfcc_1_request.get_pob_status(),
+            sfcc_2_request.get_pob_status(),
+        );
         self.update_current_max_speed(
             context,
             sfcc_1_request,
@@ -295,11 +305,14 @@ impl FlapSlatAssembly {
             self.surface_control_arm_position -= arm_position_delta;
             self.speed = -self.max_speed();
         } else {
-            let minimum_speed = self.max_speed() * 0.3;
+            // The positioning precision is 0.18 deg. It's important that the motors slow
+            // down enough that there is a movement of less than 0.18 deg between frames.
+            let minimum_speed = AngularVelocity::new::<degree_per_second>(0.18);
 
-            self.speed = if self.speed * Self::DECEL_FACTOR_WHEN_APROACHING_POSITION < minimum_speed
+            self.speed = if (self.speed * Self::DECEL_FACTOR_WHEN_APROACHING_POSITION).abs()
+                < minimum_speed
             {
-                minimum_speed
+                self.speed
             } else {
                 self.speed * Self::DECEL_FACTOR_WHEN_APROACHING_POSITION
             };
@@ -541,7 +554,8 @@ impl FlapSlatAssembly {
     }
 
     fn is_surface_moving(&self) -> bool {
-        self.speed.abs().get::<radian_per_second>() > Self::MIN_ANGULAR_SPEED_TO_REPORT_MOVING
+        self.speed.abs() != AngularVelocity::ZERO
+        // self.speed.abs().get::<radian_per_second>() > Self::MIN_ANGULAR_SPEED_TO_REPORT_MOVING
     }
 
     pub fn left_position(&self) -> f64 {
