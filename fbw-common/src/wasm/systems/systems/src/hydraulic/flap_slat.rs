@@ -178,7 +178,6 @@ impl FlapSlatAssembly {
     // This is a simplified open loop motor control where the only commands are Extract|Retract.
     // The real SFCC controls the motors through the combination of three valves in the PCU.
     const DECEL_FACTOR_WHEN_APROACHING_POSITION: f64 = 0.976;
-    const MIN_ANGULAR_SPEED_TO_REPORT_MOVING: f64 = 0.01;
 
     pub fn new(
         context: &mut InitContext,
@@ -238,15 +237,6 @@ impl FlapSlatAssembly {
         left_pressure: &impl SectionPressure,
         right_pressure: &impl SectionPressure,
     ) {
-        println!(
-            "Speed {:.4} deg/100ms | frame {:.0} ms | sfcc1_cmd {:?} | sfcc2_cmd {:?} | sfcc1_pob {:?} | sfcc2_pob {:?}",
-            self.speed.get::<degree_per_second>()/10.,
-            context.delta_as_secs_f64()*1000.,
-            sfcc_1_request.get_command_status(),
-            sfcc_2_request.get_command_status(),
-            sfcc_1_request.get_pob_status(),
-            sfcc_2_request.get_pob_status(),
-        );
         self.update_current_max_speed(
             context,
             sfcc_1_request,
@@ -555,7 +545,6 @@ impl FlapSlatAssembly {
 
     fn is_surface_moving(&self) -> bool {
         self.speed.abs() != AngularVelocity::ZERO
-        // self.speed.abs().get::<radian_per_second>() > Self::MIN_ANGULAR_SPEED_TO_REPORT_MOVING
     }
 
     pub fn left_position(&self) -> f64 {
