@@ -1,5 +1,6 @@
 use crate::systems::shared::arinc429::{Arinc429Word, SignStatus};
 use systems::hydraulic::command_sensor_unit::{CSUMonitor, CSU};
+use systems::hydraulic::flap_slat::{ChannelCommand, SolenoidStatus, ValveBlock};
 use systems::shared::PositionPickoffUnit;
 
 use systems::simulation::{
@@ -8,6 +9,8 @@ use systems::simulation::{
 };
 
 use uom::si::{angle::degree, f64::*};
+
+use super::sfcc::SlatFlapControlComputerMisc;
 
 pub struct SlatsChannel {
     slats_fppu_angle_id: VariableIdentifier,
@@ -71,6 +74,37 @@ impl SlatsChannel {
             self.slats_feedback_angle.get::<degree>(),
             SignStatus::NormalOperation,
         )
+    }
+}
+// When the POB (Pressure OFF Brake) solenoid is energised, then the hydraulic motors are allowed to move.
+// When the POB solenoid is de-energised (due to SFCC command or no SFCC power), then the hydraulic motors
+// are held in position and can't move.
+impl ValveBlock for SlatsChannel {
+    fn get_pob_status(&self) -> SolenoidStatus {
+        let demanded_angle = self.get_demanded_angle();
+        let feedback_angle = self.get_feedback_angle();
+        let in_target_position =
+            SlatFlapControlComputerMisc::in_target_threshold_range(demanded_angle, feedback_angle);
+        match in_target_position {
+            true => SolenoidStatus::DeEnergised,
+            false => SolenoidStatus::Energised,
+        }
+    }
+
+    fn get_command_status(&self) -> Option<ChannelCommand> {
+        let demanded_angle = self.get_demanded_angle();
+        let feedback_angle = self.get_feedback_angle();
+        let in_target_position = SlatFlapControlComputerMisc::in_positioning_threshold_range(
+            demanded_angle,
+            feedback_angle,
+        );
+        if in_target_position {
+            None
+        } else if demanded_angle > feedback_angle {
+            Some(ChannelCommand::Extend)
+        } else {
+            Some(ChannelCommand::Retract)
+        }
     }
 }
 impl SimulationElement for SlatsChannel {
