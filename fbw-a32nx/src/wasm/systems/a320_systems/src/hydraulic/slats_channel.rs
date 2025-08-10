@@ -83,6 +83,12 @@ impl ValveBlock for SlatsChannel {
     fn get_pob_status(&self) -> SolenoidStatus {
         let demanded_angle = self.get_demanded_angle();
         let feedback_angle = self.get_feedback_angle();
+        println!(
+            "dmd {:.3} | fb {:.3} | delta {:.3} | 0.18",
+            demanded_angle.get::<degree>(),
+            feedback_angle.get::<degree>(),
+            (demanded_angle - feedback_angle).get::<degree>()
+        );
         let in_target_position =
             SlatFlapControlComputerMisc::in_target_threshold_range(demanded_angle, feedback_angle);
         match in_target_position {
