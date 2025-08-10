@@ -273,38 +273,6 @@ impl SlatFlapComplex {
     pub fn slat_pcu(&self, idx: usize) -> &impl ValveBlock {
         &self.sfcc[idx].slats_channel
     }
-
-    // pub fn flap_command(&self, idx: usize) -> Option<ChannelCommand> {
-    //     let demanded_angle = self.sfcc[idx].flaps_channel.get_demanded_angle();
-    //     let feedback_angle = self.sfcc[idx].flaps_channel.get_feedback_angle();
-    //     let flaps_in_target_position = SlatFlapControlComputerMisc::in_positioning_threshold_range(
-    //         demanded_angle,
-    //         feedback_angle,
-    //     );
-    //     if flaps_in_target_position {
-    //         None
-    //     } else if demanded_angle > feedback_angle {
-    //         Some(ChannelCommand::Extend)
-    //     } else {
-    //         Some(ChannelCommand::Retract)
-    //     }
-    // }
-
-    // pub fn slat_command(&self, idx: usize) -> Option<ChannelCommand> {
-    //     let demanded_angle = self.sfcc[idx].slats_channel.get_demanded_angle();
-    //     let feedback_angle = self.sfcc[idx].slats_channel.get_feedback_angle();
-    //     let slats_in_target_position = SlatFlapControlComputerMisc::in_positioning_threshold_range(
-    //         demanded_angle,
-    //         feedback_angle,
-    //     );
-    //     if slats_in_target_position {
-    //         None
-    //     } else if demanded_angle > feedback_angle {
-    //         Some(ChannelCommand::Extend)
-    //     } else {
-    //         Some(ChannelCommand::Retract)
-    //     }
-    // }
 }
 impl SimulationElement for SlatFlapComplex {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
