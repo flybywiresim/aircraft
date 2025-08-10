@@ -21,7 +21,7 @@ use uom::ConstZero;
 use std::fmt;
 use std::time::Duration;
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum SecondarySurfaceSide {
     Left,
     Right,
@@ -35,7 +35,7 @@ impl fmt::Display for SecondarySurfaceSide {
     }
 }
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum SecondarySurfaceType {
     Flaps,
     Slats,
@@ -53,6 +53,17 @@ impl fmt::Display for SecondarySurfaceType {
 pub enum ChannelCommand {
     Extend,
     Retract,
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum SolenoidStatus {
+    Energised,
+    DeEnergised,
+}
+
+pub trait ValveBlock {
+    fn get_pob_status(&self) -> SolenoidStatus;
+    fn get_command_status(&self) -> Option<ChannelCommand>;
 }
 
 pub struct SecondarySurface {
@@ -163,7 +174,8 @@ impl FlapSlatAssembly {
     const BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI: f64 = 500.;
 
     // Deceleration factor calculated to ensure accuracy of 0.18 deg(FPPU).
-    // This is a simplified open loop motor control where the only commands are Extract|Retract. The real SFCC controls the motors through the combination of three valves in the PCU.
+    // This is a simplified open loop motor control where the only commands are Extract|Retract.
+    // The real SFCC controls the motors through the combination of three valves in the PCU.
     const DECEL_FACTOR_WHEN_APROACHING_POSITION: f64 = 0.976;
     const MIN_ANGULAR_SPEED_TO_REPORT_MOVING: f64 = 0.01;
 
@@ -220,8 +232,8 @@ impl FlapSlatAssembly {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        sfcc_1_request: Option<ChannelCommand>,
-        sfcc_2_request: Option<ChannelCommand>,
+        sfcc_1_request: &impl ValveBlock,
+        sfcc_2_request: &impl ValveBlock,
         left_pressure: &impl SectionPressure,
         right_pressure: &impl SectionPressure,
     ) {
@@ -251,11 +263,17 @@ impl FlapSlatAssembly {
     fn update_speed_and_position(
         &mut self,
         context: &UpdateContext,
-        sfcc_1_request: Option<ChannelCommand>,
-        sfcc_2_request: Option<ChannelCommand>,
+        sfcc_1_request: &impl ValveBlock,
+        sfcc_2_request: &impl ValveBlock,
     ) {
         let max_speed = self.max_speed().get::<radian_per_second>();
         let time_delta = context.delta_as_secs_f64();
+
+        let pob_de_energised = sfcc_1_request.get_pob_status() == SolenoidStatus::DeEnergised
+            || sfcc_1_request.get_pob_status() == SolenoidStatus::DeEnergised;
+
+        let sfcc_1_request = sfcc_1_request.get_command_status();
+        let sfcc_2_request = sfcc_2_request.get_command_status();
 
         let extend_request = sfcc_1_request == Some(ChannelCommand::Extend)
             || sfcc_2_request == Some(ChannelCommand::Extend);
@@ -263,28 +281,29 @@ impl FlapSlatAssembly {
         let retract_request = sfcc_1_request == Some(ChannelCommand::Retract)
             || sfcc_2_request == Some(ChannelCommand::Retract);
 
+        let arm_position_delta = if !context.aircraft_preset_quick_mode() {
+            Angle::new::<radian>(max_speed * time_delta)
+        } else {
+            // This is for the Aircraft Presets to expedite the setting of a preset.
+            Angle::new::<radian>(max_speed * 2.)
+        };
+
         if extend_request {
-            if !context.aircraft_preset_quick_mode() {
-                self.surface_control_arm_position += Angle::new::<radian>(max_speed * time_delta);
-            } else {
-                // This is for the Aircraft Presets to expedite the setting of a preset.
-                self.surface_control_arm_position += Angle::new::<radian>(max_speed * 2.);
-            }
+            self.surface_control_arm_position += arm_position_delta;
             self.speed = self.max_speed();
         } else if retract_request {
-            if !context.aircraft_preset_quick_mode() {
-                self.surface_control_arm_position -= Angle::new::<radian>(max_speed * time_delta);
-            } else {
-                // This is for the Aircraft Presets to expedite the setting of a preset.
-                self.surface_control_arm_position -= Angle::new::<radian>(max_speed * 2.);
-            }
+            self.surface_control_arm_position -= arm_position_delta;
             self.speed = -self.max_speed();
         } else {
-            let minimum_speed =
-                AngularVelocity::new::<radian_per_second>(Self::MIN_ANGULAR_SPEED_TO_REPORT_MOVING);
+            let minimum_speed = self.max_speed() * 0.3;
 
-            self.speed *= Self::DECEL_FACTOR_WHEN_APROACHING_POSITION;
-            if self.speed.abs() < minimum_speed {
+            self.speed = if self.speed * Self::DECEL_FACTOR_WHEN_APROACHING_POSITION < minimum_speed
+            {
+                minimum_speed
+            } else {
+                self.speed * Self::DECEL_FACTOR_WHEN_APROACHING_POSITION
+            };
+            if pob_de_energised {
                 self.speed = AngularVelocity::ZERO;
             }
             self.surface_control_arm_position +=
@@ -292,11 +311,12 @@ impl FlapSlatAssembly {
         }
 
         let limited_surface_control_arm_position = self.surface_control_arm_position;
+        let max_surface_angle = self.synchro_angle_to_surface_angle(self.max_synchro_gear_position);
 
         self.surface_control_arm_position = self
             .surface_control_arm_position
             .max(Angle::ZERO)
-            .min(self.synchro_angle_to_surface_angle(self.max_synchro_gear_position));
+            .min(max_surface_angle);
 
         if limited_surface_control_arm_position != self.surface_control_arm_position {
             self.speed = AngularVelocity::ZERO;
@@ -306,13 +326,13 @@ impl FlapSlatAssembly {
     fn update_current_max_speed(
         &mut self,
         context: &UpdateContext,
-        sfcc_1_request: Option<ChannelCommand>,
-        sfcc_2_request: Option<ChannelCommand>,
+        sfcc_1_request: &impl ValveBlock,
+        sfcc_2_request: &impl ValveBlock,
         left_pressure: Pressure,
         right_pressure: Pressure,
     ) {
-        let sfcc_1_active = sfcc_1_request.is_some();
-        let sfcc_2_active = sfcc_2_request.is_some();
+        let sfcc_1_active = sfcc_1_request.get_pob_status() == SolenoidStatus::Energised;
+        let sfcc_2_active = sfcc_2_request.get_pob_status() == SolenoidStatus::Energised;
 
         // Final pressures are the current pressure or 0 if corresponding sfcc is offline
         // This simulates a motor not responding to a failed or offline sfcc
@@ -606,27 +626,85 @@ mod tests {
         }
     }
 
+    #[derive(Default)]
+    struct TestSFCC {
+        motor_angle_request: Option<Angle>,
+        position_feedback: Angle,
+    }
+    impl TestSFCC {
+        const POSITIONING_THRESHOLD_DEGREE: f64 = 6.69;
+        const TARGET_THRESHOLD_DEGREE: f64 = 0.18;
+
+        pub fn update(&mut self, position_feedback: Angle) {
+            self.position_feedback = position_feedback;
+        }
+
+        fn set_angle_sfcc(&mut self, request_sfcc1: Option<Angle>) {
+            self.motor_angle_request = flap_fppu_from_surface_angle(request_sfcc1);
+        }
+
+        fn in_positioning_threshold_range(
+            synchro_angle_request: Angle,
+            synchro_angle_feedback: Angle,
+        ) -> bool {
+            let angle_threshold = Angle::new::<degree>(Self::POSITIONING_THRESHOLD_DEGREE);
+            (synchro_angle_request - synchro_angle_feedback).abs() < angle_threshold
+        }
+
+        fn in_target_threshold_range(position: Angle, target_position: Angle) -> bool {
+            let tolerance = Angle::new::<degree>(Self::TARGET_THRESHOLD_DEGREE);
+            position > (target_position - tolerance) && position < (target_position + tolerance)
+        }
+    }
+    impl ValveBlock for TestSFCC {
+        fn get_pob_status(&self) -> SolenoidStatus {
+            let Some(demanded_angle) = self.motor_angle_request else {
+                return SolenoidStatus::DeEnergised;
+            };
+            let feedback_angle = self.position_feedback;
+            let in_target_position =
+                Self::in_target_threshold_range(demanded_angle, feedback_angle);
+            match in_target_position {
+                true => SolenoidStatus::DeEnergised,
+                false => SolenoidStatus::Energised,
+            }
+        }
+
+        fn get_command_status(&self) -> Option<ChannelCommand> {
+            let requested_position = self.motor_angle_request?;
+            let feedback_angle = self.position_feedback;
+
+            let flaps_in_target_position =
+                Self::in_positioning_threshold_range(requested_position, feedback_angle);
+
+            if flaps_in_target_position {
+                None
+            } else if requested_position > feedback_angle {
+                Some(ChannelCommand::Extend)
+            } else {
+                Some(ChannelCommand::Retract)
+            }
+        }
+    }
+
     struct TestAircraft {
         core_hydraulic_updater: MaxStepLoop,
 
         flaps_slats: FlapSlatAssembly,
 
-        left_motor_angle_request: Option<Angle>,
-        right_motor_angle_request: Option<Angle>,
+        sfcc1: TestSFCC,
+        sfcc2: TestSFCC,
 
         left_motor_pressure: TestHydraulicSection,
         right_motor_pressure: TestHydraulicSection,
     }
     impl TestAircraft {
-        const TARGET_THRESHOLD_ANGLE: f64 = 0.18;
-        const POSITIONING_THRESHOLD_ANGLE: f64 = 6.69;
-
         fn new(context: &mut InitContext, max_speed: AngularVelocity) -> Self {
             Self {
                 core_hydraulic_updater: MaxStepLoop::new(Duration::from_millis(10)),
                 flaps_slats: flap_system(context, max_speed),
-                left_motor_angle_request: None,
-                right_motor_angle_request: None,
+                sfcc1: TestSFCC::default(),
+                sfcc2: TestSFCC::default(),
                 left_motor_pressure: TestHydraulicSection::default(),
                 right_motor_pressure: TestHydraulicSection::default(),
             }
@@ -640,66 +718,18 @@ mod tests {
             self.left_motor_pressure.set_pressure(left_motor_pressure);
             self.right_motor_pressure.set_pressure(right_motor_pressure);
         }
-
-        fn set_angle_request(&mut self, surface_angle_request: Option<Angle>) {
-            self.left_motor_angle_request = flap_fppu_from_surface_angle(surface_angle_request);
-            self.right_motor_angle_request = flap_fppu_from_surface_angle(surface_angle_request);
-        }
-
-        fn set_angle_per_sfcc(
-            &mut self,
-            surface_angle_request_sfcc1: Option<Angle>,
-            surface_angle_request_sfcc2: Option<Angle>,
-        ) {
-            self.left_motor_angle_request =
-                flap_fppu_from_surface_angle(surface_angle_request_sfcc1);
-            self.right_motor_angle_request =
-                flap_fppu_from_surface_angle(surface_angle_request_sfcc2);
-        }
-
-        fn get_accuracy_tolerance(&self) -> Angle {
-            Angle::new::<degree>(Self::TARGET_THRESHOLD_ANGLE)
-        }
-
-        fn is_approaching_requested_position(
-            &self,
-            synchro_angle_request: Angle,
-            synchro_angle_feedback: Angle,
-        ) -> bool {
-            let angle_threshold = Angle::new::<degree>(Self::POSITIONING_THRESHOLD_ANGLE);
-
-            (synchro_angle_request - synchro_angle_feedback).abs() < angle_threshold
-        }
-
-        fn flap_command(&self, requested_position: Option<Angle>) -> Option<ChannelCommand> {
-            let requested_position = requested_position?;
-
-            let flaps_in_target_position = self.is_approaching_requested_position(
-                requested_position,
-                self.flaps_slats.position_feedback(),
-            );
-
-            if flaps_in_target_position {
-                None
-            } else if requested_position > self.flaps_slats.position_feedback() {
-                Some(ChannelCommand::Extend)
-            } else {
-                Some(ChannelCommand::Retract)
-            }
-        }
     }
     impl Aircraft for TestAircraft {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
             self.core_hydraulic_updater.update(context);
 
-            let sfcc_1_command = self.flap_command(self.left_motor_angle_request);
-            let sfcc_2_command = self.flap_command(self.right_motor_angle_request);
-
             for cur_time_step in &mut self.core_hydraulic_updater {
+                self.sfcc1.update(self.flaps_slats.position_feedback());
+                self.sfcc2.update(self.flaps_slats.position_feedback());
                 self.flaps_slats.update(
                     &context.with_delta(cur_time_step),
-                    sfcc_1_command,
-                    sfcc_2_command,
+                    &self.sfcc1,
+                    &self.sfcc2,
                     &self.left_motor_pressure,
                     &self.right_motor_pressure,
                 );
@@ -736,7 +766,7 @@ mod tests {
         }
 
         fn get_accuracy_tolerance(&self) -> Angle {
-            self.query(|a| a.get_accuracy_tolerance())
+            Angle::new::<degree>(0.18)
         }
 
         fn fppu_to_flap_angle(&self, flaps_position: Angle) -> Angle {
@@ -786,7 +816,10 @@ mod tests {
         }
 
         fn set_angle_request(mut self, position: Option<Angle>) -> Self {
-            self.command(|a| a.set_angle_request(position));
+            self.command(|a| {
+                a.sfcc1.set_angle_sfcc(position);
+                a.sfcc2.set_angle_sfcc(position);
+            });
             self
         }
 
@@ -795,7 +828,10 @@ mod tests {
             sfcc_one_position: Option<Angle>,
             sfcc_two_position: Option<Angle>,
         ) -> Self {
-            self.command(|a| a.set_angle_per_sfcc(sfcc_one_position, sfcc_two_position));
+            self.command(|a| {
+                a.sfcc1.set_angle_sfcc(sfcc_one_position);
+                a.sfcc2.set_angle_sfcc(sfcc_two_position);
+            });
             self
         }
 
