@@ -49,7 +49,7 @@ import { ResetPanelSimvarPublisher, ResetPanelSimvars } from '../MsfsAvionicsCom
 import { RopRowOansPublisher } from '@flybywiresim/msfs-avionics-common';
 import { SimplaneValueProvider } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import { AesuBusPublisher } from '../MsfsAvionicsCommon/providers/AesuBusPublisher';
-import { NDFMMessageTypes } from '../../../shared/src/FmMessages';
+import { NDFMMessageTypes } from '@shared/FmMessages';
 
 import './style.scss';
 import './oans-style.scss';

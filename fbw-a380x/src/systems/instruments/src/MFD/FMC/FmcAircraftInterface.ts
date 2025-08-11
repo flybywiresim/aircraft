@@ -22,6 +22,7 @@ import {
   VerticalPathCheckpoint,
   NXLogicConfirmNode,
   NXLogicPulseNode,
+  FMMessage,
 } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { MmrRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
@@ -43,6 +44,8 @@ import { VerticalWaypointPrediction } from '@fmgc/guidance/vnav/profile/NavGeome
 import { RadioAltimeterEvents } from '@flybywiresim/msfs-avionics-common';
 import { RADIO_ALTITUDE_NODH_VALUE } from '../pages/common/DataEntryFormats';
 import { FMS_CYCLE_TIME } from './FlightManagementComputer';
+import { NavigationEvents } from '@fmgc/navigation/Navigation';
+import { NDFMMessageTypes } from '@shared/FmMessages';
 
 /**
  * Interface between FMS and rest of aircraft through SimVars and ARINC values (mostly data being sent here)
@@ -194,6 +197,32 @@ export class FmcAircraftInterface {
   );
 
   private readonly engineFailurePulseNode = new NXLogicPulseNode();
+
+  private readonly gpsPrimary = this.bus
+    .getSubscriber<NavigationEvents>()
+    .on('fms_nav_gps_primary')
+    .whenChanged()
+    .handle((v) => {
+      if (v) {
+        // TODO Split across both MFDs & NDs
+        this.recallNdFmMessage(NDFMMessageTypes.NavPrimaryLost);
+        this.fmc.removeMessageFromQueue(NXSystemMessages.navprimaryLost.text);
+        this.sendNdFmMessage(NDFMMessageTypes.NavPrimary);
+        this.fmc.addMessageToQueue(NXSystemMessages.navprimary, undefined, () =>
+          this.recallNdFmMessage(NDFMMessageTypes.NavPrimary),
+        );
+      } else {
+        this.recallNdFmMessage(NDFMMessageTypes.NavPrimary),
+          this.fmc.removeMessageFromQueue(NXSystemMessages.navprimary.text);
+        this.sendNdFmMessage(NDFMMessageTypes.NavPrimaryLost);
+        this.fmc.addMessageToQueue(NXSystemMessages.navprimaryLost, undefined, undefined);
+      }
+    });
+
+  private readonly ndMessageFlags: Record<'L' | 'R', number> = {
+    L: 0,
+    R: 0,
+  };
 
   constructor(
     private bus: EventBus,
@@ -2088,6 +2117,35 @@ export class FmcAircraftInterface {
 
     if (this.fmgc.data.engineOut.get() && this.fmgc.isAllEngineOn()) {
       this.fmgc.data.engineOut.set(false);
+    }
+  }
+
+  // TODO refactor in order to transmit message text to the ND. E.g. AREA RNP XXX.X
+  sendNdFmMessage(message: FMMessage) {
+    if (!message.ndFlag) {
+      console.warn('FMMessage has no ND flag set, cannot send message', message);
+      return;
+    }
+    for (const side in this.ndMessageFlags) {
+      const old = this.ndMessageFlags[side];
+      this.ndMessageFlags[side] |= message.ndFlag;
+      if (this.ndMessageFlags[side] !== old) {
+        SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_ND_FM_MESSAGE_FLAGS`, 'number', this.ndMessageFlags[side]);
+      }
+    }
+  }
+
+  recallNdFmMessage(message: FMMessage) {
+    if (!message.ndFlag) {
+      console.warn('FMMessage has no ND flag set, cannot recall message', message);
+      return;
+    }
+    for (const side in this.ndMessageFlags) {
+      const old = this.ndMessageFlags[side];
+      this.ndMessageFlags[side] &= ~message.ndFlag;
+      if (this.ndMessageFlags[side] !== old) {
+        SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_ND_FM_MESSAGE_FLAGS`, 'number', this.ndMessageFlags[side]);
+      }
     }
   }
 }

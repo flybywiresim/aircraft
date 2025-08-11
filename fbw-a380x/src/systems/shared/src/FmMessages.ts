@@ -54,7 +54,7 @@ export const NDFMMessageTypes: Readonly<Record<string, FMMessage>> = {
     color: 'Amber',
     ndPriority: 1,
   },
-  GpsPrimary: {
+  NavPrimary: {
     id: 7,
     ndFlag: NdFmMessageFlag.NavPrimary,
     text: 'NAV PRIMARY',
