@@ -33,7 +33,7 @@ export const EcamAbnormalSensedAta80Rest: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'ESTABLISH',
       },
       {
-        name: 'IF LDG + EVAC POSSIBLE WITHIN 30 MIN :',
+        name: 'IF LDG + EVAC POSSIBLE WITHIN 30 MIN',
         sensed: false,
         condition: true,
       },
@@ -56,7 +56,7 @@ export const EcamAbnormalSensedAta80Rest: { [n: number]: AbnormalProcedure } = {
         level: 1,
       },
       {
-        name: 'IF NO IMMEDIATE LANDING :',
+        name: 'IF NO IMMEDIATE LANDING',
         sensed: false,
         condition: true,
       },
@@ -95,7 +95,7 @@ export const EcamAbnormalSensedAta80Rest: { [n: number]: AbnormalProcedure } = {
         level: 1,
       },
       {
-        name: 'WHEN ACFT ALT = CAB ALT + 2500FT/MEA-MORA :',
+        name: 'WHEN ACFT ALT = CAB ALT + 2500FT/MEA-MORA',
         sensed: false,
         condition: true,
       },
@@ -112,7 +112,7 @@ export const EcamAbnormalSensedAta80Rest: { [n: number]: AbnormalProcedure } = {
         level: 1,
       },
       {
-        name: 'IF FUEL PERMITS :',
+        name: 'IF FUEL PERMITS',
         sensed: false,
         condition: true,
       },
@@ -286,7 +286,7 @@ export const EcamAbnormalSensedAta80Rest: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'AS RQRD',
       },
       {
-        name: 'IF EXCESSIVE THRUST VARIATIONS :',
+        name: 'IF EXCESSIVE THRUST VARIATIONS',
         sensed: false,
         condition: true,
       },

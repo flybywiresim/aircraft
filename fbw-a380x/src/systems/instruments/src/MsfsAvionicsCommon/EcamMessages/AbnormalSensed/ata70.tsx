@@ -990,7 +990,7 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
     sensed: false,
     items: [
       {
-        name: 'FOR RELIGHT (SINGLE ENGINE) :',
+        name: 'FOR RELIGHT (SINGLE ENGINE)',
         sensed: false,
         condition: true,
       },
@@ -1058,7 +1058,7 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
         level: 1,
       },
       {
-        name: 'WHEN IDLE REACHED (ENG AVAIL) :',
+        name: 'WHEN IDLE REACHED (ENG AVAIL)',
         sensed: false,
         condition: true,
       },
@@ -1087,7 +1087,7 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
         level: 1,
       },
       {
-        name: 'FOR RELIGHT (MULTIPLE ENGINES) :',
+        name: 'FOR RELIGHT (MULTIPLE ENGINES)',
         sensed: false,
         condition: true,
       },
@@ -1143,7 +1143,7 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'CONSIDER',
       },
       {
-        name: 'WHEN BELOW FL 200 :',
+        name: 'WHEN BELOW FL 200',
         sensed: true,
         condition: true,
       },
@@ -1154,7 +1154,7 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
         level: 1,
       },
       {
-        name: 'WHEN APU AVAIL :',
+        name: 'WHEN APU AVAIL',
         sensed: true,
         condition: true,
       },
@@ -1194,7 +1194,7 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
         level: 1,
       },
       {
-        name: 'IF NO FURTHER ENG RELIGHT ATTEMPT :',
+        name: 'IF NO FURTHER ENG RELIGHT ATTEMPT',
         sensed: false,
         condition: true,
       },
@@ -1223,7 +1223,7 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
         level: 1,
       },
       {
-        name: 'IF NO ENG OUT :',
+        name: 'IF NO ENG OUT',
         sensed: false,
         condition: true,
       },
@@ -1260,7 +1260,7 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'ON',
       },
       {
-        name: 'WHEN N3 BELOW 30% :',
+        name: 'WHEN N3 BELOW 30%',
         sensed: false,
         condition: true,
       },
@@ -1277,7 +1277,7 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
         level: 1,
       },
       {
-        name: 'WHEN FIRE STOPPED :',
+        name: 'WHEN FIRE STOPPED',
         sensed: false,
         condition: true,
       },
