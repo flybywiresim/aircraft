@@ -15,11 +15,15 @@ use super::sfcc::SlatFlapControlComputerMisc;
 pub struct SlatsChannel {
     slats_fppu_angle_id: VariableIdentifier,
     slat_actual_position_word_id: VariableIdentifier,
+    sap_ids: [VariableIdentifier; 7],
 
     slats_demanded_angle: Angle,
     slats_feedback_angle: Angle,
 
     csu_monitor: CSUMonitor,
+
+    // OUTPUTS
+    sap: [bool; 7],
 }
 
 impl SlatsChannel {
@@ -28,12 +32,36 @@ impl SlatsChannel {
             slats_fppu_angle_id: context.get_identifier("SLATS_FPPU_ANGLE".to_owned()),
             slat_actual_position_word_id: context
                 .get_identifier(format!("SFCC_{num}_SLAT_ACTUAL_POSITION_WORD")),
+            sap_ids: [
+                context.get_identifier(format!("SFCC_{num}_SAP_1")),
+                context.get_identifier(format!("SFCC_{num}_SAP_2")),
+                context.get_identifier(format!("SFCC_{num}_SAP_3")),
+                context.get_identifier(format!("SFCC_{num}_SAP_4")),
+                context.get_identifier(format!("SFCC_{num}_SAP_5")),
+                context.get_identifier(format!("SFCC_{num}_SAP_6")),
+                context.get_identifier(format!("SFCC_{num}_SAP_7")),
+            ],
 
             slats_demanded_angle: Angle::new::<degree>(0.),
             slats_feedback_angle: Angle::new::<degree>(0.),
 
             csu_monitor: CSUMonitor::new(context),
+
+            // Set `sap` to false to match power-off state
+            sap: [false; 7],
         }
+    }
+
+    fn sap_update(&mut self) {
+        let fppu_angle = self.slats_feedback_angle.get::<degree>();
+
+        self.sap[0] = fppu_angle > -5.0 && fppu_angle < 6.2;
+        self.sap[1] = fppu_angle > 198.0 && fppu_angle < 337.0;
+        self.sap[2] = fppu_angle > 210.4 && fppu_angle < 337.0;
+        self.sap[3] = fppu_angle > -5.0 && fppu_angle < 6.2;
+        self.sap[4] = fppu_angle > 210.4 && fppu_angle < 337.0;
+        self.sap[5] = fppu_angle > 198.0 && fppu_angle < 337.0;
+        self.sap[6] = false; // SPARE
     }
 
     fn demanded_slats_fppu_angle_from_conf(
@@ -59,6 +87,7 @@ impl SlatsChannel {
         self.slats_demanded_angle = self.generate_slat_angle();
 
         self.slats_feedback_angle = slats_feedback.angle();
+        self.sap_update();
     }
 
     pub fn get_demanded_angle(&self) -> Angle {
@@ -67,6 +96,11 @@ impl SlatsChannel {
 
     pub fn get_feedback_angle(&self) -> Angle {
         self.slats_feedback_angle
+    }
+
+    #[cfg(test)]
+    pub fn get_sap(&self, idx: usize) -> bool {
+        self.sap[idx]
     }
 
     fn slat_actual_position_word(&self) -> Arinc429Word<f64> {
@@ -114,6 +148,10 @@ impl SimulationElement for SlatsChannel {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
+        for (id, fap) in self.sap_ids.iter().zip(self.sap) {
+            writer.write(id, fap);
+        }
+
         writer.write(&self.slats_fppu_angle_id, self.slats_feedback_angle);
 
         writer.write(
