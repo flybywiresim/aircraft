@@ -294,7 +294,7 @@ export class FwsAbnormalNonSensed {
       // ENG // RELIGHT IN FLIGHT
       flightPhaseInhib: [],
       simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(700900001)),
-      notActiveWhenFaults: [],
+      notActiveWhenItemActive: [],
       whichItemsToShow: () => [
         true,
         true,
@@ -355,7 +355,7 @@ export class FwsAbnormalNonSensed {
         false,
         false,
         this.fws.engSelectorPosition.get() === 1,
-        SimVar.GetSimVarValue('L:A32NX_SWITCH_TCAS_Position', SimVarValueType.Enum) === 2,
+        this.fws.tcasTaRa.get(),
         this.fws.xBleedSelectorKnob.get() === 1,
         false,
         false,
@@ -369,7 +369,7 @@ export class FwsAbnormalNonSensed {
         false,
         false,
         this.fws.flightLevel.get() < 200,
-        SimVar.GetSimVarValue('L:A32NX_OVHD_APU_START_PB_IS_ON', SimVarValueType.Bool),
+        this.fws.tcasTaRa.get(),
         this.fws.apuAvail.get(),
         false,
         false,
@@ -383,7 +383,7 @@ export class FwsAbnormalNonSensed {
         this.fws.xBleedSelectorKnob.get() === 1,
         false,
         false,
-        SimVar.GetSimVarValue('L:A32NX_SWITCH_TCAS_Position', SimVarValueType.Enum) === 2,
+        this.fws.tcasTaRa.get(),
       ],
       failure: 1,
       auralWarning: Subject.create(FwcAuralWarning.None),
@@ -394,7 +394,7 @@ export class FwsAbnormalNonSensed {
       // ENG // TAIL PIPE FIRE
       flightPhaseInhib: [],
       simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(700900002)),
-      notActiveWhenFaults: [],
+      notActiveWhenItemActive: [],
       whichItemsToShow: () => [
         true,
         this.fws.oneEngineRunning.get(),
@@ -436,7 +436,7 @@ export class FwsAbnormalNonSensed {
       // BOMB ON BOARD
       flightPhaseInhib: [],
       simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(990900001)),
-      notActiveWhenFaults: [],
+      notActiveWhenItemActive: [],
       whichItemsToShow: () => [
         true,
         true,
@@ -596,7 +596,7 @@ export class FwsAbnormalNonSensed {
       // SEVERE TURBULENCE
       flightPhaseInhib: [],
       simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(990900010)),
-      notActiveWhenFaults: [],
+      notActiveWhenItemActive: [],
       whichItemsToShow: () => [true, true, true, true, true, true, true, true, true, true],
       whichItemsChecked: () => [
         !!this.fws.seatBelt.get(),
@@ -619,7 +619,7 @@ export class FwsAbnormalNonSensed {
       // VOLCANIC ASH ENCOUNTER
       flightPhaseInhib: [],
       simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(990900011)),
-      notActiveWhenFaults: [],
+      notActiveWhenItemActive: [],
       whichItemsToShow: () => [
         true,
         true,
