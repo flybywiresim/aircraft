@@ -65,6 +65,10 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
 
   private readonly positionFrozen = Subject.create(false);
 
+  private readonly gpsPrimary = Subject.create(false);
+
+  private readonly gpsPrimaryText = this.gpsPrimary.map((v) => (v ? 'GPS PRIMARY' : ''));
+
   private readonly positionFrozenLabel = this.positionFrozen.map((v) => (v ? 'UNFREEZE' : 'FREEZE'));
 
   private readonly positionFrozenText = this.positionFrozen.map((v) => (v ? 'POSITION FROZEN' : ''));
@@ -136,7 +140,8 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
     const navigation = this.props.fmcService.master.navigation;
     const rnp = navigation.getActiveRnp();
 
-    this.fmsAccuracyHigh.set(navigation.isAcurracyHigh());
+    this.gpsPrimary.set(navigation.getGpsPrimary());
+    this.fmsAccuracyHigh.set(navigation.isAccuracyHigh());
     this.fmsEpe.set(navigation.getEpe());
     this.fmsRnp.set(rnp ?? null);
     this.rnpEnteredByPilot.set(navigation.isPilotRnp());
@@ -243,7 +248,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
           </div>
           <div class="mfd-pos-top-row">
             <div class="mfd-label-value-container">
-              <span class="mfd-value bigger mfd-spacing-right">GPS PRIMARY</span>
+              <span class="mfd-value bigger mfd-spacing-right">{this.gpsPrimaryText}</span>
             </div>
             <div class="mfd-label-value-container" style={'margin-right:87px'}>
               <span class="mfd-label bigger mfd-spacing-right-small">RNP</span>
