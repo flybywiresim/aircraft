@@ -1,12 +1,13 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2025 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { FMMessage, FMMessageTypes, ConfirmationNode, Trigger } from '@flybywiresim/fbw-sdk';
+import { FMMessage, ConfirmationNode, Trigger } from '@flybywiresim/fbw-sdk';
 
 import { FMMessageSelector, FMMessageUpdate } from './FmsMessages';
 import { ConsumerSubject, EventBus } from '@microsoft/msfs-sdk';
 import { NavigationEvents } from '../../navigation/Navigation';
+import { FMMessageTypes } from './FmMessages';
 
 /**
  * Since this happens when the simvar goes to zero, we need to use some CONF nodes to make sure we do not count the initial
