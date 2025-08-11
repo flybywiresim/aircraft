@@ -52,4 +52,7 @@ export interface FmsDisplayInterface {
    * @param waypoint the waypoint to look for
    */
   isWaypointInUse(waypoint: Waypoint): Promise<boolean>;
+
+  /** Logs a message to the troubleshooting log on the EFB. */
+  logTroubleshootingError(msg: any): void;
 }

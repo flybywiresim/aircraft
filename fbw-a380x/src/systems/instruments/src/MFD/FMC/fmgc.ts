@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -38,6 +39,11 @@ export enum TakeoffAntiIce {
   OFF = 0,
   ENG_ONLY = 1,
   ENG_WINGS = 2,
+}
+
+export enum CostIndexMode {
+  LRC = 0,
+  ECON = 1,
 }
 
 export enum ClimbDerated {
@@ -290,6 +296,8 @@ export class FmgcData {
   /** in feet. null if not set. */
   public readonly noiseEndAltitude = Subject.create<number | null>(null);
 
+  public readonly costIndexMode = Subject.create<CostIndexMode | null>(CostIndexMode.ECON);
+
   public readonly climbDerated = Subject.create<ClimbDerated | null>(ClimbDerated.NONE);
 
   /** in feet. null if not set. */
@@ -335,6 +343,9 @@ export class FmgcData {
    * Estimated take-off time, in seconds. Displays as HH:mm:ss. Null if not set
    */
   public readonly estimatedTakeoffTime = Subject.create<number | null>(null);
+
+  /** Indicates OEI situation */
+  public readonly engineOut = Subject.create(false);
 
   private static readonly DEFAULT_SETTINGS = new FmgcData();
 
@@ -678,7 +689,7 @@ export class FmgcDataService implements Fmgc {
    * @returns {boolean}
    */
   public isEngineOn(index: number): boolean {
-    return SimVar.GetSimVarValue(`L:A32NX_ENGINE_N2:${index}`, 'percent') > 20;
+    return SimVar.GetSimVarValue(`L:A32NX_ENGINE_N2:${index}`, 'number') > 20;
   }
 
   /**
@@ -689,10 +700,10 @@ export class FmgcDataService implements Fmgc {
   }
 
   /**
-   * Returns true only if all engines are running (N2 > 20 for inner engines)
+   * Returns true only if all engines are running (N2 > 20 for all engines)
    */
   isAllEngineOn(): boolean {
-    return this.isEngineOn(2) && this.isEngineOn(3);
+    return this.isEngineOn(1) && this.isEngineOn(2) && this.isEngineOn(3) && this.isEngineOn(4);
   }
 
   isOnGround() {
