@@ -131,6 +131,7 @@
 1. [A380X/OIT] Add initial implementation of OIT AVNCS side, including flight log and inbox page for COMPANY COM app - @flogross89 (floridude)
 1. [A380X/FG] Fix SRS disengagement conditions for eng 3&4 OEI - @flogross89 (floridude)
 1. [A380X/FMS] Add engine-out indications and behavior to FMS - @flogross89 (floridude)
+1. [A380X/EWD] ECL checkbox is the same color as the text color - @Bravomike99 (bruno_pt99)
 
 ## 0.13.0
 
