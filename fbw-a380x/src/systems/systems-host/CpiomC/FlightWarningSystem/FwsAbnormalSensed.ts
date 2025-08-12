@@ -1954,7 +1954,6 @@ export class FwsAbnormalSensed {
       ],
       failure: 3,
       sysPage: SdPages.Eng,
-      inopSysAllPhases: () => ['260300002', '260300006'],
     },
     260800006: {
       // ENG 2 FIRE (IN FLIGHT)
@@ -1987,7 +1986,6 @@ export class FwsAbnormalSensed {
       ],
       failure: 3,
       sysPage: SdPages.Eng,
-      inopSysAllPhases: () => ['260300003'],
     },
     260800007: {
       // ENG 3 FIRE (IN FLIGHT)
@@ -2020,7 +2018,6 @@ export class FwsAbnormalSensed {
       ],
       failure: 3,
       sysPage: SdPages.Eng,
-      inopSysAllPhases: () => ['260300004'],
     },
     260800008: {
       // ENG 4 FIRE (IN FLIGHT)
@@ -2053,7 +2050,6 @@ export class FwsAbnormalSensed {
       ],
       failure: 3,
       sysPage: SdPages.Eng,
-      inopSysAllPhases: () => ['260300005'],
     },
     260800009: {
       // ENG 1 FIRE (ON GROUND)
@@ -2104,7 +2100,6 @@ export class FwsAbnormalSensed {
       ],
       failure: 3,
       sysPage: SdPages.Eng,
-      inopSysAllPhases: () => ['260300002'],
     },
     260800010: {
       // ENG 2 FIRE (ON GROUND)
@@ -2155,7 +2150,6 @@ export class FwsAbnormalSensed {
       ],
       failure: 3,
       sysPage: SdPages.Eng,
-      inopSysAllPhases: () => ['260300003'],
     },
     260800011: {
       // ENG 3 FIRE (ON GROUND)
@@ -2206,7 +2200,6 @@ export class FwsAbnormalSensed {
       ],
       failure: 3,
       sysPage: SdPages.Eng,
-      inopSysAllPhases: () => ['260300004'],
     },
     260800012: {
       // ENG 4 FIRE (ON GROUND)
@@ -2257,7 +2250,6 @@ export class FwsAbnormalSensed {
       ],
       failure: 3,
       sysPage: SdPages.Eng,
-      inopSysAllPhases: () => ['260300005'],
     },
     260800013: {
       // ENG 1 FIRE DET FAULT
