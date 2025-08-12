@@ -369,7 +369,7 @@ export class FwsAbnormalNonSensed {
         false,
         false,
         this.fws.flightLevel.get() < 200,
-        this.fws.tcasTaRa.get(),
+        this.fws.apuStartSwitch.get() === 1,
         this.fws.apuAvail.get(),
         false,
         false,
@@ -398,7 +398,7 @@ export class FwsAbnormalNonSensed {
       whichItemsToShow: () => [
         true,
         this.fws.oneEngineRunning.get(),
-        !this.fws.engine1Running &&
+        !this.fws.engine1Running.get() &&
           !this.fws.engine2Running.get() &&
           !this.fws.engine3Running.get() &&
           !this.fws.engine4Running.get(),
@@ -417,7 +417,7 @@ export class FwsAbnormalNonSensed {
       whichItemsChecked: () => [
         false,
         this.fws.xBleedSelectorKnob.get() === 2,
-        SimVar.GetSimVarValue('L:A32NX_OVHD_APU_START_PB_IS_ON', SimVarValueType.Bool),
+        this.fws.apuAvail.get(),
         this.fws.apuBleedPbOn.get(),
         false,
         this.fws.engSelectorPosition.get() === 0,

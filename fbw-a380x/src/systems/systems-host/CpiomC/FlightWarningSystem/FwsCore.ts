@@ -1894,6 +1894,8 @@ export class FwsCore {
 
   public readonly apuMasterSwitch = Subject.create(0);
 
+  public readonly apuStartSwitch = Subject.create(0);
+
   public readonly apuAvail = Subject.create(false);
 
   public readonly radioHeight1 = Arinc429Register.empty();
@@ -2734,6 +2736,7 @@ export class FwsCore {
     this.emergencyElectricGeneratorPotential.set(SimVar.GetSimVarValue('L:A32NX_ELEC_EMER_GEN_POTENTIAL', 'number'));
 
     this.apuMasterSwitch.set(SimVar.GetSimVarValue('L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON', 'bool'));
+    this.apuStartSwitch.set(SimVar.GetSimVarValue('L:A32NX_OVHD_APU_START_PB_IS_ON', 'bool'));
 
     this.apuAvail.set(SimVar.GetSimVarValue('L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE', 'bool') > 0);
     this.apuBleedValveOpen.set(SimVar.GetSimVarValue('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'bool') > 0);
