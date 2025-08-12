@@ -25,17 +25,15 @@ import {
   ControlPanelMapDataSearchMode,
   ControlPanelStore,
   ControlPanelUtils,
-  FmsDataStore,
-  MIN_TOUCHDOWN_ZONE_DISTANCE,
   NavigraphAmdbClient,
   OansBrakeToVacateSelection,
   OansControlEvents,
-  globalToAirportCoordinates,
 } from '@flybywiresim/oanc';
 import {
   AmdbAirportSearchResult,
   AmdbProperties,
   Arinc429LocalVarConsumerSubject,
+  BTV_MIN_TOUCHDOWN_ZONE_DISTANCE,
   BtvData,
   EfisSide,
   FeatureType,
@@ -44,6 +42,8 @@ import {
   MathUtils,
   NXDataStore,
   NXLogicConfirmNode,
+  OansFmsDataStore,
+  OansMapProjection,
   Runway,
 } from '@flybywiresim/fbw-sdk';
 
@@ -184,7 +184,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
   private readonly setPlanModeConsumer = ConsumerSubject.create(this.sub.on('oans_show_set_plan_mode'), false);
   private readonly setPlanModeDisplay = this.setPlanModeConsumer.map((it) => (it ? 'inherit' : 'none'));
 
-  private readonly fmsDataStore = new FmsDataStore(this.props.bus);
+  private readonly fmsDataStore = new OansFmsDataStore(this.props.bus);
 
   private readonly runwayTora = Subject.create<string | null>(null);
 
@@ -199,7 +199,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
   // Need to add touchdown zone distance to displayed value. BTV computes from TDZ internally,
   // but users enter LDA from threshold
   private readonly reqStoppingDistance = this.oansRequestedStoppingDistance.map((it) =>
-    it.isNormalOperation() ? Math.round(it.value + MIN_TOUCHDOWN_ZONE_DISTANCE) : null,
+    it.isNormalOperation() ? Math.round(it.value + BTV_MIN_TOUCHDOWN_ZONE_DISTANCE) : null,
   );
 
   private readonly fmsLandingRunwayNotSelectedInFallback = MappedSubject.create(
@@ -370,7 +370,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         .atFrequency(5)
         .handle((_) => {
           if (this.arpCoordinates && !this.oansAvailable.get()) {
-            globalToAirportCoordinates(this.arpCoordinates, this.presentPos.get(), this.localPpos);
+            OansMapProjection.globalToAirportCoordinates(this.arpCoordinates, this.presentPos.get(), this.localPpos);
             this.props.bus.getPublisher<FmsOansData>().pub('oansAirportLocalCoordinates', this.localPpos, true);
           }
         }),
@@ -682,14 +682,14 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
   private async btvFallbackSetDistance(distance: number | null) {
     if (!this.oansAvailable.get()) {
-      if (distance && distance > MIN_TOUCHDOWN_ZONE_DISTANCE && this.landingRunwayNavdata && this.arpCoordinates) {
+      if (distance && distance > BTV_MIN_TOUCHDOWN_ZONE_DISTANCE && this.landingRunwayNavdata && this.arpCoordinates) {
         const exitLocation = placeBearingDistance(
           this.landingRunwayNavdata.thresholdLocation,
           this.landingRunwayNavdata.bearing,
           distance / MathUtils.METRES_TO_NAUTICAL_MILES,
         );
         const localExitPos: Position = [0, 0];
-        globalToAirportCoordinates(this.arpCoordinates, exitLocation, localExitPos);
+        OansMapProjection.globalToAirportCoordinates(this.arpCoordinates, exitLocation, localExitPos);
 
         this.btvUtils.selectExitFromManualEntry(distance, localExitPos);
       }
