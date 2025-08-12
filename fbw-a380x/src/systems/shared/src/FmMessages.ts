@@ -13,8 +13,6 @@ export enum NdFmMessageFlag {
   MapPartlyDisplayed = 1 << 7,
   OffsideFmControl = 1 << 8,
   NavPrimaryLost = 1 << 9,
-  RtaMissed = 1 << 10,
-  BackupNav = 1 << 11,
 }
 /* eslint-enable no-multi-spaces */
 
