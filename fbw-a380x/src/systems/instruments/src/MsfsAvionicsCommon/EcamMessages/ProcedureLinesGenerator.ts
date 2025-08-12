@@ -643,7 +643,7 @@ export class ProcedureLinesGenerator {
 
       const appendText = ' :';
       text +=
-        itemComplete || timedText === null
+        itemComplete || (isTimedItem && timedText === null)
           ? `.AS ${item.name.substring(0, 2) === 'IF' ? item.name.substring(2) : item.name} ${timedText ?? appendText}`
           : `.IF ${item.name.substring(0, 2) === 'IF' ? item.name.substring(2) : item.name} ${timedText ?? appendText}`;
     }
