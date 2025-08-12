@@ -1141,6 +1141,7 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
         name: 'WHEN BELOW FL 200 : APU',
         sensed: false,
         labelNotCompleted: 'CONSIDER',
+        level: 1,
       },
       {
         name: 'WHEN BELOW FL 200',
