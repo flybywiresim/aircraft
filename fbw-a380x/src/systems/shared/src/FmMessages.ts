@@ -50,7 +50,7 @@ export const NDFMMessageTypes: Readonly<Record<string, FMMessage>> = {
   SpecifiedVorDmeUnavailable: {
     id: 5,
     ndFlag: NdFmMessageFlag.SpecifiedVorDmeUnavailable,
-    text: 'SPECIFIC VOR-D NOT AVAIL',
+    text: 'SPECIF VOR-D NOT AVAIL',
     color: 'Amber',
     ndPriority: 1,
   },

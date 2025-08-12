@@ -129,3 +129,7 @@ export const NXFictionalMessages = {
   reverseProxy: new TypeIMessage('REVERSE PROXY ERROR'),
   simBriefNoUser: new TypeIMessage('NO SIMBRIEF PILOT ID PROVIDED'),
 };
+
+export function isTypeIIMessage(message: McduMessage): message is TypeIIMessage {
+  return message instanceof TypeIIMessage;
+}
