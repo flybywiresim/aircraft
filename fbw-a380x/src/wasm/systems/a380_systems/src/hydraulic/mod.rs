@@ -7193,6 +7193,9 @@ mod tests {
             fn angle_of_attack(&self, _adiru_number: usize) -> Arinc429Word<Angle> {
                 Arinc429Word::new(Angle::default(), SignStatus::NormalOperation)
             }
+            fn computed_airspeed(&self, _adiru_number: usize) -> Arinc429Word<Velocity> {
+                Arinc429Word::new(Velocity::default(), SignStatus::NormalOperation)
+            }
         }
 
         struct A380TestPneumatics {
