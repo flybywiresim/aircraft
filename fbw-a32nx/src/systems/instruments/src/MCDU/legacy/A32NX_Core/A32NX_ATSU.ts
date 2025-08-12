@@ -3,11 +3,9 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { NXDataStore } from '@flybywiresim/fbw-sdk';
+import { ISimbriefData, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { McduMessage, NXFictionalMessages } from '../../messages/NXSystemMessages';
 import { AtsuMessageType } from '@datalink/common';
-// FIXME rogue import from EFB
-import { ISimbriefData } from '../../../../../../../../fbw-common/src/systems/instruments/src/EFB/Apis/Simbrief';
 import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/uplink/SimBriefUplinkAdapter';
 
 // FIXME move all to ATSU (systems host)

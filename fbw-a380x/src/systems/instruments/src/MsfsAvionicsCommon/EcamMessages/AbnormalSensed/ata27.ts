@@ -240,7 +240,7 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
         name: 'FUEL CONSUMPT INCRSD',
         sensed: false,
       },
-      FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
+      { ...FMS_PRED_UNRELIABLE_CHECKLIST_ITEM },
       {
         name: 'GA THR: TOGA ONLY',
         sensed: false,
@@ -267,7 +267,7 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
         name: 'FUEL CONSUMPT INCRSD',
         sensed: false,
       },
-      FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
+      { ...FMS_PRED_UNRELIABLE_CHECKLIST_ITEM },
       {
         name: 'GA THR: TOGA ONLY',
         sensed: false,
@@ -293,7 +293,7 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
         name: 'FUEL CONSUMPT INCRSD',
         sensed: false,
       },
-      FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
+      { ...FMS_PRED_UNRELIABLE_CHECKLIST_ITEM },
       {
         name: 'GA THR: TOGA ONLY',
         sensed: false,
@@ -439,7 +439,7 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
         style: ChecklistLineStyle.Cyan,
         sensed: false,
       },
-      FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
+      { ...FMS_PRED_UNRELIABLE_CHECKLIST_ITEM },
     ],
   },
   271800063: {
@@ -689,7 +689,7 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
       { name: 'NO AUTOLAND', sensed: false },
       { name: 'FOR GA : KEEP S/F CONF', sensed: false },
       { name: 'FUEL CONSUMPT INCRSD', sensed: false },
-      FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
+      { ...FMS_PRED_UNRELIABLE_CHECKLIST_ITEM },
       { name: 'LDG PERF AFFECTED', sensed: false },
     ],
   },

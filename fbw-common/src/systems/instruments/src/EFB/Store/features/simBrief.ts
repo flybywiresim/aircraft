@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { getSimbriefData } from '../../Apis/Simbrief';
-import { IFuel, IWeights } from '../../Apis/Simbrief/simbriefInterface';
 
 import { store, RootState } from '../store';
+import { IFuel, IWeights } from '../../../../../shared/src/Simbrief/simbriefInterface';
+import { getSimbriefData } from '../../../../../shared/src/Simbrief/simbriefParser';
 
 export interface SimbriefData {
   departingAirport: string;
