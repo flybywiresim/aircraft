@@ -1215,6 +1215,7 @@
 - A32NX_FLAPS_CONF_INDEX
     - Number
     - Indicates the desired flap configuration index according to the table
+        DO NOT USE IN SYSTEMS, USE SFCC INSTEAD
     - Value | Meaning
             --- | ---
       0 | Conf0
@@ -3571,6 +3572,11 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - {number} is 1 or 2
     - {id} is from 1 to 7
     - Flap actual position discrete output
+
+- A32NX_SFCC_{number}_SAP_{id}
+    - {number} is 1 or 2
+    - {id} is from 1 to 7
+    - Slat actual position discrete output
 
 ## Flight Controls (ATA 27)
 
