@@ -8,7 +8,8 @@ import {
   SimVarPublisherEntry,
   SimVarValueType,
 } from '@microsoft/msfs-sdk';
-import { VdSymbol } from '../../../index-no-react';
+// FIXME systems should not import from instruments
+import { VdSymbol } from '../../../instruments/src/NavigationDisplay';
 
 /**
  * Transmitted from FMS

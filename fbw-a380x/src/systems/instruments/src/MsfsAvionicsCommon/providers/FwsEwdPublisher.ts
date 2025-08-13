@@ -9,7 +9,7 @@ export interface ChecklistState {
   itemsChecked: boolean[];
   itemsToShow: boolean[];
   itemsActive: boolean[];
-  itemsTimeStamp?: number[];
+  itemsTimeStamp?: (number | null | undefined)[];
 }
 
 export type AbnormalNonSensedCategory = null | 'ENG' | 'F/CTL' | 'L/G' | 'NAV' | 'FUEL' | 'MISCELLANEOUS';

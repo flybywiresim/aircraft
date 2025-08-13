@@ -836,7 +836,7 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
         name: 'FUEL CONSUMPT INCREASD',
         sensed: false,
       },
-      FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
+      { ...FMS_PRED_UNRELIABLE_CHECKLIST_ITEM },
     ],
   },
   320800037: {
@@ -921,7 +921,7 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
         name: 'FUEL CONSUMPT INCREASD',
         sensed: false,
       },
-      FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
+      { ...FMS_PRED_UNRELIABLE_CHECKLIST_ITEM },
       // if all doors are closed
       {
         name: 'AVOID EXCESS G LOAD',
@@ -1023,7 +1023,7 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
         name: 'FUEL CONSUMPT INCREASD',
         sensed: false,
       },
-      FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
+      { ...FMS_PRED_UNRELIABLE_CHECKLIST_ITEM },
     ],
   },
   320800045: {
