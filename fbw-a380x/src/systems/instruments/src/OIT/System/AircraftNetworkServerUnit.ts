@@ -48,10 +48,10 @@ export class AircraftNetworkServerUnit implements Instrument {
   public readonly sci = new SecureCommunicationInterface(this.bus);
 
   constructor(
-    private readonly bus: EventBus,
-    private readonly index: AnsuIndex, // use only one ANSU index per type for now
-    private readonly type: AnsuType,
-    private readonly failuresConsumer: FailuresConsumer,
+    protected readonly bus: EventBus,
+    protected readonly index: AnsuIndex, // use only one ANSU index per type for now
+    protected readonly type: AnsuType,
+    protected readonly failuresConsumer: FailuresConsumer,
   ) {}
 
   /** @inheritdoc */
