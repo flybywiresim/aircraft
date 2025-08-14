@@ -1087,7 +1087,7 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
         style: ChecklistLineStyle.Cyan,
       },
       {
-        name: 'DIFF PRESS < 1 PSI & FL < 100/MEA ',
+        name: 'DIFF PRESS < 1 PSI & FL < 100/MEA',
         sensed: true,
         condition: true,
       },
@@ -1146,7 +1146,7 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'ALERT',
       },
       {
-        name: 'BEFORE OPENING ANY CABIN DOOR:',
+        name: 'BEFORE OPENING ANY CABIN DOOR',
         sensed: false,
         condition: true,
       },

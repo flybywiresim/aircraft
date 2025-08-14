@@ -502,16 +502,12 @@ text, tspan, span {
   padding-top: 2px;
   width: 32px;
   font-size: 26px;
-  color: $display-cyan;
 }
 
 .EclLineCheckboxArea.Checked {
   color: $display-green;
 }
 
-.EclLineCheckboxArea.AbnormalItem {
-  color: $display-cyan;
-}
 
 .EclLineCheckboxArea.AbnormalItem.Checked {
   color: $display-white;

@@ -295,7 +295,7 @@ export class ProcedureLinesGenerator {
           // Force 'active' status update
           ProcedureLinesGenerator.conditionalActiveItems(this.procedure, clState.itemsChecked, clState.itemsActive);
         }
-        this.moveDown(false);
+        this.moveDown();
       }
     } else if (this.sii === SPECIAL_INDEX_CLEAR) {
       this.procedureClearedOrResetCallback?.(clState);
@@ -347,7 +347,7 @@ export class ProcedureLinesGenerator {
         ? selectableAndNotChecked[0] - 1
         : this.checklistState.itemsChecked.length - 1,
     );
-    this.moveDown(false);
+    this.moveDown();
   }
 
   private selectableItems(skipCompletedSensed: boolean) {
@@ -643,7 +643,7 @@ export class ProcedureLinesGenerator {
 
       const appendText = ' :';
       text +=
-        itemComplete || timedText === null
+        itemComplete || (isTimedItem && timedText === null)
           ? `.AS ${item.name.substring(0, 2) === 'IF' ? item.name.substring(2) : item.name} ${timedText ?? appendText}`
           : `.IF ${item.name.substring(0, 2) === 'IF' ? item.name.substring(2) : item.name} ${timedText ?? appendText}`;
     }

@@ -1898,8 +1898,6 @@ export class FwsCore {
 
   public readonly radioHeight3 = Arinc429Register.empty();
 
-  public readonly fac1Failed = Subject.create(0);
-
   public readonly toMemo = Subject.create(0);
 
   public readonly ldgMemo = Subject.create(0);
@@ -2742,7 +2740,7 @@ export class FwsCore {
     this.apuBleedPbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON', SimVarValueType.Bool));
     const machBelow56 = this.machSelectedFromAdr.get() < 0.56;
     const apuWithinEnvelope =
-      (this.adrPressureAltitude.get() ?? Infinity) < 22_500 && (machBelow56 || this.allEnginesFailure.get());
+      (this.adrPressureAltitude.get() ?? 0) < 22_500 && (machBelow56 || this.allEnginesFailure.get());
     this.apuBleedPbOnOver22500ft.set(this.apuBleedPbOn.get() && !apuWithinEnvelope);
 
     this.eng1BleedAbnormalOff.set(
@@ -2761,8 +2759,6 @@ export class FwsCore {
       this.engine4Running.get() &&
         !SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_4_BLEED_PB_IS_AUTO', SimVarValueType.Bool),
     );
-
-    this.fac1Failed.set(SimVar.GetSimVarValue('L:A32NX_FBW_FAC_FAILED:1', 'boost psi'));
 
     this.toMemo.set(SimVar.GetSimVarValue('L:A32NX_FWC_TOMEMO', 'bool'));
 
