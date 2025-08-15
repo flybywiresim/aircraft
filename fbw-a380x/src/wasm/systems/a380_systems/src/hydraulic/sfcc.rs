@@ -48,8 +48,8 @@ struct SlatFlapControlComputer {
     slat_actual_position_word_id: VariableIdentifier,
     flap_actual_position_word_id: VariableIdentifier,
 
-    pub flaps_channel: FlapsChannel,
-    pub slats_channel: SlatsChannel,
+    flaps_channel: FlapsChannel,
+    slats_channel: SlatsChannel,
 
     flaps_conf: FlapsConf,
     flap_load_relief_active: bool,
@@ -294,30 +294,34 @@ impl SlatFlapControlComputer {
     }
 
     fn slat_flap_actual_position_word(&self) -> Arinc429Word<u32> {
-        let flaps_fppu = self.flaps_channel.get_feedback_angle();
-        let slats_fppu = self.slats_channel.get_feedback_angle();
+        let flaps_fppu_angle = self.flaps_channel.get_feedback_angle();
+        let slats_fppu_angle = self.slats_channel.get_feedback_angle();
         let mut word = Arinc429Word::new(0, SignStatus::NormalOperation);
 
         word.set_bit(11, true);
         // Slats retracted
         word.set_bit(
             12,
-            slats_fppu > Angle::new::<degree>(-5.0) && slats_fppu < Angle::new::<degree>(6.2),
+            slats_fppu_angle > Angle::new::<degree>(-5.0)
+                && slats_fppu_angle < Angle::new::<degree>(6.2),
         );
         // Slats >= 19°
         word.set_bit(
             13,
-            slats_fppu > Angle::new::<degree>(234.7) && slats_fppu < Angle::new::<degree>(337.),
+            slats_fppu_angle > Angle::new::<degree>(234.7)
+                && slats_fppu_angle < Angle::new::<degree>(337.),
         );
         // Slats >= 22°
         word.set_bit(
             14,
-            slats_fppu > Angle::new::<degree>(272.2) && slats_fppu < Angle::new::<degree>(337.),
+            slats_fppu_angle > Angle::new::<degree>(272.2)
+                && slats_fppu_angle < Angle::new::<degree>(337.),
         );
         // Slats extended 23°
         word.set_bit(
             15,
-            slats_fppu > Angle::new::<degree>(280.) && slats_fppu < Angle::new::<degree>(337.),
+            slats_fppu_angle > Angle::new::<degree>(280.)
+                && slats_fppu_angle < Angle::new::<degree>(337.),
         );
         word.set_bit(16, false);
         word.set_bit(17, false);
@@ -325,27 +329,32 @@ impl SlatFlapControlComputer {
         // Flaps retracted
         word.set_bit(
             19,
-            flaps_fppu > Angle::new::<degree>(-5.0) && flaps_fppu < Angle::new::<degree>(2.5),
+            flaps_fppu_angle > Angle::new::<degree>(-5.0)
+                && flaps_fppu_angle < Angle::new::<degree>(2.5),
         );
         // Flaps >= 7°
         word.set_bit(
             20,
-            flaps_fppu > Angle::new::<degree>(102.1) && flaps_fppu < Angle::new::<degree>(254.),
+            flaps_fppu_angle > Angle::new::<degree>(102.1)
+                && flaps_fppu_angle < Angle::new::<degree>(254.),
         );
         // Flaps >= 16°
         word.set_bit(
             21,
-            flaps_fppu > Angle::new::<degree>(150.0) && flaps_fppu < Angle::new::<degree>(254.),
+            flaps_fppu_angle > Angle::new::<degree>(150.0)
+                && flaps_fppu_angle < Angle::new::<degree>(254.),
         );
         // Flaps >= 25°
         word.set_bit(
             22,
-            flaps_fppu > Angle::new::<degree>(189.8) && flaps_fppu < Angle::new::<degree>(254.),
+            flaps_fppu_angle > Angle::new::<degree>(189.8)
+                && flaps_fppu_angle < Angle::new::<degree>(254.),
         );
         // Flaps extended 32°
         word.set_bit(
             23,
-            flaps_fppu > Angle::new::<degree>(218.) && flaps_fppu < Angle::new::<degree>(254.),
+            flaps_fppu_angle > Angle::new::<degree>(218.)
+                && flaps_fppu_angle < Angle::new::<degree>(254.),
         );
         word.set_bit(24, false);
         word.set_bit(25, false);
@@ -358,13 +367,19 @@ impl SlatFlapControlComputer {
     }
 
     fn slat_actual_position_word(&self) -> Arinc429Word<f64> {
-        let slats_fppu = self.slats_channel.get_feedback_angle();
-        Arinc429Word::new(slats_fppu.get::<degree>(), SignStatus::NormalOperation)
+        let fppu_slats_angle = self.slats_channel.get_feedback_angle();
+        Arinc429Word::new(
+            fppu_slats_angle.get::<degree>(),
+            SignStatus::NormalOperation,
+        )
     }
 
     fn flap_actual_position_word(&self) -> Arinc429Word<f64> {
-        let flaps_fppu = self.flaps_channel.get_feedback_angle();
-        Arinc429Word::new(flaps_fppu.get::<degree>(), SignStatus::NormalOperation)
+        let fppu_flaps_angle = self.flaps_channel.get_feedback_angle();
+        Arinc429Word::new(
+            fppu_flaps_angle.get::<degree>(),
+            SignStatus::NormalOperation,
+        )
     }
 }
 

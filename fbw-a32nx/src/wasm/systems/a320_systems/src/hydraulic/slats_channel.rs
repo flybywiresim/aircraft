@@ -9,6 +9,7 @@ use systems::simulation::{
 };
 
 use uom::si::{angle::degree, f64::*};
+use uom::ConstZero;
 
 use super::sfcc::SlatFlapControlComputerMisc;
 
@@ -29,8 +30,8 @@ impl SlatsChannel {
             slat_actual_position_word_id: context
                 .get_identifier(format!("SFCC_{num}_SLAT_ACTUAL_POSITION_WORD")),
 
-            slats_demanded_angle: Angle::new::<degree>(0.),
-            slats_feedback_angle: Angle::new::<degree>(0.),
+            slats_demanded_angle: Angle::ZERO,
+            slats_feedback_angle: Angle::ZERO,
 
             csu_monitor: CSUMonitor::new(context),
         }

@@ -145,49 +145,58 @@ impl SlatFlapControlComputer {
     }
 
     fn slat_flap_actual_position_word(&self) -> Arinc429Word<u32> {
-        let flaps_fppu = self.flaps_channel.get_feedback_angle();
-        let slats_fppu = self.slats_channel.get_feedback_angle();
+        let fppu_flaps_angle = self.flaps_channel.get_feedback_angle();
+        let fppu_slats_angle = self.slats_channel.get_feedback_angle();
         let mut word = Arinc429Word::new(0, SignStatus::NormalOperation);
 
         word.set_bit(11, true);
         word.set_bit(
             12,
-            slats_fppu > Angle::new::<degree>(-5.0) && slats_fppu < Angle::new::<degree>(6.2),
+            fppu_slats_angle > Angle::new::<degree>(-5.0)
+                && fppu_slats_angle < Angle::new::<degree>(6.2),
         );
         word.set_bit(
             13,
-            slats_fppu > Angle::new::<degree>(210.4) && slats_fppu < Angle::new::<degree>(337.),
+            fppu_slats_angle > Angle::new::<degree>(210.4)
+                && fppu_slats_angle < Angle::new::<degree>(337.),
         );
         word.set_bit(
             14,
-            slats_fppu > Angle::new::<degree>(321.8) && slats_fppu < Angle::new::<degree>(337.),
+            fppu_slats_angle > Angle::new::<degree>(321.8)
+                && fppu_slats_angle < Angle::new::<degree>(337.),
         );
         word.set_bit(
             15,
-            slats_fppu > Angle::new::<degree>(327.4) && slats_fppu < Angle::new::<degree>(337.),
+            fppu_slats_angle > Angle::new::<degree>(327.4)
+                && fppu_slats_angle < Angle::new::<degree>(337.),
         );
         word.set_bit(16, false);
         word.set_bit(17, false);
         word.set_bit(18, true);
         word.set_bit(
             19,
-            flaps_fppu > Angle::new::<degree>(-5.0) && flaps_fppu < Angle::new::<degree>(2.5),
+            fppu_flaps_angle > Angle::new::<degree>(-5.0)
+                && fppu_flaps_angle < Angle::new::<degree>(2.5),
         );
         word.set_bit(
             20,
-            flaps_fppu > Angle::new::<degree>(140.7) && flaps_fppu < Angle::new::<degree>(254.),
+            fppu_flaps_angle > Angle::new::<degree>(140.7)
+                && fppu_flaps_angle < Angle::new::<degree>(254.),
         );
         word.set_bit(
             21,
-            flaps_fppu > Angle::new::<degree>(163.7) && flaps_fppu < Angle::new::<degree>(254.),
+            fppu_flaps_angle > Angle::new::<degree>(163.7)
+                && fppu_flaps_angle < Angle::new::<degree>(254.),
         );
         word.set_bit(
             22,
-            flaps_fppu > Angle::new::<degree>(247.8) && flaps_fppu < Angle::new::<degree>(254.),
+            fppu_flaps_angle > Angle::new::<degree>(247.8)
+                && fppu_flaps_angle < Angle::new::<degree>(254.),
         );
         word.set_bit(
             23,
-            flaps_fppu > Angle::new::<degree>(250.) && flaps_fppu < Angle::new::<degree>(254.),
+            fppu_flaps_angle > Angle::new::<degree>(250.)
+                && fppu_flaps_angle < Angle::new::<degree>(254.),
         );
         word.set_bit(24, false);
         word.set_bit(25, false);

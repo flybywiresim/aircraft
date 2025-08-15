@@ -1,5 +1,6 @@
 use super::hydraulic_motor::FlapSlatHydraulicMotor;
 use super::linear_actuator::Actuator;
+use crate::shared::Clamp;
 use crate::shared::{
     interpolation, low_pass_filter::LowPassFilter, AverageExt, PositionPickoffUnit, SectionPressure,
 };
@@ -21,7 +22,7 @@ use uom::ConstZero;
 use std::fmt;
 use std::time::Duration;
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum SecondarySurfaceSide {
     Left,
     Right,
@@ -35,7 +36,7 @@ impl fmt::Display for SecondarySurfaceSide {
     }
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum SecondarySurfaceType {
     Flaps,
     Slats,
@@ -49,13 +50,13 @@ impl fmt::Display for SecondarySurfaceType {
     }
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum ChannelCommand {
     Extend,
     Retract,
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum SolenoidStatus {
     Energised,
     DeEnergised,
@@ -268,8 +269,11 @@ impl FlapSlatAssembly {
         let max_speed = self.max_speed().get::<radian_per_second>();
         let time_delta = context.delta_as_secs_f64();
 
-        let pob_de_energised = sfcc_1_request.get_pob_status() == SolenoidStatus::DeEnergised
-            || sfcc_1_request.get_pob_status() == SolenoidStatus::DeEnergised;
+        let sfcc_1_pob = sfcc_1_request.get_pob_status();
+        let sfcc_2_pob = sfcc_2_request.get_pob_status();
+
+        let pob_de_energised =
+            sfcc_1_pob == SolenoidStatus::DeEnergised || sfcc_2_pob == SolenoidStatus::DeEnergised;
 
         let sfcc_1_request = sfcc_1_request.get_command_status();
         let sfcc_2_request = sfcc_2_request.get_command_status();
@@ -298,17 +302,16 @@ impl FlapSlatAssembly {
             // down enough that there is a movement of less than 0.18 deg between frames
             // otherwise the flaps/slats will start oscillating.
             let minimum_speed = self.max_speed() * 0.18; // Low speed drive is 18% of high speed drive.
+            let new_speed = self.speed * Self::DECEL_FACTOR_WHEN_APROACHING_POSITION;
 
-            self.speed = if (self.speed * Self::DECEL_FACTOR_WHEN_APROACHING_POSITION).abs()
-                < minimum_speed
-            {
+            self.speed = if pob_de_energised {
+                AngularVelocity::ZERO
+            } else if new_speed.abs() < minimum_speed {
                 self.speed
             } else {
-                self.speed * Self::DECEL_FACTOR_WHEN_APROACHING_POSITION
+                new_speed
             };
-            if pob_de_energised {
-                self.speed = AngularVelocity::ZERO;
-            }
+
             self.surface_control_arm_position +=
                 Angle::new::<radian>(self.speed.get::<radian_per_second>() * time_delta);
         }
@@ -318,8 +321,7 @@ impl FlapSlatAssembly {
 
         self.surface_control_arm_position = self
             .surface_control_arm_position
-            .max(Angle::ZERO)
-            .min(max_surface_angle);
+            .clamp(Angle::ZERO, max_surface_angle);
 
         if limited_surface_control_arm_position != self.surface_control_arm_position {
             self.speed = AngularVelocity::ZERO;
@@ -544,7 +546,7 @@ impl FlapSlatAssembly {
     }
 
     fn is_surface_moving(&self) -> bool {
-        self.speed.abs() != AngularVelocity::ZERO
+        self.speed != AngularVelocity::ZERO
     }
 
     pub fn left_position(&self) -> f64 {
