@@ -1779,6 +1779,26 @@ mod average_tests {
 }
 
 #[cfg(test)]
+mod about_gt_lt_tests {
+    use super::*;
+
+    #[test]
+    fn about_gt_lt_uom() {
+        let expected = Angle::new::<radian>(3.);
+        let delta = Angle::new::<radian>(0.5);
+
+        let result = Angle::new::<radian>(3.);
+        assert_gt_lt!(result, expected, delta);
+
+        let result = Angle::new::<radian>(3.2);
+        assert_gt_lt!(result, expected, delta);
+
+        let result = Angle::new::<radian>(2.8);
+        assert_gt_lt!(result, expected, delta);
+    }
+}
+
+#[cfg(test)]
 mod height_over_ground {
     use super::*;
 
