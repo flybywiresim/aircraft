@@ -11,7 +11,7 @@ use systems::simulation::{
 use uom::si::{angle::degree, f64::*, velocity::knot};
 use uom::ConstZero;
 
-use super::sfcc::SlatFlapControlComputerMisc;
+use super::SlatFlapControlComputerMisc;
 
 pub struct FlapsChannel {
     flaps_fppu_angle_id: VariableIdentifier,

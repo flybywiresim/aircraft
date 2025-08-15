@@ -11,8 +11,10 @@ use systems::simulation::{
 
 use uom::si::{angle::degree, f64::*, length::foot, velocity::knot};
 
-use super::flaps_channel::FlapsChannel;
-use super::slats_channel::SlatsChannel;
+mod flaps_channel;
+mod slats_channel;
+use flaps_channel::FlapsChannel;
+use slats_channel::SlatsChannel;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum FlapsConf {

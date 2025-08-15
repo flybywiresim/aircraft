@@ -78,9 +78,7 @@ use systems::{
     },
 };
 
-mod flaps_channel;
 mod sfcc;
-mod slats_channel;
 use sfcc::SlatFlapComplex;
 
 #[cfg(test)]

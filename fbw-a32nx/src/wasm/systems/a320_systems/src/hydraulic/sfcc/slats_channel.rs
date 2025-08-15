@@ -11,7 +11,7 @@ use systems::simulation::{
 use uom::si::{angle::degree, f64::*};
 use uom::ConstZero;
 
-use super::sfcc::SlatFlapControlComputerMisc;
+use super::SlatFlapControlComputerMisc;
 
 pub struct SlatsChannel {
     slats_fppu_angle_id: VariableIdentifier,

@@ -4,7 +4,7 @@ use systems::{
 };
 use uom::si::{angle::degree, f64::*};
 
-use super::sfcc::{FlapsConf, SlatFlapControlComputerMisc};
+use super::{FlapsConf, SlatFlapControlComputerMisc};
 
 pub struct SlatsChannel {
     demanded_angle: Angle,
