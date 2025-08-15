@@ -74,6 +74,10 @@ import { FwsInopSys, FwsInopSysPhases } from './FwsInopSys';
 import { FwsInformation } from './FwsInformation';
 import { FwsLimitations, FwsLimitationsPhases } from './FwsLimitations';
 import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
+import {
+  OisDebugDataEvents,
+  DebugDataTableRow,
+} from 'instruments/src/MsfsAvionicsCommon/providers/OisDebugDataPublisher';
 
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));
@@ -136,6 +140,21 @@ export class FwsCore {
   private readonly startupTimer = new DebounceTimer();
 
   public readonly startupCompleted = Subject.create(false);
+
+  public readonly debugDataToOis: DebugDataTableRow[] = [
+    { label: 'onGroundA', value: '' },
+    { label: 'ignoreRaOnGroundTrigger', value: '' },
+    { label: 'onGroundCount', value: '' },
+    { label: 'raInvalid', value: '' },
+    { label: 'aircraftOnGround', value: '' },
+    { label: 'onGroundImmediate', value: '' },
+    { label: 'RA 1', value: '' },
+    { label: 'RA 2', value: '' },
+    { label: 'RA 3', value: '' },
+    { label: 'parkBrakeSet', value: '' },
+    { label: 'doorsOpen', value: '' },
+  ];
+  public readonly debugDataToOisSubject = Subject.create<DebugDataTableRow[]>([]);
 
   public readonly audioFunctionLost = Subject.create(false);
 
@@ -262,7 +281,7 @@ export class FwsCore {
 
   /* PSEUDO FWC VARIABLES */
 
-  private readonly publisher = this.bus.getPublisher<FwsEwdEvents>();
+  private readonly publisher = this.bus.getPublisher<FwsEwdEvents & OisDebugDataEvents>();
 
   /** Keys/IDs of all failures currently active, irrespective they are already cleared or not */
   public readonly allCurrentFailures: string[] = [];
@@ -2381,6 +2400,12 @@ export class FwsCore {
       ),
     );
 
+    this.subs.push(
+      this.debugDataToOisSubject.sub((data) => {
+        this.publisher.pub('ois_generic_debug_data_table', data, true);
+      }, true),
+    );
+
     this.fwcOut126.setSsm(
       this.startupCompleted.get() ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.FailureWarning,
     );
@@ -3245,6 +3270,21 @@ export class FwsCore {
       (onGroundCount > 2 && !raInvalid) ||
       (onGroundCount > 1 && raInvalid);
     this.aircraftOnGround.set(this.onGroundConf.write(this.onGroundImmediate, deltaTime));
+
+    this.debugDataToOis[0].value = onGroundA ? 'true' : 'false';
+    this.debugDataToOis[1].value = this.ignoreRaOnGroundTrigger.read() ? 'true' : 'false';
+    this.debugDataToOis[2].value = onGroundCount.toFixed(0);
+    this.debugDataToOis[3].value = raInvalid ? 'true' : 'false';
+    this.debugDataToOis[4].value = this.aircraftOnGround.get() ? 'true' : 'false';
+    this.debugDataToOis[5].value = this.onGroundImmediate ? 'true' : 'false';
+    this.debugDataToOis[6].value = `SSM: ${this.radioHeight1.ssm}, Value: ${this.radioHeight1.value}, OnGroundMem: ${this.ra1OnGroundMem.read() ? 'true' : 'false'}`;
+    this.debugDataToOis[7].value = `SSM: ${this.radioHeight2.ssm}, Value: ${this.radioHeight2.value}, OnGroundMem: ${this.ra2OnGroundMem.read() ? 'true' : 'false'}`;
+    this.debugDataToOis[8].value = `SSM: ${this.radioHeight3.ssm}, Value: ${this.radioHeight3.value}, OnGroundMem: ${this.ra3OnGroundMem.read() ? 'true' : 'false'}`;
+    this.debugDataToOis[9].value = this.parkBrakeSet.get() ? 'true' : 'false';
+    this.debugDataToOis[10].value = SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:0', 'percent').toFixed(2);
+
+    this.debugDataToOisSubject.set(this.debugDataToOis);
+    this.debugDataToOisSubject.notify();
 
     // AP OFF
     const apEngaged = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_ACTIVE', 'Bool');
