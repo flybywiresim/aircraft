@@ -9,6 +9,7 @@ use systems::simulation::{
 };
 
 use uom::si::{angle::degree, f64::*, velocity::knot};
+use uom::ConstZero;
 
 use super::sfcc::SlatFlapControlComputerMisc;
 
@@ -46,18 +47,11 @@ impl FlapsChannel {
             flaps_fppu_angle_id: context.get_identifier("FLAPS_FPPU_ANGLE".to_owned()),
             flap_actual_position_word_id: context
                 .get_identifier(format!("SFCC_{num}_FLAP_ACTUAL_POSITION_WORD")),
-            fap_ids: [
-                context.get_identifier(format!("SFCC_{num}_FAP_1")),
-                context.get_identifier(format!("SFCC_{num}_FAP_2")),
-                context.get_identifier(format!("SFCC_{num}_FAP_3")),
-                context.get_identifier(format!("SFCC_{num}_FAP_4")),
-                context.get_identifier(format!("SFCC_{num}_FAP_5")),
-                context.get_identifier(format!("SFCC_{num}_FAP_6")),
-                context.get_identifier(format!("SFCC_{num}_FAP_7")),
-            ],
+            fap_ids: [1, 2, 3, 4, 5, 6, 7]
+                .map(|id| context.get_identifier(format!("SFCC_{num}_FAP_{id}"))),
 
-            flaps_demanded_angle: Angle::new::<degree>(0.),
-            flaps_feedback_angle: Angle::new::<degree>(0.),
+            flaps_demanded_angle: Angle::ZERO,
+            flaps_feedback_angle: Angle::ZERO,
 
             csu_monitor: CSUMonitor::new(context),
 
