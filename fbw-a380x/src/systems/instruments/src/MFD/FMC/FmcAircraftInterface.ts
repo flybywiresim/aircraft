@@ -20,6 +20,8 @@ import {
   MathUtils,
   NXDataStore,
   VerticalPathCheckpoint,
+  HUDSyntheticRunway,
+  GenericDataListenerSync,
   NXLogicConfirmNode,
   NXLogicPulseNode,
 } from '@flybywiresim/fbw-sdk';
@@ -118,6 +120,8 @@ export class FmcAircraftInterface {
     this.arincRemainingFlightTime,
     this.arincEisWord2,
   ];
+
+  private syncer: GenericDataListenerSync = new GenericDataListenerSync();
 
   private readonly speedVs1g = Subject.create(0);
   private readonly speedVls = Subject.create(0);
@@ -603,6 +607,91 @@ export class FmcAircraftInterface {
         longitude !== undefined ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData;
 
       this.arincDestinationLongitude.setBnrValue(longitude || 0, ssm, 18, 180, -180);
+    }
+
+    const activeFp = this.flightPlanService.active;
+    if (activeFp.destinationRunway !== undefined) {
+      if (runway) {
+        const endCoordinates = Avionics.Utils.bearingDistanceToCoordinates(
+          runway.bearing,
+          runway.length / 1852, //meters to NM
+          runway.startLocation.lat,
+          runway.startLocation.long,
+        );
+        const cornerCoor: LatLongAlt[] = [];
+        const centerLineCoords: LatLongAlt[] = [];
+
+        const p1 = Avionics.Utils.bearingDistanceToCoordinates(
+          runway.bearing - 90,
+          runway.width / 2 / 1852,
+          endCoordinates.lat,
+          endCoordinates.long,
+        );
+        p1.alt = runway.thresholdCrossingHeight - runway.length * 3.281 * Math.tan((runway.gradient / 180) * Math.PI); //in feet
+        cornerCoor.push(p1);
+        const p2 = Avionics.Utils.bearingDistanceToCoordinates(
+          runway.bearing + 90,
+          runway.width / 2 / 1852,
+          endCoordinates.lat,
+          endCoordinates.long,
+        );
+        p2.alt = p1.alt; //in feet
+        cornerCoor.push(p2);
+
+        const p3 = Avionics.Utils.bearingDistanceToCoordinates(
+          runway.bearing + 90,
+          runway.width / 2 / 1852,
+          runway.thresholdLocation.lat,
+          runway.thresholdLocation.long,
+        );
+        p3.alt = runway.thresholdCrossingHeight; //in feet
+        cornerCoor.push(p3);
+        const p4 = Avionics.Utils.bearingDistanceToCoordinates(
+          runway.bearing - 90,
+          runway.width / 2 / 1852, //1852: nautical miles to meters
+          runway.thresholdLocation.lat,
+          runway.thresholdLocation.long,
+        );
+        p4.alt = runway.thresholdCrossingHeight; //in feet
+        cornerCoor.push(p4);
+
+        //extended centerline   //1852: nautical miles to meters
+        const p5 = new LatLongAlt();
+        p5.lat = runway.thresholdLocation.lat;
+        p5.long = runway.thresholdLocation.long;
+        p5.alt = runway.thresholdCrossingHeight; //in feet
+        centerLineCoords.push(p5);
+
+        const p6 = Avionics.Utils.bearingDistanceToCoordinates((runway.bearing + 180) % 360, 4, p5.lat, p5.long);
+        p6.alt = runway.thresholdCrossingHeight; //in feet
+        centerLineCoords.push(p6);
+        const p7 = Avionics.Utils.bearingDistanceToCoordinates((runway.bearing + 180) % 360, 4, p6.lat, p6.long);
+        p7.alt = runway.thresholdCrossingHeight; //in feet
+        centerLineCoords.push(p7);
+        const p8 = Avionics.Utils.bearingDistanceToCoordinates((runway.bearing + 180) % 360, 4, p7.lat, p7.long);
+        p8.alt = runway.thresholdCrossingHeight; //in feet
+        centerLineCoords.push(p8);
+        const p9 = Avionics.Utils.bearingDistanceToCoordinates((runway.bearing + 180) % 360, 4, p8.lat, p8.long);
+        p9.alt = runway.thresholdCrossingHeight; //in feet
+        centerLineCoords.push(p9);
+
+        const HUDSymbol: HUDSyntheticRunway = {
+          gradient: runway.gradient,
+          location: runway.location,
+          direction: (runway as any).bearing,
+          startLocation: runway.startLocation,
+          thresholdLocation: runway.thresholdLocation,
+          thresholdCrossingHeight: runway.thresholdCrossingHeight,
+          latitude: (runway as any).latitude,
+          longitude: (runway as any).longitude,
+          elevation: runway.thresholdCrossingHeight, // in meters
+          length: runway.length,
+          width: (runway as any).width,
+          cornerCoordinates: cornerCoor,
+          centerlineCoordinates: centerLineCoords,
+        };
+        this.syncer.sendEvent('A380X_EFIS_HUD_SYMBOLS', HUDSymbol);
+      }
     }
   }
 
