@@ -524,11 +524,6 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [],
   },
-  271800071: {
-    title: '\x1b<4m\x1b4mF/CTL\x1bm TAIL STRIKE',
-    sensed: true,
-    items: [],
-  },
   // ATA 27: FLAPS/SLATS
   272800001: {
     title: '\x1b<2m\x1b4mCONFIG\x1bm SLATS NOT IN T.O CONFIG',

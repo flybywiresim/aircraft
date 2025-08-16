@@ -2890,17 +2890,6 @@ export class FwsAbnormalSensed {
       sysPage: -1,
       inopSysAllPhases: () => [],
     },
-    271800071: {
-      // TAIL STRIKE
-      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 9, 10, 12],
-      simVarIsActive: this.fws.speedbrakesConfigWarning,
-      notActiveWhenItemActive: [],
-      whichItemsToShow: () => [],
-      whichItemsChecked: () => [],
-      failure: 2,
-      sysPage: -1,
-      inopSysAllPhases: () => [],
-    },
     // 29 FUEL
     281800002: {
       // ALL FEED TKs LEVEL LO
