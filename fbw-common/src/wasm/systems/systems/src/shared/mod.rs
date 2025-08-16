@@ -24,6 +24,8 @@ use uom::si::{
 
 pub mod low_pass_filter;
 pub mod pid;
+#[cfg(test)]
+pub mod test;
 pub mod update_iterator;
 
 mod random;
@@ -1152,37 +1154,6 @@ impl<D: uom::si::Dimension + ?Sized, U: uom::si::Units<f64> + ?Sized> Clamp
     }
 }
 
-pub fn about_gt_lt<T: std::ops::Sub<Output = T> + PartialOrd>(
-    value: T,
-    expected_value: T,
-    epsilon: T,
-) -> bool {
-    let delta = if value < expected_value {
-        value - expected_value
-    } else {
-        expected_value - value
-    };
-    delta < epsilon
-}
-
-#[macro_export]
-macro_rules! assert_gt_lt {
-    ($a:expr, $b:expr, $eps:expr) => {
-        let eps = $eps;
-        assert!(
-            $crate::shared::about_gt_lt($a, $b, eps),
-            "assertion failed: `(left !== right)` \
-             (left: `{:?}`, right: `{:?}`, epsilon: `{:?}`)",
-            $a,
-            $b,
-            eps
-        );
-    };
-    ($a:expr, $b:expr,$eps:expr,) => {
-        assert_gt_lt!($a, $b, $eps);
-    };
-}
-
 #[cfg(test)]
 mod delayed_true_logic_gate_tests {
     use super::*;
@@ -1775,26 +1746,6 @@ mod average_tests {
 
         let average: Pressure = iterator.iter().average();
         assert_eq!(average, Pressure::new::<hectopascal>(200.));
-    }
-}
-
-#[cfg(test)]
-mod about_gt_lt_tests {
-    use super::*;
-
-    #[test]
-    fn about_gt_lt_uom() {
-        let expected = Angle::new::<radian>(3.);
-        let delta = Angle::new::<radian>(0.5);
-
-        let result = Angle::new::<radian>(3.);
-        assert_gt_lt!(result, expected, delta);
-
-        let result = Angle::new::<radian>(3.2);
-        assert_gt_lt!(result, expected, delta);
-
-        let result = Angle::new::<radian>(2.8);
-        assert_gt_lt!(result, expected, delta);
     }
 }
 

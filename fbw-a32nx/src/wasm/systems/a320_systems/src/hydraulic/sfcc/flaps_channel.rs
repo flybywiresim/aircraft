@@ -13,7 +13,7 @@ use uom::ConstZero;
 
 use super::SlatFlapControlComputerMisc;
 
-pub struct FlapsChannel {
+pub(super) struct FlapsChannel {
     flaps_fppu_angle_id: VariableIdentifier,
     flap_actual_position_word_id: VariableIdentifier,
     fap_ids: [VariableIdentifier; 7],
@@ -42,7 +42,7 @@ impl FlapsChannel {
     const KNOTS_100: f64 = 100.;
     const KNOTS_210: f64 = 210.;
 
-    pub fn new(context: &mut InitContext, num: u8) -> Self {
+    pub(super) fn new(context: &mut InitContext, num: u8) -> Self {
         Self {
             flaps_fppu_angle_id: context.get_identifier("FLAPS_FPPU_ANGLE".to_owned()),
             flap_actual_position_word_id: context
@@ -262,7 +262,7 @@ impl FlapsChannel {
         Self::demanded_flaps_fppu_angle_from_conf(&self.csu_monitor, self.flaps_demanded_angle)
     }
 
-    pub fn update(
+    pub(super) fn update(
         &mut self,
         context: &UpdateContext,
         flaps_feedback: &impl PositionPickoffUnit,
@@ -275,11 +275,11 @@ impl FlapsChannel {
         self.fap_update();
     }
 
-    pub fn get_demanded_angle(&self) -> Angle {
+    pub(super) fn get_demanded_angle(&self) -> Angle {
         self.flaps_demanded_angle
     }
 
-    pub fn get_feedback_angle(&self) -> Angle {
+    pub(super) fn get_feedback_angle(&self) -> Angle {
         self.flaps_feedback_angle
     }
 
@@ -288,11 +288,11 @@ impl FlapsChannel {
     // Because X-SFCC labels are not implemented and each SFCC transmits a single set of labels
     // (instead of a set of labels per channel), then it was chosen to rely on the
     // CSU instantiated in the flaps channel.
-    pub fn get_csu_monitor(&self) -> &CSUMonitor {
+    pub(super) fn get_csu_monitor(&self) -> &CSUMonitor {
         &self.csu_monitor
     }
 
-    pub fn get_flap_auto_command_engaged(&self) -> bool {
+    pub(super) fn get_flap_auto_command_engaged(&self) -> bool {
         self.flap_auto_command_engaged
     }
 
