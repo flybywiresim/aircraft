@@ -1,23 +1,32 @@
 // Copyright (c) 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { ConsumerSubject, Subject } from '@microsoft/msfs-sdk';
+import { Subject } from '@microsoft/msfs-sdk';
 import { AircraftNetworkServerUnit } from './AircraftNetworkServerUnit';
 import { NXLogicConfirmNode, UpdateThrottler } from '@flybywiresim/fbw-sdk';
 
 export class AnsuOps extends AircraftNetworkServerUnit {
   private lastUpdateTime: number | undefined = undefined;
-  private readonly simTime = ConsumerSubject.create<number>(this.sub.on('simTime'), 0);
   private readonly ansuUpdateThrottler = new UpdateThrottler(500); // has to be > 100 due to pulse nodes
 
   // OOOI times, ref: https://patents.google.com/patent/US6308044B1/en
   // Times stored in seconds since epoch
+  private readonly parkBrakeOffTime = Subject.create<number | null>(null);
+  private readonly takeoffTime = Subject.create<number | null>(null);
+  private readonly touchdownTime = Subject.create<number | null>(null);
+  private readonly parkBrakeOnTime = Subject.create<number | null>(null);
+
   public readonly outBlockTime = Subject.create<number | null>(null);
   public readonly offBlockTime = Subject.create<number | null>(null);
   public readonly onBlockTime = Subject.create<number | null>(null);
   public readonly inBlockTime = Subject.create<number | null>(null);
 
   /** in kgs */
+  private readonly parkBrakeOffFob = Subject.create<number | null>(null);
+  private readonly takeoffFob = Subject.create<number | null>(null);
+  private readonly touchdownFob = Subject.create<number | null>(null);
+  private readonly parkBrakeOnFob = Subject.create<number | null>(null);
+
   public readonly outBlockFob = Subject.create<number | null>(null);
   public readonly offBlockFob = Subject.create<number | null>(null);
   public readonly onBlockFob = Subject.create<number | null>(null);
@@ -34,13 +43,34 @@ export class AnsuOps extends AircraftNetworkServerUnit {
   /** @inheritdoc */
   init(): void {
     super.init();
+
+    this.subscriptions.push(
+      this.sci.parkBrakeSet.sub((v) => {
+        if (v) {
+          this.parkBrakeOnTime.set(this.sci.zuluTime.get());
+          this.parkBrakeOnFob.set(this.sci.fuelWeight.get());
+        } else {
+          this.parkBrakeOffTime.set(this.sci.zuluTime.get());
+          this.parkBrakeOffFob.set(this.sci.fuelWeight.get());
+        }
+      }, true),
+      this.sci.onGround.sub((v) => {
+        if (v) {
+          this.touchdownTime.set(this.sci.zuluTime.get());
+          this.touchdownFob.set(this.sci.fuelWeight.get());
+        } else {
+          this.takeoffTime.set(this.sci.zuluTime.get());
+          this.takeoffFob.set(this.sci.fuelWeight.get());
+        }
+      }, true),
+    );
   }
 
   /** @inheritdoc */
   onUpdate(): void {
     super.onUpdate();
-    const _deltaTime = this.lastUpdateTime === undefined ? 1_000 : this.simTime.get() - this.lastUpdateTime;
-    this.lastUpdateTime = this.simTime.get();
+    const _deltaTime = this.lastUpdateTime === undefined ? 1_000 : this.sci.zuluTime.get() - this.lastUpdateTime;
+    this.lastUpdateTime = this.sci.zuluTime.get();
 
     const deltaTime = this.ansuUpdateThrottler.canUpdate(_deltaTime);
 
@@ -49,6 +79,10 @@ export class AnsuOps extends AircraftNetworkServerUnit {
       return;
     }
 
+    this.updateOooiTimes(deltaTime);
+  }
+
+  private updateOooiTimes(deltaTime: number): void {
     // OOOI
     // Out Block: Doors closed & park brake released
     this.turnaroundConfNode.write(
@@ -70,28 +104,28 @@ export class AnsuOps extends AircraftNetworkServerUnit {
         this.onBlockTime.set(null);
         this.inBlockTime.set(null);
       }
-      this.outBlockTime.set(this.sci.zuluTime.get());
-      this.outBlockFob.set(this.sci.fuelWeight.get());
+      this.outBlockTime.set(this.parkBrakeOffTime.get());
+      this.outBlockFob.set(this.parkBrakeOffFob.get());
     }
 
     // Off Block: Not on ground for 10 seconds
     this.offBlockConfNode.write(this.outBlockTime.get() !== null && !this.sci.onGround.get(), deltaTime);
     if (this.offBlockTime.get() === null && this.outBlockTime.get() !== null && this.offBlockConfNode.read()) {
-      this.offBlockTime.set(this.sci.zuluTime.get());
-      this.offBlockFob.set(this.sci.fuelWeight.get());
+      this.offBlockTime.set(this.takeoffTime.get());
+      this.offBlockFob.set(this.takeoffFob.get());
     }
 
     // On Block: On ground for 10 seconds and <30kts CAS
     this.onBlockConfNode.write(this.sci.onGround.get() && this.sci.airspeed.get().valueOr(0) < 30, deltaTime);
     if (this.onBlockTime.get() === null && this.offBlockTime.get() !== null && this.onBlockConfNode.read()) {
-      this.onBlockTime.set(this.sci.zuluTime.get());
-      this.onBlockFob.set(this.sci.fuelWeight.get());
+      this.onBlockTime.set(this.touchdownTime.get());
+      this.onBlockFob.set(this.touchdownFob.get());
     }
 
     // In Block: Park brake set
     if (this.inBlockTime.get() === null && this.onBlockTime.get() !== null && this.sci.parkBrakeSet.get()) {
-      this.inBlockTime.set(this.sci.zuluTime.get());
-      this.inBlockFob.set(this.sci.fuelWeight.get());
+      this.inBlockTime.set(this.parkBrakeOnTime.get());
+      this.inBlockFob.set(this.parkBrakeOnFob.get());
     }
 
     // Flight & block time
