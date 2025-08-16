@@ -1,12 +1,13 @@
 // Copyright (c) 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { Subject } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, Subject } from '@microsoft/msfs-sdk';
 import { AircraftNetworkServerUnit } from './AircraftNetworkServerUnit';
 import { NXLogicConfirmNode, UpdateThrottler } from '@flybywiresim/fbw-sdk';
 
 export class AnsuOps extends AircraftNetworkServerUnit {
-  private lastUpdateTime: number = Date.now();
+  private lastUpdateTime: number | undefined = undefined;
+  private readonly simTime = ConsumerSubject.create<number>(this.sub.on('simTime'), 0);
   private readonly ansuUpdateThrottler = new UpdateThrottler(500); // has to be > 100 due to pulse nodes
 
   // OOOI times, ref: https://patents.google.com/patent/US6308044B1/en
@@ -38,8 +39,8 @@ export class AnsuOps extends AircraftNetworkServerUnit {
   /** @inheritdoc */
   onUpdate(): void {
     super.onUpdate();
-    const _deltaTime = this.lastUpdateTime === undefined ? 0 : Date.now() - this.lastUpdateTime;
-    this.lastUpdateTime = Date.now();
+    const _deltaTime = this.lastUpdateTime === undefined ? 1_000 : this.simTime.get() - this.lastUpdateTime;
+    this.lastUpdateTime = this.simTime.get();
 
     const deltaTime = this.ansuUpdateThrottler.canUpdate(_deltaTime);
 

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
+  ClockEvents,
   ConsumerSubject,
   EventBus,
   Instrument,
@@ -23,7 +24,7 @@ type AnsuType = 'nss-avncs' | 'flt-ops';
 export class AircraftNetworkServerUnit implements Instrument {
   protected readonly subscriptions: Subscription[] = [];
 
-  protected readonly sub = this.bus.getSubscriber<ResetPanelSimvars & OitSimvars>();
+  protected readonly sub = this.bus.getSubscriber<ResetPanelSimvars & OitSimvars & ClockEvents>();
 
   protected readonly failureKey =
     this.type === 'flt-ops' && this.index === 1
