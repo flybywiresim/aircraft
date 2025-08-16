@@ -61,7 +61,7 @@ export class AnsuOps extends AircraftNetworkServerUnit {
     if (
       (this.turnaroundConfNode.read() || this.outBlockTime.get() === null) &&
       !this.sci.parkBrakeSet.get() &&
-      this.sci.doorsOpen.get() === 0
+      this.sci.doorsOpen.get() < 0.25
     ) {
       if (this.turnaroundConfNode.read()) {
         // Turnaround: Reset block times
@@ -74,14 +74,14 @@ export class AnsuOps extends AircraftNetworkServerUnit {
     }
 
     // Off Block: Not on ground for 10 seconds
-    this.offBlockConfNode.write(!this.sci.onGround.get(), deltaTime);
+    this.offBlockConfNode.write(this.outBlockTime.get() !== null && !this.sci.onGround.get(), deltaTime);
     if (this.offBlockTime.get() === null && this.outBlockTime.get() !== null && this.offBlockConfNode.read()) {
       this.offBlockTime.set(this.sci.zuluTime.get());
       this.offBlockFob.set(this.sci.fuelWeight.get());
     }
 
     // On Block: On ground for 10 seconds and <30kts CAS
-    this.onBlockConfNode.write(this.sci.onGround.get() && this.sci.airspeed.get().valueOr(100) < 30, deltaTime);
+    this.onBlockConfNode.write(this.sci.onGround.get() && this.sci.airspeed.get().valueOr(0) < 30, deltaTime);
     if (this.onBlockTime.get() === null && this.offBlockTime.get() !== null && this.onBlockConfNode.read()) {
       this.onBlockTime.set(this.sci.zuluTime.get());
       this.onBlockFob.set(this.sci.fuelWeight.get());
