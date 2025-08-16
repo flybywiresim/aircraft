@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 /*
  * This file contains various nodes that can be used for logical processing. Systems like the FWC may use them to
  * accurately implement their functionality.

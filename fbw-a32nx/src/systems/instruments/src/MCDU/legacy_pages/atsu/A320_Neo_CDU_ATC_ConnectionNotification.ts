@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { AtsuStatusCodes } from '@datalink/common';
 import { CDUAtcConnection } from './A320_Neo_CDU_ATC_Connection';
 import { CDUAtcConnectionStatus } from './A320_Neo_CDU_ATC_ConnectionStatus';

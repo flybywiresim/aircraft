@@ -465,6 +465,10 @@
     - Position (0-2)
     - 0 is BOTH ON 2, 1 is NORM, 2 is BOTH ON 1
 
+- A380X_FMS_DEST_EFOB_BELOW_MIN
+    - Bool
+    - Indicates if the FMS predicted fuel at destination is below minimum.
+
 ## Communications ATA 23
 
 ### Placeholder Types
@@ -830,6 +834,42 @@
 
 ## Flight Controls (ATA 27)
 
+- A32NX_{side}_FLAPS_{number}_POSITION_PERCENT
+    - Percent
+    - Indicates the angle of the flaps out of 40 degrees
+    - Side
+        - LEFT
+        - RIGHT
+    - Number
+        - From 1 (inboard) to 3
+
+- A32NX_{side}_SLATS_{number}_POSITION_PERCENT
+    - Percent
+    - Indicates the angle of the slats out of 27 degrees
+    - Side
+        - LEFT
+        - RIGHT
+    - Number
+        - From 1 (inboard) to 8
+
+- A32NX_{side}_FLAPS_{number}_ANGLE
+    - Degrees
+    - The actual angle of the flaps
+    - Side
+        - LEFT
+        - RIGHT
+    - Number
+        - From 1 (inboard) to 3
+
+- A32NX_{side}_SLATS_{number}_ANGLE
+    - Degrees
+    - The actual angle of the slats
+    - Side
+        - LEFT
+        - RIGHT
+    - Number
+        - From 1 (inboard) to 8
+
 - A32NX_FCDC_{number}_DISCRETE_WORD_1
     - Arinc429<Discrete>
     - | Bit |                Description               |
@@ -854,10 +894,10 @@
       | 28  | FCDC Opposite Fault                      |
       | 29  | SEC 3 Fault                              |
 
-- A32NX_SFCC_SLAT_FLAP_ACTUAL_POSITION_WORD
+- A32NX_SFCC_{number}_SLAT_FLAP_ACTUAL_POSITION_WORD
+    - {number} is 1 or 2
     - Slat/Flap actual position discrete word of the SFCC bus output
     - Arinc429<Discrete>
-    - Note that multiple SFCC are not yet implemented, thus no {number} in the name.
     - | Bit |      Description A380X, if different     |
       |:---:|:----------------------------------------:|
       | 11  | Slat Data Valid                          |
