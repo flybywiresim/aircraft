@@ -6,12 +6,12 @@ use uom::si::{angle::degree, f64::*};
 
 use super::{FlapsConf, SlatFlapControlComputerMisc};
 
-pub struct FlapsChannel {
+pub(super) struct FlapsChannel {
     demanded_angle: Angle,
     feedback_angle: Angle,
 }
 impl FlapsChannel {
-    pub fn new() -> Self {
+    pub(super) fn new() -> Self {
         Self {
             demanded_angle: Angle::new::<degree>(0.),
             feedback_angle: Angle::new::<degree>(0.),
@@ -32,16 +32,20 @@ impl FlapsChannel {
         }
     }
 
-    pub fn update(&mut self, flaps_conf: FlapsConf, feedback_position: &impl PositionPickoffUnit) {
+    pub(super) fn update(
+        &mut self,
+        flaps_conf: FlapsConf,
+        feedback_position: &impl PositionPickoffUnit,
+    ) {
         self.demanded_angle = Self::demanded_flaps_fppu_angle_from_conf(flaps_conf);
         self.feedback_angle = feedback_position.angle();
     }
 
-    pub fn get_demanded_angle(&self) -> Angle {
+    pub(super) fn get_demanded_angle(&self) -> Angle {
         self.demanded_angle
     }
 
-    pub fn get_feedback_angle(&self) -> Angle {
+    pub(super) fn get_feedback_angle(&self) -> Angle {
         self.feedback_angle
     }
 }

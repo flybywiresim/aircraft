@@ -13,7 +13,7 @@ use uom::ConstZero;
 
 use super::SlatFlapControlComputerMisc;
 
-pub struct SlatsChannel {
+pub(super) struct SlatsChannel {
     slats_fppu_angle_id: VariableIdentifier,
     slat_actual_position_word_id: VariableIdentifier,
 
@@ -24,7 +24,7 @@ pub struct SlatsChannel {
 }
 
 impl SlatsChannel {
-    pub fn new(context: &mut InitContext, num: u8) -> Self {
+    pub(super) fn new(context: &mut InitContext, num: u8) -> Self {
         Self {
             slats_fppu_angle_id: context.get_identifier("SLATS_FPPU_ANGLE".to_owned()),
             slat_actual_position_word_id: context
@@ -55,18 +55,22 @@ impl SlatsChannel {
         Self::demanded_slats_fppu_angle_from_conf(&self.csu_monitor, self.slats_demanded_angle)
     }
 
-    pub fn update(&mut self, context: &UpdateContext, slats_feedback: &impl PositionPickoffUnit) {
+    pub(super) fn update(
+        &mut self,
+        context: &UpdateContext,
+        slats_feedback: &impl PositionPickoffUnit,
+    ) {
         self.csu_monitor.update(context);
         self.slats_demanded_angle = self.generate_slat_angle();
 
         self.slats_feedback_angle = slats_feedback.angle();
     }
 
-    pub fn get_demanded_angle(&self) -> Angle {
+    pub(super) fn get_demanded_angle(&self) -> Angle {
         self.slats_demanded_angle
     }
 
-    pub fn get_feedback_angle(&self) -> Angle {
+    pub(super) fn get_feedback_angle(&self) -> Angle {
         self.slats_feedback_angle
     }
 
