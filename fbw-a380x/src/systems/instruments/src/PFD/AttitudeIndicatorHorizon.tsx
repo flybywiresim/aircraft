@@ -487,8 +487,8 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: EventBus }> {
         (this.tailStrikeConditions.approachPhase &&
           this.tailStrikeConditions.altitude.value < 400 &&
           this.tailStrikeConditions.speed > 50) ||
-        this.goAroundTimerActive ||
-        this.takeoffTimerActive
+        this.goAroundTimer !== null ||
+        this.takeoffTimer !== null
       ) {
         this.tailStrike.instance.style.display = 'inline';
       } else {
