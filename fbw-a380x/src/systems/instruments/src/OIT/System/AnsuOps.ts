@@ -81,7 +81,7 @@ export class AnsuOps extends AircraftNetworkServerUnit {
     }
 
     // On Block: On ground for 10 seconds and <30kts CAS
-    this.onBlockConfNode.write(this.sci.onGround.get() && this.sci.airspeed.get().valueOr(100) < 30, deltaTime);
+    this.onBlockConfNode.write(this.sci.onGround.get() && this.sci.airspeed.get().valueOr(0) < 30, deltaTime);
     if (this.onBlockTime.get() === null && this.offBlockTime.get() !== null && this.onBlockConfNode.read()) {
       this.onBlockTime.set(this.sci.zuluTime.get());
       this.onBlockFob.set(this.sci.fuelWeight.get());
