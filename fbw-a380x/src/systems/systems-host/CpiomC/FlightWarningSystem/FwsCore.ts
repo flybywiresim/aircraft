@@ -1103,8 +1103,6 @@ export class FwsCore {
 
   public readonly groundSpoilerNotArmedWarning = Subject.create(false);
 
-  public readonly taxiInFlap0Check = new NXLogicConfirmNode(60, false);
-
   public readonly spoilersActiveWord = Arinc429Register.empty();
 
   /* FUEL */
