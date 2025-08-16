@@ -2306,7 +2306,7 @@ export class FwsCore {
         this.soundManager.handleSoundCondition('stall', v);
       }, true),
     );
-    this.subs.push(this.aircraftOnGround.sub((v) => this.fwcOut126.setBitValue(28, v)));
+    this.subs.push(this.aircraftOnGround.sub((v) => this.fwcOut126.setBitValue(28, v), true));
 
     this.subs.push(
       this.fwcOut126.sub((v) => {
