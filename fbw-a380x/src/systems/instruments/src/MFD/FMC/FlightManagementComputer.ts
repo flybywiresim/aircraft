@@ -68,6 +68,8 @@ export interface FmsErrorMessage {
   onClearOverride: () => void;
 }
 
+export const FMS_CYCLE_TIME = 250; // ms
+
 /*
  * Handles navigation (and potentially other aspects) for MFD pages
  */
@@ -114,7 +116,7 @@ export class FlightManagementComputer implements FmcInterface {
     return this.#fmgc;
   }
 
-  private fmsUpdateThrottler = new UpdateThrottler(250);
+  private fmsUpdateThrottler = new UpdateThrottler(FMS_CYCLE_TIME);
 
   private efisInterfaces = {
     L: new EfisInterface('L', this.flightPlanService),
@@ -330,6 +332,16 @@ export class FlightManagementComputer implements FmcInterface {
       );
 
       this.subs.push(this.shouldBePreflightPhase, this.flightPhase, this.activePage);
+
+      this.subs.push(
+        this.fmgc.data.engineOut.sub((eo) => {
+          if (eo) {
+            this.enterEngineOut();
+          } else {
+            this.exitEngineOut();
+          }
+        }),
+      );
     }
 
     let lastUpdateTime = Date.now();
@@ -490,8 +502,14 @@ export class FlightManagementComputer implements FmcInterface {
     return Math.min(A380AltitudeUtils.calculateRecommendedMaxAltitude(gw, isaTempDeviation), maxCertifiedAlt) / 100;
   }
 
+  /** @inheritdoc */
   public getOptFlightLevel(): number | null {
-    return Math.floor((0.96 * (this.getRecMaxFlightLevel() ?? maxCertifiedAlt / 100)) / 5) * 5; // TODO remove magic
+    return Math.floor((0.96 * (this.getRecMaxFlightLevel() ?? maxCertifiedAlt / 100)) / 5) * 5; // FIXME remove magic
+  }
+
+  /** @inheritdoc */
+  public getEoMaxFlightLevel(): number | null {
+    return Math.floor((0.8 * (this.getRecMaxFlightLevel() ?? maxCertifiedAlt / 100)) / 5) * 5; // FIXME remove magic
   }
 
   private initSimVars() {
@@ -998,6 +1016,7 @@ export class FlightManagementComputer implements FmcInterface {
         this.acInterface.checkTooSteepPath();
         this.acInterface.checkDestEfobBelowMin();
         this.acInterface.checkDestEfobBelowMinScratchPadMessage(throttledDt);
+        this.acInterface.checkEngineOut(throttledDt);
 
         const toFlaps = this.fmgc.getTakeoffFlapsSetting();
         if (toFlaps) {
@@ -1190,6 +1209,41 @@ export class FlightManagementComputer implements FmcInterface {
       descentProfileVd,
       trackChangesSignificantlyAtDistance,
     );
+  }
+
+  public enterEngineOut() {
+    // Managed speed targets are handled in FmcAircraftInterface.updateManagedSpeed()
+
+    // Update drift-down altitude if in CRZ phase
+    // FIXME need to add drift-down PWP to fmsv2
+
+    // Delete pre-selected speeds
+    this.fmgc.data.climbPreSelSpeed.set(null);
+    this.fmgc.data.cruisePreSelSpeed.set(null);
+    this.fmgc.data.cruisePreSelMach.set(null);
+    this.fmgc.data.descentPreSelSpeed.set(null);
+
+    // Delete planned/future altitude steps
+    this.flightPlanService.active.allLegs
+      .filter(
+        (l, index) =>
+          l.isDiscontinuity === false && index >= this.flightPlanService.active.activeLegIndex && l.cruiseStep,
+      )
+      .forEach((l) => {
+        if (l.isDiscontinuity === false) {
+          l.cruiseStep = undefined;
+        }
+      });
+
+    // Delete time constraints
+    // no-op
+
+    // Display PERF page
+    this.mfdReference?.uiService.navigateTo('fms/active/perf');
+  }
+
+  public exitEngineOut() {
+    // Restore long-term guidance targets
   }
 
   async swapNavDatabase(): Promise<void> {

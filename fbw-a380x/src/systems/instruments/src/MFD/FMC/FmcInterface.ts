@@ -167,6 +167,9 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
   /** as flight level */
   getOptFlightLevel(): number | null;
 
+  /** as flight level */
+  getEoMaxFlightLevel(): number | null;
+
   /**
    * Add message to fmgc message queue
    * @param _message MessageObject

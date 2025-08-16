@@ -21,6 +21,7 @@ import {
   NXDataStore,
   VerticalPathCheckpoint,
   NXLogicConfirmNode,
+  NXLogicPulseNode,
 } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { MmrRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
@@ -41,6 +42,7 @@ import { MfdSurvEvents, VdAltitudeConstraint } from 'instruments/src/MsfsAvionic
 import { VerticalWaypointPrediction } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { RadioAltimeterEvents } from '@flybywiresim/msfs-avionics-common';
 import { RADIO_ALTITUDE_NODH_VALUE } from '../pages/common/DataEntryFormats';
+import { FMS_CYCLE_TIME } from './FlightManagementComputer';
 
 /**
  * Interface between FMS and rest of aircraft through SimVars and ARINC values (mostly data being sent here)
@@ -190,6 +192,8 @@ export class FmcAircraftInterface {
     this.radioAltitudeB,
     this.radioAltitudeC,
   );
+
+  private readonly engineFailurePulseNode = new NXLogicPulseNode();
 
   constructor(
     private bus: EventBus,
@@ -716,6 +720,10 @@ export class FmcAircraftInterface {
     const alt = Math.max(fcuAltitude, altitude ? altitude : 0);
 
     let kcas = SimVar.GetSimVarValue('L:A32NX_SPEEDS_GD', 'number');
+    if (!this.fmgc.isAllEngineOn()) {
+      kcas += 25; // add 25 knots to GD for EO
+    }
+
     if (this.flightPhase.get() === FmgcFlightPhase.Approach) {
       kcas = this.getAppManagedSpeed();
     }
@@ -860,15 +868,15 @@ export class FmcAircraftInterface {
       if (verticalMode === VerticalMode.OP_CLB) {
         switch (SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Number')) {
           case 0: {
-            this.managedSpeedTarget = SimVar.GetSimVarValue('L:A32NX_SPEEDS_GD', 'number');
+            this.managedSpeedTarget = this.fmgc.data.greenDotSpeed.get();
             break;
           }
           case 1: {
-            this.managedSpeedTarget = SimVar.GetSimVarValue('L:A32NX_SPEEDS_S', 'number');
+            this.managedSpeedTarget = this.fmgc.data.slatRetractionSpeed.get();
             break;
           }
           default: {
-            this.managedSpeedTarget = SimVar.GetSimVarValue('L:A32NX_SPEEDS_F', 'number');
+            this.managedSpeedTarget = this.fmgc.data.flapRetractionSpeed.get();
           }
         }
       } else if (verticalMode === VerticalMode.OP_DES) {
@@ -916,6 +924,7 @@ export class FmcAircraftInterface {
         }
         case FmgcFlightPhase.Climb: {
           let speed = this.fmgc.getManagedClimbSpeed();
+
           const speedLimit = this.fmgc.getClimbSpeedLimit();
 
           if (speedLimit !== null && SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') < speedLimit.underAltitude) {
@@ -923,6 +932,18 @@ export class FmcAircraftInterface {
           }
 
           speed = Math.min(speed, this.getSpeedConstraint());
+
+          // EO handling. Ignore speed constraints or limits.
+          if (!this.fmgc.isAllEngineOn()) {
+            const verticalMode = this.fmaVerticalMode.get();
+            const greenDotSpeed = this.fmgc.data.greenDotSpeed.get();
+            if ((verticalMode === VerticalMode.OP_CLB || verticalMode === VerticalMode.CLB) && greenDotSpeed) {
+              // New speed target is GDOT (EO-GDOT), but it ramps down by 1kt per second
+              const casWord = ADIRS.getCalibratedAirspeed();
+              const cas = casWord && casWord.isNormalOperation() ? casWord.value : null;
+              speed = cas ? cas - (cas - greenDotSpeed) * (FMS_CYCLE_TIME / 1_000) : greenDotSpeed;
+            }
+          }
 
           [this.managedSpeedTarget, isMach] = this.getManagedTargets(speed, this.fmgc.getManagedClimbSpeedMach());
           vPfd = this.managedSpeedTarget ?? speed;
@@ -2057,6 +2078,17 @@ export class FmcAircraftInterface {
           ((flightPhase === FmgcFlightPhase.Approach || flightPhase === FmgcFlightPhase.GoAround) &&
             (this.radioAlt.get() ?? 0) > 800)),
     );
+  }
+
+  checkEngineOut(deltaTime: number) {
+    this.engineFailurePulseNode.write(this.fmgc.isFlying() && !this.fmgc.isAllEngineOn(), deltaTime);
+    if (!this.fmgc.data.engineOut.get() && this.engineFailurePulseNode.read()) {
+      this.fmgc.data.engineOut.set(true);
+    }
+
+    if (this.fmgc.data.engineOut.get() && this.fmgc.isAllEngineOn()) {
+      this.fmgc.data.engineOut.set(false);
+    }
   }
 }
 

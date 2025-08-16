@@ -112,6 +112,12 @@
 1. [FMS] Fixed a rare issue where airways failed to load - @tracernz (Mike)
 1. [A380X/FWS] Implement ENG SHUTDOWN abnornal sensed & timer countdown to timed based items - @BravoMike99 (bruno_pt99)
 1. [A380X/CDS] Implement abnormal engine parameters amber attention getting box on the EWD - @BravoMike99 (bruno_pt99)
+1. [A380X/FWS] Add several abnormal non-sensed procedures (EMER DESCENT, EMER EVAC, ...) - @flogross89 (floridude)
+1. [A380X] Improve logic and architecture for INOP SYS, LIMITATIONs and INFOs - @flogross89 (floridude)
+1. [A380X/FG] Fix VLS increasing above VAPP for CONF 3 landings - @flogross89 (floridude)
+1. [A380X/FMS] Add DCT capability to AIRWAYS page - @flogross89 (floridude)
+1. [A380X] Various fixes in FMS and ECL - @flogross89 (floridude)
+1. [A380X/SD] Fix unit conversion in SD permanent area - @flogross89 (floridude)
 1. [A380X/FMS] Fix THR RED field being dashed even though filled in - @flogross89 (floridude)
 1. [A380X/FMS] Fix decision height handling in FMS and PFD; Add NO DH/NODH/NONE/NO options - @flogross89 (floridude)
 1. [SD] Fix ISA deviation display conditions on status area - @flogross89 (floridude)
@@ -122,6 +128,9 @@
 1. [ADIRU] Changed the IRS alignment times to actual enhanced align times - @tracernz (Mike)
 1. [A32NX/FWC] Added IRS alignment related faults and improved accuracy of time to align logic - @tracernz (Mike)
 1. [A32NX/EWD] Added support for flashing text from FWC - @tracernz (Mike)
+1. [A380X/OIT] Add initial implementation of OIT AVNCS side, including flight log and inbox page for COMPANY COM app - @flogross89 (floridude)
+1. [A380X/FG] Fix SRS disengagement conditions for eng 3&4 OEI - @flogross89 (floridude)
+1. [A380X/FMS] Add engine-out indications and behavior to FMS - @flogross89 (floridude)
 1. [A380X/Fuel] Enabled gravityfeeding and fixed crossfeed fuel usage from correct tanks - @Maximilian-Reuter (\_chaoz_)
 
 ## 0.13.0

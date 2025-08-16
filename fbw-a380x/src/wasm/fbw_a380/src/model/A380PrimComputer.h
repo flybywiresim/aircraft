@@ -57,12 +57,17 @@ class A380PrimComputer final
     boolean_T output;
   };
 
+  struct BlockIO_A380PrimComputer_T {
+    prim_outputs BusAssignment_nw;
+    prim_outputs BusAssignment_om;
+  };
+
   struct D_Work_A380PrimComputer_T {
     real_T Delay_DSTATE;
     real_T Delay_DSTATE_c;
     real_T eventTime;
     real_T resetEventTime;
-    real_T eventTime_p;
+    real_T eventTime_f;
     boolean_T Delay_DSTATE_cc;
     boolean_T Delay1_DSTATE;
     boolean_T Delay1_DSTATE_b;
@@ -84,8 +89,8 @@ class A380PrimComputer final
     boolean_T sProtActive;
     boolean_T eventTime_not_empty;
     boolean_T resetEventTime_not_empty;
-    boolean_T sProtActive_l;
-    boolean_T eventTime_not_empty_i;
+    boolean_T sProtActive_g;
+    boolean_T eventTime_not_empty_m;
     boolean_T abnormalConditionWasActive;
     boolean_T Runtime_MODE;
     rtDW_MATLABFunction_A380PrimComputer_o_T sf_MATLABFunction_dmh;
@@ -633,6 +638,7 @@ class A380PrimComputer final
  private:
   ExternalInputs_A380PrimComputer_T A380PrimComputer_U;
   ExternalOutputs_A380PrimComputer_T A380PrimComputer_Y;
+  BlockIO_A380PrimComputer_T A380PrimComputer_B;
   D_Work_A380PrimComputer_T A380PrimComputer_DWork;
   static Parameters_A380PrimComputer_T A380PrimComputer_P;
   static void A380PrimComputer_RateLimiter_Reset(rtDW_RateLimiter_A380PrimComputer_T *localDW);
