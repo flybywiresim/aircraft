@@ -61,7 +61,7 @@ export class AnsuOps extends AircraftNetworkServerUnit {
     if (
       (this.turnaroundConfNode.read() || this.outBlockTime.get() === null) &&
       !this.sci.parkBrakeSet.get() &&
-      this.sci.doorsOpen.get() < 5
+      this.sci.doorsOpen.get() < 0.25
     ) {
       if (this.turnaroundConfNode.read()) {
         // Turnaround: Reset block times
