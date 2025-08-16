@@ -581,6 +581,7 @@ export const EcamInopSys: { [n: string]: string } = {
   340300046: '\x1b<4mTAWS SYS 1',
   340300047: '\x1b<4mTAWS SYS 2',
   340300048: '\x1b<4mTAWS SYS 1+2',
+  490300001: '\x1b<4mAPU',
   700300001: '\x1b<4mENG 2 REVERSER',
   700300002: '\x1b<4mENG 3 REVERSER',
   700300003: '\x1b<4mENG 2+3 REVERSERs',

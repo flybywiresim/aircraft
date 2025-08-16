@@ -207,6 +207,16 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
         } else {
             self.master_off_for = Duration::ZERO
         }
+
+        if self.is_available() {
+            if self.n.get::<percent>() > 105.
+                || self.n.get::<percent>() < 88.
+                || self.n2.get::<percent>() > 102.
+                || self.egt.get::<degree_celsius>() > 700.
+            {
+                self.fault = Some(ApuFault::ApuLimitsExceeded);
+            }
+        }
     }
 
     pub fn update_bleed_air_valve_state(
@@ -383,6 +393,8 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
         if self.aircraft_preset_quick_mode {
             cool_down_required = false;
             println!("apu/electronic_control_box.rs: Aircraft Preset Quick Mode is active. APU cooldown is skipped.");
+        } else if self.is_auto_shutdown() || self.is_emergency_shutdown() {
+            cool_down_required = false;
         } else {
             cool_down_required = self
                 .bleed_air_valve_was_open_in_last(C::BLEED_AIR_COOLDOWN_DURATION)
@@ -548,4 +560,5 @@ enum ApuFault {
     ApuFire,
     FuelLowPressure,
     DcPowerLoss,
+    ApuLimitsExceeded,
 }

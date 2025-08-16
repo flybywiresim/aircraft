@@ -1950,6 +1950,17 @@ export class FwsCore {
   public readonly cpiomC1Available = Subject.create(false);
   public readonly cpiomC2Available = Subject.create(false);
 
+  /** 49 APU */
+  public readonly apuMachLimitExceeded = Subject.create(false);
+
+  public readonly apuMachLimitExceededMemory = new NXLogicMemoryNode(true);
+
+  public readonly apuAutoShutdown = Subject.create(false);
+
+  public readonly apuEmerShutdown = Subject.create(false);
+
+  public readonly apuFault = Subject.create(false);
+
   /* ICE */
 
   public readonly iceDetectedTimer1 = new NXLogicConfirmNode(40, false);
@@ -2735,6 +2746,8 @@ export class FwsCore {
     this.emergencyElectricGeneratorPotential.set(SimVar.GetSimVarValue('L:A32NX_ELEC_EMER_GEN_POTENTIAL', 'number'));
 
     this.apuMasterSwitch.set(SimVar.GetSimVarValue('L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON', 'bool'));
+    this.apuAutoShutdown.set(SimVar.GetSimVarValue('L:A32NX_APU_IS_AUTO_SHUTDOWN', 'bool'));
+    this.apuEmerShutdown.set(SimVar.GetSimVarValue('L:A32NX_APU_IS_EMERGENCY_SHUTDOWN', 'bool'));
 
     this.apuAvail.set(SimVar.GetSimVarValue('L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE', 'bool') > 0);
     this.apuBleedValveOpen.set(SimVar.GetSimVarValue('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'bool') > 0);
@@ -4719,6 +4732,16 @@ export class FwsCore {
     /* 42 AVIONICS NETWORK */
     this.cpiomC1Available.set(SimVar.GetSimVarValue('L:A32NX_CPIOM_C1_AVAIL', 'bool'));
     this.cpiomC2Available.set(SimVar.GetSimVarValue('L:A32NX_CPIOM_C2_AVAIL', 'bool'));
+
+    /* 49 - APU */
+    this.apuMachLimitExceeded.set(
+      this.apuMachLimitExceededMemory.write(
+        this.apuAvail.get() && this.machSelectedFromAdr.get() > 0.5,
+        this.machSelectedFromAdr.get() < 0.45,
+      ),
+    );
+
+    this.apuFault.set((this.apuEmerShutdown.get() || this.apuAutoShutdown.get()) && !this.apuFireDetected.get());
 
     /* ANTI ICE */
 
