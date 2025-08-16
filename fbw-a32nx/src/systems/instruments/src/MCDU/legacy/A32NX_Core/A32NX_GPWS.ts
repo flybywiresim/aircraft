@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import {
   Arinc429SignStatusMatrix,
   Arinc429Word,

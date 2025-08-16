@@ -363,14 +363,14 @@ export class FwsSoundManager {
       Coherent.call('PLAY_INSTRUMENT_SOUND', sound.wwiseEventName);
     }
     this.currentSoundPlaying = soundKey;
-    this.currentSoundPlayTimeRemaining = sound.continuous ? Infinity : sound.length;
+    this.currentSoundPlayTimeRemaining = sound.continuous ? Infinity : sound.length ?? 0;
     this.soundQueue.delete(soundKey);
   }
 
   /** Find most important sound from soundQueue and play */
   private selectAndPlayMostImportantSound(): keyof typeof FwsAuralsList | null {
     if (!this.startupCompleted.get() || this.audioFunctionLost.get()) {
-      return;
+      return null;
     }
 
     // Logic for scheduling new sounds: Take sound from soundQueue of most important type

@@ -20,6 +20,7 @@ import {
   SetSubject,
   Subscribable,
   Subscription,
+  MappedSubscribable,
 } from '@microsoft/msfs-sdk';
 
 import {
@@ -103,7 +104,7 @@ enum engineState {
 
 export interface FwsSuppressableItem {
   /** INOP SYS line is active */
-  simVarIsActive: Subscribable<boolean>;
+  simVarIsActive: MappedSubscribable<boolean> | Subscribable<boolean>;
   /** This line won't be shown if the following line(s) are active */
   notActiveWhenItemActive?: string[];
 }
@@ -130,7 +131,7 @@ export class FwsCore {
 
   private readonly fwsUpdateThrottler = new UpdateThrottler(125); // has to be > 100 due to pulse nodes
 
-  private keyEventManager: KeyEventManager;
+  private keyEventManager: KeyEventManager | undefined = undefined;
 
   private readonly startupTimer = new DebounceTimer();
 
@@ -270,7 +271,7 @@ export class FwsCore {
   public readonly presentedFailures: string[] = [];
 
   /** Keys/IDs of the active abnormal non-sensed procedures */
-  public readonly activeAbnormalNonSensedKeys: SetSubject<number> = SetSubject.create([]);
+  public readonly activeAbnormalNonSensedKeys: SetSubject<number> = SetSubject.create([] as number[]);
 
   /** Map to hold all failures which are currently active and not cleared, i.e. presented on the EWD. */
   public readonly presentedAbnormalProceduresList = MapSubject.create<string, ChecklistState>();
@@ -1173,7 +1174,7 @@ export class FwsCore {
 
   private readonly fuelingInitiated = ConsumerSubject.create(this.sub.on('fuel_refuel_started_by_user'), false);
 
-  private readonly fuelingTarget = ConsumerSubject.create(this.sub.on('fuel_desired_by_user'), null);
+  private readonly fuelingTarget = ConsumerSubject.create(this.sub.on('fuel_desired_by_user'), 0);
 
   public readonly refuelPanelOpen = MappedSubject.create(
     ([refuelPanelOpen, fuelingInprogress]) => !!refuelPanelOpen || fuelingInprogress,
@@ -1319,7 +1320,7 @@ export class FwsCore {
 
   /* 31 - FWS */
 
-  public readonly flightPhase = Subject.create<FwcFlightPhase | null>(null);
+  public readonly flightPhase = Subject.create<FwcFlightPhase>(FwcFlightPhase.ElecPwr);
 
   public readonly flightPhase1Or2 = this.flightPhase.map((v) => v === 1 || v === 2);
 
@@ -1542,7 +1543,7 @@ export class FwsCore {
     this.fwsNumber === 2 ? this.airDataFoOn3 : this.airDataCaptOn3,
   );
 
-  public readonly adrPressureAltitude = Subject.create(0);
+  public readonly adrPressureAltitude = Subject.create<number | null>(0);
 
   public readonly ir1MaintWord = Arinc429Register.empty();
   public readonly ir2MaintWord = Arinc429Register.empty();
@@ -2052,8 +2053,8 @@ export class FwsCore {
 
   public readonly eng4HydraulicInop = this.gen4Inop;
 
-  private static pushKeyUnique(val: (state?: boolean[]) => string[] | undefined, pushTo: string[], state?: boolean[]) {
-    if (val) {
+  private static pushKeyUnique(val?: (state: boolean[]) => (string | null)[], pushTo?: string[], state?: boolean[]) {
+    if (val && pushTo && state && val(state)) {
       // Push only unique keys
       for (const key of val(state)) {
         if (key && !pushTo.includes(key)) {
@@ -2420,6 +2421,11 @@ export class FwsCore {
   }
 
   private registerKeyEvents() {
+    if (!this.keyEventManager) {
+      console.warn('KeyEventManager is not instantiated, cannot register key events.');
+      return;
+    }
+
     this.keyEventManager.interceptKey('A32NX.AUTO_THROTTLE_DISCONNECT', true);
     this.keyEventManager.interceptKey('A32NX.FCU_AP_DISCONNECT_PUSH', true);
     this.keyEventManager.interceptKey('A32NX.AUTOPILOT_DISENGAGE', false); // internal event, for FWS only
@@ -2432,7 +2438,7 @@ export class FwsCore {
     SimVar.SetSimVarValue('L:A32NX_CABIN_READY', SimVarValueType.Bool, true);
   }
 
-  mapOrder(array, order): [] {
+  mapOrder(array: string[], order: string[]): string[] {
     array.sort((a, b) => {
       if (order.indexOf(a) > order.indexOf(b)) {
         return 1;
@@ -2442,7 +2448,7 @@ export class FwsCore {
     return array;
   }
 
-  public adirsMessage1(adirs, engineRunning) {
+  public adirsMessage1(adirs: number, engineRunning: boolean): number {
     let rowChoice = 0;
 
     switch (true) {
@@ -2477,7 +2483,7 @@ export class FwsCore {
     return rowChoice;
   }
 
-  public adirsMessage2(adirs, engineRunning) {
+  public adirsMessage2(adirs: number, engineRunning: boolean): number {
     let rowChoice = 0;
 
     switch (true) {
@@ -2748,7 +2754,8 @@ export class FwsCore {
 
     this.apuBleedPbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON', SimVarValueType.Bool));
     const machBelow56 = this.machSelectedFromAdr.get() < 0.56;
-    const apuWithinEnvelope = this.adrPressureAltitude.get() < 22_500 && (machBelow56 || this.allEnginesFailure.get());
+    const apuWithinEnvelope =
+      (this.adrPressureAltitude.get() ?? Infinity) < 22_500 && (machBelow56 || this.allEnginesFailure.get());
     this.apuBleedPbOnOver22500ft.set(this.apuBleedPbOn.get() && !apuWithinEnvelope);
 
     this.eng1BleedAbnormalOff.set(
@@ -3083,11 +3090,18 @@ export class FwsCore {
     this.adr2Faulty.set(!(!this.ac4BusPowered.get() || flightPhase112) && adr2Fault);
     this.adr3Faulty.set(!(!this.ac2BusPowered.get() || flightPhase112) && adr3Fault);
 
+    // FIXME use the ARINC bus words
     this.adirsRemainingAlignTime.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_REMAINING_IR_ALIGNMENT_TIME', 'Seconds'));
 
     // TODO use GPS alt if ADRs not available
     this.adrPressureAltitude.set(
-      adr1PressureAltitude.valueOr(null) ?? adr2PressureAltitude.valueOr(null) ?? adr3PressureAltitude.valueOr(null),
+      !adr1PressureAltitude.isInvalid()
+        ? adr1PressureAltitude.value
+        : !adr2PressureAltitude.isInvalid()
+          ? adr2PressureAltitude.value
+          : !adr3PressureAltitude.isInvalid()
+            ? adr3PressureAltitude.value
+            : null,
     );
     this.ir1Align.set(
       this.ir1MaintWord.bitValueOr(16, false) ||
@@ -3578,7 +3592,7 @@ export class FwsCore {
       !SimVar.GetSimVarValue('L:A32NX_AFDX_4_6_REACHABLE', SimVarValueType.Bool) &&
       !SimVar.GetSimVarValue('L:A32NX_AFDX_14_16_REACHABLE', SimVarValueType.Bool);
 
-    this.flightLevel.set(Math.round(this.adrPressureAltitude.get() / 100));
+    this.flightLevel.set(Math.round((this.adrPressureAltitude.get() ?? 0) / 100));
 
     this.phase8ConfirmationNode60.write(this.flightPhase.get() === 8, deltaTime);
 
@@ -4450,7 +4464,7 @@ export class FwsCore {
       this.radioHeight2.isFailureWarning() &&
       this.radioHeight3.isFailureWarning();
     const allRaInvalidOrNcd =
-      (this.radioHeight1.isNoComputedData || this.radioHeight1.isFailureWarning()) &&
+      (this.radioHeight1.isNoComputedData() || this.radioHeight1.isFailureWarning()) &&
       (this.radioHeight2.isNoComputedData() || this.radioHeight2.isFailureWarning()) &&
       (this.radioHeight3.isNoComputedData() || this.radioHeight3.isFailureWarning());
     const flapsApprCondition =
@@ -4958,13 +4972,15 @@ export class FwsCore {
     if (this.rclUpPulseNode.read()) {
       if (this.recallFailures.length > 0) {
         const recalledKey = this.recallFailures.shift();
-        this.presentedFailures.push(recalledKey);
+        if (recalledKey !== undefined) {
+          this.presentedFailures.push(recalledKey);
+          const recalledState = this.clearedAbnormalProceduresList.getValue(recalledKey);
 
-        this.presentedAbnormalProceduresList.setValue(
-          recalledKey,
-          this.clearedAbnormalProceduresList.getValue(recalledKey),
-        );
-        this.clearedAbnormalProceduresList.delete(recalledKey);
+          if (recalledState) {
+            this.presentedAbnormalProceduresList.setValue(recalledKey, recalledState);
+            this.clearedAbnormalProceduresList.delete(recalledKey);
+          }
+        }
       }
     }
 
@@ -5067,7 +5083,9 @@ export class FwsCore {
           }
         }
 
-        if (!this.presentedAbnormalProceduresList.has(key) && !this.clearedAbnormalProceduresList.has(key)) {
+        const previousPresentedState = this.presentedAbnormalProceduresList.getValue(key);
+        const previousClearedState = this.clearedAbnormalProceduresList.getValue(key);
+        if (!previousPresentedState && !previousClearedState) {
           // Insert into internal map
           if (value.whichItemsActive) {
             if (proc.items.length !== value.whichItemsActive().length) {
@@ -5109,7 +5127,7 @@ export class FwsCore {
               const deferredItemsActive = Array(deferredValue.whichItemsChecked().length).fill(false); // not activated, hence all false
               const deferredItemsChecked = deferredValue.whichItemsChecked
                 ? deferredValue.whichItemsChecked()
-                : Array(deferredValue.whichItemsChecked().length).fill(true);
+                : Array(deferredItemsActive.length).fill(true);
               ProcedureLinesGenerator.conditionalActiveItems(
                 EcamDeferredProcedures[deferredKey],
                 deferredItemsChecked,
@@ -5127,38 +5145,39 @@ export class FwsCore {
               });
             }
           }
-        } else if (this.presentedAbnormalProceduresList.has(key)) {
+        } else if (previousPresentedState) {
           // Update internal map
-          const prevEl = this.presentedAbnormalProceduresList.getValue(key);
-          const fusedChecked = [...prevEl.itemsChecked].map((val, index) =>
+          const fusedChecked = [...previousPresentedState.itemsChecked].map((val, index) =>
             proc.items[index].sensed ? itemsChecked[index] : !!val,
           );
           ProcedureLinesGenerator.conditionalActiveItems(proc, fusedChecked, itemsActive, itemsTimer);
           this.abnormalUpdatedItems.set(key, []);
           proc.items.forEach((item, idx) => {
             if (
-              prevEl.itemsToShow[idx] !== itemsToShow[idx] ||
-              prevEl.itemsActive[idx] !== itemsActive[idx] ||
-              (prevEl.itemsChecked[idx] !== fusedChecked[idx] && item.sensed) ||
+              previousPresentedState.itemsToShow[idx] !== itemsToShow[idx] ||
+              previousPresentedState.itemsActive[idx] !== itemsActive[idx] ||
+              (previousPresentedState.itemsChecked[idx] !== fusedChecked[idx] && item.sensed) ||
               (isTimedItem(item) !== undefined &&
                 itemsTimer !== undefined &&
-                prevEl.itemsTimeStamp !== undefined &&
-                prevEl.itemsTimeStamp[idx] !== itemsTimer[idx])
+                previousPresentedState.itemsTimeStamp !== undefined &&
+                previousPresentedState.itemsTimeStamp[idx] !== itemsTimer[idx])
             ) {
-              this.abnormalUpdatedItems.get(key).push(idx);
+              this.abnormalUpdatedItems.get(key)?.push(idx);
             }
           });
 
-          if (this.abnormalUpdatedItems.has(key) && this.abnormalUpdatedItems.get(key).length > 0) {
+          if ((this.abnormalUpdatedItems.has(key) && this.abnormalUpdatedItems.get(key)?.length) ?? 0 > 0) {
             this.presentedAbnormalProceduresList.setValue(key, {
               id: key,
-              procedureActivated: prevEl.procedureActivated,
-              procedureCompleted: prevEl.procedureCompleted,
+              procedureActivated: previousPresentedState.procedureActivated,
+              procedureCompleted: previousPresentedState.procedureCompleted,
               itemsChecked: fusedChecked,
-              itemsActive: [...prevEl.itemsActive].map((_, index) => itemsActive[index]),
-              itemsToShow: [...prevEl.itemsToShow].map((_, index) => itemsToShow[index]),
-              itemsTimeStamp: prevEl.itemsTimeStamp
-                ? [...prevEl.itemsTimeStamp].map((_, index) => itemsTimer[index])
+              itemsActive: [...previousPresentedState.itemsActive].map((_, index) => itemsActive[index]),
+              itemsToShow: [...previousPresentedState.itemsToShow].map((_, index) => itemsToShow[index]),
+              itemsTimeStamp: previousPresentedState.itemsTimeStamp
+                ? [...previousPresentedState.itemsTimeStamp].map((_, index) =>
+                    itemsTimer ? itemsTimer[index] : undefined,
+                  )
                 : undefined,
             });
           }
@@ -5186,10 +5205,13 @@ export class FwsCore {
         allFailureKeys.push(key);
 
         // Add keys for STS page
-        const checkedState = this.presentedAbnormalProceduresList.has(key)
-          ? this.presentedAbnormalProceduresList.getValue(key).itemsChecked
-          : this.clearedAbnormalProceduresList.has(key)
-            ? this.clearedAbnormalProceduresList.getValue(key).itemsChecked
+        const presentedProcedure = this.presentedAbnormalProceduresList.getValue(key);
+        const clearedProcedure = this.clearedAbnormalProceduresList.getValue(key);
+
+        const checkedState = presentedProcedure
+          ? presentedProcedure.itemsChecked
+          : clearedProcedure
+            ? clearedProcedure.itemsChecked
             : undefined;
         FwsCore.pushKeyUnique(value.info, stsInfoKeys, checkedState);
         FwsCore.pushKeyUnique(value.inopSysAllPhases, stsInopAllPhasesKeys, checkedState);
@@ -5238,9 +5260,7 @@ export class FwsCore {
       const itemsChecked = this.abnormalSensed.ewdDeferredProcs[key]
         .whichItemsChecked()
         .map((v, i) => (proc.items[i].sensed === false ? false : !!v));
-      const itemsToShow = this.abnormalSensed.ewdDeferredProcs[key].whichItemsToShow
-        ? this.abnormalSensed.ewdDeferredProcs[key].whichItemsToShow()
-        : Array(itemsChecked.length).fill(true);
+      const itemsToShow = this.abnormalSensed.ewdDeferredProcs[key].whichItemsToShow();
       const itemsActive = this.abnormalSensed.ewdDeferredProcs[key].whichItemsActive
         ? value.procedureActivated
           ? this.abnormalSensed.ewdDeferredProcs[key].whichItemsActive()
@@ -5259,11 +5279,11 @@ export class FwsCore {
           value.itemsActive[idx] !== itemsActive[idx] ||
           (value.itemsChecked[idx] !== fusedChecked[idx] && item.sensed)
         ) {
-          this.deferredUpdatedItems.get(key).push(idx);
+          this.deferredUpdatedItems.get(key)?.push(idx);
         }
       });
 
-      if (this.deferredUpdatedItems.has(key) && this.deferredUpdatedItems.get(key).length > 0) {
+      if (this.deferredUpdatedItems.get(key)?.length ?? 0 > 0) {
         this.activeDeferredProceduresList.setValue(key, {
           id: key,
           procedureActivated: value.procedureActivated,
@@ -5291,10 +5311,10 @@ export class FwsCore {
     });
 
     // Delete inactive failures from internal map
-    this.presentedAbnormalProceduresList.get().forEach((_, key) => {
+    this.presentedAbnormalProceduresList.get().forEach((procedure, key) => {
       if (!allFailureKeys.includes(key) || this.recallFailures.includes(key)) {
         if (this.recallFailures.includes(key)) {
-          this.clearedAbnormalProceduresList.setValue(key, this.presentedAbnormalProceduresList.getValue(key));
+          this.clearedAbnormalProceduresList.setValue(key, procedure);
         } else {
           this.clearedAbnormalProceduresList.delete(key);
         }
@@ -5540,7 +5560,10 @@ export class FwsCore {
       this.abnormalSensed.abnormalShown.set(false);
 
       this.publisher.pub('fws_active_item', this.normalChecklists.selectedLine.get(), true);
-      this.publisher.pub('fws_active_procedure', this.normalChecklists.activeDeferredProcedureId.get(), true);
+      const activeDeferredProcedureId = this.normalChecklists.activeDeferredProcedureId.get();
+      if (activeDeferredProcedureId) {
+        this.publisher.pub('fws_active_procedure', activeDeferredProcedureId, true);
+      }
       this.publisher.pub('fws_show_from_line', this.normalChecklists.showFromLine.get(), true);
       this.ecamEwdShowFailurePendingIndication.set(this.abnormalSensed.showAbnormalSensedRequested.get());
     } else if (this.abnormalSensed.showAbnormalSensedRequested.get()) {
@@ -5548,8 +5571,11 @@ export class FwsCore {
       this.normalChecklists.checklistShown.set(false);
       this.abnormalSensed.abnormalShown.set(true);
 
-      this.publisher.pub('fws_active_item', this.abnormalSensed.selectedItemIndex.get(), true);
-      this.publisher.pub('fws_active_procedure', this.abnormalSensed.activeProcedureId.get(), true);
+      const activeProcedureId = this.abnormalSensed.activeProcedureId.get();
+      if (activeProcedureId) {
+        this.publisher.pub('fws_active_item', this.abnormalSensed.selectedItemIndex.get(), true);
+        this.publisher.pub('fws_active_procedure', activeProcedureId, true);
+      }
       this.publisher.pub('fws_show_from_line', this.abnormalSensed.showFromLine.get(), true);
       this.ecamEwdShowFailurePendingIndication.set(false);
     } else {

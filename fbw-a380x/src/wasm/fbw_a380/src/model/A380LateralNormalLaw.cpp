@@ -388,7 +388,7 @@ void A380LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_
   int32_T low_ip1;
   int32_T mid_i;
   int16_T r_tmp;
-  boolean_T rtb_NOT_h_tmp;
+  boolean_T rtb_NOT_o;
   static const int16_T b[4]{ 0, 120, 150, 380 };
 
   static const int8_T c[4]{ -15, -15, -15, -2 };
@@ -397,16 +397,17 @@ void A380LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_
 
   static const real_T c_0[5]{ 0.3, 0.3, 0.4, 0.8, 0.8 };
 
-  rtb_NOT_h_tmp = !*rtu_In_on_ground;
-  if (static_cast<real_T>(rtb_NOT_h_tmp) > A380LateralNormalLaw_rtP.Saturation_UpperSat) {
-    omega_0 = A380LateralNormalLaw_rtP.Saturation_UpperSat;
-  } else if (static_cast<real_T>(rtb_NOT_h_tmp) < A380LateralNormalLaw_rtP.Saturation_LowerSat) {
-    omega_0 = A380LateralNormalLaw_rtP.Saturation_LowerSat;
+  boolean_T tmp;
+  rtb_NOT_o = !*rtu_In_on_ground;
+  if (static_cast<real_T>(rtb_NOT_o) > A380LateralNormalLaw_rtP.Saturation_UpperSat) {
+    Vias = A380LateralNormalLaw_rtP.Saturation_UpperSat;
+  } else if (static_cast<real_T>(rtb_NOT_o) < A380LateralNormalLaw_rtP.Saturation_LowerSat) {
+    Vias = A380LateralNormalLaw_rtP.Saturation_LowerSat;
   } else {
-    omega_0 = rtb_NOT_h_tmp;
+    Vias = rtb_NOT_o;
   }
 
-  A380LateralNormalLaw_RateLimiter(omega_0, A380LateralNormalLaw_rtP.RateLimiterVariableTs_up,
+  A380LateralNormalLaw_RateLimiter(Vias, A380LateralNormalLaw_rtP.RateLimiterVariableTs_up,
     A380LateralNormalLaw_rtP.RateLimiterVariableTs_lo, rtu_In_time_dt,
     A380LateralNormalLaw_rtP.RateLimiterVariableTs_InitialCondition, &rtb_Y_j,
     &A380LateralNormalLaw_DWork.sf_RateLimiter);
@@ -472,13 +473,10 @@ void A380LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_
       omega_0 = c_0[low_i];
     } else if (r == 1.0) {
       omega_0 = c_0[low_i + 1];
+    } else if (c_0[low_i + 1] == c_0[low_i]) {
+      omega_0 = c_0[low_i];
     } else {
-      omega_0 = c_0[low_i + 1];
-      if (omega_0 == c_0[low_i]) {
-        omega_0 = c_0[low_i];
-      } else {
-        omega_0 = (1.0 - r) * c_0[low_i] + omega_0 * r;
-      }
+      omega_0 = (1.0 - r) * c_0[low_i] + c_0[low_i + 1] * r;
     }
   }
 
@@ -572,10 +570,10 @@ void A380LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_
     A380LateralNormalLaw_DWork.pY_not_empty = true;
   }
 
-  denom = *rtu_In_time_dt * A380LateralNormalLaw_rtP.LagFilter_C1;
-  Vtas = denom / (denom + 2.0);
-  A380LateralNormalLaw_DWork.pY = (2.0 - denom) / (denom + 2.0) * A380LateralNormalLaw_DWork.pY + (rtb_Limiterxi * Vtas
-    + A380LateralNormalLaw_DWork.pU * Vtas);
+  denom = *rtu_In_time_dt * A380LateralNormalLaw_rtP.LagFilter_C1 + 2.0;
+  Vtas = *rtu_In_time_dt * A380LateralNormalLaw_rtP.LagFilter_C1 / denom;
+  A380LateralNormalLaw_DWork.pY = (2.0 - *rtu_In_time_dt * A380LateralNormalLaw_rtP.LagFilter_C1) / denom *
+    A380LateralNormalLaw_DWork.pY + (rtb_Limiterxi * Vtas + A380LateralNormalLaw_DWork.pU * Vtas);
   A380LateralNormalLaw_DWork.pU = rtb_Limiterxi;
   A380LateralNormalLaw_DWork.Delay_DSTATE = A380LateralNormalLaw_DWork.Delay_DSTATE * look1_binlxpw(*rtu_In_V_ias_kn,
     A380LateralNormalLaw_rtP.ScheduledGain_BreakpointsForDimension1, A380LateralNormalLaw_rtP.ScheduledGain_Table, 8U) +
@@ -630,7 +628,7 @@ void A380LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_
     A380LateralNormalLaw_DWork.pY_not_empty_a = true;
   }
 
-  A380LateralNormalLaw_DWork.pY_a += std::fmax(std::fmin(static_cast<real_T>(rtb_NOT_h_tmp) -
+  A380LateralNormalLaw_DWork.pY_a += std::fmax(std::fmin(static_cast<real_T>(rtb_NOT_o) -
     A380LateralNormalLaw_DWork.pY_a, std::abs(A380LateralNormalLaw_rtP.RateLimiterVariableTs1_up_j) * *rtu_In_time_dt),
     -std::abs(A380LateralNormalLaw_rtP.RateLimiterVariableTs1_lo_n) * *rtu_In_time_dt);
   if (A380LateralNormalLaw_DWork.pY_a > A380LateralNormalLaw_rtP.Saturation_UpperSat_n) {
@@ -677,7 +675,7 @@ void A380LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_
     A380LateralNormalLaw_rtP.RateLimiterVariableTs3_lo, rtu_In_time_dt,
     A380LateralNormalLaw_rtP.RateLimiterVariableTs3_InitialCondition, &rtb_Y_j,
     &A380LateralNormalLaw_DWork.sf_RateLimiter_g);
-  if (static_cast<real_T>(rtb_NOT_h_tmp) > A380LateralNormalLaw_rtP.Switch1_Threshold) {
+  if (static_cast<real_T>(rtb_NOT_o) > A380LateralNormalLaw_rtP.Switch1_Threshold) {
     rtb_Limiterxi = A380LateralNormalLaw_rtP.Gain3_Gain * rtb_Y_j;
   } else {
     rtb_Limiterxi = rtb_Y_j;
@@ -691,7 +689,8 @@ void A380LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_
     *rty_Out_zeta_lower_deg = rtb_Limiterxi;
   }
 
-  A380LateralNormalLaw_TransportDelay(rtb_Y_j, rtu_In_time_dt, !rtb_NOT_h_tmp, &rtb_Limiterxi,
+  tmp = !rtb_NOT_o;
+  A380LateralNormalLaw_TransportDelay(rtb_Y_j, rtu_In_time_dt, tmp, &rtb_Limiterxi,
     &A380LateralNormalLaw_DWork.sf_TransportDelay_p);
   if (rtb_Limiterxi > A380LateralNormalLaw_rtP.Saturation5_UpperSat) {
     *rty_Out_zeta_upper_deg = A380LateralNormalLaw_rtP.Saturation5_UpperSat;
@@ -713,30 +712,30 @@ void A380LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_
     (*rtu_In_time_dt, A380LateralNormalLaw_rtP.ScheduledGain_BreakpointsForDimension1_b,
      A380LateralNormalLaw_rtP.ScheduledGain_Table_h, 4U) * A380LateralNormalLaw_rtP.Gain_Gain_cw;
   if (A380LateralNormalLaw_DWork.Delay1_DSTATE > A380LateralNormalLaw_rtP.Limiterxi_UpperSat) {
-    omega_0 = A380LateralNormalLaw_rtP.Limiterxi_UpperSat;
+    Vias = A380LateralNormalLaw_rtP.Limiterxi_UpperSat;
   } else if (A380LateralNormalLaw_DWork.Delay1_DSTATE < A380LateralNormalLaw_rtP.Limiterxi_LowerSat) {
-    omega_0 = A380LateralNormalLaw_rtP.Limiterxi_LowerSat;
+    Vias = A380LateralNormalLaw_rtP.Limiterxi_LowerSat;
   } else {
-    omega_0 = A380LateralNormalLaw_DWork.Delay1_DSTATE;
+    Vias = A380LateralNormalLaw_DWork.Delay1_DSTATE;
   }
 
-  A380LateralNormalLaw_RateLimiter(A380LateralNormalLaw_rtP.Gain5_Gain * omega_0,
+  A380LateralNormalLaw_RateLimiter(A380LateralNormalLaw_rtP.Gain5_Gain * Vias,
     A380LateralNormalLaw_rtP.RateLimiterVariableTs2_up_g, A380LateralNormalLaw_rtP.RateLimiterVariableTs2_lo_o,
-    rtu_In_time_dt, A380LateralNormalLaw_rtP.RateLimiterVariableTs2_InitialCondition_c, &Vias,
+    rtu_In_time_dt, A380LateralNormalLaw_rtP.RateLimiterVariableTs2_InitialCondition_c, &dynamic_pressure,
     &A380LateralNormalLaw_DWork.sf_RateLimiter_l);
-  A380LateralNormalLaw_RateLimiter(Vias * A380LateralNormalLaw_DWork.Delay_DSTATE +
+  A380LateralNormalLaw_RateLimiter(dynamic_pressure * A380LateralNormalLaw_DWork.Delay_DSTATE +
     (A380LateralNormalLaw_rtP.Constant_Value_j - A380LateralNormalLaw_DWork.Delay_DSTATE) *
     (A380LateralNormalLaw_rtP.Gain_Gain_c * *rtu_In_delta_xi_pos), A380LateralNormalLaw_rtP.RateLimiterVariableTs1_up_d,
     A380LateralNormalLaw_rtP.RateLimiterVariableTs1_lo_k, rtu_In_time_dt,
     A380LateralNormalLaw_rtP.RateLimiterVariableTs1_InitialCondition_e, &rtb_Y_j,
     &A380LateralNormalLaw_DWork.sf_RateLimiter_i);
-  if (static_cast<real_T>(rtb_NOT_h_tmp) > A380LateralNormalLaw_rtP.Switch_Threshold) {
+  if (static_cast<real_T>(rtb_NOT_o) > A380LateralNormalLaw_rtP.Switch_Threshold) {
     Vias = A380LateralNormalLaw_rtP.Gain_Gain * rtb_Y_j;
   } else {
     Vias = rtb_Y_j;
   }
 
-  A380LateralNormalLaw_TransportDelay(Vias, rtu_In_time_dt, !rtb_NOT_h_tmp, &A380LateralNormalLaw_DWork.Delay_DSTATE,
+  A380LateralNormalLaw_TransportDelay(Vias, rtu_In_time_dt, tmp, &A380LateralNormalLaw_DWork.Delay_DSTATE,
     &A380LateralNormalLaw_DWork.sf_TransportDelay);
   if (A380LateralNormalLaw_DWork.Delay_DSTATE > A380LateralNormalLaw_rtP.Saturation3_UpperSat_o) {
     *rty_Out_xi_midboard_deg = A380LateralNormalLaw_rtP.Saturation3_UpperSat_o;

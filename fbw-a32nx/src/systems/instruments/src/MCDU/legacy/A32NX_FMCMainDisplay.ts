@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023, 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -386,7 +387,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       a320EfisRangeSettings,
     );
 
-    initComponents(this.navigation, this.guidanceController, this.flightPlanService);
+    initComponents(this.bus, this.navigation, this.guidanceController, this.flightPlanService);
 
     this.guidanceController.init();
     this.efisSymbolsLeft.init();
