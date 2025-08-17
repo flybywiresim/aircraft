@@ -1,7 +1,11 @@
+use std::time::Duration;
+
 use crate::systems::shared::arinc429::{Arinc429Word, SignStatus};
 use systems::hydraulic::command_sensor_unit::{CSUMonitor, CSU};
 use systems::hydraulic::flap_slat::{ChannelCommand, SolenoidStatus, ValveBlock};
-use systems::shared::{AdirsMeasurementOutputs, PositionPickoffUnit};
+use systems::shared::{
+    AdirsMeasurementOutputs, ElectricalBusType, ElectricalBuses, PositionPickoffUnit,
+};
 
 use systems::simulation::{
     InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
@@ -21,6 +25,11 @@ pub(super) struct FlapsChannel {
     flaps_demanded_angle: Angle,
     flaps_feedback_angle: Angle,
 
+    powered_by: ElectricalBusType,
+    is_powered: bool,
+    recovered_power: bool,
+    power_duration: Duration,
+
     csu_monitor: CSUMonitor,
 
     conf1_flaps: Angle,
@@ -37,12 +46,13 @@ pub(super) struct FlapsChannel {
 }
 
 impl FlapsChannel {
+    const TRANSPARENCY_TIME: Duration = Duration::from_millis(200); //ms
     const FLAP_CONF1_FPPU_ANGLE: f64 = 0.; //deg
     const FLAP_CONF1F_FPPU_ANGLE: f64 = 120.21; //deg
     const KNOTS_100: f64 = 100.;
     const KNOTS_210: f64 = 210.;
 
-    pub(super) fn new(context: &mut InitContext, num: u8) -> Self {
+    pub(super) fn new(context: &mut InitContext, num: u8, powered_by: ElectricalBusType) -> Self {
         Self {
             flaps_fppu_angle_id: context.get_identifier("FLAPS_FPPU_ANGLE".to_owned()),
             flap_actual_position_word_id: context
@@ -52,6 +62,11 @@ impl FlapsChannel {
 
             flaps_demanded_angle: Angle::ZERO,
             flaps_feedback_angle: Angle::ZERO,
+
+            powered_by,
+            is_powered: false,
+            recovered_power: false,
+            power_duration: Duration::ZERO,
 
             csu_monitor: CSUMonitor::new(context),
 
@@ -70,6 +85,11 @@ impl FlapsChannel {
     }
 
     fn fap_update(&mut self) {
+        if !self.is_powered && self.power_duration > Self::TRANSPARENCY_TIME {
+            self.fap = [false; 7];
+            return;
+        }
+
         let fppu_angle = self.flaps_feedback_angle.get::<degree>();
 
         self.fap[0] = fppu_angle > 247.8 && fppu_angle < 254.0;
@@ -95,6 +115,21 @@ impl FlapsChannel {
         }
     }
 
+    fn get_cas(
+        &self,
+        adirs: &impl AdirsMeasurementOutputs,
+    ) -> (Option<Velocity>, Option<Velocity>) {
+        let cas1 = adirs.computed_airspeed(1).normal_value();
+        let cas2 = adirs.computed_airspeed(2).normal_value();
+
+        match (cas1, cas2) {
+            (Some(cas1), Some(cas2)) => (Some(cas1), Some(cas2)),
+            (Some(cas1), None) => (Some(cas1), Some(cas1)),
+            (None, Some(cas2)) => (Some(cas2), Some(cas2)),
+            (None, None) => (None, None),
+        }
+    }
+
     fn update_flap_auto_command(&mut self, adirs: &impl AdirsMeasurementOutputs) {
         if self.csu_monitor.get_last_valid_detent() != CSU::Conf1 {
             self.flap_auto_command_active = false;
@@ -105,19 +140,9 @@ impl FlapsChannel {
         let previous_detent = self.csu_monitor.get_previous_detent();
         let current_detent = self.csu_monitor.get_current_detent();
 
-        let cas1 = adirs.computed_airspeed(1).normal_value();
-        let cas2 = adirs.computed_airspeed(2).normal_value();
-
-        let (cas1, cas2) = match (cas1, cas2) {
-            (Some(cas1), Some(cas2)) => (Some(cas1), Some(cas2)),
-            (Some(cas1), None) => (Some(cas1), Some(cas1)),
-            (None, Some(cas2)) => (Some(cas2), Some(cas2)),
-            (None, None) => (None, None),
-        };
-
         // The match can be shortened by a convoluted if statement however
         // I believe it would make debugging and understanding the state machine harder
-        match (cas1, cas2) {
+        match self.get_cas(adirs) {
             (Some(cas1), Some(cas2)) if cas1 <= self.kts_100 && cas2 <= self.kts_100 => {
                 self.flap_auto_command_angle = self.conf1f_flaps
             }
@@ -252,7 +277,119 @@ impl FlapsChannel {
             );
     }
 
+    fn powerup_reset(&mut self, adirs: &impl AdirsMeasurementOutputs) {
+        // Auto Command restart
+        if self.csu_monitor.get_last_valid_detent() != CSU::Conf1 {
+            self.flap_auto_command_active = false;
+        } else {
+            // The match can be shortened by a convoluted if statement however
+            // I believe it would make debugging and understanding the state machine harder
+            match self.get_cas(adirs) {
+                (Some(cas1), Some(cas2))
+                    if ((cas1 <= self.kts_100 && cas2 >= self.kts_210)
+                        || (cas1 >= self.kts_210 && cas2 <= self.kts_100))
+                        && SlatFlapControlComputerMisc::in_enlarged_target_range(
+                            self.flaps_feedback_angle,
+                            self.conf1_flaps,
+                        ) =>
+                {
+                    self.flap_auto_command_angle = self.conf1_flaps
+                }
+                (Some(cas1), Some(cas2))
+                    if ((cas1 <= self.kts_100 && cas2 >= self.kts_210)
+                        || (cas1 >= self.kts_210 && cas2 <= self.kts_100))
+                        && SlatFlapControlComputerMisc::in_or_above_enlarged_target_range(
+                            self.flaps_feedback_angle,
+                            self.conf1f_flaps,
+                        ) =>
+                {
+                    self.flap_auto_command_angle = self.conf1f_flaps
+                }
+                (Some(cas1), _)
+                    if cas1 > self.kts_100
+                        && cas1 < self.kts_210
+                        && SlatFlapControlComputerMisc::in_or_above_enlarged_target_range(
+                            self.flaps_feedback_angle,
+                            self.conf1f_flaps,
+                        ) =>
+                {
+                    self.flap_auto_command_angle = self.conf1f_flaps
+                }
+                (_, Some(cas2))
+                    if cas2 > self.kts_100
+                        && cas2 < self.kts_210
+                        && SlatFlapControlComputerMisc::in_or_above_enlarged_target_range(
+                            self.flaps_feedback_angle,
+                            self.conf1f_flaps,
+                        ) =>
+                {
+                    self.flap_auto_command_angle = self.conf1f_flaps
+                }
+                (Some(cas1), _)
+                    if cas1 > self.kts_100
+                        && cas1 < self.kts_210
+                        && SlatFlapControlComputerMisc::in_enlarged_target_range(
+                            self.flaps_feedback_angle,
+                            self.conf1_flaps,
+                        ) =>
+                {
+                    self.flap_auto_command_angle = self.conf1_flaps
+                }
+                (_, Some(cas2))
+                    if cas2 > self.kts_100
+                        && cas2 < self.kts_210
+                        && SlatFlapControlComputerMisc::in_enlarged_target_range(
+                            self.flaps_feedback_angle,
+                            self.conf1_flaps,
+                        ) =>
+                {
+                    self.flap_auto_command_angle = self.conf1_flaps
+                }
+                (Some(cas1), Some(cas2))
+                    if ((cas1 <= self.kts_100 && cas2 >= self.kts_210)
+                        || (cas1 >= self.kts_210 && cas2 <= self.kts_100))
+                        && SlatFlapControlComputerMisc::between_0_1f_enlarged_target_range(
+                            self.flaps_feedback_angle,
+                        ) =>
+                {
+                    // TODO: implement startup inhibition
+                    self.flap_auto_command_angle = self.flaps_feedback_angle
+                }
+                (Some(cas1), _)
+                    if cas1 > self.kts_100
+                        && cas1 < self.kts_210
+                        && SlatFlapControlComputerMisc::between_0_1f_enlarged_target_range(
+                            self.flaps_feedback_angle,
+                        ) =>
+                {
+                    // TODO: implement startup inhibition
+                    self.flap_auto_command_angle = self.flaps_feedback_angle
+                }
+                (_, Some(cas2))
+                    if cas2 > self.kts_100
+                        && cas2 < self.kts_210
+                        && SlatFlapControlComputerMisc::between_0_1f_enlarged_target_range(
+                            self.flaps_feedback_angle,
+                        ) =>
+                {
+                    // TODO: implement startup inhibition
+                    self.flap_auto_command_angle = self.flaps_feedback_angle
+                }
+                (None, None) => self.flap_auto_command_angle = self.conf1f_flaps,
+                (_, _) => self.flap_auto_command_angle = self.flaps_feedback_angle,
+            }
+            self.flap_auto_command_active = true;
+        }
+    }
+
     fn generate_flap_angle(&mut self, adirs: &impl AdirsMeasurementOutputs) -> Angle {
+        if !self.is_powered && self.power_duration > Self::TRANSPARENCY_TIME {
+            self.flap_auto_command_active = false;
+            self.flap_auto_command_engaged = false;
+            self.flap_auto_command_angle = Angle::ZERO;
+            return Angle::ZERO;
+        }
+
         self.update_flap_auto_command(adirs);
 
         if self.flap_auto_command_active {
@@ -268,6 +405,16 @@ impl FlapsChannel {
         flaps_feedback: &impl PositionPickoffUnit,
         adirs: &impl AdirsMeasurementOutputs,
     ) {
+        self.power_duration += context.delta();
+
+        if self.recovered_power {
+            if self.power_duration > Self::TRANSPARENCY_TIME {
+                self.powerup_reset(adirs);
+            }
+            self.recovered_power = false;
+            self.power_duration = Duration::ZERO;
+        }
+
         self.csu_monitor.update(context);
         self.flaps_demanded_angle = self.generate_flap_angle(adirs);
 
@@ -275,6 +422,8 @@ impl FlapsChannel {
         self.fap_update();
     }
 
+    // The result of `get_demanded_angle` shall not be used outside of the SFCC.
+    // It returns 0.0 when the SFCC is powered off regardless of the last status.
     pub(super) fn get_demanded_angle(&self) -> Angle {
         self.flaps_demanded_angle
     }
@@ -307,6 +456,10 @@ impl FlapsChannel {
     }
 
     fn flap_actual_position_word(&self) -> Arinc429Word<f64> {
+        if !self.is_powered && self.power_duration > Self::TRANSPARENCY_TIME {
+            return Arinc429Word::default();
+        }
+
         Arinc429Word::new(
             self.flaps_feedback_angle.get::<degree>(),
             SignStatus::NormalOperation,
@@ -318,6 +471,10 @@ impl FlapsChannel {
 // are held in position and can't move.
 impl ValveBlock for FlapsChannel {
     fn get_pob_status(&self) -> SolenoidStatus {
+        if !self.is_powered && self.power_duration > Self::TRANSPARENCY_TIME {
+            return SolenoidStatus::DeEnergised;
+        }
+
         let demanded_angle = self.get_demanded_angle();
         let feedback_angle = self.get_feedback_angle();
         let in_target_position =
@@ -329,6 +486,10 @@ impl ValveBlock for FlapsChannel {
     }
 
     fn get_command_status(&self) -> Option<ChannelCommand> {
+        if !self.is_powered && self.power_duration > Self::TRANSPARENCY_TIME {
+            return None;
+        }
+
         let demanded_angle = self.get_demanded_angle();
         let feedback_angle = self.get_feedback_angle();
         let in_target_position = SlatFlapControlComputerMisc::in_positioning_threshold_range(
@@ -348,6 +509,15 @@ impl SimulationElement for FlapsChannel {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.csu_monitor.accept(visitor);
         visitor.visit(self);
+    }
+
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        if self.is_powered != buses.is_powered(self.powered_by) {
+            // If is_powered returns TRUE and the previous is FALSE,
+            // it means we have just restored the power
+            self.recovered_power = !self.is_powered;
+        }
+        self.is_powered = buses.is_powered(self.powered_by);
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
