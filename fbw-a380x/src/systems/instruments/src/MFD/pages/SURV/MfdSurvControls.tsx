@@ -187,6 +187,8 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
       this.xpdrState,
       this.xpdrAltRptgDisabled,
       this.xpdrStatusRadioColor,
+      this.tcasTaraRadioColor,
+      this.tcasNormAbvBlwRadioColor,
       this.tcasFailed,
       this.tcasRadioGroupDisabled,
       this.activeSystemGroupWxrTaws,
