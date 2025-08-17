@@ -15,7 +15,7 @@ import { OitAvncsMenu } from './Pages/NssAvncs/OitAvncsMenu';
 import { OitAvncsCompanyComFlightLog } from './Pages/NssAvncs/CompanyCom/OitAvncsCompanyComFlightLog';
 import { OitAvncsCompanyComInbox } from './Pages/NssAvncs/CompanyCom/OitAvncsCompanyComInbox';
 import { OitAvncsFbwSystems } from './Pages/NssAvncs/FbwSystems/OitAvncsFbwSystems';
-import { OitAvncsFbwSystemsDebug } from './Pages/NssAvncs/FbwSystems/OitAvncsFbwSystemsDebug';
+import { OitAvncsFbwSystemsGenericDebug } from './Pages/NssAvncs/FbwSystems/OitAvncsFbwSystemsGenericDebug';
 
 // Page imports
 // eslint-disable-next-line jsdoc/require-jsdoc
@@ -97,7 +97,16 @@ export function avncsFbwSystemsPageForUrl(
     case 'nss-avncs/fbw-systems':
       return <OitAvncsFbwSystems bus={bus} uiService={uiService} container={container} />;
     case 'nss-avncs/fbw-systems/debug-data':
-      return <OitAvncsFbwSystemsDebug bus={bus} uiService={uiService} container={container} />;
+      return (
+        <OitAvncsFbwSystemsGenericDebug
+          bus={bus}
+          uiService={uiService}
+          container={container}
+          title={'FBW Systems FWS Debug'}
+          controlEventName="a380x_ois_fws_debug_data_enabled"
+          dataEventName="a380x_ois_fws_debug_data"
+        />
+      );
 
     default:
       return <OitNotFound uiService={uiService} />;

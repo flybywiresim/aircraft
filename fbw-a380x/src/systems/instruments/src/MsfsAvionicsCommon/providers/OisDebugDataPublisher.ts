@@ -11,5 +11,9 @@ export interface DebugDataTableRow {
   value: string;
 }
 export interface OisDebugDataEvents {
-  ois_generic_debug_data_table: DebugDataTableRow[];
+  a380x_ois_fws_debug_data: DebugDataTableRow[];
+}
+
+export interface OisDebugDataControlEvents {
+  a380x_ois_fws_debug_data_enabled: boolean;
 }

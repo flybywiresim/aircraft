@@ -77,6 +77,7 @@ import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPubli
 import {
   OisDebugDataEvents,
   DebugDataTableRow,
+  OisDebugDataControlEvents,
 } from 'instruments/src/MsfsAvionicsCommon/providers/OisDebugDataPublisher';
 
 export function xor(a: boolean, b: boolean): boolean {
@@ -126,7 +127,8 @@ export class FwsCore {
       KeyEvents &
       MsfsFlightModelEvents &
       FmsMessageVars &
-      FGVars
+      FGVars &
+      OisDebugDataControlEvents
   >();
 
   private subs: Subscription[] = [];
@@ -141,18 +143,17 @@ export class FwsCore {
 
   public readonly startupCompleted = Subject.create(false);
 
+  public readonly debugDataToOisEnabled = ConsumerSubject.create(
+    this.sub.on('a380x_ois_fws_debug_data_enabled'),
+    false,
+  );
   public readonly debugDataToOis: DebugDataTableRow[] = [
-    { label: 'onGroundA', value: '' },
-    { label: 'ignoreRaOnGroundTrigger', value: '' },
-    { label: 'onGroundCount', value: '' },
-    { label: 'raInvalid', value: '' },
-    { label: 'aircraftOnGround', value: '' },
-    { label: 'onGroundImmediate', value: '' },
-    { label: 'RA 1', value: '' },
-    { label: 'RA 2', value: '' },
-    { label: 'RA 3', value: '' },
-    { label: 'parkBrakeSet', value: '' },
-    { label: 'doorsOpen', value: '' },
+    { label: 'FWS Flight Phase', value: '' },
+    { label: 'Startup Completed', value: '' },
+    { label: 'ECAM STS Normal', value: '' },
+    { label: 'All Current Failures', value: '' },
+    { label: 'Presented Failures', value: '' },
+    { label: 'On Ground', value: '' },
   ];
   public readonly debugDataToOisSubject = Subject.create<DebugDataTableRow[]>([]);
 
@@ -2402,7 +2403,9 @@ export class FwsCore {
 
     this.subs.push(
       this.debugDataToOisSubject.sub((data) => {
-        this.publisher.pub('ois_generic_debug_data_table', data, true);
+        if (this.debugDataToOisEnabled.get()) {
+          this.publisher.pub('a380x_ois_fws_debug_data', data, true);
+        }
       }, true),
     );
 
@@ -3270,21 +3273,6 @@ export class FwsCore {
       (onGroundCount > 2 && !raInvalid) ||
       (onGroundCount > 1 && raInvalid);
     this.aircraftOnGround.set(this.onGroundConf.write(this.onGroundImmediate, deltaTime));
-
-    this.debugDataToOis[0].value = onGroundA ? 'true' : 'false';
-    this.debugDataToOis[1].value = this.ignoreRaOnGroundTrigger.read() ? 'true' : 'false';
-    this.debugDataToOis[2].value = onGroundCount.toFixed(0);
-    this.debugDataToOis[3].value = raInvalid ? 'true' : 'false';
-    this.debugDataToOis[4].value = this.aircraftOnGround.get() ? 'true' : 'false';
-    this.debugDataToOis[5].value = this.onGroundImmediate ? 'true' : 'false';
-    this.debugDataToOis[6].value = `SSM: ${this.radioHeight1.ssm}, Value: ${this.radioHeight1.value}, OnGroundMem: ${this.ra1OnGroundMem.read() ? 'true' : 'false'}`;
-    this.debugDataToOis[7].value = `SSM: ${this.radioHeight2.ssm}, Value: ${this.radioHeight2.value}, OnGroundMem: ${this.ra2OnGroundMem.read() ? 'true' : 'false'}`;
-    this.debugDataToOis[8].value = `SSM: ${this.radioHeight3.ssm}, Value: ${this.radioHeight3.value}, OnGroundMem: ${this.ra3OnGroundMem.read() ? 'true' : 'false'}`;
-    this.debugDataToOis[9].value = this.parkBrakeSet.get() ? 'true' : 'false';
-    this.debugDataToOis[10].value = SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:0', 'percent').toFixed(2);
-
-    this.debugDataToOisSubject.set(this.debugDataToOis);
-    this.debugDataToOisSubject.notify();
 
     // AP OFF
     const apEngaged = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_ACTIVE', 'Bool');
@@ -5560,6 +5548,10 @@ export class FwsCore {
     this.systemDisplayLogic.update(deltaTime);
     this.updateRowRopWarnings();
 
+    if (this.debugDataToOisEnabled.get()) {
+      this.updateOisDebugData();
+    }
+
     // Orchestrate display of normal or abnormal proc display
     if (this.abnormalNonSensed.showAbnProcRequested.get()) {
       // ABN PROC always shown
@@ -5689,6 +5681,18 @@ export class FwsCore {
       default:
         return 10;
     }
+  }
+
+  updateOisDebugData() {
+    this.debugDataToOis[0].value = this.flightPhase.get().toFixed(0);
+    this.debugDataToOis[1].value = this.startupCompleted.get() ? 'true' : 'false';
+    this.debugDataToOis[2].value = this.ecamStsNormal.get() ? 'true' : 'false';
+    this.debugDataToOis[3].value = this.allCurrentFailures.length.toString();
+    this.debugDataToOis[4].value = this.presentedFailures.length.toString();
+    this.debugDataToOis[5].value = this.aircraftOnGround.get() ? 'true' : 'false';
+
+    this.debugDataToOisSubject.set(this.debugDataToOis);
+    this.debugDataToOisSubject.notify();
   }
 
   static sendFailureWarning(bus: EventBus) {
