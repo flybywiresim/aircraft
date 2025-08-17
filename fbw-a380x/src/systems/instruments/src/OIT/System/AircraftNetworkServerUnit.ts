@@ -8,7 +8,6 @@ import {
   Instrument,
   SimVarValueType,
   Subject,
-  Subscribable,
   Subscription,
 } from '@microsoft/msfs-sdk';
 import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
@@ -36,7 +35,6 @@ export class AircraftNetworkServerUnit implements Instrument {
   protected readonly powered = Subject.create(false);
 
   protected readonly _isHealthy = Subject.create(false);
-  public readonly isHealthy = this._isHealthy as Subscribable<boolean>;
   protected readonly isHealthySimVar = `L:A32NX_${this.type === 'nss-avncs' ? 'NSS' : 'FLTOPS'}_ANSU_${this.index.toFixed(0)}_IS_HEALTHY`;
 
   protected readonly nssMasterOff = ConsumerSubject.create(this.sub.on('nssMasterOff'), false);
@@ -60,7 +58,7 @@ export class AircraftNetworkServerUnit implements Instrument {
     this.failuresConsumer.register(this.failureKey);
 
     this.subscriptions.push(
-      this._isHealthy.sub((v) => SimVar.SetSimVarValue(this.isHealthySimVar, SimVarValueType.Bool, v)),
+      this._isHealthy.sub((v) => SimVar.SetSimVarValue(this.isHealthySimVar, SimVarValueType.Bool, v), true),
     );
   }
 
