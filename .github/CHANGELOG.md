@@ -131,7 +131,8 @@
 1. [A380X/OIT] Add initial implementation of OIT AVNCS side, including flight log and inbox page for COMPANY COM app - @flogross89 (floridude)
 1. [A380X/FG] Fix SRS disengagement conditions for eng 3&4 OEI - @flogross89 (floridude)
 1. [A380X/FMS] Add engine-out indications and behavior to FMS - @flogross89 (floridude)
-1. [A380X/Flight Model] Minor change to fix rotation at VR at FWD CG light weight - @donstim (donbikes)
+1. [A380X/Fuel] Enabled gravityfeeding and fixed crossfeed fuel usage from correct tanks - @Maximilian-Reuter (\_chaoz_)
+1. [A380X/Flight Model] Update to A380X flight model for MSFS 2020 - @donstim (donbikes)
 
 ## 0.13.0
 
