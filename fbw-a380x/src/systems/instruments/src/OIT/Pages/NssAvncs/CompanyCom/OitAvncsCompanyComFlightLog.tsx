@@ -47,7 +47,7 @@ export abstract class OitAvncsCompanyComFlightLog extends DestroyableComponent<O
   private readonly outBlockFobText = MappedSubject.create(
     ([weight, unit]) =>
       weight !== null
-        ? `${(NXUnits.kgToUser(weight) / 1_000).toFixed(1).padStart(5, ' ')} ${unit === 'KG' ? 'T' : 'KLB'}`
+        ? `${(NXUnits.kgToUser(weight) / 1_000).toFixed(1).padStart(5, '\xa0')} ${unit === 'KG' ? 'T' : 'KLB'}`
         : '----- -',
     this.props.container.ansu.outBlockFob,
     this.userWeight,
@@ -55,7 +55,7 @@ export abstract class OitAvncsCompanyComFlightLog extends DestroyableComponent<O
   private readonly offBlockFobText = MappedSubject.create(
     ([weight, unit]) =>
       weight !== null
-        ? `${(NXUnits.kgToUser(weight) / 1_000).toFixed(1).padStart(5, ' ')} ${unit === 'KG' ? 'T' : 'KLB'}`
+        ? `${(NXUnits.kgToUser(weight) / 1_000).toFixed(1).padStart(5, '\xa0')} ${unit === 'KG' ? 'T' : 'KLB'}`
         : '----- -',
     this.props.container.ansu.offBlockFob,
     this.userWeight,
@@ -63,7 +63,7 @@ export abstract class OitAvncsCompanyComFlightLog extends DestroyableComponent<O
   private readonly onBlockFobText = MappedSubject.create(
     ([weight, unit]) =>
       weight !== null
-        ? `${(NXUnits.kgToUser(weight) / 1_000).toFixed(1).padStart(5, ' ')} ${unit === 'KG' ? 'T' : 'KLB'}`
+        ? `${(NXUnits.kgToUser(weight) / 1_000).toFixed(1).padStart(5, '\xa0')} ${unit === 'KG' ? 'T' : 'KLB'}`
         : '----- -',
     this.props.container.ansu.onBlockFob,
     this.userWeight,
@@ -71,7 +71,7 @@ export abstract class OitAvncsCompanyComFlightLog extends DestroyableComponent<O
   private readonly inBlockFobText = MappedSubject.create(
     ([weight, unit]) =>
       weight !== null
-        ? `${(NXUnits.kgToUser(weight) / 1_000).toFixed(1).padStart(5, ' ')} ${unit === 'KG' ? 'T' : 'KLB'}`
+        ? `${(NXUnits.kgToUser(weight) / 1_000).toFixed(1).padStart(5, '\xa0')} ${unit === 'KG' ? 'T' : 'KLB'}`
         : '----- -',
     this.props.container.ansu.inBlockFob,
     this.userWeight,
