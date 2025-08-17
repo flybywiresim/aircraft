@@ -30,7 +30,7 @@ export abstract class OitAvncsFbwSystemsGenericDebug extends DestroyableComponen
 
   protected readonly messageContainerRef = FSComponent.createRef<HTMLDivElement>();
 
-  protected readonly debugDataControlDropdownIndex = Subject.create(0);
+  protected readonly debugDataControlDropdownIndex = Subject.create<number | null>(0);
 
   protected readonly labelSubjects: Subject<string>[] = [];
   protected readonly valueSubjects: Subject<string>[] = [];
