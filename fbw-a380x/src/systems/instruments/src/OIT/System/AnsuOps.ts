@@ -96,7 +96,7 @@ export class AnsuOps extends AircraftNetworkServerUnit {
     if (
       (this.turnaroundConfNode.read() || this.outBlockTime.get() === null) &&
       !this.sci.parkBrakeSet.get() &&
-      this.sci.doorsOpen.get() < 0.25
+      this.sci.doorsOpenPercentageOver100.get() < 0.25
     ) {
       if (this.turnaroundConfNode.read()) {
         // Turnaround: Reset block times
@@ -123,7 +123,13 @@ export class AnsuOps extends AircraftNetworkServerUnit {
     }
 
     // In Block: Park brake set
-    if (this.inBlockTime.get() === null && this.onBlockTime.get() !== null && this.sci.parkBrakeSet.get()) {
+    if (
+      this.inBlockTime.get() === null &&
+      this.onBlockTime.get() !== null &&
+      this.sci.parkBrakeSet.get() &&
+      this.sci.doorsOpenPercentageOver100.get() > 0.25 &&
+      !this.sci.hydraulicsPressurized.get()
+    ) {
       this.inBlockTime.set(this.parkBrakeOnTime.get());
       this.inBlockFob.set(this.parkBrakeOnFob.get());
     }

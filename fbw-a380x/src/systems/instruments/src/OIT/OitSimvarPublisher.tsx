@@ -25,6 +25,8 @@ export type OitSimvars = {
   fuelTotalQuantity: number;
   /** in pounds */
   fuelWeightPerGallon: number;
+  hydGreenPressurized: boolean;
+  hydYellowPressurized: boolean;
 };
 
 export type InternalKbdKeyEvent = {
@@ -54,6 +56,11 @@ export class OitSimvarPublisher extends SimVarPublisher<OitSimvars> {
     ['cabinDoorOpen', { name: 'INTERACTIVE POINT OPEN:0', type: SimVarValueType.PercentOver100 }],
     ['fuelTotalQuantity', { name: 'FUEL TOTAL QUANTITY', type: SimVarValueType.GAL }],
     ['fuelWeightPerGallon', { name: 'FUEL WEIGHT PER GALLON', type: SimVarValueType.Number }],
+    ['hydGreenPressurized', { name: 'L:A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE_SWITCH', type: SimVarValueType.Bool }],
+    [
+      'hydYellowPressurized',
+      { name: 'L:A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE_SWITCH', type: SimVarValueType.Bool },
+    ],
   ]);
 
   public constructor(bus: EventBus) {
