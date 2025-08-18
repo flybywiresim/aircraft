@@ -346,8 +346,6 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: EventBus }> {
 
   private takeoffTimer: number | null = null;
   private goAroundTimer: number | null = null;
-  private takeoffTimerActive = false;
-  private goAroundTimerActive = false;
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -382,15 +380,12 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: EventBus }> {
         this.tailStrikeConditions.approachPhase = fp === 5;
         this.tailStrikeConditions.goAroundPhase = fp === 6;
         if (fp === 6) {
-          if (!this.goAroundTimerActive && this.goAroundTimer === null) {
-            this.goAroundTimerActive = true;
+          if (this.goAroundTimer === null) {
             this.goAroundTimer = setTimeout(() => {
-              this.goAroundTimerActive = false;
               this.goAroundTimer = null;
             }, 4000) as unknown as number;
           }
         } else {
-          this.goAroundTimerActive = false;
           if (this.goAroundTimer !== null) {
             clearTimeout(this.goAroundTimer);
             this.goAroundTimer = null;
@@ -401,15 +396,12 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: EventBus }> {
 
     const handleGearCompression = () => {
       if (!this.tailStrikeConditions.leftGearCompressed && !this.tailStrikeConditions.rightGearCompressed) {
-        if (!this.takeoffTimerActive && this.takeoffTimer === null) {
-          this.takeoffTimerActive = true;
+        if (this.takeoffTimer === null) {
           this.takeoffTimer = setTimeout(() => {
-            this.takeoffTimerActive = false;
             this.takeoffTimer = null;
           }, 3000) as unknown as number;
         }
       } else {
-        this.takeoffTimerActive = false;
         if (this.takeoffTimer !== null) {
           clearTimeout(this.takeoffTimer);
           this.takeoffTimer = null;
