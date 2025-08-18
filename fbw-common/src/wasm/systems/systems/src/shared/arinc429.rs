@@ -1,4 +1,4 @@
-#[derive(Clone, Copy)]
+#[derive(Default, Clone, Copy)]
 pub struct Arinc429Word<T: Copy> {
     value: T,
     ssm: SignStatus,
@@ -85,8 +85,9 @@ impl From<Arinc429Word<f64>> for f64 {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Default, Clone, Copy, Debug, PartialEq, Eq)]
 pub enum SignStatus {
+    #[default]
     FailureWarning,
     NoComputedData,
     FunctionalTest,
