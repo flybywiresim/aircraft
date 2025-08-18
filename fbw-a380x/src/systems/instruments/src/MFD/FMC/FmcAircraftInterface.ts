@@ -204,18 +204,18 @@ export class FmcAircraftInterface {
     .handle((v) => {
       if (v) {
         // TODO Split across both MFDs & NDs
-        this.fmc.recallNdFmMessage(NDFMMessageTypes.NavPrimaryLost, 'L');
-        this.fmc.recallNdFmMessage(NDFMMessageTypes.NavPrimaryLost, 'R');
+        this.fmc.removeNdFmMessage(NDFMMessageTypes.NavPrimaryLost, 'L');
+        this.fmc.removeNdFmMessage(NDFMMessageTypes.NavPrimaryLost, 'R');
         this.fmc.removeMessageFromQueue(NXSystemMessages.navprimaryLost.text);
         this.fmc.sendNdFmMessage(NDFMMessageTypes.NavPrimary, 'L');
         this.fmc.sendNdFmMessage(NDFMMessageTypes.NavPrimary, 'R');
         this.fmc.addMessageToQueue(NXSystemMessages.navprimary, undefined, () => {
-          this.fmc.recallNdFmMessage(NDFMMessageTypes.NavPrimary, 'L');
-          this.fmc.recallNdFmMessage(NDFMMessageTypes.NavPrimary, 'R');
+          this.fmc.removeNdFmMessage(NDFMMessageTypes.NavPrimary, 'L');
+          this.fmc.removeNdFmMessage(NDFMMessageTypes.NavPrimary, 'R');
         });
       } else {
-        this.fmc.recallNdFmMessage(NDFMMessageTypes.NavPrimary, 'L');
-        this.fmc.recallNdFmMessage(NDFMMessageTypes.NavPrimary, 'R');
+        this.fmc.removeNdFmMessage(NDFMMessageTypes.NavPrimary, 'L');
+        this.fmc.removeNdFmMessage(NDFMMessageTypes.NavPrimary, 'R');
         this.fmc.removeMessageFromQueue(NXSystemMessages.navprimary.text);
         this.fmc.sendNdFmMessage(NDFMMessageTypes.NavPrimaryLost, 'L');
         this.fmc.sendNdFmMessage(NDFMMessageTypes.NavPrimaryLost, 'R');

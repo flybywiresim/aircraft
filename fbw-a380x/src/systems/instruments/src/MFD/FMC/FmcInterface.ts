@@ -220,7 +220,7 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
 
   sendNdFmMessage(message: FMMessage, side: EfisSide): void;
 
-  recallNdFmMessage(message: FMMessage, side: EfisSide): void;
+  removeNdFmMessage(message: FMMessage, side: EfisSide): void;
 
   clearCheckSpeedModeMessage(): void;
 

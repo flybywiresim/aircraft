@@ -1292,7 +1292,7 @@ export class FlightManagementComputer implements FmcInterface {
     }
   }
 
-  public recallNdFmMessage(message: FMMessage, side: EfisSide) {
+  public removeNdFmMessage(message: FMMessage, side: EfisSide) {
     if (!message.ndFlag) {
       console.warn('FMMessage has no ND flag set, cannot recall message', message);
       return;
