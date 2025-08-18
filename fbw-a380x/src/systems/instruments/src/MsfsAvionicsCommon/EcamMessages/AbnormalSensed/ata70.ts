@@ -1,7 +1,14 @@
 ﻿// Copyright (c) 2024-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { AbnormalProcedure } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import {
+  AbnormalProcedure,
+  ChecklistLineStyle,
+  DeferredProcedure,
+  DeferredProcedureType,
+  FLAPS_SLOW_CHECKLIST_ITEM,
+  SLATS_SLOW_CHECKLIST_ITEM,
+} from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 
 // Convention for IDs:
 // First two digits: ATA chapter
@@ -994,5 +1001,150 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
     title: '\x1b<4m\x1b4mENG\x1bm TAIL PIPE FIRE (WIP)',
     sensed: false,
     items: [], // TODO
+  },
+};
+
+export const EcamDeferredProcAta70: { [n: number]: DeferredProcedure } = {
+  320700001: {
+    fromAbnormalProcs: ['701800159', '701800160'],
+    title: 'LANDING WITH TWO ENGS OUT',
+    type: DeferredProcedureType.FOR_LANDING,
+    items: [
+      {
+        name: 'DISREGARD NORM APPR & LDG C/Ls',
+        sensed: false,
+      },
+      {
+        name: 'LONG APPROACH',
+        sensed: false,
+        labelNotCompleted: 'PLAN',
+      },
+      { ...FLAPS_SLOW_CHECKLIST_ITEM },
+      { ...SLATS_SLOW_CHECKLIST_ITEM },
+      {
+        name: 'BARO REF',
+        sensed: false,
+        labelNotCompleted: 'SET',
+      },
+      {
+        name: 'MINIMUM',
+        sensed: false,
+        labelNotCompleted: 'SET',
+      },
+      {
+        name: 'CABIN CREW',
+        sensed: false,
+        labelNotCompleted: 'ADVISE',
+      },
+      {
+        name: 'AUTO BRK',
+        sensed: false,
+        labelNotCompleted: 'AS RQRD',
+      },
+      {
+        name: 'SIGNS',
+        sensed: false,
+        labelNotCompleted: 'ON',
+      },
+      {
+        name: 'INITIAL APPROACH',
+        sensed: true,
+        style: ChecklistLineStyle.CenteredSubHeadline,
+      },
+      {
+        name: 'FLAP LVR',
+        sensed: true,
+        labelNotCompleted: 'CONF 1',
+      },
+      {
+        name: 'GA PERF MAY NOT BE ACHIEVED WITH L/G DN',
+        sensed: false,
+        style: ChecklistLineStyle.Green,
+      },
+      {
+        name: 'FOR L/G EXTN',
+        sensed: true,
+        style: ChecklistLineStyle.CenteredSubHeadline,
+      },
+      {
+        name: 'FOR L/G GRVTY EXTN : MAX SPD 220 KT',
+        sensed: false,
+      },
+      {
+        name: 'L/G LEVER',
+        sensed: true,
+        labelNotCompleted: 'UP',
+      },
+      {
+        name: 'L/G GRVTY (EXTN MAX 2 MIN)',
+        sensed: true,
+        labelNotCompleted: 'DOWN',
+      },
+      {
+        name: 'WHEN L/G LOCKED DOWN OR AFTER 120S',
+        condition: true,
+        sensed: false,
+      },
+      {
+        name: 'L/G LEVER',
+        sensed: true,
+        labelNotCompleted: 'DOWN',
+        level: 1,
+      },
+      {
+        name: 'INTERCEPTING G/S',
+        sensed: true,
+        style: ChecklistLineStyle.CenteredSubHeadline,
+      },
+      {
+        name: 'FLAP LVR',
+        sensed: true,
+        labelNotCompleted: 'CONF 2',
+      },
+      {
+        name: 'PACK 1+2',
+        sensed: true,
+        labelNotCompleted: 'OFF OR ON APU BLEED',
+      },
+      {
+        name: 'FINAL APPROACH',
+        sensed: true,
+        style: ChecklistLineStyle.CenteredSubHeadline,
+      },
+      {
+        name: 'FLAP LVR',
+        sensed: true,
+        labelNotCompleted: 'CONF 3',
+      },
+      {
+        name: 'ATHR',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'GND SPLRs',
+        sensed: true,
+        labelNotCompleted: 'ARM',
+      },
+      {
+        name: 'FOR GO AROUND : FLAP LVR 1',
+        sensed: false,
+        style: ChecklistLineStyle.Green,
+      },
+      {
+        name: 'AT COMMIT ALTITUDE (500 FT AGL) ',
+        sensed: true,
+        style: ChecklistLineStyle.CenteredSubHeadline,
+      },
+      {
+        name: 'SPEED',
+        sensed: true,
+        labelNotCompleted: 'REDUCE TO VAPP',
+      },
+      {
+        name: 'DO NOT ATTEMPT GO AROUND',
+        sensed: false,
+      },
+    ],
   },
 };

@@ -1275,27 +1275,27 @@ export class FwsCore {
 
   public readonly eng1APumpAuto = Subject.create(false);
 
-  private readonly eng1APumpOffConfirmationNode = new NXLogicConfirmNode(10);
-
   public readonly eng1BPumpAuto = Subject.create(false);
-
-  private readonly eng1BPumpOffConfirmationNode = new NXLogicConfirmNode(10);
 
   public readonly eng1APumpFault = Subject.create(false);
 
+  private readonly eng1APumpFaultConfNode = new NXLogicConfirmNode(3);
+
   public readonly eng1BPumpFault = Subject.create(false);
+
+  private readonly eng1BPumpFaultConfNode = new NXLogicConfirmNode(3);
 
   public readonly eng1PumpDisc = Subject.create(false);
 
   public readonly eng2APumpAuto = Subject.create(false);
 
-  private readonly eng2APumpOffConfirmationNode = new NXLogicConfirmNode(10);
-
   public readonly eng2BPumpAuto = Subject.create(false);
 
-  private readonly eng2BPumpOffConfirmationNode = new NXLogicConfirmNode(10);
+  private readonly eng2APumpFaultConfNode = new NXLogicConfirmNode(3);
 
   public readonly eng2APumpFault = Subject.create(false);
+
+  private readonly eng2BPumpFaultConfNode = new NXLogicConfirmNode(3);
 
   public readonly eng2BPumpFault = Subject.create(false);
 
@@ -1303,27 +1303,27 @@ export class FwsCore {
 
   public readonly eng3APumpAuto = Subject.create(false);
 
-  private readonly eng3APumpOffConfirmationNode = new NXLogicConfirmNode(10);
-
   public readonly eng3BPumpAuto = Subject.create(false);
+
+  private readonly eng3APumpFaultConfNode = new NXLogicConfirmNode(3);
 
   public readonly eng3APumpFault = Subject.create(false);
 
-  public readonly eng3BPumpFault = Subject.create(false);
+  private readonly eng3BPumpFaultConfNode = new NXLogicConfirmNode(3);
 
-  private readonly eng3BPumpOffConfirmationNode = new NXLogicConfirmNode(10);
+  public readonly eng3BPumpFault = Subject.create(false);
 
   public readonly eng3PumpDisc = Subject.create(false);
 
   public readonly eng4APumpAuto = Subject.create(false);
 
-  private readonly eng4APumpOffConfirmationNode = new NXLogicConfirmNode(10);
-
   public readonly eng4BPumpAuto = Subject.create(false);
 
-  private readonly eng4BPumpOffConfirmationNode = new NXLogicConfirmNode(10);
+  private readonly eng4APumpFaultConfNode = new NXLogicConfirmNode(3);
 
   public readonly eng4APumpFault = Subject.create(false);
+
+  private readonly eng4BPumpFaultConfNode = new NXLogicConfirmNode(3);
 
   public readonly eng4BPumpFault = Subject.create(false);
 
@@ -1857,6 +1857,9 @@ export class FwsCore {
   public readonly eng2Out = Subject.create(false);
   public readonly eng3Out = Subject.create(false);
   public readonly eng4Out = Subject.create(false);
+
+  public readonly twoEnginesOutOnSameSide = Subject.create(false);
+
   public readonly phase12561112Inhibition = [1, 2, 5, 6, 11, 12];
 
   public readonly phase56Inhibition = [5, 6];
@@ -2946,160 +2949,118 @@ export class FwsCore {
     this.eng1BPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_1B_PUMP_PB_IS_AUTO', 'bool'));
     this.eng1PumpDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_ENG_1AB_PUMP_DISC', 'bool'));
 
-    this.eng1APumpOffConfirmationNode.write(
-      !this.greenRsvLoAirPressure.get() &&
-        !this.greenRsvOverheat.get() &&
-        !this.greenAbnormLoPressure.get() &&
-        this.flightPhase.get() === 2 &&
-        !this.eng1APumpAuto.get(),
-      deltaTime,
-    );
     const eng1APumpBelow2900 = !SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_PUMP_1_SECTION_PRESSURE_SWITCH', 'bool');
     this.eng1APumpFault.set(
-      this.eng1APumpOffConfirmationNode.read() ||
-        (this.engine1Running.get() &&
+      this.eng1APumpFaultConfNode.write(
+        this.engine1Running.get() &&
           eng1APumpBelow2900 &&
-          !this.greenYellowAbnormLoPressure.get() &&
-          !this.greenRsvOverheat.get()),
-    );
-
-    this.eng1BPumpOffConfirmationNode.write(
-      !this.greenRsvLoAirPressure.get() &&
-        !this.greenRsvOverheat.get() &&
-        !this.greenAbnormLoPressure.get() &&
-        this.flightPhase.get() === 2 &&
-        !this.eng1BPumpAuto.get(),
-      deltaTime,
+          !this.greenRsvLoAirPressure.get() &&
+          !this.greenRsvOverheat.get() &&
+          !this.greenAbnormLoPressure.get() &&
+          !this.greenYellowAbnormLoPressure.get(),
+        deltaTime,
+      ),
     );
     const eng1BPumpBelow2900 = !SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_PUMP_2_SECTION_PRESSURE_SWITCH', 'bool');
     this.eng1BPumpFault.set(
-      this.eng1BPumpOffConfirmationNode.read() ||
-        (this.engine1Running.get() &&
+      this.eng1BPumpFaultConfNode.write(
+        this.engine1Running.get() &&
           eng1BPumpBelow2900 &&
-          !this.greenYellowAbnormLoPressure.get() &&
-          !this.greenRsvOverheat.get()),
+          !this.greenRsvLoAirPressure.get() &&
+          !this.greenRsvOverheat.get() &&
+          !this.greenAbnormLoPressure.get() &&
+          !this.greenYellowAbnormLoPressure.get(),
+        deltaTime,
+      ),
     );
 
     this.eng2APumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_2A_PUMP_PB_IS_AUTO', 'bool'));
     this.eng2BPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_2B_PUMP_PB_IS_AUTO', 'bool'));
     this.eng2PumpDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_ENG_2AB_PUMP_DISC', 'bool'));
 
-    this.eng2APumpOffConfirmationNode.write(
-      !this.greenRsvLoAirPressure.get() &&
-        !this.greenRsvOverheat.get() &&
-        !this.greenAbnormLoPressure.get() &&
-        this.flightPhase.get() === 2 &&
-        !this.eng2APumpAuto.get(),
-      deltaTime,
-    );
-
     const eng2APumpBelow2900 = !SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_PUMP_3_SECTION_PRESSURE_SWITCH', 'bool');
     this.eng2APumpFault.set(
-      this.eng2APumpOffConfirmationNode.read() ||
-        (this.engine2Running.get() &&
+      this.eng2APumpFaultConfNode.write(
+        this.engine2Running.get() &&
           eng2APumpBelow2900 &&
-          !this.greenYellowAbnormLoPressure.get() &&
-          !this.greenRsvOverheat.get()),
-    );
-
-    this.eng2BPumpOffConfirmationNode.write(
-      !this.greenRsvLoAirPressure.get() &&
-        !this.greenRsvOverheat.get() &&
-        !this.greenAbnormLoPressure.get() &&
-        this.flightPhase.get() === 2 &&
-        !this.eng2BPumpAuto.get(),
-      deltaTime,
+          !this.greenRsvLoAirPressure.get() &&
+          !this.greenRsvOverheat.get() &&
+          !this.greenAbnormLoPressure.get() &&
+          !this.greenYellowAbnormLoPressure.get(),
+        deltaTime,
+      ),
     );
 
     const eng2BPumpBelow2900 = !SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_PUMP_4_SECTION_PRESSURE_SWITCH', 'bool');
     this.eng2BPumpFault.set(
-      this.eng2BPumpOffConfirmationNode.read() ||
-        (this.engine2Running.get() &&
+      this.eng2BPumpFaultConfNode.write(
+        this.engine2Running.get() &&
           eng2BPumpBelow2900 &&
-          !this.greenYellowAbnormLoPressure.get() &&
-          !this.greenRsvOverheat.get()),
+          !this.greenRsvLoAirPressure.get() &&
+          !this.greenRsvOverheat.get() &&
+          !this.greenAbnormLoPressure.get() &&
+          !this.greenYellowAbnormLoPressure.get(),
+        deltaTime,
+      ),
     );
-
     this.eng3APumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_3A_PUMP_PB_IS_AUTO', 'bool'));
-
-    this.eng3APumpOffConfirmationNode.write(
-      !this.yellowRsvLoAirPressure.get() &&
-        !this.yellowRsvOverheat.get() &&
-        !this.yellowAbnormLoPressure.get() &&
-        this.flightPhase.get() === 2 &&
-        !this.eng3APumpAuto.get(),
-      deltaTime,
-    );
-
     this.eng3BPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_3B_PUMP_PB_IS_AUTO', 'bool'));
     this.eng3PumpDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_ENG_3AB_PUMP_DISC', 'bool'));
-
     const eng3APumpBelow2900 = !SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_PUMP_1_SECTION_PRESSURE_SWITCH', 'bool');
     this.eng3APumpFault.set(
-      this.eng3APumpOffConfirmationNode.read() ||
-        (this.engine3Running.get() &&
+      this.eng3APumpFaultConfNode.write(
+        this.engine3Running.get() &&
           eng3APumpBelow2900 &&
-          !this.greenYellowAbnormLoPressure.get() &&
-          !this.yellowRsvOverheat.get()),
-    );
-
-    this.eng3BPumpOffConfirmationNode.write(
-      !this.yellowRsvLoAirPressure.get() &&
-        !this.yellowRsvOverheat.get() &&
-        !this.yellowAbnormLoPressure.get() &&
-        this.flightPhase.get() === 2 &&
-        !this.eng3BPumpAuto.get(),
-      deltaTime,
+          !this.yellowRsvLoAirPressure.get() &&
+          !this.yellowRsvOverheat.get() &&
+          !this.yellowAbnormLoPressure.get() &&
+          !this.greenYellowAbnormLoPressure.get(),
+        deltaTime,
+      ),
     );
 
     const eng3BPumpBelow2900 = !SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_PUMP_2_SECTION_PRESSURE_SWITCH', 'bool');
     this.eng3BPumpFault.set(
-      this.eng3BPumpOffConfirmationNode.read() ||
-        (this.engine3Running.get() &&
+      this.eng3BPumpFaultConfNode.write(
+        this.engine3Running.get() &&
           eng3BPumpBelow2900 &&
-          !this.greenYellowAbnormLoPressure.get() &&
-          !this.yellowRsvOverheat.get()),
+          !this.yellowRsvLoAirPressure.get() &&
+          !this.yellowRsvOverheat.get() &&
+          !this.yellowAbnormLoPressure.get() &&
+          !this.greenYellowAbnormLoPressure.get(),
+        deltaTime,
+      ),
     );
 
     this.eng4APumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_4A_PUMP_PB_IS_AUTO', 'bool'));
     this.eng4BPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_4B_PUMP_PB_IS_AUTO', 'bool'));
     this.eng4PumpDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_ENG_4AB_PUMP_DISC', 'bool'));
 
-    this.eng4APumpOffConfirmationNode.write(
-      !this.yellowRsvLoAirPressure.get() &&
-        !this.yellowRsvOverheat.get() &&
-        !this.yellowAbnormLoPressure.get() &&
-        this.flightPhase.get() === 2 &&
-        !this.eng4APumpAuto,
-      deltaTime,
-    );
-
     const eng4APumpBelow2900 = !SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_PUMP_3_SECTION_PRESSURE_SWITCH', 'bool');
 
     this.eng4APumpFault.set(
-      this.eng4APumpOffConfirmationNode.read() ||
-        (this.engine4Running &&
+      this.eng4APumpFaultConfNode.write(
+        this.engine4Running.get() &&
           eng4APumpBelow2900 &&
-          !this.greenYellowAbnormLoPressure &&
-          !this.yellowRsvOverheat.get()),
-    );
-
-    this.eng4BPumpOffConfirmationNode.write(
-      !this.yellowRsvLoAirPressure.get() &&
-        !this.yellowRsvOverheat.get() &&
-        !this.yellowAbnormLoPressure.get() &&
-        this.flightPhase.get() === 2 &&
-        !this.eng4BPumpAuto.get(),
-      deltaTime,
+          !this.yellowRsvLoAirPressure.get() &&
+          !this.yellowRsvOverheat.get() &&
+          !this.yellowAbnormLoPressure.get() &&
+          !this.greenYellowAbnormLoPressure.get(),
+        deltaTime,
+      ),
     );
 
     const eng4BPumpBelow2900 = !SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_PUMP_4_SECTION_PRESSURE_SWITCH', 'bool');
     this.eng4BPumpFault.set(
-      this.eng4BPumpOffConfirmationNode.read() ||
-        (this.engine4Running.get() &&
+      this.eng4BPumpFaultConfNode.write(
+        this.engine4Running.get() &&
           eng4BPumpBelow2900 &&
-          !this.greenYellowAbnormLoPressure.get() &&
-          !this.yellowRsvOverheat.get()),
+          !this.yellowRsvLoAirPressure.get() &&
+          !this.yellowRsvOverheat.get() &&
+          !this.yellowAbnormLoPressure.get() &&
+          !this.greenYellowAbnormLoPressure.get(),
+        deltaTime,
+      ),
     );
 
     this.threeYellowPumpsFailed.set(
@@ -4971,6 +4932,10 @@ export class FwsCore {
     this.eng2Out.set(this.eng2ShutDown.get() || this.eng2FailMemoryNode.read());
     this.eng3Out.set(this.eng3ShutDown.get() || this.eng3FailMemoryNode.read());
     this.eng4Out.set(this.eng4ShutDown.get() || this.eng4FailMemoryNode.read());
+
+    this.twoEnginesOutOnSameSide.set(
+      (this.eng1Out.get() && this.eng2Out.get()) || (this.eng3Out.get() && this.eng4Out.get()),
+    );
 
     this.allEnginesFailure.set(
       !this.aircraftOnGround.get() &&

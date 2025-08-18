@@ -22,7 +22,10 @@ import {
 import { EcamAbnormalSensedAta34 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata34';
 import { EcamAbnormalSensedAta353642 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata35-36-42';
 import { EcamAbnormalSensedAta46495256 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata46-49-52-56';
-import { EcamAbnormalSensedAta70 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata70';
+import {
+  EcamAbnormalSensedAta70,
+  EcamDeferredProcAta70,
+} from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata70';
 import { EcamAbnormalSensedAta80Rest } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata80-rest';
 import { EcamAbnormalSecondaryFailures } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/secondary-failures';
 import { AbnormalNonSensedCategory } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
@@ -773,6 +776,7 @@ export const EcamDeferredProcedures: { [n: string]: DeferredProcedure } = {
   ...EcamDeferredProcAta212223,
   ...EcamDeferredProcAta27,
   ...EcamDeferredProcAta313233,
+  ...EcamDeferredProcAta70,
 };
 
 /** Used for one common representation of data defining the visual appearance of ECAM lines on the WD (for the ECL part) */
@@ -803,4 +807,14 @@ export const FMS_PRED_UNRELIABLE_CHECKLIST_ITEM: ChecklistSpecialItem = {
   name: 'FMS PRED UNRELIABLE', // TODO Replace with FMS PRED UNRELIABLE WITHOUT ACCURATE FMS FUEL PENALTY INSERTION once multiple lines supported
   sensed: false,
   style: ChecklistLineStyle.ChecklistCondition,
+};
+
+export const SLATS_SLOW_CHECKLIST_ITEM: ChecklistSpecialItem = {
+  name: 'SLATS SLOW',
+  sensed: false,
+};
+
+export const FLAPS_SLOW_CHECKLIST_ITEM: ChecklistSpecialItem = {
+  name: 'FLAPS SLOW',
+  sensed: false,
 };
