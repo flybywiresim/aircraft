@@ -48,6 +48,16 @@ export class FwsInopSys {
 
   /** INOP SYS shown on SD */
   inopSys: FwsInopSysDict = {
+    213300005: {
+      // CAB PRESS SYS
+      simVarIsActive: this.fws.cabPressSys,
+      phase: FwsInopSysPhases.AllPhases,
+    },
+    210300011: {
+      // PACK 1+2
+      simVarIsActive: this.fws.pack1and2,
+      phase: FwsInopSysPhases.AllPhases,
+    },
     221300001: {
       // FMC-A
       simVarIsActive: this.fws.fmcAFault,

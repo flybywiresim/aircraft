@@ -4146,7 +4146,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.main1LOpen,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [
-        this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3, // TODO add CAB PRESS logic
+        (this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3) && this.fws.pressSysFault.get(),
         !this.fws.aircraftOnGround.get(),
         !this.fws.aircraftOnGround.get(),
         !this.fws.aircraftOnGround.get(),
@@ -4157,14 +4157,14 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.Door,
       limitationsAllPhases: (checked) => (checked[1] ? ['210400001'] : []),
-      inopSysAllPhases: (checked) => (checked[0] ? ['213300005', '210300011'] : []),
+      inopSysAllPhases: () => ['213300005', '210300011'],
     },
     520800018: {
       flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
       simVarIsActive: this.fws.main1ROpen,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [
-        this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3, // TODO add CAB PRESS logic
+        (this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3) && this.fws.pressSysFault.get(),
         !this.fws.aircraftOnGround.get(),
         !this.fws.aircraftOnGround.get(),
         !this.fws.aircraftOnGround.get(),
@@ -4175,14 +4175,14 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.Door,
       limitationsAllPhases: (checked) => (checked[1] ? ['210400001'] : []),
-      inopSysAllPhases: (checked) => (checked[0] ? ['213300005', '210300011'] : []),
+      inopSysAllPhases: () => ['213300005', '210300011'],
     },
     520800019: {
       flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
       simVarIsActive: this.fws.main2LOpen,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [
-        this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3, // TODO add CAB PRESS logic
+        (this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3) && this.fws.pressSysFault.get(),
         !this.fws.aircraftOnGround.get(),
         !this.fws.aircraftOnGround.get(),
         !this.fws.aircraftOnGround.get(),
@@ -4193,14 +4193,14 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.Door,
       limitationsAllPhases: (checked) => (checked[1] ? ['210400001'] : []),
-      inopSysAllPhases: (checked) => (checked[0] ? ['213300005', '210300011'] : []),
+      inopSysAllPhases: () => ['213300005', '210300011'],
     },
     520800020: {
       flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
       simVarIsActive: this.fws.main2ROpen,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [
-        this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3, // TODO add CAB PRESS logic
+        (this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3) && this.fws.pressSysFault.get(),
         !this.fws.aircraftOnGround.get(),
         !this.fws.aircraftOnGround.get(),
         !this.fws.aircraftOnGround.get(),
@@ -4211,14 +4211,14 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.Door,
       limitationsAllPhases: (checked) => (checked[1] ? ['210400001'] : []),
-      inopSysAllPhases: (checked) => (checked[0] ? ['213300005', '210300011'] : []),
+      inopSysAllPhases: () => ['213300005', '210300011'],
     },
     520800021: {
       flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
       simVarIsActive: this.fws.main3LOpen,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [
-        this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3, // TODO add CAB PRESS logic
+        (this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3) && this.fws.pressSysFault.get(),
         !this.fws.aircraftOnGround.get(),
         !this.fws.aircraftOnGround.get(),
         !this.fws.aircraftOnGround.get(),
@@ -4229,14 +4229,14 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.Door,
       limitationsAllPhases: (checked) => (checked[1] ? ['210400001'] : []),
-      inopSysAllPhases: (checked) => (checked[0] ? ['213300005', '210300011'] : []),
+      inopSysAllPhases: () => ['213300005', '210300011'],
     },
     520800022: {
       flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
       simVarIsActive: this.fws.main3ROpen,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [
-        this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3, // TODO add CAB PRESS logic
+        (this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3) && this.fws.pressSysFault.get(),
         !this.fws.aircraftOnGround.get(),
         !this.fws.aircraftOnGround.get(),
         !this.fws.aircraftOnGround.get(),
@@ -4247,14 +4247,14 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.Door,
       limitationsAllPhases: (checked) => (checked[1] ? ['210400001'] : []),
-      inopSysAllPhases: (checked) => (checked[0] ? ['213300005', '210300011'] : []),
+      inopSysAllPhases: () => ['213300005', '210300011'],
     },
     520800023: {
       flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
       simVarIsActive: this.fws.main4LOpen,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [
-        this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3, // TODO add CAB PRESS logic
+        (this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3) && this.fws.pressSysFault.get(),
         !this.fws.aircraftOnGround.get(),
         !this.fws.aircraftOnGround.get(),
         !this.fws.aircraftOnGround.get(),
@@ -4265,14 +4265,14 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.Door,
       limitationsAllPhases: (checked) => (checked[1] ? ['210400001'] : []),
-      inopSysAllPhases: (checked) => (checked[0] ? ['213300005', '210300011'] : []),
+      inopSysAllPhases: () => ['213300005', '210300011'],
     },
     520800024: {
       flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
       simVarIsActive: this.fws.main4ROpen,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [
-        this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3, // TODO add CAB PRESS logic
+        (this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3) && this.fws.pressSysFault.get(),
         !this.fws.aircraftOnGround.get(),
         !this.fws.aircraftOnGround.get(),
         !this.fws.aircraftOnGround.get(),
@@ -4283,14 +4283,14 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.Door,
       limitationsAllPhases: (checked) => (checked[1] ? ['210400001'] : []),
-      inopSysAllPhases: (checked) => (checked[0] ? ['213300005', '210300011'] : []),
+      inopSysAllPhases: () => ['213300005', '210300011'],
     },
     520800025: {
       flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
       simVarIsActive: this.fws.main5LOpen,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [
-        this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3, // TODO add CAB PRESS logic
+        (this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3) && this.fws.pressSysFault.get(),
         !this.fws.aircraftOnGround.get(),
         !this.fws.aircraftOnGround.get(),
         !this.fws.aircraftOnGround.get(),
@@ -4301,14 +4301,14 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.Door,
       limitationsAllPhases: (checked) => (checked[1] ? ['210400001'] : []),
-      inopSysAllPhases: (checked) => (checked[0] ? ['213300005', '210300011'] : []),
+      inopSysAllPhases: () => ['213300005', '210300011'],
     },
     520800026: {
       flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
       simVarIsActive: this.fws.main5ROpen,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [
-        this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3, // TODO add CAB PRESS logic
+        (this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3) && this.fws.pressSysFault.get(),
         !this.fws.aircraftOnGround.get(),
         !this.fws.aircraftOnGround.get(),
         !this.fws.aircraftOnGround.get(),
@@ -4319,7 +4319,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.Door,
       limitationsAllPhases: (checked) => (checked[1] ? ['210400001'] : []),
-      inopSysAllPhases: (checked) => (checked[0] ? ['213300005', '210300011'] : []),
+      inopSysAllPhases: () => ['213300005', '210300011'],
     },
     // ATA 70 Engines
     701800109: {
