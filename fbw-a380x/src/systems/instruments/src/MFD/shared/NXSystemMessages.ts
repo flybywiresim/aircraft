@@ -104,12 +104,11 @@ export const NXSystemMessages = {
 };
 
 /**
-* In cases in which you need a line please insert a carriage return at the intersection of the two lines
-* Without any space before and after
+* In cases in which you need a line please insert a line feed at the intersection of the two lines
 * Take as example comFplnRecievedPendingInsertion
 */
 export const NXFictionalMessages = {
-  noNavigraphUser: new TypeIMessage('NO NAVIGRAPH USER'),
+  noNavigraphUser: new TypeIMessage('COMPANY F-PLN RECEIVED\nWAITING FOR INSERTION'),
   internalError: new TypeIMessage('INTERNAL ERROR'),
   noAirportSpecified: new TypeIMessage('NO AIRPORT SPECIFIED'),
   fltNbrInUse: new TypeIMessage('FLT NBR IN USE'),

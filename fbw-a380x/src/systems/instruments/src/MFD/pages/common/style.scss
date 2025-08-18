@@ -98,7 +98,7 @@
 .mfd-footer {
   display: flex;
   border-top: 2px solid $display-mfd-darker-grey;
-  padding: 5px;
+  padding: 1px;
 }
 
 .mfd-footer-message-area {
@@ -112,7 +112,7 @@
 }
 
 .mfd-footer-message-area-line {
-  display: inline;
+  width: fit-content;
 }
 
 .fr {

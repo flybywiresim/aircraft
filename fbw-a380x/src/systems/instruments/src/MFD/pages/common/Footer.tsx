@@ -32,29 +32,40 @@ export class Footer extends DisplayComponent<AbstractMfdPageProps> {
           if (ind > -1 && this.line1Ref.getOrDefault() && this.line2Ref.getOrDefault()) {
             this.messageToBeCleared.set(true);
 
-            let carriageReturn = arr[ind].messageText.search('\n');
+            let lineFeed = arr[ind].messageText.search('\n');
 
-            if(carriageReturn == -1) {
+            if(lineFeed == -1) {
               this.line1Ref.instance.textContent = arr[ind].messageText;
 
               this.line2Ref.instance.textContent = '';
               this.line2Ref.instance.style.display = 'none';
             } else {
-              this.line1Ref.instance.textContent = arr[ind].messageText.slice(0, carriageReturn);
-              // To match references showing a thin gap in between lines
-              this.line1Ref.instance.style.marginBottom = '2px';
-              this.line2Ref.instance.textContent = arr[ind].messageText.slice(carriageReturn + 1, arr[ind].messageText.length);
+              this.line1Ref.instance.textContent = arr[ind].messageText.slice(0, lineFeed);
+
+              this.line2Ref.instance.textContent = arr[ind].messageText.slice(lineFeed + 1, arr[ind].messageText.length);
               this.line2Ref.instance.style.display = 'inherit';
             }
 
             if (arr[ind].backgroundColor === 'white') {
               this.line1Ref.instance.style.backgroundColor = '#ffffff';
+              // According to references, single white lines are centered
+              this.line1Ref.instance.style.marginBottom = '0px';
+              this.line1Ref.instance.style.marginTop = '0px';
+              this.line1Ref.instance.style.verticalAlign = 'middle';
+              //this.line1Ref.instance.style.transform = 'translateY(18px)';
             } else if (arr[ind].backgroundColor === 'cyan') {
               this.line1Ref.instance.style.backgroundColor = '#00ffff';
             } else if (arr[ind].backgroundColor === 'amber') {
               this.line1Ref.instance.style.backgroundColor = '#e68000';
             }
             this.line2Ref.instance.style.backgroundColor = this.line1Ref.instance.style.backgroundColor;
+
+            // According to references, amber lines or first lines are at the top of the footer
+            if (arr[ind].backgroundColor === 'amber' || lineFeed != -1) {
+              this.line1Ref.instance.style.marginBottom = '1px';
+              this.line1Ref.instance.style.marginTop = '2px';
+              this.line1Ref.instance.style.transform = 'translateY(0%)';
+            }
 
             this.buttonText.set(
               <span>
@@ -107,7 +118,7 @@ export class Footer extends DisplayComponent<AbstractMfdPageProps> {
         />
         <div class="mfd-footer-message-area">
               <div class="mfd-footer-message-area-line" ref={this.line1Ref} />
-              <div class="mfd-footer-message-area-line" ref={this.line2Ref}  />
+              <div class="mfd-footer-message-area-line" ref={this.line2Ref} />
         </div>
       </div>
     );
