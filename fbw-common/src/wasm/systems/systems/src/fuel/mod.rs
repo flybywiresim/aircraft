@@ -117,9 +117,6 @@ pub struct FuelSystem<const N: usize, const PUMP_COUNT: usize> {
     unlimited_fuel_id: VariableIdentifier,
     unlimited_fuel: bool,
 
-    fuel_total_weight_id: VariableIdentifier,
-    fuel_total_weight: Mass,
-
     fuel_tanks: [FuelTank; N],
     fuel_pumps: [FuelPump; PUMP_COUNT],
 }
@@ -132,15 +129,15 @@ impl<const N: usize, const PUMP_COUNT: usize> FuelSystem<N, PUMP_COUNT> {
         FuelSystem {
             unlimited_fuel_id: context.get_identifier("UNLIMITED FUEL".to_owned()),
             unlimited_fuel: false,
-            fuel_total_weight_id: context.get_identifier("FUEL TOTAL QUANTITY WEIGHT".to_owned()),
-            fuel_total_weight: Mass::default(),
             fuel_tanks,
             fuel_pumps,
         }
     }
 
     pub fn total_load(&self) -> Mass {
-        self.fuel_total_weight
+        self.fuel_tanks
+            .iter()
+            .fold(Mass::default(), |acc, x| acc + x.quantity())
     }
 
     pub fn tank_has_fuel(&self, t: usize) -> bool {
@@ -156,7 +153,7 @@ impl<const N: usize, const PUMP_COUNT: usize> FuelSystem<N, PUMP_COUNT> {
         let masses = self.fuel_tanks.iter().map(|t| t.quantity());
 
         // This section of code calculates the center of gravity (assume center of gravity/center of mass is near identical)
-        let total_mass_kg = self.fuel_total_weight.get::<kilogram>();
+        let total_mass_kg = self.total_load().get::<kilogram>();
         if total_mass_kg > 0. {
             positions
                 .zip(masses)
@@ -181,7 +178,6 @@ impl<const N: usize, const PUMP_COUNT: usize> SimulationElement for FuelSystem<N
 
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.unlimited_fuel = reader.read(&self.unlimited_fuel_id);
-        self.fuel_total_weight = reader.read(&self.fuel_total_weight_id);
     }
 }
 
