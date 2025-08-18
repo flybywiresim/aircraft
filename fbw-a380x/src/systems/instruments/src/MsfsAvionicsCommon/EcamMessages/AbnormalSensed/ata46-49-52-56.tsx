@@ -36,11 +36,11 @@ export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } =
     items: [
       {
         name: 'PACK 1+2 & CAB PRESS NOT AVAIL',
-        sensed: false,
+        sensed: true,
         style: ChecklistLineStyle.Amber,
       },
       {
-        name: 'ABNORM CAB V/S :',
+        name: 'ABNORM CAB V/S',
         sensed: false,
         condition: true,
       },
@@ -75,11 +75,11 @@ export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } =
     items: [
       {
         name: 'PACK 1+2 & CAB PRESS NOT AVAIL',
-        sensed: false,
+        sensed: true,
         style: ChecklistLineStyle.Amber,
       },
       {
-        name: 'ABNORM CAB V/S :',
+        name: 'ABNORM CAB V/S',
         sensed: false,
         condition: true,
       },
@@ -114,11 +114,11 @@ export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } =
     items: [
       {
         name: 'PACK 1+2 & CAB PRESS NOT AVAIL',
-        sensed: false,
+        sensed: true,
         style: ChecklistLineStyle.Amber,
       },
       {
-        name: 'ABNORM CAB V/S :',
+        name: 'ABNORM CAB V/S',
         sensed: false,
         condition: true,
       },
@@ -153,11 +153,11 @@ export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } =
     items: [
       {
         name: 'PACK 1+2 & CAB PRESS NOT AVAIL',
-        sensed: false,
+        sensed: true,
         style: ChecklistLineStyle.Amber,
       },
       {
-        name: 'ABNORM CAB V/S :',
+        name: 'ABNORM CAB V/S',
         sensed: false,
         condition: true,
       },
@@ -192,11 +192,11 @@ export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } =
     items: [
       {
         name: 'PACK 1+2 & CAB PRESS NOT AVAIL',
-        sensed: false,
+        sensed: true,
         style: ChecklistLineStyle.Amber,
       },
       {
-        name: 'ABNORM CAB V/S :',
+        name: 'ABNORM CAB V/S',
         sensed: false,
         condition: true,
       },
@@ -231,11 +231,11 @@ export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } =
     items: [
       {
         name: 'PACK 1+2 & CAB PRESS NOT AVAIL',
-        sensed: false,
+        sensed: true,
         style: ChecklistLineStyle.Amber,
       },
       {
-        name: 'ABNORM CAB V/S :',
+        name: 'ABNORM CAB V/S',
         sensed: false,
         condition: true,
       },
@@ -270,11 +270,11 @@ export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } =
     items: [
       {
         name: 'PACK 1+2 & CAB PRESS NOT AVAIL',
-        sensed: false,
+        sensed: true,
         style: ChecklistLineStyle.Amber,
       },
       {
-        name: 'ABNORM CAB V/S :',
+        name: 'ABNORM CAB V/S',
         sensed: false,
         condition: true,
       },
@@ -309,11 +309,11 @@ export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } =
     items: [
       {
         name: 'PACK 1+2 & CAB PRESS NOT AVAIL',
-        sensed: false,
+        sensed: true,
         style: ChecklistLineStyle.Amber,
       },
       {
-        name: 'ABNORM CAB V/S :',
+        name: 'ABNORM CAB V/S',
         sensed: false,
         condition: true,
       },
@@ -348,11 +348,11 @@ export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } =
     items: [
       {
         name: 'PACK 1+2 & CAB PRESS NOT AVAIL',
-        sensed: false,
+        sensed: true,
         style: ChecklistLineStyle.Amber,
       },
       {
-        name: 'ABNORM CAB V/S :',
+        name: 'ABNORM CAB V/S',
         sensed: true,
         condition: true,
         level: 1,
@@ -388,11 +388,11 @@ export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } =
     items: [
       {
         name: 'PACK 1+2 & CAB PRESS NOT AVAIL',
-        sensed: false,
+        sensed: true,
         style: ChecklistLineStyle.Amber,
       },
       {
-        name: 'ABNORM CAB V/S :',
+        name: 'ABNORM CAB V/S',
         sensed: true,
         condition: true,
         level: 1,
@@ -428,11 +428,11 @@ export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } =
     items: [
       {
         name: 'PACK 1+2 & CAB PRESS NOT AVAIL',
-        sensed: false,
+        sensed: true,
         style: ChecklistLineStyle.Amber,
       },
       {
-        name: 'ABNORM CAB V/S :',
+        name: 'ABNORM CAB V/S',
         sensed: false,
         condition: true,
       },
@@ -467,11 +467,11 @@ export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } =
     items: [
       {
         name: 'PACK 1+2 & CAB PRESS NOT AVAIL',
-        sensed: false,
+        sensed: true,
         style: ChecklistLineStyle.Amber,
       },
       {
-        name: 'ABNORM CAB V/S :',
+        name: 'ABNORM CAB V/S',
         sensed: false,
         condition: true,
       },
@@ -506,11 +506,11 @@ export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } =
     items: [
       {
         name: 'PACK 1+2 & CAB PRESS NOT AVAIL',
-        sensed: false,
+        sensed: true,
         style: ChecklistLineStyle.Amber,
       },
       {
-        name: 'ABNORM CAB V/S :',
+        name: 'ABNORM CAB V/S',
         sensed: true,
         condition: true,
         level: 1,
@@ -546,11 +546,11 @@ export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } =
     items: [
       {
         name: 'PACK 1+2 & CAB PRESS NOT AVAIL',
-        sensed: false,
+        sensed: true,
         style: ChecklistLineStyle.Amber,
       },
       {
-        name: 'ABNORM CAB V/S :',
+        name: 'ABNORM CAB V/S',
         sensed: true,
         condition: true,
         level: 1,
@@ -586,11 +586,11 @@ export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } =
     items: [
       {
         name: 'PACK 1+2 & CAB PRESS NOT AVAIL',
-        sensed: false,
+        sensed: true,
         style: ChecklistLineStyle.Amber,
       },
       {
-        name: 'ABNORM CAB V/S :',
+        name: 'ABNORM CAB V/S',
         sensed: false,
         condition: true,
       },
@@ -625,11 +625,11 @@ export const EcamAbnormalSensedAta46495256: { [n: number]: AbnormalProcedure } =
     items: [
       {
         name: 'PACK 1+2 & CAB PRESS NOT AVAIL',
-        sensed: false,
+        sensed: true,
         style: ChecklistLineStyle.Amber,
       },
       {
-        name: 'ABNORM CAB V/S :',
+        name: 'ABNORM CAB V/S',
         sensed: false,
         condition: true,
       },
