@@ -168,4 +168,39 @@ export class AnsuOps extends AircraftNetworkServerUnit {
     const date = new Date(t);
     return `${String(date.getUTCDate()).padStart(2, '0')}-${AnsuOps.months[date.getUTCMonth()]} ${String(date.getUTCHours()).padStart(2, '0')}:${String(date.getUTCMinutes()).padStart(2, '0')}`;
   }
+
+  reset(): void {
+    super.reset();
+
+    if (this.lastUpdateTime !== undefined) {
+      this.lastUpdateTime = undefined;
+
+      this.parkBrakeOffTime.set(null);
+      this.parkBrakeOffFob.set(null);
+      this.parkBrakeOnTime.set(null);
+      this.parkBrakeOnFob.set(null);
+
+      this.takeoffTime.set(null);
+      this.takeoffFob.set(null);
+      this.touchdownTime.set(null);
+      this.touchdownFob.set(null);
+
+      this.outBlockTime.set(null);
+      this.offBlockTime.set(null);
+      this.onBlockTime.set(null);
+      this.inBlockTime.set(null);
+
+      this.outBlockFob.set(null);
+      this.offBlockFob.set(null);
+      this.onBlockFob.set(null);
+      this.inBlockFob.set(null);
+
+      this.blockTime.set(null);
+      this.flightTime.set(null);
+
+      this.offBlockConfNode.write(false, 0);
+      this.onBlockConfNode.write(false, 0);
+      this.turnaroundConfNode.write(false, 0);
+    }
+  }
 }

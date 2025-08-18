@@ -88,11 +88,8 @@ export class AircraftNetworkServerUnit implements Instrument {
 
     this._isHealthy.set(!failed && this.powered.get() && !this.resetPbStatus.get() && !this.nssMasterOff.get());
 
-    if (this.resetPbStatus.get()) {
-      this.reset();
-    }
-
     if (!this._isHealthy.get()) {
+      this.reset();
       return;
     }
   }

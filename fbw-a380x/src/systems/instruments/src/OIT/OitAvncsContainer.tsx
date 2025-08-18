@@ -78,6 +78,11 @@ export abstract class OitAvncsContainer extends DisplayComponent<OitAvncsContain
       this.uiService.activeUri.sub((uri) => {
         this.activeUriChanged(uri);
       }),
+      this.ansuPowered.sub((powered) => {
+        if (!powered) {
+          this.uiService.navigateTo('nss-avncs');
+        }
+      }),
       this.ansuPowered,
       this.hideContent,
       this.hideContainer,
