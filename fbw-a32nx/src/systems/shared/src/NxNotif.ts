@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 /**
  * NXNotif utility class to create a notification event and element
  */

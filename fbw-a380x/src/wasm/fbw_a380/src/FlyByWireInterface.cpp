@@ -330,7 +330,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idFmaSoftAltModeActive = std::make_unique<LocalVariable>("A32NX_FMA_SOFT_ALT_MODE");
   idFmaCruiseAltModeActive = std::make_unique<LocalVariable>("A32NX_FMA_CRUISE_ALT_MODE");
   idFmaApproachCapability = std::make_unique<LocalVariable>("A32NX_APPROACH_CAPABILITY");
-  idFmaTripleClick = std::make_unique<LocalVariable>("A32NX_FMA_TRIPLE_CLICK");
+  idFmaTripleClick = std::make_unique<LocalVariable>("A32NX_FMA_TRIPLE_CLICK_MODE_REVERSION");
   idFmaModeReversion = std::make_unique<LocalVariable>("A32NX_FMA_MODE_REVERSION");
 
   idAutopilotTcasMessageDisarm = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_TCAS_MESSAGE_DISARM");
@@ -460,7 +460,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idFlapsHandleIndex = std::make_unique<LocalVariable>("A32NX_FLAPS_HANDLE_INDEX");
 
   flapsHandleIndexFlapConf = std::make_unique<LocalVariable>("A32NX_FLAPS_CONF_INDEX");
-  flapsPosition = std::make_unique<LocalVariable>("A32NX_LEFT_FLAPS_ANGLE");
+  flapsPosition = std::make_unique<LocalVariable>("A32NX_FLAPS_IPPU_ANGLE");
 
   idSpoilersArmed = std::make_unique<LocalVariable>("A32NX_SPOILERS_ARMED");
   idSpoilersHandlePosition = std::make_unique<LocalVariable>("A32NX_SPOILERS_HANDLE_POSITION");
@@ -506,13 +506,17 @@ void FlyByWireInterface::setupLocalVariables() {
     idLgciuDiscreteWord1[i] = std::make_unique<LocalVariable>("A32NX_LGCIU_" + idString + "_DISCRETE_WORD_1");
     idLgciuDiscreteWord2[i] = std::make_unique<LocalVariable>("A32NX_LGCIU_" + idString + "_DISCRETE_WORD_2");
     idLgciuDiscreteWord3[i] = std::make_unique<LocalVariable>("A32NX_LGCIU_" + idString + "_DISCRETE_WORD_3");
+    idLgciuDiscreteWord4[i] = std::make_unique<LocalVariable>("A32NX_LGCIU_" + idString + "_DISCRETE_WORD_4");
   }
 
-  idSfccSlatFlapComponentStatusWord = std::make_unique<LocalVariable>("A32NX_SFCC_SLAT_FLAP_COMPONENT_STATUS_WORD");
-  idSfccSlatFlapSystemStatusWord = std::make_unique<LocalVariable>("A32NX_SFCC_SLAT_FLAP_SYSTEM_STATUS_WORD");
-  idSfccSlatFlapActualPositionWord = std::make_unique<LocalVariable>("A32NX_SFCC_SLAT_FLAP_ACTUAL_POSITION_WORD");
-  idSfccSlatActualPositionWord = std::make_unique<LocalVariable>("A32NX_SFCC_SLAT_ACTUAL_POSITION_WORD");
-  idSfccFlapActualPositionWord = std::make_unique<LocalVariable>("A32NX_SFCC_FLAP_ACTUAL_POSITION_WORD");
+  for (int i = 0; i < 2; i++) {
+    std::string idString = std::to_string(i + 1);
+    idSfccSlatFlapComponentStatusWord[i] = std::make_unique<LocalVariable>("A32NX_SFCC_" + idString + "_SLAT_FLAP_COMPONENT_STATUS_WORD");
+    idSfccSlatFlapSystemStatusWord[i] = std::make_unique<LocalVariable>("A32NX_SFCC_" + idString + "_SLAT_FLAP_SYSTEM_STATUS_WORD");
+    idSfccSlatFlapActualPositionWord[i] = std::make_unique<LocalVariable>("A32NX_SFCC_" + idString + "_SLAT_FLAP_ACTUAL_POSITION_WORD");
+    idSfccSlatActualPositionWord[i] = std::make_unique<LocalVariable>("A32NX_SFCC_" + idString + "_SLAT_ACTUAL_POSITION_WORD");
+    idSfccFlapActualPositionWord[i] = std::make_unique<LocalVariable>("A32NX_SFCC_" + idString + "_FLAP_ACTUAL_POSITION_WORD");
+  }
 
   for (int i = 0; i < 3; i++) {
     std::string idString = std::to_string(i + 1);
@@ -1186,8 +1190,7 @@ bool FlyByWireInterface::updateLgciu(int lgciuIndex) {
   lgciuBusOutputs[lgciuIndex].discrete_word_1 = Arinc429Utils::fromSimVar(idLgciuDiscreteWord1[lgciuIndex]->get());
   lgciuBusOutputs[lgciuIndex].discrete_word_2 = Arinc429Utils::fromSimVar(idLgciuDiscreteWord2[lgciuIndex]->get());
   lgciuBusOutputs[lgciuIndex].discrete_word_3 = Arinc429Utils::fromSimVar(idLgciuDiscreteWord3[lgciuIndex]->get());
-  lgciuBusOutputs[lgciuIndex].discrete_word_4.SSM = Arinc429SignStatus::NormalOperation;
-  lgciuBusOutputs[lgciuIndex].discrete_word_4.Data = 0;
+  lgciuBusOutputs[lgciuIndex].discrete_word_4 = Arinc429Utils::fromSimVar(idLgciuDiscreteWord4[lgciuIndex]->get());
 
   if (clientDataEnabled) {
     simConnectInterface.setClientDataLgciu(lgciuBusOutputs[lgciuIndex], lgciuIndex);
@@ -1197,11 +1200,11 @@ bool FlyByWireInterface::updateLgciu(int lgciuIndex) {
 }
 
 bool FlyByWireInterface::updateSfcc(int sfccIndex) {
-  sfccBusOutputs[sfccIndex].slat_flap_component_status_word = Arinc429Utils::fromSimVar(idSfccSlatFlapComponentStatusWord->get());
-  sfccBusOutputs[sfccIndex].slat_flap_system_status_word = Arinc429Utils::fromSimVar(idSfccSlatFlapSystemStatusWord->get());
-  sfccBusOutputs[sfccIndex].slat_flap_actual_position_word = Arinc429Utils::fromSimVar(idSfccSlatFlapActualPositionWord->get());
-  sfccBusOutputs[sfccIndex].slat_actual_position_deg = Arinc429Utils::fromSimVar(idSfccSlatActualPositionWord->get());
-  sfccBusOutputs[sfccIndex].flap_actual_position_deg = Arinc429Utils::fromSimVar(idSfccFlapActualPositionWord->get());
+  sfccBusOutputs[sfccIndex].slat_flap_component_status_word = Arinc429Utils::fromSimVar(idSfccSlatFlapComponentStatusWord[sfccIndex]->get());
+  sfccBusOutputs[sfccIndex].slat_flap_system_status_word = Arinc429Utils::fromSimVar(idSfccSlatFlapSystemStatusWord[sfccIndex]->get());
+  sfccBusOutputs[sfccIndex].slat_flap_actual_position_word = Arinc429Utils::fromSimVar(idSfccSlatFlapActualPositionWord[sfccIndex]->get());
+  sfccBusOutputs[sfccIndex].slat_actual_position_deg = Arinc429Utils::fromSimVar(idSfccSlatActualPositionWord[sfccIndex]->get());
+  sfccBusOutputs[sfccIndex].flap_actual_position_deg = Arinc429Utils::fromSimVar(idSfccFlapActualPositionWord[sfccIndex]->get());
 
   if (clientDataEnabled) {
     simConnectInterface.setClientDataSfcc(sfccBusOutputs[sfccIndex], sfccIndex);
@@ -1706,6 +1709,9 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
     fcdcs[fcdcIndex].busInputs.prims[i] = primsBusOutputs[i];
   }
 
+  // FIXME no speed_brake_lever_command_deg in prim out bus (where to get it from?)
+  fcdcs[fcdcIndex].analogInputs.spoilersLeverPos = spoilersHandler->getHandlePosition();
+
   FcdcBus output = fcdcs[fcdcIndex].update(sampleTime, failuresConsumer.isActive(failureIndex), idCpiomCxAvailable[fcdcIndex]->get());
 
   idFcdcDiscreteWord1[fcdcIndex]->set(output.efcsStatus1.toSimVar());
@@ -2098,6 +2104,8 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.data.cruise_altitude = idFmgcCruiseAltitude->get();
     autopilotStateMachineInput.in.data.throttle_lever_1_pos = thrustLeverAngle_1->get();
     autopilotStateMachineInput.in.data.throttle_lever_2_pos = thrustLeverAngle_2->get();
+    autopilotStateMachineInput.in.data.throttle_lever_3_pos = thrustLeverAngle_3->get();
+    autopilotStateMachineInput.in.data.throttle_lever_4_pos = thrustLeverAngle_4->get();
     autopilotStateMachineInput.in.data.gear_strut_compression_1 =
         std::max(simData.contact_point_compression_1 * 0.5 + 0.5, simData.contact_point_compression_3 * 0.5 + 0.5);
     autopilotStateMachineInput.in.data.gear_strut_compression_2 =
@@ -2106,6 +2114,8 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.data.flaps_handle_index = flapsHandleIndexFlapConf->get();
     autopilotStateMachineInput.in.data.is_engine_operative_1 = simData.engine_combustion_1;
     autopilotStateMachineInput.in.data.is_engine_operative_2 = simData.engine_combustion_2;
+    autopilotStateMachineInput.in.data.is_engine_operative_3 = simData.engine_combustion_3;
+    autopilotStateMachineInput.in.data.is_engine_operative_4 = simData.engine_combustion_4;
     autopilotStateMachineInput.in.data.altimeter_setting_left_mbar = simData.kohlsmanSetting_1;
     autopilotStateMachineInput.in.data.altimeter_setting_right_mbar = simData.kohlsmanSetting_2;
     autopilotStateMachineInput.in.data.total_weight_kg = simData.total_weight_kg;
@@ -2450,6 +2460,8 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
     autopilotLawsInput.in.data.acceleration_altitude_go_around_engine_out = fmAccelerationAltitudeGoAroundEngineOut->valueOr(0);
     autopilotLawsInput.in.data.throttle_lever_1_pos = thrustLeverAngle_1->get();
     autopilotLawsInput.in.data.throttle_lever_2_pos = thrustLeverAngle_2->get();
+    autopilotLawsInput.in.data.throttle_lever_3_pos = thrustLeverAngle_3->get();
+    autopilotLawsInput.in.data.throttle_lever_4_pos = thrustLeverAngle_4->get();
     autopilotLawsInput.in.data.gear_strut_compression_1 =
         std::max(simData.contact_point_compression_1 * 0.5 + 0.5, simData.contact_point_compression_3 * 0.5 + 0.5);
     autopilotLawsInput.in.data.gear_strut_compression_2 =
@@ -2458,6 +2470,8 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
     autopilotLawsInput.in.data.flaps_handle_index = flapsHandleIndexFlapConf->get();
     autopilotLawsInput.in.data.is_engine_operative_1 = simData.engine_combustion_1;
     autopilotLawsInput.in.data.is_engine_operative_2 = simData.engine_combustion_2;
+    autopilotLawsInput.in.data.is_engine_operative_3 = simData.engine_combustion_3;
+    autopilotLawsInput.in.data.is_engine_operative_4 = simData.engine_combustion_4;
     autopilotLawsInput.in.data.altimeter_setting_left_mbar = simData.kohlsmanSetting_1;
     autopilotLawsInput.in.data.altimeter_setting_right_mbar = simData.kohlsmanSetting_1;
     autopilotLawsInput.in.data.total_weight_kg = simData.total_weight_kg;
