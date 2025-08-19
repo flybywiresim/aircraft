@@ -3288,7 +3288,8 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.greenYellowAbnormLoPressure,
       whichItemsToShow: () => [
         true,
-        this.fws.flapsHandle.get() <= 3, // fix me use actual flap angle
+        !this.fws.sfccSlatFlapPositionWord.bitValueOr(22, false) &&
+          !this.fws.sfccSlatFlapsSystemStatusWord.bitValueOr(23, false),
         true,
         true,
         true,
@@ -4682,7 +4683,7 @@ export class FwsAbnormalSensed {
         !this.fws.pack1On.get() && !this.fws.pack2On.get(),
         false,
         this.fws.slatFlapSelectionS22F20,
-        this.fws.autoThrustOffInvoluntary.get(),
+        !this.fws.autoThrustEngaged.get(),
         this.fws.spoilersArmed.get(),
         false,
         false,

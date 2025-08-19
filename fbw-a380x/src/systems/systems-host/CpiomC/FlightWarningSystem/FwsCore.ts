@@ -938,9 +938,11 @@ export class FwsCore {
 
   public readonly fcdc2FaultCondition = Subject.create(false);
 
-  public readonly flapsAngle = Subject.create(0);
+  public readonly sffcFlapPositionWord = Arinc429Register.empty();
 
-  public readonly flapsHandle = Subject.create(0);
+  public readonly sfccSlatPositionWord = Arinc429Register.empty();
+
+  public readonly flapsAngle = Subject.create(0);
 
   public readonly lrElevFaultCondition = Subject.create(false);
 
@@ -1103,7 +1105,9 @@ export class FwsCore {
 
   public readonly flapsLeverNotZero = Subject.create(false);
 
-  public readonly flapsBaulkActiveWord = Arinc429Register.empty();
+  public readonly sfccSlatFlapsSystemStatusWord = Arinc429Register.empty();
+
+  public readonly sfccSlatFlapPositionWord = Arinc429Register.empty();
 
   // FIXME implement
   public readonly flapSys1Fault = Subject.create(false);
@@ -2791,12 +2795,10 @@ export class FwsCore {
     this.N1IdleEng.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_IDLE_N1', 'number'));
 
     // Flaps
-    this.flapsAngle.set(SimVar.GetSimVarValue('L:A32NX_FLAPS_IPPU_ANGLE', 'degrees'));
-    this.flapsHandle.set(SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum'));
-    this.slatsAngle.set(SimVar.GetSimVarValue('L:A32NX_SLATS_IPPU_ANGLE', 'degrees'));
-    // TODO: add switching between SFCC_1 and SFCC_2
-    this.flapsBaulkActiveWord.setFromSimVar('L:A32NX_SFCC_1_SLAT_FLAP_SYSTEM_STATUS_WORD');
-
+    this.sfccSlatFlapsSystemStatusWord.setFromSimVar('L:A32NX_SFCC_1_SLAT_FLAP_SYSTEM_STATUS_WORD');
+    if (this.sfccSlatFlapsSystemStatusWord.isInvalid()) {
+      this.sfccSlatFlapsSystemStatusWord.setFromSimVar('L:A32NX_SFCC_2_SLAT_FLAP_SYSTEM_STATUS_WORD');
+    }
     // FIXME move out of acquisition to logic below
     const oneEngineAboveMinPower = this.engine1AboveIdle.get() || this.engine2AboveIdle.get();
 
@@ -4236,9 +4238,19 @@ export class FwsCore {
     this.spoilersArmed.set(fcdc1DiscreteWord4.bitValueOr(27, false) || fcdc2DiscreteWord4.bitValueOr(27, false));
     this.speedBrakeCommand.set(fcdc1DiscreteWord4.bitValueOr(28, false) || fcdc2DiscreteWord4.bitValueOr(28, false));
 
-    // TODO: add switching between SFCC_1 and SFCC_2
-    const flapsPos = Arinc429Word.fromSimVarValue('L:A32NX_SFCC_1_FLAP_ACTUAL_POSITION_WORD');
-    const slatsPos = Arinc429Word.fromSimVarValue('L:A32NX_SFCC_1_SLAT_ACTUAL_POSITION_WORD');
+    this.sffcFlapPositionWord.setFromSimVar('L:A32NX_SFCC_1_FLAP_ACTUAL_POSITION_WORD');
+    this.sfccSlatPositionWord.setFromSimVar('L:A32NX_SFCC_1_SLAT_ACTUAL_POSITION_WORD');
+    if (this.sffcFlapPositionWord.isInvalid()) {
+      this.sffcFlapPositionWord.setFromSimVar('A32NX_SFCC_2_FLAP_ACTUAL_POSITION_WORD');
+      this.sfccSlatPositionWord.setFromSimVar('A32NX_SFCC_2_SLAT_ACTUAL_POSITION_WORD');
+    }
+    this.sfccSlatFlapPositionWord.setFromSimVar('L:A32NX_SFCC_1_SLAT_FLAP_ACTUAL_POSITION_WORD');
+    if (this.sfccSlatFlapPositionWord.isInvalid()) {
+      this.sfccSlatFlapPositionWord.setFromSimVar('A32NX_SFCC_2_SLAT_FLAP_ACTUAL_POSITION_WORD');
+    }
+
+    const flapsPos = this.sffcFlapPositionWord;
+    const slatsPos = this.sfccSlatPositionWord;
 
     // WARNING these vary for other variants... A320 CFM LEAP values here
     // flap/slat internal signals
@@ -4296,11 +4308,10 @@ export class FwsCore {
     );
 
     // flap/slat MCDU disagree
-    // FIXME should come from SDAC via ARINC429
-    this.slatFlapSelectionS0F0 = this.flapsHandle.get() === 0;
-    this.slatFlapSelectionS18F10 = this.flapsHandle.get() === 1; // FIXME assuming 1+F and not considering 1
-    this.slatFlapSelectionS22F15 = this.flapsHandle.get() === 2;
-    this.slatFlapSelectionS22F20 = this.flapsHandle.get() === 3;
+    this.slatFlapSelectionS0F0 = this.sfccSlatFlapsSystemStatusWord.bitValueOr(17, false);
+    this.slatFlapSelectionS18F10 = this.sfccSlatFlapsSystemStatusWord.bitValueOr(18, false);
+    this.slatFlapSelectionS22F15 = this.sfccSlatFlapsSystemStatusWord.bitValueOr(19, false);
+    this.slatFlapSelectionS22F20 = this.sfccSlatFlapsSystemStatusWord.bitValueOr(20, false);
 
     const flapsMcduPos1Disagree = xor(this.slatFlapSelectionS18F10, mcduToFlapPos1);
     const flapsMcduPos2Disagree = xor(this.slatFlapSelectionS22F15, mcduToFlapPos2);
@@ -4356,14 +4367,14 @@ export class FwsCore {
     // rudder trim not takeoff
     const sec1RudderTrimActualPos = Arinc429Word.fromSimVarValue('L:A32NX_SEC_1_RUDDER_ACTUAL_POSITION');
     const sec3RudderTrimActualPos = Arinc429Word.fromSimVarValue('L:A32NX_SEC_3_RUDDER_ACTUAL_POSITION');
-    const sec1Healthy = SimVar.GetSimVarValue('L:A32NX_SEC_1_HEALTHY', 'boolean') > 0;
-    const sec3Healthy = SimVar.GetSimVarValue('L:A32NX_SEC_3_HEALTHY', 'boolean') > 0;
 
     const rudderTrimConfig =
-      (sec1Healthy && Math.abs(sec1RudderTrimActualPos.valueOr(0)) > 3.6) ||
-      (sec3Healthy && Math.abs(sec3RudderTrimActualPos.valueOr(0)) > 3.6);
+      (this.sec1Healthy.get() && Math.abs(sec1RudderTrimActualPos.valueOr(0)) > 3.6) ||
+      (this.sec3Healthy.get() && Math.abs(sec3RudderTrimActualPos.valueOr(0)) > 3.6);
 
-    this.rudderTrimPosition.set(sec1Healthy ? sec1RudderTrimActualPos.valueOr(0) : sec3RudderTrimActualPos.valueOr(0));
+    this.rudderTrimPosition.set(
+      this.sec1Healthy.get() ? sec1RudderTrimActualPos.valueOr(0) : sec3RudderTrimActualPos.valueOr(0),
+    );
 
     this.rudderTrimNotTo.set(this.flightPhase1211.get() && rudderTrimConfig);
     const rudderTrimConfigTestInPhase129 =
@@ -4382,7 +4393,7 @@ export class FwsCore {
       (adr1PressureAltitude.valueOr(0) >= 22000 ||
         adr2PressureAltitude.valueOr(0) >= 22000 ||
         adr3PressureAltitude.valueOr(0) >= 22000 ||
-        this.flapsBaulkActiveWord.bitValueOr(25, false)) &&
+        this.sfccSlatFlapsSystemStatusWord.bitValueOr(25, false)) &&
         this.flightPhase.get() === 8 &&
         !this.slatFlapSelectionS0F0,
     );
@@ -5585,7 +5596,13 @@ export class FwsCore {
       Simplane.getPressureSelectedMode(Aircraft.A320_NEO) !== 'STD',
       deltaTime,
     );
-    this.approachAutoDisplaySlatsExtendedPulseNode.write(this.flapsHandle.get() > 0, deltaTime);
+    this.approachAutoDisplaySlatsExtendedPulseNode.write(
+      this.sfccSlatFlapsSystemStatusWord.bitValueOr(18, false) ||
+        this.sfccSlatFlapsSystemStatusWord.bitValueOr(19, false) ||
+        this.sfccSlatFlapsSystemStatusWord.bitValueOr(20, false) ||
+        this.sfccSlatFlapsSystemStatusWord.bitValueOr(21, false),
+      deltaTime,
+    );
 
     const chimeRequested =
       (this.auralSingleChimePending || this.requestSingleChimeFromAThrOff) && !this.auralCrcActive.get();
