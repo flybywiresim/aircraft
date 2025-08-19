@@ -388,13 +388,15 @@ export class FwsCore {
 
   public readonly highLandingFieldElevation = Subject.create(false);
 
-  public readonly noMobileSwitchPosition = Subject.create(0);
+  public readonly noMobileSwitchOn = Subject.create(false);
 
   public readonly predWSOn = Subject.create(false);
 
-  public readonly seatBelt = Subject.create(0);
+  public readonly seatBeltSwitchOn = Subject.create(false);
 
-  public readonly strobeLightsOn = Subject.create(0);
+  public readonly signsOn = Subject.create(false);
+
+  public readonly strobeLightsOn = Subject.create(false);
 
   public readonly toConfigNormal = Subject.create(false);
 
@@ -1517,7 +1519,9 @@ export class FwsCore {
 
   private onGroundImmediate = false;
 
-  public readonly gearLeverPos = Subject.create(false);
+  public readonly gearLeverDown = Subject.create(false);
+
+  public gearGravityExtensionSwitchExtend = false;
 
   public readonly autoBrakeDeactivatedNode = new NXLogicTriggeredMonostableNode(9, false); // When ABRK deactivated, emit this for 9 sec
 
@@ -1857,6 +1861,8 @@ export class FwsCore {
   public readonly eng2Out = Subject.create(false);
   public readonly eng3Out = Subject.create(false);
   public readonly eng4Out = Subject.create(false);
+
+  public readonly twoEnginesOutOnOppositeSide = Subject.create(false);
 
   public readonly twoEnginesOutOnSameSide = Subject.create(false);
 
@@ -3185,7 +3191,9 @@ export class FwsCore {
       this.dcESSBusPowered.get() && SimVar.GetSimVarValue('L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED', 'bool') > 0;
     const leftCompressedHardwireLgciu2 =
       this.dc2BusPowered.get() && SimVar.GetSimVarValue('L:A32NX_LGCIU_2_LEFT_GEAR_COMPRESSED', 'bool') > 0;
-    this.gearLeverPos.set(SimVar.GetSimVarValue('GEAR HANDLE POSITION', 'bool'));
+    this.gearLeverDown.set(SimVar.GetSimVarValue('L:A32NX_GEAR_LEVER_POSITION_REQUEST', 'bool') == 1);
+    this.gearGravityExtensionSwitchExtend =
+      SimVar.GetSimVarValue('L:A32NX_LG_GRVTY_SWITCH_POS', SimVarValueType.Number) === 2;
 
     // General logic
     const mainGearDownlocked =
@@ -4041,12 +4049,14 @@ export class FwsCore {
     this.ir3UsedRight.set(attKnob === 2);
     this.compMesgCount.set(SimVar.GetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'number'));
     this.fmsSwitchingKnob.set(SimVar.GetSimVarValue('L:A32NX_FMS_SWITCHING_KNOB', 'enum'));
-    this.seatBelt.set(SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool'));
+    this.seatBeltSwitchOn.set(SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool') === 1);
     this.ndXfrKnob.set(SimVar.GetSimVarValue('L:A32NX_ECAM_ND_XFR_SWITCHING_KNOB', 'enum'));
-    this.noMobileSwitchPosition.set(SimVar.GetSimVarValue('L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position', 'number'));
+    this.noMobileSwitchOn.set(SimVar.GetSimVarValue('L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position', 'number') === 0);
     this.strobeLightsOn.set(SimVar.GetSimVarValue('L:LIGHTING_STROBE_0', 'Bool'));
 
     this.voiceVhf3.set(this.rmp3ActiveMode.get() !== FrequencyMode.Data);
+
+    this.signsOn.set(this.seatBeltSwitchOn.get() && this.noMobileSwitchOn.get());
 
     /* FUEL */
     const feedTank1Low = SimVar.GetSimVarValue('FUELSYSTEM TANK WEIGHT:2', 'kilogram') < 1375;
@@ -4933,10 +4943,6 @@ export class FwsCore {
     this.eng3Out.set(this.eng3ShutDown.get() || this.eng3FailMemoryNode.read());
     this.eng4Out.set(this.eng4ShutDown.get() || this.eng4FailMemoryNode.read());
 
-    this.twoEnginesOutOnSameSide.set(
-      (this.eng1Out.get() && this.eng2Out.get()) || (this.eng3Out.get() && this.eng4Out.get()),
-    );
-
     this.allEnginesFailure.set(
       !this.aircraftOnGround.get() &&
         !this.engine1Running.get() &&
@@ -4947,6 +4953,16 @@ export class FwsCore {
         this.eng2Out.get() &&
         this.eng3Out.get() &&
         this.eng4Out.get(),
+    );
+
+    this.twoEnginesOutOnSameSide.set(
+      !this.allEnginesFailure.get() &&
+        ((this.eng1Out.get() && this.eng2Out.get()) || (this.eng3Out.get() && this.eng4Out.get())),
+    );
+
+    this.twoEnginesOutOnOppositeSide.set(
+      !this.allEnginesFailure.get() &&
+        ((this.eng1Out.get() && this.eng4Out.get()) || (this.eng2Out.get() && this.eng3Out.get())),
     );
 
     /* MASTER CAUT/WARN BUTTONS */
