@@ -1146,7 +1146,7 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: 'ALERT',
       },
       {
-        name: 'BEFORE OPENING ANY CABIN DOOR:',
+        name: 'BEFORE OPENING ANY CABIN DOOR',
         sensed: false,
         condition: true,
       },
