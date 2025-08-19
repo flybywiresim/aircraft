@@ -2053,13 +2053,13 @@ export class FwsCore {
   public readonly eng4BleedInop = this.gen4Inop; // TODO add bleed inop conditions
 
   public readonly cabPressSys = MappedSubject.create(
-    ([flightPhase23, pressSysFault]) => !flightPhase23 && !pressSysFault,
+    ([flightPhase23, pressSysFault]) => flightPhase23 && pressSysFault,
     this.flightPhase23,
     this.pressSysFault,
   );
 
   public readonly pack1and2 = MappedSubject.create(
-    ([flightPhase23, pressSysFault]) => !flightPhase23 && !pressSysFault,
+    ([flightPhase23, pressSysFault]) => flightPhase23 && pressSysFault,
     this.flightPhase23,
     this.pressSysFault,
   );
