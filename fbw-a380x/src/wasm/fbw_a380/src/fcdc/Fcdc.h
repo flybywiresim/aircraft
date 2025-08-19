@@ -2,7 +2,10 @@
 
 #include "../Arinc429.h"
 #include "../Arinc429Utils.h"
+#include "../interface/SimConnectData.h"
 #include "../model/A380PrimComputer.h"
+#include "../model/AutopilotLaws.h"
+#include "../model/Autothrust.h"
 
 struct FcdcBus {
   // Label 040
@@ -15,6 +18,9 @@ struct FcdcBus {
   Arinc429DiscreteWord efcsStatus4;
   // Label 044
   Arinc429DiscreteWord efcsStatus5;
+
+  int approachCapability;
+  int autolandWarning;
 };
 
 struct FcdcDiscreteInputs {
@@ -23,6 +29,11 @@ struct FcdcDiscreteInputs {
   bool noseGearPressed;
 
   bool primHealthy[3];
+
+  /* FIXME use proper bus messages */
+  ap_raw_laws_input autopilotStateMachineOutput;
+  athr_output autoThrustOutput;
+  SimData simData;
 };
 
 struct FcdcAnalogInputs {
@@ -31,6 +42,7 @@ struct FcdcAnalogInputs {
 
 struct FcdcBusInputs {
   base_prim_out_bus prims[3];
+  base_ra_bus raBusOutputs[3];
 };
 
 enum class LateralLaw {
@@ -70,6 +82,8 @@ class Fcdc {
 
   void updateSelfTest(double deltaTime);
 
+  void updateApproachCapability(FcdcBus& output, double deltaTime);
+
   PitchLaw getPitchLawStatusFromBits(bool bit1, bool bit2, bool bit3);
 
   LateralLaw getLateralLawStatusFromBits(bool bit1, bool bit2);
@@ -89,4 +103,10 @@ class Fcdc {
   const bool isUnit1;
 
   const double minimumPowerOutageTimeForFailure = 0.01;
+
+  int currentApproachCapability = 0;
+  double previousApproachCapabilityUpdateTime = 0;
+
+  bool autolandWarningLatch = false;
+  bool autolandWarningTriggered = false;
 };

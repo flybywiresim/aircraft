@@ -1200,7 +1200,8 @@ bool FlyByWireInterface::updateLgciu(int lgciuIndex) {
 }
 
 bool FlyByWireInterface::updateSfcc(int sfccIndex) {
-  sfccBusOutputs[sfccIndex].slat_flap_component_status_word = Arinc429Utils::fromSimVar(idSfccSlatFlapComponentStatusWord[sfccIndex]->get());
+  sfccBusOutputs[sfccIndex].slat_flap_component_status_word =
+      Arinc429Utils::fromSimVar(idSfccSlatFlapComponentStatusWord[sfccIndex]->get());
   sfccBusOutputs[sfccIndex].slat_flap_system_status_word = Arinc429Utils::fromSimVar(idSfccSlatFlapSystemStatusWord[sfccIndex]->get());
   sfccBusOutputs[sfccIndex].slat_flap_actual_position_word = Arinc429Utils::fromSimVar(idSfccSlatFlapActualPositionWord[sfccIndex]->get());
   sfccBusOutputs[sfccIndex].slat_actual_position_deg = Arinc429Utils::fromSimVar(idSfccSlatActualPositionWord[sfccIndex]->get());
@@ -1697,6 +1698,8 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
     return true;
   }
 
+  SimData simData = simConnectInterface.getSimData();
+
   const int oppFcdcIndex = fcdcIndex == 0 ? 1 : 0;
 
   Failures failureIndex = fcdcIndex == 0 ? Failures::Fcdc1 : Failures::Fcdc2;
@@ -1707,7 +1710,12 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
   for (int i = 0; i < 3; i++) {
     fcdcs[fcdcIndex].discreteInputs.primHealthy[i] = primsDiscreteOutputs[i].prim_healthy;
     fcdcs[fcdcIndex].busInputs.prims[i] = primsBusOutputs[i];
+    fcdcs[fcdcIndex].busInputs.raBusOutputs[i] = raBusOutputs[i];
   }
+
+  fcdcs[fcdcIndex].discreteInputs.autopilotStateMachineOutput = autopilotStateMachineOutput;
+  fcdcs[fcdcIndex].discreteInputs.autoThrustOutput = autoThrustOutput;
+  fcdcs[fcdcIndex].discreteInputs.simData = simData;
 
   // FIXME no speed_brake_lever_command_deg in prim out bus (where to get it from?)
   fcdcs[fcdcIndex].analogInputs.spoilersLeverPos = spoilersHandler->getHandlePosition();
@@ -1719,6 +1727,8 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
   idFcdcDiscreteWord3[fcdcIndex]->set(output.efcsStatus3.toSimVar());
   idFcdcDiscreteWord4[fcdcIndex]->set(output.efcsStatus4.toSimVar());
   idFcdcDiscreteWord5[fcdcIndex]->set(output.efcsStatus5.toSimVar());
+  idFmaApproachCapability->set(output.approachCapability);
+  idAutopilotAutolandWarning->set(output.autolandWarning);
 
   return true;
 }
@@ -2277,99 +2287,6 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
   idFmaSpeedProtectionActive->set(autopilotStateMachineOutput.speed_protection_mode);
   idFmaSoftAltModeActive->set(autopilotStateMachineOutput.ALT_soft_mode_active);
   idFmaCruiseAltModeActive->set(autopilotStateMachineOutput.ALT_cruise_mode_active);
-
-  // calculate and set approach capability
-  // when no RA is available at all -> CAT1, at least one RA is needed to get into CAT2 or higher
-  // CAT3 requires two valid RA which are not simulated yet
-  bool landModeArmedOrActive = (isLocArmed || isLocEngaged) && (isGsArmed || isGsEngaged);
-  int numberOfAutopilotsEngaged = autopilotStateMachineOutput.enabled_AP1 + autopilotStateMachineOutput.enabled_AP2;
-  bool autoThrustEngaged = (autoThrustOutput.status == athr_status::ENGAGED_ACTIVE);
-  bool radioAltimeterAvailable = (simData.H_radio_ft <= 5000);
-  bool isCat1 = landModeArmedOrActive;
-  bool isCat2 = landModeArmedOrActive && radioAltimeterAvailable && !autoThrustEngaged && numberOfAutopilotsEngaged >= 1;
-  bool isCat3S = landModeArmedOrActive && radioAltimeterAvailable && autoThrustEngaged && numberOfAutopilotsEngaged >= 1;
-  bool isCat3D = landModeArmedOrActive && radioAltimeterAvailable && autoThrustEngaged && numberOfAutopilotsEngaged == 2;
-  int newApproachCapability = currentApproachCapability;
-
-  if (currentApproachCapability == 0) {
-    if (isCat1) {
-      newApproachCapability = 1;
-    }
-  } else if (currentApproachCapability == 1) {
-    if (!isCat1) {
-      newApproachCapability = 0;
-    }
-    if (isCat3S) {
-      newApproachCapability = 3;
-    } else if (isCat2) {
-      newApproachCapability = 2;
-    }
-  } else if (currentApproachCapability == 2) {
-    if (isCat3D) {
-      newApproachCapability = 4;
-    } else if (isCat3S) {
-      newApproachCapability = 3;
-    } else if (!isCat2) {
-      newApproachCapability = 1;
-    }
-  } else if (currentApproachCapability == 3) {
-    if ((simData.H_radio_ft > 100) || (simData.H_radio_ft < 100 && numberOfAutopilotsEngaged == 0)) {
-      if (isCat3D) {
-        newApproachCapability = 4;
-      } else if (!isCat3S && !isCat2) {
-        newApproachCapability = 1;
-      } else if (!isCat3S && isCat2) {
-        newApproachCapability = 2;
-      }
-    }
-  } else if (currentApproachCapability == 4) {
-    if ((simData.H_radio_ft > 100) || (simData.H_radio_ft < 100 && numberOfAutopilotsEngaged == 0)) {
-      if (!autoThrustEngaged) {
-        newApproachCapability = 2;
-      } else if (!isCat3D) {
-        newApproachCapability = 3;
-      }
-    }
-  }
-
-  bool doUpdate = false;
-  bool canDowngrade = (simData.simulationTime - previousApproachCapabilityUpdateTime) > 3.0;
-  bool canUpgrade = (simData.simulationTime - previousApproachCapabilityUpdateTime) > 1.5;
-  if (newApproachCapability != currentApproachCapability) {
-    doUpdate = (newApproachCapability == 0 && currentApproachCapability == 1) ||
-               (newApproachCapability == 1 && currentApproachCapability == 0) ||
-               (newApproachCapability > currentApproachCapability && canUpgrade) ||
-               (newApproachCapability < currentApproachCapability && canDowngrade);
-  } else {
-    previousApproachCapabilityUpdateTime = simData.simulationTime;
-  }
-
-  if (doUpdate) {
-    currentApproachCapability = newApproachCapability;
-    idFmaApproachCapability->set(currentApproachCapability);
-    previousApproachCapabilityUpdateTime = simData.simulationTime;
-  }
-
-  // autoland warning -------------------------------------------------------------------------------------------------
-  // if at least one AP engaged and LAND or FLARE mode -> latch
-  if (simData.H_radio_ft < 200 && numberOfAutopilotsEngaged > 0 &&
-      (autopilotStateMachineOutput.vertical_mode == 32 || autopilotStateMachineOutput.vertical_mode == 33)) {
-    autolandWarningLatch = true;
-  } else if (simData.H_radio_ft >= 200 ||
-             (autopilotStateMachineOutput.vertical_mode != 32 && autopilotStateMachineOutput.vertical_mode != 33)) {
-    autolandWarningLatch = false;
-    autolandWarningTriggered = false;
-    idAutopilotAutolandWarning->set(0);
-  }
-
-  if (autolandWarningLatch && !autolandWarningTriggered) {
-    if (numberOfAutopilotsEngaged == 0 ||
-        (simData.H_radio_ft > 15 && (abs(simData.nav_loc_error_deg) > 0.2 || simData.nav_loc_valid == false)) ||
-        (simData.H_radio_ft > 100 && (abs(simData.nav_gs_error_deg) > 0.4 || simData.nav_gs_valid == false))) {
-      autolandWarningTriggered = true;
-      idAutopilotAutolandWarning->set(1);
-    }
-  }
 
   // FMA triple click and mode reversion ------------------------------------------------------------------------------
   idFmaTripleClick->set(autopilotStateMachineOutput.mode_reversion_triple_click);

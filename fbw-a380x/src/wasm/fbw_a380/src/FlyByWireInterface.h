@@ -44,9 +44,6 @@ class FlyByWireInterface {
 
   double monotonicTime = 0;
 
-  int currentApproachCapability = 0;
-  double previousApproachCapabilityUpdateTime = 0;
-
   bool simulationRateReductionEnabled = true;
   bool limitSimulationRateByPerformance = true;
 
@@ -76,9 +73,6 @@ class FlyByWireInterface {
   bool flightDirectorConnectLatch_2 = false;
   bool flightDirectorDisconnectLatch_1 = false;
   bool flightDirectorDisconnectLatch_2 = false;
-
-  bool autolandWarningLatch = false;
-  bool autolandWarningTriggered = false;
 
   double flightControlsKeyChangeAileron = 0.0;
   double flightControlsKeyChangeElevator = 0.0;

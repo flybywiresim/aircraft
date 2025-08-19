@@ -135,6 +135,123 @@ FcdcBus Fcdc::update(double deltaTime, bool faultActive, bool isPowered) {
   return output;
 }
 
+void Fcdc::updateApproachCapability(FcdcBus& output, double deltaTime) {
+  // calculate and set approach capability
+  // Approach and Landing Capability comes from each PRIM, which monitors the required equipment (based on lots of criteria, see LIM-AFS-30
+  // P 11/18) FCDC consolidates these capabilities to a overall capability. To my understanding, this is done by looking at the health
+  // status of PRIMs and AP+mode engagement. The rest of the conditions should be handled in PRIM FGs.
+  bool isLocArmed = static_cast<unsigned long long>(discreteInputs.autopilotStateMachineOutput.lateral_mode_armed) >> 1 & 0x01;
+  bool isLocEngaged =
+      discreteInputs.autopilotStateMachineOutput.lateral_mode >= 30 && discreteInputs.autopilotStateMachineOutput.lateral_mode <= 34;
+  bool isGsArmed = static_cast<unsigned long long>(discreteInputs.autopilotStateMachineOutput.vertical_mode_armed) >> 4 & 0x01;
+  bool isGsEngaged =
+      discreteInputs.autopilotStateMachineOutput.vertical_mode >= 30 && discreteInputs.autopilotStateMachineOutput.vertical_mode <= 34;
+  bool isFinalArmed = static_cast<unsigned long long>(discreteInputs.autopilotStateMachineOutput.vertical_mode_armed) >> 5 & 0x01;
+  bool isFinalEngaged = discreteInputs.autopilotStateMachineOutput.vertical_mode == 24;
+  bool landFlareOrRollout =
+      discreteInputs.autopilotStateMachineOutput.vertical_mode >= 32 && discreteInputs.autopilotStateMachineOutput.vertical_mode <= 34;
+
+  bool landModeArmedOrActive = (isLocArmed || isLocEngaged) && (isGsArmed || isGsEngaged);
+  int numberOfAutopilotsEngaged =
+      discreteInputs.autopilotStateMachineOutput.enabled_AP1 + discreteInputs.autopilotStateMachineOutput.enabled_AP2;
+  bool autoThrustEngaged = (discreteInputs.autoThrustOutput.status == athr_status::ENGAGED_ACTIVE);
+  // FIXME this should be checked in PRIM FGs
+  bool radioAltimeterAvailable = isNo(busInputs.raBusOutputs[0].radio_height_ft) || isNo(busInputs.raBusOutputs[1].radio_height_ft) ||
+                                 isNo(busInputs.raBusOutputs[2].radio_height_ft);
+  bool isCat1 = landModeArmedOrActive;
+  bool isCat2 = landModeArmedOrActive && radioAltimeterAvailable && !autoThrustEngaged && numberOfAutopilotsEngaged >= 1;
+  bool isCat3S = landModeArmedOrActive && radioAltimeterAvailable && autoThrustEngaged && numberOfAutopilotsEngaged >= 1;
+  bool isCat3D = landModeArmedOrActive && radioAltimeterAvailable && autoThrustEngaged && numberOfAutopilotsEngaged == 2;
+  int newApproachCapability = currentApproachCapability;
+
+  double radioAlt = isNo(busInputs.raBusOutputs[0].radio_height_ft)   ? busInputs.raBusOutputs[0].radio_height_ft.Data
+                    : isNo(busInputs.raBusOutputs[1].radio_height_ft) ? busInputs.raBusOutputs[1].radio_height_ft.Data
+                                                                      : busInputs.raBusOutputs[2].radio_height_ft.Data;
+
+  if (currentApproachCapability == 0) {
+    if (isCat1) {
+      newApproachCapability = 1;
+    }
+  } else if (currentApproachCapability == 1) {
+    if (!isCat1) {
+      newApproachCapability = 0;
+    }
+    if (isCat3S) {
+      newApproachCapability = 3;
+    } else if (isCat2) {
+      newApproachCapability = 2;
+    }
+  } else if (currentApproachCapability == 2) {
+    if (isCat3D) {
+      newApproachCapability = 4;
+    } else if (isCat3S) {
+      newApproachCapability = 3;
+    } else if (!isCat2) {
+      newApproachCapability = 1;
+    }
+  } else if (currentApproachCapability == 3) {
+    if ((radioAlt > 200) || (radioAlt < 200 && (numberOfAutopilotsEngaged == 0 || !landFlareOrRollout))) {
+      // Computed above 400ft, memorized below 200ft
+      if (isCat3D) {
+        newApproachCapability = 4;
+      } else if (!isCat3S && !isCat2) {
+        newApproachCapability = 1;
+      } else if (!isCat3S && isCat2) {
+        newApproachCapability = 2;
+      }
+    }
+  } else if (currentApproachCapability == 4) {
+    if ((radioAlt > 200) || (radioAlt < 200 && (numberOfAutopilotsEngaged == 0 || !landFlareOrRollout))) {
+      // Computed above 400ft, memorized below 200ft
+      if (!autoThrustEngaged) {
+        newApproachCapability = 2;
+      } else if (!isCat3D) {
+        newApproachCapability = 3;
+      }
+    }
+  }
+
+  bool doUpdate = false;
+  bool canDowngrade = (discreteInputs.simData.simulationTime - previousApproachCapabilityUpdateTime) > 3.0;
+  bool canUpgrade = (discreteInputs.simData.simulationTime - previousApproachCapabilityUpdateTime) > 1.5;
+  // Only compute above 400ft
+  if (newApproachCapability != currentApproachCapability && radioAlt > 400) {
+    doUpdate = (newApproachCapability == 0 && currentApproachCapability == 1) ||
+               (newApproachCapability == 1 && currentApproachCapability == 0) ||
+               (newApproachCapability > currentApproachCapability && canUpgrade) ||
+               (newApproachCapability < currentApproachCapability && canDowngrade);
+  } else {
+    previousApproachCapabilityUpdateTime = discreteInputs.simData.simulationTime;
+  }
+
+  if (doUpdate) {
+    currentApproachCapability = newApproachCapability;
+    output.approachCapability = currentApproachCapability;
+    previousApproachCapabilityUpdateTime = discreteInputs.simData.simulationTime;
+  }
+
+  // autoland warning -------------------------------------------------------------------------------------------------
+  // if at least one AP engaged and LAND or FLARE mode -> latch
+  if (radioAlt < 200 && numberOfAutopilotsEngaged > 0 &&
+      (discreteInputs.autopilotStateMachineOutput.vertical_mode == 32 || discreteInputs.autopilotStateMachineOutput.vertical_mode == 33)) {
+    autolandWarningLatch = true;
+  } else if (radioAlt >= 200 || (discreteInputs.autopilotStateMachineOutput.vertical_mode != 32 &&
+                                 discreteInputs.autopilotStateMachineOutput.vertical_mode != 33)) {
+    autolandWarningLatch = false;
+    autolandWarningTriggered = false;
+    output.autolandWarning = 0;
+  }
+
+  if (autolandWarningLatch && !autolandWarningTriggered) {
+    if (numberOfAutopilotsEngaged == 0 ||
+        (radioAlt > 15 && (abs(discreteInputs.simData.nav_loc_error_deg) > 0.2 || discreteInputs.simData.nav_loc_valid == false)) ||
+        (radioAlt > 100 && (abs(discreteInputs.simData.nav_gs_error_deg) > 0.4 || discreteInputs.simData.nav_gs_valid == false))) {
+      autolandWarningTriggered = true;
+      output.autolandWarning = 1;
+    }
+  }
+}
+
 // Perform self monitoring
 void Fcdc::monitorSelf(bool faultActive) {
   if (faultActive || powerSupplyFault || !selfTestComplete) {
