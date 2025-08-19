@@ -412,7 +412,7 @@ export class FwsMemos {
     '335000001': {
       // SEAT BELTS
       flightPhaseInhib: [2, 9, 10],
-      simVarIsActive: this.fws.seatBelt.map((v) => !!v),
+      simVarIsActive: this.fws.seatBeltSwitchOn.map((v) => !!v),
       whichCodeToReturn: () => [0],
       codesToReturn: ['335000001'],
       memoInhibit: () => this.fws.toMemo.get() === 1 || this.fws.ldgMemo.get() === 1,
@@ -420,7 +420,7 @@ export class FwsMemos {
     '335000003': {
       // NO MOBILE
       flightPhaseInhib: [],
-      simVarIsActive: this.fws.noMobileSwitchPosition.map((pos) => pos === 0),
+      simVarIsActive: this.fws.noMobileSwitchOn.map((pos) => pos === 0),
       whichCodeToReturn: () => [0],
       codesToReturn: ['335000003'],
       memoInhibit: () => false,

@@ -168,7 +168,7 @@ export class FwsAbnormalNonSensed {
         false,
         !SimVar.GetSimVarValue('L:A32NX_OVHD_VENT_CAB_FANS_PB_IS_ON', SimVarValueType.Bool),
         !SimVar.GetSimVarValue('L:A32NX_OVHD_ELEC_GALY_AND_CAB_PB_IS_AUTO', SimVarValueType.Bool),
-        !!this.fws.seatBelt.get(),
+        !!this.fws.seatBeltSwitchOn.get(),
         false,
         false,
       ],
@@ -313,7 +313,7 @@ export class FwsAbnormalNonSensed {
       ],
       whichItemsChecked: () => [
         false,
-        !!this.fws.seatBelt.get(),
+        !!this.fws.seatBeltSwitchOn.get(),
         false,
         this.fws.allThrottleIdle.get(),
         this.fws.speedBrakeCommand.get(),

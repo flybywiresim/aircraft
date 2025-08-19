@@ -7,7 +7,11 @@ import {
   DeferredProcedure,
   DeferredProcedureType,
   FLAPS_SLOW_CHECKLIST_ITEM,
+  FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
+  FUEL_CONSUMPT_INCRSD_CHECKLIST_ITEM,
+  LDG_PERF_AFFECTED_CHECKLIST_ITEM,
   SLATS_SLOW_CHECKLIST_ITEM,
+  STEER_ENDURANCE_LIMITED_CHECKLIST_ITEM,
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 
 // Convention for IDs:
@@ -980,12 +984,40 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
   701800159: {
     title: "\x1b<4m\x1b4mENG\x1bm \x1b'mTWO ENG OUT ON SAME SIDE\x1bm",
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'PACK 1',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'PACK 2',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      { ...FUEL_CONSUMPT_INCRSD_CHECKLIST_ITEM },
+      { ...FMS_PRED_UNRELIABLE_CHECKLIST_ITEM },
+      {
+        ...STEER_ENDURANCE_LIMITED_CHECKLIST_ITEM,
+      },
+    ],
   },
   701800160: {
     title: "\x1b<4m\x1b4mENG\x1bm \x1b'mTWO ENG OUT ON OPPOSITE SIDE\x1bm",
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'PACK 1',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'PACK 2',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      { ...LDG_PERF_AFFECTED_CHECKLIST_ITEM },
+    ],
   },
   701800161: {
     title: '\x1b<4m\x1b4mENG\x1bm TYPE DISAGREE',
@@ -1005,7 +1037,7 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
 };
 
 export const EcamDeferredProcAta70: { [n: number]: DeferredProcedure } = {
-  320700001: {
+  700700001: {
     fromAbnormalProcs: ['701800159', '701800160'],
     title: 'LANDING WITH TWO ENGS OUT',
     type: DeferredProcedureType.FOR_LANDING,
@@ -1043,7 +1075,7 @@ export const EcamDeferredProcAta70: { [n: number]: DeferredProcedure } = {
       },
       {
         name: 'SIGNS',
-        sensed: false,
+        sensed: true,
         labelNotCompleted: 'ON',
       },
       {
@@ -1055,6 +1087,11 @@ export const EcamDeferredProcAta70: { [n: number]: DeferredProcedure } = {
         name: 'FLAP LVR',
         sensed: true,
         labelNotCompleted: 'CONF 1',
+      },
+      {
+        name: 'L/G LEVER',
+        sensed: true,
+        labelNotCompleted: 'DOWN',
       },
       {
         name: 'GA PERF MAY NOT BE ACHIEVED WITH L/G DN',

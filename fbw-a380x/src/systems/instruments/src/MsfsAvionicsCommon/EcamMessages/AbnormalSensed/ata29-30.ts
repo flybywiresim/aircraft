@@ -5,6 +5,7 @@ import {
   AbnormalProcedure,
   ChecklistLineStyle,
   FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
+  STEER_ENDURANCE_LIMITED_CHECKLIST_ITEM,
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 
 // Convention for IDs:
@@ -504,8 +505,7 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
         sensed: false,
       },
       {
-        name: 'FOR TAXI : STEER ENDURANCE LIMITED',
-        sensed: false,
+        ...STEER_ENDURANCE_LIMITED_CHECKLIST_ITEM,
       },
     ],
   },
@@ -651,8 +651,7 @@ export const EcamAbnormalSensedAta2930: { [n: number]: AbnormalProcedure } = {
         sensed: false,
       },
       {
-        name: 'FOR TAXI : STEER ENDURANCE LIMITED',
-        sensed: false,
+        ...STEER_ENDURANCE_LIMITED_CHECKLIST_ITEM,
       },
     ],
   },
