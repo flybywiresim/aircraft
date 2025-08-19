@@ -50,12 +50,20 @@ export class FwsInopSys {
   inopSys: FwsInopSysDict = {
     213300005: {
       // CAB PRESS SYS
-      simVarIsActive: this.fws.cabPressSys,
+      simVarIsActive: MappedSubject.create(
+        SubscribableMapFunctions.and(),
+        this.fws.flightPhase23,
+        this.fws.pressSysFault,
+      ),
       phase: FwsInopSysPhases.AllPhases,
     },
     210300011: {
       // PACK 1+2
-      simVarIsActive: this.fws.pack1and2,
+      simVarIsActive: MappedSubject.create(
+        SubscribableMapFunctions.and(),
+        this.fws.flightPhase23,
+        this.fws.pressSysFault,
+      ),
       phase: FwsInopSysPhases.AllPhases,
     },
     221300001: {
