@@ -4157,6 +4157,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.Door,
       limitationsAllPhases: (checked) => (checked[1] ? ['210400001'] : []),
+      limitationsPfd: (checked) => (checked[1] ? ['210400001'] : []),
     },
     520800018: {
       flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
@@ -4174,6 +4175,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.Door,
       limitationsAllPhases: (checked) => (checked[1] ? ['210400001'] : []),
+      limitationsPfd: (checked) => (checked[1] ? ['210400001'] : []),
     },
     520800019: {
       flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
@@ -4191,6 +4193,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.Door,
       limitationsAllPhases: (checked) => (checked[1] ? ['210400001'] : []),
+      limitationsPfd: (checked) => (checked[1] ? ['210400001'] : []),
     },
     520800020: {
       flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
@@ -4208,6 +4211,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.Door,
       limitationsAllPhases: (checked) => (checked[1] ? ['210400001'] : []),
+      limitationsPfd: (checked) => (checked[1] ? ['210400001'] : []),
     },
     520800021: {
       flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
@@ -4225,6 +4229,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.Door,
       limitationsAllPhases: (checked) => (checked[1] ? ['210400001'] : []),
+      limitationsPfd: (checked) => (checked[1] ? ['210400001'] : []),
     },
     520800022: {
       flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
@@ -4242,6 +4247,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.Door,
       limitationsAllPhases: (checked) => (checked[1] ? ['210400001'] : []),
+      limitationsPfd: (checked) => (checked[1] ? ['210400001'] : []),
     },
     520800023: {
       flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
@@ -4259,6 +4265,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.Door,
       limitationsAllPhases: (checked) => (checked[1] ? ['210400001'] : []),
+      limitationsPfd: (checked) => (checked[1] ? ['210400001'] : []),
     },
     520800024: {
       flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
@@ -4276,6 +4283,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.Door,
       limitationsAllPhases: (checked) => (checked[1] ? ['210400001'] : []),
+      limitationsPfd: (checked) => (checked[1] ? ['210400001'] : []),
     },
     520800025: {
       flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
@@ -4293,6 +4301,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.Door,
       limitationsAllPhases: (checked) => (checked[1] ? ['210400001'] : []),
+      limitationsPfd: (checked) => (checked[1] ? ['210400001'] : []),
     },
     520800026: {
       flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
@@ -4310,6 +4319,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.Door,
       limitationsAllPhases: (checked) => (checked[1] ? ['210400001'] : []),
+      limitationsPfd: (checked) => (checked[1] ? ['210400001'] : []),
     },
     // ATA 70 Engines
     701800109: {
