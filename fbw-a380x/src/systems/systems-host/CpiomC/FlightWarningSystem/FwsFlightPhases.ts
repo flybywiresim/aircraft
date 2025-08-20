@@ -1,12 +1,8 @@
 // @ts-strict-ignore
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable camelcase */
-import {
-  Arinc429Register,
-  NXLogicConfirmNode,
-  NXLogicMemoryNode,
-  NXLogicTriggeredMonostableNode,
-} from '@flybywiresim/fbw-sdk';
+import { NXLogicConfirmNode, NXLogicMemoryNode, NXLogicTriggeredMonostableNode } from '@flybywiresim/fbw-sdk';
+import { Subject } from '@microsoft/msfs-sdk';
 import { FwsCore } from 'systems-host/CpiomC/FlightWarningSystem/FwsCore';
 
 export enum FwcFlightPhase {
@@ -31,9 +27,9 @@ export enum FwcFlightPhase {
 export class FwsFlightPhases {
   toConfigTest: boolean;
 
-  ldgMemo: boolean;
+  private readonly ldgMemo = Subject.create(false);
 
-  toMemo: boolean;
+  private readonly toMemo = Subject.create(false);
 
   gndMemo: NXLogicConfirmNode;
 
@@ -101,17 +97,9 @@ export class FwsFlightPhases {
 
   _cChordShortWasTriggered: boolean;
 
-  aircraft: Aircraft;
-
-  private readonly adrAltitude = Arinc429Register.empty();
-
   constructor(private fws: FwsCore) {
     // momentary
     this.toConfigTest = null;
-
-    // persistent
-    this.ldgMemo = null;
-    this.toMemo = null;
 
     this.gndMemo = new NXLogicConfirmNode(1);
 
@@ -157,6 +145,14 @@ export class FwsFlightPhases {
     this._wasAboveThreshold = false;
     this._wasInRange = false;
     this._wasReach200ft = false;
+
+    this.toMemo.sub((v) => {
+      SimVar.SetSimVarValue('L:A32NX_FWC_TOMEMO', 'Bool', v);
+    });
+
+    this.ldgMemo.sub((v) => {
+      SimVar.SetSimVarValue('L:A32NX_FWC_LDGMEMO', 'Bool', v);
+    });
   }
 
   update(deltaTime: number) {
@@ -363,9 +359,9 @@ export class FwsFlightPhases {
       _deltaTime,
     );
 
-    this.toMemo =
-      flightPhaseMemo || (this.fws.flightPhase.get() === FwcFlightPhase.FirstEngineStarted && toTimerElapsed);
-    SimVar.SetSimVarValue('L:A32NX_FWC_TOMEMO', 'Bool', this.toMemo);
+    this.toMemo.set(
+      flightPhaseMemo || (this.fws.flightPhase.get() === FwcFlightPhase.FirstEngineStarted && toTimerElapsed),
+    );
   }
 
   _updateLandingMemo(_deltaTime: number) {
@@ -406,12 +402,12 @@ export class FwsFlightPhases {
       _deltaTime,
     );
 
-    this.ldgMemo =
+    this.ldgMemo.set(
       showInApproach ||
-      invalidRadioMemo ||
-      this.fws.flightPhase.get() === FwcFlightPhase.TouchDown ||
-      this.fws.flightPhase.get() === FwcFlightPhase.AtOrBelow800Feet;
-    SimVar.SetSimVarValue('L:A32NX_FWC_LDGMEMO', 'Bool', this.ldgMemo);
+        invalidRadioMemo ||
+        this.fws.flightPhase.get() === FwcFlightPhase.TouchDown ||
+        this.fws.flightPhase.get() === FwcFlightPhase.AtOrBelow800Feet,
+    );
   }
 
   _updateAltitudeWarning() {
@@ -456,12 +452,10 @@ export class FwsFlightPhases {
     // - Glide slope captured
     // - Landing locked down
 
-    const landingGearIsDown =
-      SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Enum') >= 1 &&
-      SimVar.GetSimVarValue('L:A32NX_GEAR_HANDLE_POSITION', 'Percent over 100') > 0.5;
+    const landingGearIsDown = !this.fws.sfccSlatFlapPositionWord.bitValueOr(12, false) && this.fws.gearLeverDown.get();
     const verticalMode = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'Number');
     const glideSlopeCaptured = verticalMode >= 30 && verticalMode <= 34;
-    const landingGearIsLockedDown = SimVar.GetSimVarValue('GEAR POSITION:0', 'Enum') > 0.9;
+    const landingGearIsLockedDown = this.fws.isAllGearDownlocked;
     const isTcasResolutionAdvisoryActive = SimVar.GetSimVarValue('L:A32NX_TCAS_STATE', 'Enum') > 1;
     if (landingGearIsDown || glideSlopeCaptured || landingGearIsLockedDown || isTcasResolutionAdvisoryActive) {
       this._wasBelowThreshold = false;

@@ -942,6 +942,14 @@ export class FwsCore {
 
   public readonly sfccSlatPositionWord = Arinc429Register.empty();
 
+  private readonly sfcc1MainRoutingSimvar = `L:A32NX_AFDX_${this.fwsNumber === 1 ? 3 : 4}_1_REACHABLE`;
+
+  private readonly sfcc1BackupRoutingSimvar = `L:A32NX_AFDX_${this.fwsNumber === 1 ? 13 : 14}_11_REACHABLE`;
+
+  private readonly sfcc2MainRoutingSimvar = `L:A32NX_AFDX_${this.fwsNumber === 1 ? 3 : 4}_2_REACHABLE`;
+
+  private readonly sfcc2BackupRoutingSimvar = `L:A32NX_AFDX_${this.fwsNumber === 1 ? 13 : 14}_12_REACHABLE`;
+
   public readonly flapsAngle = Subject.create(0);
 
   public readonly lrElevFaultCondition = Subject.create(false);
@@ -2795,10 +2803,7 @@ export class FwsCore {
     this.N1IdleEng.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_IDLE_N1', 'number'));
 
     // Flaps
-    this.sfccSlatFlapsSystemStatusWord.setFromSimVar('L:A32NX_SFCC_1_SLAT_FLAP_SYSTEM_STATUS_WORD');
-    if (this.sfccSlatFlapsSystemStatusWord.isInvalid()) {
-      this.sfccSlatFlapsSystemStatusWord.setFromSimVar('L:A32NX_SFCC_2_SLAT_FLAP_SYSTEM_STATUS_WORD');
-    }
+
     // FIXME move out of acquisition to logic below
     const oneEngineAboveMinPower = this.engine1AboveIdle.get() || this.engine2AboveIdle.get();
 
@@ -4094,6 +4099,7 @@ export class FwsCore {
     this.allFuelPumpsOff.set(this.allFeedTankPumpsOff.get() && this.allEngineSwitchOff.get());
 
     /* F/CTL */
+    this.sffccAquisition();
     const fcdc1DiscreteWord1 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_1_DISCRETE_WORD_1');
     const fcdc2DiscreteWord1 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_2_DISCRETE_WORD_1');
     const fcdc1DiscreteWord2 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_1_DISCRETE_WORD_2');
@@ -4237,17 +4243,6 @@ export class FwsCore {
 
     this.spoilersArmed.set(fcdc1DiscreteWord4.bitValueOr(27, false) || fcdc2DiscreteWord4.bitValueOr(27, false));
     this.speedBrakeCommand.set(fcdc1DiscreteWord4.bitValueOr(28, false) || fcdc2DiscreteWord4.bitValueOr(28, false));
-
-    this.sffcFlapPositionWord.setFromSimVar('L:A32NX_SFCC_1_FLAP_ACTUAL_POSITION_WORD');
-    this.sfccSlatPositionWord.setFromSimVar('L:A32NX_SFCC_1_SLAT_ACTUAL_POSITION_WORD');
-    if (this.sffcFlapPositionWord.isInvalid()) {
-      this.sffcFlapPositionWord.setFromSimVar('A32NX_SFCC_2_FLAP_ACTUAL_POSITION_WORD');
-      this.sfccSlatPositionWord.setFromSimVar('A32NX_SFCC_2_SLAT_ACTUAL_POSITION_WORD');
-    }
-    this.sfccSlatFlapPositionWord.setFromSimVar('L:A32NX_SFCC_1_SLAT_FLAP_ACTUAL_POSITION_WORD');
-    if (this.sfccSlatFlapPositionWord.isInvalid()) {
-      this.sfccSlatFlapPositionWord.setFromSimVar('A32NX_SFCC_2_SLAT_FLAP_ACTUAL_POSITION_WORD');
-    }
 
     const flapsPos = this.sffcFlapPositionWord;
     const slatsPos = this.sfccSlatPositionWord;
@@ -5810,6 +5805,48 @@ export class FwsCore {
       vcsDiscreteWord.setFromSimVar(`L:A32NX_COND_CPIOM_B${index}_VCS_DISCRETE_WORD`);
       tcsDiscreteWord.setFromSimVar(`L:A32NX_COND_CPIOM_B${index}_TCS_DISCRETE_WORD`);
       cpcsDiscreteWord.setFromSimVar(`L:A32NX_COND_CPIOM_B${index}_CPCS_DISCRETE_WORD`);
+    }
+  }
+
+  private sffccAquisition() {
+    const sffc1Reachable =
+      SimVar.GetSimVarValue(this.sfcc1MainRoutingSimvar, SimVarValueType.Bool) ||
+      SimVar.GetSimVarValue(this.sfcc1BackupRoutingSimvar, SimVarValueType.Bool);
+    if (sffc1Reachable) {
+      this.sfccSlatFlapsSystemStatusWord.setFromSimVar('L:A32NX_SFCC_1_SLAT_FLAP_SYSTEM_STATUS_WORD');
+      this.sffcFlapPositionWord.setFromSimVar('L:A32NX_SFCC_1_FLAP_ACTUAL_POSITION_WORD');
+      this.sfccSlatPositionWord.setFromSimVar('L:A32NX_SFCC_1_SLAT_ACTUAL_POSITION_WORD');
+      this.sfccSlatFlapPositionWord.setFromSimVar('L:A32NX_SFCC_1_SLAT_FLAP_ACTUAL_POSITION_WORD');
+    } else {
+      this.sfccSlatFlapsSystemStatusWord.setValue(0);
+      this.sffcFlapPositionWord.setValue(0);
+      this.sfccSlatPositionWord.setValue(0);
+      this.sfccSlatFlapPositionWord.setValue(0);
+    }
+
+    let sffc2Reachable = false;
+    if (
+      this.sfccSlatFlapsSystemStatusWord.isInvalid() ||
+      this.sffcFlapPositionWord.isInvalid() ||
+      this.sfccSlatPositionWord.isInvalid() ||
+      this.sfccSlatFlapPositionWord.isInvalid()
+    ) {
+      sffc2Reachable =
+        SimVar.GetSimVarValue(this.sfcc2MainRoutingSimvar, SimVarValueType.Bool) ||
+        SimVar.GetSimVarValue(this.sfcc2BackupRoutingSimvar, SimVarValueType.Bool);
+    }
+
+    if (this.sfccSlatFlapsSystemStatusWord.isInvalid() && sffc2Reachable) {
+      this.sfccSlatFlapsSystemStatusWord.setFromSimVar('L:A32NX_SFCC_2_SLAT_FLAP_SYSTEM_STATUS_WORD');
+
+      if (this.sffcFlapPositionWord.isInvalid() && sffc2Reachable) {
+        this.sffcFlapPositionWord.setFromSimVar('A32NX_SFCC_2_FLAP_ACTUAL_POSITION_WORD');
+        this.sfccSlatPositionWord.setFromSimVar('A32NX_SFCC_2_SLAT_ACTUAL_POSITION_WORD');
+      }
+
+      if (this.sfccSlatFlapPositionWord.isInvalid() && sffc2Reachable) {
+        this.sfccSlatFlapPositionWord.setFromSimVar('A32NX_SFCC_2_SLAT_FLAP_ACTUAL_POSITION_WORD');
+      }
     }
   }
 
