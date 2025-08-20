@@ -320,7 +320,7 @@ export class FwsAbnormalSensed {
           const changedEntries = this.fws.abnormalUpdatedItems.get(procId);
           const sii = this.activeProcedure.selectedItemIndex.get();
           if (changedEntries && changedEntries.includes(sii) && this.activeProcedure.checklistState.itemsChecked[sii]) {
-            this.activeProcedure.moveDown(false);
+            this.activeProcedure.moveDown(true);
           }
         }
       }
