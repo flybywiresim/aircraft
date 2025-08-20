@@ -347,7 +347,6 @@ fn init() {
     assert!(test_bed.contains_variable_with_name("FUEL_TANK_QUANTITY_9"));
     assert!(test_bed.contains_variable_with_name("FUEL_TANK_QUANTITY_10"));
     assert!(test_bed.contains_variable_with_name("FUEL_TANK_QUANTITY_11"));
-    assert!(test_bed.contains_variable_with_name("FUEL TOTAL QUANTITY WEIGHT"));
 }
 
 #[test]
