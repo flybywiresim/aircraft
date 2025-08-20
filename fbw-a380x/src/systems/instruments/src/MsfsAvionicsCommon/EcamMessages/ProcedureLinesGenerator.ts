@@ -493,7 +493,9 @@ export class ProcedureLinesGenerator {
         if (isCondition && !item.sensed) {
           // Insert CONFIRM <condition>, remove trailing colon
           const itemName = item.name.slice(-1) === ':' ? item.name.slice(0, -1) : item.name;
-          const confirmText = `${item.level ? '\xa0'.repeat(item.level) : ''}CONFIRM ${itemName.substring(0, 2) === 'IF' ? itemName.substring(2) : itemName}`;
+          const containsIf = itemName.substring(0, 2) === 'IF';
+          const containsWhen = !containsIf && itemName.substring(0, 4) === 'WHEN';
+          const confirmText = `${item.level ? '\xa0'.repeat(item.level) : ''}CONFIRM ${containsIf ? itemName.substring(2) : containsWhen ? itemName.substring(4) : itemName}`;
           lineData.push({
             abnormalProcedure: isAbnormalOrDeferred,
             activeProcedure: this.procedureIsActive.get(),
