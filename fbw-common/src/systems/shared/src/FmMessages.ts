@@ -30,4 +30,9 @@ export interface FMMessage {
    * Display color for both MCDU and EFIS
    */
   color: FMMessageColor;
+
+  /**
+   * Can the message be cleared by the MCDU CLR key?
+   */
+  clearable?: boolean;
 }

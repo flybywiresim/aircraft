@@ -37,6 +37,7 @@ export const FMMessageTypes: Readonly<Record<string, FMMessage>> = {
     text: 'SELECT TRUE REF',
     color: 'Amber',
     ndPriority: 1,
+    clearable: true,
   },
   CheckNorthRef: {
     id: 2,
@@ -44,6 +45,7 @@ export const FMMessageTypes: Readonly<Record<string, FMMessage>> = {
     text: 'CHECK NORTH REF',
     color: 'Amber',
     ndPriority: 1,
+    clearable: true,
   },
   NavAccuracyDowngrade: {
     id: 3,
@@ -51,6 +53,7 @@ export const FMMessageTypes: Readonly<Record<string, FMMessage>> = {
     text: 'NAV ACCUR DOWNGRAD',
     color: 'Amber',
     ndPriority: 1,
+    clearable: true,
   },
   NavAccuracyUpgradeNoGps: {
     id: 4,
@@ -58,6 +61,7 @@ export const FMMessageTypes: Readonly<Record<string, FMMessage>> = {
     text: 'NAV ACCUR UPGRAD',
     color: 'Amber',
     ndPriority: 1,
+    clearable: true,
   },
   SpecifiedVorDmeUnavailble: {
     id: 5,
@@ -65,6 +69,7 @@ export const FMMessageTypes: Readonly<Record<string, FMMessage>> = {
     text: 'SPECIF VOR/D UNAVAIL',
     color: 'Amber',
     ndPriority: 1,
+    clearable: true,
   },
   NavAccuracyUpgradeGps: {
     id: 6,
@@ -72,6 +77,7 @@ export const FMMessageTypes: Readonly<Record<string, FMMessage>> = {
     text: 'NAV ACCUR UPGRAD',
     color: 'White',
     ndPriority: 1,
+    clearable: true,
   },
   GpsPrimary: {
     id: 7,
@@ -79,6 +85,7 @@ export const FMMessageTypes: Readonly<Record<string, FMMessage>> = {
     text: 'GPS PRIMARY',
     color: 'White',
     ndPriority: 1,
+    clearable: true,
   },
   MapPartlyDisplayed: {
     id: 8,
@@ -160,20 +167,24 @@ export const FMMessageTypes: Readonly<Record<string, FMMessage>> = {
     id: 17,
     text: 'T/D REACHED',
     color: 'White',
+    clearable: true,
   },
   StepAhead: {
     id: 18,
     text: 'STEP AHEAD',
     color: 'White',
+    clearable: true,
   },
   StepDeleted: {
     id: 19,
     text: 'STEP DELETED',
     color: 'White',
+    clearable: true,
   },
   TooSteepPathAhead: {
     id: 20,
     text: 'TOO STEEP PATH AHEAD',
     color: 'Amber',
+    clearable: true,
   },
 };
