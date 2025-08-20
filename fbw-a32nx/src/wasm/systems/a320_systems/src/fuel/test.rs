@@ -60,13 +60,11 @@ impl FuelTestBed {
     }
 
     fn fuel_low(mut self) -> Self {
-        self.write_by_name("FUEL TANK LEFT MAIN QUANTITY", 324. / FUEL_GALLONS_TO_KG);
-        self.write_by_name("FUEL TANK LEFT AUX QUANTITY", 150. / FUEL_GALLONS_TO_KG);
-        self.write_by_name("FUEL TANK RIGHT MAIN QUANTITY", 324. / FUEL_GALLONS_TO_KG);
-        self.write_by_name("FUEL TANK RIGHT AUX QUANTITY", 150. / FUEL_GALLONS_TO_KG);
+        self.write_by_name("FUEL TANK LEFT MAIN QUANTITY", 405. / FUEL_GALLONS_TO_KG);
+        self.write_by_name("FUEL TANK LEFT AUX QUANTITY", 219. / FUEL_GALLONS_TO_KG);
+        self.write_by_name("FUEL TANK RIGHT MAIN QUANTITY", 405. / FUEL_GALLONS_TO_KG);
+        self.write_by_name("FUEL TANK RIGHT AUX QUANTITY", 219. / FUEL_GALLONS_TO_KG);
         self.write_by_name("FUEL TANK CENTER QUANTITY", 0. / FUEL_GALLONS_TO_KG);
-
-        self.write_by_name("FUEL TOTAL QUANTITY WEIGHT", 1248. / LBS_TO_KG);
 
         self
     }
@@ -77,7 +75,6 @@ impl FuelTestBed {
         self.write_by_name("FUEL TANK RIGHT MAIN QUANTITY", 1600. / FUEL_GALLONS_TO_KG);
         self.write_by_name("FUEL TANK RIGHT AUX QUANTITY", 200. / FUEL_GALLONS_TO_KG);
         self.write_by_name("FUEL TANK CENTER QUANTITY", 0. / FUEL_GALLONS_TO_KG);
-        self.write_by_name("FUEL TOTAL QUANTITY WEIGHT", 3600. / LBS_TO_KG);
 
         self
     }
