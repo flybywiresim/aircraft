@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Subscription } from '@microsoft/msfs-sdk';
+import { MappedSubject, Subscription } from '@microsoft/msfs-sdk';
 import { EcamLimitations } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { FwsCore, FwsSuppressableItem } from 'systems-host/CpiomC/FlightWarningSystem/FwsCore';
 
@@ -25,6 +25,16 @@ export interface FwsLimitationsDict {
 export class FwsLimitations {
   public readonly subscriptions: Subscription[] = [];
 
+  private readonly forLandingFlapLever3 = MappedSubject.create(
+    ([onGround, twoEnginesOutOnOppositeSide, twoEnginesOutOnSameSide, gySysLoPress]) => {
+      return !onGround && (twoEnginesOutOnOppositeSide || twoEnginesOutOnSameSide || gySysLoPress);
+    },
+    this.fws.aircraftOnGround,
+    this.fws.twoEnginesOutOnOppositeSide,
+    this.fws.twoEnginesOutOnSameSide,
+    this.fws.greenYellowAbnormLoPressure,
+  );
+
   constructor(private fws: FwsCore) {}
   /** LIMITATIONS shown on SD */
   limitations: FwsLimitationsDict = {
@@ -42,6 +52,11 @@ export class FwsLimitations {
       // APU bleed do not use
       simVarIsActive: this.fws.fireButtonEng1,
       phase: FwsLimitationsPhases.AllPhases,
+    },
+    270400001: {
+      // FOR LDG FLAP LVR 3
+      simVarIsActive: this.forLandingFlapLever3,
+      phase: FwsLimitationsPhases.ApprLdg,
     },
   };
 

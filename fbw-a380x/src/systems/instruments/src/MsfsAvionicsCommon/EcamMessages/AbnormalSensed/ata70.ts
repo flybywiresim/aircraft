@@ -982,7 +982,7 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   701800159: {
-    title: "\x1b<4m\x1b4mENG\x1bm \x1b'mTWO ENG OUT ON SAME SIDE\x1bm",
+    title: "\x1b<4m\x1b4mENG\x1bm \x1b'mTWO ENG OUT ON SAME SIDE\x1Bm",
     sensed: true,
     items: [
       {
@@ -1003,7 +1003,7 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
     ],
   },
   701800160: {
-    title: "\x1b<4m\x1b4mENG\x1bm \x1b'mTWO ENG OUT ON OPPOSITE SIDE\x1bm",
+    title: "\x1b<4m\x1b4mENG\x1bm \x1b'mTWO ENG OUT ON OPPOSITE SIDE\x1Bm",
     sensed: true,
     items: [
       {

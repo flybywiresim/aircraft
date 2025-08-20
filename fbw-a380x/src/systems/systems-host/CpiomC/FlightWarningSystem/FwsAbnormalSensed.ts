@@ -452,11 +452,7 @@ export class FwsAbnormalSensed {
     211800009: {
       // PACK 1 FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
-      simVarIsActive: MappedSubject.create(
-        ([fdac1fault, fdac2fault]) => fdac1fault && fdac2fault,
-        this.fws.fdac1Channel1Failure,
-        this.fws.fdac1Channel2Failure,
-      ),
+      simVarIsActive: this.fws.fdac1BothChannelsFailed,
       notActiveWhenItemActive: ['211800021'],
       whichItemsToShow: () => [true, true],
       whichItemsChecked: () => [false, !this.fws.pack1On.get()],
@@ -467,11 +463,7 @@ export class FwsAbnormalSensed {
     211800010: {
       // PACK 2 FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
-      simVarIsActive: MappedSubject.create(
-        ([fdac1fault, fdac2fault]) => fdac1fault && fdac2fault,
-        this.fws.fdac2Channel1Failure,
-        this.fws.fdac2Channel2Failure,
-      ),
+      simVarIsActive: this.fws.fdac2BothChannelsFailed,
       notActiveWhenItemActive: ['211800021'],
       whichItemsToShow: () => [true, true],
       whichItemsChecked: () => [false, !this.fws.pack2On.get()],
@@ -3239,7 +3231,7 @@ export class FwsAbnormalSensed {
     290800035: {
       // G SYS LO PRESS
       flightPhaseInhib: [4, 5, 6, 7, 9, 10],
-      simVarIsActive: this.fws.greenAbnormLoPressure,
+      simVarIsActive: this.fws.greenLoPressureAbnormalSensed,
       whichItemsToShow: () => [
         this.fws.flightPhase1112MoreThanOneMin.get(),
         true,
@@ -3264,7 +3256,7 @@ export class FwsAbnormalSensed {
     290800036: {
       // Y SYS LO PRESS
       flightPhaseInhib: [4, 5, 6, 7, 9, 10],
-      simVarIsActive: this.fws.yellowAbnormLoPressure,
+      simVarIsActive: this.fws.yellowLoPressureAbnormalSensed,
       whichItemsToShow: () => [
         this.fws.flightPhase1112MoreThanOneMin.get(),
         true,
