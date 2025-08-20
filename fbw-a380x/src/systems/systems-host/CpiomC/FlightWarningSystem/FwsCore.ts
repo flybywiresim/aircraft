@@ -950,8 +950,6 @@ export class FwsCore {
 
   private readonly sfcc2BackupRoutingSimvar = `L:A32NX_AFDX_${this.fwsNumber === 1 ? 13 : 14}_12_REACHABLE`;
 
-  public readonly flapsAngle = Subject.create(0);
-
   public readonly lrElevFaultCondition = Subject.create(false);
 
   public readonly sec1Healthy = Subject.create(false);
