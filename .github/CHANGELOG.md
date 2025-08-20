@@ -132,6 +132,7 @@
 1. [A380X/FG] Fix SRS disengagement conditions for eng 3&4 OEI - @flogross89 (floridude)
 1. [A380X/FMS] Add engine-out indications and behavior to FMS - @flogross89 (floridude)
 1. [A380X/Fuel] Enabled gravityfeeding and fixed crossfeed fuel usage from correct tanks - @Maximilian-Reuter (\_chaoz_)
+1. [A380X/EIS] Fix malformed W glyph on the EIS display units - @tracernz (Mike)
 1. [A380X/FMS] Add NAV PRIMARY & NAV PRIMARY LOST scratchpad messages - @BravoMike99 (bruno_pt99)
 
 ## 0.13.0
