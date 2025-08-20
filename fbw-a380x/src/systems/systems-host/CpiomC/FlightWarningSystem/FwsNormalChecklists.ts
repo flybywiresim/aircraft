@@ -579,10 +579,8 @@ export class FwsNormalChecklists {
         this.fws.seatBeltSwitchOn.get(),
         this.fws.isAllGearDownlocked,
         this.fws.spoilersArmed.get(),
-        (!SimVar.GetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'bool') &&
-          this.fws.sfccSlatFlapsSystemStatusWord.bitValueOr(21, false)) ||
-          (SimVar.GetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'bool') &&
-            this.fws.sfccSlatFlapsSystemStatusWord.bitValueOr(20, false)),
+        (!this.fws.flap3LandingSelected && this.fws.sfccSlatFlapsSystemStatusWord.bitValueOr(21, false)) ||
+          (this.fws.flap3LandingSelected && this.fws.sfccSlatFlapsSystemStatusWord.bitValueOr(20, false)),
       ],
     },
     1000013: {

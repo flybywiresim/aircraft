@@ -75,12 +75,16 @@ import { FwsInopSys, FwsInopSysPhases } from './FwsInopSys';
 import { FwsInformation } from './FwsInformation';
 import { FwsLimitations, FwsLimitationsPhases } from './FwsLimitations';
 import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
+<<<<<<< HEAD
 import {
   OisDebugDataEvents,
   DebugDataTableRow,
   OisDebugDataControlEvents,
 } from 'instruments/src/MsfsAvionicsCommon/providers/OisDebugDataPublisher';
 import { FcdcSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/FcdcPublisher';
+=======
+import { SdPages } from '@shared/EcamSystemPages';
+>>>>>>> 1eb1f8665 (chore:cleanup some fws code. Illuminate CLR on ECL menu)
 
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));
@@ -367,6 +371,10 @@ export class FwsCore {
 
   public readonly approachAutoDisplayQnhSetPulseNode = new NXLogicPulseNode(true);
   public readonly approachAutoDisplaySlatsExtendedPulseNode = new NXLogicPulseNode(true);
+
+  private readonly ecamClearLightOn = Subject.create(false);
+
+  private readonly sdAutoPageSelection = Subject.create<SdPages>(SdPages.None);
 
   /* MISC STUFF */
 
@@ -1114,6 +1122,8 @@ export class FwsCore {
   public readonly sfccSlatFlapsSystemStatusWord = Arinc429Register.empty();
 
   public readonly sfccSlatFlapPositionWord = Arinc429Register.empty();
+
+  public readonly flap3LandingSelected = Subject.create(false);
 
   // FIXME implement
   public readonly flapSys1Fault = Subject.create(false);
@@ -2251,6 +2261,12 @@ export class FwsCore {
       this.elecAcSecondaryFailure,
       this.bleedSecondaryFailure,
       this.fmsSwitchingNotNorm,
+      this.ecamClearLightOn.sub((v) => {
+        SimVar.SetSimVarValue('L:A32NX_ECAM_CLEAR_LIGHT', SimVarValueType.Bool, v);
+      }),
+      this.sdAutoPageSelection.sub((v) => {
+        SimVar.SetSimVarValue('L:A32NX_ECAM_SFAIL', SimVarValueType.Enum, v);
+      }),
     );
   }
 
@@ -2713,12 +2729,7 @@ export class FwsCore {
     // TO CONFIG button
     this.toConfigTestRaw = SimVar.GetSimVarValue('L:A32NX_BTN_TOCONFIG', 'bool') > 0 && !this.fwsEcpFailed.get();
     this.toConfigPulseNode.write(this.toConfigTestRaw, _deltaTime);
-    const toConfigTest = this.toConfigTriggerNode.write(this.toConfigPulseNode.read(), deltaTime);
-    if (toConfigTest !== this.toConfigTest) {
-      // temporary var for the old FWC stuff
-      SimVar.SetSimVarValue('L:A32NX_FWS_TO_CONFIG_TEST', 'boolean', toConfigTest);
-      this.toConfigTest = toConfigTest;
-    }
+    this.toConfigTest = this.toConfigTriggerNode.write(this.toConfigPulseNode.read(), deltaTime);
     this.toConfigTestHeldMin1s5Pulse.set(
       this.toConfigTestHeldMin1s5PulseNode.write(this.toConfigTestRaw, deltaTime) || this.toConfigTestRaw,
     );
@@ -3587,6 +3598,8 @@ export class FwsCore {
 
     this.fms1Fault.set(this.fmcAFault.get() && this.fmcCFault.get());
     this.fms2Fault.set(this.fmcBFault.get() && this.fmcCFault.get());
+
+    this.flap3LandingSelected.set(SimVar.GetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'bool'));
 
     /* 21 - AIR CONDITIONING AND PRESSURIZATION */
 
@@ -5015,7 +5028,7 @@ export class FwsCore {
       if (this.abnormalSensed.abnormalShown.get()) {
         // delete the first failure
         this.abnormalSensed.clearActiveProcedure();
-      } else if (this.normalChecklists.checklistShown.get()) {
+      } else if (this.normalChecklists.showChecklistRequested.get()) {
         this.normalChecklists.navigateToParent();
       } else if (this.abnormalNonSensed.abnProcShown.get()) {
         this.abnormalNonSensed.navigateToParent();
@@ -5518,10 +5531,10 @@ export class FwsCore {
 
     this.masterWarning.set(this.requestMasterWarningFromFaults || this.requestMasterWarningFromApOff);
 
-    SimVar.SetSimVarValue('L:A32NX_ECAM_FAILURE_ACTIVE', SimVarValueType.Bool, this.presentedFailures.length > 0);
+    this.ecamClearLightOn.set(this.presentedFailures.length > 0 || this.normalChecklists.showChecklistRequested.get());
 
     if (failureSystemCount === 0) {
-      SimVar.SetSimVarValue('L:A32NX_ECAM_SFAIL', 'number', -1);
+      this.sdAutoPageSelection.set(SdPages.None);
     } else {
       const sortedAbnormals = this.presentedFailures.sort((a, b) => {
         return FwsAbnormalSensed.compareAbnormalProceduresByPriority(
@@ -5534,7 +5547,7 @@ export class FwsCore {
         );
       });
       if (sortedAbnormals.length > 0 && this.ewdAbnormal[sortedAbnormals[0]].sysPage > -1) {
-        SimVar.SetSimVarValue('L:A32NX_ECAM_SFAIL', 'number', this.ewdAbnormal[sortedAbnormals[0]].sysPage);
+        this.sdAutoPageSelection.set(this.ewdAbnormal[sortedAbnormals[0]].sysPage);
       }
     }
 
@@ -5767,7 +5780,7 @@ export class FwsCore {
   static sendFailureWarning(bus: EventBus) {
     // In case of FWS1+2 failure, populate output with FW messages
     SimVar.SetSimVarValue('L:A32NX_STATUS_NORMAL', SimVarValueType.Bool, true);
-    SimVar.SetSimVarValue('L:A32NX_ECAM_FAILURE_ACTIVE', SimVarValueType.Bool, false);
+    SimVar.SetSimVarValue('L:A32NX_ECAM_CLEAR_LIGHT', SimVarValueType.Bool, false);
     SimVar.SetSimVarValue('L:A32NX_ECAM_SFAIL', SimVarValueType.Number, -1);
     SimVar.SetSimVarValue('L:A32NX_MASTER_CAUTION', SimVarValueType.Bool, false);
     SimVar.SetSimVarValue('L:A32NX_MASTER_WARNING', SimVarValueType.Bool, false);
