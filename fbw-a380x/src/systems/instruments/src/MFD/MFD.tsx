@@ -33,6 +33,7 @@ import { MfdFmsPageNotAvail } from 'instruments/src/MFD/pages/FMS/MfdFmsPageNotA
 
 import './pages/common/style.scss';
 import { InteractionMode } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
+import { NXSystemMessages } from './shared/NXSystemMessages';
 
 export const getDisplayIndex = () => {
   const url = document.getElementsByTagName('a380x-mfd')[0].getAttribute('url');
@@ -61,6 +62,8 @@ export interface MfdDisplayInterface {
   interactionMode: Subscribable<InteractionMode>;
 
   openMessageList(): void;
+
+  navigateTo(uri: string): void;
 }
 
 export class MfdComponent
@@ -227,33 +230,33 @@ export class MfdComponent
 
             switch (key) {
               case 'DIR':
-                this.uiService.navigateTo('fms/active/f-pln-direct-to');
+                this.navigateTo('fms/active/f-pln-direct-to');
                 break;
               case 'PERF':
-                this.uiService.navigateTo('fms/active/perf');
+                this.navigateTo('fms/active/perf');
                 break;
               case 'INIT':
-                this.uiService.navigateTo('fms/active/init');
+                this.navigateTo('fms/active/init');
                 break;
               case 'NAVAID':
-                this.uiService.navigateTo('fms/position/navaids');
+                this.navigateTo('fms/position/navaids');
                 break;
               case 'MAILBOX': // Move cursor to SD mail box
                 break;
               case 'FPLN':
-                this.uiService.navigateTo('fms/active/f-pln/top');
+                this.navigateTo('fms/active/f-pln/top');
                 break;
               case 'DEST':
-                this.uiService.navigateTo('fms/active/f-pln/dest');
+                this.navigateTo('fms/active/f-pln/dest');
                 break;
               case 'SECINDEX':
-                this.uiService.navigateTo('fms/sec/index');
+                this.navigateTo('fms/sec/index');
                 break;
               case 'SURV':
-                this.uiService.navigateTo('surv/controls');
+                this.navigateTo('surv/controls');
                 break;
               case 'ATCCOM':
-                this.uiService.navigateTo('atccom/connect');
+                this.navigateTo('atccom/connect');
                 break;
               case 'ND': // Move cursor to ND
                 break;
@@ -276,6 +279,20 @@ export class MfdComponent
     this.topRef.instance.addEventListener('mousemove', this.onMouseMoveHandler);
 
     this.subs.push(this.fmsDataKnob, this.fmcAIsHealthy, this.fmcBIsHealthy, this.activeFmsSource);
+  }
+
+  public navigateTo(uri: string) {
+    const parsedUri = this.uiService.parseUri(uri);
+    if (
+      parsedUri?.page == 'f-pln-direct-to' &&
+      this.props.fmcService.master?.flightPlanService.hasTemporary &&
+      !this.props.fmcService.master?.flightPlanService.hasDirectToInTmpy()
+    ) {
+      this.props.fmcService.master?.addMessageToQueue(NXSystemMessages.insertOrEraseTmpPlan, undefined, undefined);
+      return;
+    }
+
+    this.uiService.navigateTo(uri);
   }
 
   private onMouseMove(ev: MouseEvent) {

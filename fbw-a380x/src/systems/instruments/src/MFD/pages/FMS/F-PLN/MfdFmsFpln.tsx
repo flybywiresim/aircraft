@@ -1156,9 +1156,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             <Button
               label="DIR TO"
               onClick={() =>
-                this.props.mfd.uiService.navigateTo(
-                  `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-direct-to`,
-                )
+                this.props.mfd.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-direct-to`)
               }
               buttonStyle="margin-right: 5px;"
             />
