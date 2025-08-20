@@ -2104,6 +2104,8 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.data.cruise_altitude = idFmgcCruiseAltitude->get();
     autopilotStateMachineInput.in.data.throttle_lever_1_pos = thrustLeverAngle_1->get();
     autopilotStateMachineInput.in.data.throttle_lever_2_pos = thrustLeverAngle_2->get();
+    autopilotStateMachineInput.in.data.throttle_lever_3_pos = thrustLeverAngle_3->get();
+    autopilotStateMachineInput.in.data.throttle_lever_4_pos = thrustLeverAngle_4->get();
     autopilotStateMachineInput.in.data.gear_strut_compression_1 =
         std::max(simData.contact_point_compression_1 * 0.5 + 0.5, simData.contact_point_compression_3 * 0.5 + 0.5);
     autopilotStateMachineInput.in.data.gear_strut_compression_2 =
@@ -2112,6 +2114,8 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.data.flaps_handle_index = flapsHandleIndexFlapConf->get();
     autopilotStateMachineInput.in.data.is_engine_operative_1 = simData.engine_combustion_1;
     autopilotStateMachineInput.in.data.is_engine_operative_2 = simData.engine_combustion_2;
+    autopilotStateMachineInput.in.data.is_engine_operative_3 = simData.engine_combustion_3;
+    autopilotStateMachineInput.in.data.is_engine_operative_4 = simData.engine_combustion_4;
     autopilotStateMachineInput.in.data.altimeter_setting_left_mbar = simData.kohlsmanSetting_1;
     autopilotStateMachineInput.in.data.altimeter_setting_right_mbar = simData.kohlsmanSetting_2;
     autopilotStateMachineInput.in.data.total_weight_kg = simData.total_weight_kg;
@@ -2456,6 +2460,8 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
     autopilotLawsInput.in.data.acceleration_altitude_go_around_engine_out = fmAccelerationAltitudeGoAroundEngineOut->valueOr(0);
     autopilotLawsInput.in.data.throttle_lever_1_pos = thrustLeverAngle_1->get();
     autopilotLawsInput.in.data.throttle_lever_2_pos = thrustLeverAngle_2->get();
+    autopilotLawsInput.in.data.throttle_lever_3_pos = thrustLeverAngle_3->get();
+    autopilotLawsInput.in.data.throttle_lever_4_pos = thrustLeverAngle_4->get();
     autopilotLawsInput.in.data.gear_strut_compression_1 =
         std::max(simData.contact_point_compression_1 * 0.5 + 0.5, simData.contact_point_compression_3 * 0.5 + 0.5);
     autopilotLawsInput.in.data.gear_strut_compression_2 =
@@ -2464,6 +2470,8 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
     autopilotLawsInput.in.data.flaps_handle_index = flapsHandleIndexFlapConf->get();
     autopilotLawsInput.in.data.is_engine_operative_1 = simData.engine_combustion_1;
     autopilotLawsInput.in.data.is_engine_operative_2 = simData.engine_combustion_2;
+    autopilotLawsInput.in.data.is_engine_operative_3 = simData.engine_combustion_3;
+    autopilotLawsInput.in.data.is_engine_operative_4 = simData.engine_combustion_4;
     autopilotLawsInput.in.data.altimeter_setting_left_mbar = simData.kohlsmanSetting_1;
     autopilotLawsInput.in.data.altimeter_setting_right_mbar = simData.kohlsmanSetting_1;
     autopilotLawsInput.in.data.total_weight_kg = simData.total_weight_kg;

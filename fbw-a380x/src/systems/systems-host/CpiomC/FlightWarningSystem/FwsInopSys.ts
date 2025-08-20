@@ -4,7 +4,6 @@
 
 import { EcamInopSys } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { MappedSubject, SubscribableMapFunctions, Subscription } from '@microsoft/msfs-sdk';
-import { isSubscription } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
 import { FwsCore, FwsSuppressableItem } from 'systems-host/CpiomC/FlightWarningSystem/FwsCore';
 
 export enum FwsInopSysPhases {
@@ -701,7 +700,7 @@ export class FwsInopSys {
 
     for (const key in this.inopSys) {
       const element = this.inopSys[key];
-      if (isSubscription(element.simVarIsActive)) {
+      if ('destroy' in element.simVarIsActive) {
         element.simVarIsActive.destroy();
       }
     }
