@@ -5591,7 +5591,10 @@ export class FwsCore {
 
     this.masterWarning.set(this.requestMasterWarningFromFaults || this.requestMasterWarningFromApOff);
 
-    this.ecamClearLightOn.set(this.presentedFailures.length > 0 || this.normalChecklists.showChecklistRequested.get());
+    this.ecamClearLightOn.set(
+      this.presentedFailures.length > 0 ||
+        (this.normalChecklists.checklistShown.get() && this.normalChecklists.checklistId.get() === 0),
+    );
 
     if (failureSystemCount === 0) {
       this.sdAutoPageSelection.set(SdPages.None);
