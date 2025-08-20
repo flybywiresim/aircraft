@@ -463,9 +463,21 @@ export class FwsCore {
 
   public readonly fdac1Channel2Failure = Subject.create(false);
 
+  public readonly fdac1BothChannelsFailed = MappedSubject.create(
+    ([fdac1fault, fdac2fault]) => fdac1fault && fdac2fault,
+    this.fdac1Channel1Failure,
+    this.fdac1Channel2Failure,
+  );
+
   public readonly fdac2Channel1Failure = Subject.create(false);
 
   public readonly fdac2Channel2Failure = Subject.create(false);
+
+  public readonly fdac2BothChannelsFailed = MappedSubject.create(
+    ([fdac1fault, fdac2fault]) => fdac1fault && fdac2fault,
+    this.fdac2Channel1Failure,
+    this.fdac2Channel2Failure,
+  );
 
   public readonly pack1RedundLost = Subject.create(false);
 
@@ -1334,6 +1346,10 @@ export class FwsCore {
 
   public readonly eng4PumpDisc = Subject.create(false);
 
+  public readonly yellowLoPressureAbnormalSensed = Subject.create(false);
+
+  public readonly yellowLoPressure = Subject.create(false);
+
   public readonly yellowAbnormLoPressure = Subject.create(false);
 
   public readonly yellowRsvLoAirPressure = Subject.create(false);
@@ -1346,9 +1362,13 @@ export class FwsCore {
 
   public readonly greenRsvLoAirPressure = Subject.create(false);
 
+  public readonly greenLoPressure = Subject.create(false);
+
   public readonly greenRsvOverheat = Subject.create(false);
 
   public readonly greenRsvLoLevel = Subject.create(false);
+
+  public readonly greenLoPressureAbnormalSensed = Subject.create(false);
 
   public readonly greenYellowAbnormLoPressure = Subject.create(false);
 
@@ -1896,6 +1916,10 @@ export class FwsCore {
 
   public readonly twoEnginesOutOnSameSide = Subject.create(false);
 
+  public readonly engine1AndEngine2Out = Subject.create(false);
+
+  public readonly engine3AndEngine4Out = Subject.create(false);
+
   public readonly phase12561112Inhibition = [1, 2, 5, 6, 11, 12];
 
   public readonly phase56Inhibition = [5, 6];
@@ -2103,6 +2127,34 @@ export class FwsCore {
   public readonly eng3HydraulicInop = this.gen3Inop;
 
   public readonly eng4HydraulicInop = this.gen4Inop;
+
+  public readonly pack1Inop = MappedSubject.create(
+    ([pack1On, phase112, pack1Fault]) => {
+      return (!pack1On && phase112) || pack1Fault; // TODO ADD PACK VALVE FORCE CLOSED WHEN IMPLEMENTED IN SYSTEMS
+    },
+    this.pack1On,
+    this.flightPhase112,
+    this.fdac1BothChannelsFailed,
+  );
+
+  public readonly pack2Inop = MappedSubject.create(
+    ([pack2On, phase112, pack2Fault]) => {
+      return (!pack2On && phase112) || pack2Fault;
+    },
+    this.pack2On,
+    this.flightPhase112,
+    this.fdac2BothChannelsFailed,
+  );
+
+  public readonly partLandingGearRetraction = MappedSubject.create(
+    // TODO check for no L/G retraction signal when LGIS implemented
+    ([yellowLoPress, greenLoPress, flightPhase1Or12]) => {
+      return flightPhase1Or12 && yellowLoPress !== greenLoPress;
+    },
+    this.greenLoPressure,
+    this.yellowLoPressure,
+    this.flightPhase112,
+  );
 
   private static pushKeyUnique(val?: (state: boolean[]) => (string | null)[], pushTo?: string[], state?: boolean[]) {
     if (val && pushTo && state && val(state)) {
@@ -2868,6 +2920,9 @@ export class FwsCore {
     const gLoPressure = !greenSysPressurised;
     const yLoPressure = !yellowSysPressurised;
 
+    this.greenLoPressure.set(gLoPressure);
+    this.yellowLoPressure.set(yLoPressure);
+
     this.eng1Or2RunningAndPhaseConfirmationNode.write(
       this.engine1Running.get() || this.engine2Running.get() || !this.flightPhase12Or1112.get(),
       deltaTime,
@@ -2882,7 +2937,9 @@ export class FwsCore {
     const yellowAbnormLoPressure = yLoPressure && this.eng3Or4RunningAndPhaseConfirmationNode.read();
 
     this.greenAbnormLoPressure.set(greenAbnormLoPressure);
+    this.greenLoPressureAbnormalSensed.set(greenAbnormLoPressure && !this.engine1AndEngine2Out.get());
     this.yellowAbnormLoPressure.set(yellowAbnormLoPressure);
+    this.yellowLoPressureAbnormalSensed.set(yellowAbnormLoPressure && !this.engine3AndEngine4Out.get());
     this.greenYellowAbnormLoPressure.set(greenAbnormLoPressure && yellowAbnormLoPressure);
 
     // fixme OVHT signal should come from HSMU
@@ -4937,9 +4994,12 @@ export class FwsCore {
         this.eng4Out.get(),
     );
 
+    this.engine1AndEngine2Out.set(this.eng1Out.get() && this.eng2Out.get());
+
+    this.engine3AndEngine4Out.set(this.eng3Out.get() && this.eng4Out.get());
+
     this.twoEnginesOutOnSameSide.set(
-      !this.allEnginesFailure.get() &&
-        ((this.eng1Out.get() && this.eng2Out.get()) || (this.eng3Out.get() && this.eng4Out.get())),
+      !this.allEnginesFailure.get() && (this.engine1AndEngine2Out.get() || this.engine3AndEngine4Out.get()),
     );
 
     this.twoEnginesOutOnOppositeSide.set(
@@ -5028,7 +5088,6 @@ export class FwsCore {
           this.smokeFumesActivated.get() ||
           this.allEnginesFailure.get()),
     );
-
     const flightPhase = this.flightPhase.get();
     let tempMemoArrayLeft: string[] = [];
     let tempMemoArrayRight: string[] = [];
