@@ -91,7 +91,6 @@ impl FuelTestBed {
         self.write_by_name("FUEL_TANK_QUANTITY_9", 300. / FUEL_GALLONS_TO_KG);
         self.write_by_name("FUEL_TANK_QUANTITY_10", 300. / FUEL_GALLONS_TO_KG);
         self.write_by_name("FUEL_TANK_QUANTITY_11", 300. / FUEL_GALLONS_TO_KG);
-        self.write_by_name("FUEL TOTAL QUANTITY WEIGHT", 3300. / LBS_TO_KG);
 
         self
     }
@@ -108,7 +107,6 @@ impl FuelTestBed {
         self.write_by_name("FUEL_TANK_QUANTITY_9", 1500. / FUEL_GALLONS_TO_KG);
         self.write_by_name("FUEL_TANK_QUANTITY_10", 1500. / FUEL_GALLONS_TO_KG);
         self.write_by_name("FUEL_TANK_QUANTITY_11", 1500. / FUEL_GALLONS_TO_KG);
-        self.write_by_name("FUEL TOTAL QUANTITY WEIGHT", 33500. / LBS_TO_KG);
 
         self
     }
