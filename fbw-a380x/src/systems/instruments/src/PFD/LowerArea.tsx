@@ -69,19 +69,15 @@ class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private readonly spoilersArmed = ConsumerSubject.create(this.sub.on('spoilersArmed').whenChanged(), false);
 
-  private readonly speedBrakesPosDisagree = ConsumerSubject.create(
-    this.sub.on('speedBrakesPosDisagree').whenChanged(),
-    false,
-  );
-
   private readonly spoilerExtensionVisible = MappedSubject.create(
     ([pos, armed]) => (pos > SPOILERS_HIDE_DEFLECTION_BELOW_DEG || armed ? 'visible' : 'hidden'),
     this.spoilersCommandedPosition,
     this.spoilersArmed,
-    this.speedBrakesPosDisagree,
   );
 
   private readonly speedBrakesStillExtended = Subject.create(false);
+
+  private readonly speedBrakesPosDisagree = Subject.create(false);
 
   private slatIndexClass = Subject.create('');
 
