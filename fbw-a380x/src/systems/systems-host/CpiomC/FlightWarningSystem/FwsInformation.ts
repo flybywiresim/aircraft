@@ -30,6 +30,11 @@ export class FwsInformation {
       // APPR 1 ONLY
       simVarIsActive: this.fws.appr1Only,
     },
+
+    220200011: {
+      // FMS PRED UNRELIABLE
+      simVarIsActive: this.fws.fmsPredUnreliable,
+    },
   };
 
   public destroy(): void {

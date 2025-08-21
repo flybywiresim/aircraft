@@ -1011,11 +1011,6 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
         sensed: true,
         labelNotCompleted: 'OFF',
       },
-      {
-        name: 'PACK 2',
-        sensed: true,
-        labelNotCompleted: 'OFF',
-      },
       { ...LDG_PERF_AFFECTED_CHECKLIST_ITEM },
     ],
   },
