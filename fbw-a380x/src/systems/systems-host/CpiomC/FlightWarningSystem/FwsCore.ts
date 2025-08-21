@@ -1029,7 +1029,9 @@ export class FwsCore {
     this.prim3Healthy,
   );
 
-  public readonly prim2FailedBeforeTakeoff = new NXLogicMemoryNode();
+  public readonly prim2FailedBeforeTakeoff = Subject.create(false);
+
+  private readonly prim2FailedBeforeTakeoffMemoryNode = new NXLogicMemoryNode();
 
   public readonly dcEhaPowered = Subject.create(false);
 
@@ -2051,15 +2053,6 @@ export class FwsCore {
   public readonly main4ROpen = Subject.create(false);
   public readonly main5LOpen = Subject.create(false);
   public readonly main5ROpen = Subject.create(false);
-
-  public readonly fmsPredUnreliablePreCondition = this.aircraftOnGround.map(SubscribableMapFunctions.not());
-
-  public readonly fuelConsumptIncreasePreCondition = MappedSubject.create(
-    ([onGround, engRunning]) => !onGround && engRunning,
-    this.aircraftOnGround,
-    this.oneEngineRunning,
-  );
-
   /** Secondary Failures */
 
   public readonly elecAcSecondaryFailure = MappedSubject.create(
@@ -2181,6 +2174,33 @@ export class FwsCore {
     this.yellowLoPressure,
     this.flightPhase112,
   );
+
+  public readonly aileronLostAndDeflectedUpward = MappedSubject.create(
+    ([yellowLoPress, greenLoPress, prim2Healthy, prim3Healthy]) => {
+      return (greenLoPress && !prim3Healthy) || (yellowLoPress && !prim2Healthy);
+    },
+    this.greenLoPressure,
+    this.yellowLoPressure,
+    this.prim2Healthy,
+    this.prim3Healthy,
+  );
+
+  public readonly fuelConsumptIncreased = MappedSubject.create(
+    ([onGround, aileronLostAndDeflectedUpward, oneEngineRunning, primTwoAndThreeFailed, prim2FailedBeforeTakeoff]) => {
+      return (
+        !onGround &&
+        oneEngineRunning &&
+        (aileronLostAndDeflectedUpward || primTwoAndThreeFailed || prim2FailedBeforeTakeoff)
+      );
+    },
+    this.aircraftOnGround,
+    this.aileronLostAndDeflectedUpward,
+    this.oneEngineRunning,
+    this.primTwoAndThreeFailed,
+    this.prim2FailedBeforeTakeoff,
+  );
+
+  public readonly fmsPredUnreliable = this.fuelConsumptIncreased;
 
   private static pushKeyUnique(val?: (state: boolean[]) => (string | null)[], pushTo?: string[], state?: boolean[]) {
     if (val && pushTo && state && val(state)) {
@@ -2344,8 +2364,6 @@ export class FwsCore {
       this.engine2AboveIdle,
       this.engine1CoreAtOrAboveMinIdle,
       this.engine2CoreAtOrAboveMinIdle,
-      this.fmsPredUnreliablePreCondition,
-      this.fuelConsumptIncreasePreCondition,
       this.elecAcSecondaryFailure,
       this.bleedSecondaryFailure,
       this.fmsSwitchingNotNorm,
@@ -4261,9 +4279,11 @@ export class FwsCore {
     this.prim3OffThenOnPulseNode.write(!this.prim3PbOff.get(), deltaTime);
     this.prim3OffThenOnMemoryNode.write(this.prim3OffThenOnPulseNode.read(), !this.prim3FaultCondition.get());
 
-    this.prim2FailedBeforeTakeoff.write(
-      !this.prim2Healthy.get() && this.flightPhase.get() <= 5,
-      this.prim2Healthy.get() || this.flightPhase.get() === 12,
+    this.prim2FailedBeforeTakeoff.set(
+      this.prim2FailedBeforeTakeoffMemoryNode.write(
+        !this.prim2Healthy.get() && this.flightPhase.get() <= 5,
+        this.prim2Healthy.get() || this.flightPhase.get() === 12,
+      ),
     );
 
     this.twoPrimsFailed.set(
