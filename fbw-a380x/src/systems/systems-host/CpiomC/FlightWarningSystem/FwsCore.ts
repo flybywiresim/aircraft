@@ -1968,6 +1968,21 @@ export class FwsCore {
 
   public readonly iceSevereDetectedTimerStatus = Subject.create(false);
 
+  /* DOOR */
+
+  public readonly cockpitWindowOpen = Subject.create(false);
+
+  public readonly main1LOpen = Subject.create(false);
+  public readonly main1ROpen = Subject.create(false);
+  public readonly main2LOpen = Subject.create(false);
+  public readonly main2ROpen = Subject.create(false);
+  public readonly main3LOpen = Subject.create(false);
+  public readonly main3ROpen = Subject.create(false);
+  public readonly main4LOpen = Subject.create(false);
+  public readonly main4ROpen = Subject.create(false);
+  public readonly main5LOpen = Subject.create(false);
+  public readonly main5ROpen = Subject.create(false);
+
   public readonly fmsPredUnreliablePreCondition = this.aircraftOnGround.map(SubscribableMapFunctions.not());
 
   public readonly fuelConsumptIncreasePreCondition = MappedSubject.create(
@@ -4753,6 +4768,23 @@ export class FwsCore {
 
     /* OXYGEN */
     this.paxOxyMasksDeployed.set(SimVar.GetSimVarValue('L:A32NX_OXYGEN_MASKS_DEPLOYED', 'Bool'));
+
+    /* DOOR */
+    this.cockpitWindowOpen.set(
+      SimVar.GetSimVarValue('L:CPT_SLIDING_WINDOW', 'number') === 1 ||
+        SimVar.GetSimVarValue('L:FO_SLIDING_WINDOW', 'number') === 1,
+    );
+
+    this.main1LOpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:0', 'percent') > 0);
+    this.main1ROpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:1', 'percent') > 0);
+    this.main2LOpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:2', 'percent') > 0);
+    this.main2ROpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:3', 'percent') > 0);
+    this.main3LOpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:4', 'percent') > 0);
+    this.main3ROpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:5', 'percent') > 0);
+    this.main4LOpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:6', 'percent') > 0);
+    this.main4ROpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:7', 'percent') > 0);
+    this.main5LOpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:8', 'percent') > 0);
+    this.main5ROpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:9', 'percent') > 0);
 
     /* CABIN READY */
 

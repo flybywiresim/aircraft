@@ -133,6 +133,7 @@
 1. [A380X/FMS] Add engine-out indications and behavior to FMS - @flogross89 (floridude)
 1. [A380X/Fuel] Enabled gravityfeeding and fixed crossfeed fuel usage from correct tanks - @Maximilian-Reuter (\_chaoz_)
 1. [A380X/EIS] Fix malformed W glyph on the EIS display units - @tracernz (Mike)
+1. [A380X/ECAM] Add ATA 52 (DOOR) ECAM procedures (initial implementation) - @Jonny23787 (Jonathan)
 
 ## 0.13.0
 
