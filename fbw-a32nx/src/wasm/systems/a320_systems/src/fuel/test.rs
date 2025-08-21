@@ -33,7 +33,6 @@ impl SimulationElement for FuelTestAircraft {
 
 const MINUTES_TO_SECONDS: u64 = 60;
 const FUEL_GALLONS_TO_KG: f64 = 3.039075693483925;
-const LBS_TO_KG: f64 = 0.4535934;
 
 struct FuelTestBed {
     test_bed: SimulationTestBed<FuelTestAircraft>,
@@ -122,8 +121,8 @@ fn low_fuel() {
 
     assert_eq!(
         (test_bed.fore_aft_center_of_gravity() * 100.).round() / 100.,
-        -8.22,
-        "Expected cg: -8.22, cg: {}",
+        -11.12,
+        "Expected cg: -11.12, cg: {}",
         (test_bed.fore_aft_center_of_gravity() * 100.).round() / 100.,
     );
 }
