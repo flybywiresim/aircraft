@@ -65,11 +65,12 @@ export class TypeIIMessage extends McduMessage {
  */
 export const NXSystemMessages = {
   awyWptDisagree: new TypeIMessage('AIRWAY / WPT DISAGREE'),
+  crzFlAboveMaxFL: new TypeIIMessage('CRZ FL ABOVE MAX FL', false),
   cancelAtisUpdate: new TypeIMessage('CANCEL AUTO UPDATE FIRST'),
   checkMinFuelAtDest: new TypeIIMessage('CHECK MIN FUEL AT DEST'),
   checkSpeedMode: new TypeIIMessage('CHECK SPD MODE'),
   checkToData: new TypeIIMessage('CHECK T.O. DATA', true),
-  comFplnRecievedPendingInsertion: new TypeIIMessage('COMPANY F-PLN RECEIVED WAITING FOR INSERTION', false),
+  comFplnRecievedPendingInsertion: new TypeIIMessage('COMPANY F-PLN RECEIVED\nWAITING FOR INSERTION', false),
   comDatalinkNotAvail: new TypeIMessage('COM DATALINK NOT AVAIL'),
   cstrDelUpToWpt: new TypeIIMessage('CONSTRAINTS BEFORE WWWWW : DELETED', false, 'WWWWW'),
   costIndexInUse: new TypeIMessage('COST INDEX-NNN IN USE', false, 'NNN'),
@@ -99,6 +100,7 @@ export const NXSystemMessages = {
   tooSteepPathAhead: new TypeIIMessage('TOO STEEP PATH AHEAD'),
   navprimary: new TypeIIMessage('NAV PRIMARY'),
   navprimaryLost: new TypeIIMessage('NAV PRIMARY LOST', true),
+  sqwkCodeNotValid: new TypeIMessage('SQWK CODE NOT VALID'),
 };
 
 export const NXFictionalMessages = {
