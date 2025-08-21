@@ -580,9 +580,13 @@ export class FwsCore {
 
   public readonly apuBleedPbOnOver22500ft = Subject.create(false);
 
+  public readonly eng1BleedPbOn = Subject.create(false);
   public readonly eng1BleedAbnormalOff = Subject.create(false);
+  public readonly eng2BleedPbOn = Subject.create(false);
   public readonly eng2BleedAbnormalOff = Subject.create(false);
+  public readonly eng3BleedPbOn = Subject.create(false);
   public readonly eng3BleedAbnormalOff = Subject.create(false);
+  public readonly eng4BleedPbOn = Subject.create(false);
   public readonly eng4BleedAbnormalOff = Subject.create(false);
 
   public readonly enginesOffAndOnGroundSignal = new NXLogicConfirmNode(7);
@@ -1136,6 +1140,14 @@ export class FwsCore {
   public readonly sfccSlatFlapPositionWord = Arinc429Register.empty();
 
   public readonly flap3LandingSelected = Subject.create(false);
+
+  public flapLever1 = false;
+
+  public flapLever2 = false;
+
+  public flapLever3 = false;
+
+  public flapLeverFull = false;
 
   // FIXME implement
   public readonly flapSys1Fault = Subject.create(false);
@@ -1947,10 +1959,6 @@ export class FwsCore {
 
   public readonly engine2Generator = Subject.create(false);
 
-  public readonly emergencyElectricGeneratorPotential = Subject.create(0);
-
-  public readonly emergencyGeneratorOn = this.emergencyElectricGeneratorPotential.map((it) => it > 0);
-
   public readonly apuMasterSwitch = Subject.create(0);
 
   public readonly apuAvail = Subject.create(false);
@@ -2101,13 +2109,41 @@ export class FwsCore {
 
   public readonly reverser3Inop = this.eng3Out; // TODO add power loss conditions, hydraulic loss
 
-  public readonly eng1BleedInop = this.eng1Out; // TODO add bleed inop conditions
+  public readonly eng1BleedInop = MappedSubject.create(
+    ([bleed1On, phase12or1112, eng1Out]) => {
+      return !bleed1On || (eng1Out && !phase12or1112);
+    },
+    this.eng1BleedPbOn,
+    this.flightPhase12Or1112,
+    this.eng1Out,
+  ); // TODO add bleed inop conditions
 
-  public readonly eng2BleedInop = this.eng2Out; // TODO add bleed inop conditions
+  public readonly eng2BleedInop = MappedSubject.create(
+    ([bleed2On, phase12or1112, eng2Out]) => {
+      return !bleed2On || (eng2Out && !phase12or1112);
+    },
+    this.eng2BleedPbOn,
+    this.flightPhase12Or1112,
+    this.eng2Out,
+  ); // TODO add bleed inop conditions
 
-  public readonly eng3BleedInop = this.eng3Out; // TODO add bleed inop conditions
+  public readonly eng3BleedInop = MappedSubject.create(
+    ([bleed3On, phase12or1112, eng3Out]) => {
+      return !bleed3On || (eng3Out && !phase12or1112);
+    },
+    this.eng3BleedPbOn,
+    this.flightPhase12Or1112,
+    this.eng3Out,
+  ); // TODO add bleed inop conditions
 
-  public readonly eng4BleedInop = this.gen4Inop; // TODO add bleed inop conditions
+  public readonly eng4BleedInop = MappedSubject.create(
+    ([bleed4On, phase12or1112, eng4Out]) => {
+      return !bleed4On || (eng4Out && !phase12or1112);
+    },
+    this.eng4BleedPbOn,
+    this.flightPhase12Or1112,
+    this.eng4Out,
+  ); // TODO add bleed inop conditions
 
   // TODO disable when abnormal hydralic pressure
   public readonly eng1HydraulicInop = this.gen1Inop;
@@ -2120,7 +2156,7 @@ export class FwsCore {
 
   public readonly pack1Inop = MappedSubject.create(
     ([pack1On, phase112, pack1Fault]) => {
-      return (!pack1On && phase112) || pack1Fault; // TODO ADD PACK VALVE FORCE CLOSED WHEN IMPLEMENTED IN SYSTEMS
+      return (!pack1On && !phase112) || pack1Fault; // TODO ADD PACK VALVE FORCE CLOSED WHEN IMPLEMENTED IN SYSTEMS
     },
     this.pack1On,
     this.flightPhase112,
@@ -2129,7 +2165,7 @@ export class FwsCore {
 
   public readonly pack2Inop = MappedSubject.create(
     ([pack2On, phase112, pack2Fault]) => {
-      return (!pack2On && phase112) || pack2Fault;
+      return (!pack2On && !phase112) || pack2Fault;
     },
     this.pack2On,
     this.flightPhase112,
@@ -2870,7 +2906,6 @@ export class FwsCore {
 
     this.engine1Generator.set(SimVar.GetSimVarValue('L:A32NX_ELEC_ENG_GEN_1_POTENTIAL_NORMAL', 'bool'));
     this.engine2Generator.set(SimVar.GetSimVarValue('L:A32NX_ELEC_ENG_GEN_2_POTENTIAL_NORMAL', 'bool'));
-    this.emergencyElectricGeneratorPotential.set(SimVar.GetSimVarValue('L:A32NX_ELEC_EMER_GEN_POTENTIAL', 'number'));
 
     this.apuMasterSwitch.set(SimVar.GetSimVarValue('L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON', 'bool'));
 
@@ -2883,22 +2918,15 @@ export class FwsCore {
       (this.adrPressureAltitude.get() ?? 0) < 22_500 && (machBelow56 || this.allEnginesFailure.get());
     this.apuBleedPbOnOver22500ft.set(this.apuBleedPbOn.get() && !apuWithinEnvelope);
 
-    this.eng1BleedAbnormalOff.set(
-      this.engine1Running.get() &&
-        !SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO', SimVarValueType.Bool),
-    );
-    this.eng2BleedAbnormalOff.set(
-      this.engine2Running.get() &&
-        !SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_2_BLEED_PB_IS_AUTO', SimVarValueType.Bool),
-    );
-    this.eng3BleedAbnormalOff.set(
-      this.engine3Running.get() &&
-        !SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_3_BLEED_PB_IS_AUTO', SimVarValueType.Bool),
-    );
-    this.eng4BleedAbnormalOff.set(
-      this.engine4Running.get() &&
-        !SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_4_BLEED_PB_IS_AUTO', SimVarValueType.Bool),
-    );
+    this.eng1BleedPbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO', SimVarValueType.Bool));
+    this.eng2BleedPbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_2_BLEED_PB_IS_AUTO', SimVarValueType.Bool));
+    this.eng3BleedPbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_3_BLEED_PB_IS_AUTO', SimVarValueType.Bool));
+    this.eng4BleedPbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_4_BLEED_PB_IS_AUTO', SimVarValueType.Bool));
+
+    this.eng1BleedAbnormalOff.set(this.engine1Running.get() && !this.eng1BleedPbOn.get());
+    this.eng2BleedAbnormalOff.set(this.engine2Running.get() && !this.eng2BleedPbOn.get());
+    this.eng3BleedAbnormalOff.set(this.engine3Running.get() && !this.eng3BleedPbOn.get());
+    this.eng4BleedAbnormalOff.set(this.engine4Running.get() && !this.eng4BleedPbOn.get());
 
     this.toMemo.set(SimVar.GetSimVarValue('L:A32NX_FWC_TOMEMO', 'bool'));
 
@@ -4210,10 +4238,6 @@ export class FwsCore {
     );
     this.sec3OffThenOnPulseNode.write(!this.sec3PbOff.get(), deltaTime);
     this.sec3OffThenOnMemoryNode.write(this.sec3OffThenOnPulseNode.read(), !this.sec3FaultCondition.get());
-
-    this.prim1Healthy.set(SimVar.GetSimVarValue('L:A32NX_PRIM_1_HEALTHY', 'Bool'));
-    this.prim2Healthy.set(SimVar.GetSimVarValue('L:A32NX_PRIM_2_HEALTHY', 'bool'));
-    this.prim3Healthy.set(SimVar.GetSimVarValue('L:A32NX_PRIM_3_HEALTHY', 'bool'));
 
     this.prim1PbOff.set(!SimVar.GetSimVarValue('L:A32NX_PRIM_1_PUSHBUTTON_PRESSED', SimVarValueType.Bool));
 
@@ -5921,6 +5945,11 @@ export class FwsCore {
       if (this.sfccSlatFlapPositionWord.isInvalid() && sffc2Reachable) {
         this.sfccSlatFlapPositionWord.setFromSimVar('A32NX_SFCC_2_SLAT_FLAP_ACTUAL_POSITION_WORD');
       }
+
+      this.flapLever1 = this.sfccSlatFlapsSystemStatusWord.bitValueOr(18, false);
+      this.flapLever2 = this.sfccSlatFlapsSystemStatusWord.bitValueOr(19, false);
+      this.flapLever3 = this.sfccSlatFlapsSystemStatusWord.bitValueOr(20, false);
+      this.flapLeverFull = this.sfccSlatFlapsSystemStatusWord.bitValueOr(21, false);
     }
   }
 
