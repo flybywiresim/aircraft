@@ -531,7 +531,7 @@ export class FwsNormalChecklists {
 
   public sensedItems: FwsNormalChecklistsDict = {
     1000001: {
-      whichItemsChecked: () => [null, null, !!this.fws.seatBeltSwitchOn.get(), null],
+      whichItemsChecked: () => [null, null, this.fws.seatBeltSwitchOn.get(), null],
     },
     1000002: {
       whichItemsChecked: () => [null, null, SimVar.GetSimVarValue('A:LIGHT BEACON', SimVarValueType.Bool)],
