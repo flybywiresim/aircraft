@@ -2789,7 +2789,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.speedBrakePosLeverDisagree,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [true],
-      whichItemsChecked: () => [true],
+      whichItemsChecked: () => [false],
       failure: 2,
       sysPage: SdPages.Fctl,
       inopSysAllPhases: () => [],

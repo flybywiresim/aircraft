@@ -453,7 +453,7 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
     items: [
       {
         name: 'SPEED BRAKES LEVER',
-        sensed: false,
+        sensed: true,
         labelNotCompleted: 'RETRACT',
       },
     ],
