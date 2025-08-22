@@ -117,6 +117,9 @@ pub struct FuelSystem<const N: usize, const PUMP_COUNT: usize> {
     unlimited_fuel_id: VariableIdentifier,
     unlimited_fuel: bool,
 
+    total_fuel_quantity_id: VariableIdentifier,
+    total_fuel_volume_id: VariableIdentifier,
+
     fuel_tanks: [FuelTank; N],
     fuel_pumps: [FuelPump; PUMP_COUNT],
 }
@@ -129,6 +132,8 @@ impl<const N: usize, const PUMP_COUNT: usize> FuelSystem<N, PUMP_COUNT> {
         FuelSystem {
             unlimited_fuel_id: context.get_identifier("UNLIMITED FUEL".to_owned()),
             unlimited_fuel: false,
+            total_fuel_quantity_id: context.get_identifier("TOTAL_FUEL_QUANTITY".to_owned()),
+            total_fuel_volume_id: context.get_identifier("TOTAL_FUEL_VOLUME".to_owned()),
             fuel_tanks,
             fuel_pumps,
         }
@@ -174,6 +179,15 @@ impl<const N: usize, const PUMP_COUNT: usize> SimulationElement for FuelSystem<N
         accept_iterable!(self.fuel_tanks, visitor);
         accept_iterable!(self.fuel_pumps, visitor);
         visitor.visit(self);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        let total_weight = self.total_load().get::<kilogram>();
+        writer.write(&self.total_fuel_quantity_id, total_weight);
+        writer.write(
+            &self.total_fuel_volume_id,
+            total_weight / FUEL_GALLONS_TO_KG,
+        );
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
