@@ -2248,6 +2248,24 @@ export class FwsCore {
     this.emergencyDescentActive,
   );
 
+  public readonly flapsSlow = MappedSubject.create(
+    ([phase112, greenLoPress, yellowLoPress]) => {
+      return !phase112 && xor(greenLoPress, yellowLoPress); // TODO SFCC SLOW SPEED SIGNAL, SFCC FAULTS
+    },
+    this.phase112,
+    this.greenLoPressure,
+    this.yellowLoPressure,
+  );
+
+  public readonly slatsSlow = MappedSubject.create(
+    ([phase112, greenLoPress, acESSBusPowered]) => {
+      return !phase112 && xor(greenLoPress, !acESSBusPowered); // TODO SFCC SLOW SPEED SIGNAL, SFCC FAULTS
+    },
+    this.phase112,
+    this.greenLoPressure,
+    this.acESSBusPowered,
+  );
+
   public readonly fmsPredUnreliable = this.fuelConsumptIncreased;
 
   private static pushKeyUnique(val?: (state: boolean[]) => (string | null)[], pushTo?: string[], state?: boolean[]) {

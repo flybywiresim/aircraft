@@ -72,7 +72,15 @@ export class FwsLimitations {
       simVarIsActive: this.forLandingFlapLever3,
       phase: FwsLimitationsPhases.ApprLdg,
     },
-
+    290400001: {
+      // SLATS SLOW
+      simVarIsActive: this.fws.slatsSlow,
+      phase: FwsLimitationsPhases.ApprLdg,
+    },
+    290400002: {
+      simVarIsActive: this.fws.flapsSlow,
+      phase: FwsLimitationsPhases.ApprLdg,
+    },
     800400001: {
       // FUEL CONSUMPT INCRSD
       simVarIsActive: this.fws.fuelConsumptIncreased,

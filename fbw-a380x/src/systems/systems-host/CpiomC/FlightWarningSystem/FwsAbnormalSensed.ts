@@ -4614,8 +4614,8 @@ export class FwsAbnormalSensed {
       whichItemsToShow: () => [
         true,
         true,
-        this.fws.greenAbnormLoPressure.get() || this.fws.yellowAbnormLoPressure.get(),
-        this.fws.greenAbnormLoPressure.get(),
+        this.fws.flapsSlow.get(),
+        this.fws.slatsSlow.get(),
         true,
         true,
         true,
