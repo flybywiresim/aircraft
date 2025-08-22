@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 /**
- * Transmitted from MFD to SURV components
+ * Transmitted from any system to OIT
  */
 
 export interface DebugDataTableRow {
