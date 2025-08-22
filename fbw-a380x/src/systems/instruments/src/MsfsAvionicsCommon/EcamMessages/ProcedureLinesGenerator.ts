@@ -441,10 +441,7 @@ export class ProcedureLinesGenerator {
       }
 
       this.items.forEach((item, itemIndex) => {
-        if (
-          (isAbnormal && !this.checklistState.itemsToShow[itemIndex]) ||
-          (isDeferred && this.checklistState.procedureCompleted)
-        ) {
+        if (!this.checklistState.itemsToShow[itemIndex] || (isDeferred && this.checklistState.procedureCompleted)) {
           return;
         }
 
