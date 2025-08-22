@@ -35,21 +35,17 @@ export class FwsLimitations {
     this.fws.greenYellowAbnormLoPressure,
   );
 
-  private readonly landingPerformanceAffected = MappedSubject.create(
-    ([phase112, oneEngineRunning, twoEnginesOutOnOppositeSide, twoEnginesOutOnSameSide]) => {
-      return !phase112 && oneEngineRunning && (twoEnginesOutOnOppositeSide || twoEnginesOutOnSameSide);
-    },
-    this.fws.phase112,
-    this.fws.oneEngineRunning,
-    this.fws.twoEnginesOutOnOppositeSide,
-    this.fws.twoEnginesOutOnSameSide,
-  );
-
   constructor(private fws: FwsCore) {}
   /** LIMITATIONS shown on SD */
   limitations: FwsLimitationsDict = {
     1: {
       simVarIsActive: this.fws.landAsap,
+      phase: FwsLimitationsPhases.AllPhases,
+      pfd: true,
+    },
+
+    2: {
+      simVarIsActive: this.fws.landAnsa,
       phase: FwsLimitationsPhases.AllPhases,
       pfd: true,
     },
@@ -75,9 +71,15 @@ export class FwsLimitations {
       phase: FwsLimitationsPhases.AllPhases,
     },
 
+    800400002: {
+      // LDG DIST AFFECTED
+      simVarIsActive: this.fws.landingDistanceAffected,
+      phase: FwsLimitationsPhases.ApprLdg,
+    },
+
     800400003: {
       // LDG PERF AFFECTED
-      simVarIsActive: this.landingPerformanceAffected,
+      simVarIsActive: this.fws.landingPerformanceAffected,
       phase: FwsLimitationsPhases.ApprLdg,
     },
   };

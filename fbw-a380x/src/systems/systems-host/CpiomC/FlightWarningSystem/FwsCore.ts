@@ -2098,10 +2098,6 @@ export class FwsCore {
     this.engine4Running,
   );
 
-  public readonly reverser2Inop = this.eng2Out; // TODO add power loss conditions, hydraulic loss
-
-  public readonly reverser3Inop = this.eng3Out; // TODO add power loss conditions, hydraulic loss
-
   public readonly eng1BleedInop = MappedSubject.create(
     ([bleed1On, phase12or1112, eng1Out]) => {
       return !bleed1On || (eng1Out && !phase12or1112);
@@ -2137,6 +2133,10 @@ export class FwsCore {
     this.flightPhase12Or1112,
     this.eng4Out,
   ); // TODO add bleed inop conditions
+
+  public readonly reverser2Inop = this.gen2Inop; // TODO add power loss conditions, hydraulic loss
+
+  public readonly reverser3Inop = this.gen3Inop; // TODO add power loss conditions, hydraulic loss
 
   // TODO disable when abnormal hydralic pressure
   public readonly eng1HydraulicInop = this.gen1Inop;
@@ -2177,7 +2177,7 @@ export class FwsCore {
 
   public readonly aileronLostAndDeflectedUpward = MappedSubject.create(
     ([yellowLoPress, greenLoPress, prim2Healthy, prim3Healthy]) => {
-      return (greenLoPress && !prim3Healthy) || (yellowLoPress && !prim2Healthy);
+      return (greenLoPress && !prim3Healthy) || (yellowLoPress && !prim2Healthy); // TODO should use system status
     },
     this.greenLoPressure,
     this.yellowLoPressure,
@@ -2198,6 +2198,36 @@ export class FwsCore {
     this.oneEngineRunning,
     this.primTwoAndThreeFailed,
     this.prim2FailedBeforeTakeoff,
+  );
+
+  public readonly landingPerformanceAffected = MappedSubject.create(
+    ([phase112, oneEngineRunning, twoEnginesOutOnOppositeSide, twoEnginesOutOnSameSide]) => {
+      return !phase112 && oneEngineRunning && (twoEnginesOutOnOppositeSide || twoEnginesOutOnSameSide);
+    },
+    this.phase112,
+    this.oneEngineRunning,
+    this.twoEnginesOutOnOppositeSide,
+    this.twoEnginesOutOnSameSide,
+  );
+
+  public readonly landingDistanceAffected = MappedSubject.create(
+    ([phase112, oneEngineRunning, landingPerfAffected, greenSysLost, yellowSysLost]) => {
+      return !phase112 && oneEngineRunning && !landingPerfAffected && (greenSysLost || yellowSysLost);
+    },
+    this.phase112,
+    this.oneEngineRunning,
+    this.landingPerformanceAffected,
+    this.greenLoPressure,
+    this.yellowLoPressure,
+  );
+
+  public readonly landAnsa = MappedSubject.create(
+    ([landAsap, ground, twoEnginesOutOnOppositeSide, twoEnginesOutOnSameSide]) =>
+      !landAsap && !ground && (twoEnginesOutOnOppositeSide || twoEnginesOutOnSameSide),
+    this.landAsap,
+    this.aircraftOnGround,
+    this.twoEnginesOutOnOppositeSide,
+    this.twoEnginesOutOnSameSide,
   );
 
   public readonly fmsPredUnreliable = this.fuelConsumptIncreased;
@@ -3009,16 +3039,16 @@ export class FwsCore {
     this.greenYellowAbnormLoPressure.set(greenAbnormLoPressure && yellowAbnormLoPressure);
 
     // fixme OVHT signal should come from HSMU
-    this.yellowRsvOverheat.set(SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_RESERVOIR_OVHT', 'bool'));
+    this.yellowRsvOverheat.set(SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_RESERVOIR_OVHT', 'bool') > 0);
     const yellowHydralicRsvLoAirPressure = SimVar.GetSimVarValue(
       'L:A32NX_HYD_YELLOW_RESERVOIR_AIR_PRESSURE_IS_LOW',
       'bool',
     );
     this.yellowRsvLoAirPressure.set(yellowHydralicRsvLoAirPressure && !this.greenYellowAbnormLoPressure.get());
-    this.yellowRsvLoLevel.set(SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_RESERVOIR_LEVEL_IS_LOW', 'bool'));
-    this.greenRsvLoLevel.set(SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_RESERVOIR_LEVEL_IS_LOW', 'bool'));
+    this.yellowRsvLoLevel.set(SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_RESERVOIR_LEVEL_IS_LOW', 'bool') > 0);
+    this.greenRsvLoLevel.set(SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_RESERVOIR_LEVEL_IS_LOW', 'bool') > 0);
 
-    this.greenRsvOverheat.set(SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_RESERVOIR_OVHT', 'bool'));
+    this.greenRsvOverheat.set(SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_RESERVOIR_OVHT', 'bool') > 0);
     this.greenRsvLoAirPressure.set(
       SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_RESERVOIR_AIR_PRESSURE_IS_LOW', 'bool') &&
         !this.greenYellowAbnormLoPressure.get(),
@@ -3027,13 +3057,13 @@ export class FwsCore {
     this.greenAPumpOn.set(SimVar.GetSimVarValue('L:A32NX_HYD_GA_EPUMP_ACTIVE', 'bool'));
     this.greenBPumpOn.set(SimVar.GetSimVarValue('L:A32NX_HYD_GB_EPUMP_ACTIVE', 'bool'));
 
-    this.greenAPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMPGA_OFF_PB_IS_AUTO', 'bool'));
-    this.greenBPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMPGB_OFF_PB_IS_AUTO', 'bool'));
+    this.greenAPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMPGA_OFF_PB_IS_AUTO', 'bool') > 0);
+    this.greenBPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMPGB_OFF_PB_IS_AUTO', 'bool') > 0);
 
     const yellowAPumpAuto = SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMPYA_OFF_PB_IS_AUTO', 'bool');
     const yellowBPumpAuto = SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMPYB_OFF_PB_IS_AUTO', 'bool');
-    this.yellowAPumpAuto.set(yellowAPumpAuto);
-    this.yellowBPumpAuto.set(yellowBPumpAuto);
+    this.yellowAPumpAuto.set(yellowAPumpAuto > 0);
+    this.yellowBPumpAuto.set(yellowBPumpAuto > 0);
 
     // fixme add fault signal condition of elec pump fault when implemented
     const greenAPumpLoPress = SimVar.GetSimVarValue('L:A32NX_HYD_GA_EPUMP_LOW_PRESS', 'bool');
@@ -3070,9 +3100,9 @@ export class FwsCore {
     this.yellowAPumpOn.set(SimVar.GetSimVarValue('L:A32NX_HYD_YA_EPUMP_ACTIVE', 'bool'));
     this.yellowBPumpOn.set(SimVar.GetSimVarValue('L:A32NX_HYD_YB_EPUMP_ACTIVE', 'bool'));
 
-    this.eng1APumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_1A_PUMP_PB_IS_AUTO', 'bool'));
-    this.eng1BPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_1B_PUMP_PB_IS_AUTO', 'bool'));
-    this.eng1PumpDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_ENG_1AB_PUMP_DISC', 'bool'));
+    this.eng1APumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_1A_PUMP_PB_IS_AUTO', 'bool') > 0);
+    this.eng1BPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_1B_PUMP_PB_IS_AUTO', 'bool') > 0);
+    this.eng1PumpDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_ENG_1AB_PUMP_DISC', 'bool') > 0);
 
     const eng1APumpBelow2900 = !SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_PUMP_1_SECTION_PRESSURE_SWITCH', 'bool');
     this.eng1APumpFault.set(
@@ -3099,9 +3129,9 @@ export class FwsCore {
       ),
     );
 
-    this.eng2APumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_2A_PUMP_PB_IS_AUTO', 'bool'));
-    this.eng2BPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_2B_PUMP_PB_IS_AUTO', 'bool'));
-    this.eng2PumpDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_ENG_2AB_PUMP_DISC', 'bool'));
+    this.eng2APumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_2A_PUMP_PB_IS_AUTO', 'bool') > 0);
+    this.eng2BPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_2B_PUMP_PB_IS_AUTO', 'bool') > 0);
+    this.eng2PumpDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_ENG_2AB_PUMP_DISC', 'bool') > 0);
 
     const eng2APumpBelow2900 = !SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_PUMP_3_SECTION_PRESSURE_SWITCH', 'bool');
     this.eng2APumpFault.set(
@@ -3128,9 +3158,9 @@ export class FwsCore {
         deltaTime,
       ),
     );
-    this.eng3APumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_3A_PUMP_PB_IS_AUTO', 'bool'));
-    this.eng3BPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_3B_PUMP_PB_IS_AUTO', 'bool'));
-    this.eng3PumpDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_ENG_3AB_PUMP_DISC', 'bool'));
+    this.eng3APumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_3A_PUMP_PB_IS_AUTO', 'bool') > 0);
+    this.eng3BPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_3B_PUMP_PB_IS_AUTO', 'bool') > 0);
+    this.eng3PumpDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_ENG_3AB_PUMP_DISC', 'bool') > 0);
     const eng3APumpBelow2900 = !SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_PUMP_1_SECTION_PRESSURE_SWITCH', 'bool');
     this.eng3APumpFault.set(
       this.eng3APumpFaultConfNode.write(
@@ -3157,9 +3187,9 @@ export class FwsCore {
       ),
     );
 
-    this.eng4APumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_4A_PUMP_PB_IS_AUTO', 'bool'));
-    this.eng4BPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_4B_PUMP_PB_IS_AUTO', 'bool'));
-    this.eng4PumpDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_ENG_4AB_PUMP_DISC', 'bool'));
+    this.eng4APumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_4A_PUMP_PB_IS_AUTO', 'bool') > 0);
+    this.eng4BPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_4B_PUMP_PB_IS_AUTO', 'bool') > 0);
+    this.eng4PumpDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_ENG_4AB_PUMP_DISC', 'bool') > 0);
 
     const eng4APumpBelow2900 = !SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_PUMP_3_SECTION_PRESSURE_SWITCH', 'bool');
 
@@ -3692,9 +3722,9 @@ export class FwsCore {
     /** MCDU TO CONF 3 selected */
     const mcduToFlapPos3 = fm1DiscreteWord2.bitValueOr(16, false) || fm2DiscreteWord2.bitValueOr(16, false);
 
-    this.fmcAHealthy.set(SimVar.GetSimVarValue('L:A32NX_FMC_A_IS_HEALTHY', 'bool'));
-    this.fmcBHealthy.set(SimVar.GetSimVarValue('L:A32NX_FMC_B_IS_HEALTHY', 'bool'));
-    this.fmcCHealthy.set(SimVar.GetSimVarValue('L:A32NX_FMC_C_IS_HEALTHY', 'bool'));
+    this.fmcAHealthy.set(SimVar.GetSimVarValue('L:A32NX_FMC_A_IS_HEALTHY', 'bool') > 0);
+    this.fmcBHealthy.set(SimVar.GetSimVarValue('L:A32NX_FMC_B_IS_HEALTHY', 'bool') > 0);
+    this.fmcCHealthy.set(SimVar.GetSimVarValue('L:A32NX_FMC_C_IS_HEALTHY', 'bool') > 0);
     this.fmcAFault.set(!this.fmcAHealthy.get() && this.dcESSBusPowered.get());
     this.fmcBFault.set(!this.fmcBHealthy.get() && this.dc2BusPowered.get());
     this.fmcCFault.set(!this.fmcCHealthy.get() && this.dc1BusPowered.get());
@@ -3733,19 +3763,19 @@ export class FwsCore {
 
     this.phase8ConfirmationNode180.write(this.flightPhase.get() === 8, deltaTime);
 
-    this.fdac1Channel1Failure.set(SimVar.GetSimVarValue('L:A32NX_COND_FDAC_1_CHANNEL_1_FAILURE', 'bool'));
+    this.fdac1Channel1Failure.set(SimVar.GetSimVarValue('L:A32NX_COND_FDAC_1_CHANNEL_1_FAILURE', 'bool') > 0);
 
     this.pack1Ctl1Fault.set(this.fdac1Channel1Failure.get() && this.acESSBusPowered.get());
 
-    this.fdac1Channel2Failure.set(SimVar.GetSimVarValue('L:A32NX_COND_FDAC_1_CHANNEL_2_FAILURE', 'bool'));
+    this.fdac1Channel2Failure.set(SimVar.GetSimVarValue('L:A32NX_COND_FDAC_1_CHANNEL_2_FAILURE', 'bool') > 0);
 
     this.pack1Ctl2Fault.set(this.ac2BusPowered.get() && this.fdac1Channel2Failure.get());
 
-    this.fdac2Channel1Failure.set(SimVar.GetSimVarValue('L:A32NX_COND_FDAC_2_CHANNEL_1_FAILURE', 'bool'));
+    this.fdac2Channel1Failure.set(SimVar.GetSimVarValue('L:A32NX_COND_FDAC_2_CHANNEL_1_FAILURE', 'bool') > 0);
 
     this.pack2Ctl1Fault.set(this.acESSBusPowered.get() && this.fdac2Channel1Failure.get());
 
-    this.fdac2Channel2Failure.set(SimVar.GetSimVarValue('L:A32NX_COND_FDAC_2_CHANNEL_2_FAILURE', 'bool'));
+    this.fdac2Channel2Failure.set(SimVar.GetSimVarValue('L:A32NX_COND_FDAC_2_CHANNEL_2_FAILURE', 'bool') > 0);
 
     this.pack2Ctl2Fault.set(this.ac4BusPowered.get() && this.fdac2Channel2Failure.get());
 
@@ -3882,8 +3912,8 @@ export class FwsCore {
 
     this.pack2Degraded.set(cpiomB2AgsFailedAndPowered && cpiomB4AgsFailedAndPowered);
 
-    this.pack1On.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_1_PB_IS_ON', 'bool'));
-    this.pack2On.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_2_PB_IS_ON', 'bool'));
+    this.pack1On.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_1_PB_IS_ON', 'bool') > 0);
+    this.pack2On.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_2_PB_IS_ON', 'bool') > 0);
 
     this.pack1OffConfirmTime.set(!this.pack1On.get() && this.phase8ConfirmationNode60.read());
     this.pack2OffConfirmTime.set(!this.pack2On.get() && this.phase8ConfirmationNode60.read());
@@ -5132,7 +5162,7 @@ export class FwsCore {
       if (this.abnormalSensed.abnormalShown.get()) {
         // delete the first failure
         this.abnormalSensed.clearActiveProcedure();
-      } else if (this.normalChecklists.showChecklistRequested.get()) {
+      } else if (this.normalChecklists.showChecklistRequested.get() && this.normalChecklists.checklistId.get() === 0) {
         this.normalChecklists.navigateToParent();
       } else if (this.abnormalNonSensed.abnProcShown.get()) {
         this.abnormalNonSensed.navigateToParent();

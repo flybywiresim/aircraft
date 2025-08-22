@@ -51,12 +51,14 @@ export class FwsInopSys {
       // PACK 1
       simVarIsActive: this.fws.pack1Inop,
       phase: FwsInopSysPhases.AllPhases,
+      notActiveWhenItemActive: ['210300011'],
     },
     // PACK 2
     210300010: {
       // PACK 2
       simVarIsActive: this.fws.pack2Inop,
       phase: FwsInopSysPhases.AllPhases,
+      notActiveWhenItemActive: ['210300011'],
     },
     210300011: {
       // PACK 1 +2
@@ -170,7 +172,7 @@ export class FwsInopSys {
       // GEN 2
       simVarIsActive: this.fws.gen2Inop,
       phase: FwsInopSysPhases.AllPhases,
-      notActiveWhenItemActive: ['240300037', '240300038', '240300040'],
+      notActiveWhenItemActive: ['240300037', '240300040', '240300042'],
     },
     240300037: {
       // GEN 1+2
