@@ -412,7 +412,11 @@ export class FwsCore {
 
   public readonly voiceVhf3 = Subject.create(false);
 
+  // ABNORMAL NON SENSED
+
   public readonly smokeFumesActivated = this.activeAbnormalNonSensedKeys.map((set) => set.has(260900097));
+
+  public readonly emergencyDescentActive = this.activeAbnormalNonSensedKeys.map((set) => set.has(990900005));
 
   /* 21 - AIR CONDITIONING AND PRESSURIZATION */
 
@@ -468,7 +472,7 @@ export class FwsCore {
 
   public readonly fdac1Channel2Failure = Subject.create(false);
 
-  public readonly fdac1BothChannelsFailed = MappedSubject.create(
+  public readonly pack1Fault = MappedSubject.create(
     ([fdac1fault, fdac2fault]) => fdac1fault && fdac2fault,
     this.fdac1Channel1Failure,
     this.fdac1Channel2Failure,
@@ -478,7 +482,7 @@ export class FwsCore {
 
   public readonly fdac2Channel2Failure = Subject.create(false);
 
-  public readonly fdac2BothChannelsFailed = MappedSubject.create(
+  public readonly pack2Fault = MappedSubject.create(
     ([fdac1fault, fdac2fault]) => fdac1fault && fdac2fault,
     this.fdac2Channel1Failure,
     this.fdac2Channel2Failure,
@@ -491,6 +495,10 @@ export class FwsCore {
   public readonly pack1Degraded = Subject.create(false);
 
   public readonly pack2Degraded = Subject.create(false);
+
+  private pack1OffRequired = false;
+
+  private pack2OffRequired = false;
 
   public readonly pack1On = Subject.create(false);
 
@@ -2153,7 +2161,7 @@ export class FwsCore {
     },
     this.pack1On,
     this.flightPhase112,
-    this.fdac1BothChannelsFailed,
+    this.pack1Fault,
   );
 
   public readonly pack2Inop = MappedSubject.create(
@@ -2162,7 +2170,7 @@ export class FwsCore {
     },
     this.pack2On,
     this.flightPhase112,
-    this.fdac2BothChannelsFailed,
+    this.pack2Fault,
   );
 
   public readonly partLandingGearRetraction = MappedSubject.create(
@@ -2222,12 +2230,22 @@ export class FwsCore {
   );
 
   public readonly landAnsa = MappedSubject.create(
-    ([landAsap, ground, twoEnginesOutOnOppositeSide, twoEnginesOutOnSameSide]) =>
-      !landAsap && !ground && (twoEnginesOutOnOppositeSide || twoEnginesOutOnSameSide),
+    ([landAsap, ground, twoEnginesOutOnOppositeSide, twoEnginesOutOnSameSide, twoPackFault]) =>
+      !landAsap && !ground && (twoEnginesOutOnOppositeSide || twoEnginesOutOnSameSide || twoPackFault),
     this.landAsap,
     this.aircraftOnGround,
     this.twoEnginesOutOnOppositeSide,
     this.twoEnginesOutOnSameSide,
+    this.pack1And2Fault,
+  );
+
+  public readonly maxFl100MeaMora = MappedSubject.create(
+    ([onGround, pack1And2Fault, emerDescentActive]) => {
+      return !onGround && (pack1And2Fault || emerDescentActive);
+    },
+    this.aircraftOnGround,
+    this.pack1And2Fault,
+    this.emergencyDescentActive,
   );
 
   public readonly fmsPredUnreliable = this.fuelConsumptIncreased;
@@ -3915,17 +3933,21 @@ export class FwsCore {
     this.pack1On.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_1_PB_IS_ON', 'bool') > 0);
     this.pack2On.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_2_PB_IS_ON', 'bool') > 0);
 
-    this.pack1OffConfirmTime.set(!this.pack1On.get() && this.phase8ConfirmationNode60.read());
-    this.pack2OffConfirmTime.set(!this.pack2On.get() && this.phase8ConfirmationNode60.read());
+    this.pack1OffRequired =
+      this.twoEnginesOutOnOppositeSide.get() || this.twoEnginesOutOnSameSide.get() || this.excessDiffPressure.get();
+    this.pack2OffRequired = this.pack1OffRequired;
+
+    this.pack1OffConfirmTime.set(
+      !this.pack1OffRequired && !this.pack1Fault.get() && !this.pack1On.get() && this.phase8ConfirmationNode60.read(),
+    );
+    this.pack2OffConfirmTime.set(
+      !this.pack2OffRequired && !this.pack2Fault.get() && !this.pack2On.get() && this.phase8ConfirmationNode60.read(),
+    );
 
     // TODO: Add fault when on ground, with one engine running and one door open
     // TODO: Add pack overheat
     this.pack1And2Fault.set(
-      ((this.fdac1Channel1Failure.get() &&
-        this.fdac1Channel2Failure.get() &&
-        this.fdac2Channel1Failure.get() &&
-        this.fdac2Channel2Failure.get()) ||
-        (!this.pack1On.get() && !this.pack2On.get())) &&
+      ((this.pack1Fault.get() && this.pack2Fault.get()) || (!this.pack1On.get() && !this.pack2On.get())) &&
         this.phase8ConfirmationNode180.read(),
     );
 

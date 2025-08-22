@@ -452,7 +452,7 @@ export class FwsAbnormalSensed {
     211800009: {
       // PACK 1 FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
-      simVarIsActive: this.fws.fdac1BothChannelsFailed,
+      simVarIsActive: this.fws.pack1Fault,
       notActiveWhenItemActive: ['211800021'],
       whichItemsToShow: () => [true, true],
       whichItemsChecked: () => [false, !this.fws.pack1On.get()],
@@ -463,7 +463,7 @@ export class FwsAbnormalSensed {
     211800010: {
       // PACK 2 FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
-      simVarIsActive: this.fws.fdac2BothChannelsFailed,
+      simVarIsActive: this.fws.pack2Fault,
       notActiveWhenItemActive: ['211800021'],
       whichItemsToShow: () => [true, true],
       whichItemsChecked: () => [false, !this.fws.pack2On.get()],
@@ -534,9 +534,6 @@ export class FwsAbnormalSensed {
       ],
       failure: 2,
       sysPage: SdPages.Bleed,
-      limitationsAllPhases: () => ['2', '210400001'],
-      limitationsPfd: () => ['2', '210400001'],
-      inopSysAllPhases: () => ['210300011'],
     },
     211800023: {
       // ALL PRIMARY CABIN FANS FAULT

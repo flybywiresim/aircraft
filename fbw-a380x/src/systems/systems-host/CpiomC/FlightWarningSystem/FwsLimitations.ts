@@ -50,10 +50,18 @@ export class FwsLimitations {
       pfd: true,
     },
 
+    210400001: {
+      simVarIsActive: this.fws.maxFl100MeaMora,
+      phase: FwsLimitationsPhases.AllPhases,
+      pfd: true,
+    },
+
     230400001: {
+      // NO COM AVAIL
       simVarIsActive: this.fws.allRmpFault,
       phase: FwsLimitationsPhases.AllPhases,
     },
+
     260400001: {
       // APU bleed do not use
       simVarIsActive: this.fws.fireButtonEng1,
