@@ -1613,22 +1613,21 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
         this.isShown = true;
         switch (c) {
           case 1:
-            text1 = 'CAT1';
+            text1 = 'APPR1';
             break;
           case 2:
-            text1 = 'CAT2';
+            text1 = 'LAND2';
             break;
           case 3:
-            text1 = 'CAT3';
+            text1 = 'LAND3';
             text2 = 'SINGLE';
             break;
           case 4:
-            text1 = 'CAT3';
+            text1 = 'LAND3';
             text2 = 'DUAL';
             break;
           case 5:
-            text1 = 'AUTO';
-            text2 = 'LAND';
+            text1 = 'LAND1';
             break;
           case 6:
             text1 = 'F-APP';
