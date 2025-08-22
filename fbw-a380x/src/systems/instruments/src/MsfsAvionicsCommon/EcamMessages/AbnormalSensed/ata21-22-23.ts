@@ -1127,7 +1127,7 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
     ],
   },
   213800004: {
-    title: '\x1b<4m\x1b4mCAB PRESS\x1bm EXCESS RESIDUAL DIFF PRESS',
+    title: '\x1b<2m\x1b4mCAB PRESS\x1bm EXCESS RESIDUAL DIFF PRESS',
     sensed: true,
     items: [
       {
@@ -1142,17 +1142,17 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'CABIN CREW',
-        sensed: true,
+        sensed: false,
         labelNotCompleted: 'ALERT',
       },
       {
-        name: 'BEFORE OPENING ANY CABIN DOOR:',
+        name: 'BEFORE OPENING ANY CABIN DOOR',
         sensed: false,
         condition: true,
       },
       {
         name: 'RESIDUAL DIFF PRESS',
-        sensed: true,
+        sensed: false,
         labelNotCompleted: 'CHECK',
         level: 1,
       },
