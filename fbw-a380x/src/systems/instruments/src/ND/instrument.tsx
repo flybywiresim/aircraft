@@ -49,6 +49,7 @@ import { ResetPanelSimvarPublisher, ResetPanelSimvars } from '../MsfsAvionicsCom
 import { RopRowOansPublisher } from '@flybywiresim/msfs-avionics-common';
 import { SimplaneValueProvider } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import { AesuBusPublisher } from '../MsfsAvionicsCommon/providers/AesuBusPublisher';
+import { NDFMMessageTypes } from '@shared/FmMessages';
 
 import './style.scss';
 import './oans-style.scss';
@@ -253,6 +254,7 @@ class NDInstrument implements FsInstrument {
             rangeChangeMessage={a380NdRangeChange}
             modeChangeMessage={a380NdModeChange}
             mapOptions={{ waypointBoxing: true }}
+            fmMessages={Object.values(NDFMMessageTypes)}
           />
           <ContextMenu
             ref={this.contextMenuRef}
