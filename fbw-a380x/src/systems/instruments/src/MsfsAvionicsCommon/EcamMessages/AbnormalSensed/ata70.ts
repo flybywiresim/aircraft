@@ -6,13 +6,15 @@ import {
   ChecklistLineStyle,
   DeferredProcedure,
   DeferredProcedureType,
+} from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import {
   FLAPS_SLOW_CHECKLIST_ITEM,
   FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
   FUEL_CONSUMPT_INCRSD_CHECKLIST_ITEM,
   LDG_PERF_AFFECTED_CHECKLIST_ITEM,
   SLATS_SLOW_CHECKLIST_ITEM,
   STEER_ENDURANCE_LIMITED_CHECKLIST_ITEM,
-} from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+} from '../CommonChecklistItems';
 
 // Convention for IDs:
 // First two digits: ATA chapter
@@ -982,7 +984,7 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   701800159: {
-    title: "\x1b<4m\x1b4mENG\x1bm \x1b'mTWO ENG OUT ON SAME SIDE\x1Bm",
+    title: "\x1b<4m\x1b4mENG\x1bm \x1b'mTWO ENG OUT ON SAME SIDE \x1Bm",
     sensed: true,
     items: [
       {
@@ -1004,7 +1006,7 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
     recommendation: 'LAND ANSA',
   },
   701800160: {
-    title: "\x1b<4m\x1b4mENG\x1bm \x1b'mTWO ENG OUT ON OPPOSITE SIDE\x1Bm",
+    title: "\x1b<4m\x1b4mENG\x1bm \x1b'mTWO ENG OUT ON OPPOSITE SIDE \x1Bm",
     sensed: true,
     items: [
       {
