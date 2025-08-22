@@ -293,7 +293,7 @@ export class FwsAbnormalNonSensed {
     990900005: {
       // EMER DESCENT
       flightPhaseInhib: [],
-      simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(990900005)),
+      simVarIsActive: this.fws.emergencyDescentActive,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [
         true,
@@ -330,8 +330,6 @@ export class FwsAbnormalNonSensed {
       failure: 1,
       auralWarning: Subject.create(FwcAuralWarning.None),
       sysPage: SdPages.None,
-      limitationsAllPhases: () => ['210400001'],
-      limitationsPfd: () => ['210400001'],
     },
     990900006: {
       // EMER EVAC
