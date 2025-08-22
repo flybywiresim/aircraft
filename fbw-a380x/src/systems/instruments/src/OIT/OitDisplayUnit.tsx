@@ -41,12 +41,6 @@ const DisplayUnitToDCBus: { [k in OitDisplayUnitID]: (DcElectricalBus | AcElectr
   [OitDisplayUnitID.FoOit]: [AcElectricalBus.AcEss, DcElectricalBus.DcEssInFlight, DcElectricalBus.Dc1],
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const DisplayUnitToPotentiometer: { [k in OitDisplayUnitID]: number } = {
-  [OitDisplayUnitID.CaptOit]: 78,
-  [OitDisplayUnitID.FoOit]: 79,
-};
-
 interface DisplayUnitProps {
   readonly bus: EventBus;
   readonly displayUnitId: OitDisplayUnitID;

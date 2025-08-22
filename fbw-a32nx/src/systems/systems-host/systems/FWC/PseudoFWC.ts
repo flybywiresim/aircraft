@@ -1390,7 +1390,7 @@ export class PseudoFWC {
       // set the sound on/off
       SimVar.SetSimVarValue('L:A32NX_AUDIO_STALL_WARNING', 'bool', v);
     }, true);
-    this.aircraftOnGround.sub((v) => this.fwcOut126.setBitValue(28, v));
+    this.aircraftOnGround.sub((v) => this.fwcOut126.setBitValue(28, v), true);
 
     this.fwcOut126.sub((v) => {
       v.writeToSimVar('L:A32NX_FWC_1_DISCRETE_WORD_126');
