@@ -1898,8 +1898,6 @@ export class FwsCore {
 
   public readonly radioHeight3 = Arinc429Register.empty();
 
-  public readonly fac1Failed = Subject.create(0);
-
   public readonly toMemo = Subject.create(0);
 
   public readonly ldgMemo = Subject.create(0);
@@ -1967,6 +1965,21 @@ export class FwsCore {
   public readonly iceSevereDetectedTimer = new NXLogicConfirmNode(40, false);
 
   public readonly iceSevereDetectedTimerStatus = Subject.create(false);
+
+  /* DOOR */
+
+  public readonly cockpitWindowOpen = Subject.create(false);
+
+  public readonly main1LOpen = Subject.create(false);
+  public readonly main1ROpen = Subject.create(false);
+  public readonly main2LOpen = Subject.create(false);
+  public readonly main2ROpen = Subject.create(false);
+  public readonly main3LOpen = Subject.create(false);
+  public readonly main3ROpen = Subject.create(false);
+  public readonly main4LOpen = Subject.create(false);
+  public readonly main4ROpen = Subject.create(false);
+  public readonly main5LOpen = Subject.create(false);
+  public readonly main5ROpen = Subject.create(false);
 
   public readonly fmsPredUnreliablePreCondition = this.aircraftOnGround.map(SubscribableMapFunctions.not());
 
@@ -2742,7 +2755,7 @@ export class FwsCore {
     this.apuBleedPbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON', SimVarValueType.Bool));
     const machBelow56 = this.machSelectedFromAdr.get() < 0.56;
     const apuWithinEnvelope =
-      (this.adrPressureAltitude.get() ?? Infinity) < 22_500 && (machBelow56 || this.allEnginesFailure.get());
+      (this.adrPressureAltitude.get() ?? 0) < 22_500 && (machBelow56 || this.allEnginesFailure.get());
     this.apuBleedPbOnOver22500ft.set(this.apuBleedPbOn.get() && !apuWithinEnvelope);
 
     this.eng1BleedAbnormalOff.set(
@@ -2761,8 +2774,6 @@ export class FwsCore {
       this.engine4Running.get() &&
         !SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_4_BLEED_PB_IS_AUTO', SimVarValueType.Bool),
     );
-
-    this.fac1Failed.set(SimVar.GetSimVarValue('L:A32NX_FBW_FAC_FAILED:1', 'boost psi'));
 
     this.toMemo.set(SimVar.GetSimVarValue('L:A32NX_FWC_TOMEMO', 'bool'));
 
@@ -4753,6 +4764,23 @@ export class FwsCore {
 
     /* OXYGEN */
     this.paxOxyMasksDeployed.set(SimVar.GetSimVarValue('L:A32NX_OXYGEN_MASKS_DEPLOYED', 'Bool'));
+
+    /* DOOR */
+    this.cockpitWindowOpen.set(
+      SimVar.GetSimVarValue('L:CPT_SLIDING_WINDOW', 'number') === 1 ||
+        SimVar.GetSimVarValue('L:FO_SLIDING_WINDOW', 'number') === 1,
+    );
+
+    this.main1LOpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:0', 'percent') > 0);
+    this.main1ROpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:1', 'percent') > 0);
+    this.main2LOpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:2', 'percent') > 0);
+    this.main2ROpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:3', 'percent') > 0);
+    this.main3LOpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:4', 'percent') > 0);
+    this.main3ROpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:5', 'percent') > 0);
+    this.main4LOpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:6', 'percent') > 0);
+    this.main4ROpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:7', 'percent') > 0);
+    this.main5LOpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:8', 'percent') > 0);
+    this.main5ROpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:9', 'percent') > 0);
 
     /* CABIN READY */
 

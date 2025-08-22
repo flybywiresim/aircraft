@@ -320,7 +320,7 @@ export class FwsAbnormalSensed {
           const changedEntries = this.fws.abnormalUpdatedItems.get(procId);
           const sii = this.activeProcedure.selectedItemIndex.get();
           if (changedEntries && changedEntries.includes(sii) && this.activeProcedure.checklistState.itemsChecked[sii]) {
-            this.activeProcedure.moveDown(false);
+            this.activeProcedure.moveDown(true);
           }
         }
       }
@@ -1954,7 +1954,6 @@ export class FwsAbnormalSensed {
       ],
       failure: 3,
       sysPage: SdPages.Eng,
-      inopSysAllPhases: () => ['260300002', '260300006'],
     },
     260800006: {
       // ENG 2 FIRE (IN FLIGHT)
@@ -1987,7 +1986,6 @@ export class FwsAbnormalSensed {
       ],
       failure: 3,
       sysPage: SdPages.Eng,
-      inopSysAllPhases: () => ['260300003'],
     },
     260800007: {
       // ENG 3 FIRE (IN FLIGHT)
@@ -2020,7 +2018,6 @@ export class FwsAbnormalSensed {
       ],
       failure: 3,
       sysPage: SdPages.Eng,
-      inopSysAllPhases: () => ['260300004'],
     },
     260800008: {
       // ENG 4 FIRE (IN FLIGHT)
@@ -2053,7 +2050,6 @@ export class FwsAbnormalSensed {
       ],
       failure: 3,
       sysPage: SdPages.Eng,
-      inopSysAllPhases: () => ['260300005'],
     },
     260800009: {
       // ENG 1 FIRE (ON GROUND)
@@ -2104,7 +2100,6 @@ export class FwsAbnormalSensed {
       ],
       failure: 3,
       sysPage: SdPages.Eng,
-      inopSysAllPhases: () => ['260300002'],
     },
     260800010: {
       // ENG 2 FIRE (ON GROUND)
@@ -2155,7 +2150,6 @@ export class FwsAbnormalSensed {
       ],
       failure: 3,
       sysPage: SdPages.Eng,
-      inopSysAllPhases: () => ['260300003'],
     },
     260800011: {
       // ENG 3 FIRE (ON GROUND)
@@ -2206,7 +2200,6 @@ export class FwsAbnormalSensed {
       ],
       failure: 3,
       sysPage: SdPages.Eng,
-      inopSysAllPhases: () => ['260300004'],
     },
     260800012: {
       // ENG 4 FIRE (ON GROUND)
@@ -2257,7 +2250,6 @@ export class FwsAbnormalSensed {
       ],
       failure: 3,
       sysPage: SdPages.Eng,
-      inopSysAllPhases: () => ['260300005'],
     },
     260800013: {
       // ENG 1 FIRE DET FAULT
@@ -4137,6 +4129,196 @@ export class FwsAbnormalSensed {
       inopSysAllPhases: () => ['340300048'],
       failure: 2,
       sysPage: -1,
+    },
+    // ATA 52 DOOR
+    520800008: {
+      flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10, 12],
+      simVarIsActive: this.fws.cockpitWindowOpen,
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [!this.fws.cockpitWindowOpen.get()],
+      failure: 2,
+      sysPage: SdPages.Door,
+    },
+    520800017: {
+      flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.main1LOpen,
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [
+        (this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3) && this.fws.pressSysFault.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+      ],
+      whichItemsChecked: () => [false, false, false, false, false, false],
+      failure: 2,
+      sysPage: SdPages.Door,
+      limitationsAllPhases: (checked) => (checked[1] ? ['210400001'] : []),
+      limitationsPfd: (checked) => (checked[1] ? ['210400001'] : []),
+    },
+    520800018: {
+      flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.main1ROpen,
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [
+        (this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3) && this.fws.pressSysFault.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+      ],
+      whichItemsChecked: () => [false, false, false, false, false, false],
+      failure: 2,
+      sysPage: SdPages.Door,
+      limitationsAllPhases: (checked) => (checked[1] ? ['210400001'] : []),
+      limitationsPfd: (checked) => (checked[1] ? ['210400001'] : []),
+    },
+    520800019: {
+      flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.main2LOpen,
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [
+        (this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3) && this.fws.pressSysFault.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+      ],
+      whichItemsChecked: () => [false, false, false, false, false, false],
+      failure: 2,
+      sysPage: SdPages.Door,
+      limitationsAllPhases: (checked) => (checked[1] ? ['210400001'] : []),
+      limitationsPfd: (checked) => (checked[1] ? ['210400001'] : []),
+    },
+    520800020: {
+      flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.main2ROpen,
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [
+        (this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3) && this.fws.pressSysFault.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+      ],
+      whichItemsChecked: () => [false, false, false, false, false, false],
+      failure: 2,
+      sysPage: SdPages.Door,
+      limitationsAllPhases: (checked) => (checked[1] ? ['210400001'] : []),
+      limitationsPfd: (checked) => (checked[1] ? ['210400001'] : []),
+    },
+    520800021: {
+      flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.main3LOpen,
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [
+        (this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3) && this.fws.pressSysFault.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+      ],
+      whichItemsChecked: () => [false, false, false, false, false, false],
+      failure: 2,
+      sysPage: SdPages.Door,
+      limitationsAllPhases: (checked) => (checked[1] ? ['210400001'] : []),
+      limitationsPfd: (checked) => (checked[1] ? ['210400001'] : []),
+    },
+    520800022: {
+      flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.main3ROpen,
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [
+        (this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3) && this.fws.pressSysFault.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+      ],
+      whichItemsChecked: () => [false, false, false, false, false, false],
+      failure: 2,
+      sysPage: SdPages.Door,
+      limitationsAllPhases: (checked) => (checked[1] ? ['210400001'] : []),
+      limitationsPfd: (checked) => (checked[1] ? ['210400001'] : []),
+    },
+    520800023: {
+      flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.main4LOpen,
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [
+        (this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3) && this.fws.pressSysFault.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+      ],
+      whichItemsChecked: () => [false, false, false, false, false, false],
+      failure: 2,
+      sysPage: SdPages.Door,
+      limitationsAllPhases: (checked) => (checked[1] ? ['210400001'] : []),
+      limitationsPfd: (checked) => (checked[1] ? ['210400001'] : []),
+    },
+    520800024: {
+      flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.main4ROpen,
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [
+        (this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3) && this.fws.pressSysFault.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+      ],
+      whichItemsChecked: () => [false, false, false, false, false, false],
+      failure: 2,
+      sysPage: SdPages.Door,
+      limitationsAllPhases: (checked) => (checked[1] ? ['210400001'] : []),
+      limitationsPfd: (checked) => (checked[1] ? ['210400001'] : []),
+    },
+    520800025: {
+      flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.main5LOpen,
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [
+        (this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3) && this.fws.pressSysFault.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+      ],
+      whichItemsChecked: () => [false, false, false, false, false, false],
+      failure: 2,
+      sysPage: SdPages.Door,
+      limitationsAllPhases: (checked) => (checked[1] ? ['210400001'] : []),
+      limitationsPfd: (checked) => (checked[1] ? ['210400001'] : []),
+    },
+    520800026: {
+      flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 12],
+      simVarIsActive: this.fws.main5ROpen,
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [
+        (this.fws.flightPhase.get() === 2 || this.fws.flightPhase.get() === 3) && this.fws.pressSysFault.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+        !this.fws.aircraftOnGround.get(),
+      ],
+      whichItemsChecked: () => [false, false, false, false, false, false],
+      failure: 2,
+      sysPage: SdPages.Door,
+      limitationsAllPhases: (checked) => (checked[1] ? ['210400001'] : []),
+      limitationsPfd: (checked) => (checked[1] ? ['210400001'] : []),
     },
     // ATA 70 Engines
     701800109: {
