@@ -1001,6 +1001,7 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
         ...STEER_ENDURANCE_LIMITED_CHECKLIST_ITEM,
       },
     ],
+    recommendation: 'LAND ANSA',
   },
   701800160: {
     title: "\x1b<4m\x1b4mENG\x1bm \x1b'mTWO ENG OUT ON OPPOSITE SIDE\x1Bm",
@@ -1013,6 +1014,7 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
       },
       { ...LDG_PERF_AFFECTED_CHECKLIST_ITEM },
     ],
+    recommendation: 'LAND ANSA',
   },
   701800161: {
     title: '\x1b<4m\x1b4mENG\x1bm TYPE DISAGREE',
