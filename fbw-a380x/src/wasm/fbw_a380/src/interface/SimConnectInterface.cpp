@@ -1659,6 +1659,10 @@ bool SimConnectInterface::setClientDataPrimAnalog(base_prim_analog_inputs& outpu
   return sendClientData(ClientData::PRIM_ANALOG_INPUTS, sizeof(output), &output);
 }
 
+bool SimConnectInterface::setClientDataPrimTemporaryAp(base_prim_temporary_ap_input& output) {
+  return sendClientData(ClientData::PRIM_TEMPORARY_AP_INPUTS, sizeof(output), &output);
+}
+
 bool SimConnectInterface::setClientDataPrimBusInput(base_prim_out_bus& output, int primIndex) {
   return sendClientData(ClientData::PRIM_1_BUS_OUTPUT + primIndex, sizeof(output), &output);
 }

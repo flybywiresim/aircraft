@@ -1485,6 +1485,7 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   if (primIndex == primDisabled) {
     simConnectInterface.setClientDataPrimDiscretes(prims[primIndex].modelInputs.in.discrete_inputs);
     simConnectInterface.setClientDataPrimAnalog(prims[primIndex].modelInputs.in.analog_inputs);
+    simConnectInterface.setClientDataPrimTemporaryAp(prims[primIndex].modelInputs.in.temporary_ap_input);
 
     primsDiscreteOutputs[primIndex] = simConnectInterface.getClientDataPrimDiscretesOutput();
     primsAnalogOutputs[primIndex] = simConnectInterface.getClientDataPrimAnalogsOutput();
