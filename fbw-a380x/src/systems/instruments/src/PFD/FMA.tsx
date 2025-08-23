@@ -98,9 +98,9 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
 
   private readonly selectedVs = ConsumerSubject.create(this.sub.on('selectedVs'), null);
 
-  private readonly approachCapability = ConsumerSubject.create(this.sub.on('approachCapability'), 0);
-
   private readonly fcdcDiscreteWord1 = Arinc429ConsumerSubject.create(this.sub.on('fcdcDiscreteWord1'));
+
+  private readonly fcdcFgDiscreteWord4 = Arinc429ConsumerSubject.create(this.sub.on('fcdcFgDiscreteWord4'));
 
   private readonly fwcFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
 
@@ -109,14 +109,13 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
   private readonly btvExitMissed = ConsumerSubject.create(this.sub.on('btvExitMissed'), false);
 
   private readonly disconnectApForLdg = MappedSubject.create(
-    ([ap1, ap2, ra, altitude, landingElevation, verticalMode, selectedFpa, selectedVs, approachCapability]) => {
+    ([ap1, ap2, ra, altitude, landingElevation, verticalMode, selectedFpa, selectedVs, fcdcFgDiscreteWord4]) => {
       return (
         (ap1 || ap2) &&
         (ra.isNormalOperation() ? ra.value <= 150 : altitude.valueOr(Infinity) - landingElevation.valueOr(0) <= 150) &&
-        (approachCapability === 1 || // CAT 1 or FLS
-          approachCapability === 6 ||
-          approachCapability === 7 ||
-          approachCapability === 8 ||
+        (!fcdcFgDiscreteWord4.bitValueOr(16, false) || // No LAND2 or higher capability
+          !fcdcFgDiscreteWord4.bitValueOr(17, false) ||
+          !fcdcFgDiscreteWord4.bitValueOr(18, false) ||
           verticalMode === VerticalMode.DES ||
           verticalMode === VerticalMode.OP_DES ||
           (verticalMode === VerticalMode.FPA && selectedFpa <= 0) ||
@@ -131,7 +130,7 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
     this.activeVerticalMode,
     this.selectedFpa,
     this.selectedVs,
-    this.approachCapability,
+    this.fcdcFgDiscreteWord4,
   );
 
   private readonly unrestrictedClimbDescent = MappedSubject.create(
@@ -1590,6 +1589,12 @@ class BC3Cell extends DisplayComponent<{
 }
 
 class D1D2Cell extends ShowForSecondsComponent<CellProps> {
+  private fcdcFgDiscreteWord4 = new Arinc429Word(0);
+
+  private fmaLateralActive = 0;
+
+  private fmaLateralArmed = 0;
+
   private text1Sub = Subject.create('');
 
   private text2Sub = Subject.create('');
@@ -1598,65 +1603,90 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
     super(props, 9);
   }
 
+  private setText() {
+    const landModeArmed = isArmed(this.fmaLateralArmed, ArmedLateralMode.LAND);
+    const landModeActive = this.fmaLateralActive === LateralMode.LAND;
+    const land2Capacity = this.fcdcFgDiscreteWord4.bitValueOr(23, false);
+    const land3FailPassiveCapacity = this.fcdcFgDiscreteWord4.bitValueOr(24, false);
+    const land3FailOperationalCapacity = this.fcdcFgDiscreteWord4.bitValueOr(25, false);
+
+    let text1: string;
+    let text2: string | undefined;
+    this.isShown = true;
+    if (land2Capacity) {
+      text1 = 'LAND2';
+      text2 = '';
+    } else if (land3FailPassiveCapacity) {
+      text1 = 'LAND3';
+      text2 = 'SINGLE';
+    } else if (land3FailOperationalCapacity) {
+      text1 = 'LAND3';
+      text2 = 'DUAL';
+    } else if (landModeArmed || landModeActive) {
+      text1 = 'APPR1';
+      text2 = '';
+    } else if (false) {
+      text1 = 'LAND1';
+      text2 = '';
+    } else if (false) {
+      text1 = 'F-APP';
+    } else if (false) {
+      text1 = 'F-APP';
+      text2 = '+ RAW';
+    } else if (false) {
+      text1 = 'RAW';
+      text2 = 'ONLY';
+    } else {
+      text1 = '';
+      text2 = '';
+      this.isShown = false;
+    }
+
+    const hasChanged = text1 !== this.text1Sub.get() || text2 !== this.text2Sub.get();
+
+    if (hasChanged) {
+      this.displayModeChangedPath();
+
+      this.text1Sub.set(text1);
+      this.text2Sub.set(text2);
+
+      if (text2 !== '') {
+        this.modeChangedPathRef.instance.setAttribute('d', 'm104.1 1.8143h27.994v13.506h-27.994z');
+      } else {
+        this.modeChangedPathRef.instance.setAttribute('d', 'm104.1 1.8143h27.994v6.0476h-27.994z');
+      }
+    } else if (!this.isShown) {
+      this.displayModeChangedPath(true);
+    }
+  }
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<PFDSimvars>();
+    const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
 
     sub
-      .on('approachCapability')
+      .on('fcdcFgDiscreteWord4')
       .whenChanged()
       .handle((c) => {
-        let text1: string;
-        let text2: string | undefined;
+        this.fcdcFgDiscreteWord4 = c;
+        this.setText();
+      });
 
-        this.isShown = true;
-        switch (c) {
-          case 1:
-            text1 = 'APPR1';
-            break;
-          case 2:
-            text1 = 'LAND2';
-            break;
-          case 3:
-            text1 = 'LAND3';
-            text2 = 'SINGLE';
-            break;
-          case 4:
-            text1 = 'LAND3';
-            text2 = 'DUAL';
-            break;
-          case 5:
-            text1 = 'LAND1';
-            break;
-          case 6:
-            text1 = 'F-APP';
-            break;
-          case 7:
-            text1 = 'F-APP';
-            text2 = '+ RAW';
-            break;
-          case 8:
-            text1 = 'RAW';
-            text2 = 'ONLY';
-            break;
-          default:
-            text1 = '';
-        }
+    sub
+      .on('activeLateralMode')
+      .whenChanged()
+      .handle((v) => {
+        this.fmaLateralActive = v;
+        this.setText();
+      });
 
-        this.text1Sub.set(text1);
-
-        if (text2) {
-          this.text2Sub.set(text2);
-          this.modeChangedPathRef.instance.setAttribute('d', 'm104.1 1.8143h27.994v13.506h-27.994z');
-        } else {
-          this.text2Sub.set('');
-          this.modeChangedPathRef.instance.setAttribute('d', 'm104.1 1.8143h27.994v6.0476h-27.994z');
-        }
-        if (text1.length === 0 && !text2) {
-          this.isShown = false;
-        }
-        this.displayModeChangedPath();
+    sub
+      .on('fmaLateralArmed')
+      .whenChanged()
+      .handle((v) => {
+        this.fmaLateralArmed = v;
+        this.setText();
       });
   }
 

@@ -16,6 +16,9 @@ struct FcdcBus {
   Arinc429DiscreteWord efcsStatus4;
   // Label 044
   Arinc429DiscreteWord efcsStatus5;
+
+  // similar to fmgcDiscreteWord4, no references available
+  Arinc429DiscreteWord fgDiscreteWord4;
 };
 
 struct FcdcDiscreteInputs {
@@ -37,6 +40,7 @@ struct FcdcAnalogInputs {
 
 struct FcdcBusInputs {
   base_prim_out_bus prims[3];
+  base_sec_out_bus secs[3];
   base_ra_bus raBusOutputs[3];
 };
 
@@ -50,8 +54,6 @@ struct FcdcDiscreteOutputs {
   bool foRedPriorityLightOn;
 
   bool foGreenPriorityLightOn;
-
-  int approachCapability;
 
   int autolandWarning;
 };

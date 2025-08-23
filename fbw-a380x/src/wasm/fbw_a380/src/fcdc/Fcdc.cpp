@@ -40,6 +40,7 @@ FcdcBus Fcdc::getBusOutputs() {
     output.efcsStatus3.setSsm(Arinc429SignStatus::FailureWarning);
     output.efcsStatus4.setSsm(Arinc429SignStatus::FailureWarning);
     output.efcsStatus5.setSsm(Arinc429SignStatus::FailureWarning);
+    output.fgDiscreteWord4.setSsm(Arinc429SignStatus::FailureWarning);
     return output;
   }
 
@@ -150,7 +151,6 @@ FcdcDiscreteOutputs Fcdc::getDiscreteOutputs() {
   output.foRedPriorityLightOn = false;
   output.foGreenPriorityLightOn = false;
 
-  output.approachCapability = currentApproachCapability;
   output.autolandWarning = autolandWarningTriggered ? 1 : 0;
   output.fcdcValid = monitoringHealthy;
 
@@ -161,96 +161,60 @@ void Fcdc::updateApproachCapability(double deltaTime) {
   // calculate and set approach capability
   // Approach and Landing Capability comes from each PRIM, which monitors the required equipment (based on lots of criteria, see
   // LIM-AFS-30 P 11/18) FCDC consolidates these capabilities to a overall capability. To my understanding, this is done by looking at the
-  // health status of PRIMs and SECs engagement, and FWS status. The rest of the conditions should be handled in PRIM FGs.
-  bool isLocArmed = static_cast<unsigned long long>(discreteInputs.autopilotStateMachineOutput.lateral_mode_armed) >> 1 & 0x01;
-  bool isLocEngaged =
-      discreteInputs.autopilotStateMachineOutput.lateral_mode >= 30 && discreteInputs.autopilotStateMachineOutput.lateral_mode <= 34;
-  bool isGsArmed = static_cast<unsigned long long>(discreteInputs.autopilotStateMachineOutput.vertical_mode_armed) >> 4 & 0x01;
-  bool isGsEngaged =
-      discreteInputs.autopilotStateMachineOutput.vertical_mode >= 30 && discreteInputs.autopilotStateMachineOutput.vertical_mode <= 34;
-  bool landFlareOrRollout =
-      discreteInputs.autopilotStateMachineOutput.vertical_mode >= 32 && discreteInputs.autopilotStateMachineOutput.vertical_mode <= 34;
+  // health status of PRIMs and SECs engagement. The rest of the conditions should be handled in PRIM FGs.
 
-  bool landModeArmedOrActive = (isLocArmed || isLocEngaged) && (isGsArmed || isGsEngaged);
-  int numberOfAutopilotsEngaged =
-      discreteInputs.autopilotStateMachineOutput.enabled_AP1 + discreteInputs.autopilotStateMachineOutput.enabled_AP2;
-  bool autoThrustEngaged = (discreteInputs.autoThrustOutput.status == athr_status::ENGAGED_ACTIVE);
-  // FIXME this should be checked in PRIM FGs
-  bool radioAltimeterAvailable = isNo(busInputs.raBusOutputs[0].radio_height_ft) || isNo(busInputs.raBusOutputs[1].radio_height_ft) ||
-                                 isNo(busInputs.raBusOutputs[2].radio_height_ft);
-  bool isCat1 = landModeArmedOrActive;
-  bool isCat2 = landModeArmedOrActive && radioAltimeterAvailable && !autoThrustEngaged && numberOfAutopilotsEngaged >= 1;
-  bool isCat3S = landModeArmedOrActive && radioAltimeterAvailable && autoThrustEngaged && numberOfAutopilotsEngaged >= 1;
-  bool isCat3D = landModeArmedOrActive && radioAltimeterAvailable && autoThrustEngaged && numberOfAutopilotsEngaged == 2;
-  int newApproachCapability = currentApproachCapability;
+  // Select capability from master PRIM
 
+  for (int i = 0; i < 3; i++) {
+    if (reinterpret_cast<Arinc429DiscreteWord*>(&busInputs.prims[i].fctl_law_status_word)->bitFromValueOr(21, false)) {
+      Arinc429DiscreteWord* fg_status_word = reinterpret_cast<Arinc429DiscreteWord*>(&busInputs.prims[i].fg_status_word);
+      land2Capacity = fg_status_word->bitFromValueOr(16, false);
+      land3FailPassiveCapacity = fg_status_word->bitFromValueOr(17, false);
+      land3FailOperationalCapacity = fg_status_word->bitFromValueOr(18, false);
+
+      land2Inop = fg_status_word->bitFromValueOr(20, false);
+      land3FailPassiveInop = fg_status_word->bitFromValueOr(21, false);
+      land3FailOperationalInop = fg_status_word->bitFromValueOr(22, false);
+
+      break;
+    }
+  }
+
+  // Check PRIM and SEC availability
+  int primAvailable = 0;
+  int secAvailable = 0;
+
+  for (int i = 0; i < 3; i++) {
+    if (isNo(busInputs.prims[i].fctl_law_status_word) == true) {
+      primAvailable++;
+    }
+    if (isNo(busInputs.secs[i].fctl_law_status_word) == true) {
+      secAvailable++;
+    }
+  }
+
+  bool land2OrLand3SinglePrimSecCriteria = primAvailable >= 1 && secAvailable >= 1;
+  bool requiredPrimsForLand3FailOpAvail =
+      land2OrLand3SinglePrimSecCriteria &&
+      ((isNo(busInputs.prims[0].fctl_law_status_word) && isNo(busInputs.prims[1].fctl_law_status_word)) ||
+       (isNo(busInputs.prims[0].fctl_law_status_word) && isNo(busInputs.prims[2].fctl_law_status_word)));
+  land2Capacity &= land2OrLand3SinglePrimSecCriteria;
+  land3FailPassiveCapacity &= land2OrLand3SinglePrimSecCriteria;
+  land3FailOperationalCapacity &= requiredPrimsForLand3FailOpAvail;
+
+  land2Inop |= !land2OrLand3SinglePrimSecCriteria;
+  land3FailPassiveInop |= !land2OrLand3SinglePrimSecCriteria;
+  land3FailOperationalInop |= !requiredPrimsForLand3FailOpAvail;
+
+  // autoland warning -------------------------------------------------------------------------------------------------
+  // if at least one AP engaged and LAND or FLARE mode -> latch
   double radioAlt = isNo(busInputs.raBusOutputs[0].radio_height_ft)   ? busInputs.raBusOutputs[0].radio_height_ft.Data
                     : isNo(busInputs.raBusOutputs[1].radio_height_ft) ? busInputs.raBusOutputs[1].radio_height_ft.Data
                                                                       : busInputs.raBusOutputs[2].radio_height_ft.Data;
 
-  if (currentApproachCapability == 0) {
-    if (isCat1) {
-      newApproachCapability = 1;
-    }
-  } else if (currentApproachCapability == 1) {
-    if (!isCat1) {
-      newApproachCapability = 0;
-    }
-    if (isCat3S) {
-      newApproachCapability = 3;
-    } else if (isCat2) {
-      newApproachCapability = 2;
-    }
-  } else if (currentApproachCapability == 2) {
-    if (isCat3D) {
-      newApproachCapability = 4;
-    } else if (isCat3S) {
-      newApproachCapability = 3;
-    } else if (!isCat2) {
-      newApproachCapability = 1;
-    }
-  } else if (currentApproachCapability == 3) {
-    if ((radioAlt > 200) || (radioAlt < 200 && (numberOfAutopilotsEngaged == 0 || !landFlareOrRollout))) {
-      // Computed above 400ft, memorized below 200ft
-      if (isCat3D) {
-        newApproachCapability = 4;
-      } else if (!isCat3S && !isCat2) {
-        newApproachCapability = 1;
-      } else if (!isCat3S && isCat2) {
-        newApproachCapability = 2;
-      }
-    }
-  } else if (currentApproachCapability == 4) {
-    if ((radioAlt > 200) || (radioAlt < 200 && (numberOfAutopilotsEngaged == 0 || !landFlareOrRollout))) {
-      // Computed above 400ft, memorized below 200ft
-      if (!autoThrustEngaged) {
-        newApproachCapability = 2;
-      } else if (!isCat3D) {
-        newApproachCapability = 3;
-      }
-    }
-  }
+  int numberOfAutopilotsEngaged =
+      discreteInputs.autopilotStateMachineOutput.enabled_AP1 + discreteInputs.autopilotStateMachineOutput.enabled_AP2;
 
-  bool doUpdate = false;
-  bool canDowngrade = (discreteInputs.simData.simulationTime - previousApproachCapabilityUpdateTime) > 3.0;
-  bool canUpgrade = (discreteInputs.simData.simulationTime - previousApproachCapabilityUpdateTime) > 1.5;
-  // Only compute above 400ft
-  if (newApproachCapability != currentApproachCapability && radioAlt > 400) {
-    doUpdate = (newApproachCapability == 0 && currentApproachCapability == 1) ||
-               (newApproachCapability == 1 && currentApproachCapability == 0) ||
-               (newApproachCapability > currentApproachCapability && canUpgrade) ||
-               (newApproachCapability < currentApproachCapability && canDowngrade);
-  } else {
-    previousApproachCapabilityUpdateTime = discreteInputs.simData.simulationTime;
-  }
-
-  if (doUpdate) {
-    currentApproachCapability = newApproachCapability;
-    previousApproachCapabilityUpdateTime = discreteInputs.simData.simulationTime;
-  }
-
-  // autoland warning -------------------------------------------------------------------------------------------------
-  // if at least one AP engaged and LAND or FLARE mode -> latch
   if (radioAlt < 200 && numberOfAutopilotsEngaged > 0 &&
       (discreteInputs.autopilotStateMachineOutput.vertical_mode == 32 || discreteInputs.autopilotStateMachineOutput.vertical_mode == 33)) {
     autolandWarningLatch = true;

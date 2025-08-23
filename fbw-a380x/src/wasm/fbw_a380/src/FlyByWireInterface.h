@@ -196,7 +196,6 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFmaCruiseAltModeActive;
   std::unique_ptr<LocalVariable> idFmaExpediteModeActive;
   std::unique_ptr<LocalVariable> idFmaSpeedProtectionActive;
-  std::unique_ptr<LocalVariable> idFmaApproachCapability;
   std::unique_ptr<LocalVariable> idFmaTripleClick;
   std::unique_ptr<LocalVariable> idFmaModeReversion;
 
@@ -420,6 +419,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFcdcDiscreteWord3[2];
   std::unique_ptr<LocalVariable> idFcdcDiscreteWord4[2];
   std::unique_ptr<LocalVariable> idFcdcDiscreteWord5[2];
+  std::unique_ptr<LocalVariable> idFcdcFgDiscreteWord4[2];
   std::unique_ptr<LocalVariable> idFcdcCaptRollCommand[2];
   std::unique_ptr<LocalVariable> idFcdcFoRollCommand[2];
   std::unique_ptr<LocalVariable> idFcdcCaptPitchCommand[2];

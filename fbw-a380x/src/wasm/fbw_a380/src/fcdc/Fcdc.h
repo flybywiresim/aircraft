@@ -66,8 +66,13 @@ class Fcdc {
 
   const double minimumPowerOutageTimeForFailure = 0.01;
 
-  int currentApproachCapability = 0;
-  double previousApproachCapabilityUpdateTime = 0;
+  bool land2Capacity = false;
+  bool land3FailPassiveCapacity = false;
+  bool land3FailOperationalCapacity = false;
+
+  bool land2Inop = false;
+  bool land3FailPassiveInop = false;
+  bool land3FailOperationalInop = false;
 
   bool autolandWarningLatch = false;
   bool autolandWarningTriggered = false;

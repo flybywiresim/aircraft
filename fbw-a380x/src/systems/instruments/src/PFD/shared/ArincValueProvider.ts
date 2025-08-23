@@ -45,6 +45,7 @@ export interface Arinc429Values {
   landingElevation: Arinc429Word;
   staticPressure: Arinc429Word;
   fcdcDiscreteWord1: Arinc429Word;
+  fcdcFgDiscreteWord4: Arinc429Word;
   fcdc1DiscreteWord1: Arinc429Word;
   fcdc2DiscreteWord1: Arinc429Word;
   fcdc1DiscreteWord2: Arinc429Word;
@@ -128,6 +129,10 @@ export class ArincValueProvider implements Instrument {
   private fcdc1DiscreteWord2 = new Arinc429Word(0);
 
   private fcdc2DiscreteWord2 = new Arinc429Word(0);
+
+  private fcdc1FgDiscreteWord4 = new Arinc429Word(0);
+
+  private fcdc2FgDiscreteWord4 = new Arinc429Word(0);
 
   private fcdcToUse = 0;
 
@@ -472,6 +477,31 @@ export class ArincValueProvider implements Instrument {
       publisher.pub('fcdc1DiscreteWord1', this.fcdc1DiscreteWord1);
       if (this.fcdcToUse === 1) {
         publisher.pub('fcdcDiscreteWord1', this.fcdc1DiscreteWord1);
+      }
+    });
+
+    subscriber.on('fcdc2DiscreteWord1Raw').handle((discreteWord1) => {
+      this.fcdc2DiscreteWord1 = new Arinc429Word(discreteWord1);
+      this.fcdcToUse = this.determineFcdcToUse();
+      publisher.pub('fcdc2DiscreteWord1', this.fcdc2DiscreteWord1);
+      if (this.fcdcToUse === 2) {
+        publisher.pub('fcdcDiscreteWord1', this.fcdc2DiscreteWord1);
+      }
+    });
+
+    subscriber.on('fcdc1FgDiscreteWord4Raw').handle((discreteWord1) => {
+      this.fcdc1FgDiscreteWord4 = new Arinc429Word(discreteWord1);
+      this.fcdcToUse = this.determineFcdcToUse();
+      if (this.fcdcToUse === 1) {
+        publisher.pub('fcdcFgDiscreteWord4', this.fcdc1FgDiscreteWord4);
+      }
+    });
+
+    subscriber.on('fcdc2FgDiscreteWord4Raw').handle((discreteWord1) => {
+      this.fcdc2FgDiscreteWord4 = new Arinc429Word(discreteWord1);
+      this.fcdcToUse = this.determineFcdcToUse();
+      if (this.fcdcToUse === 2) {
+        publisher.pub('fcdcFgDiscreteWord4', this.fcdc2FgDiscreteWord4);
       }
     });
 
