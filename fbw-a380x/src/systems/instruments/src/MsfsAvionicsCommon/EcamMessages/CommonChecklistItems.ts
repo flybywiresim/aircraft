@@ -5,7 +5,7 @@ import { ChecklistSpecialItem, ChecklistLineStyle } from '.';
 export const FMS_PRED_UNRELIABLE_CHECKLIST_ITEM: ChecklistSpecialItem = {
   name: 'FMS PRED UNRELIABLE', // TODO Replace with FMS PRED UNRELIABLE WITHOUT ACCURATE FMS FUEL PENALTY INSERTION once multiple lines supported
   sensed: false,
-  style: ChecklistLineStyle.ChecklistCondition,
+  style: ChecklistLineStyle.Green,
 };
 
 export const SLATS_SLOW_CHECKLIST_ITEM: ChecklistSpecialItem = {

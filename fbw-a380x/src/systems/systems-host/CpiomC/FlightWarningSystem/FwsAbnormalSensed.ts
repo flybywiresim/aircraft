@@ -33,7 +33,7 @@ export interface EwdAbnormalItem extends FwsSuppressableItem {
   whichItemsActive?: () => boolean[];
   whichItemsTimer?: () => (number | null | undefined)[];
   /** 3 = master warning, 2 = master caution */
-  failure: number;
+  failure?: number;
   /** Index of ECAM page to be displayed on SD */
   sysPage: SdPages;
   /** Cancel flag for level 3 warning audio (only emergency cancel can cancel if false), defaults to true. */
@@ -4490,8 +4490,8 @@ export class FwsAbnormalSensed {
       flightPhaseInhib: [],
       simVarIsActive: this.fws.twoEnginesOutOnOppositeSide,
       notActiveWhenItemActive: [],
-      whichItemsToShow: () => [true, true],
-      whichItemsChecked: () => [!this.fws.pack1On.get(), true], //TODO we assume pack 1 only for now. TO
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [true],
       sysPage: SdPages.Eng,
       failure: 2,
     },
@@ -4509,7 +4509,6 @@ export class FwsAbnormalSensed {
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
-      failure: 2,
       sysPage: SdPages.Fctl,
     },
     999800002: {
@@ -4519,22 +4518,15 @@ export class FwsAbnormalSensed {
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
-      failure: 2,
       sysPage: SdPages.Fuel,
     },
     999800003: {
       // *WHEEL
       flightPhaseInhib: [],
-      simVarIsActive: MappedSubject.create(
-        SubscribableMapFunctions.or(),
-        this.fws.greenAbnormLoPressure,
-        this.fws.yellowAbnormLoPressure,
-        this.fws.greenYellowAbnormLoPressure,
-      ),
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.or(), this.fws.greenYellowAbnormLoPressure),
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
-      failure: 2,
       sysPage: SdPages.Wheel,
     },
     999800004: {
@@ -4544,7 +4536,6 @@ export class FwsAbnormalSensed {
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
-      failure: 2,
       sysPage: SdPages.ElecAc,
     },
     999800005: {
@@ -4554,7 +4545,6 @@ export class FwsAbnormalSensed {
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
-      failure: 2,
       sysPage: SdPages.ElecDc,
     },
     999800006: {
@@ -4564,7 +4554,6 @@ export class FwsAbnormalSensed {
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
-      failure: 2,
       sysPage: SdPages.Bleed,
     },
     999800007: {
@@ -4574,7 +4563,6 @@ export class FwsAbnormalSensed {
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
-      failure: 2,
       sysPage: SdPages.Hyd,
     },
   };
