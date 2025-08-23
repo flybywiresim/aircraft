@@ -80,7 +80,7 @@ export class LegacyFuel implements Instrument {
   }
 
   init() {
-    const fuelWeight = SimVar.GetSimVarValue('FUEL TOTAL QUANTITY WEIGHT', 'kilograms');
+    const fuelWeight = SimVar.GetSimVarValue('L:A32NX_TOTAL_FUEL_QUANTITY', 'number');
     SimVar.SetSimVarValue('L:A32NX_FUEL_DESIRED', 'kilograms', fuelWeight);
     Wait.awaitSubscribable(GameStateProvider.get(), (state) => state === GameState.ingame, true).then(() => {
       this.checkEmptyTriggers();

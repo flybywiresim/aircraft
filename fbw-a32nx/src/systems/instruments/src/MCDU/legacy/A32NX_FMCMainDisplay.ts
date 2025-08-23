@@ -4774,7 +4774,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     const useFqi = this.isAnEngineOn();
 
     // If an engine is not running, use pilot entered block fuel to calculate fuel predictions
-    return useFqi ? (SimVar.GetSimVarValue('FUEL TOTAL QUANTITY WEIGHT', 'pound') * 0.4535934) / 1000 : this.blockFuel;
+    return useFqi
+      ? (SimVar.GetSimVarValue('L:A32NX_TOTAL_FUEL_QUANTITY', 'number') * 0.4535934) / 1000
+      : this.blockFuel;
   }
 
   /**
