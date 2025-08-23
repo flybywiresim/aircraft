@@ -329,7 +329,6 @@ void FlyByWireInterface::setupLocalVariables() {
   idFmaSpeedProtectionActive = std::make_unique<LocalVariable>("A32NX_FMA_SPEED_PROTECTION_MODE");
   idFmaSoftAltModeActive = std::make_unique<LocalVariable>("A32NX_FMA_SOFT_ALT_MODE");
   idFmaCruiseAltModeActive = std::make_unique<LocalVariable>("A32NX_FMA_CRUISE_ALT_MODE");
-  idFmaApproachCapability = std::make_unique<LocalVariable>("A32NX_APPROACH_CAPABILITY");
   idFmaTripleClick = std::make_unique<LocalVariable>("A32NX_FMA_TRIPLE_CLICK_MODE_REVERSION");
   idFmaModeReversion = std::make_unique<LocalVariable>("A32NX_FMA_MODE_REVERSION");
 
@@ -355,8 +354,21 @@ void FlyByWireInterface::setupLocalVariables() {
 
   idAutopilotAutothrustMode = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_AUTOTHRUST_MODE");
 
-  // register L variables for flight guidance
+  // register L variables for flight warning system
   idFwcFlightPhase = std::make_unique<LocalVariable>("A32NX_FWC_FLIGHT_PHASE");
+  idFwsAudioFunction[0] = std::make_unique<LocalVariable>("A32NX_FWS1_AUDIO_FUNCTION_AVAILABLE");
+  idFwsAudioFunction[1] = std::make_unique<LocalVariable>("A32NX_FWS2_AUDIO_FUNCTION_AVAILABLE");
+
+  // register L variables for electrical system
+  idElecApuGenContactorClosed[0] = std::make_unique<LocalVariable>("A32NX_ELEC_CONTACTOR_990XS1_IS_CLOSED");
+  idElecApuGenContactorClosed[1] = std::make_unique<LocalVariable>("A32NX_ELEC_CONTACTOR_990XS2_IS_CLOSED");
+  idElecTrContactorClosed[0] = std::make_unique<LocalVariable>("A32NX_ELEC_CONTACTOR_990PU1_IS_CLOSED");
+  idElecTrContactorClosed[1] = std::make_unique<LocalVariable>("A32NX_ELEC_CONTACTOR_990PU2_IS_CLOSED");
+  idElecTrContactorClosed[2] = std::make_unique<LocalVariable>("A32NX_ELEC_CONTACTOR_6PE_IS_CLOSED");
+  idElecTrContactorClosed[3] = std::make_unique<LocalVariable>("A32NX_ELEC_CONTACTOR_7PU_IS_CLOSED");
+
+  // register L variables for flight guidance
+
   idFmgcFlightPhase = std::make_unique<LocalVariable>("A32NX_FMGC_FLIGHT_PHASE");
   idFmgcV2 = std::make_unique<LocalVariable>("AIRLINER_V2_SPEED");
   idFmgcV_APP = std::make_unique<LocalVariable>("AIRLINER_VAPP_SPEED");
@@ -520,6 +532,7 @@ void FlyByWireInterface::setupLocalVariables() {
 
   for (int i = 0; i < 3; i++) {
     std::string idString = std::to_string(i + 1);
+    idAdrAltitudeStandard[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_ALTITUDE");
     idAdrAltitudeCorrected[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_BARO_CORRECTED_ALTITUDE_1");
     idAdrMach[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_MACH");
     idAdrAirspeedComputed[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_COMPUTED_AIRSPEED");
@@ -529,6 +542,7 @@ void FlyByWireInterface::setupLocalVariables() {
     idAdrCorrectedAverageStaticPressure[i] =
         std::make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_CORRECTED_AVERAGE_STATIC_PRESSURE");
 
+    idIrMaintWord[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_MAINT_WORD");
     idIrLatitude[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_LATITUDE");
     idIrLongitude[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_LONGITUDE");
     idIrGroundSpeed[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_GROUND_SPEED");
@@ -555,11 +569,13 @@ void FlyByWireInterface::setupLocalVariables() {
   for (int i = 0; i < 2; i++) {
     std::string idString = std::to_string(i + 1);
 
+    idFcdcHealthy[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_HEALTHY");
     idFcdcDiscreteWord1[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_1");
     idFcdcDiscreteWord2[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_2");
     idFcdcDiscreteWord3[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_3");
     idFcdcDiscreteWord4[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_4");
     idFcdcDiscreteWord5[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_5");
+    idFcdcFgDiscreteWord4[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_FG_DISCRETE_WORD_4");
     idFcdcCaptRollCommand[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_CAPT_ROLL_COMMAND");
     idFcdcFoRollCommand[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_FO_ROLL_COMMAND");
     idFcdcCaptPitchCommand[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_CAPT_PITCH_COMMAND");
@@ -1200,7 +1216,8 @@ bool FlyByWireInterface::updateLgciu(int lgciuIndex) {
 }
 
 bool FlyByWireInterface::updateSfcc(int sfccIndex) {
-  sfccBusOutputs[sfccIndex].slat_flap_component_status_word = Arinc429Utils::fromSimVar(idSfccSlatFlapComponentStatusWord[sfccIndex]->get());
+  sfccBusOutputs[sfccIndex].slat_flap_component_status_word =
+      Arinc429Utils::fromSimVar(idSfccSlatFlapComponentStatusWord[sfccIndex]->get());
   sfccBusOutputs[sfccIndex].slat_flap_system_status_word = Arinc429Utils::fromSimVar(idSfccSlatFlapSystemStatusWord[sfccIndex]->get());
   sfccBusOutputs[sfccIndex].slat_flap_actual_position_word = Arinc429Utils::fromSimVar(idSfccSlatFlapActualPositionWord[sfccIndex]->get());
   sfccBusOutputs[sfccIndex].slat_actual_position_deg = Arinc429Utils::fromSimVar(idSfccSlatActualPositionWord[sfccIndex]->get());
@@ -1214,6 +1231,7 @@ bool FlyByWireInterface::updateSfcc(int sfccIndex) {
 }
 
 bool FlyByWireInterface::updateAdirs(int adirsIndex) {
+  adrBusOutputs[adirsIndex].altitude_standard_ft = Arinc429Utils::fromSimVar(idAdrAltitudeStandard[adirsIndex]->get());
   adrBusOutputs[adirsIndex].altitude_corrected_ft = Arinc429Utils::fromSimVar(idAdrAltitudeCorrected[adirsIndex]->get());
   adrBusOutputs[adirsIndex].mach = Arinc429Utils::fromSimVar(idAdrMach[adirsIndex]->get());
   adrBusOutputs[adirsIndex].airspeed_computed_kn = Arinc429Utils::fromSimVar(idAdrAirspeedComputed[adirsIndex]->get());
@@ -1223,6 +1241,7 @@ bool FlyByWireInterface::updateAdirs(int adirsIndex) {
   adrBusOutputs[adirsIndex].corrected_average_static_pressure =
       Arinc429Utils::fromSimVar(idAdrCorrectedAverageStaticPressure[adirsIndex]->get());
 
+  irBusOutputs[adirsIndex].discrete_word_1 = Arinc429Utils::fromSimVar(idIrMaintWord[adirsIndex]->get());
   irBusOutputs[adirsIndex].latitude_deg = Arinc429Utils::fromSimVar(idIrLatitude[adirsIndex]->get());
   irBusOutputs[adirsIndex].longitude_deg = Arinc429Utils::fromSimVar(idIrLongitude[adirsIndex]->get());
   irBusOutputs[adirsIndex].ground_speed_kn = Arinc429Utils::fromSimVar(idIrGroundSpeed[adirsIndex]->get());
@@ -1368,6 +1387,20 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   prims[primIndex].modelInputs.in.discrete_inputs.pitch_trim_down_pressed = primIndex == 1 ? false : pitchTrimInput.pitchTrimSwitchDown;
   prims[primIndex].modelInputs.in.discrete_inputs.green_low_pressure = !idHydGreenPressurised->get();
   prims[primIndex].modelInputs.in.discrete_inputs.yellow_low_pressure = !idHydYellowPressurised->get();
+  prims[primIndex].modelInputs.in.discrete_inputs.fcdc_1_healthy = fcdcsDiscreteOutputs[0].fcdcValid;
+  prims[primIndex].modelInputs.in.discrete_inputs.fcdc_2_healthy = fcdcsDiscreteOutputs[1].fcdcValid;
+  prims[primIndex].modelInputs.in.discrete_inputs.fws_1_audio_function = idFwsAudioFunction[0]->get() == 1;
+  prims[primIndex].modelInputs.in.discrete_inputs.fws_2_audio_function = idFwsAudioFunction[1]->get() == 1;
+  prims[primIndex].modelInputs.in.discrete_inputs.is_engine_operative_1 = simData.engine_combustion_1;
+  prims[primIndex].modelInputs.in.discrete_inputs.is_engine_operative_2 = simData.engine_combustion_2;
+  prims[primIndex].modelInputs.in.discrete_inputs.is_engine_operative_3 = simData.engine_combustion_3;
+  prims[primIndex].modelInputs.in.discrete_inputs.is_engine_operative_4 = simData.engine_combustion_4;
+  prims[primIndex].modelInputs.in.discrete_inputs.apu_gen_connected =
+      idElecApuGenContactorClosed[0]->get() == 1 && idElecApuGenContactorClosed[1]->get() == 1;
+  prims[primIndex].modelInputs.in.discrete_inputs.every_dc_supplied_by_tr =
+      idElecTrContactorClosed[0]->get() == 1 && idElecTrContactorClosed[1]->get() == 1 && idElecTrContactorClosed[2]->get() == 1 &&
+      idElecTrContactorClosed[3]->get() == 1;
+  prims[primIndex].modelInputs.in.discrete_inputs.antiskid_available = simData.antiskidBrakesActive;
 
   prims[primIndex].modelInputs.in.analog_inputs.capt_pitch_stick_pos = -simInput.inputs[0];
   prims[primIndex].modelInputs.in.analog_inputs.fo_pitch_stick_pos = 0;
@@ -1444,13 +1477,19 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
 
   prims[primIndex].modelInputs.in.temporary_ap_input.ap_engaged =
       autopilotStateMachineOutput.enabled_AP1 || autopilotStateMachineOutput.enabled_AP2;
+  prims[primIndex].modelInputs.in.temporary_ap_input.ap_1_engaged = autopilotStateMachineOutput.enabled_AP1;
+  prims[primIndex].modelInputs.in.temporary_ap_input.ap_2_engaged = autopilotStateMachineOutput.enabled_AP2;
+  prims[primIndex].modelInputs.in.temporary_ap_input.athr_engaged = autoThrustOutput.status == athr_status::ENGAGED_ACTIVE;
   prims[primIndex].modelInputs.in.temporary_ap_input.roll_command = autopilotLawsOutput.autopilot.Phi_c_deg;
   prims[primIndex].modelInputs.in.temporary_ap_input.pitch_command = autopilotLawsOutput.autopilot.Theta_c_deg;
   prims[primIndex].modelInputs.in.temporary_ap_input.yaw_command = autopilotLawsOutput.autopilot.Beta_c_deg;
+  prims[primIndex].modelInputs.in.temporary_ap_input.lateral_mode = autopilotStateMachineOutput.lateral_mode;
+  prims[primIndex].modelInputs.in.temporary_ap_input.lateral_mode_armed = autopilotStateMachineOutput.lateral_mode_armed;
 
   if (primIndex == primDisabled) {
     simConnectInterface.setClientDataPrimDiscretes(prims[primIndex].modelInputs.in.discrete_inputs);
     simConnectInterface.setClientDataPrimAnalog(prims[primIndex].modelInputs.in.analog_inputs);
+    simConnectInterface.setClientDataPrimTemporaryAp(prims[primIndex].modelInputs.in.temporary_ap_input);
 
     primsDiscreteOutputs[primIndex] = simConnectInterface.getClientDataPrimDiscretesOutput();
     primsAnalogOutputs[primIndex] = simConnectInterface.getClientDataPrimAnalogsOutput();
@@ -1697,6 +1736,8 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
     return true;
   }
 
+  SimData simData = simConnectInterface.getSimData();
+
   const int oppFcdcIndex = fcdcIndex == 0 ? 1 : 0;
 
   Failures failureIndex = fcdcIndex == 0 ? Failures::Fcdc1 : Failures::Fcdc2;
@@ -1707,18 +1748,29 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
   for (int i = 0; i < 3; i++) {
     fcdcs[fcdcIndex].discreteInputs.primHealthy[i] = primsDiscreteOutputs[i].prim_healthy;
     fcdcs[fcdcIndex].busInputs.prims[i] = primsBusOutputs[i];
+    fcdcs[fcdcIndex].busInputs.raBusOutputs[i] = raBusOutputs[i];
   }
+
+  fcdcs[fcdcIndex].discreteInputs.autopilotStateMachineOutput = autopilotStateMachineOutput;
+  fcdcs[fcdcIndex].discreteInputs.autoThrustOutput = autoThrustOutput;
+  fcdcs[fcdcIndex].discreteInputs.simData = simData;
 
   // FIXME no speed_brake_lever_command_deg in prim out bus (where to get it from?)
   fcdcs[fcdcIndex].analogInputs.spoilersLeverPos = spoilersHandler->getHandlePosition();
 
-  FcdcBus output = fcdcs[fcdcIndex].update(sampleTime, failuresConsumer.isActive(failureIndex), idCpiomCxAvailable[fcdcIndex]->get());
+  fcdcs[fcdcIndex].update(sampleTime, failuresConsumer.isActive(failureIndex), idCpiomCxAvailable[fcdcIndex]->get());
 
-  idFcdcDiscreteWord1[fcdcIndex]->set(output.efcsStatus1.toSimVar());
-  idFcdcDiscreteWord2[fcdcIndex]->set(output.efcsStatus2.toSimVar());
-  idFcdcDiscreteWord3[fcdcIndex]->set(output.efcsStatus3.toSimVar());
-  idFcdcDiscreteWord4[fcdcIndex]->set(output.efcsStatus4.toSimVar());
-  idFcdcDiscreteWord5[fcdcIndex]->set(output.efcsStatus5.toSimVar());
+  fcdcsDiscreteOutputs[fcdcIndex] = fcdcs[fcdcIndex].getDiscreteOutputs();
+  fcdcsBusOutputs[fcdcIndex] = fcdcs[fcdcIndex].getBusOutputs();
+
+  idFcdcDiscreteWord1[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].efcsStatus1.toSimVar());
+  idFcdcDiscreteWord2[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].efcsStatus2.toSimVar());
+  idFcdcDiscreteWord3[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].efcsStatus3.toSimVar());
+  idFcdcDiscreteWord4[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].efcsStatus4.toSimVar());
+  idFcdcDiscreteWord5[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].efcsStatus5.toSimVar());
+  idFcdcFgDiscreteWord4[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].fgDiscreteWord4.toSimVar());
+  idFcdcHealthy[fcdcIndex]->set(fcdcsDiscreteOutputs[fcdcIndex].fcdcValid);
+  idAutopilotAutolandWarning->set(fcdcsDiscreteOutputs[fcdcIndex].autolandWarning);
 
   return true;
 }
@@ -2277,99 +2329,6 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
   idFmaSpeedProtectionActive->set(autopilotStateMachineOutput.speed_protection_mode);
   idFmaSoftAltModeActive->set(autopilotStateMachineOutput.ALT_soft_mode_active);
   idFmaCruiseAltModeActive->set(autopilotStateMachineOutput.ALT_cruise_mode_active);
-
-  // calculate and set approach capability
-  // when no RA is available at all -> CAT1, at least one RA is needed to get into CAT2 or higher
-  // CAT3 requires two valid RA which are not simulated yet
-  bool landModeArmedOrActive = (isLocArmed || isLocEngaged) && (isGsArmed || isGsEngaged);
-  int numberOfAutopilotsEngaged = autopilotStateMachineOutput.enabled_AP1 + autopilotStateMachineOutput.enabled_AP2;
-  bool autoThrustEngaged = (autoThrustOutput.status == athr_status::ENGAGED_ACTIVE);
-  bool radioAltimeterAvailable = (simData.H_radio_ft <= 5000);
-  bool isCat1 = landModeArmedOrActive;
-  bool isCat2 = landModeArmedOrActive && radioAltimeterAvailable && !autoThrustEngaged && numberOfAutopilotsEngaged >= 1;
-  bool isCat3S = landModeArmedOrActive && radioAltimeterAvailable && autoThrustEngaged && numberOfAutopilotsEngaged >= 1;
-  bool isCat3D = landModeArmedOrActive && radioAltimeterAvailable && autoThrustEngaged && numberOfAutopilotsEngaged == 2;
-  int newApproachCapability = currentApproachCapability;
-
-  if (currentApproachCapability == 0) {
-    if (isCat1) {
-      newApproachCapability = 1;
-    }
-  } else if (currentApproachCapability == 1) {
-    if (!isCat1) {
-      newApproachCapability = 0;
-    }
-    if (isCat3S) {
-      newApproachCapability = 3;
-    } else if (isCat2) {
-      newApproachCapability = 2;
-    }
-  } else if (currentApproachCapability == 2) {
-    if (isCat3D) {
-      newApproachCapability = 4;
-    } else if (isCat3S) {
-      newApproachCapability = 3;
-    } else if (!isCat2) {
-      newApproachCapability = 1;
-    }
-  } else if (currentApproachCapability == 3) {
-    if ((simData.H_radio_ft > 100) || (simData.H_radio_ft < 100 && numberOfAutopilotsEngaged == 0)) {
-      if (isCat3D) {
-        newApproachCapability = 4;
-      } else if (!isCat3S && !isCat2) {
-        newApproachCapability = 1;
-      } else if (!isCat3S && isCat2) {
-        newApproachCapability = 2;
-      }
-    }
-  } else if (currentApproachCapability == 4) {
-    if ((simData.H_radio_ft > 100) || (simData.H_radio_ft < 100 && numberOfAutopilotsEngaged == 0)) {
-      if (!autoThrustEngaged) {
-        newApproachCapability = 2;
-      } else if (!isCat3D) {
-        newApproachCapability = 3;
-      }
-    }
-  }
-
-  bool doUpdate = false;
-  bool canDowngrade = (simData.simulationTime - previousApproachCapabilityUpdateTime) > 3.0;
-  bool canUpgrade = (simData.simulationTime - previousApproachCapabilityUpdateTime) > 1.5;
-  if (newApproachCapability != currentApproachCapability) {
-    doUpdate = (newApproachCapability == 0 && currentApproachCapability == 1) ||
-               (newApproachCapability == 1 && currentApproachCapability == 0) ||
-               (newApproachCapability > currentApproachCapability && canUpgrade) ||
-               (newApproachCapability < currentApproachCapability && canDowngrade);
-  } else {
-    previousApproachCapabilityUpdateTime = simData.simulationTime;
-  }
-
-  if (doUpdate) {
-    currentApproachCapability = newApproachCapability;
-    idFmaApproachCapability->set(currentApproachCapability);
-    previousApproachCapabilityUpdateTime = simData.simulationTime;
-  }
-
-  // autoland warning -------------------------------------------------------------------------------------------------
-  // if at least one AP engaged and LAND or FLARE mode -> latch
-  if (simData.H_radio_ft < 200 && numberOfAutopilotsEngaged > 0 &&
-      (autopilotStateMachineOutput.vertical_mode == 32 || autopilotStateMachineOutput.vertical_mode == 33)) {
-    autolandWarningLatch = true;
-  } else if (simData.H_radio_ft >= 200 ||
-             (autopilotStateMachineOutput.vertical_mode != 32 && autopilotStateMachineOutput.vertical_mode != 33)) {
-    autolandWarningLatch = false;
-    autolandWarningTriggered = false;
-    idAutopilotAutolandWarning->set(0);
-  }
-
-  if (autolandWarningLatch && !autolandWarningTriggered) {
-    if (numberOfAutopilotsEngaged == 0 ||
-        (simData.H_radio_ft > 15 && (abs(simData.nav_loc_error_deg) > 0.2 || simData.nav_loc_valid == false)) ||
-        (simData.H_radio_ft > 100 && (abs(simData.nav_gs_error_deg) > 0.4 || simData.nav_gs_valid == false))) {
-      autolandWarningTriggered = true;
-      idAutopilotAutolandWarning->set(1);
-    }
-  }
 
   // FMA triple click and mode reversion ------------------------------------------------------------------------------
   idFmaTripleClick->set(autopilotStateMachineOutput.mode_reversion_triple_click);

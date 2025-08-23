@@ -1,37 +1,7 @@
 #pragma once
 
 #include "../Arinc429.h"
-#include "../Arinc429Utils.h"
-#include "../model/A380PrimComputer.h"
-
-struct FcdcBus {
-  // Label 040
-  Arinc429DiscreteWord efcsStatus1;
-  // Label 041
-  Arinc429DiscreteWord efcsStatus2;
-  // Label 042
-  Arinc429DiscreteWord efcsStatus3;
-  // Label 043
-  Arinc429DiscreteWord efcsStatus4;
-  // Label 044
-  Arinc429DiscreteWord efcsStatus5;
-};
-
-struct FcdcDiscreteInputs {
-  bool spoilersArmed;
-
-  bool noseGearPressed;
-
-  bool primHealthy[3];
-};
-
-struct FcdcAnalogInputs {
-  double spoilersLeverPos;
-};
-
-struct FcdcBusInputs {
-  base_prim_out_bus prims[3];
-};
+#include "FcdcIO.h"
 
 enum class LateralLaw {
   NormalLaw,
@@ -53,7 +23,11 @@ class Fcdc {
  public:
   Fcdc(bool isUnit1);
 
-  FcdcBus update(double deltaTime, bool faultActive, bool isPowered);
+  void update(double deltaTime, bool faultActive, bool isPowered);
+
+  FcdcBus getBusOutputs();
+
+  FcdcDiscreteOutputs getDiscreteOutputs();
 
   FcdcDiscreteInputs discreteInputs;
 
@@ -69,6 +43,8 @@ class Fcdc {
   void monitorSelf(bool faultActive);
 
   void updateSelfTest(double deltaTime);
+
+  void updateApproachCapability(double deltaTime);
 
   PitchLaw getPitchLawStatusFromBits(bool bit1, bool bit2, bool bit3);
 
@@ -89,4 +65,15 @@ class Fcdc {
   const bool isUnit1;
 
   const double minimumPowerOutageTimeForFailure = 0.01;
+
+  bool land2Capacity = false;
+  bool land3FailPassiveCapacity = false;
+  bool land3FailOperationalCapacity = false;
+
+  bool land2Inop = false;
+  bool land3FailPassiveInop = false;
+  bool land3FailOperationalInop = false;
+
+  bool autolandWarningLatch = false;
+  bool autolandWarningTriggered = false;
 };

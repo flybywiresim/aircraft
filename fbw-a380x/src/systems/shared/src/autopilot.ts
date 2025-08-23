@@ -19,6 +19,7 @@ enum LateralMode {
 enum ArmedLateralMode {
   NAV = 0,
   LOC = 1,
+  LAND = 2,
 }
 
 enum VerticalMode {

@@ -44,9 +44,6 @@ class FlyByWireInterface {
 
   double monotonicTime = 0;
 
-  int currentApproachCapability = 0;
-  double previousApproachCapabilityUpdateTime = 0;
-
   bool simulationRateReductionEnabled = true;
   bool limitSimulationRateByPerformance = true;
 
@@ -76,9 +73,6 @@ class FlyByWireInterface {
   bool flightDirectorConnectLatch_2 = false;
   bool flightDirectorDisconnectLatch_1 = false;
   bool flightDirectorDisconnectLatch_2 = false;
-
-  bool autolandWarningLatch = false;
-  bool autolandWarningTriggered = false;
 
   double flightControlsKeyChangeAileron = 0.0;
   double flightControlsKeyChangeElevator = 0.0;
@@ -144,6 +138,8 @@ class FlyByWireInterface {
   base_sec_out_bus secsBusOutputs[3] = {};
 
   Fcdc fcdcs[2] = {Fcdc(true), Fcdc(false)};
+  FcdcDiscreteOutputs fcdcsDiscreteOutputs[2] = {};
+  FcdcBus fcdcsBusOutputs[2] = {};
 
   Fac facs[2] = {Fac(true), Fac(false)};
   base_fac_discrete_outputs facsDiscreteOutputs[2] = {};
@@ -200,7 +196,6 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFmaCruiseAltModeActive;
   std::unique_ptr<LocalVariable> idFmaExpediteModeActive;
   std::unique_ptr<LocalVariable> idFmaSpeedProtectionActive;
-  std::unique_ptr<LocalVariable> idFmaApproachCapability;
   std::unique_ptr<LocalVariable> idFmaTripleClick;
   std::unique_ptr<LocalVariable> idFmaModeReversion;
 
@@ -245,6 +240,12 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFmRnavAppSelected;
   std::unique_ptr<LocalVariable> idFmFinalCanEngage;
 
+  std::unique_ptr<LocalVariable> idFwcFlightPhase;
+  std::unique_ptr<LocalVariable> idFwsAudioFunction[2];
+
+  std::unique_ptr<LocalVariable> idElecApuGenContactorClosed[2];
+  std::unique_ptr<LocalVariable> idElecTrContactorClosed[4];
+
   std::unique_ptr<LocalVariable> idTcasFault;
   std::unique_ptr<LocalVariable> idTcasMode;
   std::unique_ptr<LocalVariable> idTcasTaOnly;
@@ -255,7 +256,6 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idTcasTargetRedMin;
   std::unique_ptr<LocalVariable> idTcasTargetRedMax;
 
-  std::unique_ptr<LocalVariable> idFwcFlightPhase;
   std::unique_ptr<LocalVariable> idFmgcFlightPhase;
   std::unique_ptr<LocalVariable> idFmgcV2;
   std::unique_ptr<LocalVariable> idFmgcV_APP;
@@ -381,6 +381,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idSfccFlapActualPositionWord[2];
 
   // ADR bus inputs
+  std::unique_ptr<LocalVariable> idAdrAltitudeStandard[3];
   std::unique_ptr<LocalVariable> idAdrAltitudeCorrected[3];
   std::unique_ptr<LocalVariable> idAdrMach[3];
   std::unique_ptr<LocalVariable> idAdrAirspeedComputed[3];
@@ -390,6 +391,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idAdrCorrectedAverageStaticPressure[3];
 
   // IR bus inputs
+  std::unique_ptr<LocalVariable> idIrMaintWord[3];
   std::unique_ptr<LocalVariable> idIrLatitude[3];
   std::unique_ptr<LocalVariable> idIrLongitude[3];
   std::unique_ptr<LocalVariable> idIrGroundSpeed[3];
@@ -413,11 +415,13 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idIrInertialVerticalSpeed[3];
 
   // FCDC bus label Lvars
+  std::unique_ptr<LocalVariable> idFcdcHealthy[2];
   std::unique_ptr<LocalVariable> idFcdcDiscreteWord1[2];
   std::unique_ptr<LocalVariable> idFcdcDiscreteWord2[2];
   std::unique_ptr<LocalVariable> idFcdcDiscreteWord3[2];
   std::unique_ptr<LocalVariable> idFcdcDiscreteWord4[2];
   std::unique_ptr<LocalVariable> idFcdcDiscreteWord5[2];
+  std::unique_ptr<LocalVariable> idFcdcFgDiscreteWord4[2];
   std::unique_ptr<LocalVariable> idFcdcCaptRollCommand[2];
   std::unique_ptr<LocalVariable> idFcdcFoRollCommand[2];
   std::unique_ptr<LocalVariable> idFcdcCaptPitchCommand[2];

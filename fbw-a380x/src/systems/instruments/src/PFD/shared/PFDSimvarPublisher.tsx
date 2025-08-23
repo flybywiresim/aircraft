@@ -26,7 +26,6 @@ export interface PFDSimvars {
   fmaSpeedProtection: boolean;
   AThrMode: number;
   selectedVs: number;
-  approachCapability: number;
   ap1Active: boolean;
   ap2Active: boolean;
   fmaVerticalArmed: number;
@@ -117,6 +116,8 @@ export interface PFDSimvars {
   fcdc2DiscreteWord1Raw: number;
   fcdc1DiscreteWord2Raw: number;
   fcdc2DiscreteWord2Raw: number;
+  fcdc1FgDiscreteWord4Raw: number;
+  fcdc2FgDiscreteWord4Raw: number;
   ls1Button: boolean;
   ls2Button: boolean;
   xtk: number;
@@ -204,7 +205,6 @@ export enum PFDVars {
   fmaSpeedProtection = 'L:A32NX_FMA_SPEED_PROTECTION_MODE',
   AThrMode = 'L:A32NX_AUTOTHRUST_MODE',
   selectedVs = 'L:A32NX_AUTOPILOT_VS_SELECTED',
-  approachCapability = 'L:A32NX_APPROACH_CAPABILITY',
   ap1Active = 'L:A32NX_AUTOPILOT_1_ACTIVE',
   ap2Active = 'L:A32NX_AUTOPILOT_2_ACTIVE',
   fmaVerticalArmed = 'L:A32NX_FMA_VERTICAL_ARMED',
@@ -381,7 +381,6 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['fmaSpeedProtection', { name: PFDVars.fmaSpeedProtection, type: SimVarValueType.Bool }],
     ['AThrMode', { name: PFDVars.AThrMode, type: SimVarValueType.Number }],
     ['selectedVs', { name: PFDVars.selectedVs, type: SimVarValueType.FPM }],
-    ['approachCapability', { name: PFDVars.approachCapability, type: SimVarValueType.Number }],
     ['ap1Active', { name: PFDVars.ap1Active, type: SimVarValueType.Bool }],
     ['ap2Active', { name: PFDVars.ap2Active, type: SimVarValueType.Bool }],
     ['fmaVerticalArmed', { name: PFDVars.fmaVerticalArmed, type: SimVarValueType.Number }],

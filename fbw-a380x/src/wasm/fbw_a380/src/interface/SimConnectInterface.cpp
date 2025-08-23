@@ -268,6 +268,7 @@ bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "CONTACT POINT COMPRESSION:2", "PERCENT");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "CONTACT POINT COMPRESSION:3", "PERCENT");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "CONTACT POINT COMPRESSION:4", "PERCENT");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "ANTISKID BRAKES ACTIVE", "BOOL");
 
   // -----------------------------------
   // DATA FOR FDR TO MONITOR FUEL SYSTEM
@@ -988,6 +989,18 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   // ------------------------------------------------------------------------------------------------------------------
 
   // map client id
+  result &=
+      SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_PRIM_TEMPORARY_AP_INPUT", ClientData::PRIM_TEMPORARY_AP_INPUTS);
+  // create client data
+  result &= SimConnect_CreateClientData(hSimConnect, ClientData::PRIM_TEMPORARY_AP_INPUTS, sizeof(base_prim_temporary_ap_input),
+                                        SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
+  // add data definitions
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::PRIM_TEMPORARY_AP_INPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 sizeof(base_prim_temporary_ap_input));
+
+  // ------------------------------------------------------------------------------------------------------------------
+
+  // map client id
   result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_PRIM_ANALOG_INPUT", ClientData::PRIM_ANALOG_INPUTS);
   // create client data
   result &= SimConnect_CreateClientData(hSimConnect, ClientData::PRIM_ANALOG_INPUTS, sizeof(base_prim_analog_inputs),
@@ -1656,6 +1669,10 @@ bool SimConnectInterface::setClientDataPrimDiscretes(base_prim_discrete_inputs& 
 
 bool SimConnectInterface::setClientDataPrimAnalog(base_prim_analog_inputs& output) {
   return sendClientData(ClientData::PRIM_ANALOG_INPUTS, sizeof(output), &output);
+}
+
+bool SimConnectInterface::setClientDataPrimTemporaryAp(base_prim_temporary_ap_input& output) {
+  return sendClientData(ClientData::PRIM_TEMPORARY_AP_INPUTS, sizeof(output), &output);
 }
 
 bool SimConnectInterface::setClientDataPrimBusInput(base_prim_out_bus& output, int primIndex) {

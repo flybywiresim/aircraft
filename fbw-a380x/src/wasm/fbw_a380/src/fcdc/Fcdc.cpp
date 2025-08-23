@@ -1,5 +1,6 @@
 #include "Fcdc.h"
 #include <iostream>
+#include "../Arinc429Utils.h"
 
 using namespace Arinc429Utils;
 
@@ -18,12 +19,19 @@ void Fcdc::startup() {
   powerSupplyOutageTime = 0.0;
 }
 
-FcdcBus Fcdc::update(double deltaTime, bool faultActive, bool isPowered) {
+void Fcdc::update(double deltaTime, bool faultActive, bool isPowered) {
   monitorPowerSupply(deltaTime, isPowered);
 
   updateSelfTest(deltaTime);
   monitorSelf(faultActive);
 
+  if (monitoringHealthy) {
+    updateApproachCapability(deltaTime);
+  }
+}
+
+// Write the bus output data and return it.
+FcdcBus Fcdc::getBusOutputs() {
   FcdcBus output = {};
 
   if (!monitoringHealthy) {
@@ -32,6 +40,7 @@ FcdcBus Fcdc::update(double deltaTime, bool faultActive, bool isPowered) {
     output.efcsStatus3.setSsm(Arinc429SignStatus::FailureWarning);
     output.efcsStatus4.setSsm(Arinc429SignStatus::FailureWarning);
     output.efcsStatus5.setSsm(Arinc429SignStatus::FailureWarning);
+    output.fgDiscreteWord4.setSsm(Arinc429SignStatus::FailureWarning);
     return output;
   }
 
@@ -133,6 +142,95 @@ FcdcBus Fcdc::update(double deltaTime, bool faultActive, bool isPowered) {
   output.efcsStatus5.setSsm(Arinc429SignStatus::NormalOperation);
 
   return output;
+}
+
+FcdcDiscreteOutputs Fcdc::getDiscreteOutputs() {
+  FcdcDiscreteOutputs output = {};
+  output.captRedPriorityLightOn = false;
+  output.captGreenPriorityLightOn = false;
+  output.foRedPriorityLightOn = false;
+  output.foGreenPriorityLightOn = false;
+
+  output.autolandWarning = autolandWarningTriggered ? 1 : 0;
+  output.fcdcValid = monitoringHealthy;
+
+  return output;
+}
+
+void Fcdc::updateApproachCapability(double deltaTime) {
+  // calculate and set approach capability
+  // Approach and Landing Capability comes from each PRIM, which monitors the required equipment (based on lots of criteria, see
+  // LIM-AFS-30 P 11/18) FCDC consolidates these capabilities to a overall capability. To my understanding, this is done by looking at the
+  // health status of PRIMs and SECs engagement. The rest of the conditions should be handled in PRIM FGs.
+
+  // Select capability from master PRIM
+
+  for (int i = 0; i < 3; i++) {
+    if (reinterpret_cast<Arinc429DiscreteWord*>(&busInputs.prims[i].fctl_law_status_word)->bitFromValueOr(21, false)) {
+      Arinc429DiscreteWord* fg_status_word = reinterpret_cast<Arinc429DiscreteWord*>(&busInputs.prims[i].fg_status_word);
+      land2Capacity = fg_status_word->bitFromValueOr(16, false);
+      land3FailPassiveCapacity = fg_status_word->bitFromValueOr(17, false);
+      land3FailOperationalCapacity = fg_status_word->bitFromValueOr(18, false);
+
+      land2Inop = fg_status_word->bitFromValueOr(20, false);
+      land3FailPassiveInop = fg_status_word->bitFromValueOr(21, false);
+      land3FailOperationalInop = fg_status_word->bitFromValueOr(22, false);
+
+      break;
+    }
+  }
+
+  // Check PRIM and SEC availability
+  int primAvailable = 0;
+  int secAvailable = 0;
+
+  for (int i = 0; i < 3; i++) {
+    if (isNo(busInputs.prims[i].fctl_law_status_word) == true) {
+      primAvailable++;
+    }
+    if (isNo(busInputs.secs[i].fctl_law_status_word) == true) {
+      secAvailable++;
+    }
+  }
+
+  bool land2OrLand3SinglePrimSecCriteria = primAvailable >= 1 && secAvailable >= 1;
+  bool requiredPrimsForLand3FailOpAvail =
+      land2OrLand3SinglePrimSecCriteria &&
+      ((isNo(busInputs.prims[0].fctl_law_status_word) && isNo(busInputs.prims[1].fctl_law_status_word)) ||
+       (isNo(busInputs.prims[0].fctl_law_status_word) && isNo(busInputs.prims[2].fctl_law_status_word)));
+  land2Capacity &= land2OrLand3SinglePrimSecCriteria;
+  land3FailPassiveCapacity &= land2OrLand3SinglePrimSecCriteria;
+  land3FailOperationalCapacity &= requiredPrimsForLand3FailOpAvail;
+
+  land2Inop |= !land2OrLand3SinglePrimSecCriteria;
+  land3FailPassiveInop |= !land2OrLand3SinglePrimSecCriteria;
+  land3FailOperationalInop |= !requiredPrimsForLand3FailOpAvail;
+
+  // autoland warning -------------------------------------------------------------------------------------------------
+  // if at least one AP engaged and LAND or FLARE mode -> latch
+  double radioAlt = isNo(busInputs.raBusOutputs[0].radio_height_ft)   ? busInputs.raBusOutputs[0].radio_height_ft.Data
+                    : isNo(busInputs.raBusOutputs[1].radio_height_ft) ? busInputs.raBusOutputs[1].radio_height_ft.Data
+                                                                      : busInputs.raBusOutputs[2].radio_height_ft.Data;
+
+  int numberOfAutopilotsEngaged =
+      discreteInputs.autopilotStateMachineOutput.enabled_AP1 + discreteInputs.autopilotStateMachineOutput.enabled_AP2;
+
+  if (radioAlt < 200 && numberOfAutopilotsEngaged > 0 &&
+      (discreteInputs.autopilotStateMachineOutput.vertical_mode == 32 || discreteInputs.autopilotStateMachineOutput.vertical_mode == 33)) {
+    autolandWarningLatch = true;
+  } else if (radioAlt >= 200 || (discreteInputs.autopilotStateMachineOutput.vertical_mode != 32 &&
+                                 discreteInputs.autopilotStateMachineOutput.vertical_mode != 33)) {
+    autolandWarningLatch = false;
+    autolandWarningTriggered = false;
+  }
+
+  if (autolandWarningLatch && !autolandWarningTriggered) {
+    if (numberOfAutopilotsEngaged == 0 ||
+        (radioAlt > 15 && (abs(discreteInputs.simData.nav_loc_error_deg) > 0.2 || discreteInputs.simData.nav_loc_valid == false)) ||
+        (radioAlt > 100 && (abs(discreteInputs.simData.nav_gs_error_deg) > 0.4 || discreteInputs.simData.nav_gs_valid == false))) {
+      autolandWarningTriggered = true;
+    }
+  }
 }
 
 // Perform self monitoring
