@@ -381,6 +381,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idSfccFlapActualPositionWord[2];
 
   // ADR bus inputs
+  std::unique_ptr<LocalVariable> idAdrAltitudeStandard[3];
   std::unique_ptr<LocalVariable> idAdrAltitudeCorrected[3];
   std::unique_ptr<LocalVariable> idAdrMach[3];
   std::unique_ptr<LocalVariable> idAdrAirspeedComputed[3];
