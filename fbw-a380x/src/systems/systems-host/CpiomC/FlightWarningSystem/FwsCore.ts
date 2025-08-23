@@ -2187,8 +2187,8 @@ export class FwsCore {
     ([yellowLoPress, greenLoPress, prim2Healthy, prim3Healthy]) => {
       return (greenLoPress && !prim3Healthy) || (yellowLoPress && !prim2Healthy); // TODO should use system status
     },
-    this.greenLoPressure,
     this.yellowLoPressure,
+    this.greenLoPressure,
     this.prim2Healthy,
     this.prim3Healthy,
   );

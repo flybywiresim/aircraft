@@ -1008,14 +1008,7 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
   701800160: {
     title: "\x1b<4m\x1b4mENG\x1bm \x1b'mTWO ENG OUT ON OPPOSITE SIDE \x1Bm",
     sensed: true,
-    items: [
-      {
-        name: 'PACK 1',
-        sensed: true,
-        labelNotCompleted: 'OFF',
-      },
-      { ...LDG_PERF_AFFECTED_CHECKLIST_ITEM },
-    ],
+    items: [{ ...LDG_PERF_AFFECTED_CHECKLIST_ITEM }],
     recommendation: 'LAND ANSA',
   },
   701800161: {
