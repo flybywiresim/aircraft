@@ -268,6 +268,7 @@ bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "CONTACT POINT COMPRESSION:2", "PERCENT");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "CONTACT POINT COMPRESSION:3", "PERCENT");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "CONTACT POINT COMPRESSION:4", "PERCENT");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "ANTISKID BRAKES ACTIVE", "BOOL");
 
   // -----------------------------------
   // DATA FOR FDR TO MONITOR FUEL SYSTEM
