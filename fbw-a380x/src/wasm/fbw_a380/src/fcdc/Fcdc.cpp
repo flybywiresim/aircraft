@@ -176,6 +176,10 @@ void Fcdc::updateApproachCapability(double deltaTime) {
       land3FailPassiveInop = fg_status_word->bitFromValueOr(21, false);
       land3FailOperationalInop = fg_status_word->bitFromValueOr(22, false);
 
+      land2Capacity = fg_status_word->bitFromValueOr(23, false);
+      land3FailPassiveCapacity = fg_status_word->bitFromValueOr(24, false);
+      land3FailOperationalCapacity = fg_status_word->bitFromValueOr(25, false);
+
       break;
     }
   }

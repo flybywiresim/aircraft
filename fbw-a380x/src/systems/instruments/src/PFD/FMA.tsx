@@ -113,9 +113,9 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
       return (
         (ap1 || ap2) &&
         (ra.isNormalOperation() ? ra.value <= 150 : altitude.valueOr(Infinity) - landingElevation.valueOr(0) <= 150) &&
-        (!fcdcFgDiscreteWord4.bitValueOr(16, false) || // No LAND2 or higher capability
-          !fcdcFgDiscreteWord4.bitValueOr(17, false) ||
-          !fcdcFgDiscreteWord4.bitValueOr(18, false) ||
+        (!fcdcFgDiscreteWord4.bitValueOr(23, false) || // No LAND2 or higher capability
+          !fcdcFgDiscreteWord4.bitValueOr(24, false) ||
+          !fcdcFgDiscreteWord4.bitValueOr(25, false) ||
           verticalMode === VerticalMode.DES ||
           verticalMode === VerticalMode.OP_DES ||
           (verticalMode === VerticalMode.FPA && selectedFpa <= 0) ||

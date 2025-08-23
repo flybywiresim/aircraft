@@ -1,22 +1,6 @@
 #ifndef AutopilotLaws_types_h_
 #define AutopilotLaws_types_h_
 #include "rtwtypes.h"
-#ifndef DEFINED_TYPEDEF_FOR_ap_raw_laws_flare_
-#define DEFINED_TYPEDEF_FOR_ap_raw_laws_flare_
-
-struct ap_raw_laws_flare
-{
-  boolean_T condition_Flare;
-  real_T H_dot_radio_fpm;
-  real_T H_dot_c_fpm;
-  real_T delta_Theta_H_dot_deg;
-  real_T delta_Theta_bz_deg;
-  real_T delta_Theta_bx_deg;
-  real_T delta_Theta_beta_c_deg;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_ap_lat_lon_alt_
 #define DEFINED_TYPEDEF_FOR_ap_lat_lon_alt_
 
@@ -106,6 +90,22 @@ struct ap_data
   boolean_T is_engine_operative_4;
   boolean_T altimeter_setting_changed;
   real_T total_weight_kg;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_ap_raw_laws_flare_
+#define DEFINED_TYPEDEF_FOR_ap_raw_laws_flare_
+
+struct ap_raw_laws_flare
+{
+  boolean_T condition_Flare;
+  real_T H_dot_radio_fpm;
+  real_T H_dot_c_fpm;
+  real_T delta_Theta_H_dot_deg;
+  real_T delta_Theta_bz_deg;
+  real_T delta_Theta_bx_deg;
+  real_T delta_Theta_beta_c_deg;
 };
 
 #endif

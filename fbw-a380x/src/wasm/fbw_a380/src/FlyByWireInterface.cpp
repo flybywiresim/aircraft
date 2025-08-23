@@ -1375,7 +1375,7 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   prims[primIndex].modelInputs.in.discrete_inputs.fo_priority_takeover_pressed = idFoPriorityButtonPressed->get();
   prims[primIndex].modelInputs.in.discrete_inputs.ap_1_pushbutton_pressed = false;
   prims[primIndex].modelInputs.in.discrete_inputs.ap_2_pushbutton_pressed = false;
-  prims[primIndex].modelInputs.in.discrete_inputs.fcu_healthy = false;
+  prims[primIndex].modelInputs.in.discrete_inputs.fcu_healthy = true;
   prims[primIndex].modelInputs.in.discrete_inputs.athr_pushbutton = false;
   prims[primIndex].modelInputs.in.discrete_inputs.ir_3_on_capt = false;
   prims[primIndex].modelInputs.in.discrete_inputs.ir_3_on_fo = false;
@@ -1485,6 +1485,8 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   prims[primIndex].modelInputs.in.temporary_ap_input.yaw_command = autopilotLawsOutput.autopilot.Beta_c_deg;
   prims[primIndex].modelInputs.in.temporary_ap_input.lateral_mode = autopilotStateMachineOutput.lateral_mode;
   prims[primIndex].modelInputs.in.temporary_ap_input.lateral_mode_armed = autopilotStateMachineOutput.lateral_mode_armed;
+  prims[primIndex].modelInputs.in.temporary_ap_input.vertical_mode = autopilotStateMachineOutput.vertical_mode;
+  prims[primIndex].modelInputs.in.temporary_ap_input.vertical_mode_armed = autopilotStateMachineOutput.vertical_mode_armed;
 
   if (primIndex == primDisabled) {
     simConnectInterface.setClientDataPrimDiscretes(prims[primIndex].modelInputs.in.discrete_inputs);

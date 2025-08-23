@@ -908,7 +908,7 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
         false,
         false,
         false,
-        0.0,
+        false,
         false
       },
 
@@ -2640,6 +2640,8 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
         false,
         false,
         false,
+        0.0,
+        0.0,
         0.0,
         0.0,
         0.0,
