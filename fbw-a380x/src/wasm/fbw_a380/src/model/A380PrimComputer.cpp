@@ -2736,10 +2736,10 @@ void A380PrimComputer::step()
       A380PrimComputer_DWork.pApproachModeArmedAbove400Ft);
     rtb_y_a = (A380PrimComputer_U.in.temporary_ap_input.ap_1_engaged && rtb_BusAssignment_logic_all_sfcc_lost);
     rtb_y_jb = (A380PrimComputer_U.in.temporary_ap_input.ap_2_engaged && rtb_BusAssignment_logic_all_sfcc_lost);
-    nz = (A380PrimComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_system_status_word.SSM == static_cast<uint32_T>
-          (SignStatusMatrix::NormalOperation)) +
-      (A380PrimComputer_U.in.bus_inputs.sfcc_2_bus.slat_flap_system_status_word.SSM == static_cast<uint32_T>
-       (SignStatusMatrix::NormalOperation));
+    nz = (A380PrimComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_system_status_word.SSM != static_cast<uint32_T>
+          (SignStatusMatrix::FailureWarning)) +
+      (A380PrimComputer_U.in.bus_inputs.sfcc_2_bus.slat_flap_system_status_word.SSM != static_cast<uint32_T>
+       (SignStatusMatrix::FailureWarning));
     if (A380PrimComputer_a429_bitValueOr(A380PrimComputer_U.in.bus_inputs.sec_1_bus.rudder_status_word.SSM,
          A380PrimComputer_U.in.bus_inputs.sec_1_bus.rudder_status_word.Data)) {
       rtb_BusAssignment_logic_flaps_locked = true;
@@ -2756,17 +2756,17 @@ void A380PrimComputer::step()
       A380PrimComputer_U.in.discrete_inputs.fws_2_audio_function;
     d_nz = A380PrimComputer_U.in.discrete_inputs.fcdc_1_healthy + A380PrimComputer_U.in.discrete_inputs.fcdc_2_healthy;
     rtb_TmpSignalConversionAtSFunctionInport6_idx_2 = ((A380PrimComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_1.SSM
-      == static_cast<uint32_T>(SignStatusMatrix::NormalOperation)) +
-      (A380PrimComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_1.SSM == static_cast<uint32_T>(SignStatusMatrix::
-      NormalOperation)) >= 1);
+      != static_cast<uint32_T>(SignStatusMatrix::FailureWarning)) +
+      (A380PrimComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_1.SSM != static_cast<uint32_T>(SignStatusMatrix::
+      FailureWarning)) >= 1);
     rtb_BusAssignment_logic_all_sfcc_lost = (leftSpoilerHydraulicModeAvail || leftSpoilerElectricModeAvail);
     rtb_DataTypeConversion_m2 = rtb_BusAssignment_logic_all_sfcc_lost;
-    tmp[0] = (A380PrimComputer_U.in.bus_inputs.adr_1_bus.aoa_corrected_deg.SSM == static_cast<uint32_T>(SignStatusMatrix::
-               NormalOperation));
-    tmp[1] = (A380PrimComputer_U.in.bus_inputs.adr_2_bus.aoa_corrected_deg.SSM == static_cast<uint32_T>(SignStatusMatrix::
-               NormalOperation));
-    tmp[2] = (A380PrimComputer_U.in.bus_inputs.adr_3_bus.aoa_corrected_deg.SSM == static_cast<uint32_T>(SignStatusMatrix::
-               NormalOperation));
+    tmp[0] = (A380PrimComputer_U.in.bus_inputs.adr_1_bus.aoa_corrected_deg.SSM != static_cast<uint32_T>(SignStatusMatrix::
+               FailureWarning));
+    tmp[1] = (A380PrimComputer_U.in.bus_inputs.adr_2_bus.aoa_corrected_deg.SSM != static_cast<uint32_T>(SignStatusMatrix::
+               FailureWarning));
+    tmp[2] = (A380PrimComputer_U.in.bus_inputs.adr_3_bus.aoa_corrected_deg.SSM != static_cast<uint32_T>(SignStatusMatrix::
+               FailureWarning));
     e_nz = combineVectorElements_N0KSVqzt(tmp);
     tmp[0] = A380PrimComputer_a429_bitValueOr_h(A380PrimComputer_U.in.bus_inputs.ir_1_bus.discrete_word_1.SSM,
       A380PrimComputer_U.in.bus_inputs.ir_1_bus.discrete_word_1.Data);
@@ -2778,11 +2778,11 @@ void A380PrimComputer::step()
     rtb_BusAssignment_logic_slats_locked = ((nz >= 1) && rtb_BusAssignment_logic_flaps_locked && rtb_y_i && (b_nz >= 1) &&
       (prim3LawCap >= 1) && (d_nz >= 1) && rtb_TmpSignalConversionAtSFunctionInport6_idx_2 &&
       rtb_BusAssignment_logic_all_sfcc_lost && (e_nz >= 2) && (f_nz >= 2));
-    tmp[0] = (A380PrimComputer_U.in.bus_inputs.ra_1_bus.radio_height_ft.SSM == static_cast<uint32_T>(SignStatusMatrix::
-               NormalOperation));
-    tmp[1] = (A380PrimComputer_U.in.bus_inputs.ra_2_bus.radio_height_ft.SSM == static_cast<uint32_T>(SignStatusMatrix::
-               NormalOperation));
-    tmp[2] = (rtb_left_inboard_aileron_command_deg.SSM == static_cast<uint32_T>(SignStatusMatrix::NormalOperation));
+    tmp[0] = (A380PrimComputer_U.in.bus_inputs.ra_1_bus.radio_height_ft.SSM != static_cast<uint32_T>(SignStatusMatrix::
+               FailureWarning));
+    tmp[1] = (A380PrimComputer_U.in.bus_inputs.ra_2_bus.radio_height_ft.SSM != static_cast<uint32_T>(SignStatusMatrix::
+               FailureWarning));
+    tmp[2] = (rtb_left_inboard_aileron_command_deg.SSM != static_cast<uint32_T>(SignStatusMatrix::FailureWarning));
     g_nz = combineVectorElements_N0KSVqzt(tmp);
     tmp_0[0] = A380PrimComputer_U.in.discrete_inputs.is_engine_operative_1;
     tmp_0[1] = A380PrimComputer_U.in.discrete_inputs.is_engine_operative_2;
@@ -2797,8 +2797,9 @@ void A380PrimComputer::step()
     rtb_BusAssignment_logic_slats_locked = (rtb_BusAssignment_logic_slats_locked && (g_nz == 2) && (h_nz >= 3));
     rtb_BusAssignment_logic_flaps_locked = ((nz >= 2) && rtb_BusAssignment_logic_flaps_locked && rtb_y_i && (b_nz == 2) &&
       A380PrimComputer_U.in.discrete_inputs.fcu_healthy && (prim3LawCap == 2) && (d_nz == 2) &&
-      rtb_TmpSignalConversionAtSFunctionInport6_idx_2 && rtb_DataTypeConversion_m2 && (e_nz == 3) && (f_nz == 3) &&
-      (g_nz == 2) && ((h_nz == 4) || ((h_nz == 3) && A380PrimComputer_U.in.discrete_inputs.apu_gen_connected)) &&
+      A380PrimComputer_U.in.discrete_inputs.antiskid_available && rtb_TmpSignalConversionAtSFunctionInport6_idx_2 &&
+      rtb_DataTypeConversion_m2 && (e_nz == 3) && (f_nz == 3) && (g_nz == 2) && ((h_nz == 4) || ((h_nz == 3) &&
+      A380PrimComputer_U.in.discrete_inputs.apu_gen_connected)) &&
       A380PrimComputer_U.in.discrete_inputs.every_dc_supplied_by_tr);
     rtb_TmpSignalConversionAtSFunctionInport6_idx_2 = (A380PrimComputer_DWork.pLand3FailOp ||
       (A380PrimComputer_DWork.pApproachModeArmedAbove400Ft && rtb_BusAssignment_logic_flaps_locked && rtb_y_a &&

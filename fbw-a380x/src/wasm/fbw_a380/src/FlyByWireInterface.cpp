@@ -1476,9 +1476,9 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   prims[primIndex].modelInputs.in.bus_inputs.sec_3_bus = secsBusOutputs[2];
 
   prims[primIndex].modelInputs.in.temporary_ap_input.ap_engaged =
-      autopilotStateMachineOutput.enabled_AP1 || autopilotStateMachineOutput.enabled_AP2;
-  prims[primIndex].modelInputs.in.temporary_ap_input.ap_1_engaged = autopilotStateMachineOutput.enabled_AP1;
-  prims[primIndex].modelInputs.in.temporary_ap_input.ap_2_engaged = autopilotStateMachineOutput.enabled_AP2;
+      static_cast<bool>(autopilotStateMachineOutput.enabled_AP1) || static_cast<bool>(autopilotStateMachineOutput.enabled_AP2);
+  prims[primIndex].modelInputs.in.temporary_ap_input.ap_1_engaged = static_cast<bool>(autopilotStateMachineOutput.enabled_AP1);
+  prims[primIndex].modelInputs.in.temporary_ap_input.ap_2_engaged = static_cast<bool>(autopilotStateMachineOutput.enabled_AP2);
   prims[primIndex].modelInputs.in.temporary_ap_input.athr_engaged = autoThrustOutput.status == athr_status::ENGAGED_ACTIVE;
   prims[primIndex].modelInputs.in.temporary_ap_input.roll_command = autopilotLawsOutput.autopilot.Phi_c_deg;
   prims[primIndex].modelInputs.in.temporary_ap_input.pitch_command = autopilotLawsOutput.autopilot.Theta_c_deg;
