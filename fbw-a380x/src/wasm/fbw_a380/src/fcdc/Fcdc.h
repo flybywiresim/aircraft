@@ -1,49 +1,7 @@
 #pragma once
 
 #include "../Arinc429.h"
-#include "../Arinc429Utils.h"
-#include "../interface/SimConnectData.h"
-#include "../model/A380PrimComputer.h"
-#include "../model/AutopilotLaws.h"
-#include "../model/Autothrust.h"
-
-struct FcdcBus {
-  // Label 040
-  Arinc429DiscreteWord efcsStatus1;
-  // Label 041
-  Arinc429DiscreteWord efcsStatus2;
-  // Label 042
-  Arinc429DiscreteWord efcsStatus3;
-  // Label 043
-  Arinc429DiscreteWord efcsStatus4;
-  // Label 044
-  Arinc429DiscreteWord efcsStatus5;
-
-  int approachCapability;
-  int autolandWarning;
-};
-
-struct FcdcDiscreteInputs {
-  bool spoilersArmed;
-
-  bool noseGearPressed;
-
-  bool primHealthy[3];
-
-  /* FIXME use proper bus messages */
-  ap_raw_laws_input autopilotStateMachineOutput;
-  athr_output autoThrustOutput;
-  SimData simData;
-};
-
-struct FcdcAnalogInputs {
-  double spoilersLeverPos;
-};
-
-struct FcdcBusInputs {
-  base_prim_out_bus prims[3];
-  base_ra_bus raBusOutputs[3];
-};
+#include "FcdcIO.h"
 
 enum class LateralLaw {
   NormalLaw,
@@ -65,7 +23,11 @@ class Fcdc {
  public:
   Fcdc(bool isUnit1);
 
-  FcdcBus update(double deltaTime, bool faultActive, bool isPowered);
+  void update(double deltaTime, bool faultActive, bool isPowered);
+
+  FcdcBus getBusOutputs();
+
+  FcdcDiscreteOutputs getDiscreteOutputs();
 
   FcdcDiscreteInputs discreteInputs;
 
@@ -82,7 +44,7 @@ class Fcdc {
 
   void updateSelfTest(double deltaTime);
 
-  void updateApproachCapability(FcdcBus& output, double deltaTime);
+  void updateApproachCapability(double deltaTime);
 
   PitchLaw getPitchLawStatusFromBits(bool bit1, bool bit2, bool bit3);
 

@@ -1,5 +1,6 @@
 #include "Fcdc.h"
 #include <iostream>
+#include "../Arinc429Utils.h"
 
 using namespace Arinc429Utils;
 
@@ -18,12 +19,19 @@ void Fcdc::startup() {
   powerSupplyOutageTime = 0.0;
 }
 
-FcdcBus Fcdc::update(double deltaTime, bool faultActive, bool isPowered) {
+void Fcdc::update(double deltaTime, bool faultActive, bool isPowered) {
   monitorPowerSupply(deltaTime, isPowered);
 
   updateSelfTest(deltaTime);
   monitorSelf(faultActive);
 
+  if (monitoringHealthy) {
+    updateApproachCapability(deltaTime);
+  }
+}
+
+// Write the bus output data and return it.
+FcdcBus Fcdc::getBusOutputs() {
   FcdcBus output = {};
 
   if (!monitoringHealthy) {
@@ -135,19 +143,31 @@ FcdcBus Fcdc::update(double deltaTime, bool faultActive, bool isPowered) {
   return output;
 }
 
-void Fcdc::updateApproachCapability(FcdcBus& output, double deltaTime) {
+FcdcDiscreteOutputs Fcdc::getDiscreteOutputs() {
+  FcdcDiscreteOutputs output = {};
+  output.captRedPriorityLightOn = false;
+  output.captGreenPriorityLightOn = false;
+  output.foRedPriorityLightOn = false;
+  output.foGreenPriorityLightOn = false;
+
+  output.approachCapability = currentApproachCapability;
+  output.autolandWarning = autolandWarningTriggered ? 1 : 0;
+  output.fcdcValid = monitoringHealthy;
+
+  return output;
+}
+
+void Fcdc::updateApproachCapability(double deltaTime) {
   // calculate and set approach capability
-  // Approach and Landing Capability comes from each PRIM, which monitors the required equipment (based on lots of criteria, see LIM-AFS-30
-  // P 11/18) FCDC consolidates these capabilities to a overall capability. To my understanding, this is done by looking at the health
-  // status of PRIMs and AP+mode engagement. The rest of the conditions should be handled in PRIM FGs.
+  // Approach and Landing Capability comes from each PRIM, which monitors the required equipment (based on lots of criteria, see
+  // LIM-AFS-30 P 11/18) FCDC consolidates these capabilities to a overall capability. To my understanding, this is done by looking at the
+  // health status of PRIMs and SECs engagement, and FWS status. The rest of the conditions should be handled in PRIM FGs.
   bool isLocArmed = static_cast<unsigned long long>(discreteInputs.autopilotStateMachineOutput.lateral_mode_armed) >> 1 & 0x01;
   bool isLocEngaged =
       discreteInputs.autopilotStateMachineOutput.lateral_mode >= 30 && discreteInputs.autopilotStateMachineOutput.lateral_mode <= 34;
   bool isGsArmed = static_cast<unsigned long long>(discreteInputs.autopilotStateMachineOutput.vertical_mode_armed) >> 4 & 0x01;
   bool isGsEngaged =
       discreteInputs.autopilotStateMachineOutput.vertical_mode >= 30 && discreteInputs.autopilotStateMachineOutput.vertical_mode <= 34;
-  bool isFinalArmed = static_cast<unsigned long long>(discreteInputs.autopilotStateMachineOutput.vertical_mode_armed) >> 5 & 0x01;
-  bool isFinalEngaged = discreteInputs.autopilotStateMachineOutput.vertical_mode == 24;
   bool landFlareOrRollout =
       discreteInputs.autopilotStateMachineOutput.vertical_mode >= 32 && discreteInputs.autopilotStateMachineOutput.vertical_mode <= 34;
 
@@ -226,7 +246,6 @@ void Fcdc::updateApproachCapability(FcdcBus& output, double deltaTime) {
 
   if (doUpdate) {
     currentApproachCapability = newApproachCapability;
-    output.approachCapability = currentApproachCapability;
     previousApproachCapabilityUpdateTime = discreteInputs.simData.simulationTime;
   }
 
@@ -239,7 +258,6 @@ void Fcdc::updateApproachCapability(FcdcBus& output, double deltaTime) {
                                  discreteInputs.autopilotStateMachineOutput.vertical_mode != 33)) {
     autolandWarningLatch = false;
     autolandWarningTriggered = false;
-    output.autolandWarning = 0;
   }
 
   if (autolandWarningLatch && !autolandWarningTriggered) {
@@ -247,7 +265,6 @@ void Fcdc::updateApproachCapability(FcdcBus& output, double deltaTime) {
         (radioAlt > 15 && (abs(discreteInputs.simData.nav_loc_error_deg) > 0.2 || discreteInputs.simData.nav_loc_valid == false)) ||
         (radioAlt > 100 && (abs(discreteInputs.simData.nav_gs_error_deg) > 0.4 || discreteInputs.simData.nav_gs_valid == false))) {
       autolandWarningTriggered = true;
-      output.autolandWarning = 1;
     }
   }
 }
