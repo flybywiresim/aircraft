@@ -542,6 +542,7 @@ void FlyByWireInterface::setupLocalVariables() {
     idAdrCorrectedAverageStaticPressure[i] =
         std::make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_CORRECTED_AVERAGE_STATIC_PRESSURE");
 
+    idIrMaintWord[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_MAINT_WORD");
     idIrLatitude[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_LATITUDE");
     idIrLongitude[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_LONGITUDE");
     idIrGroundSpeed[i] = std::make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_GROUND_SPEED");
@@ -1240,6 +1241,7 @@ bool FlyByWireInterface::updateAdirs(int adirsIndex) {
   adrBusOutputs[adirsIndex].corrected_average_static_pressure =
       Arinc429Utils::fromSimVar(idAdrCorrectedAverageStaticPressure[adirsIndex]->get());
 
+  irBusOutputs[adirsIndex].discrete_word_1 = Arinc429Utils::fromSimVar(idIrMaintWord[adirsIndex]->get());
   irBusOutputs[adirsIndex].latitude_deg = Arinc429Utils::fromSimVar(idIrLatitude[adirsIndex]->get());
   irBusOutputs[adirsIndex].longitude_deg = Arinc429Utils::fromSimVar(idIrLongitude[adirsIndex]->get());
   irBusOutputs[adirsIndex].ground_speed_kn = Arinc429Utils::fromSimVar(idIrGroundSpeed[adirsIndex]->get());
