@@ -188,7 +188,7 @@ export class ProcedureLinesGenerator {
       return;
     }
 
-    const selectable = this.selectableItems(true);
+    const selectable = this.selectableItems();
 
     if (selectable.length === 0) {
       this.selectFirst();
@@ -228,7 +228,7 @@ export class ProcedureLinesGenerator {
     }
   }
 
-  moveDown(skipCompletedSensed = true) {
+  moveDown() {
     if (
       (this.type === ProcedureType.Deferred || this.type === ProcedureType.Abnormal) &&
       !this.checklistState.procedureActivated
@@ -237,7 +237,7 @@ export class ProcedureLinesGenerator {
       return;
     }
 
-    const selectable = this.selectableItems(skipCompletedSensed);
+    const selectable = this.selectableItems();
     if (selectable.length == 0 || this.selectedItemIndex.get() >= selectable[selectable.length - 1]) {
       // Last element before first special line (CLEAR etc.)
       if (this.type === ProcedureType.Normal) {
@@ -341,7 +341,7 @@ export class ProcedureLinesGenerator {
       return;
     }
 
-    const selectableAndNotChecked = this.selectableItems(true);
+    const selectableAndNotChecked = this.selectableItems();
     this.selectedItemIndex.set(
       selectableAndNotChecked[0] !== undefined
         ? selectableAndNotChecked[0] - 1
@@ -350,10 +350,10 @@ export class ProcedureLinesGenerator {
     this.moveDown();
   }
 
-  private selectableItems(skipCompletedSensed: boolean) {
+  private selectableItems() {
     return this.procedure
       ? this.procedure.items
-          .map((item, index) => (this.itemIsSelectable(index, skipCompletedSensed, item) ? index : null))
+          .map((item, index) => (this.itemIsSelectable(index, item) ? index : null))
           .filter((v) => v !== null)
       : [];
   }
@@ -364,15 +364,14 @@ export class ProcedureLinesGenerator {
 
   /**
    * Used for up/down navigation, to skip not selectable items
-   * @param skipCompletedSensed Whether sensed item is only selectable if unchecked. Not sensed items can't be skipped.
    * @returns Procedure item is selectable with arrow keys
    */
-  private itemIsSelectable(itemIndex: number, skipCompletedSensed: boolean, item: AbstractChecklistItem): boolean {
+  private itemIsSelectable(itemIndex: number, item: AbstractChecklistItem): boolean {
     return (
       this.checklistState.itemsActive[itemIndex] &&
       this.checklistState.itemsToShow[itemIndex] &&
       (item?.style ? !ProcedureLinesGenerator.nonSelectableItemStyles.includes(item.style) : true) &&
-      (!item.sensed || !skipCompletedSensed || (skipCompletedSensed && !this.checklistState.itemsChecked[itemIndex]))
+      (!item.sensed || (item.sensed && !this.checklistState.itemsChecked[itemIndex]))
     );
   }
 
@@ -440,73 +439,81 @@ export class ProcedureLinesGenerator {
         });
       }
 
-      this.items.forEach((item, itemIndex) => {
-        if (!this.checklistState.itemsToShow[itemIndex] || (isDeferred && this.checklistState.procedureCompleted)) {
-          return;
-        }
-
-        let clStyle: ChecklistLineStyle = item.style ? item.style : ChecklistLineStyle.ChecklistItem;
-        let inactive = false;
-        let text = item.level && item.style !== ChecklistLineStyle.CenteredSubHeadline ? '\xa0'.repeat(item.level) : '';
-        if (!this.checklistState.itemsActive[itemIndex] || !this.checklistState.procedureActivated) {
-          inactive = true;
-        }
-
-        const itemComplete = this.checklistState.itemsChecked[itemIndex];
-        let isCondition = false;
-        if (isChecklistAction(item)) {
-          text = ProcedureLinesGenerator.getChecklistActionText(item, itemIndex, itemComplete, this.checklistState);
-          if (
-            (!this.checklistState.itemsActive[itemIndex] || !this.checklistState.procedureActivated) &&
-            clStyle === ChecklistLineStyle.ChecklistItem
-          ) {
-            clStyle = ChecklistLineStyle.ChecklistItemInactive;
+      if (!(isDeferred && this.checklistState.procedureCompleted)) {
+        this.items.forEach((item, itemIndex) => {
+          if (!this.checklistState.itemsToShow[itemIndex]) {
+            return;
           }
-        } else if (isChecklistCondition(item)) {
-          isCondition = true;
-          clStyle = ChecklistLineStyle.ChecklistCondition;
-          text = ProcedureLinesGenerator.getChecklistConditionText(item, itemIndex, itemComplete, this.checklistState);
-        } else if (isChecklistHeadline(item)) {
-          text += clStyle === ChecklistLineStyle.CenteredSubHeadline ? '.' : '';
-          text += item.name;
-        } else {
-          text += `\xa0${item.name}`;
-        }
 
-        lineData.push({
-          procedureId: this.procedureId,
-          abnormalProcedure: isAbnormalOrDeferred,
-          activeProcedure: this.procedureIsActive.get(),
-          sensed: isCondition ? true : item.sensed,
-          checked: this.checklistState.itemsChecked[itemIndex],
-          text: text.substring(0, 39),
-          style: clStyle,
-          firstLine: (!this.procedureIsActive.get() && isAbnormal) || this.type === ProcedureType.FwsFailedFallback,
-          lastLine: (!this.procedureIsActive.get() && isAbnormal) || this.type === ProcedureType.FwsFailedFallback,
-          originalItemIndex: !isCondition || (isCondition && item.sensed) ? itemIndex : undefined, // FIXME It should be possible to scroll to non sensed conditions
-          inactive: inactive,
-        });
+          let clStyle: ChecklistLineStyle = item.style ? item.style : ChecklistLineStyle.ChecklistItem;
+          let inactive = false;
+          let text =
+            item.level && item.style !== ChecklistLineStyle.CenteredSubHeadline ? '\xa0'.repeat(item.level) : '';
+          if (!this.checklistState.itemsActive[itemIndex] || !this.checklistState.procedureActivated) {
+            inactive = true;
+          }
 
-        if (isCondition && !item.sensed) {
-          // Insert CONFIRM <condition>, remove trailing colon
-          const itemName = item.name.slice(-1) === ':' ? item.name.slice(0, -1) : item.name;
-          const containsIf = itemName.substring(0, 2) === 'IF';
-          const containsWhen = !containsIf && itemName.substring(0, 4) === 'WHEN';
-          const confirmText = `${item.level ? '\xa0'.repeat(item.level) : ''}CONFIRM ${containsIf ? itemName.substring(2) : containsWhen ? itemName.substring(4) : itemName}`;
+          const itemComplete = this.checklistState.itemsChecked[itemIndex];
+          let isCondition = false;
+          if (isChecklistAction(item)) {
+            text = ProcedureLinesGenerator.getChecklistActionText(item, itemIndex, itemComplete, this.checklistState);
+            if (
+              (!this.checklistState.itemsActive[itemIndex] || !this.checklistState.procedureActivated) &&
+              clStyle === ChecklistLineStyle.ChecklistItem
+            ) {
+              clStyle = ChecklistLineStyle.ChecklistItemInactive;
+            }
+          } else if (isChecklistCondition(item)) {
+            isCondition = true;
+            clStyle = ChecklistLineStyle.ChecklistCondition;
+            text = ProcedureLinesGenerator.getChecklistConditionText(
+              item,
+              itemIndex,
+              itemComplete,
+              this.checklistState,
+            );
+          } else if (isChecklistHeadline(item)) {
+            text += clStyle === ChecklistLineStyle.CenteredSubHeadline ? '.' : '';
+            text += item.name;
+          } else {
+            text += `\xa0${item.name}`;
+          }
+
           lineData.push({
+            procedureId: this.procedureId,
             abnormalProcedure: isAbnormalOrDeferred,
             activeProcedure: this.procedureIsActive.get(),
-            sensed: item.sensed,
+            sensed: isCondition ? true : item.sensed,
             checked: this.checklistState.itemsChecked[itemIndex],
-            text: confirmText,
+            text: text.substring(0, 39),
             style: clStyle,
-            firstLine: !this.procedureIsActive.get() && isAbnormal,
-            lastLine: !this.procedureIsActive.get() && isAbnormal,
-            originalItemIndex: itemIndex,
+            firstLine: (!this.procedureIsActive.get() && isAbnormal) || this.type === ProcedureType.FwsFailedFallback,
+            lastLine: (!this.procedureIsActive.get() && isAbnormal) || this.type === ProcedureType.FwsFailedFallback,
+            originalItemIndex: !isCondition || (isCondition && item.sensed) ? itemIndex : undefined, // FIXME It should be possible to scroll to non sensed condition
             inactive: inactive,
           });
-        }
-      });
+
+          if (isCondition && !item.sensed) {
+            // Insert CONFIRM <condition>, remove trailing colon
+            const itemName = item.name.slice(-1) === ':' ? item.name.slice(0, -1) : item.name;
+            const containsIf = itemName.substring(0, 2) === 'IF';
+            const containsWhen = !containsIf && itemName.substring(0, 4) === 'WHEN';
+            const confirmText = `${item.level ? '\xa0'.repeat(item.level) : ''}CONFIRM ${containsIf ? itemName.substring(2) : containsWhen ? itemName.substring(4) : itemName}`;
+            lineData.push({
+              abnormalProcedure: isAbnormalOrDeferred,
+              activeProcedure: this.procedureIsActive.get(),
+              sensed: item.sensed,
+              checked: this.checklistState.itemsChecked[itemIndex],
+              text: confirmText,
+              style: clStyle,
+              firstLine: !this.procedureIsActive.get() && isAbnormal,
+              lastLine: !this.procedureIsActive.get() && isAbnormal,
+              originalItemIndex: itemIndex,
+              inactive: inactive,
+            });
+          }
+        });
+      }
 
       if (isAbnormal) {
         lineData.push({

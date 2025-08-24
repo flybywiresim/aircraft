@@ -308,7 +308,7 @@ export class FwsNormalChecklists {
     }
   }
 
-  moveDown(skipCompletedSensed = true) {
+  moveDown() {
     const activeDeferredId = this.activeDeferredProcedureId.get();
     if (this.checklistId.get() === 0) {
       const shownItems = this.getNormalProceduresKeysSorted()
@@ -330,7 +330,7 @@ export class FwsNormalChecklists {
         );
       }
     } else if (this.activeProcedure) {
-      this.activeProcedure.moveDown(skipCompletedSensed);
+      this.activeProcedure.moveDown();
     }
   }
 
@@ -547,7 +547,7 @@ export class FwsNormalChecklists {
         false,
         this.fws.seatBeltSwitchOn.get(),
         this.fws.spoilersArmed.get(),
-        this.fws.slatFlapSelectionS18F10 || this.fws.slatFlapSelectionS22F15 || this.fws.slatFlapSelectionS22F20,
+        this.fws.flap1Selected || this.fws.flap2Selected || this.fws.flap3Selected,
         this.fws.autoBrake.get() === 6,
         this.fws.toConfigNormal.get(),
       ],
@@ -579,8 +579,8 @@ export class FwsNormalChecklists {
         this.fws.seatBeltSwitchOn.get(),
         this.fws.isAllGearDownlocked,
         this.fws.spoilersArmed.get(),
-        (!this.fws.flap3LandingSelected && this.fws.sfccSlatFlapsSystemStatusWord.bitValueOr(21, false)) ||
-          (this.fws.flap3LandingSelected && this.fws.sfccSlatFlapsSystemStatusWord.bitValueOr(20, false)),
+        (!this.fws.flap3LandingSelected && this.fws.flapsFullSelected) ||
+          (this.fws.flap3LandingSelected && this.fws.flap3Selected),
       ],
     },
     1000013: {
