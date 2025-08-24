@@ -1062,14 +1062,6 @@ export class FwsCore {
 
   public readonly spoilersArmed = Subject.create(false);
 
-  public slatFlapSelectionS0F0 = false;
-
-  public slatFlapSelectionS18F10 = false;
-
-  public slatFlapSelectionS22F15 = false;
-
-  public slatFlapSelectionS22F20 = false;
-
   public readonly flapsInferiorTo8Deg = Subject.create(false);
 
   public readonly flapsSuperiorTo8Deg = Subject.create(false);
@@ -1151,13 +1143,15 @@ export class FwsCore {
 
   public readonly flap3LandingSelected = Subject.create(false);
 
-  public flapLever1 = false;
+  public flaps0Selected = false;
 
-  public flapLever2 = false;
+  public flap1Selected = false;
 
-  public flapLever3 = false;
+  public flap2Selected = false;
 
-  public flapLeverFull = false;
+  public flap3Selected = false;
+
+  public flapsFullSelected = false;
 
   // FIXME implement
   public readonly flapSys1Fault = Subject.create(false);
@@ -4485,14 +4479,10 @@ export class FwsCore {
     );
 
     // flap/slat MCDU disagree
-    this.slatFlapSelectionS0F0 = this.sfccSlatFlapsSystemStatusWord.bitValueOr(17, false);
-    this.slatFlapSelectionS18F10 = this.sfccSlatFlapsSystemStatusWord.bitValueOr(18, false);
-    this.slatFlapSelectionS22F15 = this.sfccSlatFlapsSystemStatusWord.bitValueOr(19, false);
-    this.slatFlapSelectionS22F20 = this.sfccSlatFlapsSystemStatusWord.bitValueOr(20, false);
 
-    const flapsMcduPos1Disagree = xor(this.slatFlapSelectionS18F10, mcduToFlapPos1);
-    const flapsMcduPos2Disagree = xor(this.slatFlapSelectionS22F15, mcduToFlapPos2);
-    const flapsMcduPos3Disagree = xor(this.slatFlapSelectionS22F20, mcduToFlapPos3);
+    const flapsMcduPos1Disagree = xor(this.flap1Selected, mcduToFlapPos1);
+    const flapsMcduPos2Disagree = xor(this.flap2Selected, mcduToFlapPos2);
+    const flapsMcduPos3Disagree = xor(this.flap3Selected, mcduToFlapPos3);
 
     this.flapsAndPitchMcduDisagreeEnable.set(
       !this.flightPhase3PulseNode.read() &&
@@ -4572,7 +4562,7 @@ export class FwsCore {
         adr3PressureAltitude.valueOr(0) >= 22000 ||
         this.sfccSlatFlapsSystemStatusWord.bitValueOr(25, false)) &&
         this.flightPhase.get() === 8 &&
-        !this.slatFlapSelectionS0F0,
+        !this.flaps0Selected,
     );
 
     // spd brk still out
@@ -6026,21 +6016,25 @@ export class FwsCore {
 
     if (this.sfccSlatFlapsSystemStatusWord.isInvalid() && sffc2Reachable) {
       this.sfccSlatFlapsSystemStatusWord.setFromSimVar('L:A32NX_SFCC_2_SLAT_FLAP_SYSTEM_STATUS_WORD');
-
-      if (this.sffcFlapPositionWord.isInvalid() && sffc2Reachable) {
-        this.sffcFlapPositionWord.setFromSimVar('A32NX_SFCC_2_FLAP_ACTUAL_POSITION_WORD');
-        this.sfccSlatPositionWord.setFromSimVar('A32NX_SFCC_2_SLAT_ACTUAL_POSITION_WORD');
-      }
-
-      if (this.sfccSlatFlapPositionWord.isInvalid() && sffc2Reachable) {
-        this.sfccSlatFlapPositionWord.setFromSimVar('A32NX_SFCC_2_SLAT_FLAP_ACTUAL_POSITION_WORD');
-      }
-
-      this.flapLever1 = this.sfccSlatFlapsSystemStatusWord.bitValueOr(18, false);
-      this.flapLever2 = this.sfccSlatFlapsSystemStatusWord.bitValueOr(19, false);
-      this.flapLever3 = this.sfccSlatFlapsSystemStatusWord.bitValueOr(20, false);
-      this.flapLeverFull = this.sfccSlatFlapsSystemStatusWord.bitValueOr(21, false);
     }
+
+    if (this.sffcFlapPositionWord.isInvalid() && sffc2Reachable) {
+      this.sffcFlapPositionWord.setFromSimVar('A32NX_SFCC_2_FLAP_ACTUAL_POSITION_WORD');
+    }
+
+    if (this.sfccSlatPositionWord.isInvalid() && sffc2Reachable) {
+      this.sfccSlatPositionWord.setFromSimVar('A32NX_SFCC_2_SLAT_ACTUAL_POSITION_WORD');
+    }
+
+    if (this.sfccSlatFlapPositionWord.isInvalid() && sffc2Reachable) {
+      this.sfccSlatFlapPositionWord.setFromSimVar('A32NX_SFCC_2_SLAT_FLAP_ACTUAL_POSITION_WORD');
+    }
+
+    this.flaps0Selected = this.sfccSlatFlapsSystemStatusWord.bitValueOr(17, false);
+    this.flap1Selected = this.sfccSlatFlapsSystemStatusWord.bitValueOr(18, false);
+    this.flap2Selected = this.sfccSlatFlapsSystemStatusWord.bitValueOr(19, false);
+    this.flap3Selected = this.sfccSlatFlapsSystemStatusWord.bitValueOr(20, false);
+    this.flapsFullSelected = this.sfccSlatFlapsSystemStatusWord.bitValueOr(21, false);
   }
 
   destroy() {

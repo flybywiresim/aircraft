@@ -102,6 +102,8 @@ export class FwsAbnormalSensed {
   /** For overflowing checklists */
   public readonly showFromLine = Subject.create(0);
 
+  private readonly showStatusAutomatically = Subject.create(false);
+
   private procedures: ProcedureLinesGenerator[] = [];
 
   private activeProcedure: ProcedureLinesGenerator | undefined = undefined;
@@ -191,6 +193,11 @@ export class FwsAbnormalSensed {
           this.pub.pub('fws_abn_sensed_procedures', sortedAbnormalsFlattened, true);
         },
       ),
+      this.showStatusAutomatically.sub((v) => {
+        if (v) {
+          SimVar.SetSimVarValue('L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX', SimVarValueType.Enum, SdPages.Status);
+        }
+      }),
     );
 
     this.subscriptions.push(
@@ -236,10 +243,7 @@ export class FwsAbnormalSensed {
 
     const numFailures = this.fws.presentedFailures.length;
     if (numFailures === 1) {
-      if (!this.fws.ecamStatusNormal.get()) {
-        // Call STS page on SD
-        SimVar.SetSimVarValue('L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX', SimVarValueType.Enum, SdPages.Status);
-      }
+      this.showStatusAutomatically.set(!this.fws.ecamStatusNormal.get());
 
       // If there are deferred procedures, open ECL menu
       this.fws.normalChecklists.openIfDeferredApplicable();
@@ -271,11 +275,7 @@ export class FwsAbnormalSensed {
       !this.fws.ecamStatusNormal.get();
     const triggerAutoDisplay =
       this.fws.approachAutoDisplayQnhSetPulseNode.read() || this.fws.approachAutoDisplaySlatsExtendedPulseNode.read();
-
-    if (approachCondition && triggerAutoDisplay) {
-      // Call STS page on SD
-      SimVar.SetSimVarValue('L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX', SimVarValueType.Enum, SdPages.Status);
-    }
+    this.showStatusAutomatically.set(approachCondition && triggerAutoDisplay);
   }
 
   /**
@@ -296,7 +296,7 @@ export class FwsAbnormalSensed {
     }
 
     if (this.fws.clDownPulseNode.read()) {
-      this.activeProcedure?.moveDown(true);
+      this.activeProcedure?.moveDown();
     }
 
     if (this.fws.clUpPulseNode.read()) {
@@ -322,7 +322,7 @@ export class FwsAbnormalSensed {
           const changedEntries = this.fws.abnormalUpdatedItems.get(procId);
           const sii = this.activeProcedure.selectedItemIndex.get();
           if (changedEntries && changedEntries.includes(sii) && this.activeProcedure.checklistState.itemsChecked[sii]) {
-            this.activeProcedure.moveDown(true);
+            this.activeProcedure.moveDown();
           }
         }
       }
@@ -3269,7 +3269,7 @@ export class FwsAbnormalSensed {
       whichItemsToShow: () => [
         true,
         !this.fws.sfccSlatFlapPositionWord.bitValueOr(22, false) &&
-          !this.fws.sfccSlatFlapsSystemStatusWord.bitValueOr(23, false),
+          !this.fws.sfccSlatFlapPositionWord.bitValueOr(23, false),
         true,
         true,
         true,
@@ -3801,7 +3801,7 @@ export class FwsAbnormalSensed {
     },
     340800045: {
       // IR NOT ALIGNED
-      flightPhaseInhib: [4, 5, 6, 9, 10],
+      flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10, 12],
       simVarIsActive: this.fws.irExcessMotion,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [
@@ -3827,7 +3827,7 @@ export class FwsAbnormalSensed {
           this.fws.ir2MaintWord.bitValueOr(13, false) &&
           this.fws.ir3MaintWord.bitValueOr(13, false),
       ],
-      whichItemsChecked: () => [true, true, true, true, true, true, true],
+      whichItemsChecked: () => [false, false, false, false, false, false, false],
       failure: 2,
       sysPage: -1,
     },
@@ -4642,7 +4642,7 @@ export class FwsAbnormalSensed {
         false,
         this.fws.signsOn.get(),
         false,
-        this.fws.flapLever1,
+        this.fws.flap1Selected,
         this.fws.gearLeverDown.get(),
         false,
         false,
@@ -4652,11 +4652,11 @@ export class FwsAbnormalSensed {
         false,
         this.fws.gearLeverDown.get(),
         false,
-        this.fws.flapLever2,
+        this.fws.flap2Selected,
         (!this.fws.pack1On.get() && !this.fws.pack2On.get()) ||
           (this.fws.apuAvail.get() && this.fws.apuBleedValveOpen.get()),
         false,
-        this.fws.flapLever3,
+        this.fws.flap3Selected,
         !this.fws.autoThrustEngaged.get(),
         this.fws.spoilersArmed.get(),
         false,

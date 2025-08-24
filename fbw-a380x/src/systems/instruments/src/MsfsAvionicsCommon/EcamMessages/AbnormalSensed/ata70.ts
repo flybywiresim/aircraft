@@ -1167,7 +1167,7 @@ export const EcamDeferredProcAta70: { [n: number]: DeferredProcedure } = {
       },
       {
         name: 'SPEED',
-        sensed: true,
+        sensed: false,
         labelNotCompleted: 'REDUCE TO VAPP',
       },
       {
