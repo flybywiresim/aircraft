@@ -85,7 +85,7 @@ export const EcamAbnormalSensedAta80Rest: { [n: number]: AbnormalProcedure } = {
         level: 1,
       },
       {
-        name: 'DECENT TO CAB ALT + 2500FT/MEA-MORA',
+        name: 'DESCENT TO CAB ALT + 2500FT/MEA-MORA',
         sensed: false,
         level: 1,
       },
@@ -292,7 +292,7 @@ export const EcamAbnormalSensedAta80Rest: { [n: number]: AbnormalProcedure } = {
         level: 1,
       },
       {
-        name: 'DECENT TO OR BELOW OPT ALT',
+        name: 'DESCENT TO OR BELOW OPT ALT',
         sensed: false,
         labelNotCompleted: 'CONSIDER',
       },
