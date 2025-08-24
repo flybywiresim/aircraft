@@ -1,12 +1,7 @@
 ﻿// Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import {
-  AbnormalProcedure,
-  ChecklistLineStyle,
-  DeferredProcedure,
-  DeferredProcedureType,
-} from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import { AbnormalProcedure, ChecklistLineStyle } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 
 // Convention for IDs:
 // First two digits: ATA chapter
@@ -95,7 +90,7 @@ export const EcamAbnormalSensedAta80Rest: { [n: number]: AbnormalProcedure } = {
         level: 1,
       },
       {
-        name: 'WHEN ACFT ALT = CAB ALT + 2500FT/MEA-MORA',
+        name: 'WHEN ACFT ALT = CAB ALT + 2500FT/MEA-MORA', // still needs "=" sign to show
         sensed: false,
         condition: true,
       },
@@ -370,23 +365,4 @@ export const EcamAbnormalSensedAta80Rest: { [n: number]: AbnormalProcedure } = {
     ],
   },
 };
-
-export const EcamDeferredProcAta80: { [n: number]: DeferredProcedure } = {
-  210700001: {
-    fromAbnormalProcs: ['990900001'],
-    title: 'IF NO IMMEDIATE LANDING :',
-    type: DeferredProcedureType.FOR_APPROACH,
-    items: [
-      {
-        name: '> CAB PRESS MANAGEMENT',
-        sensed: false,
-        style: ChecklistLineStyle.Amber,
-      },
-      {
-        name: 'CABIN ALT MODE',
-        sensed: true,
-        labelNotCompleted: 'AUTO',
-      },
-    ],
-  },
-};
+// FIXME: add limitation for BOMB ON BOARD
