@@ -221,7 +221,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private originRunwayLength = Subject.create<number>(4000);
 
-  private toSelectedFlapsIndex = Subject.create<number | null>(0);
+  private toSelectedFlapsIndex = Subject.create<number | null>(null);
 
   private toSelectedPacksIndex = Subject.create<number | null>(1);
 
@@ -304,9 +304,14 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   ]);
 
   private readonly costIndexModeLabels = ArraySubject.create(['LRC', 'ECON']);
-  private readonly costIndexDisabled = MappedSubject.create(
-    ([flightPhase, ciMode]) => flightPhase >= FmgcFlightPhase.Descent || ciMode === CostIndexMode.LRC,
+  private readonly costIndexModeDisabled = MappedSubject.create(
+    ([flightPhase]) => flightPhase >= FmgcFlightPhase.Descent,
     this.activeFlightPhase,
+  );
+
+  private readonly costIndexDisabled = MappedSubject.create(
+    ([ciModeDisabled, ciMode]) => ciModeDisabled || ciMode === CostIndexMode.LRC,
+    this.costIndexModeDisabled,
     this.props.fmcService.master?.fmgc.data.costIndexMode ?? Subject.create(CostIndexMode.ECON),
   );
 
@@ -589,7 +594,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
     this.toSelectedDeratedIndex.set(fm.takeoffDeratedSetting.get() ?? null);
 
-    if (fm.takeoffFlapsSetting !== undefined && fm.takeoffFlapsSetting.get() !== null) {
+    if (fm.takeoffFlapsSetting.get() !== null) {
       this.toSelectedFlapsIndex.set(fm.takeoffFlapsSetting.get() - 1);
     } else {
       this.toSelectedFlapsIndex.set(null);
@@ -763,6 +768,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       this.eoActive.sub((v) => {
         this.costIndexModeLabels.set(v ? ['EO-LRC', 'EO-ECON'] : ['LRC', 'ECON']);
       }, true),
+      this.costIndexModeDisabled,
     );
 
     this.subs.push(
@@ -1720,6 +1726,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                 <div style="display: flex; justify-content: space-between;">
                   <div class="mfd-label-value-container" style="margin-bottom: 15px;">
                     <DropdownMenu
+                      inactive={this.costIndexModeDisabled}
                       values={this.costIndexModeLabels}
                       selectedIndex={this.props.fmcService.master.fmgc.data.costIndexMode}
                       idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_clbCostIndexModeDropdown`}
@@ -2112,6 +2119,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                 <div style="display: flex; justify-content: space-between;">
                   <div class="mfd-label-value-container">
                     <DropdownMenu
+                      inactive={this.costIndexModeDisabled}
                       values={this.costIndexModeLabels}
                       selectedIndex={this.props.fmcService.master.fmgc.data.costIndexMode}
                       idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_crzCostIndexModeDropdown`}
@@ -2359,6 +2367,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                 <div style="display: flex; justify-content: space-between;">
                   <div class="mfd-label-value-container">
                     <DropdownMenu
+                      inactive={this.costIndexModeDisabled}
                       values={this.costIndexModeLabels}
                       selectedIndex={this.props.fmcService.master.fmgc.data.costIndexMode}
                       idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_desCostIndexModeDropdown`}
