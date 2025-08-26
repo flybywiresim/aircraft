@@ -135,6 +135,7 @@
 1. [A380X/EIS] Fix malformed W glyph on the EIS display units - @tracernz (Mike)
 1. [A380X/ECAM] Add ATA 52 (DOOR) ECAM procedures (initial implementation) - @Jonny23787 (Jonathan)
 1. [A380X/FMS] Add NAV PRIMARY & NAV PRIMARY LOST scratchpad messages - @BravoMike99 (bruno_pt99)
+1. [A380X/EWD] ECL checkbox is the same color as the text color - @Bravomike99 (bruno_pt99)
 1. [A380X/OIS] Fix OOOI times logic, automatically power laptop for runway spawns - @flogross89 (floridude)
 
 ## 0.13.0
