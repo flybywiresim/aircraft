@@ -77,11 +77,9 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
   private readonly toIcao = Subject.create<string | null>(null);
 
   private readonly cityPairDisabled = MappedSubject.create(
-    ([fp, tmpy, fromIcao, toIcao]) => (fp > FmgcFlightPhase.Preflight && (!fromIcao || !toIcao)) || tmpy,
+    ([fp, tmpy]) => fp > FmgcFlightPhase.Preflight || tmpy,
     this.activeFlightPhase,
     this.tmpyActive,
-    this.fromIcao,
-    this.toIcao,
   );
 
   private readonly altnIcao = Subject.create<string | null>(null);
@@ -104,12 +102,16 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
 
   private readonly costIndexModeLabels = ArraySubject.create(['LRC', 'ECON']);
 
-  private readonly costIndexDisabled = MappedSubject.create(
-    ([toIcao, fromIcao, flightPhase, ciMode]) =>
-      !toIcao || !fromIcao || flightPhase >= FmgcFlightPhase.Descent || ciMode === CostIndexMode.LRC,
+  private readonly costIndexModeDisabled = MappedSubject.create(
+    ([toIcao, fromIcao, flightPhase]) => !toIcao || !fromIcao || flightPhase >= FmgcFlightPhase.Descent,
     this.fromIcao,
     this.toIcao,
     this.activeFlightPhase,
+  );
+
+  private readonly costIndexDisabled = MappedSubject.create(
+    ([ciModeDisabled, ciMode]) => ciModeDisabled || ciMode === CostIndexMode.LRC,
+    this.costIndexModeDisabled,
     this.props.fmcService.master?.fmgc.data.costIndexMode ?? Subject.create(CostIndexMode.ECON),
   );
 
@@ -181,6 +183,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
       this.tripWindDisabled,
       this.cpnyRteMandatory,
       this.departureButtonDisabled,
+      this.costIndexModeDisabled,
     );
   }
 
@@ -518,6 +521,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
             <div class="mfd-fms-init-line" style="margin-top: 10px;">
               <div class="mfd-label init-input-field">MODE</div>
               <DropdownMenu
+                inactive={this.costIndexModeDisabled}
                 values={this.costIndexModeLabels}
                 selectedIndex={this.props.fmcService.master.fmgc.data.costIndexMode}
                 idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_initCostIndexModeDropdown`}
@@ -576,7 +580,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                   readonlyValue={this.props.fmcService.master.fmgc.data.tripWind}
                   containerStyle="width: 125px; margin-right: 80px; margin-top: 10px;"
                   alignText="center"
-                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
                 />
