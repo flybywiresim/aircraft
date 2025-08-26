@@ -60,17 +60,13 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
 
   private readonly costIndexModeLabels = ArraySubject.create(['LRC', 'ECON']);
 
-  private readonly costIndexDisabled = MappedSubject.create(
-    ([flightPhase, ciMode]) => flightPhase >= FmgcFlightPhase.Descent || ciMode === CostIndexMode.LRC,
-    this.activeFlightPhase,
-    this.props.fmcService.master?.fmgc.data.costIndexMode ?? Subject.create(CostIndexMode.ECON),
-  );
-
   private readonly takeoffWeight = Subject.create<number | null>(null);
 
   private readonly landingWeight = Subject.create<number | null>(null);
 
-  private readonly destIcao = Subject.create<string>('----');
+  private readonly destIcao = Subject.create<string | null>(null);
+
+  private readonly destIcaoDisplay = this.destIcao.map((v) => (v ? v : 'NONE'));
 
   private readonly destEta = Subject.create<string>('--:--');
 
@@ -94,6 +90,18 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
   private readonly flightPhaseAtLeastTakeoff = this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff);
 
   private readonly alternateFuelDisabled = Subject.create(true);
+
+  private readonly costIndexModeDisabled = MappedSubject.create(
+    ([flightPhase, dest]) => flightPhase >= FmgcFlightPhase.Descent || !dest,
+    this.activeFlightPhase,
+    this.destIcao,
+  );
+
+  private readonly costIndexDisabled = MappedSubject.create(
+    ([ciModeDisabled, ciMode]) => ciModeDisabled || ciMode === CostIndexMode.LRC,
+    this.costIndexModeDisabled,
+    this.props.fmcService.master?.fmgc.data.costIndexMode ?? Subject.create(CostIndexMode.ECON),
+  );
 
   protected onNewData() {
     if (!this.props.fmcService.master || !this.loadedFlightPlan) {
@@ -120,6 +128,10 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
       );
       const destEfob = this.props.fmcService.master.fmgc.getDestEFOB(true);
       this.destEfob.set(destEfob !== null ? destEfob.toFixed(1) : '---.-');
+    } else {
+      this.destIcao.set(null);
+      this.destEta.set('--:--');
+      this.destEfob.set('---.-');
     }
 
     if (this.loadedFlightPlan.alternateDestinationAirport) {
@@ -215,6 +227,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
       this.extraFuelTimeText,
       this.flightPhaseAtLeastTakeoff,
       this.costIndexDisabled,
+      this.costIndexModeDisabled,
     );
   }
 
@@ -446,6 +459,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 <div class="mfd-label mfd-spacing-right middleGridSmall">MODE</div>
                 <div style="margin-bottom: 10px;">
                   <DropdownMenu
+                    inactive={this.costIndexModeDisabled}
                     values={this.costIndexModeLabels}
                     selectedIndex={this.props.fmcService.master.fmgc.data.costIndexMode}
                     idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_initCostIndexModeDropdown`}
@@ -512,7 +526,9 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   </div>
                   <div class="mfd-label mfd-fms-fuel-load-dest-grid-top-cell">EFOB</div>
                   <div class="mfd-label mfd-fms-fuel-load-dest-grid-middle-cell">DEST</div>
-                  <div class="mfd-label bigger green mfd-fms-fuel-load-dest-grid-middle-cell">{this.destIcao}</div>
+                  <div class="mfd-label bigger green mfd-fms-fuel-load-dest-grid-middle-cell">
+                    {this.destIcaoDisplay}
+                  </div>
                   <div class="mfd-label bigger green mfd-fms-fuel-load-dest-grid-middle-cell">{this.destEta}</div>
                   <div class="mfd-label-value-container mfd-fms-fuel-load-dest-grid-efob-cell">
                     <span class={{ 'mfd-value': true, amber: this.props.fmcService.master.fmgc.data.destEfobBelowMin }}>
