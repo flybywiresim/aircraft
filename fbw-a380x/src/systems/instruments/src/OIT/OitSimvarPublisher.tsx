@@ -52,7 +52,7 @@ export class OitSimvarPublisher extends SimVarPublisher<OitSimvars> {
     ['nssDataToAvncsOff', { name: 'L:A32NX_OVHD_NSS_DATA_TO_AVNCS_TOGGLE', type: SimVarValueType.Bool }],
     ['parkBrakeSet', { name: 'L:A32NX_PARK_BRAKE_LEVER_POS', type: SimVarValueType.Bool }],
     ['cabinDoorOpen', { name: 'INTERACTIVE POINT OPEN:0', type: SimVarValueType.Percent }],
-    ['fuelTotalQuantity', { name: 'FUEL TOTAL QUANTITY', type: SimVarValueType.GAL }],
+    ['fuelTotalQuantity', { name: 'L:A32NX_TOTAL_FUEL_VOLUME', type: SimVarValueType.GAL }],
     ['fuelWeightPerGallon', { name: 'FUEL WEIGHT PER GALLON', type: SimVarValueType.Number }],
   ]);
 

@@ -1,10 +1,11 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2025 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { FMMessage, FMMessageTypes } from '@flybywiresim/fbw-sdk';
+import { FMMessage } from '@flybywiresim/fbw-sdk';
 
 import { FMMessageSelector, FMMessageUpdate } from './FmsMessages';
+import { FMMessageTypes } from './FmMessages';
 
 export class StepDeleted implements FMMessageSelector {
   message: FMMessage = FMMessageTypes.StepDeleted;

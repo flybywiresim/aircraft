@@ -288,7 +288,7 @@ export class GsxSyncA32NX extends GsxSync {
   }
 
   protected getFob(): number {
-    return SimVar.GetSimVarValueFast('A:FUEL TOTAL QUANTITY WEIGHT', 'kilograms');
+    return SimVar.GetSimVarValueFast('L:A32NX_TOTAL_FUEL_QUANTITY', SimVarValueType.Number);
   }
 
   protected getDesiredFuel(): number {
@@ -339,7 +339,7 @@ export class GsxSyncA380X extends GsxSync {
   }
 
   protected getFob(): number {
-    return SimVar.GetSimVarValueFast('A:FUEL TOTAL QUANTITY WEIGHT', 'kilograms');
+    return SimVar.GetSimVarValueFast('L:A32NX_TOTAL_FUEL_QUANTITY', SimVarValueType.Number);
   }
 
   protected getDesiredFuel(): number {
