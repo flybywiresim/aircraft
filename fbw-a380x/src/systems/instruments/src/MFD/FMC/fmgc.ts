@@ -245,7 +245,7 @@ export class FmgcData {
    */
   readonly v2ToBeConfirmed = Subject.create<Knots | null>(null);
 
-  public readonly takeoffFlapsSetting = Subject.create<FlapConf>(FlapConf.CONF_1);
+  public readonly takeoffFlapsSetting = Subject.create<FlapConf | null>(null);
 
   public readonly flapRetractionSpeed = Subject.create<Knots | null>(null);
 
