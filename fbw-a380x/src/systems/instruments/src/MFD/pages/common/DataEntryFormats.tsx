@@ -34,6 +34,7 @@ function getFormattedFormatError(format: string, unit?: string): A380FmsError {
 export interface DataEntryFormat<T, U = T> {
   placeholder: string;
   maxDigits: number;
+  maxOverflowDigits?: number;
   unit?: string;
   format(value: T | null): FieldFormatTuple;
   parse(input: string): Promise<U | null>;
@@ -156,7 +157,6 @@ export class SpeedMachFormat extends SubscriptionCollector implements DataEntryF
   }
 }
 
-// Assumption: All values between 0 and 430 are FL, above are FT
 export class AltitudeOrFlightLevelFormat extends SubscriptionCollector implements DataEntryFormat<number> {
   public placeholder = '-----';
 
@@ -205,17 +205,17 @@ export class AltitudeOrFlightLevelFormat extends SubscriptionCollector implement
     }
 
     let nbr = Number(input);
-    if (nbr < 430) {
+    if (input.length <= 3) {
       nbr = Number(input) * 100;
     }
-    if (!Number.isNaN(nbr) && nbr >= this.minValue && nbr <= this.maxValue) {
-      return nbr;
-    }
-    if (nbr > this.maxValue || nbr < this.minValue) {
-      throw new A380FmsError(FmsErrorType.EntryOutOfRange);
-    } else {
+
+    if (Number.isNaN(nbr)) {
       throw getFormattedFormatError(this.requiredFormat);
+    } else if (nbr > this.maxValue || nbr < this.minValue) {
+      throw new A380FmsError(FmsErrorType.EntryOutOfRange);
     }
+
+    return nbr;
   }
 
   destroy(): void {
@@ -279,7 +279,9 @@ export class AltitudeFormat extends SubscriptionCollector implements DataEntryFo
 export class FlightLevelFormat extends SubscriptionCollector implements DataEntryFormat<number> {
   public readonly placeholder = '---';
 
-  public maxDigits = 3;
+  public readonly maxDigits = 3;
+
+  public readonly maxOverflowDigits = 3;
 
   public readonly unit = 'FL';
 
@@ -311,16 +313,22 @@ export class FlightLevelFormat extends SubscriptionCollector implements DataEntr
       return null;
     }
 
-    //FIX ME Should handle FLXXX
-    const nbr = Number(input);
-    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
-      return nbr;
+    // Accept "FL" followed by 1 to 3 digits, e.g. "FL30" or "FL300"
+    let nbr: number = Number(input);
+    if (Number.isNaN(nbr)) {
+      const flMatch = input.match(/^FL(\d{1,3})$/i);
+      if (flMatch) {
+        nbr = Number(flMatch[1]);
+      }
     }
+
     if (nbr > this.maxValue || nbr < this.minValue) {
       throw new A380FmsError(FmsErrorType.EntryOutOfRange);
-    } else {
+    } else if (Number.isNaN(nbr)) {
       throw getFormattedFormatError(this.requiredFormat);
     }
+
+    return nbr;
   }
 
   destroy(): void {
@@ -949,7 +957,7 @@ export class DescentRateFormat extends SubscriptionCollector implements DataEntr
 
   public maxDigits = 4;
 
-  public readonly unit = 'FT/MIN';
+  public readonly unit = 'FT/MN';
 
   private readonly requiredFormat = '-XXXX';
 
@@ -968,9 +976,9 @@ export class DescentRateFormat extends SubscriptionCollector implements DataEntr
 
   public format(value: number) {
     if (value === null || value === undefined) {
-      return [this.placeholder, null, 'FT/MN'] as FieldFormatTuple;
+      return [this.placeholder, null, this.unit] as FieldFormatTuple;
     }
-    return [value.toString(), null, 'FT/MN'] as FieldFormatTuple;
+    return [value.toString(), null, this.unit] as FieldFormatTuple;
   }
 
   public async parse(input: string) {

@@ -497,6 +497,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
+                canOverflow={true}
               />
               <div class="mfd-label init-input-field" style="width: auto;">
                 CRZ TEMP
