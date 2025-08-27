@@ -319,6 +319,7 @@ export class FlightManagementComputer implements FmcInterface {
           if (
             val &&
             this.flightPlanService.hasActive &&
+            this.flightPlanService.active.destinationAirport &&
             !Number.isFinite(this.flightPlanService.active.performanceData.costIndex.get())
           ) {
             this.flightPlanService.active.setPerformanceData('costIndex', 0);
