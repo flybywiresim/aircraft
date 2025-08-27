@@ -522,7 +522,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
             <div class="mfd-fms-init-line" style="margin-top: 10px;">
               <div class="mfd-label init-input-field">MODE</div>
               <DropdownMenu
-                inactive={this.costIndexModeDisabled}
+                disabled={this.costIndexModeDisabled}
                 values={this.costIndexModeLabels}
                 selectedIndex={this.props.fmcService.master.fmgc.data.costIndexMode}
                 idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_initCostIndexModeDropdown`}
