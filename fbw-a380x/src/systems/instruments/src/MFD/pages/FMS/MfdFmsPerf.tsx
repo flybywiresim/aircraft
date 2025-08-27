@@ -759,7 +759,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
         if (v != null) {
           const flapConf = v + 1;
           this.props.fmcService.master?.fmgc.data.takeoffFlapsSetting.set(flapConf);
-          this.props.fmcService.master?.acInterface.setTakeoffFlaps(flapConf);
         }
       }),
     );
