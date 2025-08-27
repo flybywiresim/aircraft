@@ -298,6 +298,9 @@ export class FmcAircraftInterface {
           0,
         ),
       ),
+      this.fmgc.data.takeoffFlapsSetting.sub((v) => {
+        this.setTakeoffFlaps(v);
+      }),
     );
 
     const pub = this.bus.getPublisher<FmsData>();
@@ -584,7 +587,7 @@ export class FmcAircraftInterface {
    * Set the takeoff flap config
    * @param {0 | 1 | 2 | 3 | null} flaps
    */
-  setTakeoffFlaps(flaps: FlapConf) {
+  setTakeoffFlaps(flaps: FlapConf | null) {
     this.arincDiscreteWord2.setBitValue(13, flaps === 0);
     this.arincDiscreteWord2.setBitValue(14, flaps === 1);
     this.arincDiscreteWord2.setBitValue(15, flaps === 2);
@@ -1778,7 +1781,7 @@ export class FmcAircraftInterface {
     }
 
     this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', fl);
-    if (fl > (this.fmc.getRecMaxFlightLevel() ?? -Infinity)) {
+    if (fl > (this.fmc.getRecMaxFlightLevel() ?? Infinity)) {
       this.fmc.addMessageToQueue(NXSystemMessages.crzFlAboveMaxFL, undefined, undefined);
     }
     this.onUpdateCruiseLevel(fl);
