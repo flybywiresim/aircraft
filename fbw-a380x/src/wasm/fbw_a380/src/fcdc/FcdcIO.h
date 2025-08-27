@@ -55,5 +55,5 @@ struct FcdcDiscreteOutputs {
 
   bool foGreenPriorityLightOn;
 
-  int autolandWarning;
+  bool autolandWarning;
 };

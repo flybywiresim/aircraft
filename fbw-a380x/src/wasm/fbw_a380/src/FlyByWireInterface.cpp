@@ -1476,10 +1476,11 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   prims[primIndex].modelInputs.in.bus_inputs.sec_3_bus = secsBusOutputs[2];
 
   prims[primIndex].modelInputs.in.temporary_ap_input.ap_engaged =
-      static_cast<bool>(autopilotStateMachineOutput.enabled_AP1) || static_cast<bool>(autopilotStateMachineOutput.enabled_AP2);
-  prims[primIndex].modelInputs.in.temporary_ap_input.ap_1_engaged = static_cast<bool>(autopilotStateMachineOutput.enabled_AP1);
-  prims[primIndex].modelInputs.in.temporary_ap_input.ap_2_engaged = static_cast<bool>(autopilotStateMachineOutput.enabled_AP2);
-  prims[primIndex].modelInputs.in.temporary_ap_input.athr_engaged = autoThrustOutput.status == athr_status::ENGAGED_ACTIVE;
+      static_cast<boolean_T>(autopilotStateMachineOutput.enabled_AP1) || static_cast<boolean_T>(autopilotStateMachineOutput.enabled_AP2);
+  prims[primIndex].modelInputs.in.temporary_ap_input.ap_1_engaged = static_cast<boolean_T>(autopilotStateMachineOutput.enabled_AP1);
+  prims[primIndex].modelInputs.in.temporary_ap_input.ap_2_engaged = static_cast<boolean_T>(autopilotStateMachineOutput.enabled_AP2);
+  prims[primIndex].modelInputs.in.temporary_ap_input.athr_engaged =
+      static_cast<boolean_T>(autoThrustOutput.status == athr_status::ENGAGED_ACTIVE);
   prims[primIndex].modelInputs.in.temporary_ap_input.roll_command = autopilotLawsOutput.autopilot.Phi_c_deg;
   prims[primIndex].modelInputs.in.temporary_ap_input.pitch_command = autopilotLawsOutput.autopilot.Theta_c_deg;
   prims[primIndex].modelInputs.in.temporary_ap_input.yaw_command = autopilotLawsOutput.autopilot.Beta_c_deg;
@@ -1487,6 +1488,10 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   prims[primIndex].modelInputs.in.temporary_ap_input.lateral_mode_armed = autopilotStateMachineOutput.lateral_mode_armed;
   prims[primIndex].modelInputs.in.temporary_ap_input.vertical_mode = autopilotStateMachineOutput.vertical_mode;
   prims[primIndex].modelInputs.in.temporary_ap_input.vertical_mode_armed = autopilotStateMachineOutput.vertical_mode_armed;
+
+  if ((primDisabled != -1 && primIndex != primDisabled) || secDisabled != -1) {
+    simConnectInterface.setClientDataPrimBusInput(primsBusOutputs[primIndex], primIndex);
+  }
 
   if (primIndex == primDisabled) {
     simConnectInterface.setClientDataPrimDiscretes(prims[primIndex].modelInputs.in.discrete_inputs);
@@ -1512,10 +1517,6 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
     primsDiscreteOutputs[primIndex] = prims[primIndex].getDiscreteOutputs();
     primsAnalogOutputs[primIndex] = prims[primIndex].getAnalogOutputs();
     primsBusOutputs[primIndex] = prims[primIndex].getBusOutputs();
-  }
-
-  if ((primDisabled != -1 && primIndex != primDisabled) || secDisabled != -1) {
-    simConnectInterface.setClientDataPrimBusInput(primsBusOutputs[primIndex], primIndex);
   }
 
   idPrimHealthy[primIndex]->set(primsDiscreteOutputs[primIndex].prim_healthy);
@@ -1740,8 +1741,6 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
 
   SimData simData = simConnectInterface.getSimData();
 
-  const int oppFcdcIndex = fcdcIndex == 0 ? 1 : 0;
-
   Failures failureIndex = fcdcIndex == 0 ? Failures::Fcdc1 : Failures::Fcdc2;
 
   fcdcs[fcdcIndex].discreteInputs.noseGearPressed = idLgciuNoseGearCompressed[0]->get();
@@ -1771,8 +1770,8 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
   idFcdcDiscreteWord4[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].efcsStatus4.toSimVar());
   idFcdcDiscreteWord5[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].efcsStatus5.toSimVar());
   idFcdcFgDiscreteWord4[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].fgDiscreteWord4.toSimVar());
-  idFcdcHealthy[fcdcIndex]->set(fcdcsDiscreteOutputs[fcdcIndex].fcdcValid);
-  idAutopilotAutolandWarning->set(fcdcsDiscreteOutputs[fcdcIndex].autolandWarning);
+  idFcdcHealthy[fcdcIndex]->set(fcdcsDiscreteOutputs[fcdcIndex].fcdcValid ? 1 : 0);
+  idAutopilotAutolandWarning->set(fcdcsDiscreteOutputs[fcdcIndex].autolandWarning ? 1 : 0);
 
   return true;
 }

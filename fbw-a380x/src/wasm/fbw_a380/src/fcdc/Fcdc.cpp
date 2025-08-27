@@ -68,8 +68,7 @@ FcdcBus Fcdc::getBusOutputs() {
                                                                      bitFromValue(busInputs.prims[masterPrim].fctl_law_status_word, 17),
                                                                      bitFromValue(busInputs.prims[masterPrim].fctl_law_status_word, 18));
 
-  output.efcsStatus1.setData(0);
-  output.efcsStatus1.setSsm(Arinc429SignStatus::NormalOperation);
+  output.efcsStatus1.setSsm(ssm);
   output.efcsStatus1.setBit(11, systemPitchLaw == PitchLaw::NormalLaw);
   output.efcsStatus1.setBit(12, systemPitchLaw == PitchLaw::AlternateLaw1A || systemPitchLaw == PitchLaw::AlternateLaw1B ||
                                     systemPitchLaw == PitchLaw::AlternateLaw1C);
@@ -88,8 +87,7 @@ FcdcBus Fcdc::getBusOutputs() {
   output.efcsStatus3.setBit(26, allPrimsDead);
   output.efcsStatus3.setBit(29, allPrimsDead);
 
-  output.efcsStatus2.setData(0);
-  output.efcsStatus2.setSsm(Arinc429SignStatus::NormalOperation);
+  output.efcsStatus2.setSsm(ssm);
   output.efcsStatus2.setBit(11, !bitFromValueOr(busInputs.prims[masterPrim].aileron_status_word, 11, false));
   output.efcsStatus2.setBit(12, !bitFromValueOr(busInputs.prims[masterPrim].aileron_status_word, 11, false));
   output.efcsStatus2.setBit(13, !bitFromValueOr(busInputs.prims[masterPrim].aileron_status_word, 14, false));
@@ -99,8 +97,7 @@ FcdcBus Fcdc::getBusOutputs() {
   output.efcsStatus2.setBit(17, !bitFromValueOr(busInputs.prims[masterPrim].elevator_status_word, 14, false));
   output.efcsStatus2.setBit(18, !bitFromValueOr(busInputs.prims[masterPrim].elevator_status_word, 14, false));
 
-  output.efcsStatus3.setData(0);
-  output.efcsStatus3.setSsm(Arinc429SignStatus::NormalOperation);
+  output.efcsStatus3.setSsm(ssm);
   output.efcsStatus3.setBit(11, bitFromValueOr(busInputs.prims[masterPrim].aileron_status_word, 11, false));
   output.efcsStatus3.setBit(12, bitFromValueOr(busInputs.prims[masterPrim].aileron_status_word, 11, false));
   output.efcsStatus3.setBit(13, bitFromValueOr(busInputs.prims[masterPrim].aileron_status_word, 14, false));
@@ -115,8 +112,7 @@ FcdcBus Fcdc::getBusOutputs() {
   output.efcsStatus3.setBit(24, bitFromValueOr(busInputs.prims[masterPrim].spoiler_status_word, 11, false));
   output.efcsStatus3.setBit(25, bitFromValueOr(busInputs.prims[masterPrim].spoiler_status_word, 11, false));
 
-  output.efcsStatus4.setData(0);
-  output.efcsStatus4.setSsm(Arinc429SignStatus::NormalOperation);
+  output.efcsStatus4.setSsm(ssm);
   output.efcsStatus4.setBit(11, valueOr(busInputs.prims[masterPrim].left_spoiler_position_deg, 0) < -2.5);
   output.efcsStatus4.setBit(12, valueOr(busInputs.prims[masterPrim].right_spoiler_position_deg, 0) < -2.5);
   output.efcsStatus4.setBit(13, valueOr(busInputs.prims[masterPrim].left_spoiler_position_deg, 0) < -2.5);
@@ -139,7 +135,12 @@ FcdcBus Fcdc::getBusOutputs() {
   output.efcsStatus4.setBit(28, analogInputs.spoilersLeverPos > 0.9);
 
   output.efcsStatus5.setData(0);
-  output.efcsStatus5.setSsm(Arinc429SignStatus::NormalOperation);
+  output.efcsStatus5.setSsm(ssm);
+
+  output.fgDiscreteWord4.setSsm(ssm);
+  output.fgDiscreteWord4.setBit(23, land2Capacity);
+  output.fgDiscreteWord4.setBit(24, land3FailPassiveCapacity);
+  output.fgDiscreteWord4.setBit(25, land3FailOperationalCapacity);
 
   return output;
 }
@@ -151,7 +152,7 @@ FcdcDiscreteOutputs Fcdc::getDiscreteOutputs() {
   output.foRedPriorityLightOn = false;
   output.foGreenPriorityLightOn = false;
 
-  output.autolandWarning = autolandWarningTriggered ? 1 : 0;
+  output.autolandWarning = autolandWarningTriggered;
   output.fcdcValid = monitoringHealthy;
 
   return output;
@@ -164,7 +165,6 @@ void Fcdc::updateApproachCapability(double deltaTime) {
   // health status of PRIMs and SECs engagement. The rest of the conditions should be handled in PRIM FGs.
 
   // Select capability from master PRIM
-
   for (int i = 0; i < 3; i++) {
     if (reinterpret_cast<Arinc429DiscreteWord*>(&busInputs.prims[i].fctl_law_status_word)->bitFromValueOr(21, false)) {
       Arinc429DiscreteWord* fg_status_word = reinterpret_cast<Arinc429DiscreteWord*>(&busInputs.prims[i].fg_status_word);
@@ -175,10 +175,6 @@ void Fcdc::updateApproachCapability(double deltaTime) {
       land2Inop = fg_status_word->bitFromValueOr(20, false);
       land3FailPassiveInop = fg_status_word->bitFromValueOr(21, false);
       land3FailOperationalInop = fg_status_word->bitFromValueOr(22, false);
-
-      land2Capacity = fg_status_word->bitFromValueOr(23, false);
-      land3FailPassiveCapacity = fg_status_word->bitFromValueOr(24, false);
-      land3FailOperationalCapacity = fg_status_word->bitFromValueOr(25, false);
 
       break;
     }
