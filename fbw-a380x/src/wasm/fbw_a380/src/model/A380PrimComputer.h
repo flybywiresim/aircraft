@@ -546,6 +546,7 @@ class A380PrimComputer final
     real_T Constant_Value_g;
     real_T Gain_Gain_g;
     real_T Constant_Value_af;
+    real_T Constant2_Value_o;
     real32_T Constant2_Value_i;
     real32_T Constant3_Value_e;
     real32_T Constant6_Value_a;

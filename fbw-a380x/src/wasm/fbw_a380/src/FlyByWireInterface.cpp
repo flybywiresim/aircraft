@@ -1367,6 +1367,7 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   prims[primIndex].modelInputs.in.sim_data.tracking_mode_on_override = idExternalOverride->get() == 1;
   prims[primIndex].modelInputs.in.sim_data.tailstrike_protection_on = tailstrikeProtectionEnabled;
 
+  prims[primIndex].modelInputs.in.discrete_inputs.alignment_dummy = 0.0;
   prims[primIndex].modelInputs.in.discrete_inputs.prim_overhead_button_pressed = idPrimPushbuttonPressed[primIndex]->get();
   prims[primIndex].modelInputs.in.discrete_inputs.is_unit_1 = primIndex == 0;
   prims[primIndex].modelInputs.in.discrete_inputs.is_unit_2 = primIndex == 1;

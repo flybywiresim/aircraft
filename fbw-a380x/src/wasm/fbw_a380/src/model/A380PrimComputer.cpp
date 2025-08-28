@@ -468,6 +468,8 @@ void A380PrimComputer::step()
   base_arinc_429 rtb_left_inboard_aileron_command_deg;
   uint64m_T tmp_1;
   uint64m_T tmp_2;
+  uint64m_T tmp_3;
+  uint64m_T tmp_4;
   real_T abnormalCondition_tmp;
   real_T rtb_BusConversion_InsertedFor_BusAssignment_at_inport_1_BusCreator1_left_spoiler_8_deg;
   real_T rtb_Gain_bk;
@@ -668,13 +670,16 @@ void A380PrimComputer::step()
   a380_pitch_efcs_law rtb_law;
   a380_pitch_efcs_law rtb_law_j;
   a380_pitch_efcs_law rtb_pitchLawCapability;
-  static const uint64m_T tmp_3{ { MAX_uint32_T, MAX_uint32_T }
+  static const uint64m_T tmp_5{ { MAX_uint32_T, MAX_uint32_T }
   };
 
-  static const uint64m_T tmp_4{ { 0U, 0U }
+  static const uint64m_T tmp_6{ { 0U, 0U }
   };
 
-  static const uint64m_T tmp_5{ { 1U, 0U }
+  static const uint64m_T tmp_7{ { 8U, 0U }
+  };
+
+  static const uint64m_T tmp_8{ { 1U, 0U }
   };
 
   const base_arinc_429 *rtb_Switch_j_0;
@@ -2700,16 +2705,33 @@ void A380PrimComputer::step()
         Double2MultiWord(rtb_BusConversion_InsertedFor_BusAssignment_at_inport_1_BusCreator1_left_spoiler_8_deg,
                          &tmp_1.chunks[0U], 2);
       } else {
-        tmp_1 = tmp_4;
+        tmp_1 = tmp_6;
       }
     } else {
-      tmp_1 = tmp_3;
+      tmp_1 = tmp_5;
     }
 
-    MultiWordAnd(&tmp_1.chunks[0U], &tmp_5.chunks[0U], &tmp_2.chunks[0U], 2);
-    rtb_BusAssignment_logic_all_sfcc_lost = (uMultiWordNe(&tmp_2.chunks[0U], &tmp_4.chunks[0U], 2) ||
+    rtb_BusConversion_InsertedFor_BusAssignment_at_inport_1_BusCreator1_left_spoiler_8_deg = std::round
+      (A380PrimComputer_U.in.temporary_ap_input.vertical_mode_armed);
+    if (rtb_BusConversion_InsertedFor_BusAssignment_at_inport_1_BusCreator1_left_spoiler_8_deg < 1.8446744073709552E+19)
+    {
+      if (rtb_BusConversion_InsertedFor_BusAssignment_at_inport_1_BusCreator1_left_spoiler_8_deg >= 0.0) {
+        Double2MultiWord(rtb_BusConversion_InsertedFor_BusAssignment_at_inport_1_BusCreator1_left_spoiler_8_deg,
+                         &tmp_2.chunks[0U], 2);
+      } else {
+        tmp_2 = tmp_6;
+      }
+    } else {
+      tmp_2 = tmp_5;
+    }
+
+    MultiWordAnd(&tmp_1.chunks[0U], &tmp_8.chunks[0U], &tmp_3.chunks[0U], 2);
+    MultiWordAnd(&tmp_2.chunks[0U], &tmp_7.chunks[0U], &tmp_4.chunks[0U], 2);
+    rtb_BusAssignment_logic_all_sfcc_lost = ((uMultiWordNe(&tmp_3.chunks[0U], &tmp_6.chunks[0U], 2) ||
       ((A380PrimComputer_U.in.temporary_ap_input.lateral_mode >= 30.0) &&
-       (A380PrimComputer_U.in.temporary_ap_input.lateral_mode <= 34.0)));
+       (A380PrimComputer_U.in.temporary_ap_input.lateral_mode <= 34.0))) && (uMultiWordNe(&tmp_4.chunks[0U],
+      &tmp_6.chunks[0U], 2) || ((A380PrimComputer_U.in.temporary_ap_input.vertical_mode >= 30.0) &&
+      (A380PrimComputer_U.in.temporary_ap_input.vertical_mode <= 34.0))));
     A380PrimComputer_DWork.pApproachModeArmedAbove400Ft = (((!A380PrimComputer_DWork.pApproachModeArmedAbove400Ft) &&
       rtb_BusAssignment_logic_all_sfcc_lost && (rtb_raComputationValue > 400.0F)) ||
       A380PrimComputer_DWork.pApproachModeArmedAbove400Ft);
@@ -4503,6 +4525,7 @@ void A380PrimComputer::step()
     A380PrimComputer_MATLABFunction_i(rtb_VectorConcatenate_ep, &rtb_fg_status_word_o.Data);
     rtb_fg_status_word_o.SSM = static_cast<uint32_T>(A380PrimComputer_P.EnumeratedConstant1_Value);
     A380PrimComputer_Y.out = A380PrimComputer_B.BusAssignment_n;
+    A380PrimComputer_Y.out.discrete_outputs.alignment_dummy = A380PrimComputer_P.Constant2_Value_o;
     A380PrimComputer_Y.out.discrete_outputs.elevator_1_active_mode =
       A380PrimComputer_B.BusAssignment_n.logic.elevator_1_engaged;
     A380PrimComputer_Y.out.discrete_outputs.elevator_2_active_mode =
