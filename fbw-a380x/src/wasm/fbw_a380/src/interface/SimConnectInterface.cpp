@@ -889,6 +889,17 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   // ------------------------------------------------------------------------------------------------------------------
 
   // map client id
+  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_PRIM_ANALOG_INPUT", ClientData::PRIM_ANALOG_INPUTS);
+  // create client data
+  result &= SimConnect_CreateClientData(hSimConnect, ClientData::PRIM_ANALOG_INPUTS, sizeof(base_prim_analog_inputs),
+                                        SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
+  // add data definitions
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::PRIM_ANALOG_INPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 sizeof(base_prim_analog_inputs));
+
+  // ------------------------------------------------------------------------------------------------------------------
+
+  // map client id
   result &=
       SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_PRIM_TEMPORARY_AP_INPUT", ClientData::PRIM_TEMPORARY_AP_INPUTS);
   // create client data
@@ -897,17 +908,6 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   // add data definitions
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::PRIM_TEMPORARY_AP_INPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
                                                  sizeof(base_prim_temporary_ap_input));
-
-  // ------------------------------------------------------------------------------------------------------------------
-
-  // map client id
-  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_PRIM_ANALOG_INPUT", ClientData::PRIM_ANALOG_INPUTS);
-  // create client data
-  result &= SimConnect_CreateClientData(hSimConnect, ClientData::PRIM_ANALOG_INPUTS, sizeof(base_prim_analog_inputs),
-                                        SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
-  // add data definitions
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::PRIM_ANALOG_INPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 sizeof(base_prim_analog_inputs));
 
   // ------------------------------------------------------------------------------------------------------------------
 
