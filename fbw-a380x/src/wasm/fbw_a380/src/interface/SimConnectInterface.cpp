@@ -864,12 +864,9 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   // create client data
   result &= SimConnect_CreateClientData(hSimConnect, ClientData::AUTOTHRUST_A380, sizeof(ClientDataAutothrustA380),
                                         SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
-
   // add data definitions
-  for (int i = 0; i < 6; i++) {
-    result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOTHRUST_A380, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                   SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  }
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOTHRUST_A380, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 sizeof(ClientDataAutothrustA380));
 
   // request data to be updated when set
   result &= SimConnect_RequestClientData(hSimConnect, ClientData::AUTOTHRUST_A380, ClientData::AUTOTHRUST_A380, ClientData::AUTOTHRUST_A380,
