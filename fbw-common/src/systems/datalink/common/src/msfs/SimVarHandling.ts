@@ -231,9 +231,9 @@ export class SimVarHandling extends SimVarPublisher<SimVars> {
     this.subscriber
       .on('msfsVhf3Powered')
       .handle((powered: number) => this.datalinkPublisher.pub('vhf3Powered', powered !== 0, false, false));
-    this.subscriber
-      .on('msfsVhf3Frequency')
-      .handle((frequency: number) => this.datalinkPublisher.pub('vhf3DataMode', frequency === 0, false, false));
+    // this.subscriber
+    //   .on('msfsVhf3Frequency')
+    //   .handle((frequency: number) => this.datalinkPublisher.pub('vhf3DataMode', frequency !== 0, false, false));
     this.subscriber
       .on('msfsTransponderCode')
       .handle((code: number) => this.datalinkPublisher.pub('transponderCode', code, false, false));

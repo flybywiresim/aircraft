@@ -27,6 +27,7 @@ export interface ButtonProps extends ComponentProps {
   disabled?: boolean | Subscribable<boolean>;
   visible?: boolean | Subscribable<boolean>;
   selected?: Subscribable<boolean>; // Renders with lighter grey if selected (e.g. for segmented controls)
+  highlighted?: Subscribable<boolean>;
   buttonStyle?: string | Subscribable<string>;
   containerStyle?: string;
   onClick: () => void;
@@ -85,6 +86,9 @@ export class Button extends DisplayComponent<ButtonProps> {
     if (this.props.selected === undefined) {
       this.props.selected = Subject.create(false);
     }
+    if (this.props.highlighted === undefined) {
+      this.props.highlighted = Subject.create(false);
+    }
     if (typeof this.props.label === 'string') {
       this.props.label = Subject.create(<span>{this.props.label}</span>);
     }
@@ -114,6 +118,12 @@ export class Button extends DisplayComponent<ButtonProps> {
     this.subs.push(
       this.props.selected.sub((val) => {
         this.buttonRef.getOrDefault()?.classList.toggle('selected', val);
+      }, true),
+    );
+
+    this.subs.push(
+      this.props.highlighted.sub((val) => {
+        this.buttonRef.getOrDefault()?.classList.toggle('highlighted', val);
       }, true),
     );
 

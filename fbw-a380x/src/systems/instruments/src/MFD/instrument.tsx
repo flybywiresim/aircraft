@@ -21,6 +21,7 @@ import { FGDataPublisher } from '../MsfsAvionicsCommon/providers/FGDataPublisher
 import { ResetPanelSimvarPublisher } from '../MsfsAvionicsCommon/providers/ResetPanelPublisher';
 import { FmsMessagePublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FmsMessagePublisher';
 import { RadioAltimeterPublisher } from '@flybywiresim/msfs-avionics-common';
+import { AtcDatalinkSystem } from './ATCCOM/AtcDatalinkSystem';
 
 class MfdInstrument implements FsInstrument {
   private readonly bus = new EventBus();
@@ -47,6 +48,8 @@ class MfdInstrument implements FsInstrument {
 
   private readonly fmcService: FmcServiceInterface;
 
+  private readonly atcService: AtcDatalinkSystem;
+
   private readonly fmcAFailed = Subject.create(false);
   private readonly fmcBFailed = Subject.create(false);
   private readonly fmcCFailed = Subject.create(false);
@@ -70,6 +73,8 @@ class MfdInstrument implements FsInstrument {
       this.fmcCFailed,
     );
 
+    this.atcService = new AtcDatalinkSystem();
+
     this.doInit();
   }
 
@@ -92,11 +97,23 @@ class MfdInstrument implements FsInstrument {
       document.getElementById('MFD_CONTENT'),
     );
     FSComponent.render(
-      <MfdComponent captOrFo="CAPT" ref={this.mfdCaptRef} bus={this.bus} fmcService={this.fmcService} />,
+      <MfdComponent
+        captOrFo="CAPT"
+        ref={this.mfdCaptRef}
+        bus={this.bus}
+        fmcService={this.fmcService}
+        atcService={this.atcService}
+      />,
       document.getElementById('MFD_LEFT_PARENT_DIV'),
     );
     FSComponent.render(
-      <MfdComponent captOrFo="FO" ref={this.mfdFoRef} bus={this.bus} fmcService={this.fmcService} />,
+      <MfdComponent
+        captOrFo="FO"
+        ref={this.mfdFoRef}
+        bus={this.bus}
+        fmcService={this.fmcService}
+        atcService={this.atcService}
+      />,
       document.getElementById('MFD_RIGHT_PARENT_DIV'),
     );
 

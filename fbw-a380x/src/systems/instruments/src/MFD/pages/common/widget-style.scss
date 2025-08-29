@@ -99,6 +99,11 @@
   border: 2px inset $display-light-grey;
 }
 
+.mfd-button.highlighted {
+  color: $display-mfd-darker-grey;
+  background-color: $display-white;
+}
+
 .mfd-button.disabled:hover {
   border-color: $display-light-grey;
 }
