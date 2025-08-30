@@ -74,6 +74,11 @@ import { FwsInopSys, FwsInopSysPhases } from './FwsInopSys';
 import { FwsInformation } from './FwsInformation';
 import { FwsLimitations, FwsLimitationsPhases } from './FwsLimitations';
 import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
+import {
+  OisDebugDataEvents,
+  DebugDataTableRow,
+  OisDebugDataControlEvents,
+} from 'instruments/src/MsfsAvionicsCommon/providers/OisDebugDataPublisher';
 
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));
@@ -122,7 +127,8 @@ export class FwsCore {
       KeyEvents &
       MsfsFlightModelEvents &
       FmsMessageVars &
-      FGVars
+      FGVars &
+      OisDebugDataControlEvents
   >();
 
   private subs: Subscription[] = [];
@@ -136,6 +142,20 @@ export class FwsCore {
   private readonly startupTimer = new DebounceTimer();
 
   public readonly startupCompleted = Subject.create(false);
+
+  public readonly debugDataToOisEnabled = ConsumerSubject.create(
+    this.sub.on('a380x_ois_fws_debug_data_enabled'),
+    false,
+  );
+  public readonly debugDataToOis: DebugDataTableRow[] = [
+    { label: 'FWS Flight Phase', value: '' },
+    { label: 'Startup Completed', value: '' },
+    { label: 'ECAM STS Normal', value: '' },
+    { label: 'All Current Failures', value: '' },
+    { label: 'Presented Failures', value: '' },
+    { label: 'On Ground', value: '' },
+  ];
+  public readonly debugDataToOisSubject = Subject.create<DebugDataTableRow[]>([]);
 
   public readonly audioFunctionLost = Subject.create(false);
 
@@ -262,7 +282,7 @@ export class FwsCore {
 
   /* PSEUDO FWC VARIABLES */
 
-  private readonly publisher = this.bus.getPublisher<FwsEwdEvents>();
+  private readonly publisher = this.bus.getPublisher<FwsEwdEvents & OisDebugDataEvents>();
 
   /** Keys/IDs of all failures currently active, irrespective they are already cleared or not */
   public readonly allCurrentFailures: string[] = [];
@@ -2300,7 +2320,7 @@ export class FwsCore {
         this.soundManager.handleSoundCondition('stall', v);
       }, true),
     );
-    this.subs.push(this.aircraftOnGround.sub((v) => this.fwcOut126.setBitValue(28, v)));
+    this.subs.push(this.aircraftOnGround.sub((v) => this.fwcOut126.setBitValue(28, v), true));
 
     this.subs.push(
       this.fwcOut126.sub((v) => {
@@ -2392,6 +2412,14 @@ export class FwsCore {
         (s) => this.publisher.pub('fws_show_failure_pending', s, true),
         true,
       ),
+    );
+
+    this.subs.push(
+      this.debugDataToOisSubject.sub((data) => {
+        if (this.debugDataToOisEnabled.get()) {
+          this.publisher.pub('a380x_ois_fws_debug_data', data, true);
+        }
+      }, true),
     );
 
     this.fwcOut126.setSsm(
@@ -5548,6 +5576,10 @@ export class FwsCore {
     this.systemDisplayLogic.update(deltaTime);
     this.updateRowRopWarnings();
 
+    if (this.debugDataToOisEnabled.get()) {
+      this.updateOisDebugData();
+    }
+
     // Orchestrate display of normal or abnormal proc display
     if (this.abnormalNonSensed.showAbnProcRequested.get()) {
       // ABN PROC always shown
@@ -5677,6 +5709,18 @@ export class FwsCore {
       default:
         return 10;
     }
+  }
+
+  updateOisDebugData() {
+    this.debugDataToOis[0].value = this.flightPhase.get().toFixed(0);
+    this.debugDataToOis[1].value = this.startupCompleted.get() ? 'true' : 'false';
+    this.debugDataToOis[2].value = this.ecamStsNormal.get() ? 'true' : 'false';
+    this.debugDataToOis[3].value = this.allCurrentFailures.length.toString();
+    this.debugDataToOis[4].value = this.presentedFailures.length.toString();
+    this.debugDataToOis[5].value = this.aircraftOnGround.get() ? 'true' : 'false';
+
+    this.debugDataToOisSubject.set(this.debugDataToOis);
+    this.debugDataToOisSubject.notify();
   }
 
   static sendFailureWarning(bus: EventBus) {
