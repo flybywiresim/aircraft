@@ -141,6 +141,7 @@ FcdcBus Fcdc::getBusOutputs() {
   output.fgDiscreteWord4.setBit(23, land2Capacity);
   output.fgDiscreteWord4.setBit(24, land3FailPassiveCapacity);
   output.fgDiscreteWord4.setBit(25, land3FailOperationalCapacity);
+  output.fgDiscreteWord4.setBit(26, appr1Capacity);
 
   return output;
 }
@@ -171,6 +172,7 @@ void Fcdc::updateApproachCapability(double deltaTime) {
       land2Capacity = fg_status_word->bitFromValueOr(16, false);
       land3FailPassiveCapacity = fg_status_word->bitFromValueOr(17, false);
       land3FailOperationalCapacity = fg_status_word->bitFromValueOr(18, false);
+      appr1Capacity = fg_status_word->bitFromValueOr(19, false);
 
       land2Inop = fg_status_word->bitFromValueOr(20, false);
       land3FailPassiveInop = fg_status_word->bitFromValueOr(21, false);
@@ -198,9 +200,11 @@ void Fcdc::updateApproachCapability(double deltaTime) {
       land2OrLand3SinglePrimSecCriteria &&
       ((isNo(busInputs.prims[0].fctl_law_status_word) && isNo(busInputs.prims[1].fctl_law_status_word)) ||
        (isNo(busInputs.prims[0].fctl_law_status_word) && isNo(busInputs.prims[2].fctl_law_status_word)));
+
   land2Capacity &= land2OrLand3SinglePrimSecCriteria;
   land3FailPassiveCapacity &= land2OrLand3SinglePrimSecCriteria;
   land3FailOperationalCapacity &= requiredPrimsForLand3FailOpAvail;
+  appr1Capacity &= primAvailable >= 1;
 
   land2Inop |= !land2OrLand3SinglePrimSecCriteria;
   land3FailPassiveInop |= !land2OrLand3SinglePrimSecCriteria;

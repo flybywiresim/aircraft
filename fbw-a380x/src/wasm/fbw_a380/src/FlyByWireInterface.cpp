@@ -1750,6 +1750,7 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
   for (int i = 0; i < 3; i++) {
     fcdcs[fcdcIndex].discreteInputs.primHealthy[i] = primsDiscreteOutputs[i].prim_healthy;
     fcdcs[fcdcIndex].busInputs.prims[i] = primsBusOutputs[i];
+    fcdcs[fcdcIndex].busInputs.secs[i] = secsBusOutputs[i];
     fcdcs[fcdcIndex].busInputs.raBusOutputs[i] = raBusOutputs[i];
   }
 

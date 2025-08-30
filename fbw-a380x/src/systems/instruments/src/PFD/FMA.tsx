@@ -113,9 +113,11 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
       return (
         (ap1 || ap2) &&
         (ra.isNormalOperation() ? ra.value <= 150 : altitude.valueOr(Infinity) - landingElevation.valueOr(0) <= 150) &&
-        (!fcdcFgDiscreteWord4.bitValueOr(23, false) || // No LAND2 or higher capability
-          !fcdcFgDiscreteWord4.bitValueOr(24, false) ||
-          !fcdcFgDiscreteWord4.bitValueOr(25, false) ||
+        (!(
+          fcdcFgDiscreteWord4.bitValueOr(23, false) || // No LAND2 or higher capability
+          fcdcFgDiscreteWord4.bitValueOr(24, false) ||
+          fcdcFgDiscreteWord4.bitValueOr(25, false)
+        ) ||
           verticalMode === VerticalMode.DES ||
           verticalMode === VerticalMode.OP_DES ||
           (verticalMode === VerticalMode.FPA && selectedFpa <= 0) ||
@@ -1589,11 +1591,16 @@ class BC3Cell extends DisplayComponent<{
 }
 
 class D1D2Cell extends ShowForSecondsComponent<CellProps> {
-  private fcdcFgDiscreteWord4 = new Arinc429Word(0);
+  private sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
 
-  private fmaLateralActive = 0;
+  private readonly fcdcFgDiscreteWord4 = ConsumerSubject.create(
+    this.sub.on('fcdcFgDiscreteWord4'),
+    Arinc429Word.empty(),
+  );
 
-  private fmaLateralArmed = 0;
+  private readonly fmaLateralActive = ConsumerSubject.create(this.sub.on('activeLateralMode'), 0);
+
+  private readonly fmaLateralArmed = ConsumerSubject.create(this.sub.on('fmaLateralArmed'), 0);
 
   private text1Sub = Subject.create('');
 
@@ -1604,11 +1611,12 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
   }
 
   private setText() {
-    const landModeArmed = isArmed(this.fmaLateralArmed, ArmedLateralMode.LAND);
-    const landModeActive = this.fmaLateralActive === LateralMode.LAND;
-    const land2Capacity = this.fcdcFgDiscreteWord4.bitValueOr(23, false);
-    const land3FailPassiveCapacity = this.fcdcFgDiscreteWord4.bitValueOr(24, false);
-    const land3FailOperationalCapacity = this.fcdcFgDiscreteWord4.bitValueOr(25, false);
+    const landModeArmed = isArmed(this.fmaLateralArmed.get(), ArmedLateralMode.LAND);
+    const landModeActive = this.fmaLateralActive.get() === LateralMode.LAND;
+    const land2Capacity = this.fcdcFgDiscreteWord4.get().bitValueOr(23, false);
+    const land3FailPassiveCapacity = this.fcdcFgDiscreteWord4.get().bitValueOr(24, false);
+    const land3FailOperationalCapacity = this.fcdcFgDiscreteWord4.get().bitValueOr(25, false);
+    const appr1Capacity = this.fcdcFgDiscreteWord4.get().bitValueOr(26, false);
 
     let text1: string;
     let text2: string | undefined;
@@ -1622,7 +1630,10 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
     } else if (land3FailOperationalCapacity) {
       text1 = 'LAND3';
       text2 = 'DUAL';
-    } else if (landModeArmed || landModeActive) {
+    } else if (
+      appr1Capacity ||
+      (this.fcdcFgDiscreteWord4.get().isFailureWarning() && (landModeActive || landModeArmed))
+    ) {
       text1 = 'APPR1';
       text2 = '';
     } else if (false) {
@@ -1663,31 +1674,7 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
-
-    sub
-      .on('fcdcFgDiscreteWord4')
-      .whenChanged()
-      .handle((c) => {
-        this.fcdcFgDiscreteWord4 = c;
-        this.setText();
-      });
-
-    sub
-      .on('activeLateralMode')
-      .whenChanged()
-      .handle((v) => {
-        this.fmaLateralActive = v;
-        this.setText();
-      });
-
-    sub
-      .on('fmaLateralArmed')
-      .whenChanged()
-      .handle((v) => {
-        this.fmaLateralArmed = v;
-        this.setText();
-      });
+    MappedSubject.create(() => this.setText(), this.fcdcFgDiscreteWord4, this.fmaLateralActive, this.fmaLateralArmed);
   }
 
   render(): VNode {

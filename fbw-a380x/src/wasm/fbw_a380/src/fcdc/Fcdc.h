@@ -66,6 +66,7 @@ class Fcdc {
 
   const double minimumPowerOutageTimeForFailure = 0.01;
 
+  bool appr1Capacity = false;
   bool land2Capacity = false;
   bool land3FailPassiveCapacity = false;
   bool land3FailOperationalCapacity = false;
