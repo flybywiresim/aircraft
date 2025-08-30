@@ -4,7 +4,6 @@ import {
   DisplayComponent,
   FSComponent,
   MappedSubject,
-  MutableSubscribable,
   Subject,
   Subscribable,
   SubscribableMapFunctions,
@@ -25,10 +24,8 @@ import { AtisMessage, AtisType, AtsuStatusCodes } from '@datalink/common';
 
 interface DAtisBlockProps extends AtccomMfdPageProps {
   readonly index: 0 | 1 | 2;
-  atisIcao: MutableSubscribable<string | null>;
-  atisMessage?: Subscribable<string | null>;
-  atisType?: '' | 'ARR' | 'DEP';
   data: AirportAtis;
+  atisType?: '' | 'ARR' | 'DEP';
   isAutoUpdateEnabled?: Subscribable<boolean>;
   isAutoPrintEnabled?: Subscribable<boolean>;
 }

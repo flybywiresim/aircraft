@@ -17,7 +17,13 @@ export class MfdAtccomDAtisReceived extends DisplayComponent<MfdAtccomDAtisRecei
 
   private atisIndex: number = Number(this.props.mfd.uiService.activeUri.get().extra);
 
-  private atisData: AirportAtis = { icao: '', type: AtisType.Departure, requested: false, autoupdate: false };
+  private atisData: AirportAtis = {
+    icao: '',
+    type: AtisType.Departure,
+    requested: false,
+    autoupdate: false,
+    lastReadAtis: '',
+  };
 
   protected onNewData() {}
 
