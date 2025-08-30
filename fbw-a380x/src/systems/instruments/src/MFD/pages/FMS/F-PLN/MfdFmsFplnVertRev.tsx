@@ -21,6 +21,7 @@ import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputFi
 import {
   AltitudeOrFlightLevelFormat,
   FlightLevelFormat,
+  SpeedMachFormat,
   SpeedKnotsFormat,
   TimeHHMMSSFormat,
 } from 'instruments/src/MFD/pages/common/DataEntryFormats';
@@ -123,11 +124,13 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
   private readonly machValueInput = Subject.create<number | null>(null);
 
+  private readonly constantMachSegmentDisabled = Subject.create(true);
+
   private readonly cannotDeleteMachValue = Subject.create(true);
 
   private readonly constantMachSegmentMach = Subject.create<number | null>(null);
 
-  private readonly deleteConstantMachSegment = MappedSubject.create(
+  private readonly deleteConstantMachSegmentDisabled = MappedSubject.create(
     ([mach]) => mach === null,
     this.constantMachSegmentMach,
   );
@@ -1014,8 +1017,67 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
               </TopTabNavigatorPage>
               <TopTabNavigatorPage>
                 {/* CMS */}
-                <div style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
-                  <span class="mfd-label">NOT IMPLEMENTED</span>
+                <div style="display: flex; flex-direction: row; margin-top: 20px; justify-content: center; gap: 16px; align-items: center;">
+                  <div class="mfd-label mfd-spacing-right">START WPT</div>
+                  <div class="mfd-label mfd-spacing-right">MACH</div>
+                  <div class="mfd-label mfd-spacing-right">END WPT</div>
+                </div>
+                <div class="mfd-vert-rev-cms">
+                  <DropdownMenu
+                    idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_altConstraintWptDropdown`}
+                    selectedIndex={this.dropdownMenuSelectedWaypointIndex}
+                    values={this.availableWaypoints}
+                    freeTextAllowed={false}
+                    containerStyle="width: 175px;"
+                    alignLabels="flex-start"
+                    onModified={(i) => this.onWptDropdownModified(i)}
+                    numberOfDigitsForInputField={7}
+                    tmpyActive={this.tmpyActive}
+                    hEventConsumer={this.props.mfd.hEventConsumer}
+                    interactionMode={this.props.mfd.interactionMode}
+                  />
+                  <InputField<number>
+                    dataEntryFormat={new SpeedMachFormat(Subject.create(90), Subject.create(Vmo))}
+                    dataHandlerDuringValidation={(val) => this.tryUpdateSpeedConstraint(val ?? undefined)}
+                    mandatory={Subject.create(false)}
+                    disabled={this.constantMachSegmentDisabled}
+                    value={this.machValueInput}
+                    alignText="flex-end"
+                    tmpyActive={this.tmpyActive}
+                    errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                    hEventConsumer={this.props.mfd.hEventConsumer}
+                    interactionMode={this.props.mfd.interactionMode}
+                  />
+                  <DropdownMenu
+                    idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_altConstraintWptDropdown`}
+                    selectedIndex={this.dropdownMenuSelectedWaypointIndex}
+                    values={this.availableWaypoints}
+                    freeTextAllowed={false}
+                    containerStyle="width: 175px;"
+                    alignLabels="flex-start"
+                    onModified={(i) => this.onWptDropdownModified(i)}
+                    numberOfDigitsForInputField={7}
+                    tmpyActive={this.tmpyActive}
+                    hEventConsumer={this.props.mfd.hEventConsumer}
+                    interactionMode={this.props.mfd.interactionMode}
+                  />
+                  <Button
+                    label={Subject.create(
+                      <div style="display: flex; flex-direction: row; justify-content: space-between;">
+                        <span style="text-align: center; vertical-align: center; margin-right: 10px;">
+                          DELETE
+                          <br />
+                          CMS
+                        </span>
+                        <span style="display: flex; align-items: center; justify-content: center;">*</span>
+                      </div>,
+                    )}
+                    onClick={() => {
+                      this.deleteSpeedLimit();
+                    }}
+                    disabled={this.deleteConstantMachSegmentDisabled}
+                    buttonStyle="adding-right: 2px;"
+                  />
                 </div>
               </TopTabNavigatorPage>
               <TopTabNavigatorPage>
