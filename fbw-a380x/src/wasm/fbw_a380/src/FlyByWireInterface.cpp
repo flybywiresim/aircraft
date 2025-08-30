@@ -409,6 +409,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idTcasTargetRedMax = std::make_unique<LocalVariable>("A32NX_TCAS_VSPEED_RED:2");
 
   idFcuTrkFpaModeActive = std::make_unique<LocalVariable>("A32NX_TRK_FPA_MODE_ACTIVE");
+  idFcuNorthRefTrue = std::make_unique<LocalVariable>("A32NX_PUSH_TRUE_REF");
   idFcuSelectedFpa = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_FPA_SELECTED");
   idFcuSelectedVs = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_VS_SELECTED");
   idFcuSelectedHeading = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_HEADING_SELECTED");
@@ -1377,6 +1378,7 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   prims[primIndex].modelInputs.in.discrete_inputs.ap_1_pushbutton_pressed = false;
   prims[primIndex].modelInputs.in.discrete_inputs.ap_2_pushbutton_pressed = false;
   prims[primIndex].modelInputs.in.discrete_inputs.fcu_healthy = true;
+  prims[primIndex].modelInputs.in.discrete_inputs.fcu_north_ref_true = idFcuNorthRefTrue->get() == 1;
   prims[primIndex].modelInputs.in.discrete_inputs.athr_pushbutton = false;
   prims[primIndex].modelInputs.in.discrete_inputs.ir_3_on_capt = false;
   prims[primIndex].modelInputs.in.discrete_inputs.ir_3_on_fo = false;

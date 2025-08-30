@@ -175,6 +175,7 @@ struct base_prim_discrete_inputs
   boolean_T ap_1_pushbutton_pressed;
   boolean_T ap_2_pushbutton_pressed;
   boolean_T fcu_healthy;
+  boolean_T fcu_north_ref_true;
   boolean_T athr_pushbutton;
   boolean_T ir_3_on_capt;
   boolean_T ir_3_on_fo;
@@ -683,6 +684,7 @@ struct base_prim_logic_outputs
 
 struct base_prim_fg_logic_output
 {
+  boolean_T appr_1_capability;
   boolean_T land_2_capability;
   boolean_T land_3_fail_passive_capability;
   boolean_T land_3_fail_op_capability;
