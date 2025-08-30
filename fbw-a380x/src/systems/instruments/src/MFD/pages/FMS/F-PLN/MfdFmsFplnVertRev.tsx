@@ -121,6 +121,17 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
   // CMS page
 
+  private readonly machValueInput = Subject.create<number | null>(null);
+
+  private readonly cannotDeleteMachValue = Subject.create(true);
+
+  private readonly constantMachSegmentMach = Subject.create<number | null>(null);
+
+  private readonly deleteConstantMachSegment = MappedSubject.create(
+    ([mach]) => mach === null,
+    this.constantMachSegmentMach,
+  );
+
   // ALT page
   private readonly altitudeMessageArea = Subject.create<string>('');
 
