@@ -137,6 +137,7 @@
 1. [A380X/FMS] Add NAV PRIMARY & NAV PRIMARY LOST scratchpad messages - @BravoMike99 (bruno_pt99)
 1. [A380X/EWD] ECL checkbox is the same color as the text color - @Bravomike99 (bruno_pt99)
 1. [A380X/OIS] Fix OOOI times logic, automatically power laptop for runway spawns - @flogross89 (floridude)
+1. [A380X/MFD] Changed colors of TCAS modes to match correct colors in A380 FCOM - @fwillard (Finn)
 
 ## 0.13.0
 
