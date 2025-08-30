@@ -193,11 +193,9 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
         ),
     },
     {
-      name: '(N/A) CMS',
+      name: 'CMS',
       disabled:
-        true ||
-        altnFlightPlan ||
-        [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
+        altnFlightPlan || [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
       onPressed: () =>
         fpln.props.mfd.uiService.navigateTo(
           `fms/${fpln.props.mfd.uiService.activeUri.get().category}/f-pln-vert-rev/cms`,
