@@ -36,12 +36,14 @@ import { MfdSurvControls } from 'instruments/src/MFD/pages/SURV/MfdSurvControls'
 import { MfdFmsFplnFixInfo } from './pages/FMS/F-PLN/MfdFmsFplnFixInfo';
 import { MfdSurvStatusSwitching } from 'instruments/src/MFD/pages/SURV/MfdSurvStatusSwitching';
 import { MfdFmsDataAirport } from 'instruments/src/MFD/pages/FMS/DATA/MfdFmsDataAirport';
+import { AtcDatalinkSystem } from './ATCCOM/AtcDatalinkSystem';
 
 export function pageForUrl(
   url: string,
   bus: EventBus,
   mfd: FmsDisplayInterface & MfdDisplayInterface,
   fmcService: FmcServiceInterface,
+  atcService: AtcDatalinkSystem,
 ): VNode {
   switch (url) {
     case 'fms/active/perf':
@@ -120,9 +122,9 @@ export function pageForUrl(
         <MfdAtccomMsgRecordExpand pageTitle="MSG RECORD/ALL MSG/EXPAND" bus={bus} mfd={mfd} fmcService={fmcService} />
       );
     case 'atccom/d-atis/list':
-      return <MfdAtccomDAtis pageTitle="D-ATIS/LIST" bus={bus} mfd={mfd} fmcService={fmcService} />;
+      return <MfdAtccomDAtis pageTitle="D-ATIS/LIST" bus={bus} mfd={mfd} atcService={atcService} />;
     case 'atccom/d-atis/received':
-      return <MfdAtccomDAtisReceived pageTitle="D-ATIS/RECEIVED" bus={bus} mfd={mfd} fmcService={fmcService} />;
+      return <MfdAtccomDAtisReceived pageTitle="D-ATIS/RECEIVED" bus={bus} mfd={mfd} atcService={atcService} />;
 
     default:
       return <MfdNotFound pageTitle="NOT FOUND" bus={bus} mfd={mfd} fmcService={fmcService} />;
