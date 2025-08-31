@@ -138,6 +138,7 @@
 1. [A380X/EWD] ECL checkbox is the same color as the text color - @Bravomike99 (bruno_pt99)
 1. [A380X/OIS] Fix OOOI times logic, automatically power laptop for runway spawns - @flogross89 (floridude)
 1. [A380X/MFD] Changed colors of TCAS modes to match correct colors in A380 FCOM - @fwillard (Finn)
+1. [A380X/FLIGHT AND ENGINE MODELS] Fix excessive descent rates and takeoff rotation issues - @donstim (donbikes#4084)
 
 ## 0.13.0
 
@@ -240,7 +241,7 @@
 1. [A380/PFD] Add DISCONNECT AP FOR LDG FMA message - @BravoMike99 (bruno_pt99)
 1. [A380X/ENG] Adjust climb thrust to be more accurate - @BlueberryKing (BlueberryKing)
 1. [A380X/EWD] Show THR limit in EWD instead of N1 - @flogross89 (floridude)
-1. [A380X/FLIGHT MODEL] Fix pitchup and unrecoverable stall - - @donstim (donbikes#4084)
+1. [A380X/FLIGHT MODEL] Fix pitchup and unrecoverable stall - @donstim (donbikes#4084)
 1. [ATC/TCAS] Fixed TCAS failure on baro corrected altitude going invalid - @tracernz (Mike)
 1. [ATC/TCAS] Fixed TCAS slant range computation - @tracernz (Mike)
 1. [A380X] Add baro unit (hPa/in.Hg) auto selection - @tracernz (Mike)
