@@ -151,7 +151,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
     this.lsIdent.set(mmr.ident ?? null);
     this.lsFreq.set(mmr.frequency ?? null);
     this.lsCourse.set(mmr.course ?? null);
-    this.lsSlope.set(mmr.slope ? mmr.slope.toFixed(1) : '---');
+    this.lsSlope.set(mmr.slope ? `-${mmr.slope.toFixed(1)}` : '---');
     this.lsClass.set(mmr.ident ? 'ILS/DME' : '');
     this.lsIdentEnteredByPilot.set(MfdFmsPositionNavaids.isNavRadioIdentManual(mmr));
     this.lsFrequencyEnteredByPilot.set(MfdFmsPositionNavaids.isNavRadioFreqManual(mmr));
@@ -324,15 +324,19 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.subs.push(
-      this.props.mfd.uiService.activeUri.sub((val) => {
-        if (val.extra === 'display') {
+    if (this.props.mfd.uiService.activeUri.get().extra) {
+      switch (this.props.mfd.uiService.activeUri.get().extra) {
+        case 'display':
           this.navaidsSelectedPageIndex.set(0);
-        } else if (val.extra === 'nav') {
+          break;
+        case 'nav':
           this.navaidsSelectedPageIndex.set(1);
-        }
-      }, true),
-    );
+          break;
+      }
+    } else {
+      const allowedPhases = Math.min(Math.max(this.activeFlightPhase.get(), 1), 6);
+      this.navaidsSelectedPageIndex.set(allowedPhases - 1);
+    }
 
     const sub = this.props.bus.getSubscriber<ClockEvents & MfdSimvars>();
     this.subs.push(
