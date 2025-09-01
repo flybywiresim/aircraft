@@ -66,7 +66,7 @@ export interface NavigationProvider {
    * Gets if the FMS position accuracy is high
    * @returns true if the position accuracy is high or false if low
    */
-  isAcurracyHigh(): boolean;
+  isAccuracyHigh(): boolean;
 
   /**
    * Updates the required navigation performance of the FMS
