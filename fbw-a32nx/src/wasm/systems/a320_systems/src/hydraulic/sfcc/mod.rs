@@ -673,6 +673,34 @@ mod tests {
             self.read_by_name(&format!("SFCC_{num}_FAP_7"))
         }
 
+        fn read_sfcc_sap_1_word(&mut self, num: u8) -> bool {
+            self.read_by_name(&format!("SFCC_{num}_SAP_1"))
+        }
+
+        fn read_sfcc_sap_2_word(&mut self, num: u8) -> bool {
+            self.read_by_name(&format!("SFCC_{num}_SAP_2"))
+        }
+
+        fn read_sfcc_sap_3_word(&mut self, num: u8) -> bool {
+            self.read_by_name(&format!("SFCC_{num}_SAP_3"))
+        }
+
+        fn read_sfcc_sap_4_word(&mut self, num: u8) -> bool {
+            self.read_by_name(&format!("SFCC_{num}_SAP_4"))
+        }
+
+        fn read_sfcc_sap_5_word(&mut self, num: u8) -> bool {
+            self.read_by_name(&format!("SFCC_{num}_SAP_5"))
+        }
+
+        fn read_sfcc_sap_6_word(&mut self, num: u8) -> bool {
+            self.read_by_name(&format!("SFCC_{num}_SAP_6"))
+        }
+
+        fn read_sfcc_sap_7_word(&mut self, num: u8) -> bool {
+            self.read_by_name(&format!("SFCC_{num}_SAP_7"))
+        }
+
         fn set_indicated_airspeed(mut self, indicated_airspeed: f64) -> Self {
             self.write_by_name("AIRSPEED INDICATED", indicated_airspeed);
             self
@@ -759,6 +787,34 @@ mod tests {
             self.query(|a| a.slat_flap_complex.sfcc[idx].flaps_channel.get_fap(6))
         }
 
+        fn get_sap_1(&self, idx: usize) -> bool {
+            self.query(|a| a.slat_flap_complex.sfcc[idx].slats_channel.get_sap(0))
+        }
+
+        fn get_sap_2(&self, idx: usize) -> bool {
+            self.query(|a| a.slat_flap_complex.sfcc[idx].slats_channel.get_sap(1))
+        }
+
+        fn get_sap_3(&self, idx: usize) -> bool {
+            self.query(|a| a.slat_flap_complex.sfcc[idx].slats_channel.get_sap(2))
+        }
+
+        fn get_sap_4(&self, idx: usize) -> bool {
+            self.query(|a| a.slat_flap_complex.sfcc[idx].slats_channel.get_sap(3))
+        }
+
+        fn get_sap_5(&self, idx: usize) -> bool {
+            self.query(|a| a.slat_flap_complex.sfcc[idx].slats_channel.get_sap(4))
+        }
+
+        fn get_sap_6(&self, idx: usize) -> bool {
+            self.query(|a| a.slat_flap_complex.sfcc[idx].slats_channel.get_sap(5))
+        }
+
+        fn get_sap_7(&self, idx: usize) -> bool {
+            self.query(|a| a.slat_flap_complex.sfcc[idx].slats_channel.get_sap(6))
+        }
+
         fn get_is_approaching_position(
             &self,
             demanded_angle: Angle,
@@ -838,6 +894,22 @@ mod tests {
         assert!(test_bed.contains_variable_with_name("SFCC_2_FAP_5"));
         assert!(test_bed.contains_variable_with_name("SFCC_2_FAP_6"));
         assert!(test_bed.contains_variable_with_name("SFCC_2_FAP_7"));
+
+        assert!(test_bed.contains_variable_with_name("SFCC_1_SAP_1"));
+        assert!(test_bed.contains_variable_with_name("SFCC_1_SAP_2"));
+        assert!(test_bed.contains_variable_with_name("SFCC_1_SAP_3"));
+        assert!(test_bed.contains_variable_with_name("SFCC_1_SAP_4"));
+        assert!(test_bed.contains_variable_with_name("SFCC_1_SAP_5"));
+        assert!(test_bed.contains_variable_with_name("SFCC_1_SAP_6"));
+        assert!(test_bed.contains_variable_with_name("SFCC_1_SAP_7"));
+
+        assert!(test_bed.contains_variable_with_name("SFCC_2_SAP_1"));
+        assert!(test_bed.contains_variable_with_name("SFCC_2_SAP_2"));
+        assert!(test_bed.contains_variable_with_name("SFCC_2_SAP_3"));
+        assert!(test_bed.contains_variable_with_name("SFCC_2_SAP_4"));
+        assert!(test_bed.contains_variable_with_name("SFCC_2_SAP_5"));
+        assert!(test_bed.contains_variable_with_name("SFCC_2_SAP_6"));
+        assert!(test_bed.contains_variable_with_name("SFCC_2_SAP_7"));
 
         assert!(test_bed.contains_variable_with_name("SFCC_1_FLAP_ACTUAL_POSITION_WORD"));
         assert!(test_bed.contains_variable_with_name("SFCC_2_FLAP_ACTUAL_POSITION_WORD"));
@@ -1037,6 +1109,193 @@ mod tests {
         assert!(test_bed.read_sfcc_fap_5_word(2));
         assert!(test_bed.read_sfcc_fap_6_word(2));
         assert!(test_bed.read_sfcc_fap_7_word(2));
+    }
+
+    #[test]
+    fn sfcc_saps() {
+        let mut test_bed = test_bed_with()
+            .set_green_hyd_pressure()
+            .set_yellow_hyd_pressure()
+            .set_blue_hyd_pressure()
+            .set_indicated_airspeed(0.)
+            .set_flaps_handle_position(0)
+            .run_one_tick();
+
+        assert!(test_bed.get_sap_1(0));
+        assert!(!test_bed.get_sap_2(0));
+        assert!(!test_bed.get_sap_3(0));
+        assert!(test_bed.get_sap_4(0));
+        assert!(!test_bed.get_sap_5(0));
+        assert!(!test_bed.get_sap_6(0));
+        assert!(!test_bed.get_sap_7(0));
+
+        assert!(test_bed.get_sap_1(1));
+        assert!(!test_bed.get_sap_2(1));
+        assert!(!test_bed.get_sap_3(1));
+        assert!(test_bed.get_sap_4(1));
+        assert!(!test_bed.get_sap_5(1));
+        assert!(!test_bed.get_sap_6(1));
+        assert!(!test_bed.get_sap_7(1));
+
+        assert!(test_bed.read_sfcc_sap_1_word(1));
+        assert!(!test_bed.read_sfcc_sap_2_word(1));
+        assert!(!test_bed.read_sfcc_sap_3_word(1));
+        assert!(test_bed.read_sfcc_sap_4_word(1));
+        assert!(!test_bed.read_sfcc_sap_5_word(1));
+        assert!(!test_bed.read_sfcc_sap_6_word(1));
+        assert!(!test_bed.read_sfcc_sap_7_word(1));
+
+        assert!(test_bed.read_sfcc_sap_1_word(2));
+        assert!(!test_bed.read_sfcc_sap_2_word(2));
+        assert!(!test_bed.read_sfcc_sap_3_word(2));
+        assert!(test_bed.read_sfcc_sap_4_word(2));
+        assert!(!test_bed.read_sfcc_sap_5_word(2));
+        assert!(!test_bed.read_sfcc_sap_6_word(2));
+        assert!(!test_bed.read_sfcc_sap_7_word(2));
+
+        test_bed = test_bed
+            .set_flaps_handle_position(1)
+            .run_waiting_for(Duration::from_secs(60));
+
+        assert!(!test_bed.get_sap_1(0));
+        assert!(test_bed.get_sap_2(0));
+        assert!(test_bed.get_sap_3(0));
+        assert!(!test_bed.get_sap_4(0));
+        assert!(test_bed.get_sap_5(0));
+        assert!(test_bed.get_sap_6(0));
+        assert!(!test_bed.get_sap_7(0));
+
+        assert!(!test_bed.get_sap_1(1));
+        assert!(test_bed.get_sap_2(1));
+        assert!(test_bed.get_sap_3(1));
+        assert!(!test_bed.get_sap_4(1));
+        assert!(test_bed.get_sap_5(1));
+        assert!(test_bed.get_sap_6(1));
+        assert!(!test_bed.get_sap_7(1));
+
+        assert!(!test_bed.read_sfcc_sap_1_word(1));
+        assert!(test_bed.read_sfcc_sap_2_word(1));
+        assert!(test_bed.read_sfcc_sap_3_word(1));
+        assert!(!test_bed.read_sfcc_sap_4_word(1));
+        assert!(test_bed.read_sfcc_sap_5_word(1));
+        assert!(test_bed.read_sfcc_sap_6_word(1));
+        assert!(!test_bed.read_sfcc_sap_7_word(1));
+
+        assert!(!test_bed.read_sfcc_sap_1_word(2));
+        assert!(test_bed.read_sfcc_sap_2_word(2));
+        assert!(test_bed.read_sfcc_sap_3_word(2));
+        assert!(!test_bed.read_sfcc_sap_4_word(2));
+        assert!(test_bed.read_sfcc_sap_5_word(2));
+        assert!(test_bed.read_sfcc_sap_6_word(2));
+        assert!(!test_bed.read_sfcc_sap_7_word(2));
+
+        test_bed = test_bed
+            .set_flaps_handle_position(2)
+            .run_waiting_for(Duration::from_secs(60));
+
+        assert!(!test_bed.get_sap_1(0));
+        assert!(test_bed.get_sap_2(0));
+        assert!(test_bed.get_sap_3(0));
+        assert!(!test_bed.get_sap_4(0));
+        assert!(test_bed.get_sap_5(0));
+        assert!(test_bed.get_sap_6(0));
+        assert!(!test_bed.get_sap_7(0));
+
+        assert!(!test_bed.get_sap_1(1));
+        assert!(test_bed.get_sap_2(1));
+        assert!(test_bed.get_sap_3(1));
+        assert!(!test_bed.get_sap_4(1));
+        assert!(test_bed.get_sap_5(1));
+        assert!(test_bed.get_sap_6(1));
+        assert!(!test_bed.get_sap_7(1));
+
+        assert!(!test_bed.read_sfcc_sap_1_word(1));
+        assert!(test_bed.read_sfcc_sap_2_word(1));
+        assert!(test_bed.read_sfcc_sap_3_word(1));
+        assert!(!test_bed.read_sfcc_sap_4_word(1));
+        assert!(test_bed.read_sfcc_sap_5_word(1));
+        assert!(test_bed.read_sfcc_sap_6_word(1));
+        assert!(!test_bed.read_sfcc_sap_7_word(1));
+
+        assert!(!test_bed.read_sfcc_sap_1_word(2));
+        assert!(test_bed.read_sfcc_sap_2_word(2));
+        assert!(test_bed.read_sfcc_sap_3_word(2));
+        assert!(!test_bed.read_sfcc_sap_4_word(2));
+        assert!(test_bed.read_sfcc_sap_5_word(2));
+        assert!(test_bed.read_sfcc_sap_6_word(2));
+        assert!(!test_bed.read_sfcc_sap_7_word(2));
+
+        test_bed = test_bed
+            .set_flaps_handle_position(3)
+            .run_waiting_for(Duration::from_secs(60));
+
+        assert!(!test_bed.get_sap_1(0));
+        assert!(test_bed.get_sap_2(0));
+        assert!(test_bed.get_sap_3(0));
+        assert!(!test_bed.get_sap_4(0));
+        assert!(test_bed.get_sap_5(0));
+        assert!(test_bed.get_sap_6(0));
+        assert!(!test_bed.get_sap_7(0));
+
+        assert!(!test_bed.get_sap_1(1));
+        assert!(test_bed.get_sap_2(1));
+        assert!(test_bed.get_sap_3(1));
+        assert!(!test_bed.get_sap_4(1));
+        assert!(test_bed.get_sap_5(1));
+        assert!(test_bed.get_sap_6(1));
+        assert!(!test_bed.get_sap_7(1));
+
+        assert!(!test_bed.read_sfcc_sap_1_word(1));
+        assert!(test_bed.read_sfcc_sap_2_word(1));
+        assert!(test_bed.read_sfcc_sap_3_word(1));
+        assert!(!test_bed.read_sfcc_sap_4_word(1));
+        assert!(test_bed.read_sfcc_sap_5_word(1));
+        assert!(test_bed.read_sfcc_sap_6_word(1));
+        assert!(!test_bed.read_sfcc_sap_7_word(1));
+
+        assert!(!test_bed.read_sfcc_sap_1_word(2));
+        assert!(test_bed.read_sfcc_sap_2_word(2));
+        assert!(test_bed.read_sfcc_sap_3_word(2));
+        assert!(!test_bed.read_sfcc_sap_4_word(2));
+        assert!(test_bed.read_sfcc_sap_5_word(2));
+        assert!(test_bed.read_sfcc_sap_6_word(2));
+        assert!(!test_bed.read_sfcc_sap_7_word(2));
+
+        test_bed = test_bed
+            .set_flaps_handle_position(4)
+            .run_waiting_for(Duration::from_secs(60));
+
+        assert!(!test_bed.get_sap_1(0));
+        assert!(test_bed.get_sap_2(0));
+        assert!(test_bed.get_sap_3(0));
+        assert!(!test_bed.get_sap_4(0));
+        assert!(test_bed.get_sap_5(0));
+        assert!(test_bed.get_sap_6(0));
+        assert!(!test_bed.get_sap_7(0));
+
+        assert!(!test_bed.get_sap_1(1));
+        assert!(test_bed.get_sap_2(1));
+        assert!(test_bed.get_sap_3(1));
+        assert!(!test_bed.get_sap_4(1));
+        assert!(test_bed.get_sap_5(1));
+        assert!(test_bed.get_sap_6(1));
+        assert!(!test_bed.get_sap_7(1));
+
+        assert!(!test_bed.read_sfcc_sap_1_word(1));
+        assert!(test_bed.read_sfcc_sap_2_word(1));
+        assert!(test_bed.read_sfcc_sap_3_word(1));
+        assert!(!test_bed.read_sfcc_sap_4_word(1));
+        assert!(test_bed.read_sfcc_sap_5_word(1));
+        assert!(test_bed.read_sfcc_sap_6_word(1));
+        assert!(!test_bed.read_sfcc_sap_7_word(1));
+
+        assert!(!test_bed.read_sfcc_sap_1_word(2));
+        assert!(test_bed.read_sfcc_sap_2_word(2));
+        assert!(test_bed.read_sfcc_sap_3_word(2));
+        assert!(!test_bed.read_sfcc_sap_4_word(2));
+        assert!(test_bed.read_sfcc_sap_5_word(2));
+        assert!(test_bed.read_sfcc_sap_6_word(2));
+        assert!(!test_bed.read_sfcc_sap_7_word(2));
     }
 
     #[test]
