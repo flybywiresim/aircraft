@@ -277,7 +277,7 @@ export class Navigation implements NavigationProvider {
     return this.requiredPerformance.manualRnp;
   }
 
-  public isAcurracyHigh(): boolean {
+  public isAccuracyHigh(): boolean {
     return this.accuracyHigh;
   }
 
