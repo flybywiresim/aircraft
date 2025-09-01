@@ -182,6 +182,12 @@ void AutopilotStateMachine::AutopilotStateMachine_ROLL_OUT_entry(void)
   AutopilotStateMachine_B.out_i.law = lateral_law::ROLL_OUT;
 }
 
+void AutopilotStateMachine::AutopilotStateMachine_LOC_TRACK_entry(void)
+{
+  AutopilotStateMachine_B.out_i.mode = lateral_mode::LOC_TRACK;
+  AutopilotStateMachine_B.out_i.law = lateral_law::LOC_TRACK;
+}
+
 void AutopilotStateMachine::AutopilotStateMachine_FLARE_entry(void)
 {
   AutopilotStateMachine_B.out_i.mode = lateral_mode::FLARE;
@@ -194,12 +200,6 @@ boolean_T AutopilotStateMachine::AutopilotStateMachine_LOC_TO_X(const ap_sm_outp
   isGsArmedOrActive = (BusAssignment->vertical_previous.armed.GS || (BusAssignment->vertical_previous.output.mode ==
     vertical_mode::GS_CPT) || (BusAssignment->vertical_previous.output.mode == vertical_mode::GS_TRACK));
   return (BusAssignment->input.LOC_push && (!isGsArmedOrActive)) || (BusAssignment->input.APPR_push && isGsArmedOrActive);
-}
-
-void AutopilotStateMachine::AutopilotStateMachine_LOC_TRACK_entry(void)
-{
-  AutopilotStateMachine_B.out_i.mode = lateral_mode::LOC_TRACK;
-  AutopilotStateMachine_B.out_i.law = lateral_law::LOC_TRACK;
 }
 
 void AutopilotStateMachine::AutopilotStateMachine_LAND_entry(void)
@@ -248,6 +248,9 @@ void AutopilotStateMachine::AutopilotStateMachine_LOC(const ap_sm_output *BusAss
       if (BusAssignment->lateral.condition.FLARE) {
         AutopilotStateMachine_DWork.is_LOC = AutopilotStateMachine_IN_FLARE;
         AutopilotStateMachine_FLARE_entry();
+      } else if (!BusAssignment->data.land_capability) {
+        AutopilotStateMachine_DWork.is_LOC = AutopilotStateMachine_IN_LOC_TRACK;
+        AutopilotStateMachine_LOC_TRACK_entry();
       }
       break;
 
@@ -1910,6 +1913,9 @@ void AutopilotStateMachine::AutopilotStateMachine_GS(void)
     if (AutopilotStateMachine_B.BusAssignment_g.vertical.condition.FLARE) {
       AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_FLARE;
       AutopilotStateMachine_FLARE_entry_b();
+    } else if (!AutopilotStateMachine_B.BusAssignment_g.data.land_capability) {
+      AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_GS_TRACK;
+      AutopilotStateMachine_GS_TRACK_entry();
     }
     break;
 
@@ -3317,10 +3323,13 @@ void AutopilotStateMachine::step()
   }
 
   speedTargetChanged = ((AutopilotStateMachine_U.in.time.simulation_time - AutopilotStateMachine_DWork.eventTime_j >=
-    1.2) && ((AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::LOC_TRACK) ||
+    1.0) && ((AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::LOC_TRACK) ||
              (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::LAND)) &&
                         ((AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::GS_TRACK) ||
-    (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::LAND)));
+    (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::LAND)) &&
+                        AutopilotStateMachine_U.in.data.gear_is_extended &&
+                        (AutopilotStateMachine_U.in.data.flaps_handle_index > 0.0) &&
+                        AutopilotStateMachine_U.in.data.land_capability);
   rtb_cFLARE = (AutopilotStateMachine_U.in.input.condition_Flare &&
                 ((AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::LAND) ||
                  (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::FLARE)) &&
@@ -3977,6 +3986,8 @@ void AutopilotStateMachine::step()
   AutopilotStateMachine_B.BusAssignment_g.data.altimeter_setting_changed = (AutopilotStateMachine_DWork.Delay_DSTATE_g
     != AutopilotStateMachine_P.CompareToConstant_const_c);
   AutopilotStateMachine_B.BusAssignment_g.data.total_weight_kg = AutopilotStateMachine_U.in.data.total_weight_kg;
+  AutopilotStateMachine_B.BusAssignment_g.data.gear_is_extended = AutopilotStateMachine_U.in.data.gear_is_extended;
+  AutopilotStateMachine_B.BusAssignment_g.data.land_capability = AutopilotStateMachine_U.in.data.land_capability;
   AutopilotStateMachine_B.BusAssignment_g.data_computed.time_since_touchdown = distance_m;
   AutopilotStateMachine_B.BusAssignment_g.data_computed.time_since_lift_off = rtb_dme;
   AutopilotStateMachine_B.BusAssignment_g.data_computed.time_since_SRS = AutopilotStateMachine_U.in.time.simulation_time

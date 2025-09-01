@@ -2176,6 +2176,19 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.data.altimeter_setting_left_mbar = simData.kohlsmanSetting_1;
     autopilotStateMachineInput.in.data.altimeter_setting_right_mbar = simData.kohlsmanSetting_2;
     autopilotStateMachineInput.in.data.total_weight_kg = simData.total_weight_kg;
+    autopilotStateMachineInput.in.data.gear_is_extended = simData.gearHandlePosition < 0.95;
+
+    bool landCapability = false;
+    if (fcdcsDiscreteOutputs[0].fcdcValid) {
+      landCapability = fcdcsBusOutputs[0].fgDiscreteWord4.bitFromValueOr(23, false) ||
+                       fcdcsBusOutputs[0].fgDiscreteWord4.bitFromValueOr(24, false) ||
+                       fcdcsBusOutputs[0].fgDiscreteWord4.bitFromValueOr(25, false);
+    } else {
+      landCapability = fcdcsBusOutputs[1].fgDiscreteWord4.bitFromValueOr(23, false) ||
+                       fcdcsBusOutputs[1].fgDiscreteWord4.bitFromValueOr(24, false) ||
+                       fcdcsBusOutputs[1].fgDiscreteWord4.bitFromValueOr(25, false);
+    }
+    autopilotStateMachineInput.in.data.land_capability = landCapability;
 
     // input ----------------------------------------------------------------------------------------------------------
     autopilotStateMachineInput.in.input.FD_active = simData.ap_fd_1_active || simData.ap_fd_2_active;

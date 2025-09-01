@@ -141,7 +141,6 @@ FcdcBus Fcdc::getBusOutputs() {
   output.fgDiscreteWord4.setBit(23, land2Capacity);
   output.fgDiscreteWord4.setBit(24, land3FailPassiveCapacity);
   output.fgDiscreteWord4.setBit(25, land3FailOperationalCapacity);
-  output.fgDiscreteWord4.setBit(26, appr1Capacity);
 
   return output;
 }
