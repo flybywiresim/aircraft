@@ -65,9 +65,19 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
 
   private readonly positionFrozen = Subject.create(false);
 
-  private readonly gpsPrimary = Subject.create(false);
+  private readonly navPrimaryLost = Subject.create(false);
 
-  private readonly gpsPrimaryText = this.gpsPrimary.map((v) => (v ? 'GPS PRIMARY' : ''));
+  private readonly navPrimaryText = this.navPrimaryLost.map((v) => (v ? 'NAV PRIMARY LOST' : 'NAV PRIMARY'));
+
+  private readonly navPrimaryClass = this.navPrimaryLost.map(
+    (v) => `mfd-value ${v ? 'amber' : ''} bigger mfd-spacing-right`,
+  );
+
+  private readonly accuracyClass = this.fmsAccuracyHigh.map(
+    (v) => `mfd-value ${v ? '' : 'amber'} bigger mfd-spacing-right`,
+  );
+
+  private readonly accuracyVisibility = this.navPrimaryLost.map((v) => (v ? 'visible' : 'hidden'));
 
   private readonly positionFrozenLabel = this.positionFrozen.map((v) => (v ? 'UNFREEZE' : 'FREEZE'));
 
@@ -129,6 +139,10 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
       this.positionFrozenText,
       this.positionFrozenAt,
       this.positionFrozenTime,
+      this.navPrimaryClass,
+      this.accuracyClass,
+      this.navPrimaryText,
+      this.accuracyVisibility,
     );
   }
 
@@ -140,7 +154,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
     const navigation = this.props.fmcService.master.navigation;
     const rnp = navigation.getActiveRnp();
 
-    this.gpsPrimary.set(navigation.getGpsPrimary());
+    this.navPrimaryLost.set(!navigation.getGpsPrimary());
     this.fmsAccuracyHigh.set(navigation.isAccuracyHigh());
     this.fmsEpe.set(navigation.getEpe());
     this.fmsRnp.set(rnp ?? null);
@@ -235,8 +249,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
           <div style={'height:7px'}></div>
           <div class="mfd-pos-top-row">
             <div class="mfd-label-value-container">
-              <span class="mfd-label bigger mfd-spacing-right">ACCURACY</span>
-              <span class="mfd-value bigger">{this.fmsAccuracy}</span>
+              <span class={this.navPrimaryClass}>{this.navPrimaryText}</span>
             </div>
             <div class="mfd-label-value-container" style={'margin-right:89px;'}>
               <span class="mfd-label bigger mfd-spacing-right" style="width: 54px;">
@@ -247,8 +260,9 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
             </div>
           </div>
           <div class="mfd-pos-top-row">
-            <div class="mfd-label-value-container">
-              <span class="mfd-value bigger mfd-spacing-right">{this.gpsPrimaryText}</span>
+            <div class="mfd-label-value-container" style={{ visibility: this.accuracyVisibility }}>
+              <span class="mfd-label bigger mfd-spacing-right">ACCURACY</span>
+              <span class={this.accuracyClass}>{this.fmsAccuracy}</span>
             </div>
             <div class="mfd-label-value-container" style={'margin-right:87px'}>
               <span class="mfd-label bigger mfd-spacing-right-small">RNP</span>
@@ -267,7 +281,8 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
               />
             </div>
           </div>
-          <div class="fc mfd-pos-monitor-table">
+
+          <div class="fc mfd-pos-monitor-table" visibility={'hidden'}>
             <div class="fr space-between">
               <div class="mfd-label-value-container">
                 <span class="mfd-label bigger mfd-spacing-right">&nbsp;&nbsp;{this.onSideFms}</span>
@@ -427,9 +442,9 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                 buttonStyle="margin-right: 5px; width:140px;"
               />
               <Button
-                label="GPS"
+                label="GNSS"
                 disabled={Subject.create(true)}
-                onClick={() => this.props.mfd.uiService.navigateTo('fms/position/gps')}
+                onClick={() => this.props.mfd.uiService.navigateTo('fms/position/gnss')}
                 buttonStyle="margin-right: 5px; width:125px;"
               />
               <Button
