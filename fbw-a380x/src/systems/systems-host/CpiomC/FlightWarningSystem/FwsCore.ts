@@ -3918,10 +3918,18 @@ export class FwsCore {
         this.outflowValve4OpenAmount.valueOr(0) > 99,
     );
 
-    this.ocsm1AutoFailure.set(SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_1_AUTO_PARTITION_FAILURE', 'bool'));
-    this.ocsm2AutoFailure.set(SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_2_AUTO_PARTITION_FAILURE', 'bool'));
-    this.ocsm3AutoFailure.set(SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_3_AUTO_PARTITION_FAILURE', 'bool'));
-    this.ocsm4AutoFailure.set(SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_4_AUTO_PARTITION_FAILURE', 'bool'));
+    this.ocsm1AutoFailure.set(
+      SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_1_AUTO_PARTITION_FAILURE', SimVarValueType.Bool) > 0,
+    );
+    this.ocsm2AutoFailure.set(
+      SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_2_AUTO_PARTITION_FAILURE', SimVarValueType.Bool) > 0,
+    );
+    this.ocsm3AutoFailure.set(
+      SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_3_AUTO_PARTITION_FAILURE', SimVarValueType.Bool) > 0,
+    );
+    this.ocsm4AutoFailure.set(
+      SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_4_AUTO_PARTITION_FAILURE', SimVarValueType.Bool) > 0,
+    );
 
     // FIX ME Faults should be inhibited in case of all CPC words FW to handle unpowered states.
     // Currently these are set as FW if cpiom/cpc is unpowered or normally failed so it's not possible to distinugish between the two cases.
@@ -3936,14 +3944,22 @@ export class FwsCore {
           this.ocsm4AutoFailure.get()),
     );
 
-    const ocsm1Channel1Failure = SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_1_CHANNEL_1_FAILURE', 'bool');
-    const ocsm1Channel2Failure = SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_1_CHANNEL_2_FAILURE', 'bool');
-    const ocsm2Channel1Failure = SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_2_CHANNEL_1_FAILURE', 'bool');
-    const ocsm2Channel2Failure = SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_2_CHANNEL_2_FAILURE', 'bool');
-    const ocsm3Channel1Failure = SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_3_CHANNEL_1_FAILURE', 'bool');
-    const ocsm3Channel2Failure = SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_3_CHANNEL_2_FAILURE', 'bool');
-    const ocsm4Channel1Failure = SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_4_CHANNEL_1_FAILURE', 'bool');
-    const ocsm4Channel2Failure = SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_4_CHANNEL_2_FAILURE', 'bool');
+    const ocsm1Channel1Failure =
+      SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_1_CHANNEL_1_FAILURE', SimVarValueType.Bool) > 0;
+    const ocsm1Channel2Failure =
+      SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_1_CHANNEL_2_FAILURE', SimVarValueType.Bool) > 0;
+    const ocsm2Channel1Failure =
+      SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_2_CHANNEL_1_FAILURE', SimVarValueType.Bool) > 0;
+    const ocsm2Channel2Failure =
+      SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_2_CHANNEL_2_FAILURE', SimVarValueType.Bool) > 0;
+    const ocsm3Channel1Failure =
+      SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_3_CHANNEL_1_FAILURE', SimVarValueType.Bool) > 0;
+    const ocsm3Channel2Failure =
+      SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_3_CHANNEL_2_FAILURE', SimVarValueType.Bool) > 0;
+    const ocsm4Channel1Failure =
+      SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_4_CHANNEL_1_FAILURE', SimVarValueType.Bool) > 0;
+    const ocsm4Channel2Failure =
+      SimVar.GetSimVarValue('L:A32NX_PRESS_OCSM_4_CHANNEL_2_FAILURE', SimVarValueType.Bool) > 0;
 
     this.ocsm1Failure.set(ocsm1Channel1Failure && ocsm1Channel2Failure);
     this.ocsm2Failure.set(ocsm2Channel1Failure && ocsm2Channel2Failure);
@@ -5491,20 +5507,20 @@ export class FwsCore {
       }
     }
 
-    this.ewdMessageLinesLeft.forEach((l, i) => l.set(orderedMemoArrayLeft[i]));
+    this.ewdMessageLinesLeft.forEach((l, i) => l.set(orderedMemoArrayLeft[i] ?? ''));
     // TODO order by decreasing importance
-    this.ewdMessageLinesRight.forEach((l, i) => l.set(orderedMemoArrayRight[i]));
+    this.ewdMessageLinesRight.forEach((l, i) => l.set(orderedMemoArrayRight[i] ?? ''));
 
     // TODO order by decreasing importance
     const pfdMemos = orderedMemoArrayRight
       .filter((it) => pfdMemoDisplay.includes(it))
       .sort((a, b) => this.messagePriority(EcamMemos[a]) - this.messagePriority(EcamMemos[b]));
-    this.pfdMemoLines.forEach((l, i) => l.set(pfdMemos[i]));
+    this.pfdMemoLines.forEach((l, i) => l.set(pfdMemos[i] ?? ''));
 
     // TODO order by decreasing importance
-    this.sdStatusInfoLines.forEach((l, i) => l.set(stsInfoKeys[i]));
-    this.sdStatusInopAllPhasesLines.forEach((l, i) => l.set(stsInopAllPhasesKeys[i]));
-    this.sdStatusInopApprLdgLines.forEach((l, i) => l.set(stsInopApprLdgKeys[i]));
+    this.sdStatusInfoLines.forEach((l, i) => l.set(stsInfoKeys[i] ?? ''));
+    this.sdStatusInopAllPhasesLines.forEach((l, i) => l.set(stsInopAllPhasesKeys[i] ?? ''));
+    this.sdStatusInopApprLdgLines.forEach((l, i) => l.set(stsInopApprLdgKeys[i] ?? ''));
 
     // TODO order by decreasing importance, only color-based for now
     // LAND ASAP overrides/replaces LAND ANSA
@@ -5517,8 +5533,8 @@ export class FwsCore {
     const sortedEwdLimitationsApprLdgKeys = ewdLimitationsApprLdgKeys.sort(
       (a, b) => this.messagePriority(EcamLimitations[a]) - this.messagePriority(EcamLimitations[b]),
     );
-    this.ewdLimitationsAllPhasesLines.forEach((l, i) => l.set(sortedEwdLimitationsAllPhasesKeys[i]));
-    this.ewdLimitationsApprLdgLines.forEach((l, i) => l.set(sortedEwdLimitationsApprLdgKeys[i]));
+    this.ewdLimitationsAllPhasesLines.forEach((l, i) => l.set(sortedEwdLimitationsAllPhasesKeys[i] ?? ''));
+    this.ewdLimitationsApprLdgLines.forEach((l, i) => l.set(sortedEwdLimitationsApprLdgKeys[i] ?? ''));
 
     const pfdLimitationsCombined = [...new Set(pfdLimitationsKeys)].sort(
       (a, b) => this.messagePriority(EcamLimitations[a]) - this.messagePriority(EcamLimitations[b]),
@@ -5526,7 +5542,7 @@ export class FwsCore {
     if (pfdLimitationsCombined.includes('1') && pfdLimitationsCombined.includes('2')) {
       pfdLimitationsCombined.splice(pfdLimitationsCombined.indexOf('2'), 1);
     }
-    this.pfdLimitationsLines.forEach((l, i) => l.set(pfdLimitationsCombined[i]));
+    this.pfdLimitationsLines.forEach((l, i) => l.set(pfdLimitationsCombined[i] ?? ''));
 
     this.ecamStsNormal.set(
       !stsInfoKeys.length &&
