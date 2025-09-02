@@ -11,15 +11,16 @@ import '../../../index.scss';
 
 export const CruisePage = () => {
   const [unit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
+  const metric = unit === '1';
   const [engine1FuelUsed] = useSimVar('L:A32NX_FUEL_USED:1', 'number', 1000);
   const [engine2FuelUsed] = useSimVar('L:A32NX_FUEL_USED:2', 'number', 1000);
   const [engine3FuelUsed] = useSimVar('L:A32NX_FUEL_USED:3', 'number', 1000);
   const [engine4FuelUsed] = useSimVar('L:A32NX_FUEL_USED:4', 'number', 1000);
 
-  const engine1FuelUsedDisplay = fuelForDisplay(engine1FuelUsed, unit, 1, 5);
-  const engine2FuelUsedDisplay = fuelForDisplay(engine2FuelUsed, unit, 1, 5);
-  const engine3FuelUsedDisplay = fuelForDisplay(engine3FuelUsed, unit, 1, 5);
-  const engine4FuelUsedDisplay = fuelForDisplay(engine4FuelUsed, unit, 1, 5);
+  const engine1FuelUsedDisplay = fuelForDisplay(engine1FuelUsed, metric, 1, 5);
+  const engine2FuelUsedDisplay = fuelForDisplay(engine2FuelUsed, metric, 1, 5);
+  const engine3FuelUsedDisplay = fuelForDisplay(engine3FuelUsed, metric, 1, 5);
+  const engine4FuelUsedDisplay = fuelForDisplay(engine4FuelUsed, metric, 1, 5);
 
   const engineTotalFuelUsedDisplay =
     engine1FuelUsedDisplay + engine2FuelUsedDisplay + engine3FuelUsedDisplay + engine4FuelUsedDisplay;
@@ -29,10 +30,10 @@ export const CruisePage = () => {
   const [engine3FuelFlow] = useSimVar('L:A32NX_ENGINE_FF:3', 'number', 1000);
   const [engine4FuelFlow] = useSimVar('L:A32NX_ENGINE_FF:4', 'number', 1000);
 
-  const engine1FuelFlowDisplay = fuelForDisplay(engine1FuelFlow, unit);
-  const engine2FuelFlowDisplay = fuelForDisplay(engine2FuelFlow, unit);
-  const engine3FuelFlowDisplay = fuelForDisplay(engine3FuelFlow, unit);
-  const engine4FuelFlowDisplay = fuelForDisplay(engine4FuelFlow, unit);
+  const engine1FuelFlowDisplay = fuelForDisplay(engine1FuelFlow, metric);
+  const engine2FuelFlowDisplay = fuelForDisplay(engine2FuelFlow, metric);
+  const engine3FuelFlowDisplay = fuelForDisplay(engine3FuelFlow, metric);
+  const engine4FuelFlowDisplay = fuelForDisplay(engine4FuelFlow, metric);
 
   // TODO Degraded accuracy indication for fuel flow and used
 
