@@ -30,6 +30,9 @@ void Fcdc::update(double deltaTime, bool faultActive, bool isPowered) {
 
     btvExitMissedMtrig.write(discreteInputs.btvExitMissed, deltaTime);
     modeReversionTripleClickMtrig.write(discreteInputs.fmaModeReversion, deltaTime);
+  } else {
+    previousLandCapacity = 0;
+    autolandWarningLatch = false;
   }
 }
 
@@ -217,8 +220,8 @@ void Fcdc::updateApproachCapability(double deltaTime) {
   land3FailOperationalInop |= !requiredPrimsForLand3FailOpAvail;
 
   int newLandCapacity = land3FailOperationalCapacity ? 5 : land3FailPassiveCapacity ? 4 : land2Capacity ? 3 : 0;
-  capabilityTripleClickMtrig.write(newLandCapacity < landCapacity, deltaTime);
-  landCapacity = newLandCapacity;
+  capabilityTripleClickMtrig.write(newLandCapacity < previousLandCapacity, deltaTime);
+  previousLandCapacity = newLandCapacity;
 
   // autoland warning -------------------------------------------------------------------------------------------------
   // if at least one AP engaged and LAND or FLARE mode -> latch

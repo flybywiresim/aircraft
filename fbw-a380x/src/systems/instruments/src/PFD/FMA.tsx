@@ -13,7 +13,7 @@ import {
   SubscribableMapFunctions,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { ArmedLateralMode, isArmed, LateralMode, VerticalMode } from '@shared/autopilot';
+import { ArmedLateralMode, ArmedVerticalMode, isArmed, LateralMode, VerticalMode } from '@shared/autopilot';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
@@ -1599,8 +1599,20 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
   );
 
   private readonly fmaLateralActive = ConsumerSubject.create(this.sub.on('activeLateralMode'), 0);
-
   private readonly fmaLateralArmed = ConsumerSubject.create(this.sub.on('fmaLateralArmed'), 0);
+
+  private readonly fmaVerticalActive = ConsumerSubject.create(this.sub.on('activeVerticalMode'), 0);
+  private readonly fmaVerticalArmed = ConsumerSubject.create(this.sub.on('fmaVerticalArmed'), 0);
+
+  private readonly landModesArmedOrActive = MappedSubject.create(
+    ([latAct, latArm, vertAct, vertArm]) =>
+      ((latAct >= 30 && latAct <= 34) || isArmed(latArm, ArmedLateralMode.LOC)) &&
+      ((vertAct >= 30 && vertAct <= 34) || isArmed(vertArm, ArmedVerticalMode.GS)),
+    this.fmaLateralActive,
+    this.fmaLateralArmed,
+    this.fmaVerticalActive,
+    this.fmaVerticalArmed,
+  );
 
   private text1Sub = Subject.create('');
 
@@ -1611,8 +1623,6 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
   }
 
   private setText() {
-    const landModeArmed = isArmed(this.fmaLateralArmed.get(), ArmedLateralMode.LAND);
-    const landModeActive = this.fmaLateralActive.get() === LateralMode.LAND;
     const land2Capacity = this.fcdcFgDiscreteWord4.get().bitValueOr(23, false);
     const land3FailPassiveCapacity = this.fcdcFgDiscreteWord4.get().bitValueOr(24, false);
     const land3FailOperationalCapacity = this.fcdcFgDiscreteWord4.get().bitValueOr(25, false);
@@ -1629,7 +1639,7 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
     } else if (land3FailOperationalCapacity) {
       text1 = 'LAND3';
       text2 = 'DUAL';
-    } else if (this.fcdcFgDiscreteWord4.get().isFailureWarning() && (landModeActive || landModeArmed)) {
+    } else if (this.landModesArmedOrActive.get()) {
       text1 = 'APPR1';
       text2 = '';
     } else if (false) {
@@ -1670,7 +1680,7 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    MappedSubject.create(() => this.setText(), this.fcdcFgDiscreteWord4, this.fmaLateralActive, this.fmaLateralArmed);
+    MappedSubject.create(() => this.setText(), this.fcdcFgDiscreteWord4, this.landModesArmedOrActive);
   }
 
   render(): VNode {

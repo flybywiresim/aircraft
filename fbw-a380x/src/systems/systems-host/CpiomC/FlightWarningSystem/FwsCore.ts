@@ -677,6 +677,10 @@ export class FwsCore {
 
   public readonly checkFmaTripleClickPulse = new NXLogicPulseNode(true);
 
+  public readonly checkFmaTripleClickMonitorConfirm = new NXLogicConfirmNode(0.3, true);
+  public readonly checkFmaTripleClickDebounce = new NXLogicTriggeredMonostableNode(3, true);
+  public readonly checkFmaTripleClickDebouncePulse = new NXLogicPulseNode(true);
+
   public readonly autoThrustEngaged = Subject.create(false);
 
   public readonly autoThrustDisengagedInstantPulse = new NXLogicPulseNode(false);
@@ -3370,7 +3374,9 @@ export class FwsCore {
     const btvTripleClick =
       this.fcdc1TripleClickDemand.get().bitValueOr(3, false) || this.fcdc2TripleClickDemand.get().bitValueOr(3, false);
 
-    this.checkFmaTripleClickPulse.write(fcdcTripleClickDemand || btvTripleClick, deltaTime);
+    this.checkFmaTripleClickMonitorConfirm.write(fcdcTripleClickDemand || btvTripleClick, deltaTime);
+    this.checkFmaTripleClickDebounce.write(this.checkFmaTripleClickMonitorConfirm.read(), deltaTime);
+    this.checkFmaTripleClickPulse.write(this.checkFmaTripleClickDebounce.read(), deltaTime);
     if (this.checkFmaTripleClickPulse.read()) {
       this.soundManager.enqueueSound('tripleClick');
     }

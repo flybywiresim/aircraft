@@ -2185,7 +2185,7 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.data.altimeter_setting_left_mbar = simData.kohlsmanSetting_1;
     autopilotStateMachineInput.in.data.altimeter_setting_right_mbar = simData.kohlsmanSetting_2;
     autopilotStateMachineInput.in.data.total_weight_kg = simData.total_weight_kg;
-    autopilotStateMachineInput.in.data.gear_is_extended = simData.gearHandlePosition < 0.95;
+    autopilotStateMachineInput.in.data.gear_is_extended = simData.gearHandlePosition > 0.95;
 
     bool landCapability = false;
     if (fcdcsDiscreteOutputs[0].fcdcValid) {
