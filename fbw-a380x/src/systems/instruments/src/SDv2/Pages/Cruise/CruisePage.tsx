@@ -47,11 +47,7 @@ export class CruisePage extends DestroyableComponent<SdPageProps> {
     fu.map((v) => fuelForDisplay(v, this.usingMetric.get(), 1, 5).toFixed(0)),
   );
   private readonly engineTotalFuelUsedDisplay = MappedSubject.create(
-    (fu) =>
-      fuelForDisplay(
-        parseInt(fu[0]) + parseInt(fu[1]) + parseInt(fu[2]) + parseInt(fu[3]),
-        this.usingMetric.get(),
-      ).toFixed(0),
+    (fu) => parseInt(fu[0]) + parseInt(fu[1]) + parseInt(fu[2]) + parseInt(fu[3]),
     ...this.enginesFuelUsedDisplay,
   );
 
