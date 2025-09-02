@@ -1153,6 +1153,18 @@ export class FwsCore {
 
   public flapsFullSelected = false;
 
+  public flapsInConf0 = false;
+
+  public flapsInConf1 = false;
+
+  public flapsInConf1f = false;
+
+  public flapsInConf2 = false;
+
+  public flapsInConf3 = false;
+
+  public flapsInConfFull = false;
+
   // FIXME implement
   public readonly flapSys1Fault = Subject.create(false);
   public readonly flapSys2Fault = Subject.create(false);
@@ -1719,8 +1731,6 @@ export class FwsCore {
   public readonly overspeedVfeConf3 = Subject.create(false);
 
   public readonly overspeedVfeConfFull = Subject.create(false);
-
-  public readonly flapsIndex = Subject.create(0);
 
   private stallWarningRaw = ConsumerValue.create(this.sub.on('stall_warning_on'), false);
 
@@ -2909,8 +2919,6 @@ export class FwsCore {
       this.ldgInhibitTimer.write(this.flightPhase910.get() && !this.flightPhaseInhibitOverrideNode.read(), deltaTime),
     );
 
-    this.flapsIndex.set(SimVar.GetSimVarValue('L:A32NX_FLAPS_CONF_INDEX', 'number'));
-
     this.adr1Cas.setWord(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADR_1_COMPUTED_AIRSPEED', 'number'));
     this.adr2Cas.setWord(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADR_2_COMPUTED_AIRSPEED', 'number'));
     this.adr3Cas.setWord(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADR_3_COMPUTED_AIRSPEED', 'number'));
@@ -2976,8 +2984,6 @@ export class FwsCore {
     this.HPNEng3.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N3:3', 'number'));
     this.HPNEng4.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N3:4', 'number'));
     this.N1IdleEng.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_IDLE_N1', 'number'));
-
-    // Flaps
 
     // FIXME move out of acquisition to logic below
     const oneEngineAboveMinPower = this.engine1AboveIdle.get() || this.engine2AboveIdle.get();
@@ -3693,17 +3699,13 @@ export class FwsCore {
     overspeedWarning ||= adr1Discrete1.bitValueOr(9, false) || adr2Discrete1.bitValueOr(9, false);
     const isOverspeed = (limit: number) => this.computedAirSpeedToNearest2.get() > limit + 4;
     const isOverMach = (limit: number) => this.machSelectedFromAdr.get() > limit + 0.006;
-    this.overspeedVmo.set(
-      !this.isAllGearDownlocked && this.flapsIndex.get() === 0 && (isOverspeed(Vmo) || isOverMach(Mmo)),
-    );
-    this.overspeedVle.set(
-      this.isAllGearDownlocked && this.flapsIndex.get() === 0 && (isOverspeed(Vle) || isOverMach(Mle)),
-    );
-    this.overspeedVfeConf1.set(this.flapsIndex.get() === 1 && isOverspeed(VfeF1));
-    this.overspeedVfeConf1F.set(this.flapsIndex.get() === 2 && isOverspeed(VfeF1F));
-    this.overspeedVfeConf2.set(this.flapsIndex.get() === 3 && isOverspeed(VfeF2));
-    this.overspeedVfeConf3.set((this.flapsIndex.get() === 4 || this.flapsIndex.get() === 5) && isOverspeed(VfeF3));
-    this.overspeedVfeConfFull.set(this.flapsIndex.get() === 6 && isOverspeed(VfeFF));
+    this.overspeedVmo.set(!this.isAllGearDownlocked && this.flapsInConf0 && (isOverspeed(Vmo) || isOverMach(Mmo)));
+    this.overspeedVle.set(this.isAllGearDownlocked && this.flapsInConf0 && (isOverspeed(Vle) || isOverMach(Mle)));
+    this.overspeedVfeConf1.set(this.flapsInConf1 && isOverspeed(VfeF1));
+    this.overspeedVfeConf1F.set(this.flapsInConf1f && isOverspeed(VfeF1F));
+    this.overspeedVfeConf2.set(this.flapsInConf2 && isOverspeed(VfeF2));
+    this.overspeedVfeConf3.set(this.flapsInConf3 && isOverspeed(VfeF3));
+    this.overspeedVfeConfFull.set(this.flapsInConfFull && isOverspeed(VfeFF));
 
     // TO SPEEDS NOT INSERTED
     const fmToSpeedsNotInserted = fm1DiscreteWord3.bitValueOr(18, false) && fm2DiscreteWord3.bitValueOr(18, false);
@@ -6035,6 +6037,18 @@ export class FwsCore {
     this.flap2Selected = this.sfccSlatFlapsSystemStatusWord.bitValueOr(19, false);
     this.flap3Selected = this.sfccSlatFlapsSystemStatusWord.bitValueOr(20, false);
     this.flapsFullSelected = this.sfccSlatFlapsSystemStatusWord.bitValueOr(21, false);
+    this.flapsInConf0 =
+      this.sfccSlatFlapPositionWord.bitValueOr(12, false) && this.sfccSlatFlapPositionWord.bitValueOr(19, false);
+    this.flapsInConf1 =
+      this.sfccSlatFlapPositionWord.bitValueOr(13, false) && this.sfccSlatFlapPositionWord.bitValueOr(19, false);
+    this.flapsInConf1 =
+      this.sfccSlatFlapPositionWord.bitValueOr(13, false) && this.sfccSlatFlapPositionWord.bitValueOr(20, false);
+    this.flapsInConf2 =
+      this.sfccSlatFlapPositionWord.bitValueOr(14, false) && this.sfccSlatFlapPositionWord.bitValueOr(21, false);
+    this.flapsInConf3 =
+      this.sfccSlatFlapPositionWord.bitValueOr(15, false) && this.sfccSlatFlapPositionWord.bitValueOr(22, false);
+    this.flapsInConfFull =
+      this.sfccSlatFlapPositionWord.bitValueOr(15, false) && this.sfccSlatFlapPositionWord.bitValueOr(23, false);
   }
 
   destroy() {
