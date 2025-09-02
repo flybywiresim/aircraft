@@ -27,9 +27,16 @@ type BasePseudoFwcSimvars = {
   throttle_position: number;
   ths_position: number;
   gw_cg_percent: number;
+  fcdc_triple_click_demand: number;
 };
 
-type IndexedTopics = 'engine_master' | 'engine_state' | 'adr_cas_word' | 'fcdc_discrete_word_4' | 'throttle_position';
+type IndexedTopics =
+  | 'engine_master'
+  | 'engine_state'
+  | 'adr_cas_word'
+  | 'fcdc_discrete_word_4'
+  | 'throttle_position'
+  | 'fcdc_triple_click_demand';
 type PseudoFwcIndexedEvents = {
   [P in keyof Pick<BasePseudoFwcSimvars, IndexedTopics> as IndexedEventType<P>]: BasePseudoFwcSimvars[P];
 };
@@ -65,6 +72,10 @@ export class PseudoFwcSimvarPublisher extends SimVarPublisher<PseudoFwcSimvars> 
       ['throttle_position', { name: 'L:A32NX_AUTOTHRUST_TLA:#index#', type: SimVarValueType.Number, indexed: true }],
       ['ths_position', { name: 'ELEVATOR TRIM POSITION', type: SimVarValueType.Radians }],
       ['gw_cg_percent', { name: 'L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC', type: SimVarValueType.Number }],
+      [
+        'fcdc_triple_click_demand',
+        { name: 'L:A32NX_FCDC_#index#_TRIPLE_CLICK_DEMAND', type: SimVarValueType.Number, indexed: true },
+      ],
     ];
 
     super(new Map(simvars), bus, pacer);

@@ -27,6 +27,9 @@ void Fcdc::update(double deltaTime, bool faultActive, bool isPowered) {
 
   if (monitoringHealthy) {
     updateApproachCapability(deltaTime);
+
+    btvExitMissedMtrig.write(discreteInputs.btvExitMissed, deltaTime);
+    modeReversionTripleClickMtrig.write(discreteInputs.fmaModeReversion, deltaTime);
   }
 }
 
@@ -41,6 +44,7 @@ FcdcBus Fcdc::getBusOutputs() {
     output.efcsStatus4.setSsm(Arinc429SignStatus::FailureWarning);
     output.efcsStatus5.setSsm(Arinc429SignStatus::FailureWarning);
     output.fgDiscreteWord4.setSsm(Arinc429SignStatus::FailureWarning);
+    output.tripleClickDemand.setSsm(Arinc429SignStatus::FailureWarning);
     return output;
   }
 
@@ -142,6 +146,11 @@ FcdcBus Fcdc::getBusOutputs() {
   output.fgDiscreteWord4.setBit(24, land3FailPassiveCapacity);
   output.fgDiscreteWord4.setBit(25, land3FailOperationalCapacity);
 
+  output.tripleClickDemand.setSsm(ssm);
+  output.tripleClickDemand.setBit(1, capabilityTripleClickMtrig.read());
+  output.tripleClickDemand.setBit(2, modeReversionTripleClickMtrig.read());
+  output.tripleClickDemand.setBit(3, btvExitMissedMtrig.read());
+
   return output;
 }
 
@@ -171,7 +180,6 @@ void Fcdc::updateApproachCapability(double deltaTime) {
       land2Capacity = fg_status_word->bitFromValueOr(16, false);
       land3FailPassiveCapacity = fg_status_word->bitFromValueOr(17, false);
       land3FailOperationalCapacity = fg_status_word->bitFromValueOr(18, false);
-      appr1Capacity = fg_status_word->bitFromValueOr(19, false);
 
       land2Inop = fg_status_word->bitFromValueOr(20, false);
       land3FailPassiveInop = fg_status_word->bitFromValueOr(21, false);
@@ -203,11 +211,14 @@ void Fcdc::updateApproachCapability(double deltaTime) {
   land2Capacity &= land2OrLand3SinglePrimSecCriteria;
   land3FailPassiveCapacity &= land2OrLand3SinglePrimSecCriteria;
   land3FailOperationalCapacity &= requiredPrimsForLand3FailOpAvail;
-  appr1Capacity &= primAvailable >= 1;
 
   land2Inop |= !land2OrLand3SinglePrimSecCriteria;
   land3FailPassiveInop |= !land2OrLand3SinglePrimSecCriteria;
   land3FailOperationalInop |= !requiredPrimsForLand3FailOpAvail;
+
+  int newLandCapacity = land3FailOperationalCapacity ? 5 : land3FailPassiveCapacity ? 4 : land2Capacity ? 3 : 0;
+  capabilityTripleClickMtrig.write(newLandCapacity < landCapacity, deltaTime);
+  landCapacity = newLandCapacity;
 
   // autoland warning -------------------------------------------------------------------------------------------------
   // if at least one AP engaged and LAND or FLARE mode -> latch

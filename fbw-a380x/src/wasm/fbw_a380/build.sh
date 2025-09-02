@@ -108,6 +108,7 @@ clang++ \
   "${DIR}/src/fcdc/Fcdc.cpp" \
   -I "${DIR}/src/utils" \
   "${DIR}/src/utils/ConfirmNode.cpp" \
+  "${DIR}/src/utils/TriggeredMonostableNode.cpp" \
   "${DIR}/src/utils/SRFlipFLop.cpp" \
   "${DIR}/src/utils/PulseNode.cpp" \
   "${DIR}/src/utils/HysteresisNode.cpp" \

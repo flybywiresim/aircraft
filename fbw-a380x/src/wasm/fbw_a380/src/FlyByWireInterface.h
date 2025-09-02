@@ -374,6 +374,9 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idLgciuDiscreteWord3[2];
   std::unique_ptr<LocalVariable> idLgciuDiscreteWord4[2];
 
+  // BTV inputs (from Rust WASM)
+  std::unique_ptr<LocalVariable> idBtvExitMissed;
+
   // SFCC inputs
   std::unique_ptr<LocalVariable> idSfccSlatFlapComponentStatusWord[2];
   std::unique_ptr<LocalVariable> idSfccSlatFlapSystemStatusWord[2];
@@ -443,6 +446,8 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFcdcSpoilerRight3Pos[2];
   std::unique_ptr<LocalVariable> idFcdcSpoilerRight4Pos[2];
   std::unique_ptr<LocalVariable> idFcdcSpoilerRight5Pos[2];
+
+  std::unique_ptr<LocalVariable> idFcdcTripleClickDemand[2];
 
   // FCDC discrete output Lvars
   std::unique_ptr<LocalVariable> idFcdcPriorityCaptGreen[2];

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Arinc429.h"
+#include "../utils/TriggeredMonostableNode.h"
 #include "FcdcIO.h"
 
 enum class LateralLaw {
@@ -66,14 +67,20 @@ class Fcdc {
 
   const double minimumPowerOutageTimeForFailure = 0.01;
 
-  bool appr1Capacity = false;
+  bool lastBtvExitMissed = false;
+
   bool land2Capacity = false;
   bool land3FailPassiveCapacity = false;
   bool land3FailOperationalCapacity = false;
+  int landCapacity = 0;
 
   bool land2Inop = false;
   bool land3FailPassiveInop = false;
   bool land3FailOperationalInop = false;
+
+  TriggeredMonostableNode btvExitMissedMtrig = TriggeredMonostableNode(0.3);  // Emit for 0.3 to make sure it reaches FWS
+  TriggeredMonostableNode capabilityTripleClickMtrig = TriggeredMonostableNode(0.3);
+  TriggeredMonostableNode modeReversionTripleClickMtrig = TriggeredMonostableNode(0.3);
 
   bool autolandWarningLatch = false;
   bool autolandWarningTriggered = false;

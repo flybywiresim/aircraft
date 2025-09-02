@@ -24,6 +24,7 @@ import {
 } from '@microsoft/msfs-sdk';
 
 import {
+  Arinc429LocalVarConsumerSubject,
   Arinc429Register,
   Arinc429RegisterSubject,
   Arinc429SignStatusMatrix,
@@ -37,7 +38,6 @@ import {
   NXLogicMemoryNode,
   NXLogicPulseNode,
   NXLogicTriggeredMonostableNode,
-  RegisteredSimVar,
   UpdateThrottler,
 } from '@flybywiresim/fbw-sdk';
 import { VerticalMode, LateralMode } from '@shared/autopilot';
@@ -665,19 +665,17 @@ export class FwsCore {
 
   public readonly autoPilotOffShowMemo = Subject.create(false);
 
-  public readonly approachCapability = Subject.create(0);
-
-  public readonly approachCapabilityDowngradeDebounce = new NXLogicTriggeredMonostableNode(1, true);
-
-  public readonly approachCapabilityDowngradeSuppress = new NXLogicTriggeredMonostableNode(3, true);
-
-  public readonly approachCapabilityDowngradeDebouncePulse = new NXLogicPulseNode(false);
-
-  public readonly modeReversionTripleClickSimvar = RegisteredSimVar.create<boolean>(
-    'L:A32NX_FMA_TRIPLE_CLICK_MODE_REVERSION',
-    SimVarValueType.Bool,
+  public readonly fcdc1TripleClickDemand = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('fcdc_triple_click_demand_1'),
   );
-  public readonly modeReversionTripleClickPulse = new NXLogicPulseNode(true);
+
+  public readonly fcdc2TripleClickDemand = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('fcdc_triple_click_demand_2'),
+  );
+
+  public readonly fcdcDualFaultTripleClick = new NXLogicConfirmNode(2.3, true);
+
+  public readonly checkFmaTripleClickPulse = new NXLogicPulseNode(true);
 
   public readonly autoThrustEngaged = Subject.create(false);
 
@@ -1511,8 +1509,6 @@ export class FwsCore {
   public autoBrakeOffAuralTriggered = false;
 
   public autoBrakeOffMemoInhibited = false;
-
-  public btvExitMissedPulseNode = new NXLogicPulseNode();
 
   public readonly btvLost = Subject.create(false); // FIXME add
 
@@ -2649,23 +2645,23 @@ export class FwsCore {
     this.autoPilotInstinctiveDiscPressedPulse.write(this.apDiscInputBuffer.read(), deltaTime);
 
     // Inputs update
+    const flightPhase = this.flightPhase.get();
     this.flightPhaseEndedPulseNode.write(false, deltaTime);
-    const phase3 = this.flightPhase.get() === 3;
-    const phase6 = this.flightPhase.get() === 6;
-    const flightPhase8 = this.flightPhase.get() === 8;
+    const phase3 = flightPhase === 3;
+    const phase6 = flightPhase === 6;
+    const flightPhase8 = flightPhase === 8;
     this.flightPhase3PulseNode.write(phase3, deltaTime);
 
     // flight phase convinence vars
     const flightPhase6789 = this.flightPhase6789.get();
     const flightPhase112 = this.flightPhase112.get();
-    const flightPhase189 = this.flightPhase189.get();
 
-    this.phase815MinConfNode.write(this.flightPhase.get() === 8, deltaTime);
+    this.phase815MinConfNode.write(flightPhase === 8, deltaTime);
 
     this.flightPhase1112MoreThanOneMinConfNode.write(this.flightPhase1112.get(), deltaTime);
     this.flightPhase1112MoreThanOneMin.set(this.flightPhase1112MoreThanOneMinConfNode.read());
 
-    this.phase12ShutdownMemoryNode.write(this.flightPhase.get() === 12, !this.phase112.get());
+    this.phase12ShutdownMemoryNode.write(flightPhase === 12, !this.phase112.get());
 
     this.shutDownFor50MinutesCheckListReset.set(
       this.shutDownFor50MinutesClResetConfNode.write(this.phase12ShutdownMemoryNode.read(), deltaTime),
@@ -3356,25 +3352,26 @@ export class FwsCore {
 
     this.autoPilotInstinctiveDiscPressedPulse.write(false, deltaTime);
 
-    // approach capability downgrade. Debounce first, then suppress for a certain amount of time
-    // (to avoid multiple triple clicks, and a delay which is too long)
-    const newCapability = SimVar.GetSimVarValue('L:A32NX_APPROACH_CAPABILITY', SimVarValueType.Number);
-    const capabilityDowngrade = newCapability < this.approachCapability.get() && newCapability > 0;
-    this.approachCapabilityDowngradeDebounce.write(
-      capabilityDowngrade && flightPhase189 && !this.approachCapabilityDowngradeSuppress.read(),
+    // Triple clicks from FCDC: Capability downgrade or BTV exit missed
+    this.fcdcDualFaultTripleClick.write(
+      this.fcdc1TripleClickDemand.get().isInvalid() && this.fcdc2TripleClickDemand.get().isInvalid(),
       deltaTime,
     );
-    this.approachCapabilityDowngradeDebouncePulse.write(this.approachCapabilityDowngradeDebounce.read(), deltaTime);
-    this.approachCapabilityDowngradeSuppress.write(this.approachCapabilityDowngradeDebouncePulse.read(), deltaTime);
-    // Capability downgrade after debounce --> triple click
-    if (this.approachCapabilityDowngradeDebouncePulse.read()) {
-      this.soundManager.enqueueSound('tripleClick');
-    }
-    this.approachCapability.set(newCapability);
 
-    // FG mode reversion
-    this.modeReversionTripleClickPulse.write(this.modeReversionTripleClickSimvar.get(), deltaTime);
-    if (this.modeReversionTripleClickPulse.read()) {
+    const fcdcTripleClickDemand =
+      (this.fcdc1TripleClickDemand.get().bitValueOr(1, false) ||
+        this.fcdc2TripleClickDemand.get().bitValueOr(1, false) ||
+        this.fcdc1TripleClickDemand.get().bitValueOr(2, false) ||
+        this.fcdc2TripleClickDemand.get().bitValueOr(2, false) ||
+        this.fcdcDualFaultTripleClick.read()) &&
+      flightPhase !== 10 &&
+      flightPhase !== 11;
+
+    const btvTripleClick =
+      this.fcdc1TripleClickDemand.get().bitValueOr(3, false) || this.fcdc2TripleClickDemand.get().bitValueOr(3, false);
+
+    this.checkFmaTripleClickPulse.write(fcdcTripleClickDemand || btvTripleClick, deltaTime);
+    if (this.checkFmaTripleClickPulse.read()) {
       this.soundManager.enqueueSound('tripleClick');
     }
 
@@ -3462,15 +3459,6 @@ export class FwsCore {
     if (autoBrakeOffShouldTrigger && this.autoBrakeOffAuralConfirmNode.read() && !this.autoBrakeOffAuralTriggered) {
       this.soundManager.enqueueSound('autoBrakeOff');
       this.autoBrakeOffAuralTriggered = true;
-    }
-
-    this.btvExitMissedPulseNode.write(
-      SimVar.GetSimVarValue('L:A32NX_BTV_EXIT_MISSED', SimVarValueType.Bool),
-      deltaTime,
-    );
-
-    if (this.btvExitMissedPulseNode.read()) {
-      this.soundManager.enqueueSound('tripleClick');
     }
 
     // Engine Logic
@@ -5031,7 +5019,6 @@ export class FwsCore {
           this.allEnginesFailure.get()),
     );
 
-    const flightPhase = this.flightPhase.get();
     let tempMemoArrayLeft: string[] = [];
     let tempMemoArrayRight: string[] = [];
     const allFailureKeys: string[] = [];

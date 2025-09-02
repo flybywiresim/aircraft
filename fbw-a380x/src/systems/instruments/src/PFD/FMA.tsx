@@ -1616,7 +1616,6 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
     const land2Capacity = this.fcdcFgDiscreteWord4.get().bitValueOr(23, false);
     const land3FailPassiveCapacity = this.fcdcFgDiscreteWord4.get().bitValueOr(24, false);
     const land3FailOperationalCapacity = this.fcdcFgDiscreteWord4.get().bitValueOr(25, false);
-    const appr1Capacity = this.fcdcFgDiscreteWord4.get().bitValueOr(26, false);
 
     let text1: string;
     let text2: string | undefined;
@@ -1630,10 +1629,7 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
     } else if (land3FailOperationalCapacity) {
       text1 = 'LAND3';
       text2 = 'DUAL';
-    } else if (
-      appr1Capacity ||
-      (this.fcdcFgDiscreteWord4.get().isFailureWarning() && (landModeActive || landModeArmed))
-    ) {
+    } else if (this.fcdcFgDiscreteWord4.get().isFailureWarning() && (landModeActive || landModeArmed)) {
       text1 = 'APPR1';
       text2 = '';
     } else if (false) {

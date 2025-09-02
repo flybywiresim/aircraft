@@ -522,6 +522,8 @@ void FlyByWireInterface::setupLocalVariables() {
     idLgciuDiscreteWord4[i] = std::make_unique<LocalVariable>("A32NX_LGCIU_" + idString + "_DISCRETE_WORD_4");
   }
 
+  idBtvExitMissed = std::make_unique<LocalVariable>("A32NX_BTV_EXIT_MISSED");
+
   for (int i = 0; i < 2; i++) {
     std::string idString = std::to_string(i + 1);
     idSfccSlatFlapComponentStatusWord[i] = std::make_unique<LocalVariable>("A32NX_SFCC_" + idString + "_SLAT_FLAP_COMPONENT_STATUS_WORD");
@@ -597,6 +599,8 @@ void FlyByWireInterface::setupLocalVariables() {
     idFcdcSpoilerRight3Pos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_RIGHT_3_POS");
     idFcdcSpoilerRight4Pos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_RIGHT_4_POS");
     idFcdcSpoilerRight5Pos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_RIGHT_5_POS");
+
+    idFcdcTripleClickDemand[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_TRIPLE_CLICK_DEMAND");
 
     idFcdcPriorityCaptGreen[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_PRIORITY_LIGHT_CAPT_GREEN_ON");
     idFcdcPriorityCaptRed[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_PRIORITY_LIGHT_CAPT_RED_ON");
@@ -1748,6 +1752,8 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
 
   fcdcs[fcdcIndex].discreteInputs.noseGearPressed = idLgciuNoseGearCompressed[0]->get();
   fcdcs[fcdcIndex].discreteInputs.spoilersArmed = spoilersHandler->getIsArmed() ? true : false;
+  fcdcs[fcdcIndex].discreteInputs.btvExitMissed = idBtvExitMissed->get();
+  fcdcs[fcdcIndex].discreteInputs.fmaModeReversion = idFmaModeReversion->get();
 
   for (int i = 0; i < 3; i++) {
     fcdcs[fcdcIndex].discreteInputs.primHealthy[i] = primsDiscreteOutputs[i].prim_healthy;
@@ -1774,6 +1780,9 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
   idFcdcDiscreteWord4[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].efcsStatus4.toSimVar());
   idFcdcDiscreteWord5[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].efcsStatus5.toSimVar());
   idFcdcFgDiscreteWord4[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].fgDiscreteWord4.toSimVar());
+  idFcdcTripleClickDemand[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].tripleClickDemand.toSimVar());
+
+  idFcdcHealthy[fcdcIndex]->set(fcdcsDiscreteOutputs[fcdcIndex].fcdcValid ? 1 : 0);
   idFcdcHealthy[fcdcIndex]->set(fcdcsDiscreteOutputs[fcdcIndex].fcdcValid ? 1 : 0);
   idAutopilotAutolandWarning->set(fcdcsDiscreteOutputs[fcdcIndex].autolandWarning ? 1 : 0);
 

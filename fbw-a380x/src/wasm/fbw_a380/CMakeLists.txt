@@ -87,5 +87,6 @@ add_executable(flybywire-a380x-fbw
     src/utils/HysteresisNode.cpp
     src/utils/PulseNode.cpp
     src/utils/SRFlipFLop.cpp
+    src/utils/TriggeredMonostableNode.cpp
 
 )
