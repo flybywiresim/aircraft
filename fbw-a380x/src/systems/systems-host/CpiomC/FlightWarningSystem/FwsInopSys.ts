@@ -47,6 +47,11 @@ export class FwsInopSys {
 
   /** INOP SYS shown on SD */
   inopSys: FwsInopSysDict = {
+    220300026: {
+      // AUTOLAND
+      simVarIsActive: this.fws.land2Inop,
+      phase: FwsInopSysPhases.ApprLdg,
+    },
     213300005: {
       // CAB PRESS SYS
       simVarIsActive: MappedSubject.create(
