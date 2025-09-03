@@ -448,7 +448,7 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   271800064: {
-    title: '\x1b<4m\x1b4mF/CTL\x1bm SPEED BRAKES POS/LVR DISAGREE',
+    title: '\x1b<4m\x1b4mF/CTL\x1bm SPEED BRAKES POS/LEVER DISAGREE',
     sensed: true,
     items: [
       {
