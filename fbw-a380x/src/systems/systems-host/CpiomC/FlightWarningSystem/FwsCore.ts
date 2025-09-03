@@ -1073,7 +1073,7 @@ export class FwsCore {
 
   public readonly speedBrakeCommand5sConfirm = new NXLogicConfirmNode(5, true);
 
-  public readonly speedBrakeCommand80sConfirm = new NXLogicConfirmNode(80, true);
+  public readonly speedBrakeCommand50sConfirm = new NXLogicConfirmNode(50, true);
 
   public readonly speedBrakeCaution1Confirm = new NXLogicConfirmNode(30, true);
 
@@ -1089,7 +1089,7 @@ export class FwsCore {
 
   public readonly speedBrakeCaution2Pulse = new NXLogicPulseNode(true);
 
-  public readonly speedBrakeStillOutWarning = Subject.create(false);
+  public readonly speedBrakesStillExtended = Subject.create(false);
 
   public readonly speedBrakePosLeverDisagree = Subject.create(false);
 
@@ -1102,8 +1102,6 @@ export class FwsCore {
   public readonly speedBrake5sDelayed = new NXLogicConfirmNode(5, false);
 
   public readonly groundSpoilerNotArmedWarning = Subject.create(false);
-
-  public readonly spoilersActiveWord = Arinc429Register.empty();
 
   /* FUEL */
 
@@ -4343,14 +4341,14 @@ export class FwsCore {
 
     // spd brk still out
     this.speedBrakeCommand5sConfirm.write(this.speedBrakeCommand.get(), deltaTime);
-    this.speedBrakeCommand80sConfirm.write(this.speedBrakeCommand.get(), deltaTime);
+    this.speedBrakeCommand50sConfirm.write(this.speedBrakeCommand.get(), deltaTime);
     this.engAboveIdleWithSpeedBrakeConfirm.write(
-      this.speedBrakeCommand80sConfirm.read() && !oneEngineAboveMinPower,
+      this.speedBrakeCommand50sConfirm.read() && !oneEngineAboveMinPower,
       deltaTime,
     );
     this.speedBrakeCaution1Confirm.write(
       this.flightPhase.get() === 8 &&
-        this.speedBrakeCommand80sConfirm.read() &&
+        this.speedBrakeCommand50sConfirm.read() &&
         !this.engAboveIdleWithSpeedBrakeConfirm.read(),
       deltaTime,
     );
@@ -4382,7 +4380,7 @@ export class FwsCore {
     this.speedBrakeCaution1Pulse.write(speedBrakeCaution1, deltaTime);
     this.speedBrakeCaution2Pulse.write(speedBrakeCaution2, deltaTime);
     const speedBrakeCaution = speedBrakeCaution1 || speedBrakeCaution2 || speedBrakeCaution3;
-    this.speedBrakeStillOutWarning.set(
+    this.speedBrakesStillExtended.set(
       !this.speedBrakeCaution1Pulse.read() &&
         !this.speedBrakeCaution2Pulse.read() &&
         speedBrakeCaution &&

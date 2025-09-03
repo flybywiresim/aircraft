@@ -2797,7 +2797,7 @@ export class FwsAbnormalSensed {
     271800065: {
       // SPEED BRAKES STILL EXTENDED
       flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 10, 11, 12],
-      simVarIsActive: this.fws.speedBrakeStillOutWarning,
+      simVarIsActive: this.fws.speedBrakesStillExtended,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
