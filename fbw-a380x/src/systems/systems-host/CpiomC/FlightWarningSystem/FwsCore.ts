@@ -631,6 +631,7 @@ export class FwsCore {
   public readonly fms2Fault = Subject.create(false);
 
   /** If multiple AP discs are triggered between FWS cycles, memorize the amount */
+  public autoPilotInstinctiveDiscLastPressed = 0;
   public autoPilotInstinctiveDiscCountSinceLastFwsCycle = 0;
 
   public readonly autoPilotDisengagedInstantPulse = new NXLogicPulseNode(false);
@@ -651,7 +652,7 @@ export class FwsCore {
 
   public readonly autoPilotOffVoluntaryFirstCavalryChargeActive = new NXLogicTriggeredMonostableNode(0.9, true);
 
-  public readonly autoPilotOffVoluntaryFirstCavalryChargeActivePulse = new NXLogicPulseNode(false);
+  public readonly autoPilotOffVoluntaryFirstCavalryChargeEndedPulse = new NXLogicPulseNode(false);
 
   public readonly autoPilotOffVoluntaryDiscPulse = new NXLogicPulseNode(true);
 
@@ -3256,7 +3257,7 @@ export class FwsCore {
     this.aircraftOnGround.set(this.onGroundConf.write(this.onGroundImmediate, deltaTime));
 
     // AP OFF
-    const apEngaged = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_ACTIVE', 'Bool');
+    const apEngaged = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_ACTIVE', SimVarValueType.Bool) > 0;
     this.autoPilotDisengagedInstantPulse.write(apEngaged, deltaTime);
 
     const apDiscPressedInLast1p8SecBeforeThisCycle = this.autoPilotInstinctiveDiscPressedInLast1p9Sec.read();
@@ -3268,7 +3269,7 @@ export class FwsCore {
     this.autoPilotOffVoluntaryDiscPulse.write(voluntaryApDisc, deltaTime);
 
     this.autoPilotOffVoluntaryFirstCavalryChargeActive.write(this.autoPilotOffVoluntaryDiscPulse.read(), deltaTime);
-    this.autoPilotOffVoluntaryFirstCavalryChargeActivePulse.write(
+    this.autoPilotOffVoluntaryFirstCavalryChargeEndedPulse.write(
       this.autoPilotOffVoluntaryFirstCavalryChargeActive.read(),
       deltaTime,
     );
@@ -3314,7 +3315,7 @@ export class FwsCore {
       this.soundManager.setVolume(FwsAuralVolume.Attenuated);
       this.soundManager.enqueueSound('cavalryChargeCont'); // On the A380, first cav charge can be cancelled early
     }
-    if (this.autoPilotOffVoluntaryFirstCavalryChargeActivePulse.read()) {
+    if (this.autoPilotOffVoluntaryFirstCavalryChargeEndedPulse.read()) {
       this.soundManager.dequeueSound('cavalryChargeCont');
       this.soundManager.setVolume(FwsAuralVolume.Full);
     }
@@ -5671,8 +5672,9 @@ export class FwsCore {
 
   autoPilotInstinctiveDisconnect() {
     this.apDiscInputBuffer.write(true, false);
-    if (this.apDiscInputBuffer.read()) {
+    if (Date.now() - this.autoPilotInstinctiveDiscLastPressed > 25) {
       this.autoPilotInstinctiveDiscCountSinceLastFwsCycle++;
+      this.autoPilotInstinctiveDiscLastPressed = Date.now();
     }
   }
 
