@@ -665,10 +665,16 @@ export class FwsCore {
 
   public readonly autoPilotOffShowMemo = Subject.create(false);
 
+  public readonly fcdc1FgDiscreteWord4 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('fcdc_fg_discrete_word_4_1'),
+  );
+  public readonly fcdc2FgDiscreteWord4 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('fcdc_fg_discrete_word_4_2'),
+  );
+
   public readonly fcdc1FgDiscreteWord8 = Arinc429LocalVarConsumerSubject.create(
     this.sub.on('fcdc_fg_discrete_word_8_1'),
   );
-
   public readonly fcdc2FgDiscreteWord8 = Arinc429LocalVarConsumerSubject.create(
     this.sub.on('fcdc_fg_discrete_word_8_2'),
   );
@@ -1603,18 +1609,19 @@ export class FwsCore {
 
   public readonly land3FailOperationalInop = MappedSubject.create(
     ([fcdc1, fcdc2]) => fcdc1.bitValueOr(22, false) || fcdc2.bitValueOr(22, false),
-    this.fcdc1FgDiscreteWord8,
-    this.fcdc2FgDiscreteWord8,
+    this.fcdc1FgDiscreteWord4,
+    this.fcdc1FgDiscreteWord4,
   );
   public readonly land3FailPassiveInop = MappedSubject.create(
     ([fcdc1, fcdc2]) => fcdc1.bitValueOr(21, false) || fcdc2.bitValueOr(21, false),
-    this.fcdc1FgDiscreteWord8,
-    this.fcdc2FgDiscreteWord8,
+    this.fcdc1FgDiscreteWord4,
+    this.fcdc1FgDiscreteWord4,
   );
   public readonly land2Inop = MappedSubject.create(
-    ([fcdc1, fcdc2]) => fcdc1.bitValueOr(20, false) || fcdc2.bitValueOr(20, false),
-    this.fcdc1FgDiscreteWord8,
-    this.fcdc2FgDiscreteWord8,
+    ([fcdc1, fcdc2]) =>
+      fcdc1.bitValueOr(20, false) || fcdc2.bitValueOr(20, false) || (fcdc1.isInvalid() && fcdc2.isInvalid()),
+    this.fcdc1FgDiscreteWord4,
+    this.fcdc1FgDiscreteWord4,
   );
 
   private adr3OverspeedWarning = new NXLogicMemoryNode(false, false);

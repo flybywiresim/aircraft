@@ -160,7 +160,7 @@ FcdcBus Fcdc::getBusOutputs() {
   output.primFgDiscreteWord8.setBit(15, false);                                 // AP 2 INOP
   output.primFgDiscreteWord8.setBit(16, false);                                 // FD 1 INOP
   output.primFgDiscreteWord8.setBit(17, false);                                 // FD 2 INOP
-  output.primFgDiscreteWord8.setBit(18, bitFromValueOr(busInputs.prims[masterPrim].discrete_status_word_1, 12, false));  // ROLLOUT FAULT
+  output.primFgDiscreteWord8.setBit(18, !bitFromValueOr(busInputs.prims[masterPrim].discrete_status_word_1, 12, true));  // ROLLOUT FAULT
 
   return output;
 }
