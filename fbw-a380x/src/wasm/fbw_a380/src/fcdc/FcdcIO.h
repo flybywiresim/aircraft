@@ -18,9 +18,9 @@ struct FcdcBus {
   Arinc429DiscreteWord efcsStatus5;
 
   // similar to fmgcDiscreteWord4, no references available
-  Arinc429DiscreteWord fgDiscreteWord4;
+  Arinc429DiscreteWord primFgDiscreteWord4;
 
-  Arinc429DiscreteWord tripleClickDemand;
+  Arinc429DiscreteWord primFgDiscreteWord8;
 };
 
 struct FcdcDiscreteInputs {
@@ -33,6 +33,9 @@ struct FcdcDiscreteInputs {
   bool btvExitMissed;
 
   bool fmaModeReversion;
+
+  /* FIXME find proper communication refs */
+  bool noseWheelSteeringRollOutFault;
 
   /* FIXME use proper bus messages */
   ap_raw_laws_input autopilotStateMachineOutput;

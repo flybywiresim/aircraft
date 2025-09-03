@@ -1657,6 +1657,15 @@ export class FwsAbnormalSensed {
       info: () => [],
     },
     // 22 - AUTOFLIGHT
+    220800013: {
+      // ROLL OUT FAULT
+      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 12],
+      simVarIsActive: this.fws.rollOutFault,
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [false],
+      failure: 1,
+      sysPage: -1,
+    },
     221800001: {
       // FMC-A FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],

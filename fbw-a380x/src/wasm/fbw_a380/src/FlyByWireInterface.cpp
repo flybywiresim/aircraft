@@ -579,6 +579,7 @@ void FlyByWireInterface::setupLocalVariables() {
     idFcdcDiscreteWord4[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_4");
     idFcdcDiscreteWord5[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_5");
     idFcdcFgDiscreteWord4[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_FG_DISCRETE_WORD_4");
+    idFcdcFgDiscreteWord8[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_FG_DISCRETE_WORD_8");
     idFcdcCaptRollCommand[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_CAPT_ROLL_COMMAND");
     idFcdcFoRollCommand[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_FO_ROLL_COMMAND");
     idFcdcCaptPitchCommand[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_CAPT_PITCH_COMMAND");
@@ -599,8 +600,6 @@ void FlyByWireInterface::setupLocalVariables() {
     idFcdcSpoilerRight3Pos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_RIGHT_3_POS");
     idFcdcSpoilerRight4Pos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_RIGHT_4_POS");
     idFcdcSpoilerRight5Pos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_RIGHT_5_POS");
-
-    idFcdcTripleClickDemand[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_TRIPLE_CLICK_DEMAND");
 
     idFcdcPriorityCaptGreen[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_PRIORITY_LIGHT_CAPT_GREEN_ON");
     idFcdcPriorityCaptRed[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_PRIORITY_LIGHT_CAPT_RED_ON");
@@ -1754,6 +1753,7 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
   fcdcs[fcdcIndex].discreteInputs.spoilersArmed = spoilersHandler->getIsArmed() ? true : false;
   fcdcs[fcdcIndex].discreteInputs.btvExitMissed = idBtvExitMissed->get();
   fcdcs[fcdcIndex].discreteInputs.fmaModeReversion = idFmaModeReversion->get();
+  fcdcs[fcdcIndex].discreteInputs.noseWheelSteeringRollOutFault = failuresConsumer.isActive(Failures::Rollout);
 
   for (int i = 0; i < 3; i++) {
     fcdcs[fcdcIndex].discreteInputs.primHealthy[i] = primsDiscreteOutputs[i].prim_healthy;
@@ -1779,8 +1779,8 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
   idFcdcDiscreteWord3[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].efcsStatus3.toSimVar());
   idFcdcDiscreteWord4[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].efcsStatus4.toSimVar());
   idFcdcDiscreteWord5[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].efcsStatus5.toSimVar());
-  idFcdcFgDiscreteWord4[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].fgDiscreteWord4.toSimVar());
-  idFcdcTripleClickDemand[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].tripleClickDemand.toSimVar());
+  idFcdcFgDiscreteWord4[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].primFgDiscreteWord4.toSimVar());
+  idFcdcFgDiscreteWord8[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].primFgDiscreteWord8.toSimVar());
 
   idFcdcHealthy[fcdcIndex]->set(fcdcsDiscreteOutputs[fcdcIndex].fcdcValid ? 1 : 0);
   idFcdcHealthy[fcdcIndex]->set(fcdcsDiscreteOutputs[fcdcIndex].fcdcValid ? 1 : 0);
@@ -2189,13 +2189,13 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
 
     bool landCapability = false;
     if (fcdcsDiscreteOutputs[0].fcdcValid) {
-      landCapability = fcdcsBusOutputs[0].fgDiscreteWord4.bitFromValueOr(23, false) ||
-                       fcdcsBusOutputs[0].fgDiscreteWord4.bitFromValueOr(24, false) ||
-                       fcdcsBusOutputs[0].fgDiscreteWord4.bitFromValueOr(25, false);
+      landCapability = fcdcsBusOutputs[0].primFgDiscreteWord4.bitFromValueOr(23, false) ||
+                       fcdcsBusOutputs[0].primFgDiscreteWord4.bitFromValueOr(24, false) ||
+                       fcdcsBusOutputs[0].primFgDiscreteWord4.bitFromValueOr(25, false);
     } else {
-      landCapability = fcdcsBusOutputs[1].fgDiscreteWord4.bitFromValueOr(23, false) ||
-                       fcdcsBusOutputs[1].fgDiscreteWord4.bitFromValueOr(24, false) ||
-                       fcdcsBusOutputs[1].fgDiscreteWord4.bitFromValueOr(25, false);
+      landCapability = fcdcsBusOutputs[1].primFgDiscreteWord4.bitFromValueOr(23, false) ||
+                       fcdcsBusOutputs[1].primFgDiscreteWord4.bitFromValueOr(24, false) ||
+                       fcdcsBusOutputs[1].primFgDiscreteWord4.bitFromValueOr(25, false);
     }
     autopilotStateMachineInput.in.data.land_capability = landCapability;
 
@@ -2595,7 +2595,7 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
   idTrackingMode->set(wasInSlew || pauseDetected || idExternalOverride->get());
 
   // determine if nosewheel demand shall be set
-  if (!(wasInSlew || pauseDetected || idExternalOverride->get())) {
+  if (!(wasInSlew || pauseDetected || idExternalOverride->get() || failuresConsumer.isActive(Failures::Rollout))) {
     idAutopilotNosewheelDemand->set(autopilotLawsOutput.Nosewheel_c);
   } else {
     idAutopilotNosewheelDemand->set(0);

@@ -65,6 +65,11 @@ export class FwsInopSys {
       ),
       phase: FwsInopSysPhases.AllPhases,
     },
+    220300018: {
+      // ROLL OUT
+      simVarIsActive: this.fws.rollOutFault,
+      phase: FwsInopSysPhases.ApprLdg,
+    },
     221300001: {
       // FMC-A
       simVarIsActive: this.fws.fmcAFault,

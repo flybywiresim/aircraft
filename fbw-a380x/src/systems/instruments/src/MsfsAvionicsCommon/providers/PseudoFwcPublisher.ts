@@ -27,7 +27,7 @@ type BasePseudoFwcSimvars = {
   throttle_position: number;
   ths_position: number;
   gw_cg_percent: number;
-  fcdc_triple_click_demand: number;
+  fcdc_fg_discrete_word_8: number;
 };
 
 type IndexedTopics =
@@ -36,7 +36,7 @@ type IndexedTopics =
   | 'adr_cas_word'
   | 'fcdc_discrete_word_4'
   | 'throttle_position'
-  | 'fcdc_triple_click_demand';
+  | 'fcdc_fg_discrete_word_8';
 type PseudoFwcIndexedEvents = {
   [P in keyof Pick<BasePseudoFwcSimvars, IndexedTopics> as IndexedEventType<P>]: BasePseudoFwcSimvars[P];
 };
@@ -73,8 +73,8 @@ export class PseudoFwcSimvarPublisher extends SimVarPublisher<PseudoFwcSimvars> 
       ['ths_position', { name: 'ELEVATOR TRIM POSITION', type: SimVarValueType.Radians }],
       ['gw_cg_percent', { name: 'L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC', type: SimVarValueType.Number }],
       [
-        'fcdc_triple_click_demand',
-        { name: 'L:A32NX_FCDC_#index#_TRIPLE_CLICK_DEMAND', type: SimVarValueType.Number, indexed: true },
+        'fcdc_fg_discrete_word_8',
+        { name: 'L:A32NX_FCDC_#index#_FG_DISCRETE_WORD_8', type: SimVarValueType.Number, indexed: true },
       ],
     ];
 

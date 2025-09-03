@@ -426,6 +426,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFcdcDiscreteWord4[2];
   std::unique_ptr<LocalVariable> idFcdcDiscreteWord5[2];
   std::unique_ptr<LocalVariable> idFcdcFgDiscreteWord4[2];
+  std::unique_ptr<LocalVariable> idFcdcFgDiscreteWord8[2];
   std::unique_ptr<LocalVariable> idFcdcCaptRollCommand[2];
   std::unique_ptr<LocalVariable> idFcdcFoRollCommand[2];
   std::unique_ptr<LocalVariable> idFcdcCaptPitchCommand[2];
@@ -446,8 +447,6 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFcdcSpoilerRight3Pos[2];
   std::unique_ptr<LocalVariable> idFcdcSpoilerRight4Pos[2];
   std::unique_ptr<LocalVariable> idFcdcSpoilerRight5Pos[2];
-
-  std::unique_ptr<LocalVariable> idFcdcTripleClickDemand[2];
 
   // FCDC discrete output Lvars
   std::unique_ptr<LocalVariable> idFcdcPriorityCaptGreen[2];

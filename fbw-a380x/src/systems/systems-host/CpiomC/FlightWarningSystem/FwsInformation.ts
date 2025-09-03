@@ -26,6 +26,10 @@ export class FwsInformation {
       // LAND 3 SINGLE ONLY
       simVarIsActive: this.fws.land3SingleOnly,
     },
+    220200006: {
+      // FOR AUTOLAND: MAN ROLL OUT ONLY
+      simVarIsActive: this.fws.rollOutFault,
+    },
     220200010: {
       // APPR 1 ONLY
       simVarIsActive: this.fws.appr1Only,

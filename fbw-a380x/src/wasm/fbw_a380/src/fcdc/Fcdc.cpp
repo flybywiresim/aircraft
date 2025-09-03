@@ -46,8 +46,8 @@ FcdcBus Fcdc::getBusOutputs() {
     output.efcsStatus3.setSsm(Arinc429SignStatus::FailureWarning);
     output.efcsStatus4.setSsm(Arinc429SignStatus::FailureWarning);
     output.efcsStatus5.setSsm(Arinc429SignStatus::FailureWarning);
-    output.fgDiscreteWord4.setSsm(Arinc429SignStatus::FailureWarning);
-    output.tripleClickDemand.setSsm(Arinc429SignStatus::FailureWarning);
+    output.primFgDiscreteWord4.setSsm(Arinc429SignStatus::FailureWarning);
+    output.primFgDiscreteWord8.setSsm(Arinc429SignStatus::FailureWarning);
     return output;
   }
 
@@ -144,15 +144,20 @@ FcdcBus Fcdc::getBusOutputs() {
   output.efcsStatus5.setData(0);
   output.efcsStatus5.setSsm(ssm);
 
-  output.fgDiscreteWord4.setSsm(ssm);
-  output.fgDiscreteWord4.setBit(23, land2Capacity);
-  output.fgDiscreteWord4.setBit(24, land3FailPassiveCapacity);
-  output.fgDiscreteWord4.setBit(25, land3FailOperationalCapacity);
+  output.primFgDiscreteWord4.setSsm(ssm);
+  output.primFgDiscreteWord4.setBit(23, land2Capacity);
+  output.primFgDiscreteWord4.setBit(24, land3FailPassiveCapacity);
+  output.primFgDiscreteWord4.setBit(25, land3FailOperationalCapacity);
 
-  output.tripleClickDemand.setSsm(ssm);
-  output.tripleClickDemand.setBit(1, capabilityTripleClickMtrig.read());
-  output.tripleClickDemand.setBit(2, modeReversionTripleClickMtrig.read());
-  output.tripleClickDemand.setBit(3, btvExitMissedMtrig.read());
+  output.primFgDiscreteWord8.setSsm(ssm);
+  output.primFgDiscreteWord8.setBit(11, capabilityTripleClickMtrig.read());             // CAPABILITY DOWNGRADE
+  output.primFgDiscreteWord8.setBit(12, modeReversionTripleClickMtrig.read());          // FG MODE REVERSION
+  output.primFgDiscreteWord8.setBit(13, btvExitMissedMtrig.read());                     // BTV EXIT MISSED
+  output.primFgDiscreteWord8.setBit(14, false);                                         // AP 1 INOP
+  output.primFgDiscreteWord8.setBit(15, false);                                         // AP 2 INOP
+  output.primFgDiscreteWord8.setBit(16, false);                                         // FD 1 INOP
+  output.primFgDiscreteWord8.setBit(17, false);                                         // FD 2 INOP
+  output.primFgDiscreteWord8.setBit(18, discreteInputs.noseWheelSteeringRollOutFault);  // ROLLOUT FAULT
 
   return output;
 }

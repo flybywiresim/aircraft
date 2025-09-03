@@ -665,19 +665,21 @@ export class FwsCore {
 
   public readonly autoPilotOffShowMemo = Subject.create(false);
 
-  public readonly fcdc1TripleClickDemand = Arinc429LocalVarConsumerSubject.create(
-    this.sub.on('fcdc_triple_click_demand_1'),
+  public readonly fcdc1FgDiscreteWord8 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('fcdc_fg_discrete_word_8_1'),
   );
 
-  public readonly fcdc2TripleClickDemand = Arinc429LocalVarConsumerSubject.create(
-    this.sub.on('fcdc_triple_click_demand_2'),
+  public readonly fcdc2FgDiscreteWord8 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('fcdc_fg_discrete_word_8_2'),
   );
 
   public readonly fcdcDualFaultTripleClick = new NXLogicConfirmNode(2.3, true);
 
+  public readonly rollOutFault = Subject.create(false);
+
   public readonly checkFmaTripleClickPulse = new NXLogicPulseNode(true);
 
-  public readonly checkFmaTripleClickMonitorConfirm = new NXLogicConfirmNode(0.3, true);
+  public readonly checkFmaTripleClickMonitorConfirm = new NXLogicConfirmNode(0.6, true);
   public readonly checkFmaTripleClickDebounce = new NXLogicTriggeredMonostableNode(3, true);
   public readonly checkFmaTripleClickDebouncePulse = new NXLogicPulseNode(true);
 
@@ -3358,21 +3360,21 @@ export class FwsCore {
 
     // Triple clicks from FCDC: Capability downgrade or BTV exit missed
     this.fcdcDualFaultTripleClick.write(
-      this.fcdc1TripleClickDemand.get().isInvalid() && this.fcdc2TripleClickDemand.get().isInvalid(),
+      this.fcdc1FgDiscreteWord8.get().isInvalid() && this.fcdc2FgDiscreteWord8.get().isInvalid(),
       deltaTime,
     );
 
     const fcdcTripleClickDemand =
-      (this.fcdc1TripleClickDemand.get().bitValueOr(1, false) ||
-        this.fcdc2TripleClickDemand.get().bitValueOr(1, false) ||
-        this.fcdc1TripleClickDemand.get().bitValueOr(2, false) ||
-        this.fcdc2TripleClickDemand.get().bitValueOr(2, false) ||
+      (this.fcdc1FgDiscreteWord8.get().bitValueOr(11, false) ||
+        this.fcdc2FgDiscreteWord8.get().bitValueOr(11, false) ||
+        this.fcdc1FgDiscreteWord8.get().bitValueOr(12, false) ||
+        this.fcdc2FgDiscreteWord8.get().bitValueOr(12, false) ||
         this.fcdcDualFaultTripleClick.read()) &&
       flightPhase !== 10 &&
       flightPhase !== 11;
 
     const btvTripleClick =
-      this.fcdc1TripleClickDemand.get().bitValueOr(3, false) || this.fcdc2TripleClickDemand.get().bitValueOr(3, false);
+      this.fcdc1FgDiscreteWord8.get().bitValueOr(13, false) || this.fcdc2FgDiscreteWord8.get().bitValueOr(13, false);
 
     this.checkFmaTripleClickMonitorConfirm.write(fcdcTripleClickDemand || btvTripleClick, deltaTime);
     this.checkFmaTripleClickDebounce.write(this.checkFmaTripleClickMonitorConfirm.read(), deltaTime);
@@ -3380,6 +3382,11 @@ export class FwsCore {
     if (this.checkFmaTripleClickPulse.read()) {
       this.soundManager.enqueueSound('tripleClick');
     }
+
+    // ROLLOUT FAULT
+    this.rollOutFault.set(
+      this.fcdc1FgDiscreteWord8.get().bitValueOr(18, false) || this.fcdc2FgDiscreteWord8.get().bitValueOr(18, false),
+    );
 
     // A/THR OFF
     const aThrEngaged = this.autoThrustStatus.get() === 2 || this.autoThrustMode.get() !== 0;
