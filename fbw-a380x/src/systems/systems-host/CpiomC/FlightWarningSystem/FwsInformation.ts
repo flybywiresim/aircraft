@@ -20,11 +20,11 @@ export class FwsInformation {
   info: FwsInfoDict = {
     220200004: {
       // LAND 2 ONLY
-      simVarIsActive: this.fws.land2Only,
+      simVarIsActive: this.fws.land3FailPassiveInop,
     },
     220200005: {
       // LAND 3 SINGLE ONLY
-      simVarIsActive: this.fws.land3SingleOnly,
+      simVarIsActive: this.fws.land3FailOperationalInop,
     },
     220200006: {
       // FOR AUTOLAND: MAN ROLL OUT ONLY
@@ -32,7 +32,7 @@ export class FwsInformation {
     },
     220200010: {
       // APPR 1 ONLY
-      simVarIsActive: this.fws.appr1Only,
+      simVarIsActive: this.fws.land2Inop,
     },
   };
 

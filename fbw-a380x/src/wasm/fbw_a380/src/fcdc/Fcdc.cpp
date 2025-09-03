@@ -145,19 +145,22 @@ FcdcBus Fcdc::getBusOutputs() {
   output.efcsStatus5.setSsm(ssm);
 
   output.primFgDiscreteWord4.setSsm(ssm);
+  output.primFgDiscreteWord4.setBit(20, land2Inop);
+  output.primFgDiscreteWord4.setBit(21, land3FailPassiveInop);
+  output.primFgDiscreteWord4.setBit(22, land3FailOperationalInop);
   output.primFgDiscreteWord4.setBit(23, land2Capacity);
   output.primFgDiscreteWord4.setBit(24, land3FailPassiveCapacity);
   output.primFgDiscreteWord4.setBit(25, land3FailOperationalCapacity);
 
   output.primFgDiscreteWord8.setSsm(ssm);
-  output.primFgDiscreteWord8.setBit(11, capabilityTripleClickMtrig.read());             // CAPABILITY DOWNGRADE
-  output.primFgDiscreteWord8.setBit(12, modeReversionTripleClickMtrig.read());          // FG MODE REVERSION
-  output.primFgDiscreteWord8.setBit(13, btvExitMissedMtrig.read());                     // BTV EXIT MISSED
-  output.primFgDiscreteWord8.setBit(14, false);                                         // AP 1 INOP
-  output.primFgDiscreteWord8.setBit(15, false);                                         // AP 2 INOP
-  output.primFgDiscreteWord8.setBit(16, false);                                         // FD 1 INOP
-  output.primFgDiscreteWord8.setBit(17, false);                                         // FD 2 INOP
-  output.primFgDiscreteWord8.setBit(18, discreteInputs.noseWheelSteeringRollOutFault);  // ROLLOUT FAULT
+  output.primFgDiscreteWord8.setBit(11, capabilityTripleClickMtrig.read());     // CAPABILITY DOWNGRADE
+  output.primFgDiscreteWord8.setBit(12, modeReversionTripleClickMtrig.read());  // FG MODE REVERSION
+  output.primFgDiscreteWord8.setBit(13, btvExitMissedMtrig.read());             // BTV EXIT MISSED
+  output.primFgDiscreteWord8.setBit(14, false);                                 // AP 1 INOP
+  output.primFgDiscreteWord8.setBit(15, false);                                 // AP 2 INOP
+  output.primFgDiscreteWord8.setBit(16, false);                                 // FD 1 INOP
+  output.primFgDiscreteWord8.setBit(17, false);                                 // FD 2 INOP
+  output.primFgDiscreteWord8.setBit(18, bitFromValueOr(busInputs.prims[masterPrim].discrete_status_word_1, 12, false));  // ROLLOUT FAULT
 
   return output;
 }

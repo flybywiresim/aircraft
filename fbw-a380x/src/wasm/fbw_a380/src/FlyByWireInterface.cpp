@@ -1407,6 +1407,8 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
       idElecTrContactorClosed[0]->get() == 1 && idElecTrContactorClosed[1]->get() == 1 && idElecTrContactorClosed[2]->get() == 1 &&
       idElecTrContactorClosed[3]->get() == 1;
   prims[primIndex].modelInputs.in.discrete_inputs.antiskid_available = simData.antiskidBrakesActive;
+  prims[primIndex].modelInputs.in.discrete_inputs.nws_communication_available =
+      !failuresConsumer.isActive(Failures::Rollout);  // FIXME when steering control system implemented
 
   prims[primIndex].modelInputs.in.analog_inputs.capt_pitch_stick_pos = -simInput.inputs[0];
   prims[primIndex].modelInputs.in.analog_inputs.fo_pitch_stick_pos = 0;
@@ -1753,7 +1755,6 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
   fcdcs[fcdcIndex].discreteInputs.spoilersArmed = spoilersHandler->getIsArmed() ? true : false;
   fcdcs[fcdcIndex].discreteInputs.btvExitMissed = idBtvExitMissed->get();
   fcdcs[fcdcIndex].discreteInputs.fmaModeReversion = idFmaModeReversion->get();
-  fcdcs[fcdcIndex].discreteInputs.noseWheelSteeringRollOutFault = failuresConsumer.isActive(Failures::Rollout);
 
   for (int i = 0; i < 3; i++) {
     fcdcs[fcdcIndex].discreteInputs.primHealthy[i] = primsDiscreteOutputs[i].prim_healthy;

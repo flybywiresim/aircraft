@@ -34,9 +34,6 @@ struct FcdcDiscreteInputs {
 
   bool fmaModeReversion;
 
-  /* FIXME find proper communication refs */
-  bool noseWheelSteeringRollOutFault;
-
   /* FIXME use proper bus messages */
   ap_raw_laws_input autopilotStateMachineOutput;
   athr_output autoThrustOutput;

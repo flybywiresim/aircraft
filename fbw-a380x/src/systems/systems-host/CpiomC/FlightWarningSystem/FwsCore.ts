@@ -1601,59 +1601,20 @@ export class FwsCore {
 
   public readonly height3Failed = Subject.create(false);
 
-  // FIXME All these LAND X INOPs should maybe come from the PRIMs in the future,
-  // at least the fail-op/fail-passive status
-  public readonly land3Inop = MappedSubject.create(
-    ([ra1, ra2, ra3, latMode, fp]) =>
-      [ra1, ra2, ra3].filter((ra) => ra).length >= 2 && !(latMode !== LateralMode.NAV && fp === 1),
-    this.height1Failed,
-    this.height2Failed,
-    this.height3Failed,
-    this.fmaLateralMode,
-    this.flightPhase,
+  public readonly land3FailOperationalInop = MappedSubject.create(
+    ([fcdc1, fcdc2]) => fcdc1.bitValueOr(22, false) || fcdc2.bitValueOr(22, false),
+    this.fcdc1FgDiscreteWord8,
+    this.fcdc2FgDiscreteWord8,
   );
-
-  public readonly land3DualInop = this.height2Failed;
-
+  public readonly land3FailPassiveInop = MappedSubject.create(
+    ([fcdc1, fcdc2]) => fcdc1.bitValueOr(21, false) || fcdc2.bitValueOr(21, false),
+    this.fcdc1FgDiscreteWord8,
+    this.fcdc2FgDiscreteWord8,
+  );
   public readonly land2Inop = MappedSubject.create(
-    SubscribableMapFunctions.or(),
-    this.altnLawCondition,
-    this.directLawCondition,
-    this.allSecFaultCondition,
-    this.singleRudderFaultCondition,
-    this.audioFunctionLost,
-    this.twoIrFault,
-  );
-
-  public readonly land3SingleOnly = MappedSubject.create(
-    ([fp, land3DualInop, land3Inop, land2Inop]) => fp !== 1 && fp !== 10 && land3DualInop && !land3Inop && !land2Inop,
-    this.flightPhase,
-    this.land3DualInop,
-    this.land3Inop,
-    this.land2Inop,
-  );
-
-  // FIXME add !FADEC_OFF
-  public readonly land2Only = MappedSubject.create(
-    ([fp, land3Inop, land2Inop]) => fp !== 1 && fp !== 10 && !land2Inop && land3Inop,
-    this.flightPhase,
-    this.land3Inop,
-    this.land2Inop,
-    this.adr1Faulty,
-    this.adr2Faulty,
-    this.adr3Faulty,
-  );
-
-  // Missing: ILS1+2 INOP, LS1+2 INOP,
-  public readonly appr1Only = MappedSubject.create(
-    ([land2Inop, fp, a1f, a2f, a3f, latMode]) =>
-      land2Inop && fp !== 10 && a1f && a2f && a3f && !(latMode !== LateralMode.NAV && fp === 1),
-    this.land2Inop,
-    this.flightPhase,
-    this.adr1Faulty,
-    this.adr2Faulty,
-    this.adr3Faulty,
-    this.fmaLateralMode,
+    ([fcdc1, fcdc2]) => fcdc1.bitValueOr(20, false) || fcdc2.bitValueOr(20, false),
+    this.fcdc1FgDiscreteWord8,
+    this.fcdc2FgDiscreteWord8,
   );
 
   private adr3OverspeedWarning = new NXLogicMemoryNode(false, false);
