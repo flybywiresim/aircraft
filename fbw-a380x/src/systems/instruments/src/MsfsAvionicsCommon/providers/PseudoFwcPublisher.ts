@@ -21,24 +21,14 @@ type BasePseudoFwcSimvars = {
   right_blg_compressed: boolean;
   flaps_handle: number;
   adr_cas_word: number;
-  fcdc_discrete_word_4: number;
   hyd_green_sys_pressurized: boolean;
   hyd_yellow_sys_pressurized: boolean;
   throttle_position: number;
   ths_position: number;
   gw_cg_percent: number;
-  fcdc_fg_discrete_word_4: number;
-  fcdc_fg_discrete_word_8: number;
 };
 
-type IndexedTopics =
-  | 'engine_master'
-  | 'engine_state'
-  | 'adr_cas_word'
-  | 'fcdc_discrete_word_4'
-  | 'throttle_position'
-  | 'fcdc_fg_discrete_word_4'
-  | 'fcdc_fg_discrete_word_8';
+type IndexedTopics = 'engine_master' | 'engine_state' | 'adr_cas_word' | 'throttle_position';
 type PseudoFwcIndexedEvents = {
   [P in keyof Pick<BasePseudoFwcSimvars, IndexedTopics> as IndexedEventType<P>]: BasePseudoFwcSimvars[P];
 };
@@ -60,10 +50,6 @@ export class PseudoFwcSimvarPublisher extends SimVarPublisher<PseudoFwcSimvars> 
         { name: 'L:A32NX_ADIRS_ADR_#index#_COMPUTED_AIRSPEED', type: SimVarValueType.Number, indexed: true },
       ],
       [
-        'fcdc_discrete_word_4',
-        { name: 'L:A32NX_FCDC_#index#_DISCRETE_WORD_4', type: SimVarValueType.Number, indexed: true },
-      ],
-      [
         'hyd_green_sys_pressurized',
         { name: 'L:A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE_SWITCH', type: SimVarValueType.Bool },
       ],
@@ -74,14 +60,6 @@ export class PseudoFwcSimvarPublisher extends SimVarPublisher<PseudoFwcSimvars> 
       ['throttle_position', { name: 'L:A32NX_AUTOTHRUST_TLA:#index#', type: SimVarValueType.Number, indexed: true }],
       ['ths_position', { name: 'ELEVATOR TRIM POSITION', type: SimVarValueType.Radians }],
       ['gw_cg_percent', { name: 'L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC', type: SimVarValueType.Number }],
-      [
-        'fcdc_fg_discrete_word_4',
-        { name: 'L:A32NX_FCDC_#index#_FG_DISCRETE_WORD_4', type: SimVarValueType.Number, indexed: true },
-      ],
-      [
-        'fcdc_fg_discrete_word_8',
-        { name: 'L:A32NX_FCDC_#index#_FG_DISCRETE_WORD_8', type: SimVarValueType.Number, indexed: true },
-      ],
     ];
 
     super(new Map(simvars), bus, pacer);

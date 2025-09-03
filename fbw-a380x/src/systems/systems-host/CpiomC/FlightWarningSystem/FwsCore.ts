@@ -79,6 +79,7 @@ import {
   DebugDataTableRow,
   OisDebugDataControlEvents,
 } from 'instruments/src/MsfsAvionicsCommon/providers/OisDebugDataPublisher';
+import { FcdcSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/FcdcPublisher';
 
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));
@@ -121,6 +122,7 @@ export interface FwsSuppressableItemDict {
 export class FwsCore {
   public readonly sub = this.bus.getSubscriber<
     PseudoFwcSimvars &
+      FcdcSimvars &
       StallWarningEvents &
       MfdSurvEvents &
       FuelSystemEvents &
@@ -1609,20 +1611,27 @@ export class FwsCore {
   public readonly height3Failed = Subject.create(false);
 
   public readonly land3FailOperationalInop = MappedSubject.create(
-    ([fcdc1, fcdc2]) => fcdc1.bitValueOr(22, false) || fcdc2.bitValueOr(22, false),
+    ([fcdc1, fcdc2, flightPhase]) =>
+      flightPhase !== 1 && flightPhase !== 12 && (fcdc1.bitValueOr(22, false) || fcdc2.bitValueOr(22, false)),
     this.fcdc1FgDiscreteWord4,
     this.fcdc1FgDiscreteWord4,
+    this.flightPhase,
   );
   public readonly land3FailPassiveInop = MappedSubject.create(
-    ([fcdc1, fcdc2]) => fcdc1.bitValueOr(21, false) || fcdc2.bitValueOr(21, false),
+    ([fcdc1, fcdc2, flightPhase]) =>
+      flightPhase !== 1 && flightPhase !== 12 && (fcdc1.bitValueOr(21, false) || fcdc2.bitValueOr(21, false)),
     this.fcdc1FgDiscreteWord4,
     this.fcdc1FgDiscreteWord4,
+    this.flightPhase,
   );
   public readonly land2Inop = MappedSubject.create(
-    ([fcdc1, fcdc2]) =>
-      fcdc1.bitValueOr(20, false) || fcdc2.bitValueOr(20, false) || (fcdc1.isInvalid() && fcdc2.isInvalid()),
+    ([fcdc1, fcdc2, flightPhase]) =>
+      flightPhase !== 1 &&
+      flightPhase !== 12 &&
+      (fcdc1.bitValueOr(20, false) || fcdc2.bitValueOr(20, false) || (fcdc1.isInvalid() && fcdc2.isInvalid())),
     this.fcdc1FgDiscreteWord4,
     this.fcdc1FgDiscreteWord4,
+    this.flightPhase,
   );
 
   private adr3OverspeedWarning = new NXLogicMemoryNode(false, false);
