@@ -501,11 +501,6 @@ void FlyByWireInterface::setupLocalVariables() {
 
   idCgPercentMac = std::make_unique<LocalVariable>("A32NX_AIRFRAME_GW_CG_PERCENT_MAC");
 
-  for (int i = 0; i < 2; i++) {
-    std::string idString = std::to_string(i + 1);
-    idCpiomCxAvailable[i] = std::make_unique<LocalVariable>("A32NX_CPIOM_C" + idString + "_AVAIL");
-  }
-
   for (int i = 0; i < 3; i++) {
     std::string idString = std::to_string(i + 1);
     idRadioAltimeterHeight[i] = std::make_unique<LocalVariable>("A32NX_RA_" + idString + "_RADIO_ALTITUDE");
@@ -782,6 +777,31 @@ void FlyByWireInterface::setupLocalVariables() {
 
   idCaptPriorityButtonPressed = std::make_unique<LocalVariable>("A32NX_PRIORITY_TAKEOVER:1");
   idFoPriorityButtonPressed = std::make_unique<LocalVariable>("A32NX_PRIORITY_TAKEOVER:2");
+
+  // CPIOM available
+  for (int i = 0; i < 2; i++) {
+    std::string idString = std::to_string(i + 1);
+    idCpiomCxAvailable[i] = std::make_unique<LocalVariable>("A32NX_CPIOM_C" + idString + "_AVAIL");
+  }
+
+  // AFDX
+  idAfdx1_3Reachable = std::make_unique<LocalVariable>("A32NX_AFDX_1_3_REACHABLE");
+  idAfdx11_13Reachable = std::make_unique<LocalVariable>("A32NX_AFDX_11_13_REACHABLE");
+  idAfdx1_4Reachable = std::make_unique<LocalVariable>("A32NX_AFDX_1_4_REACHABLE");
+  idAfdx11_14Reachable = std::make_unique<LocalVariable>("A32NX_AFDX_11_14_REACHABLE");
+  idAfdx2_3Reachable = std::make_unique<LocalVariable>("A32NX_AFDX_2_3_REACHABLE");
+  idAfdx12_13Reachable = std::make_unique<LocalVariable>("A32NX_AFDX_12_13_REACHABLE");
+  idAfdx2_4Reachable = std::make_unique<LocalVariable>("A32NX_AFDX_2_4_REACHABLE");
+  idAfdx12_14Reachable = std::make_unique<LocalVariable>("A32NX_AFDX_12_14_REACHABLE");
+  idAfdx9_3Reachable = std::make_unique<LocalVariable>("A32NX_AFDX_9_3_REACHABLE");
+  idAfdx19_13Reachable = std::make_unique<LocalVariable>("A32NX_AFDX_19_13_REACHABLE");
+  idAfdx9_4Reachable = std::make_unique<LocalVariable>("A32NX_AFDX_9_4_REACHABLE");
+  idAfdx19_14Reachable = std::make_unique<LocalVariable>("A32NX_AFDX_19_14_REACHABLE");
+
+  idAfdxSwitch3Available = std::make_unique<LocalVariable>("A32NX_AFDX_SWITCH_3_AVAIL");
+  idAfdxSwitch4Available = std::make_unique<LocalVariable>("A32NX_AFDX_SWITCH_4_AVAIL");
+  idAfdxSwitch13Available = std::make_unique<LocalVariable>("A32NX_AFDX_SWITCH_13_AVAIL");
+  idAfdxSwitch14Available = std::make_unique<LocalVariable>("A32NX_AFDX_SWITCH_14_AVAIL");
 }
 
 bool FlyByWireInterface::handleFcuInitialization(double sampleTime) {
@@ -1751,24 +1771,41 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
 
   Failures failureIndex = fcdcIndex == 0 ? Failures::Fcdc1 : Failures::Fcdc2;
 
-  fcdcs[fcdcIndex].discreteInputs.noseGearPressed = idLgciuNoseGearCompressed[0]->get();
-  fcdcs[fcdcIndex].discreteInputs.spoilersArmed = spoilersHandler->getIsArmed() ? true : false;
-  fcdcs[fcdcIndex].discreteInputs.btvExitMissed = idBtvExitMissed->get();
-  fcdcs[fcdcIndex].discreteInputs.fmaModeReversion = idFmaModeReversion->get();
+  bool afdxCommAvailable = fcdcIndex == 0 ? (idAfdxSwitch3Available->get() == 1 || idAfdxSwitch13Available->get() == 1)
+                                          : (idAfdxSwitch4Available->get() == 1 || idAfdxSwitch14Available->get() == 1);
 
-  for (int i = 0; i < 3; i++) {
-    fcdcs[fcdcIndex].discreteInputs.primHealthy[i] = primsDiscreteOutputs[i].prim_healthy;
-    fcdcs[fcdcIndex].busInputs.prims[i] = primsBusOutputs[i];
-    fcdcs[fcdcIndex].busInputs.secs[i] = secsBusOutputs[i];
-    fcdcs[fcdcIndex].busInputs.raBusOutputs[i] = raBusOutputs[i];
+  if (afdxCommAvailable) {
+    fcdcs[fcdcIndex].discreteInputs.noseGearPressed = idLgciuNoseGearCompressed[0]->get();
+    fcdcs[fcdcIndex].discreteInputs.spoilersArmed = spoilersHandler->getIsArmed() ? true : false;
+    fcdcs[fcdcIndex].discreteInputs.btvExitMissed = idBtvExitMissed->get();
+    fcdcs[fcdcIndex].discreteInputs.fmaModeReversion = idFmaModeReversion->get();
+    fcdcs[fcdcIndex].discreteInputs.autopilotStateMachineOutput = autopilotStateMachineOutput;
+    fcdcs[fcdcIndex].discreteInputs.autoThrustOutput = autoThrustOutput;
+    fcdcs[fcdcIndex].discreteInputs.simData = simData;
+
+    // FIXME no speed_brake_lever_command_deg in prim out bus (where to get it from?)
+    fcdcs[fcdcIndex].analogInputs.spoilersLeverPos = spoilersHandler->getHandlePosition();
   }
 
-  fcdcs[fcdcIndex].discreteInputs.autopilotStateMachineOutput = autopilotStateMachineOutput;
-  fcdcs[fcdcIndex].discreteInputs.autoThrustOutput = autoThrustOutput;
-  fcdcs[fcdcIndex].discreteInputs.simData = simData;
+  bool primSecReachable[3] = {fcdcIndex == 0 ? (idAfdx1_3Reachable->get() == 1 || idAfdx11_13Reachable->get() == 1)
+                                             : (idAfdx1_4Reachable->get() == 1 || idAfdx11_14Reachable->get() == 1),
+                              fcdcIndex == 0 ? (idAfdx2_3Reachable->get() == 1 || idAfdx12_13Reachable->get() == 1)
+                                             : (idAfdx2_4Reachable->get() == 1 || idAfdx12_14Reachable->get() == 1),
+                              fcdcIndex == 0 ? (idAfdx9_3Reachable->get() == 1 || idAfdx19_13Reachable->get() == 1)
+                                             : (idAfdx9_4Reachable->get() == 1 || idAfdx19_14Reachable->get() == 1)};
 
-  // FIXME no speed_brake_lever_command_deg in prim out bus (where to get it from?)
-  fcdcs[fcdcIndex].analogInputs.spoilersLeverPos = spoilersHandler->getHandlePosition();
+  for (int i = 0; i < 3; i++) {
+    fcdcs[fcdcIndex].discreteInputs.primHealthy[i] = primSecReachable[i] ? primsDiscreteOutputs[i].prim_healthy : false;
+
+    if (primSecReachable[i]) {
+      fcdcs[fcdcIndex].busInputs.prims[i] = primsBusOutputs[i];
+      fcdcs[fcdcIndex].busInputs.secs[i] = secsBusOutputs[i];
+    }
+
+    if (afdxCommAvailable) {
+      fcdcs[fcdcIndex].busInputs.raBusOutputs[i] = raBusOutputs[i];
+    }
+  }
 
   fcdcs[fcdcIndex].update(sampleTime, failuresConsumer.isActive(failureIndex), idCpiomCxAvailable[fcdcIndex]->get());
 

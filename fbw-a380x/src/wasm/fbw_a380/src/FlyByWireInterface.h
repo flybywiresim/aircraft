@@ -359,9 +359,6 @@ class FlyByWireInterface {
 
   std::unique_ptr<LocalVariable> idCgPercentMac;
 
-  // CPIOM status
-  std::unique_ptr<LocalVariable> idCpiomCxAvailable[2];
-
   // RA bus inputs
   std::unique_ptr<LocalVariable> idRadioAltimeterHeight[3];
 
@@ -568,6 +565,28 @@ class FlyByWireInterface {
 
   std::unique_ptr<LocalVariable> idCaptPriorityButtonPressed;
   std::unique_ptr<LocalVariable> idFoPriorityButtonPressed;
+
+  // CPIOM status
+  std::unique_ptr<LocalVariable> idCpiomCxAvailable[2];
+
+  // ADCN / AFDX connectivity
+  std::unique_ptr<LocalVariable> idAfdx1_3Reachable;
+  std::unique_ptr<LocalVariable> idAfdx11_13Reachable;
+  std::unique_ptr<LocalVariable> idAfdx1_4Reachable;
+  std::unique_ptr<LocalVariable> idAfdx11_14Reachable;
+  std::unique_ptr<LocalVariable> idAfdx2_3Reachable;
+  std::unique_ptr<LocalVariable> idAfdx12_13Reachable;
+  std::unique_ptr<LocalVariable> idAfdx2_4Reachable;
+  std::unique_ptr<LocalVariable> idAfdx12_14Reachable;
+  std::unique_ptr<LocalVariable> idAfdx9_3Reachable;
+  std::unique_ptr<LocalVariable> idAfdx19_13Reachable;
+  std::unique_ptr<LocalVariable> idAfdx9_4Reachable;
+  std::unique_ptr<LocalVariable> idAfdx19_14Reachable;
+
+  std::unique_ptr<LocalVariable> idAfdxSwitch3Available;
+  std::unique_ptr<LocalVariable> idAfdxSwitch13Available;
+  std::unique_ptr<LocalVariable> idAfdxSwitch4Available;
+  std::unique_ptr<LocalVariable> idAfdxSwitch14Available;
 
   void loadConfiguration();
   void setupLocalVariables();
