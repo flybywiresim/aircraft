@@ -112,12 +112,6 @@ export interface PFDSimvars {
   autoBrakeDecel: boolean;
   fpaRaw: number;
   daRaw: number;
-  fcdc1DiscreteWord1Raw: number;
-  fcdc2DiscreteWord1Raw: number;
-  fcdc1DiscreteWord2Raw: number;
-  fcdc2DiscreteWord2Raw: number;
-  fcdc1FgDiscreteWord4Raw: number;
-  fcdc2FgDiscreteWord4Raw: number;
   ls1Button: boolean;
   ls2Button: boolean;
   xtk: number;
@@ -290,12 +284,6 @@ export enum PFDVars {
   autoBrakeDecel = 'L:A32NX_AUTOBRAKES_DECEL_LIGHT',
   fpaRaw = 'L:A32NX_ADIRS_IR_1_FLIGHT_PATH_ANGLE',
   daRaw = 'L:A32NX_ADIRS_IR_1_DRIFT_ANGLE',
-  fcdc1DiscreteWord1Raw = 'L:A32NX_FCDC_1_DISCRETE_WORD_1',
-  fcdc2DiscreteWord1Raw = 'L:A32NX_FCDC_2_DISCRETE_WORD_1',
-  fcdc1DiscreteWord2Raw = 'L:A32NX_FCDC_1_DISCRETE_WORD_2',
-  fcdc2DiscreteWord2Raw = 'L:A32NX_FCDC_2_DISCRETE_WORD_2',
-  fcdc1FgDiscreteWord4Raw = 'L:A32NX_FCDC_1_FG_DISCRETE_WORD_4',
-  fcdc2FgDiscreteWord4Raw = 'L:A32NX_FCDC_2_FG_DISCRETE_WORD_4',
   ls1Button = 'L:A380X_EFIS_L_LS_BUTTON_IS_ON',
   ls2Button = 'L:A380X_EFIS_R_LS_BUTTON_IS_ON',
   xtk = 'L:A32NX_FG_CROSS_TRACK_ERROR',
@@ -468,12 +456,6 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['autoBrakeDecel', { name: PFDVars.autoBrakeDecel, type: SimVarValueType.Bool }],
     ['fpaRaw', { name: PFDVars.fpaRaw, type: SimVarValueType.Number }],
     ['daRaw', { name: PFDVars.daRaw, type: SimVarValueType.Number }],
-    ['fcdc1DiscreteWord1Raw', { name: PFDVars.fcdc1DiscreteWord1Raw, type: SimVarValueType.Number }],
-    ['fcdc2DiscreteWord1Raw', { name: PFDVars.fcdc2DiscreteWord1Raw, type: SimVarValueType.Number }],
-    ['fcdc1DiscreteWord2Raw', { name: PFDVars.fcdc1DiscreteWord2Raw, type: SimVarValueType.Number }],
-    ['fcdc2DiscreteWord2Raw', { name: PFDVars.fcdc2DiscreteWord2Raw, type: SimVarValueType.Number }],
-    ['fcdc1FgDiscreteWord4Raw', { name: PFDVars.fcdc1FgDiscreteWord4Raw, type: SimVarValueType.Number }],
-    ['fcdc2FgDiscreteWord4Raw', { name: PFDVars.fcdc2FgDiscreteWord4Raw, type: SimVarValueType.Number }],
     ['ls1Button', { name: PFDVars.ls1Button, type: SimVarValueType.Bool }],
     ['ls2Button', { name: PFDVars.ls2Button, type: SimVarValueType.Bool }],
     ['xtk', { name: PFDVars.xtk, type: SimVarValueType.NM }],
