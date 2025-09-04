@@ -1775,6 +1775,18 @@ export class FwsCore {
     this.N1IdleEng,
   );
 
+  public readonly engine3AboveIdle = MappedSubject.create(
+    ([n1, idleN1]) => n1 > idleN1 + 2,
+    this.N1Eng3,
+    this.N1IdleEng,
+  );
+
+  public readonly engine4AboveIdle = MappedSubject.create(
+    ([n1, idleN1]) => n1 > idleN1 + 2,
+    this.N1Eng4,
+    this.N1IdleEng,
+  );
+
   // FIXME ECU should provide this in a discrete word, and calculate based on f(OAT)
   // this is absolute min at low temperatures
   public readonly engine1CoreAtOrAboveMinIdle = MappedSubject.create(
@@ -2199,6 +2211,8 @@ export class FwsCore {
       this.engine4Master,
       this.engine1AboveIdle,
       this.engine2AboveIdle,
+      this.engine3AboveIdle,
+      this.engine4AboveIdle,
       this.engine1CoreAtOrAboveMinIdle,
       this.engine2CoreAtOrAboveMinIdle,
       this.fmsPredUnreliablePreCondition,
@@ -2728,7 +2742,11 @@ export class FwsCore {
     this.flapsBaulkActiveWord.setFromSimVar('L:A32NX_SFCC_1_SLAT_FLAP_SYSTEM_STATUS_WORD');
 
     // FIXME move out of acquisition to logic below
-    const oneEngineAboveMinPower = this.engine1AboveIdle.get() || this.engine2AboveIdle.get();
+    const oneEngineAboveMinPower =
+      this.engine1AboveIdle.get() ||
+      this.engine2AboveIdle.get() ||
+      this.engine3AboveIdle.get() ||
+      this.engine4AboveIdle.get();
 
     this.engine1Generator.set(SimVar.GetSimVarValue('L:A32NX_ELEC_ENG_GEN_1_POTENTIAL_NORMAL', 'bool'));
     this.engine2Generator.set(SimVar.GetSimVarValue('L:A32NX_ELEC_ENG_GEN_2_POTENTIAL_NORMAL', 'bool'));

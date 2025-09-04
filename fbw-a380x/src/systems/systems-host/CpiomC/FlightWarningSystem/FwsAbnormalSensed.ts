@@ -2667,7 +2667,6 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [],
       failure: 2,
       sysPage: -1,
-      inopSysAllPhases: () => [],
     },
     271800058: {
       // SEC 1 FAULT
@@ -2792,7 +2791,6 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [false],
       failure: 2,
       sysPage: SdPages.Fctl,
-      inopSysAllPhases: () => [],
     },
     271800065: {
       // SPEED BRAKES STILL EXTENDED
@@ -2803,7 +2801,6 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [],
       failure: 2,
       sysPage: -1,
-      inopSysAllPhases: () => [],
     },
     272800001: {
       // SLAT NOT IN TO CONFIG
@@ -2888,7 +2885,6 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [],
       failure: 1,
       sysPage: -1,
-      inopSysAllPhases: () => [],
     },
     // 29 FUEL
     281800002: {
