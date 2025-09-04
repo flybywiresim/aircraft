@@ -25,6 +25,8 @@ export interface EwdAbnormalItem extends FwsSuppressableItem {
   flightPhaseInhib: number[];
   /** aural warning, defaults to simVarIsActive and SC for level 2 or CRC for level 3 if not provided */
   auralWarning?: MappedSubscribable<FwcAuralWarning> | Subscribable<FwcAuralWarning>;
+  /** The monitor confirm time in seconds. Defaults to 0.6 s. */
+  monitorConfirmTime?: number;
   /** Returns a boolean vector (same length as number of items). If true, item is shown in ECAM actions */
   whichItemsToShow: () => boolean[];
   /** Returns a boolean vector (same length as number of items). If true, item is marked as completed */
@@ -234,7 +236,7 @@ export class FwsAbnormalSensed {
 
     const numFailures = this.fws.presentedFailures.length;
     if (numFailures === 1) {
-      if (!this.fws.ecamStsNormal.get()) {
+      if (!this.fws.ecamStatusNormal.get()) {
         // Call STS page on SD
         SimVar.SetSimVarValue('L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX', SimVarValueType.Enum, SdPages.Status);
       }
@@ -266,7 +268,7 @@ export class FwsAbnormalSensed {
       this.fws.presentedAbnormalProceduresList.get().size === 0 &&
       this.fws.flightPhase.get() === 8 &&
       (this.fws.adrPressureAltitude.get() ?? 0) < 20_000 &&
-      !this.fws.ecamStsNormal.get();
+      !this.fws.ecamStatusNormal.get();
     const triggerAutoDisplay =
       this.fws.approachAutoDisplayQnhSetPulseNode.read() || this.fws.approachAutoDisplaySlatsExtendedPulseNode.read();
 
@@ -1642,7 +1644,7 @@ export class FwsAbnormalSensed {
       failure: 3,
       cancel: true,
       sysPage: -1,
-
+      monitorConfirmTime: 0.0,
       info: () => [],
     },
     220800004: {
@@ -1654,6 +1656,7 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_MODE_MESSAGE', 'number') !== 1],
       failure: 2,
       sysPage: -1,
+      monitorConfirmTime: 0.0,
       info: () => [],
     },
     // 22 - AUTOFLIGHT
