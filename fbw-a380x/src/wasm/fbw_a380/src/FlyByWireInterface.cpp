@@ -1402,7 +1402,7 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   prims[primIndex].modelInputs.in.discrete_inputs.is_engine_operative_3 = simData.engine_combustion_3;
   prims[primIndex].modelInputs.in.discrete_inputs.is_engine_operative_4 = simData.engine_combustion_4;
   prims[primIndex].modelInputs.in.discrete_inputs.apu_gen_connected =
-      idElecApuGenContactorClosed[0]->get() == 1 && idElecApuGenContactorClosed[1]->get() == 1;
+      idElecApuGenContactorClosed[0]->get() == 1 || idElecApuGenContactorClosed[1]->get() == 1;
   prims[primIndex].modelInputs.in.discrete_inputs.every_dc_supplied_by_tr =
       idElecTrContactorClosed[0]->get() == 1 && idElecTrContactorClosed[1]->get() == 1 && idElecTrContactorClosed[2]->get() == 1 &&
       idElecTrContactorClosed[3]->get() == 1;

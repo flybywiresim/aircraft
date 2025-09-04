@@ -596,6 +596,7 @@ void A380PrimComputer::step()
   boolean_T rightSpoilerElectricModeAvail;
   boolean_T rightSpoilerHydraulicModeAvail;
   boolean_T rtb_AND10;
+  boolean_T rtb_AND10_b;
   boolean_T rtb_AND11;
   boolean_T rtb_AND11_m;
   boolean_T rtb_AND12;
@@ -605,7 +606,6 @@ void A380PrimComputer::step()
   boolean_T rtb_AND16;
   boolean_T rtb_AND16_n;
   boolean_T rtb_AND17;
-  boolean_T rtb_AND18_c;
   boolean_T rtb_AND19;
   boolean_T rtb_AND1_at;
   boolean_T rtb_AND1_b;
@@ -900,9 +900,9 @@ void A380PrimComputer::step()
                (A380PrimComputer_U.in.bus_inputs.ir_3_bus.roll_att_rate_deg_s.SSM != static_cast<uint32_T>
                 (SignStatusMatrix::NormalOperation)) || A380PrimComputer_P.Constant_Value_ad);
     rtb_AND1_b = !rtb_OR_n;
-    leftAileron2Avail = !rtb_Equal;
-    rightAileron2Avail = (rtb_OR_ll && leftAileron2Avail);
-    if (rightAileron2Avail && rtb_AND1_b) {
+    rtb_y_a = !rtb_Equal;
+    leftAileron2Avail = (rtb_OR_ll && rtb_y_a);
+    if (leftAileron2Avail && rtb_AND1_b) {
       rtb_V_ias = (A380PrimComputer_U.in.bus_inputs.adr_2_bus.airspeed_computed_kn.Data +
                    A380PrimComputer_U.in.bus_inputs.adr_3_bus.airspeed_computed_kn.Data) / 2.0F;
       rtb_V_tas = (A380PrimComputer_U.in.bus_inputs.adr_2_bus.airspeed_true_kn.Data +
@@ -920,7 +920,7 @@ void A380PrimComputer::step()
                   A380PrimComputer_U.in.bus_inputs.adr_3_bus.mach.Data) / 2.0F;
       rtb_alpha = (A380PrimComputer_U.in.bus_inputs.adr_1_bus.aoa_corrected_deg.Data +
                    A380PrimComputer_U.in.bus_inputs.adr_3_bus.aoa_corrected_deg.Data) / 2.0F;
-    } else if (((!rtb_OR_ll) && leftAileron2Avail && rtb_AND1_b) || ((!rtb_OR_ll) && (!rtb_Equal) && rtb_OR_n)) {
+    } else if (((!rtb_OR_ll) && rtb_y_a && rtb_AND1_b) || ((!rtb_OR_ll) && (!rtb_Equal) && rtb_OR_n)) {
       rtb_V_ias = (A380PrimComputer_U.in.bus_inputs.adr_1_bus.airspeed_computed_kn.Data +
                    A380PrimComputer_U.in.bus_inputs.adr_2_bus.airspeed_computed_kn.Data) / 2.0F;
       rtb_V_tas = (A380PrimComputer_U.in.bus_inputs.adr_1_bus.airspeed_true_kn.Data +
@@ -934,7 +934,7 @@ void A380PrimComputer::step()
       rtb_V_tas = A380PrimComputer_U.in.bus_inputs.adr_1_bus.airspeed_true_kn.Data;
       rtb_mach = A380PrimComputer_U.in.bus_inputs.adr_1_bus.mach.Data;
       rtb_alpha = A380PrimComputer_U.in.bus_inputs.adr_1_bus.aoa_corrected_deg.Data;
-    } else if (rightAileron2Avail && rtb_OR_n) {
+    } else if (leftAileron2Avail && rtb_OR_n) {
       rtb_V_ias = A380PrimComputer_U.in.bus_inputs.adr_2_bus.airspeed_computed_kn.Data;
       rtb_V_tas = A380PrimComputer_U.in.bus_inputs.adr_2_bus.airspeed_true_kn.Data;
       rtb_mach = A380PrimComputer_U.in.bus_inputs.adr_2_bus.mach.Data;
@@ -954,9 +954,9 @@ void A380PrimComputer::step()
     A380PrimComputer_LagFilter(static_cast<real_T>(rtb_alpha), A380PrimComputer_P.LagFilter_C1,
       A380PrimComputer_U.in.time.dt, &rtb_Y, &A380PrimComputer_DWork.sf_LagFilter_a);
     rtb_AND1_b = !rtb_OR6;
-    leftAileron2Avail = !rtb_OR7;
-    rightAileron2Avail = (rtb_OR && leftAileron2Avail);
-    if (rightAileron2Avail && rtb_AND1_b) {
+    rtb_y_a = !rtb_OR7;
+    leftAileron2Avail = (rtb_OR && rtb_y_a);
+    if (leftAileron2Avail && rtb_AND1_b) {
       rtb_alpha = (A380PrimComputer_U.in.bus_inputs.ir_2_bus.pitch_angle_deg.Data +
                    A380PrimComputer_U.in.bus_inputs.ir_3_bus.pitch_angle_deg.Data) / 2.0F;
       rtb_phi = (A380PrimComputer_U.in.bus_inputs.ir_2_bus.roll_angle_deg.Data +
@@ -994,7 +994,7 @@ void A380PrimComputer::step()
                        A380PrimComputer_U.in.bus_inputs.ir_2_bus.pitch_att_rate_deg_s.Data) / 2.0F;
       rtb_phi_dot = (A380PrimComputer_U.in.bus_inputs.ir_1_bus.roll_att_rate_deg_s.Data +
                      A380PrimComputer_U.in.bus_inputs.ir_2_bus.roll_att_rate_deg_s.Data) / 2.0F;
-    } else if (((!rtb_OR) && leftAileron2Avail && rtb_AND1_b) || ((!rtb_OR) && (!rtb_OR7) && rtb_OR6)) {
+    } else if (((!rtb_OR) && rtb_y_a && rtb_AND1_b) || ((!rtb_OR) && (!rtb_OR7) && rtb_OR6)) {
       rtb_alpha = (A380PrimComputer_U.in.bus_inputs.ir_1_bus.pitch_angle_deg.Data +
                    A380PrimComputer_U.in.bus_inputs.ir_3_bus.pitch_angle_deg.Data) / 2.0F;
       rtb_phi = (A380PrimComputer_U.in.bus_inputs.ir_1_bus.roll_angle_deg.Data +
@@ -1023,7 +1023,7 @@ void A380PrimComputer::step()
       rtb_n_z = A380PrimComputer_U.in.bus_inputs.ir_1_bus.body_normal_accel_g.Data;
       rtb_theta_dot = A380PrimComputer_U.in.bus_inputs.ir_1_bus.pitch_att_rate_deg_s.Data;
       rtb_phi_dot = A380PrimComputer_U.in.bus_inputs.ir_1_bus.roll_att_rate_deg_s.Data;
-    } else if (rightAileron2Avail && rtb_OR6) {
+    } else if (leftAileron2Avail && rtb_OR6) {
       rtb_alpha = A380PrimComputer_U.in.bus_inputs.ir_3_bus.pitch_angle_deg.Data;
       rtb_phi = A380PrimComputer_U.in.bus_inputs.ir_3_bus.roll_angle_deg.Data;
       rtb_q = A380PrimComputer_U.in.bus_inputs.ir_3_bus.body_pitch_rate_deg_s.Data;
@@ -1901,7 +1901,7 @@ void A380PrimComputer::step()
     rtb_AND16_n = ((rtb_y_k1 != 0U) && rtb_y_i);
     A380PrimComputer_MATLABFunction_e(&A380PrimComputer_U.in.bus_inputs.prim_y_bus.elevator_status_word,
       A380PrimComputer_P.BitfromLabel21_bit, &rtb_y_k1);
-    rtb_AND18_c = ((rtb_y_k1 != 0U) && rtb_y_i);
+    rtb_NOT_k = ((rtb_y_k1 != 0U) && rtb_y_i);
     A380PrimComputer_MATLABFunction_e(&A380PrimComputer_U.in.bus_inputs.prim_y_bus.elevator_status_word,
       A380PrimComputer_P.BitfromLabel22_bit, &rtb_y_k1);
     rtb_AND19 = ((rtb_y_k1 != 0U) && rtb_y_i);
@@ -1938,14 +1938,14 @@ void A380PrimComputer::step()
     rtb_AND11_m = ((rtb_y_k1 != 0U) && rtb_y_jb);
     A380PrimComputer_MATLABFunction_e(&A380PrimComputer_U.in.bus_inputs.sec_3_bus.elevator_status_word,
       A380PrimComputer_P.BitfromLabel9_bit_e, &rtb_y_k1);
-    rtb_NOT_k = ((rtb_y_k1 != 0U) && rtb_y_jb);
+    rtb_AND10_b = ((rtb_y_k1 != 0U) && rtb_y_jb);
     A380PrimComputer_MATLABFunction_e(&A380PrimComputer_U.in.bus_inputs.sec_3_bus.elevator_status_word,
       A380PrimComputer_P.BitfromLabel11_bit_n, &rtb_y_k1);
     rtb_TmpSignalConversionAtSFunctionInport6_idx_2 = ((rtb_y_k1 != 0U) && rtb_y_jb);
     if (A380PrimComputer_U.in.discrete_inputs.is_unit_1) {
       rtb_y_jb = (rtb_AND_e || rtb_AND16_n);
-      rtb_AND19 = (rtb_AND18_c || rtb_AND1_at);
-      rtb_AND18_c = (elevator1Avail || rtb_AND15_l);
+      rtb_AND19 = (rtb_NOT_k || rtb_AND1_at);
+      rtb_NOT_k = (elevator1Avail || rtb_AND15_l);
       rtb_AND16_n = (rtb_AND2_b || rtb_y_jk);
       rtb_AND15_l = (rtb_thsEngaged || rtb_AND20);
       rtb_leftInboardElevPos = A380PrimComputer_U.in.analog_inputs.elevator_2_pos_deg;
@@ -1961,8 +1961,8 @@ void A380PrimComputer::step()
       rtb_thsPos = A380PrimComputer_U.in.analog_inputs.ths_pos_deg;
     } else if (A380PrimComputer_U.in.discrete_inputs.is_unit_2) {
       rtb_y_jb = (rtb_AND16_n || rtb_AND15_l);
-      rtb_AND19 = (rtb_y_jk || rtb_AND18_c);
-      rtb_AND18_c = (rtb_AND_e || rtb_AND2_b);
+      rtb_AND19 = (rtb_y_jk || rtb_NOT_k);
+      rtb_NOT_k = (rtb_AND_e || rtb_AND2_b);
       rtb_AND16_n = (elevator1Avail || rtb_AND1_at);
       rtb_AND15_l = (rtb_AND12 || rtb_AND20);
       if (A380PrimComputer_U.in.bus_inputs.prim_y_bus.elevator_1_position_deg.SSM == static_cast<uint32_T>
@@ -1984,7 +1984,7 @@ void A380PrimComputer::step()
     } else if (A380PrimComputer_U.in.discrete_inputs.is_unit_3) {
       rtb_y_jb = (elevator1Avail || rtb_AND15_l);
       rtb_AND19 = (rtb_AND_e || rtb_AND19);
-      rtb_AND18_c = (rtb_AND2_b || rtb_AND18_c);
+      rtb_NOT_k = (rtb_AND2_b || rtb_NOT_k);
       rtb_AND16_n = (rtb_AND16_n || rtb_AND1_at);
       rtb_AND15_l = (rtb_thsEngaged || rtb_AND12);
       rtb_leftInboardElevPos = A380PrimComputer_U.in.analog_inputs.elevator_1_pos_deg;
@@ -2007,7 +2007,7 @@ void A380PrimComputer::step()
     } else {
       rtb_y_jb = false;
       rtb_AND19 = false;
-      rtb_AND18_c = false;
+      rtb_NOT_k = false;
       rtb_AND16_n = false;
       rtb_AND15_l = false;
       rtb_leftInboardElevPos = 0.0;
@@ -2018,8 +2018,8 @@ void A380PrimComputer::step()
     }
 
     rtb_AND2_b = (rtb_y_jb || (rtb_AND11_m || rtb_AND3_h));
-    rtb_AND1_at = (rtb_AND19 || (rtb_NOT_k || rtb_y_a));
-    rtb_AND5_e = (rtb_AND18_c || (rtb_AND5_e || rtb_DataTypeConversion_m2));
+    rtb_AND1_at = (rtb_AND19 || (rtb_AND10_b || rtb_y_a));
+    rtb_AND5_e = (rtb_NOT_k || (rtb_AND5_e || rtb_DataTypeConversion_m2));
     rtb_AND4_fg3 = (rtb_AND16_n || (rtb_AND4_fg3 || rtb_y_i));
     A380PrimComputer_MATLABFunction_e(&A380PrimComputer_U.in.bus_inputs.prim_x_bus.rudder_status_word,
       A380PrimComputer_P.BitfromLabel38_bit, &rtb_y_k1);
@@ -2041,7 +2041,7 @@ void A380PrimComputer::step()
     A380PrimComputer_MATLABFunction_e(&A380PrimComputer_U.in.bus_inputs.prim_y_bus.rudder_status_word,
       A380PrimComputer_P.BitfromLabel37_bit, &rtb_y_k1);
     A380PrimComputer_MATLABFunction(&A380PrimComputer_U.in.bus_inputs.prim_y_bus.rudder_status_word, &rtb_y_i);
-    rtb_AND18_c = ((rtb_NOT_k || (rtb_y_k1 != 0U)) && rtb_y_i);
+    rtb_AND10_b = ((rtb_NOT_k || (rtb_y_k1 != 0U)) && rtb_y_i);
     A380PrimComputer_MATLABFunction_e(&A380PrimComputer_U.in.bus_inputs.sec_1_bus.rudder_status_word,
       A380PrimComputer_P.BitfromLabel3_bit_m, &rtb_y_k1);
     rtb_NOT_k = (rtb_y_k1 != 0U);
@@ -2072,12 +2072,12 @@ void A380PrimComputer::step()
     A380PrimComputer_MATLABFunction(&A380PrimComputer_U.in.bus_inputs.sec_3_bus.rudder_status_word, &rtb_NOT_k);
     if (A380PrimComputer_U.in.discrete_inputs.is_unit_1) {
       rtb_AND12 = (rtb_AND_n || rtb_AND6_o || rtb_AND12);
-      rtb_AND3_h = (rtb_rudder2HydraulicModeEngaged || rtb_AND2_jo || rtb_AND18_c);
+      rtb_AND3_h = (rtb_rudder2HydraulicModeEngaged || rtb_AND2_jo || rtb_AND10_b);
       rtb_handleIndex_f = A380PrimComputer_U.in.analog_inputs.rudder_1_pos_deg;
       rtb_lowerRudderPos = A380PrimComputer_U.in.analog_inputs.rudder_2_pos_deg;
     } else if (A380PrimComputer_U.in.discrete_inputs.is_unit_2) {
       rtb_AND12 = (rtb_AND_n || rtb_AND6_o || rtb_AND12);
-      rtb_AND3_h = (rtb_AND3_h || rtb_AND18_c);
+      rtb_AND3_h = (rtb_AND3_h || rtb_AND10_b);
       rtb_handleIndex_f = A380PrimComputer_U.in.analog_inputs.rudder_1_pos_deg;
       if (A380PrimComputer_U.in.bus_inputs.prim_x_bus.rudder_2_position_deg.SSM == static_cast<uint32_T>
           (SignStatusMatrix::NormalOperation)) {
@@ -2086,7 +2086,7 @@ void A380PrimComputer::step()
         rtb_lowerRudderPos = A380PrimComputer_U.in.bus_inputs.prim_y_bus.rudder_1_position_deg.Data;
       }
     } else if (A380PrimComputer_U.in.discrete_inputs.is_unit_3) {
-      rtb_AND12 = (rtb_AND12 || rtb_AND18_c);
+      rtb_AND12 = (rtb_AND12 || rtb_AND10_b);
       rtb_AND3_h = (rtb_AND_n || rtb_AND6_o || rtb_AND3_h);
       if (A380PrimComputer_U.in.bus_inputs.prim_x_bus.rudder_1_position_deg.SSM == static_cast<uint32_T>
           (SignStatusMatrix::NormalOperation)) {
@@ -2203,14 +2203,14 @@ void A380PrimComputer::step()
     }
 
     if (A380PrimComputer_U.in.discrete_inputs.is_unit_1) {
-      rtb_AND18_c = (d_nz == 1);
+      rtb_AND10_b = (d_nz == 1);
     } else if (A380PrimComputer_U.in.discrete_inputs.is_unit_2) {
-      rtb_AND18_c = (d_nz == 2);
+      rtb_AND10_b = (d_nz == 2);
     } else {
-      rtb_AND18_c = (d_nz == 3);
+      rtb_AND10_b = (d_nz == 3);
     }
 
-    if (!rtb_AND18_c) {
+    if (!rtb_AND10_b) {
       rtb_law_j = a380_pitch_efcs_law::None;
       rtb_activeLateralLaw = a380_lateral_efcs_law::None;
     } else {
@@ -2594,7 +2594,7 @@ void A380PrimComputer::step()
     A380PrimComputer_B.BusAssignment_jy.logic.pitch_law_capability = rtb_pitchLawCapability;
     A380PrimComputer_B.BusAssignment_jy.logic.active_pitch_law = rtb_law_j;
     A380PrimComputer_B.BusAssignment_jy.logic.abnormal_condition_law_active = rtb_AND16_n;
-    A380PrimComputer_B.BusAssignment_jy.logic.is_master_prim = rtb_AND18_c;
+    A380PrimComputer_B.BusAssignment_jy.logic.is_master_prim = rtb_AND10_b;
     A380PrimComputer_B.BusAssignment_jy.logic.elevator_1_avail = elevator1Avail;
     A380PrimComputer_B.BusAssignment_jy.logic.elevator_1_engaged = elevator1Avail;
     A380PrimComputer_B.BusAssignment_jy.logic.elevator_2_avail = elevator2Avail;
@@ -2735,8 +2735,8 @@ void A380PrimComputer::step()
     A380PrimComputer_DWork.pApproachModeArmedAbove400Ft = (((!A380PrimComputer_DWork.pApproachModeArmedAbove400Ft) &&
       rtb_BusAssignment_logic_all_sfcc_lost && (rtb_raComputationValue > 400.0F)) ||
       A380PrimComputer_DWork.pApproachModeArmedAbove400Ft);
-    rtb_y_a = (A380PrimComputer_U.in.temporary_ap_input.ap_1_engaged && rtb_BusAssignment_logic_all_sfcc_lost);
-    rtb_y_jb = (A380PrimComputer_U.in.temporary_ap_input.ap_2_engaged && rtb_BusAssignment_logic_all_sfcc_lost);
+    rtb_y_jb = (A380PrimComputer_U.in.temporary_ap_input.ap_1_engaged && rtb_BusAssignment_logic_all_sfcc_lost);
+    rtb_y_i = (A380PrimComputer_U.in.temporary_ap_input.ap_2_engaged && rtb_BusAssignment_logic_all_sfcc_lost);
     nz = (A380PrimComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_system_status_word.SSM != static_cast<uint32_T>
           (SignStatusMatrix::FailureWarning)) +
       (A380PrimComputer_U.in.bus_inputs.sfcc_2_bus.slat_flap_system_status_word.SSM != static_cast<uint32_T>
@@ -2750,18 +2750,18 @@ void A380PrimComputer::step()
          A380PrimComputer_U.in.bus_inputs.sec_3_bus.rudder_status_word.Data);
     }
 
-    rtb_y_i = (rtb_lateralLawCapability == a380_lateral_efcs_law::NormalLaw);
+    rtb_TmpSignalConversionAtSFunctionInport6_idx_2 = (rtb_lateralLawCapability == a380_lateral_efcs_law::NormalLaw);
     b_nz = rtb_BusAssignment_hi_logic_is_yellow_hydraulic_power_avail +
       rtb_BusAssignment_hi_logic_is_green_hydraulic_power_avail;
     prim3LawCap = A380PrimComputer_U.in.discrete_inputs.fws_1_audio_function +
       A380PrimComputer_U.in.discrete_inputs.fws_2_audio_function;
     d_nz = A380PrimComputer_U.in.discrete_inputs.fcdc_1_healthy + A380PrimComputer_U.in.discrete_inputs.fcdc_2_healthy;
-    rtb_TmpSignalConversionAtSFunctionInport6_idx_2 = ((A380PrimComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_1.SSM
-      != static_cast<uint32_T>(SignStatusMatrix::FailureWarning)) +
+    rtb_DataTypeConversion_m2 = ((A380PrimComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_1.SSM !=
+      static_cast<uint32_T>(SignStatusMatrix::FailureWarning)) +
       (A380PrimComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_1.SSM != static_cast<uint32_T>(SignStatusMatrix::
       FailureWarning)) >= 1);
     rtb_BusAssignment_logic_all_sfcc_lost = (leftSpoilerHydraulicModeAvail || leftSpoilerElectricModeAvail);
-    rtb_DataTypeConversion_m2 = rtb_BusAssignment_logic_all_sfcc_lost;
+    rtb_AND15_l = rtb_BusAssignment_logic_all_sfcc_lost;
     tmp[0] = (A380PrimComputer_U.in.bus_inputs.adr_1_bus.aoa_corrected_deg.SSM != static_cast<uint32_T>(SignStatusMatrix::
                FailureWarning));
     tmp[1] = (A380PrimComputer_U.in.bus_inputs.adr_2_bus.aoa_corrected_deg.SSM != static_cast<uint32_T>(SignStatusMatrix::
@@ -2776,10 +2776,11 @@ void A380PrimComputer::step()
     tmp[2] = A380PrimComputer_a429_bitValueOr_h(A380PrimComputer_U.in.bus_inputs.ir_3_bus.discrete_word_1.SSM,
       A380PrimComputer_U.in.bus_inputs.ir_3_bus.discrete_word_1.Data);
     f_nz = combineVectorElements_N0KSVqzt(tmp);
-    rtb_BusAssignment_logic_slats_locked = ((nz >= 1) && rtb_BusAssignment_logic_flaps_locked && rtb_y_i && (b_nz >= 1) &&
+    rtb_BusAssignment_logic_slats_locked = ((nz >= 1) && rtb_BusAssignment_logic_flaps_locked &&
+      rtb_TmpSignalConversionAtSFunctionInport6_idx_2 && (b_nz >= 1) &&
       A380PrimComputer_U.in.discrete_inputs.fcu_healthy && (!A380PrimComputer_U.in.discrete_inputs.fcu_north_ref_true) &&
-      (prim3LawCap >= 1) && (d_nz >= 1) && rtb_TmpSignalConversionAtSFunctionInport6_idx_2 &&
-      rtb_BusAssignment_logic_all_sfcc_lost && (e_nz >= 2) && (f_nz >= 2));
+      (prim3LawCap >= 1) && (d_nz >= 1) && rtb_DataTypeConversion_m2 && rtb_BusAssignment_logic_all_sfcc_lost && (e_nz >=
+      2) && (f_nz >= 2));
     tmp[0] = (A380PrimComputer_U.in.bus_inputs.ra_1_bus.radio_height_ft.SSM != static_cast<uint32_T>(SignStatusMatrix::
                FailureWarning));
     tmp[1] = (A380PrimComputer_U.in.bus_inputs.ra_2_bus.radio_height_ft.SSM != static_cast<uint32_T>(SignStatusMatrix::
@@ -2797,17 +2798,31 @@ void A380PrimComputer::step()
       (A380PrimComputer_U.in.discrete_inputs.is_engine_operative_3 ||
        A380PrimComputer_U.in.discrete_inputs.is_engine_operative_4));
     rtb_BusAssignment_logic_slats_locked = (rtb_BusAssignment_logic_slats_locked && (g_nz >= 2) && (h_nz >= 3));
-    rtb_BusAssignment_logic_flaps_locked = ((nz >= 2) && rtb_BusAssignment_logic_flaps_locked && rtb_y_i && (b_nz == 2) &&
+    if (A380PrimComputer_U.in.discrete_inputs.is_unit_1) {
+      rtb_y_a = ((A380PrimComputer_U.in.bus_inputs.prim_x_bus.radio_height_1_ft.SSM != static_cast<uint32_T>
+                  (SignStatusMatrix::FailureWarning)) ||
+                 (A380PrimComputer_U.in.bus_inputs.prim_y_bus.radio_height_2_ft.SSM != static_cast<uint32_T>
+                  (SignStatusMatrix::FailureWarning)));
+    } else if (A380PrimComputer_U.in.discrete_inputs.is_unit_2) {
+      rtb_y_a = (A380PrimComputer_U.in.bus_inputs.ra_1_bus.radio_height_ft.SSM != static_cast<uint32_T>(SignStatusMatrix::
+                  FailureWarning));
+    } else {
+      rtb_y_a = (A380PrimComputer_U.in.bus_inputs.ra_2_bus.radio_height_ft.SSM != static_cast<uint32_T>(SignStatusMatrix::
+                  FailureWarning));
+    }
+
+    rtb_BusAssignment_logic_flaps_locked = ((nz >= 2) && rtb_BusAssignment_logic_flaps_locked &&
+      rtb_TmpSignalConversionAtSFunctionInport6_idx_2 && (b_nz == 2) &&
       A380PrimComputer_U.in.discrete_inputs.fcu_healthy && (!A380PrimComputer_U.in.discrete_inputs.fcu_north_ref_true) &&
       (prim3LawCap == 2) && (d_nz == 2) && A380PrimComputer_U.in.discrete_inputs.antiskid_available &&
-      A380PrimComputer_U.in.discrete_inputs.nws_communication_available &&
-      rtb_TmpSignalConversionAtSFunctionInport6_idx_2 && rtb_DataTypeConversion_m2 && (e_nz == 3) && (f_nz == 3) &&
-      (g_nz >= 2) && ((h_nz == 4) || ((h_nz == 3) && A380PrimComputer_U.in.discrete_inputs.apu_gen_connected)) &&
+      A380PrimComputer_U.in.discrete_inputs.nws_communication_available && rtb_DataTypeConversion_m2 && rtb_AND15_l &&
+      (e_nz == 3) && (f_nz == 3) && rtb_y_a && (g_nz >= 2) && ((h_nz == 4) || ((h_nz == 3) &&
+      A380PrimComputer_U.in.discrete_inputs.apu_gen_connected)) &&
       A380PrimComputer_U.in.discrete_inputs.every_dc_supplied_by_tr);
     rtb_TmpSignalConversionAtSFunctionInport6_idx_2 = (A380PrimComputer_DWork.pLand3FailOp ||
-      (A380PrimComputer_DWork.pApproachModeArmedAbove400Ft && rtb_BusAssignment_logic_flaps_locked && rtb_y_a &&
-       rtb_y_jb && A380PrimComputer_U.in.temporary_ap_input.athr_engaged));
-    rtb_AND15_l = (rtb_y_a || rtb_y_jb);
+      (A380PrimComputer_DWork.pApproachModeArmedAbove400Ft && rtb_BusAssignment_logic_flaps_locked && rtb_y_jb &&
+       rtb_y_i && A380PrimComputer_U.in.temporary_ap_input.athr_engaged));
+    rtb_AND15_l = (rtb_y_jb || rtb_y_i);
     b_tmp = !rtb_TmpSignalConversionAtSFunctionInport6_idx_2;
     b = (A380PrimComputer_DWork.pLand3FailPass || (A380PrimComputer_DWork.pApproachModeArmedAbove400Ft &&
           rtb_BusAssignment_logic_slats_locked && rtb_AND15_l && A380PrimComputer_U.in.temporary_ap_input.athr_engaged &&
@@ -2849,7 +2864,7 @@ void A380PrimComputer::step()
     }
 
     A380PrimComputer_MATLABFunction_e(rtb_Switch_j_0, A380PrimComputer_P.BitfromLabel3_bit_gv, &rtb_y_e);
-    if (rtb_AND18_c) {
+    if (rtb_AND10_b) {
       rtb_y_jb = (rtb_AND20 && (rtb_law_j != A380PrimComputer_P.EnumeratedConstant_Value_l));
     } else {
       rtb_y_jb = ((rtb_y_e != 0U) && (rtb_Switch_j_0->SSM == static_cast<uint32_T>(SignStatusMatrix::NormalOperation)));
@@ -2975,7 +2990,7 @@ void A380PrimComputer::step()
     A380PrimComputer_B.BusAssignment_nw.logic.pitch_law_capability = rtb_pitchLawCapability;
     A380PrimComputer_B.BusAssignment_nw.logic.active_pitch_law = rtb_law_j;
     A380PrimComputer_B.BusAssignment_nw.logic.abnormal_condition_law_active = rtb_AND16_n;
-    A380PrimComputer_B.BusAssignment_nw.logic.is_master_prim = rtb_AND18_c;
+    A380PrimComputer_B.BusAssignment_nw.logic.is_master_prim = rtb_AND10_b;
     A380PrimComputer_B.BusAssignment_nw.logic.elevator_1_avail = elevator1Avail;
     A380PrimComputer_B.BusAssignment_nw.logic.elevator_1_engaged = elevator1Avail;
     A380PrimComputer_B.BusAssignment_nw.logic.elevator_2_avail = elevator2Avail;
