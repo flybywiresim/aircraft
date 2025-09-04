@@ -648,7 +648,8 @@ export class FwsCore {
   /** Stay in first warning stage for 1.8s. Raised to 1.9s to allow for triple click to finish */
   public readonly autoPilotOffVoluntaryEndAfter1p9s = new NXLogicTriggeredMonostableNode(1.9, true);
 
-  public readonly autoPilotOffVoluntaryFirstCavalryChargeActive = new NXLogicTriggeredMonostableNode(0.9, true);
+  /** Our cavalry charge lasts for 1.2s */
+  public readonly autoPilotOffVoluntaryFirstCavalryChargeActive = new NXLogicTriggeredMonostableNode(1.2, true);
 
   public readonly autoPilotOffVoluntaryFirstCavalryChargeEndedPulse = new NXLogicPulseNode(false);
 
