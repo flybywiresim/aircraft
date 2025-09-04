@@ -8,31 +8,30 @@
     margin-left: 90px;
 }
 
-.mfd-pos-monitor-table {
-    border: 2px outset $display-light-grey;
-    width: 99%;
-    margin-left: 1px;
-    margin-top: 45px;
-    padding: 10px 0px 10px 0px;
-}
 
-.mfd-pos-monitor-table-line {
-    margin-top: 2px;
-    margin-left: 30px;
+.mfd-pos-monitor-line {
     border: 1px outset $display-light-grey;
-    width: 699px;
     height: 1px;
   }
 
   .mfd-pos-monitor-frozen-pos-time-container {
     display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    width: 125px;
-    margin-left: 20px;
-    height: 23px;
+    flex-direction: column;
+    align-items: center;
+    width: 370px;
+    position: fixed;
+    left: 400px;
+    top: 625px;
   }
 
-  .mfd-pos-monitor-irs-deviation-line {
-    margin-right: 100px;
-  }
+  .mfd-pos-monitor-deviation-container {
+    margin-top:  30px;
+    margin-left: 30px;
+}
+
+.mfd-pos-monitor-irs-deviation-line {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding-bottom: 7px;
+}
