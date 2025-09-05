@@ -43,9 +43,9 @@ export class OitAvncsMenu extends DestroyableComponent<OitAvncsMenuPageProps> {
                 </OitFolder>
                 <OitFolder name={'UTILITIES'} initExpanded={true} hideFolderIcon>
                   <OitFile
-                    name={'FBW SYSTEMS'}
+                    name={'A380X SYSTEMS'}
                     uiService={this.props.uiService}
-                    navigationTarget="nss-avncs/fbw-systems"
+                    navigationTarget="nss-avncs/a380x-systems"
                     showFileSymbol={false}
                   />
                 </OitFolder>
