@@ -636,3 +636,41 @@ $font-file-path: '/Fonts/fbw-a380x/EFB';
 .nopointer {
   pointer-events: none;
 }
+
+
+.oit-fbw-systems-app-ldg-cap {
+  font-size: 0.1px;
+  color: transparent;
+  width: 450px;
+  height: 700px;
+  margin-left: 15px;
+  background-color: transparent;
+  background-image: url('/Images/fbw-a380x/oit/fbw-systems-app-ldg-cap.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.oit-fbw-systems-app-ldg-cap-table {
+  display: grid;
+  grid-template-columns: auto auto auto auto;
+}
+
+.oit-fbw-systems-app-ldg-cap-td {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid $display-white;
+  height: 50px;
+  padding: 10px;
+}
+
+.oit-fbw-systems-app-ldg-cap-td.green {
+  background-color: #006400;
+}
+
+.oit-fbw-systems-app-ldg-cap-td.red {
+  background-color: #8B0000;
+}

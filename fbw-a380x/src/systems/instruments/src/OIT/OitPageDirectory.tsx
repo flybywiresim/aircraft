@@ -16,6 +16,7 @@ import { OitAvncsCompanyComFlightLog } from './Pages/NssAvncs/CompanyCom/OitAvnc
 import { OitAvncsCompanyComInbox } from './Pages/NssAvncs/CompanyCom/OitAvncsCompanyComInbox';
 import { OitAvncsFbwSystems } from './Pages/NssAvncs/FbwSystems/OitAvncsFbwSystems';
 import { OitAvncsFbwSystemsGenericDebug } from './Pages/NssAvncs/FbwSystems/OitAvncsFbwSystemsGenericDebug';
+import { OitAvncsFbwSystemsAppLdgCap } from './Pages/NssAvncs/FbwSystems/OitAvncsFbwSystemsAppLdgCap';
 
 // Page imports
 // eslint-disable-next-line jsdoc/require-jsdoc
@@ -105,6 +106,15 @@ export function avncsFbwSystemsPageForUrl(
           title={'FBW Systems FWS Debug'}
           controlEventName="a380x_ois_fws_debug_data_enabled"
           dataEventName="a380x_ois_fws_debug_data"
+        />
+      );
+    case 'nss-avncs/fbw-systems/app-ldg-cap':
+      return (
+        <OitAvncsFbwSystemsAppLdgCap
+          bus={bus}
+          uiService={uiService}
+          container={container}
+          title={'Approach & Landing Capability'}
         />
       );
 

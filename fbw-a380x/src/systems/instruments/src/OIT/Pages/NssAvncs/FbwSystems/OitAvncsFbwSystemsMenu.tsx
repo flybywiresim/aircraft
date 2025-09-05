@@ -20,6 +20,11 @@ export class OitAvncsFbwSystemsMenu extends DestroyableComponent<OitAvncsFbwSyst
     return (
       <>
         <OitFile
+          name={'App & Ldg Capability'}
+          uiService={this.props.uiService}
+          navigationTarget="nss-avncs/fbw-systems/app-ldg-cap"
+        />
+        <OitFile
           name={'FWS Debug'}
           uiService={this.props.uiService}
           navigationTarget="nss-avncs/fbw-systems/debug-data"
