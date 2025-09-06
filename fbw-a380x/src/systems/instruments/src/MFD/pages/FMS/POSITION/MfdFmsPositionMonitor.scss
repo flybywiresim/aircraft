@@ -1,0 +1,54 @@
+@import "../../../../MsfsAvionicsCommon/definitions";
+
+
+.mfd-pos-top-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-left: 90px;
+}
+
+
+.mfd-pos-monitor-line {
+    border: 1px outset $display-light-grey;
+    height: 1px;
+    margin-left: 5px;
+  }
+
+  .mfd-pos-monitor-line.vertical-spaced {
+    margin-bottom: 20px;
+  }
+
+  .mfd-pos-monitor-line.big {
+    width: 97%;
+  }
+
+  .mfd-pos-monitor-line.short {
+    width: 100%;
+  }
+
+  .mfd-pos-monitor-frozen-pos-time-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 370px;
+    position: fixed;
+    left: 400px;
+    top: 625px;
+  }
+
+  .mfd-pos-monitor-deviation-container {
+    margin-top:  30px;
+    margin-left: 30px;
+}
+
+.mfd-pos-monitor-irs-deviation-line {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding-bottom: 7px;
+}
+
+.mfd-pos-monitor-irs-deviation-title {
+  padding-right: 50px;
+}
