@@ -1,7 +1,7 @@
-import { ClockEvents, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { ClockEvents, FSComponent, SimVarValueType, Subject, VNode } from '@microsoft/msfs-sdk';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { FmsPage } from '../../common/FmsPage';
-import { Arinc429Register, coordinateToString, Fix } from '@flybywiresim/fbw-sdk';
+import { Arinc429Register, coordinateToString, Fix, RegisteredSimVar } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Footer } from '../../common/Footer';
 import { FixFormat, RnpFormat } from '../../common/DataEntryFormats';
@@ -37,13 +37,23 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
 
   private readonly ir1LatitudeRegister = Arinc429Register.empty();
 
+  private readonly ir1LatitudeSimVar = RegisteredSimVar.create<number>(
+    'L:A32NX_ADIRS_IR_1_LATITUDE',
+    SimVarValueType.Enum,
+  );
+
   private readonly ir1LongitudeRegister = Arinc429Register.empty();
+
+  private readonly ir1LongitudeSimVar = RegisteredSimVar.create<number>(
+    'L:A32NX_ADIRS_IR_1_LONGITUDE',
+    SimVarValueType.Enum,
+  );
 
   private readonly ir1Coordinates: Coordinates = { lat: 0, long: 0 };
 
-  private readonly ir1Position = Subject.create('');
+  private readonly ir1Position = Subject.create(MfdFmsPositionMonitor.noPositionAvailableText);
 
-  private readonly ir1PositionDeviation = Subject.create('');
+  private readonly ir1PositionDeviation = Subject.create(MfdFmsPositionMonitor.noPositionAvailableDeviationText);
 
   private readonly ir1PositionDeviationUnitVisibility = this.ir1PositionDeviation.map((v) =>
     v === MfdFmsPositionMonitor.noPositionAvailableDeviationText ? 'hidden' : 'visible',
@@ -51,13 +61,23 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
 
   private readonly ir2LatitudeRegister = Arinc429Register.empty();
 
+  private readonly ir2LatitudeSimVar = RegisteredSimVar.create<number>(
+    'L:A32NX_ADIRS_IR_2_LATITUDE',
+    SimVarValueType.Enum,
+  );
+
   private readonly ir2LongitudeRegister = Arinc429Register.empty();
+
+  private readonly ir2LongitudeSimVar = RegisteredSimVar.create<number>(
+    'L:A32NX_ADIRS_IR_2_LONGITUDE',
+    SimVarValueType.Enum,
+  );
 
   private readonly ir2Coordinates: Coordinates = { lat: 0, long: 0 };
 
-  private readonly ir2Position = Subject.create('');
+  private readonly ir2Position = Subject.create(MfdFmsPositionMonitor.noPositionAvailableText);
 
-  private readonly ir2PositionDeviation = Subject.create('');
+  private readonly ir2PositionDeviation = Subject.create(MfdFmsPositionMonitor.noPositionAvailableDeviationText);
 
   private readonly ir2PositionDeviationUnitVisibility = this.ir2PositionDeviation.map((v) =>
     v === MfdFmsPositionMonitor.noPositionAvailableDeviationText ? 'hidden' : 'visible',
@@ -65,23 +85,33 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
 
   private readonly ir3LatitudeRegister = Arinc429Register.empty();
 
+  private readonly ir3LatitudeSimVar = RegisteredSimVar.create<number>(
+    'L:A32NX_ADIRS_IR_3_LATITUDE',
+    SimVarValueType.Enum,
+  );
+
   private readonly ir3LongitudeRegister = Arinc429Register.empty();
+
+  private readonly ir3LongitudeSimVar = RegisteredSimVar.create<number>(
+    'L:A32NX_ADIRS_IR_3_LONGITUDE',
+    SimVarValueType.Enum,
+  );
 
   private readonly ir3Coordinates: Coordinates = { lat: 0, long: 0 };
 
-  private readonly ir3Position = Subject.create('');
+  private readonly ir3Position = Subject.create(MfdFmsPositionMonitor.noPositionAvailableText);
 
-  private readonly ir3PositionDeviation = Subject.create('');
+  private readonly ir3PositionDeviation = Subject.create(MfdFmsPositionMonitor.noPositionAvailableDeviationText);
 
   private readonly ir3PositionDeviationUnitVisibility = this.ir3PositionDeviation.map((v) =>
     v === MfdFmsPositionMonitor.noPositionAvailableDeviationText ? 'hidden' : 'visible',
   );
 
-  private readonly onSidePosition = Subject.create('');
+  private readonly onSidePosition = Subject.create(MfdFmsPositionMonitor.noPositionAvailableText);
 
   private readonly offSidePosition = this.onSidePosition; // TODO implement when more than 1 FMS
 
-  private readonly noPositionImplemented = Subject.create(MfdFmsPositionMonitor.noPositionAvailableText);
+  private readonly radioPosition = Subject.create(MfdFmsPositionMonitor.noPositionAvailableText); // TODO implement when radio position is available from FMS
 
   private readonly positionFrozen = Subject.create(false);
 
@@ -111,7 +141,9 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
 
   private readonly gpsCoordinates: Coordinates = { lat: 0, long: 0 };
 
-  private readonly gnssPositionText = Subject.create('');
+  private readonly gnssPositionText = Subject.create(MfdFmsPositionMonitor.noPositionAvailableText);
+
+  private readonly gnss2PositionText = this.gnssPositionText; // TODO implement when GNSS2 is added
 
   private readonly cptSide = this.props.mfd.uiService.captOrFo === 'CAPT';
 
@@ -162,7 +194,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
     this.subs.push(
       sub
         .on('realTime')
-        .atFrequency(1)
+        .atFrequency(2)
         .handle((_t) => {
           this.onNewData();
         }),
@@ -206,38 +238,47 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
     this.rnpEnteredByPilot.set(navigation.isPilotRnp());
     const fmCoordinates = this.props.fmcService.master.navigation.getPpos();
     const fmPositionAvailable = fmCoordinates != null;
-    const updatePosition =
+    const updatePositionSensors =
       this.positionUpdateRequiredDueToFreeze || (this.positionSensorsVisible.get() && !this.positionFrozen.get());
-    if (updatePosition) {
+
+    this.onSidePosition.set(
+      fmPositionAvailable ? coordinateToString(fmCoordinates, false) : MfdFmsPositionMonitor.noPositionAvailableText,
+    );
+
+    this.fillIrData(
+      1,
+      this.ir1LatitudeRegister,
+      this.ir1LongitudeRegister,
+      this.ir1Coordinates,
+      fmCoordinates,
+      this.ir1Position,
+      this.ir1PositionDeviation,
+      updatePositionSensors,
+    );
+    this.fillIrData(
+      2,
+      this.ir2LatitudeRegister,
+      this.ir2LongitudeRegister,
+      this.ir2Coordinates,
+      fmCoordinates,
+      this.ir2Position,
+      this.ir2PositionDeviation,
+      updatePositionSensors,
+    );
+    this.fillIrData(
+      3,
+      this.ir3LatitudeRegister,
+      this.ir3LongitudeRegister,
+      this.ir3Coordinates,
+      fmCoordinates,
+      this.ir3Position,
+      this.ir3PositionDeviation,
+      updatePositionSensors,
+    );
+
+    if (updatePositionSensors) {
       this.onSidePosition.set(
         fmPositionAvailable ? coordinateToString(fmCoordinates, false) : MfdFmsPositionMonitor.noPositionAvailableText,
-      );
-      this.fillIrData(
-        1,
-        this.ir1LatitudeRegister,
-        this.ir1LongitudeRegister,
-        this.ir1Coordinates,
-        fmCoordinates,
-        this.ir1Position,
-        this.ir1PositionDeviation,
-      );
-      this.fillIrData(
-        2,
-        this.ir2LatitudeRegister,
-        this.ir2LongitudeRegister,
-        this.ir2Coordinates,
-        fmCoordinates,
-        this.ir2Position,
-        this.ir2PositionDeviation,
-      );
-      this.fillIrData(
-        3,
-        this.ir3LatitudeRegister,
-        this.ir3LongitudeRegister,
-        this.ir3Coordinates,
-        fmCoordinates,
-        this.ir3Position,
-        this.ir3PositionDeviation,
       );
 
       // TODO replace with MMR signals once implemented
@@ -262,16 +303,29 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
   }
 
   private fillIrData(
-    irIndex: number,
+    irIndex: 1 | 2 | 3,
     latitude: Arinc429Register,
     longitude: Arinc429Register,
     coordinates: Coordinates,
     fmPosition: Coordinates | null,
     irPosition: Subject<string>,
     irFmPositionDeviation: Subject<string>,
+    updatePosition?: boolean,
   ): void {
-    latitude.setFromSimVar(`L:A32NX_ADIRS_IR_${irIndex}_LATITUDE`);
-    longitude.setFromSimVar(`L:A32NX_ADIRS_IR_${irIndex}_LONGITUDE`);
+    latitude.set(
+      irIndex === 1
+        ? this.ir1LatitudeSimVar.get()
+        : irIndex === 2
+          ? this.ir2LatitudeSimVar.get()
+          : this.ir3LatitudeSimVar.get(),
+    );
+    longitude.set(
+      irIndex === 1
+        ? this.ir1LongitudeSimVar.get()
+        : irIndex === 2
+          ? this.ir2LongitudeSimVar.get()
+          : this.ir3LongitudeSimVar.get(),
+    );
     if (
       latitude.isFailureWarning() ||
       latitude.isNoComputedData() ||
@@ -284,7 +338,10 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
     }
     coordinates.lat = latitude.value;
     coordinates.long = longitude.value;
-    irPosition.set(coordinateToString(coordinates, false));
+
+    if (updatePosition) {
+      irPosition.set(coordinateToString(coordinates, false));
+    }
 
     if (fmPosition) {
       irFmPositionDeviation.set(distanceTo(coordinates, fmPosition).toFixed(1));
@@ -326,22 +383,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
             <div class="mfd-label-value-container">
               <span class={this.navPrimaryClass}>{this.navPrimaryText}</span>
             </div>
-            <div class="mfd-label-value-container" style={'margin-right:89px;'}>
-              <span class="mfd-label bigger mfd-spacing-right" style="width: 54px;">
-                EPU
-              </span>
-              <span class="mfd-value bigger">{this.fmsEpeDisplay}</span>
-              <span class="mfd-label-unit bigger mfd-unit-trailing" style={{ visibility: this.fmsEPeUnitVisibility }}>
-                NM
-              </span>
-            </div>
-          </div>
-          <div class="mfd-pos-top-row">
-            <div class="mfd-label-value-container" style={{ visibility: this.accuracyVisibility }}>
-              <span class="mfd-label bigger mfd-spacing-right">ACCURACY</span>
-              <span class={this.accuracyClass}>{this.fmsAccuracy}</span>
-            </div>
-            <div class="mfd-label-value-container" style={'margin-right:87px'}>
+            <div class="mfd-label-value-container" style={'margin-right:87px;'}>
               <span class="mfd-label bigger mfd-spacing-right-small">RNP</span>
               <InputField<number>
                 dataEntryFormat={new RnpFormat()}
@@ -356,6 +398,21 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                 interactionMode={this.props.mfd.interactionMode}
                 bigUnit={true}
               />
+            </div>
+          </div>
+          <div class="mfd-pos-top-row">
+            <div class="mfd-label-value-container" style={{ visibility: this.accuracyVisibility }}>
+              <span class="mfd-label bigger mfd-spacing-right">ACCURACY</span>
+              <span class={this.accuracyClass}>{this.fmsAccuracy}</span>
+            </div>
+            <div class="mfd-label-value-container" style={'margin-right:89px'}>
+              <span class="mfd-label bigger mfd-spacing-right" style="width: 54px;">
+                EPU
+              </span>
+              <span class="mfd-value bigger">{this.fmsEpeDisplay}</span>
+              <span class="mfd-label-unit bigger mfd-unit-trailing" style={{ visibility: this.fmsEPeUnitVisibility }}>
+                NM
+              </span>
             </div>
           </div>
 
@@ -373,7 +430,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
             </div>
           </div>
 
-          <div class="mfd-pos-monitor-line"> </div>
+          <div class="mfd-pos-monitor-line big"> </div>
 
           <div class="fr">
             <div class="mfd-position-monitor-sensors-container" style={this.positionSensorsVisibility}>
@@ -383,10 +440,10 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
               </div>
               <div class="mfd-label-value-container">
                 <span class="mfd-label bigger mfd-spacing-right">GNSS2</span>
-                <span class="mfd-value bigger">{this.gnssPositionText}</span>
+                <span class="mfd-value bigger">{this.gnss2PositionText}</span>
               </div>
 
-              <div class="mfd-pos-monitor-line"></div>
+              <div class="mfd-pos-monitor-line short"></div>
 
               <div class="mfd-label-value-container">
                 <span class="mfd-label bigger mfd-spacing-right">&nbsp;IRS1</span>
@@ -403,11 +460,11 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                 <span class="mfd-value bigger">{this.ir3Position}</span>
               </div>
 
-              <div class="mfd-pos-monitor-line"> </div>
+              <div class="mfd-pos-monitor-line short"> </div>
 
               <div class="mfd-label-value-container">
                 <span class="mfd-label bigger mfd-spacing-right">RADIO</span>
-                <span class="mfd-value bigger">{this.noPositionImplemented}</span>
+                <span class="mfd-value bigger">{this.radioPosition}</span>
               </div>
             </div>
             <div>
@@ -418,9 +475,9 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                   <span class="mfd-label bigger">DEVIATION FROM {this.onSidePositionLabel}</span>
                 </div>
 
-                <div class="mfd-pos-monitor-irs-deviation-line">
+                <div class="mfd-pos-monitor-irs-deviation-line mfd-pos-monitor-irs-deviation-titl">
                   <span class="mfd-label bigger mfd-spacing-right" style={this.irDeviationIdentifierVisible}>
-                    IRS1&nbsp;&nbsp;&nbsp;
+                    IRS1
                   </span>
                   <span class="mfd-value bigger">{this.ir1PositionDeviation}</span>
                   <span
@@ -431,9 +488,9 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                   </span>
                 </div>
 
-                <div class="mfd-pos-monitor-irs-deviation-line">
+                <div class="mfd-pos-monitor-irs-deviation-line mfd-pos-monitor-irs-deviation-titl">
                   <span class="mfd-label bigger mfd-spacing-right" style={this.irDeviationIdentifierVisible}>
-                    IRS2&nbsp;&nbsp;&nbsp;
+                    IRS2
                   </span>
                   <span class="mfd-value bigger">{this.ir2PositionDeviation}</span>
                   <span
@@ -444,9 +501,9 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                   </span>
                 </div>
 
-                <div class="mfd-pos-monitor-irs-deviation-line">
+                <div class="mfd-pos-monitor-irs-deviation-line mfd-pos-monitor-irs-deviation-titl">
                   <span class="mfd-label bigger mfd-spacing-right" style={this.irDeviationIdentifierVisible}>
-                    IRS3&nbsp;&nbsp;&nbsp;
+                    IRS3
                   </span>
                   <span class="mfd-value bigger">{this.ir3PositionDeviation}</span>
                   <span
@@ -467,7 +524,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
               <span class="mfd-label bigger">{this.positionFrozenTime}</span>
             </div>
 
-            <div class="fr space-between">
+            <div class="fr space-between" style={'margin-bottom: 20px;'}>
               <Button
                 label={Subject.create(
                   <div style="display: flex; flex-direction: row; justify-content: space-between;">
@@ -501,7 +558,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
             </div>
           </div>
 
-          <div class="mfd-pos-monitor-line"> </div>
+          <div class="mfd-pos-monitor-line big vertical-spaced"></div>
 
           <div class="fr space-between">
             <Button
@@ -549,6 +606,9 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
               </div>
             </div>
           </div>
+
+          <div class="mfd-pos-monitor-line big vertical-spaced"> </div>
+
           <div style="flex-grow: 1;" />
           {/* fill space vertically */}
           <div class="fr space-between">
