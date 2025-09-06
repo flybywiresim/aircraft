@@ -94,7 +94,9 @@ AutopilotLawsModelClass::Parameters_AutopilotLaws_T AutopilotLawsModelClass::Aut
       false,
       false,
       false,
-      0.0
+      0.0,
+      false,
+      false
     },
 
     {
