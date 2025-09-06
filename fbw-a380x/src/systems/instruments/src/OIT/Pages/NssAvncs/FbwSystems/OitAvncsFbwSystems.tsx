@@ -19,8 +19,8 @@ export class OitAvncsFbwSystems extends DestroyableComponent<OitAvncsFbwSystemsP
   private activePage: VNode = (<></>) as VNode;
 
   private activeUriChanged(uri: OitUriInformation) {
-    if (!uri.uri.match(/nss-avncs\/fbw-systems\/\S*/gm)) {
-      // Navigate somewhere else outside of the FBW systems section
+    if (!uri.uri.match(/nss-avncs\/a380x-systems\/\S*/gm)) {
+      // Navigate somewhere else outside of the A380X SYSTEMSs section
       return;
     }
 
@@ -75,7 +75,7 @@ export class OitAvncsFbwSystems extends DestroyableComponent<OitAvncsFbwSystemsP
     return (
       <>
         {/* begin page content */}
-        <OitAvncsSubHeader title={'FBW SYSTEMS'} uiService={this.props.uiService} />
+        <OitAvncsSubHeader title={'A380X SYSTEMS'} uiService={this.props.uiService} />
         <div class="oit-page-container">
           <div class="oit-avncs-navigator-container">
             <div class="oit-avncs-navigator-left">
