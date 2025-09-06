@@ -112,6 +112,7 @@
 1. [FMS] Fixed a rare issue where airways failed to load - @tracernz (Mike)
 1. [A380X/FWS] Implement ENG SHUTDOWN abnornal sensed & timer countdown to timed based items - @BravoMike99 (bruno_pt99)
 1. [A380X/CDS] Implement abnormal engine parameters amber attention getting box on the EWD - @BravoMike99 (bruno_pt99)
+1. [A380X/FWS] Add FCTL and OVERSPEED abnormal sensed procedures - @Jonny23787 (Jonathan)
 
 ## 0.13.0
 
