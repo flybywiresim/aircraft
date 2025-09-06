@@ -356,6 +356,9 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
   private toggleSensorsVisibility() {
     this.positionSensorsVisible.set(!this.positionSensorsVisible.get());
     this.sensorsDisplayedByPilot = this.positionSensorsVisible.get();
+    if (!this.sensorsDisplayedByPilot) {
+      this.positionFrozen.set(false);
+    }
   }
 
   private togglePositionFrozen(): void {
