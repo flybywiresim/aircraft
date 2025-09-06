@@ -12,6 +12,19 @@
 .mfd-pos-monitor-line {
     border: 1px outset $display-light-grey;
     height: 1px;
+    margin-left: 5px;
+  }
+
+  .mfd-pos-monitor-line.vertical-spaced {
+    margin-bottom: 20px;
+  }
+
+  .mfd-pos-monitor-line.big {
+    width: 97%;
+  }
+
+  .mfd-pos-monitor-line.short {
+    width: 100%;
   }
 
   .mfd-pos-monitor-frozen-pos-time-container {
@@ -34,4 +47,8 @@
   flex-direction: row;
   align-items: center;
   padding-bottom: 7px;
+}
+
+.mfd-pos-monitor-irs-deviation-title {
+  padding-right: 50px;
 }
