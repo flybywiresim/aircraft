@@ -337,7 +337,7 @@ export class OitAvncsFbwSystemsAppLdgCap extends DestroyableComponent<OitAvncsFb
               <div class="oit-a380x-systems-app-ldg-cap-td transparentbg">FCDC</div>
               <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: this.oneFcdcHealthy }}>1</div>
               <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: this.oneFcdcHealthy }}>1</div>
-              <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, red: this.twoFcdcHealthy }}>2</div>
+              <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: this.twoFcdcHealthy }}>2</div>
               <div class="oit-a380x-systems-app-ldg-cap-td transparentbg">Antiskid</div>
               <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: this.antiskidAvailable }}>Avail.</div>
               <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: this.antiskidAvailable }}>Avail.</div>
