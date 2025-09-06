@@ -643,7 +643,7 @@ $font-file-path: '/Fonts/fbw-a380x/EFB';
   color: transparent;
   width: 450px;
   height: 700px;
-  margin-left: 15px;
+  margin-left: 30px;
   background-color: transparent;
   background-image: url('/Images/fbw-a380x/oit/a380x-systems-app-ldg-cap.png');
   background-size: contain;
@@ -665,12 +665,13 @@ $font-file-path: '/Fonts/fbw-a380x/EFB';
   border: 1px solid $display-white;
   height: 50px;
   padding: 5px;
+  background-color: #8B0000;
+}
+
+.oit-a380x-systems-app-ldg-cap-td.transparentbg {
+  background-color: transparent;
 }
 
 .oit-a380x-systems-app-ldg-cap-td.green {
   background-color: #006400;
-}
-
-.oit-a380x-systems-app-ldg-cap-td.red {
-  background-color: #8B0000;
 }
