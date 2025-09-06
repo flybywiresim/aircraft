@@ -52,3 +52,10 @@
 .mfd-pos-monitor-irs-deviation-title {
   padding-right: 50px;
 }
+
+.mfd-pos-monitor-fm-pos-line {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-right: 20px;
+}
