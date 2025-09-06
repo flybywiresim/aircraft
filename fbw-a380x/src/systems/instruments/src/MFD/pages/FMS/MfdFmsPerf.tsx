@@ -41,6 +41,7 @@ import { getEtaFromUtcOrPresent as getEtaUtcOrFromPresent, getApproachName } fro
 import { ApproachType } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
+import { MfdFmsPositionMonitor } from './POSITION/MfdFmsPositionMonitor';
 
 interface MfdFmsPerfProps extends AbstractMfdPageProps {}
 
@@ -2951,7 +2952,11 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
               <div>
                 <Button
                   label="POS MONITOR"
-                  onClick={() => this.props.mfd.uiService.navigateTo('fms/position/monitor')}
+                  onClick={() =>
+                    this.props.mfd.uiService.navigateTo(
+                      `fms/position/monitor/${MfdFmsPositionMonitor.showReturnButtonUri}`,
+                    )
+                  }
                   containerStyle="margin-right: 5px;"
                 />
               </div>

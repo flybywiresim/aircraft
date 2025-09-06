@@ -19,6 +19,8 @@ interface MfdFmsPositionMonitorPageProps extends AbstractMfdPageProps {}
 export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProps> {
   static readonly noIrsPositionDeviationAvailText = '--.-';
 
+  static readonly showReturnButtonUri = 'withReturn';
+
   private readonly fmsRnp = Subject.create<number | null>(null);
 
   private readonly rnpEnteredByPilot = Subject.create(false);
@@ -193,6 +195,9 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
   private readonly gpsDeselected = Subject.create(true);
 
   private readonly gpsDeselectedVisibility = this.gpsDeselected.map((v) => (v ? 'visible' : 'hidden'));
+
+  private readonly returnButtonVisible =
+    this.props.mfd.uiService.activeUri.get().extra === MfdFmsPositionMonitor.showReturnButtonUri;
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -430,7 +435,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
               <span class="mfd-value bigger mfd-spacing-right">{this.offSidePosition}</span>
             </div>
             <div class="mfd-label-value-container">
-              <span class="mfd-value bigger">({this.offSidePositionMode})</span>
+              <span class="mfd-value bigger">{this.offSidePositionMode}</span>
             </div>
           </div>
 
@@ -618,9 +623,10 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
           {/* fill space vertically */}
           <div class="fr space-between">
             <Button
-              label="RETURN" // TODO should only be visible if accessed via the PERF page
+              label="RETURN"
               onClick={() => this.props.mfd.uiService.navigateTo('back')}
               buttonStyle="margin-right: 5px; width:150px;"
+              visible={this.returnButtonVisible}
             />
             <div class="fr">
               <Button
