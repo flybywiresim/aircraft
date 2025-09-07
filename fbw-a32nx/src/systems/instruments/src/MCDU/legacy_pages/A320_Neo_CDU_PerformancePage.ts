@@ -700,10 +700,10 @@ export class CDUPerformancePage {
 
     const timeLabel = isFlying ? '\xa0UTC' : 'TIME';
 
-    const [destEfobCell, destTimeCell] = CDUPerformancePage.formatDestEfobAndTime(mcdu, isFlying);
+    const [destEfobCell, destTimeCell] = CDUPerformancePage.formatDestEfobAndTime(mcdu, isFlying, forPlan);
     const [toUtcLabel, toDistLabel] = shouldShowToTdInformation ? ['\xa0UTC', 'DIST'] : ['', ''];
     const [toReasonCell, toDistCell, toTimeCell] = shouldShowToTdInformation
-      ? CDUPerformancePage.formatToReasonDistanceAndTime(mcdu)
+      ? CDUPerformancePage.formatToReasonDistanceAndTime(mcdu, forPlan)
       : ['', '', ''];
 
     const desCabinRateCell = shouldShowCabinRate ? '{small}-350{end}' : '';
@@ -893,7 +893,7 @@ export class CDUPerformancePage {
       isSelected,
     );
     const timeLabel = isFlying ? '\xa0UTC' : 'TIME';
-    const [destEfobCell, destTimeCell] = CDUPerformancePage.formatDestEfobAndTime(mcdu, isFlying);
+    const [destEfobCell, destTimeCell] = CDUPerformancePage.formatDestEfobAndTime(mcdu, isFlying, forPlan);
     const [toUtcLabel, toDistLabel] = shouldShowPredTo ? ['\xa0UTC', 'DIST'] : ['', ''];
 
     const bottomRowLabels = ['\xa0PREV', 'NEXT\xa0'];
@@ -1466,8 +1466,10 @@ export class CDUPerformancePage {
     return [predToDistanceCell, predToTimeCell];
   }
 
-  static formatDestEfobAndTime(mcdu: LegacyFmsPageInterface, isFlying) {
-    const destinationPrediction = mcdu.guidanceController.vnavDriver.getDestinationPrediction();
+  static formatDestEfobAndTime(mcdu: LegacyFmsPageInterface, isFlying: boolean, forPlan: FlightPlanIndex) {
+    // TODO sec - handle non active flight plan
+    const destinationPrediction =
+      forPlan === FlightPlanIndex.Active ? mcdu.guidanceController.vnavDriver.getDestinationPrediction() : undefined;
 
     let destEfobCell = '---.-';
     let destTimeCell = '----';
@@ -1492,8 +1494,10 @@ export class CDUPerformancePage {
     return [destEfobCell, destTimeCell];
   }
 
-  static formatToReasonDistanceAndTime(mcdu: LegacyFmsPageInterface) {
-    const toPrediction = mcdu.guidanceController.vnavDriver.getPerfCrzToPrediction();
+  static formatToReasonDistanceAndTime(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex) {
+    // TODO sec - handle non active flight plan
+    const toPrediction =
+      forPlan === FlightPlanIndex.Active ? mcdu.guidanceController.vnavDriver.getPerfCrzToPrediction() : undefined;
 
     let reasonCell = '(T/D)';
     let distCell = '---';
