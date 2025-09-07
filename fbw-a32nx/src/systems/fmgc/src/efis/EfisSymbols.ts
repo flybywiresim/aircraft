@@ -766,7 +766,8 @@ export class EfisSymbols<T extends number> {
         altConstraint &&
         shouldShowConstraintCircleInPhase(flightPhase, leg) &&
         !isAlternate &&
-        !leg.isXA()
+        !leg.isXA() &&
+        flightPlan.index === FlightPlanIndex.Active // Don't show constraint circles for SEC
       ) {
         if (!isSelectedVerticalModeActive) {
           type |= NdSymbolTypeFlags.Constraint;
