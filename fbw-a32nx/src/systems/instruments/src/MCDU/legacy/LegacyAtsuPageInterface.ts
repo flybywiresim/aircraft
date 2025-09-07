@@ -7,8 +7,8 @@ import { AtsuStatusCodes } from '@datalink/common';
 import { McduMessage } from '../messages/NXSystemMessages';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { FlightPhaseManager } from '@fmgc/flightphase';
-import { ISimbriefData } from '../../../../../../../fbw-common/src/systems/instruments/src/EFB/Apis/Simbrief';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { ISimbriefData } from '@flybywiresim/fbw-sdk';
 
 interface LegacyAtsuPageDrawingInterface {
   clearDisplay(webSocketDraw?: boolean): void;

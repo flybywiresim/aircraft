@@ -179,9 +179,10 @@ export interface PFDSimvars {
 }
 
 export enum PFDVars {
-  slatsFlapsStatusRaw = 'L:A32NX_SFCC_SLAT_FLAP_SYSTEM_STATUS_WORD',
-  slatsPositionRaw = 'L:A32NX_SFCC_SLAT_ACTUAL_POSITION_WORD',
-  flapsPositionRaw = 'L:A32NX_SFCC_FLAP_ACTUAL_POSITION_WORD',
+  // TODO: add switching between SFCC_1 and SFCC_2
+  slatsFlapsStatusRaw = 'L:A32NX_SFCC_1_SLAT_FLAP_SYSTEM_STATUS_WORD',
+  slatsPositionRaw = 'L:A32NX_SFCC_1_SLAT_ACTUAL_POSITION_WORD',
+  flapsPositionRaw = 'L:A32NX_SFCC_1_FLAP_ACTUAL_POSITION_WORD',
   coldDark = 'L:A32NX_COLD_AND_DARK_SPAWN',
   elec = 'L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED',
   elecFo = 'L:A32NX_ELEC_AC_2_BUS_IS_POWERED',

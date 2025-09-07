@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2022 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
@@ -495,18 +496,18 @@ export class Geometry {
     return rad;
   }
 
-  getDistanceToGo(activeLegIdx: number, ppos: LatLongAlt): number | null {
+  getDistanceToGo(activeLegIdx: number, ppos: LatLongAlt): number | undefined {
     const activeLeg = this.legs.get(activeLegIdx);
-    if (activeLeg) {
-      return activeLeg.getDistanceToGo(ppos);
-    }
-
-    return null;
+    return activeLeg?.getDistanceToGo(ppos);
   }
 
   shouldSequenceLeg(activeLegIdx: number, ppos: LatLongAlt): boolean {
     const activeLeg = this.legs.get(activeLegIdx);
     const inboundTransition = this.transitions.get(activeLegIdx - 1);
+
+    if (!activeLeg) {
+      return false;
+    }
 
     // Restrict sequencing in cases where we are still in inbound transition. Make an exception for very short legs as the transition could be overshooting.
     if (
@@ -517,17 +518,12 @@ export class Geometry {
       return false;
     }
 
-    const dtg = activeLeg.getDistanceToGo(ppos);
-
-    if (dtg <= 0 || activeLeg.isNull) {
+    if (activeLeg.isNull) {
       return true;
     }
 
-    if (activeLeg) {
-      return activeLeg.getDistanceToGo(ppos) < 0.001;
-    }
-
-    return false;
+    const dtg = activeLeg.getDistanceToGo(ppos);
+    return dtg !== undefined && dtg < 0.001;
   }
 
   onLegSequenced(_sequencedLeg: Leg, nextLeg: Leg, followingLeg: Leg): void {

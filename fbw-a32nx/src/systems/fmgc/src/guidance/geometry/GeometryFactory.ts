@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2022 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
@@ -367,7 +368,7 @@ function getMagCorrection(legIndex: number, plan: BaseFlightPlan): number {
 }
 
 function getApproachMagCorrection(legIndex: number, plan: BaseFlightPlan): number | undefined {
-  const approachType = plan.approach.type;
+  const approachType = plan.approach?.type ?? ApproachType.Unknown;
   const currentLeg = plan.legElementAt(legIndex);
 
   // we use station declination for VOR/DME approaches

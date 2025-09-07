@@ -13,7 +13,8 @@
     - [Local Vars](#local-vars)
   - [Electrical ATA 24](#electrical-ata-24)
   - [Fire and Smoke Protection ATA 26](#fire-and-smoke-protection-ata-26)
-  - [Flaps / Slats (ATA 27)](#flaps--slats-ata-27)
+  - [Flaps / Slats (ATA 27)](#flight-controls-ata-27)
+  - [Fuel (ATA 28)](#fuel-ata-28)
   - [Indicating-Recording ATA 31](#indicating-recording-ata-31)
   - [ECAM Control Panel ATA 31](#ecam-control-panel-ata-31)
   - [EFIS Control Panel ATA 31](#efis-control-panel-ata-31)
@@ -894,10 +895,10 @@
       | 28  | FCDC Opposite Fault                      |
       | 29  | SEC 3 Fault                              |
 
-- A32NX_SFCC_SLAT_FLAP_ACTUAL_POSITION_WORD
+- A32NX_SFCC_{number}_SLAT_FLAP_ACTUAL_POSITION_WORD
+    - {number} is 1 or 2
     - Slat/Flap actual position discrete word of the SFCC bus output
     - Arinc429<Discrete>
-    - Note that multiple SFCC are not yet implemented, thus no {number} in the name.
     - | Bit |      Description A380X, if different     |
       |:---:|:----------------------------------------:|
       | 11  | Slat Data Valid                          |
@@ -923,6 +924,7 @@
 - A32NX_FLAPS_CONF_INDEX
   - Number
   - Indicates the desired flap configuration index according to the table
+        DO NOT USE IN SYSTEMS, USE SFCC INSTEAD
   - Value | Meaning
             --- | ---
       0 | Conf0
@@ -932,6 +934,15 @@
       4 | Conf2S
       5 | Conf3
       6 | Conf4
+
+## Fuel ATA 28
+- A32NX_TOTAL_FUEL_QUANTITY
+  - Number in kilogramm
+  - The total physical quantity of fuel in the tanks
+
+- A32NX_TOTAL_FUEL_VOLUME
+  - Number in Gallons
+  - The total physical volume of fuel in the tanks
 
 ## Indicating-Recording ATA 31
 

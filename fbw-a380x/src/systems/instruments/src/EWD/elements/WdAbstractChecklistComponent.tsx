@@ -61,12 +61,15 @@ export class WdAbstractChecklistComponent extends DisplayComponent<WdAbstractChe
   );
   private readonly lineSelected = Array.from(Array(WD_NUM_LINES), () => Subject.create<boolean>(false));
 
-  public updateChecklists() {
+  public updateChecklists(notifyIndexes?: number[]) {
     let lineIdx = 0;
     this.totalLines.set(this.lineData.length);
 
     this.lineData.forEach((ld, index) => {
       if (index >= this.showFromLine.get() && lineIdx < WD_NUM_LINES) {
+        if (notifyIndexes && notifyIndexes.findIndex((i) => i === index) !== -1) {
+          this.lineDataSubject[lineIdx].notify();
+        }
         this.lineDataSubject[lineIdx].set(ld);
         this.lineSelected[lineIdx].set(
           ld.originalItemIndex !== undefined && ld.activeProcedure
@@ -141,9 +144,7 @@ export class EclLine extends DisplayComponent<EclLineProps> {
               (d) => !d.abnormalProcedure && d.style === ChecklistLineStyle.ChecklistItem,
             ),
             Inactive: this.props.data.map((d) => d.inactive === true),
-            AbnormalItem: this.props.data.map(
-              (d) => d.abnormalProcedure === true && d.style === ChecklistLineStyle.ChecklistItem,
-            ),
+            AbnormalItem: this.props.data.map((d) => d.abnormalProcedure === true),
             Headline: this.props.data.map((d) =>
               [
                 ChecklistLineStyle.Headline,

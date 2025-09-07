@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023, 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -13,6 +14,7 @@ import {
   EnrouteNdbNavaid,
   Fix,
   IlsNavaid,
+  ISimbriefData,
   MathUtils,
   NdbNavaid,
   NXDataStore,
@@ -67,7 +69,6 @@ import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { initComponents, updateComponents } from '@fmgc/components';
 import { CoRouteUplinkAdapter } from '@fmgc/flightplanning/uplink/CoRouteUplinkAdapter';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
-import { ISimbriefData } from '../../../../../../../fbw-common/src/systems/instruments/src/EFB/Apis/Simbrief';
 import { FuelPredComputations, SimbriefOfpState } from './LegacyFmsPageInterface';
 import { CDUInitPage } from '../legacy_pages/A320_Neo_CDU_InitPage';
 import { FmcWindVector } from '@fmgc/guidance/vnav/wind/types';
@@ -356,7 +357,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       a320EfisRangeSettings,
     );
 
-    initComponents(this.navigation, this.guidanceController, this.flightPlanService);
+    initComponents(this.bus, this.navigation, this.guidanceController, this.flightPlanService);
 
     this.guidanceController.init();
     this.efisSymbolsLeft.init();
@@ -409,7 +410,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
     this.navigationDatabaseService.activeDatabase.getDatabaseIdent().then((dbIdent) => (this.navDbIdent = dbIdent));
 
-    this.atsu?.init();
+    // FIXME move ATSU out of FMS. It can only communicate with the FMS by ARINC429 bus.
+    this.atsu = new FmsClient(this, this.flightPlanService);
+    this.atsu.init();
   }
 
   protected initVariables(resetTakeoffData = true) {
@@ -519,9 +522,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.navigation.requiredPerformance.clearPilotRnp();
     }
 
-    // FIXME WTF! Why create a whole new instance each time the FMS is cleared!
-    // ATSU data
-    this.atsu = new FmsClient(this, this.flightPlanService);
+    this.atsu?.onFmsReset();
 
     // Reset SimVars
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'knots', 0);
@@ -654,7 +655,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     //    SimVar.SetSimVarValue("H:A320_Neo_FCU_SPEED_PULL", "boolean", 1);
     // flight plan
     this.resetCoroute();
-    this.atsu.resetAtisAutoUpdate();
     await this.flightPlanService.reset();
     // stored data
     this.dataManager.deleteAllStoredWaypoints();
@@ -4542,7 +4542,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
     // If an engine is not running, use pilot entered block fuel to calculate fuel predictions
     return useFqi
-      ? (SimVar.GetSimVarValue('FUEL TOTAL QUANTITY WEIGHT', 'pound') * 0.4535934) / 1000
+      ? SimVar.GetSimVarValue('L:A32NX_TOTAL_FUEL_QUANTITY', 'number') / 1000
       : plan.performanceData.blockFuel.get() ?? null;
   }
 
@@ -5529,6 +5529,10 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     } else {
       CDUInitPage.ShowPage2(this.mcdu, forPlan);
     }
+  }
+
+  public logTroubleshootingError(msg: any) {
+    this.bus.pub('troubleshooting_log_error', String(msg), true, false);
   }
 
   // ---------------------------

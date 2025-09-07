@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -8,7 +9,7 @@ import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FmcWindVector, FmcWinds } from '@fmgc/guidance/vnav/wind/types';
-import { MappedSubject, Subject, Subscribable, SubscribableUtils } from '@microsoft/msfs-sdk';
+import { MappedSubject, MutableSubscribable, Subject, Subscribable, SubscribableUtils } from '@microsoft/msfs-sdk';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { Arinc429Word, Runway, Units } from '@flybywiresim/fbw-sdk';
 import { Feet } from 'msfs-geo';
@@ -38,6 +39,11 @@ export enum TakeoffAntiIce {
   OFF = 0,
   ENG_ONLY = 1,
   ENG_WINGS = 2,
+}
+
+export enum CostIndexMode {
+  LRC = 0,
+  ECON = 1,
 }
 
 export enum ClimbDerated {
@@ -290,6 +296,8 @@ export class FmgcData {
   /** in feet. null if not set. */
   public readonly noiseEndAltitude = Subject.create<number | null>(null);
 
+  public readonly costIndexMode = Subject.create<CostIndexMode | null>(CostIndexMode.ECON);
+
   public readonly climbDerated = Subject.create<ClimbDerated | null>(ClimbDerated.NONE);
 
   /** in feet. null if not set. */
@@ -336,13 +344,16 @@ export class FmgcData {
    */
   public readonly estimatedTakeoffTime = Subject.create<number | null>(null);
 
+  /** Indicates OEI situation */
+  public readonly engineOut = Subject.create(false);
+
   private static readonly DEFAULT_SETTINGS = new FmgcData();
 
   public reset(): void {
     for (const key in FmgcData.DEFAULT_SETTINGS) {
       const prop = key as keyof FmgcData;
       if (SubscribableUtils.isMutableSubscribable(this[prop])) {
-        this[prop].set((FmgcData.DEFAULT_SETTINGS[prop] as Subscribable<any>).get());
+        (this[prop] as MutableSubscribable<any>).set((FmgcData.DEFAULT_SETTINGS[prop] as Subscribable<any>).get());
       }
     }
   }
@@ -391,7 +402,7 @@ export class FmgcDataService implements Fmgc {
     let fob = this.data.blockFuel.get();
     if (this.isAnEngineOn()) {
       fob =
-        SimVar.GetSimVarValue('FUEL TOTAL QUANTITY', 'gallons') *
+        SimVar.GetSimVarValue('L:A32NX_TOTAL_FUEL_VOLUME', 'gallons') *
         SimVar.GetSimVarValue('FUEL WEIGHT PER GALLON', 'kilograms');
     }
 
@@ -677,7 +688,7 @@ export class FmgcDataService implements Fmgc {
    * @returns {boolean}
    */
   public isEngineOn(index: number): boolean {
-    return SimVar.GetSimVarValue(`L:A32NX_ENGINE_N2:${index}`, 'percent') > 20;
+    return SimVar.GetSimVarValue(`L:A32NX_ENGINE_N2:${index}`, 'number') > 20;
   }
 
   /**
@@ -688,10 +699,10 @@ export class FmgcDataService implements Fmgc {
   }
 
   /**
-   * Returns true only if all engines are running (N2 > 20 for inner engines)
+   * Returns true only if all engines are running (N2 > 20 for all engines)
    */
   isAllEngineOn(): boolean {
-    return this.isEngineOn(2) && this.isEngineOn(3);
+    return this.isEngineOn(1) && this.isEngineOn(2) && this.isEngineOn(3) && this.isEngineOn(4);
   }
 
   isOnGround() {

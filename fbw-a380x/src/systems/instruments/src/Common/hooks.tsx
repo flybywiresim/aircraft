@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 /*
  * A32NX
  * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
