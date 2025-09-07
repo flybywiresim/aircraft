@@ -13,6 +13,7 @@
     border: 1px outset $display-light-grey;
     height: 1px;
     margin-left: 5px;
+    margin-bottom: 8px;
   }
 
   .mfd-pos-monitor-line.vertical-spaced {
@@ -24,7 +25,7 @@
   }
 
   .mfd-pos-monitor-line.short {
-    width: 100%;
+    width: 435px;
   }
 
   .mfd-pos-monitor-frozen-pos-time-container {
@@ -39,7 +40,7 @@
 
   .mfd-pos-monitor-deviation-container {
     margin-top:  30px;
-    margin-left: 30px;
+    margin-left: 5px;
 }
 
 .mfd-pos-monitor-irs-deviation-line {
@@ -50,7 +51,7 @@
 }
 
 .mfd-pos-monitor-irs-deviation-title {
-  padding-right: 50px;
+   padding-right: 64px;
 }
 
 .mfd-pos-monitor-fm-pos-line {
@@ -58,4 +59,9 @@
   flex-direction: row;
   justify-content: space-between;
   margin-right: 20px;
+  margin-bottom: 16px;
+}
+
+.mfd-label-value-container.table-line {
+  padding-bottom: 6px;
 }

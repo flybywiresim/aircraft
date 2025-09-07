@@ -278,7 +278,7 @@ export class Navigation implements NavigationProvider {
   }
 
   public isAccuracyHigh(): boolean {
-    return this.accuracyHigh;
+    return this._accuracyHigh.get();
   }
 
   public getBaroCorrectedAltitude(): number | null {
