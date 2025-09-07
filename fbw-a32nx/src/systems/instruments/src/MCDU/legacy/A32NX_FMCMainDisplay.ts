@@ -2881,8 +2881,11 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   public async trySetThrustReductionAccelerationAltitude(s: string, forPlan: FlightPlanIndex): Promise<boolean> {
     const plan = this.getFlightPlan(forPlan);
+    const isActiveOrCopyOfActive =
+      forPlan === FlightPlanIndex.Active ||
+      (plan.flags & FlightPlanFlags.CopiedFromActive) === FlightPlanFlags.CopiedFromActive;
 
-    if (this.flightPhaseManager.phase >= FmgcFlightPhase.Takeoff || !plan.originAirport) {
+    if ((isActiveOrCopyOfActive && this.flightPhaseManager.phase >= FmgcFlightPhase.Takeoff) || !plan.originAirport) {
       this.setScratchpadMessage(NXSystemMessages.notAllowed);
       return false;
     }
@@ -2944,8 +2947,11 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   public async trySetEngineOutAcceleration(s: string, forPlan: FlightPlanIndex): Promise<boolean> {
     const plan = this.getFlightPlan(forPlan);
+    const isActiveOrCopyOfActive =
+      forPlan === FlightPlanIndex.Active ||
+      (plan.flags & FlightPlanFlags.CopiedFromActive) === FlightPlanFlags.CopiedFromActive;
 
-    if (this.flightPhaseManager.phase >= FmgcFlightPhase.Takeoff || !plan.originAirport) {
+    if ((isActiveOrCopyOfActive && this.flightPhaseManager.phase >= FmgcFlightPhase.Takeoff) || !plan.originAirport) {
       this.setScratchpadMessage(NXSystemMessages.notAllowed);
       return false;
     }
@@ -2989,8 +2995,14 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     forPlan: FlightPlanIndex,
   ): Promise<boolean> {
     const plan = this.getFlightPlan(forPlan);
+    const isActiveOrCopyOfActive =
+      forPlan === FlightPlanIndex.Active ||
+      (plan.flags & FlightPlanFlags.CopiedFromActive) === FlightPlanFlags.CopiedFromActive;
 
-    if (this.flightPhaseManager.phase >= FmgcFlightPhase.GoAround || !plan.destinationAirport) {
+    if (
+      (isActiveOrCopyOfActive && this.flightPhaseManager.phase >= FmgcFlightPhase.GoAround) ||
+      !plan.destinationAirport
+    ) {
       this.setScratchpadMessage(NXSystemMessages.notAllowed);
       return false;
     }
@@ -3047,8 +3059,14 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   public async trySetEngineOutAccelerationAltitudeGoaround(s: string, forPlan: FlightPlanIndex): Promise<boolean> {
     const plan = this.getFlightPlan(forPlan);
+    const isActiveOrCopyOfActive =
+      forPlan === FlightPlanIndex.Active ||
+      (plan.flags & FlightPlanFlags.CopiedFromActive) === FlightPlanFlags.CopiedFromActive;
 
-    if (this.flightPhaseManager.phase >= FmgcFlightPhase.GoAround || !plan.destinationAirport) {
+    if (
+      (isActiveOrCopyOfActive && this.flightPhaseManager.phase >= FmgcFlightPhase.GoAround) ||
+      !plan.destinationAirport
+    ) {
       this.setScratchpadMessage(NXSystemMessages.notAllowed);
       return false;
     }
