@@ -107,9 +107,9 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
     v === MfdFmsPositionMonitor.noIrsPositionDeviationAvailText ? 'hidden' : 'visible',
   );
 
-  private readonly onSidePosition = Subject.create(noPositionAvailableText);
+  private readonly position1 = Subject.create(noPositionAvailableText);
 
-  private readonly offSidePosition = this.onSidePosition; // TODO implement when more than 1 FMS
+  private readonly position2 = this.position1; // TODO implement when more than 1 FMS
 
   private readonly radioPosition = Subject.create(noPositionAvailableText); // TODO implement when radio position is available from FMS
 
@@ -145,18 +145,14 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
 
   private readonly gnss2PositionText = this.gnssPositionText; // TODO implement when GNSS2 is added
 
-  private readonly cptSide = this.props.mfd.uiService.captOrFo === 'CAPT';
+  private readonly onSidePositionLabel = Subject.create(this.props.mfd.uiService.captOrFo === 'CAPT' ? 'POS1' : 'POS2');
 
   private readonly monitorWaypoint =
     this.props.fmcService.master?.fmgc.data.positionMonitorFix ?? Subject.create<Fix | null>(null);
 
-  private readonly onSidePositionLabel = Subject.create(this.cptSide ? 'POS1' : 'POS2');
-
-  private readonly offSidePositionLabel = Subject.create(this.cptSide ? 'POS2' : 'POS1');
-
   // TODO implement when FM position
-  private readonly onSidePositionMode = Subject.create('');
-  private readonly offSidePositionMode = Subject.create('');
+  private readonly position1Mode = Subject.create('');
+  private readonly position2Mode = Subject.create('');
 
   private readonly bearingToWaypoint = Subject.create<number | null>(null);
 
@@ -253,7 +249,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
     const updatePositionSensors =
       this.positionUpdateRequiredDueToFreeze || (this.positionSensorsVisible.get() && !this.positionFrozen.get());
 
-    this.onSidePosition.set(fmPositionAvailable ? coordinateToString(fmCoordinates, false) : noPositionAvailableText);
+    this.position1.set(fmPositionAvailable ? coordinateToString(fmCoordinates, false) : noPositionAvailableText);
 
     this.fillIrData(
       1,
@@ -287,8 +283,6 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
     );
 
     if (updatePositionSensors) {
-      this.onSidePosition.set(fmPositionAvailable ? coordinateToString(fmCoordinates, false) : noPositionAvailableText);
-
       // TODO replace with MMR signals once implemented
       this.gpsCoordinates.lat = SimVar.GetSimVarValue('GPS POSITION LAT', 'degree latitude');
       this.gpsCoordinates.long = SimVar.GetSimVarValue('GPS POSITION LON', 'degree longitude');
@@ -422,60 +416,65 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
             </div>
           </div>
 
-          <div class="mfd-pos-monitor-fm-pos-line">
+          <div class="mfd-pos-monitor-fm-pos-line" style={' margin-bottom: 16px;'}>
             <div class="mfd-label-value-container">
-              <span class="mfd-label bigger mfd-spacing-right">&nbsp;{this.onSidePositionLabel}</span>
-              <span class="mfd-value bigger mfd-spacing-right">{this.onSidePosition}</span>
+              <span class="mfd-label bigger mfd-spacing-right">&nbsp;POS1</span>
+              <span class="mfd-value bigger mfd-spacing-right">{this.position1}</span>
             </div>
             <div class="mfd-label-value-container">
-              <span class="mfd-value bigger">{this.onSidePositionMode}</span>
+              <span class="mfd-value bigger">{this.position1Mode}</span>
             </div>
           </div>
 
-          <div class="mfd-pos-monitor-fm-pos-line">
+          <div class="mfd-pos-monitor-fm-pos-line" style={' margin-bottom: 3px;'}>
             <div class="mfd-label-value-container">
-              <span class="mfd-label bigger mfd-spacing-right">&nbsp;{this.offSidePositionLabel}</span>
-              <span class="mfd-value bigger mfd-spacing-right">{this.offSidePosition}</span>
+              <span class="mfd-label bigger mfd-spacing-right">&nbsp;POS2</span>
+              <span class="mfd-value bigger mfd-spacing-right">{this.position2}</span>
             </div>
             <div class="mfd-label-value-container">
-              <span class="mfd-value bigger">{this.offSidePositionMode}</span>
+              <span class="mfd-value bigger">{this.position2Mode}</span>
             </div>
           </div>
 
           <div class="mfd-pos-monitor-line big"> </div>
 
           <div class="fr">
-            <div class="mfd-position-monitor-sensors-container" style={this.positionSensorsVisibility}>
-              <div class="mfd-label-value-container">
+            <div style={this.positionSensorsVisibility}>
+              <div class="mfd-label-value-container table-line">
                 <span class="mfd-label bigger mfd-spacing-right">GNSS1</span>
                 <span class="mfd-value bigger">{this.gnssPositionText}</span>
               </div>
-              <div class="mfd-label-value-container">
+              <div class="mfd-label-value-container" style={'padding-bottom:5px;'}>
                 <span class="mfd-label bigger mfd-spacing-right">GNSS2</span>
                 <span class="mfd-value bigger">{this.gnss2PositionText}</span>
               </div>
 
               <div class="mfd-pos-monitor-line short"></div>
 
-              <div class="mfd-label-value-container">
+              <div class="mfd-label-value-container table-line">
                 <span class="mfd-label bigger mfd-spacing-right">&nbsp;IRS1</span>
                 <span class="mfd-value bigger">{this.ir1Position}</span>
               </div>
 
-              <div class="mfd-label-value-container">
+              <div class="mfd-label-value-container table-line">
                 <span class="mfd-label bigger mfd-spacing-right">&nbsp;IRS2</span>
                 <span class="mfd-value bigger">{this.ir2Position}</span>
               </div>
 
-              <div class="mfd-label-value-container">
+              <div class="mfd-label-value-container" style={'padding-bottom:10px;'}>
                 <span class="mfd-label bigger mfd-spacing-right">&nbsp;IRS3</span>
                 <span class="mfd-value bigger">{this.ir3Position}</span>
               </div>
 
               <div class="mfd-pos-monitor-line short"> </div>
 
-              <div class="mfd-label-value-container">
+              <div class="mfd-label-value-container" style={'padding-bottom:10px'}>
                 <span class="mfd-label bigger mfd-spacing-right">RADIO</span>
+                <span class="mfd-value bigger">{this.radioPosition}</span>
+              </div>
+
+              <div class="mfd-label-value-container">
+                <span class="mfd-label bigger mfd-spacing-right">MIXIRS</span>
                 <span class="mfd-value bigger">{this.radioPosition}</span>
               </div>
             </div>
@@ -488,8 +487,11 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                   <span class="mfd-label bigger">DEVIATION FROM {this.onSidePositionLabel}</span>
                 </div>
 
-                <div class="mfd-pos-monitor-irs-deviation-line mfd-pos-monitor-irs-deviation-title">
-                  <span class="mfd-label bigger mfd-spacing-right" style={this.irDeviationIdentifierVisible}>
+                <div class="mfd-pos-monitor-irs-deviation-line">
+                  <span
+                    class="mfd-label bigger mfd-pos-monitor-irs-deviation-title"
+                    style={this.irDeviationIdentifierVisible}
+                  >
                     IRS1
                   </span>
                   <span class="mfd-value bigger">{this.ir1PositionDeviation}</span>
@@ -501,8 +503,11 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                   </span>
                 </div>
 
-                <div class="mfd-pos-monitor-irs-deviation-line mfd-pos-monitor-irs-deviation-title">
-                  <span class="mfd-label bigger mfd-spacing-right" style={this.irDeviationIdentifierVisible}>
+                <div class="mfd-pos-monitor-irs-deviation-line">
+                  <span
+                    class="mfd-label bigger mfd-pos-monitor-irs-deviation-title"
+                    style={this.irDeviationIdentifierVisible}
+                  >
                     IRS2
                   </span>
                   <span class="mfd-value bigger">{this.ir2PositionDeviation}</span>
@@ -514,8 +519,11 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                   </span>
                 </div>
 
-                <div class="mfd-pos-monitor-irs-deviation-line mfd-pos-monitor-irs-deviation-title">
-                  <span class="mfd-label bigger mfd-spacing-right" style={this.irDeviationIdentifierVisible}>
+                <div class="mfd-pos-monitor-irs-deviation-line">
+                  <span
+                    class="mfd-label bigger mfd-pos-monitor-irs-deviation-title"
+                    style={this.irDeviationIdentifierVisible}
+                  >
                     IRS3
                   </span>
                   <span class="mfd-value bigger">{this.ir3PositionDeviation}</span>
@@ -529,8 +537,6 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
               </div>
             </div>
           </div>
-
-          <div style={'margin-top: 80px;'}> </div>
           <div class="fc">
             <div class="mfd-pos-monitor-frozen-pos-time-container">
               <span class="mfd-label bigger">{this.positionFrozenAt}</span>
