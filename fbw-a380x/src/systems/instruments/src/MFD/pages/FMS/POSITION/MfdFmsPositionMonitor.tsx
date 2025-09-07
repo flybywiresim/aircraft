@@ -375,6 +375,15 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
   render(): VNode {
     return (
       <>
+        {/* TODO:
+        Check Y pos of POS line vs NAV PRIMARY/ACCURACY
+        Improve POS X Spacing.
+        Improve EPU/RNP X spacing.
+        Improve position sensors spacing towards the right.
+        Size of freeze/position sensors buttons
+        Frozen position data location.
+        Bottom area
+        */}
         {super.render()}
         {/* begin page content */}
         <div class="mfd-page-container">
@@ -543,7 +552,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
               <span class="mfd-label bigger">{this.positionFrozenTime}</span>
             </div>
 
-            <div class="fr space-between" style={'margin-bottom: 20px;'}>
+            <div class="fr space-between" style={'margin-bottom: 23px;'}>
               <Button
                 label={Subject.create(
                   <div style="display: flex; flex-direction: row; justify-content: space-between;">
