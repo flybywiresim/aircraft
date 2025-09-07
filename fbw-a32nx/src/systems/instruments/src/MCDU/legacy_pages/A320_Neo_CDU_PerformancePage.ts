@@ -529,8 +529,8 @@ export class CDUPerformancePage {
       mcdu,
       isPhaseActive,
       isSelected,
-      targetPlan.performanceData.preselectedClimbSpeed.get(),
       targetPlan.performanceData.cruiseFlightLevel.get(),
+      targetPlan.performanceData.preselectedClimbSpeed.get(),
     );
 
     if (hasFromToPair) {
