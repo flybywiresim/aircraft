@@ -2928,7 +2928,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     if (
       (thrRed !== null && (thrRed < minimumAltitude || thrRed > 45000)) ||
       (accAlt !== null && (accAlt < minimumAltitude || accAlt > 45000)) ||
-      (newThrRed !== null && newAccAlt !== null && thrRed > accAlt)
+      (newThrRed !== null && newAccAlt !== null && newThrRed > newAccAlt)
     ) {
       this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
       return false;
@@ -3040,7 +3040,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     if (
       (thrRed !== null && (thrRed < minimumAltitude || thrRed > 45000)) ||
       (accAlt !== null && (accAlt < minimumAltitude || accAlt > 45000)) ||
-      (newThrRed !== null && newAccAlt !== null && thrRed > accAlt)
+      (newThrRed !== null && newAccAlt !== null && newThrRed > newAccAlt)
     ) {
       this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
       return false;
