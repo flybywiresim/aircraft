@@ -128,12 +128,253 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
   314800002: {
     title: '\x1b<4m\x1b4mCDS\x1bm FWS 1+2 & CPIOM FAULT',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: '\xa0', // BLANK LINE
+        sensed: true,
+        style: ChecklistLineStyle.Empty,
+      },
+      {
+        name: 'DESCENT TO FL 100/MEA',
+        labelNotCompleted: 'INITIATE',
+        sensed: true,
+      },
+      {
+        name: '\xa0', // BLANK LINE
+        sensed: true,
+        style: ChecklistLineStyle.Empty,
+      },
+      {
+        name: 'CAB PRESS MAN MODES : DO NOT USE',
+        sensed: true,
+      },
+      {
+        name: '\xa0', // BLANK LINE
+        sensed: true,
+        style: ChecklistLineStyle.Empty,
+      },
+      {
+        name: 'IN DES, ABV 7000FT: CAB ALT REGULATED TO 7000FT',
+        sensed: true,
+      },
+      {
+        name: '\xa0', // BLANK LINE
+        sensed: true,
+        style: ChecklistLineStyle.Empty,
+      },
+      {
+        name: 'BLW 7000FT: CAB ALT = A/C ALT: AVOID HI DES RATE',
+        sensed: true,
+      },
+      {
+        name: '\xa0', // BLANK LINE
+        sensed: true,
+        style: ChecklistLineStyle.Empty,
+      },
+      {
+        name: 'RAM AIR',
+        labelNotCompleted: 'ON',
+        sensed: true,
+      },
+      {
+        name: '\xa0', // BLANK LINE
+        sensed: true,
+        style: ChecklistLineStyle.Empty,
+      },
+      {
+        name: 'ALL CROSSFEEDS',
+        labelNotCompleted: 'ON',
+        sensed: true,
+      },
+      {
+        name: '\xa0', // BLANK LINE
+        sensed: true,
+        style: ChecklistLineStyle.Empty,
+      },
+      {
+        name: 'OUTR TK XFR....MAN / EMER OUTR TK XFR',
+        labelNotCompleted: 'MAN',
+        sensed: true,
+      },
+      {
+        name: '\xa0', // BLANK LINE
+        sensed: true,
+        style: ChecklistLineStyle.Empty,
+      },
+      {
+        name: 'INR TKS + MID TKS + TRIM TK: NOT USABLE',
+        sensed: true,
+      },
+      {
+        name: '\xa0', // BLANK LINE
+        sensed: true,
+        style: ChecklistLineStyle.Empty,
+      },
+      {
+        name: 'ATC COM VOICE ONLY',
+        sensed: true,
+      },
+      {
+        name: '\xa0', // BLANK LINE
+        sensed: true,
+        style: ChecklistLineStyle.Empty,
+      },
+      {
+        name: 'L/G GRVTY EXTN ONLY (MAX SPEED: 220KT)',
+        sensed: true,
+      },
+      {
+        name: '\xa0', // BLANK LINE
+        sensed: true,
+        style: ChecklistLineStyle.Empty,
+      },
+      {
+        name: 'LDG DIST: COMPUTE',
+        sensed: true,
+      },
+      {
+        name: '\xa0', // BLANK LINE
+        sensed: true,
+        style: ChecklistLineStyle.Empty,
+      },
+      {
+        name: 'ECAM SD & OVHD PNL',
+        labelNotCompleted: 'MONITOR',
+        sensed: true,
+      },
+      {
+        name: 'FUNCTIONS NOT AVAIL:',
+        sensed: true,
+        style: ChecklistLineStyle.White,
+        level: 2,
+      },
+      {
+        name: '\xa0', // BLANK LINE
+        sensed: true,
+        style: ChecklistLineStyle.Empty,
+      },
+      {
+        name: 'ENG BLEED 1+2+3+4 / WING A-ICE',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+        level: 2,
+      },
+      {
+        name: '\xa0', // BLANK LINE
+        sensed: true,
+        style: ChecklistLineStyle.Empty,
+      },
+      {
+        name: 'FQMS 1+2 / JETTISON',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+        level: 2,
+      },
+      {
+        name: '\xa0', // BLANK LINE
+        sensed: true,
+        style: ChecklistLineStyle.Empty,
+      },
+      {
+        name: 'LG CTL 1+2 / A-SKID / N/W + B/W STEER',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+        level: 2,
+      },
+      {
+        name: '\xa0', // BLANK LINE
+        sensed: true,
+        style: ChecklistLineStyle.Empty,
+      },
+      {
+        name: 'FWD + AFT VENT CTL / TEMP CTL',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+        level: 2,
+      },
+      {
+        name: 'ECAM WARNINGS & CAUTIONS / ABN PROCEDURES',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+        level: 2,
+      },
+      {
+        name: 'LIMITATIONS & STATUS / NORM C/L & MEMOS',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+        level: 2,
+      },
+      {
+        name: 'ALT ALERT & AUTO CALLOUT / F/CTL INDICATIONS',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+        level: 2,
+      },
+    ],
   },
   314800003: {
     title: '\x1b<4m\x1b4mCDS\x1bm FWS 1+2 & FCDC 1+2 FAULT',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'ECAM SD',
+        labelNotCompleted: 'MONITOR',
+        sensed: true,
+      },
+      {
+        name: 'OVHD PNL',
+        labelNotCompleted: 'MONITOR',
+        sensed: true,
+      },
+      {
+        name: 'FUNCTIONS NOT AVAIL:',
+        sensed: true,
+        style: ChecklistLineStyle.White,
+        level: 2,
+      },
+      {
+        name: 'F/CTL INDICATIONS',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+        level: 2,
+      },
+      {
+        name: 'ECAM WARNINGS & CAUTIONS',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+        level: 2,
+      },
+      {
+        name: 'ABN PROCEDURES',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+        level: 2,
+      },
+      {
+        name: 'LIMITATIONS & STATUS',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+        level: 2,
+      },
+      {
+        name: 'ALTITUDE ALERT',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+        level: 2,
+      },
+      {
+        name: 'AUTO CALLOUT',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+        level: 2,
+      },
+      {
+        name: 'NORM C/L & MEMO',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+        level: 2,
+      },
+    ],
   },
   314800004: {
     title: '\x1b<4m\x1b4mFWS\x1bm FWS 1+2 FAULT',

@@ -21,6 +21,7 @@ import {
   TimedChecklistCondition,
   WdLineData,
   AbstractChecklistItem,
+  WdSpecialLine,
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { EcamNormalProcedures } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/NormalProcedures';
 import { ChecklistState } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
@@ -488,6 +489,7 @@ export class ProcedureLinesGenerator {
           lastLine: (!this.procedureIsActive.get() && isAbnormal) || this.type === ProcedureType.FwsFailedFallback,
           originalItemIndex: !isCondition || (isCondition && item.sensed) ? itemIndex : undefined, // FIXME It should be possible to scroll to non sensed conditions
           inactive: inactive,
+          specialLine: clStyle === ChecklistLineStyle.Empty ? WdSpecialLine.Empty : undefined,
         });
 
         if (isCondition && !item.sensed) {
