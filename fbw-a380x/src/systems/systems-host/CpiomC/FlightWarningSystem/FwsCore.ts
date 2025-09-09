@@ -75,7 +75,6 @@ import { FwsInopSys, FwsInopSysPhases } from './FwsInopSys';
 import { FwsInformation } from './FwsInformation';
 import { FwsLimitations, FwsLimitationsPhases } from './FwsLimitations';
 import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
-<<<<<<< HEAD
 import {
   OisDebugDataEvents,
   DebugDataTableRow,
@@ -84,7 +83,6 @@ import {
 import { FcdcSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/FcdcPublisher';
 =======
 import { SdPages } from '@shared/EcamSystemPages';
->>>>>>> 1eb1f8665 (chore:cleanup some fws code. Illuminate CLR on ECL menu)
 
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));
