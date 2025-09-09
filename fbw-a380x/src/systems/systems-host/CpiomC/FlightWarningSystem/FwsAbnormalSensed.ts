@@ -2529,10 +2529,7 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [false],
       failure: 2,
       sysPage: SdPages.None,
-      limitationsAllPhases: () => [this.fws.altn1ALawCondition.get() ? '270400002' : ''],
-      limitationsPfd: () => [this.fws.altn1ALawCondition.get() ? '270400002' : ''],
       inopSysAllPhases: () => [
-        '340300013',
         this.fws.altn2LawConfirmNodeOutput.get() ? '220300007' : '',
         this.fws.altn2LawConfirmNodeOutput.get() ? '220300024' : '',
       ],
@@ -2548,11 +2545,7 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [false, false, false, false],
       failure: 2,
       sysPage: SdPages.None,
-      inopSysAllPhases: () => ['290100008', '220300007', '220300024'],
-      inopSysApprLdg: () => ['220300026'],
-      limitationsAllPhases: () => ['240400002', '240400004'],
-      limitationsPfd: () => ['240400002', '240400004'],
-      info: () => ['340200004', this.fws.allPrimAndSecFailed.get() ? '270200002' : '', '220200010'],
+      inopSysAllPhases: () => ['220300007', '220300024'],
     },
     271800013: {
       // FCDC 1 FAULT
@@ -3700,7 +3693,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => [
-        '340300013',
+        '290100008',
         '340300014',
         '340300021',
         '220300007',
@@ -3732,7 +3725,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => [
-        '340300013',
+        '290100008',
         '340300014',
         '340300021',
         '220300007',
@@ -3764,7 +3757,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => [
-        '340300013',
+        '290100008',
         '340300014',
         '340300021',
         '220300007',
@@ -3798,7 +3791,7 @@ export class FwsAbnormalSensed {
       failure: 3,
       sysPage: -1,
       inopSysAllPhases: () => [
-        '340300013',
+        '290100008',
         '340300014',
         '340300021',
         '220300007',
@@ -3900,7 +3893,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => [
-        '340300013',
+        '290100008',
         '340300033',
         this.fws.attKnob.get() === 0 ? '340300038' : '340300043',
         this.fws.attKnob.get() === 0 ? '340300012' : '340300029',
@@ -3927,7 +3920,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => [
-        '340300013',
+        '290100008',
         '340300034',
         '220300005',
         '220300022',
@@ -3955,7 +3948,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => [
-        '340300013',
+        '290100008',
         '340300035',
         '220300006',
         '220300023',

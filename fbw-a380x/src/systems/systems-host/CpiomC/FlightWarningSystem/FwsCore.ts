@@ -1528,9 +1528,9 @@ export class FwsCore {
 
   public btvExitMissedPulseNode = new NXLogicPulseNode();
 
-  public readonly btvLost = Subject.create(false); // FIXME add
+  public readonly btvLost = Subject.create(false); // FIXME add from FCDC
 
-  public readonly rowRopLost = Subject.create(false); // FIXME add
+  public readonly rowRopLost = Subject.create(false); // FIXME add from FCDC
 
   /* NAVIGATION */
 
