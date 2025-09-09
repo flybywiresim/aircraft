@@ -1,4 +1,4 @@
-import { FlightPlanLeg } from '../../../flightplanning/legs/FlightPlanLeg';
+import { FlightPlanLeg, isLeg } from '../../../flightplanning/legs/FlightPlanLeg';
 import { FlightPlan } from '../../../flightplanning/plans/FlightPlan';
 
 export class FlightPlanTrackProfile {
@@ -13,7 +13,7 @@ export class FlightPlanTrackProfile {
     if (this.cachedIndex > 0) {
       const leg = this.plan.maybeElementAt(this.cachedIndex);
 
-      if (leg?.isDiscontinuity === false) {
+      if (leg !== undefined && leg.isDiscontinuity === false && leg.calculated !== undefined) {
         if (
           distanceFromStart >
             leg.calculated.cumulativeDistanceWithTransitions - leg.calculated.distanceWithTransitions &&
@@ -32,7 +32,7 @@ export class FlightPlanTrackProfile {
 
     for (let i = 0; i < this.plan.firstMissedApproachLegIndex; i++) {
       const leg = this.plan.maybeElementAt(i);
-      if (leg?.isDiscontinuity === true) {
+      if (!isLeg(leg) || leg.calculated === undefined) {
         continue;
       }
 
@@ -65,6 +65,6 @@ export class FlightPlanTrackProfile {
 
     const leg = this.plan.legElementAt(legIndex);
 
-    return leg.calculated.trueTrack ?? null;
+    return leg.calculated?.trueTrack ?? null;
   }
 }

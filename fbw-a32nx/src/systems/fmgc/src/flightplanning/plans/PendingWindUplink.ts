@@ -15,7 +15,7 @@ interface PendingLatLonCruiseWind extends BasePendingCruiseWind {
   long: number;
 }
 
-type PendingCruiseWind = PendingWaypointCruiseWind | PendingLatLonCruiseWind;
+export type PendingCruiseWind = PendingWaypointCruiseWind | PendingLatLonCruiseWind;
 
 enum PendingWindUplinkState {
   Idle,

@@ -3,6 +3,7 @@ import { FlightPlan } from './FlightPlan';
 import { Vec2Math } from '@microsoft/msfs-sdk';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { WindEntry } from '../data/wind';
+import { PendingCruiseWind } from './PendingWindUplink';
 
 export class PendingWindUplinkParser {
   private static readonly MAX_CERTIFIED_LEVEL = 398;
@@ -19,51 +20,52 @@ export class PendingWindUplinkParser {
       .slice(0, 5)
       .sort((a, b) => a.altitude - b.altitude);
 
-    plan.pendingWindUplink.cruiseWinds = uplink.cruiseWinds
-      ?.filter((wind) => this.isValidWindLevel(wind.flightLevel))
-      .filter((wind, i, source) => this.isUniqueWindLevel(wind, i, source))
-      .slice(0, 4)
-      .reduce<typeof plan.pendingWindUplink.cruiseWinds>((acc, uplinkedEntry) => {
-        uplinkedEntry.fixes
-          .filter((windAtFix) => this.isValidWindEntry(windAtFix))
-          .forEach((windAtFix) => {
-            const pendingEntry = {
-              altitude: uplinkedEntry.flightLevel * 100,
-              vector: this.createVecFromDeg(windAtFix),
-            };
+    plan.pendingWindUplink.cruiseWinds = (
+      uplink.cruiseWinds
+        ?.filter((wind) => this.isValidWindLevel(wind.flightLevel))
+        .filter((wind, i, source) => this.isUniqueWindLevel(wind, i, source))
+        .slice(0, 4)
+        .reduce<PendingCruiseWind[]>((acc, uplinkedEntry) => {
+          uplinkedEntry.fixes
+            .filter((windAtFix) => this.isValidWindEntry(windAtFix))
+            .forEach((windAtFix) => {
+              const pendingEntry = {
+                altitude: uplinkedEntry.flightLevel * 100,
+                vector: this.createVecFromDeg(windAtFix),
+              };
 
-            const existingFixWinds = acc.find(
-              (w) =>
-                (w.type === 'waypoint' && windAtFix.type === 'waypoint' && w.fixIdent === windAtFix.fixIdent) ||
-                (w.type === 'latlon' &&
-                  windAtFix.type === 'latlon' &&
-                  MathUtils.isAboutEqual(w.lat, windAtFix.lat) &&
-                  MathUtils.isAboutEqual(w.long, windAtFix.long)),
-            );
-            if (existingFixWinds) {
-              existingFixWinds.levels.push(pendingEntry);
-            } else if (windAtFix.type === 'waypoint') {
-              acc.push({
-                type: 'waypoint',
-                fixIdent: windAtFix.fixIdent,
-                levels: [pendingEntry],
-              });
-            } else if (windAtFix.type === 'latlon') {
-              acc.push({
-                type: 'latlon',
-                lat: windAtFix.lat,
-                long: windAtFix.long,
-                levels: [pendingEntry],
-              });
-            }
-          });
+              const existingFixWinds = acc.find(
+                (w) =>
+                  (w.type === 'waypoint' && windAtFix.type === 'waypoint' && w.fixIdent === windAtFix.fixIdent) ||
+                  (w.type === 'latlon' &&
+                    windAtFix.type === 'latlon' &&
+                    MathUtils.isAboutEqual(w.lat, windAtFix.lat) &&
+                    MathUtils.isAboutEqual(w.long, windAtFix.long)),
+              );
+              if (existingFixWinds) {
+                existingFixWinds.levels.push(pendingEntry);
+              } else if (windAtFix.type === 'waypoint') {
+                acc.push({
+                  type: 'waypoint',
+                  fixIdent: windAtFix.fixIdent,
+                  levels: [pendingEntry],
+                });
+              } else if (windAtFix.type === 'latlon') {
+                acc.push({
+                  type: 'latlon',
+                  lat: windAtFix.lat,
+                  long: windAtFix.long,
+                  levels: [pendingEntry],
+                });
+              }
+            });
 
-        return acc;
-      }, [])
-      .map((fix) => {
-        fix.levels.sort((a, b) => b.altitude - a.altitude);
-        return fix;
-      });
+          return acc;
+        }, []) ?? []
+    ).map((fix) => {
+      fix.levels.sort((a, b) => b.altitude - a.altitude);
+      return fix;
+    });
 
     plan.pendingWindUplink.descentWinds = uplink.descentWinds
       ?.filter((wind) => this.isValidWind(wind))
@@ -86,7 +88,7 @@ export class PendingWindUplinkParser {
   ): boolean {
     return (
       source.findIndex((w2) => {
-        if (Number.isFinite(groundElevation) && wind.flightLevel < groundElevation + 4) {
+        if (groundElevation !== undefined && wind.flightLevel < groundElevation + 4) {
           return w2.flightLevel < groundElevation + 4;
         }
 

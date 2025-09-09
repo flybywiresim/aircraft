@@ -241,6 +241,11 @@ export class WindProfile implements WindInterface {
 
       const prevLeg = this.plan.legElementAt(prevLegIndex);
 
+      if (!prevLeg.calculated || !leg.calculated) {
+        console.warn('[FMS] Cruise wind interpolation failed, leg had no distance');
+        return Vec2Math.set(0, 0, result);
+      }
+
       return Vec2Utils.interpolate(
         distanceFromStart,
         prevLeg.calculated.cumulativeDistanceWithTransitions,

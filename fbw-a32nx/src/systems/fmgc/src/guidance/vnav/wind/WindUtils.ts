@@ -29,5 +29,7 @@ export class WindUtils {
         }
       }
     }
+
+    return Vec2Math.set(0, 0, result);
   }
 }
