@@ -64,10 +64,14 @@ export class CDUEquitimePointPage {
         Column.cyan,
         etpService.isReferenceFix1PilotEntered ? Column.big : Column.small,
       );
-      ref1BrgColumn.update(`${etpService.pposBearingToReferenceFix1.toFixed(0).padStart(3, '0')}°T`, Column.green);
-      ref1DistColumn.update(etpService.pposDistanceToReferenceFix1.toFixed(0), Column.green);
+      if (etpService.pposBearingToReferenceFix1 !== undefined) {
+        ref1BrgColumn.update(`${etpService.pposBearingToReferenceFix1.toFixed(0).padStart(3, '0')}°T`, Column.green);
+      }
+      if (etpService.pposDistanceToReferenceFix1 !== undefined) {
+        ref1DistColumn.update(etpService.pposDistanceToReferenceFix1.toFixed(0), Column.green);
+      }
 
-      if (Number.isFinite(etpService.pposTimeToReferenceFix1)) {
+      if (etpService.pposTimeToReferenceFix1 !== undefined) {
         ref1UtcColumn.update(
           FmsFormatters.secondsToUTC(utcTime + etpService.pposTimeToReferenceFix1 * 3600),
           Column.green,
@@ -87,7 +91,7 @@ export class CDUEquitimePointPage {
       );
 
       etpToRef1BrgColumn.update('----');
-      if (Number.isFinite(etpService.etpBearingToReferenceFix1)) {
+      if (etpService.etpBearingToReferenceFix1 !== undefined) {
         etpToRef1BrgColumn.update(
           `${etpService.etpBearingToReferenceFix1.toFixed(0).padStart(3, '0')}°T`,
           Column.green,
@@ -95,12 +99,12 @@ export class CDUEquitimePointPage {
       }
 
       etpToRef1DistColumn.update('----');
-      if (Number.isFinite(etpService.etpDistanceToReferenceFix1)) {
+      if (etpService.etpDistanceToReferenceFix1 !== undefined) {
         etpToRef1DistColumn.update(etpService.etpDistanceToReferenceFix1.toFixed(0), Column.green);
       }
 
       etpToRef1UtcColumn.update('----');
-      if (Number.isFinite(etpService.etpTimeToReferenceFix1)) {
+      if (etpService.etpTimeToReferenceFix1 !== undefined) {
         etpToRef1UtcColumn.update(
           FmsFormatters.secondsToUTC(utcTime + etpService.etpTimeToReferenceFix1 * 3600),
           Column.green,
@@ -143,10 +147,14 @@ export class CDUEquitimePointPage {
         Column.cyan,
         etpService.isReferenceFix2PilotEntered ? Column.big : Column.small,
       );
-      ref2BrgColumn.update(`${etpService.pposBearingToReferenceFix2.toFixed(0).padStart(3, '0')}°T`, Column.green);
-      ref2DistColumn.update(etpService.pposDistanceToReferenceFix2.toFixed(0), Column.green);
+      if (etpService.pposBearingToReferenceFix2 !== undefined) {
+        ref2BrgColumn.update(`${etpService.pposBearingToReferenceFix2.toFixed(0).padStart(3, '0')}°T`, Column.green);
+      }
+      if (etpService.pposDistanceToReferenceFix2 !== undefined) {
+        ref2DistColumn.update(etpService.pposDistanceToReferenceFix2.toFixed(0), Column.green);
+      }
 
-      if (Number.isFinite(etpService.pposTimeToReferenceFix2)) {
+      if (etpService.pposTimeToReferenceFix2 !== undefined) {
         ref2UtcColumn.update(
           FmsFormatters.secondsToUTC(utcTime + etpService.pposTimeToReferenceFix2 * 3600),
           Column.green,
@@ -166,7 +174,7 @@ export class CDUEquitimePointPage {
       );
 
       etpToRef2BrgColumn.update('----');
-      if (Number.isFinite(etpService.etpBearingToReferenceFix2)) {
+      if (etpService.etpBearingToReferenceFix2 !== undefined) {
         etpToRef2BrgColumn.update(
           `${etpService.etpBearingToReferenceFix2.toFixed(0).padStart(3, '0')}°T`,
           Column.green,
@@ -174,12 +182,12 @@ export class CDUEquitimePointPage {
       }
 
       etpToRef2DistColumn.update('----');
-      if (Number.isFinite(etpService.etpDistanceToReferenceFix2)) {
+      if (etpService.etpDistanceToReferenceFix2 !== undefined) {
         etpToRef2DistColumn.update(etpService.etpDistanceToReferenceFix2.toFixed(0), Column.green);
       }
 
       etpToRef2UtcColumn.update('----');
-      if (Number.isFinite(etpService.etpTimeToReferenceFix2)) {
+      if (etpService.etpTimeToReferenceFix2 !== undefined) {
         etpToRef2UtcColumn.update(
           FmsFormatters.secondsToUTC(utcTime + etpService.etpTimeToReferenceFix2 * 3600),
           Column.green,
@@ -224,8 +232,9 @@ export class CDUEquitimePointPage {
 
       acToLabelColumn.update('A/C TO');
       acToColumn.update('(NO ETP)');
-      if (etpService?.isComputed()) {
-        const etp = etpService.get();
+
+      const etp = etpService.get();
+      if (etpService?.isComputed() && etp) {
         const legIdent = plan.legElementAt(etp[2])?.ident;
 
         etpLocationLegColumn.update(legIdent ?? '-----', legIdent ? Column.green : Column.white);

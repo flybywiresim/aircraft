@@ -60,11 +60,12 @@ export class EquitimePoint {
     const ppos = this.navigation.getPpos();
     const plan = this.flightPlanService.get(FlightPlanIndex.Active);
 
-    if (!ref1 || !ref2 || !ppos || !plan || !this.geometry) {
+    const cruiseLevel = plan.performanceData.cruiseFlightLevel;
+
+    if (!ref1 || !ref2 || !ppos || !plan || !this.geometry || !cruiseLevel) {
       return undefined;
     }
 
-    const cruiseLevel = plan.performanceData.cruiseFlightLevel;
     // TODO consider CI and speed limit
     const tas = UnitType.MPS.convertTo(
       Math.min(
@@ -292,7 +293,7 @@ export class EquitimePoint {
    * @param tas the true airspeed in knots
    * @returns the time in hours to fly from `from` to `to`
    */
-  private static timeTo(from: Coordinates, to: Coordinates, wind: Float64Array | undefined, tas: number): number {
+  private static timeTo(from: Coordinates, to: Coordinates, wind: Float64Array, tas: number): number {
     const distance = distanceTo(from, to);
     const bearing = bearingTo(from, to);
 
