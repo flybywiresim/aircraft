@@ -12,11 +12,10 @@ import {
 import { Vec2Math } from '@microsoft/msfs-sdk';
 
 export class SimBriefConnector {
-  private static readonly WindUplinkCache: WindUplinkMessage = {
+  private static readonly WindUplinkCache: Omit<Required<WindUplinkMessage>, 'alternateWind'> = {
     climbWinds: [],
     cruiseWinds: [],
     descentWinds: [],
-    alternateWind: null,
   };
 
   public static async receiveSimBriefWinds(
@@ -36,7 +35,6 @@ export class SimBriefConnector {
     SimBriefConnector.WindUplinkCache.climbWinds.length = 0;
     SimBriefConnector.WindUplinkCache.cruiseWinds.length = 0;
     SimBriefConnector.WindUplinkCache.descentWinds.length = 0;
-    SimBriefConnector.WindUplinkCache.alternateWind = null;
   }
 
   private static parseSimBriefWinds(simbriefJson: ISimbriefData, request: WindRequestMessage): WindUplinkMessage {
@@ -53,7 +51,7 @@ export class SimBriefConnector {
     return this.WindUplinkCache;
   }
 
-  private static parseClimbWinds(navlog: ISimbriefData['navlog'], result: WindUplinkMessage): void {
+  private static parseClimbWinds(navlog: Required<ISimbriefData>['navlog'], result: typeof this.WindUplinkCache): void {
     const clbWpts = navlog.filter((val) => val.stage === 'CLB');
     let lastAltitude = 0;
 
@@ -116,19 +114,21 @@ export class SimBriefConnector {
   }
 
   private static parseCruiseWinds(
-    navlog: ISimbriefData['navlog'],
+    navlog: Required<ISimbriefData>['navlog'],
     request: WindRequestMessage,
-    result: WindUplinkMessage,
+    result: typeof this.WindUplinkCache,
   ): void {
     if (request.cruiseWinds === undefined || request.cruiseWinds.flightLevels.length === 0) {
       return;
     }
 
+    const requestedCruiseWinds = request.cruiseWinds;
+
     const cruiseWaypoints = navlog.filter(
       (wpt) =>
         wpt.ident !== 'TOC' &&
         wpt.ident !== 'TOD' &&
-        request.cruiseWinds.waypoints.some((reqWpt) => {
+        requestedCruiseWinds.waypoints.some((reqWpt) => {
           return (
             (wpt.type === 'wpt' && typeof reqWpt === 'string' && reqWpt === wpt.ident) ||
             (wpt.type === 'ltlg' &&
@@ -140,7 +140,7 @@ export class SimBriefConnector {
     );
 
     // Go through all the requested flight levels
-    for (const reqLevel of request.cruiseWinds.flightLevels) {
+    for (const reqLevel of requestedCruiseWinds.flightLevels) {
       const responseSet: UplinkedCruiseWindSet = {
         flightLevel: reqLevel,
         fixes: [],
@@ -243,7 +243,10 @@ export class SimBriefConnector {
     }
   }
 
-  private static parseDescentWinds(navlog: ISimbriefData['navlog'], result: WindUplinkMessage): void {
+  private static parseDescentWinds(
+    navlog: Required<ISimbriefData>['navlog'],
+    result: typeof this.WindUplinkCache,
+  ): void {
     let lastAltitude = 45000;
     navlog.forEach((desWpt, wptIdx) => {
       // TOD is marked as cruise stage, but we want it's topmost wind data

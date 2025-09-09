@@ -38,7 +38,6 @@ export * from './logic';
 export * from './MapParameters';
 export * from './navdata';
 export * from './navigraph';
-export * from './navigraph';
 export * from './notification';
 export * from './parseMetar';
 export * from './performance';
