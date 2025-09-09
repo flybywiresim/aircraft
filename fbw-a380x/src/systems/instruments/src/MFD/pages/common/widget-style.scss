@@ -103,6 +103,10 @@
   border: 2px inset $display-light-grey;
 }
 
+.mfd-button.selected:hover {
+  border-color: $display-cyan;
+}
+
 .mfd-button.disabled:hover {
   border-color: $display-light-grey;
 }
