@@ -9,7 +9,7 @@ import { EwdSimvarPublisher } from './shared/EwdSimvarPublisher';
 import '../index.scss';
 import './style.scss';
 import { EngineWarningDisplay } from 'instruments/src/EWD/EWD';
-import { ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { ArincEventBus, CpiomDataPublisher } from '@flybywiresim/fbw-sdk';
 
 class A380X_EWD extends BaseInstrument {
   private readonly bus = new ArincEventBus();
@@ -17,6 +17,8 @@ class A380X_EWD extends BaseInstrument {
   private readonly backplane = new InstrumentBackplane();
 
   private readonly simVarPublisher = new EwdSimvarPublisher(this.bus);
+
+  private readonly cpiomPublisher = new CpiomDataPublisher(this.bus);
 
   private readonly arincProvider = new ArincValueProvider(this.bus);
 
@@ -27,6 +29,7 @@ class A380X_EWD extends BaseInstrument {
 
     this.backplane.addInstrument('Clock', this.clock);
     this.backplane.addPublisher('SimVars', this.simVarPublisher);
+    this.backplane.addPublisher('CPIOM', this.cpiomPublisher);
   }
 
   get templateID(): string {
