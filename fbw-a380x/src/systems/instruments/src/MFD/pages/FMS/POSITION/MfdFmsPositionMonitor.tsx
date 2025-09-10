@@ -375,12 +375,10 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
   render(): VNode {
     return (
       <>
-        {/* TODO:
-        Check Y pos of POS line vs NAV PRIMARY/ACCURACY
-        Improve POS X Spacing.
-        Improve EPU/RNP X spacing.
+        {/* TODO (top to bottom):
+        Change Y of EPU/RNP AREA
         Improve position sensors spacing towards the right.
-        Size of freeze/position sensors buttons
+        Check SHOW POS DATA/FREEZE POSITION X & Y labels
         Frozen position data location.
         Bottom area
         */}
@@ -392,15 +390,15 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
             <div class="mfd-label-value-container">
               <span class={this.navPrimaryClass}>{this.navPrimaryText}</span>
             </div>
-            <div class="mfd-label-value-container" style={'margin-right:87px;'}>
-              <span class="mfd-label bigger mfd-spacing-right-small">RNP</span>
+            <div class="mfd-label-value-container" style={'margin-right:92px;'}>
+              <span class="mfd-label bigger mfd-spacing-right">RNP</span>
               <InputField<number>
                 dataEntryFormat={new RnpFormat()}
                 value={this.fmsRnp}
                 onModified={(v) => this.props.fmcService.master?.navigation.setPilotRnp(v)}
                 enteredByPilot={this.rnpEnteredByPilot}
                 canBeCleared={Subject.create(true)}
-                containerStyle="width: 147px;"
+                containerStyle="width: 155px;"
                 alignText="center"
                 errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
@@ -414,8 +412,8 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
               <span class="mfd-label bigger mfd-spacing-right">ACCURACY</span>
               <span class={this.accuracyClass}>{this.fmsAccuracy}</span>
             </div>
-            <div class="mfd-label-value-container" style={'margin-right:89px'}>
-              <span class="mfd-label bigger mfd-spacing-right" style="width: 54px;">
+            <div class="mfd-label-value-container" style={'margin-right:95px'}>
+              <span class="mfd-label bigger mfd-spacing" style="margin-right: 38px;">
                 EPU
               </span>
               <span class="mfd-value bigger">{this.fmsEpeDisplay}</span>
@@ -556,7 +554,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
               <Button
                 label={Subject.create(
                   <div style="display: flex; flex-direction: row; justify-content: space-between;">
-                    <span style="text-align: center; vertical-align: center; margin-right: 10px;">
+                    <span style="text-align: center; vertical-align: center; margin-right: 13px;">
                       {this.positionSensorsButtonLabel}
                       <br />
                       POS SENSORS
@@ -565,7 +563,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                 )}
                 onClick={() => this.toggleSensorsVisibility()}
                 selected={this.positionSensorsVisible}
-                buttonStyle="width: 195px; margin-left: 95px; height:60px;"
+                buttonStyle="width: 210px; margin-left: 95px; height:62px;"
               />
 
               <Button
@@ -581,7 +579,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                 )}
                 onClick={() => this.togglePositionFrozen()}
                 selected={this.positionFrozen}
-                buttonStyle="width: 185px; margin-right:90px; height:60px"
+                buttonStyle="width: 206px; margin-right:90px; height:60px"
               />
             </div>
           </div>
