@@ -37,11 +37,14 @@ import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { A380SpeedsUtils } from '@shared/OperatingSpeeds';
 import { NXSystemMessages } from '../../shared/NXSystemMessages';
-import { getEtaFromUtcOrPresent as getEtaUtcOrFromPresent, getApproachName } from '../../shared/utils';
+import {
+  getEtaFromUtcOrPresent as getEtaUtcOrFromPresent,
+  getApproachName,
+  showReturnButtonUriExtra,
+} from '../../shared/utils';
 import { ApproachType } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
-import { MfdFmsPositionMonitor } from './POSITION/MfdFmsPositionMonitor';
 
 interface MfdFmsPerfProps extends AbstractMfdPageProps {}
 
@@ -2953,9 +2956,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                 <Button
                   label="POS MONITOR"
                   onClick={() =>
-                    this.props.mfd.uiService.navigateTo(
-                      `fms/position/monitor/${MfdFmsPositionMonitor.showReturnButtonUri}`,
-                    )
+                    this.props.mfd.uiService.navigateTo(`fms/position/monitor/${showReturnButtonUriExtra}`)
                   }
                   containerStyle="margin-right: 5px;"
                 />
