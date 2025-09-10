@@ -183,7 +183,7 @@ export class CDUFuelPredPage {
       }
 
       mcdu.onLeftInput[3] = async (value, scratchpadCallback) => {
-        if (mcdu.trySetRouteAlternateFuel(value, FlightPlanIndex.Active)) {
+        if (await mcdu.trySetRouteAlternateFuel(value, FlightPlanIndex.Active)) {
           await CDUFuelPredPage.refreshAfterFuelPred(mcdu, FlightPlanIndex.Active);
         } else {
           scratchpadCallback();
@@ -207,7 +207,7 @@ export class CDUFuelPredPage {
       }
 
       if (alternate) {
-        if (Number.isFinite(predictions.alternateTime)) {
+        if (Number.isFinite(predictions.alternateTime) && Number.isFinite(predictions.tripTime)) {
           altTimeCell = isFlying
             ? FmsFormatters.secondsToUTC(
                 utcTime + FmsFormatters.minuteToSeconds(predictions.tripTime + predictions.alternateTime),
@@ -220,7 +220,7 @@ export class CDUFuelPredPage {
         }
       }
 
-      if (isFlying || Number.isFinite(predictions.routeReserveFuel)) {
+      if (Number.isFinite(predictions.routeReserveFuel)) {
         rteRsvWeightCell = `{small}${NXUnits.kgToUser(predictions.routeReserveFuel).toFixed(1).padStart(5, '\xa0')}{end}`;
         rteRSvCellColor = isFlying ? '[color]green' : '[color]cyan';
       } else if (Number.isFinite(plan.performanceData.pilotRouteReserveFuel.get())) {
@@ -266,7 +266,7 @@ export class CDUFuelPredPage {
       }
 
       mcdu.onLeftInput[5] = async (value, scratchpadCallback) => {
-        if (mcdu.trySetMinDestFob(value, FlightPlanIndex.Active)) {
+        if (await mcdu.trySetMinDestFob(value, FlightPlanIndex.Active)) {
           await CDUFuelPredPage.refreshAfterFuelPred(mcdu, FlightPlanIndex.Active);
         } else {
           scratchpadCallback();
@@ -290,8 +290,9 @@ export class CDUFuelPredPage {
         zfwCell = NXUnits.kgToUser(plan.performanceData.zeroFuelWeight.get()).toFixed(1);
         zfwColor = '[color]cyan';
       }
-      if (plan.performanceData.zeroFuelWeightCenterOfGravity.get() !== null) {
-        zfwCgCell = plan.performanceData.zeroFuelWeightCenterOfGravity.get().toFixed(1);
+      const zfwcg = plan.performanceData.zeroFuelWeightCenterOfGravity.get();
+      if (Number.isFinite(zfwcg)) {
+        zfwCgCell = zfwcg.toFixed(1);
       }
     }
 
