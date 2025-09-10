@@ -474,8 +474,8 @@ export class LnavDriver implements GuidanceComponent {
     const activePlan = this.flightPlanService.active;
     const secPlan = this.flightPlanService.secondary(secIndex);
 
-    const secFromLeg = secPlan.elementAt(this.flightPlanService.active.activeLegIndex - 1);
-    const secToLeg = secPlan.elementAt(this.flightPlanService.active.activeLegIndex);
+    const secFromLeg = secPlan.maybeElementAt(this.flightPlanService.active.activeLegIndex - 1);
+    const secToLeg = secPlan.maybeElementAt(this.flightPlanService.active.activeLegIndex);
 
     const activeFromLeg = activePlan.elementAt(this.flightPlanService.active.activeLegIndex - 1);
     const activeToLeg = activePlan.elementAt(this.flightPlanService.active.activeLegIndex);
@@ -483,6 +483,8 @@ export class LnavDriver implements GuidanceComponent {
     // We see if what used to be the FROM/TO pair in the active plan is currently the FROM/TO in the secondary plan
     const shouldSequence =
       secPlan.activeLegIndex === activePlan.activeLegIndex - 1 &&
+      secFromLeg !== undefined &&
+      secToLeg !== undefined &&
       FlightPlanUtils.areFlightPlanElementsSame(secFromLeg, activeFromLeg) &&
       FlightPlanUtils.areFlightPlanElementsSame(secToLeg, activeToLeg);
 
@@ -492,10 +494,10 @@ export class LnavDriver implements GuidanceComponent {
           `[LnavDriver](trySequenceSecondaryPlan) Not sequencing SEC ${secIndex} - FROM/TO pairs were different`,
         );
         console.log(
-          `[LnavDriver](trySequenceSecondaryPlan) SEC: FROM: ${secFromLeg.isDiscontinuity === true ? '<disco>' : secFromLeg.uuid}`,
+          `[LnavDriver](trySequenceSecondaryPlan) SEC: FROM: ${secFromLeg.isDiscontinuity === true ? '<disco>' : secFromLeg?.uuid ?? '<none>'}`,
         );
         console.log(
-          `[LnavDriver](trySequenceSecondaryPlan) SEC: TO: ${secToLeg.isDiscontinuity === true ? '<disco>' : secToLeg.uuid}`,
+          `[LnavDriver](trySequenceSecondaryPlan) SEC: TO: ${secToLeg.isDiscontinuity === true ? '<disco>' : secToLeg?.uuid ?? '<none>'}`,
         );
         console.log(
           `[LnavDriver](trySequenceSecondaryPlan) ACT: FROM: ${activeFromLeg.isDiscontinuity === true ? '<disco>' : activeFromLeg.uuid}`,
