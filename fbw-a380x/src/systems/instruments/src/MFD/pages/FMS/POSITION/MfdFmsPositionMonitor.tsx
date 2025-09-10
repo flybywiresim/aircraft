@@ -9,7 +9,11 @@ import './MfdFmsPositionMonitor.scss';
 import { distanceTo } from 'msfs-geo';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
-import { getEtaFromUtcOrPresent, noPositionAvailableText } from 'instruments/src/MFD/shared/utils';
+import {
+  getEtaFromUtcOrPresent,
+  noPositionAvailableText,
+  showReturnButtonUriExtra,
+} from 'instruments/src/MFD/shared/utils';
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import { A32NX_Util } from '@shared/A32NX_Util';
@@ -18,8 +22,6 @@ interface MfdFmsPositionMonitorPageProps extends AbstractMfdPageProps {}
 
 export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProps> {
   static readonly noIrsPositionDeviationAvailText = '--.-';
-
-  static readonly showReturnButtonUri = 'withReturn';
 
   private readonly fmsRnp = Subject.create<number | null>(null);
 
@@ -139,11 +141,11 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
     v ? 'AT ' + getEtaFromUtcOrPresent(0, false) : '',
   );
 
-  private readonly gpsCoordinates: Coordinates = { lat: 0, long: 0 };
+  private readonly gnssCoordinates: Coordinates = { lat: 0, long: 0 };
 
-  private readonly gnssPositionText = Subject.create(noPositionAvailableText);
+  private readonly gnss1PositionText = Subject.create(noPositionAvailableText);
 
-  private readonly gnss2PositionText = this.gnssPositionText; // TODO implement when GNSS2 is added
+  private readonly gnss2PositionText = this.gnss1PositionText; // TODO implement when GNSS2 is added
 
   private readonly onSidePositionLabel = Subject.create(this.props.mfd.uiService.captOrFo === 'CAPT' ? 'POS1' : 'POS2');
 
@@ -192,8 +194,11 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
 
   private readonly gpsDeselectedVisibility = this.gpsDeselected.map((v) => (v ? 'visible' : 'hidden'));
 
-  private readonly returnButtonVisible =
-    this.props.mfd.uiService.activeUri.get().extra === MfdFmsPositionMonitor.showReturnButtonUri;
+  private readonly returnButtonVisible = this.props.mfd.uiService.activeUri.get().extra === showReturnButtonUriExtra;
+
+  private readonly irsMixCoordinates: Coordinates = { lat: 0, long: 0 };
+
+  private readonly mixIrsPositionText = Subject.create(noPositionAvailableText);
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -284,9 +289,36 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
 
     if (updatePositionSensors) {
       // TODO replace with MMR signals once implemented
-      this.gpsCoordinates.lat = SimVar.GetSimVarValue('GPS POSITION LAT', 'degree latitude');
-      this.gpsCoordinates.long = SimVar.GetSimVarValue('GPS POSITION LON', 'degree longitude');
-      this.gnssPositionText.set(coordinateToString(this.gpsCoordinates, false));
+      this.gnssCoordinates.lat = SimVar.GetSimVarValue('GPS POSITION LAT', 'degree latitude');
+      this.gnssCoordinates.long = SimVar.GetSimVarValue('GPS POSITION LON', 'degree longitude');
+      this.gnss1PositionText.set(coordinateToString(this.gnssCoordinates, false));
+
+      let mixLatitude = 0;
+      let mixLongitude = 0;
+      let availableIrs = 0;
+      if (!this.ir1LatitudeRegister.isInvalid() && !this.ir1LongitudeRegister.isInvalid()) {
+        mixLatitude += this.ir1LatitudeRegister.value;
+        mixLongitude += this.ir1LongitudeRegister.value;
+        availableIrs += 1;
+      }
+      if (!this.ir2LatitudeRegister.isInvalid() && !this.ir2LongitudeRegister.isInvalid()) {
+        mixLatitude += this.ir2LatitudeRegister.value;
+        mixLongitude += this.ir2LongitudeRegister.value;
+        availableIrs += 1;
+      }
+      if (!this.ir3LatitudeRegister.isInvalid() && !this.ir3LongitudeRegister.isInvalid()) {
+        mixLatitude += this.ir3LatitudeRegister.value;
+        mixLongitude += this.ir3LongitudeRegister.value;
+        availableIrs += 1;
+      }
+
+      if (availableIrs > 0) {
+        this.irsMixCoordinates.lat = mixLatitude / availableIrs;
+        this.irsMixCoordinates.long = mixLongitude / availableIrs;
+        this.mixIrsPositionText.set(coordinateToString(this.irsMixCoordinates, false));
+      } else {
+        this.mixIrsPositionText.set(noPositionAvailableText);
+      }
     }
 
     const waypoint = this.monitorWaypoint.get();
@@ -449,7 +481,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
               <div class="mfd-label-value-container pos-monitor-table-lateral-spacing pos-monitor-table-vertical-spacing">
                 <span class="mfd-label bigger mfd-spacing-right">GNSS1</span>
                 <span class="mfd-value bigger" style={'position: relative; top:5px;'}>
-                  {this.gnssPositionText}
+                  {this.gnss1PositionText}
                 </span>
               </div>
               <div class="mfd-label-value-container pos-monitor-table-lateral-spacing" style={'padding-bottom:5px;'}>
@@ -483,7 +515,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
 
               <div class="mfd-label-value-container" style={'padding-left:3px'}>
                 <span class="mfd-label bigger mfd-spacing-right">MIXIRS</span>
-                <span class="mfd-value bigger">{this.radioPosition}</span>
+                <span class="mfd-value bigger">{this.mixIrsPositionText}</span>
               </div>
             </div>
             <div>
