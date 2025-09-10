@@ -62,3 +62,5 @@ export function getApproachName(approach: Approach, withRnpSuffix = true): strin
 }
 
 export const noPositionAvailableText = '--°--.--/---°--.--';
+
+export const showReturnButtonUriExtra = 'withReturn';
