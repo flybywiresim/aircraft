@@ -5,7 +5,7 @@
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-   margin-left: 86px;
+    margin-left: 86px;
     margin-bottom: 4px;
 }
 
@@ -26,7 +26,7 @@
   }
 
   .mfd-pos-monitor-line.short {
-    width: 435px;
+    width: 445px;
   }
 
   .mfd-pos-monitor-frozen-pos-time-container {
@@ -40,8 +40,8 @@
   }
 
   .mfd-pos-monitor-deviation-container {
-    margin-top:  30px;
-    margin-left: 5px;
+    margin-top: 27px;
+    margin-left: 19px;
 }
 
 .mfd-pos-monitor-irs-deviation-line {
@@ -60,10 +60,19 @@
   flex-direction: row;
   justify-content: space-between;
   margin-right: 20px;
-  margin-bottom: 16px;
   margin-left:   9px;
 }
 
-.mfd-label-value-container.table-line {
+.mfd-label-value-container.pos-monitor-table-lateral-spacing {
+  margin-left:  10px;
+
+}
+
+.mfd-label-value-container.pos-monitor-table-vertical-spacing {
   padding-bottom: 6px;
+}
+
+.rnp-container {
+  margin-right: 92px;
+  margin-top: 7px;
 }
