@@ -309,6 +309,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       this.stringMissedApproach();
     }
 
+    if (isLeg(this.activeLeg) && this.activeLeg.cruiseStep) {
+      this.autoDeleteCruiseStep(this.activeLegIndex);
+    }
+
     this.activeLegIndex++;
 
     this.sendEvent('flightPlan.setActiveLegIndex', {
@@ -1678,6 +1682,15 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     this.unignoreAllCruiseSteps();
 
     this.incrementVersion();
+  }
+
+  private autoDeleteCruiseStep(legIndex: number) {
+    this.sendEvent('flightPlan.autoDeleteCruiseStep', {
+      planIndex: this.index,
+      forAlternate: this instanceof AlternateFlightPlan,
+    });
+
+    this.removeCruiseStep(legIndex);
   }
 
   removeCruiseStep(index: number) {

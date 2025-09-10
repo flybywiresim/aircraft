@@ -93,6 +93,7 @@ export interface FlightPlanEvents {
   'flightPlan.setSegmentLegs': FlightPlanSetSegmentLegsEvent;
   'flightPlan.legFlagsEdit': FlightPlanLegFlagsEditEvent;
   'flightPlan.legDefinitionEdit': FlightPlanLegDefinitionEditEvent;
+  'flightPlan.autoDeleteCruiseStep': FlightPlanEditSyncEvent;
   'flightPlan.setLegCruiseStep': FlightPlanLegCruiseStepEditEvent;
   'flightPlan.setFixInfoEntry': FlightPlanSetFixInfoEntryEvent;
   'flightPlan.setFlightNumber': FlightPlanFlightNumberEditEvent;

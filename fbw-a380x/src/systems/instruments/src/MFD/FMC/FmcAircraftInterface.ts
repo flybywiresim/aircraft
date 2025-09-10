@@ -45,6 +45,8 @@ import { RADIO_ALTITUDE_NODH_VALUE } from '../pages/common/DataEntryFormats';
 import { FMS_CYCLE_TIME } from './FlightManagementComputer';
 import { NavigationEvents } from '@fmgc/navigation/Navigation';
 import { NDFMMessageTypes } from '@shared/FmMessages';
+import { FlightPlanEvents } from '@fmgc/flightplanning/sync/FlightPlanEvents';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 
 /**
  * Interface between FMS and rest of aircraft through SimVars and ARINC values (mostly data being sent here)
@@ -332,6 +334,18 @@ export class FmcAircraftInterface {
       }, true),
       this.radioAlt,
       this.gpsPrimary,
+    );
+
+    // Check for STEP DELETED message
+    this.subs.push(
+      this.bus
+        .getSubscriber<FlightPlanEvents>()
+        .on('flightPlan.autoDeleteCruiseStep')
+        .handle(({ planIndex }) => {
+          if (planIndex === FlightPlanIndex.Active) {
+            this.fmc.addMessageToQueue(NXSystemMessages.stepDeleted, undefined, undefined);
+          }
+        }),
     );
   }
 
@@ -2022,14 +2036,6 @@ export class FmcAircraftInterface {
         }
         this.stepAheadTriggeredForAltitude = approachingCruiseStep.toAltitude;
       }
-    }
-
-    // Check for STEP DELETED message
-    if (SimVar.GetSimVarValue('L:A32NX_FM_VNAV_TRIGGER_STEP_DELETED', SimVarValueType.Bool) === 1) {
-      // Add message
-      this.fmc.addMessageToQueue(NXSystemMessages.stepDeleted, undefined, undefined);
-
-      SimVar.SetSimVarValue('L:A32NX_FM_VNAV_TRIGGER_STEP_DELETED', SimVarValueType.Bool, false);
     }
   }
 

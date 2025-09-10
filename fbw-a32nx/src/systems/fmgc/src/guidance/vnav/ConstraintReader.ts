@@ -86,10 +86,6 @@ export class ConstraintReader {
             waypointIndex,
             isIgnored: false,
           });
-        } else {
-          // We've already passed the waypoint
-          plan.removeCruiseStep(i);
-          SimVar.SetSimVarValue('L:A32NX_FM_VNAV_TRIGGER_STEP_DELETED', 'boolean', true);
         }
       }
 
