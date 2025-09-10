@@ -376,8 +376,6 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
     return (
       <>
         {/* TODO (top to bottom):
-        Change Y of EPU/RNP AREA
-        Improve position sensors spacing towards the right.
         Check SHOW POS DATA/FREEZE POSITION X & Y labels
         Frozen position data location.
         Bottom area
@@ -385,26 +383,27 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
         {super.render()}
         {/* begin page content */}
         <div class="mfd-page-container">
-          <div style={'height:7px'}></div>
           <div class="mfd-pos-top-row">
-            <div class="mfd-label-value-container">
+            <div class="mfd-label-value-container" style={'margin-top:13px'}>
               <span class={this.navPrimaryClass}>{this.navPrimaryText}</span>
             </div>
-            <div class="mfd-label-value-container" style={'margin-right:92px;'}>
-              <span class="mfd-label bigger mfd-spacing-right">RNP</span>
-              <InputField<number>
-                dataEntryFormat={new RnpFormat()}
-                value={this.fmsRnp}
-                onModified={(v) => this.props.fmcService.master?.navigation.setPilotRnp(v)}
-                enteredByPilot={this.rnpEnteredByPilot}
-                canBeCleared={Subject.create(true)}
-                containerStyle="width: 155px;"
-                alignText="center"
-                errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
-                hEventConsumer={this.props.mfd.hEventConsumer}
-                interactionMode={this.props.mfd.interactionMode}
-                bigUnit={true}
-              />
+            <div class="rnp-container">
+              <div class="mfd-label-value-container">
+                <span class="mfd-label bigger mfd-spacing-right">RNP</span>
+                <InputField<number>
+                  dataEntryFormat={new RnpFormat()}
+                  value={this.fmsRnp}
+                  onModified={(v) => this.props.fmcService.master?.navigation.setPilotRnp(v)}
+                  enteredByPilot={this.rnpEnteredByPilot}
+                  canBeCleared={Subject.create(true)}
+                  containerStyle="width: 155px;"
+                  alignText="center"
+                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  hEventConsumer={this.props.mfd.hEventConsumer}
+                  interactionMode={this.props.mfd.interactionMode}
+                  bigUnit={true}
+                />
+              </div>
             </div>
           </div>
           <div class="mfd-pos-top-row">
@@ -423,7 +422,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
             </div>
           </div>
 
-          <div class="mfd-pos-monitor-fm-pos-line" style={' margin-bottom: 16px;'}>
+          <div class="mfd-pos-monitor-fm-pos-line" style={'margin-bottom: 16px;'}>
             <div class="mfd-label-value-container">
               <span class="mfd-label bigger mfd-spacing-right">&nbsp;POS1</span>
               <span class="mfd-value bigger mfd-spacing-right">{this.position1}</span>
@@ -447,40 +446,42 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
 
           <div class="fr">
             <div style={this.positionSensorsVisibility}>
-              <div class="mfd-label-value-container table-line">
+              <div class="mfd-label-value-container pos-monitor-table-lateral-spacing pos-monitor-table-vertical-spacing">
                 <span class="mfd-label bigger mfd-spacing-right">GNSS1</span>
-                <span class="mfd-value bigger">{this.gnssPositionText}</span>
+                <span class="mfd-value bigger" style={'position: relative; top:5px;'}>
+                  {this.gnssPositionText}
+                </span>
               </div>
-              <div class="mfd-label-value-container" style={'padding-bottom:5px;'}>
+              <div class="mfd-label-value-container pos-monitor-table-lateral-spacing" style={'padding-bottom:5px;'}>
                 <span class="mfd-label bigger mfd-spacing-right">GNSS2</span>
                 <span class="mfd-value bigger">{this.gnss2PositionText}</span>
               </div>
 
               <div class="mfd-pos-monitor-line short"></div>
 
-              <div class="mfd-label-value-container table-line">
+              <div class="mfd-label-value-container pos-monitor-table-lateral-spacing pos-monitor-table-vertical-spacing">
                 <span class="mfd-label bigger mfd-spacing-right">&nbsp;IRS1</span>
                 <span class="mfd-value bigger">{this.ir1Position}</span>
               </div>
 
-              <div class="mfd-label-value-container table-line">
+              <div class="mfd-label-value-container pos-monitor-table-lateral-spacing pos-monitor-table-vertical-spacing">
                 <span class="mfd-label bigger mfd-spacing-right">&nbsp;IRS2</span>
                 <span class="mfd-value bigger">{this.ir2Position}</span>
               </div>
 
-              <div class="mfd-label-value-container" style={'padding-bottom:10px;'}>
+              <div class="mfd-label-value-container pos-monitor-table-lateral-spacing" style={'padding-bottom:10px;'}>
                 <span class="mfd-label bigger mfd-spacing-right">&nbsp;IRS3</span>
                 <span class="mfd-value bigger">{this.ir3Position}</span>
               </div>
 
               <div class="mfd-pos-monitor-line short"> </div>
 
-              <div class="mfd-label-value-container" style={'padding-bottom:10px'}>
+              <div class="mfd-label-value-container pos-monitor-table-lateral-spacing" style={'padding-bottom:10px'}>
                 <span class="mfd-label bigger mfd-spacing-right">RADIO</span>
                 <span class="mfd-value bigger">{this.radioPosition}</span>
               </div>
 
-              <div class="mfd-label-value-container">
+              <div class="mfd-label-value-container" style={'padding-left:3px'}>
                 <span class="mfd-label bigger mfd-spacing-right">MIXIRS</span>
                 <span class="mfd-value bigger">{this.radioPosition}</span>
               </div>
@@ -563,7 +564,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                 )}
                 onClick={() => this.toggleSensorsVisibility()}
                 selected={this.positionSensorsVisible}
-                buttonStyle="width: 210px; margin-left: 95px; height:62px;"
+                buttonStyle="width: 219px; margin-left: 95px; height:62px;"
               />
 
               <Button
