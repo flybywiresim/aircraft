@@ -45,7 +45,7 @@ export class FwsMemos {
       simVarIsActive: this.fws.spoilersArmed,
       whichCodeToReturn: () => [0],
       codesToReturn: ['271000001'],
-      memoInhibit: () => this.fws.toMemo.get() === 1 || this.fws.ldgMemo.get() === 1,
+      memoInhibit: () => this.fws.toMemo.get() || this.fws.ldgMemo.get(),
     },
     '280000001': {
       // CROSSFEED OPEN
@@ -407,7 +407,7 @@ export class FwsMemos {
       ),
       whichCodeToReturn: () => [0],
       codesToReturn: ['333000001'],
-      memoInhibit: () => this.fws.toMemo.get() === 1 || this.fws.ldgMemo.get() === 1,
+      memoInhibit: () => this.fws.toMemo.get() || this.fws.ldgMemo.get(),
     },
     '335000001': {
       // SEAT BELTS
@@ -415,7 +415,7 @@ export class FwsMemos {
       simVarIsActive: this.fws.seatBeltSwitchOn,
       whichCodeToReturn: () => [0],
       codesToReturn: ['335000001'],
-      memoInhibit: () => this.fws.toMemo.get() === 1 || this.fws.ldgMemo.get() === 1,
+      memoInhibit: () => this.fws.toMemo.get() || this.fws.ldgMemo.get(),
     },
     '335000003': {
       // NO MOBILE
@@ -466,7 +466,7 @@ export class FwsMemos {
         '340003007',
         '340003008',
       ],
-      memoInhibit: () => this.fws.toMemo.get() === 1 || this.fws.ldgMemo.get() === 1,
+      memoInhibit: () => this.fws.toMemo.get() || this.fws.ldgMemo.get(),
     },
     '340003101': {
       // IR IN ALIGN
@@ -502,7 +502,7 @@ export class FwsMemos {
         '340003107',
         '340003108',
       ],
-      memoInhibit: () => this.fws.toMemo.get() === 1 || this.fws.ldgMemo.get() === 1,
+      memoInhibit: () => this.fws.toMemo.get() || this.fws.ldgMemo.get(),
     },
     '340068001': {
       // ADIRS SWTG
@@ -523,7 +523,7 @@ export class FwsMemos {
       simVarIsActive: this.fws.tawsGpwsOff,
       whichCodeToReturn: () => [0],
       codesToReturn: ['341000001'],
-      memoInhibit: () => this.fws.toMemo.get() === 1 || this.fws.ldgMemo.get() === 1,
+      memoInhibit: () => this.fws.toMemo.get() || this.fws.ldgMemo.get(),
     },
     '341000002': {
       // TAWS FLAP MODE OFF
@@ -531,7 +531,7 @@ export class FwsMemos {
       simVarIsActive: this.fws.tawsFlapModeOff,
       whichCodeToReturn: () => [0],
       codesToReturn: ['341000002'],
-      memoInhibit: () => this.fws.toMemo.get() === 1 || this.fws.ldgMemo.get() === 1,
+      memoInhibit: () => this.fws.toMemo.get() || this.fws.ldgMemo.get(),
     },
     '341000003': {
       // TAWS G/S MODE OFF
@@ -539,7 +539,7 @@ export class FwsMemos {
       simVarIsActive: this.fws.tawsGsOff,
       whichCodeToReturn: () => [0],
       codesToReturn: ['341000003'],
-      memoInhibit: () => this.fws.toMemo.get() === 1 || this.fws.ldgMemo.get() === 1,
+      memoInhibit: () => this.fws.toMemo.get() || this.fws.ldgMemo.get(),
     },
 
     '343000001': {
@@ -599,14 +599,12 @@ export class FwsMemos {
     '0000010': {
       // T.O MEMO
       flightPhaseInhib: [1, 3, 8, 12],
-      simVarIsActive: this.fws.toMemo.map((t) => !!t),
+      simVarIsActive: this.fws.toMemo,
       whichCodeToReturn: () => [
         0,
         this.fws.seatBeltSwitchOn.get() ? 2 : 1,
         this.fws.spoilersArmed.get() ? 4 : 3,
-        this.fws.slatFlapSelectionS18F10 || this.fws.slatFlapSelectionS22F15 || this.fws.slatFlapSelectionS22F20
-          ? 6
-          : 5,
+        this.fws.flap1Selected || this.fws.flap2Selected || this.fws.flap3Selected ? 6 : 5,
         this.fws.autoBrake.get() === 6 ? 8 : 7,
         this.fws.toConfigNormal.get() ? 10 : 9,
       ],
@@ -629,14 +627,14 @@ export class FwsMemos {
     '0000020': {
       // LANDING MEMO
       flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 11, 12],
-      simVarIsActive: this.fws.ldgMemo.map((t) => !!t),
+      simVarIsActive: this.fws.ldgMemo,
       whichCodeToReturn: () => [
         0,
         this.fws.seatBeltSwitchOn.get() ? 2 : 1,
         this.fws.isAllGearDownlocked ? 4 : 3,
         this.fws.spoilersArmed.get() ? 6 : 5,
-        (!this.fws.flap3LandingSelected && this.fws.sfccSlatFlapsSystemStatusWord.bitValueOr(21, false)) ||
-        (this.fws.flap3LandingSelected && this.fws.sfccSlatFlapsSystemStatusWord.bitValueOr(20, false))
+        (!this.fws.flap3LandingSelected && this.fws.flapsFullSelected) ||
+        (this.fws.flap3LandingSelected && this.fws.flap3Selected)
           ? 8
           : 7,
       ],

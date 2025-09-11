@@ -1971,7 +1971,7 @@ export class FwsCore {
 
   public readonly engine2Generator = Subject.create(false);
 
-  public readonly apuMasterSwitch = Subject.create(0);
+  public readonly apuMasterSwitch = Subject.create(false);
 
   public readonly apuAvail = Subject.create(false);
 
@@ -1981,9 +1981,9 @@ export class FwsCore {
 
   public readonly radioHeight3 = Arinc429Register.empty();
 
-  public readonly toMemo = Subject.create(0);
+  public readonly toMemo = Subject.create(false);
 
-  public readonly ldgMemo = Subject.create(0);
+  public readonly ldgMemo = Subject.create(false);
 
   public readonly autoBrake = Subject.create(0);
 
@@ -2211,25 +2211,25 @@ export class FwsCore {
   );
 
   public readonly landingPerformanceAffected = MappedSubject.create(
-    ([phase112, oneEngineRunning, twoEnginesOutOnOppositeSide, twoEnginesOutOnSameSide]) => {
-      return !phase112 && oneEngineRunning && (twoEnginesOutOnOppositeSide || twoEnginesOutOnSameSide);
+    ([allEnginesFailure, twoEnginesOutOnOppositeSide, twoEnginesOutOnSameSide]) => {
+      return !allEnginesFailure && (twoEnginesOutOnOppositeSide || twoEnginesOutOnSameSide);
     },
-    this.phase112,
-    this.oneEngineRunning,
+    this.allEnginesFailure,
     this.twoEnginesOutOnOppositeSide,
     this.twoEnginesOutOnSameSide,
   );
 
   public readonly landingDistanceAffected = MappedSubject.create(
-    ([phase112, oneEngineRunning, landingPerfAffected, greenSysLost, yellowSysLost]) => {
-      return !phase112 && oneEngineRunning && !landingPerfAffected && (greenSysLost || yellowSysLost);
+    ([allEnginesFailure, landingPerfAffected, greenSysLost, yellowSysLost]) => {
+      return !allEnginesFailure && !landingPerfAffected && (greenSysLost || yellowSysLost);
     },
-    this.phase112,
-    this.oneEngineRunning,
+    this.allEnginesFailure,
     this.landingPerformanceAffected,
     this.greenLoPressure,
     this.yellowLoPressure,
   );
+
+  public readonly onDryRunwayOnlyldgDistanceAffected = this.landingDistanceAffected;
 
   public readonly landAnsa = MappedSubject.create(
     ([landAsap, ground, twoEnginesOutOnOppositeSide, twoEnginesOutOnSameSide, twoPackFault]) =>
@@ -2986,10 +2986,10 @@ export class FwsCore {
     // FIXME move out of acquisition to logic below
     const oneEngineAboveMinPower = this.engine1AboveIdle.get() || this.engine2AboveIdle.get();
 
-    this.engine1Generator.set(SimVar.GetSimVarValue('L:A32NX_ELEC_ENG_GEN_1_POTENTIAL_NORMAL', 'bool'));
-    this.engine2Generator.set(SimVar.GetSimVarValue('L:A32NX_ELEC_ENG_GEN_2_POTENTIAL_NORMAL', 'bool'));
+    this.engine1Generator.set(SimVar.GetSimVarValue('L:A32NX_ELEC_ENG_GEN_1_POTENTIAL_NORMAL', 'bool') > 0);
+    this.engine2Generator.set(SimVar.GetSimVarValue('L:A32NX_ELEC_ENG_GEN_2_POTENTIAL_NORMAL', 'bool') > 0);
 
-    this.apuMasterSwitch.set(SimVar.GetSimVarValue('L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON', 'bool'));
+    this.apuMasterSwitch.set(SimVar.GetSimVarValue('L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON', 'bool') > 0);
 
     this.apuAvail.set(SimVar.GetSimVarValue('L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE', 'bool') > 0);
     this.apuBleedValveOpen.set(SimVar.GetSimVarValue('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'bool') > 0);
@@ -3000,36 +3000,40 @@ export class FwsCore {
       (this.adrPressureAltitude.get() ?? 0) < 22_500 && (machBelow56 || this.allEnginesFailure.get());
     this.apuBleedPbOnOver22500ft.set(this.apuBleedPbOn.get() && !apuWithinEnvelope);
 
-    this.eng1BleedPbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO', SimVarValueType.Bool));
-    this.eng2BleedPbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_2_BLEED_PB_IS_AUTO', SimVarValueType.Bool));
-    this.eng3BleedPbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_3_BLEED_PB_IS_AUTO', SimVarValueType.Bool));
-    this.eng4BleedPbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_4_BLEED_PB_IS_AUTO', SimVarValueType.Bool));
+    this.eng1BleedPbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO', SimVarValueType.Bool) > 0);
+    this.eng2BleedPbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_2_BLEED_PB_IS_AUTO', SimVarValueType.Bool) > 0);
+    this.eng3BleedPbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_3_BLEED_PB_IS_AUTO', SimVarValueType.Bool) > 0);
+    this.eng4BleedPbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_4_BLEED_PB_IS_AUTO', SimVarValueType.Bool) > 0);
 
     this.eng1BleedAbnormalOff.set(this.engine1Running.get() && !this.eng1BleedPbOn.get());
     this.eng2BleedAbnormalOff.set(this.engine2Running.get() && !this.eng2BleedPbOn.get());
     this.eng3BleedAbnormalOff.set(this.engine3Running.get() && !this.eng3BleedPbOn.get());
     this.eng4BleedAbnormalOff.set(this.engine4Running.get() && !this.eng4BleedPbOn.get());
 
-    this.toMemo.set(SimVar.GetSimVarValue('L:A32NX_FWC_TOMEMO', 'bool'));
+    this.toMemo.set(SimVar.GetSimVarValue('L:A32NX_FWC_TOMEMO', 'bool') > 0);
 
     this.autoBrake.set(SimVar.GetSimVarValue('L:A32NX_AUTOBRAKES_ARMED_MODE', 'enum'));
 
-    this.ldgMemo.set(SimVar.GetSimVarValue('L:A32NX_FWC_LDGMEMO', 'bool'));
+    this.ldgMemo.set(SimVar.GetSimVarValue('L:A32NX_FWC_LDGMEMO', 'bool') > 0);
 
     this.engSelectorPosition.set(SimVar.GetSimVarValue('L:XMLVAR_ENG_MODE_SEL', 'Enum'));
-    this.eng1AntiIce.set(!!SimVar.GetSimVarValue('A:ENG ANTI ICE:1', 'bool'));
-    this.eng2AntiIce.set(!!SimVar.GetSimVarValue('A:ENG ANTI ICE:2', 'bool'));
-    this.eng3AntiIce.set(!!SimVar.GetSimVarValue('A:ENG ANTI ICE:3', 'bool'));
-    this.eng4AntiIce.set(!!SimVar.GetSimVarValue('A:ENG ANTI ICE:4', 'bool'));
-    this.wingAntiIce.set(!!SimVar.GetSimVarValue('A:STRUCTURAL DEICE SWITCH', 'bool'));
+    this.eng1AntiIce.set(SimVar.GetSimVarValue('A:ENG ANTI ICE:1', 'bool') > 0);
+    this.eng2AntiIce.set(SimVar.GetSimVarValue('A:ENG ANTI ICE:2', 'bool') > 0);
+    this.eng3AntiIce.set(SimVar.GetSimVarValue('A:ENG ANTI ICE:3', 'bool') > 0);
+    this.eng4AntiIce.set(SimVar.GetSimVarValue('A:ENG ANTI ICE:4', 'bool') > 0);
+    this.wingAntiIce.set(SimVar.GetSimVarValue('A:STRUCTURAL DEICE SWITCH', 'bool') > 0);
     this.throttle1Position.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:1', 'number'));
     this.throttle2Position.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:2', 'number'));
     this.throttle3Position.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:3', 'number'));
     this.throttle4Position.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:4', 'number'));
     this.autoThrustStatus.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_STATUS', 'enum'));
     this.autoThrustMode.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_MODE', 'enum'));
-    this.autothrustLeverWarningFlex.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_FLEX', 'bool'));
-    this.autothrustLeverWarningToga.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA', 'bool'));
+    this.autothrustLeverWarningFlex.set(
+      SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_FLEX', 'bool') > 0,
+    );
+    this.autothrustLeverWarningToga.set(
+      SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA', 'bool') > 0,
+    );
     this.allThrottleIdle.set(
       this.throttle1Position.get() < 1 &&
         this.throttle2Position.get() < 1 &&
@@ -3044,8 +3048,9 @@ export class FwsCore {
 
     /* HYDRAULICS acquisition */
 
-    const greenSysPressurised = SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE_SWITCH', 'bool');
-    const yellowSysPressurised = SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE_SWITCH', 'bool');
+    const greenSysPressurised = SimVar.GetSimVarValue('L:A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE_SWITCH', 'bool') > 0;
+    const yellowSysPressurised =
+      SimVar.GetSimVarValue('L:A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE_SWITCH', 'bool') > 0;
 
     const gLoPressure = !greenSysPressurised;
     const yLoPressure = !yellowSysPressurised;
@@ -3088,8 +3093,8 @@ export class FwsCore {
         !this.greenYellowAbnormLoPressure.get(),
     );
 
-    this.greenAPumpOn.set(SimVar.GetSimVarValue('L:A32NX_HYD_GA_EPUMP_ACTIVE', 'bool'));
-    this.greenBPumpOn.set(SimVar.GetSimVarValue('L:A32NX_HYD_GB_EPUMP_ACTIVE', 'bool'));
+    this.greenAPumpOn.set(SimVar.GetSimVarValue('L:A32NX_HYD_GA_EPUMP_ACTIVE', 'bool') > 0);
+    this.greenBPumpOn.set(SimVar.GetSimVarValue('L:A32NX_HYD_GB_EPUMP_ACTIVE', 'bool') > 0);
 
     this.greenAPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMPGA_OFF_PB_IS_AUTO', 'bool') > 0);
     this.greenBPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMPGB_OFF_PB_IS_AUTO', 'bool') > 0);
@@ -3131,8 +3136,8 @@ export class FwsCore {
         (!this.yellowAPumpFault.get() || !this.yellowBPumpFault.get()),
     );
 
-    this.yellowAPumpOn.set(SimVar.GetSimVarValue('L:A32NX_HYD_YA_EPUMP_ACTIVE', 'bool'));
-    this.yellowBPumpOn.set(SimVar.GetSimVarValue('L:A32NX_HYD_YB_EPUMP_ACTIVE', 'bool'));
+    this.yellowAPumpOn.set(SimVar.GetSimVarValue('L:A32NX_HYD_YA_EPUMP_ACTIVE', 'bool') > 0);
+    this.yellowBPumpOn.set(SimVar.GetSimVarValue('L:A32NX_HYD_YB_EPUMP_ACTIVE', 'bool') > 0);
 
     this.eng1APumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_1A_PUMP_PB_IS_AUTO', 'bool') > 0);
     this.eng1BPumpAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_ENG_1B_PUMP_PB_IS_AUTO', 'bool') > 0);
@@ -3351,14 +3356,14 @@ export class FwsCore {
 
     /* LANDING GEAR AND LIGHTS acquisition */
 
-    this.antiSkidSwitchOff.set(!SimVar.GetSimVarValue('ANTISKID BRAKES ACTIVE', 'bool'));
+    this.antiSkidSwitchOff.set(SimVar.GetSimVarValue('ANTISKID BRAKES ACTIVE', 'bool') === 0);
 
     const brakesHot = SimVar.GetSimVarValue('L:A32NX_BRAKES_HOT', 'bool');
 
     this.brakesHot.set(brakesHot && !this.phase815MinConfNode.read());
 
-    this.lgciu1Fault.set(SimVar.GetSimVarValue('L:A32NX_LGCIU_1_FAULT', 'bool'));
-    this.lgciu2Fault.set(SimVar.GetSimVarValue('L:A32NX_LGCIU_2_FAULT', 'bool'));
+    this.lgciu1Fault.set(SimVar.GetSimVarValue('L:A32NX_LGCIU_1_FAULT', 'bool') > 0);
+    this.lgciu2Fault.set(SimVar.GetSimVarValue('L:A32NX_LGCIU_2_FAULT', 'bool') > 0);
     this.lgciu1DiscreteWord1.setFromSimVar('L:A32NX_LGCIU_1_DISCRETE_WORD_1');
     this.lgciu2DiscreteWord1.setFromSimVar('L:A32NX_LGCIU_2_DISCRETE_WORD_1');
     this.lgciu1DiscreteWord2.setFromSimVar('L:A32NX_LGCIU_1_DISCRETE_WORD_2');
@@ -3369,7 +3374,7 @@ export class FwsCore {
     this.configParkBrakeOn.set(
       this.confingParkBrakeOnMemoryNode.write(phase3 && parkBrakeSet, !parkBrakeSet || phase6),
     );
-    this.nwSteeringDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool'));
+    this.nwSteeringDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool') > 0);
     const leftCompressedHardwireLgciu1 =
       this.dcESSBusPowered.get() && SimVar.GetSimVarValue('L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED', 'bool') > 0;
     const leftCompressedHardwireLgciu2 =
@@ -3762,7 +3767,7 @@ export class FwsCore {
     this.fms1Fault.set(this.fmcAFault.get() && this.fmcCFault.get());
     this.fms2Fault.set(this.fmcBFault.get() && this.fmcCFault.get());
 
-    this.flap3LandingSelected.set(SimVar.GetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'bool'));
+    this.flap3LandingSelected.set(SimVar.GetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'bool') > 0);
 
     /* 21 - AIR CONDITIONING AND PRESSURIZATION */
 
@@ -3963,9 +3968,9 @@ export class FwsCore {
         this.phase8ConfirmationNode180.read(),
     );
 
-    this.ramAirOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_RAM_AIR_PB_IS_ON', 'bool'));
+    this.ramAirOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_RAM_AIR_PB_IS_ON', 'bool') > 0);
 
-    this.cabinAirExtractOn.set(SimVar.GetSimVarValue('L:A32NX_VENT_OVERPRESSURE_RELIEF_VALVE_IS_OPEN', 'bool'));
+    this.cabinAirExtractOn.set(SimVar.GetSimVarValue('L:A32NX_VENT_OVERPRESSURE_RELIEF_VALVE_IS_OPEN', 'bool') > 0);
 
     const fan1Fault = vcsDiscreteWordToUse.bitValueOr(18, false);
     const fan2Fault = vcsDiscreteWordToUse.bitValueOr(19, false);
@@ -4010,8 +4015,8 @@ export class FwsCore {
     this.bulkIsolValveOpen.set(vcsDiscreteWordToUse.bitValueOr(16, false));
     this.bulkIsolValveFault.set(vcsDiscreteWordToUse.bitValueOr(24, false));
 
-    this.fwdIsolValvePbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_CARGO_AIR_ISOL_VALVES_FWD_PB_IS_ON', 'bool'));
-    this.bulkIsolValvePbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_CARGO_AIR_ISOL_VALVES_BULK_PB_IS_ON', 'bool'));
+    this.fwdIsolValvePbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_CARGO_AIR_ISOL_VALVES_FWD_PB_IS_ON', 'bool') > 0);
+    this.bulkIsolValvePbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_CARGO_AIR_ISOL_VALVES_BULK_PB_IS_ON', 'bool') > 0);
 
     this.hotAir1Disagrees.set(tcsDiscreteWordToUse.bitValueOr(13, false));
     this.hotAir2Disagrees.set(tcsDiscreteWordToUse.bitValueOr(14, false));
@@ -4019,8 +4024,8 @@ export class FwsCore {
     this.hotAir1Open.set(tcsDiscreteWordToUse.bitValueOr(15, false));
     this.hotAir2Open.set(tcsDiscreteWordToUse.bitValueOr(16, false));
 
-    this.hotAir1PbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_HOT_AIR_1_PB_IS_ON', 'bool'));
-    this.hotAir2PbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_HOT_AIR_2_PB_IS_ON', 'bool'));
+    this.hotAir1PbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_HOT_AIR_1_PB_IS_ON', 'bool') > 0);
+    this.hotAir2PbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_HOT_AIR_2_PB_IS_ON', 'bool') > 0);
 
     const taddChannel1Failure: boolean = SimVar.GetSimVarValue('L:A32NX_COND_TADD_CHANNEL_1_FAILURE', 'bool');
     const taddChannel2Failure: boolean = SimVar.GetSimVarValue('L:A32NX_COND_TADD_CHANNEL_2_FAILURE', 'bool');
@@ -4036,14 +4041,14 @@ export class FwsCore {
           this.fdac2Channel2Failure.get()),
     );
 
-    this.vcmFwdChannel1Failure.set(SimVar.GetSimVarValue('L:A32NX_VENT_FWD_VCM_CHANNEL_1_FAILURE', 'bool'));
-    this.vcmFwdChannel2Failure.set(SimVar.GetSimVarValue('L:A32NX_VENT_FWD_VCM_CHANNEL_2_FAILURE', 'bool'));
+    this.vcmFwdChannel1Failure.set(SimVar.GetSimVarValue('L:A32NX_VENT_FWD_VCM_CHANNEL_1_FAILURE', 'bool') > 0);
+    this.vcmFwdChannel2Failure.set(SimVar.GetSimVarValue('L:A32NX_VENT_FWD_VCM_CHANNEL_2_FAILURE', 'bool') > 0);
 
     this.fwdVentCtl1Fault.set(this.vcmFwdChannel1Failure.get() && this.dc1BusPowered.get());
     this.fwdVentCtl2Fault.set(this.vcmFwdChannel2Failure.get() && this.dcESSBusPowered.get());
 
-    this.vcmAftChannel1Failure.set(SimVar.GetSimVarValue('L:A32NX_VENT_AFT_VCM_CHANNEL_1_FAILURE', 'bool'));
-    this.vcmAftChannel2Failure.set(SimVar.GetSimVarValue('L:A32NX_VENT_AFT_VCM_CHANNEL_2_FAILURE', 'bool'));
+    this.vcmAftChannel1Failure.set(SimVar.GetSimVarValue('L:A32NX_VENT_AFT_VCM_CHANNEL_1_FAILURE', 'bool') > 0);
+    this.vcmAftChannel2Failure.set(SimVar.GetSimVarValue('L:A32NX_VENT_AFT_VCM_CHANNEL_2_FAILURE', 'bool') > 0);
 
     this.aftVentCtl1Fault.set(this.vcmAftChannel1Failure.get() && this.dc2BusPowered.get());
     this.aftVentCtl2Fault.set(this.vcmAftChannel2Failure.get() && this.dcESSBusPowered.get());
@@ -4174,7 +4179,7 @@ export class FwsCore {
       this.ocsm1Failure.get() && this.ocsm2Failure.get() && this.ocsm3Failure.get() && this.ocsm4Failure.get(),
     );
 
-    this.manCabinAltMode.set(!SimVar.GetSimVarValue('L:A32NX_OVHD_PRESS_MAN_ALTITUDE_PB_IS_AUTO', 'bool'));
+    this.manCabinAltMode.set(SimVar.GetSimVarValue('L:A32NX_OVHD_PRESS_MAN_ALTITUDE_PB_IS_AUTO', 'bool') === 0);
 
     if (flightPhase8) {
       this.landingElevation.setFromSimVar('L:A32NX_FM1_LANDING_ELEVATION');
@@ -4237,7 +4242,7 @@ export class FwsCore {
     this.seatBeltSwitchOn.set(SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool') === 1);
     this.ndXfrKnob.set(SimVar.GetSimVarValue('L:A32NX_ECAM_ND_XFR_SWITCHING_KNOB', 'enum'));
     this.noMobileSwitchOn.set(SimVar.GetSimVarValue('L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position', 'number') === 0);
-    this.strobeLightsOn.set(SimVar.GetSimVarValue('L:LIGHTING_STROBE_0', 'Bool'));
+    this.strobeLightsOn.set(SimVar.GetSimVarValue('L:LIGHTING_STROBE_0', 'Bool') > 0);
 
     this.voiceVhf3.set(this.rmp3ActiveMode.get() !== FrequencyMode.Data);
 
@@ -4289,17 +4294,18 @@ export class FwsCore {
     const fcdc1DiscreteWord5 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_1_DISCRETE_WORD_5');
     const fcdc2DiscreteWord5 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_2_DISCRETE_WORD_5');
 
-    this.prim1Healthy.set(SimVar.GetSimVarValue('L:A32NX_PRIM_1_HEALTHY', 'bool'));
-    this.prim2Healthy.set(SimVar.GetSimVarValue('L:A32NX_PRIM_2_HEALTHY', 'bool'));
-    this.prim3Healthy.set(SimVar.GetSimVarValue('L:A32NX_PRIM_3_HEALTHY', 'bool'));
-    this.sec1Healthy.set(SimVar.GetSimVarValue('L:A32NX_SEC_1_HEALTHY', 'bool'));
-    this.sec2Healthy.set(SimVar.GetSimVarValue('L:A32NX_SEC_2_HEALTHY', 'bool'));
-    this.sec3Healthy.set(SimVar.GetSimVarValue('L:A32NX_SEC_3_HEALTHY', 'bool'));
+    //FIXME FCDC should supply PRIM & SEC healthy status
+    this.prim1Healthy.set(SimVar.GetSimVarValue('L:A32NX_PRIM_1_HEALTHY', 'bool') > 0);
+    this.prim2Healthy.set(SimVar.GetSimVarValue('L:A32NX_PRIM_2_HEALTHY', 'bool') > 0);
+    this.prim3Healthy.set(SimVar.GetSimVarValue('L:A32NX_PRIM_3_HEALTHY', 'bool') > 0);
+    this.sec1Healthy.set(SimVar.GetSimVarValue('L:A32NX_SEC_1_HEALTHY', 'bool') > 0);
+    this.sec2Healthy.set(SimVar.GetSimVarValue('L:A32NX_SEC_2_HEALTHY', 'bool') > 0);
+    this.sec3Healthy.set(SimVar.GetSimVarValue('L:A32NX_SEC_3_HEALTHY', 'bool') > 0);
     this.allPrimAndSecFailed.set(
       this.allPrimFailed.get() && !this.sec1Healthy.get() && !this.sec2Healthy.get() && !this.sec3Healthy.get(),
     );
 
-    this.sec1PbOff.set(!SimVar.GetSimVarValue('L:A32NX_SEC_1_PUSHBUTTON_PRESSED', SimVarValueType.Bool));
+    this.sec1PbOff.set(SimVar.GetSimVarValue('L:A32NX_SEC_1_PUSHBUTTON_PRESSED', SimVarValueType.Bool) === 0);
 
     this.sec1FaultCondition.set(
       !(flightPhase112 && this.sec1PbOff.get()) && !this.sec1Healthy.get() && this.dc108PhBusPowered.get(),
@@ -4307,21 +4313,21 @@ export class FwsCore {
     this.sec1OffThenOnPulseNode.write(!this.sec1PbOff.get(), deltaTime);
     this.sec1OffThenOnMemoryNode.write(this.sec1OffThenOnPulseNode.read(), !this.sec1FaultCondition.get());
 
-    this.sec2PbOff.set(!SimVar.GetSimVarValue('L:A32NX_SEC_2_PUSHBUTTON_PRESSED', SimVarValueType.Bool));
+    this.sec2PbOff.set(SimVar.GetSimVarValue('L:A32NX_SEC_2_PUSHBUTTON_PRESSED', SimVarValueType.Bool) === 0);
     this.sec2FaultCondition.set(
       !(flightPhase112 && this.sec2PbOff.get()) && !this.sec2Healthy.get() && this.dc2BusPowered.get(),
     );
     this.sec2OffThenOnPulseNode.write(!this.sec2PbOff.get(), deltaTime);
     this.sec2OffThenOnMemoryNode.write(this.sec2OffThenOnPulseNode.read(), !this.sec2FaultCondition.get());
 
-    this.sec3PbOff.set(!SimVar.GetSimVarValue('L:A32NX_SEC_3_PUSHBUTTON_PRESSED', SimVarValueType.Bool));
+    this.sec3PbOff.set(SimVar.GetSimVarValue('L:A32NX_SEC_3_PUSHBUTTON_PRESSED', SimVarValueType.Bool) === 0);
     this.sec3FaultCondition.set(
       !(flightPhase112 && this.sec3PbOff.get()) && !this.sec3Healthy.get() && this.dc1BusPowered.get(),
     );
     this.sec3OffThenOnPulseNode.write(!this.sec3PbOff.get(), deltaTime);
     this.sec3OffThenOnMemoryNode.write(this.sec3OffThenOnPulseNode.read(), !this.sec3FaultCondition.get());
 
-    this.prim1PbOff.set(!SimVar.GetSimVarValue('L:A32NX_PRIM_1_PUSHBUTTON_PRESSED', SimVarValueType.Bool));
+    this.prim1PbOff.set(SimVar.GetSimVarValue('L:A32NX_PRIM_1_PUSHBUTTON_PRESSED', SimVarValueType.Bool) === 0);
 
     this.prim1FaultCondition.set(
       !(flightPhase112 && this.prim1PbOff.get()) && !this.prim1Healthy.get() && this.dc108PhBusPowered.get(),
@@ -4329,14 +4335,14 @@ export class FwsCore {
     this.prim1OffThenOnPulseNode.write(!this.prim1PbOff.get(), deltaTime);
     this.prim1OffThenOnMemoryNode.write(this.prim1OffThenOnPulseNode.read(), !this.prim1FaultCondition.get());
 
-    this.prim2PbOff.set(!SimVar.GetSimVarValue('L:A32NX_PRIM_2_PUSHBUTTON_PRESSED', SimVarValueType.Bool));
+    this.prim2PbOff.set(SimVar.GetSimVarValue('L:A32NX_PRIM_2_PUSHBUTTON_PRESSED', SimVarValueType.Bool) === 0);
     this.prim2FaultCondition.set(
       !(flightPhase112 && this.prim2PbOff.get()) && !this.prim2Healthy.get() && this.dc2BusPowered.get(),
     );
     this.prim2OffThenOnPulseNode.write(!this.prim2PbOff.get(), deltaTime);
     this.prim2OffThenOnMemoryNode.write(this.prim2OffThenOnPulseNode.read(), !this.prim2FaultCondition.get());
 
-    this.prim3PbOff.set(!SimVar.GetSimVarValue('L:A32NX_PRIM_3_PUSHBUTTON_PRESSED', SimVarValueType.Bool));
+    this.prim3PbOff.set(SimVar.GetSimVarValue('L:A32NX_PRIM_3_PUSHBUTTON_PRESSED', SimVarValueType.Bool) === 0);
     this.prim3FaultCondition.set(
       !(flightPhase112 && this.prim3PbOff.get()) && !this.prim3Healthy.get() && this.dc1BusPowered.get(),
     );
@@ -4713,12 +4719,12 @@ export class FwsCore {
     this.lgLeverRedArrow.set(redArrow);
 
     // 34 - Surveillance Logic
-    this.tawsFlapModeOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_FLAPS_OFF', 'Bool'));
-    this.tawsTerrOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_TERR_OFF', 'Bool'));
-    this.tawsGsOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_GS_OFF', 'Bool'));
-    this.tawsGpwsOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_SYS_OFF', 'Bool'));
-    this.gpws1Failed.set(SimVar.GetSimVarValue('L:A32NX_GPWS_1_FAILED', 'Bool'));
-    this.gpws2Failed.set(SimVar.GetSimVarValue('L:A32NX_GPWS_2_FAILED', 'Bool'));
+    this.tawsFlapModeOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_FLAPS_OFF', 'Bool') > 0);
+    this.tawsTerrOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_TERR_OFF', 'Bool') > 0);
+    this.tawsGsOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_GS_OFF', 'Bool') > 0);
+    this.tawsGpwsOff.set(SimVar.GetSimVarValue('L:A32NX_GPWS_SYS_OFF', 'Bool') > 0);
+    this.gpws1Failed.set(SimVar.GetSimVarValue('L:A32NX_GPWS_1_FAILED', 'Bool') > 0);
+    this.gpws2Failed.set(SimVar.GetSimVarValue('L:A32NX_GPWS_2_FAILED', 'Bool') > 0);
     this.allGpwsFailed.set(this.gpws1Failed.get() && this.gpws2Failed.get());
 
     // fix me check for fault condition when implemented
@@ -4730,8 +4736,8 @@ export class FwsCore {
         : transponder1State === 5 || transponder1State === 4,
     ); // mode S or mode C
 
-    this.tcasInop.set(SimVar.GetSimVarValue('L:A32NX_TCAS_FAULT', 'bool'));
-    const tcasFaulty = SimVar.GetSimVarValue('L:A32NX_TCAS_FAULT', 'bool');
+    this.tcasInop.set(SimVar.GetSimVarValue('L:A32NX_TCAS_FAULT', 'bool') > 0);
+    const tcasFaulty = this.tcasInop.get();
     const tcasMode = SimVar.GetSimVarValue('L:A32NX_TCAS_MODE', 'Enum');
 
     this.tcasTaOnly.set(tcasMode === 1);
@@ -4852,21 +4858,21 @@ export class FwsCore {
     this.apuFireDetConfNode.write(this.apuLoopAFault.get() && this.apuLoopBFault.get(), deltaTime);
     this.apuFireDetFault.set(this.apuFireDetConfNode.read());
 
-    this.apuAgentDischarged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_1_APU_1_IS_DISCHARGED', 'bool'));
-    this.eng1Agent1Discharged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_1_ENG_1_IS_DISCHARGED', 'bool'));
-    this.eng1Agent2Discharged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_2_ENG_1_IS_DISCHARGED', 'bool'));
-    this.eng2Agent1Discharged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_1_ENG_2_IS_DISCHARGED', 'bool'));
-    this.eng2Agent2Discharged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_2_ENG_2_IS_DISCHARGED', 'bool'));
-    this.eng3Agent1Discharged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_1_ENG_3_IS_DISCHARGED', 'bool'));
-    this.eng3Agent2Discharged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_2_ENG_3_IS_DISCHARGED', 'bool'));
-    this.eng4Agent1Discharged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_1_ENG_4_IS_DISCHARGED', 'bool'));
-    this.eng4Agent2Discharged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_2_ENG_4_IS_DISCHARGED', 'bool'));
+    this.apuAgentDischarged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_1_APU_1_IS_DISCHARGED', 'bool') > 0);
+    this.eng1Agent1Discharged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_1_ENG_1_IS_DISCHARGED', 'bool') > 0);
+    this.eng1Agent2Discharged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_2_ENG_1_IS_DISCHARGED', 'bool') > 0);
+    this.eng2Agent1Discharged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_1_ENG_2_IS_DISCHARGED', 'bool') > 0);
+    this.eng2Agent2Discharged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_2_ENG_2_IS_DISCHARGED', 'bool') > 0);
+    this.eng3Agent1Discharged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_1_ENG_3_IS_DISCHARGED', 'bool') > 0);
+    this.eng3Agent2Discharged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_2_ENG_3_IS_DISCHARGED', 'bool') > 0);
+    this.eng4Agent1Discharged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_1_ENG_4_IS_DISCHARGED', 'bool') > 0);
+    this.eng4Agent2Discharged.set(SimVar.GetSimVarValue('L:A32NX_FIRE_SQUIB_2_ENG_4_IS_DISCHARGED', 'bool') > 0);
 
-    this.fireButtonEng1.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_ENG1', 'bool'));
-    this.fireButtonEng2.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_ENG2', 'bool'));
-    this.fireButtonEng3.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_ENG3', 'bool'));
-    this.fireButtonEng4.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_ENG4', 'bool'));
-    this.fireButtonAPU.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_APU', 'bool'));
+    this.fireButtonEng1.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_ENG1', 'bool') > 0);
+    this.fireButtonEng2.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_ENG2', 'bool') > 0);
+    this.fireButtonEng3.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_ENG3', 'bool') > 0);
+    this.fireButtonEng4.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_ENG4', 'bool') > 0);
+    this.fireButtonAPU.set(SimVar.GetSimVarValue('L:A32NX_FIRE_BUTTON_APU', 'bool') > 0);
     this.allFireButtons.set(
       this.fireButtonEng1.get() &&
         this.fireButtonEng2.get() &&
@@ -4932,16 +4938,16 @@ export class FwsCore {
         this.eng4Agent1Discharged.get(),
     );
 
-    this.evacCommand.set(SimVar.GetSimVarValue('L:A32NX_EVAC_COMMAND_TOGGLE', 'bool'));
+    this.evacCommand.set(SimVar.GetSimVarValue('L:A32NX_EVAC_COMMAND_TOGGLE', 'bool') > 0);
 
-    this.cargoFireTest.set(SimVar.GetSimVarValue('L:A32NX_FIRE_TEST_CARGO', 'bool'));
-    this.cargoFireAgentDisch.set(SimVar.GetSimVarValue('L:A32NX_CARGOSMOKE_FWD_DISCHARGED', 'bool'));
+    this.cargoFireTest.set(SimVar.GetSimVarValue('L:A32NX_FIRE_TEST_CARGO', 'bool') > 0);
+    this.cargoFireAgentDisch.set(SimVar.GetSimVarValue('L:A32NX_CARGOSMOKE_FWD_DISCHARGED', 'bool') > 0);
 
-    this.fireTestPb.set(SimVar.GetSimVarValue('L:A32NX_OVHD_FIRE_TEST_PB_IS_PRESSED', 'bool'));
+    this.fireTestPb.set(SimVar.GetSimVarValue('L:A32NX_OVHD_FIRE_TEST_PB_IS_PRESSED', 'bool') > 0);
 
     /* 42 AVIONICS NETWORK */
-    this.cpiomC1Available.set(SimVar.GetSimVarValue('L:A32NX_CPIOM_C1_AVAIL', 'bool'));
-    this.cpiomC2Available.set(SimVar.GetSimVarValue('L:A32NX_CPIOM_C2_AVAIL', 'bool'));
+    this.cpiomC1Available.set(SimVar.GetSimVarValue('L:A32NX_CPIOM_C1_AVAIL', 'bool') > 0);
+    this.cpiomC2Available.set(SimVar.GetSimVarValue('L:A32NX_CPIOM_C2_AVAIL', 'bool') > 0);
 
     /* ANTI ICE */
 
@@ -4975,7 +4981,7 @@ export class FwsCore {
     );
 
     /* OXYGEN */
-    this.paxOxyMasksDeployed.set(SimVar.GetSimVarValue('L:A32NX_OXYGEN_MASKS_DEPLOYED', 'Bool'));
+    this.paxOxyMasksDeployed.set(SimVar.GetSimVarValue('L:A32NX_OXYGEN_MASKS_DEPLOYED', 'Bool') > 0);
 
     /* DOOR */
     this.cockpitWindowOpen.set(
@@ -4993,15 +4999,6 @@ export class FwsCore {
     this.main4ROpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:7', 'percent') > 0);
     this.main5LOpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:8', 'percent') > 0);
     this.main5ROpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:9', 'percent') > 0);
-
-    /* CABIN READY */
-
-    const callPushAft = SimVar.GetSimVarValue('L:PUSH_OVHD_CALLS_AFT', 'bool');
-    const callPushAll = SimVar.GetSimVarValue('L:PUSH_OVHD_CALLS_ALL', 'bool');
-    const callPushFwd = SimVar.GetSimVarValue('L:PUSH_OVHD_CALLS_FWD', 'bool');
-    if (callPushAft || callPushAll || callPushFwd) {
-      SimVar.SetSimVarValue('L:A32NX_CABIN_READY', 'bool', 1);
-    }
 
     /** ATA 70- Engines */
 
@@ -5170,7 +5167,6 @@ export class FwsCore {
       const catering = SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:3', 'percent');
       const cargofwdLocked = SimVar.GetSimVarValue('L:A32NX_FWD_DOOR_CARGO_LOCKED', 'bool');
       const cargoaftLocked = SimVar.GetSimVarValue('L:A32NX_AFT_DOOR_CARGO_LOCKED', 'bool');
-      const brakesHot = SimVar.GetSimVarValue('L:A32NX_BRAKES_HOT', 'bool');
 
       const speeds = !toSpeedsTooLow && !toV2VRV2Disagree && !fmToSpeedsNotInserted;
       const doors = !!(cabin === 0 && catering === 0 && cargoaftLocked && cargofwdLocked);
