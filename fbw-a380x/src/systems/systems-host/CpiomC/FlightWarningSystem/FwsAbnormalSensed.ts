@@ -1855,7 +1855,7 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [
         this.fws.fireButtonAPU.get(),
         this.fws.apuAgentDischarged.get(),
-        this.fws.apuMasterSwitch.get() === 0,
+        !this.fws.apuMasterSwitch.get(),
       ],
       whichItemsTimer: () => [undefined, this.fws.apuFireAgent1Discharge10SecondsTimestamp.get(), undefined],
       failure: 3,
@@ -2413,7 +2413,7 @@ export class FwsAbnormalSensed {
         false,
         false,
         !this.fws.evacCommand.get(),
-        this.fws.apuMasterSwitch.get() === 0,
+        !this.fws.apuMasterSwitch.get(),
         this.fws.allBatteriesOff.get(),
         false,
         false,

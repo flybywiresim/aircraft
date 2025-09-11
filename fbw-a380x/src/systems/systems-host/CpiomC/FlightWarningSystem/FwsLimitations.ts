@@ -26,13 +26,14 @@ export class FwsLimitations {
   public readonly subscriptions: Subscription[] = [];
 
   private readonly forLandingFlapLever3 = MappedSubject.create(
-    ([onGround, twoEnginesOutOnOppositeSide, twoEnginesOutOnSameSide, gySysLoPress]) => {
-      return !onGround && (twoEnginesOutOnOppositeSide || twoEnginesOutOnSameSide || gySysLoPress);
+    ([onGround, twoEnginesOutOnOppositeSide, twoEnginesOutOnSameSide, gySysLoPress, allEnginesOut]) => {
+      return !onGround && (twoEnginesOutOnOppositeSide || twoEnginesOutOnSameSide || gySysLoPress || allEnginesOut);
     },
     this.fws.aircraftOnGround,
     this.fws.twoEnginesOutOnOppositeSide,
     this.fws.twoEnginesOutOnSameSide,
     this.fws.greenYellowAbnormLoPressure,
+    this.fws.allEnginesFailure,
   );
 
   constructor(private fws: FwsCore) {}
