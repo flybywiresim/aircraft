@@ -5022,7 +5022,7 @@ export class FwsCore {
       this.engine2masterOnPulseNode.write(this.engine2Master.get(), deltaTime),
     );
     this.eng3NotStartingConfNode.write(
-      this.engine3Master.get() && this.engine3State.get() !== engineState.STARTING,
+      this.engine3Master.get() && this.engine3State.get() !== engineState.STARTING && this.engine3Running.get(),
       deltaTime,
     );
     this.eng3WasRunningMemoryNode.write(
@@ -5030,7 +5030,7 @@ export class FwsCore {
       this.engine3masterOnPulseNode.write(this.engine3Master.get(), deltaTime),
     );
     this.eng4NotStartingConfNode.write(
-      this.engine4Master.get() && this.engine4State.get() !== engineState.STARTING,
+      this.engine4Master.get() && this.engine4State.get() !== engineState.STARTING && this.engine4Running.get(),
       deltaTime,
     );
     this.eng4WasRunningMemoryNode.write(
