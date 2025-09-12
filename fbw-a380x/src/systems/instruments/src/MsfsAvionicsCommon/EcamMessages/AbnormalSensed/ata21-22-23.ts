@@ -216,8 +216,8 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
         sensed: false,
       },
       {
-        name: 'MAX FL : 100/MEA',
-        sensed: true,
+        name: 'MAX FL : 100/MEA-MORA',
+        sensed: false,
         style: ChecklistLineStyle.Cyan,
       },
       //Otherwise
@@ -234,7 +234,7 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
       // If there is pack overheat
       {
         name: 'PACK OVHT OUT',
-        sensed: true,
+        sensed: false,
         condition: true,
       },
       {
@@ -280,11 +280,10 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
       // In flight, if below FL 100
       {
         name: 'MAX FL : 100/MEA-MORA',
-        sensed: true,
-        style: ChecklistLineStyle.Cyan,
+        sensed: false,
       },
       {
-        name: 'RAM AIR:',
+        name: 'RAM AIR',
         sensed: true,
         labelNotCompleted: 'ON',
       },

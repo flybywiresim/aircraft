@@ -140,7 +140,7 @@
                 <LEFT_LEAVE_CODE>
                     0 (&gt;L:#SIMVAR#)
                 </LEFT_LEAVE_CODE>
-                <SEQ2_EMISSIVE_CODE>(L:A32NX_ECAM_FAILURE_ACTIVE) (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ2_POWERED# and</SEQ2_EMISSIVE_CODE>
+                <SEQ2_EMISSIVE_CODE>(L:A32NX_ECAM_CLEAR_LIGHT) (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ2_POWERED# and</SEQ2_EMISSIVE_CODE>
             </UseTemplate>
         </Component>
     </Template>

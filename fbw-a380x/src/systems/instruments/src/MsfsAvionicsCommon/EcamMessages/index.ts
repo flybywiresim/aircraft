@@ -22,7 +22,10 @@ import {
 import { EcamAbnormalSensedAta34 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata34';
 import { EcamAbnormalSensedAta353642 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata35-36-42';
 import { EcamAbnormalSensedAta46495256 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata46-49-52-56';
-import { EcamAbnormalSensedAta70 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata70';
+import {
+  EcamAbnormalSensedAta70,
+  EcamDeferredProcAta70,
+} from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata70';
 import { EcamAbnormalSensedAta80Rest } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata80-rest';
 import { EcamAbnormalSecondaryFailures } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/secondary-failures';
 import { AbnormalNonSensedCategory } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
@@ -198,7 +201,6 @@ export const EcamInfos: { [n: string]: string } = {
   220200013: '\x1b<3mAUTOLAND : RECOMMENDED',
   230200001: '\x1b<3mSATCOM DATALINK AVAIL',
   260200001: '\x1b<3mBEFORE CARGO OPENING : PAX DISEMBARK',
-  270200001: '\x1b<3mON DRY RWY ONLY : LDG DIST AFFECTED < 15%',
   270200002: '\x1bGND SPLRs WILL EXTEND AT REV SELECTION',
   270200003: '\x1bF/CTL BKUP CTL ACTIVE',
   320200001: '\x1b<3mALTN BRK WITH A-SKID',
@@ -398,6 +400,10 @@ export const EcamInopSys: { [n: string]: string } = {
   240300036: '\x1b<4mTR ESS',
   240300037: '\x1b<4mGEN 1+2',
   240300038: '\x1b<4mGEN 3+4',
+  240300039: '\x1b<4mGEN 1+3',
+  240300040: '\x1b<4mGEN 2+4',
+  240300041: '\x1b<4mGEN 1+4',
+  240300042: '\x1b<4mGEN 2+3',
   260300001: '\x1b<4mAPU FIRE DET',
   260300002: '\x1b<4mENG 1 BLEED',
   260300003: '\x1b<4mENG 2 BLEED',
@@ -773,6 +779,7 @@ export const EcamDeferredProcedures: { [n: string]: DeferredProcedure } = {
   ...EcamDeferredProcAta212223,
   ...EcamDeferredProcAta27,
   ...EcamDeferredProcAta313233,
+  ...EcamDeferredProcAta70,
 };
 
 /** Used for one common representation of data defining the visual appearance of ECAM lines on the WD (for the ECL part) */
@@ -798,9 +805,3 @@ export enum WdSpecialLine {
   Empty,
   SeparationLine,
 }
-
-export const FMS_PRED_UNRELIABLE_CHECKLIST_ITEM: ChecklistSpecialItem = {
-  name: 'FMS PRED UNRELIABLE', // TODO Replace with FMS PRED UNRELIABLE WITHOUT ACCURATE FMS FUEL PENALTY INSERTION once multiple lines supported
-  sensed: false,
-  style: ChecklistLineStyle.ChecklistCondition,
-};

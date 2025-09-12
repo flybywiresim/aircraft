@@ -1,7 +1,20 @@
 ﻿// Copyright (c) 2024-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { AbnormalProcedure } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import {
+  AbnormalProcedure,
+  ChecklistLineStyle,
+  DeferredProcedure,
+  DeferredProcedureType,
+} from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import {
+  FLAPS_SLOW_CHECKLIST_ITEM,
+  FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
+  FUEL_CONSUMPT_INCRSD_CHECKLIST_ITEM,
+  LDG_PERF_AFFECTED_CHECKLIST_ITEM,
+  SLATS_SLOW_CHECKLIST_ITEM,
+  STEER_ENDURANCE_LIMITED_CHECKLIST_ITEM,
+} from '../CommonChecklistItems';
 
 // Convention for IDs:
 // First two digits: ATA chapter
@@ -971,14 +984,32 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   701800159: {
-    title: "\x1b<4m\x1b4mENG\x1bm \x1b'mTWO ENG OUT ON SAME SIDE\x1bm",
+    title: "\x1b<4m\x1b4mENG\x1bm \x1b'mTWO ENG OUT ON SAME SIDE \x1Bm",
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'PACK 1',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'PACK 2',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      { ...FUEL_CONSUMPT_INCRSD_CHECKLIST_ITEM },
+      { ...FMS_PRED_UNRELIABLE_CHECKLIST_ITEM },
+      {
+        ...STEER_ENDURANCE_LIMITED_CHECKLIST_ITEM,
+      },
+    ],
+    recommendation: 'LAND ANSA',
   },
   701800160: {
-    title: "\x1b<4m\x1b4mENG\x1bm \x1b'mTWO ENG OUT ON OPPOSITE SIDE\x1bm",
+    title: "\x1b<4m\x1b4mENG\x1bm \x1b'mTWO ENG OUT ON OPPOSITE SIDE \x1Bm",
     sensed: true,
-    items: [],
+    items: [{ ...LDG_PERF_AFFECTED_CHECKLIST_ITEM }],
+    recommendation: 'LAND ANSA',
   },
   701800161: {
     title: '\x1b<4m\x1b4mENG\x1bm TYPE DISAGREE',
@@ -994,5 +1025,155 @@ export const EcamAbnormalSensedAta70: { [n: number]: AbnormalProcedure } = {
     title: '\x1b<4m\x1b4mENG\x1bm TAIL PIPE FIRE (WIP)',
     sensed: false,
     items: [], // TODO
+  },
+};
+
+export const EcamDeferredProcAta70: { [n: number]: DeferredProcedure } = {
+  700700001: {
+    fromAbnormalProcs: ['701800159', '701800160'],
+    title: 'LANDING WITH TWO ENGS OUT',
+    type: DeferredProcedureType.FOR_LANDING,
+    items: [
+      {
+        name: 'DISREGARD NORM APPR & LDG C/Ls',
+        sensed: false,
+      },
+      {
+        name: 'LONG APPROACH',
+        sensed: false,
+        labelNotCompleted: 'PLAN',
+      },
+      { ...FLAPS_SLOW_CHECKLIST_ITEM },
+      { ...SLATS_SLOW_CHECKLIST_ITEM },
+      {
+        name: 'BARO REF',
+        sensed: false,
+        labelNotCompleted: 'SET',
+      },
+      {
+        name: 'MINIMUM',
+        sensed: false,
+        labelNotCompleted: 'SET',
+      },
+      {
+        name: 'CABIN CREW',
+        sensed: false,
+        labelNotCompleted: 'ADVISE',
+      },
+      {
+        name: 'AUTO BRK',
+        sensed: false,
+        labelNotCompleted: 'AS RQRD',
+      },
+      {
+        name: 'SIGNS',
+        sensed: true,
+        labelNotCompleted: 'ON',
+      },
+      {
+        name: 'INITIAL APPROACH',
+        sensed: true,
+        style: ChecklistLineStyle.CenteredSubHeadline,
+      },
+      {
+        name: 'FLAP LVR',
+        sensed: true,
+        labelNotCompleted: 'CONF 1',
+      },
+      {
+        name: 'L/G LEVER',
+        sensed: true,
+        labelNotCompleted: 'DOWN',
+      },
+      {
+        name: 'GA PERF MAY NOT BE ACHIEVED WITH L/G DN',
+        sensed: false,
+        style: ChecklistLineStyle.Green,
+      },
+      {
+        name: 'FOR L/G EXTN',
+        sensed: true,
+        style: ChecklistLineStyle.CenteredSubHeadline,
+      },
+      {
+        name: 'FOR L/G GRVTY EXTN : MAX SPD 220 KT',
+        sensed: false,
+      },
+      {
+        name: 'L/G LEVER',
+        sensed: true,
+        labelNotCompleted: 'UP',
+      },
+      {
+        name: 'L/G GRVTY (EXTN MAX 2 MIN)',
+        sensed: true,
+        labelNotCompleted: 'DOWN',
+      },
+      {
+        name: 'WHEN L/G LOCKED DOWN OR AFTER 120S',
+        condition: true,
+        sensed: false,
+      },
+      {
+        name: 'L/G LEVER',
+        sensed: true,
+        labelNotCompleted: 'DOWN',
+        level: 1,
+      },
+      {
+        name: 'INTERCEPTING G/S',
+        sensed: true,
+        style: ChecklistLineStyle.CenteredSubHeadline,
+      },
+      {
+        name: 'FLAP LVR',
+        sensed: true,
+        labelNotCompleted: 'CONF 2',
+      },
+      {
+        name: 'PACK 1+2',
+        sensed: true,
+        labelNotCompleted: 'OFF OR ON APU BLEED',
+      },
+      {
+        name: 'FINAL APPROACH',
+        sensed: true,
+        style: ChecklistLineStyle.CenteredSubHeadline,
+      },
+      {
+        name: 'FLAP LVR',
+        sensed: true,
+        labelNotCompleted: 'CONF 3',
+      },
+      {
+        name: 'ATHR',
+        sensed: true,
+        labelNotCompleted: 'OFF',
+      },
+      {
+        name: 'GND SPLRs',
+        sensed: true,
+        labelNotCompleted: 'ARM',
+      },
+      {
+        name: 'FOR GO AROUND : FLAP LVR 1',
+        sensed: false,
+        style: ChecklistLineStyle.Green,
+      },
+      {
+        name: 'AT COMMIT ALTITUDE (500 FT AGL) ',
+        sensed: true,
+        style: ChecklistLineStyle.CenteredSubHeadline,
+      },
+      {
+        name: 'SPEED',
+        sensed: false,
+        labelNotCompleted: 'REDUCE TO VAPP',
+      },
+      {
+        name: 'DO NOT ATTEMPT GO AROUND',
+        sensed: false,
+      },
+    ],
   },
 };
