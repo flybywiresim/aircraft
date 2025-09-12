@@ -39,13 +39,13 @@ export interface CpiomData extends BaseCpiomData, CpiomIndexedEvents {}
 /** A publisher to poll and publish nav/com simvars. */
 export class CpiomDataPublisher extends SimVarPublisher<CpiomData> {
   private static simvars = new Map<keyof CpiomData, SimVarPublisherEntry<any>>([
-    ['cpiom_a_available', { name: 'L:A32NX_CPIOM_A#index#_AVAIL', type: SimVarValueType.Number, indexed: [1, 2] }],
-    ['cpiom_b_available', { name: 'L:A32NX_CPIOM_B#index#_AVAIL', type: SimVarValueType.Number, indexed: [1, 2] }],
-    ['cpiom_c_available', { name: 'L:A32NX_CPIOM_C#index#_AVAIL', type: SimVarValueType.Number, indexed: [1, 2] }],
-    ['cpiom_d_available', { name: 'L:A32NX_CPIOM_D#index#_AVAIL', type: SimVarValueType.Number, indexed: [1, 2] }],
-    ['cpiom_e_available', { name: 'L:A32NX_CPIOM_E#index#_AVAIL', type: SimVarValueType.Number, indexed: [1, 2] }],
-    ['cpiom_f_available', { name: 'L:A32NX_CPIOM_F#index#_AVAIL', type: SimVarValueType.Number, indexed: [1, 2] }],
-    ['cpiom_g_available', { name: 'L:A32NX_CPIOM_G#index#_AVAIL', type: SimVarValueType.Number, indexed: [1, 2] }],
+    ['cpiom_a_available', { name: 'L:A32NX_CPIOM_A#index#_AVAIL', type: SimVarValueType.Bool, indexed: true }],
+    ['cpiom_b_available', { name: 'L:A32NX_CPIOM_B#index#_AVAIL', type: SimVarValueType.Bool, indexed: true }],
+    ['cpiom_c_available', { name: 'L:A32NX_CPIOM_C#index#_AVAIL', type: SimVarValueType.Bool, indexed: true }],
+    ['cpiom_d_available', { name: 'L:A32NX_CPIOM_D#index#_AVAIL', type: SimVarValueType.Bool, indexed: true }],
+    ['cpiom_e_available', { name: 'L:A32NX_CPIOM_E#index#_AVAIL', type: SimVarValueType.Bool, indexed: true }],
+    ['cpiom_f_available', { name: 'L:A32NX_CPIOM_F#index#_AVAIL', type: SimVarValueType.Bool, indexed: true }],
+    ['cpiom_g_available', { name: 'L:A32NX_CPIOM_G#index#_AVAIL', type: SimVarValueType.Bool, indexed: true }],
   ]);
 
   public constructor(bus: EventBus) {

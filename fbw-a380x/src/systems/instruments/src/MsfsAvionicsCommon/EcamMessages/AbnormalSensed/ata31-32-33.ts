@@ -126,7 +126,7 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   314800002: {
-    title: '\x1b<4m\x1b4mCDS\x1bm FWS 1+2 & CPIOM FAULT',
+    title: '\x1b<4m\x1b4mFWS\x1bm FWS 1+2 & CPIOM FAULT',
     sensed: true,
     items: [
       {
@@ -224,18 +224,8 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
         sensed: true,
       },
       {
-        name: '\xa0', // BLANK LINE
-        sensed: true,
-        style: ChecklistLineStyle.Empty,
-      },
-      {
         name: 'LDG DIST: COMPUTE',
         sensed: true,
-      },
-      {
-        name: '\xa0', // BLANK LINE
-        sensed: true,
-        style: ChecklistLineStyle.Empty,
       },
       {
         name: 'ECAM SD & OVHD PNL',
@@ -313,7 +303,7 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
     ],
   },
   314800003: {
-    title: '\x1b<4m\x1b4mCDS\x1bm FWS 1+2 & FCDC 1+2 FAULT',
+    title: '\x1b<4m\x1b4mFWS\x1bm FWS 1+2 & FCDC 1+2 FAULT',
     sensed: true,
     items: [
       {

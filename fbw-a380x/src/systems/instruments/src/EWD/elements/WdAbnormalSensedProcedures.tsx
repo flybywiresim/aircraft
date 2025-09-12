@@ -23,18 +23,26 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
 
   private readonly cpiomA1Available = ConsumerSubject.create(this.sub.on('cpiom_a_available_1'), false);
   private readonly cpiomA2Available = ConsumerSubject.create(this.sub.on('cpiom_a_available_2'), false);
+  private readonly cpiomA3Available = ConsumerSubject.create(this.sub.on('cpiom_a_available_3'), false);
+  private readonly cpiomA4Available = ConsumerSubject.create(this.sub.on('cpiom_a_available_4'), false);
   private readonly cpiomAFailed = MappedSubject.create(
     SubscribableMapFunctions.nor(),
     this.cpiomA1Available,
     this.cpiomA2Available,
+    this.cpiomA3Available,
+    this.cpiomA4Available,
   );
 
   private readonly cpiomB1Available = ConsumerSubject.create(this.sub.on('cpiom_b_available_1'), false);
   private readonly cpiomB2Available = ConsumerSubject.create(this.sub.on('cpiom_b_available_2'), false);
+  private readonly cpiomB3Available = ConsumerSubject.create(this.sub.on('cpiom_b_available_3'), false);
+  private readonly cpiomB4Available = ConsumerSubject.create(this.sub.on('cpiom_b_available_4'), false);
   private readonly cpiomBFailed = MappedSubject.create(
     SubscribableMapFunctions.nor(),
     this.cpiomB1Available,
     this.cpiomB2Available,
+    this.cpiomB3Available,
+    this.cpiomB4Available,
   );
 
   private readonly cpiomC1Available = ConsumerSubject.create(this.sub.on('cpiom_c_available_1'), false);
@@ -46,11 +54,11 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
   );
 
   private readonly cpiomD1Available = ConsumerSubject.create(this.sub.on('cpiom_d_available_1'), false);
-  private readonly cpiomD2Available = ConsumerSubject.create(this.sub.on('cpiom_d_available_2'), false);
+  private readonly cpiomD3Available = ConsumerSubject.create(this.sub.on('cpiom_d_available_3'), false);
   private readonly cpiomDFailed = MappedSubject.create(
     SubscribableMapFunctions.nor(),
     this.cpiomD1Available,
-    this.cpiomD2Available,
+    this.cpiomD3Available,
   );
 
   private readonly cpiomE1Available = ConsumerSubject.create(this.sub.on('cpiom_e_available_1'), false);
@@ -63,27 +71,36 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
 
   private readonly cpiomF1Available = ConsumerSubject.create(this.sub.on('cpiom_f_available_1'), false);
   private readonly cpiomF2Available = ConsumerSubject.create(this.sub.on('cpiom_f_available_2'), false);
+  private readonly cpiomF3Available = ConsumerSubject.create(this.sub.on('cpiom_f_available_3'), false);
+  private readonly cpiomF4Available = ConsumerSubject.create(this.sub.on('cpiom_f_available_4'), false);
   private readonly cpiomFFailed = MappedSubject.create(
     SubscribableMapFunctions.nor(),
     this.cpiomF1Available,
     this.cpiomF2Available,
+    this.cpiomF3Available,
+    this.cpiomF4Available,
   );
 
-  private readonly cpiomG1Failed = ConsumerSubject.create(this.sub.on('cpiom_g_available_1'), false);
-  private readonly cpiomG2Failed = ConsumerSubject.create(this.sub.on('cpiom_g_available_2'), false);
+  private readonly cpiomG1Available = ConsumerSubject.create(this.sub.on('cpiom_g_available_1'), false);
+  private readonly cpiomG2Available = ConsumerSubject.create(this.sub.on('cpiom_g_available_2'), false);
+  private readonly cpiomG3Available = ConsumerSubject.create(this.sub.on('cpiom_g_available_3'), false);
+  private readonly cpiomG4Available = ConsumerSubject.create(this.sub.on('cpiom_g_available_4'), false);
   private readonly cpiomGFailed = MappedSubject.create(
     SubscribableMapFunctions.nor(),
-    this.cpiomG1Failed,
-    this.cpiomG2Failed,
+    this.cpiomG1Available,
+    this.cpiomG2Available,
+    this.cpiomG3Available,
+    this.cpiomG4Available,
   );
 
   private readonly otherCpiomFailed = MappedSubject.create(
-    SubscribableMapFunctions.nor(),
+    SubscribableMapFunctions.or(),
     this.cpiomAFailed,
     this.cpiomBFailed,
     this.cpiomDFailed,
     this.cpiomEFailed,
     this.cpiomFFailed,
+    this.cpiomGFailed,
   );
 
   private lastProcUpdate: number | null = null;
@@ -120,7 +137,7 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
       // FWS 1+2 & FCDC 1+2 FAULT
       // FWS 1+2 & CPIOM FAULT
       // FWS 1+2 failed, show fallback
-      if (this.props.fwsAvail.get() && this.cpiomCFailed.get() && this.otherCpiomFailed.get()) {
+      if (!this.props.fwsAvail.get() && this.cpiomCFailed.get() && this.otherCpiomFailed.get()) {
         // FWS 1+2 & FCDC 1+2 & other CPIOM failed, show fallback
         // If CPIOM failed: Show line; If not failed: Show blank line before item
         const af = this.cpiomAFailed.get();
@@ -181,14 +198,14 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
         );
         this.lineData.push(...procGenFwsFailedFallback.toLineData());
         // Still TODO: Show LAND ANSA only when group F is failed
-      } else if (this.props.fwsAvail.get() && this.cpiomCFailed.get()) {
+      } else if (!this.props.fwsAvail.get() && this.cpiomCFailed.get()) {
         // FWS 1+2 & FCDC 1+2 failed, show fallback
         const fwsFailedFallbackClState: ChecklistState = {
           id: '314800003',
           procedureActivated: true,
           procedureCompleted: false,
           itemsActive: [true, true, true, true, true, true, true, true, true, true],
-          itemsChecked: [false, false, true, true, true, true, true, true, true, true],
+          itemsChecked: [false, false, false, false, false, false, false, false, false, false],
           itemsToShow: [true, true, true, true, true, true, true, true, true, true],
         };
         const procGenFwsFailedFallback = new ProcedureLinesGenerator(
@@ -205,7 +222,7 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
           procedureActivated: true,
           procedureCompleted: false,
           itemsActive: [true, true, true, true, true, true, true, true, true, true],
-          itemsChecked: [false, false, true, true, true, true, true, true, true, true],
+          itemsChecked: [false, false, false, false, false, false, false, false, false, false],
           itemsToShow: [true, true, true, true, true, true, true, true, true, true],
         };
         const procGenFwsFailedFallback = new ProcedureLinesGenerator(
@@ -227,6 +244,17 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
     this.subscriptions.push(
       this.procedures.sub(() => this.updateChecklists(), true),
       this.activeProcedureId.sub(() => this.updateChecklists(), true),
+      MappedSubject.create(
+        () => this.updateChecklists(),
+        this.cpiomAFailed,
+        this.cpiomBFailed,
+        this.cpiomCFailed,
+        this.cpiomDFailed,
+        this.cpiomEFailed,
+        this.cpiomFFailed,
+        this.cpiomGFailed,
+        this.otherCpiomFailed,
+      ),
     );
 
     if (this.props.fwsAvail) {
@@ -248,22 +276,33 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
       this.activeProcedureId,
       this.cpiomA1Available,
       this.cpiomA2Available,
+      this.cpiomA3Available,
+      this.cpiomA4Available,
       this.cpiomAFailed,
       this.cpiomB1Available,
       this.cpiomB2Available,
+      this.cpiomB3Available,
+      this.cpiomB4Available,
       this.cpiomBFailed,
       this.cpiomC1Available,
       this.cpiomC2Available,
       this.cpiomCFailed,
       this.cpiomD1Available,
-      this.cpiomD2Available,
+      this.cpiomD3Available,
       this.cpiomDFailed,
       this.cpiomE1Available,
       this.cpiomE2Available,
       this.cpiomEFailed,
       this.cpiomF1Available,
       this.cpiomF2Available,
+      this.cpiomF3Available,
+      this.cpiomF4Available,
       this.cpiomFFailed,
+      this.cpiomGFailed,
+      this.cpiomG1Available,
+      this.cpiomG2Available,
+      this.cpiomG3Available,
+      this.cpiomG4Available,
       this.otherCpiomFailed,
       this.timeSub,
     );

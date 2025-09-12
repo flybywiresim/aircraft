@@ -384,7 +384,7 @@ export class ProcedureLinesGenerator {
       this.type === ProcedureType.Abnormal ||
       this.type === ProcedureType.Deferred ||
       this.type === ProcedureType.FwsFailedFallback;
-    const isAbnormal = this.type === ProcedureType.Abnormal;
+    const isAbnormal = this.type === ProcedureType.Abnormal || this.type === ProcedureType.FwsFailedFallback;
     const isAbnormalNotSensed =
       this.type === ProcedureType.Abnormal && EcamAbnormalProcedures[this.procedureId]?.sensed === false;
     const isDeferred = this.type === ProcedureType.Deferred;
@@ -413,7 +413,7 @@ export class ProcedureLinesGenerator {
       });
     }
 
-    if (!isAbnormal || this.procedureIsActive.get()) {
+    if (!isAbnormal || this.procedureIsActive.get() || this.type === ProcedureType.FwsFailedFallback) {
       if (this.recommendation) {
         lineData.push({
           abnormalProcedure: isAbnormalOrDeferred,
@@ -511,7 +511,7 @@ export class ProcedureLinesGenerator {
         }
       });
 
-      if (isAbnormal) {
+      if (isAbnormal && this.type !== ProcedureType.FwsFailedFallback) {
         lineData.push({
           abnormalProcedure: isAbnormalOrDeferred,
           activeProcedure: this.procedureIsActive.get(),
@@ -572,7 +572,7 @@ export class ProcedureLinesGenerator {
           });
         }
       }
-    } else if (this.items.length > 0 && this.type !== ProcedureType.FwsFailedFallback) {
+    } else if (this.items.length > 0) {
       // Only three dots for following procedures
       lineData.push({
         abnormalProcedure: isAbnormalOrDeferred,
