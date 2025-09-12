@@ -8,7 +8,6 @@ import { CDULateralRevisionPage } from './A320_Neo_CDU_LateralRevisionPage';
 import { CDUVerticalRevisionPage } from './A320_Neo_CDU_VerticalRevisionPage';
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
 import { CDUHoldAtPage } from './A320_Neo_CDU_HoldAtPage';
-import { CDUInitPage } from './A320_Neo_CDU_InitPage';
 import { AltitudeDescriptor, NXUnits, WaypointConstraintType } from '@flybywiresim/fbw-sdk';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
@@ -60,6 +59,18 @@ export class CDUFlightPlanPage {
     };
     mcdu.activeSystem = 'FMGC';
 
+    if (forPlan >= FlightPlanIndex.FirstSecondary) {
+      mcdu.efisInterfaces.L.setSecRelatedPageOpen(true);
+      mcdu.efisInterfaces.R.setSecRelatedPageOpen(true);
+      mcdu.onUnload = () => {
+        mcdu.efisInterfaces.L.setSecRelatedPageOpen(false);
+        mcdu.efisInterfaces.R.setSecRelatedPageOpen(false);
+      };
+    } else {
+      mcdu.efisInterfaces.L.setSecRelatedPageOpen(false);
+      mcdu.efisInterfaces.R.setSecRelatedPageOpen(false);
+    }
+
     // regular update due to showing dynamic data on this page
     mcdu.SelfPtr = setTimeout(() => {
       if (mcdu.page.Current === mcdu.page.FlightPlanPage) {
@@ -84,7 +95,7 @@ export class CDUFlightPlanPage {
       title.push(new Column(6, 'TMPY', Column.yellow));
     }
     if (forActiveOrTemporary) {
-      title.push(new Column(20, mcdu.flightNumber ?? '', Column.small, Column.right));
+      title.push(new Column(20, targetPlan.flightNumber ?? '', Column.small, Column.right));
     } else {
       title.push(new Column(16, 'SEC'));
     }
@@ -95,14 +106,12 @@ export class CDUFlightPlanPage {
     let alternateAirportOffset = 0;
 
     // VNAV
-    const fmsGeometryProfile = mcdu.guidanceController.vnavDriver.mcduProfile;
-    const fmsPseudoWaypoints = mcdu.guidanceController.currentPseudoWaypoints;
+    const fmsGeometryProfile = forActiveOrTemporary ? mcdu.guidanceController.vnavDriver.mcduProfile : undefined;
+    const fmsPseudoWaypoints = forActiveOrTemporary ? mcdu.guidanceController.currentPseudoWaypoints : [];
 
-    /** @type {Map<number, VerticalWaypointPrediction>} */
-    let vnavPredictionsMapByWaypoint = null;
-    if (fmsGeometryProfile && fmsGeometryProfile.isReadyToDisplay) {
-      vnavPredictionsMapByWaypoint = fmsGeometryProfile.waypointPredictions;
-    }
+    const vnavPredictionsMapByWaypoint = fmsGeometryProfile?.isReadyToDisplay
+      ? fmsGeometryProfile.waypointPredictions
+      : null;
 
     let cumulativeDistance = 0;
     // Primary F-PLAN
@@ -275,8 +284,6 @@ export class CDUFlightPlanPage {
         isActive,
       } = waypointsAndMarkers[winI];
 
-      const legAccentColor = inAlternate || inMissedApproach ? 'cyan' : planAccentColor;
-
       const wpPrev = inAlternate
         ? targetPlan.alternateFlightPlan.maybeElementAt(fpIndex - 1)
         : targetPlan.maybeElementAt(fpIndex - 1);
@@ -314,6 +321,13 @@ export class CDUFlightPlanPage {
         useTransitionAltitude = winI <= tocIndex;
       } // else we stick with the last time we were sure...
 
+      let color = planAccentColor;
+      if (isActive) {
+        color = 'white';
+      } else if (forActiveOrTemporary && (inMissedApproach || inAlternate)) {
+        color = 'cyan';
+      }
+
       if (wp && wp.isDiscontinuity === false) {
         // Waypoint
         if (offset === 0) {
@@ -328,21 +342,6 @@ export class CDUFlightPlanPage {
         // TODO: Alternate predictions
         if (!inAlternate && vnavPredictionsMapByWaypoint) {
           verticalWaypoint = vnavPredictionsMapByWaypoint.get(fpIndex);
-        }
-
-        // Color
-        let color;
-        if (isActive) {
-          color = 'white';
-        } else {
-          const inMissedApproach =
-            targetPlan.index === FlightPlanIndex.Active && fpIndex >= targetPlan.firstMissedApproachLegIndex;
-
-          if (inMissedApproach || inAlternate) {
-            color = 'cyan';
-          } else {
-            color = planAccentColor;
-          }
         }
 
         // Time
@@ -370,9 +369,9 @@ export class CDUFlightPlanPage {
         let distance = '';
         // Active waypoint is live distance, others are distances in the flight plan
         if (isActive) {
-          if (Number.isFinite(mcdu.guidanceController.activeLegAlongTrackCompletePathDtg)) {
+          if (Number.isFinite(mcdu.guidanceController.activeLegCompleteLegPathDtg)) {
             distance = Math.round(
-              Math.max(0, Math.min(9999, mcdu.guidanceController.activeLegAlongTrackCompletePathDtg)),
+              Math.max(0, Math.min(9999, mcdu.guidanceController.activeLegCompleteLegPathDtg)),
             ).toFixed(0);
           }
         } else {
@@ -393,10 +392,10 @@ export class CDUFlightPlanPage {
 
         if (targetPlan.index !== FlightPlanIndex.Temporary && wp.type !== 'HM') {
           if (!inAlternate && fpIndex === targetPlan.originLegIndex) {
-            speedConstraint = Number.isFinite(mcdu.v1Speed)
-              ? `{big}${Math.round(mcdu.v1Speed)}{end}`
+            speedConstraint = Number.isFinite(targetPlan.performanceData.v1.get())
+              ? `{big}${Math.round(targetPlan.performanceData.v1.get())}{end}`
               : Speed.NoPrediction;
-            spdColor = Number.isFinite(mcdu.v1Speed) ? color : 'white';
+            spdColor = Number.isFinite(targetPlan.performanceData.v1.get()) ? color : 'white';
           } else if (isFromLeg) {
             speedConstraint = Speed.Empty;
           } else if (verticalWaypoint && verticalWaypoint.speed) {
@@ -680,7 +679,7 @@ export class CDUFlightPlanPage {
         let distance = undefined;
         if (!shouldHidePredictions) {
           distance = isActive
-            ? mcdu.guidanceController.activeLegAlongTrackCompletePathDtg - pwp.distanceFromLegTermination
+            ? mcdu.guidanceController.activeLegCompleteLegPathDtg - pwp.distanceFromLegTermination
             : distanceFromLastLine;
         }
 
@@ -702,12 +701,16 @@ export class CDUFlightPlanPage {
           isOverfly: false,
         };
 
-        addLskAt(rowI, 0, (value) => {
-          if (value === Keypad.clrValue) {
-            // TODO
-            mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
-          }
-        });
+        addLskAt(
+          rowI,
+          () => mcdu.getDelaySwitchPage(),
+          (value) => {
+            if (value === Keypad.clrValue) {
+              // TODO
+              mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+            }
+          },
+        );
       } else if (marker) {
         // Marker
         scrollWindow[rowI] = waypointsAndMarkers[winI];
@@ -753,11 +756,6 @@ export class CDUFlightPlanPage {
         });
       } else if (holdResumeExit && holdResumeExit.isDiscontinuity === false) {
         const isNext = fpIndex === targetPlan.activeLegIndex + 1;
-
-        let color = legAccentColor;
-        if (isActive) {
-          color = 'white';
-        }
 
         const decelReached = isActive || (isNext && mcdu.holdDecelReached);
         const holdSpeed =
@@ -944,11 +942,7 @@ export class CDUFlightPlanPage {
       let destEFOBCell = '---.-';
 
       if (targetPlan.destinationAirport) {
-        if (CDUInitPage.fuelPredConditionsMet(mcdu) && mcdu._fuelPredDone) {
-          mcdu.tryUpdateRouteTrip(isFlying);
-        }
-
-        const destDist = mcdu.guidanceController.alongTrackDistanceToDestination;
+        const destDist = mcdu.guidanceController.getAlongTrackDistanceToDestination(forPlan);
 
         if (Number.isFinite(destDist)) {
           destDistCell = Math.round(destDist).toFixed(0);
@@ -1327,10 +1321,10 @@ function formatAltitudeOrLevel(mcdu: LegacyFmsPageInterface, alt: number, useTra
 
   let isFl = false;
   if (useTransAlt) {
-    const transAlt = activePlan.performanceData.transitionAltitude;
+    const transAlt = activePlan.performanceData.transitionAltitude.get();
     isFl = transAlt !== null && alt > transAlt;
   } else {
-    const transLevel = activePlan.performanceData.transitionLevel;
+    const transLevel = activePlan.performanceData.transitionLevel.get();
     isFl = transLevel !== null && alt >= transLevel * 100;
   }
 
