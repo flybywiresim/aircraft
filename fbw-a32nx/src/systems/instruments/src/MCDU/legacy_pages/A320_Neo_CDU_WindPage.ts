@@ -28,11 +28,10 @@ export class CDUWindPage {
 
   static ShowPage(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex) {
     const phase = mcdu.flightPhaseManager.phase;
-    const plan = mcdu.getFlightPlan(forPlan);
 
     switch (phase) {
       case FmgcFlightPhase.Cruise:
-        CDUWindPage.ShowCRZPage(mcdu, forPlan, this.findNextCruiseLegIndex(mcdu, plan, 0));
+        CDUWindPage.ShowCRZPage(mcdu, forPlan, 0);
         break;
       case FmgcFlightPhase.Descent:
       case FmgcFlightPhase.Approach:
@@ -200,6 +199,14 @@ export class CDUWindPage {
     mcdu.page.Current = mcdu.page.CruiseWind;
 
     const plan = mcdu.getFlightPlan(forPlan);
+
+    // If - for any reason - we cannot find a suitable leg at the requested index or downstream of it, just show the
+    // descent wind page instead
+    const nextSuitableLegIndex = this.findNextCruiseLegIndex(mcdu, plan, fpIndex);
+    if (nextSuitableLegIndex === -1) {
+      this.ShowDESPage(mcdu, forPlan);
+      return;
+    }
 
     const doesWindUplinkExist = plan.pendingWindUplink.isWindUplinkReadyToInsert();
     const doesCrzWindUplinkExist = doesWindUplinkExist && plan.pendingWindUplink.cruiseWinds !== undefined;
@@ -763,7 +770,10 @@ export class CDUWindPage {
    * @returns The index of the next cruise leg, or -1 if no cruise leg is found.
    */
   private static findNextCruiseLegIndex(mcdu: LegacyFmsPageInterface, plan: BaseFlightPlan, fromIndex: number): number {
-    const legPredictions = mcdu.guidanceController.vnavDriver.mcduProfile?.waypointPredictions;
+    const legPredictions =
+      plan.index === FlightPlanIndex.Active
+        ? mcdu.guidanceController.vnavDriver.mcduProfile?.waypointPredictions
+        : undefined;
 
     for (let i = Math.max(fromIndex, plan.activeLegIndex); i < plan.firstMissedApproachLegIndex; i++) {
       const leg = plan.maybeElementAt(i);
