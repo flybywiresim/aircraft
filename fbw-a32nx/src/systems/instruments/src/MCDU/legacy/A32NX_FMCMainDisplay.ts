@@ -5580,14 +5580,15 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       throw new Error(`Flight plan ${forPlan} does not exist.`);
     }
 
+    // Request winds
     if (!plan.pendingWindUplink.isWindUplinkReadyToInsert() && !plan.pendingWindUplink.isWindUplinkInProgress()) {
       plan.pendingWindUplink.onUplinkRequested();
 
-      const payload = this.formatWindRequest(forPlan);
-      console.log(`[FMS] Downlink wind request: ${formatWindDownlinkMessage(payload)}`);
+      const request = this.formatWindRequest(forPlan);
+      console.log(`[FMS] Downlink wind request: ${formatWindDownlinkMessage(request)}`);
 
       try {
-        const [status, uplink] = await this.atsu.receiveWindUplink(payload, sentCallback);
+        const [status, uplink] = await this.atsu.receiveWindUplink(request, sentCallback);
 
         if (status !== AtsuStatusCodes.Ok) {
           plan.pendingWindUplink.onUplinkAborted();
@@ -5596,7 +5597,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         }
 
         console.log(`[FMS] Uplinked winds: ${formatWindUplinkMessage(uplink)}`);
-        PendingWindUplinkParser.setFromUplink(uplink, plan);
+
+        PendingWindUplinkParser.setFromUplink(uplink, plan, this.flightPhaseManager.phase);
 
         this.addMessageToQueue(
           NXSystemMessages.windTempDataUplk,
@@ -5621,6 +5623,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       }
     }
 
+    // Insert winds
     const uplinkAlternateCruiseLevel = plan.pendingWindUplink.alternateWind?.altitude;
     const computedAlternateCruiseLevel = this.computeAlternateCruiseLevel(forPlan);
     if (
