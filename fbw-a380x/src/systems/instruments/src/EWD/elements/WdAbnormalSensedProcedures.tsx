@@ -21,64 +21,64 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
 
   private readonly activeProcedureId = ConsumerSubject.create(this.sub.on('fws_active_procedure'), '0');
 
-  private readonly cpiomA1Failed = ConsumerSubject.create(this.sub.on('cpiom_a_failed_1'), false);
-  private readonly cpiomA2Failed = ConsumerSubject.create(this.sub.on('cpiom_a_failed_2'), false);
+  private readonly cpiomA1Available = ConsumerSubject.create(this.sub.on('cpiom_a_available_1'), false);
+  private readonly cpiomA2Available = ConsumerSubject.create(this.sub.on('cpiom_a_available_2'), false);
   private readonly cpiomAFailed = MappedSubject.create(
-    SubscribableMapFunctions.and(),
-    this.cpiomA1Failed,
-    this.cpiomA2Failed,
+    SubscribableMapFunctions.nor(),
+    this.cpiomA1Available,
+    this.cpiomA2Available,
   );
 
-  private readonly cpiomB1Failed = ConsumerSubject.create(this.sub.on('cpiom_b_failed_1'), false);
-  private readonly cpiomB2Failed = ConsumerSubject.create(this.sub.on('cpiom_b_failed_2'), false);
+  private readonly cpiomB1Available = ConsumerSubject.create(this.sub.on('cpiom_b_available_1'), false);
+  private readonly cpiomB2Available = ConsumerSubject.create(this.sub.on('cpiom_b_available_2'), false);
   private readonly cpiomBFailed = MappedSubject.create(
-    SubscribableMapFunctions.and(),
-    this.cpiomB1Failed,
-    this.cpiomB2Failed,
+    SubscribableMapFunctions.nor(),
+    this.cpiomB1Available,
+    this.cpiomB2Available,
   );
 
-  private readonly cpiomC1Failed = ConsumerSubject.create(this.sub.on('cpiom_c_failed_1'), false);
-  private readonly cpiomC2Failed = ConsumerSubject.create(this.sub.on('cpiom_c_failed_2'), false);
+  private readonly cpiomC1Available = ConsumerSubject.create(this.sub.on('cpiom_c_available_1'), false);
+  private readonly cpiomC2Available = ConsumerSubject.create(this.sub.on('cpiom_c_available_2'), false);
   private readonly cpiomCFailed = MappedSubject.create(
-    SubscribableMapFunctions.and(),
-    this.cpiomC1Failed,
-    this.cpiomC2Failed,
+    SubscribableMapFunctions.nor(),
+    this.cpiomC1Available,
+    this.cpiomC2Available,
   );
 
-  private readonly cpiomD1Failed = ConsumerSubject.create(this.sub.on('cpiom_d_failed_1'), false);
-  private readonly cpiomD2Failed = ConsumerSubject.create(this.sub.on('cpiom_d_failed_2'), false);
+  private readonly cpiomD1Available = ConsumerSubject.create(this.sub.on('cpiom_d_available_1'), false);
+  private readonly cpiomD2Available = ConsumerSubject.create(this.sub.on('cpiom_d_available_2'), false);
   private readonly cpiomDFailed = MappedSubject.create(
-    SubscribableMapFunctions.and(),
-    this.cpiomD1Failed,
-    this.cpiomD2Failed,
+    SubscribableMapFunctions.nor(),
+    this.cpiomD1Available,
+    this.cpiomD2Available,
   );
 
-  private readonly cpiomE1Failed = ConsumerSubject.create(this.sub.on('cpiom_e_failed_1'), false);
-  private readonly cpiomE2Failed = ConsumerSubject.create(this.sub.on('cpiom_e_failed_2'), false);
+  private readonly cpiomE1Available = ConsumerSubject.create(this.sub.on('cpiom_e_available_1'), false);
+  private readonly cpiomE2Available = ConsumerSubject.create(this.sub.on('cpiom_e_available_2'), false);
   private readonly cpiomEFailed = MappedSubject.create(
-    SubscribableMapFunctions.and(),
-    this.cpiomE1Failed,
-    this.cpiomE2Failed,
+    SubscribableMapFunctions.nor(),
+    this.cpiomE1Available,
+    this.cpiomE2Available,
   );
 
-  private readonly cpiomF1Failed = ConsumerSubject.create(this.sub.on('cpiom_f_failed_1'), false);
-  private readonly cpiomF2Failed = ConsumerSubject.create(this.sub.on('cpiom_f_failed_2'), false);
+  private readonly cpiomF1Available = ConsumerSubject.create(this.sub.on('cpiom_f_available_1'), false);
+  private readonly cpiomF2Available = ConsumerSubject.create(this.sub.on('cpiom_f_available_2'), false);
   private readonly cpiomFFailed = MappedSubject.create(
-    SubscribableMapFunctions.and(),
-    this.cpiomF1Failed,
-    this.cpiomF2Failed,
+    SubscribableMapFunctions.nor(),
+    this.cpiomF1Available,
+    this.cpiomF2Available,
   );
 
-  private readonly cpiomG1Failed = ConsumerSubject.create(this.sub.on('cpiom_g_failed_1'), false);
-  private readonly cpiomG2Failed = ConsumerSubject.create(this.sub.on('cpiom_g_failed_2'), false);
+  private readonly cpiomG1Failed = ConsumerSubject.create(this.sub.on('cpiom_g_available_1'), false);
+  private readonly cpiomG2Failed = ConsumerSubject.create(this.sub.on('cpiom_g_available_2'), false);
   private readonly cpiomGFailed = MappedSubject.create(
-    SubscribableMapFunctions.and(),
+    SubscribableMapFunctions.nor(),
     this.cpiomG1Failed,
     this.cpiomG2Failed,
   );
 
   private readonly otherCpiomFailed = MappedSubject.create(
-    SubscribableMapFunctions.or(),
+    SubscribableMapFunctions.nor(),
     this.cpiomAFailed,
     this.cpiomBFailed,
     this.cpiomDFailed,
@@ -246,23 +246,23 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
     this.subscriptions.push(
       this.procedures,
       this.activeProcedureId,
-      this.cpiomA1Failed,
-      this.cpiomA2Failed,
+      this.cpiomA1Available,
+      this.cpiomA2Available,
       this.cpiomAFailed,
-      this.cpiomB1Failed,
-      this.cpiomB2Failed,
+      this.cpiomB1Available,
+      this.cpiomB2Available,
       this.cpiomBFailed,
-      this.cpiomC1Failed,
-      this.cpiomC2Failed,
+      this.cpiomC1Available,
+      this.cpiomC2Available,
       this.cpiomCFailed,
-      this.cpiomD1Failed,
-      this.cpiomD2Failed,
+      this.cpiomD1Available,
+      this.cpiomD2Available,
       this.cpiomDFailed,
-      this.cpiomE1Failed,
-      this.cpiomE2Failed,
+      this.cpiomE1Available,
+      this.cpiomE2Available,
       this.cpiomEFailed,
-      this.cpiomF1Failed,
-      this.cpiomF2Failed,
+      this.cpiomF1Available,
+      this.cpiomF2Available,
       this.cpiomFFailed,
       this.otherCpiomFailed,
       this.timeSub,
