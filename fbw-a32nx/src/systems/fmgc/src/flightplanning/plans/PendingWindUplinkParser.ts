@@ -4,14 +4,31 @@ import { Vec2Math } from '@microsoft/msfs-sdk';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { WindEntry } from '../data/wind';
 import { PendingCruiseWind } from './PendingWindUplink';
+import { FmgcFlightPhase } from '../../../../shared/src/flightphase';
 
 export class PendingWindUplinkParser {
   private static readonly MAX_CERTIFIED_LEVEL = 398;
   private static readonly MAX_WIND_MAGNITUDE = 500;
 
-  public static setFromUplink(uplink: WindUplinkMessage, plan: FlightPlan) {
+  public static setFromUplink(uplink: WindUplinkMessage, plan: FlightPlan, flightPhase: FmgcFlightPhase) {
+    switch (flightPhase) {
+      case FmgcFlightPhase.Preflight:
+      case FmgcFlightPhase.Takeoff:
+      case FmgcFlightPhase.Done:
+        this.setClimbWinds(uplink, plan);
+      // eslint-disable-next-line no-fallthrough
+      case FmgcFlightPhase.Climb:
+      case FmgcFlightPhase.Cruise:
+        this.setCruiseWinds(uplink, plan);
+        this.setDescentWinds(uplink, plan);
+        this.setAlternateWinds(uplink, plan);
+    }
+
+    plan.pendingWindUplink.onUplinkReadyToInsert();
+  }
+
+  private static setClimbWinds(uplink: WindUplinkMessage, plan: FlightPlan) {
     const originElevationLevel = (plan.originAirport?.location.alt ?? 0) / 100;
-    const destinationElevationLevel = (plan.destinationAirport?.location.alt ?? 0) / 100;
 
     plan.pendingWindUplink.climbWinds = uplink.climbWinds
       ?.filter((wind) => this.isValidWind(wind))
@@ -19,7 +36,9 @@ export class PendingWindUplinkParser {
       .map((wind) => this.createWindEntryFromUplinkedWind(wind))
       .slice(0, 5)
       .sort((a, b) => a.altitude - b.altitude);
+  }
 
+  private static setCruiseWinds(uplink: WindUplinkMessage, plan: FlightPlan) {
     plan.pendingWindUplink.cruiseWinds = (
       uplink.cruiseWinds
         ?.filter((wind) => this.isValidWindLevel(wind.flightLevel))
@@ -66,6 +85,10 @@ export class PendingWindUplinkParser {
       fix.levels.sort((a, b) => b.altitude - a.altitude);
       return fix;
     });
+  }
+
+  private static setDescentWinds(uplink: WindUplinkMessage, plan: FlightPlan) {
+    const destinationElevationLevel = (plan.destinationAirport?.location.alt ?? 0) / 100;
 
     plan.pendingWindUplink.descentWinds = uplink.descentWinds
       ?.filter((wind) => this.isValidWind(wind))
@@ -73,11 +96,11 @@ export class PendingWindUplinkParser {
       .map((wind) => this.createWindEntryFromUplinkedWind(wind))
       .slice(0, 10)
       .sort((a, b) => b.altitude - a.altitude);
+  }
 
+  private static setAlternateWinds(uplink: WindUplinkMessage, plan: FlightPlan) {
     plan.pendingWindUplink.alternateWind =
       uplink.alternateWind !== undefined ? this.createWindEntryFromUplinkedWind(uplink.alternateWind) : undefined;
-
-    plan.pendingWindUplink.onUplinkReadyToInsert();
   }
 
   private static isUniqueWindLevel(
