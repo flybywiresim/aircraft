@@ -18,9 +18,7 @@ export class SimBriefConnector {
     descentWinds: [],
   };
 
-  public static async receiveSimBriefWinds(
-    request: WindRequestMessage,
-  ): Promise<[AtsuStatusCodes, WindUplinkMessage | null]> {
+  public static async receiveSimBriefWinds(request: WindRequestMessage): Promise<[AtsuStatusCodes, WindUplinkMessage]> {
     try {
       const body = await getSimBriefOfp();
 
