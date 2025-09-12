@@ -1,7 +1,7 @@
 // Copyright (c) 2024-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-export const WD_NUM_LINES = 17;
+export const WD_NUM_LINES = 21;
 
 import {
   EcamAbnormalSensedAta212223,
