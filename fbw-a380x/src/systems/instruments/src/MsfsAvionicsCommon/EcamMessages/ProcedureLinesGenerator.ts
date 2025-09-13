@@ -21,6 +21,7 @@ import {
   TimedChecklistCondition,
   WdLineData,
   AbstractChecklistItem,
+  WdSpecialLine,
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { EcamNormalProcedures } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/NormalProcedures';
 import { ChecklistState } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
@@ -383,7 +384,7 @@ export class ProcedureLinesGenerator {
       this.type === ProcedureType.Abnormal ||
       this.type === ProcedureType.Deferred ||
       this.type === ProcedureType.FwsFailedFallback;
-    const isAbnormal = this.type === ProcedureType.Abnormal;
+    const isAbnormal = this.type === ProcedureType.Abnormal || this.type === ProcedureType.FwsFailedFallback;
     const isAbnormalNotSensed =
       this.type === ProcedureType.Abnormal && EcamAbnormalProcedures[this.procedureId]?.sensed === false;
     const isDeferred = this.type === ProcedureType.Deferred;
@@ -412,7 +413,7 @@ export class ProcedureLinesGenerator {
       });
     }
 
-    if (!isAbnormal || this.procedureIsActive.get()) {
+    if (!isAbnormal || this.procedureIsActive.get() || this.type === ProcedureType.FwsFailedFallback) {
       if (this.recommendation) {
         lineData.push({
           abnormalProcedure: isAbnormalOrDeferred,
@@ -488,6 +489,7 @@ export class ProcedureLinesGenerator {
           lastLine: (!this.procedureIsActive.get() && isAbnormal) || this.type === ProcedureType.FwsFailedFallback,
           originalItemIndex: !isCondition || (isCondition && item.sensed) ? itemIndex : undefined, // FIXME It should be possible to scroll to non sensed conditions
           inactive: inactive,
+          specialLine: clStyle === ChecklistLineStyle.Empty ? WdSpecialLine.Empty : undefined,
         });
 
         if (isCondition && !item.sensed) {
@@ -509,7 +511,7 @@ export class ProcedureLinesGenerator {
         }
       });
 
-      if (isAbnormal) {
+      if (isAbnormal && this.type !== ProcedureType.FwsFailedFallback) {
         lineData.push({
           abnormalProcedure: isAbnormalOrDeferred,
           activeProcedure: this.procedureIsActive.get(),
@@ -570,7 +572,7 @@ export class ProcedureLinesGenerator {
           });
         }
       }
-    } else if (this.items.length > 0 && this.type !== ProcedureType.FwsFailedFallback) {
+    } else if (this.items.length > 0) {
       // Only three dots for following procedures
       lineData.push({
         abnormalProcedure: isAbnormalOrDeferred,

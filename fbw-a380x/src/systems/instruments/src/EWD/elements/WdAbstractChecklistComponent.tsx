@@ -17,8 +17,10 @@ import {
   WdLineData,
   WdSpecialLine,
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
 import { FormattedFwcText } from 'instruments/src/EWD/elements/FormattedFwcText';
 import { EclSoftKeys } from 'instruments/src/EWD/elements/EclClickspots';
+import { CpiomData } from '@flybywiresim/fbw-sdk';
 
 interface WdAbstractChecklistComponentProps {
   bus: EventBus;
@@ -27,8 +29,8 @@ interface WdAbstractChecklistComponentProps {
   fwsAvail?: Subscribable<boolean>;
 }
 
-export class WdAbstractChecklistComponent extends DisplayComponent<WdAbstractChecklistComponentProps> {
-  protected readonly sub = this.props.bus.getSubscriber<ClockEvents & EwdSimvars & FwsEwdEvents>();
+export class WdAbstractChecklistComponent extends DestroyableComponent<WdAbstractChecklistComponentProps> {
+  protected readonly sub = this.props.bus.getSubscriber<ClockEvents & EwdSimvars & FwsEwdEvents & CpiomData>();
 
   protected readonly lineData: WdLineData[] = [];
 
