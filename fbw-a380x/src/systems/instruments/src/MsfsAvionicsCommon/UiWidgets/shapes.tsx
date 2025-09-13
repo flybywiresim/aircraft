@@ -26,3 +26,13 @@ export class TriangleUp extends DisplayComponent<ShapeProps> {
     );
   }
 }
+
+export class TriangleLeft extends DisplayComponent<ShapeProps> {
+  render(): VNode {
+    return (
+      <svg height="15" width="15">
+        <polygon points="0,7.5 15,15 15,0" style="fill:white" />
+      </svg>
+    );
+  }
+}
