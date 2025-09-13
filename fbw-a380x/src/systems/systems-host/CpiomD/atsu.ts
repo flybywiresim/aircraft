@@ -1,10 +1,18 @@
 import { Atc } from '@datalink/atc';
 import { Aoc } from '@datalink/aoc';
 import { SimVarHandling } from '@datalink/common';
-import { Router } from '@datalink/router';
+import { Router, vhfRadioInterface } from '@datalink/router';
 import { EventBus, EventSubscriber, Instrument } from '@microsoft/msfs-sdk';
 import { PowerSupplyBusTypes } from 'systems-host/Misc/powersupply';
 
+class a380xVhfProvider implements vhfRadioInterface {
+  isDataModeActive(): boolean {
+    if (SimVar.GetSimVarValue('L:FBW_RMP_MODE_ACTIVE_3', 'enum') === 1) {
+      return true;
+    }
+    return false;
+  }
+}
 export class AtsuSystem implements Instrument {
   private readonly simVarHandling: SimVarHandling;
 
@@ -18,7 +26,7 @@ export class AtsuSystem implements Instrument {
 
   constructor(private readonly bus: EventBus) {
     this.simVarHandling = new SimVarHandling(this.bus);
-    this.router = new Router(this.bus, false, false);
+    this.router = new Router(this.bus, false, false, new a380xVhfProvider());
     this.atc = new Atc(this.bus, false, false);
     this.aoc = new Aoc(this.bus, false);
 
