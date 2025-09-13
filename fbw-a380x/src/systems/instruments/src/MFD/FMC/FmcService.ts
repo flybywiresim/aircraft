@@ -4,6 +4,7 @@ import {
   EventBus,
   MappedSubject,
   SimVarValueType,
+  Subject,
   Subscribable,
   Subscription,
 } from '@microsoft/msfs-sdk';
@@ -98,14 +99,18 @@ export class FmcService implements FmcServiceInterface {
     this.fmc.push(
       new FlightManagementComputer(FmcIndex.FmcA, FmcOperatingModes.Master, this.bus, this.fmcAInop, mfdReference),
     );
+    this.fmc[FmcIndex.FmcA].operatingMode = FmcOperatingModes.Master;
+    this.masterFmcChanged.notify(); // TODO check why we removed this in this branch
 
     this.fmc.push(
       new FlightManagementComputer(FmcIndex.FmcB, FmcOperatingModes.Slave, this.bus, this.fmcBInop, mfdReference),
     );
+    this.fmc[FmcIndex.FmcB].operatingMode = FmcOperatingModes.Slave;
 
     this.fmc.push(
       new FlightManagementComputer(FmcIndex.FmcC, FmcOperatingModes.Standby, this.bus, this.fmcCInop, mfdReference),
     );
+    this.fmc[FmcIndex.FmcC].operatingMode = FmcOperatingModes.Standby;
   }
 
   has(forFmcIndex: FmcIndex) {
@@ -123,4 +128,6 @@ export class FmcService implements FmcServiceInterface {
 
     this.fmc[forFmcIndex].mfdReference = mfd;
   }
+
+  public readonly masterFmcChanged = Subject.create(false);
 }

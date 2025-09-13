@@ -97,6 +97,8 @@ export const NXSystemMessages = {
   stepAhead: new TypeIIMessage('STEP AHEAD'),
   stepDeleted: new TypeIIMessage('STEP DELETED'),
   tooSteepPathAhead: new TypeIIMessage('TOO STEEP PATH AHEAD'),
+  navprimary: new TypeIIMessage('NAV PRIMARY'),
+  navprimaryLost: new TypeIIMessage('NAV PRIMARY LOST', true),
 };
 
 export const NXFictionalMessages = {
@@ -127,3 +129,7 @@ export const NXFictionalMessages = {
   reverseProxy: new TypeIMessage('REVERSE PROXY ERROR'),
   simBriefNoUser: new TypeIMessage('NO SIMBRIEF PILOT ID PROVIDED'),
 };
+
+export function isTypeIIMessage(message: McduMessage): message is TypeIIMessage {
+  return message instanceof TypeIIMessage;
+}

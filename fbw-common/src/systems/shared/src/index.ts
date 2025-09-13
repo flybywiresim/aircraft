@@ -43,6 +43,7 @@ export * from './performance';
 export * from './persistence';
 export * from './popup';
 export * from './simbridge';
+export * from './Simbrief';
 export * from './simvar';
 export * from './units';
 export * from './GPUManagement';

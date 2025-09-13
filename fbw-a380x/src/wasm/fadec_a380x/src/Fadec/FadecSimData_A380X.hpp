@@ -51,22 +51,26 @@ class FadecSimData_A380X {
   DataDefinitionVariablePtr<AtcIdData> atcIdDataPtr;
 
   // Fuel Feed Tank Data in one Data Definition as they are read and updated together
-  struct FuelFeedTankData {
-    FLOAT64 fuelSystemFeedOne;    // in Gallons
-    FLOAT64 fuelSystemFeedTwo;    // in Gallons
-    FLOAT64 fuelSystemFeedThree;  // in Gallons
-    FLOAT64 fuelSystemFeedFour;   // in Gallons
+  struct FuelExtraTankData {
+    FLOAT64 fuelSystemExtraOne;    // in Gallons
+    FLOAT64 fuelSystemExtraTwo;    // in Gallons
+    FLOAT64 fuelSystemExtraThree;  // in Gallons
+    FLOAT64 fuelSystemExtraFour;   // in Gallons
   };
-  DataDefinitionVector fuelFeedTankDataDef = {
-      {"FUELSYSTEM TANK QUANTITY", 2, UNITS.Gallons}, //
-      {"FUELSYSTEM TANK QUANTITY", 5, UNITS.Gallons}, //
-      {"FUELSYSTEM TANK QUANTITY", 6, UNITS.Gallons}, //
-      {"FUELSYSTEM TANK QUANTITY", 9, UNITS.Gallons}, //
+  DataDefinitionVector fuelExtraTankDataDef = {
+      {"FUELSYSTEM TANK QUANTITY", 12, UNITS.Gallons}, //
+      {"FUELSYSTEM TANK QUANTITY", 13, UNITS.Gallons}, //
+      {"FUELSYSTEM TANK QUANTITY", 14, UNITS.Gallons}, //
+      {"FUELSYSTEM TANK QUANTITY", 15, UNITS.Gallons}, //
   };
-  DataDefinitionVariablePtr<FuelFeedTankData> fuelFeedTankDataPtr;  // in Gallons
+  DataDefinitionVariablePtr<FuelExtraTankData> fuelExtraTankDataPtr;  // in Gallons
 
   // Fuel Tank Data in one Data Definition as they are read and updated together
   struct FuelTankData {
+    FLOAT64 fuelSystemFeedOne;     // in Gallons
+    FLOAT64 fuelSystemFeedTwo;     // in Gallons
+    FLOAT64 fuelSystemFeedThree;   // in Gallons
+    FLOAT64 fuelSystemFeedFour;    // in Gallons
     FLOAT64 fuelSystemLeftOuter;   // in Gallons
     FLOAT64 fuelSystemLeftMid;     // in Gallons
     FLOAT64 fuelSystemLeftInner;   // in Gallons
@@ -76,6 +80,10 @@ class FadecSimData_A380X {
     FLOAT64 fuelSystemTrim;        // in Gallons
   };
   DataDefinitionVector fuelTankDataDef = {
+      {"FUELSYSTEM TANK QUANTITY", 2,  UNITS.Gallons}, //
+      {"FUELSYSTEM TANK QUANTITY", 5,  UNITS.Gallons}, //
+      {"FUELSYSTEM TANK QUANTITY", 6,  UNITS.Gallons}, //
+      {"FUELSYSTEM TANK QUANTITY", 9,  UNITS.Gallons}, //
       {"FUELSYSTEM TANK QUANTITY", 1,  UNITS.Gallons}, //
       {"FUELSYSTEM TANK QUANTITY", 3,  UNITS.Gallons}, //
       {"FUELSYSTEM TANK QUANTITY", 4,  UNITS.Gallons}, //
@@ -261,8 +269,8 @@ class FadecSimData_A380X {
   void initDataDefinitions(DataManager* dm) {
     atcIdDataPtr = dm->make_datadefinition_var<AtcIdData>("ATC ID DATA", atcIdDataDef, NO_AUTO_UPDATE);
 
-    fuelFeedTankDataPtr = dm->make_datadefinition_var<FuelFeedTankData>("FUEL FEED TANK DATA", fuelFeedTankDataDef);
-    fuelFeedTankDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
+    fuelExtraTankDataPtr = dm->make_datadefinition_var<FuelExtraTankData>("FUEL EXTRA TANK DATA", fuelExtraTankDataDef);
+    fuelExtraTankDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);
 
     fuelTankDataPtr = dm->make_datadefinition_var<FuelTankData>("FUEL TANK DATA", fuelTankDataDef);
     fuelTankDataPtr->requestPeriodicDataFromSim(SIMCONNECT_PERIOD_VISUAL_FRAME);

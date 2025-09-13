@@ -22,7 +22,7 @@ export class FwsSystemDisplayLogic {
   private readonly prevFailPage = Subject.create<SdPages>(SdPages.Door);
   private readonly pageWhenUnselected = Subject.create<SdPages>(SdPages.Door);
 
-  private ecamCycleInterval: NodeJS.Timeout | null = null;
+  private ecamCycleInterval: NodeJS.Timeout | undefined = undefined;
   private readonly startPageAllCycleRef = Subject.create<SdPages>(SdPages.None);
 
   private readonly ecamButtonLightDelayTimer = Subject.create(Number.MIN_SAFE_INTEGER);
@@ -78,7 +78,7 @@ export class FwsSystemDisplayLogic {
     } else if (!ecamAllButtonPushed && this.prevEcamAllButtonState.get()) {
       // ALL button released
       clearInterval(this.ecamCycleInterval);
-      this.ecamCycleInterval = null;
+      this.ecamCycleInterval = undefined;
     } else if (!ecamAllButtonPushed) {
       if (this.userSelectedPage.get() !== SdPages.Status) {
         this.stsPrevPage.set(this.userSelectedPage.get());
@@ -148,7 +148,8 @@ export class FwsSystemDisplayLogic {
             SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'number') !== 0 ||
             SimVar.GetSimVarValue('L:A32NX_SPOILERS_HANDLE_POSITION', 'percent') !== 0;
 
-          if (isGearExtended && this.fws.adrPressureAltitude.get() < 16000) {
+          const pressureAlt = this.fws.adrPressureAltitude.get() ?? 0;
+          if (isGearExtended && pressureAlt < 16000) {
             this.pageWhenUnselected.set(SdPages.Wheel);
             this.checkApuPage(deltaTime);
             this.checkEnginePage(deltaTime);

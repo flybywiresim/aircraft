@@ -5,7 +5,6 @@
 import { Subscription } from '@microsoft/msfs-sdk';
 import { EcamLimitations } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { FwsCore, FwsSuppressableItem } from 'systems-host/CpiomC/FlightWarningSystem/FwsCore';
-import { isSubscription } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
 
 export enum FwsLimitationsPhases {
   AllPhases,
@@ -51,7 +50,7 @@ export class FwsLimitations {
 
     for (const key in this.limitations) {
       const element = this.limitations[key];
-      if (isSubscription(element.simVarIsActive)) {
+      if ('destroy' in element.simVarIsActive) {
         element.simVarIsActive.destroy();
       }
     }
