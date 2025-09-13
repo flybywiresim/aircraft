@@ -4,12 +4,14 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
+  AvionicsPlugin,
   Clock,
   FsBaseInstrument,
   FSComponent,
   FsInstrument,
   HEventPublisher,
   InstrumentBackplane,
+  PluginSystem,
   Subject,
 } from '@microsoft/msfs-sdk';
 import {
@@ -195,7 +197,27 @@ class NDInstrument implements FsInstrument {
   }
 }
 
+export interface NdPluginBinder {
+  readonly ndIndex: number;
+}
+
 class A32NX_ND extends FsBaseInstrument<NDInstrument> {
+  private pluginSystem?: PluginSystem<AvionicsPlugin<NdPluginBinder>, NdPluginBinder>;
+
+  connectedCallback(): void {
+    super.connectedCallback();
+
+    this.initPlugins();
+  }
+
+  private async initPlugins(): Promise<void> {
+    this.pluginSystem = new PluginSystem<AvionicsPlugin<NdPluginBinder>, NdPluginBinder>();
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    await this.pluginSystem.addScripts(this.xmlConfig, this.templateID, (target: string) => target === 'FBW_A32NX_ND');
+    await this.pluginSystem.startSystem({ ndIndex: getDisplayIndex() });
+  }
+
   constructInstrument(): NDInstrument {
     return new NDInstrument();
   }
