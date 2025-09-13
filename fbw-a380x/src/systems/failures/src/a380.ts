@@ -55,6 +55,7 @@ export const A380Failure = Object.freeze({
   CpcsApp3: 21048,
   CpcsApp4: 21049,
 
+  Rollout: 22001,
   FmcA: 22100,
   FmcB: 22101,
   FmcC: 22102,
@@ -243,6 +244,7 @@ export const A380FailureDefinitions: FailureDefinition[] = [
   [22, A380Failure.FmcA, 'FMC-A'],
   [22, A380Failure.FmcB, 'FMC-B'],
   [22, A380Failure.FmcC, 'FMC-C'],
+  [22, A380Failure.Rollout, 'ROLLOUT'],
 
   [23, A380Failure.AudioManagementUnit1, 'AMU 1'],
   [23, A380Failure.AudioManagementUnit2, 'AMU 2'],

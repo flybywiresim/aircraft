@@ -19,6 +19,7 @@ import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { VerticalTape } from './VerticalTape';
 import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import { Arinc429Values } from './shared/ArincValueProvider';
+import { FcdcValueProvider } from './shared/FcdcValueProvider';
 
 const ValueSpacing = 10;
 const DistanceSpacing = 10;
@@ -138,20 +139,20 @@ class VRBugElement extends DisplayComponent<{ bus: EventBus }> {
   }
 }
 
-class VAlphaProtBar extends DisplayComponent<{ bus: ArincEventBus }> {
+class VAlphaProtBar extends DisplayComponent<{
+  readonly bus: ArincEventBus;
+  readonly fcdcData: FcdcValueProvider;
+}> {
   private VAprotIndicator = FSComponent.createRef<SVGPathElement>();
 
   private airSpeed = new Arinc429Word(0);
 
   private vAlphaProt = new Arinc429Word(0);
 
-  private fcdc1DiscreteWord1 = new Arinc429Word(0);
-
-  private fcdc2DiscreteWord1 = new Arinc429Word(0);
-
   private setAlphaProtBarPath() {
     const normalLawActive =
-      this.fcdc1DiscreteWord1.bitValueOr(11, false) || this.fcdc2DiscreteWord1.bitValueOr(11, false);
+      this.props.fcdcData.fcdcDiscreteWord1.get().bitValueOr(11, false) ||
+      this.props.fcdcData.fcdcDiscreteWord2.get().bitValueOr(11, false);
     if (
       this.airSpeed.value - this.vAlphaProt.value > DisplayRange ||
       this.vAlphaProt.isFailureWarning() ||
@@ -190,13 +191,7 @@ class VAlphaProtBar extends DisplayComponent<{ bus: ArincEventBus }> {
         this.setAlphaProtBarPath();
       });
 
-    sub.on('fcdc1DiscreteWord1').handle((word) => {
-      this.fcdc1DiscreteWord1 = word;
-      this.setAlphaProtBarPath();
-    });
-
-    sub.on('fcdc2DiscreteWord1').handle((word) => {
-      this.fcdc2DiscreteWord1 = word;
+    this.props.fcdcData.fcdcDiscreteWord1.sub(() => {
       this.setAlphaProtBarPath();
     });
   }
@@ -533,20 +528,20 @@ class VMaxBar extends DisplayComponent<{ bus: ArincEventBus }> {
   }
 }
 
-class VStallWarnBar extends DisplayComponent<{ bus: ArincEventBus }> {
+class VStallWarnBar extends DisplayComponent<{
+  readonly bus: ArincEventBus;
+  readonly fcdcData: FcdcValueProvider;
+}> {
   private VStallWarnIndicator = FSComponent.createRef<SVGPathElement>();
 
   private airSpeed = new Arinc429Word(0);
 
   private vStallWarn = new Arinc429Word(0);
 
-  private fcdc1DiscreteWord1 = new Arinc429Word(0);
-
-  private fcdc2DiscreteWord1 = new Arinc429Word(0);
-
   private setVStallWarnBarPath() {
     const normalLawActive =
-      this.fcdc1DiscreteWord1.bitValueOr(11, false) || this.fcdc2DiscreteWord1.bitValueOr(11, false);
+      this.props.fcdcData.fcdcDiscreteWord1.get().bitValueOr(11, false) ||
+      this.props.fcdcData.fcdcDiscreteWord2.get().bitValueOr(11, false);
     if (
       this.airSpeed.value - this.vStallWarn.value > DisplayRange ||
       this.vStallWarn.isFailureWarning() ||
@@ -585,13 +580,7 @@ class VStallWarnBar extends DisplayComponent<{ bus: ArincEventBus }> {
         this.setVStallWarnBarPath();
       });
 
-    sub.on('fcdc1DiscreteWord1').handle((word) => {
-      this.fcdc1DiscreteWord1 = word;
-      this.setVStallWarnBarPath();
-    });
-
-    sub.on('fcdc2DiscreteWord1').handle((word) => {
-      this.fcdc2DiscreteWord1 = word;
+    this.props.fcdcData.fcdcDiscreteWord2.sub(() => {
       this.setVStallWarnBarPath();
     });
   }
@@ -610,8 +599,9 @@ class VStallWarnBar extends DisplayComponent<{ bus: ArincEventBus }> {
 }
 
 interface AirspeedIndicatorProps {
-  bus: ArincEventBus;
-  instrument: BaseInstrument;
+  readonly bus: ArincEventBus;
+  readonly instrument: BaseInstrument;
+  readonly fcdcData: FcdcValueProvider;
 }
 
 export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> {
@@ -746,16 +736,16 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
               class="NormalStroke Amber"
               d="m19.031 81.34h-2.8709m0-1.0079h2.8709"
             />
-            <VProtBug bus={this.props.bus} />
+            <VProtBug bus={this.props.bus} fcdcData={this.props.fcdcData} />
           </VerticalTape>
 
           <VMaxBar bus={this.props.bus} />
-          <VAlphaProtBar bus={this.props.bus} />
-          <VStallWarnBar bus={this.props.bus} />
+          <VAlphaProtBar bus={this.props.bus} fcdcData={this.props.fcdcData} />
+          <VStallWarnBar bus={this.props.bus} fcdcData={this.props.fcdcData} />
           <g ref={this.showBarsRef}>
-            <VLsBar bus={this.props.bus} />
+            <VLsBar bus={this.props.bus} fcdcData={this.props.fcdcData} />
           </g>
-          <VAlphaLimBar bus={this.props.bus} />
+          <VAlphaLimBar bus={this.props.bus} fcdcData={this.props.fcdcData} />
           <SpeedTrendArrow airspeed={this.speedSub} instrument={this.props.instrument} bus={this.props.bus} />
           <V1Offtape bus={this.props.bus} />
           <ArsBar bus={this.props.bus} />
@@ -834,7 +824,7 @@ class SpeedTrendArrow extends DisplayComponent<{
   }
 }
 
-class VLsBar extends DisplayComponent<{ bus: ArincEventBus }> {
+class VLsBar extends DisplayComponent<{ readonly bus: ArincEventBus; readonly fcdcData: FcdcValueProvider }> {
   private vlsPath = Subject.create<string>('');
 
   private vlsVisbility = Subject.create<string>('hidden');
@@ -847,16 +837,11 @@ class VLsBar extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private vls = new Arinc429Word(0);
 
-  private fcdc1DiscreteWord1 = new Arinc429Word(0);
-
-  private fcdc2DiscreteWord1 = new Arinc429Word(0);
-
   private setVlsPath() {
     if (this.vls.isNormalOperation()) {
       this.vlsVisbility.set('visible');
 
-      const normalLawActive =
-        this.fcdc1DiscreteWord1.bitValueOr(11, false) || this.fcdc2DiscreteWord1.bitValueOr(11, false);
+      const normalLawActive = this.props.fcdcData.fcdcDiscreteWord1.get().bitValueOr(11, false);
 
       const VLsPos = ((this.airSpeed.value - this.vls.value) * DistanceSpacing) / ValueSpacing + 80.818;
       const offset =
@@ -907,15 +892,7 @@ class VLsBar extends DisplayComponent<{ bus: ArincEventBus }> {
         this.setVlsPath();
       });
 
-    sub.on('fcdc1DiscreteWord1').handle((word) => {
-      this.fcdc1DiscreteWord1 = word;
-      this.setVlsPath();
-    });
-
-    sub.on('fcdc2DiscreteWord1').handle((word) => {
-      this.fcdc2DiscreteWord1 = word;
-      this.setVlsPath();
-    });
+    this.props.fcdcData.fcdcDiscreteWord1.sub(() => this.setVlsPath());
   }
 
   render(): VNode {
@@ -923,20 +900,18 @@ class VLsBar extends DisplayComponent<{ bus: ArincEventBus }> {
   }
 }
 
-class VAlphaLimBar extends DisplayComponent<{ bus: ArincEventBus }> {
+class VAlphaLimBar extends DisplayComponent<{
+  readonly bus: ArincEventBus;
+  readonly fcdcData: FcdcValueProvider;
+}> {
   private VAlimIndicator = FSComponent.createRef<SVGPathElement>();
 
   private airSpeed = new Arinc429Word(0);
 
   private vAlphaLim = new Arinc429Word(0);
 
-  private fcdc1DiscreteWord1 = new Arinc429Word(0);
-
-  private fcdc2DiscreteWord1 = new Arinc429Word(0);
-
   private setAlphaLimBarPath() {
-    const normalLawActive =
-      this.fcdc1DiscreteWord1.bitValueOr(11, false) || this.fcdc2DiscreteWord1.bitValueOr(11, false);
+    const normalLawActive = this.props.fcdcData.fcdcDiscreteWord1.get().bitValueOr(11, false);
     if (
       this.vAlphaLim.value - this.airSpeed.value < -DisplayRange ||
       this.vAlphaLim.isFailureWarning() ||
@@ -972,15 +947,7 @@ class VAlphaLimBar extends DisplayComponent<{ bus: ArincEventBus }> {
       this.setAlphaLimBarPath();
     });
 
-    sub.on('fcdc1DiscreteWord1').handle((word) => {
-      this.fcdc1DiscreteWord1 = word;
-      this.setAlphaLimBarPath();
-    });
-
-    sub.on('fcdc2DiscreteWord1').handle((word) => {
-      this.fcdc2DiscreteWord1 = word;
-      this.setAlphaLimBarPath();
-    });
+    this.props.fcdcData.fcdcDiscreteWord1.sub(() => this.setAlphaLimBarPath());
   }
 
   render(): VNode {
@@ -1452,10 +1419,8 @@ export class MachNumber extends DisplayComponent<{ bus: EventBus }> {
   }
 }
 
-class VProtBug extends DisplayComponent<{ bus: EventBus }> {
+class VProtBug extends DisplayComponent<{ readonly bus: EventBus; readonly fcdcData: FcdcValueProvider }> {
   private vProtBug = FSComponent.createRef<SVGGElement>();
-
-  private fcdcWord1 = new Arinc429Word(0);
 
   private Vmax = new Arinc429Word(0);
 
@@ -1463,7 +1428,9 @@ class VProtBug extends DisplayComponent<{ bus: EventBus }> {
     const showVProt = this.Vmax.value > 240 && this.Vmax.isNormalOperation();
     const offset = (-(this.Vmax.value + 10) * DistanceSpacing) / ValueSpacing;
 
-    const isNormalLawActive = this.fcdcWord1.bitValue(11) && !this.fcdcWord1.isFailureWarning();
+    const isNormalLawActive =
+      this.props.fcdcData.fcdcDiscreteWord1.get().bitValue(11) &&
+      !this.props.fcdcData.fcdcDiscreteWord1.get().isFailureWarning();
 
     if (showVProt && isNormalLawActive) {
       this.vProtBug.instance.style.display = 'block';
@@ -1487,14 +1454,7 @@ class VProtBug extends DisplayComponent<{ bus: EventBus }> {
         this.handleVProtBugDisplay();
       });
 
-    sub
-      .on('fcdcDiscreteWord1')
-      .whenChanged()
-      .handle((dw) => {
-        this.fcdcWord1 = dw;
-
-        this.handleVProtBugDisplay();
-      });
+    this.props.fcdcData.fcdcDiscreteWord1.sub(() => this.handleVProtBugDisplay());
   }
 
   render(): VNode {

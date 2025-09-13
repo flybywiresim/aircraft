@@ -21,7 +21,6 @@ type BasePseudoFwcSimvars = {
   right_blg_compressed: boolean;
   flaps_handle: number;
   adr_cas_word: number;
-  fcdc_discrete_word_4: number;
   hyd_green_sys_pressurized: boolean;
   hyd_yellow_sys_pressurized: boolean;
   throttle_position: number;
@@ -29,7 +28,7 @@ type BasePseudoFwcSimvars = {
   gw_cg_percent: number;
 };
 
-type IndexedTopics = 'engine_master' | 'engine_state' | 'adr_cas_word' | 'fcdc_discrete_word_4' | 'throttle_position';
+type IndexedTopics = 'engine_master' | 'engine_state' | 'adr_cas_word' | 'throttle_position';
 type PseudoFwcIndexedEvents = {
   [P in keyof Pick<BasePseudoFwcSimvars, IndexedTopics> as IndexedEventType<P>]: BasePseudoFwcSimvars[P];
 };
@@ -49,10 +48,6 @@ export class PseudoFwcSimvarPublisher extends SimVarPublisher<PseudoFwcSimvars> 
       [
         'adr_cas_word',
         { name: 'L:A32NX_ADIRS_ADR_#index#_COMPUTED_AIRSPEED', type: SimVarValueType.Number, indexed: true },
-      ],
-      [
-        'fcdc_discrete_word_4',
-        { name: 'L:A32NX_FCDC_#index#_DISCRETE_WORD_4', type: SimVarValueType.Number, indexed: true },
       ],
       [
         'hyd_green_sys_pressurized',

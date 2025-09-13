@@ -42,6 +42,7 @@ import { FwsCore } from 'systems-host/CpiomC/FlightWarningSystem/FwsCore';
 import { FuelSystemPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
 import { BrakeToVacateDistanceUpdater } from 'systems-host/PseudoPRIM/BrakeToVacateDistanceUpdater';
 import { PseudoFwcSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
+import { FcdcSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FcdcPublisher';
 import {
   ResetPanelSimvarPublisher,
   ResetPanelSimvars,
@@ -122,6 +123,8 @@ class SystemsHost extends BaseInstrument {
 
   private readonly pseudoFwcPublisher = new PseudoFwcSimvarPublisher(this.bus);
 
+  private readonly fcdcPublisher = new FcdcSimvarPublisher(this.bus);
+
   private readonly resetPanelPublisher = new ResetPanelSimvarPublisher(this.bus);
 
   private readonly cpiomAvailablePublisher = new CpiomAvailableSimvarPublisher(this.bus);
@@ -151,6 +154,9 @@ class SystemsHost extends BaseInstrument {
 
   private readonly fws1Healthy = Subject.create(false);
   private readonly fws2Healthy = Subject.create(false);
+
+  private readonly fws1AudioFunctionAvail = Subject.create(false);
+  private readonly fws2AudioFunctionAvail = Subject.create(false);
 
   private readonly fwsEcpFailed = Subject.create(false);
 
@@ -205,6 +211,7 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('FuelPublisher', this.fuelSystemPublisher);
     this.backplane.addPublisher('StallWarning', this.stallWarningPublisher);
     this.backplane.addPublisher('PseudoFwc', this.pseudoFwcPublisher);
+    this.backplane.addPublisher('Fcdc', this.fcdcPublisher);
     this.backplane.addPublisher('ResetPanel', this.resetPanelPublisher);
     this.backplane.addPublisher('CpiomAvailable', this.cpiomAvailablePublisher);
     this.backplane.addPublisher('InteractivePoints', this.interactivePointsPublisher);
@@ -258,6 +265,13 @@ class SystemsHost extends BaseInstrument {
       SimVar.SetSimVarValue('L:A32NX_FWS2_IS_HEALTHY', SimVarValueType.Bool, healthy);
     }, true);
 
+    this.fws1AudioFunctionAvail.sub((audioAvail) => {
+      SimVar.SetSimVarValue('L:A32NX_FWS1_AUDIO_FUNCTION_AVAILABLE', SimVarValueType.Bool, audioAvail);
+    }, true);
+    this.fws2AudioFunctionAvail.sub((audioAvail) => {
+      SimVar.SetSimVarValue('L:A32NX_FWS2_AUDIO_FUNCTION_AVAILABLE', SimVarValueType.Bool, audioAvail);
+    }, true);
+
     this.fwsEcpFailed.sub((v) => SimVar.SetSimVarValue('L:A32NX_FWS_ECP_FAILED', SimVarValueType.Bool, v), true);
   }
 
@@ -307,6 +321,13 @@ class SystemsHost extends BaseInstrument {
 
     this.fws1Healthy.set(!this.fws1Failed.get() && this.fws1Powered.get() && this.fwsCore?.startupCompleted.get());
     this.fws2Healthy.set(!this.fws2Failed.get() && this.fws2Powered.get() && this.fwsCore?.startupCompleted.get());
+
+    this.fws1AudioFunctionAvail.set(
+      this.fws1Healthy.get() && !this.failuresConsumer.isActive(A380Failure.Fws1AudioFunction),
+    );
+    this.fws2AudioFunctionAvail.set(
+      this.fws2Healthy.get() && !this.failuresConsumer.isActive(A380Failure.Fws2AudioFunction),
+    );
 
     const ecpNotReachable =
       !SimVar.GetSimVarValue('L:A32NX_AFDX_3_3_REACHABLE', SimVarValueType.Bool) &&

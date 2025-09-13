@@ -1225,7 +1225,7 @@ export class FmcAircraftInterface {
       this.updatePerfSpeeds();
       this.updateConstraints();
       this.updateManagedSpeed();
-      const currentApMasterStatus = SimVar.GetSimVarValue('AUTOPILOT MASTER', 'boolean');
+      const currentApMasterStatus = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_ACTIVE', 'boolean');
       if (currentApMasterStatus !== this.apMasterStatus) {
         this.apMasterStatus = currentApMasterStatus;
         apLogicOn = this.apMasterStatus || Simplane.getAutoPilotFlightDirectorActive(1);
