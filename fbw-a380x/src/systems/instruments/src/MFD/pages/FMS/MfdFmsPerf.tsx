@@ -2341,7 +2341,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   </div>
                   <div style="display: flex; flex-direction: row;">
                     <Button
-                      disabled={Subject.create(true)}
+                      disabled={Subject.create(false)}
                       label="CMS"
                       onClick={() => this.props.mfd.uiService.navigateTo('fms/active/f-pln-vert-rev/cms')}
                       buttonStyle="margin-right: 10px;"
