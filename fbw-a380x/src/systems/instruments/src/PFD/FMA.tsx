@@ -1641,12 +1641,6 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps & { readonly fcdcData: 
     let text1: string;
     let text2: string | undefined;
     this.isShown = true;
-    console.log(
-      this.props.fcdcData.land2Capacity.get(),
-      this.props.fcdcData.land3FailPassiveCapacity.get(),
-      this.props.fcdcData.land3FailOperationalCapacity.get(),
-      this.landModesArmedOrActive.get(),
-    );
     if (this.props.fcdcData.land2Capacity.get()) {
       text1 = 'LAND2';
       text2 = '';
