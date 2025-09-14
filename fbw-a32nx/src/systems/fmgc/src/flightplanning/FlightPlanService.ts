@@ -107,10 +107,13 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
   }
 
   async secondaryCopyFromActive(index: number, isBeforeEngineStart: boolean) {
+    // TODO copy predictions
+    // We don't copy predictions for now because we don't have the computation of predictions for the secondary flight plan
+    // To keep things consistent, we don't show predictions anywhere and we don't want to show any computed turn radii
     this.flightPlanManager.copy(
       FlightPlanIndex.Active,
       FlightPlanIndex.FirstSecondary + (index - 1),
-      CopyOptions.CopyPredictions,
+      // CopyOptions.CopyPredictions,
     );
 
     const active = this.active;
