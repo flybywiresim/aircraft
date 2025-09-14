@@ -25,6 +25,7 @@ import {
   ArincEventBus,
 } from '@flybywiresim/fbw-sdk';
 import { FcdcValueProvider } from './shared/FcdcValueProvider';
+import { DmcLogicEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 
 abstract class ShowForSecondsComponent<T extends ComponentProps> extends DisplayComponent<T> {
   private timeout: number = 0;
@@ -59,7 +60,7 @@ export class FMA extends DisplayComponent<{
   readonly isAttExcessive: Subscribable<boolean>;
   readonly fcdcData: FcdcValueProvider;
 }> {
-  private sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & SimplaneValues>();
+  private sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & SimplaneValues & DmcLogicEvents>();
 
   private activeLateralMode: number = 0;
 
@@ -110,15 +111,11 @@ export class FMA extends DisplayComponent<{
   private readonly btvExitMissed = ConsumerSubject.create(this.sub.on('btvExitMissed'), false);
 
   private readonly disconnectApForLdg = MappedSubject.create(
-    ([ap1, ap2, ra, altitude, landingElevation, verticalMode, selectedFpa, selectedVs, fcdcFgDiscreteWord4]) => {
+    ([ap1, ap2, ra, altitude, landingElevation, verticalMode, selectedFpa, selectedVs, autolandCapacity]) => {
       return (
         (ap1 || ap2) &&
         (ra.isNormalOperation() ? ra.value <= 150 : altitude.valueOr(Infinity) - landingElevation.valueOr(0) <= 150) &&
-        (!(
-          fcdcFgDiscreteWord4.bitValueOr(23, false) || // No LAND2 or higher capability
-          fcdcFgDiscreteWord4.bitValueOr(24, false) ||
-          fcdcFgDiscreteWord4.bitValueOr(25, false)
-        ) ||
+        (!autolandCapacity ||
           verticalMode === VerticalMode.DES ||
           verticalMode === VerticalMode.OP_DES ||
           (verticalMode === VerticalMode.FPA && selectedFpa <= 0) ||
@@ -133,7 +130,7 @@ export class FMA extends DisplayComponent<{
     this.activeVerticalMode,
     this.selectedFpa,
     this.selectedVs,
-    this.props.fcdcData.fcdcFgDiscreteWord4,
+    this.props.fcdcData.autolandCapacity,
   );
 
   private readonly unrestrictedClimbDescent = MappedSubject.create(
@@ -497,6 +494,7 @@ class Row3 extends DisplayComponent<{
 
 interface CellProps extends ComponentProps {
   bus: EventBus;
+  fcdcData?: FcdcValueProvider;
 }
 
 class A1A2Cell extends ShowForSecondsComponent<CellProps> {
@@ -974,6 +972,11 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
         additionalText = VSText;
         break;
       }
+      case VerticalMode.LAND:
+        if (!this.props.fcdcData.autolandCapacity.get()) {
+          text = 'G/S';
+        }
+        break;
       default:
         text = '';
         this.isShown = false;
@@ -1244,7 +1247,10 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
       text = 'RWY TRK';
     } else if (this.activeLateralMode === LateralMode.TRACK) {
       text = 'TRACK';
-    } else if (this.activeLateralMode === LateralMode.LOC_TRACK) {
+    } else if (
+      this.activeLateralMode === LateralMode.LOC_TRACK ||
+      (this.activeLateralMode === LateralMode.LAND && !this.props.fcdcData.autolandCapacity.get())
+    ) {
       text = 'LOC';
     } else if (this.activeLateralMode === LateralMode.NAV) {
       text = 'NAV';
@@ -1365,7 +1371,7 @@ class BC1Cell extends ShowForSecondsComponent<CellProps> {
       text = 'ROLL OUT';
     } else if (this.lastVerticalMode === VerticalMode.FLARE) {
       text = 'FLARE';
-    } else if (this.lastVerticalMode === VerticalMode.LAND) {
+    } else if (this.lastVerticalMode === VerticalMode.LAND && this.props.fcdcData.autolandCapacity.get()) {
       text = 'LAND';
     } else {
       text = '';
@@ -1598,7 +1604,7 @@ class BC3Cell extends DisplayComponent<{
 }
 
 class D1D2Cell extends ShowForSecondsComponent<CellProps & { readonly fcdcData: FcdcValueProvider }> {
-  private sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
+  private sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & DmcLogicEvents>();
 
   private readonly fmaLateralActive = ConsumerSubject.create(this.sub.on('activeLateralMode'), 0);
   private readonly fmaLateralArmed = ConsumerSubject.create(this.sub.on('fmaLateralArmed'), 0);
@@ -1625,20 +1631,16 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps & { readonly fcdcData: 
   }
 
   private setText() {
-    const land2Capacity = this.props.fcdcData.fcdcFgDiscreteWord4.get().bitValueOr(23, false);
-    const land3FailPassiveCapacity = this.props.fcdcData.fcdcFgDiscreteWord4.get().bitValueOr(24, false);
-    const land3FailOperationalCapacity = this.props.fcdcData.fcdcFgDiscreteWord4.get().bitValueOr(25, false);
-
     let text1: string;
     let text2: string | undefined;
     this.isShown = true;
-    if (land2Capacity) {
+    if (this.props.fcdcData.land2Capacity.get()) {
       text1 = 'LAND2';
       text2 = '';
-    } else if (land3FailPassiveCapacity) {
+    } else if (this.props.fcdcData.land3FailPassiveCapacity.get()) {
       text1 = 'LAND3';
       text2 = 'SINGLE';
-    } else if (land3FailOperationalCapacity) {
+    } else if (this.props.fcdcData.land3FailOperationalCapacity.get()) {
       text1 = 'LAND3';
       text2 = 'DUAL';
     } else if (this.landModesArmedOrActive.get()) {

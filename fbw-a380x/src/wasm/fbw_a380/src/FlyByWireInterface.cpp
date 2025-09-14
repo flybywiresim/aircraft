@@ -356,8 +356,8 @@ void FlyByWireInterface::setupLocalVariables() {
 
   // register L variables for flight warning system
   idFwcFlightPhase = std::make_unique<LocalVariable>("A32NX_FWC_FLIGHT_PHASE");
-  idFwsAudioFunction[0] = std::make_unique<LocalVariable>("A32NX_FWS1_AUDIO_FUNCTION_AVAILABLE");
-  idFwsAudioFunction[1] = std::make_unique<LocalVariable>("A32NX_FWS2_AUDIO_FUNCTION_AVAILABLE");
+  idFwsDiscreteWord126[0] = std::make_unique<LocalVariable>("A32NX_FWC_1_DISCRETE_WORD_126");
+  idFwsDiscreteWord126[1] = std::make_unique<LocalVariable>("A32NX_FWC_2_DISCRETE_WORD_126");
 
   // register L variables for electrical system
   idElecApuGenContactorClosed[0] = std::make_unique<LocalVariable>("A32NX_ELEC_CONTACTOR_990XS1_IS_CLOSED");
@@ -409,7 +409,6 @@ void FlyByWireInterface::setupLocalVariables() {
   idTcasTargetRedMax = std::make_unique<LocalVariable>("A32NX_TCAS_VSPEED_RED:2");
 
   idFcuTrkFpaModeActive = std::make_unique<LocalVariable>("A32NX_TRK_FPA_MODE_ACTIVE");
-  idFcuNorthRefTrue = std::make_unique<LocalVariable>("A32NX_PUSH_TRUE_REF");
   idFcuSelectedFpa = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_FPA_SELECTED");
   idFcuSelectedVs = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_VS_SELECTED");
   idFcuSelectedHeading = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_HEADING_SELECTED");
@@ -1401,7 +1400,6 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   prims[primIndex].modelInputs.in.discrete_inputs.ap_1_pushbutton_pressed = false;
   prims[primIndex].modelInputs.in.discrete_inputs.ap_2_pushbutton_pressed = false;
   prims[primIndex].modelInputs.in.discrete_inputs.fcu_healthy = true;
-  prims[primIndex].modelInputs.in.discrete_inputs.fcu_north_ref_true = idFcuNorthRefTrue->get() == 1;
   prims[primIndex].modelInputs.in.discrete_inputs.athr_pushbutton = false;
   prims[primIndex].modelInputs.in.discrete_inputs.ir_3_on_capt = false;
   prims[primIndex].modelInputs.in.discrete_inputs.ir_3_on_fo = false;
@@ -1413,22 +1411,6 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   prims[primIndex].modelInputs.in.discrete_inputs.pitch_trim_down_pressed = primIndex == 1 ? false : pitchTrimInput.pitchTrimSwitchDown;
   prims[primIndex].modelInputs.in.discrete_inputs.green_low_pressure = !idHydGreenPressurised->get();
   prims[primIndex].modelInputs.in.discrete_inputs.yellow_low_pressure = !idHydYellowPressurised->get();
-  prims[primIndex].modelInputs.in.discrete_inputs.fcdc_1_healthy = fcdcsDiscreteOutputs[0].fcdcValid;
-  prims[primIndex].modelInputs.in.discrete_inputs.fcdc_2_healthy = fcdcsDiscreteOutputs[1].fcdcValid;
-  prims[primIndex].modelInputs.in.discrete_inputs.fws_1_audio_function = idFwsAudioFunction[0]->get() == 1;
-  prims[primIndex].modelInputs.in.discrete_inputs.fws_2_audio_function = idFwsAudioFunction[1]->get() == 1;
-  prims[primIndex].modelInputs.in.discrete_inputs.is_engine_operative_1 = simData.engine_combustion_1;
-  prims[primIndex].modelInputs.in.discrete_inputs.is_engine_operative_2 = simData.engine_combustion_2;
-  prims[primIndex].modelInputs.in.discrete_inputs.is_engine_operative_3 = simData.engine_combustion_3;
-  prims[primIndex].modelInputs.in.discrete_inputs.is_engine_operative_4 = simData.engine_combustion_4;
-  prims[primIndex].modelInputs.in.discrete_inputs.apu_gen_connected =
-      idElecApuGenContactorClosed[0]->get() == 1 || idElecApuGenContactorClosed[1]->get() == 1;
-  prims[primIndex].modelInputs.in.discrete_inputs.every_dc_supplied_by_tr =
-      idElecTrContactorClosed[0]->get() == 1 && idElecTrContactorClosed[1]->get() == 1 && idElecTrContactorClosed[2]->get() == 1 &&
-      idElecTrContactorClosed[3]->get() == 1;
-  prims[primIndex].modelInputs.in.discrete_inputs.antiskid_available = simData.antiskidBrakesActive;
-  prims[primIndex].modelInputs.in.discrete_inputs.nws_communication_available =
-      !failuresConsumer.isActive(Failures::Rollout);  // FIXME when steering control system implemented
 
   prims[primIndex].modelInputs.in.analog_inputs.capt_pitch_stick_pos = -simInput.inputs[0];
   prims[primIndex].modelInputs.in.analog_inputs.fo_pitch_stick_pos = 0;
@@ -1781,6 +1763,19 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
     fcdcs[fcdcIndex].discreteInputs.fmaModeReversion = idFmaModeReversion->get();
     fcdcs[fcdcIndex].discreteInputs.autopilotStateMachineOutput = autopilotStateMachineOutput;
     fcdcs[fcdcIndex].discreteInputs.autoThrustOutput = autoThrustOutput;
+    fcdcs[fcdcIndex].discreteInputs.otherFcdcHealthy = fcdcsDiscreteOutputs[fcdcIndex == 0 ? 1 : 0].fcdcValid;
+    fcdcs[fcdcIndex].discreteInputs.engineOperative[0] = simData.engine_combustion_1;
+    fcdcs[fcdcIndex].discreteInputs.engineOperative[1] = simData.engine_combustion_2;
+    fcdcs[fcdcIndex].discreteInputs.engineOperative[2] = simData.engine_combustion_3;
+    fcdcs[fcdcIndex].discreteInputs.engineOperative[3] = simData.engine_combustion_4;
+    fcdcs[fcdcIndex].discreteInputs.apu_gen_connected =
+        idElecApuGenContactorClosed[0]->get() == 1 || idElecApuGenContactorClosed[1]->get() == 1;
+    fcdcs[fcdcIndex].discreteInputs.every_dc_supplied_by_tr =
+        idElecTrContactorClosed[0]->get() == 1 && idElecTrContactorClosed[1]->get() == 1 && idElecTrContactorClosed[2]->get() == 1 &&
+        idElecTrContactorClosed[3]->get() == 1;
+    fcdcs[fcdcIndex].discreteInputs.antiskid_available = simData.antiskidBrakesActive;
+    fcdcs[fcdcIndex].discreteInputs.nws_communication_available =
+        !failuresConsumer.isActive(Failures::Rollout);  // FIXME when steering control system implemented
     fcdcs[fcdcIndex].discreteInputs.simData = simData;
 
     // FIXME no speed_brake_lever_command_deg in prim out bus (where to get it from?)
@@ -1804,6 +1799,12 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
 
     if (afdxCommAvailable) {
       fcdcs[fcdcIndex].busInputs.raBusOutputs[i] = raBusOutputs[i];
+    }
+  }
+
+  for (int i = 0; i < 2; i++) {
+    if (afdxCommAvailable) {
+      fcdcs[fcdcIndex].busInputs.fwsDiscreteWord126[i] = Arinc429Utils::fromSimVar(idFwsDiscreteWord126[i]->get());
     }
   }
 

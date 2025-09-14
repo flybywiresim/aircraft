@@ -275,7 +275,6 @@ class AutopilotStateMachine final
   static Parameters_AutopilotStateMachine_T AutopilotStateMachine_P;
   static void AutopilotStateMachine_BitShift(real_T rtu_u, real_T *rty_y);
   static void AutopilotStateMachine_BitShift1(real_T rtu_u, real_T *rty_y);
-  static void AutopilotStateMachine_BitShift2(real_T rtu_u, real_T *rty_y);
   boolean_T AutopilotStateMachine_X_TO_OFF(const ap_sm_output *BusAssignment);
   boolean_T AutopilotStateMachine_X_TO_GA_TRK(const ap_sm_output *BusAssignment);
   boolean_T AutopilotStateMachine_ON_TO_HDG(const ap_sm_output *BusAssignment);

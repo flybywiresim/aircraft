@@ -164,7 +164,13 @@ export class FwsCore {
   ];
   public readonly debugDataToOisSubject = Subject.create<DebugDataTableRow[]>([]);
 
-  public readonly audioFunctionLost = Subject.create(false);
+  public readonly fws1AudioFunctionLost = Subject.create(false);
+  public readonly fws2AudioFunctionLost = Subject.create(false);
+  public readonly audioFunctionLost = MappedSubject.create(
+    SubscribableMapFunctions.and(),
+    this.fws1AudioFunctionLost,
+    this.fws2AudioFunctionLost,
+  );
 
   public readonly fwsEcpFailed = Subject.create(false);
 
@@ -356,7 +362,8 @@ export class FwsCore {
 
   public readonly ecamEwdShowFailurePendingIndication = Subject.create(false);
 
-  public readonly fwcOut126 = Arinc429RegisterSubject.createEmpty();
+  public readonly fwc1Out126 = Arinc429RegisterSubject.createEmpty();
+  public readonly fwc2Out126 = Arinc429RegisterSubject.createEmpty();
 
   public readonly approachAutoDisplayQnhSetPulseNode = new NXLogicPulseNode(true);
   public readonly approachAutoDisplaySlatsExtendedPulseNode = new NXLogicPulseNode(true);
@@ -2123,7 +2130,8 @@ export class FwsCore {
         if (v) {
           this.init();
 
-          this.fwcOut126.setSsm(Arinc429SignStatusMatrix.NormalOperation);
+          this.fwc1Out126.setSsm(Arinc429SignStatusMatrix.NormalOperation);
+          this.fwc2Out126.setSsm(Arinc429SignStatusMatrix.NormalOperation);
 
           this.normalChecklists.reset(null);
           this.abnormalNonSensed.reset();
@@ -2308,18 +2316,22 @@ export class FwsCore {
 
     this.subs.push(
       this.stallWarning.sub((v) => {
-        this.fwcOut126.setBitValue(17, v);
+        this.fwc1Out126.setBitValue(17, v);
+        this.fwc2Out126.setBitValue(17, v);
         // set the sound on/off
         this.soundManager.handleSoundCondition('stall', v);
       }, true),
+      this.aircraftOnGround.sub((v) => {
+        this.fwc1Out126.setBitValue(28, v);
+        this.fwc2Out126.setBitValue(28, v);
+      }, true),
+      this.fws1AudioFunctionLost.sub((v) => this.fwc1Out126.setBitValue(16, v), true), // not accurate, but we're saving a simvar here
+      this.fws2AudioFunctionLost.sub((v) => this.fwc2Out126.setBitValue(16, v), true),
     );
-    this.subs.push(this.aircraftOnGround.sub((v) => this.fwcOut126.setBitValue(28, v), true));
 
     this.subs.push(
-      this.fwcOut126.sub((v) => {
-        Arinc429Word.toSimVarValue('L:A32NX_FWC_1_DISCRETE_WORD_126', v.value, v.ssm);
-        Arinc429Word.toSimVarValue('L:A32NX_FWC_2_DISCRETE_WORD_126', v.value, v.ssm);
-      }, true),
+      this.fwc1Out126.sub((v) => v.writeToSimVar('L:A32NX_FWC_1_DISCRETE_WORD_126'), true),
+      this.fwc2Out126.sub((v) => v.writeToSimVar('L:A32NX_FWC_2_DISCRETE_WORD_126'), true),
     );
 
     this.ewdMessageLinesLeft.forEach((ls, i) =>
@@ -2417,7 +2429,10 @@ export class FwsCore {
       }, true),
     );
 
-    this.fwcOut126.setSsm(
+    this.fwc1Out126.setSsm(
+      this.startupCompleted.get() ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.FailureWarning,
+    );
+    this.fwc2Out126.setSsm(
       this.startupCompleted.get() ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.FailureWarning,
     );
 
@@ -2620,10 +2635,8 @@ export class FwsCore {
     // A380X hack: Inject healthy messages for some systems which are not yet implemented
     this.healthInjector();
 
-    this.audioFunctionLost.set(
-      this.failuresConsumer.isActive(A380Failure.Fws1AudioFunction) &&
-        this.failuresConsumer.isActive(A380Failure.Fws2AudioFunction),
-    );
+    this.fws1AudioFunctionLost.set(this.failuresConsumer.isActive(A380Failure.Fws1AudioFunction));
+    this.fws2AudioFunctionLost.set(this.failuresConsumer.isActive(A380Failure.Fws2AudioFunction));
 
     // Update flight phases
     this.flightPhases.update(deltaTime);

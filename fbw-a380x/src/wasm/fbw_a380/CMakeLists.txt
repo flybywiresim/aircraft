@@ -62,7 +62,6 @@ add_executable(flybywire-a380x-fbw
     src/model/AutopilotStateMachine.cpp
     src/model/Autothrust_data.cpp
     src/model/Autothrust.cpp
-    src/model/combineVectorElements_iJqADVYL.cpp
     src/model/combineVectorElements_N0KSVqzt.cpp
     src/model/binsearch_u32d.cpp
     src/model/Double2MultiWord.cpp

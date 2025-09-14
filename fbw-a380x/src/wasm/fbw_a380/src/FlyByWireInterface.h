@@ -218,7 +218,6 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idAutopilot_H_dot_radio;
 
   std::unique_ptr<LocalVariable> idFcuTrkFpaModeActive;
-  std::unique_ptr<LocalVariable> idFcuNorthRefTrue;
   std::unique_ptr<LocalVariable> idFcuSelectedFpa;
   std::unique_ptr<LocalVariable> idFcuSelectedVs;
   std::unique_ptr<LocalVariable> idFcuSelectedHeading;
@@ -242,7 +241,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFmFinalCanEngage;
 
   std::unique_ptr<LocalVariable> idFwcFlightPhase;
-  std::unique_ptr<LocalVariable> idFwsAudioFunction[2];
+  std::unique_ptr<LocalVariable> idFwsDiscreteWord126[2];
 
   std::unique_ptr<LocalVariable> idElecApuGenContactorClosed[2];
   std::unique_ptr<LocalVariable> idElecTrContactorClosed[4];

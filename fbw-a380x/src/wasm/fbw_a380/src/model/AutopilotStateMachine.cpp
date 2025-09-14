@@ -11,8 +11,6 @@
 
 const real_T AutopilotStateMachine_N{ 1.0 };
 
-const real_T AutopilotStateMachine_N_o{ 2.0 };
-
 const uint8_T AutopilotStateMachine_IN_FLARE{ 1U };
 
 const uint8_T AutopilotStateMachine_IN_GA_TRK{ 1U };
@@ -44,6 +42,8 @@ const uint8_T AutopilotStateMachine_IN_RWY_TRK{ 5U };
 const uint8_T AutopilotStateMachine_IN_InAir{ 1U };
 
 const uint8_T AutopilotStateMachine_IN_OnGround{ 2U };
+
+const real_T AutopilotStateMachine_N_c{ 2.0 };
 
 const real_T AutopilotStateMachine_N_a{ 3.0 };
 
@@ -99,11 +99,6 @@ void AutopilotStateMachine::AutopilotStateMachine_BitShift(real_T rtu_u, real_T 
 void AutopilotStateMachine::AutopilotStateMachine_BitShift1(real_T rtu_u, real_T *rty_y)
 {
   *rty_y = std::ldexp(rtu_u, static_cast<int32_T>(AutopilotStateMachine_N));
-}
-
-void AutopilotStateMachine::AutopilotStateMachine_BitShift2(real_T rtu_u, real_T *rty_y)
-{
-  *rty_y = std::ldexp(rtu_u, static_cast<int32_T>(AutopilotStateMachine_N_o));
 }
 
 boolean_T AutopilotStateMachine::AutopilotStateMachine_X_TO_OFF(const ap_sm_output *BusAssignment)
@@ -1913,9 +1908,6 @@ void AutopilotStateMachine::AutopilotStateMachine_GS(void)
     if (AutopilotStateMachine_B.BusAssignment_g.vertical.condition.FLARE) {
       AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_FLARE;
       AutopilotStateMachine_FLARE_entry_b();
-    } else if (!AutopilotStateMachine_B.BusAssignment_g.data.land_capability) {
-      AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_GS_TRACK;
-      AutopilotStateMachine_GS_TRACK_entry();
     }
     break;
 
@@ -3328,8 +3320,7 @@ void AutopilotStateMachine::step()
                         ((AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::GS_TRACK) ||
     (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode::LAND)) &&
                         AutopilotStateMachine_U.in.data.gear_is_extended &&
-                        (AutopilotStateMachine_U.in.data.flaps_handle_index > 0.0) &&
-                        AutopilotStateMachine_U.in.data.land_capability);
+                        (AutopilotStateMachine_U.in.data.flaps_handle_index > 0.0));
   rtb_cFLARE = (AutopilotStateMachine_U.in.input.condition_Flare &&
                 ((AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::LAND) ||
                  (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode::FLARE)) &&
@@ -4432,15 +4423,11 @@ void AutopilotStateMachine::step()
     &rtb_GainTheta);
   AutopilotStateMachine_BitShift1(static_cast<real_T>(AutopilotStateMachine_B.BusAssignment_g.lateral.armed.LOC),
     &rtb_GainTheta1);
-  AutopilotStateMachine_BitShift2(static_cast<real_T>(AutopilotStateMachine_B.BusAssignment_g.lateral.condition.LAND),
-    &result_idx_0);
   if (AutopilotStateMachine_B.BusAssignment_g.input.FD_active ||
       (AutopilotStateMachine_B.BusAssignment_g.output.enabled_AP1 != 0.0) ||
       (AutopilotStateMachine_B.BusAssignment_g.output.enabled_AP2 != 0.0)) {
-    Double2MultiWord(std::floor(rtb_GainTheta), &tmp_3.chunks[0U], 2);
-    Double2MultiWord(std::floor(rtb_GainTheta1), &tmp_4.chunks[0U], 2);
-    MultiWordIor(&tmp_3.chunks[0U], &tmp_4.chunks[0U], &tmp_2.chunks[0U], 2);
-    Double2MultiWord(std::floor(result_idx_0), &tmp_3.chunks[0U], 2);
+    Double2MultiWord(std::floor(rtb_GainTheta), &tmp_2.chunks[0U], 2);
+    Double2MultiWord(std::floor(rtb_GainTheta1), &tmp_3.chunks[0U], 2);
     MultiWordIor(&tmp_2.chunks[0U], &tmp_3.chunks[0U], &tmp_1.chunks[0U], 2);
     AutopilotStateMachine_Y.out.output.lateral_mode_armed = uMultiWord2Double(&tmp_1.chunks[0U], 2, 0);
   } else {
@@ -4451,15 +4438,14 @@ void AutopilotStateMachine::step()
     &rtb_GainTheta);
   AutopilotStateMachine_BitShift1(static_cast<real_T>(AutopilotStateMachine_B.BusAssignment_g.vertical.armed.ALT_CST),
     &rtb_GainTheta1);
-  AutopilotStateMachine_BitShift2(static_cast<real_T>(AutopilotStateMachine_B.BusAssignment_g.vertical.armed.CLB),
-    &result_idx_0);
   if (AutopilotStateMachine_B.BusAssignment_g.input.FD_active ||
       (AutopilotStateMachine_B.BusAssignment_g.output.enabled_AP1 != 0.0) ||
       (AutopilotStateMachine_B.BusAssignment_g.output.enabled_AP2 != 0.0)) {
     Double2MultiWord(std::floor(rtb_GainTheta), &tmp_9.chunks[0U], 2);
     Double2MultiWord(std::floor(rtb_GainTheta1), &tmp_a.chunks[0U], 2);
     MultiWordIor(&tmp_9.chunks[0U], &tmp_a.chunks[0U], &tmp_8.chunks[0U], 2);
-    Double2MultiWord(std::floor(result_idx_0), &tmp_9.chunks[0U], 2);
+    Double2MultiWord(std::ldexp(static_cast<real_T>(AutopilotStateMachine_B.BusAssignment_g.vertical.armed.CLB),
+      static_cast<int32_T>(AutopilotStateMachine_N_c)), &tmp_9.chunks[0U], 2);
     MultiWordIor(&tmp_8.chunks[0U], &tmp_9.chunks[0U], &tmp_7.chunks[0U], 2);
     Double2MultiWord(std::ldexp(static_cast<real_T>(AutopilotStateMachine_B.BusAssignment_g.vertical.armed.DES),
       static_cast<int32_T>(AutopilotStateMachine_N_a)), &tmp_8.chunks[0U], 2);

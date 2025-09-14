@@ -2,12 +2,13 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Arinc429LocalVarConsumerSubject } from '@flybywiresim/fbw-sdk';
-import { EventBus, MappedSubject, Subscription } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, EventBus, MappedSubject, Subscription } from '@microsoft/msfs-sdk';
+import { DmcLogicEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { FcdcSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/FcdcPublisher';
 
 export class FcdcValueProvider {
   private readonly subscriptions: Subscription[] = [];
-  private readonly sub = this.bus.getSubscriber<FcdcSimvars>();
+  private readonly sub = this.bus.getSubscriber<FcdcSimvars & DmcLogicEvents>();
 
   private readonly fcdc1DiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_1_1'));
   private readonly fcdc2DiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_1_2'));
@@ -51,6 +52,32 @@ export class FcdcValueProvider {
     this.sub.on(`fcdc_fg_discrete_word_8_${this.displayIndex}`),
   );
 
+  // Judging from our refs, degradation to APPR1 when TRUE REF is active is handled in the CDS
+  private readonly trueRefActive = ConsumerSubject.create(this.sub.on('trueRefActive'), false);
+
+  public readonly land2Capacity = MappedSubject.create(
+    ([word, trueRefActive]) => word.bitValueOr(23, false) && !trueRefActive,
+    this.fcdcFgDiscreteWord4,
+    this.trueRefActive,
+  );
+  public readonly land3FailPassiveCapacity = MappedSubject.create(
+    ([word, trueRefActive]) => word.bitValueOr(24, false) && !trueRefActive,
+    this.fcdcFgDiscreteWord4,
+    this.trueRefActive,
+  );
+  public readonly land3FailOperationalCapacity = MappedSubject.create(
+    ([word, trueRefActive]) => word.bitValueOr(25, false) && !trueRefActive,
+    this.fcdcFgDiscreteWord4,
+    this.trueRefActive,
+  );
+
+  public readonly autolandCapacity = MappedSubject.create(
+    ([land2, land3S, land3D]) => land2 || land3S || land3D,
+    this.land2Capacity,
+    this.land3FailPassiveCapacity,
+    this.land3FailOperationalCapacity,
+  );
+
   constructor(
     private readonly bus: EventBus,
     private readonly displayIndex: number,
@@ -66,6 +93,11 @@ export class FcdcValueProvider {
       this.fcdcDiscreteWord5,
       this.fcdcFgDiscreteWord4,
       this.fcdcFgDiscreteWord8,
+      this.trueRefActive,
+      this.land2Capacity,
+      this.land3FailPassiveCapacity,
+      this.land3FailOperationalCapacity,
+      this.autolandCapacity,
     );
 
     this.subscriptions.push(

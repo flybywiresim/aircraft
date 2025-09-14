@@ -30,9 +30,22 @@ struct FcdcDiscreteInputs {
 
   bool primHealthy[3];
 
+  bool otherFcdcHealthy;
+
   bool btvExitMissed;
 
   bool fmaModeReversion;
+
+  // Some of these might be bus inputs, no refs though
+  bool engineOperative[4];
+
+  bool apu_gen_connected;
+
+  bool every_dc_supplied_by_tr;
+
+  bool antiskid_available;
+
+  bool nws_communication_available;
 
   /* FIXME use proper bus messages */
   ap_raw_laws_input autopilotStateMachineOutput;
@@ -48,6 +61,7 @@ struct FcdcBusInputs {
   base_prim_out_bus prims[3];
   base_sec_out_bus secs[3];
   base_ra_bus raBusOutputs[3];
+  base_arinc_429 fwsDiscreteWord126[2];
 };
 
 struct FcdcDiscreteOutputs {

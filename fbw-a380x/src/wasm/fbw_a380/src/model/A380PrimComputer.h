@@ -60,8 +60,7 @@ class A380PrimComputer final
 
   struct BlockIO_A380PrimComputer_T {
     prim_outputs BusAssignment_nw;
-    prim_outputs BusAssignment_n;
-    prim_outputs BusAssignment_jy;
+    prim_outputs BusAssignment_om;
   };
 
   struct D_Work_A380PrimComputer_T {
@@ -669,7 +668,6 @@ class A380PrimComputer final
   static void A380PrimComputer_LagFilter_Reset(rtDW_LagFilter_A380PrimComputer_T *localDW);
   static void A380PrimComputer_LagFilter(real_T rtu_U, real_T rtu_C1, real_T rtu_dt, real_T *rty_Y,
     rtDW_LagFilter_A380PrimComputer_T *localDW);
-  static void A380PrimComputer_OtherRAselection(const prim_outputs *rtu_in, base_arinc_429 *rty_ra3Word);
   static void A380PrimComputer_MATLABFunction_c_Reset(rtDW_MATLABFunction_A380PrimComputer_o_T *localDW);
   static void A380PrimComputer_MATLABFunction_f(boolean_T rtu_u, boolean_T rtu_isRisingEdge, boolean_T *rty_y,
     rtDW_MATLABFunction_A380PrimComputer_o_T *localDW);
@@ -687,7 +685,6 @@ class A380PrimComputer final
     boolean_T *rty_bit3);
   static void A380PrimComputer_MATLABFunction2(a380_lateral_efcs_law rtu_law, boolean_T *rty_bit1, boolean_T *rty_bit2);
   boolean_T A380PrimComputer_a429_bitValueOr(uint32_T word_SSM, real32_T word_Data);
-  boolean_T A380PrimComputer_a429_bitValueOr_h(uint32_T word_SSM, real32_T word_Data);
   A380LateralDirectLaw LawMDLOBJ1;
   A380LateralNormalLaw LawMDLOBJ2;
   A380PitchAlternateLaw LawMDLOBJ3;

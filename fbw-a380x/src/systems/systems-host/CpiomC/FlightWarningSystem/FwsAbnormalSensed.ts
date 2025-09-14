@@ -3365,6 +3365,7 @@ export class FwsAbnormalSensed {
       whichItemsToShow: () => [true, true, true, true],
       whichItemsChecked: () => [true, true, true, true],
       notActiveWhenItemActive: ['314800004'],
+      monitorConfirmTime: 5.0,
       failure: -1,
       sysPage: -1,
       inopSysApprLdg: () => ['320300007', '320300022'],
