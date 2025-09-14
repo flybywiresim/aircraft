@@ -39,13 +39,15 @@ struct FcdcDiscreteInputs {
   // Some of these might be bus inputs, no refs though
   bool engineOperative[4];
 
-  bool apu_gen_connected;
+  bool apuGenConnected;
 
-  bool every_dc_supplied_by_tr;
+  bool everyDcSuppliedByTr;
 
-  bool antiskid_available;
+  bool antiskidAvailable;
 
-  bool nws_communication_available;
+  bool nwsCommunicationAvailable;
+
+  bool fcuNorthRefTrue;
 
   /* FIXME use proper bus messages */
   ap_raw_laws_input autopilotStateMachineOutput;

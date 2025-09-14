@@ -409,6 +409,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idTcasTargetRedMax = std::make_unique<LocalVariable>("A32NX_TCAS_VSPEED_RED:2");
 
   idFcuTrkFpaModeActive = std::make_unique<LocalVariable>("A32NX_TRK_FPA_MODE_ACTIVE");
+  idFcuNorthRefTrue = std::make_unique<LocalVariable>("A32NX_PUSH_TRUE_REF");
   idFcuSelectedFpa = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_FPA_SELECTED");
   idFcuSelectedVs = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_VS_SELECTED");
   idFcuSelectedHeading = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_HEADING_SELECTED");
@@ -1768,14 +1769,15 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
     fcdcs[fcdcIndex].discreteInputs.engineOperative[1] = simData.engine_combustion_2;
     fcdcs[fcdcIndex].discreteInputs.engineOperative[2] = simData.engine_combustion_3;
     fcdcs[fcdcIndex].discreteInputs.engineOperative[3] = simData.engine_combustion_4;
-    fcdcs[fcdcIndex].discreteInputs.apu_gen_connected =
+    fcdcs[fcdcIndex].discreteInputs.apuGenConnected =
         idElecApuGenContactorClosed[0]->get() == 1 || idElecApuGenContactorClosed[1]->get() == 1;
-    fcdcs[fcdcIndex].discreteInputs.every_dc_supplied_by_tr =
-        idElecTrContactorClosed[0]->get() == 1 && idElecTrContactorClosed[1]->get() == 1 && idElecTrContactorClosed[2]->get() == 1 &&
-        idElecTrContactorClosed[3]->get() == 1;
-    fcdcs[fcdcIndex].discreteInputs.antiskid_available = simData.antiskidBrakesActive;
-    fcdcs[fcdcIndex].discreteInputs.nws_communication_available =
+    fcdcs[fcdcIndex].discreteInputs.everyDcSuppliedByTr = idElecTrContactorClosed[0]->get() == 1 &&
+                                                          idElecTrContactorClosed[1]->get() == 1 &&
+                                                          idElecTrContactorClosed[2]->get() == 1 && idElecTrContactorClosed[3]->get() == 1;
+    fcdcs[fcdcIndex].discreteInputs.antiskidAvailable = simData.antiskidBrakesActive;
+    fcdcs[fcdcIndex].discreteInputs.nwsCommunicationAvailable =
         !failuresConsumer.isActive(Failures::Rollout);  // FIXME when steering control system implemented
+    fcdcs[fcdcIndex].discreteInputs.fcuNorthRefTrue = idFcuNorthRefTrue->get() == 1;
     fcdcs[fcdcIndex].discreteInputs.simData = simData;
 
     // FIXME no speed_brake_lever_command_deg in prim out bus (where to get it from?)

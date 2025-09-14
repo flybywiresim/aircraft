@@ -333,10 +333,10 @@ class Row1 extends DisplayComponent<{
         <A1A2Cell bus={this.props.bus} />
 
         <g ref={this.cellsToHide}>
-          <B1Cell ref={this.b1Cell} bus={this.props.bus} />
-          <C1Cell ref={this.c1Cell} bus={this.props.bus} />
+          <B1Cell ref={this.b1Cell} bus={this.props.bus} fcdcData={this.props.fcdcData} />
+          <C1Cell ref={this.c1Cell} bus={this.props.bus} fcdcData={this.props.fcdcData} />
           <D1D2Cell ref={this.D1D2Cell} bus={this.props.bus} fcdcData={this.props.fcdcData} />
-          <BC1Cell ref={this.BC1Cell} bus={this.props.bus} />
+          <BC1Cell ref={this.BC1Cell} bus={this.props.bus} fcdcData={this.props.fcdcData} />
         </g>
         <E1Cell bus={this.props.bus} />
       </g>
@@ -494,7 +494,6 @@ class Row3 extends DisplayComponent<{
 
 interface CellProps extends ComponentProps {
   bus: EventBus;
-  fcdcData?: FcdcValueProvider;
 }
 
 class A1A2Cell extends ShowForSecondsComponent<CellProps> {
@@ -854,7 +853,7 @@ class AB3Cell extends DisplayComponent<CellProps> {
   }
 }
 
-class B1Cell extends ShowForSecondsComponent<CellProps> {
+class B1Cell extends ShowForSecondsComponent<CellProps & { fcdcData: FcdcValueProvider }> {
   private boxClassSub = Subject.create('');
 
   private boxPathStringSub = Subject.create('');
@@ -883,7 +882,7 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
 
   private FPA = 0;
 
-  constructor(props: CellProps) {
+  constructor(props: CellProps & { fcdcData: FcdcValueProvider }) {
     super(props, 10);
   }
 
@@ -975,7 +974,11 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
       case VerticalMode.LAND:
         if (!this.props.fcdcData.autolandCapacity.get()) {
           text = 'G/S';
+        } else {
+          text = '';
+          this.isShown = false;
         }
+
         break;
       default:
         text = '';
@@ -1089,6 +1092,8 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
         this.tcasModeDisarmed = t;
         this.getText();
       });
+
+    this.props.fcdcData.autolandCapacity.sub(() => this.getText());
   }
 
   render(): VNode {
@@ -1202,12 +1207,12 @@ class B2Cell extends DisplayComponent<CellProps> {
   }
 }
 
-class C1Cell extends ShowForSecondsComponent<CellProps> {
+class C1Cell extends ShowForSecondsComponent<CellProps & { fcdcData: FcdcValueProvider }> {
   private textSub = Subject.create('');
 
   private activeLateralMode = 0;
 
-  constructor(props: CellProps) {
+  constructor(props: CellProps & { fcdcData: FcdcValueProvider }) {
     super(props, 10);
   }
 
@@ -1355,12 +1360,12 @@ class C2Cell extends DisplayComponent<CellProps> {
   }
 }
 
-class BC1Cell extends ShowForSecondsComponent<CellProps> {
+class BC1Cell extends ShowForSecondsComponent<CellProps & { fcdcData: FcdcValueProvider }> {
   private lastVerticalMode = 0;
 
   private textSub = Subject.create('');
 
-  constructor(props: CellProps) {
+  constructor(props: CellProps & { fcdcData: FcdcValueProvider }) {
     super(props, 9);
   }
 
@@ -1397,6 +1402,8 @@ class BC1Cell extends ShowForSecondsComponent<CellProps> {
         this.lastVerticalMode = v;
         this.setText();
       });
+
+    this.props.fcdcData.autolandCapacity.sub(() => this.setText(), true);
   }
 
   render(): VNode {
@@ -1634,6 +1641,12 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps & { readonly fcdcData: 
     let text1: string;
     let text2: string | undefined;
     this.isShown = true;
+    console.log(
+      this.props.fcdcData.land2Capacity.get(),
+      this.props.fcdcData.land3FailPassiveCapacity.get(),
+      this.props.fcdcData.land3FailOperationalCapacity.get(),
+      this.landModesArmedOrActive.get(),
+    );
     if (this.props.fcdcData.land2Capacity.get()) {
       text1 = 'LAND2';
       text2 = '';

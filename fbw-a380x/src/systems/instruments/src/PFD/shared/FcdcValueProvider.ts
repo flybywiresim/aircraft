@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Arinc429LocalVarConsumerSubject } from '@flybywiresim/fbw-sdk';
-import { ConsumerSubject, EventBus, MappedSubject, Subscription } from '@microsoft/msfs-sdk';
+import { EventBus, MappedSubject, Subscription } from '@microsoft/msfs-sdk';
 import { DmcLogicEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { FcdcSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/FcdcPublisher';
 
@@ -52,24 +52,9 @@ export class FcdcValueProvider {
     this.sub.on(`fcdc_fg_discrete_word_8_${this.displayIndex}`),
   );
 
-  // Judging from our refs, degradation to APPR1 when TRUE REF is active is handled in the CDS
-  private readonly trueRefActive = ConsumerSubject.create(this.sub.on('trueRefActive'), false);
-
-  public readonly land2Capacity = MappedSubject.create(
-    ([word, trueRefActive]) => word.bitValueOr(23, false) && !trueRefActive,
-    this.fcdcFgDiscreteWord4,
-    this.trueRefActive,
-  );
-  public readonly land3FailPassiveCapacity = MappedSubject.create(
-    ([word, trueRefActive]) => word.bitValueOr(24, false) && !trueRefActive,
-    this.fcdcFgDiscreteWord4,
-    this.trueRefActive,
-  );
-  public readonly land3FailOperationalCapacity = MappedSubject.create(
-    ([word, trueRefActive]) => word.bitValueOr(25, false) && !trueRefActive,
-    this.fcdcFgDiscreteWord4,
-    this.trueRefActive,
-  );
+  public readonly land2Capacity = this.fcdcFgDiscreteWord4.map((word) => word.bitValueOr(23, false));
+  public readonly land3FailPassiveCapacity = this.fcdcFgDiscreteWord4.map((word) => word.bitValueOr(24, false));
+  public readonly land3FailOperationalCapacity = this.fcdcFgDiscreteWord4.map((word) => word.bitValueOr(25, false));
 
   public readonly autolandCapacity = MappedSubject.create(
     ([land2, land3S, land3D]) => land2 || land3S || land3D,
@@ -93,7 +78,6 @@ export class FcdcValueProvider {
       this.fcdcDiscreteWord5,
       this.fcdcFgDiscreteWord4,
       this.fcdcFgDiscreteWord8,
-      this.trueRefActive,
       this.land2Capacity,
       this.land3FailPassiveCapacity,
       this.land3FailOperationalCapacity,

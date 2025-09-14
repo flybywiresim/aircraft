@@ -2130,9 +2130,6 @@ export class FwsCore {
         if (v) {
           this.init();
 
-          this.fwc1Out126.setSsm(Arinc429SignStatusMatrix.NormalOperation);
-          this.fwc2Out126.setSsm(Arinc429SignStatusMatrix.NormalOperation);
-
           this.normalChecklists.reset(null);
           this.abnormalNonSensed.reset();
           this.activeDeferredProceduresList.clear();
@@ -2325,8 +2322,30 @@ export class FwsCore {
         this.fwc1Out126.setBitValue(28, v);
         this.fwc2Out126.setBitValue(28, v);
       }, true),
-      this.fws1AudioFunctionLost.sub((v) => this.fwc1Out126.setBitValue(16, v), true), // not accurate, but we're saving a simvar here
-      this.fws2AudioFunctionLost.sub((v) => this.fwc2Out126.setBitValue(16, v), true),
+      this.fws1AudioFunctionLost.sub((v) => this.fwc1Out126.setBitValue(16, !v), true), // not accurate, but we're saving a simvar here
+      this.fws2AudioFunctionLost.sub((v) => this.fwc2Out126.setBitValue(16, !v), true),
+      MappedSubject.create(
+        ([fws1Failed, startupCompleted]) => !fws1Failed && startupCompleted,
+        this.fws1Failed,
+        this.startupCompleted,
+      ).sub(
+        (v) =>
+          this.fwc1Out126.setSsm(
+            v ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.FailureWarning,
+          ),
+        true,
+      ),
+      MappedSubject.create(
+        ([fws2Failed, startupCompleted]) => !fws2Failed && startupCompleted,
+        this.fws2Failed,
+        this.startupCompleted,
+      ).sub(
+        (v) =>
+          this.fwc2Out126.setSsm(
+            v ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.FailureWarning,
+          ),
+        true,
+      ),
     );
 
     this.subs.push(
@@ -2427,13 +2446,6 @@ export class FwsCore {
           this.publisher.pub('a380x_ois_fws_debug_data', data, true);
         }
       }, true),
-    );
-
-    this.fwc1Out126.setSsm(
-      this.startupCompleted.get() ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.FailureWarning,
-    );
-    this.fwc2Out126.setSsm(
-      this.startupCompleted.get() ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.FailureWarning,
     );
 
     // Inhibit single chimes for the first two seconds after power-on
