@@ -389,6 +389,7 @@ export class CDUInitPage {
 
     const plan = mcdu.getFlightPlan(forPlan);
     const isForPrimary = forPlan < FlightPlanIndex.FirstSecondary;
+    const isFlyingInActive = mcdu.isFlying() && plan.isActiveOrCopiedFromActive();
 
     const predictions = mcdu.getFuelPredComputation(forPlan);
 
@@ -571,7 +572,7 @@ export class CDUInitPage {
     if (Number.isFinite(predictions.routeReserveFuel)) {
       rteRsvWeightCell.update(
         NXUnits.kgToUser(predictions.routeReserveFuel).toFixed(1),
-        mcdu.isFlying() ? Column.green : Column.cyan,
+        isFlyingInActive ? Column.green : Column.cyan,
         Column.small,
       );
     } else if (Number.isFinite(plan.performanceData.pilotRouteReserveFuel.get())) {

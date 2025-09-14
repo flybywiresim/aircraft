@@ -2881,11 +2881,11 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   public async trySetThrustReductionAccelerationAltitude(s: string, forPlan: FlightPlanIndex): Promise<boolean> {
     const plan = this.getFlightPlan(forPlan);
-    const isActiveOrCopyOfActive =
-      forPlan === FlightPlanIndex.Active ||
-      (plan.flags & FlightPlanFlags.CopiedFromActive) === FlightPlanFlags.CopiedFromActive;
 
-    if ((isActiveOrCopyOfActive && this.flightPhaseManager.phase >= FmgcFlightPhase.Takeoff) || !plan.originAirport) {
+    if (
+      (plan.isActiveOrCopiedFromActive() && this.flightPhaseManager.phase >= FmgcFlightPhase.Takeoff) ||
+      !plan.originAirport
+    ) {
       this.setScratchpadMessage(NXSystemMessages.notAllowed);
       return false;
     }
@@ -2947,11 +2947,11 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   public async trySetEngineOutAcceleration(s: string, forPlan: FlightPlanIndex): Promise<boolean> {
     const plan = this.getFlightPlan(forPlan);
-    const isActiveOrCopyOfActive =
-      forPlan === FlightPlanIndex.Active ||
-      (plan.flags & FlightPlanFlags.CopiedFromActive) === FlightPlanFlags.CopiedFromActive;
 
-    if ((isActiveOrCopyOfActive && this.flightPhaseManager.phase >= FmgcFlightPhase.Takeoff) || !plan.originAirport) {
+    if (
+      (plan.isActiveOrCopiedFromActive() && this.flightPhaseManager.phase >= FmgcFlightPhase.Takeoff) ||
+      !plan.originAirport
+    ) {
       this.setScratchpadMessage(NXSystemMessages.notAllowed);
       return false;
     }
@@ -2995,12 +2995,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     forPlan: FlightPlanIndex,
   ): Promise<boolean> {
     const plan = this.getFlightPlan(forPlan);
-    const isActiveOrCopyOfActive =
-      forPlan === FlightPlanIndex.Active ||
-      (plan.flags & FlightPlanFlags.CopiedFromActive) === FlightPlanFlags.CopiedFromActive;
 
     if (
-      (isActiveOrCopyOfActive && this.flightPhaseManager.phase >= FmgcFlightPhase.GoAround) ||
+      (plan.isActiveOrCopiedFromActive() && this.flightPhaseManager.phase >= FmgcFlightPhase.GoAround) ||
       !plan.destinationAirport
     ) {
       this.setScratchpadMessage(NXSystemMessages.notAllowed);
@@ -3059,12 +3056,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   public async trySetEngineOutAccelerationAltitudeGoaround(s: string, forPlan: FlightPlanIndex): Promise<boolean> {
     const plan = this.getFlightPlan(forPlan);
-    const isActiveOrCopyOfActive =
-      forPlan === FlightPlanIndex.Active ||
-      (plan.flags & FlightPlanFlags.CopiedFromActive) === FlightPlanFlags.CopiedFromActive;
 
     if (
-      (isActiveOrCopyOfActive && this.flightPhaseManager.phase >= FmgcFlightPhase.GoAround) ||
+      (plan.isActiveOrCopiedFromActive() && this.flightPhaseManager.phase >= FmgcFlightPhase.GoAround) ||
       !plan.destinationAirport
     ) {
       this.setScratchpadMessage(NXSystemMessages.notAllowed);
@@ -4554,9 +4548,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
    */
   //TODO: Can this be util?
   public getFOB(forPlan: FlightPlanIndex): number | null {
-    const useFqi = this.isAnEngineOn();
-
     const plan = this.getFlightPlan(forPlan);
+
+    const useFqi = this.isAnEngineOn() && plan.isActiveOrCopiedFromActive();
 
     // If an engine is not running, use pilot entered block fuel to calculate fuel predictions
     return useFqi
@@ -5193,6 +5187,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     const plan = this.getFlightPlan(forPlan);
     const computations = this.resetFuelPredComputation(forPlan);
 
+    const isFlyingInActive = this.isFlying() && plan.isActiveOrCopiedFromActive();
+
     if (!CDUInitPage.fuelPredConditionsMet(this.mcdu, forPlan)) {
       return computations;
     }
@@ -5295,7 +5291,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
 
     // Route reserve
-    if (this.isFlying()) {
+    if (isFlyingInActive) {
       computations.routeReserveFuel = 0;
       computations.routeReserveFuelPercentage = 0;
     } else {
@@ -5324,7 +5320,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
     // EFOB
     computations.destinationFuelOnBoard =
-      fob !== null ? fob - computations.tripFuel - (!this.isFlying() ? plan.performanceData.taxiFuel.get() : 0) : null;
+      fob !== null ? fob - computations.tripFuel - (!isFlyingInActive ? plan.performanceData.taxiFuel.get() : 0) : null;
     computations.alternateDestinationFuelOnBoard =
       computations.destinationFuelOnBoard !== null && alternateFuel !== null
         ? computations.destinationFuelOnBoard - alternateFuel
@@ -5344,7 +5340,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       computations.extraFuel =
         computations.destinationFuelOnBoard !== null
           ? computations.destinationFuelOnBoard -
-            (this.isFlying() ? 0 : routeReserveFuel ?? 0) -
+            (isFlyingInActive ? 0 : routeReserveFuel ?? 0) -
             (minimumDestinationFuel ?? 0)
           : null;
       computations.extraTime =

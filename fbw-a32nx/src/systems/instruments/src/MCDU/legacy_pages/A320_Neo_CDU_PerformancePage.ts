@@ -71,7 +71,6 @@ export class CDUPerformancePage {
 
     const isActivePlan = forPlan === FlightPlanIndex.Active;
     const targetPlan = mcdu.getFlightPlan(forPlan);
-    const isCopyOfActivePlan = BitFlags.isAll(targetPlan.flags, FlightPlanFlags.CopiedFromActive);
 
     const isPhaseActive = mcdu.flightPhaseManager.phase === FmgcFlightPhase.Takeoff;
     const titlePrefix = forPlan >= FlightPlanIndex.FirstSecondary ? 'SEC\xa0' : '\xa0\xa0\xa0\xa0';
@@ -99,7 +98,7 @@ export class CDUPerformancePage {
     let v1Check = '{small}\xa0\xa0\xa0{end}';
     let vRCheck = '{small}\xa0\xa0\xa0{end}';
     let v2Check = '{small}\xa0\xa0\xa0{end}';
-    if (mcdu.flightPhaseManager.phase < FmgcFlightPhase.Takeoff || (!isActivePlan && !isCopyOfActivePlan)) {
+    if (mcdu.flightPhaseManager.phase < FmgcFlightPhase.Takeoff || !targetPlan.isActiveOrCopiedFromActive()) {
       v1 = isActivePlan ? '{amber}___{end}' : '{cyan}[\xa0]{end}';
 
       if (isActivePlan && mcdu.unconfirmedV1Speed) {
@@ -233,7 +232,7 @@ export class CDUPerformancePage {
 
     // thrust reduction / acceleration altitude
     const altitudeColour = hasOrigin
-      ? mcdu.flightPhaseManager.phase >= FmgcFlightPhase.Takeoff && (isActivePlan || isCopyOfActivePlan)
+      ? mcdu.flightPhaseManager.phase >= FmgcFlightPhase.Takeoff && targetPlan.isActiveOrCopiedFromActive()
         ? 'green'
         : 'cyan'
       : 'white';
@@ -307,7 +306,7 @@ export class CDUPerformancePage {
           ? `UP${Math.abs(targetPlan.performanceData.trimmableHorizontalStabilizer.get()).toFixed(1)}`
           : `DN${Math.abs(targetPlan.performanceData.trimmableHorizontalStabilizer.get()).toFixed(1)}`
         : '';
-    if (mcdu.flightPhaseManager.phase < FmgcFlightPhase.Takeoff || (!isActivePlan && !isCopyOfActivePlan)) {
+    if (mcdu.flightPhaseManager.phase < FmgcFlightPhase.Takeoff || !targetPlan.isActiveOrCopiedFromActive()) {
       const flaps =
         targetPlan.performanceData.takeoffFlaps.get() !== null ? targetPlan.performanceData.takeoffFlaps.get() : '[]';
       const ths = formattedThs ? formattedThs : '[\xa0\xa0\xa0]';
@@ -328,7 +327,7 @@ export class CDUPerformancePage {
 
     // flex takeoff temperature
     let flexTakeOffTempCell = '[\xa0\xa0]°[color]cyan';
-    if (mcdu.flightPhaseManager.phase < FmgcFlightPhase.Takeoff || (!isActivePlan && !isCopyOfActivePlan)) {
+    if (mcdu.flightPhaseManager.phase < FmgcFlightPhase.Takeoff || !targetPlan.isActiveOrCopiedFromActive()) {
       if (Number.isFinite(targetPlan.performanceData.flexTakeoffTemperature.get())) {
         if (mcdu._toFlexChecked) {
           flexTakeOffTempCell = `${targetPlan.performanceData.flexTakeoffTemperature.get().toFixed(0)}°[color]cyan`;
@@ -986,7 +985,6 @@ export class CDUPerformancePage {
 
     const isActivePlan = forPlan === FlightPlanIndex.Active;
     const plan = mcdu.getFlightPlan(forPlan);
-    const isCopyOfActivePlan = BitFlags.isAll(plan.flags, FlightPlanFlags.CopiedFromActive);
 
     const isPhaseActive = mcdu.flightPhaseManager.phase === FmgcFlightPhase.Approach;
 
@@ -1157,7 +1155,7 @@ export class CDUPerformancePage {
     const titlePrefix = forPlan >= FlightPlanIndex.FirstSecondary ? 'SEC' : '\xa0\xa0\xa0';
     const titleColor = isPhaseActive && isActivePlan ? 'green' : 'white';
 
-    if (isPhaseActive && (isActivePlan || isCopyOfActivePlan)) {
+    if (isPhaseActive && plan.isActiveOrCopiedFromActive()) {
       bottomRowLabels[0] = '';
       bottomRowCells[0] = '';
     } else {
@@ -1240,7 +1238,6 @@ export class CDUPerformancePage {
 
     const isActivePlan = forPlan === FlightPlanIndex.Active;
     const plan = mcdu.getFlightPlan(forPlan);
-    const isCopyOfActivePlan = BitFlags.isAll(plan.flags, FlightPlanFlags.CopiedFromActive);
     const haveDestination = plan.destinationAirport !== undefined;
 
     const titlePrefix = forPlan >= FlightPlanIndex.FirstSecondary ? 'SEC' : '\xa0\xa0\xa0';
@@ -1301,7 +1298,7 @@ export class CDUPerformancePage {
       '\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0',
       '\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0',
     ];
-    if (isPhaseActive && (isActivePlan || isCopyOfActivePlan)) {
+    if (isPhaseActive && plan.isActiveOrCopiedFromActive()) {
       if (isActivePlan) {
         if (confirmAppr) {
           bottomRowLabels[0] = '\xa0{amber}CONFIRM{amber}\xa0\xa0\xa0\xa0';

@@ -689,4 +689,11 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
     return false;
   }
+
+  isActiveOrCopiedFromActive(): boolean {
+    return (
+      this.index === FlightPlanIndex.Active ||
+      (this.flags & FlightPlanFlags.CopiedFromActive) === FlightPlanFlags.CopiedFromActive
+    );
+  }
 }
