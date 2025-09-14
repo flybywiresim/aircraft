@@ -268,7 +268,8 @@ export class CDUPerformancePage {
     let flpRetrCell = '---';
     let sltRetrCell = '---';
     let cleanCell = '---';
-    if (Number.isFinite(targetPlan.performanceData.zeroFuelWeight.get())) {
+    // TODO sec perf characteristic speeds computation
+    if (Number.isFinite(targetPlan.performanceData.zeroFuelWeight.get()) && forPlan === FlightPlanIndex.Active) {
       const flapSpeed = mcdu.computedVfs;
       if (flapSpeed !== 0) {
         flpRetrCell = `{green}${flapSpeed.toFixed(0)}{end}`;
