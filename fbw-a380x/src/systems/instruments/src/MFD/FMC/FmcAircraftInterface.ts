@@ -668,9 +668,7 @@ export class FmcAircraftInterface {
   }
 
   updateDestinationPredictions(destPred?: VerticalWaypointPrediction) {
-    if (destPred != null) {
-      this.updateMinimums(destPred.distanceFromAircraft);
-    }
+    this.updateMinimums(destPred?.distanceFromAircraft);
 
     this.arincRemainingFlightTime.setBnrValue(
       destPred?.secondsFromPresent ?? 0,
@@ -684,7 +682,7 @@ export class FmcAircraftInterface {
     this.updateDestinationPredictions();
   }
 
-  updateMinimums(distanceToDestination: number) {
+  updateMinimums(distanceToDestination?: number) {
     const inRange = this.shouldTransmitMinimums(distanceToDestination);
 
     const mda = this.fmgc.data.approachBaroMinimum.get();
@@ -703,7 +701,7 @@ export class FmcAircraftInterface {
     this.arincEisWord2.ssm = Arinc429SignStatusMatrix.NormalOperation;
   }
 
-  shouldTransmitMinimums(distanceToDestination: number) {
+  shouldTransmitMinimums(distanceToDestination?: number) {
     const phase = this.flightPhase.get();
     const isCloseToDestination = Number.isFinite(distanceToDestination) ? distanceToDestination < 250 : true;
 

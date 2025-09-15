@@ -87,7 +87,6 @@ export const NXSystemMessages = {
   comFplnRecievedPendingInsertion: new TypeIIMessage('COMPANY F-PLN RECEIVED\nWAITING FOR INSERTION', false),
   comDatalinkNotAvail: new TypeIMessage('COM DATALINK NOT AVAIL'),
   cstrDelUpToWpt: new TypeIIMessage('CONSTRAINTS BEFORE WWWWW : DELETED', false, 'WWWWW'),
-  costIndexInUse: new TypeIMessage('COST INDEX-NNN IN USE', false, 'NNN'),
   databaseCodingError: new TypeIIMessage('DATABASE CODING ERROR'),
   destEfobBelowMin: new TypeIIMessage('DEST EFOB BELOW MIN', true),
   enterDestData: new TypeIIMessage('ENTER DEST DATA', true),
@@ -116,6 +115,7 @@ export const NXSystemMessages = {
   navprimary: new TypeIIMessage('NAV PRIMARY'),
   navprimaryLost: new TypeIIMessage('NAV PRIMARY LOST', true),
   sqwkCodeNotValid: new TypeIMessage('SQWK CODE NOT VALID'),
+  lrcInUse: new TypeIMessage('LRC MODE IN USE'),
 };
 
 export const NXFictionalMessages = {
