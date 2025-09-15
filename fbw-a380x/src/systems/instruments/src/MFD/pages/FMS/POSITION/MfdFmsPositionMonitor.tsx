@@ -31,7 +31,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
 
   private readonly fmsEpe = Subject.create(Infinity);
 
-  private readonly fmsEpeDisplay = this.fmsEpe.map((v) => (v === Infinity ? '--.-' : v.toFixed(2).padEnd(5, '\xa0')));
+  private readonly fmsEpeDisplay = this.fmsEpe.map((v) => (v === Infinity ? '--.-' : v.toFixed(2)).padEnd(5, '\xa0'));
 
   private readonly fmsEPeUnitVisibility = this.fmsEpe.map((v) => (v === Infinity ? 'hidden' : 'visible'));
 
@@ -444,7 +444,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
               <span class={this.accuracyClass}>{this.fmsAccuracy}</span>
             </div>
             <div class="mfd-label-value-container" style={'margin-right:95px'}>
-              <span class="mfd-label bigger mfd-spacing" style="margin-right: 38px;">
+              <span class="mfd-label bigger mfd-spacing" style="margin-right: 37px;">
                 EPU
               </span>
               <span class="mfd-value bigger">{this.fmsEpeDisplay}</span>
@@ -454,7 +454,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
             </div>
           </div>
 
-          <div class="mfd-pos-monitor-fm-pos-line" style={'margin-bottom: 16px;'}>
+          <div class="mfd-pos-monitor-fm-pos-line" style={'margin-bottom: 14.5px;'}>
             <div class="mfd-label-value-container">
               <span class="mfd-label bigger mfd-spacing-right">&nbsp;POS1</span>
               <span class="mfd-value bigger mfd-spacing-right">{this.position1}</span>
@@ -583,7 +583,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
               <span class="mfd-label bigger">{this.positionFrozenTime}</span>
             </div>
 
-            <div class="fr space-between" style={'margin-bottom: 23px;'}>
+            <div class="fr space-between" style={'margin-bottom: 19px;'}>
               <Button
                 label={Subject.create(
                   <div style="display: flex; flex-direction: row; justify-content: space-between;">
@@ -612,19 +612,19 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                 )}
                 onClick={() => this.togglePositionFrozen()}
                 selected={this.positionFrozen}
-                buttonStyle="width: 206px; margin-right:90px; height:60px"
+                buttonStyle="width: 231px; margin-right:41px; height:60px"
               />
             </div>
           </div>
 
-          <div class="mfd-pos-monitor-line big vertical-spaced"></div>
+          <div class="mfd-pos-monitor-line big"></div>
 
           <div class="fr space-between">
             <Button
               label="POSITION <br /> UPDATE"
               disabled={Subject.create(true)}
               onClick={() => {}}
-              buttonStyle="width: 136px; height:58px; margin-top:18px;"
+              buttonStyle="width: 138px; height:59px; margin-top:18px;"
             />
             <div>
               <div class="mfd-label-value-container" style={'margin-right:20px; justify-content:flex-end;'}>
@@ -666,7 +666,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
             </div>
           </div>
 
-          <div class="mfd-pos-monitor-line big vertical-spaced"> </div>
+          <div class="mfd-pos-monitor-line big" style={'margin-top:34px;'}></div>
 
           <div style="flex-grow: 1;" />
           {/* fill space vertically */}
@@ -681,18 +681,18 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
               <Button
                 label="NAVAIDS"
                 onClick={() => this.props.mfd.uiService.navigateTo('fms/position/navaids')}
-                buttonStyle="margin-right: 5px; width:140px;"
+                buttonStyle="margin-right: 5px; width:149px; height:43px;"
               />
               <Button
                 label="GNSS"
                 disabled={Subject.create(true)}
                 onClick={() => this.props.mfd.uiService.navigateTo('fms/position/gnss')}
-                buttonStyle="margin-right: 5px; width:125px;"
+                buttonStyle="margin-right: 5px; width:133px; height:43px;"
               />
               <Button
                 label="IRS"
                 onClick={() => this.props.mfd.uiService.navigateTo('fms/position/irs')}
-                buttonStyle="margin-right: 5px; width:125px;"
+                buttonStyle="margin-right: 5px; width:136px; height:43px;"
               />
             </div>
           </div>
