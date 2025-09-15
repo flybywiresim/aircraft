@@ -18,7 +18,7 @@ import { A380AltitudeUtils } from '@shared/OperatingAltitudes';
 import { maxBlockFuel, maxCertifiedAlt, maxZfw } from '@shared/PerformanceConstants';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FmcAircraftInterface } from 'instruments/src/MFD/FMC/FmcAircraftInterface';
-import { FmgcDataService, LOWEST_FUEL_ESTIMATE_KGS } from 'instruments/src/MFD/FMC/fmgc';
+import { CostIndexMode, FmgcDataService, LOWEST_FUEL_ESTIMATE_KGS } from 'instruments/src/MFD/FMC/fmgc';
 import { FmcInterface, FmcOperatingModes } from 'instruments/src/MFD/FMC/FmcInterface';
 import {
   a380EfisRangeSettings,
@@ -316,14 +316,8 @@ export class FlightManagementComputer implements FmcInterface {
           }
         }, true),
         this.enginesWereStarted.sub((val) => {
-          if (
-            val &&
-            this.flightPlanService.hasActive &&
-            this.flightPlanService.active.destinationAirport &&
-            !Number.isFinite(this.flightPlanService.active.performanceData.costIndex.get())
-          ) {
-            this.flightPlanService.active.setPerformanceData('costIndex', 0);
-            this.addMessageToQueue(NXSystemMessages.costIndexInUse.getModifiedMessage('000'));
+          if (val) {
+            this.setCi0AndLrcIfFlightplanHasnoCi();
           }
         }),
         this.legacyFmsIsHealthy.sub((v) => {
@@ -352,6 +346,11 @@ export class FlightManagementComputer implements FmcInterface {
             this.removeMessageFromQueue(NXSystemMessages.enterDestData.text);
           }
         }),
+        this.fmgc.data.zeroFuelWeight.sub((zfw) => {
+          if (zfw != null) {
+            this.setCi0AndLrcIfFlightplanHasnoCi();
+          }
+        }),
       );
 
       this.subs.push(this.shouldBePreflightPhase, this.flightPhase, this.activePage);
@@ -376,6 +375,17 @@ export class FlightManagementComputer implements FmcInterface {
 
       lastUpdateTime = now;
     }, 100);
+
+    // Start the check routine for system health and status
+    setInterval(() => {
+      if (this.flightPhaseManager.phase === FmgcFlightPhase.Cruise && !this.destDataCheckedInCruise) {
+        const destPred = this.guidanceController.vnavDriver.getDestinationPrediction();
+        if (destPred && Number.isFinite(destPred.distanceFromAircraft) && destPred.distanceFromAircraft < 180) {
+          this.destDataCheckedInCruise = true;
+          this.checkDestData();
+        }
+      }
+    }, 15000);
 
     console.log(`${FmcIndex[this.instance]} initialized.`);
   }
@@ -577,17 +587,6 @@ export class FlightManagementComputer implements FmcInterface {
       SimVar.SetSimVarValue('K:TOGGLE_GPS_DRIVES_NAV1', 'Bool', 0);
     }
     SimVar.SetSimVarValue('K:VS_SLOT_INDEX_SET', 'number', 1);
-
-    // Start the check routine for system health and status
-    setInterval(() => {
-      if (this.flightPhaseManager.phase === FmgcFlightPhase.Cruise && !this.destDataCheckedInCruise) {
-        const destPred = this.guidanceController.vnavDriver.getDestinationPrediction();
-        if (destPred && Number.isFinite(destPred.distanceFromAircraft) && destPred.distanceFromAircraft < 180) {
-          this.destDataCheckedInCruise = true;
-          this.checkDestData();
-        }
-      }
-    }, 15000);
   }
 
   public clearLatestFmsErrorMessage() {
@@ -1327,6 +1326,18 @@ export class FlightManagementComputer implements FmcInterface {
     this.ndMessageFlags[side] &= ~message.ndFlag;
     if (this.ndMessageFlags[side] !== old) {
       SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_ND_FM_MESSAGE_FLAGS`, 'number', this.ndMessageFlags[side]);
+    }
+  }
+
+  private setCi0AndLrcIfFlightplanHasnoCi(): void {
+    if (
+      this.flightPlanService.hasActive &&
+      this.flightPlanService.active.destinationAirport &&
+      !Number.isFinite(this.flightPlanService.active.performanceData.costIndex)
+    ) {
+      this.flightPlanService.active.setPerformanceData('costIndex', 0);
+      this.fmgc.data.costIndexMode.set(CostIndexMode.LRC);
+      this.addMessageToQueue(NXSystemMessages.lrcInUse);
     }
   }
 }
