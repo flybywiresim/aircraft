@@ -141,36 +141,59 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
   }
 
   async secondaryActivate(index: number, isBeforeEngineStart: boolean) {
-    const oldZfw = this.active?.performanceData.zeroFuelWeight.get() ?? null;
-    const oldZfwCg = this.active?.performanceData.zeroFuelWeightCenterOfGravity.get() ?? null;
-    const fixInfos = this.active?.fixInfos.map((it) => it?.clone()) ?? [];
-
-    this.flightPlanManager.copy(FlightPlanIndex.FirstSecondary + index - 1, FlightPlanIndex.Active);
-
-    // The ZFW/ZFWCG are actually not copied to the active plan if we activate after engine start. We only show the
-    // CHECK WEIGHT scratchpad message if the weights differ by more than 5 tonnes.
-    if (!isBeforeEngineStart) {
-      this.setPerformanceData('zeroFuelWeight', oldZfw, FlightPlanIndex.Active);
-      this.setPerformanceData('zeroFuelWeightCenterOfGravity', oldZfwCg, FlightPlanIndex.Active);
-    }
-
-    // FIX INFOs are preserved when activating secondary
-    // FIXME they should probabably not be part of the flight plan at all since you can only set them for the active plan
-    this.active.fixInfos = fixInfos;
+    this.persistActivePerfDataAcrossModification(isBeforeEngineStart, () => {
+      this.flightPlanManager.copy(FlightPlanIndex.FirstSecondary + index - 1, FlightPlanIndex.Active);
+    });
   }
 
   async activeAndSecondarySwap(secIndex: number, isBeforeEngineStart: boolean): Promise<void> {
+    this.persistActivePerfDataAcrossModification(isBeforeEngineStart, () => {
+      this.flightPlanManager.swap(FlightPlanIndex.FirstSecondary + secIndex - 1, FlightPlanIndex.Active);
+    });
+  }
+
+  private persistActivePerfDataAcrossModification(isBeforeEngineStart: boolean, activeModification: () => void) {
     const oldZfw = this.active?.performanceData.zeroFuelWeight.get() ?? null;
     const oldZfwCg = this.active?.performanceData.zeroFuelWeightCenterOfGravity.get() ?? null;
+    const oldBlockFuel = this.active?.performanceData.blockFuel.get() ?? null;
+    const oldTaxiFuel = this.active?.performanceData.taxiFuel.get() ?? null;
+    const oldCostIndex = this.active?.performanceData.costIndex.get() ?? null;
+    const oldFlightNumber = this.active?.flightNumber;
+
     const fixInfos = this.active?.fixInfos.map((it) => it?.clone()) ?? [];
 
-    this.flightPlanManager.swap(FlightPlanIndex.FirstSecondary + secIndex - 1, FlightPlanIndex.Active);
+    activeModification();
 
-    // The ZFW/ZFWCG are actually not copied to the active plan if we activate after engine start. We only show the
-    // CHECK WEIGHT scratchpad message if the weights differ by more than 5 tonnes.
-    if (!isBeforeEngineStart) {
+    // The ZFW/ZFWCG are actually not copied to the active plan if we activate after engine start or before engine
+    // start but with the values in the SEC being empty.
+    // We only show the CHECK WEIGHT scratchpad message if the weights differ by more than 5 tonnes.
+    if (oldZfw !== null && (!isBeforeEngineStart || this.active.performanceData.zeroFuelWeight.get() === null)) {
       this.setPerformanceData('zeroFuelWeight', oldZfw, FlightPlanIndex.Active);
+    }
+    if (
+      oldZfwCg !== null &&
+      (!isBeforeEngineStart || this.active.performanceData.zeroFuelWeightCenterOfGravity.get() === null)
+    ) {
       this.setPerformanceData('zeroFuelWeightCenterOfGravity', oldZfwCg, FlightPlanIndex.Active);
+    }
+    if (oldBlockFuel !== null && (!isBeforeEngineStart || this.active.performanceData.blockFuel.get() === null)) {
+      this.setPerformanceData('blockFuel', oldBlockFuel, FlightPlanIndex.Active);
+    }
+
+    if (
+      this.config.PERSIST_TAXI_FUEL_ON_SEC_SWAP &&
+      oldTaxiFuel !== null &&
+      this.active.performanceData.pilotTaxiFuel.get() === null
+    ) {
+      this.setPerformanceData('pilotTaxiFuel', oldTaxiFuel, FlightPlanIndex.Active);
+    }
+
+    if (oldCostIndex !== null && this.active.performanceData.costIndex.get() === null) {
+      this.setPerformanceData('costIndex', oldCostIndex, FlightPlanIndex.Active);
+    }
+
+    if (oldFlightNumber !== undefined && this.active.flightNumber === undefined) {
+      this.setFlightNumber(oldFlightNumber, FlightPlanIndex.Active);
     }
 
     // FIX INFOs are preserved when swapping active and secondary

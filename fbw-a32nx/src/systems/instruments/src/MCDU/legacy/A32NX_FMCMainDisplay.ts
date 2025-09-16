@@ -4199,7 +4199,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   /**
-   * Called after Flaps or THS change
+   * Called after Flaps or THS change or a secondary flight plan is activated
    */
   private tryCheckToData() {
     if (Number.isFinite(this.v1Speed) || Number.isFinite(this.vRSpeed) || Number.isFinite(this.v2Speed)) {
