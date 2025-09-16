@@ -57,7 +57,7 @@ If you're still running into problems after reading through the documentation, f
 
 ## How to contribute
 
-If you would like to contribute to the project, see [Contributing.md](.github/Contributing.md)
+If you would like to contribute to the project, see [CONTRIBUTING.md](.github/CONTRIBUTING.md)
 
 ### Known issues and bug reporting
 
@@ -77,7 +77,7 @@ We don't know, since it depends on many factors. We will announce each new stabl
 
 ### How do I join the team?
 
-Read [Contributing.md](.github/Contributing.md) and join our Discord to get started.
+Read [CONTRIBUTING.md](.github/CONTRIBUTING.md) and join our [Discord](https://discord.gg/flybywire) to get started.
 
 ### Are FlyByWire aircraft payware?
 
@@ -121,3 +121,4 @@ The contents of distribution packages built from the sources in this repository 
 - in the case of original source code from FBW or compiled artifacts generated from it, under GPLv3.
 - in the case of original 3D assets from FBW, under CC BY-NC 4.0.
 - in the case of assets covered by the "Game Content Usage Rules", under the license granted by those rules.
+
