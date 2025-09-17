@@ -227,7 +227,7 @@ function geometryLegFromFlightPlanLeg(
 
   const waypoint = flightPlanLeg.terminationWaypoint();
   const magneticCourse = flightPlanLeg.definition.magneticCourse;
-  const trueCourse = A32NX_Util.magneticToTrue(magneticCourse, courseMagVar);
+  const trueCourse = flightPlanLeg.definition.trueCourse ?? A32NX_Util.magneticToTrue(magneticCourse, courseMagVar);
   const recommendedNavaid = flightPlanLeg.definition.recommendedNavaid;
   const length = flightPlanLeg.definition.length;
 
