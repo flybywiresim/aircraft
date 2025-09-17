@@ -328,7 +328,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     this.clearSpeedConstraints();
   }
 
-  static turningPoint(segment: EnrouteSegment, location: Coordinates, magneticCourse: DegreesMagnetic): FlightPlanLeg {
+  static turningPoint(segment: EnrouteSegment, location: Coordinates, trueCourse: DegreesTrue): FlightPlanLeg {
     return new FlightPlanLeg(
       segment,
       {
@@ -336,7 +336,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         type: LegType.CF,
         overfly: false,
         waypoint: WaypointFactory.fromLocation('T-P', location),
-        magneticCourse,
+        trueCourse,
       },
       'T-P',
       '',

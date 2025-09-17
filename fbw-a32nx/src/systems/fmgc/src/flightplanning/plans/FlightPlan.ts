@@ -6,7 +6,7 @@
 
 import { Airport, ApproachType, Fix, isMsfs2024, LegType, MathUtils, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
-import { EventBus, MagVar } from '@microsoft/msfs-sdk';
+import { EventBus } from '@microsoft/msfs-sdk';
 import { FixInfoData, FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
 import { loadAllDepartures, loadAllRunways } from '@fmgc/flightplanning/DataLoading';
 import { Coordinates, Degrees } from 'msfs-geo';
@@ -156,10 +156,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
       throw new Error('[FPM] Cannot direct to a non-XF leg');
     }
 
-    const magVar = MagVar.get(ppos.lat, ppos.long);
-    const magneticCourse = A32NX_Util.trueToMagnetic(trueTrack, magVar);
-
-    const turningPoint = FlightPlanLeg.turningPoint(this.enrouteSegment, ppos, magneticCourse);
+    const turningPoint = FlightPlanLeg.turningPoint(this.enrouteSegment, ppos, trueTrack);
     turningPoint.flags |= FlightPlanLegFlags.DirectToTurningPoint;
     if (this.index === FlightPlanIndex.Temporary) {
       turningPoint.flags |= FlightPlanLegFlags.PendingDirectToTurningPoint;
@@ -201,10 +198,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
       return;
     }
 
-    const magVar = MagVar.get(ppos.lat, ppos.long);
-    const magneticCourse = A32NX_Util.trueToMagnetic(trueTrack, magVar);
-
-    const turningPoint = FlightPlanLeg.turningPoint(this.enrouteSegment, ppos, magneticCourse);
+    const turningPoint = FlightPlanLeg.turningPoint(this.enrouteSegment, ppos, trueTrack);
     const turnEnd = FlightPlanLeg.directToTurnEnd(this.enrouteSegment, waypoint);
 
     turningPoint.flags |= FlightPlanLegFlags.DirectToTurningPoint;
