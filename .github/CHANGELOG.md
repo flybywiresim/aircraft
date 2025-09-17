@@ -139,7 +139,7 @@
 1. [A380X/OIS] Fix OOOI times logic, automatically power laptop for runway spawns - @flogross89 (floridude)
 1. [A380X/MFD] Changed colors of TCAS modes to match correct colors in A380 FCOM - @fwillard (Finn)
 1. [MODEL] Inverted behavior of FADEC GND PWR PB - @Maximilian-Reuter (\_chaoz_)
-1. [A380X/FLIGHT AND ENGINE MODELS] Fixed excessive descent rates and takeoff rotation issues - @donstim (donbikes)
+1. [A380X/FLIGHT AND ENGINE MODELS] Fixed excessive descent rates and takeoff rotation issues, improved fuel burn - @donstim (donbikes)
 
 ## 0.13.0
 
