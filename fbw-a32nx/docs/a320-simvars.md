@@ -3574,6 +3574,11 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - {id} is from 1 to 7
     - Flap actual position discrete output
 
+- A32NX_SFCC_{number}_SAP_{id}
+    - {number} is 1 or 2
+    - {id} is from 1 to 7
+    - Slat actual position discrete output
+
 ## Flight Controls (ATA 27)
 
 - A32NX_FLIGHT_CONTROLS_TRACKING_MODE
