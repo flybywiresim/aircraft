@@ -1,12 +1,14 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { FMMessage, FMMessageTypes } from '@flybywiresim/fbw-sdk';
+import { FMMessage } from '@flybywiresim/fbw-sdk';
 
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { FMMessageSelector, FMMessageUpdate } from './FmsMessages';
 import { Navigation } from '../../navigation/Navigation';
+import { FMMessageTypes } from './FmMessages';
 
 export class NoNavIntercept implements FMMessageSelector {
   message: FMMessage = FMMessageTypes.NoNavIntercept;

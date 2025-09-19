@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import {
   Arinc429Register,
   Arinc429Word,
@@ -9,7 +10,7 @@ import {
 // FIXME move to PseudoFWC
 export class A32NX_FWC {
   // momentary
-  private toConfigTest = null; // WTOCT
+  private toConfigTest = false; // WTOCT
 
   // persistent
   private flightPhase = null;
@@ -71,7 +72,7 @@ export class A32NX_FWC {
   }
 
   _updateButtons(_deltaTime) {
-    this.ecpWarningButtonStatus.setFromSimVar('A32NX_ECP_WARNING_SWITCH_WORD');
+    this.ecpWarningButtonStatus.setFromSimVar('L:A32NX_ECP_WARNING_SWITCH_WORD');
     this.toConfigTest = this.ecpWarningButtonStatus.bitValue(18);
   }
 

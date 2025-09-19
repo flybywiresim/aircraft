@@ -1,4 +1,5 @@
-// Copyright (c) 2021-2022 FlyByWire Simulations
+// @ts-strict-ignore
+// Copyright (c) 2021-2022, 2025 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -14,7 +15,6 @@ import { DmeArcTransition } from '@fmgc/guidance/lnav/transitions/DmeArcTransiti
 import { placeBearingDistance, placeBearingIntersection } from 'msfs-geo';
 import { MathUtils, Fix } from '@flybywiresim/fbw-sdk';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
-import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
 import { PathVector, PathVectorType } from '../PathVector';
 
 export class CFLeg extends XFLeg {
@@ -42,11 +42,6 @@ export class CFLeg extends XFLeg {
   }
 
   getPathStartPoint(): Coordinates | undefined {
-    // Make sure an inbound radial doesn't connect to the actual IN-BND waypoint which is at PPOS
-    if (this.inboundGuidable instanceof IFLeg && !this.inboundGuidable.isInbndOrOutbnd()) {
-      return this.inboundGuidable.fix.location;
-    }
-
     if (this.inboundGuidable instanceof Transition && this.inboundGuidable.isComputed) {
       return this.inboundGuidable.getPathEndPoint();
     }

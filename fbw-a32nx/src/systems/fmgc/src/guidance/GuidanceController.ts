@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2025 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -124,7 +125,7 @@ export class GuidanceController {
 
   activeTransIndex: number;
 
-  activeLegDtg: NauticalMiles;
+  activeLegDtg?: NauticalMiles;
 
   /** Used for lateral guidance */
   activeLegCompleteLegPathDtg: NauticalMiles;

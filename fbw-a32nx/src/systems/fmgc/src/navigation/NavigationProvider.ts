@@ -27,6 +27,11 @@ export interface NavigationProvider {
    */
   getPpos(): Coordinates | null;
 
+  /** Whether GPS is the primary navigation means and meets accuracy requirements.
+   * @returns true if GPS primary is active.
+   */
+  getGpsPrimary(): boolean;
+
   /**
    * Gets the true aircraft track according to the FMS
    * @returns true track in degrees or null if invalid
