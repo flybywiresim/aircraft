@@ -10,7 +10,6 @@ import {
   NodeReference,
   Subject,
   Subscribable,
-  SubscribableMapFunctions,
   VNode,
 } from '@microsoft/msfs-sdk';
 import {
@@ -1028,7 +1027,8 @@ class ArsBar extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private readonly config1F = this.flapsSlatActualPosition.map((w) => {
     // Slats valid and in 1
-    w.bitValueOr(11, false) &&
+    return (
+      w.bitValueOr(11, false) &&
       w.bitValue(13) &&
       !w.bitValue(14) &&
       !w.bitValue(15) &&
@@ -1039,23 +1039,26 @@ class ArsBar extends DisplayComponent<{ bus: ArincEventBus }> {
       !w.bitValue(22) &&
       // flap not fault and not jammed
       !w.bitValue(29) &&
-      !w.bitValue(25);
+      !w.bitValue(25)
+    );
   });
 
-  private readonly flapLeverConf1AndFlaps1PlusF = MappedSubject.create(
-    SubscribableMapFunctions.and(),
-    this.flapLever1,
-    this.config1F,
-  );
   private readonly airspeed = Arinc429LocalVarConsumerSubject.create(this.sub.on('speed'), null);
 
+  private readonly arsVisible = MappedSubject.create(
+    ([flapLever1, config1F, airspeed]) => !airspeed.isInvalid() && flapLever1 && config1F,
+    this.flapLever1,
+    this.config1F,
+    this.airspeed,
+  );
+
   private readonly arsStyle = MappedSubject.create(
-    ([conf1, ias]) => {
-      return conf1
-        ? `transform: translate3d(0px, ${((ias.valueOr(0) - ArsBar.ARS_1F_F_SPEED) * DistanceSpacing) / ValueSpacing + 80.818}px, 0px )`
+    ([visible, ias]) => {
+      return visible
+        ? `transform: translate3d(0px, ${((ias.value - ArsBar.ARS_1F_F_SPEED) * DistanceSpacing) / ValueSpacing + 80.818}px, 0px )`
         : '';
     },
-    this.flapLeverConf1AndFlaps1PlusF,
+    this.arsVisible,
     this.airspeed,
   );
 
@@ -1070,7 +1073,7 @@ class ArsBar extends DisplayComponent<{ bus: ArincEventBus }> {
         class="NormalStroke Green"
         d={this.path}
         visibility={{
-          visible: this.flapLeverConf1AndFlaps1PlusF,
+          visible: this.arsVisible,
         }}
         style={this.arsStyle}
       />
