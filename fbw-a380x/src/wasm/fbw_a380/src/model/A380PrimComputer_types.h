@@ -41,6 +41,47 @@ struct base_arinc_429
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_prim_discrete_outputs_
+#define DEFINED_TYPEDEF_FOR_base_prim_discrete_outputs_
+
+struct base_prim_discrete_outputs
+{
+  real_T alignment_dummy;
+  boolean_T elevator_1_active_mode;
+  boolean_T elevator_2_active_mode;
+  boolean_T elevator_3_active_mode;
+  boolean_T ths_active_mode;
+  boolean_T left_aileron_1_active_mode;
+  boolean_T left_aileron_2_active_mode;
+  boolean_T right_aileron_1_active_mode;
+  boolean_T right_aileron_2_active_mode;
+  boolean_T left_spoiler_electronic_module_enable;
+  boolean_T right_spoiler_electronic_module_enable;
+  boolean_T rudder_1_hydraulic_active_mode;
+  boolean_T rudder_1_electric_active_mode;
+  boolean_T rudder_2_hydraulic_active_mode;
+  boolean_T rudder_2_electric_active_mode;
+  boolean_T prim_healthy;
+  boolean_T fcu_own_select;
+  boolean_T fcu_opp_select;
+  boolean_T reverser_tertiary_lock;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+#define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+
+struct base_lgciu_bus
+{
+  base_arinc_429 discrete_word_1;
+  base_arinc_429 discrete_word_2;
+  base_arinc_429 discrete_word_3;
+  base_arinc_429 discrete_word_4;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_time_
 #define DEFINED_TYPEDEF_FOR_base_time_
 
@@ -217,19 +258,6 @@ struct base_sfcc_bus
   base_arinc_429 slat_flap_actual_position_word;
   base_arinc_429 slat_actual_position_deg;
   base_arinc_429 flap_actual_position_deg;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
-#define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
-
-struct base_lgciu_bus
-{
-  base_arinc_429 discrete_word_1;
-  base_arinc_429 discrete_word_2;
-  base_arinc_429 discrete_word_3;
-  base_arinc_429 discrete_word_4;
 };
 
 #endif
@@ -651,34 +679,6 @@ struct base_prim_fg_logic_output
   boolean_T land_2_inop;
   boolean_T land_3_fail_passive_inop;
   boolean_T land_3_fail_op_inop;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_prim_discrete_outputs_
-#define DEFINED_TYPEDEF_FOR_base_prim_discrete_outputs_
-
-struct base_prim_discrete_outputs
-{
-  real_T alignment_dummy;
-  boolean_T elevator_1_active_mode;
-  boolean_T elevator_2_active_mode;
-  boolean_T elevator_3_active_mode;
-  boolean_T ths_active_mode;
-  boolean_T left_aileron_1_active_mode;
-  boolean_T left_aileron_2_active_mode;
-  boolean_T right_aileron_1_active_mode;
-  boolean_T right_aileron_2_active_mode;
-  boolean_T left_spoiler_electronic_module_enable;
-  boolean_T right_spoiler_electronic_module_enable;
-  boolean_T rudder_1_hydraulic_active_mode;
-  boolean_T rudder_1_electric_active_mode;
-  boolean_T rudder_2_hydraulic_active_mode;
-  boolean_T rudder_2_electric_active_mode;
-  boolean_T prim_healthy;
-  boolean_T fcu_own_select;
-  boolean_T fcu_opp_select;
-  boolean_T reverser_tertiary_lock;
 };
 
 #endif

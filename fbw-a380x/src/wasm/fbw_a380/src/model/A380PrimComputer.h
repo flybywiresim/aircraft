@@ -93,8 +93,6 @@ class A380PrimComputer final
     boolean_T sProtActive_g;
     boolean_T eventTime_not_empty_m;
     boolean_T abnormalConditionWasActive;
-    boolean_T pLand3FailOp;
-    boolean_T pLand3FailPass;
     boolean_T pApproachModeArmedAbove400Ft;
     boolean_T Runtime_MODE;
     rtDW_MATLABFunction_A380PrimComputer_o_T sf_MATLABFunction_dmh;

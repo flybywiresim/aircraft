@@ -184,6 +184,16 @@ void Fcdc::updateApproachCapability(double deltaTime) {
   // LIM-AFS-30 P 11/18) FCDC consolidates these capabilities to a overall capability. To my understanding, this is done by looking at the
   // health status of PRIMs and SECs engagement. The rest of the conditions should be handled in PRIM FGs.
 
+  double radioAlt = isNo(busInputs.raBusOutputs[0].radio_height_ft)   ? busInputs.raBusOutputs[0].radio_height_ft.Data
+                    : isNo(busInputs.raBusOutputs[1].radio_height_ft) ? busInputs.raBusOutputs[1].radio_height_ft.Data
+                                                                      : busInputs.raBusOutputs[2].radio_height_ft.Data;
+
+  int numberOfAutopilotsEngaged =
+      discreteInputs.autopilotStateMachineOutput.enabled_AP1 + discreteInputs.autopilotStateMachineOutput.enabled_AP2;
+  bool memorizeLand3Capacity =
+      radioAlt < 200 && numberOfAutopilotsEngaged > 0 &&
+      (discreteInputs.autopilotStateMachineOutput.vertical_mode == 32 || discreteInputs.autopilotStateMachineOutput.vertical_mode == 33 ||
+       discreteInputs.autopilotStateMachineOutput.vertical_mode == 34);
   // Select capability from master PRIM
   bool land2Capability = false;
   bool land3FailPassiveCapability = false;
@@ -246,14 +256,18 @@ void Fcdc::updateApproachCapability(double deltaTime) {
                            discreteInputs.everyDcSuppliedByTr && discreteInputs.antiskidAvailable &&
                            discreteInputs.nwsCommunicationAvailable;
 
-  land2Capacity = (land2Capability || land3FailPassiveCapability || land3FailOperationalCapability) && land2Criteria &&
-                  !land3SingleCriteria && !land3DualCriteria;
-  land3FailPassiveCapacity = (land3FailPassiveCapability || land3FailOperationalCapability) && land3SingleCriteria && !land3DualCriteria;
-  land3FailOperationalCapacity = land3FailOperationalCapability && land3DualCriteria;
+  if (!memorizeLand3Capacity) {
+    land3FailOperationalCapacity = land3FailOperationalCapability && land3DualCriteria;
+    land3FailPassiveCapacity =
+        (land3FailPassiveCapability || land3FailOperationalCapability) && land3SingleCriteria && !land3FailOperationalCapacity;
 
+    land3FailOperationalInop |= !land3DualCriteria;
+    land3FailPassiveInop |= !land3SingleCriteria;
+  }
+
+  land2Capacity = (land2Capability || land3FailPassiveCapability || land3FailOperationalCapability) && land2Criteria &&
+                  !land3FailPassiveCapacity && !land3FailOperationalCapacity;
   land2Inop |= !land2Criteria;
-  land3FailPassiveInop |= !land3SingleCriteria;
-  land3FailOperationalInop |= !land3DualCriteria;
 
   int newLandCapacity = land3FailOperationalCapacity ? 5 : land3FailPassiveCapacity ? 4 : land2Capacity ? 3 : 0;
   capabilityTripleClickMtrig.write(newLandCapacity < previousLandCapacity, deltaTime);
@@ -261,15 +275,7 @@ void Fcdc::updateApproachCapability(double deltaTime) {
 
   // autoland warning -------------------------------------------------------------------------------------------------
   // if at least one AP engaged and LAND or FLARE mode -> latch
-  double radioAlt = isNo(busInputs.raBusOutputs[0].radio_height_ft)   ? busInputs.raBusOutputs[0].radio_height_ft.Data
-                    : isNo(busInputs.raBusOutputs[1].radio_height_ft) ? busInputs.raBusOutputs[1].radio_height_ft.Data
-                                                                      : busInputs.raBusOutputs[2].radio_height_ft.Data;
-
-  int numberOfAutopilotsEngaged =
-      discreteInputs.autopilotStateMachineOutput.enabled_AP1 + discreteInputs.autopilotStateMachineOutput.enabled_AP2;
-
-  if (radioAlt < 200 && numberOfAutopilotsEngaged > 0 &&
-      (discreteInputs.autopilotStateMachineOutput.vertical_mode == 32 || discreteInputs.autopilotStateMachineOutput.vertical_mode == 33)) {
+  if (memorizeLand3Capacity) {
     autolandWarningLatch = true;
   } else if (radioAlt >= 200 || (discreteInputs.autopilotStateMachineOutput.vertical_mode != 32 &&
                                  discreteInputs.autopilotStateMachineOutput.vertical_mode != 33)) {

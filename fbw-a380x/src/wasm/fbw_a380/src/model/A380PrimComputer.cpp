@@ -691,8 +691,6 @@ void A380PrimComputer::step()
       A380PrimComputer_MATLABFunction_c_Reset(&A380PrimComputer_DWork.sf_MATLABFunction_ny);
       A380PrimComputer_MATLABFunction_c_Reset(&A380PrimComputer_DWork.sf_MATLABFunction_gc);
       A380PrimComputer_MATLABFunction_c_Reset(&A380PrimComputer_DWork.sf_MATLABFunction_ff);
-      A380PrimComputer_DWork.pLand3FailOp = false;
-      A380PrimComputer_DWork.pLand3FailPass = false;
       A380PrimComputer_DWork.pApproachModeArmedAbove400Ft = false;
       A380PrimComputer_MATLABFunction_c_Reset(&A380PrimComputer_DWork.sf_MATLABFunction_ky);
       A380PrimComputer_MATLABFunction_c_Reset(&A380PrimComputer_DWork.sf_MATLABFunction_dmh);
@@ -2509,20 +2507,12 @@ void A380PrimComputer::step()
     normalLawAvail = ((nz >= 2) && rtb_DataTypeConversion_m2 && normalLawAvail && (b_nz == 2) &&
                       A380PrimComputer_U.in.discrete_inputs.fcu_healthy && oneLgersAvail && gndSplrAvail && (prim3LawCap
       == 3) && (d_nz == 3) && rtb_y_hz && land3FailPassiveConditions_tmp);
-    oneLgersAvail = (A380PrimComputer_DWork.pLand3FailOp || (A380PrimComputer_DWork.pApproachModeArmedAbove400Ft &&
-      normalLawAvail && rtb_y_nt && rtb_y_kkg && A380PrimComputer_U.in.temporary_ap_input.athr_engaged));
+    oneLgersAvail = (A380PrimComputer_DWork.pApproachModeArmedAbove400Ft && normalLawAvail && rtb_y_nt && rtb_y_kkg &&
+                     A380PrimComputer_U.in.temporary_ap_input.athr_engaged);
     gndSplrAvail = (rtb_y_nt || rtb_y_kkg);
     land3FailPassiveConditions_tmp = !oneLgersAvail;
-    b = (A380PrimComputer_DWork.pLand3FailPass || (A380PrimComputer_DWork.pApproachModeArmedAbove400Ft && rtb_AND19 &&
-          gndSplrAvail && A380PrimComputer_U.in.temporary_ap_input.athr_engaged && land3FailPassiveConditions_tmp));
-    if ((rtb_raComputationValue < 200.0F) && gndSplrAvail) {
-      A380PrimComputer_DWork.pLand3FailOp = oneLgersAvail;
-      A380PrimComputer_DWork.pLand3FailPass = b;
-    } else {
-      A380PrimComputer_DWork.pLand3FailOp = false;
-      A380PrimComputer_DWork.pLand3FailPass = false;
-    }
-
+    b = (A380PrimComputer_DWork.pApproachModeArmedAbove400Ft && rtb_AND19 && gndSplrAvail &&
+         A380PrimComputer_U.in.temporary_ap_input.athr_engaged && land3FailPassiveConditions_tmp);
     A380PrimComputer_B.BusAssignment_nw.logic.ground_spoilers_armed = rtb_NOT_k;
     A380PrimComputer_MATLABFunction_e(&A380PrimComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_actual_position_word,
       A380PrimComputer_P.BitfromLabel_bit_e, &rtb_y_k1);
