@@ -12,7 +12,7 @@ import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 import { Fix, Waypoint } from '@flybywiresim/fbw-sdk';
 import { placeBearingDistance } from 'msfs-geo';
 import { fixToFixGuidance } from '@fmgc/guidance/lnav/CommonGeometry';
-import { FXLeg } from '@fmgc/guidance/lnav/legs/FX';
+import { FXLeg } from './FX';
 
 /**
  * Temporary - better solution is just to have an `InfiniteLine` vector...
@@ -30,12 +30,12 @@ export class FMLeg extends FXLeg {
    * @param segment The flight plan segment this leg appears in.
    */
   constructor(
-    public readonly fix: Fix,
+    fix: Fix,
     private readonly course: number,
     public readonly metadata: Readonly<LegMetadata>,
     segment: SegmentType,
   ) {
-    super();
+    super(fix);
     this.segment = segment;
   }
 

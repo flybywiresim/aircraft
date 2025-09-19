@@ -1,6 +1,8 @@
 import { Fix } from '@flybywiresim/fbw-sdk';
-import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
+import { Leg } from './Leg';
 
 export abstract class FXLeg extends Leg {
-  readonly fix: Fix;
+  constructor(public readonly fix: Fix) {
+    super();
+  }
 }

@@ -101,7 +101,7 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
   }
 
   getAlongTrackDistanceToGo(trueTrack: number): number | null {
-    if (!this.doesExist() || !this.flightPlanService.has(FlightPlanIndex.Active)) {
+    if (this.geometry === null || !this.flightPlanService.has(FlightPlanIndex.Active) || !this.ppos) {
       return null;
     }
 
@@ -113,6 +113,10 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
     const referenceInboundTransition = this.geometry.transitions.get(referenceLegIndex - 1);
     const referenceLeg = this.geometry.legs.get(referenceLegIndex);
     const referenceOutboundTransition = this.geometry.transitions.get(referenceLegIndex);
+
+    if (!referenceLeg) {
+      return null;
+    }
 
     let atdtg = 0;
 
@@ -126,7 +130,9 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
 
     if (ciLeg?.isAbeam(this.ppos)) {
       atdtg +=
-        activePlan.activeLeg?.isDiscontinuity === false ? activePlan.activeLeg.calculated.distanceWithTransitions : 0;
+        activePlan.activeLeg?.isDiscontinuity === false && activePlan.activeLeg.calculated !== undefined
+          ? activePlan.activeLeg.calculated.distanceWithTransitions
+          : 0;
     }
 
     return atdtg;
@@ -244,7 +250,7 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
       trueTrack === null ||
       trueAirspeed === null ||
       groundSpeed === null ||
-      !Number.isFinite(activeGeometryLeg?.outboundCourse)
+      activeGeometryLeg?.outboundCourse === undefined
     ) {
       this.resetPath();
       return;
@@ -279,7 +285,14 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
 
     this.geometry.legs.set(activeLegIndex - 2, ifLeg);
     this.geometry.legs.set(activeLegIndex - 1, ciLeg);
-    this.geometry.transitions.set(activeLegIndex - 1, TransitionPicker.forLegs(ciLeg, activeGeometryLeg));
+
+    const trans = TransitionPicker.forLegs(ciLeg, activeGeometryLeg);
+    if (trans) {
+      this.geometry.transitions.set(activeLegIndex - 1, trans);
+    } else {
+      this.geometry.transitions.delete(activeLegIndex - 1);
+    }
+
     this.geometry.transitions.delete(activeLegIndex - 2);
     this.geometry.recomputeWithParameters(trueAirspeed, groundSpeed, this.ppos, trueTrack, activeLegIndex - 1, -1);
     this.geometry.updateDistances(activePlan, activeLegIndex - 1, activePlan.firstMissedApproachLegIndex);
@@ -288,7 +301,7 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
   private tryUpdateIntercept(trueTrack: number, activeGeometryLeg: Leg): boolean {
     let intercept: Coordinates | null = null;
     try {
-      intercept = Geo.legIntercept(this.ppos, trueTrack, activeGeometryLeg) ?? null;
+      intercept = Geo.legIntercept(this.ppos!, trueTrack, activeGeometryLeg) ?? null;
     } catch (e) {
       this.resetPath();
       return false;
@@ -299,7 +312,7 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
     }
 
     // Check intercept lies on path
-    const isInterceptAhead = sideOfPointOnCourseToFix(this.ppos, trueTrack, intercept) === PointSide.After;
+    const isInterceptAhead = sideOfPointOnCourseToFix(this.ppos!, trueTrack, intercept) === PointSide.After;
     const dtg = activeGeometryLeg.getDistanceToGo(intercept);
     const isOnLeg = (dtg === undefined || dtg > 0) && activeGeometryLeg.isAbeam(intercept);
 
@@ -307,7 +320,7 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
       return false;
     }
 
-    const distanceToIntercept = distanceTo(this.ppos, intercept);
+    const distanceToIntercept = distanceTo(this.ppos!, intercept);
 
     if (this.intercept === null) {
       this.intercept = {
@@ -325,7 +338,7 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
   private updateIfLeg(activeGeometryLeg: Leg): IFLeg {
     if (this.cachedIfLeg === null) {
       this.cachedIfLeg = new IFLeg(
-        WaypointFactory.fromLocation('PPOS', this.ppos),
+        WaypointFactory.fromLocation('PPOS', this.ppos!),
         {
           flightPlanLegDefinition: {
             type: LegType.IF,
@@ -392,7 +405,7 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
   }
 
   private isPreNavEngagementPathCaptureConditionMet(): boolean | undefined {
-    if (!this.flightPlanService.hasActive) {
+    if (!this.flightPlanService.hasActive || !this.geometry) {
       return undefined;
     }
 
@@ -416,7 +429,8 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
 
     const rad = this.geometry.getGuidableRollAnticipationDistance(gs, ciLeg, transition);
 
-    return ciLeg.getDistanceToGo(this.ppos) < rad;
+    const dtg = ciLeg.getDistanceToGo(this.ppos!);
+    return dtg !== undefined && dtg < rad;
   }
 
   private updateNavCaptureCondition(activeGeometry: Geometry) {
@@ -477,7 +491,7 @@ export class PreNavModeEngagementPathCalculation implements PreNavModeEngagement
   }
 
   private sequence() {
-    if (!this.doesExist() || !this.flightPlanService.hasActive) {
+    if (this.geometry === null || !this.flightPlanService.hasActive) {
       return;
     }
 

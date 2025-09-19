@@ -12,7 +12,7 @@ import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { LegMetadata } from './index';
 import { courseToFixDistanceToGo, fixToFixGuidance } from '../CommonGeometry';
-import { FXLeg } from '@fmgc/guidance/lnav/legs/FX';
+import { FXLeg } from './FX';
 
 export class FDLeg extends FXLeg {
   predictedPath: PathVector[] = [];
@@ -29,12 +29,12 @@ export class FDLeg extends FXLeg {
   constructor(
     private readonly course: DegreesTrue,
     private readonly dmeDistance: NauticalMiles,
-    public readonly fix: Fix,
+    fix: Fix,
     private readonly navaid: VhfNavaid,
     public readonly metadata: Readonly<LegMetadata>,
     segment: SegmentType,
   ) {
-    super();
+    super(fix);
 
     this.segment = segment;
 
