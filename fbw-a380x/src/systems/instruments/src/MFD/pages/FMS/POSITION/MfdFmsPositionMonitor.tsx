@@ -31,7 +31,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
 
   private readonly fmsEpe = Subject.create(Infinity);
 
-  private readonly fmsEpeDisplay = this.fmsEpe.map((v) => (v === Infinity ? '--.-' : v.toFixed(2)).padEnd(5, '\xa0'));
+  private readonly fmsEpeDisplay = this.fmsEpe.map((v) => (v === Infinity ? '-.--' : v.toFixed(2)).padEnd(5, '\xa0'));
 
   private readonly fmsEPeUnitVisibility = this.fmsEpe.map((v) => (v === Infinity ? 'hidden' : 'visible'));
 
