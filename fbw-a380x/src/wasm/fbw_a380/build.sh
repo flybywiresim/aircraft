@@ -108,6 +108,7 @@ clang++ \
   "${DIR}/src/fcdc/Fcdc.cpp" \
   -I "${DIR}/src/utils" \
   "${DIR}/src/utils/ConfirmNode.cpp" \
+  "${DIR}/src/utils/TriggeredMonostableNode.cpp" \
   "${DIR}/src/utils/SRFlipFLop.cpp" \
   "${DIR}/src/utils/PulseNode.cpp" \
   "${DIR}/src/utils/HysteresisNode.cpp" \
@@ -131,17 +132,22 @@ clang++ \
   "${DIR}/src/model/A380PitchDirectLaw.cpp" \
   "${DIR}/src/model/A380LateralNormalLaw.cpp" \
   "${DIR}/src/model/A380LateralDirectLaw.cpp" \
+  "${DIR}/src/model/combineVectorElements_N0KSVqzt.cpp" \
   "${DIR}/src/model/intrp3d_l_pw.cpp" \
   "${DIR}/src/model/look1_binlxpw.cpp" \
   "${DIR}/src/model/look2_binlxpw.cpp" \
   "${DIR}/src/model/look2_iflf_binlxpw.cpp" \
   "${DIR}/src/model/maximum_Y6vyn2io.cpp" \
   "${DIR}/src/model/mod_OlzklkXq.cpp" \
+  "${DIR}/src/model/MultiWordAnd.cpp" \
   "${DIR}/src/model/MultiWordIor.cpp" \
   "${DIR}/src/model/plook_binx.cpp" \
   "${DIR}/src/model/rt_modd.cpp" \
   "${DIR}/src/model/rt_remd.cpp" \
+  "${DIR}/src/model/Single2MultiWord.cpp" \
+  "${DIR}/src/model/uMultiWordCmp.cpp" \
   "${DIR}/src/model/uMultiWord2Double.cpp" \
+  "${DIR}/src/model/uMultiWordNe.cpp" \
   -I "${COMMON_DIR}/fbw_common/src/zlib" \
   "${COMMON_DIR}/fbw_common/src/zlib/zfstream.cc" \
   "${DIR}/src/FlyByWireInterface.cpp" \
