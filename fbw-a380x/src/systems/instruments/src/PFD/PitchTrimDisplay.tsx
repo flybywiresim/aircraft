@@ -38,7 +38,7 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
 
   private readonly pitchTrimVisibility = this.props.visible.map((it) => (it ? 'visible' : 'hidden'));
 
-  private readonly pitchTrimVisibilitySub = this.pitchTrimVisibility.sub((v) => {
+  private readonly pitchTrimVisibilitySub = this.props.visible.sub((v) => {
     if (v) {
       this.subscriptions.forEach((s) => (v ? s.resume(true) : s.pause()));
     }

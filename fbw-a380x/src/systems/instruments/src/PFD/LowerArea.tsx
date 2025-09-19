@@ -180,7 +180,7 @@ class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
       } else {
         this.targetText.set('');
       }
-    });
+    }, true);
 
     this.slatPositionWord.sub((s) => {
       const slats = s.valueOr(0);
@@ -220,7 +220,7 @@ class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
       } else {
         this.slatsTargetPos.set(null);
       }
-    });
+    }, true);
 
     this.flapPositionWord.sub((s) => {
       const flaps = s.valueOr(0);
@@ -277,7 +277,7 @@ class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
       } else {
         this.flapsTargetPos.set(null);
       }
-    });
+    }, true);
 
     this.sub.on('realTime').handle((_t) => {
       const inMotion = this.flapsTargetPos.get() !== null || this.slatsTargetPos.get() !== null;

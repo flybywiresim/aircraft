@@ -10,6 +10,7 @@ import {
   NodeReference,
   Subject,
   Subscribable,
+  SubscribableMapFunctions,
   VNode,
 } from '@microsoft/msfs-sdk';
 import {
@@ -1064,17 +1065,25 @@ class ArsBar extends DisplayComponent<{ bus: ArincEventBus }> {
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+    this.config1F.sub((v) => {
+      if (!v) {
+        this.airspeed.pause();
+      } else {
+        this.airspeed.resume();
+      }
+    });
   }
 
   render(): VNode {
     return (
       <path
         id="ArsIndicator"
-        class="NormalStroke Green"
-        d={this.path}
-        visibility={{
-          visible: this.arsVisible,
+        class={{
+          NormalStroke: true,
+          Green: true,
+          HiddenElement: this.arsVisible.map(SubscribableMapFunctions.not()),
         }}
+        d={this.path}
         style={this.arsStyle}
       />
     );
