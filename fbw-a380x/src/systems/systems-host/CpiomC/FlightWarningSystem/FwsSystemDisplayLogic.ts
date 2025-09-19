@@ -240,7 +240,7 @@ export class FwsSystemDisplayLogic {
   };
 
   private checkStsPage = (deltaTime: number) => {
-    const isStatusPageEmpty = this.fws.statusNormal.get();
+    const isStatusPageEmpty = this.fws.ecamStatusNormal.get();
 
     if (this.currentPage.get() !== SdPages.Status) {
       this.stsPressedTimer.set(STS_DISPLAY_TIMER_DURATION);
