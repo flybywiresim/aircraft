@@ -2,13 +2,14 @@
 // Copyright (c) 2021 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { A32NX_Util } from '../../../../shared/src/A32NX_Util';
 import { McduMessage, NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 import { MagVar } from '@flybywiresim/fbw-sdk';
+import { bearingTo } from 'msfs-geo';
+import { CDUFlightPlanPage } from './A320_Neo_CDU_FlightPlanPage';
 
 export class CDUFixInfoPage {
   static ShowPage(mcdu: LegacyFmsPageInterface, page: 1 | 2 | 3 | 4 = 1) {
@@ -189,8 +190,36 @@ export class CDUFixInfoPage {
         }
       };
 
-      template[10] = ['{inop}<ABEAM{end}'];
-      mcdu.onLeftInput[4] = () => mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
+      if (fixInfo.abeam !== undefined) {
+        if (fixInfo.abeam.lat !== undefined && fixInfo.abeam.long !== undefined) {
+          const bearing = bearingTo(fixInfo.fix.location, { lat: fixInfo.abeam.lat, long: fixInfo.abeam.long });
+
+          template[10] = [`{cyan}*${bearing.toFixed(0).padStart(3, '\xa0')}°{end}\xa0\xa0\xa0\xa0----\xa0----\xa0----`];
+        } else {
+          template[10] = ['{cyan}\xa0ABEAM{end}\xa0\xa0\xa0----\xa0----\xa0----'];
+        }
+      } else {
+        template[10] = ['<ABEAM[color]cyan'];
+      }
+
+      mcdu.onLeftInput[4] = async () => {
+        if (fixInfo.abeam === undefined) {
+          await mcdu.flightPlanService.editFixInfoEntry(page, (fixInfo) => {
+            fixInfo.abeam = {};
+            return fixInfo;
+          });
+
+          CDUFixInfoPage.ShowPage(mcdu, page);
+        } else {
+          await mcdu.flightPlanService.requestFixInfoAbeamPoint(page);
+          await mcdu.flightPlanService.editFixInfoEntry(page, (fixInfo) => {
+            fixInfo.abeam = undefined;
+            return fixInfo;
+          });
+
+          CDUFlightPlanPage.ShowPage(mcdu);
+        }
+      };
     }
 
     mcdu.setArrows(false, false, true, true);

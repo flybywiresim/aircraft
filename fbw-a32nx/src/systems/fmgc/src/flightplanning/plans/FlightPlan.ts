@@ -105,6 +105,8 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
       newPlan.fixInfos = this.fixInfos.map((it) => it?.clone());
     }
 
+    newPlan.abeamPointRequests = [...this.abeamPointRequests];
+
     return newPlan;
   }
 
@@ -402,6 +404,20 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         forAlternate: false,
         index,
         fixInfo: planFixInfo[index] ? planFixInfo[index].clone() : null,
+      });
+    }
+
+    this.incrementVersion();
+  }
+
+  requestFixInfoAbeamPoint(index: 1 | 2 | 3 | 4, notify = true) {
+    this.abeamPointRequests.push({ referenceFix: this.fixInfos[index].fix });
+
+    if (notify) {
+      this.sendEvent('flightPlan.requestFixInfoAbeamPoint', {
+        planIndex: this.index,
+        forAlternate: false,
+        index,
       });
     }
 

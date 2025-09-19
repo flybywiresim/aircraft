@@ -46,7 +46,7 @@ import { MissedApproachSegment } from '@fmgc/flightplanning/segments/MissedAppro
 import { ArrivalRunwayTransitionSegment } from '@fmgc/flightplanning/segments/ArrivalRunwayTransitionSegment';
 import { ApproachViaSegment } from '@fmgc/flightplanning/segments/ApproachViaSegment';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
-import { HoldData, WaypointStats } from '@fmgc/flightplanning/data/flightplan';
+import { AbeamPointRequest, HoldData, WaypointStats } from '@fmgc/flightplanning/data/flightplan';
 import { procedureLegIdentAndAnnotation } from '@fmgc/flightplanning/legs/FlightPlanLegNaming';
 import {
   FlightPlanEditSyncEvent,
@@ -73,12 +73,15 @@ import {
 } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
-import { bearingTo } from 'msfs-geo';
+import { bearingTo, Coordinates, distanceTo } from 'msfs-geo';
 import { RestringOptions } from './RestringOptions';
 import { ReadonlyPendingAirways } from '@fmgc/flightplanning/plans/ReadonlyPendingAirways';
 import { RemotePendingAirways } from '@fmgc/flightplanning/plans/RemotePendingAirways';
 import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
 import { FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/FlightPlanQueuedOperation';
+import { Geometry } from '../../guidance/Geometry';
+import { PathVectorType } from '../../guidance/lnav/PathVector';
+import { abeamBetween } from '../../guidance/lnav/CommonGeometry';
 
 export interface FlightPlanContext {
   get syncClientID(): number;
@@ -92,6 +95,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   private readonly perfSyncPub: Publisher<PerformanceDataFlightPlanSyncEvents<P>>;
 
   public pendingAirways: ReadonlyPendingAirways | undefined;
+
+  public abeamPointRequests: AbeamPointRequest[] = [];
 
   private subscriptions: Subscription[] = [];
 
@@ -2826,6 +2831,54 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
   protected hasLegAt(index: number): boolean {
     return isLeg(this.maybeElementAt(index));
+  }
+
+  insertAbeamPoint(alongLegIndex: number, location: Coordinates, referenceFix: Fix) {
+    const alongLeg = this.legElementAt(alongLegIndex);
+    if (!alongLeg.allowsAbeamPoints()) {
+      throw new Error('[FMS/FPM] Can only create abeam points along CF/DF/TF leg');
+    }
+
+    const [segment, indexInSegment] = this.segmentPositionForIndex(alongLegIndex);
+
+    const abeamLeg = FlightPlanLeg.abeamLeg(segment, referenceFix, location, alongLeg);
+
+    const legAfterAbeam = FlightPlanLeg.fromEnrouteFix(segment, alongLeg.terminationWaypoint(), alongLeg.annotation)
+      .withDefinitionFrom(alongLeg)
+      .withPilotEnteredDataFrom(alongLeg);
+    legAfterAbeam.flags = alongLeg.flags;
+
+    segment.allLegs.splice(indexInSegment, 1, abeamLeg, legAfterAbeam);
+
+    this.syncSegmentLegsChange(segment);
+    this.incrementVersion();
+  }
+
+  locateAbeamPoint(
+    geometry: Geometry,
+    referenceFix: Fix,
+    endLeg: number = this.firstMissedApproachLegIndex,
+  ): [number, Coordinates] | undefined {
+    for (let legIndex = this.activeLegIndex ?? 0; legIndex < endLeg; legIndex++) {
+      const leg = this.maybeElementAt(legIndex);
+      const geometryLeg = geometry.legs.get(legIndex);
+
+      if (!isLeg(leg) || !leg.allowsAbeamPoints() || !geometryLeg) continue;
+
+      for (const vec of geometryLeg.predictedPath) {
+        if (vec.type !== PathVectorType.Line) continue;
+
+        const intersection = abeamBetween(vec.startPoint, vec.endPoint, referenceFix.location);
+
+        if (intersection !== undefined) {
+          if (distanceTo(intersection, referenceFix.location) <= 700) {
+            return [legIndex, intersection];
+          }
+        }
+      }
+    }
+
+    return undefined;
   }
 }
 

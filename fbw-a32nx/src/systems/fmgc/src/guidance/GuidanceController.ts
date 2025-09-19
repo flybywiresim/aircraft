@@ -44,6 +44,7 @@ import { VMLeg } from './lnav/legs/VM';
 import { ConsumerValue, EventBus } from '@microsoft/msfs-sdk';
 import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 import { A32NX_Util } from '../../../shared/src/A32NX_Util';
+import { FlightPlanLegFlags, isLeg } from '../flightplanning/legs/FlightPlanLeg';
 
 // How often the (milliseconds)
 const GEOMETRY_RECOMPUTATION_TIMER = 5_000;
@@ -210,8 +211,8 @@ export class GuidanceController {
   }
 
   private updateEfisIdent() {
-    // Update EFIS ident
-    const activeLeg = this.flightPlanService.active?.activeLeg;
+    const activeLeg = this.flightPlanService.active?.maybeElementAt(this.findToLegIndex());
+
     const efisIdent = activeLeg?.isDiscontinuity === false ? activeLeg.ident : 'PPOS';
 
     const efisVars = SimVarString.pack(efisIdent, 9);
@@ -265,7 +266,7 @@ export class GuidanceController {
     const gs = SimVar.GetSimVarValue('GPS GROUND SPEED', 'Knots');
     const flightPhase = this.flightPhase.get();
     const etaComputable = flightPhase >= FmgcFlightPhase.Takeoff && gs > 100;
-    const activeLeg = this.activeGeometry?.legs.get(this.activeLegIndex);
+    const activeLeg = this.activeGeometry?.legs.get(this.findToLegIndex());
     if (activeLeg) {
       const isXMLeg = activeLeg instanceof FMLeg || activeLeg instanceof VMLeg;
       // Don't transmit bearing for manual legs
@@ -491,7 +492,7 @@ export class GuidanceController {
 
     // Use geometry index here because main and alternate flight plans have the same indices
     // but different versions. Otherwise, we keep recomputing the geometry because their versions will not be the same
-    const lastVersion = this.lastFlightPlanVersions.get(geometryPIndex);
+    // const lastVersion = this.lastFlightPlanVersions.get(geometryPIndex);
 
     if (!this.flightPlanService.has(flightPlanIndex)) {
       this.flightPlanGeometries.delete(geometryPIndex);
@@ -502,33 +503,38 @@ export class GuidanceController {
       ? this.flightPlanService.get(flightPlanIndex).alternateFlightPlan
       : this.flightPlanService.get(flightPlanIndex);
 
-    const currentVersion = plan.version;
+    let i = 0;
+    for (; i < 5 && (force || this.lastFlightPlanVersions.get(geometryPIndex) !== plan.version); i++) {
+      this.lastFlightPlanVersions.set(geometryPIndex, plan.version);
 
-    if (!force && lastVersion === currentVersion) {
-      return;
+      const geometry = this.flightPlanGeometries.get(geometryPIndex);
+
+      if (geometry) {
+        GeometryFactory.updateFromFlightPlan(
+          geometry,
+          plan,
+          !alternate && flightPlanIndex < FlightPlanIndex.FirstSecondary,
+        );
+
+        this.recomputeGeometry(geometry, plan);
+      } else {
+        const newGeometry = GeometryFactory.createFromFlightPlan(
+          plan,
+          !alternate && flightPlanIndex < FlightPlanIndex.FirstSecondary,
+        );
+
+        this.recomputeGeometry(newGeometry, plan);
+
+        this.flightPlanGeometries.set(geometryPIndex, newGeometry);
+      }
+
+      if (force) {
+        break;
+      }
     }
 
-    this.lastFlightPlanVersions.set(geometryPIndex, currentVersion);
-
-    const geometry = this.flightPlanGeometries.get(geometryPIndex);
-
-    if (geometry) {
-      GeometryFactory.updateFromFlightPlan(
-        geometry,
-        plan,
-        !alternate && flightPlanIndex < FlightPlanIndex.FirstSecondary,
-      );
-
-      this.recomputeGeometry(geometry, plan);
-    } else {
-      const newGeometry = GeometryFactory.createFromFlightPlan(
-        plan,
-        !alternate && flightPlanIndex < FlightPlanIndex.FirstSecondary,
-      );
-
-      this.recomputeGeometry(newGeometry, plan);
-
-      this.flightPlanGeometries.set(geometryPIndex, newGeometry);
+    if (i > 2) {
+      console.log(`[FMS/Geometry] Recorded ${i} recomputations`);
     }
   }
 
@@ -551,6 +557,20 @@ export class GuidanceController {
     geometry.updateCalculatedData(plan, Math.max(0, plan.activeLegIndex - 1), plan.firstMissedApproachLegIndex);
     // Update distances in missed approach segment
     geometry.updateCalculatedData(plan, Math.max(plan.firstMissedApproachLegIndex), plan.legCount);
+
+    // Handle abeam point requests
+    if (plan.index === FlightPlanIndex.Active) {
+      // Insert abeam points in reverse order to make sure the leg index stays correct if we have
+      // multiple abeam points on the same leg
+      // TODO make this more robust
+      plan.abeamPointRequests
+        .reverse()
+        .map((req) => [plan.locateAbeamPoint(geometry, req.referenceFix, req.endLeg), req] as const)
+        .filter(([res]) => res !== undefined)
+        .forEach(([[legIndex, location], req]) => plan.insertAbeamPoint(legIndex, location, req.referenceFix));
+
+      plan.abeamPointRequests.length = 0;
+    }
   }
 
   /**
@@ -603,5 +623,20 @@ export class GuidanceController {
 
   getAlongTrackDistanceToDestination(forPlan = FlightPlanIndex.Active) {
     return this.alongTrackDistancesToDestination.get(forPlan);
+  }
+
+  private findToLegIndex(): number | undefined {
+    // Try to find a direct to leg that is not an abeam point
+    const directToLegIndex = this.flightPlanService.active?.allLegs.findIndex(
+      (leg, i) =>
+        i >= this.flightPlanService.active.activeLegIndex &&
+        i < this.flightPlanService.active.firstMissedApproachLegIndex &&
+        isLeg(leg) &&
+        (leg.flags & (FlightPlanLegFlags.DirectToTurnEnd | FlightPlanLegFlags.AbeamPoint)) ===
+          FlightPlanLegFlags.DirectToTurnEnd,
+    );
+
+    // If we cannot find a direct to leg, just use the active leg, regardless of whether it is an abeam point or not
+    return directToLegIndex ?? this.flightPlanService.active?.activeLegIndex;
   }
 }

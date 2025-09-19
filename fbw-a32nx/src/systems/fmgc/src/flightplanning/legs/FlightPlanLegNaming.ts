@@ -88,6 +88,10 @@ export function procedureLegIdentAndAnnotation(
   return [`(UNKN ${LegType[legType]})`, 'UNKNOWN'];
 }
 
+export function formatAbeamPointIdent(originalIdent: string) {
+  return `${abeamPointPrefix}${originalIdent.substring(0, 5)}`;
+}
+
 export const pposPointIDent = 'PPOS';
 
 export const turningPointIdent = 'T-P';
@@ -95,3 +99,5 @@ export const turningPointIdent = 'T-P';
 export const inboundPointIdent = 'IN-BND';
 
 export const outboundPointIdent = 'OUT-BND';
+
+const abeamPointPrefix = 'AB';

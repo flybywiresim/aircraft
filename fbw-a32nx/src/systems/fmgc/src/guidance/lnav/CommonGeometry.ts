@@ -340,3 +340,83 @@ export function getRollAnticipationDistance(gs: Knots, bankA: Degrees, bankB: De
 
   return rad;
 }
+
+function thetaToLat(theta: number) {
+  return 90 - (theta * 180) / Math.PI;
+}
+
+function phiToLong(phi: number) {
+  if (phi > Math.PI) return 180 - (phi * 180) / Math.PI;
+
+  return (phi * 180) / Math.PI;
+}
+
+function latToTheta(lat: number) {
+  return ((90 - lat) * Math.PI) / 180;
+}
+
+function longToPhi(long: number) {
+  if (long < 0) return ((long + 360) * Math.PI) / 180;
+
+  return (long * Math.PI) / 180;
+}
+
+function coordinatesToXyz(coordinates: Coordinates, radius: number): [number, number, number] {
+  const theta = latToTheta(coordinates.lat);
+  const phi = longToPhi(coordinates.long);
+
+  return [radius * Math.sin(theta) * Math.cos(phi), radius * Math.sin(theta) * Math.sin(phi), radius * Math.cos(theta)];
+}
+
+function crossProduct(
+  x1: number,
+  y1: number,
+  z1: number,
+  x2: number,
+  y2: number,
+  z2: number,
+): [number, number, number] {
+  return [y1 * z2 - z1 * y2, z1 * x2 - x1 * z2, x1 * y2 - y1 * x2];
+}
+
+function normalise2Pi(angle: number): number {
+  // this can still be negative..
+  const mod2Pi = angle % (2 * Math.PI);
+  // so we force it positive.
+  return (mod2Pi + 2 * Math.PI) % (2 * Math.PI);
+}
+
+export function abeam(from: Coordinates, to: Coordinates, ref: Coordinates) {
+  const rFrom = coordinatesToXyz(from, 1);
+  const rTo = coordinatesToXyz(to, 1);
+  const rRef = coordinatesToXyz(ref, 1);
+
+  const n = crossProduct(rFrom[0], rFrom[1], rFrom[2], rTo[0], rTo[1], rTo[2]);
+  const m = crossProduct(n[0], n[1], n[2], rRef[0], rRef[1], rRef[2]);
+
+  const one = m[0] * n[2] - m[2] * n[0];
+  const two = m[2] * n[1] - m[1] * n[2];
+
+  const phiV = Math.atan2(one, two);
+  const thetaV = Math.atan(-n[2] / (Math.cos(phiV) * n[0] + Math.sin(phiV) * n[1]));
+
+  return [
+    { lat: thetaToLat(thetaV), long: phiToLong(phiV) },
+    { lat: thetaToLat(Math.PI - thetaV), long: phiToLong(normalise2Pi(phiV + Math.PI)) },
+  ];
+}
+
+export function abeamBetween(from: Coordinates, to: Coordinates, ref: Coordinates) {
+  const intersections = abeam(from, to, ref);
+
+  for (const intersection of intersections) {
+    if (
+      Math.abs(bearingTo(from, intersection) - bearingTo(from, to)) < 1e-4 &&
+      Math.abs(bearingTo(to, intersection) - bearingTo(to, from)) < 1e-4
+    ) {
+      return intersection;
+    }
+  }
+
+  return undefined;
+}

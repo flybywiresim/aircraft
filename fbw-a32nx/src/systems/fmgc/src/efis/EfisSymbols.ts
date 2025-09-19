@@ -944,12 +944,26 @@ export class EfisSymbols<T extends number> {
           continue;
         }
 
+        let radials = fixInfo.radials?.map((it) => it.trueBearing);
+
+        if (fixInfo.abeam !== undefined) {
+          const result = flightPlan.locateAbeamPoint(geometry, fixInfo.fix);
+
+          if (result !== undefined) {
+            fixInfo.abeam.lat = result[1].lat;
+            fixInfo.abeam.long = result[1].long;
+
+            radials ??= [];
+            radials.push(bearingTo(fixInfo.fix.location, result[1]));
+          }
+        }
+
         ret.push({
           databaseId: fixInfo.fix.databaseId,
           ident: fixInfo.fix.ident,
           location: fixInfo.fix.location,
           type: NdSymbolTypeFlags.FixInfo,
-          radials: fixInfo.radials?.map((it) => it.trueBearing),
+          radials,
           radii: fixInfo.radii?.map((it) => it.radius),
         });
       }

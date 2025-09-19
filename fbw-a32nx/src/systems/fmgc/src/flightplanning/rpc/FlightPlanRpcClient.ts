@@ -27,6 +27,7 @@ import { FlightPlan } from '../plans/FlightPlan';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
 import { FlightPlanEvents } from '@fmgc/flightplanning/sync/FlightPlanEvents';
+import { Geometry } from '../../guidance/Geometry';
 
 export type FunctionsOnlyAndUnwrapPromises<T> = {
   [k in keyof T as T[k] extends (...args: any) => Promise<any> ? k : never]: T[k] extends (
@@ -488,6 +489,10 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
     return this.callFunctionViaRpc('editFixInfoEntry', index, callback, planIndex);
   }
 
+  requestFixInfoAbeamPoint(index: 1 | 2 | 3 | 4, planIndex: number): Promise<void> {
+    return this.callFunctionViaRpc('requestFixInfoAbeamPoint', index, planIndex);
+  }
+
   setPilotEntryClimbSpeedLimitSpeed(value: number, planIndex: FlightPlanIndex, alternate: boolean): Promise<void> {
     return this.callFunctionViaRpc('setPilotEntryClimbSpeedLimitSpeed', value, planIndex, alternate);
   }
@@ -530,5 +535,25 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
 
   closeBatch(uuid: string): Promise<FlightPlanBatch> {
     return this.callFunctionViaRpc('closeBatch', uuid);
+  }
+
+  insertAbeamPoint(
+    alongLegIndex: number,
+    location: Coordinates,
+    referenceFix: Fix,
+    planIndex?: FlightPlanIndex,
+    alternate?: boolean,
+  ): Promise<void> {
+    return this.callFunctionViaRpc('insertAbeamPoint', alongLegIndex, location, referenceFix, planIndex, alternate);
+  }
+
+  locateAbeamPoint(
+    geometry: Geometry,
+    referenceFix: Fix,
+    endLegIndex: number,
+    planIndex?: FlightPlanIndex,
+    alternate?: boolean,
+  ): Promise<[number, Coordinates] | undefined> {
+    return this.callFunctionViaRpc('locateAbeamPoint', geometry, referenceFix, endLegIndex, planIndex, alternate);
   }
 }

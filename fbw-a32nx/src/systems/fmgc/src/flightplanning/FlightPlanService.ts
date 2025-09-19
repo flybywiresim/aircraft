@@ -21,6 +21,7 @@ import {
 } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { FlightPlanFlags } from './plans/FlightPlanFlags';
 import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
+import { Geometry } from '../guidance/Geometry';
 
 export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanPerformanceData>
   implements FlightPlanInterface<P>
@@ -734,6 +735,12 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     plan.editFixInfoEntry(index, callback);
   }
 
+  async requestFixInfoAbeamPoint(index: 1 | 2 | 3 | 4, planIndex = FlightPlanIndex.Active) {
+    const plan = this.flightPlanManager.get(planIndex);
+
+    plan.requestFixInfoAbeamPoint(index);
+  }
+
   async setPilotEntryClimbSpeedLimitSpeed(value: number, planIndex = FlightPlanIndex.Active, alternate = false) {
     const finalIndex = this.config.TMPY_ON_CONSTRAINT_EDIT ? this.prepareDestructiveModification(planIndex) : planIndex;
 
@@ -926,5 +933,33 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
   public closeBatch(uuid: string): Promise<FlightPlanBatch> {
     return this.flightPlanManager.closeBatch(uuid);
+  }
+
+  async insertAbeamPoint(
+    alongLegIndex: number,
+    location: Coordinates,
+    referenceFix: Fix,
+    planIndex = FlightPlanIndex.Active,
+    alternate = false,
+  ): Promise<void> {
+    const plan = alternate
+      ? this.flightPlanManager.get(planIndex).alternateFlightPlan
+      : this.flightPlanManager.get(planIndex);
+
+    plan.insertAbeamPoint(alongLegIndex, location, referenceFix);
+  }
+
+  async locateAbeamPoint(
+    geometry: Geometry,
+    referenceFix: Fix,
+    endLeg: number,
+    planIndex = FlightPlanIndex.Active,
+    alternate = false,
+  ): Promise<[number, Coordinates] | undefined> {
+    const plan = alternate
+      ? this.flightPlanManager.get(planIndex).alternateFlightPlan
+      : this.flightPlanManager.get(planIndex);
+
+    return plan.locateAbeamPoint(geometry, referenceFix, endLeg);
   }
 }

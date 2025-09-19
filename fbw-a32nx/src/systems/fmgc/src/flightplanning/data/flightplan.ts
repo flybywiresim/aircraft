@@ -1,7 +1,7 @@
 //  Copyright (c) 2021 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { TurnDirection } from '@flybywiresim/fbw-sdk';
+import { Fix, TurnDirection } from '@flybywiresim/fbw-sdk';
 
 export interface WaypointStats {
   /**
@@ -74,3 +74,8 @@ export interface StepData {
 
   ident: string;
 }
+
+export type AbeamPointRequest = {
+  referenceFix: Readonly<Fix>;
+  endLeg?: number;
+};

@@ -18,10 +18,15 @@ import {
   AltitudeConstraint,
   SpeedConstraint,
   MagVar,
+  isAbeamWaypoint,
 } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from 'msfs-geo';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/legs/FlightPlanLegDefinition';
-import { procedureLegIdentAndAnnotation } from '@fmgc/flightplanning/legs/FlightPlanLegNaming';
+import {
+  formatAbeamPointIdent,
+  procedureLegIdentAndAnnotation,
+  turningPointIdent,
+} from '@fmgc/flightplanning/legs/FlightPlanLegNaming';
 import { WaypointFactory } from '@fmgc/flightplanning/waypoints/WaypointFactory';
 import { FlightPlanSegment } from '@fmgc/flightplanning/segments/FlightPlanSegment';
 import { EnrouteSegment } from '@fmgc/flightplanning/segments/EnrouteSegment';
@@ -59,6 +64,8 @@ export enum FlightPlanLegFlags {
   PendingDirectToTurningPoint = 1 << 1,
   Origin = 1 << 2,
   CopiedWithPredictions = 1 << 3,
+  AbeamPoint = 1 << 4,
+  DirectToTurnEnd = 1 << 5,
 }
 
 export interface LegCalculations {
@@ -275,6 +282,10 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     return this.definition.waypointDescriptor === WaypointDescriptor.Runway;
   }
 
+  allowsAbeamPoints() {
+    return this.type === LegType.CF || this.type === LegType.DF || this.type === LegType.TF;
+  }
+
   /**
    * Returns the termination waypoint is this is an XF leg, `null` otherwise
    */
@@ -284,6 +295,15 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     }
 
     return this.definition.waypoint;
+  }
+
+  /**
+   * Returns the fix used to create an abeam waypoint based on this leg
+   */
+  abeamReference(): Fix | null {
+    const termination = this.terminationWaypoint();
+
+    return isAbeamWaypoint(termination) ? termination.referenceFix : termination;
   }
 
   /**
@@ -394,12 +414,12 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         procedureIdent: '',
         type: LegType.CF,
         overfly: false,
-        waypoint: WaypointFactory.fromLocation('T-P', location),
+        waypoint: WaypointFactory.fromLocation(turningPointIdent, location),
         course,
         magVar,
         length: 0,
       },
-      'T-P',
+      turningPointIdent,
       '',
       undefined,
     );
@@ -566,6 +586,34 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
       airwayIdent ?? '',
       undefined,
     );
+  }
+
+  static abeamLeg(
+    segment: FlightPlanSegment,
+    referenceFix: Fix,
+    location: Coordinates,
+    alongLeg: FlightPlanLeg,
+  ): FlightPlanLeg {
+    const ident = formatAbeamPointIdent(referenceFix.ident);
+    const waypoint = WaypointFactory.abeamFromFix(ident, location, referenceFix);
+
+    const leg = new FlightPlanLeg(
+      segment,
+      {
+        procedureIdent: '',
+        type: alongLeg.type,
+        overfly: false,
+        waypoint,
+        magneticCourse: alongLeg.definition.magneticCourse,
+      },
+      ident,
+      '',
+      undefined,
+    );
+
+    leg.flags |= FlightPlanLegFlags.AbeamPoint;
+
+    return leg;
   }
 }
 

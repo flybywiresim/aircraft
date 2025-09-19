@@ -14,6 +14,7 @@ import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performanc
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
 import { FlightPlanContext } from '@fmgc/flightplanning/plans/BaseFlightPlan';
+import { Geometry } from '../guidance/Geometry';
 
 /**
  * Interface for querying, modifying and creating flight plans.
@@ -371,6 +372,13 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
   ): Promise<void>;
 
   /**
+   * Insert a waypoint abeam a fix info reference fix into the flight plan
+   * @param index index of the fix info page
+   * @param planIndex which flight plan to insert the fix into
+   */
+  requestFixInfoAbeamPoint(index: 1 | 2 | 3 | 4, planIndex: number): Promise<void>;
+
+  /**
    * Sets a pilot entry speed value on the climb speed limit of the performance data.
    * If no altitude is previously defined, a default value is applied to it.
    * @param value which speed in knots to apply
@@ -433,4 +441,37 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
   openBatch(name: string): Promise<FlightPlanBatch>;
 
   closeBatch(uuid: string): Promise<FlightPlanBatch>;
+
+  /**
+   * Insert an abeam point of a reference fix into the flight plan along a given leg
+   * @param alongLegIndex along which leg to insert the abeam point
+   * @param location the coordinates of the abeam point
+   * @param referenceFix the reference which to base the abeam point on
+   * @param planIndex whih flight plan to insert the abeam point into
+   * @param alternate whether to insert the abeam point into the alternate plan
+   */
+  insertAbeamPoint(
+    alongLegIndex: number,
+    location: Coordinates,
+    referenceFix: Fix,
+    planIndex?: FlightPlanIndex,
+    alternate?: boolean,
+  ): Promise<void>;
+
+  /**
+   * TODO: remove geometry dependency
+   * Find the coordinates and leg index that an abeam point lies on in the flihgt plan
+   * @param geometry the flight plan's geometry
+   * @param referenceFix the reference fix to base the abeam point on
+   * @param endLegIndex the last leg index (exclusive) to search when finding a leg to place the abeam point on
+   * @param planIndex which flight plan to use to locate the abeam point
+   * @param alternate whether to locate the abeam point in the alternate flight plan
+   */
+  locateAbeamPoint(
+    geometry: Geometry,
+    referenceFix: Fix,
+    endLegIndex: number,
+    planIndex?: FlightPlanIndex,
+    alternate?: boolean,
+  ): Promise<[number, Coordinates] | undefined>;
 }
