@@ -8,7 +8,7 @@ import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightP
 import { AeroMath, BitFlags, EventBus, MutableSubscribable, Subject } from '@microsoft/msfs-sdk';
 import { FixInfoData, FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
 import { Coordinates, Degrees } from 'msfs-geo';
-import { FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { FlightPlanLeg, FlightPlanLegFlags, isLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { FlightArea } from '@fmgc/navigation/FlightArea';
 import { CopyOptions } from '@fmgc/flightplanning/plans/CloningOptions';
@@ -198,7 +198,19 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
       throw new Error('[FPM] Target leg of a direct to not found in enroute segment after leg redistribution!');
     }
 
-    this.enrouteSegment.allLegs.splice(0, indexInEnrouteSegment + 1, turningPoint, turnEnd);
+    const removedLegs = this.enrouteSegment.allLegs.splice(0, indexInEnrouteSegment + 1, turningPoint, turnEnd);
+
+    this.abeamPointRequests.push(
+      ...removedLegs
+        .slice(1, -1)
+        .filter((leg) => isLeg(leg))
+        .filter((leg) => leg.isXF())
+        .map((leg) => ({
+          referenceFix: leg.abeamReference(),
+          endLeg: this.activeLegIndex + 1,
+        })),
+    );
+
     this.incrementVersion();
 
     const turnEndLegIndexInPlan = this.allLegs.findIndex((it) => it === turnEnd);

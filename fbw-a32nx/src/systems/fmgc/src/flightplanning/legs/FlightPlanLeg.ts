@@ -426,7 +426,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
   }
 
   static directToTurnEnd(segment: EnrouteSegment, waypoint: Fix, magVar: number | null): FlightPlanLeg {
-    return new FlightPlanLeg(
+    const turnEnd = new FlightPlanLeg(
       segment,
       {
         procedureIdent: '',
@@ -439,6 +439,10 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
       '',
       undefined,
     );
+
+    turnEnd.flags |= FlightPlanLegFlags.DirectToTurnEnd;
+
+    return turnEnd;
   }
 
   static manualHold(segment: FlightPlanSegment, waypoint: Fix, hold: HoldData, magVar: number | null): FlightPlanLeg {
