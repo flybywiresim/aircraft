@@ -22,6 +22,7 @@ import {
 import { FlightPlanFlags } from './plans/FlightPlanFlags';
 import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
 import { Geometry } from '../guidance/Geometry';
+import { DirectTo } from './types/DirectTo';
 
 export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanPerformanceData>
   implements FlightPlanInterface<P>
@@ -559,32 +560,12 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     await plan.finaliseAirwayEntry();
   }
 
-  async directToWaypoint(
-    ppos: Coordinates,
-    trueTrack: Degrees,
-    waypoint: Fix,
-    withAbeam = false,
-    planIndex = FlightPlanIndex.Active,
-  ) {
-    const finalIndex = this.prepareDestructiveModification(planIndex);
+  async directTo(ppos: Coordinates, trueTrack: Degrees, directTo: DirectTo) {
+    const finalIndex = this.prepareDestructiveModification(FlightPlanIndex.Active);
 
     const plan = this.flightPlanManager.get(finalIndex);
 
-    plan.directToWaypoint(ppos, trueTrack, waypoint, withAbeam);
-  }
-
-  async directToLeg(
-    ppos: Coordinates,
-    trueTrack: Degrees,
-    targetLegIndex: number,
-    withAbeam = false,
-    planIndex = FlightPlanIndex.Active,
-  ) {
-    const finalIndex = this.prepareDestructiveModification(planIndex);
-
-    const plan = this.flightPlanManager.get(finalIndex);
-
-    plan.directToLeg(ppos, trueTrack, targetLegIndex, withAbeam);
+    plan.directTo(ppos, trueTrack, directTo);
   }
 
   async addOrEditManualHold(

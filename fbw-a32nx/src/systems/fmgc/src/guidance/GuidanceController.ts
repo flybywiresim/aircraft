@@ -637,6 +637,6 @@ export class GuidanceController {
     );
 
     // If we cannot find a direct to leg, just use the active leg, regardless of whether it is an abeam point or not
-    return directToLegIndex ?? this.flightPlanService.active?.activeLegIndex;
+    return directToLegIndex >= 0 ? directToLegIndex : this.flightPlanService.active?.activeLegIndex;
   }
 }

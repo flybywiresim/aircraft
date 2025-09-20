@@ -379,13 +379,6 @@ function crossProduct(
   return [y1 * z2 - z1 * y2, z1 * x2 - x1 * z2, x1 * y2 - y1 * x2];
 }
 
-function normalise2Pi(angle: number): number {
-  // this can still be negative..
-  const mod2Pi = angle % (2 * Math.PI);
-  // so we force it positive.
-  return (mod2Pi + 2 * Math.PI) % (2 * Math.PI);
-}
-
 export function abeam(from: Coordinates, to: Coordinates, ref: Coordinates) {
   const rFrom = coordinatesToXyz(from, 1);
   const rTo = coordinatesToXyz(to, 1);
@@ -397,12 +390,17 @@ export function abeam(from: Coordinates, to: Coordinates, ref: Coordinates) {
   const one = m[0] * n[2] - m[2] * n[0];
   const two = m[2] * n[1] - m[1] * n[2];
 
-  const phiV = Math.atan2(one, two);
-  const thetaV = Math.atan(-n[2] / (Math.cos(phiV) * n[0] + Math.sin(phiV) * n[1]));
+  let phiV = Math.atan2(one, two);
+  let thetaV = Math.atan2(-n[2], Math.cos(phiV) * n[0] + Math.sin(phiV) * n[1]);
+
+  if (thetaV < 0) {
+    thetaV = -thetaV;
+    phiV = MathUtils.normalise2Pi(phiV + Math.PI);
+  }
 
   return [
     { lat: thetaToLat(thetaV), long: phiToLong(phiV) },
-    { lat: thetaToLat(Math.PI - thetaV), long: phiToLong(normalise2Pi(phiV + Math.PI)) },
+    { lat: thetaToLat(Math.PI - thetaV), long: phiToLong(MathUtils.normalise2Pi(phiV + Math.PI)) },
   ];
 }
 

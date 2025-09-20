@@ -24,8 +24,11 @@ import { Coordinates } from 'msfs-geo';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/legs/FlightPlanLegDefinition';
 import {
   formatAbeamPointIdent,
+  InboundPointIdent,
+  OutboundPointIdent,
+  PposPointIdent,
   procedureLegIdentAndAnnotation,
-  turningPointIdent,
+  TurningPointIdent,
 } from '@fmgc/flightplanning/legs/FlightPlanLegNaming';
 import { WaypointFactory } from '@fmgc/flightplanning/waypoints/WaypointFactory';
 import { FlightPlanSegment } from '@fmgc/flightplanning/segments/FlightPlanSegment';
@@ -62,10 +65,12 @@ export interface SerializedFlightPlanLeg {
 export enum FlightPlanLegFlags {
   DirectToTurningPoint = 1 << 0,
   PendingDirectToTurningPoint = 1 << 1,
-  Origin = 1 << 2,
   CopiedWithPredictions = 1 << 3,
-  AbeamPoint = 1 << 4,
-  DirectToTurnEnd = 1 << 5,
+  DirectToInBound = 1 << 4,
+  DirectToOutBound = 1 << 5,
+  AbeamPoint = 1 << 6,
+  DirectToTurnEnd = 1 << 7,
+  Origin = 1 << 8,
 }
 
 export interface LegCalculations {
@@ -414,12 +419,12 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         procedureIdent: '',
         type: LegType.CF,
         overfly: false,
-        waypoint: WaypointFactory.fromLocation(turningPointIdent, location),
+        waypoint: WaypointFactory.fromLocation(TurningPointIdent, location),
         course,
         magVar,
         length: 0,
       },
-      turningPointIdent,
+      TurningPointIdent,
       '',
       undefined,
     );
@@ -445,7 +450,60 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     return turnEnd;
   }
 
-  static manualHold(segment: FlightPlanSegment, waypoint: Fix, hold: HoldData, magVar: number | null): FlightPlanLeg {
+  static ppos(
+    segment: EnrouteSegment,
+    ident: typeof PposPointIdent | typeof InboundPointIdent | typeof OutboundPointIdent,
+    ppos: Coordinates,
+  ): FlightPlanLeg {
+    return new FlightPlanLeg(
+      segment,
+      {
+        procedureIdent: '',
+        type: LegType.IF,
+        overfly: false,
+        waypoint: WaypointFactory.fromLocation(ident, ppos),
+        magVar: null,
+      },
+      ident,
+      '',
+      undefined,
+    );
+  }
+
+  static radialInLeg(segment: EnrouteSegment, waypoint: Fix, course: number, magVar: number | null): FlightPlanLeg {
+    return new FlightPlanLeg(
+      segment,
+      {
+        procedureIdent: '',
+        type: LegType.CF,
+        overfly: false,
+        waypoint,
+        course,
+        magVar,
+        length: IN_BND_DISTANCE_NM,
+      },
+      waypoint.ident,
+      '',
+      undefined,
+    );
+  }
+
+  static radialOutLeg(segment: EnrouteSegment, waypoint: Fix, course: number, magVar: number | null): FlightPlanLeg {
+    return this.fromProcedureLeg(
+      segment,
+      {
+        procedureIdent: '',
+        type: LegType.FM,
+        overfly: false,
+        waypoint,
+        course,
+        magVar,
+      },
+      '',
+    );
+  }
+
+  static manualHold(segment: FlightPlanSegment, waypoint: Fix, hold: HoldData): FlightPlanLeg {
     return new FlightPlanLeg(
       segment,
       {
@@ -634,3 +692,5 @@ export function isDiscontinuity(o: any): o is Discontinuity {
 export function isLeg(o: any): o is FlightPlanLeg {
   return typeof o === 'object' && o.isDiscontinuity === false;
 }
+
+const IN_BND_DISTANCE_NM = 512;
