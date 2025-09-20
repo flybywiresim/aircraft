@@ -5294,7 +5294,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     if (isFlyingInActive) {
       computations.routeReserveFuel = 0;
       computations.routeReserveFuelPercentage = 0;
-    } else {
+    } else if (computations.tripFuel !== null) {
       if (plan.performanceData.pilotRouteReserveFuel.get() === null) {
         const fivePercentWeight = (plan.performanceData.routeReserveFuelPercentage.get() * computations.tripFuel) / 100;
         const fiveMinuteHoldingWeight = (5 * (finalHoldingFuelFlow / 60)) / 1000;
@@ -5320,7 +5320,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
     // EFOB
     computations.destinationFuelOnBoard =
-      fob !== null ? fob - computations.tripFuel - (!isFlyingInActive ? plan.performanceData.taxiFuel.get() : 0) : null;
+      fob !== null && computations.tripFuel !== null
+        ? fob - computations.tripFuel - (!isFlyingInActive ? plan.performanceData.taxiFuel.get() : 0)
+        : null;
     computations.alternateDestinationFuelOnBoard =
       computations.destinationFuelOnBoard !== null && alternateFuel !== null
         ? computations.destinationFuelOnBoard - alternateFuel
