@@ -126,17 +126,14 @@ export interface FlightPlanLegDefinition {
    * Specifies the outbound magnetic course associated with the termination of this leg
    * For AF legs this is the boundary radial
    * For CF legs this is the course to the specified fix
-   * If the leg is true referenced, this is undefined and the true course is in @see trueCourse instead
    */
   magneticCourse?: DegreesMagnetic;
 
   /**
-   * Specifies the outbound true course associated with the termination of this leg
-   * For AF legs this is the boundary radial
-   * For CF legs this is the course to the specified fix
-   * If the leg is magnetic referenced, this is undefined and the magnetic course is in @see magneticCourse instead
+   * Specifies the magvar to use to convert between @see magneticCourse and the true course that may be used for the
+   * geometry generation
    */
-  trueCourse?: DegreesTrue;
+  magVar?: number;
 
   /**
    * Specifies the descent vertical angle (negative) referenced to the terminating fix
