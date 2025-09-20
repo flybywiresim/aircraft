@@ -227,7 +227,7 @@ function geometryLegFromFlightPlanLeg(
 
   const waypoint = flightPlanLeg.terminationWaypoint();
   const magneticCourse = flightPlanLeg.definition.magneticCourse;
-  const trueCourse = flightPlanLeg.definition.trueCourse ?? A32NX_Util.magneticToTrue(magneticCourse, courseMagVar);
+  const trueCourse = A32NX_Util.magneticToTrue(magneticCourse, courseMagVar);
   const recommendedNavaid = flightPlanLeg.definition.recommendedNavaid;
   const length = flightPlanLeg.definition.length;
 
@@ -332,6 +332,10 @@ function geometryLegFromFlightPlanLeg(
 function getMagCorrection(legIndex: number, plan: BaseFlightPlan): number {
   // we try to interpret PANS OPs as accurately as possible within the limits of available data
   const currentLeg = plan.legElementAt(legIndex);
+
+  if (currentLeg.definition.magVar !== undefined) {
+    return currentLeg.definition.magVar;
+  }
 
   let airportMagVar = 0;
   if (legIndex <= plan.findLastDepartureLeg()[2]) {
