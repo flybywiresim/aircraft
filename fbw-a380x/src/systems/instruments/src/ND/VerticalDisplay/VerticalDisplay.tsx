@@ -427,7 +427,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
     this.wxrInop,
   );
 
-  private readonly viewAlongAircraftTrkFlagVisibility = MappedSubject.create(
+  private readonly viewAlongAcftTrkFlagVisibility = MappedSubject.create(
     ([trajNotAvail, isGaTrack, takeoffNoIls]) => (trajNotAvail || isGaTrack || takeoffNoIls ? 'inherit' : 'hidden'),
     this.trajNotAvailFlagCondition,
     this.isGaTrack,
@@ -494,7 +494,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
       this.noTerrAndWxDataAvailFlagVisibility,
       this.terrInopFlagVisibility,
       this.wxrInopFlagVisibility,
-      this.viewAlongAircraftTrkFlagVisibility,
+      this.viewAlongAcftTrkFlagVisibility,
       this.targetAltitudeFormatted,
     );
 
@@ -788,7 +788,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
             x={422}
             y={990}
             class="White FontSmall MiddleAlign shadow"
-            style={{ visibility: this.viewAlongAircraftTrkFlagVisibility }}
+            style={{ visibility: this.viewAlongAcftTrkFlagVisibility }}
           >
             VIEW ALONG AIRCRAFT TRACK
           </text>
