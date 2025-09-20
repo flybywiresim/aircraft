@@ -148,8 +148,10 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     const leg = FlightPlanLeg.deserialize(this.serialize(), forSegment);
 
     if (BitFlags.isAll(options, CopyOptions.CopyPredictions)) {
-      leg.calculated = JSON.parse(JSON.stringify(this.calculated));
       leg.flags |= FlightPlanLegFlags.CopiedWithPredictions;
+    } else if (leg.calculated) {
+      // Do not show TOO STEEP PATHs on secondary
+      leg.calculated.endsInTooSteepPath = false;
     }
 
     return leg;
