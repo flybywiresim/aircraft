@@ -658,7 +658,7 @@ export class CDUInitPage {
       }
 
       mcdu.onLeftInput[3] = async (value, scratchpadCallback) => {
-        if (mcdu.trySetRouteAlternateFuel(value, forPlan)) {
+        if (await mcdu.trySetRouteAlternateFuel(value, forPlan)) {
           await CDUInitPage.refreshAfterFuelPred(mcdu, forPlan);
         } else {
           scratchpadCallback();
@@ -686,7 +686,7 @@ export class CDUInitPage {
       }
 
       mcdu.onLeftInput[5] = async (value, scratchpadCallback) => {
-        if (mcdu.trySetMinDestFob(value, forPlan)) {
+        if (await mcdu.trySetMinDestFob(value, forPlan)) {
           await CDUInitPage.refreshAfterFuelPred(mcdu, forPlan);
         } else {
           scratchpadCallback();
