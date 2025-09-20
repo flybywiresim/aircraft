@@ -895,6 +895,44 @@
       | 28  | FCDC Opposite Fault                      |
       | 29  | SEC 3 Fault                              |
 
+- A32NX_FCDC_{number}_FG_DISCRETE_WORD_4
+    - Arinc429<Discrete>
+    - Bits marked with ? are guessed/unknown
+      | Bit |            Description            |
+      |:---:|:---------------------------------:|
+      | 11  | AP Instinctive Disc               |
+      | 12  | AP Engaged                        |
+      | 13  | FD Engaged                        |
+      | 14  | LAND TRK mode active              |
+      | 16  | LAND 2 Capability                 |
+      | 17  | LAND 3 FAIL PASSIVE Capability    |
+      | 18  | LAND 3 FAIL OP Capability         |
+      | 19  | AP Inop                           |
+      | 20  | LAND 2 Inop                       |
+      | 21  | LAND 3 FAIL PASSIVE Inop          |
+      | 22  | LAND 3 FAIL OP Inop               |
+      | 23  | LAND 2 Capacity                   |
+      | 24  | LAND 3 FAIL PASSIVE Capacity      |
+      | 25  | LAND 3 FAIL OP Capacity           |
+      | 26  | RWY Heading memorized             |
+      | 27  | ? FD Auto Disengage Command       |
+      | 28  | AP/FD Mode reversion              |
+      | 29  | V/S Target not held               |
+
+- A32NX_FCDC_{number}_FG_DISCRETE_WORD_8
+    - Arinc429<Discrete>
+    - Bits marked with ? are guessed/unknown
+      | Bit |            Description            |
+      |:---:|:---------------------------------:|
+      | 11  | Capability Downgrade triple click |
+      | 12  | Mode reversion triple click       |
+      | 13  | BTV Exit Missed triple click      |
+      | 14  | AP 1 INOP                         |
+      | 15  | AP 2 INOP                         |
+      | 16  | FD 1 INOP                         |
+      | 17  | FD 1 INOP                         |
+      | 18  | ROLLOUT INOP                      |
+
 - A32NX_SFCC_{number}_SLAT_FLAP_ACTUAL_POSITION_WORD
     - {number} is 1 or 2
     - Slat/Flap actual position discrete word of the SFCC bus output
