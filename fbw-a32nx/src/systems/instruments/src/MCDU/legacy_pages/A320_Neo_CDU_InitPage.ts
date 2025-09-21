@@ -43,6 +43,9 @@ export class CDUInitPage {
 
     const haveFlightPlan = plan.originAirport && plan.destinationAirport;
 
+    const allowWindsOnSecondary = false; // TODO
+    const shouldEnableWindOption = allowWindsOnSecondary || forPlan !== FlightPlanIndex.FirstSecondary;
+
     const coRoute = new Column(
       0,
       haveFlightPlan ? '' : isForPrimary ? '__________' : '[\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0]',
@@ -344,7 +347,7 @@ export class CDUInitPage {
         [new Column(0, 'FLT NBR')],
         [new Column(0, flightNoText, flightNoColor), new Column(23, alignOption || '', Column.right)],
         [],
-        [new Column(23, 'WIND/TEMP>', Column.right)],
+        [new Column(23, shouldEnableWindOption ? 'WIND/TEMP>' : '', Column.right)],
         [new Column(0, 'COST INDEX'), new Column(23, 'TROPO', Column.right)],
         [new Column(0, costIndexText, costIndexColor), tropo],
         [new Column(0, 'CRZ FL/TEMP'), new Column(23, 'GND TEMP', Column.right)],
@@ -352,12 +355,14 @@ export class CDUInitPage {
       ]),
     );
 
-    mcdu.onRightInput[3] = () => {
-      CDUWindPage.Return = () => {
-        CDUInitPage.ShowPage1(mcdu, forPlan);
+    if (shouldEnableWindOption) {
+      mcdu.onRightInput[3] = () => {
+        CDUWindPage.Return = () => {
+          CDUInitPage.ShowPage1(mcdu, forPlan);
+        };
+        CDUWindPage.ShowPage(mcdu);
       };
-      CDUWindPage.ShowPage(mcdu);
-    };
+    }
 
     mcdu.onUp = () => {};
   }
