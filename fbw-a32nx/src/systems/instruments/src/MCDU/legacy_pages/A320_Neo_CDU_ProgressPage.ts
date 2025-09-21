@@ -16,10 +16,14 @@ export class CDUProgressPage {
     };
     mcdu.activeSystem = 'FMGC';
     const flightNo = mcdu.flightNumber ?? '';
-    const flMax = mcdu.getMaxFlCorrected();
+    const recMaxFl = mcdu.getMaxFlCorrected();
+    const flMaxText = recMaxFl !== null ? `{magenta}FL:${recMaxFl.toString()}{end}` : `-----`;
     const flOpt =
-      mcdu._zeroFuelWeightZFWCGEntered && mcdu._blockFuelEntered && (mcdu.isAllEngineOn() || mcdu.isOnGround())
-        ? '{green}FL' + (Math.floor(flMax / 5) * 5).toString() + '{end}'
+      recMaxFl !== null &&
+      mcdu._zeroFuelWeightZFWCGEntered &&
+      mcdu._blockFuelEntered &&
+      (mcdu.isAllEngineOn() || mcdu.isOnGround())
+        ? '{green}FL' + (Math.floor(recMaxFl / 5) * 5).toString() + '{end}'
         : '-----';
     const gpsPrimary = mcdu.navigation.getGpsPrimary();
     const gpsPrimaryStatus = mcdu.navigation.getGpsPrimary() ? '{green}GPS PRIMARY{end}' : '';
@@ -188,7 +192,7 @@ export class CDUProgressPage {
     mcdu.setTemplate([
       ['{green}' + flightPhase.padStart(15, '\xa0') + '{end}\xa0' + flightNo.padEnd(11, '\xa0')],
       ['\xa0' + 'CRZ\xa0', 'OPT\xa0\xa0\xa0\xa0REC MAX'],
-      [flCrz, flOpt + '\xa0\xa0\xa0\xa0' + '{magenta}FL' + flMax.toString() + '\xa0{end}'],
+      [flCrz, flOpt + '\xa0\xa0\xa0\xa0' + flMaxText + '\xa0{end}'],
       [''],
       ['<REPORT', vDevCell],
       [gpsPrimary ? '' : '\xa0POSITION UPDATE AT'],
