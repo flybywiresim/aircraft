@@ -1253,28 +1253,6 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
   }
 
-  // A -> B -> C -> D -> E -> F -> G -> H -> I -> J
-  // |__________|   |______________|    |_________|
-  //     DEP            ENROUTE             ARR
-
-  // Insert NEW DEST at  C
-
-  // A -> B -> C -> D -> E -> F -> G -> H -> I -> J
-  // |____|    |__________________________________|
-  //   DEP                     ENROUTE
-
-  // A -> B -> C -> D -> E -> F -> G -> H -> I -> J
-  // |__________|   |______________|    |_________|
-  //     DEP            ENROUTE             ARR
-
-  // Insert NEW DEST at  H
-
-  // A -> B -> C -> D -> E -> F -> G -> H -> I -> J
-  // |__________|   |___________________|    |____|
-  //     DEP            ENROUTE               ARR
-
-  // Insert NEW DEST at  H
-
   /**
    * NEW DEST revision. Changes the destination airport and removes all routing ahead of an index, with a discontinuity in between.
    *
