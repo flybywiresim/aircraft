@@ -86,8 +86,6 @@ export class AtcDatalinkSystem implements Instrument {
 
     this.subscriber.on('atcActiveAtisAutoUpdates').handle((airports) => (this.atisAutoUpdates = airports));
     this.subscriber.on('atcRequestAtsuStatusCode').handle((response) => {
-      console.log('atcRequestAtsuStatusCode detected');
-      console.log(response);
       this.requestAtsuStatusCodeCallbacks.every((callback, index) => {
         if (callback(response.code, response.requestId)) {
           this.requestAtsuStatusCodeCallbacks.splice(index, 1);
@@ -128,7 +126,6 @@ export class AtcDatalinkSystem implements Instrument {
   ) {}
 
   public async receiveAtcAtis(airport: string, type: AtisType): Promise<AtsuStatusCodes> {
-    console.log('atis request received: ' + airport + ' ' + type);
     return new Promise<AtsuStatusCodes>((resolve, _reject) => {
       const requestId = this.requestId++;
       this.publisher.pub('atcRequestAtis', { icao: airport, type, requestId }, true, false);

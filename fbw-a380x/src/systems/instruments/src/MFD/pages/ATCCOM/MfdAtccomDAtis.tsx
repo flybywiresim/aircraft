@@ -19,7 +19,6 @@ export class MfdAtccomDAtis extends DisplayComponent<MfdAtccomDAtisProps> {
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-    console.log(this.airports);
   }
   render(): VNode {
     return (
@@ -57,9 +56,7 @@ export class MfdAtccomDAtis extends DisplayComponent<MfdAtccomDAtisProps> {
             <Button
               label="PRINT<br/>ALL"
               disabled={Subject.create(true)}
-              onClick={() => {
-                console.log(this.airports);
-              }}
+              onClick={() => {}}
               buttonStyle="width: 190px;"
               containerStyle="position:absolute; top: 3px; right:190px"
             />

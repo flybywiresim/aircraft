@@ -88,7 +88,6 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
     if (airport.icao !== '' && !airport.requested) {
       airport.requested = true;
 
-      console.log(this.datalink);
       this.messageStatusLabel.set(PredefinedMessages.sending);
 
       this.datalink.receiveAtcAtis(airport.icao, airport.type).then((response) => {
@@ -165,7 +164,6 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
 
   private updateAtisData(airportIcao: string): void {
     const atisReport: AtisMessage = this.datalink.atisReports(airportIcao)[0];
-    console.log(atisReport);
     if (atisReport === undefined) return;
     if (atisReport.Information) {
       this.atisCode.set(atisReport.Information);
@@ -304,6 +302,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
                 },
                 {
                   label: 'AUTO UPDATE',
+                  disabled: true,
                   action: () => {
                     this.toggleAtisAutoUpdate(this.atisIcao.get());
                   },
@@ -318,7 +317,6 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
               label="SEND<br/>REQUEST"
               disabled={this.isIcaoEmpty}
               onClick={() => {
-                console.log(this.props.data);
                 this.requestAtis(this.props.data);
               }}
               visible={this.showDropdownMenu}
