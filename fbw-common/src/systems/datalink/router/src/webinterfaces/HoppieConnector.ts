@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 //  Copyright (c) 2021 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
@@ -96,12 +97,14 @@ export class HoppieConnector {
     };
     const text = await Hoppie.sendRequest(body).then((resp) => resp.response);
 
-    if (text === 'error {callsign already in use}' || text.includes(station)) {
+    if (text === 'error {callsign already in use}') {
       return AtsuStatusCodes.CallsignInUse;
     }
+
     if (text.includes('error')) {
       return AtsuStatusCodes.ProxyError;
     }
+
     if (text.startsWith('ok') !== true) {
       return AtsuStatusCodes.ComFailed;
     }
@@ -127,13 +130,19 @@ export class HoppieConnector {
     };
     const text = await Hoppie.sendRequest(body).then((resp) => resp.response);
 
+    if (text === 'error {callsign already in use}') {
+      return AtsuStatusCodes.CallsignInUse;
+    }
+
     if (text.includes('error')) {
       return AtsuStatusCodes.ProxyError;
     }
+
     if (text.startsWith('ok') !== true) {
       return AtsuStatusCodes.ComFailed;
     }
-    if (text !== `ok {${station}}`) {
+
+    if (text.includes(station) !== true) {
       return AtsuStatusCodes.NoAtc;
     }
 
@@ -155,6 +164,10 @@ export class HoppieConnector {
     const text = await Hoppie.sendRequest(body)
       .then((resp) => resp.response)
       .catch(() => 'proxy');
+
+    if (text === 'error {callsign already in use}') {
+      return AtsuStatusCodes.CallsignInUse;
+    }
 
     if (text === 'proxy') {
       return AtsuStatusCodes.ProxyError;
@@ -321,6 +334,10 @@ export class HoppieConnector {
       const text = await Hoppie.sendRequest(body)
         .then((resp) => resp.response)
         .catch(() => 'proxy');
+
+      if (text === 'error {callsign already in use}') {
+        return [AtsuStatusCodes.CallsignInUse, retval];
+      }
 
       // proxy error during request
       if (text === 'proxy') {

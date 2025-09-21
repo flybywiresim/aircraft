@@ -1,4 +1,5 @@
-import { useArinc429Var } from '@flybywiresim/fbw-sdk';
+// @ts-strict-ignore
+import { MathUtils, useArinc429Var } from '@flybywiresim/fbw-sdk';
 import { GaugeComponent, GaugeMarkerComponent, ThrottlePositionDonutComponent } from '@instruments/common/gauges';
 import { useSimVar } from '@instruments/common/simVars';
 import { Position, ValidRedundantSystem } from '@instruments/common/types';
@@ -16,12 +17,15 @@ export const CabAlt: React.FC<Position & ValidRedundantSystem> = ({ x, y, system
 
   const cabAltTarget50 = Math.round(cabinAltTarget / 50) * 50;
 
+  const maxValue = 12.5;
+  const minValue = -0.6;
+  const clampedTarget = MathUtils.clamp(cabAltTarget50 / 1000, minValue, maxValue);
+
   const [cabAltAutoMode] = useSimVar('L:A32NX_OVHD_PRESS_MAN_ALTITUDE_PB_IS_AUTO', 'bool', 500);
 
   const radius = 87;
   const startAngle = 212;
   const endAngle = 89;
-  const maxValue = 12.5;
 
   return (
     <g id="DeltaPressure">
@@ -54,7 +58,7 @@ export const CabAlt: React.FC<Position & ValidRedundantSystem> = ({ x, y, system
           value={12.5}
           x={x}
           y={y}
-          min={-0.6}
+          min={minValue}
           max={maxValue}
           radius={radius}
           startAngle={startAngle}
@@ -67,7 +71,7 @@ export const CabAlt: React.FC<Position & ValidRedundantSystem> = ({ x, y, system
           value={10}
           x={x}
           y={y}
-          min={-0.6}
+          min={minValue}
           max={maxValue}
           radius={radius}
           startAngle={startAngle}
@@ -81,7 +85,7 @@ export const CabAlt: React.FC<Position & ValidRedundantSystem> = ({ x, y, system
           value={7.5}
           x={x}
           y={y}
-          min={-0.6}
+          min={minValue}
           max={maxValue}
           radius={radius}
           startAngle={startAngle}
@@ -92,7 +96,7 @@ export const CabAlt: React.FC<Position & ValidRedundantSystem> = ({ x, y, system
           value={5}
           x={x}
           y={y}
-          min={-0.6}
+          min={minValue}
           max={maxValue}
           radius={radius}
           startAngle={startAngle}
@@ -106,7 +110,7 @@ export const CabAlt: React.FC<Position & ValidRedundantSystem> = ({ x, y, system
           value={2.5}
           x={x}
           y={y}
-          min={-0.6}
+          min={minValue}
           max={maxValue}
           radius={radius}
           startAngle={startAngle}
@@ -117,7 +121,7 @@ export const CabAlt: React.FC<Position & ValidRedundantSystem> = ({ x, y, system
           value={0}
           x={x}
           y={y}
-          min={-0.6}
+          min={minValue}
           max={maxValue}
           radius={radius}
           startAngle={startAngle}
@@ -131,7 +135,7 @@ export const CabAlt: React.FC<Position & ValidRedundantSystem> = ({ x, y, system
           value={cabAlt50 / 1000}
           x={x}
           y={y}
-          min={-0.6}
+          min={minValue}
           max={maxValue}
           radius={radius}
           startAngle={startAngle}
@@ -141,10 +145,10 @@ export const CabAlt: React.FC<Position & ValidRedundantSystem> = ({ x, y, system
           multiplierOuter={1.01}
         />
         <ThrottlePositionDonutComponent
-          value={cabAltTarget50 / 1000}
+          value={clampedTarget}
           x={x}
           y={y}
-          min={-0.6}
+          min={minValue}
           max={maxValue}
           radius={radius}
           startAngle={startAngle}

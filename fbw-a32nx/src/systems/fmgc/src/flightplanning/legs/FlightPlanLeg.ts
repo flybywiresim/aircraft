@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2022 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
@@ -406,7 +407,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
           procedureIdent: '',
           type: LegType.IF,
           overfly: false,
-          waypoint: WaypointFactory.fromRunway(runway),
+          waypoint: runway,
           waypointDescriptor: WaypointDescriptor.Runway,
           magneticCourse: runway?.magneticBearing,
         },
@@ -422,7 +423,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         procedureIdent: '',
         type: LegType.IF,
         overfly: false,
-        waypoint: WaypointFactory.fromAirport(airport),
+        waypoint: airport,
         waypointDescriptor: WaypointDescriptor.Airport,
         magneticCourse: runway?.magneticBearing,
       },
