@@ -91,6 +91,7 @@ export class CDUAtcLatRequestFansA {
 
   static ShowPage1(mcdu: LegacyAtsuPageInterface, data = CDUAtcLatRequestFansA.CreateDataBlock()) {
     mcdu.clearDisplay();
+    mcdu.page.Current = mcdu.page.ATCLatRequest;
 
     let weatherDeviation = '{cyan}[  ]{end}';
     if (data.weatherDeviation) {
@@ -305,6 +306,7 @@ export class CDUAtcLatRequestFansA {
 
   static ShowPage2(mcdu: LegacyAtsuPageInterface, data = CDUAtcLatRequestFansA.CreateDataBlock()) {
     mcdu.clearDisplay();
+    mcdu.page.Current = mcdu.page.ATCLatRequest;
 
     let offsetDistance = '[  ]';
     let offsetStartPoint = '[     ]';
