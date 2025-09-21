@@ -21,6 +21,7 @@ import { AutoUpdateIcon } from 'instruments/src/MFD/pages/ATCCOM/Elements/AutoUp
 import { AutoPrintIcon } from 'instruments/src/MFD/pages/ATCCOM/Elements/AutoPrintIcon';
 import { AirportAtis } from '../../ATCCOM/AtcDatalinkSystem';
 import { AtisMessage, AtisType, AtsuStatusCodes } from '@datalink/common';
+import { ATCCOMMessages } from '../../shared/NXSystemMessages';
 
 interface DAtisBlockProps extends AtccomMfdPageProps {
   readonly index: 0 | 1 | 2;
@@ -101,11 +102,13 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
             break;
           case AtsuStatusCodes.NoAtisReceived:
             this.messageStatusLabel.set(PredefinedMessages.noReply);
+            this.datalink.addMessageToQueue(ATCCOMMessages.datisNoReply, undefined, undefined);
             break;
           case AtsuStatusCodes.NewAtisReceived:
             this.updateAtisData(airport.icao);
             this.atisStatus.set(AtisStatus.RECEIVED);
             this.messageStatusLabel.set('');
+            this.datalink.addMessageToQueue(ATCCOMMessages.datisReceived, undefined, undefined);
         }
         airport.requested = false;
       });
@@ -211,6 +214,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
         this.atisCode.set('');
         this.atisTimestamp.set('');
         this.atisMessage.set('');
+        this.messageStatusLabel.set('');
       }),
     );
 

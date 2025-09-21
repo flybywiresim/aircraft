@@ -4,9 +4,8 @@ import { FmsRouterMessages, RouterFmsMessages } from '@datalink/router';
 import { ArraySubject, EventBus, Instrument, InstrumentBackplane } from '@microsoft/msfs-sdk';
 import { MessageStorage } from './MessageStorage';
 import { FmsDataPublisher } from '@flybywiresim/fbw-sdk';
-import { FmsErrorMessage } from '../FMC/FlightManagementComputer';
 import { FmsErrorType } from '@fmgc/FmsError';
-import { NXFictionalMessages, NXSystemMessages, TypeIMessage } from '../shared/NXSystemMessages';
+import { McduMessage, ATCCOMMessage, NXFictionalMessages, NXSystemMessages } from '../shared/NXSystemMessages';
 
 export type AirportAtis = {
   icao: string;
@@ -15,6 +14,13 @@ export type AirportAtis = {
   autoupdate: boolean;
   lastReadAtis: string;
 };
+
+export interface AtcErrorMessage {
+  message: McduMessage;
+  messageText: string;
+  backgroundColor: 'white' | 'amber' | 'cyan'; // Whether the message should be colored.
+  cleared: boolean; // If message has been cleared from footer
+}
 
 export class AtcDatalinkSystem implements Instrument {
   private readonly bus = new EventBus();
@@ -38,7 +44,7 @@ export class AtcDatalinkSystem implements Instrument {
 
   private atisReportsPrintActive: boolean = false;
 
-  atcErrors = ArraySubject.create<FmsErrorMessage>();
+  atcErrors = ArraySubject.create<AtcErrorMessage>();
 
   private readonly atisAirports: AirportAtis[] = [
     { icao: '', type: AtisType.Departure, requested: false, autoupdate: false, lastReadAtis: '' },
@@ -117,13 +123,40 @@ export class AtcDatalinkSystem implements Instrument {
         break;
     }
   }
-  clearLatestAtcErrorMessage() {}
+  clearLatestAtcErrorMessage() {
+    const arr = this.atcErrors.getArray();
+    const index = arr.findIndex((val) => !val.cleared);
+
+    if (index > -1) {
+      if (arr[index].message.isTypeTwo) {
+        const old = arr[index];
+        old.cleared = true;
+
+        this.atcErrors.set(arr);
+      } else {
+        this.atcErrors.removeAt(index);
+      }
+    }
+  }
 
   public addMessageToQueue(
-    _message: TypeIMessage,
+    message: ATCCOMMessage,
     _isResolvedOverride: (() => boolean) | undefined = undefined,
     _onClearOverride: (() => void) | undefined = undefined,
-  ) {}
+  ) {
+    const msg: AtcErrorMessage = {
+      message: message,
+      messageText: message.text,
+      backgroundColor: message.isAmber ? 'amber' : 'white',
+      cleared: false,
+    };
+
+    const exists = this.atcErrors.getArray().findIndex((el) => el.messageText === msg.messageText && el.cleared);
+    if (exists !== -1) {
+      this.atcErrors.removeAt(exists);
+    }
+    this.atcErrors.insert(msg, 0);
+  }
 
   public async receiveAtcAtis(airport: string, type: AtisType): Promise<AtsuStatusCodes> {
     return new Promise<AtsuStatusCodes>((resolve, _reject) => {
