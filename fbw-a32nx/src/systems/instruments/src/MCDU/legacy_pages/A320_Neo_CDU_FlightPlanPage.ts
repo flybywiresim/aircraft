@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023, 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -14,6 +15,7 @@ import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FlightPlanLeg, isDiscontinuity } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { FmsFormatters } from '../legacy/FmsFormatters';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { Column, FormatLine } from '../legacy/A320_Neo_CDU_Format';
 
 const Markers = {
   FPLN_DISCONTINUITY: ['---F-PLN DISCONTINUITY--'],
@@ -76,20 +78,15 @@ export class CDUFlightPlanPage {
       : mcdu.flightPlanService.secondary(1);
     const planAccentColor = forActiveOrTemporary ? (mcdu.flightPlanService.hasTemporary ? 'yellow' : 'green') : 'white';
 
-    let headerText;
-    if (forActiveOrTemporary) {
-      if (mcdu.flightPlanService.hasTemporary) {
-        headerText = `{yellow}{sp}TMPY{end}`;
-      } else {
-        headerText = `{sp}`;
-      }
-    } else {
-      headerText = `{sp}{sp}{sp}{sp}{sp}{sp}{sp}{sp}{sp}{sp}{sp}SEC`;
+    const fromHeader = new Column(1, 'FROM', Column.small);
+    const title: Column[] = [fromHeader];
+    if (forActiveOrTemporary && mcdu.flightPlanService.hasTemporary) {
+      title.push(new Column(6, 'TMPY', Column.yellow));
     }
-
-    let flightNumberText = '';
     if (forActiveOrTemporary) {
-      flightNumberText = mcdu.flightNumber ?? '';
+      title.push(new Column(20, mcdu.flightNumber ?? '', Column.small, Column.right));
+    } else {
+      title.push(new Column(16, 'SEC'));
     }
 
     const waypointsAndMarkers = [];
@@ -248,10 +245,7 @@ export class CDUFlightPlanPage {
 
     if (waypointsAndMarkers.length === 0) {
       rowsCount = 0;
-      mcdu.setTemplate([
-        [`{left}{small}{sp}FROM{end}${headerText}{end}{right}{small}${flightNumberText}{sp}{sp}{sp}{end}{end}`],
-        ...emptyFplnPage(forPlan),
-      ]);
+      mcdu.setTemplate([FormatLine(...title), ...emptyFplnPage(forPlan)]);
       mcdu.onLeftInput[0] = () => CDULateralRevisionPage.ShowPage(mcdu, undefined, undefined, forPlan);
       return;
     } else if (waypointsAndMarkers.length >= 5) {
@@ -1062,13 +1056,12 @@ export class CDUFlightPlanPage {
     mcdu.setArrows(allowScroll, allowScroll, true, true);
     scrollText[0][1] = 'SPD/ALT\xa0\xa0\xa0';
     scrollText[0][2] = isFlying ? '\xa0UTC{sp}{sp}{sp}{sp}' : 'TIME{sp}{sp}{sp}{sp}';
-    mcdu.setTemplate([
-      [
-        `{left}{small}{sp}${showFrom ? 'FROM' : '{sp}{sp}{sp}{sp}'}{end}${headerText}{end}{right}{small}${flightNumberText}{sp}{sp}{sp}{end}{end}`,
-      ],
-      ...scrollText,
-      ...destText,
-    ]);
+
+    if (!showFrom) {
+      fromHeader.update('');
+    }
+
+    mcdu.setTemplate([FormatLine(...title), ...scrollText, ...destText]);
   }
 
   static async clearElement(

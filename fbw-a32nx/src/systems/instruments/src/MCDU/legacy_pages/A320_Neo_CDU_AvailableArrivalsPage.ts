@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 /*
  * A32NX
  * Copyright (C) 2020-2021, 2025 FlyByWire Simulations and its contributors
@@ -23,6 +24,7 @@ import {
   ApproachType,
   ApproachUtils,
   Arrival,
+  NXUnits,
   Runway,
   RunwayUtils,
 } from '@flybywiresim/fbw-sdk';
@@ -202,7 +204,7 @@ export class CDUAvailableArrivalsPage {
 
           const runway = targetPlan.availableDestinationRunways.find((rw) => rw.ident === approachOrRunway.runwayIdent);
           if (runway) {
-            runwayLength = runway.length.toFixed(0); // TODO imperial length pin program
+            runwayLength = NXUnits.mToUser(runway.length).toFixed(0);
             runwayCourse = Utils.leadingZeros(Math.round(runway.magneticBearing), 3);
 
             const finalLeg = approachOrRunway.legs[approachOrRunway.legs.length - 1];
@@ -221,7 +223,7 @@ export class CDUAvailableArrivalsPage {
             rows[2 * i] = [
               `{${color}}${!isSelected ? '{' : '{sp}'}${ApproachUtils.shortApproachName(approachOrRunway)}{end}`,
               '',
-              `{sp}{sp}{sp}${runwayLength}{small}M{end}[color]${color}`,
+              `{sp}{sp}${runwayLength.padStart(6, '\xa0')}{small}${NXUnits.userDistanceUnit().padEnd(2)}{end}[color]${color}`,
             ];
             rows[2 * i + 1] = [`{${color}}{sp}{sp}{sp}${runwayCourse}${ilsText}{end}`];
           }
@@ -231,6 +233,7 @@ export class CDUAvailableArrivalsPage {
             if (!isSelected) {
               try {
                 await mcdu.flightPlanService.setApproach(approachOrRunway.databaseId, forPlan, inAlternate);
+                await CDUAvailableArrivalsPage.tryAutoSetApproachVia(mcdu, forPlan, inAlternate);
 
                 CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
               } catch (e) {
@@ -249,7 +252,6 @@ export class CDUAvailableArrivalsPage {
             }
           };
         } else {
-          const runwayLength = approachOrRunway.length.toFixed(0); // TODO imperial length pin program
           const runwayCourse = Utils.leadingZeros(Math.round(approachOrRunway.magneticBearing), 3);
 
           const isSelected =
@@ -261,9 +263,9 @@ export class CDUAvailableArrivalsPage {
           rows[2 * i] = [
             `{${color}}${!isSelected ? '{' : '{sp}'}${RunwayUtils.runwayString(approachOrRunway.ident)}{end}`,
             '',
-            `{sp}{sp}{sp}${runwayLength}{small}M{end}[color]${color}`,
+            `{sp}{sp}${NXUnits.mToUser(approachOrRunway.length).toFixed(0).padStart(6, '\xa0')}{small}${NXUnits.userDistanceUnit().padEnd(2)}{end}[color]${color}`,
           ];
-          rows[2 * i + 1] = ['{sp}{sp}{sp}{sp}' + runwayCourse + '[color]cyan'];
+          rows[2 * i + 1] = ['{sp}{sp}{sp}' + runwayCourse + '[color]cyan'];
 
           mcdu.onLeftInput[i + 2] = async (_, scratchpadCallback) => {
             // Clicking the already selected runway is not allowed
@@ -336,13 +338,19 @@ export class CDUAvailableArrivalsPage {
             mcdu.onLeftInput[i + 2] = async () => {
               try {
                 await mcdu.flightPlanService.setArrival(null, forPlan, inAlternate);
-
-                const availableVias = targetPlan.availableApproachVias;
-
-                if (selectedApproach !== undefined && availableVias.length > 0) {
-                  CDUAvailableArrivalsPage.ShowViasPage(mcdu, airport, 0, forPlan, inAlternate);
-                } else {
+                if (await CDUAvailableArrivalsPage.tryAutoSetApproachVia(mcdu, forPlan, inAlternate)) {
                   CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
+                } else {
+                  const newTargetPlan = inAlternate
+                    ? mcdu.getAlternateFlightPlan(forPlan)
+                    : mcdu.getFlightPlan(forPlan);
+                  const availableVias = newTargetPlan.availableApproachVias;
+
+                  if (selectedApproach !== undefined && availableVias.length > 0) {
+                    CDUAvailableArrivalsPage.ShowViasPage(mcdu, airport, 0, forPlan, inAlternate);
+                  } else {
+                    CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
+                  }
                 }
               } catch (e) {
                 console.error(e);
@@ -383,12 +391,16 @@ export class CDUAvailableArrivalsPage {
 
                   await mcdu.flightPlanService.setArrival(starDatabaseId, forPlan, inAlternate);
 
-                  const availableVias = targetPlan.availableApproachVias;
-
-                  if (selectedApproach !== undefined && availableVias.length > 0) {
-                    CDUAvailableArrivalsPage.ShowViasPage(mcdu, airport, 0, forPlan, inAlternate);
-                  } else {
+                  if (await CDUAvailableArrivalsPage.tryAutoSetApproachVia(mcdu, forPlan, inAlternate)) {
                     CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
+                  } else {
+                    const availableVias = targetPlan.availableApproachVias;
+
+                    if (selectedApproach !== undefined && availableVias.length > 0) {
+                      CDUAvailableArrivalsPage.ShowViasPage(mcdu, airport, 0, forPlan, inAlternate);
+                    } else {
+                      CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
+                    }
                   }
                 } catch (e) {
                   console.error(e);
@@ -616,46 +628,14 @@ export class CDUAvailableArrivalsPage {
 
     const rows = [[''], [''], [''], [''], [''], [''], [''], ['']];
 
-    const starFixes = [];
-    if (targetPlan.arrivalEnrouteTransition?.legs.length > 0) {
-      for (const leg of targetPlan.arrivalEnrouteTransition.legs) {
-        if (leg.waypoint) {
-          starFixes.push(leg.waypoint.databaseId);
-        }
-      }
-    }
-    if (targetPlan.arrival?.commonLegs.length > 0) {
-      for (const leg of targetPlan.arrival.commonLegs) {
-        if (leg.waypoint) {
-          starFixes.push(leg.waypoint.databaseId);
-        }
-      }
-    }
-    if (targetPlan.arrivalRunwayTransition?.legs.length > 0) {
-      for (const leg of targetPlan.arrivalRunwayTransition.legs) {
-        if (leg.waypoint) {
-          starFixes.push(leg.waypoint.databaseId);
-        }
-      }
-    }
-
-    const shouldFilterVias = starFixes.length > 0;
-    const vias: { ident: string; databaseId: string | null; isOtherVia: boolean }[] =
-      targetPlan.availableApproachVias.map((t) => ({
-        ident: t.ident,
-        databaseId: t.databaseId,
-        isOtherVia: shouldFilterVias && !starFixes.find((id) => t.legs[0].waypoint?.databaseId === id),
-      }));
+    const vias = CDUAvailableArrivalsPage.getVias(mcdu, forPlan, inAlternate);
     vias.unshift({
       ident: Labels.NO_VIA,
       databaseId: null,
       isOtherVia: false,
     });
 
-    if (shouldFilterVias) {
-      vias.sort((a, b) => (a.isOtherVia && !b.isOtherVia ? 1 : !a.isOtherVia && b.isOtherVia ? -1 : 0));
-    }
-    const firstOtherViaIndex = shouldFilterVias ? vias.findIndex((v) => v.isOtherVia) : -1;
+    const firstOtherViaIndex = vias.findIndex((v) => v.isOtherVia);
 
     for (let i = 0; i < ArrivalPagination.VIA_PAGE; i++) {
       const index = i + pageCurrent * ArrivalPagination.VIA_PAGE;
@@ -753,5 +733,82 @@ export class CDUAvailableArrivalsPage {
       CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
     };
     mcdu.onNextPage = mcdu.onPrevPage;
+  }
+
+  /**
+   * Gets the list of vias for the currently approach, and whether they are compatible with the selected STAR ("other" via if not).
+   * @param mcdu The FMS.
+   * @param forPlan The plan index to operate on.
+   * @param inAlternate Whether to operate on the alternate plan.
+   * @returns The list of vias.
+   */
+  private static getVias(
+    mcdu: LegacyFmsPageInterface,
+    forPlan = FlightPlanIndex.Active,
+    inAlternate = false,
+  ): { ident: string; databaseId: string | null; isOtherVia: boolean }[] {
+    const targetPlan = inAlternate ? mcdu.getAlternateFlightPlan(forPlan) : mcdu.getFlightPlan(forPlan);
+
+    const starFixes = [];
+    if (targetPlan.arrivalEnrouteTransition?.legs.length > 0) {
+      for (const leg of targetPlan.arrivalEnrouteTransition.legs) {
+        if (leg.waypoint) {
+          starFixes.push(leg.waypoint.databaseId);
+        }
+      }
+    }
+    if (targetPlan.arrival?.commonLegs.length > 0) {
+      for (const leg of targetPlan.arrival.commonLegs) {
+        if (leg.waypoint) {
+          starFixes.push(leg.waypoint.databaseId);
+        }
+      }
+    }
+    if (targetPlan.arrivalRunwayTransition?.legs.length > 0) {
+      for (const leg of targetPlan.arrivalRunwayTransition.legs) {
+        if (leg.waypoint) {
+          starFixes.push(leg.waypoint.databaseId);
+        }
+      }
+    }
+
+    const shouldFilterVias = starFixes.length > 0;
+    const vias: { ident: string; databaseId: string | null; isOtherVia: boolean }[] =
+      targetPlan.availableApproachVias.map((t) => ({
+        ident: t.ident,
+        databaseId: t.databaseId,
+        isOtherVia: shouldFilterVias && !starFixes.find((id) => t.legs[0].waypoint?.databaseId === id),
+      }));
+
+    if (shouldFilterVias) {
+      vias.sort((a, b) => (a.isOtherVia && !b.isOtherVia ? 1 : !a.isOtherVia && b.isOtherVia ? -1 : 0));
+    }
+
+    return vias;
+  }
+
+  /**
+   * Automatically selects the approach via if there is exactly one for the selected arrival and approach.
+   * @param mcdu The FMS.
+   * @param forPlan The plan index to operate on.
+   * @param inAlternate Whether to operate on the alternate plan.
+   * @returns Whether a via was automatically selected.
+   */
+  private static async tryAutoSetApproachVia(
+    mcdu: LegacyFmsPageInterface,
+    forPlan = FlightPlanIndex.Active,
+    inAlternate = false,
+  ): Promise<boolean> {
+    const targetPlan = inAlternate ? mcdu.getAlternateFlightPlan(forPlan) : mcdu.getFlightPlan(forPlan);
+    if (targetPlan.approach !== undefined && targetPlan.arrival !== undefined) {
+      const availableVias = CDUAvailableArrivalsPage.getVias(mcdu, forPlan, inAlternate).filter(
+        (v) => v.isOtherVia === false,
+      );
+      if (availableVias.length === 1) {
+        await mcdu.flightPlanService.setApproachVia(availableVias[0].databaseId, forPlan, inAlternate);
+        return true;
+      }
+    }
+    return false;
   }
 }

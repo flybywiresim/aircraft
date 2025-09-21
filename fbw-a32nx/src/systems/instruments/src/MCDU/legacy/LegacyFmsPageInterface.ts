@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -252,7 +253,6 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   costIndex: number | undefined;
   cruiseLevel: number | undefined;
   cruiseTemperature?: number;
-  tempCurve: any; // we don't have the MSFS SDK typings for these curves
   casToMachManualCrossoverCurve: any;
   machToCasManualCrossoverCurve: any;
   tropo: number | undefined;
@@ -297,8 +297,8 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   managedSpeedDescendMach: number;
   perfApprQNH: number;
   perfApprTemp: number;
-  perfApprWindHeading: number;
-  perfApprWindSpeed: number;
+  perfApprWindHeading: number | null;
+  perfApprWindSpeed: number | null;
   approachSpeeds?: NXSpeedsApp;
   vApp: number;
   perfApprFlaps3: boolean;

@@ -34,34 +34,34 @@ export const BleedPage = () => {
         BLEED
       </PageTitle>
 
-      <BleedMixerUnit x={384} y={30} _sdacDatum={sdacDatum} />
+      <BleedMixerUnit x={164} y={34} _sdacDatum={sdacDatum} />
 
-      <text x={344} y={70} className="White F23 MiddleAlign">
+      <text x={356} y={72} className="White F22 MiddleAlign">
         RAM
       </text>
-      <text x={404} y={70} className="White F23 MiddleAlign">
+      <text x={415} y={72} className="White F22 MiddleAlign">
         AIR
       </text>
 
       {/* Hot Air */}
-      <BleedHotAir x={238} y={204} hotAir={1} _sdacDatum={sdacDatum} />
-      <BleedHotAir x={514} y={204} hotAir={2} _sdacDatum={sdacDatum} />
+      <BleedHotAir x={247} y={207} hotAir={1} _sdacDatum={sdacDatum} />
+      <BleedHotAir x={520} y={207} hotAir={2} _sdacDatum={sdacDatum} />
 
-      <text x={344} y={190} className="White F23 MiddleAlign">
+      <text x={355} y={193} className="White F22 MiddleAlign">
         HOT
       </text>
-      <text x={404} y={190} className="White F23 MiddleAlign">
+      <text x={414} y={193} className="White F22 MiddleAlign">
         AIR
       </text>
 
-      <BleedEngine x={75} y={525} engine={1} sdacDatum={sdacDatum} />
-      <BleedEngine x={209} y={525} engine={2} sdacDatum={sdacDatum} />
-      <BleedEngine x={485} y={525} engine={3} sdacDatum={sdacDatum} />
-      <BleedEngine x={619} y={525} engine={4} sdacDatum={sdacDatum} />
+      <BleedEngine x={78} y={528} engine={1} sdacDatum={sdacDatum} />
+      <BleedEngine x={215} y={528} engine={2} sdacDatum={sdacDatum} />
+      <BleedEngine x={490} y={528} engine={3} sdacDatum={sdacDatum} />
+      <BleedEngine x={627} y={528} engine={4} sdacDatum={sdacDatum} />
 
       {/* Packs */}
-      <BleedPack x={115} y={90} pack={1} isPackOperative={isPack1Operative} />
-      <BleedPack x={525} y={90} pack={2} isPackOperative={isPack2Operative} />
+      <BleedPack x={100} y={93} pack={1} isPackOperative={isPack1Operative} />
+      <BleedPack x={512} y={93} pack={2} isPackOperative={isPack2Operative} />
 
       {/* Crossbleed */}
       <BleedCrossbleed />
@@ -70,7 +70,7 @@ export const BleedPage = () => {
       <BleedGnd />
 
       {/* APU */}
-      <BleedApu isPack1Operative={isPack1Operative} isPack2Operative={isPack2Operative} />
+      <BleedApu />
     </>
   );
 };

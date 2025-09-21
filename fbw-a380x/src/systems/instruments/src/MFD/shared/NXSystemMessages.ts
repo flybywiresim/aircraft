@@ -66,7 +66,7 @@ export class TypeIIMessage extends McduMessage {
 export const NXSystemMessages = {
   awyWptDisagree: new TypeIMessage('AIRWAY / WPT DISAGREE'),
   cancelAtisUpdate: new TypeIMessage('CANCEL AUTO UPDATE FIRST'),
-  checkMinDestFob: new TypeIIMessage('CHECK MIN DEST FOB'),
+  checkMinFuelAtDest: new TypeIIMessage('CHECK MIN FUEL AT DEST'),
   checkSpeedMode: new TypeIIMessage('CHECK SPD MODE'),
   checkToData: new TypeIIMessage('CHECK T.O. DATA', true),
   comFplnRecievedPendingInsertion: new TypeIIMessage('COMPANY F-PLN RECEIVED WAITING FOR INSERTION', false),
@@ -97,6 +97,8 @@ export const NXSystemMessages = {
   stepAhead: new TypeIIMessage('STEP AHEAD'),
   stepDeleted: new TypeIIMessage('STEP DELETED'),
   tooSteepPathAhead: new TypeIIMessage('TOO STEEP PATH AHEAD'),
+  navprimary: new TypeIIMessage('NAV PRIMARY'),
+  navprimaryLost: new TypeIIMessage('NAV PRIMARY LOST', true),
 };
 
 export const NXFictionalMessages = {
@@ -127,3 +129,7 @@ export const NXFictionalMessages = {
   reverseProxy: new TypeIMessage('REVERSE PROXY ERROR'),
   simBriefNoUser: new TypeIMessage('NO SIMBRIEF PILOT ID PROVIDED'),
 };
+
+export function isTypeIIMessage(message: McduMessage): message is TypeIIMessage {
+  return message instanceof TypeIIMessage;
+}

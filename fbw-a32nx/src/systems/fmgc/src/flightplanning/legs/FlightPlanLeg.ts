@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2022 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
@@ -406,7 +407,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
           procedureIdent: '',
           type: LegType.IF,
           overfly: false,
-          waypoint: WaypointFactory.fromRunway(runway),
+          waypoint: runway,
           waypointDescriptor: WaypointDescriptor.Runway,
           magneticCourse: runway?.magneticBearing,
         },
@@ -422,7 +423,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         procedureIdent: '',
         type: LegType.IF,
         overfly: false,
-        waypoint: WaypointFactory.fromAirport(airport),
+        waypoint: airport,
         waypointDescriptor: WaypointDescriptor.Airport,
         magneticCourse: runway?.magneticBearing,
       },
@@ -509,4 +510,8 @@ export type FlightPlanElement = FlightPlanLeg | Discontinuity;
 
 export function isDiscontinuity(o: any): o is Discontinuity {
   return typeof o === 'object' && o.isDiscontinuity === true;
+}
+
+export function isLeg(o: any): o is FlightPlanLeg {
+  return typeof o === 'object' && o.isDiscontinuity === false;
 }

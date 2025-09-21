@@ -1,8 +1,10 @@
+// @ts-strict-ignore
 import { NXUnits } from '@flybywiresim/fbw-sdk';
 import { getSimBriefOfp } from '../../legacy/A32NX_Core/A32NX_ATSU';
 import { CDUAocMenu } from './A320_Neo_CDU_AOC_Menu';
 import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
 import { FmsFormatters } from '../../legacy/FmsFormatters';
+import { Column, FormatLine } from '../../legacy/A320_Neo_CDU_Format';
 
 /**
  * Value is rounded to 1000 and fixed to 1 decimal
@@ -64,7 +66,7 @@ export class CDUAocInit {
       }
     }
     mcdu.setTemplate([
-      ['INIT/REVIEW', '1', '2', 'AOC'],
+      [...FormatLine(new Column(0, 'AOC', Column.small), new Column(7, 'INIT/REVIEW')), '1', '2'],
       ['\xa0FMC FLT NO', 'GMT\xa0'],
       [fltNbr, gmt],
       ['\xa0DEP'],
@@ -167,7 +169,7 @@ export class CDUAocInit {
         return;
       }
       const display = [
-        ['INIT/REVIEW', '2', '2', 'AOC'],
+        [...FormatLine(new Column(0, 'AOC', Column.small), new Column(7, 'INIT/REVIEW')), '2', '2'],
         [' OUT', 'OFF ', 'DOORS'],
         [outTime, offTime, doorsTime],
         [' ON', 'IN ', 'GMT'],
@@ -177,7 +179,7 @@ export class CDUAocInit {
         [' FUEL REM', 'LDG PILOT '],
         ['   ' + fob, '-------'],
         ['', ''],
-        ['*AUTOLAND <{small}n{end}>[color]cyan'],
+        ['*AUTOLAND <{small}N{end}>[color]cyan'],
         ['', 'ADVISORY '],
         ['<AOC MENU'],
       ];

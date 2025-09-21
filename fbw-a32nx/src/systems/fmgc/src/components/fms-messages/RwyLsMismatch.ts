@@ -1,12 +1,14 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// @ts-strict-ignore
+// Copyright (c) 2021-2025 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { FMMessage, FMMessageTypes, Trigger } from '@flybywiresim/fbw-sdk';
+import { FMMessage, Trigger } from '@flybywiresim/fbw-sdk';
 
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
 import { FMMessageSelector, FMMessageUpdate } from './FmsMessages';
 import { Navigation } from '@fmgc/navigation/Navigation';
+import { FMMessageTypes } from './FmMessages';
 
 abstract class RwyLsMismatch implements FMMessageSelector {
   message: FMMessage = FMMessageTypes.RwyLsMismatch;
