@@ -618,7 +618,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
             </div>
             <Button
               label="NAVAIDS"
-              onClick={() => this.props.mfd.uiService.navigateTo('fms/position/navaids')}
+              onClick={() => this.props.mfd.uiService.navigateTo('fms/position/navaids/nav')}
               buttonStyle="width: 160px; margin-left: 150px; margin-bottom: 10px;"
             />
             <Button
