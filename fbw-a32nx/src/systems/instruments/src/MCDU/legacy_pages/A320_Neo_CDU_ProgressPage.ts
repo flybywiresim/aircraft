@@ -138,14 +138,16 @@ export class CDUProgressPage {
       });
     };
 
-    let rnpCell = '-.-';
+    let rnpCell = '{white}----{end}';
     const rnpSize = mcdu.navigation.requiredPerformance.manualRnp ? 'big' : 'small';
     const rnp = mcdu.navigation.requiredPerformance.activeRnp;
     // TODO check 2 decimal cut-off
-    if (rnp > 1) {
-      rnpCell = rnp.toFixed(1).padStart(4);
-    } else if (rnp !== undefined) {
-      rnpCell = rnp.toFixed(2);
+    if (rnp !== undefined) {
+      if (rnp > 1) {
+        rnpCell = rnp.toFixed(1).padStart(4);
+      } else {
+        rnpCell = rnp.toFixed(2);
+      }
     }
 
     mcdu.onLeftInput[5] = (input, scratchpadCallback) => {
@@ -172,13 +174,15 @@ export class CDUProgressPage {
       CDUProgressPage.ShowPage(mcdu);
     };
 
-    let anpCell = '-.-';
+    let anpCell = '{white}----{end}';
     const anp = mcdu.navigation.currentPerformance;
     // TODO check 2 decimal cut-off
-    if (anp > 1) {
-      anpCell = anp.toFixed(1).padStart(4);
-    } else if (anp !== undefined) {
-      anpCell = anp.toFixed(2);
+    if (anp !== undefined) {
+      if (anp > 1) {
+        anpCell = anp.toFixed(1).padStart(4);
+      } else {
+        anpCell = anp.toFixed(2);
+      }
     }
 
     mcdu.setTemplate([
