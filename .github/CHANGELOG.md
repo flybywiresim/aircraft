@@ -144,6 +144,7 @@
 1. [A380X/FWS] Fix cavalry charge for AP disconnect; Add improved triple click logic using FCDC signals - @flogross89 (floridude)
 1. [A380X] Autoflight: Add ROLLOUT fault (i.e. communication fault between NWS and PRIM) - @flogross89 (floridude)
 1. [A380X/CDS] Change autoland capability designation to Batch 7 standard (LAND instead of CAT) - @flogross89 (floridude)
+1. [FMS] Add lateral discontinuity ahead fms message - @BravoMike99 (bruno_pt99)
 
 ## 0.13.0
 
