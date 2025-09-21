@@ -1,9 +1,10 @@
+// @ts-strict-ignore
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable no-console */
 import React, { FC, useEffect, useRef } from 'react';
-import { GPUControlEvents, useSimVar } from '@flybywiresim/fbw-sdk';
+import { GPUControlEvents, isMsfs2024, useSimVar } from '@flybywiresim/fbw-sdk';
 import {
   ArchiveFill,
   ConeStriped,
@@ -32,6 +33,7 @@ import {
   setFuelTruckButtonState,
   setGpuButtonState,
   setJetWayButtonState,
+  setStairsButtonState,
   setAsuButtonState,
   useEventBus,
 } from '@flybywiresim/flypad';
@@ -57,6 +59,7 @@ enum ServiceButton {
   CabinLeftDoor,
   CabinRightDoor,
   JetBridge,
+  Stairs,
   FuelTruck,
   Gpu,
   CargoDoor,
@@ -148,6 +151,8 @@ export const A320Services: React.FC = () => {
     SimVar.SetSimVarValue('K:TOGGLE_JETWAY', 'bool', false);
     SimVar.SetSimVarValue('K:TOGGLE_RAMPTRUCK', 'bool', false);
   };
+  const toggleJetBridge = () => SimVar.SetSimVarValue('K:TOGGLE_JETWAY', 'bool', false);
+  const toggleStairs = () => SimVar.SetSimVarValue('K:TOGGLE_RAMPTRUCK', 'bool', false);
   const toggleCargoDoor = () => SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 6);
   const toggleBaggageTruck = () => SimVar.SetSimVarValue('K:REQUEST_LUGGAGE', 'bool', true);
   const toggleAftLeftDoor = () => SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 3);
@@ -165,6 +170,7 @@ export const A320Services: React.FC = () => {
     serviceDoorButtonState,
     cargo1DoorButtonState,
     jetWayButtonState,
+    stairsButtonState,
     fuelTruckButtonState,
     gpuButtonState,
     baggageButtonState,
@@ -175,6 +181,8 @@ export const A320Services: React.FC = () => {
   // Required so these can be used inside the useTimeout callback
   const jetWayButtonStateRef = useRef(jetWayButtonState);
   jetWayButtonStateRef.current = jetWayButtonState;
+  const stairsButtonStateRef = useRef(stairsButtonState);
+  stairsButtonStateRef.current = stairsButtonState;
   const baggageButtonStateRef = useRef(baggageButtonState);
   baggageButtonStateRef.current = baggageButtonState;
   const cateringButtonStateRef = useRef(cateringButtonState);
@@ -328,7 +336,22 @@ export const A320Services: React.FC = () => {
           setBoarding1DoorButtonState,
           cabinLeftDoorOpen,
         );
-        toggleJetBridgeAndStairs();
+        if (!isMsfs2024()) {
+          toggleJetBridgeAndStairs();
+        } else {
+          toggleJetBridge();
+        }
+        break;
+      case ServiceButton.Stairs:
+        handleComplexService(
+          ServiceButton.Stairs,
+          stairsButtonStateRef,
+          setStairsButtonState,
+          boarding1DoorButtonState,
+          setBoarding1DoorButtonState,
+          cabinLeftDoorOpen,
+        );
+        toggleStairs();
         break;
       case ServiceButton.BaggageTruck:
         handleComplexService(
@@ -462,6 +485,17 @@ export const A320Services: React.FC = () => {
     );
   }, [cabinLeftDoorOpen]);
 
+  // Cabin Door listener for Stairs Button
+  useEffect(() => {
+    complexServiceListenerHandling(
+      stairsButtonStateRef,
+      setStairsButtonState,
+      boarding1DoorButtonState,
+      setBoarding1DoorButtonState,
+      cabinLeftDoorOpen,
+    );
+  }, [cabinLeftDoorOpen]);
+
   // Cargo Door listener for Baggage Button
   useEffect(() => {
     complexServiceListenerHandling(
@@ -496,6 +530,7 @@ export const A320Services: React.FC = () => {
       dispatch(setBoarding1DoorButtonState(ServiceButtonState.DISABLED));
       dispatch(setBoarding2DoorButtonState(ServiceButtonState.DISABLED));
       dispatch(setJetWayButtonState(ServiceButtonState.DISABLED));
+      dispatch(setStairsButtonState(ServiceButtonState.DISABLED));
       dispatch(setFuelTruckButtonState(ServiceButtonState.DISABLED));
       dispatch(setGpuButtonState(ServiceButtonState.DISABLED));
       dispatch(setCargo1DoorButtonState(ServiceButtonState.DISABLED));
@@ -581,14 +616,27 @@ export const A320Services: React.FC = () => {
           <PersonPlusFill size={36} />
         </GroundServiceButton>
 
-        {/* FUEL TRUCK */}
-        <GroundServiceButton
-          name={t('Ground.Services.FuelTruck')}
-          state={fuelTruckButtonState}
-          onClick={() => handleButtonClick(ServiceButton.FuelTruck)}
-        >
-          <Truck size={36} />
-        </GroundServiceButton>
+        {/* JET STAIRS (ONLY SHOWN IN 2024) */}
+        {isMsfs2024() && (
+          <GroundServiceButton
+            name={t('Ground.Services.Stairs')}
+            state={stairsButtonState}
+            onClick={() => handleButtonClick(ServiceButton.Stairs)}
+          >
+            <PersonPlusFill size={36} />
+          </GroundServiceButton>
+        )}
+
+        {/* FUEL TRUCK for 2020 */}
+        {!isMsfs2024() && (
+          <GroundServiceButton
+            name={t('Ground.Services.FuelTruck')}
+            state={fuelTruckButtonState}
+            onClick={() => handleButtonClick(ServiceButton.FuelTruck)}
+          >
+            <Truck size={36} />
+          </GroundServiceButton>
+        )}
 
         {/* Air Starter Unit */}
         <GroundServiceButton
@@ -693,6 +741,17 @@ export const A320Services: React.FC = () => {
         >
           <ArchiveFill size={36} />
         </GroundServiceButton>
+
+        {/* FUEL TRUCK for 2024 */}
+        {isMsfs2024() && (
+          <GroundServiceButton
+            name={t('Ground.Services.FuelTruck')}
+            state={fuelTruckButtonState}
+            onClick={() => handleButtonClick(ServiceButton.FuelTruck)}
+          >
+            <Truck size={36} />
+          </GroundServiceButton>
+        )}
       </ServiceButtonWrapper>
 
       {/* Visual indications for tug and doors */}

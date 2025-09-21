@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { DisplayUnit } from '@instruments/common/displayUnit';
+import { DisplayUnit } from './displayUnit';
 import React from 'react';
 import { render } from '@instruments/common/index';
 import { useSimVar } from '@flybywiresim/fbw-sdk';

@@ -79,20 +79,40 @@ animation: pulsingS 1s step-end infinite;
             fill: $display-cyan !important;
         }
 
+        &.Cyan.DimColor {
+            fill: scale-color($display-cyan, $lightness: -50%) !important;
+        }
+
         &.Green {
             fill: $display-green !important;
+        }
+
+        &.Green.DimColor {
+            fill: scale-color($display-green, $lightness: -50%) !important;
         }
 
         &.Amber {
             fill: $display-amber;
         }
 
+        &.Amber.DimColor {
+            fill: scale-color($display-amber, $lightness: -50%) !important;
+        }
+
         &.Red {
             fill: $display-red;
         }
 
+        &.Red.DimColor {
+            fill: scale-color($display-red, $lightness: -50%) !important;
+        }
+
         &.Magenta {
             fill: $display-magenta;
+        }
+
+        &.Magenta.DimColor {
+            fill: scale-color($display-magenta, $lightness: -50%) !important;
         }
 
         &.Center {
