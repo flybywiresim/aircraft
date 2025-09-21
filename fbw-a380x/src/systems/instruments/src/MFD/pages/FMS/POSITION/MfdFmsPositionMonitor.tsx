@@ -17,6 +17,7 @@ import {
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import { A32NX_Util } from '@shared/A32NX_Util';
+import { MfdFmsPositionNavaids } from './MfdFmsPositionNavaids';
 
 interface MfdFmsPositionMonitorPageProps extends AbstractMfdPageProps {}
 
@@ -680,7 +681,11 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
             <div class="fr">
               <Button
                 label="NAVAIDS"
-                onClick={() => this.props.mfd.uiService.navigateTo('fms/position/navaids')}
+                onClick={() =>
+                  this.props.mfd.uiService.navigateTo(
+                    `fms/position/navaids/${MfdFmsPositionNavaids.selectedForFmsNavExtra}`,
+                  )
+                }
                 buttonStyle="margin-right: 5px; width:149px; height:43px;"
               />
               <Button
