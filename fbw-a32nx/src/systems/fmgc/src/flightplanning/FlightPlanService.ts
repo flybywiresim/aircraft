@@ -164,7 +164,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
     activeModification();
 
-    // The ZFW/ZFWCG are actually not copied to the active plan if we activate after engine start or before engine
+    // The ZFW/ZFWCG/BLOCK FUEL values are actually not copied to the active plan if we activate after engine start or before engine
     // start but with the values in the SEC being empty.
     // We only show the CHECK WEIGHT scratchpad message if the weights differ by more than 5 tonnes.
     if (oldZfw !== null && (!isBeforeEngineStart || this.active.performanceData.zeroFuelWeight.get() === null)) {
@@ -180,6 +180,8 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       this.setPerformanceData('blockFuel', oldBlockFuel, FlightPlanIndex.Active);
     }
 
+    // If CI and flight number are set in the active but not in the SEC before we swap, we keep the active plan values.
+    // The same is true for the taxi fuel, but only on the A380
     if (
       this.config.PERSIST_TAXI_FUEL_ON_SEC_SWAP &&
       oldTaxiFuel !== null &&
