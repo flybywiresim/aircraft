@@ -40,6 +40,14 @@ void EngineControl_A380X::update() {
       atcId = simData.atcIdDataPtr->data().atcID;
       LOG_INFO("Fadec::EngineControl_A380X::update() - received ATC ID: " + atcId);
       initializeEngineControlData();
+    } else {
+      // Check if we've exceeded the timeout for receiving ATC ID
+      const double currentTime = msfsHandlerPtr->getSimulationTime();
+      if (currentTime - atcIdRequestStartTime > ATC_ID_TIMEOUT_SECONDS) {
+        atcId = "A380X";
+        LOG_WARN("Fadec::EngineControl_A380X::update() - ATC ID timeout, using fallback ID: " + atcId);
+        initializeEngineControlData();
+      }
     }
     return;
   }

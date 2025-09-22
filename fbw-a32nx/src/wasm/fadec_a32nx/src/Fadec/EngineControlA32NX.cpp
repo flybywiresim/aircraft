@@ -22,6 +22,7 @@ void EngineControl_A32NX::initialize(MsfsHandler* msfsHandler) {
   this->msfsHandlerPtr = msfsHandler;
   this->dataManagerPtr = &msfsHandler->getDataManager();
   this->simData.initialize(dataManagerPtr);
+  this->atcIdRequestStartTime = msfsHandler->getSimulationTime();
   LOG_INFO("Fadec::EngineControl_A32NX::initialize() - initialized");
 }
 
@@ -37,12 +38,21 @@ void EngineControl_A32NX::update() {
   // Get ATC ID from sim to be able to load and store fuel levels
   // If not yet available, request it from sim and return early
   // If available initialize the engine control data
+  // Failsafe: if ATC ID is not received within timeout, initialize with default ID
   if (atcId.empty()) {
     simData.atcIdDataPtr->requestUpdateFromSim(msfsHandlerPtr->getTimeStamp(), msfsHandlerPtr->getTickCounter());
     if (simData.atcIdDataPtr->hasChanged()) {
       atcId = simData.atcIdDataPtr->data().atcID;
       LOG_INFO("Fadec::EngineControl_A32NX::update() - received ATC ID: " + atcId);
       initializeEngineControlData();
+    } else {
+      // Check if we've exceeded the timeout for receiving ATC ID
+      const double currentTime = msfsHandlerPtr->getSimulationTime();
+      if (currentTime - atcIdRequestStartTime > ATC_ID_TIMEOUT_SECONDS) {
+        atcId = "A32NX";
+        LOG_WARN("Fadec::EngineControl_A32NX::update() - ATC ID timeout, using fallback ID: " + atcId);
+        initializeEngineControlData();
+      }
     }
     return;
   }

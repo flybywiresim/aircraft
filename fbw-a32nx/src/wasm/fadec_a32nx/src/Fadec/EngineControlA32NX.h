@@ -36,6 +36,10 @@ class EngineControl_A32NX {
   // ATC ID for the aircraft used to load and store the fuel levels
   std::string atcId{};
 
+  // Time when ATC ID request started (for failsafe timeout)
+  double                  atcIdRequestStartTime  = 0.0;
+  static constexpr double ATC_ID_TIMEOUT_SECONDS = 30.0;
+
   // Fuel configuration for loading and storing fuel levels
   FuelConfiguration_A32NX fuelConfiguration{};
 
