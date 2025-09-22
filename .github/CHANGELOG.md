@@ -135,6 +135,15 @@
 1. [A380X/EIS] Fix malformed W glyph on the EIS display units - @tracernz (Mike)
 1. [A380X/ECAM] Add ATA 52 (DOOR) ECAM procedures (initial implementation) - @Jonny23787 (Jonathan)
 1. [A380X/FMS] Add NAV PRIMARY & NAV PRIMARY LOST scratchpad messages - @BravoMike99 (bruno_pt99)
+1. [A380X/EWD] ECL checkbox is the same color as the text color - @Bravomike99 (bruno_pt99)
+1. [A380X/OIS] Fix OOOI times logic, automatically power laptop for runway spawns - @flogross89 (floridude)
+1. [A380X/MFD] Changed colors of TCAS modes to match correct colors in A380 FCOM - @fwillard (Finn)
+1. [MODEL] Inverted behavior of FADEC GND PWR PB - @Maximilian-Reuter (\_chaoz_)
+1. [A380X] Autoflight: Partially move approach and landing capability computation to FCDC - @flogross89 (floridude)
+1. [A380X/PRIM] Introduce required equipment monitoring for AUTOLAND capability - @flogross89 (floridude)
+1. [A380X/FWS] Fix cavalry charge for AP disconnect; Add improved triple click logic using FCDC signals - @flogross89 (floridude)
+1. [A380X] Autoflight: Add ROLLOUT fault (i.e. communication fault between NWS and PRIM) - @flogross89 (floridude)
+1. [A380X/CDS] Change autoland capability designation to Batch 7 standard (LAND instead of CAT) - @flogross89 (floridude)
 1. {A32NX/Flight Model} Flight model update for early rotation issue - @donstim (donbikes)
 
 ## 0.13.0
