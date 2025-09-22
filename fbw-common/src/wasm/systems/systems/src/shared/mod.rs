@@ -23,7 +23,7 @@ use uom::si::{
 
 pub mod low_pass_filter;
 pub mod pid;
-#[cfg(test)]
+// The module `test` isn't marked #[cfg(test)] to allow usage in other crates.
 pub mod test;
 pub mod update_iterator;
 
