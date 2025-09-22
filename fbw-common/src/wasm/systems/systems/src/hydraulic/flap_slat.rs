@@ -273,11 +273,13 @@ impl FlapSlatAssembly {
         let sfcc_2_pob = sfcc_2_request.get_pob_status();
 
         let pob_de_energised =
-            sfcc_1_pob == SolenoidStatus::DeEnergised || sfcc_2_pob == SolenoidStatus::DeEnergised;
+            sfcc_1_pob == SolenoidStatus::DeEnergised && sfcc_2_pob == SolenoidStatus::DeEnergised;
 
         let sfcc_1_request = sfcc_1_request.get_command_status();
         let sfcc_2_request = sfcc_2_request.get_command_status();
 
+        // NOTE: opposite requests are not modelled yet. Opposite requests aren't expected
+        // in the current code.
         let extend_request = sfcc_1_request == Some(ChannelCommand::Extend)
             || sfcc_2_request == Some(ChannelCommand::Extend);
 
