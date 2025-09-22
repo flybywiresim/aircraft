@@ -568,7 +568,10 @@ impl SimulationElement for FlapSlatAssembly {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        // I assume FPPU and IPPU have the same value. No mismatch implemented.
+        // NOTE: I assume FPPU and IPPU have the same value. No mismatch implemented.
+        // I also assume that FPPUs/IPPUs are always powered and reading the correct
+        // position. The behaviour in case of power loss is modelled in the receiver
+        // side: FWC/SFCC.
         writer.write(&self.fppu_id, self.position_feedback().get::<degree>());
         writer.write(&self.ippu_id, self.position_feedback().get::<degree>());
 
