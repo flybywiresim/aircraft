@@ -26,7 +26,6 @@ export interface PFDSimvars {
   fmaSpeedProtection: boolean;
   AThrMode: number;
   selectedVs: number;
-  approachCapability: number;
   ap1Active: boolean;
   ap2Active: boolean;
   fmaVerticalArmed: number;
@@ -113,10 +112,6 @@ export interface PFDSimvars {
   autoBrakeDecel: boolean;
   fpaRaw: number;
   daRaw: number;
-  fcdc1DiscreteWord1Raw: number;
-  fcdc2DiscreteWord1Raw: number;
-  fcdc1DiscreteWord2Raw: number;
-  fcdc2DiscreteWord2Raw: number;
   ls1Button: boolean;
   ls2Button: boolean;
   xtk: number;
@@ -204,7 +199,6 @@ export enum PFDVars {
   fmaSpeedProtection = 'L:A32NX_FMA_SPEED_PROTECTION_MODE',
   AThrMode = 'L:A32NX_AUTOTHRUST_MODE',
   selectedVs = 'L:A32NX_AUTOPILOT_VS_SELECTED',
-  approachCapability = 'L:A32NX_APPROACH_CAPABILITY',
   ap1Active = 'L:A32NX_AUTOPILOT_1_ACTIVE',
   ap2Active = 'L:A32NX_AUTOPILOT_2_ACTIVE',
   fmaVerticalArmed = 'L:A32NX_FMA_VERTICAL_ARMED',
@@ -290,10 +284,6 @@ export enum PFDVars {
   autoBrakeDecel = 'L:A32NX_AUTOBRAKES_DECEL_LIGHT',
   fpaRaw = 'L:A32NX_ADIRS_IR_1_FLIGHT_PATH_ANGLE',
   daRaw = 'L:A32NX_ADIRS_IR_1_DRIFT_ANGLE',
-  fcdc1DiscreteWord1Raw = 'L:A32NX_FCDC_1_DISCRETE_WORD_1',
-  fcdc2DiscreteWord1Raw = 'L:A32NX_FCDC_2_DISCRETE_WORD_1',
-  fcdc1DiscreteWord2Raw = 'L:A32NX_FCDC_1_DISCRETE_WORD_2',
-  fcdc2DiscreteWord2Raw = 'L:A32NX_FCDC_2_DISCRETE_WORD_2',
   ls1Button = 'L:A380X_EFIS_L_LS_BUTTON_IS_ON',
   ls2Button = 'L:A380X_EFIS_R_LS_BUTTON_IS_ON',
   xtk = 'L:A32NX_FG_CROSS_TRACK_ERROR',
@@ -381,7 +371,6 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['fmaSpeedProtection', { name: PFDVars.fmaSpeedProtection, type: SimVarValueType.Bool }],
     ['AThrMode', { name: PFDVars.AThrMode, type: SimVarValueType.Number }],
     ['selectedVs', { name: PFDVars.selectedVs, type: SimVarValueType.FPM }],
-    ['approachCapability', { name: PFDVars.approachCapability, type: SimVarValueType.Number }],
     ['ap1Active', { name: PFDVars.ap1Active, type: SimVarValueType.Bool }],
     ['ap2Active', { name: PFDVars.ap2Active, type: SimVarValueType.Bool }],
     ['fmaVerticalArmed', { name: PFDVars.fmaVerticalArmed, type: SimVarValueType.Number }],
@@ -467,10 +456,6 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['autoBrakeDecel', { name: PFDVars.autoBrakeDecel, type: SimVarValueType.Bool }],
     ['fpaRaw', { name: PFDVars.fpaRaw, type: SimVarValueType.Number }],
     ['daRaw', { name: PFDVars.daRaw, type: SimVarValueType.Number }],
-    ['fcdc1DiscreteWord1Raw', { name: PFDVars.fcdc1DiscreteWord1Raw, type: SimVarValueType.Number }],
-    ['fcdc2DiscreteWord1Raw', { name: PFDVars.fcdc2DiscreteWord1Raw, type: SimVarValueType.Number }],
-    ['fcdc1DiscreteWord2Raw', { name: PFDVars.fcdc1DiscreteWord2Raw, type: SimVarValueType.Number }],
-    ['fcdc2DiscreteWord2Raw', { name: PFDVars.fcdc2DiscreteWord2Raw, type: SimVarValueType.Number }],
     ['ls1Button', { name: PFDVars.ls1Button, type: SimVarValueType.Bool }],
     ['ls2Button', { name: PFDVars.ls2Button, type: SimVarValueType.Bool }],
     ['xtk', { name: PFDVars.xtk, type: SimVarValueType.NM }],
