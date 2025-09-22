@@ -324,19 +324,15 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    if (this.props.mfd.uiService.activeUri.get().extra) {
-      switch (this.props.mfd.uiService.activeUri.get().extra) {
-        case 'display':
+    this.subs.push(
+      this.props.mfd.uiService.activeUri.sub((val) => {
+        if (val.extra === 'display') {
           this.navaidsSelectedPageIndex.set(0);
-          break;
-        case 'nav':
+        } else if (val.extra === 'nav') {
           this.navaidsSelectedPageIndex.set(1);
-          break;
-      }
-    } else {
-      const allowedPhases = Math.min(Math.max(this.activeFlightPhase.get(), 1), 6);
-      this.navaidsSelectedPageIndex.set(allowedPhases - 1);
-    }
+        }
+      }, true),
+    );
 
     const sub = this.props.bus.getSubscriber<ClockEvents & MfdSimvars>();
     this.subs.push(
