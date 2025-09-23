@@ -693,6 +693,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
   isActiveOrCopiedFromActive(): boolean {
     return (
       this.index === FlightPlanIndex.Active ||
+      this.index === FlightPlanIndex.Temporary ||
       (this.flags & FlightPlanFlags.CopiedFromActive) === FlightPlanFlags.CopiedFromActive
     );
   }
