@@ -46,9 +46,12 @@ export type EwdSimvars = {
   flexTemp: number;
   satRaw: number;
   totalFuel: number;
-  slatsFlapsStatusRaw: number;
-  slatsPositionRaw: number;
-  flapsPositionRaw: number;
+  sfcc1SlatsFlapsStatusRaw: number;
+  sfcc1SlatsPositionRaw: number;
+  sfcc1FlapsPositionRaw: number;
+  sfcc2SlatsFlapsStatusRaw: number;
+  sfcc2SlatsPositionRaw: number;
+  sfcc2FlapsPositionRaw: number;
   ewdLowerLeft1: number;
   ewdLowerLeft2: number;
   ewdLowerLeft3: number;
@@ -110,9 +113,12 @@ export enum EwdVars {
   satRaw = 'L:A32NX_ADIRS_ADR_1_STATIC_AIR_TEMPERATURE',
   totalFuel = 'L:A32NX_TOTAL_FUEL_QUANTITY',
   // TODO: it should be label 127 and 137 from SDAC and FWC
-  slatsFlapsStatusRaw = 'L:A32NX_SFCC_1_SLAT_FLAP_SYSTEM_STATUS_WORD',
-  slatsPositionRaw = 'L:A32NX_SFCC_1_SLAT_ACTUAL_POSITION_WORD',
-  flapsPositionRaw = 'L:A32NX_SFCC_1_FLAP_ACTUAL_POSITION_WORD',
+  sfcc1SlatsFlapsStatusRaw = 'L:A32NX_SFCC_1_SLAT_FLAP_SYSTEM_STATUS_WORD',
+  sfcc1SlatsPositionRaw = 'L:A32NX_SFCC_1_SLAT_ACTUAL_POSITION_WORD',
+  sfcc1FlapsPositionRaw = 'L:A32NX_SFCC_1_FLAP_ACTUAL_POSITION_WORD',
+  sfcc2SlatsFlapsStatusRaw = 'L:A32NX_SFCC_2_SLAT_FLAP_SYSTEM_STATUS_WORD',
+  sfcc2SlatsPositionRaw = 'L:A32NX_SFCC_2_SLAT_ACTUAL_POSITION_WORD',
+  sfcc2FlapsPositionRaw = 'L:A32NX_SFCC_2_FLAP_ACTUAL_POSITION_WORD',
   ewdLowerLeft1 = 'L:A32NX_Ewd_LOWER_LEFT_LINE_1',
   ewdLowerLeft2 = 'L:A32NX_Ewd_LOWER_LEFT_LINE_2',
   ewdLowerLeft3 = 'L:A32NX_Ewd_LOWER_LEFT_LINE_3',
@@ -176,9 +182,12 @@ export class EwdSimvarPublisher extends SimVarPublisher<EwdSimvars> {
     ['flexTemp', { name: EwdVars.flexTemp, type: SimVarValueType.Number }],
     ['satRaw', { name: EwdVars.satRaw, type: SimVarValueType.Number }],
     ['totalFuel', { name: EwdVars.totalFuel, type: SimVarValueType.Number }],
-    ['slatsFlapsStatusRaw', { name: EwdVars.slatsFlapsStatusRaw, type: SimVarValueType.Number }],
-    ['slatsPositionRaw', { name: EwdVars.slatsPositionRaw, type: SimVarValueType.Number }],
-    ['flapsPositionRaw', { name: EwdVars.flapsPositionRaw, type: SimVarValueType.Number }],
+    ['sfcc1SlatsFlapsStatusRaw', { name: EwdVars.sfcc1SlatsFlapsStatusRaw, type: SimVarValueType.Number }],
+    ['sfcc1SlatsPositionRaw', { name: EwdVars.sfcc1SlatsPositionRaw, type: SimVarValueType.Number }],
+    ['sfcc1FlapsPositionRaw', { name: EwdVars.sfcc1FlapsPositionRaw, type: SimVarValueType.Number }],
+    ['sfcc2SlatsFlapsStatusRaw', { name: EwdVars.sfcc2SlatsFlapsStatusRaw, type: SimVarValueType.Number }],
+    ['sfcc2SlatsPositionRaw', { name: EwdVars.sfcc2SlatsPositionRaw, type: SimVarValueType.Number }],
+    ['sfcc2FlapsPositionRaw', { name: EwdVars.sfcc2FlapsPositionRaw, type: SimVarValueType.Number }],
     ['ewdLowerLeft1', { name: EwdVars.ewdLowerLeft1, type: SimVarValueType.Number }],
     ['ewdLowerLeft2', { name: EwdVars.ewdLowerLeft2, type: SimVarValueType.Number }],
     ['ewdLowerLeft3', { name: EwdVars.ewdLowerLeft3, type: SimVarValueType.Number }],
