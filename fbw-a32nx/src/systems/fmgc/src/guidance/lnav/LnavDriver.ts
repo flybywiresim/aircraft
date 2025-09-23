@@ -90,17 +90,9 @@ export class LnavDriver implements GuidanceComponent {
 
     const trueTrack = SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree');
 
-    const activeLegIdx = this.guidanceController.activeLegIndex;
+    this.updateSecDistanceToDestination(trueTrack);
 
-    const secGeometry = this.guidanceController.getGeometryForFlightPlan(FlightPlanIndex.FirstSecondary);
-    if (secGeometry && secGeometry.legs.size > 0) {
-      this.guidanceController.setAlongTrackDistanceToDestination(
-        secGeometry.computeAlongTrackDistanceToDestination(activeLegIdx, this.ppos, trueTrack),
-        FlightPlanIndex.FirstSecondary,
-      );
-    } else {
-      this.guidanceController.setAlongTrackDistanceToDestination(0, FlightPlanIndex.FirstSecondary);
-    }
+    const activeLegIdx = this.guidanceController.activeLegIndex;
 
     const geometry = this.guidanceController.activeGeometry;
     if (geometry && geometry.legs.size > 0) {
@@ -415,6 +407,40 @@ export class LnavDriver implements GuidanceComponent {
       this.lastPhi = null;
       this.turnState = LnavTurnState.Normal;
     }
+  }
+
+  private updateSecDistanceToDestination(trueTrack: number) {
+    const secGeometry = this.guidanceController.getGeometryForFlightPlan(FlightPlanIndex.FirstSecondary);
+
+    if (!secGeometry || secGeometry.legs.size <= 0) {
+      this.guidanceController.setAlongTrackDistanceToDestination(0, FlightPlanIndex.FirstSecondary);
+      return;
+    }
+
+    // Check if active legs are the same
+    const activePlan = this.flightPlanService.active;
+    const secPlan = this.flightPlanService.secondary(1);
+
+    const secToLeg = secPlan.maybeElementAt(secPlan.activeLegIndex);
+    const activeToLeg = activePlan.elementAt(activePlan.activeLegIndex);
+
+    const areActiveLegsTheSame =
+      secPlan.activeLegIndex === activePlan.activeLegIndex &&
+      secToLeg !== undefined &&
+      FlightPlanUtils.areFlightPlanElementsSame(secToLeg, activeToLeg);
+
+    const secFromLeg = secGeometry.legs.get(secPlan.fromLegIndex);
+    const totalFlightPlanDistance = secFromLeg?.calculated?.cumulativeDistanceToEnd;
+
+    // The distance to the destination in the secondary flight plan is either
+    // 1) the along track distance of the active leg + the total distance of the rest of the legs or
+    // 2) the total distance of all the legs
+    // depending on whether the active leg is the same between active and SEC, choosing 1) if that's the case and 2) if not
+    const distanceToDestination = areActiveLegsTheSame
+      ? secGeometry.computeAlongTrackDistanceToDestination(activePlan.activeLegIndex, this.ppos, trueTrack)
+      : totalFlightPlanDistance;
+
+    this.guidanceController.setAlongTrackDistanceToDestination(distanceToDestination, FlightPlanIndex.FirstSecondary);
   }
 
   public legEta(gs: Knots, termination: Coordinates): number {
