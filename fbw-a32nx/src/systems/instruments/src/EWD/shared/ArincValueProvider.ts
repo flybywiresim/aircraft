@@ -54,8 +54,6 @@ export class ArincValueProvider {
       this.slatsPosition = new Arinc429Word(w);
       if (this.sfccToUse === 1) {
         publisher.pub('slatsPosition', this.slatsPosition);
-      } else if (this.sfccToUse === 0) {
-        publisher.pub('slatsPosition', new Arinc429Word(0));
       }
     });
 
@@ -63,8 +61,6 @@ export class ArincValueProvider {
       this.flapsPosition = new Arinc429Word(w);
       if (this.sfccToUse === 1) {
         publisher.pub('flapsPosition', this.flapsPosition);
-      } else if (this.sfccToUse === 0) {
-        publisher.pub('flapsPosition', new Arinc429Word(0));
       }
     });
 
@@ -83,8 +79,6 @@ export class ArincValueProvider {
       this.slatsPosition = new Arinc429Word(w);
       if (this.sfccToUse === 2) {
         publisher.pub('slatsPosition', this.slatsPosition);
-      } else if (this.sfccToUse === 0) {
-        publisher.pub('slatsPosition', new Arinc429Word(0));
       }
     });
 
@@ -92,8 +86,6 @@ export class ArincValueProvider {
       this.flapsPosition = new Arinc429Word(w);
       if (this.sfccToUse === 2) {
         publisher.pub('flapsPosition', this.flapsPosition);
-      } else if (this.sfccToUse === 0) {
-        publisher.pub('flapsPosition', new Arinc429Word(0));
       }
     });
   }
