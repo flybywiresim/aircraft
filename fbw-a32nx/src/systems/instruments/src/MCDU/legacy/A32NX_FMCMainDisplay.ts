@@ -5,6 +5,7 @@
 import {
   A320EfisNdRangeValue,
   a320EfisRangeSettings,
+  Airport,
   Arinc429LocalVarOutputWord,
   Arinc429SignStatusMatrix,
   Arinc429Word,
@@ -5382,21 +5383,23 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   public async swapActiveAndSecondaryPlan(index: number) {
     const zfwDiff = this.computeZfwDiffToSecondary(index);
+    const oldDestination = this.currFlightPlanService.active?.destinationAirport;
 
     await this.flightPlanService.activeAndSecondarySwap(index, !this.isAnEngineOn());
 
-    await this.onSecondaryActivated(zfwDiff);
+    await this.onSecondaryActivated(zfwDiff, oldDestination);
   }
 
   public async activateSecondaryPlan(index: number) {
     const zfwDiff = this.computeZfwDiffToSecondary(index);
+    const oldDestination = this.currFlightPlanService.active?.destinationAirport;
 
     await this.flightPlanService.secondaryActivate(index, !this.isAnEngineOn());
 
-    await this.onSecondaryActivated(zfwDiff);
+    await this.onSecondaryActivated(zfwDiff, oldDestination);
   }
 
-  private async onSecondaryActivated(zfwDiff: number | null) {
+  private async onSecondaryActivated(zfwDiff: number | null, oldDestination: Airport | undefined) {
     const phase = this.getFlightPhase();
 
     if (phase === FmgcFlightPhase.Preflight || phase === FmgcFlightPhase.Done) {
@@ -5410,6 +5413,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         sub.destroy();
       });
     }
+
+    this.checkDestination(oldDestination);
   }
 
   /**
