@@ -48,12 +48,18 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
         !isLegTerminatingAtDatabaseFix,
       onPressed: () => {
         const ppos = fpln.props.fmcService.master?.navigation.getPpos();
+
+        const magneticTrack = SimVar.GetSimVarValue('GPS GROUND MAGNETIC TRACK', 'Degrees');
+        const trueTrack = SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'Degrees');
+        const magVar = trueTrack - magneticTrack;
+
         if (ppos) {
           fpln.props.fmcService.master?.flightPlanService.directToLeg(
             ppos,
-            SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree'),
+            magneticTrack,
+            magVar,
             legIndex,
-            true,
+            false,
             planIndex,
           );
           fpln.props.mfd.uiService.navigateTo(
