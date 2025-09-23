@@ -58,6 +58,8 @@ export class Slats extends DisplayComponent<SlatsProps> {
 
   private flapsOut: boolean = false;
 
+  private sfccValid = Subject.create(false);
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
@@ -67,6 +69,9 @@ export class Slats extends DisplayComponent<SlatsProps> {
       .on('slatsFlapsStatus')
       .whenChanged()
       .handle((s) => {
+        const sfccValid = !s.isFailureWarning();
+        this.sfccValid.set(sfccValid);
+
         this.configClean = s.bitValue(17);
         this.config1 = s.bitValue(18);
         this.config2 = s.bitValue(19);
@@ -225,10 +230,10 @@ export class Slats extends DisplayComponent<SlatsProps> {
           <text class={this.targetClass} x={-3} y={59}>
             {this.targetText}
           </text>
-          <text class="Standard Center" x={-101} y={15}>
+          <text class={this.sfccValid.map((v) => (v ? 'Standard Center' : 'Standard Center Amber'))} x={-101} y={15}>
             S
           </text>
-          <text class="Standard Center" x={105} y={15}>
+          <text class={this.sfccValid.map((v) => (v ? 'Standard Center' : 'Standard Center Amber'))} x={105} y={15}>
             F
           </text>
 
@@ -252,11 +257,23 @@ export class Slats extends DisplayComponent<SlatsProps> {
           A LOCK
         </text>
 
-        <path class="Slats" d={this.slatsPath} />
-        <line class="GreenLine" x1={-18} y1={0} x2={this.slatsEndX} y2={this.slatsEndY} />
+        <path class={this.sfccValid.map((v) => (v ? 'SlatsGreen' : 'SlatsAmber'))} d={this.slatsPath} />
+        <line
+          class={this.sfccValid.map((v) => (v ? 'GreenLine' : 'AmberLine'))}
+          x1={-18}
+          y1={0}
+          x2={this.slatsEndX}
+          y2={this.slatsEndY}
+        />
 
-        <path class="Flaps" d={this.flapsPath} />
-        <line class="GreenLine" x1={0} y1={0} x2={this.flapsEndX} y2={this.flapsEndY} />
+        <path class={this.sfccValid.map((v) => (v ? 'FlapsGreen' : 'FlapsAmber'))} d={this.flapsPath} />
+        <line
+          class={this.sfccValid.map((v) => (v ? 'GreenLine' : 'AmberLine'))}
+          x1={0}
+          y1={0}
+          x2={this.flapsEndX}
+          y2={this.flapsEndY}
+        />
       </Layer>
     );
   }
