@@ -81,7 +81,6 @@ import {
   OisDebugDataControlEvents,
 } from 'instruments/src/MsfsAvionicsCommon/providers/OisDebugDataPublisher';
 import { FcdcSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/FcdcPublisher';
-=======
 import { SdPages } from '@shared/EcamSystemPages';
 
 export function xor(a: boolean, b: boolean): boolean {
