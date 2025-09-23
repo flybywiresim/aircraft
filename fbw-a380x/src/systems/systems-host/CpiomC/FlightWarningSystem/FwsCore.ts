@@ -6015,15 +6015,15 @@ export class FwsCore {
     }
 
     if (this.sffcFlapPositionWord.isInvalid() && sffc2Reachable) {
-      this.sffcFlapPositionWord.setFromSimVar('A32NX_SFCC_2_FLAP_ACTUAL_POSITION_WORD');
+      this.sffcFlapPositionWord.setFromSimVar('L:A32NX_SFCC_2_FLAP_ACTUAL_POSITION_WORD');
     }
 
     if (this.sfccSlatPositionWord.isInvalid() && sffc2Reachable) {
-      this.sfccSlatPositionWord.setFromSimVar('A32NX_SFCC_2_SLAT_ACTUAL_POSITION_WORD');
+      this.sfccSlatPositionWord.setFromSimVar('L:A32NX_SFCC_2_SLAT_ACTUAL_POSITION_WORD');
     }
 
     if (this.sfccSlatFlapPositionWord.isInvalid() && sffc2Reachable) {
-      this.sfccSlatFlapPositionWord.setFromSimVar('A32NX_SFCC_2_SLAT_FLAP_ACTUAL_POSITION_WORD');
+      this.sfccSlatFlapPositionWord.setFromSimVar('L:A32NX_SFCC_2_SLAT_FLAP_ACTUAL_POSITION_WORD');
     }
 
     this.flaps0Selected = this.sfccSlatFlapsSystemStatusWord.bitValueOr(17, false);
@@ -6035,7 +6035,7 @@ export class FwsCore {
       this.sfccSlatFlapPositionWord.bitValueOr(12, false) && this.sfccSlatFlapPositionWord.bitValueOr(19, false);
     this.flapsInConf1 =
       this.sfccSlatFlapPositionWord.bitValueOr(13, false) && this.sfccSlatFlapPositionWord.bitValueOr(19, false);
-    this.flapsInConf1 =
+    this.flapsInConf1f =
       this.sfccSlatFlapPositionWord.bitValueOr(13, false) && this.sfccSlatFlapPositionWord.bitValueOr(20, false);
     this.flapsInConf2 =
       this.sfccSlatFlapPositionWord.bitValueOr(14, false) && this.sfccSlatFlapPositionWord.bitValueOr(21, false);
