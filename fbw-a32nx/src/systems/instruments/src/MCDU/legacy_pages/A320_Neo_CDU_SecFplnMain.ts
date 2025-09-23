@@ -62,6 +62,12 @@ export class CDUSecFplnMain {
       activateSecColumn.update('*ACTIVATE SEC');
 
       mcdu.onLeftInput[3] = async (_, scratchpadCallback) => {
+        if (mcdu.flightPlanService.hasTemporary) {
+          mcdu.setScratchpadMessage(NXSystemMessages.temporaryFplnExists);
+          scratchpadCallback();
+          return;
+        }
+
         // We should not get here, because the button is not even shown, but the page might not have refreshed yet to reflect
         // the new NAV status
         if (!this.canActivateOrSwapSecondary(mcdu, activePlan)) {
@@ -119,6 +125,12 @@ export class CDUSecFplnMain {
       secSwapActiveColumn.update('*SWAP ACTIVE   ');
 
       mcdu.onLeftInput[5] = async (_, scratchpadCallback) => {
+        if (mcdu.flightPlanService.hasTemporary) {
+          mcdu.setScratchpadMessage(NXSystemMessages.temporaryFplnExists);
+          scratchpadCallback();
+          return;
+        }
+
         // We should not get here, because the button is not even shown, but the page might not have refreshed yet to reflect
         // the new NAV status
         if (!this.canActivateOrSwapSecondary(mcdu, activePlan)) {

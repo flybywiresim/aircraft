@@ -112,6 +112,7 @@ export const NXSystemMessages = {
   stepAboveMaxFl: new TypeIIMessage('STEP ABOVE MAX FL'),
   stepAhead: new TypeIIMessage('STEP AHEAD'),
   stepDeleted: new TypeIIMessage('STEP DELETED'),
+  temporaryFplnExists: new TypeIMessage('TEMPORARY F-PLN EXISTS'),
 };
 
 // FIXME move ATSU messages out of FMS
