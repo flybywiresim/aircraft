@@ -223,8 +223,6 @@ class FadecSimData_A32NX {
 
   NamedVariablePtr aircraftPresetQuickMode;  // 0 or 1
 
-  NamedVariablePtr a32nxReady;
-
   // ===============================================================================================
 
   /**
@@ -358,8 +356,6 @@ class FadecSimData_A32NX {
     apuRpmPercent       = dm->make_named_var("A32NX_APU_N_RAW", UNITS.Number, AUTO_READ);
 
     aircraftPresetQuickMode = dm->make_named_var("A32NX_AIRCRAFT_PRESET_QUICK_MODE", UNITS.Number, AUTO_READ);
-
-    a32nxReady = dm->make_named_var("A32NX_IS_READY", UNITS.Number, AUTO_READ);
 
     // reset LVars to 0
     aircraftPresetQuickMode->setAndWriteToSim(0);

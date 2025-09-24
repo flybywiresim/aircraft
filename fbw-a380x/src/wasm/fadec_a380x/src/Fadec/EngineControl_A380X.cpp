@@ -125,7 +125,7 @@ void EngineControl_A380X::ensureFadecIsInitialized() {
   const UINT64  tickCounter = msfsHandlerPtr->getTickCounter();
 
   if (!hasLoadedFuelConfig) {
-    bool isSimulationReady = simData.a32nxReady->getAsInt64() > 0;
+    bool isSimulationReady = msfsHandlerPtr->getAircraftIsReadyVar();
     simData.atcIdDataPtr->requestUpdateFromSim(msfsHandlerPtr->getTimeStamp(), tickCounter);
 
     if (isSimulationReady) {
@@ -228,8 +228,8 @@ void EngineControl_A380X::initializeFuelTanks(FLOAT64 timeStamp, UINT64 tickCoun
   // Setting initial Fuel Levels
   const double weightLbsPerGallon = simData.simVarsDataPtr->data().fuelWeightLbsPerGallon;
 
-  // only loads saved fuel quantity on C/D spawn
-  if (simData.startState->updateFromSim(timeStamp, tickCounter) == 2) {
+  // only loads saved fuel quantity on C/D spawn and if the simulation is ready to ensure the callsign (ATC ID) is available
+  if (simData.startState->updateFromSim(timeStamp, tickCounter) == 2 && msfsHandlerPtr->getAircraftIsReadyVar()) {
     // Load fuel configuration from file
     fuelConfiguration.setConfigFilename(FILENAME_FADEC_CONF_DIRECTORY + atcId + FILENAME_FADEC_CONF_FILE_EXTENSION);
     fuelConfiguration.loadConfigurationFromIni();
@@ -892,9 +892,10 @@ void EngineControl_A380X::updateFuel(double deltaTimeSeconds) {
     simData.fuelExtraTankDataPtr->writeDataToSim();
   }
 
-  // Will save the current fuel quantities if on the ground AND engines being shutdown
+  // Will save the current fuel quantities if the Simulation is ready AND the aircraft is on the ground AND engines being shutdown
   // AND 5 seconds have passed since the last save
-  if (msfsHandlerPtr->getSimOnGround() && (msfsHandlerPtr->getSimulationTime() - lastFuelSaveTime) > 5.0 &&
+  if (msfsHandlerPtr->getAircraftIsReadyVar() && msfsHandlerPtr->getSimOnGround() &&
+      (msfsHandlerPtr->getSimulationTime() - lastFuelSaveTime) > 5.0 &&
       (engine1State == OFF || engine1State == SHUTTING ||  // 1
        engine2State == OFF || engine2State == SHUTTING ||  // 2
        engine3State == OFF || engine3State == SHUTTING ||  // 3

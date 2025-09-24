@@ -149,7 +149,7 @@ void EngineControl_A32NX::ensureFadecIsInitialized() {
   const UINT64  tickCounter = msfsHandlerPtr->getTickCounter();
 
   if (!hasLoadedFuelConfig) {
-    bool isSimulationReady = simData.a32nxReady->getAsInt64() > 0;
+    bool isSimulationReady = msfsHandlerPtr->getAircraftIsReadyVar();
     simData.atcIdDataPtr->requestUpdateFromSim(msfsHandlerPtr->getTimeStamp(), tickCounter);
 
     if (isSimulationReady) {
@@ -255,8 +255,8 @@ void EngineControl_A32NX::initializeFuelTanks(FLOAT64 timeStamp, UINT64 tickCoun
   const double leftAuxQuantity  = simData.simVarsDataPtr->data().fuelTankQuantityLeftAux;   // gal
   const double rightAuxQuantity = simData.simVarsDataPtr->data().fuelTankQuantityRightAux;  // gal
 
-  // only loads saved fuel quantity on C/D spawn
-  if (simData.startState->updateFromSim(timeStamp, tickCounter) == 2) {
+  // only loads saved fuel quantity on C/D spawn and if the simulation is ready to ensure the callsign (ATC ID) is available
+  if (simData.startState->updateFromSim(timeStamp, tickCounter) == 2 && msfsHandlerPtr->getAircraftIsReadyVar()) {
     // Load fuel configuration from file
     fuelConfiguration.setConfigFilename(FILENAME_FADEC_CONF_DIRECTORY + atcId + FILENAME_FADEC_CONF_FILE_EXTENSION);
     fuelConfiguration.loadConfigurationFromIni();
@@ -999,8 +999,11 @@ void EngineControl_A32NX::updateFuel(double deltaTimeSeconds) {
 
   //--------------------------------------------
   // Will save the current fuel quantities at a certain interval
-  // if the aircraft is on the ground and the engines are off/shutting down
-  if (msfsHandlerPtr->getSimOnGround() && (msfsHandlerPtr->getSimulationTime() - lastFuelSaveTime) > FUEL_SAVE_INTERVAL &&
+  // if the simulation is ready
+  // and the aircraft is on the ground and the engines are off/shutting down
+
+  if (msfsHandlerPtr->getAircraftIsReadyVar() && msfsHandlerPtr->getSimOnGround() &&
+      (msfsHandlerPtr->getSimulationTime() - lastFuelSaveTime) > FUEL_SAVE_INTERVAL &&
       (engine1State == OFF || engine1State == SHUTTING || engine2State == OFF || engine2State == SHUTTING)) {
     fuelConfiguration.setFuelLeft(simData.fuelLeftPre->get() / weightLbsPerGallon);
     fuelConfiguration.setFuelRight(simData.fuelRightPre->get() / weightLbsPerGallon);
