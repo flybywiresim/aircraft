@@ -19,6 +19,7 @@ void EngineControl_A380X::initialize(MsfsHandler* msfsHandler) {
   this->msfsHandlerPtr = msfsHandler;
   this->dataManagerPtr = &msfsHandler->getDataManager();
   this->simData.initialize(dataManagerPtr);
+  initializeEngineControlData();
   LOG_INFO("Fadec::EngineControl_A380X::initialize() - initialized");
 }
 
