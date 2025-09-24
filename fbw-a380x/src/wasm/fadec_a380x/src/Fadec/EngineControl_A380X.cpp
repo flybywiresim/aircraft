@@ -133,7 +133,10 @@ void EngineControl_A380X::ensureFadecIsInitialized() {
         atcId = simData.atcIdDataPtr->data().atcID;
         LOG_INFO("Fadec::EngineControl_A380X::ensureFadecIsInitialized() - received ATC ID: " + atcId);
       }
-      initializeFuelTanks(simTime, tickCounter);
+      // only init if we do a C&D spawn, otherwise fuel levels are already set correctly
+      if (simData.startState->updateFromSim(simTime, tickCounter) == 2) {
+        initializeFuelTanks(simTime, tickCounter);
+      }
       hasLoadedFuelConfig = true;
     }
   }
