@@ -38,9 +38,6 @@ class EngineControl_A32NX {
 
   // Whether we have already loaded the fuel configuration from the config file
   bool hasLoadedFuelConfig = false;
-  // Time when ATC ID request started (for failsafe timeout)
-  double                  atcIdRequestStartTime  = 0.0;
-  static constexpr double ATC_ID_TIMEOUT_SECONDS = 5.0;
 
   // Fuel configuration for loading and storing fuel levels
   FuelConfiguration_A32NX fuelConfiguration{};

@@ -252,6 +252,8 @@ class FadecSimData_A380X {
 
   NamedVariablePtr fadecQuickMode;  // 0 or 1
 
+  NamedVariablePtr a32nxReady;
+
   // ===============================================================================================
 
   /**
@@ -443,6 +445,8 @@ class FadecSimData_A380X {
 
     fadecQuickMode = dm->make_named_var("A32NX_AIRCRAFT_PRESET_QUICK_MODE", UNITS.Number, AUTO_READ);
     fadecQuickMode->set(0);
+
+    a32nxReady = dm->make_named_var("A32NX_IS_READY", UNITS.Number, AUTO_READ);
 
     // reset LVars to 0
     engineEgt[E1]->setAndWriteToSim(0);

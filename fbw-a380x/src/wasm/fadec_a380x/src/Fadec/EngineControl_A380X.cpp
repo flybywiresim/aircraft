@@ -32,27 +32,6 @@ void EngineControl_A380X::update() {
   profilerUpdate.start();
 #endif
 
-  // Get ATC ID from sim to be able to load and store fuel levels
-  // If not yet available, request it from sim and return early
-  // If available initialize the engine control data
-  if (atcId.empty()) {
-    simData.atcIdDataPtr->requestUpdateFromSim(msfsHandlerPtr->getTimeStamp(), msfsHandlerPtr->getTickCounter());
-    if (simData.atcIdDataPtr->hasChanged()) {
-      atcId = simData.atcIdDataPtr->data().atcID;
-      LOG_INFO("Fadec::EngineControl_A380X::update() - received ATC ID: " + atcId);
-      initializeEngineControlData();
-    } else {
-      // Check if we've exceeded the timeout for receiving ATC ID
-      const double currentTime = msfsHandlerPtr->getSimulationTime();
-      if (currentTime - atcIdRequestStartTime > ATC_ID_TIMEOUT_SECONDS) {
-        atcId = "A380X";
-        LOG_WARN("Fadec::EngineControl_A380X::update() - ATC ID timeout, using fallback ID: " + atcId);
-        initializeEngineControlData();
-      }
-    }
-    return;
-  }
-
   const double deltaTime          = std::max(0.002, msfsHandlerPtr->getSimulationDeltaTime());
   const double mach               = simData.simVarsDataPtr->data().airSpeedMach;
   const double pressureAltitude   = simData.simVarsDataPtr->data().pressureAltitude;
@@ -139,6 +118,32 @@ void EngineControl_A380X::update() {
 // Private methods
 // =====================================================================================================================
 
+void EngineControl_A380X::ensureFadecIsInitialized() {
+#ifdef PROFILING
+  profilerEnsureFadecIsInitialized.start();
+#endif
+  const FLOAT64 simTime     = msfsHandlerPtr->getSimulationTime();
+  const UINT64  tickCounter = msfsHandlerPtr->getTickCounter();
+
+  bool isSimulationReady = simData.a32nxReady->getAsInt64() > 0;
+  if (isSimulationReady) {
+    simData.atcIdDataPtr->requestUpdateFromSim(msfsHandlerPtr->getTimeStamp(), tickCounter);
+
+    if (simData.atcIdDataPtr->data().atcID != nullptr && simData.atcIdDataPtr->data().atcID[0] != '\0') {
+      atcId = simData.atcIdDataPtr->data().atcID;
+      LOG_INFO("Fadec::EngineControl_A32NX::ensureFadecIsInitialized() - received ATC ID: " + atcId);
+    }
+    initializeFuelTanks(simTime, tickCounter);
+  }
+
+#ifdef PROFILING
+  profilerEnsureFadecIsInitialized.stop();
+  if (msfsHandlerPtr->getTickCounter() % 100 == 0) {
+    profilerEnsureFadecIsInitialized.print();
+  }
+#endif
+}
+
 void EngineControl_A380X::initializeEngineControlData() {
   LOG_INFO("Fadec::EngineControl_A380X::initializeEngineControlData()");
 
@@ -202,6 +207,23 @@ void EngineControl_A380X::initializeEngineControlData() {
   simData.engineTimer[E3]->set(0);
   simData.engineTimer[E4]->set(0);
 
+  initializeFuelTanks(timeStamp, tickCounter);
+
+  // Setting initial Fuel Flow
+  simData.fuelPumpState[E1]->set(0);
+  simData.fuelPumpState[E2]->set(0);
+  simData.fuelPumpState[E3]->set(0);
+  simData.fuelPumpState[E4]->set(0);
+
+  // Setting initial Thrust Limits
+  simData.thrustLimitIdle->set(0);
+  simData.thrustLimitClimb->set(0);
+  simData.thrustLimitFlex->set(0);
+  simData.thrustLimitMct->set(0);
+  simData.thrustLimitToga->set(0);
+}
+
+void EngineControl_A380X::initializeFuelTanks(FLOAT64 timeStamp, UINT64 tickCounter) {
   // Setting initial Fuel Levels
   const double weightLbsPerGallon = simData.simVarsDataPtr->data().fuelWeightLbsPerGallon;
 
@@ -251,19 +273,6 @@ void EngineControl_A380X::initializeEngineControlData() {
     simData.fuelRightOuterPre->set(simData.fuelTankDataPtr->data().fuelSystemRightOuter * weightLbsPerGallon);
     simData.fuelTrimPre->set(simData.fuelTankDataPtr->data().fuelSystemTrim * weightLbsPerGallon);
   }
-
-  // Setting initial Fuel Flow
-  simData.fuelPumpState[E1]->set(0);
-  simData.fuelPumpState[E2]->set(0);
-  simData.fuelPumpState[E3]->set(0);
-  simData.fuelPumpState[E4]->set(0);
-
-  // Setting initial Thrust Limits
-  simData.thrustLimitIdle->set(0);
-  simData.thrustLimitClimb->set(0);
-  simData.thrustLimitFlex->set(0);
-  simData.thrustLimitMct->set(0);
-  simData.thrustLimitToga->set(0);
 }
 
 void EngineControl_A380X::generateIdleParameters(double pressAltitude, double mach, double ambientTemperature, double ambientPressure) {

@@ -34,11 +34,7 @@ class EngineControl_A380X {
   FadecSimData_A380X simData{};
 
   // ATC ID for the aircraft used to load and store the fuel levels
-  std::string atcId{};
-
-  // Time when ATC ID request started (for failsafe timeout)
-  double                  atcIdRequestStartTime  = 0.0;
-  static constexpr double ATC_ID_TIMEOUT_SECONDS = 30.0;
+  std::string atcId = "A380X";
 
   // Fuel configuration for loading and storing fuel levels
   FuelConfiguration_A380X fuelConfiguration{};
@@ -132,10 +128,21 @@ class EngineControl_A380X {
 
  private:
   /**
+   * @brief Initializes the required data for the engine simulation if it has not been initialized
+   */
+  void ensureFadecIsInitialized();
+
+  /**
    * @brief Initialize the FADEC and Fuel model
    * This is done after we have retrieved the ATC ID so we can load the fuel levels
    */
   void initializeEngineControlData();
+
+  /**
+   * @brief Initializes the fuel tanks based on a default config or the saved state of this livery
+   * This method may be called multiple times during initialization
+   */
+  void initializeFuelTanks(FLOAT64 timeStamp, UINT64 tickCounter);
 
   /**
    * @brief Generate Idle / Initial Engine Parameters (non-imbalanced)

@@ -22,7 +22,6 @@ void EngineControl_A32NX::initialize(MsfsHandler* msfsHandler) {
   this->msfsHandlerPtr = msfsHandler;
   this->dataManagerPtr = &msfsHandler->getDataManager();
   this->simData.initialize(dataManagerPtr);
-  this->atcIdRequestStartTime = msfsHandler->getSimulationTime();
   initializeEngineControlData();
   LOG_INFO("Fadec::EngineControl_A32NX::initialize() - initialized");
 }
@@ -149,20 +148,15 @@ void EngineControl_A32NX::ensureFadecIsInitialized() {
   const FLOAT64 simTime     = msfsHandlerPtr->getSimulationTime();
   const UINT64  tickCounter = msfsHandlerPtr->getTickCounter();
 
-  if (!hasLoadedFuelConfig) {
+  bool isSimulationReady = simData.a32nxReady->getAsInt64() > 0;
+  if (isSimulationReady) {
     simData.atcIdDataPtr->requestUpdateFromSim(msfsHandlerPtr->getTimeStamp(), tickCounter);
 
-    if (simData.atcIdDataPtr->hasChanged()) {
-      atcId               = simData.atcIdDataPtr->data().atcID;
-      hasLoadedFuelConfig = true;
-
+    if (simData.atcIdDataPtr->data().atcID != nullptr && simData.atcIdDataPtr->data().atcID[0] != '\0') {
+      atcId = simData.atcIdDataPtr->data().atcID;
       LOG_INFO("Fadec::EngineControl_A32NX::ensureFadecIsInitialized() - received ATC ID: " + atcId);
-      initializeFuelTanks(simTime, tickCounter);
-    } else if (simTime - atcIdRequestStartTime > ATC_ID_TIMEOUT_SECONDS) {
-      hasLoadedFuelConfig = true;
-
-      LOG_WARN("Fadec::EngineControl_A32NX::ensureFadecIsInitialized() - ATC ID timeout, using fallback ID: " + atcId);
     }
+    initializeFuelTanks(simTime, tickCounter);
   }
 
 #ifdef PROFILING
