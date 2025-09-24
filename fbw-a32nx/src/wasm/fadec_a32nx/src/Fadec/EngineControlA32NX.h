@@ -34,13 +34,10 @@ class EngineControl_A32NX {
   FadecSimData_A32NX simData{};
 
   // ATC ID for the aircraft used to load and store the fuel levels
-  std::string atcId{};
+  std::string atcId = "A32NX";
 
-  // In what state of the initialization process the FADEC is
-  // 0 - not initialized
-  // 1 - initialized with default atcId
-  // 2 - initialized fully user-specified atcId or default atcId after timeout
-  int initializationState = 0;
+  // Whether we have already loaded the fuel configuration from the config file
+  bool hasLoadedFuelConfig = false;
   // Time when ATC ID request started (for failsafe timeout)
   double                  atcIdRequestStartTime  = 0.0;
   static constexpr double ATC_ID_TIMEOUT_SECONDS = 5.0;

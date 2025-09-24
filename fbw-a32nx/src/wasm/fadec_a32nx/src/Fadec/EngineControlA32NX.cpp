@@ -23,6 +23,7 @@ void EngineControl_A32NX::initialize(MsfsHandler* msfsHandler) {
   this->dataManagerPtr = &msfsHandler->getDataManager();
   this->simData.initialize(dataManagerPtr);
   this->atcIdRequestStartTime = msfsHandler->getSimulationTime();
+  initializeEngineControlData();
   LOG_INFO("Fadec::EngineControl_A32NX::initialize() - initialized");
 }
 
@@ -148,41 +149,17 @@ void EngineControl_A32NX::ensureFadecIsInitialized() {
   const FLOAT64 simTime     = msfsHandlerPtr->getSimulationTime();
   const UINT64  tickCounter = msfsHandlerPtr->getTickCounter();
 
-  if (initializationState == 0) {
-    // Get ATC ID from sim to be able to load and store fuel levels
-    // If not yet available, request it from sim and return early
-    // If available initialize the engine control data
-    if (atcId.empty()) {
-      simData.atcIdDataPtr->requestUpdateFromSim(simTime, tickCounter);
-
-      if (simData.atcIdDataPtr->hasChanged()) {
-        atcId               = simData.atcIdDataPtr->data().atcID;
-        initializationState = 2;
-
-        LOG_INFO("Fadec::EngineControl_A32NX::ensureFadecIsInitialized() - received ATC ID: " + atcId);
-      } else {
-        atcId               = "A32NX";
-        initializationState = 1;
-
-        LOG_INFO("Fadec::EngineControl_A32NX::ensureFadecIsInitialized() - received no ATC ID yet, initializing with default atcId: " +
-                 atcId);
-      }
-    } else {
-      initializationState = 2;
-    }
-
-    initializeEngineControlData();
-  } else if (initializationState == 1) {
+  if (!hasLoadedFuelConfig) {
     simData.atcIdDataPtr->requestUpdateFromSim(msfsHandlerPtr->getTimeStamp(), tickCounter);
 
     if (simData.atcIdDataPtr->hasChanged()) {
       atcId               = simData.atcIdDataPtr->data().atcID;
-      initializationState = 2;
+      hasLoadedFuelConfig = true;
 
       LOG_INFO("Fadec::EngineControl_A32NX::ensureFadecIsInitialized() - received ATC ID: " + atcId);
       initializeFuelTanks(simTime, tickCounter);
     } else if (simTime - atcIdRequestStartTime > ATC_ID_TIMEOUT_SECONDS) {
-      initializationState = 2;
+      hasLoadedFuelConfig = true;
 
       LOG_WARN("Fadec::EngineControl_A32NX::ensureFadecIsInitialized() - ATC ID timeout, using fallback ID: " + atcId);
     }
