@@ -36,9 +36,14 @@ class EngineControl_A32NX {
   // ATC ID for the aircraft used to load and store the fuel levels
   std::string atcId{};
 
+  // In what state of the initialization process the FADEC is
+  // 0 - not initialized
+  // 1 - initialized with default atcId
+  // 2 - initialized fully user-specified atcId or default atcId after timeout
+  int initializationState = 0;
   // Time when ATC ID request started (for failsafe timeout)
   double                  atcIdRequestStartTime  = 0.0;
-  static constexpr double ATC_ID_TIMEOUT_SECONDS = 30.0;
+  static constexpr double ATC_ID_TIMEOUT_SECONDS = 5.0;
 
   // Fuel configuration for loading and storing fuel levels
   FuelConfiguration_A32NX fuelConfiguration{};
@@ -102,6 +107,8 @@ class EngineControl_A32NX {
   SimpleProfiler profilerUpdateFuel{"Fadec::EngineControl_A32NX::updateFuel()", 100};
   SimpleProfiler profilerUpdateThrustLimits{"Fadec::EngineControl_A32NX::updateThrustLimits()", 100};
   SimpleProfiler profilerUpdateOil{"Fadec::EngineControl_A32NX::updateOil()", 100};
+  SimpleProfiler profilerUpdateOil{"Fadec::EngineControl_A32NX::updateOil()", 100};
+  SimpleProfiler profilerEnsureFadecIsInitialized{"Fadec::EngineControl_A32NX::ensureFadecIsInitialized()", 100};
 #endif
 
   // ===========================================================================
@@ -131,10 +138,20 @@ class EngineControl_A32NX {
 
  private:
   /**
+   * @brief Initializes the required data for the engine simulation if it has not been initialized
+   */
+  void ensureFadecIsInitialized();
+
+  /**
    * @brief Initialize the FADEC and Fuel model
-   * This is done after we have retrieved the ATC ID so we can load the fuel levels
    */
   void initializeEngineControlData();
+
+  /**
+   * @brief Initializes the fuel tanks based on a default config or the saved state of this livery
+   * This method may be called multiple times during initialization
+   */
+  void initializeFuelTanks(FLOAT64 timeStamp, UINT64 tickCounter);
 
   /**
    * @brief Generates a random engine imbalance.

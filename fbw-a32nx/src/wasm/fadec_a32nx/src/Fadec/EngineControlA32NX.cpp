@@ -35,27 +35,7 @@ void EngineControl_A32NX::update() {
   profilerUpdate.start();
 #endif
 
-  // Get ATC ID from sim to be able to load and store fuel levels
-  // If not yet available, request it from sim and return early
-  // If available initialize the engine control data
-  // Failsafe: if ATC ID is not received within timeout, initialize with default ID
-  if (atcId.empty()) {
-    simData.atcIdDataPtr->requestUpdateFromSim(msfsHandlerPtr->getTimeStamp(), msfsHandlerPtr->getTickCounter());
-    if (simData.atcIdDataPtr->hasChanged()) {
-      atcId = simData.atcIdDataPtr->data().atcID;
-      LOG_INFO("Fadec::EngineControl_A32NX::update() - received ATC ID: " + atcId);
-      initializeEngineControlData();
-    } else {
-      // Check if we've exceeded the timeout for receiving ATC ID
-      const double currentTime = msfsHandlerPtr->getSimulationTime();
-      if (currentTime - atcIdRequestStartTime > ATC_ID_TIMEOUT_SECONDS) {
-        atcId = "A32NX";
-        LOG_WARN("Fadec::EngineControl_A32NX::update() - ATC ID timeout, using fallback ID: " + atcId);
-        initializeEngineControlData();
-      }
-    }
-    return;
-  }
+  ensureFadecIsInitialized();
 
   const double deltaTime          = std::max(0.002, msfsHandlerPtr->getSimulationDeltaTime());
   const double simTime            = msfsHandlerPtr->getSimulationTime();
@@ -161,6 +141,61 @@ void EngineControl_A32NX::update() {
 // PRIVATE
 // =============================================================================
 
+void EngineControl_A32NX::ensureFadecIsInitialized() {
+#ifdef PROFILING
+  profilerEnsureFadecIsInitialized.start();
+#endif
+  const FLOAT64 simTime     = msfsHandlerPtr->getSimulationTime();
+  const UINT64  tickCounter = msfsHandlerPtr->getTickCounter();
+
+  if (initializationState == 0) {
+    // Get ATC ID from sim to be able to load and store fuel levels
+    // If not yet available, request it from sim and return early
+    // If available initialize the engine control data
+    if (atcId.empty()) {
+      simData.atcIdDataPtr->requestUpdateFromSim(simTime, tickCounter);
+
+      if (simData.atcIdDataPtr->hasChanged()) {
+        atcId               = simData.atcIdDataPtr->data().atcID;
+        initializationState = 2;
+
+        LOG_INFO("Fadec::EngineControl_A32NX::ensureFadecIsInitialized() - received ATC ID: " + atcId);
+      } else {
+        atcId               = "A32NX";
+        initializationState = 1;
+
+        LOG_INFO("Fadec::EngineControl_A32NX::ensureFadecIsInitialized() - received no ATC ID yet, initializing with default atcId: " +
+                 atcId);
+      }
+    } else {
+      initializationState = 2;
+    }
+
+    initializeEngineControlData();
+  } else if (initializationState == 1) {
+    simData.atcIdDataPtr->requestUpdateFromSim(msfsHandlerPtr->getTimeStamp(), tickCounter);
+
+    if (simData.atcIdDataPtr->hasChanged()) {
+      atcId               = simData.atcIdDataPtr->data().atcID;
+      initializationState = 2;
+
+      LOG_INFO("Fadec::EngineControl_A32NX::ensureFadecIsInitialized() - received ATC ID: " + atcId);
+      initializeFuelTanks(simTime, tickCounter);
+    } else if (simTime - atcIdRequestStartTime > ATC_ID_TIMEOUT_SECONDS) {
+      initializationState = 2;
+
+      LOG_WARN("Fadec::EngineControl_A32NX::ensureFadecIsInitialized() - ATC ID timeout, using fallback ID: " + atcId);
+    }
+  }
+
+#ifdef PROFILING
+  profilerEnsureFadecIsInitialized.stop();
+  if (msfsHandlerPtr->getTickCounter() % 100 == 0) {
+    profilerEnsureFadecIsInitialized.print();
+  }
+#endif
+}
+
 /**
  * @brief Initializes the engine control data.
  *
@@ -219,7 +254,26 @@ void EngineControl_A32NX::initializeEngineControlData() {
   simData.engineTimer[L]->set(0);
   simData.engineTimer[R]->set(0);
 
-  // Initialize Fuel Tanks
+  initializeFuelTanks(timeStamp, tickCounter);
+
+  // Initialize Pump State
+  simData.fuelPumpState[L]->set(0);
+  simData.fuelPumpState[R]->set(0);
+
+  // Initialize Thrust Limits
+  simData.thrustLimitIdle->set(0);
+  simData.thrustLimitClimb->set(0);
+  simData.thrustLimitFlex->set(0);
+  simData.thrustLimitMct->set(0);
+  simData.thrustLimitToga->set(0);
+}
+
+void EngineControl_A32NX::initializeFuelTanks(FLOAT64 timeStamp, UINT64 tickCounter) {
+  LOG_INFO("Fadec::EngineControl_A32NX::initializeFuelTanks()");
+
+#ifdef PROFILING
+  ScopedTimer timer("Fadec::EngineControl_A32NX::initializeFuelTanks()");
+#endif
   const double fuelWeightGallon = simData.simVarsDataPtr->data().fuelWeightPerGallon;  // weight of gallon of jet A in lbs
 
   const double centerQuantity   = simData.simVarsDataPtr->data().fuelTankQuantityCenter;    // gal
@@ -257,17 +311,6 @@ void EngineControl_A32NX::initializeEngineControlData() {
     simData.fuelAuxLeftPre->set(leftAuxQuantity * fuelWeightGallon);    // in Pounds
     simData.fuelAuxRightPre->set(rightAuxQuantity * fuelWeightGallon);  // in Pounds
   }
-
-  // Initialize Pump State
-  simData.fuelPumpState[L]->set(0);
-  simData.fuelPumpState[R]->set(0);
-
-  // Initialize Thrust Limits
-  simData.thrustLimitIdle->set(0);
-  simData.thrustLimitClimb->set(0);
-  simData.thrustLimitFlex->set(0);
-  simData.thrustLimitMct->set(0);
-  simData.thrustLimitToga->set(0);
 }
 
 double EngineControl_A32NX::generateEngineImbalance() {
