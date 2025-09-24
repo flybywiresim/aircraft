@@ -144,6 +144,7 @@
 1. [A380X/FWS] Fix cavalry charge for AP disconnect; Add improved triple click logic using FCDC signals - @flogross89 (floridude)
 1. [A380X] Autoflight: Add ROLLOUT fault (i.e. communication fault between NWS and PRIM) - @flogross89 (floridude)
 1. [A380X/CDS] Change autoland capability designation to Batch 7 standard (LAND instead of CAT) - @flogross89 (floridude)
+1. [A380X/FLIGHT and ENGINE MODELS] Fixed excessive descent rates and takeoff rotation issues, improved fuel burn - @donstim (donbikes)
 
 ## 0.13.0
 
@@ -246,7 +247,7 @@
 1. [A380/PFD] Add DISCONNECT AP FOR LDG FMA message - @BravoMike99 (bruno_pt99)
 1. [A380X/ENG] Adjust climb thrust to be more accurate - @BlueberryKing (BlueberryKing)
 1. [A380X/EWD] Show THR limit in EWD instead of N1 - @flogross89 (floridude)
-1. [A380X/FLIGHT MODEL] Fix pitchup and unrecoverable stall - - @donstim (donbikes#4084)
+1. [A380X/FLIGHT MODEL] Fix pitchup and unrecoverable stall - @donstim (donbikes#4084)
 1. [ATC/TCAS] Fixed TCAS failure on baro corrected altitude going invalid - @tracernz (Mike)
 1. [ATC/TCAS] Fixed TCAS slant range computation - @tracernz (Mike)
 1. [A380X] Add baro unit (hPa/in.Hg) auto selection - @tracernz (Mike)
