@@ -36,6 +36,9 @@ class EngineControl_A380X {
   // ATC ID for the aircraft used to load and store the fuel levels
   std::string atcId = "A380X";
 
+  // Whether we have already loaded the fuel configuration from the config file
+  bool hasLoadedFuelConfig = false;
+
   // Fuel configuration for loading and storing fuel levels
   FuelConfiguration_A380X fuelConfiguration{};
 

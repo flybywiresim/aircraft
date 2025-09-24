@@ -19,7 +19,6 @@ void EngineControl_A380X::initialize(MsfsHandler* msfsHandler) {
   this->msfsHandlerPtr = msfsHandler;
   this->dataManagerPtr = &msfsHandler->getDataManager();
   this->simData.initialize(dataManagerPtr);
-  this->atcIdRequestStartTime = msfsHandler->getSimulationTime();
   LOG_INFO("Fadec::EngineControl_A380X::initialize() - initialized");
 }
 
@@ -125,17 +124,19 @@ void EngineControl_A380X::ensureFadecIsInitialized() {
   const FLOAT64 simTime     = msfsHandlerPtr->getSimulationTime();
   const UINT64  tickCounter = msfsHandlerPtr->getTickCounter();
 
-  bool isSimulationReady = simData.a32nxReady->getAsInt64() > 0;
-  if (isSimulationReady) {
-    simData.atcIdDataPtr->requestUpdateFromSim(msfsHandlerPtr->getTimeStamp(), tickCounter);
+  if (!hasLoadedFuelConfig) {
+    bool isSimulationReady = simData.a32nxReady->getAsInt64() > 0;
+    if (isSimulationReady) {
+      simData.atcIdDataPtr->requestUpdateFromSim(msfsHandlerPtr->getTimeStamp(), tickCounter);
 
-    if (simData.atcIdDataPtr->data().atcID != nullptr && simData.atcIdDataPtr->data().atcID[0] != '\0') {
-      atcId = simData.atcIdDataPtr->data().atcID;
-      LOG_INFO("Fadec::EngineControl_A32NX::ensureFadecIsInitialized() - received ATC ID: " + atcId);
+      if (simData.atcIdDataPtr->data().atcID != nullptr && simData.atcIdDataPtr->data().atcID[0] != '\0') {
+        atcId = simData.atcIdDataPtr->data().atcID;
+        LOG_INFO("Fadec::EngineControl_A380X::ensureFadecIsInitialized() - received ATC ID: " + atcId);
+      }
+      initializeFuelTanks(simTime, tickCounter);
+      hasLoadedFuelConfig = true;
     }
-    initializeFuelTanks(simTime, tickCounter);
   }
-
 #ifdef PROFILING
   profilerEnsureFadecIsInitialized.stop();
   if (msfsHandlerPtr->getTickCounter() % 100 == 0) {
