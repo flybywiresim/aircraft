@@ -126,9 +126,9 @@ void EngineControl_A380X::ensureFadecIsInitialized() {
 
   if (!hasLoadedFuelConfig) {
     bool isSimulationReady = simData.a32nxReady->getAsInt64() > 0;
-    if (isSimulationReady) {
-      simData.atcIdDataPtr->requestUpdateFromSim(msfsHandlerPtr->getTimeStamp(), tickCounter);
+    simData.atcIdDataPtr->requestUpdateFromSim(msfsHandlerPtr->getTimeStamp(), tickCounter);
 
+    if (isSimulationReady) {
       if (simData.atcIdDataPtr->data().atcID != nullptr && simData.atcIdDataPtr->data().atcID[0] != '\0') {
         atcId = simData.atcIdDataPtr->data().atcID;
         LOG_INFO("Fadec::EngineControl_A380X::ensureFadecIsInitialized() - received ATC ID: " + atcId);
