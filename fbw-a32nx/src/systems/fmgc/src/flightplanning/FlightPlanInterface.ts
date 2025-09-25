@@ -12,6 +12,7 @@ import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { DirectTo } from '@fmgc/flightplanning/types/DirectTo';
 
 /**
  * Interface for querying, modifying and creating flight plans.
@@ -216,22 +217,14 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
    */
   startAirwayEntry(atIndex: number, planIndex: number, alternate?: boolean): Promise<void>;
 
-  directToLeg(
-    ppos: Coordinates,
-    trueTrack: Degrees,
-    targetLegIndex: number,
-    withAbeam: boolean,
-    planIndex: number,
-  ): Promise<void>;
-
-  // TODO do not pass in fix object (rpc)
-  directToWaypoint(
-    ppos: Coordinates,
-    trueTrack: Degrees,
-    waypoint: Fix,
-    withAbeam: boolean,
-    planIndex: number,
-  ): Promise<void>;
+  /**
+   * DIR TO revision. Directs to a waypoint or leg.
+   * @param ppos present position of the aircraft
+   * @param trueTrack the true track of the aircraft
+   * @param directTo the direct to data
+   * @param planIndex which flight plan to make the change on
+   */
+  directTo(ppos: Coordinates, trueTrack: Degrees, directTo: DirectTo, planIndex: number): Promise<void>;
 
   /**
    * HOLD AT revision. Inserts or edits a manual hold parented to the leg.

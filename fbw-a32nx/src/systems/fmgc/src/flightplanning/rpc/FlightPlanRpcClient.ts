@@ -16,6 +16,7 @@ import { FlightPlanLegDefinition } from '../legs/FlightPlanLegDefinition';
 import { FixInfoEntry } from '../plans/FixInfo';
 import { FlightPlan } from '../plans/FlightPlan';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { DirectTo } from '@fmgc/flightplanning/types/DirectTo';
 
 export type FunctionsOnlyAndUnwrapPromises<T> = {
   [k in keyof T as T[k] extends (...args: any) => Promise<any> ? k : never]: T[k] extends (
@@ -246,24 +247,8 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
     return this.callFunctionViaRpc('startAirwayEntry', at, planIndex, alternate);
   }
 
-  directToLeg(
-    ppos: Coordinates,
-    trueTrack: Degrees,
-    targetLegIndex: number,
-    withAbeam: boolean,
-    planIndex: number,
-  ): Promise<void> {
-    return this.callFunctionViaRpc('directToLeg', ppos, trueTrack, targetLegIndex, withAbeam, planIndex);
-  }
-
-  directToWaypoint(
-    ppos: Coordinates,
-    trueTrack: Degrees,
-    waypoint: Fix,
-    withAbeam: boolean,
-    planIndex: number,
-  ): Promise<void> {
-    return this.callFunctionViaRpc('directToWaypoint', ppos, trueTrack, waypoint, withAbeam, planIndex);
+  directTo(ppos: Coordinates, trueTrack: Degrees, directTo: DirectTo, planIndex: number): Promise<void> {
+    return this.callFunctionViaRpc('directTo', ppos, trueTrack, directTo, planIndex);
   }
 
   addOrEditManualHold(
