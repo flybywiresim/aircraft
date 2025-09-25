@@ -23,12 +23,12 @@ impl SlatsChannel {
     fn demanded_slats_fppu_angle_from_conf(flap_conf: FlapsConf) -> Angle {
         match flap_conf {
             FlapsConf::Conf0 => Angle::new::<degree>(0.),
-            FlapsConf::Conf1 => Angle::new::<degree>(247.27),
-            FlapsConf::Conf1F => Angle::new::<degree>(247.27),
-            FlapsConf::Conf2 => Angle::new::<degree>(247.27),
-            FlapsConf::Conf2S => Angle::new::<degree>(284.65),
-            FlapsConf::Conf3 => Angle::new::<degree>(284.65),
-            FlapsConf::ConfFull => Angle::new::<degree>(284.65),
+            FlapsConf::Conf1 => Angle::new::<degree>(286.48),
+            FlapsConf::Conf1F => Angle::new::<degree>(286.48),
+            FlapsConf::Conf2 => Angle::new::<degree>(286.48),
+            FlapsConf::Conf2S => Angle::new::<degree>(327.39),
+            FlapsConf::Conf3 => Angle::new::<degree>(327.39),
+            FlapsConf::ConfFull => Angle::new::<degree>(327.39),
         }
     }
 
