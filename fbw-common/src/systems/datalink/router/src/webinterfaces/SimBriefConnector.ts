@@ -6,18 +6,13 @@ import {
   AtsuStatusCodes,
   UplinkedCruiseWindEntry,
   UplinkedCruiseWindSet,
+  UplinkedWindLevel,
   WindRequestMessage,
   WindUplinkMessage,
 } from '../../../common/src';
 import { Vec2Math } from '@microsoft/msfs-sdk';
 
 export class SimBriefConnector {
-  private static readonly WindUplinkCache: Omit<Required<WindUplinkMessage>, 'alternateWind'> = {
-    climbWinds: [],
-    cruiseWinds: [],
-    descentWinds: [],
-  };
-
   public static async receiveSimBriefWinds(request: WindRequestMessage): Promise<[AtsuStatusCodes, WindUplinkMessage]> {
     try {
       const body = await getSimBriefOfp();
@@ -29,27 +24,28 @@ export class SimBriefConnector {
     }
   }
 
-  private static resetCache(): void {
-    SimBriefConnector.WindUplinkCache.climbWinds.length = 0;
-    SimBriefConnector.WindUplinkCache.cruiseWinds.length = 0;
-    SimBriefConnector.WindUplinkCache.descentWinds.length = 0;
-  }
-
   private static parseSimBriefWinds(simbriefJson: ISimbriefData, request: WindRequestMessage): WindUplinkMessage {
     const alternate = simbriefJson.alternate;
     const navlog = simbriefJson.navlog ?? [];
 
-    this.resetCache();
-
-    this.parseClimbWinds(navlog, this.WindUplinkCache);
-    this.parseCruiseWinds(navlog, request, this.WindUplinkCache);
-    this.parseDescentWinds(navlog, this.WindUplinkCache);
-    this.parseAlternateWinds(alternate, this.WindUplinkCache);
-
-    return this.WindUplinkCache;
+    return {
+      climbWinds: this.parseClimbWinds(navlog, request),
+      cruiseWinds: this.parseCruiseWinds(navlog, request),
+      descentWinds: this.parseDescentWinds(navlog, request),
+      alternateWind: this.parseAlternateWinds(alternate, request),
+    };
   }
 
-  private static parseClimbWinds(navlog: Required<ISimbriefData>['navlog'], result: typeof this.WindUplinkCache): void {
+  private static parseClimbWinds(
+    navlog: Required<ISimbriefData>['navlog'],
+    request: WindRequestMessage,
+  ): UplinkedWindLevel[] | undefined {
+    if (request.climbWindLevel === undefined) {
+      return undefined;
+    }
+
+    const result: UplinkedWindLevel[] = [];
+
     const clbWpts = navlog.filter((val) => val.stage === 'CLB');
     let lastAltitude = 0;
 
@@ -65,7 +61,7 @@ export class SimBriefConnector {
           const magnitude = parseInt(clbWpt.wind_data.level[altIdx].wind_spd);
           const trueDegrees = parseInt(clbWpt.wind_data.level[altIdx].wind_dir);
 
-          result.climbWinds.push({
+          result.push({
             trueDegrees,
             magnitude,
             flightLevel: Math.round(altitude / 100),
@@ -97,7 +93,7 @@ export class SimBriefConnector {
 
           // Check again that we didn't backtrack
           if (idxAltitude > lastAltitude) {
-            result.climbWinds.push({
+            result.push({
               trueDegrees,
               magnitude,
               flightLevel: Math.round(idxAltitude / 100),
@@ -108,17 +104,18 @@ export class SimBriefConnector {
       });
     });
 
-    result.climbWinds.sort((a, b) => b.flightLevel - a.flightLevel);
+    return result.sort((a, b) => b.flightLevel - a.flightLevel);
   }
 
   private static parseCruiseWinds(
     navlog: Required<ISimbriefData>['navlog'],
     request: WindRequestMessage,
-    result: typeof this.WindUplinkCache,
-  ): void {
+  ): UplinkedCruiseWindSet[] | undefined {
     if (request.cruiseWinds === undefined || request.cruiseWinds.flightLevels.length === 0) {
-      return;
+      return undefined;
     }
+
+    const result: UplinkedCruiseWindSet[] = [];
 
     const requestedCruiseWinds = request.cruiseWinds;
 
@@ -185,12 +182,12 @@ export class SimBriefConnector {
         for (let i = 0; i < fix.wind_data.level.length - 1; i++) {
           const lowerWindAlt = parseInt(fix.wind_data.level[i].altitude, 10);
           const lowerWindSpd = parseInt(fix.wind_data.level[i].wind_spd, 10);
-          const lowerWindDir = parseInt(fix.wind_data.level[i].altitude, 10);
+          const lowerWindDir = parseInt(fix.wind_data.level[i].wind_dir, 10);
           const lowerLevelOat = parseInt(fix.wind_data.level[i].oat, 10);
 
           const upperWindAlt = parseInt(fix.wind_data.level[i + 1].altitude, 10);
           const upperWindSpd = parseInt(fix.wind_data.level[i + 1].wind_spd, 10);
-          const upperWindDir = parseInt(fix.wind_data.level[i + 1].altitude, 10);
+          const upperWindDir = parseInt(fix.wind_data.level[i + 1].wind_dir, 10);
           const upperLevelOat = parseInt(fix.wind_data.level[i + 1].oat, 10);
 
           const lowerLevel = Math.round(lowerWindAlt / 100);
@@ -237,14 +234,22 @@ export class SimBriefConnector {
         responseSet.fixes.push(responseFix);
       }
 
-      result.cruiseWinds.push(responseSet);
+      result.push(responseSet);
     }
+
+    return result;
   }
 
   private static parseDescentWinds(
     navlog: Required<ISimbriefData>['navlog'],
-    result: typeof this.WindUplinkCache,
-  ): void {
+    request: WindRequestMessage,
+  ): UplinkedWindLevel[] | undefined {
+    if (request.descentWindLevel === undefined) {
+      return undefined;
+    }
+
+    const result: UplinkedWindLevel[] = [];
+
     let lastAltitude = 45000;
     navlog.forEach((desWpt, wptIdx) => {
       // TOD is marked as cruise stage, but we want it's topmost wind data
@@ -262,7 +267,7 @@ export class SimBriefConnector {
           const magnitude = parseInt(desWpt.wind_data.level[altIdx].wind_spd);
           const trueDegrees = parseInt(desWpt.wind_data.level[altIdx].wind_dir);
 
-          result.descentWinds.push({
+          result.push({
             trueDegrees,
             magnitude,
             flightLevel: Math.round(altitude / 100),
@@ -293,7 +298,7 @@ export class SimBriefConnector {
 
           // Check again that we didn't backtrack
           if (idxAltitude < lastAltitude) {
-            result.descentWinds.push({
+            result.push({
               trueDegrees,
               magnitude,
               flightLevel: Math.round(idxAltitude / 100),
@@ -303,15 +308,22 @@ export class SimBriefConnector {
         }
       });
     });
+
+    return result;
   }
 
-  private static parseAlternateWinds(alternate: ISimbriefData['alternate'], result: WindUplinkMessage): void {
-    if (alternate) {
-      result.alternateWind = {
-        flightLevel: Math.round(alternate.cruiseAltitude / 100),
-        trueDegrees: alternate.averageWindDirection,
-        magnitude: alternate.averageWindSpeed,
-      };
+  private static parseAlternateWinds(
+    alternate: ISimbriefData['alternate'],
+    request: WindRequestMessage,
+  ): UplinkedWindLevel | undefined {
+    if (!alternate || request.alternateWind === undefined) {
+      return undefined;
     }
+
+    return {
+      flightLevel: Math.round(alternate.cruiseAltitude / 100),
+      trueDegrees: alternate.averageWindDirection,
+      magnitude: alternate.averageWindSpeed,
+    };
   }
 }

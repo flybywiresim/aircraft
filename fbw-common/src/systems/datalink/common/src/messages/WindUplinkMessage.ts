@@ -70,10 +70,10 @@ export interface CruiseWindRequest {
 }
 
 export interface WindUplinkMessage {
-  climbWinds?: UplinkedWindLevel[];
-  cruiseWinds?: UplinkedCruiseWindSet[];
-  descentWinds?: UplinkedWindLevel[];
-  alternateWind?: UplinkedWindLevel;
+  climbWinds: UplinkedWindLevel[] | undefined;
+  cruiseWinds: UplinkedCruiseWindSet[] | undefined;
+  descentWinds: UplinkedWindLevel[] | undefined;
+  alternateWind: UplinkedWindLevel | undefined;
 }
 
 export interface UplinkedCruiseWindSet {
