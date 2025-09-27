@@ -146,7 +146,7 @@ void EngineControl_A380X::loadFuelConfigIfPossible() {
       } else {
         LOG_INFO("Fadec::EngineControl_A380X::ensureFadecIsInitialized() - no ATC ID received, taking default: " + atcId);
       }
-      // ATC ID is empty, so we take the default
+      // if ATC ID is empty, we take the default and still set hasLoadedFuelConfig to as it won't change anymore
       hasLoadedFuelConfig = true;
     }
   }
