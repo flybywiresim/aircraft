@@ -39,6 +39,8 @@ class EngineControl_A32NX {
   // Whether we have already loaded the fuel configuration from the config file
   bool hasLoadedFuelConfig = false;
 
+  bool fadecInitialized = false;
+
   // Fuel configuration for loading and storing fuel levels
   FuelConfiguration_A32NX fuelConfiguration{};
 
@@ -134,7 +136,7 @@ class EngineControl_A32NX {
   /**
    * @brief Initializes the required data for the engine simulation if it has not been initialized
    */
-  void ensureFadecIsInitialized();
+  void loadFuelConfigIfPossible();
 
   /**
    * @brief Initialize the FADEC and Fuel model

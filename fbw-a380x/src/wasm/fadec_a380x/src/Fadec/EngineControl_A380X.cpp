@@ -19,7 +19,6 @@ void EngineControl_A380X::initialize(MsfsHandler* msfsHandler) {
   this->msfsHandlerPtr = msfsHandler;
   this->dataManagerPtr = &msfsHandler->getDataManager();
   this->simData.initialize(dataManagerPtr);
-  initializeEngineControlData();
   LOG_INFO("Fadec::EngineControl_A380X::initialize() - initialized");
 }
 
@@ -31,6 +30,13 @@ void EngineControl_A380X::update() {
 #ifdef PROFILING
   profilerUpdate.start();
 #endif
+
+  if (!fadecInitialized) {
+    initializeEngineControlData();
+    fadecInitialized = true;
+  }
+
+  loadFuelConfigIfPossible();
 
   const double deltaTime          = std::max(0.002, msfsHandlerPtr->getSimulationDeltaTime());
   const double mach               = simData.simVarsDataPtr->data().airSpeedMach;
@@ -118,7 +124,7 @@ void EngineControl_A380X::update() {
 // Private methods
 // =====================================================================================================================
 
-void EngineControl_A380X::ensureFadecIsInitialized() {
+void EngineControl_A380X::loadFuelConfigIfPossible() {
 #ifdef PROFILING
   profilerEnsureFadecIsInitialized.start();
 #endif
@@ -127,17 +133,20 @@ void EngineControl_A380X::ensureFadecIsInitialized() {
 
   if (!hasLoadedFuelConfig) {
     bool isSimulationReady = msfsHandlerPtr->getAircraftIsReadyVar();
+
     simData.atcIdDataPtr->requestUpdateFromSim(msfsHandlerPtr->getTimeStamp(), tickCounter);
 
+    // we only receive the data one tick later as we request it via simconnect. But it should be enought to only perform the check after
+    // isSimulationReady as this is set by the JS instruments after spawn
     if (isSimulationReady) {
-      if (simData.atcIdDataPtr->data().atcID != nullptr && simData.atcIdDataPtr->data().atcID[0] != '\0') {
+      if (simData.atcIdDataPtr->data().atcID[0] != '\0') {
         atcId = simData.atcIdDataPtr->data().atcID;
         LOG_INFO("Fadec::EngineControl_A380X::ensureFadecIsInitialized() - received ATC ID: " + atcId);
-      }
-      // only init if we do a C&D spawn, otherwise fuel levels are already set correctly
-      if (simData.startState->updateFromSim(simTime, tickCounter) == 2) {
         initializeFuelTanks(simTime, tickCounter);
+      } else {
+        LOG_INFO("Fadec::EngineControl_A380X::ensureFadecIsInitialized() - no ATC ID received, taking default: " + atcId);
       }
+      // ATC ID is empty, so we take the default
       hasLoadedFuelConfig = true;
     }
   }

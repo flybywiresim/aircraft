@@ -22,7 +22,6 @@ void EngineControl_A32NX::initialize(MsfsHandler* msfsHandler) {
   this->msfsHandlerPtr = msfsHandler;
   this->dataManagerPtr = &msfsHandler->getDataManager();
   this->simData.initialize(dataManagerPtr);
-  initializeEngineControlData();
   LOG_INFO("Fadec::EngineControl_A32NX::initialize() - initialized");
 }
 
@@ -35,7 +34,12 @@ void EngineControl_A32NX::update() {
   profilerUpdate.start();
 #endif
 
-  ensureFadecIsInitialized();
+  if (!fadecInitialized) {
+    initializeEngineControlData();
+    fadecInitialized = true;
+  }
+
+  loadFuelConfigIfPossible();
 
   const double deltaTime          = std::max(0.002, msfsHandlerPtr->getSimulationDeltaTime());
   const double simTime            = msfsHandlerPtr->getSimulationTime();
@@ -141,7 +145,7 @@ void EngineControl_A32NX::update() {
 // PRIVATE
 // =============================================================================
 
-void EngineControl_A32NX::ensureFadecIsInitialized() {
+void EngineControl_A32NX::loadFuelConfigIfPossible() {
 #ifdef PROFILING
   profilerEnsureFadecIsInitialized.start();
 #endif
@@ -150,22 +154,24 @@ void EngineControl_A32NX::ensureFadecIsInitialized() {
 
   if (!hasLoadedFuelConfig) {
     bool isSimulationReady = msfsHandlerPtr->getAircraftIsReadyVar();
+
     simData.atcIdDataPtr->requestUpdateFromSim(msfsHandlerPtr->getTimeStamp(), tickCounter);
 
+    // we only receive the data one tick later as we request it via simconnect. But it should be enought to only perform the check after
+    // isSimulationReady as this is set by the JS instruments after spawn
     if (isSimulationReady) {
-      if (simData.atcIdDataPtr->data().atcID != nullptr && simData.atcIdDataPtr->data().atcID[0] != '\0') {
+      if (simData.atcIdDataPtr->data().atcID[0] != '\0') {
         atcId = simData.atcIdDataPtr->data().atcID;
         LOG_INFO("Fadec::EngineControl_A32NX::ensureFadecIsInitialized() - received ATC ID: " + atcId);
-      }
-
-      // only init if we do a C&D spawn, otherwise fuel levels are already set correctly
-      if (simData.startState->updateFromSim(simTime, tickCounter) == 2) {
         initializeFuelTanks(simTime, tickCounter);
+      } else {
+        LOG_INFO("Fadec::EngineControl_A32NX::ensureFadecIsInitialized() - no ATC ID received, taking default: " + atcId);
       }
-
+      // ATC ID is empty, so we take the default
       hasLoadedFuelConfig = true;
     }
   }
+
 #ifdef PROFILING
   profilerEnsureFadecIsInitialized.stop();
   if (msfsHandlerPtr->getTickCounter() % 100 == 0) {
@@ -173,7 +179,6 @@ void EngineControl_A32NX::ensureFadecIsInitialized() {
   }
 #endif
 }
-
 /**
  * @brief Initializes the engine control data.
  *
@@ -260,8 +265,12 @@ void EngineControl_A32NX::initializeFuelTanks(FLOAT64 timeStamp, UINT64 tickCoun
   const double leftAuxQuantity  = simData.simVarsDataPtr->data().fuelTankQuantityLeftAux;   // gal
   const double rightAuxQuantity = simData.simVarsDataPtr->data().fuelTankQuantityRightAux;  // gal
 
-  // only loads saved fuel quantity on C/D spawn and if the simulation is ready to ensure the callsign (ATC ID) is available
-  if (simData.startState->updateFromSim(timeStamp, tickCounter) == 2 && msfsHandlerPtr->getAircraftIsReadyVar()) {
+  LOG_INFO("Fadec::EngineControl_A32NX::initializeFuelTanks() - Current Fuel Levels from Sim:\n Center: " + std::to_string(centerQuantity) +
+           " gal\n Left: " + std::to_string(leftQuantity) + " gal\n Right: " + std::to_string(rightQuantity) +
+           " gal\n Left Aux: " + std::to_string(leftAuxQuantity) + " gal\n Right Aux: " + std::to_string(rightAuxQuantity) + " gal");
+
+  // only loads saved fuel quantity on C/D spawn
+  if (simData.startState->updateFromSim(timeStamp, tickCounter) == 2) {
     // Load fuel configuration from file
     fuelConfiguration.setConfigFilename(FILENAME_FADEC_CONF_DIRECTORY + atcId + FILENAME_FADEC_CONF_FILE_EXTENSION);
     fuelConfiguration.loadConfigurationFromIni();
