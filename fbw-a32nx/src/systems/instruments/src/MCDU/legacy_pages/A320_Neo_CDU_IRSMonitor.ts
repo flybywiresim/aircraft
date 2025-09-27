@@ -117,5 +117,7 @@ export class CDUIRSMonitor {
     } else if (irMaintenanceWord.bitValue(2)) {
       return 'ATT';
     }
+
+    return '';
   }
 }
