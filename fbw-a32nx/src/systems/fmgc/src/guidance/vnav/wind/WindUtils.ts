@@ -13,16 +13,23 @@ export class WindUtils {
   static interpolateWindEntries(entries: WindEntry[], altitude: number, result: WindVector): WindVector {
     if (entries.length === 0) {
       return Vec2Math.set(0, 0, result);
+    } else if (entries.length === 1) {
+      return Vec2Math.copy(entries[0].vector, result);
     }
 
-    if (altitude >= Math.max(entries[0].altitude, entries[entries.length - 1].altitude)) {
-      return Vec2Math.copy(entries[0].vector, result);
-    } else if (altitude <= Math.min(entries[0].altitude, entries[entries.length - 1].altitude)) {
-      return Vec2Math.copy(entries[0].vector, result);
+    const isDescendingOrder = entries[1].altitude < entries[0].altitude;
+
+    const lowest = isDescendingOrder ? entries[entries.length - 1] : entries[0];
+    const highest = isDescendingOrder ? entries[0] : entries[entries.length - 1];
+
+    if (altitude <= lowest.altitude) {
+      return Vec2Math.copy(lowest.vector, result);
+    } else if (altitude >= highest.altitude) {
+      return Vec2Math.copy(highest.vector, result);
     } else {
       for (let i = 0; i < entries.length - 1; i++) {
-        const lower = entries[i + 1].altitude < entries[i].altitude ? entries[i + 1] : entries[i];
-        const upper = entries[i + 1].altitude > entries[i].altitude ? entries[i + 1] : entries[i];
+        const lower = isDescendingOrder ? entries[i + 1] : entries[i];
+        const upper = !isDescendingOrder ? entries[i + 1] : entries[i];
 
         if (lower.altitude <= altitude) {
           return Vec2Utils.interpolate(altitude, lower.altitude, upper.altitude, lower.vector, upper.vector, result);
