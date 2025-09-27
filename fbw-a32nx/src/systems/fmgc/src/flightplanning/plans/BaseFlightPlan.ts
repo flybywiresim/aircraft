@@ -2516,7 +2516,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
             throw new Error('[FMS/FPM] Duplicate leg cannot be a discontinuity');
           }
 
-          duplicateLeg.withDefinitionFrom(firstArrivalLeg).withPilotEnteredDataFrom(firstArrivalLeg);
+          // Do not copy pilot entered data since the arrival leg will not have any such data as the arrival has only
+          // just been selected when we string (right?)
+          // If we did, we'd override pilot entered data on the upstream segment
+          duplicateLeg.withDefinitionFrom(firstArrivalLeg);
 
           this.removeRange(duplicatePlanIndex + 1, firstArrivalLegIndexInPlan + 1);
           duplicateSegment.strung = true;
