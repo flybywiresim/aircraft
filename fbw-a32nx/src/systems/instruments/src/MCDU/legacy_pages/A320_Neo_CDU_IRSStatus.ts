@@ -4,6 +4,7 @@ import { Arinc429Register, coordinateToString, RegisteredSimVar } from '@flybywi
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { SimVarValueType } from '@microsoft/msfs-sdk';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
+import { FmsFormatters } from '../legacy/FmsFormatters';
 
 export class CDUIRSStatus {
   private static frozen = false;
@@ -138,11 +139,6 @@ export class CDUIRSStatus {
   private static readonly gpirsCoordinates: Coordinates = { lat: 0, long: 0 };
 
   static ShowPage(mcdu: LegacyFmsPageInterface, index: 1 | 2 | 3, frozenTime?: string): void {
-    // Remove frozen flag if we come from another page
-    if (mcdu.page.Current !== mcdu.page.IRSStatus) {
-      this.frozen = false;
-    }
-    mcdu.page.Current = mcdu.page.IRSStatus;
     if (!this.frozen) {
       mcdu.clearDisplay();
       this.populateIrData(index);
@@ -163,7 +159,7 @@ export class CDUIRSStatus {
             ? '---.-[color]white'
             : `${Math.round(this.irTrueTrack.value).toFixed(1)}[color]green`,
           this.irGroundSpeed.isInvalid()
-            ? '---.-[color]white'
+            ? '---[color]white'
             : `${Math.round(this.irGroundSpeed.value).toFixed(0)}[color]green`,
         ],
         [`THDG`, 'MHDG'],
@@ -188,17 +184,18 @@ export class CDUIRSStatus {
         [this.frozen ? '{UNFREEZE[color]cyan' : '{FREEZE[color]cyan', 'NEXT IRS>'],
       ]);
     }
+    mcdu.page.Current = mcdu.page.IRSStatus;
 
     mcdu.onLeftInput[5] = () => {
       if (this.frozen) {
         this.frozen = false;
         CDUIRSStatus.ShowPage(mcdu, index);
       } else {
-        const UTC_SECONDS = Math.floor(SimVar.GetGlobalVarValue('ZULU TIME', 'seconds'));
-        const hours = Math.floor(UTC_SECONDS / 3600) || 0;
-        const minutes = Math.floor((UTC_SECONDS % 3600) / 60) || 0;
-        const hhmm = `${hours.toString().padStart(2, '0') || '00'}${minutes.toString().padStart(2, '0') || '00'}`;
-        CDUIRSStatus.ShowPage(mcdu, index, hhmm);
+        CDUIRSStatus.ShowPage(
+          mcdu,
+          index,
+          FmsFormatters.secondsTohhmm(Math.floor(SimVar.GetGlobalVarValue('ZULU TIME', 'seconds'))),
+        );
       }
     };
 
@@ -214,11 +211,15 @@ export class CDUIRSStatus {
       }
     };
 
+    mcdu.onUnload = () => {
+      this.frozen = false;
+    };
+
     // regular update due to showing dynamic data on this page
     mcdu.SelfPtr = setTimeout(() => {
       if (mcdu.page.Current === mcdu.page.IRSStatus) {
         if (!this.frozen) {
-          CDUIRSStatus.ShowPage(mcdu, index);
+          this.ShowPage(mcdu, index);
         }
       }
     }, mcdu.PageTimeout.Default);

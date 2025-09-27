@@ -96,42 +96,26 @@ export class CDUIRSMonitor {
     }
 
     if (irMaintenanceWord.bitValue(3)) {
-      if (irMaintenanceWord.bitValue(16) || irMaintenanceWord.bitValue(17) || irMaintenanceWord.bitValue(18)) {
+      const align1Min = irMaintenanceWord.bitValue(16);
+      const align2Min = irMaintenanceWord.bitValue(17);
+      const align4Min = irMaintenanceWord.bitValue(18);
+      if (align1Min || align2Min || align4Min) {
         let timeToAlign = 0;
-        if (irMaintenanceWord.bitValueOr(16, false)) {
+        if (align1Min) {
           timeToAlign += 1;
         }
-        if (irMaintenanceWord.bitValueOr(17, false)) {
+        if (align2Min) {
           timeToAlign += 2;
         }
-        if (irMaintenanceWord.bitValueOr(18, false)) {
+        if (align4Min) {
           timeToAlign += 4;
         }
-
-        if (timeToAlign != 0) {
-          return 'ALIGN TTN ' + timeToAlign;
-        }
+        return 'ALIGN TTN ' + timeToAlign;
       } else {
         return 'NAV';
       }
     } else if (irMaintenanceWord.bitValue(2)) {
       return 'ATT';
-    } else if (irMaintenanceWord.bitValue(16) || irMaintenanceWord.bitValue(17) || irMaintenanceWord.bitValue(18)) {
-      let timeToAlign = 0;
-      if (irMaintenanceWord.bitValueOr(16, false)) {
-        timeToAlign += 1;
-      }
-      if (irMaintenanceWord.bitValueOr(17, false)) {
-        timeToAlign += 2;
-      }
-      if (irMaintenanceWord.bitValueOr(18, false)) {
-        timeToAlign += 4;
-      }
-
-      if (timeToAlign != 0) {
-        return 'ALIGN TTN ' + timeToAlign;
-      }
     }
-    return 'INVAL';
   }
 }
