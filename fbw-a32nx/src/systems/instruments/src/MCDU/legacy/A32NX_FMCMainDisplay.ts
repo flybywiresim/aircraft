@@ -4133,8 +4133,11 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   private updateAmberEfob() {
+    const plan = this.getFlightPlan(FlightPlanIndex.Active);
+
     const predictions = this.getFuelPredComputation(FlightPlanIndex.Active);
-    const minDestFob = predictions.minimumDestinationFuel;
+    const minDestFob =
+      plan.performanceData.pilotMinimumDestinationFuelOnBoard.get() ?? predictions.minimumDestinationFuel;
     const destEfob = predictions.destinationFuelOnBoard;
 
     if (minDestFob !== null && destEfob !== null) {
