@@ -5484,7 +5484,7 @@ export class PseudoFWC {
       memoInhibit: () => false,
       failure: 0,
       sysPage: -1,
-      side: 'RIGHT',
+      side: 'LEFT',
     },
     '0000055': {
       // GND SPLRS ARMED

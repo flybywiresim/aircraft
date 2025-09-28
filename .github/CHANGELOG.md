@@ -145,6 +145,7 @@
 1. [A380X] Autoflight: Add ROLLOUT fault (i.e. communication fault between NWS and PRIM) - @flogross89 (floridude)
 1. [A380X/CDS] Change autoland capability designation to Batch 7 standard (LAND instead of CAT) - @flogross89 (floridude)
 1. [A380X/FLIGHT and ENGINE MODELS] Fixed excessive descent rates and takeoff rotation issues, improved fuel burn - @donstim (donbikes)
+1. [A32NX/FMS] Hookup IR data to IRS status & monitor MCDU page - @BravoMike99 (bruno_pt99)
 
 ## 0.13.0
 
