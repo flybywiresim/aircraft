@@ -448,7 +448,6 @@ export class CDUPerformancePage {
     };
 
     const isActivePlan = forPlan === FlightPlanIndex.Active;
-    const targetPlan = mcdu.getFlightPlan(forPlan);
     const isCopyOfActivePlan = BitFlags.isAll(targetPlan.flags, FlightPlanFlags.CopiedFromActive);
 
     const hasFromToPair = !!targetPlan.originAirport && !!targetPlan.destinationAirport;
@@ -458,8 +457,10 @@ export class CDUPerformancePage {
     const titlePrefix = forPlan >= FlightPlanIndex.FirstSecondary ? 'SEC' : '\xa0\xa0\xa0';
     const titleColor = isPhaseActive && isActivePlan ? 'green' : 'white';
     const preselectedClimbSpeed = targetPlan.performanceData.preselectedClimbSpeed.get();
+    const isPhaseActiveInActive = isPhaseActive && targetPlan.isActiveOrCopiedFromActive();
     const isSelected =
-      (isPhaseActive && Simplane.getAutoPilotAirspeedSelected()) || (!isPhaseActive && preselectedClimbSpeed !== null);
+      (isPhaseActiveInActive && Simplane.getAutoPilotAirspeedSelected()) ||
+      (!isPhaseActiveInActive && preselectedClimbSpeed !== null);
     const actModeCell = isSelected ? 'SELECTED' : 'MANAGED';
     const costIndexCell = CDUPerformancePage.formatCostIndexCell(
       targetPlan.performanceData.costIndex.get(),
@@ -667,11 +668,14 @@ export class CDUPerformancePage {
 
     const hasFromToPair = !!targetPlan.originAirport && !!targetPlan.destinationAirport;
     const isPhaseActive = mcdu.flightPhaseManager.phase === FmgcFlightPhase.Cruise;
+    const isPhaseActiveInActive = isPhaseActive && targetPlan.isActiveOrCopiedFromActive();
     const titlePrefix = forPlan >= FlightPlanIndex.FirstSecondary ? 'SEC' : '\xa0\xa0\xa0';
     const titleColor = isPhaseActive && isActivePlan ? 'green' : 'white';
     const preselectedCruiseSpeed = targetPlan.performanceData.preselectedCruiseSpeed.get();
     const isSelected =
-      (isPhaseActive && Simplane.getAutoPilotAirspeedSelected()) || (!isPhaseActive && preselectedCruiseSpeed !== null);
+      (isPhaseActiveInActive && Simplane.getAutoPilotAirspeedSelected()) ||
+      (!isPhaseActiveInActive && preselectedCruiseSpeed !== null);
+
     const isFlying = mcdu.flightPhaseManager.phase >= FmgcFlightPhase.Takeoff;
     const actModeCell = isSelected ? 'SELECTED' : 'MANAGED';
     const costIndexCell = CDUPerformancePage.formatCostIndexCell(
@@ -719,7 +723,7 @@ export class CDUPerformancePage {
       };
     }
 
-    const timeLabel = isFlying ? '\xa0UTC' : 'TIME';
+    const timeLabel = isFlying && targetPlan.isActiveOrCopiedFromActive() ? '\xa0UTC' : 'TIME';
 
     const [destEfobCell, destTimeCell] = CDUPerformancePage.formatDestEfobAndTime(mcdu, isFlying, forPlan);
     const [toUtcLabel, toDistLabel] = shouldShowToTdInformation ? ['\xa0UTC', 'DIST'] : ['', ''];
@@ -854,10 +858,13 @@ export class CDUPerformancePage {
 
     const hasFromToPair = !!targetPlan.originAirport && !!targetPlan.destinationAirport;
     const isPhaseActive = mcdu.flightPhaseManager.phase === FmgcFlightPhase.Descent;
+    const isPhaseActiveInActive = isPhaseActive && targetPlan.isActiveOrCopiedFromActive();
     const titlePrefix = forPlan >= FlightPlanIndex.FirstSecondary ? 'SEC' : '\xa0\xa0\xa0';
     const titleColor = isPhaseActive && isActivePlan ? 'green' : 'white';
-    const isFlying = mcdu.flightPhaseManager.phase >= FmgcFlightPhase.Takeoff;
-    const isSelected = isPhaseActive && Simplane.getAutoPilotAirspeedSelected();
+    const isFlying =
+      targetPlan.isActiveOrCopiedFromActive() && mcdu.flightPhaseManager.phase >= FmgcFlightPhase.Takeoff;
+
+    const isSelected = isPhaseActiveInActive && Simplane.getAutoPilotAirspeedSelected();
     const actModeCell = isSelected ? 'SELECTED' : 'MANAGED';
 
     const shouldShowPredTo = isActivePlan && isPhaseActive;
