@@ -29,7 +29,12 @@ export class CDUPerformancePage {
     }
     mcdu.activeSystem = 'FMGC';
 
-    switch (_phase || mcdu.flightPhaseManager.phase) {
+    const targetPlan = mcdu.getFlightPlan(forPlan);
+    const targetPhase = targetPlan.isActiveOrCopiedFromActive()
+      ? _phase ?? mcdu.flightPhaseManager.phase
+      : FmgcFlightPhase.Preflight;
+
+    switch (targetPhase) {
       case FmgcFlightPhase.Preflight:
         CDUPerformancePage.ShowTAKEOFFPage(mcdu, forPlan);
         break;
@@ -58,10 +63,16 @@ export class CDUPerformancePage {
     mcdu.page.Current = mcdu.page.PerformancePageTakeoff;
     CDUPerformancePage._timer = 0;
     CDUPerformancePage._lastPhase = mcdu.flightPhaseManager.phase;
+
+    const targetPlan = mcdu.getFlightPlan(forPlan);
+
     mcdu.pageUpdate = () => {
       CDUPerformancePage._timer++;
       if (CDUPerformancePage._timer >= 50) {
-        if (mcdu.flightPhaseManager.phase === CDUPerformancePage._lastPhase) {
+        if (
+          !targetPlan.isActiveOrCopiedFromActive() || // Do not switch page automatically on SEC page
+          mcdu.flightPhaseManager.phase === CDUPerformancePage._lastPhase
+        ) {
           CDUPerformancePage.ShowTAKEOFFPage(mcdu, forPlan);
         } else {
           CDUPerformancePage.ShowPage(mcdu, forPlan);
@@ -70,7 +81,6 @@ export class CDUPerformancePage {
     };
 
     const isActivePlan = forPlan === FlightPlanIndex.Active;
-    const targetPlan = mcdu.getFlightPlan(forPlan);
 
     const isPhaseActive = mcdu.flightPhaseManager.phase === FmgcFlightPhase.Takeoff;
     const titlePrefix = forPlan >= FlightPlanIndex.FirstSecondary ? 'SEC\xa0' : '\xa0\xa0\xa0\xa0';
@@ -420,10 +430,16 @@ export class CDUPerformancePage {
     mcdu.page.Current = mcdu.page.PerformancePageClb;
     CDUPerformancePage._timer = 0;
     CDUPerformancePage._lastPhase = mcdu.flightPhaseManager.phase;
+
+    const targetPlan = mcdu.getFlightPlan(forPlan);
+
     mcdu.pageUpdate = () => {
       CDUPerformancePage._timer++;
       if (CDUPerformancePage._timer >= 100) {
-        if (mcdu.flightPhaseManager.phase === CDUPerformancePage._lastPhase) {
+        if (
+          !targetPlan.isActiveOrCopiedFromActive() || // Do not switch page automatically on SEC page
+          mcdu.flightPhaseManager.phase === CDUPerformancePage._lastPhase
+        ) {
           CDUPerformancePage.ShowCLBPage(mcdu, forPlan);
         } else {
           CDUPerformancePage.ShowPage(mcdu, forPlan);
@@ -629,10 +645,16 @@ export class CDUPerformancePage {
     mcdu.page.Current = mcdu.page.PerformancePageCrz;
     CDUPerformancePage._timer = 0;
     CDUPerformancePage._lastPhase = mcdu.flightPhaseManager.phase;
+
+    const targetPlan = mcdu.getFlightPlan(forPlan);
+
     mcdu.pageUpdate = () => {
       CDUPerformancePage._timer++;
       if (CDUPerformancePage._timer >= 100) {
-        if (mcdu.flightPhaseManager.phase === CDUPerformancePage._lastPhase) {
+        if (
+          !targetPlan.isActiveOrCopiedFromActive() || // Do not switch page automatically on SEC page
+          mcdu.flightPhaseManager.phase === CDUPerformancePage._lastPhase
+        ) {
           CDUPerformancePage.ShowCRZPage(mcdu, forPlan);
         } else {
           CDUPerformancePage.ShowPage(mcdu, forPlan);
@@ -641,7 +663,6 @@ export class CDUPerformancePage {
     };
 
     const isActivePlan = forPlan === FlightPlanIndex.Active;
-    const targetPlan = mcdu.getFlightPlan(forPlan);
     const isCopyOfActivePlan = BitFlags.isAll(targetPlan.flags, FlightPlanFlags.CopiedFromActive);
 
     const hasFromToPair = !!targetPlan.originAirport && !!targetPlan.destinationAirport;
@@ -811,10 +832,16 @@ export class CDUPerformancePage {
     mcdu.page.Current = mcdu.page.PerformancePageDes;
     CDUPerformancePage._timer = 0;
     CDUPerformancePage._lastPhase = mcdu.flightPhaseManager.phase;
+
+    const targetPlan = mcdu.getFlightPlan(forPlan);
+
     mcdu.pageUpdate = () => {
       CDUPerformancePage._timer++;
       if (CDUPerformancePage._timer >= 100) {
-        if (mcdu.flightPhaseManager.phase === CDUPerformancePage._lastPhase) {
+        if (
+          !targetPlan.isActiveOrCopiedFromActive() || // Do not switch page automatically on SEC page
+          mcdu.flightPhaseManager.phase === CDUPerformancePage._lastPhase
+        ) {
           CDUPerformancePage.ShowDESPage(mcdu, forPlan);
         } else {
           CDUPerformancePage.ShowPage(mcdu, forPlan);
@@ -823,7 +850,6 @@ export class CDUPerformancePage {
     };
 
     const isActivePlan = forPlan === FlightPlanIndex.Active;
-    const targetPlan = mcdu.getFlightPlan(forPlan);
     const isCopyOfActivePlan = BitFlags.isAll(targetPlan.flags, FlightPlanFlags.CopiedFromActive);
 
     const hasFromToPair = !!targetPlan.originAirport && !!targetPlan.destinationAirport;
@@ -994,7 +1020,7 @@ export class CDUPerformancePage {
     mcdu.pageUpdate = () => {
       CDUPerformancePage._timer++;
       if (CDUPerformancePage._timer >= 100) {
-        if (mcdu.flightPhaseManager.phase === CDUPerformancePage._lastPhase) {
+        if (!plan.isActiveOrCopiedFromActive() || mcdu.flightPhaseManager.phase === CDUPerformancePage._lastPhase) {
           CDUPerformancePage.ShowAPPRPage(mcdu, forPlan);
         }
       }
