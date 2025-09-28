@@ -150,7 +150,7 @@ export class CDUIRSStatus {
         [`IRS${index} ${this.frozen ? `FROZEN {small}AT{end} ${frozenTime}` : ''}`],
         ['POSITION'],
         [
-          this.irLatitude.isInvalid() && this.irLongitude.isInvalid()
+          this.irLatitude.isInvalid() || this.irLongitude.isInvalid()
             ? '--°--.--/---°--.--[color]white'
             : `${coordinateToString(this.irCoordinates, false)}[color]green`,
         ],
@@ -174,7 +174,7 @@ export class CDUIRSStatus {
         ],
         ['WIND', 'GPIRS ACCUR'],
         [
-          this.irWindDirection.isInvalid() && this.irWindSpeed.isInvalid()
+          this.irWindDirection.isInvalid() || this.irWindSpeed.isInvalid()
             ? '---°/--[color]white'
             : `${Math.round(this.irWindDirection.value)}°/${Math.round(this.irWindSpeed.value)}[color]green`,
           '200FT[color]green',
