@@ -422,11 +422,12 @@ export class LnavDriver implements GuidanceComponent {
     const secPlan = this.flightPlanService.secondary(1);
 
     const secToLeg = secPlan.maybeElementAt(secPlan.activeLegIndex);
-    const activeToLeg = activePlan.elementAt(activePlan.activeLegIndex);
+    const activeToLeg = activePlan.maybeElementAt(activePlan.activeLegIndex);
 
     const areActiveLegsTheSame =
       secPlan.activeLegIndex === activePlan.activeLegIndex &&
       secToLeg !== undefined &&
+      activeToLeg !== undefined &&
       FlightPlanUtils.areFlightPlanElementsSame(secToLeg, activeToLeg);
 
     const secFromLeg = secGeometry.legs.get(secPlan.fromLegIndex);
