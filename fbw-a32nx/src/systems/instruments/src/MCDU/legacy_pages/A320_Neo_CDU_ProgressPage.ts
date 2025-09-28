@@ -17,7 +17,7 @@ export class CDUProgressPage {
     mcdu.activeSystem = 'FMGC';
     const flightNo = mcdu.flightNumber ?? '';
     const recMaxFl = mcdu.getMaxFlCorrected();
-    const flMaxText = recMaxFl !== null ? `{magenta}FL:${recMaxFl.toString()}{end}` : `-----`;
+    const flMaxText = recMaxFl !== null ? `{magenta}FL${recMaxFl.toString()}{end}` : `-----`;
     const flOpt =
       recMaxFl !== null &&
       mcdu._zeroFuelWeightZFWCGEntered &&
@@ -205,7 +205,7 @@ export class CDUProgressPage {
       [
         `{cyan}{${rnpSize}}${rnpCell}NM{end}{end}`,
         `{green}{small}${anpCell}NM{end}{end}`,
-        `{green}${mcdu.navigation.accuracyHigh.get() ? 'HIGH' : 'LOW'}{end}`,
+        `{green}${mcdu.navigation.accuracyHigh.get() ? 'HIGH' : 'LOW\xa0'}{end}`,
       ],
     ]);
 

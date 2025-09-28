@@ -9,45 +9,45 @@ import { FmsFormatters } from '../legacy/FmsFormatters';
 export class CDUIRSStatus {
   private static frozen = false;
 
-  private static readonly ir1Latitudevar = RegisteredSimVar.create<number>(
+  private static readonly ir1LatitudeVar = RegisteredSimVar.create<number>(
     'L:A32NX_ADIRS_IR_1_LATITUDE',
     SimVarValueType.Enum,
   );
-  private static readonly ir1Longitudevar = RegisteredSimVar.create<number>(
+  private static readonly ir1LongitudeVar = RegisteredSimVar.create<number>(
     'L:A32NX_ADIRS_IR_1_LONGITUDE',
     SimVarValueType.Enum,
   );
-  private static readonly ir2Latitudevar = RegisteredSimVar.create<number>(
+  private static readonly ir2LatitudeVar = RegisteredSimVar.create<number>(
     'L:A32NX_ADIRS_IR_2_LATITUDE',
     SimVarValueType.Enum,
   );
 
-  private static readonly ir2Longitudevar = RegisteredSimVar.create<number>(
+  private static readonly ir2LongitudeVar = RegisteredSimVar.create<number>(
     'L:A32NX_ADIRS_IR_2_LONGITUDE',
     SimVarValueType.Enum,
   );
 
-  private static readonly ir3Latitudevar = RegisteredSimVar.create<number>(
+  private static readonly ir3LatitudeVar = RegisteredSimVar.create<number>(
     'L:A32NX_ADIRS_IR_3_LATITUDE',
     SimVarValueType.Enum,
   );
 
-  private static readonly ir3Longitudevar = RegisteredSimVar.create<number>(
+  private static readonly ir3LongitudeVar = RegisteredSimVar.create<number>(
     'L:A32NX_ADIRS_IR_3_LONGITUDE',
     SimVarValueType.Enum,
   );
 
-  private static readonly Ir1TrueTrackVar = RegisteredSimVar.create<number>(
+  private static readonly ir1TrueTrackVar = RegisteredSimVar.create<number>(
     'L:A32NX_ADIRS_IR_1_TRUE_TRACK',
     SimVarValueType.Enum,
   );
 
-  private static readonly Ir2TrueTrackVar = RegisteredSimVar.create<number>(
+  private static readonly ir2TrueTrackVar = RegisteredSimVar.create<number>(
     'L:A32NX_ADIRS_IR_2_TRUE_TRACK',
     SimVarValueType.Enum,
   );
 
-  private static readonly Ir3TrueTrackVar = RegisteredSimVar.create<number>(
+  private static readonly ir3TrueTrackVar = RegisteredSimVar.create<number>(
     'L:A32NX_ADIRS_IR_3_TRUE_TRACK',
     SimVarValueType.Enum,
   );
@@ -142,6 +142,7 @@ export class CDUIRSStatus {
     if (!this.frozen) {
       mcdu.clearDisplay();
       this.populateIrData(index);
+      // TODO hookup GPIRS to calculated position from FM when implemented
       this.gpirsCoordinates.lat = SimVar.GetSimVarValue('GPS POSITION LAT', 'degree latitude');
       this.gpirsCoordinates.long = SimVar.GetSimVarValue('GPS POSITION LON', 'degree longitude');
       this.frozen = frozenTime !== undefined;
@@ -228,11 +229,11 @@ export class CDUIRSStatus {
   static populateIrData(index: 1 | 2 | 3) {
     switch (index) {
       case 1:
-        this.irLatitude.set(this.ir1Latitudevar.get());
-        this.irLongitude.set(this.ir1Longitudevar.get());
+        this.irLatitude.set(this.ir1LatitudeVar.get());
+        this.irLongitude.set(this.ir1LongitudeVar.get());
         this.irCoordinates.lat = this.irLatitude.valueOr(0);
         this.irCoordinates.long = this.irLongitude.valueOr(0);
-        this.irTrueTrack.set(this.Ir1TrueTrackVar.get());
+        this.irTrueTrack.set(this.ir1TrueTrackVar.get());
         this.irTrueHeading.set(this.ir1TrueHeadingVar.get());
         this.irMagneticHeading.set(this.ir1MagneticHeadingVar.get());
         this.irGroundSpeed.set(this.ir1GroundSpeedVar.get());
@@ -240,11 +241,11 @@ export class CDUIRSStatus {
         this.irWindSpeed.set(this.ir1WindSpeedVar.get());
         break;
       case 2:
-        this.irLatitude.set(this.ir2Latitudevar.get());
-        this.irLongitude.set(this.ir2Longitudevar.get());
+        this.irLatitude.set(this.ir2LatitudeVar.get());
+        this.irLongitude.set(this.ir2LongitudeVar.get());
         this.irCoordinates.lat = this.irLatitude.valueOr(0);
         this.irCoordinates.long = this.irLongitude.valueOr(0);
-        this.irTrueTrack.set(this.Ir2TrueTrackVar.get());
+        this.irTrueTrack.set(this.ir2TrueTrackVar.get());
         this.irTrueHeading.set(this.ir2TrueHeadingVar.get());
         this.irMagneticHeading.set(this.ir2MagneticHeadingVar.get());
         this.irGroundSpeed.set(this.ir2GroundSpeedVar.get());
@@ -252,11 +253,11 @@ export class CDUIRSStatus {
         this.irWindSpeed.set(this.ir2WindSpeedVar.get());
         break;
       case 3:
-        this.irLatitude.set(this.ir3Latitudevar.get());
-        this.irLongitude.set(this.ir3Longitudevar.get());
+        this.irLatitude.set(this.ir3LatitudeVar.get());
+        this.irLongitude.set(this.ir3LongitudeVar.get());
         this.irCoordinates.lat = this.irLatitude.valueOr(0);
         this.irCoordinates.long = this.irLongitude.valueOr(0);
-        this.irTrueTrack.set(this.Ir3TrueTrackVar.get());
+        this.irTrueTrack.set(this.ir3TrueTrackVar.get());
         this.irTrueHeading.set(this.ir3TrueHeadingVar.get());
         this.irMagneticHeading.set(this.ir3MagneticHeadingVar.get());
         this.irGroundSpeed.set(this.ir3GroundSpeedVar.get());
