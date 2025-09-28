@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { GuidanceComponent } from '@fmgc/guidance/GuidanceComponent';
@@ -256,13 +256,10 @@ export class PseudoWaypoints implements GuidanceComponent {
         break;
       case PseudoWaypointSequencingAction.APPROACH_PHASE_AUTO_ENGAGE: {
         const apLateralMode = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_MODE', 'Number');
-        const agl = Simplane.getAltitudeAboveGround();
-
         if (
-          agl < 9500 &&
-          (apLateralMode === LateralMode.NAV ||
-            apLateralMode === LateralMode.LOC_CPT ||
-            apLateralMode === LateralMode.LOC_TRACK)
+          apLateralMode === LateralMode.NAV ||
+          apLateralMode === LateralMode.LOC_CPT ||
+          apLateralMode === LateralMode.LOC_TRACK
         ) {
           // Request APPROACH phase engagement for 5 seconds
           SimVar.SetSimVarValue('L:A32NX_FM_ENABLE_APPROACH_PHASE', 'Bool', true).then(() => [
