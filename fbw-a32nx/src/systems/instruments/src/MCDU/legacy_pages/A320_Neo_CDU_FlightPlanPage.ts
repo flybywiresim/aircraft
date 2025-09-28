@@ -914,7 +914,7 @@ export class CDUFlightPlanPage {
     // Destination (R6)
 
     const destText = [];
-    if (mcdu.flightPlanService.hasTemporary) {
+    if (forActiveOrTemporary && mcdu.flightPlanService.hasTemporary) {
       destText[0] = [' ', ' '];
       destText[1] = ['{ERASE[color]amber', 'INSERT*[color]amber'];
 
