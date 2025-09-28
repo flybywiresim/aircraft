@@ -76,6 +76,7 @@ import { FmcWindVector } from '@fmgc/guidance/vnav/wind/types';
 import { FlightPlanFlags } from '@fmgc/flightplanning/plans/FlightPlanFlags';
 import { CDUFuelPredPage } from '../legacy_pages/A320_Neo_CDU_FuelPredPage';
 import { ObservableFlightPlanManager } from '@fmgc/flightplanning/ObservableFlightPlanManager';
+import { CDUFlightPlanPage } from '../legacy_pages/A320_Neo_CDU_FlightPlanPage';
 
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
@@ -517,7 +518,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.perfClbPredToAltitudePilot = undefined;
     this.perfDesPredToAltitudePilot = undefined;
 
-    this.onAirport = () => {};
+    this.onAirport = () => CDUFlightPlanPage.ShowPage(this.mcdu);
 
     if (this.navigation) {
       this.navigation.requiredPerformance.clearPilotRnp();

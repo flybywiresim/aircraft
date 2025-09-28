@@ -59,17 +59,8 @@ export class CDUFlightPlanPage {
     };
     mcdu.activeSystem = 'FMGC';
 
-    if (forPlan >= FlightPlanIndex.FirstSecondary) {
-      mcdu.efisInterfaces.L.setSecRelatedPageOpen(true);
-      mcdu.efisInterfaces.R.setSecRelatedPageOpen(true);
-      mcdu.onUnload = () => {
-        mcdu.efisInterfaces.L.setSecRelatedPageOpen(false);
-        mcdu.efisInterfaces.R.setSecRelatedPageOpen(false);
-      };
-    } else {
-      mcdu.efisInterfaces.L.setSecRelatedPageOpen(false);
-      mcdu.efisInterfaces.R.setSecRelatedPageOpen(false);
-    }
+    mcdu.efisInterfaces.L.setSecRelatedPageOpen(forPlan >= FlightPlanIndex.FirstSecondary);
+    mcdu.efisInterfaces.R.setSecRelatedPageOpen(forPlan >= FlightPlanIndex.FirstSecondary);
 
     // regular update due to showing dynamic data on this page
     mcdu.SelfPtr = setTimeout(() => {
@@ -821,12 +812,12 @@ export class CDUFlightPlanPage {
           row.fpIndex >= targetPlan.alternateFlightPlan.firstMissedApproachLegIndex,
       );
 
-    mcdu.efisInterfaces['L'].setShownFplnLegs(
+    mcdu.efisInterfaces.L.setShownFplnLegs(
       isMissedApproachLegShown,
       isAlternateLegShown,
       isAlternateMissedApproachLegShown,
     );
-    mcdu.efisInterfaces['R'].setShownFplnLegs(
+    mcdu.efisInterfaces.R.setShownFplnLegs(
       isMissedApproachLegShown,
       isAlternateLegShown,
       isAlternateMissedApproachLegShown,
@@ -836,8 +827,14 @@ export class CDUFlightPlanPage {
       CDUFlightPlanPage.updatePlanCentre(mcdu, waypointsAndMarkers, 0, FlightPlanIndex.Active, 'L');
       CDUFlightPlanPage.updatePlanCentre(mcdu, waypointsAndMarkers, 0, FlightPlanIndex.Active, 'R');
 
-      mcdu.efisInterfaces['L'].setShownFplnLegs(false, false, false);
-      mcdu.efisInterfaces['R'].setShownFplnLegs(false, false, false);
+      mcdu.efisInterfaces.L.setSecRelatedPageOpen(false);
+      mcdu.efisInterfaces.R.setSecRelatedPageOpen(false);
+
+      mcdu.efisInterfaces.L.setShownFplnLegs(false, false, false);
+      mcdu.efisInterfaces.R.setShownFplnLegs(false, false, false);
+
+      // When the flight plan page is not shown, the AIRPORT key should just show the flight plan page
+      mcdu.onAirport = () => CDUFlightPlanPage.ShowPage(mcdu);
     };
 
     // Render scrolling data to text >> add ditto marks
@@ -1009,7 +1006,9 @@ export class CDUFlightPlanPage {
       mcdu.onAirport = () => {
         // Only called if > 4 waypoints
         const isOnFlightPlanPage = mcdu.page.Current === mcdu.page.FlightPlanPage;
-        const allowCycleToOriginAirport = mcdu.flightPhaseManager.phase === FmgcFlightPhase.Preflight;
+        // Origin airport exists if we're in preflight phase or we are on a SEC plan that is not a copy of the active plan
+        const allowCycleToOriginAirport =
+          mcdu.flightPhaseManager.phase === FmgcFlightPhase.Preflight || !targetPlan.isActiveOrCopiedFromActive();
         if (
           offset >= Math.max(destinationAirportOffset, alternateAirportOffset) &&
           allowCycleToOriginAirport &&
