@@ -2872,13 +2872,38 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       for (const vec of geometryLeg.predictedPath) {
         if (vec.type !== PathVectorType.Line) continue;
 
-        const intersection = abeamBetween(vec.startPoint, vec.endPoint, referenceFix.location);
+        const abeamCoordinates = abeamBetween(vec.startPoint, vec.endPoint, referenceFix.location);
 
-        if (intersection !== undefined) {
-          if (distanceTo(intersection, referenceFix.location) <= 700) {
-            return [legIndex, intersection];
+        if (abeamCoordinates === undefined) continue;
+
+        // Abeam points must be within 700 NM of its reference point
+        if (distanceTo(abeamCoordinates, referenceFix.location) > 700) {
+          return undefined;
+        }
+
+        // Check abeam point does not lie within 1 NM of an existing waypoint
+        // TODO: maybe check this somewhere else as we currently do not check if abeam point
+        // lies within 1 NM of another abeam point in the same "batch"
+        for (
+          let otherLegIndex = this.activeLegIndex ?? 0;
+          otherLegIndex < this.firstMissedApproachLegIndex;
+          otherLegIndex++
+        ) {
+          const otherLeg = this.maybeElementAt(otherLegIndex);
+          if (!isLeg(otherLeg)) continue;
+
+          const termination = otherLeg.terminationWaypoint();
+          if (termination === null) continue;
+
+          if (distanceTo(abeamCoordinates, termination.location) <= 1) {
+            console.log(
+              `[FMS/FPM] Abeam point of ${referenceFix.ident} was within 1 NM of ${otherLeg.ident} termination, rejecting`,
+            );
+            return undefined;
           }
         }
+
+        return [legIndex, abeamCoordinates];
       }
     }
 
