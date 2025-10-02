@@ -13,7 +13,7 @@ export enum WaypointArea {
 /**
  * Waypoint fix
  */
-export type Waypoint = EnrouteWaypoint | TerminalWaypoint | AbeamWaypoint;
+export type Waypoint = EnrouteWaypoint | TerminalWaypoint;
 
 export interface EnrouteWaypoint extends BaseWaypoint<SectionCode.Enroute> {
   subSectionCode: EnrouteSubsectionCode.Waypoints;
