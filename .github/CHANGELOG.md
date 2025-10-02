@@ -145,6 +145,7 @@
 1. [A380X] Autoflight: Add ROLLOUT fault (i.e. communication fault between NWS and PRIM) - @flogross89 (floridude)
 1. [A380X/CDS] Change autoland capability designation to Batch 7 standard (LAND instead of CAT) - @flogross89 (floridude)
 1. [A380X/FLIGHT and ENGINE MODELS] Fixed excessive descent rates and takeoff rotation issues, improved fuel burn - @donstim (donbikes)
+1. [FMS] Fix fuel predictions in the FMS not matching the engine model - @BlueberryKing (BlueberryKing)
 1. [A32NX/FMS] Implement ability to create, modify, activate and swap a secondary flight plan - @Benjozork (Benjamin Dupont), @BlueberyKing (BlueberryKing)
 
 ## 0.13.0
