@@ -4,7 +4,8 @@ use crate::systems::shared::arinc429::{Arinc429Word, SignStatus};
 use systems::hydraulic::command_sensor_unit::{CSUMonitor, CSU};
 use systems::hydraulic::flap_slat::{ChannelCommand, SolenoidStatus, ValveBlock};
 use systems::shared::{
-    AdirsMeasurementOutputs, ElectricalBusType, ElectricalBuses, PositionPickoffUnit,
+    AdirsMeasurementOutputs, DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType,
+    ElectricalBuses, PositionPickoffUnit,
 };
 
 use systems::simulation::{
@@ -27,8 +28,8 @@ pub(super) struct FlapsChannel {
 
     powered_by: ElectricalBusType,
     is_powered: bool,
-    recovered_power: bool,
-    power_duration: Duration,
+    power_loss_for_more_than_200ms: DelayedTrueLogicGate,
+    recovered_power_pulse: DelayedPulseTrueLogicGate,
 
     csu_monitor: CSUMonitor,
 
@@ -65,8 +66,9 @@ impl FlapsChannel {
 
             powered_by,
             is_powered: false,
-            recovered_power: false,
-            power_duration: Duration::ZERO,
+            power_loss_for_more_than_200ms: DelayedTrueLogicGate::new(Self::TRANSPARENCY_TIME)
+                .starting_as(true),
+            recovered_power_pulse: DelayedPulseTrueLogicGate::new(Duration::ZERO),
 
             csu_monitor: CSUMonitor::new(context),
 
@@ -85,7 +87,7 @@ impl FlapsChannel {
     }
 
     fn fap_update(&mut self) {
-        if !self.is_powered && self.power_duration > Self::TRANSPARENCY_TIME {
+        if self.power_loss_for_more_than_200ms.output() {
             self.fap = [false; 7];
             return;
         }
@@ -382,11 +384,15 @@ impl FlapsChannel {
         }
     }
 
+    fn power_loss_reset(&mut self) {
+        self.flap_auto_command_active = false;
+        self.flap_auto_command_engaged = false;
+        self.flap_auto_command_angle = Angle::ZERO;
+    }
+
     fn generate_flap_angle(&mut self, adirs: &impl AdirsMeasurementOutputs) -> Angle {
-        if !self.is_powered && self.power_duration > Self::TRANSPARENCY_TIME {
-            self.flap_auto_command_active = false;
-            self.flap_auto_command_engaged = false;
-            self.flap_auto_command_angle = Angle::ZERO;
+        if self.power_loss_for_more_than_200ms.output() {
+            self.power_loss_reset();
             return Angle::ZERO;
         }
 
@@ -405,14 +411,13 @@ impl FlapsChannel {
         flaps_feedback: &impl PositionPickoffUnit,
         adirs: &impl AdirsMeasurementOutputs,
     ) {
-        self.power_duration += context.delta();
+        self.power_loss_for_more_than_200ms
+            .update(context, !self.is_powered);
+        self.recovered_power_pulse
+            .update(context, !self.power_loss_for_more_than_200ms.output());
 
-        if self.recovered_power {
-            if self.power_duration > Self::TRANSPARENCY_TIME {
-                self.powerup_reset(adirs);
-            }
-            self.recovered_power = false;
-            self.power_duration = Duration::ZERO;
+        if self.recovered_power_pulse.output() {
+            self.powerup_reset(adirs);
         }
 
         self.csu_monitor.update(context);
@@ -456,7 +461,7 @@ impl FlapsChannel {
     }
 
     fn flap_actual_position_word(&self) -> Arinc429Word<f64> {
-        if !self.is_powered && self.power_duration > Self::TRANSPARENCY_TIME {
+        if self.power_loss_for_more_than_200ms.output() {
             return Arinc429Word::default();
         }
 
@@ -471,7 +476,7 @@ impl FlapsChannel {
 // are held in position and can't move.
 impl ValveBlock for FlapsChannel {
     fn get_pob_status(&self) -> SolenoidStatus {
-        if !self.is_powered && self.power_duration > Self::TRANSPARENCY_TIME {
+        if self.power_loss_for_more_than_200ms.output() {
             return SolenoidStatus::DeEnergised;
         }
 
@@ -486,7 +491,7 @@ impl ValveBlock for FlapsChannel {
     }
 
     fn get_command_status(&self) -> Option<ChannelCommand> {
-        if !self.is_powered && self.power_duration > Self::TRANSPARENCY_TIME {
+        if self.power_loss_for_more_than_200ms.output() {
             return None;
         }
 
@@ -512,11 +517,6 @@ impl SimulationElement for FlapsChannel {
     }
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        if self.is_powered != buses.is_powered(self.powered_by) {
-            // If is_powered returns TRUE and the previous is FALSE,
-            // it means we have just restored the power
-            self.recovered_power = !self.is_powered;
-        }
         self.is_powered = buses.is_powered(self.powered_by);
     }
 
