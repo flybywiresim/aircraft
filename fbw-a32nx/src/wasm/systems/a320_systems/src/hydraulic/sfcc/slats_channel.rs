@@ -3,7 +3,9 @@ use std::time::Duration;
 use crate::systems::shared::arinc429::{Arinc429Word, SignStatus};
 use systems::hydraulic::command_sensor_unit::{CSUMonitor, CSU};
 use systems::hydraulic::flap_slat::{ChannelCommand, SolenoidStatus, ValveBlock};
-use systems::shared::{ElectricalBusType, ElectricalBuses, PositionPickoffUnit};
+use systems::shared::{
+    DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses, PositionPickoffUnit,
+};
 
 use systems::simulation::{
     InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
@@ -25,8 +27,7 @@ pub(super) struct SlatsChannel {
 
     powered_by: ElectricalBusType,
     is_powered: bool,
-    recovered_power: bool,
-    power_duration: Duration,
+    power_loss_for_more_than_200ms: DelayedTrueLogicGate,
 
     csu_monitor: CSUMonitor,
 
@@ -50,8 +51,8 @@ impl SlatsChannel {
 
             powered_by,
             is_powered: false,
-            recovered_power: false,
-            power_duration: Duration::ZERO,
+            power_loss_for_more_than_200ms: DelayedTrueLogicGate::new(Self::TRANSPARENCY_TIME)
+                .starting_as(true),
 
             csu_monitor: CSUMonitor::new(context),
 
@@ -61,7 +62,7 @@ impl SlatsChannel {
     }
 
     fn sap_update(&mut self) {
-        if !self.is_powered && self.power_duration > Self::TRANSPARENCY_TIME {
+        if self.power_loss_for_more_than_200ms.output() {
             self.sap = [false; 7];
             return;
         }
@@ -92,7 +93,7 @@ impl SlatsChannel {
     }
 
     fn generate_slat_angle(&mut self) -> Angle {
-        if !self.is_powered && self.power_duration > Self::TRANSPARENCY_TIME {
+        if self.power_loss_for_more_than_200ms.output() {
             return Angle::ZERO;
         }
 
@@ -104,12 +105,8 @@ impl SlatsChannel {
         context: &UpdateContext,
         slats_feedback: &impl PositionPickoffUnit,
     ) {
-        self.power_duration += context.delta();
-
-        if self.recovered_power {
-            self.recovered_power = false;
-            self.power_duration = Duration::ZERO;
-        }
+        self.power_loss_for_more_than_200ms
+            .update(context, !self.is_powered);
 
         self.csu_monitor.update(context);
         self.slats_demanded_angle = self.generate_slat_angle();
@@ -118,7 +115,8 @@ impl SlatsChannel {
         self.sap_update();
     }
 
-    // The result of `get_demanded_angle` shall not be used outside of the SFCC.
+    // `get_demanded_angle` shall not be called outside of the SFCC to reflect
+    // the real architecture of the LRU, hence the use of `pub(super)`.
     // It returns 0.0 when the SFCC is powered off regardless of the last status.
     pub(super) fn get_demanded_angle(&self) -> Angle {
         self.slats_demanded_angle
@@ -134,7 +132,7 @@ impl SlatsChannel {
     }
 
     fn slat_actual_position_word(&self) -> Arinc429Word<f64> {
-        if !self.is_powered && self.power_duration > Self::TRANSPARENCY_TIME {
+        if self.power_loss_for_more_than_200ms.output() {
             return Arinc429Word::default();
         }
 
@@ -149,7 +147,7 @@ impl SlatsChannel {
 // are held in position and can't move.
 impl ValveBlock for SlatsChannel {
     fn get_pob_status(&self) -> SolenoidStatus {
-        if !self.is_powered && self.power_duration > Self::TRANSPARENCY_TIME {
+        if self.power_loss_for_more_than_200ms.output() {
             return SolenoidStatus::DeEnergised;
         }
 
@@ -164,7 +162,7 @@ impl ValveBlock for SlatsChannel {
     }
 
     fn get_command_status(&self) -> Option<ChannelCommand> {
-        if !self.is_powered && self.power_duration > Self::TRANSPARENCY_TIME {
+        if self.power_loss_for_more_than_200ms.output() {
             return None;
         }
 
@@ -190,11 +188,6 @@ impl SimulationElement for SlatsChannel {
     }
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        if self.is_powered != buses.is_powered(self.powered_by) {
-            // If is_powered returns TRUE and the previous is FALSE,
-            // it means we have just restored the power
-            self.recovered_power = !self.is_powered;
-        }
         self.is_powered = buses.is_powered(self.powered_by);
     }
 

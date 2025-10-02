@@ -5,7 +5,8 @@ use systems::accept_iterable;
 use systems::hydraulic::command_sensor_unit::CSU;
 use systems::hydraulic::flap_slat::ValveBlock;
 use systems::shared::{
-    AdirsMeasurementOutputs, ConsumePower, ElectricalBusType, ElectricalBuses, PositionPickoffUnit,
+    AdirsMeasurementOutputs, ConsumePower, DelayedTrueLogicGate, ElectricalBusType,
+    ElectricalBuses, PositionPickoffUnit,
 };
 
 use systems::simulation::{
@@ -48,39 +49,39 @@ impl From<u8> for FlapsConf {
     }
 }
 
-pub struct SlatFlapControlComputerMisc {}
+struct SlatFlapControlComputerMisc {}
 impl SlatFlapControlComputerMisc {
     const POSITIONING_THRESHOLD_DEGREE: f64 = 6.69;
     const ENLARGED_TARGET_THRESHOLD_DEGREE: f64 = 0.8;
     const TARGET_THRESHOLD_DEGREE: f64 = 0.18;
 
-    pub fn in_positioning_threshold_range(position: Angle, target_position: Angle) -> bool {
+    fn in_positioning_threshold_range(position: Angle, target_position: Angle) -> bool {
         let tolerance = Angle::new::<degree>(Self::POSITIONING_THRESHOLD_DEGREE);
         position > (target_position - tolerance) && position < (target_position + tolerance)
     }
 
-    pub fn in_target_threshold_range(position: Angle, target_position: Angle) -> bool {
+    fn in_target_threshold_range(position: Angle, target_position: Angle) -> bool {
         let tolerance = Angle::new::<degree>(Self::TARGET_THRESHOLD_DEGREE);
         position > (target_position - tolerance) && position < (target_position + tolerance)
     }
 
-    pub fn below_enlarged_target_range(position: Angle, target_position: Angle) -> bool {
+    fn below_enlarged_target_range(position: Angle, target_position: Angle) -> bool {
         let tolerance = Angle::new::<degree>(Self::ENLARGED_TARGET_THRESHOLD_DEGREE);
         position < target_position - tolerance
     }
 
-    pub fn in_enlarged_target_range(position: Angle, target_position: Angle) -> bool {
+    fn in_enlarged_target_range(position: Angle, target_position: Angle) -> bool {
         let tolerance = Angle::new::<degree>(Self::ENLARGED_TARGET_THRESHOLD_DEGREE);
         position > (target_position - tolerance) && position < (target_position + tolerance)
     }
 
-    pub fn in_or_above_enlarged_target_range(position: Angle, target_position: Angle) -> bool {
+    fn in_or_above_enlarged_target_range(position: Angle, target_position: Angle) -> bool {
         let tolerance = Angle::new::<degree>(Self::ENLARGED_TARGET_THRESHOLD_DEGREE);
         Self::in_enlarged_target_range(position, target_position)
             || position >= target_position + tolerance
     }
 
-    pub fn between_0_1f_enlarged_target_range(position: Angle) -> bool {
+    fn between_0_1f_enlarged_target_range(position: Angle) -> bool {
         let tolerance = Angle::new::<degree>(Self::ENLARGED_TARGET_THRESHOLD_DEGREE);
         position > (Angle::ZERO + tolerance)
             && position < (Angle::new::<degree>(120.21) - tolerance)
@@ -95,8 +96,7 @@ struct SlatFlapControlComputer {
     powered_by: ElectricalBusType,
     consumed_power: Power,
     is_powered: bool,
-    recovered_power: bool,
-    power_duration: Duration,
+    power_loss_for_more_than_200ms: DelayedTrueLogicGate,
 
     flaps_channel: FlapsChannel,
     slats_channel: SlatsChannel,
@@ -117,8 +117,8 @@ impl SlatFlapControlComputer {
             powered_by,
             consumed_power: Power::new::<watt>(Self::MAX_POWER_CONSUMPTION_WATT),
             is_powered: false,
-            recovered_power: false,
-            power_duration: Duration::ZERO,
+            power_loss_for_more_than_200ms: DelayedTrueLogicGate::new(Self::TRANSPARENCY_TIME)
+                .starting_as(true),
 
             flaps_channel: FlapsChannel::new(context, num, powered_by),
             slats_channel: SlatsChannel::new(context, num, powered_by),
@@ -132,19 +132,15 @@ impl SlatFlapControlComputer {
         slats_feedback: &impl PositionPickoffUnit,
         adirs: &impl AdirsMeasurementOutputs,
     ) {
-        self.power_duration += context.delta();
-
-        if self.recovered_power {
-            self.recovered_power = false;
-            self.power_duration = Duration::ZERO;
-        }
+        self.power_loss_for_more_than_200ms
+            .update(context, !self.is_powered);
 
         self.flaps_channel.update(context, flaps_feedback, adirs);
         self.slats_channel.update(context, slats_feedback);
     }
 
     fn slat_flap_system_status_word(&self) -> Arinc429Word<u32> {
-        if !self.is_powered && self.power_duration > Self::TRANSPARENCY_TIME {
+        if self.power_loss_for_more_than_200ms.output() {
             return Arinc429Word::default();
         }
 
@@ -186,7 +182,7 @@ impl SlatFlapControlComputer {
     }
 
     fn slat_flap_actual_position_word(&self) -> Arinc429Word<u32> {
-        if !self.is_powered && self.power_duration > Self::TRANSPARENCY_TIME {
+        if self.power_loss_for_more_than_200ms.output() {
             return Arinc429Word::default();
         }
 
@@ -254,7 +250,7 @@ impl SlatFlapControlComputer {
     }
 
     fn get_flaps_config(&self) -> Option<FlapsConf> {
-        if !self.is_powered && self.power_duration > Self::TRANSPARENCY_TIME {
+        if self.power_loss_for_more_than_200ms.output() {
             return None;
         }
 
@@ -284,11 +280,6 @@ impl SimulationElement for SlatFlapControlComputer {
     }
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        if self.is_powered != buses.is_powered(self.powered_by) {
-            // If is_powered returns TRUE and the previous is FALSE,
-            // it means we have just restored the power
-            self.recovered_power = !self.is_powered;
-        }
         self.is_powered = buses.is_powered(self.powered_by);
     }
 
