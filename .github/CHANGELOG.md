@@ -139,6 +139,13 @@
 1. [A380X/OIS] Fix OOOI times logic, automatically power laptop for runway spawns - @flogross89 (floridude)
 1. [A380X/MFD] Changed colors of TCAS modes to match correct colors in A380 FCOM - @fwillard (Finn)
 1. [MODEL] Inverted behavior of FADEC GND PWR PB - @Maximilian-Reuter (\_chaoz_)
+1. [A380X] Autoflight: Partially move approach and landing capability computation to FCDC - @flogross89 (floridude)
+1. [A380X/PRIM] Introduce required equipment monitoring for AUTOLAND capability - @flogross89 (floridude)
+1. [A380X/FWS] Fix cavalry charge for AP disconnect; Add improved triple click logic using FCDC signals - @flogross89 (floridude)
+1. [A380X] Autoflight: Add ROLLOUT fault (i.e. communication fault between NWS and PRIM) - @flogross89 (floridude)
+1. [A380X/CDS] Change autoland capability designation to Batch 7 standard (LAND instead of CAT) - @flogross89 (floridude)
+1. [A380X/FLIGHT and ENGINE MODELS] Fixed excessive descent rates and takeoff rotation issues, improved fuel burn - @donstim (donbikes)
+1. [FMS] Fix fuel predictions in the FMS not matching the engine model - @BlueberryKing (BlueberryKing)
 
 ## 0.13.0
 
@@ -241,7 +248,7 @@
 1. [A380/PFD] Add DISCONNECT AP FOR LDG FMA message - @BravoMike99 (bruno_pt99)
 1. [A380X/ENG] Adjust climb thrust to be more accurate - @BlueberryKing (BlueberryKing)
 1. [A380X/EWD] Show THR limit in EWD instead of N1 - @flogross89 (floridude)
-1. [A380X/FLIGHT MODEL] Fix pitchup and unrecoverable stall - - @donstim (donbikes#4084)
+1. [A380X/FLIGHT MODEL] Fix pitchup and unrecoverable stall - @donstim (donbikes#4084)
 1. [ATC/TCAS] Fixed TCAS failure on baro corrected altitude going invalid - @tracernz (Mike)
 1. [ATC/TCAS] Fixed TCAS slant range computation - @tracernz (Mike)
 1. [A380X] Add baro unit (hPa/in.Hg) auto selection - @tracernz (Mike)
