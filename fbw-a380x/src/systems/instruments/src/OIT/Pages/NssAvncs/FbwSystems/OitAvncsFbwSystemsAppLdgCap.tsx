@@ -143,6 +143,7 @@ export class OitAvncsFbwSystemsAppLdgCap extends DestroyableComponent<OitAvncsFb
     'L:A32NX_ELEC_CONTACTOR_990XS2_IS_CLOSED',
     SimVarValueType.Bool,
   );
+  private readonly oneEngOnEitherSideAvailable = Subject.create(true);
   private readonly threeEnginesAvailable = Subject.create(true);
   private readonly fourEnginesAvailable = Subject.create(true);
 
@@ -226,6 +227,10 @@ export class OitAvncsFbwSystemsAppLdgCap extends DestroyableComponent<OitAvncsFb
       (this.engine3Combustion.get() ? 1 : 0) +
       (this.engine4Combustion.get() ? 1 : 0);
 
+    this.oneEngOnEitherSideAvailable.set(
+      (this.engine1Combustion.get() || this.engine2Combustion.get()) &&
+        (this.engine3Combustion.get() || this.engine4Combustion.get()),
+    );
     this.threeEnginesAvailable.set(numEnginesAvailable >= 3);
     this.fourEnginesAvailable.set(
       numEnginesAvailable === 4 ||
@@ -339,19 +344,19 @@ export class OitAvncsFbwSystemsAppLdgCap extends DestroyableComponent<OitAvncsFb
               <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: this.oneFcdcHealthy }}>1</div>
               <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: this.twoFcdcHealthy }}>2</div>
               <div class="oit-a380x-systems-app-ldg-cap-td transparentbg">Antiskid</div>
-              <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: this.antiskidAvailable }}>Avail.</div>
-              <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: this.antiskidAvailable }}>Avail.</div>
+              <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: true }}>Avail.</div>
+              <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: true }}>Avail.</div>
               <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: this.antiskidAvailable }}>Avail.</div>
               <div class="oit-a380x-systems-app-ldg-cap-td transparentbg">NWS</div>
-              <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: this.nwsAvailable }}>Avail.</div>
-              <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: this.nwsAvailable }}>Avail.</div>
+              <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: true }}>Avail.</div>
+              <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: true }}>Avail.</div>
               <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: this.nwsAvailable }}>Avail.</div>
               <div class="oit-a380x-systems-app-ldg-cap-td transparentbg">ADR</div>
               <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: this.twoAdrAvailable }}>2</div>
               <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: this.twoAdrAvailable }}>3</div>
               <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: this.threeAdrAvailable }}>3</div>
               <div class="oit-a380x-systems-app-ldg-cap-td transparentbg">Engines</div>
-              <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: this.threeEnginesAvailable }}>3</div>
+              <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: this.oneEngOnEitherSideAvailable }}>3</div>
               <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: this.threeEnginesAvailable }}>3</div>
               <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: this.fourEnginesAvailable }}>4</div>
             </div>
