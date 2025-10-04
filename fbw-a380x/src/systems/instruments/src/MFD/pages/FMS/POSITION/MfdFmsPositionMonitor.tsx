@@ -139,7 +139,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
   private readonly positionFrozenAt = this.positionFrozen.map((v) => (v ? 'POS DATA FROZEN' : ''));
 
   private readonly positionFrozenTime = this.positionFrozen.map((v) =>
-    v ? 'AT ' + getEtaFromUtcOrPresent(0, false) : '',
+    v ? '\xa0AT\xa0' + getEtaFromUtcOrPresent(0, false) : '',
   );
 
   private readonly gnssCoordinates: Coordinates = { lat: 0, long: 0 };
@@ -588,7 +588,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
               <Button
                 label={Subject.create(
                   <div style="display: flex; flex-direction: row; justify-content: space-between;">
-                    <span style="text-align: center; vertical-align: center; margin-right: 13px;">
+                    <span style="text-align: center; vertical-align: center; margin-right: 25px;">
                       {this.positionSensorsButtonLabel}
                       <br />
                       POS SENSORS
@@ -597,7 +597,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                 )}
                 onClick={() => this.toggleSensorsVisibility()}
                 selected={this.positionSensorsVisible}
-                buttonStyle="width: 219px; margin-left: 95px; height:62px;"
+                buttonStyle="width: 219px; margin-left: 95px; height:58px;"
               />
 
               <Button
@@ -613,7 +613,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                 )}
                 onClick={() => this.togglePositionFrozen()}
                 selected={this.positionFrozen}
-                buttonStyle="width: 231px; margin-right:41px; height:60px"
+                buttonStyle="width: 212px; margin-right:60px; height:58px"
               />
             </div>
           </div>
