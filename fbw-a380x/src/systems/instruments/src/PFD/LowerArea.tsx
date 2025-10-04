@@ -227,22 +227,22 @@ class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
         let synchroOffset = 0;
         let positionFactor = 0;
         let positionOffset = 0;
-        if (flaps >= 0 && flaps < 210) {
+        if (flaps >= 0 && flaps < 214.927) {
           synchroOffset = 0;
-          positionFactor = 0.37;
-          positionOffset = 5.82;
-        } else if (flaps >= 210 && flaps < 254) {
+          positionFactor = 0.18575;
+          positionOffset = 2.8942;
+        } else if (flaps >= 214.927 && flaps < 259.019) {
           synchroOffset = 7.92;
-          positionFactor = 0.85;
-          positionOffset = 8.7;
-        } else if (flaps >= 254 && flaps < 292) {
+          positionFactor = 0.90853;
+          positionOffset = -12.768;
+        } else if (flaps >= 259.019 && flaps < 297.523) {
           synchroOffset = 18.11;
-          positionFactor = 1.0;
-          positionOffset = 17.4;
-        } else if (flaps >= 292 && flaps < 355) {
+          positionFactor = 1.0295;
+          positionOffset = -6.2983;
+        } else if (flaps >= 297.523 && flaps < 355) {
           synchroOffset = 26.8;
-          positionFactor = 1.55;
-          positionOffset = 26.1;
+          positionFactor = 0.9315;
+          positionOffset = 4.8816;
         }
 
         const value = Math.max(
