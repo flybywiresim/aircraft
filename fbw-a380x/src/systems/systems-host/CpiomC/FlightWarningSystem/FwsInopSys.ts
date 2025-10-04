@@ -47,28 +47,28 @@ export class FwsInopSys {
 
   /** INOP SYS shown on SD */
   inopSys: FwsInopSysDict = {
+    210300009: {
+      // PACK 1
+      simVarIsActive: this.fws.pack1Inop,
+      phase: FwsInopSysPhases.AllPhases,
+      notActiveWhenItemActive: ['210300011'],
+    },
+    // PACK 2
+    210300010: {
+      // PACK 2
+      simVarIsActive: this.fws.pack2Inop,
+      phase: FwsInopSysPhases.AllPhases,
+      notActiveWhenItemActive: ['210300011'],
+    },
+    210300011: {
+      // PACK 1 +2
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.pack1Inop, this.fws.pack2Inop),
+      phase: FwsInopSysPhases.AllPhases,
+    },
     220300026: {
       // AUTOLAND
       simVarIsActive: this.fws.land2Inop,
       phase: FwsInopSysPhases.ApprLdg,
-    },
-    213300005: {
-      // CAB PRESS SYS
-      simVarIsActive: MappedSubject.create(
-        SubscribableMapFunctions.and(),
-        this.fws.flightPhase23,
-        this.fws.pressSysFault,
-      ),
-      phase: FwsInopSysPhases.AllPhases,
-    },
-    210300011: {
-      // PACK 1+2
-      simVarIsActive: MappedSubject.create(
-        SubscribableMapFunctions.and(),
-        this.fws.flightPhase23,
-        this.fws.pressSysFault,
-      ),
-      phase: FwsInopSysPhases.AllPhases,
     },
     220300018: {
       // ROLL OUT
@@ -165,15 +165,15 @@ export class FwsInopSys {
       // GEN 1
       simVarIsActive: this.fws.gen1Inop,
       phase: FwsInopSysPhases.AllPhases,
-      notActiveWhenItemActive: ['240300037'],
+      notActiveWhenItemActive: ['240300037', '240300039', '240300041'],
     },
+
     240300011: {
       // GEN 2
       simVarIsActive: this.fws.gen2Inop,
       phase: FwsInopSysPhases.AllPhases,
-      notActiveWhenItemActive: ['240300037'],
+      notActiveWhenItemActive: ['240300037', '240300040', '240300042'],
     },
-
     240300037: {
       // GEN 1+2
       simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.gen1Inop, this.fws.gen2Inop),
@@ -184,19 +184,48 @@ export class FwsInopSys {
       // GEN 3
       simVarIsActive: this.fws.gen3Inop,
       phase: FwsInopSysPhases.AllPhases,
-      notActiveWhenItemActive: ['240300038'],
+      notActiveWhenItemActive: ['240300038', '240300039', '240300042'],
     },
     240300013: {
       // GEN 4
       simVarIsActive: this.fws.gen4Inop,
       phase: FwsInopSysPhases.AllPhases,
-      notActiveWhenItemActive: ['240300038'],
+      notActiveWhenItemActive: ['240300038', '240300040', '240300041'],
     },
     240300038: {
       // GEN 3+4
       simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.gen3Inop, this.fws.gen4Inop),
       phase: FwsInopSysPhases.AllPhases,
     },
+
+    240300039: {
+      // GEN 1+3
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.gen1Inop, this.fws.gen3Inop),
+      phase: FwsInopSysPhases.AllPhases,
+      notActiveWhenItemActive: ['240300037'],
+    },
+
+    240300040: {
+      // GEN 2+4
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.gen2Inop, this.fws.gen4Inop),
+      phase: FwsInopSysPhases.AllPhases,
+      notActiveWhenItemActive: ['240300037'],
+    },
+
+    240300041: {
+      // GEN 1+4
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.gen1Inop, this.fws.gen4Inop),
+      phase: FwsInopSysPhases.AllPhases,
+      notActiveWhenItemActive: ['240300039'],
+    },
+
+    240300042: {
+      // GEN 2+3
+      simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.gen2Inop, this.fws.gen3Inop),
+      phase: FwsInopSysPhases.AllPhases,
+      notActiveWhenItemActive: ['240300040'],
+    },
+
     260300002: {
       // ENG 1 BLEED
       simVarIsActive: this.fws.eng1BleedInop,
@@ -434,6 +463,13 @@ export class FwsInopSys {
       simVarIsActive: this.fws.rowRopLost,
       phase: FwsInopSysPhases.ApprLdg,
     },
+
+    320300023: {
+      // PART L/G RETRACTION
+      simVarIsActive: this.fws.partLandingGearRetraction,
+      phase: FwsInopSysPhases.AllPhases,
+    },
+
     340300001: {
       // GPWS 1
       simVarIsActive: this.fws.gpws1Failed,
