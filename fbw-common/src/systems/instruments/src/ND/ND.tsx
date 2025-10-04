@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2024 FlyByWire Simulations
+// Copyright (c) 2021-2025 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -85,8 +85,8 @@ export interface NDProps<T extends number> {
 }
 
 export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> {
+  // TODO these two should be FM pos ?
   private readonly pposLatWord = Arinc429RegisterSubject.createEmpty();
-
   private readonly pposLonWord = Arinc429RegisterSubject.createEmpty();
 
   private readonly isUsingTrackUpMode = Subject.create(false);
@@ -113,7 +113,7 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
 
   private readonly planPage = FSComponent.createRef<PlanModePage<T>>();
 
-  private currentPageMode = Subject.create(EfisNdMode.ARC);
+  private readonly currentPageMode = Subject.create(EfisNdMode.ARC);
 
   private currentPageInstance: NDPage;
 
@@ -160,7 +160,33 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
     this.currentPageMode,
   );
 
-  private showOans = Subject.create<boolean>(false);
+  private readonly fmsFailed = ConsumerSubject.create(
+    this.props.bus.getSubscriber<GenericFmsEvents>().on('fmsFailed').whenChanged(),
+    false,
+  );
+
+  // TODO in the future, this should be looking at stuff like FM position invalid or not map frames transmitted
+  private readonly mapNotAvailShown = MappedSubject.create(
+    ([headingWord, latWord, longWord, currentPageMode, fmsFailed]) => {
+      return (
+        headingWord.isInvalid() ||
+        (currentPageMode !== EfisNdMode.PLAN && (latWord.isInvalid() || longWord.isInvalid())) ||
+        fmsFailed
+      );
+    },
+    this.headingWord,
+    this.pposLatWord,
+    this.pposLonWord,
+    this.currentPageMode,
+    this.fmsFailed,
+  );
+
+  private readonly showOans = Subject.create<boolean>(false);
+
+  private readonly ndRange = ConsumerSubject.create(
+    this.props.bus.getSubscriber<GenericFcuEvents>().on('ndRangeSetting').whenChanged(),
+    -1,
+  );
 
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
@@ -216,12 +242,9 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
       .whenChanged()
       .handle((v) => this.trueRefActive.set(v));
 
-    sub
-      .on('ndRangeSetting')
-      .whenChanged()
-      .handle(() => {
-        this.invalidateRange();
-      });
+    this.ndRange.sub(() => {
+      this.invalidateRange();
+    });
 
     sub
       .on('ndMode')
@@ -255,18 +278,6 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
   }
 
   // eslint-disable-next-line arrow-body-style
-  private readonly mapFlagShown = MappedSubject.create(
-    ([headingWord, latWord, longWord, currentPageMode]) => {
-      return (
-        (!headingWord.isNormalOperation() || !latWord.isNormalOperation() || !longWord.isNormalOperation()) &&
-        currentPageMode !== EfisNdMode.PLAN
-      );
-    },
-    this.headingWord,
-    this.pposLatWord,
-    this.pposLonWord,
-    this.currentPageMode,
-  );
 
   private readonly planeRotation = MappedSubject.create(
     ([isUsingTrackUpMode, headingWord, trackWord]) => {
@@ -329,7 +340,7 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
     if (
       this.currentPageMode.get() !== EfisNdMode.ROSE_ILS &&
       this.currentPageMode.get() !== EfisNdMode.ROSE_VOR &&
-      !this.mapFlagShown.get()
+      !this.mapNotAvailShown.get()
     ) {
       // Range has priority over mode change
       this.pageChangeInProgress.set(false);
@@ -354,7 +365,7 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
       this.currentPageMode.get() !== EfisNdMode.ROSE_ILS &&
       this.currentPageMode.get() !== EfisNdMode.ROSE_VOR &&
       !this.rangeChangeInProgress.get() &&
-      !this.mapFlagShown.get()
+      !this.mapNotAvailShown.get()
     ) {
       this.pageChangeInProgress.set(true);
       this.pageChangeInvalidationTimeout = window.setTimeout(
@@ -428,6 +439,10 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
               trueTrackWord={this.trueTrackWord}
               rangeValues={this.props.rangeValues}
               isUsingTrackUpMode={this.isUsingTrackUpMode}
+              latitude={this.pposLatWord}
+              longitude={this.pposLonWord}
+              mapNotAvail={this.mapNotAvailShown}
+              range={this.ndRange}
             />
             <ArcModePage
               ref={this.arcPage}
@@ -438,12 +453,20 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
               trackWord={this.trackWord}
               trueTrackWord={this.trueTrackWord}
               isUsingTrackUpMode={this.isUsingTrackUpMode}
+              latitude={this.pposLatWord}
+              longitude={this.pposLonWord}
+              mapNotAvail={this.mapNotAvailShown}
+              range={this.ndRange}
             />
             <PlanModePage
               ref={this.planPage}
               bus={this.props.bus}
               rangeValues={this.props.rangeValues}
               aircraftTrueHeading={this.trueHeadingWord}
+              latitude={this.pposLatWord}
+              longitude={this.pposLonWord}
+              mapRange={this.ndRange}
+              mapNotAvail={this.mapNotAvailShown}
             />
 
             <SelectedHeadingBug bus={this.props.bus} rotationOffset={this.planeRotation} mode={this.currentPageMode} />
@@ -516,7 +539,7 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
             <CrossTrackError
               bus={this.props.bus}
               currentPageMode={this.currentPageMode}
-              isNormalOperation={this.mapFlagShown.map((it) => !it)}
+              isNormalOperation={this.mapNotAvailShown.map((it) => !it)}
             />
 
             <g

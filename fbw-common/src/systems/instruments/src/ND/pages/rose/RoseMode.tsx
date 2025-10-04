@@ -17,6 +17,10 @@ export interface RoseModeProps<T extends number> extends ComponentProps {
   trackWord: Subscribable<Arinc429WordData>;
   trueTrackWord: Subscribable<Arinc429WordData>;
   isUsingTrackUpMode: Subscribable<boolean>;
+  mapNotAvail?: Subscribable<boolean>;
+  latitude?: Subscribable<Arinc429WordData>;
+  longitude?: Subscribable<Arinc429WordData>;
+  range?: Subscribable<number>;
 }
 
 export abstract class RoseMode<T extends number, P extends RoseModeProps<T> = RoseModeProps<T>> extends NDPage<P> {
