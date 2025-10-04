@@ -182,14 +182,14 @@ class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
         let synchroOffset = 0;
         let positionFactor = 0;
         let positionOffset = 0;
-        if (slats >= 0 && slats < 281) {
+        if (slats >= 0 && slats < 286.584) {
           synchroOffset = 0;
-          positionFactor = 0.57;
+          positionFactor = 0.491985;
           positionOffset = 0;
-        } else if (slats >= 281 && slats < 355) {
-          synchroOffset = 20.02;
-          positionFactor = 3.7;
-          positionOffset = 11.5;
+        } else if (slats >= 286.584 && slats < 355) {
+          synchroOffset = 13.22;
+          positionFactor = 3.41585;
+          positionOffset = -22.69;
         }
 
         const value = (slats * synchroFactor - synchroOffset) * positionFactor + positionOffset;
