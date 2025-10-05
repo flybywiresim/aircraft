@@ -1,3 +1,5 @@
+use crate::hydraulic::sfcc::utils::SlatFlapControlComputerMisc;
+
 use super::*;
 use ntest::assert_about_eq;
 use std::{panic::Location, time::Duration};
@@ -3037,76 +3039,6 @@ fn flaps_autocommand_speed_boundary_no_adiru() {
         .set_adiru_failed(2)
         .run_one_tick();
     assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
-}
-
-#[test]
-fn sfcc_misc_ops() {
-    let target_position = Angle::new::<degree>(10.);
-
-    let position = Angle::new::<degree>(10.);
-    assert!(!SlatFlapControlComputerMisc::below_enlarged_target_range(
-        position,
-        target_position
-    ));
-    assert!(SlatFlapControlComputerMisc::in_enlarged_target_range(
-        position,
-        target_position
-    ));
-    assert!(
-        SlatFlapControlComputerMisc::in_or_above_enlarged_target_range(position, target_position)
-    );
-
-    let position = Angle::new::<degree>(0.);
-    assert!(SlatFlapControlComputerMisc::below_enlarged_target_range(
-        position,
-        target_position
-    ));
-    assert!(!SlatFlapControlComputerMisc::in_enlarged_target_range(
-        position,
-        target_position
-    ));
-    assert!(
-        !SlatFlapControlComputerMisc::in_or_above_enlarged_target_range(position, target_position)
-    );
-
-    let position = Angle::new::<degree>(20.);
-    assert!(!SlatFlapControlComputerMisc::below_enlarged_target_range(
-        position,
-        target_position
-    ));
-    assert!(!SlatFlapControlComputerMisc::in_enlarged_target_range(
-        position,
-        target_position
-    ));
-    assert!(
-        SlatFlapControlComputerMisc::in_or_above_enlarged_target_range(position, target_position)
-    );
-
-    let position = Angle::new::<degree>(10.7);
-    assert!(!SlatFlapControlComputerMisc::below_enlarged_target_range(
-        position,
-        target_position
-    ));
-    assert!(SlatFlapControlComputerMisc::in_enlarged_target_range(
-        position,
-        target_position
-    ));
-    assert!(
-        SlatFlapControlComputerMisc::in_or_above_enlarged_target_range(position, target_position)
-    );
-
-    let position = Angle::new::<degree>(9.3);
-    assert!(!SlatFlapControlComputerMisc::below_enlarged_target_range(
-        position,
-        target_position
-    ));
-    assert!(SlatFlapControlComputerMisc::in_enlarged_target_range(
-        position,
-        target_position
-    ));
-    assert!(
-        SlatFlapControlComputerMisc::in_or_above_enlarged_target_range(position, target_position)
-    );
 }
 
 #[test]
