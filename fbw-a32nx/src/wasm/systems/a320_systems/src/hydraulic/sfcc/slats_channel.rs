@@ -4,7 +4,7 @@ use crate::systems::shared::arinc429::{Arinc429Word, SignStatus};
 use systems::hydraulic::command_sensor_unit::{CSUMonitor, CSU};
 use systems::hydraulic::flap_slat::{ChannelCommand, SolenoidStatus, ValveBlock};
 use systems::shared::{
-    DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses, PositionPickoffUnit,
+    DelayedFalseLogicGate, ElectricalBusType, ElectricalBuses, PositionPickoffUnit,
 };
 
 use systems::simulation::{
@@ -27,7 +27,7 @@ pub(super) struct SlatsChannel {
 
     powered_by: ElectricalBusType,
     is_powered: bool,
-    power_loss_for_more_than_200ms: DelayedTrueLogicGate,
+    is_powered_delayed: DelayedFalseLogicGate,
 
     csu_monitor: CSUMonitor,
 
@@ -52,8 +52,8 @@ impl SlatsChannel {
 
             powered_by,
             is_powered: false,
-            power_loss_for_more_than_200ms: DelayedTrueLogicGate::new(Self::TRANSPARENCY_TIME)
-                .starting_as(true),
+            is_powered_delayed: DelayedFalseLogicGate::new(Self::TRANSPARENCY_TIME)
+                .starting_as(false),
 
             csu_monitor: CSUMonitor::new(context),
 
@@ -63,7 +63,7 @@ impl SlatsChannel {
     }
 
     fn sap_update(&mut self) {
-        if self.power_loss_for_more_than_200ms.output() {
+        if !self.is_powered_delayed.output() {
             self.sap = [false; 7];
             return;
         }
@@ -94,7 +94,7 @@ impl SlatsChannel {
     }
 
     fn generate_slat_angle(&mut self) -> Angle {
-        if self.power_loss_for_more_than_200ms.output() {
+        if !self.is_powered_delayed.output() {
             return Angle::ZERO;
         }
 
@@ -106,8 +106,7 @@ impl SlatsChannel {
         context: &UpdateContext,
         slats_feedback: &impl PositionPickoffUnit,
     ) {
-        self.power_loss_for_more_than_200ms
-            .update(context, !self.is_powered);
+        self.is_powered_delayed.update(context, self.is_powered);
 
         self.csu_monitor.update(context);
         self.slats_demanded_angle = self.generate_slat_angle();
@@ -133,7 +132,7 @@ impl SlatsChannel {
     }
 
     fn slat_actual_position_word(&self) -> Arinc429Word<f64> {
-        if self.power_loss_for_more_than_200ms.output() {
+        if !self.is_powered_delayed.output() {
             return Arinc429Word::default();
         }
 
@@ -148,7 +147,7 @@ impl SlatsChannel {
 // are held in position and can't move.
 impl ValveBlock for SlatsChannel {
     fn get_pob_status(&self) -> SolenoidStatus {
-        if self.power_loss_for_more_than_200ms.output() {
+        if !self.is_powered_delayed.output() {
             return SolenoidStatus::DeEnergised;
         }
 
@@ -163,7 +162,7 @@ impl ValveBlock for SlatsChannel {
     }
 
     fn get_command_status(&self) -> Option<ChannelCommand> {
-        if self.power_loss_for_more_than_200ms.output() {
+        if !self.is_powered_delayed.output() {
             return None;
         }
 

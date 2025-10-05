@@ -4,7 +4,7 @@ use crate::systems::shared::arinc429::{Arinc429Word, SignStatus};
 use systems::hydraulic::command_sensor_unit::{CSUMonitor, CSU};
 use systems::hydraulic::flap_slat::{ChannelCommand, SolenoidStatus, ValveBlock};
 use systems::shared::{
-    AdirsMeasurementOutputs, DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType,
+    AdirsMeasurementOutputs, DelayedFalseLogicGate, DelayedPulseTrueLogicGate, ElectricalBusType,
     ElectricalBuses, PositionPickoffUnit,
 };
 
@@ -28,7 +28,7 @@ pub(super) struct FlapsChannel {
 
     powered_by: ElectricalBusType,
     is_powered: bool,
-    power_loss_for_more_than_200ms: DelayedTrueLogicGate,
+    is_powered_delayed: DelayedFalseLogicGate,
     recovered_power_pulse: DelayedPulseTrueLogicGate,
 
     csu_monitor: CSUMonitor,
@@ -67,8 +67,8 @@ impl FlapsChannel {
 
             powered_by,
             is_powered: false,
-            power_loss_for_more_than_200ms: DelayedTrueLogicGate::new(Self::TRANSPARENCY_TIME)
-                .starting_as(true),
+            is_powered_delayed: DelayedFalseLogicGate::new(Self::TRANSPARENCY_TIME)
+                .starting_as(false),
             recovered_power_pulse: DelayedPulseTrueLogicGate::new(Duration::ZERO),
 
             csu_monitor: CSUMonitor::new(context),
@@ -88,7 +88,7 @@ impl FlapsChannel {
     }
 
     fn fap_update(&mut self) {
-        if self.power_loss_for_more_than_200ms.output() {
+        if !self.is_powered_delayed.output() {
             self.fap = [false; 7];
             return;
         }
@@ -406,7 +406,7 @@ impl FlapsChannel {
     }
 
     fn generate_flap_angle(&mut self, adirs: &impl AdirsMeasurementOutputs) -> Angle {
-        if self.power_loss_for_more_than_200ms.output() {
+        if !self.is_powered_delayed.output() {
             self.power_loss_reset();
             return Angle::ZERO;
         }
@@ -426,10 +426,9 @@ impl FlapsChannel {
         flaps_feedback: &impl PositionPickoffUnit,
         adirs: &impl AdirsMeasurementOutputs,
     ) {
-        self.power_loss_for_more_than_200ms
-            .update(context, !self.is_powered);
+        self.is_powered_delayed.update(context, self.is_powered);
         self.recovered_power_pulse
-            .update(context, !self.power_loss_for_more_than_200ms.output());
+            .update(context, self.is_powered_delayed.output());
 
         if self.recovered_power_pulse.output() {
             self.powerup_reset(adirs);
@@ -476,7 +475,7 @@ impl FlapsChannel {
     }
 
     fn flap_actual_position_word(&self) -> Arinc429Word<f64> {
-        if self.power_loss_for_more_than_200ms.output() {
+        if !self.is_powered_delayed.output() {
             return Arinc429Word::default();
         }
 
@@ -491,7 +490,7 @@ impl FlapsChannel {
 // are held in position and can't move.
 impl ValveBlock for FlapsChannel {
     fn get_pob_status(&self) -> SolenoidStatus {
-        if self.power_loss_for_more_than_200ms.output() {
+        if !self.is_powered_delayed.output() {
             return SolenoidStatus::DeEnergised;
         }
 
@@ -506,7 +505,7 @@ impl ValveBlock for FlapsChannel {
     }
 
     fn get_command_status(&self) -> Option<ChannelCommand> {
-        if self.power_loss_for_more_than_200ms.output() {
+        if !self.is_powered_delayed.output() {
             return None;
         }
 

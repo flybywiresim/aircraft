@@ -626,6 +626,20 @@ impl DelayedFalseLogicGate {
         }
     }
 
+    pub fn starting_as(mut self, state: bool) -> Self {
+        self.set_output(state);
+        self
+    }
+
+    fn set_output(&mut self, state: bool) {
+        self.expression_result = state;
+        if !state {
+            self.false_duration = self.delay;
+        } else {
+            self.false_duration = Duration::from_millis(0)
+        }
+    }
+
     pub fn update(&mut self, context: &UpdateContext, expression_result: bool) {
         if !expression_result {
             self.false_duration += context.delta();
