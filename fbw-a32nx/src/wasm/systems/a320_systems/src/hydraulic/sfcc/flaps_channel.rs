@@ -125,12 +125,7 @@ impl FlapsChannel {
         let cas1 = adirs.computed_airspeed(1).normal_value();
         let cas2 = adirs.computed_airspeed(2).normal_value();
 
-        match (cas1, cas2) {
-            (Some(cas1), Some(cas2)) => (Some(cas1), Some(cas2)),
-            (Some(cas1), None) => (Some(cas1), Some(cas1)),
-            (None, Some(cas2)) => (Some(cas2), Some(cas2)),
-            (None, None) => (None, None),
-        }
+        (cas1.or(cas2), cas2.or(cas1))
     }
 
     fn update_flap_auto_command(&mut self, adirs: &impl AdirsMeasurementOutputs) {
