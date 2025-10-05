@@ -16,7 +16,7 @@ use systems::simulation::{
 use uom::si::{angle::degree, f64::*, velocity::knot};
 use uom::ConstZero;
 
-use super::SlatFlapControlComputerMisc;
+use super::utils::SlatFlapControlComputerMisc;
 
 pub(super) struct FlapsChannel {
     flaps_fppu_angle_id: VariableIdentifier,
@@ -47,6 +47,7 @@ pub(super) struct FlapsChannel {
 }
 
 impl FlapsChannel {
+    // Check the comments in `SlatFlapControlComputer` for a description of `TRANSPARENCY_TIME`
     const TRANSPARENCY_TIME: Duration = Duration::from_millis(200); //ms
     const FLAP_CONF1_FPPU_ANGLE: f64 = 0.; //deg
     const FLAP_CONF1F_FPPU_ANGLE: f64 = 120.21; //deg
@@ -145,12 +146,15 @@ impl FlapsChannel {
         // The match can be shortened by a convoluted if statement however
         // I believe it would make debugging and understanding the state machine harder
         match self.get_cas(adirs) {
+            // If CAS from both ADIRUs <= 100, flaps 1+F
             (Some(cas1), Some(cas2)) if cas1 <= self.kts_100 && cas2 <= self.kts_100 => {
                 self.flap_auto_command_angle = self.conf1f_flaps
             }
+            // If CAS from both ADIRUs >= 210, flaps 0
             (Some(cas1), Some(cas2)) if cas1 >= self.kts_210 && cas2 >= self.kts_210 => {
                 self.flap_auto_command_angle = self.conf1_flaps
             }
+            // If CAS of at least one ADIRU is > 100 and flaps lever has been extended to 1 and flaps are near 0, flaps 0
             (Some(cas1), _)
                 if previous_detent == CSU::Conf0
                     && current_detent == CSU::Conf1
@@ -175,6 +179,7 @@ impl FlapsChannel {
             {
                 self.flap_auto_command_angle = self.conf1_flaps
             }
+            // If CAS of at least one ADIRU is < 210 and flaps lever has been retracted to 1 and flaps are extended, flaps 1+F
             (Some(cas1), _)
                 if (previous_detent == CSU::Conf2
                     || previous_detent == CSU::Conf3
@@ -203,6 +208,7 @@ impl FlapsChannel {
             {
                 self.flap_auto_command_angle = self.conf1f_flaps
             }
+            // If CAS of at least one ADIRU is > 100 and flaps lever has been retracted to 1 and flaps are extended, flaps 1
             (Some(cas1), _)
                 if (previous_detent == CSU::Conf2
                     || previous_detent == CSU::Conf3
@@ -231,6 +237,7 @@ impl FlapsChannel {
             {
                 self.flap_auto_command_angle = self.conf1_flaps
             }
+            // If CAS of at least one ADIRU is < 210 and flaps lever has been extended to 1 and flaps are extended, flaps 1+F
             (Some(cas1), _)
                 if previous_detent == CSU::Conf0
                     && current_detent == CSU::Conf1
@@ -258,8 +265,10 @@ impl FlapsChannel {
             // If the following cases are moved at the top, then the other cases are never hit.
             // They can be simplified in a single case statement but for clarity
             // they are kept separate.
+            // If CAS of at least one ADIRU is > 100 and < 210, no change to flaps
             (Some(cas1), _) if cas1 > self.kts_100 && cas1 < self.kts_210 => (),
             (_, Some(cas2)) if cas2 > self.kts_100 && cas2 < self.kts_210 => (),
+            // If CAS of one ADIRU <= 100 and the other >= 210, no change to flaps
             (Some(cas1), Some(cas2))
                 if (cas1 <= self.kts_100 && cas2 >= self.kts_210)
                     || (cas1 >= self.kts_210 && cas2 <= self.kts_100) => {}
@@ -287,6 +296,7 @@ impl FlapsChannel {
             // The match can be shortened by a convoluted if statement however
             // I believe it would make debugging and understanding the state machine harder
             match self.get_cas(adirs) {
+                // If one CAS <= 100 and other CAS >= 210 and flaps near 0 deg, flaps 0
                 (Some(cas1), Some(cas2))
                     if ((cas1 <= self.kts_100 && cas2 >= self.kts_210)
                         || (cas1 >= self.kts_210 && cas2 <= self.kts_100))
@@ -297,6 +307,7 @@ impl FlapsChannel {
                 {
                     self.flap_auto_command_angle = self.conf1_flaps
                 }
+                // If one CAS <= 100 and other CAS >= 210 and flaps extended, flaps 1+F
                 (Some(cas1), Some(cas2))
                     if ((cas1 <= self.kts_100 && cas2 >= self.kts_210)
                         || (cas1 >= self.kts_210 && cas2 <= self.kts_100))
@@ -307,6 +318,7 @@ impl FlapsChannel {
                 {
                     self.flap_auto_command_angle = self.conf1f_flaps
                 }
+                // If at least one CAS > 100 and < 210 and flaps extended, flaps 1+F
                 (Some(cas1), _)
                     if cas1 > self.kts_100
                         && cas1 < self.kts_210
@@ -327,6 +339,7 @@ impl FlapsChannel {
                 {
                     self.flap_auto_command_angle = self.conf1f_flaps
                 }
+                // If at least one CAS > 100 and < 210 and flaps retracted, flaps 0
                 (Some(cas1), _)
                     if cas1 > self.kts_100
                         && cas1 < self.kts_210
@@ -347,6 +360,7 @@ impl FlapsChannel {
                 {
                     self.flap_auto_command_angle = self.conf1_flaps
                 }
+                // If one CAS <= 100 and other CAS >= 210 and flaps between 0 and 1+F, keep position
                 (Some(cas1), Some(cas2))
                     if ((cas1 <= self.kts_100 && cas2 >= self.kts_210)
                         || (cas1 >= self.kts_210 && cas2 <= self.kts_100))
@@ -357,6 +371,7 @@ impl FlapsChannel {
                     // TODO: implement startup inhibition
                     self.flap_auto_command_angle = self.flaps_feedback_angle
                 }
+                // If at least one CAS > 100 and < 210 and flaps between 0 and 1+F, keep position
                 (Some(cas1), _)
                     if cas1 > self.kts_100
                         && cas1 < self.kts_210

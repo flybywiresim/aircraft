@@ -15,7 +15,7 @@ use systems::simulation::{
 use uom::si::{angle::degree, f64::*};
 use uom::ConstZero;
 
-use super::SlatFlapControlComputerMisc;
+use super::utils::SlatFlapControlComputerMisc;
 
 pub(super) struct SlatsChannel {
     slats_fppu_angle_id: VariableIdentifier,
@@ -36,6 +36,7 @@ pub(super) struct SlatsChannel {
 }
 
 impl SlatsChannel {
+    // Check the comments in `SlatFlapControlComputer` for a description of `TRANSPARENCY_TIME`
     const TRANSPARENCY_TIME: Duration = Duration::from_millis(200); //ms
 
     pub(super) fn new(context: &mut InitContext, num: u8, powered_by: ElectricalBusType) -> Self {
