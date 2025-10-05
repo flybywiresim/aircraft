@@ -402,7 +402,6 @@ impl FlapsChannel {
 
     fn generate_flap_angle(&mut self, adirs: &impl AdirsMeasurementOutputs) -> Angle {
         if !self.is_powered_delayed.output() {
-            self.power_loss_reset();
             return Angle::ZERO;
         }
 
@@ -427,6 +426,10 @@ impl FlapsChannel {
 
         if self.recovered_power_pulse.output() {
             self.powerup_reset(adirs);
+        }
+
+        if !self.is_powered_delayed.output() {
+            self.power_loss_reset();
         }
 
         self.csu_monitor.update(context);
