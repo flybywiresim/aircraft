@@ -22,9 +22,9 @@ mod test;
 
 mod flaps_channel;
 mod slats_channel;
+mod utils;
 use flaps_channel::FlapsChannel;
 use slats_channel::SlatsChannel;
-use uom::ConstZero;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 enum FlapsConf {
@@ -49,45 +49,6 @@ impl From<u8> for FlapsConf {
     }
 }
 
-struct SlatFlapControlComputerMisc {}
-impl SlatFlapControlComputerMisc {
-    const POSITIONING_THRESHOLD_DEGREE: f64 = 6.69;
-    const ENLARGED_TARGET_THRESHOLD_DEGREE: f64 = 0.8;
-    const TARGET_THRESHOLD_DEGREE: f64 = 0.18;
-
-    fn in_positioning_threshold_range(position: Angle, target_position: Angle) -> bool {
-        let tolerance = Angle::new::<degree>(Self::POSITIONING_THRESHOLD_DEGREE);
-        position > (target_position - tolerance) && position < (target_position + tolerance)
-    }
-
-    fn in_target_threshold_range(position: Angle, target_position: Angle) -> bool {
-        let tolerance = Angle::new::<degree>(Self::TARGET_THRESHOLD_DEGREE);
-        position > (target_position - tolerance) && position < (target_position + tolerance)
-    }
-
-    fn below_enlarged_target_range(position: Angle, target_position: Angle) -> bool {
-        let tolerance = Angle::new::<degree>(Self::ENLARGED_TARGET_THRESHOLD_DEGREE);
-        position < target_position - tolerance
-    }
-
-    fn in_enlarged_target_range(position: Angle, target_position: Angle) -> bool {
-        let tolerance = Angle::new::<degree>(Self::ENLARGED_TARGET_THRESHOLD_DEGREE);
-        position > (target_position - tolerance) && position < (target_position + tolerance)
-    }
-
-    fn in_or_above_enlarged_target_range(position: Angle, target_position: Angle) -> bool {
-        let tolerance = Angle::new::<degree>(Self::ENLARGED_TARGET_THRESHOLD_DEGREE);
-        Self::in_enlarged_target_range(position, target_position)
-            || position >= target_position + tolerance
-    }
-
-    fn between_0_1f_enlarged_target_range(position: Angle) -> bool {
-        let tolerance = Angle::new::<degree>(Self::ENLARGED_TARGET_THRESHOLD_DEGREE);
-        position > (Angle::ZERO + tolerance)
-            && position < (Angle::new::<degree>(120.21) - tolerance)
-    }
-}
-
 struct SlatFlapControlComputer {
     config_index_id: VariableIdentifier,
     slat_flap_system_status_word_id: VariableIdentifier,
@@ -103,6 +64,10 @@ struct SlatFlapControlComputer {
 }
 
 impl SlatFlapControlComputer {
+    // `TRANSPARENCY_TIME` is the maximum duration (200ms) the SFCC continues to
+    // output valid data after a power loss. If the power loss exceeds this time,
+    // the SFCC loses all data, zeroes its outputs, and re-initializes once power
+    // is restored.
     const TRANSPARENCY_TIME: Duration = Duration::from_millis(200); //ms
     const MAX_POWER_CONSUMPTION_WATT: f64 = 90.; //W Cumulative for the whole SFCC
 
