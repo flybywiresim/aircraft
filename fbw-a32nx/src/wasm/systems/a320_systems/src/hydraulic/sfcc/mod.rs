@@ -5,7 +5,7 @@ use systems::accept_iterable;
 use systems::hydraulic::command_sensor_unit::CSU;
 use systems::hydraulic::flap_slat::ValveBlock;
 use systems::shared::{
-    AdirsMeasurementOutputs, ConsumePower, DelayedTrueLogicGate, ElectricalBusType,
+    AdirsMeasurementOutputs, ConsumePower, DelayedFalseLogicGate, ElectricalBusType,
     ElectricalBuses, PositionPickoffUnit,
 };
 
@@ -57,7 +57,7 @@ struct SlatFlapControlComputer {
     powered_by: ElectricalBusType,
     consumed_power: Power,
     is_powered: bool,
-    power_loss_for_more_than_200ms: DelayedTrueLogicGate,
+    is_powered_delayed: DelayedFalseLogicGate,
 
     flaps_channel: FlapsChannel,
     slats_channel: SlatsChannel,
@@ -82,8 +82,8 @@ impl SlatFlapControlComputer {
             powered_by,
             consumed_power: Power::new::<watt>(Self::MAX_POWER_CONSUMPTION_WATT),
             is_powered: false,
-            power_loss_for_more_than_200ms: DelayedTrueLogicGate::new(Self::TRANSPARENCY_TIME)
-                .starting_as(true),
+            is_powered_delayed: DelayedFalseLogicGate::new(Self::TRANSPARENCY_TIME)
+                .starting_as(false),
 
             flaps_channel: FlapsChannel::new(context, num, powered_by),
             slats_channel: SlatsChannel::new(context, num, powered_by),
@@ -97,15 +97,14 @@ impl SlatFlapControlComputer {
         slats_feedback: &impl PositionPickoffUnit,
         adirs: &impl AdirsMeasurementOutputs,
     ) {
-        self.power_loss_for_more_than_200ms
-            .update(context, !self.is_powered);
+        self.is_powered_delayed.update(context, self.is_powered);
 
         self.flaps_channel.update(context, flaps_feedback, adirs);
         self.slats_channel.update(context, slats_feedback);
     }
 
     fn slat_flap_system_status_word(&self) -> Arinc429Word<u32> {
-        if self.power_loss_for_more_than_200ms.output() {
+        if !self.is_powered_delayed.output() {
             return Arinc429Word::default();
         }
 
@@ -147,7 +146,7 @@ impl SlatFlapControlComputer {
     }
 
     fn slat_flap_actual_position_word(&self) -> Arinc429Word<u32> {
-        if self.power_loss_for_more_than_200ms.output() {
+        if !self.is_powered_delayed.output() {
             return Arinc429Word::default();
         }
 
@@ -215,7 +214,7 @@ impl SlatFlapControlComputer {
     }
 
     fn get_flaps_config(&self) -> Option<FlapsConf> {
-        if self.power_loss_for_more_than_200ms.output() {
+        if !self.is_powered_delayed.output() {
             return None;
         }
 
