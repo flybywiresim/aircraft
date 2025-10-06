@@ -6,15 +6,28 @@ import { FMMessage } from '@flybywiresim/fbw-sdk';
 
 import { FMMessageSelector, FMMessageUpdate } from './FmsMessages';
 import { FMMessageTypes } from './FmMessages';
+import { EventBus } from '@microsoft/msfs-sdk';
+import { FlightPlanEvents } from '../../flightplanning/sync/FlightPlanEvents';
+import { FlightPlanIndex } from '../../flightplanning/FlightPlanManager';
 
 export class StepDeleted implements FMMessageSelector {
   message: FMMessage = FMMessageTypes.StepDeleted;
 
-  process(_: number): FMMessageUpdate {
-    const newState = SimVar.GetSimVarValue('L:A32NX_FM_VNAV_TRIGGER_STEP_DELETED', 'Bool') === 1;
+  private shouldTriggerMessage = false;
 
-    if (newState) {
-      SimVar.SetSimVarValue('L:A32NX_FM_VNAV_TRIGGER_STEP_DELETED', 'boolean', false);
+  constructor(private readonly bus: EventBus) {
+    const sub = this.bus.getSubscriber<FlightPlanEvents>();
+
+    sub.on('flightPlan.autoDeleteCruiseStep').handle(({ planIndex }) => {
+      if (planIndex === FlightPlanIndex.Active) {
+        this.shouldTriggerMessage = true;
+      }
+    });
+  }
+
+  process(_: number): FMMessageUpdate {
+    if (this.shouldTriggerMessage) {
+      this.shouldTriggerMessage = false;
 
       return FMMessageUpdate.SEND;
     }

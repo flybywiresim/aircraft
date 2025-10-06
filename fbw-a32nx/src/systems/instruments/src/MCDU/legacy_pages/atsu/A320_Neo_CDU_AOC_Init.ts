@@ -4,6 +4,7 @@ import { getSimBriefOfp } from '../../legacy/A32NX_Core/A32NX_ATSU';
 import { CDUAocMenu } from './A320_Neo_CDU_AOC_Menu';
 import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
 import { FmsFormatters } from '../../legacy/FmsFormatters';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { Column, FormatLine } from '../../legacy/A320_Neo_CDU_Format';
 
 /**
@@ -60,7 +61,7 @@ export class CDUAocInit {
     }
     if (mcdu.isAnEngineOn()) {
       // should only get if an engine running
-      const currentFob = formatWeight(NXUnits.kgToUser(mcdu.getFOB()));
+      const currentFob = formatWeight(NXUnits.kgToUser(mcdu.getFOB(FlightPlanIndex.Active)));
       if (currentFob) {
         fob = `{small}${currentFob}{end}[color]green`;
       }
@@ -133,7 +134,7 @@ export class CDUAocInit {
     const seconds = Math.floor(SimVar.GetGlobalVarValue('ZULU TIME', 'seconds'));
     gmt = `{small}${FmsFormatters.secondsTohhmm(seconds)}{end}[color]green`;
     if (mcdu.isAnEngineOn()) {
-      const currentFob = formatWeight(NXUnits.kgToUser(mcdu.getFOB()));
+      const currentFob = formatWeight(NXUnits.kgToUser(mcdu.getFOB(FlightPlanIndex.Active)));
       if (currentFob) {
         fob = `{small}${currentFob}{end}[color]green`;
       }

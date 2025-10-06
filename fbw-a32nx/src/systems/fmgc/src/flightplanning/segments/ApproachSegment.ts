@@ -13,11 +13,12 @@ import {
   WaypointConstraintType,
 } from '@flybywiresim/fbw-sdk';
 import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
-import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/BaseFlightPlan';
+import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { ProcedureSegment } from '@fmgc/flightplanning/segments/ProcedureSegment';
 import { RestringOptions } from '../plans/RestringOptions';
 import { NavigationDatabaseService } from '../NavigationDatabaseService';
+import { FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/FlightPlanQueuedOperation';
 
 export class ApproachSegment extends ProcedureSegment<Approach> {
   class = SegmentClass.Arrival;
@@ -171,11 +172,13 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
     );
   }
 
-  clone(forPlan: BaseFlightPlan): ApproachSegment {
+  clone(forPlan: BaseFlightPlan, options?: number): ApproachSegment {
     const newSegment = new ApproachSegment(forPlan);
 
     newSegment.strung = this.strung;
-    newSegment.allLegs = [...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment) : it))];
+    newSegment.allLegs = [
+      ...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment, options) : it)),
+    ];
     newSegment.approach = this.approach;
 
     return newSegment;

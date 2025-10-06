@@ -207,7 +207,7 @@ export class FlightPlanAsoboSync {
           }
         }
 
-        await rpcClient.uplinkInsert();
+        await rpcClient.uplinkInsert(FlightPlanIndex.Active);
       }
     } catch (e) {
       console.error('Error in loading FlightPlan from MSFS', e);
