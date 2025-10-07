@@ -30,7 +30,7 @@ import { DmcLogicEvents } from 'instruments/src/MsfsAvionicsCommon/providers/Dmc
 abstract class ShowForSecondsComponent<T extends ComponentProps> extends DisplayComponent<T> {
   private timeout: number = 0;
 
-  private displayTimeInSeconds;
+  private readonly displayTimeInSeconds: number;
 
   protected modeChangedPathRef = FSComponent.createRef<SVGPathElement>();
 
@@ -62,7 +62,7 @@ export class FMA extends DisplayComponent<{
 }> {
   private sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & SimplaneValues & DmcLogicEvents>();
 
-  private activeLateralMode: number = 0;
+  private activeLateralMode: LateralMode = LateralMode.NONE;
 
   private armedVerticalModeSub = Subject.create(0);
 
@@ -153,10 +153,13 @@ export class FMA extends DisplayComponent<{
 
   private handleFMABorders() {
     const sharedModeActive =
-      this.activeLateralMode === 32 ||
-      this.activeLateralMode === 33 ||
-      this.activeLateralMode === 34 ||
-      (this.activeLateralMode === 20 && this.activeVerticalMode.get() === 24);
+      (this.props.fcdcData.autolandCapacity.get() &&
+        this.activeVerticalMode.get() === VerticalMode.LAND &&
+        this.activeLateralMode === LateralMode.LAND) ||
+      this.activeLateralMode === LateralMode.FLARE ||
+      this.activeVerticalMode.get() === VerticalMode.FLARE ||
+      this.activeLateralMode === LateralMode.ROLL_OUT ||
+      this.activeVerticalMode.get() === VerticalMode.ROLL_OUT;
     const BC3Message =
       getBC3Message(
         this.props.isAttExcessive.get(),
@@ -980,14 +983,16 @@ class B1Cell extends ShowForSecondsComponent<CellProps & { fcdcData: FcdcValuePr
           text = 'G/S';
         } else {
           text = '';
-          this.isShown = false;
         }
 
         break;
       default:
         text = '';
-        this.isShown = false;
-        this.displayModeChangedPath(true);
+    }
+
+    if (text === '') {
+      this.isShown = false;
+      this.displayModeChangedPath(true);
     }
 
     const inSpeedProtection =
