@@ -1914,6 +1914,8 @@ export class FwsCore {
 
   public readonly emergencyGeneratorOn = this.emergencyElectricGeneratorPotential.map((it) => it > 0);
 
+  public readonly elecEmerConfig = Subject.create(false); // FIXME add real condition
+
   public readonly apuMasterSwitch = Subject.create(0);
 
   public readonly apuAvail = Subject.create(false);
@@ -2765,6 +2767,13 @@ export class FwsCore {
     this.acESSBusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED', 'bool') > 0);
     this.dc108PhBusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_108PH_BUS_IS_POWERED', 'Bool') > 0);
     this.dcEhaPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_247PP_BUS_IS_POWERED', 'Bool') > 0);
+    this.elecEmerConfig.set(
+      this.emergencyGeneratorOn.get() &&
+        !this.ac1BusPowered.get() &&
+        !this.ac2BusPowered.get() &&
+        !this.ac3BusPowered.get() &&
+        !this.ac4BusPowered.get(),
+    );
 
     /* ENGINE AND THROTTLE acquisition */
 

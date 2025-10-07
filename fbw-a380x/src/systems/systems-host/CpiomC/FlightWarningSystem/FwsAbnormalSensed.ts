@@ -2910,7 +2910,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.allSlatSysFault,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [
-        this.fws.emergencyGeneratorOn.get(),
+        this.fws.elecEmerConfig.get(), // FIXME should be ELEC EMER config
         true,
         this.fws.slatsJammed.get(),
         this.fws.slatsJammed.get(),

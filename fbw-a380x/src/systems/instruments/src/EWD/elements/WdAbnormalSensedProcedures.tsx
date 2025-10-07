@@ -137,7 +137,7 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
       // FWS 1+2 & FCDC 1+2 FAULT
       // FWS 1+2 & CPIOM FAULT
       // FWS 1+2 failed, show fallback
-      if (!this.props.fwsAvail.get() && this.cpiomCFailed.get() && this.otherCpiomFailed.get()) {
+      if (this.cpiomCFailed.get() && this.otherCpiomFailed.get()) {
         // FWS 1+2 & FCDC 1+2 & other CPIOM failed, show fallback
         // If CPIOM failed: Show line; If not failed: Show blank line before item
         const af = this.cpiomAFailed.get();
@@ -198,7 +198,7 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
         );
         this.lineData.push(...procGenFwsFailedFallback.toLineData());
         // Still TODO: Show LAND ANSA only when group F is failed
-      } else if (!this.props.fwsAvail.get() && this.cpiomCFailed.get()) {
+      } else if (this.cpiomCFailed.get()) {
         // FWS 1+2 & FCDC 1+2 failed, show fallback
         const fwsFailedFallbackClState: ChecklistState = {
           id: '314800003',
