@@ -312,7 +312,7 @@ export class OitAvncsFbwSystemsAppLdgCap extends DestroyableComponent<OitAvncsFb
               <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: this.oneApEngaged }}>1</div>
               <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: this.twoApEngaged }}>2</div>
               <div class="oit-a380x-systems-app-ldg-cap-td transparentbg">A/THR</div>
-              <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: true }}>Not reqrd</div>
+              <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: true }}>Not reqrd.</div>
               <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: this.athrEngaged }}>Active</div>
               <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: this.athrEngaged }}>Active</div>
               <div class="oit-a380x-systems-app-ldg-cap-td transparentbg">PRIM</div>
@@ -344,19 +344,19 @@ export class OitAvncsFbwSystemsAppLdgCap extends DestroyableComponent<OitAvncsFb
               <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: this.oneFcdcHealthy }}>1</div>
               <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: this.twoFcdcHealthy }}>2</div>
               <div class="oit-a380x-systems-app-ldg-cap-td transparentbg">Antiskid</div>
-              <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: true }}>Avail.</div>
-              <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: true }}>Avail.</div>
+              <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: true }}>Not reqrd.</div>
+              <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: true }}>Not reqrd.</div>
               <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: this.antiskidAvailable }}>Avail.</div>
               <div class="oit-a380x-systems-app-ldg-cap-td transparentbg">NWS</div>
-              <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: true }}>Avail.</div>
-              <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: true }}>Avail.</div>
+              <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: true }}>Not reqrd.</div>
+              <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: true }}>Not reqrd.</div>
               <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: this.nwsAvailable }}>Avail.</div>
               <div class="oit-a380x-systems-app-ldg-cap-td transparentbg">ADR</div>
               <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: this.twoAdrAvailable }}>2</div>
               <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: this.twoAdrAvailable }}>3</div>
               <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: this.threeAdrAvailable }}>3</div>
               <div class="oit-a380x-systems-app-ldg-cap-td transparentbg">Engines</div>
-              <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: this.oneEngOnEitherSideAvailable }}>3</div>
+              <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: this.oneEngOnEitherSideAvailable }}>2</div>
               <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: this.threeEnginesAvailable }}>3</div>
               <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: this.fourEnginesAvailable }}>4</div>
             </div>
