@@ -146,6 +146,7 @@
 1. [A380X/CDS] Change autoland capability designation to Batch 7 standard (LAND instead of CAT) - @flogross89 (floridude)
 1. [A380X/FLIGHT and ENGINE MODELS] Fixed excessive descent rates and takeoff rotation issues, improved fuel burn - @donstim (donbikes)
 1. [FMS] Fix fuel predictions in the FMS not matching the engine model - @BlueberryKing (BlueberryKing)
+1. {A32NX/Flight Model} Flight model update for early rotation issue - @donstim (donbikes)
 
 ## 0.13.0
 
