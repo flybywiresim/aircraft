@@ -15,7 +15,8 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 import { DataEntryFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { FmsError, FmsErrorType } from '@fmgc/FmsError';
+import { A380FmsError } from '../../MFD/shared/A380FmsError';
+import { FmsError } from '@fmgc/FmsError';
 
 export enum InteractionMode {
   Touchscreen,
@@ -46,7 +47,7 @@ interface InputFieldProps<T, U = T, S = T extends U ? true : false> extends Comp
    * @returns whether validation was successful. If nothing is returned, success is assumed
    */
   dataHandlerDuringValidation?: (newValue: U | null, oldValue?: T | null) => Promise<boolean | void>;
-  errorHandler?: (errorType: FmsErrorType) => void;
+  errorHandler: (error: A380FmsError) => void;
   handleFocusBlurExternally?: boolean;
   containerStyle?: string;
   alignText?: 'flex-start' | 'center' | 'flex-end' | Subscribable<'flex-start' | 'center' | 'flex-end'>;
@@ -117,6 +118,8 @@ export class InputField<
     true,
   );
 
+  private isOverFlow = false;
+
   private onNewValue() {
     // Don't update if field is being edited
     if (this.isFocused.get() || this.isValidating.get()) {
@@ -184,14 +187,14 @@ export class InputField<
       if (overflow) {
         this.topRef.instance.classList.add('overflow');
         this.containerRef.instance.classList.add('overflow');
-
         const remainingWidth = 768 - 50 - this.containerRef.instance.getBoundingClientRect().left;
         this.containerRef.instance.style.width = `${remainingWidth}px`; // TODO extend to right edge
+        this.isOverFlow = true;
       } else {
         this.topRef.instance.classList.remove('overflow');
-        this.topRef.instance.classList.remove('overflow');
-
+        this.containerRef.instance.classList.remove('overflow');
         this.containerRef.instance.style.width = '';
+        this.isOverFlow = false;
 
         if (this.props.containerStyle) {
           this.containerRef.instance.setAttribute('style', this.props.containerStyle);
@@ -321,6 +324,10 @@ export class InputField<
         } else {
           await this.validateAndUpdate(this.modifiedFieldValue.get() ?? '');
         }
+
+        if (this.isOverFlow) {
+          this.overflow(false);
+        }
       }
 
       // Restore mandatory class for correct coloring of dot (e.g. non-placeholders)
@@ -350,51 +357,56 @@ export class InputField<
     this.isValidating.set(true);
 
     let newValue = null;
+    let updateWasSuccessful = true;
     try {
       newValue = await this.props.dataEntryFormat.parse(input);
     } catch (msg: unknown) {
+      updateWasSuccessful = false;
       if (msg instanceof FmsError && this.props.errorHandler) {
-        this.props.errorHandler(msg.type);
-        newValue = null;
+        this.props.errorHandler(msg);
+        newValue = this.readValue.get();
       }
-    }
-
-    let updateWasSuccessful = true;
-    const artificialWaitingTime = new Promise((resolve) => setTimeout(resolve, 500));
-    if (this.props.dataHandlerDuringValidation) {
-      try {
-        const realWaitingTime = this.props.dataHandlerDuringValidation(newValue, this.readValue.get());
-        const [validation] = await Promise.all([realWaitingTime, artificialWaitingTime]);
-
-        if (validation === false) {
-          updateWasSuccessful = false;
-        }
-      } catch {
-        updateWasSuccessful = false;
-        await artificialWaitingTime;
-      }
-    } else {
-      await artificialWaitingTime;
     }
 
     if (updateWasSuccessful) {
-      if (this.props.onModified) {
+      const artificialWaitingTime = new Promise((resolve) => setTimeout(resolve, 500));
+      if (this.props.dataHandlerDuringValidation) {
         try {
-          await this.props.onModified(newValue);
-        } catch (msg: unknown) {
-          if (msg instanceof FmsError && this.props.errorHandler) {
-            this.props.errorHandler(msg.type);
-          }
-        }
-      } else if ('value' in this.props && SubscribableUtils.isMutableSubscribable(this.props.value)) {
-        // If we have `value` in props, we know U extends T
+          const realWaitingTime = this.props.dataHandlerDuringValidation(newValue, this.readValue.get());
+          const [validation] = await Promise.all([realWaitingTime, artificialWaitingTime]);
 
-        this.props.value.set(newValue as T);
-      } else if (!this.props.dataHandlerDuringValidation) {
-        console.error(
-          'InputField: this.props.value not of type Subject, and no onModified handler or dataHandlerDuringValidation was defined',
-        );
+          if (validation === false) {
+            updateWasSuccessful = false;
+          }
+        } catch {
+          updateWasSuccessful = false;
+          await artificialWaitingTime;
+        }
+      } else {
+        await artificialWaitingTime;
       }
+
+      if (updateWasSuccessful) {
+        if (this.props.onModified) {
+          try {
+            await this.props.onModified(newValue);
+          } catch (msg: unknown) {
+            if (msg instanceof FmsError && this.props.errorHandler) {
+              this.props.errorHandler(msg);
+            }
+            updateWasSuccessful = false;
+          }
+        } else if ('value' in this.props && SubscribableUtils.isMutableSubscribable(this.props.value)) {
+          // If we have `value` in props, we know U extends T
+
+          this.props.value.set(newValue as T);
+        } else if (!this.props.dataHandlerDuringValidation) {
+          console.error(
+            'InputField: this.props.value not of type Subject, and no onModified handler or dataHandlerDuringValidation was defined',
+          );
+        }
+      }
+      return updateWasSuccessful;
     }
 
     this.modifiedFieldValue.set(null);
