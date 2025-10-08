@@ -10,9 +10,15 @@ import {
   NodeReference,
   Subject,
   Subscribable,
+  SubscribableMapFunctions,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { Arinc429RegisterSubject, Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
+import {
+  Arinc429LocalVarConsumerSubject,
+  Arinc429RegisterSubject,
+  Arinc429Word,
+  ArincEventBus,
+} from '@flybywiresim/fbw-sdk';
 import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { LagFilter, RateLimiter } from './PFDUtils';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
@@ -20,6 +26,7 @@ import { VerticalTape } from './VerticalTape';
 import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { FcdcValueProvider } from './shared/FcdcValueProvider';
+import { SfccEvents } from 'instruments/src/MsfsAvionicsCommon/providers/SfccPublisher';
 
 const ValueSpacing = 10;
 const DistanceSpacing = 10;
@@ -1002,54 +1009,82 @@ class V1Offtape extends DisplayComponent<{ bus: EventBus }> {
 }
 
 class ArsBar extends DisplayComponent<{ bus: ArincEventBus }> {
-  private readonly sub = this.props.bus.getArincSubscriber<PFDSimvars>();
-
+  private readonly sub = this.props.bus.getArincSubscriber<PFDSimvars & SfccEvents>();
   private static readonly ARS_1F_F_SPEED = 212;
-
   private static readonly CONF_1_F_VFE = 222;
-
   private readonly size = ((ArsBar.ARS_1F_F_SPEED - ArsBar.CONF_1_F_VFE) * DistanceSpacing) / ValueSpacing;
-
   private readonly path = `m19.031 0h 1.9748v${this.size}`;
 
-  private readonly flapConfigRaw = ConsumerSubject.create(this.sub.on('slatsFlapsStatusRaw').whenChanged(), null);
-
-  private readonly flapConfig = Arinc429RegisterSubject.createEmpty();
-
-  private readonly conf1SelectedSub = this.flapConfig.map(
-    (w) => w.bitValueOr(28, false) && w.bitValue(29) && w.bitValue(18) && !w.bitValue(26),
+  //FIXME PRIM Should provide the ARS speed. All this logic should be moved there
+  private readonly flapSlatsStatusWord = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('slat_flap_system_status_word_1'),
+    null,
+  );
+  private readonly flapLever1 = this.flapSlatsStatusWord.map((w) => w.bitValueOr(18, false) && !w.bitValue(26));
+  private readonly flapsSlatActualPosition = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('slat_flap_actual_position_word_1'),
+    null,
   );
 
-  private readonly arsVisiblitySub = this.conf1SelectedSub.map((v) => (v ? 'visible' : 'hidden'));
-
-  private readonly airspeedRaw = ConsumerSubject.create(this.sub.on('speed').whenChanged(), null);
-
-  private readonly airspeed = Arinc429RegisterSubject.createEmpty();
-
-  private readonly arsStyleSub = this.airspeed.map((ias) => {
-    if (this.conf1SelectedSub.get()) {
-      const arsPos = ((ias.value - ArsBar.ARS_1F_F_SPEED) * DistanceSpacing) / ValueSpacing + 80.818;
-      return `transform: translate3d(0px, ${arsPos}px, 0px )`;
-    } else {
-      return '';
-    }
+  private readonly config1F = this.flapsSlatActualPosition.map((w) => {
+    // Slats valid and in 1
+    return (
+      w.bitValueOr(11, false) &&
+      w.bitValue(13) &&
+      !w.bitValue(14) &&
+      !w.bitValue(15) &&
+      // Flaps valid and in 1
+      w.bitValue(18) &&
+      w.bitValue(20) &&
+      !w.bitValue(21) &&
+      !w.bitValue(22) &&
+      // flap not fault and not jammed
+      !w.bitValue(29) &&
+      !w.bitValue(25)
+    );
   });
+
+  private readonly airspeed = Arinc429LocalVarConsumerSubject.create(this.sub.on('speed'), null);
+
+  private readonly arsVisible = MappedSubject.create(
+    ([flapLever1, config1F, airspeed]) => !airspeed.isInvalid() && flapLever1 && config1F,
+    this.flapLever1,
+    this.config1F,
+    this.airspeed,
+  );
+
+  private readonly arsStyle = MappedSubject.create(
+    ([visible, ias]) => {
+      return visible
+        ? `transform: translate3d(0px, ${((ias.value - ArsBar.ARS_1F_F_SPEED) * DistanceSpacing) / ValueSpacing + 80.818}px, 0px )`
+        : '';
+    },
+    this.arsVisible,
+    this.airspeed,
+  );
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-
-    this.flapConfigRaw.sub((w) => this.flapConfig.setWord(w));
-    this.airspeedRaw.sub((w) => this.airspeed.setWord(w));
+    this.config1F.sub((v) => {
+      if (!v) {
+        this.airspeed.pause();
+      } else {
+        this.airspeed.resume();
+      }
+    });
   }
 
   render(): VNode {
     return (
       <path
         id="ArsIndicator"
-        class="NormalStroke Green"
+        class={{
+          NormalStroke: true,
+          Green: true,
+          HiddenElement: this.arsVisible.map(SubscribableMapFunctions.not()),
+        }}
         d={this.path}
-        visibility={this.arsVisiblitySub}
-        style={this.arsStyleSub}
+        style={this.arsStyle}
       />
     );
   }
