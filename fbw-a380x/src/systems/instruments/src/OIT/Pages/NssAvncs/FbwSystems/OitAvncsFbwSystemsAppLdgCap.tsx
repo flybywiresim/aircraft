@@ -67,13 +67,15 @@ export class OitAvncsFbwSystemsAppLdgCap extends DestroyableComponent<OitAvncsFb
   private readonly oneHydAvailable = Subject.create(true);
   private readonly twoHydAvailable = Subject.create(true);
 
-  private readonly fws1WithAudio = RegisteredSimVar.create<boolean>(
-    'L:A32NX_FWS1_AUDIO_FUNCTION_AVAILABLE',
-    SimVarValueType.Bool,
+  private readonly fws1DiscreteWord126Register = Arinc429Register.empty();
+  private readonly fws1DiscreteWord126 = RegisteredSimVar.create<number>(
+    'L:A32NX_FWC_1_DISCRETE_WORD_126',
+    SimVarValueType.Number,
   );
-  private readonly fws2WithAudio = RegisteredSimVar.create<boolean>(
-    'L:A32NX_FWS2_AUDIO_FUNCTION_AVAILABLE',
-    SimVarValueType.Bool,
+  private readonly fws2DiscreteWord126Register = Arinc429Register.empty();
+  private readonly fws2DiscreteWord126 = RegisteredSimVar.create<number>(
+    'L:A32NX_FWC_2_DISCRETE_WORD_126',
+    SimVarValueType.Number,
   );
   private readonly oneFwsWithAudio = Subject.create(true);
   private readonly twoFwsWithAudio = Subject.create(true);
@@ -192,8 +194,14 @@ export class OitAvncsFbwSystemsAppLdgCap extends DestroyableComponent<OitAvncsFb
     this.oneHydAvailable.set(this.sci.hydGreenPressurized.get() || this.sci.hydYellowPressurized.get());
     this.twoHydAvailable.set(this.sci.hydGreenPressurized.get() && this.sci.hydYellowPressurized.get());
 
-    this.oneFwsWithAudio.set(this.fws1WithAudio.get() || this.fws2WithAudio.get());
-    this.twoFwsWithAudio.set(this.fws1WithAudio.get() && this.fws2WithAudio.get());
+    this.fws1DiscreteWord126Register.set(this.fws1DiscreteWord126.get());
+    this.fws2DiscreteWord126Register.set(this.fws2DiscreteWord126.get());
+    this.oneFwsWithAudio.set(
+      this.fws1DiscreteWord126Register.bitValueOr(16, false) || this.fws2DiscreteWord126Register.bitValueOr(16, false),
+    );
+    this.twoFwsWithAudio.set(
+      this.fws1DiscreteWord126Register.bitValueOr(16, false) && this.fws2DiscreteWord126Register.bitValueOr(16, false),
+    );
 
     this.oneFcdcHealthy.set(this.fcdc1Healthy.get() || this.fcdc2Healthy.get());
     this.twoFcdcHealthy.set(this.fcdc1Healthy.get() && this.fcdc2Healthy.get());
@@ -353,7 +361,7 @@ export class OitAvncsFbwSystemsAppLdgCap extends DestroyableComponent<OitAvncsFb
               <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: this.nwsAvailable }}>Avail.</div>
               <div class="oit-a380x-systems-app-ldg-cap-td transparentbg">ADR</div>
               <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: this.twoAdrAvailable }}>2</div>
-              <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: this.twoAdrAvailable }}>3</div>
+              <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: this.twoAdrAvailable }}>2</div>
               <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: this.threeAdrAvailable }}>3</div>
               <div class="oit-a380x-systems-app-ldg-cap-td transparentbg">Engines</div>
               <div class={{ 'oit-a380x-systems-app-ldg-cap-td': true, green: this.oneEngOnEitherSideAvailable }}>2</div>
