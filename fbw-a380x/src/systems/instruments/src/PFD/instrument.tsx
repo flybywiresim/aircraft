@@ -52,7 +52,7 @@ class A380X_PFD extends BaseInstrument {
 
   private readonly fcdcPublisher = new FcdcSimvarPublisher(this.bus);
 
-  private readonly sfccPublisher = new SfccSimVarPublisher(this.bus); // TODO remove when CDS gets SLAT/FLAP data from PRIM
+  private readonly sfccPublisher = new SfccSimVarPublisher(this.bus);
 
   constructor() {
     super();
