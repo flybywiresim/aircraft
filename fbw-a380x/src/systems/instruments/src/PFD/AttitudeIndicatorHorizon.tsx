@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import {
   ClockEvents,
   DisplayComponent,
@@ -20,6 +21,7 @@ import { Arinc429Values } from './shared/ArincValueProvider';
 import { HorizontalTape } from './HorizontalTape';
 import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import { getDisplayIndex } from './PFD';
+import { FcdcValueProvider } from './shared/FcdcValueProvider';
 
 const DisplayRange = 35;
 const DistanceSpacing = 15;
@@ -102,10 +104,11 @@ class HeadingBug extends DisplayComponent<{ bus: EventBus; isCaptainSide: boolea
 }
 
 interface HorizonProps {
-  bus: ArincEventBus;
-  instrument: BaseInstrument;
-  isAttExcessive: Subscribable<boolean>;
-  filteredRadioAlt: Subscribable<number>;
+  readonly bus: ArincEventBus;
+  readonly instrument: BaseInstrument;
+  readonly isAttExcessive: Subscribable<boolean>;
+  readonly filteredRadioAlt: Subscribable<number>;
+  readonly fcdcData: FcdcValueProvider;
 }
 
 export class Horizon extends DisplayComponent<HorizonProps> {
@@ -117,9 +120,9 @@ export class Horizon extends DisplayComponent<HorizonProps> {
 
   private yOffset = Subject.create(0);
 
-  private readonly fcdcDiscreteWord1 = Arinc429ConsumerSubject.create(this.sub.on('fcdcDiscreteWord1'));
-
-  private readonly isNormalLawActive = this.fcdcDiscreteWord1.map((dw) => dw.bitValue(11) && !dw.isFailureWarning());
+  private readonly isNormalLawActive = this.props.fcdcData.fcdcDiscreteWord1.map(
+    (dw) => dw.bitValue(11) && !dw.isFailureWarning(),
+  );
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -457,6 +460,10 @@ class RadioAltAndDH extends DisplayComponent<{
   filteredRadioAltitude: Subscribable<number>;
   attExcessive: Subscribable<boolean>;
 }> {
+  private readonly altitude = Arinc429ConsumerSubject.create(
+    this.props.bus.getArincSubscriber<Arinc429Values>().on('altitudeAr'),
+  );
+
   private daRaGroup = FSComponent.createRef<SVGGElement>();
 
   private roll = new Arinc429Word(0);
@@ -472,8 +479,6 @@ class RadioAltAndDH extends DisplayComponent<{
   private transLvlAr = Arinc429Register.empty();
 
   private fmgcFlightPhase = 0;
-
-  private altitude = new Arinc429Word(0);
 
   private attDhText = FSComponent.createRef<SVGTextElement>();
 
@@ -520,10 +525,6 @@ class RadioAltAndDH extends DisplayComponent<{
         this.fmgcFlightPhase = fp;
       });
 
-    sub.on('altitudeAr').handle((a) => {
-      this.altitude = a;
-    });
-
     sub.on('chosenRa').handle((ra) => {
       if (!this.props.attExcessive.get()) {
         this.radioAltitude = ra;
@@ -535,8 +536,8 @@ class RadioAltAndDH extends DisplayComponent<{
         const chosenTransalt = useTransAltVsLvl ? this.transAltAr : this.transLvlAr;
         const belowTransitionAltitude =
           chosenTransalt.isNormalOperation() &&
-          !this.altitude.isNoComputedData() &&
-          this.altitude.value < (useTransAltVsLvl ? chosenTransalt.value : chosenTransalt.value * 100);
+          !this.altitude.get().isNoComputedData() &&
+          this.altitude.get().value < (useTransAltVsLvl ? chosenTransalt.value : chosenTransalt.value * 100);
         let size = 'FontLarge';
         const DHValid = this.dh >= 0;
 

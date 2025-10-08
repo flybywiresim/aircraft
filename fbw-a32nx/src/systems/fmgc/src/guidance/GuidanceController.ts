@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2025 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -41,7 +42,7 @@ const GEOMETRY_RECOMPUTATION_TIMER = 5_000;
 
 export interface Fmgc {
   getZeroFuelWeight(): number;
-  getFOB(): number;
+  getFOB(): number | null;
   getGrossWeight(): number | null;
   getV2Speed(): Knots;
   getTropoPause(): Feet;
@@ -70,7 +71,7 @@ export interface Fmgc {
   getApproachWind(): FmcWindVector | null;
   getApproachQnh(): number;
   getApproachTemperature(): number;
-  getDestEFOB(useFob: boolean): number; // Metric tons
+  getDestEFOB(useFob: boolean): number | null; // Metric tons
   getDepartureElevation(): Feet | null;
   getDestinationElevation(): Feet;
 }
@@ -122,7 +123,7 @@ export class GuidanceController {
 
   activeTransIndex: number;
 
-  activeLegDtg: NauticalMiles;
+  activeLegDtg?: NauticalMiles;
 
   /** Used for lateral guidance */
   activeLegCompleteLegPathDtg: NauticalMiles;

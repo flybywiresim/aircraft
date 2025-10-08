@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023, 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -15,6 +16,7 @@ import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FuelPlanningPhases } from '../legacy/A32NX_Core/A32NX_FuelPred';
 import { FmsFormatters } from '../legacy/FmsFormatters';
 import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/uplink/SimBriefUplinkAdapter';
+import { AeroMath } from '@microsoft/msfs-sdk';
 
 export class CDUInitPage {
   static ShowPage1(mcdu: LegacyFmsPageInterface) {
@@ -143,7 +145,9 @@ export class CDUInitPage {
             cruiseFlTempSeparator.updateAttributes(Column.cyan);
           } else {
             cruiseTemp.update(
-              CDUInitPage.formatTemperature(Math.round(mcdu.tempCurve.evaluate(mcdu.cruiseLevel))),
+              CDUInitPage.formatTemperature(
+                Math.round(AeroMath.isaTemperature(Math.min(mcdu.cruiseLevel * 100, mcdu.tropo ?? 36090) * 0.3048)),
+              ),
               Column.cyan,
               Column.small,
             );

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -11,10 +12,17 @@ import {
   Subscribable,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { ArincEventBus, Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
+import {
+  ArincEventBus,
+  Arinc429RegisterSubject,
+  Arinc429ConsumerSubject,
+  Arinc429LocalVarConsumerSubject,
+} from '@flybywiresim/fbw-sdk';
 
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
+import { FlashOneHertz } from 'instruments/src/MsfsAvionicsCommon/FlashingElementUtils';
+import { A32NXFwcBusEvents } from '../../../shared/src/publishers/A32NXFwcBusPublisher';
 
 const TensDigits = (value: number) => {
   let text: string;
@@ -68,7 +76,28 @@ interface DigitalAltitudeReadoutProps {
 export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeReadoutProps> {
   private readonly mda = Arinc429RegisterSubject.createEmpty();
 
-  private readonly altitude = Arinc429RegisterSubject.createEmpty();
+  private readonly altitude = Arinc429ConsumerSubject.create(
+    this.props.bus.getArincSubscriber<Arinc429Values>().on('altitudeAr'),
+  );
+
+  private readonly fwcWord126 = Arinc429LocalVarConsumerSubject.create(
+    this.props.bus.getSubscriber<A32NXFwcBusEvents>().on('a32nx_fwc_discrete_word_126_1'),
+  );
+
+  private readonly flashingOrPulsing = MappedSubject.create(
+    ([fwcWord126]) => fwcWord126.bitValueOr(27, false),
+    this.fwcWord126,
+  );
+
+  private readonly pulsing = MappedSubject.create(
+    ([fwcWord126]) => fwcWord126.bitValueOr(27, false) && !fwcWord126.bitValueOr(26, false),
+    this.fwcWord126,
+  );
+
+  private readonly flashing = MappedSubject.create(
+    ([fwcWord126]) => fwcWord126.bitValueOr(27, false) && fwcWord126.bitValueOr(26, false),
+    this.fwcWord126,
+  );
 
   private isNegativeSub = Subject.create('hidden');
 
@@ -142,8 +171,6 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
     });
 
     sub.on('fmMdaRaw').handle(this.mda.setWord.bind(this.mda));
-    // FIXME once the ADR has the proper baro alt implementation this will need filtered altitude with source selection
-    sub.on('baroCorrectedAltitude').handle(this.altitude.setWord.bind(this.altitude));
   }
 
   render(): VNode {
@@ -207,11 +234,19 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
           style="display: none"
           d="m132.61 81.669h4.7345m-4.7345-1.6933h4.7345"
         />
-        <path
-          id="AltReadoutOutline"
-          class="NormalStroke Yellow"
-          d="m117.75 76.337h13.096v-2.671h8.8647v14.313h-8.8647v-2.671h-13.096"
-        />
+        <FlashOneHertz
+          bus={this.props.bus}
+          flashDuration={Infinity}
+          flashing={this.flashingOrPulsing}
+          className1={this.flashing.map((flashing) => (flashing ? 'Amber' : 'Yellow'))}
+          className2={this.pulsing.map((pulsing) => (pulsing ? 'DimmedYellow' : 'HiddenElement'))}
+        >
+          <path
+            id="AltReadoutOutline"
+            class="NormalStroke"
+            d="m117.75 76.337h13.096v-2.671h8.8647v14.313h-8.8647v-2.671h-13.096"
+          />
+        </FlashOneHertz>
 
         <g id="AltNegativeText" class="FontLarge EndAlign" visibility={this.isNegativeSub}>
           <text class="White" x="121.51714" y="77.956947">

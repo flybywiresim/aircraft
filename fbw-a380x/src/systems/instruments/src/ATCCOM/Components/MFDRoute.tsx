@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import React, { FC } from 'react';
 import { Redirect, Route, useRouteMatch } from 'react-router-dom';
 
