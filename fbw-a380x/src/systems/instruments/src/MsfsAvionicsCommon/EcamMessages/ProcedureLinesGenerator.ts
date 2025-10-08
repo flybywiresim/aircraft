@@ -22,6 +22,7 @@ import {
   WdLineData,
   AbstractChecklistItem,
   WdSpecialLine,
+  WD_LINE_CHARACTERS,
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { EcamNormalProcedures } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/NormalProcedures';
 import { ChecklistState } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
@@ -483,7 +484,7 @@ export class ProcedureLinesGenerator {
           activeProcedure: this.procedureIsActive.get(),
           sensed: isCondition ? true : item.sensed,
           checked: this.checklistState.itemsChecked[itemIndex],
-          text: text.substring(0, 39),
+          text: text.substring(0, WD_LINE_CHARACTERS - 1),
           style: clStyle,
           firstLine: (!this.procedureIsActive.get() && isAbnormal) || this.type === ProcedureType.FwsFailedFallback,
           lastLine: (!this.procedureIsActive.get() && isAbnormal) || this.type === ProcedureType.FwsFailedFallback,
@@ -618,8 +619,11 @@ export class ProcedureLinesGenerator {
       if (isTimedCheckListAction(item)) {
         text += this.getTimedItemLineText(item, checklistState, itemIndex) ?? '';
       }
-      // Pad to 39 characters max
-      const paddingNeeded = Math.max(0, 39 - (item.labelNotCompleted.length + text.length + (item.level ?? 0) * 1 + 2));
+      // Pad to 40 characters max
+      const paddingNeeded = Math.max(
+        0,
+        WD_LINE_CHARACTERS - 1 - (item.labelNotCompleted.length + text.length + (item.level ?? 0) * 1 + 2),
+      );
 
       text += ` ${'.'.repeat(paddingNeeded)}${item.labelNotCompleted}`;
     }

@@ -1,7 +1,8 @@
 // Copyright (c) 2024-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-export const WD_NUM_LINES = 21;
+export const WD_NUM_LINES = 18;
+export const WD_LINE_CHARACTERS = 41; // Characters without the leading checkbox and the space after it
 
 import {
   EcamAbnormalSensedAta212223,

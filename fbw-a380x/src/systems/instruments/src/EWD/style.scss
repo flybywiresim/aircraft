@@ -498,8 +498,9 @@ text, tspan, span {
   text-align: center;
   justify-content: center;
   align-items: center;
-  width: 32px;
-  font-size: 24px;
+  width: 24px;
+  font-size: 26px;
+  margin-right: 20px;
 }
 
 .EclLineCheckboxArea.Checked {
@@ -520,22 +521,21 @@ text, tspan, span {
 }
 
 .EclLineText {
-  margin: 0px 10px 0px 10px;
-  font-size: 24px;
+  font-size: 26px;
 }
 
 .EclSeparationLine {
   flex: 1;
   border-bottom: 2px solid $display-white;
-  padding-top: 12px;
-  margin-bottom: 12px;
+  padding-top: 14px;
+  margin-bottom: 14px;
   align-self: center;
   justify-self: center;
   margin-right: 10px;
 }
 
 .EclLineContainer {
-  height: 30px;
+  height: 34px;
   display: flex;
   flex-direction: row;
   flex: 1;
@@ -544,7 +544,7 @@ text, tspan, span {
 .EclLineEndMarker {
   content: ' ';
   width: 28px;
-  height: 30px;
+  height: 34px;
   border-right: 3px solid $display-white;
   border-left: 3px solid $display-white;
   margin-left: -5px;
