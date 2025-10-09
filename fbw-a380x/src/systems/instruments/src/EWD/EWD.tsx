@@ -12,7 +12,7 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 import { EwdSimvars } from './shared/EwdSimvarPublisher';
-import { ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { ArincEventBus, CpiomData } from '@flybywiresim/fbw-sdk';
 import { N1Limit } from './elements/ThrustRatingMode';
 import { EngineGauge } from 'instruments/src/EWD/elements/EngineGauge';
 import { Idle } from 'instruments/src/EWD/elements/Idle';
@@ -24,11 +24,13 @@ import { FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEw
 import { WdAbnormalSensedProcedures } from 'instruments/src/EWD/elements/WdAbnormalSensedProcedures';
 import { WdAbnormalNonSensedProcedures } from 'instruments/src/EWD/elements/WdAbnormalNonSensed';
 import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
+import { WdCpiomFailedFallbackChecklistComponent } from './elements/WdCpiomFailedFallbackChecklistComponent';
 
 export class EngineWarningDisplay extends DestroyableComponent<{ bus: ArincEventBus }> {
   private readonly sub = this.props.bus.getSubscriber<EwdSimvars & FwsEwdEvents>();
 
-  private readonly availChecker = new FwsEwdAvailabilityChecker(this.props.bus);
+  private readonly fwsAvailChecker = new FwsEwdAvailabilityChecker(this.props.bus);
+  private readonly cpiomAvailChecker = new CpiomEwdAvailabilityChecker(this.props.bus);
 
   private readonly engineStateSubs: ConsumerSubject<number>[] = [
     ConsumerSubject.create(this.sub.on('engine_state_1'), 0),
@@ -67,21 +69,27 @@ export class EngineWarningDisplay extends DestroyableComponent<{ bus: ArincEvent
   private readonly normalChecklistsVisibleNotFailed = MappedSubject.create(
     ([visible, avail]) => visible && avail,
     this.normalChecklistsVisible,
-    this.availChecker.fwsAvail,
+    this.fwsAvailChecker.fwsAvail,
+  );
+
+  private readonly cpiomCAndOtherFailedFallbackVisible = MappedSubject.create(
+    SubscribableMapFunctions.and(),
+    this.cpiomAvailChecker.cpiomCFailed,
+    this.cpiomAvailChecker.otherCpiomFailed,
   );
 
   private readonly abnormalSensedVisible = ConsumerSubject.create(this.sub.on('fws_show_abn_sensed'), false);
   private readonly abnormalSensedVisibleNotFailed = MappedSubject.create(
-    ([visible, avail]) => visible && avail,
+    ([visible, fallback]) => visible && !fallback,
     this.abnormalSensedVisible,
-    this.availChecker.fwsAvail,
+    this.cpiomCAndOtherFailedFallbackVisible,
   );
 
   private readonly abnormalNonSensedVisible = ConsumerSubject.create(this.sub.on('fws_show_abn_non_sensed'), false);
   private readonly abnormalNonSensedVisibleNotFailed = MappedSubject.create(
     ([visible, avail]) => visible && avail,
     this.abnormalNonSensedVisible,
-    this.availChecker.fwsAvail,
+    this.fwsAvailChecker.fwsAvail,
   );
 
   private readonly stsAreaVisibility = MappedSubject.create(
@@ -113,7 +121,7 @@ export class EngineWarningDisplay extends DestroyableComponent<{ bus: ArincEvent
     this.normalChecklistsVisible,
     this.abnormalSensedVisible,
     this.abnormalNonSensedVisible,
-    this.availChecker.fwsFailed,
+    this.fwsAvailChecker.fwsFailed,
   );
 
   private readonly failurePendingIndicationRequested = ConsumerSubject.create(
@@ -123,21 +131,21 @@ export class EngineWarningDisplay extends DestroyableComponent<{ bus: ArincEvent
   private readonly failurePendingIndicationVisibility = MappedSubject.create(
     SubscribableMapFunctions.and(),
     this.failurePendingIndicationRequested,
-    this.availChecker.fwsAvail,
+    this.fwsAvailChecker.fwsAvail,
   ).map((s) => (s ? 'visible' : 'hidden'));
 
   private readonly stsIndicationRequested = ConsumerSubject.create(this.sub.on('fws_show_sts_indication'), false);
   private readonly stsIndicationVisibility = MappedSubject.create(
     SubscribableMapFunctions.and(),
     this.stsIndicationRequested,
-    this.availChecker.fwsAvail,
+    this.fwsAvailChecker.fwsAvail,
   ).map((s) => (s ? 'visible' : 'hidden'));
 
   private readonly advIndicationRequested = ConsumerSubject.create(this.sub.on('fws_show_adv_indication'), false);
   private readonly advIndicationVisibility = MappedSubject.create(
     SubscribableMapFunctions.and(),
     this.advIndicationRequested,
-    this.availChecker.fwsAvail,
+    this.fwsAvailChecker.fwsAvail,
   ).map((s) => (s ? 'visible' : 'hidden'));
 
   public onAfterRender(node: VNode): void {
@@ -165,8 +173,8 @@ export class EngineWarningDisplay extends DestroyableComponent<{ bus: ArincEvent
       this.stsIndicationVisibility,
       this.advIndicationRequested,
       this.advIndicationVisibility,
-      this.availChecker.fwsAvail,
-      this.availChecker.fwsFailed,
+      this.fwsAvailChecker.fwsAvail,
+      this.fwsAvailChecker.fwsFailed,
     );
   }
 
@@ -328,13 +336,20 @@ export class EngineWarningDisplay extends DestroyableComponent<{ bus: ArincEvent
               bus={this.props.bus}
               visible={this.abnormalSensedVisibleNotFailed}
               abnormal={true}
-              fwsAvail={this.availChecker.fwsAvail}
+              fwsAvail={this.fwsAvailChecker.fwsAvail}
+              cpiomAvailChecker={this.cpiomAvailChecker}
             />
             <WdAbnormalNonSensedProcedures
               bus={this.props.bus}
               visible={this.abnormalNonSensedVisibleNotFailed}
               abnormal={true}
             />
+            <WdCpiomFailedFallbackChecklistComponent
+              bus={this.props.bus}
+              visible={this.cpiomCAndOtherFailedFallbackVisible}
+              cpiomAvailChecker={this.cpiomAvailChecker}
+            />
+
             <div class="StsArea" style={{ display: this.stsAreaVisibility }}>
               <div
                 class="FailurePendingBox"
@@ -393,4 +408,92 @@ class FwsEwdAvailabilityChecker {
   );
 
   public readonly fwsFailed = this.fwsAvail.map((it) => !it);
+}
+
+export class CpiomEwdAvailabilityChecker {
+  constructor(private bus: EventBus) {}
+
+  protected readonly sub = this.bus.getSubscriber<CpiomData>();
+
+  private readonly cpiomA1Available = ConsumerSubject.create(this.sub.on('cpiom_a_available_1'), false);
+  private readonly cpiomA2Available = ConsumerSubject.create(this.sub.on('cpiom_a_available_2'), false);
+  private readonly cpiomA3Available = ConsumerSubject.create(this.sub.on('cpiom_a_available_3'), false);
+  private readonly cpiomA4Available = ConsumerSubject.create(this.sub.on('cpiom_a_available_4'), false);
+  public readonly cpiomAFailed = MappedSubject.create(
+    SubscribableMapFunctions.nor(),
+    this.cpiomA1Available,
+    this.cpiomA2Available,
+    this.cpiomA3Available,
+    this.cpiomA4Available,
+  );
+
+  private readonly cpiomB1Available = ConsumerSubject.create(this.sub.on('cpiom_b_available_1'), false);
+  private readonly cpiomB2Available = ConsumerSubject.create(this.sub.on('cpiom_b_available_2'), false);
+  private readonly cpiomB3Available = ConsumerSubject.create(this.sub.on('cpiom_b_available_3'), false);
+  private readonly cpiomB4Available = ConsumerSubject.create(this.sub.on('cpiom_b_available_4'), false);
+  public readonly cpiomBFailed = MappedSubject.create(
+    SubscribableMapFunctions.nor(),
+    this.cpiomB1Available,
+    this.cpiomB2Available,
+    this.cpiomB3Available,
+    this.cpiomB4Available,
+  );
+
+  private readonly cpiomC1Available = ConsumerSubject.create(this.sub.on('cpiom_c_available_1'), false);
+  private readonly cpiomC2Available = ConsumerSubject.create(this.sub.on('cpiom_c_available_2'), false);
+  public readonly cpiomCFailed = MappedSubject.create(
+    SubscribableMapFunctions.nor(),
+    this.cpiomC1Available,
+    this.cpiomC2Available,
+  );
+
+  private readonly cpiomD1Available = ConsumerSubject.create(this.sub.on('cpiom_d_available_1'), false);
+  private readonly cpiomD3Available = ConsumerSubject.create(this.sub.on('cpiom_d_available_3'), false);
+  public readonly cpiomDFailed = MappedSubject.create(
+    SubscribableMapFunctions.nor(),
+    this.cpiomD1Available,
+    this.cpiomD3Available,
+  );
+
+  private readonly cpiomE1Available = ConsumerSubject.create(this.sub.on('cpiom_e_available_1'), false);
+  private readonly cpiomE2Available = ConsumerSubject.create(this.sub.on('cpiom_e_available_2'), false);
+  public readonly cpiomEFailed = MappedSubject.create(
+    SubscribableMapFunctions.nor(),
+    this.cpiomE1Available,
+    this.cpiomE2Available,
+  );
+
+  private readonly cpiomF1Available = ConsumerSubject.create(this.sub.on('cpiom_f_available_1'), false);
+  private readonly cpiomF2Available = ConsumerSubject.create(this.sub.on('cpiom_f_available_2'), false);
+  private readonly cpiomF3Available = ConsumerSubject.create(this.sub.on('cpiom_f_available_3'), false);
+  private readonly cpiomF4Available = ConsumerSubject.create(this.sub.on('cpiom_f_available_4'), false);
+  public readonly cpiomFFailed = MappedSubject.create(
+    SubscribableMapFunctions.nor(),
+    this.cpiomF1Available,
+    this.cpiomF2Available,
+    this.cpiomF3Available,
+    this.cpiomF4Available,
+  );
+
+  private readonly cpiomG1Available = ConsumerSubject.create(this.sub.on('cpiom_g_available_1'), false);
+  private readonly cpiomG2Available = ConsumerSubject.create(this.sub.on('cpiom_g_available_2'), false);
+  private readonly cpiomG3Available = ConsumerSubject.create(this.sub.on('cpiom_g_available_3'), false);
+  private readonly cpiomG4Available = ConsumerSubject.create(this.sub.on('cpiom_g_available_4'), false);
+  public readonly cpiomGFailed = MappedSubject.create(
+    SubscribableMapFunctions.nor(),
+    this.cpiomG1Available,
+    this.cpiomG2Available,
+    this.cpiomG3Available,
+    this.cpiomG4Available,
+  );
+
+  public readonly otherCpiomFailed = MappedSubject.create(
+    SubscribableMapFunctions.or(),
+    this.cpiomAFailed,
+    this.cpiomBFailed,
+    this.cpiomDFailed,
+    this.cpiomEFailed,
+    this.cpiomFFailed,
+    this.cpiomGFailed,
+  );
 }

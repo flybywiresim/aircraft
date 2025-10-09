@@ -21,12 +21,14 @@ import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/Destroy
 import { FormattedFwcText } from 'instruments/src/EWD/elements/FormattedFwcText';
 import { EclSoftKeys } from 'instruments/src/EWD/elements/EclClickspots';
 import { CpiomData } from '@flybywiresim/fbw-sdk';
+import { CpiomEwdAvailabilityChecker } from '../EWD';
 
 interface WdAbstractChecklistComponentProps {
   bus: EventBus;
   visible: Subscribable<boolean>;
   abnormal: boolean;
   fwsAvail?: Subscribable<boolean>;
+  cpiomAvailChecker?: CpiomEwdAvailabilityChecker;
 }
 
 export class WdAbstractChecklistComponent extends DestroyableComponent<WdAbstractChecklistComponentProps> {
@@ -106,7 +108,7 @@ export class WdAbstractChecklistComponent extends DestroyableComponent<WdAbstrac
     this.showFromLine.sub(() => this.updateChecklists());
   }
 
-  // 17 lines
+  // 18 lines
   render() {
     return (
       <div class="ProceduresContainer" style={{ display: this.props.visible.map((it) => (it ? 'flex' : 'none')) }}>

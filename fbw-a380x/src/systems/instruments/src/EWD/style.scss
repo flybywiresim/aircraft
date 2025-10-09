@@ -524,6 +524,10 @@ text, tspan, span {
   font-size: 26px;
 }
 
+.EclLineText.smaller {
+  font-size: 24px;
+}
+
 .EclSeparationLine {
   flex: 1;
   border-bottom: 2px solid $display-white;
@@ -537,8 +541,17 @@ text, tspan, span {
 .EclLineContainer {
   height: 34px;
   display: flex;
+  visibility: visible;
   flex-direction: row;
   flex: 1;
+}
+
+.EclLineContainer.smaller {
+  height: 30px;
+}
+
+.EclLineContainer.invisible {
+  visibility: hidden;
 }
 
 .EclLineEndMarker {
