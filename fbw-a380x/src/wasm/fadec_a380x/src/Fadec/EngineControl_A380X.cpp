@@ -31,12 +31,19 @@ void EngineControl_A380X::update() {
   profilerUpdate.start();
 #endif
 
+  bool isSimulationReady = msfsHandlerPtr->getAircraftIsReadyVar();
+
+  if (!isSimulationReady) {
+    // still request atc id so it is ready once the initialization starts
+    simData.atcIdDataPtr->requestUpdateFromSim(msfsHandlerPtr->getTimeStamp(), msfsHandlerPtr->getTickCounter());
+    return;
+  }
+
   if (!fadecInitialized) {
+    loadFuelConfigIfPossible();
     initializeEngineControlData();
     fadecInitialized = true;
   }
-
-  loadFuelConfigIfPossible();
 
   const double deltaTime          = std::max(0.002, msfsHandlerPtr->getSimulationDeltaTime());
   const double mach               = simData.simVarsDataPtr->data().airSpeedMach;

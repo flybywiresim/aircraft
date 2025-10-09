@@ -103,7 +103,6 @@ class EngineControl_A32NX {
   SimpleProfiler profilerUpdateFuel{"Fadec::EngineControl_A32NX::updateFuel()", 100};
   SimpleProfiler profilerUpdateThrustLimits{"Fadec::EngineControl_A32NX::updateThrustLimits()", 100};
   SimpleProfiler profilerUpdateOil{"Fadec::EngineControl_A32NX::updateOil()", 100};
-  SimpleProfiler profilerUpdateOil{"Fadec::EngineControl_A32NX::updateOil()", 100};
   SimpleProfiler profilerEnsureFadecIsInitialized{"Fadec::EngineControl_A32NX::ensureFadecIsInitialized()", 100};
 #endif
 

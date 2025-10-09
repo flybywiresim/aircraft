@@ -34,12 +34,20 @@ void EngineControl_A32NX::update() {
   profilerUpdate.start();
 #endif
 
+  bool isSimulationReady = msfsHandlerPtr->getAircraftIsReadyVar();
+
+  if (!isSimulationReady) {
+    // still request atc id so it is ready once the initialization starts
+    simData.atcIdDataPtr->requestUpdateFromSim(msfsHandlerPtr->getTimeStamp(), msfsHandlerPtr->getTickCounter());
+    return;
+  }
+
   if (!fadecInitialized) {
+    loadFuelConfigIfPossible();
+
     initializeEngineControlData();
     fadecInitialized = true;
   }
-
-  loadFuelConfigIfPossible();
 
   const double deltaTime          = std::max(0.002, msfsHandlerPtr->getSimulationDeltaTime());
   const double simTime            = msfsHandlerPtr->getSimulationTime();
@@ -154,8 +162,6 @@ void EngineControl_A32NX::loadFuelConfigIfPossible() {
 
   if (!hasLoadedFuelConfig) {
     bool isSimulationReady = msfsHandlerPtr->getAircraftIsReadyVar();
-
-    simData.atcIdDataPtr->requestUpdateFromSim(msfsHandlerPtr->getTimeStamp(), tickCounter);
 
     // we only receive the data one tick later as we request it via simconnect. But it should be enought to only perform the check after
     // isSimulationReady as this is set by the JS instruments after spawn
