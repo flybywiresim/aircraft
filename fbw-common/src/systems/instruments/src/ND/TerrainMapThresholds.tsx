@@ -70,7 +70,7 @@ export class TerrainMapThresholds extends DisplayComponent<TerrainMapThresholdsP
   render(): VNode | null {
     return (
       <g visibility={this.shown.map((v) => (v ? 'inherit' : 'hidden'))}>
-        <text class="TerrTextLabel" x={688} y={612} font-size={23} fill="#44d9e1>
+        <text class="TerrTextLabel" x={688} y={612} font-size={23} fill="#44d9e1">
           TERR
         </text>
 
