@@ -333,6 +333,10 @@ function getMagCorrection(legIndex: number, plan: BaseFlightPlan): number {
   // we try to interpret PANS OPs as accurately as possible within the limits of available data
   const currentLeg = plan.legElementAt(legIndex);
 
+  if (currentLeg.definition.magVar !== undefined) {
+    return currentLeg.definition.magVar;
+  }
+
   let airportMagVar = 0;
   if (legIndex <= plan.findLastDepartureLeg()[2]) {
     airportMagVar = Facilities.getMagVar(plan.originAirport.location.lat, plan.originAirport.location.long);
