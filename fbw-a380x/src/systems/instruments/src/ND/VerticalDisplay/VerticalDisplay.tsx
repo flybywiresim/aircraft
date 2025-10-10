@@ -51,18 +51,18 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
   private readonly subscriptions: Subscription[] = [];
 
   private readonly sub = this.props.bus.getArincSubscriber<
-    GenericFcuEvents &
-      GenericTawsEvents &
-      NDSimvars &
-      SimplaneValues &
-      FmsSymbolsData &
-      NDControlEvents &
+    AesuBusEvents &
+      A380XFcuBusEvents &
       ClockEvents &
-      AesuBusEvents &
-      FGVars &
       FcuSimVars &
+      FGVars &
+      FmsSymbolsData &
+      GenericFcuEvents &
+      GenericTawsEvents &
       MfdSurvEvents &
-      A380XFcuBusEvents
+      NDControlEvents &
+      NDSimvars &
+      SimplaneValues
   >();
 
   private readonly labelSvgRef = FSComponent.createRef<SVGElement>();
