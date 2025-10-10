@@ -9,6 +9,7 @@ import {
   MappedSubject,
   Subject,
   SubscribableMapFunctions,
+  Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
 import { EwdSimvars } from './shared/EwdSimvarPublisher';
@@ -411,9 +412,49 @@ class FwsEwdAvailabilityChecker {
 }
 
 export class CpiomEwdAvailabilityChecker {
-  constructor(private bus: EventBus) {}
+  constructor(private bus: EventBus) {
+    this.pausableSubscriptions.push(
+      this.cpiomA1Available,
+      this.cpiomA2Available,
+      this.cpiomA3Available,
+      this.cpiomA4Available,
+      this.cpiomAFailed,
+      this.cpiomB1Available,
+      this.cpiomB2Available,
+      this.cpiomB3Available,
+      this.cpiomB4Available,
+      this.cpiomBFailed,
+      this.cpiomD1Available,
+      this.cpiomD3Available,
+      this.cpiomDFailed,
+      this.cpiomE1Available,
+      this.cpiomE2Available,
+      this.cpiomEFailed,
+      this.cpiomF1Available,
+      this.cpiomF2Available,
+      this.cpiomF3Available,
+      this.cpiomF4Available,
+      this.cpiomFFailed,
+      this.cpiomG1Available,
+      this.cpiomG2Available,
+      this.cpiomG3Available,
+      this.cpiomG4Available,
+      this.cpiomGFailed,
+      this.otherCpiomFailed,
+    );
+
+    this.cpiomCFailed.sub((v) => {
+      if (v) {
+        this.pausableSubscriptions.forEach((s) => s.resume());
+      } else {
+        this.pausableSubscriptions.forEach((s) => s.pause());
+      }
+    }, true);
+  }
 
   protected readonly sub = this.bus.getSubscriber<CpiomData>();
+
+  private readonly pausableSubscriptions: Subscription[] = [];
 
   private readonly cpiomA1Available = ConsumerSubject.create(this.sub.on('cpiom_a_available_1'), false);
   private readonly cpiomA2Available = ConsumerSubject.create(this.sub.on('cpiom_a_available_2'), false);

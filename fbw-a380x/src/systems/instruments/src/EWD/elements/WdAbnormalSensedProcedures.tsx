@@ -1,6 +1,6 @@
 // Copyright (c) 2024-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
-import { ConsumerSubject, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, MappedSubject, Subject, SubscribableMapFunctions, VNode } from '@microsoft/msfs-sdk';
 import {
   ProcedureLinesGenerator,
   ProcedureType,
@@ -15,11 +15,30 @@ import {
   isTimedItem,
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { ChecklistState } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
+import { Arinc429LocalVarConsumerSubject } from '@flybywiresim/fbw-sdk';
 
 export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
   private readonly procedures = ConsumerSubject.create(this.sub.on('fws_abn_sensed_procedures'), []);
 
   private readonly activeProcedureId = ConsumerSubject.create(this.sub.on('fws_active_procedure'), '0');
+
+  private readonly airspeed1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('cas_1'));
+  private readonly airspeed2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('cas_2'));
+  private readonly airspeed3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('cas_3'));
+  private readonly airspeed = MappedSubject.create(
+    ([airspeed1, airspeed2, airspeed3]) =>
+      !airspeed1.isFailureWarning()
+        ? airspeed1.valueOr(0)
+        : !airspeed2.isFailureWarning()
+          ? airspeed2.valueOr(0)
+          : airspeed3.valueOr(0),
+    this.airspeed1,
+    this.airspeed2,
+    this.airspeed3,
+  );
+  private readonly onGround1 = ConsumerSubject.create(this.sub.on('nose_gear_compressed_1'), true);
+  private readonly onGround2 = ConsumerSubject.create(this.sub.on('nose_gear_compressed_2'), true);
+  private readonly onGround = MappedSubject.create(SubscribableMapFunctions.or(), this.onGround1, this.onGround2);
 
   private lastProcUpdate: number | null = null;
 
@@ -49,7 +68,7 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
         );
         this.lineData.push(...procGen.toLineData());
       });
-    } else {
+    } else if (!(this.onGround.get() && this.airspeed.get() >= 50)) {
       // Three possible cases to handle here:
       // FWS 1+2 FAULT
       // FWS 1+2 & FCDC 1+2 FAULT
