@@ -45,7 +45,6 @@ void EngineControl_A32NX::update() {
 
   if (!fadecInitialized) {
     loadFuelConfigIfPossible();
-
     initializeEngineControlData();
     fadecInitialized = true;
   }
