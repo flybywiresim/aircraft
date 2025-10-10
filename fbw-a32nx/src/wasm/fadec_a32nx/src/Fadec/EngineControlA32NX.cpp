@@ -22,6 +22,7 @@ void EngineControl_A32NX::initialize(MsfsHandler* msfsHandler) {
   this->msfsHandlerPtr = msfsHandler;
   this->dataManagerPtr = &msfsHandler->getDataManager();
   this->simData.initialize(dataManagerPtr);
+  fuelConfiguration.setConfigFilename(FILENAME_FADEC_CONF_DIRECTORY + atcId + FILENAME_FADEC_CONF_FILE_EXTENSION);
   LOG_INFO("Fadec::EngineControl_A32NX::initialize() - initialized");
 }
 
@@ -270,10 +271,6 @@ void EngineControl_A32NX::initializeFuelTanks(FLOAT64 timeStamp, UINT64 tickCoun
   const double rightQuantity    = simData.simVarsDataPtr->data().fuelTankQuantityRight;     // gal
   const double leftAuxQuantity  = simData.simVarsDataPtr->data().fuelTankQuantityLeftAux;   // gal
   const double rightAuxQuantity = simData.simVarsDataPtr->data().fuelTankQuantityRightAux;  // gal
-
-  LOG_INFO("Fadec::EngineControl_A32NX::initializeFuelTanks() - Current Fuel Levels from Sim:\n Center: " + std::to_string(centerQuantity) +
-           " gal\n Left: " + std::to_string(leftQuantity) + " gal\n Right: " + std::to_string(rightQuantity) +
-           " gal\n Left Aux: " + std::to_string(leftAuxQuantity) + " gal\n Right Aux: " + std::to_string(rightAuxQuantity) + " gal");
 
   // only loads saved fuel quantity on C/D spawn
   if (simData.startState->updateFromSim(timeStamp, tickCounter) == 2) {
