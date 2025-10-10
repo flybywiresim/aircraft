@@ -211,6 +211,10 @@ void FlightDataRecorder::cleanUpFlightDataRecorderFiles() {
 
   // open directory
   DIR* directory = opendir("\\work");
+  if (!directory) {
+    fprintf(stderr, "[FlightDataRecorder::getFlightDataRecorderFilename] Failed to open work dir!");
+    return;
+  }
 
   // read directory until end
   while ((directoryEntry = readdir(directory)) != NULL) {

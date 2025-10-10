@@ -33,7 +33,6 @@ This list is divided into standardized ATA chapters, if there are no noteworthy 
 
 - Incomplete pages see [fbw-a380x/src/systems/instruments/src/MFD/pages](https://github.com/flybywiresim/aircraft/tree/master/fbw-a380x/src/systems/instruments/src/MFD/pages)
 - Full separation into three synchronized FMCs and two FMSs (currently one FMC serving one FMS)
-- EO modes / EO SID
 - Accurate CI, OPT and REC MAX FL computation
 - NADP (see THR NOISE above)
 - Fuel planning on FMS/FUEL&LOAD page
@@ -90,7 +89,6 @@ This list is divided into standardized ATA chapters, if there are no noteworthy 
 - ECAM: Correct behavior of RCL / RCL LAST
 - ECAM: Time limited failures
 - Video: ETACS due to sim limitation
-- Latest FMA indications for landing modes (e.g. LAND3 instead of CAT3)
 - SD VIDEO page
 
 ### ATA 32 Landing Gear / Braking / BTV
@@ -109,7 +107,7 @@ This list is divided into standardized ATA chapters, if there are no noteworthy 
 
 ### ATA 34 Surveillance / TCAS / TAWS / WXR / XPDR
 
-- Weather radar / WXR
+- Weather radar / WXR due to sim limitation
 - TAWS obstacles
 
 ### ATA 34 ROW/ROP
