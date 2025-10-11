@@ -75,7 +75,7 @@ export class VerticalDisplayWaypointLayer implements VerticalDisplayMapLayer<VdS
     y: number,
     symbol: VdSymbol,
   ) {
-    const mainColor = symbol.type & NdSymbolTypeFlags.FlightPlan ? '#fff' : '#ff94ff';
+    const mainColor = symbol.type & NdSymbolTypeFlags.FlightPlan ? '#fff' : '#c87fda';
 
     this.paintAirportShape(context, x, y, isColorLayer ? mainColor : '#000', isColorLayer ? 1.75 : 3.25);
 
@@ -91,9 +91,9 @@ export class VerticalDisplayWaypointLayer implements VerticalDisplayMapLayer<VdS
     y: number,
     symbol: VdSymbol,
   ) {
-    this.paintWaypointShape(context, x, y, isColorLayer ? '#ff94ff' : '#000', isColorLayer ? 1.75 : 3.25);
+    this.paintWaypointShape(context, x, y, isColorLayer ? '#c87fda' : '#000', isColorLayer ? 1.75 : 3.25);
     context.font = '21px Ecam';
-    VerticalDisplayPaintUtils.paintText(isColorLayer, context, x + 15, y + 17, symbol.ident, '#ff94ff');
+    VerticalDisplayPaintUtils.paintText(isColorLayer, context, x + 15, y + 17, symbol.ident, '#c87fda');
   }
 
   private paintFlightPlanWaypoint(
@@ -114,8 +114,8 @@ export class VerticalDisplayWaypointLayer implements VerticalDisplayMapLayer<VdS
       const constraintStrokeColor = isSelectedModeVertical
         ? '#fff'
         : symbol.isAltitudeConstraintMet
-          ? '#ff94ff'
-          : '#e68000';
+          ? '#c87fda'
+          : '#eb880c';
       const constraintFillColor = !isSelectedModeVertical && !symbol.isAltitudeConstraintMet ? '#e68000' : 'none';
 
       // If alt constraint not met, draw vertical dashed amber line
@@ -141,7 +141,7 @@ export class VerticalDisplayWaypointLayer implements VerticalDisplayMapLayer<VdS
               x,
               VerticalDisplayCanvasMap.altToY(cst.altitude1, verticalRange),
               ABOVE_CONSTRAINT_PATH,
-              '#ff94ff',
+              '#c87fda',
             );
           }
           break;
@@ -272,7 +272,7 @@ export class VerticalDisplayWaypointLayer implements VerticalDisplayMapLayer<VdS
   }
 
   private paintMissedConstraintDashedLine(context: CanvasRenderingContext2D, x: number) {
-    context.strokeStyle = '#e68000';
+    context.strokeStyle = '#eb880c';
     context.setLineDash([2, 2]);
     context.lineWidth = 2;
     context.beginPath();
