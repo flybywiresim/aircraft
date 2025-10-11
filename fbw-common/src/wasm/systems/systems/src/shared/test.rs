@@ -4,9 +4,9 @@ pub fn about_gt_lt<T: std::ops::Sub<Output = T> + PartialOrd>(
     epsilon: T,
 ) -> bool {
     let delta = if value < expected_value {
-        value - expected_value
-    } else {
         expected_value - value
+    } else {
+        value - expected_value
     };
     delta < epsilon
 }
@@ -18,7 +18,7 @@ macro_rules! assert_gt_lt {
         assert!(
             $crate::shared::test::about_gt_lt($a, $b, eps),
             "assertion failed: `(left !== right)` \
-             (left: `{:?}`, right: `{:?}`, epsilon: `{:?}`)",
+             (left: `{:.3?}`, right: `{:.3?}`, epsilon: `{:.3?}`)",
             $a,
             $b,
             eps
