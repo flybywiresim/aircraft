@@ -151,7 +151,6 @@
 1. [A380X/PFD] Fix selected altitude not white when ROLLOUT engaged - @BravoMike99(bruno_pt99)
 1. [A380X/PFD] Fix green ARS indication appearing before flaps are in CONF 1+F - @BravoMike99(bruno_pt99)
 1. [A380X/OIT] Add systems info page for approach and landing capability equipment monitoring - @flogross89 (floridude)
-1. [A380X/VD] Fix VD altitude band not responding to QNH/STD baro ref changes - @flogross89 (floridude)
 
 ## 0.13.0
 
