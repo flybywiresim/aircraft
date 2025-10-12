@@ -148,6 +148,10 @@
 1. [FMS] Fix fuel predictions in the FMS not matching the engine model - @BlueberryKing (BlueberryKing)
 1. [A380X/PFD] Fix selected altitude not white when ROLLOUT engaged - @BravoMike99(bruno_pt99)
 1. [A380X/PFD] Fix green ARS indication appearing before flaps are in CONF 1+F - @BravoMike99(bruno_pt99)
+1. [A380X] Enable mouse drag for knobs in lock mode - @heclak (Heclak)
+2. [A380X] Fix some knobs snapping back to start position when turned to max value - @heclak (Heclak)
+3. [A32NX] Enable mouse drag for knobs in lock mode - @heclak (Heclak)
+4. [A32NX] Fix some knobs snapping back to start position when turned to max value - @heclak (Heclak)
 
 ## 0.13.0
 
