@@ -14,7 +14,7 @@ export class WdCpiomFailedFallbackChecklistComponent extends DestroyableComponen
     super.onAfterRender(node);
   }
 
-  // 18 lines
+  // 21 lines
   render() {
     return (
       <div class="ProceduresContainer" style={{ display: this.props.visible.map((it) => (it ? 'flex' : 'none')) }}>

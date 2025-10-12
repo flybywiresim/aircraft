@@ -20,7 +20,7 @@ import {
 import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
 import { FormattedFwcText } from 'instruments/src/EWD/elements/FormattedFwcText';
 import { EclSoftKeys } from 'instruments/src/EWD/elements/EclClickspots';
-import { CpiomData } from '@flybywiresim/fbw-sdk';
+import { AdrBusEvents, CpiomData, IrBusEvents } from '@flybywiresim/fbw-sdk';
 import { CpiomEwdAvailabilityChecker } from '../EWD';
 
 interface WdAbstractChecklistComponentProps {
@@ -32,7 +32,9 @@ interface WdAbstractChecklistComponentProps {
 }
 
 export class WdAbstractChecklistComponent extends DestroyableComponent<WdAbstractChecklistComponentProps> {
-  protected readonly sub = this.props.bus.getSubscriber<ClockEvents & EwdSimvars & FwsEwdEvents & CpiomData>();
+  protected readonly sub = this.props.bus.getSubscriber<
+    AdrBusEvents & ClockEvents & CpiomData & EwdSimvars & FwsEwdEvents & IrBusEvents
+  >();
 
   protected readonly lineData: WdLineData[] = [];
 

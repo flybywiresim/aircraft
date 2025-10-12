@@ -1914,7 +1914,7 @@ export class FwsCore {
 
   public readonly emergencyGeneratorOn = this.emergencyElectricGeneratorPotential.map((it) => it > 0);
 
-  public readonly elecEmerConfig = Subject.create(false); // FIXME add real condition
+  public readonly elecEmerConfig = Subject.create(false);
 
   public readonly apuMasterSwitch = Subject.create(0);
 
@@ -2804,7 +2804,6 @@ export class FwsCore {
 
     // Flaps
     this.flapsHandle.set(SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum'));
-    // FIXME: add SFCC_2 and switching between the two
     this.slatFlapsSystem1StatusWord.setFromSimVar('L:A32NX_SFCC_1_SLAT_FLAP_SYSTEM_STATUS_WORD');
     this.slatFlapsSystem2StatusWord.setFromSimVar('L:A32NX_SFCC_2_SLAT_FLAP_SYSTEM_STATUS_WORD');
     this.slatFlapsSystem1ActualPositionWord.setFromSimVar('L:A32NX_SFCC_1_SLAT_FLAP_ACTUAL_POSITION_WORD');

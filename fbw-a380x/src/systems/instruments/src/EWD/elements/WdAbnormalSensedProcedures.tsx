@@ -22,19 +22,15 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
 
   private readonly activeProcedureId = ConsumerSubject.create(this.sub.on('fws_active_procedure'), '0');
 
-  private readonly airspeed1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('cas_1'));
-  private readonly airspeed2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('cas_2'));
-  private readonly airspeed3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('cas_3'));
-  private readonly airspeed = MappedSubject.create(
-    ([airspeed1, airspeed2, airspeed3]) =>
-      !airspeed1.isFailureWarning()
-        ? airspeed1.valueOr(0)
-        : !airspeed2.isFailureWarning()
-          ? airspeed2.valueOr(0)
-          : airspeed3.valueOr(0),
-    this.airspeed1,
-    this.airspeed2,
-    this.airspeed3,
+  private readonly groundspeed1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_ground_speed_1'));
+  private readonly groundspeed2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_ground_speed_2'));
+  private readonly groundspeed3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_ground_speed_3'));
+  private readonly groundspeed = MappedSubject.create(
+    ([gs1, gs2, gs3]) =>
+      !gs1.isFailureWarning() ? gs1.valueOr(0) : !gs2.isFailureWarning() ? gs2.valueOr(0) : gs3.valueOr(0),
+    this.groundspeed1,
+    this.groundspeed2,
+    this.groundspeed3,
   );
   private readonly onGround1 = ConsumerSubject.create(this.sub.on('nose_gear_compressed_1'), true);
   private readonly onGround2 = ConsumerSubject.create(this.sub.on('nose_gear_compressed_2'), true);
@@ -68,7 +64,7 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
         );
         this.lineData.push(...procGen.toLineData());
       });
-    } else if (!(this.onGround.get() && this.airspeed.get() >= 50)) {
+    } else if (!(this.onGround.get() && this.groundspeed.get() >= 50)) {
       // Three possible cases to handle here:
       // FWS 1+2 FAULT
       // FWS 1+2 & FCDC 1+2 FAULT
