@@ -1,9 +1,22 @@
 use std::{collections::HashMap, time::Duration};
 
-use crate::systems::simulation::SimulationElement;
+use super::{
+    fuel_quantity_data_concentrator::FuelQuantityDataConcentrator, A380FuelTankType, SetFuelLevel,
+};
+use crate::{
+    avionics_data_communication_network::{
+        A380AvionicsDataCommunicationNetwork, A380AvionicsDataCommunicationNetworkMessageData,
+    },
+    systems::simulation::SimulationElement,
+};
 use serde::Deserialize;
+use serde_with::{serde_as, DisplayFromStr};
 use systems::{
-    fuel::{self, FuelInfo, FuelPump, FuelPumpProperties, FuelSystem, RefuelRate},
+    fuel::{self, FuelPayload, RefuelRate},
+    integrated_modular_avionics::{
+        AvionicsDataCommunicationNetwork, AvionicsDataCommunicationNetworkEndpoint,
+        AvionicsDataCommunicationNetworkMessage, AvionicsDataCommunicationNetworkMessageIdentifier,
+    },
     pneumatic::EngineState,
     shared::{ElectricalBusType, ElectricalBuses},
     simulation::{
@@ -16,10 +29,6 @@ use uom::si::{
     mass::kilogram,
     velocity::knot,
 };
-
-use super::A380FuelTankType;
-
-use serde_with::{serde_as, DisplayFromStr};
 
 #[derive(Clone, Copy)]
 enum ModeSelect {
@@ -244,7 +253,7 @@ impl RefuelApplication {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        fuel_system: &mut FuelSystem<11, 20>,
+        fuel_system: &mut (impl SetFuelLevel + FuelPayload),
         refuel_panel_input: &mut IntegratedRefuelPanel,
     ) {
         // Automatic Refueling
@@ -473,7 +482,7 @@ impl RefuelDriver {
         &mut self,
         delta_time: Duration,
         is_fast: bool,
-        fuel_system: &mut FuelSystem<11, 20>,
+        fuel_system: &mut (impl SetFuelLevel + FuelPayload),
         refuel_panel_input: &mut IntegratedRefuelPanel,
         desired_quantities: HashMap<A380FuelTankType, Mass>,
     ) {
@@ -541,7 +550,7 @@ impl RefuelDriver {
         max_delta: Mass,
         channel: [A380FuelTankType; 11],
         desired_quantities: &HashMap<A380FuelTankType, Mass>,
-        fuel_system: &mut FuelSystem<11, 20>,
+        fuel_system: &mut (impl SetFuelLevel + FuelPayload),
     ) -> bool {
         if max_delta <= Mass::default() {
             return true;
@@ -560,10 +569,8 @@ impl RefuelDriver {
             };
 
             let delta = (desired_quantity - current_quantity).abs();
-            fuel_system.set_tank_quantity(
-                tank as usize,
-                current_quantity + sign * delta.min(remaining_delta),
-            );
+            fuel_system
+                .set_tank_quantity(tank, current_quantity + sign * delta.min(remaining_delta));
             if delta >= remaining_delta {
                 return false;
             }
@@ -574,7 +581,7 @@ impl RefuelDriver {
 
     fn execute_instant_refuel(
         &mut self,
-        fuel_system: &mut FuelSystem<11, 20>,
+        fuel_system: &mut (impl SetFuelLevel + FuelPayload),
         refuel_panel_input: &mut IntegratedRefuelPanel,
         desired_quantities: HashMap<A380FuelTankType, Mass>,
     ) {
@@ -586,7 +593,7 @@ impl RefuelDriver {
         } else {
             for tank_type in A380FuelTankType::iterator() {
                 fuel_system.set_tank_quantity(
-                    tank_type as usize,
+                    tank_type,
                     *desired_quantities
                         .get(&tank_type)
                         .unwrap_or(&Mass::default()),
@@ -598,26 +605,17 @@ impl RefuelDriver {
 impl SimulationElement for RefuelDriver {}
 
 pub struct A380FuelQuantityManagementSystem {
-    fuel_system: FuelSystem<11, 20>,
     refuel_application: RefuelApplication,
     integrated_refuel_panel: IntegratedRefuelPanel,
+
+    fuel_tank_quantities_identifier: AvionicsDataCommunicationNetworkMessageIdentifier,
 }
 impl A380FuelQuantityManagementSystem {
-    pub fn new(
-        context: &mut InitContext,
-        fuel_tanks_info: [FuelInfo; 11],
-        fuel_pumps_info: [(usize, FuelPumpProperties); 20],
-    ) -> Self {
-        let fuel_tanks = fuel_tanks_info.map(|f| f.into_fuel_tank(context, true));
-        let fuel_pumps =
-            fuel_pumps_info.map(|(id, properties)| FuelPump::new(context, id, properties));
-        let fuel_system = FuelSystem::new(context, fuel_tanks, fuel_pumps);
-
+    pub fn new(context: &mut InitContext, adcn: &mut A380AvionicsDataCommunicationNetwork) -> Self {
         Self {
             // TODO: This needs to be refactored when CPIOM implementation is done
             // CPIOM_COM_F1, CPIOM_MON_F3 [FQDC_1] -> 501PP
             // CPIOM_COM_F2, CPIOM_MON_F4 [FQDC_2] -> 109PP 101PP 107PP
-            fuel_system,
             refuel_application: RefuelApplication::new(
                 context,
                 ElectricalBusType::DirectCurrentEssential, // 501PP
@@ -626,29 +624,66 @@ impl A380FuelQuantityManagementSystem {
                 context,
                 ElectricalBusType::DirectCurrentEssential, // 501PP
             ),
+
+            fuel_tank_quantities_identifier: adcn
+                .get_message_identifier("FQMS_FUEL_TANK_QUANTITIES".to_owned()),
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext) {
-        self.refuel_application.update(
-            context,
-            &mut self.fuel_system,
-            &mut self.integrated_refuel_panel,
+    pub fn update(
+        &mut self,
+        context: &UpdateContext,
+        fuel_system: &mut (impl SetFuelLevel + FuelPayload),
+        cpiom: &impl AvionicsDataCommunicationNetworkEndpoint,
+        fqdc: &FuelQuantityDataConcentrator,
+    ) {
+        self.refuel_application
+            .update(context, fuel_system, &mut self.integrated_refuel_panel);
+
+        let left_outer_tank_quantity = fqdc.left_outer_tank_quantity();
+        let feed_one_tank_quantity = fqdc.feed_one_tank_quantity();
+        let left_mid_tank_quantity = fqdc.left_mid_tank_quantity();
+        let left_inner_tank_quantity = fqdc.left_inner_tank_quantity();
+        let feed_two_tank_quantity = fqdc.feed_two_tank_quantity();
+        let feed_three_tank_quantity = fqdc.feed_three_tank_quantity();
+        let right_inner_tank_quantity = fqdc.right_inner_tank_quantity();
+        let right_mid_tank_quantity = fqdc.right_mid_tank_quantity();
+        let feed_four_tank_quantity = fqdc.feed_four_tank_quantity();
+        let right_outer_tank_quantity = fqdc.right_outer_tank_quantity();
+        let trim_tank_quantity = fqdc.trim_tank_quantity();
+
+        let tank_quantities_message_status = left_outer_tank_quantity.ssm().into();
+        let tank_quantities_message_data =
+            A380AvionicsDataCommunicationNetworkMessageData::FuelQuantityDataSystemTankQuantities {
+                left_outer_tank_quantity: left_outer_tank_quantity.value(),
+                feed_one_tank_quantity: feed_one_tank_quantity.value(),
+                left_mid_tank_quantity: left_mid_tank_quantity.value(),
+                left_inner_tank_quantity: left_inner_tank_quantity.value(),
+                feed_two_tank_quantity: feed_two_tank_quantity.value(),
+                feed_three_tank_quantity: feed_three_tank_quantity.value(),
+                right_inner_tank_quantity: right_inner_tank_quantity.value(),
+                right_mid_tank_quantity: right_mid_tank_quantity.value(),
+                feed_four_tank_quantity: feed_four_tank_quantity.value(),
+                right_outer_tank_quantity: right_outer_tank_quantity.value(),
+                trim_tank_quantity: trim_tank_quantity.value(),
+            };
+        let tank_quantities_message = AvionicsDataCommunicationNetworkMessage::new(
+            tank_quantities_message_status,
+            tank_quantities_message_data,
         );
+        // cpiom.send_value(
+        //     &self.fuel_tank_quantities_identifier,
+        //     tank_quantities_message,
+        // );
     }
 
     #[allow(dead_code)]
     pub fn refuel_application(&mut self) -> &mut RefuelApplication {
         &mut self.refuel_application
     }
-
-    pub fn fuel_system(&self) -> &FuelSystem<11, 20> {
-        &self.fuel_system
-    }
 }
 impl SimulationElement for A380FuelQuantityManagementSystem {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.fuel_system.accept(visitor);
         self.refuel_application.accept(visitor);
         self.integrated_refuel_panel.accept(visitor);
         visitor.visit(self);
