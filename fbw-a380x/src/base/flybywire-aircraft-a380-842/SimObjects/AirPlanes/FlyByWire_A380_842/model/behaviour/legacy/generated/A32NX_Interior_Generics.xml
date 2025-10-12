@@ -33,7 +33,7 @@
             <ANIMTIP_0></ANIMTIP_0>
             <ANIMTIP_1></ANIMTIP_1>
             <ANIM_LAG>60</ANIM_LAG>
-            <ANIM_WRAP>True</ANIM_WRAP>
+            <ANIM_WRAP>False</ANIM_WRAP>
         </Parameters>
         <Parameters Type="Default">
             <DECREMENT>#INCREMENT#</DECREMENT>
