@@ -56,6 +56,15 @@
             </ANIM_CODE>
         </UseTemplate>
 
+        <UseTemplate Name="ASOBO_GT_Interaction_WheelAndContinuousLeft#EXTRA_INTERACTION#">
+            <CLOCKWISE_CODE>
+                (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #INCREMENT# + #ANIM_SIMVAR_MAX# min #SET_CODE#
+            </CLOCKWISE_CODE>
+            <ANTICLOCKWISE_CODE>
+                (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #DECREMENT# - #ANIM_SIMVAR_MIN# max #SET_CODE#
+            </ANTICLOCKWISE_CODE>
+        </UseTemplate>
+
         <UseTemplate Name="FBW_Continuous_Knob_Finite_From_Simvar_Impl">
             <CLOCKWISE_CODE>
                 (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #INCREMENT# + #ANIM_SIMVAR_MAX# min #SET_CODE#
