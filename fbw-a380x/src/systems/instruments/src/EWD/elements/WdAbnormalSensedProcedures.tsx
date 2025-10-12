@@ -26,8 +26,7 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
   private readonly groundspeed2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_ground_speed_2'));
   private readonly groundspeed3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_ground_speed_3'));
   private readonly groundspeed = MappedSubject.create(
-    ([gs1, gs2, gs3]) =>
-      !gs1.isFailureWarning() ? gs1.valueOr(0) : !gs2.isFailureWarning() ? gs2.valueOr(0) : gs3.valueOr(0),
+    ([gs1, gs2, gs3]) => (!gs1.isInvalid() ? gs1.valueOr(0) : !gs2.isInvalid() ? gs2.valueOr(0) : gs3.valueOr(0)),
     this.groundspeed1,
     this.groundspeed2,
     this.groundspeed3,
