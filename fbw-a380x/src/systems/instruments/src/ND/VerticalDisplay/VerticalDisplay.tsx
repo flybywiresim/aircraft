@@ -643,7 +643,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
               x2="115"
               y1={this.planeSymbolY}
               y2={this.planeSymbolY}
-              stroke="yellow"
+              stroke="#f5ca4f"
               stroke-width="4"
               visibility={this.planeSymbolVisibility}
             />
