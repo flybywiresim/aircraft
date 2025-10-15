@@ -185,14 +185,14 @@ export class PseudoWaypointLayer implements MapLayer<NdSymbol> {
 
 const typeFlagToColor = (typeFlag: NdSymbolTypeFlags) => {
   if (typeFlag & NdSymbolTypeFlags.MagentaColor) {
-    return '#ff94ff';
+    return '#c87fda';
   }
   if (typeFlag & NdSymbolTypeFlags.AmberColor) {
-    return '#e68000';
+    return '#eb880c';
   }
   if (typeFlag & NdSymbolTypeFlags.CyanColor) {
-    return '#00ffff';
+    return '#44d9e1';
   }
 
-  return '#fff';
+  return '#e5dfd6';
 };
