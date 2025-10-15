@@ -99,7 +99,7 @@ export class FixInfoLayer implements MapLayer<NdSymbol> {
     color: string,
     lineWidth: number,
   ) {
-    context.strokeStyle = color;
+    context.strokeStyle = '#44d9e1';
     context.lineWidth = lineWidth;
 
     const rotation = mapParameters.rotation(bearing) * MathUtils.DEGREES_TO_RADIANS;
@@ -120,7 +120,7 @@ export class FixInfoLayer implements MapLayer<NdSymbol> {
     color: string,
     lineWidth: number,
   ) {
-    context.strokeStyle = color;
+    context.strokeStyle = '#44d9e1';
     context.lineWidth = lineWidth;
 
     context.ellipse(cx, cy, rPx, rPx, 0, 0, Math.PI * 2);
