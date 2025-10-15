@@ -1175,7 +1175,7 @@ interface FplnLineCommonProps extends ComponentProps {
   openRevisionsMenuCallback: () => void;
 }
 enum FplnLineColor {
-  Active = '#75da1d',
+  Active = '#64da1d',
   Temporary = '#f5ca4f',
   Secondary = '#e5dfd6',
   Alternate = '#44d9e1',
