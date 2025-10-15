@@ -38,11 +38,11 @@ export class TerrainMapThresholds extends DisplayComponent<TerrainMapThresholdsP
   private readonly upperBorderColor = this.maxElevationModeSub.map((mode) => {
     switch (mode as TerrainLevelMode) {
       case TerrainLevelMode.Caution:
-        return '#c21d1a';
+        return '#002fff';
       case TerrainLevelMode.Warning:
-        return 'f5ca4f';
+        return '002fff';
       default:
-        return '#75da1d';
+        return '#002fff';
     }
   });
 
@@ -59,11 +59,11 @@ export class TerrainMapThresholds extends DisplayComponent<TerrainMapThresholdsP
   private readonly lowerBorderColor = this.minElevationModeSub.map((mode) => {
     switch (mode as TerrainLevelMode) {
       case TerrainLevelMode.Caution:
-        return '#c21d1a';
+        return '#002fff';
       case TerrainLevelMode.Warning:
-        return '#f5ca4f';
+        return '#002fff';
       default:
-        return '#75da1d';
+        return '#002fff';
     }
   });
 
