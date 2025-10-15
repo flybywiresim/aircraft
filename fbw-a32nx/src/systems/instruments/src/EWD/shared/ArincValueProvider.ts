@@ -2,33 +2,33 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventBus, Publisher } from '@microsoft/msfs-sdk';
-import { Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { Publisher } from '@microsoft/msfs-sdk';
+import { Arinc429Word, Arinc429WordData, Arinc429RegisterSubject, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { EwdSimvars } from './EwdSimvarPublisher';
 
 export interface Arinc429Values {
   sat: Arinc429Word;
-  slatsFlapsStatus: Arinc429Word;
-  slatsPosition: Arinc429Word;
-  flapsPosition: Arinc429Word;
+  slatsFlapsStatus: Arinc429WordData;
+  slatsPosition: Arinc429WordData;
+  flapsPosition: Arinc429WordData;
   sfccToUse: number;
 }
 export class ArincValueProvider {
   private sat = new Arinc429Word(0);
 
-  private sfcc1SlatsFlapsStatus = new Arinc429Word(0);
+  private sfcc1SlatsFlapsStatus = Arinc429RegisterSubject.createEmpty();
 
-  private sfcc2SlatsFlapsStatus = new Arinc429Word(0);
+  private sfcc2SlatsFlapsStatus = Arinc429RegisterSubject.createEmpty();
 
-  private slatsFlapsStatus = new Arinc429Word(0);
+  private slatsFlapsStatus = Arinc429RegisterSubject.createEmpty();
 
-  private slatsPosition = new Arinc429Word(0);
+  private slatsPosition = Arinc429RegisterSubject.createEmpty();
 
-  private flapsPosition = new Arinc429Word(0);
+  private flapsPosition = Arinc429RegisterSubject.createEmpty();
 
   private sfccToUse = 0;
 
-  constructor(private readonly bus: EventBus) {}
+  constructor(private readonly bus: ArincEventBus) {}
 
   public init() {
     const publisher = this.bus.getPublisher<Arinc429Values>();
@@ -40,59 +40,59 @@ export class ArincValueProvider {
     });
 
     subscriber.on('sfcc1SlatsFlapsStatusRaw').handle((w) => {
-      this.slatsFlapsStatus = new Arinc429Word(w);
-      this.sfcc1SlatsFlapsStatus = new Arinc429Word(w);
+      this.slatsFlapsStatus.setWord(w);
+      this.sfcc1SlatsFlapsStatus.setWord(w);
       this.determineSfccToUse(publisher);
       if (this.sfccToUse === 1) {
-        publisher.pub('slatsFlapsStatus', this.slatsFlapsStatus);
+        publisher.pub('slatsFlapsStatus', this.slatsFlapsStatus.get());
       } else if (this.sfccToUse === 0) {
         publisher.pub('slatsFlapsStatus', new Arinc429Word(0));
       }
     });
 
     subscriber.on('sfcc1SlatsPositionRaw').handle((w) => {
-      this.slatsPosition = new Arinc429Word(w);
+      this.slatsPosition.setWord(w);
       if (this.sfccToUse === 1) {
-        publisher.pub('slatsPosition', this.slatsPosition);
+        publisher.pub('slatsPosition', this.slatsPosition.get());
       }
     });
 
     subscriber.on('sfcc1FlapsPositionRaw').handle((w) => {
-      this.flapsPosition = new Arinc429Word(w);
+      this.flapsPosition.setWord(w);
       if (this.sfccToUse === 1) {
-        publisher.pub('flapsPosition', this.flapsPosition);
+        publisher.pub('flapsPosition', this.flapsPosition.get());
       }
     });
 
     subscriber.on('sfcc2SlatsFlapsStatusRaw').handle((w) => {
-      this.slatsFlapsStatus = new Arinc429Word(w);
-      this.sfcc2SlatsFlapsStatus = new Arinc429Word(w);
+      this.slatsFlapsStatus.setWord(w);
+      this.sfcc2SlatsFlapsStatus.setWord(w);
       this.determineSfccToUse(publisher);
       if (this.sfccToUse === 2) {
-        publisher.pub('slatsFlapsStatus', this.slatsFlapsStatus);
+        publisher.pub('slatsFlapsStatus', this.slatsFlapsStatus.get());
       } else if (this.sfccToUse === 0) {
         publisher.pub('slatsFlapsStatus', new Arinc429Word(0));
       }
     });
 
     subscriber.on('sfcc2SlatsPositionRaw').handle((w) => {
-      this.slatsPosition = new Arinc429Word(w);
+      this.slatsPosition.setWord(w);
       if (this.sfccToUse === 2) {
-        publisher.pub('slatsPosition', this.slatsPosition);
+        publisher.pub('slatsPosition', this.slatsPosition.get());
       }
     });
 
     subscriber.on('sfcc2FlapsPositionRaw').handle((w) => {
-      this.flapsPosition = new Arinc429Word(w);
+      this.flapsPosition.setWord(w);
       if (this.sfccToUse === 2) {
-        publisher.pub('flapsPosition', this.flapsPosition);
+        publisher.pub('flapsPosition', this.flapsPosition.get());
       }
     });
   }
 
   private determineSfccToUse(publisher: Publisher<Arinc429Values>) {
-    const sfcc1Valid = !this.sfcc1SlatsFlapsStatus.isFailureWarning();
-    const sfcc2Valid = !this.sfcc2SlatsFlapsStatus.isFailureWarning();
+    const sfcc1Valid = !this.sfcc1SlatsFlapsStatus.get().isFailureWarning();
+    const sfcc2Valid = !this.sfcc2SlatsFlapsStatus.get().isFailureWarning();
     if (sfcc1Valid) {
       this.sfccToUse = 1;
     } else if (sfcc2Valid) {
