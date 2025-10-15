@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventBus, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
-import { NXDataStore } from '@flybywiresim/fbw-sdk';
+import { DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { ArincEventBus, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { AFloor } from './AFloor';
 import { Egt } from './EGT';
 import { FF } from './FF';
@@ -17,7 +17,7 @@ import { PacksNaiWai } from './PacksNaiWai';
 import { Slats } from './Slats';
 
 interface UpperDisplayProps {
-  bus: EventBus;
+  bus: ArincEventBus;
 }
 export class UpperDisplay extends DisplayComponent<UpperDisplayProps> {
   private usingMetric = Subject.create(false);

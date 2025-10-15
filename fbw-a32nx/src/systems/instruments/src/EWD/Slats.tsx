@@ -3,7 +3,8 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ClockEvents, EventBus, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { ClockEvents, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { EwdSimvars } from './shared/EwdSimvarPublisher';
 import { Layer } from '../MsfsAvionicsCommon/Layer';
@@ -11,7 +12,7 @@ import { Layer } from '../MsfsAvionicsCommon/Layer';
 import './style.scss';
 
 interface SlatsProps {
-  bus: EventBus;
+  bus: ArincEventBus;
 }
 export class Slats extends DisplayComponent<SlatsProps> {
   private targetClass = Subject.create('');
@@ -63,11 +64,11 @@ export class Slats extends DisplayComponent<SlatsProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<Arinc429Values & ClockEvents & EwdSimvars>();
+    const sub = this.props.bus.getArincSubscriber<Arinc429Values & ClockEvents & EwdSimvars>();
 
     sub
       .on('slatsFlapsStatus')
-      .whenChanged()
+      .whenArinc429Changed()
       .handle((s) => {
         const sfccValid = !s.isFailureWarning();
         this.sfccValid.set(sfccValid);
@@ -109,7 +110,7 @@ export class Slats extends DisplayComponent<SlatsProps> {
 
     sub
       .on('slatsPosition')
-      .whenChanged()
+      .whenArinc429Changed()
       .handle((s) => {
         const slats = s.valueOr(0);
 
@@ -158,7 +159,7 @@ export class Slats extends DisplayComponent<SlatsProps> {
 
     sub
       .on('flapsPosition')
-      .whenChanged()
+      .whenArinc429Changed()
       .handle((s) => {
         const flaps = s.valueOr(0);
 

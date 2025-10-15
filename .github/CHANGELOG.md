@@ -12,6 +12,9 @@
 
 ## 0.15.0
 
+1. [A32NX/SFCC] Added implementation of SAP and FAP in SFCC - @Eagle941 (Joe)
+1. [A32NX/SFCC] Connected SFCC to electrical busses with simulation of power consumption and power restoration behaviour - @Eagle941 (Joe)
+
 ## 0.14.0
 
 1. [A380X/FMS] Fix speed margins being displayed in the wrong place for a Mach target - @BlueberryKing (BlueberryKing)
@@ -133,8 +136,6 @@
 1. [A380X/OIT] Add initial implementation of OIT AVNCS side, including flight log and inbox page for COMPANY COM app - @flogross89 (floridude)
 1. [A380X/FG] Fix SRS disengagement conditions for eng 3&4 OEI - @flogross89 (floridude)
 1. [A380X/FMS] Add engine-out indications and behavior to FMS - @flogross89 (floridude)
-1. [A32NX/SFCC] Added implementation of SAP and FAP in SFCC - @Eagle941 (Joe)
-1. [A32NX/SFCC] Connected SFCC to electrical busses with simulation of power consumption and power restoration behaviour - @Eagle941 (Joe)
 1. [A380X/Fuel] Enabled gravityfeeding and fixed crossfeed fuel usage from correct tanks - @Maximilian-Reuter (\_chaoz_)
 1. [A380X/EIS] Fix malformed W glyph on the EIS display units - @tracernz (Mike)
 1. [A380X/ECAM] Add ATA 52 (DOOR) ECAM procedures (initial implementation) - @Jonny23787 (Jonathan)
