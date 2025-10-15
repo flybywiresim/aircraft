@@ -173,7 +173,7 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
         this.cgGroup.instance.style.visibility = 'inherit';
         this.outOfRangeGroup.instance.style.visibility = 'hidden';
         this.cgValue.instance.classList.add('Green');
-        this.arrowRef.instance.style.fill = '#80da1d';
+        this.arrowRef.instance.style.fill = '#64da1d';
         break;
       case PitchTrimStatus.NotAtTarget:
         this.cgGroup.instance.style.visibility = 'inherit';
@@ -308,7 +308,7 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
             <g transform={this.trimAreasTransform}>
               <rect width="28" height="414" x="0" y="0" stroke="black" fill="#323135" />
               <rect width="25" height="207" x="2" y="103.5" fill="none" stroke="#e5dfd6" stroke-width="2" />
-              <rect width="23" height="103.5" x="3" y="175.95" fill="none" stroke="#c87fda" stroke-width="4" />
+              <rect width="23" height="103.5" x="3" y="175.95" fill="none" stroke="#64da1d" stroke-width="4" />
               <rect
                 width="16"
                 height={this.optimalPitchTrimUpperBoxHeight}
