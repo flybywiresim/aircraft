@@ -464,11 +464,11 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
   private drawVector(context: CanvasRenderingContext2D, vector: PathVector, group: EfisVectorsGroup) {
     switch (group) {
       case EfisVectorsGroup.ACTIVE:
-        context.strokeStyle = '#75da1d';
+        context.strokeStyle = '#64da1d';
         context.setLineDash(NO_DASHES);
         break;
       case EfisVectorsGroup.DASHED:
-        context.strokeStyle = '#75da1d';
+        context.strokeStyle = '#64da1d';
         context.setLineDash(DASHES);
         break;
       case EfisVectorsGroup.TEMPORARY:
