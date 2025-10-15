@@ -3,7 +3,7 @@
 
 import { EventBus, FSComponent, VNode } from '@microsoft/msfs-sdk';
 import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
-import { OitFile } from '../OitAvncsFolderNavigator';
+import { OitFile, OitFolder } from '../OitAvncsFolderNavigator';
 import { OitUiService } from '../../../OitUiService';
 
 interface OitAvncsFbwSystemsMenuProps {
@@ -19,11 +19,20 @@ export class OitAvncsFbwSystemsMenu extends DestroyableComponent<OitAvncsFbwSyst
   render(): VNode {
     return (
       <>
-        <OitFile
-          name={'FWS Debug'}
-          uiService={this.props.uiService}
-          navigationTarget="nss-avncs/fbw-systems/debug-data"
-        />
+        <OitFolder name={'AUTO FLT'} initExpanded={true}>
+          <OitFile
+            name={'App & Ldg Capability'}
+            uiService={this.props.uiService}
+            navigationTarget="nss-avncs/a380x-systems/app-ldg-cap"
+          />
+        </OitFolder>
+        <OitFolder name={'CDS / FWS'} initExpanded={true}>
+          <OitFile
+            name={'FWS Debug'}
+            uiService={this.props.uiService}
+            navigationTarget="nss-avncs/a380x-systems/debug-data"
+          />
+        </OitFolder>
       </>
     );
   }
