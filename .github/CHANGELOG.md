@@ -151,6 +151,10 @@
 1. [A380X/PFD] Fix selected altitude not white when ROLLOUT engaged - @BravoMike99(bruno_pt99)
 1. [A380X/PFD] Fix green ARS indication appearing before flaps are in CONF 1+F - @BravoMike99(bruno_pt99)
 1. [A380X/OIT] Add systems info page for approach and landing capability equipment monitoring - @flogross89 (floridude)
+1. [A380X] Enable mouse drag for knobs in lock mode - @heclak (Heclak)
+1. [A380X] Fix some knobs snapping back to start position when turned to max value - @heclak (Heclak)
+1. [A32NX] Enable mouse drag for knobs in lock mode - @heclak (Heclak)
+1. [A32NX] Fix some knobs snapping back to start position when turned to max value - @heclak (Heclak)
 
 ## 0.13.0
 
