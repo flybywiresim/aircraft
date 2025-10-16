@@ -39,7 +39,7 @@
 
 .mfd-title-bar-title-label {
   color: #222222;
-  font-size: 28px;
+  font-size: 30px;
 }
 
 .mfd-title-bar-eo-section {
@@ -114,6 +114,10 @@
 .fr {
   display: flex;
   flex-direction: row;
+}
+
+.fr.space-between {
+  justify-content: space-between;
 }
 
 .grow {

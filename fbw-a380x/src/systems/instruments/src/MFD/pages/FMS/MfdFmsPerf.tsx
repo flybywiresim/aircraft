@@ -37,7 +37,11 @@ import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { A380SpeedsUtils } from '@shared/OperatingSpeeds';
 import { NXSystemMessages } from '../../shared/NXSystemMessages';
-import { getEtaFromUtcOrPresent as getEtaUtcOrFromPresent, getApproachName } from '../../shared/utils';
+import {
+  getEtaFromUtcOrPresent as getEtaUtcOrFromPresent,
+  getApproachName,
+  showReturnButtonUriExtra,
+} from '../../shared/utils';
 import { ApproachType } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
@@ -853,7 +857,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.clbTablePredLine2.set(null);
           } else {
             this.clbTableModeLine1.set('SELECTED');
-            this.clbTableSpdLine1.set(obs && obs.fcuSpeed >= 1 ? obs?.fcuSpeed.toFixed(0) ?? null : null);
+            this.clbTableSpdLine1.set(obs && obs.fcuSpeed >= 1 ? (obs?.fcuSpeed.toFixed(0) ?? null) : null);
             this.clbTableMachLine1.set(obs && obs.fcuSpeed < 1 ? `.${obs.fcuSpeed.toFixed(2).split('.')[1]}` : null);
             this.clbTablePredLine1.set(null);
 
@@ -974,7 +978,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.crzTableSpdLine1.set(
               obs && obs.fcuSpeed < 1
                 ? '---'
-                : this.props.fmcService.master?.fmgc.getManagedClimbSpeed().toFixed(0) ?? null,
+                : (this.props.fmcService.master?.fmgc.getManagedClimbSpeed().toFixed(0) ?? null),
             );
             this.crzTableMachLine1.set(
               obs && obs.fcuSpeed < 1
@@ -989,7 +993,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.crzTablePredLine2.set(null);
           } else {
             this.crzTableModeLine1.set('SELECTED');
-            this.crzTableSpdLine1.set(obs && obs.fcuSpeed < 1 ? '---' : obs?.fcuSpeed.toFixed(0) ?? null);
+            this.crzTableSpdLine1.set(obs && obs.fcuSpeed < 1 ? '---' : (obs?.fcuSpeed.toFixed(0) ?? null));
             this.crzTableMachLine1.set(obs && obs.fcuSpeed < 1 ? `.${obs.fcuSpeed.toFixed(2).split('.')[1]}` : null);
 
             this.crzTableModeLine2.set('MANAGED');
@@ -997,7 +1001,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.crzTableSpdLine2.set(
               obs && obs.fcuSpeed < 1
                 ? '---'
-                : this.props.fmcService.master?.fmgc.getManagedCruiseSpeed().toFixed(0) ?? null,
+                : (this.props.fmcService.master?.fmgc.getManagedCruiseSpeed().toFixed(0) ?? null),
             );
             this.crzTableMachLine2.set(
               obs && obs.fcuSpeed < 1
@@ -1042,7 +1046,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.desTablePredLine2.set(null);
           } else {
             this.desTableModeLine1.set('SELECTED');
-            this.desTableSpdLine1.set(obs && obs.fcuSpeed >= 1 ? obs?.fcuSpeed.toFixed(0) ?? null : null);
+            this.desTableSpdLine1.set(obs && obs.fcuSpeed >= 1 ? (obs?.fcuSpeed.toFixed(0) ?? null) : null);
             this.desTableMachLine1.set(obs && obs.fcuSpeed < 1 ? `.${obs.fcuSpeed.toFixed(2).split('.')[1]}` : null);
             this.desTablePredLine1.set('--:--  ----');
             this.desTableModeLine2.set('MANAGED');
@@ -2949,7 +2953,13 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                 />
               </div>
               <div>
-                <Button label="POS MONITOR" onClick={() => {}} containerStyle="margin-right: 5px;" />
+                <Button
+                  label="POS MONITOR"
+                  onClick={() =>
+                    this.props.mfd.uiService.navigateTo(`fms/position/monitor/${showReturnButtonUriExtra}`)
+                  }
+                  containerStyle="margin-right: 5px;"
+                />
               </div>
               <div style={{ 'margin-right': '5px', visibility: this.clearEoButtonVisibility }}>
                 <Button
