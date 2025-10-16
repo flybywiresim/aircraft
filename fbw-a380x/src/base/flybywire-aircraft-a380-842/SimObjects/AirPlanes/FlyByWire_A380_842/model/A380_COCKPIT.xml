@@ -3338,7 +3338,7 @@
                         </UseTemplate>
 
                         <Component ID="KNOB_OVHD_AIRCOND_FWDCABIN" Node="KNOB_OVHD_AIRCOND_FWDCABIN">
-                            <UseTemplate Name="FBW_Continuous_Knob_Finite_From_Simvar">
+                            <UseTemplate Name="FBW_A380X_Knob_Aircond_Cabin">
                                 <NODE_ID>KNOB_OVHD_AIRCOND_FWDCABIN</NODE_ID>
                                 <ANIM_NAME>KNOB_OVHD_AIRCOND_FWDCABIN</ANIM_NAME>
                                 <ANIM_SIMVAR>L:A32NX_OVHD_COND_CABIN_SELECTOR_KNOB</ANIM_SIMVAR>

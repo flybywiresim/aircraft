@@ -10,6 +10,8 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 <!-- The changed area should be prefixed with "A32NX/" or "A380X/" if only one of them is affected. -->
 
+## 0.15.0
+
 ## 0.14.0
 
 1. [A380X/FMS] Fix speed margins being displayed in the wrong place for a Mach target - @BlueberryKing (BlueberryKing)
@@ -148,6 +150,12 @@
 1. [FMS] Fix fuel predictions in the FMS not matching the engine model - @BlueberryKing (BlueberryKing)
 1. [A380X/PFD] Fix selected altitude not white when ROLLOUT engaged - @BravoMike99(bruno_pt99)
 1. [A380X/PFD] Fix green ARS indication appearing before flaps are in CONF 1+F - @BravoMike99(bruno_pt99)
+1. [A380X/OIT] Add systems info page for approach and landing capability equipment monitoring - @flogross89 (floridude)
+1. [A380X] Enable mouse drag for knobs in lock mode - @heclak (Heclak)
+1. [A380X] Fix some knobs snapping back to start position when turned to max value - @heclak (Heclak)
+1. [A32NX] Enable mouse drag for knobs in lock mode - @heclak (Heclak)
+1. [A32NX] Fix some knobs snapping back to start position when turned to max value - @heclak (Heclak)
+1. [ND] Fix terrain display smearing issue - @flogross89 (floridude)
 
 ## 0.13.0
 
