@@ -572,10 +572,25 @@ impl A380AvionicsDataCommunicationNetworkSimvarTranslator {
 impl SimulationElement for A380AvionicsDataCommunicationNetworkSimvarTranslator {}
 
 /// This type represents all the messages which can be send over AFDX
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum A380AvionicsDataCommunicationNetworkMessageData {
     #[cfg(test)]
     TestValue(&'static str),
+
+    // FQMS data
+    FuelQuantityDataSystemTankQuantities {
+        left_outer_tank_quantity: uom::si::f64::Mass,
+        feed_one_tank_quantity: uom::si::f64::Mass,
+        left_mid_tank_quantity: uom::si::f64::Mass,
+        left_inner_tank_quantity: uom::si::f64::Mass,
+        feed_two_tank_quantity: uom::si::f64::Mass,
+        feed_three_tank_quantity: uom::si::f64::Mass,
+        right_inner_tank_quantity: uom::si::f64::Mass,
+        right_mid_tank_quantity: uom::si::f64::Mass,
+        feed_four_tank_quantity: uom::si::f64::Mass,
+        right_outer_tank_quantity: uom::si::f64::Mass,
+        trim_tank_quantity: uom::si::f64::Mass,
+    },
 }
 impl A380AvionicsDataCommunicationNetworkMessageData {
     pub(crate) fn into_message(
