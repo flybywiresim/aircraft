@@ -78,6 +78,7 @@ void Fmgc::updateSelfTest(double deltaTime) {
 
     // Hardcoded test light sequence. Between the times (in seconds) in each array, the light is on.
     selfTestFaultLightVisible = false;
+    // FIXME no references available, best guess
     double testLightOnTimes[][2] = {{0, 1}, {1.5, 3}, {3.5, 4}};
     for (auto& timeRange : testLightOnTimes) {
       double selfTestTimerInverted = selfTestDuration - selfTestTimer;
