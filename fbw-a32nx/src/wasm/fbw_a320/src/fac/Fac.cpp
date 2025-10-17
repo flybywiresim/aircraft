@@ -84,8 +84,8 @@ void Fac::updateSelfTest(double deltaTime) {
     double testLightOnTimes[][2] = {{0, 2},       {4.77, 4.87}, {4.9, 5.0},   {5.17, 5.27}, {5.33, 5.43},
                                     {5.60, 5.70}, {7.83, 7.93}, {8.13, 8.23}, {8.4, 8.5},   {19.13, 19.37}};
     for (auto& timeRange : testLightOnTimes) {
-      double selfTestTimerInverted = selfTestDuration - selfTestTimer;
-      if (selfTestTimerInverted >= timeRange[0] && selfTestTimerInverted <= timeRange[1]) {
+      double selfTestTimerFromStart = selfTestDuration - selfTestTimer;
+      if (selfTestTimerFromStart >= timeRange[0] && selfTestTimerFromStart <= timeRange[1]) {
         selfTestFaultLightVisible = true;
         break;
       }

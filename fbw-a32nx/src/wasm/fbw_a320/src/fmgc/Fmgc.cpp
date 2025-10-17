@@ -81,8 +81,8 @@ void Fmgc::updateSelfTest(double deltaTime) {
     // FIXME no references available, best guess
     double testLightOnTimes[][2] = {{0, 1}, {1.5, 3}, {3.5, 4}};
     for (auto& timeRange : testLightOnTimes) {
-      double selfTestTimerInverted = selfTestDuration - selfTestTimer;
-      if (selfTestTimerInverted >= timeRange[0] && selfTestTimerInverted <= timeRange[1]) {
+      double selfTestTimerFromStart = selfTestDuration - selfTestTimer;
+      if (selfTestTimerFromStart >= timeRange[0] && selfTestTimerFromStart <= timeRange[1]) {
         selfTestFaultLightVisible = true;
         break;
       }

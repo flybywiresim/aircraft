@@ -98,8 +98,8 @@ void Sec::updateSelfTest(double deltaTime) {
     selfTestFaultLightVisible = false;
     double testLightOnTimes[][2] = {{0, 06.46}, {18.5, 18.63}, {21.13, 21.33}, {21.42, 21.54}, {21.58, 21.96}};
     for (auto& timeRange : testLightOnTimes) {
-      double selfTestTimerInverted = longSelfTestDuration - selfTestTimer;
-      if (selfTestTimerInverted >= timeRange[0] && selfTestTimerInverted <= timeRange[1]) {
+      double selfTestTimerFromStart = longSelfTestDuration - selfTestTimer;
+      if (selfTestTimerFromStart >= timeRange[0] && selfTestTimerFromStart <= timeRange[1]) {
         selfTestFaultLightVisible = true;
         break;
       }

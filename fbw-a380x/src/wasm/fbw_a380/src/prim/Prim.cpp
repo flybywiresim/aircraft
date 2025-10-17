@@ -95,8 +95,8 @@ void Prim::updateSelfTest(double deltaTime) {
     selfTestFaultLightVisible = false;
     double testLightOnTimes[][2] = {{0, 12.29}, {13.42, 28.67}, {31.04, 31.63}, {31.71, 33.13}, {33.21, 35.75}};
     for (auto& timeRange : testLightOnTimes) {
-      double selfTestTimerInverted = longSelfTestDuration - selfTestTimer;
-      if (selfTestTimerInverted >= timeRange[0] && selfTestTimerInverted <= timeRange[1]) {
+      double selfTestTimerFromStart = longSelfTestDuration - selfTestTimer;
+      if (selfTestTimerFromStart >= timeRange[0] && selfTestTimerFromStart <= timeRange[1]) {
         selfTestFaultLightVisible = true;
         break;
       }
