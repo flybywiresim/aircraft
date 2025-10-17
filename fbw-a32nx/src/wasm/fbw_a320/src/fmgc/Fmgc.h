@@ -35,6 +35,8 @@ class Fmgc {
   // Computer Self-monitoring vars
   bool monitoringHealthy;
 
+  bool selfTestFaultLightVisible;
+
   bool cpuStopped;
 
   // Power Supply monitoring

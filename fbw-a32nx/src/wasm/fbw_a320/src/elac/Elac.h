@@ -45,6 +45,8 @@ class Elac {
   // Computer Self-monitoring vars
   bool monitoringHealthy;
 
+  bool selfTestFaultLightVisible;
+
   bool prevEngageButtonWasPressed;
 
   // Power Supply monitoring

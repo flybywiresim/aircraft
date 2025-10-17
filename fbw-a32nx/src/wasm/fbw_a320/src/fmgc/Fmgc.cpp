@@ -72,8 +72,20 @@ void Fmgc::updateSelfTest(double deltaTime) {
   }
   if (selfTestTimer <= 0) {
     selfTestComplete = true;
+    selfTestFaultLightVisible = false;
   } else {
     selfTestComplete = false;
+
+    // Hardcoded test light sequence. Between the times (in seconds) in each array, the light is on.
+    selfTestFaultLightVisible = false;
+    double testLightOnTimes[][2] = {{0, 1}, {1.5, 3}, {3.5, 4}};
+    for (auto& timeRange : testLightOnTimes) {
+      double selfTestTimerInverted = selfTestDuration - selfTestTimer;
+      if (selfTestTimerInverted >= timeRange[0] && selfTestTimerInverted <= timeRange[1]) {
+        selfTestFaultLightVisible = true;
+        break;
+      }
+    }
   }
 }
 
@@ -81,7 +93,7 @@ void Fmgc::updateSelfTest(double deltaTime) {
 base_fmgc_discrete_outputs Fmgc::getDiscreteOutputs() {
   base_fmgc_discrete_outputs output = {};
 
-  output.fmgc_healthy = !monitoringHealthy;
+  output.fmgc_healthy = (selfTestComplete && monitoringHealthy) || (!selfTestComplete && !selfTestFaultLightVisible);
   if (!monitoringHealthy) {
     output.athr_own_engaged = false;
     output.fd_own_engaged = false;

@@ -40,6 +40,8 @@ class Fac {
   // Computer Self-monitoring vars
   bool facHealthy;
 
+  bool selfTestFaultLightVisible;
+
   SRFlipFlop facHealthyFlipFlop = SRFlipFlop(false);
 
   PulseNode pushbuttonPulse = PulseNode(true);

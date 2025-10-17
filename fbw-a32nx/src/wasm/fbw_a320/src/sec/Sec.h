@@ -42,6 +42,8 @@ class Sec {
   // Computer Self-monitoring vars
   bool monitoringHealthy;
 
+  bool selfTestFaultLightVisible;
+
   bool cpuStopped;
 
   SRFlipFlop cpuStoppedFlipFlop = SRFlipFlop(true);
