@@ -85,21 +85,8 @@ void Elac::updateSelfTest(double deltaTime) {
   }
   if (selfTestTimer <= 0) {
     selfTestComplete = true;
-    selfTestFaultLightVisible = false;
   } else {
     selfTestComplete = false;
-
-    // Hardcoded test light sequence. Between the times (in seconds) in each array, the light is on.
-    selfTestFaultLightVisible = false;
-    // FIXME no references available, best guess
-    double testLightOnTimes[][2] = {{0, 1}, {1.5, 2}, {2.5, 3}};
-    for (auto& timeRange : testLightOnTimes) {
-      double selfTestTimerInverted = longSelfTestDuration - selfTestTimer;
-      if (selfTestTimerInverted >= timeRange[0] && selfTestTimerInverted <= timeRange[1]) {
-        selfTestFaultLightVisible = true;
-        break;
-      }
-    }
   }
 }
 
@@ -136,7 +123,7 @@ base_elac_out_bus Elac::getBusOutputs() {
 base_elac_discrete_outputs Elac::getDiscreteOutputs() {
   base_elac_discrete_outputs output = {};
 
-  output.digital_output_validated = (selfTestComplete && monitoringHealthy) || (!selfTestComplete && !selfTestFaultLightVisible);
+  output.digital_output_validated = monitoringHealthy;
   if (!monitoringHealthy) {
     output.pitch_axis_ok = false;
     output.left_aileron_ok = false;

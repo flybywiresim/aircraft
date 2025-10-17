@@ -45,8 +45,6 @@ class Elac {
   // Computer Self-monitoring vars
   bool monitoringHealthy;
 
-  bool selfTestFaultLightVisible;
-
   bool prevEngageButtonWasPressed;
 
   // Power Supply monitoring
@@ -64,5 +62,5 @@ class Elac {
 
   const double minimumPowerOutageTimeForFailure = 0.02;
   const double shortSelfTestDuration = 1;
-  const double longSelfTestDuration = 3;
+  const double longSelfTestDuration = 8;
 };

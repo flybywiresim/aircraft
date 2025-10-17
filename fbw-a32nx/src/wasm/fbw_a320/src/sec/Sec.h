@@ -65,5 +65,5 @@ class Sec {
   const bool isUnit3;
 
   const double minimumPowerOutageTimeForFailure = 0.02;
-  const double selfTestDuration = 4;
+  const double selfTestDuration = 30;
 };
