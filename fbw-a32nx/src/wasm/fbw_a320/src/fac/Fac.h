@@ -63,5 +63,5 @@ class Fac {
 
   const double longPowerFailureTime = 0.2;
   const double shortPowerFailureTime = 0.01;
-  const double selfTestDuration = 10;
+  const double selfTestDuration = 20;
 };
