@@ -99,16 +99,26 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
       this.props.fmcService.master.resetRevisedWaypoint();
     }
 
+    const trueTrack = ADIRS.getTrueTrack();
+    const magneticTrack = ADIRS.getMagneticTrack();
+
+    if (!trueTrack?.isNormalOperation() || !magneticTrack?.isNormalOperation()) {
+      return;
+    }
+
+    const magVar = trueTrack.value - magneticTrack.value;
+
     if (idx >= 0) {
       const legIndex = this.availableWaypointsToLegIndex[idx];
       this.props.fmcService.master?.setRevisedWaypoint(legIndex, FlightPlanIndex.Active, false);
       if (legIndex !== undefined) {
         this.selectedWaypointIndex.set(idx);
         this.manualWptIdent = null;
-        const trueTrack = ADIRS.getTrueTrack();
+
         await this.props.fmcService.master?.flightPlanService.directToLeg(
           this.props.fmcService.master.navigation.getPpos() ?? { lat: 0, long: 0 },
-          trueTrack?.isNormalOperation() ? trueTrack.value : 0,
+          magneticTrack.value,
+          magVar,
           legIndex,
           this.directToOption.get() === DirectToOption.DIRECT_WITH_ABEAM,
           FlightPlanIndex.Active,
@@ -120,7 +130,8 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
         this.manualWptIdent = wpt.ident;
         await this.props.fmcService.master.flightPlanService.directToWaypoint(
           this.props.fmcService.master.navigation.getPpos() ?? { lat: 0, long: 0 },
-          SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree'),
+          magneticTrack.value,
+          magVar,
           wpt,
           this.directToOption.get() === DirectToOption.DIRECT_WITH_ABEAM,
           FlightPlanIndex.Active,

@@ -130,6 +130,12 @@ export interface FlightPlanLegDefinition {
   magneticCourse?: DegreesMagnetic;
 
   /**
+   * Specifies the magvar to use to convert between @see magneticCourse and the true course that may be used for the
+   * geometry generation
+   */
+  magVar?: number;
+
+  /**
    * Specifies the descent vertical angle (negative) referenced to the terminating fix
    * Should be projected back up to the last coded altitude
    */

@@ -5296,8 +5296,14 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     const adirLat = ADIRS.getLatitude();
     const adirLong = ADIRS.getLongitude();
     const trueTrack = ADIRS.getTrueTrack();
+    const magneticTrack = ADIRS.getMagneticTrack();
 
-    if (!adirLat.isNormalOperation() || !adirLong.isNormalOperation() || !trueTrack.isNormalOperation()) {
+    if (
+      !adirLat.isNormalOperation() ||
+      !adirLong.isNormalOperation() ||
+      !trueTrack.isNormalOperation() ||
+      !magneticTrack.isNormalOperation()
+    ) {
       return;
     }
 
@@ -5306,7 +5312,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       long: adirLong.value,
     };
 
-    await this.flightPlanService.directToWaypoint(ppos, trueTrack.value, waypoint);
+    const magVar = trueTrack.value - magneticTrack.value;
+
+    await this.flightPlanService.directToWaypoint(ppos, magneticTrack.value, magVar, waypoint);
   }
 
   /**
@@ -5318,8 +5326,14 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     const adirLat = ADIRS.getLatitude();
     const adirLong = ADIRS.getLongitude();
     const trueTrack = ADIRS.getTrueTrack();
+    const magneticTrack = ADIRS.getMagneticTrack();
 
-    if (!adirLat.isNormalOperation() || !adirLong.isNormalOperation() || !trueTrack.isNormalOperation()) {
+    if (
+      !adirLat.isNormalOperation() ||
+      !adirLong.isNormalOperation() ||
+      !trueTrack.isNormalOperation() ||
+      !magneticTrack.isNormalOperation()
+    ) {
       return;
     }
 
@@ -5328,7 +5342,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       long: adirLong.value,
     };
 
-    await this.flightPlanService.directToLeg(ppos, trueTrack.value, legIndex);
+    const magVar = trueTrack.value - magneticTrack.value;
+
+    await this.flightPlanService.directToLeg(ppos, magneticTrack.value, magVar, legIndex);
   }
 
   /**
