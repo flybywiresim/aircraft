@@ -47,6 +47,8 @@ class Fcdc {
 
   void updateApproachCapability(double deltaTime);
 
+  void updateBtvRowRop(double deltaTime);
+
   PitchLaw getPitchLawStatusFromBits(bool bit1, bool bit2, bool bit3);
 
   LateralLaw getLateralLawStatusFromBits(bool bit1, bool bit2);
@@ -67,7 +69,21 @@ class Fcdc {
 
   const double minimumPowerOutageTimeForFailure = 0.01;
 
+  int masterPrimIndex = 0;
+  bool allPrimsDead = false;
+
   bool lastBtvExitMissed = false;
+  bool ldgPerfAffectedRowRopLost = false;
+  bool ldgPerfAffectedBtvLost = false;
+  bool ldgDistAffectedRowRopLost = false;
+  bool ldgDistAffectedBtvLost = false;
+  bool arptNavLost = false;
+  bool rowLost = false;
+  bool ropLost = false;
+  bool btvLost = false;
+
+  bool ldgPerfAffectedMisc = false;
+  bool ldgDistAffectedMisc = false;
 
   bool land2Capacity = false;
   bool land3FailPassiveCapacity = false;
