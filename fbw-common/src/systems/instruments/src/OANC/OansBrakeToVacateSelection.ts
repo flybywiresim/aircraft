@@ -7,7 +7,11 @@ import {
   Arinc429LocalVarConsumerSubject,
   BTV_MIN_TOUCHDOWN_ZONE_DISTANCE,
   FmsOansData,
+  GenericAdirsEvents,
+  IrBusEvents,
+  LgciuBusEvents,
   OansMapProjection,
+  RaBusEvents,
   Runway,
 } from '@flybywiresim/fbw-sdk';
 import {
@@ -39,7 +43,9 @@ const CLAMP_WET_STOPBAR_DISTANCE = 200; // If stop bar is <> meters behind end o
  */
 
 export class OansBrakeToVacateSelection<T extends number> {
-  private readonly sub = this.bus.getSubscriber<BtvData & FmsOansData>();
+  private readonly sub = this.bus.getSubscriber<
+    BtvData & FmsOansData & IrBusEvents & LgciuBusEvents & GenericAdirsEvents & RaBusEvents
+  >();
 
   private readonly runwayLengthArinc = Arinc429Register.empty();
 
@@ -123,30 +129,18 @@ export class OansBrakeToVacateSelection<T extends number> {
   /** Live remaining stopping distance during deceleration, in meters. Null if not set. Counted from actual aircraft position. */
   private readonly liveStoppingDistance = ConsumerSubject.create(this.sub.on('stopBarDistance').whenChanged(), 0);
 
-  private readonly radioAltitude1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('radioAltitude_1'));
-  private readonly radioAltitude2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('radioAltitude_2'));
-  private readonly radioAltitude3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('radioAltitude_3'));
+  private readonly radioAltitude1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ra_radio_altitude_1'));
+  private readonly radioAltitude2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ra_radio_altitude_2'));
+  private readonly radioAltitude3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ra_radio_altitude_3'));
 
-  private readonly groundSpeed1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('groundSpeed_1'));
-  private readonly groundSpeed2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('groundSpeed_2'));
-  private readonly groundSpeed3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('groundSpeed_3'));
-  private readonly groundSpeed = MappedSubject.create(
-    ([gs1, gs2, gs3]) => {
-      if (gs1.isNormalOperation()) {
-        return gs1;
-      } else if (gs2.isNormalOperation()) {
-        return gs2;
-      } else {
-        return gs3;
-      }
-    },
-    this.groundSpeed1,
-    this.groundSpeed2,
-    this.groundSpeed3,
+  private readonly groundSpeed = Arinc429LocalVarConsumerSubject.create(this.sub.on('groundSpeed'));
+
+  private readonly lgciuDiscreteWord2_1 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('lgciu_discrete_word_2_1'),
   );
-
-  private readonly lgciuDiscreteWord2_1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('lgciuDiscreteWord2_1'));
-  private readonly lgciuDiscreteWord2_2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('lgciuDiscreteWord2_2'));
+  private readonly lgciuDiscreteWord2_2 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('lgciu_discrete_word_2_2'),
+  );
   private readonly onGround = MappedSubject.create(
     ([g1, g2]) => {
       if (g1.isNormalOperation()) {

@@ -31,6 +31,8 @@ import {
   PilotSeatPublisher,
   VhfComIndices,
   SwitchingPanelPublisher,
+  RaBusPublisher,
+  LgciuBusPublisher,
 } from '@flybywiresim/fbw-sdk';
 import { AudioManagementUnit } from 'systems-host/Misc/Communications/AudioManagementUnit';
 import { RmpAmuBusPublisher } from 'systems-host/Misc/Communications/RmpAmuBusPublisher';
@@ -136,6 +138,8 @@ class SystemsHost extends BaseInstrument {
   private readonly fgDataPublisher = new FGDataPublisher(this.bus);
   private readonly msfsMiscPublisher = new MsfsMiscPublisher(this.bus);
   private readonly irBusPublisher = new IrBusPublisher(this.bus);
+  private readonly raBusPublisher = new RaBusPublisher(this.bus);
+  private readonly lgciuBusPublisher = new LgciuBusPublisher(this.bus);
   private readonly aesuBusPublisher = new AesuBusPublisher(this.bus);
   private readonly switchingPanelPublisher = new SwitchingPanelPublisher(this.bus);
 
@@ -217,6 +221,8 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('FGDataPublisher', this.fgDataPublisher);
     this.backplane.addPublisher('MsfsMiscPublisher', this.msfsMiscPublisher);
     this.backplane.addPublisher('IrBusPublisher', this.irBusPublisher);
+    this.backplane.addPublisher('RaBusPublisher', this.raBusPublisher);
+    this.backplane.addPublisher('LgciuBusPublisher', this.lgciuBusPublisher);
     this.backplane.addPublisher('AesuPublisher', this.aesuBusPublisher);
     this.backplane.addPublisher('SwitchingPanelPublisher', this.switchingPanelPublisher);
     this.backplane.addPublisher('fmsMessage', this.fmsMessagePublisher);

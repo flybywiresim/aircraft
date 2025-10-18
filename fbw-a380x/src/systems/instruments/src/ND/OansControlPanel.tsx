@@ -39,6 +39,7 @@ import {
   FeatureType,
   FeatureTypeString,
   FmsOansData,
+  LgciuBusEvents,
   MathUtils,
   NXDataStore,
   NXLogicConfirmNode,
@@ -78,7 +79,14 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
   private readonly subs: Subscription[] = [];
 
   private readonly sub = this.props.bus.getSubscriber<
-    ClockEvents & FmsOansData & AdirsSimVars & NDSimvars & BtvData & OansControlEvents & ResetPanelSimvars
+    AdirsSimVars &
+      BtvData &
+      ClockEvents &
+      FmsOansData &
+      LgciuBusEvents &
+      NDSimvars &
+      OansControlEvents &
+      ResetPanelSimvars
   >();
 
   /** If navigraph not available, this class will compute BTV features */
@@ -183,8 +191,12 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     this.pposLongWord,
   );
 
-  private readonly lgciuDiscreteWord2_1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('lgciuDiscreteWord2_1'));
-  private readonly lgciuDiscreteWord2_2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('lgciuDiscreteWord2_2'));
+  private readonly lgciuDiscreteWord2_1 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('lgciu_discrete_word_2_1'),
+  );
+  private readonly lgciuDiscreteWord2_2 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('lgciu_discrete_word_2_2'),
+  );
   private readonly onGround = MappedSubject.create(
     ([g1, g2]) => {
       if (g1.isNormalOperation()) {

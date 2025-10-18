@@ -9,9 +9,12 @@ import {
   BTV_MIN_TOUCHDOWN_ZONE_DISTANCE,
   BtvData,
   FmsOansData,
+  IrBusEvents,
+  LgciuBusEvents,
   MathUtils,
   OansFmsDataStore,
   OansMapProjection,
+  RaBusEvents,
 } from '@flybywiresim/fbw-sdk';
 import { OansControlEvents } from '@flybywiresim/oanc';
 import { placeBearingDistance } from 'msfs-geo';
@@ -24,7 +27,7 @@ import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationD
  */
 
 export class BrakeToVacateDistanceUpdater implements Instrument {
-  private readonly sub = this.bus.getSubscriber<BtvData & FmsOansData>();
+  private readonly sub = this.bus.getSubscriber<BtvData & FmsOansData & IrBusEvents & LgciuBusEvents & RaBusEvents>();
 
   private readonly fmsDataStore = new OansFmsDataStore(this.bus);
 
@@ -99,18 +102,22 @@ export class BrakeToVacateDistanceUpdater implements Instrument {
 
   private readonly exitPosition = ConsumerSubject.create(this.sub.on('oansExitPosition'), []);
 
-  private readonly radioAltitude1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('radioAltitude_1'));
-  private readonly radioAltitude2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('radioAltitude_2'));
-  private readonly radioAltitude3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('radioAltitude_3'));
+  private readonly radioAltitude1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ra_radio_altitude_1'));
+  private readonly radioAltitude2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ra_radio_altitude_2'));
+  private readonly radioAltitude3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ra_radio_altitude_3'));
 
-  private readonly verticalSpeed1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('verticalSpeed_1'));
-  private readonly verticalSpeed2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('verticalSpeed_2'));
-  private readonly verticalSpeed3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('verticalSpeed_3'));
+  private readonly verticalSpeed1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_vertical_speed_1'));
+  private readonly verticalSpeed2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_vertical_speed_2'));
+  private readonly verticalSpeed3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_vertical_speed_3'));
 
   private readonly fwsFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
 
-  private readonly lgciuDiscreteWord2_1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('lgciuDiscreteWord2_1'));
-  private readonly lgciuDiscreteWord2_2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('lgciuDiscreteWord2_2'));
+  private readonly lgciuDiscreteWord2_1 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('lgciu_discrete_word_2_1'),
+  );
+  private readonly lgciuDiscreteWord2_2 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('lgciu_discrete_word_2_2'),
+  );
   private readonly onGround = MappedSubject.create(
     ([g1, g2]) => {
       if (g1.isNormalOperation()) {
