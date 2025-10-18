@@ -16,6 +16,7 @@ import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/legs/FlightPlanLegDefinition';
 import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
 import { CopyOptions } from '@fmgc/flightplanning/plans/CloningOptions';
+import { DirectTo } from '@fmgc/flightplanning/types/DirectTo';
 import {
   DefaultPerformanceData,
   FlightPlanPerformanceData,
@@ -127,7 +128,8 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     const tmpyFromLeg = temporaryPlan.maybeElementAt(temporaryPlan.activeLegIndex - 1);
 
     const directToInTmpy =
-      tmpyFromLeg?.isDiscontinuity === false && tmpyFromLeg.flags & FlightPlanLegFlags.DirectToTurningPoint;
+      tmpyFromLeg?.isDiscontinuity === false &&
+      BitFlags.isAny(tmpyFromLeg.flags, FlightPlanLegFlags.DirectToTurningPoint | FlightPlanLegFlags.DirectToInBound);
 
     const directToBeingInserted =
       directToInTmpy && BitFlags.isAny(tmpyFromLeg.flags, FlightPlanLegFlags.PendingDirectToTurningPoint);
@@ -401,32 +403,12 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     plan.startAirwayEntry(at);
   }
 
-  async directToWaypoint(
-    ppos: Coordinates,
-    trueTrack: Degrees,
-    waypoint: Fix,
-    withAbeam = false,
-    planIndex = FlightPlanIndex.Active,
-  ) {
-    const finalIndex = this.prepareDestructiveModification(planIndex);
+  async directTo(ppos: Coordinates, trueTrack: Degrees, directTo: DirectTo) {
+    const finalIndex = this.prepareDestructiveModification(FlightPlanIndex.Active);
 
     const plan = this.flightPlanManager.get(finalIndex);
 
-    plan.directToWaypoint(ppos, trueTrack, waypoint, withAbeam);
-  }
-
-  async directToLeg(
-    ppos: Coordinates,
-    trueTrack: Degrees,
-    targetLegIndex: number,
-    withAbeam = false,
-    planIndex = FlightPlanIndex.Active,
-  ) {
-    const finalIndex = this.prepareDestructiveModification(planIndex);
-
-    const plan = this.flightPlanManager.get(finalIndex);
-
-    plan.directToLeg(ppos, trueTrack, targetLegIndex, withAbeam);
+    plan.directTo(ppos, trueTrack, directTo);
   }
 
   async addOrEditManualHold(

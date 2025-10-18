@@ -33,6 +33,12 @@ export interface NavigationProvider {
   getGpsPrimary(): boolean;
 
   /**
+   * Gets the true aircraft track according to the FMS
+   * @returns true track in degrees or null if invalid
+   */
+  getTrueTrack(): number | null;
+
+  /**
    * Get the pressure altitude
    * @returns pressure altitude in feet or null if invalid
    */
@@ -43,6 +49,18 @@ export interface NavigationProvider {
    * @returns computed air speed in knots or null if invalid
    */
   getComputedAirspeed(): number | null;
+
+  /**
+   * Get the true airspeed from the ADR
+   * @returns true air speed in knots or null if invalid
+   */
+  getTrueAirspeed(): number | null;
+
+  /**
+   * Get the ground speed according to the FMS
+   * @returns ground speed in knots or null if invalid
+   */
+  getGroundSpeed(): number | null;
 
   /**
    * Get the radio altimeter height
