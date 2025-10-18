@@ -1732,6 +1732,9 @@ export class FwsCore {
 
   public readonly tawsWxrSelected = Subject.create(0);
 
+  public readonly oansAvailable = Subject.create(false);
+  public readonly oansPposLost = Subject.create(false);
+
   /** 35 OXYGEN */
   public readonly paxOxyMasksDeployed = Subject.create(false);
 
@@ -4663,6 +4666,10 @@ export class FwsCore {
     this.taws1FaultCond.set(this.taws1Failed.get() && taws1Powered);
     this.taws2FaultCond.set(this.taws2Failed.get() && taws2Powered);
     this.tawsWxrSelected.set(SimVar.GetSimVarValue('L:A32NX_WXR_TAWS_SYS_SELECTED', SimVarValueType.Number));
+
+    // OANS
+    this.oansAvailable.set(!!SimVar.GetSimVarValue('L:A32NX_OANS_AVAILABLE', SimVarValueType.Bool));
+    this.oansPposLost.set(!!SimVar.GetSimVarValue('L:A32NX_ARPT_NAV_POS_LOST', SimVarValueType.Bool));
 
     /* 26 - FIRE */
 

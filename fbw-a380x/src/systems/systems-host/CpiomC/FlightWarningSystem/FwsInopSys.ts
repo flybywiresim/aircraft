@@ -680,6 +680,15 @@ export class FwsInopSys {
       simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.taws1Failed, this.fws.taws2Failed),
       phase: FwsInopSysPhases.AllPhases,
     },
+    340300049: {
+      // ARPT NAV
+      simVarIsActive: MappedSubject.create(
+        ([oans, pposLost]) => !oans || pposLost,
+        this.fws.oansAvailable,
+        this.fws.oansPposLost,
+      ),
+      phase: FwsInopSysPhases.ApprLdg,
+    },
 
     700300001: {
       // ENG 2 REVERSER
