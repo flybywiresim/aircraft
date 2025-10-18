@@ -1539,6 +1539,8 @@ export class FwsCore {
 
   public autoBrakeOffMemoInhibited = false;
 
+  public readonly rowRopStatusWord = Arinc429Register.empty();
+
   public readonly rowLost = MappedSubject.create(
     ([w1, w2]) => w1.bitValueOr(11, false) || w2.bitValueOr(11, false),
     this.fcdc1LandingFctDiscreteWord,
@@ -5766,31 +5768,34 @@ export class FwsCore {
   }
 
   updateRowRopWarnings() {
-    const w = Arinc429Word.fromSimVarValue('L:A32NX_ROW_ROP_WORD_1');
+    this.rowRopStatusWord.setFromSimVar('L:A32NX_ROW_ROP_WORD_1');
 
     // ROW
-    this.soundManager.handleSoundCondition('runwayTooShort', w.bitValueOr(15, false));
+    this.soundManager.handleSoundCondition('runwayTooShort', this.rowRopStatusWord.bitValueOr(15, false));
 
     // ROP
     // MAX BRAKING, only for manual braking, if maximum pedal braking is not applied
     const maxBrakingSet =
       SimVar.GetSimVarValue('L:A32NX_LEFT_BRAKE_PEDAL_INPUT', 'number') > 90 ||
       SimVar.GetSimVarValue('L:A32NX_RIGHT_BRAKE_PEDAL_INPUT', 'number') > 90;
-    const maxBraking = w.bitValueOr(13, false) && !maxBrakingSet;
+    const maxBraking = this.rowRopStatusWord.bitValueOr(13, false) && !maxBrakingSet;
     this.soundManager.handleSoundCondition('brakeMaxBraking', maxBraking);
 
     // SET MAX REVERSE, if not already max. reverse set and !MAX_BRAKING
     const maxReverseSet =
       SimVar.GetSimVarValue('L:XMLVAR_Throttle1Position', 'number') < 0.1 &&
       SimVar.GetSimVarValue('L:XMLVAR_Throttle2Position', 'number') < 0.1;
-    const maxReverse = (w.bitValueOr(12, false) || w.bitValueOr(13, false)) && !maxReverseSet;
+    const maxReverse =
+      (this.rowRopStatusWord.bitValueOr(12, false) || this.rowRopStatusWord.bitValueOr(13, false)) && !maxReverseSet;
     this.soundManager.handleSoundCondition('setMaxReverse', !maxBraking && maxReverse);
 
     // At 80kt, KEEP MAX REVERSE once, if max. reversers deployed
     const ias = SimVar.GetSimVarValue('AIRSPEED INDICATED', 'knots');
     this.soundManager.handleSoundCondition(
       'keepMaxReverse',
-      ias <= 80 && ias > 4 && (w.bitValueOr(12, false) || w.bitValueOr(13, false)),
+      ias <= 80 &&
+        ias > 4 &&
+        (this.rowRopStatusWord.bitValueOr(12, false) || this.rowRopStatusWord.bitValueOr(13, false)),
     );
   }
 

@@ -4,17 +4,20 @@
 import { ConsumerSubject, EventBus, Instrument, MappedSubject, Subject } from '@microsoft/msfs-sdk';
 import {
   Arinc429LocalVarConsumerSubject,
+  Arinc429Register,
+  Arinc429SignStatusMatrix,
   BTV_MIN_TOUCHDOWN_ZONE_DISTANCE,
   BtvData,
   FmsOansData,
+  MathUtils,
+  OansFmsDataStore,
   OansMapProjection,
 } from '@flybywiresim/fbw-sdk';
-import { Arinc429Register, Arinc429SignStatusMatrix, MathUtils } from '@flybywiresim/fbw-sdk';
+import { OansControlEvents } from '@flybywiresim/oanc';
 import { placeBearingDistance } from 'msfs-geo';
 import { Position } from '@turf/turf';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
-import { OansFmsDataStore } from '@flybywiresim/fbw-sdk';
 
 /**
  * Utility class for brake to vacate (BTV) functions on the A380
@@ -105,6 +108,24 @@ export class BrakeToVacateDistanceUpdater implements Instrument {
   private readonly verticalSpeed3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('verticalSpeed_3'));
 
   private readonly fwsFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
+
+  private readonly lgciuDiscreteWord2_1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('lgciuDiscreteWord2_1'));
+  private readonly lgciuDiscreteWord2_2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('lgciuDiscreteWord2_2'));
+  private readonly onGround = MappedSubject.create(
+    ([g1, g2]) => {
+      if (g1.isNormalOperation()) {
+        return g1.bitValue(11);
+      } else {
+        return g2.bitValueOr(11, false);
+      }
+    },
+    this.lgciuDiscreteWord2_1,
+    this.lgciuDiscreteWord2_2,
+  );
+
+  private readonly autoBrakeMode = ConsumerSubject.create(this.sub.on('autoBrakeMode'), 0);
+  private readonly autoBrakeActive = ConsumerSubject.create(this.sub.on('autoBrakeActive'), false);
+  private btvActiveOnGroundLastValue = false;
 
   public readonly below300ftRaAndLanding = MappedSubject.create(
     ([ra1, ra2, ra3, fp]) =>
@@ -206,5 +227,13 @@ export class BrakeToVacateDistanceUpdater implements Instrument {
 
   public onUpdate(): void {
     this.updateRemainingDistances();
+
+    // If BTV disarmed when on ground, clear BTV selection
+    const btvActiveOnGround = this.autoBrakeActive.get() && this.onGround.get() && this.autoBrakeMode.get() === 1;
+    if (this.btvActiveOnGroundLastValue && !btvActiveOnGround) {
+      this.clearSelection();
+      this.bus.getPublisher<OansControlEvents>().pub('oans_remove_btv_data', true, true);
+    }
+    this.btvActiveOnGroundLastValue = btvActiveOnGround;
   }
 }

@@ -36,6 +36,10 @@ void Fcdc::update(double deltaTime, bool faultActive, bool isPowered) {
       }
     }
 
+    radioAlt = isNo(busInputs.raBusOutputs[0].radio_height_ft)   ? busInputs.raBusOutputs[0].radio_height_ft.Data
+               : isNo(busInputs.raBusOutputs[1].radio_height_ft) ? busInputs.raBusOutputs[1].radio_height_ft.Data
+                                                                 : busInputs.raBusOutputs[2].radio_height_ft.Data;
+
     updateApproachCapability(deltaTime);
     updateBtvRowRop(deltaTime);
 
@@ -157,7 +161,7 @@ FcdcBus Fcdc::getBusOutputs() {
   output.primFgDiscreteWord8.setSsm(ssm);
   output.primFgDiscreteWord8.setBit(11, capabilityTripleClickMtrig.read());          // CAPABILITY DOWNGRADE
   output.primFgDiscreteWord8.setBit(12, modeReversionTripleClickMtrig.read());       // FG MODE REVERSION
-  output.primFgDiscreteWord8.setBit(13, btvExitMissedMtrig.read());                  // BTV EXIT MISSED
+  output.primFgDiscreteWord8.setBit(13, btvTripleClickMtrig.read());                 // BTV TRIPLE CLICK
   output.primFgDiscreteWord8.setBit(14, false);                                      // AP 1 INOP
   output.primFgDiscreteWord8.setBit(15, false);                                      // AP 2 INOP
   output.primFgDiscreteWord8.setBit(16, false);                                      // FD 1 INOP
@@ -196,10 +200,6 @@ void Fcdc::updateApproachCapability(double deltaTime) {
   // Approach and Landing Capability comes from each PRIM, which monitors the required equipment (based on lots of criteria, see
   // LIM-AFS-30 P 11/18) FCDC consolidates these capabilities to a overall capability. To my understanding, this is done by looking at the
   // health status of PRIMs and SECs engagement. The rest of the conditions should be handled in PRIM FGs.
-
-  double radioAlt = isNo(busInputs.raBusOutputs[0].radio_height_ft)   ? busInputs.raBusOutputs[0].radio_height_ft.Data
-                    : isNo(busInputs.raBusOutputs[1].radio_height_ft) ? busInputs.raBusOutputs[1].radio_height_ft.Data
-                                                                      : busInputs.raBusOutputs[2].radio_height_ft.Data;
 
   int numberOfAutopilotsEngaged =
       discreteInputs.autopilotStateMachineOutput.enabled_AP1 + discreteInputs.autopilotStateMachineOutput.enabled_AP2;
@@ -307,7 +307,24 @@ void Fcdc::updateApproachCapability(double deltaTime) {
 
 void Fcdc::updateBtvRowRop(double deltaTime) {
   // Populate BTV data
-  btvExitMissedMtrig.write(discreteInputs.btvExitMissed, deltaTime);
+  btvTripleClickMtrig.write(discreteInputs.btvExitMissed, deltaTime);
+
+  // BTV reversion triple click
+  // On ground, if BTV is active and then deactivates --> triple click
+  // In flight below 700ft RA, if BTV was armed and then was disarmed --> triple click
+  Arinc429DiscreteWord* lgciu1DiscreteWord2 = reinterpret_cast<Arinc429DiscreteWord*>(&busInputs.lgciuBusOutputs[0].discrete_word_2);
+  Arinc429DiscreteWord* lgciu2DiscreteWord2 = reinterpret_cast<Arinc429DiscreteWord*>(&busInputs.lgciuBusOutputs[1].discrete_word_2);
+  bool onGround = lgciu1DiscreteWord2->bitFromValueOr(11, false) || lgciu2DiscreteWord2->bitFromValueOr(11, false);
+  bool btvActive =
+      discreteInputs.autoBrakeActive && (discreteInputs.btvState == 2 || discreteInputs.btvState == 3 || discreteInputs.btvState == 4);
+  bool btvArmed = !discreteInputs.autoBrakeActive && discreteInputs.btvState == 1;
+  if (onGround && btvActive == false && lastBtvActive == true) {
+    btvTripleClickMtrig.write(discreteInputs.btvExitMissed, deltaTime);
+  } else if (!onGround && radioAlt < 700 && !btvArmed && lastBtvArmed) {
+    btvTripleClickMtrig.write(discreteInputs.btvExitMissed, deltaTime);
+  }
+  lastBtvActive = btvActive;
+  lastBtvArmed = btvArmed;
 
   // Check PRIM and SEC availability
   int primAvailable = 0;

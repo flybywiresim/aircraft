@@ -327,6 +327,8 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idBrakePedalLeftPos;
   std::unique_ptr<LocalVariable> idBrakePedalRightPos;
   std::unique_ptr<LocalVariable> idAutobrakeArmedMode;
+  std::unique_ptr<LocalVariable> idAutobrakeActive;
+  std::unique_ptr<LocalVariable> idBtvState;
   std::unique_ptr<LocalVariable> idAutobrakeDecelLight;
   std::unique_ptr<LocalVariable> idMasterWarning;
   std::unique_ptr<LocalVariable> idMasterCaution;

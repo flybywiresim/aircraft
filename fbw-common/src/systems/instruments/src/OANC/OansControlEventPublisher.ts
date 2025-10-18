@@ -31,4 +31,5 @@ export interface OansControlEvents {
   oans_erase_flag_id: number;
   /** OANC -> ND: Show SET PLAN MODE in control panel, if in ARC/NAV mode and arpt too far away */
   oans_show_set_plan_mode: boolean;
+  oans_remove_btv_data: boolean;
 }

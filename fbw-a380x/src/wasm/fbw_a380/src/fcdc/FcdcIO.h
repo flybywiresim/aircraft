@@ -65,6 +65,10 @@ struct FcdcDiscreteInputs {
   bool dc2Failed;
   bool ac2Failed;
 
+  bool autoBrakeActive;
+  int autoBrakeMode;
+  int btvState;
+
   /* FIXME use proper bus messages */
   ap_raw_laws_input autopilotStateMachineOutput;
   athr_output autoThrustOutput;
@@ -83,6 +87,7 @@ struct FcdcBusInputs {
   base_ir_bus irBusOutputs[3];
   base_adr_bus adrBusOutputs[3];
   base_sfcc_bus sfccBusOutputs[2];
+  base_lgciu_bus lgciuBusOutputs[2];
 };
 
 struct FcdcDiscreteOutputs {

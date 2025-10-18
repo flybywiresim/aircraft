@@ -34,6 +34,9 @@ export interface BtvData {
   verticalSpeed_3: number;
 
   fwcFlightPhase: number;
+
+  autoBrakeMode: number;
+  autoBrakeActive: boolean;
 }
 
 export enum BtvSimVars {
@@ -55,6 +58,8 @@ export enum BtvSimVars {
   verticalSpeed_2 = 'L:A32NX_ADIRS_IR_2_VERTICAL_SPEED',
   verticalSpeed_3 = 'L:A32NX_ADIRS_IR_3_VERTICAL_SPEED',
   fwcFlightPhase = 'L:A32NX_FWC_FLIGHT_PHASE',
+  autoBrakeMode = 'L:A32NX_AUTOBRAKES_ARMED_MODE',
+  autoBrakeActive = 'L:A32NX_AUTOBRAKES_ACTIVE',
 }
 
 export class BtvSimvarPublisher extends SimVarPublisher<BtvData> {
@@ -77,6 +82,8 @@ export class BtvSimvarPublisher extends SimVarPublisher<BtvData> {
     ['verticalSpeed_2', { name: BtvSimVars.verticalSpeed_2, type: SimVarValueType.Number }],
     ['verticalSpeed_3', { name: BtvSimVars.verticalSpeed_3, type: SimVarValueType.Number }],
     ['fwcFlightPhase', { name: BtvSimVars.fwcFlightPhase, type: SimVarValueType.Enum }],
+    ['autoBrakeMode', { name: BtvSimVars.autoBrakeMode, type: SimVarValueType.Number }],
+    ['autoBrakeActive', { name: BtvSimVars.autoBrakeActive, type: SimVarValueType.Bool }],
   ]);
 
   public constructor(bus: ArincEventBus) {

@@ -72,7 +72,11 @@ class Fcdc {
   int masterPrimIndex = 0;
   bool allPrimsDead = false;
 
+  double radioAlt = 0.0;
+
   bool lastBtvExitMissed = false;
+  bool lastBtvActive = false;
+  bool lastBtvArmed = false;
   bool ldgPerfAffectedRowRopLost = false;
   bool ldgPerfAffectedBtvLost = false;
   bool ldgDistAffectedRowRopLost = false;
@@ -94,7 +98,7 @@ class Fcdc {
   bool land3FailPassiveInop = false;
   bool land3FailOperationalInop = false;
 
-  TriggeredMonostableNode btvExitMissedMtrig = TriggeredMonostableNode(1);  // Emit for 1s to make sure it reaches FWS
+  TriggeredMonostableNode btvTripleClickMtrig = TriggeredMonostableNode(1);  // Emit for 1s to make sure it reaches FWS
   TriggeredMonostableNode capabilityTripleClickMtrig = TriggeredMonostableNode(1);
   TriggeredMonostableNode modeReversionTripleClickMtrig = TriggeredMonostableNode(1);
 

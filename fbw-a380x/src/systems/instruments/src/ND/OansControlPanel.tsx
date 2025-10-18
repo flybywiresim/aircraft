@@ -44,6 +44,7 @@ import {
   NXLogicConfirmNode,
   OansFmsDataStore,
   OansMapProjection,
+  RegisteredSimVar,
   Runway,
 } from '@flybywiresim/fbw-sdk';
 
@@ -161,6 +162,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
   );
 
   private manualAirportSelection = false;
+  private manualAirportSelectionTime: number = 0;
 
   // TODO: Should be using GPS position interpolated with IRS velocity data
   private readonly pposLatWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('latitude'));
@@ -181,6 +183,20 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     this.pposLongWord,
   );
 
+  private readonly lgciuDiscreteWord2_1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('lgciuDiscreteWord2_1'));
+  private readonly lgciuDiscreteWord2_2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('lgciuDiscreteWord2_2'));
+  private readonly onGround = MappedSubject.create(
+    ([g1, g2]) => {
+      if (g1.isNormalOperation()) {
+        return g1.bitValue(11);
+      } else {
+        return g2.bitValueOr(11, false);
+      }
+    },
+    this.lgciuDiscreteWord2_1,
+    this.lgciuDiscreteWord2_2,
+  );
+
   private readonly setPlanModeConsumer = ConsumerSubject.create(this.sub.on('oans_show_set_plan_mode'), false);
   private readonly setPlanModeDisplay = this.setPlanModeConsumer.map((it) => (it ? 'inherit' : 'none'));
 
@@ -195,6 +211,8 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
   private readonly oansRequestedStoppingDistance = Arinc429LocalVarConsumerSubject.create(
     this.sub.on('oansRequestedStoppingDistance'),
   );
+
+  private readonly simTimeVar = RegisteredSimVar.create<number>('E:SIMULATION TIME', SimVarValueType.Seconds);
 
   // Need to add touchdown zone distance to displayed value. BTV computes from TDZ internally,
   // but users enter LDA from threshold
@@ -326,8 +344,10 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
           if (destination && this.oansAvailable.get() === false) {
             this.setBtvRunwayFromFmsRunway();
           }
+        } else if (this.oansAvailable.get() === false && !this.onGround.get()) {
+          this.clearSelection();
         }
-      }),
+      }, true),
     );
 
     this.subs.push(
@@ -337,6 +357,14 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         .handle((showOans) => {
           if (this.props.side === showOans.side) {
             this.showOans = showOans.show;
+          }
+        }),
+      this.sub
+        .on('oans_remove_btv_data')
+        .whenChanged()
+        .handle((removeBtvData) => {
+          if (removeBtvData && this.navigraphAvailable.get() === false) {
+            this.btvUtils.clearSelection();
           }
         }),
     );
@@ -572,6 +600,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     }
 
     this.manualAirportSelection = true;
+    this.manualAirportSelectionTime = this.simTimeVar.get();
     this.props.bus.getPublisher<OansControlEvents>().pub('oans_display_airport', selectedArpt.idarpt, true);
     this.store.loadedAirport.set(selectedArpt);
     this.store.isAirportSelectionPending.set(false); // TODO should be done when airport is fully loaded
@@ -619,12 +648,12 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
   private autoLoadAirport() {
     // If we don't have ppos or airport unloaded due to performance reasons, do not try to auto load
-    // If airport has been manually selected, do not auto load.
+    // If airport has been manually selected within the last 10 minutes, do not auto load.
     // FIXME reset manualAirportSelection after a while, to enable auto-load for destination even if departure was selected manually
     if (
       this.presentPosNotAvailable.get() ||
       this.oansPerformanceModeAndMovedOutOfZoomRange.read() ||
-      this.manualAirportSelection === true ||
+      (this.manualAirportSelection === true && this.simTimeVar.get() - this.manualAirportSelectionTime < 600) ||
       this.store.loadedAirport.get() !== this.store.selectedAirport.get() ||
       this.store.airports.length === 0 ||
       this.oansResetPulled.get()
@@ -694,6 +723,14 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         this.btvUtils.selectExitFromManualEntry(distance, localExitPos);
       }
     }
+  }
+
+  private clearSelection() {
+    this.btvUtils.clearSelection();
+    this.selectedEntityIndex.set(null);
+    this.selectedEntityString.set(null);
+    this.runwayLda.set(null);
+    this.runwayTora.set(null);
   }
 
   destroy(): void {

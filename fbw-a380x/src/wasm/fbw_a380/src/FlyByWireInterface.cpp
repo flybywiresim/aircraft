@@ -475,6 +475,8 @@ void FlyByWireInterface::setupLocalVariables() {
   idBrakePedalLeftPos = std::make_unique<LocalVariable>("A32NX_LEFT_BRAKE_PEDAL_INPUT");
   idBrakePedalRightPos = std::make_unique<LocalVariable>("A32NX_RIGHT_BRAKE_PEDAL_INPUT");
   idAutobrakeArmedMode = std::make_unique<LocalVariable>("A32NX_AUTOBRAKES_ARMED_MODE");
+  idAutobrakeActive = std::make_unique<LocalVariable>("A32NX_AUTOBRAKES_ACTIVE");
+  idBtvState = std::make_unique<LocalVariable>("A32NX_BTV_STATE");
   idAutobrakeDecelLight = std::make_unique<LocalVariable>("A32NX_AUTOBRAKES_DECEL_LIGHT");
   idFlapsHandlePercent = std::make_unique<LocalVariable>("A32NX_FLAPS_HANDLE_PERCENT");
   idFlapsHandleIndex = std::make_unique<LocalVariable>("A32NX_FLAPS_HANDLE_INDEX");
@@ -1800,6 +1802,9 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
     fcdcs[fcdcIndex].discreteInputs.dcEssFailed = !idElecDcEssBusPowered->get();
     fcdcs[fcdcIndex].discreteInputs.dc2Failed = !idElecDc2BusPowered->get();
     fcdcs[fcdcIndex].discreteInputs.ac2Failed = !idElecAc2BusPowered->get();
+    fcdcs[fcdcIndex].discreteInputs.autoBrakeActive = idAutobrakeActive->get() == 1;
+    fcdcs[fcdcIndex].discreteInputs.autoBrakeMode = idAutobrakeArmedMode->get();
+    fcdcs[fcdcIndex].discreteInputs.btvState = idBtvState->get();
 
     // FIXME no speed_brake_lever_command_deg in prim out bus (where to get it from?)
     fcdcs[fcdcIndex].analogInputs.spoilersLeverPos = spoilersHandler->getHandlePosition();
@@ -1831,6 +1836,7 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
     if (afdxCommAvailable) {
       fcdcs[fcdcIndex].busInputs.fwsDiscreteWord126[i] = Arinc429Utils::fromSimVar(idFwsDiscreteWord126[i]->get());
       fcdcs[fcdcIndex].busInputs.sfccBusOutputs[i] = sfccBusOutputs[i];
+      fcdcs[fcdcIndex].busInputs.lgciuBusOutputs[i] = lgciuBusOutputs[i];
     }
   }
 

@@ -503,6 +503,14 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
         flag: foundSymbols.flag,
       });
     });
+    this.sub
+      .on('oans_remove_btv_data')
+      .whenChanged()
+      .handle((removeBtvData) => {
+        if (removeBtvData) {
+          this.btvUtils.clearSelection();
+        }
+      });
 
     this.fmsDataStore.origin.sub(() => this.updateLabelClasses());
     this.fmsDataStore.departureRunway.sub(() => this.updateLabelClasses());
