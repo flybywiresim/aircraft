@@ -1,5 +1,11 @@
 // @ts-strict-ignore
-import { Arinc429SignStatusMatrix, Arinc429Word, NXDataStore, UpdateThrottler } from '@flybywiresim/fbw-sdk';
+import {
+  Arinc429Register,
+  Arinc429SignStatusMatrix,
+  Arinc429Word,
+  NXDataStore,
+  UpdateThrottler,
+} from '@flybywiresim/fbw-sdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { LegacySoundManager, soundList } from 'systems-host/Misc/LegacySoundManager';
 import { A380X_DEFAULT_RADIO_AUTO_CALL_OUTS, A380XRadioAutoCallOutFlags } from '../../shared/src/AutoCallOuts';
@@ -49,9 +55,11 @@ export class LegacyGpws {
 
   RetardState: LegacyStateMachine;
 
-  egpwsAlertDiscreteWord1 = Arinc429Word.empty();
+  egpwsAlertDiscreteWord1 = Arinc429Register.empty();
 
-  egpwsAlertDiscreteWord2 = Arinc429Word.empty();
+  egpwsAlertDiscreteWord2 = Arinc429Register.empty();
+
+  sfccSlatFlapPositionWord = Arinc429Register.empty();
 
   // eslint-disable-next-line camelcase
   constructor(
@@ -132,17 +140,19 @@ export class LegacyGpws {
     this.RetardState.setState('landed');
   }
 
-  gpwsUpdateDiscreteWords() {
-    this.egpwsAlertDiscreteWord1.ssm = Arinc429SignStatusMatrix.NormalOperation;
-    this.egpwsAlertDiscreteWord1.setBitValue(11, this.modes[0].current === 1);
-    this.egpwsAlertDiscreteWord1.setBitValue(12, this.modes[0].current === 2);
-    this.egpwsAlertDiscreteWord1.setBitValue(13, this.modes[1].current === 1);
-    this.egpwsAlertDiscreteWord1.setBitValue(12, this.modes[1].current === 2);
-    this.egpwsAlertDiscreteWord1.setBitValue(14, this.modes[2].current === 1);
-    this.egpwsAlertDiscreteWord1.setBitValue(15, this.modes[3].current === 1);
-    this.egpwsAlertDiscreteWord1.setBitValue(16, this.modes[3].current === 2);
-    this.egpwsAlertDiscreteWord1.setBitValue(17, this.modes[3].current === 3);
-    this.egpwsAlertDiscreteWord1.setBitValue(18, this.modes[4].current === 1);
+  gpwsUpdateDiscreteWords(gpwsFailed: boolean) {
+    this.egpwsAlertDiscreteWord1.ssm = gpwsFailed
+      ? Arinc429SignStatusMatrix.FailureWarning
+      : Arinc429SignStatusMatrix.NormalOperation;
+    this.egpwsAlertDiscreteWord1.setBitValue(11, gpwsFailed ? false : this.modes[0].current === 1);
+    this.egpwsAlertDiscreteWord1.setBitValue(12, gpwsFailed ? false : this.modes[0].current === 2);
+    this.egpwsAlertDiscreteWord1.setBitValue(13, gpwsFailed ? false : this.modes[1].current === 1);
+    this.egpwsAlertDiscreteWord1.setBitValue(12, gpwsFailed ? false : this.modes[1].current === 2);
+    this.egpwsAlertDiscreteWord1.setBitValue(14, gpwsFailed ? false : this.modes[2].current === 1);
+    this.egpwsAlertDiscreteWord1.setBitValue(15, gpwsFailed ? false : this.modes[3].current === 1);
+    this.egpwsAlertDiscreteWord1.setBitValue(16, gpwsFailed ? false : this.modes[3].current === 2);
+    this.egpwsAlertDiscreteWord1.setBitValue(17, gpwsFailed ? false : this.modes[3].current === 3);
+    this.egpwsAlertDiscreteWord1.setBitValue(18, gpwsFailed ? false : this.modes[4].current === 1);
     Arinc429Word.toSimVarValue(
       'L:A32NX_EGPWS_ALERT_1_DISCRETE_WORD_1',
       this.egpwsAlertDiscreteWord1.value,
@@ -154,7 +164,9 @@ export class LegacyGpws {
       this.egpwsAlertDiscreteWord1.ssm,
     );
 
-    this.egpwsAlertDiscreteWord2.ssm = Arinc429SignStatusMatrix.NormalOperation;
+    this.egpwsAlertDiscreteWord2.ssm = gpwsFailed
+      ? Arinc429SignStatusMatrix.FailureWarning
+      : Arinc429SignStatusMatrix.NormalOperation;
     this.egpwsAlertDiscreteWord2.setBitValue(14, false);
     Arinc429Word.toSimVarValue(
       'L:A32NX_EGPWS_ALERT_1_DISCRETE_WORD_2',
@@ -169,7 +181,6 @@ export class LegacyGpws {
   }
 
   setGlideSlopeWarning(state: boolean) {
-    SimVar.SetSimVarValue('L:A32NX_GPWS_GS_Warning_Active', 'Bool', state ? 1 : 0); // Still need this for XML
     this.egpwsAlertDiscreteWord2.setBitValue(11, state);
     Arinc429Word.toSimVarValue(
       'L:A32NX_EGPWS_ALERT_1_DISCRETE_WORD_2',
@@ -269,8 +280,14 @@ export class LegacyGpws {
     ) {
       // Activate between 10 - 2450 radio alt unless SYS is off
       const flapsThreeSelected = SimVar.GetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'Bool');
-      const FlapPosition = SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Number');
-      const FlapsInLandingConfig = flapsThreeSelected ? FlapPosition === 3 : FlapPosition === 4; // fixme should be actual flap angle
+
+      this.sfccSlatFlapPositionWord.setFromSimVar('A32NX_SFCC_1_SLAT_FLAP_SYSTEM_STATUS_WORD');
+      if (this.sfccSlatFlapPositionWord.isInvalid()) {
+        this.sfccSlatFlapPositionWord.setFromSimVar('A32NX_SFCC_2_SLAT_FLAP_SYSTEM_STATUS_WORD');
+      }
+      const FlapsInLandingConfig = flapsThreeSelected
+        ? this.sfccSlatFlapPositionWord.bitValueOr(22, false)
+        : this.sfccSlatFlapPositionWord.bitValueOr(23, false); //TODO Check AFDX Availabiltiy
       const vSpeed = Simplane.getVerticalSpeed();
       const Airspeed = SimVar.GetSimVarValue('AIRSPEED INDICATED', 'Knots');
       const gearExtended = SimVar.GetSimVarValue('GEAR TOTAL PCT EXTENDED', 'Percent') > 0.9;
@@ -298,7 +315,7 @@ export class LegacyGpws {
     }
 
     this.GPWSComputeLightsAndCallouts();
-    this.gpwsUpdateDiscreteWords();
+    this.gpwsUpdateDiscreteWords(gpwsFailed);
   }
 
   /**
