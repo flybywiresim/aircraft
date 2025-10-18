@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2025 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -85,7 +85,7 @@ export interface FlightPlanContext {
 }
 
 export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData>
-  implements ReadonlyFlightPlan
+  implements ReadonlyFlightPlan<P>
 {
   private readonly perfSyncPub: Publisher<PerformanceDataFlightPlanSyncEvents<P>>;
 
@@ -230,6 +230,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
   }
 
+  abstract get performanceData(): P;
+
   destroy() {
     for (const subscription of this.subscriptions) {
       subscription.destroy();
@@ -238,6 +240,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
   get legCount() {
     return this.allLegs.length;
+  }
+
+  get enrouteLegCount(): number {
+    return this.enrouteSegment.legCount;
   }
 
   get lastIndex() {
@@ -250,6 +256,21 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
   get firstApproachLegIndex() {
     return this.firstMissedApproachLegIndex - this.approachSegment.legCount;
+  }
+
+  get firstEnrouteLegIndex(): number {
+    return this.lastEnrouteLegIndex - this.enrouteSegment.legCount;
+  }
+
+  get lastEnrouteLegIndex(): number {
+    return (
+      this.firstApproachLegIndex -
+      this.approachViaSegment.legCount -
+      this.arrivalRunwayTransitionSegment.legCount -
+      this.arrivalSegment.legCount -
+      this.arrivalEnrouteTransitionSegment.legCount -
+      1
+    );
   }
 
   activeLegIndex = 1;

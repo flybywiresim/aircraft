@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2025 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -32,15 +32,15 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
 
   has(index: number): boolean;
 
-  get active(): ReadonlyFlightPlan;
+  get active(): ReadonlyFlightPlan<P>;
 
-  get temporary(): ReadonlyFlightPlan;
+  get temporary(): ReadonlyFlightPlan<P>;
 
-  get activeOrTemporary(): ReadonlyFlightPlan;
+  get activeOrTemporary(): ReadonlyFlightPlan<P>;
 
-  get uplink(): ReadonlyFlightPlan;
+  get uplink(): ReadonlyFlightPlan<P>;
 
-  secondary(index: number): ReadonlyFlightPlan;
+  secondary(index: number): ReadonlyFlightPlan<P>;
 
   get hasActive(): boolean;
 

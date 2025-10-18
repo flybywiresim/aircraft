@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2025 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -29,6 +29,10 @@ export class AlternateFlightPlan<P extends FlightPlanPerformanceData> extends Ba
 
   get originAirport(): Airport | undefined {
     return this.mainFlightPlan.destinationAirport;
+  }
+
+  get performanceData(): P {
+    return this.mainFlightPlan.performanceData;
   }
 
   clone(context: FlightPlanContext, fromMainFlightPlan: BaseFlightPlan<P>): AlternateFlightPlan<P> {

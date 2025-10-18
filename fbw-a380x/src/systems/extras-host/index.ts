@@ -1,8 +1,8 @@
-// @ts-strict-ignore
 // Copyright (c) 2022-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { Clock, EventBus, HEventPublisher, InstrumentBackplane, SimVarValueType } from '@microsoft/msfs-sdk';
+
 import {
   BaroUnitSelector,
   ExtrasSimVarPublisher,
@@ -20,12 +20,12 @@ import {
   TelexCheck,
   PilotSeatPublisher,
 } from '@flybywiresim/fbw-sdk';
+
 import { PushbuttonCheck } from 'extras-host/modules/pushbutton_check/PushbuttonCheck';
 import { A380XKeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
 import { VersionCheck } from './modules/version_check/VersionCheck';
 import { AircraftSync } from 'extras-host/modules/aircraft_sync/AircraftSync';
 import { LightSync } from 'extras-host/modules/light_sync/LightSync';
-import { MsfsFlightPlanSync } from '@fmgc/flightplanning/MsfsFlightPlanSync';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
 
@@ -91,8 +91,6 @@ class ExtrasHost extends BaseInstrument {
 
   private readonly pilotSeatManager = new PilotSeatManager(ExtrasHost.flightDeckBounds);
 
-  private readonly msfsFlightPlanSync: MsfsFlightPlanSync;
-
   private readonly telexCheck = new TelexCheck();
   /**interaction point 19 is GPU connection and 4 GPUs in total */
   private readonly gpuManagement = new GPUManagement(this.bus, 19, 4);
@@ -117,6 +115,12 @@ class ExtrasHost extends BaseInstrument {
   constructor() {
     super();
 
+    const aircraftProjectPrefix = process.env.AIRCRAFT_PROJECT_PREFIX;
+
+    if (aircraftProjectPrefix === undefined) {
+      throw new Error('[ExtrasHost] AIRCRAFT_PROJECT_PREFIX was undefined');
+    }
+
     this.hEventPublisher = new HEventPublisher(this.bus);
     this.simVarPublisher = new ExtrasSimVarPublisher(this.bus);
     this.msfsElectricsPublisher = new MsfsElectricsPublisher(this.bus);
@@ -129,13 +133,11 @@ class ExtrasHost extends BaseInstrument {
 
     this.pushbuttonCheck = new PushbuttonCheck(this.bus, this.notificationManager);
     this.keyInterceptor = new A380XKeyInterceptor(this.bus, this.notificationManager);
-    this.versionCheck = new VersionCheck(process.env.AIRCRAFT_PROJECT_PREFIX, this.bus);
-    this.aircraftSync = new AircraftSync(process.env.AIRCRAFT_PROJECT_PREFIX, this.bus);
+    this.versionCheck = new VersionCheck(aircraftProjectPrefix, this.bus);
+    this.aircraftSync = new AircraftSync(aircraftProjectPrefix, this.bus);
 
     if (isMsfs2024()) {
       NavigationDatabaseService.activeDatabase = new NavigationDatabase(this.bus, NavigationDatabaseBackend.Msfs);
-
-      this.msfsFlightPlanSync = new MsfsFlightPlanSync(this.bus);
     }
 
     this.backplane.addPublisher('SimvarPublisher', this.simVarPublisher);

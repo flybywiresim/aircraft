@@ -24,8 +24,9 @@ import {
   a380EfisRangeSettings,
   DatabaseItem,
   EfisSide,
-  FMMessage,
   Fix,
+  FMMessage,
+  isMsfs2024,
   NXDataStore,
   Units,
   UpdateThrottler,
@@ -41,7 +42,7 @@ import {
   TypeIMessage,
 } from 'instruments/src/MFD/shared/NXSystemMessages';
 import { DataManager, LatLonFormatType, PilotWaypoint } from '@fmgc/flightplanning/DataManager';
-import { Coordinates, distanceTo, bearingTo } from 'msfs-geo';
+import { bearingTo, Coordinates } from 'msfs-geo';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { FmcIndex } from 'instruments/src/MFD/FMC/FmcServiceInterface';
@@ -61,6 +62,7 @@ import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDataba
 import { FlightPlanRpcServer } from '@fmgc/flightplanning/rpc/FlightPlanRpcServer';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
 import { VdAltitudeConstraint } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
+import { MsfsFlightPlanSync } from '@fmgc/flightplanning/MsfsFlightPlanSync';
 
 export interface FmsErrorMessage {
   message: McduMessage;
@@ -103,6 +105,10 @@ export class FlightManagementComputer implements FmcInterface {
     return this._operatingMode;
   }
 
+  set operatingMode(mode: FmcOperatingModes) {
+    this._operatingMode = mode;
+  }
+
   // FIXME A320 data
   #flightPlanService = new FlightPlanService(
     this.bus,
@@ -110,6 +116,8 @@ export class FlightManagementComputer implements FmcInterface {
     FpmConfigs.A380,
     this._operatingMode === FmcOperatingModes.Master, // TODO Dynamically change this within `FlightPlanService` (proxy things through to an RPC client?)
   );
+
+  #msfsFlightPlanSync: MsfsFlightPlanSync | undefined;
 
   #rpcServer: FlightPlanRpcServer | undefined;
 
@@ -284,7 +292,11 @@ export class FlightManagementComputer implements FmcInterface {
         true,
       );
 
-      this.#rpcServer = new FlightPlanRpcServer(this.bus, this.#flightPlanService);
+      // FIXME this needs to be changed when operating mode can vary. Need some other way of only instantiating this on only
+      // one FMC.
+      if (isMsfs2024() && this.operatingMode === FmcOperatingModes.Master) {
+        this.#msfsFlightPlanSync = new MsfsFlightPlanSync(this.bus, this.flightPlanService);
+      }
 
       this.#navigation.init();
       this.efisSymbolsLeft.init();
@@ -1127,7 +1139,7 @@ export class FlightManagementComputer implements FmcInterface {
   private updateVerticalPath() {
     // Transmit active vertical geometry
     const predictions = this.guidanceController.vnavDriver.mcduProfile?.waypointPredictions;
-    const plan: ReadonlyFlightPlan = this.flightPlanService.active;
+    const plan: ReadonlyFlightPlan<A320FlightPlanPerformanceData> = this.flightPlanService.active;
 
     if (!predictions || !this.flightPlanService.hasActive) {
       this.acInterface.transmitVerticalPath([], [], [], [], null);

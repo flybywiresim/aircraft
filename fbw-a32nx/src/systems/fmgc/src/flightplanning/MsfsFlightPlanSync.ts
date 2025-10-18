@@ -1,3 +1,7 @@
+// Copyright (c) 2025 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import {
   AirportSubsectionCode,
   Approach,
@@ -21,11 +25,10 @@ import {
   JS_ICAO,
   JS_RunwayIdentifier,
 } from '../../../../../../fbw-common/src/systems/navdata/client/backends/Msfs/FsTypes';
-import { FlightPlanRpcClient } from '@fmgc/flightplanning/rpc/FlightPlanRpcClient';
-import { A320FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { DataManager, PilotWaypointType } from '@fmgc/flightplanning/DataManager';
+import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
 
 export class MsfsFlightPlanSync {
   private static readonly FBW_APPROACH_TO_MSFS_APPROACH: Record<ApproachType, string> = {
@@ -53,8 +56,6 @@ export class MsfsFlightPlanSync {
 
   private readonly listener: ViewListener.ViewListener;
 
-  private readonly rpcClient: FlightPlanRpcClient<A320FlightPlanPerformanceData>;
-
   private readonly dataManager: DataManager;
 
   private readonly listenerReady = Subject.create(false);
@@ -71,7 +72,10 @@ export class MsfsFlightPlanSync {
     logTroubleshootingError(this.bus, '[MsfsFlightPlanSync] ' + message);
   }
 
-  constructor(private readonly bus: EventBus) {
+  constructor(
+    private readonly bus: EventBus,
+    private readonly flightPlanInterface: FlightPlanInterface,
+  ) {
     if (!isMsfs2024()) {
       throw new Error('[MsfsFlightPlanSync] Cannot be instantiated in MSFS 2020');
     }
@@ -84,10 +88,9 @@ export class MsfsFlightPlanSync {
       this.listenerReady.set(true);
     });
 
-    this.rpcClient = new FlightPlanRpcClient(bus, new A320FlightPlanPerformanceData());
-    this.rpcClient.onAvailable.on(() => this.fmsRpcClientReady.set(true));
+    this.fmsRpcClientReady.set(true);
 
-    this.dataManager = new DataManager(this.bus, this.rpcClient);
+    this.dataManager = new DataManager(this.bus, this.flightPlanInterface);
 
     Wait.awaitSubscribable(this.isReady).then(async () => {
       console.log('[MsfsFlightPlanSync] Ready');
@@ -132,7 +135,7 @@ export class MsfsFlightPlanSync {
 
     const db = NavigationDatabaseService.activeDatabase;
 
-    await this.rpcClient.newCityPair(
+    await this.flightPlanInterface.newCityPair(
       route.departureAirport.ident,
       route.destinationAirport.ident,
       undefined,
@@ -140,7 +143,7 @@ export class MsfsFlightPlanSync {
     );
 
     if (route.departureRunway.number !== '') {
-      await this.rpcClient.setOriginRunway(
+      await this.flightPlanInterface.setOriginRunway(
         RunwayUtils.runwayIdent(
           route.departureAirport.ident,
           route.departureRunway.number,
@@ -151,7 +154,7 @@ export class MsfsFlightPlanSync {
     }
 
     if (route.destinationRunway.number !== '') {
-      await this.rpcClient.setDestinationRunway(
+      await this.flightPlanInterface.setDestinationRunway(
         RunwayUtils.runwayIdent(
           route.destinationAirport.ident,
           route.destinationRunway.number,
@@ -167,7 +170,7 @@ export class MsfsFlightPlanSync {
       departure = departures.find((it) => it.ident === route.departure);
 
       if (departure) {
-        await this.rpcClient.setDepartureProcedure(departure.databaseId, FlightPlanIndex.Uplink);
+        await this.flightPlanInterface.setDepartureProcedure(departure.databaseId, FlightPlanIndex.Uplink);
       }
     }
 
@@ -175,25 +178,20 @@ export class MsfsFlightPlanSync {
       const transition = departure.enrouteTransitions.find((it) => it.ident === route.departureTransition);
 
       if (transition) {
-        await this.rpcClient.setDepartureEnrouteTransition(transition.databaseId, FlightPlanIndex.Uplink);
+        await this.flightPlanInterface.setDepartureEnrouteTransition(transition.databaseId, FlightPlanIndex.Uplink);
       }
     }
 
     let insertHead = 0;
 
     const updateInsertHead = () => {
-      const uplinkPlan = this.rpcClient.uplink;
+      const uplinkPlan = this.flightPlanInterface.uplink;
 
-      insertHead = uplinkPlan.originSegment.allLegs.length;
-      insertHead += uplinkPlan.departureRunwayTransitionSegment.allLegs.length;
-      insertHead += uplinkPlan.departureSegment.allLegs.length;
-      insertHead += uplinkPlan.departureEnrouteTransitionSegment.allLegs.length;
-      insertHead += uplinkPlan.enrouteSegment.allLegs.length;
-      insertHead--;
+      insertHead = uplinkPlan.lastEnrouteLegIndex;
 
-      const lastEnrouteElement = uplinkPlan.enrouteSegment.allLegs[uplinkPlan.enrouteSegment.allLegs.length - 1];
+      const lastEnrouteElement = uplinkPlan.maybeElementAt(insertHead);
 
-      if (lastEnrouteElement && lastEnrouteElement.isDiscontinuity === true && uplinkPlan.enrouteSegment.legCount > 1) {
+      if (lastEnrouteElement && lastEnrouteElement.isDiscontinuity === true && uplinkPlan.enrouteLegCount > 1) {
         insertHead--;
       }
     };
@@ -245,7 +243,7 @@ export class MsfsFlightPlanSync {
       }
 
       if (leg.via !== '') {
-        await this.rpcClient.startAirwayEntry(insertHead, FlightPlanIndex.Uplink);
+        await this.flightPlanInterface.startAirwayEntry(insertHead, FlightPlanIndex.Uplink);
 
         const airway = await NavigationDatabaseService.activeDatabase.searchAirway(leg.via, fix);
 
@@ -254,13 +252,13 @@ export class MsfsFlightPlanSync {
           continue;
         }
 
-        await this.rpcClient.continueAirwayEntryViaAirway(airway[0], FlightPlanIndex.Uplink);
-        await this.rpcClient.continueAirwayEntryToFix(fix, false, FlightPlanIndex.Uplink);
+        await this.flightPlanInterface.continueAirwayEntryViaAirway(airway[0], FlightPlanIndex.Uplink);
+        await this.flightPlanInterface.continueAirwayEntryToFix(fix, false, FlightPlanIndex.Uplink);
 
-        await this.rpcClient.finaliseAirwayEntry(FlightPlanIndex.Uplink);
+        await this.flightPlanInterface.finaliseAirwayEntry(FlightPlanIndex.Uplink);
         updateInsertHead();
       } else {
-        await this.rpcClient.nextWaypoint(insertHead, fix, FlightPlanIndex.Uplink, false);
+        await this.flightPlanInterface.nextWaypoint(insertHead, fix, FlightPlanIndex.Uplink, false);
         updateInsertHead();
       }
     }
@@ -273,7 +271,7 @@ export class MsfsFlightPlanSync {
       );
 
       if (approach) {
-        await this.rpcClient.setApproach(approach.databaseId, FlightPlanIndex.Uplink);
+        await this.flightPlanInterface.setApproach(approach.databaseId, FlightPlanIndex.Uplink);
       }
     }
 
@@ -281,7 +279,7 @@ export class MsfsFlightPlanSync {
       const transition = approach.transitions.find((it) => it.ident === route.approachTransition);
 
       if (transition) {
-        await this.rpcClient.setApproachVia(transition.databaseId, FlightPlanIndex.Uplink);
+        await this.flightPlanInterface.setApproachVia(transition.databaseId, FlightPlanIndex.Uplink);
       }
     }
 
@@ -291,7 +289,7 @@ export class MsfsFlightPlanSync {
       arrival = arrivals.find((it) => it.ident === route.arrival);
 
       if (arrival) {
-        await this.rpcClient.setArrival(arrival.databaseId, FlightPlanIndex.Uplink);
+        await this.flightPlanInterface.setArrival(arrival.databaseId, FlightPlanIndex.Uplink);
       }
     }
 
@@ -299,15 +297,15 @@ export class MsfsFlightPlanSync {
       const transition = arrival.enrouteTransitions.find((it) => it.ident === route.arrivalTransition);
 
       if (transition) {
-        await this.rpcClient.setArrivalEnrouteTransition(transition.databaseId, FlightPlanIndex.Uplink);
+        await this.flightPlanInterface.setArrivalEnrouteTransition(transition.databaseId, FlightPlanIndex.Uplink);
       }
     }
 
-    await this.rpcClient.uplinkInsert();
+    await this.flightPlanInterface.uplinkInsert();
   };
 
   private handleAvionicsRouteRequested = async (_requestID: number): Promise<void> => {
-    const activePlan = this.rpcClient.active;
+    const activePlan = this.flightPlanInterface.active;
 
     if (!activePlan.originAirport || !activePlan.destinationAirport) {
       return;
@@ -350,7 +348,9 @@ export class MsfsFlightPlanSync {
 
     const enroute: JS_EnrouteLeg[] = [];
 
-    for (const element of activePlan.enrouteSegment.allLegs) {
+    for (let i = activePlan.firstEnrouteLegIndex; i <= activePlan.lastEnrouteLegIndex; i++) {
+      const element = activePlan.elementAt(i);
+
       if (element.isDiscontinuity === true) {
         continue;
       }
@@ -426,12 +426,14 @@ export class MsfsFlightPlanSync {
       suffix: '',
     };
 
-    if (activePlan.approach) {
-      approach.type = MsfsFlightPlanSync.FBW_APPROACH_TO_MSFS_APPROACH[activePlan.approach.type];
-      if (activePlan.approach.runwayIdent !== undefined) {
-        MsfsFlightPlanSync.assignFbwRunwayIdentToMsfsRunwayIdent(approach.runway, activePlan.approach.runwayIdent);
+    const fbwApproach = activePlan.approach;
+
+    if (fbwApproach) {
+      approach.type = MsfsFlightPlanSync.FBW_APPROACH_TO_MSFS_APPROACH[fbwApproach.type];
+      if (fbwApproach.runwayIdent !== undefined) {
+        MsfsFlightPlanSync.assignFbwRunwayIdentToMsfsRunwayIdent(approach.runway, fbwApproach.runwayIdent);
       }
-      approach.suffix = activePlan.approach.multipleIndicator;
+      approach.suffix = fbwApproach.multipleIndicator;
     }
 
     const route: JS_FlightPlanRoute = {
