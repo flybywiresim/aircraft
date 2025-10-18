@@ -69,13 +69,13 @@ describe('FlightPlanInterface', () => {
 
       const terminationFix = await NavigationDatabaseService.activeDatabase.searchWaypoint('DUTIL');
 
-      await flightPlanInterface.continueAirwayEntryToFix(terminationFix[0], FlightPlanIndex.Uplink);
+      await flightPlanInterface.continueAirwayEntryToFix(terminationFix[0], false, FlightPlanIndex.Uplink);
 
       await flightPlanInterface.finaliseAirwayEntry(FlightPlanIndex.Uplink);
 
-      expect(flightPlanInterface.uplink.legElementAt(2).terminationWaypoint().ident).toBe('NOSUS');
-      expect(flightPlanInterface.uplink.legElementAt(3).terminationWaypoint().ident).toBe('DEBUS');
-      expect(flightPlanInterface.uplink.legElementAt(4).terminationWaypoint().ident).toBe('DUTIL');
+      expect(flightPlanInterface.uplink.legElementAt(2).terminationWaypoint()?.ident).toBe('NOSUS');
+      expect(flightPlanInterface.uplink.legElementAt(3).terminationWaypoint()?.ident).toBe('DEBUS');
+      expect(flightPlanInterface.uplink.legElementAt(4).terminationWaypoint()?.ident).toBe('DUTIL');
     });
   });
 });
