@@ -3,7 +3,8 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ClockEvents, EventBus, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { ClockEvents, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { EwdSimvars } from './shared/EwdSimvarPublisher';
 import { Layer } from '../MsfsAvionicsCommon/Layer';
@@ -11,7 +12,7 @@ import { Layer } from '../MsfsAvionicsCommon/Layer';
 import './style.scss';
 
 interface SlatsProps {
-  bus: EventBus;
+  bus: ArincEventBus;
 }
 export class Slats extends DisplayComponent<SlatsProps> {
   private targetClass = Subject.create('');
@@ -58,15 +59,20 @@ export class Slats extends DisplayComponent<SlatsProps> {
 
   private flapsOut: boolean = false;
 
+  private sfccValid = Subject.create(false);
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<Arinc429Values & ClockEvents & EwdSimvars>();
+    const sub = this.props.bus.getArincSubscriber<Arinc429Values & ClockEvents & EwdSimvars>();
 
     sub
       .on('slatsFlapsStatus')
-      .whenChanged()
+      .whenArinc429Changed()
       .handle((s) => {
+        const sfccValid = !s.isFailureWarning();
+        this.sfccValid.set(sfccValid);
+
         this.configClean = s.bitValue(17);
         this.config1 = s.bitValue(18);
         this.config2 = s.bitValue(19);
@@ -104,7 +110,7 @@ export class Slats extends DisplayComponent<SlatsProps> {
 
     sub
       .on('slatsPosition')
-      .whenChanged()
+      .whenArinc429Changed()
       .handle((s) => {
         const slats = s.valueOr(0);
 
@@ -153,7 +159,7 @@ export class Slats extends DisplayComponent<SlatsProps> {
 
     sub
       .on('flapsPosition')
-      .whenChanged()
+      .whenArinc429Changed()
       .handle((s) => {
         const flaps = s.valueOr(0);
 
@@ -225,10 +231,10 @@ export class Slats extends DisplayComponent<SlatsProps> {
           <text class={this.targetClass} x={-3} y={59}>
             {this.targetText}
           </text>
-          <text class="Standard Center" x={-101} y={15}>
+          <text class={{ Amber: this.sfccValid.map((v) => !v), Standard: true, Center: true }} x={-101} y={15}>
             S
           </text>
-          <text class="Standard Center" x={105} y={15}>
+          <text class={{ Amber: this.sfccValid.map((v) => !v), Standard: true, Center: true }} x={105} y={15}>
             F
           </text>
 
@@ -252,11 +258,23 @@ export class Slats extends DisplayComponent<SlatsProps> {
           A LOCK
         </text>
 
-        <path class="Slats" d={this.slatsPath} />
-        <line class="GreenLine" x1={-18} y1={0} x2={this.slatsEndX} y2={this.slatsEndY} />
+        <path class={{ AmberStroke: this.sfccValid.map((v) => !v), Path: true }} d={this.slatsPath} />
+        <line
+          class={{ AmberStroke: this.sfccValid.map((v) => !v), Line: true }}
+          x1={-18}
+          y1={0}
+          x2={this.slatsEndX}
+          y2={this.slatsEndY}
+        />
 
-        <path class="Flaps" d={this.flapsPath} />
-        <line class="GreenLine" x1={0} y1={0} x2={this.flapsEndX} y2={this.flapsEndY} />
+        <path class={{ AmberStroke: this.sfccValid.map((v) => !v), Path: true }} d={this.flapsPath} />
+        <line
+          class={{ AmberStroke: this.sfccValid.map((v) => !v), Line: true }}
+          x1={0}
+          y1={0}
+          x2={this.flapsEndX}
+          y2={this.flapsEndY}
+        />
       </Layer>
     );
   }

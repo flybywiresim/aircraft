@@ -14,6 +14,12 @@ export interface ArincConsumer<T> extends Consumer<T> {
   withArinc429Precision(precision: number): Consumer<T>;
 
   /**
+   * Filter the subscription to consume only when the Arinc429 word changes.
+   * @returns A new consumer with the applied filter.
+   */
+  whenArinc429Changed(): Consumer<T>;
+
+  /**
    * Filter the subscription to consume only when the SSM value changes.
    * @returns A new consumer with the applied ssm filter.
    */
@@ -65,6 +71,24 @@ export class BasicArincConsumer<T> extends BasicConsumer<T> {
         state.hasNormalOps = (data as any).isNormalOperation();
         state.isNoComputedData = (data as any).isNoComputedData();
         state.isFailureWarning = (data as any).isFailureWarning();
+        this.arincWith(data, next);
+      }
+    };
+  }
+
+  /** @inheritdoc */
+  public whenArinc429Changed(): ArincConsumer<T> {
+    return new BasicArincConsumer<T>(
+      this.arincSubscribe,
+      { lastValue: 0, hasLastValue: false },
+      this.getWhenArinc429ChangedHandler(),
+    );
+  }
+
+  private getWhenArinc429ChangedHandler(): (data: any, state: any, next: Handler<T>) => void {
+    return (data, state, next): void => {
+      if ((data as any).rawWord !== state.lastWord) {
+        state.lastWord = (data as any).rawWord;
         this.arincWith(data, next);
       }
     };
