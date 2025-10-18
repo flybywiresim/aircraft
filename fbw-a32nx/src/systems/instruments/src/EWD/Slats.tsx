@@ -231,10 +231,10 @@ export class Slats extends DisplayComponent<SlatsProps> {
           <text class={this.targetClass} x={-3} y={59}>
             {this.targetText}
           </text>
-          <text class={this.sfccValid.map((v) => (v ? 'Standard Center' : 'Standard Center Amber'))} x={-101} y={15}>
+          <text class={{ Amber: this.sfccValid.map((v) => !v), Standard: true, Center: true }} x={-101} y={15}>
             S
           </text>
-          <text class={this.sfccValid.map((v) => (v ? 'Standard Center' : 'Standard Center Amber'))} x={105} y={15}>
+          <text class={{ Amber: this.sfccValid.map((v) => !v), Standard: true, Center: true }} x={105} y={15}>
             F
           </text>
 
@@ -258,18 +258,18 @@ export class Slats extends DisplayComponent<SlatsProps> {
           A LOCK
         </text>
 
-        <path class={this.sfccValid.map((v) => (v ? 'SlatsGreen' : 'SlatsAmber'))} d={this.slatsPath} />
+        <path class={{ AmberStroke: this.sfccValid.map((v) => !v), Path: true }} d={this.slatsPath} />
         <line
-          class={this.sfccValid.map((v) => (v ? 'GreenLine' : 'AmberLine'))}
+          class={{ AmberStroke: this.sfccValid.map((v) => !v), Line: true }}
           x1={-18}
           y1={0}
           x2={this.slatsEndX}
           y2={this.slatsEndY}
         />
 
-        <path class={this.sfccValid.map((v) => (v ? 'FlapsGreen' : 'FlapsAmber'))} d={this.flapsPath} />
+        <path class={{ AmberStroke: this.sfccValid.map((v) => !v), Path: true }} d={this.flapsPath} />
         <line
-          class={this.sfccValid.map((v) => (v ? 'GreenLine' : 'AmberLine'))}
+          class={{ AmberStroke: this.sfccValid.map((v) => !v), Line: true }}
           x1={0}
           y1={0}
           x2={this.flapsEndX}
