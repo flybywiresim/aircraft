@@ -2569,6 +2569,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         const { start, length } = toDelete[i];
         segment.allLegs.splice(start, length);
       }
+
+      this.enqueueOperation(FlightPlanQueuedOperation.SyncSegmentLegs, segment);
     }
   }
 

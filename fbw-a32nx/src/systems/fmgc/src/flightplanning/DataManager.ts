@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -160,6 +159,15 @@ export class DataManager {
           waypoint: WaypointFactory.fromLocation(ident, coordinates),
         };
       case PilotWaypointType.Pbx:
+        if (
+          wp.pbxPlace1 === undefined ||
+          wp.pbxBearing1 === undefined ||
+          wp.pbxPlace2 === undefined ||
+          wp.pbxBearing2 === undefined
+        ) {
+          throw new Error('[DataManager](deserializeWaypoint) Serialized PBX waypoint did not have required data');
+        }
+
         return {
           type: PilotWaypointType.Pbx,
           storedIndex,
@@ -170,6 +178,10 @@ export class DataManager {
           pbxBearing2: wp.pbxBearing2,
         };
       case PilotWaypointType.Pbd:
+        if (wp.pbdPlace === undefined || wp.pbdBearing === undefined || wp.pbdDistance === undefined) {
+          throw new Error('[DataManager](deserializeWaypoint) Serialized PBD waypoint did not have required data');
+        }
+
         return {
           type: PilotWaypointType.Pbd,
           storedIndex,
@@ -178,8 +190,6 @@ export class DataManager {
           pbdBearing: wp.pbdBearing,
           pbdDistance: wp.pbdDistance,
         };
-      default:
-        return undefined;
     }
   }
 
@@ -326,7 +336,7 @@ export class DataManager {
    * @param ident The ident of the waypoint, if undefined it will be generated
    * @returns The created waypoint
    */
-  public createLatLonWaypoint(coordinates: Coordinates, stored: boolean, ident: string = undefined): LatLonWaypoint {
+  public createLatLonWaypoint(coordinates: Coordinates, stored: boolean, ident?: string): LatLonWaypoint {
     const index = stored ? this.generateStoredWaypointIndex() : -1;
 
     if (ident === undefined) {
@@ -369,7 +379,7 @@ export class DataManager {
     place2: Fix,
     magneticBearing2: DegreesMagnetic,
     stored = false,
-    ident: string = undefined,
+    ident?: string,
   ): PbxWaypoint {
     const bearing1 = A32NX_Util.magneticToTrue(magneticBearing1, A32NX_Util.getRadialMagVar(place1));
     const bearing2 = A32NX_Util.magneticToTrue(magneticBearing2, A32NX_Util.getRadialMagVar(place2));
@@ -412,7 +422,7 @@ export class DataManager {
     magneticBearing: DegreesMagnetic,
     distance: NauticalMiles,
     stored = false,
-    ident: string = undefined,
+    ident?: string,
   ): PbdWaypoint {
     const bearing = A32NX_Util.magneticToTrue(magneticBearing, A32NX_Util.getRadialMagVar(origin));
 
@@ -446,5 +456,9 @@ export class DataManager {
 
   public getStoredWaypointsByIdent(ident: string): PilotWaypoint[] {
     return this.storedWaypoints.filter((wp) => wp && wp.waypoint.ident === ident);
+  }
+
+  public getStoredWaypointsByDatabaseId(databaseId: string): PilotWaypoint | undefined {
+    return this.storedWaypoints.find((wp) => wp && wp.waypoint.databaseId === databaseId);
   }
 }

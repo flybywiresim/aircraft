@@ -143,7 +143,7 @@ class ExtrasHost extends BaseInstrument {
     this.aircraftSync = new AircraftSync(process.env.AIRCRAFT_PROJECT_PREFIX, this.bus);
 
     if (isMsfs2024()) {
-      NavigationDatabaseService.activeDatabase = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
+      NavigationDatabaseService.activeDatabase = new NavigationDatabase(this.bus, NavigationDatabaseBackend.Msfs);
 
       this.msfsFlightPlanSync = new MsfsFlightPlanSync(this.bus);
     } else {

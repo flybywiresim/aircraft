@@ -59,6 +59,10 @@ export class FlightPlanRpcServer<P extends FlightPlanPerformanceData = FlightPla
 
       await this.respondToRpcCommand(id, returnValue);
     } catch (e: unknown) {
+      console.error('Error while executing flight plan RPC command:');
+      console.error(command, id, ...args);
+      console.error(e);
+
       await this.respondToRpcCommandWithError(
         id,
         typeof e === 'object' && 'message' in e && typeof e.message === 'string' ? e.message : e,

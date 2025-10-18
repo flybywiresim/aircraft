@@ -7,6 +7,7 @@ import {
   Fix,
   isMsfs2024,
   LegType,
+  logTroubleshootingError,
   NavaidSubsectionCode,
   NXDataStore,
   RunwayUtils,
@@ -62,6 +63,14 @@ export class MsfsFlightPlanSync {
 
   private readonly isReady = MappedSubject.create(([a, b]) => a && b, this.listenerReady, this.fmsRpcClientReady);
 
+  /**
+   * Logs an error to the EFB troubleshooting page
+   * @param message the error to log
+   */
+  private logError(message: string): void {
+    logTroubleshootingError(this.bus, '[MsfsFlightPlanSync] ' + message);
+  }
+
   constructor(private readonly bus: EventBus) {
     if (!isMsfs2024()) {
       throw new Error('[MsfsFlightPlanSync] Cannot be instantiated in MSFS 2020');
@@ -80,7 +89,7 @@ export class MsfsFlightPlanSync {
 
     this.dataManager = new DataManager(this.bus, this.rpcClient);
 
-    Wait.awaitSubscribable(this.isReady).then(() => {
+    Wait.awaitSubscribable(this.isReady).then(async () => {
       console.log('[MsfsFlightPlanSync] Ready');
 
       const autoLoadRoute = NXDataStore.get('CONFIG_AUTO_SIM_ROUTE_LOAD', 'DISABLED') === 'ENABLED';
@@ -88,13 +97,29 @@ export class MsfsFlightPlanSync {
       if (autoLoadRoute) {
         console.log('[MsfsFlightPlanSync] Configured to automatically load MSFS route - loading...');
 
-        this.handleSimRouteSent();
+        try {
+          await this.handleSimRouteSent();
+        } catch (e: any) {
+          this.logError(e instanceof Error ? e.message : e.toString());
+        }
       } else {
         console.log('[MsfsFlightPlanSync] Configured to not automatically load MSFS route');
       }
 
-      this.listener.on('AvionicsRouteSync', this.handleSimRouteSent);
-      this.listener.on('AvionicsRouteRequested', this.handleAvionicsRouteRequested);
+      this.listener.on('AvionicsRouteSync', async () => {
+        try {
+          await this.handleSimRouteSent();
+        } catch (e: any) {
+          this.logError(e instanceof Error ? e.message : e.toString());
+        }
+      });
+      this.listener.on('AvionicsRouteRequested', async (requestID: number) => {
+        try {
+          await this.handleAvionicsRouteRequested(requestID);
+        } catch (e: any) {
+          this.logError(e instanceof Error ? e.message : e.toString());
+        }
+      });
     });
   }
 
@@ -110,7 +135,7 @@ export class MsfsFlightPlanSync {
     await this.rpcClient.newCityPair(
       route.departureAirport.ident,
       route.destinationAirport.ident,
-      null,
+      undefined,
       FlightPlanIndex.Uplink,
     );
 
@@ -136,7 +161,7 @@ export class MsfsFlightPlanSync {
       );
     }
 
-    let departure: Departure | null;
+    let departure: Departure | undefined;
     if (route.departure !== '') {
       const departures = await db.backendDatabase.getDepartures(route.departureAirport.ident);
       departure = departures.find((it) => it.ident === route.departure);
@@ -156,11 +181,26 @@ export class MsfsFlightPlanSync {
 
     let insertHead = 0;
 
-    insertHead += this.rpcClient.uplink.originSegment.allLegs.length;
-    insertHead += this.rpcClient.uplink.departureRunwayTransitionSegment.allLegs.length;
-    insertHead += this.rpcClient.uplink.departureSegment.allLegs.length;
-    insertHead += this.rpcClient.uplink.departureEnrouteTransitionSegment.allLegs.length;
-    insertHead -= 1;
+    const updateInsertHead = () => {
+      const uplinkPlan = this.rpcClient.uplink;
+
+      insertHead = uplinkPlan.originSegment.allLegs.length;
+      insertHead += uplinkPlan.departureRunwayTransitionSegment.allLegs.length;
+      insertHead += uplinkPlan.departureSegment.allLegs.length;
+      insertHead += uplinkPlan.departureEnrouteTransitionSegment.allLegs.length;
+      insertHead += uplinkPlan.enrouteSegment.allLegs.length;
+      insertHead--;
+
+      const lastEnrouteElement = uplinkPlan.enrouteSegment.allLegs[uplinkPlan.enrouteSegment.allLegs.length - 1];
+
+      if (lastEnrouteElement && lastEnrouteElement.isDiscontinuity === true && uplinkPlan.enrouteSegment.legCount > 1) {
+        insertHead--;
+      }
+    };
+
+    await this.dataManager.deleteAllStoredWaypoints();
+
+    updateInsertHead();
 
     for (const leg of route.enroute) {
       if (leg.isPpos) {
@@ -168,7 +208,7 @@ export class MsfsFlightPlanSync {
         continue;
       }
 
-      let fix: Fix;
+      let fix: Fix | undefined;
 
       if (leg.hasLatLon) {
         fix = this.dataManager.createLatLonWaypoint(
@@ -199,7 +239,7 @@ export class MsfsFlightPlanSync {
         fix = fixes.find((it) => it.icaoCode === leg.fixIcao.region);
 
         if (!fix) {
-          console.error(`[MsfsFlightPlanSync](loadSimRoute) Cannot find matching fix for '${leg.fixIcao.ident}'`);
+          this.logError(`Cannot find matching fix for '${leg.fixIcao.ident}'`);
           continue;
         }
       }
@@ -209,16 +249,23 @@ export class MsfsFlightPlanSync {
 
         const airway = await NavigationDatabaseService.activeDatabase.searchAirway(leg.via, fix);
 
+        if (airway.length === 0) {
+          this.logError(`Cannot find matching airway for '${leg.via}' to '${fix.ident}'`);
+          continue;
+        }
+
         await this.rpcClient.continueAirwayEntryViaAirway(airway[0], FlightPlanIndex.Uplink);
-        await this.rpcClient.continueAirwayEntryToFix(fix, FlightPlanIndex.Uplink);
+        await this.rpcClient.continueAirwayEntryToFix(fix, false, FlightPlanIndex.Uplink);
 
         await this.rpcClient.finaliseAirwayEntry(FlightPlanIndex.Uplink);
+        updateInsertHead();
       } else {
-        await this.rpcClient.nextWaypoint(insertHead++, fix, FlightPlanIndex.Uplink, false);
+        await this.rpcClient.nextWaypoint(insertHead, fix, FlightPlanIndex.Uplink, false);
+        updateInsertHead();
       }
     }
 
-    let approach: Approach | null = null;
+    let approach: Approach | undefined = undefined;
     if (route.approach.type !== '') {
       const approaches = await db.backendDatabase.getApproaches(route.destinationAirport.ident);
       approach = approaches.find((it) =>
@@ -238,12 +285,14 @@ export class MsfsFlightPlanSync {
       }
     }
 
-    let arrival: Arrival | null = null;
+    let arrival: Arrival | undefined = undefined;
     if (route.arrival !== '') {
       const arrivals = await db.backendDatabase.getArrivals(route.destinationAirport.ident);
       arrival = arrivals.find((it) => it.ident === route.arrival);
 
-      await this.rpcClient.setArrival(arrival.databaseId, FlightPlanIndex.Uplink);
+      if (arrival) {
+        await this.rpcClient.setArrival(arrival.databaseId, FlightPlanIndex.Uplink);
+      }
     }
 
     if (route.arrivalTransition !== '' && arrival) {
@@ -306,7 +355,9 @@ export class MsfsFlightPlanSync {
         continue;
       }
 
-      if (element.definition.type !== LegType.TF && element.definition.type !== LegType.IF) {
+      const terminatingWaypoint = element.terminationWaypoint();
+
+      if (!terminatingWaypoint || (element.definition.type !== LegType.TF && element.definition.type !== LegType.IF)) {
         continue;
       }
 
@@ -339,9 +390,7 @@ export class MsfsFlightPlanSync {
       };
 
       // Encode a pilot waypoint correctly
-      const matchingPilotWaypoint = this.dataManager
-        .getStoredWaypointsByIdent(element.definition.waypoint.ident)
-        .find((it) => it.waypoint.databaseId === element.definition.waypoint.databaseId);
+      const matchingPilotWaypoint = this.dataManager.getStoredWaypointsByDatabaseId(terminatingWaypoint.databaseId);
 
       if (matchingPilotWaypoint) {
         switch (matchingPilotWaypoint.type) {
@@ -360,7 +409,7 @@ export class MsfsFlightPlanSync {
         }
         enrouteLeg.name = matchingPilotWaypoint.waypoint.ident;
       } else {
-        MsfsFlightPlanSync.assignFbwFixToMsfsIcao(enrouteLeg.fixIcao, element.definition.waypoint);
+        MsfsFlightPlanSync.assignFbwFixToMsfsIcao(enrouteLeg.fixIcao, terminatingWaypoint);
       }
 
       enroute.push(enrouteLeg);
