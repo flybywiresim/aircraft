@@ -431,7 +431,12 @@ export class FwsInopSys {
     },
     320300022: {
       // ROW/ROP
-      simVarIsActive: this.fws.rowRopLost,
+      simVarIsActive: this.fws.rowLost,
+      phase: FwsInopSysPhases.ApprLdg,
+    },
+    320300025: {
+      // RWY OVERRUN PROT
+      simVarIsActive: this.fws.ropLost,
       phase: FwsInopSysPhases.ApprLdg,
     },
     340300001: {
@@ -682,11 +687,7 @@ export class FwsInopSys {
     },
     340300049: {
       // ARPT NAV
-      simVarIsActive: MappedSubject.create(
-        ([oans, pposLost]) => !oans || pposLost,
-        this.fws.oansAvailable,
-        this.fws.oansPposLost,
-      ),
+      simVarIsActive: this.fws.arptNavLost,
       phase: FwsInopSysPhases.ApprLdg,
     },
 

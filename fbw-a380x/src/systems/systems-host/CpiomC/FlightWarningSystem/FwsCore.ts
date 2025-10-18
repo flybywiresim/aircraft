@@ -686,6 +686,13 @@ export class FwsCore {
     this.sub.on('fcdc_fg_discrete_word_8_2'),
   );
 
+  public readonly fcdc1LandingFctDiscreteWord = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('fcdc_landing_fct_discrete_word_1'),
+  );
+  public readonly fcdc2LandingFctDiscreteWord = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('fcdc_landing_fct_discrete_word_2'),
+  );
+
   public readonly fcdcDualFaultTripleClick = new NXLogicConfirmNode(2.3, true);
 
   public readonly rollOutFault = Subject.create(false);
@@ -1139,6 +1146,9 @@ export class FwsCore {
 
   public readonly groundSpoilerNotArmedWarning = Subject.create(false);
 
+  public readonly abnProcImpactingLdgPerfActive = Subject.create(false);
+  public readonly abnProcImpactingLdgDistActive = Subject.create(false);
+
   /* FUEL */
 
   public readonly engine1ValueSwitch = ConsumerSubject.create(this.sub.on('fuel_valve_switch_1'), false);
@@ -1529,9 +1539,52 @@ export class FwsCore {
 
   public autoBrakeOffMemoInhibited = false;
 
-  public readonly btvLost = Subject.create(false); // FIXME add
+  public readonly rowLost = MappedSubject.create(
+    ([w1, w2]) => w1.bitValueOr(11, false) || w2.bitValueOr(11, false),
+    this.fcdc1LandingFctDiscreteWord,
+    this.fcdc2LandingFctDiscreteWord,
+  );
+  public readonly ropLost = MappedSubject.create(
+    ([w1, w2]) => w1.bitValueOr(12, false) || w2.bitValueOr(12, false),
+    this.fcdc1LandingFctDiscreteWord,
+    this.fcdc2LandingFctDiscreteWord,
+  );
+  public readonly btvLost = MappedSubject.create(
+    ([w1, w2]) => w1.bitValueOr(13, false) || w2.bitValueOr(13, false),
+    this.fcdc1LandingFctDiscreteWord,
+    this.fcdc2LandingFctDiscreteWord,
+  );
 
-  public readonly rowRopLost = Subject.create(false); // FIXME add
+  public readonly oansAvailable = Subject.create(false);
+  public readonly oansPposLost = Subject.create(false);
+  public readonly arptNavLost = MappedSubject.create(
+    ([oans, pposLost]) => !oans || pposLost,
+    this.oansAvailable,
+    this.oansPposLost,
+  );
+
+  public readonly ldgDistAffected = MappedSubject.create(
+    ([w1, w2]) =>
+      w1.bitValueOr(20, false) ||
+      w2.bitValueOr(20, false) ||
+      w1.bitValueOr(22, false) ||
+      w2.bitValueOr(22, false) ||
+      w1.bitValueOr(24, false) ||
+      w2.bitValueOr(24, false),
+    this.fcdc1LandingFctDiscreteWord,
+    this.fcdc2LandingFctDiscreteWord,
+  );
+  public readonly ldgPerfAffected = MappedSubject.create(
+    ([w1, w2]) =>
+      w1.bitValueOr(21, false) ||
+      w2.bitValueOr(21, false) ||
+      w1.bitValueOr(23, false) ||
+      w2.bitValueOr(23, false) ||
+      w1.bitValueOr(25, false) ||
+      w2.bitValueOr(25, false),
+    this.fcdc1LandingFctDiscreteWord,
+    this.fcdc2LandingFctDiscreteWord,
+  );
 
   /* NAVIGATION */
 
@@ -1731,9 +1784,6 @@ export class FwsCore {
   public readonly taws2Failed = Subject.create(false);
 
   public readonly tawsWxrSelected = Subject.create(0);
-
-  public readonly oansAvailable = Subject.create(false);
-  public readonly oansPposLost = Subject.create(false);
 
   /** 35 OXYGEN */
   public readonly paxOxyMasksDeployed = Subject.create(false);
@@ -2429,14 +2479,19 @@ export class FwsCore {
     );
 
     this.subs.push(
+      this.abnProcImpactingLdgPerfActive.sub(
+        (s) => SimVar.SetSimVarValue(`L:A32NX_FWC_${this.fwsNumber}_ABN_PROC_IMPACT_LDG_PERF`, 'boolean', s),
+        true,
+      ),
+      this.abnProcImpactingLdgDistActive.sub(
+        (s) => SimVar.SetSimVarValue(`L:A32NX_FWC_${this.fwsNumber}_ABN_PROC_IMPACT_LDG_DIST`, 'boolean', s),
+        true,
+      ),
+    );
+
+    this.subs.push(
       this.ecamStatusNormal.sub((s) => SimVar.SetSimVarValue('L:A32NX_STATUS_NORMAL', 'boolean', s), true),
-    );
-
-    this.subs.push(
       this.ecamEwdShowStsIndication.sub((s) => this.publisher.pub('fws_show_sts_indication', s, true), true),
-    );
-
-    this.subs.push(
       this.ecamEwdShowFailurePendingIndication.sub(
         (s) => this.publisher.pub('fws_show_failure_pending', s, true),
         true,
@@ -4496,6 +4551,21 @@ export class FwsCore {
         !allGroundSpoilersInop &&
         !(this.groundSpoiler5sDelayed.read() || this.speedBrake5sDelayed.read()) &&
         (fcdc1DiscreteWord4.isNormalOperation() || fcdc2DiscreteWord4.isNormalOperation()),
+    );
+
+    this.abnProcImpactingLdgPerfActive.set(
+      this.activeAbnormalNonSensedKeys.has(270900001) ||
+        this.activeAbnormalNonSensedKeys.has(270900004) ||
+        this.activeAbnormalNonSensedKeys.has(270900005),
+    );
+    this.abnProcImpactingLdgDistActive.set(
+      this.activeAbnormalNonSensedKeys.has(320900001) ||
+        this.activeAbnormalNonSensedKeys.has(320900002) ||
+        this.activeAbnormalNonSensedKeys.has(320900003) ||
+        this.activeAbnormalNonSensedKeys.has(320900004) ||
+        this.activeAbnormalNonSensedKeys.has(320900005) ||
+        this.activeAbnormalNonSensedKeys.has(320900006) ||
+        this.activeAbnormalNonSensedKeys.has(990900009),
     );
 
     // l/g gear not down
