@@ -2,8 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ComponentProps, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
-import { ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 import { EwdSimvars } from './shared/EwdSimvarPublisher';
 import { UpperDisplay } from './UpperDisplay';
@@ -13,7 +12,7 @@ import { LowerRightDisplay } from './LowerRightDisplay';
 import './style.scss';
 
 interface EwdProps extends ComponentProps {
-  bus: ArincEventBus;
+  bus: EventBus;
   instrument: BaseInstrument;
 }
 export class EwdComponent extends DisplayComponent<EwdProps> {
