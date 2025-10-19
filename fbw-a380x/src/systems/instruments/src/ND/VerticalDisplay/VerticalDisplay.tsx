@@ -129,7 +129,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
 
   private readonly vdDataVisibility = this.vdAvailable.map((v) => (v ? 'visible' : 'hidden'));
 
-  private readonly lineColor = this.vdAvailable.map((a) => (a ? 'white' : 'red'));
+  private readonly lineColor = this.vdAvailable.map((a) => (a ? '#e5dfd6' : '#c21d1a'));
 
   private readonly fcuEisDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(
     this.sub.on(this.props.side === 'L' ? 'a380x_fcu_eis_discrete_word_2_left' : 'a380x_fcu_eis_discrete_word_2_right'),
