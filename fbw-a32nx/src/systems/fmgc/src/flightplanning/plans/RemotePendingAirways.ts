@@ -13,7 +13,7 @@ export class RemotePendingAirways implements ReadonlyPendingAirways {
   }
 
   public fixAlongTailAirway(ident: string) {
-    const fixAlongAirway = this.tailElement.airway.fixes.find((fix) => fix.ident === ident);
+    const fixAlongAirway = this.tailElement?.airway?.fixes.find((fix) => fix.ident === ident);
 
     if (fixAlongAirway) {
       return fixAlongAirway;
