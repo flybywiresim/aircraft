@@ -16,7 +16,7 @@ import { ReadonlyFlightPlanElement, ReadonlyFlightPlanLeg } from '@fmgc/flightpl
 import { ReadonlyPendingAirways } from '@fmgc/flightplanning/plans/ReadonlyPendingAirways';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 
-export interface ReadonlyFlightPlan<P extends FlightPlanPerformanceData> {
+export interface ReadonlyFlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> {
   get index(): number;
 
   get legCount(): number;

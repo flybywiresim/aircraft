@@ -141,7 +141,12 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
               const wp = await WaypointEntryUtils.getOrCreateWaypoint(mcdu, value, false);
 
               if (wp) {
-                const result = await mcdu.flightPlanService.continueAirwayEntryToFix(wp, planIndexToEdit, inAlternate);
+                const result = await mcdu.flightPlanService.continueAirwayEntryToFix(
+                  wp,
+                  false,
+                  planIndexToEdit,
+                  inAlternate,
+                );
 
                 A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(
                   mcdu,

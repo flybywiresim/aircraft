@@ -346,7 +346,7 @@ export class CoRouteUplinkAdapter {
 
             const airwayFix = pickAirwayFix(tailAirway, fixes);
             if (airwayFix) {
-              await flightPlanService.continueAirwayEntryToFix(airwayFix, FlightPlanIndex.Uplink);
+              await flightPlanService.continueAirwayEntryToFix(airwayFix, false, FlightPlanIndex.Uplink);
 
               await ensureAirwaysFinalized();
             } else {

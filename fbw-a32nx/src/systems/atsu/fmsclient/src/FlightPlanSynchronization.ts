@@ -6,6 +6,7 @@ import { Waypoint } from '@datalink/common';
 import { EventBus, Publisher } from '@microsoft/msfs-sdk';
 import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
+import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 
 export class FlightPlanSynchronization {
   private readonly publisher: Publisher<FmsAtcMessages>;
