@@ -2,12 +2,12 @@ import { Atc } from '@datalink/atc';
 import { Aoc } from '@datalink/aoc';
 import { SimVarHandling } from '@datalink/common';
 import { Router, vhfRadioInterface } from '@datalink/router';
-import { EventBus, EventSubscriber, Instrument } from '@microsoft/msfs-sdk';
+import { EventBus, EventSubscriber, Instrument, SimVarValueType } from '@microsoft/msfs-sdk';
 import { PowerSupplyBusTypes } from 'systems-host/Misc/powersupply';
 
 class a380xVhfProvider implements vhfRadioInterface {
   isDataModeActive(): boolean {
-    if (SimVar.GetSimVarValue('L:FBW_RMP_MODE_ACTIVE_3', 'enum') === 1) {
+    if (SimVar.GetSimVarValue('L:FBW_RMP_MODE_ACTIVE_3', SimVarValueType.Enum) === 1) {
       return true;
     }
     return false;

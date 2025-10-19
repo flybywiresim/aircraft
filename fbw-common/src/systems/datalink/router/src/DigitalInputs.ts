@@ -293,7 +293,6 @@ export class DigitalInputs {
       }
     });
     this.subscriber.on('vhf3Powered').handle((powered: boolean) => (this.Vhf3Powered = powered));
-    // this.subscriber.on('vhf3DataMode').handle((dataMode: boolean) => (this.Vhf3DataMode = dataMode));
   }
 
   public powerUp(): void {
