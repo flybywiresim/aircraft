@@ -508,7 +508,7 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
                 this.pageChangeInProgress,
               )}
               x={384}
-              y={315.6}
+              y={315}
               class="Green FontLargest"
             >
               {this.props.modeChangeMessage}

@@ -38,9 +38,6 @@ export class PlanModePage<T extends number> extends NDPage<PlanModePageProps<T>>
 
   private readonly subs = this.props.bus.getSubscriber<NDControlEvents & GenericAdirsEvents & GenericFmsEvents>();
 
-  private readonly pposLatRegister = Arinc429Register.empty();
-  private readonly pposLongRegister = Arinc429Register.empty();
-
   private readonly mapCenterLatSub = ConsumerSubject.create(this.subs.on('set_map_center_lat').whenChanged(), -1);
 
   private readonly mapCenterLonSub = ConsumerSubject.create(this.subs.on('set_map_center_lon').whenChanged(), -1);
@@ -115,12 +112,12 @@ export class PlanModePage<T extends number> extends NDPage<PlanModePageProps<T>>
 
   private handleMovePlane() {
     if (this.isVisible.get() && !this.props.mapNotAvail.get()) {
-      const latRegister = this.pposLatRegister;
-      const longRegister = this.pposLongRegister;
+      const latitude = this.props.latitude.get();
+      const longitude = this.props.longitude.get();
 
-      if (latRegister.isNormalOperation() && longRegister.isNormalOperation()) {
-        const lat = latRegister.value;
-        const long = longRegister.value;
+      if (latitude.isNormalOperation() && longitude.isNormalOperation()) {
+        const lat = latitude.value;
+        const long = longitude.value;
 
         const [x, y] = this.mapParams.coordinatesToXYy({ lat, long });
 
@@ -146,8 +143,8 @@ export class PlanModePage<T extends number> extends NDPage<PlanModePageProps<T>>
       const planeRotation = this.props.aircraftTrueHeading.get();
       if (
         planeRotation.isNormalOperation() &&
-        this.pposLongRegister.isNormalOperation() &&
-        this.pposLatRegister.isNormalOperation()
+        this.props.longitude.get().isNormalOperation() &&
+        this.props.latitude.get().isNormalOperation()
       ) {
         this.controlPublisher.pub('set_show_plane', true);
       } else {
@@ -207,7 +204,7 @@ export class PlanModePage<T extends number> extends NDPage<PlanModePageProps<T>>
     return (
       <g visibility={this.isVisible.map((visible) => (visible ? 'visible' : 'hidden'))}>
         <PlanModeUnderlay mapRange={this.mapRangeRadiusSub} />
-        <Flag visible={this.props.mapNotAvail} x={384} y={315.6} class="Red FontLarge">
+        <Flag visible={this.props.mapNotAvail} x={384} y={320.6} class="Red FontLarge">
           MAP NOT AVAIL
         </Flag>
       </g>

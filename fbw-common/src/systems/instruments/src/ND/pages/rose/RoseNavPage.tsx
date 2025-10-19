@@ -144,7 +144,7 @@ export class RoseNavPage<T extends number> extends RoseMode<T> {
           mode={Subject.create(EfisNdMode.ROSE_NAV)}
         />
 
-        <Flag visible={this.props.mapNotAvail} x={384} y={315.6} class="Red FontLarge">
+        <Flag visible={this.props.mapNotAvail} x={384} y={320.6} class="Red FontLarge">
           MAP NOT AVAIL
         </Flag>
       </g>
