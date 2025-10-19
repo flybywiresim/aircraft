@@ -105,7 +105,7 @@ export class PlanModePage<T extends number> extends NDPage<PlanModePageProps<T>>
 
     this.props.mapNotAvail.sub((v) => {
       if (this.isVisible.get()) {
-        this.showMap(v);
+        this.showMap(!v);
         if (v) {
           this.onShow();
         }
@@ -207,7 +207,7 @@ export class PlanModePage<T extends number> extends NDPage<PlanModePageProps<T>>
     return (
       <g visibility={this.isVisible.map((visible) => (visible ? 'visible' : 'hidden'))}>
         <PlanModeUnderlay mapRange={this.mapRangeRadiusSub} />
-        <Flag visible={this.props.mapNotAvail} x={384} y={320.6} class="Red FontLarge">
+        <Flag visible={this.props.mapNotAvail} x={384} y={315.6} class="Red FontLarge">
           MAP NOT AVAIL
         </Flag>
       </g>
