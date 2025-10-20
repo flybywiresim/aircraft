@@ -1,33 +1,16 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2023 2025 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import {
-  FSComponent,
-  ComponentProps,
-  ConsumerSubject,
-  MappedSubject,
-  Subject,
-  Subscribable,
-  VNode,
-} from '@microsoft/msfs-sdk';
+import { FSComponent, ComponentProps, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 
-import {
-  ArincEventBus,
-  Arinc429WordData,
-  Arinc429RegisterSubject,
-  EfisNdMode,
-  MathUtils,
-  GenericAdirsEvents,
-} from '@flybywiresim/fbw-sdk';
+import { ArincEventBus, Arinc429WordData, EfisNdMode, MathUtils } from '@flybywiresim/fbw-sdk';
 
 import { LsCourseBug } from './LsCourseBug';
 import { ArcModeUnderlay } from './ArcModeUnderlay';
 import { Flag } from '../../shared/Flag';
 import { NDPage } from '../NDPage';
 import { NDControlEvents } from '../../NDControlEvents';
-import { GenericFcuEvents } from '../../types/GenericFcuEvents';
-import { GenericFmsEvents } from '../../types/GenericFmsEvents';
 
 export interface ArcModePageProps<T extends number> extends ComponentProps {
   bus: ArincEventBus;
@@ -37,21 +20,14 @@ export interface ArcModePageProps<T extends number> extends ComponentProps {
   trackWord: Subscribable<Arinc429WordData>;
   trueTrackWord: Subscribable<Arinc429WordData>;
   isUsingTrackUpMode: Subscribable<boolean>;
+  mapNotAvail: Subscribable<boolean>;
+  latitude: Subscribable<Arinc429WordData>;
+  longitude: Subscribable<Arinc429WordData>;
+  range: Subscribable<number>;
 }
 
 export class ArcModePage<T extends number> extends NDPage<ArcModePageProps<T>> {
   public isVisible = Subject.create(false);
-
-  // TODO these two should be FM pos maybe ?
-
-  private readonly pposLatWord = Arinc429RegisterSubject.createEmpty();
-
-  private readonly pposLonWord = Arinc429RegisterSubject.createEmpty();
-
-  private readonly mapRangeSub = ConsumerSubject.create(
-    this.props.bus.getSubscriber<GenericFcuEvents>().on('ndRangeSetting').whenChanged(),
-    -1,
-  );
 
   private readonly ringAvailable = MappedSubject.create(
     ([isUsingTrackUpMode, headingWord, trackWord]) => {
@@ -83,24 +59,6 @@ export class ArcModePage<T extends number> extends NDPage<ArcModePageProps<T>> {
     this.props.trackWord,
   );
 
-  private readonly fmsFailed = ConsumerSubject.create(
-    this.props.bus.getSubscriber<GenericFmsEvents>().on('fmsFailed').whenChanged(),
-    false,
-  );
-
-  // TODO in the future, this should be looking at stuff like FM position invalid or not map frames transmitted
-  private readonly mapFlagShown = MappedSubject.create(
-    ([headingWord, latWord, longWord, fmsFailed]) => {
-      return (
-        !headingWord.isNormalOperation() || !latWord.isNormalOperation() || !longWord.isNormalOperation() || fmsFailed
-      );
-    },
-    this.props.headingWord,
-    this.pposLatWord,
-    this.pposLonWord,
-    this.fmsFailed,
-  );
-
   onShow() {
     super.onShow();
 
@@ -113,18 +71,6 @@ export class ArcModePage<T extends number> extends NDPage<ArcModePageProps<T>> {
 
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
-
-    const sub = this.props.bus.getSubscriber<GenericAdirsEvents & GenericFcuEvents>();
-
-    sub
-      .on('latitude')
-      .whenChanged()
-      .handle((v) => this.pposLatWord.setWord(v));
-    sub
-      .on('longitude')
-      .whenChanged()
-      .handle((v) => this.pposLonWord.setWord(v));
-
     this.props.headingWord.sub(() => this.handleRingRotation());
     this.props.trueHeadingWord.sub(() => this.handleMapRotation());
     this.props.trackWord.sub(() => this.handleRingRotation());
@@ -137,10 +83,10 @@ export class ArcModePage<T extends number> extends NDPage<ArcModePageProps<T>> {
       }
     });
 
-    this.pposLatWord.sub(() => this.handleMoveMap());
-    this.pposLonWord.sub(() => this.handleMoveMap());
+    this.props.latitude.sub(() => this.handleMoveMap());
+    this.props.longitude.sub(() => this.handleMoveMap());
 
-    this.mapRangeSub.sub(() => this.handleScaleMap());
+    this.props.range.sub(() => this.handleScaleMap());
   }
 
   private handleRingRotation() {
@@ -191,8 +137,8 @@ export class ArcModePage<T extends number> extends NDPage<ArcModePageProps<T>> {
 
     const publisher = this.props.bus.getPublisher<NDControlEvents>();
 
-    const latWord = this.pposLatWord.get();
-    const lonWord = this.pposLonWord.get();
+    const latWord = this.props.latitude.get();
+    const lonWord = this.props.longitude.get();
 
     if (latWord.isNormalOperation() && lonWord.isNormalOperation()) {
       publisher.pub('set_show_map', true);
@@ -222,7 +168,7 @@ export class ArcModePage<T extends number> extends NDPage<ArcModePageProps<T>> {
 
     publisher.pub('set_map_efis_mode', EfisNdMode.ARC);
     publisher.pub('set_map_pixel_radius', 498);
-    publisher.pub('set_map_range_radius', this.props.rangeValues[this.mapRangeSub.get()]);
+    publisher.pub('set_map_range_radius', this.props.rangeValues[this.props.range.get()]);
     publisher.pub('set_map_center_y_bias', 242);
   }
 
@@ -255,7 +201,7 @@ export class ArcModePage<T extends number> extends NDPage<ArcModePageProps<T>> {
 
         <LsCourseBug bus={this.props.bus} rotationOffset={this.planeRotation} mode={Subject.create(EfisNdMode.ARC)} />
 
-        <Flag visible={this.mapFlagShown} x={384} y={320.6} class="Red FontLarge">
+        <Flag visible={this.props.mapNotAvail} x={384} y={320.6} class="Red FontLarge">
           MAP NOT AVAIL
         </Flag>
       </g>

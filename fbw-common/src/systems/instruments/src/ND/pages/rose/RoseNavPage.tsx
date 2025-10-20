@@ -1,46 +1,18 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2023 2025 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { FSComponent, ConsumerSubject, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
+import { FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
 
-import { Arinc429RegisterSubject, EfisNdMode, MathUtils, GenericAdirsEvents } from '@flybywiresim/fbw-sdk';
+import { EfisNdMode, MathUtils } from '@flybywiresim/fbw-sdk';
 
 import { LsCourseBug } from '../arc/LsCourseBug';
 import { Flag } from '../../shared/Flag';
 import { RoseMode } from './RoseMode';
 import { RoseModeUnderlay } from './RoseModeUnderlay';
 import { NDControlEvents } from '../../NDControlEvents';
-import { GenericFcuEvents } from '../../types/GenericFcuEvents';
-import { GenericFmsEvents } from '../../types/GenericFmsEvents';
 
 export class RoseNavPage<T extends number> extends RoseMode<T> {
-  private readonly pposLatWord = Arinc429RegisterSubject.createEmpty();
-
-  private readonly pposLonWord = Arinc429RegisterSubject.createEmpty();
-
-  private readonly mapRangeSub = ConsumerSubject.create(
-    this.props.bus.getSubscriber<GenericFcuEvents>().on('ndRangeSetting').whenChanged(),
-    -1,
-  );
-
-  private readonly fmsFailed = ConsumerSubject.create(
-    this.props.bus.getSubscriber<GenericFmsEvents>().on('fmsFailed').whenChanged(),
-    false,
-  );
-
-  private readonly mapFlagShown = MappedSubject.create(
-    ([headingWord, latWord, longWord, fmsFailed]) => {
-      return (
-        !headingWord.isNormalOperation() || !latWord.isNormalOperation() || !longWord.isNormalOperation() || fmsFailed
-      );
-    },
-    this.props.headingWord,
-    this.pposLatWord,
-    this.pposLonWord,
-    this.fmsFailed,
-  );
-
   private readonly planeRotation = MappedSubject.create(
     ([isUsingTrackUpMode, headingWord, trackWord]) => {
       if (isUsingTrackUpMode) {
@@ -68,17 +40,6 @@ export class RoseNavPage<T extends number> extends RoseMode<T> {
       }
     });
 
-    const sub = this.props.bus.getArincSubscriber<GenericAdirsEvents & GenericFcuEvents>();
-
-    sub
-      .on('latitude')
-      .whenChanged()
-      .handle((v) => this.pposLatWord.setWord(v));
-    sub
-      .on('longitude')
-      .whenChanged()
-      .handle((v) => this.pposLonWord.setWord(v));
-
     this.props.isUsingTrackUpMode.sub(() => this.handleRotateMap());
     this.props.trueHeadingWord.sub(() => {
       if (!this.props.isUsingTrackUpMode.get()) {
@@ -91,10 +52,10 @@ export class RoseNavPage<T extends number> extends RoseMode<T> {
       }
     });
 
-    this.pposLatWord.sub(() => this.handleMoveMap());
-    this.pposLonWord.sub(() => this.handleMoveMap());
+    this.props.latitude?.sub(() => this.handleMoveMap());
+    this.props.longitude?.sub(() => this.handleMoveMap());
 
-    this.mapRangeSub.sub(() => this.handleScaleMap());
+    this.props.range?.sub(() => this.handleScaleMap());
   }
 
   private handleRotateMap() {
@@ -122,8 +83,8 @@ export class RoseNavPage<T extends number> extends RoseMode<T> {
 
     const publisher = this.props.bus.getPublisher<NDControlEvents>();
 
-    const latWord = this.pposLatWord.get();
-    const lonWord = this.pposLonWord.get();
+    const latWord = this.props.latitude.get();
+    const lonWord = this.props.longitude.get();
 
     if (latWord.isNormalOperation() && lonWord.isNormalOperation()) {
       publisher.pub('set_show_map', true);
@@ -141,7 +102,7 @@ export class RoseNavPage<T extends number> extends RoseMode<T> {
 
     const publisher = this.props.bus.getPublisher<NDControlEvents>();
 
-    const rangeSetting = this.mapRangeSub.get();
+    const rangeSetting = this.props.range?.get();
     const range = this.props.rangeValues[rangeSetting];
 
     publisher.pub('set_map_efis_mode', EfisNdMode.ROSE_NAV);
@@ -183,7 +144,7 @@ export class RoseNavPage<T extends number> extends RoseMode<T> {
           mode={Subject.create(EfisNdMode.ROSE_NAV)}
         />
 
-        <Flag visible={this.mapFlagShown} x={384} y={320.6} class="Red FontLarge">
+        <Flag visible={this.props.mapNotAvail} x={384} y={320.6} class="Red FontLarge">
           MAP NOT AVAIL
         </Flag>
       </g>

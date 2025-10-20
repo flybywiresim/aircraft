@@ -42,9 +42,10 @@ export class Airplane extends DisplayComponent<{ bus: EventBus; ndMode: Subscrib
   );
 
   private readonly circleVisibility = MappedSubject.create(
-    ([headingValid, showPlane]) => !headingValid && showPlane,
+    ([headingValid, showPlane, ndMode]) => !headingValid && showPlane && ndMode !== EfisNdMode.PLAN,
     this.headingWordValid,
     this.showPlane,
+    this.props.ndMode,
   );
 
   private readonly x = Subject.create(0);
