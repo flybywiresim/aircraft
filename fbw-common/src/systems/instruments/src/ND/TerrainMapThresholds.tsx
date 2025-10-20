@@ -40,7 +40,7 @@ export class TerrainMapThresholds extends DisplayComponent<TerrainMapThresholdsP
       case TerrainLevelMode.Caution:
         return '#c21d1a';
       case TerrainLevelMode.Warning:
-        return 'eb880c';
+        return 'f5ca4f';
       default:
         return '#64da1d';
     }
@@ -61,7 +61,7 @@ export class TerrainMapThresholds extends DisplayComponent<TerrainMapThresholdsP
       case TerrainLevelMode.Caution:
         return '#c21d1a';
       case TerrainLevelMode.Warning:
-        return '#eb880c';
+        return '#f5ca4f';
       default:
         return '#64da1d';
     }
