@@ -75,7 +75,7 @@ export class VerticalDisplayWaypointLayer implements VerticalDisplayMapLayer<VdS
     y: number,
     symbol: VdSymbol,
   ) {
-    const mainColor = symbol.type & NdSymbolTypeFlags.FlightPlan ? '#fff' : '#c87fda';
+    const mainColor = symbol.type & NdSymbolTypeFlags.FlightPlan ? '#e5dfd6' : '#c87fda';
 
     this.paintAirportShape(context, x, y, isColorLayer ? mainColor : '#000', isColorLayer ? 1.75 : 3.25);
 
@@ -105,14 +105,14 @@ export class VerticalDisplayWaypointLayer implements VerticalDisplayMapLayer<VdS
     verticalRange: [number, number],
     isSelectedModeVertical: boolean,
   ) {
-    const mainColor = symbol.type & NdSymbolTypeFlags.ActiveLegTermination ? '#fff' : '#0f0';
+    const mainColor = symbol.type & NdSymbolTypeFlags.ActiveLegTermination ? '#e5dfd6' : '#64da1d';
 
     this.paintWaypointShape(context, x, y, isColorLayer ? mainColor : '#000', isColorLayer ? 1.75 : 3.25);
 
     if (symbol.altConstraint) {
       const cst = symbol.altConstraint;
       const constraintStrokeColor = isSelectedModeVertical
-        ? '#fff'
+        ? '#e5dfd6'
         : symbol.isAltitudeConstraintMet
           ? '#c87fda'
           : '#eb880c';
