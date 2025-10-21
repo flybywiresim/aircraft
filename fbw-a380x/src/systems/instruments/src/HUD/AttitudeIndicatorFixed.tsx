@@ -16,10 +16,12 @@ import { FlightPathDirector } from './FlightPathDirector';
 import { FlightPathVector } from './FlightPathVector';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
+import { FcdcValueProvider } from './shared/FcdcValueProvider';
 import { FIVE_DEG, HudElems, HudMode, LagFilter, calculateHorizonOffsetFromPitch } from './HUDUtils';
 import { LateralMode } from '@shared/autopilot';
 interface AttitudeIndicatorFixedUpperProps {
-  bus: EventBus;
+  readonly bus: EventBus;
+  readonly fcdcData: FcdcValueProvider;
 }
 
 export class AttitudeIndicatorFixedUpper extends DisplayComponent<AttitudeIndicatorFixedUpperProps> {
@@ -36,8 +38,9 @@ export class AttitudeIndicatorFixedUpper extends DisplayComponent<AttitudeIndica
   private visibilitySub = Subject.create('hidden');
 
   private readonly fcdcDiscreteWord1 = Arinc429ConsumerSubject.create(this.sub.on('fcdcDiscreteWord1'));
-
-  private readonly isNormalLawActive = this.fcdcDiscreteWord1.map((dw) => dw.bitValue(11) && !dw.isFailureWarning());
+  private readonly isNormalLawActive = this.props.fcdcData.fcdcDiscreteWord1.map(
+    (dw) => dw.bitValue(11) && !dw.isFailureWarning(),
+  );
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -478,20 +481,20 @@ export class DeclutterIndicator extends DisplayComponent<DeclutterIndicatorProps
 
   private declutterModeRef = FSComponent.createRef<SVGPathElement>();
 
+  private text: string = '';
   private handleDecIndState() {
-    let text: string;
     if (this.declutterMode == 0) {
-      text = 'N';
+      this.text = 'N';
       this.declutterModeRef.instance.style.visibility = 'visible';
     } else if (this.declutterMode == 1) {
-      text = 'D';
+      this.text = 'D';
       this.declutterModeRef.instance.style.visibility = 'visible';
     } else if (this.declutterMode == 2) {
       this.declutterModeRef.instance.style.visibility = 'hidden';
 
-      text = '';
+      this.text = '';
     }
-    this.textSub.set(text);
+    this.textSub.set(this.text);
   }
 
   onAfterRender(node: VNode): void {
@@ -526,7 +529,7 @@ export class ReverserIndicator extends DisplayComponent<{ bus: ArincEventBus }> 
   private rev3Ref = FSComponent.createRef<SVGGElement>();
   private rev2TxtRef = FSComponent.createRef<SVGTextElement>();
   private rev3TxtRef = FSComponent.createRef<SVGTextElement>();
-  private text: string;
+  private text: string = '';
   private readonly eng2State = ConsumerSubject.create(this.sub.on('eng2State').whenChanged(), 0); // no rev failure implemented  using on/off state instead
   private readonly eng3State = ConsumerSubject.create(this.sub.on('eng3State').whenChanged(), 0); // no rev failure implemented  using on/off state instead
   private readonly rev2 = ConsumerSubject.create(this.sub.on('rev2').whenChanged(), 0);

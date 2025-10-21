@@ -42,6 +42,7 @@ export const getDisplayIndex = () => {
   const url = Array.from(document.querySelectorAll('vcockpit-panel > *'))
     .find((it) => it.tagName.toLowerCase() !== 'wasm-instrument')
     .getAttribute('url');
+
   const duId = url ? parseInt(url.substring(url.length - 1), 10) : -1;
 
   switch (duId) {
@@ -120,16 +121,6 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
       this.xWindAltTape,
       this.windIndicator,
     );
-    this.subscriptions.push(
-      this.sub.on('chosenRa').handle((ra) => {
-        this.ownRadioAltitude = ra;
-        const filteredRadioAltitude = this.radioAltitudeFilter.step(
-          this.ownRadioAltitude.value,
-          this.props.instrument.deltaTime / 1000,
-        );
-        this.filteredRadioAltitude.set(filteredRadioAltitude);
-      }),
-    );
 
     this.subscriptions.push(
       this.sub.on('headingAr').handle((h) => {
@@ -174,6 +165,17 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
             this.isAttExcessive.set(false);
           }
         }),
+    );
+
+    this.subscriptions.push(
+      this.sub.on('chosenRa').handle((ra) => {
+        this.ownRadioAltitude = ra;
+        const filteredRadioAltitude = this.radioAltitudeFilter.step(
+          this.ownRadioAltitude.value,
+          this.props.instrument.deltaTime / 1000,
+        );
+        this.filteredRadioAltitude.set(filteredRadioAltitude);
+      }),
     );
   }
 
@@ -240,7 +242,7 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
             <WindIndicator bus={this.props.bus} />
           </g>
           <AltitudeIndicator bus={this.props.bus} />
-          <AirspeedIndicator bus={this.props.bus} instrument={this.props.instrument} />
+          <AirspeedIndicator bus={this.props.bus} instrument={this.props.instrument} fcdcData={this.fcdcData} />
           <g id="TapesMasks2">
             <path
               id="Mask2Cw"
@@ -289,7 +291,7 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
           <AirspeedIndicatorOfftape bus={this.props.bus} />
 
           <LandingSystem bus={this.props.bus} instrument={this.props.instrument} />
-          <AttitudeIndicatorFixedUpper bus={this.props.bus} />
+          <AttitudeIndicatorFixedUpper bus={this.props.bus} fcdcData={this.fcdcData} />
           <AttitudeIndicatorWarnings bus={this.props.bus} instrument={this.props.instrument} />
           <AttitudeIndicatorWarningsA380 bus={this.props.bus} instrument={this.props.instrument} />
           <HudWarnings bus={this.props.bus} instrument={this.props.instrument} />
