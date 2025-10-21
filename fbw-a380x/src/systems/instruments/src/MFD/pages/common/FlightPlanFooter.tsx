@@ -39,7 +39,6 @@ export class FlightPlanFooter extends DisplayComponent<FlightPlanFooterProps> {
           style={{ visibility: this.flightPlanManager.temporaryPlanExists.map((it) => (it ? 'visible' : 'hidden')) }}
         >
           <Button 
-            style={{ color: '#f5ca4f' }}
             label="TMPY F-PLN"
             onClick={() => {
               this.props.fmcService.master?.resetRevisedWaypoint();
