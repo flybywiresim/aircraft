@@ -93,7 +93,7 @@ void Prim::updateSelfTest(double deltaTime) {
 
     // Hardcoded test light sequence. Between the times (in seconds) in each array, the light is on.
     selfTestFaultLightVisible = false;
-    double testLightOnTimes[][2] = {{0, 12.29}, {13.42, 28.67}, {31.04, 31.63}, {31.71, 33.13}, {33.21, 35.75}};
+    double constexpr testLightOnTimes[][2] = {{0, 12.29}, {13.42, 28.67}, {31.04, 31.63}, {31.71, 33.13}, {33.21, 35.75}};
     for (auto& timeRange : testLightOnTimes) {
       double selfTestTimerFromStart = longSelfTestDuration - selfTestTimer;
       if (selfTestTimerFromStart >= timeRange[0] && selfTestTimerFromStart <= timeRange[1]) {

@@ -78,7 +78,7 @@ void Fmgc::updateSelfTest(double deltaTime) {
     // Hardcoded test light sequence. Between the times (in seconds) in each array, the light is on.
     selfTestApEngagedDiscreteOn = false;
     // FIXME no references available, best guess
-    double testApDiscreteOnTimes[][2] = {{24.7, 25.18}, {25.23, 25.35}, {25.46, 25.55}, {25.62, 25.75}, {25.8, 25.95}};
+    double constexpr testApDiscreteOnTimes[][2] = {{24.7, 25.18}, {25.23, 25.35}, {25.46, 25.55}, {25.62, 25.75}, {25.8, 25.95}};
     for (auto& timeRange : testApDiscreteOnTimes) {
       double selfTestTimerFromStart = selfTestDuration - selfTestTimer;
       if (selfTestTimerFromStart >= timeRange[0] && selfTestTimerFromStart <= timeRange[1]) {
@@ -88,7 +88,7 @@ void Fmgc::updateSelfTest(double deltaTime) {
     }
     selfTestAthrEngagedDiscreteOn = false;
     // FIXME no references available, best guess
-    double testAthrDiscreteOnTimes[][2] = {{26.16, 26.6}, {26.7, 26.85}, {26.96, 27.05}, {27.11, 27.22}, {27.32, 27.72}};
+    double constexpr testAthrDiscreteOnTimes[][2] = {{26.16, 26.6}, {26.7, 26.85}, {26.96, 27.05}, {27.11, 27.22}, {27.32, 27.72}};
     for (auto& timeRange : testAthrDiscreteOnTimes) {
       double selfTestTimerFromStart = selfTestDuration - selfTestTimer;
       if (selfTestTimerFromStart >= timeRange[0] && selfTestTimerFromStart <= timeRange[1]) {
@@ -98,7 +98,7 @@ void Fmgc::updateSelfTest(double deltaTime) {
     }
     selfTestDigitalOutValid = false;
     // FIXME no references available, best guess
-    double testDigitalOutValidTimes[][2] = {{25.23, 28.2}, {29.35, 29.75}};
+    double constexpr testDigitalOutValidTimes[][2] = {{25.23, 28.2}, {29.35, 29.75}};
     for (auto& timeRange : testDigitalOutValidTimes) {
       double selfTestTimerFromStart = selfTestDuration - selfTestTimer;
       if (selfTestTimerFromStart >= timeRange[0] && selfTestTimerFromStart <= timeRange[1]) {

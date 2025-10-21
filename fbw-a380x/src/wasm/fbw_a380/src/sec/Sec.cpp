@@ -96,7 +96,7 @@ void Sec::updateSelfTest(double deltaTime) {
 
     // Hardcoded test light sequence. Between the times (in seconds) in each array, the light is on.
     selfTestFaultLightVisible = false;
-    double testLightOnTimes[][2] = {{0, 06.46}, {18.5, 18.63}, {21.13, 21.33}, {21.42, 21.54}, {21.58, 21.96}};
+    double constexpr testLightOnTimes[][2] = {{0, 06.46}, {18.5, 18.63}, {21.13, 21.33}, {21.42, 21.54}, {21.58, 21.96}};
     for (auto& timeRange : testLightOnTimes) {
       double selfTestTimerFromStart = longSelfTestDuration - selfTestTimer;
       if (selfTestTimerFromStart >= timeRange[0] && selfTestTimerFromStart <= timeRange[1]) {
