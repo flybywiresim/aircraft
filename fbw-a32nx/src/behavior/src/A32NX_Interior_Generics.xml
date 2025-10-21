@@ -33,7 +33,7 @@
             <ANIMTIP_0></ANIMTIP_0>
             <ANIMTIP_1></ANIMTIP_1>
             <ANIM_LAG>60</ANIM_LAG>
-            <ANIM_WRAP>True</ANIM_WRAP>
+            <ANIM_WRAP>False</ANIM_WRAP>
         </Parameters>
         <Parameters Type="Default">
             <DECREMENT>#INCREMENT#</DECREMENT>
@@ -54,6 +54,15 @@
             <ANIM_CODE>
                 (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #ANIM_SIMVAR_MIN# - #ANIM_SIMVAR_MAX# #ANIM_SIMVAR_MIN# - / 100 *
             </ANIM_CODE>
+        </UseTemplate>
+
+        <UseTemplate Name="ASOBO_GT_Interaction_WheelAndContinuousLeft#EXTRA_INTERACTION#">
+            <CLOCKWISE_CODE>
+                (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #INCREMENT# + #ANIM_SIMVAR_MAX# min #SET_CODE#
+            </CLOCKWISE_CODE>
+            <ANTICLOCKWISE_CODE>
+                (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #DECREMENT# - #ANIM_SIMVAR_MIN# max #SET_CODE#
+            </ANTICLOCKWISE_CODE>
         </UseTemplate>
 
         <UseTemplate Name="FBW_Continuous_Knob_Finite_From_Simvar_Impl">

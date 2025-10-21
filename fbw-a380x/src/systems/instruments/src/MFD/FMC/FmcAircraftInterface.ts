@@ -43,6 +43,8 @@ import { VerticalWaypointPrediction } from '@fmgc/guidance/vnav/profile/NavGeome
 import { RadioAltimeterEvents } from '@flybywiresim/msfs-avionics-common';
 import { RADIO_ALTITUDE_NODH_VALUE } from '../pages/common/DataEntryFormats';
 import { FMS_CYCLE_TIME } from './FlightManagementComputer';
+import { NavigationEvents } from '@fmgc/navigation/Navigation';
+import { NDFMMessageTypes } from '@shared/FmMessages';
 
 /**
  * Interface between FMS and rest of aircraft through SimVars and ARINC values (mostly data being sent here)
@@ -195,6 +197,32 @@ export class FmcAircraftInterface {
 
   private readonly engineFailurePulseNode = new NXLogicPulseNode();
 
+  private readonly gpsPrimary = this.bus
+    .getSubscriber<NavigationEvents>()
+    .on('fms_nav_gps_primary')
+    .whenChanged()
+    .handle((v) => {
+      if (v) {
+        // TODO Split across both MFDs & NDs
+        this.fmc.removeNdFmMessage(NDFMMessageTypes.NavPrimaryLost, 'L');
+        this.fmc.removeNdFmMessage(NDFMMessageTypes.NavPrimaryLost, 'R');
+        this.fmc.removeMessageFromQueue(NXSystemMessages.navprimaryLost.text);
+        this.fmc.sendNdFmMessage(NDFMMessageTypes.NavPrimary, 'L');
+        this.fmc.sendNdFmMessage(NDFMMessageTypes.NavPrimary, 'R');
+        this.fmc.addMessageToQueue(NXSystemMessages.navprimary, undefined, () => {
+          this.fmc.removeNdFmMessage(NDFMMessageTypes.NavPrimary, 'L');
+          this.fmc.removeNdFmMessage(NDFMMessageTypes.NavPrimary, 'R');
+        });
+      } else {
+        this.fmc.removeNdFmMessage(NDFMMessageTypes.NavPrimary, 'L');
+        this.fmc.removeNdFmMessage(NDFMMessageTypes.NavPrimary, 'R');
+        this.fmc.removeMessageFromQueue(NXSystemMessages.navprimary.text);
+        this.fmc.sendNdFmMessage(NDFMMessageTypes.NavPrimaryLost, 'L');
+        this.fmc.sendNdFmMessage(NDFMMessageTypes.NavPrimaryLost, 'R');
+        this.fmc.addMessageToQueue(NXSystemMessages.navprimaryLost, undefined, undefined);
+      }
+    });
+
   constructor(
     private bus: EventBus,
     private fmc: FmcInterface,
@@ -303,6 +331,7 @@ export class FmcAircraftInterface {
         }
       }, true),
       this.radioAlt,
+      this.gpsPrimary,
     );
   }
 
@@ -1196,7 +1225,7 @@ export class FmcAircraftInterface {
       this.updatePerfSpeeds();
       this.updateConstraints();
       this.updateManagedSpeed();
-      const currentApMasterStatus = SimVar.GetSimVarValue('AUTOPILOT MASTER', 'boolean');
+      const currentApMasterStatus = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_ACTIVE', 'boolean');
       if (currentApMasterStatus !== this.apMasterStatus) {
         this.apMasterStatus = currentApMasterStatus;
         apLogicOn = this.apMasterStatus || Simplane.getAutoPilotFlightDirectorActive(1);
