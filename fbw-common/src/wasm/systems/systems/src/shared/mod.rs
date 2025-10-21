@@ -120,6 +120,7 @@ pub trait LgciuGearExtension {
     fn main_up_and_locked(&self) -> bool;
     fn nose_down_and_locked(&self) -> bool;
     fn nose_up_and_locked(&self) -> bool;
+    fn left_down_and_locked(&self) -> bool;
 }
 
 pub trait LgciuDoorPosition {
