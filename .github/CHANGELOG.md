@@ -12,6 +12,8 @@
 
 ## 0.15.0
 
+1. [A32NX/MCDU] Hide ATC MENU prompts depending on CPDLC connection status - @BravoMike99 (bruno_pt99)
+ 
 ## 0.14.0
 
 1. [A380X/FMS] Fix speed margins being displayed in the wrong place for a Mach target - @BlueberryKing (BlueberryKing)
