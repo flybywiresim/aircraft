@@ -77,9 +77,10 @@ export class MfdMsgList extends DisplayComponent<MfdMsgListProps> {
     );
 
     this.subs.push(
-      this.props.fmcService.masterFmcChanged.sub(() =>
-        this.props.fmcService.master?.fmgc.data.engineOut.pipe(this.eoActive),
-      ),
+      this.props.fmcService.masterFmcChanged.sub(() => {
+        // FIXME the previous pipe leaks...
+        this.props.fmcService.master?.fmgc.data.engineOut.pipe(this.eoActive);
+      }),
     );
   }
 
