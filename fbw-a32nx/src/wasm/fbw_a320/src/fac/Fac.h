@@ -40,6 +40,8 @@ class Fac {
   // Computer Self-monitoring vars
   bool facHealthy;
 
+  bool selfTestFaultLightVisible;
+
   SRFlipFlop facHealthyFlipFlop = SRFlipFlop(false);
 
   PulseNode pushbuttonPulse = PulseNode(true);
@@ -61,5 +63,5 @@ class Fac {
 
   const double longPowerFailureTime = 0.2;
   const double shortPowerFailureTime = 0.01;
-  const double selfTestDuration = 10;
+  const double selfTestDuration = 20;
 };
