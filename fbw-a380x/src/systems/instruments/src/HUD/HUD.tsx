@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import {
   ClockEvents,
   ComponentProps,
@@ -12,7 +13,7 @@ import {
   HEvent,
 } from '@microsoft/msfs-sdk';
 import { Arinc429Word, ArincEventBus, FailuresConsumer } from '@flybywiresim/fbw-sdk';
-import { AttitudeIndicatorWarnings } from '@flybywiresim/hud';
+import { AttitudeIndicatorWarnings } from '@flybywiresim/pfd';
 import { AttitudeIndicatorWarningsA380 } from 'instruments/src/HUD/AttitudeIndicatorWarningsA380';
 import { LinearDeviationIndicator } from 'instruments/src/HUD/LinearDeviationIndicator';
 import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
@@ -35,6 +36,7 @@ import { DecelIndicator } from './DecelSpeedIndicator';
 import { DeclutterIndicator } from './AttitudeIndicatorFixed';
 import { HudWarnings } from './HudWarnings';
 import { RadioNavInfo } from './RadioNavInfo';
+import { FcdcValueProvider } from './shared/FcdcValueProvider';
 
 export const getDisplayIndex = () => {
   const url = Array.from(document.querySelectorAll('vcockpit-panel > *'))
@@ -62,6 +64,7 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
   private readonly sub = this.props.bus.getSubscriber<
     Arinc429Values & ClockEvents & DmcLogicEvents & HUDSimvars & HEvent & HudElems
   >();
+  private readonly fcdcData = new FcdcValueProvider(this.props.bus, getDisplayIndex());
 
   private headingFailed = Subject.create(true);
 
@@ -195,6 +198,7 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
             instrument={this.props.instrument}
             isAttExcessive={this.isAttExcessive}
             filteredRadioAlt={this.filteredRadioAltitude}
+            fcdcData={this.fcdcData}
           />
           <path
             id="PitchScaleMask"
@@ -302,7 +306,7 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
 
           <RadioNavInfo bus={this.props.bus} index={1} />
           <RadioNavInfo bus={this.props.bus} index={2} />
-          <FMA bus={this.props.bus} isAttExcessive={this.isAttExcessive} />
+          <FMA bus={this.props.bus} isAttExcessive={this.isAttExcessive} fcdcData={this.fcdcData} />
 
           <DeclutterIndicator bus={this.props.bus} />
         </svg>

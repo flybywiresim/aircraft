@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Clock, FSComponent, HEventPublisher, InstrumentBackplane, Subject } from '@microsoft/msfs-sdk';
 import { ArincEventBus, EfisSide } from '@flybywiresim/fbw-sdk';
 import { getDisplayIndex } from 'instruments/src/MsfsAvionicsCommon/CdsDisplayUnit';
@@ -14,6 +15,8 @@ import './style.scss';
 import { FwcPublisher, RopRowOansPublisher, SecPublisher, TawsPublisher } from '@flybywiresim/msfs-avionics-common';
 import { FwsPfdSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FwsPfdPublisher';
 import { VorBusPublisher } from '../MsfsAvionicsCommon/providers/VorBusPublisher';
+import { FcdcSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FcdcPublisher';
+import { SfccSimVarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/SfccPublisher';
 class A380X_HUD extends BaseInstrument {
   private readonly bus = new ArincEventBus();
 
@@ -47,6 +50,10 @@ class A380X_HUD extends BaseInstrument {
 
   private readonly fcuBusPublisher = new A380XFcuBusPublisher(this.bus);
 
+  private readonly fcdcPublisher = new FcdcSimvarPublisher(this.bus);
+
+  private readonly sfccPublisher = new SfccSimVarPublisher(this.bus);
+
   private readonly hudProvider = new HudValueProvider(this.bus);
 
   private readonly symbolPublisher = new HUDSymbolsPublisher(this.bus);
@@ -74,6 +81,8 @@ class A380X_HUD extends BaseInstrument {
     this.backplane.addPublisher('TawsPublisher', this.tawsPublisher);
     this.backplane.addPublisher('FwsPfdPublisher', this.fwsPfdPublisher);
     this.backplane.addPublisher('FcuBusPublisher', this.fcuBusPublisher);
+    this.backplane.addPublisher('FcdcPublisher', this.fcdcPublisher);
+    this.backplane.addPublisher('SfccPublisher', this.sfccPublisher);
     this.backplane.addInstrument('HudProvider', this.hudProvider);
     this.backplane.addPublisher('HUDSymbolsPublisher', this.symbolPublisher);
     this.backplane.addPublisher('vor', this.vorBusPublisher);
