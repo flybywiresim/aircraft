@@ -204,6 +204,7 @@ export class BrakeToVacateDistanceUpdater implements Instrument {
   private async detectLandingRunway() {
     // Arming phase between 500ft and 300ft RA
     if (this.radioAltitude.get() < 300 || this.radioAltitude.get() > 500) {
+      this.nearbyAirportMonitor.setLocation(undefined, undefined); // Invalidate location to prevent unnecessary searching
       return;
     }
 
