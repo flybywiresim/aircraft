@@ -13,7 +13,7 @@ import {
   MappedSubject,
 } from '@microsoft/msfs-sdk';
 
-import { Arinc429ConsumerSubject, Arinc429WordData, Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { Arinc429WordData, Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import {
   calculateHorizonOffsetFromPitch,
   calculateVerticalOffsetFromRoll,
@@ -138,8 +138,6 @@ export class Horizon extends DisplayComponent<HorizonProps> {
   private yOffset = Subject.create(0);
 
   private headingFailed = Subject.create(true);
-
-  private readonly fcdcDiscreteWord1 = Arinc429ConsumerSubject.create(this.sub.on('fcdcDiscreteWord1'));
 
   private readonly isNormalLawActive = this.props.fcdcData.fcdcDiscreteWord1.map(
     (dw) => dw.bitValue(11) && !dw.isFailureWarning(),

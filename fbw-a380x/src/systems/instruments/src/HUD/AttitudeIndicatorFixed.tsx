@@ -11,7 +11,7 @@ import {
   Subscription,
 } from '@microsoft/msfs-sdk';
 import { getDisplayIndex } from 'instruments/src/HUD/HUD';
-import { Arinc429ConsumerSubject, Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { FlightPathDirector } from './FlightPathDirector';
 import { FlightPathVector } from './FlightPathVector';
 import { Arinc429Values } from './shared/ArincValueProvider';
@@ -37,7 +37,6 @@ export class AttitudeIndicatorFixedUpper extends DisplayComponent<AttitudeIndica
 
   private visibilitySub = Subject.create('hidden');
 
-  private readonly fcdcDiscreteWord1 = Arinc429ConsumerSubject.create(this.sub.on('fcdcDiscreteWord1'));
   private readonly isNormalLawActive = this.props.fcdcData.fcdcDiscreteWord1.map(
     (dw) => dw.bitValue(11) && !dw.isFailureWarning(),
   );
