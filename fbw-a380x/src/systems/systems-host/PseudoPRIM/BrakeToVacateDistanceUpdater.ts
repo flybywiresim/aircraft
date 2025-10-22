@@ -239,6 +239,7 @@ export class BrakeToVacateDistanceUpdater implements Instrument {
       // Fetch all runways of all airports in vicinity
       const db = NavigationDatabaseService.activeDatabase.backendDatabase;
       this.nearbyAirportMonitor.setLocation(ppos.lat, ppos.long);
+      // Question to reviewers: How resource intensive is getCurrentFacilities()?
       const nearbyAirports = this.nearbyAirportMonitor
         .getCurrentFacilities()
         .filter((airport) => airport.type === NearbyFacilityType.Airport);
