@@ -588,11 +588,11 @@ impl AirDataInertialReferenceSystem {
     }
 
     pub fn adr_bus(&self, number: usize) -> &impl AirDataReferenceBus {
-        &self.adirus[number + 1].adr
+        &self.adirus[number - 1].adr
     }
 
     pub fn ir_bus(&self, number: usize) -> &impl InertialReferenceBus {
-        &self.adirus[number + 1].ir
+        &self.adirus[number - 1].ir
     }
 }
 impl SimulationElement for AirDataInertialReferenceSystem {
