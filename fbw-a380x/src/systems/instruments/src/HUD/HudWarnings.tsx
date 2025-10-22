@@ -3,21 +3,21 @@ import { Arinc429ConsumerSubject, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { HudElems, HudMode } from './HUDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
+import { FcdcValueProvider } from './shared/FcdcValueProvider';
 
 interface HudWarningsProps {
   bus: ArincEventBus;
   instrument: BaseInstrument;
+  fcdcData: FcdcValueProvider;
 }
 
 export class HudWarnings extends DisplayComponent<HudWarningsProps> {
   private readonly warningGroupRef = FSComponent.createRef<SVGGElement>();
-  private readonly sub = this.props.bus.getSubscriber<HUDSimvars & HudElems & Arinc429Values>();
+  private readonly sub = this.props.bus.getSubscriber<HUDSimvars & HudElems & Arinc429Values & FcdcValueProvider>();
   private readonly roll = Arinc429ConsumerSubject.create(this.sub.on('rollAr').whenChanged());
   private readonly vStallWarn = Arinc429ConsumerSubject.create(this.sub.on('vStallWarn').whenChanged());
   private readonly airSpeed = Arinc429ConsumerSubject.create(this.sub.on('speedAr').whenChanged());
   private readonly hudmode = ConsumerSubject.create(this.sub.on('hudMode').whenChanged(), 1);
-  private readonly fcdc1DiscreteWord1 = Arinc429ConsumerSubject.create(this.sub.on('fcdc1DiscreteWord1').whenChanged());
-  private readonly fcdc2DiscreteWord1 = Arinc429ConsumerSubject.create(this.sub.on('fcdc2DiscreteWord1').whenChanged());
 
   private readonly hudMode = ConsumerSubject.create(this.sub.on('hudFlightPhaseMode').whenChanged(), 0);
   private readonly autoBrakeMode = ConsumerSubject.create(this.sub.on('autoBrakeMode').whenChanged(), 0);
@@ -25,7 +25,9 @@ export class HudWarnings extends DisplayComponent<HudWarningsProps> {
   private readonly brakePedalInputRight = ConsumerSubject.create(this.sub.on('brakePedalInputRight').whenChanged(), 0);
   private readonly throttle2Position = ConsumerSubject.create(this.sub.on('throttle2Position').whenChanged(), 0);
   private readonly throttle3Position = ConsumerSubject.create(this.sub.on('throttle3Position').whenChanged(), 0);
-
+  private readonly isNormalLawActive = this.props.fcdcData.fcdcDiscreteWord1.map(
+    (dw) => dw.bitValue(11) && !dw.isFailureWarning(),
+  );
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
   }
@@ -59,15 +61,13 @@ export class HudWarnings extends DisplayComponent<HudWarningsProps> {
           class="FontLarge Green MiddleAlign"
           style={{
             display: MappedSubject.create(
-              ([vStallWarn, airSpeed, fcdc1DiscreteWord1, fcdc2DiscreteWord1, hudmode]) => {
-                const normalLawActive =
-                  fcdc1DiscreteWord1.bitValueOr(11, false) || fcdc2DiscreteWord1.bitValueOr(11, false);
+              ([vStallWarn, airSpeed, isNormalLawActive, hudmode]) => {
                 if (hudmode === 0) {
                   if (
                     (airSpeed.value - vStallWarn.value < 0 ||
                       vStallWarn.isFailureWarning() ||
                       vStallWarn.isNoComputedData()) &&
-                    !normalLawActive // is stall  warn only  with normal law ?
+                    !isNormalLawActive // is stall  warn only  with normal law ?
                   ) {
                     return true;
                   } else {
@@ -79,8 +79,7 @@ export class HudWarnings extends DisplayComponent<HudWarningsProps> {
               },
               this.vStallWarn,
               this.airSpeed,
-              this.fcdc1DiscreteWord1,
-              this.fcdc2DiscreteWord1,
+              this.isNormalLawActive,
               this.hudmode,
             ).map((it) => (it ? 'block' : 'none')),
           }}

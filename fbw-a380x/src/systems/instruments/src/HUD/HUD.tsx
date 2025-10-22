@@ -294,7 +294,7 @@ export class HUDComponent extends DisplayComponent<HUDProps> {
           <AttitudeIndicatorFixedUpper bus={this.props.bus} fcdcData={this.fcdcData} />
           <AttitudeIndicatorWarnings bus={this.props.bus} instrument={this.props.instrument} />
           <AttitudeIndicatorWarningsA380 bus={this.props.bus} instrument={this.props.instrument} />
-          <HudWarnings bus={this.props.bus} instrument={this.props.instrument} />
+          <HudWarnings bus={this.props.bus} instrument={this.props.instrument} fcdcData={this.fcdcData} />
           <VerticalSpeedIndicator
             bus={this.props.bus}
             instrument={this.props.instrument}

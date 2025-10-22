@@ -924,10 +924,6 @@ class VStallWarnBar extends DisplayComponent<{
 
   private vStallWarn = new Arinc429Word(0);
 
-  private fcdc1DiscreteWord1 = new Arinc429Word(0);
-
-  private fcdc2DiscreteWord1 = new Arinc429Word(0);
-
   private setVStallWarnBarPath() {
     const normalLawActive =
       this.props.fcdcData.fcdcDiscreteWord1.get().bitValueOr(11, false) ||
