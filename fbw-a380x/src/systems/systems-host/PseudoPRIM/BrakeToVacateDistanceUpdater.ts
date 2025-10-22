@@ -15,10 +15,11 @@ import {
   NearbyFacilityType,
   OansMapProjection,
   RaBusEvents,
+  RopsRunwayPrediction,
   UpdateThrottler,
 } from '@flybywiresim/fbw-sdk';
 import { OansControlEvents } from '@flybywiresim/oanc';
-import { Coordinates, distanceTo, placeBearingDistance } from 'msfs-geo';
+import { Coordinates, placeBearingDistance } from 'msfs-geo';
 import { Position } from '@turf/turf';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
@@ -231,41 +232,18 @@ export class BrakeToVacateDistanceUpdater implements Instrument {
           ? this.trueHeading3.get().value
           : 0;
 
-    if (ppos !== null) {
-      const dist =
-        this.radioAltitude.get() / MathUtils.FEET_TO_NAUTICAL_MILES / Math.tan(3.0 * MathUtils.DEGREES_TO_RADIANS); // assuming 3 degree glide slope
-      const touchdownPoint = placeBearingDistance(ppos, trueHeading, dist);
+    const landingRunway = await RopsRunwayPrediction.detectLandingRunway(
+      this.nearbyAirportMonitor,
+      this.radioAltitude.get(),
+      trueHeading,
+      ppos,
+    );
 
-      // Fetch all runways of all airports in vicinity
-      const db = NavigationDatabaseService.activeDatabase.backendDatabase;
-      this.nearbyAirportMonitor.setLocation(ppos.lat, ppos.long);
-      // Question to reviewers: How resource intensive is getCurrentFacilities()?
-      const nearbyAirports = this.nearbyAirportMonitor
-        .getCurrentFacilities()
-        .filter((airport) => airport.type === NearbyFacilityType.Airport);
-      let nearbyAirportIdent: string | null = null;
-      let nearbyRunwayIdent: string | null = null;
-      let nearbyRunwayDistance = 10; // nm
-
-      for (const airport of nearbyAirports) {
-        const runways = await db.getRunways(airport.ident);
-
-        for (const runway of runways) {
-          const dist = distanceTo(touchdownPoint, runway.thresholdLocation);
-          if (dist < nearbyRunwayDistance && Math.abs(runway.bearing - trueHeading) < 30) {
-            nearbyAirportIdent = airport.ident;
-            nearbyRunwayIdent = runway.ident;
-            nearbyRunwayDistance = dist;
-          }
-        }
-      }
-
-      // Set as ROPS/BTV runway
-      if (nearbyAirportIdent && nearbyRunwayIdent) {
-        // If BTV runway already set, prioritize until 350ft RA
-        if (!this.runwayIsSet() || (this.runwayIsSet() && this.radioAltitude.get() < 350)) {
-          this.setBtvRunwayFromNavdata(nearbyAirportIdent, nearbyRunwayIdent);
-        }
+    // Set as ROPS/BTV runway
+    if (landingRunway) {
+      // If BTV runway already set, prioritize until 350ft RA
+      if (!this.runwayIsSet() || (this.runwayIsSet() && this.radioAltitude.get() < 350)) {
+        this.setBtvRunwayFromNavdata(landingRunway.airport, landingRunway.runway);
       }
     }
   }
