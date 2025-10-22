@@ -32,13 +32,13 @@ export class SyntheticRunway extends DisplayComponent<{
     HUDSimvars & Arinc429Values & ClockEvents & HUDSymbolData & HudElems
   >();
 
-  private data: HUDSyntheticRunway;
-  private alt: number;
+  private data?: HUDSyntheticRunway;
+  private alt = 0;
   private logOnce = 0;
-  private lat: number;
-  private long: number;
-  private heading: number;
-  private prevRwyHdg;
+  private lat = 0;
+  private long = 0;
+  private heading = 0;
+  private prevRwyHdg = 0;
 
   private pathRefs: NodeReference<SVGTextElement>[] = [];
   private centerlinePathRefs: NodeReference<SVGTextElement>[] = [];
@@ -46,7 +46,7 @@ export class SyntheticRunway extends DisplayComponent<{
   private JKCoords: LatLongAlt[] = [];
   private centerLineCoords: LatLongAlt[] = [];
   private threshHeighAbvGnd = 1020 * Math.tan((3 / 180) * Math.PI);
-  private data2;
+  private data2?: HUDSyntheticRunway;
   private isDefined = false;
   /** bit 29 is NO DH selection */
   private readonly fmEisDiscrete2 = Arinc429RegisterSubject.createEmpty();
@@ -236,34 +236,34 @@ export class SyntheticRunway extends DisplayComponent<{
 
   private initRwyPoints() {
     //console.log('update...');
+    if (this.data2 !== undefined) {
+      this.JKCoords[0] = this.data2.cornerCoordinates[0];
+      this.JKCoords[1] = this.data2.cornerCoordinates[1];
+      this.JKCoords[2] = this.data2.cornerCoordinates[2];
+      this.JKCoords[3] = this.data2.cornerCoordinates[3];
+      this.centerLineCoords[0] = this.data2.centerlineCoordinates[0];
+      this.centerLineCoords[1] = this.data2.centerlineCoordinates[1];
+      this.centerLineCoords[2] = this.data2.centerlineCoordinates[2];
+      this.centerLineCoords[3] = this.data2.centerlineCoordinates[3];
+      this.centerLineCoords[4] = this.data2.centerlineCoordinates[4];
 
-    this.JKCoords[0] = this.data2.cornerCoordinates[0];
-    this.JKCoords[1] = this.data2.cornerCoordinates[1];
-    this.JKCoords[2] = this.data2.cornerCoordinates[2];
-    this.JKCoords[3] = this.data2.cornerCoordinates[3];
+      this.JKCoords[0].alt = this.JKCoords[0].alt - this.threshHeighAbvGnd;
+      this.JKCoords[1].alt = this.JKCoords[1].alt - this.threshHeighAbvGnd;
+      this.JKCoords[2].alt = this.JKCoords[2].alt - this.threshHeighAbvGnd;
+      this.JKCoords[3].alt = this.JKCoords[3].alt - this.threshHeighAbvGnd;
 
-    this.centerLineCoords[0] = this.data2.centerlineCoordinates[0];
-    this.centerLineCoords[1] = this.data2.centerlineCoordinates[1];
-    this.centerLineCoords[2] = this.data2.centerlineCoordinates[2];
-    this.centerLineCoords[3] = this.data2.centerlineCoordinates[3];
-    this.centerLineCoords[4] = this.data2.centerlineCoordinates[4];
+      // //extended centerline   //1852: nautical miles to meters
 
-    this.JKCoords[0].alt = this.JKCoords[0].alt - this.threshHeighAbvGnd;
-    this.JKCoords[1].alt = this.JKCoords[1].alt - this.threshHeighAbvGnd;
-    this.JKCoords[2].alt = this.JKCoords[2].alt - this.threshHeighAbvGnd;
-    this.JKCoords[3].alt = this.JKCoords[3].alt - this.threshHeighAbvGnd;
-
-    // //extended centerline   //1852: nautical miles to meters
-
-    this.centerLineCoords[0].alt = this.centerLineCoords[0].alt - this.threshHeighAbvGnd;
-    this.centerLineCoords[1].alt = this.centerLineCoords[1].alt - this.threshHeighAbvGnd;
-    this.centerLineCoords[2].alt = this.centerLineCoords[2].alt - this.threshHeighAbvGnd;
-    this.centerLineCoords[3].alt = this.centerLineCoords[3].alt - this.threshHeighAbvGnd;
-    this.centerLineCoords[4].alt = this.centerLineCoords[4].alt - this.threshHeighAbvGnd;
+      this.centerLineCoords[0].alt = this.centerLineCoords[0].alt - this.threshHeighAbvGnd;
+      this.centerLineCoords[1].alt = this.centerLineCoords[1].alt - this.threshHeighAbvGnd;
+      this.centerLineCoords[2].alt = this.centerLineCoords[2].alt - this.threshHeighAbvGnd;
+      this.centerLineCoords[3].alt = this.centerLineCoords[3].alt - this.threshHeighAbvGnd;
+      this.centerLineCoords[4].alt = this.centerLineCoords[4].alt - this.threshHeighAbvGnd;
+    }
   }
 
   updateSyntheticRunway() {
-    if (this.logOnce === 0) {
+    if (this.logOnce === 0 && this.data !== undefined) {
       this.logOnce += 1;
 
       console.log(

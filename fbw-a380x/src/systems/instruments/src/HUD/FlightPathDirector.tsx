@@ -42,8 +42,8 @@ export class FlightPathDirector extends DisplayComponent<{ bus: EventBus; isAttE
   };
   private flightPhase = -1;
   private declutterMode = 0;
-  private crosswindMode;
-  private fdCueOffRange;
+  private crosswindMode = false;
+  private fdCueOffRange = false;
   private sVisibility = Subject.create<String>('');
 
   private needsUpdate = false;
@@ -191,7 +191,7 @@ export class FlightPathDirector extends DisplayComponent<{ bus: EventBus; isAttE
       const yOffset = yOffsetFpv + FDPitchOrderLim * 13 + rollSin * (xOffset - xOffsetFpv); // * rollCos;
 
       //set lateral limit for fdCue
-      if (this.crosswindMode == 0) {
+      if (this.crosswindMode == false) {
         if (xOffset < -378 || xOffset > 350) {
           this.fdCueOffRange = true;
         } else {

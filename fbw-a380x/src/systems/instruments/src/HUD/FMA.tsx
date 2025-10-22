@@ -2007,10 +2007,16 @@ class D3Cell extends DisplayComponent<{ bus: ArincEventBus }> {
     ([mdaMode, dh, mda]) => {
       switch (mdaMode) {
         case MdaMode.Baro:
+          console.log('mda: baro');
           return Math.round(mda.value).toString().padStart(6, '\xa0');
         case MdaMode.Radio:
+          console.log('mda: radio');
           return Math.round(dh.value).toString().padStart(4, '\xa0');
+        case MdaMode.None:
+          console.log('mda: none');
+          return '';
         default:
+          console.log('mda: def');
           return '';
       }
     },

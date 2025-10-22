@@ -519,7 +519,7 @@ export class HudValueProvider implements Instrument {
     });
   }
 
-  private setCrossWindMode(value) {
+  private setCrossWindMode(value: boolean) {
     if (this.hudMode.get() === HudMode.NORMAL) {
       if (this.flightPhase === FmgcFlightPhase.Approach) {
         if (this.declutterMode === 2) {

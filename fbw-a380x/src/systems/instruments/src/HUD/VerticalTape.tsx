@@ -115,7 +115,7 @@ export class VerticalTape extends DisplayComponent<VerticalTapeProps> {
           }
         } else {
           for (let i = 0; i < this.tickRefs.length - 1; i++) {
-            if ((parseInt(this.tickRefs[i].instance.textContent) * 100) % 500 === 0) {
+            if ((parseInt(this.tickRefs[i].instance.textContent as string) * 100) % 500 === 0) {
               this.tickRefs[i].instance.getElementsByTagName('text')[0].classList.remove('HiddenElement');
             }
           }
