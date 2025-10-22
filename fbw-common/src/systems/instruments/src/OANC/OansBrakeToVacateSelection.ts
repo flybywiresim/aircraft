@@ -152,18 +152,6 @@ export class OansBrakeToVacateSelection<T extends number> {
     this.lgciuDiscreteWord2_1,
     this.lgciuDiscreteWord2_2,
   );
-
-  private readonly fwsFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
-
-  public readonly below300ftRaAndLanding = MappedSubject.create(
-    ([ra1, ra2, ra3, fp]) =>
-      fp > 8 && fp < 11 && (ra1.valueOr(2500) <= 300 || ra2.valueOr(2500) <= 300 || ra3.valueOr(2500) <= 300),
-    this.radioAltitude1,
-    this.radioAltitude2,
-    this.radioAltitude3,
-    this.fwsFlightPhase,
-  );
-
   selectRunwayFromOans(
     runway: string,
     centerlineFeature: Feature<Geometry, AmdbProperties>,
@@ -423,10 +411,11 @@ export class OansBrakeToVacateSelection<T extends number> {
     ctx.resetTransform();
     ctx.translate(this.canvasCentreX?.get() ?? 0, this.canvasCentreY?.get() ?? 0);
 
-    const radioAlt =
-      this.radioAltitude1.get().isFailureWarning() || this.radioAltitude1.get().isNoComputedData()
+    const radioAlt = !this.radioAltitude1.get().isInvalid()
+      ? this.radioAltitude1.get()
+      : !this.radioAltitude2.get().isInvalid()
         ? this.radioAltitude2.get()
-        : this.radioAltitude1.get();
+        : this.radioAltitude3.get();
 
     // Below 600ft RA, if somewhere on approach, update DRY/WET lines according to predicted touchdown point
     const dryWetLinesAreUpdating = radioAlt.valueOr(1000) <= 600;

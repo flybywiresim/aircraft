@@ -12,12 +12,13 @@ import {
   IrBusEvents,
   LgciuBusEvents,
   MathUtils,
-  OansFmsDataStore,
+  NearbyFacilityType,
   OansMapProjection,
   RaBusEvents,
+  UpdateThrottler,
 } from '@flybywiresim/fbw-sdk';
 import { OansControlEvents } from '@flybywiresim/oanc';
-import { placeBearingDistance } from 'msfs-geo';
+import { Coordinates, distanceTo, placeBearingDistance } from 'msfs-geo';
 import { Position } from '@turf/turf';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
@@ -29,7 +30,7 @@ import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationD
 export class BrakeToVacateDistanceUpdater implements Instrument {
   private readonly sub = this.bus.getSubscriber<BtvData & FmsOansData & IrBusEvents & LgciuBusEvents & RaBusEvents>();
 
-  private readonly fmsDataStore = new OansFmsDataStore(this.bus);
+  private readonly updateThrottler = new UpdateThrottler(200);
 
   private readonly airportLocalPos = ConsumerSubject.create(this.sub.on('oansAirportLocalCoordinates'), []);
 
@@ -39,7 +40,10 @@ export class BrakeToVacateDistanceUpdater implements Instrument {
 
   private readonly requestedStoppingDistArinc = Arinc429Register.empty();
 
-  constructor(private readonly bus: EventBus) {
+  constructor(
+    private readonly bus: EventBus,
+    private readonly instrument: BaseInstrument,
+  ) {
     this.remainingDistToExit.sub((v) => {
       this.remainingDistToExitArinc.setValue(v < 0 ? 0 : v);
       this.remainingDistToExitArinc.setSsm(
@@ -74,20 +78,15 @@ export class BrakeToVacateDistanceUpdater implements Instrument {
         this.requestedStoppingDistArinc.writeToSimVar('L:A32NX_OANS_BTV_REQ_STOPPING_DISTANCE');
       }
     }, true);
-
-    // If BTV runway not set when passing 300ft, set from FMS. Needed for ROW/ROP
-    // FIXME Predict landing runway separately for ROP/ROW
-    this.below300ftRaAndLanding.sub((below300) => {
-      if (below300 && !this.runwayIsSet()) {
-        this.setBtvRunwayFromFmsRunway();
-      }
-    });
   }
 
   init() {
     // FIXME this should only ever be used within the FMGC
     const db = new NavigationDatabase(this.bus, NavigationDatabaseBackend.Msfs);
     NavigationDatabaseService.activeDatabase = db;
+
+    this.nearbyAirportMonitor.setMaxResults(5);
+    this.nearbyAirportMonitor.setRadius(5);
 
     this.clearSelection();
   }
@@ -105,10 +104,30 @@ export class BrakeToVacateDistanceUpdater implements Instrument {
   private readonly radioAltitude1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ra_radio_altitude_1'));
   private readonly radioAltitude2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ra_radio_altitude_2'));
   private readonly radioAltitude3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ra_radio_altitude_3'));
-
-  private readonly verticalSpeed1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_vertical_speed_1'));
-  private readonly verticalSpeed2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_vertical_speed_2'));
-  private readonly verticalSpeed3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_vertical_speed_3'));
+  private readonly radioAltitude = MappedSubject.create(
+    ([ra1, ra2, ra3]) => {
+      let ra = 1000;
+      const numRaValid = (!ra1.isInvalid() ? 1 : 0) + (!ra2.isInvalid() ? 1 : 0) + (!ra3.isInvalid() ? 1 : 0);
+      if (numRaValid === 1) {
+        ra = !ra1.isInvalid() ? ra1.value : !ra2.isInvalid() ? ra2.value : ra3.value;
+      } else if (numRaValid === 2) {
+        // Return average of the two valid RAs
+        let sum = 0;
+        if (!ra1.isInvalid()) sum += ra1.value;
+        if (!ra2.isInvalid()) sum += ra2.value;
+        if (!ra3.isInvalid()) sum += ra3.value;
+        ra = sum / 2;
+      } else if (numRaValid === 3) {
+        // Return median of the three RAs
+        const ras = [ra1.value, ra2.value, ra3.value].sort((a, b) => a - b);
+        ra = ras[1];
+      }
+      return ra;
+    },
+    this.radioAltitude1,
+    this.radioAltitude2,
+    this.radioAltitude3,
+  );
 
   private readonly fwsFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
 
@@ -134,13 +153,23 @@ export class BrakeToVacateDistanceUpdater implements Instrument {
   private readonly autoBrakeActive = ConsumerSubject.create(this.sub.on('autoBrakeActive'), false);
   private btvActiveOnGroundLastValue = false;
 
-  public readonly below300ftRaAndLanding = MappedSubject.create(
-    ([ra1, ra2, ra3, fp]) =>
-      fp > 8 && fp < 11 && (ra1.valueOr(2500) <= 300 || ra2.valueOr(2500) <= 300 || ra3.valueOr(2500) <= 300),
-    this.radioAltitude1,
-    this.radioAltitude2,
-    this.radioAltitude3,
-    this.fwsFlightPhase,
+  private readonly verticalSpeed1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_vertical_speed_1'));
+  private readonly verticalSpeed2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_vertical_speed_2'));
+  private readonly verticalSpeed3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_vertical_speed_3'));
+
+  private readonly latitude1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_latitude_1'));
+  private readonly longitude1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_longitude_1'));
+  private readonly latitude2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_latitude_2'));
+  private readonly longitude2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_longitude_2'));
+  private readonly latitude3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_latitude_3'));
+  private readonly longitude3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_longitude_3'));
+
+  private readonly trueHeading1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_true_heading_1'));
+  private readonly trueHeading2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_true_heading_2'));
+  private readonly trueHeading3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_true_heading_3'));
+
+  private nearbyAirportMonitor = NavigationDatabaseService.activeDatabase.createNearbyFacilityMonitor(
+    NearbyFacilityType.Airport,
   );
 
   private runwayIsSet() {
@@ -148,16 +177,14 @@ export class BrakeToVacateDistanceUpdater implements Instrument {
     return thresPos.length >= 2 && thresPos[0].length > 0 && thresPos[1].length > 0;
   }
 
-  private async setBtvRunwayFromFmsRunway() {
-    const destination = this.fmsDataStore.destination.get();
-    const rwyIdent = this.fmsDataStore.landingRunway.get();
-    if (destination && rwyIdent) {
+  private async setBtvRunwayFromNavdata(airportIdent: string, rwyIdent: string) {
+    if (airportIdent && rwyIdent) {
       const db = NavigationDatabaseService.activeDatabase.backendDatabase;
 
-      const arps = await db.getAirports([destination]);
+      const arps = await db.getAirports([airportIdent]);
       const arpCoordinates = arps[0].location;
 
-      const runways = await db.getRunways(destination);
+      const runways = await db.getRunways(airportIdent);
       const landingRunwayNavdata = runways.filter((rw) => rw.ident === rwyIdent)[0];
       const oppositeThreshold = placeBearingDistance(
         landingRunwayNavdata.thresholdLocation,
@@ -173,6 +200,75 @@ export class BrakeToVacateDistanceUpdater implements Instrument {
     }
   }
 
+  private async detectLandingRunway() {
+    // Arming phase between 500ft and 300ft RA
+    if (this.radioAltitude.get() < 300 || this.radioAltitude.get() > 500) {
+      return;
+    }
+
+    // Retrieve ppos
+    const lon1 = this.longitude1.get();
+    const lat1 = this.latitude1.get();
+    const lon2 = this.longitude2.get();
+    const lat2 = this.latitude2.get();
+    const lon3 = this.longitude3.get();
+    const lat3 = this.latitude3.get();
+
+    let ppos: Coordinates | null = null;
+    if (!lat1.isInvalid() && !lon1.isInvalid()) {
+      ppos = { lat: lat1.value, long: lon1.value } as Coordinates;
+    } else if (!lat2.isInvalid() && !lon2.isInvalid()) {
+      ppos = { lat: lat2.value, long: lon2.value } as Coordinates;
+    } else if (!lat3.isInvalid() && !lon3.isInvalid()) {
+      ppos = { lat: lat3.value, long: lon3.value } as Coordinates;
+    }
+
+    const trueHeading = !this.trueHeading1.get().isInvalid()
+      ? this.trueHeading1.get().value
+      : !this.trueHeading2.get().isInvalid()
+        ? this.trueHeading2.get().value
+        : !this.trueHeading3.get().isInvalid()
+          ? this.trueHeading3.get().value
+          : 0;
+
+    if (ppos !== null) {
+      const dist =
+        this.radioAltitude.get() / MathUtils.FEET_TO_NAUTICAL_MILES / Math.tan(3.0 * MathUtils.DEGREES_TO_RADIANS); // assuming 3 degree glide slope
+      const touchdownPoint = placeBearingDistance(ppos, trueHeading, dist);
+
+      // Fetch all runways of all airports in vicinity
+      const db = NavigationDatabaseService.activeDatabase.backendDatabase;
+      this.nearbyAirportMonitor.setLocation(ppos.lat, ppos.long);
+      const nearbyAirports = this.nearbyAirportMonitor
+        .getCurrentFacilities()
+        .filter((airport) => airport.type === NearbyFacilityType.Airport);
+      let nearbyAirportIdent: string | null = null;
+      let nearbyRunwayIdent: string | null = null;
+      let nearbyRunwayDistance = 10; // nm
+
+      for (const airport of nearbyAirports) {
+        const runways = await db.getRunways(airport.ident);
+
+        for (const runway of runways) {
+          const dist = distanceTo(touchdownPoint, runway.thresholdLocation);
+          if (dist < nearbyRunwayDistance && Math.abs(runway.bearing - trueHeading) < 30) {
+            nearbyAirportIdent = airport.ident;
+            nearbyRunwayIdent = runway.ident;
+            nearbyRunwayDistance = dist;
+          }
+        }
+      }
+
+      // Set as ROPS/BTV runway
+      if (nearbyAirportIdent && nearbyRunwayIdent) {
+        // If BTV runway already set, prioritize until 350ft RA
+        if (!this.runwayIsSet() || (this.runwayIsSet() && this.radioAltitude.get() < 350)) {
+          this.setBtvRunwayFromNavdata(nearbyAirportIdent, nearbyRunwayIdent);
+        }
+      }
+    }
+  }
+
   private clearSelection() {
     this.remainingDistToExit.set(-1);
     this.remaininingDistToRwyEnd.set(-1);
@@ -182,11 +278,7 @@ export class BrakeToVacateDistanceUpdater implements Instrument {
     // Only update below 600ft AGL, and in landing FMGC phase
     // Also, V/S should be below +400ft/min, to avoid ROW during G/A
     if (
-      !(
-        this.radioAltitude1.get().valueOr(2500) < 600 ||
-        this.radioAltitude2.get().valueOr(2500) < 600 ||
-        this.radioAltitude3.get().valueOr(2500) < 600
-      ) ||
+      this.radioAltitude.get() > 600 ||
       this.fwsFlightPhase.get() < 9 ||
       this.fwsFlightPhase.get() > 11 ||
       this.verticalSpeed1.get().valueOr(0) > 400 ||
@@ -233,6 +325,12 @@ export class BrakeToVacateDistanceUpdater implements Instrument {
   }
 
   public onUpdate(): void {
+    const deltaTime = this.updateThrottler.canUpdate(this.instrument.deltaTime);
+    if (deltaTime <= 0) {
+      return;
+    }
+
+    this.detectLandingRunway();
     this.updateRemainingDistances();
 
     // If BTV disarmed when on ground, clear BTV selection

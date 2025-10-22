@@ -107,7 +107,7 @@ class SystemsHost extends BaseInstrument {
 
   private readonly atsu = new AtsuSystem(this.bus);
 
-  private readonly btvDistanceUpdater = new BrakeToVacateDistanceUpdater(this.bus);
+  private readonly btvDistanceUpdater = new BrakeToVacateDistanceUpdater(this.bus, this);
 
   private readonly rmpAmuBusPublisher = new RmpAmuBusPublisher(this.bus);
 
