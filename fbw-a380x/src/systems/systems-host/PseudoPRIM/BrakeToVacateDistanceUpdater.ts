@@ -65,6 +65,7 @@ export class BrakeToVacateDistanceUpdater implements Instrument {
     });
 
     this.remaininingDistToRwyEnd.sub((v) => {
+      console.log(`BTV Remaining Distance to RWY End: ${v}`);
       this.remaininingDistToRwyEndArinc.setValue(v < 0 ? 0 : v);
       this.remaininingDistToRwyEndArinc.setSsm(
         v < 0 ? Arinc429SignStatusMatrix.NoComputedData : Arinc429SignStatusMatrix.NormalOperation,
@@ -73,7 +74,7 @@ export class BrakeToVacateDistanceUpdater implements Instrument {
     });
 
     this.thresholdPositions.sub((tPos) => {
-      if (tPos.length > 0) {
+      if (tPos.length > 0 && this.remaininingDistToRwyEnd.get() === -1) {
         const lda = MathUtils.pointDistance(tPos[0][0], tPos[0][1], tPos[1][0], tPos[1][1]);
         this.remaininingDistToRwyEnd.set(lda - BTV_MIN_TOUCHDOWN_ZONE_DISTANCE);
         this.remainingDistToExit.set(lda - BTV_MIN_TOUCHDOWN_ZONE_DISTANCE);
@@ -97,10 +98,10 @@ export class BrakeToVacateDistanceUpdater implements Instrument {
   }
 
   /** Updated during deceleration on the ground. Counted from touchdown distance (min. 400m).  */
-  private readonly remainingDistToExit = Subject.create<number>(0);
+  private readonly remainingDistToExit = Subject.create<number>(-1);
 
   /** Updated during deceleration on the ground. Counted from touchdown distance (min. 400m).  */
-  private readonly remaininingDistToRwyEnd = Subject.create<number>(0);
+  private readonly remaininingDistToRwyEnd = Subject.create<number>(-1);
 
   private readonly thresholdPositions = ConsumerSubject.create(this.sub.on('oansThresholdPositions'), []);
 
@@ -248,6 +249,8 @@ export class BrakeToVacateDistanceUpdater implements Instrument {
       // If BTV runway already set, prioritize until 350ft RA
       if (!this.runwayIsSet() || (this.runwayIsSet() && this.radioAltitude.get() < 350)) {
         this.setBtvRunwayFromNavdata(landingRunway.airport, landingRunway.runway);
+        this.bus.getPublisher<FmsOansData>().pub('ropsDetectedAirport', landingRunway.airport, true);
+        this.bus.getPublisher<FmsOansData>().pub('ropsDetectedRunway', landingRunway.runway, true);
         console.log('Runway set');
       }
     }
@@ -277,6 +280,10 @@ export class BrakeToVacateDistanceUpdater implements Instrument {
     const thresholdPos = this.thresholdPositions.get()[0];
     const oppositeThresholdPos = this.thresholdPositions.get()[1];
     const airportLocalPos = this.airportLocalPos.get();
+
+    console.log(`BTV Threshold Pos: ${thresholdPos}`);
+    console.log(`BTV Opposite Threshold Pos: ${oppositeThresholdPos}`);
+    console.log(`BTV Airport Local Pos: ${airportLocalPos}`);
 
     if (thresholdPos && thresholdPos.length > 0) {
       if (oppositeThresholdPos && oppositeThresholdPos.length > 0) {

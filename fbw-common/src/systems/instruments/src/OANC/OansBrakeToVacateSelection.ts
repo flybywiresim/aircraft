@@ -293,7 +293,7 @@ export class OansBrakeToVacateSelection<T extends number> {
     this.runwayBearingArinc.writeToSimVar('L:A32NX_OANS_RWY_BEARING');
   }
 
-  public async setBtvRunwayFromFmsRunway(destination: string, rwyIdent: string): Promise<[Runway, Coordinates]> {
+  public async setBtvRunwayFromNavdata(destination: string, rwyIdent: string): Promise<[Runway, Coordinates]> {
     const db = NavigationDatabaseService.activeDatabase.backendDatabase;
 
     const arps = await db.getAirports([destination]);

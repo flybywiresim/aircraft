@@ -243,6 +243,9 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     !notSelected ? 'inherit' : 'hidden',
   );
 
+  private readonly ropsDetectedAirport = ConsumerSubject.create(this.sub.on('ropsDetectedAirport'), null);
+  private readonly ropsDetectedRunway = ConsumerSubject.create(this.sub.on('ropsDetectedRunway'), null);
+
   private arpCoordinates: Coordinates | undefined;
 
   private localPpos: Position = [];
@@ -365,6 +368,17 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
           this.clearSelection();
         }
       }, true),
+      MappedSubject.create(
+        async ([arpt, rwy]) => {
+          if (arpt && rwy) {
+            [this.landingRunwayNavdata, this.arpCoordinates] = await this.btvUtils.setBtvRunwayFromNavdata(arpt, rwy);
+            this.runwayLda.set(this.landingRunwayNavdata.length.toFixed(0));
+            this.runwayTora.set(this.landingRunwayNavdata.length.toFixed(0));
+          }
+        },
+        this.ropsDetectedAirport,
+        this.ropsDetectedRunway,
+      ),
     );
 
     this.subs.push(
@@ -414,7 +428,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         .on('realTime')
         .atFrequency(5)
         .handle((_) => {
-          if (this.arpCoordinates && !this.oansAvailable.get()) {
+          if (this.arpCoordinates) {
             OansMapProjection.globalToAirportCoordinates(this.arpCoordinates, this.presentPos.get(), this.localPpos);
             this.props.bus.getPublisher<FmsOansData>().pub('oansAirportLocalCoordinates', this.localPpos, true);
           }
@@ -717,7 +731,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     const rwyIdent = this.fmsDataStore.landingRunway.get();
 
     if (destination && rwyIdent) {
-      [this.landingRunwayNavdata, this.arpCoordinates] = await this.btvUtils.setBtvRunwayFromFmsRunway(
+      [this.landingRunwayNavdata, this.arpCoordinates] = await this.btvUtils.setBtvRunwayFromNavdata(
         destination,
         rwyIdent,
       );

@@ -41,6 +41,11 @@ export interface FmsOansData {
   btvTurnAroundMaxReverse: number;
   /** Message displayed at the top of the ND (instead of TRUE REF), e.g. BTV 08R/A13 */
   ndBtvMessage: string;
+
+  /** (ROPS) Detected landing airport by ROPS. */
+  ropsDetectedAirport: string | null;
+  /** (ROPS) Detected landing runway by ROPS. */
+  ropsDetectedRunway: string | null;
 }
 
 export enum FmsOansSimVars {

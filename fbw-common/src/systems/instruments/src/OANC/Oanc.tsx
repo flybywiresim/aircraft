@@ -1156,7 +1156,6 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
         this.positionVisible.set(false);
       }
 
-      this.props.bus.getPublisher<FmsOansData>().pub('oansAirportLocalCoordinates', this.projectedPpos.get(), true);
       this.btvUtils.updateRwyAheadAdvisory(
         this.ppos.get(),
         arpCoordinates,
