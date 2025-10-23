@@ -12,6 +12,7 @@ import {
   IrBusEvents,
   LgciuBusEvents,
   MathUtils,
+  NearbyFacilityMonitor,
   NearbyFacilityType,
   OansMapProjection,
   RaBusEvents,
@@ -45,6 +46,16 @@ export class BrakeToVacateDistanceUpdater implements Instrument {
     private readonly bus: EventBus,
     private readonly instrument: BaseInstrument,
   ) {
+    // FIXME this should only ever be used within the FMGC
+    const db = new NavigationDatabase(this.bus, NavigationDatabaseBackend.Msfs);
+    NavigationDatabaseService.activeDatabase = db;
+
+    this.nearbyAirportMonitor = NavigationDatabaseService.activeDatabase.createNearbyFacilityMonitor(
+      NearbyFacilityType.Airport,
+    );
+    this.nearbyAirportMonitor.setMaxResults(5);
+    this.nearbyAirportMonitor.setRadius(5);
+
     this.remainingDistToExit.sub((v) => {
       this.remainingDistToExitArinc.setValue(v < 0 ? 0 : v);
       this.remainingDistToExitArinc.setSsm(
@@ -82,13 +93,6 @@ export class BrakeToVacateDistanceUpdater implements Instrument {
   }
 
   init() {
-    // FIXME this should only ever be used within the FMGC
-    const db = new NavigationDatabase(this.bus, NavigationDatabaseBackend.Msfs);
-    NavigationDatabaseService.activeDatabase = db;
-
-    this.nearbyAirportMonitor.setMaxResults(5);
-    this.nearbyAirportMonitor.setRadius(5);
-
     this.clearSelection();
   }
 
@@ -169,9 +173,7 @@ export class BrakeToVacateDistanceUpdater implements Instrument {
   private readonly trueHeading2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_true_heading_2'));
   private readonly trueHeading3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_true_heading_3'));
 
-  private nearbyAirportMonitor = NavigationDatabaseService.activeDatabase.createNearbyFacilityMonitor(
-    NearbyFacilityType.Airport,
-  );
+  private nearbyAirportMonitor: NearbyFacilityMonitor;
 
   private runwayIsSet() {
     const thresPos = this.thresholdPositions.get();
@@ -242,9 +244,11 @@ export class BrakeToVacateDistanceUpdater implements Instrument {
 
     // Set as ROPS/BTV runway
     if (landingRunway) {
+      console.log(`Detected landing runway: ${landingRunway.airport} ${landingRunway.runway}`);
       // If BTV runway already set, prioritize until 350ft RA
       if (!this.runwayIsSet() || (this.runwayIsSet() && this.radioAltitude.get() < 350)) {
         this.setBtvRunwayFromNavdata(landingRunway.airport, landingRunway.runway);
+        console.log('Runway set');
       }
     }
   }

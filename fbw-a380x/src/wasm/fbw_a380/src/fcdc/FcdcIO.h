@@ -58,7 +58,7 @@ struct FcdcDiscreteInputs {
   bool abnProcImpactingLdgPerfActive;
   bool abnProcImpactingLdgDistActive;
 
-  bool oansAvailable;
+  bool oansFailed;
   bool oansPposLost;
 
   bool dcEssFailed;

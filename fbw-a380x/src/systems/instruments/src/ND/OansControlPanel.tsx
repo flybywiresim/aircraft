@@ -105,6 +105,8 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     this.oansResetPulled,
   );
 
+  private readonly oansFailed = MappedSubject.create(([reset]) => reset, this.oansResetPulled);
+
   private amdbClient = new NavigraphAmdbClient();
 
   private readonly oansMenuRef = FSComponent.createRef<HTMLDivElement>();
@@ -330,6 +332,9 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         }
         SimVar.SetSimVarValue('L:A32NX_OANS_AVAILABLE', SimVarValueType.Bool, v);
         this.props.bus.getPublisher<OansControlEvents>().pub('oans_not_avail', !v, true, false);
+      }, true),
+      this.oansFailed.sub((v) => {
+        SimVar.SetSimVarValue('L:A32NX_OANS_FAILED', SimVarValueType.Bool, v);
       }, true),
     );
 

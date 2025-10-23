@@ -259,7 +259,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idTcasTargetRedMin;
   std::unique_ptr<LocalVariable> idTcasTargetRedMax;
 
-  std::unique_ptr<LocalVariable> idOansAvailable;
+  std::unique_ptr<LocalVariable> idOansFailed;
   std::unique_ptr<LocalVariable> idOansPposLost;
 
   std::unique_ptr<LocalVariable> idFmgcFlightPhase;

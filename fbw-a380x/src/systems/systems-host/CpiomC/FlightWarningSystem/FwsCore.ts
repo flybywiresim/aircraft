@@ -1557,11 +1557,11 @@ export class FwsCore {
     this.fcdc2LandingFctDiscreteWord,
   );
 
-  public readonly oansAvailable = Subject.create(false);
+  public readonly oansFailed = Subject.create(false);
   public readonly oansPposLost = Subject.create(false);
   public readonly arptNavLost = MappedSubject.create(
-    ([oans, pposLost]) => !oans || pposLost,
-    this.oansAvailable,
+    ([oansFailed, pposLost]) => oansFailed || pposLost,
+    this.oansFailed,
     this.oansPposLost,
   );
 
@@ -4740,7 +4740,7 @@ export class FwsCore {
     this.tawsWxrSelected.set(SimVar.GetSimVarValue('L:A32NX_WXR_TAWS_SYS_SELECTED', SimVarValueType.Number));
 
     // OANS
-    this.oansAvailable.set(!!SimVar.GetSimVarValue('L:A32NX_OANS_AVAILABLE', SimVarValueType.Bool));
+    this.oansFailed.set(!!SimVar.GetSimVarValue('L:A32NX_OANS_FAILED', SimVarValueType.Bool));
     this.oansPposLost.set(!!SimVar.GetSimVarValue('L:A32NX_ARPT_NAV_POS_LOST', SimVarValueType.Bool));
 
     /* 26 - FIRE */

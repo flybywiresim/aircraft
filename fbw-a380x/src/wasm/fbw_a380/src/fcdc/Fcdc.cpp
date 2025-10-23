@@ -366,12 +366,9 @@ void Fcdc::updateBtvRowRop(double deltaTime) {
 
   // LDG PERF AFFECTED leading to BTV LOST
   Arinc429DiscreteWord* elevStatusWord = reinterpret_cast<Arinc429DiscreteWord*>(&busInputs.prims[masterPrimIndex].elevator_status_word);
-  bool doubleElevFault = elevStatusWord->bitFromValueOr(11, false)       ? 1
-                         : 0 + elevStatusWord->bitFromValueOr(14, false) ? 1
-                         : 0 + elevStatusWord->bitFromValueOr(17, false) ? 1
-                                                                         : 0 < 2;
-  Arinc429DiscreteWord* sfcc1StatusWord =
-      reinterpret_cast<Arinc429DiscreteWord*>(&busInputs.sfccBusOutputs[0].slat_flap_system_status_word);
+  bool doubleElevFault = (elevStatusWord->bitFromValueOr(11, false) ? 1 : 0) + (elevStatusWord->bitFromValueOr(14, false) ? 1 : 0) +
+                             (elevStatusWord->bitFromValueOr(17, false) ? 1 : 0) <
+                         2;
   bool anyAileronFault = false;  // FIXME add
   Arinc429DiscreteWord* sfcc1StatusWord =
       reinterpret_cast<Arinc429DiscreteWord*>(&busInputs.sfccBusOutputs[0].slat_flap_system_status_word);
@@ -389,10 +386,10 @@ void Fcdc::updateBtvRowRop(double deltaTime) {
   bool commonConditions = irAvailable < 2 || adrAvailable < 2 || raAvailable < 1 || fwsAudioFunctionAvailable == 0;
 
   rowLost = commonConditions || ldgPerfAffectedRowRopLost || ldgDistAffectedRowRopLost;
-  ropLost = commonConditions || ldgPerfAffectedRowRopLost || ldgDistAffectedRowRopLost || !discreteInputs.oansAvailable ||
+  ropLost = commonConditions || ldgPerfAffectedRowRopLost || ldgDistAffectedRowRopLost || discreteInputs.oansFailed ||
             discreteInputs.oansPposLost;
   btvLost =
-      commonConditions || ldgPerfAffectedBtvLost || ldgDistAffectedBtvLost || !discreteInputs.oansAvailable || discreteInputs.oansPposLost;
+      commonConditions || ldgPerfAffectedBtvLost || ldgDistAffectedBtvLost || discreteInputs.oansFailed || discreteInputs.oansPposLost;
 
   // Misc. LDG DIST/LDG PERF effects
   ldgDistAffectedMisc = discreteInputs.antiskidAvailable == false;
