@@ -12,6 +12,9 @@
 
 ## 0.15.0
 
+1. [A32NX/SFCC] Added implementation of SAP and FAP in SFCC - @Eagle941 (Joe)
+1. [A32NX/SFCC] Connected SFCC to electrical busses with simulation of power consumption and power restoration behaviour - @Eagle941 (Joe)
+
 ## 0.14.0
 
 1. [A380X/FMS] Fix speed margins being displayed in the wrong place for a Mach target - @BlueberryKing (BlueberryKing)
