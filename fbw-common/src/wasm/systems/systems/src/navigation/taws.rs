@@ -19,10 +19,6 @@ pub struct TerrainAwarenessWarningSystemDiscreteInputs {
     pub sim_reposition_active: bool,
 }
 
-pub trait TerrainAwarenessWarningSystemDiscreteInput {
-    fn discrete_inputs(&self) -> &TerrainAwarenessWarningSystemDiscreteInputs;
-}
-
 #[derive(Default)]
 pub struct TerrainAwarenessWarningSystemBusOutputs {
     // Label 270
@@ -36,7 +32,7 @@ pub trait TerrainAwarenessWarningSystemBusOutput {
     fn bus_outputs(&self) -> &TerrainAwarenessWarningSystemBusOutputs;
 }
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct TerrainAwarenessWarningSystemDiscreteOutputs {
     pub warning_lamp: bool,
     pub alert_lamp: bool,

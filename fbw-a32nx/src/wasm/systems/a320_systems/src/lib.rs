@@ -24,10 +24,13 @@ use electrical::{
 use hydraulic::{A320Hydraulic, A320HydraulicOverheadPanel};
 use navigation::{A320AirDataInertialReferenceSystemBuilder, A320RadioAltimeters};
 use power_consumption::A320PowerConsumption;
-use systems::navigation::egpws::EnhancedGroundProximityWarningComputer as EnhancedGroundProximityWarningComputer2;
+use systems::navigation::{
+    egpws::EnhancedGroundProximityWarningComputer as EnhancedGroundProximityWarningComputer2,
+    ils::MultiModeReceiverShim,
+};
 use systems::{
     enhanced_gpwc::EnhancedGroundProximityWarningComputer,
-    navigation::egpws::electrical_harness::TawsElectricalHarness,
+    navigation::egpws::electrical_harness::EgpwsElectricalHarness,
 };
 use systems::{hydraulic::brake::BrakeFanPanel, simulation::InitContext};
 use uom::si::{f64::Length, length::nautical_mile};
@@ -80,7 +83,8 @@ pub struct A320 {
     radio_altimeters: A320RadioAltimeters,
     egpwc: EnhancedGroundProximityWarningComputer,
     egpwc_2: EnhancedGroundProximityWarningComputer2,
-    egpws_electrical_harness: TawsElectricalHarness,
+    egpws_electrical_harness: EgpwsElectricalHarness,
+    mmr: MultiModeReceiverShim,
     reverse_thrust: ReverserForce,
 }
 impl A320 {
@@ -140,7 +144,8 @@ impl A320 {
                 context,
                 ElectricalBusType::AlternatingCurrent(1),
             ),
-            egpws_electrical_harness: TawsElectricalHarness::new(context),
+            egpws_electrical_harness: EgpwsElectricalHarness::new(context),
+            mmr: MultiModeReceiverShim::new(context),
             reverse_thrust: ReverserForce::new(context),
         }
     }
@@ -272,8 +277,10 @@ impl Aircraft for A320 {
             context,
             &self.egpws_electrical_harness,
             self.radio_altimeters.radio_altimeter_1(),
+            self.radio_altimeters.radio_altimeter_2(),
             self.adirs.adr_bus(1),
             self.adirs.ir_bus(1),
+            &self.mmr,
         );
     }
 }
@@ -309,6 +316,7 @@ impl SimulationElement for A320 {
         self.egpwc.accept(visitor);
         self.egpws_electrical_harness.accept(visitor);
         self.egpwc_2.accept(visitor);
+        self.mmr.accept(visitor);
         self.reverse_thrust.accept(visitor);
 
         visitor.visit(self);

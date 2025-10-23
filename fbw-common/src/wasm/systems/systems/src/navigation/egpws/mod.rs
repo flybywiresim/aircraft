@@ -1,23 +1,31 @@
 pub mod electrical_harness;
 mod runtime;
+#[cfg(test)]
+mod test;
 
 use crate::{
     failures::{Failure, FailureType},
     navigation::{
         adirs::{AirDataReferenceBus, InertialReferenceBus},
-        egpws::runtime::{EnhancedGroundProximityWarningComputerRuntime, FlightPhase},
+        egpws::{
+            electrical_harness::EgpwsElectricalHarness,
+            runtime::{AuralWarning, EnhancedGroundProximityWarningComputerRuntime, FlightPhase},
+        },
+        ils::InstrumentLandingSystemBus,
         radio_altimeter::RadioAltimeter,
         taws::{
             TerrainAwarenessWarningSystemBusOutput, TerrainAwarenessWarningSystemBusOutputs,
-            TerrainAwarenessWarningSystemDiscreteInput,
             TerrainAwarenessWarningSystemDiscreteOutput,
             TerrainAwarenessWarningSystemDiscreteOutputs,
         },
     },
     shared::{random_from_range, ConsumePower, ElectricalBusType, ElectricalBuses},
-    simulation::{InitContext, SimulationElement, SimulationElementVisitor, UpdateContext},
+    simulation::{
+        InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
+        VariableIdentifier, Write,
+    },
 };
-use std::time::Duration;
+use std::{fmt::Debug, time::Duration};
 use uom::si::{f64::Power, power::watt};
 
 pub struct EnhancedGroundProximityWarningComputer {
@@ -44,6 +52,14 @@ pub struct EnhancedGroundProximityWarningComputer {
     /// NVM data
     on_ground: bool,
     flight_phase: FlightPhase,
+
+    terr_fault_id: VariableIdentifier,
+    sys_fault_id: VariableIdentifier,
+
+    warning_light_on_id: VariableIdentifier,
+    alert_light_on_id: VariableIdentifier,
+
+    aural_output_id: VariableIdentifier,
 }
 
 impl EnhancedGroundProximityWarningComputer {
@@ -95,16 +111,25 @@ impl EnhancedGroundProximityWarningComputer {
             } else {
                 FlightPhase::Approach
             },
+            terr_fault_id: context.get_identifier("GPWS_TERR_FAULT".to_owned()),
+            sys_fault_id: context.get_identifier("GPWS_SYS_FAULT".to_owned()),
+
+            warning_light_on_id: context.get_identifier("GPWS_WARNING_LIGHT_ON".to_owned()),
+            alert_light_on_id: context.get_identifier("GPWS_ALERT_LIGHT_ON".to_owned()),
+
+            aural_output_id: context.get_identifier("GPWS_AURAL_OUTPUT".to_owned()),
         }
     }
 
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        electrical_harness: &impl TerrainAwarenessWarningSystemDiscreteInput,
-        ra: &impl RadioAltimeter,
+        electrical_harness: &EgpwsElectricalHarness,
+        ra1: &impl RadioAltimeter,
+        ra2: &impl RadioAltimeter,
         adr: &impl AirDataReferenceBus,
         ir: &impl InertialReferenceBus,
+        ils: &impl InstrumentLandingSystemBus,
     ) {
         if self.is_powered {
             self.unpowered_for = Duration::ZERO;
@@ -121,6 +146,14 @@ impl EnhancedGroundProximityWarningComputer {
                 self.flight_phase = runtime.get_flight_phase();
             }
             self.runtime = None;
+
+            // Set outputs to default failure state
+            self.discrete_output_data = TerrainAwarenessWarningSystemDiscreteOutputs::default();
+            // These discretes default to grounded when the EGPWS is unpowered or experienced a catastrophic failure
+            self.discrete_output_data.gpws_inop = true;
+            self.discrete_output_data.terrain_inop = true;
+            self.discrete_output_data.terrain_not_available = true;
+            self.bus_output_data = TerrainAwarenessWarningSystemBusOutputs::default();
             return;
         }
 
@@ -137,7 +170,15 @@ impl EnhancedGroundProximityWarningComputer {
                     self.flight_phase,
                 )
             });
-            runtime.update(context, electrical_harness.discrete_inputs(), ra, adr, ir);
+            runtime.update(
+                context,
+                electrical_harness.discrete_inputs(),
+                ra1,
+                ra2,
+                adr,
+                ir,
+                ils,
+            );
             runtime.set_outputs(&mut self.discrete_output_data, &mut self.bus_output_data);
         }
     }
@@ -168,6 +209,26 @@ impl SimulationElement for EnhancedGroundProximityWarningComputer {
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         self.is_powered = buses.is_powered(self.powered_by);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.terr_fault_id, self.discrete_output_data.terrain_inop);
+        writer.write(&self.sys_fault_id, self.discrete_output_data.gpws_inop);
+
+        writer.write(
+            &self.alert_light_on_id,
+            self.discrete_output_data.alert_lamp,
+        );
+        writer.write(
+            &self.warning_light_on_id,
+            self.discrete_output_data.warning_lamp,
+        );
+        writer.write(
+            &self.aural_output_id,
+            self.runtime
+                .as_ref()
+                .map_or(AuralWarning::None, |r| r.get_aural_output()) as u8,
+        );
     }
 
     fn consume_power<T: ConsumePower>(&mut self, _: &UpdateContext, consumption: &mut T) {

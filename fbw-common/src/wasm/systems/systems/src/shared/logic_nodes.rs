@@ -45,6 +45,10 @@ impl ConfirmationNode {
         }
         self.output
     }
+
+    pub fn get_output(&self) -> bool {
+        self.output
+    }
 }
 
 /// A monostable trigger, which outputs lo until it detects a rising or falling edge. At that point

@@ -96,7 +96,6 @@ impl A320RadioAltimeters {
         &self.radio_altimeter_1.radio_altimeter
     }
 
-    #[allow(dead_code)]
     pub fn radio_altimeter_2(&self) -> &impl RadioAltimeter {
         &self.radio_altimeter_2.radio_altimeter
     }
