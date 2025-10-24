@@ -12,7 +12,6 @@ import {
   LgciuBusEvents,
   OansMapProjection,
   RaBusEvents,
-  Runway,
 } from '@flybywiresim/fbw-sdk';
 import {
   booleanContains,
@@ -33,7 +32,6 @@ import { BtvData } from '../../../shared/src/publishers/OansBtv/BtvPublisher';
 import { OancLabelManager } from './OancLabelManager';
 import { fractionalPointAlongLine, pointAngle, pointToLineDistance } from './OancMapUtils';
 import { Coordinates, placeBearingDistance } from 'msfs-geo';
-import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 
 const CLAMP_DRY_STOPBAR_DISTANCE = 100; // If stop bar is <> meters behind end of runway, clamp to this distance behind end of runway
 const CLAMP_WET_STOPBAR_DISTANCE = 200; // If stop bar is <> meters behind end of runway, clamp to this distance behind end of runway
@@ -46,10 +44,6 @@ export class OansBrakeToVacateSelection<T extends number> {
   private readonly sub = this.bus.getSubscriber<
     BtvData & FmsOansData & IrBusEvents & LgciuBusEvents & GenericAdirsEvents & RaBusEvents
   >();
-
-  private readonly runwayLengthArinc = Arinc429Register.empty();
-
-  private readonly runwayBearingArinc = Arinc429Register.empty();
 
   constructor(
     private readonly bus: EventBus,
@@ -86,20 +80,11 @@ export class OansBrakeToVacateSelection<T extends number> {
   /** Runway heading, in degrees. Null if not set. */
   readonly btvRunwayBearingTrue = Subject.create<number | null>(null);
 
-  /** Reference point used to coordinate transformations from nav db reference. */
-  private navDbAirportCoordinates: Coordinates | null = null;
-
   /** Threshold, used for runway end distance calculation. Airport local coordinates, reference point from AMDB. */
   private btvThresholdPositionOansReference: Position | undefined;
 
   /** Opposite threshold, used for runway end distance calculation. Airport local coordinates, reference point from AMDB. */
   private btvOppositeThresholdPositionOansReference: Position | undefined;
-
-  /** Threshold, used for runway end distance calculation. Airport local coordinates, reference point from nav db. */
-  private btvThresholdPositionNavDbReference: Position = [];
-
-  /** Opposite threshold, used for runway end distance calculation. Airport local coordinates, reference point from nav db. */
-  private btvOppositeThresholdPositionNavDbReference: Position = [];
 
   /** Selected exit */
   readonly btvExit = Subject.create<string | null>(null);
@@ -109,8 +94,6 @@ export class OansBrakeToVacateSelection<T extends number> {
 
   /** BTV exit position. Airport local coordinates, reference point from AMDB. */
   private btvExitPositionOansReference: Position | undefined;
-  /** BTV exit position. Airport local coordinates, reference point from nav db. */
-  private btvExitPositionNavDbReference: Position = [];
 
   /** "runway ahead" advisory was triggered */
   private rwyAheadTriggered: boolean = false;
@@ -187,34 +170,6 @@ export class OansBrakeToVacateSelection<T extends number> {
     } else {
       this.btvOppositeThresholdPositionOansReference = lastEl;
     }
-
-    // Transform to airport local coordinates; from OANS ref point to nav db ref point
-    const db = NavigationDatabaseService.activeDatabase.backendDatabase;
-
-    const arps = await db.getAirports([runway.substring(0, 4)]);
-    this.navDbAirportCoordinates = arps[0].location;
-    const globalThresholdCoordinates: Coordinates = { lat: 0, long: 0 };
-    OansMapProjection.airportToGlobalCoordinates(
-      this.airportCoordinates!.get(),
-      this.btvThresholdPositionOansReference,
-      globalThresholdCoordinates,
-    );
-    OansMapProjection.globalToAirportCoordinates(
-      this.navDbAirportCoordinates,
-      globalThresholdCoordinates,
-      this.btvThresholdPositionNavDbReference,
-    );
-
-    OansMapProjection.airportToGlobalCoordinates(
-      this.airportCoordinates!.get(),
-      this.btvOppositeThresholdPositionOansReference,
-      globalThresholdCoordinates,
-    );
-    OansMapProjection.globalToAirportCoordinates(
-      this.navDbAirportCoordinates,
-      globalThresholdCoordinates,
-      this.btvOppositeThresholdPositionNavDbReference,
-    );
     // Derive LDA from geometry (if we take the LDA database value, there might be drawing errors)
     const lda = dist1 > dist2 ? dist1 : dist2;
 
@@ -226,19 +181,6 @@ export class OansBrakeToVacateSelection<T extends number> {
 
     const pub = this.bus.getPublisher<FmsOansData>();
     pub.pub('oansSelectedLandingRunway', runway);
-    pub.pub(
-      'oansThresholdPositions',
-      [this.btvThresholdPositionNavDbReference, this.btvOppositeThresholdPositionNavDbReference],
-      true,
-    );
-
-    this.runwayLengthArinc.setValue(lda);
-    this.runwayLengthArinc.setSsm(Arinc429SignStatusMatrix.NormalOperation);
-    this.runwayLengthArinc.writeToSimVar('L:A32NX_OANS_RWY_LENGTH');
-
-    this.runwayBearingArinc.setValue(heading);
-    this.runwayBearingArinc.setSsm(Arinc429SignStatusMatrix.NormalOperation);
-    this.runwayBearingArinc.writeToSimVar('L:A32NX_OANS_RWY_BEARING');
 
     this.drawBtvLayer();
   }
@@ -247,8 +189,7 @@ export class OansBrakeToVacateSelection<T extends number> {
     if (
       this.btvRunway.get() == null ||
       !this.btvThresholdPositionOansReference ||
-      !this.btvOppositeThresholdPositionOansReference ||
-      !this.navDbAirportCoordinates
+      !this.btvOppositeThresholdPositionOansReference
     ) {
       return;
     }
@@ -291,21 +232,16 @@ export class OansBrakeToVacateSelection<T extends number> {
     }
     this.btvExitPositionOansReference = exitDistFromCenterLine1 < exitDistFromCenterLine2 ? exitLoc1 : exitLoc2;
 
-    // Transform to airport local coordinates; from OANS ref point to nav db ref point
+    // Transform to WGS-84 coordinates
     const globalExitCoordinates: Coordinates = { lat: 0, long: 0 };
     OansMapProjection.airportToGlobalCoordinates(
       this.airportCoordinates!.get(),
       this.btvExitPositionOansReference,
       globalExitCoordinates,
     );
-    OansMapProjection.globalToAirportCoordinates(
-      this.navDbAirportCoordinates,
-      globalExitCoordinates,
-      this.btvExitPositionNavDbReference,
-    );
 
-    this.bus.getPublisher<FmsOansData>().pub('oansExitPosition', this.btvExitPositionNavDbReference, true);
-    console.log('Selected BTV exit position:', this.btvExitPositionNavDbReference);
+    this.bus.getPublisher<FmsOansData>().pub('oansExitCoordinates', globalExitCoordinates, true);
+    console.log('Selected BTV exit position:', globalExitCoordinates);
 
     // Subtract 400m due to distance of touchdown zone from threshold
     const exitDistance =
@@ -316,10 +252,7 @@ export class OansBrakeToVacateSelection<T extends number> {
         this.btvExitPositionOansReference[1],
       ) - BTV_MIN_TOUCHDOWN_ZONE_DISTANCE;
 
-    this.bus.getPublisher<FmsOansData>().pub('oansSelectedExit', exit);
-    this.bus
-      .getPublisher<FmsOansData>()
-      .pub('ndBtvMessage', `BTV ${this.btvRunway.get()?.substring(4) ?? ''}/${exit}`, true);
+    this.bus.getPublisher<FmsOansData>().pub('oansSelectedExit', exit, true);
 
     this.btvPathGeometry = Array.from(feature.geometry.coordinates as Position[]);
     if (exitDistFromCenterLine1 < exitDistFromCenterLine2) {
@@ -334,97 +267,14 @@ export class OansBrakeToVacateSelection<T extends number> {
     this.drawBtvLayer();
   }
 
-  selectRunwayFromNavdata(
-    runway: string,
-    lda: number,
-    heading: number,
-    btvThresholdPosition: Position,
-    btvOppositeThresholdPosition: Position,
-  ) {
-    this.clearSelection();
-
-    this.btvThresholdPositionNavDbReference = btvThresholdPosition;
-    this.btvOppositeThresholdPositionNavDbReference = btvOppositeThresholdPosition;
-    this.btvThresholdPositionOansReference = undefined;
-    this.btvOppositeThresholdPositionOansReference = undefined;
-    this.btvRunwayLda.set(lda);
-    this.btvRunwayBearingTrue.set(heading);
-    this.btvRunway.set(runway);
-
-    const pub = this.bus.getPublisher<FmsOansData>();
-    pub.pub('oansSelectedLandingRunway', runway);
-    pub.pub(
-      'oansThresholdPositions',
-      [this.btvThresholdPositionNavDbReference, this.btvOppositeThresholdPositionNavDbReference],
-      true,
-    );
-
-    this.runwayLengthArinc.setValue(lda);
-    this.runwayLengthArinc.setSsm(Arinc429SignStatusMatrix.NormalOperation);
-    this.runwayLengthArinc.writeToSimVar('L:A32NX_OANS_RWY_LENGTH');
-
-    this.runwayBearingArinc.setValue(heading);
-    this.runwayBearingArinc.setSsm(Arinc429SignStatusMatrix.NormalOperation);
-    this.runwayBearingArinc.writeToSimVar('L:A32NX_OANS_RWY_BEARING');
-  }
-
-  public async setBtvRunwayFromNavdata(destination: string, rwyIdent: string): Promise<[Runway, Coordinates]> {
-    const db = NavigationDatabaseService.activeDatabase.backendDatabase;
-
-    const arps = await db.getAirports([destination]);
-    const arpCoordinates = arps[0].location;
-
-    const runways = await db.getRunways(destination);
-    const landingRunwayNavdata = runways.filter((rw) => rw.ident === rwyIdent)[0];
-    const oppositeThreshold = placeBearingDistance(
-      landingRunwayNavdata.thresholdLocation,
-      landingRunwayNavdata.bearing,
-      landingRunwayNavdata.length / MathUtils.METRES_TO_NAUTICAL_MILES,
-    );
-    const localThr: Position = [0, 0];
-    const localOppThr: Position = [0, 0];
-    OansMapProjection.globalToAirportCoordinates(arpCoordinates, landingRunwayNavdata.thresholdLocation, localThr);
-    OansMapProjection.globalToAirportCoordinates(arpCoordinates, oppositeThreshold, localOppThr);
-
-    this.selectRunwayFromNavdata(
-      rwyIdent,
-      landingRunwayNavdata.length,
-      landingRunwayNavdata.bearing,
-      localThr,
-      localOppThr,
-    );
-
-    return [landingRunwayNavdata, arpCoordinates];
-  }
-
-  selectExitFromManualEntry(reqStoppingDistance: number, btvExitPosition: Position) {
-    this.btvExitPositionNavDbReference = btvExitPosition;
-    this.btvExitPositionOansReference = undefined;
-
-    // Requested stopping distance measured from runway threshold (i.e. LDA)
-    const correctedStoppingDistance = reqStoppingDistance;
-
-    const pub = this.bus.getPublisher<FmsOansData>();
-    pub.pub('oansSelectedExit', 'N/A');
-    pub.pub('oansExitPosition', this.btvExitPositionNavDbReference, true);
-
-    pub.pub('ndBtvMessage', `BTV ${this.btvRunway.get()?.substring(4) ?? ''}/MANUAL`, true);
-
-    this.btvExitDistance.set(correctedStoppingDistance);
-    this.btvExit.set('N/A');
-  }
-
   clearSelection() {
     this.btvThresholdPositionOansReference = undefined;
     this.btvOppositeThresholdPositionOansReference = undefined;
-    this.btvThresholdPositionNavDbReference = [];
-    this.btvOppositeThresholdPositionNavDbReference = [];
     this.btvRunwayLda.set(null);
     this.btvRunwayBearingTrue.set(null);
     this.btvRunway.set(null);
 
     this.btvExitPositionOansReference = undefined;
-    this.btvExitPositionNavDbReference = [];
     this.btvExitDistance.set(null);
     this.btvExit.set(null);
     this.btvPathGeometry = [];
@@ -433,17 +283,6 @@ export class OansBrakeToVacateSelection<T extends number> {
     const pub = this.bus.getPublisher<FmsOansData>();
     pub.pub('oansSelectedLandingRunway', null);
     pub.pub('oansSelectedExit', null, true);
-    pub.pub('oansThresholdPositions', [], true);
-    pub.pub('oansExitPosition', [], true);
-    pub.pub('ndBtvMessage', '', true);
-
-    this.runwayLengthArinc.setValue(0);
-    this.runwayLengthArinc.setSsm(Arinc429SignStatusMatrix.NoComputedData);
-    this.runwayLengthArinc.writeToSimVar('L:A32NX_OANS_RWY_LENGTH');
-
-    this.runwayBearingArinc.setValue(0);
-    this.runwayBearingArinc.setSsm(Arinc429SignStatusMatrix.NoComputedData);
-    this.runwayBearingArinc.writeToSimVar('L:A32NX_OANS_RWY_BEARING');
   }
 
   drawBtvPath() {

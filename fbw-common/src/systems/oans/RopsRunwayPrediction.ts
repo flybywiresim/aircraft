@@ -45,8 +45,8 @@ export class RopsRunwayPrediction {
 
       for (const runway of runways) {
         const dist = distanceTo(touchdownPoint, runway.thresholdLocation);
-        // Additional conditions: within 1nm of predicted touchdown point and aligned within 30 degrees
-        if (dist < nearbyRunwayDistance && dist < 1 && Math.abs(runway.bearing - trueHeading) < 30) {
+        // Additional conditions: within 2nm of predicted touchdown point and aligned within 30 degrees
+        if (dist < nearbyRunwayDistance && dist < 2 && Math.abs(runway.bearing - trueHeading) < 30) {
           nearbyAirportIdent = airport.ident;
           nearbyRunwayIdent = runway.ident;
           nearbyRunwayDistance = dist;

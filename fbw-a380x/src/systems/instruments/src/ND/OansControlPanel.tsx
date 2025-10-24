@@ -26,7 +26,6 @@ import {
   ControlPanelStore,
   ControlPanelUtils,
   NavigraphAmdbClient,
-  OansBrakeToVacateSelection,
   OansControlEvents,
 } from '@flybywiresim/oanc';
 import {
@@ -40,13 +39,10 @@ import {
   FeatureTypeString,
   FmsOansData,
   LgciuBusEvents,
-  MathUtils,
   NXDataStore,
   NXLogicConfirmNode,
   OansFmsDataStore,
-  OansMapProjection,
   RegisteredSimVar,
-  Runway,
 } from '@flybywiresim/fbw-sdk';
 
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
@@ -57,7 +53,7 @@ import { InputField, InteractionMode } from 'instruments/src/MsfsAvionicsCommon/
 import { LengthFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
-import { Coordinates, distanceTo, placeBearingDistance } from 'msfs-geo';
+import { Coordinates, distanceTo } from 'msfs-geo';
 import { AdirsSimVars } from 'instruments/src/MsfsAvionicsCommon/SimVarTypes';
 import { InternalKccuKeyEvent } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { NDSimvars } from 'instruments/src/ND/NDSimvarPublisher';
@@ -193,24 +189,6 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     this.pposLongWord,
   );
 
-  private readonly lgciuDiscreteWord2_1 = Arinc429LocalVarConsumerSubject.create(
-    this.sub.on('lgciu_discrete_word_2_1'),
-  );
-  private readonly lgciuDiscreteWord2_2 = Arinc429LocalVarConsumerSubject.create(
-    this.sub.on('lgciu_discrete_word_2_2'),
-  );
-  private readonly onGround = MappedSubject.create(
-    ([g1, g2]) => {
-      if (g1.isNormalOperation()) {
-        return g1.bitValue(11);
-      } else {
-        return g2.bitValueOr(11, false);
-      }
-    },
-    this.lgciuDiscreteWord2_1,
-    this.lgciuDiscreteWord2_2,
-  );
-
   private readonly setPlanModeConsumer = ConsumerSubject.create(this.sub.on('oans_show_set_plan_mode'), false);
   private readonly setPlanModeDisplay = this.setPlanModeConsumer.map((it) => (it ? 'inherit' : 'none'));
 
@@ -245,14 +223,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
   private readonly ropsDetectedAirport = ConsumerSubject.create(this.sub.on('ropsDetectedAirport'), null);
   private readonly ropsDetectedRunway = ConsumerSubject.create(this.sub.on('ropsDetectedRunway'), null);
-
-  private arpCoordinates: Coordinates | undefined;
-
-  private localPpos: Position = [];
-
-  private landingRunwayNavdata: Runway | undefined;
-
-  private btvUtils = new OansBrakeToVacateSelection(this.props.bus);
+  private readonly ropsDetectedRunwayLda = ConsumerSubject.create(this.sub.on('ropsDetectedRunwayLda'), null);
 
   private readonly airportDatabase = this.navigraphAvailable.map((a) => (a ? 'FBW9027250BB04' : 'N/A'));
 
@@ -356,24 +327,13 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     );
 
     this.subs.push(
-      this.fmsDataStore.landingRunway.sub(async (it) => {
-        // Set control panel display
-        if (it) {
-          // Load runway data
-          const destination = this.fmsDataStore.destination.get();
-          if (destination && this.oansAvailable.get() === false) {
-            this.setBtvRunwayFromFmsRunway();
-          }
-        } else if (this.oansAvailable.get() === false && !this.onGround.get()) {
-          this.clearSelection();
-        }
-      }, true),
       MappedSubject.create(
         async ([arpt, rwy]) => {
           if (arpt && rwy) {
-            [this.landingRunwayNavdata, this.arpCoordinates] = await this.btvUtils.setBtvRunwayFromNavdata(arpt, rwy);
-            this.runwayLda.set(this.landingRunwayNavdata.length.toFixed(0));
-            this.runwayTora.set(this.landingRunwayNavdata.length.toFixed(0));
+            this.runwayLda.set((this.ropsDetectedRunwayLda.get() ?? 0).toFixed(0));
+            this.runwayTora.set((this.ropsDetectedRunwayLda.get() ?? 0).toFixed(0));
+          } else {
+            this.clearRunwayInfo();
           }
         },
         this.ropsDetectedAirport,
@@ -388,14 +348,6 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
         .handle((showOans) => {
           if (this.props.side === showOans.side) {
             this.showOans = showOans.show;
-          }
-        }),
-      this.sub
-        .on('oans_remove_btv_data')
-        .whenChanged()
-        .handle((removeBtvData) => {
-          if (removeBtvData && this.navigraphAvailable.get() === false) {
-            this.btvUtils.clearSelection();
           }
         }),
     );
@@ -420,18 +372,6 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
           this.autoLoadAirport();
 
           this.lastUpdateTime = time;
-        }),
-    );
-
-    this.subs.push(
-      this.sub
-        .on('realTime')
-        .atFrequency(5)
-        .handle((_) => {
-          if (this.arpCoordinates) {
-            OansMapProjection.globalToAirportCoordinates(this.arpCoordinates, this.presentPos.get(), this.localPpos);
-            this.props.bus.getPublisher<FmsOansData>().pub('oansAirportLocalCoordinates', this.localPpos, true);
-          }
         }),
     );
 
@@ -726,38 +666,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     }
   }
 
-  private async setBtvRunwayFromFmsRunway() {
-    const destination = this.fmsDataStore.destination.get();
-    const rwyIdent = this.fmsDataStore.landingRunway.get();
-
-    if (destination && rwyIdent) {
-      [this.landingRunwayNavdata, this.arpCoordinates] = await this.btvUtils.setBtvRunwayFromNavdata(
-        destination,
-        rwyIdent,
-      );
-      this.runwayLda.set(this.landingRunwayNavdata.length.toFixed(0));
-      this.runwayTora.set(this.landingRunwayNavdata.length.toFixed(0));
-    }
-  }
-
-  private async btvFallbackSetDistance(distance: number | null) {
-    if (!this.oansAvailable.get()) {
-      if (distance && distance > BTV_MIN_TOUCHDOWN_ZONE_DISTANCE && this.landingRunwayNavdata && this.arpCoordinates) {
-        const exitLocation = placeBearingDistance(
-          this.landingRunwayNavdata.thresholdLocation,
-          this.landingRunwayNavdata.bearing,
-          distance / MathUtils.METRES_TO_NAUTICAL_MILES,
-        );
-        const localExitPos: Position = [0, 0];
-        OansMapProjection.globalToAirportCoordinates(this.arpCoordinates, exitLocation, localExitPos);
-
-        this.btvUtils.selectExitFromManualEntry(distance, localExitPos);
-      }
-    }
-  }
-
-  private clearSelection() {
-    this.btvUtils.clearSelection();
+  private clearRunwayInfo() {
     this.selectedEntityIndex.set(null);
     this.selectedEntityString.set(null);
     this.runwayLda.set(null);
@@ -937,7 +846,9 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                       <div>
                         <InputField<number, number, false>
                           dataEntryFormat={new LengthFormat(Subject.create(0), Subject.create(4000))}
-                          dataHandlerDuringValidation={async (val) => this.btvFallbackSetDistance(val)}
+                          dataHandlerDuringValidation={async (val) =>
+                            this.props.bus.getPublisher<FmsOansData>().pub('oansManualStoppingDistance', val, true)
+                          }
                           readonlyValue={this.reqStoppingDistance}
                           mandatory={Subject.create(false)}
                           inactive={this.fmsLandingRunwayNotSelectedInFallback}
