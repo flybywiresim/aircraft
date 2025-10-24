@@ -156,6 +156,7 @@
 1. [A32NX] Enable mouse drag for knobs in lock mode - @heclak (Heclak)
 1. [A32NX] Fix some knobs snapping back to start position when turned to max value - @heclak (Heclak)
 1. [ND] Fix terrain display smearing issue - @flogross89 (floridude)
+1. {A32NX/Flight Model} Flight model update for early rotation issue - @donstim (donbikes)
 
 ## 0.13.0
 
