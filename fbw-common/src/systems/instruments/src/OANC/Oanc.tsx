@@ -281,16 +281,14 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
   // TODO: Should be using GPS position interpolated with IRS velocity data
   private readonly pposLatWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('latitude'));
-
   private readonly pposLongWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('longitude'));
+  private readonly trueHeadingWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('trueHeadingRaw'));
 
   public readonly ppos = MappedSubject.create(
     ([latWord, longWord]) => ({ lat: latWord.value, long: longWord.value }) as Coordinates,
     this.pposLatWord,
     this.pposLongWord,
   );
-
-  private readonly trueHeadingWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('trueHeadingRaw'));
 
   public referencePos: Coordinates = { lat: 0, long: 0 };
 
@@ -348,6 +346,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     this.labelManager,
     this.aircraftOnGround,
     this.projectedPpos,
+    this.arpCoordinates,
     this.layerCanvasRefs[7],
     this.canvasCentreX,
     this.canvasCentreY,
@@ -505,6 +504,14 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
         flag: foundSymbols.flag,
       });
     });
+    this.sub
+      .on('oans_remove_btv_data')
+      .whenChanged()
+      .handle((removeBtvData) => {
+        if (removeBtvData) {
+          this.btvUtils.clearSelection();
+        }
+      });
 
     this.fmsDataStore.origin.sub(() => this.updateLabelClasses());
     this.fmsDataStore.departureRunway.sub(() => this.updateLabelClasses());
@@ -583,6 +590,10 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       this.modeAnimationOffsetX,
       this.modeAnimationOffsetY,
     );
+
+    this.pposNotAvailable.sub((notAvailable) => {
+      SimVar.SetSimVarValue('L:A32NX_ARPT_NAV_POS_LOST', SimVarValueType.Bool, notAvailable);
+    }, true);
   }
 
   private handleLabelFilter() {
@@ -1146,7 +1157,6 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
         this.positionVisible.set(false);
       }
 
-      this.props.bus.getPublisher<FmsOansData>().pub('oansAirportLocalCoordinates', this.projectedPpos.get(), true);
       this.btvUtils.updateRwyAheadAdvisory(
         this.ppos.get(),
         arpCoordinates,

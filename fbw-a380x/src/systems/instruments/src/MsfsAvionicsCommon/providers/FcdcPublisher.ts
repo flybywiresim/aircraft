@@ -19,6 +19,7 @@ type BaseFcdcSimvars = {
   fcdc_discrete_word_5: number;
   fcdc_fg_discrete_word_4: number;
   fcdc_fg_discrete_word_8: number;
+  fcdc_landing_fct_discrete_word: number;
 };
 
 type IndexedTopics =
@@ -28,7 +29,8 @@ type IndexedTopics =
   | 'fcdc_discrete_word_4'
   | 'fcdc_discrete_word_5'
   | 'fcdc_fg_discrete_word_4'
-  | 'fcdc_fg_discrete_word_8';
+  | 'fcdc_fg_discrete_word_8'
+  | 'fcdc_landing_fct_discrete_word';
 type FcdcIndexedEvents = {
   [P in keyof Pick<BaseFcdcSimvars, IndexedTopics> as IndexedEventType<P>]: BaseFcdcSimvars[P];
 };
@@ -65,6 +67,10 @@ export class FcdcSimvarPublisher extends SimVarPublisher<FcdcSimvars> {
       [
         'fcdc_fg_discrete_word_8',
         { name: 'L:A32NX_FCDC_#index#_FG_DISCRETE_WORD_8', type: SimVarValueType.Number, indexed: true },
+      ],
+      [
+        'fcdc_landing_fct_discrete_word',
+        { name: 'L:A32NX_FCDC_#index#_LANDING_FCT_DISCRETE_WORD', type: SimVarValueType.Number, indexed: true },
       ],
     ];
 
