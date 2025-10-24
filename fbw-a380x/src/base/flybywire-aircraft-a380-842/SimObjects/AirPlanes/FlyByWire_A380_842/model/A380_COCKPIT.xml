@@ -50,6 +50,7 @@
         <Include RelativeFile="behaviour\mip.xml" />
         <Include RelativeFile="behaviour\rmp.xml" />
         <Include RelativeFile="behaviour\kccu.xml" />
+        <Include RelativeFile="behaviour\hud.xml" />
 
         <!-- TEMPLATES -->
         <!-- TODO: Should probably not be in this file -->
@@ -225,6 +226,9 @@
 
 
         <!-- External Components -->
+        <Component ID="HUD">
+            <UseTemplate Name="FBW_A380X_Components_HUD" />
+        </Component>
 
         <Component ID="VIBRATION">
 			<!-- Glare shield vibrations -->
