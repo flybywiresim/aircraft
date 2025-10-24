@@ -346,6 +346,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     this.labelManager,
     this.aircraftOnGround,
     this.projectedPpos,
+    this.arpCoordinates,
     this.layerCanvasRefs[7],
     this.canvasCentreX,
     this.canvasCentreY,

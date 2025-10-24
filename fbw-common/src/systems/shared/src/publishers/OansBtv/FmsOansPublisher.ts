@@ -26,11 +26,11 @@ export interface FmsOansData {
   /** (OANS -> BTV) Arinc429: Distance to requested stopping distance, in meters. */
   oansRemainingDistToExit: number;
 
-  /** (OANS -> BTV) Projected position, i.e. aircraft position in airport local coordinates */
+  /** (OANS -> BTV) Projected position, i.e. aircraft position in airport local coordinates. Airport local coordinates, reference point from nav db. */
   oansAirportLocalCoordinates: Position;
-  /** (OANS -> BTV) Positions of threshold and opposite threshold after selection of runway. WGS-84. */
+  /** (OANS -> BTV) Positions of threshold and opposite threshold after selection of runway. Airport local coordinates, reference point from nav db. */
   oansThresholdPositions: Position[];
-  /** (OANS -> BTV) Position of exit after selection of exit. WGS-84. */
+  /** (OANS -> BTV) Position of exit after selection of exit. Airport local coordinates, reference point from nav db. */
   oansExitPosition: Position;
 
   /** (BTV -> OANS) Estimated runway occupancy time (ROT), in seconds. */

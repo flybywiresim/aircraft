@@ -35,6 +35,7 @@ export class BrakeToVacateDistanceUpdater implements Instrument {
   private readonly updateThrottler = new UpdateThrottler(200);
 
   private readonly airportLocalPos = ConsumerSubject.create(this.sub.on('oansAirportLocalCoordinates'), []);
+  private readonly oansRunwayIdent = ConsumerSubject.create(this.sub.on('oansSelectedLandingRunway'), null);
 
   private readonly remainingDistToExitArinc = Arinc429Register.empty();
 
@@ -245,12 +246,18 @@ export class BrakeToVacateDistanceUpdater implements Instrument {
 
     // Set as ROPS/BTV runway
     if (landingRunway) {
-      console.log(`Detected landing runway: ${landingRunway.airport} ${landingRunway.runway}`);
+      console.log(
+        `Detected landing runway: ${landingRunway.airport} ${landingRunway.runway}, OANS runway: ${this.oansRunwayIdent.get()}`,
+      );
       // If BTV runway already set, prioritize until 350ft RA
-      if (!this.runwayIsSet() || (this.runwayIsSet() && this.radioAltitude.get() < 350)) {
+      if (
+        !this.runwayIsSet() ||
+        (this.runwayIsSet() && this.radioAltitude.get() < 350 && this.oansRunwayIdent.get() !== landingRunway.runway)
+      ) {
         this.setBtvRunwayFromNavdata(landingRunway.airport, landingRunway.runway);
         this.bus.getPublisher<FmsOansData>().pub('ropsDetectedAirport', landingRunway.airport, true);
         this.bus.getPublisher<FmsOansData>().pub('ropsDetectedRunway', landingRunway.runway, true);
+        this.bus.getPublisher<FmsOansData>().pub('ndBtvMessage', `RWY${landingRunway.runway.substring(4) ?? ''}`, true);
         console.log('Runway set');
       }
     }
@@ -311,6 +318,7 @@ export class BrakeToVacateDistanceUpdater implements Instrument {
         const exitDistance = MathUtils.pointDistance(airportLocalPos[0], airportLocalPos[1], exitPos[0], exitPos[1]);
 
         this.remainingDistToExit.set(MathUtils.round(Math.min(exitDistanceFromTdz, exitDistance), 0.1));
+        console.log(`BTV distance to exit: ${MathUtils.round(Math.min(exitDistanceFromTdz, exitDistance), 0.1)}`);
       }
     }
   }
