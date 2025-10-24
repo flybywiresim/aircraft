@@ -188,7 +188,9 @@ export class A32NX_GPWS {
       case 5:
         return soundList.too_low_flaps;
       case 6:
-        return soundList.sink_rate;
+        // Use retard as a placeholder, as sink_rate is not functional.
+        //return soundList.sink_rate;
+        return soundList.retard;
       case 7:
         return soundList.dont_sink;
       // These are not implemented in sound.xml.
