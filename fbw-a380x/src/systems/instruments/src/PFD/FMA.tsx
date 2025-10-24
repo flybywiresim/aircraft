@@ -30,7 +30,7 @@ import { DmcLogicEvents } from 'instruments/src/MsfsAvionicsCommon/providers/Dmc
 abstract class ShowForSecondsComponent<T extends ComponentProps> extends DisplayComponent<T> {
   private timeout: number = 0;
 
-  private displayTimeInSeconds;
+  private readonly displayTimeInSeconds: number;
 
   protected modeChangedPathRef = FSComponent.createRef<SVGPathElement>();
 
@@ -62,7 +62,7 @@ export class FMA extends DisplayComponent<{
 }> {
   private sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & SimplaneValues & DmcLogicEvents>();
 
-  private activeLateralMode: number = 0;
+  private activeLateralMode: LateralMode = LateralMode.NONE;
 
   private armedVerticalModeSub = Subject.create(0);
 
@@ -153,10 +153,13 @@ export class FMA extends DisplayComponent<{
 
   private handleFMABorders() {
     const sharedModeActive =
-      this.activeLateralMode === 32 ||
-      this.activeLateralMode === 33 ||
-      this.activeLateralMode === 34 ||
-      (this.activeLateralMode === 20 && this.activeVerticalMode.get() === 24);
+      (this.props.fcdcData.autolandCapacity.get() &&
+        this.activeVerticalMode.get() === VerticalMode.LAND &&
+        this.activeLateralMode === LateralMode.LAND) ||
+      this.activeLateralMode === LateralMode.FLARE ||
+      this.activeVerticalMode.get() === VerticalMode.FLARE ||
+      this.activeLateralMode === LateralMode.ROLL_OUT ||
+      this.activeVerticalMode.get() === VerticalMode.ROLL_OUT;
     const BC3Message =
       getBC3Message(
         this.props.isAttExcessive.get(),
@@ -686,7 +689,9 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
       .whenChanged()
       .handle((a) => {
         this.autoBrakeMode = a;
-        this.setText();
+        if (this.autoBrakeActive) {
+          this.setText();
+        }
       });
   }
 
@@ -854,19 +859,19 @@ class AB3Cell extends DisplayComponent<CellProps> {
 }
 
 class B1Cell extends ShowForSecondsComponent<CellProps & { fcdcData: FcdcValueProvider }> {
-  private boxClassSub = Subject.create('');
+  private readonly boxClassSub = Subject.create('');
 
-  private boxPathStringSub = Subject.create('');
+  private readonly boxPathStringSub = Subject.create('');
 
-  private activeVerticalModeSub = Subject.create(0);
+  private readonly activeVerticalModeSub = Subject.create(VerticalMode.NONE);
 
-  private activeVerticalModeClassSub = Subject.create('');
+  private readonly activeVerticalModeClassSub = Subject.create('');
 
-  private speedProtectionPathRef = FSComponent.createRef<SVGPathElement>();
+  private readonly speedProtectionPathRef = FSComponent.createRef<SVGPathElement>();
 
-  private inModeReversionPathRef = FSComponent.createRef<SVGPathElement>();
+  private readonly inModeReversionPathRef = FSComponent.createRef<SVGPathElement>();
 
-  private fmaTextRef = FSComponent.createRef<SVGTextElement>();
+  private readonly fmaTextRef = FSComponent.createRef<SVGTextElement>();
 
   private selectedVS = 0;
 
@@ -881,6 +886,8 @@ class B1Cell extends ShowForSecondsComponent<CellProps & { fcdcData: FcdcValuePr
   private tcasModeDisarmed = false;
 
   private FPA = 0;
+
+  private readonly displayedVerticalModeText = Subject.create('');
 
   constructor(props: CellProps & { fcdcData: FcdcValueProvider }) {
     super(props, 10);
@@ -976,14 +983,16 @@ class B1Cell extends ShowForSecondsComponent<CellProps & { fcdcData: FcdcValuePr
           text = 'G/S';
         } else {
           text = '';
-          this.isShown = false;
         }
 
         break;
       default:
         text = '';
-        this.isShown = false;
-        this.displayModeChangedPath(true);
+    }
+
+    if (text === '') {
+      this.isShown = false;
+      this.displayModeChangedPath(true);
     }
 
     const inSpeedProtection =
@@ -1015,6 +1024,11 @@ class B1Cell extends ShowForSecondsComponent<CellProps & { fcdcData: FcdcValuePr
 
     this.fmaTextRef.instance.innerHTML = `<tspan>${text}</tspan><tspan xml:space="preserve" class=${inSpeedProtection ? 'PulseCyanFill' : 'Cyan'}>${additionalText}</tspan>`;
 
+    if (text.length !== 0 && this.displayedVerticalModeText.get() !== text) {
+      this.displayModeChangedPath();
+    }
+    this.displayedVerticalModeText.set(text);
+
     return text.length > 0;
   }
 
@@ -1029,7 +1043,6 @@ class B1Cell extends ShowForSecondsComponent<CellProps & { fcdcData: FcdcValuePr
       .handle((activeVerticalMode) => {
         this.activeVerticalModeSub.set(activeVerticalMode);
         this.getText();
-        this.displayModeChangedPath();
       });
 
     sub
