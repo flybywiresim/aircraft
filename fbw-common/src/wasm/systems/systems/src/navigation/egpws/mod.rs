@@ -25,7 +25,7 @@ use crate::{
         VariableIdentifier, Write,
     },
 };
-use std::{fmt::Debug, time::Duration};
+use std::time::Duration;
 use uom::si::{f64::Power, power::watt};
 
 pub struct EnhancedGroundProximityWarningComputer {

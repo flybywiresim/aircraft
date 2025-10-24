@@ -430,17 +430,8 @@ impl EnhancedGroundProximityWarningComputerRuntime {
             biased_vertical_speed,
         ) >= self.ra_ft
             && self.ra_ft > 10.
-            && self.ra_ft < 2450.;
-        println!(
-            "Mode 1: VS: {}, RA: {}, boundary_val: {}",
-            self.chosen_vertical_speed_ft_min,
-            self.ra_ft,
-            interpolation(
-                &Self::MODE_1_ALERT_AREA_BREAKPOINTS,
-                &Self::MODE_1_ALERT_AREA_VALUES,
-                biased_vertical_speed,
-            )
-        );
+            && self.ra_ft < 2450.
+            && biased_vertical_speed < -964.;
 
         let mode_1_warning_boundary_met = interpolation(
             &Self::MODE_1_WARNING_AREA_BREAKPOINTS,
@@ -448,16 +439,8 @@ impl EnhancedGroundProximityWarningComputerRuntime {
             biased_vertical_speed,
         ) >= self.ra_ft
             && self.ra_ft > 10.
-            && self.ra_ft < 2450.;
-
-        println!(
-            "Mode 1: boundary_val_warning: {}",
-            interpolation(
-                &Self::MODE_1_WARNING_AREA_BREAKPOINTS,
-                &Self::MODE_1_WARNING_AREA_VALUES,
-                biased_vertical_speed,
-            )
-        );
+            && self.ra_ft < 2450.
+            && biased_vertical_speed < -1482.;
 
         self.mode_1_sinkrate_lamp_active = self.mode_1_sinkrate_conf_node_2.update(
             self.mode_1_sinkrate_conf_node_1
