@@ -385,9 +385,9 @@ void Fcdc::updateBtvRowRop(double deltaTime) {
   // common conditions for ROW/ROP and BTV lost
   bool commonConditions = irAvailable < 2 || adrAvailable < 2 || raAvailable < 1 || fwsAudioFunctionAvailable == 0;
 
-  rowLost = commonConditions || ldgPerfAffectedRowRopLost || ldgDistAffectedRowRopLost;
+  rowLost = commonConditions || ldgPerfAffectedRowRopLost || ldgDistAffectedRowRopLost || discreteInputs.tawsTerrOff;
   ropLost = commonConditions || ldgPerfAffectedRowRopLost || ldgDistAffectedRowRopLost || discreteInputs.oansFailed ||
-            discreteInputs.oansPposLost;
+            discreteInputs.oansPposLost || discreteInputs.tawsTerrOff;
   btvLost =
       commonConditions || ldgPerfAffectedBtvLost || ldgDistAffectedBtvLost || discreteInputs.oansFailed || discreteInputs.oansPposLost;
 

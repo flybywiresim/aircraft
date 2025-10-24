@@ -415,6 +415,8 @@ void FlyByWireInterface::setupLocalVariables() {
   idOansFailed = std::make_unique<LocalVariable>("A32NX_OANS_FAILED");
   idOansPposLost = std::make_unique<LocalVariable>("A32NX_ARPT_NAV_POS_LOST");
 
+  idTawsTerrainOff = std::make_unique<LocalVariable>("A32NX_GPWS_TERR_OFF");
+
   idFcuTrkFpaModeActive = std::make_unique<LocalVariable>("A32NX_TRK_FPA_MODE_ACTIVE");
   idFcuNorthRefTrue = std::make_unique<LocalVariable>("A32NX_PUSH_TRUE_REF");
   idFcuSelectedFpa = std::make_unique<LocalVariable>("A32NX_AUTOPILOT_FPA_SELECTED");
@@ -1799,6 +1801,7 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
         idFwsAbnProcImpactingLdgDistActive[0]->get() || idFwsAbnProcImpactingLdgDistActive[1]->get();
     fcdcs[fcdcIndex].discreteInputs.oansFailed = idOansFailed->get();
     fcdcs[fcdcIndex].discreteInputs.oansPposLost = idOansPposLost->get();
+    fcdcs[fcdcIndex].discreteInputs.tawsTerrOff = idTawsTerrainOff->get();
     fcdcs[fcdcIndex].discreteInputs.dcEssFailed = !idElecDcEssBusPowered->get();
     fcdcs[fcdcIndex].discreteInputs.dc2Failed = !idElecDc2BusPowered->get();
     fcdcs[fcdcIndex].discreteInputs.ac2Failed = !idElecAc2BusPowered->get();
