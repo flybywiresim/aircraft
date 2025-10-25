@@ -21,7 +21,6 @@
         <Include ModelBehaviorFile="Asobo\Common.xml"/>
         <Include ModelBehaviorFile="Asobo\Airliner\GlassCockpit.xml"/>
         <Include ModelBehaviorFile="A32NX\LockHighlight.xml"/>
-        <Include ModelBehaviorFile="A32NX\Interior\hud.xml"/>
 
         <!-- HUD -->
 
