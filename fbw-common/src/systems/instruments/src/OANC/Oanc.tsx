@@ -56,7 +56,7 @@ import { bearingTo, clampAngle, Coordinates, distanceTo, placeBearingDistance } 
 import { OansControlEvents } from './OansControlEventPublisher';
 import { reciprocal } from '@fmgc/guidance/lnav/CommonGeometry';
 import { OansBrakeToVacateSelection } from './OansBrakeToVacateSelection';
-import { STYLE_DATA } from './style-data';
+import { LAYER_SPECIFICATIONS } from './style-data';
 import { OancMovingModeOverlay, OancStaticModeOverlay } from './OancMovingModeOverlay';
 import { OancAircraftIcon } from './OancAircraftIcon';
 import { OancLabelManager } from './OancLabelManager';
@@ -95,14 +95,6 @@ export const a320EfisZoomRangeSettings: A320EfisZoomRangeValue[] = [0.2, 0.5, 1,
 export const a380EfisZoomRangeSettings: A380EfisZoomRangeValue[] = [0.2, 0.5, 1, 2, 5];
 
 const DEFAULT_SCALE_NM = 0.539957;
-
-const LAYER_VISIBILITY_RULES = [
-  [true, true, true, true, false, false, true, true],
-  [true, true, true, true, false, false, false, true],
-  [false, true, false, false, true, true, false, true],
-  [false, true, false, false, true, true, false, true],
-  [false, true, false, false, true, true, false, true],
-];
 
 export const LABEL_VISIBILITY_RULES = [true, true, true, true, true];
 
@@ -220,9 +212,9 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     featureCollection([]), // Layer 0: TAXIWAY BG + TAXIWAY SHOULDER
     featureCollection([]), // Layer 1: APRON + STAND BG + BUILDINGS (terminal only)
     featureCollection([]), // Layer 2: RUNWAY (with markings)
-    featureCollection([]), // Layer 3: RUNWAY (without markings)
+    featureCollection([]), // Layer 3: TAXIWAY GUIDANCE LINES (unscaled width)
     featureCollection([]), // Layer 4: TAXIWAY GUIDANCE LINES (scaled width), HOLD SHORT LINES
-    featureCollection([]), // Layer 5: TAXIWAY GUIDANCE LINES (unscaled width)
+    featureCollection([]), // Layer 5: RUNWAY (without markings)
     featureCollection([]), // Layer 6: STAND GUIDANCE LINES (scaled width)
     featureCollection([]), // Layer 7: DYNAMIC BTV CONTENT (BTV PATH, STOP LINES)
   ];
@@ -655,10 +647,10 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       return;
     }
 
-    const includeFeatureTypes: FeatureType[] = Object.values(STYLE_DATA).reduce(
+    const includeFeatureTypes: FeatureType[] = Object.values(LAYER_SPECIFICATIONS).reduce(
       (acc, it) => [
         ...acc,
-        ...it.reduce(
+        ...it.styleRules.reduce(
           (acc, it) => [
             ...acc,
             ...(it?.dontFetchFromAmdb || it.forFeatureTypes === undefined ? [] : it.forFeatureTypes),
@@ -826,12 +818,17 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
   private sortDataIntoLayers(data: FeatureCollection<Geometry, AmdbProperties>) {
     for (let i = 0; i < this.layerFeatures.length; i++) {
       const layer = this.layerFeatures[i];
+      const layerSpec = LAYER_SPECIFICATIONS[i];
 
-      const layerFeatureTypes = STYLE_DATA[i].reduce(
+      if (layerSpec.styleRules.length === 0) {
+        return;
+      }
+
+      const layerFeatureTypes = layerSpec.styleRules.reduce(
         (acc, rule) => [...acc, ...(rule.forFeatureTypes !== undefined ? rule.forFeatureTypes : [])],
         [] as FeatureType[],
       );
-      const layerPolygonStructureTypes = STYLE_DATA[i].reduce(
+      const layerPolygonStructureTypes = layerSpec.styleRules.reduce(
         (acc, rule) => [...acc, ...(rule.forPolygonStructureTypes ?? [])],
         [] as PolygonalStructureType[],
       );
@@ -1209,15 +1206,17 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
     // Transform layers
     for (let i = 0; i < this.layerCanvasRefs.length; i++) {
+      const layerSpec = LAYER_SPECIFICATIONS[i];
+
       const canvas = this.layerCanvasRefs[i].instance;
       const canvasScaleContainer = this.layerCanvasScaleContainerRefs[i].instance;
 
       const scale = this.getZoomLevelInverseScale();
 
-      const translateX = -(this.canvasWidth.get() / 2) + OANC_RENDER_WIDTH / 2;
-      const translateY = -(this.canvasHeight.get() / 2) + OANC_RENDER_HEIGHT / 2;
+      const translateX = -((this.canvasWidth.get() * layerSpec.renderScale) / 2) + OANC_RENDER_WIDTH / 2;
+      const translateY = -((this.canvasHeight.get() * layerSpec.renderScale) / 2) + OANC_RENDER_HEIGHT / 2;
 
-      canvas.style.transform = `translate(${-offsetX}px, ${offsetY}px) rotate(${rotate}deg)`;
+      canvas.style.transform = `translate(${-offsetX}px, ${offsetY}px) scale(${1 / layerSpec.renderScale}) rotate(${rotate}deg)`;
 
       canvasScaleContainer.style.left = `${translateX}px`;
       canvasScaleContainer.style.top = `${translateY}px`;
@@ -1226,7 +1225,11 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       const context = canvas.getContext('2d');
       if (context) {
         context.resetTransform();
-        context.translate(this.canvasCentreX.get(), this.canvasCentreY.get());
+        context.translate(
+          this.canvasCentreX.get() * layerSpec.renderScale,
+          this.canvasCentreY.get() * layerSpec.renderScale,
+        );
+        context.scale(layerSpec.renderScale, layerSpec.renderScale);
       }
     }
 
@@ -1398,10 +1401,8 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
   }
 
   private handleLayerVisibilities() {
-    const rule = LAYER_VISIBILITY_RULES[this.zoomLevelIndex.get()];
-
     for (let i = 0; i < this.layerCanvasScaleContainerRefs.length; i++) {
-      const shouldBeVisible = rule[i];
+      const shouldBeVisible = LAYER_SPECIFICATIONS[i].zoomLevelVisibilities[this.zoomLevelIndex.get()];
 
       const layerContainer = this.layerCanvasScaleContainerRefs[i].instance;
 
@@ -1613,54 +1614,15 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
             style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
           >
             <div ref={this.panContainerRef[0]} style="position: absolute;">
-              <div
-                ref={this.layerCanvasScaleContainerRefs[0]}
-                style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
-              >
-                <canvas ref={this.layerCanvasRefs[0]} width={this.canvasWidth} height={this.canvasHeight} />
-              </div>
-              <div
-                ref={this.layerCanvasScaleContainerRefs[1]}
-                style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
-              >
-                <canvas ref={this.layerCanvasRefs[1]} width={this.canvasWidth} height={this.canvasHeight} />
-              </div>
-              <div
-                ref={this.layerCanvasScaleContainerRefs[2]}
-                style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
-              >
-                <canvas ref={this.layerCanvasRefs[2]} width={this.canvasWidth} height={this.canvasHeight} />
-              </div>
-              <div
-                ref={this.layerCanvasScaleContainerRefs[3]}
-                style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
-              >
-                <canvas ref={this.layerCanvasRefs[3]} width={this.canvasWidth} height={this.canvasHeight} />
-              </div>
-              <div
-                ref={this.layerCanvasScaleContainerRefs[4]}
-                style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
-              >
-                <canvas ref={this.layerCanvasRefs[4]} width={this.canvasWidth} height={this.canvasHeight} />
-              </div>
-              <div
-                ref={this.layerCanvasScaleContainerRefs[5]}
-                style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
-              >
-                <canvas ref={this.layerCanvasRefs[5]} width={this.canvasWidth} height={this.canvasHeight} />
-              </div>
-              <div
-                ref={this.layerCanvasScaleContainerRefs[6]}
-                style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
-              >
-                <canvas ref={this.layerCanvasRefs[6]} width={this.canvasWidth} height={this.canvasHeight} />
-              </div>
-              <div
-                ref={this.layerCanvasScaleContainerRefs[7]}
-                style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
-              >
-                <canvas ref={this.layerCanvasRefs[7]} width={this.canvasWidth} height={this.canvasHeight} />
-              </div>
+              {this.layerCanvasScaleContainerRefs.map((ref, index) => (
+                <div ref={ref} style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}>
+                  <canvas
+                    ref={this.layerCanvasRefs[index]}
+                    width={this.canvasWidth.map((it) => it * LAYER_SPECIFICATIONS[index].renderScale)}
+                    height={this.canvasHeight.map((it) => it * LAYER_SPECIFICATIONS[index].renderScale)}
+                  />
+                </div>
+              ))}
             </div>
           </div>
 
@@ -1781,7 +1743,7 @@ function renderFeaturesToCanvas(
   startIndex: number,
   endIndex: number,
 ) {
-  const styleRules = STYLE_DATA[layer];
+  const layerSpec = LAYER_SPECIFICATIONS[layer];
 
   for (let i = startIndex; i < Math.min(endIndex, data.features.length); i++) {
     const feature = data.features[i];
@@ -1789,7 +1751,7 @@ function renderFeaturesToCanvas(
 
     let doFill = false;
 
-    const matchingRule = styleRules.find((it) => {
+    const matchingRule = layerSpec.styleRules.find((it) => {
       if (feature.properties.feattype === FeatureType.VerticalPolygonalStructure) {
         return (
           it.forFeatureTypes?.includes(feature.properties.feattype) &&
