@@ -1,13 +1,16 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { FeatureType, PolygonalStructureType } from '@flybywiresim/fbw-sdk';
+import { AmdbProperties, FeatureType, PolygonalStructureType } from '@flybywiresim/fbw-sdk';
 
 export interface LayerSpecification {
+  /** The scale at which to render this layer, as a multiple of the total size (in projected coordinates) of the entire airport map */
   renderScale: number;
 
+  /** The visibility of this layer at each OANS zoom level */
   zoomLevelVisibilities: [boolean, boolean, boolean, boolean, boolean];
 
+  /** The styling rules for this layer  */
   styleRules: StyleRule[];
 }
 
@@ -20,6 +23,12 @@ export interface StyleRule {
 
   /** If `true`, the feature won't be fetched from the AMDB */
   dontFetchFromAmdb?: boolean;
+
+  /** If applicable, how to union features this rule applies to. Only valid for polygons. */
+  unionBy?: keyof AmdbProperties | 'all';
+
+  /** If provided, the tolerance with which to simplify features. If not provided, the feature is not simplified. */
+  simplify?: number;
 
   /** The styles to apply */
   styles: StyleData;
@@ -131,12 +140,7 @@ export const LAYER_SPECIFICATIONS: Record<number, LayerSpecification> = {
     // Layer 4: TAXIWAY GUIDANCE LINES (unscaled width)
     renderScale: 0.25,
     zoomLevelVisibilities: [false, false, true, true, true],
-    styleRules: [
-      {
-        forFeatureTypes: [FeatureType.TaxiwayGuidanceLine, FeatureType.RunwayExitLine],
-        styles: { doStroke: true, doFill: false, strokeStyle: '#666666', lineWidth: 8 },
-      },
-    ],
+    styleRules: [],
   },
   5: {
     // Layer 5: RUNWAY (without markings)
@@ -144,12 +148,18 @@ export const LAYER_SPECIFICATIONS: Record<number, LayerSpecification> = {
     zoomLevelVisibilities: [false, false, true, true, true],
     styleRules: [
       {
+        forFeatureTypes: [FeatureType.TaxiwayGuidanceLine, FeatureType.RunwayExitLine],
+        styles: { doStroke: true, doFill: false, strokeStyle: '#666666', lineWidth: 8 },
+      },
+      {
         forFeatureTypes: [
           FeatureType.RunwayElement,
           FeatureType.RunwayIntersection,
           FeatureType.RunwayDisplacedArea,
           FeatureType.Stopway,
         ],
+        unionBy: 'all',
+        simplify: 0.1,
         styles: { doStroke: false, doFill: true, fillStyle: '#ffffff' },
       },
     ],

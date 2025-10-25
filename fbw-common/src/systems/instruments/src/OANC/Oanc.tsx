@@ -1,8 +1,8 @@
-// @ts-strict-ignore
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import {
+  ArrayUtils,
   ComponentProps,
   ConsumerSubject,
   DebounceTimer,
@@ -20,27 +20,37 @@ import {
 } from '@microsoft/msfs-sdk';
 
 import {
+  AmdbFeature,
   AmdbFeatureCollection,
   AmdbFeatureTypeStrings,
   AmdbProjection,
   AmdbProperties,
+  Arinc429LocalVarConsumerSubject,
+  EfisNdMode,
+  EfisSide,
+  FcuSimVars,
   FeatureType,
   FeatureTypeString,
-  MathUtils,
-  PolygonalStructureType,
-  EfisNdMode,
-  MapParameters,
-  EfisSide,
   FmsOansData,
-  FcuSimVars,
   GenericAdirsEvents,
-  Arinc429LocalVarConsumerSubject,
+  MapParameters,
+  MathUtils,
   OansFmsDataStore,
   OansMapProjection,
+  PolygonalStructureType,
 } from '@flybywiresim/fbw-sdk';
 
-import { bbox, bboxPolygon, booleanPointInPolygon, centroid, featureCollection } from '@turf/turf';
-import { Feature, FeatureCollection, Geometry, LineString, Point, Polygon, Position } from 'geojson';
+import {
+  bbox,
+  bboxPolygon,
+  booleanPointInPolygon,
+  centroid,
+  featureCollection,
+  polygon,
+  simplify,
+  union,
+} from '@turf/turf';
+import { Feature, FeatureCollection, Geometry, LineString, Point, Polygon, MultiPolygon, Position } from 'geojson';
 import { bearingTo, clampAngle, Coordinates, distanceTo, placeBearingDistance } from 'msfs-geo';
 
 import { OansControlEvents } from './OansControlEventPublisher';
@@ -805,35 +815,89 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     return element;
   }
 
-  private sortDataIntoLayers(data: FeatureCollection<Geometry, AmdbProperties>) {
+  private sortDataIntoLayers(data: AmdbFeatureCollection) {
     for (let i = 0; i < this.layerFeatures.length; i++) {
       const layer = this.layerFeatures[i];
       const layerSpec = LAYER_SPECIFICATIONS[i];
 
       if (layerSpec.styleRules.length === 0) {
-        return;
+        continue;
       }
 
-      const layerFeatureTypes = layerSpec.styleRules.reduce(
-        (acc, rule) => [...acc, ...(rule.forFeatureTypes !== undefined ? rule.forFeatureTypes : [])],
-        [] as FeatureType[],
-      );
-      const layerPolygonStructureTypes = layerSpec.styleRules.reduce(
-        (acc, rule) => [...acc, ...(rule.forPolygonStructureTypes ?? [])],
-        [] as PolygonalStructureType[],
-      );
-      const layerData = data.features.filter((it) => {
-        if (it.properties.feattype === FeatureType.VerticalPolygonalStructure) {
-          return (
-            layerFeatureTypes.includes(FeatureType.VerticalPolygonalStructure) &&
-            it.properties.plysttyp &&
-            layerPolygonStructureTypes.includes(it.properties.plysttyp)
-          );
-        }
-        return layerFeatureTypes.includes(it.properties.feattype);
-      });
+      const featuresByStyleRule: AmdbFeature[][] = [];
 
-      layer.features.push(...layerData);
+      for (const styleRule of layerSpec.styleRules) {
+        const matchingFeatures = data.features.filter(
+          (it) =>
+            (styleRule.forFeatureTypes === undefined || styleRule.forFeatureTypes.includes(it.properties.feattype)) &&
+            (it.properties.plysttyp === undefined ||
+              it.properties.feattype !== FeatureType.VerticalPolygonalStructure ||
+              styleRule.forPolygonStructureTypes === undefined ||
+              styleRule.forPolygonStructureTypes.includes(it.properties.plysttyp)),
+        );
+
+        unionFeatures: if (styleRule.unionBy !== undefined) {
+          const featuresAreAllPolygons = matchingFeatures.every(
+            (it) => it.geometry.type === 'Polygon' || it.geometry.type === 'MultiPolygon',
+          );
+
+          if (!featuresAreAllPolygons) {
+            console.warn(
+              '[Oanc](sortDataIntoLayers) Style rule had unionBy declared but not all filtered features were (multi)polygons. Not unioning them.',
+            );
+            break unionFeatures;
+          }
+
+          const finalFeatures: AmdbFeature<Polygon | MultiPolygon>[] = [];
+          const groups = new Map<AmdbProperties[keyof AmdbProperties], AmdbFeature<Polygon | MultiPolygon>[]>();
+
+          for (const feature of matchingFeatures) {
+            const key = styleRule.unionBy !== 'all' ? feature.properties[styleRule.unionBy] : 'all';
+            let existingGroup = groups.get(key);
+
+            if (existingGroup === undefined) {
+              existingGroup = [];
+              groups.set(key, existingGroup);
+            }
+
+            if (styleRule.simplify !== undefined) {
+              existingGroup.push(
+                simplify(feature, { tolerance: styleRule.simplify }) as AmdbFeature<Polygon | MultiPolygon>,
+              );
+            } else {
+              existingGroup.push(feature as AmdbFeature<Polygon | MultiPolygon>);
+            }
+          }
+
+          const unionedGroups = Array.from(groups.values()).map((it) =>
+            it.length > 1 ? union(featureCollection(it), { properties: it[0].properties }) : it[0],
+          );
+
+          for (const unionedGroup of unionedGroups) {
+            if (unionedGroup === null) {
+              continue;
+            }
+
+            switch (unionedGroup.geometry.type) {
+              case 'Polygon':
+                finalFeatures.push(unionedGroup);
+                break;
+              case 'MultiPolygon':
+                for (const polygonCoordinates of unionedGroup.geometry.coordinates) {
+                  const polygonFeature = polygon(polygonCoordinates, unionedGroup.properties);
+
+                  finalFeatures.push(polygonFeature);
+                }
+            }
+          }
+
+          featuresByStyleRule.push(finalFeatures);
+        } else {
+          featuresByStyleRule.push(matchingFeatures);
+        }
+      }
+
+      layer.features.push(...ArrayUtils.flat(featuresByStyleRule));
     }
   }
 
@@ -1787,6 +1851,7 @@ function renderFeaturesToCanvas(
       pathIdCache.set(feature, id);
     }
 
+    const usePathCache = matchingRule.unionBy === undefined;
     const cachedPaths = pathCache.get(id);
 
     switch (feature.geometry.type) {
@@ -1794,7 +1859,7 @@ function renderFeaturesToCanvas(
         const outline = feature.geometry as LineString;
 
         let path: Path2D;
-        if (cachedPaths) {
+        if (usePathCache && cachedPaths) {
           // eslint-disable-next-line prefer-destructuring
           path = cachedPaths[0];
         } else {
@@ -1824,7 +1889,7 @@ function renderFeaturesToCanvas(
         const polygon = feature.geometry as Polygon;
 
         let paths: Path2D[] = [];
-        if (cachedPaths) {
+        if (usePathCache && cachedPaths) {
           paths = cachedPaths;
         } else {
           for (const outline of polygon.coordinates) {
@@ -1833,8 +1898,12 @@ function renderFeaturesToCanvas(
             toCachePath.moveTo(outline[0][0], outline[0][1] * -1);
 
             for (let i = 1; i < outline.length; i++) {
-              const point = outline[i];
-              toCachePath.lineTo(point[0], point[1] * -1);
+              if (i === outline.length - 1) {
+                toCachePath.closePath();
+              } else {
+                const point = outline[i];
+                toCachePath.lineTo(point[0], point[1] * -1);
+              }
             }
 
             paths.push(toCachePath);
