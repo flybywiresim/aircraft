@@ -2628,6 +2628,18 @@ mod tests {
             self
         }
 
+        fn boarding_rate_of(mut self, rate: BoardingRate) -> Self {
+            self.write_by_name(AdirsSimulatorData::BOARDING_RATE, rate);
+
+            self
+        }
+
+        fn boarding_started_of(mut self, started: bool) -> Self {
+            self.write_by_name(AdirsSimulatorData::BOARDING_STARTED_BY_USR, started);
+
+            self
+        }
+
         fn ir_fault_light_illuminated(&mut self, number: usize) -> bool {
             self.read_by_name(&OnOffFaultPushButton::has_fault_id(&format!(
                 "ADIRS_IR_{}",
@@ -3388,6 +3400,39 @@ mod tests {
         assert_eq!(
             maint_word_flags.unwrap() & IrMaintFlags::EXCESS_MOTION_ERROR,
             IrMaintFlags::EXCESS_MOTION_ERROR
+        );
+    }
+
+    #[rstest]
+    fn adirs_detects_excess_motion_during_alignment_with_instant_boarding_selected() {
+        let mut test_bed = all_adirus_unaligned_test_bed_with()
+            .boarding_rate_of(BoardingRate::Instant)
+            .body_lateral_velocity_of(Velocity::new::<foot_per_second>(0.1))
+            .ir_mode_selector_set_to(1, InertialReferenceMode::Navigation);
+        test_bed.run();
+        test_bed.run();
+
+        let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word(1).value());
+        assert_eq!(
+            maint_word_flags.unwrap() & IrMaintFlags::EXCESS_MOTION_ERROR,
+            IrMaintFlags::EXCESS_MOTION_ERROR
+        );
+    }
+
+    #[rstest]
+    fn adirs_does_not_detect_excess_motion_during_instant_boarding() {
+        let mut test_bed = all_adirus_unaligned_test_bed_with()
+            .boarding_rate_of(BoardingRate::Instant)
+            .boarding_started_of(true)
+            .body_lateral_velocity_of(Velocity::new::<foot_per_second>(0.1))
+            .ir_mode_selector_set_to(1, InertialReferenceMode::Navigation);
+        test_bed.run();
+        test_bed.run();
+
+        let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word(1).value());
+        assert_eq!(
+            maint_word_flags.unwrap() & IrMaintFlags::EXCESS_MOTION_ERROR,
+            IrMaintFlags::empty()
         );
     }
 
