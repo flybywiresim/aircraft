@@ -122,7 +122,7 @@ export interface Label {
   style: LabelStyle;
   position: Position;
   rotation: number | undefined;
-  associatedFeature?: Feature<Geometry, AmdbProperties>;
+  associatedFeature?: AmdbFeature;
 }
 
 export interface ContextMenuItemData {
@@ -667,32 +667,29 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       AmdbProjection.Epsg4326,
     );
 
-    const features = Object.values(data).reduce(
-      (acc, it) => {
-        const features = it.features.map((f) => {
-          // FeatureCollection
-          if (f.properties.idthr || f.properties.idrwy) {
-            const nf = Object.assign({}, f);
-            if (nf.properties.idthr && nf.properties.idthr.replace(/[^0-9]/g, '').length < 2) {
-              nf.properties.idthr = `0${nf.properties.idthr}`;
-            }
-
-            if (nf.properties.idrwy) {
-              nf.properties.idrwy = nf.properties.idrwy
-                .split('.')
-                .map((qfu) => (qfu.replace(/[^0-9]/g, '').length < 2 ? `0${qfu}` : qfu))
-                .join('.');
-            }
-
-            return nf;
+    const features = Object.values(data).reduce((acc, it) => {
+      const features = it.features.map((f) => {
+        // FeatureCollection
+        if (f.properties.idthr || f.properties.idrwy) {
+          const nf = Object.assign({}, f);
+          if (nf.properties.idthr && nf.properties.idthr.replace(/[^0-9]/g, '').length < 2) {
+            nf.properties.idthr = `0${nf.properties.idthr}`;
           }
-          return f;
-        });
 
-        return [...acc, ...features];
-      },
-      [] as Feature<Geometry, AmdbProperties>[],
-    );
+          if (nf.properties.idrwy) {
+            nf.properties.idrwy = nf.properties.idrwy
+              .split('.')
+              .map((qfu) => (qfu.replace(/[^0-9]/g, '').length < 2 ? `0${qfu}` : qfu))
+              .join('.');
+          }
+
+          return nf;
+        }
+        return f;
+      });
+
+      return [...acc, ...features];
+    }, [] as AmdbFeature[]);
     const airportMap: AmdbFeatureCollection = featureCollection(features);
 
     const wgs84ReferencePoint = wgs84ArpDat.aerodromereferencepoint?.features[0];
@@ -892,7 +889,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     }
   }
 
-  private generateAllLabels(data: FeatureCollection<Geometry, AmdbProperties>) {
+  private generateAllLabels(data: AmdbFeatureCollection) {
     for (const feature of data.features) {
       if (!LABEL_FEATURE_TYPES.includes(feature.properties.feattype)) {
         continue;
