@@ -18,6 +18,7 @@ import {
   VNode,
   Wait,
 } from '@microsoft/msfs-sdk';
+
 import {
   AmdbFeatureCollection,
   AmdbFeatureTypeStrings,
@@ -37,20 +38,9 @@ import {
   OansFmsDataStore,
   OansMapProjection,
 } from '@flybywiresim/fbw-sdk';
-import {
-  bbox,
-  bboxPolygon,
-  booleanPointInPolygon,
-  centroid,
-  Feature,
-  featureCollection,
-  FeatureCollection,
-  Geometry,
-  LineString,
-  Point,
-  Polygon,
-  Position,
-} from '@turf/turf';
+
+import { bbox, bboxPolygon, booleanPointInPolygon, centroid, featureCollection } from '@turf/turf';
+import { Feature, FeatureCollection, Geometry, LineString, Point, Polygon, Position } from 'geojson';
 import { bearingTo, clampAngle, Coordinates, distanceTo, placeBearingDistance } from 'msfs-geo';
 
 import { OansControlEvents } from './OansControlEventPublisher';
