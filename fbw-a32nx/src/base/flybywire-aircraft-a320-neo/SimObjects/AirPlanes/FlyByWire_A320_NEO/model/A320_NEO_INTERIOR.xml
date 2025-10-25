@@ -21,8 +21,14 @@
         <Include ModelBehaviorFile="Asobo\Common.xml"/>
         <Include ModelBehaviorFile="Asobo\Airliner\GlassCockpit.xml"/>
         <Include ModelBehaviorFile="A32NX\LockHighlight.xml"/>
+        <Include ModelBehaviorFile="A32NX\Interior\hud.xml"/>
 
         <!-- HUD -->
+
+        <Component ID="HUD">
+            <UseTemplate Name="FBW_A380X_Components_HUD" />
+        </Component>
+
         <Component ID="Hud_Dome_Lights" >
             <!-- CPT DOME LT -->
             <UseTemplate Name="ASOBO_LIGHTING_Cabin_Emissive_Template">
