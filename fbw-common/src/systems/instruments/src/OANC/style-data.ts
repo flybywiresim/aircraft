@@ -53,7 +53,7 @@ export interface StyleData {
 
 export const LAYER_SPECIFICATIONS: Record<number, LayerSpecification> = {
   0: {
-    // Layer 0: TAXIWAY BG + TAXIWAY SHOULDER
+    // Layer 0: TAXIWAYS (scaled), SERVICE ROADS, RUNWAYS (with markings), TAXI LINES, HOLD SHORT LINES
     renderScale: 1.0,
     zoomLevelVisibilities: [true, true, false, false, false],
     styleRules: [
@@ -68,6 +68,32 @@ export const LAYER_SPECIFICATIONS: Record<number, LayerSpecification> = {
       {
         forFeatureTypes: [FeatureType.ServiceRoad],
         styles: { doStroke: false, doFill: true, fillStyle: '#b59824' },
+      },
+      {
+        forFeatureTypes: [
+          FeatureType.RunwayElement,
+          FeatureType.RunwayIntersection,
+          FeatureType.BlastPad,
+          FeatureType.RunwayDisplacedArea,
+          FeatureType.Stopway,
+        ],
+        styles: { doStroke: false, doFill: true, fillStyle: 'gray' },
+      },
+      {
+        forFeatureTypes: [FeatureType.RunwayMarking],
+        styles: { doStroke: false, doFill: true, fillStyle: '#ffffff' },
+      },
+      {
+        forFeatureTypes: [FeatureType.RunwayShoulder],
+        styles: { doStroke: false, doFill: true, fillStyle: '#85451d' },
+      },
+      {
+        forFeatureTypes: [FeatureType.TaxiwayGuidanceLine, FeatureType.RunwayExitLine],
+        styles: { doStroke: true, doFill: false, strokeStyle: '#ffff00', lineWidth: 1.85 },
+      },
+      {
+        forFeatureTypes: [FeatureType.TaxiwayHoldingPosition],
+        styles: { doStroke: true, doFill: false, strokeStyle: '#ff2f00' },
       },
     ],
   },
@@ -97,53 +123,7 @@ export const LAYER_SPECIFICATIONS: Record<number, LayerSpecification> = {
     ],
   },
   2: {
-    // Layer 2: RUNWAY (with markings)
-    renderScale: 1.0,
-    zoomLevelVisibilities: [true, true, false, false, false],
-    styleRules: [
-      {
-        forFeatureTypes: [
-          FeatureType.RunwayElement,
-          FeatureType.RunwayIntersection,
-          FeatureType.BlastPad,
-          FeatureType.RunwayDisplacedArea,
-          FeatureType.Stopway,
-        ],
-        styles: { doStroke: false, doFill: true, fillStyle: 'gray' },
-      },
-      {
-        forFeatureTypes: [FeatureType.RunwayMarking],
-        styles: { doStroke: false, doFill: true, fillStyle: '#ffffff' },
-      },
-      {
-        forFeatureTypes: [FeatureType.RunwayShoulder],
-        styles: { doStroke: false, doFill: true, fillStyle: '#85451d' },
-      },
-    ],
-  },
-  3: {
-    // Layer 3: TAXIWAY GUIDANCE LINES (scaled width), HOLD SHORT LINES
-    renderScale: 1.0,
-    zoomLevelVisibilities: [true, true, false, false, false],
-    styleRules: [
-      {
-        forFeatureTypes: [FeatureType.TaxiwayGuidanceLine, FeatureType.RunwayExitLine],
-        styles: { doStroke: true, doFill: false, strokeStyle: '#ffff00', lineWidth: 1.85 },
-      },
-      {
-        forFeatureTypes: [FeatureType.TaxiwayHoldingPosition],
-        styles: { doStroke: true, doFill: false, strokeStyle: '#ff2f00' },
-      },
-    ],
-  },
-  4: {
-    // Layer 4: TAXIWAY GUIDANCE LINES (unscaled width)
-    renderScale: 0.25,
-    zoomLevelVisibilities: [false, false, true, true, true],
-    styleRules: [],
-  },
-  5: {
-    // Layer 5: RUNWAY (without markings)
+    // Layer 2: RUNWAYS (without markings)
     renderScale: 0.25,
     zoomLevelVisibilities: [false, false, true, true, true],
     styleRules: [
@@ -164,8 +144,8 @@ export const LAYER_SPECIFICATIONS: Record<number, LayerSpecification> = {
       },
     ],
   },
-  6: {
-    // Layer 6: STAND GUIDANCE LINES (scaled width)
+  3: {
+    // Layer 3: STAND GUIDANCE LINES (scaled)
     renderScale: 1.0,
     zoomLevelVisibilities: [true, false, false, false, false],
     styleRules: [
@@ -175,8 +155,8 @@ export const LAYER_SPECIFICATIONS: Record<number, LayerSpecification> = {
       },
     ],
   },
-  7: {
-    // Layer 7: DYNAMIC BTV CONTENT (BTV PATH, STOP LINES)
+  4: {
+    // Layer 4: DYNAMIC BTV CONTENT (BTV PATH, STOP LINES)
     renderScale: 1.0,
     zoomLevelVisibilities: [true, true, true, true, true],
     styleRules: [],

@@ -161,15 +161,9 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     FSComponent.createRef<HTMLCanvasElement>(),
     FSComponent.createRef<HTMLCanvasElement>(),
     FSComponent.createRef<HTMLCanvasElement>(),
-    FSComponent.createRef<HTMLCanvasElement>(),
-    FSComponent.createRef<HTMLCanvasElement>(),
-    FSComponent.createRef<HTMLCanvasElement>(),
   ];
 
   private readonly layerCanvasScaleContainerRefs = [
-    FSComponent.createRef<HTMLCanvasElement>(),
-    FSComponent.createRef<HTMLCanvasElement>(),
-    FSComponent.createRef<HTMLCanvasElement>(),
     FSComponent.createRef<HTMLCanvasElement>(),
     FSComponent.createRef<HTMLCanvasElement>(),
     FSComponent.createRef<HTMLCanvasElement>(),
@@ -214,9 +208,6 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     featureCollection([]), // Layer 2: RUNWAY (with markings)
     featureCollection([]), // Layer 3: TAXIWAY GUIDANCE LINES (unscaled width)
     featureCollection([]), // Layer 4: TAXIWAY GUIDANCE LINES (scaled width), HOLD SHORT LINES
-    featureCollection([]), // Layer 5: RUNWAY (without markings)
-    featureCollection([]), // Layer 6: STAND GUIDANCE LINES (scaled width)
-    featureCollection([]), // Layer 7: DYNAMIC BTV CONTENT (BTV PATH, STOP LINES)
   ];
 
   public readonly amdbClient = new NavigraphAmdbClient();
@@ -340,7 +331,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     this.labelManager,
     this.aircraftOnGround,
     this.projectedPpos,
-    this.layerCanvasRefs[7],
+    this.layerCanvasRefs[this.layerCanvasRefs.length - 1],
     this.canvasCentreX,
     this.canvasCentreY,
     this.zoomLevelIndex,
@@ -1154,6 +1145,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     }
 
     this.aircraftOnGround.set(
+      // FIXME use an enum...
       ![6, 7, 8, 9].includes(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', SimVarValueType.Number)),
     );
 
