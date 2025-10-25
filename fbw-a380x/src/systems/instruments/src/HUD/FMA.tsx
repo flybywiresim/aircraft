@@ -1980,10 +1980,16 @@ class D3Cell extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private readonly dh = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmDhRaw'));
 
+  private readonly flightPhase = ConsumerSubject.create(this.sub.on('fmgcFlightPhase'), 0);
+
   private readonly noDhSelected = this.fmEisDiscrete2.map((r) => r.bitValueOr(29, false));
 
   private readonly mdaDhMode = MappedSubject.create(
-    ([noDh, dh, mda]) => {
+    ([noDh, dh, mda, flightPhase]) => {
+      if (flightPhase == 7) {
+        return MdaMode.None;
+      }
+
       if (noDh) {
         return MdaMode.NoDh;
       }
@@ -2001,28 +2007,27 @@ class D3Cell extends DisplayComponent<{ bus: ArincEventBus }> {
     this.noDhSelected,
     this.dh,
     this.mda,
+    this.flightPhase,
   );
 
   private readonly mdaDhValueText = MappedSubject.create(
-    ([mdaMode, dh, mda]) => {
+    ([mdaMode, dh, mda, flightPhase]) => {
+      if (flightPhase == 7) {
+        return '';
+      }
       switch (mdaMode) {
         case MdaMode.Baro:
-          console.log('mda: baro');
           return Math.round(mda.value).toString().padStart(6, '\xa0');
         case MdaMode.Radio:
-          console.log('mda: radio');
           return Math.round(dh.value).toString().padStart(4, '\xa0');
-        case MdaMode.None:
-          console.log('mda: none');
-          return '';
         default:
-          console.log('mda: def');
           return '';
       }
     },
     this.mdaDhMode,
     this.dh,
     this.mda,
+    this.flightPhase,
   );
   private readonly DhModexPos = MappedSubject.create(([noDhSelected]) => (noDhSelected ? 800 : 735), this.noDhSelected);
 
