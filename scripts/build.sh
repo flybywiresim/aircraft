@@ -32,6 +32,8 @@ for arg in "$@"; do
   fi
 done
 
+
+
 #use ci config if github action
 if [ "${GITHUB_ACTIONS}" == "true" ]; then
   # select build tasks for assigned texture resolution
@@ -45,7 +47,7 @@ else
   if [ "${USE_4K_TEXTURES}" == "true" ]; then
     time npx igniter -r "^(?!.*ci-build)(?!.*8K).*" "${args[@]}"
   else
-    time npx igniter -r "^(?!.*ci-build)(?!.*4K).*" "${args[@]}"
+    FBW_TYPECHECK=1 time npx igniter -r "^(?!.*ci-build)(?!.*4K).*" "${args[@]}"
   fi
 fi
 
