@@ -25,8 +25,18 @@
 
         <!-- HUD -->
 
-        <Component ID="HUD">
-            <UseTemplate Name="FBW_A380X_Components_HUD" />
+        <Component ID="HUD_KNOB_INTEG">
+            <Parameters Type="Default">
+                <POTENTIOMETER>84</POTENTIOMETER>
+                <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
+            </Parameters>
+
+            <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
+                <NODE_ID>KNOB_EFIS_HUD_L_BRIGHTNESS</NODE_ID>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
+                <NODE_ID>KNOB_EFIS_HUD_R_BRIGHTNESS</NODE_ID>
+            </UseTemplate>
         </Component>
 
         <Component ID="Hud_Dome_Lights" >
