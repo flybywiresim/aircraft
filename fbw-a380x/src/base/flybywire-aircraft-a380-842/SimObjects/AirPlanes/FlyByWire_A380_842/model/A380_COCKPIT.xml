@@ -150,12 +150,12 @@
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                     <NODE_ID>HUD_L_TEX</NODE_ID>
                     <POTENTIOMETER>71</POTENTIOMETER>
-                    <EMISSIVE_CODE>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Number) 2 * (L:A320_Neo_HUD_L_POS) ! *</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Number) 10 * (L:A320_Neo_HUD_L_POS) ! *</EMISSIVE_CODE>
                 </UseTemplate>
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                     <NODE_ID>HUD_R_TEX</NODE_ID>
                     <POTENTIOMETER>72</POTENTIOMETER>
-                    <EMISSIVE_CODE>(L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Number) 2 * (L:A320_Neo_HUD_L_POS) ! *</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>(L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Number) 10 * (L:A320_Neo_HUD_L_POS) ! *</EMISSIVE_CODE>
                 </UseTemplate>
             </Component>
 
