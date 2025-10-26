@@ -145,8 +145,11 @@ pub(super) struct EnhancedGroundProximityWarningComputerRuntime {
     mode_4_too_low_terrain_voice_active: bool,
 
     // GPWS Mode 5 Logic
+    mode_5_time_to_next_aural: Duration,
+    mode_5_declutter_threshold_increase: f64,
     mode_5_glideslope_soft_voice_active: bool,
     mode_5_glideslope_hard_voice_active: bool,
+    mode_5_glideslope_lamp_active: bool,
 
     // Aural output management
     number_of_aural_warning_emissions: u32,
@@ -173,11 +176,12 @@ impl EnhancedGroundProximityWarningComputerRuntime {
     const MODE_3_ALERT_AREA_BREAKPOINTS: [f64; 2] = [8., 143.];
     const MODE_3_ALERT_AREA_VALUES: [f64; 2] = [30., 1500.];
 
-    //const MODE_5_SOFT_ALERT_BREAKPOINTS: [f64; 2] = [1.3, 2.7];
-    //const MODE_5_SOFT_ALERT_VALUES: [f64; 2] = [150., 50.];
-    //
-    //const MODE_5_HARD_ALERT_BREAKPOINTS: [f64; 2] = [2., 3.4];
-    //const MODE_5_HARD_ALERT_VALUES: [f64; 2] = [150., 50.];
+    const MODE_5_SOFT_ALERT_UPPER_BOUNDARY_BREAKPOINTS: [f64; 2] = [-500., 0.];
+    const MODE_5_SOFT_ALERT_UPPER_BOUNDARY_VALUES: [f64; 2] = [1000., 500.];
+    const MODE_5_SOFT_ALERT_BREAKPOINTS: [f64; 2] = [1.3, 2.7];
+    const MODE_5_SOFT_ALERT_VALUES: [f64; 2] = [150., 50.];
+    const MODE_5_HARD_ALERT_BREAKPOINTS: [f64; 2] = [2., 3.4];
+    const MODE_5_HARD_ALERT_VALUES: [f64; 2] = [150., 50.];
 
     pub fn new_running(on_ground: bool, flight_phase: FlightPhase) -> Self {
         Self::new(Duration::ZERO, on_ground, flight_phase)
@@ -240,8 +244,11 @@ impl EnhancedGroundProximityWarningComputerRuntime {
             mode_4_too_low_flaps_voice_active: false,
             mode_4_too_low_terrain_voice_active: false,
 
+            mode_5_time_to_next_aural: Duration::ZERO,
+            mode_5_declutter_threshold_increase: 0.,
             mode_5_glideslope_soft_voice_active: false,
             mode_5_glideslope_hard_voice_active: false,
+            mode_5_glideslope_lamp_active: false,
 
             number_of_aural_warning_emissions: 0,
             time_since_first_emission: Duration::ZERO,
@@ -287,7 +294,7 @@ impl EnhancedGroundProximityWarningComputerRuntime {
         self.update_mode_2_logic(context, adr, discrete_inputs, ils);
         self.update_mode_3_logic(context);
         self.update_mode_4_logic();
-        self.update_mode_5_logic(ils);
+        self.update_mode_5_logic(context, ils, ir, discrete_inputs);
 
         self.compute_lamp_output(discrete_inputs);
         self.compute_aural_output(context, discrete_inputs);
@@ -589,21 +596,21 @@ impl EnhancedGroundProximityWarningComputerRuntime {
             !aural_terrain_only && mode_2_boundary_met && self.mode_2_pull_up_preface_voice_emitted;
         self.mode_2_terrain_active = aural_terrain_only && mode_2_boundary_met;
 
-        println!(
-            "Mode 2: ra: {:.1} ft, ra_lim: {:.1} ft, closure rate: {:.1} ({:.1} raw) ft/min, lower boundary: {:.1} ft, upper boundary: {:.1} ft,
-            boundary met: {}, preface emitted: {}, preface active: {}, pull up active: {}, terrain active: {}",
-            self.ra_ft,
-            ra_ratelim,
-            filtered_closure_rate_ft,
-            closure_rate_ft_per_min_raw,
-            mode_2_lower_boundary_ft,
-            mode_2_upper_boundary_ft,
-            mode_2_boundary_met,
-            self.mode_2_pull_up_preface_voice_emitted,
-            self.mode_2_pull_up_preface_active,
-            self.mode_2_pull_up_active,
-            self.mode_2_terrain_active,
-        );
+        //println!(
+        //    "Mode 2: ra: {:.1} ft, ra_lim: {:.1} ft, closure rate: {:.1} ({:.1} raw) ft/min, lower boundary: {:.1} ft, upper boundary: {:.1} ft,
+        //    boundary met: {}, preface emitted: {}, preface active: {}, pull up active: {}, terrain active: {}",
+        //    self.ra_ft,
+        //    ra_ratelim,
+        //    filtered_closure_rate_ft,
+        //    closure_rate_ft_per_min_raw,
+        //    mode_2_lower_boundary_ft,
+        //    mode_2_upper_boundary_ft,
+        //    mode_2_boundary_met,
+        //    self.mode_2_pull_up_preface_voice_emitted,
+        //    self.mode_2_pull_up_preface_active,
+        //    self.mode_2_pull_up_active,
+        //    self.mode_2_terrain_active,
+        //);
     }
 
     fn update_mode_3_logic(&mut self, context: &UpdateContext) {
@@ -626,7 +633,147 @@ impl EnhancedGroundProximityWarningComputerRuntime {
 
     fn update_mode_4_logic(&mut self) {}
 
-    fn update_mode_5_logic(&mut self, ils: &impl InstrumentLandingSystemBus) {}
+    fn update_mode_5_logic(
+        &mut self,
+        context: &UpdateContext,
+        ils: &impl InstrumentLandingSystemBus,
+        ir: &impl InertialReferenceBus,
+        discrete_inputs: &TerrainAwarenessWarningSystemDiscreteInputs,
+    ) {
+        // 0.0875 is 1 dot
+        let loc_deviation_dots = ils.localizer_deviation().value().get::<ratio>() / 0.0775;
+        let gs_deviation_dots_fly_up = -ils.glideslope_deviation().value().get::<ratio>() / 0.0875;
+
+        let fls_selected = false; // TODO implement
+        let mix_loc_fls_selected = false; // TODO implement
+        let heading_difference = (ir.magnetic_track().value().get::<degree>()
+            - ils.runway_heading().value().get::<degree>()
+            + 540.)
+            % 360.
+            - 180.;
+        let mode_5_active = !fls_selected
+            && !mix_loc_fls_selected
+            && ils.glideslope_deviation().is_normal_operation()
+            && !discrete_inputs.glideslop_inhibit
+            && (discrete_inputs.landing_flaps || self.flight_phase == FlightPhase::Approach)
+            && (discrete_inputs.landing_gear_downlocked || false) // TODO Implement envelope modulation override
+            && (heading_difference.abs() < 50. || !ir.magnetic_track().is_normal_operation())
+            && (loc_deviation_dots.abs() < 2. || self.ra_ft < 500.);
+
+        let mode_5_hard_alert_boundary_met = interpolation(
+            &Self::MODE_5_HARD_ALERT_BREAKPOINTS,
+            &Self::MODE_5_HARD_ALERT_VALUES,
+            gs_deviation_dots_fly_up,
+        ) < self.ra_ft
+            && gs_deviation_dots_fly_up > 2.0
+            && self.ra_ft < 300.
+            && self.ra_ft > 50.
+            && mode_5_active;
+
+        let mode_5_soft_alert_upper_boundary_ft = interpolation(
+            &Self::MODE_5_SOFT_ALERT_UPPER_BOUNDARY_BREAKPOINTS,
+            &Self::MODE_5_SOFT_ALERT_UPPER_BOUNDARY_VALUES,
+            self.chosen_vertical_speed_ft_min,
+        );
+        let mode_5_soft_alert_light_boundary_met = interpolation(
+            &Self::MODE_5_SOFT_ALERT_BREAKPOINTS,
+            &Self::MODE_5_SOFT_ALERT_VALUES,
+            gs_deviation_dots_fly_up,
+        ) < self.ra_ft
+            && gs_deviation_dots_fly_up > 1.3
+            && self.ra_ft < mode_5_soft_alert_upper_boundary_ft
+            && self.ra_ft > 50.
+            && mode_5_active;
+
+        let soft_alert_aural_boundary_biased =
+            gs_deviation_dots_fly_up / (1. + self.mode_5_declutter_threshold_increase);
+        let mode_5_soft_alert_aural_boundary_met = interpolation(
+            &Self::MODE_5_SOFT_ALERT_BREAKPOINTS,
+            &Self::MODE_5_SOFT_ALERT_VALUES,
+            soft_alert_aural_boundary_biased,
+        ) < self.ra_ft
+            && soft_alert_aural_boundary_biased > 1.3
+            && self.ra_ft < mode_5_soft_alert_upper_boundary_ft
+            && self.ra_ft > 50.
+            && mode_5_active;
+
+        self.mode_5_glideslope_lamp_active = mode_5_active
+            && (mode_5_soft_alert_light_boundary_met || mode_5_hard_alert_boundary_met);
+
+        if self.pin_programs.audio_declutter_disable {
+            // Without audio declutter, the aural warnings are always active when in the alert area,
+            // with a pause between emissions based on RA and G/S deviation
+            self.mode_5_glideslope_soft_voice_active = mode_5_soft_alert_aural_boundary_met
+                && !mode_5_hard_alert_boundary_met
+                && self.mode_5_time_to_next_aural == Duration::ZERO;
+            self.mode_5_glideslope_hard_voice_active =
+                mode_5_hard_alert_boundary_met && self.mode_5_time_to_next_aural == Duration::ZERO;
+
+            let mode_5_aural_pause =
+                Duration::from_secs_f64(self.ra_ft / gs_deviation_dots_fly_up.abs() * 0.0067);
+            if !(mode_5_hard_alert_boundary_met || mode_5_soft_alert_aural_boundary_met) {
+                self.mode_5_time_to_next_aural = Duration::ZERO;
+            } else if self.mode_5_time_to_next_aural == Duration::ZERO
+                && (self.aural_output == AuralWarning::GlideslopeHard
+                    || self.aural_output == AuralWarning::GlideslopeSoft)
+                && self.number_of_aural_warning_emissions > 0
+            {
+                self.mode_5_time_to_next_aural = mode_5_aural_pause;
+            } else {
+                self.mode_5_time_to_next_aural = self
+                    .mode_5_time_to_next_aural
+                    .checked_sub(context.delta())
+                    .unwrap_or(Duration::ZERO);
+            }
+        } else {
+            // With audio declutter, the hard aural warning is always active in the hard alert area, with an emission pause of around 3s.
+            // The soft aural warning is only active once when the threshold is met, then a 20% increase in G/S deviation is required to
+            // emit a new alert.
+            self.mode_5_glideslope_soft_voice_active =
+                mode_5_soft_alert_aural_boundary_met && !mode_5_hard_alert_boundary_met;
+            self.mode_5_glideslope_hard_voice_active =
+                mode_5_hard_alert_boundary_met && self.mode_5_time_to_next_aural == Duration::ZERO;
+
+            if !mode_5_soft_alert_light_boundary_met {
+                self.mode_5_declutter_threshold_increase = 0.;
+            } else if self.mode_5_glideslope_soft_voice_active
+                && self.aural_output == AuralWarning::GlideslopeSoft
+                && self.number_of_aural_warning_emissions > 0
+            {
+                self.mode_5_declutter_threshold_increase += 0.2;
+            }
+
+            if !mode_5_hard_alert_boundary_met {
+                self.mode_5_time_to_next_aural = Duration::ZERO;
+            } else if self.mode_5_time_to_next_aural == Duration::ZERO
+                && self.aural_output == AuralWarning::GlideslopeHard
+                && self.number_of_aural_warning_emissions > 0
+            {
+                self.mode_5_time_to_next_aural = Duration::from_secs(3);
+            } else {
+                self.mode_5_time_to_next_aural = self
+                    .mode_5_time_to_next_aural
+                    .checked_sub(context.delta())
+                    .unwrap_or(Duration::ZERO);
+            }
+
+            //println!(
+            //    "Mode 5: ra: {:.1} ft, gs dev: {:.2} dots, mode 5 active: {}, soft light met: {}, soft aural met: {}, hard met: {},
+            //    soft_upper_bound: {:.1}ft, soft voice active: {}, hard voice active: {}, declutter increase: {:.1}, time to next aural: {:.1} s",
+            //    self.ra_ft,
+            //    gs_deviation_dots_fly_up,
+            //    mode_5_active,
+            //    mode_5_soft_alert_light_boundary_met,
+            //    mode_5_soft_alert_aural_boundary_met,
+            //    mode_5_hard_alert_boundary_met,
+            //    mode_5_soft_alert_upper_boundary_ft,
+            //    self.mode_5_glideslope_soft_voice_active,
+            //    self.mode_5_glideslope_hard_voice_active,
+            //    self.mode_5_declutter_threshold_increase,
+            //    self.mode_5_time_to_next_aural.as_secs_f64(),
+            //);
+        }
+    }
 
     fn compute_lamp_output(
         &mut self,
@@ -639,7 +786,8 @@ impl EnhancedGroundProximityWarningComputerRuntime {
                 && !discrete_inputs.gpws_inhibit;
             self.alert_lamp_activated = (self.mode_1_sinkrate_lamp_active
                 || self.mode_2_pull_up_preface_active
-                || self.mode_2_terrain_active)
+                || self.mode_2_terrain_active
+                || self.mode_5_glideslope_lamp_active)
                 && !discrete_inputs.gpws_inhibit;
         } else {
             self.warning_lamp_activated = (self.mode_1_sinkrate_lamp_active
@@ -648,7 +796,8 @@ impl EnhancedGroundProximityWarningComputerRuntime {
                 || self.mode_2_pull_up_preface_active
                 || self.mode_2_terrain_active)
                 && !discrete_inputs.gpws_inhibit;
-            self.alert_lamp_activated = false && !discrete_inputs.gpws_inhibit;
+            self.alert_lamp_activated =
+                self.mode_5_glideslope_lamp_active && !discrete_inputs.gpws_inhibit;
         }
     }
 

@@ -196,11 +196,11 @@ export class A32NX_GPWS {
         return soundList.retard;
       case 7:
         return soundList.dont_sink;
-      // These are not implemented in sound.xml.
+      // Placeholders, not implemented
       case 8:
-        return 'aural_glideslope_soft';
+        return soundList.alt_1000;
       case 9:
-        return 'aural_glideslope_hard';
+        return soundList.alt_2000;
       default:
         return '';
     }
