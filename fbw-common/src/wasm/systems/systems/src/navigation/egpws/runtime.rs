@@ -290,7 +290,7 @@ impl EnhancedGroundProximityWarningComputerRuntime {
         self.update_general_logic(context, adr, ir);
 
         // Update GPWS Basic mode logics
-        self.update_mode_1_logic(context);
+        self.update_mode_1_logic(context, ils);
         self.update_mode_2_logic(context, adr, discrete_inputs, ils);
         self.update_mode_3_logic(context);
         self.update_mode_4_logic();
@@ -439,10 +439,22 @@ impl EnhancedGroundProximityWarningComputerRuntime {
         self.terr_sys_fault = false;
     }
 
-    fn update_mode_1_logic(&mut self, context: &UpdateContext) {
+    fn update_mode_1_logic(
+        &mut self,
+        context: &UpdateContext,
+        ils: &impl InstrumentLandingSystemBus,
+    ) {
         // TODO implement steep approach logic
-        // TODO implement G/S deviation bias if audio declutter PP is set
-        let biased_vertical_speed = self.chosen_vertical_speed_ft_min;
+        // If the audio declutter is enabled, bias vertical speed when above the beam to remove unnecessary warnings
+        // when repositioning to the beam.
+        let biased_vertical_speed = if self.pin_programs.audio_declutter_disable {
+            self.chosen_vertical_speed_ft_min
+        } else {
+            self.chosen_vertical_speed_ft_min
+                + 300.
+                    * (self.ra_ft / 100.).clamp(0., 1.)
+                    * (ils.glideslope_deviation().value().get::<ratio>() / 0.175).clamp(0., 1.)
+        };
 
         let mode_1_alert_boundary_met = interpolation(
             &Self::MODE_1_ALERT_AREA_BREAKPOINTS,
@@ -456,11 +468,11 @@ impl EnhancedGroundProximityWarningComputerRuntime {
         let mode_1_warning_boundary_met = interpolation(
             &Self::MODE_1_WARNING_AREA_BREAKPOINTS,
             &Self::MODE_1_WARNING_AREA_VALUES,
-            biased_vertical_speed,
+            self.chosen_vertical_speed_ft_min,
         ) >= self.ra_ft
             && self.ra_ft > 10.
             && self.ra_ft < 2450.
-            && biased_vertical_speed < -1482.;
+            && self.chosen_vertical_speed_ft_min < -1482.;
 
         self.mode_1_sinkrate_lamp_active = self.mode_1_sinkrate_conf_node_2.update(
             self.mode_1_sinkrate_conf_node_1
