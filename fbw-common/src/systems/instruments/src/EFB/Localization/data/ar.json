@@ -92,12 +92,14 @@
   },
   "Dispatch": {
     "Ofp": {
-      "ImportSimBriefData": "استيراد بيانات SimBrief",
       "TT": {
         "IncreaseFontSize": "زيادة حجم الخط",
+        "NextLoadsheetSection": "Next loadsheet section",
+        "PreviousLoadsheetSection": "Previous loadsheet section",
         "ReduceFontSize": "تقليل حجم الخط"
       },
       "Title": "خطة الطيران التشغيلية\n",
+      "UnavailableLoadsheetSection": "Info not available or section not enabled in Simbrief.",
       "YouHaveNotYetImportedAnySimBriefData": "لم تستورد بعد أي بيانات SimBrief.\n"
     },
     "Overview": {
@@ -287,6 +289,7 @@
   "Performance": {
     "Data": "البيانات",
     "Landing": {
+      "Airport": "Airport",
       "AirportIcao": "معلومات ICAO للمطار ",
       "ApproachSpeed": "سرعة الاقتراب ",
       "ApproachSpeedUnit": "عقدة",
@@ -295,8 +298,10 @@
       "Clear": "مسح",
       "DropDownNo": "لا",
       "DropDownYes": "نعم",
+      "EnterManually": "Enter Manually",
       "FillDataFrom": "تعبئة البيانات من",
       "FlapsConfiguration": "Flaps Configuration",
+      "LandingWeight": "Landing Weight",
       "Low": "منخفض",
       "MaximumManual": "الحد الأقصى اليدوي ",
       "Medium": "وسط",
@@ -305,6 +310,7 @@
       "OverweightProcedure": "إجراء زيادة الوزن",
       "Qnh": "ضغط الجو QNH",
       "ReverseThrust": "الدفع العكسي",
+      "Runway": "Runway",
       "RunwayAltitude": "ارتفاع المدرج",
       "RunwayAltitudeUnit": "الارتفاع فوق سطح البحر بالقدم",
       "RunwayCondition": "حالة المدرج",
@@ -316,6 +322,8 @@
         "MediumPoor": "متوسط سيء (2)",
         "Poor": "سيء (1)"
       },
+      "RunwayElevation": "Runway Elevation",
+      "RunwayElevationUnit": "ft AMSL",
       "RunwayHeading": "اتجاه المدرج",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "طول المدرج",
@@ -331,6 +339,7 @@
       "UnitFt": "قدم",
       "UnitMeter": "م",
       "Weight": "الوزن",
+      "Wind": "Wind",
       "WindDirection": "• اتجاه الرياح",
       "WindDirectionUnit": "°",
       "WindMagnitude": "كثافة الرياح",
@@ -396,6 +405,8 @@
       },
       "RunwayElevation": "Runway Elevation",
       "RunwayElevationUnit": "ft",
+      "RunwayHeading": "Runway Heading",
+      "RunwayHeadingUnit": "°",
       "RunwayLengthUnitFt": "ft",
       "RunwayLengthUnitMeter": "m",
       "RunwaySlope": "Runway Slope",
@@ -556,6 +567,8 @@
       "AlignAdirs": "Instantly align ADIRS",
       "AutoBrightness": "Turn Auto Brightness On/Off",
       "Brightness": "Set flyPad brightness",
+      "CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+      "CabinLighting": "Set Cabin Lighting",
       "FinishBoarding": "Instantly finish boarding",
       "OnScreenKeyboard": "Turn OnScreen Keyboard On/Off",
       "PauseAtTod": "Arm or Disarm pause at Top of Descent",
@@ -567,8 +580,6 @@
     },
     "Title": "Quick Controls"
   },
-  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
-  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "حول"
@@ -644,18 +655,17 @@
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "فصل الحارث عن مدخلات الدفة",
-      "SyncEfis": "Sync EFIS and audio controls between Captain and FO",
+      "SyncEfis": "Sync EFIS and Audio Controls Between Captain and FO",
       "Title": "الواقعية"
     },
     "SimOptions": {
       "Active": "نشط",
       "Auto": "تلقائي",
       "Both": "Synchronized",
+      "CabinAutoBrightness": "Auto Cabin Lighting",
+      "CabinManualBrightness": "Cabin Lighting Brightness",
       "Calibrate": "تعيّر ",
-      "Captain": "Captain",
-      "CockpitSeatUsedToControl": "Cockpit Seat Used To Control",
       "ConesEnabled": "اقماع الامان",
-      "Copilot": "Copilot",
       "DefaultBarometerUnit": "وحدة البارومتر الافتراضية",
       "DynamicRegistrationDecal": "ملصق تسجيل ديناميكي",
       "EnableSimBridge": "تمكين اتصال خادم MCDU (إلغاء التنشيط التلقائي بعد 5 دقائق إذا لم يكن هناك اتصال ناجح)",
@@ -698,6 +708,7 @@
         "SettingTitle": "Navigraph Account Link",
         "SubscriptionStatus": {
           "None": "None",
+          "Standard": "Navigraph Standard",
           "Unknown": "Unknown",
           "Unlimited": "Navigraph Unlimited"
         },
@@ -705,6 +716,7 @@
       },
       "OverrideSimBriefUserID": "Override SimBrief User ID",
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
+      "SimbriefLoadsheetNavigationEnabled": "Simbrief Loadsheet Navigation",
       "TT": {
         "OverrideSimBriefUserID": "Alternative SimBrief user ID to use instead of the linked Navigraph Account"
       },
@@ -736,6 +748,9 @@
       "TogaOnAxis": "TOGA On Axis"
     },
     "Title": "الإعدادات",
+    "Troubleshooting": {
+      "Title": "Troubleshooting"
+    },
     "Unrealistic": "غير واقعي",
     "flyPad": {
       "AutoBrightness": "الإضاءة التلقائية",
@@ -744,7 +759,6 @@
       "Blue": "أزرق",
       "Brightness": "السطوع",
       "Dark": "داكن",
-      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "اللغة",
       "Light": "فاتح",
       "Local": "محلي",
@@ -761,8 +775,6 @@
       "UtcAndLocal": "التوقيت المحلي و العالمي"
     }
   },
-  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
-  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "الاقتراب ",
     "Aug": "أغسطس",

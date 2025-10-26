@@ -47,8 +47,8 @@ class A380FacComputer final
     real_T pY;
     real_T pU;
     real_T takeoff_config;
-    real_T takeoff_config_c;
-    real_T takeoff_config_g;
+    real_T takeoff_config_k;
+    real_T takeoff_config_a;
     real_T sAlphaFloor;
     uint8_T is_active_c15_A380FacComputer;
     uint8_T is_c15_A380FacComputer;

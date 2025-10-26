@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import React, { SVGProps, FC } from 'react';
 
 export const Layer: FC<SVGProps<SVGGElement> & { angle?: number }> = (props) => (
