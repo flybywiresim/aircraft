@@ -140,9 +140,14 @@ pub(super) struct EnhancedGroundProximityWarningComputerRuntime {
     mode_3_dont_sink_voice_active: bool,
 
     // GPWS Mode 4 Logic
+    mode_4_c_filter_value: f64,
+    mode_4_a_alert_upper_boundary: f64,
+    mode_4_c_declutter_threshold_increase: f64,
+
     mode_4_too_low_gear_voice_active: bool,
     mode_4_too_low_flaps_voice_active: bool,
     mode_4_too_low_terrain_voice_active: bool,
+    mode_4_lamp_active: bool,
 
     // GPWS Mode 5 Logic
     mode_5_cancel_active: bool,
@@ -176,6 +181,11 @@ impl EnhancedGroundProximityWarningComputerRuntime {
 
     const MODE_3_ALERT_AREA_BREAKPOINTS: [f64; 2] = [8., 143.];
     const MODE_3_ALERT_AREA_VALUES: [f64; 2] = [30., 1500.];
+
+    const MODE_4_FILTER_TIME_CONSTANT: f64 = 15.; // Seconds. The filter will charge in 20s from 0 to 220, for a step input of 300.
+                                                  // => Time constant = 15s
+    const MODE_4_A_ALERT_AREA_BREAKPOINTS: [f64; 2] = [190., 250.];
+    const MODE_4_A_ALERT_AREA_VALUES: [f64; 2] = [500., 1000.];
 
     const MODE_5_SOFT_ALERT_UPPER_BOUNDARY_BREAKPOINTS: [f64; 2] = [-500., 0.];
     const MODE_5_SOFT_ALERT_UPPER_BOUNDARY_VALUES: [f64; 2] = [1000., 500.];
@@ -241,10 +251,15 @@ impl EnhancedGroundProximityWarningComputerRuntime {
             mode_3_lamp_active: false,
             mode_3_dont_sink_voice_active: false,
 
+            mode_4_c_filter_value: 0.,
+            mode_4_a_alert_upper_boundary: 500.,
+            mode_4_c_declutter_threshold_increase: 0.,
             mode_4_too_low_gear_voice_active: false,
             mode_4_too_low_flaps_voice_active: false,
             mode_4_too_low_terrain_voice_active: false,
+            mode_4_lamp_active: false,
 
+            mode_5_cancel_active: false,
             mode_5_time_to_next_aural: Duration::ZERO,
             mode_5_declutter_threshold_increase: 0.,
             mode_5_glideslope_soft_voice_active: false,
@@ -294,7 +309,7 @@ impl EnhancedGroundProximityWarningComputerRuntime {
         self.update_mode_1_logic(context, ils);
         self.update_mode_2_logic(context, adr, discrete_inputs, ils);
         self.update_mode_3_logic(context);
-        self.update_mode_4_logic();
+        self.update_mode_4_logic(context, adr, discrete_inputs);
         self.update_mode_5_logic(context, ils, ir, discrete_inputs);
 
         self.compute_lamp_output(discrete_inputs);
@@ -343,16 +358,16 @@ impl EnhancedGroundProximityWarningComputerRuntime {
         let approach_to_takeoff_condition = self.ra_ft < 245. && true;
 
         if self.flight_phase == FlightPhase::Takeoff && !self.on_ground {
+            // TODO change integrator to use alt above field, doesn't make sense as is
             self.takeoff_to_approach_condition_integrator +=
                 self.chosen_altitude_ft.max(0.).min(700.) * context.delta().as_secs_f64();
         } else {
             self.takeoff_to_approach_condition_integrator = 0.;
         }
 
-        // TODO Implement second condition, and change integrator to use alt above field, doesn't make sense as is
         let takeoff_to_approach_condition = (!self.pin_programs.audio_declutter_disable
             && self.takeoff_to_approach_condition_integrator > 84_700.)
-            || false;
+            || self.mode_4_c_filter_value > self.mode_4_a_alert_upper_boundary;
 
         if self.flight_phase == FlightPhase::Takeoff && takeoff_to_approach_condition {
             self.flight_phase = FlightPhase::Approach;
@@ -640,11 +655,76 @@ impl EnhancedGroundProximityWarningComputerRuntime {
             altitude_loss_ft,
         ) < self.ra_ft
             && altitude_loss_ft > 8.
-            && self.ra_ft > 30.;
+            && self.ra_ft > 30.
+            && self.ra_ft < 1500.;
         self.mode_3_lamp_active = mode_3_boundary_met;
     }
 
-    fn update_mode_4_logic(&mut self) {}
+    fn update_mode_4_logic(
+        &mut self,
+        context: &UpdateContext,
+        adr: &impl AirDataReferenceBus,
+        discrete_inputs: &TerrainAwarenessWarningSystemDiscreteInputs,
+    ) {
+        // Mode 4A Logic
+        self.mode_4_a_alert_upper_boundary = interpolation(
+            &Self::MODE_4_A_ALERT_AREA_BREAKPOINTS,
+            &Self::MODE_4_A_ALERT_AREA_VALUES,
+            adr.computed_airspeed().value().get::<knot>(),
+        );
+
+        // Mode 4C Logic
+        if !self.on_ground && self.flight_phase == FlightPhase::Takeoff {
+            // When enabled, update a low-pass filter towards 0.75 * RA. This filter can only
+            // increase in value. This filter is further used for flight phase switching logic
+            self.mode_4_c_filter_value += ((0.75 * self.ra_ft - self.mode_4_c_filter_value)
+                * (1.
+                    - std::f64::consts::E
+                        .powf(-context.delta_as_secs_f64() / Self::MODE_4_FILTER_TIME_CONSTANT)))
+            .max(0.);
+        } else {
+            self.mode_4_c_filter_value = 0.;
+        }
+
+        let mode_4_c_boundary = self
+            .mode_4_c_filter_value
+            .clamp(30., self.mode_4_a_alert_upper_boundary);
+
+        let mode_4_c_enabled = !self.on_ground
+            && self.flight_phase == FlightPhase::Takeoff
+            && discrete_inputs.landing_flaps
+            && discrete_inputs.landing_gear_downlocked
+            && self.ra_ft < 1000.;
+
+        self.mode_4_lamp_active =
+            mode_4_c_enabled && mode_4_c_boundary >= self.ra_ft && self.ra_ft > 100.;
+
+        // If the audio declutter is disabled, the aural warning is always active when in the alert area.
+        // Otherwise, increase the declutter threshold (ratcheting) once the aural warning has played once.
+        if self.pin_programs.audio_declutter_disable || !self.mode_4_lamp_active {
+            self.mode_4_c_declutter_threshold_increase = 0.;
+        } else if self.mode_4_too_low_terrain_voice_active
+            && self.aural_output == AuralWarning::TooLowTerrain
+            && self.number_of_aural_warning_emissions > 0
+        {
+            self.mode_4_c_declutter_threshold_increase += 0.2;
+        }
+
+        let biased_ra_ft = self.ra_ft * (1. + self.mode_4_c_declutter_threshold_increase);
+        self.mode_4_too_low_terrain_voice_active |=
+            mode_4_c_enabled && mode_4_c_boundary >= biased_ra_ft && biased_ra_ft > 100.;
+
+        println!("Mode 4: ra: {:.1} ft, filter: {:.1} ft, upper boundary: {:.1} ft, biased ra: {:.1} ft, enabled: {},
+        lamp active: {}, too low terrain voice active: {}",
+                self.ra_ft,
+                self.mode_4_c_filter_value,
+                self.mode_4_a_alert_upper_boundary,
+                biased_ra_ft,
+                mode_4_c_enabled,
+                self.mode_4_lamp_active,
+                self.mode_4_too_low_terrain_voice_active,
+            );
+    }
 
     fn update_mode_5_logic(
         &mut self,
@@ -808,14 +888,16 @@ impl EnhancedGroundProximityWarningComputerRuntime {
             self.alert_lamp_activated = (self.mode_1_sinkrate_lamp_active
                 || self.mode_2_pull_up_preface_active
                 || self.mode_2_terrain_active
-                || self.mode_5_glideslope_lamp_active)
+                || self.mode_5_glideslope_lamp_active
+                || self.mode_4_lamp_active)
                 && !discrete_inputs.gpws_inhibit;
         } else {
             self.warning_lamp_activated = (self.mode_1_sinkrate_lamp_active
                 || self.mode_1_pull_up_active
                 || self.mode_2_pull_up_active
                 || self.mode_2_pull_up_preface_active
-                || self.mode_2_terrain_active)
+                || self.mode_2_terrain_active
+                || self.mode_4_lamp_active)
                 && !discrete_inputs.gpws_inhibit;
             self.alert_lamp_activated =
                 self.mode_5_glideslope_lamp_active && !discrete_inputs.gpws_inhibit;
