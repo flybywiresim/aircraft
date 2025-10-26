@@ -32,7 +32,6 @@ pub struct MultiModeReceiverShim {
     nav_valid: bool,
     loc_valid: bool,
     localizer_course: Angle,
-    localizer_magvar: Angle,
     localizer_deviation: Angle,
     glideslope_valid: bool,
     glideslope_deviation: Angle,
@@ -41,7 +40,6 @@ pub struct MultiModeReceiverShim {
     nav_valid_id: VariableIdentifier,
     loc_valid_id: VariableIdentifier,
     localizer_course_id: VariableIdentifier,
-    localizer_magvar_id: VariableIdentifier,
     localizer_deviation_id: VariableIdentifier,
     glideslope_valid_id: VariableIdentifier,
     glideslope_deviation_id: VariableIdentifier,
@@ -53,7 +51,6 @@ impl MultiModeReceiverShim {
             nav_valid: false,
             loc_valid: false,
             localizer_course: Angle::default(),
-            localizer_magvar: Angle::default(),
             localizer_deviation: Angle::default(),
             glideslope_valid: false,
             glideslope_deviation: Angle::default(),
@@ -62,7 +59,6 @@ impl MultiModeReceiverShim {
             nav_valid_id: context.get_identifier("NAV HAS NAV:3".to_owned()),
             loc_valid_id: context.get_identifier("NAV HAS LOC:3".to_owned()),
             localizer_course_id: context.get_identifier("A32NX_FM_LS_COURSE".to_owned()),
-            localizer_magvar_id: context.get_identifier("NAV MAGVAR:3".to_owned()),
             localizer_deviation_id: context.get_identifier("NAV RADIAL ERROR:3".to_owned()),
             glideslope_valid_id: context.get_identifier("NAV HAS GLIDE SLOPE:3".to_owned()),
             glideslope_deviation_id: context.get_identifier("NAV GLIDE SLOPE ERROR:3".to_owned()),
@@ -102,7 +98,7 @@ impl MultiModeReceiverShim {
 impl InstrumentLandingSystemBus for MultiModeReceiverShim {
     fn runway_heading(&self) -> Arinc429Word<Angle> {
         Arinc429Word::new(
-            Self::normalize_360(self.localizer_course - self.localizer_magvar),
+            self.localizer_course,
             if self.loc_valid {
                 SignStatus::NormalOperation
             } else {
@@ -154,7 +150,6 @@ impl SimulationElement for MultiModeReceiverShim {
         self.nav_valid = reader.read(&self.nav_valid_id);
         self.loc_valid = reader.read(&self.loc_valid_id);
         self.localizer_course = reader.read(&self.localizer_course_id);
-        self.localizer_magvar = reader.read(&self.localizer_magvar_id);
         self.localizer_deviation = reader.read(&self.localizer_deviation_id);
         self.glideslope_valid = reader.read(&self.glideslope_valid_id);
         self.glideslope_deviation = reader.read(&self.glideslope_deviation_id);
