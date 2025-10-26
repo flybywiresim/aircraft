@@ -1705,9 +1705,13 @@ impl InertialReference {
         simulator_data.latitude.abs().get::<degree>() <= Self::MAX_LATITUDE_FOR_ALIGNMENT
     }
 
-    fn is_instant_boarding_in_progress(simulator_data: AdirsSimulatorData) -> bool {
-        simulator_data.is_boarding_started_by_user
-            && simulator_data.boarding_rate == BoardingRate::Instant
+    fn is_instant_or_fast_boarding_in_progress(simulator_data: AdirsSimulatorData) -> bool {
+        match simulator_data.boarding_rate {
+            BoardingRate::Instant | BoardingRate::Fast => {
+                simulator_data.is_boarding_started_by_user
+            }
+            _ => false,
+        }
     }
 
     fn update_remaining_align_duration(
@@ -1729,8 +1733,8 @@ impl InertialReference {
                 .saturating_sub(context.delta());
         }
 
-        // work around instant boarding upsetting the body velocity and interrupting IR alignment
-        if InertialReference::is_instant_boarding_in_progress(simulator_data) {
+        // work around instant/fast boarding upsetting the body velocity and interrupting IR alignment
+        if InertialReference::is_instant_or_fast_boarding_in_progress(simulator_data) {
             self.excess_motion_inhibit_time = Some(InertialReference::EXCESS_MOTION_INHIBIT_TIME);
         } else if let Some(excess_motion_inhibit_time) = self.excess_motion_inhibit_time {
             self.excess_motion_inhibit_time =
@@ -3420,9 +3424,42 @@ mod tests {
     }
 
     #[rstest]
+    fn adirs_detects_excess_motion_during_alignment_with_fast_boarding_selected() {
+        let mut test_bed = all_adirus_unaligned_test_bed_with()
+            .boarding_rate_of(BoardingRate::Fast)
+            .body_lateral_velocity_of(Velocity::new::<foot_per_second>(0.1))
+            .ir_mode_selector_set_to(1, InertialReferenceMode::Navigation);
+        test_bed.run();
+        test_bed.run();
+
+        let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word(1).value());
+        assert_eq!(
+            maint_word_flags.unwrap() & IrMaintFlags::EXCESS_MOTION_ERROR,
+            IrMaintFlags::EXCESS_MOTION_ERROR
+        );
+    }
+
+    #[rstest]
     fn adirs_does_not_detect_excess_motion_during_instant_boarding() {
         let mut test_bed = all_adirus_unaligned_test_bed_with()
             .boarding_rate_of(BoardingRate::Instant)
+            .boarding_started_of(true)
+            .body_lateral_velocity_of(Velocity::new::<foot_per_second>(0.1))
+            .ir_mode_selector_set_to(1, InertialReferenceMode::Navigation);
+        test_bed.run();
+        test_bed.run();
+
+        let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word(1).value());
+        assert_eq!(
+            maint_word_flags.unwrap() & IrMaintFlags::EXCESS_MOTION_ERROR,
+            IrMaintFlags::empty()
+        );
+    }
+
+    #[rstest]
+    fn adirs_does_not_detect_excess_motion_during_fast_boarding() {
+        let mut test_bed = all_adirus_unaligned_test_bed_with()
+            .boarding_rate_of(BoardingRate::Fast)
             .boarding_started_of(true)
             .body_lateral_velocity_of(Velocity::new::<foot_per_second>(0.1))
             .ir_mode_selector_set_to(1, InertialReferenceMode::Navigation);
