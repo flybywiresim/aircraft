@@ -100,13 +100,10 @@ export class FlightPathVector extends DisplayComponent<{
         }),
     );
     this.subscriptions.push(
-      this.sub
-        .on('pitchAr')
-        .whenChanged()
-        .handle((p) => {
-          this.data.pitch.setWord(p.rawWord);
-          this.needsUpdate = true;
-        }),
+      this.sub.on('pitchAr').handle((p) => {
+        this.data.pitch.setWord(p.rawWord);
+        this.needsUpdate = true;
+      }),
     );
     this.subscriptions.push(this.sub.on('realTime').handle(this.onFrameUpdate.bind(this)));
   }

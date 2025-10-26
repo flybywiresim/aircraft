@@ -78,9 +78,10 @@ export class FlightPathDirector extends DisplayComponent<{
 
   private readonly flightPathDirector = ConsumerSubject.create(this.sub.on('flightPathDirector').whenChanged(), '');
   private readonly crosswindMode = ConsumerSubject.create(this.sub.on('cWndMode').whenChanged(), false);
+  private readonly flightPase = ConsumerSubject.create(this.sub.on('fmgcFlightPhase').whenChanged(), 0);
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-    this.subscriptions.push(this.flightPathDirector, this.crosswindMode);
+    this.subscriptions.push(this.flightPathDirector, this.crosswindMode, this.flightPase);
     const isCaptainSide = getDisplayIndex() === 1;
 
     this.subscriptions.push(
@@ -177,20 +178,18 @@ export class FlightPathDirector extends DisplayComponent<{
       }),
     );
 
-    this.subscriptions.push(
-      this.sub.on('realTime').handle((_t) => {
-        this.handlePath();
-        if (this.needsUpdate && this.isVisible.get()) {
-          this.moveBird();
-        }
-      }),
-    );
+    this.subscriptions.push(this.sub.on('realTime').handle(this.onFrameUpdate.bind(this)));
 
     this.props.isAttExcessive.sub((_a) => {
       this.needsUpdate = true;
     }, true);
   }
-
+  private onFrameUpdate(_realTime: number): void {
+    this.handlePath();
+    if (this.needsUpdate && this.isVisible.get()) {
+      this.moveBird();
+    }
+  }
   private handlePath() {
     const rollFdInvalid =
       this.data.rollFdCommand.get().isFailureWarning() || this.data.rollFdCommand.get().isNoComputedData();
@@ -227,37 +226,22 @@ export class FlightPathDirector extends DisplayComponent<{
       //FD Smoothing when close to FPV
       //roll
       const FDRollOrder = this.data.rollFdCommand.get().value;
-      let FDRollOrder2 = FDRollOrder;
-      let cx, cy, r;
-      cx = -30;
-      cy = 90;
-      r = 94.86835;
-      if (FDRollOrder >= 0) {
-        FDRollOrder2 = cy - Math.sqrt(r ** 2 - (FDRollOrder - cx) ** 2);
-      } else {
-        FDRollOrder2 = -cy + Math.sqrt(r ** 2 - (FDRollOrder + cx) ** 2);
-      }
-      const FDRollOrderLim = Math.max(Math.min(FDRollOrder2, 45), -45);
-
-      //pitch
+      const FDRollOrderLim =
+        this.flightPase.get() === 5
+          ? Math.max(Math.min(FDRollOrder, 2.5), -2.5)
+          : Math.max(Math.min(FDRollOrder, 45), -45);
+      // //pitch
       const FDPitchOrder = this.data.pitchFdCommand.get().value; //in degrees on pitch scale
-      let FDPitchOrder2 = FDRollOrder;
-
-      cx = -10;
-      cy = 18;
-      r = 20.5913;
-      if (FDPitchOrder >= 0) {
-        FDPitchOrder2 = cy - Math.sqrt(r ** 2 - (FDPitchOrder - cx) ** 2);
-      } else {
-        FDPitchOrder2 = -cy + Math.sqrt(r ** 2 - (FDPitchOrder + cx) ** 2);
-      }
-      const FDPitchOrderLim = Math.max(Math.min(FDPitchOrder2, 5), -5);
+      const FDPitchOrderLim =
+        this.flightPase.get() === 5
+          ? Math.max(Math.min(FDPitchOrder, 2.5), -2.5)
+          : Math.max(Math.min(FDPitchOrder, 7.5), -10);
 
       const xOffsetFpv = daLimConv * rollCos - pitchSubFpaConv * rollSin;
       const yOffsetFpv = pitchSubFpaConv * rollCos + daLimConv * rollSin;
 
       const xOffset = xOffsetFpv + FDRollOrderLim * 13;
-      const yOffset = yOffsetFpv + FDPitchOrderLim * 13 + rollSin * (xOffset - xOffsetFpv);
+      const yOffset = yOffsetFpv + FDPitchOrderLim * 37 + rollSin * (xOffset - xOffsetFpv);
 
       //set lateral limit for fdCue
       if (this.crosswindMode.get() === false) {
