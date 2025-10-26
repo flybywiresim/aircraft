@@ -145,6 +145,7 @@ pub(super) struct EnhancedGroundProximityWarningComputerRuntime {
     mode_4_too_low_terrain_voice_active: bool,
 
     // GPWS Mode 5 Logic
+    mode_5_cancel_active: bool,
     mode_5_time_to_next_aural: Duration,
     mode_5_declutter_threshold_increase: f64,
     mode_5_glideslope_soft_voice_active: bool,
@@ -652,6 +653,13 @@ impl EnhancedGroundProximityWarningComputerRuntime {
         ir: &impl InertialReferenceBus,
         discrete_inputs: &TerrainAwarenessWarningSystemDiscreteInputs,
     ) {
+        // Not sure if this is only when a G/S warning is active, or always
+        if discrete_inputs.gs_cancel && self.ra_ft < 2000. {
+            self.mode_5_cancel_active = true;
+        } else if self.ra_ft >= 2000. || self.ra_ft < 30. {
+            self.mode_5_cancel_active = false;
+        }
+
         // 0.0875 is 1 dot
         let loc_deviation_dots = ils.localizer_deviation().value().get::<ratio>() / 0.0775;
         let gs_deviation_dots_fly_up = -ils.glideslope_deviation().value().get::<ratio>() / 0.0875;
@@ -669,6 +677,7 @@ impl EnhancedGroundProximityWarningComputerRuntime {
             && !discrete_inputs.glideslop_inhibit
             && (discrete_inputs.landing_flaps || self.flight_phase == FlightPhase::Approach)
             && (discrete_inputs.landing_gear_downlocked || false) // TODO Implement envelope modulation override
+            && !self.mode_5_cancel_active
             && (heading_difference.abs() < 50. || !ir.magnetic_track().is_normal_operation())
             && (loc_deviation_dots.abs() < 2. || self.ra_ft < 500.);
 
