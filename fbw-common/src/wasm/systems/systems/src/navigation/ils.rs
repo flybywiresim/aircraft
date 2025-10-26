@@ -4,7 +4,8 @@ use crate::{
 };
 use uom::si::{
     angle::degree,
-    f64::{Angle, Frequency},
+    f64::{Angle, Frequency, Ratio},
+    ratio::ratio,
 };
 
 pub trait InstrumentLandingSystemBus {
@@ -12,10 +13,14 @@ pub trait InstrumentLandingSystemBus {
     fn runway_heading(&self) -> Arinc429Word<Angle>;
     /// Label 033
     fn ils_frequency(&self) -> Arinc429Word<Frequency>;
-    /// Label 173
-    fn localizer_deviation(&self) -> Arinc429Word<Angle>;
-    /// Label 174
-    fn glideslope_deviation(&self) -> Arinc429Word<Angle>;
+    /// Label 173, in DDM (difference in depth of modulation).
+    /// 0.155DDM is full scale deflection (two dots) => one dot = 0.0775DDM
+    /// One dot = 0.8° on the localizer scale according to FCOM, but the exact conversion depends on runway length.
+    fn localizer_deviation(&self) -> Arinc429Word<Ratio>;
+    /// Label 174, in DDM (difference in depth of modulation).
+    /// 0.175DDM is full scale deflection (two dots) => one dot = 0.0875DDM
+    /// One dot = 0.4° on the glideslope scale according to FCOM
+    fn glideslope_deviation(&self) -> Arinc429Word<Ratio>;
     /// Label 263
     fn ground_station_ident_1(&self) -> Arinc429Word<u32>;
     /// Label 264
@@ -115,9 +120,10 @@ impl InstrumentLandingSystemBus for MultiModeReceiverShim {
             },
         )
     }
-    fn localizer_deviation(&self) -> Arinc429Word<Angle> {
+    fn localizer_deviation(&self) -> Arinc429Word<Ratio> {
         Arinc429Word::new(
-            self.get_corrected_localizer_deviation(),
+            self.get_corrected_localizer_deviation() / Angle::new::<degree>(0.8)
+                * Ratio::new::<ratio>(0.0775),
             if self.loc_valid {
                 SignStatus::NormalOperation
             } else {
@@ -125,9 +131,9 @@ impl InstrumentLandingSystemBus for MultiModeReceiverShim {
             },
         )
     }
-    fn glideslope_deviation(&self) -> Arinc429Word<Angle> {
+    fn glideslope_deviation(&self) -> Arinc429Word<Ratio> {
         Arinc429Word::new(
-            self.glideslope_deviation,
+            self.glideslope_deviation / Angle::new::<degree>(0.4) * Ratio::new::<ratio>(0.0875),
             if self.glideslope_valid {
                 SignStatus::NormalOperation
             } else {

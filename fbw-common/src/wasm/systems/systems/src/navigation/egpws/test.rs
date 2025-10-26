@@ -271,21 +271,21 @@ impl InertialReferenceBus for TestAdiru {
 }
 
 struct TestIls {
-    glideslope_deviation: Angle,
+    glideslope_deviation: Ratio,
 }
 impl TestIls {
     fn new() -> Self {
         Self {
-            glideslope_deviation: Angle::default(),
+            glideslope_deviation: Ratio::default(),
         }
     }
 }
 impl InstrumentLandingSystemBus for TestIls {
-    fn glideslope_deviation(&self) -> Arinc429Word<Angle> {
+    fn glideslope_deviation(&self) -> Arinc429Word<Ratio> {
         Arinc429Word::new(self.glideslope_deviation, SignStatus::NormalOperation)
     }
-    fn localizer_deviation(&self) -> Arinc429Word<Angle> {
-        Arinc429Word::new(Angle::default(), SignStatus::NormalOperation)
+    fn localizer_deviation(&self) -> Arinc429Word<Ratio> {
+        Arinc429Word::new(Ratio::default(), SignStatus::NormalOperation)
     }
     fn runway_heading(&self) -> Arinc429Word<Angle> {
         Arinc429Word::new(Angle::default(), SignStatus::NormalOperation)
