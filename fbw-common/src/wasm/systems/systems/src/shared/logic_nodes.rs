@@ -111,6 +111,10 @@ impl MonostableTriggerNode {
         self.output = self.remaining_trigger > Duration::ZERO;
         self.output
     }
+
+    pub fn output(&self) -> bool {
+        self.output
+    }
 }
 
 /// A node that detects a rising or a falling edge and will trigger exactly once. Similar to a
