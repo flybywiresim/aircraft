@@ -5053,23 +5053,14 @@
 
             <!-- Should be springloaded in the 3rd position, not sure how to do that. -->
             <Component ID="KNOB_CHRONO_RUN" Node="KNOB_CHRONO_RUN">
-                <UseTemplate Name="ASOBO_GT_Knob_Finite_Code">
-                    <NODE_ID>KNOB_CHRONO_RUN</NODE_ID>
+                <UseTemplate Name="ASOBO_GT_Switch_3States">
                     <ANIM_NAME>KNOB_CHRONO_RUN</ANIM_NAME>
+                    <ANIM_CODE>50</ANIM_CODE>
+                    <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+                    <SWITCH_POSITION_VAR>A32NX_CHRONO_ET_SWITCH_POS</SWITCH_POSITION_VAR>
+                    <SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
                     <WWISE_EVENT>smallknob</WWISE_EVENT>
-                    <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-                    <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
-                    <ANIM_CODE>(L:A32NX_CHRONO_ET_SWITCH_POS, number) 10 *</ANIM_CODE>
-                    <CLOCKWISE_CODE>
-                        (L:A32NX_CHRONO_ET_SWITCH_POS, number) 1 + 2 min
-                        (&gt;L:A32NX_CHRONO_ET_SWITCH_POS, number)
-                        (&gt;H:A32NX_CHRONO_ET_POS_CHANGED)
-                    </CLOCKWISE_CODE>
-                    <ANTICLOCKWISE_CODE>
-                        (L:A32NX_CHRONO_ET_SWITCH_POS, number) 1 - 0 max
-                        (&gt;L:A32NX_CHRONO_ET_SWITCH_POS, number)
-                        (&gt;H:A32NX_CHRONO_ET_POS_CHANGED)
-                    </ANTICLOCKWISE_CODE>
+                    <ON_STATE_CHANGED_EXTERNAL_CODE>(&gt;H:A32NX_CHRONO_ET_POS_CHANGED)</ON_STATE_CHANGED_EXTERNAL_CODE>
                 </UseTemplate>
             </Component>
 
@@ -5476,6 +5467,34 @@
         <Component ID="HAT03" Node="HAT03">
             <UseTemplate Name="ASOBO_GT_MouseRect">
                 <CALLBACKCODE_DEFAULT_IM>(M:Event) 'LeftSingle' scmp 0 == if{ (L:A380X_CABIN_HIDDEN, bool) ! (&gt;L:A380X_CABIN_HIDDEN, bool) }</CALLBACKCODE_DEFAULT_IM>
+                <MOUSEFLAGS>LeftSingle</MOUSEFLAGS>
+                <CURSOR>Hand</CURSOR>
+            </UseTemplate>
+        </Component>
+
+        <Component ID="EFB_CPT_MOUNT" Node="EFB_CPT_MOUNT">
+            <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                <VISIBILITY_CODE>(L:A380X_CPT_EFB_HIDDEN, bool) 0 ==</VISIBILITY_CODE>
+            </UseTemplate>
+        </Component>
+
+        <Component ID="LH_SLIDING_LIGHTING_KNOB" Node="LH_SLIDING_LIGHTING_KNOB">
+            <UseTemplate Name="ASOBO_GT_MouseRect">
+                <CALLBACKCODE_DEFAULT_IM>(M:Event) 'LeftSingle' scmp 0 == if{ (L:A380X_CPT_EFB_HIDDEN, bool) ! (&gt;L:A380X_CPT_EFB_HIDDEN, bool) }</CALLBACKCODE_DEFAULT_IM>
+                <MOUSEFLAGS>LeftSingle</MOUSEFLAGS>
+                <CURSOR>Hand</CURSOR>
+            </UseTemplate>
+        </Component>
+
+        <Component ID="EFB_FO_MOUNT" Node="EFB_FO_MOUNT">
+            <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                <VISIBILITY_CODE>(L:A380X_FO_EFB_HIDDEN, bool) 0 ==</VISIBILITY_CODE>
+            </UseTemplate>
+        </Component>
+
+        <Component ID="RH_SLIDING_LIGHTING_KNOB" Node="RH_SLIDING_LIGHTING_KNOB">
+            <UseTemplate Name="ASOBO_GT_MouseRect">
+                <CALLBACKCODE_DEFAULT_IM>(M:Event) 'LeftSingle' scmp 0 == if{ (L:A380X_FO_EFB_HIDDEN, bool) ! (&gt;L:A380X_FO_EFB_HIDDEN, bool) }</CALLBACKCODE_DEFAULT_IM>
                 <MOUSEFLAGS>LeftSingle</MOUSEFLAGS>
                 <CURSOR>Hand</CURSOR>
             </UseTemplate>
