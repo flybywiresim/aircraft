@@ -27,7 +27,7 @@ export interface StyleRule {
   /** If applicable, how to union features this rule applies to. Only valid for polygons. */
   unionBy?: keyof AmdbProperties | 'all';
 
-  /** If provided, the tolerance with which to simplify features. If not provided, the feature is not simplified. */
+  /** If provided, the tolerance with which to simplify features, in units of projected coordinates. If not provided, the feature is not simplified. */
   simplify?: number;
 
   /** The styles to apply */
