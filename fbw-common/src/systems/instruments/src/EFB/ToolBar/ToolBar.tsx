@@ -13,7 +13,6 @@ import {
   Calculator,
   JournalCheck,
   Sliders,
-  FuelPump,
 } from 'react-bootstrap-icons';
 import { NavLink } from 'react-router-dom';
 import { t } from '../Localization/translation';
@@ -69,10 +68,6 @@ export const ToolBar = () => (
       <ToolBarButton to="/presets" tooltipText={t('Presets.Title')}>
         <Sliders size={35} />
       </ToolBarButton>
-      <ToolBarButton to="/handleFuel" tooltipText={t('HandleFuel.CurrentFuel.Title')}>
-        <FuelPump size={35} />
-      </ToolBarButton>
-
     </div>
 
     <div className="flex flex-col items-center">
