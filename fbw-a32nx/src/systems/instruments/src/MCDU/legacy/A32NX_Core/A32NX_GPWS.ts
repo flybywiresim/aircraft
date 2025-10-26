@@ -181,6 +181,9 @@ export class A32NX_GPWS {
     switch (num) {
       case 1:
         return soundList.pull_up;
+      case 2:
+        // Use retard as a placeholder, as "terrain" is not implemented.
+        return soundList.retard;
       case 3:
         return soundList.too_low_terrain;
       case 4:

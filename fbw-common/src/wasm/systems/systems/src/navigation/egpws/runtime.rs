@@ -2,8 +2,9 @@ use std::{fmt::Debug, time::Duration};
 
 use uom::si::{
     angle::degree,
-    f64::{Angle, Velocity},
+    f64::{Angle, Ratio, Velocity},
     length::foot,
+    ratio::ratio,
     velocity::{foot_per_minute, knot},
 };
 
@@ -18,6 +19,7 @@ use crate::{
         },
     },
     shared::{
+        derivative::DerivativeNode,
         interpolation,
         logic_nodes::{ConfirmationNode, MonostableTriggerNode},
         low_pass_filter::LowPassFilter,
@@ -121,12 +123,15 @@ pub(super) struct EnhancedGroundProximityWarningComputerRuntime {
 
     // GPWS Mode 2 Logic
     mode_2_takeoff_latch_node: MonostableTriggerNode,
+    mode_2_closure_rate_derivative: DerivativeNode<f64>,
     mode_2_ra_rate_limiter: RateLimiter<f64>,
+    mode_2_closure_rate_rate_limiter: RateLimiter<f64>,
     mode_2_ra_filter: LowPassFilter<f64>,
 
-    mode_2_pull_up_preface_voice_active: bool,
-    mode_2_pull_up_voice_active: bool,
-    mode_2_terrain_voice_active: bool,
+    mode_2_pull_up_preface_voice_emitted: bool,
+    mode_2_pull_up_preface_active: bool,
+    mode_2_pull_up_active: bool,
+    mode_2_terrain_active: bool,
 
     // GPWS Mode 3 Logic
     mode_3_max_achieved_alt_ft: f64,
@@ -159,6 +164,11 @@ impl EnhancedGroundProximityWarningComputerRuntime {
     const MODE_1_ALERT_AREA_VALUES: [f64; 2] = [2450., 10.];
     const MODE_1_WARNING_AREA_BREAKPOINTS: [f64; 3] = [-7125., -1710., -1482.];
     const MODE_1_WARNING_AREA_VALUES: [f64; 3] = [2450., 284., 10.];
+
+    const MODE_2_ALERT_AREA_BREAKPOINTS: [f64; 3] = [2038., 3545., 9800.];
+    const MODE_2_ALERT_AREA_VALUES: [f64; 3] = [30., 1220., 2450.];
+    const MODE_2_B_CUTOFF_AREA_BREAKPOINTS: [f64; 2] = [-1000., -400.];
+    const MODE_2_B_CUTOFF_AREA_VALUES: [f64; 2] = [600., 200.];
 
     const MODE_3_ALERT_AREA_BREAKPOINTS: [f64; 2] = [8., 143.];
     const MODE_3_ALERT_AREA_VALUES: [f64; 2] = [30., 1500.];
@@ -210,13 +220,16 @@ impl EnhancedGroundProximityWarningComputerRuntime {
             mode_1_sinkrate_voice_active: false,
             mode_1_pull_up_active: false,
 
-            mode_2_takeoff_latch_node: MonostableTriggerNode::new_rising(Duration::from_secs(60)),
-            mode_2_ra_rate_limiter: RateLimiter::new_symmetrical(60.),
+            mode_2_takeoff_latch_node: MonostableTriggerNode::new_falling(Duration::from_secs(60)),
+            mode_2_closure_rate_derivative: DerivativeNode::new(),
+            mode_2_ra_rate_limiter: RateLimiter::new_symmetrical(170.), // Roughly 10 kfpm, i.e. maximum of boundary
+            mode_2_closure_rate_rate_limiter: RateLimiter::new_symmetrical(2_900.), // roughly 1.5g in ft/(min*s)
             mode_2_ra_filter: LowPassFilter::new(Duration::from_secs_f64(1.)),
 
-            mode_2_pull_up_preface_voice_active: false,
-            mode_2_pull_up_voice_active: false,
-            mode_2_terrain_voice_active: false,
+            mode_2_pull_up_preface_voice_emitted: false,
+            mode_2_pull_up_preface_active: false,
+            mode_2_pull_up_active: false,
+            mode_2_terrain_active: false,
 
             mode_3_max_achieved_alt_ft: 0.,
 
@@ -271,7 +284,7 @@ impl EnhancedGroundProximityWarningComputerRuntime {
 
         // Update GPWS Basic mode logics
         self.update_mode_1_logic(context);
-        self.update_mode_2_logic(context);
+        self.update_mode_2_logic(context, adr, discrete_inputs, ils);
         self.update_mode_3_logic(context);
         self.update_mode_4_logic();
         self.update_mode_5_logic(ils);
@@ -492,16 +505,105 @@ impl EnhancedGroundProximityWarningComputerRuntime {
                 || !self.mode_1_sinkrate_emitted_for_current_time_to_impact);
     }
 
-    fn update_mode_2_logic(&mut self, context: &UpdateContext) {
+    fn update_mode_2_logic(
+        &mut self,
+        context: &UpdateContext,
+        adr: &impl AirDataReferenceBus,
+        discrete_inputs: &TerrainAwarenessWarningSystemDiscreteInputs,
+        ils: &impl InstrumentLandingSystemBus,
+    ) {
         self.mode_2_takeoff_latch_node
-            .update(self.flight_phase == FlightPhase::Approach, context.delta());
+            .update(self.on_ground, context.delta());
 
-        // Update the filtered RA FT value
-        self.mode_2_ra_rate_limiter
+        // Calculate and filter closure rate. We have it even worse than in IRL, because the sim in it's
+        // infinite wisdom decides to potentially update the RA at a potentially low rate
+        // (depening on RA, down to less than 1Hz)
+        let ra_ratelim = self
+            .mode_2_ra_rate_limiter
             .update(context.delta(), self.ra_ft);
-        let filtered_ra_ft = self
-            .mode_2_ra_filter
-            .update(context.delta(), self.mode_2_ra_rate_limiter.output());
+
+        self.mode_2_closure_rate_derivative
+            .update(ra_ratelim, context.delta());
+        let closure_rate_ft_per_min_raw = self.mode_2_closure_rate_derivative.output() * -60.; // ft/s to ft/min
+
+        let filtered_closure_rate_ft = self.mode_2_ra_filter.update(
+            context.delta(),
+            self.mode_2_closure_rate_rate_limiter
+                .update(context.delta(), closure_rate_ft_per_min_raw),
+        );
+
+        // Compute boundaries
+
+        // TODO implement TCF and TERR function active conditions
+        let mode_2_b_active = self.mode_2_takeoff_latch_node.output()
+            || discrete_inputs.landing_flaps
+            || (ils.glideslope_deviation().is_normal_operation()
+                && ils.localizer_deviation().is_normal_operation()
+                && ils.glideslope_deviation().value().abs() < Ratio::new::<ratio>(0.175)
+                && ils.localizer_deviation().value().abs() < Ratio::new::<ratio>(0.155));
+
+        let mode_2_upper_boundary_ft = if mode_2_b_active {
+            789.
+        } else {
+            // TODO limit mode 2A upper boundary when TERR function active
+            (1650. + 8.9 * (adr.computed_airspeed().value_or_default().get::<knot>() - 220.))
+                .clamp(1650., 2450.)
+        };
+        let mode_2_lower_boundary_ft = if mode_2_b_active && discrete_inputs.landing_flaps {
+            interpolation(
+                &Self::MODE_2_B_CUTOFF_AREA_BREAKPOINTS,
+                &Self::MODE_2_B_CUTOFF_AREA_VALUES,
+                self.chosen_vertical_speed_ft_min,
+            )
+        } else {
+            30.
+        };
+
+        let mode_2_boundary_met = interpolation(
+            &Self::MODE_2_ALERT_AREA_BREAKPOINTS,
+            &Self::MODE_2_ALERT_AREA_VALUES,
+            filtered_closure_rate_ft,
+        ) >= self.ra_ft
+            && filtered_closure_rate_ft > 2038.
+            && self.ra_ft > mode_2_lower_boundary_ft
+            && self.ra_ft < mode_2_upper_boundary_ft;
+
+        // Compute Warning logics
+        let aural_terrain_only =
+            discrete_inputs.landing_flaps && discrete_inputs.landing_gear_downlocked;
+
+        if mode_2_boundary_met && !self.mode_2_pull_up_preface_voice_emitted && !aural_terrain_only
+        {
+            self.mode_2_pull_up_preface_voice_emitted = self.number_of_aural_warning_emissions >= 2
+                && self.aural_output == AuralWarning::Terrain;
+        } else if !mode_2_boundary_met || aural_terrain_only {
+            self.mode_2_pull_up_preface_voice_emitted = false;
+        }
+
+        // TODO Implement mode 2A altitude gain condition
+
+        self.mode_2_pull_up_preface_active = !aural_terrain_only
+            && mode_2_boundary_met
+            && !self.mode_2_pull_up_preface_voice_emitted;
+        self.mode_2_pull_up_active =
+            !aural_terrain_only && mode_2_boundary_met && self.mode_2_pull_up_preface_voice_emitted;
+        self.mode_2_terrain_active = aural_terrain_only && mode_2_boundary_met;
+
+        println!(
+            "Mode 2: ra: {:.1} ft, ra_lim: {:.1} ft, closure rate: {:.1} ({:.1} raw) ft/min, lower boundary: {:.1} ft, upper boundary: {:.1} ft,
+            boundary met: {}, preface emitted: {}, preface active: {}, pull up active: {}, terrain active: {}",
+            self.ra_ft,
+            ra_ratelim,
+            filtered_closure_rate_ft,
+            closure_rate_ft_per_min_raw,
+            mode_2_lower_boundary_ft,
+            mode_2_upper_boundary_ft,
+            mode_2_boundary_met,
+            self.mode_2_pull_up_preface_voice_emitted,
+            self.mode_2_pull_up_preface_active,
+            self.mode_2_pull_up_active,
+            self.mode_2_terrain_active,
+        );
     }
 
     fn update_mode_3_logic(&mut self, context: &UpdateContext) {
@@ -516,8 +618,9 @@ impl EnhancedGroundProximityWarningComputerRuntime {
             &Self::MODE_3_ALERT_AREA_BREAKPOINTS,
             &Self::MODE_3_ALERT_AREA_VALUES,
             altitude_loss_ft,
-        ) < self.ra_ft;
-
+        ) < self.ra_ft
+            && altitude_loss_ft > 8.
+            && self.ra_ft > 30.;
         self.mode_3_lamp_active = mode_3_boundary_met;
     }
 
@@ -531,13 +634,19 @@ impl EnhancedGroundProximityWarningComputerRuntime {
     ) {
         if self.pin_programs.alternate_lamp_format {
             // TODO Complete rest of the modes.
-            self.warning_lamp_activated =
-                self.mode_1_pull_up_active && !discrete_inputs.gpws_inhibit;
-            self.alert_lamp_activated =
-                self.mode_1_sinkrate_lamp_active && !discrete_inputs.gpws_inhibit;
+            self.warning_lamp_activated = (self.mode_1_pull_up_active
+                || self.mode_2_pull_up_active)
+                && !discrete_inputs.gpws_inhibit;
+            self.alert_lamp_activated = (self.mode_1_sinkrate_lamp_active
+                || self.mode_2_pull_up_preface_active
+                || self.mode_2_terrain_active)
+                && !discrete_inputs.gpws_inhibit;
         } else {
             self.warning_lamp_activated = (self.mode_1_sinkrate_lamp_active
-                || self.mode_1_pull_up_active)
+                || self.mode_1_pull_up_active
+                || self.mode_2_pull_up_active
+                || self.mode_2_pull_up_preface_active
+                || self.mode_2_terrain_active)
                 && !discrete_inputs.gpws_inhibit;
             self.alert_lamp_activated = false && !discrete_inputs.gpws_inhibit;
         }
@@ -554,11 +663,11 @@ impl EnhancedGroundProximityWarningComputerRuntime {
 
         if self.mode_1_pull_up_active && !basic_gpws_inhibit {
             self.aural_output = AuralWarning::PullUp;
-        } else if self.mode_2_pull_up_preface_voice_active && !basic_gpws_inhibit {
+        } else if self.mode_2_pull_up_preface_active && !basic_gpws_inhibit {
             self.aural_output = AuralWarning::Terrain;
-        } else if self.mode_2_pull_up_voice_active && !basic_gpws_inhibit {
+        } else if self.mode_2_pull_up_active && !basic_gpws_inhibit {
             self.aural_output = AuralWarning::PullUp;
-        } else if self.mode_2_terrain_voice_active && !basic_gpws_inhibit {
+        } else if self.mode_2_terrain_active && !basic_gpws_inhibit {
             self.aural_output = AuralWarning::Terrain;
         } else if self.mode_4_too_low_terrain_voice_active && !basic_gpws_inhibit {
             self.aural_output = AuralWarning::TooLowTerrain;
