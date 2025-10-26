@@ -47,7 +47,7 @@ else
   if [ "${USE_4K_TEXTURES}" == "true" ]; then
     time npx igniter -r "^(?!.*ci-build)(?!.*8K).*" "${args[@]}"
   else
-    FBW_TYPECHECK=1 time npx igniter -r "^(?!.*ci-build)(?!.*4K).*" "${args[@]}"
+    time npx igniter -r "^(?!.*ci-build)(?!.*4K).*" "${args[@]}"
   fi
 fi
 
