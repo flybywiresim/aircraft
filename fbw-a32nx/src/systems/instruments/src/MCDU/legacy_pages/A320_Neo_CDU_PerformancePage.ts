@@ -403,6 +403,7 @@ export class CDUPerformancePage {
         }
       }
     };
+
     const hasFromToPair =
       mcdu.flightPlanService.active.originAirport && mcdu.flightPlanService.active.destinationAirport; // TODO use the right flight plan
     const showManagedSpeed = hasFromToPair && mcdu.isCostIndexSet && Number.isFinite(mcdu.costIndex);
