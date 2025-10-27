@@ -218,9 +218,12 @@ interface GroundTrackBugProps {
 
 class GroundTrackBug extends DisplayComponent<GroundTrackBugProps> {
   private readonly subscriptions: Subscription[] = [];
-  private readonly sub = this.props.bus.getArincSubscriber<DmcLogicEvents & HUDSimvars & ClockEvents & HudElems>();
+  private readonly sub = this.props.bus.getArincSubscriber<
+    Arinc429Values & DmcLogicEvents & HUDSimvars & ClockEvents & HudElems
+  >();
   private readonly groundTrack = Arinc429ConsumerSubject.create(this.sub.on('track'));
   private readonly headingTrk = ConsumerSubject.create(this.sub.on('headingTrk'), '');
+  private readonly fpa = Arinc429ConsumerSubject.create(this.sub.on('fpa'));
 
   private isVisibleSub = MappedSubject.create(
     ([groundTrack, heading]) => {
@@ -232,11 +235,19 @@ class GroundTrackBug extends DisplayComponent<GroundTrackBugProps> {
     this.props.heading,
   );
 
-  private isDisplayed = MappedSubject.create(([headingTrk]) => {
-    const bHeadingTrk = headingTrk === 'block' ? true : false;
-    // TODO should also be hidden if heading is invalid
-    return this.isVisibleSub && bHeadingTrk ? 'block' : 'none';
-  }, this.headingTrk);
+  private isDisplayed = MappedSubject.create(
+    ([headingTrk, fpa]) => {
+      if (Math.abs(fpa.value) < 1.5) {
+        return 'none';
+      } else {
+        const bHeadingTrk = headingTrk === 'block' ? true : false;
+        // TODO should also be hidden if heading is invalid
+        return this.isVisibleSub && bHeadingTrk ? 'block' : 'none';
+      }
+    },
+    this.headingTrk,
+    this.fpa,
+  );
 
   private transformSub = MappedSubject.create(
     ([groundTrack, heading]) => {
