@@ -138,7 +138,8 @@ pub(super) struct EnhancedGroundProximityWarningComputerRuntime {
     mode_2_terrain_active: bool,
 
     // GPWS Mode 3 Logic
-    mode_3_max_achieved_alt_ft: f64,
+    mode_3_max_achieved_alt_ft: Option<f64>,
+    mode_3_declutter_threshold_increase: f64,
 
     mode_3_lamp_active: bool,
     mode_3_dont_sink_voice_active: bool,
@@ -261,7 +262,8 @@ impl EnhancedGroundProximityWarningComputerRuntime {
             mode_2_pull_up_active: false,
             mode_2_terrain_active: false,
 
-            mode_3_max_achieved_alt_ft: 0.,
+            mode_3_max_achieved_alt_ft: None,
+            mode_3_declutter_threshold_increase: 0.,
 
             mode_3_lamp_active: false,
             mode_3_dont_sink_voice_active: false,
@@ -326,7 +328,7 @@ impl EnhancedGroundProximityWarningComputerRuntime {
         // Update GPWS Basic mode logics
         self.update_mode_1_logic(context, ils);
         self.update_mode_2_logic(context, adr, discrete_inputs, ils);
-        self.update_mode_3_logic(context);
+        self.update_mode_3_logic(discrete_inputs);
         self.update_mode_4_logic(context, adr, discrete_inputs);
         self.update_mode_5_logic(context, ils, ir, discrete_inputs);
 
@@ -685,23 +687,80 @@ impl EnhancedGroundProximityWarningComputerRuntime {
         //);
     }
 
-    fn update_mode_3_logic(&mut self, context: &UpdateContext) {
+    fn update_mode_3_logic(
+        &mut self,
+        discrete_inputs: &TerrainAwarenessWarningSystemDiscreteInputs,
+    ) {
         let mode_3_enabled = self.flight_phase == FlightPhase::Takeoff
             && self.ra_ft < 1500.
+            && self.ra_ft > 30.
             && self.chosen_vertical_speed_ft_min < 0.;
 
-        let altitude_loss_ft = self.mode_3_max_achieved_alt_ft - self.chosen_altitude_ft;
+        if mode_3_enabled
+            && self.chosen_vertical_speed_ft_min < 0.
+            && self.mode_3_max_achieved_alt_ft.is_none()
+            && !discrete_inputs.landing_flaps
+            && !discrete_inputs.landing_gear_downlocked
+        {
+            self.mode_3_max_achieved_alt_ft = Some(self.chosen_altitude_ft);
+        } else if (self.mode_3_max_achieved_alt_ft.is_some()
+            && self.chosen_altitude_ft > self.mode_3_max_achieved_alt_ft.unwrap_or(0.))
+            || self.ra_ft > 1500.
+            || discrete_inputs.landing_flaps
+            || discrete_inputs.landing_gear_downlocked
+        {
+            self.mode_3_max_achieved_alt_ft = None;
+        }
+
+        let altitude_loss_ft = if mode_3_enabled {
+            self.mode_3_max_achieved_alt_ft
+                .map(|max_alt| max_alt - self.chosen_altitude_ft)
+        } else {
+            None
+        };
 
         // TODO Implement bias
-        let mode_3_boundary_met = interpolation(
+        let mode_3_boundary = interpolation(
             &Self::MODE_3_ALERT_AREA_BREAKPOINTS,
             &Self::MODE_3_ALERT_AREA_VALUES,
-            altitude_loss_ft,
-        ) < self.ra_ft
-            && altitude_loss_ft > 8.
+            altitude_loss_ft.unwrap_or_default(),
+        );
+
+        let mode_3_lamp_boundary_met = mode_3_enabled
             && self.ra_ft > 30.
-            && self.ra_ft < 1500.;
-        self.mode_3_lamp_active = mode_3_boundary_met;
+            && self.ra_ft < mode_3_boundary
+            && altitude_loss_ft.unwrap_or(0.) > 8.;
+
+        let biased_ra_ft = self.ra_ft * (1. + self.mode_3_declutter_threshold_increase);
+        let mode_3_voice_boundary_met = mode_3_enabled
+            && biased_ra_ft > 30.
+            && biased_ra_ft < mode_3_boundary
+            && altitude_loss_ft.unwrap_or(0.) > 8.;
+
+        self.mode_3_lamp_active = mode_3_lamp_boundary_met;
+        self.mode_3_dont_sink_voice_active = mode_3_voice_boundary_met;
+
+        // Ratcheting logic for Mode 3 declutter threshold increase
+        if self.pin_programs.audio_declutter_disable || !self.mode_3_lamp_active {
+            self.mode_3_declutter_threshold_increase = 0.;
+        } else if mode_3_voice_boundary_met
+            && self.aural_output == AuralWarning::DontSink
+            && self.number_of_aural_warning_emissions > 1
+        {
+            self.mode_3_declutter_threshold_increase += 0.20;
+        }
+
+        //println!(
+        //    "Mode 3: phase: {:?}, enabled: {}, max achieved alt: {:.1} ft, altitude loss: {:.1} ft, mode 3 boundary: {:.1} ft, lamp active: {}, voice active: {}, declutter increase: {:.2}",
+        //    self.flight_phase,
+        //    mode_3_enabled,
+        //    self.mode_3_max_achieved_alt_ft.unwrap_or_default(),
+        //    altitude_loss_ft.unwrap_or_default(),
+        //    mode_3_boundary,
+        //    self.mode_3_lamp_active,
+        //    self.mode_3_dont_sink_voice_active,
+        //    self.mode_3_declutter_threshold_increase,
+        //);
     }
 
     fn update_mode_4_logic(
@@ -1053,6 +1112,7 @@ impl EnhancedGroundProximityWarningComputerRuntime {
             self.alert_lamp_activated = (self.mode_1_sinkrate_lamp_active
                 || self.mode_2_pull_up_preface_active
                 || self.mode_2_terrain_active
+                || self.mode_3_lamp_active
                 || self.mode_5_glideslope_lamp_active
                 || self.mode_4_lamp_active)
                 && !discrete_inputs.gpws_inhibit;
@@ -1062,6 +1122,7 @@ impl EnhancedGroundProximityWarningComputerRuntime {
                 || self.mode_2_pull_up_active
                 || self.mode_2_pull_up_preface_active
                 || self.mode_2_terrain_active
+                || self.mode_3_lamp_active
                 || self.mode_4_lamp_active)
                 && !discrete_inputs.gpws_inhibit;
             self.alert_lamp_activated =
