@@ -24,7 +24,6 @@ use uom::si::{
 
 pub mod low_pass_filter;
 pub mod pid;
-#[cfg(test)]
 pub mod test;
 pub mod update_iterator;
 

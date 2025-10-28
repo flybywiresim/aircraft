@@ -4,9 +4,9 @@ pub fn about_gt_lt<T: std::ops::Sub<Output = T> + PartialOrd>(
     epsilon: T,
 ) -> bool {
     let delta = if value < expected_value {
-        value - expected_value
-    } else {
         expected_value - value
+    } else {
+        value - expected_value
     };
     delta < epsilon
 }
