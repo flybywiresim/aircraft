@@ -21,7 +21,7 @@ use crate::{
     shared::{
         derivative::DerivativeNode,
         interpolation,
-        logic_nodes::{ConfirmationNode, MonostableTriggerNode},
+        logic_nodes::{ConfirmationNode, MonostableTriggerNode, PulseNode},
         low_pass_filter::LowPassFilter,
         rate_lmiter::RateLimiter,
     },
@@ -98,6 +98,10 @@ pub(super) struct EnhancedGroundProximityWarningComputerRuntime {
     // On ground/phase helpers
     ground_to_air_confirm_node: ConfirmationNode,
     takeoff_to_approach_condition_integrator: f64,
+    approach_to_takeoff_condition_confirm_node: ConfirmationNode,
+
+    field_elevation_ft: f64,
+    takeoff_goaround_pulse_node: PulseNode,
 
     // General GPWS Fault logic
     gpws_sys_fault: bool,
@@ -143,6 +147,9 @@ pub(super) struct EnhancedGroundProximityWarningComputerRuntime {
     mode_4_c_filter_value: f64,
     mode_4_a_alert_upper_boundary: f64,
     mode_4_c_declutter_threshold_increase: f64,
+    mode_4_b_active: bool,
+    mode_4_ab_declutter_threshold_increase: f64,
+    mode_4_ab_prev_submode_active: u8,
 
     mode_4_too_low_gear_voice_active: bool,
     mode_4_too_low_flaps_voice_active: bool,
@@ -186,6 +193,8 @@ impl EnhancedGroundProximityWarningComputerRuntime {
                                                   // => Time constant = 15s
     const MODE_4_A_ALERT_AREA_BREAKPOINTS: [f64; 2] = [190., 250.];
     const MODE_4_A_ALERT_AREA_VALUES: [f64; 2] = [500., 1000.];
+    const MODE_4_B_ALERT_AREA_BREAKPOINTS: [f64; 2] = [159., 250.];
+    const MODE_4_B_ALERT_AREA_VALUES: [f64; 2] = [245., 1000.];
 
     const MODE_5_SOFT_ALERT_UPPER_BOUNDARY_BREAKPOINTS: [f64; 2] = [-500., 0.];
     const MODE_5_SOFT_ALERT_UPPER_BOUNDARY_VALUES: [f64; 2] = [1000., 500.];
@@ -214,6 +223,12 @@ impl EnhancedGroundProximityWarningComputerRuntime {
 
             ground_to_air_confirm_node: ConfirmationNode::new_rising(Duration::from_secs(10)),
             takeoff_to_approach_condition_integrator: 0.,
+            approach_to_takeoff_condition_confirm_node: ConfirmationNode::new_rising(
+                Duration::from_secs_f64(0.2),
+            ),
+
+            field_elevation_ft: 0.,
+            takeoff_goaround_pulse_node: PulseNode::new_rising(),
 
             gpws_sys_fault: false,
             terr_sys_fault: false,
@@ -254,6 +269,9 @@ impl EnhancedGroundProximityWarningComputerRuntime {
             mode_4_c_filter_value: 0.,
             mode_4_a_alert_upper_boundary: 500.,
             mode_4_c_declutter_threshold_increase: 0.,
+            mode_4_b_active: false,
+            mode_4_ab_declutter_threshold_increase: 0.,
+            mode_4_ab_prev_submode_active: 0,
             mode_4_too_low_gear_voice_active: false,
             mode_4_too_low_flaps_voice_active: false,
             mode_4_too_low_terrain_voice_active: false,
@@ -353,14 +371,19 @@ impl EnhancedGroundProximityWarningComputerRuntime {
             self.on_ground = true;
         }
 
-        // Takeoff/Approach mode state machine logic
-        // TODO add no mode 4B warning condition
-        let approach_to_takeoff_condition = self.ra_ft < 245. && true;
+        // Takeoff/Approach mode state machine logic. We need a little confirm time, otherwise,
+        // the mode 4 alerts could never trigger if not already active.
+        let approach_to_takeoff_condition = self.approach_to_takeoff_condition_confirm_node.update(
+            self.ra_ft < 245. && !self.mode_4_lamp_active,
+            context.delta(),
+        );
 
         if self.flight_phase == FlightPhase::Takeoff && !self.on_ground {
-            // TODO change integrator to use alt above field, doesn't make sense as is
-            self.takeoff_to_approach_condition_integrator +=
-                self.chosen_altitude_ft.max(0.).min(700.) * context.delta().as_secs_f64();
+            self.takeoff_to_approach_condition_integrator += (self.chosen_altitude_ft
+                - self.field_elevation_ft)
+                .max(0.)
+                .min(700.)
+                * context.delta().as_secs_f64();
         } else {
             self.takeoff_to_approach_condition_integrator = 0.;
         }
@@ -374,6 +397,27 @@ impl EnhancedGroundProximityWarningComputerRuntime {
         } else if self.flight_phase == FlightPhase::Approach && approach_to_takeoff_condition {
             self.flight_phase = FlightPhase::Takeoff;
         }
+
+        // At takeoff or goaround (transition from approach phase to takeoff phase), sample the field elevation.
+        // This is used for takeoff to approach transition logic, and for mode 3 bias computation.
+        let takeoff_goaround = self
+            .takeoff_goaround_pulse_node
+            .update(!self.on_ground || approach_to_takeoff_condition);
+
+        if takeoff_goaround {
+            self.field_elevation_ft = self.chosen_altitude_ft - self.ra_ft;
+        }
+
+        // println!(
+        //     "EGPWS General Logic: on_ground: {}, flight_phase: {:?}, takeoff_to_approach_integrator: {:.1}, field_elev: {:.1} ft
+        //     mode_4_c_filter: {:.1}, mode_4_a_upper_boundary: {:.1}",
+        //     self.on_ground,
+        //     self.flight_phase,
+        //     self.takeoff_to_approach_condition_integrator,
+        //     self.field_elevation_ft,
+        //     self.mode_4_c_filter_value,
+        //     self.mode_4_a_alert_upper_boundary,
+        // );
     }
 
     fn update_fault_logic(
@@ -666,12 +710,129 @@ impl EnhancedGroundProximityWarningComputerRuntime {
         adr: &impl AirDataReferenceBus,
         discrete_inputs: &TerrainAwarenessWarningSystemDiscreteInputs,
     ) {
+        let cas_kts = adr.computed_airspeed().value().get::<knot>();
+
         // Mode 4A Logic
         self.mode_4_a_alert_upper_boundary = interpolation(
             &Self::MODE_4_A_ALERT_AREA_BREAKPOINTS,
             &Self::MODE_4_A_ALERT_AREA_VALUES,
-            adr.computed_airspeed().value().get::<knot>(),
+            cas_kts,
         );
+
+        // TODO Implement alternate Mode 4B
+        let mode_4_b_alternate = true;
+
+        // TODO Implement TAD hi integrity condition
+        let mode_4_a_boundary_limit = if discrete_inputs.landing_flaps || false {
+            500.
+        } else {
+            1000.
+        };
+        let mode_4_b_boundary_limit =
+            if mode_4_b_alternate && discrete_inputs.landing_flaps || false {
+                245.
+            } else {
+                1000.
+            };
+        let mode_4_a_boundary = self
+            .mode_4_a_alert_upper_boundary
+            .min(mode_4_a_boundary_limit);
+        let mode_4_b_boundary = interpolation(
+            &Self::MODE_4_B_ALERT_AREA_BREAKPOINTS,
+            &Self::MODE_4_B_ALERT_AREA_VALUES,
+            cas_kts,
+        )
+        .min(mode_4_b_boundary_limit);
+
+        // Mode 4B is activated when in approach phase with gear downlocked (or flaps down and alternate mode).
+        // This is latched and only reverted when on ground or in takeoff phase (i.e. go-around).
+        if !self.on_ground
+            && self.flight_phase == FlightPhase::Approach
+            && (discrete_inputs.landing_gear_downlocked
+                || (discrete_inputs.landing_flaps && mode_4_b_alternate))
+        {
+            self.mode_4_b_active = true;
+        } else if self.on_ground || self.flight_phase == FlightPhase::Takeoff {
+            self.mode_4_b_active = false;
+        }
+
+        let mode_4_enabled = !self.on_ground
+            && self.flight_phase == FlightPhase::Approach
+            && (!discrete_inputs.landing_flaps || !discrete_inputs.landing_gear_downlocked);
+
+        let mode_4_ab_lamp_active = mode_4_enabled
+            && self.ra_ft > 30.
+            && if self.mode_4_b_active {
+                self.ra_ft < mode_4_b_boundary
+            } else {
+                self.ra_ft < mode_4_a_boundary
+            };
+
+        let biased_ra_ft = self.ra_ft * (1. + self.mode_4_ab_declutter_threshold_increase);
+        let mode_4_ab_voice_active = mode_4_enabled
+            && biased_ra_ft > 30.
+            && if self.mode_4_b_active {
+                biased_ra_ft < mode_4_b_boundary
+            } else {
+                biased_ra_ft < mode_4_a_boundary
+            };
+
+        let mode_4_submode_too_low_gear;
+        let mode_4_submode_too_low_flaps;
+        let mode_4_submode_too_low_terrain;
+        if self.mode_4_b_active {
+            mode_4_submode_too_low_gear = (cas_kts < 159.
+                || (cas_kts >= 159. && discrete_inputs.landing_flaps))
+                && !discrete_inputs.landing_gear_downlocked;
+            mode_4_submode_too_low_flaps = cas_kts < 159. && !discrete_inputs.landing_flaps;
+            mode_4_submode_too_low_terrain = cas_kts >= 159. && !discrete_inputs.landing_flaps;
+        } else {
+            mode_4_submode_too_low_gear =
+                cas_kts < 190. || (cas_kts >= 190. && discrete_inputs.landing_flaps);
+            mode_4_submode_too_low_flaps = false;
+            mode_4_submode_too_low_terrain = cas_kts >= 190. && !discrete_inputs.landing_flaps;
+        }
+
+        // Ratcheting logic for Mode 4AB declutter threshold increase
+        let mode_4_ab_submode = (mode_4_submode_too_low_gear as u8) << 2
+            | (mode_4_submode_too_low_flaps as u8) << 1
+            | (mode_4_submode_too_low_terrain as u8);
+        let aural_changed = mode_4_ab_submode != self.mode_4_ab_prev_submode_active;
+        self.mode_4_ab_prev_submode_active = mode_4_ab_submode;
+        if self.pin_programs.audio_declutter_disable || !self.mode_4_lamp_active || aural_changed {
+            self.mode_4_ab_declutter_threshold_increase = 0.;
+        } else if mode_4_ab_voice_active
+            && (self.aural_output == AuralWarning::TooLowGear
+                || self.aural_output == AuralWarning::TooLowFlaps
+                || self.aural_output == AuralWarning::TooLowTerrain)
+            && self.number_of_aural_warning_emissions > 0
+        {
+            self.mode_4_ab_declutter_threshold_increase += 0.2;
+        }
+
+        self.mode_4_too_low_gear_voice_active =
+            mode_4_ab_voice_active && mode_4_submode_too_low_gear;
+        self.mode_4_too_low_flaps_voice_active =
+            mode_4_ab_voice_active && mode_4_submode_too_low_flaps;
+        let mode_4_ab_too_low_terrain_voice_active =
+            mode_4_ab_voice_active && mode_4_submode_too_low_terrain;
+
+        // println!(
+        //     "Mode 4AB: ra: {:.1} ft, cas: {:.1} kts, mode 4B active: {}, app. mode: {}, mode 4A boundary: {:.1} ft, mode 4B boundary: {:.1} ft,
+        //     lamp active: {}, too low gear voice active: {}, too low flaps voice active: {}, too low terrain voice active: {}, declutter increase: {:.1}, n_emiss: {}",
+        //     self.ra_ft,
+        //     cas_kts,
+        //     self.mode_4_b_active,
+        //     self.flight_phase == FlightPhase::Approach,
+        //     mode_4_a_boundary,
+        //     mode_4_b_boundary,
+        //     mode_4_ab_lamp_active,
+        //     self.mode_4_too_low_gear_voice_active,
+        //     self.mode_4_too_low_flaps_voice_active,
+        //     mode_4_ab_too_low_terrain_voice_active,
+        //     self.mode_4_ab_declutter_threshold_increase,
+        //     self.number_of_aural_warning_emissions
+        // );
 
         // Mode 4C Logic
         if !self.on_ground && self.flight_phase == FlightPhase::Takeoff {
@@ -692,11 +853,10 @@ impl EnhancedGroundProximityWarningComputerRuntime {
 
         let mode_4_c_enabled = !self.on_ground
             && self.flight_phase == FlightPhase::Takeoff
-            && discrete_inputs.landing_flaps
-            && discrete_inputs.landing_gear_downlocked
+            && !(discrete_inputs.landing_flaps && discrete_inputs.landing_gear_downlocked)
             && self.ra_ft < 1000.;
 
-        self.mode_4_lamp_active =
+        let mode_4_c_lamp_active =
             mode_4_c_enabled && mode_4_c_boundary >= self.ra_ft && self.ra_ft > 100.;
 
         // If the audio declutter is disabled, the aural warning is always active when in the alert area.
@@ -711,19 +871,24 @@ impl EnhancedGroundProximityWarningComputerRuntime {
         }
 
         let biased_ra_ft = self.ra_ft * (1. + self.mode_4_c_declutter_threshold_increase);
-        self.mode_4_too_low_terrain_voice_active |=
+        let mode_4_c_too_low_terrain_voice_active =
             mode_4_c_enabled && mode_4_c_boundary >= biased_ra_ft && biased_ra_ft > 100.;
 
-        println!("Mode 4: ra: {:.1} ft, filter: {:.1} ft, upper boundary: {:.1} ft, biased ra: {:.1} ft, enabled: {},
-        lamp active: {}, too low terrain voice active: {}",
-                self.ra_ft,
-                self.mode_4_c_filter_value,
-                self.mode_4_a_alert_upper_boundary,
-                biased_ra_ft,
-                mode_4_c_enabled,
-                self.mode_4_lamp_active,
-                self.mode_4_too_low_terrain_voice_active,
-            );
+        //println!("Mode 4: ra: {:.1} ft, filter: {:.1} ft, upper boundary: {:.1} ft, biased ra: {:.1} ft, enabled: {},
+        // lamp active: {}, too low terrain voice active: {}",
+        //         self.ra_ft,
+        //         self.mode_4_c_filter_value,
+        //         self.mode_4_a_alert_upper_boundary,
+        //         biased_ra_ft,
+        //         mode_4_c_enabled,
+        //         mode_4_c_lamp_active,
+        //         mode_4_c_too_low_terrain_voice_active,
+        //     );
+
+        // Just write to the output, as mode 4C cannot be active at the same time as 4AB
+        self.mode_4_lamp_active = mode_4_c_lamp_active || mode_4_ab_lamp_active;
+        self.mode_4_too_low_terrain_voice_active =
+            mode_4_c_too_low_terrain_voice_active || mode_4_ab_too_low_terrain_voice_active;
     }
 
     fn update_mode_5_logic(
