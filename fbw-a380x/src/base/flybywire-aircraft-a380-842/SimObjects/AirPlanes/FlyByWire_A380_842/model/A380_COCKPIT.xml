@@ -5465,10 +5465,9 @@
         </Component>
 
         <Component ID="HAT03" Node="HAT03">
-            <UseTemplate Name="ASOBO_GT_MouseRect">
-                <CALLBACKCODE_DEFAULT_IM>(M:Event) 'LeftSingle' scmp 0 == if{ (L:A380X_CABIN_HIDDEN, bool) ! (&gt;L:A380X_CABIN_HIDDEN, bool) }</CALLBACKCODE_DEFAULT_IM>
-                <MOUSEFLAGS>LeftSingle</MOUSEFLAGS>
-                <CURSOR>Hand</CURSOR>
+            <UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Code">
+                <TOOLTIPID>TOGGLE CABIN</TOOLTIPID>
+                <LEFT_SINGLE_CODE>0 == if{ (L:A380X_CABIN_HIDDEN, bool) ! (&gt;L:A380X_CABIN_HIDDEN, bool) }</LEFT_SINGLE_CODE>
             </UseTemplate>
         </Component>
 
@@ -5479,10 +5478,9 @@
         </Component>
 
         <Component ID="LH_SLIDING_LIGHTING_KNOB" Node="LH_SLIDING_LIGHTING_KNOB">
-            <UseTemplate Name="ASOBO_GT_MouseRect">
-                <CALLBACKCODE_DEFAULT_IM>(M:Event) 'LeftSingle' scmp 0 == if{ (L:A380X_CPT_EFB_HIDDEN, bool) ! (&gt;L:A380X_CPT_EFB_HIDDEN, bool) }</CALLBACKCODE_DEFAULT_IM>
-                <MOUSEFLAGS>LeftSingle</MOUSEFLAGS>
-                <CURSOR>Hand</CURSOR>
+            <UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Code">
+                <TOOLTIPID>TOGGLE CPT EFB</TOOLTIPID>
+                <LEFT_SINGLE_CODE>0 == if{ (L:A380X_CPT_EFB_HIDDEN, bool) ! (&gt;L:A380X_CPT_EFB_HIDDEN, bool) }</LEFT_SINGLE_CODE>
             </UseTemplate>
         </Component>
 
@@ -5493,10 +5491,9 @@
         </Component>
 
         <Component ID="RH_SLIDING_LIGHTING_KNOB" Node="RH_SLIDING_LIGHTING_KNOB">
-            <UseTemplate Name="ASOBO_GT_MouseRect">
-                <CALLBACKCODE_DEFAULT_IM>(M:Event) 'LeftSingle' scmp 0 == if{ (L:A380X_FO_EFB_HIDDEN, bool) ! (&gt;L:A380X_FO_EFB_HIDDEN, bool) }</CALLBACKCODE_DEFAULT_IM>
-                <MOUSEFLAGS>LeftSingle</MOUSEFLAGS>
-                <CURSOR>Hand</CURSOR>
+            <UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Code">
+                <TOOLTIPID>TOGGLE FO EFB</TOOLTIPID>
+                <LEFT_SINGLE_CODE>0 == if{ (L:A380X_FO_EFB_HIDDEN, bool) ! (&gt;L:A380X_FO_EFB_HIDDEN, bool) }</LEFT_SINGLE_CODE>
             </UseTemplate>
         </Component>
 
