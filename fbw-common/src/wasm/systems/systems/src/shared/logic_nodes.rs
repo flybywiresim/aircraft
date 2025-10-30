@@ -1,5 +1,8 @@
 use std::time::Duration;
 
+// Logic nodes, taken from https://github.com/flybywiresim/aircraft/pull/4872, and adapted Confirmation node to better adhere to sensible
+// initial condition behaviour.
+
 /// A confirmation circuit, which only passes a signal once it has been stable for a certain amount
 /// of time. When it detects either a rising or falling edge (depending on its type) it will wait
 /// for a time delay period and emit the incoming signal if it was stable throughout the period.
@@ -34,14 +37,12 @@ impl ConfirmationNode {
         let condition_met = hi == self.rising_edge;
         if condition_met {
             self.condition_since += delta;
-            self.output = if self.condition_since >= self.time_delay {
-                self.rising_edge
-            } else {
-                !self.rising_edge
-            };
+            if self.condition_since >= self.time_delay {
+                self.output = hi;
+            }
         } else {
             self.condition_since = Duration::ZERO;
-            self.output = !self.rising_edge;
+            self.output = hi;
         }
         self.output
     }
@@ -329,12 +330,14 @@ mod tests {
         #[test]
         fn rising_initially_stays_lo_when_hi() {
             let mut node = ConfirmationNode::new_rising(Duration::from_secs(1));
+            assert!(!node.update(false, Duration::from_secs_f64(2.)));
             assert!(!node.update(true, Duration::from_secs_f64(0.1)));
         }
 
         #[test]
         fn falling_initially_stays_hi_when_lo() {
             let mut node = ConfirmationNode::new_falling(Duration::from_secs(1));
+            assert!(node.update(true, Duration::from_secs_f64(2.)));
             assert!(node.update(false, Duration::from_secs_f64(0.1)));
         }
 
