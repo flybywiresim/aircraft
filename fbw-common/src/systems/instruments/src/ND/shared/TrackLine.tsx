@@ -21,9 +21,10 @@ import { GenericFcuEvents } from '../types/GenericFcuEvents';
 import {
   ArmedLateralMode,
   GenericFlightGuidanceEvents,
-  LateralMode,
   isArmed,
+  LateralMode,
 } from '../types/GenericFlightGuidanceEvents';
+import { FmsSymbolsData } from 'instruments/src/ND/FmsSymbolsPublisher';
 
 export interface TrackLineProps {
   bus: EventBus;
@@ -39,7 +40,7 @@ export class TrackLine extends DisplayComponent<TrackLineProps> {
   private readonly lineRef = FSComponent.createRef<SVGLineElement>();
 
   private readonly sub = this.props.bus.getSubscriber<
-    GenericDisplayManagementEvents & GenericFlightGuidanceEvents & NDSimvars & GenericFcuEvents
+    GenericDisplayManagementEvents & GenericFlightGuidanceEvents & NDSimvars & GenericFcuEvents & FmsSymbolsData
   >();
 
   private readonly ndMode = ConsumerSubject.create(this.sub.on('ndMode').whenChanged(), EfisNdMode.ARC);
@@ -80,17 +81,23 @@ export class TrackLine extends DisplayComponent<TrackLineProps> {
     this.y,
   );
 
+  private readonly areActiveVectorsTransmitted = Subject.create(false);
+
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
 
     this.headingWord.setConsumer(this.sub.on('heading'));
     this.trackWord.setConsumer(this.sub.on('track'));
+    this.sub
+      .on('vectorsActive')
+      .handle((data) => this.areActiveVectorsTransmitted.set(data !== null && data !== undefined));
 
     this.headingWord.sub(() => this.handleLineVisibility(), true);
     this.trackWord.sub(() => this.handleLineVisibility(), true);
     this.lateralModeSub.sub(() => this.handleLineVisibility(), true);
     this.lateralArmedSub.sub(() => this.handleLineVisibility(), true);
     this.ndMode.sub(() => this.handleLineVisibility(), true);
+    this.areActiveVectorsTransmitted.sub(() => this.handleLineVisibility(), true);
   }
 
   private handleLineVisibility() {
@@ -102,7 +109,9 @@ export class TrackLine extends DisplayComponent<TrackLineProps> {
     const lateralMode = this.lateralModeSub.get();
     const lateralArmed = this.lateralArmedSub.get();
 
-    const shouldShowLine = TrackLine.shouldShowTrackLine(lateralMode, lateralArmed);
+    const areActiveVectorsTransmitted = this.areActiveVectorsTransmitted.get();
+
+    const shouldShowLine = TrackLine.shouldShowTrackLine(lateralMode, lateralArmed, areActiveVectorsTransmitted);
 
     if (wrongNDMode || headingInvalid || trackInvalid || !shouldShowLine) {
       this.visibility.set('hidden');
@@ -111,15 +120,17 @@ export class TrackLine extends DisplayComponent<TrackLineProps> {
     }
   }
 
-  public static shouldShowTrackLine(lateralMode: LateralMode, lateralArmed: number) {
+  public static shouldShowTrackLine(
+    lateralMode: LateralMode,
+    lateralArmed: number,
+    areActiveVectorsTransmitted: boolean,
+  ) {
     return (
-      (lateralMode === LateralMode.NONE ||
-        lateralMode === LateralMode.HDG ||
+      (lateralMode === LateralMode.HDG ||
         lateralMode === LateralMode.TRACK ||
-        lateralMode === LateralMode.RWY ||
-        lateralMode === LateralMode.RWY_TRACK ||
-        lateralMode === LateralMode.GA_TRACK) &&
-      !isArmed(lateralArmed, ArmedLateralMode.NAV)
+        lateralMode === LateralMode.GA_TRACK ||
+        lateralMode === LateralMode.RWY_TRACK) &&
+      (!isArmed(lateralArmed, ArmedLateralMode.NAV) || !areActiveVectorsTransmitted)
     );
   }
 

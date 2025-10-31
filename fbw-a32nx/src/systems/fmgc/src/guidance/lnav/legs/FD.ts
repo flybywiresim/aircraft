@@ -4,7 +4,6 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { SegmentType } from '@fmgc/flightplanning/FlightPlanSegment';
 import { Fix, VhfNavaid, Waypoint } from '@flybywiresim/fbw-sdk';
@@ -13,8 +12,9 @@ import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { LegMetadata } from './index';
 import { courseToFixDistanceToGo, fixToFixGuidance } from '../CommonGeometry';
+import { FXLeg } from './FX';
 
-export class FDLeg extends Leg {
+export class FDLeg extends FXLeg {
   predictedPath: PathVector[] = [];
 
   inboundCourse;
@@ -29,12 +29,12 @@ export class FDLeg extends Leg {
   constructor(
     private readonly course: DegreesTrue,
     private readonly dmeDistance: NauticalMiles,
-    private readonly fix: Fix,
+    fix: Fix,
     private readonly navaid: VhfNavaid,
     public readonly metadata: Readonly<LegMetadata>,
     segment: SegmentType,
   ) {
-    super();
+    super(fix);
 
     this.segment = segment;
 

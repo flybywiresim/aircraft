@@ -259,6 +259,7 @@ export class FlightManagementComputer implements FmcInterface {
         this.fmgc,
         this.flightPlanService,
         this.efisInterfaces,
+        this.#navigation,
         a380EfisRangeSettings,
         A380AircraftConfig,
       );

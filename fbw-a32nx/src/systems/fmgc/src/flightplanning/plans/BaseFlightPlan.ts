@@ -2575,6 +2575,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
    * @param end end of the range, exclusive
    */
   protected removeRange(start: number, end: number) {
+    if (start >= end) {
+      return;
+    }
+
     const [startSegment, indexInStartSegment] = this.segmentPositionForIndex(start);
     const [endSegment, indexInEndSegment] = this.segmentPositionForIndex(end - 1);
 

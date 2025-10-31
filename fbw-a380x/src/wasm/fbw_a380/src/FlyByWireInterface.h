@@ -240,6 +240,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFmTargetVerticalSpeed;
   std::unique_ptr<LocalVariable> idFmRnavAppSelected;
   std::unique_ptr<LocalVariable> idFmFinalCanEngage;
+  std::unique_ptr<LocalVariable> idFmNavCaptureCondition;
 
   std::unique_ptr<LocalVariable> idFwcFlightPhase;
   std::unique_ptr<LocalVariable> idFwsDiscreteWord126[2];
