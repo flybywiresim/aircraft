@@ -22,7 +22,7 @@ OS2Version: 4
 OS2_WeightWidthSlopeOnly: 0
 OS2_UseTypoMetrics: 1
 CreationTime: 1630565342
-ModificationTime: 1761382957
+ModificationTime: 1761895472
 PfmFamily: 17
 TTFWeight: 400
 TTFWidth: 5
@@ -160,6 +160,7 @@ SplineSet
  272 2594 l 1,7,-1
  272 136 l 1,4,-1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: uni0000
@@ -168,6 +169,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: nonmarkingreturn
@@ -176,6 +179,8 @@ Width: 2864
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0001
@@ -184,6 +189,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0002
@@ -192,6 +199,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0003
@@ -200,6 +209,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0004
@@ -208,6 +219,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0005
@@ -216,6 +229,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0006
@@ -224,6 +239,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0007
@@ -232,6 +249,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0008
@@ -240,6 +259,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0009
@@ -248,6 +269,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni000A
@@ -256,6 +279,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni000B
@@ -264,6 +289,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni000C
@@ -272,6 +299,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni000D
@@ -280,6 +309,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni000E
@@ -288,6 +319,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni000F
@@ -296,6 +329,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0010
@@ -304,6 +339,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0011
@@ -312,6 +349,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0012
@@ -320,6 +359,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0013
@@ -328,6 +369,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0014
@@ -336,6 +379,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0015
@@ -344,6 +389,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0016
@@ -352,6 +399,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0017
@@ -360,6 +409,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0018
@@ -368,6 +419,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0019
@@ -376,6 +429,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni001A
@@ -384,6 +439,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni001B
@@ -392,6 +449,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni001C
@@ -400,6 +459,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni001D
@@ -408,6 +469,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni001E
@@ -416,6 +479,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni001F
@@ -424,6 +489,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: space
@@ -432,6 +499,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: exclam
@@ -440,6 +509,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: quotedbl
@@ -473,6 +544,7 @@ SplineSet
  1038 1689 1038 1689 997 1646 c 0,28,29
  957 1604 957 1604 897 1604 c 0,15,16
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: numbersign
@@ -481,6 +553,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: dollar
@@ -489,6 +563,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: percent
@@ -563,6 +639,7 @@ SplineSet
  1607 685 1607 685 1545 623 c 128,-1,52
  1483 561 1483 561 1483 473 c 128,-1,53
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: ampersand
@@ -645,6 +722,7 @@ SplineSet
  1466 616 l 1,91,-1
  832 1342 l 1,77,78
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: quotesingle
@@ -667,6 +745,7 @@ SplineSet
  1038 1689 1038 1689 997 1646 c 0,13,14
  957 1604 957 1604 897 1604 c 0,0,1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: parenleft
@@ -697,6 +776,7 @@ SplineSet
  1474 323 1474 323 1460 266 c 128,-1,0
  1446 209 1446 209 1395.5 179 c 128,-1,1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: parenright
@@ -727,6 +807,7 @@ SplineSet
  701 2791 701 2791 715 2848 c 128,-1,0
  729 2905 729 2905 779.5 2935 c 128,-1,1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: asterisk
@@ -787,6 +868,7 @@ SplineSet
  1185 2394 1185 2394 1226 2353 c 128,-1,56
  1267 2312 1267 2312 1267 2253 c 2,0,1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: plus
@@ -823,6 +905,7 @@ SplineSet
  987 2233 987 2233 1028.5 2191.5 c 128,-1,28
  1070 2150 1070 2150 1070 2091 c 2,0,1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: comma
@@ -854,6 +937,7 @@ SplineSet
  934 390 934 390 934 480 c 2,31,-1
  934 795 l 2,0,1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: hyphen
@@ -876,6 +960,7 @@ SplineSet
  201 880 201 880 160 921.5 c 128,-1,0
  119 963 119 963 119 1021.5 c 128,-1,1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: period
@@ -900,6 +985,7 @@ SplineSet
  934 93 934 93 934 158 c 2,15,-1
  934 473 l 2,0,1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: slash
@@ -922,6 +1008,7 @@ SplineSet
  1819 3093 1819 3093 1875.5 3108 c 128,-1,0
  1932 3123 1932 3123 1982.5 3093.5 c 128,-1,1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: zero
@@ -969,6 +1056,7 @@ SplineSet
  119 2227 119 2227 170.5 2416.5 c 128,-1,49
  222 2606 222 2606 326 2756 c 0,22,23
 EndSplineSet
+Validated: 1
 Substitution2: "'zero' Slashed Zero in Latin lookup 0 subtable" zero.zero
 EndChar
 
@@ -1005,6 +1093,7 @@ SplineSet
  852 3104 852 3104 910.5 3111.5 c 128,-1,27
  969 3119 969 3119 1015 3083 c 0,0,1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: two
@@ -1055,6 +1144,7 @@ SplineSet
  718 2830 718 2830 525 2582 c 0,51,52
  427 2455 427 2455 400 2334 c 0,0,1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: three
@@ -1128,6 +1218,7 @@ SplineSet
  851 2829 851 2829 727 2773.5 c 128,-1,81
  603 2718 603 2718 527 2624 c 0,0,1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: four
@@ -1166,6 +1257,7 @@ SplineSet
  508 1025 l 1,30,-1
  1338 1025 l 1,28,-1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: five
@@ -1220,6 +1312,7 @@ SplineSet
  120 1835 120 1835 120 1910 c 2,56,-1
  120 2931 l 2,0,1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: six
@@ -1278,6 +1371,7 @@ SplineSet
  487 1345 487 1345 444.5 1223 c 128,-1,68
  402 1101 402 1101 402 947 c 0,51,52
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: seven
@@ -1308,6 +1402,7 @@ SplineSet
  202 2830 202 2830 161 2871.5 c 128,-1,0
  120 2913 120 2913 120 2971.5 c 128,-1,1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: eight
@@ -1403,6 +1498,7 @@ SplineSet
  1416 1475 1416 1475 1297.5 1512 c 128,-1,82
  1179 1549 1179 1549 1086 1549 c 128,-1,83
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: nine
@@ -1460,6 +1556,7 @@ SplineSet
  1683 1769 1683 1769 1726 1891 c 128,-1,66
  1769 2013 1769 2013 1769 2167 c 0,49,50
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: colon
@@ -1497,6 +1594,7 @@ SplineSet
  473 408 473 408 473 473 c 2,31,-1
  473 787 l 2,16,17
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: semicolon
@@ -1534,6 +1632,7 @@ SplineSet
  591 485 591 485 591 550 c 2,31,-1
  591 943 l 2,16,17
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: less
@@ -1568,6 +1667,7 @@ SplineSet
  1710 252 1710 252 1702 252 c 0,39,40
  1655 252 1655 252 1617 282 c 2,0,1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: equal
@@ -1578,29 +1678,30 @@ Flags: W
 LayerCount: 2
 Fore
 SplineSet
-371 1736 m 128,-1,1
- 371 1794 371 1794 412 1836 c 0,2,3
- 454 1878 454 1878 512 1878 c 2,4,-1
- 2084 1878 l 2,5,6
- 2143 1878 2143 1878 2184 1836 c 128,-1,7
- 2225 1794 2225 1794 2225 1736 c 128,-1,8
- 2225 1678 2225 1678 2184 1636 c 0,9,10
- 2142 1594 2142 1594 2084 1594 c 2,11,-1
- 512 1594 l 2,12,13
- 453 1594 453 1594 412 1636 c 128,-1,0
- 371 1678 371 1678 371 1736 c 128,-1,1
-371 807 m 0,14,15
- 371 875 371 875 412 907 c 0,16,17
- 468 948 468 948 512 948 c 2,18,-1
- 2084 948 l 2,19,20
- 2142 948 2142 948 2184 907 c 0,21,22
- 2225 866 2225 866 2225 807 c 0,23,24
- 2225 739 2225 739 2184 707 c 0,25,26
- 2128 666 2128 666 2084 666 c 2,27,-1
- 512 666 l 2,28,29
- 454 666 454 666 412 707 c 0,30,31
- 371 748 371 748 371 807 c 0,14,15
+142 1458 m 128,-1,1
+ 142 1516 142 1516 183 1558 c 0,2,3
+ 225 1600 225 1600 283 1600 c 2,4,-1
+ 2059 1604 l 2,5,6
+ 2063.97460938 1604.01074219 2063.97460938 1604.01074219 2158.99902344 1562.14257812 c 0,7,8
+ 2200 1544 2200 1544 2200 1462 c 0,9,10
+ 2200 1404 2200 1404 2159 1362 c 0,11,12
+ 2117.13085938 1320.13085938 2117.13085938 1320.13085938 2059 1320 c 2,13,-1
+ 283 1316 l 2,14,15
+ 224.129882812 1315.8671875 224.129882812 1315.8671875 183.064453125 1357.93359375 c 128,-1,0
+ 142 1400 142 1400 142 1458 c 128,-1,1
+142 529 m 0,16,17
+ 142 599 142 599 183 629 c 0,18,19
+ 239 670 239 670 283 670 c 2,20,-1
+ 2059 674 l 2,21,22
+ 2059.99414062 674.001953125 2059.99414062 674.001953125 2159 633 c 0,23,24
+ 2200 616 2200 616 2200 533 c 0,25,26
+ 2200 463 2200 463 2159 433 c 0,27,28
+ 2103.34960938 392.255859375 2103.34960938 392.255859375 1994 392 c 2,29,-1
+ 283 388 l 2,30,31
+ 225.138671875 387.864257812 225.138671875 387.864257812 183 429 c 0,32,33
+ 142 470 142 470 142 529 c 0,16,17
 EndSplineSet
+Validated: 524289
 EndChar
 
 StartChar: greater
@@ -1635,6 +1736,7 @@ SplineSet
  222 2859 222 2859 230 2859 c 0,39,40
  277 2859 277 2859 315 2829 c 2,0,1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: question
@@ -1643,6 +1745,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: at
@@ -1676,6 +1780,7 @@ SplineSet
  2314 155 l 2,3,4
 1375 3104 m 1024,29,30
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: A
@@ -1686,32 +1791,33 @@ Flags: W
 LayerCount: 2
 Fore
 SplineSet
-1127 2605 m 1,0,-1
- 514 1147 l 1,1,-1
- 1739 1147 l 1,2,-1
- 1127 2605 l 1,0,-1
-1890 129 m 2,3,4
- 1890 129 1890 129 1823 865 c 1,5,-1
- 431 865 l 1,6,-1
- 364 129 l 2,7,8
- 359 71 359 71 314 33.5 c 128,-1,9
- 269 -4 269 -4 210.5 1 c 128,-1,10
- 152 6 152 6 114.5 51.5 c 128,-1,11
- 77 97 77 97 82 155 c 2,12,-1
- 161 1017 l 2,13,14
- 162 1043 162 1043 173 1066 c 2,15,-1
- 995 3021 l 2,16,17
- 1016 3078 1016 3078 1072 3101 c 0,18,19
- 1136 3127 1136 3127 1196 3094 c 0,20,21
- 1240 3069 1240 3069 1259 3022 c 2,22,-1
- 2081 1064 l 2,23,24
- 2091 1040 2091 1040 2093 1015 c 2,25,-1
- 2171 155 l 2,26,27
- 2177 96 2177 96 2139.5 51 c 128,-1,28
- 2102 6 2102 6 2043.5 1 c 128,-1,29
- 1985 -4 1985 -4 1940 33.5 c 128,-1,30
- 1895 71 1895 71 1890 129 c 2,3,4
+1127 2605 m 5,0,-1
+ 514 1147 l 5,1,-1
+ 1739 1147 l 5,2,-1
+ 1127 2605 l 5,0,-1
+1890 129 m 6,3,4
+ 1890 129 1890 129 1823 865 c 5,5,-1
+ 431 865 l 5,6,-1
+ 364 129 l 6,7,8
+ 359 71 359 71 314 33.5 c 132,-1,9
+ 269 -4 269 -4 210.5 1 c 132,-1,10
+ 152 6 152 6 114.5 51.5 c 132,-1,11
+ 77 97 77 97 82 155 c 6,12,-1
+ 161 1017 l 6,13,14
+ 162 1043 162 1043 173 1066 c 6,15,-1
+ 995 3021 l 6,16,17
+ 1016 3078 1016 3078 1072 3101 c 4,18,19
+ 1136 3127 1136 3127 1196 3094 c 4,20,21
+ 1240 3069 1240 3069 1259 3022 c 6,22,-1
+ 2081 1064 l 6,23,24
+ 2091 1040 2091 1040 2093 1015 c 6,25,-1
+ 2171 155 l 6,26,27
+ 2177 96 2177 96 2139.5 51 c 132,-1,28
+ 2102 6 2102 6 2043.5 1 c 132,-1,29
+ 1985 -4 1985 -4 1940 33.5 c 132,-1,30
+ 1895 71 1895 71 1890 129 c 6,3,4
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: B
@@ -1767,6 +1873,7 @@ SplineSet
  1467 1414 1467 1414 1360 1414 c 2,58,-1
  401 1414 l 1,45,-1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: C
@@ -1831,6 +1938,7 @@ SplineSet
  458 2479 458 2479 430 2351.5 c 128,-1,71
  402 2224 402 2224 402 2096 c 2,0,-1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: D
@@ -1868,6 +1976,7 @@ SplineSet
  1391 2830 1391 2830 1046 2830 c 2,34,-1
  402 2830 l 1,20,-1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: E
@@ -1905,6 +2014,7 @@ SplineSet
  119 84 119 84 119 143 c 2,29,-1
  119 2970 l 2,0,1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: F
@@ -1938,6 +2048,7 @@ SplineSet
  1 85 1 85 1 143 c 2,32,-1
  1 2970 l 2,0,1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: G
@@ -2010,6 +2121,7 @@ SplineSet
  355 2468 355 2468 320 2339 c 0,110,111
  284 2209 284 2209 284 2095 c 2,0,1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: H
@@ -2046,6 +2158,7 @@ SplineSet
  0 3030 0 3030 42 3071 c 0,28,29
  83 3113 83 3113 142 3113 c 0,0,1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: I
@@ -2082,6 +2195,7 @@ SplineSet
  203 2829 203 2829 161.5 2870.5 c 128,-1,0
  120 2912 120 2912 120 2970.5 c 128,-1,1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: J
@@ -2136,6 +2250,7 @@ SplineSet
  1280 2829 1280 2829 1238.5 2870.5 c 128,-1,0
  1197 2912 1197 2912 1197 2971 c 128,-1,1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: K
@@ -2173,6 +2288,7 @@ SplineSet
  186 3034 186 3034 226 3073.5 c 128,-1,0
  266 3113 266 3113 322 3113 c 128,-1,1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: L
@@ -2199,6 +2315,7 @@ SplineSet
  120 3030 120 3030 161.5 3071.5 c 128,-1,0
  203 3113 203 3113 261.5 3113 c 128,-1,1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: M
@@ -2238,6 +2355,7 @@ SplineSet
  143 3061 143 3061 178 3086 c 0,36,0
  227 3121 227 3121 285 3111 c 128,-1,1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: N
@@ -2273,6 +2391,7 @@ SplineSet
  118 3017 118 3017 147.5 3056 c 128,-1,0
  177 3095 177 3095 223 3108 c 128,-1,1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: O
@@ -2319,6 +2438,7 @@ SplineSet
  237 1235 237 1235 237 1556 c 0,44,45
  237 2240 237 2240 466 2637 c 0,20,21
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: P
@@ -2365,6 +2485,7 @@ SplineSet
  401 2830 l 1,40,-1
  401 1699 l 1,25,-1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: Q
@@ -2439,6 +2560,7 @@ SplineSet
  2099 925 2099 925 2057 767 c 128,-1,71
  2015 609 2015 609 1934 472 c 1,34,-1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: R
@@ -2492,6 +2614,7 @@ SplineSet
  403 2829 l 1,48,-1
  402 1697 l 1,33,-1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: S
@@ -2564,6 +2687,7 @@ SplineSet
  2291 2247 2291 2247 2250 2206 c 128,-1,103
  2209 2165 2209 2165 2151 2165 c 0,0,1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: T
@@ -2593,6 +2717,7 @@ SplineSet
  202 2830 202 2830 161 2871 c 128,-1,0
  120 2912 120 2912 120 2971 c 128,-1,1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: U
@@ -2641,6 +2766,7 @@ SplineSet
  119 3030 119 3030 160.5 3071.5 c 128,-1,0
  202 3113 202 3113 260.5 3113 c 128,-1,1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: V
@@ -2675,6 +2801,7 @@ SplineSet
  1244 49 1244 49 1198.5 21 c 128,-1,27
  1153 -7 1153 -7 1102 2 c 0,0,1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: W
@@ -2717,6 +2844,7 @@ SplineSet
  2055 3109 2055 3109 2094 3065.5 c 128,-1,41
  2133 3022 2133 3022 2130 2964 c 2,0,1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: X
@@ -2765,6 +2893,7 @@ SplineSet
  119 3030 119 3030 160.5 3071 c 128,-1,0
  202 3112 202 3112 260.5 3112 c 128,-1,1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: Y
@@ -2801,6 +2930,7 @@ SplineSet
  119 3030 119 3030 160.5 3071 c 128,-1,0
  202 3112 202 3112 260.5 3112 c 128,-1,1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: Z
@@ -2835,6 +2965,7 @@ SplineSet
  202 3113 202 3113 260 3113 c 2,26,-1
  2065 3113 l 2,0,1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: bracketleft
@@ -2863,6 +2994,7 @@ SplineSet
  1833 0 1833 0 906 0 c 1,21,-1
  902 283 l 1,0,-1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: backslash
@@ -2871,6 +3003,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: bracketright
@@ -2899,6 +3033,7 @@ SplineSet
  1974 3112 1974 3112 1974 2829 c 2,21,-1
  1974 283 l 1,0,-1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: asciicircum
@@ -2907,6 +3042,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: underscore
@@ -2929,6 +3066,7 @@ SplineSet
  101 18 101 18 60 59.5 c 128,-1,0
  19 101 19 101 19 159.5 c 128,-1,1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: grave
@@ -2937,6 +3075,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: a
@@ -2945,6 +3085,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: b
@@ -2953,6 +3095,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: c
@@ -2961,6 +3105,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: d
@@ -2969,6 +3115,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: e
@@ -2977,6 +3125,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: f
@@ -2985,6 +3135,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: g
@@ -2993,6 +3145,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: h
@@ -3001,6 +3155,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: i
@@ -3009,6 +3165,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: j
@@ -3017,6 +3175,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: k
@@ -3025,6 +3185,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: l
@@ -3033,6 +3195,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: m
@@ -3041,6 +3205,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: n
@@ -3049,6 +3215,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: o
@@ -3057,6 +3225,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: p
@@ -3065,6 +3235,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: q
@@ -3073,6 +3245,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: r
@@ -3081,6 +3255,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: s
@@ -3151,6 +3327,7 @@ SplineSet
  119 1707 119 1707 177.5 1826.5 c 128,-1,87
  236 1946 236 1946 351 2026 c 0,0,1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: t
@@ -3159,6 +3336,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: u
@@ -3167,6 +3346,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: v
@@ -3175,6 +3356,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: w
@@ -3183,6 +3366,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: x
@@ -3191,6 +3376,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: y
@@ -3199,6 +3386,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: z
@@ -3207,6 +3396,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: braceleft
@@ -3215,6 +3406,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: bar
@@ -3252,6 +3445,7 @@ SplineSet
  473 92 473 92 473 157 c 2,31,-1
  473 471 l 2,16,17
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: braceright
@@ -3260,6 +3454,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: asciitilde
@@ -3268,6 +3464,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni007F
@@ -3276,6 +3474,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0080
@@ -3284,6 +3484,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0081
@@ -3292,6 +3494,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0082
@@ -3300,6 +3504,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0083
@@ -3308,6 +3514,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0084
@@ -3316,6 +3524,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0085
@@ -3324,6 +3534,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0086
@@ -3332,6 +3544,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0087
@@ -3340,6 +3554,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0088
@@ -3348,6 +3564,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0089
@@ -3356,6 +3574,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni008A
@@ -3364,6 +3584,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni008B
@@ -3372,6 +3594,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni008C
@@ -3380,6 +3604,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni008D
@@ -3388,6 +3614,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni008E
@@ -3396,6 +3624,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni008F
@@ -3404,6 +3634,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0090
@@ -3412,6 +3644,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0091
@@ -3420,6 +3654,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0092
@@ -3428,6 +3664,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0093
@@ -3436,6 +3674,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0094
@@ -3444,6 +3684,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0095
@@ -3452,6 +3694,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0096
@@ -3460,6 +3704,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0097
@@ -3468,6 +3714,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0098
@@ -3476,6 +3724,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0099
@@ -3484,6 +3734,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni009A
@@ -3492,6 +3744,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni009B
@@ -3500,6 +3754,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni009C
@@ -3508,6 +3764,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni009D
@@ -3516,6 +3774,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni009E
@@ -3524,6 +3784,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni009F
@@ -3532,6 +3794,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni00A0
@@ -3540,6 +3804,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: exclamdown
@@ -3548,6 +3814,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: cent
@@ -3556,6 +3824,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: sterling
@@ -3564,6 +3834,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: currency
@@ -3572,6 +3844,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: yen
@@ -3580,6 +3854,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: brokenbar
@@ -3588,6 +3864,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: section
@@ -3596,6 +3874,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: dieresis
@@ -3604,6 +3884,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: copyright
@@ -3612,6 +3894,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: ordfeminine
@@ -3620,6 +3904,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: guillemotleft
@@ -3628,6 +3914,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: logicalnot
@@ -3636,6 +3924,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni00AD
@@ -3644,6 +3934,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: registered
@@ -3652,6 +3944,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: macron
@@ -3660,6 +3954,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: degree
@@ -3697,6 +3993,7 @@ SplineSet
  1390 2688 1390 2688 1455.5 2622.5 c 128,-1,16
  1521 2557 1521 2557 1613.5 2557 c 128,-1,17
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: plusminus
@@ -3705,6 +4002,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni00B2
@@ -3713,6 +4012,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni00B3
@@ -3721,6 +4022,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: acute
@@ -3729,6 +4032,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: mu
@@ -3737,6 +4042,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: paragraph
@@ -3745,6 +4052,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: periodcentered
@@ -3753,6 +4062,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: cedilla
@@ -3761,6 +4072,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni00B9
@@ -3769,6 +4082,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: ordmasculine
@@ -3777,6 +4092,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: guillemotright
@@ -3785,6 +4102,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: onequarter
@@ -3793,6 +4112,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: onehalf
@@ -3801,6 +4122,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: threequarters
@@ -3809,6 +4132,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: questiondown
@@ -3817,6 +4142,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Agrave
@@ -3825,6 +4152,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Aacute
@@ -3833,6 +4162,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Acircumflex
@@ -3841,6 +4172,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Atilde
@@ -3849,6 +4182,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Adieresis
@@ -3857,6 +4192,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Aring
@@ -3865,6 +4202,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: AE
@@ -3873,6 +4212,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Ccedilla
@@ -3881,6 +4222,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Egrave
@@ -3889,6 +4232,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Eacute
@@ -3897,6 +4242,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Ecircumflex
@@ -3905,6 +4252,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Edieresis
@@ -3913,6 +4262,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Igrave
@@ -3921,6 +4272,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Iacute
@@ -3929,6 +4282,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Icircumflex
@@ -3937,6 +4292,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Idieresis
@@ -3945,6 +4302,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Eth
@@ -3953,6 +4312,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Ntilde
@@ -3961,6 +4322,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Ograve
@@ -3969,6 +4332,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Oacute
@@ -3977,6 +4342,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Ocircumflex
@@ -3985,6 +4352,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Otilde
@@ -3993,6 +4362,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Odieresis
@@ -4001,6 +4372,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: multiply
@@ -4009,6 +4382,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Oslash
@@ -4017,6 +4392,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Ugrave
@@ -4025,6 +4402,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Uacute
@@ -4033,6 +4412,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Ucircumflex
@@ -4041,6 +4422,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Udieresis
@@ -4049,6 +4432,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Yacute
@@ -4057,6 +4442,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Thorn
@@ -4065,6 +4452,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: germandbls
@@ -4073,6 +4462,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: agrave
@@ -4081,6 +4472,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: aacute
@@ -4089,6 +4482,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: acircumflex
@@ -4097,6 +4492,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: atilde
@@ -4105,6 +4502,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: adieresis
@@ -4113,6 +4512,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: aring
@@ -4121,6 +4522,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: ae
@@ -4129,6 +4532,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: ccedilla
@@ -4137,6 +4542,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: egrave
@@ -4145,6 +4552,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: eacute
@@ -4153,6 +4562,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: ecircumflex
@@ -4161,6 +4572,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: edieresis
@@ -4169,6 +4582,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: igrave
@@ -4177,6 +4592,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: iacute
@@ -4185,6 +4602,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: icircumflex
@@ -4193,6 +4612,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: idieresis
@@ -4201,6 +4622,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: eth
@@ -4209,6 +4632,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: ntilde
@@ -4217,6 +4642,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: ograve
@@ -4225,6 +4652,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: oacute
@@ -4233,6 +4662,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: ocircumflex
@@ -4241,6 +4672,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: otilde
@@ -4249,6 +4682,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: odieresis
@@ -4257,6 +4692,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: divide
@@ -4265,6 +4702,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: oslash
@@ -4273,6 +4712,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: ugrave
@@ -4281,6 +4722,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uacute
@@ -4289,6 +4732,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: ucircumflex
@@ -4297,6 +4742,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: udieresis
@@ -4305,6 +4752,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: yacute
@@ -4313,6 +4762,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: thorn
@@ -4321,6 +4772,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: ydieresis
@@ -4329,6 +4782,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Amacron
@@ -4337,6 +4792,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: amacron
@@ -4345,6 +4802,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Abreve
@@ -4353,6 +4812,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: abreve
@@ -4361,6 +4822,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Aogonek
@@ -4369,6 +4832,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: aogonek
@@ -4377,6 +4842,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Cacute
@@ -4385,6 +4852,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: cacute
@@ -4393,6 +4862,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Ccircumflex
@@ -4401,6 +4872,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: ccircumflex
@@ -4409,6 +4882,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Cdotaccent
@@ -4417,6 +4892,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: cdotaccent
@@ -4425,6 +4902,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Ccaron
@@ -4433,6 +4912,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: ccaron
@@ -4441,6 +4922,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Dcaron
@@ -4449,6 +4932,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: dcaron
@@ -4457,6 +4942,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Dcroat
@@ -4465,6 +4952,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: dcroat
@@ -4473,6 +4962,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Emacron
@@ -4481,6 +4972,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: emacron
@@ -4489,6 +4982,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Ebreve
@@ -4497,6 +4992,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: ebreve
@@ -4505,6 +5002,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Edotaccent
@@ -4513,6 +5012,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: edotaccent
@@ -4521,6 +5022,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Eogonek
@@ -4529,6 +5032,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: eogonek
@@ -4537,6 +5042,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Ecaron
@@ -4545,6 +5052,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: ecaron
@@ -4553,6 +5062,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Gcircumflex
@@ -4561,6 +5072,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: gcircumflex
@@ -4569,6 +5082,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Gbreve
@@ -4577,6 +5092,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: gbreve
@@ -4585,6 +5102,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Gdotaccent
@@ -4593,6 +5112,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: gdotaccent
@@ -4601,6 +5122,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0122
@@ -4609,6 +5132,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0123
@@ -4617,6 +5142,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Hcircumflex
@@ -4625,6 +5152,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: hcircumflex
@@ -4633,6 +5162,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Hbar
@@ -4641,6 +5172,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: hbar
@@ -4649,6 +5182,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Itilde
@@ -4657,6 +5192,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: itilde
@@ -4665,6 +5202,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Imacron
@@ -4673,6 +5212,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: imacron
@@ -4681,6 +5222,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Ibreve
@@ -4689,6 +5232,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: ibreve
@@ -4697,6 +5242,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Iogonek
@@ -4705,6 +5252,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: iogonek
@@ -4713,6 +5262,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Idotaccent
@@ -4721,6 +5272,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: dotlessi
@@ -4729,6 +5282,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: IJ
@@ -4737,6 +5292,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: ij
@@ -4745,6 +5302,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Jcircumflex
@@ -4753,6 +5312,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: jcircumflex
@@ -4761,6 +5322,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0136
@@ -4769,6 +5332,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0137
@@ -4777,6 +5342,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: kgreenlandic
@@ -4785,6 +5352,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Lacute
@@ -4793,6 +5362,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: lacute
@@ -4801,6 +5372,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni013B
@@ -4809,6 +5382,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni013C
@@ -4817,6 +5392,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Lcaron
@@ -4825,6 +5402,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: lcaron
@@ -4833,6 +5412,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Ldot
@@ -4841,6 +5422,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: ldot
@@ -4849,6 +5432,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Lslash
@@ -4857,6 +5442,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: lslash
@@ -4865,6 +5452,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Nacute
@@ -4873,6 +5462,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: nacute
@@ -4881,6 +5472,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0145
@@ -4889,6 +5482,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0146
@@ -4897,6 +5492,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Ncaron
@@ -4905,6 +5502,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: ncaron
@@ -4913,6 +5512,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: napostrophe
@@ -4921,6 +5522,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Eng
@@ -4929,6 +5532,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: eng
@@ -4937,6 +5542,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Omacron
@@ -4945,6 +5552,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: omacron
@@ -4953,6 +5562,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Obreve
@@ -4961,6 +5572,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: obreve
@@ -4969,6 +5582,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Ohungarumlaut
@@ -4977,6 +5592,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: ohungarumlaut
@@ -4985,6 +5602,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: OE
@@ -4993,6 +5612,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: oe
@@ -5001,6 +5622,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Racute
@@ -5009,6 +5632,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: racute
@@ -5017,6 +5642,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0156
@@ -5025,6 +5652,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0157
@@ -5033,6 +5662,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Rcaron
@@ -5041,6 +5672,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: rcaron
@@ -5049,6 +5682,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Sacute
@@ -5057,6 +5692,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: sacute
@@ -5065,6 +5702,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Scircumflex
@@ -5073,6 +5712,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: scircumflex
@@ -5081,6 +5722,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Scedilla
@@ -5089,6 +5732,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: scedilla
@@ -5097,6 +5742,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Scaron
@@ -5105,6 +5752,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: scaron
@@ -5113,6 +5762,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0162
@@ -5121,6 +5772,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uni0163
@@ -5129,6 +5782,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Tcaron
@@ -5137,6 +5792,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: tcaron
@@ -5145,6 +5802,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Tbar
@@ -5153,6 +5812,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: tbar
@@ -5161,6 +5822,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Utilde
@@ -5169,6 +5832,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: utilde
@@ -5177,6 +5842,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Umacron
@@ -5185,6 +5852,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: umacron
@@ -5193,6 +5862,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Ubreve
@@ -5201,6 +5872,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: ubreve
@@ -5209,6 +5882,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Uring
@@ -5217,6 +5892,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uring
@@ -5225,6 +5902,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Uhungarumlaut
@@ -5233,6 +5912,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uhungarumlaut
@@ -5241,6 +5922,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Uogonek
@@ -5249,6 +5932,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: uogonek
@@ -5257,6 +5942,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Wcircumflex
@@ -5265,6 +5952,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: wcircumflex
@@ -5273,6 +5962,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Ycircumflex
@@ -5281,6 +5972,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: ycircumflex
@@ -5289,6 +5982,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Ydieresis
@@ -5297,6 +5992,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: Zacute
@@ -5305,6 +6002,8 @@ Width: 2568
 GlyphClass: 2
 Flags: W
 LayerCount: 2
+Fore
+Validated: 1
 EndChar
 
 StartChar: filledbox
@@ -5343,6 +6042,7 @@ SplineSet
  485 2632 l 1,28,-1
  485 332 l 1,25,-1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: H22073
@@ -5372,6 +6072,7 @@ SplineSet
  485 2632 l 1,19,-1
  485 332 l 1,16,-1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: uni25AF
@@ -5401,6 +6102,7 @@ SplineSet
  1809 2829 l 1,19,-1
  402 2829 l 1,16,-1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: uni25C7
@@ -5430,6 +6132,7 @@ SplineSet
  2075 1554 l 1,22,-1
  1269 2716 l 1,19,-1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: zero.zero
@@ -5470,6 +6173,7 @@ SplineSet
  1836 2263 1836 2263 1760 2446 c 1,42,-1
  886 401 l 1,33,34
 EndSplineSet
+Validated: 1
 EndChar
 EndChars
 EndSplineFont
