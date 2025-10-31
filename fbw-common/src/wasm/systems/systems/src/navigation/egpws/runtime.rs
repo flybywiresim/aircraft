@@ -1198,8 +1198,6 @@ impl EnhancedGroundProximityWarningComputerRuntime {
         discrete_outputs.alert_lamp = self.alert_lamp_activated;
         discrete_outputs.warning_lamp = self.warning_lamp_activated;
         discrete_outputs.audio_on = self.aural_output != AuralWarning::None;
-        discrete_outputs.terrain_obstacle_caution = false;
-        discrete_outputs.terrain_obstacle_warning = false;
         discrete_outputs.gpws_inop = self.gpws_sys_fault || self.remaining_startup > Duration::ZERO;
         discrete_outputs.terrain_inop =
             self.terr_sys_fault || self.remaining_startup > Duration::ZERO;
@@ -1207,6 +1205,5 @@ impl EnhancedGroundProximityWarningComputerRuntime {
         discrete_outputs.raas_inop = false;
         discrete_outputs.capt_terrain_display_active = false;
         discrete_outputs.fo_terrain_display_active = false;
-        discrete_outputs.tcas_inhibit = false;
     }
 }

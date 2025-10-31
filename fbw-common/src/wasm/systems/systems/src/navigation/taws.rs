@@ -37,15 +37,12 @@ pub struct TerrainAwarenessWarningSystemDiscreteOutputs {
     pub warning_lamp: bool,
     pub alert_lamp: bool,
     pub audio_on: bool,
-    pub terrain_obstacle_caution: bool,
-    pub terrain_obstacle_warning: bool,
     pub gpws_inop: bool,
     pub terrain_inop: bool,
     pub terrain_not_available: bool,
     pub raas_inop: bool,
     pub capt_terrain_display_active: bool,
     pub fo_terrain_display_active: bool,
-    pub tcas_inhibit: bool,
 }
 
 pub trait TerrainAwarenessWarningSystemDiscreteOutput {
