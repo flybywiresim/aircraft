@@ -10,6 +10,7 @@ nalgebra = "0.33.0"
 systems = { path = "../../../../../fbw-common/src/wasm/systems/systems" }
 
 [dev-dependencies]
+more-asserts.workspace = true
 ntest.workspace = true
 rstest.workspace = true
 rand.workspace = true
