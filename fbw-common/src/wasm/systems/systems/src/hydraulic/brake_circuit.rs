@@ -665,6 +665,7 @@ mod tests {
 
     use crate::simulation::test::{ElementCtorFn, SimulationTestBed, TestBed};
     use crate::simulation::{Aircraft, UpdateContext};
+    use more_asserts::{assert_ge, assert_le};
     use std::time::Duration;
     use uom::si::{pressure::psi, volume::gallon};
 
@@ -812,19 +813,19 @@ mod tests {
 
         assert!(test_bed.query_element(|e| e.current_position) >= 0.99);
 
-        assert!(
-            test_bed.query_element(|e| e.volume_to_actuator_accumulator)
-                >= Volume::new::<gallon>(0.04 - 0.0001)
+        assert_ge!(
+            test_bed.query_element(|e| e.volume_to_actuator_accumulator),
+            Volume::new::<gallon>(0.04 - 0.0001)
         );
 
-        assert!(
-            test_bed.query_element(|e| e.volume_to_actuator_accumulator)
-                <= Volume::new::<gallon>(0.04 + 0.0001)
+        assert_le!(
+            test_bed.query_element(|e| e.volume_to_actuator_accumulator),
+            Volume::new::<gallon>(0.04 + 0.0001)
         );
 
-        assert!(
-            test_bed.query_element(|e| e.volume_to_res_accumulator)
-                <= Volume::new::<gallon>(0.0001)
+        assert_le!(
+            test_bed.query_element(|e| e.volume_to_res_accumulator),
+            Volume::new::<gallon>(0.0001)
         );
 
         test_bed.command_element(|e| e.reset_volumes());
@@ -833,8 +834,8 @@ mod tests {
 
         test_bed.run_multiple_frames(Duration::from_secs(1));
 
-        assert!(test_bed.query_element(|e| e.current_position) <= 0.01);
-        assert!(test_bed.query_element(|e| e.current_position) >= 0.);
+        assert_le!(test_bed.query_element(|e| e.current_position), 0.01);
+        assert_ge!(test_bed.query_element(|e| e.current_position), 0.);
     }
 
     #[test]
