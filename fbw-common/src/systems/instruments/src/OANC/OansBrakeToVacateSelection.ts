@@ -3,6 +3,7 @@
 
 import { ConsumerSubject, EventBus, MappedSubject, NodeReference, Subject, Subscribable } from '@microsoft/msfs-sdk';
 import {
+  AmdbFeature,
   AmdbProperties,
   Arinc429LocalVarConsumerSubject,
   BTV_MIN_TOUCHDOWN_ZONE_DISTANCE,
@@ -10,19 +11,8 @@ import {
   OansMapProjection,
   Runway,
 } from '@flybywiresim/fbw-sdk';
-import {
-  booleanContains,
-  booleanDisjoint,
-  Feature,
-  FeatureCollection,
-  Geometry,
-  lineOffset,
-  lineString,
-  point,
-  polygon,
-  Polygon,
-  Position,
-} from '@turf/turf';
+import { booleanContains, booleanDisjoint, lineOffset, lineString, point, polygon } from '@turf/turf';
+import { FeatureCollection, Geometry, Polygon, Position } from 'geojson';
 import { Arinc429Register, Arinc429SignStatusMatrix, MathUtils } from '@flybywiresim/fbw-sdk';
 import { Label, LabelStyle } from '.';
 import { BtvData } from '../../../shared/src/publishers/OansBtv/BtvPublisher';
@@ -170,12 +160,10 @@ export class OansBrakeToVacateSelection<T extends number> {
     this.fwsFlightPhase,
   );
 
-  selectRunwayFromOans(
-    runway: string,
-    centerlineFeature: Feature<Geometry, AmdbProperties>,
-    thresholdFeature: Feature<Geometry, AmdbProperties>,
-  ) {
+  selectRunwayFromOans(runway: string, centerlineFeature: AmdbFeature, thresholdFeature: AmdbFeature) {
     this.clearSelection();
+
+    // FIXME specify geometry in types instead of casting
 
     // Select opposite threshold location
     const thrLoc = thresholdFeature.geometry.coordinates as Position;
@@ -216,7 +204,7 @@ export class OansBrakeToVacateSelection<T extends number> {
     this.drawBtvLayer();
   }
 
-  selectExitFromOans(exit: string, feature: Feature<Geometry, AmdbProperties>) {
+  selectExitFromOans(exit: string, feature: AmdbFeature) {
     if (this.btvRunway.get() == null || !this.btvThresholdPosition || !this.btvOppositeThresholdPosition) {
       return;
     }
