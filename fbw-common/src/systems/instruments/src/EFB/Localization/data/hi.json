@@ -92,12 +92,14 @@
   },
   "Dispatch": {
     "Ofp": {
-      "ImportSimBriefData": "सिमब्रीफ डेटा आयात करें",
       "TT": {
         "IncreaseFontSize": "फ़ॉन्ट आकार बढ़ाएॅं",
+        "NextLoadsheetSection": "Next loadsheet section",
+        "PreviousLoadsheetSection": "Previous loadsheet section",
         "ReduceFontSize": "फ़ॉन्ट का आकार घटाएँ"
       },
       "Title": "ओएफपी",
+      "UnavailableLoadsheetSection": "Info not available or section not enabled in Simbrief.",
       "YouHaveNotYetImportedAnySimBriefData": "आपने अभी तक कोई SimBrief डेटा आयात नहीं किया है।"
     },
     "Overview": {
@@ -287,6 +289,7 @@
   "Performance": {
     "Data": "डेटा",
     "Landing": {
+      "Airport": "Airport",
       "AirportIcao": "हवाई अड्डा ICAO",
       "ApproachSpeed": "एप्रोच गती",
       "ApproachSpeedUnit": "के.टी.एस.",
@@ -295,8 +298,10 @@
       "Clear": "साफ़ करें",
       "DropDownNo": "नहीं",
       "DropDownYes": "हाँ",
+      "EnterManually": "Enter Manually",
       "FillDataFrom": "से डेटा भरें",
       "FlapsConfiguration": "फ्लैप कॉन्फ़िगरेशन",
+      "LandingWeight": "Landing Weight",
       "Low": "कम",
       "MaximumManual": "अधिकतम मैनुअल",
       "Medium": "मध्यम",
@@ -305,6 +310,7 @@
       "OverweightProcedure": "अधिक वजन की प्रक्रिया",
       "Qnh": "क्यू. एन. एच",
       "ReverseThrust": "रिवर्स थ्रस्ट",
+      "Runway": "Runway",
       "RunwayAltitude": "रनवे की ऊंचाई",
       "RunwayAltitudeUnit": "फुट एएसएल",
       "RunwayCondition": "रनवे दशा",
@@ -316,6 +322,8 @@
         "MediumPoor": "मध्यम-बेकार (2)",
         "Poor": "बेकार"
       },
+      "RunwayElevation": "Runway Elevation",
+      "RunwayElevationUnit": "ft AMSL",
       "RunwayHeading": "रनवे हेडिंग",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "रनवे एलडीए",
@@ -331,6 +339,7 @@
       "UnitFt": "फुट",
       "UnitMeter": "मीटर",
       "Weight": "भार",
+      "Wind": "Wind",
       "WindDirection": "हवा की दिशा",
       "WindDirectionUnit": "°",
       "WindMagnitude": "पवन परिमाण",
@@ -396,6 +405,8 @@
       },
       "RunwayElevation": "Runway Elevation",
       "RunwayElevationUnit": "ft",
+      "RunwayHeading": "Runway Heading",
+      "RunwayHeadingUnit": "°",
       "RunwayLengthUnitFt": "ft",
       "RunwayLengthUnitMeter": "m",
       "RunwaySlope": "Runway Slope",
@@ -556,6 +567,8 @@
       "AlignAdirs": "Instantly align ADIRS",
       "AutoBrightness": "Turn Auto Brightness On/Off",
       "Brightness": "Set flyPad brightness",
+      "CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+      "CabinLighting": "Set Cabin Lighting",
       "FinishBoarding": "Instantly finish boarding",
       "OnScreenKeyboard": "Turn OnScreen Keyboard On/Off",
       "PauseAtTod": "Arm or Disarm pause at Top of Descent",
@@ -567,8 +580,6 @@
     },
     "Title": "Quick Controls"
   },
-  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
-  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "बारे में"
@@ -651,11 +662,10 @@
       "Active": "सक्रिय",
       "Auto": "ऑटो",
       "Both": "Synchronized",
+      "CabinAutoBrightness": "Auto Cabin Lighting",
+      "CabinManualBrightness": "Cabin Lighting Brightness",
       "Calibrate": "कैलिब्रेट",
-      "Captain": "Captain",
-      "CockpitSeatUsedToControl": "Cockpit Seat Used To Control",
       "ConesEnabled": "सुरक्षा कोन",
-      "Copilot": "Copilot",
       "DefaultBarometerUnit": "डिफ़ॉल्ट बैरोमीटर यूनिट",
       "DynamicRegistrationDecal": "डायनामिक रजिस्ट्रेशन डिकल",
       "EnableSimBridge": "SimBridge कनेक्शन सक्षम करें (यदि कोई सफल कनेक्शन नहीं है तो 5 मिनट के बाद ऑटो निष्क्रिय हो जाता है)",
@@ -698,6 +708,7 @@
         "SettingTitle": "Navigraph Account Link",
         "SubscriptionStatus": {
           "None": "None",
+          "Standard": "Navigraph Standard",
           "Unknown": "Unknown",
           "Unlimited": "Navigraph Unlimited"
         },
@@ -705,6 +716,7 @@
       },
       "OverrideSimBriefUserID": "Override SimBrief User ID",
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
+      "SimbriefLoadsheetNavigationEnabled": "Simbrief Loadsheet Navigation",
       "TT": {
         "OverrideSimBriefUserID": "Alternative SimBrief user ID to use instead of the linked Navigraph Account"
       },
@@ -736,6 +748,9 @@
       "TogaOnAxis": "TOGA On Axis"
     },
     "Title": "सेटिंग",
+    "Troubleshooting": {
+      "Title": "Troubleshooting"
+    },
     "Unrealistic": "अवास्तविक",
     "flyPad": {
       "AutoBrightness": "स्वतः उज्ज्वलता",
@@ -744,7 +759,6 @@
       "Blue": "नीला",
       "Brightness": "ब्राइटनेस",
       "Dark": "डार्क",
-      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "भाषा",
       "Light": "हल्का",
       "Local": "स्थानीय",
@@ -761,8 +775,6 @@
       "UtcAndLocal": "यूटीसी और लोकल"
     }
   },
-  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
-  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "अप्रैल",
     "Aug": "अगस्त",

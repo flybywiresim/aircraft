@@ -92,12 +92,14 @@
   },
   "Dispatch": {
     "Ofp": {
-      "ImportSimBriefData": "นำเข้าข้อมูล SimBrief",
       "TT": {
         "IncreaseFontSize": "เพิ่มขนาดตัวอักษร",
+        "NextLoadsheetSection": "Next loadsheet section",
+        "PreviousLoadsheetSection": "Previous loadsheet section",
         "ReduceFontSize": "ลดขนาดตัวอักษร"
       },
       "Title": "OFP",
+      "UnavailableLoadsheetSection": "Info not available or section not enabled in Simbrief.",
       "YouHaveNotYetImportedAnySimBriefData": "คุณยังไม่ได้นำเข้าข้อมูล SimBrief ใดๆเลย"
     },
     "Overview": {
@@ -287,6 +289,7 @@
   "Performance": {
     "Data": "ข้อมูล",
     "Landing": {
+      "Airport": "Airport",
       "AirportIcao": "สนามบิน ICAO",
       "ApproachSpeed": "ความเร็ว Approach",
       "ApproachSpeedUnit": "kts",
@@ -295,8 +298,10 @@
       "Clear": "ล้าง",
       "DropDownNo": "ไม่",
       "DropDownYes": "ใช่",
+      "EnterManually": "Enter Manually",
       "FillDataFrom": "กรอกข้อมูลจาก",
       "FlapsConfiguration": "การตั้งค่า Flaps",
+      "LandingWeight": "Landing Weight",
       "Low": "ต่ำ",
       "MaximumManual": "ด้วยตัวเองสูงสุด",
       "Medium": "ปานกลาง",
@@ -305,6 +310,7 @@
       "OverweightProcedure": "ขั้นตอนการลงจอดแบบน้ำหนักเกิน",
       "Qnh": "QNH",
       "ReverseThrust": "Reverse Thrust",
+      "Runway": "Runway",
       "RunwayAltitude": "ความสูงรันเวย์",
       "RunwayAltitudeUnit": "ft ASL",
       "RunwayCondition": "สภาพรันเวย์",
@@ -316,6 +322,8 @@
         "MediumPoor": "ปานกลาง-แย่ (2)",
         "Poor": "แย่ (1)"
       },
+      "RunwayElevation": "Runway Elevation",
+      "RunwayElevationUnit": "ft AMSL",
       "RunwayHeading": " ทิศทางรันเวย์",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "ระยะที่ลงจอดได้ บนรันเวย์",
@@ -331,6 +339,7 @@
       "UnitFt": "ft",
       "UnitMeter": "m",
       "Weight": "น้ำหนัก",
+      "Wind": "Wind",
       "WindDirection": "ทิศทางลม",
       "WindDirectionUnit": "°",
       "WindMagnitude": "ขนาดลม",
@@ -396,6 +405,8 @@
       },
       "RunwayElevation": "Runway Elevation",
       "RunwayElevationUnit": "ft",
+      "RunwayHeading": "Runway Heading",
+      "RunwayHeadingUnit": "°",
       "RunwayLengthUnitFt": "ft",
       "RunwayLengthUnitMeter": "m",
       "RunwaySlope": "Runway Slope",
@@ -556,6 +567,8 @@
       "AlignAdirs": "จัดตำแหน่ง ADIRS ทันที",
       "AutoBrightness": "เปิด/ปิด การปรับแสงอัตโนมัติ",
       "Brightness": "ปรับความสว่างของ flyPad",
+      "CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+      "CabinLighting": "Set Cabin Lighting",
       "FinishBoarding": "เสร็จสิ้นการขึ้นเครื่องทันที",
       "OnScreenKeyboard": "เปิด/ปิดแป้นพิมพ์บนหน้าจอ",
       "PauseAtTod": "Arm or Disarm pause at Top of Descent",
@@ -567,8 +580,6 @@
     },
     "Title": "Quick Controls"
   },
-  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
-  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "เกี่ยวกับ"
@@ -651,11 +662,10 @@
       "Active": "ใช้งานอยู่",
       "Auto": "อัตโนมัติ",
       "Both": "ซิงโครไนซ์",
+      "CabinAutoBrightness": "Auto Cabin Lighting",
+      "CabinManualBrightness": "Cabin Lighting Brightness",
       "Calibrate": "Calibrate",
-      "Captain": "กัปตัน",
-      "CockpitSeatUsedToControl": "ที่นั่งนักบินที่ใช้ในการควบคุม",
       "ConesEnabled": "กรวยนิรภัย",
-      "Copilot": "นักบินผู้ช่วย",
       "DefaultBarometerUnit": "หน่วย Barometer เริ่มต้น",
       "DynamicRegistrationDecal": "ทะเบียนเครื่องบินแบบไดนามิก",
       "EnableSimBridge": "เปิดใช้งานการเชื่อมต่อ SimBridge (ปิดการทำงานหลังจาก 5 นาทีโดยอัตโนมัติ หากไม่มีการเชื่อมต่อที่สำเร็จ)",
@@ -698,6 +708,7 @@
         "SettingTitle": "ลิงก์บัญชี Navigraph",
         "SubscriptionStatus": {
           "None": "ไม่มี",
+          "Standard": "Navigraph Standard",
           "Unknown": "Unknown",
           "Unlimited": "Navigraph Unlimited"
         },
@@ -705,6 +716,7 @@
       },
       "OverrideSimBriefUserID": "ใช้ SimBrief User ID อื่น",
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "โปรดตรวจสอบว่าคุณได้ป้อนชื่อผู้ใช้ SimBrief หรือ pilot ID ของคุณอย่างถูกต้องแล้ว",
+      "SimbriefLoadsheetNavigationEnabled": "Simbrief Loadsheet Navigation",
       "TT": {
         "OverrideSimBriefUserID": "ID ของผู้ใช้ SimBrief เพื่อใช้แทนบัญชี Navigraph ที่ลิงก์"
       },
@@ -736,6 +748,9 @@
       "TogaOnAxis": "TOGA On Axis"
     },
     "Title": "การตั้งค่า",
+    "Troubleshooting": {
+      "Title": "Troubleshooting"
+    },
     "Unrealistic": "ไม่สมจริง",
     "flyPad": {
       "AutoBrightness": "ปรับความสว่างอัตโนมัติ",
@@ -744,7 +759,6 @@
       "Blue": "ฟ้า",
       "Brightness": "ความสว่าง",
       "Dark": "มืด",
-      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "ภาษา",
       "Light": "สว่าง",
       "Local": "ท้องถิ่น",
@@ -761,8 +775,6 @@
       "UtcAndLocal": "UTC และท้องถิ่น"
     }
   },
-  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
-  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "เม.ย.",
     "Aug": "ส.ค.",
