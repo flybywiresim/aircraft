@@ -350,7 +350,7 @@ impl EnhancedGroundProximityWarningComputerRuntime {
         let ground_to_air_pitch_condition =
             ir.pitch_angle().value_or_default() >= Angle::new::<degree>(5.);
         let air_to_ground_condition =
-            self.ra_ft < 25. && adr.computed_airspeed().value() > Velocity::new::<knot>(60.);
+            self.ra_ft < 25. && adr.computed_airspeed().value() < Velocity::new::<knot>(60.);
 
         // If the reposition signal is active, skip the normal mode logic, and use reposition override logic.
         if self.reposition_mode_confirm_node.get_output() {
