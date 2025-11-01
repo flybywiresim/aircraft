@@ -68,6 +68,12 @@ impl EnhancedGroundProximityWarningComputer {
     const MINIMUM_POWER_HOLDOVER: u64 = 200;
     const MAXIMUM_POWER_HOLDOVER: u64 = 300;
 
+    const TERR_FAULT_KEY: &str = "GPWS_TERR_FAULT";
+    const SYS_FAULT_KEY: &str = "GPWS_SYS_FAULT";
+    const WARNING_LIGHT_ON_KEY: &str = "GPWS_WARNING_LIGHT_ON";
+    const ALERT_LIGHT_ON_KEY: &str = "GPWS_ALERT_LIGHT_ON";
+    const AURAL_OUTPUT_KEY: &str = "GPWS_AURAL_OUTPUT";
+
     pub fn new(context: &mut InitContext, powered_by: ElectricalBusType) -> Self {
         let is_powered = context.has_engines_running();
         let on_ground = context.is_on_ground();
@@ -111,13 +117,13 @@ impl EnhancedGroundProximityWarningComputer {
             } else {
                 FlightPhase::Approach
             },
-            terr_fault_id: context.get_identifier("GPWS_TERR_FAULT".to_owned()),
-            sys_fault_id: context.get_identifier("GPWS_SYS_FAULT".to_owned()),
+            terr_fault_id: context.get_identifier(Self::TERR_FAULT_KEY.to_owned()),
+            sys_fault_id: context.get_identifier(Self::SYS_FAULT_KEY.to_owned()),
 
-            warning_light_on_id: context.get_identifier("GPWS_WARNING_LIGHT_ON".to_owned()),
-            alert_light_on_id: context.get_identifier("GPWS_ALERT_LIGHT_ON".to_owned()),
+            warning_light_on_id: context.get_identifier(Self::WARNING_LIGHT_ON_KEY.to_owned()),
+            alert_light_on_id: context.get_identifier(Self::ALERT_LIGHT_ON_KEY.to_owned()),
 
-            aural_output_id: context.get_identifier("GPWS_AURAL_OUTPUT".to_owned()),
+            aural_output_id: context.get_identifier(Self::AURAL_OUTPUT_KEY.to_owned()),
         }
     }
 

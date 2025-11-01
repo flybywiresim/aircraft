@@ -5,6 +5,7 @@ use uom::si::{
         Pressure, Ratio, ThermodynamicTemperature, Velocity,
     },
     length::foot,
+    velocity::{foot_per_minute, knot},
 };
 
 use crate::{
@@ -14,8 +15,8 @@ use crate::{
         LgciuGearExtension, MachNumber, PotentialOrigin, PowerConsumptionReport,
     },
     simulation::{
-        test::{SimulationTestBed, TestBed},
-        Aircraft, StartState,
+        test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
+        Aircraft, Read, SimulatorReader, StartState,
     },
 };
 
@@ -29,8 +30,8 @@ impl TestLgciu {
         Self { extended }
     }
 
-    fn set_on_ground(&mut self, on_ground: bool) {
-        self.extended = on_ground;
+    fn set_gear_extended(&mut self, extended: bool) {
+        self.extended = extended;
     }
 }
 impl LgciuGearExtension for TestLgciu {
@@ -60,6 +61,9 @@ impl LgciuGearExtension for TestLgciu {
 struct TestRa {
     radio_altitude: Length,
     failed: bool,
+
+    altitude_id: VariableIdentifier,
+    terr_height_id: VariableIdentifier,
 }
 impl RadioAltimeter for TestRa {
     fn radio_altitude(&self) -> Arinc429Word<Length> {
@@ -75,19 +79,27 @@ impl RadioAltimeter for TestRa {
     }
 }
 impl TestRa {
-    fn new(radio_altitude: Length) -> Self {
+    const ALTITUDE_KEY: &str = "TEST_RA_RADIO_ALTITUDE";
+    const TERRAIN_HEIGHT_KEY: &str = "TEST_RA_TERRAIN_HEIGHT";
+
+    fn new(context: &mut InitContext, radio_altitude: Length) -> Self {
         Self {
             radio_altitude,
             failed: false,
-        }
-    }
 
-    fn set_radio_altitude(&mut self, radio_altitude: Length) {
-        self.radio_altitude = radio_altitude;
+            altitude_id: context.get_identifier(Self::ALTITUDE_KEY.to_owned()),
+            terr_height_id: context.get_identifier(Self::TERRAIN_HEIGHT_KEY.to_owned()),
+        }
     }
 
     fn set_failed(&mut self, failed: bool) {
         self.failed = failed;
+    }
+}
+impl SimulationElement for TestRa {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.radio_altitude = Read::<Length>::read(reader, &self.altitude_id)
+            - Read::<Length>::read(reader, &self.terr_height_id);
     }
 }
 
@@ -96,14 +108,25 @@ struct TestAdiru {
     altitude: Length,
     vertical_speed: Velocity,
     pitch: Angle,
+
+    altitude_id: VariableIdentifier,
+    vertical_speed_id: VariableIdentifier,
+    cas_id: VariableIdentifier,
 }
 impl TestAdiru {
-    fn new() -> Self {
+    const VERTICAL_SPEED_KEY: &str = "VERTICAL_SPEED";
+    const CAS_KEY: &str = "COMPUTED_AIRSPEED";
+
+    fn new(context: &mut InitContext) -> Self {
         Self {
             computed_airspeed: Velocity::default(),
             altitude: Length::default(),
             vertical_speed: Velocity::default(),
             pitch: Angle::default(),
+
+            altitude_id: context.get_identifier(TestRa::ALTITUDE_KEY.to_owned()),
+            vertical_speed_id: context.get_identifier(Self::VERTICAL_SPEED_KEY.to_owned()),
+            cas_id: context.get_identifier(Self::CAS_KEY.to_owned()),
         }
     }
 }
@@ -269,26 +292,64 @@ impl InertialReferenceBus for TestAdiru {
         Arinc429Word::new(0u32, SignStatus::NormalOperation)
     }
 }
+impl SimulationElement for TestAdiru {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.altitude = reader.read(&self.altitude_id);
+        self.vertical_speed = reader.read(&self.vertical_speed_id);
+        self.computed_airspeed = reader.read(&self.cas_id);
+    }
+}
 
 struct TestIls {
+    has_glideslope: bool,
     glideslope_deviation: Ratio,
+    failed: bool,
 }
 impl TestIls {
     fn new() -> Self {
         Self {
+            has_glideslope: false,
             glideslope_deviation: Ratio::default(),
+            failed: false,
         }
+    }
+
+    fn set_failed(&mut self, failed: bool) {
+        self.failed = failed;
     }
 }
 impl InstrumentLandingSystemBus for TestIls {
     fn glideslope_deviation(&self) -> Arinc429Word<Ratio> {
-        Arinc429Word::new(self.glideslope_deviation, SignStatus::NormalOperation)
+        Arinc429Word::new(
+            self.glideslope_deviation,
+            if self.failed {
+                SignStatus::FailureWarning
+            } else if self.has_glideslope {
+                SignStatus::NormalOperation
+            } else {
+                SignStatus::NoComputedData
+            },
+        )
     }
     fn localizer_deviation(&self) -> Arinc429Word<Ratio> {
-        Arinc429Word::new(Ratio::default(), SignStatus::NormalOperation)
+        Arinc429Word::new(
+            Ratio::default(),
+            if self.failed {
+                SignStatus::FailureWarning
+            } else {
+                SignStatus::NormalOperation
+            },
+        )
     }
     fn runway_heading(&self) -> Arinc429Word<Angle> {
-        Arinc429Word::new(Angle::default(), SignStatus::NormalOperation)
+        Arinc429Word::new(
+            Angle::default(),
+            if self.failed {
+                SignStatus::FailureWarning
+            } else {
+                SignStatus::NormalOperation
+            },
+        )
     }
     fn ils_frequency(&self) -> Arinc429Word<uom::si::f64::Frequency> {
         Arinc429Word::new(Frequency::default(), SignStatus::NormalOperation)
@@ -322,8 +383,8 @@ impl TestAircraft {
             ),
             ac_1_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(1)),
             lgciu: TestLgciu::new(false),
-            ra: TestRa::new(Length::new::<foot>(0.0)),
-            adiru: TestAdiru::new(),
+            ra: TestRa::new(context, Length::new::<foot>(0.0)),
+            adiru: TestAdiru::new(context),
             ils: TestIls::new(),
             egpws_electrical_harness: EgpwsElectricalHarness::new(context),
             egpwc: EnhancedGroundProximityWarningComputer::new(
@@ -337,10 +398,6 @@ impl TestAircraft {
 
     fn set_ac_1_power(&mut self, is_powered: bool) {
         self.is_ac_1_powered = is_powered;
-    }
-
-    fn power_consumption(&self) -> Power {
-        self.power_consumption
     }
 }
 impl Aircraft for TestAircraft {
@@ -381,6 +438,10 @@ impl SimulationElement for TestAircraft {
     }
 
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        //self.ils.accept(visitor);
+        self.adiru.accept(visitor);
+        self.ra.accept(visitor);
+        //self.lgciu.accept(visitor);
         self.egpwc.accept(visitor);
         self.egpws_electrical_harness.accept(visitor);
 
@@ -399,8 +460,7 @@ impl EgpwcTestBed {
                 TestAircraft::new,
             ),
         };
-        test_bed = test_bed.above_ground();
-        test_bed = test_bed.powered();
+        test_bed = test_bed.on_ground().powered();
 
         test_bed
     }
@@ -419,17 +479,90 @@ impl EgpwcTestBed {
         self
     }
 
-    fn above_ground(self) -> Self {
-        self.height_over_ground(Length::new::<foot>(500.0))
+    fn on_ground(mut self) -> Self {
+        let terr_height = ReadByName::<EgpwcTestBed, Length>::read_by_name(
+            &mut self,
+            EnhancedGroundProximityWarningComputer::AURAL_OUTPUT_KEY,
+        );
+        self.altitude_of(terr_height).gear_position(true)
     }
 
-    fn on_ground(self) -> Self {
-        self.height_over_ground(Length::new::<foot>(0.0))
-    }
-
-    fn height_over_ground(mut self, height: Length) -> Self {
-        self.command(|a| a.ra.set_radio_altitude(height));
+    fn altitude_of(mut self, height: Length) -> Self {
+        self.write_by_name(TestRa::ALTITUDE_KEY, height);
         self
+    }
+
+    fn terrain_height_of(mut self, height: Length) -> Self {
+        self.write_by_name(TestRa::TERRAIN_HEIGHT_KEY, height);
+        self
+    }
+
+    fn vertical_speed_of(mut self, vs: Velocity) -> Self {
+        self.write_by_name(TestAdiru::VERTICAL_SPEED_KEY, vs);
+        self
+    }
+
+    fn cas_of(mut self, vs: Velocity) -> Self {
+        self.write_by_name(TestAdiru::CAS_KEY, vs);
+        self
+    }
+
+    fn gear_position(mut self, extended: bool) -> Self {
+        self.command(|a| a.lgciu.set_gear_extended(extended));
+        self
+    }
+
+    fn flaps_mode_button_pressed(mut self, pressed: bool) -> Self {
+        self.write_by_name(EgpwsElectricalHarness::GPWS_FLAP_OFF_KEY, pressed);
+        self
+    }
+
+    fn flaps_3_button_pressed(mut self, pressed: bool) -> Self {
+        self.write_by_name(EgpwsElectricalHarness::GPWS_FLAPS3_KEY, pressed);
+        self
+    }
+
+    fn gpws_sys_button_pressed(mut self, pressed: bool) -> Self {
+        self.write_by_name(EgpwsElectricalHarness::GPWS_SYS_OFF_KEY, pressed);
+        self
+    }
+
+    fn set_ra_failure(&mut self, failed: bool) {
+        self.command(|a| a.ra.set_failed(failed));
+    }
+
+    fn set_ils_failure(&mut self, failed: bool) {
+        self.command(|a| a.ils.set_failed(failed));
+    }
+
+    fn get_aural_warning(&mut self) -> u8 {
+        ReadByName::<EgpwcTestBed, u8>::read_by_name(
+            self,
+            EnhancedGroundProximityWarningComputer::AURAL_OUTPUT_KEY,
+        )
+    }
+
+    fn get_audio_on(&self) -> bool {
+        self.query(|ac: &TestAircraft| ac.egpwc.discrete_outputs().audio_on)
+    }
+
+    fn is_warning_light_on(&mut self) -> bool {
+        self.query(|ac: &TestAircraft| ac.egpwc.discrete_outputs().warning_lamp)
+    }
+
+    fn is_alert_light_on(&mut self) -> bool {
+        self.query(|ac: &TestAircraft| ac.egpwc.discrete_outputs().alert_lamp)
+    }
+
+    fn egpws_sys_fault(&mut self) -> bool {
+        self.query(|ac: &TestAircraft| ac.egpwc.discrete_outputs().gpws_inop)
+    }
+
+    fn assert_no_warning_active(&mut self) {
+        assert!(!self.get_audio_on());
+        assert_eq!(self.get_aural_warning(), AuralWarning::None as u8);
+        assert!(!self.is_warning_light_on());
+        assert!(!self.is_alert_light_on());
     }
 }
 impl TestBed for EgpwcTestBed {
@@ -453,7 +586,194 @@ fn test_bed_with() -> EgpwcTestBed {
 }
 
 #[test]
-fn measures_zero_on_ground() {
-    let mut test_bed = test_bed_with().on_ground();
+fn self_tests_after_power_loss_on_ground_and_emits_no_warnings() {
+    let mut test_bed = test_bed_with().on_ground().and().powered();
     test_bed.run_with_delta(Duration::from_millis(1));
+    assert!(!test_bed.egpws_sys_fault());
+    test_bed.assert_no_warning_active();
+
+    let mut test_bed = test_bed.no_power();
+    test_bed.run_with_delta(Duration::from_millis(500));
+    assert!(test_bed.egpws_sys_fault());
+    let mut test_bed = test_bed.powered();
+    test_bed.run_with_delta(Duration::from_millis(1_000));
+    assert!(test_bed.egpws_sys_fault());
+    test_bed.run_with_delta(Duration::from_millis(20_000));
+    assert!(!test_bed.egpws_sys_fault());
+    test_bed.assert_no_warning_active();
+}
+
+#[test]
+fn emits_failure_when_ra_is_failed() {
+    let mut test_bed = test_bed_with()
+        .altitude_of(Length::new::<foot>(2500.0))
+        .and()
+        .powered();
+
+    test_bed.run_with_delta(Duration::from_millis(1));
+
+    assert!(!test_bed.egpws_sys_fault());
+    test_bed.assert_no_warning_active();
+
+    test_bed.set_ra_failure(true);
+    test_bed.run_with_delta(Duration::from_millis(1));
+    assert!(test_bed.egpws_sys_fault());
+    test_bed.assert_no_warning_active();
+
+    test_bed.set_ra_failure(false);
+    test_bed.run_with_delta(Duration::from_millis(1));
+    assert!(!test_bed.egpws_sys_fault());
+    test_bed.assert_no_warning_active();
+}
+
+#[test]
+fn emits_no_failure_when_ils_is_failed_in_air() {
+    let mut test_bed = test_bed_with()
+        .altitude_of(Length::new::<foot>(2500.0))
+        .and()
+        .powered();
+
+    test_bed.run_with_delta(Duration::from_millis(1));
+
+    test_bed.set_ils_failure(true);
+    test_bed.run_with_delta(Duration::from_millis(1));
+    assert!(!test_bed.egpws_sys_fault());
+    test_bed.assert_no_warning_active();
+
+    test_bed.set_ils_failure(false);
+    test_bed.run_with_delta(Duration::from_millis(1));
+    assert!(!test_bed.egpws_sys_fault());
+    test_bed.assert_no_warning_active();
+}
+
+#[test]
+fn emits_failure_when_ils_is_failed_on_ground() {
+    let mut test_bed = test_bed_with().on_ground().and().powered();
+
+    test_bed.run_with_delta(Duration::from_millis(1));
+
+    test_bed.set_ils_failure(true);
+    test_bed.run_with_delta(Duration::from_millis(1));
+    assert!(test_bed.egpws_sys_fault());
+    test_bed.assert_no_warning_active();
+
+    test_bed.set_ils_failure(false);
+    test_bed.run_with_delta(Duration::from_millis(1));
+    assert!(!test_bed.egpws_sys_fault());
+    test_bed.assert_no_warning_active();
+}
+
+#[test]
+fn mode_1_test() {
+    let mut test_bed = test_bed_with()
+        .altitude_of(Length::new::<foot>(1500.0))
+        .terrain_height_of(Length::new::<foot>(0.0))
+        .vertical_speed_of(Velocity::new::<foot_per_minute>(0.0))
+        .cas_of(Velocity::new::<knot>(250.))
+        .and()
+        .powered();
+
+    test_bed.run_with_delta(Duration::from_millis(1));
+    test_bed.assert_no_warning_active();
+
+    // Inside of alert area
+    test_bed = test_bed.vertical_speed_of(Velocity::new::<foot_per_minute>(-4000.0));
+    test_bed.run_with_delta(Duration::from_millis(1));
+    // Confirm time not elapsed
+    test_bed.assert_no_warning_active();
+    test_bed.run_with_delta(Duration::from_millis(1_000));
+    assert!(test_bed.get_audio_on());
+    assert_eq!(test_bed.get_aural_warning(), AuralWarning::SinkRate as u8); // Emission pattern depends on audio declutter active
+    assert!(test_bed.is_warning_light_on());
+
+    // Inside Warning area
+    test_bed = test_bed.vertical_speed_of(Velocity::new::<foot_per_minute>(-5000.0));
+    test_bed.run_with_delta(Duration::from_millis(1_700));
+    assert!(test_bed.get_audio_on());
+    assert_eq!(test_bed.get_aural_warning(), AuralWarning::PullUp as u8);
+    assert!(test_bed.is_warning_light_on());
+
+    // Warning immediately ceases with GPWS SYS OFF pressed
+    test_bed = test_bed.gpws_sys_button_pressed(true);
+    test_bed.run_with_delta(Duration::from_millis(1));
+    test_bed.assert_no_warning_active();
+
+    // Warning immediately restarts with GPWS SYS OFF no longer pressed
+    test_bed = test_bed.gpws_sys_button_pressed(false);
+    test_bed.run_with_delta(Duration::from_millis(1));
+    assert!(test_bed.get_audio_on());
+    assert_eq!(test_bed.get_aural_warning(), AuralWarning::PullUp as u8);
+    assert!(test_bed.is_warning_light_on());
+
+    // Exiting warning area
+    test_bed = test_bed.vertical_speed_of(Velocity::new::<foot_per_minute>(-1000.0));
+    test_bed.run_with_delta(Duration::from_millis(100));
+
+    // Confirm time not elapsed
+    assert!(test_bed.get_audio_on());
+    assert_eq!(test_bed.get_aural_warning(), AuralWarning::PullUp as u8);
+    assert!(test_bed.is_warning_light_on());
+
+    test_bed.run_with_delta(Duration::from_millis(200));
+    test_bed.assert_no_warning_active();
+}
+
+#[test]
+fn mode_2_a_test() {
+    let mut test_bed = test_bed_with()
+        .altitude_of(Length::new::<foot>(2500.0))
+        .terrain_height_of(Length::new::<foot>(0.0))
+        .vertical_speed_of(Velocity::new::<foot_per_minute>(0.0))
+        .cas_of(Velocity::new::<knot>(310.0))
+        .and()
+        .powered();
+
+    // Step 71s, since Mode 4B is active for 60s after takeoff and flight mode is activated 10s after above 30ft RA
+    // since pitch angle is not set above for immediate switching to occur.
+    test_bed.run_with_delta(Duration::from_millis(1_000));
+    test_bed.run_with_delta(Duration::from_millis(70_000));
+    test_bed.assert_no_warning_active();
+
+    // Terrain rises
+    test_bed = test_bed.terrain_height_of(Length::new::<foot>(1000.0));
+    test_bed.run_with_delta(Duration::from_millis(3_000));
+    assert!(test_bed.get_audio_on());
+    assert_eq!(test_bed.get_aural_warning(), AuralWarning::Terrain as u8); // Emission pattern depends on audio declutter active
+    assert!(test_bed.is_warning_light_on());
+
+    // Warning immediately ceases with GPWS SYS OFF pressed
+    test_bed = test_bed.gpws_sys_button_pressed(true);
+    test_bed.run_with_delta(Duration::from_millis(1));
+    test_bed.assert_no_warning_active();
+
+    // Warning immediately restarts with GPWS SYS OFF no longer pressed
+    test_bed = test_bed.gpws_sys_button_pressed(false);
+    test_bed.run_with_delta(Duration::from_millis(1));
+    assert!(test_bed.get_audio_on());
+    assert_eq!(test_bed.get_aural_warning(), AuralWarning::Terrain as u8);
+    assert!(test_bed.is_warning_light_on());
+
+    test_bed = test_bed.cas_of(Velocity::new::<knot>(230.0));
+    test_bed = test_bed.terrain_height_of(Length::new::<foot>(1125.0));
+    test_bed.run_with_delta(Duration::from_millis(1_000));
+
+    // Closure rate still 7500 ft/min, now at 1000 ft RA
+    test_bed = test_bed.cas_of(Velocity::new::<knot>(230.0));
+    test_bed = test_bed.terrain_height_of(Length::new::<foot>(1500.0));
+    test_bed.run_with_delta(Duration::from_millis(3_000));
+    assert!(test_bed.get_audio_on());
+    assert_eq!(test_bed.get_aural_warning(), AuralWarning::Terrain as u8);
+    assert!(test_bed.is_warning_light_on());
+
+    // After two emissions of TERRAIN (ca. 2s), it will switch to PULL UP. Now closure rate is 2400 ft/min, at 800 ft RA
+    test_bed = test_bed.terrain_height_of(Length::new::<foot>(1700.0));
+    test_bed.run_with_delta(Duration::from_millis(5_000));
+    assert!(test_bed.get_audio_on());
+    assert_eq!(test_bed.get_aural_warning(), AuralWarning::PullUp as u8);
+    assert!(test_bed.is_warning_light_on());
+
+    // Exiting warning area due to lowering terrain. Now at 1000ft, since otherwise the Mode 4 warning would trigger.
+    test_bed = test_bed.terrain_height_of(Length::new::<foot>(1500.0));
+    test_bed.run_with_delta(Duration::from_millis(2_000));
+    test_bed.assert_no_warning_active();
 }

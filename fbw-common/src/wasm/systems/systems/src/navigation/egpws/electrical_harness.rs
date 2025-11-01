@@ -30,6 +30,17 @@ pub struct EgpwsElectricalHarness {
 }
 
 impl EgpwsElectricalHarness {
+    pub(super) const GPWS_TERR_OFF_KEY: &str = "GPWS_TERR_OFF";
+    pub(super) const GPWS_SYS_OFF_KEY: &str = "GPWS_SYS_OFF";
+    pub(super) const GPWS_GS_OFF_KEY: &str = "GPWS_GS_OFF";
+    pub(super) const GPWS_FLAP_OFF_KEY: &str = "GPWS_FLAP_OFF";
+    pub(super) const GPWS_FLAPS3_KEY: &str = "GPWS_FLAPS3";
+    pub(super) const GPWS_TEST_KEY: &str = "GPWS_TEST";
+    pub(super) const SFCC_1_FAP_1_KEY: &str = "SFCC_1_FAP_1";
+    pub(super) const SFCC_1_FAP_5_KEY: &str = "SFCC_1_FAP_5";
+    pub(super) const ECP_DISCRETE_OUT_EMER_CANC_KEY: &str = "ECP_DISCRETE_OUT_EMER_CANC";
+    pub(super) const IS_SLEW_ACTIVE_KEY: &str = "IS SLEW ACTIVE";
+
     pub fn new(context: &mut InitContext) -> Self {
         Self {
             discrete_inputs: TerrainAwarenessWarningSystemDiscreteInputs::default(),
@@ -38,19 +49,20 @@ impl EgpwsElectricalHarness {
             flaps_mode_off: false,
             landing_flaps_3: false,
 
-            terr_off_id: context.get_identifier("GPWS_TERR_OFF".to_owned()),
-            sys_off_id: context.get_identifier("GPWS_SYS_OFF".to_owned()),
-            gs_mode_off_id: context.get_identifier("GPWS_GS_OFF".to_owned()),
-            flap_mode_off_id: context.get_identifier("GPWS_FLAP_OFF".to_owned()),
-            landing_flap_3_on_id: context.get_identifier("GPWS_FLAPS3".to_owned()),
-            gs_cancel_self_test_id: context.get_identifier("GPWS_TEST".to_owned()),
+            terr_off_id: context.get_identifier(Self::GPWS_TERR_OFF_KEY.to_owned()),
+            sys_off_id: context.get_identifier(Self::GPWS_SYS_OFF_KEY.to_owned()),
+            gs_mode_off_id: context.get_identifier(Self::GPWS_GS_OFF_KEY.to_owned()),
+            flap_mode_off_id: context.get_identifier(Self::GPWS_FLAP_OFF_KEY.to_owned()),
+            landing_flap_3_on_id: context.get_identifier(Self::GPWS_FLAPS3_KEY.to_owned()),
+            gs_cancel_self_test_id: context.get_identifier(Self::GPWS_TEST_KEY.to_owned()),
 
-            sfcc_fap_1_id: context.get_identifier("SFCC_1_FAP_1".to_owned()),
-            sfcc_fap_5_id: context.get_identifier("SFCC_1_FAP_5".to_owned()),
+            sfcc_fap_1_id: context.get_identifier(Self::SFCC_1_FAP_1_KEY.to_owned()),
+            sfcc_fap_5_id: context.get_identifier(Self::SFCC_1_FAP_5_KEY.to_owned()),
 
-            ecam_cp_emer_canc_id: context.get_identifier("ECP_DISCRETE_OUT_EMER_CANC".to_owned()),
+            ecam_cp_emer_canc_id: context
+                .get_identifier(Self::ECP_DISCRETE_OUT_EMER_CANC_KEY.to_owned()),
 
-            slew_active_id: context.get_identifier("IS SLEW ACTIVE".to_owned()),
+            slew_active_id: context.get_identifier(Self::IS_SLEW_ACTIVE_KEY.to_owned()),
         }
     }
 
