@@ -104,7 +104,8 @@ pub(super) struct EnhancedGroundProximityWarningComputerRuntime {
     takeoff_goaround_pulse_node: PulseNode,
 
     // General GPWS Fault logic
-    gpws_sys_fault: bool,
+    gpws_general_fault: bool,
+    gpws_mode_5_fault: bool,
     terr_sys_fault: bool,
     gs_fault: bool,
     vs_fault: bool,
@@ -231,7 +232,8 @@ impl EnhancedGroundProximityWarningComputerRuntime {
             field_elevation_ft: 0.,
             takeoff_goaround_pulse_node: PulseNode::new_rising(),
 
-            gpws_sys_fault: false,
+            gpws_general_fault: false,
+            gpws_mode_5_fault: false,
             terr_sys_fault: false,
             gs_fault: false,
             vs_fault: false,
@@ -485,7 +487,8 @@ impl EnhancedGroundProximityWarningComputerRuntime {
 
         let cas_fault = adr.computed_airspeed().is_failure_warning();
 
-        self.gs_fault = ils.glideslope_deviation().is_failure_warning();
+        self.gs_fault = ils.glideslope_deviation().is_failure_warning()
+            || ils.localizer_deviation().is_failure_warning();
 
         self.audio_inhibit_discrete_conf_node
             .update(discrete_inputs.audio_inhibit, context.delta());
@@ -494,9 +497,12 @@ impl EnhancedGroundProximityWarningComputerRuntime {
 
         let total_failure_due_to_peripherals = ra_fault || cas_fault;
 
-        self.gpws_sys_fault = self.audio_inhibit_discrete_conf_node.get_output()
+        self.gpws_general_fault = self.audio_inhibit_discrete_conf_node.get_output()
             || self.gpws_inhibit_discrete_conf_node.get_output()
             || total_failure_due_to_peripherals;
+        self.gpws_mode_5_fault = self.audio_inhibit_discrete_conf_node.get_output()
+            || self.gpws_inhibit_discrete_conf_node.get_output()
+            || self.gs_fault;
         // TODO Implement TERR sys
         self.terr_sys_fault = false;
     }
@@ -584,6 +590,18 @@ impl EnhancedGroundProximityWarningComputerRuntime {
             && !self.mode_1_pull_up_active
             && (self.pin_programs.audio_declutter_disable
                 || !self.mode_1_sinkrate_emitted_for_current_time_to_impact);
+
+        // println!(
+        //     "Mode 1: ra: {:.1} ft, biased_vs: {:.1} ft/min, alert_boundary_met: {}, warning_boundary_met: {},
+        //     sinkrate_lamp: {}, sinkrate_voice: {}, pull_up_active: {}",
+        //     self.ra_ft,
+        //     biased_vertical_speed,
+        //     mode_1_alert_boundary_met,
+        //     mode_1_warning_boundary_met,
+        //     self.mode_1_sinkrate_lamp_active,
+        //     self.mode_1_sinkrate_voice_active,
+        //     self.mode_1_pull_up_active,
+        // );
     }
 
     fn update_mode_2_logic(
@@ -1193,12 +1211,14 @@ impl EnhancedGroundProximityWarningComputerRuntime {
     pub fn set_outputs(
         &self,
         discrete_outputs: &mut TerrainAwarenessWarningSystemDiscreteOutputs,
-        bus_outputs: &mut TerrainAwarenessWarningSystemBusOutputs,
+        _bus_outputs: &mut TerrainAwarenessWarningSystemBusOutputs,
     ) {
         discrete_outputs.alert_lamp = self.alert_lamp_activated;
         discrete_outputs.warning_lamp = self.warning_lamp_activated;
         discrete_outputs.audio_on = self.aural_output != AuralWarning::None;
-        discrete_outputs.gpws_inop = self.gpws_sys_fault || self.remaining_startup > Duration::ZERO;
+        discrete_outputs.gpws_inop = self.gpws_general_fault
+            || (self.gpws_mode_5_fault && self.on_ground)
+            || self.remaining_startup > Duration::ZERO;
         discrete_outputs.terrain_inop =
             self.terr_sys_fault || self.remaining_startup > Duration::ZERO;
         discrete_outputs.terrain_not_available = false;
