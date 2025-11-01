@@ -94,6 +94,7 @@ mod tests {
     #[test]
     fn rate_limiter_step_test() {
         let mut rate_limiter = RateLimiter::<f64>::new(1., -0.5);
+        rate_limiter.update(Duration::from_secs_f64(0.1), 0.);
 
         rate_limiter.update(Duration::from_secs_f64(0.1), 1.);
         assert!(rate_limiter.output() > 0.);
