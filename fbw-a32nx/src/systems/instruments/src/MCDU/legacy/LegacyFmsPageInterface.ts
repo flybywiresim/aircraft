@@ -27,6 +27,7 @@ import { FlightPhaseManager } from '@fmgc/flightphase';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { DataManager } from '@fmgc/flightplanning/DataManager';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
+import { FuelPredictions } from '@fmgc/flightplanning/fuel/FuelPredictions';
 
 export type LskCallback = (
   /** The scratchpad content when the LSK was pressed. */
@@ -42,44 +43,6 @@ export enum SimbriefOfpState {
   NotLoaded = 0,
   Requested = 1,
   Loaded = 2,
-}
-
-export class FuelPredComputations {
-  tripFuel: number | null = null;
-  tripTime: number | null = null;
-  routeReserveFuel: number | null = null;
-  routeReserveFuelPercentage: number | null = null;
-  alternateFuel: number | null = null;
-  alternateTime: number | null = null;
-  finalHoldingFuel: number | null = null;
-  finalHoldingTime: number | null = null;
-  minimumDestinationFuel: number | null = null;
-  takeoffWeight: number | null = null;
-  landingWeight: number | null = null;
-  destinationFuelOnBoard: number | null = null;
-  alternateDestinationFuelOnBoard: number | null = null;
-  extraFuel: number | null = null;
-  extraTime: number | null = null;
-
-  public reset(): this {
-    this.tripFuel = null;
-    this.tripTime = null;
-    this.routeReserveFuel = null;
-    this.routeReserveFuelPercentage = null;
-    this.alternateFuel = null;
-    this.alternateTime = null;
-    this.finalHoldingFuel = null;
-    this.finalHoldingTime = null;
-    this.minimumDestinationFuel = null;
-    this.takeoffWeight = null;
-    this.landingWeight = null;
-    this.destinationFuelOnBoard = null;
-    this.alternateDestinationFuelOnBoard = null;
-    this.extraFuel = null;
-    this.extraTime = null;
-
-    return this;
-  }
 }
 
 interface LegacyFmsPageDrawingInterface {
@@ -246,10 +209,10 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   isFuelPlanningInProgress(forPlan: FlightPlanIndex): boolean;
   getUnconfirmedBlockFuel(forPlan: FlightPlanIndex): number | undefined;
   setUnconfirmedBlockFuel(value: number, forPlan: FlightPlanIndex): void;
-  runFuelPredComputation(forPlan: FlightPlanIndex): Readonly<FuelPredComputations>;
-  getFuelPredComputation(forPlan: FlightPlanIndex): Readonly<FuelPredComputations>;
-  resetFuelPredComputation(forPlan: FlightPlanIndex): FuelPredComputations;
-  computeTakeoffWeight(forPlan: FlightPlanIndex): Readonly<FuelPredComputations>;
+  runFuelPredComputation(forPlan: FlightPlanIndex): FuelPredictions;
+  getFuelPredComputation(forPlan: FlightPlanIndex): FuelPredictions;
+  resetFuelPredComputation(forPlan: FlightPlanIndex): FuelPredictions;
+  computeTakeoffWeight(forPlan: FlightPlanIndex): FuelPredictions;
   setV1Speed(speed: number, forPlan: FlightPlanIndex): void;
   setVrSpeed(speed: number, forPlan: FlightPlanIndex): void;
   setV2Speed(speed: number, forPlan: FlightPlanIndex): void;

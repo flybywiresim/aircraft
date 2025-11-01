@@ -70,13 +70,14 @@ import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { initComponents, updateComponents } from '@fmgc/components';
 import { CoRouteUplinkAdapter } from '@fmgc/flightplanning/uplink/CoRouteUplinkAdapter';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
-import { FuelPredComputations, SimbriefOfpState } from './LegacyFmsPageInterface';
+import { SimbriefOfpState } from './LegacyFmsPageInterface';
 import { CDUInitPage } from '../legacy_pages/A320_Neo_CDU_InitPage';
 import { FmcWindVector } from '@fmgc/guidance/vnav/wind/types';
 import { FlightPlanFlags } from '@fmgc/flightplanning/plans/FlightPlanFlags';
 import { CDUFuelPredPage } from '../legacy_pages/A320_Neo_CDU_FuelPredPage';
 import { ObservableFlightPlanManager } from '@fmgc/flightplanning/ObservableFlightPlanManager';
 import { CDUFlightPlanPage } from '../legacy_pages/A320_Neo_CDU_FlightPlanPage';
+import { FuelPredComputations } from '@fmgc/flightplanning/fuel/FuelPredComputations';
 
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
