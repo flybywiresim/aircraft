@@ -4,6 +4,9 @@
 # Ensure LF for shell files, even on Windows, so that bash inside Docker does not panic
 *.sh text eol=lf
 
+# The lockfile will show warnings about changing to CR;LF if autocrlf is default
+pnpm-lock.yaml text eol=lf
+
 # Ensure the language files update during build are not marked as changed due to different
 # line endings.
 /fbw-a32nx/src/localization/flypad/*.json text eol=lf
