@@ -45,6 +45,9 @@ struct Args {
     /// Print raw interface version of input file
     #[arg(short = 'r', long, default_value_t = false)]
     get_raw_input_file_version: bool,
+    /// Disregard the detected FDR file version, will output garbled data if version is mismatched
+    #[arg(long, default_value_t = false)]
+    override_interface_version: bool,
 }
 
 // Read number of bytes specified by the size of T from the binary file
@@ -101,7 +104,12 @@ fn main() -> Result<(), std::io::Error> {
     } else if args.get_raw_input_file_version {
         println!("{}", file_format_version);
         return Ok(());
-    } else if aircraft_interface_version != file_format_version {
+    } else if aircraft_interface_version != file_format_version && args.override_interface_version {
+        println!("Mismatch between converter and file version (expected {aircraft_interface_version}, got {file_format_version}). \
+        override_interface_version is set, converting anyway.\n \
+        \x1b[31mWARNING: Will create garbled data if the struct definitions don't match.\x1b[0m");
+    } else if aircraft_interface_version != file_format_version && !args.override_interface_version
+    {
         return Err(std::io::Error::new(
             ErrorKind::InvalidInput,
             format!(

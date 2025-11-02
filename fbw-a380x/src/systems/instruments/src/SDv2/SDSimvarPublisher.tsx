@@ -37,7 +37,6 @@ export type BaseSDSimvars = AdirsSimVars &
     cpcsBxDiscreteWord: number;
     engineFuelUsed: number;
     engineFuelFlow: number;
-    baroMode: number;
   };
 
 type IndexedTopics =
@@ -96,7 +95,6 @@ export class SDSimvarPublisher extends UpdatableSimVarPublisher<SDSimvars> {
     ],
     ['engineFuelUsed', { name: 'L:A32NX_FUEL_USED:#index#', type: SimVarValueType.Number, indexed: true }],
     ['engineFuelFlow', { name: 'L:A32NX_ENGINE_FF:#index#', type: SimVarValueType.Number, indexed: true }],
-    ['baroMode', { name: 'L:A32NX_FCU_EFIS_L_DISPLAY_BARO_MODE', type: SimVarValueType.Number }],
   ]);
 
   public constructor(bus: EventBus) {

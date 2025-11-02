@@ -7,10 +7,10 @@ edition = "2021"
 [dependencies]
 uom.workspace = true
 nalgebra = "0.33.0"
-ntest = "0.9.0"
 systems = { path = "../../../../../fbw-common/src/wasm/systems/systems" }
 
 [dev-dependencies]
+ntest.workspace = true
 rstest.workspace = true
-rand = "0.9.1"
+rand.workspace = true
 rand_pcg = "0.9.0"
