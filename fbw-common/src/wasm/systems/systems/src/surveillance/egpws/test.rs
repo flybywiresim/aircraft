@@ -1,4 +1,5 @@
 use uom::si::{
+    angle::degree,
     electric_potential::volt,
     f64::{
         Angle, AngularAcceleration, AngularVelocity, ElectricPotential, Frequency, Length,
@@ -112,10 +113,12 @@ struct TestAdiru {
     altitude_id: VariableIdentifier,
     vertical_speed_id: VariableIdentifier,
     cas_id: VariableIdentifier,
+    pitch_id: VariableIdentifier,
 }
 impl TestAdiru {
     const VERTICAL_SPEED_KEY: &str = "VERTICAL_SPEED";
     const CAS_KEY: &str = "COMPUTED_AIRSPEED";
+    const PITCH_ANGLE_KEY: &str = "PITCH_ANGLE";
 
     fn new(context: &mut InitContext) -> Self {
         Self {
@@ -127,6 +130,7 @@ impl TestAdiru {
             altitude_id: context.get_identifier(TestRa::ALTITUDE_KEY.to_owned()),
             vertical_speed_id: context.get_identifier(Self::VERTICAL_SPEED_KEY.to_owned()),
             cas_id: context.get_identifier(Self::CAS_KEY.to_owned()),
+            pitch_id: context.get_identifier(Self::PITCH_ANGLE_KEY.to_owned()),
         }
     }
 }
@@ -297,6 +301,7 @@ impl SimulationElement for TestAdiru {
         self.altitude = reader.read(&self.altitude_id);
         self.vertical_speed = reader.read(&self.vertical_speed_id);
         self.computed_airspeed = reader.read(&self.cas_id);
+        self.pitch = reader.read(&self.pitch_id);
     }
 }
 
@@ -504,6 +509,11 @@ impl EgpwcTestBed {
 
     fn cas_of(mut self, vs: Velocity) -> Self {
         self.write_by_name(TestAdiru::CAS_KEY, vs);
+        self
+    }
+
+    fn pitch_of(mut self, pitch: Angle) -> Self {
+        self.write_by_name(TestAdiru::PITCH_ANGLE_KEY, pitch);
         self
     }
 
@@ -902,5 +912,211 @@ fn mode_3_disabled_in_approach_mode() {
         .altitude_of(Length::new::<foot>(600.0))
         .vertical_speed_of(Velocity::new::<foot_per_minute>(-100.));
     test_bed.run_with_delta(Duration::from_millis(10_000));
+    test_bed.assert_no_warning_active();
+}
+
+#[test]
+fn mode_4_a_test() {
+    let mut test_bed = test_bed_with()
+        .altitude_of(Length::new::<foot>(1500.0))
+        .terrain_height_of(Length::new::<foot>(0.0))
+        .vertical_speed_of(Velocity::new::<foot_per_minute>(0.0))
+        .cas_of(Velocity::new::<knot>(250.0))
+        .flaps_extended(false)
+        .gear_extended(false)
+        .and()
+        .powered();
+
+    test_bed.run_with_delta(Duration::from_millis(1_000));
+    test_bed.assert_no_warning_active();
+
+    test_bed = test_bed.altitude_of(Length::new::<foot>(900.0));
+    test_bed.run_with_delta(Duration::from_millis(10_000));
+    assert!(test_bed.get_audio_on());
+    assert_eq!(
+        test_bed.get_aural_warning(),
+        AuralWarning::TooLowTerrain as u8
+    );
+    assert!(test_bed.is_warning_light_on());
+
+    test_bed = test_bed.cas_of(Velocity::new::<knot>(180.0));
+    test_bed.run_with_delta(Duration::from_millis(5_000));
+    test_bed.assert_no_warning_active();
+
+    test_bed = test_bed.altitude_of(Length::new::<foot>(400.0));
+    test_bed.run_with_delta(Duration::from_millis(15_000));
+    assert!(test_bed.get_audio_on());
+    assert_eq!(test_bed.get_aural_warning(), AuralWarning::TooLowGear as u8);
+    assert!(test_bed.is_warning_light_on());
+
+    test_bed = test_bed.gpws_sys_button_pressed(true);
+    test_bed.run_with_delta(Duration::from_millis(1));
+    test_bed.assert_no_warning_active();
+    test_bed = test_bed.gpws_sys_button_pressed(false);
+    test_bed.run_with_delta(Duration::from_millis(1));
+    assert!(test_bed.get_audio_on());
+    assert_eq!(test_bed.get_aural_warning(), AuralWarning::TooLowGear as u8);
+    assert!(test_bed.is_warning_light_on());
+}
+
+#[test]
+fn mode_4_b_test() {
+    let mut test_bed = test_bed_with()
+        .altitude_of(Length::new::<foot>(1500.0))
+        .terrain_height_of(Length::new::<foot>(0.0))
+        .vertical_speed_of(Velocity::new::<foot_per_minute>(0.0))
+        .cas_of(Velocity::new::<knot>(250.0))
+        .flaps_extended(false)
+        .gear_extended(true)
+        .and()
+        .powered();
+
+    test_bed.run_with_delta(Duration::from_millis(1_000));
+    test_bed.assert_no_warning_active();
+
+    test_bed = test_bed.altitude_of(Length::new::<foot>(400.0));
+    test_bed.run_with_delta(Duration::from_millis(30_000));
+    assert!(test_bed.get_audio_on());
+    assert_eq!(
+        test_bed.get_aural_warning(),
+        AuralWarning::TooLowTerrain as u8
+    );
+    assert!(test_bed.is_warning_light_on());
+
+    test_bed = test_bed.cas_of(Velocity::new::<knot>(150.0));
+    test_bed.run_with_delta(Duration::from_millis(5_000));
+    test_bed.assert_no_warning_active();
+
+    test_bed = test_bed.altitude_of(Length::new::<foot>(246.0));
+    test_bed.run_with_delta(Duration::from_millis(15_000));
+    // Need a small step size here, otherwise takeoff mode would activate
+    test_bed = test_bed.altitude_of(Length::new::<foot>(244.0));
+    test_bed.run_with_delta(Duration::from_millis(100));
+    assert!(test_bed.get_audio_on());
+    assert_eq!(
+        test_bed.get_aural_warning(),
+        AuralWarning::TooLowFlaps as u8
+    );
+    assert!(test_bed.is_warning_light_on());
+
+    test_bed = test_bed.gpws_sys_button_pressed(true);
+    test_bed.run_with_delta(Duration::from_millis(1));
+    test_bed.assert_no_warning_active();
+    test_bed = test_bed.gpws_sys_button_pressed(false);
+    test_bed.run_with_delta(Duration::from_millis(1));
+    assert!(test_bed.get_audio_on());
+    assert_eq!(
+        test_bed.get_aural_warning(),
+        AuralWarning::TooLowFlaps as u8
+    );
+    assert!(test_bed.is_warning_light_on());
+
+    test_bed = test_bed.flaps_extended(true);
+    test_bed.run_with_delta(Duration::from_millis(50));
+    test_bed.assert_no_warning_active();
+
+    test_bed = test_bed
+        .flaps_extended(false)
+        .flaps_mode_button_pressed(true);
+    test_bed.run_with_delta(Duration::from_millis(50));
+    test_bed.assert_no_warning_active();
+
+    test_bed = test_bed.flaps_mode_button_pressed(false);
+    test_bed.run_with_delta(Duration::from_millis(50));
+    assert!(test_bed.get_audio_on());
+    assert_eq!(
+        test_bed.get_aural_warning(),
+        AuralWarning::TooLowFlaps as u8
+    );
+    assert!(test_bed.is_warning_light_on());
+}
+
+#[test]
+fn mode_4_b_alternate_test() {
+    let mut test_bed = test_bed_with()
+        .altitude_of(Length::new::<foot>(1500.0))
+        .terrain_height_of(Length::new::<foot>(0.0))
+        .vertical_speed_of(Velocity::new::<foot_per_minute>(0.0))
+        .cas_of(Velocity::new::<knot>(250.0))
+        .flaps_extended(true)
+        .gear_extended(false)
+        .and()
+        .powered();
+
+    test_bed.run_with_delta(Duration::from_millis(1_000));
+    test_bed.assert_no_warning_active();
+
+    test_bed = test_bed.altitude_of(Length::new::<foot>(246.0));
+    test_bed.run_with_delta(Duration::from_millis(35_000));
+    // Need a small step size here, otherwise takeoff mode would activate
+    test_bed = test_bed.altitude_of(Length::new::<foot>(244.0));
+    test_bed.run_with_delta(Duration::from_millis(100));
+    assert!(test_bed.get_audio_on());
+    assert_eq!(test_bed.get_aural_warning(), AuralWarning::TooLowGear as u8);
+    assert!(test_bed.is_warning_light_on());
+
+    test_bed = test_bed
+        .cas_of(Velocity::new::<knot>(150.0))
+        .altitude_of(Length::new::<foot>(300.0));
+    test_bed.run_with_delta(Duration::from_millis(5_000));
+    test_bed.assert_no_warning_active();
+
+    test_bed = test_bed.altitude_of(Length::new::<foot>(246.0));
+    test_bed.run_with_delta(Duration::from_millis(15_000));
+    // Need a small step size here, otherwise takeoff mode would activate
+    test_bed = test_bed.altitude_of(Length::new::<foot>(244.0));
+    test_bed.run_with_delta(Duration::from_millis(100));
+    assert!(test_bed.get_audio_on());
+    assert_eq!(test_bed.get_aural_warning(), AuralWarning::TooLowGear as u8);
+    assert!(test_bed.is_warning_light_on());
+}
+
+#[test]
+fn mode_4_c_test() {
+    let mut test_bed = test_bed_with().on_ground().and().powered();
+
+    test_bed.run_with_delta(Duration::from_millis(1_000));
+    test_bed.assert_no_warning_active();
+
+    // Take off
+    test_bed = test_bed
+        .altitude_of(Length::new::<foot>(30.0))
+        .cas_of(Velocity::new::<knot>(150.0))
+        .pitch_of(Angle::new::<degree>(10.))
+        .gear_extended(false);
+    test_bed.run_with_delta(Duration::from_millis(1_000));
+    test_bed.assert_no_warning_active();
+    test_bed = test_bed.altitude_of(Length::new::<foot>(100.0));
+    test_bed.run_with_delta(Duration::from_millis(5_000));
+
+    test_bed = test_bed.altitude_of(Length::new::<foot>(400.0));
+    test_bed.run_with_delta(Duration::from_millis(15_000));
+    test_bed.assert_no_warning_active();
+
+    test_bed = test_bed.altitude_of(Length::new::<foot>(210.0));
+    test_bed.run_with_delta(Duration::from_millis(10_000));
+    assert!(test_bed.get_audio_on());
+    assert_eq!(
+        test_bed.get_aural_warning(),
+        AuralWarning::TooLowTerrain as u8
+    );
+    assert!(test_bed.is_warning_light_on());
+
+    test_bed = test_bed.cas_of(Velocity::new::<knot>(150.0));
+
+    test_bed = test_bed.gpws_sys_button_pressed(true);
+    test_bed.run_with_delta(Duration::from_millis(1));
+    test_bed.assert_no_warning_active();
+    test_bed = test_bed.gpws_sys_button_pressed(false);
+    test_bed.run_with_delta(Duration::from_millis(1));
+    assert!(test_bed.get_audio_on());
+    assert_eq!(
+        test_bed.get_aural_warning(),
+        AuralWarning::TooLowTerrain as u8
+    );
+    assert!(test_bed.is_warning_light_on());
+
+    test_bed = test_bed.altitude_of(Length::new::<foot>(400.0));
+    test_bed.run_with_delta(Duration::from_millis(15_000));
     test_bed.assert_no_warning_active();
 }
