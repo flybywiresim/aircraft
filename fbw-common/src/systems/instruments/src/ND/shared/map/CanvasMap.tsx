@@ -407,58 +407,57 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
   private handleFrame(_deltaTime: number) {
     const canvas = this.canvasRef.instance;
     const context = canvas.getContext('2d');
-
     const size = 768;
-
     context.clearRect(0, 0, size, size);
-
-    switch (this.mapMode.get()) {
-      case EfisNdMode.ARC:
-        context.clip(ARC_CLIP);
-        break;
-      case EfisNdMode.ROSE_NAV:
-      case EfisNdMode.ROSE_ILS:
-      case EfisNdMode.ROSE_VOR:
-        context.clip(ROSE_CLIP);
-        break;
-      case EfisNdMode.PLAN:
-        context.clip(PLAN_CLIP);
-        break;
-      default:
-        context.clip(DEFAULT_CLIP);
-        break;
-    }
-    context.resetTransform();
-
-    this.constraintsLayer.paintShadowLayer(context, size, size, this.mapParams);
-    this.constraintsLayer.paintColorLayer(context, size, size, this.mapParams);
-
-    for (const key in this.vectors) {
-      if (this.vectors[key].length > 0) {
-        context.beginPath();
-        for (const vector of this.vectors[key]) {
-          this.drawVector(context, vector, parseInt(key));
-        }
-        context.stroke();
+    if (this.mapVisible.get()) {
+      switch (this.mapMode.get()) {
+        case EfisNdMode.ARC:
+          context.clip(ARC_CLIP);
+          break;
+        case EfisNdMode.ROSE_NAV:
+        case EfisNdMode.ROSE_ILS:
+        case EfisNdMode.ROSE_VOR:
+          context.clip(ROSE_CLIP);
+          break;
+        case EfisNdMode.PLAN:
+          context.clip(PLAN_CLIP);
+          break;
+        default:
+          context.clip(DEFAULT_CLIP);
+          break;
       }
+      context.resetTransform();
+
+      this.constraintsLayer.paintShadowLayer(context, size, size, this.mapParams);
+      this.constraintsLayer.paintColorLayer(context, size, size, this.mapParams);
+
+      for (const key in this.vectors) {
+        if (this.vectors[key].length > 0) {
+          context.beginPath();
+          for (const vector of this.vectors[key]) {
+            this.drawVector(context, vector, parseInt(key));
+          }
+          context.stroke();
+        }
+      }
+      // reset line dash
+      context.setLineDash(NO_DASHES);
+
+      this.waypointLayer.paintShadowLayer(context, size, size, this.mapParams);
+      this.waypointLayer.paintColorLayer(context, size, size, this.mapParams);
+
+      this.fixInfoLayer.paintShadowLayer(context, size, size, this.mapParams);
+      this.fixInfoLayer.paintColorLayer(context, size, size, this.mapParams);
+
+      this.runwayLayer.paintShadowLayer(context, size, size, this.mapParams);
+      this.runwayLayer.paintColorLayer(context, size, size, this.mapParams);
+
+      this.pwpLayer.paintShadowLayer(context, size, size, this.mapParams);
+      this.pwpLayer.paintColorLayer(context, size, size, this.mapParams);
+
+      this.trafficLayer.paintShadowLayer(context, size, size);
+      this.trafficLayer.paintColorLayer(context, size, size);
     }
-    // reset line dash
-    context.setLineDash(NO_DASHES);
-
-    this.waypointLayer.paintShadowLayer(context, size, size, this.mapParams);
-    this.waypointLayer.paintColorLayer(context, size, size, this.mapParams);
-
-    this.fixInfoLayer.paintShadowLayer(context, size, size, this.mapParams);
-    this.fixInfoLayer.paintColorLayer(context, size, size, this.mapParams);
-
-    this.runwayLayer.paintShadowLayer(context, size, size, this.mapParams);
-    this.runwayLayer.paintColorLayer(context, size, size, this.mapParams);
-
-    this.pwpLayer.paintShadowLayer(context, size, size, this.mapParams);
-    this.pwpLayer.paintColorLayer(context, size, size, this.mapParams);
-
-    this.trafficLayer.paintShadowLayer(context, size, size);
-    this.trafficLayer.paintColorLayer(context, size, size);
   }
 
   private drawVector(context: CanvasRenderingContext2D, vector: PathVector, group: EfisVectorsGroup) {

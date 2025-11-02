@@ -18,13 +18,17 @@ import { PlanModeUnderlay } from './PlanModeUnderlay';
 import { MapParameters } from '../../shared/utils/MapParameters';
 import { NDPage } from '../NDPage';
 import { NDControlEvents } from '../../NDControlEvents';
-import { GenericFcuEvents } from '../../types/GenericFcuEvents';
 import { GenericFmsEvents } from '../../types/GenericFmsEvents';
+import { Flag } from '../../shared/Flag';
 
 export interface PlanModePageProps<T extends number> extends ComponentProps {
   bus: EventBus;
   rangeValues: T[];
   aircraftTrueHeading: Subscribable<Arinc429WordData>;
+  mapRange: Subscribable<number>;
+  latitude: Subscribable<Arinc429WordData>;
+  longitude: Subscribable<Arinc429WordData>;
+  mapNotAvail: Subscribable<boolean>;
 }
 
 export class PlanModePage<T extends number> extends NDPage<PlanModePageProps<T>> {
@@ -33,14 +37,6 @@ export class PlanModePage<T extends number> extends NDPage<PlanModePageProps<T>>
   private readonly controlPublisher = this.props.bus.getPublisher<NDControlEvents>();
 
   private readonly subs = this.props.bus.getSubscriber<NDControlEvents & GenericAdirsEvents & GenericFmsEvents>();
-
-  private readonly pposLatSub = ConsumerSubject.create(this.subs.on('latitude').whenChanged(), -1);
-
-  private readonly pposLatRegister = Arinc429Register.empty();
-
-  private readonly pposLongSub = ConsumerSubject.create(this.subs.on('longitude').whenChanged(), -1);
-
-  private readonly pposLongRegister = Arinc429Register.empty();
 
   private readonly mapCenterLatSub = ConsumerSubject.create(this.subs.on('set_map_center_lat').whenChanged(), -1);
 
@@ -55,11 +51,6 @@ export class PlanModePage<T extends number> extends NDPage<PlanModePageProps<T>>
   private readonly selectedWaypointLongRegister = Arinc429Register.empty();
 
   private readonly selectedWaypointLongSub = ConsumerSubject.create(this.subs.on('mrpLong').whenChanged(), -1);
-
-  private readonly mapRangeSub = ConsumerSubject.create(
-    this.props.bus.getSubscriber<GenericFcuEvents>().on('ndRangeSetting').whenChanged(),
-    -1,
-  );
 
   private readonly mapParams = new MapParameters();
 
@@ -79,16 +70,12 @@ export class PlanModePage<T extends number> extends NDPage<PlanModePageProps<T>>
       this.handleRotatePlane();
     });
 
-    this.pposLatSub.sub((lat) => {
-      this.pposLatRegister.set(lat);
-
+    this.props.latitude.sub(() => {
       this.handlePlaneVisibility();
       this.handleMovePlane();
     });
 
-    this.pposLongSub.sub((long) => {
-      this.pposLongRegister.set(long);
-
+    this.props.longitude.sub(() => {
       this.handlePlaneVisibility();
       this.handleMovePlane();
     });
@@ -108,20 +95,29 @@ export class PlanModePage<T extends number> extends NDPage<PlanModePageProps<T>>
       this.handleMovePlane();
     });
 
-    this.mapRangeSub.sub(() => this.handleScaleMap());
+    this.props.mapRange.sub(() => this.handleScaleMap());
 
     this.selectedWaypointLatSub.sub(() => this.handleSelectedWaypointPos());
     this.selectedWaypointLongSub.sub(() => this.handleSelectedWaypointPos());
+
+    this.props.mapNotAvail.sub((v) => {
+      if (this.isVisible.get()) {
+        this.showMap(!v);
+        if (v) {
+          this.onShow();
+        }
+      }
+    });
   }
 
   private handleMovePlane() {
-    if (this.isVisible.get()) {
-      const latRegister = this.pposLatRegister;
-      const longRegister = this.pposLongRegister;
+    if (this.isVisible.get() && !this.props.mapNotAvail.get()) {
+      const latitude = this.props.latitude.get();
+      const longitude = this.props.longitude.get();
 
-      if (latRegister.isNormalOperation() && longRegister.isNormalOperation()) {
-        const lat = latRegister.value;
-        const long = longRegister.value;
+      if (latitude.isNormalOperation() && longitude.isNormalOperation()) {
+        const lat = latitude.value;
+        const long = longitude.value;
 
         const [x, y] = this.mapParams.coordinatesToXYy({ lat, long });
 
@@ -132,7 +128,7 @@ export class PlanModePage<T extends number> extends NDPage<PlanModePageProps<T>>
   }
 
   private handleRotatePlane() {
-    if (this.isVisible.get()) {
+    if (this.isVisible.get() && !this.props.mapNotAvail.get()) {
       const planeRotation = this.props.aircraftTrueHeading.get();
 
       if (planeRotation.isNormalOperation()) {
@@ -143,12 +139,12 @@ export class PlanModePage<T extends number> extends NDPage<PlanModePageProps<T>>
   }
 
   private handlePlaneVisibility() {
-    if (this.isVisible.get()) {
+    if (this.isVisible.get() && !this.props.mapNotAvail.get()) {
       const planeRotation = this.props.aircraftTrueHeading.get();
       if (
         planeRotation.isNormalOperation() &&
-        this.pposLongRegister.isNormalOperation() &&
-        this.pposLatRegister.isNormalOperation()
+        this.props.longitude.get().isNormalOperation() &&
+        this.props.latitude.get().isNormalOperation()
       ) {
         this.controlPublisher.pub('set_show_plane', true);
       } else {
@@ -159,7 +155,7 @@ export class PlanModePage<T extends number> extends NDPage<PlanModePageProps<T>>
 
   private handleScaleMap() {
     if (this.isVisible.get()) {
-      const rangeSetting = this.mapRangeSub.get();
+      const rangeSetting = this.props.mapRange.get();
       const range = this.props.rangeValues[rangeSetting];
 
       this.controlPublisher.pub('set_map_efis_mode', EfisNdMode.PLAN);
@@ -176,6 +172,7 @@ export class PlanModePage<T extends number> extends NDPage<PlanModePageProps<T>>
     // FIXME what to do when the selected waypoint is not valid?
     if (
       this.isVisible.get() &&
+      !this.props.mapNotAvail.get() &&
       this.selectedWaypointLatRegister.isNormalOperation() &&
       this.selectedWaypointLongRegister.isNormalOperation()
     ) {
@@ -187,19 +184,29 @@ export class PlanModePage<T extends number> extends NDPage<PlanModePageProps<T>>
   }
 
   private handleRecomputeMapParameters() {
-    this.mapParams.compute(
-      { lat: this.mapCenterLatSub.get(), long: this.mapCenterLonSub.get() },
-      0,
-      this.mapRangeRadiusSub.get(),
-      250,
-      0, // FIXME true north ?
-    );
+    if (this.isVisible.get() && !this.props.mapNotAvail.get()) {
+      this.mapParams.compute(
+        { lat: this.mapCenterLatSub.get(), long: this.mapCenterLonSub.get() },
+        0,
+        this.mapRangeRadiusSub.get(),
+        250,
+        0, // FIXME true north ?
+      );
+    }
+  }
+
+  private showMap(bool: boolean) {
+    this.controlPublisher.pub('set_show_map', bool);
+    this.controlPublisher.pub('set_show_plane', bool);
   }
 
   render(): VNode | null {
     return (
       <g visibility={this.isVisible.map((visible) => (visible ? 'visible' : 'hidden'))}>
         <PlanModeUnderlay mapRange={this.mapRangeRadiusSub} />
+        <Flag visible={this.props.mapNotAvail} x={384} y={320.6} class="Red FontLarge">
+          MAP NOT AVAIL
+        </Flag>
       </g>
     );
   }
