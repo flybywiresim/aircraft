@@ -99,7 +99,7 @@
         "ReduceFontSize": "Zmenšit písmo"
       },
       "Title": "OFP",
-      "UnavailableLoadsheetSection": "Info not available or section not enabled in Simbrief.",
+      "UnavailableLoadsheetSection": "Informace není dostupná nebo sekce není zapnutá v Simbrief.",
       "YouHaveNotYetImportedAnySimBriefData": "Dosud jste neimportovali žádná SimBrief data."
     },
     "Overview": {
@@ -596,7 +596,7 @@
       "Select": "Vybrat",
       "ThrustReductionHeight": "Výška snížení tahu (ft AGL)",
       "Title": "Možnosti letadla / Pin programy",
-      "WeightUnit": "Jednotky hmotnosti"
+      "WeightUnit": "Americké jednotky"
     },
     "AtsuAoc": {
       "AtisAtcSource": "Zdroj ATIS/ATC",
@@ -716,7 +716,7 @@
       },
       "OverrideSimBriefUserID": "Přepsat uživatelské ID SimBrief",
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Zkontrolujte prosím, zda jste správně zadali své SimBrief uživatelské jméno nebo ID pilota.",
-      "SimbriefLoadsheetNavigationEnabled": "Simbrief Loadsheet Navigation",
+      "SimbriefLoadsheetNavigationEnabled": "Navigace Nákladního Listu Simbrief",
       "TT": {
         "OverrideSimBriefUserID": "Alternativní SimBrief uživatelské ID, které se použije místo propojeného účtu Navigraph"
       },
