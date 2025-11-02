@@ -12,6 +12,8 @@
 
 ## 0.15.0
 
+1. [A32NX/MCDU] Fix managed speed units in IAS/MACH on perf climb page - @Lucas-IQ21 (Lucas)
+
 ## 0.14.0
 
 1. [A380X/FMS] Fix speed margins being displayed in the wrong place for a Mach target - @BlueberryKing (BlueberryKing)
