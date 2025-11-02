@@ -12,6 +12,8 @@
 
 ## 0.15.0
 
+1. [FMS] Add lateral discontinuity ahead fms message - @BravoMike99 (bruno_pt99)
+
 ## 0.14.0
 
 1. [A380X/FMS] Fix speed margins being displayed in the wrong place for a Mach target - @BlueberryKing (BlueberryKing)
