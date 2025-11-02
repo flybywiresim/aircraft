@@ -191,8 +191,8 @@ impl EnhancedGroundProximityWarningComputerRuntime {
     const MODE_3_ALERT_AREA_BREAKPOINTS: [f64; 2] = [8., 143.];
     const MODE_3_ALERT_AREA_VALUES: [f64; 2] = [30., 1500.];
 
-    const MODE_4_FILTER_TIME_CONSTANT: f64 = 15.; // Seconds. The filter will charge in 20s from 0 to 220, for a step input of 300.
-                                                  // => Time constant = 15s
+    const MODE_4_FILTER_TIME_CONSTANT: f64 = 12.; // Seconds. The filter will charge in 20s from 0 to 220, in a standard takeoff.
+                                                  // For a step input of 300 => Time constant = 15s, but takeoff is not step, so reduce a bit
     const MODE_4_A_ALERT_AREA_BREAKPOINTS: [f64; 2] = [190., 250.];
     const MODE_4_A_ALERT_AREA_VALUES: [f64; 2] = [500., 1000.];
     const MODE_4_B_ALERT_AREA_BREAKPOINTS: [f64; 2] = [159., 250.];
