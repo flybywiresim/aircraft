@@ -109,6 +109,8 @@ struct TestAdiru {
     altitude: Length,
     vertical_speed: Velocity,
     pitch: Angle,
+    adr_ssm: SignStatus,
+    ir_ssm: SignStatus,
 
     altitude_id: VariableIdentifier,
     vertical_speed_id: VariableIdentifier,
@@ -126,6 +128,8 @@ impl TestAdiru {
             altitude: Length::default(),
             vertical_speed: Velocity::default(),
             pitch: Angle::default(),
+            ir_ssm: SignStatus::NormalOperation,
+            adr_ssm: SignStatus::NormalOperation,
 
             altitude_id: context.get_identifier(TestRa::ALTITUDE_KEY.to_owned()),
             vertical_speed_id: context.get_identifier(Self::VERTICAL_SPEED_KEY.to_owned()),
@@ -133,167 +137,177 @@ impl TestAdiru {
             pitch_id: context.get_identifier(Self::PITCH_ANGLE_KEY.to_owned()),
         }
     }
+
+    fn set_failed_ir(&mut self, failed: bool) {
+        self.ir_ssm = if failed {
+            SignStatus::FailureWarning
+        } else {
+            SignStatus::NormalOperation
+        };
+    }
+
+    fn set_failed_adr(&mut self, failed: bool) {
+        self.adr_ssm = if failed {
+            SignStatus::FailureWarning
+        } else {
+            SignStatus::NormalOperation
+        };
+    }
 }
 impl AirDataReferenceBus for TestAdiru {
     fn standard_altitude(&self) -> Arinc429Word<Length> {
-        Arinc429Word::new(self.altitude, SignStatus::NormalOperation)
+        Arinc429Word::new(self.altitude, self.adr_ssm)
     }
     fn baro_corrected_altitude_1(&self) -> Arinc429Word<Length> {
-        Arinc429Word::new(self.altitude, SignStatus::NormalOperation)
+        Arinc429Word::new(self.altitude, self.adr_ssm)
     }
     fn mach(&self) -> Arinc429Word<MachNumber> {
-        Arinc429Word::new(MachNumber::default(), SignStatus::NormalOperation)
+        Arinc429Word::new(MachNumber::default(), self.adr_ssm)
     }
     fn computed_airspeed(&self) -> Arinc429Word<Velocity> {
-        Arinc429Word::new(self.computed_airspeed, SignStatus::NormalOperation)
+        Arinc429Word::new(self.computed_airspeed, self.adr_ssm)
     }
     fn max_allowable_airspeed(&self) -> Arinc429Word<Velocity> {
-        Arinc429Word::new(Velocity::default(), SignStatus::NormalOperation)
+        Arinc429Word::new(Velocity::default(), self.adr_ssm)
     }
     fn true_airspeed(&self) -> Arinc429Word<Velocity> {
-        Arinc429Word::new(self.computed_airspeed, SignStatus::NormalOperation)
+        Arinc429Word::new(self.computed_airspeed, self.adr_ssm)
     }
     fn total_air_temperature(&self) -> Arinc429Word<ThermodynamicTemperature> {
-        Arinc429Word::new(
-            ThermodynamicTemperature::default(),
-            SignStatus::NormalOperation,
-        )
+        Arinc429Word::new(ThermodynamicTemperature::default(), self.adr_ssm)
     }
     fn vertical_speed(&self) -> Arinc429Word<Velocity> {
-        Arinc429Word::new(self.vertical_speed, SignStatus::NormalOperation)
+        Arinc429Word::new(self.vertical_speed, self.adr_ssm)
     }
     fn static_air_temperature(&self) -> Arinc429Word<ThermodynamicTemperature> {
-        Arinc429Word::new(
-            ThermodynamicTemperature::default(),
-            SignStatus::NormalOperation,
-        )
+        Arinc429Word::new(ThermodynamicTemperature::default(), self.adr_ssm)
     }
     fn baro_corrected_altitude_2(&self) -> Arinc429Word<Length> {
-        Arinc429Word::new(self.altitude, SignStatus::NormalOperation)
+        Arinc429Word::new(self.altitude, self.adr_ssm)
     }
     fn baro_correction_1(&self) -> Arinc429Word<Pressure> {
-        Arinc429Word::new(Pressure::default(), SignStatus::NormalOperation)
+        Arinc429Word::new(Pressure::default(), self.adr_ssm)
     }
     fn baro_correction_2(&self) -> Arinc429Word<Pressure> {
-        Arinc429Word::new(Pressure::default(), SignStatus::NormalOperation)
+        Arinc429Word::new(Pressure::default(), self.adr_ssm)
     }
     fn corrected_angle_of_attack(&self) -> Arinc429Word<Angle> {
-        Arinc429Word::new(Angle::default(), SignStatus::NormalOperation)
+        Arinc429Word::new(Angle::default(), self.adr_ssm)
     }
 }
 impl InertialReferenceBus for TestAdiru {
     /// Label 052
     fn pitch_angular_acc(&self) -> Arinc429Word<AngularAcceleration> {
-        Arinc429Word::new(AngularAcceleration::default(), SignStatus::NormalOperation)
+        Arinc429Word::new(AngularAcceleration::default(), self.ir_ssm)
     }
     /// Label 053
     fn roll_angular_acc(&self) -> Arinc429Word<AngularAcceleration> {
-        Arinc429Word::new(AngularAcceleration::default(), SignStatus::NormalOperation)
+        Arinc429Word::new(AngularAcceleration::default(), self.ir_ssm)
     }
     /// Label 053
     fn yaw_angular_acc(&self) -> Arinc429Word<AngularAcceleration> {
-        Arinc429Word::new(AngularAcceleration::default(), SignStatus::NormalOperation)
+        Arinc429Word::new(AngularAcceleration::default(), self.ir_ssm)
     }
     /// Label 310
     fn ppos_latitude(&self) -> Arinc429Word<Angle> {
-        Arinc429Word::new(Angle::default(), SignStatus::NormalOperation)
+        Arinc429Word::new(Angle::default(), self.ir_ssm)
     }
     /// Label 311
     fn ppos_longitude(&self) -> Arinc429Word<Angle> {
-        Arinc429Word::new(Angle::default(), SignStatus::NormalOperation)
+        Arinc429Word::new(Angle::default(), self.ir_ssm)
     }
     /// Label 312
     fn ground_speed(&self) -> Arinc429Word<Velocity> {
-        Arinc429Word::new(Velocity::default(), SignStatus::NormalOperation)
+        Arinc429Word::new(Velocity::default(), self.ir_ssm)
     }
     /// Label 313
     fn true_heading(&self) -> Arinc429Word<Angle> {
-        Arinc429Word::new(Angle::default(), SignStatus::NormalOperation)
+        Arinc429Word::new(Angle::default(), self.ir_ssm)
     }
     /// Label 314
     fn true_track(&self) -> Arinc429Word<Angle> {
-        Arinc429Word::new(Angle::default(), SignStatus::NormalOperation)
+        Arinc429Word::new(Angle::default(), self.ir_ssm)
     }
     /// Label 315
     fn wind_speed(&self) -> Arinc429Word<Velocity> {
-        Arinc429Word::new(Velocity::default(), SignStatus::NormalOperation)
+        Arinc429Word::new(Velocity::default(), self.ir_ssm)
     }
     /// Label 316
     fn wind_dir_true(&self) -> Arinc429Word<Angle> {
-        Arinc429Word::new(Angle::default(), SignStatus::NormalOperation)
+        Arinc429Word::new(Angle::default(), self.ir_ssm)
     }
     /// Label 317
     fn magnetic_track(&self) -> Arinc429Word<Angle> {
-        Arinc429Word::new(Angle::default(), SignStatus::NormalOperation)
+        Arinc429Word::new(Angle::default(), self.ir_ssm)
     }
     /// Label 320
     fn magnetic_heading(&self) -> Arinc429Word<Angle> {
-        Arinc429Word::new(Angle::default(), SignStatus::NormalOperation)
+        Arinc429Word::new(Angle::default(), self.ir_ssm)
     }
     /// Label 321
     fn drift_angle(&self) -> Arinc429Word<Angle> {
-        Arinc429Word::new(Angle::default(), SignStatus::NormalOperation)
+        Arinc429Word::new(Angle::default(), self.ir_ssm)
     }
     /// Label 322
     fn flight_path_angle(&self) -> Arinc429Word<Angle> {
-        Arinc429Word::new(Angle::default(), SignStatus::NormalOperation)
+        Arinc429Word::new(Angle::default(), self.ir_ssm)
     }
     /// Label 323
     fn flight_path_accel(&self) -> Arinc429Word<Ratio> {
-        Arinc429Word::new(Ratio::default(), SignStatus::NormalOperation)
+        Arinc429Word::new(Ratio::default(), self.ir_ssm)
     }
     /// Label 324
     fn pitch_angle(&self) -> Arinc429Word<Angle> {
-        Arinc429Word::new(self.pitch, SignStatus::NormalOperation)
+        Arinc429Word::new(self.pitch, self.ir_ssm)
     }
     /// Label 325
     fn roll_angle(&self) -> Arinc429Word<Angle> {
-        Arinc429Word::new(Angle::default(), SignStatus::NormalOperation)
+        Arinc429Word::new(Angle::default(), self.ir_ssm)
     }
     /// Label 326
     fn body_pitch_rate(&self) -> Arinc429Word<AngularVelocity> {
-        Arinc429Word::new(AngularVelocity::default(), SignStatus::NormalOperation)
+        Arinc429Word::new(AngularVelocity::default(), self.ir_ssm)
     }
     /// Label 327
     fn body_roll_rate(&self) -> Arinc429Word<AngularVelocity> {
-        Arinc429Word::new(AngularVelocity::default(), SignStatus::NormalOperation)
+        Arinc429Word::new(AngularVelocity::default(), self.ir_ssm)
     }
     /// Label 330
     fn body_yaw_rate(&self) -> Arinc429Word<AngularVelocity> {
-        Arinc429Word::new(AngularVelocity::default(), SignStatus::NormalOperation)
+        Arinc429Word::new(AngularVelocity::default(), self.ir_ssm)
     }
     /// Label 331
     fn body_long_acc(&self) -> Arinc429Word<Ratio> {
-        Arinc429Word::new(Ratio::default(), SignStatus::NormalOperation)
+        Arinc429Word::new(Ratio::default(), self.ir_ssm)
     }
     /// Label 332
     fn body_lat_acc(&self) -> Arinc429Word<Ratio> {
-        Arinc429Word::new(Ratio::default(), SignStatus::NormalOperation)
+        Arinc429Word::new(Ratio::default(), self.ir_ssm)
     }
     /// Label 333
     fn body_normal_acc(&self) -> Arinc429Word<Ratio> {
-        Arinc429Word::new(Ratio::default(), SignStatus::NormalOperation)
+        Arinc429Word::new(Ratio::default(), self.ir_ssm)
     }
     /// Label 361
     fn inertial_altitude(&self) -> Arinc429Word<Length> {
-        Arinc429Word::new(self.altitude, SignStatus::NormalOperation)
+        Arinc429Word::new(self.altitude, self.ir_ssm)
     }
     /// Label 365
     fn inertial_vertical_speed(&self) -> Arinc429Word<Velocity> {
-        Arinc429Word::new(self.vertical_speed, SignStatus::NormalOperation)
+        Arinc429Word::new(self.vertical_speed, self.ir_ssm)
     }
 
     /// Label 270
     fn discrete_word_1(&self) -> Arinc429Word<u32> {
-        Arinc429Word::new(0u32, SignStatus::NormalOperation)
+        Arinc429Word::new(0u32, self.ir_ssm)
     }
     /// Label 275
     fn discrete_word_2(&self) -> Arinc429Word<u32> {
-        Arinc429Word::new(0u32, SignStatus::NormalOperation)
+        Arinc429Word::new(0u32, self.ir_ssm)
     }
     /// Label 276
     fn discrete_word_3(&self) -> Arinc429Word<u32> {
-        Arinc429Word::new(0u32, SignStatus::NormalOperation)
+        Arinc429Word::new(0u32, self.ir_ssm)
     }
 }
 impl SimulationElement for TestAdiru {
@@ -551,6 +565,14 @@ impl EgpwcTestBed {
         self.command(|a| a.ils.set_failed(failed));
     }
 
+    fn set_adr_failure(&mut self, failed: bool) {
+        self.command(|a| a.adiru.set_failed_adr(failed));
+    }
+
+    fn set_ir_failure(&mut self, failed: bool) {
+        self.command(|a| a.adiru.set_failed_ir(failed));
+    }
+
     fn get_aural_warning(&mut self) -> u8 {
         ReadByName::<EgpwcTestBed, u8>::read_by_name(
             self,
@@ -637,6 +659,52 @@ fn emits_failure_when_ra_is_failed() {
     test_bed.assert_no_warning_active();
 
     test_bed.set_ra_failure(false);
+    test_bed.run_with_delta(Duration::from_millis(1));
+    assert!(!test_bed.egpws_sys_fault());
+    test_bed.assert_no_warning_active();
+}
+
+#[test]
+fn emits_failure_when_adr_is_failed() {
+    let mut test_bed = test_bed_with()
+        .altitude_of(Length::new::<foot>(2500.0))
+        .and()
+        .powered();
+
+    test_bed.run_with_delta(Duration::from_millis(1));
+
+    assert!(!test_bed.egpws_sys_fault());
+    test_bed.assert_no_warning_active();
+
+    test_bed.set_adr_failure(true);
+    test_bed.run_with_delta(Duration::from_millis(1));
+    assert!(test_bed.egpws_sys_fault());
+    test_bed.assert_no_warning_active();
+
+    test_bed.set_adr_failure(false);
+    test_bed.run_with_delta(Duration::from_millis(1));
+    assert!(!test_bed.egpws_sys_fault());
+    test_bed.assert_no_warning_active();
+}
+
+#[test]
+fn emits_no_sys_failure_when_ir_is_failed() {
+    let mut test_bed = test_bed_with()
+        .altitude_of(Length::new::<foot>(2500.0))
+        .and()
+        .powered();
+
+    test_bed.run_with_delta(Duration::from_millis(1));
+
+    assert!(!test_bed.egpws_sys_fault());
+    test_bed.assert_no_warning_active();
+
+    test_bed.set_ir_failure(true);
+    test_bed.run_with_delta(Duration::from_millis(1));
+    assert!(!test_bed.egpws_sys_fault());
+    test_bed.assert_no_warning_active();
+
+    test_bed.set_ir_failure(false);
     test_bed.run_with_delta(Duration::from_millis(1));
     assert!(!test_bed.egpws_sys_fault());
     test_bed.assert_no_warning_active();
