@@ -12,6 +12,8 @@
 
 ## 0.15.0
 
+1. [A380X/MFD] Add = sign the the MFD font - @JulKem (JulK)
+
 ## 0.14.0
 
 1. [A380X/FMS] Fix speed margins being displayed in the wrong place for a Mach target - @BlueberryKing (BlueberryKing)
