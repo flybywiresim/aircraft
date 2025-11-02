@@ -21,6 +21,7 @@ interface PowerSupplySimvars {
   msfsDcBus1: number;
   msfsDcBus2: number;
   msfsDcBusEss: number;
+  msfsDcBusEssInFlight: number;
 }
 
 enum PowerSupplySimvarSources {
@@ -32,6 +33,7 @@ enum PowerSupplySimvarSources {
   dcBus1 = 'L:A32NX_ELEC_DC_1_BUS_IS_POWERED',
   dcBus2 = 'L:A32NX_ELEC_DC_2_BUS_IS_POWERED',
   dcBusEss = 'L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED',
+  dcBusEssInFlight = 'L:A32NX_ELEC_108PH_BUS_IS_POWERED',
 }
 
 export class PowerSupplySimvarPublisher extends SimVarPublisher<PowerSupplySimvars> {
@@ -44,6 +46,7 @@ export class PowerSupplySimvarPublisher extends SimVarPublisher<PowerSupplySimva
     ['msfsDcBus1', { name: PowerSupplySimvarSources.dcBus1, type: SimVarValueType.Number }],
     ['msfsDcBus2', { name: PowerSupplySimvarSources.dcBus2, type: SimVarValueType.Number }],
     ['msfsDcBusEss', { name: PowerSupplySimvarSources.dcBusEss, type: SimVarValueType.Number }],
+    ['msfsDcBusEssInFlight', { name: PowerSupplySimvarSources.dcBusEssInFlight, type: SimVarValueType.Number }],
   ]);
 
   public constructor(bus: EventBus) {
@@ -60,6 +63,7 @@ export interface PowerSupplyBusTypes {
   dcBus1: boolean;
   dcBus2: boolean;
   dcBusEss: boolean;
+  dcBusEssInFlight: boolean;
 }
 
 export class PowerSupplyBusses implements BackplanePublisher {
@@ -109,6 +113,10 @@ export class PowerSupplyBusses implements BackplanePublisher {
       .on('msfsDcBusEss')
       .whenChanged()
       .handle((powered: number) => this.publisher.pub('dcBusEss', powered !== 0, false, false));
+    this.subscriber
+      .on('msfsDcBusEssInFlight')
+      .whenChanged()
+      .handle((powered: number) => this.publisher.pub('dcBusEssInFlight', powered !== 0, false, false));
   }
 
   public startPublish(): void {
