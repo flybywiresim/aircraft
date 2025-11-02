@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { FMMessageTypes } from '@flybywiresim/fbw-sdk';
 import { FMMessageSelector, FMMessageUpdate } from './FmsMessages';
 import { GuidanceController } from '../../guidance/GuidanceController';
 import { FlightPlanService } from '../../flightplanning/FlightPlanService';
 import { Navigation } from '../../navigation/Navigation';
+import { FMMessageTypes } from './FmMessages';
 
 export class LateralDiscontinuityAhead implements FMMessageSelector {
   message = FMMessageTypes.LateralDiscontinuityAhead;
