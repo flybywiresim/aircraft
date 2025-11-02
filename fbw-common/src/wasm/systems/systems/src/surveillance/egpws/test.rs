@@ -6,6 +6,7 @@ use uom::si::{
         Pressure, Ratio, ThermodynamicTemperature, Velocity,
     },
     length::foot,
+    ratio::ratio,
     velocity::{foot_per_minute, knot},
 };
 
@@ -322,6 +323,8 @@ impl SimulationElement for TestAdiru {
 struct TestIls {
     has_glideslope: bool,
     glideslope_deviation: Ratio,
+    has_localizer: bool,
+    localizer_deviation: Ratio,
     failed: bool,
 }
 impl TestIls {
@@ -329,12 +332,34 @@ impl TestIls {
         Self {
             has_glideslope: false,
             glideslope_deviation: Ratio::default(),
+            has_localizer: false,
+            localizer_deviation: Ratio::default(),
             failed: false,
         }
     }
 
     fn set_failed(&mut self, failed: bool) {
         self.failed = failed;
+    }
+
+    fn set_gs_deviation(&mut self, deviation: Option<Ratio>) {
+        if let Some(dev) = deviation {
+            self.has_glideslope = true;
+            self.glideslope_deviation = dev;
+        } else {
+            self.has_glideslope = false;
+            self.glideslope_deviation = Ratio::default();
+        }
+    }
+
+    fn set_loc_deviation(&mut self, deviation: Option<Ratio>) {
+        if let Some(dev) = deviation {
+            self.has_localizer = true;
+            self.localizer_deviation = dev;
+        } else {
+            self.has_localizer = false;
+            self.localizer_deviation = Ratio::default();
+        }
     }
 }
 impl InstrumentLandingSystemBus for TestIls {
@@ -352,11 +377,13 @@ impl InstrumentLandingSystemBus for TestIls {
     }
     fn localizer_deviation(&self) -> Arinc429Word<Ratio> {
         Arinc429Word::new(
-            Ratio::default(),
+            self.localizer_deviation,
             if self.failed {
                 SignStatus::FailureWarning
-            } else {
+            } else if self.has_localizer {
                 SignStatus::NormalOperation
+            } else {
+                SignStatus::NoComputedData
             },
         )
     }
@@ -531,6 +558,16 @@ impl EgpwcTestBed {
         self
     }
 
+    fn gs_deviation_of(mut self, deviation: Option<Ratio>) -> Self {
+        self.command(|a| a.ils.set_gs_deviation(deviation));
+        self
+    }
+
+    fn loc_deviation_of(mut self, deviation: Option<Ratio>) -> Self {
+        self.command(|a| a.ils.set_loc_deviation(deviation));
+        self
+    }
+
     fn gear_extended(mut self, extended: bool) -> Self {
         self.command(|a| a.lgciu.set_gear_extended(extended));
         self
@@ -541,13 +578,18 @@ impl EgpwcTestBed {
         self
     }
 
-    fn flaps_3_button_pressed(mut self, pressed: bool) -> Self {
-        self.write_by_name(EgpwsElectricalHarness::GPWS_FLAPS3_KEY, pressed);
+    fn gs_mode_button_pressed(mut self, pressed: bool) -> Self {
+        self.write_by_name(EgpwsElectricalHarness::GPWS_GS_OFF_KEY, pressed);
         self
     }
 
     fn gpws_sys_button_pressed(mut self, pressed: bool) -> Self {
         self.write_by_name(EgpwsElectricalHarness::GPWS_SYS_OFF_KEY, pressed);
+        self
+    }
+
+    fn gpws_gs_cancel_self_test_pressed(mut self, pressed: bool) -> Self {
+        self.write_by_name(EgpwsElectricalHarness::GPWS_TEST_KEY, pressed);
         self
     }
 
@@ -594,6 +636,11 @@ impl EgpwcTestBed {
 
     fn egpws_sys_fault(&mut self) -> bool {
         self.query(|ac: &TestAircraft| ac.egpwc.discrete_outputs().gpws_inop)
+    }
+
+    #[allow(dead_code)]
+    fn egpws_terr_fault(&mut self) -> bool {
+        self.query(|ac: &TestAircraft| ac.egpwc.discrete_outputs().terrain_inop)
     }
 
     fn assert_no_warning_active(&mut self) {
@@ -1187,4 +1234,121 @@ fn mode_4_c_test() {
     test_bed = test_bed.altitude_of(Length::new::<foot>(400.0));
     test_bed.run_with_delta(Duration::from_millis(15_000));
     test_bed.assert_no_warning_active();
+}
+
+#[test]
+fn mode_5_test() {
+    let mut test_bed = test_bed_with()
+        .altitude_of(Length::new::<foot>(900.0))
+        .terrain_height_of(Length::new::<foot>(0.0))
+        .vertical_speed_of(Velocity::new::<foot_per_minute>(0.0))
+        .cas_of(Velocity::new::<knot>(150.0))
+        .gs_deviation_of(None)
+        .loc_deviation_of(None)
+        .gear_extended(true)
+        .flaps_extended(true)
+        .and()
+        .powered();
+
+    test_bed.run_with_delta(Duration::from_millis(1_000));
+    test_bed.assert_no_warning_active();
+
+    test_bed = test_bed.loc_deviation_of(Some(Ratio::new::<ratio>(0.3)));
+    test_bed = test_bed.gs_deviation_of(Some(Ratio::new::<ratio>(-0.122)));
+    test_bed.run_with_delta(Duration::from_millis(1_000));
+    test_bed.assert_no_warning_active();
+
+    test_bed = test_bed
+        .loc_deviation_of(Some(Ratio::new::<ratio>(0.0)))
+        .vertical_speed_of(Velocity::new::<foot_per_minute>(-500.0));
+    test_bed.run_with_delta(Duration::from_millis(1_000));
+    assert!(test_bed.get_audio_on());
+    assert_eq!(
+        test_bed.get_aural_warning(),
+        AuralWarning::GlideslopeSoft as u8
+    );
+    assert!(test_bed.is_alert_light_on());
+
+    test_bed = test_bed.gs_deviation_of(Some(Ratio::new::<ratio>(-0.18)));
+    test_bed.run_with_delta(Duration::from_millis(1_000));
+    assert!(test_bed.get_audio_on());
+    assert_eq!(
+        test_bed.get_aural_warning(),
+        AuralWarning::GlideslopeSoft as u8
+    );
+    assert!(test_bed.is_alert_light_on());
+
+    test_bed = test_bed.altitude_of(Length::new::<foot>(200.0));
+    test_bed.run_with_delta(Duration::from_millis(1_000));
+    assert!(test_bed.get_audio_on());
+    assert_eq!(
+        test_bed.get_aural_warning(),
+        AuralWarning::GlideslopeHard as u8
+    );
+    assert!(test_bed.is_alert_light_on());
+
+    test_bed = test_bed.gs_mode_button_pressed(true);
+    test_bed.run_with_delta(Duration::from_millis(1));
+    test_bed.assert_no_warning_active();
+    test_bed = test_bed.gs_mode_button_pressed(false);
+    test_bed.run_with_delta(Duration::from_millis(1));
+    assert!(test_bed.get_audio_on());
+    assert_eq!(
+        test_bed.get_aural_warning(),
+        AuralWarning::GlideslopeHard as u8
+    );
+    assert!(test_bed.is_alert_light_on());
+}
+
+#[test]
+fn mode_5_gs_inhibit_button_cancels() {
+    let mut test_bed = test_bed_with()
+        .altitude_of(Length::new::<foot>(900.0))
+        .terrain_height_of(Length::new::<foot>(0.0))
+        .vertical_speed_of(Velocity::new::<foot_per_minute>(0.0))
+        .cas_of(Velocity::new::<knot>(150.0))
+        .gs_deviation_of(None)
+        .loc_deviation_of(None)
+        .gear_extended(true)
+        .flaps_extended(true)
+        .and()
+        .powered();
+
+    test_bed.run_with_delta(Duration::from_millis(1_000));
+    test_bed.assert_no_warning_active();
+
+    test_bed = test_bed.loc_deviation_of(Some(Ratio::new::<ratio>(0.3)));
+    test_bed = test_bed.gs_deviation_of(Some(Ratio::new::<ratio>(-0.122)));
+    test_bed.run_with_delta(Duration::from_millis(1_000));
+    test_bed.assert_no_warning_active();
+
+    test_bed = test_bed
+        .loc_deviation_of(Some(Ratio::new::<ratio>(0.0)))
+        .vertical_speed_of(Velocity::new::<foot_per_minute>(-500.0));
+    test_bed = test_bed.gs_deviation_of(Some(Ratio::new::<ratio>(-0.18)));
+    test_bed = test_bed.altitude_of(Length::new::<foot>(200.0));
+    test_bed.run_with_delta(Duration::from_millis(1_000));
+    assert!(test_bed.get_audio_on());
+    assert_eq!(
+        test_bed.get_aural_warning(),
+        AuralWarning::GlideslopeHard as u8
+    );
+    assert!(test_bed.is_alert_light_on());
+
+    test_bed = test_bed.gpws_gs_cancel_self_test_pressed(true);
+    test_bed.run_with_delta(Duration::from_millis(1));
+    test_bed = test_bed.gpws_gs_cancel_self_test_pressed(false);
+    test_bed.run_with_delta(Duration::from_millis(1));
+    test_bed.assert_no_warning_active();
+
+    test_bed = test_bed.altitude_of(Length::new::<foot>(2100.0));
+    test_bed.run_with_delta(Duration::from_millis(1));
+    test_bed = test_bed.altitude_of(Length::new::<foot>(200.0));
+    test_bed.run_with_delta(Duration::from_millis(60_000));
+    assert!(test_bed.get_audio_on());
+    assert_eq!(
+        test_bed.get_aural_warning(),
+        AuralWarning::GlideslopeHard as u8
+    );
+    assert!(test_bed.is_alert_light_on());
 }
