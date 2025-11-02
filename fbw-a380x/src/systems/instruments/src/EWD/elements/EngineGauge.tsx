@@ -1,3 +1,5 @@
+// Copyright (c) 2024-2025 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
 import { DisplayComponent, Subscribable, VNode, FSComponent, EventBus } from '@microsoft/msfs-sdk';
 import { AttentionGetter } from 'instruments/src/EWD/elements/AttentionGetter';
 import { EGT } from 'instruments/src/EWD/elements/EGT';
@@ -11,6 +13,8 @@ interface EngineGaugeProps {
   engine: number;
   active: Subscribable<boolean>;
   n1Degraded: Subscribable<boolean>;
+  engineNormalAttentionGettingBox: Subscribable<boolean>;
+  engineAbnormalAttentionGettingBox: Subscribable<boolean>;
 }
 
 export class EngineGauge extends DisplayComponent<EngineGaugeProps> {
@@ -27,6 +31,8 @@ export class EngineGauge extends DisplayComponent<EngineGaugeProps> {
           y={this.props.y}
           engine={this.props.engine}
           active={this.props.active}
+          normal={this.props.engineNormalAttentionGettingBox}
+          abnormal={this.props.engineAbnormalAttentionGettingBox}
         />
         <ThrustGauge
           bus={this.props.bus}

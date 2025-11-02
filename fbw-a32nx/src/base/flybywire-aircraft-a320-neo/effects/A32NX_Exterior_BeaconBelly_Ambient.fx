@@ -70,3 +70,4 @@ SpotInner=25
 SpotOuter=75
 Volumetric=0
 ScatDir=0.0
+ForceFlare=0

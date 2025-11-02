@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2022 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
@@ -144,10 +145,10 @@ export class PendingAirways {
     return true;
   }
 
-  thenTo(waypoint: Fix) {
+  thenTo(waypoint: Fix, isDct = false) {
     const tailElement = this.tailElement;
 
-    if (tailElement.to) {
+    if (isDct || tailElement?.to) {
       // The tail element is already complete, so we do a DCT entry
 
       this.elements.push({ to: waypoint, isDct: true });

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -15,7 +16,7 @@ import {
   AltitudeDescriptor,
   EfisSide,
   Arinc429SignStatusMatrix,
-  Arinc429OutputWord,
+  Arinc429LocalVarOutputWord,
   NearbyFacilityType,
   isNearbyVhfFacility,
   isMsfs2024,
@@ -82,9 +83,9 @@ export class EfisSymbols<T extends number> {
 
   private lastEfisInterfaceVersion = -1;
 
-  private mapReferenceLatitude = new Arinc429OutputWord(`L:A32NX_EFIS_${this.side}_MRP_LAT`);
+  private mapReferenceLatitude = new Arinc429LocalVarOutputWord(`L:A32NX_EFIS_${this.side}_MRP_LAT`);
 
-  private mapReferenceLongitude = new Arinc429OutputWord(`L:A32NX_EFIS_${this.side}_MRP_LONG`);
+  private mapReferenceLongitude = new Arinc429LocalVarOutputWord(`L:A32NX_EFIS_${this.side}_MRP_LONG`);
 
   private readonly flightPhase = ConsumerValue.create(
     this.bus.getSubscriber<FlightPhaseManagerEvents>().on('fmgc_flight_phase'),

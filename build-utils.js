@@ -113,6 +113,7 @@ function typecheckingPlugin() {
 
                 try {
                     childProcess.execSync('npx tsc --noEmit -p .', { cwd: tsConfigDir });
+                    childProcess.execSync('npx tsc-strict', { cwd: tsConfigDir });
                 } catch (e) {
                     if (!('stdout' in e) || !e.stdout) {
                         throw e;

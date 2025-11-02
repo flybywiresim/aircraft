@@ -47,8 +47,8 @@ class A380FacComputer final
     real_T pY;
     real_T pU;
     real_T takeoff_config;
-    real_T takeoff_config_c;
-    real_T takeoff_config_g;
+    real_T takeoff_config_k;
+    real_T takeoff_config_a;
     real_T sAlphaFloor;
     uint8_T is_active_c15_A380FacComputer;
     uint8_T is_c15_A380FacComputer;
@@ -284,8 +284,8 @@ class A380FacComputer final
     real_T Vfe_25_Value;
     real_T uDLookupTable1_tableData_ow[6];
     real_T uDLookupTable1_bp01Data_pi[6];
-    real_T uDLookupTable_tableData_a[6];
-    real_T uDLookupTable_bp01Data_a[6];
+    real_T uDLookupTable_tableData_k[6];
+    real_T uDLookupTable_bp01Data_i[6];
     real_T Constant1_Value_p;
     real_T Saturation_UpperSat_j;
     real_T Saturation_LowerSat_c;
@@ -293,7 +293,7 @@ class A380FacComputer final
     real_T Saturation_UpperSat_e;
     real_T Saturation_LowerSat_o;
     real_T uDLookupTable_tableData_j[7];
-    real_T uDLookupTable_bp01Data_i[7];
+    real_T uDLookupTable_bp01Data_ik[7];
     real_T Saturation_UpperSat_g;
     real_T Saturation_LowerSat_f;
     real_T Constant_Value_b;
@@ -308,6 +308,9 @@ class A380FacComputer final
     real32_T Constant4_Value_j;
     real32_T Constant1_Value_c;
     real32_T Gain4_Gain_o;
+    real32_T uDLookupTable_tableData_d[15];
+    real32_T uDLookupTable_bp01Data_o[5];
+    real32_T uDLookupTable_bp02Data_p[3];
     real32_T Constant28_Value;
     real32_T Constant22_Value;
     real32_T Constant21_Value;
@@ -331,6 +334,7 @@ class A380FacComputer final
     uint32_T uDLookupTable1_maxIndex_g[2];
     uint32_T nDLookupTable_maxIndex_g[3];
     uint32_T nDLookupTable_dimSizes_i[3];
+    uint32_T uDLookupTable_maxIndex_j[2];
     boolean_T Constant_Value_c;
     boolean_T Constant_Value_h;
     boolean_T Constant_Value_b5;
