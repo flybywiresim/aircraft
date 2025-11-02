@@ -1,10 +1,10 @@
 use crate::{
-    navigation::{
+    shared::LgciuGearExtension,
+    simulation::{InitContext, Read, SimulationElement, SimulatorReader, VariableIdentifier},
+    surveillance::{
         egpws::runtime::EnhancedGroundProximityWarningComputerPinProgramming,
         taws::TerrainAwarenessWarningSystemDiscreteInputs,
     },
-    shared::LgciuGearExtension,
-    simulation::{InitContext, Read, SimulationElement, SimulatorReader, VariableIdentifier},
 };
 
 pub struct EgpwsElectricalHarness {

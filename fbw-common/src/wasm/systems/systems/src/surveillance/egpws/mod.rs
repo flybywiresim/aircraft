@@ -7,22 +7,24 @@ use crate::{
     failures::{Failure, FailureType},
     navigation::{
         adirs::{AirDataReferenceBus, InertialReferenceBus},
-        egpws::{
-            electrical_harness::EgpwsElectricalHarness,
-            runtime::{AuralWarning, EnhancedGroundProximityWarningComputerRuntime, FlightPhase},
-        },
         ils::InstrumentLandingSystemBus,
         radio_altimeter::RadioAltimeter,
-        taws::{
-            TerrainAwarenessWarningSystemBusOutput, TerrainAwarenessWarningSystemBusOutputs,
-            TerrainAwarenessWarningSystemDiscreteOutput,
-            TerrainAwarenessWarningSystemDiscreteOutputs,
-        },
     },
     shared::{random_from_range, ConsumePower, ElectricalBusType, ElectricalBuses},
     simulation::{
         InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
         VariableIdentifier, Write,
+    },
+    surveillance::{
+        egpws::{
+            electrical_harness::EgpwsElectricalHarness,
+            runtime::{AuralWarning, EnhancedGroundProximityWarningComputerRuntime, FlightPhase},
+        },
+        taws::{
+            TerrainAwarenessWarningSystemBusOutput, TerrainAwarenessWarningSystemBusOutputs,
+            TerrainAwarenessWarningSystemDiscreteOutput,
+            TerrainAwarenessWarningSystemDiscreteOutputs,
+        },
     },
 };
 use std::time::Duration;

@@ -13,10 +13,6 @@ use crate::{
         adirs::{AirDataReferenceBus, InertialReferenceBus},
         ils::InstrumentLandingSystemBus,
         radio_altimeter::RadioAltimeter,
-        taws::{
-            TerrainAwarenessWarningSystemBusOutputs, TerrainAwarenessWarningSystemDiscreteInputs,
-            TerrainAwarenessWarningSystemDiscreteOutputs,
-        },
     },
     shared::{
         derivative::DerivativeNode,
@@ -26,6 +22,10 @@ use crate::{
         rate_lmiter::RateLimiter,
     },
     simulation::UpdateContext,
+    surveillance::taws::{
+        TerrainAwarenessWarningSystemBusOutputs, TerrainAwarenessWarningSystemDiscreteInputs,
+        TerrainAwarenessWarningSystemDiscreteOutputs,
+    },
 };
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
@@ -768,17 +768,17 @@ impl EnhancedGroundProximityWarningComputerRuntime {
             self.mode_3_declutter_threshold_increase += 0.20;
         }
 
-        //println!(
-        //    "Mode 3: phase: {:?}, enabled: {}, max achieved alt: {:.1} ft, altitude loss: {:.1} ft, mode 3 boundary: {:.1} ft, lamp active: {}, voice active: {}, declutter increase: {:.2}",
-        //    self.flight_phase,
-        //    mode_3_enabled,
-        //    self.mode_3_max_achieved_alt_ft.unwrap_or_default(),
-        //    altitude_loss_ft.unwrap_or_default(),
-        //    mode_3_boundary,
-        //    self.mode_3_lamp_active,
-        //    self.mode_3_dont_sink_voice_active,
-        //    self.mode_3_declutter_threshold_increase,
-        //);
+        println!(
+            "Mode 3: phase: {:?}, enabled: {}, max achieved alt: {:.1} ft, altitude loss: {:.1} ft, mode 3 boundary: {:.1} ft, lamp active: {}, voice active: {}, declutter increase: {:.2}",
+            self.flight_phase,
+            mode_3_enabled,
+            self.mode_3_max_achieved_alt_ft.unwrap_or_default(),
+            altitude_loss_ft.unwrap_or_default(),
+            mode_3_boundary,
+            self.mode_3_lamp_active,
+            self.mode_3_dont_sink_voice_active,
+            self.mode_3_declutter_threshold_increase,
+        );
     }
 
     fn update_mode_4_logic(

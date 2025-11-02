@@ -24,13 +24,13 @@ use electrical::{
 use hydraulic::{A320Hydraulic, A320HydraulicOverheadPanel};
 use navigation::{A320AirDataInertialReferenceSystemBuilder, A320RadioAltimeters};
 use power_consumption::A320PowerConsumption;
-use systems::navigation::{
-    egpws::EnhancedGroundProximityWarningComputer as EnhancedGroundProximityWarningComputer2,
-    ils::MultiModeReceiverShim,
-};
+use systems::navigation::ils::MultiModeReceiverShim;
 use systems::{
     enhanced_gpwc::EnhancedGroundProximityWarningComputer,
-    navigation::egpws::electrical_harness::EgpwsElectricalHarness,
+    surveillance::egpws::{
+        electrical_harness::EgpwsElectricalHarness,
+        EnhancedGroundProximityWarningComputer as EnhancedGroundProximityWarningComputer2,
+    },
 };
 use systems::{hydraulic::brake::BrakeFanPanel, simulation::InitContext};
 use uom::si::{f64::Length, length::nautical_mile};

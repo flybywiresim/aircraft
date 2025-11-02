@@ -460,7 +460,7 @@ impl EgpwcTestBed {
                 TestAircraft::new,
             ),
         };
-        test_bed = test_bed.on_ground().powered();
+        test_bed = test_bed.on_ground().powered().flaps_extended(false);
 
         test_bed
     }
@@ -484,7 +484,7 @@ impl EgpwcTestBed {
             &mut self,
             EnhancedGroundProximityWarningComputer::AURAL_OUTPUT_KEY,
         );
-        self.altitude_of(terr_height).gear_position(true)
+        self.altitude_of(terr_height).gear_extended(true)
     }
 
     fn altitude_of(mut self, height: Length) -> Self {
@@ -507,7 +507,7 @@ impl EgpwcTestBed {
         self
     }
 
-    fn gear_position(mut self, extended: bool) -> Self {
+    fn gear_extended(mut self, extended: bool) -> Self {
         self.command(|a| a.lgciu.set_gear_extended(extended));
         self
     }
@@ -524,6 +524,12 @@ impl EgpwcTestBed {
 
     fn gpws_sys_button_pressed(mut self, pressed: bool) -> Self {
         self.write_by_name(EgpwsElectricalHarness::GPWS_SYS_OFF_KEY, pressed);
+        self
+    }
+
+    fn flaps_extended(mut self, extended: bool) -> Self {
+        self.write_by_name(EgpwsElectricalHarness::SFCC_1_FAP_1_KEY, extended);
+        self.write_by_name(EgpwsElectricalHarness::SFCC_1_FAP_5_KEY, extended);
         self
     }
 
@@ -775,5 +781,126 @@ fn mode_2_a_test() {
     // Exiting warning area due to lowering terrain. Now at 1000ft, since otherwise the Mode 4 warning would trigger.
     test_bed = test_bed.terrain_height_of(Length::new::<foot>(1500.0));
     test_bed.run_with_delta(Duration::from_millis(2_000));
+    test_bed.assert_no_warning_active();
+}
+
+#[test]
+fn mode_2_b_test() {
+    let mut test_bed = test_bed_with()
+        .altitude_of(Length::new::<foot>(2500.0))
+        .terrain_height_of(Length::new::<foot>(0.0))
+        .vertical_speed_of(Velocity::new::<foot_per_minute>(0.0))
+        .cas_of(Velocity::new::<knot>(200.0))
+        .flaps_extended(true)
+        .gear_extended(true)
+        .and()
+        .powered();
+
+    test_bed.run_with_delta(Duration::from_millis(1_000));
+    test_bed.assert_no_warning_active();
+
+    // Terrain rises, in mode 2B (flaps extended), max. clearance for alert is 789ft
+    test_bed = test_bed.terrain_height_of(Length::new::<foot>(1000.0));
+    test_bed.run_with_delta(Duration::from_millis(3_000));
+    test_bed.assert_no_warning_active();
+
+    test_bed = test_bed.terrain_height_of(Length::new::<foot>(2000.0));
+    test_bed.run_with_delta(Duration::from_millis(10_000));
+    assert!(test_bed.get_audio_on());
+    assert_eq!(test_bed.get_aural_warning(), AuralWarning::Terrain as u8);
+    assert!(test_bed.is_warning_light_on());
+
+    // With high V/S, lower warning boundary is shifted up.
+    test_bed = test_bed.vertical_speed_of(Velocity::new::<foot_per_minute>(-800.));
+    test_bed = test_bed.terrain_height_of(Length::new::<foot>(2100.0));
+    test_bed.run_with_delta(Duration::from_millis(2_000));
+    test_bed.assert_no_warning_active();
+
+    test_bed = test_bed.vertical_speed_of(Velocity::new::<foot_per_minute>(0.));
+    test_bed = test_bed.terrain_height_of(Length::new::<foot>(2200.0));
+    test_bed.run_with_delta(Duration::from_millis(2_000));
+    assert!(test_bed.get_audio_on());
+    assert_eq!(test_bed.get_aural_warning(), AuralWarning::Terrain as u8);
+    assert!(test_bed.is_warning_light_on());
+
+    // Exiting warning area due to lowering terrain.
+    test_bed = test_bed.terrain_height_of(Length::new::<foot>(1000.0));
+    test_bed.run_with_delta(Duration::from_millis(4_000));
+    test_bed.assert_no_warning_active();
+}
+
+#[test]
+fn mode_3_test() {
+    let mut test_bed = test_bed_with().on_ground().and().powered();
+
+    test_bed.run_with_delta(Duration::from_millis(1_000));
+    test_bed.assert_no_warning_active();
+
+    // Take off
+    test_bed = test_bed
+        .altitude_of(Length::new::<foot>(100.0))
+        .vertical_speed_of(Velocity::new::<foot_per_minute>(100.))
+        .gear_extended(false);
+    test_bed.run_with_delta(Duration::from_millis(3_000));
+    test_bed.assert_no_warning_active();
+
+    test_bed = test_bed
+        .altitude_of(Length::new::<foot>(500.0))
+        .vertical_speed_of(Velocity::new::<foot_per_minute>(-100.));
+    test_bed.run_with_delta(Duration::from_millis(6_000));
+    test_bed.assert_no_warning_active();
+
+    test_bed = test_bed
+        .altitude_of(Length::new::<foot>(400.0))
+        .vertical_speed_of(Velocity::new::<foot_per_minute>(-100.));
+    test_bed.run_with_delta(Duration::from_millis(6_000));
+    assert!(test_bed.get_audio_on());
+    assert_eq!(test_bed.get_aural_warning(), AuralWarning::DontSink as u8);
+    assert!(test_bed.is_warning_light_on());
+
+    test_bed = test_bed
+        .altitude_of(Length::new::<foot>(420.0))
+        .vertical_speed_of(Velocity::new::<foot_per_minute>(100.));
+    test_bed.run_with_delta(Duration::from_millis(1_000));
+    test_bed.assert_no_warning_active();
+
+    test_bed = test_bed
+        .altitude_of(Length::new::<foot>(420.0))
+        .vertical_speed_of(Velocity::new::<foot_per_minute>(-100.));
+    test_bed.run_with_delta(Duration::from_millis(1_000));
+    assert!(test_bed.get_audio_on());
+    assert_eq!(test_bed.get_aural_warning(), AuralWarning::DontSink as u8);
+    assert!(test_bed.is_warning_light_on());
+
+    test_bed = test_bed.gpws_sys_button_pressed(true);
+    test_bed.run_with_delta(Duration::from_millis(1));
+    test_bed.assert_no_warning_active();
+    test_bed = test_bed.gpws_sys_button_pressed(false);
+    test_bed.run_with_delta(Duration::from_millis(1));
+    assert!(test_bed.get_audio_on());
+    assert_eq!(test_bed.get_aural_warning(), AuralWarning::DontSink as u8);
+    assert!(test_bed.is_warning_light_on());
+}
+
+#[test]
+fn mode_3_disabled_in_approach_mode() {
+    let mut test_bed = test_bed_with().on_ground().and().powered();
+
+    test_bed.run_with_delta(Duration::from_millis(1_000));
+    test_bed.assert_no_warning_active();
+
+    // Take off
+    test_bed = test_bed.altitude_of(Length::new::<foot>(100.0));
+    test_bed.run_with_delta(Duration::from_millis(3_000));
+    test_bed.assert_no_warning_active();
+
+    test_bed = test_bed.altitude_of(Length::new::<foot>(1000.0));
+    test_bed.run_with_delta(Duration::from_millis(20_000));
+    test_bed.assert_no_warning_active();
+
+    test_bed = test_bed
+        .altitude_of(Length::new::<foot>(600.0))
+        .vertical_speed_of(Velocity::new::<foot_per_minute>(-100.));
+    test_bed.run_with_delta(Duration::from_millis(10_000));
     test_bed.assert_no_warning_active();
 }
