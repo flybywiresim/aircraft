@@ -2,35 +2,25 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ConsumerSubject, EventBus, MappedSubject, NodeReference, Subject, Subscribable } from '@microsoft/msfs-sdk';
-import { AmdbProperties, Arinc429LocalVarConsumerSubject, FmsOansData, Runway } from '@flybywiresim/fbw-sdk';
 import {
-  booleanContains,
-  booleanDisjoint,
-  Feature,
-  FeatureCollection,
-  Geometry,
-  lineOffset,
-  lineString,
-  point,
-  polygon,
-  Polygon,
-  Position,
-} from '@turf/turf';
+  AmdbFeature,
+  AmdbProperties,
+  Arinc429LocalVarConsumerSubject,
+  BTV_MIN_TOUCHDOWN_ZONE_DISTANCE,
+  FmsOansData,
+  OansMapProjection,
+  Runway,
+} from '@flybywiresim/fbw-sdk';
+import { booleanContains, booleanDisjoint, lineOffset, lineString, point, polygon } from '@turf/turf';
+import { FeatureCollection, Geometry, Polygon, Position } from 'geojson';
 import { Arinc429Register, Arinc429SignStatusMatrix, MathUtils } from '@flybywiresim/fbw-sdk';
 import { Label, LabelStyle } from '.';
 import { BtvData } from '../../../shared/src/publishers/OansBtv/BtvPublisher';
 import { OancLabelManager } from './OancLabelManager';
-import {
-  fractionalPointAlongLine,
-  globalToAirportCoordinates,
-  pointAngle,
-  pointDistance,
-  pointToLineDistance,
-} from './OancMapUtils';
+import { fractionalPointAlongLine, pointAngle, pointToLineDistance } from './OancMapUtils';
 import { Coordinates, placeBearingDistance } from 'msfs-geo';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 
-export const MIN_TOUCHDOWN_ZONE_DISTANCE = 400; // Minimum distance from threshold to touch down zone
 const CLAMP_DRY_STOPBAR_DISTANCE = 100; // If stop bar is <> meters behind end of runway, clamp to this distance behind end of runway
 const CLAMP_WET_STOPBAR_DISTANCE = 200; // If stop bar is <> meters behind end of runway, clamp to this distance behind end of runway
 
@@ -170,22 +160,20 @@ export class OansBrakeToVacateSelection<T extends number> {
     this.fwsFlightPhase,
   );
 
-  selectRunwayFromOans(
-    runway: string,
-    centerlineFeature: Feature<Geometry, AmdbProperties>,
-    thresholdFeature: Feature<Geometry, AmdbProperties>,
-  ) {
+  selectRunwayFromOans(runway: string, centerlineFeature: AmdbFeature, thresholdFeature: AmdbFeature) {
     this.clearSelection();
+
+    // FIXME specify geometry in types instead of casting
 
     // Select opposite threshold location
     const thrLoc = thresholdFeature.geometry.coordinates as Position;
     this.btvThresholdPosition = thrLoc;
     const firstEl = centerlineFeature.geometry.coordinates[0] as Position;
-    const dist1 = pointDistance(thrLoc[0], thrLoc[1], firstEl[0], firstEl[1]);
+    const dist1 = MathUtils.pointDistance(thrLoc[0], thrLoc[1], firstEl[0], firstEl[1]);
     const lastEl = centerlineFeature.geometry.coordinates[
       centerlineFeature.geometry.coordinates.length - 1
     ] as Position;
-    const dist2 = pointDistance(thrLoc[0], thrLoc[1], lastEl[0], lastEl[1]);
+    const dist2 = MathUtils.pointDistance(thrLoc[0], thrLoc[1], lastEl[0], lastEl[1]);
     if (dist1 > dist2) {
       this.btvOppositeThresholdPosition = centerlineFeature.geometry.coordinates[0] as Position;
     } else {
@@ -216,7 +204,7 @@ export class OansBrakeToVacateSelection<T extends number> {
     this.drawBtvLayer();
   }
 
-  selectExitFromOans(exit: string, feature: Feature<Geometry, AmdbProperties>) {
+  selectExitFromOans(exit: string, feature: AmdbFeature) {
     if (this.btvRunway.get() == null || !this.btvThresholdPosition || !this.btvOppositeThresholdPosition) {
       return;
     }
@@ -239,8 +227,8 @@ export class OansBrakeToVacateSelection<T extends number> {
     // Check whether valid path: Exit start position (i.e. point of exit line closest to threshold) should be inside runway
     const exitStartDistFromThreshold =
       exitDistFromCenterLine1 < exitDistFromCenterLine2
-        ? pointDistance(thrLoc[0], thrLoc[1], exitLoc1[0], exitLoc1[1])
-        : pointDistance(thrLoc[0], thrLoc[1], exitLoc2[0], exitLoc2[1]);
+        ? MathUtils.pointDistance(thrLoc[0], thrLoc[1], exitLoc1[0], exitLoc1[1])
+        : MathUtils.pointDistance(thrLoc[0], thrLoc[1], exitLoc2[0], exitLoc2[1]);
 
     const geoCoords = feature.geometry.coordinates as Position[]; // trust me, bro
     const exitAngle =
@@ -253,7 +241,7 @@ export class OansBrakeToVacateSelection<T extends number> {
     if (
       Math.abs(exitAngle) > 120 ||
       Math.min(exitDistFromCenterLine1, exitDistFromCenterLine2) > 20 ||
-      exitStartDistFromThreshold < MIN_TOUCHDOWN_ZONE_DISTANCE
+      exitStartDistFromThreshold < BTV_MIN_TOUCHDOWN_ZONE_DISTANCE
     ) {
       return;
     }
@@ -262,8 +250,8 @@ export class OansBrakeToVacateSelection<T extends number> {
 
     // Subtract 400m due to distance of touchdown zone from threshold
     const exitDistance =
-      pointDistance(thrLoc[0], thrLoc[1], this.btvExitPosition[0], this.btvExitPosition[1]) -
-      MIN_TOUCHDOWN_ZONE_DISTANCE;
+      MathUtils.pointDistance(thrLoc[0], thrLoc[1], this.btvExitPosition[0], this.btvExitPosition[1]) -
+      BTV_MIN_TOUCHDOWN_ZONE_DISTANCE;
 
     this.bus.getPublisher<FmsOansData>().pub('oansSelectedExit', exit);
     this.bus
@@ -326,8 +314,8 @@ export class OansBrakeToVacateSelection<T extends number> {
     );
     const localThr: Position = [0, 0];
     const localOppThr: Position = [0, 0];
-    globalToAirportCoordinates(arpCoordinates, landingRunwayNavdata.thresholdLocation, localThr);
-    globalToAirportCoordinates(arpCoordinates, oppositeThreshold, localOppThr);
+    OansMapProjection.globalToAirportCoordinates(arpCoordinates, landingRunwayNavdata.thresholdLocation, localThr);
+    OansMapProjection.globalToAirportCoordinates(arpCoordinates, oppositeThreshold, localOppThr);
 
     this.selectRunwayFromNavdata(
       rwyIdent,
@@ -439,13 +427,13 @@ export class OansBrakeToVacateSelection<T extends number> {
 
     // Aircraft distance after threshold
 
-    const aircraftDistFromThreshold = pointDistance(
+    const aircraftDistFromThreshold = MathUtils.pointDistance(
       this.btvThresholdPosition[0],
       this.btvThresholdPosition[1],
       aircraftPpos[0],
       aircraftPpos[1],
     );
-    const aircraftDistFromRunwayEnd = pointDistance(
+    const aircraftDistFromRunwayEnd = MathUtils.pointDistance(
       this.btvOppositeThresholdPosition[0],
       this.btvOppositeThresholdPosition[1],
       aircraftPpos[0],
@@ -455,9 +443,9 @@ export class OansBrakeToVacateSelection<T extends number> {
     const isPastThreshold = aircraftDistFromRunwayEnd < rwyLda;
     // As soon as aircraft passes the touchdown zone distance, draw DRY and WET stop bars from there
     const touchdownDistance =
-      dryWetLinesAreUpdating && isPastThreshold && aircraftDistFromThreshold > MIN_TOUCHDOWN_ZONE_DISTANCE
+      dryWetLinesAreUpdating && isPastThreshold && aircraftDistFromThreshold > BTV_MIN_TOUCHDOWN_ZONE_DISTANCE
         ? aircraftDistFromThreshold
-        : MIN_TOUCHDOWN_ZONE_DISTANCE;
+        : BTV_MIN_TOUCHDOWN_ZONE_DISTANCE;
     const dryRunoverCondition = touchdownDistance + this.dryStoppingDistance.get() > rwyLda;
     const wetRunoverCondition = touchdownDistance + this.wetStoppingDistance.get() > rwyLda;
 
@@ -702,7 +690,7 @@ export class OansBrakeToVacateSelection<T extends number> {
     ]);
     const leftLine = lineOffset(line, 30, { units: 'meters' });
     const rightLine = lineOffset(line, -30, { units: 'meters' });
-    globalToAirportCoordinates(
+    OansMapProjection.globalToAirportCoordinates(
       airportRefPos,
       {
         lat: leftLine.geometry.coordinates[0][0],
@@ -710,7 +698,7 @@ export class OansBrakeToVacateSelection<T extends number> {
       },
       this.rwyAheadPredictionVolumePoints[0],
     );
-    globalToAirportCoordinates(
+    OansMapProjection.globalToAirportCoordinates(
       airportRefPos,
       {
         lat: leftLine.geometry.coordinates[1][0],
@@ -718,7 +706,7 @@ export class OansBrakeToVacateSelection<T extends number> {
       },
       this.rwyAheadPredictionVolumePoints[1],
     );
-    globalToAirportCoordinates(
+    OansMapProjection.globalToAirportCoordinates(
       airportRefPos,
       {
         lat: rightLine.geometry.coordinates[1][0],
@@ -726,7 +714,7 @@ export class OansBrakeToVacateSelection<T extends number> {
       },
       this.rwyAheadPredictionVolumePoints[2],
     );
-    globalToAirportCoordinates(
+    OansMapProjection.globalToAirportCoordinates(
       airportRefPos,
       {
         lat: rightLine.geometry.coordinates[0][0],
@@ -734,7 +722,7 @@ export class OansBrakeToVacateSelection<T extends number> {
       },
       this.rwyAheadPredictionVolumePoints[3],
     );
-    globalToAirportCoordinates(
+    OansMapProjection.globalToAirportCoordinates(
       airportRefPos,
       {
         lat: leftLine.geometry.coordinates[0][0],

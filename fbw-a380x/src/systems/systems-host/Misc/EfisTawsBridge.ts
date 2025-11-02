@@ -176,7 +176,7 @@ export class EfisTawsBridge implements Instrument {
   private readonly aesu1ResetPulled = ConsumerSubject.create(this.sub.on('a380x_reset_panel_aesu1'), false);
   private readonly aesu2ResetPulled = ConsumerSubject.create(this.sub.on('a380x_reset_panel_aesu2'), false);
 
-  private readonly dcEssPowered = ConsumerSubject.create(this.sub.on('dcBusEss'), false);
+  private readonly dcEssInFlightPowered = ConsumerSubject.create(this.sub.on('dcBusEssInFlight'), false);
   private readonly dc1Powered = ConsumerSubject.create(this.sub.on('dcBus1'), false);
   private readonly dc2Powered = ConsumerSubject.create(this.sub.on('dcBus2'), false);
 
@@ -207,7 +207,7 @@ export class EfisTawsBridge implements Instrument {
     this.headingWord3,
     this.trackWord1,
     this.trackWord3,
-    this.dcEssPowered,
+    this.dcEssInFlightPowered,
     this.dc1Powered,
   );
 
@@ -221,7 +221,7 @@ export class EfisTawsBridge implements Instrument {
     this.headingWord3,
     this.latitudeWord1,
     this.latitudeWord3,
-    this.dcEssPowered,
+    this.dcEssInFlightPowered,
     this.dc1Powered,
   );
 
@@ -503,7 +503,7 @@ export class EfisTawsBridge implements Instrument {
       this.shouldShowTrackLine,
       this.aesu1ResetPulled,
       this.aesu2ResetPulled,
-      this.dcEssPowered,
+      this.dcEssInFlightPowered,
       this.dc1Powered,
       this.dc2Powered,
       this.acEssPowered,
