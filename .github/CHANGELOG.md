@@ -12,6 +12,8 @@
 
 ## 0.15.0
 
+1. [A32NX/FMS] Hookup IR data to IRS status & monitor MCDU page - @BravoMike99 (bruno_pt99)
+
 ## 0.14.0
 
 1. [A380X/FMS] Fix speed margins being displayed in the wrong place for a Mach target - @BlueberryKing (BlueberryKing)
@@ -147,9 +149,6 @@
 1. [A380X] Autoflight: Add ROLLOUT fault (i.e. communication fault between NWS and PRIM) - @flogross89 (floridude)
 1. [A380X/CDS] Change autoland capability designation to Batch 7 standard (LAND instead of CAT) - @flogross89 (floridude)
 1. [A380X/FLIGHT and ENGINE MODELS] Fixed excessive descent rates and takeoff rotation issues, improved fuel burn - @donstim (donbikes)
-<<<<<<< HEAD
-1. [A32NX/FMS] Hookup IR data to IRS status & monitor MCDU page - @BravoMike99 (bruno_pt99)
-=======
 1. [FMS] Fix fuel predictions in the FMS not matching the engine model - @BlueberryKing (BlueberryKing)
 1. [A380X/PFD] Fix selected altitude not white when ROLLOUT engaged - @BravoMike99(bruno_pt99)
 1. [A380X/PFD] Fix green ARS indication appearing before flaps are in CONF 1+F - @BravoMike99(bruno_pt99)
@@ -159,7 +158,6 @@
 1. [A32NX] Enable mouse drag for knobs in lock mode - @heclak (Heclak)
 1. [A32NX] Fix some knobs snapping back to start position when turned to max value - @heclak (Heclak)
 1. [ND] Fix terrain display smearing issue - @flogross89 (floridude)
->>>>>>> upstream/master
 
 ## 0.13.0
 
