@@ -1,7 +1,7 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { Position } from '@turf/turf';
+import { Position } from 'geojson';
 import { bearingTo, Coordinates, distanceTo } from 'msfs-geo';
 import { MathUtils } from '../shared/src/MathUtils';
 
