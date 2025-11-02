@@ -6,8 +6,8 @@ import {
   ChecklistLineStyle,
   DeferredProcedure,
   DeferredProcedureType,
-  FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import { FMS_PRED_UNRELIABLE_CHECKLIST_ITEM } from '../CommonChecklistItems';
 
 // Convention for IDs:
 // First two digits: ATA chapter

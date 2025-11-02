@@ -168,7 +168,7 @@ export class FwsAbnormalNonSensed {
         false,
         !SimVar.GetSimVarValue('L:A32NX_OVHD_VENT_CAB_FANS_PB_IS_ON', SimVarValueType.Bool),
         !SimVar.GetSimVarValue('L:A32NX_OVHD_ELEC_GALY_AND_CAB_PB_IS_AUTO', SimVarValueType.Bool),
-        !!this.fws.seatBelt.get(),
+        this.fws.seatBeltSwitchOn.get(),
         false,
         false,
       ],
@@ -226,10 +226,10 @@ export class FwsAbnormalNonSensed {
       simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(270900004)),
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [
-        this.fws.flapsHandle.get() <= 2,
-        this.fws.flapsHandle.get() === 3,
-        this.fws.flapsHandle.get() < 2,
-        this.fws.flapsHandle.get() < 2,
+        !this.fws.flap3Selected && !this.fws.flapsFullSelected,
+        this.fws.flap3Selected,
+        !this.fws.flap3Selected && !this.fws.flapsFullSelected,
+        !this.fws.flap3Selected && !this.fws.flapsFullSelected,
         true,
         true,
         true,
@@ -241,8 +241,8 @@ export class FwsAbnormalNonSensed {
       sysPage: SdPages.None,
       limitationsAllPhases: () => ['800400001'],
       limitationsApprLdg: () => [
-        this.fws.flapsHandle.get() === 3 ? '270400001' : '',
-        ...(this.fws.flapsHandle.get() < 3 ? ['220400001', '800400004', '800400003'] : ''),
+        this.fws.flap3Selected ? '270400001' : '',
+        ...(!this.fws.flap3Selected && !this.fws.flapsFullSelected ? ['220400001', '800400004', '800400003'] : ''),
       ],
       inopSysApprLdg: () => ['320300007'],
       info: () => ['220200011'],
@@ -263,7 +263,7 @@ export class FwsAbnormalNonSensed {
         false,
         false,
         false,
-        this.fws.flapsHandle.get() === 1,
+        this.fws.flap1Selected,
         false,
         false,
         !this.fws.autoThrustEngaged.get(),
@@ -293,7 +293,7 @@ export class FwsAbnormalNonSensed {
     990900005: {
       // EMER DESCENT
       flightPhaseInhib: [],
-      simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(990900005)),
+      simVarIsActive: this.fws.emergencyDescentActive,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [
         true,
@@ -313,7 +313,7 @@ export class FwsAbnormalNonSensed {
       ],
       whichItemsChecked: () => [
         false,
-        !!this.fws.seatBelt.get(),
+        this.fws.seatBeltSwitchOn.get(),
         false,
         this.fws.allThrottleIdle.get(),
         this.fws.speedBrakeCommand.get(),
@@ -330,8 +330,6 @@ export class FwsAbnormalNonSensed {
       failure: 1,
       auralWarning: Subject.create(FwcAuralWarning.None),
       sysPage: SdPages.None,
-      limitationsAllPhases: () => ['210400001'],
-      limitationsPfd: () => ['210400001'],
     },
     990900006: {
       // EMER EVAC

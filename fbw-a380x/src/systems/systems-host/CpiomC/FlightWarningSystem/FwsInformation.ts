@@ -34,6 +34,16 @@ export class FwsInformation {
       // APPR 1 ONLY
       simVarIsActive: this.fws.land2Inop,
     },
+
+    220200011: {
+      // FMS PRED UNRELIABLE
+      simVarIsActive: this.fws.fmsPredUnreliable,
+    },
+
+    800200002: {
+      // ON DRY RWY ONLY : LDG DIST AFFECTED < 15%
+      simVarIsActive: this.fws.landingDistanceAffected,
+    },
   };
 
   public destroy(): void {

@@ -308,7 +308,7 @@ export class FwsNormalChecklists {
     }
   }
 
-  moveDown(skipCompletedSensed = true) {
+  moveDown() {
     const activeDeferredId = this.activeDeferredProcedureId.get();
     if (this.checklistId.get() === 0) {
       const shownItems = this.getNormalProceduresKeysSorted()
@@ -330,7 +330,7 @@ export class FwsNormalChecklists {
         );
       }
     } else if (this.activeProcedure) {
-      this.activeProcedure.moveDown(skipCompletedSensed);
+      this.activeProcedure.moveDown();
     }
   }
 
@@ -531,7 +531,7 @@ export class FwsNormalChecklists {
 
   public sensedItems: FwsNormalChecklistsDict = {
     1000001: {
-      whichItemsChecked: () => [null, null, !!this.fws.seatBelt.get(), null],
+      whichItemsChecked: () => [null, null, this.fws.seatBeltSwitchOn.get(), null],
     },
     1000002: {
       whichItemsChecked: () => [null, null, SimVar.GetSimVarValue('A:LIGHT BEACON', SimVarValueType.Bool)],
@@ -545,9 +545,9 @@ export class FwsNormalChecklists {
         null,
         null,
         false,
-        SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool') === 1,
+        this.fws.seatBeltSwitchOn.get(),
         this.fws.spoilersArmed.get(),
-        this.fws.slatFlapSelectionS18F10 || this.fws.slatFlapSelectionS22F15 || this.fws.slatFlapSelectionS22F20,
+        this.fws.flap1Selected || this.fws.flap2Selected || this.fws.flap3Selected,
         this.fws.autoBrake.get() === 6,
         this.fws.toConfigNormal.get(),
       ],
@@ -568,7 +568,7 @@ export class FwsNormalChecklists {
       whichItemsChecked: () => [null],
     },
     1000010: {
-      whichItemsChecked: () => [null, SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool'), null, null],
+      whichItemsChecked: () => [null, this.fws.seatBeltSwitchOn.get(), null, null],
     },
     1000011: {
       whichItemsChecked: () => [null],
@@ -576,13 +576,11 @@ export class FwsNormalChecklists {
     1000012: {
       whichItemsChecked: () => [
         false,
-        SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool'),
+        this.fws.seatBeltSwitchOn.get(),
         this.fws.isAllGearDownlocked,
         this.fws.spoilersArmed.get(),
-        (!SimVar.GetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'bool') &&
-          SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum') === 4) ||
-          (SimVar.GetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'bool') &&
-            SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum') === 3),
+        (!this.fws.flap3LandingSelected && this.fws.flapsFullSelected) ||
+          (this.fws.flap3LandingSelected && this.fws.flap3Selected),
       ],
     },
     1000013: {
