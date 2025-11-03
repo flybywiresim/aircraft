@@ -31,7 +31,7 @@ impl Display for CpiomId {
     }
 }
 
-pub struct CoreProcessingInputOutputModule<MessageData: Clone + Eq + PartialEq> {
+pub struct CoreProcessingInputOutputModule<MessageData: Clone + PartialEq> {
     power_supply: ElectricalBusType,
     is_powered: bool,
     available_id: VariableIdentifier,
@@ -40,7 +40,7 @@ pub struct CoreProcessingInputOutputModule<MessageData: Clone + Eq + PartialEq> 
     connected_switches: Vec<Rc<RefCell<AvionicsFullDuplexSwitch<MessageData>>>>,
 }
 
-impl<MessageData: Clone + Eq + PartialEq> CoreProcessingInputOutputModule<MessageData> {
+impl<MessageData: Clone + PartialEq> CoreProcessingInputOutputModule<MessageData> {
     pub fn new(
         context: &mut InitContext,
         name: &str,
@@ -62,7 +62,7 @@ impl<MessageData: Clone + Eq + PartialEq> CoreProcessingInputOutputModule<Messag
     }
 }
 
-impl<MessageData: Clone + Eq + PartialEq> AvionicsDataCommunicationNetworkEndpoint
+impl<MessageData: Clone + PartialEq> AvionicsDataCommunicationNetworkEndpoint
     for CoreProcessingInputOutputModule<MessageData>
 {
     type MessageData = MessageData;
@@ -104,7 +104,7 @@ impl<MessageData: Clone + Eq + PartialEq> AvionicsDataCommunicationNetworkEndpoi
     }
 }
 
-impl<MessageData: Clone + Eq + PartialEq> SimulationElement
+impl<MessageData: Clone + PartialEq> SimulationElement
     for CoreProcessingInputOutputModule<MessageData>
 {
     fn read(&mut self, reader: &mut SimulatorReader) {

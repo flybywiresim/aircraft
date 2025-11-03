@@ -12,7 +12,7 @@ use crate::{
 };
 use std::{cell::RefCell, rc::Rc};
 
-pub struct InputOutputModule<MessageData: Clone + Eq + PartialEq> {
+pub struct InputOutputModule<MessageData: Clone + PartialEq> {
     power_supply: ElectricalBusType,
     is_powered: bool,
     available_id: VariableIdentifier,
@@ -21,7 +21,7 @@ pub struct InputOutputModule<MessageData: Clone + Eq + PartialEq> {
     connected_switches: Vec<Rc<RefCell<AvionicsFullDuplexSwitch<MessageData>>>>,
 }
 
-impl<MessageData: Clone + Eq + PartialEq> InputOutputModule<MessageData> {
+impl<MessageData: Clone + PartialEq> InputOutputModule<MessageData> {
     pub fn new(
         context: &mut InitContext,
         name: &str,
@@ -43,7 +43,7 @@ impl<MessageData: Clone + Eq + PartialEq> InputOutputModule<MessageData> {
     }
 }
 
-impl<MessageData: Clone + Eq + PartialEq> AvionicsDataCommunicationNetworkEndpoint
+impl<MessageData: Clone + PartialEq> AvionicsDataCommunicationNetworkEndpoint
     for InputOutputModule<MessageData>
 {
     type MessageData = MessageData;
@@ -85,7 +85,7 @@ impl<MessageData: Clone + Eq + PartialEq> AvionicsDataCommunicationNetworkEndpoi
     }
 }
 
-impl<MessageData: Clone + Eq + PartialEq> SimulationElement for InputOutputModule<MessageData> {
+impl<MessageData: Clone + PartialEq> SimulationElement for InputOutputModule<MessageData> {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.failure_indication = reader.read(&self.failure_indication_id);
     }

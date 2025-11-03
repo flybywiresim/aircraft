@@ -13,6 +13,7 @@ serde = { version = "1.0.215", features = ["derive"] }
 serde_with = { version = "3.11.0" }
 toml = { version = "0.9.6", default_features = false, features = ["std", "serde", "parse"] }
 systems = { path = "../../../../../fbw-common/src/wasm/systems/systems" }
+enum-map = "2.7"
 
 [dev-dependencies]
 ntest.workspace = true

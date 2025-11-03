@@ -105,6 +105,7 @@ impl A380 {
         let mut adcn = A380AvionicsDataCommunicationNetwork::new(context);
         let adcn_simvar_translation =
             A380AvionicsDataCommunicationNetworkSimvarTranslator::new(context, &mut adcn);
+        let fuel = A380Fuel::new(context, &mut adcn);
         A380 {
             adcn,
             adcn_simvar_translation,
@@ -126,7 +127,7 @@ impl A380 {
             payload: A380Payload::new(context),
             airframe: A380Airframe::new(context),
             fire_and_smoke_protection: A380FireAndSmokeProtection::new(context),
-            fuel: A380Fuel::new(context),
+            fuel,
             engine_1: TrentEngine::new(context, 1),
             engine_2: TrentEngine::new(context, 2),
             engine_3: TrentEngine::new(context, 3),
@@ -194,7 +195,7 @@ impl Aircraft for A380 {
                 && !(self.electrical_overhead.external_power_is_on(1)
                     && self.electrical_overhead.external_power_is_available(1)),
             self.pneumatic.apu_bleed_air_valve(),
-            self.fuel.feed_one_tank_has_fuel(),
+            self.fuel.feed_four_tank_has_fuel(),
         );
 
         self.electrical.update(
@@ -334,7 +335,7 @@ impl Aircraft for A380 {
         self.icing_simulation.update(context);
 
         self.egpwc.update(&self.adirs, self.lgcius.lgciu1());
-        self.fuel.update(context);
+        self.fuel.update(context, &self.adcn);
 
         self.engine_reverser_control[0].update(
             &self.engine_2,
