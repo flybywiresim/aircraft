@@ -1,5 +1,6 @@
 // Note: Fuel system for now is still handled in MSFS. This is used for calculating fuel-related factors.
 
+mod cpiom_f;
 mod fuel_quantity_data_concentrator;
 mod fuel_quantity_management_system;
 use crate::avionics_data_communication_network::A380AvionicsDataCommunicationNetwork;
@@ -42,7 +43,7 @@ trait SetFuelLevel {
     fn set_tank_quantity(&mut self, tank: A380FuelTankType, quantity: Mass);
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug, Enum)]
 pub enum A380FuelTankType {
     LeftOuter,
     FeedOne,
@@ -73,6 +74,24 @@ impl A380FuelTankType {
         ]
         .iter()
         .copied()
+    }
+}
+impl std::fmt::Display for A380FuelTankType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let tank_str = match self {
+            A380FuelTankType::LeftOuter => "LEFT_OUTER_TANK",
+            A380FuelTankType::FeedOne => "FEED_1_TANK",
+            A380FuelTankType::LeftMid => "LEFT_MID_TANK",
+            A380FuelTankType::LeftInner => "LEFT_INNER_TANK",
+            A380FuelTankType::FeedTwo => "FEED_2_TANK",
+            A380FuelTankType::FeedThree => "FEED_3_TANK",
+            A380FuelTankType::RightInner => "RIGHT_INNER_TANK",
+            A380FuelTankType::RightMid => "RIGHT_MID_TANK",
+            A380FuelTankType::FeedFour => "FEED_4_TANK",
+            A380FuelTankType::RightOuter => "RIGHT_OUTER_TANK",
+            A380FuelTankType::Trim => "TRIM_TANK",
+        };
+        write!(f, "{tank_str}")
     }
 }
 

@@ -2380,7 +2380,8 @@
                 </DefaultTemplateParameters>
 
 
-                <UseTemplate Name="FBW_Airbus_Fuel_Crossfeed">
+                <!-- TODO: fix fuel valve indexes -->
+                <!-- <UseTemplate Name="FBW_Airbus_Fuel_Crossfeed">
                     <NODE_ID>PUSH_OVHD_FUEL_XFEED</NODE_ID>
                     <ID>46</ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
@@ -2419,7 +2420,7 @@
                     <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                     <OFF_TOOLTIP>COCKPIT.TOOLTIPS.FUEL_XFEED_TURN_ON</OFF_TOOLTIP>
                     <ON_TOOLTIP>COCKPIT.TOOLTIPS.FUEL_XFEED_TURN_OFF</ON_TOOLTIP>
-                </UseTemplate>
+                </UseTemplate> -->
 
                 <!-- OUTR TK XFR -->
                 <UseTemplate Name="FBW_Covered_Push_Toggle">
