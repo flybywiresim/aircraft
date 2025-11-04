@@ -32,6 +32,8 @@ for arg in "$@"; do
   fi
 done
 
+
+
 #use ci config if github action
 if [ "${GITHUB_ACTIONS}" == "true" ]; then
   # select build tasks for assigned texture resolution
