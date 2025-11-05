@@ -23,7 +23,7 @@ import {
 } from '@flybywiresim/fbw-sdk';
 import { OansControlEvents } from '@flybywiresim/oanc';
 import { Coordinates, placeBearingDistance } from 'msfs-geo';
-import { Position } from '@turf/turf';
+import { Position } from 'geojson';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
 

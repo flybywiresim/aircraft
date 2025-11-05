@@ -3,6 +3,7 @@
 
 import { ConsumerSubject, EventBus, MappedSubject, NodeReference, Subject, Subscribable } from '@microsoft/msfs-sdk';
 import {
+  AmdbFeature,
   AmdbProperties,
   Arinc429LocalVarConsumerSubject,
   BTV_MIN_TOUCHDOWN_ZONE_DISTANCE,
@@ -13,19 +14,8 @@ import {
   OansMapProjection,
   RaBusEvents,
 } from '@flybywiresim/fbw-sdk';
-import {
-  booleanContains,
-  booleanDisjoint,
-  Feature,
-  FeatureCollection,
-  Geometry,
-  lineOffset,
-  lineString,
-  point,
-  polygon,
-  Polygon,
-  Position,
-} from '@turf/turf';
+import { booleanContains, booleanDisjoint, lineOffset, lineString, point, polygon } from '@turf/turf';
+import { FeatureCollection, Geometry, Polygon, Position } from 'geojson';
 import { Arinc429Register, Arinc429SignStatusMatrix, MathUtils } from '@flybywiresim/fbw-sdk';
 import { Label, LabelStyle } from '.';
 import { BtvData } from '../../../shared/src/publishers/OansBtv/BtvPublisher';
@@ -50,7 +40,7 @@ export class OansBrakeToVacateSelection<T extends number> {
     private readonly labelManager?: OancLabelManager<T>,
     private readonly aircraftOnGround?: Subscribable<boolean>,
     private readonly aircraftPpos?: Subscribable<Position>,
-    private readonly airportCoordinates?: Subscribable<Coordinates>,
+    private readonly airportCoordinates?: Subscribable<Coordinates | null>,
     private readonly canvasRef?: NodeReference<HTMLCanvasElement>,
     private readonly canvasCentreX?: Subscribable<number>,
     private readonly canvasCentreY?: Subscribable<number>,
@@ -149,12 +139,10 @@ export class OansBrakeToVacateSelection<T extends number> {
     this.lgciuDiscreteWord2_2,
   );
 
-  async selectRunwayFromOans(
-    runway: string,
-    centerlineFeature: Feature<Geometry, AmdbProperties>,
-    thresholdFeature: Feature<Geometry, AmdbProperties>,
-  ) {
+  async selectRunwayFromOans(runway: string, centerlineFeature: AmdbFeature, thresholdFeature: AmdbFeature) {
     this.clearSelection();
+
+    // FIXME specify geometry in types instead of casting
 
     // Select opposite threshold location
     const thrLoc = thresholdFeature.geometry.coordinates as Position;
@@ -185,7 +173,7 @@ export class OansBrakeToVacateSelection<T extends number> {
     this.drawBtvLayer();
   }
 
-  async selectExitFromOans(exit: string, feature: Feature<Geometry, AmdbProperties>) {
+  async selectExitFromOans(exit: string, feature: AmdbFeature) {
     if (
       this.btvRunway.get() == null ||
       !this.btvThresholdPositionOansReference ||
@@ -234,11 +222,12 @@ export class OansBrakeToVacateSelection<T extends number> {
 
     // Transform to WGS-84 coordinates
     const globalExitCoordinates: Coordinates = { lat: 0, long: 0 };
-    OansMapProjection.airportToGlobalCoordinates(
-      this.airportCoordinates!.get(),
-      this.btvExitPositionOansReference,
-      globalExitCoordinates,
-    );
+    const arpCoords = this.airportCoordinates?.get();
+    if (!arpCoords) {
+      console.warn('Cannot select BTV exit position: airport coordinates unavailable');
+      return;
+    }
+    OansMapProjection.airportToGlobalCoordinates(arpCoords, this.btvExitPositionOansReference, globalExitCoordinates);
 
     this.bus.getPublisher<FmsOansData>().pub('oansExitCoordinates', globalExitCoordinates, true);
     console.log('Selected BTV exit position:', globalExitCoordinates);

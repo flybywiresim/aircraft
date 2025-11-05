@@ -3,7 +3,7 @@
 
 import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { SimVarPublisher, SimVarDefinition, SimVarValueType } from '@microsoft/msfs-sdk';
-import { Position } from '@turf/turf';
+import { Position } from 'geojson';
 import { Coordinates } from 'msfs-geo';
 
 /**
