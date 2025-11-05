@@ -953,6 +953,30 @@
                 <ID>2</ID>
             </UseTemplate>
 
+            <UseTemplate Name="FBW_AIRBUS_Push_Round_Button_Template">
+                <NODE_ID>PUSH_EFIS_CS_RECONF</NODE_ID>
+                <ANIM_NAME>PUSH_EFIS_CS_RECONF</ANIM_NAME>
+                <ID>1</ID>
+            </UseTemplate>
+
+            <UseTemplate Name="FBW_AIRBUS_Push_Round_Button_Template">
+                <NODE_ID>PUSH_EFIS_FO_RECONF</NODE_ID>
+                <ANIM_NAME>PUSH_EFIS_FO_RECONF</ANIM_NAME>
+                <ID>2</ID>
+            </UseTemplate>
+
+            <UseTemplate Name="FBW_AIRBUS_Push_Round_Button_Template">
+                <NODE_ID>PUSH_GLARESHIELD_CS_PTT</NODE_ID>
+                <ANIM_NAME>PUSH_GLARESHIELD_CS_PTT</ANIM_NAME>
+                <ID>1</ID>
+            </UseTemplate>
+
+            <UseTemplate Name="FBW_AIRBUS_Push_Round_Button_Template">
+                <NODE_ID>PUSH_GLARESHIELD_FO_PTT</NODE_ID>
+                <ANIM_NAME>PUSH_GLARESHIELD_FO_PTT</ANIM_NAME>
+                <ID>2</ID>
+            </UseTemplate>
+
             <!-- CAPT LAPTOP -->
             <!-- Yes, this is a momentary switch/latch, but I simply can't get the XML for that to work -->
             <UseTemplate Name="A32NX_GT_Switch_Dummy">
