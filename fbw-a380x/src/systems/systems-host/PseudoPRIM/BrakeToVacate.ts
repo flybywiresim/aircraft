@@ -257,7 +257,7 @@ export class BrakeToVacate implements Instrument {
 
       const pub = this.bus.getPublisher<FmsOansData>();
       pub.pub('ropsDetectedRunwayLda', this.landingRunwayNavdata.length, true);
-      pub.pub('oansSelectedLandingRunway', rwyIdent);
+      pub.pub('oansSelectedLandingRunway', rwyIdent, true);
 
       this.runwayLengthArinc.setValueSsm(this.landingRunwayNavdata.length, Arinc429SignStatusMatrix.NormalOperation);
       this.runwayBearingArinc.setValueSsm(this.landingRunwayNavdata.bearing, Arinc429SignStatusMatrix.NormalOperation);
@@ -287,7 +287,7 @@ export class BrakeToVacate implements Instrument {
       );
 
       const pub = this.bus.getPublisher<FmsOansData>();
-      pub.pub('oansSelectedExit', 'N/A');
+      pub.pub('oansSelectedExit', 'N/A', true);
       pub.pub('oansExitCoordinates', exitLocation, true);
 
       pub.pub('ndBtvMessage', `BTV ${this.landingRunwayNavdata.ident.substring(4) ?? ''}/MANUAL`, true);
@@ -348,9 +348,6 @@ export class BrakeToVacate implements Instrument {
 
     // Set as ROPS/BTV runway
     if (landingRunway) {
-      console.log(
-        `Detected landing runway: ${landingRunway.airport} ${landingRunway.runway}, OANS runway: ${this.oansRunwayIdent.get()}`,
-      );
       // If BTV runway already set, prioritize until 350ft RA
       if (
         !this.runwayIsSet() ||
@@ -360,7 +357,6 @@ export class BrakeToVacate implements Instrument {
         this.bus.getPublisher<FmsOansData>().pub('ropsDetectedAirport', landingRunway.airport, true);
         this.bus.getPublisher<FmsOansData>().pub('ropsDetectedRunway', landingRunway.runway, true);
         this.bus.getPublisher<FmsOansData>().pub('ndBtvMessage', `RWY${landingRunway.runway.substring(4) ?? ''}`, true);
-        console.log('Runway set');
       }
     }
   }
@@ -394,10 +390,6 @@ export class BrakeToVacate implements Instrument {
     }
 
     OansMapProjection.globalToAirportCoordinates(this.arpCoordinates, ppos, this.localPpos);
-
-    console.log(`BTV Threshold Pos: ${this.btvThresholdPositionNavDbReference}`);
-    console.log(`BTV Opposite Threshold Pos: ${this.btvOppositeThresholdPositionNavDbReference}`);
-    console.log(`BTV Airport Local Pos: ${this.localPpos}`);
 
     if (this.btvThresholdPositionNavDbReference && this.btvThresholdPositionNavDbReference.length > 0) {
       if (
@@ -442,7 +434,6 @@ export class BrakeToVacate implements Instrument {
           MathUtils.round(Math.min(exitDistanceFromTdz, exitDistance), 0.1),
           Arinc429SignStatusMatrix.NormalOperation,
         );
-        console.log(`BTV distance to exit: ${MathUtils.round(Math.min(exitDistanceFromTdz, exitDistance), 0.1)}`);
       }
     }
   }

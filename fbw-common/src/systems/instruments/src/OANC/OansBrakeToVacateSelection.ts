@@ -168,7 +168,7 @@ export class OansBrakeToVacateSelection<T extends number> {
     this.btvRunway.set(runway);
 
     const pub = this.bus.getPublisher<FmsOansData>();
-    pub.pub('oansSelectedLandingRunway', runway);
+    pub.pub('oansSelectedLandingRunway', runway, true);
 
     this.drawBtvLayer();
   }
@@ -213,7 +213,7 @@ export class OansBrakeToVacateSelection<T extends number> {
     // Don't run backwards, don't start outside of runway, don't start before minimum touchdown distance
     if (
       Math.abs(exitAngle) > 120 ||
-      Math.min(exitDistFromCenterLine1, exitDistFromCenterLine2) > 20 ||
+      Math.min(exitDistFromCenterLine1, exitDistFromCenterLine2) > 50 ||
       exitStartDistFromThreshold < BTV_MIN_TOUCHDOWN_ZONE_DISTANCE
     ) {
       return;
@@ -221,16 +221,17 @@ export class OansBrakeToVacateSelection<T extends number> {
     this.btvExitPositionOansReference = exitDistFromCenterLine1 < exitDistFromCenterLine2 ? exitLoc1 : exitLoc2;
 
     // Transform to WGS-84 coordinates
-    const globalExitCoordinates: Coordinates = { lat: 0, long: 0 };
     const arpCoords = this.airportCoordinates?.get();
     if (!arpCoords) {
       console.warn('Cannot select BTV exit position: airport coordinates unavailable');
       return;
     }
-    OansMapProjection.airportToGlobalCoordinates(arpCoords, this.btvExitPositionOansReference, globalExitCoordinates);
+    const globalExitCoordinates = OansMapProjection.airportToGlobalCoordinates(
+      arpCoords,
+      this.btvExitPositionOansReference,
+    );
 
     this.bus.getPublisher<FmsOansData>().pub('oansExitCoordinates', globalExitCoordinates, true);
-    console.log('Selected BTV exit position:', globalExitCoordinates);
 
     // Subtract 400m due to distance of touchdown zone from threshold
     const exitDistance =
@@ -270,7 +271,7 @@ export class OansBrakeToVacateSelection<T extends number> {
     this.drawBtvLayer();
 
     const pub = this.bus.getPublisher<FmsOansData>();
-    pub.pub('oansSelectedLandingRunway', null);
+    pub.pub('oansSelectedLandingRunway', null, true);
     pub.pub('oansSelectedExit', null, true);
   }
 

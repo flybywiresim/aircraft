@@ -30,18 +30,11 @@ export class OansMapProjection {
   /**
    * Reverse transform: airport local coordinates (x east, y north) back to global WGS84 coordinates.
    *
-   * Conventions must mirror globalToAirportCoordinates:
-   * - Local X (index 0) is East in meters
-   * - Local Y (index 1) is North in meters
-   * - Bearing is true, degrees, 0 = North, increasing clockwise
-   * - Distance is in nautical miles
-   *
    * @param airportPos Airport reference coordinates (origin of local system)
    * @param local Airport local coordinates [x_east_m, y_north_m]
    * @param out Output argument: Write global coordinates here
-   * @returns Global coordinates at that local offset
    */
-  public static airportToGlobalCoordinates(airportPos: Coordinates, local: Position, out: Coordinates): Coordinates {
+  public static airportToGlobalCoordinates(airportPos: Coordinates, local: Position): Coordinates {
     const nmToMeters = 1_000 / 0.539957;
 
     // Inverse of packing in globalToAirportCoordinates
@@ -52,8 +45,6 @@ export class OansMapProjection {
     let bearingDeg = Math.atan2(yNm, xNm) * MathUtils.RADIANS_TO_DEGREES; // from North, clockwise
     if (bearingDeg < 0) bearingDeg += 360;
 
-    out = placeBearingDistance(airportPos, bearingDeg, distanceNm);
-
-    return out;
+    return placeBearingDistance(airportPos, bearingDeg, distanceNm);
   }
 }
