@@ -85,6 +85,9 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
   const { flightPlanProgress } = useAppSelector((state) => state.flightProgress);
   const { departingAirport, arrivingAirport, schedIn, schedOut } = useAppSelector((state) => state.simbrief.data);
   const { data } = useAppSelector((state) => state.simbrief);
+  const { mismatches: fileHashMismatches } = useAppSelector((state) => state.fileHashes);
+
+  const isCriticalFileMismatch = fileHashMismatches.length > 0;
 
   const [showSchedTimes, setShowSchedTimes] = useState(false);
 
@@ -128,7 +131,9 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
   }, []);
 
   return (
-    <div className="fixed z-30 flex h-10 w-full items-center justify-between bg-theme-statusbar px-6 text-lg font-medium leading-none text-theme-text">
+    <div
+      className={`fixed z-30 flex h-10 w-full items-center justify-between ${isCriticalFileMismatch ? 'bg-theme-statusbar-mismatch' : 'bg-theme-statusbar'} px-6 text-lg font-medium leading-none text-theme-text`}
+    >
       <p>{`${dayName} ${monthName} ${dayOfMonth}`}</p>
 
       {outdatedVersionFlag ? (

@@ -1,10 +1,12 @@
-// Copyright (c) 2022, 2023 FlyByWire Simulations
+// Copyright (c) 2022, 2023, 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 'use strict';
 
 const fs = require('fs');
 const path = require('path');
+
+const { cyrb53 } = require(path.resolve(__dirname, 'hash.js'));
 
 function* readdir(d) {
   for (const dirent of fs.readdirSync(d, { withFileTypes: true })) {
@@ -18,6 +20,33 @@ function* readdir(d) {
       yield resolved;
     }
   }
+}
+
+const HASHED_FILES = [
+  'SimObjects/AirPlanes/FlyByWire_A380_842/engines.cfg',
+  'SimObjects/AirPlanes/FlyByWire_A380_842/flight_model.cfg',
+  'SimObjects/AirPlanes/FlyByWire_A380_842/systems.cfg',
+
+  'html_ui/Pages/VCockpit/Instruments/A380X/MFD/mfd.js',
+  'html_ui/Pages/VCockpit/Instruments/A380X/ND/nd.js',
+  'html_ui/Pages/VCockpit/Instruments/A380X/PFD/pfd.js',
+
+  '/SimObjects/AirPlanes/FlyByWire_A380_842/model/A380_COCKPIT.xml',
+];
+
+function createHashFiles(baseDir) {
+  const hashes = {};
+
+  for (const file of HASHED_FILES) {
+    const content = fs.readFileSync(path.resolve(baseDir, file)).toString();
+    hashes[file] = cyrb53(content, 380);
+  }
+
+  const dataDir = path.resolve(baseDir, 'html_ui/Data');
+  if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
+  }
+  fs.writeFileSync(path.resolve(dataDir, 'a380x_hashes.json'), JSON.stringify(hashes));
 }
 
 const buildInfo = require('./git_build_info').getGitBuildInfo();
@@ -84,4 +113,5 @@ function createPackageFiles(baseDir, manifestBaseFilename) {
   );
 }
 
+createHashFiles(A380X_OUT);
 createPackageFiles(A380X_OUT, 'manifest-base.json');

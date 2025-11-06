@@ -1,10 +1,12 @@
-// Copyright (c) 2022 FlyByWire Simulations
+// Copyright (c) 2022, 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 'use strict';
 
 const fs = require('fs');
 const path = require('path');
+
+const { cyrb53 } = require(path.resolve(__dirname, 'hash.js'));
 
 function* readdir(d) {
   for (const dirent of fs.readdirSync(d, { withFileTypes: true })) {
@@ -52,6 +54,33 @@ const MS_FILETIME_EPOCH = 116444736000000000n;
 const A32NX_SRC = path.resolve(__dirname, '..', 'fbw-a32nx/src');
 const A32NX_OUT = path.resolve(__dirname, '..', 'fbw-a32nx/out/flybywire-aircraft-a320-neo');
 
+const HASHED_FILES = [
+  'SimObjects/AirPlanes/FlyByWire_A320_NEO/engines.cfg',
+  'SimObjects/AirPlanes/FlyByWire_A320_NEO/flight_model.cfg',
+  'SimObjects/AirPlanes/FlyByWire_A320_NEO/systems.cfg',
+
+  'html_ui/Pages/VCockpit/Instruments/A32NX/MCDU/mcdu.js',
+  'html_ui/Pages/VCockpit/Instruments/A32NX/ND/nd.js',
+  'html_ui/Pages/VCockpit/Instruments/A32NX/PFD/pfd.js',
+
+  'SimObjects/AirPlanes/FlyByWire_A320_NEO/model/A320_NEO_INTERIOR.xml',
+];
+
+function createHashFiles(baseDir) {
+  const hashes = {};
+
+  for (const file of HASHED_FILES) {
+    const content = fs.readFileSync(path.resolve(baseDir, file)).toString();
+    hashes[file] = cyrb53(content, 320);
+  }
+
+  const dataDir = path.resolve(baseDir, 'html_ui/Data');
+  if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
+  }
+  fs.writeFileSync(path.resolve(dataDir, 'a32nx_hashes.json'), JSON.stringify(hashes));
+}
+
 function createPackageFiles(baseDir, manifestBaseFilename) {
   const contentEntries = [];
   let totalPackageSize = 0;
@@ -94,5 +123,6 @@ function createPackageFiles(baseDir, manifestBaseFilename) {
   );
 }
 
+createHashFiles(A32NX_OUT);
 createPackageFiles(A32NX_OUT, 'manifest-base.json');
 createPackageFiles(A32NX_OUT + '-lock-highlight', 'manifest-base-lock-highlight.json');

@@ -31,6 +31,7 @@ export * from './ata';
 export * from './bitFlags';
 export * from './config';
 export * from './failures';
+export * from './hash';
 export * from './localization';
 export * from './logic';
 export * from './MapParameters';

@@ -66,6 +66,10 @@ interface AircraftEfbContext {
   performanceCalculators: PerformanceCalculators;
   pushbackPage: PushbackPage;
   settingsPages: SettingsPages;
+  /** File containing critical file hashes to be checked for integrity. */
+  hashFile?: string;
+  /** Seed for the cyrb53 hashes. Defaults to 0. */
+  hashSeed?: number;
 }
 
 export const AircraftContext = createContext<AircraftEfbContext>({
