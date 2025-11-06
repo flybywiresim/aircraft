@@ -31,7 +31,7 @@ const HASHED_FILES = [
   'html_ui/Pages/VCockpit/Instruments/A380X/ND/nd.js',
   'html_ui/Pages/VCockpit/Instruments/A380X/PFD/pfd.js',
 
-  '/SimObjects/AirPlanes/FlyByWire_A380_842/model/A380_COCKPIT.xml',
+  'SimObjects/AirPlanes/FlyByWire_A380_842/model/A380_COCKPIT.xml',
 ];
 
 function createHashFiles(baseDir) {
