@@ -420,7 +420,10 @@ impl A380AutobrakeController {
             || self.should_disarm_after_time_in_flight.output()
             || (self.mode == A380AutobrakeMode::RTO
                 && self.should_reject_rto_mode_after_time_in_flight.output())
-            || (self.mode == A380AutobrakeMode::BTV && !self.btv_scheduler.is_armed())
+    }
+
+    fn btv_should_revert_to_brk_hi(&self) -> bool {
+        self.mode == A380AutobrakeMode::BTV && !self.btv_scheduler.is_armed()
     }
 
     fn disarm_actions(&mut self) {
@@ -526,6 +529,10 @@ impl A380AutobrakeController {
         let rto_disable = self.rto_mode_deselected_this_update(autobrake_panel);
 
         self.mode = self.determine_mode(autobrake_panel);
+
+        if self.btv_should_revert_to_brk_hi() {
+            self.mode = A380AutobrakeMode::HIGH;
+        }
 
         if rto_disable || self.should_disarm(context) {
             self.disarm_actions();

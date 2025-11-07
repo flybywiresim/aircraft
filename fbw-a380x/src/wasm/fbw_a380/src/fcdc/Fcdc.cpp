@@ -184,13 +184,22 @@ FcdcBus Fcdc::getBusOutputs() {
 
 FcdcDiscreteOutputs Fcdc::getDiscreteOutputs() {
   FcdcDiscreteOutputs output = {};
+
   output.captRedPriorityLightOn = false;
   output.captGreenPriorityLightOn = false;
   output.foRedPriorityLightOn = false;
   output.foGreenPriorityLightOn = false;
 
-  output.autolandWarning = autolandWarningTriggered;
   output.fcdcValid = monitoringHealthy;
+
+  if (!monitoringHealthy) {
+    output.autolandWarning = false;
+    output.btvLost = false;
+    return output;
+  }
+
+  output.autolandWarning = autolandWarningTriggered;
+  output.btvLost = btvLost;
 
   return output;
 }

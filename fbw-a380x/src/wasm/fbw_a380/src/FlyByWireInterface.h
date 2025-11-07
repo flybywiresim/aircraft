@@ -460,6 +460,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFcdcPriorityCaptRed[2];
   std::unique_ptr<LocalVariable> idFcdcPriorityFoGreen[2];
   std::unique_ptr<LocalVariable> idFcdcPriorityFoRed[2];
+  std::unique_ptr<LocalVariable> idBtvLost;
 
   // PRIM discrete input Lvars
   std::unique_ptr<LocalVariable> idPrimPushbuttonPressed[3];

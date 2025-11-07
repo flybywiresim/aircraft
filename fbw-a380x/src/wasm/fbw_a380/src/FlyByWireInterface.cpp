@@ -612,6 +612,8 @@ void FlyByWireInterface::setupLocalVariables() {
     idFcdcPriorityCaptRed[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_PRIORITY_LIGHT_CAPT_RED_ON");
     idFcdcPriorityFoGreen[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_PRIORITY_LIGHT_FO_GREEN_ON");
     idFcdcPriorityFoRed[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_PRIORITY_LIGHT_FO_RED_ON");
+
+    idBtvLost = std::make_unique<LocalVariable>("A32NX_BTV_LOST");
   }
 
   for (int i = 0; i < 3; i++) {
@@ -1858,8 +1860,8 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
   idFcdcLandingFctDiscreteWord[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].landingFctDiscreteWord.toSimVar());
 
   idFcdcHealthy[fcdcIndex]->set(fcdcsDiscreteOutputs[fcdcIndex].fcdcValid ? 1 : 0);
-  idFcdcHealthy[fcdcIndex]->set(fcdcsDiscreteOutputs[fcdcIndex].fcdcValid ? 1 : 0);
   idAutopilotAutolandWarning->set(fcdcsDiscreteOutputs[fcdcIndex].autolandWarning ? 1 : 0);
+  idBtvLost->set(fcdcsDiscreteOutputs[0].btvLost || fcdcsDiscreteOutputs[1].btvLost ? 1 : 0);
 
   return true;
 }

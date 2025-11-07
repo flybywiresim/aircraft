@@ -104,4 +104,8 @@ struct FcdcDiscreteOutputs {
   bool foGreenPriorityLightOn;
 
   bool autolandWarning;
+
+  // This is architecturally not accurate, in the real thing this is done inside the PRIMs.
+  // However, as BTV is implemented in Rust and the BTV INOP status is checked here, this would be good place to put it.
+  bool btvLost;
 };
