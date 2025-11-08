@@ -1,24 +1,28 @@
 import { MutableSubscribable, Subject } from '@microsoft/msfs-sdk';
 
-type DataStoreSettingKey = keyof NXDataStoreSettings & string;
+export type DataStoreSettingKey = keyof NXDataStoreSettings & string;
 type DataStoreSettingValue = string | number | boolean;
 
 type SubscribeCallback = (key: string, value: string | undefined) => void;
 type SubscribeCancellation = () => void;
 
 export interface NXDataStoreSettings {
-  efbTheme: 'light' | 'dark';
+  EFB_UI_THEME: 'blue' | 'dark' | 'light';
 }
 
-type LegacyDataStoreSettingKey<k extends string> = k & (k extends keyof NXDataStoreSettings ? never : k);
+export type LegacyDataStoreSettingKey<k extends string> = k & (k extends keyof NXDataStoreSettings ? never : k);
 
 /**
  * Allows interacting with the persistent storage
  */
 export class NXDataStore {
-  private static settingSubjectMap = new Map<string, Subject<any>>();
+  private static readonly settingSubjectMap = new Map<string, Subject<any>>();
 
-  private static aircraftProjectPrefix: string = process.env.AIRCRAFT_PROJECT_PREFIX?.toUpperCase() ?? 'UNK';
+  private static readonly settingsDefaultValues: { [k in keyof NXDataStoreSettings]: NXDataStoreSettings[k] } = {
+    EFB_UI_THEME: 'blue',
+  };
+
+  private static readonly aircraftProjectPrefix: string = process.env.AIRCRAFT_PROJECT_PREFIX?.toUpperCase() ?? 'UNK';
 
   private static mListener: ViewListener.ViewListener;
 
@@ -79,9 +83,17 @@ export class NXDataStore {
     try {
       parsed = JSON.parse(rawValue);
     } catch (e) {
-      // This will happen if the setting is a string, and it was previously saved as a legacy setting. Convert it to a JSON value.
-      NXDataStore.setTypedSettingValue(key, rawValue as NXDataStoreSettings[k]);
+      let newValue: string;
 
+      if (rawValue === '') {
+        // Non-existent settings return an empty string
+        newValue = NXDataStore.settingsDefaultValues[key];
+      } else {
+        // This will happen if the setting is a string, and it was previously saved as a legacy setting. Convert it to a JSON value.
+        newValue = rawValue;
+      }
+
+      NXDataStore.setTypedSettingValue(key, newValue as NXDataStoreSettings[k]);
       parsed = rawValue;
     }
 
