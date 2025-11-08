@@ -327,10 +327,10 @@ void Fcdc::updateBtvRowRop(double deltaTime) {
   bool btvActive =
       discreteInputs.autoBrakeActive && (discreteInputs.btvState == 2 || discreteInputs.btvState == 3 || discreteInputs.btvState == 4);
   bool btvArmed = !discreteInputs.autoBrakeActive && discreteInputs.btvState == 1;
-  if (onGround && btvActive == false && lastBtvActive == true) {
-    btvTripleClickMtrig.write(discreteInputs.btvExitMissed, deltaTime);
+  if (onGround && !btvActive && lastBtvActive) {
+    btvTripleClickMtrig.write(true, deltaTime);
   } else if (!onGround && radioAlt < 700 && !btvArmed && lastBtvArmed) {
-    btvTripleClickMtrig.write(discreteInputs.btvExitMissed, deltaTime);
+    btvTripleClickMtrig.write(true, deltaTime);
   }
   lastBtvActive = btvActive;
   lastBtvArmed = btvArmed;
