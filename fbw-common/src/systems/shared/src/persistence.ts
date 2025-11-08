@@ -1,17 +1,17 @@
-// @ts-strict-ignore
-type SubscribeCallback = (key: string, value: string) => void;
+type SubscribeCallback = (key: string, value: string | undefined) => void;
 type SubscribeCancellation = () => void;
 
 /**
  * Allows interacting with the persistent storage
  */
 export class NXDataStore {
-  private static aircraftProjectPrefix: string = process.env.AIRCRAFT_PROJECT_PREFIX.toUpperCase();
+  private static aircraftProjectPrefix: string = process.env.AIRCRAFT_PROJECT_PREFIX?.toUpperCase() ?? 'UNK';
+
   private static mListener: ViewListener.ViewListener;
 
   private static get listener() {
     if (this.mListener === undefined) {
-      this.mListener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
+      this.mListener = RegisterViewListener('JS_LISTENER_SIMVARS', undefined, true);
     }
     return this.mListener;
   }
