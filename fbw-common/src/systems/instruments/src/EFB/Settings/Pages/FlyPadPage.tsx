@@ -4,7 +4,12 @@
 
 import React, { useRef } from 'react';
 
-import { usePersistentNumberProperty, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
+import {
+  usePersistentNumberProperty,
+  usePersistentProperty,
+  usePersistentSetting,
+  useSimVar,
+} from '@flybywiresim/fbw-sdk';
 
 import Slider from 'rc-slider';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
@@ -19,7 +24,7 @@ export const FlyPadPage = () => {
   const [brightnessSetting, setBrightnessSetting] = usePersistentNumberProperty('EFB_BRIGHTNESS', 0);
   const [brightness] = useSimVar('L:A32NX_EFB_BRIGHTNESS', 'number', 500);
   const [usingAutobrightness, setUsingAutobrightness] = usePersistentNumberProperty('EFB_USING_AUTOBRIGHTNESS', 1);
-  const [theme, setTheme] = usePersistentProperty('EFB_UI_THEME', 'blue');
+  const [theme, setTheme] = usePersistentSetting('EFB_UI_THEME');
   const [autoOSK, setAutoOSK] = usePersistentNumberProperty('EFB_AUTO_OSK', 0);
   const [timeDisplayed, setTimeDisplayed] = usePersistentProperty('EFB_TIME_DISPLAYED', 'utc');
   const [timeFormat, setTimeFormat] = usePersistentProperty('EFB_TIME_FORMAT', '24');
@@ -35,11 +40,11 @@ export const FlyPadPage = () => {
   // the tt() is a special case to update the page with the correct language after user
   // changes the language. the change to simvar hooks changed timing/order of updates.
 
-  const themeButtons: ButtonType[] = [
+  const themeButtons = [
     { name: tt('Settings.flyPad.Blue', language), setting: 'blue' },
     { name: tt('Settings.flyPad.Dark', language), setting: 'dark' },
     { name: tt('Settings.flyPad.Light', language), setting: 'light' },
-  ];
+  ] as const;
 
   const timeDisplayButtons: ButtonType[] = [
     { name: tt('Settings.flyPad.Utc', language), setting: 'utc' },
@@ -52,7 +57,7 @@ export const FlyPadPage = () => {
     { name: tt('Settings.flyPad.TwentyFourHours', language), setting: '24' },
   ];
 
-  const handleThemeSelect = (theme: string) => {
+  const handleThemeSelect = (theme: 'blue' | 'dark' | 'light') => {
     setTheme(theme);
     document.documentElement.classList.forEach((className) => {
       if (className.includes('theme-')) {
