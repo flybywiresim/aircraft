@@ -20,17 +20,41 @@ export class NXDataStore {
    * Reads a value from persistent storage
    * @param key The property key
    * @param defaultVal The default value if the property is not set
+   * @deprecated
    */
-  static get(key: string, defaultVal: string): string;
-  static get(key: string, defaultVal?: string): string | undefined;
-  static get(key: string, defaultVal?: string): any {
-    const val = GetStoredData(`${this.aircraftProjectPrefix}_${key}`);
+  public static getLegacy(key: string, defaultVal: string): string;
+  /**
+   * Reads a value from persistent storage
+   * @param key The property key
+   * @param defaultVal The default value if the property is not set
+   * @deprecated
+   */
+  public static getLegacy(key: string, defaultVal?: string): string | undefined;
+  /**
+   * Reads a value from persistent storage
+   * @param key The property key
+   * @param defaultVal The default value if the property is not set
+   * @deprecated
+   */
+  public static getLegacy(key: string, defaultVal?: string): any {
+    const val = NXDataStore.getRaw(key);
+
     // GetStoredData returns null on error, or empty string for keys that don't exist (why isn't that an error??)
     // We could use SearchStoredData, but that spams the console with every key (somebody left their debug print in)
     if (val === null || val.length === 0) {
       return defaultVal;
     }
+
     return val;
+  }
+
+  /**
+   * Gets a raw value from the sim DataStore
+   * @param key the key
+   * @returns a string, or the empty string if the value is not present
+   */
+  private static getRaw(key: string): string {
+    return GetStoredData(`${this.aircraftProjectPrefix}_${key}`);
   }
 
   /**
@@ -38,13 +62,28 @@ export class NXDataStore {
    *
    * @param key The property key
    * @param val The value to assign to the property
+   *
+   * @deprecated
    */
-  static set(key: string, val: string): void {
-    SetStoredData(`${this.aircraftProjectPrefix}_${key}`, val);
+  public static setLegacy(key: string, val: string): void {
+    NXDataStore.setRaw(key, val);
+
     this.listener.triggerToAllSubscribers('FBW_NXDATASTORE_UPDATE', key, val);
   }
 
-  static subscribe(key: string, callback: SubscribeCallback): SubscribeCancellation {
+  /**
+   * Sets raw value into the sim DataStore
+   * @param key the key
+   * @param val the value
+   */
+  private static setRaw(key: string, val: string): void {
+    SetStoredData(`${this.aircraftProjectPrefix}_${key}`, val);
+  }
+
+  /**
+   * @deprecated
+   */
+  public static subscribeLegacy(key: string, callback: SubscribeCallback): SubscribeCancellation {
     return Coherent.on('FBW_NXDATASTORE_UPDATE', (updatedKey: string, value: string) => {
       if (key === '*' || key === updatedKey) {
         callback(updatedKey, value);
@@ -52,8 +91,15 @@ export class NXDataStore {
     }).clear;
   }
 
-  static getAndSubscribe(key: string, callback: SubscribeCallback, defaultVal?: string): SubscribeCancellation {
-    callback(key, NXDataStore.get(key, defaultVal));
-    return NXDataStore.subscribe(key, callback);
+  /**
+   * @deprecated
+   */
+  public static getAndSubscribeLegacy(
+    key: string,
+    callback: SubscribeCallback,
+    defaultVal?: string,
+  ): SubscribeCancellation {
+    callback(key, NXDataStore.getLegacy(key, defaultVal));
+    return NXDataStore.subscribeLegacy(key, callback);
   }
 }

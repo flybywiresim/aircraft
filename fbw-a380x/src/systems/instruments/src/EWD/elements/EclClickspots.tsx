@@ -15,7 +15,7 @@ export class EclSoftKeys extends DisplayComponent<EclSoftKeysProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    NXDataStore.getAndSubscribe(
+    NXDataStore.getAndSubscribeLegacy(
       'CONFIG_A380X_SHOW_ECL_SOFTKEYS',
       (_, v) => {
         if (this.eclSoftKeysRef.getOrDefault()) {

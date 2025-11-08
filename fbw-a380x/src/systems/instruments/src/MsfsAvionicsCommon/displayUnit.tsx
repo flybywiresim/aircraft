@@ -132,7 +132,7 @@ export class DisplayUnit extends DisplayComponent<DisplayUnitProps> {
       clearTimeout(this.timeOut);
     } else if (this.state === DisplayUnitState.Off && this.brightness !== 0 && this.powered && !this.failed) {
       this.state = DisplayUnitState.Selftest;
-      this.setTimer(parseInt(NXDataStore.get('CONFIG_SELF_TEST_TIME', '15')));
+      this.setTimer(parseInt(NXDataStore.getLegacy('CONFIG_SELF_TEST_TIME', '15')));
     } else if (this.state === DisplayUnitState.Selftest && (this.brightness === 0 || !this.powered)) {
       this.state = DisplayUnitState.Off;
       clearTimeout(this.timeOut);

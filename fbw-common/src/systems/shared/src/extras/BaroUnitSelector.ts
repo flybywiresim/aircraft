@@ -10,7 +10,7 @@ export class BaroUnitSelector {
   constructor(private readonly setBaroSelector: (isHpa: boolean) => void) {}
 
   public performSelection(): void {
-    const configInitBaroUnit = NXDataStore.get('CONFIG_INIT_BARO_UNIT', 'AUTO');
+    const configInitBaroUnit = NXDataStore.getLegacy('CONFIG_INIT_BARO_UNIT', 'AUTO');
     if (configInitBaroUnit !== 'AUTO') {
       this.setBaroSelector(configInitBaroUnit == 'HPA');
     } else if (this.facilityListener) {

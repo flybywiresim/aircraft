@@ -182,7 +182,7 @@ export const globalSyncedSettings: SyncedSettingDefinition[] = [
 ];
 
 function syncSetting(definition: SyncedSettingDefinition) {
-  NXDataStore.getAndSubscribe(
+  NXDataStore.getAndSubscribeLegacy(
     definition.configKey,
     (prop, value) => {
       SimVar.SetSimVarValue(

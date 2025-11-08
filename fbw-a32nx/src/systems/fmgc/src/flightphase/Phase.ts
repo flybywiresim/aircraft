@@ -52,11 +52,11 @@ export class TakeOffPhase extends Phase {
 
     const accAlt = Arinc429Word.fromSimVarValue('L:A32NX_FM1_ACC_ALT');
     this.accelerationAltitudeMsl = accAlt.valueOr(
-      SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500')),
+      SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.getLegacy('CONFIG_ACCEL_ALT', '1500')),
     );
     const eoAccAlt = Arinc429Word.fromSimVarValue('L:A32NX_FM1_EO_ACC_ALT');
     this.accelerationAltitudeMslEo = eoAccAlt.valueOr(
-      SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500')),
+      SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.getLegacy('CONFIG_ACCEL_ALT', '1500')),
     );
   }
 

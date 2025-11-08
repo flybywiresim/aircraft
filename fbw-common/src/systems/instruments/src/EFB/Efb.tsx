@@ -79,7 +79,7 @@ export const EfbWrapper: React.FC<EfbWrapperProps> = ({ failures, aircraftSetup,
     const nanoid = customAlphabet(ALPHABET, SESSION_ID_LENGTH);
     const generatedSessionID = nanoid();
 
-    NXDataStore.set('A32NX_SENTRY_SESSION_ID', generatedSessionID);
+    NXDataStore.setLegacy('A32NX_SENTRY_SESSION_ID', generatedSessionID);
   };
   const [aircraftChecklists, setAircraftChecklists] = useState<ChecklistJsonDefinition[]>([]);
 

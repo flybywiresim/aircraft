@@ -5,12 +5,12 @@
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
 
 export const getSimBridgeIp = (): string =>
-  NXDataStore.get('CONFIG_SIMBRIDGE_REMOTE', 'local') === 'local'
+  NXDataStore.getLegacy('CONFIG_SIMBRIDGE_REMOTE', 'local') === 'local'
     ? 'localhost'
-    : NXDataStore.get('CONFIG_SIMBRIDGE_IP', 'localhost');
+    : NXDataStore.getLegacy('CONFIG_SIMBRIDGE_IP', 'localhost');
 
 export const getSimBridgeUrl = (): string =>
-  `http://${getSimBridgeIp()}:${NXDataStore.get('CONFIG_SIMBRIDGE_PORT', '8380')}`;
+  `http://${getSimBridgeIp()}:${NXDataStore.getLegacy('CONFIG_SIMBRIDGE_PORT', '8380')}`;
 
 export const fetchWithTimeout = (resource: RequestInfo, options?: object, timeout: number = 2000): Promise<Response> =>
   new Promise((resolve, reject) => {

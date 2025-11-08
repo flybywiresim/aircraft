@@ -208,7 +208,7 @@ export class LegacyGpws {
     this.egpwsAlertDiscreteWord1.setBitValue(12, false);
 
     // eslint-disable-next-line max-len
-    NXDataStore.getAndSubscribe(
+    NXDataStore.getAndSubscribeLegacy(
       'CONFIG_A380X_FWC_RADIO_AUTO_CALL_OUT_PINS',
       (k, v) => k === 'CONFIG_A380X_FWC_RADIO_AUTO_CALL_OUT_PINS' && (this.autoCallOutPins = Number(v)),
       A380X_DEFAULT_RADIO_AUTO_CALL_OUTS.toString(),

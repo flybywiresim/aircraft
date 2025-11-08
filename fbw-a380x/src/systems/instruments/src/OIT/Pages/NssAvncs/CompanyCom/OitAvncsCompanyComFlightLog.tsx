@@ -36,7 +36,7 @@ export abstract class OitAvncsCompanyComFlightLog extends DestroyableComponent<O
 
   private readonly userWeight = Subject.create<'KG' | 'LBS'>(NXUnits.userWeightUnit());
 
-  private readonly configMetricUnitsSub = NXDataStore.getAndSubscribe(
+  private readonly configMetricUnitsSub = NXDataStore.getAndSubscribeLegacy(
     'CONFIG_USING_METRIC_UNIT',
     (_, value) => {
       this.userWeight.set(value === '1' ? 'KG' : 'LBS');
