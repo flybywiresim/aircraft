@@ -167,6 +167,7 @@ pub struct A380AutobrakeController {
     decel_light_id: VariableIdentifier,
     active_id: VariableIdentifier,
     rto_mode_armed_id: VariableIdentifier,
+    btv_appr_different_runway_id: VariableIdentifier,
 
     external_deactivation_event_id: VariableIdentifier,
 
@@ -192,6 +193,8 @@ pub struct A380AutobrakeController {
     selection_knob_should_return_disarm: DelayedTrueLogicGate,
 
     external_deactivation_event: bool,
+
+    btv_appr_different_runway: bool,
 
     placeholder_ground_spoilers_out: bool,
 
@@ -228,6 +231,8 @@ impl A380AutobrakeController {
             decel_light_id: context.get_identifier("AUTOBRAKES_DECEL_LIGHT".to_owned()),
             active_id: context.get_identifier("AUTOBRAKES_ACTIVE".to_owned()),
             rto_mode_armed_id: context.get_identifier("AUTOBRAKES_RTO_ARMED".to_owned()),
+            btv_appr_different_runway_id: context
+                .get_identifier("BTV_APPR_DIFFERENT_RUNWAY".to_owned()),
 
             external_deactivation_event_id: context
                 .get_identifier("AUTOBRAKE_INSTINCTIVE_DISCONNECT".to_owned()),
@@ -264,6 +269,8 @@ impl A380AutobrakeController {
             ),
 
             external_deactivation_event: false,
+
+            btv_appr_different_runway: false,
 
             placeholder_ground_spoilers_out: false,
 
@@ -420,6 +427,7 @@ impl A380AutobrakeController {
             || self.should_disarm_after_time_in_flight.output()
             || (self.mode == A380AutobrakeMode::RTO
                 && self.should_reject_rto_mode_after_time_in_flight.output())
+            || self.btv_appr_different_runway
     }
 
     fn btv_should_revert_to_brk_hi(&self) -> bool {
@@ -599,6 +607,7 @@ impl SimulationElement for A380AutobrakeController {
         self.ground_spoilers_are_deployed = self.placeholder_ground_spoilers_out;
 
         self.external_deactivation_event = reader.read(&self.external_deactivation_event_id);
+        self.btv_appr_different_runway = reader.read(&self.btv_appr_different_runway_id);
 
         // Reading current mode in sim to initialize correct mode if sim changes it (from .FLT files for example)
         let readed_mode = reader.read_f64(&self.armed_mode_id);

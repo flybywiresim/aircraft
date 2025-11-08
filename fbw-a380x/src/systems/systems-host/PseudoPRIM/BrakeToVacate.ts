@@ -1,7 +1,7 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { ConsumerSubject, EventBus, Instrument, MappedSubject } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, EventBus, Instrument, MappedSubject, SimVarValueType } from '@microsoft/msfs-sdk';
 import {
   Arinc429LocalVarConsumerSubject,
   Arinc429RegisterSubject,
@@ -17,6 +17,7 @@ import {
   OansFmsDataStore,
   OansMapProjection,
   RaBusEvents,
+  RegisteredSimVar,
   RopsRunwayPrediction,
   Runway,
   UpdateThrottler,
@@ -63,6 +64,11 @@ export class BrakeToVacate implements Instrument {
   private readonly runwayLengthArinc = Arinc429RegisterSubject.createEmpty();
 
   private readonly runwayBearingArinc = Arinc429RegisterSubject.createEmpty();
+
+  private readonly btvApprDifferentRunwaySimvar = RegisteredSimVar.create<boolean>(
+    'L:A32NX_BTV_APPR_DIFFERENT_RUNWAY',
+    SimVarValueType.Bool,
+  );
 
   private readonly oansSelectedRunway = ConsumerSubject.create(this.sub.on('oansSelectedLandingRunway'), null);
   private readonly oansSelectedExit = ConsumerSubject.create(this.sub.on('oansSelectedExit'), null);
@@ -270,6 +276,8 @@ export class BrakeToVacate implements Instrument {
         this.landingRunwayNavdata.length - BTV_MIN_TOUCHDOWN_ZONE_DISTANCE,
         Arinc429SignStatusMatrix.NormalOperation,
       );
+
+      this.btvApprDifferentRunwaySimvar.set(false);
     }
   }
 
@@ -328,6 +336,7 @@ export class BrakeToVacate implements Instrument {
     // Arming phase between 500ft and 300ft RA
     if (this.radioAltitude.get() < 300 || this.radioAltitude.get() > 500 || !this.ppos.get()) {
       this.nearbyAirportMonitor.setLocation(undefined, undefined); // Invalidate location to prevent unnecessary searching
+      this.btvApprDifferentRunwaySimvar.set(false);
       return;
     }
 
@@ -353,7 +362,8 @@ export class BrakeToVacate implements Instrument {
         !this.runwayIsSet() ||
         (this.runwayIsSet() && this.radioAltitude.get() < 350 && this.oansRunwayIdent.get() !== landingRunway.runway)
       ) {
-        this.setBtvRunwayFromNavdata(landingRunway.runway);
+        await this.setBtvRunwayFromNavdata(landingRunway.runway);
+        this.btvApprDifferentRunwaySimvar.set(true);
         this.bus.getPublisher<FmsOansData>().pub('ropsDetectedAirport', landingRunway.airport, true);
         this.bus.getPublisher<FmsOansData>().pub('ropsDetectedRunway', landingRunway.runway, true);
         this.bus.getPublisher<FmsOansData>().pub('ndBtvMessage', `RWY${landingRunway.runway.substring(4) ?? ''}`, true);
@@ -368,6 +378,7 @@ export class BrakeToVacate implements Instrument {
     this.bus.getPublisher<FmsOansData>().pub('ropsDetectedAirport', null, true);
     this.bus.getPublisher<FmsOansData>().pub('ropsDetectedRunway', null, true);
     this.bus.getPublisher<FmsOansData>().pub('oansSelectedLandingRunway', null, true);
+    this.btvApprDifferentRunwaySimvar.set(false);
   }
 
   private updateRemainingDistances() {

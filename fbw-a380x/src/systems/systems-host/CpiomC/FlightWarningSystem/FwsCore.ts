@@ -1557,7 +1557,12 @@ export class FwsCore {
     this.fcdc2LandingFctDiscreteWord,
   );
 
+  public readonly oansFailedSimvar = RegisteredSimVar.create<boolean>('L:A32NX_OANS_FAILED', SimVarValueType.Bool);
   public readonly oansFailed = Subject.create(false);
+  public readonly oansPposLostSimVar = RegisteredSimVar.create<boolean>(
+    'L:A32NX_ARPT_NAV_POS_LOST',
+    SimVarValueType.Bool,
+  );
   public readonly oansPposLost = Subject.create(false);
   public readonly arptNavLost = MappedSubject.create(
     ([oansFailed, pposLost]) => oansFailed || pposLost,
@@ -1775,16 +1780,30 @@ export class FwsCore {
 
   public readonly terrSys2FaultCond = Subject.create(false);
 
+  public readonly terrSys1FailedSimvar = RegisteredSimVar.create<boolean>(
+    'L:A32NX_TERR_1_FAILED',
+    SimVarValueType.Bool,
+  );
   public readonly terrSys1Failed = Subject.create(false);
+  public readonly terrSys2FailedSimvar = RegisteredSimVar.create<boolean>(
+    'L:A32NX_TERR_2_FAILED',
+    SimVarValueType.Bool,
+  );
   public readonly terrSys2Failed = Subject.create(false);
 
   public readonly taws1FaultCond = Subject.create(false);
 
   public readonly taws2FaultCond = Subject.create(false);
 
+  public readonly taws1FailedSimvar = RegisteredSimVar.create<boolean>('L:A32NX_TAWS_1_FAILED', SimVarValueType.Bool);
   public readonly taws1Failed = Subject.create(false);
+  public readonly taws2FailedSimvar = RegisteredSimVar.create<boolean>('L:A32NX_TAWS_2_FAILED', SimVarValueType.Bool);
   public readonly taws2Failed = Subject.create(false);
 
+  public readonly tawsWxrSelectedSimvar = RegisteredSimVar.create<number>(
+    'L:A32NX_WXR_TAWS_SYS_SELECTED',
+    SimVarValueType.Number,
+  );
   public readonly tawsWxrSelected = Subject.create(0);
 
   /** 35 OXYGEN */
@@ -4729,19 +4748,19 @@ export class FwsCore {
     // TAWS
     const taws1Powered = this.acESSBusPowered.get();
     const taws2Powered = this.ac4BusPowered.get();
-    this.terrSys1Failed.set(!!SimVar.GetSimVarValue('L:A32NX_TERR_1_FAILED', SimVarValueType.Bool));
+    this.terrSys1Failed.set(!!this.terrSys1FailedSimvar.get());
     this.terrSys1FaultCond.set(this.terrSys1Failed.get() && taws1Powered);
-    this.terrSys2Failed.set(!!SimVar.GetSimVarValue('L:A32NX_TERR_2_FAILED', SimVarValueType.Bool));
-    this.terrSys2FaultCond.set(this.terrSys1Failed.get() && taws2Powered);
-    this.taws1Failed.set(!!SimVar.GetSimVarValue('L:A32NX_TAWS_1_FAILED', SimVarValueType.Bool));
-    this.taws2Failed.set(!!SimVar.GetSimVarValue('L:A32NX_TAWS_2_FAILED', SimVarValueType.Bool));
+    this.terrSys2Failed.set(!!this.terrSys2FailedSimvar.get());
+    this.terrSys2FaultCond.set(this.terrSys2Failed.get() && taws2Powered);
+    this.taws1Failed.set(!!this.taws1FailedSimvar.get());
+    this.taws2Failed.set(!!this.taws2FailedSimvar.get());
     this.taws1FaultCond.set(this.taws1Failed.get() && taws1Powered);
     this.taws2FaultCond.set(this.taws2Failed.get() && taws2Powered);
-    this.tawsWxrSelected.set(SimVar.GetSimVarValue('L:A32NX_WXR_TAWS_SYS_SELECTED', SimVarValueType.Number));
+    this.tawsWxrSelected.set(this.tawsWxrSelectedSimvar.get());
 
     // OANS
-    this.oansFailed.set(!!SimVar.GetSimVarValue('L:A32NX_OANS_FAILED', SimVarValueType.Bool));
-    this.oansPposLost.set(!!SimVar.GetSimVarValue('L:A32NX_ARPT_NAV_POS_LOST', SimVarValueType.Bool));
+    this.oansFailed.set(!!this.oansFailedSimvar.get());
+    this.oansPposLost.set(!!this.oansPposLostSimVar.get());
 
     /* 26 - FIRE */
 
