@@ -1,10 +1,23 @@
+import { MutableSubscribable, Subject } from '@microsoft/msfs-sdk';
+
+type DataStoreSettingKey = keyof NXDataStoreSettings & string;
+type DataStoreSettingValue = string | number | boolean;
+
 type SubscribeCallback = (key: string, value: string | undefined) => void;
 type SubscribeCancellation = () => void;
+
+export interface NXDataStoreSettings {
+  efbTheme: 'light' | 'dark';
+}
+
+type LegacyDataStoreSettingKey<k extends string> = k & (k extends keyof NXDataStoreSettings ? never : k);
 
 /**
  * Allows interacting with the persistent storage
  */
 export class NXDataStore {
+  private static settingSubjectMap = new Map<string, Subject<any>>();
+
   private static aircraftProjectPrefix: string = process.env.AIRCRAFT_PROJECT_PREFIX?.toUpperCase() ?? 'UNK';
 
   private static mListener: ViewListener.ViewListener;
@@ -17,26 +30,96 @@ export class NXDataStore {
   }
 
   /**
-   * Reads a value from persistent storage
-   * @param key The property key
-   * @param defaultVal The default value if the property is not set
-   * @deprecated
+   * Gets a mutable subscribable setting given a key. This subscribable is updated whenever the setting is changed, and setting it
+   * will change the setting.
+   * @param key the key of the setting
+   * @returns a mutable subscribable
    */
-  public static getLegacy(key: string, defaultVal: string): string;
+  public static getSetting<k extends DataStoreSettingKey>(key: k): MutableSubscribable<NXDataStoreSettings[k]> {
+    let subject = NXDataStore.settingSubjectMap.get(key);
+
+    if (subject === undefined) {
+      subject = NXDataStore.createSettingSubject(key);
+    }
+
+    return subject;
+  }
+
+  /**
+   * Creates a subject given a data store setting key
+   * @param key the key of the setting
+   * @returns a subject
+   */
+  private static createSettingSubject<k extends DataStoreSettingKey>(key: k): Subject<NXDataStoreSettings[k]> {
+    const value = NXDataStore.getTypedSettingValue(key);
+
+    const subject = Subject.create(value);
+
+    // Don't need to keep track of those subscriptions, because the subjects are singletons
+    NXDataStore.subscribeRaw((updatedKey) => {
+      if (updatedKey === key) {
+        subject.set(NXDataStore.getTypedSettingValue(key));
+      }
+    });
+    subject.sub((value) => NXDataStore.setTypedSettingValue(key, value));
+
+    return subject;
+  }
+
+  /**
+   * Obtains a typed value given a setting key. If the setting was previously saved as a legacy setting, it is updated in the
+   * data store to be compatible with modern settings.
+   * @param key the key of the setting
+   * @returns a typed value for the setting
+   */
+  private static getTypedSettingValue<k extends DataStoreSettingKey>(key: k): NXDataStoreSettings[k] {
+    const rawValue = NXDataStore.getRaw(key);
+
+    let parsed: DataStoreSettingValue;
+    try {
+      parsed = JSON.parse(rawValue);
+    } catch (e) {
+      // This will happen if the setting is a string, and it was previously saved as a legacy setting. Convert it to a JSON value.
+      NXDataStore.setTypedSettingValue(key, rawValue as NXDataStoreSettings[k]);
+
+      parsed = rawValue;
+    }
+
+    return parsed as NXDataStoreSettings[k];
+  }
+
+  /**
+   * Sets a typed value for a setting key.
+   * @param key the key of the setting
+   * @param value a typed value for the setting
+   */
+  private static setTypedSettingValue<k extends DataStoreSettingKey>(key: k, value: NXDataStoreSettings[k]): void {
+    const rawValue = JSON.stringify(value);
+
+    NXDataStore.setRaw(key, rawValue);
+  }
+
   /**
    * Reads a value from persistent storage
    * @param key The property key
    * @param defaultVal The default value if the property is not set
    * @deprecated
    */
-  public static getLegacy(key: string, defaultVal?: string): string | undefined;
+  public static getLegacy<k extends string>(key: LegacyDataStoreSettingKey<k>, defaultVal: string): string;
   /**
    * Reads a value from persistent storage
    * @param key The property key
    * @param defaultVal The default value if the property is not set
    * @deprecated
    */
-  public static getLegacy(key: string, defaultVal?: string): any {
+  public static getLegacy<k extends string>(key: LegacyDataStoreSettingKey<k>, defaultVal?: string): string | undefined;
+  /**
+   * Reads a value from persistent storage
+   * @param key The property key
+   * @param defaultVal The default value if the property is not set
+   * @deprecated
+   */
+  public static getLegacy<k extends string>(key: LegacyDataStoreSettingKey<k>, defaultVal?: string): any {
     const val = NXDataStore.getRaw(key);
 
     // GetStoredData returns null on error, or empty string for keys that don't exist (why isn't that an error??)
@@ -65,7 +148,7 @@ export class NXDataStore {
    *
    * @deprecated
    */
-  public static setLegacy(key: string, val: string): void {
+  public static setLegacy<k extends string>(key: LegacyDataStoreSettingKey<k>, val: string): void {
     NXDataStore.setRaw(key, val);
 
     this.listener.triggerToAllSubscribers('FBW_NXDATASTORE_UPDATE', key, val);
@@ -83,19 +166,31 @@ export class NXDataStore {
   /**
    * @deprecated
    */
-  public static subscribeLegacy(key: string, callback: SubscribeCallback): SubscribeCancellation {
-    return Coherent.on('FBW_NXDATASTORE_UPDATE', (updatedKey: string, value: string) => {
+  public static subscribeLegacy<k extends string>(
+    key: LegacyDataStoreSettingKey<k>,
+    callback: SubscribeCallback,
+  ): SubscribeCancellation {
+    return NXDataStore.subscribeRaw((updatedKey, value) => {
       if (key === '*' || key === updatedKey) {
         callback(updatedKey, value);
       }
-    }).clear;
+    });
+  }
+
+  /**
+   * Subscribes to raw DataStore update events
+   * @param callback a callback for every update
+   * @returns a function to cancel the subscription
+   */
+  private static subscribeRaw(callback: SubscribeCallback): SubscribeCancellation {
+    return Coherent.on('FBW_NXDATASTORE_UPDATE', callback).clear;
   }
 
   /**
    * @deprecated
    */
-  public static getAndSubscribeLegacy(
-    key: string,
+  public static getAndSubscribeLegacy<k extends string>(
+    key: LegacyDataStoreSettingKey<k>,
     callback: SubscribeCallback,
     defaultVal?: string,
   ): SubscribeCancellation {
