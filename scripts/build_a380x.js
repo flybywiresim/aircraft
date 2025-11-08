@@ -32,6 +32,10 @@ const HASHED_FILES = [
   'html_ui/Pages/VCockpit/Instruments/A380X/PFD/pfd.js',
 
   'SimObjects/AirPlanes/FlyByWire_A380_842/model/A380_COCKPIT.xml',
+
+  'SimObjects/AirPlanes/FlyByWire_A380_842/panel/fadec-a380x.wasm',
+  'SimObjects/AirPlanes/FlyByWire_A380_842/panel/fbw.wasm',
+  'SimObjects/AirPlanes/FlyByWire_A380_842/panel/systems.wasm',
 ];
 
 function createHashFiles(baseDir) {

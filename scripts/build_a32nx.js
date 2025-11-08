@@ -64,6 +64,10 @@ const HASHED_FILES = [
   'html_ui/Pages/VCockpit/Instruments/A32NX/PFD/pfd.js',
 
   'SimObjects/AirPlanes/FlyByWire_A320_NEO/model/A320_NEO_INTERIOR.xml',
+
+  'SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fadec-a32nx.wasm',
+  'SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fbw.wasm',
+  'SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/systems.wasm',
 ];
 
 function createHashFiles(baseDir) {
