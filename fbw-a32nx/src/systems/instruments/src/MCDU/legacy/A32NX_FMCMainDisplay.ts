@@ -18,6 +18,7 @@ import {
   NdbNavaid,
   NXDataStore,
   NXUnits,
+  RegisteredSimVar,
   TerminalNdbNavaid,
   UpdateThrottler,
   VhfNavaid,
@@ -52,7 +53,7 @@ import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 import { FmsDataInterface } from '@fmgc/flightplanning/interface/FmsDataInterface';
-import { EventBus } from '@microsoft/msfs-sdk';
+import { EventBus, SimVarValueType } from '@microsoft/msfs-sdk';
 import { AdfRadioTuningStatus, MmrRadioTuningStatus, VorRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { FmsFormatters } from './FmsFormatters';
@@ -66,6 +67,7 @@ import { initComponents, updateComponents } from '@fmgc/components';
 import { CoRouteUplinkAdapter } from '@fmgc/flightplanning/uplink/CoRouteUplinkAdapter';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 import { FmcWindVector } from '@fmgc/guidance/vnav/wind/types';
+import { LateralMode } from '@shared/autopilot';
 
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
@@ -317,6 +319,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   public casToMachManualCrossoverCurve;
   public machToCasManualCrossoverCurve;
+
+  private readonly lateralMode = RegisteredSimVar.create('L:A32NX_FMA_LATERAL_MODE', SimVarValueType.Number);
 
   constructor(public readonly bus: EventBus) {
     FMCMainDisplay.DEBUG_INSTANCE = this;
@@ -1547,7 +1551,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   // TODO/VNAV: Speed constraint
   private getSpeedConstraint() {
-    if (!this.navModeEngaged()) {
+    if (!this.isLateralModeManaged()) {
       return Infinity;
     }
 
@@ -4612,18 +4616,22 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     return this.groundTempPilot !== undefined ? this.groundTempPilot : this.groundTempAuto;
   }
 
-  public navModeEngaged() {
-    const lateralMode = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_MODE', 'Number');
-    switch (lateralMode) {
-      case 20: // NAV
-      case 30: // LOC*
-      case 31: // LOC
-      case 32: // LAND
-      case 33: // FLARE
-      case 34: // ROLL OUT
+  public isNavModeEngaged() {
+    return this.lateralMode.get() === LateralMode.NAV;
+  }
+
+  private isLateralModeManaged() {
+    switch (this.lateralMode.get()) {
+      case LateralMode.NAV:
+      case LateralMode.LOC_CPT:
+      case LateralMode.LOC_TRACK:
+      case LateralMode.LAND:
+      case LateralMode.FLARE:
+      case LateralMode.ROLL_OUT:
         return true;
+      default:
+        return false;
     }
-    return false;
   }
 
   // FIXME check why steps alts page is the only one outside FMS/CDU calling this...
