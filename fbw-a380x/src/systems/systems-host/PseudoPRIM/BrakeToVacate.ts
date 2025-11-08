@@ -139,25 +139,8 @@ export class BrakeToVacate implements Instrument {
   private readonly longitude2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_longitude_2'));
   private readonly latitude3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_latitude_3'));
   private readonly longitude3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_longitude_3'));
-  private readonly ppos = MappedSubject.create(
-    ([lat1, lon1, lat2, lon2, lat3, lon3]) => {
-      let ppos: Coordinates | null = null;
-      if (!lat1.isInvalid() && !lon1.isInvalid()) {
-        ppos = { lat: lat1.value, long: lon1.value } as Coordinates;
-      } else if (!lat2.isInvalid() && !lon2.isInvalid()) {
-        ppos = { lat: lat2.value, long: lon2.value } as Coordinates;
-      } else if (!lat3.isInvalid() && !lon3.isInvalid()) {
-        ppos = { lat: lat3.value, long: lon3.value } as Coordinates;
-      }
-      return ppos;
-    },
-    this.latitude1,
-    this.longitude1,
-    this.latitude2,
-    this.longitude2,
-    this.latitude3,
-    this.longitude3,
-  );
+
+  private ppos: Coordinates = { lat: 0, long: 0 };
 
   private readonly trueHeading1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_true_heading_1'));
   private readonly trueHeading2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_true_heading_2'));
@@ -199,6 +182,28 @@ export class BrakeToVacate implements Instrument {
       },
       this.oansSelectedExit,
       this.oansExitCoordinates,
+    );
+
+    MappedSubject.create(
+      ([lat1, lon1, lat2, lon2, lat3, lon3]) => {
+        if (!lat1.isInvalid() && !lon1.isInvalid()) {
+          this.ppos.lat = lat1.value;
+          this.ppos.long = lon1.value;
+        } else if (!lat2.isInvalid() && !lon2.isInvalid()) {
+          this.ppos.lat = lat2.value;
+          this.ppos.long = lon2.value;
+        } else if (!lat3.isInvalid() && !lon3.isInvalid()) {
+          this.ppos.lat = lat3.value;
+          this.ppos.long = lon3.value;
+        }
+        return this.ppos;
+      },
+      this.latitude1,
+      this.longitude1,
+      this.latitude2,
+      this.longitude2,
+      this.latitude3,
+      this.longitude3,
     );
 
     this.remainingDistToExitArinc.sub((v) => {
@@ -334,7 +339,7 @@ export class BrakeToVacate implements Instrument {
 
   private async detectLandingRunway() {
     // Arming phase between 500ft and 300ft RA
-    if (this.radioAltitude.get() < 300 || this.radioAltitude.get() > 500 || !this.ppos.get()) {
+    if (this.radioAltitude.get() < 300 || this.radioAltitude.get() > 500 || !this.ppos) {
       this.nearbyAirportMonitor.setLocation(undefined, undefined); // Invalidate location to prevent unnecessary searching
       this.btvApprDifferentRunwaySimvar.set(false);
       return;
@@ -352,7 +357,7 @@ export class BrakeToVacate implements Instrument {
       this.nearbyAirportMonitor,
       this.radioAltitude.get(),
       trueHeading,
-      this.ppos.get(),
+      this.ppos,
     );
 
     // Set as ROPS/BTV runway
@@ -384,7 +389,7 @@ export class BrakeToVacate implements Instrument {
   private updateRemainingDistances() {
     // Only update below 600ft AGL, and in landing FMGC phase
     // Also, V/S should be below +400ft/min, to avoid ROW during G/A
-    const ppos = this.ppos.get();
+    const ppos = this.ppos;
     if (
       this.radioAltitude.get() > 600 ||
       this.fwsFlightPhase.get() < 9 ||

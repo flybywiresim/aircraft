@@ -61,8 +61,6 @@ struct FcdcDiscreteInputs {
   bool oansFailed;
   bool oansPposLost;
 
-  bool tawsTerrOff;
-
   bool dcEssFailed;
   bool dc2Failed;
   bool ac2Failed;

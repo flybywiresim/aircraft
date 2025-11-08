@@ -262,8 +262,6 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idOansFailed;
   std::unique_ptr<LocalVariable> idOansPposLost;
 
-  std::unique_ptr<LocalVariable> idTawsTerrainOff;
-
   std::unique_ptr<LocalVariable> idFmgcFlightPhase;
   std::unique_ptr<LocalVariable> idFmgcV2;
   std::unique_ptr<LocalVariable> idFmgcV_APP;
