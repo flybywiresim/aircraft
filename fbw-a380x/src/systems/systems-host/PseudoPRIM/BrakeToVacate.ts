@@ -14,6 +14,7 @@ import {
   MathUtils,
   NearbyFacilityMonitor,
   NearbyFacilityType,
+  OansControlEvents,
   OansFmsDataStore,
   OansMapProjection,
   RaBusEvents,
@@ -22,7 +23,6 @@ import {
   Runway,
   UpdateThrottler,
 } from '@flybywiresim/fbw-sdk';
-import { OansControlEvents } from '@flybywiresim/oanc';
 import { Coordinates, placeBearingDistance } from 'msfs-geo';
 import { Position } from 'geojson';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';

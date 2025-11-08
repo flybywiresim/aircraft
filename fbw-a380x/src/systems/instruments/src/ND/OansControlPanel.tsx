@@ -26,7 +26,6 @@ import {
   ControlPanelStore,
   ControlPanelUtils,
   NavigraphAmdbClient,
-  OansControlEvents,
 } from '@flybywiresim/oanc';
 import {
   AmdbAirportSearchResult,
@@ -41,6 +40,7 @@ import {
   LgciuBusEvents,
   NXDataStore,
   NXLogicConfirmNode,
+  OansControlEvents,
   OansFmsDataStore,
   RegisteredSimVar,
 } from '@flybywiresim/fbw-sdk';
