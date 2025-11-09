@@ -35,7 +35,7 @@ export class OansMapProjection {
    * @param out Output argument: Write global coordinates here
    */
   public static airportToGlobalCoordinates(airportPos: Coordinates, local: Position): Coordinates {
-    const nmToMeters = 1_000 / 0.539957;
+    const nmToMeters = 1852;
 
     // Inverse of packing in globalToAirportCoordinates
     const yNm = local[0] / nmToMeters; // east component in NM

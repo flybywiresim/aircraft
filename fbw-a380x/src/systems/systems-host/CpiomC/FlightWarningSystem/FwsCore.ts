@@ -1146,7 +1146,14 @@ export class FwsCore {
 
   public readonly groundSpoilerNotArmedWarning = Subject.create(false);
 
+  private readonly abnProcImpactingLdgPerfActiveSimvar = RegisteredSimVar.createBoolean(
+    `L:A32NX_FWC_${this.fwsNumber}_ABN_PROC_IMPACT_LDG_PERF`,
+  );
   public readonly abnProcImpactingLdgPerfActive = Subject.create(false);
+
+  private readonly abnProcImpactingLdgDistActiveSimvar = RegisteredSimVar.createBoolean(
+    `L:A32NX_FWC_${this.fwsNumber}_ABN_PROC_IMPACT_LDG_DIST`,
+  );
   public readonly abnProcImpactingLdgDistActive = Subject.create(false);
 
   /* FUEL */
@@ -1209,6 +1216,8 @@ export class FwsCore {
     this.crossFeed4ValveOpen,
   );
 
+  private readonly fmsZeroFuelWeightSimvarName = `L:A32NX_FM${this.fwsNumber}_ZERO_FUEL_WEIGHT`;
+  private readonly fmsZeroFuelWeightCgSimvarName = `L:A32NX_FM${this.fwsNumber}_ZERO_FUEL_WEIGHT_CG`;
   public readonly fmsZeroFuelWeight = Arinc429Register.empty();
   public readonly fmsZeroFuelWeightCg = Arinc429Register.empty();
 
@@ -2493,14 +2502,8 @@ export class FwsCore {
     );
 
     this.subs.push(
-      this.abnProcImpactingLdgPerfActive.sub(
-        (s) => SimVar.SetSimVarValue(`L:A32NX_FWC_${this.fwsNumber}_ABN_PROC_IMPACT_LDG_PERF`, 'boolean', s),
-        true,
-      ),
-      this.abnProcImpactingLdgDistActive.sub(
-        (s) => SimVar.SetSimVarValue(`L:A32NX_FWC_${this.fwsNumber}_ABN_PROC_IMPACT_LDG_DIST`, 'boolean', s),
-        true,
-      ),
+      this.abnProcImpactingLdgPerfActive.sub((s) => this.abnProcImpactingLdgPerfActiveSimvar.set(s), true),
+      this.abnProcImpactingLdgDistActive.sub((s) => this.abnProcImpactingLdgDistActiveSimvar.set(s), true),
     );
 
     this.subs.push(
@@ -4177,8 +4180,8 @@ export class FwsCore {
     this.crossFeed3ValveOpen.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE OPEN:48', 'kilogram') > 0.1);
     this.crossFeed4ValveOpen.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE OPEN:49', 'kilogram') > 0.1);
 
-    this.fmsZeroFuelWeight.setFromSimVar(`L:A32NX_FM${this.fwsNumber}_ZERO_FUEL_WEIGHT`);
-    this.fmsZeroFuelWeightCg.setFromSimVar(`L:A32NX_FM${this.fwsNumber}_ZERO_FUEL_WEIGHT_CG`);
+    this.fmsZeroFuelWeight.setFromSimVar(this.fmsZeroFuelWeightSimvarName);
+    this.fmsZeroFuelWeightCg.setFromSimVar(this.fmsZeroFuelWeightCgSimvarName);
 
     this.fmsZfwOrZfwCgNotSet.set(
       this.fmsZeroFuelWeight.isNoComputedData() || this.fmsZeroFuelWeightCg.isNoComputedData(),
