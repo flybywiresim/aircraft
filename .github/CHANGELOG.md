@@ -12,7 +12,7 @@
 
 ## 0.15.0
 
-1. [FMS] Fix "NOT ALLOWED IN NAV" when sequecing TO waypoint while in LOC mode - @BravoMike99 (bruno_pt99)
+1. [FMS] Fix "NOT ALLOWED IN NAV" when sequencing TO waypoint while in LOC mode - @BravoMike99 (bruno_pt99)
 
 ## 0.14.0
 
