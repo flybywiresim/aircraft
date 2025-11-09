@@ -12,6 +12,10 @@
 
 ## 0.15.0
 
+1. [A32NX/FMS] Removed required leading zeros for acceleration, thrust reduction, and transition altitudes - @Jonny23787 (Jonathan)
+1. [A32NX/FMS] Adjusted TRANS ALT allowed entry range - @Jonny23787 (Jonathan)
+1. [A32NX/FMS] Add - sign to slope value on RAD NAV page - @Jonny23787 (Jonathan)
+
 ## 0.14.0
 
 1. [A380X/FMS] Fix speed margins being displayed in the wrong place for a Mach target - @BlueberryKing (BlueberryKing)
