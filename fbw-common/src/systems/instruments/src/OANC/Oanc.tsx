@@ -35,6 +35,7 @@ import {
   GenericAdirsEvents,
   MapParameters,
   MathUtils,
+  OansControlEvents,
   OansFmsDataStore,
   OansMapProjection,
   PolygonalStructureType,
@@ -53,7 +54,6 @@ import {
 import { Feature, FeatureCollection, Geometry, LineString, Point, Polygon, MultiPolygon, Position } from 'geojson';
 import { bearingTo, clampAngle, Coordinates, distanceTo, placeBearingDistance } from 'msfs-geo';
 
-import { OansControlEvents } from './OansControlEventPublisher';
 import { reciprocal } from '@fmgc/guidance/lnav/CommonGeometry';
 import { OansBrakeToVacateSelection } from './OansBrakeToVacateSelection';
 import { LAYER_SPECIFICATIONS } from './style-data';
