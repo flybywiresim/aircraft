@@ -94,7 +94,7 @@ export class NXDataStore {
       }
 
       NXDataStore.setTypedSettingValue(key, newValue as NXDataStoreSettings[k]);
-      parsed = rawValue;
+      parsed = newValue;
     }
 
     return parsed as NXDataStoreSettings[k];
