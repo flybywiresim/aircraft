@@ -2,8 +2,10 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { useEffect, useState } from 'react';
 import { DataStoreSettingKey, LegacyDataStoreSettingKey, NXDataStore } from '@flybywiresim/fbw-sdk';
+
+import { useEffect, useState } from 'react';
+
 import { useMutableSubscribable } from './subscribables';
 
 /**
