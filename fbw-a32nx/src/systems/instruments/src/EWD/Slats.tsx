@@ -102,10 +102,6 @@ export class Slats extends DisplayComponent<SlatsProps> {
 
   private targetVisible = Subject.create('hidden');
 
-  private slatsClass = Subject.create('');
-
-  private slatsLineClass = Subject.create('');
-
   private slatsTargetPath = Subject.create('');
 
   private flapsTargetPath = Subject.create('');

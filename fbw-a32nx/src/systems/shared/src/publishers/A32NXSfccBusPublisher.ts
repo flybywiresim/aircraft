@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 // Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -31,7 +30,7 @@ interface A32NXSfccBusBaseEvents {
   a32nx_sfcc_2_flaps_position: number;
 }
 
-type IndexedTopics = null;
+type IndexedTopics = never;
 
 type A32NXSfccBusIndexedEvents = {
   [P in keyof Pick<A32NXSfccBusBaseEvents, IndexedTopics> as IndexedEventType<P>]: A32NXSfccBusBaseEvents[P];
