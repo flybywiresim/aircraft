@@ -1,4 +1,9 @@
+// Copyright (c) 2025 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { MutableSubscribable, Subscribable } from '@microsoft/msfs-sdk';
+
 import { useCallback, useEffect, useState } from 'react';
 
 /**

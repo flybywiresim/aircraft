@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2025 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { MutableSubscribable, Subject } from '@microsoft/msfs-sdk';
 
 export type DataStoreSettingKey = keyof NXDataStoreSettings & string;
