@@ -1557,12 +1557,9 @@ export class FwsCore {
     this.fcdc2LandingFctDiscreteWord,
   );
 
-  public readonly oansFailedSimvar = RegisteredSimVar.create<boolean>('L:A32NX_OANS_FAILED', SimVarValueType.Bool);
+  public readonly oansFailedSimvar = RegisteredSimVar.createBoolean('L:A32NX_OANS_FAILED');
   public readonly oansFailed = Subject.create(false);
-  public readonly oansPposLostSimVar = RegisteredSimVar.create<boolean>(
-    'L:A32NX_ARPT_NAV_POS_LOST',
-    SimVarValueType.Bool,
-  );
+  public readonly oansPposLostSimVar = RegisteredSimVar.createBoolean('L:A32NX_ARPT_NAV_POS_LOST');
   public readonly oansPposLost = Subject.create(false);
   public readonly arptNavLost = MappedSubject.create(
     ([oansFailed, pposLost]) => oansFailed || pposLost,
@@ -1570,17 +1567,6 @@ export class FwsCore {
     this.oansPposLost,
   );
 
-  public readonly ldgDistAffected = MappedSubject.create(
-    ([w1, w2]) =>
-      w1.bitValueOr(20, false) ||
-      w2.bitValueOr(20, false) ||
-      w1.bitValueOr(22, false) ||
-      w2.bitValueOr(22, false) ||
-      w1.bitValueOr(24, false) ||
-      w2.bitValueOr(24, false),
-    this.fcdc1LandingFctDiscreteWord,
-    this.fcdc2LandingFctDiscreteWord,
-  );
   public readonly ldgPerfAffected = MappedSubject.create(
     ([w1, w2]) =>
       w1.bitValueOr(21, false) ||
@@ -1591,6 +1577,19 @@ export class FwsCore {
       w2.bitValueOr(25, false),
     this.fcdc1LandingFctDiscreteWord,
     this.fcdc2LandingFctDiscreteWord,
+  );
+  public readonly ldgDistAffected = MappedSubject.create(
+    ([w1, w2, perfAffected]) =>
+      (w1.bitValueOr(20, false) ||
+        w2.bitValueOr(20, false) ||
+        w1.bitValueOr(22, false) ||
+        w2.bitValueOr(22, false) ||
+        w1.bitValueOr(24, false) ||
+        w2.bitValueOr(24, false)) &&
+      !perfAffected,
+    this.fcdc1LandingFctDiscreteWord,
+    this.fcdc2LandingFctDiscreteWord,
+    this.ldgPerfAffected,
   );
 
   /* NAVIGATION */
@@ -1780,24 +1779,18 @@ export class FwsCore {
 
   public readonly terrSys2FaultCond = Subject.create(false);
 
-  public readonly terrSys1FailedSimvar = RegisteredSimVar.create<boolean>(
-    'L:A32NX_TERR_1_FAILED',
-    SimVarValueType.Bool,
-  );
+  public readonly terrSys1FailedSimvar = RegisteredSimVar.createBoolean('L:A32NX_TERR_1_FAILED');
   public readonly terrSys1Failed = Subject.create(false);
-  public readonly terrSys2FailedSimvar = RegisteredSimVar.create<boolean>(
-    'L:A32NX_TERR_2_FAILED',
-    SimVarValueType.Bool,
-  );
+  public readonly terrSys2FailedSimvar = RegisteredSimVar.createBoolean('L:A32NX_TERR_2_FAILED');
   public readonly terrSys2Failed = Subject.create(false);
 
   public readonly taws1FaultCond = Subject.create(false);
 
   public readonly taws2FaultCond = Subject.create(false);
 
-  public readonly taws1FailedSimvar = RegisteredSimVar.create<boolean>('L:A32NX_TAWS_1_FAILED', SimVarValueType.Bool);
+  public readonly taws1FailedSimvar = RegisteredSimVar.createBoolean('L:A32NX_TAWS_1_FAILED');
   public readonly taws1Failed = Subject.create(false);
-  public readonly taws2FailedSimvar = RegisteredSimVar.create<boolean>('L:A32NX_TAWS_2_FAILED', SimVarValueType.Bool);
+  public readonly taws2FailedSimvar = RegisteredSimVar.createBoolean('L:A32NX_TAWS_2_FAILED');
   public readonly taws2Failed = Subject.create(false);
 
   public readonly tawsWxrSelectedSimvar = RegisteredSimVar.create<number>(

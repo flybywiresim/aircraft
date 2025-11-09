@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { ConsumerSubject, EventBus, Instrument, MappedSubject, SimVarValueType } from '@microsoft/msfs-sdk';
@@ -339,7 +339,11 @@ export class BrakeToVacate implements Instrument {
 
   private async detectLandingRunway() {
     // Arming phase between 500ft and 300ft RA
-    if (this.radioAltitude.get() < 300 || this.radioAltitude.get() > 500 || !this.ppos) {
+    if (
+      this.radioAltitude.get() < 300 ||
+      this.radioAltitude.get() > 500 ||
+      (this.ppos.lat === 0 && this.ppos.long === 0)
+    ) {
       this.nearbyAirportMonitor.setLocation(undefined, undefined); // Invalidate location to prevent unnecessary searching
       this.btvApprDifferentRunwaySimvar.set(false);
       return;
@@ -389,7 +393,6 @@ export class BrakeToVacate implements Instrument {
   private updateRemainingDistances() {
     // Only update below 600ft AGL, and in landing FMGC phase
     // Also, V/S should be below +400ft/min, to avoid ROW during G/A
-    const ppos = this.ppos;
     if (
       this.radioAltitude.get() > 600 ||
       this.fwsFlightPhase.get() < 9 ||
@@ -398,14 +401,14 @@ export class BrakeToVacate implements Instrument {
       this.verticalSpeed2.get().valueOr(0) > 400 ||
       this.verticalSpeed3.get().valueOr(0) > 400 ||
       !this.arpCoordinates ||
-      !ppos
+      (this.ppos.lat === 0 && this.ppos.long === 0)
     ) {
       this.remainingDistToExitArinc.setValueSsm(0, Arinc429SignStatusMatrix.NoComputedData);
       this.remaininingDistToRwyEndArinc.setValueSsm(0, Arinc429SignStatusMatrix.NoComputedData);
       return;
     }
 
-    OansMapProjection.globalToAirportCoordinates(this.arpCoordinates, ppos, this.localPpos);
+    OansMapProjection.globalToAirportCoordinates(this.arpCoordinates, this.ppos, this.localPpos);
 
     if (this.btvThresholdPositionNavDbReference && this.btvThresholdPositionNavDbReference.length > 0) {
       if (
