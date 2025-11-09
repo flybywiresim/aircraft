@@ -46,6 +46,11 @@ class ElacComputer final
     boolean_T pY_not_empty;
   };
 
+  struct rtDW_MATLABFunction_ElacComputer_m_T {
+    boolean_T previousInput;
+    boolean_T previousInput_not_empty;
+  };
+
   struct BlockIO_ElacComputer_T {
     real_T in_flight;
   };
@@ -57,7 +62,7 @@ class ElacComputer final
     real_T configFullEventTime;
     real_T eventTime;
     real_T resetEventTime;
-    real_T eventTime_p;
+    real_T eventTime_f;
     real_T on_ground_time;
     boolean_T Delay_DSTATE_cc;
     boolean_T Delay1_DSTATE;
@@ -67,8 +72,6 @@ class ElacComputer final
     uint8_T is_c30_ElacComputer;
     boolean_T Memory_PreviousInput;
     boolean_T icLoad;
-    boolean_T previousInput;
-    boolean_T previousInput_not_empty;
     boolean_T pLeftStickDisabled;
     boolean_T pRightStickDisabled;
     boolean_T configFullEventTime_not_empty;
@@ -77,11 +80,14 @@ class ElacComputer final
     boolean_T sProtActive;
     boolean_T eventTime_not_empty;
     boolean_T resetEventTime_not_empty;
-    boolean_T sProtActive_f;
-    boolean_T eventTime_not_empty_i;
+    boolean_T sProtActive_l;
+    boolean_T eventTime_not_empty_m;
     boolean_T abnormalConditionWasActive;
     boolean_T Runtime_MODE;
     rtDW_MATLABFunction_ElacComputer_kz_T sf_MATLABFunction_fb;
+    rtDW_MATLABFunction_ElacComputer_m_T sf_MATLABFunction_l0;
+    rtDW_MATLABFunction_ElacComputer_m_T sf_MATLABFunction_pk;
+    rtDW_MATLABFunction_ElacComputer_m_T sf_MATLABFunction_cq;
     rtDW_MATLABFunction_ElacComputer_kz_T sf_MATLABFunction_oy;
     rtDW_MATLABFunction_ElacComputer_kz_T sf_MATLABFunction_fq;
     rtDW_MATLABFunction_ElacComputer_kz_T sf_MATLABFunction_j2;
@@ -223,11 +229,13 @@ class ElacComputer final
     boolean_T ConfirmNode1_isRisingEdge_i;
     boolean_T ConfirmNode2_isRisingEdge_j;
     boolean_T ConfirmNode2_isRisingEdge_l;
+    boolean_T PulseNode_isRisingEdge;
     boolean_T ConfirmNode3_isRisingEdge;
+    boolean_T PulseNode1_isRisingEdge;
     boolean_T ConfirmNode1_isRisingEdge_k;
     boolean_T ConfirmNode_isRisingEdge_j;
     boolean_T ConfirmNode_isRisingEdge_o;
-    boolean_T PulseNode_isRisingEdge;
+    boolean_T PulseNode_isRisingEdge_g;
     boolean_T ConfirmNode_isRisingEdge_f;
     elac_outputs out_Y0;
     base_elac_out_bus Constant4_Value;
@@ -360,6 +368,9 @@ class ElacComputer final
   static void ElacComputer_RateLimiter_d_Reset(rtDW_RateLimiter_ElacComputer_b_T *localDW);
   static void ElacComputer_RateLimiter_n(real_T rtu_u, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, boolean_T rtu_reset,
     real_T *rty_Y, rtDW_RateLimiter_ElacComputer_b_T *localDW);
+  static void ElacComputer_MATLABFunction_o_Reset(rtDW_MATLABFunction_ElacComputer_m_T *localDW);
+  static void ElacComputer_MATLABFunction_cq(boolean_T rtu_u, boolean_T rtu_isRisingEdge, boolean_T *rty_y,
+    rtDW_MATLABFunction_ElacComputer_m_T *localDW);
   static void ElacComputer_MATLABFunction_cw(const boolean_T rtu_u[19], real32_T *rty_y);
   static void ElacComputer_LateralLawCaptoBits(lateral_efcs_law rtu_law, boolean_T *rty_bit1, boolean_T *rty_bit2);
   LateralDirectLaw LawMDLOBJ1;
