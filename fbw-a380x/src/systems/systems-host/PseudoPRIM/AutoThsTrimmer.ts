@@ -11,6 +11,7 @@ import {
   Subscription,
 } from '@microsoft/msfs-sdk';
 import PitchTrimUtils from '@shared/PitchTrimUtils';
+import { FcdcSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/FcdcPublisher';
 import { PseudoFwcSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
 
 /**
@@ -19,7 +20,7 @@ import { PseudoFwcSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/P
 
 export class AutoThsTrimmer implements Instrument {
   private readonly subscriptions: Subscription[] = [];
-  private readonly sub = this.bus.getSubscriber<PseudoFwcSimvars>();
+  private readonly sub = this.bus.getSubscriber<PseudoFwcSimvars & FcdcSimvars>();
 
   constructor(
     private readonly bus: EventBus,

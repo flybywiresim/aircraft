@@ -4,7 +4,6 @@
 
 import { EcamInopSys } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { MappedSubject, SubscribableMapFunctions, Subscription } from '@microsoft/msfs-sdk';
-import { isSubscription } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
 import { FwsCore, FwsSuppressableItem } from 'systems-host/CpiomC/FlightWarningSystem/FwsCore';
 
 export enum FwsInopSysPhases {
@@ -48,6 +47,34 @@ export class FwsInopSys {
 
   /** INOP SYS shown on SD */
   inopSys: FwsInopSysDict = {
+    220300026: {
+      // AUTOLAND
+      simVarIsActive: this.fws.land2Inop,
+      phase: FwsInopSysPhases.ApprLdg,
+    },
+    213300005: {
+      // CAB PRESS SYS
+      simVarIsActive: MappedSubject.create(
+        SubscribableMapFunctions.and(),
+        this.fws.flightPhase23,
+        this.fws.pressSysFault,
+      ),
+      phase: FwsInopSysPhases.AllPhases,
+    },
+    210300011: {
+      // PACK 1+2
+      simVarIsActive: MappedSubject.create(
+        SubscribableMapFunctions.and(),
+        this.fws.flightPhase23,
+        this.fws.pressSysFault,
+      ),
+      phase: FwsInopSysPhases.AllPhases,
+    },
+    220300018: {
+      // ROLL OUT
+      simVarIsActive: this.fws.rollOutFault,
+      phase: FwsInopSysPhases.ApprLdg,
+    },
     221300001: {
       // FMC-A
       simVarIsActive: this.fws.fmcAFault,
@@ -683,7 +710,7 @@ export class FwsInopSys {
 
     for (const key in this.inopSys) {
       const element = this.inopSys[key];
-      if (isSubscription(element.simVarIsActive)) {
+      if ('destroy' in element.simVarIsActive) {
         element.simVarIsActive.destroy();
       }
     }

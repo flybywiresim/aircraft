@@ -13,6 +13,7 @@ extern base_prim_logic_outputs rtP_prim_logic_output_MATLABStruct;
 extern base_prim_laws_outputs rtP_prim_laws_output_MATLABStruct;
 extern base_prim_analog_outputs rtP_prim_analog_output_MATLABStruct;
 extern base_prim_discrete_outputs rtP_prim_discrete_output_MATLABStruct;
+extern base_prim_fg_logic_output rtP_prim_fg_logic_output_MATLABStruct;
 class A380PrimComputer final
 {
  public:
@@ -57,12 +58,17 @@ class A380PrimComputer final
     boolean_T output;
   };
 
+  struct BlockIO_A380PrimComputer_T {
+    prim_outputs BusAssignment_nw;
+    prim_outputs BusAssignment_om;
+  };
+
   struct D_Work_A380PrimComputer_T {
     real_T Delay_DSTATE;
     real_T Delay_DSTATE_c;
     real_T eventTime;
     real_T resetEventTime;
-    real_T eventTime_p;
+    real_T eventTime_f;
     boolean_T Delay_DSTATE_cc;
     boolean_T Delay1_DSTATE;
     boolean_T Delay1_DSTATE_b;
@@ -84,9 +90,10 @@ class A380PrimComputer final
     boolean_T sProtActive;
     boolean_T eventTime_not_empty;
     boolean_T resetEventTime_not_empty;
-    boolean_T sProtActive_l;
-    boolean_T eventTime_not_empty_i;
+    boolean_T sProtActive_g;
+    boolean_T eventTime_not_empty_m;
     boolean_T abnormalConditionWasActive;
+    boolean_T pApproachModeArmedAbove400Ft;
     boolean_T Runtime_MODE;
     rtDW_MATLABFunction_A380PrimComputer_o_T sf_MATLABFunction_dmh;
     rtDW_MATLABFunction_A380PrimComputer_o_T sf_MATLABFunction_ky;
@@ -316,10 +323,6 @@ class A380PrimComputer final
     real_T CompareToConstant1_const;
     real_T CompareToConstant2_const;
     real_T CompareToConstant_const_n;
-    real_T CompareToConstant13_const;
-    real_T CompareToConstant9_const;
-    real_T CompareToConstant10_const;
-    real_T CompareToConstant14_const;
     real_T CompareToConstant_const_m;
     real_T CompareToConstant26_const;
     real_T CompareToConstant11_const;
@@ -332,6 +335,10 @@ class A380PrimComputer final
     real_T CompareToConstant16_const;
     real_T CompareToConstant17_const;
     real_T CompareToConstant18_const;
+    real_T CompareToConstant13_const;
+    real_T CompareToConstant9_const;
+    real_T CompareToConstant10_const;
+    real_T CompareToConstant14_const;
     real_T CompareToConstant7_const;
     real_T CompareToConstant8_const;
     real_T CompareToConstant3_const_n;
@@ -458,9 +465,9 @@ class A380PrimComputer final
     boolean_T ConfirmNode1_isRisingEdge_k;
     boolean_T ConfirmNode_isRisingEdge_j;
     boolean_T ConfirmNode_isRisingEdge_c;
+    boolean_T PulseNode5_isRisingEdge;
     boolean_T PulseNode7_isRisingEdge;
     boolean_T PulseNode6_isRisingEdge;
-    boolean_T PulseNode5_isRisingEdge;
     boolean_T PulseNode4_isRisingEdge;
     boolean_T PulseNode1_isRisingEdge_n;
     boolean_T PulseNode2_isRisingEdge;
@@ -536,6 +543,7 @@ class A380PrimComputer final
     real_T Constant_Value_g;
     real_T Gain_Gain_g;
     real_T Constant_Value_af;
+    real_T Constant2_Value_o;
     real32_T Constant2_Value_i;
     real32_T Constant3_Value_e;
     real32_T Constant6_Value_a;
@@ -608,6 +616,7 @@ class A380PrimComputer final
     boolean_T Constant21_Value;
     boolean_T Constant22_Value;
     boolean_T Constant36_Value;
+    boolean_T Constant38_Value;
     boolean_T Constant37_Value;
   };
 
@@ -633,6 +642,7 @@ class A380PrimComputer final
  private:
   ExternalInputs_A380PrimComputer_T A380PrimComputer_U;
   ExternalOutputs_A380PrimComputer_T A380PrimComputer_Y;
+  BlockIO_A380PrimComputer_T A380PrimComputer_B;
   D_Work_A380PrimComputer_T A380PrimComputer_DWork;
   static Parameters_A380PrimComputer_T A380PrimComputer_P;
   static void A380PrimComputer_RateLimiter_Reset(rtDW_RateLimiter_A380PrimComputer_T *localDW);
@@ -672,6 +682,7 @@ class A380PrimComputer final
   static void A380PrimComputer_MATLABFunction_b(a380_pitch_efcs_law rtu_law, boolean_T *rty_bit1, boolean_T *rty_bit2,
     boolean_T *rty_bit3);
   static void A380PrimComputer_MATLABFunction2(a380_lateral_efcs_law rtu_law, boolean_T *rty_bit1, boolean_T *rty_bit2);
+  boolean_T A380PrimComputer_a429_bitValueOr(uint32_T word_SSM, real32_T word_Data);
   A380LateralDirectLaw LawMDLOBJ1;
   A380LateralNormalLaw LawMDLOBJ2;
   A380PitchAlternateLaw LawMDLOBJ3;

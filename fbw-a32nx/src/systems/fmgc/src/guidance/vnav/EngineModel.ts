@@ -100,10 +100,14 @@ export class EngineModel {
    * @returns fuel flow, in pounds per hour (per engine)
    */
   static getCorrectedFuelFlow(config: EngineModelParameters, cn1: number, mach: number, alt: number): number {
+    // These coefficients should match
+    // https://github.com/flybywiresim/aircraft/blob/80b2e662a101be890cee0010d1e4bc659ff375a6/fbw-a32nx/src/wasm/fadec_a32nx/src/Fadec/Polynomials_A32NX.hpp#L321
+    // https://github.com/flybywiresim/aircraft/blob/80b2e662a101be890cee0010d1e4bc659ff375a6/fbw-a380x/src/wasm/fadec_a380x/src/Fadec/Polynomials_A380X.hpp#L338
+    // TODO separate between A32NX and A380X
     const coefficients = [
-      -639.6602981, 0.0, 1.03705e2, -2.23264e3, 5.70316e-3, -2.29404, 1.0823e2, 2.77667e-4, -6.1718e2, -7.20713e-2,
-      2.19013e-7, 2.49418e-2, -7.31662e-1, -1.00003e-5, -3.79466e1, 1.34552e-3, 5.72612e-9, -2.7195e2, 8.58469e-2,
-      -2.72912e-6, 2.02928e-11,
+      -1.763e2, -2.1542e-1, 4.7119e1, 6.1519e2, 1.8047e-3, -4.4554e-1, -4.394e1, 4.0459e-5, -3.2912e1, -6.2894e-3,
+      -1.2544e-7, 1.0938e-2, 4.0936e-1, -5.5841e-6, -2.3829e1, 9.3269e-4, 2.0273e-11, -2.41e2, 1.4171e-2, -9.5581e-7,
+      1.2728e-11,
     ];
 
     const flow =

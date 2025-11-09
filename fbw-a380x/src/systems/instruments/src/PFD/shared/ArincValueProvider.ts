@@ -24,9 +24,6 @@ import { PFDSimvars } from './PFDSimvarPublisher';
 import { A380XFcuBusEvents } from '@shared/publishers/A380XFcuBusPublisher';
 
 export interface Arinc429Values {
-  slatsFlapsStatus: Arinc429Word;
-  slatsPosition: Arinc429Word;
-  flapsPosition: Arinc429Word;
   pitchAr: Arinc429Word;
   rollAr: Arinc429Word;
 
@@ -44,11 +41,6 @@ export interface Arinc429Values {
   da: Arinc429Word;
   landingElevation: Arinc429Word;
   staticPressure: Arinc429Word;
-  fcdcDiscreteWord1: Arinc429Word;
-  fcdc1DiscreteWord1: Arinc429Word;
-  fcdc2DiscreteWord1: Arinc429Word;
-  fcdc1DiscreteWord2: Arinc429Word;
-  fcdc2DiscreteWord2: Arinc429Word;
   facToUse: number;
   vAlphaMax: Arinc429Word;
   vAlphaProt: Arinc429Word;
@@ -121,16 +113,6 @@ export class ArincValueProvider implements Instrument {
 
   private staticPressure = new Arinc429Word(0);
 
-  private fcdc1DiscreteWord1 = new Arinc429Word(0);
-
-  private fcdc2DiscreteWord1 = new Arinc429Word(0);
-
-  private fcdc1DiscreteWord2 = new Arinc429Word(0);
-
-  private fcdc2DiscreteWord2 = new Arinc429Word(0);
-
-  private fcdcToUse = 0;
-
   private fac1Healthy = false;
 
   private fac2Healthy = false;
@@ -167,18 +149,6 @@ export class ArincValueProvider implements Instrument {
 
     const publisher = this.bus.getPublisher<Arinc429Values>();
     const subscriber = this.bus.getSubscriber<PFDSimvars>();
-
-    subscriber.on('slatsFlapsStatusRaw').handle((w) => {
-      publisher.pub('slatsFlapsStatus', new Arinc429Word(w));
-    });
-
-    subscriber.on('slatsPositionRaw').handle((w) => {
-      publisher.pub('slatsPosition', new Arinc429Word(w));
-    });
-
-    subscriber.on('flapsPositionRaw').handle((w) => {
-      publisher.pub('flapsPosition', new Arinc429Word(w));
-    });
 
     subscriber.on('pitch').handle((p) => {
       this.pitch = new Arinc429Word(p);
@@ -466,34 +436,6 @@ export class ArincValueProvider implements Instrument {
       publisher.pub('lgciuDiscreteWord1', this.lgciuDiscreteWord1);
     });
 
-    subscriber.on('fcdc1DiscreteWord1Raw').handle((discreteWord1) => {
-      this.fcdc1DiscreteWord1 = new Arinc429Word(discreteWord1);
-      this.fcdcToUse = this.determineFcdcToUse();
-      publisher.pub('fcdc1DiscreteWord1', this.fcdc1DiscreteWord1);
-      if (this.fcdcToUse === 1) {
-        publisher.pub('fcdcDiscreteWord1', this.fcdc1DiscreteWord1);
-      }
-    });
-
-    subscriber.on('fcdc2DiscreteWord1Raw').handle((discreteWord1) => {
-      this.fcdc2DiscreteWord1 = new Arinc429Word(discreteWord1);
-      this.fcdcToUse = this.determineFcdcToUse();
-      publisher.pub('fcdc2DiscreteWord1', this.fcdc2DiscreteWord1);
-      if (this.fcdcToUse === 2) {
-        publisher.pub('fcdcDiscreteWord1', this.fcdc2DiscreteWord1);
-      }
-    });
-
-    subscriber.on('fcdc1DiscreteWord2Raw').handle((discreteWord2) => {
-      this.fcdc1DiscreteWord2 = new Arinc429Word(discreteWord2);
-      publisher.pub('fcdc1DiscreteWord2', this.fcdc1DiscreteWord2);
-    });
-
-    subscriber.on('fcdc2DiscreteWord2Raw').handle((discreteWord2) => {
-      this.fcdc2DiscreteWord2 = new Arinc429Word(discreteWord2);
-      publisher.pub('fcdc2DiscreteWord2', this.fcdc2DiscreteWord2);
-    });
-
     this.fm1Subs.push(
       subscriber.on('fm1EisDiscrete2Raw').handle((raw) => publisher.pub('fmEisDiscreteWord2Raw', raw), true),
     );
@@ -604,27 +546,6 @@ export class ArincValueProvider implements Instrument {
     } else {
       publisher.pub('landingElevation', this.ownLandingElevation);
     }
-  }
-
-  private determineFcdcToUse() {
-    if (getDisplayIndex() === 1) {
-      if (
-        (this.fcdc1DiscreteWord1.isFailureWarning() && !this.fcdc2DiscreteWord1.isFailureWarning()) ||
-        (!this.fcdc1DiscreteWord1.bitValueOr(24, false) && this.fcdc2DiscreteWord1.bitValueOr(24, false))
-      ) {
-        return 2;
-      }
-      return 1;
-    }
-    if (
-      !(
-        (!this.fcdc1DiscreteWord1.isFailureWarning() && this.fcdc2DiscreteWord1.isFailureWarning()) ||
-        (this.fcdc1DiscreteWord1.bitValueOr(24, false) && !this.fcdc2DiscreteWord1.bitValueOr(24, false))
-      )
-    ) {
-      return 2;
-    }
-    return 1;
   }
 
   // Determine which FAC bus to use for FE function. If FAC HEALTHY discrete is low or any word is coded FW,

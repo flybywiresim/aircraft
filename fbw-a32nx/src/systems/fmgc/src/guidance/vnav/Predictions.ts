@@ -338,8 +338,8 @@ export class Predictions {
     // Engine model calculations
     const theta2 = Common.getTheta2(theta, mach);
     const delta2 = Common.getDelta2(delta, mach);
-    // Divide by 2 to get thrust per engine
-    const correctedThrust = thrust / delta2 / 2;
+    // Divide by number of engines to get thrust per engine
+    const correctedThrust = thrust / delta2 / config.engineModelParameters.numberOfEngines;
     // Since table 1506 describes corrected thrust as a fraction of max thrust, divide it
     const correctedN1 = EngineModel.reverseTableInterpolation(
       config.engineModelParameters.table1506,

@@ -108,7 +108,7 @@ export enum EwdVars {
   idleN1 = 'L:A32NX_ENGINE_IDLE_N1',
   flexTemp = 'L:A32NX_AIRLINER_TO_FLEX_TEMP',
   satRaw = 'L:A32NX_ADIRS_ADR_1_STATIC_AIR_TEMPERATURE',
-  totalFuel = 'FUEL TOTAL QUANTITY WEIGHT',
+  totalFuel = 'L:A32NX_TOTAL_FUEL_QUANTITY',
   // TODO: add switching between SFCC_1 and SFCC_2
   slatsFlapsStatusRaw = 'L:A32NX_SFCC_1_SLAT_FLAP_SYSTEM_STATUS_WORD',
   slatsPositionRaw = 'L:A32NX_SFCC_1_SLAT_ACTUAL_POSITION_WORD',

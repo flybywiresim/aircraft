@@ -47,7 +47,7 @@ As this is an open source project, anyone is free to contribute as much or as li
 
 If you're comfortable contributing to Open Source projects on GitHub please ensure you read our expectations for issue tracking, feature proposals and pull requests.
 
-If you're looking for tools and tips to help you develop, see [Development Resources](../fbw-a32nx/docs/resources.md).
+If you're looking for tools and tips to help you develop, see [Development Resources](/fbw-a32nx/docs/resources.md).
 
 **Please avoid** adding features that are not true to life or features without providing supported documentation.
 

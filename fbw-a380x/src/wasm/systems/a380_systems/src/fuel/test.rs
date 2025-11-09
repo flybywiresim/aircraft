@@ -48,7 +48,6 @@ impl SimulationElement for FuelTestAircraft {
 
 const MINUTES_TO_SECONDS: u64 = 60;
 const FUEL_GALLONS_TO_KG: f64 = 3.039075693483925;
-const LBS_TO_KG: f64 = 0.4535934;
 
 struct FuelTestBed {
     test_bed: SimulationTestBed<FuelTestAircraft>,
@@ -91,7 +90,6 @@ impl FuelTestBed {
         self.write_by_name("FUEL_TANK_QUANTITY_9", 300. / FUEL_GALLONS_TO_KG);
         self.write_by_name("FUEL_TANK_QUANTITY_10", 300. / FUEL_GALLONS_TO_KG);
         self.write_by_name("FUEL_TANK_QUANTITY_11", 300. / FUEL_GALLONS_TO_KG);
-        self.write_by_name("FUEL TOTAL QUANTITY WEIGHT", 3300. / LBS_TO_KG);
 
         self
     }
@@ -108,7 +106,6 @@ impl FuelTestBed {
         self.write_by_name("FUEL_TANK_QUANTITY_9", 1500. / FUEL_GALLONS_TO_KG);
         self.write_by_name("FUEL_TANK_QUANTITY_10", 1500. / FUEL_GALLONS_TO_KG);
         self.write_by_name("FUEL_TANK_QUANTITY_11", 1500. / FUEL_GALLONS_TO_KG);
-        self.write_by_name("FUEL TOTAL QUANTITY WEIGHT", 33500. / LBS_TO_KG);
 
         self
     }
@@ -347,7 +344,6 @@ fn init() {
     assert!(test_bed.contains_variable_with_name("FUEL_TANK_QUANTITY_9"));
     assert!(test_bed.contains_variable_with_name("FUEL_TANK_QUANTITY_10"));
     assert!(test_bed.contains_variable_with_name("FUEL_TANK_QUANTITY_11"));
-    assert!(test_bed.contains_variable_with_name("FUEL TOTAL QUANTITY WEIGHT"));
 }
 
 #[test]

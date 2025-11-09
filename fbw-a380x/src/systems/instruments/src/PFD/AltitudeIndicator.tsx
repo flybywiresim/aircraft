@@ -404,7 +404,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
       this.activeVerticalMode !== VerticalMode.FPA;
 
     const selectedAltIgnored =
-      (this.activeVerticalMode >= VerticalMode.GS_CPT && this.activeVerticalMode < VerticalMode.ROLL_OUT) ||
+      (this.activeVerticalMode >= VerticalMode.GS_CPT && this.activeVerticalMode <= VerticalMode.ROLL_OUT) ||
       this.activeVerticalMode === VerticalMode.FINAL;
 
     this.isManaged = this.constraint > 0 && clbActive;

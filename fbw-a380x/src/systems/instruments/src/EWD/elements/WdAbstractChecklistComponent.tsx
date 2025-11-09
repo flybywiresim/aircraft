@@ -144,9 +144,7 @@ export class EclLine extends DisplayComponent<EclLineProps> {
               (d) => !d.abnormalProcedure && d.style === ChecklistLineStyle.ChecklistItem,
             ),
             Inactive: this.props.data.map((d) => d.inactive === true),
-            AbnormalItem: this.props.data.map(
-              (d) => d.abnormalProcedure === true && d.style === ChecklistLineStyle.ChecklistItem,
-            ),
+            AbnormalItem: this.props.data.map((d) => d.abnormalProcedure === true),
             Headline: this.props.data.map((d) =>
               [
                 ChecklistLineStyle.Headline,

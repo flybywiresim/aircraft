@@ -115,7 +115,7 @@ export class FuelSystemPublisher extends SimVarPublisher<FuelSystemEvents> {
       [
         'fuel_on_board',
         {
-          name: 'FUEL TOTAL QUANTITY WEIGHT',
+          name: 'L:A32NX_TOTAL_FUEL_QUANTITY',
           type: SimVarValueType.Number,
         },
       ],

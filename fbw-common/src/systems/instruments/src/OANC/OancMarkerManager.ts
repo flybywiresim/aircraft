@@ -2,10 +2,11 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ArraySubject, EventBus } from '@microsoft/msfs-sdk';
-import { along, Feature, Geometry, length, LineString, Point, Position } from '@turf/turf';
+import { along, length } from '@turf/turf';
+import { LineString, Point, Position } from 'geojson';
 import { Label, LabelStyle, Oanc, OansControlEvents } from './';
 import { OancLabelManager } from './OancLabelManager';
-import { AmdbProperties, FeatureType } from '@flybywiresim/fbw-sdk';
+import { AmdbFeature, FeatureType } from '@flybywiresim/fbw-sdk';
 
 const MAX_SYMBOL_DIST_NEIGHBORHOOD_SEARCH = 20;
 const TAXIWAY_SYMBOL_SPACING = 250;
@@ -27,7 +28,7 @@ export class OancMarkerManager<T extends number> {
   private nextCrossId = 0;
   private nextFlagId = 0;
 
-  addCross(coords: Position, feature?: Feature<Geometry, AmdbProperties>) {
+  addCross(coords: Position, feature?: AmdbFeature) {
     const crossSymbolLabel: Label = {
       text: (this.nextCrossId++).toString(),
       style: LabelStyle.CrossSymbol,
@@ -40,7 +41,7 @@ export class OancMarkerManager<T extends number> {
     this.crosses.insert(crossSymbolLabel);
   }
 
-  addFlag(coords: Position, feature?: Feature<Geometry, AmdbProperties>) {
+  addFlag(coords: Position, feature?: AmdbFeature) {
     const flagSymbolLabel: Label = {
       text: (this.nextFlagId++).toString(),
       style: LabelStyle.FlagSymbol,
@@ -132,7 +133,7 @@ export class OancMarkerManager<T extends number> {
   addSymbolAtFeature(
     id: number,
     feattype: FeatureType,
-    addFunction: (coords: Position, feature?: Feature<Geometry, AmdbProperties>) => void,
+    addFunction: (coords: Position, feature?: AmdbFeature) => void,
   ) {
     // Find feature by id in loaded airport data
     const feature = this.oanc.data?.features.filter(

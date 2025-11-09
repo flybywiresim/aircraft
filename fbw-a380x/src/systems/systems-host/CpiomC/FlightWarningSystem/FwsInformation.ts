@@ -5,7 +5,6 @@
 import { Subscription } from '@microsoft/msfs-sdk';
 import { EcamInfos } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { FwsCore, FwsSuppressableItem } from 'systems-host/CpiomC/FlightWarningSystem/FwsCore';
-import { isSubscription } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
 
 export interface FwsInfoItem extends FwsSuppressableItem {}
 
@@ -21,15 +20,19 @@ export class FwsInformation {
   info: FwsInfoDict = {
     220200004: {
       // LAND 2 ONLY
-      simVarIsActive: this.fws.land2Only,
+      simVarIsActive: this.fws.land3FailPassiveInop,
     },
     220200005: {
       // LAND 3 SINGLE ONLY
-      simVarIsActive: this.fws.land3SingleOnly,
+      simVarIsActive: this.fws.land3FailOperationalInop,
+    },
+    220200006: {
+      // FOR AUTOLAND: MAN ROLL OUT ONLY
+      simVarIsActive: this.fws.rollOutFault,
     },
     220200010: {
       // APPR 1 ONLY
-      simVarIsActive: this.fws.appr1Only,
+      simVarIsActive: this.fws.land2Inop,
     },
   };
 
@@ -39,7 +42,7 @@ export class FwsInformation {
     for (const key in this.info) {
       const element = this.info[key];
 
-      if (isSubscription(element.simVarIsActive)) {
+      if ('destroy' in element.simVarIsActive) {
         element.simVarIsActive.destroy();
       }
     }

@@ -351,6 +351,7 @@
   appearance: none; /* CSS3 */
   font-size: 26px;
   display: flex;
+  flex-direction: row;
   align-items: center;
   border: 2px solid transparent;
 }

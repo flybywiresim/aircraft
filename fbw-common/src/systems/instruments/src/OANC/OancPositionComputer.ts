@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FeatureType } from '@flybywiresim/fbw-sdk';
-import { booleanPointInPolygon, Polygon } from '@turf/turf';
+
+import { booleanPointInPolygon } from '@turf/turf';
+import { Polygon } from 'geojson';
 import { Oanc } from './Oanc';
 
 const OANC_VALID_POSITION_INDICATION_FEATURE_TYPES = [
