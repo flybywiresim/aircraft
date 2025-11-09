@@ -1418,7 +1418,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
 
     if (this.updateAutopilotCooldown < 0) {
-      this.fgAquisition();
+      this.fgAcquisition();
       this.updatePerfSpeeds();
       this.updateConstraints();
       this.updateManagedSpeed();
@@ -5378,9 +5378,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   protected abstract addNewAtsuMessage(code: AtsuStatusCodes): void;
 
   /**
-   * Acquisition of FMGC discrete words from the operating FMGC
+   * Acquisition of FMGC discrete words from an operating FMGC
    */
-  private fgAquisition() {
+  private fgAcquisition() {
     this.fmgcDiscreteWord2.set(this.fmgc1DiscreteWord2.get());
     if (this.fmgcDiscreteWord2.isInvalid()) {
       this.fmgcDiscreteWord2.set(this.fmgc2DiscreteWord2.get());
