@@ -107,13 +107,22 @@ export class OansBrakeToVacateSelection<T extends number> {
   private btvPathGeometry: Position[] = [];
 
   /** Stopping distance for dry rwy conditions, in meters. Null if not set. Counted from touchdown distance (min. 400m).  */
-  private readonly dryStoppingDistance = ConsumerSubject.create(this.sub.on('dryStoppingDistance').whenChanged(), 0);
+  private readonly dryStoppingDistance = ConsumerSubject.create(
+    this.sub.on('a380x_btv_dry_stopping_distance').whenChanged(),
+    0,
+  );
 
   /** Stopping distance for wet rwy conditions, in meters. Null if not set. Counted from touchdown distance (min. 400m).  */
-  private readonly wetStoppingDistance = ConsumerSubject.create(this.sub.on('wetStoppingDistance').whenChanged(), 0);
+  private readonly wetStoppingDistance = ConsumerSubject.create(
+    this.sub.on('a380x_btv_wet_stopping_distance').whenChanged(),
+    0,
+  );
 
   /** Live remaining stopping distance during deceleration, in meters. Null if not set. Counted from actual aircraft position. */
-  private readonly liveStoppingDistance = ConsumerSubject.create(this.sub.on('stopBarDistance').whenChanged(), 0);
+  private readonly liveStoppingDistance = ConsumerSubject.create(
+    this.sub.on('a380x_btv_stop_bar_distance').whenChanged(),
+    0,
+  );
 
   private readonly radioAltitude1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ra_radio_altitude_1'));
   private readonly radioAltitude2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ra_radio_altitude_2'));

@@ -105,7 +105,7 @@ export class BrakeToVacate implements Instrument {
     this.radioAltitude3,
   );
 
-  private readonly fwsFlightPhase = ConsumerSubject.create(this.sub.on('fwcFlightPhase'), 0);
+  private readonly fwsFlightPhase = ConsumerSubject.create(this.sub.on('a380x_btv_fws_flight_phase'), 0);
 
   private readonly lgciuDiscreteWord2_1 = Arinc429LocalVarConsumerSubject.create(
     this.sub.on('lgciu_discrete_word_2_1'),
@@ -125,8 +125,8 @@ export class BrakeToVacate implements Instrument {
     this.lgciuDiscreteWord2_2,
   );
 
-  private readonly autoBrakeMode = ConsumerSubject.create(this.sub.on('autoBrakeMode'), 0);
-  private readonly autoBrakeActive = ConsumerSubject.create(this.sub.on('autoBrakeActive'), false);
+  private readonly autoBrakeMode = ConsumerSubject.create(this.sub.on('a380x_btv_auto_brake_mode'), 0);
+  private readonly autoBrakeActive = ConsumerSubject.create(this.sub.on('a380x_btv_auto_brake_active'), false);
   private btvActiveOnGroundLastValue = false;
 
   private readonly verticalSpeed1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_vertical_speed_1'));

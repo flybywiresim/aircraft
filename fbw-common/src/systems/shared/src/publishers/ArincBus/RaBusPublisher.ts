@@ -5,7 +5,7 @@ import { EventBus, PublishPacer, SimVarPublisher, SimVarPublisherEntry, SimVarVa
 
 interface RaBusBaseEvents {
   /**
-   The height over ground as measured by the corresponding radio altimeter towards the aft of the aircraft. Raw ARINC Word.
+   The height over ground (in feet) as measured by the corresponding radio altimeter towards the aft of the aircraft. Raw ARINC Word.
    */
   ra_radio_altitude: number;
 }
