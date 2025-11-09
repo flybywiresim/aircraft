@@ -6,6 +6,7 @@ import {
   A320EfisNdRangeValue,
   a320EfisRangeSettings,
   Arinc429LocalVarOutputWord,
+  Arinc429Register,
   Arinc429SignStatusMatrix,
   Arinc429Word,
   DatabaseIdent,
@@ -67,7 +68,6 @@ import { initComponents, updateComponents } from '@fmgc/components';
 import { CoRouteUplinkAdapter } from '@fmgc/flightplanning/uplink/CoRouteUplinkAdapter';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 import { FmcWindVector } from '@fmgc/guidance/vnav/wind/types';
-import { LateralMode } from '@shared/autopilot';
 
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
@@ -320,7 +320,24 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public casToMachManualCrossoverCurve;
   public machToCasManualCrossoverCurve;
 
-  private readonly lateralMode = RegisteredSimVar.create('L:A32NX_FMA_LATERAL_MODE', SimVarValueType.Number);
+  private readonly fmgcDiscreteWord2 = Arinc429Register.empty();
+  private readonly fmgc1DiscreteWord2 = RegisteredSimVar.create<number>(
+    'L:A32NX_FMGC_1_DISCRETE_WORD_2',
+    SimVarValueType.Enum,
+  );
+  private readonly fmgc2DiscreteWord2 = RegisteredSimVar.create<number>(
+    'L:A32NX_FMGC_2_DISCRETE_WORD_2',
+    SimVarValueType.Enum,
+  );
+  private readonly fmgcDiscreteWord4 = Arinc429Register.empty();
+  private readonly fmgc1DiscreteWord4 = RegisteredSimVar.create<number>(
+    'L:A32NX_FMGC_1_DISCRETE_WORD_4',
+    SimVarValueType.Enum,
+  );
+  private readonly fmgc2DiscreteWord4 = RegisteredSimVar.create<number>(
+    'L:A32NX_FMGC_2_DISCRETE_WORD_4',
+    SimVarValueType.Enum,
+  );
 
   constructor(public readonly bus: EventBus) {
     FMCMainDisplay.DEBUG_INSTANCE = this;
@@ -1401,6 +1418,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
 
     if (this.updateAutopilotCooldown < 0) {
+      this.fgAquisition();
       this.updatePerfSpeeds();
       this.updateConstraints();
       this.updateManagedSpeed();
@@ -4617,21 +4635,16 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   public isNavModeEngaged() {
-    return this.lateralMode.get() === LateralMode.NAV;
+    return this.fmgcDiscreteWord2.bitValueOr(12, false);
   }
 
   private isLateralModeManaged() {
-    switch (this.lateralMode.get()) {
-      case LateralMode.NAV:
-      case LateralMode.LOC_CPT:
-      case LateralMode.LOC_TRACK:
-      case LateralMode.LAND:
-      case LateralMode.FLARE:
-      case LateralMode.ROLL_OUT:
-        return true;
-      default:
-        return false;
-    }
+    return (
+      this.isNavModeEngaged() ||
+      this.fmgcDiscreteWord2.bitValueOr(13, false) || // LOC Capture
+      this.fmgcDiscreteWord2.bitValueOr(14, false) || // LOC track
+      this.fmgcDiscreteWord4.bitValueOr(14, false) // LAND, FLARE, ROLLOUT
+    );
   }
 
   // FIXME check why steps alts page is the only one outside FMS/CDU calling this...
@@ -5363,6 +5376,20 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   protected abstract setScratchpadText(value: string): void;
   protected abstract setScratchpadMessage(message: McduMessage): void;
   protected abstract addNewAtsuMessage(code: AtsuStatusCodes): void;
+
+  /**
+   * Acquisition of FMGC discrete words from the operating FMGC
+   */
+  private fgAquisition() {
+    this.fmgcDiscreteWord2.set(this.fmgc1DiscreteWord2.get());
+    if (this.fmgcDiscreteWord2.isInvalid()) {
+      this.fmgcDiscreteWord2.set(this.fmgc2DiscreteWord2.get());
+    }
+    this.fmgcDiscreteWord4.set(this.fmgc1DiscreteWord4.get());
+    if (this.fmgcDiscreteWord4.isInvalid()) {
+      this.fmgcDiscreteWord4.set(this.fmgc2DiscreteWord4.get());
+    }
+  }
 }
 
 // const FlightPlans = Object.freeze({
