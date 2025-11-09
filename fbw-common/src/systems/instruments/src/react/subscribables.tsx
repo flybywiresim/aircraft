@@ -29,7 +29,7 @@ export const useMutableSubscribable = <T,>(subscribable: MutableSubscribable<T>)
   useEffect(() => {
     const subscription = subscribable.sub(() => {
       setState(subscribable.get());
-    });
+    }, true);
 
     return () => subscription.destroy();
   }, [subscribable]);
