@@ -41,6 +41,7 @@ export class CDUAtcContactRequest {
 
   static ShowPage(mcdu: LegacyAtsuPageInterface, data = CDUAtcContactRequest.CreateDataBlock()) {
     mcdu.clearDisplay();
+    mcdu.page.Current = mcdu.page.ATCContactRequest;
 
     let requestContact = '{cyan}{{end}REQ VOICE CONTACT';
     if (data.altitude) {
