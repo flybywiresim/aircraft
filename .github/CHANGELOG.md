@@ -12,6 +12,8 @@
 
 ## 0.15.0
 
+1. [A380X/GPWS] Fix mode 4 logic - @Jonny23787 (Jonathan)
+
 ## 0.14.0
 
 1. [A380X/FMS] Fix speed margins being displayed in the wrong place for a Mach target - @BlueberryKing (BlueberryKing)
