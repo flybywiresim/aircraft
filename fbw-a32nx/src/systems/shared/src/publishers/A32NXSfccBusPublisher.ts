@@ -11,22 +11,70 @@ import {
 } from '@microsoft/msfs-sdk';
 
 interface A32NXSfccBusBaseEvents {
-  /** TODO */
+  /**
+   * Slat/Flap system status discrete word from SFCC1 bus.
+   * Raw ARINC word.
+   * | Bit |            Description            |
+   * |:---:|:---------------------------------:|
+   * | 11  | Slat Fault                        |
+   * | 12  | Flap Fault                        |
+   * | 13  | Slat Jam                          |
+   * | 14  | Flap Jam                          |
+   * | 15  | Slat WTB engaged                  |
+   * | 16  | Flap WTB engaged                  |
+   * | 17  | Lever in Config 0                 |
+   * | 18  | Lever in Config 1                 |
+   * | 19  | Lever in Config 2                 |
+   * | 20  | Lever in Config 3                 |
+   * | 21  | Lever in Config FULL              |
+   * | 22  | Slat Relief Engaged               |
+   * | 23  | Flap Attachement Failure          |
+   * | 24  | Slat Alpha lock Engaged           |
+   * | 25  | Slat Baulk Engaged                |
+   * | 26  | Flap Auto-retract Engaged         |
+   * | 27  | CSU out of detent longer than 10s |
+   * | 28  | Slat Data Valid                   |
+   * | 29  | Flap Data Valid                   |
+   */
   a32nx_sfcc_1_slats_flaps_status: number;
 
-  /** TODO */
+  /** The slats FPPU angle in degrees from SFCC1. Raw ARINC word. */
   a32nx_sfcc_1_slats_position: number;
 
-  /** TODO */
+  /** The flaps FPPU angle in degrees from SFCC1. Raw ARINC word. */
   a32nx_sfcc_1_flaps_position: number;
 
-  /** TODO */
+  /**
+   * Slat/Flap system status discrete word from SFCC2 bus.
+   * Raw ARINC word.
+   * | Bit |            Description            |
+   * |:---:|:---------------------------------:|
+   * | 11  | Slat Fault                        |
+   * | 12  | Flap Fault                        |
+   * | 13  | Slat Jam                          |
+   * | 14  | Flap Jam                          |
+   * | 15  | Slat WTB engaged                  |
+   * | 16  | Flap WTB engaged                  |
+   * | 17  | Lever in Config 0                 |
+   * | 18  | Lever in Config 1                 |
+   * | 19  | Lever in Config 2                 |
+   * | 20  | Lever in Config 3                 |
+   * | 21  | Lever in Config FULL              |
+   * | 22  | Slat Relief Engaged               |
+   * | 23  | Flap Attachement Failure          |
+   * | 24  | Slat Alpha lock Engaged           |
+   * | 25  | Slat Baulk Engaged                |
+   * | 26  | Flap Auto-retract Engaged         |
+   * | 27  | CSU out of detent longer than 10s |
+   * | 28  | Slat Data Valid                   |
+   * | 29  | Flap Data Valid                   |
+   */
   a32nx_sfcc_2_slats_flaps_status: number;
 
-  /** TODO */
+  /** The slats FPPU angle in degrees from SFCC2. Raw ARINC word. */
   a32nx_sfcc_2_slats_position: number;
 
-  /** TODO */
+  /** The flaps FPPU angle in degrees from SFCC2. Raw ARINC word. */
   a32nx_sfcc_2_flaps_position: number;
 }
 
