@@ -2,18 +2,19 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ConsumerSubject, EventBus, Instrument, MappedSubject, Subject } from '@microsoft/msfs-sdk';
-import { Arinc429LocalVarConsumerSubject, BtvData, FmsOansData } from '@flybywiresim/fbw-sdk';
 import {
-  FmsDataStore,
-  globalToAirportCoordinates,
-  MIN_TOUCHDOWN_ZONE_DISTANCE,
-  pointDistance,
-} from '@flybywiresim/oanc';
+  Arinc429LocalVarConsumerSubject,
+  BTV_MIN_TOUCHDOWN_ZONE_DISTANCE,
+  BtvData,
+  FmsOansData,
+  OansMapProjection,
+} from '@flybywiresim/fbw-sdk';
 import { Arinc429Register, Arinc429SignStatusMatrix, MathUtils } from '@flybywiresim/fbw-sdk';
 import { placeBearingDistance } from 'msfs-geo';
-import { Position } from '@turf/turf';
+import { Position } from 'geojson';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
+import { OansFmsDataStore } from '@flybywiresim/fbw-sdk';
 
 /**
  * Utility class for brake to vacate (BTV) functions on the A380
@@ -22,7 +23,7 @@ import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationD
 export class BrakeToVacateDistanceUpdater implements Instrument {
   private readonly sub = this.bus.getSubscriber<BtvData & FmsOansData>();
 
-  private readonly fmsDataStore = new FmsDataStore(this.bus);
+  private readonly fmsDataStore = new OansFmsDataStore(this.bus);
 
   private readonly airportLocalPos = ConsumerSubject.create(this.sub.on('oansAirportLocalCoordinates'), []);
 
@@ -51,16 +52,17 @@ export class BrakeToVacateDistanceUpdater implements Instrument {
 
     this.thresholdPositions.sub((tPos) => {
       if (tPos.length > 0) {
-        const lda = pointDistance(tPos[0][0], tPos[0][1], tPos[1][0], tPos[1][1]);
-        this.remaininingDistToRwyEnd.set(lda - MIN_TOUCHDOWN_ZONE_DISTANCE);
-        this.remainingDistToExit.set(lda - MIN_TOUCHDOWN_ZONE_DISTANCE);
+        const lda = MathUtils.pointDistance(tPos[0][0], tPos[0][1], tPos[1][0], tPos[1][1]);
+        this.remaininingDistToRwyEnd.set(lda - BTV_MIN_TOUCHDOWN_ZONE_DISTANCE);
+        this.remainingDistToExit.set(lda - BTV_MIN_TOUCHDOWN_ZONE_DISTANCE);
       }
     }, true);
 
     this.exitPosition.sub((ePos) => {
       const tPos = this.thresholdPositions.get()[0];
       if (tPos && ePos) {
-        const exitDistance = pointDistance(tPos[0], tPos[1], ePos[0], ePos[1]) - MIN_TOUCHDOWN_ZONE_DISTANCE;
+        const exitDistance =
+          MathUtils.pointDistance(tPos[0], tPos[1], ePos[0], ePos[1]) - BTV_MIN_TOUCHDOWN_ZONE_DISTANCE;
         this.requestedStoppingDistArinc.setValue(exitDistance);
         this.requestedStoppingDistArinc.setSsm(Arinc429SignStatusMatrix.NormalOperation);
         this.requestedStoppingDistArinc.writeToSimVar('L:A32NX_OANS_BTV_REQ_STOPPING_DISTANCE');
@@ -136,8 +138,8 @@ export class BrakeToVacateDistanceUpdater implements Instrument {
       );
       const localThr: Position = [0, 0];
       const localOppThr: Position = [0, 0];
-      globalToAirportCoordinates(arpCoordinates, landingRunwayNavdata.thresholdLocation, localThr);
-      globalToAirportCoordinates(arpCoordinates, oppositeThreshold, localOppThr);
+      OansMapProjection.globalToAirportCoordinates(arpCoordinates, landingRunwayNavdata.thresholdLocation, localThr);
+      OansMapProjection.globalToAirportCoordinates(arpCoordinates, oppositeThreshold, localOppThr);
 
       this.bus.getPublisher<FmsOansData>().pub('oansThresholdPositions', [localThr, localOppThr]);
     }
@@ -175,10 +177,10 @@ export class BrakeToVacateDistanceUpdater implements Instrument {
     if (thresholdPos && thresholdPos.length > 0) {
       if (oppositeThresholdPos && oppositeThresholdPos.length > 0) {
         const rwyEndDistanceFromTdz =
-          pointDistance(thresholdPos[0], thresholdPos[1], oppositeThresholdPos[0], oppositeThresholdPos[1]) -
-          MIN_TOUCHDOWN_ZONE_DISTANCE;
+          MathUtils.pointDistance(thresholdPos[0], thresholdPos[1], oppositeThresholdPos[0], oppositeThresholdPos[1]) -
+          BTV_MIN_TOUCHDOWN_ZONE_DISTANCE;
 
-        const rwyEndDistance = pointDistance(
+        const rwyEndDistance = MathUtils.pointDistance(
           airportLocalPos[0],
           airportLocalPos[1],
           oppositeThresholdPos[0],
@@ -192,9 +194,10 @@ export class BrakeToVacateDistanceUpdater implements Instrument {
 
       if (exitPos && exitPos.length > 0) {
         const exitDistanceFromTdz =
-          pointDistance(thresholdPos[0], thresholdPos[1], exitPos[0], exitPos[1]) - MIN_TOUCHDOWN_ZONE_DISTANCE;
+          MathUtils.pointDistance(thresholdPos[0], thresholdPos[1], exitPos[0], exitPos[1]) -
+          BTV_MIN_TOUCHDOWN_ZONE_DISTANCE;
 
-        const exitDistance = pointDistance(airportLocalPos[0], airportLocalPos[1], exitPos[0], exitPos[1]);
+        const exitDistance = MathUtils.pointDistance(airportLocalPos[0], airportLocalPos[1], exitPos[0], exitPos[1]);
 
         this.remainingDistToExit.set(MathUtils.round(Math.min(exitDistanceFromTdz, exitDistance), 0.1));
       }

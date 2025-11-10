@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Use this to create and sync local simvars that are derived from other simvars.
 // To create and sync a new local simvar, you need to add a selector and an updater.
 // The selector calculates the new value based on other simvars and some logic.

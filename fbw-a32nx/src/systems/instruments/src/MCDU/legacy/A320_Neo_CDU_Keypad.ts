@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { CDUDataIndexPage } from '../legacy_pages/A320_Neo_CDU_DataIndexPage';
 import { CDUDirectToPage } from '../legacy_pages/A320_Neo_CDU_DirectToPage';

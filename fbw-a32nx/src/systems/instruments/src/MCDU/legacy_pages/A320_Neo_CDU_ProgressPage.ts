@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023, 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -20,8 +21,8 @@ export class CDUProgressPage {
       mcdu._zeroFuelWeightZFWCGEntered && mcdu._blockFuelEntered && (mcdu.isAllEngineOn() || mcdu.isOnGround())
         ? '{green}FL' + (Math.floor(flMax / 5) * 5).toString() + '{end}'
         : '-----';
-    const adirsUsesGpsAsPrimary = SimVar.GetSimVarValue('L:A32NX_ADIRS_USES_GPS_AS_PRIMARY', 'Bool');
-    const gpsPrimaryStatus = adirsUsesGpsAsPrimary ? '{green}GPS PRIMARY{end}' : '';
+    const gpsPrimary = mcdu.navigation.getGpsPrimary();
+    const gpsPrimaryStatus = mcdu.navigation.getGpsPrimary() ? '{green}GPS PRIMARY{end}' : '';
     let flCrz = '-----';
     let vDevCell = '';
     switch (mcdu.flightPhaseManager.phase) {
@@ -186,8 +187,8 @@ export class CDUProgressPage {
       [flCrz, flOpt + '\xa0\xa0\xa0\xa0' + '{magenta}FL' + flMax.toString() + '\xa0{end}'],
       [''],
       ['<REPORT', vDevCell],
-      [adirsUsesGpsAsPrimary ? '' : '\xa0POSITION UPDATE AT'],
-      [adirsUsesGpsAsPrimary ? '' : '{small}*{end}[\xa0\xa0\xa0\xa0][color]cyan'],
+      [gpsPrimary ? '' : '\xa0POSITION UPDATE AT'],
+      [gpsPrimary ? '' : '{small}*{end}[\xa0\xa0\xa0\xa0][color]cyan'],
       ['\xa0\xa0BRG / DIST'],
       [progBearingDist, `{small}{white}TO{end}{end}\xa0{cyan}${progWaypoint}{end}`],
       ['\xa0PREDICTIVE'],
@@ -196,7 +197,7 @@ export class CDUProgressPage {
       [
         `{cyan}{${rnpSize}}${rnpCell}NM{end}{end}`,
         `{green}{small}${anpCell}NM{end}{end}`,
-        `{green}${mcdu.navigation.accuracyHigh ? 'HIGH' : 'LOW'}{end}`,
+        `{green}${mcdu.navigation.accuracyHigh.get() ? 'HIGH' : 'LOW'}{end}`,
       ],
     ]);
 
