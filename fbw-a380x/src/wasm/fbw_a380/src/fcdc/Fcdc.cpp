@@ -144,7 +144,6 @@ FcdcBus Fcdc::getBusOutputs() {
   output.efcsStatus5.setData(0);
 
   output.efcsStatus5.setSsm(ssm);
-  output.efcsStatus5.setSsm(Arinc429SignStatus::NormalOperation);
   bool spoilersRetracted =
       valueOr(busInputs.prims[masterPrim].left_spoiler_position_deg, 0.0f)  >= -2.5f &&
       valueOr(busInputs.prims[masterPrim].right_spoiler_position_deg, 0.0f) >= -2.5f;
