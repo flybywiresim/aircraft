@@ -46,9 +46,6 @@ export type EwdSimvars = {
   flexTemp: number;
   satRaw: number;
   totalFuel: number;
-  slatsFlapsStatusRaw: number;
-  slatsPositionRaw: number;
-  flapsPositionRaw: number;
   ewdLowerLeft1: number;
   ewdLowerLeft2: number;
   ewdLowerLeft3: number;
@@ -109,10 +106,6 @@ export enum EwdVars {
   flexTemp = 'L:A32NX_AIRLINER_TO_FLEX_TEMP',
   satRaw = 'L:A32NX_ADIRS_ADR_1_STATIC_AIR_TEMPERATURE',
   totalFuel = 'L:A32NX_TOTAL_FUEL_QUANTITY',
-  // TODO: add switching between SFCC_1 and SFCC_2
-  slatsFlapsStatusRaw = 'L:A32NX_SFCC_1_SLAT_FLAP_SYSTEM_STATUS_WORD',
-  slatsPositionRaw = 'L:A32NX_SFCC_1_SLAT_ACTUAL_POSITION_WORD',
-  flapsPositionRaw = 'L:A32NX_SFCC_1_FLAP_ACTUAL_POSITION_WORD',
   ewdLowerLeft1 = 'L:A32NX_Ewd_LOWER_LEFT_LINE_1',
   ewdLowerLeft2 = 'L:A32NX_Ewd_LOWER_LEFT_LINE_2',
   ewdLowerLeft3 = 'L:A32NX_Ewd_LOWER_LEFT_LINE_3',
@@ -176,9 +169,6 @@ export class EwdSimvarPublisher extends SimVarPublisher<EwdSimvars> {
     ['flexTemp', { name: EwdVars.flexTemp, type: SimVarValueType.Number }],
     ['satRaw', { name: EwdVars.satRaw, type: SimVarValueType.Number }],
     ['totalFuel', { name: EwdVars.totalFuel, type: SimVarValueType.Number }],
-    ['slatsFlapsStatusRaw', { name: EwdVars.slatsFlapsStatusRaw, type: SimVarValueType.Number }],
-    ['slatsPositionRaw', { name: EwdVars.slatsPositionRaw, type: SimVarValueType.Number }],
-    ['flapsPositionRaw', { name: EwdVars.flapsPositionRaw, type: SimVarValueType.Number }],
     ['ewdLowerLeft1', { name: EwdVars.ewdLowerLeft1, type: SimVarValueType.Number }],
     ['ewdLowerLeft2', { name: EwdVars.ewdLowerLeft2, type: SimVarValueType.Number }],
     ['ewdLowerLeft3', { name: EwdVars.ewdLowerLeft3, type: SimVarValueType.Number }],

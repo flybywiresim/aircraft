@@ -1,7 +1,11 @@
+use std::time::Duration;
+
 use crate::systems::shared::arinc429::{Arinc429Word, SignStatus};
 use systems::hydraulic::command_sensor_unit::{CSUMonitor, CSU};
 use systems::hydraulic::flap_slat::{ChannelCommand, SolenoidStatus, ValveBlock};
-use systems::shared::PositionPickoffUnit;
+use systems::shared::{
+    DelayedFalseLogicGate, ElectricalBusType, ElectricalBuses, PositionPickoffUnit,
+};
 
 use systems::simulation::{
     InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
@@ -11,7 +15,7 @@ use systems::simulation::{
 use uom::si::{angle::degree, f64::*};
 use uom::ConstZero;
 
-use super::SlatFlapControlComputerMisc;
+use super::utils::SlatFlapControlComputerMisc;
 
 pub(super) struct SlatsChannel {
     slats_fppu_angle_id: VariableIdentifier,
@@ -21,6 +25,10 @@ pub(super) struct SlatsChannel {
     slats_demanded_angle: Angle,
     slats_feedback_angle: Angle,
 
+    powered_by: ElectricalBusType,
+    is_powered: bool,
+    is_powered_delayed: DelayedFalseLogicGate,
+
     csu_monitor: CSUMonitor,
 
     // OUTPUTS
@@ -28,7 +36,10 @@ pub(super) struct SlatsChannel {
 }
 
 impl SlatsChannel {
-    pub(super) fn new(context: &mut InitContext, num: u8) -> Self {
+    // Check the comments in `SlatFlapControlComputer` for a description of `TRANSPARENCY_TIME`
+    const TRANSPARENCY_TIME: Duration = Duration::from_millis(200); //ms
+
+    pub(super) fn new(context: &mut InitContext, num: u8, powered_by: ElectricalBusType) -> Self {
         Self {
             slats_fppu_angle_id: context.get_identifier("SLATS_FPPU_ANGLE".to_owned()),
             slat_actual_position_word_id: context
@@ -39,6 +50,11 @@ impl SlatsChannel {
             slats_demanded_angle: Angle::ZERO,
             slats_feedback_angle: Angle::ZERO,
 
+            powered_by,
+            is_powered: false,
+            is_powered_delayed: DelayedFalseLogicGate::new(Self::TRANSPARENCY_TIME)
+                .starting_as(false),
+
             csu_monitor: CSUMonitor::new(context),
 
             // Set `sap` to false to match power-off state
@@ -47,6 +63,11 @@ impl SlatsChannel {
     }
 
     fn sap_update(&mut self) {
+        if !self.is_powered_delayed.output() {
+            self.sap = [false; 7];
+            return;
+        }
+
         let fppu_angle = self.slats_feedback_angle.get::<degree>();
 
         self.sap[0] = fppu_angle > -5.0 && fppu_angle < 6.2;
@@ -73,6 +94,10 @@ impl SlatsChannel {
     }
 
     fn generate_slat_angle(&mut self) -> Angle {
+        if !self.is_powered_delayed.output() {
+            return Angle::ZERO;
+        }
+
         Self::demanded_slats_fppu_angle_from_conf(&self.csu_monitor, self.slats_demanded_angle)
     }
 
@@ -81,6 +106,8 @@ impl SlatsChannel {
         context: &UpdateContext,
         slats_feedback: &impl PositionPickoffUnit,
     ) {
+        self.is_powered_delayed.update(context, self.is_powered);
+
         self.csu_monitor.update(context);
         self.slats_demanded_angle = self.generate_slat_angle();
 
@@ -88,6 +115,9 @@ impl SlatsChannel {
         self.sap_update();
     }
 
+    // `get_demanded_angle` shall not be called outside of the SFCC to reflect
+    // the real architecture of the LRU, hence the use of `pub(super)`.
+    // It returns 0.0 when the SFCC is powered off regardless of the last status.
     pub(super) fn get_demanded_angle(&self) -> Angle {
         self.slats_demanded_angle
     }
@@ -102,6 +132,10 @@ impl SlatsChannel {
     }
 
     fn slat_actual_position_word(&self) -> Arinc429Word<f64> {
+        if !self.is_powered_delayed.output() {
+            return Arinc429Word::default();
+        }
+
         Arinc429Word::new(
             self.slats_feedback_angle.get::<degree>(),
             SignStatus::NormalOperation,
@@ -113,6 +147,10 @@ impl SlatsChannel {
 // are held in position and can't move.
 impl ValveBlock for SlatsChannel {
     fn get_pob_status(&self) -> SolenoidStatus {
+        if !self.is_powered_delayed.output() {
+            return SolenoidStatus::DeEnergised;
+        }
+
         let demanded_angle = self.get_demanded_angle();
         let feedback_angle = self.get_feedback_angle();
         let in_target_position =
@@ -124,6 +162,10 @@ impl ValveBlock for SlatsChannel {
     }
 
     fn get_command_status(&self) -> Option<ChannelCommand> {
+        if !self.is_powered_delayed.output() {
+            return None;
+        }
+
         let demanded_angle = self.get_demanded_angle();
         let feedback_angle = self.get_feedback_angle();
         let in_target_position = SlatFlapControlComputerMisc::in_positioning_threshold_range(
@@ -143,6 +185,10 @@ impl SimulationElement for SlatsChannel {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.csu_monitor.accept(visitor);
         visitor.visit(self);
+    }
+
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_powered = buses.is_powered(self.powered_by);
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
