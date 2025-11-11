@@ -9,6 +9,7 @@ use crate::simulation::{
     VariableIdentifier, Write,
 };
 
+use uom::si::angular_velocity::degree_per_second;
 use uom::si::{
     angle::{degree, radian},
     angular_velocity::{radian_per_second, revolution_per_minute},
@@ -318,6 +319,8 @@ impl FlapSlatAssembly {
             self.surface_control_arm_position +=
                 Angle::new::<radian>(self.speed.get::<radian_per_second>() * time_delta);
         }
+
+        println!("Speed {:.2}", self.speed.get::<degree_per_second>());
 
         let limited_surface_control_arm_position = self.surface_control_arm_position;
         let max_surface_angle = self.synchro_angle_to_surface_angle(self.max_synchro_gear_position);

@@ -584,14 +584,14 @@ mod tests {
 
                 flap_gear: SlatFlapGear::new(
                     context,
-                    AngularVelocity::new::<degree_per_second>(7.5),
-                    Angle::new::<degree>(251.97),
+                    AngularVelocity::new::<degree_per_second>(11.5),
+                    Angle::new::<degree>(338.99),
                     "FLAPS",
                 ),
                 slat_gear: SlatFlapGear::new(
                     context,
-                    AngularVelocity::new::<degree_per_second>(7.5),
-                    Angle::new::<degree>(334.16),
+                    AngularVelocity::new::<degree_per_second>(11.5),
+                    Angle::new::<degree>(327.39),
                     "SLATS",
                 ),
 
@@ -853,6 +853,7 @@ mod tests {
                 feedback_angle,
             )
         }
+
         fn test_flap_conf(
             &mut self,
             handle_pos: u8,
@@ -1232,19 +1233,19 @@ mod tests {
 
         test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
 
-        test_bed.test_flap_conf(1, 108.28, 247.27, FlapsConf::Conf1F, angle_delta);
+        test_bed.test_flap_conf(1, 215.68, 286.48, FlapsConf::Conf1F, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(2).run_one_tick();
 
-        test_bed.test_flap_conf(2, 154.65, 247.27, FlapsConf::Conf2, angle_delta);
+        test_bed.test_flap_conf(2, 259.28, 286.48, FlapsConf::Conf2, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
 
-        test_bed.test_flap_conf(3, 194.03, 284.65, FlapsConf::Conf3, angle_delta);
+        test_bed.test_flap_conf(3, 297.59, 327.39, FlapsConf::Conf3, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
 
-        test_bed.test_flap_conf(4, 218.91, 284.65, FlapsConf::ConfFull, angle_delta);
+        test_bed.test_flap_conf(4, 338.99, 327.39, FlapsConf::ConfFull, angle_delta);
     }
 
     // Tests flaps configuration and angles for regular
@@ -1262,19 +1263,19 @@ mod tests {
 
         test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
 
-        test_bed.test_flap_conf(1, 0., 247.27, FlapsConf::Conf1, angle_delta);
+        test_bed.test_flap_conf(1, 0., 286.48, FlapsConf::Conf1, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(2).run_one_tick();
 
-        test_bed.test_flap_conf(2, 154.65, 247.27, FlapsConf::Conf2, angle_delta);
+        test_bed.test_flap_conf(2, 259.28, 286.48, FlapsConf::Conf2, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
 
-        test_bed.test_flap_conf(3, 154.65, 284.65, FlapsConf::Conf2S, angle_delta);
+        test_bed.test_flap_conf(3, 259.28, 327.39, FlapsConf::Conf2S, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
 
-        test_bed.test_flap_conf(4, 194.03, 284.65, FlapsConf::Conf3, angle_delta);
+        test_bed.test_flap_conf(4, 297.59, 327.39, FlapsConf::Conf3, angle_delta);
     }
 
     //Tests regular transition 2->1 below and above 212 knots
@@ -1343,19 +1344,19 @@ mod tests {
 
         test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
 
-        test_bed.test_flap_conf(4, 218.91, 284.65, FlapsConf::ConfFull, angle_delta);
+        test_bed.test_flap_conf(4, 338.99, 327.39, FlapsConf::ConfFull, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
 
-        test_bed.test_flap_conf(3, 194.03, 284.65, FlapsConf::Conf3, angle_delta);
+        test_bed.test_flap_conf(3, 297.59, 327.39, FlapsConf::Conf3, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(2).run_one_tick();
 
-        test_bed.test_flap_conf(2, 154.65, 247.27, FlapsConf::Conf2, angle_delta);
+        test_bed.test_flap_conf(2, 259.28, 286.48, FlapsConf::Conf2, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
 
-        test_bed.test_flap_conf(1, 108.28, 247.27, FlapsConf::Conf1F, angle_delta);
+        test_bed.test_flap_conf(1, 215.68, 286.48, FlapsConf::Conf1F, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
 
@@ -1375,19 +1376,19 @@ mod tests {
 
         test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
 
-        test_bed.test_flap_conf(4, 218.91, 284.65, FlapsConf::ConfFull, angle_delta);
+        test_bed.test_flap_conf(4, 338.99, 327.39, FlapsConf::ConfFull, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
 
-        test_bed.test_flap_conf(3, 194.03, 284.65, FlapsConf::Conf3, angle_delta);
+        test_bed.test_flap_conf(3, 297.59, 327.39, FlapsConf::Conf3, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(2).run_one_tick();
 
-        test_bed.test_flap_conf(2, 154.65, 247.27, FlapsConf::Conf2, angle_delta);
+        test_bed.test_flap_conf(2, 259.28, 286.48, FlapsConf::Conf2, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
 
-        test_bed.test_flap_conf(1, 0., 247.27, FlapsConf::Conf1, angle_delta);
+        test_bed.test_flap_conf(1, 0., 286.48, FlapsConf::Conf1, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
 
