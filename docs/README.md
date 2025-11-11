@@ -135,3 +135,11 @@ Branches to be retained on the main repository are:
 - `master` - The source of truth and main development branch,
 - release branches (e.g. `v0.12`),
 - in special cases some long-running branches requiring collaboration (make a proposal in the #development channel on Discord).
+
+## HTML Instruments
+
+### Typescript Strict Mode
+
+We initially started out writing a lot of typescript without strict mode enabled. It is difficult to then transition to strict mode, as anything importing any of the code that isn't strict mode compliant would fail lint/typechecks. Instead of enabling tsc strict mode explicitly, we use https://github.com/allegro/typescript-strict-plugin, and add a `// @ts-strict-ignore` comment to the beginning of all the files that haven't yet been fixed for strict mode compliance. Eventually these should all be eliminated, we can enable tsc strict mode again, and remove this plugin. Until then, CI checks the A32NX (A380X will be checked soon:tm: as well), and your editor can provide hints if it uses the project tsc. To do this in VSCode, open the command palette (Ctrl+Shift+P), select `TypeScript: Select TypeScript Version...`, and choose `Use Workspace Version`.
+
+**All new code should be strict mode compliant, and should not have a `ts-strict-ignore` directive.** All tsconfig.json should import one of the three top-level configs that already have the `typescript-strict-plugin` setup, and tsc strict mode disabled.

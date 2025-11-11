@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 /**
  * Lowest selectable Speed Table
  * calls function(gross weight (1000 lb)) which returns CAS, automatically compensates for cg.
@@ -438,6 +439,7 @@ export class A380OperatingSpeeds {
     v2Speed: number,
     altitude: Feet,
     wind: Knots = 0,
+    ignoreSpoilers = false,
   ) {
     const cg = SimVar.GetSimVarValue('L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC', 'number');
 
@@ -455,12 +457,12 @@ export class A380OperatingSpeeds {
       this.vfeN = fPos === 4 ? 0 : vfeFS[fPos + 2];
     }
     this.vapp = this.vls + addWindComponent(Math.round(wind / 3));
-    this.vref = this.vls = SpeedsLookupTables.getApproachVls(ApproachConf.CONF_FULL, cg, m);
+    this.vref = SpeedsLookupTables.getApproachVls(ApproachConf.CONF_FULL, cg, m);
 
     this.gd = SpeedsLookupTables.GREEN_DOT.get(altitude, m);
 
     this.vs1g = this.vls / 1.23;
-    this.vls = Math.max(1.23 * this.vs1g, Vmcl);
+    this.vls = Math.max(this.vls, Vmcl);
     if (fmgcFlightPhase <= FmgcFlightPhase.Takeoff) {
       this.vls = Math.max(1.15 * this.vs1g, 1.05 * Math.min(v2Speed, Vmcl));
     } else if (fPos === 1 && calibratedAirSpeed > 212) {
@@ -471,7 +473,7 @@ export class A380OperatingSpeeds {
     const spoilers = SimVar.GetSimVarValue('L:A32NX_LEFT_SPOILER_1_COMMANDED_POSITION', 'number');
     const maxSpoilerExtension = [20, 20, 12, 9, 8, 6];
     const spoilerVlsIncrease = [25, 25, 7, 10, 10, 8];
-    if (spoilers > 0) {
+    if (spoilers > 0 && !ignoreSpoilers) {
       let conf = fPos + 1;
       switch (fPos) {
         case 1:
