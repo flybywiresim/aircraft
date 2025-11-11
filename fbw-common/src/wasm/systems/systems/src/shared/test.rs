@@ -18,7 +18,7 @@ macro_rules! assert_gt_lt {
         assert!(
             $crate::shared::test::about_gt_lt($a, $b, eps),
             "assertion failed: `(left !== right)` \
-             (left: `{:?}`, right: `{:?}`, epsilon: `{:?}`)",
+             (left: `{:.3?}`, right: `{:.3?}`, epsilon: `{:.3?}`)",
             $a,
             $b,
             eps

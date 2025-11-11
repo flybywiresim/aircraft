@@ -1,4 +1,5 @@
 use crate::air_conditioning::AdirsToAirCondInterface;
+use crate::payload::BoardingRate;
 use crate::shared::InternationalStandardAtmosphere;
 use crate::simulation::{InitContext, VariableIdentifier};
 use crate::{
@@ -249,6 +250,12 @@ struct AdirsSimulatorData {
     baro_correction_2_id: VariableIdentifier,
     /// Baro correction for fo's side in hPa from the FCU
     baro_correction_2: Arinc429Word<f64>,
+
+    is_boarding_started_by_user_id: VariableIdentifier,
+    boarding_rate_id: VariableIdentifier,
+
+    is_boarding_started_by_user: bool,
+    boarding_rate: BoardingRate,
 }
 impl AdirsSimulatorData {
     const MACH: &'static str = "AIRSPEED MACH";
@@ -270,6 +277,8 @@ impl AdirsSimulatorData {
     const ANGLE_OF_ATTACK: &'static str = "INCIDENCE ALPHA";
     const BARO_CORRECTION_1_HPA: &'static str = "FCU_LEFT_EIS_BARO_HPA";
     const BARO_CORRECTION_2_HPA: &'static str = "FCU_RIGHT_EIS_BARO_HPA";
+    const BOARDING_STARTED_BY_USR: &'static str = "BOARDING_STARTED_BY_USR";
+    const BOARDING_RATE: &'static str = "BOARDING_RATE";
 
     fn new(context: &mut InitContext) -> Self {
         Self {
@@ -330,6 +339,13 @@ impl AdirsSimulatorData {
 
             baro_correction_2_id: context.get_identifier(Self::BARO_CORRECTION_2_HPA.to_owned()),
             baro_correction_2: Arinc429Word::new(1013., SignStatus::FailureWarning),
+
+            is_boarding_started_by_user_id: context
+                .get_identifier(Self::BOARDING_STARTED_BY_USR.to_owned()),
+            boarding_rate_id: context.get_identifier(Self::BOARDING_RATE.to_owned()),
+
+            is_boarding_started_by_user: false,
+            boarding_rate: BoardingRate::Instant,
         }
     }
 }
@@ -359,6 +375,8 @@ impl SimulationElement for AdirsSimulatorData {
         self.angle_of_attack = reader.read(&self.angle_of_attack_id);
         self.baro_correction_1 = reader.read_arinc429(&self.baro_correction_1_id);
         self.baro_correction_2 = reader.read_arinc429(&self.baro_correction_2_id);
+        self.is_boarding_started_by_user = reader.read(&self.is_boarding_started_by_user_id);
+        self.boarding_rate = reader.read(&self.boarding_rate_id);
     }
 }
 
@@ -1470,6 +1488,7 @@ struct InertialReference {
     extreme_latitude: bool,
     body_velocity_filter: LowPassFilter<Vector2<f64>>,
     excess_motion: bool,
+    excess_motion_inhibit_time: Option<Duration>,
     quick_realign_remaining_available_time: Duration,
     alignment_failed: bool,
 
@@ -1508,6 +1527,7 @@ struct InertialReference {
     fault_warn_discrete: AdirsDiscreteOutput<bool>,
 }
 impl InertialReference {
+    const EXCESS_MOTION_INHIBIT_TIME: Duration = Duration::from_secs(2);
     const FAST_ALIGNMENT_TIME_IN_SECS: f64 = 90.;
     const IR_FAULT_FLASH_DURATION: Duration = Duration::from_millis(50);
     const ATTITUDE_INITIALISATION_DURATION: Duration = Duration::from_secs(28);
@@ -1564,6 +1584,7 @@ impl InertialReference {
             extreme_latitude: false,
             body_velocity_filter: LowPassFilter::new(Self::ALIGNMENT_VELOCITY_TIME_CONSTANT),
             excess_motion: false,
+            excess_motion_inhibit_time: None,
             quick_realign_remaining_available_time: Duration::default(),
             alignment_failed: false,
 
@@ -1684,6 +1705,15 @@ impl InertialReference {
         simulator_data.latitude.abs().get::<degree>() <= Self::MAX_LATITUDE_FOR_ALIGNMENT
     }
 
+    fn is_instant_or_fast_boarding_in_progress(simulator_data: AdirsSimulatorData) -> bool {
+        match simulator_data.boarding_rate {
+            BoardingRate::Instant | BoardingRate::Fast => {
+                simulator_data.is_boarding_started_by_user
+            }
+            _ => false,
+        }
+    }
+
     fn update_remaining_align_duration(
         &mut self,
         context: &UpdateContext,
@@ -1703,6 +1733,14 @@ impl InertialReference {
                 .saturating_sub(context.delta());
         }
 
+        // work around instant/fast boarding upsetting the body velocity and interrupting IR alignment
+        if InertialReference::is_instant_or_fast_boarding_in_progress(simulator_data) {
+            self.excess_motion_inhibit_time = Some(InertialReference::EXCESS_MOTION_INHIBIT_TIME);
+        } else if let Some(excess_motion_inhibit_time) = self.excess_motion_inhibit_time {
+            self.excess_motion_inhibit_time =
+                excess_motion_inhibit_time.checked_sub(context.delta());
+        }
+
         // If the  align time setting has been changed to instant during alignment,
         // then set remaining time to 0. This allows to implement a "Instant Align" button in the EFB
         // for users who want to align the ADIRS instantly but do not want to change the default
@@ -1713,6 +1751,7 @@ impl InertialReference {
             // If we exceeded the max alignment velocity, the alignment is restarted
             if self.is_aligning()
                 && self.body_velocity_filter.output().max() > Self::MAX_ALIGNMENT_VELOCITY_FPS
+                && self.excess_motion_inhibit_time.is_none()
             {
                 self.remaining_align_duration = None;
                 self.excess_motion = true;
@@ -2593,6 +2632,18 @@ mod tests {
             self
         }
 
+        fn boarding_rate_of(mut self, rate: BoardingRate) -> Self {
+            self.write_by_name(AdirsSimulatorData::BOARDING_RATE, rate);
+
+            self
+        }
+
+        fn boarding_started_of(mut self, started: bool) -> Self {
+            self.write_by_name(AdirsSimulatorData::BOARDING_STARTED_BY_USR, started);
+
+            self
+        }
+
         fn ir_fault_light_illuminated(&mut self, number: usize) -> bool {
             self.read_by_name(&OnOffFaultPushButton::has_fault_id(&format!(
                 "ADIRS_IR_{}",
@@ -3353,6 +3404,72 @@ mod tests {
         assert_eq!(
             maint_word_flags.unwrap() & IrMaintFlags::EXCESS_MOTION_ERROR,
             IrMaintFlags::EXCESS_MOTION_ERROR
+        );
+    }
+
+    #[rstest]
+    fn adirs_detects_excess_motion_during_alignment_with_instant_boarding_selected() {
+        let mut test_bed = all_adirus_unaligned_test_bed_with()
+            .boarding_rate_of(BoardingRate::Instant)
+            .body_lateral_velocity_of(Velocity::new::<foot_per_second>(0.1))
+            .ir_mode_selector_set_to(1, InertialReferenceMode::Navigation);
+        test_bed.run();
+        test_bed.run();
+
+        let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word(1).value());
+        assert_eq!(
+            maint_word_flags.unwrap() & IrMaintFlags::EXCESS_MOTION_ERROR,
+            IrMaintFlags::EXCESS_MOTION_ERROR
+        );
+    }
+
+    #[rstest]
+    fn adirs_detects_excess_motion_during_alignment_with_fast_boarding_selected() {
+        let mut test_bed = all_adirus_unaligned_test_bed_with()
+            .boarding_rate_of(BoardingRate::Fast)
+            .body_lateral_velocity_of(Velocity::new::<foot_per_second>(0.1))
+            .ir_mode_selector_set_to(1, InertialReferenceMode::Navigation);
+        test_bed.run();
+        test_bed.run();
+
+        let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word(1).value());
+        assert_eq!(
+            maint_word_flags.unwrap() & IrMaintFlags::EXCESS_MOTION_ERROR,
+            IrMaintFlags::EXCESS_MOTION_ERROR
+        );
+    }
+
+    #[rstest]
+    fn adirs_does_not_detect_excess_motion_during_instant_boarding() {
+        let mut test_bed = all_adirus_unaligned_test_bed_with()
+            .boarding_rate_of(BoardingRate::Instant)
+            .boarding_started_of(true)
+            .body_lateral_velocity_of(Velocity::new::<foot_per_second>(0.1))
+            .ir_mode_selector_set_to(1, InertialReferenceMode::Navigation);
+        test_bed.run();
+        test_bed.run();
+
+        let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word(1).value());
+        assert_eq!(
+            maint_word_flags.unwrap() & IrMaintFlags::EXCESS_MOTION_ERROR,
+            IrMaintFlags::empty()
+        );
+    }
+
+    #[rstest]
+    fn adirs_does_not_detect_excess_motion_during_fast_boarding() {
+        let mut test_bed = all_adirus_unaligned_test_bed_with()
+            .boarding_rate_of(BoardingRate::Fast)
+            .boarding_started_of(true)
+            .body_lateral_velocity_of(Velocity::new::<foot_per_second>(0.1))
+            .ir_mode_selector_set_to(1, InertialReferenceMode::Navigation);
+        test_bed.run();
+        test_bed.run();
+
+        let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word(1).value());
+        assert_eq!(
+            maint_word_flags.unwrap() & IrMaintFlags::EXCESS_MOTION_ERROR,
+            IrMaintFlags::empty()
         );
     }
 
