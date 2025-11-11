@@ -273,11 +273,13 @@ impl FlapSlatAssembly {
         let sfcc_2_pob = sfcc_2_request.get_pob_status();
 
         let pob_de_energised =
-            sfcc_1_pob == SolenoidStatus::DeEnergised || sfcc_2_pob == SolenoidStatus::DeEnergised;
+            sfcc_1_pob == SolenoidStatus::DeEnergised && sfcc_2_pob == SolenoidStatus::DeEnergised;
 
         let sfcc_1_request = sfcc_1_request.get_command_status();
         let sfcc_2_request = sfcc_2_request.get_command_status();
 
+        // NOTE: opposite requests are not modelled yet. Opposite requests aren't expected
+        // in the current code.
         let extend_request = sfcc_1_request == Some(ChannelCommand::Extend)
             || sfcc_2_request == Some(ChannelCommand::Extend);
 
@@ -566,7 +568,10 @@ impl SimulationElement for FlapSlatAssembly {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        // I assume FPPU and IPPU have the same value. No mismatch implemented.
+        // NOTE: I assume FPPU and IPPU have the same value. No mismatch implemented.
+        // I also assume that FPPUs/IPPUs are always powered and reading the correct
+        // position. The behaviour in case of power loss is modelled in the receiver
+        // side: FWC/SFCC.
         writer.write(&self.fppu_id, self.position_feedback().get::<degree>());
         writer.write(&self.ippu_id, self.position_feedback().get::<degree>());
 
