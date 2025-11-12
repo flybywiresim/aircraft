@@ -4263,7 +4263,6 @@ export class FwsCore {
     const flapsPos = Arinc429Word.fromSimVarValue('L:A32NX_SFCC_1_FLAP_ACTUAL_POSITION_WORD');
     const slatsPos = Arinc429Word.fromSimVarValue('L:A32NX_SFCC_1_SLAT_ACTUAL_POSITION_WORD');
 
-    // WARNING these vary for other variants... A320 CFM LEAP values here
     // flap/slat internal signals
     this.flapsInferiorTo8Deg.set(flapsPos.isNormalOperation() && flapsPos.value < 205);
     this.flapsSuperiorTo8Deg.set(flapsPos.isNormalOperation() && flapsPos.value > 225);
