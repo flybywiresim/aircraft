@@ -10,6 +10,12 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 <!-- The changed area should be prefixed with "A32NX/" or "A380X/" if only one of them is affected. -->
 
+## 0.15.0
+
+1. [A32NX/SFCC] Added implementation of SAP and FAP in SFCC - @Eagle941 (Joe)
+1. [A32NX/SFCC] Connected SFCC to electrical busses with simulation of power consumption and power restoration behaviour - @Eagle941 (Joe)
+1. [A380X/MFD] Add = sign the the MFD font - @JulKem (JulK)
+
 ## 0.14.0
 
 1. [A380X/FMS] Fix speed margins being displayed in the wrong place for a Mach target - @BlueberryKing (BlueberryKing)
@@ -144,6 +150,17 @@
 1. [A380X/FWS] Fix cavalry charge for AP disconnect; Add improved triple click logic using FCDC signals - @flogross89 (floridude)
 1. [A380X] Autoflight: Add ROLLOUT fault (i.e. communication fault between NWS and PRIM) - @flogross89 (floridude)
 1. [A380X/CDS] Change autoland capability designation to Batch 7 standard (LAND instead of CAT) - @flogross89 (floridude)
+1. [A380X/FLIGHT and ENGINE MODELS] Fixed excessive descent rates and takeoff rotation issues, improved fuel burn - @donstim (donbikes)
+1. [FMS] Fix fuel predictions in the FMS not matching the engine model - @BlueberryKing (BlueberryKing)
+1. [A380X/PFD] Fix selected altitude not white when ROLLOUT engaged - @BravoMike99(bruno_pt99)
+1. [A380X/PFD] Fix green ARS indication appearing before flaps are in CONF 1+F - @BravoMike99(bruno_pt99)
+1. [A380X/OIT] Add systems info page for approach and landing capability equipment monitoring - @flogross89 (floridude)
+1. [A380X] Enable mouse drag for knobs in lock mode - @heclak (Heclak)
+1. [A380X] Fix some knobs snapping back to start position when turned to max value - @heclak (Heclak)
+1. [A32NX] Enable mouse drag for knobs in lock mode - @heclak (Heclak)
+1. [A32NX] Fix some knobs snapping back to start position when turned to max value - @heclak (Heclak)
+1. [ND] Fix terrain display smearing issue - @flogross89 (floridude)
+1. [MISC] Prevent long sim freezes in some scenarios in MSFS 2024 - @Benjozork (Benjamin Dupont)
 
 ## 0.13.0
 
@@ -246,7 +263,7 @@
 1. [A380/PFD] Add DISCONNECT AP FOR LDG FMA message - @BravoMike99 (bruno_pt99)
 1. [A380X/ENG] Adjust climb thrust to be more accurate - @BlueberryKing (BlueberryKing)
 1. [A380X/EWD] Show THR limit in EWD instead of N1 - @flogross89 (floridude)
-1. [A380X/FLIGHT MODEL] Fix pitchup and unrecoverable stall - - @donstim (donbikes#4084)
+1. [A380X/FLIGHT MODEL] Fix pitchup and unrecoverable stall - @donstim (donbikes#4084)
 1. [ATC/TCAS] Fixed TCAS failure on baro corrected altitude going invalid - @tracernz (Mike)
 1. [ATC/TCAS] Fixed TCAS slant range computation - @tracernz (Mike)
 1. [A380X] Add baro unit (hPa/in.Hg) auto selection - @tracernz (Mike)
