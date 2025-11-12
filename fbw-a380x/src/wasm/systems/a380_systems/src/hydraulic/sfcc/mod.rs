@@ -300,30 +300,36 @@ impl SlatFlapControlComputer {
         let slats_fppu_angle = self.slats_channel.get_feedback_angle();
         let mut word = Arinc429Word::new(0, SignStatus::NormalOperation);
 
+        // NOTE: This arinc word is an adaptation of label 047 in the A320 SFCC
+        // to A380 FLAPS/SLATS FPPU positions. In the future this can be improved,
+        // but it requires changes to all the readers.
+
+        println!("flaps_fppu_angle {:.2}", flaps_fppu_angle.get::<degree>());
+
         word.set_bit(11, true);
         // Slats retracted
         word.set_bit(
             12,
-            slats_fppu_angle > Angle::new::<degree>(-5.0)
-                && slats_fppu_angle < Angle::new::<degree>(6.2),
+            slats_fppu_angle > Angle::new::<degree>(-16.304)
+                && slats_fppu_angle <= Angle::new::<degree>(9.580),
         );
-        // Slats >= 19°
+        // Slats >= 20°
         word.set_bit(
             13,
-            slats_fppu_angle > Angle::new::<degree>(234.7)
-                && slats_fppu_angle < Angle::new::<degree>(337.),
+            slats_fppu_angle >= Angle::new::<degree>(276.900)
+                && slats_fppu_angle <= Angle::new::<degree>(343.695),
         );
-        // Slats >= 22°
+        // Slats >= 23°
         word.set_bit(
             14,
-            slats_fppu_angle > Angle::new::<degree>(272.2)
-                && slats_fppu_angle < Angle::new::<degree>(337.),
+            slats_fppu_angle >= Angle::new::<degree>(317.810)
+                && slats_fppu_angle <= Angle::new::<degree>(343.695),
         );
         // Slats extended 23°
         word.set_bit(
             15,
-            slats_fppu_angle > Angle::new::<degree>(280.)
-                && slats_fppu_angle < Angle::new::<degree>(337.),
+            slats_fppu_angle >= Angle::new::<degree>(317.810)
+                && slats_fppu_angle <= Angle::new::<degree>(343.695),
         );
         word.set_bit(16, false);
         word.set_bit(17, false);
@@ -331,32 +337,32 @@ impl SlatFlapControlComputer {
         // Flaps retracted
         word.set_bit(
             19,
-            flaps_fppu_angle > Angle::new::<degree>(-5.0)
-                && flaps_fppu_angle < Angle::new::<degree>(2.5),
+            flaps_fppu_angle > Angle::new::<degree>(-10.504)
+                && flaps_fppu_angle <= Angle::new::<degree>(10.063),
         );
-        // Flaps >= 7°
+        // Flaps >= 8°
         word.set_bit(
             20,
-            flaps_fppu_angle > Angle::new::<degree>(102.1)
-                && flaps_fppu_angle < Angle::new::<degree>(254.),
+            flaps_fppu_angle >= Angle::new::<degree>(208.033)
+                && flaps_fppu_angle <= Angle::new::<degree>(349.495),
         );
-        // Flaps >= 16°
+        // Flaps >= 17°
         word.set_bit(
             21,
-            flaps_fppu_angle > Angle::new::<degree>(150.0)
-                && flaps_fppu_angle < Angle::new::<degree>(254.),
+            flaps_fppu_angle >= Angle::new::<degree>(251.633)
+                && flaps_fppu_angle <= Angle::new::<degree>(349.495),
         );
-        // Flaps >= 25°
+        // Flaps >= 26°
         word.set_bit(
             22,
-            flaps_fppu_angle > Angle::new::<degree>(189.8)
-                && flaps_fppu_angle < Angle::new::<degree>(254.),
+            flaps_fppu_angle >= Angle::new::<degree>(289.943)
+                && flaps_fppu_angle <= Angle::new::<degree>(349.495),
         );
-        // Flaps extended 32°
+        // Flaps extended 33°
         word.set_bit(
             23,
-            flaps_fppu_angle > Angle::new::<degree>(218.)
-                && flaps_fppu_angle < Angle::new::<degree>(254.),
+            flaps_fppu_angle >= Angle::new::<degree>(331.343)
+                && flaps_fppu_angle <= Angle::new::<degree>(349.495),
         );
         word.set_bit(24, false);
         word.set_bit(25, false);
