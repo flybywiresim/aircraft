@@ -17,6 +17,8 @@
 1. [A32NX/SFCC] Connected SFCC to electrical busses with simulation of power consumption and power restoration behaviour - @Eagle941 (Joe)
 1. [A380X/MFD] Add = sign the the MFD font - @JulKem (JulK)
 
+1. [FMS] Fix "NOT ALLOWED IN NAV" when sequencing TO waypoint while in LOC mode - @BravoMike99 (bruno_pt99)
+
 ## 0.14.0
 
 1. [A380X/FMS] Fix speed margins being displayed in the wrong place for a Mach target - @BlueberryKing (BlueberryKing)

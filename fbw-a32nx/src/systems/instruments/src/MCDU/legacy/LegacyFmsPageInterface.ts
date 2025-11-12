@@ -106,7 +106,7 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
     bypassTmpy?: boolean,
   ): void;
   tryUpdateRouteTrip(_dynamic?: boolean): void;
-  navModeEngaged(): boolean;
+  isNavModeEngaged(): boolean;
   isFlying(): boolean;
   trySetZeroFuelWeightZFWCG(s: string): boolean;
   /** @deprecated use getGrossWeight */
