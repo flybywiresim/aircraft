@@ -90,7 +90,7 @@ export const EcamAbnormalSensedAta80Rest: { [n: number]: AbnormalProcedure } = {
         level: 1,
       },
       {
-        name: 'WHEN ACFT ALT = CAB ALT + 2500FT/MEA-MORA', // still needs "=" sign to show
+        name: 'WHEN ACFT ALT = CAB ALT + 2500FT/MEA-MORA',
         sensed: false,
         condition: true,
       },
