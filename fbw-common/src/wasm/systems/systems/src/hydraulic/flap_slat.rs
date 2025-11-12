@@ -205,9 +205,7 @@ impl FlapSlatAssembly {
             left_surfaces,
             right_surfaces,
             surface_control_arm_position: Angle::ZERO,
-            max_synchro_gear_position: Angle::new::<degree>(
-                synchro_gear_breakpoints.last().unwrap().clone(),
-            ),
+            max_synchro_gear_position: Angle::new::<degree>(synchro_gear_breakpoints[11]),
             speed: AngularVelocity::ZERO,
             current_max_speed: LowPassFilter::<AngularVelocity>::new(
                 Self::LOW_PASS_FILTER_SURFACE_POSITION_TRANSIENT_TIME_CONSTANT,
