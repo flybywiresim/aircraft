@@ -25,6 +25,7 @@
     - [Flight Augmentation Computer (FAC)](#flight-augmentation-computer-fac)
   - [Flaps / Slats (ATA 27)](#flaps--slats-ata-27)
   - [Flight Controls (ATA 27)](#flight-controls-ata-27)
+  - [Fuel (ATA 28)](#fuel-ata-28)
   - [Indication and Recording Systems (ATA 31)](#indication-and-recording-systems-ata-31)
     - [DMC](#dmc)
       - [ARINC429 Output Bus](#arinc429-output-bus)
@@ -214,7 +215,7 @@
     - Position (0-2)
     - 0 is CAPT, 1 is NORM, 2 is F/O
 
-- L:A32NX_DMC_DISPLAYTEST:{1,2,3}
+- A32NX_DMC_DISPLAYTEST:{1,2,3}
     - Enum
     - Provides the display test status (can be set in the CFDS) for the respective DMC {1,2,3}
       Value | Meaning
@@ -1215,6 +1216,7 @@
 - A32NX_FLAPS_CONF_INDEX
     - Number
     - Indicates the desired flap configuration index according to the table
+        DO NOT USE IN SYSTEMS, USE SFCC INSTEAD
     - Value | Meaning
             --- | ---
       0 | Conf0
@@ -3572,6 +3574,11 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - {id} is from 1 to 7
     - Flap actual position discrete output
 
+- A32NX_SFCC_{number}_SAP_{id}
+    - {number} is 1 or 2
+    - {id} is from 1 to 7
+    - Slat actual position discrete output
+
 ## Flight Controls (ATA 27)
 
 - A32NX_FLIGHT_CONTROLS_TRACKING_MODE
@@ -3930,6 +3937,15 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_HYD_TRIM_WHEEL_PERCENT
     - Percent
     - Trim wheel position in percent
+
+## Fuel ATA 28
+- A32NX_TOTAL_FUEL_QUANTITY
+  - Number in kilogramm
+  - The total physical quantity of fuel in the tanks
+
+- A32NX_TOTAL_FUEL_VOLUME
+  - Number in Gallons
+  - The total physical volume of fuel in the tanks
 
 ## Indication and Recording Systems (ATA 31)
 

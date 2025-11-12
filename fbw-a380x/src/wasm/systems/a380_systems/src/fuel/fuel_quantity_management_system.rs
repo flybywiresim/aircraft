@@ -578,19 +578,20 @@ impl RefuelDriver {
         refuel_panel_input: &mut IntegratedRefuelPanel,
         desired_quantities: HashMap<A380FuelTankType, Mass>,
     ) {
-        for tank_type in A380FuelTankType::iterator() {
-            fuel_system.set_tank_quantity(
-                tank_type as usize,
-                *desired_quantities
-                    .get(&tank_type)
-                    .unwrap_or(&Mass::default()),
-            );
-        }
-
+        // check needs to happen first so function always runs two ticks making sure values are actually written back to the sim
         if (fuel_system.total_load() - refuel_panel_input.total_desired_fuel()).abs()
             < Mass::new::<kilogram>(1.)
         {
             refuel_panel_input.set_refuel_status(false);
+        } else {
+            for tank_type in A380FuelTankType::iterator() {
+                fuel_system.set_tank_quantity(
+                    tank_type as usize,
+                    *desired_quantities
+                        .get(&tank_type)
+                        .unwrap_or(&Mass::default()),
+                );
+            }
         }
     }
 }

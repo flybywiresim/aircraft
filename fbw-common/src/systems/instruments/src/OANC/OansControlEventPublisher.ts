@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EfisSide, FeatureType } from '@flybywiresim/fbw-sdk';
-import { Position } from '@turf/turf';
+import { Position } from 'geojson';
 
 export interface OansControlEvents {
   nd_show_oans: { side: EfisSide; show: boolean };

@@ -3338,7 +3338,7 @@
                         </UseTemplate>
 
                         <Component ID="KNOB_OVHD_AIRCOND_FWDCABIN" Node="KNOB_OVHD_AIRCOND_FWDCABIN">
-                            <UseTemplate Name="FBW_Continuous_Knob_Finite_From_Simvar">
+                            <UseTemplate Name="FBW_A380X_Knob_Aircond_Cabin">
                                 <NODE_ID>KNOB_OVHD_AIRCOND_FWDCABIN</NODE_ID>
                                 <ANIM_NAME>KNOB_OVHD_AIRCOND_FWDCABIN</ANIM_NAME>
                                 <ANIM_SIMVAR>L:A32NX_OVHD_COND_CABIN_SELECTOR_KNOB</ANIM_SIMVAR>
@@ -4571,6 +4571,7 @@
                         <NODE_ID>PUSH_OVHD_ENG_FADEC1</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_ENG_FADEC1</LOCK_NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_FADEC_1</TOGGLE_SIMVAR>
+                        <INVERTED_ANIMATION>True</INVERTED_ANIMATION>
                         <SEQ_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
                         <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
@@ -4584,6 +4585,7 @@
                         <NODE_ID>PUSH_OVHD_ENG_FADEC2</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_ENG_FADEC2</LOCK_NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_FADEC_2</TOGGLE_SIMVAR>
+                        <INVERTED_ANIMATION>True</INVERTED_ANIMATION>
                         <SEQ_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
                         <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
@@ -4597,6 +4599,7 @@
                         <NODE_ID>PUSH_OVHD_ENG_FADEC3</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_ENG_FADEC3</LOCK_NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_FADEC_3</TOGGLE_SIMVAR>
+                        <INVERTED_ANIMATION>True</INVERTED_ANIMATION>
                         <SEQ_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
                         <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
@@ -4610,6 +4613,7 @@
                         <NODE_ID>PUSH_OVHD_ENG_FADEC4</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_ENG_FADEC4</LOCK_NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_FADEC_4</TOGGLE_SIMVAR>
+                        <INVERTED_ANIMATION>True</INVERTED_ANIMATION>
                         <SEQ_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
                         <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
