@@ -9,7 +9,6 @@ use crate::simulation::{
     VariableIdentifier, Write,
 };
 
-use uom::si::angular_velocity::degree_per_second;
 use uom::si::{
     angle::{degree, radian},
     angular_velocity::{radian_per_second, revolution_per_minute},
@@ -320,24 +319,12 @@ impl FlapSlatAssembly {
                 Angle::new::<radian>(self.speed.get::<radian_per_second>() * time_delta);
         }
 
-        println!("Speed {:.2}", self.speed.get::<degree_per_second>());
-
         let limited_surface_control_arm_position = self.surface_control_arm_position;
         let max_surface_angle = self.synchro_angle_to_surface_angle(self.max_synchro_gear_position);
 
         self.surface_control_arm_position = self
             .surface_control_arm_position
             .clamp(Angle::ZERO, max_surface_angle);
-
-        println!(
-            "Max Synchro angle {:.2} | synchro {:.2} | surface arm {:.2} | max surface arm {:.2} | speed {:.3}",
-            self.max_synchro_gear_position.get::<degree>(),
-            self.position_feedback().get::<degree>(),
-            self.surface_control_arm_position.get::<degree>(),
-            self.synchro_angle_to_surface_angle(self.max_synchro_gear_position)
-                .get::<degree>(),
-            self.speed.get::<radian_per_second>()
-        );
 
         if limited_surface_control_arm_position != self.surface_control_arm_position {
             self.speed = AngularVelocity::ZERO;
@@ -1401,7 +1388,6 @@ mod tests {
             right_flaps,
             Volume::new::<cubic_inch>(0.32),
             max_speed,
-            // Angle::new::<degree>(251.97),
             Ratio::new::<ratio>(140.),
             Ratio::new::<ratio>(16.632),
             Ratio::new::<ratio>(314.98),

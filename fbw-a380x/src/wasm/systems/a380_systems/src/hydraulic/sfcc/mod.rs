@@ -304,8 +304,6 @@ impl SlatFlapControlComputer {
         // to A380 FLAPS/SLATS FPPU positions. In the future this can be improved,
         // but it requires changes to all the readers.
 
-        println!("flaps_fppu_angle {:.2}", flaps_fppu_angle.get::<degree>());
-
         word.set_bit(11, true);
         // Slats retracted
         word.set_bit(

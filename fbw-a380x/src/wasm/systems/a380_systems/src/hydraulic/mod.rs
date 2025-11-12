@@ -2004,7 +2004,6 @@ impl A380Hydraulic {
                 right_flaps,
                 Volume::new::<cubic_inch>(0.32),
                 AngularVelocity::new::<radian_per_second>(0.07),
-                // Angle::new::<degree>(218.912),
                 Ratio::new::<ratio>(140.),
                 Ratio::new::<ratio>(16.632),
                 Ratio::new::<ratio>(314.98),
@@ -2019,7 +2018,6 @@ impl A380Hydraulic {
                 right_slats,
                 Volume::new::<cubic_inch>(0.32),
                 AngularVelocity::new::<radian_per_second>(0.08),
-                // Angle::new::<degree>(284.66),
                 Ratio::new::<ratio>(140.),
                 Ratio::new::<ratio>(16.632),
                 Ratio::new::<ratio>(314.98),
@@ -10807,7 +10805,6 @@ mod tests {
             assert!(test_bed.is_flaps_moving());
 
             test_bed = test_bed.run_waiting_for(Duration::from_secs(2));
-            println!("{:.2}", test_bed.get_flaps_left_position_percent());
             assert!(!test_bed.is_flaps_moving());
 
             assert!(test_bed.get_flaps_left_position_percent() >= 98.);
