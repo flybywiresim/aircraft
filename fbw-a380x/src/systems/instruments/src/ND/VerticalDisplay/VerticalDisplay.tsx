@@ -35,6 +35,7 @@ import { AesuBusEvents } from 'instruments/src/MsfsAvionicsCommon/providers/Aesu
 import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
 import { MfdSurvEvents } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
+import { A380XFcuBusEvents } from '@shared/publishers/A380XFcuBusPublisher';
 
 export interface VerticalDisplayProps extends ComponentProps {
   bus: ArincEventBus;
@@ -63,7 +64,8 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
       FGVars &
       FcuSimVars &
       MfdSurvEvents &
-      MfdSimvars
+      MfdSimvars &
+      A380XFcuBusEvents
   >();
 
   private readonly labelSvgRef = FSComponent.createRef<SVGElement>();
