@@ -24,19 +24,24 @@ export const EcamAbnormalSensedAta80Rest: { [n: number]: AbnormalProcedure } = {
     items: [], // TODO
   },
   990900002: {
-    title: '\x1b<4m\x1b4mMISC\x1bm CKPT WINDOW CRACKED (WIP)',
+    title: '\x1b<4m\x1b4mMISC\x1bm CKPT WINDOW CRACKED',
     sensed: false,
-    items: [], // TODO
+    items: [],
   },
   990900003: {
-    title: '\x1b<4m\x1b4mMISC\x1bm CKPT WINDOW ELEC ARCING (WIP)',
+    title: '\x1b<4m\x1b4mMISC\x1bm CKPT WINDOW ELEC ARCING',
     sensed: false,
-    items: [], // TODO
+    items: [
+      { name: 'IF L WINDOW/WINDSHIELD AFFECTED', condition: true, sensed: false },
+      { name: 'AICU 1', labelNotCompleted: 'PULL', sensed: true },
+      { name: 'IF R WINDOW/WINDSHIELD AFFECTED', condition: true, sensed: false },
+      { name: 'AICU 2', labelNotCompleted: 'PULL', sensed: true },
+    ],
   },
   990900004: {
-    title: '\x1b<2m\x1b4mMISC\x1bm DITCHING (WIP)',
+    title: '\x1b<2m\x1b4mMISC\x1bm DITCHING',
     sensed: false,
-    items: [], // TODO
+    items: [],
   },
   990900005: {
     title: '\x1b<2m\x1b4mMISC\x1bm EMER DESCENT',
@@ -89,14 +94,26 @@ export const EcamAbnormalSensedAta80Rest: { [n: number]: AbnormalProcedure } = {
     ],
   },
   990900007: {
-    title: '\x1b<2m\x1b4mMISC\x1bm FORCED LANDING (WIP)',
+    title: '\x1b<2m\x1b4mMISC\x1bm FORCED LANDING',
     sensed: false,
-    items: [], // TODO
+    items: [],
   },
   990900008: {
-    title: '\x1b<4m\x1b4mMISC\x1bm OIS FAULT (WIP)',
+    title: '\x1b<4m\x1b4mMISC\x1bm OIS FAULT',
     sensed: false,
-    items: [], // TODO
+    items: [
+      { name: 'AFFECTED SIDE LAPTOP', labelNotCompleted: 'UNSTOW & VERIFY', sensed: false },
+      { name: 'IF LAPTOP NOT AFFECTED', condition: true, sensed: false },
+      { name: 'OIT (AFFECTED)', labelNotCompleted: 'OFF 5 S THEN ON', sensed: false, level: 1 },
+      { name: 'IF NOT SUCCESSFULL AFTER 4 MIN', condition: true, sensed: false },
+      { name: 'USE LAPTOP AS RQRD', sensed: false, level: 1 },
+      { name: 'IF LAPTOP AFFECTED', condition: true, sensed: false },
+      { name: 'LAPTOP (AFFECTED)', labelNotCompleted: 'OFF', sensed: false, level: 1 },
+      { name: 'AFTER 30 S', condition: true, sensed: false },
+      { name: 'LAPTOP (AFFECTED)', labelNotCompleted: 'ON', sensed: false, level: 1 },
+      { name: 'IF NOT SUCCESSFUL AFTER 5 MIN', condition: true, sensed: false },
+      { name: 'USE BACKUP AS RQRD', sensed: false, level: 1 },
+    ],
   },
   990900009: {
     title: '\x1b<4m\x1b4mMISC\x1bm OVERWEIGHT LDG',
