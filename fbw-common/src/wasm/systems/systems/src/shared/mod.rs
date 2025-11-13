@@ -33,7 +33,10 @@ pub use random::*;
 pub mod arinc429;
 pub mod arinc825;
 pub mod can_bus;
+pub mod derivative;
+pub mod logic_nodes;
 pub mod power_supply_relay;
+pub mod rate_lmiter;
 
 pub trait ReservoirAirPressure {
     fn green_reservoir_pressure(&self) -> Pressure;
@@ -120,6 +123,7 @@ pub trait LgciuGearExtension {
     fn main_up_and_locked(&self) -> bool;
     fn nose_down_and_locked(&self) -> bool;
     fn nose_up_and_locked(&self) -> bool;
+    fn left_down_and_locked(&self) -> bool;
 }
 
 pub trait LgciuDoorPosition {

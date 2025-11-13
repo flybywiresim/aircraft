@@ -12,6 +12,25 @@ impl<T: Copy> Arinc429Word<T> {
         self.value
     }
 
+    pub fn value_or(&self, default: T) -> T {
+        if self.is_failure_warning() {
+            default
+        } else {
+            self.value
+        }
+    }
+
+    pub fn value_or_default(&self) -> T
+    where
+        T: Default,
+    {
+        if self.is_failure_warning() {
+            T::default()
+        } else {
+            self.value
+        }
+    }
+
     /// Returns `Some` value when the SSM indicates normal operation, `None` otherwise.
     pub fn normal_value(&self) -> Option<T> {
         if self.is_normal_operation() {
