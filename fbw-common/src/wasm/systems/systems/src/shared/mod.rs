@@ -23,7 +23,7 @@ use uom::si::{
 
 pub mod low_pass_filter;
 pub mod pid;
-#[cfg(test)]
+// The module `test` isn't marked #[cfg(test)] to allow usage in other crates.
 pub mod test;
 pub mod update_iterator;
 
@@ -628,6 +628,20 @@ impl DelayedFalseLogicGate {
             expression_result: false,
             false_duration: delay,
         }
+    }
+
+    pub fn starting_as(mut self, state: bool) -> Self {
+        self.set_output(state);
+        self
+    }
+
+    fn set_output(&mut self, state: bool) {
+        self.expression_result = state;
+        self.false_duration = if !state {
+            self.delay
+        } else {
+            Duration::from_millis(0)
+        };
     }
 
     pub fn update(&mut self, context: &UpdateContext, expression_result: bool) {

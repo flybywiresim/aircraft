@@ -182,11 +182,11 @@ impl AirDataInertialReferenceSystemOverheadPanel {
     }
 
     fn adr_is_on(&self, number: usize) -> bool {
-        self.adr[number - 1].is_on()
+        self.mode_of(number) != InertialReferenceMode::Off && self.adr[number - 1].is_on()
     }
 
     fn ir_is_on(&self, number: usize) -> bool {
-        self.ir[number - 1].is_on()
+        self.mode_of(number) != InertialReferenceMode::Off && self.ir[number - 1].is_on()
     }
 }
 impl SimulationElement for AirDataInertialReferenceSystemOverheadPanel {
@@ -3479,6 +3479,10 @@ mod tests {
             self.assert_ir_attitude_data_available(available, adiru_number);
             self.assert_ir_heading_data_available(available, adiru_number);
             self.assert_ir_non_attitude_data_available(available, adiru_number);
+            assert_eq!(
+                self.maint_word(adiru_number).is_normal_operation(),
+                available
+            );
         }
 
         fn assert_wind_direction_and_velocity_zero(&mut self, adiru_number: usize) {
