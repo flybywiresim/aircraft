@@ -14,14 +14,19 @@ Sec::Sec(const Sec& obj) : isUnit1(obj.isUnit1), isUnit2(obj.isUnit2), isUnit3(o
 // If the power supply is valid, perform the self-test-sequence.
 // If at least one hydraulic source is pressurised, perform a short test.
 // If no hydraulic supply is pressurised, and the outage was more than 3 seconds (or the switch was turned off),
-// perform a long selft-test.
+// perform a long self-test.
 // Else, perform a short self-test.
-void Sec::initSelfTests() {
+void Sec::initSelfTests(bool viaPushButton) {
   if (powerSupplyFault)
     return;
 
   clearMemory();
-  selfTestTimer = selfTestDuration;
+  if (modelInputs.in.discrete_inputs.green_low_pressure && modelInputs.in.discrete_inputs.yellow_low_pressure &&
+      (powerSupplyOutageTime > 3 || viaPushButton)) {
+    selfTestTimer = longSelfTestDuration;
+  } else {
+    selfTestTimer = shortSelfTestDuration;
+  }
 }
 
 // After the self-test is complete, erase all data in RAM.
@@ -48,7 +53,7 @@ void Sec::monitorSelf(bool faultActive) {
 
   bool shouldReset = cpuStopped && resetPulseNode.update(modelInputs.in.discrete_inputs.sec_overhead_button_pressed) && !powerSupplyFault;
   if (shouldReset) {
-    initSelfTests();
+    initSelfTests(true);
   }
 
   monitoringHealthy = !cpuStopped && !powerSupplyFault && modelInputs.in.discrete_inputs.sec_overhead_button_pressed;
@@ -67,7 +72,7 @@ void Sec::monitorPowerSupply(double deltaTime, bool isPowered) {
   }
   if (isPowered && powerSupplyFault) {
     powerSupplyFault = false;
-    initSelfTests();
+    initSelfTests(false);
     powerSupplyOutageTime = 0;
   }
 }
@@ -84,9 +89,21 @@ void Sec::updateSelfTest(double deltaTime) {
   if (selfTestTimer <= 0) {
     selfTestComplete = true;
     modelInputs.in.sim_data.computer_running = true;
+    selfTestFaultLightVisible = false;
   } else {
     selfTestComplete = false;
     modelInputs.in.sim_data.computer_running = false;
+
+    // Hardcoded test light sequence. Between the times (in seconds) in each array, the light is on.
+    selfTestFaultLightVisible = false;
+    double constexpr testLightOnTimes[][2] = {{0, 06.46}, {18.5, 18.63}, {21.13, 21.33}, {21.42, 21.54}, {21.58, 21.96}};
+    for (auto& timeRange : testLightOnTimes) {
+      double selfTestTimerFromStart = longSelfTestDuration - selfTestTimer;
+      if (selfTestTimerFromStart >= timeRange[0] && selfTestTimerFromStart <= timeRange[1]) {
+        selfTestFaultLightVisible = true;
+        break;
+      }
+    }
   }
 }
 
@@ -133,7 +150,8 @@ base_sec_out_bus Sec::getBusOutputs() {
 base_sec_discrete_outputs Sec::getDiscreteOutputs() {
   base_sec_discrete_outputs output = {};
 
-  output.sec_healthy = monitoringHealthy;
+  output.sec_healthy = (selfTestComplete && monitoringHealthy) || (!selfTestComplete && !selfTestFaultLightVisible);
+
   if (!monitoringHealthy) {
     output.elevator_1_active_mode = false;
     output.elevator_2_active_mode = false;

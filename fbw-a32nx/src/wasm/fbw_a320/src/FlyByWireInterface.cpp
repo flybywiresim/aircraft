@@ -1956,7 +1956,7 @@ bool FlyByWireInterface::updateFmgc(double sampleTime, int fmgcIndex) {
 
   // Set the stick lock var (for sounds) and inst. disc. discretes, after both FMGCs have updated
   if (fmgcIndex == 1) {
-    idStickLockActive->set(fmgcsDiscreteOutputs[0].ap_own_engaged || fmgcsDiscreteOutputs[1].ap_own_engaged);
+    idStickLockActive->set(fmgcsDiscreteOutputs[0].stick_rudder_lock || fmgcsDiscreteOutputs[1].stick_rudder_lock);
 
     idApInstinctiveDisconnect->set(ap_instinctive_disc);
     idAthrInstinctiveDisconnect->set(athr_instinctive_disc);

@@ -77,8 +77,21 @@ void Fac::updateSelfTest(double deltaTime) {
   if (selfTestTimer > 0) {
     selfTestTimer -= deltaTime;
     selfTestComplete = false;
+
+    // Hardcoded test light sequence. Between the times (in seconds) in each array, the light is on.
+    selfTestFaultLightVisible = false;
+    double constexpr testLightOnTimes[][2] = {{0, 2},       {4.77, 4.87}, {4.9, 5.0},   {5.17, 5.27}, {5.33, 5.43},
+                                              {5.60, 5.70}, {7.83, 7.93}, {8.13, 8.23}, {8.4, 8.5},   {19.13, 19.37}};
+    for (auto& timeRange : testLightOnTimes) {
+      double selfTestTimerFromStart = selfTestDuration - selfTestTimer;
+      if (selfTestTimerFromStart >= timeRange[0] && selfTestTimerFromStart <= timeRange[1]) {
+        selfTestFaultLightVisible = true;
+        break;
+      }
+    }
   } else {
     selfTestComplete = true;
+    selfTestFaultLightVisible = false;
   }
 }
 
@@ -126,7 +139,7 @@ base_fac_bus Fac::getBusOutputs() {
 base_fac_discrete_outputs Fac::getDiscreteOutputs() {
   base_fac_discrete_outputs output = {};
 
-  output.fac_healthy = facHealthy;
+  output.fac_healthy = (selfTestComplete && facHealthy) || (!selfTestComplete && !selfTestFaultLightVisible);
 
   if (!facHealthy) {
     output.yaw_damper_engaged = false;

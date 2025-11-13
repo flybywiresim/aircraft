@@ -128,7 +128,6 @@ export class A320_Neo_CDU_MainDisplay
     IRSInit: 18,
     IRSMonitor: 19,
     IRSStatus: 20,
-    IRSStatusFrozen: 21,
     LateralRevisionPage: 22,
     MenuPage: 23,
     NavaidPage: 24,
