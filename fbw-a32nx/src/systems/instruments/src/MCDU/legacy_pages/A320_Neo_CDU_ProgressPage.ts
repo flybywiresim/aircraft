@@ -21,12 +21,14 @@ export class CDUProgressPage {
 
     const flightNo = plan.flightNumber ?? '';
     const cruiseLevel = plan.performanceData.cruiseFlightLevel.get();
-    const flMax = mcdu.getMaxFlCorrected();
+    const recMaxFl = mcdu.getMaxFlCorrected();
+    const flMaxText = recMaxFl !== null ? `{magenta}FL${recMaxFl.toString()}{end}` : `-----`;
     const flOpt =
+      recMaxFl !== null &&
       plan.performanceData.zeroFuelWeightCenterOfGravity.get() !== null &&
       plan.performanceData.blockFuel.get() !== null &&
       (mcdu.isAllEngineOn() || mcdu.isOnGround())
-        ? '{green}FL' + (Math.floor(flMax / 5) * 5).toString() + '{end}'
+        ? '{green}FL' + (Math.floor(recMaxFl / 5) * 5).toString() + '{end}'
         : '-----';
     const gpsPrimary = mcdu.navigation.getGpsPrimary();
     const gpsPrimaryStatus = mcdu.navigation.getGpsPrimary() ? '{green}GPS PRIMARY{end}' : '';
@@ -145,14 +147,16 @@ export class CDUProgressPage {
       });
     };
 
-    let rnpCell = '-.-';
+    let rnpCell = '{white}----{end}';
     const rnpSize = mcdu.navigation.requiredPerformance.manualRnp ? 'big' : 'small';
     const rnp = mcdu.navigation.requiredPerformance.activeRnp;
     // TODO check 2 decimal cut-off
-    if (rnp > 1) {
-      rnpCell = rnp.toFixed(1).padStart(4);
-    } else if (rnp !== undefined) {
-      rnpCell = rnp.toFixed(2);
+    if (rnp !== undefined) {
+      if (rnp > 1) {
+        rnpCell = rnp.toFixed(1).padStart(4);
+      } else {
+        rnpCell = rnp.toFixed(2);
+      }
     }
 
     mcdu.onLeftInput[5] = (input, scratchpadCallback) => {
@@ -179,19 +183,21 @@ export class CDUProgressPage {
       CDUProgressPage.ShowPage(mcdu);
     };
 
-    let anpCell = '-.-';
+    let anpCell = '{white}----{end}';
     const anp = mcdu.navigation.currentPerformance;
     // TODO check 2 decimal cut-off
-    if (anp > 1) {
-      anpCell = anp.toFixed(1).padStart(4);
-    } else if (anp !== undefined) {
-      anpCell = anp.toFixed(2);
+    if (anp !== undefined) {
+      if (anp > 1) {
+        anpCell = anp.toFixed(1).padStart(4);
+      } else {
+        anpCell = anp.toFixed(2);
+      }
     }
 
     mcdu.setTemplate([
       ['{green}' + flightPhase.padStart(15, '\xa0') + '{end}\xa0' + flightNo.padEnd(11, '\xa0')],
       ['\xa0' + 'CRZ\xa0', 'OPT\xa0\xa0\xa0\xa0REC MAX'],
-      [flCrz, flOpt + '\xa0\xa0\xa0\xa0' + '{magenta}FL' + flMax.toString() + '\xa0{end}'],
+      [flCrz, flOpt + '\xa0\xa0\xa0\xa0' + flMaxText + '\xa0{end}'],
       [''],
       ['<REPORT', vDevCell],
       [gpsPrimary ? '' : '\xa0POSITION UPDATE AT'],
@@ -204,7 +210,7 @@ export class CDUProgressPage {
       [
         `{cyan}{${rnpSize}}${rnpCell}NM{end}{end}`,
         `{green}{small}${anpCell}NM{end}{end}`,
-        `{green}${mcdu.navigation.accuracyHigh.get() ? 'HIGH' : 'LOW'}{end}`,
+        `{green}${mcdu.navigation.accuracyHigh.get() ? 'HIGH' : 'LOW\xa0'}{end}`,
       ],
     ]);
 

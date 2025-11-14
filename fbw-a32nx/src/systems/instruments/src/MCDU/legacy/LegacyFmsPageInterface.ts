@@ -195,8 +195,8 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   setPerfApprMDA(s: string, forPlan: FlightPlanIndex): boolean;
   setPerfApprDH(s: string, forPlan: FlightPlanIndex): boolean;
   computeManualCrossoverAltitude(mach: number): number;
-  getMaxFlCorrected(fl?: number): number;
   isAnEngineOn(): boolean;
+  getMaxFlCorrected(): number | null;
   isAllEngineOn(): boolean;
   trySetCruiseFlCheckInput(input: string, forPlan: FlightPlanIndex): boolean;
   trySetProgWaypoint(s: string, callback?: typeof EmptyCallback.Boolean): void;

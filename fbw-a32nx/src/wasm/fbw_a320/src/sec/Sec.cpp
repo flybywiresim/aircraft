@@ -82,9 +82,21 @@ void Sec::updateSelfTest(double deltaTime) {
   if (selfTestTimer <= 0) {
     selfTestComplete = true;
     modelInputs.in.sim_data.computer_running = true;
+    selfTestFaultLightVisible = false;
   } else {
     selfTestComplete = false;
     modelInputs.in.sim_data.computer_running = false;
+
+    // Hardcoded test light sequence. Between the times (in seconds) in each array, the light is on.
+    selfTestFaultLightVisible = false;
+    double constexpr testLightOnTimes[][2] = {{0, 0.5}, {1, 1.5}, {2, 2.5}, {27, 27.5}, {28, 28.5}, {29, 29.5}};
+    for (auto& timeRange : testLightOnTimes) {
+      double selfTestTimerFromStart = selfTestDuration - selfTestTimer;
+      if (selfTestTimerFromStart >= timeRange[0] && selfTestTimerFromStart <= timeRange[1]) {
+        selfTestFaultLightVisible = true;
+        break;
+      }
+    }
   }
 }
 
@@ -122,7 +134,7 @@ base_sec_out_bus Sec::getBusOutputs() {
 base_sec_discrete_outputs Sec::getDiscreteOutputs() {
   base_sec_discrete_outputs output = {};
 
-  output.sec_failed = !monitoringHealthy;
+  output.sec_failed = !((selfTestComplete && monitoringHealthy) || (!selfTestComplete && !selfTestFaultLightVisible));
   if (!monitoringHealthy) {
     output.thr_reverse_selected = false;
     output.left_elevator_ok = false;

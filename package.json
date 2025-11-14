@@ -1,6 +1,6 @@
 {
   "name": "a32nx",
-  "version": "0.14.0",
+  "version": "0.15.0",
   "edition": "development",
   "imports": {
     "#build-utils": "./build-utils.js"

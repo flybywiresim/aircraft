@@ -105,8 +105,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public _deltaTime = 0;
 
   /** Declaration of every variable used (NOT initialization) */
-  private maxCruiseFL = 390;
-  private recMaxCruiseFL = 398;
+  private readonly maximumAllowedCruiseFlightLevel = 390;
+  private readonly maximumRecommendedCruiseFlightLevel = 398;
   public coRoute = { routeNumber: undefined, routes: undefined };
 
   private readonly fuelComputationsCache: Map<FlightPlanIndex, FuelPredComputations> = new Map();
@@ -420,8 +420,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   protected initVariables(resetTakeoffData = true) {
     this.costIndex = undefined;
-    this.maxCruiseFL = 390;
-    this.recMaxCruiseFL = 398;
     this.resetCoroute();
     this.unconfirmedV1Speed = undefined;
     this.unconfirmedVRSpeed = undefined;
@@ -3439,7 +3437,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     if (fl >= 1000) {
       fl = Math.floor(fl / 100);
     }
-    if (fl > this.maxCruiseFL) {
+    if (fl > this.maximumAllowedCruiseFlightLevel) {
       this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
       return false;
     }
@@ -3457,7 +3455,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       return false;
     }
 
-    if (fl <= 0 || fl > this.maxCruiseFL) {
+    if (fl <= 0 || fl > this.maximumAllowedCruiseFlightLevel) {
       this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
       return false;
     }
@@ -4487,18 +4485,21 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
    * @returns {number} MAX FL
    */
   //TODO: can this be an util?
-  private getMaxFL(temp = A32NX_Util.getIsaTempDeviation(), gw = this.getGW()) {
-    return Math.round(temp <= 10 ? -2.778 * gw + 578.667 : (temp * -0.039 - 2.389) * gw + temp * -0.667 + 585.334);
+  private getMaxFL(temp = A32NX_Util.getIsaTempDeviation(), gw = this.getGrossWeight()): number | null {
+    return gw !== null
+      ? Math.round(temp <= 10 ? -2.778 * gw + 578.667 : (temp * -0.039 - 2.389) * gw + temp * -0.667 + 585.334)
+      : null;
   }
 
   /**
    * Returns the maximum allowed cruise FL considering max service FL
    * @param fl FL to check
-   * @returns maximum allowed cruise FL
+   * @returns maximum allowed cruise FL or null if no grossweight available
    */
   //TODO: can this be an util? no
-  public getMaxFlCorrected(fl: number = this.getMaxFL()): number {
-    return fl >= this.recMaxCruiseFL ? this.recMaxCruiseFL : fl;
+  public getMaxFlCorrected(): number | null {
+    const maxFl = this.getMaxFL();
+    return maxFl !== null ? Math.min(maxFl, this.maximumRecommendedCruiseFlightLevel) : null;
   }
 
   // only used by trySetMinDestFob

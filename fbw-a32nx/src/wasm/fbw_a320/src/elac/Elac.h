@@ -62,5 +62,5 @@ class Elac {
 
   const double minimumPowerOutageTimeForFailure = 0.02;
   const double shortSelfTestDuration = 1;
-  const double longSelfTestDuration = 3;
+  const double longSelfTestDuration = 8;
 };
