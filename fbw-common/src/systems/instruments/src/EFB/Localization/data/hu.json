@@ -587,6 +587,7 @@
     "AircraftOptionsPinPrograms": {
       "AccelerationHeight": "Gyorsítási magasság (ft)",
       "EngineOutAccelerationHeight": "Hajtómű leállás gyorsulási magasság (ft)",
+      "hudXwindFpvType": "Crosswind FPV Type ",
       "IsisBaroUnit": "ISIS barométer egység",
       "IsisMetricAltitude": "ISIS metrikus magasság",
       "LatLonExtendedFormat": "FMGC Lat/Lon Útvonal formátum",
