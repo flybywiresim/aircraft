@@ -131,7 +131,7 @@ bool FlyByWireInterface::update(double sampleTime) {
     if (simConnectInterface.wasLastBaroInputRightSide()) {
       if (idFcuEisPanelBaroIsInhg[1]->get()) {
         if (fcuBusOutput.baro_setting_left_inhg.Data != fcuBusOutput.baro_setting_right_inhg.Data) {
-          const DWORD kohlsman = fcuBusOutput.baro_setting_right_inhg.Data * 541.822186666672;
+          const DWORD kohlsman = fcuBusOutput.baro_setting_right_inhg.Data * 541.8224;
           simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_L_BARO_SET, kohlsman);
           std::cout << "FBWInterface: Syncing left baro to " << fcuBusOutput.baro_setting_right_inhg.Data << std::endl;
         }
@@ -152,7 +152,7 @@ bool FlyByWireInterface::update(double sampleTime) {
     } else {
       if (idFcuEisPanelBaroIsInhg[1]->get()) {
         if (fcuBusOutput.baro_setting_left_inhg.Data != fcuBusOutput.baro_setting_right_inhg.Data) {
-          const DWORD kohlsman = fcuBusOutput.baro_setting_left_inhg.Data * 541.822186666672;
+          const DWORD kohlsman = fcuBusOutput.baro_setting_left_inhg.Data * 541.8224;
           simConnectInterface.sendEvent(SimConnectInterface::Events::A32NX_FCU_EFIS_R_BARO_SET, kohlsman);
           std::cout << "FBWInterface: Syncing right baro to " << fcuBusOutput.baro_setting_left_inhg.Data << std::endl;
         }
