@@ -31,6 +31,8 @@ import {
   PilotSeatPublisher,
   VhfComIndices,
   SwitchingPanelPublisher,
+  RaBusPublisher,
+  LgciuBusPublisher,
 } from '@flybywiresim/fbw-sdk';
 import { AudioManagementUnit } from 'systems-host/Misc/Communications/AudioManagementUnit';
 import { RmpAmuBusPublisher } from 'systems-host/Misc/Communications/RmpAmuBusPublisher';
@@ -40,7 +42,7 @@ import { SimAudioManager } from 'systems-host/Misc/Communications/SimAudioManage
 import { AtsuSystem } from 'systems-host/CpiomD/atsu';
 import { FwsCore } from 'systems-host/CpiomC/FlightWarningSystem/FwsCore';
 import { FuelSystemPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
-import { BrakeToVacateDistanceUpdater } from 'systems-host/PseudoPRIM/BrakeToVacateDistanceUpdater';
+import { BrakeToVacate } from 'systems-host/PseudoPRIM/BrakeToVacate';
 import { PseudoFwcSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
 import { FcdcSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FcdcPublisher';
 import {
@@ -105,7 +107,7 @@ class SystemsHost extends BaseInstrument {
 
   private readonly atsu = new AtsuSystem(this.bus);
 
-  private readonly btvDistanceUpdater = new BrakeToVacateDistanceUpdater(this.bus);
+  private readonly btv = new BrakeToVacate(this.bus, this);
 
   private readonly rmpAmuBusPublisher = new RmpAmuBusPublisher(this.bus);
 
@@ -136,6 +138,8 @@ class SystemsHost extends BaseInstrument {
   private readonly fgDataPublisher = new FGDataPublisher(this.bus);
   private readonly msfsMiscPublisher = new MsfsMiscPublisher(this.bus);
   private readonly irBusPublisher = new IrBusPublisher(this.bus);
+  private readonly raBusPublisher = new RaBusPublisher(this.bus);
+  private readonly lgciuBusPublisher = new LgciuBusPublisher(this.bus);
   private readonly aesuBusPublisher = new AesuBusPublisher(this.bus);
   private readonly switchingPanelPublisher = new SwitchingPanelPublisher(this.bus);
 
@@ -198,7 +202,7 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addInstrument('Xpndr1', this.xpdr1, true);
     this.backplane.addInstrument('AtsuSystem', this.atsu);
     this.backplane.addInstrument('LegacyFuel', this.legacyFuel);
-    this.backplane.addInstrument('BtvDistanceUpdater', this.btvDistanceUpdater);
+    this.backplane.addInstrument('BtvDistanceUpdater', this.btv);
     this.backplane.addInstrument('EfisTawsBridge', this.efisTawsBridge);
     this.backplane.addPublisher('RmpAmuBusPublisher', this.rmpAmuBusPublisher);
     this.backplane.addPublisher('PilotSeatPublisher', this.pilotSeatPublisher);
@@ -217,6 +221,8 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('FGDataPublisher', this.fgDataPublisher);
     this.backplane.addPublisher('MsfsMiscPublisher', this.msfsMiscPublisher);
     this.backplane.addPublisher('IrBusPublisher', this.irBusPublisher);
+    this.backplane.addPublisher('RaBusPublisher', this.raBusPublisher);
+    this.backplane.addPublisher('LgciuBusPublisher', this.lgciuBusPublisher);
     this.backplane.addPublisher('AesuPublisher', this.aesuBusPublisher);
     this.backplane.addPublisher('SwitchingPanelPublisher', this.switchingPanelPublisher);
     this.backplane.addPublisher('fmsMessage', this.fmsMessagePublisher);
