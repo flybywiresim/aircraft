@@ -248,22 +248,24 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
 
   directToLeg(
     ppos: Coordinates,
-    trueTrack: Degrees,
+    magneticTrack: Degrees,
+    magVar: number,
     targetLegIndex: number,
     withAbeam: boolean,
     planIndex: number,
   ): Promise<void> {
-    return this.callFunctionViaRpc('directToLeg', ppos, trueTrack, targetLegIndex, withAbeam, planIndex);
+    return this.callFunctionViaRpc('directToLeg', ppos, magneticTrack, magVar, targetLegIndex, withAbeam, planIndex);
   }
 
   directToWaypoint(
     ppos: Coordinates,
-    trueTrack: Degrees,
+    magneticTrack: Degrees,
+    magVar: number,
     waypoint: Fix,
     withAbeam: boolean,
     planIndex: number,
   ): Promise<void> {
-    return this.callFunctionViaRpc('directToWaypoint', ppos, trueTrack, waypoint, withAbeam, planIndex);
+    return this.callFunctionViaRpc('directToWaypoint', ppos, magneticTrack, magVar, waypoint, withAbeam, planIndex);
   }
 
   addOrEditManualHold(
