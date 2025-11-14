@@ -17,7 +17,7 @@ enum PowerSupply {
     Relay(PowerSupplyRelay),
 }
 
-pub struct AvionicsFullDuplexSwitch<MessageData: Clone + Eq + PartialEq> {
+pub struct AvionicsFullDuplexSwitch<MessageData: Clone + PartialEq> {
     power_supply: PowerSupply,
     last_is_powered: bool,
     is_powered: bool,
@@ -36,7 +36,7 @@ pub struct AvionicsFullDuplexSwitch<MessageData: Clone + Eq + PartialEq> {
     >,
 }
 
-impl<MessageData: Clone + Eq + PartialEq> AvionicsFullDuplexSwitch<MessageData> {
+impl<MessageData: Clone + PartialEq> AvionicsFullDuplexSwitch<MessageData> {
     pub fn new_single_power_supply(
         context: &mut InitContext,
         id: u8,
@@ -125,7 +125,7 @@ impl<MessageData: Clone + Eq + PartialEq> AvionicsFullDuplexSwitch<MessageData> 
         self.adcn_messages = adcn_messages;
     }
 }
-impl<MessageData: Clone + Eq + PartialEq> AvionicsDataCommunicationNetworkEndpoint
+impl<MessageData: Clone + PartialEq> AvionicsDataCommunicationNetworkEndpoint
     for AvionicsFullDuplexSwitch<MessageData>
 {
     type MessageData = MessageData;
@@ -160,9 +160,7 @@ impl<MessageData: Clone + Eq + PartialEq> AvionicsDataCommunicationNetworkEndpoi
         self.adcn_messages.borrow_mut().insert(*id, value);
     }
 }
-impl<MessageData: Clone + Eq + PartialEq> SimulationElement
-    for AvionicsFullDuplexSwitch<MessageData>
-{
+impl<MessageData: Clone + PartialEq> SimulationElement for AvionicsFullDuplexSwitch<MessageData> {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         if let PowerSupply::Relay(ref mut power_supply_relay) = self.power_supply {
             power_supply_relay.accept(visitor);
