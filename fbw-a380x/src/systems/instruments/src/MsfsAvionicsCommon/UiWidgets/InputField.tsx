@@ -64,7 +64,7 @@ interface InputFieldProps<T, U = T, S = T extends U ? true : false> extends Comp
   overrideEmptyMandatoryPlaceholder?: string;
   // inViewEvent?: Consumer<boolean>; // Consider activating when we have a larger collision mesh for the screens
 
-  /* Wheter to display the unit in a larger font size */
+  /* Whether to display the unit in a larger font size */
   bigUnit?: boolean;
 }
 

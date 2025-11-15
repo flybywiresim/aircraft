@@ -17,6 +17,8 @@
 1. [A32NX/SFCC] Connected SFCC to electrical busses with simulation of power consumption and power restoration behaviour - @Eagle941 (Joe)
 1. [A380X/MFD] Add = sign the the MFD font - @JulKem (JulK)
 1. [A32NX/FMS] Hookup IR data to IRS status & monitor MCDU page - @BravoMike99 (bruno_pt99)
+1. [A380X/MFD] Implement Position Monitor page - @BravoMike99 (bruno_pt99)
+1. [A380X/MFD] Only show "RETURN" button on PERF & POS NAVAIDS if acessed via INIT page keys - @BravoMike99 (bruno_pt99)
 
 ## 0.14.0
 

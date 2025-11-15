@@ -191,7 +191,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
 
   private positionUpdateRequiredDueToFreeze = false;
 
-  private readonly gpsDeselected = Subject.create(true);
+  private readonly gpsDeselected = Subject.create(false); // TODO change when GPS deselected state is available from FM
 
   private readonly gpsDeselectedVisibility = this.gpsDeselected.map((v) => (v ? 'visible' : 'hidden'));
 
@@ -408,11 +408,6 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
   render(): VNode {
     return (
       <>
-        {/* TODO (top to bottom):
-        Check SHOW POS DATA/FREEZE POSITION X & Y labels
-        Frozen position data location.
-        Bottom area
-        */}
         {super.render()}
         {/* begin page content */}
         <div class="mfd-page-container">
