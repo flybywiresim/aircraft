@@ -32,7 +32,7 @@ export class ClientState {
   private available: boolean = false;
 
   // SimBridge Connect setting
-  private simBridgeEnabledSetting: string = 'AUTO ON';
+  private simBridgeEnabledSetting: string | undefined = 'AUTO ON';
 
   // counter for failed connection attempts
   private connectionAttemptCounter: number = 0;
