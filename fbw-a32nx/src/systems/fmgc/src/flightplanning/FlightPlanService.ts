@@ -228,8 +228,8 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     }
 
     // Support code for TELEX API, should move somewhere else
-    NXDataStore.set('PLAN_ORIGIN', fromIcao);
-    NXDataStore.set('PLAN_DESTINATION', toIcao);
+    NXDataStore.setLegacy('PLAN_ORIGIN', fromIcao);
+    NXDataStore.setLegacy('PLAN_DESTINATION', toIcao);
   }
 
   async setAlternate(altnIcao: string, planIndex = FlightPlanIndex.Active) {

@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2025 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 // @ts-strict-ignore
 import {
   Arinc429SignStatusMatrix,
@@ -185,7 +189,7 @@ export class A32NX_GPWS {
     this.setGlideSlopeWarning(false);
     this.setGpwsWarning(false);
 
-    NXDataStore.getAndSubscribe(
+    NXDataStore.getAndSubscribeLegacy(
       'CONFIG_A32NX_FWC_RADIO_AUTO_CALL_OUT_PINS',
       (k, v) => k === 'CONFIG_A32NX_FWC_RADIO_AUTO_CALL_OUT_PINS' && (this.autoCallOutPins = Number(v)),
       A32NX_DEFAULT_RADIO_AUTO_CALL_OUTS.toString(),

@@ -751,7 +751,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           // it's important to set this immediately as we don't want to immediately sequence to the climb phase
           plan.setPerformanceData(
             'pilotAccelerationAltitude',
-            SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500')),
+            SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') +
+              parseInt(NXDataStore.getLegacy('CONFIG_ACCEL_ALT', '1500')),
           );
           this.updateThrustReductionAcceleration();
         }
@@ -759,7 +760,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           // it's important to set this immediately as we don't want to immediately sequence to the climb phase
           plan.setPerformanceData(
             'pilotEngineOutAccelerationAltitude',
-            SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500')),
+            SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') +
+              parseInt(NXDataStore.getLegacy('CONFIG_ACCEL_ALT', '1500')),
           );
           this.updateThrustReductionAcceleration();
         }
@@ -870,7 +872,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           activePlan.setPerformanceData(
             'pilotMissedAccelerationAltitude',
             SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') +
-              parseInt(NXDataStore.get('CONFIG_ENG_OUT_ACCEL_ALT', '1500')),
+              parseInt(NXDataStore.getLegacy('CONFIG_ENG_OUT_ACCEL_ALT', '1500')),
           );
           this.updateThrustReductionAcceleration();
         }
@@ -879,7 +881,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           activePlan.setPerformanceData(
             'pilotMissedEngineOutAccelerationAltitude',
             SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') +
-              parseInt(NXDataStore.get('CONFIG_ENG_OUT_ACCEL_ALT', '1500')),
+              parseInt(NXDataStore.getLegacy('CONFIG_ENG_OUT_ACCEL_ALT', '1500')),
           );
           this.updateThrustReductionAcceleration();
         }

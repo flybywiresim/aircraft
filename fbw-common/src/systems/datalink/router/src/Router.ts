@@ -246,7 +246,7 @@ export class Router {
 
     if (index < icaos.length) {
       if (requestMetar === true) {
-        const storedMetarSrc = NXDataStore.get('CONFIG_METAR_SRC', 'MSFS');
+        const storedMetarSrc = NXDataStore.getLegacy('CONFIG_METAR_SRC', 'MSFS');
 
         if (storedMetarSrc === 'MSFS') {
           retval = await MsfsConnector.receiveMsfsMetar(icaos[index], message).then(() =>
@@ -258,7 +258,7 @@ export class Router {
           );
         }
       } else {
-        const storedTafSrc = NXDataStore.get('CONFIG_TAF_SRC', isMsfs2024() ? 'MSFS' : 'NOAA');
+        const storedTafSrc = NXDataStore.getLegacy('CONFIG_TAF_SRC', isMsfs2024() ? 'MSFS' : 'NOAA');
         if (storedTafSrc === 'MSFS') {
           retval = await MsfsConnector.receiveMsfsTaf(icaos[index], message).then(() =>
             this.receiveWeatherData(requestMetar, icaos, index + 1, message),
@@ -382,7 +382,7 @@ export class Router {
   }
 
   private satcomDatalinkStatus(): DatalinkStatusCode {
-    if (NXDataStore.get('MODEL_SATCOM_ENABLED') === '1') {
+    if (NXDataStore.getLegacy('MODEL_SATCOM_ENABLED') === '1') {
       return DatalinkStatusCode.DlkNotAvail;
     }
     return DatalinkStatusCode.NotInstalled;

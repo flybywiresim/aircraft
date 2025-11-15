@@ -58,7 +58,7 @@ export class OitAvncsLoadingScreen extends DisplayComponent<OitAvncsLoadingScree
           }
         }),
       this.ansuPowered.sub((powered) => {
-        this.totalStartupTime.set(powered ? parseInt(NXDataStore.get('CONFIG_SELF_TEST_TIME', '12')) * 1.5 : 0);
+        this.totalStartupTime.set(powered ? parseInt(NXDataStore.getLegacy('CONFIG_SELF_TEST_TIME', '12')) * 1.5 : 0);
         this.remainingStartupTime.set(this.totalStartupTime.get());
       }, true),
     );

@@ -4,5 +4,6 @@ export * from './hooks';
 export * from './navigraph';
 export * from './persistence';
 export * from './simVars';
+export * from './subscribables';
 export * from './useInterval';
 export * from './utils';
