@@ -166,10 +166,10 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
   );
 
   private readonly distanceToWaypointDisplay = this.distanceToWaypoint.map((v) =>
-    v ? v.toFixed(v > 9999 ? 0 : 1).padStart(6, '\xa0') : '----.-',
+    v ? v.toFixed(v > 9999 ? 0 : 1).padEnd(6, '\xa0') : '----.-',
   );
 
-  private readonly bearingUnit = this.bearingToWaypoint.map((v) => (v ? '°\xa0\xa0' : '\xa0\xa0\xa0'));
+  private readonly bearingUnit = this.bearingToWaypoint.map((v) => (v ? '°' : ''));
 
   private readonly distanceToWaypointUnit = this.bearingToWaypoint.map((v) => (v ? 'NM' : '\xa0\xa0'));
 
@@ -628,8 +628,13 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
               buttonStyle="width: 138px; height:59px; margin-top:18px;"
             />
             <div>
-              <div class="mfd-label-value-container" style={'margin-right:20px; justify-content:flex-end;'}>
-                <span class="mfd-label bigger mfd-spacing-right">BRG / DIST TO</span>
+              <div
+                class="mfd-label-value-container"
+                style={'margin-right:16px; padding-top:8px; justify-content:flex-end; padding-bottom:3px;'}
+              >
+                <span class="mfd-label mfd-spacing-right-small" style={'font-size:22px;'}>
+                  BRG / DIST TO
+                </span>
                 <InputField<Fix, string, false>
                   dataEntryFormat={new FixFormat()}
                   readonlyValue={this.monitorWaypoint}
@@ -654,15 +659,23 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                   errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
+                  containerStyle='"width:130px;'
                 />
               </div>
-              <div class="fr" style={'width: 430px;'}>
-                <span class="mfd-value bigger">{this.bearingToWaypointDisplay}</span>
-                <span class="mfd-label-unit bigger mfd-unit-trailing">{this.bearingUnit}</span>
-                <span class="mfd-value bigger" style={'margin-left:10px'}>
-                  /{this.distanceToWaypointDisplay}
+              <div class="fr" style={'width:417px; margin-top: 5px;'}>
+                <span class="mfd-value" style={'position: absolute; left: 452px;'}>
+                  /
                 </span>
-                <span class="mfd-label-unit bigger mfd-unit-trailing">{this.distanceToWaypointUnit}</span>
+                <div>
+                  <span class="mfd-value">{this.bearingToWaypointDisplay}</span>
+                  <span class="mfd-label-unit mfd-unit-trailing">&nbsp;{this.bearingUnit}</span>
+                </div>
+                <div>
+                  <span class="mfd-value" style={'margin-left:50px'}>
+                    {this.distanceToWaypointDisplay}
+                  </span>
+                  <span class="mfd-label-unit mfd-unit-trailing">&nbsp;{this.distanceToWaypointUnit}</span>
+                </div>
               </div>
             </div>
           </div>
