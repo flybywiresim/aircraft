@@ -59,7 +59,7 @@ import { Coordinates, distanceTo, placeBearingDistance } from 'msfs-geo';
 import { AdirsSimVars } from 'instruments/src/MsfsAvionicsCommon/SimVarTypes';
 import { InternalKccuKeyEvent } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { NDSimvars } from 'instruments/src/ND/NDSimvarPublisher';
-import { Feature, Geometry, LineString, Point, Position } from '@turf/turf';
+import { Feature, Geometry, LineString, Point, Position } from 'geojson';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
 import { ResetPanelSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/ResetPanelPublisher';

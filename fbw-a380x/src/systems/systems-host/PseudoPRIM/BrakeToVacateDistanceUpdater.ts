@@ -11,7 +11,7 @@ import {
 } from '@flybywiresim/fbw-sdk';
 import { Arinc429Register, Arinc429SignStatusMatrix, MathUtils } from '@flybywiresim/fbw-sdk';
 import { placeBearingDistance } from 'msfs-geo';
-import { Position } from '@turf/turf';
+import { Position } from 'geojson';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
 import { OansFmsDataStore } from '@flybywiresim/fbw-sdk';
