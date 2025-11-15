@@ -4164,10 +4164,6 @@ export class FwsCore {
     this.sec3OffThenOnPulseNode.write(!this.sec3PbOff.get(), deltaTime);
     this.sec3OffThenOnMemoryNode.write(this.sec3OffThenOnPulseNode.read(), !this.sec3FaultCondition.get());
 
-    this.prim1Healthy.set(SimVar.GetSimVarValue('L:A32NX_PRIM_1_HEALTHY', 'Bool'));
-    this.prim2Healthy.set(SimVar.GetSimVarValue('L:A32NX_PRIM_2_HEALTHY', 'bool'));
-    this.prim3Healthy.set(SimVar.GetSimVarValue('L:A32NX_PRIM_3_HEALTHY', 'bool'));
-
     this.prim1PbOff.set(!SimVar.GetSimVarValue('L:A32NX_PRIM_1_PUSHBUTTON_PRESSED', SimVarValueType.Bool));
 
     this.prim1FaultCondition.set(
