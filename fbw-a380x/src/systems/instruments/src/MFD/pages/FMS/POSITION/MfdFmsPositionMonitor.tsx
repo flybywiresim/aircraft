@@ -663,15 +663,15 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                 />
               </div>
               <div class="fr" style={'width:417px; margin-top: 5px;'}>
-                <span class="mfd-value" style={'position: absolute; left: 452px;'}>
-                  /
-                </span>
                 <div>
                   <span class="mfd-value">{this.bearingToWaypointDisplay}</span>
                   <span class="mfd-label-unit mfd-unit-trailing">&nbsp;{this.bearingUnit}</span>
                 </div>
+                <span class="mfd-value" style={'margin-left:33px;'}>
+                  /
+                </span>
                 <div>
-                  <span class="mfd-value" style={'margin-left:50px'}>
+                  <span class="mfd-value" style={'margin-left:14px'}>
                     {this.distanceToWaypointDisplay}
                   </span>
                   <span class="mfd-label-unit mfd-unit-trailing">&nbsp;{this.distanceToWaypointUnit}</span>
