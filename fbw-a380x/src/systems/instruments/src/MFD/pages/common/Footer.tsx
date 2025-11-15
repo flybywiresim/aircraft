@@ -33,11 +33,11 @@ export class Footer extends DisplayComponent<AbstractMfdPageProps> {
             this.messageRef.instance.textContent = arr[ind].messageText;
 
             if (arr[ind].backgroundColor === 'white') {
-              this.messageRef.instance.style.backgroundColor = '#ffffff';
+              this.messageRef.instance.style.backgroundColor = '#e5dfd6';
             } else if (arr[ind].backgroundColor === 'cyan') {
-              this.messageRef.instance.style.backgroundColor = '#00ffff';
+              this.messageRef.instance.style.backgroundColor = '#44d9e1';
             } else if (arr[ind].backgroundColor === 'amber') {
-              this.messageRef.instance.style.backgroundColor = '#e68000';
+              this.messageRef.instance.style.backgroundColor = '#eb880c';
             }
             this.buttonText.set(
               <span>
