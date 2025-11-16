@@ -1,3 +1,5 @@
+// Copyright (c) 2024-2025 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
 import { ClockEvents, FSComponent, SimVarValueType, Subject, VNode } from '@microsoft/msfs-sdk';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { FmsPage } from '../../common/FmsPage';
