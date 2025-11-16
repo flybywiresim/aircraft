@@ -169,7 +169,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
     v ? v.toFixed(v > 9999 ? 0 : 1).padEnd(6, '\xa0') : '----.-',
   );
 
-  private readonly bearingUnit = this.bearingToWaypoint.map((v) => (v ? '°' : ''));
+  private readonly bearingUnit = this.bearingToWaypoint.map((v) => (v ? '°' : '\xa0'));
 
   private readonly distanceToWaypointUnit = this.bearingToWaypoint.map((v) => (v ? 'NM' : '\xa0\xa0'));
 
@@ -662,7 +662,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                   <span class="mfd-value">{this.bearingToWaypointDisplay}</span>
                   <span class="mfd-label-unit mfd-unit-trailing">&nbsp;{this.bearingUnit}</span>
                 </div>
-                <span class="mfd-value" style={'margin-left:33px;'}>
+                <span class="mfd-value" style={'margin-left:20px;'}>
                   /
                 </span>
                 <div>
