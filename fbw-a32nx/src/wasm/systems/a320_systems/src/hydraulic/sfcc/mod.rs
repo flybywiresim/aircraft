@@ -6,7 +6,7 @@ use systems::hydraulic::command_sensor_unit::CSU;
 use systems::hydraulic::flap_slat::ValveBlock;
 use systems::shared::{
     AdirsMeasurementOutputs, ConsumePower, DelayedFalseLogicGate, ElectricalBusType,
-    ElectricalBuses, PositionPickoffUnit,
+    ElectricalBuses, LgciuWeightOnWheels, PositionPickoffUnit,
 };
 
 use systems::simulation::{
@@ -96,11 +96,13 @@ impl SlatFlapControlComputer {
         flaps_feedback: &impl PositionPickoffUnit,
         slats_feedback: &impl PositionPickoffUnit,
         adirs: &impl AdirsMeasurementOutputs,
+        lgciu: &impl LgciuWeightOnWheels,
     ) {
         self.is_powered_delayed.update(context, self.is_powered);
 
         self.flaps_channel.update(context, flaps_feedback, adirs);
-        self.slats_channel.update(context, slats_feedback);
+        self.slats_channel
+            .update(context, slats_feedback, adirs, lgciu);
     }
 
     fn slat_flap_system_status_word(&self) -> Arinc429Word<u32> {
@@ -293,9 +295,11 @@ impl SlatFlapComplex {
         flaps_feedback: &impl PositionPickoffUnit,
         slats_feedback: &impl PositionPickoffUnit,
         adirs: &impl AdirsMeasurementOutputs,
+        lgciu1: &impl LgciuWeightOnWheels,
+        lgciu2: &impl LgciuWeightOnWheels,
     ) {
-        self.sfcc[0].update(context, flaps_feedback, slats_feedback, adirs);
-        self.sfcc[1].update(context, flaps_feedback, slats_feedback, adirs);
+        self.sfcc[0].update(context, flaps_feedback, slats_feedback, adirs, lgciu1);
+        self.sfcc[1].update(context, flaps_feedback, slats_feedback, adirs, lgciu2);
     }
 
     pub fn flap_pcu(&self, idx: usize) -> &impl ValveBlock {

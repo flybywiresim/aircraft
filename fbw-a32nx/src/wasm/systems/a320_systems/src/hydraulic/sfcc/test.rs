@@ -106,6 +106,49 @@ impl SimulationElement for SlatFlapGear {
 }
 
 #[derive(Default)]
+struct TestLgciu {
+    ac_on_ground: bool,
+}
+impl TestLgciu {
+    fn set_ac_on_ground(&mut self, ac_on_ground: bool) {
+        self.ac_on_ground = ac_on_ground;
+    }
+}
+impl LgciuWeightOnWheels for TestLgciu {
+    fn right_gear_compressed(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+        false
+    }
+
+    fn right_gear_extended(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+        false
+    }
+
+    fn left_gear_compressed(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+        false
+    }
+
+    fn left_gear_extended(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+        false
+    }
+
+    fn left_and_right_gear_compressed(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+        false
+    }
+
+    fn left_and_right_gear_extended(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+        self.ac_on_ground
+    }
+
+    fn nose_gear_compressed(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+        false
+    }
+
+    fn nose_gear_extended(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+        false
+    }
+}
+
+#[derive(Default)]
 struct TestAdirus {
     is_failed: [bool; 3],
     override_airspeed: [Option<Arinc429Word<Velocity>>; 3],
@@ -196,6 +239,9 @@ struct A320FlapsTestAircraft {
     yellow_pressure: Pressure,
 
     adirus: TestAdirus,
+
+    lgciu1: TestLgciu,
+    lgciu2: TestLgciu,
 }
 
 impl A320FlapsTestAircraft {
@@ -232,6 +278,8 @@ impl A320FlapsTestAircraft {
             yellow_pressure: Pressure::new::<psi>(0.),
 
             adirus: TestAdirus::default(),
+            lgciu1: TestLgciu::default(),
+            lgciu2: TestLgciu::default(),
         }
     }
 
@@ -275,8 +323,14 @@ impl Aircraft for A320FlapsTestAircraft {
 
     fn update_after_power_distribution(&mut self, context: &UpdateContext) {
         self.adirus.update(context);
-        self.slat_flap_complex
-            .update(context, &self.flap_gear, &self.slat_gear, &self.adirus);
+        self.slat_flap_complex.update(
+            context,
+            &self.flap_gear,
+            &self.slat_gear,
+            &self.adirus,
+            &self.lgciu1,
+            &self.lgciu2,
+        );
         let flaps_demanded_angle = self
             .signal_demanded_angle(0, "FLAPS")
             .or(self.signal_demanded_angle(1, "FLAPS"));

@@ -4,7 +4,8 @@ use crate::systems::shared::arinc429::{Arinc429Word, SignStatus};
 use systems::hydraulic::command_sensor_unit::{CSUMonitor, CSU};
 use systems::hydraulic::flap_slat::{ChannelCommand, SolenoidStatus, ValveBlock};
 use systems::shared::{
-    DelayedFalseLogicGate, ElectricalBusType, ElectricalBuses, PositionPickoffUnit,
+    AdirsMeasurementOutputs, DelayedFalseLogicGate, ElectricalBusType, ElectricalBuses,
+    LgciuWeightOnWheels, PositionPickoffUnit,
 };
 
 use systems::simulation::{
@@ -12,6 +13,7 @@ use systems::simulation::{
     VariableIdentifier, Write,
 };
 
+use uom::si::velocity::knot;
 use uom::si::{angle::degree, f64::*};
 use uom::ConstZero;
 
@@ -31,13 +33,31 @@ pub(super) struct SlatsChannel {
 
     csu_monitor: CSUMonitor,
 
+    kts_60: Velocity,
+    conf1_slats: Angle,
+    slat_baulk_low_cas: Velocity,
+    slat_baulk_high_cas: Velocity,
+    slat_alpha_lock_low_aoa: Angle,
+    slat_alpha_lock_high_aoa: Angle,
+
     // OUTPUTS
     sap: [bool; 7],
+
+    slat_alpha_lock_baulk_function_active: bool,
+    slat_retraction_inhibited: bool,
+    slat_baulk_engaged: bool,
 }
 
 impl SlatsChannel {
     // Check the comments in `SlatFlapControlComputer` for a description of `TRANSPARENCY_TIME`
     const TRANSPARENCY_TIME: Duration = Duration::from_millis(200); //ms
+
+    const CONF1_SLATS_DEGREES: f64 = 222.27; //deg
+    const SLAT_FUNCTIONS_ACTIVE_SPEED_KNOTS: f64 = 60.; //kts
+    const SLAT_BAULK_LOW_SPEED_KNOTS: f64 = 148.; //deg
+    const SLAT_BAULK_HIGH_SPEED_KNOTS: f64 = 154.; //deg
+    const SLAT_LOCK_LOW_ALPHA_DEGREES: f64 = 8.5; //deg
+    const SLAT_LOCK_HIGH_ALPHA_DEGREES: f64 = 7.6; //deg
 
     pub(super) fn new(context: &mut InitContext, num: u8, powered_by: ElectricalBusType) -> Self {
         Self {
@@ -55,10 +75,21 @@ impl SlatsChannel {
             is_powered_delayed: DelayedFalseLogicGate::new(Self::TRANSPARENCY_TIME)
                 .starting_as(false),
 
+            kts_60: Velocity::new::<knot>(Self::SLAT_FUNCTIONS_ACTIVE_SPEED_KNOTS),
+            conf1_slats: Angle::new::<degree>(Self::CONF1_SLATS_DEGREES),
+            slat_baulk_low_cas: Velocity::new::<knot>(Self::SLAT_BAULK_LOW_SPEED_KNOTS),
+            slat_baulk_high_cas: Velocity::new::<knot>(Self::SLAT_BAULK_HIGH_SPEED_KNOTS),
+            slat_alpha_lock_low_aoa: Angle::new::<degree>(Self::SLAT_LOCK_LOW_ALPHA_DEGREES),
+            slat_alpha_lock_high_aoa: Angle::new::<degree>(Self::SLAT_LOCK_HIGH_ALPHA_DEGREES),
+
             csu_monitor: CSUMonitor::new(context),
 
             // Set `sap` to false to match power-off state
             sap: [false; 7],
+
+            slat_alpha_lock_baulk_function_active: false,
+            slat_retraction_inhibited: false,
+            slat_baulk_engaged: false,
         }
     }
 
@@ -93,10 +124,98 @@ impl SlatsChannel {
         }
     }
 
-    fn generate_slat_angle(&mut self) -> Angle {
+    fn get_higher_cas(&self, adirs: &impl AdirsMeasurementOutputs) -> Option<Velocity> {
+        let cas1 = adirs.computed_airspeed(1).normal_value();
+        let cas2 = adirs.computed_airspeed(2).normal_value();
+
+        match (cas1, cas2) {
+            (Some(cas1), Some(cas2)) => Some(Velocity::max(cas1, cas2)),
+            (Some(cas1), None) => Some(cas1),
+            (None, Some(cas2)) => Some(cas2),
+            (None, None) => None,
+        }
+    }
+
+    fn get_lower_aoa(&self, adirs: &impl AdirsMeasurementOutputs) -> Option<Angle> {
+        let aoa1 = adirs.angle_of_attack(1).normal_value();
+        let aoa2 = adirs.angle_of_attack(2).normal_value();
+
+        match (aoa1, aoa2) {
+            (Some(aoa1), Some(aoa2)) => Some(Angle::min(aoa1, aoa2)),
+            (Some(aoa1), None) => Some(aoa1),
+            (None, Some(aoa2)) => Some(aoa2),
+            (None, None) => None,
+        }
+    }
+
+    fn update_slat_baulk(&mut self, adirs: &impl AdirsMeasurementOutputs) {
+        let cas = self.get_higher_cas(adirs);
+        let current_detent = self.csu_monitor.get_current_detent();
+        let valid_detent = self.csu_monitor.get_last_valid_detent();
+
+        match cas {
+            Some(cas)
+                if cas < self.slat_baulk_low_cas
+                    && current_detent == CSU::Conf0
+                    && SlatFlapControlComputerMisc::in_or_above_enlarged_target_range(
+                        self.slats_feedback_angle,
+                        self.conf1_slats,
+                    ) =>
+            {
+                self.slat_baulk_engaged = true;
+            }
+            Some(_) if current_detent == CSU::OutOfDetent => {
+                self.slat_baulk_engaged = self.slat_baulk_engaged;
+            }
+            Some(cas)
+                if cas > self.slat_baulk_high_cas
+                    && current_detent == CSU::Conf0
+                    && self.slat_baulk_engaged =>
+            {
+                self.slat_baulk_engaged = false;
+            }
+            None if valid_detent == CSU::Conf0 => {
+                self.slat_baulk_engaged = false;
+            }
+            _ => {
+                // TODO: is it correct?
+                self.slat_baulk_engaged = false;
+            }
+        }
+    }
+
+    fn power_loss_reset(&mut self) {
+        self.slat_alpha_lock_baulk_function_active = false;
+    }
+
+    fn generate_slat_angle(
+        &mut self,
+        adirs: &impl AdirsMeasurementOutputs,
+        lgciu: &impl LgciuWeightOnWheels,
+    ) -> Angle {
         if !self.is_powered_delayed.output() {
             return Angle::ZERO;
         }
+
+        let cas = self.get_higher_cas(adirs);
+        self.slat_alpha_lock_baulk_function_active =
+            lgciu.left_and_right_gear_extended(false) || cas.unwrap_or_default() >= self.kts_60;
+
+        self.update_slat_baulk(adirs);
+
+        if self.slat_alpha_lock_baulk_function_active && self.slat_baulk_engaged {
+            return self.conf1_slats;
+        }
+
+        // let aoa = self.get_lower_aoa(adirs);
+        // let current_detent = self.csu_monitor.get_current_detent();
+
+        // TODO: is .unwrap_or_default() correct in case of None?
+
+        // self.slat_retraction_inhibited = aoa.unwrap_or_default() > self.slat_alpha_lock_high_aoa
+        //     || cas.unwrap_or_default() < self.slat_baulk_low_cas
+        //         && current_detent == CSU::Conf0
+        //         && self.slats_feedback_angle >= Angle::new::<degree>(221.47);
 
         Self::demanded_slats_fppu_angle_from_conf(&self.csu_monitor, self.slats_demanded_angle)
     }
@@ -105,11 +224,25 @@ impl SlatsChannel {
         &mut self,
         context: &UpdateContext,
         slats_feedback: &impl PositionPickoffUnit,
+        adirs: &impl AdirsMeasurementOutputs,
+        lgciu: &impl LgciuWeightOnWheels,
     ) {
         self.is_powered_delayed.update(context, self.is_powered);
 
+        // TODO
+        // self.recovered_power_pulse
+        //     .update(context, self.is_powered_delayed.output());
+
+        // if self.recovered_power_pulse.output() {
+        //     self.powerup_reset(adirs);
+        // }
+
+        if !self.is_powered_delayed.output() {
+            self.power_loss_reset();
+        }
+
         self.csu_monitor.update(context);
-        self.slats_demanded_angle = self.generate_slat_angle();
+        self.slats_demanded_angle = self.generate_slat_angle(adirs, lgciu);
 
         self.slats_feedback_angle = slats_feedback.angle();
         self.sap_update();
