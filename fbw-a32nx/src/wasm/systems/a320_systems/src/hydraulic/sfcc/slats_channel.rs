@@ -46,6 +46,7 @@ pub(super) struct SlatsChannel {
     slat_alpha_lock_baulk_function_active: bool,
     slat_retraction_inhibited: bool,
     slat_baulk_engaged: bool,
+    slat_alpha_lock_engaged: bool,
 }
 
 impl SlatsChannel {
@@ -90,6 +91,7 @@ impl SlatsChannel {
             slat_alpha_lock_baulk_function_active: false,
             slat_retraction_inhibited: false,
             slat_baulk_engaged: false,
+            slat_alpha_lock_engaged: false,
         }
     }
 
@@ -184,8 +186,46 @@ impl SlatsChannel {
         }
     }
 
+    fn update_slat_alpha_lock(&mut self, adirs: &impl AdirsMeasurementOutputs) {
+        let aoa = self.get_lower_aoa(adirs);
+        let current_detent = self.csu_monitor.get_current_detent();
+        let valid_detent = self.csu_monitor.get_last_valid_detent();
+
+        match aoa {
+            Some(aoa)
+                if aoa > self.slat_alpha_lock_high_aoa
+                    && current_detent == CSU::Conf0
+                    && SlatFlapControlComputerMisc::in_or_above_enlarged_target_range(
+                        self.slats_feedback_angle,
+                        self.conf1_slats,
+                    ) =>
+            {
+                self.slat_alpha_lock_engaged = true;
+            }
+            Some(_) if current_detent == CSU::OutOfDetent => {
+                self.slat_alpha_lock_engaged = self.slat_alpha_lock_engaged;
+            }
+            Some(aoa)
+                if aoa < self.slat_alpha_lock_low_aoa
+                    && current_detent == CSU::Conf0
+                    && self.slat_alpha_lock_engaged =>
+            {
+                self.slat_alpha_lock_engaged = false;
+            }
+            None if valid_detent == CSU::Conf0 => {
+                self.slat_alpha_lock_engaged = false;
+            }
+            _ => {
+                // TODO: is it correct?
+                self.slat_alpha_lock_engaged = false;
+            }
+        }
+    }
+
     fn power_loss_reset(&mut self) {
         self.slat_alpha_lock_baulk_function_active = false;
+        self.slat_baulk_engaged = false;
+        self.slat_alpha_lock_engaged = false;
     }
 
     fn generate_slat_angle(
@@ -202,20 +242,13 @@ impl SlatsChannel {
             lgciu.left_and_right_gear_extended(false) || cas.unwrap_or_default() >= self.kts_60;
 
         self.update_slat_baulk(adirs);
+        self.update_slat_alpha_lock(adirs);
 
-        if self.slat_alpha_lock_baulk_function_active && self.slat_baulk_engaged {
+        if self.slat_alpha_lock_baulk_function_active
+            && (self.slat_baulk_engaged || self.slat_alpha_lock_engaged)
+        {
             return self.conf1_slats;
         }
-
-        // let aoa = self.get_lower_aoa(adirs);
-        // let current_detent = self.csu_monitor.get_current_detent();
-
-        // TODO: is .unwrap_or_default() correct in case of None?
-
-        // self.slat_retraction_inhibited = aoa.unwrap_or_default() > self.slat_alpha_lock_high_aoa
-        //     || cas.unwrap_or_default() < self.slat_baulk_low_cas
-        //         && current_detent == CSU::Conf0
-        //         && self.slats_feedback_angle >= Angle::new::<degree>(221.47);
 
         Self::demanded_slats_fppu_angle_from_conf(&self.csu_monitor, self.slats_demanded_angle)
     }
