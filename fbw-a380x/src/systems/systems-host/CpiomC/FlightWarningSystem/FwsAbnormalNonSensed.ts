@@ -398,14 +398,8 @@ export class FwsAbnormalNonSensed {
       whichItemsToShow: () => [
         true,
         this.fws.oneEngineRunning.get(),
-        !this.fws.engine1Running.get() &&
-          !this.fws.engine2Running.get() &&
-          !this.fws.engine3Running.get() &&
-          !this.fws.engine4Running.get(),
-        !this.fws.engine1Running.get() &&
-          !this.fws.engine2Running.get() &&
-          !this.fws.engine3Running.get() &&
-          !this.fws.engine4Running.get(),
+        !this.fws.oneEngineRunning.get(),
+        !this.fws.oneEngineRunning.get()) && this.fws.apuAvail.get(),
         true,
         true,
         true,
