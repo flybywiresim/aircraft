@@ -24,6 +24,7 @@
 1. [A380X/MODEL] Texture size optimization for display albedos - @heclak (Heclak)
 1. [A380X/MODEL] Fix RAT blur texture size not power of two - @heclak (Heclak)
 1. [A380X/OIT] Fix tooltips for OIT switches - @heclak (Heclak)
+1. [A380X/FUEL SYSTEM] Fuel system update - @donstim (donbikes)
 
 ## 0.14.0
 
