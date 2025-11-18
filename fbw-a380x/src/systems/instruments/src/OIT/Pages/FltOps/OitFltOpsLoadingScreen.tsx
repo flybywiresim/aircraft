@@ -61,7 +61,7 @@ export class OitFltOpsLoadingScreen extends DisplayComponent<OitFltOpsLoadingScr
           }
         }),
       this.laptopPowered.sub((powered) => {
-        this.totalStartupTime.set(powered ? parseInt(NXDataStore.get('CONFIG_SELF_TEST_TIME', '12')) * 2 : 0);
+        this.totalStartupTime.set(powered ? parseInt(NXDataStore.getLegacy('CONFIG_SELF_TEST_TIME', '12')) * 2 : 0);
         this.remainingStartupTime.set(powered ? this.totalStartupTime.get() : 0);
       }, true),
     );
