@@ -1,4 +1,4 @@
-use fxhash::{FxHashMap, FxHashSet};
+use rustc_hash::{FxHashMap, FxHashSet};
 use rand::Rng;
 use std::{cell::Ref, time::Duration};
 use uom::si::{
