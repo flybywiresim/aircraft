@@ -16,7 +16,7 @@ void Fmgc::initSelfTests() {
     return;
 
   clearMemory();
-  if (modelInputs.in.discrete_inputs.nose_gear_pressed_opp && modelInputs.in.discrete_inputs.nose_gear_pressed_opp) {
+  if (modelInputs.in.discrete_inputs.nose_gear_pressed_opp && modelInputs.in.discrete_inputs.nose_gear_pressed_own) {
     selfTestTimer = selfTestDuration;
   }
 }
