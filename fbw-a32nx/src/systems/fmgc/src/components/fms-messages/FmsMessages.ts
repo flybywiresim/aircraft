@@ -1,8 +1,8 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { FMMessage, FMMessageTriggers } from '@flybywiresim/fbw-sdk';
+import { FMMessage } from '@flybywiresim/fbw-sdk';
 
 import { RwyLsMismatchLeft, RwyLsMismatchRight } from '@fmgc/components/fms-messages/RwyLsMismatch';
 import {
@@ -27,6 +27,7 @@ import { Navigation } from '@fmgc/navigation/Navigation';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { TooSteepPathAhead } from '@fmgc/components/fms-messages/TooSteepPathAhead';
 import { EventBus } from '@microsoft/msfs-sdk';
+import { FMMessageTriggers } from './FmMessages';
 
 /**
  * This class manages Type II messages sent from the FMGC.

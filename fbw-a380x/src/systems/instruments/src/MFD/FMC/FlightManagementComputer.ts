@@ -23,6 +23,7 @@ import { FmcInterface, FmcOperatingModes } from 'instruments/src/MFD/FMC/FmcInte
 import {
   DatabaseItem,
   EfisSide,
+  FMMessage,
   Fix,
   NXDataStore,
   Units,
@@ -32,6 +33,7 @@ import {
   a380EfisRangeSettings,
 } from '@flybywiresim/fbw-sdk';
 import {
+  isTypeIIMessage,
   McduMessage,
   NXFictionalMessages,
   NXSystemMessages,
@@ -75,6 +77,11 @@ export const FMS_CYCLE_TIME = 250; // ms
  */
 export class FlightManagementComputer implements FmcInterface {
   protected readonly subs = [] as Subscription[];
+
+  private readonly ndMessageFlags: Record<'L' | 'R', number> = {
+    L: 0,
+    R: 0,
+  };
 
   #mfdReference: (FmsDisplayInterface & MfdDisplayInterface) | null;
 
@@ -567,6 +574,9 @@ export class FlightManagementComputer implements FmcInterface {
         old.cleared = true;
 
         this.fmsErrors.set(arr);
+        if (old.onClearOverride) {
+          old.onClearOverride();
+        }
       } else {
         this.fmsErrors.removeAt(index);
       }
@@ -651,8 +661,8 @@ export class FlightManagementComputer implements FmcInterface {
       messageText: message.text,
       backgroundColor: message.isAmber ? 'amber' : 'white',
       cleared: false,
-      onClearOverride: _message instanceof TypeIIMessage ? _message.onClear : () => {},
-      isResolvedOverride: _message instanceof TypeIIMessage ? _message.isResolved : () => false,
+      onClearOverride: isTypeIIMessage(message) ? message.onClear : () => {},
+      isResolvedOverride: isTypeIIMessage(message) ? message.isResolved : () => false,
     };
 
     const exists = this.fmsErrors.getArray().findIndex((el) => el.messageText === msg.messageText && el.cleared);
@@ -742,7 +752,8 @@ export class FlightManagementComputer implements FmcInterface {
           // it's important to set this immediately as we don't want to immediately sequence to the climb phase
           plan.setPerformanceData(
             'pilotAccelerationAltitude',
-            SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500')),
+            SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') +
+              parseInt(NXDataStore.getLegacy('CONFIG_ACCEL_ALT', '1500')),
           );
           this.acInterface.updateThrustReductionAcceleration();
         }
@@ -750,7 +761,8 @@ export class FlightManagementComputer implements FmcInterface {
           // it's important to set this immediately as we don't want to immediately sequence to the climb phase
           plan.setPerformanceData(
             'pilotEngineOutAccelerationAltitude',
-            SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500')),
+            SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') +
+              parseInt(NXDataStore.getLegacy('CONFIG_ACCEL_ALT', '1500')),
           );
           this.acInterface.updateThrustReductionAcceleration();
         }
@@ -869,7 +881,7 @@ export class FlightManagementComputer implements FmcInterface {
           activePlan.setPerformanceData(
             'pilotMissedAccelerationAltitude',
             SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') +
-              parseInt(NXDataStore.get('CONFIG_ENG_OUT_ACCEL_ALT', '1500')),
+              parseInt(NXDataStore.getLegacy('CONFIG_ENG_OUT_ACCEL_ALT', '1500')),
           );
           this.acInterface.updateThrustReductionAcceleration();
         }
@@ -878,7 +890,7 @@ export class FlightManagementComputer implements FmcInterface {
           activePlan.setPerformanceData(
             'pilotMissedEngineOutAccelerationAltitude',
             SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') +
-              parseInt(NXDataStore.get('CONFIG_ENG_OUT_ACCEL_ALT', '1500')),
+              parseInt(NXDataStore.getLegacy('CONFIG_ENG_OUT_ACCEL_ALT', '1500')),
           );
           this.acInterface.updateThrustReductionAcceleration();
         }
@@ -1267,5 +1279,30 @@ export class FlightManagementComputer implements FmcInterface {
 
   public logTroubleshootingError(msg: any) {
     this.bus.pub('troubleshooting_log_error', String(msg), true, false);
+  }
+
+  // TODO refactor in order to transmit message text to the ND. E.g. LEG/AREA/MAN RNP XXX.X
+  public sendNdFmMessage(message: FMMessage, side: EfisSide) {
+    if (!message.ndFlag) {
+      console.warn('FMMessage has no ND flag set, cannot send message', message);
+      return;
+    }
+    const old = this.ndMessageFlags[side];
+    this.ndMessageFlags[side] |= message.ndFlag;
+    if (this.ndMessageFlags[side] !== old) {
+      SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_ND_FM_MESSAGE_FLAGS`, 'number', this.ndMessageFlags[side]);
+    }
+  }
+
+  public removeNdFmMessage(message: FMMessage, side: EfisSide) {
+    if (!message.ndFlag) {
+      console.warn('FMMessage has no ND flag set, cannot recall message', message);
+      return;
+    }
+    const old = this.ndMessageFlags[side];
+    this.ndMessageFlags[side] &= ~message.ndFlag;
+    if (this.ndMessageFlags[side] !== old) {
+      SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_ND_FM_MESSAGE_FLAGS`, 'number', this.ndMessageFlags[side]);
+    }
   }
 }

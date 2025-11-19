@@ -135,6 +135,7 @@ struct SimData {
   double contact_point_compression_2;
   double contact_point_compression_3;
   double contact_point_compression_4;
+  unsigned long long antiskidBrakesActive;
 };
 
 struct SimInput {

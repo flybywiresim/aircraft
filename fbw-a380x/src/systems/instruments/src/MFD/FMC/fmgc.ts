@@ -402,7 +402,7 @@ export class FmgcDataService implements Fmgc {
     let fob = this.data.blockFuel.get();
     if (this.isAnEngineOn()) {
       fob =
-        SimVar.GetSimVarValue('FUEL TOTAL QUANTITY', 'gallons') *
+        SimVar.GetSimVarValue('L:A32NX_TOTAL_FUEL_VOLUME', 'gallons') *
         SimVar.GetSimVarValue('FUEL WEIGHT PER GALLON', 'kilograms');
     }
 

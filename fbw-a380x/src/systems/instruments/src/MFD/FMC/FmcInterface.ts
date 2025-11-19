@@ -9,7 +9,7 @@ import { FmcAircraftInterface } from 'instruments/src/MFD/FMC/FmcAircraftInterfa
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { FmgcDataService } from 'instruments/src/MFD/FMC/fmgc';
 import { TypeIMessage, TypeIIMessage } from 'instruments/src/MFD/shared/NXSystemMessages';
-import { EfisSide, Fix, Waypoint } from '@flybywiresim/fbw-sdk';
+import { EfisSide, Fix, FMMessage, Waypoint } from '@flybywiresim/fbw-sdk';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { DataManager } from '@fmgc/flightplanning/DataManager';
@@ -217,6 +217,10 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
     planDisplayLegIndex: number,
     planDisplayInAltn: boolean,
   ): void;
+
+  sendNdFmMessage(message: FMMessage, side: EfisSide): void;
+
+  removeNdFmMessage(message: FMMessage, side: EfisSide): void;
 
   clearCheckSpeedModeMessage(): void;
 

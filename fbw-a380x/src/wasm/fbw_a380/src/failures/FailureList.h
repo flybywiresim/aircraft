@@ -1,6 +1,7 @@
 #pragma once
 
 enum class Failures {
+  Rollout = 22001,
   Prim1 = 27000,
   Prim2 = 27001,
   Prim3 = 27002,

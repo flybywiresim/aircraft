@@ -178,7 +178,7 @@ export const EcamMemos: { [n: string]: string } = {
 /** Only these IDs will be shown in the PFD MEMO section */
 export const pfdMemoDisplay: string[] = ['000006002', '220000001', '220000002', '300000001', '300000002', '320000001'];
 
-/** All possible INFOs (e.g. CAT 3 SINGLE ONLY), with special formatting characters. */
+/** All possible INFOs (e.g. LAND 3 SINGLE ONLY), with special formatting characters. */
 export const EcamInfos: { [n: string]: string } = {
   210200001: '\x1b<3mCABIN TEMP REGUL DEGRADED',
   210200002: '\x1b<3mFWD CRG VENT DEGRADED',
@@ -186,13 +186,13 @@ export const EcamInfos: { [n: string]: string } = {
   220200001: '\x1b<3mFMS 1 ON FMC-C',
   220200002: '\x1b<3mFMS 2 ON FMC-C',
   220200003: '\x1b<3mSTBY INSTRUMENTS NAV AVAIL',
-  220200004: '\x1b<3mCAT 2 ONLY',
-  220200005: '\x1b<3mCAT 3 SINGLE ONLY',
+  220200004: '\x1b<3mLAND 2 ONLY',
+  220200005: '\x1b<3mLAND 3 SINGLE ONLY',
   220200006: '\x1b<3mFOR AUTOLAND: MAN ROLL OUT ONLY',
-  220200007: '\x1b<3mAPPR MODE NOT AVAIL',
+  220200007: '\x1b<3mAD/FD APPR MODE NOT AVAIL',
   220200008: '\x1b<3mLOC MODE AVAIL ONLY',
   220200009: '\x1b<3mWHEN L/G DOWN AND AP OFF: USE MAN PITCH TRIM',
-  220200010: '\x1b<3mCAT 1 ONLY',
+  220200010: '\x1b<3mAPPR 1 ONLY',
   220200011: '\x1b<3mFMS PRED UNRELIABLE', // TODO add without accurate fms penalty once multiple lines supported
   220200012: '\x1b<3mMINIMIZE XWIND FOR LANDING',
   220200013: '\x1b<3mAUTOLAND : RECOMMENDED',

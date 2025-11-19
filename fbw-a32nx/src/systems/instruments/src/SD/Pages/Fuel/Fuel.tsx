@@ -248,7 +248,7 @@ type FOBProps = {
 };
 
 const FOB = ({ unit }: FOBProps) => {
-  const [fob] = useSimVar('FUEL TOTAL QUANTITY WEIGHT', 'kg', 1000);
+  const [fob] = useSimVar('L:A32NX_TOTAL_FUEL_QUANTITY', 'number', 1000);
 
   return (
     <>

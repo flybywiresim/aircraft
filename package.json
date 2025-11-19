@@ -1,6 +1,6 @@
 {
   "name": "a32nx",
-  "version": "0.14.0",
+  "version": "0.15.0",
   "edition": "development",
   "imports": {
     "#build-utils": "./build-utils.js"
@@ -150,7 +150,7 @@
     "@sentry/integrations": "^6.17.7",
     "@sentry/tracing": "^6.17.7",
     "@tabler/icons": "^1.41.2",
-    "@turf/turf": "^6.5.0",
+    "@turf/turf": "^7.2.0",
     "@types/react-canvas-draw": "^1.1.1",
     "byte-data": "^19.0.1",
     "classnames": "^2.2.6",

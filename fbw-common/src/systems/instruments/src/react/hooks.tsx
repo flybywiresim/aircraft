@@ -3,11 +3,13 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import React from 'react';
+import React, { useRef } from 'react';
 import { GenericDataListenerSync } from '../../../shared/src/GenericDataListenerSync';
 import { getRootElement } from '../defaults';
 
 export const useUpdate = (handler: (deltaTime: number) => void) => {
+  const lastTime = useRef(Date.now());
+
   // Logic based on https://usehooks.com/useEventListener/
   const savedHandler = React.useRef(handler);
   React.useEffect(() => {
@@ -15,8 +17,12 @@ export const useUpdate = (handler: (deltaTime: number) => void) => {
   }, [handler]);
 
   React.useEffect(() => {
-    const wrappedHandler = (event: CustomEvent) => {
-      savedHandler.current(event.detail);
+    const wrappedHandler = () => {
+      const now = Date.now();
+
+      savedHandler.current(now - lastTime.current);
+
+      lastTime.current = now;
     };
 
     getRootElement().addEventListener('update', wrappedHandler);

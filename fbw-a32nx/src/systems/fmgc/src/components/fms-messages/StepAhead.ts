@@ -1,14 +1,14 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2025 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
-import { FMMessageTypes } from '@flybywiresim/fbw-sdk';
 
 import { FMMessageSelector, FMMessageUpdate } from './FmsMessages';
 import { Navigation } from '@fmgc/navigation/Navigation';
+import { FMMessageTypes } from './FmMessages';
 
 export class StepAhead implements FMMessageSelector {
   message = FMMessageTypes.StepAhead;

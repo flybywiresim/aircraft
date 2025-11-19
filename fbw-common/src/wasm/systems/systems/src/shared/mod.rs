@@ -7,7 +7,6 @@ use crate::{
 
 use arinc429::Arinc429Word;
 use nalgebra::Vector3;
-use ntest::MaxDifference;
 use num_derive::FromPrimitive;
 use std::{cell::Ref, fmt::Display, time::Duration};
 use uom::si::{
@@ -24,6 +23,8 @@ use uom::si::{
 
 pub mod low_pass_filter;
 pub mod pid;
+// The module `test` isn't marked #[cfg(test)] to allow usage in other crates.
+pub mod test;
 pub mod update_iterator;
 
 mod random;
@@ -625,6 +626,20 @@ impl DelayedFalseLogicGate {
         }
     }
 
+    pub fn starting_as(mut self, state: bool) -> Self {
+        self.set_output(state);
+        self
+    }
+
+    fn set_output(&mut self, state: bool) {
+        self.expression_result = state;
+        self.false_duration = if !state {
+            self.delay
+        } else {
+            Duration::from_millis(0)
+        };
+    }
+
     pub fn update(&mut self, context: &UpdateContext, expression_result: bool) {
         if !expression_result {
             self.false_duration += context.delta();
@@ -860,12 +875,6 @@ impl From<f64> for MachNumber {
 impl From<MachNumber> for f64 {
     fn from(value: MachNumber) -> Self {
         value.0
-    }
-}
-
-impl MaxDifference for MachNumber {
-    fn max_diff(self, other: Self) -> f64 {
-        (f64::from(self) - f64::from(other)).abs()
     }
 }
 
@@ -2122,7 +2131,7 @@ mod local_acceleration_at_plane_coordinate {
 
 #[cfg(test)]
 mod mach_number_tests {
-    use ntest::assert_about_eq;
+    use ntest::{assert_about_eq, MaxDifference};
     use uom::si::{
         length::foot,
         quantities::{Length, Velocity},
@@ -2130,6 +2139,12 @@ mod mach_number_tests {
     };
 
     use crate::shared::{InternationalStandardAtmosphere, MachNumber};
+
+    impl MaxDifference for MachNumber {
+        fn max_diff(self, other: Self) -> f64 {
+            (f64::from(self) - f64::from(other)).abs()
+        }
+    }
 
     // All of the test values are obtained from
     // - https://aerotoolbox.com/airspeed-conversions/

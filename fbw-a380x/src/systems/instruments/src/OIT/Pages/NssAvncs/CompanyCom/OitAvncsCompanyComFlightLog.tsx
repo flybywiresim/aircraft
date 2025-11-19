@@ -36,7 +36,7 @@ export abstract class OitAvncsCompanyComFlightLog extends DestroyableComponent<O
 
   private readonly userWeight = Subject.create<'KG' | 'LBS'>(NXUnits.userWeightUnit());
 
-  private readonly configMetricUnitsSub = NXDataStore.getAndSubscribe(
+  private readonly configMetricUnitsSub = NXDataStore.getAndSubscribeLegacy(
     'CONFIG_USING_METRIC_UNIT',
     (_, value) => {
       this.userWeight.set(value === '1' ? 'KG' : 'LBS');
@@ -46,25 +46,33 @@ export abstract class OitAvncsCompanyComFlightLog extends DestroyableComponent<O
 
   private readonly outBlockFobText = MappedSubject.create(
     ([weight, unit]) =>
-      weight !== null ? `${NXUnits.kgToUser(weight).toFixed(0).padStart(6, ' ')} ${unit}` : '----- ---',
+      weight !== null
+        ? `${(NXUnits.kgToUser(weight) / 1_000).toFixed(1).padStart(5, '\xa0')} ${unit === 'KG' ? 'T' : 'KLB'}`
+        : '----- -',
     this.props.container.ansu.outBlockFob,
     this.userWeight,
   );
   private readonly offBlockFobText = MappedSubject.create(
     ([weight, unit]) =>
-      weight !== null ? `${NXUnits.kgToUser(weight).toFixed(0).padStart(6, ' ')} ${unit}` : '----- ---',
+      weight !== null
+        ? `${(NXUnits.kgToUser(weight) / 1_000).toFixed(1).padStart(5, '\xa0')} ${unit === 'KG' ? 'T' : 'KLB'}`
+        : '----- -',
     this.props.container.ansu.offBlockFob,
     this.userWeight,
   );
   private readonly onBlockFobText = MappedSubject.create(
     ([weight, unit]) =>
-      weight !== null ? `${NXUnits.kgToUser(weight).toFixed(0).padStart(6, ' ')} ${unit}` : '----- ---',
+      weight !== null
+        ? `${(NXUnits.kgToUser(weight) / 1_000).toFixed(1).padStart(5, '\xa0')} ${unit === 'KG' ? 'T' : 'KLB'}`
+        : '----- -',
     this.props.container.ansu.onBlockFob,
     this.userWeight,
   );
   private readonly inBlockFobText = MappedSubject.create(
     ([weight, unit]) =>
-      weight !== null ? `${NXUnits.kgToUser(weight).toFixed(0).padStart(6, ' ')} ${unit}` : '----- ---',
+      weight !== null
+        ? `${(NXUnits.kgToUser(weight) / 1_000).toFixed(1).padStart(5, '\xa0')} ${unit === 'KG' ? 'T' : 'KLB'}`
+        : '----- -',
     this.props.container.ansu.inBlockFob,
     this.userWeight,
   );
@@ -80,7 +88,7 @@ export abstract class OitAvncsCompanyComFlightLog extends DestroyableComponent<O
       } else if (inb === null) {
         return 'POST-FLIGHT';
       }
-      return 'UNKNOWN';
+      return 'IN';
     },
     this.props.container.ansu.outBlockTime,
     this.props.container.ansu.offBlockTime,

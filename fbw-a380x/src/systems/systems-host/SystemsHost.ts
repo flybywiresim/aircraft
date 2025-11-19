@@ -42,6 +42,7 @@ import { FwsCore } from 'systems-host/CpiomC/FlightWarningSystem/FwsCore';
 import { FuelSystemPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
 import { BrakeToVacateDistanceUpdater } from 'systems-host/PseudoPRIM/BrakeToVacateDistanceUpdater';
 import { PseudoFwcSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
+import { FcdcSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FcdcPublisher';
 import {
   ResetPanelSimvarPublisher,
   ResetPanelSimvars,
@@ -121,6 +122,8 @@ class SystemsHost extends BaseInstrument {
   private readonly stallWarningPublisher = new StallWarningPublisher(this.bus, 0.9);
 
   private readonly pseudoFwcPublisher = new PseudoFwcSimvarPublisher(this.bus);
+
+  private readonly fcdcPublisher = new FcdcSimvarPublisher(this.bus);
 
   private readonly resetPanelPublisher = new ResetPanelSimvarPublisher(this.bus);
 
@@ -205,6 +208,7 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('FuelPublisher', this.fuelSystemPublisher);
     this.backplane.addPublisher('StallWarning', this.stallWarningPublisher);
     this.backplane.addPublisher('PseudoFwc', this.pseudoFwcPublisher);
+    this.backplane.addPublisher('Fcdc', this.fcdcPublisher);
     this.backplane.addPublisher('ResetPanel', this.resetPanelPublisher);
     this.backplane.addPublisher('CpiomAvailable', this.cpiomAvailablePublisher);
     this.backplane.addPublisher('InteractivePoints', this.interactivePointsPublisher);

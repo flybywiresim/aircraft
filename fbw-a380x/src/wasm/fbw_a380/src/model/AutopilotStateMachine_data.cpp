@@ -94,7 +94,9 @@ AutopilotStateMachine::Parameters_AutopilotStateMachine_T AutopilotStateMachine:
       false,
       false,
       false,
-      0.0
+      0.0,
+      false,
+      false
     },
 
     {

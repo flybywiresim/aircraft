@@ -1087,7 +1087,7 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
         style: ChecklistLineStyle.Cyan,
       },
       {
-        name: 'DIFF PRESS < 1 PSI & FL < 100/MEA ',
+        name: 'DIFF PRESS < 1 PSI & FL < 100/MEA',
         sensed: true,
         condition: true,
       },
@@ -1835,8 +1835,8 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [
       {
-        name: 'FOR AUTOLAND: MAN ROLL OUT ONLY', // Always completed
-        sensed: true,
+        name: 'FOR AUTOLAND : MAN ROLL OUT ONLY',
+        sensed: false,
         style: ChecklistLineStyle.Green,
       },
     ],
@@ -1846,18 +1846,18 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [
       {
-        name: 'FOR TCAS ALERT', // Always completed
+        name: 'FOR TCAS ALERT',
         sensed: true,
         style: ChecklistLineStyle.Green,
       },
       {
-        name: 'AP & FD', // Always completed
+        name: 'AP & FD',
         sensed: true,
         labelNotCompleted: 'OFF',
         style: ChecklistLineStyle.Green,
       },
       {
-        name: 'FLY MANUALLY TCAS RA ORDER', // Always completed
+        name: 'FLY MANUALLY TCAS RA ORDER',
         sensed: true,
         style: ChecklistLineStyle.Green,
       },

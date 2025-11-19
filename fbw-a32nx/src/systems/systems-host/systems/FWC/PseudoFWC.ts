@@ -1390,7 +1390,7 @@ export class PseudoFWC {
       // set the sound on/off
       SimVar.SetSimVarValue('L:A32NX_AUDIO_STALL_WARNING', 'bool', v);
     }, true);
-    this.aircraftOnGround.sub((v) => this.fwcOut126.setBitValue(28, v));
+    this.aircraftOnGround.sub((v) => this.fwcOut126.setBitValue(28, v), true);
 
     this.fwcOut126.sub((v) => {
       v.writeToSimVar('L:A32NX_FWC_1_DISCRETE_WORD_126');
@@ -3130,7 +3130,7 @@ export class PseudoFWC {
 
     /* SETTINGS */
 
-    this.configPortableDevices.set(NXDataStore.get('CONFIG_USING_PORTABLE_DEVICES', '1') !== '0');
+    this.configPortableDevices.set(NXDataStore.getLegacy('CONFIG_USING_PORTABLE_DEVICES', '1') !== '0');
 
     /* CABIN READY */
 
@@ -5484,7 +5484,7 @@ export class PseudoFWC {
       memoInhibit: () => false,
       failure: 0,
       sysPage: -1,
-      side: 'RIGHT',
+      side: 'LEFT',
     },
     '0000055': {
       // GND SPLRS ARMED
