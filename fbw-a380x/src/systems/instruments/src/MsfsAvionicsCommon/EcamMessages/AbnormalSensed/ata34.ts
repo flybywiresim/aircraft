@@ -972,7 +972,13 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
   340900001: {
     title: '\x1b<4m\x1b4mNAV\x1bm IR ALIGNMENT IN ATT MODE',
     sensed: false,
-    items: [],
+    items: [
+      { name: 'ATT HDG SWTG', labelNotCompleted: 'AS RQRD', sensed: false },
+      { name: 'IR MODE SEL (AFFECTED)', labelNotCompleted: 'ATT', sensed: false },
+      { name: 'SPEED, HDG & FL : KEEP CONST FOR 30S', sensed: false },
+      { name: 'FMS POSITION / IRS PAGE', labelNotCompleted: 'SELECT', sensed: false },
+      { name: 'HDG', labelNotCompleted: 'ENTER', sensed: false },
+    ],
   },
   340900002: {
     title: '\x1b<4m\x1b4mNAV\x1bm FLUCTUATING VERTICAL SPEED',
