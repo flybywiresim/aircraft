@@ -360,7 +360,7 @@ export class FwsAbnormalSensed {
   }
 
   public ewdAbnormalSensed: EwdAbnormalDict = {
-    // 21 - AIR CONDITIONING AND PRESSURIZATION
+    // ATA 21 - AIR CONDITIONING AND PRESSURIZATION
     211800001: {
       // PACK 1 CTL 1 FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10, 11],
@@ -1630,7 +1630,7 @@ export class FwsAbnormalSensed {
       sysPage: SdPages.Press,
       inopSysAllPhases: () => ['213300017', '213300018', '213300019'],
     },
-    // 22 - FLIGHT GUIDANCE
+    // ATA 22 - FLIGHT GUIDANCE
     220800001: {
       // AP OFF involuntary
       flightPhaseInhib: [],
@@ -1659,7 +1659,7 @@ export class FwsAbnormalSensed {
       monitorConfirmTime: 0.0,
       info: () => [],
     },
-    // 22 - AUTOFLIGHT
+    // ATA 22 - AUTOFLIGHT
     220800013: {
       // ROLL OUT FAULT
       flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 12],
@@ -1784,7 +1784,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.None,
     },
-    // 23 - COMMUNICATION
+    // ATA 23 - COMMUNICATION
     230800012: {
       // RMP 1 FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
@@ -1867,7 +1867,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.None,
     },
-    // 26 - FIRE PROTECTION
+    // ATA 26 - FIRE PROTECTION
     260800001: {
       // APU FIRE
       flightPhaseInhib: [5, 6],
@@ -2484,7 +2484,7 @@ export class FwsAbnormalSensed {
       redundLoss: () => ['260300024'],
     },
 
-    // ATA 27 FLIGHT CONTROLS
+    // ATA 27 - FLIGHT CONTROLS
     271800003: {
       // PITCH TRIM NOT IN TO RANGE
       flightPhaseInhib: [5, 6, 7, 8, 9, 10, 12],
@@ -2844,7 +2844,7 @@ export class FwsAbnormalSensed {
       inopSysAllPhases: () => [],
     },
 
-    // 29 FUEL
+    // ATA 29 - FUEL
     281800002: {
       // ALL FEED TKs LEVEL LO
       flightPhaseInhib: [1, 3, 4, 5, 6, 7, 9, 10, 12],
@@ -2984,7 +2984,7 @@ export class FwsAbnormalSensed {
       notActiveWhenItemActive: [],
       inopSysAllPhases: () => [],
     },
-    // 29 Hydraulic
+    // ATA 29 - HYDRAULICS
     290800001: {
       // G ELEC PMP A FAULT
       flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
@@ -3358,7 +3358,7 @@ export class FwsAbnormalSensed {
       failure: -1,
       sysPage: SdPages.None,
     },
-    // 31 Display/Recording
+    // ATA 31 - DISPLAY/RECORDING
     314800006: {
       // AUDIO FUNCTION LOST
       flightPhaseInhib: [3, 4, 5, 6, 7, 10, 11],
@@ -3407,7 +3407,7 @@ export class FwsAbnormalSensed {
       sysPage: SdPages.None,
       redundLoss: () => ['310300003'],
     },
-    // 32 Landing Gear & Brakes
+    // ATA 32 - LANDING GEAR & BRAKES
     320800008: {
       // BRAKES A_SKID OFF
       flightPhaseInhib: [4, 5, 6, 7],
@@ -3485,7 +3485,7 @@ export class FwsAbnormalSensed {
       sysPage: SdPages.Wheel,
       cancel: true,
     },
-    // 34 NAVIGATION
+    // ATA 34 - NAVIGATION
     340800001: {
       // ADR 1 FAULT
       flightPhaseInhib: [4, 5, 10],
@@ -3979,7 +3979,7 @@ export class FwsAbnormalSensed {
       inopSysApprLdg: () => ['320300007', '320300022', '340300028', '310300001', '220300010', '220300021'],
       info: () => ['220200007', '220200008', '220200009'],
     },
-    // SURVEILLANCE
+    // 34 - SURVEILLANCE
     341800016: {
       // TCAS 1 FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
@@ -4118,7 +4118,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.None,
     },
-    // ATA 52 DOOR
+    // ATA 52 - DOORS
     520800008: {
       // CKPT SLIDING WINDOW NOT CLOSED
       flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10, 12],
@@ -4319,7 +4319,7 @@ export class FwsAbnormalSensed {
       limitationsAllPhases: (checked) => (checked[1] ? ['210400001'] : []),
       limitationsPfd: (checked) => (checked[1] ? ['210400001'] : []),
     },
-    // ATA 70 Engines
+    // ATA 70 - ENGINES
     701800029: {
       // ENG 1 FAIL
       simVarIsActive: this.fws.eng1Fail,
