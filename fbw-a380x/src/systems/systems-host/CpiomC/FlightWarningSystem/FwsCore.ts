@@ -1922,6 +1922,12 @@ export class FwsCore {
 
   public readonly engSelectorPosition = Subject.create(0);
 
+  public readonly engineStartSelCrank = Subject.create(false);
+
+  public readonly engineStartSelNorm = Subject.create(false);
+
+  public readonly engineStartSelIgnition = Subject.create(false);
+
   public readonly eng1AntiIce = Subject.create(false);
 
   public readonly eng2AntiIce = Subject.create(false);
@@ -2856,6 +2862,10 @@ export class FwsCore {
         this.throttle3Position.get() < 1 &&
         this.throttle4Position.get() < 1,
     );
+
+    this.engineStartSelCrank.set(this.engSelectorPosition.get() === 0);
+    this.engineStartSelNorm.set(this.engSelectorPosition.get() === 1);
+    this.engineStartSelIgnition.set(this.engSelectorPosition.get() === 2);
 
     const masterCautionButtonLeft = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERCAUT_L', 'bool');
     const masterCautionButtonRight = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERCAUT_R', 'bool');
