@@ -238,7 +238,7 @@ export class CdsDisplayUnit extends DisplayComponent<DisplayUnitProps> {
       !this.failed
     ) {
       this.state = DisplayUnitState.Selftest;
-      this.setTimer(parseInt(NXDataStore.get('CONFIG_SELF_TEST_TIME', '15')));
+      this.setTimer(parseInt(NXDataStore.getLegacy('CONFIG_SELF_TEST_TIME', '15')));
     } else if (
       (this.state === DisplayUnitState.Selftest || this.state === DisplayUnitState.ThalesBootup) &&
       (this.brightness.get() === 0 || !this.powered.get())
