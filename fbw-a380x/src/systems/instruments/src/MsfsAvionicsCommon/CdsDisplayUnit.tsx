@@ -49,7 +49,7 @@ const DisplayUnitToDCBus: { [k in DisplayUnitID]: DcElectricalBus[] } = {
   [DisplayUnitID.FoMfd]: [DcElectricalBus.Dc1, DcElectricalBus.Dc2],
   [DisplayUnitID.Ewd]: [DcElectricalBus.DcEss], // powered by 423PP
   [DisplayUnitID.Sd]: [DcElectricalBus.Dc2],
-  [DisplayUnitID.CaptHud]: [DcElectricalBus.DcEssInFlight], //guess
+  [DisplayUnitID.CaptHud]: [DcElectricalBus.Dc1],
   [DisplayUnitID.FoHud]: [DcElectricalBus.Dc2], //guess
 };
 
