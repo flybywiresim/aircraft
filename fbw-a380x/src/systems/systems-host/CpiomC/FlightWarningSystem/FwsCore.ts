@@ -599,6 +599,12 @@ export class FwsCore {
 
   public readonly xBleedSelectorKnob = Subject.create(0);
 
+  public readonly xBleedSelectorShut = Subject.create(false);
+
+  public readonly xBleedSelectorAuto = Subject.create(false);
+
+  public readonly xBleedSelectorOpen = Subject.create(false);
+
   public readonly manCabinAltMode = Subject.create(false);
 
   private readonly cabinAltitude = Arinc429Register.empty();
@@ -777,6 +783,8 @@ export class FwsCore {
   public readonly engine4Running = Subject.create(false);
 
   public readonly allBatteriesOff = Subject.create(false);
+
+  public readonly elecGalleyAndPaxSys = Subject.create(false);
   /* 26 - FIRE */
 
   public readonly fduDiscreteWord = Arinc429Register.empty();
@@ -2761,6 +2769,7 @@ export class FwsCore {
     this.acESSBusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED', 'bool') > 0);
     this.dc108PhBusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_108PH_BUS_IS_POWERED', 'Bool') > 0);
     this.dcEhaPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_247PP_BUS_IS_POWERED', 'Bool') > 0);
+    this.elecGalleyAndPaxSys.set(SimVar.GetSimVarValue('L:A32NX_OVHD_ELEC_GALY_AND_CAB_PB_IS_AUTO', 'bool'));
 
     /* ENGINE AND THROTTLE acquisition */
 
@@ -4057,6 +4066,10 @@ export class FwsCore {
 
     // 0: Shut, 1: Auto, 2: Open
     this.xBleedSelectorKnob.set(SimVar.GetSimVarValue('L:A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position', 'number'));
+
+    this.xBleedSelectorShut.set(this.xBleedSelectorKnob.get() === 0);
+    this.xBleedSelectorAuto.set(this.xBleedSelectorKnob.get() === 1);
+    this.xBleedSelectorOpen.set(this.xBleedSelectorKnob.get() === 2);
 
     /* 23 - COMMUNICATION */
     const rmp1State = SimVar.GetSimVarValue('L:A380X_RMP_1_STATE', 'number');
