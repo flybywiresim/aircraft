@@ -13,7 +13,7 @@ import {
   HEvent,
 } from '@microsoft/msfs-sdk';
 import { Arinc429Word, ArincEventBus, FailuresConsumer } from '@flybywiresim/fbw-sdk';
-import { AttitudeIndicatorWarnings } from '@flybywiresim/pfd';
+import { AttitudeIndicatorWarnings } from '@flybywiresim/hud';
 import { AttitudeIndicatorWarningsA380 } from 'instruments/src/HUD/AttitudeIndicatorWarningsA380';
 import { LinearDeviationIndicator } from 'instruments/src/HUD/LinearDeviationIndicator';
 import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
