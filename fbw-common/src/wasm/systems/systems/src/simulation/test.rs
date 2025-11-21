@@ -1,5 +1,5 @@
-use rustc_hash::{FxHashMap, FxHashSet};
 use rand::Rng;
+use rustc_hash::{FxHashMap, FxHashSet};
 use std::{cell::Ref, time::Duration};
 use uom::si::{
     acceleration::foot_per_second_squared,

@@ -1192,8 +1192,8 @@ impl SimulationElement for A380PressurizationOverheadPanel {
 mod tests {
     use self::local_controllers::outflow_valve_control_module::CpcsShared;
     use super::*;
-    use rustc_hash::FxHashMap;
     use ntest::assert_about_eq;
+    use rustc_hash::FxHashMap;
     use systems::{
         air_conditioning::{Channel, PackFlow},
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
