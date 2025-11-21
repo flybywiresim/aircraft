@@ -27,7 +27,7 @@ import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { getDisplayIndex } from './HUD';
 import { FIVE_DEG, calculateVerticalOffsetFromRoll } from './HUDUtils';
 import { SimplaneValues } from './shared/SimplaneValueProvide';
-import { VerticalMode } from '@shared/autopilot';
+import { VerticalMode } from '../../../shared/src/autopilot';
 const DistanceSpacing = FIVE_DEG;
 const ValueSpacing = 5;
 
@@ -642,7 +642,7 @@ class FlareIndicator extends DisplayComponent<{
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & VerticalMode>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values>();
 
     sub
       .on('activeVerticalMode')
