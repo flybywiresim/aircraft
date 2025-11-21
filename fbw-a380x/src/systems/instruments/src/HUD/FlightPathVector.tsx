@@ -27,7 +27,7 @@ import { HUDSimvars } from './shared/HUDSimvarPublisher';
 import { getDisplayIndex } from './HUD';
 import { FIVE_DEG, calculateVerticalOffsetFromRoll } from './HUDUtils';
 import { SimplaneValues } from './shared/SimplaneValueProvide';
-import { VerticalMode } from '../../../shared/src/autopilot';
+import { VerticalMode } from '@shared/autopilot';
 const DistanceSpacing = FIVE_DEG;
 const ValueSpacing = 5;
 
