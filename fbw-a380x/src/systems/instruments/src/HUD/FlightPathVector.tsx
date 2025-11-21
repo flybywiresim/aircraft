@@ -99,7 +99,7 @@ export class FlightPathVector extends DisplayComponent<{
   }
 
   private moveBird() {
-    const hudXwindFpvType = parseInt(NXDataStore.get('HUD_FPV_TYPE', '0'));
+    const hudXwindFpvType = parseInt(NXDataStore.getLegacy('HUD_FPV_TYPE', '0'));
     if (this.isFpvVisible.get()) {
       hudXwindFpvType === 0 ? this.useLockedFreeFpv() : this.useSingleFpv();
     }
