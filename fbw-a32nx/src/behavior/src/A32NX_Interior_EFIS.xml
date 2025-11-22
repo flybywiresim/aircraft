@@ -14,7 +14,6 @@
             </INDICATOR_CODE>
             <BUTTON_CODE>
                 'A32NX.FCU_EFIS_#SIDE#_LS_PUSH' (&gt;F:KeyEvent)
-                (H:A320_Neo_HUD_XWINDMODE, boolean) = true;
             </BUTTON_CODE>
         </UseTemplate>
     </Template>
