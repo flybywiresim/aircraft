@@ -55,6 +55,11 @@ declare global {
 
     interface Window {
         /**
+         * Setting subject map for `NXDataStore`
+         */
+        NXDATASTORE_SUBJECT_MAP: Map<string, Subject<any>> | undefined;
+
+        /**
          * Present if the instrument is running in [ACE](https://github.com/flybywiresim/ace)
          */
         ACE_ENGINE_HANDLE: object | undefined
