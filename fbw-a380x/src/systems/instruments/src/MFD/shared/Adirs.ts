@@ -46,6 +46,10 @@ export class ADIRS {
     return ADIRS.getFromAnyAdiru('IR', 'TRUE_TRACK');
   }
 
+  static getMagneticTrack() {
+    return ADIRS.getFromAnyAdiru('IR', 'TRACK');
+  }
+
   /** in knots */
   static getTrueAirspeed() {
     return ADIRS.getFromAnyAdiru('ADR', 'TRUE_AIRSPEED');

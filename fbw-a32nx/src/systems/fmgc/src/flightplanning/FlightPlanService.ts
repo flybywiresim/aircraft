@@ -140,11 +140,13 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       );
 
       const magneticCourse: number = SimVar.GetSimVarValue('GPS GROUND MAGNETIC TRACK', 'Degrees');
+      const trueCourse: number = SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'Degrees');
       const lat: number = SimVar.GetSimVarValue('PLANE LATITUDE', 'Degrees');
       const long: number = SimVar.GetSimVarValue('PLANE LONGITUDE', 'Degrees');
 
       temporaryPlan.editLegDefinition(temporaryPlan.activeLegIndex - 1, {
         magneticCourse,
+        magVar: trueCourse - magneticCourse,
         waypoint: {
           ...tmpyFromLeg.definition.waypoint,
           location: {
@@ -403,7 +405,8 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
   async directToWaypoint(
     ppos: Coordinates,
-    trueTrack: Degrees,
+    magneticTrack: Degrees,
+    magVar: number,
     waypoint: Fix,
     withAbeam = false,
     planIndex = FlightPlanIndex.Active,
@@ -412,12 +415,13 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
     const plan = this.flightPlanManager.get(finalIndex);
 
-    plan.directToWaypoint(ppos, trueTrack, waypoint, withAbeam);
+    plan.directToWaypoint(ppos, magneticTrack, magVar, waypoint, withAbeam);
   }
 
   async directToLeg(
     ppos: Coordinates,
-    trueTrack: Degrees,
+    magneticTrack: Degrees,
+    magVar: number,
     targetLegIndex: number,
     withAbeam = false,
     planIndex = FlightPlanIndex.Active,
@@ -426,7 +430,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
     const plan = this.flightPlanManager.get(finalIndex);
 
-    plan.directToLeg(ppos, trueTrack, targetLegIndex, withAbeam);
+    plan.directToLeg(ppos, magneticTrack, magVar, targetLegIndex, withAbeam);
   }
 
   async addOrEditManualHold(
