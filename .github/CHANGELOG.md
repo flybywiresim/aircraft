@@ -25,6 +25,7 @@
 1. [A380X/MODEL] Fix RAT blur texture size not power of two - @heclak (Heclak)
 1. [A380X/OIT] Fix tooltips for OIT switches - @heclak (Heclak)
 1. [A32NX/MCDU] Fix managed speed units in IAS/MACH on perf climb page - @Lucas-IQ21 (Lucas)
+1. [A380X/FWS] Improve various ABN SENSED procedure accuracy - @Jonny23787 (Jonathan)
 
 ## 0.14.0
 
