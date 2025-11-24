@@ -3822,7 +3822,7 @@ export class FwsAbnormalSensed {
     },
     340800045: {
       // IR NOT ALIGNED
-      flightPhaseInhib: [1, 4, 5, 6, 9, 10, 12],
+      flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10, 12],
       simVarIsActive: this.fws.irExcessMotion,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [
