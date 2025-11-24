@@ -22,6 +22,14 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
 
   private readonly activeProcedureId = ConsumerSubject.create(this.sub.on('fws_active_procedure'), '0');
 
+  private readonly fcdc1DiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_1_1'));
+  private readonly fcdc2DiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_1_2'));
+  private readonly fcdc12Failed = MappedSubject.create(
+    ([word1, word2]) => word1.isInvalid() && word2.isInvalid(),
+    this.fcdc1DiscreteWord1,
+    this.fcdc2DiscreteWord1,
+  );
+
   private readonly groundspeed1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_ground_speed_1'));
   private readonly groundspeed2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_ground_speed_2'));
   private readonly groundspeed3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_ground_speed_3'));
@@ -69,7 +77,11 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
       // FWS 1+2 & FCDC 1+2 FAULT
       // FWS 1+2 & CPIOM FAULT
       // FWS 1+2 failed, show fallback
-      if (this.props.cpiomAvailChecker?.cpiomCFailed.get() && !this.props.cpiomAvailChecker?.otherCpiomFailed.get()) {
+      if (
+        (this.props.cpiomAvailChecker?.cpiomCFailed.get() ||
+          (!this.props.fwsAvail?.get() && this.fcdc12Failed.get())) &&
+        !this.props.cpiomAvailChecker?.otherCpiomFailed.get()
+      ) {
         // FWS 1+2 & FCDC 1+2 failed, show fallback
         const fwsFailedFallbackClState: ChecklistState = {
           id: '314800003',
@@ -115,6 +127,17 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
     this.subscriptions.push(
       this.procedures.sub(() => this.updateChecklists(), true),
       this.activeProcedureId.sub(() => this.updateChecklists(), true),
+      this.fcdc12Failed.sub(() => this.updateChecklists(), true),
+      this.fcdc1DiscreteWord1,
+      this.fcdc2DiscreteWord1,
+      this.fcdc12Failed,
+      this.groundspeed1,
+      this.groundspeed2,
+      this.groundspeed3,
+      this.groundspeed,
+      this.onGround1,
+      this.onGround2,
+      this.onGround,
     );
 
     if (this.props.cpiomAvailChecker) {
