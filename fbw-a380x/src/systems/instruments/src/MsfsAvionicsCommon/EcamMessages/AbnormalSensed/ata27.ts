@@ -127,7 +127,12 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [
       {
-        name: 'AUDIOS NOT AVAIL : WINDSHEAR, SPEED SPEED',
+        name: 'AUDIOS NOT AVAIL :',
+        style: ChecklistLineStyle.Green,
+        sensed: false,
+      },
+      {
+        name: `${'\xa0'.repeat(16)}WINDSHEAR, SPEED SPEED`,
         style: ChecklistLineStyle.Green,
         sensed: false,
       },
