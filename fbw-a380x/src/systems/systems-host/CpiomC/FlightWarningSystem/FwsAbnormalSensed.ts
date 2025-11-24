@@ -3423,7 +3423,7 @@ export class FwsAbnormalSensed {
     },
     320800018: {
       // BRAKES HOT
-      flightPhaseInhib: [4, 5, 8, 9, 10, 11, 12],
+      flightPhaseInhib: [4, 5, 9, 10, 11],
       simVarIsActive: this.fws.brakesHot,
       whichItemsToShow: () => [
         this.fws.phase112.get(),
