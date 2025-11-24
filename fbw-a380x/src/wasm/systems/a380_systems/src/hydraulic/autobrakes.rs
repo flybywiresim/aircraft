@@ -427,11 +427,12 @@ impl A380AutobrakeController {
             || self.should_disarm_after_time_in_flight.output()
             || (self.mode == A380AutobrakeMode::RTO
                 && self.should_reject_rto_mode_after_time_in_flight.output())
-            || self.btv_appr_different_runway
+            || (self.mode == A380AutobrakeMode::BTV && !self.btv_scheduler.is_armed())
     }
 
     fn btv_should_revert_to_brk_hi(&self) -> bool {
-        self.mode == A380AutobrakeMode::BTV && !self.btv_scheduler.is_armed()
+        self.mode == A380AutobrakeMode::BTV
+            && (self.btv_scheduler.btv_lost || self.btv_appr_different_runway)
     }
 
     fn disarm_actions(&mut self) {
