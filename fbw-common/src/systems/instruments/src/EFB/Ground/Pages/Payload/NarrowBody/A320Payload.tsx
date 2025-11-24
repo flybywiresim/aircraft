@@ -11,7 +11,7 @@ import {
   SeatFlags,
   Units,
   usePersistentNumberProperty,
-  usePersistentProperty,
+  usePersistentSetting,
   useSeatFlags,
   useSimVar,
 } from '@flybywiresim/fbw-sdk';
@@ -508,7 +508,7 @@ export const A320Payload: React.FC<PayloadProps> = ({
     return `${minutes}:${padding}${seconds.toFixed(0)} ${t('Ground.Payload.EstimatedDurationUnit')}`;
   };
 
-  const [theme] = usePersistentProperty('EFB_UI_THEME', 'blue');
+  const [theme] = usePersistentSetting('EFB_UI_THEME');
   const getTheme = useCallback(
     (theme: string): [string, string, string] => {
       let base = '#fff';

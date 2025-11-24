@@ -147,7 +147,7 @@ export const LegacyCdsDisplayUnit = forwardRef<SVGSVGElement, PropsWithChildren<
         !failed
       ) {
         setState(DisplayUnitState.ThalesBootup);
-        const delay = parseInt(NXDataStore.get('CONFIG_SELF_TEST_TIME', '15')) - 0.5 + Math.random();
+        const delay = parseInt(NXDataStore.getLegacy('CONFIG_SELF_TEST_TIME', '15')) - 0.5 + Math.random();
         setTimer(delay);
         thalesBootupEndTime.current = delay - (0.25 + Math.random() * 0.2);
       } else if (
