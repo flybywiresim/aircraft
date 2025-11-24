@@ -484,15 +484,15 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     if (referenceAltitude !== undefined) {
       plan.setPerformanceData(
         'defaultThrustReductionAltitude',
-        referenceAltitude + parseInt(NXDataStore.get('CONFIG_THR_RED_ALT', '1500')),
+        referenceAltitude + parseInt(NXDataStore.getLegacy('CONFIG_THR_RED_ALT', '1500')),
       );
       plan.setPerformanceData(
         'defaultAccelerationAltitude',
-        referenceAltitude + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500')),
+        referenceAltitude + parseInt(NXDataStore.getLegacy('CONFIG_ACCEL_ALT', '1500')),
       );
       plan.setPerformanceData(
         'defaultEngineOutAccelerationAltitude',
-        referenceAltitude + parseInt(NXDataStore.get('CONFIG_ENG_OUT_ACCEL_ALT', '1500')),
+        referenceAltitude + parseInt(NXDataStore.getLegacy('CONFIG_ENG_OUT_ACCEL_ALT', '1500')),
       );
       plan.setPerformanceData(
         'defaultGroundTemperature',
@@ -526,15 +526,15 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     if (referenceAltitude !== undefined) {
       plan.setPerformanceData(
         'defaultMissedThrustReductionAltitude',
-        referenceAltitude + parseInt(NXDataStore.get('CONFIG_THR_RED_ALT', '1500')),
+        referenceAltitude + parseInt(NXDataStore.getLegacy('CONFIG_THR_RED_ALT', '1500')),
       );
       plan.setPerformanceData(
         'defaultMissedAccelerationAltitude',
-        referenceAltitude + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500')),
+        referenceAltitude + parseInt(NXDataStore.getLegacy('CONFIG_ACCEL_ALT', '1500')),
       );
       plan.setPerformanceData(
         'defaultMissedEngineOutAccelerationAltitude',
-        referenceAltitude + parseInt(NXDataStore.get('CONFIG_ENG_OUT_ACCEL_ALT', '1500')),
+        referenceAltitude + parseInt(NXDataStore.getLegacy('CONFIG_ENG_OUT_ACCEL_ALT', '1500')),
       );
     } else {
       plan.setPerformanceData('defaultMissedThrustReductionAltitude', null);

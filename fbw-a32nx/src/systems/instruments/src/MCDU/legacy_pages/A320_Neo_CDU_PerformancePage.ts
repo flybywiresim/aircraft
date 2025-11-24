@@ -516,13 +516,7 @@ export class CDUPerformancePage {
 
     let managedSpeedCell = '';
     if (isPhaseActive) {
-      if (mcdu.managedSpeedTarget === mcdu.managedSpeedClimb) {
-        managedSpeedCell = `\xa0${mcdu.managedSpeedClimb.toFixed(0)}/${mcdu.managedSpeedClimbMach.toFixed(2).replace('0.', '.')}`;
-      } else if (mcdu.managedSpeedTargetIsMach) {
-        managedSpeedCell = `\xa0${mcdu.managedSpeedClimbMach.toFixed(2).replace('0.', '.')}`;
-      } else {
-        managedSpeedCell = `\xa0${mcdu.managedSpeedTarget.toFixed(0)}`;
-      }
+      managedSpeedCell = `\xa0${mcdu.managedSpeedClimb.toFixed(0)}/${mcdu.managedSpeedClimbMach.toFixed(2).replace('0.', '.')}`;
     } else {
       let climbSpeed = Math.min(mcdu.managedSpeedClimb, mcdu.getNavModeSpeedConstraint());
       if (
@@ -532,7 +526,9 @@ export class CDUPerformancePage {
         climbSpeed = Math.min(climbSpeed, mcdu.climbSpeedLimit);
       }
 
-      managedSpeedCell = `${canClickManagedSpeed ? '*' : '\xa0'}${climbSpeed.toFixed(0)}`;
+      managedSpeedCell = `${canClickManagedSpeed ? '*' : '\xa0'}${climbSpeed.toFixed(0)}/${mcdu.managedSpeedClimbMach
+        .toFixed(2)
+        .replace('0.', '.')}`;
 
       mcdu.onLeftInput[3] = (value, scratchpadCallback) => {
         if (mcdu.trySetPreSelectedClimbSpeed(value, forPlan)) {
