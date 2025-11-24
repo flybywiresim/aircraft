@@ -2534,7 +2534,7 @@ export class FwsCore {
     if (powered) {
       // Real time is 60 seconds, i.e. 60_000 ms; Real setting for DMC self test in EFB is 12 seconds.
       const coldAndDark = SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'bool');
-      const startupTime = coldAndDark ? parseInt(NXDataStore.get('CONFIG_SELF_TEST_TIME', '12')) * 5_000 : 0;
+      const startupTime = coldAndDark ? parseInt(NXDataStore.getLegacy('CONFIG_SELF_TEST_TIME', '12')) * 5_000 : 0;
 
       this.startupTimer.schedule(() => {
         this.startupCompleted.set(true);
@@ -4238,10 +4238,6 @@ export class FwsCore {
     );
     this.sec3OffThenOnPulseNode.write(!this.sec3PbOff.get(), deltaTime);
     this.sec3OffThenOnMemoryNode.write(this.sec3OffThenOnPulseNode.read(), !this.sec3FaultCondition.get());
-
-    this.prim1Healthy.set(SimVar.GetSimVarValue('L:A32NX_PRIM_1_HEALTHY', 'Bool'));
-    this.prim2Healthy.set(SimVar.GetSimVarValue('L:A32NX_PRIM_2_HEALTHY', 'bool'));
-    this.prim3Healthy.set(SimVar.GetSimVarValue('L:A32NX_PRIM_3_HEALTHY', 'bool'));
 
     this.prim1PbOff.set(!SimVar.GetSimVarValue('L:A32NX_PRIM_1_PUSHBUTTON_PRESSED', SimVarValueType.Bool));
 
