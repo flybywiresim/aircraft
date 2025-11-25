@@ -90,15 +90,29 @@ export class CDUSecFplnMain {
 
     // <COPY ACTIVE
     mcdu.onLeftInput[0] = async () => {
-      await mcdu.flightPlanService.secondaryCopyFromActive(1, !mcdu.isAnEngineOn());
+      try {
+        await mcdu.flightPlanService.secondaryCopyFromActive(1, !mcdu.isAnEngineOn());
+      } catch (error) {
+        console.error(error);
+        mcdu.logTroubleshootingError(error);
+        mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
+      }
+
       CDUFlightPlanPage.ShowPage(mcdu, 0, FlightPlanIndex.FirstSecondary);
     };
 
     // INIT>
     mcdu.onRightInput[0] = async () => {
       if (!hasSecondary) {
-        await mcdu.flightPlanService.secondaryInit(1);
+        try {
+          await mcdu.flightPlanService.secondaryInit(1);
+        } catch (error) {
+          console.error(error);
+          mcdu.logTroubleshootingError(error);
+          mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
+        }
       }
+
       CDUInitPage.ShowPage1(mcdu, FlightPlanIndex.FirstSecondary);
     };
 
