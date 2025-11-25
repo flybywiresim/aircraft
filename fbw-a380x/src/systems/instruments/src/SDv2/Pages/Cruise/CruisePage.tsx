@@ -21,7 +21,7 @@ export class CruisePage extends DestroyableComponent<SdPageProps> {
 
   private readonly usingMetric = Subject.create(true);
 
-  private readonly metricUnitSubscription = NXDataStore.getAndSubscribe(
+  private readonly metricUnitSubscription = NXDataStore.getAndSubscribeLegacy(
     'CONFIG_USING_METRIC_UNIT',
     (_k, v) => {
       this.usingMetric.set(v === '1');

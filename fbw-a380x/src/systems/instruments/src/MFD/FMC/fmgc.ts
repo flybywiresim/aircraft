@@ -413,8 +413,8 @@ export class FmgcDataService implements Fmgc {
 
   /** in knots */
   getV2Speed(): number {
-    return this.flightPlanService.has(FlightPlanIndex.Active) && this.flightPlanService.active.performanceData.v2
-      ? this.flightPlanService.active.performanceData.v2
+    return this.flightPlanService.has(FlightPlanIndex.Active)
+      ? this.flightPlanService.active.performanceData.v2.get() ?? 150
       : 150;
   }
 
@@ -426,7 +426,7 @@ export class FmgcDataService implements Fmgc {
   /** in knots */
   getManagedClimbSpeed(): number {
     if (this.flightPlanService.has(FlightPlanIndex.Active)) {
-      const dCI = ((this.flightPlanService.active.performanceData.costIndex ?? 100) / 999) ** 2;
+      const dCI = ((this.flightPlanService.active.performanceData.costIndex.get() ?? 100) / 999) ** 2;
       return 290 * (1 - dCI) + 330 * dCI;
     }
     return 250;
@@ -445,28 +445,28 @@ export class FmgcDataService implements Fmgc {
   /** in feet */
   getAccelerationAltitude(): number {
     return this.flightPlanService.has(FlightPlanIndex.Active)
-      ? (this.flightPlanService?.active.performanceData.accelerationAltitude as Feet)
+      ? (this.flightPlanService?.active.performanceData.accelerationAltitude.get() as Feet)
       : 1_500;
   }
 
   /** in feet */
   getThrustReductionAltitude(): number {
     return this.flightPlanService.has(FlightPlanIndex.Active)
-      ? (this.flightPlanService?.active.performanceData.thrustReductionAltitude as Feet)
+      ? (this.flightPlanService?.active.performanceData.thrustReductionAltitude.get() as Feet)
       : 1_500;
   }
 
   /** in feet. undefined if not set. */
   getOriginTransitionAltitude(): number | undefined {
     return this.flightPlanService.has(FlightPlanIndex.Active)
-      ? (this.flightPlanService?.active.performanceData.transitionAltitude as Feet)
+      ? (this.flightPlanService?.active.performanceData.transitionAltitude.get() as Feet)
       : undefined;
   }
 
   /** in feet. undefined if not set. */
   getDestinationTransitionLevel(): number | undefined {
     return this.flightPlanService.has(FlightPlanIndex.Active)
-      ? (this.flightPlanService?.active.performanceData.transitionLevel as Feet)
+      ? (this.flightPlanService?.active.performanceData.transitionLevel.get() as Feet)
       : undefined;
   }
 
@@ -475,9 +475,8 @@ export class FmgcDataService implements Fmgc {
    * @returns flight level in steps of 100ft (e.g. 320 instead of 32000 for FL320)
    */
   getCruiseAltitude(): number {
-    return this.flightPlanService.has(FlightPlanIndex.Active) &&
-      this.flightPlanService?.active.performanceData.cruiseFlightLevel
-      ? this.flightPlanService?.active.performanceData.cruiseFlightLevel
+    return this.flightPlanService.has(FlightPlanIndex.Active)
+      ? this.flightPlanService?.active.performanceData.cruiseFlightLevel.get() ?? 320
       : 320;
   }
 
@@ -494,7 +493,7 @@ export class FmgcDataService implements Fmgc {
 
     // FIXME need to rework the cost index based speed calculations
     /* if (this.flightPlanService.has(FlightPlanIndex.Active)) {
-      const dCI = ((this.flightPlanService.active.performanceData.costIndex ?? 100) / 999) ** 2;
+      const dCI = ((this.flightPlanService.active.performanceData.costIndex.get() ?? 100) / 999) ** 2;
       return 290 * (1 - dCI) + 330 * dCI;
     }*/
     return 310;
@@ -513,8 +512,8 @@ export class FmgcDataService implements Fmgc {
     if (!this.flightPlanService.has(FlightPlanIndex.Active)) {
       return null;
     }
-    const speedLimitSpeed = this.flightPlanService.active.performanceData.climbSpeedLimitSpeed;
-    const speedLimitAltitude = this.flightPlanService.active.performanceData.climbSpeedLimitAltitude;
+    const speedLimitSpeed = this.flightPlanService.active.performanceData.climbSpeedLimitSpeed.get();
+    const speedLimitAltitude = this.flightPlanService.active.performanceData.climbSpeedLimitAltitude.get();
     if (speedLimitSpeed && speedLimitAltitude) {
       return {
         speed: speedLimitSpeed,
@@ -528,8 +527,8 @@ export class FmgcDataService implements Fmgc {
     if (!this.flightPlanService.has(FlightPlanIndex.Active)) {
       return null;
     }
-    const speedLimitSpeed = this.flightPlanService.active.performanceData.descentSpeedLimitSpeed;
-    const speedLimitAltitude = this.flightPlanService.active.performanceData.descentSpeedLimitAltitude;
+    const speedLimitSpeed = this.flightPlanService.active.performanceData.descentSpeedLimitSpeed.get();
+    const speedLimitAltitude = this.flightPlanService.active.performanceData.descentSpeedLimitAltitude.get();
     if (speedLimitSpeed && speedLimitAltitude) {
       return {
         speed: speedLimitSpeed,
@@ -568,7 +567,7 @@ export class FmgcDataService implements Fmgc {
     }
     // TODO adapt for A380
     if (this.flightPlanService.has(FlightPlanIndex.Active)) {
-      const dCI = (this.flightPlanService.active.performanceData.costIndex ?? 100) / 999;
+      const dCI = (this.flightPlanService.active.performanceData.costIndex.get() ?? 100) / 999;
       return 288 * (1 - dCI) + 300 * dCI;
     }
     return 300;
