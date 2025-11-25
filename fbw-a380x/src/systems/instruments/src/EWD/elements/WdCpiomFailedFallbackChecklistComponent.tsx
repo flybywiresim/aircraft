@@ -76,13 +76,13 @@ export class WdCpiomFailedFallbackChecklistComponent extends DestroyableComponen
             visible={this.props.cpiomAvailChecker.cpiomFFailed}
           />
           <EclFallbackLine
-            text="-INR TKS + MID TKS + TRIM TK:NOT USABLE"
+            text="INR TKS + MID TKS + TRIM TK:NOT USABLE"
             cyan
             visible={this.props.cpiomAvailChecker.cpiomFFailed}
           />
-          <EclFallbackLine text="-ATC COM VOICE ONLY" cyan visible={this.props.cpiomAvailChecker.cpiomDFailed} />
+          <EclFallbackLine text="ATC COM VOICE ONLY" cyan visible={this.props.cpiomAvailChecker.cpiomDFailed} />
           <EclFallbackLine
-            text="-L/G GRVTY EXTN ONLY (MAX SPEED: 220KT)"
+            text="L/G GRVTY EXTN ONLY (MAX SPEED: 220KT)"
             cyan
             visible={this.props.cpiomAvailChecker.cpiomGFailed}
           />
