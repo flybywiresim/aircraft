@@ -46,17 +46,17 @@ export class WdCpiomFailedFallbackChecklistComponent extends DestroyableComponen
             visible={this.props.cpiomAvailChecker.cpiomAFailed}
           />
           <EclFallbackLine
-            text="-CAB PRESS MAN MODES : DO NOT USE"
+            text="CAB PRESS MAN MODES : DO NOT USE"
             cyan
             visible={this.props.cpiomAvailChecker.cpiomBFailed}
           />
           <EclFallbackLine
-            text="-IN DES,ABV 7000FT: CAB ALT REGULATED TO 7000FT"
+            text="IN DES,ABV 7000FT: CAB ALT REGULATED TO 7000FT"
             cyan
             visible={this.props.cpiomAvailChecker.cpiomBFailed}
           />
           <EclFallbackLine
-            text="-BLW 7000FT: CAB ALT=A/C ALT: AVOID HI DES RATE"
+            text="BLW 7000FT: CAB ALT=A/C ALT: AVOID HI DES RATE"
             cyan
             visible={this.props.cpiomAvailChecker.cpiomBFailed}
           />
