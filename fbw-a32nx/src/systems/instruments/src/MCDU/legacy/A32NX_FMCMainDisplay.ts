@@ -14,6 +14,7 @@ import {
   EnrouteNdbNavaid,
   Fix,
   IlsNavaid,
+  isMsfs2024,
   MathUtils,
   NdbNavaid,
   NXDataStore,
@@ -65,7 +66,9 @@ import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { initComponents, updateComponents } from '@fmgc/components';
 import { CoRouteUplinkAdapter } from '@fmgc/flightplanning/uplink/CoRouteUplinkAdapter';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
+import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
 import { FmcWindVector } from '@fmgc/guidance/vnav/wind/types';
+import { MsfsFlightPlanSync } from '@fmgc/flightplanning/MsfsFlightPlanSync';
 
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
@@ -75,10 +78,16 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   public readonly navDatabaseBackend = NavigationDatabaseBackend.Msfs;
   public readonly currFlightPhaseManager = new FlightPhaseManager(this.bus);
-  public readonly currFlightPlanService = new FlightPlanService(this.bus, new A320FlightPlanPerformanceData());
+  public readonly currFlightPlanService = new FlightPlanService(
+    this.bus,
+    new A320FlightPlanPerformanceData(),
+    FpmConfigs.A320_HONEYWELL_H3,
+    true,
+  );
   public readonly rpcServer = new FlightPlanRpcServer(this.bus, this.currFlightPlanService);
   public readonly currNavigationDatabaseService = NavigationDatabaseService;
   public readonly navigationDatabase = new NavigationDatabase(this.bus, NavigationDatabaseBackend.Msfs);
+  public readonly msfsRouteSync = isMsfs2024() ? new MsfsFlightPlanSync(this.bus, this.currFlightPlanService) : null;
 
   private readonly flightPhaseUpdateThrottler = new UpdateThrottler(800);
   private readonly fmsUpdateThrottler = new UpdateThrottler(250);
@@ -353,7 +362,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.A32NXCore = new A32NX_Core();
     this.A32NXCore.init();
 
-    this.dataManager = new DataManager(this);
+    this.dataManager = new DataManager(this.bus, this);
 
     this.efisInterfaces = {
       L: new EfisInterface('L', this.currFlightPlanService),
@@ -2799,19 +2808,21 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         ? this.currFlightPlanService.active.destinationAirport.ident
         : undefined;
       const oldCruiseLevel = this.cruiseLevel;
-      this.flightPlanService.temporaryInsert();
-      this.checkCostIndex(oldCostIndex);
-      // FIXME I don't know if it is actually possible to insert TMPY with no FROM/TO, but we should not crash here, so check this for now
-      if (oldDestination !== undefined) {
-        this.checkDestination(oldDestination);
-      }
-      this.checkCruiseLevel(oldCruiseLevel);
 
-      SimVar.SetSimVarValue('L:FMC_FLIGHT_PLAN_IS_TEMPORARY', 'number', 0);
-      SimVar.SetSimVarValue('L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN', 'number', 0);
+      this.flightPlanService.temporaryInsert().then(() => {
+        this.checkCostIndex(oldCostIndex);
+        // FIXME I don't know if it is actually possible to insert TMPY with no FROM/TO, but we should not crash here, so check this for now
+        if (oldDestination !== undefined) {
+          this.checkDestination(oldDestination);
+        }
+        this.checkCruiseLevel(oldCruiseLevel);
 
-      this.guidanceController.vnavDriver.invalidateFlightPlanProfile();
-      callback();
+        SimVar.SetSimVarValue('L:FMC_FLIGHT_PLAN_IS_TEMPORARY', 'number', 0);
+        SimVar.SetSimVarValue('L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN', 'number', 0);
+
+        this.guidanceController.vnavDriver.invalidateFlightPlanProfile();
+        callback();
+      });
     }
   }
 
