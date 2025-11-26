@@ -47,7 +47,6 @@ export class SyntheticRunway extends DisplayComponent<{
   private centerLineCoords: LatLongAlt[] = [];
   private threshHeighAbvGnd = 1020 * Math.tan((3 / 180) * Math.PI);
   private data2?: HUDSyntheticRunway;
-  private isDefined = false;
   /** bit 29 is NO DH selection */
   private readonly fmEisDiscrete2 = Arinc429RegisterSubject.createEmpty();
 
@@ -57,7 +56,7 @@ export class SyntheticRunway extends DisplayComponent<{
   private readonly mda = Arinc429RegisterSubject.createEmpty();
   private readonly dh = Arinc429RegisterSubject.createEmpty();
   private readonly noDhSelected = this.fmEisDiscrete2.map((r) => r.bitValueOr(29, false));
-
+  private readonly symb = ConsumerSubject.create(this.sub.on('symbol'), undefined);
   private readonly mdaDhMode = MappedSubject.create(
     ([noDh, dh, mda]) => {
       if (noDh) {
@@ -79,6 +78,19 @@ export class SyntheticRunway extends DisplayComponent<{
     this.mda,
   );
 
+  private readonly isDefined = MappedSubject.create(([symb]) => {
+    this.data = symb;
+    if (this.data === undefined) {
+      //console.log('M symbol data not loaded');
+    } else {
+      //console.log('M symbol data loaded');
+      this.data2 = JSON.parse(JSON.stringify(this.data));
+      this.initRwyPoints();
+    }
+
+    return symb !== undefined;
+  }, this.symb);
+
   private readonly mdaDhValue = MappedSubject.create(
     ([mdaMode, dh, mda]) => {
       switch (mdaMode) {
@@ -99,7 +111,7 @@ export class SyntheticRunway extends DisplayComponent<{
     ([mda, dh, mdaDhMode, altitude, ra, syntheticRunwway]) => {
       let diff;
       const minAlt = this.mdaDhValue.get();
-      if (syntheticRunwway === 'block' && this.isDefined === true) {
+      if (syntheticRunwway === 'block' && this.isDefined.get() === true) {
         switch (mdaDhMode) {
           case MdaMode.Baro:
             diff = altitude.value - mda.value;
@@ -145,24 +157,10 @@ export class SyntheticRunway extends DisplayComponent<{
   );
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-    this.subscriptions.push(this.altitude, this.ra, this.syntheticRunwway, this.noDhSelected);
+    this.subscriptions.push(this.altitude, this.ra, this.syntheticRunwway, this.noDhSelected, this.symb);
 
     this.subscriptions.push(this.sub.on('fmMdaRaw').handle(this.mda.setWord.bind(this.mda)));
     this.subscriptions.push(this.sub.on('fmDhRaw').handle(this.dh.setWord.bind(this.dh)));
-    this.subscriptions.push(
-      this.sub
-        .on('symbol')
-        .whenChanged()
-        .handle((data) => {
-          this.data = data;
-          if (this.data === undefined) {
-            console.log('symbol data not loaded');
-          } else {
-            this.data2 = JSON.parse(JSON.stringify(this.data));
-            this.initRwyPoints();
-          }
-        }),
-    );
 
     this.subscriptions.push(
       this.sub
@@ -177,7 +175,6 @@ export class SyntheticRunway extends DisplayComponent<{
   }
 
   private onFrameUpdate(_realTime: number): void {
-    this.data === undefined ? (this.isDefined = false) : (this.isDefined = true);
     if (this.visToggle.get() === 'block') {
       this.alt = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet');
       this.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
