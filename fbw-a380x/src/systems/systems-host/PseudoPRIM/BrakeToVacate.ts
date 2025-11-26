@@ -195,6 +195,9 @@ export class BrakeToVacate implements Instrument {
         } else if (!lat3.isInvalid() && !lon3.isInvalid()) {
           this.ppos.lat = lat3.value;
           this.ppos.long = lon3.value;
+        } else {
+          this.ppos.lat = 0;
+          this.ppos.long = 0;
         }
         return this.ppos;
       },

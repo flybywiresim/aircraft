@@ -4740,19 +4740,19 @@ export class FwsCore {
     // TAWS
     const taws1Powered = this.acESSBusPowered.get();
     const taws2Powered = this.ac4BusPowered.get();
-    this.terrSys1Failed.set(!!this.terrSys1FailedSimvar.get());
+    this.terrSys1Failed.set(this.terrSys1FailedSimvar.get());
     this.terrSys1FaultCond.set(this.terrSys1Failed.get() && taws1Powered);
-    this.terrSys2Failed.set(!!this.terrSys2FailedSimvar.get());
+    this.terrSys2Failed.set(this.terrSys2FailedSimvar.get());
     this.terrSys2FaultCond.set(this.terrSys2Failed.get() && taws2Powered);
-    this.taws1Failed.set(!!this.taws1FailedSimvar.get());
-    this.taws2Failed.set(!!this.taws2FailedSimvar.get());
+    this.taws1Failed.set(this.taws1FailedSimvar.get());
+    this.taws2Failed.set(this.taws2FailedSimvar.get());
     this.taws1FaultCond.set(this.taws1Failed.get() && taws1Powered);
     this.taws2FaultCond.set(this.taws2Failed.get() && taws2Powered);
     this.tawsWxrSelected.set(this.tawsWxrSelectedSimvar.get());
 
     // OANS
-    this.oansFailed.set(!!this.oansFailedSimvar.get());
-    this.oansPposLost.set(!!this.oansPposLostSimVar.get());
+    this.oansFailed.set(this.oansFailedSimvar.get());
+    this.oansPposLost.set(this.oansPposLostSimVar.get());
 
     /* 26 - FIRE */
 
