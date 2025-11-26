@@ -1,6 +1,6 @@
 {
   "name": "a32nx",
-  "version": "0.14.0",
+  "version": "0.15.0",
   "edition": "development",
   "imports": {
     "#build-utils": "./build-utils.js"
@@ -102,6 +102,7 @@
     "@types/react": "~17.0.11",
     "@types/react-dom": "~17.0.8",
     "@types/react-router-dom": "~5.1.7",
+    "@types/uuid": "^10.0.0",
     "@types/semver": "^7.3.13",
     "@typescript-eslint/eslint-plugin": "~6.19.1",
     "@typescript-eslint/parser": "~6.19.1",

@@ -31,9 +31,8 @@ import {
   VerticalCheckpointReason,
   VerticalWaypointPrediction,
 } from './profile/NavGeometryProfile';
-import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
-import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
+import { FlightPlanIndex } from '../../flightplanning/FlightPlanManager';
 import { VnavConfig } from './VnavConfig';
 
 export class VnavDriver implements GuidanceComponent {
@@ -131,12 +130,11 @@ export class VnavDriver implements GuidanceComponent {
       const { flightPhase } = this.computationParametersObserver.get();
 
       this.updateDebugInformation();
-      this.updateDistanceToDestination();
 
       if (flightPhase >= FmgcFlightPhase.Takeoff) {
         this.updateHoldSpeed();
         this.updateDescentSpeedGuidance();
-        this.descentGuidance.update(deltaTime, this.guidanceController.alongTrackDistanceToDestination);
+        this.descentGuidance.update(deltaTime, this.guidanceController.getAlongTrackDistanceToDestination());
       }
     } catch (e) {
       console.error('[FMS] Failed to calculate vertical profile. See exception below.');
@@ -592,8 +590,9 @@ export class VnavDriver implements GuidanceComponent {
     this.listener.triggerToAllSubscribers(
       'A32NX_FM_DEBUG_VNAV_STATUS',
       'A32NX FMS VNAV STATUS\n' +
-        `DTG ${this.guidanceController.activeLegAlongTrackCompletePathDtg?.toFixed(2) ?? '---'} NM\n` +
-        `DIST TO DEST ${this.guidanceController.alongTrackDistanceToDestination?.toFixed(2) ?? '---'} NM\n` +
+        `DTG ${this.guidanceController.displayActiveLegCompleteLegPathDtg?.toFixed(2) ?? '---'} NM\n` +
+        `DIST TO DEST ${this.guidanceController.getAlongTrackDistanceToDestination()?.toFixed(2) ?? '---'} NM\n` +
+        `SEC DIST TO DEST ${this.guidanceController.getAlongTrackDistanceToDestination(FlightPlanIndex.FirstSecondary)?.toFixed(2) ?? '---'} NM\n` +
         `DIST FROM START ${this.constraintReader.distanceToPresentPosition?.toFixed(2) ?? '---'} NM\n` +
         `TOTAL DIST ${this.constraintReader.totalFlightPlanDistance?.toFixed(2) ?? '---'} NM\n` +
         '---\n' +
@@ -601,56 +600,6 @@ export class VnavDriver implements GuidanceComponent {
         `VDEV ${this.descentGuidance.getLinearDeviation()?.toFixed(0) ?? '---'} FT\n` +
         `VS ${this.descentGuidance.getTargetVerticalSpeed()?.toFixed(0) ?? '---'} FT/MIN\n`,
     );
-  }
-
-  private updateDistanceToDestination(): void {
-    const geometry = this.guidanceController.activeGeometry;
-    if (!geometry || geometry.legs.size <= 0) {
-      this.guidanceController.activeLegAlongTrackCompletePathDtg = undefined;
-      this.guidanceController.alongTrackDistanceToDestination = undefined;
-
-      return;
-    }
-
-    // TODO: Proper navigation
-    const ppos = this.guidanceController.lnavDriver.ppos;
-    const trueTrack = SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree');
-
-    const activeLegIndx = this.guidanceController.activeLegIndex;
-    const activeLeg = geometry.legs.get(activeLegIndx);
-
-    let referenceLegIndex = activeLegIndx;
-    if (!activeLeg) {
-      referenceLegIndex = activeLegIndx + 1;
-    } else if (activeLeg instanceof VMLeg || activeLeg instanceof FMLeg) {
-      referenceLegIndex = activeLegIndx + 2;
-    }
-    const referenceLeg = geometry.legs.get(referenceLegIndex);
-
-    if (!referenceLeg) {
-      this.guidanceController.activeLegAlongTrackCompletePathDtg = undefined;
-      this.guidanceController.alongTrackDistanceToDestination = undefined;
-
-      return;
-    }
-
-    const inboundTransition = geometry.transitions.get(referenceLegIndex - 1);
-    const outboundTransition = geometry.transitions.get(referenceLegIndex);
-
-    const completeLegAlongTrackPathDtg = Geometry.completeLegAlongTrackPathDistanceToGo(
-      ppos,
-      trueTrack,
-      referenceLeg,
-      inboundTransition,
-      outboundTransition,
-    );
-
-    this.guidanceController.activeLegAlongTrackCompletePathDtg = completeLegAlongTrackPathDtg;
-    this.guidanceController.alongTrackDistanceToDestination = Number.isFinite(
-      referenceLeg.calculated?.cumulativeDistanceToEndWithTransitions,
-    )
-      ? completeLegAlongTrackPathDtg + referenceLeg.calculated.cumulativeDistanceToEndWithTransitions
-      : undefined;
   }
 
   shouldShowLatDiscontinuityAhead(): boolean {

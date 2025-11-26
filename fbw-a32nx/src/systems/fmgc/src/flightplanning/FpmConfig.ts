@@ -33,6 +33,12 @@ export interface FpmConfig {
 
   /** Whether the next abeam point of a DIR TO WITH ABEAM is considered as the TO waypoint emitted by the FPM */
   DIR_TO_ABEAM_POINT_IS_TO_WPT: boolean;
+
+  /**
+   * Whether or not to keep the taxi fuel in the active flight plan if a swap with a secondary plan,
+   * that does not have a taxi fuel value entered, is performed
+   */
+  PERSIST_TAXI_FUEL_ON_SEC_SWAP: boolean;
 }
 
 export class FpmConfigs {
@@ -46,6 +52,7 @@ export class FpmConfigs {
     MAX_NUM_LEGS: 200,
     CHECK_VIA_COMPATIBILITY: true,
     DIR_TO_ABEAM_POINT_IS_TO_WPT: true,
+    PERSIST_TAXI_FUEL_ON_SEC_SWAP: true,
   };
 
   static A320_HONEYWELL_H3: FpmConfig = {
@@ -58,5 +65,6 @@ export class FpmConfigs {
     MAX_NUM_LEGS: 250,
     CHECK_VIA_COMPATIBILITY: false,
     DIR_TO_ABEAM_POINT_IS_TO_WPT: false,
+    PERSIST_TAXI_FUEL_ON_SEC_SWAP: false,
   };
 }
