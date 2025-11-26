@@ -14,7 +14,7 @@ import {
   isChecklistCondition,
   isTimedItem,
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
-import { ChecklistState } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
+import { ChecklistState } from 'instruments/src/MsfsAvionicsCommon/providers/FwsPublisher';
 
 export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
   private readonly procedures = ConsumerSubject.create(this.sub.on('fws_abn_sensed_procedures'), []);

@@ -10,7 +10,7 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 import { EwdSimvars } from 'instruments/src/EWD/shared/EwdSimvarPublisher';
-import { FwsEwdEvents } from '../../MsfsAvionicsCommon/providers/FwsEwdPublisher';
+import { FwsEvents } from '../../MsfsAvionicsCommon/providers/FwsPublisher';
 import {
   ChecklistLineStyle,
   WD_NUM_LINES,
@@ -28,7 +28,7 @@ interface WdAbstractChecklistComponentProps {
 }
 
 export class WdAbstractChecklistComponent extends DisplayComponent<WdAbstractChecklistComponentProps> {
-  protected readonly sub = this.props.bus.getSubscriber<ClockEvents & EwdSimvars & FwsEwdEvents>();
+  protected readonly sub = this.props.bus.getSubscriber<ClockEvents & EwdSimvars & FwsEvents>();
 
   protected readonly lineData: WdLineData[] = [];
 

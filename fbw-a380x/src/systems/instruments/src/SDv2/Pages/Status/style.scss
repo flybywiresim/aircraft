@@ -1,0 +1,70 @@
+﻿// Copyright (c) 2025 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
+@import "../../../MsfsAvionicsCommon/definitions.scss";
+
+@font-face {
+  font-family: "Ecam";
+  //noinspection CssUnknownTarget
+  src: url("/Fonts/fbw-a380x/FBW-Display-EIS-A380.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "FBW-Display-EIS-A380-SlashedZero";
+  //noinspection CssUnknownTarget
+  src: url("/Fonts/fbw-a380x/FBW-Display-EIS-A380-SlashedZero.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.sd-sts-top-div {
+  display: flex;
+  flex-direction: column;
+  height: 665px;
+  width: 768px;
+  position: absolute;
+  top: 0px;
+  background-color: $display-background;
+  z-index: 1;
+}
+
+.sd-sts-section-container {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 8px 12px 8px;
+}
+
+.sd-sts-section-heading {
+  display: flex;
+  justify-content: center;
+  font-size: 24px;
+  letter-spacing: 1.75px;
+  margin-bottom: 4px;
+}
+
+.sd-sts-section-heading.underline {
+  text-decoration: underline;
+}
+
+.sd-sts-section-divided-area {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  padding-bottom: 4px;
+}
+
+.sd-sts-section-divided-left {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  border-right: 2px solid lightgrey;
+}
+
+.sd-sts-section-divided-right {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding-left: 8px;
+}

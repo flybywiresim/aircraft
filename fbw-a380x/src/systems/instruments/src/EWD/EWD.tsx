@@ -21,12 +21,12 @@ import { BleedSupply } from 'instruments/src/EWD/elements/BleedSupply';
 import { WdMemos } from 'instruments/src/EWD/elements/WdMemos';
 import { WdLimitations } from 'instruments/src/EWD/elements/WdLimitations';
 import { WdNormalChecklists } from 'instruments/src/EWD/elements/WdNormalChecklists';
-import { FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
+import { FwsEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsPublisher';
 import { WdAbnormalSensedProcedures } from 'instruments/src/EWD/elements/WdAbnormalSensedProcedures';
 import { WdAbnormalNonSensedProcedures } from 'instruments/src/EWD/elements/WdAbnormalNonSensed';
 
 export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
-  private readonly sub = this.props.bus.getSubscriber<EwdSimvars & FwsEwdEvents>();
+  private readonly sub = this.props.bus.getSubscriber<EwdSimvars & FwsEvents>();
 
   private readonly availChecker = new FwsEwdAvailabilityChecker(this.props.bus);
 

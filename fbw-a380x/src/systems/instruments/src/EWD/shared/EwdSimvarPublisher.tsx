@@ -36,8 +36,6 @@ export interface BaseEwdSimvars {
   cpiomB3AgsDiscreteRaw: number;
   cpiomB4AgsDiscreteRaw: number;
   fwc_flight_phase: number;
-  limitations_apprldg: number;
-  limitations_all: number;
   memo_left: number;
   memo_right: number;
   nose_gear_compressed: boolean;
@@ -62,8 +60,6 @@ type IndexedTopics =
   | 'reverser_deployed'
   | 'thrust_reverse'
   | 'eng_anti_ice'
-  | 'limitations_apprldg'
-  | 'limitations_all'
   | 'memo_left'
   | 'memo_right'
   | 'nose_gear_compressed'
@@ -114,14 +110,6 @@ export class EwdSimvarPublisher extends SimVarPublisher<EwdSimvars> {
       ['cpiomB3AgsDiscreteRaw', { name: 'L:A32NX_COND_CPIOM_B3_AGS_DISCRETE_WORD', type: SimVarValueType.Number }],
       ['cpiomB4AgsDiscreteRaw', { name: 'L:A32NX_COND_CPIOM_B4_AGS_DISCRETE_WORD', type: SimVarValueType.Number }],
       ['fwc_flight_phase', { name: 'L:A32NX_FWC_FLIGHT_PHASE', type: SimVarValueType.Enum }],
-      [
-        'limitations_apprldg',
-        { name: 'L:A32NX_EWD_LIMITATIONS_LDG_LINE_#index#', type: SimVarValueType.Number, indexed: true },
-      ],
-      [
-        'limitations_all',
-        { name: 'L:A32NX_EWD_LIMITATIONS_ALL_LINE_#index#', type: SimVarValueType.Number, indexed: true },
-      ],
       ['memo_left', { name: 'L:A32NX_EWD_LOWER_LEFT_LINE_#index#', type: SimVarValueType.Number, indexed: true }],
       ['memo_right', { name: 'L:A32NX_EWD_LOWER_RIGHT_LINE_#index#', type: SimVarValueType.Number, indexed: true }],
       [

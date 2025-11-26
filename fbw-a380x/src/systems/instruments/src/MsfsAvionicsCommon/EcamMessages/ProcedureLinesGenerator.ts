@@ -23,7 +23,7 @@ import {
   AbstractChecklistItem,
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { EcamNormalProcedures } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/NormalProcedures';
-import { ChecklistState } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
+import { ChecklistState } from 'instruments/src/MsfsAvionicsCommon/providers/FwsPublisher';
 
 export enum ProcedureType {
   Normal,
