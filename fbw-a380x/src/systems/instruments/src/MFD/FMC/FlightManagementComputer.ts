@@ -304,7 +304,7 @@ export class FlightManagementComputer implements FmcInterface {
           if (
             val &&
             this.flightPlanService.hasActive &&
-            !Number.isFinite(this.flightPlanService.active.performanceData.costIndex)
+            !Number.isFinite(this.flightPlanService.active.performanceData.costIndex.get())
           ) {
             this.flightPlanService.active.setPerformanceData('costIndex', 0);
             this.addMessageToQueue(NXSystemMessages.costIndexInUse.getModifiedMessage('000'));
@@ -748,7 +748,7 @@ export class FlightManagementComputer implements FmcInterface {
         const plan = this.flightPlanService.active;
         const pd = this.fmgc.data;
 
-        if (!plan.performanceData.accelerationAltitude) {
+        if (!plan.performanceData.accelerationAltitude.get()) {
           // it's important to set this immediately as we don't want to immediately sequence to the climb phase
           plan.setPerformanceData(
             'pilotAccelerationAltitude',
@@ -757,7 +757,7 @@ export class FlightManagementComputer implements FmcInterface {
           );
           this.acInterface.updateThrustReductionAcceleration();
         }
-        if (!plan.performanceData.engineOutAccelerationAltitude) {
+        if (!plan.performanceData.engineOutAccelerationAltitude.get()) {
           // it's important to set this immediately as we don't want to immediately sequence to the climb phase
           plan.setPerformanceData(
             'pilotEngineOutAccelerationAltitude',
@@ -802,7 +802,7 @@ export class FlightManagementComputer implements FmcInterface {
         const cruisePreSelMach = this.fmgc.data.cruisePreSelMach.get();
         this.acInterface.updatePreSelSpeedMach(cruisePreSelMach ?? cruisePreSel);
 
-        if (!this.flightPlanService.active.performanceData.cruiseFlightLevel) {
+        if (!this.flightPlanService.active.performanceData.cruiseFlightLevel.get()) {
           this.flightPlanService.active.setPerformanceData(
             'cruiseFlightLevel',
             (Simplane.getAutoPilotDisplayedAltitudeLockValue('feet') ?? 0) / 100,
@@ -876,7 +876,7 @@ export class FlightManagementComputer implements FmcInterface {
         );
 
         const activePlan = this.flightPlanService.active;
-        if (!activePlan.performanceData.missedAccelerationAltitude) {
+        if (!activePlan.performanceData.missedAccelerationAltitude.get()) {
           // it's important to set this immediately as we don't want to immediately sequence to the climb phase
           activePlan.setPerformanceData(
             'pilotMissedAccelerationAltitude',
@@ -885,7 +885,7 @@ export class FlightManagementComputer implements FmcInterface {
           );
           this.acInterface.updateThrustReductionAcceleration();
         }
-        if (!activePlan.performanceData.missedEngineOutAccelerationAltitude) {
+        if (!activePlan.performanceData.missedEngineOutAccelerationAltitude.get()) {
           // it's important to set this immediately as we don't want to immediately sequence to the climb phase
           activePlan.setPerformanceData(
             'pilotMissedEngineOutAccelerationAltitude',
