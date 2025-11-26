@@ -20,7 +20,7 @@ export class LateralDiscontinuityAhead implements FMMessageSelector {
   }
 
   process(_: number): FMMessageUpdate {
-    const newState = this.guidanceController.vnavDriver.shouldShowLatDiscontinuityAhead();
+    const newState = this.guidanceController?.vnavDriver.shouldShowLatDiscontinuityAhead() ?? false;
 
     if (newState !== this.lastState) {
       this.lastState = newState;
