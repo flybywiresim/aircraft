@@ -225,6 +225,9 @@ importers:
       '@types/semver':
         specifier: ^7.3.13
         version: 7.5.6
+      '@types/uuid':
+        specifier: ^10.0.0
+        version: 10.0.0
       '@typescript-eslint/eslint-plugin':
         specifier: ~6.19.1
         version: 6.19.1(@typescript-eslint/parser@6.19.1(eslint@8.56.0)(typescript@5.5.2))(eslint@8.56.0)(typescript@5.5.2)
@@ -2230,6 +2233,9 @@ packages:
 
   '@types/stylus@0.48.42':
     resolution: {integrity: sha512-CPGlr5teL4sqdap+EOowMifLuNGeIoLwc0VQ7u/BPxo+ocqiNa5jeVt0H0IVBblEh6ZwX1sGpIQIFnSSr8NBQA==}
+
+  '@types/uuid@10.0.0':
+    resolution: {integrity: sha512-7gqG38EyHgyP1S+7+xomFtL+ZNHcKv6DwNaCZmJmo1vgMugyF3TCnXVg4t1uk89mLNwnLtnY3TpOpCOyp1/xHQ==}
 
   '@typescript-eslint/eslint-plugin@5.62.0':
     resolution: {integrity: sha512-TiZzBSJja/LbhNPvk6yc0JrX9XqhQ0hdh6M2svYfsHGejaKFIAGd9MQ+ERIMzLGlN/kZoYIgdxFV0PuljTKXag==}
@@ -8278,6 +8284,8 @@ snapshots:
   '@types/stylus@0.48.42':
     dependencies:
       '@types/node': 20.10.4
+
+  '@types/uuid@10.0.0': {}
 
   '@typescript-eslint/eslint-plugin@5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.56.0)(typescript@5.5.2))(eslint@8.56.0)(typescript@5.5.2)':
     dependencies:
