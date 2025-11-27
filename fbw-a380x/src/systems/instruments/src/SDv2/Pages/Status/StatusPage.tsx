@@ -17,10 +17,11 @@ import { SdPageProps } from '../../SD';
 
 import './style.scss';
 
+export const SD_STS_LINES_PER_PAGE = 18;
 export class StatusPage extends DestroyableComponent<SdPageProps> {
   private readonly sub = this.props.bus.getSubscriber<SDSimvars & FwsEvents>();
 
-  private readonly topSvgStyle = this.props.visible.map((v) => `visibility: ${v ? 'visible' : 'hidden'}`);
+  private readonly topSvgVisibility = this.props.visible.map((v) => (v ? 'visible' : 'hidden'));
 
   /* LIMITATIONS */
   private readonly limitationsAllPhases = ConsumerSubject.create(this.sub.on('fws_limitations_all_phases'), []);
@@ -35,7 +36,7 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
   );
 
   private readonly limitationsLines = MappedSubject.create(
-    ([all, apprLdg]) => (all.length > 0 || apprLdg.length > 0 ? Math.max(all.length, apprLdg.length) + 2 : 0),
+    ([all, apprLdg]) => (all.length > 0 || apprLdg.length > 0 ? Math.max(all.length, apprLdg.length) : 0),
     this.limitationsAllPhases,
     this.limitationsApprLdg,
   );
@@ -55,7 +56,7 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
   );
 
   private readonly deferredProceduresLines = MappedSubject.create(
-    ([proc]) => (proc.length > 0 ? proc.length * 2 + 1 : 0),
+    ([proc]) => (proc.length > 0 ? proc.length * 2 : 0),
     this.deferredProcedures,
   );
   private readonly deferredProceduresDisplay = this.deferredProceduresLines.map((lines) =>
@@ -68,7 +69,7 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
 
   private readonly infoFormatString = this.info.map((info) => info.map((val) => EcamInfos[val]).join('\r'));
 
-  private readonly infoLines = MappedSubject.create(([info]) => (info.length > 0 ? info.length + 1 : 0), this.info);
+  private readonly infoLines = MappedSubject.create(([info]) => (info.length > 0 ? info.length : 0), this.info);
   private readonly infoDisplay = this.infoLines.map((lines) => (lines > 0 ? 'flex' : 'none'));
   private readonly infoHeight = this.infoLines.map((lines) => `${lines * 30 + 3}px`);
 
@@ -85,7 +86,7 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
   );
 
   private readonly inopSysLines = MappedSubject.create(
-    ([all, apprLdg]) => (all.length > 0 || apprLdg.length > 0 ? Math.max(all.length, apprLdg.length) + 2 : 0),
+    ([all, apprLdg]) => (all.length > 0 || apprLdg.length > 0 ? Math.max(all.length, apprLdg.length) : 0),
     this.inopSysAllPhases,
     this.inopSysApprLdg,
   );
@@ -98,7 +99,7 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
     this.inopSysAllPhases.sub((v) => console.log('inopSysAllPhases changed', v));
 
     this.subscriptions.push(
-      this.topSvgStyle,
+      this.topSvgVisibility,
       this.limitationsAllPhases,
       this.limitationsApprLdg,
       this.limitationsLeftFormatString,
@@ -129,14 +130,8 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
 
   render() {
     return (
-      <div class="sd-sts-top-div">
-        <svg
-          version="1.1"
-          xmlns="http://www.w3.org/2000/svg"
-          xmlnsXlink="http://www.w3.org/1999/xlink"
-          style={this.topSvgStyle}
-          height="36"
-        >
+      <div class="sd-sts-top-div" style={{ visibility: this.topSvgVisibility }}>
+        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" height="45">
           <PageTitle x={6} y={29}>
             STATUS
           </PageTitle>
@@ -151,13 +146,13 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
           <span class="sd-sts-section-heading underline">LIMITATIONS</span>
           <div class="sd-sts-section-divided-area">
             <div class="sd-sts-section-divided-left">
-              <span class="sd-sts-section-heading">ALL PHASES</span>
+              <span class="sd-sts-section-divided-area-heading">ALL PHASES</span>
               <svg version="1.1" xmlns="http://www.w3.org/2000/svg" style={{ height: this.limitationsHeight }}>
                 <FormattedFwcText x={0} y={24} message={this.limitationsLeftFormatString} />
               </svg>
             </div>
             <div class="sd-sts-section-divided-right">
-              <span class="sd-sts-section-heading">APPR & LDG</span>
+              <span class="sd-sts-section-divided-area-heading">APPR & LDG</span>
               <svg version="1.1" xmlns="http://www.w3.org/2000/svg" style={{ height: this.limitationsHeight }}>
                 <FormattedFwcText x={0} y={24} message={this.limitationsRightFormatString} />
               </svg>
@@ -198,13 +193,13 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
           <span class="sd-sts-section-heading underline">INOP SYS</span>
           <div class="sd-sts-section-divided-area">
             <div class="sd-sts-section-divided-left">
-              <span class="sd-sts-section-heading">ALL PHASES</span>
+              <span class="sd-sts-section-divided-area-heading">ALL PHASES</span>
               <svg version="1.1" xmlns="http://www.w3.org/2000/svg" style={{ height: this.inopSysHeight }}>
                 <FormattedFwcText x={0} y={24} message={this.inopSysLeftFormatString} />
               </svg>
             </div>
             <div class="sd-sts-section-divided-right">
-              <span class="sd-sts-section-heading">APPR & LDG</span>
+              <span class="sd-sts-section-divided-area-heading">APPR & LDG</span>
               <svg version="1.1" xmlns="http://www.w3.org/2000/svg" style={{ height: this.inopSysHeight }}>
                 <FormattedFwcText x={0} y={24} message={this.inopSysRightFormatString} />
               </svg>

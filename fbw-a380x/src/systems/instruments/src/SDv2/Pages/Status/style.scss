@@ -33,19 +33,27 @@
 .sd-sts-section-container {
   display: flex;
   flex-direction: column;
-  padding: 12px 8px 12px 8px;
+  padding: 0px 8px 0px 8px;
 }
 
 .sd-sts-section-heading {
   display: flex;
   justify-content: center;
-  font-size: 24px;
+  font-size: 28px;
   letter-spacing: 1.75px;
-  margin-bottom: 4px;
+  margin-bottom: 12px;
 }
 
 .sd-sts-section-heading.underline {
   text-decoration: underline;
+}
+
+.sd-sts-section-divided-area-heading {
+  display: flex;
+  justify-content: center;
+  font-size: 26px;
+  letter-spacing: 1.75px;
+  margin-bottom: 12px;
 }
 
 .sd-sts-section-divided-area {

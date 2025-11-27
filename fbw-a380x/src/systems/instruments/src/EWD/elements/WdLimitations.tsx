@@ -37,7 +37,11 @@ export class WdLimitations extends DestroyableComponent<WdLimitationsProps> {
     this.limitationsLeft,
     this.limitationsRight,
   );
-  private readonly limitationsDisplay = this.limitationsLines.map((lines) => (lines > 0 ? 'flex' : 'none'));
+  private readonly limitationsDisplay = MappedSubject.create(
+    ([lines, visible]) => (lines > 0 && visible ? 'flex' : 'none'),
+    this.limitationsLines,
+    this.props.visible,
+  );
   private readonly limitationsHeight = this.limitationsLines.map((lines) => `${lines * 30 + 3}px`);
 
   public onAfterRender(node: VNode): void {
