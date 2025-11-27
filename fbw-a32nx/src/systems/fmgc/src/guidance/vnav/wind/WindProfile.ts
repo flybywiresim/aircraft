@@ -55,7 +55,7 @@ export class WindProfile implements WindInterface {
   }
 
   getClimbWindForecast(altitude: Feet, result: WindVector): WindVector | TailwindComponent {
-    const climbWindEntries = this.plan.performanceData.climbWindEntries;
+    const climbWindEntries = this.plan.performanceData.climbWindEntries.get();
     const hasClimbWindEntry = climbWindEntries.length > 0;
 
     // TODO winds trip wind from performance data
@@ -106,7 +106,7 @@ export class WindProfile implements WindInterface {
   }
 
   getDescentWindForecast(altitude: Feet, result: WindVector): WindVector | TailwindComponent {
-    const descentWindEntries = this.plan.performanceData.descentWindEntries;
+    const descentWindEntries = this.plan.performanceData.descentWindEntries.get();
     const hasDescentWindEntry = descentWindEntries.length > 0;
 
     // TODO winds trip wind from performance data
@@ -388,7 +388,7 @@ export class ConstantWindProfile implements WindInterface {
   }
 
   getClimbWindForecast(_distanceFromStart: NauticalMiles, altitude: Feet, result: WindVector): WindVector {
-    const climbWindEntries = this.plan.performanceData.climbWindEntries;
+    const climbWindEntries = this.plan.performanceData.climbWindEntries.get();
     const hasClimbWindEntry = climbWindEntries.length > 0;
 
     const originAlt = this.plan.originRunway?.thresholdLocation.alt ?? this.plan.originAirport?.location.alt ?? 0;
@@ -425,7 +425,7 @@ export class ConstantWindProfile implements WindInterface {
   }
 
   getDescentWindForecast(_distanceFromStart: NauticalMiles, altitude: Feet, result: WindVector): WindVector {
-    const descentWindEntries = this.plan.performanceData.descentWindEntries;
+    const descentWindEntries = this.plan.performanceData.descentWindEntries.get();
     const hasDescentWindEntry = descentWindEntries.length > 0;
 
     // TODO winds perf appr wind from performance data

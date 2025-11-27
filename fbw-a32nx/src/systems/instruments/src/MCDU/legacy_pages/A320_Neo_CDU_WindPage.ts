@@ -91,7 +91,7 @@ export class CDUWindPage {
     } else {
       const climbWindEntries = doesClbWindUplinkExist
         ? plan.pendingWindUplink.climbWinds
-        : plan.performanceData.climbWindEntries;
+        : plan.performanceData.climbWindEntries.get();
 
       let numEntries = 0;
       for (let i = 0; i < Math.min(climbWindEntries.length, maxNumClimbWindEntries); i++) {
@@ -450,7 +450,7 @@ export class CDUWindPage {
 
     const descentWindEntries = doesDesWindUplinkExist
       ? plan.pendingWindUplink.descentWinds
-      : plan.performanceData.descentWindEntries;
+      : plan.performanceData.descentWindEntries.get();
 
     if (isWindUplinkInProgress) {
       for (let i = 0; i < numDescentWindEntriesPerPage; i++) {
@@ -535,7 +535,7 @@ export class CDUWindPage {
       if (shouldShowAlternateOnPage) {
         const alternateWind = doesDesWindUplinkExist
           ? plan.pendingWindUplink.alternateWind?.vector ?? null
-          : plan.performanceData.alternateWind;
+          : plan.performanceData.alternateWind.get();
 
         const alternateCruiseLevel = mcdu.computeAlternateCruiseLevel(forPlan);
 

@@ -722,20 +722,20 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
   }
 
   async setClimbWindEntry(altitude: number, entry: WindEntry | null, maxNumberEntries: number): Promise<void> {
-    this.setClbDesWindEntry(this.performanceData.climbWindEntries, altitude, entry, maxNumberEntries);
+    this.setClbDesWindEntry(this.performanceData.climbWindEntries.get(), altitude, entry, maxNumberEntries);
     // Do this so the RPC event is sent
     this.setPerformanceData(
       'climbWindEntries',
-      this.performanceData.climbWindEntries.sort((a, b) => a.altitude - b.altitude),
+      this.performanceData.climbWindEntries.get().sort((a, b) => a.altitude - b.altitude),
     );
   }
 
   async setDescentWindEntry(altitude: number, entry: WindEntry | null, maxNumberEntries: number): Promise<void> {
-    this.setClbDesWindEntry(this.performanceData.descentWindEntries, altitude, entry, maxNumberEntries);
+    this.setClbDesWindEntry(this.performanceData.descentWindEntries.get(), altitude, entry, maxNumberEntries);
     // Do this so the RPC event is sent
     this.setPerformanceData(
       'descentWindEntries',
-      this.performanceData.descentWindEntries.sort((a, b) => b.altitude - a.altitude),
+      this.performanceData.descentWindEntries.get().sort((a, b) => b.altitude - a.altitude),
     );
   }
 
@@ -796,8 +796,8 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
   hasWindEntries() {
     return (
-      this.performanceData.climbWindEntries.length > 0 ||
-      this.performanceData.descentWindEntries.length > 0 ||
+      this.performanceData.climbWindEntries.get().length > 0 ||
+      this.performanceData.descentWindEntries.get().length > 0 ||
       this.allLegs.some((el) => isLeg(el) && el.cruiseWindEntries.length > 0)
     );
   }

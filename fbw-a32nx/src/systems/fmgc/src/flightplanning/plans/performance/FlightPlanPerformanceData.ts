@@ -5,14 +5,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { MathUtils } from '@flybywiresim/fbw-sdk';
-import {
-  ArraySubject,
-  MappedSubject,
-  MutableSubscribable,
-  Subject,
-  Subscribable,
-  Subscription,
-} from '@microsoft/msfs-sdk';
+import { MappedSubject, MutableSubscribable, Subject, Subscribable, Subscription } from '@microsoft/msfs-sdk';
 import { WindEntry, WindVector } from '../../data/wind';
 import { Vec2Math } from '@microsoft/msfs-sdk';
 
@@ -492,12 +485,12 @@ export interface FlightPlanPerformanceData {
   /**
    * The wind entries for the climb segment entered by the pilot
    */
-  readonly climbWindEntries: ArraySubject<WindEntry>;
+  readonly climbWindEntries: Subject<WindEntry[]>;
 
   /**
    * The wind entries for the descent segment entered by the pilot
    */
-  readonly descentWindEntries: ArraySubject<WindEntry>;
+  readonly descentWindEntries: Subject<WindEntry[]>;
 
   /**
    * The average wind vector for the alternate flight plan, or null if not set.
@@ -611,15 +604,21 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
     cloned.approachRadioMinimum.set(this.approachRadioMinimum.get());
     cloned.approachFlapsThreeSelected.set(this.approachFlapsThreeSelected.get());
 
-    cloned.climbWindEntries = this.climbWindEntries.map(({ altitude, vector }) => ({
-      altitude,
-      vector: Vec2Math.copy(vector, Vec2Math.create()),
-    }));
-    cloned.descentWindEntries = this.descentWindEntries.map(({ altitude, vector }) => ({
-      altitude,
-      vector: Vec2Math.copy(vector, Vec2Math.create()),
-    }));
-    cloned.alternateWind = this.alternateWind !== null ? Vec2Math.copy(this.alternateWind, Vec2Math.create()) : null;
+    cloned.climbWindEntries.set(
+      this.climbWindEntries.get().map(({ altitude, vector }) => ({
+        altitude,
+        vector: Vec2Math.copy(vector, Vec2Math.create()),
+      })),
+    );
+    cloned.descentWindEntries.set(
+      this.descentWindEntries.get().map(({ altitude, vector }) => ({
+        altitude,
+        vector: Vec2Math.copy(vector, Vec2Math.create()),
+      })),
+    );
+    cloned.alternateWind.set(
+      this.alternateWind.get() !== null ? Vec2Math.copy(this.alternateWind.get(), Vec2Math.create()) : null,
+    );
 
     return cloned as this;
   }
@@ -1268,12 +1267,12 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
   /**
    * The wind entries for the climb segment entered by the pilot
    */
-  readonly climbWindEntries: ArraySubject<WindEntry> = ArraySubject.create([]);
+  readonly climbWindEntries: Subject<WindEntry[]> = Subject.create([]);
 
   /**
    * The wind entries for the descent segment entered by the pilot
    */
-  readonly descentWindEntries: ArraySubject<WindEntry> = ArraySubject.create([]);
+  readonly descentWindEntries: Subject<WindEntry[]> = Subject.create([]);
 
   /**
    * The average wind vector for the alternate flight plan, or null if not set.
@@ -1351,8 +1350,8 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
       approachRadioMinimum: this.approachRadioMinimum.get(),
       approachFlapsThreeSelected: this.approachFlapsThreeSelected.get(),
 
-      climbWindEntries: this.climbWindEntries.getArray(),
-      descentWindEntries: this.descentWindEntries.getArray(),
+      climbWindEntries: this.climbWindEntries.get(),
+      descentWindEntries: this.descentWindEntries.get(),
       alternateWind: this.alternateWind.get(),
     };
   }
