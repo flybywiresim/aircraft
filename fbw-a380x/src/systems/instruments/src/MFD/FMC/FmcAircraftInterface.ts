@@ -20,8 +20,6 @@ import {
   MathUtils,
   NXDataStore,
   VerticalPathCheckpoint,
-  HUDSyntheticRunway,
-  GenericDataListenerSync,
   NXLogicConfirmNode,
   NXLogicPulseNode,
 } from '@flybywiresim/fbw-sdk';
@@ -125,7 +123,26 @@ export class FmcAircraftInterface {
     this.arincEisWord2,
   ];
 
-  private syncer: GenericDataListenerSync = new GenericDataListenerSync();
+  private readonly gradient = Subject.create<number | null>(0);
+  private readonly location = Subject.create<string | null>('');
+  private readonly direction = Subject.create<number | null>(0);
+  private readonly startLocation = Subject.create<string | null>('');
+  private readonly thresholdLocation = Subject.create<string | null>('');
+  private readonly thresholdCrossingHeight = Subject.create<number | null>(0);
+  private readonly latitude = Subject.create<number | null>(0);
+  private readonly longitude = Subject.create<number | null>(0);
+  private readonly elevation = Subject.create<number | null>(0);
+  private readonly length = Subject.create<number | null>(0);
+  private readonly width = Subject.create<number | null>(0);
+  private readonly srwyP1 = Subject.create<string | null>('');
+  private readonly srwyP2 = Subject.create<string | null>('');
+  private readonly srwyP3 = Subject.create<string | null>('');
+  private readonly srwyP4 = Subject.create<string | null>('');
+  private readonly srwyP5 = Subject.create<string | null>('');
+  private readonly srwyP6 = Subject.create<string | null>('');
+  private readonly srwyP7 = Subject.create<string | null>('');
+  private readonly srwyP8 = Subject.create<string | null>('');
+  private readonly srwyP9 = Subject.create<string | null>('');
 
   private readonly speedVs1g = Subject.create(0);
   private readonly speedVls = Subject.create(0);
@@ -338,6 +355,27 @@ export class FmcAircraftInterface {
       }, true),
       this.radioAlt,
       this.gpsPrimary,
+
+      this.gradient.sub((v) => pub.pub('gradient', v, true), true),
+      this.location.sub((v) => pub.pub('location', v, true), true),
+      this.direction.sub((v) => pub.pub('direction', v, true), true),
+      this.startLocation.sub((v) => pub.pub('startLocation', v, true), true),
+      this.thresholdLocation.sub((v) => pub.pub('thresholdLocation', v, true), true),
+      this.thresholdCrossingHeight.sub((v) => pub.pub('thresholdCrossingHeight', v, true), true),
+      this.latitude.sub((v) => pub.pub('latitude', v, true), true),
+      this.longitude.sub((v) => pub.pub('longitude', v, true), true),
+      this.elevation.sub((v) => pub.pub('elevation', v, true), true),
+      this.length.sub((v) => pub.pub('length', v, true), true),
+      this.width.sub((v) => pub.pub('width', v, true), true),
+      this.srwyP1.sub((v) => pub.pub('srwyP1', v, true), true),
+      this.srwyP2.sub((v) => pub.pub('srwyP2', v, true), true),
+      this.srwyP3.sub((v) => pub.pub('srwyP3', v, true), true),
+      this.srwyP4.sub((v) => pub.pub('srwyP4', v, true), true),
+      this.srwyP5.sub((v) => pub.pub('srwyP5', v, true), true),
+      this.srwyP6.sub((v) => pub.pub('srwyP6', v, true), true),
+      this.srwyP7.sub((v) => pub.pub('srwyP7', v, true), true),
+      this.srwyP8.sub((v) => pub.pub('srwyP8', v, true), true),
+      this.srwyP9.sub((v) => pub.pub('srwyP9', v, true), true),
     );
 
     // Check for STEP DELETED message
@@ -730,22 +768,33 @@ export class FmcAircraftInterface {
         p9.alt = runway.thresholdCrossingHeight; //in feet
         centerLineCoords.push(p9);
 
-        const HUDSymbol: HUDSyntheticRunway = {
-          gradient: runway.gradient,
-          location: runway.location,
-          direction: (runway as any).bearing,
-          startLocation: runway.startLocation,
-          thresholdLocation: runway.thresholdLocation,
-          thresholdCrossingHeight: runway.thresholdCrossingHeight,
-          latitude: (runway as any).latitude,
-          longitude: (runway as any).longitude,
-          elevation: runway.thresholdCrossingHeight, // in meters
-          length: runway.length,
-          width: (runway as any).width,
-          cornerCoordinates: cornerCoor,
-          centerlineCoordinates: centerLineCoords,
-        };
-        this.syncer.sendEvent('A380X_EFIS_HUD_SYMBOLS', HUDSymbol);
+        this.gradient.set(runway.gradient);
+        this.location.set(runway.location.lat.toFixed(6) + '#' + runway.location.long.toFixed(6));
+        this.direction.set((runway as any).bearing);
+        this.startLocation.set(runway.startLocation.lat.toFixed(6) + '#' + runway.startLocation.long.toFixed(6));
+        this.thresholdLocation.set(
+          runway.thresholdLocation.lat.toFixed(6) +
+            '#' +
+            runway.thresholdLocation.long.toFixed(6) +
+            '#' +
+            runway.thresholdLocation.alt.toFixed(6),
+        );
+        this.thresholdCrossingHeight.set(runway.thresholdCrossingHeight);
+        this.latitude.set((runway as any).latitude);
+        this.longitude.set((runway as any).longitude);
+        this.elevation.set(runway.thresholdCrossingHeight);
+        this.length.set(runway.length);
+        this.width.set((runway as any).width);
+        this.srwyP1.set(p1.lat.toFixed(6) + '#' + p1.long.toFixed(6) + '#' + p1.alt.toFixed(6));
+        this.srwyP2.set(p2.lat.toFixed(6) + '#' + p2.long.toFixed(6) + '#' + p2.alt.toFixed(6));
+        this.srwyP3.set(p3.lat.toFixed(6) + '#' + p3.long.toFixed(6) + '#' + p3.alt.toFixed(6));
+        this.srwyP4.set(p4.lat.toFixed(6) + '#' + p4.long.toFixed(6) + '#' + p4.alt.toFixed(6));
+
+        this.srwyP5.set(p5.lat.toFixed(6) + '#' + p5.long.toFixed(6) + '#' + p5.alt.toFixed(6));
+        this.srwyP6.set(p6.lat.toFixed(6) + '#' + p6.long.toFixed(6) + '#' + p6.alt.toFixed(6));
+        this.srwyP7.set(p7.lat.toFixed(6) + '#' + p7.long.toFixed(6) + '#' + p7.alt.toFixed(6));
+        this.srwyP8.set(p8.lat.toFixed(6) + '#' + p8.long.toFixed(6) + '#' + p8.alt.toFixed(6));
+        this.srwyP9.set(p9.lat.toFixed(6) + '#' + p9.long.toFixed(6) + '#' + p9.alt.toFixed(6));
       }
     }
   }

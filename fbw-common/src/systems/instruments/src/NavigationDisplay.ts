@@ -205,15 +205,15 @@ export interface HUDSyntheticRunway {
   thresholdLocation: Coordinates;
   startLocation: Coordinates;
   // degrees
-  gradient: number;
-  direction: number;
-  latitude: number;
-  longitude: number;
+  gradient: number | null;
+  direction: number | null;
+  latitude: number | null;
+  longitude: number | null;
   // metres
-  thresholdCrossingHeight: number;
-  elevation: number;
-  length: number;
-  width: number;
+  thresholdCrossingHeight: number | null;
+  elevation: number | null;
+  length: number | null;
+  width: number | null;
   cornerCoordinates: LatLongAlt[];
   centerlineCoordinates: LatLongAlt[];
 }

@@ -18,28 +18,43 @@ import {
   ArincEventBus,
   HUDSyntheticRunway,
   Arinc429RegisterSubject,
+  FmsData,
 } from '@flybywiresim/fbw-sdk';
 import { getSmallestAngle, HudElems, MdaMode } from './HUDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars, HUDSymbolData } from './shared/HUDSimvarPublisher';
-
+import { Coordinates } from 'msfs-geo';
 export class SyntheticRunway extends DisplayComponent<{
   bus: ArincEventBus;
   filteredRadioAlt: Subscribable<number>;
 }> {
   private readonly subscriptions: Subscription[] = [];
   private readonly sub = this.props.bus.getSubscriber<
-    HUDSimvars & Arinc429Values & ClockEvents & HUDSymbolData & HudElems
+    HUDSimvars & Arinc429Values & ClockEvents & HUDSymbolData & HudElems & FmsData
   >();
 
-  private data?: HUDSyntheticRunway;
+  private data: HUDSyntheticRunway = {
+    gradient: 0,
+    location: { lat: 0, long: 0 },
+    direction: 0,
+    startLocation: { lat: 0, long: 0 },
+    thresholdLocation: { lat: 0, long: 0 },
+    thresholdCrossingHeight: 0,
+    latitude: 0,
+    longitude: 0,
+    elevation: 0,
+    length: 0,
+    width: 0,
+    cornerCoordinates: [],
+    centerlineCoordinates: [],
+  };
+
   private alt = 0;
   private logOnce = 0;
   private lat = 0;
   private long = 0;
   private heading = 0;
-  private prevRwyHdg = 0;
-
+  private landingRunway = '0000';
   private pathRefs: NodeReference<SVGTextElement>[] = [];
   private centerlinePathRefs: NodeReference<SVGTextElement>[] = [];
 
@@ -56,7 +71,70 @@ export class SyntheticRunway extends DisplayComponent<{
   private readonly mda = Arinc429RegisterSubject.createEmpty();
   private readonly dh = Arinc429RegisterSubject.createEmpty();
   private readonly noDhSelected = this.fmEisDiscrete2.map((r) => r.bitValueOr(29, false));
-  private readonly symb = ConsumerSubject.create(this.sub.on('symbol'), undefined);
+
+  private readonly fmsLandingRunway = ConsumerSubject.create(this.sub.on('fmsLandingRunway'), '');
+  private readonly gradient = ConsumerSubject.create(this.sub.on('gradient').whenChanged(), 0);
+  private readonly location = ConsumerSubject.create(this.sub.on('location').whenChanged(), '');
+  private readonly direction = ConsumerSubject.create(this.sub.on('direction').whenChanged(), 0);
+  private readonly startLocation = ConsumerSubject.create(this.sub.on('startLocation').whenChanged(), '');
+  private readonly thresholdLocation = ConsumerSubject.create(this.sub.on('thresholdLocation').whenChanged(), '');
+  private readonly thresholdCrossingHeight = ConsumerSubject.create(
+    this.sub.on('thresholdCrossingHeight').whenChanged(),
+    0,
+  );
+  private readonly latitude = ConsumerSubject.create(this.sub.on('latitude').whenChanged(), 0);
+  private readonly longitude = ConsumerSubject.create(this.sub.on('longitude').whenChanged(), 0);
+  private readonly elevation = ConsumerSubject.create(this.sub.on('elevation').whenChanged(), 0);
+  private readonly length = ConsumerSubject.create(this.sub.on('length').whenChanged(), 0);
+  private readonly width = ConsumerSubject.create(this.sub.on('width').whenChanged(), 0);
+  private readonly srwyP1 = ConsumerSubject.create(this.sub.on('srwyP1').whenChanged(), '');
+  private readonly srwyP2 = ConsumerSubject.create(this.sub.on('srwyP2').whenChanged(), '');
+  private readonly srwyP3 = ConsumerSubject.create(this.sub.on('srwyP3').whenChanged(), '');
+  private readonly srwyP4 = ConsumerSubject.create(this.sub.on('srwyP4').whenChanged(), '');
+  private readonly srwyP5 = ConsumerSubject.create(this.sub.on('srwyP5').whenChanged(), '');
+  private readonly srwyP6 = ConsumerSubject.create(this.sub.on('srwyP6').whenChanged(), '');
+  private readonly srwyP7 = ConsumerSubject.create(this.sub.on('srwyP7').whenChanged(), '');
+  private readonly srwyP8 = ConsumerSubject.create(this.sub.on('srwyP8').whenChanged(), '');
+  private readonly srwyP9 = ConsumerSubject.create(this.sub.on('srwyP9').whenChanged(), '');
+
+  private filterFloat = function (value: any) {
+    if (/^(-|\+)?([0-9]+(\.[0-9]+)?|Infinity)$/.test(value)) return Number(value);
+    return -1;
+  };
+
+  private strToLLA(str: string | null): LatLongAlt {
+    if (str !== null) {
+      const arrP = str.match(/(\d+.\d+)/gm);
+      if (arrP === null || arrP.length < 2) {
+        return new LatLongAlt(0, 0, 0);
+      } else {
+        const Plat = arrP[0];
+        const Plon = arrP[1];
+        const Palt = arrP[2];
+        const P = new LatLongAlt(this.filterFloat(Plat), this.filterFloat(Plon), this.filterFloat(Palt));
+        return P;
+      }
+    } else {
+      return new LatLongAlt(0, 0, 0);
+    }
+  }
+
+  private strToCoordinates(str: string | null): Coordinates {
+    if (str !== null) {
+      const arrP = str.match(/(\d+.\d+)/gm);
+      if (arrP === null) {
+        return new LatLongAlt(0, 0, 0);
+      } else {
+        const Plat = arrP[0];
+        const Plon = arrP[1];
+        const P = new LatLongAlt(this.filterFloat(Plat), this.filterFloat(Plon));
+        return P;
+      }
+    } else {
+      return new LatLongAlt(0, 0, 0);
+    }
+  }
+
   private readonly mdaDhMode = MappedSubject.create(
     ([noDh, dh, mda]) => {
       if (noDh) {
@@ -78,18 +156,110 @@ export class SyntheticRunway extends DisplayComponent<{
     this.mda,
   );
 
-  private readonly isDefined = MappedSubject.create(([symb]) => {
-    this.data = symb;
-    if (this.data === undefined) {
-      //console.log('M symbol data not loaded');
+  private readonly isLandwingRwyChanged = MappedSubject.create(([fmsLandingRunway]) => {
+    if (fmsLandingRunway === null) {
+      return false;
     } else {
-      //console.log('M symbol data loaded');
-      this.data2 = JSON.parse(JSON.stringify(this.data));
-      this.initRwyPoints();
+      if (this.landingRunway === fmsLandingRunway && fmsLandingRunway !== null && fmsLandingRunway.length > 2) {
+        return false;
+      } else {
+        this.landingRunway = fmsLandingRunway.toString();
+        this.logOnce = 0;
+        return true;
+      }
     }
+  }, this.fmsLandingRunway);
 
-    return symb !== undefined;
-  }, this.symb);
+  private readonly isDefined = MappedSubject.create(
+    ([
+      gradient,
+      location,
+      direction,
+      startLocation,
+      thresholdLocation,
+      thresholdCrossingHeight,
+      latitude,
+      longitude,
+      elevation,
+      length,
+      width,
+      srwyP1,
+      srwyP2,
+      srwyP3,
+      srwyP4,
+      srwyP5,
+      srwyP6,
+      srwyP7,
+      srwyP8,
+      srwyP9,
+    ]) => {
+      this.data.gradient = gradient;
+      this.data.location = this.strToCoordinates(location) as Coordinates;
+      this.data.direction = direction;
+      this.data.startLocation = this.strToCoordinates(startLocation) as Coordinates;
+      this.data.thresholdLocation = this.strToCoordinates(thresholdLocation) as Coordinates;
+      this.data.thresholdCrossingHeight = thresholdCrossingHeight;
+      this.data.latitude = latitude;
+      this.data.longitude = longitude;
+      this.data.elevation = elevation;
+      this.data.length = length;
+      this.data.width = width;
+
+      this.data.cornerCoordinates[0] = this.strToLLA(srwyP1);
+      this.data.cornerCoordinates[1] = this.strToLLA(srwyP2);
+      this.data.cornerCoordinates[2] = this.strToLLA(srwyP3);
+      this.data.cornerCoordinates[3] = this.strToLLA(srwyP4);
+      this.data.centerlineCoordinates[0] = this.strToLLA(srwyP5);
+      this.data.centerlineCoordinates[1] = this.strToLLA(srwyP6);
+      this.data.centerlineCoordinates[2] = this.strToLLA(srwyP7);
+      this.data.centerlineCoordinates[3] = this.strToLLA(srwyP8);
+      this.data.centerlineCoordinates[4] = this.strToLLA(srwyP9);
+
+      const eps = 0.001;
+      if (
+        Math.abs(this.filterFloat(this.data.cornerCoordinates[0].lat)) < eps &&
+        Math.abs(this.filterFloat(this.data.cornerCoordinates[0].long)) < eps &&
+        Math.abs(this.filterFloat(this.data.cornerCoordinates[0].alt)) < eps &&
+        Math.abs(this.filterFloat(this.data.cornerCoordinates[1].lat)) < eps &&
+        Math.abs(this.filterFloat(this.data.cornerCoordinates[1].long)) < eps &&
+        Math.abs(this.filterFloat(this.data.cornerCoordinates[1].alt)) < eps &&
+        Math.abs(this.filterFloat(this.data.cornerCoordinates[2].lat)) < eps &&
+        Math.abs(this.filterFloat(this.data.cornerCoordinates[2].long)) < eps &&
+        Math.abs(this.filterFloat(this.data.cornerCoordinates[2].alt)) < eps &&
+        Math.abs(this.filterFloat(this.data.cornerCoordinates[3].lat)) < eps &&
+        Math.abs(this.filterFloat(this.data.cornerCoordinates[3].long)) < eps &&
+        Math.abs(this.filterFloat(this.data.cornerCoordinates[3].alt)) < eps
+      ) {
+        console.log('M symbol data not loaded');
+        return false;
+      } else {
+        this.data2 = JSON.parse(JSON.stringify(this.data));
+        this.initRwyPoints();
+        console.log('M symbol data loaded');
+        return true;
+      }
+    },
+    this.gradient,
+    this.location,
+    this.direction,
+    this.startLocation,
+    this.thresholdLocation,
+    this.thresholdCrossingHeight,
+    this.latitude,
+    this.longitude,
+    this.elevation,
+    this.length,
+    this.width,
+    this.srwyP1,
+    this.srwyP2,
+    this.srwyP3,
+    this.srwyP4,
+    this.srwyP5,
+    this.srwyP6,
+    this.srwyP7,
+    this.srwyP8,
+    this.srwyP9,
+  );
 
   private readonly mdaDhValue = MappedSubject.create(
     ([mdaMode, dh, mda]) => {
@@ -111,7 +281,10 @@ export class SyntheticRunway extends DisplayComponent<{
     ([mda, dh, mdaDhMode, altitude, ra, syntheticRunwway]) => {
       let diff;
       const minAlt = this.mdaDhValue.get();
-      if (syntheticRunwway === 'block' && this.isDefined.get() === true) {
+      if (syntheticRunwway === 'block') {
+        if (this.isLandwingRwyChanged.get()) {
+          this.isDefined.get();
+        }
         switch (mdaDhMode) {
           case MdaMode.Baro:
             diff = altitude.value - mda.value;
@@ -157,7 +330,33 @@ export class SyntheticRunway extends DisplayComponent<{
   );
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-    this.subscriptions.push(this.altitude, this.ra, this.syntheticRunwway, this.noDhSelected, this.symb);
+    this.subscriptions.push(
+      this.altitude,
+      this.ra,
+      this.syntheticRunwway,
+      this.noDhSelected,
+      this.gradient,
+      this.location,
+      this.direction,
+      this.startLocation,
+      this.thresholdLocation,
+      this.thresholdCrossingHeight,
+      this.latitude,
+      this.longitude,
+      this.elevation,
+      this.length,
+      this.width,
+      this.srwyP1,
+      this.srwyP2,
+      this.srwyP3,
+      this.srwyP4,
+      this.srwyP5,
+      this.srwyP6,
+      this.srwyP7,
+      this.srwyP8,
+      this.srwyP9,
+      this.fmsLandingRunway,
+    );
 
     this.subscriptions.push(this.sub.on('fmMdaRaw').handle(this.mda.setWord.bind(this.mda)));
     this.subscriptions.push(this.sub.on('fmDhRaw').handle(this.dh.setWord.bind(this.dh)));
@@ -179,16 +378,9 @@ export class SyntheticRunway extends DisplayComponent<{
       this.alt = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet');
       this.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
       this.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
-
-      if (this.data !== undefined) {
-        if (this.prevRwyHdg !== this.data.direction) {
-          this.prevRwyHdg = this.data.direction;
-          this.logOnce = 0;
-          //console.log("defined data");
-        }
+      if (this.isDefined.get()) {
         this.updateSyntheticRunway();
       } else {
-        this.logOnce == 0;
         console.log('undefined data...');
       }
     }
@@ -260,7 +452,7 @@ export class SyntheticRunway extends DisplayComponent<{
   }
 
   updateSyntheticRunway() {
-    if (this.logOnce === 0 && this.data !== undefined) {
+    if (this.logOnce == 0) {
       this.logOnce += 1;
 
       console.log(
