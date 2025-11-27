@@ -20,8 +20,6 @@ export type LegacyDataStoreSettingKey<k extends string> = k & (k extends keyof N
  * Allows interacting with the persistent storage
  */
 export class NXDataStore {
-  private static readonly settingSubjectMap = new Map<string, Subject<any>>();
-
   private static readonly settingsDefaultValues: { [k in keyof NXDataStoreSettings]: NXDataStoreSettings[k] } = {
     EFB_UI_THEME: 'blue',
   };
@@ -37,6 +35,18 @@ export class NXDataStore {
     return this.mListener;
   }
 
+  private static get settingSubjectMap(): Map<string, Subject<any>> {
+    // We store the subject map on the window rather than on a static property,
+    // because there might be multiples instances of this class (multiple instruments in one VCockpit) and
+    // triggerToAllSubscribers does not work across instruments on the same VCockpit.
+
+    if (window.NXDATASTORE_SUBJECT_MAP !== undefined) {
+      return window.NXDATASTORE_SUBJECT_MAP;
+    }
+
+    return (window.NXDATASTORE_SUBJECT_MAP = new Map());
+  }
+
   /**
    * Gets a mutable subscribable setting given a key. This subscribable is updated whenever the setting is changed, and setting it
    * will change the setting.
@@ -48,6 +58,8 @@ export class NXDataStore {
 
     if (subject === undefined) {
       subject = NXDataStore.createSettingSubject(key);
+
+      this.settingSubjectMap.set(key, subject);
     }
 
     return subject;

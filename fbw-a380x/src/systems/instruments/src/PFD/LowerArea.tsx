@@ -403,8 +403,8 @@ class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
         </text>
         <text
           class="GreenPulse FontSmallest"
-          x={38}
-          y={190}
+          x={32.5}
+          y={210.8}
           visibility={this.flapReliefEngaged.map((v) => (v ? 'inherit' : 'hidden'))}
         >
           F RELIEF
