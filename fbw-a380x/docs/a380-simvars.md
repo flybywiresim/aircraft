@@ -937,28 +937,29 @@
 - A32NX_SFCC_{number}_SLAT_FLAP_ACTUAL_POSITION_WORD
     - {number} is 1 or 2
     - Slat/Flap actual position discrete word of the SFCC bus output
+    - This ARINC word has been adapted from the A320 with A380 angles
     - Arinc429<Discrete>
-    - | Bit |      Description A380X, if different     |
-      |:---:|:----------------------------------------:|
-      | 11  | Slat Data Valid                          |
-      | 12  | Slats Retracted 0° (6.2° > FPPU > -5°)   |
-      | 13  | Slats >= 19° (337° > FPPU > 234.7°)      |
-      | 14  | Slats >= 22 (337° > FPPU > 272.2°)       |
-      | 15  | Slats Extended 23° (337° > FPPU > 280°)  |
-      | 16  | Slat WTB Engaged                         |
-      | 17  | Slat Fault                               |
-      | 18  | Flap Data Valid                          |
-      | 19  | Flaps Retracted 0° (2.5° > FPPU > -5°)   |
-      | 20  | Flaps >= 7° (254° > FPPU > 102.1°)       |
-      | 21  | Flaps >= 16° (254° > FPPU > 150.0°)      |
-      | 22  | Flaps >= 25° (254° > FPPU > 189.8°)      |
-      | 23  | Flaps Extended 32° (254° > FPPU > 218°)  |
-      | 24  | Flap WTB engaged                         |
-      | 25  | Flap Fault                               |
-      | 26  | Spoiler Lift Demand                      |
-      | 27  | Spoiler Limit Demand                     |
-      | 28  | Slat System Jam                          |
-      | 29  | Flap System Jam                          |
+    - | Bit |      Description A380X, if different        |
+      |:---:|:-------------------------------------------:|
+      | 11  | Slat Data Valid                             |
+      | 12  | Slats Retracted 0° (9.5° > FPPU > -16°)     |
+      | 13  | Slats >= 20° (343° >= FPPU >= 276.9°)       |
+      | 14  | Slats >= 23 (343° >= FPPU >= 317.8°)        |
+      | 15  | Slats Extended 23° (343° >= FPPU >= 317.8°) |
+      | 16  | Slat WTB Engaged                            |
+      | 17  | Slat Fault                                  |
+      | 18  | Flap Data Valid                             |
+      | 19  | Flaps Retracted 0° (10° > FPPU > -10°)      |
+      | 20  | Flaps >= 8° (350° >= FPPU >= 208.0°)        |
+      | 21  | Flaps >= 17° (350° >= FPPU >= 251.6°)       |
+      | 22  | Flaps >= 26° (350° >= FPPU >= 289.9°)       |
+      | 23  | Flaps Extended 33° (350° >= FPPU >= 331°)   |
+      | 24  | Flap WTB engaged                            |
+      | 25  | Flap Fault                                  |
+      | 26  | Spoiler Lift Demand                         |
+      | 27  | Spoiler Limit Demand                        |
+      | 28  | Slat System Jam                             |
+      | 29  | Flap System Jam                             |
 
 - A32NX_FLAPS_CONF_INDEX
   - Number
