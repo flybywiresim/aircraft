@@ -46,6 +46,10 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
   private readonly fcuLeftEisDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(
     this.sub.on('a380x_fcu_eis_discrete_word_2_left'),
   );
+  private readonly fcuRightEisDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a380x_fcu_eis_discrete_word_2_right'),
+  );
+
   private readonly tatClass = this.tat.map((tat) => `F25 EndAlign ${tat.isNormalOperation() ? 'Green' : 'Amber'}`);
   private readonly tatText = this.tat.map((tat) =>
     tat.isNormalOperation() ? getValuePrefix(tat.value) + tat.value.toFixed(0) : 'XX',
@@ -65,9 +69,14 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
   private readonly isaText = this.isa.map((isa) => getValuePrefix(isa) + isa.toFixed(0));
 
   private readonly isaVisibility = MappedSubject.create(
-    ([fcuLeft, zp, sat]) =>
-      fcuLeft.bitValueOr(28, false) && zp.isNormalOperation() && sat.isNormalOperation() ? 'inherit' : 'hidden',
+    ([fcuLeft, fcuRight, zp, sat]) =>
+      (fcuLeft.bitValueOr(28, false) || fcuRight.bitValueOr(28, false)) &&
+      zp.isNormalOperation() &&
+      sat.isNormalOperation()
+        ? 'inherit'
+        : 'hidden',
     this.fcuLeftEisDiscreteWord2,
+    this.fcuRightEisDiscreteWord2,
     this.zp,
     this.sat,
   );
