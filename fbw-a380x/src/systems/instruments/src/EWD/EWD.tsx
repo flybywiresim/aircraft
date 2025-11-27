@@ -80,9 +80,10 @@ export class EngineWarningDisplay extends DestroyableComponent<{ bus: ArincEvent
   );
 
   private readonly abnormalSensedVisible = ConsumerSubject.create(this.sub.on('fws_show_abn_sensed'), false);
-  private readonly abnormalSensedVisibleNotFailed = MappedSubject.create(
-    ([visible, fallback]) => visible && !fallback,
+  private readonly abnormalSensedVisibleNoFallback = MappedSubject.create(
+    ([visible, failed, fallback]) => (visible || failed) && !fallback,
     this.abnormalSensedVisible,
+    this.fwsAvailChecker.fwsFailed,
     this.cpiomCAndOtherFailedFallbackVisible,
   );
 
@@ -95,7 +96,7 @@ export class EngineWarningDisplay extends DestroyableComponent<{ bus: ArincEvent
 
   private readonly stsAreaVisibility = MappedSubject.create(
     SubscribableMapFunctions.nor(),
-    this.abnormalSensedVisibleNotFailed,
+    this.abnormalSensedVisibleNoFallback,
     this.abnormalNonSensedVisibleNotFailed,
   ).map((s) => (s ? 'block' : 'none'));
 
@@ -160,7 +161,7 @@ export class EngineWarningDisplay extends DestroyableComponent<{ bus: ArincEvent
       this.normalChecklistsVisible,
       this.normalChecklistsVisibleNotFailed,
       this.abnormalSensedVisible,
-      this.abnormalSensedVisibleNotFailed,
+      this.abnormalSensedVisibleNoFallback,
       this.abnormalNonSensedVisible,
       this.abnormalNonSensedVisibleNotFailed,
       this.stsAreaVisibility,
@@ -335,7 +336,7 @@ export class EngineWarningDisplay extends DestroyableComponent<{ bus: ArincEvent
             <WdNormalChecklists bus={this.props.bus} visible={this.normalChecklistsVisibleNotFailed} abnormal={false} />
             <WdAbnormalSensedProcedures
               bus={this.props.bus}
-              visible={this.abnormalSensedVisibleNotFailed}
+              visible={this.abnormalSensedVisibleNoFallback}
               abnormal={true}
               fwsAvail={this.fwsAvailChecker.fwsAvail}
               cpiomAvailChecker={this.cpiomAvailChecker}
