@@ -1,6 +1,6 @@
 //  Copyright (c) 2025 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
-import { ConsumerSubject, FSComponent, MappedSubject, VNode } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, FSComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
 import {
   DEFERRED_PROCEDURE_TYPE_TO_STRING,
@@ -130,7 +130,7 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
 
   render() {
     return (
-      <div class="sd-sts-top-div" style={{ visibility: this.topSvgVisibility }}>
+      <div id="sts" class="sd-sts-top-div" style={{ visibility: this.topSvgVisibility }}>
         <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" height="45">
           <PageTitle x={6} y={29}>
             STATUS
@@ -143,7 +143,7 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
             display: this.limitationsDisplay,
           }}
         >
-          <span class="sd-sts-section-heading underline">LIMITATIONS</span>
+          <StatusPageSectionHeading title="LIMITATIONS" showLines={Subject.create(false)} />
           <div class="sd-sts-section-divided-area">
             <div class="sd-sts-section-divided-left">
               <span class="sd-sts-section-divided-area-heading">ALL PHASES</span>
@@ -166,7 +166,7 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
             display: this.deferredProceduresDisplay,
           }}
         >
-          <span class="sd-sts-section-heading underline">DEFERRED PROCEDURE LIST</span>
+          <StatusPageSectionHeading title="DEFERRED PROCEDURE LIST" showLines={Subject.create(true)} />
           <svg version="1.1" xmlns="http://www.w3.org/2000/svg" style={{ height: this.deferredProceduresHeight }}>
             <FormattedFwcText x={0} y={24} message={this.deferredProceduresFormatString} />
           </svg>
@@ -178,7 +178,7 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
             display: this.infoDisplay,
           }}
         >
-          <span class="sd-sts-section-heading underline">INFO</span>
+          <StatusPageSectionHeading title="INFO" showLines={Subject.create(true)} />
           <svg version="1.1" xmlns="http://www.w3.org/2000/svg" style={{ height: this.infoHeight }}>
             <FormattedFwcText x={0} y={24} message={this.infoFormatString} />
           </svg>
@@ -190,7 +190,7 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
             display: this.inopSysDisplay,
           }}
         >
-          <span class="sd-sts-section-heading underline">INOP SYS</span>
+          <StatusPageSectionHeading title="INOP SYS" showLines={Subject.create(true)} />
           <div class="sd-sts-section-divided-area">
             <div class="sd-sts-section-divided-left">
               <span class="sd-sts-section-divided-area-heading">ALL PHASES</span>
@@ -206,6 +206,22 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
             </div>
           </div>
         </div>
+      </div>
+    );
+  }
+}
+
+interface StatusPageSectionHeadingProps {
+  title: string;
+  showLines: Subscribable<boolean>;
+}
+export class StatusPageSectionHeading extends DestroyableComponent<StatusPageSectionHeadingProps> {
+  render() {
+    return (
+      <div class="sd-sts-section-heading-group">
+        <div class={{ 'sd-sts-section-heading-lines': true, show: this.props.showLines }} />
+        <span class="sd-sts-section-heading underline">{this.props.title}</span>
+        <div class={{ 'sd-sts-section-heading-lines': true, show: this.props.showLines }} />
       </div>
     );
   }

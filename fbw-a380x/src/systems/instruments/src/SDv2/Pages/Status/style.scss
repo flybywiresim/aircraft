@@ -33,15 +33,33 @@
 .sd-sts-section-container {
   display: flex;
   flex-direction: column;
-  padding: 0px 8px 0px 8px;
+  padding: 0px 15px 0px 15px;
 }
+
+.sd-sts-section-heading-group {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+.sd-sts-section-heading-lines {
+  visibility: hidden;
+  border-bottom: 2px solid $display-light-grey;
+  margin-bottom: 14px;
+  flex-grow: 1;
+}
+.sd-sts-section-heading-lines.show {
+  visibility: visible;
+}
+
 
 .sd-sts-section-heading {
   display: flex;
   justify-content: center;
   font-size: 28px;
   letter-spacing: 1.75px;
-  margin-bottom: 12px;
+  margin: 0px 12px 12px 12px;
 }
 
 .sd-sts-section-heading.underline {
@@ -67,12 +85,12 @@
   display: flex;
   flex-direction: column;
   flex: 1;
-  border-right: 2px solid lightgrey;
+  border-right: 2px solid $display-light-grey;
 }
 
 .sd-sts-section-divided-right {
   display: flex;
   flex-direction: column;
   flex: 1;
-  padding-left: 8px;
+  padding-left: 15px;
 }
