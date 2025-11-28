@@ -106,6 +106,7 @@ impl SlatFlapControlComputer {
     }
 
     fn slat_flap_system_status_word(&self) -> Arinc429Word<u32> {
+        // Label 046
         if !self.is_powered_delayed.output() {
             return Arinc429Word::default();
         }
@@ -116,6 +117,8 @@ impl SlatFlapControlComputer {
             .get_csu_monitor()
             .time_since_last_valid_detent();
         let flap_auto_command_engaged = self.flaps_channel.get_flap_auto_command_engaged();
+        let slat_baulk_engaged = self.slats_channel.get_slat_baulk_engaged();
+        let slat_alpha_lock_engaged = self.slats_channel.get_slat_alpha_lock_engaged();
 
         // label 046
         let mut word = Arinc429Word::new(0, SignStatus::NormalOperation);
@@ -133,8 +136,8 @@ impl SlatFlapControlComputer {
         word.set_bit(21, current_detent == CSU::ConfFull);
         word.set_bit(22, false);
         word.set_bit(23, false);
-        word.set_bit(24, false);
-        word.set_bit(25, false);
+        word.set_bit(24, slat_alpha_lock_engaged);
+        word.set_bit(25, slat_baulk_engaged);
         word.set_bit(26, flap_auto_command_engaged);
         word.set_bit(
             27,

@@ -4,8 +4,8 @@ use crate::systems::shared::arinc429::{Arinc429Word, SignStatus};
 use systems::hydraulic::command_sensor_unit::{CSUMonitor, CSU};
 use systems::hydraulic::flap_slat::{ChannelCommand, SolenoidStatus, ValveBlock};
 use systems::shared::{
-    AdirsMeasurementOutputs, DelayedFalseLogicGate, ElectricalBusType, ElectricalBuses,
-    LgciuWeightOnWheels, PositionPickoffUnit,
+    AdirsMeasurementOutputs, DelayedFalseLogicGate, DelayedPulseTrueLogicGate, ElectricalBusType,
+    ElectricalBuses, LgciuWeightOnWheels, PositionPickoffUnit,
 };
 
 use systems::simulation::{
@@ -30,6 +30,7 @@ pub(super) struct SlatsChannel {
     powered_by: ElectricalBusType,
     is_powered: bool,
     is_powered_delayed: DelayedFalseLogicGate,
+    recovered_power_pulse: DelayedPulseTrueLogicGate,
 
     csu_monitor: CSUMonitor,
 
@@ -44,7 +45,6 @@ pub(super) struct SlatsChannel {
     sap: [bool; 7],
 
     slat_alpha_lock_baulk_function_active: bool,
-    slat_retraction_inhibited: bool,
     slat_baulk_engaged: bool,
     slat_alpha_lock_engaged: bool,
 }
@@ -75,6 +75,7 @@ impl SlatsChannel {
             is_powered: false,
             is_powered_delayed: DelayedFalseLogicGate::new(Self::TRANSPARENCY_TIME)
                 .starting_as(false),
+            recovered_power_pulse: DelayedPulseTrueLogicGate::new(Duration::ZERO),
 
             kts_60: Velocity::new::<knot>(Self::SLAT_FUNCTIONS_ACTIVE_SPEED_KNOTS),
             conf1_slats: Angle::new::<degree>(Self::CONF1_SLATS_DEGREES),
@@ -89,7 +90,6 @@ impl SlatsChannel {
             sap: [false; 7],
 
             slat_alpha_lock_baulk_function_active: false,
-            slat_retraction_inhibited: false,
             slat_baulk_engaged: false,
             slat_alpha_lock_engaged: false,
         }
@@ -150,12 +150,17 @@ impl SlatsChannel {
         }
     }
 
+    // NOTE: the logic of Slat Baulk and Slat Alpha Lock functions is identical.
+    // The difference is the Slat Baulk uses the CAS, the Slat Alpha Lock uses the AoA.
+
     fn update_slat_baulk(&mut self, adirs: &impl AdirsMeasurementOutputs) {
         let cas = self.get_higher_cas(adirs);
         let current_detent = self.csu_monitor.get_current_detent();
         let valid_detent = self.csu_monitor.get_last_valid_detent();
 
         match cas {
+            // If the CAS is less than the minimum limit and the flaps lever
+            // position is 0 and slats are already extended, then keep slats extended
             Some(cas)
                 if cas < self.slat_baulk_low_cas
                     && current_detent == CSU::Conf0
@@ -166,9 +171,11 @@ impl SlatsChannel {
             {
                 self.slat_baulk_engaged = true;
             }
-            Some(_) if current_detent == CSU::OutOfDetent => {
-                self.slat_baulk_engaged = self.slat_baulk_engaged;
-            }
+            // If the flaps lever position is in out of detent position, then
+            // don't change the status
+            Some(_) if current_detent == CSU::OutOfDetent => {}
+            // If the CAS is higher than the max limit and the flaps lever
+            // position is 0 and slats are locked at extended position, then retract the slats
             Some(cas)
                 if cas > self.slat_baulk_high_cas
                     && current_detent == CSU::Conf0
@@ -176,6 +183,8 @@ impl SlatsChannel {
             {
                 self.slat_baulk_engaged = false;
             }
+            // If CAS is invalid and the last valid flaps lever position is 0,
+            // then retract the slats
             None if valid_detent == CSU::Conf0 => {
                 self.slat_baulk_engaged = false;
             }
@@ -192,6 +201,8 @@ impl SlatsChannel {
         let valid_detent = self.csu_monitor.get_last_valid_detent();
 
         match aoa {
+            // If the AoA is greater than the max limit and the flaps lever
+            // position is 0 and slats are already extended, then keep slats extended
             Some(aoa)
                 if aoa > self.slat_alpha_lock_high_aoa
                     && current_detent == CSU::Conf0
@@ -202,9 +213,11 @@ impl SlatsChannel {
             {
                 self.slat_alpha_lock_engaged = true;
             }
-            Some(_) if current_detent == CSU::OutOfDetent => {
-                self.slat_alpha_lock_engaged = self.slat_alpha_lock_engaged;
-            }
+            // If the flaps lever position is in out of detent position, then
+            // don't change the status
+            Some(_) if current_detent == CSU::OutOfDetent => {}
+            // If the AoA is lower than the min limit and the flaps lever
+            // position is 0 and slats are locked at extended position, then retract the slats
             Some(aoa)
                 if aoa < self.slat_alpha_lock_low_aoa
                     && current_detent == CSU::Conf0
@@ -212,12 +225,43 @@ impl SlatsChannel {
             {
                 self.slat_alpha_lock_engaged = false;
             }
+            // If AoA is invalid and the last valid flaps lever position is 0,
+            // then retract the slats
             None if valid_detent == CSU::Conf0 => {
                 self.slat_alpha_lock_engaged = false;
             }
             _ => {
                 // TODO: is it correct?
                 self.slat_alpha_lock_engaged = false;
+            }
+        }
+    }
+
+    fn powerup_reset(&mut self, adirs: &impl AdirsMeasurementOutputs) {
+        let cas = self.get_higher_cas(adirs);
+        let aoa = self.get_lower_aoa(adirs);
+        let current_detent = self.csu_monitor.get_current_detent();
+
+        // Slat Baulk restart and Slat alpha lock restart
+        match (cas, aoa) {
+            (Some(cas), Some(aoa))
+                if aoa < self.slat_alpha_lock_high_aoa
+                    && cas > self.slat_baulk_low_cas
+                    && current_detent == CSU::Conf0 =>
+            {
+                self.slat_baulk_engaged = false;
+                self.slat_alpha_lock_engaged = false;
+            }
+            (None, _) if current_detent == CSU::Conf0 => {
+                self.slat_baulk_engaged = false;
+                self.slat_alpha_lock_engaged = false;
+            }
+            (_, None) if current_detent == CSU::Conf0 => {
+                self.slat_baulk_engaged = false;
+                self.slat_alpha_lock_engaged = false;
+            }
+            (_, _) => {
+                // TODO
             }
         }
     }
@@ -238,6 +282,7 @@ impl SlatsChannel {
         }
 
         let cas = self.get_higher_cas(adirs);
+        // When CAS is invalid, only the landing gear discrete inputs are used
         self.slat_alpha_lock_baulk_function_active =
             lgciu.left_and_right_gear_extended(false) || cas.unwrap_or_default() >= self.kts_60;
 
@@ -262,13 +307,12 @@ impl SlatsChannel {
     ) {
         self.is_powered_delayed.update(context, self.is_powered);
 
-        // TODO
-        // self.recovered_power_pulse
-        //     .update(context, self.is_powered_delayed.output());
+        self.recovered_power_pulse
+            .update(context, self.is_powered_delayed.output());
 
-        // if self.recovered_power_pulse.output() {
-        //     self.powerup_reset(adirs);
-        // }
+        if self.recovered_power_pulse.output() {
+            self.powerup_reset(adirs);
+        }
 
         if !self.is_powered_delayed.output() {
             self.power_loss_reset();
@@ -290,6 +334,14 @@ impl SlatsChannel {
 
     pub(super) fn get_feedback_angle(&self) -> Angle {
         self.slats_feedback_angle
+    }
+
+    pub(super) fn get_slat_baulk_engaged(&self) -> bool {
+        self.slat_baulk_engaged
+    }
+
+    pub(super) fn get_slat_alpha_lock_engaged(&self) -> bool {
+        self.slat_alpha_lock_engaged
     }
 
     #[cfg(test)]
