@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 //  Copyright (c) 2023 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
@@ -112,33 +113,8 @@ export class FmsClient implements Instrument {
     this.backplane.addPublisher('FmBus', new A32NXFmBusPublisher(this.bus));
 
     // register the system control handlers
-    this.subscriber.on('aocResetData').handle(() => this.messageStorage.resetAocData());
-    this.subscriber.on('atcResetData').handle(() => {
-      this.messageStorage.resetAtcData();
-      this.atisAutoUpdates = [];
-      this.atisReportsPrintActive = false;
-      this.automaticPositionReportIsActive = false;
-
-      this.atcStationStatus = {
-        current: '',
-        next: '',
-        notificationTime: 0,
-        mode: FansMode.FansNone,
-        logonInProgress: false,
-      };
-
-      this.datalinkStatus = {
-        vhf: DatalinkStatusCode.NotInstalled,
-        satellite: DatalinkStatusCode.NotInstalled,
-        hf: DatalinkStatusCode.NotInstalled,
-      };
-
-      this.datalinkMode = {
-        vhf: DatalinkModeCode.None,
-        satellite: DatalinkModeCode.None,
-        hf: DatalinkModeCode.None,
-      };
-    });
+    this.subscriber.on('aocResetData').handle(this.onAocReset.bind(this));
+    this.subscriber.on('atcResetData').handle(this.onAtcReset.bind(this));
 
     // register the streaming handlers
     this.subscriber.on('atcSystemStatus').handle((status) => this.fms.addNewAtsuMessage(status));
@@ -230,6 +206,47 @@ export class FmsClient implements Instrument {
   /** @inheritdoc */
   public onUpdate(): void {
     this.backplane.onUpdate();
+  }
+
+  /** Handles FMS reset (completion of flight, nav DB swap, etc.) */
+  public onFmsReset(): void {
+    this.resetAtisAutoUpdate();
+    this.onAocReset();
+    this.onAtcReset();
+  }
+
+  private onAocReset(): void {
+    this.messageStorage.resetAocData();
+  }
+
+  private onAtcReset(): void {
+    this.messageStorage.resetAtcData();
+    this.atisAutoUpdates = [];
+    this.atisReportsPrintActive = false;
+    this.automaticPositionReportIsActive = false;
+
+    // FIXME don't allocate a new object
+    this.atcStationStatus = {
+      current: '',
+      next: '',
+      notificationTime: 0,
+      mode: FansMode.FansNone,
+      logonInProgress: false,
+    };
+
+    // FIXME don't allocate a new object
+    this.datalinkStatus = {
+      vhf: DatalinkStatusCode.NotInstalled,
+      satellite: DatalinkStatusCode.NotInstalled,
+      hf: DatalinkStatusCode.NotInstalled,
+    };
+
+    // FIXME don't allocate a new object
+    this.datalinkMode = {
+      vhf: DatalinkModeCode.None,
+      satellite: DatalinkModeCode.None,
+      hf: DatalinkModeCode.None,
+    };
   }
 
   public maxUplinkDelay: number = -1;

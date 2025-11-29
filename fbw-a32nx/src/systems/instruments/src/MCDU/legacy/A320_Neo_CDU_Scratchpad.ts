@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // private variables and function are marked with _ prefix
 
 import { McduMessage } from '../messages/NXSystemMessages';

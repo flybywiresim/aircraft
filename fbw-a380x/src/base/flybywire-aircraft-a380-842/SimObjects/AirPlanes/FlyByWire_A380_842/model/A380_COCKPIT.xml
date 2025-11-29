@@ -417,11 +417,18 @@
                 </UseTemplate>
                 <UseTemplate Name="FBW_GT_Interaction_NoInteraction"/>
             </Component>
-            <Component ID="PUSH_EFB_SIDE" Node="PUSH_EFB_SIDE">
-                <UseTemplate Name="ASOBO_GT_Push_Button">
-                    <LEFT_SINGLE_CODE>(&gt;H:A32NX_EFB_POWER)</LEFT_SINGLE_CODE>
-                    <TOOLTIPID>EFB power</TOOLTIPID>
+        </Component>
+
+        <Component ID="EFB_FO">
+            <Component ID="SCREEN_EFB_FO" Node="SCREEN_EFB_FO">
+                <DefaultTemplateParameters>
+                    <NODE_ID>SCREEN_EFB_FO</NODE_ID>
+                </DefaultTemplateParameters>
+
+                <UseTemplate Name="ASOBO_GT_Material_Emissive_Code">
+                    <EMISSIVE_CODE>(L:A32NX_EFB_BRIGHTNESS, number) 10 max 100 min 100 /</EMISSIVE_CODE>
                 </UseTemplate>
+                <UseTemplate Name="FBW_GT_Interaction_NoInteraction"/>
             </Component>
         </Component>
 
@@ -500,7 +507,7 @@
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
-                <NODE_ID>SWITCH_OVHD_INTLT_DOME</NODE_ID>
+                <NODE_ID>LIGHTING_Knob_Ambient</NODE_ID>
                 <POTENTIOMETER>85</POTENTIOMETER>
                 <EMISSIVE_CODE>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
             </UseTemplate>
@@ -532,14 +539,14 @@
             <!-- TODO holland move to glareshield.xml -->
             <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
                 <NODE_ID>KNOB_GLARESHIELD_CS_SPEAKER</NODE_ID>
-                <POTENTIOMETER>85</POTENTIOMETER>
+                <POTENTIOMETER>84</POTENTIOMETER>
                 <EMISSIVE_CODE>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
             </UseTemplate>
 
             <!-- TODO holland move to glareshield.xml -->
             <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
                 <NODE_ID>KNOB_GLARESHIELD_FO_SPEAKER</NODE_ID>
-                <POTENTIOMETER>85</POTENTIOMETER>
+                <POTENTIOMETER>84</POTENTIOMETER>
                 <EMISSIVE_CODE>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
             </UseTemplate>
 
@@ -946,6 +953,57 @@
                 <ID>2</ID>
             </UseTemplate>
 
+            <UseTemplate Name="FBW_AIRBUS_Push_Round_Button_Template">
+                <NODE_ID>PUSH_EFIS_CS_RECONF</NODE_ID>
+                <ANIM_NAME>PUSH_EFIS_CS_RECONF</ANIM_NAME>
+                <ID>1</ID>
+            </UseTemplate>
+
+            <UseTemplate Name="FBW_AIRBUS_Push_Round_Button_Template">
+                <NODE_ID>PUSH_EFIS_FO_RECONF</NODE_ID>
+                <ANIM_NAME>PUSH_EFIS_FO_RECONF</ANIM_NAME>
+                <ID>2</ID>
+            </UseTemplate>
+
+            <UseTemplate Name="FBW_AIRBUS_Push_Round_Button_Template">
+                <NODE_ID>PUSH_GLARESHIELD_CS_PTT</NODE_ID>
+                <ANIM_NAME>PUSH_GLARESHIELD_CS_PTT</ANIM_NAME>
+                <ID>1</ID>
+            </UseTemplate>
+
+            <UseTemplate Name="FBW_AIRBUS_Push_Round_Button_Template">
+                <NODE_ID>PUSH_GLARESHIELD_FO_PTT</NODE_ID>
+                <ANIM_NAME>PUSH_GLARESHIELD_FO_PTT</ANIM_NAME>
+                <ID>2</ID>
+            </UseTemplate>
+
+            <!-- CAPT LAPTOP -->
+            <!-- Yes, this is a momentary switch/latch, but I simply can't get the XML for that to work -->
+            <UseTemplate Name="A32NX_GT_Switch_Dummy">
+                <NODE_ID>SWITCH_LAPTOP_CS_POWER</NODE_ID>
+                <PART_ID>SWITCH_LAPTOP_CS_POWER</PART_ID>
+                <ANIM_NAME>SWITCH_LAPTOP_CS_POWER</ANIM_NAME>
+                <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+                <SWITCH_POSITION_VAR>A380X_SWITCH_LAPTOP_POWER_LEFT</SWITCH_POSITION_VAR>
+                <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
+                <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
+                <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+                <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+            </UseTemplate>
+
+            <!-- FO LAPTOP -->
+            <UseTemplate Name="A32NX_GT_Switch_Dummy">
+                <NODE_ID>SWITCH_LAPTOP_FO_POWER</NODE_ID>
+                <PART_ID>SWITCH_LAPTOP_FO_POWER</PART_ID>
+                <ANIM_NAME>SWITCH_LAPTOP_FO_POWER</ANIM_NAME>
+                <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+                <SWITCH_POSITION_VAR>A380X_SWITCH_LAPTOP_POWER_RIGHT</SWITCH_POSITION_VAR>
+                <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
+                <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
+                <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+                <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+            </UseTemplate>
+
 
             <Component ID="Screens_Left">
                 <DefaultTemplateParameters>
@@ -1229,36 +1287,36 @@
                     </DefaultTemplateParameters>
 
                     <UseTemplate Name="FBW_ISIS_Knob_Template">
-                        <ANIM_NAME>AUTOPILOT_Knob_Baro</ANIM_NAME>
-                        <NODE_ID>AUTOPILOT_Knob_Baro</NODE_ID>
+                        <ANIM_NAME>KNOB_ISIS_1_SET_SEL</ANIM_NAME>
+                        <NODE_ID>KNOB_ISIS_1_SET_SEL</NODE_ID>
                         <ALTIMETER_INDEX>3</ALTIMETER_INDEX>
                     </UseTemplate>
                     <UseTemplate Name="A32NX_ISIS_Push_Template">
-                        <NODE_ID>PUSH_BARO_BUGS</NODE_ID>
+                        <NODE_ID>PUSH_ISIS_1_MODE</NODE_ID>
                         <TOOLTIPID>Toggle ISI Bugs</TOOLTIPID>
                         <BTN_ID>BUGS</BTN_ID>
                         <ONLY_SEQ1 />
                     </UseTemplate>
                     <UseTemplate Name="A32NX_ISIS_Push_Template">
-                        <NODE_ID>PUSH_BARO_LS</NODE_ID>
+                        <NODE_ID>PUSH_ISIS_1_LS_DIR</NODE_ID>
                         <TOOLTIPID>Toggle LS scales</TOOLTIPID>
                         <BTN_ID>LS</BTN_ID>
                         <ONLY_SEQ1 />
                     </UseTemplate>
                     <UseTemplate Name="A32NX_ISIS_Push_Held_Template">
-                        <NODE_ID>PUSH_BARO_PLUS</NODE_ID>
+                        <NODE_ID>PUSH_ISIS_1_PLUS</NODE_ID>
                         <TOOLTIPID>Increase ISI brightness</TOOLTIPID>
                         <BTN_ID>PLUS</BTN_ID>
                         <ONLY_SEQ1 />
                     </UseTemplate>
                     <UseTemplate Name="A32NX_ISIS_Push_Held_Template">
-                        <NODE_ID>PUSH_BARO_MINUS</NODE_ID>
+                        <NODE_ID>PUSH_ISIS_1_MINUS</NODE_ID>
                         <TOOLTIPID>Decrease ISI brightness</TOOLTIPID>
                         <BTN_ID>MINUS</BTN_ID>
                         <ONLY_SEQ1 />
                     </UseTemplate>
                     <UseTemplate Name="A32NX_ISIS_Push_Held_Template">
-                        <NODE_ID>PUSH_BARO_RST</NODE_ID>
+                        <NODE_ID>PUSH_ISIS_1_MENU</NODE_ID>
                         <TOOLTIPID>Reset ISI Attitude</TOOLTIPID>
                         <BTN_ID>RST</BTN_ID>
                         <ONLY_SEQ1 />
@@ -2017,6 +2075,28 @@
                     </UseTemplate>
                 </Component>
 
+                <!-- STORM LIGHT -->
+                <!-- TODO Dummy switch. Requires lighting logic to be added -->
+                <UseTemplate Name="A32NX_GT_Switch_Dummy">
+                    <NODE_ID>SWITCH_OVHD_INTLT_STORM</NODE_ID>
+                    <PART_ID>SWITCH_OVHD_INTLT_STORM</PART_ID>
+                    <ANIM_NAME>SWITCH_OVHD_INTLT_STORM</ANIM_NAME>
+                    <NUM_STATES>2</NUM_STATES>
+                    <SWITCH_DIRECTION>Vertical</SWITCH_DIRECTION>
+                    <LIGHT_TYPE>STORM_LT</LIGHT_TYPE>
+                    <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+                    <SWITCH_POSITION_VAR>A380X_OVHD_STORM_LT</SWITCH_POSITION_VAR>
+                    <ANIMTIP_0>Set Storm Light to ON</ANIMTIP_0>
+                    <ANIMTIP_1>Set Storm Light to OFF</ANIMTIP_1>
+                    <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
+                    <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
+                    <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+                    <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+                    <CODE_POS_0></CODE_POS_0>
+                    <CODE_POS_1></CODE_POS_1>
+                    <INVERT_ANIM>1</INVERT_ANIM>
+                </UseTemplate>
+
                 <!-- BEACON -->
                 <UseTemplate Name="FBW_Airbus_LIGHTING_Switch_Light_Beacon_Template">
                     <NODE_ID>SWITCH_OVHD_EXTLT_BEACON</NODE_ID>
@@ -2272,9 +2352,9 @@
                     <EMISSIVE_CODE>(L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
                 </UseTemplate>
 
-                <Component ID="SWITCH_OVHD_INTLT_DOME" Node="SWITCH_OVHD_INTLT_DOME">
+                <Component ID="LIGHTING_Knob_Ambient" Node="LIGHTING_Knob_Ambient">
                     <UseTemplate Name="FBW_Stepless_Potentiometer">
-                        <NODE_ID>SWITCH_OVHD_INTLT_DOME</NODE_ID>
+                        <NODE_ID>LIGHTING_Knob_Ambient</NODE_ID>
                         <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_PEDESTAL_DECREASE</ANIMTIP_0>
                         <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_PEDESTAL_INCREASE</ANIMTIP_1>
                         <POTENTIOMETER>7</POTENTIOMETER>
@@ -3282,7 +3362,7 @@
                         </UseTemplate>
 
                         <Component ID="KNOB_OVHD_AIRCOND_FWDCABIN" Node="KNOB_OVHD_AIRCOND_FWDCABIN">
-                            <UseTemplate Name="FBW_Continuous_Knob_Finite_From_Simvar">
+                            <UseTemplate Name="FBW_A380X_Knob_Aircond_Cabin">
                                 <NODE_ID>KNOB_OVHD_AIRCOND_FWDCABIN</NODE_ID>
                                 <ANIM_NAME>KNOB_OVHD_AIRCOND_FWDCABIN</ANIM_NAME>
                                 <ANIM_SIMVAR>L:A32NX_OVHD_COND_CABIN_SELECTOR_KNOB</ANIM_SIMVAR>
@@ -3536,7 +3616,7 @@
                                 <LOCK_NODE_ID>LOCK_OVHD_ENGMANSTART_2</LOCK_NODE_ID>
                                 <TOGGLE_SIMVAR>L:A32NX_ENGMANSTART2_TOGGLE</TOGGLE_SIMVAR>
                                 <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                                <SEQ2_CODE>(L:A32NX_ENGMANSTART1_TOGGLE, Bool)</SEQ2_CODE>
+                                <SEQ2_CODE>(L:A32NX_ENGMANSTART2_TOGGLE, Bool)</SEQ2_CODE>
                                 <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
                                 <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                                 <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
@@ -3549,45 +3629,45 @@
                             <UseTemplate Name="FBW_Covered_Push_Toggle">
                                 <NODE_ID>PUSH_OVHD_ENGMANSTART_3</NODE_ID>
                                 <LOCK_NODE_ID>LOCK_OVHD_ENGMANSTART_3</LOCK_NODE_ID>
-                                <TOGGLE_SIMVAR>L:A32NX_ENGMANSTART2_TOGGLE</TOGGLE_SIMVAR>
+                                <TOGGLE_SIMVAR>L:A32NX_ENGMANSTART3_TOGGLE</TOGGLE_SIMVAR>
                                 <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                                <SEQ2_CODE>(L:A32NX_ENGMANSTART2_TOGGLE, Bool)</SEQ2_CODE>
+                                <SEQ2_CODE>(L:A32NX_ENGMANSTART3_TOGGLE, Bool)</SEQ2_CODE>
                                 <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
                                 <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                                 <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                                 <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                                <TOOLTIPID>%((L:A32NX_ENGMANSTART2_TOGGLE, Bool))%{if}Turn OFF
-                                    engine 2 manual start%{else}Turn ON engine 2 manual start%{end}</TOOLTIPID>
+                                <TOOLTIPID>%((L:A32NX_ENGMANSTART3_TOGGLE, Bool))%{if}Turn OFF
+                                    engine 3 manual start%{else}Turn ON engine 3 manual start%{end}</TOOLTIPID>
                             </UseTemplate>
 
                             <!-- 4 -->
                             <UseTemplate Name="FBW_Covered_Push_Toggle">
                                 <NODE_ID>PUSH_OVHD_ENGMANSTART_4</NODE_ID>
                                 <LOCK_NODE_ID>LOCK_OVHD_ENGMANSTART_4</LOCK_NODE_ID>
-                                <TOGGLE_SIMVAR>L:A32NX_ENGMANSTART2_TOGGLE</TOGGLE_SIMVAR>
+                                <TOGGLE_SIMVAR>L:A32NX_ENGMANSTART4_TOGGLE</TOGGLE_SIMVAR>
                                 <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                                <SEQ2_CODE>(L:A32NX_ENGMANSTART2_TOGGLE, Bool)</SEQ2_CODE>
+                                <SEQ2_CODE>(L:A32NX_ENGMANSTART4_TOGGLE, Bool)</SEQ2_CODE>
                                 <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
                                 <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                                 <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                                 <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                                <TOOLTIPID>%((L:A32NX_ENGMANSTART2_TOGGLE, Bool))%{if}Turn OFF
-                                    engine 2 manual start%{else}Turn ON engine 2 manual start%{end}</TOOLTIPID>
+                                <TOOLTIPID>%((L:A32NX_ENGMANSTART4_TOGGLE, Bool))%{if}Turn OFF
+                                    engine 4 manual start%{else}Turn ON engine 4 manual start%{end}</TOOLTIPID>
                             </UseTemplate>
 
                             <!-- ALTN -->
                             <UseTemplate Name="FBW_Covered_Push_Toggle">
                                 <NODE_ID>PUSH_OVHD_ENGMANSTARTALTN</NODE_ID>
                                 <LOCK_NODE_ID>LOCK_OVHD_ENGMANSTARTALTN</LOCK_NODE_ID>
-                                <TOGGLE_SIMVAR>L:A32NX_ENGMANSTART1_TOGGLE</TOGGLE_SIMVAR>
+                                <TOGGLE_SIMVAR>L:A32NX_ENGMANSTARTALTN_TOGGLE</TOGGLE_SIMVAR>
                                 <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                                <SEQ2_CODE>(L:A32NX_ENGMANSTART2_TOGGLE, Bool)</SEQ2_CODE>
+                                <SEQ2_CODE>(L:A32NX_ENGMANSTARTALTN_TOGGLE, Bool)</SEQ2_CODE>
                                 <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
                                 <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                                 <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                                 <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                                <TOOLTIPID>%((L:A32NX_ENGMANSTART2_TOGGLE, Bool))%{if}Turn OFF
-                                    engine 2 manual start%{else}Turn ON engine 2 manual start%{end}</TOOLTIPID>
+                                <TOOLTIPID>%((L:A32NX_ENGMANSTARTALTN_TOGGLE, Bool))%{if}Turn OFF
+                                    engine altn mode%{else}Turn ON engine altn mode%{end}</TOOLTIPID>
                             </UseTemplate>
                         </Component>
 
@@ -4154,93 +4234,33 @@
                         <Component ID="GPWS">
                             <UseTemplate Name="FBW_Push_Toggle">
                                 <NODE_ID>PUSH_OVHD_ENT_CWS</NODE_ID>
-                                <TOGGLE_SIMVAR>L:A32NX_GPWS_TERR_OFF</TOGGLE_SIMVAR>
-                                <DOWN_CODE>(L:A32NX_GPWS_TERR_OFF, Bool) !</DOWN_CODE>
+                                <TOGGLE_SIMVAR>L:A32NX_ENTERTAINMENT_CWS_OFF</TOGGLE_SIMVAR>
+                                <DOWN_CODE>(L:A32NX_ENTERTAINMENT_CWS_OFF, Bool) !</DOWN_CODE>
                                 <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                                 <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                                 <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                                 <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                                <TOOLTIPID>%((L:A32NX_GPWS_TERR_OFF, Bool))%{if}(Inop.) Turn ON GPWS
-                                    TERR%{else}(Inop.) Turn OFF GPWS TERR%{end}</TOOLTIPID>
                             </UseTemplate>
 
                             <UseTemplate Name="FBW_Push_Toggle">
                                 <NODE_ID>PUSH_OVHD_ENT_IFEC</NODE_ID>
-                                <TOGGLE_SIMVAR>L:A32NX_GPWS_TERR_OFF</TOGGLE_SIMVAR>
-                                <DOWN_CODE>(L:A32NX_GPWS_TERR_OFF, Bool) !</DOWN_CODE>
+                                <TOGGLE_SIMVAR>L:A32NX_ENTERTAINMENT_IFEC_OFF</TOGGLE_SIMVAR>
+                                <DOWN_CODE>(L:A32NX_ENTERTAINMENT_IFEC_OFF, Bool) !</DOWN_CODE>
                                 <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                                 <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                                 <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                                 <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                                <TOOLTIPID>%((L:A32NX_GPWS_TERR_OFF, Bool))%{if}(Inop.) Turn ON GPWS
-                                    TERR%{else}(Inop.) Turn OFF GPWS TERR%{end}</TOOLTIPID>
                             </UseTemplate>
 
                             <UseTemplate Name="FBW_Covered_Push_Toggle">
                                 <NODE_ID>PUSH_OVHD_NSS_MASTER</NODE_ID>
                                 <LOCK_NODE_ID>LOCK_OVHD_NSSMASTER</LOCK_NODE_ID>
-                                <TOGGLE_SIMVAR>L:A32NX_GPWS_TERR_OFF</TOGGLE_SIMVAR>
-                                <DOWN_CODE>(L:A32NX_GPWS_TERR_OFF, Bool) !</DOWN_CODE>
+                                <TOGGLE_SIMVAR>L:A32NX_NSS_MASTER_OFF</TOGGLE_SIMVAR>
+                                <DOWN_CODE>(L:A32NX_NSS_MASTER_OFF, Bool) !</DOWN_CODE>
                                 <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                                 <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                                 <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                                 <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                                <TOOLTIPID>%((L:A32NX_GPWS_TERR_OFF, Bool))%{if}(Inop.) Turn ON GPWS
-                                    TERR%{else}(Inop.) Turn OFF GPWS TERR%{end}</TOOLTIPID>
-                            </UseTemplate>
-
-                            <UseTemplate Name="FBW_Push_Toggle">
-                                <NODE_ID>PUSH_OVHD_GPWS_SYS</NODE_ID>
-                                <TOGGLE_SIMVAR>L:A32NX_GPWS_SYS_OFF</TOGGLE_SIMVAR>
-                                <DOWN_CODE>(L:A32NX_GPWS_SYS_OFF, Bool) !</DOWN_CODE>
-                                <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                                <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
-                                <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
-                                <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                                <TOOLTIPID>%((L:A32NX_GPWS_SYS_OFF, Bool))%{if}Turn ON GPWS
-                                    SYS%{else}Turn OFF GPWS SYS%{end}</TOOLTIPID>
-                            </UseTemplate>
-
-                            <UseTemplate Name="FBW_Push_Toggle">
-                                <NODE_ID>PUSH_OVHD_GPWS_GSMODE</NODE_ID>
-                                <TOGGLE_SIMVAR>L:A32NX_GPWS_GS_OFF</TOGGLE_SIMVAR>
-                                <DOWN_CODE>(L:A32NX_GPWS_GS_OFF, Bool) !</DOWN_CODE>
-                                <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                                <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
-                                <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
-                                <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
-                                <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                                <TOOLTIPID>%((L:A32NX_GPWS_GS_OFF, Bool))%{if}Turn ON GPWS G/S
-                                    mode%{else}Turn OFF GPWS G/S mode%{end}</TOOLTIPID>
-                            </UseTemplate>
-
-                            <UseTemplate Name="FBW_Push_Toggle">
-                                <NODE_ID>PUSH_OVHD_GPWS_FLAP</NODE_ID>
-                                <PART_ID>GPWS_Flap</PART_ID>
-                                <TOGGLE_SIMVAR>L:A32NX_GPWS_FLAP_OFF</TOGGLE_SIMVAR>
-                                <DOWN_CODE>(L:A32NX_GPWS_FLAP_OFF, Bool) !</DOWN_CODE>
-                                <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                                <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
-                                <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
-                                <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
-                                <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                                <TOOLTIPID>%((L:A32NX_GPWS_FLAP_OFF, Bool))%{if}Turn ON GPWS flap
-                                    mode%{else}Turn OFF GPWS flap mode%{end}</TOOLTIPID>
-                            </UseTemplate>
-
-                            <!-- LDG FLAP 3 -->
-                            <UseTemplate Name="FBW_Push_Toggle">
-                                <NODE_ID>PUSH_OVHD_GPWS_LDG</NODE_ID>
-                                <PART_ID>GPWS_Flap3</PART_ID>
-                                <TOGGLE_SIMVAR>L:A32NX_GPWS_FLAPS3</TOGGLE_SIMVAR>
-                                <DOWN_CODE>(L:A32NX_GPWS_FLAPS3, Bool)</DOWN_CODE>
-                                <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                                <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
-                                <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
-                                <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
-                                <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                                <TOOLTIPID>%((L:A32NX_GPWS_FLAPS3, Bool))%{if}Switch landing flaps
-                                    to FULL%{else}Switch landing flaps to 3%{end}</TOOLTIPID>
                             </UseTemplate>
                         </Component>
 
@@ -4345,11 +4365,23 @@
                                 <HOLD_SIMVAR>L:PUSH_OVHD_CALLS_ALL</HOLD_SIMVAR>
                             </UseTemplate>
                             <UseTemplate Name="FBW_Push_Held">
-                                <NODE_ID>PUSH_OVHD_CALLS_FWD</NODE_ID>
+                                <NODE_ID>PUSH_OVHD_CALLS_DECK_UPPER</NODE_ID>
                                 <HOLD_SIMVAR>L:PUSH_OVHD_CALLS_FWD</HOLD_SIMVAR>
                             </UseTemplate>
                             <UseTemplate Name="FBW_Push_Held">
-                                <NODE_ID>PUSH_OVHD_CALLS_AFT</NODE_ID>
+                                <NODE_ID>PUSH_OVHD_CALLS_DECK_MAIN</NODE_ID>
+                                <HOLD_SIMVAR>L:PUSH_OVHD_CALLS_AFT</HOLD_SIMVAR>
+                            </UseTemplate>
+                            <UseTemplate Name="FBW_Push_Held">
+                                <NODE_ID>PUSH_OVHD_CALLS_REST_FWD</NODE_ID>
+                                <HOLD_SIMVAR>L:PUSH_OVHD_CALLS_FWD</HOLD_SIMVAR>
+                            </UseTemplate>
+                            <UseTemplate Name="FBW_Push_Held">
+                                <NODE_ID>PUSH_OVHD_CALLS_REST_MAIN</NODE_ID>
+                                <HOLD_SIMVAR>L:PUSH_OVHD_CALLS_AFT</HOLD_SIMVAR>
+                            </UseTemplate>
+                            <UseTemplate Name="FBW_Push_Held">
+                                <NODE_ID>PUSH_OVHD_CALLS_PURS</NODE_ID>
                                 <HOLD_SIMVAR>L:PUSH_OVHD_CALLS_AFT</HOLD_SIMVAR>
                             </UseTemplate>
                             <UseTemplate Name="FBW_Covered_Push_Toggle">
@@ -4563,6 +4595,7 @@
                         <NODE_ID>PUSH_OVHD_ENG_FADEC1</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_ENG_FADEC1</LOCK_NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_FADEC_1</TOGGLE_SIMVAR>
+                        <INVERTED_ANIMATION>True</INVERTED_ANIMATION>
                         <SEQ_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
                         <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
@@ -4576,6 +4609,7 @@
                         <NODE_ID>PUSH_OVHD_ENG_FADEC2</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_ENG_FADEC2</LOCK_NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_FADEC_2</TOGGLE_SIMVAR>
+                        <INVERTED_ANIMATION>True</INVERTED_ANIMATION>
                         <SEQ_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
                         <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
@@ -4589,6 +4623,7 @@
                         <NODE_ID>PUSH_OVHD_ENG_FADEC3</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_ENG_FADEC3</LOCK_NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_FADEC_3</TOGGLE_SIMVAR>
+                        <INVERTED_ANIMATION>True</INVERTED_ANIMATION>
                         <SEQ_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
                         <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
@@ -4602,6 +4637,7 @@
                         <NODE_ID>PUSH_OVHD_ENG_FADEC4</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_ENG_FADEC4</LOCK_NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_FADEC_4</TOGGLE_SIMVAR>
+                        <INVERTED_ANIMATION>True</INVERTED_ANIMATION>
                         <SEQ_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
                         <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
@@ -4763,6 +4799,12 @@
                     </UseTemplate>
                     <UseTemplate Name="FBW_Airbus_RESET_PANEL_BUTTON">
                         <NAME>AESU2</NAME>
+                    </UseTemplate>
+                    <UseTemplate Name="FBW_Airbus_RESET_PANEL_BUTTON">
+                        <NAME>NSS_AVNCS</NAME>
+                    </UseTemplate>
+                    <UseTemplate Name="FBW_Airbus_RESET_PANEL_BUTTON">
+                        <NAME>NSS_FLT_OPS</NAME>
                     </UseTemplate>
                 </Component>
             </Component>
@@ -4978,6 +5020,12 @@
                 <ANIM_NAME>SWITCH_DOOR_LOCK</ANIM_NAME>
                 <INVERT_ANIM>1</INVERT_ANIM>
             </UseTemplate>
+
+            <!-- COCKPIT DOOR LOCK STATUS -->
+            <UseTemplate Name="FBW_Push_Toggle">
+                <NODE_ID>PUSH_CKPT_DOOR</NODE_ID>
+                <TOOLTIPID>COCKPIT DOOR LOCK STATUS</TOOLTIPID>
+            </UseTemplate>
         </Component>
 
         <Component ID="Chronometer">
@@ -5029,23 +5077,14 @@
 
             <!-- Should be springloaded in the 3rd position, not sure how to do that. -->
             <Component ID="KNOB_CHRONO_RUN" Node="KNOB_CHRONO_RUN">
-                <UseTemplate Name="ASOBO_GT_Knob_Finite_Code">
-                    <NODE_ID>KNOB_CHRONO_RUN</NODE_ID>
+                <UseTemplate Name="ASOBO_GT_Switch_3States">
                     <ANIM_NAME>KNOB_CHRONO_RUN</ANIM_NAME>
+                    <ANIM_CODE>50</ANIM_CODE>
+                    <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+                    <SWITCH_POSITION_VAR>A32NX_CHRONO_ET_SWITCH_POS</SWITCH_POSITION_VAR>
+                    <SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
                     <WWISE_EVENT>smallknob</WWISE_EVENT>
-                    <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-                    <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
-                    <ANIM_CODE>(L:A32NX_CHRONO_ET_SWITCH_POS, number) 10 *</ANIM_CODE>
-                    <CLOCKWISE_CODE>
-                        (L:A32NX_CHRONO_ET_SWITCH_POS, number) 1 + 2 min
-                        (&gt;L:A32NX_CHRONO_ET_SWITCH_POS, number)
-                        (&gt;H:A32NX_CHRONO_ET_POS_CHANGED)
-                    </CLOCKWISE_CODE>
-                    <ANTICLOCKWISE_CODE>
-                        (L:A32NX_CHRONO_ET_SWITCH_POS, number) 1 - 0 max
-                        (&gt;L:A32NX_CHRONO_ET_SWITCH_POS, number)
-                        (&gt;H:A32NX_CHRONO_ET_POS_CHANGED)
-                    </ANTICLOCKWISE_CODE>
+                    <ON_STATE_CHANGED_EXTERNAL_CODE>(&gt;H:A32NX_CHRONO_ET_POS_CHANGED)</ON_STATE_CHANGED_EXTERNAL_CODE>
                 </UseTemplate>
             </Component>
 
@@ -5450,10 +5489,44 @@
         </Component>
 
         <Component ID="HAT03" Node="HAT03">
-            <UseTemplate Name="ASOBO_GT_MouseRect">
-                <CALLBACKCODE_DEFAULT_IM>(M:Event) 'LeftSingle' scmp 0 == if{ (L:A380X_CABIN_HIDDEN, bool) ! (&gt;L:A380X_CABIN_HIDDEN, bool) }</CALLBACKCODE_DEFAULT_IM>
-                <MOUSEFLAGS>LeftSingle</MOUSEFLAGS>
-                <CURSOR>Hand</CURSOR>
+            <UseTemplate Name="ASOBO_Interaction_Base_Template">
+                <NODE_ID>HAT03</NODE_ID>
+                <TOOLTIP_TITLE>A380X.TOOLTIPS.TOGGLE_CABIN</TOOLTIP_TITLE>
+                <IS_AIRLINER>False</IS_AIRLINER>
+                <INTERACTION_TYPE>Push</INTERACTION_TYPE>
+                <LEFT_SINGLE_CODE>0 == if{ (L:A380X_CABIN_HIDDEN, bool) ! (&gt;L:A380X_CABIN_HIDDEN, bool) }</LEFT_SINGLE_CODE>
+            </UseTemplate>
+        </Component>
+
+        <Component ID="EFB_CPT_MOUNT" Node="EFB_CPT_MOUNT">
+            <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                <VISIBILITY_CODE>(L:A380X_CPT_EFB_HIDDEN, bool) 0 ==</VISIBILITY_CODE>
+            </UseTemplate>
+        </Component>
+
+        <Component ID="LH_SLIDING_LIGHTING_KNOB" Node="LH_SLIDING_LIGHTING_KNOB">
+            <UseTemplate Name="ASOBO_Interaction_Base_Template">
+                <NODE_ID>LH_SLIDING_LIGHTING_KNOB</NODE_ID>
+                <TOOLTIP_TITLE>A380X.TOOLTIPS.EFB_CPT_TOGGLE</TOOLTIP_TITLE>
+                <IS_AIRLINER>False</IS_AIRLINER>
+                <INTERACTION_TYPE>Push</INTERACTION_TYPE>
+                <LEFT_SINGLE_CODE>0 == if{ (L:A380X_CPT_EFB_HIDDEN, bool) ! (&gt;L:A380X_CPT_EFB_HIDDEN, bool) }</LEFT_SINGLE_CODE>
+            </UseTemplate>
+        </Component>
+
+        <Component ID="EFB_FO_MOUNT" Node="EFB_FO_MOUNT">
+            <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                <VISIBILITY_CODE>(L:A380X_FO_EFB_HIDDEN, bool) 0 ==</VISIBILITY_CODE>
+            </UseTemplate>
+        </Component>
+
+        <Component ID="RH_SLIDING_LIGHTING_KNOB" Node="RH_SLIDING_LIGHTING_KNOB">
+            <UseTemplate Name="ASOBO_Interaction_Base_Template">
+                <NODE_ID>RH_SLIDING_LIGHTING_KNOB</NODE_ID>
+                <TOOLTIP_TITLE>A380X.TOOLTIPS.EFB_FO_TOGGLE</TOOLTIP_TITLE>
+                <IS_AIRLINER>False</IS_AIRLINER>
+                <INTERACTION_TYPE>Push</INTERACTION_TYPE>
+                <LEFT_SINGLE_CODE>0 == if{ (L:A380X_FO_EFB_HIDDEN, bool) ! (&gt;L:A380X_FO_EFB_HIDDEN, bool) }</LEFT_SINGLE_CODE>
             </UseTemplate>
         </Component>
 

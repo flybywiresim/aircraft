@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { UpdateThrottler } from '@flybywiresim/fbw-sdk';
 import { NXNotifManager } from '@shared/NxNotif';
 

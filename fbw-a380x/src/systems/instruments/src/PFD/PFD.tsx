@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import {
   ClockEvents,
   ComponentProps,
@@ -31,6 +32,7 @@ import { VerticalSpeedIndicator } from './VerticalSpeedIndicator';
 import './style.scss';
 import { PitchTrimDisplay } from 'instruments/src/PFD/PitchTrimDisplay';
 import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
+import { FcdcValueProvider } from './shared/FcdcValueProvider';
 
 export const getDisplayIndex = () => {
   const url = Array.from(document.querySelectorAll('vcockpit-panel > *'))
@@ -57,6 +59,8 @@ interface PFDProps extends ComponentProps {
 export class PFDComponent extends DisplayComponent<PFDProps> {
   private readonly subscriptions: Subscription[] = [];
   private readonly sub = this.props.bus.getSubscriber<Arinc429Values & ClockEvents & PFDSimvars>();
+
+  private readonly fcdcData = new FcdcValueProvider(this.props.bus, getDisplayIndex());
 
   private headingFailed = Subject.create(true);
 
@@ -233,6 +237,7 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
             instrument={this.props.instrument}
             isAttExcessive={this.isAttExcessive}
             filteredRadioAlt={this.filteredRadioAltitude}
+            fcdcData={this.fcdcData}
           />
           <AttitudeIndicatorFixedCenter bus={this.props.bus} isAttExcessive={this.isAttExcessive} />
           <path
@@ -243,7 +248,7 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
           />
           <HeadingTape bus={this.props.bus} failed={this.headingFailed} />
           <AltitudeIndicator bus={this.props.bus} />
-          <AirspeedIndicator bus={this.props.bus} instrument={this.props.instrument} />
+          <AirspeedIndicator bus={this.props.bus} instrument={this.props.instrument} fcdcData={this.fcdcData} />
           <path
             id="Mask2"
             class="BackgroundFill"
@@ -253,7 +258,7 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
           <AirspeedIndicatorOfftape bus={this.props.bus} />
 
           <LandingSystem bus={this.props.bus} instrument={this.props.instrument} />
-          <AttitudeIndicatorFixedUpper bus={this.props.bus} />
+          <AttitudeIndicatorFixedUpper bus={this.props.bus} fcdcData={this.fcdcData} />
           <AttitudeIndicatorWarnings bus={this.props.bus} instrument={this.props.instrument} />
           <AttitudeIndicatorWarningsA380 bus={this.props.bus} instrument={this.props.instrument} />
           <VerticalSpeedIndicator
@@ -266,7 +271,7 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
           <LinearDeviationIndicator bus={this.props.bus} />
 
           <MachNumber bus={this.props.bus} />
-          <FMA bus={this.props.bus} isAttExcessive={this.isAttExcessive} />
+          <FMA bus={this.props.bus} isAttExcessive={this.isAttExcessive} fcdcData={this.fcdcData} />
 
           <LowerArea bus={this.props.bus} pitchTrimIndicatorVisible={this.pitchTrimIndicatorVisible} />
         </svg>

@@ -1,7 +1,7 @@
 // Copyright (c) 2021-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { FeatureCollection, Geometry, Point } from '@turf/turf';
+import { Feature, FeatureCollection, Geometry, GeometryCollection, Point } from 'geojson';
 import { LatLonInterface } from '@microsoft/msfs-sdk';
 
 export enum AmdbProjection {
@@ -187,7 +187,11 @@ export interface AmdbProperties {
   midpoint?: Point;
 }
 
-export type AmdbFeatureCollection = FeatureCollection<Geometry, AmdbProperties>;
+export type AmdbGeometry = Exclude<Geometry, GeometryCollection>;
+
+export type AmdbFeature<GeometryType extends Geometry = AmdbGeometry> = Feature<GeometryType, AmdbProperties>;
+
+export type AmdbFeatureCollection = FeatureCollection<AmdbGeometry, AmdbProperties>;
 
 export type AmdbResponse = Partial<Record<FeatureTypeString, AmdbFeatureCollection>>;
 

@@ -94,9 +94,12 @@
     "Ofp": {
       "TT": {
         "IncreaseFontSize": "Μεγέθυνση Μεγέθους Γραμματοσειράς",
+        "NextLoadsheetSection": "Επόμενη ενότητα δελτίου φόρτωσης",
+        "PreviousLoadsheetSection": "Προηγούμενη ενότητα δελτίου φόρτωσης",
         "ReduceFontSize": "Μείωση Μεγέθους Γραμματοσειράς"
       },
       "Title": "Επιχειρησιακό Σχέδιο Πτήσης",
+      "UnavailableLoadsheetSection": "Πληροφορίες μη διαθέσιμες ή η ενότητα δεν έχει ενεργοποιηθεί στο Simbrief.",
       "YouHaveNotYetImportedAnySimBriefData": "Δεν έχετε εισαγάγει ακόμη δεδομένα Simbrief."
     },
     "Overview": {
@@ -286,7 +289,7 @@
   "Performance": {
     "Data": "Δεδομένα",
     "Landing": {
-      "Airport": "Airport",
+      "Airport": "Αεροδρόμιο",
       "AirportIcao": "ICAO Αεροδρομίου",
       "ApproachSpeed": "Ταχύτητα Προσέγγισης",
       "ApproachSpeedUnit": "kts",
@@ -295,10 +298,10 @@
       "Clear": "Εκκαθάριση",
       "DropDownNo": "Όχι",
       "DropDownYes": "Ναι",
-      "EnterManually": "Enter Manually",
+      "EnterManually": "Εισάγετε χειροκίνητα",
       "FillDataFrom": "Συμπλήρωση δεδομένων από",
       "FlapsConfiguration": "Διαμόρφωση Πτερυγίων",
-      "LandingWeight": "Landing Weight",
+      "LandingWeight": "Βάρος προσγείωσης",
       "Low": "Χαμηλή",
       "MaximumManual": "Μέγιστο Τεχνικό Εγχειρίδιο ",
       "Medium": "Μεσαίο",
@@ -307,7 +310,9 @@
       "OverweightProcedure": "Διαδικασία Υπερβολικού Βάρους",
       "Qnh": "QNH",
       "ReverseThrust": "Ανάστροφη Ώση",
-      "Runway": "Runway",
+      "Runway": "Αεροδιάδρομος",
+      "RunwayAltitude": "Υψόμετρο Διαδρόμου",
+      "RunwayAltitudeUnit": "Πόδια Άνωθεν Επιπέδου Θαλάσσης ",
       "RunwayCondition": "Κατάσταση Διαδρόμου",
       "RunwayConditions": {
         "Dry": "Dry (6)",
@@ -317,7 +322,7 @@
         "MediumPoor": "Medium-Poor (2)",
         "Poor": "Poor (1)"
       },
-      "RunwayElevation": "Runway Elevation",
+      "RunwayElevation": "Υψόμετρο αεροδιαδρόμου",
       "RunwayElevationUnit": "ft AMSL",
       "RunwayHeading": "Πορεία Διαδρόμου",
       "RunwayHeadingUnit": "°",
@@ -333,7 +338,11 @@
       "Title": "Προσγείωση",
       "UnitFt": "Πόδια",
       "UnitMeter": "Μέτρα",
-      "Wind": "Wind",
+      "Weight": "Βάρος",
+      "Wind": "Άνεμος",
+      "WindDirection": "Κατεύθυνση Ανέμου",
+      "WindDirectionUnit": "°",
+      "WindMagnitude": "Μέγεθος Ανέμου",
       "WindMagnitudeUnit": "kts"
     },
     "SYNC": "Συγχρονισμός",
@@ -377,6 +386,8 @@
       "Packs": "Συστήματα Παροχής Αέρα",
       "Qnh": "QNH",
       "Runway": "Διάδρομος",
+      "RunwayBearing": "Πορεία διαδρόμου",
+      "RunwayBearingUnit": "°",
       "RunwayCondition": "Κατάσταση διαδρόμου",
       "RunwayConditions": {
         "Contaminated100mmDrySnow": "Ξηρό χιόνι - 100 χιλιοστά/4\"",
@@ -394,7 +405,7 @@
       },
       "RunwayElevation": "Υψόμετρο διαδρόμου",
       "RunwayElevationUnit": "πόδια",
-      "RunwayHeading": "Runway Heading",
+      "RunwayHeading": "Πορεία Διαδρόμου",
       "RunwayHeadingUnit": "°",
       "RunwayLengthUnitFt": "πόδια",
       "RunwayLengthUnitMeter": "m",
@@ -556,8 +567,8 @@
       "AlignAdirs": "Άμεση ευθυγράμμιση των ADIRS.",
       "AutoBrightness": "Ενεργοποίηση/Απενεργοποίηση της αυτόματης φωτεινότητας",
       "Brightness": "Ορισμός φωτεινότητας flyPad.",
-      "CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
-      "CabinLighting": "Set Cabin Lighting",
+      "CabinAutoBrightness": "Αυτόματη ενεργοποίηση/απενεργοποίηση φωτισμού καμπίνας",
+      "CabinLighting": "Ορισμός φωτισμού καμπίνας",
       "FinishBoarding": "Ολοκλήρωσε αμέσως την επιβίβαση.",
       "OnScreenKeyboard": "Ενεργοποίηση/Απενεργοποίηση πληκτρολογίου οθόνης",
       "PauseAtTod": "Όπλιση ή αφόπλιση παύσης στην κορυφή της κατάβασης",
@@ -631,11 +642,11 @@
     "Real": "Πραγματικά",
     "Realism": {
       "AdirsAlignTime": "Χρόνος Ευθυγράμμισης ADIRS",
-      "AutoStepClimb": "Automatic Step Climb",
+      "AutoStepClimb": "Αυτόματη ανάβαση σκαλοπατιών",
       "AutofillChecklists": "Λίστες Ελέγχου Αυτόματης Συμπλήρωσης",
       "BoardingTime": "Χρόνος Επιβίβασης ",
       "DmcSelfTestTime": "Χρόνος Αυτοδοκιμής DMC",
-      "EclSoftKeys": "Show Soft Keys for EWD Electronic Checklists",
+      "EclSoftKeys": "Εμφάνιση προγραμματιζόμενων πλήκτρων για τις ηλεκτρονικές λίστες ελέγχου EWD ",
       "FirstOfficerAvatar": "Εμφάνιση φιγούρας First Officer",
       "HomeCockpitMode": "Λειτουργία θαλάμου πιλοτηρίου οικιακής χρήσης",
       "McduFocusTimeout": "Χρονικό Όριο Εστίασης MCDU (δευτερόλεπτα)",
@@ -644,15 +655,15 @@
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "PilotAvatar": "Εμφάνιση φιγούρας πιλότου",
       "SeparateTillerFromRudderInputs": "Ξεχωριστό Οιακοστροφίο απο τις Εισαγωγές Πηδαλίου",
-      "SyncEfis": "Συγχρονισμός EFIS και ηχητικών χειρισμών μεταξύ κυβερνήτη και FO",
+      "SyncEfis": "Συγχρονισμός EFIS και ηχητικών χειρισμών μεταξύ κυβερνήτη και συγκυβερνήτη",
       "Title": "Ρεαλισμός"
     },
     "SimOptions": {
       "Active": "Ενεργό",
       "Auto": "Αυτόματο",
       "Both": "Συγχρονισμένο",
-      "CabinAutoBrightness": "Auto Cabin Lighting",
-      "CabinManualBrightness": "Cabin Lighting Brightness",
+      "CabinAutoBrightness": "Αυτόματος φωτισμός καμπίνας",
+      "CabinManualBrightness": "Φωτεινότητα φωτισμού καμπίνας",
       "Calibrate": "Βαθμονόμηση",
       "ConesEnabled": "Safety Cones",
       "DefaultBarometerUnit": "Προκαθορισμένη Βαρομετρική Μονάδα",
@@ -666,7 +677,7 @@
       "Left": "Αριστερά",
       "LoadOnly": "Φόρτωση Μόνο",
       "None": "Κανένα",
-      "OansPerformanceMode": "OANS Performance Mode (Unload Airport Map When Not Used)",
+      "OansPerformanceMode": "Λειτουργία απόδοσης OANS (Ο χάρτης αεροδρομίου αποφορτώνεται οταν δεν χρησιμοποιείται)",
       "Off": "Απενεργοποιημένο",
       "PilotSeat": "Κάθισμα πιλότου για έλεγχο",
       "Right": "Δεξιά",
@@ -705,6 +716,7 @@
       },
       "OverrideSimBriefUserID": "Παράκαμψη αναγνωριστικού χρήστη SimBrief",
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Παρακαλώ ελέγξτε ότι έχετε εισάγει σωστά το όνομα χρήστη SimBrief ή το pilot ID σας.",
+      "SimbriefLoadsheetNavigationEnabled": "Πλοήγηση δελτίου φόρτωσης Simbrief",
       "TT": {
         "OverrideSimBriefUserID": "Εναλλακτικό αναγνωριστικό χρήστη SimBrief για να χρησιμοποιηθεί αντί του συνδεδεμένου λογαριασμού Navigraph"
       },
@@ -737,7 +749,7 @@
     },
     "Title": "Ρυθμίσεις",
     "Troubleshooting": {
-      "Title": "Troubleshooting"
+      "Title": "Αντιμετώπιση προβλημάτων"
     },
     "Unrealistic": "Μη Ρεαλιστικό",
     "flyPad": {

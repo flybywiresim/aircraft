@@ -94,9 +94,12 @@
     "Ofp": {
       "TT": {
         "IncreaseFontSize": "Tăng cỡ phông chữ",
+        "NextLoadsheetSection": "Phần loadsheet tiếp theo",
+        "PreviousLoadsheetSection": "Phần loadsheet trước",
         "ReduceFontSize": "Giảm cỡ phông chữ"
       },
       "Title": "OFP",
+      "UnavailableLoadsheetSection": "Thông tin không có sẵn hoặc phần không được bật trong Simbrief.",
       "YouHaveNotYetImportedAnySimBriefData": "Bạn chưa nhập bất kỳ dữ liệu SimBrief nào."
     },
     "Overview": {
@@ -286,7 +289,7 @@
   "Performance": {
     "Data": "Dữ liệu",
     "Landing": {
-      "Airport": "Airport",
+      "Airport": "Sân bay",
       "AirportIcao": "ICAO của sân bay",
       "ApproachSpeed": "Tốc độ tiếp cận",
       "ApproachSpeedUnit": "kt",
@@ -295,10 +298,10 @@
       "Clear": "Xoá",
       "DropDownNo": "Không",
       "DropDownYes": "Có",
-      "EnterManually": "Enter Manually",
+      "EnterManually": "Nhập thủ công",
       "FillDataFrom": "Điền dữ liệu từ",
       "FlapsConfiguration": "Cấu hình cánh tà",
-      "LandingWeight": "Landing Weight",
+      "LandingWeight": "Trọng lượng hạ cánh",
       "Low": "Thấp",
       "MaximumManual": "Mức độ tối đa khi lái tay",
       "Medium": "Trung bình",
@@ -307,7 +310,9 @@
       "OverweightProcedure": "Thủ tục quá trọng lượng",
       "Qnh": "QNH",
       "ReverseThrust": "Lực đẩy ngược",
-      "Runway": "Runway",
+      "Runway": "Đường băng",
+      "RunwayAltitude": "Độ cao đường băng",
+      "RunwayAltitudeUnit": "ft ASL",
       "RunwayCondition": "Điều kiện đường băng",
       "RunwayConditions": {
         "Dry": "Khô (6)",
@@ -317,7 +322,7 @@
         "MediumPoor": "Trung bình kém (2)",
         "Poor": "Kém (1)"
       },
-      "RunwayElevation": "Runway Elevation",
+      "RunwayElevation": "Độ cao đường băng",
       "RunwayElevationUnit": "ft AMSL",
       "RunwayHeading": "Hướng của đường băng",
       "RunwayHeadingUnit": "°",
@@ -333,8 +338,12 @@
       "Title": "Hạ cánh",
       "UnitFt": "ft",
       "UnitMeter": "m",
-      "Wind": "Wind",
-      "WindMagnitudeUnit": "kt"
+      "Weight": "Trọng lượng",
+      "Wind": "Gió",
+      "WindDirection": "Hướng gió",
+      "WindDirectionUnit": "°",
+      "WindMagnitude": "Cường độ gió",
+      "WindMagnitudeUnit": "kts"
     },
     "SYNC": "Đồng bộ hóa",
     "Takeoff": {
@@ -377,6 +386,8 @@
       "Packs": "Gói điều hòa",
       "Qnh": "QNH",
       "Runway": "Đường băng",
+      "RunwayBearing": "Vòng đường băng",
+      "RunwayBearingUnit": "°",
       "RunwayCondition": "Tình trạng đường băng",
       "RunwayConditions": {
         "Contaminated100mmDrySnow": "Tuyết khô - 100 mm/4\"",
@@ -394,7 +405,7 @@
       },
       "RunwayElevation": "Độ cao đường băng",
       "RunwayElevationUnit": "ft",
-      "RunwayHeading": "Runway Heading",
+      "RunwayHeading": "Hướng đường băng",
       "RunwayHeadingUnit": "°",
       "RunwayLengthUnitFt": "ft",
       "RunwayLengthUnitMeter": "m",
@@ -556,8 +567,8 @@
       "AlignAdirs": "Căn chỉnh ADIRS ngay lập tức",
       "AutoBrightness": "Bật/Tắt độ sáng tự động",
       "Brightness": "Cài đặt độ sáng của flyPad",
-      "CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
-      "CabinLighting": "Set Cabin Lighting",
+      "CabinAutoBrightness": "Bật/Tắt đèn buồng tự động",
+      "CabinLighting": "Đặt độ sáng buồng",
       "FinishBoarding": "Hoàn thành việc cho lên máy bay ngay lập tức",
       "OnScreenKeyboard": "Bật/Tắt Bàn phím trên Màn hình",
       "PauseAtTod": "Kích hoạt Tạm dừng tại điểm hạ độ cao",
@@ -585,7 +596,7 @@
       "Select": "Chọn",
       "ThrustReductionHeight": "Độ cao giảm lực đẩy (ft)",
       "Title": "Tùy chọn máy bay / Pin Programs",
-      "WeightUnit": "Đơn vị trọng lượng"
+      "WeightUnit": "Đơn vị kiểu Mỹ"
     },
     "AtsuAoc": {
       "AtisAtcSource": "Nguồn ATIS/ATC",
@@ -644,15 +655,15 @@
       "PauseAtTodDistance": "Khoảng cách dừng từ điểm hạ độ cao (nm)",
       "PilotAvatar": "Hiện thị Avatar Phi công",
       "SeparateTillerFromRudderInputs": "Tách rời Điều Khiển Bánh Mũi với Bàn Đạp",
-      "SyncEfis": "Đồng bộ hóa các điều khiển EFIS giữa cơ trưởng và cơ phó",
+      "SyncEfis": "Đồng bộ hóa bộ điều khiển EFIS giữa cơ trưởng và cơ phó",
       "Title": "Mức thực tế"
     },
     "SimOptions": {
       "Active": "Hoạt động",
       "Auto": "Tự động",
       "Both": "Đã đồng bộ hóa",
-      "CabinAutoBrightness": "Auto Cabin Lighting",
-      "CabinManualBrightness": "Cabin Lighting Brightness",
+      "CabinAutoBrightness": "Độ sáng buồng tự động",
+      "CabinManualBrightness": "Độ sáng của đèn trong buồng",
       "Calibrate": "Hiệu chỉnh",
       "ConesEnabled": "Chóp nón An toàn",
       "DefaultBarometerUnit": "Đơn vị áp kế mặc định",
@@ -705,6 +716,7 @@
       },
       "OverrideSimBriefUserID": "Ghi đè ID SimBrief",
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Vui lòng kiểm tra xem bạn đã nhập đúng tên người dùng SimBrief hoặc ID của mình chưa.",
+      "SimbriefLoadsheetNavigationEnabled": "Điều hướng Simbrief Loadsheet",
       "TT": {
         "OverrideSimBriefUserID": "ID SimBrief để sử dụng thay cho tải khoản Navigraph đã được liên kết"
       },
@@ -737,7 +749,7 @@
     },
     "Title": "Cài đặt",
     "Troubleshooting": {
-      "Title": "Troubleshooting"
+      "Title": "Xử lý sự cố"
     },
     "Unrealistic": "Không thực tế",
     "flyPad": {

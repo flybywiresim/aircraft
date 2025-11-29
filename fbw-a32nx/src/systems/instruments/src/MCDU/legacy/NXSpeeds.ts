@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 /**
  * Stall speed table
  * calls function(gross weight (t), landing gear) which returns CAS.

@@ -119703,37 +119703,37 @@
 			}
 		},
 		{
-			"name": "$COM",
+			"name": "DCDU",
 			"pbrMetallicRoughness": {
 				"metallicFactor": 0.0
 			}
 		},
 		{
-			"name": "$PFD",
+			"name": "PFD_L",
 			"pbrMetallicRoughness": {
 				"metallicFactor": 0.0
 			}
 		},
 		{
-			"name": "$MFD",
+			"name": "ND_L",
 			"pbrMetallicRoughness": {
 				"metallicFactor": 0.0
 			}
 		},
 		{
-			"name": "$EICAS2",
+			"name": "ECAM_SD",
 			"pbrMetallicRoughness": {
 				"metallicFactor": 0.0
 			}
 		},
 		{
-			"name": "$EWD",
+			"name": "ECAM_EWD",
 			"pbrMetallicRoughness": {
 				"metallicFactor": 0.0
 			}
 		},
 		{
-			"name": "$FMC",
+			"name": "MCDU",
 			"pbrMetallicRoughness": {
 				"metallicFactor": 0.0
 			}
@@ -120101,25 +120101,25 @@
 			}
 		},
 		{
-			"name": "$FCU",
+			"name": "FCU",
 			"pbrMetallicRoughness": {
 				"metallicFactor": 0.0
 			}
 		},
 		{
-			"name": "$RTPI",
+			"name": "RTPI",
 			"pbrMetallicRoughness": {
 				"metallicFactor": 0.0
 			}
 		},
 		{
-			"name": "$ATTITUDEDISPLAY",
+			"name": "SCREEN_ISIS",
 			"pbrMetallicRoughness": {
 				"metallicFactor": 0.0
 			}
 		},
 		{
-			"name": "$CLOCK",
+			"name": "SCREEN_CLOCK",
 			"pbrMetallicRoughness": {
 				"metallicFactor": 0.0
 			}
@@ -120131,19 +120131,19 @@
 			}
 		},
 		{
-			"name": "$FDW",
+			"name": "RMP",
 			"pbrMetallicRoughness": {
 				"metallicFactor": 0.0
 			}
 		},
 		{
-			"name": "$TCI",
+			"name": "XPDR",
 			"pbrMetallicRoughness": {
 				"metallicFactor": 0.0
 			}
 		},
 		{
-			"name": "$BAT",
+			"name": "BAT",
 			"pbrMetallicRoughness": {
 				"metallicFactor": 0.0
 			}

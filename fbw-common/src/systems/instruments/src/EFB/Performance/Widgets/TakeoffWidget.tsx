@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -1009,7 +1010,7 @@ export const TakeoffWidget = () => {
                   <Label text={t('Performance.Takeoff.Packs')}>
                     <SelectInput
                       className="w-48"
-                      defaultValue={initialState.takeoff.antiIce}
+                      defaultValue={initialState.takeoff.packs}
                       value={packs}
                       onChange={handlePacks}
                       options={[

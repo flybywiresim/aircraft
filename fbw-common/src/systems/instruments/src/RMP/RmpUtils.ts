@@ -1,6 +1,6 @@
 import { SimVarValueType } from '@microsoft/msfs-sdk';
 import { VhfComIndices } from '../../../shared/src/RadioTypes';
-import { RegisteredSimVar } from '../../../index-no-react';
+import { RegisteredSimVar } from '../../../shared/src/SimVarUtils';
 
 export class RmpUtils {
   private static activeFrequencyCache = new Map<VhfComIndices, RegisteredSimVar<number>>();

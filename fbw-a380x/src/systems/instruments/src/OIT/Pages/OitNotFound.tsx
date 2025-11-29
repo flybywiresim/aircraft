@@ -2,9 +2,11 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { DisplayComponent, FSComponent, Subscription, VNode } from '@microsoft/msfs-sdk';
-import { AbstractOitPageProps } from '../OIT';
+import { OitUiService } from '../OitUiService';
 
-interface OitNotFoundProps extends AbstractOitPageProps {}
+interface OitNotFoundProps {
+  uiService: OitUiService;
+}
 
 export class OitNotFound extends DisplayComponent<OitNotFoundProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
@@ -13,7 +15,7 @@ export class OitNotFound extends DisplayComponent<OitNotFoundProps> {
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    new Promise((resolve) => setTimeout(resolve, 500)).then(() => this.props.oit.uiService.navigateTo('back'));
+    new Promise((resolve) => setTimeout(resolve, 500)).then(() => this.props.uiService.navigateTo('back'));
   }
 
   public destroy(): void {

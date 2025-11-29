@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -247,7 +248,7 @@ type FOBProps = {
 };
 
 const FOB = ({ unit }: FOBProps) => {
-  const [fob] = useSimVar('FUEL TOTAL QUANTITY WEIGHT', 'kg', 1000);
+  const [fob] = useSimVar('L:A32NX_TOTAL_FUEL_QUANTITY', 'number', 1000);
 
   return (
     <>

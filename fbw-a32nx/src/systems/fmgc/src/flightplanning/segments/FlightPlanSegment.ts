@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2022 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
@@ -11,7 +12,8 @@ import {
   SerializedFlightPlanLeg,
 } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
-import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/BaseFlightPlan';
+import type { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
+import { FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/FlightPlanQueuedOperation';
 
 export abstract class FlightPlanSegment {
   abstract class: SegmentClass;
@@ -61,8 +63,9 @@ export abstract class FlightPlanSegment {
    * Creates an identical copy of this segment
    *
    * @param forPlan the (new) flight plan for which the segment is being cloned
+   * @param options the copy options
    */
-  abstract clone(forPlan: BaseFlightPlan): FlightPlanSegment;
+  abstract clone(forPlan: BaseFlightPlan, options?: number): FlightPlanSegment;
 
   /**
    * Inserts an element at a specified index

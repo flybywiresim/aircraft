@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -13,7 +14,7 @@ export class NXUnits {
 
   static get metricWeight() {
     if (NXUnits.metricWeightVal === undefined) {
-      NXDataStore.getAndSubscribe(
+      NXDataStore.getAndSubscribeLegacy(
         'CONFIG_USING_METRIC_UNIT',
         (key, value) => {
           NXUnits.metricWeightVal = value === '1';

@@ -1,6 +1,7 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
+import { AircraftGithubVersionChecker } from '@flybywiresim/fbw-sdk';
 import { EventBus } from '@microsoft/msfs-sdk';
 
 /**
@@ -12,6 +13,10 @@ export class VersionCheck {
     private readonly bus: EventBus,
   ) {
     console.log('VersionCheck: Created');
+  }
+
+  public connectedCallback(): void {
+    AircraftGithubVersionChecker.setEditionLocalVar(this.aircraftProjectPrefix);
   }
 
   public startPublish(): void {

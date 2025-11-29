@@ -4,16 +4,16 @@
     "ChangeATISATCSourceButton": "更改 ATIS/ATC 來源",
     "ConnectHoppieACARS": "連接 Hoppie ACARS",
     "NoInformationAvailableForThisFrequency": "此頻率沒有資料",
-    "SearchPlaceholder": "Search",
+    "SearchPlaceholder": "搜索",
     "SelectCorrectATISATCSource": "您需要在設置中選擇 IVAO 或 VATSIM 為 ATC 來源才可使用此頁面。",
     "SetActive": "設定為使用中",
     "SetStandby": "設定為待命",
-    "ShowAll": "All",
+    "ShowAll": "全部",
     "ShowApproach": "Approach",
     "ShowAtis": "ATIS",
     "ShowDelivery": "Delivery",
     "ShowDeparture": "Departure",
-    "ShowGround": "Ground",
+    "ShowGround": "地勤",
     "ShowRadar": "Radar",
     "ShowTower": "Tower",
     "Standby": "待命",
@@ -94,9 +94,12 @@
     "Ofp": {
       "TT": {
         "IncreaseFontSize": "增大字體",
+        "NextLoadsheetSection": "Next loadsheet section",
+        "PreviousLoadsheetSection": "Previous loadsheet section",
         "ReduceFontSize": "減小字體"
       },
       "Title": "OFP",
+      "UnavailableLoadsheetSection": "Info not available or section not enabled in Simbrief.",
       "YouHaveNotYetImportedAnySimBriefData": "尚未導入 SimBrief 數據。"
     },
     "Overview": {
@@ -151,11 +154,11 @@
       "Unavailable": "唔用得"
     },
     "Payload": {
-      "BoardingTime": "Boarding Time",
+      "BoardingTime": "登機需時",
       "Cargo": "Cargo",
       "Current": "Current",
       "DeboardConfirmationBody": "Please confirm deboarding all passengers",
-      "DeboardConfirmationCancel": "Cancel",
+      "DeboardConfirmationCancel": "取消",
       "DeboardConfirmationConfirm": "Deboard",
       "DeboardConfirmationTitle": "Deboard all Passengers?",
       "EstimatedDurationUnit": "minutes",
@@ -176,7 +179,7 @@
         "MaxCargo": "Max Cargo",
         "MaxGW": "Maximum GW",
         "MaxGWCG": "Maximum GW CG",
-        "MaxPassengers": "Maximum Passengers",
+        "MaxPassengers": "最大客量",
         "MaxZFW": "Maximum ZFW",
         "MaxZFWCG": "Maximum ZFWCG",
         "PerPaxBagWeight": "Per Passenger Bag Weight",
@@ -185,7 +188,7 @@
         "StartDeboarding": "Begin Deboarding"
       },
       "Title": "Payload",
-      "ZFW": "ZFW",
+      "ZFW": "零油重量 (ZFW)",
       "ZFWCG": "ZFWCG"
     },
     "Pushback": {
@@ -308,6 +311,8 @@
       "Qnh": "QNH",
       "ReverseThrust": "反向推力 (Reverse)",
       "Runway": "Runway",
+      "RunwayAltitude": "跑道海拔",
+      "RunwayAltitudeUnit": "海拔英尺 (ft ASL)",
       "RunwayCondition": "跑道狀況",
       "RunwayConditions": {
         "Dry": "幹 (6)",
@@ -333,7 +338,11 @@
       "Title": "降落",
       "UnitFt": "英尺 (ft)",
       "UnitMeter": "米 (m)",
+      "Weight": "重量",
       "Wind": "Wind",
+      "WindDirection": "風向",
+      "WindDirectionUnit": "°",
+      "WindMagnitude": "風速",
       "WindMagnitudeUnit": "節 (kts)"
     },
     "SYNC": "同步處理",
@@ -377,6 +386,8 @@
       "Packs": "Packs",
       "Qnh": "QNH",
       "Runway": "Runway",
+      "RunwayBearing": "Runway Bearing",
+      "RunwayBearingUnit": "°",
       "RunwayCondition": "Runway Condition",
       "RunwayConditions": {
         "Contaminated100mmDrySnow": "Dry Snow - 100 mm/4\"",
@@ -393,7 +404,7 @@
         "Wet": "Wet"
       },
       "RunwayElevation": "Runway Elevation",
-      "RunwayElevationUnit": "ft AMSL",
+      "RunwayElevationUnit": "ft",
       "RunwayHeading": "Runway Heading",
       "RunwayHeadingUnit": "°",
       "RunwayLengthUnitFt": "ft",
@@ -474,7 +485,7 @@
       "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
       "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
       "AutoLoadNight": "Night:",
-      "AutoLoadNoneSelection": "None",
+      "AutoLoadNoneSelection": "未挑選",
       "LoadPreset": "加載預設",
       "LoadingPreset": "正在加載預設",
       "NewNameConfirmationDialogMsg": "請確認新照明預設的名稱",
@@ -501,7 +512,7 @@
     "DisableSystemMessageBody": "Are you sure you want to disable the Pushback System? This will also release the tug.",
     "DisableSystemMessageTitle": "Disable Pushback System",
     "EnableSystemMessageBody": "The new flyPadOS 3 Pushback System can cause conflicts with other pushback add-ons. We recommend not to enable the system if you plan to use another pushback add-on. ",
-    "EnableSystemMessageTitle": "Enable Pushback System",
+    "EnableSystemMessageTitle": "啟用後推系統",
     "Forward": "向前",
     "Halt": "已暫停",
     "LeavePageMessage": "暫停推機",
@@ -513,8 +524,8 @@
       "Title": "泊機煞掣"
     },
     "Right": "右",
-    "SystemEnabledOff": "Pushback System Off",
-    "SystemEnabledOn": "Pushback System On",
+    "SystemEnabledOff": "後推系統關閉",
+    "SystemEnabledOn": "後推系統啟動",
     "TT": {
       "CallReleaseTug": "召喚或釋放推機車",
       "CenterPlaneMode": "地圖中央於本機 — 開/關",
@@ -549,7 +560,7 @@
     "SimBridge": "SimBridge",
     "SimBridgeConnected": "Connected",
     "SimBridgeConnecting": "Connecting...",
-    "SimBridgeOff": "Off",
+    "SimBridgeOff": "放開",
     "SimBridgeOffline": "Not Available",
     "Simrate": "Simrate",
     "TT": {
@@ -565,7 +576,7 @@
       "Settings": "Go to flyPad Settings page",
       "SimBridge": "Control SimBridge Connection",
       "Simrate": "Increase or Decrease Simulation Rate",
-      "Sleep": "Standby"
+      "Sleep": "待命"
     },
     "Title": "Quick Controls"
   },
@@ -696,7 +707,7 @@
         },
         "SettingTitle": "Navigraph Account Link",
         "SubscriptionStatus": {
-          "None": "None",
+          "None": "未挑選",
           "Standard": "Navigraph Standard",
           "Unknown": "Unknown",
           "Unlimited": "Navigraph Unlimited"
@@ -704,7 +715,8 @@
         "Unlink": "Unlink Account"
       },
       "OverrideSimBriefUserID": "Override SimBrief User ID",
-      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "請檢查您是否輸入了正確的 SimBrief 用戶名或編號。",
+      "SimbriefLoadsheetNavigationEnabled": "Simbrief Loadsheet Navigation",
       "TT": {
         "OverrideSimBriefUserID": "Alternative SimBrief user ID to use instead of the linked Navigraph Account"
       },
@@ -743,7 +755,7 @@
     "flyPad": {
       "AutoBrightness": "自動調整亮度",
       "AutomaticallyShowOnscreenKeyboard": "自動顯示屏幕鍵盤",
-      "BatteryLifeEnabled": "Battery Life Simulated",
+      "BatteryLifeEnabled": "模擬電池充量",
       "Blue": "藍色",
       "Brightness": "亮度",
       "Dark": "深色",

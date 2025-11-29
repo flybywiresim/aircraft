@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 export interface SoundDefinition {
   name: string;
   length: number;

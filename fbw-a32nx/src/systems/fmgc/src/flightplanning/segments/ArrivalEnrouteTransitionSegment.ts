@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2022 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
@@ -5,10 +6,11 @@
 
 import { LegType, ProcedureTransition, WaypointConstraintType } from '@flybywiresim/fbw-sdk';
 import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
-import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/BaseFlightPlan';
+import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { ProcedureSegment } from '@fmgc/flightplanning/segments/ProcedureSegment';
 import { RestringOptions } from '../plans/RestringOptions';
+import { FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/FlightPlanQueuedOperation';
 
 export class ArrivalEnrouteTransitionSegment extends ProcedureSegment<ProcedureTransition> {
   class = SegmentClass.Arrival;
@@ -89,11 +91,13 @@ export class ArrivalEnrouteTransitionSegment extends ProcedureSegment<ProcedureT
     this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring, RestringOptions.RestringArrival);
   }
 
-  clone(forPlan: BaseFlightPlan): ArrivalEnrouteTransitionSegment {
+  clone(forPlan: BaseFlightPlan, options?: number): ArrivalEnrouteTransitionSegment {
     const newSegment = new ArrivalEnrouteTransitionSegment(forPlan);
 
     newSegment.strung = this.strung;
-    newSegment.allLegs = [...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment) : it))];
+    newSegment.allLegs = [
+      ...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment, options) : it)),
+    ];
     newSegment.arrivalEnrouteTransition = this.arrivalEnrouteTransition;
 
     return newSegment;

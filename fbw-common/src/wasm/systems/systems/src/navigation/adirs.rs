@@ -1,4 +1,5 @@
 use crate::air_conditioning::AdirsToAirCondInterface;
+use crate::payload::BoardingRate;
 use crate::shared::InternationalStandardAtmosphere;
 use crate::simulation::{InitContext, VariableIdentifier};
 use crate::{
@@ -27,7 +28,7 @@ use uom::si::{
     pressure::hectopascal,
     ratio::ratio,
     time::second,
-    velocity::{foot_per_minute, knot},
+    velocity::{foot_per_minute, foot_per_second, knot},
 };
 
 pub struct AirDataInertialReferenceSystemOverheadPanel {
@@ -91,11 +92,11 @@ impl AirDataInertialReferenceSystemOverheadPanel {
     }
 
     fn adr_is_on(&self, number: usize) -> bool {
-        self.adr[number - 1].is_on()
+        self.mode_of(number) != InertialReferenceMode::Off && self.adr[number - 1].is_on()
     }
 
     fn ir_is_on(&self, number: usize) -> bool {
-        self.ir[number - 1].is_on()
+        self.mode_of(number) != InertialReferenceMode::Off && self.ir[number - 1].is_on()
     }
 }
 impl SimulationElement for AirDataInertialReferenceSystemOverheadPanel {
@@ -249,6 +250,12 @@ struct AdirsSimulatorData {
     baro_correction_2_id: VariableIdentifier,
     /// Baro correction for fo's side in hPa from the FCU
     baro_correction_2: Arinc429Word<f64>,
+
+    is_boarding_started_by_user_id: VariableIdentifier,
+    boarding_rate_id: VariableIdentifier,
+
+    is_boarding_started_by_user: bool,
+    boarding_rate: BoardingRate,
 }
 impl AdirsSimulatorData {
     const MACH: &'static str = "AIRSPEED MACH";
@@ -270,6 +277,8 @@ impl AdirsSimulatorData {
     const ANGLE_OF_ATTACK: &'static str = "INCIDENCE ALPHA";
     const BARO_CORRECTION_1_HPA: &'static str = "FCU_LEFT_EIS_BARO_HPA";
     const BARO_CORRECTION_2_HPA: &'static str = "FCU_RIGHT_EIS_BARO_HPA";
+    const BOARDING_STARTED_BY_USR: &'static str = "BOARDING_STARTED_BY_USR";
+    const BOARDING_RATE: &'static str = "BOARDING_RATE";
 
     fn new(context: &mut InitContext) -> Self {
         Self {
@@ -330,6 +339,13 @@ impl AdirsSimulatorData {
 
             baro_correction_2_id: context.get_identifier(Self::BARO_CORRECTION_2_HPA.to_owned()),
             baro_correction_2: Arinc429Word::new(1013., SignStatus::FailureWarning),
+
+            is_boarding_started_by_user_id: context
+                .get_identifier(Self::BOARDING_STARTED_BY_USR.to_owned()),
+            boarding_rate_id: context.get_identifier(Self::BOARDING_RATE.to_owned()),
+
+            is_boarding_started_by_user: false,
+            boarding_rate: BoardingRate::Instant,
         }
     }
 }
@@ -359,6 +375,8 @@ impl SimulationElement for AdirsSimulatorData {
         self.angle_of_attack = reader.read(&self.angle_of_attack_id);
         self.baro_correction_1 = reader.read_arinc429(&self.baro_correction_1_id);
         self.baro_correction_2 = reader.read_arinc429(&self.baro_correction_2_id);
+        self.is_boarding_started_by_user = reader.read(&self.is_boarding_started_by_user_id);
+        self.boarding_rate = reader.read(&self.boarding_rate_id);
     }
 }
 
@@ -405,7 +423,6 @@ pub struct AirDataInertialReferenceSystem {
     remaining_alignment_time_id: VariableIdentifier,
     configured_align_time_id: VariableIdentifier,
     aircraft_preset_quick_mode_id: VariableIdentifier,
-    uses_gps_as_primary_id: VariableIdentifier,
 
     adirus: [AirDataInertialReferenceUnit; 3],
     configured_align_time: AlignTime,
@@ -413,13 +430,12 @@ pub struct AirDataInertialReferenceSystem {
     simulator_data: AdirsSimulatorData,
 }
 impl AirDataInertialReferenceSystem {
+    // TODO remove when A380X FWC is fixed
     const REMAINING_ALIGNMENT_TIME_KEY: &'static str = "ADIRS_REMAINING_IR_ALIGNMENT_TIME";
     const CONFIGURED_ALIGN_TIME_KEY: &'static str = "CONFIG_ADIRS_IR_ALIGN_TIME";
     // A32NX_AIRCRAFT_PRESET_QUICK_MODE LVar is set by the Aircraft Presets to allow expedited presets without
     // changing the general  alignment time setting
     const AIRCRAFT_PRESET_QUICK_MODE_KEY: &'static str = "AIRCRAFT_PRESET_QUICK_MODE";
-    // TODO this is an FMS thing, nothing to do with ADIRUs
-    const USES_GPS_AS_PRIMARY_KEY: &'static str = "ADIRS_USES_GPS_AS_PRIMARY";
 
     pub fn new(
         context: &mut InitContext,
@@ -432,8 +448,6 @@ impl AirDataInertialReferenceSystem {
                 .get_identifier(Self::CONFIGURED_ALIGN_TIME_KEY.to_owned()),
             aircraft_preset_quick_mode_id: context
                 .get_identifier(Self::AIRCRAFT_PRESET_QUICK_MODE_KEY.to_owned()),
-            uses_gps_as_primary_id: context
-                .get_identifier(Self::USES_GPS_AS_PRIMARY_KEY.to_owned()),
 
             adirus: [1, 2, 3]
                 .map(|n| AirDataInertialReferenceUnit::new(context, n, programming.clone())),
@@ -479,12 +493,6 @@ impl AirDataInertialReferenceSystem {
             .unwrap_or_else(|| Duration::from_secs(0))
     }
 
-    fn any_adiru_fully_aligned_with_ir_on(&self) -> bool {
-        self.adirus
-            .iter()
-            .any(|adiru| adiru.is_fully_aligned() && adiru.ir_is_on())
-    }
-
     fn ir_has_fault(&self, number: usize) -> bool {
         self.adirus[number - 1].ir_has_fault()
     }
@@ -507,10 +515,6 @@ impl SimulationElement for AirDataInertialReferenceSystem {
             &self.remaining_alignment_time_id,
             self.remaining_align_duration(),
         );
-        writer.write(
-            &self.uses_gps_as_primary_id,
-            self.any_adiru_fully_aligned_with_ir_on(),
-        )
     }
 }
 impl AdirsToAirCondInterface for AirDataInertialReferenceSystem {
@@ -576,6 +580,10 @@ impl AdirsMeasurementOutputs for AirDataInertialReferenceSystem {
     fn angle_of_attack(&self, adiru_number: usize) -> Arinc429Word<Angle> {
         self.adirus[adiru_number - 1].angle_of_attack()
     }
+
+    fn computed_airspeed(&self, adiru_number: usize) -> Arinc429Word<Velocity> {
+        self.adirus[adiru_number - 1].computed_airspeed()
+    }
 }
 
 struct AirDataInertialReferenceUnit {
@@ -633,10 +641,6 @@ impl AirDataInertialReferenceUnit {
 
     fn is_fully_aligned(&self) -> bool {
         self.ir.is_fully_aligned()
-    }
-
-    fn ir_is_on(&self) -> bool {
-        self.ir.is_on()
     }
 
     fn remaining_align_duration(&self) -> Option<Duration> {
@@ -738,6 +742,10 @@ impl AirDataInertialReferenceUnit {
         self.ir.ground_speed()
     }
 
+    fn computed_airspeed(&self) -> Arinc429Word<Velocity> {
+        self.adr.computed_airspeed()
+    }
+
     fn true_airspeed(&self) -> Arinc429Word<Velocity> {
         self.adr.true_airspeed()
     }
@@ -767,12 +775,42 @@ impl SimulationElement for AirDataInertialReferenceUnit {
     }
 }
 
-struct AdirsData<T> {
+struct AdirsDiscreteOutput<T> {
+    id: VariableIdentifier,
+    value: T,
+}
+impl<T: Copy + Default + PartialOrd> AdirsDiscreteOutput<T> {
+    fn new_ir(context: &mut InitContext, number: usize, name: &str) -> Self {
+        Self::new(context, OutputDataType::Ir, number, name)
+    }
+
+    fn new(
+        context: &mut InitContext,
+        data_type: OutputDataType,
+        number: usize,
+        name: &str,
+    ) -> Self {
+        Self {
+            id: context.get_identifier(output_data_id(data_type, number, name)),
+            value: Default::default(),
+        }
+    }
+
+    fn set_value(&mut self, value: T) {
+        self.value = value;
+    }
+
+    fn write_to<U: Write<T> + Writer>(&self, writer: &mut U) {
+        writer.write(&self.id, self.value);
+    }
+}
+
+struct AdirsArinc429Data<T> {
     id: VariableIdentifier,
     value: T,
     ssm: SignStatus,
 }
-impl<T: Copy + Default + PartialOrd> AdirsData<T> {
+impl<T: Copy + Default + PartialOrd> AdirsArinc429Data<T> {
     fn new_adr(context: &mut InitContext, number: usize, name: &str) -> Self {
         Self::new(context, OutputDataType::Adr, number, name)
     }
@@ -807,7 +845,7 @@ impl<T: Copy + Default + PartialOrd> AdirsData<T> {
         self.ssm = ssm;
     }
 
-    fn set_from(&mut self, other: &AdirsData<T>) {
+    fn set_from(&mut self, other: &AdirsArinc429Data<T>) {
         self.set_value(other.value, other.ssm);
     }
 
@@ -907,32 +945,32 @@ struct AirDataReference {
     is_overspeed: bool,
 
     /// label 234
-    baro_correction_1_hpa: AdirsData<Pressure>,
+    baro_correction_1_hpa: AdirsArinc429Data<Pressure>,
     /// label 235
-    baro_correction_1_inhg: AdirsData<Pressure>,
+    baro_correction_1_inhg: AdirsArinc429Data<Pressure>,
     /// label 236
-    baro_correction_2_hpa: AdirsData<Pressure>,
+    baro_correction_2_hpa: AdirsArinc429Data<Pressure>,
     /// label 237
-    baro_correction_2_inhg: AdirsData<Pressure>,
-    corrected_average_static_pressure: AdirsData<Pressure>,
+    baro_correction_2_inhg: AdirsArinc429Data<Pressure>,
+    corrected_average_static_pressure: AdirsArinc429Data<Pressure>,
     /// pressure altitude
-    altitude: AdirsData<Length>,
+    altitude: AdirsArinc429Data<Length>,
     /// baro corrected altitude for the captain's side
-    baro_corrected_altitude_1: AdirsData<Length>,
+    baro_corrected_altitude_1: AdirsArinc429Data<Length>,
     /// baro corrected altitude for the fo's side
-    baro_corrected_altitude_2: AdirsData<Length>,
+    baro_corrected_altitude_2: AdirsArinc429Data<Length>,
     /// label 206, computed airspeed in knots, NCD below 30 knots.
-    computed_airspeed: AdirsData<Velocity>,
+    computed_airspeed: AdirsArinc429Data<Velocity>,
     /// label 207, max allowable airspeed in knots (considering both VMO and MMO).
-    max_airspeed: AdirsData<Velocity>,
+    max_airspeed: AdirsArinc429Data<Velocity>,
     /// label 205, computed mach number, NCD below mach 0.1.
-    mach: AdirsData<MachNumber>,
-    barometric_vertical_speed: AdirsData<f64>,
-    true_airspeed: AdirsData<Velocity>,
-    static_air_temperature: AdirsData<ThermodynamicTemperature>,
-    total_air_temperature: AdirsData<ThermodynamicTemperature>,
-    angle_of_attack: AdirsData<Angle>,
-    discrete_word_1: AdirsData<u32>,
+    mach: AdirsArinc429Data<MachNumber>,
+    barometric_vertical_speed: AdirsArinc429Data<f64>,
+    true_airspeed: AdirsArinc429Data<Velocity>,
+    static_air_temperature: AdirsArinc429Data<ThermodynamicTemperature>,
+    total_air_temperature: AdirsArinc429Data<ThermodynamicTemperature>,
+    angle_of_attack: AdirsArinc429Data<Angle>,
+    discrete_word_1: AdirsArinc429Data<u32>,
 
     static_pressure_filter: LowPassFilter<Pressure>,
     vertical_speed_filter: LowPassFilter<f64>,
@@ -980,51 +1018,63 @@ impl AirDataReference {
             is_on: true,
             is_overspeed: false,
 
-            baro_correction_1_hpa: AdirsData::new_adr(context, number, Self::BARO_CORRECTION_1_HPA),
-            baro_correction_1_inhg: AdirsData::new_adr(
+            baro_correction_1_hpa: AdirsArinc429Data::new_adr(
+                context,
+                number,
+                Self::BARO_CORRECTION_1_HPA,
+            ),
+            baro_correction_1_inhg: AdirsArinc429Data::new_adr(
                 context,
                 number,
                 Self::BARO_CORRECTION_1_INHG,
             ),
-            baro_correction_2_hpa: AdirsData::new_adr(context, number, Self::BARO_CORRECTION_2_HPA),
-            baro_correction_2_inhg: AdirsData::new_adr(
+            baro_correction_2_hpa: AdirsArinc429Data::new_adr(
+                context,
+                number,
+                Self::BARO_CORRECTION_2_HPA,
+            ),
+            baro_correction_2_inhg: AdirsArinc429Data::new_adr(
                 context,
                 number,
                 Self::BARO_CORRECTION_2_INHG,
             ),
-            corrected_average_static_pressure: AdirsData::new_adr(
+            corrected_average_static_pressure: AdirsArinc429Data::new_adr(
                 context,
                 number,
                 Self::CORRECTED_AVERAGE_STATIC_PRESSURE,
             ),
-            altitude: AdirsData::new_adr(context, number, Self::ALTITUDE),
-            baro_corrected_altitude_1: AdirsData::new_adr(
+            altitude: AdirsArinc429Data::new_adr(context, number, Self::ALTITUDE),
+            baro_corrected_altitude_1: AdirsArinc429Data::new_adr(
                 context,
                 number,
                 Self::BARO_CORRECTED_ALTITUDE_1,
             ),
-            baro_corrected_altitude_2: AdirsData::new_adr(
+            baro_corrected_altitude_2: AdirsArinc429Data::new_adr(
                 context,
                 number,
                 Self::BARO_CORRECTED_ALTITUDE_2,
             ),
-            computed_airspeed: AdirsData::new_adr(context, number, Self::COMPUTED_AIRSPEED),
-            max_airspeed: AdirsData::new_adr(context, number, Self::MAX_AIRSPEED),
-            mach: AdirsData::new_adr(context, number, Self::MACH),
-            barometric_vertical_speed: AdirsData::new_adr(
+            computed_airspeed: AdirsArinc429Data::new_adr(context, number, Self::COMPUTED_AIRSPEED),
+            max_airspeed: AdirsArinc429Data::new_adr(context, number, Self::MAX_AIRSPEED),
+            mach: AdirsArinc429Data::new_adr(context, number, Self::MACH),
+            barometric_vertical_speed: AdirsArinc429Data::new_adr(
                 context,
                 number,
                 Self::BAROMETRIC_VERTICAL_SPEED,
             ),
-            true_airspeed: AdirsData::new_adr(context, number, Self::TRUE_AIRSPEED),
-            static_air_temperature: AdirsData::new_adr(
+            true_airspeed: AdirsArinc429Data::new_adr(context, number, Self::TRUE_AIRSPEED),
+            static_air_temperature: AdirsArinc429Data::new_adr(
                 context,
                 number,
                 Self::STATIC_AIR_TEMPERATURE,
             ),
-            total_air_temperature: AdirsData::new_adr(context, number, Self::TOTAL_AIR_TEMPERATURE),
-            angle_of_attack: AdirsData::new_adr(context, number, Self::ANGLE_OF_ATTACK),
-            discrete_word_1: AdirsData::new_adr(context, number, Self::DISCRETE_WORD_1),
+            total_air_temperature: AdirsArinc429Data::new_adr(
+                context,
+                number,
+                Self::TOTAL_AIR_TEMPERATURE,
+            ),
+            angle_of_attack: AdirsArinc429Data::new_adr(context, number, Self::ANGLE_OF_ATTACK),
+            discrete_word_1: AdirsArinc429Data::new_adr(context, number, Self::DISCRETE_WORD_1),
 
             static_pressure_filter: LowPassFilter::new_with_init_value(
                 Self::STATIC_PORT_TIME_CONSTANT,
@@ -1077,7 +1127,7 @@ impl AirDataReference {
         Length::new::<foot>(-145442.15 * (1. - (baro_correction / 1013.25).powf(0.192263)))
     }
 
-    fn update_altitude_word(altitude: Length, output: &mut AdirsData<Length>) {
+    fn update_altitude_word(altitude: Length, output: &mut AdirsArinc429Data<Length>) {
         // the output is 17 bits with 1 foot resolution, and we're already clamping the value on the next line
         let rounded_alt = Length::new::<foot>(altitude.get::<foot>().round());
         if rounded_alt >= Length::new::<foot>(Self::MINIMUM_VALID_ALTITUDE)
@@ -1311,6 +1361,10 @@ impl AirDataReference {
         self.computed_airspeed.value()
     }
 
+    fn computed_airspeed(&self) -> Arinc429Word<Velocity> {
+        Arinc429Word::new(self.computed_airspeed.value(), self.computed_airspeed.ssm())
+    }
+
     fn altitude(&self) -> Arinc429Word<Length> {
         Arinc429Word::new(self.altitude.value(), self.altitude.ssm())
     }
@@ -1394,6 +1448,7 @@ impl From<f64> for AlignTime {
 
 bitflags! {
     #[derive(Default)]
+    #[cfg_attr(test, derive(Debug, PartialEq))]
     struct IrMaintFlags: u32 {
         const ALIGNMENT_NOT_READY = 0b0000000000000000001;
         const REV_ATT_MODE = 0b0000000000000000010;
@@ -1431,40 +1486,48 @@ struct InertialReference {
     remaining_attitude_initialisation_duration: Option<Duration>,
     wind_velocity: LowPassFilter<Vector2<f64>>,
     extreme_latitude: bool,
+    body_velocity_filter: LowPassFilter<Vector2<f64>>,
+    excess_motion: bool,
+    excess_motion_inhibit_time: Option<Duration>,
+    quick_realign_remaining_available_time: Duration,
+    alignment_failed: bool,
 
-    pitch: AdirsData<Angle>,
-    roll: AdirsData<Angle>,
-    heading: AdirsData<Angle>,
-    true_heading: AdirsData<Angle>,
-    track: AdirsData<Angle>,
-    true_track: AdirsData<Angle>,
-    drift_angle: AdirsData<Angle>,
-    flight_path_angle: AdirsData<Angle>,
-    body_pitch_rate: AdirsData<AngularVelocity>,
-    body_roll_rate: AdirsData<AngularVelocity>,
-    body_yaw_rate: AdirsData<AngularVelocity>,
-    body_longitudinal_acc: AdirsData<Ratio>,
-    body_lateral_acc: AdirsData<Ratio>,
-    body_normal_acc: AdirsData<Ratio>,
-    heading_rate: AdirsData<AngularVelocity>,
-    pitch_att_rate: AdirsData<AngularVelocity>,
-    roll_att_rate: AdirsData<AngularVelocity>,
-    vertical_speed: AdirsData<f64>,
-    ground_speed: AdirsData<Velocity>,
+    pitch: AdirsArinc429Data<Angle>,
+    roll: AdirsArinc429Data<Angle>,
+    heading: AdirsArinc429Data<Angle>,
+    true_heading: AdirsArinc429Data<Angle>,
+    track: AdirsArinc429Data<Angle>,
+    true_track: AdirsArinc429Data<Angle>,
+    drift_angle: AdirsArinc429Data<Angle>,
+    flight_path_angle: AdirsArinc429Data<Angle>,
+    body_pitch_rate: AdirsArinc429Data<AngularVelocity>,
+    body_roll_rate: AdirsArinc429Data<AngularVelocity>,
+    body_yaw_rate: AdirsArinc429Data<AngularVelocity>,
+    body_longitudinal_acc: AdirsArinc429Data<Ratio>,
+    body_lateral_acc: AdirsArinc429Data<Ratio>,
+    body_normal_acc: AdirsArinc429Data<Ratio>,
+    heading_rate: AdirsArinc429Data<AngularVelocity>,
+    pitch_att_rate: AdirsArinc429Data<AngularVelocity>,
+    roll_att_rate: AdirsArinc429Data<AngularVelocity>,
+    vertical_speed: AdirsArinc429Data<f64>,
+    ground_speed: AdirsArinc429Data<Velocity>,
     /// Label 016, 2 Hz [0, 256)
-    wind_speed: AdirsData<Velocity>,
+    wind_speed: AdirsArinc429Data<Velocity>,
     /// label 015, 2 Hz, [0, 359]
-    wind_direction: AdirsData<Angle>,
+    wind_direction: AdirsArinc429Data<Angle>,
     /// Label 316, 10 Hz [0, 256)
-    wind_speed_bnr: AdirsData<Velocity>,
+    wind_speed_bnr: AdirsArinc429Data<Velocity>,
     /// Label 315, 10 Hz (-180, 180]
-    wind_direction_bnr: AdirsData<Angle>,
-    latitude: AdirsData<Angle>,
-    longitude: AdirsData<Angle>,
+    wind_direction_bnr: AdirsArinc429Data<Angle>,
+    latitude: AdirsArinc429Data<Angle>,
+    longitude: AdirsArinc429Data<Angle>,
     /// label 270
-    maint_word: AdirsData<u32>,
+    maint_word: AdirsArinc429Data<u32>,
+    align_discrete: AdirsDiscreteOutput<bool>,
+    fault_warn_discrete: AdirsDiscreteOutput<bool>,
 }
 impl InertialReference {
+    const EXCESS_MOTION_INHIBIT_TIME: Duration = Duration::from_secs(2);
     const FAST_ALIGNMENT_TIME_IN_SECS: f64 = 90.;
     const IR_FAULT_FLASH_DURATION: Duration = Duration::from_millis(50);
     const ATTITUDE_INITIALISATION_DURATION: Duration = Duration::from_secs(28);
@@ -1495,10 +1558,17 @@ impl InertialReference {
     const LATITUDE: &'static str = "LATITUDE";
     const LONGITUDE: &'static str = "LONGITUDE";
     const MAINT_WORD: &'static str = "MAINT_WORD";
+    const ALIGN_DISCRETE: &'static str = "ALIGN_DISCRETE";
+    const FAULT_WARN_DISCRETE: &'static str = "FAULT_WARN_DISCRETE";
     const MINIMUM_TRUE_AIRSPEED_FOR_WIND_DETERMINATION_KNOTS: f64 = 100.;
     const MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS: f64 = 50.;
 
     const WIND_VELOCITY_TIME_CONSTANT: Duration = Duration::from_millis(100);
+    const QUICK_REALIGN_AVAILABLE_TIME: Duration = Duration::from_secs(5);
+    const QUICK_REALIGN_ALIGN_TIME: Duration = Duration::from_secs(180);
+    const ALIGNMENT_VELOCITY_TIME_CONSTANT: Duration = Duration::from_millis(500);
+    const MAX_ALIGNMENT_VELOCITY_FPS: f64 = 0.011;
+    const MAX_LATITUDE_FOR_ALIGNMENT: f64 = 82.;
 
     fn new(context: &mut InitContext, number: usize) -> Self {
         Self {
@@ -1512,33 +1582,52 @@ impl InertialReference {
             remaining_attitude_initialisation_duration: Some(Duration::from_secs(0)),
             wind_velocity: LowPassFilter::new(Self::WIND_VELOCITY_TIME_CONSTANT),
             extreme_latitude: false,
+            body_velocity_filter: LowPassFilter::new(Self::ALIGNMENT_VELOCITY_TIME_CONSTANT),
+            excess_motion: false,
+            excess_motion_inhibit_time: None,
+            quick_realign_remaining_available_time: Duration::default(),
+            alignment_failed: false,
 
-            pitch: AdirsData::new_ir(context, number, Self::PITCH),
-            roll: AdirsData::new_ir(context, number, Self::ROLL),
-            heading: AdirsData::new_ir(context, number, Self::HEADING),
-            true_heading: AdirsData::new_ir(context, number, Self::TRUE_HEADING),
-            track: AdirsData::new_ir(context, number, Self::TRACK),
-            true_track: AdirsData::new_ir(context, number, Self::TRUE_TRACK),
-            drift_angle: AdirsData::new_ir(context, number, Self::DRIFT_ANGLE),
-            flight_path_angle: AdirsData::new_ir(context, number, Self::FLIGHT_PATH_ANGLE),
-            body_pitch_rate: AdirsData::new_ir(context, number, Self::BODY_PITCH_RATE),
-            body_roll_rate: AdirsData::new_ir(context, number, Self::BODY_ROLL_RATE),
-            body_yaw_rate: AdirsData::new_ir(context, number, Self::BODY_YAW_RATE),
-            body_longitudinal_acc: AdirsData::new_ir(context, number, Self::BODY_LONGITUDINAL_ACC),
-            body_lateral_acc: AdirsData::new_ir(context, number, Self::BODY_LATERAL_ACC),
-            body_normal_acc: AdirsData::new_ir(context, number, Self::BODY_NORMAL_ACC),
-            heading_rate: AdirsData::new_ir(context, number, Self::HEADING_RATE),
-            pitch_att_rate: AdirsData::new_ir(context, number, Self::PITCH_ATT_RATE),
-            roll_att_rate: AdirsData::new_ir(context, number, Self::ROLL_ATT_RATE),
-            vertical_speed: AdirsData::new_ir(context, number, Self::VERTICAL_SPEED),
-            ground_speed: AdirsData::new_ir(context, number, Self::GROUND_SPEED),
-            wind_direction: AdirsData::new_ir(context, number, Self::WIND_DIRECTION),
-            wind_direction_bnr: AdirsData::new_ir(context, number, Self::WIND_DIRECTION_BNR),
-            wind_speed: AdirsData::new_ir(context, number, Self::WIND_SPEED),
-            wind_speed_bnr: AdirsData::new_ir(context, number, Self::WIND_SPEED_BNR),
-            latitude: AdirsData::new_ir(context, number, Self::LATITUDE),
-            longitude: AdirsData::new_ir(context, number, Self::LONGITUDE),
-            maint_word: AdirsData::new_ir(context, number, Self::MAINT_WORD),
+            pitch: AdirsArinc429Data::new_ir(context, number, Self::PITCH),
+            roll: AdirsArinc429Data::new_ir(context, number, Self::ROLL),
+            heading: AdirsArinc429Data::new_ir(context, number, Self::HEADING),
+            true_heading: AdirsArinc429Data::new_ir(context, number, Self::TRUE_HEADING),
+            track: AdirsArinc429Data::new_ir(context, number, Self::TRACK),
+            true_track: AdirsArinc429Data::new_ir(context, number, Self::TRUE_TRACK),
+            drift_angle: AdirsArinc429Data::new_ir(context, number, Self::DRIFT_ANGLE),
+            flight_path_angle: AdirsArinc429Data::new_ir(context, number, Self::FLIGHT_PATH_ANGLE),
+            body_pitch_rate: AdirsArinc429Data::new_ir(context, number, Self::BODY_PITCH_RATE),
+            body_roll_rate: AdirsArinc429Data::new_ir(context, number, Self::BODY_ROLL_RATE),
+            body_yaw_rate: AdirsArinc429Data::new_ir(context, number, Self::BODY_YAW_RATE),
+            body_longitudinal_acc: AdirsArinc429Data::new_ir(
+                context,
+                number,
+                Self::BODY_LONGITUDINAL_ACC,
+            ),
+            body_lateral_acc: AdirsArinc429Data::new_ir(context, number, Self::BODY_LATERAL_ACC),
+            body_normal_acc: AdirsArinc429Data::new_ir(context, number, Self::BODY_NORMAL_ACC),
+            heading_rate: AdirsArinc429Data::new_ir(context, number, Self::HEADING_RATE),
+            pitch_att_rate: AdirsArinc429Data::new_ir(context, number, Self::PITCH_ATT_RATE),
+            roll_att_rate: AdirsArinc429Data::new_ir(context, number, Self::ROLL_ATT_RATE),
+            vertical_speed: AdirsArinc429Data::new_ir(context, number, Self::VERTICAL_SPEED),
+            ground_speed: AdirsArinc429Data::new_ir(context, number, Self::GROUND_SPEED),
+            wind_direction: AdirsArinc429Data::new_ir(context, number, Self::WIND_DIRECTION),
+            wind_direction_bnr: AdirsArinc429Data::new_ir(
+                context,
+                number,
+                Self::WIND_DIRECTION_BNR,
+            ),
+            wind_speed: AdirsArinc429Data::new_ir(context, number, Self::WIND_SPEED),
+            wind_speed_bnr: AdirsArinc429Data::new_ir(context, number, Self::WIND_SPEED_BNR),
+            latitude: AdirsArinc429Data::new_ir(context, number, Self::LATITUDE),
+            longitude: AdirsArinc429Data::new_ir(context, number, Self::LONGITUDE),
+            maint_word: AdirsArinc429Data::new_ir(context, number, Self::MAINT_WORD),
+            align_discrete: AdirsDiscreteOutput::new_ir(context, number, Self::ALIGN_DISCRETE),
+            fault_warn_discrete: AdirsDiscreteOutput::new_ir(
+                context,
+                number,
+                Self::FAULT_WARN_DISCRETE,
+            ),
         }
     }
 
@@ -1552,6 +1641,8 @@ impl InertialReference {
         simulator_data: AdirsSimulatorData,
     ) {
         self.is_on = overhead.ir_is_on(self.number);
+
+        self.update_body_velocity(context);
 
         self.update_fault_flash_duration(context, overhead);
         self.update_remaining_attitude_align_duration(
@@ -1571,6 +1662,7 @@ impl InertialReference {
         self.update_heading_values(overhead, simulator_data);
         self.update_non_attitude_values(context, true_airspeed_source, overhead, simulator_data);
         self.update_maint_word(overhead);
+        self.update_discrete_outputs();
     }
 
     fn update_fault_flash_duration(
@@ -1609,6 +1701,19 @@ impl InertialReference {
         );
     }
 
+    fn can_align(simulator_data: AdirsSimulatorData) -> bool {
+        simulator_data.latitude.abs().get::<degree>() <= Self::MAX_LATITUDE_FOR_ALIGNMENT
+    }
+
+    fn is_instant_or_fast_boarding_in_progress(simulator_data: AdirsSimulatorData) -> bool {
+        match simulator_data.boarding_rate {
+            BoardingRate::Instant | BoardingRate::Fast => {
+                simulator_data.is_boarding_started_by_user
+            }
+            _ => false,
+        }
+    }
+
     fn update_remaining_align_duration(
         &mut self,
         context: &UpdateContext,
@@ -1616,24 +1721,68 @@ impl InertialReference {
         configured_align_time: AlignTime,
         simulator_data: AdirsSimulatorData,
     ) {
+        // If the knob is moved out of NAV and back within 5 seconds while aligned, a quick re-alignment
+        // is performed. This just zeros the velocities etc.
+        if self.is_fully_aligned()
+            && overhead.mode_of(self.number) != InertialReferenceMode::Navigation
+        {
+            self.quick_realign_remaining_available_time = Self::QUICK_REALIGN_AVAILABLE_TIME;
+        } else if !self.quick_realign_remaining_available_time.is_zero() {
+            self.quick_realign_remaining_available_time = self
+                .quick_realign_remaining_available_time
+                .saturating_sub(context.delta());
+        }
+
+        // work around instant/fast boarding upsetting the body velocity and interrupting IR alignment
+        if InertialReference::is_instant_or_fast_boarding_in_progress(simulator_data) {
+            self.excess_motion_inhibit_time = Some(InertialReference::EXCESS_MOTION_INHIBIT_TIME);
+        } else if let Some(excess_motion_inhibit_time) = self.excess_motion_inhibit_time {
+            self.excess_motion_inhibit_time =
+                excess_motion_inhibit_time.checked_sub(context.delta());
+        }
+
         // If the  align time setting has been changed to instant during alignment,
         // then set remaining time to 0. This allows to implement a "Instant Align" button in the EFB
         // for users who want to align the ADIRS instantly but do not want to change the default
         // setting and restart the flight.
         if let AlignTime::Instant = configured_align_time {
             self.remaining_align_duration = Some(Duration::from_secs_f64(0.));
+        } else {
+            // If we exceeded the max alignment velocity, the alignment is restarted
+            if self.is_aligning()
+                && self.body_velocity_filter.output().max() > Self::MAX_ALIGNMENT_VELOCITY_FPS
+                && self.excess_motion_inhibit_time.is_none()
+            {
+                self.remaining_align_duration = None;
+                self.excess_motion = true;
+            }
+
+            self.remaining_align_duration =
+                match overhead.mode_of(self.number) {
+                    InertialReferenceMode::Navigation => match self.remaining_align_duration {
+                        Some(remaining) => {
+                            if Self::can_align(simulator_data) {
+                                Some(subtract_delta_from_duration(context, remaining))
+                            } else {
+                                Some(remaining)
+                            }
+                        }
+                        None => Some(self.total_alignment_duration(
+                            configured_align_time,
+                            simulator_data.latitude,
+                        )),
+                    },
+                    InertialReferenceMode::Off | InertialReferenceMode::Attitude => None,
+                };
         }
 
-        self.remaining_align_duration = match overhead.mode_of(self.number) {
-            InertialReferenceMode::Navigation => match self.remaining_align_duration {
-                Some(remaining) => Some(subtract_delta_from_duration(context, remaining)),
-                None => Some(Self::total_alignment_duration(
-                    configured_align_time,
-                    simulator_data.latitude,
-                )),
-            },
-            InertialReferenceMode::Off | InertialReferenceMode::Attitude => None,
-        };
+        self.alignment_failed = self.is_aligning() && !Self::can_align(simulator_data);
+
+        if self.is_fully_aligned()
+            || overhead.mode_of(self.number) != InertialReferenceMode::Navigation
+        {
+            self.excess_motion = false;
+        }
     }
 
     fn update_latitude(&mut self, simulator_data: AdirsSimulatorData) {
@@ -1739,6 +1888,21 @@ impl InertialReference {
             },
             magnetic_heading_ssm,
         );
+    }
+
+    fn update_body_velocity(&mut self, context: &UpdateContext) {
+        let body_velocity = Vector2::new(
+            context
+                .local_velocity()
+                .lat_velocity()
+                .get::<foot_per_second>(),
+            context
+                .local_velocity()
+                .long_velocity()
+                .get::<foot_per_second>(),
+        );
+        self.body_velocity_filter
+            .update(context.delta(), body_velocity);
     }
 
     fn update_wind_velocity(
@@ -1931,7 +2095,7 @@ impl InertialReference {
             return;
         }
 
-        if !self.is_fully_aligned() {
+        if self.is_aligning() {
             maint_word |= IrMaintFlags::ALIGNMENT_NOT_READY;
         }
 
@@ -1939,7 +2103,7 @@ impl InertialReference {
             maint_word |= IrMaintFlags::REV_ATT_MODE;
         }
 
-        if self.is_fully_aligned() {
+        if overhead.mode_of(self.number) == InertialReferenceMode::Navigation {
             maint_word |= IrMaintFlags::NAV_MODE;
         }
 
@@ -1957,11 +2121,15 @@ impl InertialReference {
 
         // TODO DC fault during DC operation last power up
 
-        // TODO align fault
+        if self.alignment_failed {
+            maint_word |= IrMaintFlags::ALIGN_FAULT;
+        }
 
         // TODO No IRS initial pos
 
-        // TODO excess motion during align
+        if self.excess_motion {
+            maint_word |= IrMaintFlags::EXCESS_MOTION_ERROR;
+        }
 
         // TODO ADR data not received or parity error
 
@@ -1991,25 +2159,54 @@ impl InertialReference {
         // TODO tests!
     }
 
+    fn update_discrete_outputs(&mut self) {
+        self.align_discrete.set_value(self.is_aligning());
+        self.fault_warn_discrete.set_value(self.has_fault());
+    }
+
     fn alignment_starting(&self, selected_mode: InertialReferenceMode) -> bool {
         selected_mode != InertialReferenceMode::Off
             && self.remaining_attitude_initialisation_duration.is_none()
     }
 
-    fn total_alignment_duration(configured_align_time: AlignTime, latitude: Angle) -> Duration {
+    fn total_alignment_duration_from_configuration(
+        configured_align_time: AlignTime,
+        latitude: Angle,
+    ) -> Duration {
+        let abs_lat = latitude.get::<degree>().abs();
         Duration::from_secs_f64(match configured_align_time {
-            AlignTime::Realistic => ((latitude.get::<degree>().powi(2)) * 0.095) + 310.,
+            AlignTime::Realistic => {
+                if abs_lat > 73. {
+                    1020.
+                } else if abs_lat > 60. {
+                    600.
+                } else {
+                    (300. / latitude.get::<radian>().cos()).abs()
+                }
+            }
             AlignTime::Instant => 0.,
             AlignTime::Fast => Self::FAST_ALIGNMENT_TIME_IN_SECS,
         })
     }
 
-    fn is_fully_aligned(&self) -> bool {
-        self.remaining_align_duration == Some(Duration::from_secs(0))
+    fn total_alignment_duration(
+        &mut self,
+        configured_align_time: AlignTime,
+        latitude: Angle,
+    ) -> Duration {
+        let mut alignment_duration =
+            Self::total_alignment_duration_from_configuration(configured_align_time, latitude);
+
+        if !self.quick_realign_remaining_available_time.is_zero() {
+            self.quick_realign_remaining_available_time = Duration::default();
+            alignment_duration = Self::QUICK_REALIGN_ALIGN_TIME.min(alignment_duration)
+        }
+
+        alignment_duration
     }
 
-    fn is_on(&self) -> bool {
-        self.is_on
+    fn is_fully_aligned(&self) -> bool {
+        self.remaining_align_duration == Some(Duration::ZERO)
     }
 
     fn is_aligning(&self) -> bool {
@@ -2100,6 +2297,8 @@ impl SimulationElement for InertialReference {
         self.latitude.write_to(writer);
         self.longitude.write_to(writer);
         self.maint_word.write_to(writer);
+        self.align_discrete.write_to(writer);
+        self.fault_warn_discrete.write_to(writer);
     }
 }
 
@@ -2260,14 +2459,6 @@ mod tests {
             self
         }
 
-        fn wait_for_alignment_of(mut self, adiru_number: usize) -> Self {
-            while self.align_state(adiru_number) != AlignState::Aligned {
-                self.run();
-            }
-
-            self
-        }
-
         fn latitude_of(mut self, latitude: Angle) -> Self {
             self.write_by_name(AdirsSimulatorData::LATITUDE, latitude);
             self
@@ -2328,6 +2519,11 @@ mod tests {
 
         fn body_yaw_rate_of(mut self, rate: AngularVelocity) -> Self {
             self.write_by_name(AdirsSimulatorData::BODY_ROTATION_RATE_Y, rate);
+            self
+        }
+
+        fn body_lateral_velocity_of(mut self, velocity: Velocity) -> Self {
+            self.write_by_name(UpdateContext::LOCAL_LATERAL_SPEED_KEY, velocity);
             self
         }
 
@@ -2432,6 +2628,18 @@ mod tests {
                 &OnOffFaultPushButton::is_on_id(&format!("ADIRS_IR_{}", number)),
                 false,
             );
+
+            self
+        }
+
+        fn boarding_rate_of(mut self, rate: BoardingRate) -> Self {
+            self.write_by_name(AdirsSimulatorData::BOARDING_RATE, rate);
+
+            self
+        }
+
+        fn boarding_started_of(mut self, started: bool) -> Self {
+            self.write_by_name(AdirsSimulatorData::BOARDING_STARTED_BY_USR, started);
 
             self
         }
@@ -2838,10 +3046,6 @@ mod tests {
             ))
         }
 
-        fn uses_gps_as_primary(&mut self) -> bool {
-            self.read_by_name(AirDataInertialReferenceSystem::USES_GPS_AS_PRIMARY_KEY)
-        }
-
         fn assert_adr_data_valid(&mut self, valid: bool, adiru_number: usize) {
             assert_eq!(
                 !self
@@ -2997,6 +3201,10 @@ mod tests {
             self.assert_ir_attitude_data_available(available, adiru_number);
             self.assert_ir_heading_data_available(available, adiru_number);
             self.assert_ir_non_attitude_data_available(available, adiru_number);
+            assert_eq!(
+                self.maint_word(adiru_number).is_normal_operation(),
+                available
+            );
         }
 
         fn assert_wind_direction_and_velocity_zero(&mut self, adiru_number: usize) {
@@ -3059,6 +3267,13 @@ mod tests {
         all_adirus_aligned_test_bed()
     }
 
+    fn all_adirus_unaligned_test_bed_with() -> AdirsTestBed {
+        let mut bed = all_adirus_aligned_test_bed().all_mode_selectors_off();
+        // run long enough to bypass quick align
+        bed.run_with_delta(Duration::from_secs(10));
+        bed
+    }
+
     fn all_adirus_aligned_test_bed() -> AdirsTestBed {
         AdirsTestBed::new()
     }
@@ -3086,8 +3301,6 @@ mod tests {
     #[case(2)]
     #[case(3)]
     fn adiru_is_not_aligning_nor_aligned_when_ir_mode_selector_off(#[case] adiru_number: usize) {
-        // TODO: Once the ADIRUs are split, this unit test needs to be modified to test all
-        // ADIRUs individually.
         let mut test_bed =
             test_bed_with().ir_mode_selector_set_to(adiru_number, InertialReferenceMode::Off);
 
@@ -3097,8 +3310,9 @@ mod tests {
         assert!(!test_bed.is_aligning(adiru_number));
         let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word(adiru_number).value());
         assert_eq!(
-            maint_word_flags.unwrap() & IrMaintFlags::ALIGNMENT_NOT_READY,
-            IrMaintFlags::ALIGNMENT_NOT_READY
+            maint_word_flags.unwrap()
+                & (IrMaintFlags::ALIGNMENT_NOT_READY | IrMaintFlags::NAV_MODE),
+            IrMaintFlags::empty()
         );
     }
 
@@ -3159,22 +3373,127 @@ mod tests {
     }
 
     #[rstest]
-    #[case(Angle::new::<degree>(90.))]
-    #[case(Angle::new::<degree>(-90.))]
+    #[case(Angle::new::<degree>(85.))]
+    #[case(Angle::new::<degree>(-85.))]
+    fn adirs_does_not_align_near_the_poles(#[case] polar_latitude: Angle) {
+        let mut test_bed = start_align_at_latitude(polar_latitude);
+        test_bed.run();
+        test_bed.run_with_delta(Duration::from_secs(20 * 60)); // run for 20 minutes, enough for any alignment
+
+        assert!(!test_bed.is_aligned(1));
+    }
+
+    #[rstest]
+    #[case(Angle::new::<degree>(85.))]
+    #[case(Angle::new::<degree>(-85.))]
+    fn adirs_stays_aligned_near_the_poles(#[case] polar_latitude: Angle) {
+        let mut test_bed = all_adirus_aligned_test_bed_with()
+            .ir_mode_selector_set_to(1, InertialReferenceMode::Navigation)
+            .and()
+            .latitude_of(polar_latitude);
+        test_bed.run();
+
+        assert!(test_bed.is_aligned(1));
+    }
+
+    #[rstest]
+    fn adirs_detects_excess_motion_during_alignment() {
+        let mut test_bed = all_adirus_unaligned_test_bed_with()
+            .body_lateral_velocity_of(Velocity::new::<foot_per_second>(0.1))
+            .ir_mode_selector_set_to(1, InertialReferenceMode::Navigation);
+        test_bed.run();
+        test_bed.run();
+
+        let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word(1).value());
+        assert_eq!(
+            maint_word_flags.unwrap() & IrMaintFlags::EXCESS_MOTION_ERROR,
+            IrMaintFlags::EXCESS_MOTION_ERROR
+        );
+    }
+
+    #[rstest]
+    fn adirs_detects_excess_motion_during_alignment_with_instant_boarding_selected() {
+        let mut test_bed = all_adirus_unaligned_test_bed_with()
+            .boarding_rate_of(BoardingRate::Instant)
+            .body_lateral_velocity_of(Velocity::new::<foot_per_second>(0.1))
+            .ir_mode_selector_set_to(1, InertialReferenceMode::Navigation);
+        test_bed.run();
+        test_bed.run();
+
+        let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word(1).value());
+        assert_eq!(
+            maint_word_flags.unwrap() & IrMaintFlags::EXCESS_MOTION_ERROR,
+            IrMaintFlags::EXCESS_MOTION_ERROR
+        );
+    }
+
+    #[rstest]
+    fn adirs_detects_excess_motion_during_alignment_with_fast_boarding_selected() {
+        let mut test_bed = all_adirus_unaligned_test_bed_with()
+            .boarding_rate_of(BoardingRate::Fast)
+            .body_lateral_velocity_of(Velocity::new::<foot_per_second>(0.1))
+            .ir_mode_selector_set_to(1, InertialReferenceMode::Navigation);
+        test_bed.run();
+        test_bed.run();
+
+        let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word(1).value());
+        assert_eq!(
+            maint_word_flags.unwrap() & IrMaintFlags::EXCESS_MOTION_ERROR,
+            IrMaintFlags::EXCESS_MOTION_ERROR
+        );
+    }
+
+    #[rstest]
+    fn adirs_does_not_detect_excess_motion_during_instant_boarding() {
+        let mut test_bed = all_adirus_unaligned_test_bed_with()
+            .boarding_rate_of(BoardingRate::Instant)
+            .boarding_started_of(true)
+            .body_lateral_velocity_of(Velocity::new::<foot_per_second>(0.1))
+            .ir_mode_selector_set_to(1, InertialReferenceMode::Navigation);
+        test_bed.run();
+        test_bed.run();
+
+        let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word(1).value());
+        assert_eq!(
+            maint_word_flags.unwrap() & IrMaintFlags::EXCESS_MOTION_ERROR,
+            IrMaintFlags::empty()
+        );
+    }
+
+    #[rstest]
+    fn adirs_does_not_detect_excess_motion_during_fast_boarding() {
+        let mut test_bed = all_adirus_unaligned_test_bed_with()
+            .boarding_rate_of(BoardingRate::Fast)
+            .boarding_started_of(true)
+            .body_lateral_velocity_of(Velocity::new::<foot_per_second>(0.1))
+            .ir_mode_selector_set_to(1, InertialReferenceMode::Navigation);
+        test_bed.run();
+        test_bed.run();
+
+        let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word(1).value());
+        assert_eq!(
+            maint_word_flags.unwrap() & IrMaintFlags::EXCESS_MOTION_ERROR,
+            IrMaintFlags::empty()
+        );
+    }
+
+    #[rstest]
+    #[case(Angle::new::<degree>(80.))]
+    #[case(Angle::new::<degree>(-80.))]
     fn adirs_aligns_quicker_near_equator_than_near_the_poles_when_configured_align_time_is_realistic(
         #[case] polar_latitude: Angle,
     ) {
-        let mut test_bed = align_at_latitude(Angle::new::<degree>(0.));
+        let mut test_bed = start_align_at_latitude(Angle::new::<degree>(0.));
         let equator_alignment_time = test_bed.remaining_alignment_time();
 
-        let mut test_bed = align_at_latitude(polar_latitude);
+        let mut test_bed = start_align_at_latitude(polar_latitude);
         let south_pole_alignment_time = test_bed.remaining_alignment_time();
 
         assert!(equator_alignment_time < south_pole_alignment_time);
     }
 
-    fn align_at_latitude(latitude: Angle) -> AdirsTestBed {
-        let mut test_bed = test_bed_with()
+    fn start_align_at_latitude(latitude: Angle) -> AdirsTestBed {
+        let mut test_bed = all_adirus_unaligned_test_bed_with()
             .align_time_configured_as(AlignTime::Realistic)
             .latitude_of(latitude)
             .and()
@@ -3182,6 +3501,30 @@ mod tests {
 
         test_bed.run();
         test_bed
+    }
+
+    #[rstest]
+    #[case(Angle::new::<degree>(0.))]
+    #[case(Angle::new::<degree>(63.))]
+    #[case(Angle::new::<degree>(-63.))]
+    fn adirs_aligns_quick_when_mode_selector_off_for_3_secs(#[case] latitude: Angle) {
+        // Create the conditions for a quick align (aligned, then less than 5 secs off)
+        let mut test_bed = all_adirus_aligned_test_bed_with()
+            .align_time_configured_as(AlignTime::Realistic)
+            .latitude_of(latitude)
+            .and()
+            .ir_mode_selector_set_to(1, InertialReferenceMode::Off);
+        test_bed.run_with_delta(Duration::from_secs(2));
+
+        // Perform the quick align
+        test_bed = test_bed
+            .then_continue_with()
+            .ir_mode_selector_set_to(1, InertialReferenceMode::Navigation);
+        test_bed.run();
+
+        let alignment_time = test_bed.remaining_alignment_time();
+
+        assert!(alignment_time <= Duration::from_secs(180));
     }
 
     #[rstest]
@@ -4699,41 +5042,6 @@ mod tests {
 
     mod gps {
         use super::*;
-
-        #[rstest]
-        #[case(1)]
-        #[case(2)]
-        #[case(3)]
-        fn uses_gps_as_primary_when_any_adiru_is_aligned(#[case] adiru_number: usize) {
-            // The GPSSU is for now assumed to always work. Thus, when any ADIRU is aligned
-            // GPS is used as the primary means of navigation.
-            let mut test_bed = test_bed_with()
-                .ir_mode_selector_set_to(adiru_number, InertialReferenceMode::Navigation)
-                .wait_for_alignment_of(adiru_number);
-
-            assert!(test_bed.uses_gps_as_primary());
-        }
-
-        #[test]
-        fn does_not_use_gps_as_primary_when_no_adiru_is_aligned() {
-            let mut test_bed = test_bed();
-            test_bed.run();
-
-            assert!(!test_bed.uses_gps_as_primary());
-        }
-
-        #[test]
-        fn does_not_use_gps_as_primary_when_adirus_aligned_with_ir_push_buttons_off() {
-            let mut test_bed = all_adirus_aligned_test_bed_with()
-                .ir_push_button_off(1)
-                .ir_push_button_off(2)
-                .and()
-                .ir_push_button_off(3);
-
-            test_bed.run();
-
-            assert!(!test_bed.uses_gps_as_primary());
-        }
 
         #[rstest]
         #[case(1)]

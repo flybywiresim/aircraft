@@ -94,9 +94,12 @@
     "Ofp": {
       "TT": {
         "IncreaseFontSize": "글씨 크게",
+        "NextLoadsheetSection": "다음 Loadsheet 섹션",
+        "PreviousLoadsheetSection": "이전 Loadsheet 섹션",
         "ReduceFontSize": "글씨 작게"
       },
       "Title": "OFP",
+      "UnavailableLoadsheetSection": "Simbrief에서 정보를 사용할 수 없거나 섹션이 활성화되지 않았습니다.",
       "YouHaveNotYetImportedAnySimBriefData": "SimBrief 데이터를 불러오지 않았습니다."
     },
     "Overview": {
@@ -308,6 +311,8 @@
       "Qnh": "QNH",
       "ReverseThrust": "역추진 추력",
       "Runway": "활주로",
+      "RunwayAltitude": "활주로 고도",
+      "RunwayAltitudeUnit": "ft ASL",
       "RunwayCondition": "활주로 상태",
       "RunwayConditions": {
         "Dry": "완전히 마름 (6)",
@@ -333,8 +338,12 @@
       "Title": "착륙",
       "UnitFt": "ft",
       "UnitMeter": "m",
+      "Weight": "무게",
       "Wind": "바람",
-      "WindMagnitudeUnit": "kts 또는 °/kts"
+      "WindDirection": "풍향",
+      "WindDirectionUnit": "°",
+      "WindMagnitude": "풍속",
+      "WindMagnitudeUnit": "kts"
     },
     "SYNC": "동기화",
     "Takeoff": {
@@ -377,6 +386,8 @@
       "Packs": "에어컨",
       "Qnh": "QNH",
       "Runway": "활주로",
+      "RunwayBearing": "활주로 방위",
+      "RunwayBearingUnit": "°",
       "RunwayCondition": "활주로 상태",
       "RunwayConditions": {
         "Contaminated100mmDrySnow": "마른 눈 - 100 mm/4\"",
@@ -393,7 +404,7 @@
         "Wet": "젖음"
       },
       "RunwayElevation": "활주로 고도",
-      "RunwayElevationUnit": "피트 AMSL",
+      "RunwayElevationUnit": "ft",
       "RunwayHeading": "활주로 방향",
       "RunwayHeadingUnit": "°",
       "RunwayLengthUnitFt": "피트",
@@ -585,7 +596,7 @@
       "Select": "선택",
       "ThrustReductionHeight": "추력 감소 고도 (ft)",
       "Title": "항공기 옵션 / 프로그램 설정",
-      "WeightUnit": "미국 단위(lbs)"
+      "WeightUnit": "미국 단위"
     },
     "AtsuAoc": {
       "AtisAtcSource": "ATIS/ATC 출처",
@@ -705,6 +716,7 @@
       },
       "OverrideSimBriefUserID": "SimBrief 사용자 아이디 덮어쓰기",
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "SimBrief 사용자 이름이나 조종사 아이디를 제대로 입력했는지 확인해주세요.",
+      "SimbriefLoadsheetNavigationEnabled": "Simbrief Loadsheet 탐색",
       "TT": {
         "OverrideSimBriefUserID": "연결된 Navigraph 계정 대신 사용할 대체 SimBrief 사용자 ID"
       },

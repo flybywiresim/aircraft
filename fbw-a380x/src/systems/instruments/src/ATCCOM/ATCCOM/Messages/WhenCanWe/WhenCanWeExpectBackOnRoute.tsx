@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import React, { FC } from 'react';
 import { CpdlcMessagesDownlink } from '@atsu/messages/CpdlcMessageElements';
 import { Layer } from '../../../Components/Layer';

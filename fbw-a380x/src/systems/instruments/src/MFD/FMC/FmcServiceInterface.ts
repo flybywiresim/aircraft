@@ -1,4 +1,5 @@
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
+import { Subscribable } from '@microsoft/msfs-sdk';
 import { FmcInterface } from 'instruments/src/MFD/FMC/FmcInterface';
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 
@@ -46,4 +47,6 @@ export interface FmcServiceInterface {
    * Sets mfd reference for given FMC, used for navigating to pages and opening prompts
    */
   setMfdReference(forFmcIndex: FmcIndex, mfd: FmsDisplayInterface & MfdDisplayInterface): void;
+
+  masterFmcChanged: Subscribable<boolean>;
 }

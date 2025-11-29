@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { FansMode } from '@datalink/common';
 import { CDUAtcAtisMenu } from './A320_Neo_CDU_ATC_AtisMenu';
 import { CDUAtcClearanceReq } from './A320_Neo_CDU_ATC_ClearanceReq';

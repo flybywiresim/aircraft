@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 //  Copyright (c) 2024-2025 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
@@ -29,6 +30,7 @@ interface InputFieldProps<T, U = T, S = T extends U ? true : false> extends Comp
   inactive?: Subscribable<boolean>;
   /** Whether value can be set (if disabled, rendered as input field but greyed out)  */
   disabled?: Subscribable<boolean>;
+  /** Whether field can be cleared by user */
   canBeCleared?: Subscribable<boolean>;
   /** Value will be displayed in smaller font, if not entered by pilot (i.e. computed) */
   enteredByPilot?: Subscribable<boolean>;
@@ -133,6 +135,10 @@ export class InputField<
 
       if (this.props.mandatory?.get()) {
         this.textInputRef.getOrDefault()?.classList.remove('mandatory');
+      }
+    } else {
+      if (this.props.mandatory?.get()) {
+        this.textInputRef.getOrDefault()?.classList.add('mandatory');
       }
     }
     this.updateDisplayElement();

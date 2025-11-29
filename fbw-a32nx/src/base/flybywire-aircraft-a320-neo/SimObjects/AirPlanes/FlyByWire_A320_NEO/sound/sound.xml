@@ -134,11 +134,11 @@
             <Range UpperBound="0" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="startcontactors" NodeName="FUSES01" Continuous="false" ViewPoint="Inside" LocalVar="A32NX_ELEC_CONTACTOR_10KA_AND_5KA_IS_CLOSED" Units="BOOLEAN" Index="0">
+        <Sound WwiseData="true" WwiseEvent="startcontactors" NodeName="SOUND_121VU" Continuous="false" ViewPoint="Inside" LocalVar="A32NX_ELEC_CONTACTOR_10KA_AND_5KA_IS_CLOSED" Units="BOOLEAN" Index="0">
             <Range LowerBound="1" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="startcontactorsdc" NodeName="FUSES01" Continuous="false" ViewPoint="Inside" LocalVar="A32NX_ELEC_CONTACTOR_10KA_AND_5KA_IS_CLOSED" Units="BOOLEAN" Index="0">
+        <Sound WwiseData="true" WwiseEvent="startcontactorsdc" NodeName="SOUND_121VU" Continuous="false" ViewPoint="Inside" LocalVar="A32NX_ELEC_CONTACTOR_10KA_AND_5KA_IS_CLOSED" Units="BOOLEAN" Index="0">
             <Range UpperBound="0" />
         </Sound>
 
@@ -230,14 +230,14 @@
             <Range LowerBound="1" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="svcbuswhine" Continuous="true" LocalVar="A32NX_ELEC_DC_GND_FLT_SVC_BUS_IS_POWERED" NodeName="FUSES01">
+        <Sound WwiseData="true" WwiseEvent="svcbuswhine" Continuous="true" LocalVar="A32NX_ELEC_DC_GND_FLT_SVC_BUS_IS_POWERED" NodeName="SOUND_121VU">
             <Range LowerBound="1" />
             <Requires LocalVar="A32NX_ELEC_AC_1_BUS_IS_POWERED">
                 <Range UpperBound="0" />
             </Requires>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="svcbusoff" Continuous="false" LocalVar="A32NX_ELEC_DC_GND_FLT_SVC_BUS_IS_POWERED" NodeName="FUSES01">
+        <Sound WwiseData="true" WwiseEvent="svcbusoff" Continuous="false" LocalVar="A32NX_ELEC_DC_GND_FLT_SVC_BUS_IS_POWERED" NodeName="SOUND_121VU">
             <Range UpperBound="0" />
         </Sound>
 
@@ -596,19 +596,19 @@
             <WwiseRTPC LocalVar="A32NX_SOUND_EXTERIOR_MASTER" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_EXTERIOR_VOLUME" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="APUnlock" NodeName="PUSH_YOKE_LEFT" ViewPoint="Inside" Continuous="false" LocalVar="A32NX_STICK_LOCK_ACTIVE" Units="BOOL" Index="0">
+        <Sound WwiseData="true" WwiseEvent="APUnlock" NodeName="SOUND_SIDESTICK_LEFT" ViewPoint="Inside" Continuous="false" LocalVar="A32NX_STICK_LOCK_ACTIVE" Units="BOOL" Index="0">
             <Range UpperBound="0" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="APUnlock" NodeName="PUSH_YOKE_RIGHT" ViewPoint="Inside" Continuous="false" LocalVar="A32NX_STICK_LOCK_ACTIVE" Units="BOOL" Index="0">
+        <Sound WwiseData="true" WwiseEvent="APUnlock" NodeName="SOUND_SIDESTICK_RIGHT" ViewPoint="Inside" Continuous="false" LocalVar="A32NX_STICK_LOCK_ACTIVE" Units="BOOL" Index="0">
             <Range UpperBound="0" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="APLock" NodeName="PUSH_YOKE_LEFT" ViewPoint="Inside" Continuous="false" LocalVar="A32NX_STICK_LOCK_ACTIVE" Units="BOOL" Index="0">
+        <Sound WwiseData="true" WwiseEvent="APLock" NodeName="SOUND_SIDESTICK_LEFT" ViewPoint="Inside" Continuous="false" LocalVar="A32NX_STICK_LOCK_ACTIVE" Units="BOOL" Index="0">
             <Range LowerBound="1" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="APLock" NodeName="PUSH_YOKE_RIGHT" ViewPoint="Inside" Continuous="false" LocalVar="A32NX_STICK_LOCK_ACTIVE" Units="BOOL" Index="0">
+        <Sound WwiseData="true" WwiseEvent="APLock" NodeName="SOUND_SIDESTICK_RIGHT" ViewPoint="Inside" Continuous="false" LocalVar="A32NX_STICK_LOCK_ACTIVE" Units="BOOL" Index="0">
             <Range LowerBound="1" />
         </Sound>
 
@@ -642,83 +642,83 @@
 
 
 
-        <Sound WwiseData="true" WwiseEvent="batteryrelay" Continuous="false" ViewPoint="Inside" NodeName="FUSES01" LocalVar="A32NX_ELEC_DC_BAT_BUS_IS_POWERED" Units="Bool" Index="1">
+        <Sound WwiseData="true" WwiseEvent="batteryrelay" Continuous="false" ViewPoint="Inside" NodeName="SOUND_121VU" LocalVar="A32NX_ELEC_DC_BAT_BUS_IS_POWERED" Units="Bool" Index="1">
             <Range LowerBound="1" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="batteryrelay2" Continuous="false" ViewPoint="Inside" NodeName="FUSES01" LocalVar="A32NX_ELEC_DC_ESS_BUS_IS_POWERED" Units="Bool" Index="1">
+        <Sound WwiseData="true" WwiseEvent="batteryrelay2" Continuous="false" ViewPoint="Inside" NodeName="SOUND_121VU" LocalVar="A32NX_ELEC_DC_ESS_BUS_IS_POWERED" Units="Bool" Index="1">
             <Range LowerBound="1" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="batteryrelayoff" Continuous="false" ViewPoint="Inside" NodeName="FUSES01" LocalVar="A32NX_ELEC_DC_ESS_BUS_IS_POWERED" Units="Bool" Index="1">
+        <Sound WwiseData="true" WwiseEvent="batteryrelayoff" Continuous="false" ViewPoint="Inside" NodeName="SOUND_121VU" LocalVar="A32NX_ELEC_DC_ESS_BUS_IS_POWERED" Units="Bool" Index="1">
             <Range UpperBound="0" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="batteryrelayoff2" Continuous="false" ViewPoint="Inside" NodeName="FUSES01" LocalVar="A32NX_ELEC_DC_BAT_BUS_IS_POWERED" Units="Bool" Index="1">
+        <Sound WwiseData="true" WwiseEvent="batteryrelayoff2" Continuous="false" ViewPoint="Inside" NodeName="SOUND_121VU" LocalVar="A32NX_ELEC_DC_BAT_BUS_IS_POWERED" Units="Bool" Index="1">
             <Range UpperBound="0" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="transfer" Continuous="false" ViewPoint="Inside" NodeName="FUSES01" LocalVar="A32NX_ELEC_CONTACTOR_3XG_IS_CLOSED" Units="Bool" Index="1">
-            <Range LowerBound="1" />
-            <WwiseRTPC LocalVar="A32NX_ENGINE_N2:2" RTPCName="SIMVAR_TURB_ENG_N2" />
-        </Sound>
-
-        <Sound WwiseData="true" WwiseEvent="transfer" Continuous="false" ViewPoint="Inside" NodeName="FUSES01" LocalVar="A32NX_ELEC_CONTACTOR_3XS_IS_CLOSED" Units="Bool" Index="1">
+        <Sound WwiseData="true" WwiseEvent="transfer" Continuous="false" ViewPoint="Inside" NodeName="SOUND_121VU" LocalVar="A32NX_ELEC_CONTACTOR_3XG_IS_CLOSED" Units="Bool" Index="1">
             <Range LowerBound="1" />
             <WwiseRTPC LocalVar="A32NX_ENGINE_N2:2" RTPCName="SIMVAR_TURB_ENG_N2" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="transfer_01" Continuous="false" ViewPoint="Inside" NodeName="FUSES01" LocalVar="A32NX_ELEC_CONTACTOR_9XU1_IS_CLOSED" Units="Bool" Index="1">
+        <Sound WwiseData="true" WwiseEvent="transfer" Continuous="false" ViewPoint="Inside" NodeName="SOUND_121VU" LocalVar="A32NX_ELEC_CONTACTOR_3XS_IS_CLOSED" Units="Bool" Index="1">
             <Range LowerBound="1" />
             <WwiseRTPC LocalVar="A32NX_ENGINE_N2:2" RTPCName="SIMVAR_TURB_ENG_N2" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="transfer_01" Continuous="false" ViewPoint="Inside" NodeName="FUSES01" LocalVar="A32NX_ELEC_CONTACTOR_9XU2_IS_CLOSED" Units="Bool" Index="1">
+        <Sound WwiseData="true" WwiseEvent="transfer_01" Continuous="false" ViewPoint="Inside" NodeName="SOUND_121VU" LocalVar="A32NX_ELEC_CONTACTOR_9XU1_IS_CLOSED" Units="Bool" Index="1">
             <Range LowerBound="1" />
             <WwiseRTPC LocalVar="A32NX_ENGINE_N2:2" RTPCName="SIMVAR_TURB_ENG_N2" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="transfer" Continuous="false" ViewPoint="Inside" NodeName="FUSES01" LocalVar="A32NX_ELEC_CONTACTOR_11XU1_IS_CLOSED" Units="Bool" Index="1">
+        <Sound WwiseData="true" WwiseEvent="transfer_01" Continuous="false" ViewPoint="Inside" NodeName="SOUND_121VU" LocalVar="A32NX_ELEC_CONTACTOR_9XU2_IS_CLOSED" Units="Bool" Index="1">
             <Range LowerBound="1" />
             <WwiseRTPC LocalVar="A32NX_ENGINE_N2:2" RTPCName="SIMVAR_TURB_ENG_N2" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="transfer" Continuous="false" ViewPoint="Inside" NodeName="FUSES01" LocalVar="A32NX_ELEC_CONTACTOR_11XU2_IS_CLOSED" Units="Bool" Index="1">
+        <Sound WwiseData="true" WwiseEvent="transfer" Continuous="false" ViewPoint="Inside" NodeName="SOUND_121VU" LocalVar="A32NX_ELEC_CONTACTOR_11XU1_IS_CLOSED" Units="Bool" Index="1">
             <Range LowerBound="1" />
             <WwiseRTPC LocalVar="A32NX_ENGINE_N2:2" RTPCName="SIMVAR_TURB_ENG_N2" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="transfer" Continuous="false" ViewPoint="Inside" NodeName="FUSES01" LocalVar="A32NX_ELEC_CONTACTOR_3XG_IS_CLOSED" Units="Bool" Index="1">
+        <Sound WwiseData="true" WwiseEvent="transfer" Continuous="false" ViewPoint="Inside" NodeName="SOUND_121VU" LocalVar="A32NX_ELEC_CONTACTOR_11XU2_IS_CLOSED" Units="Bool" Index="1">
+            <Range LowerBound="1" />
+            <WwiseRTPC LocalVar="A32NX_ENGINE_N2:2" RTPCName="SIMVAR_TURB_ENG_N2" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="transfer" Continuous="false" ViewPoint="Inside" NodeName="SOUND_121VU" LocalVar="A32NX_ELEC_CONTACTOR_3XG_IS_CLOSED" Units="Bool" Index="1">
             <Range UpperBound="0" />
             <WwiseRTPC LocalVar="A32NX_ENGINE_N2:2" RTPCName="SIMVAR_TURB_ENG_N2" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="transfer" Continuous="false" ViewPoint="Inside" NodeName="FUSES01" LocalVar="A32NX_ELEC_CONTACTOR_3XS_IS_CLOSED" Units="Bool" Index="1">
+        <Sound WwiseData="true" WwiseEvent="transfer" Continuous="false" ViewPoint="Inside" NodeName="SOUND_121VU" LocalVar="A32NX_ELEC_CONTACTOR_3XS_IS_CLOSED" Units="Bool" Index="1">
             <Range UpperBound="0" />
             <WwiseRTPC LocalVar="A32NX_ENGINE_N2:2" RTPCName="SIMVAR_TURB_ENG_N2" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="transfer_01" Continuous="false" ViewPoint="Inside" NodeName="FUSES01" LocalVar="A32NX_ELEC_CONTACTOR_9XU1_IS_CLOSED" Units="Bool" Index="1">
+        <Sound WwiseData="true" WwiseEvent="transfer_01" Continuous="false" ViewPoint="Inside" NodeName="SOUND_121VU" LocalVar="A32NX_ELEC_CONTACTOR_9XU1_IS_CLOSED" Units="Bool" Index="1">
             <Range UpperBound="0" />
             <WwiseRTPC LocalVar="A32NX_ENGINE_N2:2" RTPCName="SIMVAR_TURB_ENG_N2" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="transfer_01" Continuous="false" ViewPoint="Inside" NodeName="FUSES01" LocalVar="A32NX_ELEC_CONTACTOR_9XU2_IS_CLOSED" Units="Bool" Index="1">
+        <Sound WwiseData="true" WwiseEvent="transfer_01" Continuous="false" ViewPoint="Inside" NodeName="SOUND_121VU" LocalVar="A32NX_ELEC_CONTACTOR_9XU2_IS_CLOSED" Units="Bool" Index="1">
             <Range UpperBound="0" />
             <WwiseRTPC LocalVar="A32NX_ENGINE_N2:2" RTPCName="SIMVAR_TURB_ENG_N2" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="transfer" Continuous="false" ViewPoint="Inside" NodeName="FUSES01" LocalVar="A32NX_ELEC_CONTACTOR_11XU1_IS_CLOSED" Units="Bool" Index="1">
+        <Sound WwiseData="true" WwiseEvent="transfer" Continuous="false" ViewPoint="Inside" NodeName="SOUND_121VU" LocalVar="A32NX_ELEC_CONTACTOR_11XU1_IS_CLOSED" Units="Bool" Index="1">
             <Range UpperBound="0" />
             <WwiseRTPC LocalVar="A32NX_ENGINE_N2:2" RTPCName="SIMVAR_TURB_ENG_N2" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="transfer" Continuous="false" ViewPoint="Inside" NodeName="FUSES01" LocalVar="A32NX_ELEC_CONTACTOR_11XU2_IS_CLOSED" Units="Bool" Index="1">
+        <Sound WwiseData="true" WwiseEvent="transfer" Continuous="false" ViewPoint="Inside" NodeName="SOUND_121VU" LocalVar="A32NX_ELEC_CONTACTOR_11XU2_IS_CLOSED" Units="Bool" Index="1">
             <Range UpperBound="0" />
             <WwiseRTPC LocalVar="A32NX_ENGINE_N2:2" RTPCName="SIMVAR_TURB_ENG_N2" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="doorlocks" Continuous="false" ViewPoint="Inside" NodeName="FUSES01" LocalVar="A32NX_ELEC_DC_2_BUS_IS_POWERED" Units="Bool" Index="1">
+        <Sound WwiseData="true" WwiseEvent="doorlocks" Continuous="false" ViewPoint="Inside" NodeName="SOUND_121VU" LocalVar="A32NX_ELEC_DC_2_BUS_IS_POWERED" Units="Bool" Index="1">
             <Range LowerBound="1" />
         </Sound>
 
@@ -1775,27 +1775,27 @@
 
         <!-- INSTRUMENTS FOLEYS  =========================================================================  -->
 
-        <Sound WwiseData="true" WwiseEvent="flapnotch" NodeName="LEVER_FLAPS" Continuous="false" LocalVar="A32NX_FLAPS_HANDLE_PERCENT" Units="NUMBER" Index="1">
+        <Sound WwiseData="true" WwiseEvent="flapnotch" NodeName="SOUND_FLAP_LEVER" Continuous="false" LocalVar="A32NX_FLAPS_HANDLE_PERCENT" Units="NUMBER" Index="1">
             <Range LowerBound="0.00" UpperBound="0.00" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="flapnotch" NodeName="LEVER_FLAPS" Continuous="false" LocalVar="A32NX_FLAPS_HANDLE_PERCENT" Units="NUMBER" Index="1">
+        <Sound WwiseData="true" WwiseEvent="flapnotch" NodeName="SOUND_FLAP_LEVER" Continuous="false" LocalVar="A32NX_FLAPS_HANDLE_PERCENT" Units="NUMBER" Index="1">
             <Range LowerBound="0.25" UpperBound="0.25" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="flapnotch" NodeName="LEVER_FLAPS" Continuous="false" LocalVar="A32NX_FLAPS_HANDLE_PERCENT" Units="NUMBER" Index="1">
+        <Sound WwiseData="true" WwiseEvent="flapnotch" NodeName="SOUND_FLAP_LEVER" Continuous="false" LocalVar="A32NX_FLAPS_HANDLE_PERCENT" Units="NUMBER" Index="1">
             <Range LowerBound="0.50" UpperBound="0.50" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="flapnotch" NodeName="LEVER_FLAPS" Continuous="false" LocalVar="A32NX_FLAPS_HANDLE_PERCENT" Units="NUMBER" Index="1">
+        <Sound WwiseData="true" WwiseEvent="flapnotch" NodeName="SOUND_FLAP_LEVER" Continuous="false" LocalVar="A32NX_FLAPS_HANDLE_PERCENT" Units="NUMBER" Index="1">
             <Range LowerBound="0.75" UpperBound="0.75" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="flapnotch" NodeName="LEVER_FLAPS" Continuous="false" LocalVar="A32NX_FLAPS_HANDLE_PERCENT" Units="NUMBER" Index="1">
+        <Sound WwiseData="true" WwiseEvent="flapnotch" NodeName="SOUND_FLAP_LEVER" Continuous="false" LocalVar="A32NX_FLAPS_HANDLE_PERCENT" Units="NUMBER" Index="1">
             <Range LowerBound="1.00" UpperBound="1.00" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="Spoiler0" NodeName="LEVER_SPEEDBRAKE" Continuous="false" LocalVar="A32NX_SPOILERS_HANDLE_POSITION" Units="NUMBER" Index="1">
+        <Sound WwiseData="true" WwiseEvent="Spoiler0" NodeName="SOUND_SPEED_BRAKE_LEVER" Continuous="false" LocalVar="A32NX_SPOILERS_HANDLE_POSITION" Units="NUMBER" Index="1">
             <Range LowerBound="0" UpperBound="0" />
             <WwiseRTPC SimVar="GROUND VELOCITY" Units="METERS PER SECOND" Index="0" RTPCName="SIMVAR_GROUND_VELOCITY" />
             <Requires LocalVar="A32NX_SPOILERS_ARMED" Units="BOOL" Index="1">
@@ -1803,7 +1803,7 @@
             </Requires>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="Spoiler50" NodeName="LEVER_SPEEDBRAKE" Continuous="false" LocalVar="A32NX_SPOILERS_HANDLE_POSITION" Units="NUMBER" Index="1">
+        <Sound WwiseData="true" WwiseEvent="Spoiler50" NodeName="SOUND_SPEED_BRAKE_LEVER" Continuous="false" LocalVar="A32NX_SPOILERS_HANDLE_POSITION" Units="NUMBER" Index="1">
             <Range LowerBound="0.49" UpperBound="0.51" />
             <WwiseRTPC SimVar="GROUND VELOCITY" Units="METERS PER SECOND" Index="0" RTPCName="SIMVAR_GROUND_VELOCITY" />
             <Requires LocalVar="A32NX_SPOILERS_ARMED" Units="BOOL" Index="1">
@@ -1811,7 +1811,7 @@
             </Requires>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="Spoiler100" NodeName="LEVER_SPEEDBRAKE" Continuous="false" LocalVar="A32NX_SPOILERS_HANDLE_POSITION" Units="NUMBER" Index="1">
+        <Sound WwiseData="true" WwiseEvent="Spoiler100" NodeName="SOUND_SPEED_BRAKE_LEVER" Continuous="false" LocalVar="A32NX_SPOILERS_HANDLE_POSITION" Units="NUMBER" Index="1">
             <Range LowerBound="0.99" />
             <WwiseRTPC SimVar="GROUND VELOCITY" Units="METERS PER SECOND" Index="0" RTPCName="SIMVAR_GROUND_VELOCITY" />
             <Requires LocalVar="A32NX_SPOILERS_ARMED" Units="BOOL" Index="1">
@@ -1819,59 +1819,59 @@
             </Requires>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="SpoilerARM" NodeName="LEVER_SPEEDBRAKE" Continuous="false" LocalVar="A32NX_SPOILERS_ARMED" Units="BOOL" Index="1">
+        <Sound WwiseData="true" WwiseEvent="SpoilerARM" NodeName="SOUND_SPEED_BRAKE_LEVER" Continuous="false" LocalVar="A32NX_SPOILERS_ARMED" Units="BOOL" Index="1">
             <Range LowerBound="1" UpperBound="1" />
             <WwiseRTPC SimVar="GROUND VELOCITY" Units="METERS PER SECOND" Index="0" RTPCName="SIMVAR_GROUND_VELOCITY" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="SpoilerDISARM" NodeName="LEVER_SPEEDBRAKE" Continuous="false" LocalVar="A32NX_SPOILERS_ARMED" Units="BOOL" Index="1">
+        <Sound WwiseData="true" WwiseEvent="SpoilerDISARM" NodeName="SOUND_SPEED_BRAKE_LEVER" Continuous="false" LocalVar="A32NX_SPOILERS_ARMED" Units="BOOL" Index="1">
             <Range LowerBound="0" UpperBound="0" />
             <WwiseRTPC SimVar="GROUND VELOCITY" Units="METERS PER SECOND" Index="0" RTPCName="SIMVAR_GROUND_VELOCITY" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="lever_throttle_1" ViewPoint="Inside" NodeName="LEVER_THROTTLE_1" LocalVar="XMLVAR_Throttle1Position">
+        <Sound WwiseData="true" WwiseEvent="lever_throttle_1" ViewPoint="Inside" NodeName="SOUND_THRUST_LEVER_1" LocalVar="XMLVAR_Throttle1Position">
             <WwiseRTPC LocalVar="XMLVAR_Throttle1Position" Derived="true" RTPCName="LOCALVAR_GENERAL_ENG_THROTTLE1_LEVER_POSITION_DERIVED" />
             <WwiseRTPC LocalVar="XMLVAR_Throttle1Position" RTPCName="LOCALVAR_GENERAL_ENG_THROTTLE1_LEVER_POSITION" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="lever_throttle_2" ViewPoint="Inside" NodeName="LEVER_THROTTLE_2" LocalVar="XMLVAR_Throttle2Position">
+        <Sound WwiseData="true" WwiseEvent="lever_throttle_2" ViewPoint="Inside" NodeName="SOUND_THRUST_LEVER_2" LocalVar="XMLVAR_Throttle2Position">
             <WwiseRTPC LocalVar="XMLVAR_Throttle2Position" Derived="true" RTPCName="LOCALVAR_GENERAL_ENG_THROTTLE2_LEVER_POSITION_DERIVED" />
             <WwiseRTPC LocalVar="XMLVAR_Throttle2Position" RTPCName="LOCALVAR_GENERAL_ENG_THROTTLE2_LEVER_POSITION" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="detent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_1" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_1" Units="PERCENT">
+        <Sound WwiseData="true" WwiseEvent="detent" Continuous="false" ViewPoint="Inside" NodeName="SOUND_THRUST_LEVER_1" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_1" Units="PERCENT">
             <Range LowerBound="73" UpperBound="77" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="detent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_2" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_2" Units="PERCENT">
+        <Sound WwiseData="true" WwiseEvent="detent" Continuous="false" ViewPoint="Inside" NodeName="SOUND_THRUST_LEVER_2" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_2" Units="PERCENT">
             <Range LowerBound="73" UpperBound="77" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="detent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_1" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_1" Units="PERCENT">
+        <Sound WwiseData="true" WwiseEvent="detent" Continuous="false" ViewPoint="Inside" NodeName="SOUND_THRUST_LEVER_1" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_1" Units="PERCENT">
             <Range LowerBound="48" UpperBound="52" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="detent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_2" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_2" Units="PERCENT">
+        <Sound WwiseData="true" WwiseEvent="detent" Continuous="false" ViewPoint="Inside" NodeName="SOUND_THRUST_LEVER_2" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_2" Units="PERCENT">
             <Range LowerBound="48" UpperBound="52" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="IdleDetent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_1" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_1" Units="PERCENT">
+        <Sound WwiseData="true" WwiseEvent="IdleDetent" Continuous="false" ViewPoint="Inside" NodeName="SOUND_THRUST_LEVER_1" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_1" Units="PERCENT">
             <Range LowerBound="23" UpperBound="27" />
             <Range LowerBound="98" />
             <Range UpperBound="0" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="IdleDetent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_2" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_2" Units="PERCENT">
+        <Sound WwiseData="true" WwiseEvent="IdleDetent" Continuous="false" ViewPoint="Inside" NodeName="SOUND_THRUST_LEVER_2" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_2" Units="PERCENT">
             <Range LowerBound="23" UpperBound="27" />
             <Range LowerBound="98" />
             <Range UpperBound="0" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="lever_trim_elevator" ViewPoint="Inside" NodeName="LEVER_ELEVATORTRIM_1" ContinuousStopDelay="1.0" SimVar="ELEVATOR TRIM POSITION" Units="PERCENT" Index="0">
+        <Sound WwiseData="true" WwiseEvent="lever_trim_elevator" ViewPoint="Inside" NodeName="SOUND_THRUST_LEVER_1" ContinuousStopDelay="1.0" SimVar="ELEVATOR TRIM POSITION" Units="PERCENT" Index="0">
             <WwiseRTPC SimVar="ELEVATOR TRIM POSITION" Units="PERCENT" Index="0" Derived="true" RTPCName="SIMVAR_ELEVATOR_TRIM_POSITION_DERIVED" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="pedal_movement" ViewPoint="Inside" NodeName="PEDALS_LEFT" ContinuousStopDelay="1.0" SimVar="RUDDER PEDAL POSITION" Units="PERCENT" Index="0">
+        <Sound WwiseData="true" WwiseEvent="pedal_movement" ViewPoint="Inside" NodeName="SOUND_FOOTWELL_LEFT" ContinuousStopDelay="1.0" SimVar="RUDDER PEDAL POSITION" Units="PERCENT" Index="0">
             <WwiseRTPC SimVar="RUDDER PEDAL POSITION" Units="PERCENT" Index="0" Derived="true" RTPCName="SIMVAR_RUDDER_PEDAL_POSITION_DERIVED" />
         </Sound>
 
@@ -1898,39 +1898,39 @@
 
         <!-- Miscellaneous ==========================================================================================  -->
 
-        <Sound WwiseData="true" WwiseEvent="wiper_slowL" NodeName="Wiper_Base_l" SimVar="CIRCUIT POWER SETTING" Units="percent" Index="77" Continuous="true">
+        <Sound WwiseData="true" WwiseEvent="wiper_slowL" NodeName="SOUND_WIPER_LEFT" SimVar="CIRCUIT POWER SETTING" Units="percent" Index="77" Continuous="true">
             <Range LowerBound="75" UpperBound="75" />
             <Requires SimVar="CIRCUIT ON" Units="Bool" Index="77">
             <Range LowerBound="1" />
             </Requires>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="wiper_fastL" NodeName="Wiper_Base_l" SimVar="CIRCUIT POWER SETTING" Units="percent" Index="77" Continuous="true">
+        <Sound WwiseData="true" WwiseEvent="wiper_fastL" NodeName="SOUND_WIPER_LEFT" SimVar="CIRCUIT POWER SETTING" Units="percent" Index="77" Continuous="true">
             <Range LowerBound="100" />
             <Requires SimVar="CIRCUIT ON" Units="Bool" Index="77">
             <Range LowerBound="1" />
             </Requires>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="wiper_parkL" NodeName="Wiper_Base_l" SimVar="CIRCUIT ON" Units="Bool" Index="77" Continuous="false">
+        <Sound WwiseData="true" WwiseEvent="wiper_parkL" NodeName="SOUND_WIPER_LEFT" SimVar="CIRCUIT ON" Units="Bool" Index="77" Continuous="false">
             <Range UpperBound="0" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="wiper_slowR" NodeName="WIPER_BASE_R" SimVar="CIRCUIT POWER SETTING" Units="percent" Index="80" Continuous="true">
+        <Sound WwiseData="true" WwiseEvent="wiper_slowR" NodeName="SOUND_WIPER_RIGHT" SimVar="CIRCUIT POWER SETTING" Units="percent" Index="80" Continuous="true">
             <Range LowerBound="75" UpperBound="75" />
             <Requires SimVar="CIRCUIT ON" Units="Bool" Index="80">
             <Range LowerBound="1" />
             </Requires>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="wiper_fastR" NodeName="WIPER_BASE_R" SimVar="CIRCUIT POWER SETTING" Units="percent" Index="80" Continuous="true">
+        <Sound WwiseData="true" WwiseEvent="wiper_fastR" NodeName="SOUND_WIPER_RIGHT" SimVar="CIRCUIT POWER SETTING" Units="percent" Index="80" Continuous="true">
             <Range LowerBound="100" />
             <Requires SimVar="CIRCUIT ON" Units="Bool" Index="80">
             <Range LowerBound="1" />
             </Requires>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="wiper_parkR" NodeName="WIPER_BASE_R" SimVar="CIRCUIT ON" Units="Bool" Index="80" Continuous="false">
+        <Sound WwiseData="true" WwiseEvent="wiper_parkR" NodeName="SOUND_WIPER_RIGHT" SimVar="CIRCUIT ON" Units="Bool" Index="80" Continuous="false">
             <Range UpperBound="0" />
         </Sound>
 
@@ -2004,22 +2004,22 @@
             </Requires>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="cvr_test" NodeName="PEDALS_LEFT" LocalVar="A32NX_RCDR_TEST" Continuous="true">
+        <Sound WwiseData="true" WwiseEvent="cvr_test" NodeName="SOUND_FOOTWELL_LEFT" LocalVar="A32NX_RCDR_TEST" Continuous="true">
             <Range LowerBound="1" />
             <Requires LocalVar="A32NX_RCDR_GROUND_CONTROL_ON" Units="Bool" Index="1">
             <Range LowerBound="1" />
             </Requires>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="printerloop" NodeName="Print" Continuous="true" LocalVar="A32NX_PRINTER_ACTIVE" Units="NUMBER">
+        <Sound WwiseData="true" WwiseEvent="printerloop" NodeName="SOUND_PRINTER" Continuous="true" LocalVar="A32NX_PRINTER_ACTIVE" Units="NUMBER">
             <Range LowerBound="1"/>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="papertear" NodeName="Print" Continuous="false" LocalVar="A32NX_PRINTER_TEAR" Units="NUMBER">
+        <Sound WwiseData="true" WwiseEvent="papertear" NodeName="SOUND_PRINTER" Continuous="false" LocalVar="A32NX_PRINTER_TEAR" Units="NUMBER">
             <Range LowerBound="2" UpperBound="2"/>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="papercrumble" NodeName="PAPER_DISCARD" Continuous="false" LocalVar="A32NX_DISCARD_PAGE" Units="NUMBER">
+        <Sound WwiseData="true" WwiseEvent="papercrumble" NodeName="SOUND_PAPER_DISCARD" Continuous="false" LocalVar="A32NX_DISCARD_PAGE" Units="NUMBER">
             <Range LowerBound="1" UpperBound="1"/>
         </Sound>
 
@@ -2035,7 +2035,7 @@
 
         <!-- RAIN ========================================================================================== -->
 
-		<Sound WwiseData="true" WwiseEvent="LightRainL" SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" NodeName="Wiper_Base_l" ViewPoint="Inside" Continuous="true">
+		<Sound WwiseData="true" WwiseEvent="LightRainL" SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" NodeName="SOUND_WIPER_LEFT" ViewPoint="Inside" Continuous="true">
 			<Range LowerBound="0.01" />
 			<WwiseRTPC SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" RTPCName="SIMVAR_AMBIENT_PRECIP_RATE"/>
 			<WwiseRTPC SimVar="AIRSPEED TRUE" Units="KNOTS" Index="0" RTPCName="SIMVAR_AIRSPEED_TRUE"/>
@@ -2044,7 +2044,7 @@
 			</Requires>
 		</Sound>
 
-		<Sound WwiseData="true" WwiseEvent="LightRainR" SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" NodeName="WIPER_BASE_R" ViewPoint="Inside" Continuous="true">
+		<Sound WwiseData="true" WwiseEvent="LightRainR" SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" NodeName="SOUND_WIPER_RIGHT" ViewPoint="Inside" Continuous="true">
 			<Range LowerBound="0.01" />
 			<WwiseRTPC SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" RTPCName="SIMVAR_AMBIENT_PRECIP_RATE"/>
 			<WwiseRTPC SimVar="AIRSPEED TRUE" Units="KNOTS" Index="0" RTPCName="SIMVAR_AIRSPEED_TRUE"/>
@@ -2053,7 +2053,7 @@
 			</Requires>
 		</Sound>
 
-		<Sound WwiseData="true" WwiseEvent="ModerateRainL" SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" NodeName="Wiper_Base_l" ViewPoint="Inside" Continuous="true">
+		<Sound WwiseData="true" WwiseEvent="ModerateRainL" SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" NodeName="SOUND_WIPER_LEFT" ViewPoint="Inside" Continuous="true">
 			<Range LowerBound="2" />
 			<WwiseRTPC SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" RTPCName="SIMVAR_AMBIENT_PRECIP_RATE"/>
 			<WwiseRTPC SimVar="AIRSPEED TRUE" Units="KNOTS" Index="0" RTPCName="SIMVAR_AIRSPEED_TRUE"/>
@@ -2062,7 +2062,7 @@
 			</Requires>
 		</Sound>
 
-		<Sound WwiseData="true" WwiseEvent="ModerateRainR" SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" NodeName="WIPER_BASE_R" ViewPoint="Inside" Continuous="true">
+		<Sound WwiseData="true" WwiseEvent="ModerateRainR" SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" NodeName="SOUND_WIPER_RIGHT" ViewPoint="Inside" Continuous="true">
 			<Range LowerBound="2" />
 			<WwiseRTPC SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" RTPCName="SIMVAR_AMBIENT_PRECIP_RATE"/>
 			<WwiseRTPC SimVar="AIRSPEED TRUE" Units="KNOTS" Index="0" RTPCName="SIMVAR_AIRSPEED_TRUE"/>
@@ -2071,7 +2071,7 @@
 			</Requires>
 		</Sound>
 
-		<Sound WwiseData="true" WwiseEvent="HeavyRainL" SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" NodeName="Wiper_Base_l" ViewPoint="Inside" Continuous="true">
+		<Sound WwiseData="true" WwiseEvent="HeavyRainL" SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" NodeName="SOUND_WIPER_LEFT" ViewPoint="Inside" Continuous="true">
 			<Range LowerBound="15" />
 			<WwiseRTPC SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" RTPCName="SIMVAR_AMBIENT_PRECIP_RATE"/>
 			<WwiseRTPC SimVar="AIRSPEED TRUE" Units="KNOTS" Index="0" RTPCName="SIMVAR_AIRSPEED_TRUE"/>
@@ -2080,7 +2080,7 @@
 			</Requires>
 		</Sound>
 
-		<Sound WwiseData="true" WwiseEvent="HeavyRainR" SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" NodeName="WIPER_BASE_R" ViewPoint="Inside" Continuous="true">
+		<Sound WwiseData="true" WwiseEvent="HeavyRainR" SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" NodeName="SOUND_WIPER_RIGHT" ViewPoint="Inside" Continuous="true">
 			<Range LowerBound="15" />
 			<WwiseRTPC SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" RTPCName="SIMVAR_AMBIENT_PRECIP_RATE"/>
 			<WwiseRTPC SimVar="AIRSPEED TRUE" Units="KNOTS" Index="0" RTPCName="SIMVAR_AIRSPEED_TRUE"/>
@@ -2089,64 +2089,64 @@
 			</Requires>
 		</Sound>
 
-        <Sound WwiseData="true" WwiseEvent="selcalbeep" NodeName="Wiper_Base_l" ViewPoint="Inside" LocalVar="A32NX_ACP_SELCAL">
+        <Sound WwiseData="true" WwiseEvent="selcalbeep" NodeName="SOUND_SPEAKER_LEFT" ViewPoint="Inside" LocalVar="A32NX_ACP_SELCAL">
             <Range LowerBound="1" />
 
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="identbeep" NodeName="Wiper_Base_l" ViewPoint="Inside" LocalVar="A32NX_ACP_BEEP_IDENT_NAV1">
-            <Range LowerBound="1" />
-            <WwiseRTPC LocalVar="A32NX_NAV_VOLUME:1" RTPCName="LOCALVAR_ACP_VOLUME"/>
-        </Sound>
-
-        <Sound WwiseData="true" WwiseEvent="squelchloop" NodeName="Wiper_Base_l" ViewPoint="Inside" SimVar="NAV SOUND" Units="Bool" Index="1">
+        <Sound WwiseData="true" WwiseEvent="identbeep" NodeName="SOUND_SPEAKER_LEFT" ViewPoint="Inside" LocalVar="A32NX_ACP_BEEP_IDENT_NAV1">
             <Range LowerBound="1" />
             <WwiseRTPC LocalVar="A32NX_NAV_VOLUME:1" RTPCName="LOCALVAR_ACP_VOLUME"/>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="identbeep" NodeName="Wiper_Base_l" ViewPoint="Inside" LocalVar="A32NX_ACP_BEEP_IDENT_NAV2">
+        <Sound WwiseData="true" WwiseEvent="squelchloop" NodeName="SOUND_SPEAKER_LEFT" ViewPoint="Inside" SimVar="NAV SOUND" Units="Bool" Index="1">
+            <Range LowerBound="1" />
+            <WwiseRTPC LocalVar="A32NX_NAV_VOLUME:1" RTPCName="LOCALVAR_ACP_VOLUME"/>
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="identbeep" NodeName="SOUND_SPEAKER_LEFT" ViewPoint="Inside" LocalVar="A32NX_ACP_BEEP_IDENT_NAV2">
             <Range LowerBound="1" />
             <WwiseRTPC LocalVar="A32NX_NAV_VOLUME:2" RTPCName="LOCALVAR_ACP_VOLUME"/>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="squelchloop2" NodeName="Wiper_Base_l" ViewPoint="Inside" SimVar="NAV SOUND" Units="Bool" Index="2">
+        <Sound WwiseData="true" WwiseEvent="squelchloop2" NodeName="SOUND_SPEAKER_LEFT" ViewPoint="Inside" SimVar="NAV SOUND" Units="Bool" Index="2">
             <Range LowerBound="1" />
             <WwiseRTPC LocalVar="A32NX_NAV_VOLUME:2" RTPCName="LOCALVAR_ACP_VOLUME"/>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="identbeep" NodeName="Wiper_Base_l" ViewPoint="Inside" LocalVar="A32NX_ACP_BEEP_IDENT_NAV3">
+        <Sound WwiseData="true" WwiseEvent="identbeep" NodeName="SOUND_SPEAKER_LEFT" ViewPoint="Inside" LocalVar="A32NX_ACP_BEEP_IDENT_NAV3">
             <Range LowerBound="1" />
             <WwiseRTPC LocalVar="A32NX_NAV_VOLUME:3" RTPCName="LOCALVAR_ACP_VOLUME"/>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="squelchloop3" NodeName="Wiper_Base_l" ViewPoint="Inside" SimVar="NAV SOUND" Units="Bool" Index="3">
+        <Sound WwiseData="true" WwiseEvent="squelchloop3" NodeName="SOUND_SPEAKER_LEFT" ViewPoint="Inside" SimVar="NAV SOUND" Units="Bool" Index="3">
             <Range LowerBound="1" />
             <WwiseRTPC LocalVar="A32NX_NAV_VOLUME:3" RTPCName="LOCALVAR_ACP_VOLUME"/>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="identbeep" NodeName="Wiper_Base_l" ViewPoint="Inside" LocalVar="A32NX_ACP_BEEP_IDENT_ADF1">
+        <Sound WwiseData="true" WwiseEvent="identbeep" NodeName="SOUND_SPEAKER_LEFT" ViewPoint="Inside" LocalVar="A32NX_ACP_BEEP_IDENT_ADF1">
             <Range LowerBound="1" />
             <WwiseRTPC LocalVar="A32NX_ADF_VOLUME:1" RTPCName="LOCALVAR_ACP_VOLUME"/>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="squelchloop4" NodeName="Wiper_Base_l" ViewPoint="Inside" SimVar="ADF SOUND" Units="Bool" Index="1">
+        <Sound WwiseData="true" WwiseEvent="squelchloop4" NodeName="SOUND_SPEAKER_LEFT" ViewPoint="Inside" SimVar="ADF SOUND" Units="Bool" Index="1">
             <Range LowerBound="1" />
             <WwiseRTPC LocalVar="A32NX_ADF_VOLUME:1" RTPCName="LOCALVAR_ACP_VOLUME"/>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="identbeep" NodeName="Wiper_Base_l" ViewPoint="Inside" LocalVar="A32NX_ACP_BEEP_IDENT_ADF2">
+        <Sound WwiseData="true" WwiseEvent="identbeep" NodeName="SOUND_SPEAKER_LEFT" ViewPoint="Inside" LocalVar="A32NX_ACP_BEEP_IDENT_ADF2">
             <Range LowerBound="1" />
             <WwiseRTPC LocalVar="A32NX_ADF_VOLUME:2" RTPCName="LOCALVAR_ACP_VOLUME"/>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="squelchloop5" NodeName="Wiper_Base_l" ViewPoint="Inside" SimVar="ADF SOUND" Units="Bool" Index="2">
+        <Sound WwiseData="true" WwiseEvent="squelchloop5" NodeName="SOUND_SPEAKER_LEFT" ViewPoint="Inside" SimVar="ADF SOUND" Units="Bool" Index="2">
             <Range LowerBound="1" />
             <WwiseRTPC LocalVar="A32NX_ADF_VOLUME:2" RTPCName="LOCALVAR_ACP_VOLUME"/>
         </Sound>
 
         <!-- CRC and Caution ========================================================================================-->
 
-        <Sound WwiseData="true" WwiseEvent="CRC" NodeName="Wiper_Base_l" ViewPoint="Inside" LocalVar="A32NX_FWC_CRC">
+        <Sound WwiseData="true" WwiseEvent="CRC" NodeName="SOUND_SPEAKER_LEFT" ViewPoint="Inside" LocalVar="A32NX_FWC_CRC">
             <Range LowerBound="0.5" />
 
         </Sound>
@@ -2249,7 +2249,7 @@
             </Requires>
             <WwiseRTPC LocalVar="A32NX_SOUND_ANNOUNCEMENTS_ENABLED" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_ANNOUNCEMENT_TOGGLE" />
         </Sound>
-         <Sound WwiseData="true" WwiseEvent="cabin_crew_seats_takeoff" LocalVar="A32NX_SWITCH_TCAS_POSITION" NodeName="PEDALS_LEFT" Continuous="true">
+         <Sound WwiseData="true" WwiseEvent="cabin_crew_seats_takeoff" LocalVar="A32NX_SWITCH_TCAS_POSITION" NodeName="SOUND_FOOTWELL_LEFT" Continuous="true">
             <Range LowerBound="1" />
             <Requires LocalVar="A32NX_ENGINE_N1:1">
                 <Range LowerBound="17" />
@@ -2262,7 +2262,7 @@
             </Requires>
             <WwiseRTPC LocalVar="A32NX_SOUND_ANNOUNCEMENTS_ENABLED" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_ANNOUNCEMENT_TOGGLE" />
         </Sound>
-         <Sound WwiseData="true" WwiseEvent="cabin_crew_seats_landing" SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT" Index="0" NodeName="PEDALS_LEFT" Continuous="true">
+         <Sound WwiseData="true" WwiseEvent="cabin_crew_seats_landing" SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT" Index="0" NodeName="SOUND_FOOTWELL_LEFT" Continuous="true">
             <Range LowerBound="0.2" />
             <Requires LocalVar="A32NX_FMGC_FLIGHT_PHASE">
                 <Range LowerBound="5" UpperBound="6" />
@@ -2272,48 +2272,40 @@
 
         <!-- Cavalry charge ===============================================================================-->
 
-        <Sound WwiseData="true" WwiseEvent="cavcharge" NodeName="WIPER_BASE_L" ViewPoint="Inside" LocalVar="A32NX_FWC_CAVALRY_CHARGE" Continuous="true">
+        <Sound WwiseData="true" WwiseEvent="cavcharge" NodeName="SOUND_SPEAKER_LEFT" ViewPoint="Inside" LocalVar="A32NX_FWC_CAVALRY_CHARGE" Continuous="true">
             <Range LowerBound="0.5" />
             <WwiseRTPC LocalVar="A32NX_FWS_AUDIO_VOLUME" Units="number" Index="0" RTPCName="LOCALVAR_FWC_VOLUME" />
         </Sound>
 
         <!-- Altitude deviation warning =====================================================================-->
 
-        <Sound WwiseData="true" WwiseEvent="cchordloop" NodeName="PEDALS_LEFT" ViewPoint="Inside" LocalVar="A32NX_ALT_DEVIATION" Continuous="true">
+        <Sound WwiseData="true" WwiseEvent="cchordloop" NodeName="SOUND_SPEAKER_LEFT" ViewPoint="Inside" LocalVar="A32NX_FWC_CCHORD" Continuous="true">
             <Range LowerBound="1" />
-        </Sound>
-
-        <Sound WwiseData="true" WwiseEvent="cchordshort" NodeName="PEDALS_LEFT" ViewPoint="Inside" LocalVar="A32NX_ALT_DEVIATION_SHORT" Continuous="false">
-            <Range LowerBound="1" />
-        </Sound>
-
-        <Sound WwiseEvent="3click" WwiseData="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_FMA_TRIPLE_CLICK" Continuous="false">
-            <Range LowerBound="1"/>
         </Sound>
 
         <!-- Stall warning =====================================================================-->
-        <Sound WwiseEvent="aural_stall_new" WwiseData="true" NodeName="PEDALS_LEFT" LocalVar="A32NX_AUDIO_STALL_WARNING" Continuous="true">
+        <Sound WwiseEvent="aural_stall_new" WwiseData="true" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_AUDIO_STALL_WARNING" Continuous="true">
             <Range LowerBound="1"/>
         </Sound>
 
         <!-- ROP/ROW warnings =====================================================================-->
-        <Sound WwiseEvent="brake_max_braking" WwiseData="true" NodeName="Wiper_Base_l" LocalVar="A32NX_AUDIO_ROP_MAX_BRAKING" Continuous="true">
+        <Sound WwiseEvent="brake_max_braking" WwiseData="true" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_AUDIO_ROP_MAX_BRAKING" Continuous="true">
             <Range LowerBound="1"/>
         </Sound>
 
-        <Sound WwiseEvent="set_max_reverse" WwiseData="true" NodeName="Wiper_Base_l" LocalVar="A32NX_AUDIO_ROW_SET_MAX_REVERSE" Continuous="true">
+        <Sound WwiseEvent="set_max_reverse" WwiseData="true" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_AUDIO_ROW_SET_MAX_REVERSE" Continuous="true">
             <Range LowerBound="1"/>
         </Sound>
 
-        <Sound WwiseEvent="keep_max_reverse" WwiseData="true" NodeName="Wiper_Base_l" LocalVar="A32NX_AUDIO_ROP_KEEP_MAX_REVERSE" Continuous="false">
+        <Sound WwiseEvent="keep_max_reverse" WwiseData="true" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_AUDIO_ROP_KEEP_MAX_REVERSE" Continuous="false">
             <Range LowerBound="1"/>
         </Sound>
 
-        <Sound WwiseEvent="runway_too_short" WwiseData="true" NodeName="Wiper_Base_l" LocalVar="A32NX_AUDIO_ROW_RWY_TOO_SHORT" Continuous="true">
+        <Sound WwiseEvent="runway_too_short" WwiseData="true" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_AUDIO_ROW_RWY_TOO_SHORT" Continuous="true">
             <Range LowerBound="1"/>
         </Sound>
 
-        <Sound WwiseEvent="autobrake_off" WwiseData="true" NodeName="Wiper_Base_l" LocalVar="A32NX_AUDIO_AUTOBRAKE_OFF" Continuous="false">
+        <Sound WwiseEvent="autobrake_off" WwiseData="true" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_AUDIO_AUTOBRAKE_OFF" Continuous="false">
             <Range LowerBound="1"/>
         </Sound>
 
@@ -2359,47 +2351,47 @@
         <Sound WwiseData="true" WwiseEvent="aural_v1" />
         <Sound WwiseEvent="cavcharge" WwiseData="true" NodeName="PEDALS_LEFT" Continuous="false" />
         <Sound WwiseEvent="3click" WwiseData="true" NodeName="PEDALS_LEFT" Continuous="false" />
-        <Sound WwiseData="true" WwiseEvent="fwdgalley" NodeName="Wiper_Base_l" />
-        <Sound WwiseData="true" WwiseEvent="cpdlc_ring" NodeName="Wiper_Base_l" />
+        <Sound WwiseData="true" WwiseEvent="fwdgalley" NodeName="SOUND_SPEAKER_LEFT" />
+        <Sound WwiseData="true" WwiseEvent="cpdlc_ring" NodeName="SOUND_SPEAKER_LEFT" />
 
         <!-- New RA callouts ====================================================================================-->
-        <Sound WwiseData="true" WwiseEvent="new_5" NodeName="Wiper_Base_l" />
-        <Sound WwiseData="true" WwiseEvent="new_10" NodeName="Wiper_Base_l" />
-        <Sound WwiseData="true" WwiseEvent="new_20" NodeName="Wiper_Base_l" />
-        <Sound WwiseData="true" WwiseEvent="new_30" NodeName="Wiper_Base_l" />
-        <Sound WwiseData="true" WwiseEvent="new_40" NodeName="Wiper_Base_l" />
-        <Sound WwiseData="true" WwiseEvent="new_50" NodeName="Wiper_Base_l" />
-        <Sound WwiseData="true" WwiseEvent="new_100" NodeName="Wiper_Base_l" />
-        <Sound WwiseData="true" WwiseEvent="new_200" NodeName="Wiper_Base_l" />
-        <Sound WwiseData="true" WwiseEvent="new_300" NodeName="Wiper_Base_l" />
-        <Sound WwiseData="true" WwiseEvent="new_400" NodeName="Wiper_Base_l" />
-        <Sound WwiseData="true" WwiseEvent="new_500" NodeName="Wiper_Base_l" />
-        <Sound WwiseData="true" WwiseEvent="new_1000" NodeName="Wiper_Base_l" />
-        <Sound WwiseData="true" WwiseEvent="new_2000" NodeName="Wiper_Base_l" />
-        <Sound WwiseData="true" WwiseEvent="new_2500" NodeName="Wiper_Base_l" />
-        <Sound WwiseData="true" WwiseEvent="new_2_500" NodeName="Wiper_Base_l" />
-        <Sound WwiseData="true" WwiseEvent="new_retard" NodeName="Wiper_Base_l" />
-        <Sound WwiseData="true" WwiseEvent="aural_minimumnew" NodeName="Wiper_Base_l" />
-        <Sound WwiseData="true" WwiseEvent="aural_100above" NodeName="Wiper_Base_l" />
+        <Sound WwiseData="true" WwiseEvent="new_5" NodeName="SOUND_SPEAKER_LEFT" />
+        <Sound WwiseData="true" WwiseEvent="new_10" NodeName="SOUND_SPEAKER_LEFT" />
+        <Sound WwiseData="true" WwiseEvent="new_20" NodeName="SOUND_SPEAKER_LEFT" />
+        <Sound WwiseData="true" WwiseEvent="new_30" NodeName="SOUND_SPEAKER_LEFT" />
+        <Sound WwiseData="true" WwiseEvent="new_40" NodeName="SOUND_SPEAKER_LEFT" />
+        <Sound WwiseData="true" WwiseEvent="new_50" NodeName="SOUND_SPEAKER_LEFT" />
+        <Sound WwiseData="true" WwiseEvent="new_100" NodeName="SOUND_SPEAKER_LEFT" />
+        <Sound WwiseData="true" WwiseEvent="new_200" NodeName="SOUND_SPEAKER_LEFT" />
+        <Sound WwiseData="true" WwiseEvent="new_300" NodeName="SOUND_SPEAKER_LEFT" />
+        <Sound WwiseData="true" WwiseEvent="new_400" NodeName="SOUND_SPEAKER_LEFT" />
+        <Sound WwiseData="true" WwiseEvent="new_500" NodeName="SOUND_SPEAKER_LEFT" />
+        <Sound WwiseData="true" WwiseEvent="new_1000" NodeName="SOUND_SPEAKER_LEFT" />
+        <Sound WwiseData="true" WwiseEvent="new_2000" NodeName="SOUND_SPEAKER_LEFT" />
+        <Sound WwiseData="true" WwiseEvent="new_2500" NodeName="SOUND_SPEAKER_LEFT" />
+        <Sound WwiseData="true" WwiseEvent="new_2_500" NodeName="SOUND_SPEAKER_LEFT" />
+        <Sound WwiseData="true" WwiseEvent="new_retard" NodeName="SOUND_SPEAKER_LEFT" />
+        <Sound WwiseData="true" WwiseEvent="aural_minimumnew" NodeName="SOUND_SPEAKER_LEFT" />
+        <Sound WwiseData="true" WwiseEvent="aural_100above" NodeName="SOUND_SPEAKER_LEFT" />
 
         <!-- TCAS callouts ====================================================================================-->
 
-        <Sound WwiseData="true" WwiseEvent="clear_of_conflict" NodeName="Wiper_Base_l" />
-        <Sound WwiseData="true" WwiseEvent="climb_climb" NodeName="Wiper_Base_l" />
-        <Sound WwiseData="true" WwiseEvent="climb_climb_now" NodeName="Wiper_Base_l" />
-        <Sound WwiseData="true" WwiseEvent="climb_crossing_climb" NodeName="Wiper_Base_l" />
-        <Sound WwiseData="true" WwiseEvent="descend_crossing_descend" NodeName="Wiper_Base_l" />
-        <Sound WwiseData="true" WwiseEvent="descend_descend" NodeName="Wiper_Base_l" />
-        <Sound WwiseData="true" WwiseEvent="descend_descend_now" NodeName="Wiper_Base_l" />
-        <Sound WwiseData="true" WwiseEvent="increase_climb" NodeName="Wiper_Base_l" />
-        <Sound WwiseData="true" WwiseEvent="increase_descent" NodeName="Wiper_Base_l" />
-        <Sound WwiseData="true" WwiseEvent="level_off_level_off" NodeName="Wiper_Base_l" />
-        <Sound WwiseData="true" WwiseEvent="maint_vs_crossing_maint" NodeName="Wiper_Base_l" />
-        <Sound WwiseData="true" WwiseEvent="maint_vs_maint" NodeName="Wiper_Base_l" />
-        <Sound WwiseData="true" WwiseEvent="monitor_vs" NodeName="Wiper_Base_l" />
-        <Sound WwiseData="true" WwiseEvent="traffic" NodeName="Wiper_Base_l" />
-        <Sound WwiseData="true" WwiseEvent="traffic_traffic" NodeName="Wiper_Base_l" />
-        <Sound WwiseData="true" WwiseEvent="TCAS_sys_test_OK" NodeName="Wiper_Base_l" />
+        <Sound WwiseData="true" WwiseEvent="clear_of_conflict" NodeName="SOUND_SPEAKER_LEFT" />
+        <Sound WwiseData="true" WwiseEvent="climb_climb" NodeName="SOUND_SPEAKER_LEFT" />
+        <Sound WwiseData="true" WwiseEvent="climb_climb_now" NodeName="SOUND_SPEAKER_LEFT" />
+        <Sound WwiseData="true" WwiseEvent="climb_crossing_climb" NodeName="SOUND_SPEAKER_LEFT" />
+        <Sound WwiseData="true" WwiseEvent="descend_crossing_descend" NodeName="SOUND_SPEAKER_LEFT" />
+        <Sound WwiseData="true" WwiseEvent="descend_descend" NodeName="SOUND_SPEAKER_LEFT" />
+        <Sound WwiseData="true" WwiseEvent="descend_descend_now" NodeName="SOUND_SPEAKER_LEFT" />
+        <Sound WwiseData="true" WwiseEvent="increase_climb" NodeName="SOUND_SPEAKER_LEFT" />
+        <Sound WwiseData="true" WwiseEvent="increase_descent" NodeName="SOUND_SPEAKER_LEFT" />
+        <Sound WwiseData="true" WwiseEvent="level_off_level_off" NodeName="SOUND_SPEAKER_LEFT" />
+        <Sound WwiseData="true" WwiseEvent="maint_vs_crossing_maint" NodeName="SOUND_SPEAKER_LEFT" />
+        <Sound WwiseData="true" WwiseEvent="maint_vs_maint" NodeName="SOUND_SPEAKER_LEFT" />
+        <Sound WwiseData="true" WwiseEvent="monitor_vs" NodeName="SOUND_SPEAKER_LEFT" />
+        <Sound WwiseData="true" WwiseEvent="traffic" NodeName="SOUND_SPEAKER_LEFT" />
+        <Sound WwiseData="true" WwiseEvent="traffic_traffic" NodeName="SOUND_SPEAKER_LEFT" />
+        <Sound WwiseData="true" WwiseEvent="TCAS_sys_test_OK" NodeName="SOUND_SPEAKER_LEFT" />
 
     </AvionicSounds>
 
@@ -2578,8 +2570,8 @@
         <Sound WwiseData="true" WwiseEvent="deice_windshield_switch_off" ViewPoint="Inside"/>
 
         <!-- Exterior ========================================================================================== -->
-        <Sound WwiseData="true" WwiseEvent="wipers_forward" NodeName="Wiper_Base_l"/>
-        <Sound WwiseData="true" WwiseEvent="wipers_backward" NodeName="Wiper_Base_l"/>
+        <Sound WwiseData="true" WwiseEvent="wipers_forward" NodeName="SOUND_SPEAKER_LEFT"/>
+        <Sound WwiseData="true" WwiseEvent="wipers_backward" NodeName="SOUND_SPEAKER_LEFT"/>
 
     </AnimationSounds>
 

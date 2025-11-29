@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { CDUAtsuMenu } from './A320_Neo_CDU_ATSU_Menu';
 import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
 

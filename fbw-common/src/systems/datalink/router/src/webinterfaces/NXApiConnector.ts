@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
@@ -31,9 +32,9 @@ export class NXApiConnector {
     const alt = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet');
     const heading = SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'degree');
     const acType = SimVar.GetSimVarValue('TITLE', 'string'); // Note: This can be overriden by livery aircraft.cfg
-    const origin = NXDataStore.get('PLAN_ORIGIN', '');
-    const destination = NXDataStore.get('PLAN_DESTINATION', '');
-    const freetext = NXDataStore.get('CONFIG_ONLINE_FEATURES_STATUS', 'DISABLED') === 'ENABLED';
+    const origin = NXDataStore.getLegacy('PLAN_ORIGIN', '');
+    const destination = NXDataStore.getLegacy('PLAN_DESTINATION', '');
+    const freetext = NXDataStore.getLegacy('CONFIG_ONLINE_FEATURES_STATUS', 'DISABLED') === 'ENABLED';
 
     return {
       location: {
@@ -51,7 +52,7 @@ export class NXApiConnector {
   }
 
   public static async connect(flightNo: string): Promise<AtsuStatusCodes> {
-    if (NXDataStore.get('CONFIG_ONLINE_FEATURES_STATUS', 'DISABLED') !== 'ENABLED') {
+    if (NXDataStore.getLegacy('CONFIG_ONLINE_FEATURES_STATUS', 'DISABLED') !== 'ENABLED') {
       return AtsuStatusCodes.TelexDisabled;
     }
 
@@ -77,7 +78,7 @@ export class NXApiConnector {
   }
 
   public static async disconnect(): Promise<AtsuStatusCodes> {
-    if (NXDataStore.get('CONFIG_ONLINE_FEATURES_STATUS', 'DISABLED') !== 'ENABLED') {
+    if (NXDataStore.getLegacy('CONFIG_ONLINE_FEATURES_STATUS', 'DISABLED') !== 'ENABLED') {
       return AtsuStatusCodes.TelexDisabled;
     }
 
@@ -115,7 +116,7 @@ export class NXApiConnector {
   }
 
   public static async receiveMetar(icao: string, message: WeatherMessage): Promise<AtsuStatusCodes> {
-    const storedMetarSrc = NXDataStore.get('CONFIG_METAR_SRC', 'MSFS');
+    const storedMetarSrc = NXDataStore.getLegacy('CONFIG_METAR_SRC', 'MSFS');
 
     return Metar.get(icao, ConfigWeatherMap[storedMetarSrc])
       .then((data) => {
@@ -134,7 +135,7 @@ export class NXApiConnector {
   }
 
   public static async receiveTaf(icao: string, message: WeatherMessage): Promise<AtsuStatusCodes> {
-    const storedTafSrc = NXDataStore.get('CONFIG_TAF_SRC', isMsfs2024() ? 'MSFS' : 'NOAA');
+    const storedTafSrc = NXDataStore.getLegacy('CONFIG_TAF_SRC', isMsfs2024() ? 'MSFS' : 'NOAA');
 
     return Taf.get(icao, ConfigWeatherMap[storedTafSrc])
       .then((data) => {
@@ -153,7 +154,7 @@ export class NXApiConnector {
   }
 
   public static async receiveAtis(icao: string, type: AtisType, message: AtisMessage): Promise<AtsuStatusCodes> {
-    const storedAtisSrc = NXDataStore.get('CONFIG_ATIS_SRC', 'FAA');
+    const storedAtisSrc = NXDataStore.getLegacy('CONFIG_ATIS_SRC', 'FAA');
 
     await Atis.get(icao, ConfigWeatherMap[storedAtisSrc])
       .then((data) => {

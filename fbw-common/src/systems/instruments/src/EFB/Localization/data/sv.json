@@ -94,9 +94,12 @@
     "Ofp": {
       "TT": {
         "IncreaseFontSize": "Öka teckenstorlek",
+        "NextLoadsheetSection": "Next loadsheet section",
+        "PreviousLoadsheetSection": "Previous loadsheet section",
         "ReduceFontSize": "Minska teckenstorlek"
       },
       "Title": "OFP",
+      "UnavailableLoadsheetSection": "Info not available or section not enabled in Simbrief.",
       "YouHaveNotYetImportedAnySimBriefData": "Du har ännu inte importerat SimBrief-data."
     },
     "Overview": {
@@ -308,6 +311,8 @@
       "Qnh": "QNH",
       "ReverseThrust": "Omvänd dragkraft",
       "Runway": "Runway",
+      "RunwayAltitude": "Höjd på landningsbanan",
+      "RunwayAltitudeUnit": "Fot över havsnivå",
       "RunwayCondition": "Banans skick",
       "RunwayConditions": {
         "Dry": "Torr (6)",
@@ -333,7 +338,11 @@
       "Title": "Landning",
       "UnitFt": "ft",
       "UnitMeter": "m",
+      "Weight": "Vikt",
       "Wind": "Wind",
+      "WindDirection": "Vindriktning",
+      "WindDirectionUnit": "°",
+      "WindMagnitude": "Vindstyrka",
       "WindMagnitudeUnit": "kts"
     },
     "SYNC": "SYNKA",
@@ -377,6 +386,8 @@
       "Packs": "Packs",
       "Qnh": "QNH",
       "Runway": "Runway",
+      "RunwayBearing": "Runway Bearing",
+      "RunwayBearingUnit": "°",
       "RunwayCondition": "Runway Condition",
       "RunwayConditions": {
         "Contaminated100mmDrySnow": "Dry Snow - 100 mm/4\"",
@@ -393,7 +404,7 @@
         "Wet": "Wet"
       },
       "RunwayElevation": "Runway Elevation",
-      "RunwayElevationUnit": "ft AMSL",
+      "RunwayElevationUnit": "ft",
       "RunwayHeading": "Runway Heading",
       "RunwayHeadingUnit": "°",
       "RunwayLengthUnitFt": "ft",
@@ -705,6 +716,7 @@
       },
       "OverrideSimBriefUserID": "Åsidosätta SimBrief användar-ID",
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Kontrollera att du har angett ditt SimBrief-användarnamn eller pilot-ID korrekt.",
+      "SimbriefLoadsheetNavigationEnabled": "Simbrief Loadsheet Navigation",
       "TT": {
         "OverrideSimBriefUserID": "Alternativt SimBrief-användar-ID att använda istället för det länkade Navigraph-kontot"
       },

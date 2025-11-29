@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2022-2024 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -19,7 +20,7 @@ import { NavaidSelectionManager, VorSelectionReason } from '@fmgc/navigation/Nav
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
 import { RequiredPerformance } from '@fmgc/navigation/RequiredPerformance';
-import { EventBus, Subject } from '@microsoft/msfs-sdk';
+import { EventBus, Subject, Subscribable } from '@microsoft/msfs-sdk';
 import { Coordinates } from 'msfs-geo';
 import { FlightPlanService } from '../flightplanning/FlightPlanService';
 import { NavigationDatabaseService } from '../flightplanning/NavigationDatabaseService';
@@ -53,6 +54,8 @@ export interface SelectedNavaid {
 export interface NavigationEvents {
   /** The selected pressure altitude in feet, or null if invalid/NCD. */
   fms_nav_pressure_altitude: number | null;
+  /** Whether GPS primary is in use. */
+  fms_nav_gps_primary: boolean;
 }
 
 export class Navigation implements NavigationProvider {
@@ -66,7 +69,8 @@ export class Navigation implements NavigationProvider {
 
   currentPerformance: number | undefined;
 
-  accuracyHigh: boolean = false;
+  private readonly _accuracyHigh = Subject.create(false);
+  public readonly accuracyHigh: Subscribable<boolean> = this._accuracyHigh;
 
   ppos: Coordinates = { lat: 0, long: 0 };
 
@@ -114,6 +118,14 @@ export class Navigation implements NavigationProvider {
     (_, i) => `L:A32NX_ADIRS_ADR_${i + 1}_STATIC_AIR_TEMPERATURE`,
   );
 
+  private static readonly irDiscreteWordVars = Array.from(
+    { length: 3 },
+    (_, i) => `L:A32NX_ADIRS_IR_${i + 1}_MAINT_WORD`,
+  );
+
+  private isGpirsAvailable = false;
+  private readonly gpsPrimary = Subject.create(false);
+
   private readonly navaidSelectionManager: NavaidSelectionManager;
 
   private readonly landingSystemSelectionManager: LandingSystemSelectionManager;
@@ -144,6 +156,11 @@ export class Navigation implements NavigationProvider {
     this.navaidTuner.init();
 
     this.pressureAltitude.sub((v) => this.publisher.pub('fms_nav_pressure_altitude', v, false, true), true);
+    this._accuracyHigh.sub((v) => {
+      SimVar.SetSimVarValue('L:A32NX_FMGC_L_NAV_ACCURACY_HIGH', 'bool', v);
+      SimVar.SetSimVarValue('L:A32NX_FMGC_R_NAV_ACCURACY_HIGH', 'bool', v);
+    }, true);
+    this.gpsPrimary.sub((v) => this.publisher.pub('fms_nav_gps_primary', v, false, true), true);
 
     this.nearbyAirportMonitor = NavigationDatabaseService.activeDatabase.createNearbyFacilityMonitor(
       NearbyFacilityType.Airport,
@@ -155,8 +172,8 @@ export class Navigation implements NavigationProvider {
   update(deltaTime: number): void {
     this.requiredPerformance.update(deltaTime);
 
+    this.updateAttHdgPosData();
     this.updateCurrentPerformance();
-
     this.updatePosition();
     this.updateRadioHeight();
     this.updateAirData();
@@ -180,7 +197,7 @@ export class Navigation implements NavigationProvider {
     for (const adiru of Navigation.adiruOrder) {
       const simVar = simVars[adiru - 1];
       Navigation.arincWordCache.setFromSimVar(simVar);
-      if (Navigation.arincWordCache.isNormalOperation() || Navigation.arincWordCache.isFunctionalTest()) {
+      if (!Navigation.arincWordCache.isInvalid()) {
         return Navigation.arincWordCache.value;
       }
     }
@@ -190,24 +207,24 @@ export class Navigation implements NavigationProvider {
   private updateCurrentPerformance(): void {
     const gs = SimVar.GetSimVarValue('GPS GROUND SPEED', 'knots');
 
-    // FIXME fake it until we make it :D
-    const estimate = 0.03 + Math.random() * 0.02 + gs * 0.00015;
-    // basic IIR filter
-    this.currentPerformance =
-      this.currentPerformance === undefined ? estimate : this.currentPerformance * 0.9 + estimate * 0.1;
+    if (this.isGpirsAvailable) {
+      // FIXME fake it until we make it :D
+      const estimate = 0.03 + Math.random() * 0.02 + gs * 0.00015;
+      // basic IIR filter
+      this.currentPerformance =
+        this.currentPerformance === undefined ? estimate : this.currentPerformance * 0.9 + estimate * 0.1;
 
-    const accuracyHigh = this.currentPerformance <= this.requiredPerformance.activeRnp;
-    if (accuracyHigh !== this.accuracyHigh) {
-      this.accuracyHigh = accuracyHigh;
-      SimVar.SetSimVarValue('L:A32NX_FMGC_L_NAV_ACCURACY_HIGH', 'bool', this.accuracyHigh);
-      SimVar.SetSimVarValue('L:A32NX_FMGC_R_NAV_ACCURACY_HIGH', 'bool', this.accuracyHigh);
+      this._accuracyHigh.set(this.currentPerformance <= this.requiredPerformance.activeRnp);
+    } else {
+      this._accuracyHigh.set(false);
     }
+    this.gpsPrimary.set(this.isGpirsAvailable && this.accuracyHigh.get());
   }
 
   private updateRadioHeight(): void {
     for (const simVar of Navigation.radioAltimeterVars) {
       Navigation.arincWordCache.setFromSimVar(simVar);
-      if (Navigation.arincWordCache.isNormalOperation()) {
+      if (!Navigation.arincWordCache.isInvalid()) {
         this.radioHeight = Navigation.arincWordCache.value;
         return;
       }
@@ -222,6 +239,22 @@ export class Navigation implements NavigationProvider {
     this.computedAirspeed = this.getAdiruValue(Navigation.computedAirspeedVars);
     this.trueAirspeed = this.getAdiruValue(Navigation.trueAirspeedVars);
     this.staticAirTemperature = this.getAdiruValue(Navigation.staticAirTemperatureVars);
+  }
+
+  private updateAttHdgPosData(): void {
+    this.isGpirsAvailable = false;
+    for (const simVar of Navigation.irDiscreteWordVars) {
+      Navigation.arincWordCache.setFromSimVar(simVar);
+      // Check if in NAV mode and aligned
+      if (
+        !Navigation.arincWordCache.isInvalid() &&
+        Navigation.arincWordCache.bitValue(3) &&
+        !Navigation.arincWordCache.bitValue(1)
+      ) {
+        this.isGpirsAvailable = true;
+        break;
+      }
+    }
   }
 
   private updatePosition(): void {
@@ -243,6 +276,10 @@ export class Navigation implements NavigationProvider {
   public getPpos(): Coordinates | null {
     // TODO return null when fms pos invalid
     return this.ppos;
+  }
+
+  public getGpsPrimary(): boolean {
+    return this.gpsPrimary.get();
   }
 
   public getPressureAltitude(): number | null {

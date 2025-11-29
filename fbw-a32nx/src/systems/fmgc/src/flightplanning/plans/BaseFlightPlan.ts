@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
@@ -24,7 +25,13 @@ import {
   WaypointDescriptor,
 } from '@flybywiresim/fbw-sdk';
 import { OriginSegment } from '@fmgc/flightplanning/segments/OriginSegment';
-import { FlightPlanElement, FlightPlanLeg, FlightPlanLegFlags, isLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import {
+  FlightPlanElement,
+  FlightPlanLeg,
+  FlightPlanLegFlags,
+  isDiscontinuity,
+  isLeg,
+} from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { DepartureSegment } from '@fmgc/flightplanning/segments/DepartureSegment';
 import { ArrivalSegment } from '@fmgc/flightplanning/segments/ArrivalSegment';
 import { ApproachSegment } from '@fmgc/flightplanning/segments/ApproachSegment';
@@ -59,12 +66,7 @@ import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPla
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { bearingTo } from 'msfs-geo';
 import { RestringOptions } from './RestringOptions';
-
-export enum FlightPlanQueuedOperation {
-  Restring,
-  RebuildArrivalAndApproach,
-  SyncSegmentLegs,
-}
+import { FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/FlightPlanQueuedOperation';
 
 export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData>
   implements ReadonlyFlightPlan
@@ -216,11 +218,11 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   }
 
   get firstMissedApproachLegIndex() {
-    return this.allLegs.length - this.missedApproachSegment.allLegs.length;
+    return this.allLegs.length - this.missedApproachSegment.legCount;
   }
 
   get firstApproachLegIndex() {
-    return this.firstMissedApproachLegIndex - this.approachSegment.allLegs.length;
+    return this.firstMissedApproachLegIndex - this.approachSegment.legCount;
   }
 
   activeLegIndex = 1;
@@ -305,6 +307,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       this.activeLeg.definition.approachWaypointDescriptor === ApproachWaypointDescriptor.MissedApproachPoint
     ) {
       this.stringMissedApproach();
+    }
+
+    if (isLeg(this.activeLeg) && this.activeLeg.cruiseStep) {
+      this.autoDeleteCruiseStep(this.activeLegIndex);
     }
 
     this.activeLegIndex++;
@@ -1254,9 +1260,11 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
    * @param airportIdent the airport to use as the new destination
    */
   async newDest(index: number, airportIdent: string) {
-    this.redistributeLegsAt(index);
-
     const leg = this.legElementAt(index);
+
+    const segment = leg.segment;
+    this.redistributeLegsAt(segment.class === SegmentClass.Departure ? index + 1 : index);
+
     const legIndexInEnroute = this.enrouteSegment.allLegs.indexOf(leg);
 
     const legsToDelete = this.enrouteSegment.allLegs.length - (legIndexInEnroute + 1);
@@ -1265,14 +1273,13 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     await this.approachViaSegment.setProcedure(undefined);
     await this.arrivalEnrouteTransitionSegment.setProcedure(undefined);
     await this.arrivalSegment.setProcedure(undefined);
-    await this.destinationSegment.setDestinationIcao(airportIdent);
-    await this.destinationSegment.setDestinationRunway(undefined);
 
-    await this.flushOperationQueue();
+    await this.setDestinationAirport(airportIdent);
+    await this.setDestinationRunway(undefined);
 
     this.enrouteSegment.allLegs.splice(legIndexInEnroute + 1, legsToDelete);
 
-    if (this.enrouteSegment.allLegs[this.enrouteSegment.legCount - 1].isDiscontinuity === false) {
+    if (!isDiscontinuity(this.enrouteSegment.allLegs[this.enrouteSegment.allLegs.length - 1])) {
       this.enrouteSegment.allLegs.push({ isDiscontinuity: true });
     }
     this.enrouteSegment.strung = true;
@@ -1653,6 +1660,15 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     this.unignoreAllCruiseSteps();
 
     this.incrementVersion();
+  }
+
+  private autoDeleteCruiseStep(legIndex: number) {
+    this.sendEvent('flightPlan.autoDeleteCruiseStep', {
+      planIndex: this.index,
+      forAlternate: this instanceof AlternateFlightPlan,
+    });
+
+    this.removeCruiseStep(legIndex);
   }
 
   removeCruiseStep(index: number) {
@@ -2312,8 +2328,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       }
     }
 
-    if (this.enrouteSegment.allLegs[0]?.isDiscontinuity === false) {
-      // Insert disco otherwise
+    this.incrementVersion();
+
+    // Insert disco after departure segment if there is no disco already
+    if (this.allLegs[lastDepartureLegIndexInPlan + 1]?.isDiscontinuity === false) {
       this.enrouteSegment.allLegs.unshift({ isDiscontinuity: true });
       this.enqueueOperation(FlightPlanQueuedOperation.SyncSegmentLegs, lastDepartureSegment);
     }
@@ -2378,7 +2396,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     );
   }
 
-  private findLastDepartureLeg(): [FlightPlanSegment, number, number] {
+  findLastDepartureLeg(): [FlightPlanSegment, number, number] {
     for (let segment = this.previousSegment(this.enrouteSegment); segment; segment = this.previousSegment(segment)) {
       const lastLegIndex = segment.lastLegIndex;
       if (lastLegIndex < 0) {
@@ -2393,7 +2411,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     return [undefined, -1, -1];
   }
 
-  private findFirstArrivalLeg(): [FlightPlanSegment, number, number] {
+  findFirstArrivalLeg(): [FlightPlanSegment, number, number] {
     for (let segment = this.nextSegment(this.enrouteSegment); segment; segment = this.nextSegment(segment)) {
       if (segment.legCount < 0) {
         continue;
@@ -2683,6 +2701,18 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
   protected hasLegAt(index: number): boolean {
     return isLeg(this.maybeElementAt(index));
+  }
+
+  /**
+   * Finds the index of the final approach fix
+   * @returns The leg index, or -1 if not found.
+   */
+  getFinalApproachCourseFixIndex(): number {
+    return this.allLegs.findIndex(
+      (el) =>
+        el.isDiscontinuity === false &&
+        el.definition.approachWaypointDescriptor === ApproachWaypointDescriptor.FinalApproachCourseFix,
+    );
   }
 }
 

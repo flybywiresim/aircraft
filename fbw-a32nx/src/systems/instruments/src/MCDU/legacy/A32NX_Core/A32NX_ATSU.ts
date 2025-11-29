@@ -1,13 +1,13 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { NXDataStore } from '@flybywiresim/fbw-sdk';
+import { ISimbriefData, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { McduMessage, NXFictionalMessages } from '../../messages/NXSystemMessages';
 import { AtsuMessageType } from '@datalink/common';
-// FIXME rogue import from EFB
-import { ISimbriefData } from '../../../../../../../../fbw-common/src/systems/instruments/src/EFB/Apis/Simbrief';
 import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/uplink/SimBriefUplinkAdapter';
+import { SimbriefOfpState } from '../LegacyFmsPageInterface';
 
 // FIXME move all to ATSU (systems host)
 
@@ -49,12 +49,18 @@ const lbsToKg = (value) => {
  * Fetch SimBrief OFP data and store on FMCMainDisplay object
  */
 export const getSimBriefOfp = (
-  mcdu: { simbrief: any; setScratchpadMessage(m: McduMessage) },
+  // TODO fix this type
+  mcdu: {
+    simbrief: any;
+    simbriefOfpState: SimbriefOfpState;
+    simbriefOfp: ISimbriefData;
+    setScratchpadMessage(m: McduMessage);
+  },
   updateView: () => void,
   callback = () => {},
 ): Promise<ISimbriefData> => {
-  const navigraphUsername = NXDataStore.get('NAVIGRAPH_USERNAME', '');
-  const overrideSimBriefUserID = NXDataStore.get('CONFIG_OVERRIDE_SIMBRIEF_USERID', '');
+  const navigraphUsername = NXDataStore.getLegacy('NAVIGRAPH_USERNAME', '');
+  const overrideSimBriefUserID = NXDataStore.getLegacy('CONFIG_OVERRIDE_SIMBRIEF_USERID', '');
 
   if (!navigraphUsername && !overrideSimBriefUserID) {
     mcdu.setScratchpadMessage(NXFictionalMessages.noNavigraphUser);
@@ -62,11 +68,14 @@ export const getSimBriefOfp = (
   }
 
   mcdu.simbrief['sendStatus'] = 'REQUESTING';
+  mcdu.simbriefOfpState = SimbriefOfpState.Requested;
 
   updateView();
 
   return SimBriefUplinkAdapter.downloadOfpForUserID(navigraphUsername, overrideSimBriefUserID)
     .then((data) => {
+      mcdu.simbriefOfp = data;
+      mcdu.simbriefOfpState = SimbriefOfpState.Loaded;
       mcdu.simbrief['units'] = data.units;
       mcdu.simbrief['route'] = data.route;
       mcdu.simbrief['cruiseAltitude'] = data.cruiseAltitude;

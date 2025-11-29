@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -38,6 +39,13 @@ export enum KnowBranchNames {
   exp = 'Experimental',
 }
 
+export enum FbwBuildEdition {
+  Unknown = 0,
+  Stable,
+  Development,
+  Experimental,
+}
+
 /**
  *  Provides functions to the check the version of the aircraft against the
  *  published GitHub version
@@ -51,7 +59,13 @@ export class AircraftGithubVersionChecker {
 
   private static newestExpCommit: CommitInfo;
 
-  private static buildInfo: BuildInfo;
+  private static buildInfo?: BuildInfo;
+
+  /** Promises awaiting fetching of the build info. */
+  private static readonly buildInfoAwaiters: {
+    resolve: (buildInfo: BuildInfo) => void;
+    reject: (reason?: any) => void;
+  }[] = [];
 
   /**
    * Checks if the aircraft version is outdated and shows a popup if it is.
@@ -90,6 +104,33 @@ export class AircraftGithubVersionChecker {
     return this.versionChecked;
   }
 
+  /** Fetches the build info from the VFS and resolves or rejects all the awaiting promises. */
+  private static async fetchBuildInfo(aircraft: string): Promise<void> {
+    try {
+      const response = await fetch(`/VFS/${aircraft}_build_info.json`);
+      const json = await response.json();
+      this.buildInfo = {
+        built: json.built,
+        ref: json.ref,
+        sha: json.sha,
+        actor: json.actor,
+        eventName: json.event_name,
+        prettyReleaseName: json.pretty_release_name,
+        version: json.version,
+      };
+
+      for (const awaiter of AircraftGithubVersionChecker.buildInfoAwaiters) {
+        awaiter.resolve(this.buildInfo);
+      }
+    } catch (e) {
+      for (const awaiter of AircraftGithubVersionChecker.buildInfoAwaiters) {
+        awaiter.reject(e);
+      }
+    } finally {
+      AircraftGithubVersionChecker.buildInfoAwaiters.length = 0;
+    }
+  }
+
   /**
    * Reads the ${aircraft}_build_info.json file and returns the data a BuildInfo object.
    * It returns a cached version if it has been read before as the file is not expected to change
@@ -101,25 +142,14 @@ export class AircraftGithubVersionChecker {
     if (this.buildInfo) {
       return this.buildInfo;
     }
-    await fetch(`/VFS/${aircraft}_build_info.json`).then((response) => {
-      response
-        .json()
-        .then((json) => {
-          this.buildInfo = {
-            built: json.built,
-            ref: json.ref,
-            sha: json.sha,
-            actor: json.actor,
-            eventName: json.event_name,
-            prettyReleaseName: json.pretty_release_name,
-            version: json.version,
-          };
-        })
-        .catch((error) => {
-          console.error('Failed to read build info: ', error);
-        });
+
+    const ret = new Promise<BuildInfo>((resolve, reject) => {
+      AircraftGithubVersionChecker.buildInfoAwaiters.push({ resolve, reject });
     });
-    return this.buildInfo;
+    if (this.buildInfoAwaiters.length === 1) {
+      AircraftGithubVersionChecker.fetchBuildInfo(aircraft);
+    }
+    return ret;
   }
 
   /**
@@ -142,6 +172,38 @@ export class AircraftGithubVersionChecker {
       };
     }
     throw new Error('Invalid version format');
+  }
+
+  /**
+   * Gets the current aircraft edition (same meaning as package.json edition property).
+   * @param aircraft The aircraft prefix for the current aircraft.
+   * @returns The detected edition or {@link FbwBuildEdition.Unknown} if not known.
+   */
+  public static async getEdition(aircraft: string): Promise<FbwBuildEdition> {
+    try {
+      const buildInfo = await AircraftGithubVersionChecker.getBuildInfo(aircraft);
+      const versionInfo = AircraftGithubVersionChecker.getVersionInfo(aircraft, buildInfo.version);
+      switch (KnowBranchNames[versionInfo.branch]) {
+        case KnowBranchNames.rel:
+          return FbwBuildEdition.Stable;
+        case KnowBranchNames.dev:
+          return FbwBuildEdition.Development;
+        case KnowBranchNames.exp:
+          return FbwBuildEdition.Experimental;
+      }
+    } catch (e) {
+      console.warn('Failed to fetch edition', e);
+    }
+    return FbwBuildEdition.Unknown;
+  }
+
+  public static async setEditionLocalVar(aircraft: string): Promise<unknown> {
+    try {
+      const edition = await AircraftGithubVersionChecker.getEdition(aircraft);
+      return SimVar.SetSimVarValue('L:FBW_BUILD_EDITION', 'enum', edition);
+    } catch (e) {
+      return SimVar.SetSimVarValue('L:FBW_BUILD_EDITION', 'enum', FbwBuildEdition.Unknown);
+    }
   }
 
   /**

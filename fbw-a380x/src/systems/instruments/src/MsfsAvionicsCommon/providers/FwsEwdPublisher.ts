@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2024 FlyByWire Simulations
+﻿// Copyright (c) 2024-2025 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -9,6 +9,7 @@ export interface ChecklistState {
   itemsChecked: boolean[];
   itemsToShow: boolean[];
   itemsActive: boolean[];
+  itemsTimeStamp?: (number | null | undefined)[];
 }
 
 export type AbnormalNonSensedCategory = null | 'ENG' | 'F/CTL' | 'L/G' | 'NAV' | 'FUEL' | 'MISCELLANEOUS';
@@ -57,4 +58,13 @@ export interface FwsEwdEvents {
   fws_show_sts_indication: boolean;
   /** (FWS -> EWD) Show ADV indication at bottom of page */
   fws_show_adv_indication: boolean;
+
+  /** Show normal (white) attention getter for each engine*/
+  fws_normal_attention_getter_eng: boolean[];
+
+  /** Show abnormal (amber) attention getter on upper EWD for each engine*/
+  fws_abnormal_primary_engine_parameters_attention_getter: boolean[];
+
+  /** Show abnormal (amber) attention getter on engine SD for each engine Unused for now */
+  fws_abnormal_secondary_engine_parameters_attention_getter: boolean[];
 }
