@@ -2,6 +2,11 @@
   "LocalisationPackage": {
     "Language": "fr-FR",
     "Strings": {
+      "A380X": {
+        "TOOLTIPS": {
+          "AUTOBRAKE_2": "Régler le frein automatique sur 2"
+        }
+      },
       "A380X.LOADING.TIPS.A380_001": "L'A380X de FlyByWire est le fruit d'une collaboration entre des centaines de contributeurs individuels.",
       "A380X.LOADING.TIPS.A380_002": "Le développement de l'A380X de FlyByWire a débuté en octobre 2020.",
       "A380X.LOADING.TIPS.A380_003": "FlyByWire tire son nom des commandes de vol électriques introduites pour la première fois dans l'Airbus A320.",
@@ -110,12 +115,9 @@
       "AIRCRAFT.DESCRIPTION": "Le plus grand avion de ligne du monde, l'Airbus A380, est un gros porteur à deux étages fabriqué par Airbus, dont le premier modèle de production a été livré à Singapore Airlines le 15 octobre 2007.</br></br>Considéré comme un tournant dans l'ingénierie, l'A3XX, désigné plus tard comme l'A380, s'est inspiré d'études antérieures sur les gros porteurs, dans le but de surpasser la vénérable série de gros porteurs Boeing 747 en termes d'économie de carburant, d'efficacité opérationnelle et de satisfaction de la clientèle.</br></br>Assemblé à Toulouse, en France, chaque A380 est composé de plus de quatre millions de pièces détachées provenant de plus de 1500 entreprises réparties dans 30 pays. Certifié pour transporter jusqu'à 853 passagers en configuration tout-économique, ou 525 passagers en configuration typique à trois classes, l'A380 est propulsé par quatre turbosoufflantes Engine Alliance GP7200 ou Rolls-Royce Trent 900.</br></br>Au total, 254 appareils ont été livrés avant la fin de la production en 2021.",
       "AIRCRAFT.UI_MANUFACTURER": "FlyByWire Simulations",
       "AIRCRAFT.UI_MODEL": "A380X (A380-842 RR)",
-      "AIRCRAFT.UI_VARIATION": "Livrée FlyByWire A380X",
-      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "Ajuster le cap sélectionné vers la gauche (%((A:AUTOPILOT HEADING LOCK DIR:1,deg))%!d!°)",
-      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "Ajuster le cap sélectionné vers la droite  (%((A:AUTOPILOT HEADING LOCK DIR:1,degr))%!d!°)"
+      "AIRCRAFT.UI_VARIATION": "Livrée FlyByWire A380X"
     }
   },
-  "LocalisationPackage.Strings.A380X.TOOLTIPS.AUTOBRAKE_2": "Régler le frein automatique sur 2",
   "LocalisationPackage.Strings.A380X.TOOLTIPS.AUTOBRAKE_3": "Régler le frein automatique sur 3",
   "LocalisationPackage.Strings.A380X.TOOLTIPS.AUTOBRAKE_BTV": "Régler le frein automatique sur brake-to-vacate (BTV)",
   "LocalisationPackage.Strings.A380X.TOOLTIPS.AUTOBRAKE_DISARM": "Régler le frein automatique sur désarmé (DISARM)",

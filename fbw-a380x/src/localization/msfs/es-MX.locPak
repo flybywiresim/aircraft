@@ -2,6 +2,11 @@
   "LocalisationPackage": {
     "Language": "en-US",
     "Strings": {
+      "A380X": {
+        "TOOLTIPS": {
+          "AUTOBRAKE_2": "Set auto brake to 2"
+        }
+      },
       "A380X.LOADING.TIPS.A380_001": "The FlyByWire A380X is a collaboration between hundreds of individual contributors.",
       "A380X.LOADING.TIPS.A380_002": "Development of the FlyByWire A380X first started in October 2020.",
       "A380X.LOADING.TIPS.A380_003": "FlyByWire is named after the fly-by-wire controls first introduced in the Airbus A320.",
@@ -110,12 +115,9 @@
       "AIRCRAFT.DESCRIPTION": "The world's largest passenger airliner, the Airbus A380, is a double deck wide-body aircraft manufactured by Airbus, with the first production model delivered to Singapore Airlines on 15 October 2007.</br></br>Considered to be an engineering milestone, the A3XX, later designated the A380, drew inspiration from earlier large aircraft studies, with the aim of surpassing the venerable Boeing 747 series of wide-body aircraft in fuel economy, operational efficiency and customer satisfaction. .</br></br>Assembled at the Final Assembly Line in Toulouse, France, each A380 is made up of over four million individual parts sourced from over 1500 companies in 30 countries. Certified to carry up to 853 passengers in an all-economy class configuration, or 525 passengers in a typical three-class configuration, the A380 is powered by four Engine Alliance GP7200 or Rolls-Royce Trent 900 turbofan engines.</br></br>A total of 254 airframes were delivered before the end of production in 2021.",
       "AIRCRAFT.UI_MANUFACTURER": "FlyByWire Simulations",
       "AIRCRAFT.UI_MODEL": "A380X (A380-842 RR)",
-      "AIRCRAFT.UI_VARIATION": "FlyByWire A380X House Livery",
-      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "Adjust selected heading to the left (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
-      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "Adjust selected heading to the right  (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)"
+      "AIRCRAFT.UI_VARIATION": "FlyByWire A380X House Livery"
     }
   },
-  "LocalisationPackage.Strings.A380X.TOOLTIPS.AUTOBRAKE_2": "Set auto brake to 2",
   "LocalisationPackage.Strings.A380X.TOOLTIPS.AUTOBRAKE_3": "Set auto brake to 3",
   "LocalisationPackage.Strings.A380X.TOOLTIPS.AUTOBRAKE_BTV": "Set auto brake to brake-to-vacate (BTV)",
   "LocalisationPackage.Strings.A380X.TOOLTIPS.AUTOBRAKE_DISARM": "Set auto brake to DISARM",
