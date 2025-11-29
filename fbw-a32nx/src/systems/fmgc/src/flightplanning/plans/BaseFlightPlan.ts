@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2025 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -556,28 +556,19 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   }
 
   get destinationLegIndex() {
-    let targetSegment: FlightPlanSegment = undefined;
-
-    if (this.destinationSegment.allLegs.length > 0) {
-      targetSegment = this.destinationSegment;
-    } else if (this.approachSegment.allLegs.length > 0) {
-      targetSegment = this.approachSegment;
-    } else if (this.enrouteSegment.allLegs.length > 0) {
-      targetSegment = this.enrouteSegment;
-    } else {
-      return -1;
-    }
-
-    let accumulator = 0;
-    for (const segment of this.orderedSegments) {
-      accumulator += segment.allLegs.length;
-
-      if (segment === targetSegment) {
-        break;
+    for (let i = this.firstMissedApproachLegIndex - 1; i >= 0; i--) {
+      const leg = this.maybeElementAt(i);
+      if (
+        isLeg(leg) &&
+        (leg.definition.approachWaypointDescriptor === ApproachWaypointDescriptor.MissedApproachPoint ||
+          areDatabaseItemsEqual(leg.terminationWaypoint(), this.destinationAirport) ||
+          areDatabaseItemsEqual(leg.terminationWaypoint(), this.destinationRunway))
+      ) {
+        return i;
       }
     }
 
-    return accumulator - 1;
+    return -1;
   }
 
   get endsAtRunway() {

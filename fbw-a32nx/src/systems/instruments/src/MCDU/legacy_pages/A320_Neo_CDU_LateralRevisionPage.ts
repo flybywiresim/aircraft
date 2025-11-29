@@ -45,7 +45,7 @@ export class CDULateralRevisionPage {
     const isDeparture =
       legIndexFP === targetPlan.originLegIndex &&
       !isPpos &&
-      (isAirport(leg) || isRunway(leg)) &&
+      (isAirport(legWaypoint) || isRunway(legWaypoint)) &&
       legWaypoint.airportIdent === departure?.airportIdent;
     const isDestination = legIndexFP === targetPlan.destinationLegIndex && !isPpos; // TODO this is bogus... compare icaos
     const isWaypoint = !isDeparture && !isDestination && !isPpos;
