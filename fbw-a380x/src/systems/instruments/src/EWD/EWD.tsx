@@ -457,10 +457,10 @@ export class CpiomEwdAvailabilityChecker {
 
   private readonly pausableSubscriptions: Subscription[] = [];
 
-  private readonly cpiomA1Available = ConsumerSubject.create(this.sub.on('cpiom_a_available_1'), false);
-  private readonly cpiomA2Available = ConsumerSubject.create(this.sub.on('cpiom_a_available_2'), false);
-  private readonly cpiomA3Available = ConsumerSubject.create(this.sub.on('cpiom_a_available_3'), false);
-  private readonly cpiomA4Available = ConsumerSubject.create(this.sub.on('cpiom_a_available_4'), false);
+  private readonly cpiomA1Available = ConsumerSubject.create(this.sub.on('cpiom_a_available_1'), true);
+  private readonly cpiomA2Available = ConsumerSubject.create(this.sub.on('cpiom_a_available_2'), true);
+  private readonly cpiomA3Available = ConsumerSubject.create(this.sub.on('cpiom_a_available_3'), true);
+  private readonly cpiomA4Available = ConsumerSubject.create(this.sub.on('cpiom_a_available_4'), true);
   public readonly cpiomAFailed = MappedSubject.create(
     SubscribableMapFunctions.nor(),
     this.cpiomA1Available,
@@ -469,10 +469,10 @@ export class CpiomEwdAvailabilityChecker {
     this.cpiomA4Available,
   );
 
-  private readonly cpiomB1Available = ConsumerSubject.create(this.sub.on('cpiom_b_available_1'), false);
-  private readonly cpiomB2Available = ConsumerSubject.create(this.sub.on('cpiom_b_available_2'), false);
-  private readonly cpiomB3Available = ConsumerSubject.create(this.sub.on('cpiom_b_available_3'), false);
-  private readonly cpiomB4Available = ConsumerSubject.create(this.sub.on('cpiom_b_available_4'), false);
+  private readonly cpiomB1Available = ConsumerSubject.create(this.sub.on('cpiom_b_available_1'), true);
+  private readonly cpiomB2Available = ConsumerSubject.create(this.sub.on('cpiom_b_available_2'), true);
+  private readonly cpiomB3Available = ConsumerSubject.create(this.sub.on('cpiom_b_available_3'), true);
+  private readonly cpiomB4Available = ConsumerSubject.create(this.sub.on('cpiom_b_available_4'), true);
   public readonly cpiomBFailed = MappedSubject.create(
     SubscribableMapFunctions.nor(),
     this.cpiomB1Available,
@@ -481,34 +481,34 @@ export class CpiomEwdAvailabilityChecker {
     this.cpiomB4Available,
   );
 
-  private readonly cpiomC1Available = ConsumerSubject.create(this.sub.on('cpiom_c_available_1'), false);
-  private readonly cpiomC2Available = ConsumerSubject.create(this.sub.on('cpiom_c_available_2'), false);
+  private readonly cpiomC1Available = ConsumerSubject.create(this.sub.on('cpiom_c_available_1'), true);
+  private readonly cpiomC2Available = ConsumerSubject.create(this.sub.on('cpiom_c_available_2'), true);
   public readonly cpiomCFailed = MappedSubject.create(
     SubscribableMapFunctions.nor(),
     this.cpiomC1Available,
     this.cpiomC2Available,
   );
 
-  private readonly cpiomD1Available = ConsumerSubject.create(this.sub.on('cpiom_d_available_1'), false);
-  private readonly cpiomD3Available = ConsumerSubject.create(this.sub.on('cpiom_d_available_3'), false);
+  private readonly cpiomD1Available = ConsumerSubject.create(this.sub.on('cpiom_d_available_1'), true);
+  private readonly cpiomD3Available = ConsumerSubject.create(this.sub.on('cpiom_d_available_3'), true);
   public readonly cpiomDFailed = MappedSubject.create(
     SubscribableMapFunctions.nor(),
     this.cpiomD1Available,
     this.cpiomD3Available,
   );
 
-  private readonly cpiomE1Available = ConsumerSubject.create(this.sub.on('cpiom_e_available_1'), false);
-  private readonly cpiomE2Available = ConsumerSubject.create(this.sub.on('cpiom_e_available_2'), false);
+  private readonly cpiomE1Available = ConsumerSubject.create(this.sub.on('cpiom_e_available_1'), true);
+  private readonly cpiomE2Available = ConsumerSubject.create(this.sub.on('cpiom_e_available_2'), true);
   public readonly cpiomEFailed = MappedSubject.create(
     SubscribableMapFunctions.nor(),
     this.cpiomE1Available,
     this.cpiomE2Available,
   );
 
-  private readonly cpiomF1Available = ConsumerSubject.create(this.sub.on('cpiom_f_available_1'), false);
-  private readonly cpiomF2Available = ConsumerSubject.create(this.sub.on('cpiom_f_available_2'), false);
-  private readonly cpiomF3Available = ConsumerSubject.create(this.sub.on('cpiom_f_available_3'), false);
-  private readonly cpiomF4Available = ConsumerSubject.create(this.sub.on('cpiom_f_available_4'), false);
+  private readonly cpiomF1Available = ConsumerSubject.create(this.sub.on('cpiom_f_available_1'), true);
+  private readonly cpiomF2Available = ConsumerSubject.create(this.sub.on('cpiom_f_available_2'), true);
+  private readonly cpiomF3Available = ConsumerSubject.create(this.sub.on('cpiom_f_available_3'), true);
+  private readonly cpiomF4Available = ConsumerSubject.create(this.sub.on('cpiom_f_available_4'), true);
   public readonly cpiomFFailed = MappedSubject.create(
     SubscribableMapFunctions.nor(),
     this.cpiomF1Available,
@@ -517,10 +517,10 @@ export class CpiomEwdAvailabilityChecker {
     this.cpiomF4Available,
   );
 
-  private readonly cpiomG1Available = ConsumerSubject.create(this.sub.on('cpiom_g_available_1'), false);
-  private readonly cpiomG2Available = ConsumerSubject.create(this.sub.on('cpiom_g_available_2'), false);
-  private readonly cpiomG3Available = ConsumerSubject.create(this.sub.on('cpiom_g_available_3'), false);
-  private readonly cpiomG4Available = ConsumerSubject.create(this.sub.on('cpiom_g_available_4'), false);
+  private readonly cpiomG1Available = ConsumerSubject.create(this.sub.on('cpiom_g_available_1'), true);
+  private readonly cpiomG2Available = ConsumerSubject.create(this.sub.on('cpiom_g_available_2'), true);
+  private readonly cpiomG3Available = ConsumerSubject.create(this.sub.on('cpiom_g_available_3'), true);
+  private readonly cpiomG4Available = ConsumerSubject.create(this.sub.on('cpiom_g_available_4'), true);
   public readonly cpiomGFailed = MappedSubject.create(
     SubscribableMapFunctions.nor(),
     this.cpiomG1Available,
