@@ -2,11 +2,6 @@
   "LocalisationPackage": {
     "Language": "de-DE",
     "Strings": {
-      "A380X": {
-        "TOOLTIPS": {
-          "AUTOBRAKE_2": "Set auto brake to 2"
-        }
-      },
       "A380X.LOADING.TIPS.A380_001": "Der FlyByWire A380X ist eine Zusammenarbeit von Hunderten einzelner Mitwirkender.",
       "A380X.LOADING.TIPS.A380_002": "Die Entwicklung des FlyByWire A380X begann erstmals im Oktober 2020.",
       "A380X.LOADING.TIPS.A380_003": "FlyByWire ist nach den Fly-by-Wire-Steuerelementen benannt, die erstmals im Airbus A320 eingeführt wurden.",
@@ -16,6 +11,7 @@
       "A380X.LOADING.TIPS.A380_007": "Das Volumen aller drei Decks (einschließlich des Laderaums) beträgt 1.570 m3. Das ist genug Platz für 35 Millionen Tischtennisbälle.",
       "A380X.LOADING.TIPS.A380_008": "Die maximale Auslegungslast des 6-Rad-Fahrwerks beträgt 260 Tonnen - das entspricht 200 VW Golf.",
       "A380X.LOADING.TIPS.A380_009": "Die Lüfterblätter des Motors mit einem Durchmesser von 116 Zoll (2,95 m) saugen jede Sekunde über eineinhalb Tonnen Luft an",
+      "A380X.TOOLTIPS.AUTOBRAKE_2": "Set auto brake to 2",
       "A380X.TOOLTIPS.BAT_SELECTOR_ACTION": "Select the battery voltage to display",
       "A380X.TOOLTIPS.BAT_SELECTOR_TITLE": "Battery Voltage Selector",
       "A380X.TOOLTIPS.DOORS_ARM_DISARM": "Arm or disarm slides for passenger door",

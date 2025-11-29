@@ -2,11 +2,6 @@
   "LocalisationPackage": {
     "Language": "fr-FR",
     "Strings": {
-      "A380X": {
-        "TOOLTIPS": {
-          "AUTOBRAKE_2": "Régler le frein automatique sur 2"
-        }
-      },
       "A380X.LOADING.TIPS.A380_001": "L'A380X de FlyByWire est le fruit d'une collaboration entre des centaines de contributeurs individuels.",
       "A380X.LOADING.TIPS.A380_002": "Le développement de l'A380X de FlyByWire a débuté en octobre 2020.",
       "A380X.LOADING.TIPS.A380_003": "FlyByWire tire son nom des commandes de vol électriques introduites pour la première fois dans l'Airbus A320.",
@@ -16,6 +11,7 @@
       "A380X.LOADING.TIPS.A380_007": "Le volume des trois ponts (y compris la soute) est de 1 570 m3. Cela représente un espace suffisant pour 35 millions de balles de ping-pong.",
       "A380X.LOADING.TIPS.A380_008": "La charge maximale prévue pour l'engin à 6 roues est de 260 tonnes, soit l'équivalent de 200 Golfs Volkswagen",
       "A380X.LOADING.TIPS.A380_009": "Les pales du ventilateur du moteur, d'un diamètre de 2,95 m, aspirent plus d'une tonne et quart d'air par seconde.",
+      "A380X.TOOLTIPS.AUTOBRAKE_2": "Régler le frein automatique sur 2",
       "A380X.TOOLTIPS.BAT_SELECTOR_ACTION": "Sélectionner la tension de la batterie à afficher",
       "A380X.TOOLTIPS.BAT_SELECTOR_TITLE": "Sélecteur de tension de la batterie",
       "A380X.TOOLTIPS.DOORS_ARM_DISARM": "Activer ou désactiver les glissières des portes passagers",
