@@ -4309,15 +4309,14 @@ export class FwsCore {
     const flapsPos = Arinc429Word.fromSimVarValue('L:A32NX_SFCC_1_FLAP_ACTUAL_POSITION_WORD');
     const slatsPos = Arinc429Word.fromSimVarValue('L:A32NX_SFCC_1_SLAT_ACTUAL_POSITION_WORD');
 
-    // WARNING these vary for other variants... A320 CFM LEAP values here
     // flap/slat internal signals
-    this.flapsInferiorTo8Deg.set(flapsPos.isNormalOperation() && flapsPos.value < 50);
-    this.flapsSuperiorTo8Deg.set(flapsPos.isNormalOperation() && flapsPos.value > 120);
-    this.flapsSuperiorTo17Deg.set(flapsPos.isNormalOperation() && flapsPos.value > 179);
-    this.flapsSuperiorTo26Deg.set(flapsPos.isNormalOperation() && flapsPos.value > 203);
-    this.slatsInferiorTo20Deg.set(slatsPos.isNormalOperation() && slatsPos.value < 240);
+    this.flapsInferiorTo8Deg.set(flapsPos.isNormalOperation() && flapsPos.value < 205);
+    this.flapsSuperiorTo8Deg.set(flapsPos.isNormalOperation() && flapsPos.value > 225);
+    this.flapsSuperiorTo17Deg.set(flapsPos.isNormalOperation() && flapsPos.value > 270);
+    this.flapsSuperiorTo26Deg.set(flapsPos.isNormalOperation() && flapsPos.value > 307);
+    this.slatsInferiorTo20Deg.set(slatsPos.isNormalOperation() && slatsPos.value < 276);
     this.flapsInConf3OrFull.set(
-      this.flapsSuperiorTo17Deg.get() || (slatsPos.isNormalOperation() && slatsPos.value > 255),
+      this.flapsSuperiorTo17Deg.get() || (slatsPos.isNormalOperation() && slatsPos.value > 317),
     );
 
     // flap, slat and speedbrake config warning logic
