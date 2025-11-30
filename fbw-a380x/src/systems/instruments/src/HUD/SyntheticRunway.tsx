@@ -49,6 +49,7 @@ export class SyntheticRunway extends DisplayComponent<{
     centerlineCoordinates: [],
   };
 
+  private definedData = false;
   private alt = 0;
   private logOnce = 0;
   private lat = 0;
@@ -165,6 +166,7 @@ export class SyntheticRunway extends DisplayComponent<{
       } else {
         this.landingRunway = fmsLandingRunway.toString();
         this.logOnce = 0;
+        this.definedData = false;
         return true;
       }
     }
@@ -231,11 +233,13 @@ export class SyntheticRunway extends DisplayComponent<{
         Math.abs(this.filterFloat(this.data.cornerCoordinates[3].alt)) < eps
       ) {
         console.log('M symbol data not loaded');
+        this.definedData = false;
         return false;
       } else {
         this.data2 = JSON.parse(JSON.stringify(this.data));
         this.initRwyPoints();
         console.log('M symbol data loaded');
+        this.definedData = true;
         return true;
       }
     },
@@ -378,7 +382,7 @@ export class SyntheticRunway extends DisplayComponent<{
       this.alt = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet');
       this.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
       this.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
-      if (this.isDefined.get()) {
+      if (this.definedData) {
         this.updateSyntheticRunway();
       } else {
         console.log('undefined data...');
@@ -512,6 +516,8 @@ export class SyntheticRunway extends DisplayComponent<{
           this.drawPath(this.centerLineCoords[i], this.centerLineCoords[i + 1]),
         );
       }
+    } else {
+      return;
     }
   }
 
