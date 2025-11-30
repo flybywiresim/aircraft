@@ -4,8 +4,8 @@ use crate::systems::shared::arinc429::{Arinc429Word, SignStatus};
 use systems::hydraulic::command_sensor_unit::{CSUMonitor, CSU};
 use systems::hydraulic::flap_slat::{ChannelCommand, SolenoidStatus, ValveBlock};
 use systems::shared::{
-    AdirsMeasurementOutputs, DelayedFalseLogicGate, DelayedPulseTrueLogicGate, ElectricalBusType,
-    ElectricalBuses, LgciuWeightOnWheels, PositionPickoffUnit,
+    AdirsMeasurementOutputs, DelayedFalseLogicGate, ElectricalBusType, ElectricalBuses,
+    LgciuWeightOnWheels, PositionPickoffUnit,
 };
 
 use systems::simulation::{
@@ -30,7 +30,6 @@ pub(super) struct SlatsChannel {
     powered_by: ElectricalBusType,
     is_powered: bool,
     is_powered_delayed: DelayedFalseLogicGate,
-    recovered_power_pulse: DelayedPulseTrueLogicGate,
 
     csu_monitor: CSUMonitor,
 
@@ -75,7 +74,6 @@ impl SlatsChannel {
             is_powered: false,
             is_powered_delayed: DelayedFalseLogicGate::new(Self::TRANSPARENCY_TIME)
                 .starting_as(false),
-            recovered_power_pulse: DelayedPulseTrueLogicGate::new(Duration::ZERO),
 
             kts_60: Velocity::new::<knot>(Self::SLAT_FUNCTIONS_ACTIVE_SPEED_KNOTS),
             conf1_slats: Angle::new::<degree>(Self::CONF1_SLATS_DEGREES),
@@ -188,8 +186,8 @@ impl SlatsChannel {
             None if valid_detent == CSU::Conf0 => {
                 self.slat_baulk_engaged = false;
             }
+            // In any oher case, don't influence slats movement
             _ => {
-                // TODO: is it correct?
                 self.slat_baulk_engaged = false;
             }
         }
@@ -230,38 +228,9 @@ impl SlatsChannel {
             None if valid_detent == CSU::Conf0 => {
                 self.slat_alpha_lock_engaged = false;
             }
+            // In any oher case, don't influence slats movement
             _ => {
-                // TODO: is it correct?
                 self.slat_alpha_lock_engaged = false;
-            }
-        }
-    }
-
-    fn powerup_reset(&mut self, adirs: &impl AdirsMeasurementOutputs) {
-        let cas = self.get_higher_cas(adirs);
-        let aoa = self.get_lower_aoa(adirs);
-        let current_detent = self.csu_monitor.get_current_detent();
-
-        // Slat Baulk restart and Slat alpha lock restart
-        match (cas, aoa) {
-            (Some(cas), Some(aoa))
-                if aoa < self.slat_alpha_lock_high_aoa
-                    && cas > self.slat_baulk_low_cas
-                    && current_detent == CSU::Conf0 =>
-            {
-                self.slat_baulk_engaged = false;
-                self.slat_alpha_lock_engaged = false;
-            }
-            (None, _) if current_detent == CSU::Conf0 => {
-                self.slat_baulk_engaged = false;
-                self.slat_alpha_lock_engaged = false;
-            }
-            (_, None) if current_detent == CSU::Conf0 => {
-                self.slat_baulk_engaged = false;
-                self.slat_alpha_lock_engaged = false;
-            }
-            (_, _) => {
-                // TODO
             }
         }
     }
@@ -307,12 +276,7 @@ impl SlatsChannel {
     ) {
         self.is_powered_delayed.update(context, self.is_powered);
 
-        self.recovered_power_pulse
-            .update(context, self.is_powered_delayed.output());
-
-        if self.recovered_power_pulse.output() {
-            self.powerup_reset(adirs);
-        }
+        // NOTE: there is no power recovery function because not needed by the slat channel (yet)
 
         if !self.is_powered_delayed.output() {
             self.power_loss_reset();
