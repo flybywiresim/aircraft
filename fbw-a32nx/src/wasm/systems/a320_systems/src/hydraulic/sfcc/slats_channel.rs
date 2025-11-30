@@ -313,6 +313,11 @@ impl SlatsChannel {
         self.sap[idx]
     }
 
+    #[cfg(test)]
+    pub fn get_slat_alpha_lock_baulk_function_active(&self) -> bool {
+        self.slat_alpha_lock_baulk_function_active
+    }
+
     fn slat_actual_position_word(&self) -> Arinc429Word<f64> {
         if !self.is_powered_delayed.output() {
             return Arinc429Word::default();

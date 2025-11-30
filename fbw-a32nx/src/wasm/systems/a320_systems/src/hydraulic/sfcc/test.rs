@@ -107,44 +107,41 @@ impl SimulationElement for SlatFlapGear {
 
 #[derive(Default)]
 struct TestLgciu {
-    ac_on_ground: bool,
+    compressed: bool,
 }
 impl TestLgciu {
-    fn set_ac_on_ground(&mut self, ac_on_ground: bool) {
-        self.ac_on_ground = ac_on_ground;
+    fn new(compressed: bool) -> Self {
+        Self { compressed }
+    }
+
+    pub fn set_on_ground(&mut self, is_on_ground: bool) {
+        self.compressed = is_on_ground;
     }
 }
 impl LgciuWeightOnWheels for TestLgciu {
-    fn right_gear_compressed(&self, _treat_ext_pwr_as_ground: bool) -> bool {
-        false
-    }
-
-    fn right_gear_extended(&self, _treat_ext_pwr_as_ground: bool) -> bool {
-        false
-    }
-
-    fn left_gear_compressed(&self, _treat_ext_pwr_as_ground: bool) -> bool {
-        false
-    }
-
-    fn left_gear_extended(&self, _treat_ext_pwr_as_ground: bool) -> bool {
-        false
-    }
-
     fn left_and_right_gear_compressed(&self, _treat_ext_pwr_as_ground: bool) -> bool {
-        false
+        self.compressed
     }
-
+    fn right_gear_compressed(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+        self.compressed
+    }
+    fn right_gear_extended(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+        !self.compressed
+    }
+    fn left_gear_compressed(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+        self.compressed
+    }
+    fn left_gear_extended(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+        !self.compressed
+    }
     fn left_and_right_gear_extended(&self, _treat_ext_pwr_as_ground: bool) -> bool {
-        self.ac_on_ground
+        !self.compressed
     }
-
     fn nose_gear_compressed(&self, _treat_ext_pwr_as_ground: bool) -> bool {
-        false
+        self.compressed
     }
-
     fn nose_gear_extended(&self, _treat_ext_pwr_as_ground: bool) -> bool {
-        false
+        !self.compressed
     }
 }
 
@@ -278,8 +275,8 @@ impl A320FlapsTestAircraft {
             yellow_pressure: Pressure::new::<psi>(0.),
 
             adirus: TestAdirus::default(),
-            lgciu1: TestLgciu::default(),
-            lgciu2: TestLgciu::default(),
+            lgciu1: TestLgciu::new(true),
+            lgciu2: TestLgciu::new(true),
         }
     }
 
@@ -534,6 +531,13 @@ impl A320FlapsTestBed {
         self
     }
 
+    fn set_lgciu_on_ground(mut self, is_on_ground: bool) -> Self {
+        self.set_on_ground(is_on_ground);
+        self.command(|a| a.lgciu1.set_on_ground(is_on_ground));
+        self.command(|a| a.lgciu2.set_on_ground(is_on_ground));
+        self
+    }
+
     fn get_flaps_demanded_angle(&self, idx: usize) -> f64 {
         self.query(|a| {
             a.slat_flap_complex.sfcc[idx]
@@ -578,6 +582,14 @@ impl A320FlapsTestBed {
 
     fn get_slat_command(&self, idx: usize) -> Option<ChannelCommand> {
         self.query(|a| a.slat_flap_complex.slat_pcu(idx).get_command_status())
+    }
+
+    fn get_slat_alpha_lock_baulk_function_active(&self, idx: usize) -> bool {
+        self.query(|a| {
+            a.slat_flap_complex.sfcc[idx]
+                .slats_channel
+                .get_slat_alpha_lock_baulk_function_active()
+        })
     }
 
     fn get_flap_auto_command_active(&self, idx: usize) -> bool {
@@ -819,6 +831,66 @@ fn flaps_simvars() {
 
     assert!(test_bed.contains_variable_with_name("SFCC_1_SLAT_FLAP_SYSTEM_STATUS_WORD"));
     assert!(test_bed.contains_variable_with_name("SFCC_2_SLAT_FLAP_SYSTEM_STATUS_WORD"));
+}
+
+#[test]
+fn sfcc_slat_function_active() {
+    let mut test_bed = test_bed_with()
+        .set_green_hyd_pressure()
+        .set_yellow_hyd_pressure()
+        .set_blue_hyd_pressure()
+        .set_lgciu_on_ground(true)
+        .set_indicated_airspeed(0.)
+        .set_flaps_handle_position(0)
+        .run_one_tick();
+    assert!(!test_bed.get_slat_alpha_lock_baulk_function_active(0));
+    assert!(!test_bed.get_slat_alpha_lock_baulk_function_active(1));
+
+    test_bed = test_bed.set_indicated_airspeed(80.).run_one_tick();
+    assert!(test_bed.get_slat_alpha_lock_baulk_function_active(0));
+    assert!(test_bed.get_slat_alpha_lock_baulk_function_active(1));
+
+    test_bed = test_bed
+        .set_lgciu_on_ground(false)
+        .set_indicated_airspeed(30.)
+        .run_one_tick();
+    assert!(test_bed.get_slat_alpha_lock_baulk_function_active(0));
+    assert!(test_bed.get_slat_alpha_lock_baulk_function_active(1));
+
+    test_bed = test_bed.set_indicated_airspeed(250.).run_one_tick();
+    assert!(test_bed.get_slat_alpha_lock_baulk_function_active(0));
+    assert!(test_bed.get_slat_alpha_lock_baulk_function_active(1));
+}
+
+#[test]
+fn sfcc_slat_baulk() {
+    let angle_delta: f64 = 0.18;
+    let mut test_bed = test_bed_with()
+        .set_green_hyd_pressure()
+        .set_yellow_hyd_pressure()
+        .set_blue_hyd_pressure()
+        .set_lgciu_on_ground(false)
+        .set_indicated_airspeed(145.)
+        .set_flaps_handle_position(1)
+        .run_for_some_time();
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(25));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(25));
+
+    test_bed = test_bed.set_flaps_handle_position(0).run_for_some_time();
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(24));
+    assert!(test_bed.read_slat_flap_system_status_word(1).get_bit(25));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(24));
+    assert!(test_bed.read_slat_flap_system_status_word(2).get_bit(25));
+    test_bed.test_flap_conf(0, 0., 222.27, FlapsConf::Conf1, angle_delta);
+
+    test_bed = test_bed.set_indicated_airspeed(160.).run_for_some_time();
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(25));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(25));
+    test_bed.test_flap_conf(0, 0., 0., FlapsConf::Conf0, angle_delta);
 }
 
 #[test]

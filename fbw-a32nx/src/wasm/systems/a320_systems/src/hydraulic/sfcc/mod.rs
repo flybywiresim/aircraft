@@ -225,8 +225,16 @@ impl SlatFlapControlComputer {
 
         let current_detent = self.flaps_channel.get_csu_monitor().get_current_detent();
         let flap_auto_command_engaged = self.flaps_channel.get_flap_auto_command_engaged();
+        let slat_alpha_lock_engaged = self.slats_channel.get_slat_alpha_lock_engaged();
+        let slat_baulk_engaged = self.slats_channel.get_slat_baulk_engaged();
         match current_detent {
-            CSU::Conf0 => Some(FlapsConf::Conf0),
+            CSU::Conf0 => {
+                if slat_alpha_lock_engaged || slat_baulk_engaged {
+                    Some(FlapsConf::Conf1)
+                } else {
+                    Some(FlapsConf::Conf0)
+                }
+            }
             CSU::Conf1 => {
                 if flap_auto_command_engaged {
                     Some(FlapsConf::Conf1)
