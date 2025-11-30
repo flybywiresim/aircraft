@@ -414,7 +414,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
         {/* begin page content */}
         <div class="mfd-page-container">
           <div class="mfd-pos-top-row">
-            <div class="mfd-label-value-container" style={'margin-top:13px'}>
+            <div class="mfd-label-value-container" style="margin-top:13px">
               <span class={this.navPrimaryClass}>{this.navPrimaryText}</span>
             </div>
             <div class="rnp-container">
@@ -441,7 +441,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
               <span class="mfd-label bigger mfd-spacing-right">ACCURACY</span>
               <span class={this.accuracyClass}>{this.fmsAccuracy}</span>
             </div>
-            <div class="mfd-label-value-container" style={'margin-right:95px'}>
+            <div class="mfd-label-value-container" style="margin-right:95px">
               <span class="mfd-label bigger mfd-spacing" style="margin-right: 37px;">
                 EPU
               </span>
@@ -452,7 +452,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
             </div>
           </div>
 
-          <div class="mfd-pos-monitor-fm-pos-line" style={'margin-bottom: 14.5px;'}>
+          <div class="mfd-pos-monitor-fm-pos-line" style="margin-bottom: 14.5px;">
             <div class="mfd-label-value-container">
               <span class="mfd-label bigger mfd-spacing-right">&nbsp;POS1</span>
               <span class="mfd-value bigger mfd-spacing-right">{this.position1}</span>
@@ -462,7 +462,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
             </div>
           </div>
 
-          <div class="mfd-pos-monitor-fm-pos-line" style={' margin-bottom: 3px;'}>
+          <div class="mfd-pos-monitor-fm-pos-line" style="margin-bottom: 3px;">
             <div class="mfd-label-value-container">
               <span class="mfd-label bigger mfd-spacing-right">&nbsp;POS2</span>
               <span class="mfd-value bigger mfd-spacing-right">{this.position2}</span>
@@ -478,11 +478,11 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
             <div style={this.positionSensorsVisibility}>
               <div class="mfd-label-value-container pos-monitor-table-lateral-spacing pos-monitor-table-vertical-spacing">
                 <span class="mfd-label bigger mfd-spacing-right">GNSS1</span>
-                <span class="mfd-value bigger" style={'position: relative; top:5px;'}>
+                <span class="mfd-value bigger" style="position: relative; top:5px;">
                   {this.gnss1PositionText}
                 </span>
               </div>
-              <div class="mfd-label-value-container pos-monitor-table-lateral-spacing" style={'padding-bottom:5px;'}>
+              <div class="mfd-label-value-container pos-monitor-table-lateral-spacing" style="padding-bottom:5px;">
                 <span class="mfd-label bigger mfd-spacing-right">GNSS2</span>
                 <span class="mfd-value bigger">{this.gnss2PositionText}</span>
               </div>
@@ -499,19 +499,19 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                 <span class="mfd-value bigger">{this.ir2Position}</span>
               </div>
 
-              <div class="mfd-label-value-container pos-monitor-table-lateral-spacing" style={'padding-bottom:10px;'}>
+              <div class="mfd-label-value-container pos-monitor-table-lateral-spacing" style="padding-bottom:10px;">
                 <span class="mfd-label bigger mfd-spacing-right">&nbsp;IRS3</span>
                 <span class="mfd-value bigger">{this.ir3Position}</span>
               </div>
 
               <div class="mfd-pos-monitor-line short"> </div>
 
-              <div class="mfd-label-value-container pos-monitor-table-lateral-spacing" style={'padding-bottom:10px'}>
+              <div class="mfd-label-value-container pos-monitor-table-lateral-spacing" style="padding-bottom:10px;">
                 <span class="mfd-label bigger mfd-spacing-right">RADIO</span>
                 <span class="mfd-value bigger">{this.radioPosition}</span>
               </div>
 
-              <div class="mfd-label-value-container" style={'padding-left:3px'}>
+              <div class="mfd-label-value-container" style="padding-left:3px">
                 <span class="mfd-label bigger mfd-spacing-right">MIXIRS</span>
                 <span class="mfd-value bigger">{this.mixIrsPositionText}</span>
               </div>
@@ -581,7 +581,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
               <span class="mfd-label bigger">{this.positionFrozenTime}</span>
             </div>
 
-            <div class="fr space-between" style={'margin-bottom: 19px;'}>
+            <div class="fr space-between" style="margin-bottom: 19px;">
               <Button
                 label={Subject.create(
                   <div style="display: flex; flex-direction: row; justify-content: space-between;">
@@ -627,9 +627,9 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
             <div>
               <div
                 class="mfd-label-value-container"
-                style={'margin-right:16px; padding-top:8px; justify-content:flex-end; padding-bottom:3px;'}
+                style="margin-right:16px; padding-top:8px; justify-content:flex-end; padding-bottom:3px;"
               >
-                <span class="mfd-label mfd-spacing-right-small" style={'font-size:22px;'}>
+                <span class="mfd-label mfd-spacing-right-small" style="font-size:22px;">
                   BRG / DIST TO
                 </span>
                 <InputField<Fix, string, false>
@@ -659,16 +659,16 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                   containerStyle='"width:130px;'
                 />
               </div>
-              <div class="fr" style={'width:417px; margin-top: 5px;'}>
+              <div class="fr" style="width:417px; margin-top: 5px;">
                 <div>
                   <span class="mfd-value">{this.bearingToWaypointDisplay}</span>
                   <span class="mfd-label-unit mfd-unit-trailing">&nbsp;{this.bearingUnit}</span>
                 </div>
-                <span class="mfd-value" style={'margin-left:20px;'}>
+                <span class="mfd-value" style="margin-left:20px;">
                   /
                 </span>
                 <div>
-                  <span class="mfd-value" style={'margin-left:14px'}>
+                  <span class="mfd-value" style="margin-left:14px">
                     {this.distanceToWaypointDisplay}
                   </span>
                   <span class="mfd-label-unit mfd-unit-trailing">&nbsp;{this.distanceToWaypointUnit}</span>
@@ -677,8 +677,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
             </div>
           </div>
 
-          <div class="mfd-pos-monitor-line big" style={'margin-top:34px;'}></div>
-
+          <div class="mfd-pos-monitor-line big" style="margin-top:34px;"></div>
           <div style="flex-grow: 1;" />
           {/* fill space vertically */}
           <div class="fr space-between">
