@@ -150,12 +150,12 @@
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                     <NODE_ID>HUD_L_TEX</NODE_ID>
                     <POTENTIOMETER>71</POTENTIOMETER>
-                    <EMISSIVE_CODE>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Number) 10 * (L:A320_Neo_HUD_L_POS) ! *</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Number) 10 * (L:A320_Neo_HUD_L_POS) ! *</EMISSIVE_CODE>
                 </UseTemplate>
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                     <NODE_ID>HUD_R_TEX</NODE_ID>
                     <POTENTIOMETER>72</POTENTIOMETER>
-                    <EMISSIVE_CODE>(L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Number) 10 * (L:A320_Neo_HUD_L_POS) ! *</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>(L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Number) 10 * (L:A320_Neo_HUD_R_POS) ! *</EMISSIVE_CODE>
                 </UseTemplate>
             </Component>
 
@@ -164,21 +164,15 @@
                     <NODE_ID>HUD_L_ARM</NODE_ID>
                     <ANIM_NAME>HUD_L_ARM</ANIM_NAME>
                     <ANIM_CODE>(L:A320_Neo_HUD_L_POS) 100 *</ANIM_CODE>
-                    <ANIM_LENGTH>10</ANIM_LENGTH>
-                    <ANIM_LAG>10</ANIM_LAG>
+                    <ANIM_LENGTH>50</ANIM_LENGTH>
+                    <ANIM_LAG>50</ANIM_LAG>
                 </UseTemplate>
 
-                <UseTemplate Name="FBW_Anim_Interactions">
+                <UseTemplate Name="ASOBO_GT_Switch_Dummy">
                     <NODE_ID>ARM1_LOCK_L</NODE_ID>
-                    <ANIM_TYPE>BUTTON</ANIM_TYPE>
-                    <ANIM_TEMPLATE>ASOBO_GT_Push_Button_Airliner</ANIM_TEMPLATE>
-                    <NO_SEQ2/>
                     <ANIM_NAME>ARM1_LOCK_L</ANIM_NAME>
-                    <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
-                    <WWISE_EVENT_2>mcdubuttons</WWISE_EVENT_2>
-                    <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-                    <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
-                    <DONT_OVERRIDE_BASE_EMISSIVE>True</DONT_OVERRIDE_BASE_EMISSIVE>
+                    <ANIM_LENGTH>50</ANIM_LENGTH>
+                    <ANIM_LAG>50</ANIM_LAG>
                     <LEFT_SINGLE_CODE>(L:A320_Neo_HUD_L_POS) ! (&gt;L:A320_Neo_HUD_L_POS)</LEFT_SINGLE_CODE>
                 </UseTemplate>
 
@@ -186,8 +180,8 @@
                     <NODE_ID>HUD_L_FRAME</NODE_ID>
                     <ANIM_NAME>HUD_L_FRAME</ANIM_NAME>
                     <ANIM_CODE>(L:A320_Neo_HUD_L_POS) 100 *</ANIM_CODE>
-                    <ANIM_LENGTH>10</ANIM_LENGTH>
-                    <ANIM_LAG>10</ANIM_LAG>
+                    <ANIM_LENGTH>50</ANIM_LENGTH>
+                    <ANIM_LAG>50</ANIM_LAG>
                 </UseTemplate>
             </Component>
 
@@ -196,21 +190,15 @@
                     <NODE_ID>HUD_R_ARM</NODE_ID>
                     <ANIM_NAME>HUD_R_ARM</ANIM_NAME>
                     <ANIM_CODE>(L:A320_Neo_HUD_R_POS) 100 *</ANIM_CODE>
-                    <ANIM_LENGTH>10</ANIM_LENGTH>
-                    <ANIM_LAG>10</ANIM_LAG>
+                    <ANIM_LENGTH>50</ANIM_LENGTH>
+                    <ANIM_LAG>50</ANIM_LAG>
                 </UseTemplate>
 
-                <UseTemplate Name="FBW_Anim_Interactions">
+                <UseTemplate Name="ASOBO_GT_Switch_Dummy">
                     <NODE_ID>ARM1_LOCK_R</NODE_ID>
-                    <ANIM_TYPE>BUTTON</ANIM_TYPE>
-                    <ANIM_TEMPLATE>ASOBO_GT_Push_Button_Airliner</ANIM_TEMPLATE>
-                    <NO_SEQ2/>
                     <ANIM_NAME>ARM1_LOCK_R</ANIM_NAME>
-                    <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
-                    <WWISE_EVENT_2>mcdubuttons</WWISE_EVENT_2>
-                    <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-                    <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
-                    <DONT_OVERRIDE_BASE_EMISSIVE>True</DONT_OVERRIDE_BASE_EMISSIVE>
+                    <ANIM_LENGTH>50</ANIM_LENGTH>
+                    <ANIM_LAG>50</ANIM_LAG>
                     <LEFT_SINGLE_CODE>(L:A320_Neo_HUD_R_POS) ! (&gt;L:A320_Neo_HUD_R_POS)</LEFT_SINGLE_CODE>
                 </UseTemplate>
 
@@ -218,8 +206,8 @@
                     <NODE_ID>HUD_R_FRAME</NODE_ID>
                     <ANIM_NAME>HUD_R_FRAME</ANIM_NAME>
                     <ANIM_CODE>(L:A320_Neo_HUD_R_POS) 100 *</ANIM_CODE>
-                    <ANIM_LENGTH>10</ANIM_LENGTH>
-                    <ANIM_LAG>10</ANIM_LAG>
+                    <ANIM_LENGTH>50</ANIM_LENGTH>
+                    <ANIM_LAG>50</ANIM_LAG>
                 </UseTemplate>
             </Component>
         </Component>
