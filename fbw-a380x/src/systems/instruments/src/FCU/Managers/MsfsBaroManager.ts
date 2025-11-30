@@ -12,6 +12,7 @@ import {
   KeyEvents,
   SimVarValueType,
   Subscribable,
+  UnitType,
   Wait,
 } from '@microsoft/msfs-sdk';
 import { BaroEvents, BaroIndex, BaroManager, BaroMode, BaroUnit } from './BaroManager';
