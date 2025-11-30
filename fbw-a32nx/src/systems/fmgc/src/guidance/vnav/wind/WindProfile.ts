@@ -14,6 +14,7 @@ import { ProfilePhase } from '../profile/NavGeometryProfile';
 import { FlightPlanTrackProfile } from './FlightPlanTrackProfile';
 import { WindMeasurement, WindObserver } from './WindObserver';
 import { WindUtils } from './WindUtils';
+import { A32NX_Util } from '../../../../../shared/src/A32NX_Util';
 
 export class WindProfile implements WindInterface {
   private static readonly VectorCache = [Vec2Math.create(), Vec2Math.create()] as const;
@@ -58,8 +59,7 @@ export class WindProfile implements WindInterface {
     const climbWindEntries = this.plan.performanceData.climbWindEntries.get();
     const hasClimbWindEntry = climbWindEntries.length > 0;
 
-    // TODO winds trip wind from performance data
-    const tripWind: TailwindComponent | null = null;
+    const tripWind: TailwindComponent | null = this.plan.performanceData.pilotTripWind.get();
     const hasTripWindEntry = tripWind !== null;
 
     const originAlt = this.plan.originRunway?.thresholdLocation.alt ?? this.plan.originAirport?.location.alt ?? 0;
@@ -109,19 +109,10 @@ export class WindProfile implements WindInterface {
     const descentWindEntries = this.plan.performanceData.descentWindEntries.get();
     const hasDescentWindEntry = descentWindEntries.length > 0;
 
-    // TODO winds trip wind from performance data
-    const tripWind: TailwindComponent | null = null;
+    const tripWind: TailwindComponent | null = this.plan.performanceData.pilotTripWind.get();
     const hasTripWindEntry = tripWind !== null;
 
-    // TODO winds perf appr wind from performance data
-    const perfApprWindMag = 0; // TODO correct with magvar
-    const perfApprWindDir = 0;
-
-    const perfPageWind = Vec2Math.setFromPolar(
-      perfApprWindMag,
-      perfApprWindDir * MathUtils.DEGREES_TO_RADIANS,
-      WindProfile.VectorCache[0],
-    );
+    const perfPageWind = getPerfPageWindVector(this.plan, WindProfile.VectorCache[0]);
 
     const destinationAlt =
       this.plan.destinationRunway?.thresholdLocation.alt ?? this.plan.destinationAirport?.location.alt ?? 0;
@@ -222,8 +213,7 @@ export class WindProfile implements WindInterface {
         leg.cruiseWindEntries.length > 0,
     );
 
-    // TODO winds trip wind from performance data
-    const tripWind: TailwindComponent | null = null;
+    const tripWind: TailwindComponent | null = this.plan.performanceData.pilotTripWind.get();
     const hasTripWindEntry = tripWind !== null;
 
     const legIndex = this.tracks.getLegIndex(distanceFromStart);
@@ -352,7 +342,7 @@ export class WindProfile implements WindInterface {
 
     // The minus is needed because the wind vector points in the direction that the wind is coming from, whereas the leg's
     // true track points in the direction that the aircraft is going.
-    return Vec2Math.set(-tailwind, leg.calculated.trueTrack * MathUtils.DEGREES_TO_RADIANS, result);
+    return Vec2Math.setFromPolar(-tailwind, leg.calculated.trueTrack * MathUtils.DEGREES_TO_RADIANS, result);
   }
 }
 
@@ -428,15 +418,7 @@ export class ConstantWindProfile implements WindInterface {
     const descentWindEntries = this.plan.performanceData.descentWindEntries.get();
     const hasDescentWindEntry = descentWindEntries.length > 0;
 
-    // TODO winds perf appr wind from performance data
-    const perfApprWindMag = 0; // TODO winds correct with magvar
-    const perfApprWindDir = 0;
-
-    const perfPageWind = Vec2Math.setFromPolar(
-      perfApprWindMag * MathUtils.DEGREES_TO_RADIANS,
-      perfApprWindDir,
-      ConstantWindProfile.VectorCache[0],
-    );
+    const perfPageWind = getPerfPageWindVector(this.plan, ConstantWindProfile.VectorCache[0]);
 
     const destinationAlt =
       this.plan.destinationRunway?.thresholdLocation.alt ?? this.plan.destinationAirport?.location.alt ?? 0;
@@ -527,7 +509,7 @@ class LegWinds {
 
       // The minus is needed because the wind vector points in the direction that the wind is coming from, whereas the leg's
       // true track points in the direction that the aircraft is going.
-      return Vec2Math.set(-windForecast, leg.calculated.trueTrack * MathUtils.DEGREES_TO_RADIANS, result);
+      return Vec2Math.setFromPolar(-windForecast, leg.calculated.trueTrack * MathUtils.DEGREES_TO_RADIANS, result);
     }
 
     return result;
@@ -542,8 +524,7 @@ class LegWinds {
         leg.cruiseWindEntries.length > 0,
     );
 
-    // TODO winds trip wind from performance data
-    const tripWind: TailwindComponent | null = null;
+    const tripWind: TailwindComponent | null = this.plan.performanceData.pilotTripWind.get();
     const hasTripWindEntry = tripWind !== null;
 
     if (hasCruiseWindEntry) {
@@ -569,4 +550,17 @@ class WindConfig {
   static readonly MaxCruiseWindBlendDistance = 200; // NM
 
   static readonly TripWindMaxAltitude = 20_000; // feet
+}
+
+function getPerfPageWindVector(plan: FlightPlan, result: WindVector) {
+  const destination = plan.destinationAirport;
+  const destinationMagVar = destination ? Facilities.getMagVar(destination.location.lat, destination.location.long) : 0;
+
+  const perfApprWindMag = plan.performanceData.approachWindMagnitude.get() ?? 0;
+  const perfApprWindDir = A32NX_Util.magneticToTrue(
+    plan.performanceData.approachWindDirection.get() ?? 0,
+    destinationMagVar,
+  );
+
+  return Vec2Math.setFromPolar(perfApprWindMag, perfApprWindDir * MathUtils.DEGREES_TO_RADIANS, result);
 }
