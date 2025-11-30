@@ -31,7 +31,7 @@ export class EngineWarningDisplay extends DestroyableComponent<{ bus: ArincEvent
   private readonly sub = this.props.bus.getSubscriber<EwdSimvars & FwsEwdEvents>();
 
   private readonly fwsAvailChecker = new FwsEwdAvailabilityChecker(this.props.bus);
-  private readonly cpiomAvailChecker = new CpiomEwdAvailabilityChecker(this.props.bus);
+  private readonly cpiomAvailChecker = new CpiomEwdAvailabilityChecker(this.props.bus, this.fwsAvailChecker);
 
   private readonly engineStateSubs: ConsumerSubject<number>[] = [
     ConsumerSubject.create(this.sub.on('engine_state_1'), 0),
@@ -413,7 +413,10 @@ class FwsEwdAvailabilityChecker {
 }
 
 export class CpiomEwdAvailabilityChecker {
-  constructor(private bus: EventBus) {
+  constructor(
+    private bus: EventBus,
+    private fwsAvailChecker: FwsEwdAvailabilityChecker,
+  ) {
     this.pausableSubscriptions.push(
       this.cpiomA1Available,
       this.cpiomA2Available,
@@ -444,7 +447,7 @@ export class CpiomEwdAvailabilityChecker {
       this.otherCpiomFailed,
     );
 
-    this.cpiomCFailed.sub((v) => {
+    MappedSubject.create(SubscribableMapFunctions.or(), this.cpiomCFailed, this.fwsAvailChecker.fwsFailed).sub((v) => {
       if (v) {
         this.pausableSubscriptions.forEach((s) => s.resume());
       } else {
