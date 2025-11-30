@@ -158,25 +158,19 @@
                 <NODE_ID>ARM1_L</NODE_ID>
                 <ANIM_NAME>ARM1_L</ANIM_NAME>
                 <ANIM_CODE>(L:A320_Neo_HUD_L_POS) 100 *</ANIM_CODE>
-                <ANIM_LENGTH>10</ANIM_LENGTH>
-                <ANIM_LAG>10</ANIM_LAG>
+                <ANIM_LENGTH>50</ANIM_LENGTH>
+                <ANIM_LAG>40</ANIM_LAG>
             </UseTemplate>
         </Component>
 
         <Component ID="ARM1_LOCK_L" Node="ARM1_LOCK_L">
-            <UseTemplate Name="FBW_Anim_Interactions">
-                <NODE_ID>ARM1_LOCK_L</NODE_ID>
-                <ANIM_TYPE>BUTTON</ANIM_TYPE>
-                <ANIM_TEMPLATE>ASOBO_GT_Push_Button_Airliner</ANIM_TEMPLATE>
-                <NO_SEQ2/>
-                <ANIM_NAME>ARM1_LOCK_L</ANIM_NAME>
-                <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
-                <WWISE_EVENT_2>mcdubuttons</WWISE_EVENT_2>
-                <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-                <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
-                <DONT_OVERRIDE_BASE_EMISSIVE>True</DONT_OVERRIDE_BASE_EMISSIVE>
-                <LEFT_SINGLE_CODE>(&gt;H:A320_Neo_HUD_L_POS)</LEFT_SINGLE_CODE>
-            </UseTemplate>
+                <UseTemplate Name="ASOBO_GT_Switch_Dummy">
+                    <NODE_ID>ARM1_LOCK_L</NODE_ID>
+                    <ANIM_NAME>ARM1_LOCK_L</ANIM_NAME>
+                    <ANIM_LENGTH>50</ANIM_LENGTH>
+                    <ANIM_LAG>40</ANIM_LAG>
+                    <LEFT_SINGLE_CODE>(&gt;H:A320_Neo_HUD_L_POS)</LEFT_SINGLE_CODE>
+                </UseTemplate>
         </Component>
 
         <Component ID="HUD_SCREEN_FRAME_L" Node="HUD_SCREEN_FRAME_L">
@@ -184,8 +178,8 @@
                 <NODE_ID>HUD_SCREEN_FRAME_L</NODE_ID>
                 <ANIM_NAME>HUD_SCREEN_FRAME_L</ANIM_NAME>
                 <ANIM_CODE>(L:A320_Neo_HUD_L_POS) 100 *</ANIM_CODE>
-                <ANIM_LENGTH>10</ANIM_LENGTH>
-                <ANIM_LAG>10</ANIM_LAG>
+                <ANIM_LENGTH>50</ANIM_LENGTH>
+                <ANIM_LAG>40</ANIM_LAG>
             </UseTemplate>
         </Component>
 
@@ -194,34 +188,29 @@
                 <NODE_ID>ARM1_R</NODE_ID>
                 <ANIM_NAME>ARM1_R</ANIM_NAME>
                 <ANIM_CODE>(L:A320_Neo_HUD_R_POS) 100 *</ANIM_CODE>
-                <ANIM_LENGTH>10</ANIM_LENGTH>
-                <ANIM_LAG>10</ANIM_LAG>
+                <ANIM_LENGTH>50</ANIM_LENGTH>
+                <ANIM_LAG>40</ANIM_LAG>
             </UseTemplate>
         </Component>
 
         <Component ID="ARM1_LOCK_R" Node="ARM1_LOCK_R">
-            <UseTemplate Name="FBW_Anim_Interactions">
-                <NODE_ID>ARM1_LOCK_R</NODE_ID>
-                <ANIM_TYPE>BUTTON</ANIM_TYPE>
-                <ANIM_TEMPLATE>ASOBO_GT_Push_Button_Airliner</ANIM_TEMPLATE>
-                <NO_SEQ2/>
-                <ANIM_NAME>ARM1_LOCK_R</ANIM_NAME>
-                <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
-                <WWISE_EVENT_2>mcdubuttons</WWISE_EVENT_2>
-                <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-                <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
-                <DONT_OVERRIDE_BASE_EMISSIVE>True</DONT_OVERRIDE_BASE_EMISSIVE>
-                <LEFT_SINGLE_CODE>(&gt;H:A320_Neo_HUD_R_POS)</LEFT_SINGLE_CODE>
-            </UseTemplate>
+                <UseTemplate Name="ASOBO_GT_Switch_Dummy">
+                    <NODE_ID>ARM1_LOCK_R</NODE_ID>
+                    <ANIM_NAME>ARM1_LOCK_R</ANIM_NAME>
+                    <ANIM_LENGTH>50</ANIM_LENGTH>
+                    <ANIM_LAG>40</ANIM_LAG>
+                    <LEFT_SINGLE_CODE>(&gt;H:A320_Neo_HUD_R_POS)</LEFT_SINGLE_CODE>
+                </UseTemplate>
         </Component>
+
 
         <Component ID="HUD_SCREEN_FRAME_R" Node="HUD_SCREEN_FRAME_R">
             <UseTemplate Name="ASOBO_GT_Anim_Code">
                 <NODE_ID>HUD_SCREEN_FRAME_R</NODE_ID>
                 <ANIM_NAME>HUD_SCREEN_FRAME_R</ANIM_NAME>
                 <ANIM_CODE>(L:A320_Neo_HUD_R_POS) 100 *</ANIM_CODE>
-                <ANIM_LENGTH>10</ANIM_LENGTH>
-                <ANIM_LAG>10</ANIM_LAG>
+                <ANIM_LENGTH>50</ANIM_LENGTH>
+                <ANIM_LAG>40</ANIM_LAG>
             </UseTemplate>
         </Component>
 
