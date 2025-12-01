@@ -1063,6 +1063,16 @@ export class FwsAbnormalSensed {
       limitationsAllPhases: () => ['210400002', '210400001'],
       limitationsPfd: () => ['210400002', '210400001'],
     },
+    213800004: {
+      // EXCESS RESIDUAL DIFF PRESS
+      flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9, 10],
+      simVarIsActive: this.fws.excessResidualDiffPressure,
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [true, true, true, true, true],
+      whichItemsChecked: () => [!this.fws.pack1On.get(), !this.fws.pack2On.get(), false, false, false],
+      failure: 3,
+      sysPage: SdPages.Press,
+    },
     213800005: {
       // PRESS AUTO CTL FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
@@ -1114,6 +1124,18 @@ export class FwsAbnormalSensed {
       failure: 1,
       sysPage: -1,
       redundLoss: () => [],
+    },
+    213800009: {
+      // INHIBITED BY DOORS
+      flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 11, 12],
+      simVarIsActive: this.fws.inhibitedByDoors,
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [true],
+      failure: 2,
+      sysPage: SdPages.Press,
+      limitationsAllPhases: () => ['210400001'],
+      limitationsPfd: () => ['210400001'],
     },
     213800011: {
       // PRESS OUTFLW VLV CTL 1 FAULT
