@@ -373,16 +373,79 @@ export class FwsInopSys {
       simVarIsActive: this.fws.prim3Healthy.map(SubscribableMapFunctions.not()),
       phase: FwsInopSysPhases.AllPhases,
     },
+    270300013: {
+      // FCDC 1
+      simVarIsActive: this.fws.fcdc1FaultCondition,
+      notActiveWhenItemActive: ['270300015'],
+      phase: FwsInopSysPhases.AllPhases,
+      redundancyLoss: true,
+    },
+    270300014: {
+      // FCDC 2
+      simVarIsActive: this.fws.fcdc2FaultCondition,
+      notActiveWhenItemActive: ['270300015'],
+      phase: FwsInopSysPhases.AllPhases,
+      redundancyLoss: true,
+    },
+    270300015: {
+      // FCDC 1+2
+      simVarIsActive: this.fws.fcdc12FaultCondition,
+      phase: FwsInopSysPhases.AllPhases,
+      redundancyLoss: true,
+    },
     290100001: {
       // PART SPLRs
       simVarIsActive: this.partSplrs,
       phase: FwsInopSysPhases.AllPhases,
       notActiveWhenItemActive: ['290100011'],
     },
+    290100003: {
+      // FLAP SYS 1
+      simVarIsActive: this.fws.flapSys1Fault,
+      notActiveWhenItemActive: ['290100012'],
+      phase: FwsInopSysPhases.ApprLdg,
+    },
+    290100004: {
+      // FLAP SYS 2
+      simVarIsActive: this.fws.flapSys2Fault,
+      notActiveWhenItemActive: ['290100012'],
+      phase: FwsInopSysPhases.ApprLdg,
+    },
+    290100005: {
+      // SLAT SYS 1
+      simVarIsActive: this.fws.slatSys1Fault,
+      notActiveWhenItemActive: ['290100013'],
+      phase: FwsInopSysPhases.ApprLdg,
+    },
+    290100006: {
+      // SLAT SYS 2
+      simVarIsActive: this.fws.slatSys2Fault,
+      notActiveWhenItemActive: ['290100013'],
+      phase: FwsInopSysPhases.ApprLdg,
+    },
+    290100008: {
+      // F/CTL PROT
+      simVarIsActive: MappedSubject.create(
+        SubscribableMapFunctions.or(),
+        this.fws.altnLawCondition,
+        this.fws.directLawCondition,
+      ),
+      phase: FwsInopSysPhases.AllPhases,
+    },
     290100011: {
       // MOST SPLRs
       simVarIsActive: this.mostSplrs,
       phase: FwsInopSysPhases.AllPhases,
+    },
+    290100012: {
+      // FLAPS
+      simVarIsActive: this.fws.allFlapSysFault,
+      phase: FwsInopSysPhases.ApprLdg,
+    },
+    290100013: {
+      // SLATS
+      simVarIsActive: this.fws.allSlatSysFault,
+      phase: FwsInopSysPhases.ApprLdg,
     },
     290300021: {
       // G HYD SYS
