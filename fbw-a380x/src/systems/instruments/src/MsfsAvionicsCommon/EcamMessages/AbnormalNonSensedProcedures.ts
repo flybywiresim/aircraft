@@ -1,7 +1,7 @@
 // Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { AbnormalNonSensedList } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
+import { AbnormalNonSensedList } from 'instruments/src/MsfsAvionicsCommon/providers/FwsPublisher';
 
 /** All normal procedures (checklists, via ECL) should be here.
  * Display is ordered by ID, ascending. That's why keys need to be numbers. */

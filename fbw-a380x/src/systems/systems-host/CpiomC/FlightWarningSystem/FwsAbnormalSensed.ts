@@ -18,7 +18,7 @@ import {
   ProcedureLinesGenerator,
   ProcedureType,
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/ProcedureLinesGenerator';
-import { ChecklistState, FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
+import { ChecklistState, FwsEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsPublisher';
 import { FwcAuralWarning, FwsCore, FwsSuppressableItem } from 'systems-host/CpiomC/FlightWarningSystem/FwsCore';
 
 export interface EwdAbnormalItem extends FwsSuppressableItem {
@@ -85,7 +85,7 @@ export interface EwdAbnormalDict {
  */
 
 export class FwsAbnormalSensed {
-  private readonly pub = this.fws.bus.getPublisher<FwsEwdEvents>();
+  private readonly pub = this.fws.bus.getPublisher<FwsEvents>();
 
   private readonly subscriptions: Subscription[] = [];
 

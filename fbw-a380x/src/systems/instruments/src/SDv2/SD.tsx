@@ -21,6 +21,7 @@ import './style.scss';
 import '../index.scss';
 import { CruisePage } from './Pages/Cruise/CruisePage';
 import { SDSimvars } from './SDSimvarPublisher';
+import { StatusPage } from './Pages/Status/StatusPage';
 
 export interface SDProps {
   readonly bus: EventBus;
@@ -41,7 +42,7 @@ export class SD extends DestroyableComponent<SDProps> {
     .map(() => Subject.create(false));
 
   private readonly anyPageVisibleStyle = MappedSubject.create(
-    (vis) => `visibility: ${vis.some((v) => v === true) ? 'visible' : 'hidden'}`,
+    (vis) => (vis.some((v) => v === true) ? 'visible' : 'hidden'),
     ...this.pageVisible,
   );
 
@@ -65,12 +66,12 @@ export class SD extends DestroyableComponent<SDProps> {
     null, // FCTL
     null, // CB
     <CruisePage ref={this.pageRef[SdPages.Crz]} bus={this.props.bus} visible={this.pageVisible[SdPages.Crz]} />,
-    null, // STATUS
+    <StatusPage ref={this.pageRef[SdPages.Status]} bus={this.props.bus} visible={this.pageVisible[SdPages.Status]} />, // STATUS
     null, // TODO video page
   ];
 
   // Once a page is ported, add its enum value here
-  private readonly indicesToShowInV2 = [SdPages.Crz];
+  private readonly indicesToShowInV2 = [SdPages.Crz, SdPages.Status];
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -103,7 +104,7 @@ export class SD extends DestroyableComponent<SDProps> {
     return (
       <CdsDisplayUnit bus={this.props.bus} displayUnitId={DisplayUnitID.Sd}>
         {this.sdPages}
-        <div class="sd-content-area-blocker" style={this.anyPageVisibleStyle} />
+        <div class="sd-content-area-blocker" style={{ visibility: this.anyPageVisibleStyle }} />
         <PermanentData bus={this.props.bus} />
         <AtcMailbox bus={this.props.bus} />
       </CdsDisplayUnit>

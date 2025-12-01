@@ -26,7 +26,7 @@ import { EcamAbnormalSensedAta46495256 } from 'instruments/src/MsfsAvionicsCommo
 import { EcamAbnormalSensedAta70 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata70';
 import { EcamAbnormalSensedAta80Rest } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata80-rest';
 import { EcamAbnormalSecondaryFailures } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/secondary-failures';
-import { AbnormalNonSensedCategory } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
+import { AbnormalNonSensedCategory } from 'instruments/src/MsfsAvionicsCommon/providers/FwsPublisher';
 
 // Convention for IDs:
 // First two digits: ATA chapter. 00 for T.O and LDG memos
@@ -730,6 +730,7 @@ export enum DeferredProcedureType {
   FOR_APPROACH,
   FOR_LANDING,
 }
+export const DEFERRED_PROCEDURE_TYPE_TO_STRING = ['ALL PHASES', 'AT TOP OF DESCENT', 'FOR APPROACH', 'FOR LANDING'];
 export interface DeferredProcedure {
   /** Which abnormal procedures triggers this deferred procedure */
   fromAbnormalProcs: string[];
