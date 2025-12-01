@@ -1029,6 +1029,7 @@ export class FlightManagementComputer implements FmcInterface {
         this.acInterface.checkDestEfobBelowMin();
         this.acInterface.checkDestEfobBelowMinScratchPadMessage(throttledDt);
         this.acInterface.checkEngineOut(throttledDt);
+        this.acInterface.checkLateralDiscontinuityAhead();
 
         const toFlaps = this.fmgc.getTakeoffFlapsSetting();
         if (toFlaps) {

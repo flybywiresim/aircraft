@@ -166,6 +166,12 @@ export class GuidanceController {
 
   private readonly approachIdentSize: number;
 
+  private activeLegSecondsToGo: number | null;
+
+  public getActiveLegSecondsToGo(): number | null {
+    return this.activeLegSecondsToGo;
+  }
+
   private updateEfisState(side: EfisSide, state: EfisState<number>): void {
     const ndMode = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_MODE`, 'Enum') as EfisNdMode;
     const ndRange = this.efisNDRangeValues[SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_RANGE`, 'Enum')];
@@ -273,12 +279,14 @@ export class GuidanceController {
 
       // Don't compute distance and ETA for XM legs
       const efisDistance = isXMLeg ? -1 : Avionics.Utils.computeGreatCircleDistance(ppos, termination);
-      const efisEta = isXMLeg || !etaComputable ? -1 : this.lnavDriver.legEta(gs, termination);
+      this.activeLegSecondsToGo = isXMLeg || !etaComputable ? null : this.lnavDriver.legSecondsToGo(gs, termination);
+      const efisEta = this.activeLegSecondsToGo !== null ? this.formatLegEta(this.activeLegSecondsToGo) : -1;
 
       // FIXME should be NCD if no FM position
       this.updateEfisVars(efisBearing, efisTrueBearing, efisDistance, efisEta, 'L');
       this.updateEfisVars(efisBearing, efisTrueBearing, efisDistance, efisEta, 'R');
     } else {
+      this.activeLegSecondsToGo = null;
       this.updateEfisVars(-1, -1, -1, -1, 'L');
       this.updateEfisVars(-1, -1, -1, -1, 'R');
     }
@@ -289,6 +297,12 @@ export class GuidanceController {
     SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_TO_WPT_TRUE_BEARING`, 'Degrees', trueBearing);
     SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_TO_WPT_DISTANCE`, 'Number', distance);
     SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_TO_WPT_ETA`, 'Seconds', eta);
+  }
+
+  private formatLegEta(secondsToGo: number) {
+    const UTC_SECONDS = Math.floor(SimVar.GetGlobalVarValue('ZULU TIME', 'seconds'));
+    const eta = (UTC_SECONDS + secondsToGo) % (3600 * 24);
+    return eta;
   }
 
   constructor(

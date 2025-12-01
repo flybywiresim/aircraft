@@ -602,6 +602,10 @@ export class VnavDriver implements GuidanceComponent {
     );
   }
 
+  shouldShowLatDiscontinuityAhead(): boolean {
+    return this.profileManager.shouldShowLatDiscontinuityAhead();
+  }
+
   shouldShowTooSteepPathAhead(): boolean {
     return this.profileManager.shouldShowTooSteepPathAhead();
   }

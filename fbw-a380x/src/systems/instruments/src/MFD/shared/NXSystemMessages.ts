@@ -100,6 +100,7 @@ export const NXSystemMessages = {
   tooSteepPathAhead: new TypeIIMessage('TOO STEEP PATH AHEAD'),
   navprimary: new TypeIIMessage('NAV PRIMARY'),
   navprimaryLost: new TypeIIMessage('NAV PRIMARY LOST', true),
+  lateralDiscontinuityAhead: new TypeIIMessage('LATERAL DISCONTINUITY AHEAD', true),
 };
 
 export const NXFictionalMessages = {

@@ -697,4 +697,19 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
       (this.flags & FlightPlanFlags.CopiedFromActive) === FlightPlanFlags.CopiedFromActive
     );
   }
+
+  /**
+   * Gets the index of the last leg located before a discontinuity
+   * @returns null if no discontinuity exists, the leg index before the discontinuity otherwise
+   */
+  getLastLegindexBeforeDiscontinuity(): number | null {
+    for (let i = this.activeLegIndex; i < this.allLegs.length; i++) {
+      const nextLeg = this.maybeElementAt(i + 1);
+      // Handle case of end of flightplan or discont
+      if (!nextLeg || nextLeg.isDiscontinuity) {
+        return i;
+      }
+    }
+    return null;
+  }
 }

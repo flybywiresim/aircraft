@@ -444,17 +444,9 @@ export class LnavDriver implements GuidanceComponent {
     this.guidanceController.setAlongTrackDistanceToDestination(distanceToDestination, FlightPlanIndex.FirstSecondary);
   }
 
-  public legEta(gs: Knots, termination: Coordinates): number {
-    // FIXME use a more accurate estimate, calculate in predictions
-
-    const UTC_SECONDS = Math.floor(SimVar.GetGlobalVarValue('ZULU TIME', 'seconds'));
-
+  public legSecondsToGo(gs: Knots, termination: Coordinates): number {
     const nauticalMilesToGo = distanceTo(this.ppos, termination);
-    const secondsToGo = (nauticalMilesToGo / Math.max(this.acConfig.lnavConfig.DEFAULT_MIN_PREDICTED_TAS, gs)) * 3600;
-
-    const eta = (UTC_SECONDS + secondsToGo) % (3600 * 24);
-
-    return eta;
+    return (nauticalMilesToGo / Math.max(this.acConfig.lnavConfig.DEFAULT_MIN_PREDICTED_TAS, gs)) * 3600;
   }
 
   sequenceLeg(leg?: Leg, outboundTransition?: Transition): void {

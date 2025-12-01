@@ -28,6 +28,7 @@ import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { TooSteepPathAhead } from '@fmgc/components/fms-messages/TooSteepPathAhead';
 import { EventBus } from '@microsoft/msfs-sdk';
 import { FMMessageTriggers } from './FmMessages';
+import { LateralDiscontinuityAhead } from './LateralDiscontinuityAhead';
 
 /**
  * This class manages Type II messages sent from the FMGC.
@@ -68,6 +69,7 @@ export class FmsMessages implements FmgcComponent {
     new StepAhead(),
     new StepDeleted(this.bus),
     new TooSteepPathAhead(),
+    new LateralDiscontinuityAhead(),
   ];
 
   constructor(private readonly bus: EventBus) {}
