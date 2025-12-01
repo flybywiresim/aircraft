@@ -101,8 +101,14 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
   );
 
   private readonly stsIndicationRequested = ConsumerSubject.create(this.sub.on('fws_show_sts_indication'), false);
-
   private readonly advIndicationRequested = ConsumerSubject.create(this.sub.on('fws_show_adv_indication'), false);
+
+  private readonly deferredProcedures = ConsumerSubject.create(this.sub.on('fws_deferred_procedures'), []);
+  private readonly stsIndicationLabel = MappedSubject.create(
+    ([sts, deferred]) => (sts && deferred.length > 0 ? 'STS & DEFRD PROC' : 'STS'),
+    this.stsIndicationRequested,
+    this.deferredProcedures,
+  );
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -312,7 +318,7 @@ export class EngineWarningDisplay extends DisplayComponent<{ bus: ArincEventBus 
                   ).map((s) => (s ? 'visible' : 'hidden')),
                 }}
               >
-                STS
+                {this.stsIndicationLabel}
               </div>
               <div
                 class="AdvBox"
