@@ -125,7 +125,18 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
   271800015: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm FCDC 1+2 FAULT',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'AUDIOS NOT AVAIL :',
+        style: ChecklistLineStyle.Green,
+        sensed: false,
+      },
+      {
+        name: `${'\xa0'.repeat(16)}WINDSHEAR, SPEED SPEED`,
+        style: ChecklistLineStyle.Green,
+        sensed: false,
+      },
+    ],
   },
   271800016: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm GND SPLRs FAULT',
@@ -542,17 +553,78 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
   272800006: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm FLAP SYS 1 FAULT',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'FLAPS SLOW',
+        sensed: false,
+      },
+    ],
   },
   272800007: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm FLAP SYS 2 FAULT',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'FLAPS SLOW',
+        sensed: false,
+      },
+    ],
   },
   272800008: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm FLAP SYS 1+2 FAULT',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'FOR VFE : USE PFD',
+        sensed: false,
+      },
+      {
+        name: 'WHEN SPEED BELOW VFE',
+        condition: true,
+        sensed: false,
+      },
+      {
+        name: 'FLAPS LEVER',
+        labelNotCompleted: 'RECYCLE',
+        sensed: false,
+        level: 1,
+      },
+      {
+        name: 'USE SELECTED SPEED',
+        sensed: false,
+      },
+      {
+        name: '[MFD SURV] TAWS FLAP MODE',
+        labelNotCompleted: 'OFF',
+        sensed: true,
+      },
+      {
+        name: '[MFD SURV] GPWS',
+        labelNotCompleted: 'OFF',
+        sensed: true,
+      },
+      {
+        name: 'FUEL CONSUMPT INCRSD',
+        sensed: false,
+      },
+      { ...FMS_PRED_UNRELIABLE_CHECKLIST_ITEM },
+      {
+        name: 'FOR LDG : FLAP LVR 3',
+        sensed: false,
+      },
+      {
+        name: 'NO AUTOLAND',
+        sensed: false,
+      },
+      {
+        name: 'FOR GA : KEEP S/F CONF',
+        sensed: false,
+      },
+      {
+        name: 'LDG PERF AFFECTED',
+        sensed: false,
+      },
+    ],
   },
   272800009: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm FLAP 1 SAFETY TEST REQUIRED',
@@ -607,17 +679,73 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
   272800021: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm SLAT SYS 1 FAULT',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'SLATS SLOW',
+        sensed: false,
+      },
+    ],
   },
   272800022: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm SLAT SYS 2 FAULT',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'SLATS SLOW',
+        sensed: false,
+      },
+    ],
   },
   272800023: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm SLAT SYS 1+2 FAULT',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'SLATS 1',
+        labelNotCompleted: 'RESET',
+        sensed: false,
+      },
+      {
+        name: 'FOR VFE : USE PFD',
+        sensed: false,
+      },
+      {
+        name: 'WHEN SPEED BELOW VFE',
+        condition: true,
+        sensed: false,
+      },
+      {
+        name: 'FLAPS LEVER',
+        labelNotCompleted: 'RECYCLE',
+        sensed: false,
+        level: 1,
+      },
+      {
+        name: 'USE SELECTED SPEED',
+        sensed: false,
+      },
+      {
+        name: 'FUEL CONSUMPT INCRSD',
+        sensed: false,
+      },
+      { ...FMS_PRED_UNRELIABLE_CHECKLIST_ITEM },
+      {
+        name: 'FOR LDG : FLAP LVR 3',
+        sensed: false,
+      },
+      {
+        name: 'NO AUTOLAND',
+        sensed: false,
+      },
+      {
+        name: 'FOR GA : KEEP S/F CONF',
+        sensed: false,
+      },
+      {
+        name: 'LDG PERF AFFECTED',
+        sensed: false,
+      },
+    ],
   },
   272800024: {
     title: '\x1b<4m\x1b4mF/CTL\x1bm SLATS LOCKED',
