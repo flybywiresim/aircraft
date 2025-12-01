@@ -1128,7 +1128,7 @@ export class FwsAbnormalSensed {
     },
     213800009: {
       // INHIBITED BY DOORS
-      flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 11],
+      flightPhaseInhib: [1, 4, 5, 6, 7, 9, 10, 11, 12],
       simVarIsActive: this.fws.inhibitedByDoors,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [true],
