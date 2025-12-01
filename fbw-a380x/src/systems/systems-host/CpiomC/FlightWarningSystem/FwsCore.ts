@@ -2959,6 +2959,7 @@ export class FwsCore {
     const masterCautionButtonRight = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERCAUT_R', 'bool');
     const masterWarningButtonLeft = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_L', 'bool');
     const masterWarningButtonRight = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_R', 'bool');
+    const emerCancelPressed = SimVar.GetSimVarValue('L:A32NX_BTN_EMERCANC', 'bool');
 
     /* HYDRAULICS acquisition */
 
@@ -5169,6 +5170,13 @@ export class FwsCore {
       this.requestMasterWarningFromFaults = this.nonCancellableWarningCount > 0;
       this.requestMasterWarningFromApOff = false;
       this.auralCrcActive.set(this.nonCancellableWarningCount > 0);
+    }
+    if (emerCancelPressed) {
+      this.soundManager.stopAllSounds();
+      this.requestMasterWarningFromFaults = false;
+      this.requestMasterWarningFromApOff = false;
+      this.auralCrcActive.set(false);
+      this.masterWarning.set(false);
     }
 
     /* T.O. CONFIG CHECK */

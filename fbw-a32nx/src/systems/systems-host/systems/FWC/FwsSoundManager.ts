@@ -295,6 +295,21 @@ export class FwsSoundManager {
     this.soundQueue.delete(soundKey);
   }
 
+  /** Stop any currently playing sound and clear pending queue. E.g. from EMER CANC button */
+  stopAllSounds() {
+    if (this.currentSoundPlaying) {
+      const sound = FwsAuralsList[this.currentSoundPlaying];
+      if (sound?.localVarName) {
+        SimVar.SetSimVarValue(`L:${sound.localVarName}`, SimVarValueType.Bool, false);
+      }
+      this.currentSoundPlaying = null;
+      this.currentSoundPlayTimeRemaining = 0;
+    }
+
+    this.soundQueue.clear();
+    this.singleChimesPending = 0;
+  }
+
   private stopCurrentSound() {
     // Only LVar sounds which are continuous can be stopped
     if (
@@ -398,17 +413,18 @@ export class FwsSoundManager {
       // Interrupt if sound with higher category is present in queue and current sound is continuous
       let shouldInterrupt = false;
       let rescheduleSound: keyof typeof FwsAuralsList | null = null;
-      this.soundQueue.forEach((sk) => {
-        const s = FwsAuralsList[sk];
-        if (
-          s &&
-          this.currentSoundPlaying &&
-          FwsAuralsList[this.currentSoundPlaying]?.continuous &&
-          s.type > FwsAuralsList[this.currentSoundPlaying].type
-        ) {
-          shouldInterrupt = true;
-        }
-      });
+      const currentSound = this.currentSoundPlaying ? FwsAuralsList[this.currentSoundPlaying] : undefined;
+      if (currentSound?.continuous) {
+        this.soundQueue.forEach((sk) => {
+          const s = FwsAuralsList[sk];
+          if (
+            s &&
+            (s.type > currentSound.type || (s.type === currentSound.type && s.priority > currentSound.priority))
+          ) {
+            shouldInterrupt = true;
+          }
+        });
+      }
 
       if (shouldInterrupt) {
         if (this.currentSoundPlaying && FwsAuralsList[this.currentSoundPlaying]?.continuous) {

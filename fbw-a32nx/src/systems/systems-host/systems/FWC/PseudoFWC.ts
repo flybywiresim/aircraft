@@ -3195,6 +3195,12 @@ export class PseudoFWC {
       this.auralCrcActive.set(this.nonCancellableWarningCount > 0);
       this.cChordActive.set(this.nonCancellableWarningCount > 0);
     }
+    if (this.ecpEmergencyCancelPulseUp) {
+      this.soundManager.stopAllSounds();
+      this.requestMasterWarningFromFaults = false;
+      this.auralCrcActive.set(false);
+      this.cChordActive.set(false);
+    }
 
     /* T.O. CONFIG CHECK */
     // TODO Note that fuel tank low pressure and gravity feed warnings are not included
