@@ -5490,10 +5490,32 @@ export class FwsCore {
     this.pfdMemoLines.forEach((l, i) => l.set(pfdMemos[i] ?? ''));
 
     // TODO order by decreasing importance
-    this.informationKeys.set(stsInfoKeys);
-    this.inopSysAllPhasesKeys.set(stsInopAllPhasesKeys);
-    this.inopSysApprLdgKeys.set(stsInopApprLdgKeys);
-    this.inopSysRedundLossKeys.set(stsInopRedundLossKeys);
+    // Check if keys have changed before setting to avoid unnecessary updates
+    if (
+      this.informationKeys.get().length !== stsInfoKeys.length ||
+      !this.informationKeys.get().every((value, index) => value === stsInfoKeys[index])
+    ) {
+      this.informationKeys.set(stsInfoKeys);
+    }
+
+    if (
+      this.inopSysAllPhasesKeys.get().length !== stsInopAllPhasesKeys.length ||
+      !this.inopSysAllPhasesKeys.get().every((value, index) => value === stsInopAllPhasesKeys[index])
+    ) {
+      this.inopSysAllPhasesKeys.set(stsInopAllPhasesKeys);
+    }
+    if (
+      this.inopSysApprLdgKeys.get().length !== stsInopApprLdgKeys.length ||
+      !this.inopSysApprLdgKeys.get().every((value, index) => value === stsInopApprLdgKeys[index])
+    ) {
+      this.inopSysApprLdgKeys.set(stsInopApprLdgKeys);
+    }
+    if (
+      this.inopSysRedundLossKeys.get().length !== stsInopRedundLossKeys.length ||
+      !this.inopSysRedundLossKeys.get().every((value, index) => value === stsInopRedundLossKeys[index])
+    ) {
+      this.inopSysRedundLossKeys.set(stsInopRedundLossKeys);
+    }
 
     // TODO order by decreasing importance, only color-based for now
     // LAND ASAP overrides/replaces LAND ANSA
@@ -5507,8 +5529,19 @@ export class FwsCore {
       (a, b) => this.messagePriority(EcamLimitations[a]) - this.messagePriority(EcamLimitations[b]),
     );
 
-    this.limitationsAllPhasesKeys.set(sortedEwdLimitationsAllPhasesKeys);
-    this.limitationsApprLdgKeys.set(sortedEwdLimitationsApprLdgKeys);
+    // Check if keys have changed before setting to avoid unnecessary updates
+    if (
+      this.limitationsAllPhasesKeys.get().length !== sortedEwdLimitationsAllPhasesKeys.length ||
+      !this.limitationsAllPhasesKeys.get().every((value, index) => value === sortedEwdLimitationsAllPhasesKeys[index])
+    ) {
+      this.limitationsAllPhasesKeys.set(sortedEwdLimitationsAllPhasesKeys);
+    }
+    if (
+      this.limitationsApprLdgKeys.get().length !== sortedEwdLimitationsApprLdgKeys.length ||
+      !this.limitationsApprLdgKeys.get().every((value, index) => value === sortedEwdLimitationsApprLdgKeys[index])
+    ) {
+      this.limitationsApprLdgKeys.set(sortedEwdLimitationsApprLdgKeys);
+    }
 
     const pfdLimitationsCombined = [...new Set(pfdLimitationsKeys)].sort(
       (a, b) => this.messagePriority(EcamLimitations[a]) - this.messagePriority(EcamLimitations[b]),
