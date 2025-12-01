@@ -2,6 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 import {
   ConsumerSubject,
+  EventBus,
   FSComponent,
   MappedSubject,
   SimVarValueType,
@@ -20,14 +21,16 @@ import {
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { FormattedFwcText } from 'instruments/src/EWD/elements/FormattedFwcText';
 import { ChecklistState, FwsEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsPublisher';
-import { PageTitle } from '../Generic/PageTitle';
+import { MoreLabel, PageTitle } from '../Generic/PageTitle';
 import { SDSimvars } from '../../SDSimvarPublisher';
 import { SdPageProps } from '../../SD';
 
 import './style.scss';
 import { RegisteredSimVar } from '@flybywiresim/fbw-sdk';
+import { SdSoftKey } from './elements/SdSoftKey';
 
 export const SD_STS_LINES_PER_PAGE = 17;
+export const SD_STS_LINES_PER_PAGE_USABLE = 13; // Minus heading and footer
 
 enum StatusPageSectionDisplayStatus {
   HIDDEN,
@@ -37,12 +40,20 @@ enum StatusPageSectionDisplayStatus {
 export class StatusPage extends DestroyableComponent<SdPageProps> {
   private readonly sub = this.props.bus.getSubscriber<SDSimvars & FwsEvents>();
 
+  private readonly availChecker = new FwsSdAvailabilityChecker(this.props.bus);
+
   private readonly topSvgVisibility = this.props.visible.map((v) => (v ? 'visible' : 'hidden'));
 
   private readonly stsPageToShow = ConsumerSubject.create(this.sub.on('sdStsPageToShow'), 0);
 
+  private readonly statusNormal = Subject.create(true);
+
   private readonly stsNumberOfPagesSimvar = RegisteredSimVar.create(
     'L:A32NX_ECAM_SD_STS_NUMBER_OF_PAGES',
+    SimVarValueType.Number,
+  );
+  private readonly stsMoreAvailableSimvar = RegisteredSimVar.create<number>(
+    'L:A32NX_ECAM_SD_STS_MORE_AVAILABLE',
     SimVarValueType.Number,
   );
 
@@ -169,6 +180,57 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
     StatusPageSectionDisplayStatus.HIDDEN,
   );
 
+  /* INOP SYS REDUND */
+  private readonly inopSysRedund = ConsumerSubject.create(this.sub.on('fws_inop_sys_redundancy_loss'), []);
+  private readonly inopSysRedundCurrentPage = MappedSubject.create(
+    ([inopSysRedund, pageToShow]) =>
+      inopSysRedund.slice(pageToShow * SD_STS_LINES_PER_PAGE_USABLE, (pageToShow + 1) * SD_STS_LINES_PER_PAGE_USABLE),
+    this.inopSysRedund,
+    this.stsPageToShow,
+  );
+
+  private readonly inopSysRedundFormatString = this.inopSysRedundCurrentPage.map((inopSysRedundCurrentPage) =>
+    inopSysRedundCurrentPage.map((val) => EcamInopSys[val]).join('\r'),
+  );
+
+  private readonly inopSysRedundLines = MappedSubject.create(
+    ([inopSysRedund]) => (inopSysRedund.length > 0 ? inopSysRedund.length : 0),
+    this.inopSysRedundCurrentPage,
+  );
+  private readonly inopSysRedundDisplay = MappedSubject.create(
+    ([lines]) => (lines > 0 ? 'flex' : 'none'),
+    this.inopSysRedundLines,
+  );
+
+  private readonly inopSysRedundHeight = this.inopSysRedundLines.map((lines) => `${lines * 30 + 3}px`);
+
+  private readonly moreActive = ConsumerSubject.create(this.sub.on('moreActive'), false);
+  private readonly moreAvailable = this.inopSysRedund.map((lines) => lines.length > 0);
+  private readonly moreAvailableVisibility = this.moreAvailable.map((v) => (v ? 'inherit' : 'hidden'));
+  private readonly moreActiveVisibility = this.moreActive.map((v) => (v ? 'inherit' : 'hidden'));
+
+  private readonly statusNormalDisplay = MappedSubject.create(
+    ([normal, notAvail]) => (normal && !notAvail ? 'flex' : 'none'),
+    this.statusNormal,
+    this.availChecker.fwsFailed,
+  );
+  private readonly statusNotAvailableDisplay = MappedSubject.create(
+    ([notAvail]) => (notAvail ? 'flex' : 'none'),
+    this.availChecker.fwsFailed,
+  );
+  private readonly abnormalContentDisplay = MappedSubject.create(
+    ([normal, notAvail, moreActive]) => (!normal && !notAvail && !moreActive ? 'flex' : 'none'),
+    this.statusNormal,
+    this.availChecker.fwsFailed,
+    this.moreActive,
+  );
+  private readonly abnormalContentMoreDisplay = MappedSubject.create(
+    ([normal, notAvail, moreActive]) => (!normal && !notAvail && moreActive ? 'flex' : 'none'),
+    this.statusNormal,
+    this.availChecker.fwsFailed,
+    this.moreActive,
+  );
+
   private readonly pressStsForNextStatusPageVisibility = MappedSubject.create(
     ([defStatus, infoStatus, inopStatus, alertStatus]) =>
       defStatus === StatusPageSectionDisplayStatus.VISIBLE_NEXT_PAGE ||
@@ -182,6 +244,13 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
     this.inopSysDisplayStatus,
     this.alertImpactingLdgPerfDisplayStatus,
   );
+
+  private readonly morePageOverflow = MappedSubject.create(
+    ([inopSysRedund, pageToShow]) => inopSysRedund.length > (pageToShow + 1) * SD_STS_LINES_PER_PAGE_USABLE,
+    this.inopSysRedund,
+    this.stsPageToShow,
+  );
+  private readonly pressMoreForNextMorePageVisibility = this.morePageOverflow.map((v) => (v ? 'inherit' : 'hidden'));
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -218,10 +287,28 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
 
     this.subscriptions.push(
       MappedSubject.create(
-        ([pageToShow, limAll, limAppr, _deferredProcedures, info, inopApp, inopAppr]) => {
+        ([pageToShow, limAll, limAppr, deferredProcedures, info, inopApp, inopAppr, moreActive, inopSysRedund]) => {
           // Calculate number of pages required and where to display "ON NEXT PAGE" messages
           // 6 lines reserved for heading and white PRESS STS... line
-          const USABLE_LINES_PER_PAGE = SD_STS_LINES_PER_PAGE - 3;
+          if (
+            limAll.length === 0 &&
+            limAppr.length === 0 &&
+            deferredProcedures.length === 0 &&
+            info.length === 0 &&
+            inopApp.length === 0 &&
+            inopAppr.length === 0
+          ) {
+            this.statusNormal.set(true);
+          } else {
+            this.statusNormal.set(false);
+          }
+
+          if (moreActive) {
+            this.stsNumberOfPagesSimvar.set(
+              inopSysRedund.length > 0 ? Math.ceil(inopSysRedund.length / SD_STS_LINES_PER_PAGE_USABLE) : 1,
+            );
+            return;
+          }
 
           // Add one or two lines for header
           const limitationsLines = Math.max(limAll.length, limAppr.length) + 2;
@@ -247,7 +334,7 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
               : StatusPageSectionDisplayStatus.HIDDEN,
           );
 
-          if (linesUsedOnCurrentPage + deferredProceduresLines > USABLE_LINES_PER_PAGE) {
+          if (linesUsedOnCurrentPage + deferredProceduresLines > SD_STS_LINES_PER_PAGE_USABLE) {
             deferredProceduresVisibleOnPage = calculateForPage + 1;
             calculateForPage += 1;
             linesUsedOnCurrentPage = 0;
@@ -258,7 +345,7 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
           }
           linesUsedOnCurrentPage += deferredProceduresLines;
 
-          if (linesUsedOnCurrentPage + infoLines > USABLE_LINES_PER_PAGE) {
+          if (linesUsedOnCurrentPage + infoLines > SD_STS_LINES_PER_PAGE_USABLE) {
             infoVisibleOnPage = calculateForPage + 1;
             calculateForPage += 1;
             linesUsedOnCurrentPage = 0;
@@ -269,7 +356,7 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
           }
           linesUsedOnCurrentPage += infoLines;
 
-          if (linesUsedOnCurrentPage + inopSysLines > USABLE_LINES_PER_PAGE) {
+          if (linesUsedOnCurrentPage + inopSysLines > SD_STS_LINES_PER_PAGE_USABLE) {
             inopSysVisibleOnPage = calculateForPage + 1;
             calculateForPage += 1;
             linesUsedOnCurrentPage = 0;
@@ -280,7 +367,7 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
           }
           linesUsedOnCurrentPage += inopSysLines;
 
-          if (linesUsedOnCurrentPage + alertImpactingLdgPerfLines > USABLE_LINES_PER_PAGE) {
+          if (linesUsedOnCurrentPage + alertImpactingLdgPerfLines > SD_STS_LINES_PER_PAGE_USABLE) {
             alertImpactingLdgPerfVisibleOnPage = calculateForPage + 1;
             calculateForPage += 1;
             linesUsedOnCurrentPage = 0;
@@ -335,7 +422,13 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
         this.info,
         this.inopSysAllPhases,
         this.inopSysApprLdg,
+        this.moreActive,
+        this.inopSysRedund,
       ),
+      this.moreAvailable.sub((v) => {
+        this.stsMoreAvailableSimvar.set(v ? 1 : 0);
+        console.log(this.inopSysRedund.get(), v);
+      }, true),
     );
   }
 
@@ -350,119 +443,168 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
           <PageTitle x={6} y={29}>
             STATUS
           </PageTitle>
+          <g visibility={this.moreActiveVisibility}>
+            <MoreLabel x={187} y={28} moreActive={this.moreActive} />
+          </g>
         </svg>
-        {/* LIMITATIONS */}
-        <div
-          class="sd-sts-section-container"
-          style={{
-            display: this.limitationsDisplay,
-          }}
-        >
-          <StatusPageSectionHeading title="LIMITATIONS" showSeparationLines={Subject.create(false)} />
-          <div class="sd-sts-section-divided-area">
-            <div class="sd-sts-section-divided-left">
-              <span class="sd-sts-section-divided-area-heading">ALL PHASES</span>
-              <svg version="1.1" xmlns="http://www.w3.org/2000/svg" style={{ height: this.limitationsHeight }}>
-                <FormattedFwcText x={0} y={24} message={this.limitationsLeftFormatString} />
-              </svg>
-            </div>
-            <div class="sd-sts-section-divided-right">
-              <span class="sd-sts-section-divided-area-heading">APPR & LDG</span>
-              <svg version="1.1" xmlns="http://www.w3.org/2000/svg" style={{ height: this.limitationsHeight }}>
-                <FormattedFwcText x={0} y={24} message={this.limitationsRightFormatString} />
-              </svg>
-            </div>
-          </div>
+        <div id="sts-normal-content" class="sd-sts-centered-text" style={{ display: this.statusNormalDisplay }}>
+          NORMAL
         </div>
-        {/* DEFERRED PROCEDURE LIST on next page */}
         <div
-          class="sd-sts-section-container"
-          style={{
-            display: this.deferredProceduresOnNextPageDisplay,
-          }}
+          id="sts-normal-content"
+          class="sd-sts-centered-text amber"
+          style={{ display: this.statusNotAvailableDisplay }}
         >
-          <StatusPageSectionHeading title="DEFERRED PROCEDURE LIST" showSeparationLines={Subject.create(true)} />
-          <svg version="1.1" xmlns="http://www.w3.org/2000/svg" style={{ height: '63px' }}>
-            <FormattedFwcText x={0} y={24} message={'\x1b<4mDISPLAYED ON NEXT STATUS PAGE...'} />
-          </svg>
+          STATUS NOT AVAILABLE
         </div>
-        {/* DEFERRED PROCEDURE LIST */}
-        <div
-          class="sd-sts-section-container"
-          style={{
-            display: this.deferredProceduresDisplay,
-          }}
-        >
-          <StatusPageSectionHeading
-            title="DEFERRED PROCEDURE LIST"
-            showSeparationLines={this.deferredProceduresDisplaySeparationLine}
-          />
-          <svg version="1.1" xmlns="http://www.w3.org/2000/svg" style={{ height: this.deferredProceduresHeight }}>
-            <FormattedFwcText x={0} y={24} message={this.deferredProceduresFormatString} />
-          </svg>
-        </div>
-        {/* INFO on next page */}
-        <div
-          class="sd-sts-section-container"
-          style={{
-            display: this.infoOnNextPageDisplay,
-          }}
-        >
-          <StatusPageSectionHeading title="INFO" showSeparationLines={Subject.create(true)} />
-          <svg version="1.1" xmlns="http://www.w3.org/2000/svg" style={{ height: '63px' }}>
-            <FormattedFwcText x={0} y={24} message={'\x1b<3mDISPLAYED ON NEXT STATUS PAGE...'} />
-          </svg>
-        </div>
-        {/* INFO */}
-        <div
-          class="sd-sts-section-container"
-          style={{
-            display: this.infoDisplay,
-          }}
-        >
-          <StatusPageSectionHeading title="INFO" showSeparationLines={this.infoDisplaySeparationLine} />
-          <svg version="1.1" xmlns="http://www.w3.org/2000/svg" style={{ height: this.infoHeight }}>
-            <FormattedFwcText x={0} y={24} message={this.infoFormatString} />
-          </svg>
-        </div>
-        {/* INOP SYS on next page */}
-        <div
-          class="sd-sts-section-container"
-          style={{
-            display: this.inopSysOnNextPageDisplay,
-          }}
-        >
-          <StatusPageSectionHeading title="INOP SYS" showSeparationLines={Subject.create(true)} />
-          <svg version="1.1" xmlns="http://www.w3.org/2000/svg" style={{ height: '63px' }}>
-            <FormattedFwcText x={0} y={24} message={'\x1b<4mDISPLAYED ON NEXT STATUS PAGE...'} />
-          </svg>
-        </div>
-        {/* INOP SYS */}
-        <div
-          class="sd-sts-section-container"
-          style={{
-            display: this.inopSysDisplay,
-          }}
-        >
-          <StatusPageSectionHeading title="INOP SYS" showSeparationLines={this.inopSysDisplaySeparationLine} />
-          <div class="sd-sts-section-divided-area">
-            <div class="sd-sts-section-divided-left">
-              <span class="sd-sts-section-divided-area-heading">ALL PHASES</span>
-              <svg version="1.1" xmlns="http://www.w3.org/2000/svg" style={{ height: this.inopSysHeight }}>
-                <FormattedFwcText x={0} y={24} message={this.inopSysLeftFormatString} />
-              </svg>
-            </div>
-            <div class="sd-sts-section-divided-right">
-              <span class="sd-sts-section-divided-area-heading">APPR & LDG</span>
-              <svg version="1.1" xmlns="http://www.w3.org/2000/svg" style={{ height: this.inopSysHeight }}>
-                <FormattedFwcText x={0} y={24} message={this.inopSysRightFormatString} />
-              </svg>
+        <div id="sts-abnormal-content" class="sd-sts-abnormal-content" style={{ display: this.abnormalContentDisplay }}>
+          {/* LIMITATIONS */}
+          <div
+            class="sd-sts-section-container"
+            style={{
+              display: this.limitationsDisplay,
+            }}
+          >
+            <StatusPageSectionHeading title="LIMITATIONS" showSeparationLines={Subject.create(false)} />
+            <div class="sd-sts-section-divided-area">
+              <div class="sd-sts-section-divided-left">
+                <span class="sd-sts-section-divided-area-heading">ALL PHASES</span>
+                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" style={{ height: this.limitationsHeight }}>
+                  <FormattedFwcText x={0} y={24} message={this.limitationsLeftFormatString} />
+                </svg>
+              </div>
+              <div class="sd-sts-section-divided-right">
+                <span class="sd-sts-section-divided-area-heading">APPR & LDG</span>
+                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" style={{ height: this.limitationsHeight }}>
+                  <FormattedFwcText x={0} y={24} message={this.limitationsRightFormatString} />
+                </svg>
+              </div>
             </div>
           </div>
+          {/* DEFERRED PROCEDURE LIST on next page */}
+          <div
+            class="sd-sts-section-container"
+            style={{
+              display: this.deferredProceduresOnNextPageDisplay,
+            }}
+          >
+            <StatusPageSectionHeading title="DEFERRED PROCEDURE LIST" showSeparationLines={Subject.create(true)} />
+            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" style={{ height: '63px' }}>
+              <FormattedFwcText x={0} y={24} message={'\x1b<4mDISPLAYED ON NEXT STATUS PAGE...'} />
+            </svg>
+          </div>
+          {/* DEFERRED PROCEDURE LIST */}
+          <div
+            class="sd-sts-section-container"
+            style={{
+              display: this.deferredProceduresDisplay,
+            }}
+          >
+            <StatusPageSectionHeading
+              title="DEFERRED PROCEDURE LIST"
+              showSeparationLines={this.deferredProceduresDisplaySeparationLine}
+            />
+            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" style={{ height: this.deferredProceduresHeight }}>
+              <FormattedFwcText x={0} y={24} message={this.deferredProceduresFormatString} />
+            </svg>
+          </div>
+          {/* INFO on next page */}
+          <div
+            class="sd-sts-section-container"
+            style={{
+              display: this.infoOnNextPageDisplay,
+            }}
+          >
+            <StatusPageSectionHeading title="INFO" showSeparationLines={Subject.create(true)} />
+            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" style={{ height: '63px' }}>
+              <FormattedFwcText x={0} y={24} message={'\x1b<3mDISPLAYED ON NEXT STATUS PAGE...'} />
+            </svg>
+          </div>
+          {/* INFO */}
+          <div
+            class="sd-sts-section-container"
+            style={{
+              display: this.infoDisplay,
+            }}
+          >
+            <StatusPageSectionHeading title="INFO" showSeparationLines={this.infoDisplaySeparationLine} />
+            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" style={{ height: this.infoHeight }}>
+              <FormattedFwcText x={0} y={24} message={this.infoFormatString} />
+            </svg>
+          </div>
+          {/* INOP SYS on next page */}
+          <div
+            class="sd-sts-section-container"
+            style={{
+              display: this.inopSysOnNextPageDisplay,
+            }}
+          >
+            <StatusPageSectionHeading title="INOP SYS" showSeparationLines={Subject.create(true)} />
+            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" style={{ height: '63px' }}>
+              <FormattedFwcText x={0} y={24} message={'\x1b<4mDISPLAYED ON NEXT STATUS PAGE...'} />
+            </svg>
+          </div>
+          {/* INOP SYS */}
+          <div
+            class="sd-sts-section-container"
+            style={{
+              display: this.inopSysDisplay,
+            }}
+          >
+            <StatusPageSectionHeading title="INOP SYS" showSeparationLines={this.inopSysDisplaySeparationLine} />
+            <div class="sd-sts-section-divided-area">
+              <div class="sd-sts-section-divided-left">
+                <span class="sd-sts-section-divided-area-heading">ALL PHASES</span>
+                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" style={{ height: this.inopSysHeight }}>
+                  <FormattedFwcText x={0} y={24} message={this.inopSysLeftFormatString} />
+                </svg>
+              </div>
+              <div class="sd-sts-section-divided-right">
+                <span class="sd-sts-section-divided-area-heading">APPR & LDG</span>
+                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" style={{ height: this.inopSysHeight }}>
+                  <FormattedFwcText x={0} y={24} message={this.inopSysRightFormatString} />
+                </svg>
+              </div>
+            </div>
+          </div>
+          <div style="flex-grow: 1" />
+          <div class="sd-sts-press-sts-for-next-page" style={{ visibility: this.pressStsForNextStatusPageVisibility }}>
+            PRESS STS FOR NEXT STATUS PAGE
+          </div>
+          <div class="sd-sts-bottom-area">
+            <div
+              class="sd-sts-bottom-area-more-box"
+              style={{
+                visibility: this.moreAvailableVisibility,
+              }}
+            >
+              MORE
+            </div>
+          </div>
+          <SdSoftKey />
         </div>
-        <div style="flex-grow: 1" />
-        <div class="sd-sts-press-sts-for-next-page" style={{ visibility: this.pressStsForNextStatusPageVisibility }}>
-          PRESS STS FOR NEXT STATUS PAGE
+        <div
+          id="sts-abnormal-content-more"
+          class="sd-sts-abnormal-content"
+          style={{ display: this.abnormalContentMoreDisplay }}
+        >
+          {/* INOP SYS REDUND */}
+          <div
+            class="sd-sts-section-container"
+            style={{
+              display: this.inopSysRedundDisplay,
+            }}
+          >
+            <StatusPageSectionHeading title="INOP SYS REDUND" showSeparationLines={Subject.create(false)} />
+            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" style={{ height: this.inopSysRedundHeight }}>
+              <FormattedFwcText x={0} y={24} message={this.inopSysRedundFormatString} />
+            </svg>
+          </div>
+          <div style="flex-grow: 1" />
+          <div class="sd-sts-press-sts-for-next-page" style={{ visibility: this.pressMoreForNextMorePageVisibility }}>
+            PRESS MORE FOR NEXT MORE PAGE
+          </div>
+          <SdSoftKey />
         </div>
       </div>
     );
@@ -507,4 +649,31 @@ export class StatusPageSectionHeading extends DestroyableComponent<StatusPageSec
       </div>
     );
   }
+}
+
+class FwsSdAvailabilityChecker {
+  constructor(private bus: EventBus) {}
+
+  private readonly sub = this.bus.getSubscriber<SDSimvars>();
+
+  private readonly fws1IsHealthy = ConsumerSubject.create(this.sub.on('fws1_is_healthy'), true);
+  private readonly fws2IsHealthy = ConsumerSubject.create(this.sub.on('fws2_is_healthy'), true);
+
+  private readonly afdx_4_4_reachable = ConsumerSubject.create(this.sub.on('afdx_4_4_reachable'), true);
+  private readonly afdx_14_14_reachable = ConsumerSubject.create(this.sub.on('afdx_14_14_reachable'), true);
+  private readonly afdx_4_3_reachable = ConsumerSubject.create(this.sub.on('afdx_4_3_reachable'), true);
+  private readonly afdx_14_13_reachable = ConsumerSubject.create(this.sub.on('afdx_14_13_reachable'), true);
+
+  public readonly fwsAvail = MappedSubject.create(
+    ([healthy1, healthy2, r_4_4, r_14_14, r_4_3, r_14_13]) =>
+      (healthy1 && (r_4_3 || r_14_13)) || (healthy2 && (r_4_4 || r_14_14)),
+    this.fws1IsHealthy,
+    this.fws2IsHealthy,
+    this.afdx_4_4_reachable,
+    this.afdx_14_14_reachable,
+    this.afdx_4_3_reachable,
+    this.afdx_14_13_reachable,
+  );
+
+  public readonly fwsFailed = this.fwsAvail.map((it) => !it);
 }

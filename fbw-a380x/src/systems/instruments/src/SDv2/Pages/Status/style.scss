@@ -30,6 +30,39 @@
   z-index: 1;
 }
 
+.sd-sts-centered-text {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 30px;
+  height: 100%;
+  color: $display-green;
+}
+
+.sd-sts-abnormal-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.sd-sts-centered-text.amber {
+  color: $display-amber;
+}
+
+.sd-sts-bottom-area {
+  height: 40px;
+}
+
+.sd-sts-bottom-area-more-box {
+  display: inline;
+  position: relative;
+  left: 335px;
+  top: 4px;
+  border: 2px outset $display-white;
+  font-size: 24px;
+  padding: 2px;
+}
+
 .sd-sts-section-container {
   display: flex;
   flex-direction: column;
@@ -104,4 +137,12 @@
   color: $display-background;
   height: 40px;
   margin-bottom: 10px;
+}
+
+.sd-sts-soft-key {
+  position: absolute;
+  top: 605px;
+  right: 3px;
+  display: flex;
+  flex-direction: row;
 }

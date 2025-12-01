@@ -5403,11 +5403,19 @@ export class FwsCore {
     // INOP SYS
     for (const [key, value] of Object.entries(this.inopSys.inopSys)) {
       if (itemIsActiveConsideringFaultSuppression(value, key, 1.0)) {
-        if (value.phase === FwsInopSysPhases.AllPhases && !stsInopAllPhasesKeys.includes(key)) {
+        if (
+          !value.redundancyLoss &&
+          value.phase === FwsInopSysPhases.AllPhases &&
+          !stsInopAllPhasesKeys.includes(key)
+        ) {
           stsInopAllPhasesKeys.push(key);
-        } else if (value.phase === FwsInopSysPhases.ApprLdg && !stsInopApprLdgKeys.includes(key)) {
+        } else if (
+          !value.redundancyLoss &&
+          value.phase === FwsInopSysPhases.ApprLdg &&
+          !stsInopApprLdgKeys.includes(key)
+        ) {
           stsInopApprLdgKeys.push(key);
-        } else if (value.redudancyLoss && !stsInopRedundLossKeys.includes(key)) {
+        } else if (value.redundancyLoss && !stsInopRedundLossKeys.includes(key)) {
           stsInopRedundLossKeys.push(key);
         }
       }

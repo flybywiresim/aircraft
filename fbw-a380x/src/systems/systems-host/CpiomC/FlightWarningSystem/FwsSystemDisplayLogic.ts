@@ -14,6 +14,8 @@ const STS_DISPLAY_TIMER_DURATION = 3;
 const ECAM_LIGHT_DELAY_ALL = 200;
 const ECAM_ALL_CYCLE_DELAY = 3000;
 
+const MORE_AVAILABLE_FOR_PAGES = [SdPages.Status];
+
 export class FwsSystemDisplayLogic {
   private readonly subscriptions: Subscription[] = [];
 
@@ -23,6 +25,8 @@ export class FwsSystemDisplayLogic {
   );
   private readonly sdFailPageIndexSimvar = RegisteredSimVar.create<SdPages>('L:A32NX_ECAM_SFAIL', SimVarValueType.Enum);
   private readonly ecamAllButtonPushedSimvar = RegisteredSimVar.createBoolean('L:A32NX_BTN_ALL');
+
+  private readonly sdMoreShownSimvar = RegisteredSimVar.create<number>('L:A32NX_SD_MORE_SHOWN', SimVarValueType.Number);
 
   private readonly userSelectedPage = Subject.create<SdPages>(SdPages.None);
   private readonly currentPage = Subject.create<SdPages>(SdPages.Door);
@@ -55,6 +59,10 @@ export class FwsSystemDisplayLogic {
     'L:A32NX_ECAM_SD_STS_PAGE_TO_SHOW',
     SimVarValueType.Number,
   );
+  private readonly stsMoreAvailableSimvar = RegisteredSimVar.create<number>(
+    'L:A32NX_ECAM_SD_STS_MORE_AVAILABLE',
+    SimVarValueType.Number,
+  );
 
   constructor(private fws: FwsCore) {}
 
@@ -70,9 +78,18 @@ export class FwsSystemDisplayLogic {
           if (currentPage + 2 > numberOfPages) {
             this.stsPageToShowSimvar.set(0);
             this.sdCurrentPageIndexSimvar.set(SdPages.None);
+            this.sdMoreShownSimvar.set(0);
           } else {
             this.stsPageToShowSimvar.set(currentPage + 1);
           }
+        } else if (eventName === 'A32NX_SD_REQUEST_MORE' && MORE_AVAILABLE_FOR_PAGES.includes(this.currentPage.get())) {
+          if (this.currentPage.get() === SdPages.Status && !this.stsMoreAvailableSimvar.get()) {
+            // Only switch if MORE available
+            this.sdMoreShownSimvar.set(0);
+            return;
+          }
+          this.stsPageToShowSimvar.set(0);
+          this.sdMoreShownSimvar.set(this.sdMoreShownSimvar.get() === 1 ? 0 : 1);
         }
       }),
     );
@@ -80,7 +97,7 @@ export class FwsSystemDisplayLogic {
 
   update(deltaTime: number) {
     // FIXME convoluted, confusing logic, someone please, please, please re-write it from scratch
-    // FIXME backup for ALL button needed when both FWS are failed
+    // FIXME backup needed when both FWS are failed (for all ECAM CP buttons, they are somehow wired directly to the CDS)
     const failPage = this.sdFailPageIndexSimvar.get();
     const ecamAllButtonPushed = this.ecamAllButtonPushedSimvar.get();
     this.apuRpm.setFromSimVar('L:A32NX_APU_N');

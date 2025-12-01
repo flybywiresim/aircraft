@@ -1,15 +1,10 @@
-import { DisplayComponent, EventBus, FSComponent, SimVarValueType, VNode } from '@microsoft/msfs-sdk';
+import { DisplayComponent, FSComponent, SimVarValueType, VNode } from '@microsoft/msfs-sdk';
 import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
-import { EwdSimvars } from 'instruments/src/EWD/shared/EwdSimvarPublisher';
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
 
-interface EclSoftKeysProps {
-  bus: EventBus;
-}
+interface EclSoftKeysProps {}
 
 export class EclSoftKeys extends DisplayComponent<EclSoftKeysProps> {
-  private readonly sub = this.props.bus.getSubscriber<EwdSimvars>();
-
   private readonly eclSoftKeysRef = FSComponent.createRef<HTMLDivElement>();
 
   onAfterRender(node: VNode): void {

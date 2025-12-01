@@ -15,7 +15,7 @@ export interface FwsInopSysItem extends FwsSuppressableItem {
   /** Relevant phase shown on SD/EWD: ALL PHASES or APPR & LDG */
   phase: FwsInopSysPhases;
   /** Only to be shown under REDUND LOSS on MORE page */
-  redudancyLoss?: boolean;
+  redundancyLoss?: boolean;
 }
 
 export interface FwsInopSysDict {
@@ -79,19 +79,19 @@ export class FwsInopSys {
       // FMC-A
       simVarIsActive: this.fws.fmcAFault,
       phase: FwsInopSysPhases.AllPhases,
-      redudancyLoss: true,
+      redundancyLoss: true,
     },
     221300002: {
       // FMC-B
       simVarIsActive: this.fws.fmcBFault,
       phase: FwsInopSysPhases.AllPhases,
-      redudancyLoss: true,
+      redundancyLoss: true,
     },
     221300003: {
       // FMC-C
       simVarIsActive: this.fws.fmcCFault,
       phase: FwsInopSysPhases.AllPhases,
-      redudancyLoss: true,
+      redundancyLoss: true,
     },
     221300004: {
       // FMS 1
@@ -349,14 +349,14 @@ export class FwsInopSys {
       simVarIsActive: this.fws.sec1FaultCondition,
       phase: FwsInopSysPhases.AllPhases,
       notActiveWhenItemActive: ['270300004'],
-      redudancyLoss: true,
+      redundancyLoss: true,
     },
     270300006: {
       // RUDDER TRIM 2
       simVarIsActive: this.fws.sec3FaultCondition,
       phase: FwsInopSysPhases.AllPhases,
       notActiveWhenItemActive: ['270300004'],
-      redudancyLoss: true,
+      redundancyLoss: true,
     },
     270300010: {
       // PRIM 1
@@ -519,21 +519,21 @@ export class FwsInopSys {
       simVarIsActive: this.fws.height1Failed,
       phase: FwsInopSysPhases.ApprLdg,
       notActiveWhenItemActive: ['340300025', '340300026', '340300028'],
-      redudancyLoss: true,
+      redundancyLoss: true,
     },
     340300023: {
       // RA SYS B
       simVarIsActive: this.fws.height2Failed,
       phase: FwsInopSysPhases.ApprLdg,
       notActiveWhenItemActive: ['340300025', '340300027', '340300028'],
-      redudancyLoss: true,
+      redundancyLoss: true,
     },
     340300024: {
       // RA SYS C
       simVarIsActive: this.fws.height3Failed,
       phase: FwsInopSysPhases.ApprLdg,
       notActiveWhenItemActive: ['340300026', '340300027', '340300028'],
-      redudancyLoss: true,
+      redundancyLoss: true,
     },
     340300025: {
       // RA SYS A+B
