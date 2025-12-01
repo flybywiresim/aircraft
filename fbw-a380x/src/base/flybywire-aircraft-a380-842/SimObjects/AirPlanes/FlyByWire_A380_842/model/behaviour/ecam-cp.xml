@@ -47,7 +47,11 @@
                 (#STATE_SIMVAR#) #STATE_ID# != if{
                     #STATE_ID# (&gt;#STATE_SIMVAR#)
                 } els{
-                    -1 (&gt;#STATE_SIMVAR#)
+                    #STATE_ID# 14 == if{
+                        (&gt;H:A32NX_SD_STS_NEXT_PAGE)
+                    } els{
+                        -1 (&gt;#STATE_SIMVAR#)
+                    }
                 }
                 (&gt;H:A32NX_SD_PAGE_CHANGED)
             </LEFT_SINGLE_CODE>

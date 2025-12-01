@@ -21,6 +21,7 @@ import {
   Subscribable,
   Subscription,
   MappedSubscribable,
+  HEvent,
 } from '@microsoft/msfs-sdk';
 
 import {
@@ -126,14 +127,15 @@ export class FwsCore {
   public readonly sub = this.bus.getSubscriber<
     PseudoFwcSimvars &
       FcdcSimvars &
-      StallWarningEvents &
-      MfdSurvEvents &
-      FuelSystemEvents &
-      KeyEvents &
-      MsfsFlightModelEvents &
-      FmsMessageVars &
       FGVars &
-      OisDebugDataControlEvents
+      FmsMessageVars &
+      FuelSystemEvents &
+      HEvent &
+      KeyEvents &
+      MfdSurvEvents &
+      MsfsFlightModelEvents &
+      OisDebugDataControlEvents &
+      StallWarningEvents
   >();
 
   private subs: Subscription[] = [];
@@ -2218,6 +2220,8 @@ export class FwsCore {
         }
       }),
     );
+
+    this.systemDisplayLogic.init();
 
     this.subs.push(
       this.toConfigNormal.sub((normal) => SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool', normal)),

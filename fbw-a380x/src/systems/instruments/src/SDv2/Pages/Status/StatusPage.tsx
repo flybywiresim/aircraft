@@ -175,7 +175,7 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
       infoStatus === StatusPageSectionDisplayStatus.VISIBLE_NEXT_PAGE ||
       inopStatus === StatusPageSectionDisplayStatus.VISIBLE_NEXT_PAGE ||
       alertStatus === StatusPageSectionDisplayStatus.VISIBLE_NEXT_PAGE
-        ? 'visible'
+        ? 'inherit'
         : 'hidden',
     this.deferredProceduresDisplayStatus,
     this.infoDisplayStatus,
