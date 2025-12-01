@@ -14,6 +14,7 @@ import { UpdatableSimVarPublisher } from '../MsfsAvionicsCommon/UpdatableSimVarP
 export type BaseSDSimvars = AdirsSimVars &
   SwitchingPanelVSimVars & {
     sdPageToShow: number;
+    sdStsPageToShow: number;
     zuluTime: number;
     /** in gallons */
     grossWeightCg: number;
@@ -60,6 +61,7 @@ export class SDSimvarPublisher extends UpdatableSimVarPublisher<SDSimvars> {
     ...AdirsSimVarDefinitions,
     ...SwitchingPanelSimVarsDefinitions,
     ['sdPageToShow', { name: 'L:A32NX_ECAM_SD_PAGE_TO_SHOW', type: SimVarValueType.Enum }],
+    ['sdStsPageToShow', { name: 'L:A32NX_ECAM_SD_STS_PAGE_TO_SHOW', type: SimVarValueType.Enum }],
     ['zuluTime', { name: 'E:ZULU TIME', type: SimVarValueType.Seconds }],
     ['grossWeightCg', { name: 'L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC', type: SimVarValueType.Number }],
     ['fuelTotalQuantity', { name: 'L:A32NX_TOTAL_FUEL_VOLUME', type: SimVarValueType.GAL }],
