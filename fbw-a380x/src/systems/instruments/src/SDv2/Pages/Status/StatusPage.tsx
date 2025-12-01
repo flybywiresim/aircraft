@@ -427,7 +427,6 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
       ),
       this.moreAvailable.sub((v) => {
         this.stsMoreAvailableSimvar.set(v ? 1 : 0);
-        console.log(this.inopSysRedund.get(), v);
       }, true),
     );
   }
