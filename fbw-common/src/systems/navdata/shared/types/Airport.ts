@@ -3,6 +3,7 @@ import { DatabaseItem, Knots, FlightLevel, ElevatedCoordinates } from './Common'
 import { RunwaySurfaceType } from './Runway';
 import { AirportSubsectionCode, SectionCode } from './SectionCode';
 import { WaypointArea } from './Waypoint';
+import { Fix } from '@flybywiresim/fbw-sdk';
 
 export interface Airport extends DatabaseItem<SectionCode.Airport> {
   subSectionCode: AirportSubsectionCode.ReferencePoints;
@@ -48,4 +49,12 @@ export interface Airport extends DatabaseItem<SectionCode.Airport> {
   // These two are needed to satisfy the terminal fix interface, for use as procedure fix.
   area: WaypointArea.Terminal;
   airportIdent: string;
+}
+
+export function isAirport(o: Fix): o is Airport {
+  return (
+    typeof o === 'object' &&
+    o.sectionCode === SectionCode.Airport &&
+    o.subSectionCode === AirportSubsectionCode.ReferencePoints
+  );
 }
