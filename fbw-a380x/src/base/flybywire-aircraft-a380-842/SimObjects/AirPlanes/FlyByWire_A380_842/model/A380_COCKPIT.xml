@@ -953,6 +953,30 @@
                 <ID>2</ID>
             </UseTemplate>
 
+            <UseTemplate Name="FBW_AIRBUS_Push_Round_Button_Template">
+                <NODE_ID>PUSH_EFIS_CS_RECONF</NODE_ID>
+                <ANIM_NAME>PUSH_EFIS_CS_RECONF</ANIM_NAME>
+                <ID>1</ID>
+            </UseTemplate>
+
+            <UseTemplate Name="FBW_AIRBUS_Push_Round_Button_Template">
+                <NODE_ID>PUSH_EFIS_FO_RECONF</NODE_ID>
+                <ANIM_NAME>PUSH_EFIS_FO_RECONF</ANIM_NAME>
+                <ID>2</ID>
+            </UseTemplate>
+
+            <UseTemplate Name="FBW_AIRBUS_Push_Round_Button_Template">
+                <NODE_ID>PUSH_GLARESHIELD_CS_PTT</NODE_ID>
+                <ANIM_NAME>PUSH_GLARESHIELD_CS_PTT</ANIM_NAME>
+                <ID>1</ID>
+            </UseTemplate>
+
+            <UseTemplate Name="FBW_AIRBUS_Push_Round_Button_Template">
+                <NODE_ID>PUSH_GLARESHIELD_FO_PTT</NODE_ID>
+                <ANIM_NAME>PUSH_GLARESHIELD_FO_PTT</ANIM_NAME>
+                <ID>2</ID>
+            </UseTemplate>
+
             <!-- CAPT LAPTOP -->
             <!-- Yes, this is a momentary switch/latch, but I simply can't get the XML for that to work -->
             <UseTemplate Name="A32NX_GT_Switch_Dummy">
@@ -3338,7 +3362,7 @@
                         </UseTemplate>
 
                         <Component ID="KNOB_OVHD_AIRCOND_FWDCABIN" Node="KNOB_OVHD_AIRCOND_FWDCABIN">
-                            <UseTemplate Name="FBW_Continuous_Knob_Finite_From_Simvar">
+                            <UseTemplate Name="FBW_A380X_Knob_Aircond_Cabin">
                                 <NODE_ID>KNOB_OVHD_AIRCOND_FWDCABIN</NODE_ID>
                                 <ANIM_NAME>KNOB_OVHD_AIRCOND_FWDCABIN</ANIM_NAME>
                                 <ANIM_SIMVAR>L:A32NX_OVHD_COND_CABIN_SELECTOR_KNOB</ANIM_SIMVAR>
@@ -5053,23 +5077,14 @@
 
             <!-- Should be springloaded in the 3rd position, not sure how to do that. -->
             <Component ID="KNOB_CHRONO_RUN" Node="KNOB_CHRONO_RUN">
-                <UseTemplate Name="ASOBO_GT_Knob_Finite_Code">
-                    <NODE_ID>KNOB_CHRONO_RUN</NODE_ID>
+                <UseTemplate Name="ASOBO_GT_Switch_3States">
                     <ANIM_NAME>KNOB_CHRONO_RUN</ANIM_NAME>
+                    <ANIM_CODE>50</ANIM_CODE>
+                    <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+                    <SWITCH_POSITION_VAR>A32NX_CHRONO_ET_SWITCH_POS</SWITCH_POSITION_VAR>
+                    <SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
                     <WWISE_EVENT>smallknob</WWISE_EVENT>
-                    <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-                    <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
-                    <ANIM_CODE>(L:A32NX_CHRONO_ET_SWITCH_POS, number) 10 *</ANIM_CODE>
-                    <CLOCKWISE_CODE>
-                        (L:A32NX_CHRONO_ET_SWITCH_POS, number) 1 + 2 min
-                        (&gt;L:A32NX_CHRONO_ET_SWITCH_POS, number)
-                        (&gt;H:A32NX_CHRONO_ET_POS_CHANGED)
-                    </CLOCKWISE_CODE>
-                    <ANTICLOCKWISE_CODE>
-                        (L:A32NX_CHRONO_ET_SWITCH_POS, number) 1 - 0 max
-                        (&gt;L:A32NX_CHRONO_ET_SWITCH_POS, number)
-                        (&gt;H:A32NX_CHRONO_ET_POS_CHANGED)
-                    </ANTICLOCKWISE_CODE>
+                    <ON_STATE_CHANGED_EXTERNAL_CODE>(&gt;H:A32NX_CHRONO_ET_POS_CHANGED)</ON_STATE_CHANGED_EXTERNAL_CODE>
                 </UseTemplate>
             </Component>
 
@@ -5474,10 +5489,44 @@
         </Component>
 
         <Component ID="HAT03" Node="HAT03">
-            <UseTemplate Name="ASOBO_GT_MouseRect">
-                <CALLBACKCODE_DEFAULT_IM>(M:Event) 'LeftSingle' scmp 0 == if{ (L:A380X_CABIN_HIDDEN, bool) ! (&gt;L:A380X_CABIN_HIDDEN, bool) }</CALLBACKCODE_DEFAULT_IM>
-                <MOUSEFLAGS>LeftSingle</MOUSEFLAGS>
-                <CURSOR>Hand</CURSOR>
+            <UseTemplate Name="ASOBO_Interaction_Base_Template">
+                <NODE_ID>HAT03</NODE_ID>
+                <TOOLTIP_TITLE>A380X.TOOLTIPS.TOGGLE_CABIN</TOOLTIP_TITLE>
+                <IS_AIRLINER>False</IS_AIRLINER>
+                <INTERACTION_TYPE>Push</INTERACTION_TYPE>
+                <LEFT_SINGLE_CODE>0 == if{ (L:A380X_CABIN_HIDDEN, bool) ! (&gt;L:A380X_CABIN_HIDDEN, bool) }</LEFT_SINGLE_CODE>
+            </UseTemplate>
+        </Component>
+
+        <Component ID="EFB_CPT_MOUNT" Node="EFB_CPT_MOUNT">
+            <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                <VISIBILITY_CODE>(L:A380X_CPT_EFB_HIDDEN, bool) 0 ==</VISIBILITY_CODE>
+            </UseTemplate>
+        </Component>
+
+        <Component ID="LH_SLIDING_LIGHTING_KNOB" Node="LH_SLIDING_LIGHTING_KNOB">
+            <UseTemplate Name="ASOBO_Interaction_Base_Template">
+                <NODE_ID>LH_SLIDING_LIGHTING_KNOB</NODE_ID>
+                <TOOLTIP_TITLE>A380X.TOOLTIPS.EFB_CPT_TOGGLE</TOOLTIP_TITLE>
+                <IS_AIRLINER>False</IS_AIRLINER>
+                <INTERACTION_TYPE>Push</INTERACTION_TYPE>
+                <LEFT_SINGLE_CODE>0 == if{ (L:A380X_CPT_EFB_HIDDEN, bool) ! (&gt;L:A380X_CPT_EFB_HIDDEN, bool) }</LEFT_SINGLE_CODE>
+            </UseTemplate>
+        </Component>
+
+        <Component ID="EFB_FO_MOUNT" Node="EFB_FO_MOUNT">
+            <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                <VISIBILITY_CODE>(L:A380X_FO_EFB_HIDDEN, bool) 0 ==</VISIBILITY_CODE>
+            </UseTemplate>
+        </Component>
+
+        <Component ID="RH_SLIDING_LIGHTING_KNOB" Node="RH_SLIDING_LIGHTING_KNOB">
+            <UseTemplate Name="ASOBO_Interaction_Base_Template">
+                <NODE_ID>RH_SLIDING_LIGHTING_KNOB</NODE_ID>
+                <TOOLTIP_TITLE>A380X.TOOLTIPS.EFB_FO_TOGGLE</TOOLTIP_TITLE>
+                <IS_AIRLINER>False</IS_AIRLINER>
+                <INTERACTION_TYPE>Push</INTERACTION_TYPE>
+                <LEFT_SINGLE_CODE>0 == if{ (L:A380X_FO_EFB_HIDDEN, bool) ! (&gt;L:A380X_FO_EFB_HIDDEN, bool) }</LEFT_SINGLE_CODE>
             </UseTemplate>
         </Component>
 

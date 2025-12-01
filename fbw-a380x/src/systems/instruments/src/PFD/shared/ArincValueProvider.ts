@@ -24,9 +24,6 @@ import { PFDSimvars } from './PFDSimvarPublisher';
 import { A380XFcuBusEvents } from '@shared/publishers/A380XFcuBusPublisher';
 
 export interface Arinc429Values {
-  slatsFlapsStatus: Arinc429Word;
-  slatsPosition: Arinc429Word;
-  flapsPosition: Arinc429Word;
   pitchAr: Arinc429Word;
   rollAr: Arinc429Word;
 
@@ -152,18 +149,6 @@ export class ArincValueProvider implements Instrument {
 
     const publisher = this.bus.getPublisher<Arinc429Values>();
     const subscriber = this.bus.getSubscriber<PFDSimvars>();
-
-    subscriber.on('slatsFlapsStatusRaw').handle((w) => {
-      publisher.pub('slatsFlapsStatus', new Arinc429Word(w));
-    });
-
-    subscriber.on('slatsPositionRaw').handle((w) => {
-      publisher.pub('slatsPosition', new Arinc429Word(w));
-    });
-
-    subscriber.on('flapsPositionRaw').handle((w) => {
-      publisher.pub('flapsPosition', new Arinc429Word(w));
-    });
 
     subscriber.on('pitch').handle((p) => {
       this.pitch = new Arinc429Word(p);

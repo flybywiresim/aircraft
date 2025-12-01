@@ -13,6 +13,7 @@ import { A380XFcuBusPublisher } from '../../../shared/src/publishers/A380XFcuBus
 import { FwcPublisher, RopRowOansPublisher, SecPublisher, TawsPublisher } from '@flybywiresim/msfs-avionics-common';
 import { FwsPfdSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FwsPfdPublisher';
 import { FcdcSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FcdcPublisher';
+import { SfccSimVarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/SfccPublisher';
 
 import './style.scss';
 
@@ -51,6 +52,8 @@ class A380X_PFD extends BaseInstrument {
 
   private readonly fcdcPublisher = new FcdcSimvarPublisher(this.bus);
 
+  private readonly sfccPublisher = new SfccSimVarPublisher(this.bus);
+
   constructor() {
     super();
 
@@ -73,6 +76,7 @@ class A380X_PFD extends BaseInstrument {
     this.backplane.addPublisher('FwsPfdPublisher', this.fwsPfdPublisher);
     this.backplane.addPublisher('FcuBusPublisher', this.fcuBusPublisher);
     this.backplane.addPublisher('FcdcPublisher', this.fcdcPublisher);
+    this.backplane.addPublisher('SfccPublisher', this.sfccPublisher);
   }
 
   get templateID(): string {
