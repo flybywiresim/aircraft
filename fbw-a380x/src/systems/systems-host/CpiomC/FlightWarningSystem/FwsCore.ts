@@ -3951,8 +3951,6 @@ export class FwsCore {
       diffPressureAbovePoint072 && ((this.aircraftOnGround.get() && engNotRunning) || this.phase10For90sConfirm.read()),
     );
 
-    this.diffPressure.setFromSimVar(`L:A32NX_PRESS_CABIN_DELTA_PRESSURE_B${cpcsToUseId}`);
-
     this.cabinDoorOpen.set(
       Array.from({ length: 10 }, (_, i) => SimVar.GetSimVarValue(`INTERACTIVE POINT OPEN:${i}`, 'percent') > 0).some(
         (isOpen) => isOpen,
@@ -3963,16 +3961,6 @@ export class FwsCore {
       this.cabinDoorOpen.get() &&
         (this.throttle2Position.get() >= 45 || (this.throttle2Position.get() >= 35 && flexThrustLimit)),
     );
-
-    const outflowValve1OpenAmount = Arinc429Register.empty();
-    const outflowValve2OpenAmount = Arinc429Register.empty();
-    const outflowValve3OpenAmount = Arinc429Register.empty();
-    const outflowValve4OpenAmount = Arinc429Register.empty();
-
-    outflowValve1OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_1_OPEN_PERCENTAGE_B${cpcsToUseId}`);
-    outflowValve2OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_2_OPEN_PERCENTAGE_B${cpcsToUseId}`);
-    outflowValve3OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_3_OPEN_PERCENTAGE_B${cpcsToUseId}`);
-    outflowValve4OpenAmount.setFromSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_4_OPEN_PERCENTAGE_B${cpcsToUseId}`);
 
     this.allOutflowValvesOpen.set(
       this.outflowValve1OpenAmount.valueOr(0) > 99 &&

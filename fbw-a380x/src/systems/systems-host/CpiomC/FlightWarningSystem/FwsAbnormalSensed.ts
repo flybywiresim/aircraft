@@ -1072,7 +1072,6 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [!this.fws.pack1On.get(), !this.fws.pack2On.get(), false, false, false],
       failure: 3,
       sysPage: SdPages.Press,
-      redundLoss: () => [],
     },
     213800005: {
       // PRESS AUTO CTL FAULT
