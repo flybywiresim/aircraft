@@ -12,6 +12,24 @@
 
 ## 0.15.0
 
+1. [OVHD] Implement FAULT light flickering during self-test sequence of PRIM, SEC, ELAC, FAC - @flogross89 (floridude)
+1. [A32NX/SFCC] Added implementation of SAP and FAP in SFCC - @Eagle941 (Joe)
+1. [A32NX/SFCC] Connected SFCC to electrical busses with simulation of power consumption and power restoration behaviour - @Eagle941 (Joe)
+1. [A380X/MFD] Add = sign the the MFD font - @JulKem (JulK)
+1. [A32NX/FMS] Hookup IR data to IRS status & monitor MCDU page - @BravoMike99 (bruno_pt99)
+1. [A380X/MODEL] Add ability to hide EFB model via a clickspot - @heclak (Heclak)
+1. [A380X/MODEL] Fix cargo air cond temp knob animation out of range - @heclak (Heclak)
+1. [A380X/MODEL] Fix RMP Voice volume knob animations - @heclak (Heclak)
+1. [A380X/MODEL] Fix RAD NAV STBY button on RMP 2 not lighting up - @heclak (Heclak)
+1. [A380X/MODEL] Texture size optimization for display albedos - @heclak (Heclak)
+1. [A380X/MODEL] Fix RAT blur texture size not power of two - @heclak (Heclak)
+1. [A380X/OIT] Fix tooltips for OIT switches - @heclak (Heclak)
+1. [A32NX/MCDU] Fix managed speed units in IAS/MACH on perf climb page - @Lucas-IQ21 (Lucas)
+1. [A32NX/FMS] Implement ability to create, modify, activate and swap a secondary flight plan - @Benjozork (Benjamin Dupont), @BlueberyKing (BlueberryKing)
+1. [A380X] Fix PFD F RELIEF indication and SD status area ISA visibility - @flogross89 (floridude)
+1. [A380X/FMS] Add - sign to LS slope value - @Jonny23787 (Jonathan)
+1. [A380X/MFD] Implement Position Monitor page - @BravoMike99 (bruno_pt99)
+1. [A380X/MFD] Only show "RETURN" button on PERF & POS NAVAIDS if acessed via INIT page keys - @BravoMike99 (bruno_pt99)
 1. [A32NX/FWS] Make master caution from autobrake off trigger for 3 seconds - @BravoMike99 (bruno_pt99)
 
 ## 0.14.0
@@ -158,6 +176,7 @@
 1. [A32NX] Enable mouse drag for knobs in lock mode - @heclak (Heclak)
 1. [A32NX] Fix some knobs snapping back to start position when turned to max value - @heclak (Heclak)
 1. [ND] Fix terrain display smearing issue - @flogross89 (floridude)
+1. [MISC] Prevent long sim freezes in some scenarios in MSFS 2024 - @Benjozork (Benjamin Dupont)
 
 ## 0.13.0
 

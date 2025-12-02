@@ -42,6 +42,8 @@ class Sec {
   // Computer Self-monitoring vars
   bool monitoringHealthy;
 
+  bool selfTestFaultLightVisible;
+
   bool cpuStopped;
 
   SRFlipFlop cpuStoppedFlipFlop = SRFlipFlop(true);
@@ -63,5 +65,5 @@ class Sec {
   const bool isUnit3;
 
   const double minimumPowerOutageTimeForFailure = 0.02;
-  const double selfTestDuration = 4;
+  const double selfTestDuration = 30;
 };

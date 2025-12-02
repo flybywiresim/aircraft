@@ -3140,7 +3140,7 @@ export class PseudoFWC {
 
     /* SETTINGS */
 
-    this.configPortableDevices.set(NXDataStore.get('CONFIG_USING_PORTABLE_DEVICES', '1') !== '0');
+    this.configPortableDevices.set(NXDataStore.getLegacy('CONFIG_USING_PORTABLE_DEVICES', '1') !== '0');
 
     /* CABIN READY */
 
@@ -5486,7 +5486,7 @@ export class PseudoFWC {
       memoInhibit: () => false,
       failure: 0,
       sysPage: -1,
-      side: 'RIGHT',
+      side: 'LEFT',
     },
     '0000055': {
       // GND SPLRS ARMED
