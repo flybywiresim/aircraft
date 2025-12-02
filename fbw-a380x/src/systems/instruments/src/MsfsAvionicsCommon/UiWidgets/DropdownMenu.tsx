@@ -60,6 +60,9 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
 
   private readonly inputFieldValue = Subject.create<string | null>('');
 
+  private readonly dropdownArrowFill =
+    this.props.disabled?.map((isDisabled) => (isDisabled ? 'gray' : 'white')) ?? Subject.create('white');
+
   private freeTextEntered = false;
 
   private readonly renderedDropdownOptions = ArraySubject.create<string>();
@@ -229,6 +232,8 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
           }
         }
       }, true),
+
+      this.dropdownArrowFill,
     );
 
     // TODO add KCCU events
@@ -305,12 +310,12 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
               tmpyActive={this.props.tmpyActive}
               hEventConsumer={this.props.hEventConsumer}
               interactionMode={this.props.interactionMode}
-              errorHandler={undefined}
+              errorHandler={() => {}}
             />
           </div>
           <div ref={this.dropdownArrowRef} class="mfd-dropdown-arrow">
             <svg height="15" width="15">
-              <polygon points="0,0 15,0 7.5,15" style="fill: white" />
+              <polygon points="0,0 15,0 7.5,15" style={{ fill: this.dropdownArrowFill }} />
             </svg>
           </div>
         </div>

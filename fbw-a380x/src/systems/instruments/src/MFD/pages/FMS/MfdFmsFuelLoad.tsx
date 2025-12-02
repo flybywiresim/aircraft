@@ -459,7 +459,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 <div class="mfd-label mfd-spacing-right middleGridSmall">MODE</div>
                 <div style="margin-bottom: 10px;">
                   <DropdownMenu
-                    inactive={this.costIndexModeDisabled}
+                    disabled={this.costIndexModeDisabled}
                     values={this.costIndexModeLabels}
                     selectedIndex={this.props.fmcService.master.fmgc.data.costIndexMode}
                     idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_initCostIndexModeDropdown`}

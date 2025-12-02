@@ -867,7 +867,7 @@ export class QnhFormat implements DataEntryFormat<number> {
 }
 
 export class CostIndexFormat implements DataEntryFormat<number> {
-  public placeholder = '--';
+  public placeholder = '---';
 
   public maxDigits = 3;
 
