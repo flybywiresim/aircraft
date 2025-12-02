@@ -1,8 +1,7 @@
-// @ts-strict-ignore
+//  Copyright (c) 2024-2025 FlyByWire Simulations
+//  SPDX-License-Identifier: GPL-3.0
 import { Subject, Subscribable, Subscription } from '@microsoft/msfs-sdk';
-
 import { Fix } from '@flybywiresim/fbw-sdk';
-
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 import { Mmo, maxCertifiedAlt } from '@shared/PerformanceConstants';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
@@ -1832,19 +1831,23 @@ export class RadiusFormat implements DataEntryFormat<number> {
 }
 
 export class RnpFormat implements DataEntryFormat<number> {
-  public placeholder = '--.-';
+  public readonly placeholder = '--.-';
 
-  public maxDigits = 4;
+  public readonly maxDigits = 4;
 
-  private minValue = 0.01;
+  private readonly minValue = 0.01;
 
-  private maxValue = 20.0;
+  private readonly maxValue = 20.0;
+
+  public readonly unit = 'NM';
+
+  private readonly requiredFormat = 'X.XX';
 
   public format(value: number) {
     if (value === null || value === undefined) {
       return [this.placeholder, null, null] as FieldFormatTuple;
     }
-    return [value > 10.0 ? value.toFixed(1) : value.toFixed(2), null, 'NM'] as FieldFormatTuple;
+    return [value > 10.0 ? value.toFixed(1) : value.toFixed(2), null, this.unit] as FieldFormatTuple;
   }
 
   public async parse(input: string) {
@@ -1853,14 +1856,14 @@ export class RnpFormat implements DataEntryFormat<number> {
     }
 
     const nbr = Number(input);
-    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
-      return nbr;
+    if (Number.isNaN(nbr)) {
+      throw getFormattedFormatError(this.requiredFormat, this.unit);
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
-      throw new FmsError(FmsErrorType.EntryOutOfRange);
-    } else {
-      throw new FmsError(FmsErrorType.FormatError);
+      throw getFormattedEntryOutOfRangeError(this.minValue.toFixed(2), this.maxValue.toFixed(1), this.unit);
     }
+
+    return nbr;
   }
 }
 
