@@ -388,7 +388,6 @@ export class FwsAbnormalNonSensed {
       failure: 1,
       auralWarning: Subject.create(FwcAuralWarning.None),
       sysPage: SdPages.Eng,
-      redundLoss: () => [],
     },
     700900002: {
       // ENG // TAIL PIPE FIRE
@@ -424,7 +423,6 @@ export class FwsAbnormalNonSensed {
       failure: 1,
       auralWarning: Subject.create(FwcAuralWarning.None),
       sysPage: SdPages.Eng,
-      redundLoss: () => [],
     },
     990900001: {
       // BOMB ON BOARD
@@ -452,8 +450,12 @@ export class FwsAbnormalNonSensed {
         true,
         true,
         true,
+        true,
+        true,
       ],
       whichItemsChecked: () => [
+        false,
+        false,
         false,
         false,
         false,
@@ -647,7 +649,6 @@ export class FwsAbnormalNonSensed {
       failure: 1,
       auralWarning: Subject.create(FwcAuralWarning.None),
       sysPage: SdPages.None,
-      redundLoss: () => [],
     },
   };
 }
