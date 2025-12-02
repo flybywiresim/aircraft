@@ -43,7 +43,11 @@ export class PreFlightPhase extends Phase {
 export class TakeOffPhase extends Phase {
   accelerationAltitudeMsl: number;
 
+  accelerationAltitudeMslEo: number;
+
   readonly fmAccelerationAltitude = Arinc429Register.empty();
+
+  readonly fmEoAccelerationAltitude = Arinc429Register.empty();
 
   init() {
     this.nextPhase = FmgcFlightPhase.Climb;
@@ -53,11 +57,16 @@ export class TakeOffPhase extends Phase {
     this.accelerationAltitudeMsl = this.fmAccelerationAltitude.valueOr(
       SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500')),
     );
+    this.fmEoAccelerationAltitude.setFromSimVar('L:A32NX_FM1_EO_ACC_ALT');
+    this.accelerationAltitudeMslEo = this.fmEoAccelerationAltitude.valueOr(
+      SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '3000')),
+    );
   }
 
   shouldActivateNextPhase(_deltaTime) {
-    //FIXME add Speed > Gdot if EO mode active
-    const aboveAccelHeight = Simplane.getAltitude() > this.accelerationAltitudeMsl;
+    const engineOut = !isAnEngineOn();
+    const aboveAccelHeight =
+      Simplane.getAltitude() > (engineOut ? this.accelerationAltitudeMslEo : this.accelerationAltitudeMsl); //FIXME add Speed > Gdot if EO mode active
     if (aboveAccelHeight) {
       return true;
     }
