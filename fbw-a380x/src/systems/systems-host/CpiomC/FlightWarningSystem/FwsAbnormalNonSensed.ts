@@ -592,7 +592,7 @@ export class FwsAbnormalNonSensed {
       whichItemsToShow: () => [true, true, true, true, true, true, true, true, true, true],
       whichItemsChecked: () => [
         this.fws.seatBelt.get() === 1,
-        false,
+        false, // TODO add logic for if no more restrictive speed limitation
         false,
         false,
         false,
@@ -605,7 +605,7 @@ export class FwsAbnormalNonSensed {
       failure: 1,
       auralWarning: Subject.create(FwcAuralWarning.None),
       sysPage: SdPages.None,
-      limitationsAllPhases: () => ['800400008', '800400006', '800400007'],
+      limitationsAllPhases: () => ['800400008', '800400006', '800400007'], // TODO add logic for if no more restrictive speed limitation
     },
     990900011: {
       // VOLCANIC ASH ENCOUNTER

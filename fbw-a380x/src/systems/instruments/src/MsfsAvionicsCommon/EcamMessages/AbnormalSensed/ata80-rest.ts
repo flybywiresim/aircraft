@@ -184,4 +184,4 @@ export const EcamAbnormalSensedAta80Rest: { [n: number]: AbnormalProcedure } = {
     ],
   },
 };
-// FIXME: add defered proc for BOMB ON BOARD
+// FIXME: add deferred proc for BOMB ON BOARD
