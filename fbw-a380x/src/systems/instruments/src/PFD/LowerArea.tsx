@@ -124,6 +124,8 @@ class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private configFull: boolean = false;
 
+  private slatsFlapsCruiseBaulk: boolean = false;
+
   private flaps1AutoRetract: boolean = false;
 
   private slatsOut: boolean = false;
@@ -154,6 +156,7 @@ class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
       this.config2 = s.bitValue(19);
       this.config3 = s.bitValue(20);
       this.configFull = s.bitValue(21);
+      this.slatsFlapsCruiseBaulk = s.bitValue(25);
       this.flaps1AutoRetract = s.bitValue(26);
 
       this.flapReliefEngaged.set(s.bitValue(22));
@@ -165,7 +168,7 @@ class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
       this.slatsDataValid.set(s.bitValue(28));
       this.flapsDataValid.set(s.bitValue(29));
 
-      if (this.configClean) {
+      if (this.configClean || this.slatsFlapsCruiseBaulk) {
         this.targetText.set('0');
       } else if (this.config1 && this.flaps1AutoRetract) {
         this.targetText.set('1');
