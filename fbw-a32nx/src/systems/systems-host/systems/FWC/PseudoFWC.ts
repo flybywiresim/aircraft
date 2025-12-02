@@ -1002,7 +1002,8 @@ export class PseudoFWC {
 
   private readonly autobrakeDeactivatedPulseNode = new NXLogicPulseNode(false);
 
-  private readonly autoBrakeDeactivatedMemoTriggeredNode = new NXLogicTriggeredMonostableNode(9, false); // When ABRK deactivated, emit this for 9 sec
+  /** When ABRK deactivated, emit this for 9 sec */
+  private readonly autoBrakeDeactivatedMemoTriggeredNode = new NXLogicTriggeredMonostableNode(9, false);
 
   private readonly autobrakeDeactivatedMcNode = new NXLogicTriggeredMonostableNode(3);
 
