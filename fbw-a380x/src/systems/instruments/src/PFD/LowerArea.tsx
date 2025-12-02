@@ -168,9 +168,9 @@ class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
       this.slatsDataValid.set(s.bitValue(28));
       this.flapsDataValid.set(s.bitValue(29));
 
-      if (this.configClean || this.slatsFlapsCruiseBaulk) {
+      if (this.configClean) {
         this.targetText.set('0');
-      } else if (this.config1 && this.flaps1AutoRetract) {
+      } else if (this.config1 && (this.flaps1AutoRetract || this.slatsFlapsCruiseBaulk)) {
         this.targetText.set('1');
       } else if (this.config1) {
         this.targetText.set('1+F');
