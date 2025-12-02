@@ -120,11 +120,13 @@ impl SlatFlapControlComputer {
                 FlapsConf::Conf1F
             }
             (CSU::Conf0 | CSU::Conf1, CSU::Conf1)
-                if context.indicated_airspeed().get::<knot>()
+                // If we're not already in Conf0, then we've oversped Conf1 instead of specfically moving the flaps handle
+                if self.flaps_conf == FlapsConf::Conf0
+                    && (context.indicated_airspeed().get::<knot>()
                     > Self::CRUISE_BAULK_AIRSPEED_THRESHOLD_KNOTS
                     // FIXME use ADRs
                     || context.pressure_altitude().get::<foot>()
-                        > Self::CRUISE_BAULK_ALTITUDE_THRESHOLD_FEET =>
+                        > Self::CRUISE_BAULK_ALTITUDE_THRESHOLD_FEET) =>
             {
                 FlapsConf::Conf0
             }
@@ -2044,6 +2046,25 @@ mod tests {
         assert_eq!(test_bed.get_flaps_conf(1), FlapsConf::Conf0);
         assert!(test_bed.read_slat_flap_system_status_word(1).get_bit(25));
         assert!(test_bed.read_slat_flap_system_status_word(2).get_bit(25));
+    }
+
+    #[test]
+    fn config_test_no_cruise_baulk_when_overspeed_conf1() {
+        let mut test_bed = test_bed_with()
+            .set_green_hyd_pressure()
+            .set_indicated_airspeed(220.)
+            .set_on_ground(false)
+            .set_flaps_handle_position(1)
+            .run_one_tick();
+
+        test_bed = test_bed
+            .set_indicated_airspeed(270.)
+            .run_waiting_for(Duration::from_secs(20));
+
+        assert_eq!(test_bed.get_flaps_conf(0), FlapsConf::Conf1);
+        assert_eq!(test_bed.get_flaps_conf(1), FlapsConf::Conf1);
+        assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(25));
+        assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(25));
     }
 
     #[test]
