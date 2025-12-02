@@ -195,14 +195,14 @@ class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
       let synchroOffset = 0;
       let positionFactor = 0;
       let positionOffset = 0;
-      if (slats >= 0 && slats < 247.1) {
+      if (slats >= 0 && slats < 286.584) {
         synchroOffset = 0;
-        positionFactor = 0.57;
+        positionFactor = 0.491985;
         positionOffset = 0;
-      } else if (slats >= 247.1 && slats < 355) {
-        synchroOffset = 20.02;
-        positionFactor = 3.7;
-        positionOffset = 11.5;
+      } else if (slats >= 286.584 && slats < 355) {
+        synchroOffset = 13.22;
+        positionFactor = 3.41585;
+        positionOffset = -22.69;
       }
 
       const value = (slats * synchroFactor - synchroOffset) * positionFactor + positionOffset;
@@ -213,14 +213,14 @@ class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
 
       if (this.configClean && slats > 6.1) {
         this.slatsTargetPos.set(0);
-      } else if ((this.config1 || this.config2) && (slats < 234.92 || slats > 259.62)) {
+      } else if ((this.config1 || this.config2) && (slats < 276 || slats > 296)) {
         this.slatsTargetPos.set(1);
-      } else if ((this.config3 || this.configFull) && (slats < 272.3 || slats > 297.0)) {
+      } else if ((this.config3 || this.configFull) && (slats < 317 || slats > 337)) {
         this.slatsTargetPos.set(2);
       } else {
         this.slatsTargetPos.set(null);
       }
-    }, true);
+    });
 
     this.flapPositionWord.sub((s) => {
       const flaps = s.valueOr(0);
@@ -237,22 +237,22 @@ class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
       let synchroOffset = 0;
       let positionFactor = 0;
       let positionOffset = 0;
-      if (flaps >= 0 && flaps < 108.2) {
+      if (flaps >= 0 && flaps < 214.927) {
         synchroOffset = 0;
-        positionFactor = 0.37;
-        positionOffset = 5.82;
-      } else if (flaps >= 108.2 && flaps < 154.5) {
+        positionFactor = 0.18575;
+        positionOffset = 2.8942;
+      } else if (flaps >= 214.927 && flaps < 259.019) {
         synchroOffset = 7.92;
-        positionFactor = 0.85;
-        positionOffset = 8.7;
-      } else if (flaps >= 154.5 && flaps < 194.0) {
+        positionFactor = 0.90853;
+        positionOffset = -12.768;
+      } else if (flaps >= 259.019 && flaps < 297.523) {
         synchroOffset = 18.11;
-        positionFactor = 1.0;
-        positionOffset = 17.4;
-      } else if (flaps >= 194.0 && flaps < 355) {
+        positionFactor = 1.0295;
+        positionOffset = -6.2983;
+      } else if (flaps >= 297.523 && flaps < 355) {
         synchroOffset = 26.8;
-        positionFactor = 1.55;
-        positionOffset = 26.1;
+        positionFactor = 0.9315;
+        positionOffset = 4.8816;
       }
 
       const value = Math.max(
@@ -266,18 +266,18 @@ class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
 
       if ((this.configClean || this.flaps1AutoRetract) && flaps > flapDetctThrshld) {
         this.flapsTargetPos.set(0);
-      } else if (this.config1 && !this.flaps1AutoRetract && (flaps < 103.7 || flaps > 112.8)) {
+      } else if (this.config1 && !this.flaps1AutoRetract && (flaps < 210 || flaps > 220)) {
         this.flapsTargetPos.set(1);
-      } else if (this.config2 && (flaps < 150.1 || flaps > 159.2)) {
+      } else if (this.config2 && (flaps < 254 || flaps > 264)) {
         this.flapsTargetPos.set(2);
-      } else if (this.config3 && (flaps < 189.5 || flaps > 198.6)) {
+      } else if (this.config3 && (flaps < 292 || flaps > 302)) {
         this.flapsTargetPos.set(3);
-      } else if (this.configFull && (flaps < 214.3 || flaps > 223.4)) {
+      } else if (this.configFull && (flaps < 333 || flaps > 343)) {
         this.flapsTargetPos.set(4);
       } else {
         this.flapsTargetPos.set(null);
       }
-    }, true);
+    });
 
     this.sub.on('realTime').handle((_t) => {
       const inMotion = this.flapsTargetPos.get() !== null || this.slatsTargetPos.get() !== null;
@@ -403,8 +403,8 @@ class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
         </text>
         <text
           class="GreenPulse FontSmallest"
-          x={38}
-          y={190}
+          x={32.5}
+          y={210.8}
           visibility={this.flapReliefEngaged.map((v) => (v ? 'inherit' : 'hidden'))}
         >
           F RELIEF

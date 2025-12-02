@@ -6,6 +6,7 @@
 import { AdcPublisher, Clock, EventBus, FSComponent, InstrumentBackplane, Subject } from '@microsoft/msfs-sdk';
 import { FuelSystemPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
 import { ArincValueProvider } from './shared/ArincValueProvider';
+import { A32NXSfccBusPublisher } from '@shared/publishers/A32NXSfccBusPublisher';
 import { EwdComponent } from './EWD';
 import { EwdSimvarPublisher } from './shared/EwdSimvarPublisher';
 
@@ -27,6 +28,8 @@ class A32NX_EWD extends BaseInstrument {
 
   private readonly adcPublisher = new AdcPublisher(this.bus);
 
+  private readonly sfccBusPublisher = new A32NXSfccBusPublisher(this.bus);
+
   constructor() {
     super();
 
@@ -36,6 +39,8 @@ class A32NX_EWD extends BaseInstrument {
     this.backplane.addPublisher('SimVars', this.simVarPublisher);
     this.backplane.addPublisher('FuelSystem', this.fuelSystemPublisher);
     this.backplane.addPublisher('adc', this.adcPublisher);
+
+    this.backplane.addPublisher('SfccBus', this.sfccBusPublisher);
   }
 
   get templateID(): string {

@@ -11,17 +11,17 @@ export function usePersistentProperty(
   defaultValue?: string,
 ): [string | undefined, (value: string) => void];
 export function usePersistentProperty(propertyName: string, defaultValue?: string): any {
-  const [propertyValue, rawPropertySetter] = useState(() => NXDataStore.get(propertyName, defaultValue));
+  const [propertyValue, rawPropertySetter] = useState(() => NXDataStore.getLegacy(propertyName, defaultValue));
 
   useEffect(() => {
-    const unsubscribe = NXDataStore.subscribe(propertyName, (key, value) => rawPropertySetter(value));
+    const unsubscribe = NXDataStore.subscribeLegacy(propertyName, (key, value) => rawPropertySetter(value));
     return () => {
       unsubscribe();
     };
   }, []);
 
   const propertySetter = (value: string) => {
-    NXDataStore.set(propertyName, value);
+    NXDataStore.setLegacy(propertyName, value);
     rawPropertySetter(value);
   };
 
