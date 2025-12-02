@@ -55,11 +55,11 @@ export class TakeOffPhase extends Phase {
 
     this.fmAccelerationAltitude.setFromSimVar('L:A32NX_FM1_ACC_ALT');
     this.accelerationAltitudeMsl = this.fmAccelerationAltitude.valueOr(
-      SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500')),
+      SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.getLegacy('CONFIG_ACCEL_ALT', '1500')),
     );
     this.fmEoAccelerationAltitude.setFromSimVar('L:A32NX_FM1_EO_ACC_ALT');
     this.accelerationAltitudeMslEo = this.fmEoAccelerationAltitude.valueOr(
-      SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '3000')),
+      SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.getLegacy('CONFIG_ACCEL_ALT', '1500')),
     );
   }
 
