@@ -2065,6 +2065,8 @@ mod tests {
         assert_eq!(test_bed.get_flaps_conf(1), FlapsConf::Conf1);
         assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(25));
         assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(25));
+        assert!(test_bed.read_slat_flap_system_status_word(1).get_bit(26));
+        assert!(test_bed.read_slat_flap_system_status_word(2).get_bit(26));
     }
 
     #[test]
