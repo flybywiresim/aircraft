@@ -1533,15 +1533,17 @@ export class FwsCore {
 
   public readonly gearLeverPos = Subject.create(false);
 
+  private readonly autobrakeDeactivatedPulseNode = new NXLogicPulseNode(false);
+
   public readonly autoBrakeDeactivatedNode = new NXLogicTriggeredMonostableNode(9, false); // When ABRK deactivated, emit this for 9 sec
 
   public readonly autoBrakeOffAuralConfirmNode = new NXLogicConfirmNode(1, true);
 
   public readonly autoBrakeOff = Subject.create(false);
 
-  public autoBrakeOffAuralTriggered = false;
+  private autoBrakeOffAuralTriggered = false;
 
-  public autoBrakeOffMemoInhibited = false;
+  private autoBrakeOffMemoInhibited = false;
 
   public btvExitMissedPulseNode = new NXLogicPulseNode();
 
@@ -3505,24 +3507,25 @@ export class FwsCore {
     this.autoThrustOffInvoluntary.set(this.autoThrustOffInvoluntaryNode.read());
 
     // AUTO BRAKE OFF
-    this.autoBrakeDeactivatedNode.write(!!SimVar.GetSimVarValue('L:A32NX_AUTOBRAKES_ACTIVE', 'boolean'), deltaTime);
+    this.autobrakeDeactivatedPulseNode.write(
+      !!SimVar.GetSimVarValue('L:A32NX_AUTOBRAKES_ACTIVE', 'boolean'),
+      deltaTime,
+    );
 
-    if (!this.autoBrakeDeactivatedNode.read()) {
+    const autoBrakeOffShouldTrigger = this.autoBrakeDeactivatedNode.write(
+      this.autobrakeDeactivatedPulseNode.read() &&
+        this.aircraftOnGround.get() &&
+        this.computedAirSpeedToNearest2.get() > 33,
+      deltaTime,
+    );
+
+    if (!autoBrakeOffShouldTrigger) {
       this.autoBrakeOffMemoInhibited = false;
       this.requestMasterCautionFromABrkOff = false;
       this.autoBrakeOffAuralTriggered = false;
     }
 
-    this.autoBrakeOffAuralConfirmNode.write(
-      this.autoBrakeDeactivatedNode.read() && !this.autoBrakeOffMemoInhibited,
-      deltaTime,
-    );
-
-    const autoBrakeOffShouldTrigger =
-      this.aircraftOnGround.get() &&
-      this.computedAirSpeedToNearest2.get() > 33 &&
-      this.autoBrakeDeactivatedNode.read() &&
-      !this.autoBrakeOffMemoInhibited;
+    this.autoBrakeOffAuralConfirmNode.write(autoBrakeOffShouldTrigger && !this.autoBrakeOffMemoInhibited, deltaTime);
 
     if (autoBrakeOffShouldTrigger && !this.autoBrakeOff.get()) {
       // Triggered in this cycle -> request master caution
