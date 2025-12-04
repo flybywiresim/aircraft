@@ -9,7 +9,8 @@ import { EwdSimvarPublisher } from './shared/EwdSimvarPublisher';
 import '../index.scss';
 import './style.scss';
 import { EngineWarningDisplay } from 'instruments/src/EWD/EWD';
-import { ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { AdrBusPublisher, ArincEventBus, CpiomDataPublisher, IrBusPublisher } from '@flybywiresim/fbw-sdk';
+import { FcdcSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FcdcPublisher';
 
 class A380X_EWD extends BaseInstrument {
   private readonly bus = new ArincEventBus();
@@ -18,7 +19,14 @@ class A380X_EWD extends BaseInstrument {
 
   private readonly simVarPublisher = new EwdSimvarPublisher(this.bus);
 
+  private readonly cpiomPublisher = new CpiomDataPublisher(this.bus);
+
+  private readonly fcdcPublisher = new FcdcSimvarPublisher(this.bus);
+
   private readonly arincProvider = new ArincValueProvider(this.bus);
+
+  private readonly adrPublisher = new AdrBusPublisher(this.bus);
+  private readonly irPublisher = new IrBusPublisher(this.bus);
 
   private readonly clock = new Clock(this.bus);
 
@@ -27,6 +35,10 @@ class A380X_EWD extends BaseInstrument {
 
     this.backplane.addInstrument('Clock', this.clock);
     this.backplane.addPublisher('SimVars', this.simVarPublisher);
+    this.backplane.addPublisher('CPIOM', this.cpiomPublisher);
+    this.backplane.addPublisher('FCDC', this.fcdcPublisher);
+    this.backplane.addPublisher('ADR', this.adrPublisher);
+    this.backplane.addPublisher('IR', this.irPublisher);
   }
 
   get templateID(): string {

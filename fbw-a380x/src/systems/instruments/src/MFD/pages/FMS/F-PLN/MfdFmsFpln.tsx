@@ -41,6 +41,7 @@ import {
 import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
 import { ConditionalComponent } from '../../../../MsfsAvionicsCommon/UiWidgets/ConditionalComponent';
 import { InternalKccuKeyEvent } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 
 interface MfdFmsFplnProps extends AbstractMfdPageProps {}
 
@@ -232,7 +233,9 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     const destPred = this.props.fmcService?.master?.guidanceController?.vnavDriver?.getDestinationPrediction();
 
     const distanceToDestination =
-      this.props.fmcService.master?.fmgc?.guidanceController?.alongTrackDistanceToDestination;
+      this.props.fmcService.master?.fmgc?.guidanceController?.getAlongTrackDistanceToDestination(
+        FlightPlanIndex.Active,
+      );
     this.distanceToDest.set(distanceToDestination ?? null);
 
     if (destPred && this.props.fmcService.master) {
@@ -371,7 +374,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             overfly: false,
             annotation: pwp.mcduHeader ?? '',
             etaOrSecondsFromPresent: this.predictionTimestamp(pwp.flightPlanInfo?.secondsFromPresent ?? 0),
-            transitionAltitude: this.loadedFlightPlan.performanceData.transitionAltitude,
+            transitionAltitude: this.loadedFlightPlan.performanceData.transitionAltitude.get(),
             altitudePrediction: pwp.flightPlanInfo?.altitude ?? null,
             hasAltitudeConstraint: false, // TODO
             altitudeConstraint: null, // TODO
@@ -394,8 +397,8 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         }
 
         if (leg instanceof FlightPlanLeg) {
-          const transAlt = this.loadedFlightPlan.performanceData.transitionAltitude;
-          const transLevel = this.loadedFlightPlan.performanceData.transitionLevel;
+          const transAlt = this.loadedFlightPlan.performanceData.transitionAltitude.get();
+          const transLevel = this.loadedFlightPlan.performanceData.transitionLevel.get();
           const transLevelAsAlt = transLevel !== null && transLevel !== undefined ? transLevel * 100 : null;
           const useTransLevel =
             i >=
