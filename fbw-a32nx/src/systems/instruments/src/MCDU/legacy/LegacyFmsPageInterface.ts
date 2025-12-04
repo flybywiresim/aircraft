@@ -116,7 +116,6 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
     callback?: typeof EmptyCallback.Boolean,
     bypassTmpy?: boolean,
   ): void;
-  tryUpdateRouteTrip(_dynamic?: boolean): void;
   isNavModeEngaged(): boolean;
   isFlying(): boolean;
   trySetZeroFuelWeightZFWCG(s: string, forPlan: FlightPlanIndex): boolean;
