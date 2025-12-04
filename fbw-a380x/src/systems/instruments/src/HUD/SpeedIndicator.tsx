@@ -380,7 +380,7 @@ class V1BugElement extends DisplayComponent<{ bus: EventBus }> {
     return (
       <g id="V1BugGroup" style={this.offsetSub} visibility={this.visibilitySub}>
         <path class="NormalStroke Green" d="m83.065 361.5 h27.449" />
-        <text class="FontLarge MiddleAlign Green" x="26.205544" y="82.96">
+        <text class="FontLarge MiddleAlign Green" x="120" y="370">
           1
         </text>
       </g>
