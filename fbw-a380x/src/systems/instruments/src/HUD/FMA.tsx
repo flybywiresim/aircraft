@@ -1176,6 +1176,8 @@ class B1Cell extends ShowForSecondsComponent<CellProps & { fcdcData: FcdcValuePr
       .handle((c) => {
         this.crzAltMode = c;
         this.getText();
+        this.displayModeChangedPath();
+        this.handleDeclutterMode(false, this.decMode, this.fmaTextRef);
       });
 
     sub
