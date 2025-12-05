@@ -32,6 +32,7 @@
 1. [A380X/MFD] Only show "RETURN" button on PERF & POS NAVAIDS if acessed via INIT page keys - @BravoMike99 (bruno_pt99)
 1. [A32NX/FWS] Make master caution from autobrake off trigger for 3 seconds - @BravoMike99 (bruno_pt99)
 1. [FMS] Fixed climb phase not activating if vertical mode is changed below acceleration height - @BravoMike99 (bruno_pt99)
+1. [A32NX/A380X] Properly handle `PARKING_BRAKE_ON` and `PARKING_BRAKE_OFF` key events - @tracernz (Mike)
 
 ## 0.14.0
 
