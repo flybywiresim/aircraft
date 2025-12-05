@@ -359,6 +359,17 @@ export class FwsAbnormalNonSensed {
       auralWarning: Subject.create(FwcAuralWarning.None),
       sysPage: SdPages.None,
     },
+    990900008: {
+      // OIS FAULT
+      flightPhaseInhib: [],
+      simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(990900008)),
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [true, true, true, true, true, true, true, true, true, true, true, true],
+      whichItemsChecked: () => [false, false, false, false, false, false, false, false, false, false, false],
+      failure: 1,
+      auralWarning: Subject.create(FwcAuralWarning.None),
+      sysPage: SdPages.None,
+    },
     990900009: {
       // OVERWEIGHT LDG
       flightPhaseInhib: [],
