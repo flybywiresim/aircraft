@@ -8,7 +8,7 @@ use crate::shared::{
     FireDetectionZone, GearActuatorId, HydraulicColor, LgciuId, ProximityDetectorId,
 };
 use crate::simulation::SimulationElement;
-use fxhash::FxHashSet;
+use rustc_hash::FxHashSet;
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub enum FailureType {

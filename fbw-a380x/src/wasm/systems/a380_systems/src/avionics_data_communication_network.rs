@@ -11,7 +11,7 @@ use crate::systems::{
         VariableIdentifier, Write,
     },
 };
-use fxhash::FxHashMap;
+use rustc_hash::FxHashMap;
 use std::{
     cell::{Ref, RefCell},
     collections::VecDeque,

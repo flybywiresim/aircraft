@@ -9,7 +9,7 @@ use crate::{
         SimulatorWriter, VariableIdentifier, Write,
     },
 };
-use fxhash::FxHashMap;
+use rustc_hash::FxHashMap;
 use std::{cell::RefCell, rc::Rc};
 
 enum PowerSupply {
