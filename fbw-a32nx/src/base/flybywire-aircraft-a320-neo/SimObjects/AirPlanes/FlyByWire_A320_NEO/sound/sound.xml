@@ -2354,6 +2354,11 @@
         <Sound WwiseData="true" WwiseEvent="fwdgalley" NodeName="SOUND_SPEAKER_LEFT" />
         <Sound WwiseData="true" WwiseEvent="cpdlc_ring" NodeName="SOUND_SPEAKER_LEFT" />
 
+        <!-- F/CTL Priority ====================================================================================-->
+        <Sound WwiseData="true" WwiseEvent="dualinput" NodeName="SOUND_SPEAKER_LEFT" />
+        <Sound WwiseData="true" WwiseEvent="priorityleft" NodeName="SOUND_SPEAKER_LEFT" />
+        <Sound WwiseData="true" WwiseEvent="priorityright" NodeName="SOUND_SPEAKER_LEFT" />
+
         <!-- New RA callouts ====================================================================================-->
         <Sound WwiseData="true" WwiseEvent="new_5" NodeName="SOUND_SPEAKER_LEFT" />
         <Sound WwiseData="true" WwiseEvent="new_10" NodeName="SOUND_SPEAKER_LEFT" />
