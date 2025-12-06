@@ -833,7 +833,7 @@ impl SimulationElement for A380FuelQuantityManagementSystem {
 
     fn write(&self, writer: &mut SimulatorWriter) {
         // TODO: only CPIOM-F3 and CPIOM-F4 can provide data via ARINC 429
-        let is_powered = self.cpioms_available[1..=4].iter().any(|a| *a);
+        let is_powered = self.cpioms_available.iter().any(|a| *a);
         self.write_arinc429(
             writer,
             &self.total_fuel_onboard_id,
