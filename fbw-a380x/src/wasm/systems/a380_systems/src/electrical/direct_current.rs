@@ -370,10 +370,10 @@ impl A380DirectCurrentElectrical {
             }
             electricity.flow(dc2, &self.refuel_on_bat_bus);
         }
-        electricity.flow(&self.dc_ess_bus, &self.ess_refuel_bus_contactors[0]);
-        electricity.flow(&self.hot_bus_ess, &self.ess_refuel_bus_contactors[1]);
-        electricity.flow(&self.dc_bus_2, &self.refuel_on_bat_contactors[0]);
-        electricity.flow(&self.hot_bus_2, &self.refuel_on_bat_contactors[1]);
+        electricity.flow(&self.hot_bus_ess, &self.ess_refuel_bus_contactors[0]);
+        electricity.flow(&self.dc_ess_bus, &self.ess_refuel_bus_contactors[1]);
+        electricity.flow(&self.hot_bus_2, &self.refuel_on_bat_contactors[0]);
+        electricity.flow(&self.dc_bus_2, &self.refuel_on_bat_contactors[1]);
     }
 
     #[cfg(test)]

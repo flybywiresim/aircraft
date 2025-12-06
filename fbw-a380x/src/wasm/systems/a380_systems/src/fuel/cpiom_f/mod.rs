@@ -798,12 +798,8 @@ impl A380FuelQuantityManagementSystem {
         flags: impl Flags<Bits = u32>,
         is_powered: bool,
     ) {
-        let value = if self.self_test_finished.output() && is_powered {
-            flags.bits() >> 11 // Shift to match ARINC 429 bit positions
-        } else {
-            0
-        };
-        writer.write(identifier, value);
+        // Shift to match ARINC 429 bit positions
+        self.write_arinc429(writer, identifier, Some(flags.bits() >> 11), is_powered);
     }
 }
 impl SimulationElement for A380FuelQuantityManagementSystem {
