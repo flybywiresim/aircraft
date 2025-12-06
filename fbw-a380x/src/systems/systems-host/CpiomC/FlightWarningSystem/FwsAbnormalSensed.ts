@@ -2676,7 +2676,7 @@ export class FwsAbnormalSensed {
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
       failure: 2,
-      sysPage: -1,
+      sysPage: SdPages.None,
     },
     271800058: {
       // SEC 1 FAULT
@@ -2797,7 +2797,7 @@ export class FwsAbnormalSensed {
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
       failure: 2,
-      sysPage: -1,
+      sysPage: SdPages.None,
     },
     272800001: {
       // SLAT NOT IN TO CONFIG
@@ -2881,7 +2881,7 @@ export class FwsAbnormalSensed {
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
       failure: 1,
-      sysPage: -1,
+      sysPage: SdPages.None,
     },
     // 29 FUEL
     281800002: {
