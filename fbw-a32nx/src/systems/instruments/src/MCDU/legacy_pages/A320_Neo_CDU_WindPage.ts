@@ -4,8 +4,6 @@ import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessa
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import {
-  formatWindAltitude,
-  formatWindEntry,
   formatWindVector,
   PropagatedWindEntry,
   PropagationType,
@@ -20,6 +18,7 @@ import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
 import { ProfilePhase } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { isLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 
 export class CDUWindPage {
   static readonly WindCache: PropagatedWindEntry[] = [];
@@ -53,6 +52,7 @@ export class CDUWindPage {
     mcdu.page.Current = mcdu.page.ClimbWind;
 
     const plan = mcdu.getFlightPlan(forPlan);
+    const originElevation = plan.originAirport?.location.alt ?? 0;
 
     const doesWindUplinkExist = plan.pendingWindUplink.isWindUplinkReadyToInsert();
     const doesClbWindUplinkExist = doesWindUplinkExist && plan.pendingWindUplink.climbWinds !== undefined;
@@ -97,7 +97,8 @@ export class CDUWindPage {
       for (let i = 0; i < Math.min(climbWindEntries.length, maxNumClimbWindEntries); i++) {
         const wind = climbWindEntries[i];
 
-        template[i * 2 + 2][0] = `${formatWindEntry(wind)}[color]${canModifyWinds ? 'cyan' : 'green'}`;
+        template[i * 2 + 2][0] =
+          `${formatWindVector(wind.vector)}/${this.formatAltitudeOrLevel(plan, wind.altitude, true)}[color]${canModifyWinds ? 'cyan' : 'green'}`;
 
         numEntries = i + 1;
         mcdu.onLeftInput[i] = async (value, scratchpadCallback) => {
@@ -111,7 +112,7 @@ export class CDUWindPage {
             if (value === Keypad.clrValue) {
               await mcdu.flightPlanService.setClimbWindEntry(wind.altitude, null, forPlan);
             } else {
-              const entry = this.parseWindEntryEdit(mcdu, value, wind);
+              const entry = this.parseWindEntryEdit(mcdu, value, wind, originElevation);
 
               if (entry === null) {
                 scratchpadCallback();
@@ -135,7 +136,7 @@ export class CDUWindPage {
 
         mcdu.onLeftInput[numEntries] = async (value, scratchpadCallback) => {
           try {
-            const entry = this.parseWindEntry(mcdu, value);
+            const entry = this.parseWindEntry(mcdu, value, originElevation);
 
             if (entry === null) {
               scratchpadCallback();
@@ -258,7 +259,8 @@ export class CDUWindPage {
       for (let i = 0; i < winds.length; i++) {
         const wind = winds[i];
 
-        template[i * 2 + 4][0] = `${formatWindVector(wind.vector)}/${formatWindAltitude(wind)}[color]green`;
+        template[i * 2 + 4][0] =
+          `${formatWindVector(wind.vector)}/${this.formatAltitudeOrLevel(plan, wind.altitude, false)}[color]green`;
 
         mcdu.onLeftInput[i + 1] = async (_, scratchpadCallback) => {
           mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
@@ -276,13 +278,15 @@ export class CDUWindPage {
         switch (wind.type) {
           case PropagationType.Forward:
             template[i * 2 + 4][0] =
-              `{small}${formatWindVector(wind.vector)}{end}/${formatWindAltitude(wind)}[color]cyan`;
+              `{small}${formatWindVector(wind.vector)}{end}/${this.formatAltitudeOrLevel(plan, wind.altitude, false)}[color]cyan`;
             break;
           case PropagationType.Entry:
-            template[i * 2 + 4][0] = `${formatWindVector(wind.vector)}/${formatWindAltitude(wind)}[color]cyan`;
+            template[i * 2 + 4][0] =
+              `${formatWindVector(wind.vector)}/${this.formatAltitudeOrLevel(plan, wind.altitude, false)}[color]cyan`;
             break;
           case PropagationType.Backward:
-            template[i * 2 + 4][0] = `[\xa0]°/[\xa0]/${formatWindAltitude(wind)}[color]cyan`;
+            template[i * 2 + 4][0] =
+              `[\xa0]°/[\xa0]/${this.formatAltitudeOrLevel(plan, wind.altitude, false)}[color]cyan`;
             break;
         }
 
@@ -299,7 +303,7 @@ export class CDUWindPage {
 
               await mcdu.flightPlanService.deleteCruiseWindEntry(fpIndex, wind.altitude, forPlan);
             } else {
-              const entry = this.parseWindEntryEdit(mcdu, value, wind);
+              const entry = this.parseWindEntryEdit(mcdu, value, wind, NaN);
 
               if (entry === null) {
                 scratchpadCallback();
@@ -322,7 +326,7 @@ export class CDUWindPage {
         template[numEntries * 2 + 4][0] = '{cyan}[ ]°/[ ]/[{sp}{sp}{sp}]{end}';
 
         mcdu.onLeftInput[numEntries + 1] = async (value, scratchpadCallback) => {
-          const entry = this.parseWindEntry(mcdu, value);
+          const entry = this.parseWindEntry(mcdu, value, NaN);
 
           if (entry === null) {
             scratchpadCallback();
@@ -412,6 +416,7 @@ export class CDUWindPage {
     mcdu.page.Current = mcdu.page.DescentWind;
 
     const plan = mcdu.getFlightPlan(forPlan);
+    const destinationElevation = plan.destinationAirport?.location.alt ?? 0;
 
     const doesWindUplinkExist = plan.pendingWindUplink.isWindUplinkReadyToInsert();
     const doesDesWindUplinkExist = doesWindUplinkExist && plan.pendingWindUplink.descentWinds !== undefined;
@@ -466,7 +471,8 @@ export class CDUWindPage {
       for (let i = 0; i < numWindEntriesOnPage; i++) {
         const wind = descentWindEntries[i + page * numDescentWindEntriesPerPage];
 
-        template[i * 2 + 2][0] = `${formatWindEntry(wind)}[color]${canModifyWinds ? 'cyan' : 'green'}`;
+        template[i * 2 + 2][0] =
+          `${formatWindVector(wind.vector)}/${this.formatAltitudeOrLevel(plan, wind.altitude, false)}[color]${canModifyWinds ? 'cyan' : 'green'}`;
 
         mcdu.onLeftInput[i] = async (value, scratchpadCallback) => {
           if (!canModifyWinds) {
@@ -479,7 +485,7 @@ export class CDUWindPage {
             if (value === Keypad.clrValue) {
               await mcdu.flightPlanService.setDescentWindEntry(wind.altitude, null, forPlan);
             } else {
-              const entry = this.parseWindEntryEdit(mcdu, value, wind);
+              const entry = this.parseWindEntryEdit(mcdu, value, wind, destinationElevation);
 
               if (entry === null) {
                 scratchpadCallback();
@@ -509,7 +515,7 @@ export class CDUWindPage {
         template[numWindEntriesOnPage * 2 + 2][0] = '{cyan}[ ]°/[ ]/[{sp}{sp}{sp}]{end}';
 
         mcdu.onLeftInput[numWindEntriesOnPage] = async (value, scratchpadCallback) => {
-          const entry = this.parseWindEntry(mcdu, value);
+          const entry = this.parseWindEntry(mcdu, value, destinationElevation);
 
           if (entry === null) {
             scratchpadCallback();
@@ -647,7 +653,7 @@ export class CDUWindPage {
     mcdu.onPrevPage = () => mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
   }
 
-  private static parseWindEntry(mcdu: LegacyFmsPageInterface, input: string): WindEntry | null {
+  private static parseWindEntry(mcdu: LegacyFmsPageInterface, input: string, grndAltitude: number): WindEntry | null {
     const elements = input.split('/', 3);
     if (elements.length !== 3) {
       mcdu.setScratchpadMessage(NXSystemMessages.formatError);
@@ -659,7 +665,7 @@ export class CDUWindPage {
       return null;
     }
 
-    const altitude = this.parseWindEntryAltitude(mcdu, elements[2]);
+    const altitude = this.parseWindEntryAltitude(mcdu, elements[2], grndAltitude);
     if (altitude === null) {
       return null;
     }
@@ -671,6 +677,7 @@ export class CDUWindPage {
     mcdu: LegacyFmsPageInterface,
     input: string,
     oldEntry: WindEntry,
+    grndAltitude: number,
   ): WindEntry | null {
     const elements = input.split('/');
     if (elements.length === 1) {
@@ -679,7 +686,7 @@ export class CDUWindPage {
       // Either "120/40" or "/40"
       if (elements[0] === '') {
         // "/40"
-        const altitude = this.parseWindEntryAltitude(mcdu, elements[1]);
+        const altitude = this.parseWindEntryAltitude(mcdu, elements[1], grndAltitude);
         if (altitude === null) {
           return null;
         }
@@ -702,7 +709,7 @@ export class CDUWindPage {
       }
     }
 
-    return this.parseWindEntry(mcdu, input);
+    return this.parseWindEntry(mcdu, input, grndAltitude);
   }
 
   private static parseWindVector(mcdu: LegacyFmsPageInterface, input: string): WindVector | null {
@@ -738,15 +745,25 @@ export class CDUWindPage {
     return Vec2Math.setFromPolar(magnitude, trueDegrees * MathUtils.DEGREES_TO_RADIANS, Vec2Math.create());
   }
 
-  private static parseWindEntryAltitude(mcdu: LegacyFmsPageInterface, input: string): number | null {
-    if (!input.match(/^((FL)?\d{1,3}|\d{4,5})$/)) {
+  private static parseWindEntryAltitude(
+    mcdu: LegacyFmsPageInterface,
+    input: string,
+    // The altitude to use if "GRND" is entered as an altitude
+    grndAltitude: number = NaN,
+  ): number | null {
+    if (!input.match(/^((FL)?\d{1,3}|\d{4,5}|GRND)$/)) {
       mcdu.setScratchpadMessage(NXSystemMessages.formatError);
       return null;
     }
 
-    let altitude = parseInt(input.replace('FL', ''), 10);
-    if (altitude < 1000) {
-      altitude *= 100;
+    let altitude = grndAltitude;
+
+    if (input !== 'GRND') {
+      altitude = parseInt(input.replace('FL', ''), 10);
+
+      if (altitude < 1000) {
+        altitude *= 100;
+      }
     }
 
     if (!Number.isFinite(altitude)) {
@@ -827,5 +844,31 @@ export class CDUWindPage {
     }
 
     return -1;
+  }
+
+  private static formatAltitudeOrLevel(plan: FlightPlan, alt: number, isClbVsDes: boolean): string {
+    let isFl = false;
+    let isGnd = false;
+    if (isClbVsDes) {
+      const transAlt = plan.performanceData.transitionAltitude.get();
+      const originAlt = plan.originAirport.location.alt;
+
+      isGnd = alt <= originAlt + 400;
+      isFl = transAlt !== null && alt > transAlt;
+    } else {
+      const transLevel = plan.performanceData.transitionLevel.get();
+      const destinationAlt = plan.destinationAirport.location.alt;
+
+      isGnd = alt <= destinationAlt + 400;
+      isFl = transLevel !== null && alt >= transLevel * 100;
+    }
+
+    if (isGnd) {
+      return 'GRND';
+    } else if (isFl) {
+      return `FL${(alt / 100).toFixed(0).padStart(3, '0')}`;
+    }
+
+    return (Math.round(alt / 10) * 10).toFixed(0);
   }
 }

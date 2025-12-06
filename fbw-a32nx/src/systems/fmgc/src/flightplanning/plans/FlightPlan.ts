@@ -721,8 +721,22 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     );
   }
 
+  /**
+   * Sets the climb wind entry at the specified altitude rounded to the nearest 100 feet.
+   * If the provided entry is null, the entry is deleted.
+   * @param altitude the altitude of the entry to set
+   * @param entry the entry to set, or null to delete the entry
+   * @param planIndex which flight plan index to set the entry in
+   */
   async setClimbWindEntry(altitude: number, entry: WindEntry | null, maxNumberEntries: number): Promise<void> {
-    this.setClbDesWindEntry(this.performanceData.climbWindEntries.get(), altitude, entry, maxNumberEntries);
+    const originElevation = this.originAirport?.location.alt ?? 0;
+    const altitudeOrGround = altitude <= originElevation + 400 ? originElevation : altitude;
+
+    if (entry?.altitude <= originElevation + 400) {
+      entry.altitude = originElevation;
+    }
+
+    this.setClbDesWindEntry(this.performanceData.climbWindEntries.get(), altitudeOrGround, entry, maxNumberEntries);
     // Do this so the RPC event is sent
     this.setPerformanceData(
       'climbWindEntries',
@@ -730,8 +744,22 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     );
   }
 
+  /**
+   * Sets the descent wind entry at the specified altitude rounded to the nearest 100 feet.
+   * If the provided entry is null, the entry is deleted.
+   * @param altitude the altitude of the entry to set
+   * @param entry the entry to set, or null to delete the entry
+   * @param planIndex which flight plan index to set the entry in
+   */
   async setDescentWindEntry(altitude: number, entry: WindEntry | null, maxNumberEntries: number): Promise<void> {
-    this.setClbDesWindEntry(this.performanceData.descentWindEntries.get(), altitude, entry, maxNumberEntries);
+    const destinationElevation = this.destinationAirport?.location.alt ?? 0;
+    const altitudeOrGround = altitude <= destinationElevation + 400 ? destinationElevation : altitude;
+
+    if (entry?.altitude <= destinationElevation + 400) {
+      entry.altitude = destinationElevation;
+    }
+
+    this.setClbDesWindEntry(this.performanceData.descentWindEntries.get(), altitudeOrGround, entry, maxNumberEntries);
     // Do this so the RPC event is sent
     this.setPerformanceData(
       'descentWindEntries',
@@ -764,6 +792,12 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         if (windEntries.length >= maxNumberEntries) {
           console.error('[FPM] Attempting to add a wind entry when the maximum number of entries is reached');
           return;
+        }
+
+        if (altitude !== entry.altitude) {
+          console.warn(
+            `[FPM] Ambiguous wind entry altitudes. Adding wind entry at altitude ${entry.altitude.toFixed(0)} ft because no entry was found at ${altitude.toFixed(0)} ft`,
+          );
         }
 
         windEntries.push(entry);
