@@ -13,7 +13,7 @@ import { CDUAtcUsualRequestFansA } from './FansA/A320_Neo_CDU_ATC_UsualRequest';
 import { CDUAtcEmergencyFansB } from './FansB/A320_Neo_CDU_ATC_Emergency';
 import { CDUAtcUsualRequestFansB } from './FansB/A320_Neo_CDU_ATC_UsualRequest';
 import { NXSystemMessages } from '../../messages/NXSystemMessages';
-import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
+import { LegacyAtsuPageInterface, setKeyNotActiveLskActions } from '../../legacy/LegacyAtsuPageInterface';
 import { CDUAtcReports } from './FansA/A320_Neo_CDU_ATC_Reports';
 
 export class CDUAtcMenu {
@@ -135,6 +135,8 @@ export class CDUAtcMenu {
     mcdu.onRightInput[3] = () => {
       if (mcdu.atsu.modificationMessage) {
         CDUAtcMessageModify.ShowPage(mcdu, mcdu.atsu.modificationMessage);
+      } else {
+        mcdu.setScratchpadMessage(NXSystemMessages.keyNotActive);
       }
     };
 
@@ -148,5 +150,6 @@ export class CDUAtcMenu {
         CDUAtcEmergencyFansB.ShowPage(mcdu);
       }
     };
+    setKeyNotActiveLskActions(mcdu);
   }
 }

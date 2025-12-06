@@ -2,7 +2,7 @@
 import { AtsuMessageSerializationFormat } from '@datalink/common';
 import { CDUAtcAtisMenu } from './A320_Neo_CDU_ATC_AtisMenu';
 import { NXSystemMessages } from '../../messages/NXSystemMessages';
-import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
+import { LegacyAtsuPageInterface, setKeyNotActiveLskActions } from '../../legacy/LegacyAtsuPageInterface';
 
 export class CDUAtcReportAtis {
   static ConvertAtisInformation(info) {
@@ -145,5 +145,7 @@ export class CDUAtcReportAtis {
     mcdu.onRightInput[5] = () => {
       mcdu.atsu.printMessage(message);
     };
+
+    setKeyNotActiveLskActions(mcdu);
   }
 }

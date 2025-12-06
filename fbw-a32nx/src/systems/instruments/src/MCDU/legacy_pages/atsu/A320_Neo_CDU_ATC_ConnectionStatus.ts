@@ -3,7 +3,7 @@ import { AtsuStatusCodes } from '@datalink/common';
 import { CDUAtcConnection } from './A320_Neo_CDU_ATC_Connection';
 import { CDUAtcConnectionNotification } from './A320_Neo_CDU_ATC_ConnectionNotification';
 import { NXSystemMessages } from '../../messages/NXSystemMessages';
-import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
+import { LegacyAtsuPageInterface, setKeyNotActiveLskActions } from '../../legacy/LegacyAtsuPageInterface';
 
 export class CDUAtcConnectionStatus {
   static ShowPage(
@@ -97,5 +97,6 @@ export class CDUAtcConnectionStatus {
     mcdu.onRightInput[5] = () => {
       CDUAtcConnectionNotification.ShowPage(mcdu);
     };
+    setKeyNotActiveLskActions(mcdu);
   }
 }

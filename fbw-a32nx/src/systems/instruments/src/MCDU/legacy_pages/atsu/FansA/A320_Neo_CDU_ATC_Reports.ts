@@ -5,7 +5,7 @@ import { CDUAtcMenu } from '../A320_Neo_CDU_ATC_Menu';
 import { CDUAtcPositionReport } from '../FansA/A320_Neo_CDU_ATC_PositionReport';
 import { CDUAtcTextFansA } from '../FansA/A320_Neo_CDU_ATC_Text';
 import { NXSystemMessages } from '../../../messages/NXSystemMessages';
-import { LegacyAtsuPageInterface } from '../../../legacy/LegacyAtsuPageInterface';
+import { LegacyAtsuPageInterface, setKeyNotActiveLskActions } from '../../../legacy/LegacyAtsuPageInterface';
 
 export class CDUAtcReports {
   static CreateDataBlock() {
@@ -181,5 +181,6 @@ export class CDUAtcReports {
         }
       }
     };
+    setKeyNotActiveLskActions(mcdu);
   }
 }

@@ -4,7 +4,7 @@ import { Keypad } from '../../../legacy/A320_Neo_CDU_Keypad';
 import { CDUAtcFlightReq } from '../A320_Neo_CDU_ATC_FlightReq';
 import { CDUAtcMenu } from '../A320_Neo_CDU_ATC_Menu';
 import { NXSystemMessages } from '../../../messages/NXSystemMessages';
-import { LegacyAtsuPageInterface } from '../../../legacy/LegacyAtsuPageInterface';
+import { LegacyAtsuPageInterface, setKeyNotActiveLskActions } from '../../../legacy/LegacyAtsuPageInterface';
 
 export class CDUAtcTextFansB {
   static CreateDataBlock() {
@@ -134,5 +134,6 @@ export class CDUAtcTextFansB {
         }
       }
     };
+    setKeyNotActiveLskActions(mcdu);
   }
 }

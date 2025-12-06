@@ -4,7 +4,7 @@ import { Keypad } from '../../../legacy/A320_Neo_CDU_Keypad';
 import { CDUAtcMenu } from '../A320_Neo_CDU_ATC_Menu';
 import { CDUAtcTextFansA } from '../FansA/A320_Neo_CDU_ATC_Text';
 import { NXSystemMessages } from '../../../messages/NXSystemMessages';
-import { LegacyAtsuPageInterface } from '../../../legacy/LegacyAtsuPageInterface';
+import { LegacyAtsuPageInterface, setKeyNotActiveLskActions } from '../../../legacy/LegacyAtsuPageInterface';
 
 export class CDUAtcEmergencyFansA {
   static CanSendData(data) {
@@ -299,6 +299,7 @@ export class CDUAtcEmergencyFansA {
     mcdu.onNextPage = () => {
       CDUAtcEmergencyFansA.ShowPage2(mcdu, data);
     };
+    setKeyNotActiveLskActions(mcdu);
   }
 
   static ShowPage2(mcdu: LegacyAtsuPageInterface, data = CDUAtcEmergencyFansA.CreateDataBlock()) {
@@ -490,5 +491,6 @@ export class CDUAtcEmergencyFansA {
     mcdu.onNextPage = () => {
       CDUAtcEmergencyFansA.ShowPage1(mcdu, data);
     };
+    setKeyNotActiveLskActions(mcdu);
   }
 }

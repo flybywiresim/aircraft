@@ -4,7 +4,7 @@
 
 import { AtisType, AtsuStatusCodes } from '@datalink/common';
 import { CDUAtcAtisMenu } from './A320_Neo_CDU_ATC_AtisMenu';
-import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
+import { LegacyAtsuPageInterface, setKeyNotActiveLskActions } from '../../legacy/LegacyAtsuPageInterface';
 
 export class CDUAtcAtisAutoUpdate {
   static ToggleAutoUpdate(mcdu: LegacyAtsuPageInterface, icao, reloadPage) {
@@ -107,5 +107,6 @@ export class CDUAtcAtisAutoUpdate {
         CDUAtcAtisAutoUpdate.ShowPage(mcdu, true);
       }
     };
+    setKeyNotActiveLskActions(mcdu);
   }
 }
