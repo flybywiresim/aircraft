@@ -1,7 +1,8 @@
 // Copyright (c) 2024-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-export const WD_NUM_LINES = 17;
+export const WD_NUM_LINES = 18;
+export const WD_LINE_CHARACTERS = 41; // Characters without the leading checkbox and the space after it
 
 import {
   EcamAbnormalSensedAta212223,
@@ -199,8 +200,10 @@ export const EcamInfos: { [n: string]: string } = {
   230200001: '\x1b<3mSATCOM DATALINK AVAIL',
   260200001: '\x1b<3mBEFORE CARGO OPENING : PAX DISEMBARK',
   270200001: '\x1b<3mON DRY RWY ONLY : LDG DIST AFFECTED < 15%',
-  270200002: '\x1bGND SPLRs WILL EXTEND AT REV SELECTION',
-  270200003: '\x1bF/CTL BKUP CTL ACTIVE',
+  270200002: '\x1b<3mGND SPLRs WILL EXTEND AT REV SELECTION',
+  270200003: '\x1b<3mF/CTL BKUP CTL ACTIVE',
+  270200004: '\x1b<3mAUDIOS NOT AVAIL : WINDHSHEAR, SPEED SPEED',
+  270200005: '\x1b<3mF/CTL INDICATIONS LOST',
   320200001: '\x1b<3mALTN BRK WITH A-SKID',
   320200002: '\x1b<3mBRK PRESS AUTO LIMITED ON ALL L/Gs',
   320200003: '\x1b<3mDELAY BRAKING UNTIL NLG TOUCHDOWN',
@@ -472,17 +475,21 @@ export const EcamInopSys: { [n: string]: string } = {
   270300010: '\x1b<4mPRIM 1',
   270300011: '\x1b<4mPRIM 2',
   270300012: '\x1b<4mPRIM 3',
+  270300013: '\x1b<4mFCDC 1',
+  270300014: '\x1b<4mFCDC 2',
+  270300015: '\x1b<4mFCDC 1+2',
   290100001: '\x1b<4mPART SPLRs',
-  290100003: '\x1b<4mFLAPS SYS 1',
-  290100004: '\x1b<4mFLAPS SYS 2',
-  290100005: '\x1b<4mSLATS SYS 1',
-  290100006: '\x1b<4mSLATS SYS 2',
+  290100003: '\x1b<4mFLAP SYS 1',
+  290100004: '\x1b<4mFLAP SYS 2',
+  290100005: '\x1b<4mSLAT SYS 1',
+  290100006: '\x1b<4mSLAT SYS 2',
   290100007: '\x1b<4mSTABILIZER',
   290100008: '\x1b<4mF/CTL PROT',
   290100009: '\x1b<4mL OUTR AILERON',
   290100010: '\x1b<4mR OUTR AILERON',
   290100011: '\x1b<4mMOST SPLRs',
   290100012: '\x1b<4mFLAPS',
+  290100013: '\x1b<4mSLATS',
   290300001: '\x1b<4mG ELEC PMP A',
   290300002: '\x1b<4mG ELEC PMP B',
   290300003: '\x1b<4mY ELEC PMP A',
@@ -549,7 +556,6 @@ export const EcamInopSys: { [n: string]: string } = {
   340300010: '\x1b<4mADR 1+2+3',
   340300011: '\x1b<4mTCAS 1',
   340300012: '\x1b<4mTCAS 2',
-  340300013: '\x1b<4mF/CTL PROT',
   340300014: '\x1b<4mLOAD ALLEVIATION',
   340300021: '\x1b<4mGUST LOAD PROT',
   340300022: '\x1b<4mRA SYS A',
@@ -598,6 +604,7 @@ export enum ChecklistLineStyle {
   SubHeadline = 'SubHeadline',
   CenteredSubHeadline = 'CenteredSubHeadline',
   SeparationLine = 'SeparationLine',
+  Empty = 'Empty',
   ChecklistItem = 'ChecklistItem',
   CompletedChecklist = 'CompletedChecklist',
   CompletedDeferredProcedure = 'CompletedDeferredProcedure',
