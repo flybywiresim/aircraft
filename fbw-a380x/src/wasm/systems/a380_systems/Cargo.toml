@@ -5,6 +5,7 @@ authors = ["FlyByWire Simulations"]
 edition = "2021"
 
 [dependencies]
+bitflags = "2.9.1"
 uom.workspace = true
 nalgebra = "0.33.0"
 fxhash = "0.2.1"

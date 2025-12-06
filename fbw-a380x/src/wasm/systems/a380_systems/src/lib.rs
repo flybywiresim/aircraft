@@ -31,7 +31,6 @@ use electrical::{
     APU_START_MOTOR_BUS_TYPE,
 };
 use fire_and_smoke_protection::A380FireAndSmokeProtection;
-use fuel::FuelLevel;
 use hydraulic::{autobrakes::A380AutobrakePanel, A380Hydraulic, A380HydraulicOverheadPanel};
 use icing::Icing;
 use navigation::{A380AirDataInertialReferenceSystemBuilder, A380RadioAltimeters};
@@ -334,7 +333,7 @@ impl Aircraft for A380 {
         self.icing_simulation.update(context);
 
         self.egpwc.update(&self.adirs, self.lgcius.lgciu1());
-        self.fuel.update(context);
+        self.fuel.update(context, &self.adcn);
 
         self.engine_reverser_control[0].update(
             &self.engine_2,

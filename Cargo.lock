@@ -44,6 +44,7 @@ dependencies = [
 name = "a380_systems"
 version = "0.1.0"
 dependencies = [
+ "bitflags",
  "enum-map",
  "fxhash",
  "nalgebra",

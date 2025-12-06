@@ -983,6 +983,52 @@
   - Number in Gallons
   - The total physical volume of fuel in the tanks
 
+- A32NX_FQMS_STATUS_WORD
+  - Arinc429<Discrete>
+  - Status word indicating different status
+  - | Bit |        Meaning        |
+    |:---:|:---------------------:|
+    | 11   | FMS Data unavailable |
+    | 12   | FMS Data disagrees   |
+    | 13   | |
+    | 14   | |
+    | 15   | |
+    | 16   | |
+    | 17   | |
+    | 18   | |
+    | 19   | |
+    | 20   | |
+    | 21  | |
+    | 22  | |
+    | 23  | |
+    | 24  | |
+    | 25  | |
+    | 26  | |
+    | 27  | |
+    | 28  | |
+    | 29  | |
+
+
+- A32NX_FQMS_{side}_FUEL_PUMPS_RUNNING
+  - Arinc429<Discrete>
+  - Status word indicating different status
+  - {side}
+    - LEFT
+    - RIGHT
+  - | Bit |        Meaning        |
+    |:---:|:---------------------:|
+    | 11   | Main Feed Pump 1/3 running |
+    | 12   | Standby Feed Pump 1/3 running |
+    | 13   | Main Feed Pump 2/4 running |
+    | 14   | Standby Feed Pump 2/4 running |
+    | 15   | {side} Outer Pump running |
+    | 16   | {side} Mid Fwd Pump running |
+    | 17   | {side} Mid Aft Pump running |
+    | 18   | {side} Inner Fwd Pump running |
+    | 19   | {side} Inner Aft Pump running |
+    | 20   | {side} Trim Pump running |
+    | 21-29 | Unused |
+
 ## Indicating-Recording ATA 31
 
 - A32NX_CDS_CAN_BUS_1_1_AVAIL

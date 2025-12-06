@@ -1,4 +1,6 @@
 use super::{A380FuelPump, FuelLevel, FuelPumpStatus};
+use crate::fuel::{A380FuelTankType, ArincFuelPumpStatusProvider, ArincFuelQuantityProvider};
+use enum_map::Enum;
 use systems::{
     shared::{
         arinc429::{Arinc429Word, SignStatus},
@@ -6,35 +8,14 @@ use systems::{
     },
     simulation::{InitContext, SimulationElement, SimulatorWriter, VariableIdentifier, Write},
 };
-use uom::si::f64::*;
+use uom::{si::f64::*, ConstZero};
 
 pub(super) struct FuelQuantityDataConcentrator {
     powered_by: ElectricalBusType,
     is_powered: bool,
 
-    left_outer_tank_quantity_identifier: VariableIdentifier,
-    left_mid_tank_quantity_identifier: VariableIdentifier,
-    left_inner_tank_quantity_identifier: VariableIdentifier,
-    feed_one_tank_quantity_identifier: VariableIdentifier,
-    feed_two_tank_quantity_identifier: VariableIdentifier,
-    feed_three_tank_quantity_identifier: VariableIdentifier,
-    feed_four_tank_quantity_identifier: VariableIdentifier,
-    right_inner_tank_quantity_identifier: VariableIdentifier,
-    right_mid_tank_quantity_identifier: VariableIdentifier,
-    right_outer_tank_quantity_identifier: VariableIdentifier,
-    trim_tank_quantity_identifier: VariableIdentifier,
-
-    left_outer_tank_quantity: Arinc429Word<Mass>,
-    left_mid_tank_quantity: Arinc429Word<Mass>,
-    left_inner_tank_quantity: Arinc429Word<Mass>,
-    feed_one_tank_quantity: Arinc429Word<Mass>,
-    feed_two_tank_quantity: Arinc429Word<Mass>,
-    feed_three_tank_quantity: Arinc429Word<Mass>,
-    feed_four_tank_quantity: Arinc429Word<Mass>,
-    right_inner_tank_quantity: Arinc429Word<Mass>,
-    right_mid_tank_quantity: Arinc429Word<Mass>,
-    right_outer_tank_quantity: Arinc429Word<Mass>,
-    trim_tank_quantity: Arinc429Word<Mass>,
+    tank_quantity_identifiers: [VariableIdentifier; A380FuelTankType::LENGTH],
+    tank_quantities: [Arinc429Word<Mass>; A380FuelTankType::LENGTH],
 
     left_fuel_pump_running: Arinc429Word<u32>,
     right_fuel_pump_running: Arinc429Word<u32>,
@@ -65,47 +46,19 @@ impl FuelQuantityDataConcentrator {
         A380FuelPump::TrimRight,
     ];
     pub(super) fn new(context: &mut InitContext, id: usize, powered_by: ElectricalBusType) -> Self {
-        let arinc_word = Arinc429Word::new(Mass::default(), SignStatus::FailureWarning);
         Self {
             powered_by,
             is_powered: false,
 
             // Fuel quantities as "calculated" by the AGP and published on an arinc 429 bus
             // These values are also used the FQMS because in the sim there only exists this value
-            left_outer_tank_quantity_identifier: context
-                .get_identifier(format!("FQDC_{id}_LEFT_OUTER_TANK_QUANTITY")),
-            left_mid_tank_quantity_identifier: context
-                .get_identifier(format!("FQDC_{id}_LEFT_MID_TANK_QUANTITY")),
-            left_inner_tank_quantity_identifier: context
-                .get_identifier(format!("FQDC_{id}_LEFT_INNER_TANK_QUANTITY")),
-            feed_one_tank_quantity_identifier: context
-                .get_identifier(format!("FQDC_{id}_FEED_ONE_TANK_QUANTITY")),
-            feed_two_tank_quantity_identifier: context
-                .get_identifier(format!("FQDC_{id}_FEED_TWO_TANK_QUANTITY")),
-            feed_three_tank_quantity_identifier: context
-                .get_identifier(format!("FQDC_{id}_FEED_THREE_TANK_QUANTITY")),
-            feed_four_tank_quantity_identifier: context
-                .get_identifier(format!("FQDC_{id}_FEED_FOUR_TANK_QUANTITY")),
-            right_inner_tank_quantity_identifier: context
-                .get_identifier(format!("FQDC_{id}_RIGHT_INNER_TANK_QUANTITY")),
-            right_mid_tank_quantity_identifier: context
-                .get_identifier(format!("FQDC_{id}_RIGHT_MID_TANK_QUANTITY")),
-            right_outer_tank_quantity_identifier: context
-                .get_identifier(format!("FQDC_{id}_RIGHT_OUTER_TANK_QUANTITY")),
-            trim_tank_quantity_identifier: context
-                .get_identifier(format!("FQDC_{id}_TRIM_TANK_QUANTITY")),
-
-            left_outer_tank_quantity: arinc_word,
-            left_mid_tank_quantity: arinc_word,
-            left_inner_tank_quantity: arinc_word,
-            feed_one_tank_quantity: arinc_word,
-            feed_two_tank_quantity: arinc_word,
-            feed_three_tank_quantity: arinc_word,
-            feed_four_tank_quantity: arinc_word,
-            right_inner_tank_quantity: arinc_word,
-            right_mid_tank_quantity: arinc_word,
-            right_outer_tank_quantity: arinc_word,
-            trim_tank_quantity: arinc_word,
+            tank_quantity_identifiers: A380FuelTankType::iterator()
+                .map(|tank_type| context.get_identifier(format!("FQDC_{id}_{tank_type}_QUANTITY")))
+                .collect::<Vec<_>>()
+                .try_into()
+                .expect("Failed to create fuel quantity identifiers array"),
+            tank_quantities: [Arinc429Word::new(Mass::ZERO, SignStatus::FailureWarning);
+                A380FuelTankType::LENGTH],
 
             left_fuel_pump_running: Arinc429Word::new(0, SignStatus::FailureWarning),
             right_fuel_pump_running: Arinc429Word::new(0, SignStatus::FailureWarning),
@@ -113,30 +66,37 @@ impl FuelQuantityDataConcentrator {
     }
 
     pub(super) fn update(&mut self, fuel_levels: &(impl FuelLevel + FuelPumpStatus)) {
-        let ssm = if self.is_powered {
-            SignStatus::NormalOperation
-        } else {
-            SignStatus::FailureWarning
-        };
+        if !self.is_powered {
+            self.tank_quantities = Default::default();
+            self.left_fuel_pump_running = Arinc429Word::default();
+            self.right_fuel_pump_running = Arinc429Word::default();
+            return;
+        }
 
-        self.left_outer_tank_quantity =
+        let ssm = SignStatus::NormalOperation;
+
+        self.tank_quantities[A380FuelTankType::LeftOuter.into_usize()] =
             Arinc429Word::new(fuel_levels.left_outer_tank_quantity(), ssm);
-        self.left_mid_tank_quantity = Arinc429Word::new(fuel_levels.left_mid_tank_quantity(), ssm);
-        self.left_inner_tank_quantity =
+        self.tank_quantities[A380FuelTankType::LeftMid.into_usize()] =
+            Arinc429Word::new(fuel_levels.left_mid_tank_quantity(), ssm);
+        self.tank_quantities[A380FuelTankType::LeftInner.into_usize()] =
             Arinc429Word::new(fuel_levels.left_inner_tank_quantity(), ssm);
-        self.feed_one_tank_quantity = Arinc429Word::new(fuel_levels.feed_one_tank_quantity(), ssm);
-        self.feed_two_tank_quantity = Arinc429Word::new(fuel_levels.feed_two_tank_quantity(), ssm);
-        self.feed_three_tank_quantity =
+        self.tank_quantities[A380FuelTankType::FeedOne.into_usize()] =
+            Arinc429Word::new(fuel_levels.feed_one_tank_quantity(), ssm);
+        self.tank_quantities[A380FuelTankType::FeedTwo.into_usize()] =
+            Arinc429Word::new(fuel_levels.feed_two_tank_quantity(), ssm);
+        self.tank_quantities[A380FuelTankType::FeedThree.into_usize()] =
             Arinc429Word::new(fuel_levels.feed_three_tank_quantity(), ssm);
-        self.feed_four_tank_quantity =
+        self.tank_quantities[A380FuelTankType::FeedFour.into_usize()] =
             Arinc429Word::new(fuel_levels.feed_four_tank_quantity(), ssm);
-        self.right_inner_tank_quantity =
+        self.tank_quantities[A380FuelTankType::RightInner.into_usize()] =
             Arinc429Word::new(fuel_levels.right_inner_tank_quantity(), ssm);
-        self.right_mid_tank_quantity =
+        self.tank_quantities[A380FuelTankType::RightMid.into_usize()] =
             Arinc429Word::new(fuel_levels.right_mid_tank_quantity(), ssm);
-        self.right_outer_tank_quantity =
+        self.tank_quantities[A380FuelTankType::RightOuter.into_usize()] =
             Arinc429Word::new(fuel_levels.right_outer_tank_quantity(), ssm);
-        self.trim_tank_quantity = Arinc429Word::new(fuel_levels.trim_tank_quantity(), ssm);
+        self.tank_quantities[A380FuelTankType::Trim.into_usize()] =
+            Arinc429Word::new(fuel_levels.trim_tank_quantity(), ssm);
 
         self.left_fuel_pump_running =
             Self::update_fuel_pump_state(fuel_levels, ssm, Self::LEFT_FUEL_PUMPS);
@@ -144,62 +104,29 @@ impl FuelQuantityDataConcentrator {
             Self::update_fuel_pump_state(fuel_levels, ssm, Self::RIGHT_FUEL_PUMPS);
     }
 
-    pub(super) fn left_outer_tank_quantity(&self) -> Arinc429Word<Mass> {
-        self.left_outer_tank_quantity
-    }
-
-    pub(super) fn left_mid_tank_quantity(&self) -> Arinc429Word<Mass> {
-        self.left_mid_tank_quantity
-    }
-
-    pub(super) fn left_inner_tank_quantity(&self) -> Arinc429Word<Mass> {
-        self.left_inner_tank_quantity
-    }
-
-    pub(super) fn feed_one_tank_quantity(&self) -> Arinc429Word<Mass> {
-        self.feed_one_tank_quantity
-    }
-
-    pub(super) fn feed_two_tank_quantity(&self) -> Arinc429Word<Mass> {
-        self.feed_two_tank_quantity
-    }
-
-    pub(super) fn feed_three_tank_quantity(&self) -> Arinc429Word<Mass> {
-        self.feed_three_tank_quantity
-    }
-
-    pub(super) fn feed_four_tank_quantity(&self) -> Arinc429Word<Mass> {
-        self.feed_four_tank_quantity
-    }
-
-    pub(super) fn right_inner_tank_quantity(&self) -> Arinc429Word<Mass> {
-        self.right_inner_tank_quantity
-    }
-
-    pub(super) fn right_mid_tank_quantity(&self) -> Arinc429Word<Mass> {
-        self.right_mid_tank_quantity
-    }
-
-    pub(super) fn right_outer_tank_quantity(&self) -> Arinc429Word<Mass> {
-        self.right_outer_tank_quantity
-    }
-
-    pub(super) fn trim_tank_quantity(&self) -> Arinc429Word<Mass> {
-        self.trim_tank_quantity
-    }
-
     fn update_fuel_pump_state(
         pump_status: &impl FuelPumpStatus,
         ssm: SignStatus,
         fuel_pumps: impl IntoIterator<Item = A380FuelPump>,
     ) -> Arinc429Word<u32> {
-        let mut fuel_pump_running = Arinc429Word::new(0, ssm);
+        let value = (11..=29).zip(fuel_pumps).fold(0, |value, (bit, pump)| {
+            value | ((pump_status.is_fuel_pump_running(pump) as u32) << bit)
+        });
+        Arinc429Word::new(value, ssm)
+    }
+}
+impl ArincFuelQuantityProvider for FuelQuantityDataConcentrator {
+    fn get_tank_quantity(&self, tank: A380FuelTankType) -> Arinc429Word<Mass> {
+        self.tank_quantities[tank.into_usize()]
+    }
+}
+impl ArincFuelPumpStatusProvider for FuelQuantityDataConcentrator {
+    fn get_left_fuel_pump_running_word(&self) -> Arinc429Word<u32> {
+        self.left_fuel_pump_running
+    }
 
-        for (i, pump) in (11..=29).zip(fuel_pumps) {
-            fuel_pump_running.set_bit(i, pump_status.is_fuel_pump_running(pump));
-        }
-
-        fuel_pump_running
+    fn get_right_fuel_pump_running_word(&self) -> Arinc429Word<u32> {
+        self.right_fuel_pump_running
     }
 }
 impl SimulationElement for FuelQuantityDataConcentrator {
@@ -208,46 +135,82 @@ impl SimulationElement for FuelQuantityDataConcentrator {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(
-            &self.left_outer_tank_quantity_identifier,
-            self.left_outer_tank_quantity,
-        );
-        writer.write(
-            &self.left_mid_tank_quantity_identifier,
-            self.left_mid_tank_quantity,
-        );
-        writer.write(
-            &self.left_inner_tank_quantity_identifier,
-            self.left_inner_tank_quantity,
-        );
-        writer.write(
-            &self.feed_one_tank_quantity_identifier,
-            self.feed_one_tank_quantity,
-        );
-        writer.write(
-            &self.feed_two_tank_quantity_identifier,
-            self.feed_two_tank_quantity,
-        );
-        writer.write(
-            &self.feed_three_tank_quantity_identifier,
-            self.feed_three_tank_quantity,
-        );
-        writer.write(
-            &self.feed_four_tank_quantity_identifier,
-            self.feed_four_tank_quantity,
-        );
-        writer.write(
-            &self.right_inner_tank_quantity_identifier,
-            self.right_inner_tank_quantity,
-        );
-        writer.write(
-            &self.right_mid_tank_quantity_identifier,
-            self.right_mid_tank_quantity,
-        );
-        writer.write(
-            &self.right_outer_tank_quantity_identifier,
-            self.right_outer_tank_quantity,
-        );
-        writer.write(&self.trim_tank_quantity_identifier, self.trim_tank_quantity);
+        for (identifier, quantity) in self
+            .tank_quantity_identifiers
+            .iter()
+            .zip(self.tank_quantities)
+        {
+            writer.write(identifier, quantity);
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rstest::{fixture, rstest};
+    use systems::simulation::{
+        test::{SimulationTestBed, TestBed},
+        Aircraft, SimulationElementVisitor,
+    };
+
+    #[rstest]
+    fn fuel_quantity_data_concentrator_writes_simvars(test_bed: FQDCTestBed) {
+        for var_name in [
+            "FQDC_0_FEED_1_TANK_QUANTITY",
+            "FQDC_0_FEED_2_TANK_QUANTITY",
+            "FQDC_0_FEED_3_TANK_QUANTITY",
+            "FQDC_0_FEED_4_TANK_QUANTITY",
+            "FQDC_0_LEFT_OUTER_TANK_QUANTITY",
+            "FQDC_0_RIGHT_OUTER_TANK_QUANTITY",
+            "FQDC_0_LEFT_MID_TANK_QUANTITY",
+            "FQDC_0_RIGHT_MID_TANK_QUANTITY",
+            "FQDC_0_LEFT_INNER_TANK_QUANTITY",
+            "FQDC_0_RIGHT_INNER_TANK_QUANTITY",
+            "FQDC_0_TRIM_TANK_QUANTITY",
+        ] {
+            assert!(
+                test_bed.contains_variable_with_name(var_name),
+                "Expected variable {var_name} to be present in the test bed",
+            );
+        }
+    }
+
+    #[fixture]
+    fn test_bed() -> FQDCTestBed {
+        FQDCTestBed(SimulationTestBed::new(TestAircraft::new))
+    }
+
+    struct FQDCTestBed(SimulationTestBed<TestAircraft>);
+    impl TestBed for FQDCTestBed {
+        type Aircraft = TestAircraft;
+
+        fn test_bed(&self) -> &SimulationTestBed<Self::Aircraft> {
+            &self.0
+        }
+
+        fn test_bed_mut(&mut self) -> &mut SimulationTestBed<Self::Aircraft> {
+            &mut self.0
+        }
+    }
+
+    struct TestAircraft {
+        fqdc: FuelQuantityDataConcentrator,
+    }
+    impl TestAircraft {
+        fn new(context: &mut InitContext) -> Self {
+            let fqdc = FuelQuantityDataConcentrator::new(
+                context,
+                0,
+                ElectricalBusType::DirectCurrentEssential,
+            );
+            Self { fqdc }
+        }
+    }
+    impl Aircraft for TestAircraft {}
+    impl SimulationElement for TestAircraft {
+        fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+            self.fqdc.accept(visitor);
+        }
     }
 }

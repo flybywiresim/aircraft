@@ -2,16 +2,18 @@
 
 mod cpiom_f;
 mod fuel_quantity_data_concentrator;
-mod fuel_quantity_management_system;
-
+use crate::{
+    avionics_data_communication_network::A380AvionicsDataCommunicationNetwork,
+    fuel::cpiom_f::A380FuelQuantityManagementSystem,
+};
 use enum_map::{enum_map, Enum};
 use fuel_quantity_data_concentrator::FuelQuantityDataConcentrator;
-use fuel_quantity_management_system::A380FuelQuantityManagementSystem;
 use nalgebra::Vector3;
 use systems::{
     accept_iterable,
     fuel::{FuelCG, FuelInfo, FuelPayload, FuelPump, FuelPumpProperties, FuelSystem},
-    shared::ElectricalBusType,
+    integrated_modular_avionics::AvionicsDataCommunicationNetwork,
+    shared::{arinc429::Arinc429Word, ElectricalBusType},
     simulation::{InitContext, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
 use uom::si::f64::*;
@@ -34,12 +36,21 @@ pub trait FuelLevel {
     fn trim_tank_quantity(&self) -> Mass;
 }
 
-pub trait FuelPumpStatus {
+trait FuelPumpStatus {
     fn is_fuel_pump_running(&self, pump: A380FuelPump) -> bool;
 }
 
 trait SetFuelLevel {
     fn set_tank_quantity(&mut self, tank: A380FuelTankType, quantity: Mass);
+}
+
+trait ArincFuelQuantityProvider {
+    fn get_tank_quantity(&self, tank: A380FuelTankType) -> Arinc429Word<Mass>;
+}
+
+trait ArincFuelPumpStatusProvider {
+    fn get_left_fuel_pump_running_word(&self) -> Arinc429Word<u32>;
+    fn get_right_fuel_pump_running_word(&self) -> Arinc429Word<u32>;
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug, Enum)]
@@ -137,7 +148,12 @@ impl A380Fuel {
         }
     }
 
-    pub(crate) fn update(&mut self, context: &UpdateContext) {
+    pub(crate) fn update(
+        &mut self,
+        context: &UpdateContext,
+        acdn: &A380AvionicsDataCommunicationNetwork,
+    ) {
+        let cpioms = ["F1", "F2", "F3", "F4"].map(|id| acdn.get_cpiom(id));
         for fqdc in &mut self.fuel_quantity_data_concentrators {
             fqdc.update(&self.fuel_system);
         }
@@ -145,6 +161,7 @@ impl A380Fuel {
             context,
             &mut self.fuel_system,
             &self.fuel_quantity_data_concentrators[0], // TODO
+            cpioms.map(|cpiom| cpiom.is_available()),
         );
     }
 
