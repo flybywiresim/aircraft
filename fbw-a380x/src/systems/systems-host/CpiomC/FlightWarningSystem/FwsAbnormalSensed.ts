@@ -3678,7 +3678,7 @@ export class FwsAbnormalSensed {
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
       failure: 1,
-      sysPage: -1,
+      sysPage: SdPages.None,
     },
     340800021: {
       // EXTREME LATITUDE
@@ -3991,7 +3991,7 @@ export class FwsAbnormalSensed {
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
       failure: 2,
-      sysPage: -1,
+      sysPage: SdPages.None,
     },
     341800016: {
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
