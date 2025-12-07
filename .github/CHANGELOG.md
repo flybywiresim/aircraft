@@ -27,6 +27,11 @@
 1. [A32NX/MCDU] Fix managed speed units in IAS/MACH on perf climb page - @Lucas-IQ21 (Lucas)
 1. [A32NX/FMS] Implement ability to create, modify, activate and swap a secondary flight plan - @Benjozork (Benjamin Dupont), @BlueberyKing (BlueberryKing)
 1. [A380X] Fix PFD F RELIEF indication and SD status area ISA visibility - @flogross89 (floridude)
+1. [A380X/FMS] Add - sign to LS slope value - @Jonny23787 (Jonathan)
+1. [A380X/MFD] Implement Position Monitor page - @BravoMike99 (bruno_pt99)
+1. [A380X/MFD] Only show "RETURN" button on PERF & POS NAVAIDS if acessed via INIT page keys - @BravoMike99 (bruno_pt99)
+1. [A32NX/FWS] Make master caution from autobrake off trigger for 3 seconds - @BravoMike99 (bruno_pt99)
+1. [FMS] Fixed climb phase not activating if vertical mode is changed below acceleration height - @BravoMike99 (bruno_pt99)
 1. [A380X/FWS] Add FCDC, SLAT/FLAP SYS, FWS+FCDC, FWS+CPIOM faults - @flogross89 (floridude)
 1. [A380X/SD] Improve STS page: Add deferred procedures, page switching, MORE page, improve performance - @flogross89 (floridude)
 
