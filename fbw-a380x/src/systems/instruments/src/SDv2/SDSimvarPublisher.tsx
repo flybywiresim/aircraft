@@ -67,7 +67,7 @@ export class SDSimvarPublisher extends UpdatableSimVarPublisher<SDSimvars> {
   private static simvars = new Map<keyof SDSimvars, SimVarPublisherEntry<any>>([
     ...AdirsSimVarDefinitions,
     ...SwitchingPanelSimVarsDefinitions,
-    ['moreActive', { name: 'L:A32NX_SD_MORE_SHOWN', type: SimVarValueType.Bool }],
+    ['moreActive', { name: 'L:A32NX_ECAM_SD_MORE_SHOWN', type: SimVarValueType.Bool }],
     ['sdPageToShow', { name: 'L:A32NX_ECAM_SD_PAGE_TO_SHOW', type: SimVarValueType.Enum }],
     ['sdStsPageToShow', { name: 'L:A32NX_ECAM_SD_STS_PAGE_TO_SHOW', type: SimVarValueType.Enum }],
     ['zuluTime', { name: 'E:ZULU TIME', type: SimVarValueType.Seconds }],
