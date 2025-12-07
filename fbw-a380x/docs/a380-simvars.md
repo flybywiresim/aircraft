@@ -1008,6 +1008,18 @@
     | 28  | |
     | 29  | |
 
+- A32NX_FQMS_TOTAL_FUEL_ON_BOARD
+  - Arinc429<Kilogram>
+  - The total quantity of fuel in the tanks
+
+- A32NX_FQMS_GROSS_WEIGHT
+  - Arinc429<Kilogram>
+  - The total weight of the aircraft
+
+- A32NX_FQMS_CENTER_OF_GRAVITY_MAC
+  - Arinc429<Percent>
+  - The center of gravity of the aircraft
+
 
 - A32NX_FQMS_{side}_FUEL_PUMPS_RUNNING
   - Arinc429<Discrete>

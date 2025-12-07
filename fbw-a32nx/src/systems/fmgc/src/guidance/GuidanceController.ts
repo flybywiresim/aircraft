@@ -44,6 +44,7 @@ export interface Fmgc {
   getZeroFuelWeight(): number;
   getFOB(forPlan: FlightPlanIndex): number | null;
   getGrossWeight(): number | null;
+  getGrossWeightCg(): number | null;
   getV2Speed(): Knots;
   getTropoPause(): Feet;
   getManagedClimbSpeed(): Knots;
