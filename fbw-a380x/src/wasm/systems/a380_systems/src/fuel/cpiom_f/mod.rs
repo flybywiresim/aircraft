@@ -815,7 +815,8 @@ impl SimulationElement for A380FuelQuantityManagementSystem {
             .iter()
             .zip(&mut self.fms_zero_fuel_weights)
         {
-            *zfw = reader.read_arinc429(id).normal_value();
+            let zfw_arinc: Arinc429Word<f64> = reader.read_arinc429(id);
+            *zfw = zfw_arinc.normal_value().map(|v| Mass::new::<kilogram>(v));
         }
 
         for (id, zfwcg) in self
