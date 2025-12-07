@@ -23,7 +23,7 @@ import { Arinc429LocalVarConsumerSubject, Arinc429Word, Runway, Units } from '@f
 import { Feet } from 'msfs-geo';
 import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
 import { minGw } from '@shared/PerformanceConstants';
-import { A380XFqmsBusEvents } from '@shared/publishers/A380XFqmsBusPublisher';
+import { FqmsBusEvents } from '@shared/publishers/FqmsBusPublisher';
 
 export enum TakeoffPowerSetting {
   TOGA = 0,
@@ -377,11 +377,11 @@ export class FmgcDataService implements Fmgc {
 
   public guidanceController: GuidanceController | undefined = undefined;
 
-  private readonly sub = this.bus.getSubscriber<A380XFqmsBusEvents>();
+  private readonly sub = this.bus.getSubscriber<FqmsBusEvents>();
 
-  private readonly fqms_fob = Arinc429LocalVarConsumerSubject.create(this.sub.on('a380x_fqms_total_fuel_on_board'));
-  private readonly fqms_gw = Arinc429LocalVarConsumerSubject.create(this.sub.on('a380x_fqms_gross_weight'));
-  private readonly fqms_gwcg = Arinc429LocalVarConsumerSubject.create(this.sub.on('a380x_fqms_center_of_gravity_mac'));
+  private readonly fqms_fob = Arinc429LocalVarConsumerSubject.create(this.sub.on('fqms_total_fuel_on_board'));
+  private readonly fqms_gw = Arinc429LocalVarConsumerSubject.create(this.sub.on('fqms_gross_weight'));
+  private readonly fqms_gwcg = Arinc429LocalVarConsumerSubject.create(this.sub.on('fqms_center_of_gravity_mac'));
 
   constructor(
     private readonly bus: EventBus,

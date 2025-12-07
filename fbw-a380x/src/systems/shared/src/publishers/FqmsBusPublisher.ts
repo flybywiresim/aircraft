@@ -10,7 +10,7 @@ import {
   SimVarValueType,
 } from '@microsoft/msfs-sdk';
 
-interface A380XFqmsBusBaseEvents {
+interface FqmsBusBaseEvents {
   /**
    * Discrete status word for the FQMS, raw ARINC word.
    * | Bit |            Description            |
@@ -18,22 +18,22 @@ interface A380XFqmsBusBaseEvents {
    * | 11  | FMS Data unavailable              |
    * | 12  | FMS Data disagrees                |
    */
-  a380x_fqms_status_word: number;
+  fqms_status_word: number;
   /**
    * FQMS fuel on board in kilograms.
    * Raw ARINC word.
    */
-  a380x_fqms_total_fuel_on_board: number;
+  fqms_total_fuel_on_board: number;
   /**
    * FQMS gross weight in kilograms.
    * Raw ARINC word.
    */
-  a380x_fqms_gross_weight: number;
+  fqms_gross_weight: number;
   /**
    * FQMS center of gravity in percent.
    * Raw ARINC word.
    */
-  a380x_fqms_center_of_gravity_mac: number;
+  fqms_center_of_gravity_mac: number;
   /**
    * Discrete status word for the left fuel pump status, raw ARINC word.
    * | Bit |            Description            |
@@ -49,7 +49,7 @@ interface A380XFqmsBusBaseEvents {
    * | 19  | Left Inner Aft Pump running     |
    * | 20  | Left Trim Pump running          |
    */
-  a380x_fqms_fuel_pump_running_left: number;
+  fqms_fuel_pump_running_left: number;
   /**
    * Discrete status word for the right fuel pump status, raw ARINC word.
    * | Bit |            Description            |
@@ -65,45 +65,39 @@ interface A380XFqmsBusBaseEvents {
    * | 19  | Right Inner Aft Pump running     |
    * | 20  | Right Trim Pump running          |
    */
-  a380x_fqms_fuel_pump_running_right: number;
+  fqms_fuel_pump_running_right: number;
 }
 
 type IndexedTopics = null;
 
-type A380XFqmsBusIndexedEvents = {
-  [P in keyof Pick<A380XFqmsBusBaseEvents, IndexedTopics> as IndexedEventType<P>]: A380XFqmsBusBaseEvents[P];
+type FqmsBusIndexedEvents = {
+  [P in keyof Pick<FqmsBusBaseEvents, IndexedTopics> as IndexedEventType<P>]: FqmsBusBaseEvents[P];
 };
 
-interface A380XFqmsBusPublisherEvents extends A380XFqmsBusBaseEvents, A380XFqmsBusIndexedEvents {}
+interface FqmsBusPublisherEvents extends FqmsBusBaseEvents, FqmsBusIndexedEvents {}
 
 /**
- * Events for A380X FQMS bus local vars.
+ * Events for FQMS bus local vars.
  */
-export interface A380XFqmsBusEvents extends Omit<A380XFqmsBusBaseEvents, IndexedTopics>, A380XFqmsBusIndexedEvents {}
+export interface FqmsBusEvents extends Omit<FqmsBusBaseEvents, IndexedTopics>, FqmsBusIndexedEvents {}
 
 /**
- * Publisher for A380X FQMS bus local vars.
+ * Publisher for FQMS bus local vars.
  */
-export class A380XFqmsBusPublisher extends SimVarPublisher<A380XFqmsBusPublisherEvents> {
+export class FqmsBusPublisher extends SimVarPublisher<FqmsBusPublisherEvents> {
   /**
    * Create a publisher.
    * @param bus The EventBus to publish to
    * @param pacer An optional pacer to use to control the rate of publishing
    */
-  public constructor(bus: EventBus, pacer?: PublishPacer<A380XFqmsBusPublisherEvents>) {
-    const simvars = new Map<keyof A380XFqmsBusPublisherEvents, SimVarPublisherEntry<any>>([
-      ['a380x_fqms_status_word', { name: 'L:A32NX_FQMS_STATUS_WORD', type: SimVarValueType.Enum }],
-      ['a380x_fqms_total_fuel_on_board', { name: 'L:A32NX_FQMS_TOTAL_FUEL_ON_BOARD', type: SimVarValueType.Enum }],
-      ['a380x_fqms_gross_weight', { name: 'L:A32NX_FQMS_GROSS_WEIGHT', type: SimVarValueType.Enum }],
-      ['a380x_fqms_center_of_gravity_mac', { name: 'L:A32NX_FQMS_CENTER_OF_GRAVITY_MAC', type: SimVarValueType.Enum }],
-      [
-        'a380x_fqms_fuel_pump_running_left',
-        { name: 'L:A32NX_FQMS_LEFT_FUEL_PUMPS_RUNNING', type: SimVarValueType.Enum },
-      ],
-      [
-        'a380x_fqms_fuel_pump_running_right',
-        { name: 'L:A32NX_FQMS_RIGHT_FUEL_PUMPS_RUNNING', type: SimVarValueType.Enum },
-      ],
+  public constructor(bus: EventBus, pacer?: PublishPacer<FqmsBusPublisherEvents>) {
+    const simvars = new Map<keyof FqmsBusPublisherEvents, SimVarPublisherEntry<any>>([
+      ['fqms_status_word', { name: 'L:A32NX_FQMS_STATUS_WORD', type: SimVarValueType.Enum }],
+      ['fqms_total_fuel_on_board', { name: 'L:A32NX_FQMS_TOTAL_FUEL_ON_BOARD', type: SimVarValueType.Enum }],
+      ['fqms_gross_weight', { name: 'L:A32NX_FQMS_GROSS_WEIGHT', type: SimVarValueType.Enum }],
+      ['fqms_center_of_gravity_mac', { name: 'L:A32NX_FQMS_CENTER_OF_GRAVITY_MAC', type: SimVarValueType.Enum }],
+      ['fqms_fuel_pump_running_left', { name: 'L:A32NX_FQMS_LEFT_FUEL_PUMPS_RUNNING', type: SimVarValueType.Enum }],
+      ['fqms_fuel_pump_running_right', { name: 'L:A32NX_FQMS_RIGHT_FUEL_PUMPS_RUNNING', type: SimVarValueType.Enum }],
     ]);
 
     super(simvars, bus, pacer);
