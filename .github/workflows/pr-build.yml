@@ -85,10 +85,11 @@ jobs:
           ./scripts/dev-env/run.sh ./scripts/build_a32nx.sh --no-tty -j 4
           rm -rf fbw-a32nx/src
           docker system prune -af
-      - name: Remove A380X source files
+      - name: Remove source files
         run: |
           rm -rf ./fbw-a380x/
-          rm -rf ./large-files/fbw-a380x/
+          rm -rf ./fbw-a32nx/
+          rm -rf ./large-files/
       - name: Generate install.json
         if: github.event.pull_request.auto_merge == false
         run: |
