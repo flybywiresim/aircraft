@@ -18,6 +18,7 @@ import '../index.scss';
 import { Arinc429LocalVarConsumerSubject, FmsData, NXDataStore, NXUnits } from '@flybywiresim/fbw-sdk';
 import { SDSimvars } from './SDSimvarPublisher';
 import { A380XFcuBusEvents } from '@shared/publishers/A380XFcuBusPublisher';
+import { FqmsBusEvents } from '@shared/publishers/FqmsBusPublisher';
 
 export interface PermanentDataProps {
   readonly bus: EventBus;
@@ -35,7 +36,7 @@ const getCurrentHHMMSS = (seconds: number) => {
 export class PermanentData extends DisplayComponent<PermanentDataProps> {
   private readonly subscriptions: Subscription[] = [];
 
-  private readonly sub = this.props.bus.getSubscriber<SDSimvars & ClockEvents & FmsData & A380XFcuBusEvents>();
+  private readonly sub = this.props.bus.getSubscriber<SDSimvars & ClockEvents & FqmsBusEvents & A380XFcuBusEvents>();
 
   private readonly sat = Arinc429LocalVarConsumerSubject.create(this.sub.on('sat'));
 
@@ -105,55 +106,44 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
     '1',
   );
 
-  private readonly fm1ZeroFuelWeight = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmZeroFuelWeight_1'));
-  private readonly fm2ZeroFuelWeight = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmZeroFuelWeight_2'));
-
-  private readonly fm1ZeroFuelWeightCg = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmZeroFuelWeightCg_1'));
-  private readonly fm2ZeroFuelWeightCg = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmZeroFuelWeightCg_2'));
-
-  private readonly fuelQuantity = ConsumerSubject.create(this.sub.on('fuelTotalQuantity'), 0);
-  private readonly fuelWeightPerGallon = ConsumerSubject.create(this.sub.on('fuelWeightPerGallon'), 0);
-  private readonly fuelWeight = MappedSubject.create(
-    ([qt, weightPerGallon]) => qt * weightPerGallon,
-    this.fuelQuantity,
-    this.fuelWeightPerGallon,
-    this.userWeight,
-  );
+  private readonly fqmsFuelQuantity = Arinc429LocalVarConsumerSubject.create(this.sub.on('fqms_total_fuel_on_board'));
   private readonly fuelWeightText = MappedSubject.create(
-    ([fw, _uw]) => (Math.round(NXUnits.kgToUser(fw) / 100) * 100).toFixed(0),
-    this.fuelWeight,
+    ([fq, _uw]) =>
+      fq.isNormalOperation() ? (Math.round(NXUnits.kgToUser(fq.value) / 100) * 100).toFixed(0) : 'XX\xa0\xa0',
+    this.fqmsFuelQuantity,
     this.userWeight,
   );
+  private readonly fuelWeightClass = this.fqmsFuelQuantity.map((fq) =>
+    fq.isNormalOperation() ? 'F27 Green EndAlign' : 'F27 Amber EndAlign',
+  );
 
-  // FIXME replace with FQMS implementation
-  private readonly grossWeight = MappedSubject.create(
-    ([fm1Zfw, fm2Zfw, fm1ZfwCg, fm2ZfwCg, fuelWeight]) =>
-      (fm1Zfw.isNormalOperation() && fm1ZfwCg.isNormalOperation()) ||
-      (fm2Zfw.isNormalOperation() && fm2ZfwCg.isNormalOperation())
-        ? (fm1Zfw.isNormalOperation() ? fm1Zfw.value : fm2Zfw.value) + fuelWeight
-        : null,
-    this.fm1ZeroFuelWeight,
-    this.fm2ZeroFuelWeight,
-    this.fm1ZeroFuelWeightCg,
-    this.fm2ZeroFuelWeightCg,
-    this.fuelWeight,
+  private readonly fqmsGrossWeight = Arinc429LocalVarConsumerSubject.create(this.sub.on('fqms_gross_weight'));
+  private readonly fqmsGrossWeightCg = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('fqms_center_of_gravity_mac'),
   );
 
   private readonly gwText = MappedSubject.create(
-    ([gw, _uw]) => (gw === 0 || gw === null ? '--\xa0\xa0' : (Math.round(NXUnits.kgToUser(gw) / 100) * 100).toFixed(0)),
-    this.grossWeight,
+    ([gw, _uw]) =>
+      gw.isNormalOperation()
+        ? (Math.round(NXUnits.kgToUser(gw.value) / 100) * 100).toFixed(0)
+        : gw.isNoComputedData()
+          ? '--\xa0\xa0'
+          : 'XX\xa0\xa0',
+    this.fqmsGrossWeight,
     this.userWeight,
   );
 
-  private readonly gwClass = this.grossWeight.map((gw) =>
-    gw === 0 || gw === null ? 'F27 Cyan EndAlign' : 'F27 Green EndAlign',
+  private readonly gwClass = this.fqmsGrossWeight.map((gw) =>
+    gw.isNormalOperation() ? 'F27 Green EndAlign' : gw.isNoComputedData() ? 'F27 Cyan EndAlign' : 'F27 Amber EndAlign',
   );
 
-  private readonly grossWeightCg = ConsumerSubject.create(this.sub.on('grossWeightCg'), 0);
   private readonly grossWeightCgText = MappedSubject.create(
-    ([cg, gw]) => (gw === 0 || gw === null ? '--\xa0\xa0' : (Math.round(cg * 10) / 10).toFixed(1)),
-    this.grossWeightCg,
-    this.grossWeight,
+    ([cg]) => (cg.isNormalOperation() ? cg.value.toFixed(1) : cg.isNoComputedData() ? '--\xa0\xa0' : 'XX\xa0\xa0'),
+    this.fqmsGrossWeightCg,
+  );
+
+  private readonly gwCgClass = this.fqmsGrossWeightCg.map((cg) =>
+    cg.isNormalOperation() ? 'F27 Green EndAlign' : cg.isNoComputedData() ? 'F27 Cyan EndAlign' : 'F27 Amber EndAlign',
   );
 
   public onAfterRender(node: VNode): void {
@@ -177,19 +167,15 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
       this.zuluTime,
       this.timeHHMM,
       this.timeSS,
-      this.fm1ZeroFuelWeight,
-      this.fm2ZeroFuelWeight,
-      this.fm1ZeroFuelWeightCg,
-      this.fm2ZeroFuelWeightCg,
-      this.fuelQuantity,
-      this.fuelWeightPerGallon,
-      this.fuelWeight,
+      this.fqmsFuelQuantity,
+      this.fqmsGrossWeight,
+      this.fqmsGrossWeightCg,
       this.fuelWeightText,
-      this.grossWeight,
+      this.fuelWeightClass,
       this.gwText,
       this.gwClass,
-      this.grossWeightCg,
       this.grossWeightCgText,
+      this.gwCgClass,
     );
   }
 
@@ -304,10 +290,10 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
           <text x={705} y={696} class={this.gwClass}>
             {this.gwText}
           </text>
-          <text x={705} y={724} class={this.gwClass}>
+          <text x={705} y={724} class={this.gwCgClass}>
             {this.grossWeightCgText}
           </text>
-          <text x={705} y={752} class="F27 Green EndAlign">
+          <text x={705} y={752} class={this.fuelWeightClass}>
             {this.fuelWeightText}
           </text>
 

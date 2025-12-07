@@ -16,6 +16,7 @@ import { FcdcSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/provider
 import { SfccSimVarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/SfccPublisher';
 
 import './style.scss';
+import { FqmsBusPublisher } from '@shared/publishers/FqmsBusPublisher';
 
 class A380X_PFD extends BaseInstrument {
   private readonly bus = new ArincEventBus();
@@ -54,6 +55,8 @@ class A380X_PFD extends BaseInstrument {
 
   private readonly sfccPublisher = new SfccSimVarPublisher(this.bus);
 
+  private readonly fqmsPublisher = new FqmsBusPublisher(this.bus);
+
   constructor() {
     super();
 
@@ -77,6 +80,7 @@ class A380X_PFD extends BaseInstrument {
     this.backplane.addPublisher('FcuBusPublisher', this.fcuBusPublisher);
     this.backplane.addPublisher('FcdcPublisher', this.fcdcPublisher);
     this.backplane.addPublisher('SfccPublisher', this.sfccPublisher);
+    this.backplane.addPublisher('FqmsPublisher', this.fqmsPublisher);
   }
 
   get templateID(): string {

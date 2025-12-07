@@ -16,6 +16,7 @@ import {
 } from '@microsoft/msfs-sdk';
 import { PFDSimvars } from 'instruments/src/PFD/shared/PFDSimvarPublisher';
 import PitchTrimUtils from '@shared/PitchTrimUtils';
+import { FqmsBusEvents } from '@shared/publishers/FqmsBusPublisher';
 
 enum PitchTrimStatus {
   AfterLanding,
@@ -26,7 +27,7 @@ enum PitchTrimStatus {
 
 export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible: Subscribable<boolean> }> {
   private readonly subscriptions: Subscription[] = [];
-  private readonly sub = this.props.bus.getSubscriber<PFDSimvars>();
+  private readonly sub = this.props.bus.getSubscriber<PFDSimvars & FqmsBusEvents>();
 
   private readonly cgGroup = FSComponent.createRef<SVGGElement>();
 
@@ -79,8 +80,10 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
     this.engFourRunning,
   );
 
-  private readonly cgPercent = ConsumerSubject.create(this.sub.on('cgPercent').withPrecision(2), 0);
-  private readonly cgPercentText = this.cgPercent.map((it) => (Math.round(it * 10) / 10).toFixed(1));
+  // TODO: check what happens when CG is not available
+  // TODO: take WBBC CG if FQMS unavailable
+  private readonly cgPercent = Arinc429LocalVarConsumerSubject.create(this.sub.on('fqms_center_of_gravity_mac'));
+  private readonly cgPercentText = this.cgPercent.map((cg) => (cg.isNormalOperation() ? cg.value.toFixed(1) : ''));
 
   private readonly greenHydPressurized = ConsumerSubject.create(this.sub.on('hydGreenSysPressurized'), false);
   private readonly yellowHydPressurized = ConsumerSubject.create(this.sub.on('hydYellowSysPressurized'), false);
@@ -98,7 +101,9 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
         if (PitchTrimUtils.pitchTrimOutOfRange(trim)) {
           return PitchTrimStatus.OutOfRange;
         } else {
-          return PitchTrimUtils.pitchTrimInCyanBand(cg, trim) ? PitchTrimStatus.AtTarget : PitchTrimStatus.NotAtTarget;
+          return cg.isNormalOperation() && PitchTrimUtils.pitchTrimInCyanBand(cg.value, trim)
+            ? PitchTrimStatus.AtTarget
+            : PitchTrimStatus.NotAtTarget;
         }
       }
     },
@@ -108,7 +113,9 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
     this.anyEngRunning,
   );
 
-  private readonly optimalPitchTrim = this.cgPercent.map((cg) => PitchTrimUtils.cgToPitchTrim(cg));
+  private readonly optimalPitchTrim = this.cgPercent.map((cg) =>
+    cg.isNormalOperation() ? PitchTrimUtils.cgToPitchTrim(cg.value) : null,
+  );
 
   degreesToPixel(deg: number) {
     return (10 - deg) * 17.25 + 103.5;
@@ -116,25 +123,27 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
 
   /** in pixels, where magenta GW CG box is */
   private readonly gwCgPositionTransform = MappedSubject.create(
-    ([pitch, optimal]) => `translate(0 ${(pitch - optimal) * 17.25 - 5})`,
+    ([pitch, optimal]) => (optimal === null ? '' : `translate(0 ${(pitch - optimal) * 17.25 - 5})`),
     this.trimPosition,
     this.optimalPitchTrim,
   );
 
   private readonly gwCgVisibility = MappedSubject.create(
-    ([flightPhase, hydPress, engRunning]) => (engRunning && flightPhase <= 10 && hydPress ? 'inherit' : 'hidden'),
+    ([flightPhase, hydPress, engRunning, cg]) =>
+      cg.isNormalOperation() && engRunning && flightPhase <= 10 && hydPress ? 'inherit' : 'hidden',
     this.fwcFlightPhase,
     this.oneHydPressurized,
     this.anyEngRunning,
+    this.cgPercent,
   );
 
   /** in pixels, where upper magenta box starts */
   private readonly optimalPitchTrimUpperBoxStart = this.optimalPitchTrim.map((it) =>
-    this.degreesToPixel(Math.min(it + 1.5, 5.8)),
+    this.degreesToPixel(Math.min((it ?? 0) + 1.5, 5.8)),
   );
 
   /** in pixels, where middle of magenta boxes is */
-  private readonly optimalPitchTrimCenter = this.optimalPitchTrim.map((it) => this.degreesToPixel(it));
+  private readonly optimalPitchTrimCenter = this.optimalPitchTrim.map((it) => this.degreesToPixel(it ?? 0));
 
   private readonly optimalPitchTrimUpperBoxHeight = MappedSubject.create(
     ([start, center]) => center - start,
@@ -144,7 +153,7 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
 
   /** in pixels, where lower magenta box ends */
   private readonly optimalPitchTrimLowerBoxEnd = this.optimalPitchTrim.map((it) =>
-    this.degreesToPixel(Math.max(it - 1.5, -0.2)),
+    this.degreesToPixel(Math.max((it ?? 0) - 1.5, -0.2)),
   );
 
   private readonly optimalPitchTrimLowerBoxHeight = MappedSubject.create(
