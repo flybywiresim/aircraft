@@ -2,13 +2,11 @@ use crate::fuel::{cpiom_f::FEED_TANKS, A380FuelTankType, ArincFuelQuantityProvid
 use enum_map::{enum_map, Enum};
 use nalgebra::Vector3;
 use std::sync::LazyLock;
-use uom::{
-    si::{
-        f64::{Mass, Ratio},
-        mass::kilogram,
-        ratio::percent,
-    },
-    ConstZero,
+use systems::payload::LoadsheetInfo;
+use uom::si::{
+    f64::{Mass, Ratio},
+    mass::kilogram,
+    ratio::{percent, ratio},
 };
 
 static FUEL_TANK_POSITIONS: LazyLock<[Vector3<f64>; A380FuelTankType::LENGTH]> =
@@ -30,20 +28,56 @@ static FUEL_TANK_POSITIONS: LazyLock<[Vector3<f64>; A380FuelTankType::LENGTH]> =
         .into_array()
     });
 
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+enum AlternateOption<T> {
+    #[default]
+    None,
+    Alternate(T),
+    Some(T),
+}
+impl<T> AlternateOption<T> {
+    fn value(self) -> Option<T> {
+        match self {
+            Self::Some(v) | Self::Alternate(v) => Some(v),
+            Self::None => None,
+        }
+    }
+
+    fn non_alternate_value(self) -> Option<T> {
+        match self {
+            Self::Some(v) => Some(v),
+            Self::Alternate(_) | Self::None => None,
+        }
+    }
+}
+impl<T: Copy> AlternateOption<T> {
+    fn or(self, other: Self) -> Self {
+        match (self, other) {
+            (Self::Some(_), _) => self,
+            (Self::None, Self::Some(v)) => Self::Alternate(v),
+            _ => Self::None,
+        }
+    }
+}
+impl<T> From<Option<T>> for AlternateOption<T> {
+    fn from(value: Option<T>) -> Self {
+        match value {
+            Some(v) => Self::Some(v),
+            None => Self::None,
+        }
+    }
+}
+
+#[derive(Default)]
 pub(super) struct FuelMeasuringApplication {
-    tank_quantities: [Option<Mass>; A380FuelTankType::LENGTH],
+    tank_quantities: [AlternateOption<Mass>; A380FuelTankType::LENGTH],
     total_fuel_onboard: Option<Mass>,
     total_aircraft_weight: Option<Mass>,
     center_of_gravity: Option<Ratio>,
 }
 impl FuelMeasuringApplication {
     pub(super) fn new() -> Self {
-        Self {
-            tank_quantities: [None; A380FuelTankType::LENGTH],
-            total_fuel_onboard: None,
-            total_aircraft_weight: None,
-            center_of_gravity: None,
-        }
+        Self::default()
     }
 
     pub(super) fn reset(&mut self) {
@@ -52,6 +86,7 @@ impl FuelMeasuringApplication {
 
     pub(super) fn update(
         &mut self,
+        loadsheet: &LoadsheetInfo,
         fqdc: &impl ArincFuelQuantityProvider,
         zero_fuel_weight: Option<Mass>,
         zero_fuel_weight_cg: Option<Ratio>,
@@ -59,7 +94,8 @@ impl FuelMeasuringApplication {
         // Feed tanks & Trim tank
         // In case of FQI failure we consider the trim tank to be empty
         for tank in FEED_TANKS.iter().chain(&[A380FuelTankType::Trim]).copied() {
-            self.tank_quantities[tank.into_usize()] = fqdc.get_tank_quantity(tank).normal_value();
+            self.tank_quantities[tank.into_usize()] =
+                fqdc.get_tank_quantity(tank).normal_value().into();
         }
 
         // Wing tanks
@@ -78,11 +114,11 @@ impl FuelMeasuringApplication {
 
         self.update_total_fuel_onboard();
         self.update_total_aircraft_weight(zero_fuel_weight);
-        self.update_center_of_gravity(zero_fuel_weight, zero_fuel_weight_cg);
+        self.update_center_of_gravity(loadsheet, zero_fuel_weight, zero_fuel_weight_cg);
     }
 
     pub(super) fn tank_quantity(&self, tank: A380FuelTankType) -> Option<Mass> {
-        self.tank_quantities[tank.into_usize()]
+        self.tank_quantities[tank.into_usize()].non_alternate_value()
     }
 
     pub(super) fn total_fuel_onboard(&self) -> Option<Mass> {
@@ -102,7 +138,7 @@ impl FuelMeasuringApplication {
         self.total_fuel_onboard = self
             .tank_quantities
             .iter()
-            .filter_map(|q| *q)
+            .filter_map(|q| q.value())
             .reduce(|a, b| a + b);
     }
 
@@ -115,6 +151,7 @@ impl FuelMeasuringApplication {
 
     fn update_center_of_gravity(
         &mut self,
+        loadsheet: &LoadsheetInfo,
         zero_fuel_weight: Option<Mass>,
         zero_fuel_weight_cg: Option<Ratio>,
     ) {
@@ -130,18 +167,36 @@ impl FuelMeasuringApplication {
         ) {
             // Calculate the center of gravity based on the fuel tank quantities
             // and the zero fuel weight center of gravity
-            self.tank_quantities
+            let zero_fuel_weight_moment = Self::cg_mac_to_arm(loadsheet, zero_fuel_weight_cg)
+                * zero_fuel_weight.get::<kilogram>();
+
+            let fuel_moment = self
+                .tank_quantities
                 .iter()
                 .zip(FUEL_TANK_POSITIONS.iter())
-                .map(|(q, pos)| q.map(|m| Ratio::new::<percent>(pos.x * m.get::<kilogram>())))
-                .try_fold(Ratio::ZERO, |acc, x| x.map(|x| acc + x))
-                .map(|fuel_cg| {
-                    (fuel_cg + zero_fuel_weight_cg * zero_fuel_weight.get::<kilogram>())
-                        / total_aircraft_weight.get::<kilogram>()
-                })
+                .map(|(q, pos)| q.value().map(|m| pos.x * m.get::<kilogram>()))
+                .try_fold(0., |acc, x| x.map(|x| acc + x));
+
+            fuel_moment.map(|fuel_moment| {
+                let total_moment = fuel_moment + zero_fuel_weight_moment;
+                let gross_arm = total_moment / total_aircraft_weight.get::<kilogram>();
+                Self::arm_to_cg_mac(loadsheet, gross_arm)
+            })
         } else {
             None
         };
+    }
+
+    fn cg_mac_to_arm(loadsheet: &LoadsheetInfo, cg_mac: Ratio) -> f64 {
+        -(cg_mac.get::<ratio>() * loadsheet.mean_aerodynamic_chord_size
+            - loadsheet.leading_edge_mean_aerodynamic_chord)
+    }
+
+    fn arm_to_cg_mac(loadsheet: &LoadsheetInfo, arm: f64) -> Ratio {
+        Ratio::new::<ratio>(
+            -(arm - loadsheet.leading_edge_mean_aerodynamic_chord)
+                / loadsheet.mean_aerodynamic_chord_size,
+        )
     }
 
     /// Determines the fuel quantity of the wing tanks even in case of a FQI failure.
@@ -163,8 +218,13 @@ impl FuelMeasuringApplication {
 
     /// Given two optional values, mirror the opposite
     /// when one side is missing. If both are missing, both stay `None`.
-    fn mirror_pair<T: Clone>(left: Option<T>, right: Option<T>) -> (Option<T>, Option<T>) {
-        let l = left.clone().or(right.clone());
+    fn mirror_pair<T: Copy>(
+        left: Option<T>,
+        right: Option<T>,
+    ) -> (AlternateOption<T>, AlternateOption<T>) {
+        let left: AlternateOption<T> = left.into();
+        let right: AlternateOption<T> = right.into();
+        let l = left.or(right);
         let r = right.or(left);
         (l, r)
     }
@@ -173,35 +233,93 @@ impl FuelMeasuringApplication {
 #[cfg(test)]
 mod tests {
     use super::*;
+    mod alternate_option_tests {
+        use super::*;
+        use rstest::rstest;
+
+        #[rstest]
+        #[case(AlternateOption::Some(42), Some(42))]
+        #[case(AlternateOption::Alternate(42), Some(42))]
+        #[case(AlternateOption::None, None)]
+        fn value(#[case] v: AlternateOption<i32>, #[case] expected_value: Option<i32>) {
+            assert_eq!(v.value(), expected_value);
+        }
+
+        #[rstest]
+        #[case(AlternateOption::Some(42), Some(42))]
+        #[case(AlternateOption::Alternate(42), None)]
+        #[case(AlternateOption::None, None)]
+        fn non_alternate_value(
+            #[case] v: AlternateOption<i32>,
+            #[case] expected_value: Option<i32>,
+        ) {
+            assert_eq!(v.non_alternate_value(), expected_value);
+        }
+
+        #[rstest]
+        #[case(
+            AlternateOption::Some(1),
+            AlternateOption::Some(2),
+            AlternateOption::Some(1)
+        )]
+        #[case(
+            AlternateOption::Some(1),
+            AlternateOption::Alternate(2),
+            AlternateOption::Some(1)
+        )]
+        #[case(
+            AlternateOption::Alternate(1),
+            AlternateOption::Some(2),
+            AlternateOption::None
+        )]
+        #[case(
+            AlternateOption::None,
+            AlternateOption::Some(2),
+            AlternateOption::Alternate(2)
+        )]
+        #[case(
+            AlternateOption::Some(1),
+            AlternateOption::None,
+            AlternateOption::Some(1)
+        )]
+        #[case(AlternateOption::None, AlternateOption::None, AlternateOption::None)]
+        fn or(
+            #[case] l: AlternateOption<i32>,
+            #[case] r: AlternateOption<i32>,
+            #[case] expected_value: AlternateOption<i32>,
+        ) {
+            assert_eq!(l.or(r), expected_value);
+        }
+    }
     mod mirror_pair_tests {
-        use super::FuelMeasuringApplication;
+        use super::*;
 
         #[test]
         fn both_present() {
             let (l, r) = FuelMeasuringApplication::mirror_pair(Some(10u32), Some(20));
-            assert_eq!(l, Some(10));
-            assert_eq!(r, Some(20));
+            assert_eq!(l, AlternateOption::Some(10));
+            assert_eq!(r, AlternateOption::Some(20));
         }
 
         #[test]
         fn left_missing_mirrors_right() {
             let (l, r) = FuelMeasuringApplication::mirror_pair(None, Some(20));
-            assert_eq!(l, Some(20));
-            assert_eq!(r, Some(20));
+            assert_eq!(l, AlternateOption::Alternate(20));
+            assert_eq!(r, AlternateOption::Some(20));
         }
 
         #[test]
         fn right_missing_mirrors_left() {
             let (l, r) = FuelMeasuringApplication::mirror_pair(Some(10u32), None);
-            assert_eq!(l, Some(10));
-            assert_eq!(r, Some(10));
+            assert_eq!(l, AlternateOption::Some(10));
+            assert_eq!(r, AlternateOption::Alternate(10));
         }
 
         #[test]
         fn both_missing_stay_none() {
             let (l, r) = FuelMeasuringApplication::mirror_pair::<u32>(None, None);
-            assert_eq!(l, None);
-            assert_eq!(r, None);
+            assert_eq!(l, AlternateOption::None);
+            assert_eq!(r, AlternateOption::None);
         }
     }
 }

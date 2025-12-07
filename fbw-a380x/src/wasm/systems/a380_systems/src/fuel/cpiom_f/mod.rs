@@ -13,6 +13,7 @@ use serde_with::{serde_as, DisplayFromStr};
 use std::{collections::HashMap, time::Duration};
 use systems::{
     fuel::{self, FuelPayload, RefuelRate},
+    payload::LoadsheetInfo,
     pneumatic::EngineState,
     shared::{
         arinc429::{Arinc429Word, SignStatus},
@@ -705,6 +706,7 @@ impl A380FuelQuantityManagementSystem {
         &mut self,
         context: &UpdateContext,
         fuel_system: &mut (impl SetFuelLevel + FuelPayload),
+        loadsheet: &LoadsheetInfo,
         fqdc: &(impl ArincFuelQuantityProvider + ArincFuelPumpStatusProvider),
         cpioms_available: [bool; 4],
     ) {
@@ -734,7 +736,7 @@ impl A380FuelQuantityManagementSystem {
         let fms_zfwcg = self.get_fms_data_and_update_status(self.fms_zero_fuel_weight_cgs);
 
         self.fuel_measuring_application
-            .update(fqdc, fms_zfw, fms_zfwcg);
+            .update(loadsheet, fqdc, fms_zfw, fms_zfwcg);
     }
 
     fn reset(&mut self) {

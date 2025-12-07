@@ -333,7 +333,8 @@ impl Aircraft for A380 {
         self.icing_simulation.update(context);
 
         self.egpwc.update(&self.adirs, self.lgcius.lgciu1());
-        self.fuel.update(context, &self.adcn);
+        self.fuel
+            .update(context, &self.adcn, A380Airframe::get_loadsheet());
 
         self.engine_reverser_control[0].update(
             &self.engine_2,

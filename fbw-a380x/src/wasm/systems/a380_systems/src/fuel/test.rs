@@ -5,9 +5,12 @@ use systems::{electrical::Electricity, fuel::RefuelRate, simulation::test::ReadB
 use uom::si::mass::kilogram;
 
 use super::*;
-use crate::systems::simulation::{
-    test::{SimulationTestBed, TestBed, WriteByName},
-    Aircraft, SimulationElement, SimulationElementVisitor,
+use crate::{
+    airframe::A380Airframe,
+    systems::simulation::{
+        test::{SimulationTestBed, TestBed, WriteByName},
+        Aircraft, SimulationElement, SimulationElementVisitor,
+    },
 };
 struct FuelTestAircraft {
     acdn: A380AvionicsDataCommunicationNetwork,
@@ -38,7 +41,8 @@ impl Aircraft for FuelTestAircraft {
         _electricity: &mut Electricity,
     ) {
         self.acdn.update();
-        self.fuel.update(context, &self.acdn);
+        self.fuel
+            .update(context, &self.acdn, A380Airframe::get_loadsheet());
     }
 }
 impl SimulationElement for FuelTestAircraft {

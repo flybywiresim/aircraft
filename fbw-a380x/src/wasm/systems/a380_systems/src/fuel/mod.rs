@@ -13,6 +13,7 @@ use systems::{
     accept_iterable,
     fuel::{FuelCG, FuelInfo, FuelPayload, FuelPump, FuelPumpProperties, FuelSystem},
     integrated_modular_avionics::AvionicsDataCommunicationNetwork,
+    payload::LoadsheetInfo,
     shared::{arinc429::Arinc429Word, ElectricalBusType},
     simulation::{InitContext, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
@@ -152,6 +153,7 @@ impl A380Fuel {
         &mut self,
         context: &UpdateContext,
         acdn: &A380AvionicsDataCommunicationNetwork,
+        loadsheet: &LoadsheetInfo,
     ) {
         let cpioms = ["F1", "F2", "F3", "F4"].map(|id| acdn.get_cpiom(id));
         for fqdc in &mut self.fuel_quantity_data_concentrators {
@@ -160,6 +162,7 @@ impl A380Fuel {
         self.fuel_quantity_management_system.update(
             context,
             &mut self.fuel_system,
+            loadsheet,
             &self.fuel_quantity_data_concentrators[0], // TODO
             cpioms.map(|cpiom| cpiom.is_available()),
         );
