@@ -53,8 +53,8 @@ class EngineControl_A380X {
   static constexpr double TRANSITION_WAIT_TIME = 10;
 
   // values that need previous state
-  double prevFlexTemperature = 0.0;
-  double prevThrustLimitType = 0.0;
+  double latchedFlexTemperature = 0.0;
+  double prevThrustLimitType    = 0.0;
 
   // FLX->CLB thrust limit transition
   bool   wasFlexActive;
