@@ -32,7 +32,7 @@ export class ClientState {
   private available: boolean = false;
 
   // SimBridge Connect setting
-  private simBridgeEnabledSetting: string = 'AUTO ON';
+  private simBridgeEnabledSetting: string | undefined = 'AUTO ON';
 
   // counter for failed connection attempts
   private connectionAttemptCounter: number = 0;
@@ -50,7 +50,7 @@ export class ClientState {
   private constructor() {
     // Subscribe to the SimBridge Enabled setting to be notified when it changes. Otherwise, we would
     // only be able to check each check interval (5sec)
-    NXDataStore.getAndSubscribe(
+    NXDataStore.getAndSubscribeLegacy(
       'CONFIG_SIMBRIDGE_ENABLED',
       (key, value) => {
         // console.log(`[SimBridge-Client] SimBridge Enabled setting changed to: ${value}`);
@@ -62,14 +62,14 @@ export class ClientState {
     );
     // Subscribe to the SimBridge Remote setting so we can instantly re-establish connection
     // when we change this
-    NXDataStore.subscribe('CONFIG_SIMBRIDGE_REMOTE', (_) => {
+    NXDataStore.subscribeLegacy('CONFIG_SIMBRIDGE_REMOTE', (_) => {
       this.connectionAttemptCounter = 0;
       this.checkServerAvailability();
     });
 
     // reset the setting if not permanent off
     if (this.simBridgeEnabledSetting !== 'PERM OFF') {
-      NXDataStore.set('CONFIG_SIMBRIDGE_ENABLED', 'AUTO ON');
+      NXDataStore.setLegacy('CONFIG_SIMBRIDGE_ENABLED', 'AUTO ON');
     }
 
     // Try to connect websocket if enabled in EFB and no connection established
@@ -156,7 +156,7 @@ export class ClientState {
     // prevent the client from trying to connect to the server again. The user can reset the setting to AUTO ON
     // in the flyPad EFB to try again.
     if (this.connectionAttemptCounter++ >= this.maxSimBridgeConnectionAttempts) {
-      NXDataStore.set('CONFIG_SIMBRIDGE_ENABLED', 'AUTO OFF');
+      NXDataStore.setLegacy('CONFIG_SIMBRIDGE_ENABLED', 'AUTO OFF');
       this.connectionAttemptCounter = 0;
     } else {
       // try to connect to the server

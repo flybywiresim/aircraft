@@ -19,10 +19,12 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { A380AltitudeUtils } from '@shared/OperatingAltitudes';
 import { AtsuStatusCodes } from '@datalink/common';
 import { FmsRouterMessages } from '@datalink/router';
-
-import './MfdFmsInit.scss';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { CostIndexMode } from '../../FMC/fmgc';
 import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
+import { showReturnButtonUriExtra } from '../../shared/utils';
+
+import './MfdFmsInit.scss';
 
 interface MfdFmsInitProps extends AbstractMfdPageProps {}
 
@@ -202,15 +204,16 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
       this.altnIcao.set(this.loadedFlightPlan.originAirport && this.loadedFlightPlan.destinationAirport ? 'NONE' : '');
     }
 
-    this.crzFl.set(this.loadedFlightPlan.performanceData.cruiseFlightLevel);
+    this.crzFl.set(this.loadedFlightPlan.performanceData.cruiseFlightLevel.get());
     this.crzFlIsMandatory.set(this.props.fmcService.master.fmgc.getFlightPhase() < FmgcFlightPhase.Descent);
-    if (this.loadedFlightPlan.performanceData.cruiseFlightLevel) {
+    const cruiseLevel = this.loadedFlightPlan.performanceData.cruiseFlightLevel.get();
+    if (cruiseLevel) {
       this.props.fmcService.master.fmgc.data.cruiseTemperatureIsaTemp.set(
-        A380AltitudeUtils.getIsaTemp(this.loadedFlightPlan.performanceData.cruiseFlightLevel * 100),
+        A380AltitudeUtils.getIsaTemp(cruiseLevel * 100),
       );
     }
 
-    this.costIndex.set(this.loadedFlightPlan.performanceData.costIndex);
+    this.costIndex.set(this.loadedFlightPlan.performanceData.costIndex.get());
 
     // Set some empty fields with pre-defined values
     if (this.fromIcao.get() && this.toIcao.get()) {
@@ -558,7 +561,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
             </div>
             <Button
               label="NAVAIDS"
-              onClick={() => this.props.mfd.uiService.navigateTo('fms/position/navaids')}
+              onClick={() => this.props.mfd.uiService.navigateTo(`fms/position/navaids/${showReturnButtonUriExtra}`)}
               buttonStyle="width: 160px; margin-left: 150px; margin-bottom: 10px;"
             />
             <Button

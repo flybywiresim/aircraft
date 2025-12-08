@@ -59,7 +59,7 @@ import { Coordinates, distanceTo, placeBearingDistance } from 'msfs-geo';
 import { AdirsSimVars } from 'instruments/src/MsfsAvionicsCommon/SimVarTypes';
 import { InternalKccuKeyEvent } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { NDSimvars } from 'instruments/src/ND/NDSimvarPublisher';
-import { Feature, Geometry, LineString, Point, Position } from '@turf/turf';
+import { Feature, Geometry, LineString, Point, Position } from 'geojson';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
 import { ResetPanelSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/ResetPanelPublisher';
@@ -268,7 +268,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
       this.activeDatabase.set(`${from.getDate()}${months[from.getMonth()]}-${to.getDate()}${months[to.getMonth()]}`);
     });
 
-    NXDataStore.getAndSubscribe('NAVIGRAPH_ACCESS_TOKEN', () => this.loadOansDb());
+    NXDataStore.getAndSubscribeLegacy('NAVIGRAPH_ACCESS_TOKEN', () => this.loadOansDb());
 
     this.subs.push(
       this.props.isVisible.sub((it) => this.style.setValue('visibility', it ? 'inherit' : 'hidden'), true),
@@ -311,7 +311,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
       }, true),
     );
 
-    this.oansPerformanceModeSettingSub = NXDataStore.getAndSubscribe(
+    this.oansPerformanceModeSettingSub = NXDataStore.getAndSubscribeLegacy(
       'CONFIG_A380X_OANS_PERFORMANCE_MODE',
       (_, v) => this.oansPerformanceMode.set(v === '1'),
       '0',

@@ -7,12 +7,13 @@
 import { Airport, areDatabaseItemsEqual, LegType, MathUtils as FbwMathUtils, Runway } from '@flybywiresim/fbw-sdk';
 import { loadAirport, loadAllDepartures, loadAllRunways, loadRunway } from '@fmgc/flightplanning/DataLoading';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
-import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/BaseFlightPlan';
+import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { bearingTo } from 'msfs-geo';
 import { MathUtils as MsMathUtils } from '@microsoft/msfs-sdk';
 import { RestringOptions } from '../plans/RestringOptions';
 import { FlightPlanElement, FlightPlanLeg, FlightPlanLegFlags } from '../legs/FlightPlanLeg';
 import { NavigationDatabaseService } from '../NavigationDatabaseService';
+import { FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/FlightPlanQueuedOperation';
 import { TerminalSegment } from '@fmgc/flightplanning/segments/TerminalSegment';
 
 export class OriginSegment extends TerminalSegment {
@@ -198,11 +199,13 @@ export class OriginSegment extends TerminalSegment {
     this.flightPlan.syncSegmentLegsChange(this);
   }
 
-  clone(forPlan: BaseFlightPlan): OriginSegment {
+  clone(forPlan: BaseFlightPlan, options?: number): OriginSegment {
     const newSegment = new OriginSegment(forPlan);
 
     newSegment.strung = this.strung;
-    newSegment.allLegs = [...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment) : it))];
+    newSegment.allLegs = [
+      ...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment, options) : it)),
+    ];
     newSegment.airport = this.airport;
     newSegment.runway = this.runway;
 

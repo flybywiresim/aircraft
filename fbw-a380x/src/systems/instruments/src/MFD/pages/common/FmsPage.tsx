@@ -201,16 +201,16 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
         fm?.vSpeedsForRunway.set(this.loadedFlightPlan.originRunway.ident);
       } else if (fm.vSpeedsForRunway.get() !== this.loadedFlightPlan.originRunway.ident) {
         fm.vSpeedsForRunway.set(this.loadedFlightPlan.originRunway.ident);
-        fm.v1ToBeConfirmed.set(pd?.v1 ?? null);
+        fm.v1ToBeConfirmed.set(pd?.v1.get() ?? null);
         fps?.setPerformanceData('v1', null, this.loadedFlightPlanIndex.get());
-        fm.vrToBeConfirmed.set(pd?.vr ?? null);
+        fm.vrToBeConfirmed.set(pd?.vr.get() ?? null);
         fps?.setPerformanceData('vr', null, this.loadedFlightPlanIndex.get());
-        fm.v2ToBeConfirmed.set(pd?.v2 ?? null);
+        fm.v2ToBeConfirmed.set(pd?.v2.get() ?? null);
         fps?.setPerformanceData('v2', null, this.loadedFlightPlanIndex.get());
 
         this.props.fmcService.master?.addMessageToQueue(
           NXSystemMessages.checkToData,
-          () => this.loadedFlightPlan?.performanceData.vr !== null,
+          () => this.loadedFlightPlan?.performanceData.vr.get() !== null,
           undefined,
         );
       }

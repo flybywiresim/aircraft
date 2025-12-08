@@ -11,6 +11,8 @@ import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
 import { LegCalculations } from './FlightPlanLeg';
 
 export interface ReadonlyFlightPlanLeg {
+  readonly uuid: string;
+
   readonly isDiscontinuity: false;
 
   readonly type: LegType;
