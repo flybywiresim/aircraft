@@ -85,7 +85,8 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
     }
 
     const isAltn = this.props.fmcService.master.revisedLegIsAltn.get() ?? false;
-    const flightPlan = isAltn ? this.loadedFlightPlan.alternateFlightPlan : this.loadedFlightPlan;
+    const flightPlan =
+      isAltn && this.loadedAlternateFlightPlan ? this.loadedAlternateFlightPlan : this.loadedFlightPlan;
 
     if (flightPlan.destinationAirport) {
       this.toIcao.set(flightPlan.destinationAirport.ident);
@@ -96,17 +97,17 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
         runways.push({
           label: `${rw.ident.substring(4).padEnd(3, ' ')} ${rw.length.toFixed(0).padStart(5, ' ')}M`,
           action: async () => {
-            await this.props.fmcService.master?.flightPlanService.setDestinationRunway(
+            await this.props.fmcService.master?.flightPlanInterface.setDestinationRunway(
               rw.ident,
               this.loadedFlightPlanIndex.get(),
               isAltn,
             );
-            await this.props.fmcService.master?.flightPlanService.setApproach(
+            await this.props.fmcService.master?.flightPlanInterface.setApproach(
               undefined,
               this.loadedFlightPlanIndex.get(),
               isAltn,
             );
-            await this.props.fmcService.master?.flightPlanService.setApproachVia(
+            await this.props.fmcService.master?.flightPlanInterface.setApproachVia(
               undefined,
               this.loadedFlightPlanIndex.get(),
               isAltn,
@@ -131,12 +132,12 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
           {
             label: 'NONE',
             action: async () => {
-              await this.props.fmcService.master?.flightPlanService.setApproach(
+              await this.props.fmcService.master?.flightPlanInterface.setApproach(
                 undefined,
                 this.loadedFlightPlanIndex.get(),
                 isAltn,
               );
-              await this.props.fmcService.master?.flightPlanService.setApproachVia(
+              await this.props.fmcService.master?.flightPlanInterface.setApproachVia(
                 undefined,
                 this.loadedFlightPlanIndex.get(),
                 isAltn,
@@ -167,17 +168,17 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
           appr.push({
             label: getApproachName(el),
             action: async () => {
-              await this.props.fmcService.master?.flightPlanService.setDestinationRunway(
+              await this.props.fmcService.master?.flightPlanInterface.setDestinationRunway(
                 el.runwayIdent ?? '',
                 this.loadedFlightPlanIndex.get(),
                 isAltn,
               ); // Should we do this here?
-              await this.props.fmcService.master?.flightPlanService.setApproach(
+              await this.props.fmcService.master?.flightPlanInterface.setApproach(
                 el.databaseId,
                 this.loadedFlightPlanIndex.get(),
                 isAltn,
               );
-              await this.props.fmcService.master?.flightPlanService.setApproachVia(
+              await this.props.fmcService.master?.flightPlanInterface.setApproachVia(
                 undefined,
                 this.loadedFlightPlanIndex.get(),
                 isAltn,
@@ -209,7 +210,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
             {
               label: 'NONE',
               action: async () => {
-                await this.props.fmcService.master?.flightPlanService.setApproachVia(
+                await this.props.fmcService.master?.flightPlanInterface.setApproachVia(
                   undefined,
                   this.loadedFlightPlanIndex.get(),
                   isAltn,
@@ -233,7 +234,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
               vias.push({
                 label: isRnp ? `${via.ident} (RNP)` : via.ident,
                 action: async () => {
-                  await this.props.fmcService.master?.flightPlanService.setApproachVia(
+                  await this.props.fmcService.master?.flightPlanInterface.setApproachVia(
                     via.databaseId,
                     this.loadedFlightPlanIndex.get(),
                     isAltn,
@@ -271,12 +272,12 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
           {
             label: 'NONE',
             action: async () => {
-              await this.props.fmcService.master?.flightPlanService.setArrival(
+              await this.props.fmcService.master?.flightPlanInterface.setArrival(
                 undefined,
                 this.loadedFlightPlanIndex.get(),
                 isAltn,
               );
-              await this.props.fmcService.master?.flightPlanService.setArrivalEnrouteTransition(
+              await this.props.fmcService.master?.flightPlanInterface.setArrivalEnrouteTransition(
                 undefined,
                 this.loadedFlightPlanIndex.get(),
                 isAltn,
@@ -289,12 +290,12 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
           const arr: ButtonMenuItem = {
             label: el.ident,
             action: async () => {
-              await this.props.fmcService.master?.flightPlanService.setArrival(
+              await this.props.fmcService.master?.flightPlanInterface.setArrival(
                 el.databaseId,
                 this.loadedFlightPlanIndex.get(),
                 isAltn,
               );
-              await this.props.fmcService.master?.flightPlanService.setArrivalEnrouteTransition(
+              await this.props.fmcService.master?.flightPlanInterface.setArrivalEnrouteTransition(
                 undefined,
                 this.loadedFlightPlanIndex.get(),
                 isAltn,
@@ -336,7 +337,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
             {
               label: 'NONE',
               action: async () => {
-                await this.props.fmcService.master?.flightPlanService.setArrivalEnrouteTransition(
+                await this.props.fmcService.master?.flightPlanInterface.setArrivalEnrouteTransition(
                   undefined,
                   this.loadedFlightPlanIndex.get(),
                   isAltn,
@@ -348,7 +349,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
             trans.push({
               label: el.ident,
               action: async () => {
-                await this.props.fmcService.master?.flightPlanService.setArrivalEnrouteTransition(
+                await this.props.fmcService.master?.flightPlanInterface.setArrivalEnrouteTransition(
                   el.databaseId,
                   this.loadedFlightPlanIndex.get(),
                   isAltn,

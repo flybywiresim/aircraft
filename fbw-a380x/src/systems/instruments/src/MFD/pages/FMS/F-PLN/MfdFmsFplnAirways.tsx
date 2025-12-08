@@ -1,4 +1,4 @@
-﻿import { ComponentProps, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+﻿import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 
 import './MfdFmsFplnAirways.scss';
 import '../../common/style.scss';
@@ -15,7 +15,8 @@ import { FmcInterface } from 'instruments/src/MFD/FMC/FmcInterface';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { Fix } from '@flybywiresim/fbw-sdk';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
-import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
+import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 
 interface MfdFmsFplnAirwaysProps extends AbstractMfdPageProps {}
 
@@ -55,6 +56,7 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
             mfd={this.props.mfd}
             tmpyActive={this.tmpyActive}
             loadedFlightPlan={this.loadedFlightPlan}
+            loadedFlightPlanIndex={this.loadedFlightPlanIndex}
             fromFix={fromFix}
             isFirstLine={false}
             nextLineCallback={(fix) => this.renderNextLine(fix)}
@@ -90,6 +92,7 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
           mfd={this.props.mfd}
           tmpyActive={this.tmpyActive}
           loadedFlightPlan={this.loadedFlightPlan}
+          loadedFlightPlanIndex={this.loadedFlightPlanIndex}
           fromFix={revWpt}
           isFirstLine
           nextLineCallback={(fix) => this.renderNextLine(fix)}
@@ -152,8 +155,9 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
               label="TMPY F-PLN"
               onClick={async () => {
                 if (this.loadedFlightPlan) {
-                  await this.loadedFlightPlan.finaliseAirwayEntry();
-                  this.loadedFlightPlan.pendingAirways = undefined; // Reset, so it's not finalized twice when performing tmpy insert
+                  await this.props.fmcService.master?.flightPlanInterface.finaliseAirwayEntry(
+                    this.loadedFlightPlanIndex.get(),
+                  );
                   this.props.fmcService.master?.resetRevisedWaypoint();
                   this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln`);
                 }
@@ -173,7 +177,8 @@ interface AirwayLineProps extends ComponentProps {
   fmc: FmcInterface;
   mfd: FmsDisplayInterface & MfdDisplayInterface;
   tmpyActive: Subject<boolean>;
-  loadedFlightPlan: FlightPlan;
+  loadedFlightPlan: ReadonlyFlightPlan;
+  loadedFlightPlanIndex: Subscribable<FlightPlanIndex>;
   fromFix: Fix;
   isFirstLine: boolean;
   nextLineCallback: (f: Fix) => void;
@@ -214,7 +219,10 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
                 return false;
               }
 
-              const success = await this.props.loadedFlightPlan.continueAirwayEntryViaAirway(airways[0]);
+              const success = await this.props.fmc.flightPlanInterface.continueAirwayEntryViaAirway(
+                airways[0],
+                this.props.loadedFlightPlanIndex.get(),
+              );
               if (success) {
                 this.viaFieldDisabled.set(true);
                 this.toFieldDisabled.set(false);
@@ -282,7 +290,11 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
                 return false;
               }
 
-              const success = await this.props.loadedFlightPlan.continueAirwayEntryToFix(chosenFix, isDct);
+              const success = await this.props.fmc.flightPlanInterface.continueAirwayEntryToFix(
+                chosenFix,
+                isDct,
+                this.props.loadedFlightPlanIndex.get(),
+              );
               if (success) {
                 this.toFieldDisabled.set(true);
                 this.props.nextLineCallback(chosenFix);

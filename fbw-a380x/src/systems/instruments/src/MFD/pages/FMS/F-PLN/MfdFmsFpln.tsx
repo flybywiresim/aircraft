@@ -41,6 +41,7 @@ import {
 import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
 import { ConditionalComponent } from '../../../../MsfsAvionicsCommon/UiWidgets/ConditionalComponent';
 import { InternalKccuKeyEvent } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
+import { ReadonlyFlightPlanElement } from '@fmgc/flightplanning/legs/ReadonlyFlightPlanLeg';
 
 interface MfdFmsFplnProps extends AbstractMfdPageProps {}
 
@@ -292,7 +293,9 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       let lastDistanceFromStart: number = 0;
       let lastLegLatLong: Coordinates = { lat: 0, long: 0 };
       // Construct leg data for all legs
-      const jointFlightPlan = this.loadedFlightPlan.allLegs.concat(this.loadedFlightPlan.alternateFlightPlan.allLegs);
+      const jointFlightPlan = this.loadedFlightPlan.allLegs.concat(
+        this.loadedAlternateFlightPlan?.allLegs as ReadonlyFlightPlanElement[],
+      );
 
       if (!jointFlightPlan.length) {
         return;
@@ -313,7 +316,10 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
         if (
           el instanceof FlightPlanLeg &&
-          index < (this.loadedFlightPlan?.legCount ?? 0) + (this.loadedFlightPlan?.alternateFlightPlan.legCount ?? 0)
+          index <
+            (this.loadedFlightPlan?.legCount ?? 0) +
+              (this.props.fmcService.master?.flightPlanInterface.get(this.loadedFlightPlanIndex.get())
+                .alternateFlightPlan.legCount ?? 0)
         ) {
           if (index === 0 || el.calculated === undefined) {
             newEl.distanceFromLastWpt = null;
@@ -365,7 +371,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             isPseudoWaypoint: true,
             isAltnWaypoint: isAltn,
             isMissedAppchWaypoint: isAltn
-              ? i >= (this.loadedFlightPlan.alternateFlightPlan.firstMissedApproachLegIndex ?? Infinity)
+              ? i >= (this.loadedAlternateFlightPlan?.firstMissedApproachLegIndex ?? Infinity)
               : i >= (this.loadedFlightPlan?.firstMissedApproachLegIndex ?? Infinity),
             ident: pwp.mcduIdent ?? pwp.ident,
             overfly: false,
@@ -397,13 +403,8 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           const transAlt = this.loadedFlightPlan.performanceData.transitionAltitude;
           const transLevel = this.loadedFlightPlan.performanceData.transitionLevel;
           const transLevelAsAlt = transLevel !== null && transLevel !== undefined ? transLevel * 100 : null;
-          const useTransLevel =
-            i >=
-            this.loadedFlightPlan.originSegment.legCount +
-              this.loadedFlightPlan.enrouteSegment.legCount +
-              this.loadedFlightPlan.departureSegment.legCount +
-              this.loadedFlightPlan.departureRunwayTransitionSegment.legCount +
-              this.loadedFlightPlan.departureEnrouteTransitionSegment.legCount;
+          const useTransLevel = i >= this.loadedFlightPlan.lastEnrouteLegIndex;
+          const firstMissedApproachLegIndex = this.loadedAlternateFlightPlan?.firstMissedApproachLegIndex ?? 0;
 
           if (leg.type === LegType.HM) {
             // Insert special HM line, TODO
@@ -413,7 +414,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
               isPseudoWaypoint: false,
               isAltnWaypoint: isAltn,
               isMissedAppchWaypoint: isAltn
-                ? i >= this.loadedFlightPlan.alternateFlightPlan.firstMissedApproachLegIndex
+                ? i >= firstMissedApproachLegIndex
                 : i >= this.loadedFlightPlan.firstMissedApproachLegIndex,
               ident: leg.definition.turnDirection === TurnDirection.Left ? 'HOLD L' : 'HOLD R',
               distFromLastWpt: leg.definition.length ?? null,
@@ -433,7 +434,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             isPseudoWaypoint: false,
             isAltnWaypoint: isAltn,
             isMissedAppchWaypoint: isAltn
-              ? i >= this.loadedFlightPlan.alternateFlightPlan.firstMissedApproachLegIndex
+              ? i >= firstMissedApproachLegIndex
               : i >= this.loadedFlightPlan.firstMissedApproachLegIndex,
             ident: leg.ident,
             overfly: leg.definition.overfly,
@@ -481,13 +482,13 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         if (i === this.loadedFlightPlan.allLegs.length - 1) {
           this.lineData.push(this.endOfFlightPlan);
 
-          if (this.loadedFlightPlan.alternateFlightPlan.allLegs.length === 0) {
+          if (this.loadedAlternateFlightPlan?.allLegs.length === 0) {
             this.lineData.push(this.noAlternateFlightPlan);
           }
         }
 
         // Identify end of ALTN F-PLN
-        if (this.loadedFlightPlan.alternateFlightPlan.allLegs.length > 0 && i === jointFlightPlan.length - 1) {
+        if ((this.loadedAlternateFlightPlan?.allLegs.length ?? 0) > 0 && i === jointFlightPlan.length - 1) {
           this.lineData.push({ type: FplnLineType.Special, originalLegIndex: null, label: 'END OF ALTN F-PLN' });
         }
       }
@@ -637,7 +638,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
   private openRevisionsMenu(legIndex: number, altnFlightPlan: boolean) {
     if (!this.revisionsMenuOpened.get()) {
-      const flightPlan = altnFlightPlan ? this.loadedFlightPlan?.alternateFlightPlan : this.loadedFlightPlan;
+      const flightPlan = altnFlightPlan ? this.loadedAlternateFlightPlan : this.loadedFlightPlan;
       const leg = flightPlan?.elementAt(legIndex);
       this.props.fmcService.master?.setRevisedWaypoint(legIndex, this.loadedFlightPlanIndex.get(), altnFlightPlan);
 
@@ -664,7 +665,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
   public openInsertNextWptFromWindow() {
     const flightPlan = this.props.fmcService.master?.revisedLegIsAltn.get()
-      ? this.loadedFlightPlan?.alternateFlightPlan
+      ? this.loadedAlternateFlightPlan
       : this.loadedFlightPlan;
     const wpt: NextWptInfo[] = flightPlan?.allLegs
       .map((el, idx) => {
@@ -978,7 +979,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                   <span style="display: flex; align-items: center; justify-content: center;">*</span>
                 </div>,
               )}
-              onClick={() => this.props.fmcService.master?.flightPlanService.temporaryDelete()}
+              onClick={() => this.props.fmcService.master?.flightPlanInterface.temporaryDelete()}
               buttonStyle="color: #e68000; padding-right: 2px;"
             />
             <Button
@@ -992,7 +993,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                   <span style="display: flex; align-items: center; justify-content: center;">*</span>
                 </div>,
               )}
-              onClick={() => this.props.fmcService.master?.flightPlanService.temporaryInsert()}
+              onClick={() => this.props.fmcService.master?.flightPlanInterface.temporaryInsert()}
               buttonStyle="color: #e68000; padding-right: 2px;"
             />
           </div>

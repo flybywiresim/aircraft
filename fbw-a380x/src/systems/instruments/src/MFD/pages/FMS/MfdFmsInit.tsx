@@ -15,10 +15,7 @@ import {
 import { Button, ButtonMenuItem } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { maxCertifiedAlt } from '@shared/PerformanceConstants';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
-import { ISimbriefData, logTroubleshootingError, NXDataStore } from '@flybywiresim/fbw-sdk';
-import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/uplink/SimBriefUplinkAdapter';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { NXFictionalMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
 import { A380AltitudeUtils } from '@shared/OperatingAltitudes';
 import { AtsuStatusCodes } from '@datalink/common';
 import { FmsRouterMessages } from '@datalink/router';
@@ -30,8 +27,6 @@ import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Dropd
 interface MfdFmsInitProps extends AbstractMfdPageProps {}
 
 export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
-  private simBriefOfp: ISimbriefData | null = null;
-
   private readonly cpnyFplnButtonLabel = this.props.fmcService.master
     ? this.props.fmcService.master.fmgc.data.cpnyFplnAvailable.map((it) => {
         if (!it) {
@@ -57,11 +52,11 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     ? this.props.fmcService.master.fmgc.data.cpnyFplnAvailable.map((it) =>
         it
           ? [
-              { label: 'INSERT*', action: () => this.insertCpnyFpln() },
+              { label: 'INSERT*', action: () => this.props.fmcService.master?.insertCpnyFpln() },
               {
                 label: 'CLEAR*',
                 action: () => {
-                  this.props.fmcService.master?.flightPlanService.uplinkDelete();
+                  this.props.fmcService.master?.flightPlanInterface.uplinkDelete();
                   this.props.fmcService.master?.fmgc.data.cpnyFplnAvailable.set(false);
                 },
               },
@@ -155,7 +150,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
         this.props.fmcService.master.fmgc.data.atcCallsign.sub((c) => {
           if (c) {
             this.connectToNetworks(c);
-            this.loadedFlightPlan?.setFlightNumber(c);
+            this.props.fmcService.master?.flightPlanInterface.setFlightNumber(c, this.loadedFlightPlanIndex.get());
           } else {
             this.disconnectFromNetworks();
           }
@@ -188,8 +183,8 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     }
 
     this.props.fmcService.master.fmgc.data.cpnyFplnAvailable.set(
-      this.props.fmcService.master.flightPlanService.hasUplink &&
-        this.props.fmcService.master.flightPlanService.uplink.legCount > 0,
+      this.props.fmcService.master.flightPlanInterface.hasUplink &&
+        this.props.fmcService.master.flightPlanInterface.uplink.legCount > 0,
     );
 
     // Update internal subjects for display purposes or input fields
@@ -201,8 +196,8 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
       this.toIcao.set(this.loadedFlightPlan.destinationAirport.ident);
     }
 
-    if (this.loadedFlightPlan.alternateDestinationAirport) {
-      this.altnIcao.set(this.loadedFlightPlan.alternateDestinationAirport.ident);
+    if (this.loadedAlternateFlightPlan?.destinationAirport) {
+      this.altnIcao.set(this.loadedAlternateFlightPlan.destinationAirport.ident);
     } else {
       this.altnIcao.set(this.loadedFlightPlan.originAirport && this.loadedFlightPlan.destinationAirport ? 'NONE' : '');
     }
@@ -229,84 +224,20 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     }
   }
 
-  private async cpnyFplnRequest() {
-    if (!this.props.fmcService.master) {
-      return;
-    }
-
-    const navigraphUsername = NXDataStore.get('NAVIGRAPH_USERNAME', '');
-    const overrideSimBriefUserID = NXDataStore.get('CONFIG_OVERRIDE_SIMBRIEF_USERID', '');
-
-    if (!navigraphUsername && !overrideSimBriefUserID) {
-      this.props.fmcService.master.addMessageToQueue(NXFictionalMessages.noNavigraphUser, undefined, undefined);
-      throw new Error('No Navigraph username provided');
-    }
-
-    this.simBriefOfp = await SimBriefUplinkAdapter.downloadOfpForUserID(navigraphUsername, overrideSimBriefUserID);
-
-    try {
-      SimBriefUplinkAdapter.uplinkFlightPlanFromSimbrief(
-        this.props.fmcService.master,
-        this.props.fmcService.master.flightPlanService,
-        this.simBriefOfp,
-        { doUplinkProcedures: false },
-      );
-    } catch (e) {
-      console.error(e);
-      logTroubleshootingError(this.props.bus, e);
-    }
-  }
-
   private async cityPairModified() {
     const fromIcao = this.fromIcao.get();
     const toIcao = this.toIcao.get();
     const cityPairIsDifferent =
-      fromIcao !== this.props.fmcService.master?.flightPlanService.active.originAirport?.ident ||
-      toIcao !== this.props.fmcService.master.flightPlanService.active.destinationAirport?.ident;
+      fromIcao !== this.props.fmcService.master?.flightPlanInterface.active.originAirport?.ident ||
+      toIcao !== this.props.fmcService.master.flightPlanInterface.active.destinationAirport?.ident;
     if (fromIcao && toIcao && cityPairIsDifferent) {
-      await this.props.fmcService.master?.flightPlanService.newCityPair(
+      await this.props.fmcService.master?.flightPlanInterface.newCityPair(
         fromIcao,
         toIcao,
         this.altnIcao.get() ?? undefined,
       );
       this.props.fmcService.master?.acInterface.updateFmsData();
     }
-  }
-
-  private async insertCpnyFpln() {
-    if (!this.props.fmcService.master) {
-      return;
-    }
-
-    try {
-      this.props.fmcService.master.flightPlanService.uplinkInsert();
-    } catch (e) {
-      console.error(e);
-      logTroubleshootingError(this.props.bus, e);
-    }
-    this.props.fmcService.master?.acInterface.updateFmsData();
-    this.props.fmcService.master.fmgc.data.atcCallsign.set(this.simBriefOfp?.callsign ?? '----------');
-
-    // Don't insert weights for now, something seems broken here
-    /* this.props.fmService.fmgc.data.blockFuel.set(this.simBriefOfp.units === 'kgs' ? this.simBriefOfp.fuel.planRamp : Units.poundToKilogram(this.simBriefOfp.fuel.planRamp));
-        this.props.fmService.fmgc.data.zeroFuelWeight.set(this.simBriefOfp.units === 'kgs'
-            ? Number(this.simBriefOfp.weights.estZeroFuelWeight)
-            : Units.poundToKilogram(Number(this.simBriefOfp.weights.estZeroFuelWeight)));
-        this.props.fmService.fmgc.data.taxiFuelPilotEntry.set(this.simBriefOfp.units === 'kgs' ? this.simBriefOfp.fuel.taxi : Units.poundToKilogram(this.simBriefOfp.fuel.taxi));
-        this.props.fmService.fmgc.data.alternateFuelPilotEntry.set(this.simBriefOfp.units === 'kgs' ? this.simBriefOfp.alternate.burn : Units.poundToKilogram(this.simBriefOfp.alternate.burn));
-        this.props.fmService.fmgc.data.finalFuelWeightPilotEntry.set(this.simBriefOfp.units === 'kgs' ? this.simBriefOfp.fuel.reserve : Units.poundToKilogram(this.simBriefOfp.fuel.reserve));
-        */
-
-    this.props.fmcService.master.fmgc.data.paxNumber.set(Number(this.simBriefOfp?.weights?.passengerCount ?? null));
-    this.props.fmcService.master.fmgc.data.tropopausePilotEntry.set(
-      this.simBriefOfp?.averageTropopause ? Number(this.simBriefOfp.averageTropopause) : null,
-    );
-
-    if (this.simBriefOfp?.cruiseAltitude) {
-      this.props.fmcService.master.acInterface.setCruiseFl(this.simBriefOfp.cruiseAltitude / 100);
-    }
-
-    this.props.fmcService.master.fmgc.data.cpnyFplnAvailable.set(false);
   }
 
   private requestId = 0;
@@ -373,7 +304,9 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 label={this.cpnyFplnButtonLabel}
                 disabled={this.props.fmcService.master.fmgc.data.cpnyFplnUplinkInProgress}
                 onClick={() =>
-                  this.props.fmcService.master?.fmgc.data.cpnyFplnAvailable.get() ? {} : this.cpnyFplnRequest()
+                  this.props.fmcService.master?.fmgc.data.cpnyFplnAvailable.get()
+                    ? {}
+                    : this.props.fmcService.master?.cpnyFplnRequest()
                 }
                 buttonStyle="width: 175px;"
                 idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_fplnreq`}
@@ -420,7 +353,10 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 dataHandlerDuringValidation={async (v) => {
                   this.altnIcao.set(v);
                   if (v) {
-                    await this.props.fmcService.master?.flightPlanService.setAlternate(v);
+                    await this.props.fmcService.master?.flightPlanInterface.setAlternate(
+                      v,
+                      this.loadedFlightPlanIndex.get(),
+                    );
                     this.props.fmcService.master?.acInterface.updateFmsData();
                   }
                 }}
@@ -553,7 +489,11 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 <InputField<number>
                   dataEntryFormat={new CostIndexFormat()}
                   dataHandlerDuringValidation={async (v) => {
-                    this.loadedFlightPlan?.setPerformanceData('costIndex', v);
+                    this.props.fmcService.master?.flightPlanInterface?.setPerformanceData(
+                      'costIndex',
+                      v,
+                      this.loadedFlightPlanIndex.get(),
+                    );
                   }}
                   mandatory={Subject.create(true)}
                   disabled={this.costIndexDisabled}

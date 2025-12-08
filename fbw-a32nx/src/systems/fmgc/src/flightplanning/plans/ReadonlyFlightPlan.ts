@@ -51,6 +51,8 @@ export interface ReadonlyFlightPlan<P extends FlightPlanPerformanceData = Flight
 
   get destinationLegIndex(): number;
 
+  readonly availableDestinationRunways: Runway[];
+
   get endsAtRunway(): boolean;
 
   hasElement(index: number): boolean;
@@ -69,9 +71,13 @@ export interface ReadonlyFlightPlan<P extends FlightPlanPerformanceData = Flight
 
   get originRunway(): Runway | undefined;
 
+  readonly availableOriginRunways: Runway[];
+
   get departureRunwayTransition(): ProcedureTransition | undefined;
 
   get originDeparture(): Departure | undefined;
+
+  readonly availableDepartures: Departure[];
 
   get departureEnrouteTransition(): ProcedureTransition | undefined;
 
@@ -84,9 +90,15 @@ export interface ReadonlyFlightPlan<P extends FlightPlanPerformanceData = Flight
 
   get arrivalRunwayTransition(): ProcedureTransition | undefined;
 
+  readonly availableArrivals: Arrival[];
+
   get approachVia(): ProcedureTransition | undefined | null;
 
   get approach(): Approach | undefined;
+
+  readonly availableApproaches: Approach[];
+
+  readonly availableApproachVias: ProcedureTransition[];
 
   get destinationAirport(): Airport | undefined;
 

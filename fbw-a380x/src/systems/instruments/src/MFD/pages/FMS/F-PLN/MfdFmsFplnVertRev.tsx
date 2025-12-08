@@ -28,7 +28,6 @@ import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Dropd
 import { maxCertifiedAlt, Vmo } from '@shared/PerformanceConstants';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { RadioButtonColor, RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
-import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 import { AltitudeDescriptor, WaypointConstraintType } from '@flybywiresim/fbw-sdk';
 import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
 import { FmgcData } from 'instruments/src/MFD/FMC/fmgc';
@@ -36,6 +35,8 @@ import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
 import { NXSystemMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
 import { getEtaFromUtcOrPresent } from 'instruments/src/MFD/shared/utils';
 import { FmgcFlightPhase } from '@shared/flightphase';
+import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
+import { ReadonlyFlightPlanLeg } from '@fmgc/flightplanning/legs/ReadonlyFlightPlanLeg';
 
 interface MfdFmsFplnVertRevProps extends AbstractMfdPageProps {}
 
@@ -206,7 +207,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       this.transitionLevel.set(null);
     }
 
-    const activeLegIndex = this.props.fmcService.master?.flightPlanService.get(
+    const activeLegIndex = this.props.fmcService.master?.flightPlanInterface.get(
       this.loadedFlightPlanIndex.get(),
     ).activeLegIndex;
     if (activeLegIndex) {
@@ -237,7 +238,11 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     this.updateCruiseSteps();
   }
 
-  public static isEligibleForVerticalRevision(legIndex: number, leg: FlightPlanLeg, flightPlan: FlightPlan): boolean {
+  public static isEligibleForVerticalRevision(
+    legIndex: number,
+    leg: ReadonlyFlightPlanLeg,
+    flightPlan: ReadonlyFlightPlan,
+  ): boolean {
     // Check conditions: No constraints for airports, FROM waypoint, GA legs, pseudo waypoints
     return (
       !leg.isRunway() && legIndex >= flightPlan.activeLegIndex && legIndex < flightPlan.firstMissedApproachLegIndex
@@ -471,7 +476,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     }
   }
 
-  static nextCruiseStep(flightPlan: FlightPlan): [CruiseStepEntry | undefined, number | undefined] {
+  static nextCruiseStep(flightPlan: ReadonlyFlightPlan): [CruiseStepEntry | undefined, number | undefined] {
     const cruiseStepLegIndex = flightPlan.allLegs.findIndex(
       (l, index) => l.isDiscontinuity === false && index >= flightPlan.activeLegIndex && l.cruiseStep,
     );
@@ -512,7 +517,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
   private async tryUpdateSpeedConstraint(newSpeed?: number) {
     if (this.checkLegModificationAllowed() && this.spdConstraintTypeRadioSelected.get() !== null) {
-      this.props.fmcService.master!.flightPlanService.setPilotEnteredSpeedConstraintAt(
+      this.props.fmcService.master!.flightPlanInterface.setPilotEnteredSpeedConstraintAt(
         this.selectedLegIndex!,
         this.spdConstraintTypeRadioSelected.get() === 1,
         newSpeed,
@@ -551,7 +556,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
           break;
       }
 
-      this.props.fmcService.master!.flightPlanService.setPilotEnteredAltitudeConstraintAt(
+      this.props.fmcService.master!.flightPlanInterface.setPilotEnteredAltitudeConstraintAt(
         this.selectedLegIndex!,
         this.altConstraintTypeRadioSelected.get() === 1,
         { altitude1: alt, altitudeDescriptor: option },
@@ -563,7 +568,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
   private deleteAltitudeConstraint() {
     if (this.checkLegModificationAllowed()) {
-      this.props.fmcService.master!.flightPlanService.setPilotEnteredAltitudeConstraintAt(
+      this.props.fmcService.master!.flightPlanInterface.setPilotEnteredAltitudeConstraintAt(
         this.selectedLegIndex!,
         this.altConstraintTypeRadioSelected.get() === 1,
         undefined,
@@ -582,13 +587,13 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       this.deleteSpeedLimit();
     } else if (this.checkPerformanceDataEditCondition()) {
       if (this.speedLimitType.get() === SpeedLimitType.CLB) {
-        this.props.fmcService.master?.flightPlanService.setPilotEntryClimbSpeedLimitSpeed(
+        this.props.fmcService.master?.flightPlanInterface.setPilotEntryClimbSpeedLimitSpeed(
           value,
           this.loadedFlightPlanIndex.get(),
           false,
         );
       } else {
-        this.props.fmcService.master?.flightPlanService.setPilotEntryDescentSpeedLimitSpeed(
+        this.props.fmcService.master?.flightPlanInterface.setPilotEntryDescentSpeedLimitSpeed(
           value,
           this.loadedFlightPlanIndex.get(),
           false,
@@ -602,13 +607,13 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       this.deleteSpeedLimit();
     } else if (this.checkPerformanceDataEditCondition()) {
       if (this.speedLimitType.get() === SpeedLimitType.CLB) {
-        this.props.fmcService.master?.flightPlanService.setPilotEntryClimbSpeedLimitAltitude(
+        this.props.fmcService.master?.flightPlanInterface.setPilotEntryClimbSpeedLimitAltitude(
           value,
           this.loadedFlightPlanIndex.get(),
           false,
         );
       } else {
-        this.props.fmcService.master?.flightPlanService.setPilotEntryDescentSpeedLimitAltitude(
+        this.props.fmcService.master?.flightPlanInterface.setPilotEntryDescentSpeedLimitAltitude(
           value,
           this.loadedFlightPlanIndex.get(),
           false,
@@ -620,9 +625,12 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   private async deleteSpeedLimit() {
     if (this.checkPerformanceDataEditCondition()) {
       if (this.speedLimitType.get() === SpeedLimitType.CLB) {
-        this.props.fmcService.master?.flightPlanService.deleteClimbSpeedLimit(this.loadedFlightPlanIndex.get(), false);
+        this.props.fmcService.master?.flightPlanInterface.deleteClimbSpeedLimit(
+          this.loadedFlightPlanIndex.get(),
+          false,
+        );
       } else {
-        this.props.fmcService.master?.flightPlanService.deleteDescentSpeedLimit(
+        this.props.fmcService.master?.flightPlanInterface.deleteDescentSpeedLimit(
           this.loadedFlightPlanIndex.get(),
           false,
         );
@@ -715,7 +723,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       }
 
       if (isValid) {
-        this.loadedFlightPlan?.addOrUpdateCruiseStep(legIndex, flightLevel * 100);
+        this.props.fmcService.master?.flightPlanInterface.addOrUpdateCruiseStep(legIndex, flightLevel * 100);
       } else {
         if (this.selectedLegIndex !== null) {
           const leg = this.loadedFlightPlan?.maybeElementAt(this.selectedLegIndex);
@@ -727,7 +735,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
   private tryDeleteCruiseStep(lineIndex: number, previousDropdownIndex: number) {
     const legIndex = this.availableWaypointsToLegIndex[previousDropdownIndex];
-    this.loadedFlightPlan?.removeCruiseStep(legIndex);
+    this.props.fmcService.master?.flightPlanInterface.removeCruiseStep(legIndex);
     this.stepAltsWptIndices[lineIndex].set(null);
     this.stepAltsFlightLevel[lineIndex].set(null);
     this.forceRebuildList = true;

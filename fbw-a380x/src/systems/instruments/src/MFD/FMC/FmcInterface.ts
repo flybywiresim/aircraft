@@ -10,10 +10,10 @@ import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { FmgcDataService } from 'instruments/src/MFD/FMC/fmgc';
 import { TypeIMessage, TypeIIMessage } from 'instruments/src/MFD/shared/NXSystemMessages';
 import { EfisSide, Fix, FMMessage, Waypoint } from '@flybywiresim/fbw-sdk';
-import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { DataManager } from '@fmgc/flightplanning/DataManager';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
 
 export enum FmcOperatingModes {
   Master,
@@ -53,7 +53,7 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
   /**
    * FlightPlanService interface
    */
-  get flightPlanService(): FlightPlanService;
+  get flightPlanInterface(): FlightPlanInterface;
 
   /**
    * FMGC data class, handles most data which didn't make it into the flight plan performance data so far
@@ -195,6 +195,12 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
   isWaypointInUse(waypoint: Waypoint): Promise<boolean>;
 
   clearLatestFmsErrorMessage(): void;
+
+  /** Request CPNY FPLN from SimBrief */
+  cpnyFplnRequest(): void;
+
+  /** Insert CPNY FPLN into active flight plan */
+  insertCpnyFpln(): void;
 
   /**
    * Calling this function with a message should display the message in the FMS' message area,

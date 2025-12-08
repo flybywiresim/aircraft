@@ -16,7 +16,7 @@ export interface FlightPlanFooterProps {
 export class FlightPlanFooter extends DisplayComponent<FlightPlanFooterProps> {
   private readonly flightPlanManager = new ObservableFlightPlanManager(
     this.props.bus,
-    this.props.fmcService.master!.flightPlanService,
+    this.props.fmcService.master!.flightPlanInterface,
   );
 
   public render(): VNode | null {

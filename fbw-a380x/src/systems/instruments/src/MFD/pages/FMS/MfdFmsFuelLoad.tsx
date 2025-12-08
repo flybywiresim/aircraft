@@ -122,8 +122,13 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
       this.destEfob.set(destEfob !== null ? destEfob.toFixed(1) : '---.-');
     }
 
-    if (this.loadedFlightPlan.alternateDestinationAirport) {
-      this.altnIcao.set(this.loadedFlightPlan.alternateDestinationAirport.ident);
+    if (
+      this.props.fmcService.master.flightPlanInterface.get(this.loadedFlightPlanIndex.get()).alternateDestinationAirport
+    ) {
+      this.altnIcao.set(
+        this.props.fmcService.master.flightPlanInterface.get(this.loadedFlightPlanIndex.get())
+          .alternateDestinationAirport.ident,
+      );
       this.altnEta.set('--:--');
       this.altnEfob.set(this.props.fmcService.master.fmgc.getAltEFOB());
     } else {
@@ -462,7 +467,11 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   <InputField<number>
                     dataEntryFormat={new CostIndexFormat()}
                     dataHandlerDuringValidation={async (v) => {
-                      this.loadedFlightPlan?.setPerformanceData('costIndex', v);
+                      this.props.fmcService.master?.flightPlanInterface?.setPerformanceData(
+                        'costIndex',
+                        v,
+                        this.loadedFlightPlanIndex.get(),
+                      );
                     }}
                     value={this.costIndex}
                     mandatory={Subject.create(true)}

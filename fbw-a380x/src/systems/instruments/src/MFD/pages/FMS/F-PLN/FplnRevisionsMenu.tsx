@@ -49,7 +49,7 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
       onPressed: () => {
         const ppos = fpln.props.fmcService.master?.navigation.getPpos();
         if (ppos) {
-          fpln.props.fmcService.master?.flightPlanService.directToLeg(
+          fpln.props.fmcService.master?.flightPlanInterface.directToLeg(
             ppos,
             SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree'),
             legIndex,
@@ -75,7 +75,7 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
         isFromLeg || // TODO allow in HDG/TRK
         planIndex === FlightPlanIndex.Temporary,
       onPressed: () => {
-        fpln.props.fmcService.master?.flightPlanService.deleteElementAt(legIndex, false, planIndex, altnFlightPlan);
+        fpln.props.fmcService.master?.flightPlanInterface.deleteElementAt(legIndex, false, planIndex, altnFlightPlan);
       },
     },
     {
@@ -108,7 +108,7 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
             ? revisedLeg.definition.altitude1
             : SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet');
 
-          const previousLeg = fpln.props.fmcService.master?.flightPlanService.active.maybeElementAt(legIndex - 1);
+          const previousLeg = fpln.props.fmcService.master?.flightPlanInterface.active.maybeElementAt(legIndex - 1);
 
           let inboundMagneticCourse = 100;
           const prevTerm = previousLeg?.isDiscontinuity === false && previousLeg.terminationWaypoint();
@@ -123,7 +123,7 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
             time: alt <= 14000 ? 1 : 1.5,
             type: HoldType.Computed,
           };
-          await fpln.props.fmcService.master?.flightPlanService.addOrEditManualHold(
+          await fpln.props.fmcService.master?.flightPlanInterface.addOrEditManualHold(
             legIndex,
             Object.assign({}, defaultHold),
             undefined,
@@ -148,7 +148,7 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
         revisedLeg.waypointDescriptor === WaypointDescriptor.Airport ||
         revisedLeg.waypointDescriptor === WaypointDescriptor.Runway,
       onPressed: () => {
-        fpln.props.fmcService.master?.flightPlanService.startAirwayEntry(legIndex);
+        fpln.props.fmcService.master?.flightPlanInterface.startAirwayEntry(legIndex);
         fpln.props.mfd.uiService.navigateTo(`fms/${fpln.props.mfd.uiService.activeUri.get().category}/f-pln-airways`);
       },
     },
@@ -166,13 +166,13 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
         isFromLeg ||
         !isLegTerminatingAtDatabaseFix,
       onPressed: () =>
-        fpln.props.fmcService.master?.flightPlanService.toggleOverfly(legIndex, planIndex, altnFlightPlan),
+        fpln.props.fmcService.master?.flightPlanInterface.toggleOverfly(legIndex, planIndex, altnFlightPlan),
     },
     {
       name: 'ENABLE ALTN *',
       disabled: !revisedLeg || revisedLeg.isDiscontinuity,
       onPressed: () => {
-        fpln.props.fmcService.master?.flightPlanService.enableAltn(legIndex, planIndex);
+        fpln.props.fmcService.master?.flightPlanInterface.enableAltn(legIndex, planIndex);
         fpln.props.fmcService.master?.acInterface.updateFmsData();
       },
     },

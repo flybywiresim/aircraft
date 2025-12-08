@@ -8,6 +8,7 @@ import { FlightPlanSegment } from '@fmgc/flightplanning/segments/FlightPlanSegme
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/legs/FlightPlanLegDefinition';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
+import { LegCalculations } from './FlightPlanLeg';
 
 export interface ReadonlyFlightPlanLeg {
   readonly isDiscontinuity: false;
@@ -34,13 +35,21 @@ export interface ReadonlyFlightPlanLeg {
 
   readonly constraintType: WaypointConstraintType;
 
+  readonly altitudeConstraint: AltitudeConstraint | undefined;
+
+  readonly speedConstraint: SpeedConstraint | undefined;
+
   readonly cruiseStep: CruiseStepEntry | undefined;
 
   readonly pilotEnteredAltitudeConstraint: AltitudeConstraint | undefined;
 
   readonly pilotEnteredSpeedConstraint: SpeedConstraint | undefined;
 
+  readonly calculated: LegCalculations | undefined;
+
   terminationWaypoint(): Fix | null;
+
+  isRunway(): boolean;
 }
 
 export interface ReadonlyDiscontinuity {
