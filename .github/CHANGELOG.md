@@ -32,6 +32,9 @@
 1. [A380X/MFD] Only show "RETURN" button on PERF & POS NAVAIDS if acessed via INIT page keys - @BravoMike99 (bruno_pt99)
 1. [A32NX/FWS] Make master caution from autobrake off trigger for 3 seconds - @BravoMike99 (bruno_pt99)
 1. [FMS] Fixed climb phase not activating if vertical mode is changed below acceleration height - @BravoMike99 (bruno_pt99)
+1. [A32NX/FMS] Removed required leading zeros for acceleration, thrust reduction, and transition altitudes - @Jonny23787 (Jonathan)
+1. [A32NX/FMS] Adjusted TRANS ALT allowed entry range - @Jonny23787 (Jonathan)
+1. [A32NX/FMS] Add - sign to slope value on RAD NAV page - @Jonny23787 (Jonathan)
 
 ## 0.14.0
 
