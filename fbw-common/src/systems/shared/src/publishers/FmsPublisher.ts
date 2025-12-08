@@ -33,6 +33,7 @@ export interface BaseFmsData {
   fmZeroFuelWeightCg: number;
   /** A429 raw value */
   fmLandingElevation: number;
+  // TODO: remove and replace with FQMS (+ WBBC) values
   fmGrossWeight: number;
   /** Symbols displayed on VD */
   vdSymbols_L: VdSymbol[];
