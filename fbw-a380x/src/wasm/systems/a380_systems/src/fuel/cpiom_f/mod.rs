@@ -732,8 +732,9 @@ impl A380FuelQuantityManagementSystem {
             fqdc.get_right_fuel_pump_running_word(),
         ];
 
-        let fms_zfw = self.get_fms_data_and_update_status(self.fms_zero_fuel_weights);
-        let fms_zfwcg = self.get_fms_data_and_update_status(self.fms_zero_fuel_weight_cgs);
+        let (fms_zfw, flags1) = Self::get_fms_data_and_status(self.fms_zero_fuel_weights);
+        let (fms_zfwcg, flags2) = Self::get_fms_data_and_status(self.fms_zero_fuel_weight_cgs);
+        self.fqms_status_word = flags1 | flags2;
 
         self.fuel_measuring_application
             .update(loadsheet, fqdc, fms_zfw, fms_zfwcg);
@@ -754,24 +755,25 @@ impl A380FuelQuantityManagementSystem {
 
     /// Extracts the FMS data by get the first one available.
     /// Simultaniously it is checked that both values agree if multiple values are available.
-    fn get_fms_data_and_update_status<T: PartialEq>(
-        &mut self,
+    fn get_fms_data_and_status<T: PartialEq>(
         fms_values: [Option<T>; 2],
-    ) -> Option<T> {
+    ) -> (Option<T>, FQMSDiscreteFlags) {
         let mut iter = fms_values.into_iter().flat_map(|x| x.into_iter());
 
         if let Some(first_value) = iter.next() {
-            if let Some(second_value) = iter.next() {
-                self.fqms_status_word.set(
-                    FQMSDiscreteFlags::FMS_DATA_DISAGREE,
-                    first_value != second_value,
-                );
-            }
-            self.fqms_status_word.remove(FQMSDiscreteFlags::FMS_NO_DATA);
-            Some(first_value)
+            let flags = iter
+                .next()
+                .map(|second_value| {
+                    if first_value != second_value {
+                        FQMSDiscreteFlags::FMS_DATA_DISAGREE
+                    } else {
+                        FQMSDiscreteFlags::empty()
+                    }
+                })
+                .unwrap_or_default();
+            (Some(first_value), flags)
         } else {
-            self.fqms_status_word.insert(FQMSDiscreteFlags::FMS_NO_DATA);
-            None
+            (None, FQMSDiscreteFlags::FMS_NO_DATA)
         }
     }
 
@@ -801,7 +803,7 @@ impl A380FuelQuantityManagementSystem {
         is_powered: bool,
     ) {
         // Shift to match ARINC 429 bit positions
-        self.write_arinc429(writer, identifier, Some(flags.bits() >> 11), is_powered);
+        self.write_arinc429(writer, identifier, Some(flags.bits() << 11), is_powered);
     }
 }
 impl SimulationElement for A380FuelQuantityManagementSystem {
