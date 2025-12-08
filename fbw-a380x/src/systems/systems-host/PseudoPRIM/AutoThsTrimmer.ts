@@ -13,6 +13,7 @@ import {
 import PitchTrimUtils from '@shared/PitchTrimUtils';
 import { FcdcSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/FcdcPublisher';
 import { PseudoFwcSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
+import { FqmsBusEvents } from '@shared/publishers/FqmsBusPublisher';
 
 /**
  * Utility class for auto-setting the THS trim. Will be superseded by the proper PRIM implementation in some point in the future
@@ -20,7 +21,7 @@ import { PseudoFwcSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/P
 
 export class AutoThsTrimmer implements Instrument {
   private readonly subscriptions: Subscription[] = [];
-  private readonly sub = this.bus.getSubscriber<PseudoFwcSimvars & FcdcSimvars>();
+  private readonly sub = this.bus.getSubscriber<PseudoFwcSimvars & FcdcSimvars & FqmsBusEvents>();
 
   constructor(
     private readonly bus: EventBus,
@@ -64,8 +65,7 @@ export class AutoThsTrimmer implements Instrument {
   private readonly groundSpoilersDisarmedPulse = new NXLogicPulseNode(false);
 
   /** in percent */
-  private readonly cgPercent = ConsumerSubject.create(this.sub.on('gw_cg_percent'), 0);
-  private readonly targetThsPosition = this.cgPercent.map((cg) => PitchTrimUtils.cgToPitchTrim(cg));
+  private readonly cgPercent = Arinc429LocalVarConsumerSubject.create(this.sub.on('fqms_center_of_gravity_mac'));
   /** in radians */
   private readonly trimPosition = ConsumerSubject.create(this.sub.on('ths_position'), 0);
 
@@ -81,7 +81,6 @@ export class AutoThsTrimmer implements Instrument {
       this.cas,
       this.flapsLever,
       this.cgPercent,
-      this.targetThsPosition,
       this.trimPosition,
     );
 
@@ -133,9 +132,10 @@ export class AutoThsTrimmer implements Instrument {
 
   /** This needs to be called with a high frequency (at least the FBW CPP code frequency) to ensure adequate trimming rates */
   public autoTrim() {
-    if (this.shouldAutoTrim) {
+    if (this.shouldAutoTrim && this.cgPercent.get().isNormalOperation()) {
+      const targetThsPosition = PitchTrimUtils.cgToPitchTrim(this.cgPercent.get().value);
       const trimPositionDeg = SimVar.GetSimVarValue('ELEVATOR TRIM POSITION', SimVarValueType.Degree);
-      const thsTrimDiff = this.targetThsPosition.get() - trimPositionDeg;
+      const thsTrimDiff = targetThsPosition - trimPositionDeg;
 
       // Difference by 0.008° guarantees accuracy within 0.05% CG, but we have to account for some lag of the THS actuation, so stop early
       if (Math.abs(thsTrimDiff) < 0.02) {

@@ -1199,6 +1199,10 @@ export class FwsCore {
 
   private readonly fuelOnBoard = Arinc429LocalVarConsumerSubject.create(this.sub.on('fqms_total_fuel_on_board'));
 
+  private readonly fqmsGrossWeightCgPercent = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('fqms_center_of_gravity_mac'),
+  );
+
   private readonly fqmsStatusWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('fqms_status_word'));
 
   public readonly fqmsZfwOrZfwCgNotSet = this.fqmsStatusWord.map((w) => w.bitValueOr(12, false));
@@ -2184,6 +2188,7 @@ export class FwsCore {
       this.masterCautionOutput,
       this.masterWarningOutput,
       this.fuelOnBoard,
+      this.fqmsGrossWeightCgPercent,
       this.fqmsStatusWord,
       this.fqmsZfwOrZfwCgNotSet,
       this.fqmsZfwOrZfwCgDisagree,
@@ -4337,7 +4342,6 @@ export class FwsCore {
 
     // pitch trim not takeoff
     const stabPos = SimVar.GetSimVarValue('ELEVATOR TRIM POSITION', 'degree');
-    const cgPercent = SimVar.GetSimVarValue('L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC', 'number');
 
     // A320neo config
     const pitchConfig = !PitchTrimUtils.pitchTrimInGreenBand(stabPos);
@@ -4360,8 +4364,9 @@ export class FwsCore {
       !fm1PitchTrim.isNormalOperation() && fm2PitchTrim.isNormalOperation() ? fm2PitchTrim : fm1PitchTrim;
     this.trimDisagreeMcduStabConf.write(
       fmPitchTrim.isNormalOperation() &&
-        (!PitchTrimUtils.pitchTrimInCyanBand(cgPercent, stabPos) ||
-          !(Math.abs(fmPitchTrim.valueOr(0) - cgPercent) < 1)),
+        this.fqmsGrossWeightCgPercent.get().isNormalOperation() &&
+        (!PitchTrimUtils.pitchTrimInCyanBand(this.fqmsGrossWeightCgPercent.get().value, stabPos) ||
+          !(Math.abs(fmPitchTrim.valueOr(0) - this.fqmsGrossWeightCgPercent.get().value) < 1)),
       deltaTime,
     );
     this.pitchTrimMcduCgDisagree.set(

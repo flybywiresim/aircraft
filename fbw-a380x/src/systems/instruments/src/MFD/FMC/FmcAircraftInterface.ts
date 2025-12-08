@@ -1381,9 +1381,11 @@ export class FmcAircraftInterface {
     }
 
     // Calculate approach speeds. Independent from ADR data
-    if (ldgWeight !== null) {
+    const landingCg = this.fmgc.getGrossWeightCg();
+    if (ldgWeight !== null && landingCg !== null) {
       const approachSpeeds = new A380OperatingSpeeds(
         ldgWeight,
+        landingCg,
         0,
         this.fmgc.data.approachFlapConfig.get(),
         FmgcFlightPhase.Approach,
