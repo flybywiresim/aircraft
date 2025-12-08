@@ -2942,6 +2942,15 @@ export class FwsAbnormalSensed {
       notActiveWhenItemActive: ['281800103', '281800002'],
       inopSysAllPhases: () => [],
     },
+    281800101: {
+      // ZFW OR ZFWCG FMS DISAGREE
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11, 12],
+      simVarIsActive: this.fws.fqmsZfwOrZfwCgDisagree,
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [false],
+      failure: 2,
+      sysPage: null,
+    },
     281800102: {
       // FEED TKs 1+2 LEVEL LO
       flightPhaseInhib: [1, 3, 4, 5, 6, 7, 9, 10, 12],
@@ -2975,7 +2984,7 @@ export class FwsAbnormalSensed {
     281800076: {
       // NO ZFW OR ZFWCG DATA
       flightPhaseInhib: [1, 3, 4, 5, 6, 7, 9, 10, 11, 12],
-      simVarIsActive: this.fws.fmsZfwOrZfwCgNotSet,
+      simVarIsActive: this.fws.fqmsZfwOrZfwCgNotSet,
       whichItemsToShow: () => [true],
       whichItemsChecked: () => [false],
       failure: 2,

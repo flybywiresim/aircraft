@@ -75,6 +75,7 @@ import { FwsInopSys, FwsInopSysPhases } from './FwsInopSys';
 import { FwsInformation } from './FwsInformation';
 import { FwsLimitations, FwsLimitationsPhases } from './FwsLimitations';
 import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
+import { FqmsBusEvents } from '@shared/publishers/FqmsBusPublisher';
 import {
   OisDebugDataEvents,
   DebugDataTableRow,
@@ -126,6 +127,7 @@ export class FwsCore {
   public readonly sub = this.bus.getSubscriber<
     PseudoFwcSimvars &
       FcdcSimvars &
+      FqmsBusEvents &
       StallWarningEvents &
       MfdSurvEvents &
       FuelSystemEvents &
@@ -1195,13 +1197,13 @@ export class FwsCore {
     this.crossFeed4ValveOpen,
   );
 
-  public readonly fmsZeroFuelWeight = Arinc429Register.empty();
-  public readonly fmsZeroFuelWeightCg = Arinc429Register.empty();
+  private readonly fuelOnBoard = Arinc429LocalVarConsumerSubject.create(this.sub.on('fqms_total_fuel_on_board'));
 
-  public readonly fmsZfwOrZfwCgNotSet = Subject.create(false);
+  private readonly fqmsStatusWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('fqms_status_word'));
 
-  // TODO signals should come from FQMS
-  private readonly fuelOnBoard = ConsumerSubject.create(this.sub.on('fuel_on_board').whenChangedBy(100), 0);
+  public readonly fqmsZfwOrZfwCgNotSet = this.fqmsStatusWord.map((w) => w.bitValueOr(12, false));
+
+  public readonly fqmsZfwOrZfwCgDisagree = this.fqmsStatusWord.map((w) => w.bitValueOr(13, false));
 
   private readonly refuelPanel = ConsumerSubject.create(this.sub.on('msfs_interactive_point_open_18'), 0);
 
@@ -1216,7 +1218,7 @@ export class FwsCore {
   );
 
   private readonly isRefuelFuelTarget = MappedSubject.create(
-    ([fuelOnBoard, targetFuel]) => fuelOnBoard <= targetFuel,
+    ([fuelOnBoard, targetFuel]) => fuelOnBoard.isNormalOperation() && fuelOnBoard.value <= targetFuel,
     this.fuelOnBoard,
     this.fuelingTarget,
   );
@@ -1859,7 +1861,9 @@ export class FwsCore {
 
   public readonly fwdCargoTempRegulatorOff = Subject.create(false);
 
-  public readonly fuelOnBoardBetween55And95T = this.fuelOnBoard.map((v) => v >= 55000 && v <= 95000);
+  public readonly fuelOnBoardBetween55And95T = this.fuelOnBoard.map(
+    (v) => v.isNormalOperation() && v.value >= 55000 && v.value <= 95000,
+  );
 
   public readonly eng1StartOrCrank = Subject.create(false);
   public readonly eng1PrimaryAbnormalParams = Subject.create(false);
@@ -2180,9 +2184,11 @@ export class FwsCore {
       this.masterCautionOutput,
       this.masterWarningOutput,
       this.fuelOnBoard,
+      this.fqmsStatusWord,
+      this.fqmsZfwOrZfwCgNotSet,
+      this.fqmsZfwOrZfwCgDisagree,
       this.fuelingInitiated,
       this.fuelingTarget,
-      this.refuelPanelOpen,
       this.allFeedTankPumpsOff,
       this.allFeedTankPumpsOn,
       this.allCrossFeedValvesOpen,
@@ -4098,13 +4104,6 @@ export class FwsCore {
     this.crossFeed2ValveOpen.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE OPEN:47', 'kilogram') > 0.1);
     this.crossFeed3ValveOpen.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE OPEN:48', 'kilogram') > 0.1);
     this.crossFeed4ValveOpen.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE OPEN:49', 'kilogram') > 0.1);
-
-    this.fmsZeroFuelWeight.setFromSimVar(`L:A32NX_FM${this.fwsNumber}_ZERO_FUEL_WEIGHT`);
-    this.fmsZeroFuelWeightCg.setFromSimVar(`L:A32NX_FM${this.fwsNumber}_ZERO_FUEL_WEIGHT_CG`);
-
-    this.fmsZfwOrZfwCgNotSet.set(
-      this.fmsZeroFuelWeight.isNoComputedData() || this.fmsZeroFuelWeightCg.isNoComputedData(),
-    );
 
     this.allEngineSwitchOff.set(
       !this.engine1ValueSwitch.get() &&

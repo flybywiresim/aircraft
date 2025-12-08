@@ -39,8 +39,6 @@ export interface BaseFuelSystemEvents {
   fuel_refuel_started_by_user: boolean;
   /** Desired fuel target for fuelling in kilograms */
   fuel_desired_by_user: number;
-  /** Fuel on board in kilograms */
-  fuel_on_board: number;
 
   /** The CG percent of the GW */
   cg_percent_gw: number;
@@ -109,13 +107,6 @@ export class FuelSystemPublisher extends SimVarPublisher<FuelSystemEvents> {
         'fuel_desired_by_user',
         {
           name: 'L:A32NX_FUEL_DESIRED',
-          type: SimVarValueType.Number,
-        },
-      ],
-      [
-        'fuel_on_board',
-        {
-          name: 'L:A32NX_TOTAL_FUEL_QUANTITY',
           type: SimVarValueType.Number,
         },
       ],
