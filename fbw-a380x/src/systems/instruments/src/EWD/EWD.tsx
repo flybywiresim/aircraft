@@ -219,7 +219,7 @@ export class EngineWarningDisplay extends DestroyableComponent<{ bus: ArincEvent
               </text>
 
               <text
-                x={330}
+                x={387}
                 y={30}
                 class={{
                   Huge: true,

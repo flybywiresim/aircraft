@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+import { SDK_NAME } from '@sentry/browser';
 import { EcamAbnormalProcedures, WD_NUM_LINES } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
 import {
   MappedSubject,
@@ -1652,12 +1653,22 @@ export class FwsAbnormalSensed {
       flightPhaseInhib: [3, 4, 5, 10],
       simVarIsActive: this.fws.autoThrustOffInvoluntary,
       notActiveWhenItemActive: [],
-      whichItemsToShow: () => [false],
-      whichItemsChecked: () => [SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_MODE_MESSAGE', 'number') !== 1],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [!this.fws.engineThrustLocked],
       failure: 2,
       sysPage: -1,
       monitorConfirmTime: 0.0,
       info: () => [],
+    },
+    220800003: {
+      // A/THR LIMITED
+      flightPhaseInhib: [2, 3, 4, 5, 6, 10, 11],
+      simVarIsActive: this.fws.autoThrustLimited,
+      whichItemsToShow: () => [this.fws.autoThrustLimitedClb, this.fws.autoThrustLimitedMct],
+      whichItemsChecked: () => [false, false],
+      failure: 2,
+      sysPage: SdPages.None,
+      monitorConfirmTime: 0,
     },
     // 22 - AUTOFLIGHT
     220800013: {
@@ -4585,6 +4596,16 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [],
       sysPage: SdPages.Eng,
       failure: 3,
+    },
+    701800158: {
+      // ENGINE THRUST LOCKED
+      simVarIsActive: this.fws.engineThrustLockedAbnormalSensed,
+      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 10, 11, 12],
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [false],
+      sysPage: SdPages.None,
+      failure: 2,
     },
 
     // SECONDARY FAILURES

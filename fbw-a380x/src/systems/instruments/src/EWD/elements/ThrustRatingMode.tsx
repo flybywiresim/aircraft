@@ -64,7 +64,7 @@ export class N1Limit extends DisplayComponent<{
     return (
       <g id="Thrust-Rating-Mode" style={{ display: this.props.hidden.map((v) => (v ? 'none' : '')) }}>
         <text
-          class={{ F26: true, Center: true, Amber: true, HiddenElement: this.activeHiddenElement }}
+          class={{ F26: true, Center: true, Amber: true, HiddenElement: this.props.active }}
           x={this.props.x - 18}
           y={this.props.y}
         >
