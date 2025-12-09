@@ -724,17 +724,86 @@ export const FuelPage = () => {
     isCollectorCell1NotFull || isCollectorCell2NotFull || isCollectorCell3NotFull || isCollectorCell4NotFull;
 
   // Tanks
-  const [leftOuterTankWeight] = useSimVar('FUELSYSTEM TANK WEIGHT:1', 'kg');
-  const [feed1TankWeight] = useSimVar('FUELSYSTEM TANK WEIGHT:2', 'kg');
-  const [leftMidTankWeight] = useSimVar('FUELSYSTEM TANK WEIGHT:3', 'kg');
-  const [leftInnerTankWeight] = useSimVar('FUELSYSTEM TANK WEIGHT:4', 'kg');
-  const [feed2TankWeight] = useSimVar('FUELSYSTEM TANK WEIGHT:5', 'kg');
-  const [feed3TankWeight] = useSimVar('FUELSYSTEM TANK WEIGHT:6', 'kg');
-  const [rightInnerTankWeight] = useSimVar('FUELSYSTEM TANK WEIGHT:7', 'kg');
-  const [rightMidTankWeight] = useSimVar('FUELSYSTEM TANK WEIGHT:8', 'kg');
-  const [feed4TankWeight] = useSimVar('FUELSYSTEM TANK WEIGHT:9', 'kg');
-  const [rightOuterTankWeight] = useSimVar('FUELSYSTEM TANK WEIGHT:10', 'kg');
-  const [trimTankWeight] = useSimVar('FUELSYSTEM TANK WEIGHT:11', 'kg');
+  // We take the values provided by the FQDCs since the FQMS doesn't provide the values yet (over AFDX)
+  const fqdc1LeftOuterTankWeight = useArinc429Var('A32NX_FQDC_1_LEFT_OUTER_TANK_QUANTITY');
+  const fqdc1Feed1TankWeight = useArinc429Var('A32NX_FQDC_1_FEED_ONE_TANK_QUANTITY');
+  const fqdc1LeftMidTankWeight = useArinc429Var('A32NX_FQDC_1_LEFT_MID_TANK_QUANTITY');
+  const fqdc1LeftInnerTankWeight = useArinc429Var('A32NX_FQDC_1_LEFT_INNER_TANK_QUANTITY');
+  const fqdc1Feed2TankWeight = useArinc429Var('A32NX_FQDC_1_FEED_TWO_TANK_QUANTITY');
+  const fqdc1Feed3TankWeight = useArinc429Var('A32NX_FQDC_1_FEED_THREE_TANK_QUANTITY');
+  const fqdc1RightInnerTankWeight = useArinc429Var('A32NX_FQDC_1_RIGHT_INNER_TANK_QUANTITY');
+  const fqdc1RightMidTankWeight = useArinc429Var('A32NX_FQDC_1_RIGHT_MID_TANK_QUANTITY');
+  const fqdc1Feed4TankWeight = useArinc429Var('A32NX_FQDC_1_FEED_FOUR_TANK_QUANTITY');
+  const fqdc1RightOuterTankWeight = useArinc429Var('A32NX_FQDC_1_RIGHT_OUTER_TANK_QUANTITY');
+  const fqdc1TrimTankWeight = useArinc429Var('A32NX_FQDC_1_TRIM_TANK_QUANTITY');
+
+  const fqdc2LeftOuterTankWeight = useArinc429Var('A32NX_FQDC_2_LEFT_OUTER_TANK_QUANTITY');
+  const fqdc2Feed1TankWeight = useArinc429Var('A32NX_FQDC_2_FEED_ONE_TANK_QUANTITY');
+  const fqdc2LeftMidTankWeight = useArinc429Var('A32NX_FQDC_2_LEFT_MID_TANK_QUANTITY');
+  const fqdc2LeftInnerTankWeight = useArinc429Var('A32NX_FQDC_2_LEFT_INNER_TANK_QUANTITY');
+  const fqdc2Feed2TankWeight = useArinc429Var('A32NX_FQDC_2_FEED_TWO_TANK_QUANTITY');
+  const fqdc2Feed3TankWeight = useArinc429Var('A32NX_FQDC_2_FEED_THREE_TANK_QUANTITY');
+  const fqdc2RightInnerTankWeight = useArinc429Var('A32NX_FQDC_2_RIGHT_INNER_TANK_QUANTITY');
+  const fqdc2RightMidTankWeight = useArinc429Var('A32NX_FQDC_2_RIGHT_MID_TANK_QUANTITY');
+  const fqdc2Feed4TankWeight = useArinc429Var('A32NX_FQDC_2_FEED_FOUR_TANK_QUANTITY');
+  const fqdc2RightOuterTankWeight = useArinc429Var('A32NX_FQDC_2_RIGHT_OUTER_TANK_QUANTITY');
+  const fqdc2TrimTankWeight = useArinc429Var('A32NX_FQDC_2_TRIM_TANK_QUANTITY');
+
+  const leftOuterTankWeight = fqdc1LeftOuterTankWeight.isNormalOperation()
+    ? fqdc1LeftOuterTankWeight.value
+    : fqdc2LeftOuterTankWeight.isNormalOperation()
+      ? fqdc2LeftOuterTankWeight.value
+      : null;
+  const feed1TankWeight = fqdc1Feed1TankWeight.isNormalOperation()
+    ? fqdc1Feed1TankWeight.value
+    : fqdc2Feed1TankWeight.isNormalOperation()
+      ? fqdc2Feed1TankWeight.value
+      : null;
+  const leftMidTankWeight = fqdc1LeftMidTankWeight.isNormalOperation()
+    ? fqdc1LeftMidTankWeight.value
+    : fqdc2LeftMidTankWeight.isNormalOperation()
+      ? fqdc2LeftMidTankWeight.value
+      : null;
+  const leftInnerTankWeight = fqdc1LeftInnerTankWeight.isNormalOperation()
+    ? fqdc1LeftInnerTankWeight.value
+    : fqdc2LeftInnerTankWeight.isNormalOperation()
+      ? fqdc2LeftInnerTankWeight.value
+      : null;
+  const feed2TankWeight = fqdc1Feed2TankWeight.isNormalOperation()
+    ? fqdc1Feed2TankWeight.value
+    : fqdc2Feed2TankWeight.isNormalOperation()
+      ? fqdc2Feed2TankWeight.value
+      : null;
+  const feed3TankWeight = fqdc1Feed3TankWeight.isNormalOperation()
+    ? fqdc1Feed3TankWeight.value
+    : fqdc2Feed3TankWeight.isNormalOperation()
+      ? fqdc2Feed3TankWeight.value
+      : null;
+  const rightInnerTankWeight = fqdc1RightInnerTankWeight.isNormalOperation()
+    ? fqdc1RightInnerTankWeight.value
+    : fqdc2RightInnerTankWeight.isNormalOperation()
+      ? fqdc2RightInnerTankWeight.value
+      : null;
+  const rightMidTankWeight = fqdc1RightMidTankWeight.isNormalOperation()
+    ? fqdc1RightMidTankWeight.value
+    : fqdc2RightMidTankWeight.isNormalOperation()
+      ? fqdc2RightMidTankWeight.value
+      : null;
+  const feed4TankWeight = fqdc1Feed4TankWeight.isNormalOperation()
+    ? fqdc1Feed4TankWeight.value
+    : fqdc2Feed4TankWeight.isNormalOperation()
+      ? fqdc2Feed4TankWeight.value
+      : null;
+  const rightOuterTankWeight = fqdc1RightOuterTankWeight.isNormalOperation()
+    ? fqdc1RightOuterTankWeight.value
+    : fqdc2RightOuterTankWeight.isNormalOperation()
+      ? fqdc2RightOuterTankWeight.value
+      : null;
+  const trimTankWeight = fqdc1TrimTankWeight.isNormalOperation()
+    ? fqdc1TrimTankWeight.value
+    : fqdc2TrimTankWeight.isNormalOperation()
+      ? fqdc2TrimTankWeight.value
+      : null;
 
   return (
     <>
@@ -1587,16 +1656,21 @@ const Engine: FC<EngineProps> = ({ x, y, index }) => {
 
 interface TankQuantityProps extends Position {
   smallFont?: boolean;
-  quantity: number;
+  quantity: number | null;
   hasFault?: boolean;
 }
 
 const TankQuantity: FC<TankQuantityProps> = ({ x, y, smallFont = false, quantity, hasFault }) => {
-  const displayQuantity = Math.floor(quantity / 20) * 20;
+  const displayText = quantity !== null ? Math.floor(quantity / 20) * 20 : 'XX\xa0';
 
   return (
-    <text x={x} y={y} className={`${hasFault ? 'Amber' : 'Green'} ${smallFont ? 'T3' : 'T4'}`} textAnchor="end">
-      {displayQuantity}
+    <text
+      x={x}
+      y={y}
+      className={`${hasFault || quantity === null ? 'Amber' : 'Green'} ${smallFont ? 'T3' : 'T4'}`}
+      textAnchor="end"
+    >
+      {displayText}
     </text>
   );
 };

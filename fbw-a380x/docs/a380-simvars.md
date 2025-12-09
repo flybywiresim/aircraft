@@ -1041,6 +1041,25 @@
     | 20   | {side} Trim Pump running |
     | 21-29 | Unused |
 
+- A32NX_FQDC_{id}_{tank}_TANK_QUANTITY
+  - Arinc429<Kilogram>
+  - The fuel quantity in a specific tank (AGP value)
+  - {id}
+    - 1
+    - 2
+  -{tank}
+    - FEED_ONE
+    - FEED_TWO
+    - FEED_THREE
+    - FEED_FOUR
+    - LEFT_OUTER
+    - LEFT_MID
+    - LEFT_INNER
+    - RIGHT_OUTER
+    - RIGHT_MID
+    - RIGHT_INNER
+    - TRIM
+
 ## Indicating-Recording ATA 31
 
 - A32NX_CDS_CAN_BUS_1_1_AVAIL
