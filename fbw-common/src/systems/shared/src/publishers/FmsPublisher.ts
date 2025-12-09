@@ -11,6 +11,7 @@ import {
 // FIXME systems should not import from instruments
 import { VdSymbol } from '../../../instruments/src/NavigationDisplay';
 
+// FIXME: this should not be shared between the aircraft but each have their own implementation
 /**
  * Transmitted from FMS
  */
@@ -33,7 +34,6 @@ export interface BaseFmsData {
   fmZeroFuelWeightCg: number;
   /** A429 raw value */
   fmLandingElevation: number;
-  // TODO: remove and replace with FQMS (+ WBBC) values
   fmGrossWeight: number;
   /** Symbols displayed on VD */
   vdSymbols_L: VdSymbol[];

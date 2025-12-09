@@ -1048,10 +1048,10 @@
     - 1
     - 2
   -{tank}
-    - FEED_ONE
-    - FEED_TWO
-    - FEED_THREE
-    - FEED_FOUR
+    - FEED_1
+    - FEED_2
+    - FEED_3
+    - FEED_4
     - LEFT_OUTER
     - LEFT_MID
     - LEFT_INNER
