@@ -40,9 +40,9 @@ export class TerrainMapThresholds extends DisplayComponent<TerrainMapThresholdsP
       case TerrainLevelMode.Caution:
         return '#c21d1a';
       case TerrainLevelMode.Warning:
-        return 'f5ca4f';
+        return 'ffd200';
       default:
-        return '#64da1d';
+        return '#5bea06';
     }
   });
 
@@ -61,16 +61,16 @@ export class TerrainMapThresholds extends DisplayComponent<TerrainMapThresholdsP
       case TerrainLevelMode.Caution:
         return '#c21d1a';
       case TerrainLevelMode.Warning:
-        return '#f5ca4f';
+        return '#ffd200';
       default:
-        return '#64da1d';
+        return '#5bea06';
     }
   });
 
   render(): VNode | null {
     return (
       <g visibility={this.shown.map((v) => (v ? 'inherit' : 'hidden'))}>
-        <text class="TerrTextLabel" x={688} y={612} font-size={23} fill="#44d9e1">
+        <text class="TerrTextLabel" x={688} y={612} font-size={23} fill="#17e9f2">
           TERR
         </text>
 
@@ -78,12 +78,12 @@ export class TerrainMapThresholds extends DisplayComponent<TerrainMapThresholdsP
           {this.upperBorder}
         </text>
 
-        <rect x={700} y={619} width={54} height={24} strokw-width={3} stroke="#f5ca4f" fill-opacity={0} />
+        <rect x={700} y={619} width={54} height={24} strokw-width={3} stroke="#ffd200" fill-opacity={0} />
         <text x={709} y={663} font-size={22} fill={this.lowerBorderColor}>
           {this.lowerBorder}
         </text>
 
-        <rect x={700} y={643} width={54} height={24} strokw-width={3} stroke="#f5ca4f" fill-opacity={0} />
+        <rect x={700} y={643} width={54} height={24} strokw-width={3} stroke="#ffd200" fill-opacity={0} />
       </g>
     );
   }
