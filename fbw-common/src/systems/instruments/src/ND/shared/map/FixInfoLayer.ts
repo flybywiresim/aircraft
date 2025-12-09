@@ -72,7 +72,7 @@ export class FixInfoLayer implements MapLayer<NdSymbol> {
       if (radials) {
         for (const radial of radials) {
           if (Number.isFinite(radial)) {
-            this.drawFixInfoRadial(context, rx, ry, radial, mapParameters, '#0ff', 1.75);
+            this.drawFixInfoRadial(context, rx, ry, radial, mapParameters, '#17e9f2', 1.75);
           }
         }
       }
@@ -80,7 +80,7 @@ export class FixInfoLayer implements MapLayer<NdSymbol> {
       if (radii) {
         for (const radius of radii) {
           if (Number.isFinite(radius)) {
-            this.drawFixInfoRadius(context, rx, ry, radius * mapParameters.nmToPx, '#0ff', 1.75);
+            this.drawFixInfoRadius(context, rx, ry, radius * mapParameters.nmToPx, '#17e9f2', 1.75);
           }
         }
       }
@@ -99,7 +99,7 @@ export class FixInfoLayer implements MapLayer<NdSymbol> {
     color: string,
     lineWidth: number,
   ) {
-    context.strokeStyle = '#44d9e1';
+    context.strokeStyle = '#17e9f2';
     context.lineWidth = lineWidth;
 
     const rotation = mapParameters.rotation(bearing) * MathUtils.DEGREES_TO_RADIANS;
@@ -120,7 +120,7 @@ export class FixInfoLayer implements MapLayer<NdSymbol> {
     color: string,
     lineWidth: number,
   ) {
-    context.strokeStyle = '#44d9e1';
+    context.strokeStyle = '#17e9f2';
     context.lineWidth = lineWidth;
 
     context.ellipse(cx, cy, rPx, rPx, 0, 0, Math.PI * 2);
