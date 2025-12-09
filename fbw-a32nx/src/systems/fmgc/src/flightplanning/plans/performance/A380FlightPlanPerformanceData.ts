@@ -94,7 +94,7 @@ export class A380FlightPlanPerformanceData extends A320FlightPlanPerformanceData
 
   readonly climbDerated = Subject.create<ClimbDerated | null>(null);
 
-  readonly descentCabinRate = Subject.create<number | null>(null);
+  readonly descentCabinRate = Subject.create<number | null>(-350);
 
   pipeTo(other: A380FlightPlanPerformanceData, isBeforeEngineStart: boolean): void {
     super.pipeTo(other, isBeforeEngineStart);

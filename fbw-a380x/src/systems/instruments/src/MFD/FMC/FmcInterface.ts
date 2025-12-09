@@ -3,7 +3,7 @@ import { FmsDataInterface } from '@fmgc/flightplanning/interface/FmsDataInterfac
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
-import { ArraySubject, Subject } from '@microsoft/msfs-sdk';
+import { ArraySubject, Subject, Subscribable } from '@microsoft/msfs-sdk';
 import { FmsErrorMessage } from 'instruments/src/MFD/FMC/FlightManagementComputer';
 import { FmcAircraftInterface } from 'instruments/src/MFD/FMC/FmcAircraftInterface';
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
@@ -156,6 +156,11 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
 
   /** in kilograms */
   getExtraFuel(): number | null;
+
+  /**
+   * Whether predicted EFOB at destination is below minimum fuel
+   */
+  get destEfobBelowMin(): Subscribable<boolean>;
 
   /**
    * Calculates the recommended maximum flight level.

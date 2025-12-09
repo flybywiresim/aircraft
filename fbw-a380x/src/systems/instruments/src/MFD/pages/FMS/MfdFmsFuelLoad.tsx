@@ -97,7 +97,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
   private readonly costIndexDisabled = MappedSubject.create(
     ([flightPhase, ciMode]) => flightPhase >= FmgcFlightPhase.Descent || ciMode === CostIndexMode.LRC,
     this.activeFlightPhase,
-    this.props.fmcService.master?.fmgc.data.costIndexMode ?? Subject.create(CostIndexMode.ECON),
+    this.costIndexMode,
   );
 
   private readonly jettisonGrossWeight = Subject.create<number | null>(null);

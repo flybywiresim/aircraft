@@ -112,7 +112,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     this.fromIcao,
     this.toIcao,
     this.activeFlightPhase,
-    this.props.fmcService.master?.fmgc.data.costIndexMode ?? Subject.create(CostIndexMode.ECON),
+    this.costIndexMode,
   );
 
   private readonly tropopause = Subject.create<number | null>(null);

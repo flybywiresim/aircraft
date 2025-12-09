@@ -243,11 +243,18 @@ export class FlightManagementComputer implements FmcInterface {
     this.zeroFuelWeightCenterOfGravity,
   );
 
+  private readonly approachQnh = Subject.create<number | null>(null);
+  private readonly approachTemperature = Subject.create<number | null>(null);
+  private readonly approachWindDirection = Subject.create<number | null>(null);
+  private readonly approachWindMagnitude = Subject.create<number | null>(null);
+
   private readonly destDataEntered = MappedSubject.create(
-    ([qnh, temperature, wind]) => qnh !== null && temperature !== null && wind !== null,
-    this.fmgc.data.approachQnh,
-    this.fmgc.data.approachTemperature,
-    this.fmgc.data.approachWind,
+    ([qnh, temperature, windDirection, windMagnitude]) =>
+      qnh !== null && temperature !== null && windDirection !== null && windMagnitude !== null,
+    this.approachQnh,
+    this.approachTemperature,
+    this.approachWindDirection,
+    this.approachWindMagnitude,
   );
 
   private readonly minimumFuelAtDestinationPilotEntry = Subject.create<number | null>(null);
@@ -266,6 +273,8 @@ export class FlightManagementComputer implements FmcInterface {
     this.alternateFuel,
     this.finalFuelWeight,
   );
+
+  public readonly destEfobBelowMin = Subject.create(false);
 
   private destDataCheckedInCruise = false;
 
@@ -345,6 +354,10 @@ export class FlightManagementComputer implements FmcInterface {
             this.flightPlanInterface.active.performanceData.zeroFuelWeightCenterOfGravity.pipe(
               this.zeroFuelWeightCenterOfGravity,
             ),
+            this.flightPlanInterface.active.performanceData.approachQnh.pipe(this.approachQnh),
+            this.flightPlanInterface.active.performanceData.approachTemperature.pipe(this.approachTemperature),
+            this.flightPlanInterface.active.performanceData.approachWindDirection.pipe(this.approachWindDirection),
+            this.flightPlanInterface.active.performanceData.approachWindMagnitude.pipe(this.approachWindMagnitude),
             this.flightPlanInterface.active.performanceData.minimumDestinationFuelOnBoard.pipe(
               this.minimumFuelAtDestinationPilotEntry,
             ),
@@ -1171,7 +1184,7 @@ export class FlightManagementComputer implements FmcInterface {
           this.acInterface.setTakeoffFlaps(toFlaps);
         }
 
-        const thsFor = this.fmgc.data.takeoffThsFor.get();
+        const thsFor = this.flightPlanInterface.active.performanceData.takeoffThsFor.get();
         if (thsFor) {
           this.acInterface.setTakeoffTrim(thsFor);
         }

@@ -286,7 +286,7 @@ export class FlightLevelFormat extends SubscriptionCollector implements DataEntr
   }
 }
 
-export const RADIO_ALTITUDE_NODH_VALUE = -2;
+export const RADIO_ALTITUDE_NODH_VALUE = 0;
 export class RadioAltitudeFormat extends SubscriptionCollector implements DataEntryFormat<number> {
   public placeholder = '-----';
 

@@ -691,18 +691,19 @@ export class FmcAircraftInterface {
   updateMinimums(distanceToDestination: number) {
     const inRange = this.shouldTransmitMinimums(distanceToDestination);
 
-    const mda = this.fmgc.data.approachBaroMinimum.get();
-    const dh = this.fmgc.data.approachRadioMinimum.get();
+    const mda = this.flightPlanService.active.performanceData.approachBaroMinimum.get();
+    const dh = this.flightPlanService.active.performanceData.approachRadioMinimum.get();
+    const dhNumerical = dh === 'NO DH' ? 0 : dh;
 
     const mdaValid = inRange && mda !== null;
-    const dhValid = !mdaValid && inRange && dh !== null && dh > 0;
+    const dhValid = !mdaValid && inRange && dhNumerical !== null && dhNumerical > 0;
 
     const mdaSsm = mdaValid ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData;
     const dhSsm = dhValid ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData;
 
     this.arincMDA.setBnrValue(mdaValid ? mda : 0, mdaSsm, 17, 131072, 0);
-    this.arincDH.setBnrValue(dhValid ? dh : 0, dhSsm, 16, 8192, 0);
-    this.arincEisWord2.setBitValue(29, inRange && dh === RADIO_ALTITUDE_NODH_VALUE);
+    this.arincDH.setBnrValue(dhValid ? dhNumerical : 0, dhSsm, 16, 8192, 0);
+    this.arincEisWord2.setBitValue(29, inRange && dhNumerical === RADIO_ALTITUDE_NODH_VALUE);
     // FIXME we need to handle these better
     this.arincEisWord2.ssm = Arinc429SignStatusMatrix.NormalOperation;
   }
@@ -1383,13 +1384,14 @@ export class FmcAircraftInterface {
     }
 
     // if pilot has set approach wind in MCDU we use it, otherwise fall back to current measured wind
-    const appWind = this.fmgc.data.approachWind.get();
+    const appWindDirection = this.flightPlanService.active.performanceData.approachWindDirection.get();
+    const appWindMagnitude = this.flightPlanService.active.performanceData.approachWindMagnitude.get();
     let towerHeadwind = 0;
-    if (appWind !== null) {
+    if (appWindDirection !== null && appWindMagnitude !== null) {
       if (this.flightPlanService.active.destinationRunway) {
         towerHeadwind = A380SpeedsUtils.getHeadwind(
-          appWind.speed,
-          appWind.direction,
+          appWindMagnitude,
+          appWindDirection,
           this.flightPlanService.active.destinationRunway.magneticBearing,
         );
       }
@@ -2114,16 +2116,16 @@ export class FmcAircraftInterface {
     if (destEfob !== null) {
       const minFuelAtDestination = this.flightPlanService.active.performanceData.minimumDestinationFuelOnBoard.get();
       if (minFuelAtDestination !== null) {
-        const isBelowMin = this.fmgc.data.destEfobBelowMin.get();
+        const isBelowMin = this.fmc.destEfobBelowMin.get();
         if (isBelowMin) {
-          this.fmgc.data.destEfobBelowMin.set(destEfob - minFuelAtDestination <= 0.3);
+          this.fmc.destEfobBelowMin.set(destEfob - minFuelAtDestination <= 0.3);
         } else {
-          this.fmgc.data.destEfobBelowMin.set(destEfob < minFuelAtDestination);
+          this.fmc.destEfobBelowMin.set(destEfob < minFuelAtDestination);
         }
         return;
       }
     }
-    this.fmgc.data.destEfobBelowMin.set(false);
+    this.fmc.destEfobBelowMin.set(false);
   }
 
   checkDestEfobBelowMinScratchPadMessage(deltaTime: number) {
@@ -2134,7 +2136,7 @@ export class FmcAircraftInterface {
     );
 
     this.destEfobBelowMinScratchPadMessage.set(
-      this.fmgc.data.destEfobBelowMin.get() &&
+      this.fmc.destEfobBelowMin.get() &&
         (flightPhase === FmgcFlightPhase.Cruise ||
           flightPhase === FmgcFlightPhase.Descent ||
           altActiveInClimbForMoreThan10Min ||

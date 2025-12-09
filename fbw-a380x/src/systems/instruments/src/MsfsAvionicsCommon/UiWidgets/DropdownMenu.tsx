@@ -7,6 +7,7 @@ import {
   Consumer,
   DisplayComponent,
   FSComponent,
+  MutableSubscribable,
   Subject,
   Subscribable,
   SubscribableArray,
@@ -19,7 +20,7 @@ import { DropdownFieldFormat } from 'instruments/src/MFD/pages/common/DataEntryF
 
 interface DropdownMenuProps extends ComponentProps {
   values: SubscribableArray<string>;
-  selectedIndex: Subject<number | null>;
+  selectedIndex: Subscribable<number | null> | MutableSubscribable<number | null>;
   freeTextAllowed: boolean;
   idPrefix: string;
   /** If defined, this component does not update the selectedIndex prop by itself, but rather calls this method. */
@@ -77,7 +78,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
       this.freeTextEntered = false;
       if (this.props.onModified) {
         this.props.onModified(this.renderedDropdownOptionsIndices[i], '');
-      } else {
+      } else if (SubscribableUtils.isMutableSubscribable(this.props.selectedIndex)) {
         this.props.selectedIndex.set(this.renderedDropdownOptionsIndices[i]);
       }
       this.dropdownIsOpened.set(false);

@@ -98,74 +98,11 @@ export class FmgcData {
 
   public readonly greenDotSpeed = Subject.create<Knots | null>(null);
 
-  // MIGRATE vapp
-  public readonly approachSpeed = Subject.create<Knots | null>(null);
-
-  // MIGRATE
-  public readonly approachWindDirection = Subject.create<number | null>(null);
-
-  // MIGRATE
-  public readonly approachWindSpeed = Subject.create<number | null>(null);
-
-  // MIGRATE
-  public readonly approachWind: MappedSubject<number[], FmcWindVector | null> = MappedSubject.create(
-    ([direction, speed]) => (direction !== null && speed !== null ? { direction: direction, speed: speed } : null),
-    this.approachWindDirection,
-    this.approachWindSpeed,
-  );
-
-  // MIGRATE
-  public readonly approachQnh = Subject.create<number | null>(null);
-
-  // MIGRATE
-  public readonly approachTemperature = Subject.create<number | null>(null);
-
   public readonly approachGreenDotSpeed = Subject.create<Knots | null>(null);
 
   public readonly approachSlatRetractionSpeed = Subject.create<Knots | null>(null);
 
   public readonly approachFlapRetractionSpeed = Subject.create<Knots | null>(null);
-
-  /** in meters. null if not set. */
-  // MIGRATE
-  public readonly takeoffShift = Subject.create<number | null>(null);
-
-  // MIGRATE
-  public readonly takeoffPowerSetting = Subject.create<TakeoffPowerSetting>(TakeoffPowerSetting.TOGA);
-
-  // MIGRATE
-  public readonly takeoffFlexTemp = Subject.create<number | null>(null);
-
-  // MIGRATE
-  public readonly takeoffDeratedSetting = Subject.create<TakeoffDerated | null>(null);
-
-  // MIGRATE
-  public readonly takeoffThsFor = Subject.create<number | null>(null);
-
-  // MIGRATE
-  public readonly takeoffPacks = Subject.create<TakeoffPacks | null>(TakeoffPacks.ON);
-
-  // MIGRATE
-  public readonly takeoffAntiIce = Subject.create<TakeoffAntiIce | null>(TakeoffAntiIce.OFF);
-
-  // MIGRATE
-  public readonly noiseEnabled = Subject.create<boolean>(false);
-
-  // MIGRATE
-  public readonly noiseN1 = Subject.create<number | null>(null);
-
-  // MIGRATE
-  public readonly noiseSpeed = Subject.create<Knots | null>(null);
-
-  /** in feet. null if not set. */
-  // MIGRATE
-  public readonly noiseEndAltitude = Subject.create<number | null>(null);
-
-  // MIGRATE
-  public readonly costIndexMode = Subject.create<CostIndexMode | null>(CostIndexMode.ECON);
-
-  // MIGRATE
-  public readonly climbDerated = Subject.create<ClimbDerated | null>(ClimbDerated.NONE);
 
   /** in feet. null if not set. */
   public readonly climbPredictionsReferencePilotEntry = Subject.create<number | null>(null);
@@ -190,18 +127,6 @@ export class FmgcData {
   public readonly cruisePreSelSpeed = Subject.create<Knots | null>(null);
 
   public readonly descentPreSelSpeed = Subject.create<Knots | null>(null);
-
-  /** in feet/min. null if not set. */
-  // MIGRATE
-  public readonly descentCabinRate = Subject.create<number>(-350);
-
-  /** in feet. null if not set. */
-  // MIGRATE
-  public readonly approachBaroMinimum = Subject.create<number | null>(null);
-
-  /** in feet. null if not set. */
-  // MIGRATE
-  public readonly approachRadioMinimum = Subject.create<number | null>(null);
 
   public readonly approachVref = Subject.create<Knots | null>(null);
 
@@ -489,17 +414,23 @@ export class FmgcDataService implements Fmgc {
   }
 
   getApproachWind(): FmcWindVector | null {
-    return this.data.approachWind.get();
+    const windDirection = this.flightPlanService.active.performanceData.approachWindDirection.get();
+    const windMagnitude = this.flightPlanService.active.performanceData.approachWindMagnitude.get();
+    if (windDirection !== null && windMagnitude !== null) {
+      return { direction: windDirection, speed: windMagnitude };
+    } else {
+      return null;
+    }
   }
 
   /** in hPa */
   getApproachQnh(): number {
-    return this.data.approachQnh.get() ?? 1013.15;
+    return this.flightPlanService.active.performanceData.approachQnh.get() ?? 1013.25;
   }
 
   /** in degrees celsius */
   getApproachTemperature(): number {
-    return this.data.approachTemperature.get() ?? 0;
+    return this.flightPlanService.active.performanceData.approachTemperature.get() ?? 0;
   }
 
   /** in tons */
