@@ -348,6 +348,8 @@ export class FmgcData {
 
   public readonly approachVls = Subject.create<Knots | null>(null);
 
+  public readonly positionMonitorFix = Subject.create<Fix | null>(null);
+
   /**
    * Estimated take-off time, in seconds. Displays as HH:mm:ss. Null if not set
    */

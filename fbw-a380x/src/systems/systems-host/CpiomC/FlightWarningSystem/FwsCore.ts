@@ -933,9 +933,7 @@ export class FwsCore {
   public readonly directLawCondition = Subject.create(false);
 
   public readonly fcdc1FaultCondition = Subject.create(false);
-
   public readonly fcdc12FaultCondition = Subject.create(false);
-
   public readonly fcdc2FaultCondition = Subject.create(false);
 
   public readonly flapsHandle = Subject.create(0);
@@ -1099,13 +1097,33 @@ export class FwsCore {
 
   public readonly flapsLeverNotZero = Subject.create(false);
 
-  public readonly flapsBaulkActiveWord = Arinc429Register.empty();
+  public readonly slatFlapsSystem1StatusWord = Arinc429Register.empty();
+  public readonly slatFlapsSystem2StatusWord = Arinc429Register.empty();
+
+  public readonly slatFlapsSystem1ActualPositionWord = Arinc429Register.empty();
+  public readonly slatFlapsSystem2ActualPositionWord = Arinc429Register.empty();
 
   // FIXME implement
   public readonly flapSys1Fault = Subject.create(false);
   public readonly flapSys2Fault = Subject.create(false);
+  public readonly allFlapSysFault = MappedSubject.create(
+    SubscribableMapFunctions.and(),
+    this.flapSys1Fault,
+    this.flapSys2Fault,
+  );
+  public readonly flapsJammed = Subject.create(false);
+  public readonly flapPositionValid = Subject.create(false);
+  public readonly flapsRetracted = Subject.create(false);
+
   public readonly slatSys1Fault = Subject.create(false);
   public readonly slatSys2Fault = Subject.create(false);
+  public readonly allSlatSysFault = MappedSubject.create(
+    SubscribableMapFunctions.and(),
+    this.slatSys1Fault,
+    this.slatSys2Fault,
+  );
+  public readonly slatsJammed = Subject.create(false);
+  public readonly slatsRetracted = Subject.create(false);
 
   public readonly speedBrakeCommand5sConfirm = new NXLogicConfirmNode(5, true);
 
@@ -1521,19 +1539,23 @@ export class FwsCore {
 
   public readonly gearLeverPos = Subject.create(false);
 
+  private readonly autobrakeDeactivatedPulseNode = new NXLogicPulseNode(false);
+
   public readonly autoBrakeDeactivatedNode = new NXLogicTriggeredMonostableNode(9, false); // When ABRK deactivated, emit this for 9 sec
 
   public readonly autoBrakeOffAuralConfirmNode = new NXLogicConfirmNode(1, true);
 
   public readonly autoBrakeOff = Subject.create(false);
 
-  public autoBrakeOffAuralTriggered = false;
+  private autoBrakeOffAuralTriggered = false;
 
-  public autoBrakeOffMemoInhibited = false;
+  private autoBrakeOffMemoInhibited = false;
 
-  public readonly btvLost = Subject.create(false); // FIXME add
+  public btvExitMissedPulseNode = new NXLogicPulseNode();
 
-  public readonly rowRopLost = Subject.create(false); // FIXME add
+  public readonly btvLost = Subject.create(false); // FIXME add from FCDC
+
+  public readonly rowRopLost = Subject.create(false); // FIXME add from FCDC
 
   /* NAVIGATION */
 
@@ -1901,6 +1923,8 @@ export class FwsCore {
   public readonly emergencyElectricGeneratorPotential = Subject.create(0);
 
   public readonly emergencyGeneratorOn = this.emergencyElectricGeneratorPotential.map((it) => it > 0);
+
+  public readonly elecEmerConfig = Subject.create(false);
 
   public readonly apuMasterSwitch = Subject.create(0);
 
@@ -2756,6 +2780,9 @@ export class FwsCore {
     this.acESSBusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED', 'bool') > 0);
     this.dc108PhBusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_108PH_BUS_IS_POWERED', 'Bool') > 0);
     this.dcEhaPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_247PP_BUS_IS_POWERED', 'Bool') > 0);
+    this.elecEmerConfig.set(
+      !this.ac1BusPowered.get() && !this.ac2BusPowered.get() && !this.ac3BusPowered.get() && !this.ac4BusPowered.get(),
+    );
 
     /* ENGINE AND THROTTLE acquisition */
 
@@ -2790,8 +2817,33 @@ export class FwsCore {
 
     // Flaps
     this.flapsHandle.set(SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum'));
-    // TODO: add switching between SFCC_1 and SFCC_2
-    this.flapsBaulkActiveWord.setFromSimVar('L:A32NX_SFCC_1_SLAT_FLAP_SYSTEM_STATUS_WORD');
+    this.slatFlapsSystem1StatusWord.setFromSimVar('L:A32NX_SFCC_1_SLAT_FLAP_SYSTEM_STATUS_WORD');
+    this.slatFlapsSystem2StatusWord.setFromSimVar('L:A32NX_SFCC_2_SLAT_FLAP_SYSTEM_STATUS_WORD');
+    this.slatFlapsSystem1ActualPositionWord.setFromSimVar('L:A32NX_SFCC_1_SLAT_FLAP_ACTUAL_POSITION_WORD');
+    this.slatFlapsSystem2ActualPositionWord.setFromSimVar('L:A32NX_SFCC_2_SLAT_FLAP_ACTUAL_POSITION_WORD');
+
+    this.flapSys1Fault.set(this.slatFlapsSystem1StatusWord.bitValueOr(12, false));
+    this.flapSys2Fault.set(this.slatFlapsSystem2StatusWord.bitValueOr(12, false));
+    this.flapsJammed.set(
+      this.slatFlapsSystem1StatusWord.bitValueOr(14, false) || this.slatFlapsSystem2StatusWord.bitValueOr(14, false),
+    );
+    this.flapPositionValid.set(
+      this.slatFlapsSystem1StatusWord.bitValueOr(29, false) || this.slatFlapsSystem2StatusWord.bitValueOr(29, false),
+    );
+    this.flapsRetracted.set(
+      this.slatFlapsSystem1ActualPositionWord.bitValueOr(19, false) ||
+        this.slatFlapsSystem2ActualPositionWord.bitValueOr(19, false),
+    );
+
+    this.slatSys1Fault.set(this.slatFlapsSystem1StatusWord.bitValueOr(11, false));
+    this.slatSys2Fault.set(this.slatFlapsSystem2StatusWord.bitValueOr(11, false));
+    this.slatsJammed.set(
+      this.slatFlapsSystem1StatusWord.bitValueOr(13, false) || this.slatFlapsSystem2StatusWord.bitValueOr(13, false),
+    );
+    this.slatsRetracted.set(
+      this.slatFlapsSystem1ActualPositionWord.bitValueOr(12, false) ||
+        this.slatFlapsSystem2ActualPositionWord.bitValueOr(12, false),
+    );
 
     // FIXME move out of acquisition to logic below
     const oneEngineAboveMinPower = this.engine1AboveIdle.get() || this.engine2AboveIdle.get();
@@ -3466,24 +3518,25 @@ export class FwsCore {
     this.autoThrustOffInvoluntary.set(this.autoThrustOffInvoluntaryNode.read());
 
     // AUTO BRAKE OFF
-    this.autoBrakeDeactivatedNode.write(!!SimVar.GetSimVarValue('L:A32NX_AUTOBRAKES_ACTIVE', 'boolean'), deltaTime);
+    this.autobrakeDeactivatedPulseNode.write(
+      !!SimVar.GetSimVarValue('L:A32NX_AUTOBRAKES_ACTIVE', 'boolean'),
+      deltaTime,
+    );
 
-    if (!this.autoBrakeDeactivatedNode.read()) {
+    const autoBrakeOffShouldTrigger = this.autoBrakeDeactivatedNode.write(
+      this.autobrakeDeactivatedPulseNode.read() &&
+        this.aircraftOnGround.get() &&
+        this.computedAirSpeedToNearest2.get() > 33,
+      deltaTime,
+    );
+
+    if (!autoBrakeOffShouldTrigger) {
       this.autoBrakeOffMemoInhibited = false;
       this.requestMasterCautionFromABrkOff = false;
       this.autoBrakeOffAuralTriggered = false;
     }
 
-    this.autoBrakeOffAuralConfirmNode.write(
-      this.autoBrakeDeactivatedNode.read() && !this.autoBrakeOffMemoInhibited,
-      deltaTime,
-    );
-
-    const autoBrakeOffShouldTrigger =
-      this.aircraftOnGround.get() &&
-      this.computedAirSpeedToNearest2.get() > 33 &&
-      this.autoBrakeDeactivatedNode.read() &&
-      !this.autoBrakeOffMemoInhibited;
+    this.autoBrakeOffAuralConfirmNode.write(autoBrakeOffShouldTrigger && !this.autoBrakeOffMemoInhibited, deltaTime);
 
     if (autoBrakeOffShouldTrigger && !this.autoBrakeOff.get()) {
       // Triggered in this cycle -> request master caution
@@ -4404,7 +4457,7 @@ export class FwsCore {
       (adr1PressureAltitude.valueOr(0) >= 22000 ||
         adr2PressureAltitude.valueOr(0) >= 22000 ||
         adr3PressureAltitude.valueOr(0) >= 22000 ||
-        this.flapsBaulkActiveWord.bitValueOr(25, false)) &&
+        this.slatFlapsSystem1StatusWord.bitValueOr(25, false)) &&
         this.flightPhase.get() === 8 &&
         !this.slatFlapSelectionS0F0,
     );
