@@ -13,7 +13,6 @@ import { MappedSubject, MutableSubscribable, Subject, Subscribable, Subscribable
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { Arinc429Word, Fix, Runway, Units } from '@flybywiresim/fbw-sdk';
 import { Feet } from 'msfs-geo';
-import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
 import { minGw } from '@shared/PerformanceConstants';
 
 export enum TakeoffPowerSetting {
@@ -69,195 +68,9 @@ export class FmgcData {
 
   public readonly atcCallsign = Subject.create<string | null>(null);
 
-  /** in degrees celsius. null if not set. */
-  // MIGRATE
-  public readonly cruiseTemperaturePilotEntry = Subject.create<number | null>(null);
-
-  /** in degrees celsius. null if not set. */
-  // MIGRATE
-  public readonly cruiseTemperatureIsaTemp = Subject.create<number | null>(null);
-
-  /** in degrees celsius. null if not set. */
-  // MIGRATE
-  public readonly cruiseTemperature = MappedSubject.create(
-    ([isa, pe]) => (pe !== null ? pe : isa),
-    this.cruiseTemperatureIsaTemp,
-    this.cruiseTemperaturePilotEntry,
-  );
-
-  // MIGRATE
-  public readonly cruiseTemperatureIsPilotEntered = this.cruiseTemperaturePilotEntry.map((it) => it !== null);
-
-  /** in knots. null if not set. */
-  // MIGRATE
-  public readonly tripWind = Subject.create<number | null>(null);
-
-  /** in kg. null if not set. */
-  // MIGRATE
-  public readonly zeroFuelWeight = Subject.create<number | null>(null);
-
-  /** in percent. null if not set. */
-  // MIGRATE
-  public readonly zeroFuelWeightCenterOfGravity = Subject.create<number | null>(null);
-
-  /** in kg. null if not set. */
-  // MIGRATE
-  public readonly blockFuel = Subject.create<number | null>(null);
-
-  /** in kg. null if not set. */
-  // MIGRATE
-  public readonly taxiFuelPilotEntry = Subject.create<number | null>(null);
-
-  // MIGRATE
-  public readonly taxiFuelIsPilotEntered = this.taxiFuelPilotEntry.map((v) => v !== null);
-
-  // MIGRATE
-  public readonly defaultTaxiFuel = Subject.create<number | null>(AirlineModifiableInformation.EK.taxiFuel);
-
-  // MIGRATE
-  public readonly taxiFuel = MappedSubject.create(
-    ([pilotEntryTaxiFuel, defaultTaxiFuel]) => (pilotEntryTaxiFuel !== null ? pilotEntryTaxiFuel : defaultTaxiFuel),
-    this.taxiFuelPilotEntry,
-    this.defaultTaxiFuel,
-  );
-
-  /** in kg. null if not set. */
-  // MIGRATE
-  public readonly routeReserveFuelWeightPilotEntry = Subject.create<number | null>(null);
-
-  /** in kg. null if not set. */
-  // MIGRATE
-  public readonly routeReserveFuelWeightCalculated = Subject.create<number | null>(null);
-
-  /** in kg. null if not set. */
-  // MIGRATE
-  public readonly routeReserveFuelWeight = MappedSubject.create(
-    ([calc, pe]) => (pe !== null ? pe : calc),
-    this.routeReserveFuelWeightCalculated,
-    this.routeReserveFuelWeightPilotEntry,
-  );
-
-  /** in percent. null if not set. */
-  // MIGRATE
-  public readonly routeReserveFuelPercentagePilotEntry = Subject.create<number | null>(null);
-
-  // MIGRATE
-  public readonly routeReserveFuelIsPilotEntered = this.routeReserveFuelWeightPilotEntry.map((it) => it !== null);
-
-  // MIGRATE
-  public readonly routeReserveFuelPercentage = MappedSubject.create(
-    ([percentagePilotEntry, reservePilotEntry]) =>
-      reservePilotEntry !== null
-        ? null
-        : percentagePilotEntry === null
-          ? AirlineModifiableInformation.EK.rteRsv
-          : percentagePilotEntry,
-    this.routeReserveFuelPercentagePilotEntry,
-    this.routeReserveFuelWeightPilotEntry,
-  );
-
-  // MIGRATE
-  public readonly routeReserveFuelPercentageIsPilotEntered = this.routeReserveFuelPercentagePilotEntry.map(
-    (v) => v !== null,
-  );
+  public readonly tripFuelAtPreflight = Subject.create<number | null>(null); // in tonnes
 
   public readonly destEfobBelowMin = Subject.create(false);
-
-  // MIGRATE
-  public readonly paxNumber = Subject.create<number | null>(null);
-
-  /** in kg. null if not set. */
-  // MIGRATE
-  public readonly jettisonGrossWeight = Subject.create<number | null>(null);
-
-  public readonly alternateExists = Subject.create(false);
-
-  /** in kg. null if not set. */
-  // MIGRATE
-  public readonly alternateFuelPilotEntry = Subject.create<number | null>(null);
-
-  /** in kg. null if not set. */
-  // MIGRATE
-  public readonly alternateFuelCalculated = this.alternateExists.map((v) => (v ? 6_500 : null)); // FIXME Hardcoded value. Derive from FMS predictions.
-
-  // MIGRATE
-  public readonly alternateFuel = MappedSubject.create(
-    ([calc, pe]) => (pe !== null ? pe : calc),
-    this.alternateFuelCalculated,
-    this.alternateFuelPilotEntry,
-  ); // in kg
-
-  // MIGRATE
-  public readonly alternateFuelIsPilotEntered = this.alternateFuelPilotEntry.map((it) => it !== null);
-
-  /** in kg. null if not set. */
-  // MIGRATE
-  public readonly finalFuelWeightPilotEntry = Subject.create<number | null>(null);
-
-  /** in kg. null if not set. */
-  // MIGRATE
-  public readonly finalFuelWeightCalculated = Subject.create<number | null>(4_650); // FIXME Hardcoded value. Derive from configured final time based on hold at 1500ft with flaps 1.
-
-  // MIGRATE
-  public readonly finalFuelWeight = MappedSubject.create(
-    ([calc, pe]) => (pe !== null ? pe : calc),
-    this.finalFuelWeightCalculated,
-    this.finalFuelWeightPilotEntry,
-  );
-
-  /** in minutes. null if not set. */
-  // MIGRATE
-  public readonly finalFuelTimePilotEntry = Subject.create<number | null>(null);
-
-  /** in minutes. */
-  // MIGRATE
-  public readonly finalFuelTime = this.finalFuelTimePilotEntry.map((it) => (it === null ? 30 : it));
-
-  // MIGRATE
-  public readonly finalFuelIsPilotEntered = MappedSubject.create(
-    ([fuel, time]) => fuel !== null || time !== null,
-    this.finalFuelWeightPilotEntry,
-    this.finalFuelTimePilotEntry,
-  );
-
-  /** in kg. null if not set. */
-  // MIGRATE
-  public readonly minimumFuelAtDestinationPilotEntry = Subject.create<number | null>(null);
-
-  /** in kg. null if not set. */
-  // MIGRATE
-  public readonly minimumFuelAtDestination = MappedSubject.create(
-    ([pe, ff, af]) => (pe === null && ff && af ? ff + af : pe),
-    this.minimumFuelAtDestinationPilotEntry,
-    this.finalFuelWeight,
-    this.alternateFuel,
-  );
-
-  // MIGRATE
-  public readonly minFuelAtDestTon = this.minimumFuelAtDestination.map((v) => (v ? v / 1000 : null));
-
-  public readonly minimumFuelAtDestinationIsPilotEntered = this.minimumFuelAtDestinationPilotEntry.map(
-    (it) => it !== null,
-  );
-
-  public readonly pilotEntryMinFuelBelowAltnPlusFinal = MappedSubject.create(
-    ([minFuel, altnFuel, finalFuel]) =>
-      minFuel != null && altnFuel != null && finalFuel != null && minFuel < altnFuel + finalFuel,
-    this.minimumFuelAtDestinationPilotEntry,
-    this.alternateFuel,
-    this.finalFuelWeight,
-  );
-
-  /** in feet. null if not set. */
-  // MIGRATE
-  public readonly tropopausePilotEntry = Subject.create<number | null>(null);
-
-  /** in feet. null if not set. */
-  // MIGRATE
-  public readonly tropopause = this.tropopausePilotEntry.map((tp) => tp ?? 36_090);
-
-  // MIGRATE
-  public readonly tropopauseIsPilotEntered = this.tropopausePilotEntry.map((it) => it !== null);
 
   /**
    * For which departure runway the v speeds have been inserted
@@ -278,9 +91,6 @@ export class FmgcData {
    * V2 speed, to be confirmed after rwy change
    */
   readonly v2ToBeConfirmed = Subject.create<Knots | null>(null);
-
-  // MIGRATE
-  public readonly takeoffFlapsSetting = Subject.create<FlapConf>(FlapConf.CONF_1);
 
   public readonly flapRetractionSpeed = Subject.create<Knots | null>(null);
 
@@ -422,7 +232,7 @@ export class FmgcData {
 }
 
 /**
- * Implementation of Fmgc interface. Not associated to flight plans right now, which should be the case for some of these values
+ * Implementation of Fmgc interface.
  */
 export class FmgcDataService implements Fmgc {
   public data = new FmgcData();
@@ -433,14 +243,14 @@ export class FmgcDataService implements Fmgc {
 
   /** in tons */
   getZeroFuelWeight(): number {
-    const zfw = this.data.zeroFuelWeight.get() ?? minGw;
+    const zfw = this.flightPlanService.active.performanceData.zeroFuelWeight.get() ?? minGw;
     return zfw / 1_000;
   }
 
   /** in tons */
   public getGrossWeight(): number | null {
     // Value received from FQMS, or falls back to entered ZFW + entered FOB
-    const zfw = this.data.zeroFuelWeight.get();
+    const zfw = this.flightPlanService.active.performanceData.zeroFuelWeight.get();
     const fob = this.getFOB();
 
     if (zfw == null || fob === null) {
@@ -461,14 +271,15 @@ export class FmgcDataService implements Fmgc {
    * @returns fuel on board in tonnes (i.e. 1000 x kg)
    */
   getFOB(): number | null {
-    let fob = this.data.blockFuel.get();
+    let fob = this.flightPlanService.active.performanceData.blockFuel.get();
+    // FIXME get from FQMS when implemented
     if (this.isAnEngineOn()) {
       fob =
         SimVar.GetSimVarValue('L:A32NX_TOTAL_FUEL_VOLUME', 'gallons') *
         SimVar.GetSimVarValue('FUEL WEIGHT PER GALLON', 'kilograms');
     }
 
-    return fob !== null ? fob / 1_000 : null; // Needs to be returned in tonnes
+    return fob !== null ? fob : null;
   }
 
   /** in knots */
@@ -480,7 +291,7 @@ export class FmgcDataService implements Fmgc {
 
   /** in feet */
   getTropoPause(): number {
-    return this.data.tropopause.get();
+    return this.flightPlanService.active.performanceData.tropopause.get();
   }
 
   /** in knots */
@@ -617,7 +428,7 @@ export class FmgcDataService implements Fmgc {
   }
 
   getTakeoffFlapsSetting(): FlapConf | undefined {
-    return this.data.takeoffFlapsSetting.get();
+    return this.flightPlanService.active.performanceData.takeoffFlaps.get();
   }
 
   /** in knots */
@@ -645,7 +456,7 @@ export class FmgcDataService implements Fmgc {
 
   /** in knots */
   getApproachSpeed(): number {
-    return this.data.approachSpeed.get() ?? 0;
+    return this.flightPlanService.active.performanceData.pilotVapp.get() ?? 0;
   }
 
   /** F speed in knots based on estimated landing weight, or 0 if it cannot be computed */
@@ -665,7 +476,7 @@ export class FmgcDataService implements Fmgc {
 
   /** in knots */
   getTripWind(): number {
-    return this.data.tripWind.get() ?? 0;
+    return this.flightPlanService.active.performanceData.pilotTripWind.get() ?? 0;
   }
 
   getWinds(): FmcWinds {
@@ -706,7 +517,7 @@ export class FmgcDataService implements Fmgc {
     // TODO estimate alternate fuel
 
     const destEfob = this.getDestEFOB(true);
-    const alternateFuel = this.data.alternateFuel.get();
+    const alternateFuel = this.flightPlanService.active.performanceData.alternateFuel.get();
 
     if (destEfob === null || alternateFuel === null) {
       return null;

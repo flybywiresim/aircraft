@@ -45,6 +45,7 @@ import {
 import { ApproachType } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 
 interface MfdFmsPerfProps extends AbstractMfdPageProps {}
 
@@ -69,7 +70,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   private previousFmsFlightPhase: FmgcFlightPhase | null = null;
 
   // Subjects
-  private crzFl = Subject.create<number | null>(null);
+  private readonly crzFl = Subject.create<number | null>(null);
 
   private readonly crzFlIsMandatory = Subject.create(true);
 
@@ -578,7 +579,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
     this.costIndex.set(pd.costIndex.get());
 
-    this.toShift.set(fm.takeoffShift.get());
+    this.toShift.set(pd.takeoffShift.get());
 
     this.toV1.set(pd.v1.get());
 
@@ -593,8 +594,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
     this.toSelectedDeratedIndex.set(fm.takeoffDeratedSetting.get());
 
-    if (fm.takeoffFlapsSetting !== undefined && fm.takeoffFlapsSetting.get() !== null) {
-      this.toSelectedFlapsIndex.set(fm.takeoffFlapsSetting.get() - 1);
+    if (pd.takeoffFlaps !== undefined && pd.takeoffFlaps.get() !== null) {
+      this.toSelectedFlapsIndex.set((pd.takeoffFlaps.get() ?? 1) - 1);
     } else {
       this.toSelectedFlapsIndex.set(null);
     }
@@ -750,8 +751,15 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
         // Convert to FlapConf
         if (v != null) {
           const flapConf = v + 1;
-          this.props.fmcService.master?.fmgc.data.takeoffFlapsSetting.set(flapConf);
-          this.props.fmcService.master?.acInterface.setTakeoffFlaps(flapConf);
+          this.props.fmcService.master?.flightPlanInterface.setPerformanceData(
+            'takeoffFlaps',
+            flapConf,
+            this.loadedFlightPlanIndex.get(),
+          );
+
+          if (this.loadedFlightPlanIndex.get() === FlightPlanIndex.Active) {
+            this.props.fmcService.master?.acInterface.setTakeoffFlaps(flapConf);
+          }
         }
       }),
     );

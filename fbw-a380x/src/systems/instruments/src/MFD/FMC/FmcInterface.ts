@@ -196,11 +196,13 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
 
   clearLatestFmsErrorMessage(): void;
 
-  /** Request CPNY FPLN from SimBrief */
-  cpnyFplnRequest(): void;
+  /** Request CPNY FPLN from SimBrief
+   * @param intoPlan Flight plan to insert CPNY FPLN into
+   */
+  cpnyFplnRequest(intoPlan: FlightPlanIndex): void;
 
   /** Insert CPNY FPLN into active flight plan */
-  insertCpnyFpln(): void;
+  insertCpnyFpln(intoPlan: FlightPlanIndex): void;
 
   /**
    * Calling this function with a message should display the message in the FMS' message area,

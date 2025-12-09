@@ -54,7 +54,7 @@ import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
 import { FlightPhaseManager, FlightPhaseManagerEvents } from '@fmgc/flightphase';
 import { MfdUIData } from 'instruments/src/MFD/shared/MfdUIData';
 import { ActiveUriInformation } from 'instruments/src/MFD/pages/common/MfdUiService';
-import { A320FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import { A380FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/A380FlightPlanPerformanceData';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { Navigation } from '@fmgc/navigation/Navigation';
 import { EfisSymbols } from '@fmgc/efis/EfisSymbols';
@@ -66,6 +66,7 @@ import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPla
 import { VdAltitudeConstraint } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
 import { MsfsFlightPlanSync } from '@fmgc/flightplanning/MsfsFlightPlanSync';
 import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/uplink/SimBriefUplinkAdapter';
+import { FlightPlanChangeNotifier } from '@fmgc/flightplanning/sync/FlightPlanChangeNotifier';
 
 export interface FmsErrorMessage {
   message: McduMessage;
@@ -115,7 +116,7 @@ export class FlightManagementComputer implements FmcInterface {
   // FIXME A320 data
   #flightPlanService = new FlightPlanService(
     this.bus,
-    new A320FlightPlanPerformanceData(),
+    new A380FlightPlanPerformanceData(),
     FpmConfigs.A380,
     this._operatingMode === FmcOperatingModes.Master, // TODO Dynamically change this within `FlightPlanService` (proxy things through to an RPC client?)
   );
@@ -129,6 +130,8 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   private lastFlightPlanVersion: number | null = null;
+
+  private readonly flightPlanChangeNotifier = new FlightPlanChangeNotifier(this.bus);
 
   #fmgc = new FmgcDataService(this.flightPlanInterface);
 
@@ -231,10 +234,13 @@ export class FlightManagementComputer implements FmcInterface {
 
   private wasReset = false;
 
+  public readonly zeroFuelWeight = Subject.create<number | null>(null);
+  public readonly zeroFuelWeightCenterOfGravity = Subject.create<number | null>(null);
+
   private readonly ZfwOrZfwCgUndefined = MappedSubject.create(
     ([zfw, zfwCg]) => zfw == null || zfwCg == null,
-    this.fmgc.data.zeroFuelWeight,
-    this.fmgc.data.zeroFuelWeightCenterOfGravity,
+    this.zeroFuelWeight,
+    this.zeroFuelWeightCenterOfGravity,
   );
 
   private readonly destDataEntered = MappedSubject.create(
@@ -242,6 +248,23 @@ export class FlightManagementComputer implements FmcInterface {
     this.fmgc.data.approachQnh,
     this.fmgc.data.approachTemperature,
     this.fmgc.data.approachWind,
+  );
+
+  private readonly minimumFuelAtDestinationPilotEntry = Subject.create<number | null>(null);
+  private readonly alternateFuel = Subject.create<number | null>(null);
+  private readonly pilotFinalFuelWeight = Subject.create<number | null>(null);
+  private readonly pilotFinalFuelTime = Subject.create<number | null>(null);
+  private readonly finalFuelWeight = MappedSubject.create(
+    ([weight, time]) => (weight ? weight : time ? (time * 9.3) / 60 : null),
+    this.pilotFinalFuelWeight,
+    this.pilotFinalFuelTime,
+  );
+  public readonly pilotEntryMinFuelBelowAltnPlusFinal = MappedSubject.create(
+    ([minFuel, altnFuel, finalFuel]) =>
+      minFuel != null && altnFuel != null && finalFuel != null && minFuel < altnFuel + finalFuel,
+    this.minimumFuelAtDestinationPilotEntry,
+    this.alternateFuel,
+    this.finalFuelWeight,
   );
 
   private destDataCheckedInCruise = false;
@@ -313,6 +336,26 @@ export class FlightManagementComputer implements FmcInterface {
       this.initSimVars();
 
       this.flightPhaseManager.addOnPhaseChanged((prev, next) => this.onFlightPhaseChanged(prev, next));
+
+      // When the active flight plan changes, re-pipe all related subjects
+      this.subs.push(
+        this.flightPlanChangeNotifier.flightPlanChanged.sub(() => {
+          this.subs.push(
+            this.flightPlanInterface.active.performanceData.zeroFuelWeight.pipe(this.zeroFuelWeight),
+            this.flightPlanInterface.active.performanceData.zeroFuelWeightCenterOfGravity.pipe(
+              this.zeroFuelWeightCenterOfGravity,
+            ),
+            this.flightPlanInterface.active.performanceData.minimumDestinationFuelOnBoard.pipe(
+              this.minimumFuelAtDestinationPilotEntry,
+            ),
+            this.flightPlanInterface.active.performanceData.alternateFuel.pipe(this.alternateFuel),
+            this.flightPlanInterface.active.performanceData.pilotFinalHoldingFuel.pipe(this.pilotFinalFuelWeight),
+            this.flightPlanInterface.active.performanceData.pilotFinalHoldingTime.pipe(this.pilotFinalFuelTime),
+          );
+        }),
+        this.finalFuelWeight,
+        this.pilotEntryMinFuelBelowAltnPlusFinal,
+      );
 
       this.subs.push(
         this.shouldBePreflightPhase.sub((shouldBePreflight) => {
@@ -460,18 +503,26 @@ export class FlightManagementComputer implements FmcInterface {
     if (gw) {
       // Preflight, engines on
       // LW = GW - TRIP - TAXI
-      return gw - (tf ?? 0) - (this.fmgc.data.taxiFuel.get() ?? 0);
+      return gw - (tf ?? 0) - (this.#flightPlanService.active.performanceData.taxiFuel.get() ?? 0) * 1000;
     }
     return null;
   }
 
   public getTakeoffWeight(): number | null {
-    if (!this.enginesWereStarted.get()) {
+    if (!this.enginesWereStarted.get() && this.flightPlanInterface.hasActive) {
       // On ground, engines off
       // TOW before engine start: TOW = ZFW + BLOCK - TAXI
-      const zfw = this.fmgc.data.zeroFuelWeight.get() ?? maxZfw;
-      if (this.fmgc.data.zeroFuelWeight.get() && this.fmgc.data.blockFuel.get() && this.fmgc.data.taxiFuel.get()) {
-        return zfw + (this.fmgc.data.blockFuel.get() ?? maxBlockFuel) - (this.fmgc.data.taxiFuel.get() ?? 0);
+      const zfw = this.flightPlanInterface.active.performanceData.zeroFuelWeight.get() ?? maxZfw;
+      if (
+        this.flightPlanInterface.active.performanceData.zeroFuelWeight.get() &&
+        this.flightPlanInterface.active.performanceData.blockFuel.get() &&
+        this.flightPlanInterface.active.performanceData.taxiFuel.get()
+      ) {
+        return (
+          zfw +
+          (this.flightPlanInterface.active.performanceData.blockFuel.get() ?? maxBlockFuel / 1000) * 1000 -
+          (this.flightPlanInterface.active.performanceData.taxiFuel.get() ?? 0) * 1000
+        );
       }
       return null;
     }
@@ -483,7 +534,10 @@ export class FlightManagementComputer implements FmcInterface {
     // Preflight, engines on
     // LW = GW - TRIP - TAXI
     // TOW after engine start: TOW = GW - TAXI
-    return SimVar.GetSimVarValue('TOTAL WEIGHT', 'kilogram') - (this.fmgc.data.taxiFuel.get() ?? 0);
+    return (
+      SimVar.GetSimVarValue('TOTAL WEIGHT', 'kilogram') -
+      (this.#flightPlanService.active.performanceData.taxiFuel.get() ?? 0) * 1000
+    );
   }
 
   public getTripFuel(): number | null {
@@ -498,19 +552,30 @@ export class FlightManagementComputer implements FmcInterface {
 
   public getExtraFuel(): number | null {
     const destPred = this.guidanceController.vnavDriver.getDestinationPrediction();
+    const pd = this.#flightPlanService.active.performanceData;
     if (destPred) {
       if (this.flightPhase.get() === FmgcFlightPhase.Preflight) {
         // EXTRA = BLOCK - TAXI - TRIP - MIN FUEL DEST - RTE RSV
+        const rteRsvPercentage = pd.isRouteReserveFuelPercentagePilotEntered.get()
+          ? pd.pilotRouteReserveFuelPercentage.get()!
+          : pd.defaultRouteReserveFuelPercentage.get()!;
+        const rteRsv = pd.pilotRouteReserveFuel.get()
+          ? (pd.pilotRouteReserveFuel.get() ?? 0) * 1_000
+          : ((this.getTripFuel() ?? 0) * rteRsvPercentage) / 100;
         return (
-          (this.enginesWereStarted.get() ? this.fmgc.getFOB()! * 1_000 : this.fmgc.data.blockFuel.get() ?? 0) -
-          (this.fmgc.data.taxiFuel.get() ?? 0) -
+          (this.enginesWereStarted.get()
+            ? this.fmgc.getFOB()! * 1_000
+            : this.flightPlanInterface.active.performanceData.blockFuel.get() ?? 0) *
+            1000 -
+          (this.flightPlanInterface.active.performanceData.taxiFuel.get() ?? 0) * 1000 -
           (this.getTripFuel() ?? 0) -
-          (this.fmgc.data.minimumFuelAtDestination.get() ?? 0) -
-          (this.fmgc.data.routeReserveFuelWeight.get() ?? 0)
+          (this.flightPlanInterface.active.performanceData.minimumDestinationFuelOnBoard.get() ?? 0) * 1000 -
+          rteRsv
         );
       } else {
         return (
-          Units.poundToKilogram(destPred.estimatedFuelOnBoard) - (this.fmgc.data.minimumFuelAtDestination.get() ?? 0)
+          Units.poundToKilogram(destPred.estimatedFuelOnBoard) -
+          (this.flightPlanInterface.active.performanceData.minimumDestinationFuelOnBoard.get() ?? 0) * 1000
         );
       }
     }
@@ -603,9 +668,9 @@ export class FlightManagementComputer implements FmcInterface {
     }
   }
 
-  async cpnyFplnRequest() {
-    const navigraphUsername = NXDataStore.get('NAVIGRAPH_USERNAME', '');
-    const overrideSimBriefUserID = NXDataStore.get('CONFIG_OVERRIDE_SIMBRIEF_USERID', '');
+  async cpnyFplnRequest(intoPlan: FlightPlanIndex) {
+    const navigraphUsername = NXDataStore.getLegacy('NAVIGRAPH_USERNAME');
+    const overrideSimBriefUserID = NXDataStore.getLegacy('CONFIG_OVERRIDE_SIMBRIEF_USERID', '');
 
     if (!navigraphUsername && !overrideSimBriefUserID) {
       this.addMessageToQueue(NXFictionalMessages.noNavigraphUser, undefined, undefined);
@@ -615,7 +680,7 @@ export class FlightManagementComputer implements FmcInterface {
     this.simBriefOfp = await SimBriefUplinkAdapter.downloadOfpForUserID(navigraphUsername, overrideSimBriefUserID);
 
     try {
-      SimBriefUplinkAdapter.uplinkFlightPlanFromSimbrief(this, this.#flightPlanService, this.simBriefOfp, {
+      SimBriefUplinkAdapter.uplinkFlightPlanFromSimbrief(this, this.#flightPlanService, intoPlan, this.simBriefOfp, {
         doUplinkProcedures: false,
       });
     } catch (e) {
@@ -624,9 +689,9 @@ export class FlightManagementComputer implements FmcInterface {
     }
   }
 
-  async insertCpnyFpln() {
+  async insertCpnyFpln(intoPlan: FlightPlanIndex) {
     try {
-      this.flightPlanInterface.uplinkInsert();
+      this.flightPlanInterface.uplinkInsert(intoPlan);
     } catch (e) {
       console.error(e);
       logTroubleshootingError(this.bus, e);
@@ -634,19 +699,15 @@ export class FlightManagementComputer implements FmcInterface {
     this.acInterface.updateFmsData();
     this.fmgc.data.atcCallsign.set(this.simBriefOfp?.callsign ?? '----------');
 
-    // Don't insert weights for now, something seems broken here
-    /* this.props.fmService.fmgc.data.blockFuel.set(this.simBriefOfp.units === 'kgs' ? this.simBriefOfp.fuel.planRamp : Units.poundToKilogram(this.simBriefOfp.fuel.planRamp));
-        this.props.fmService.fmgc.data.zeroFuelWeight.set(this.simBriefOfp.units === 'kgs'
-            ? Number(this.simBriefOfp.weights.estZeroFuelWeight)
-            : Units.poundToKilogram(Number(this.simBriefOfp.weights.estZeroFuelWeight)));
-        this.props.fmService.fmgc.data.taxiFuelPilotEntry.set(this.simBriefOfp.units === 'kgs' ? this.simBriefOfp.fuel.taxi : Units.poundToKilogram(this.simBriefOfp.fuel.taxi));
-        this.props.fmService.fmgc.data.alternateFuelPilotEntry.set(this.simBriefOfp.units === 'kgs' ? this.simBriefOfp.alternate.burn : Units.poundToKilogram(this.simBriefOfp.alternate.burn));
-        this.props.fmService.fmgc.data.finalFuelWeightPilotEntry.set(this.simBriefOfp.units === 'kgs' ? this.simBriefOfp.fuel.reserve : Units.poundToKilogram(this.simBriefOfp.fuel.reserve));
-        */
-
-    this.fmgc.data.paxNumber.set(Number(this.simBriefOfp?.weights?.passengerCount ?? null));
-    this.fmgc.data.tropopausePilotEntry.set(
+    this.flightPlanInterface.setPerformanceData(
+      'paxNumber',
+      Number(this.simBriefOfp?.weights?.passengerCount ?? null),
+      intoPlan,
+    );
+    this.flightPlanInterface.setPerformanceData(
+      'pilotTropopause',
       this.simBriefOfp?.averageTropopause ? Number(this.simBriefOfp.averageTropopause) : null,
+      intoPlan,
     );
 
     if (this.simBriefOfp?.cruiseAltitude) {
@@ -840,11 +901,12 @@ export class FlightManagementComputer implements FmcInterface {
           this.acInterface.updateThrustReductionAcceleration();
         }
 
-        pd.taxiFuelPilotEntry.set(null);
-        pd.defaultTaxiFuel.set(null);
-        pd.routeReserveFuelWeightPilotEntry.set(null);
-        pd.routeReserveFuelPercentagePilotEntry.set(0);
-        pd.routeReserveFuelWeightCalculated.set(0);
+        pd.tripFuelAtPreflight.set((this.getTripFuel() ?? 0) / 1000); // in tons
+
+        this.#flightPlanService.active.setPerformanceData('taxiFuel', 0);
+        this.#flightPlanService.active.setPerformanceData('defaultTaxiFuel', 0);
+        this.#flightPlanService.active.setPerformanceData('pilotRouteReserveFuel', null);
+        this.#flightPlanService.active.setPerformanceData('pilotRouteReserveFuelPercentage', 0);
 
         this.fmgc.data.climbPredictionsReferenceAutomatic.set(
           this.guidanceController.verticalProfileComputationParametersObserver.get().fcuAltitude,
@@ -1121,11 +1183,12 @@ export class FlightManagementComputer implements FmcInterface {
           this.acInterface.resetDestinationPredictions();
         }
         this.acInterface.updateIlsCourse(this.navigation.getNavaidTuner().getMmrRadioTuningStatus(1));
-        this.fmgc.data.alternateExists.set(this.flightPlanInterface.active.alternateDestinationAirport !== undefined);
+        this.#flightPlanService.active.setPerformanceData(
+          'alternateExists',
+          this.flightPlanInterface.active.alternateDestinationAirport !== undefined,
+        );
       } else {
         this.acInterface.resetDestinationPredictions();
-        this.fmgc.data.alternateExists.set(false);
-        this.fmgc.data.alternateFuelPilotEntry.set(null);
       }
       this.checkZfwParams();
       this.updateMessageQueue();
@@ -1200,7 +1263,7 @@ export class FlightManagementComputer implements FmcInterface {
   private updateVerticalPath() {
     // Transmit active vertical geometry
     const predictions = this.guidanceController.vnavDriver.mcduProfile?.waypointPredictions;
-    const plan: ReadonlyFlightPlan<A320FlightPlanPerformanceData> = this.flightPlanInterface.active;
+    const plan: ReadonlyFlightPlan<A380FlightPlanPerformanceData> = this.flightPlanInterface.active;
 
     if (!predictions || !this.flightPlanInterface.hasActive) {
       this.acInterface.transmitVerticalPath([], [], [], [], null);

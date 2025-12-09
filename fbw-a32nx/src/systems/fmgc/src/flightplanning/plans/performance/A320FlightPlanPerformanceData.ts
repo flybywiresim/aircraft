@@ -595,6 +595,14 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
   readonly pilotRouteReserveFuel: Subject<number | null> = Subject.create(null);
 
   /**
+   * Whether the route reserve fuel percentage is pilot entered.
+   */
+  readonly isRouteReserveFuelPilotEntered = MappedSubject.create(
+    ([pilotRouteReserveFuel]) => pilotRouteReserveFuel !== null,
+    this.pilotRouteReserveFuel,
+  );
+
+  /**
    * The route reserve percentage entered by the pilot as a percentage, or null if not set.
    */
   readonly pilotRouteReserveFuelPercentage: Subject<number | null> = Subject.create(null);
@@ -618,7 +626,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
   /**
    * Whether the route reserve fuel percentage is pilot entered.
    */
-  readonly isRouteReserveFuelPrecentagePilotEntered = MappedSubject.create(
+  readonly isRouteReserveFuelPercentagePilotEntered = MappedSubject.create(
     ([pilotRouteReserveFuelPercentage]) => pilotRouteReserveFuelPercentage !== null,
     this.pilotRouteReserveFuelPercentage,
   );
@@ -635,6 +643,14 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
    * The final holding fuel entered by the pilot in tonnes, or null if not set.
    */
   readonly pilotFinalHoldingFuel: Subject<number | null> = Subject.create(null);
+
+  /**
+   * Whether final holding fuel is pilot entered.
+   */
+  readonly isFinalHoldingFuelPilotEntered = MappedSubject.create(
+    ([pilotFinalHoldingFuel]) => pilotFinalHoldingFuel !== null,
+    this.pilotFinalHoldingFuel,
+  );
 
   /**
    * The final holding time entered by the pilot in minutes, or null if not set.

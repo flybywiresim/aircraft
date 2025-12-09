@@ -354,6 +354,11 @@ export interface FlightPlanPerformanceData {
   readonly pilotRouteReserveFuel: MutableSubscribable<number | null>;
 
   /**
+   * Whether the route reserve fuel weight is pilot entered.
+   */
+  get isRouteReserveFuelPilotEntered(): Subscribable<boolean>;
+
+  /**
    * The route reserve fuel percentage entered by the pilot as a percentage, or null if not set.
    */
   readonly pilotRouteReserveFuelPercentage: MutableSubscribable<number | null>;
@@ -371,7 +376,7 @@ export interface FlightPlanPerformanceData {
   /**
    * Whether the route reserve fuel percentage is pilot entered.
    */
-  get isRouteReserveFuelPrecentagePilotEntered(): Subscribable<boolean>;
+  get isRouteReserveFuelPercentagePilotEntered(): Subscribable<boolean>;
 
   /**
    * The alternate fuel entered by the pilot in tonnes, or null if not set.
@@ -406,6 +411,11 @@ export interface FlightPlanPerformanceData {
    * The final holding fuel entered by the pilot in tonnes, or null if not set.
    */
   readonly pilotFinalHoldingFuel: MutableSubscribable<number | null>;
+
+  /**
+   * Whether final holding fuel weight is pilot entered.
+   */
+  get isFinalHoldingFuelPilotEntered(): Subscribable<boolean>;
 
   /**
    * The final holding time entered by the pilot in minutes, or null if not set.
