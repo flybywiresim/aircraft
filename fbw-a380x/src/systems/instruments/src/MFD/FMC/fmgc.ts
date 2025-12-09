@@ -70,39 +70,51 @@ export class FmgcData {
   public readonly atcCallsign = Subject.create<string | null>(null);
 
   /** in degrees celsius. null if not set. */
+  // MIGRATE
   public readonly cruiseTemperaturePilotEntry = Subject.create<number | null>(null);
 
   /** in degrees celsius. null if not set. */
+  // MIGRATE
   public readonly cruiseTemperatureIsaTemp = Subject.create<number | null>(null);
 
   /** in degrees celsius. null if not set. */
+  // MIGRATE
   public readonly cruiseTemperature = MappedSubject.create(
     ([isa, pe]) => (pe !== null ? pe : isa),
     this.cruiseTemperatureIsaTemp,
     this.cruiseTemperaturePilotEntry,
   );
 
+  // MIGRATE
   public readonly cruiseTemperatureIsPilotEntered = this.cruiseTemperaturePilotEntry.map((it) => it !== null);
 
   /** in knots. null if not set. */
+  // MIGRATE
   public readonly tripWind = Subject.create<number | null>(null);
 
   /** in kg. null if not set. */
+  // MIGRATE
   public readonly zeroFuelWeight = Subject.create<number | null>(null);
 
   /** in percent. null if not set. */
+  // MIGRATE
   public readonly zeroFuelWeightCenterOfGravity = Subject.create<number | null>(null);
 
   /** in kg. null if not set. */
+  // MIGRATE
   public readonly blockFuel = Subject.create<number | null>(null);
 
   /** in kg. null if not set. */
+  // MIGRATE
   public readonly taxiFuelPilotEntry = Subject.create<number | null>(null);
 
+  // MIGRATE
   public readonly taxiFuelIsPilotEntered = this.taxiFuelPilotEntry.map((v) => v !== null);
 
+  // MIGRATE
   public readonly defaultTaxiFuel = Subject.create<number | null>(AirlineModifiableInformation.EK.taxiFuel);
 
+  // MIGRATE
   public readonly taxiFuel = MappedSubject.create(
     ([pilotEntryTaxiFuel, defaultTaxiFuel]) => (pilotEntryTaxiFuel !== null ? pilotEntryTaxiFuel : defaultTaxiFuel),
     this.taxiFuelPilotEntry,
@@ -110,12 +122,15 @@ export class FmgcData {
   );
 
   /** in kg. null if not set. */
+  // MIGRATE
   public readonly routeReserveFuelWeightPilotEntry = Subject.create<number | null>(null);
 
   /** in kg. null if not set. */
+  // MIGRATE
   public readonly routeReserveFuelWeightCalculated = Subject.create<number | null>(null);
 
   /** in kg. null if not set. */
+  // MIGRATE
   public readonly routeReserveFuelWeight = MappedSubject.create(
     ([calc, pe]) => (pe !== null ? pe : calc),
     this.routeReserveFuelWeightCalculated,
@@ -123,10 +138,13 @@ export class FmgcData {
   );
 
   /** in percent. null if not set. */
+  // MIGRATE
   public readonly routeReserveFuelPercentagePilotEntry = Subject.create<number | null>(null);
 
+  // MIGRATE
   public readonly routeReserveFuelIsPilotEntered = this.routeReserveFuelWeightPilotEntry.map((it) => it !== null);
 
+  // MIGRATE
   public readonly routeReserveFuelPercentage = MappedSubject.create(
     ([percentagePilotEntry, reservePilotEntry]) =>
       reservePilotEntry !== null
@@ -138,39 +156,49 @@ export class FmgcData {
     this.routeReserveFuelWeightPilotEntry,
   );
 
+  // MIGRATE
   public readonly routeReserveFuelPercentageIsPilotEntered = this.routeReserveFuelPercentagePilotEntry.map(
     (v) => v !== null,
   );
 
   public readonly destEfobBelowMin = Subject.create(false);
 
+  // MIGRATE
   public readonly paxNumber = Subject.create<number | null>(null);
 
   /** in kg. null if not set. */
+  // MIGRATE
   public readonly jettisonGrossWeight = Subject.create<number | null>(null);
 
   public readonly alternateExists = Subject.create(false);
 
   /** in kg. null if not set. */
+  // MIGRATE
   public readonly alternateFuelPilotEntry = Subject.create<number | null>(null);
 
   /** in kg. null if not set. */
+  // MIGRATE
   public readonly alternateFuelCalculated = this.alternateExists.map((v) => (v ? 6_500 : null)); // FIXME Hardcoded value. Derive from FMS predictions.
 
+  // MIGRATE
   public readonly alternateFuel = MappedSubject.create(
     ([calc, pe]) => (pe !== null ? pe : calc),
     this.alternateFuelCalculated,
     this.alternateFuelPilotEntry,
   ); // in kg
 
+  // MIGRATE
   public readonly alternateFuelIsPilotEntered = this.alternateFuelPilotEntry.map((it) => it !== null);
 
   /** in kg. null if not set. */
+  // MIGRATE
   public readonly finalFuelWeightPilotEntry = Subject.create<number | null>(null);
 
   /** in kg. null if not set. */
+  // MIGRATE
   public readonly finalFuelWeightCalculated = Subject.create<number | null>(4_650); // FIXME Hardcoded value. Derive from configured final time based on hold at 1500ft with flaps 1.
 
+  // MIGRATE
   public readonly finalFuelWeight = MappedSubject.create(
     ([calc, pe]) => (pe !== null ? pe : calc),
     this.finalFuelWeightCalculated,
@@ -178,11 +206,14 @@ export class FmgcData {
   );
 
   /** in minutes. null if not set. */
+  // MIGRATE
   public readonly finalFuelTimePilotEntry = Subject.create<number | null>(null);
 
   /** in minutes. */
+  // MIGRATE
   public readonly finalFuelTime = this.finalFuelTimePilotEntry.map((it) => (it === null ? 30 : it));
 
+  // MIGRATE
   public readonly finalFuelIsPilotEntered = MappedSubject.create(
     ([fuel, time]) => fuel !== null || time !== null,
     this.finalFuelWeightPilotEntry,
@@ -190,9 +221,11 @@ export class FmgcData {
   );
 
   /** in kg. null if not set. */
+  // MIGRATE
   public readonly minimumFuelAtDestinationPilotEntry = Subject.create<number | null>(null);
 
   /** in kg. null if not set. */
+  // MIGRATE
   public readonly minimumFuelAtDestination = MappedSubject.create(
     ([pe, ff, af]) => (pe === null && ff && af ? ff + af : pe),
     this.minimumFuelAtDestinationPilotEntry,
@@ -200,6 +233,7 @@ export class FmgcData {
     this.alternateFuel,
   );
 
+  // MIGRATE
   public readonly minFuelAtDestTon = this.minimumFuelAtDestination.map((v) => (v ? v / 1000 : null));
 
   public readonly minimumFuelAtDestinationIsPilotEntered = this.minimumFuelAtDestinationPilotEntry.map(
@@ -215,11 +249,14 @@ export class FmgcData {
   );
 
   /** in feet. null if not set. */
+  // MIGRATE
   public readonly tropopausePilotEntry = Subject.create<number | null>(null);
 
   /** in feet. null if not set. */
+  // MIGRATE
   public readonly tropopause = this.tropopausePilotEntry.map((tp) => tp ?? 36_090);
 
+  // MIGRATE
   public readonly tropopauseIsPilotEntered = this.tropopausePilotEntry.map((it) => it !== null);
 
   /**
@@ -242,6 +279,7 @@ export class FmgcData {
    */
   readonly v2ToBeConfirmed = Subject.create<Knots | null>(null);
 
+  // MIGRATE
   public readonly takeoffFlapsSetting = Subject.create<FlapConf>(FlapConf.CONF_1);
 
   public readonly flapRetractionSpeed = Subject.create<Knots | null>(null);
@@ -250,20 +288,26 @@ export class FmgcData {
 
   public readonly greenDotSpeed = Subject.create<Knots | null>(null);
 
+  // MIGRATE vapp
   public readonly approachSpeed = Subject.create<Knots | null>(null);
 
+  // MIGRATE
   public readonly approachWindDirection = Subject.create<number | null>(null);
 
+  // MIGRATE
   public readonly approachWindSpeed = Subject.create<number | null>(null);
 
+  // MIGRATE
   public readonly approachWind: MappedSubject<number[], FmcWindVector | null> = MappedSubject.create(
     ([direction, speed]) => (direction !== null && speed !== null ? { direction: direction, speed: speed } : null),
     this.approachWindDirection,
     this.approachWindSpeed,
   );
 
+  // MIGRATE
   public readonly approachQnh = Subject.create<number | null>(null);
 
+  // MIGRATE
   public readonly approachTemperature = Subject.create<number | null>(null);
 
   public readonly approachGreenDotSpeed = Subject.create<Knots | null>(null);
@@ -273,31 +317,44 @@ export class FmgcData {
   public readonly approachFlapRetractionSpeed = Subject.create<Knots | null>(null);
 
   /** in meters. null if not set. */
+  // MIGRATE
   public readonly takeoffShift = Subject.create<number | null>(null);
 
+  // MIGRATE
   public readonly takeoffPowerSetting = Subject.create<TakeoffPowerSetting>(TakeoffPowerSetting.TOGA);
 
+  // MIGRATE
   public readonly takeoffFlexTemp = Subject.create<number | null>(null);
 
+  // MIGRATE
   public readonly takeoffDeratedSetting = Subject.create<TakeoffDerated | null>(null);
 
+  // MIGRATE
   public readonly takeoffThsFor = Subject.create<number | null>(null);
 
+  // MIGRATE
   public readonly takeoffPacks = Subject.create<TakeoffPacks | null>(TakeoffPacks.ON);
 
+  // MIGRATE
   public readonly takeoffAntiIce = Subject.create<TakeoffAntiIce | null>(TakeoffAntiIce.OFF);
 
+  // MIGRATE
   public readonly noiseEnabled = Subject.create<boolean>(false);
 
+  // MIGRATE
   public readonly noiseN1 = Subject.create<number | null>(null);
 
+  // MIGRATE
   public readonly noiseSpeed = Subject.create<Knots | null>(null);
 
   /** in feet. null if not set. */
+  // MIGRATE
   public readonly noiseEndAltitude = Subject.create<number | null>(null);
 
+  // MIGRATE
   public readonly costIndexMode = Subject.create<CostIndexMode | null>(CostIndexMode.ECON);
 
+  // MIGRATE
   public readonly climbDerated = Subject.create<ClimbDerated | null>(ClimbDerated.NONE);
 
   /** in feet. null if not set. */
@@ -325,12 +382,15 @@ export class FmgcData {
   public readonly descentPreSelSpeed = Subject.create<Knots | null>(null);
 
   /** in feet/min. null if not set. */
+  // MIGRATE
   public readonly descentCabinRate = Subject.create<number>(-350);
 
   /** in feet. null if not set. */
+  // MIGRATE
   public readonly approachBaroMinimum = Subject.create<number | null>(null);
 
   /** in feet. null if not set. */
+  // MIGRATE
   public readonly approachRadioMinimum = Subject.create<number | null>(null);
 
   public readonly approachVref = Subject.create<Knots | null>(null);

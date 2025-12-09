@@ -146,7 +146,7 @@ export class CDUInitPage {
         cruiseFlTempSeparator.updateAttributes(isForPrimary ? Column.amber : Column.cyan);
 
         const planCruiseLevel = plan.performanceData.cruiseFlightLevel.get();
-        const planCruiseTemp = plan.performanceData.cruiseTemperature.get();
+        const planCruiseTemp = plan.performanceData.cruiseTemperaturePilotEntry.get();
 
         //This is done so pilot enters a FL first, rather than using the computed one
         // TODO differentiate for SEC
