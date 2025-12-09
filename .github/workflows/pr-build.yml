@@ -176,7 +176,8 @@ jobs:
           rm -rf ./fbw-a32nx/
           rm -rf ./large-files/fbw-a32nx/
           rm -rf ./fbw-common/
-          rm -rf ./.git
+          rm -rf ./.git/objects/
+          rm -rf ./.git/modules/aircraft-large-files/objects/
       - name: Remove A380X 4K textures
         run: |
           rm -rf ./large-files/fbw-a380x/src/base/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/texture-4k/
