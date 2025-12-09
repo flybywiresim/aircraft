@@ -90,13 +90,13 @@ export class VdPseudoWaypointLayer implements VerticalDisplayMapLayer<VdSymbol> 
 
 const typeFlagToColor = (typeFlag: NdSymbolTypeFlags) => {
   if (typeFlag & NdSymbolTypeFlags.MagentaColor) {
-    return '#c87fda';
+    return '#dc78da';
   }
   if (typeFlag & NdSymbolTypeFlags.AmberColor) {
     return '#eb880c';
   }
   if (typeFlag & NdSymbolTypeFlags.CyanColor) {
-    return '#44d9e1';
+    return '#17e9f2';
   }
 
   return '#e5dfd6';
