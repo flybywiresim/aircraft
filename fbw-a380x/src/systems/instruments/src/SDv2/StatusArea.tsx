@@ -15,7 +15,7 @@ import {
 
 import './style.scss';
 import '../index.scss';
-import { Arinc429LocalVarConsumerSubject, FmsData, NXDataStore, NXUnits } from '@flybywiresim/fbw-sdk';
+import { Arinc429LocalVarConsumerSubject, NXDataStore, NXUnits } from '@flybywiresim/fbw-sdk';
 import { SDSimvars } from './SDSimvarPublisher';
 import { A380XFcuBusEvents } from '@shared/publishers/A380XFcuBusPublisher';
 import { FqmsBusEvents } from '@shared/publishers/FqmsBusPublisher';
