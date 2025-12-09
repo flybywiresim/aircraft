@@ -17,7 +17,6 @@ export type BaseSDSimvars = AdirsSimVars &
     zuluTime: number;
     /** in gallons */
     grossWeightCg: number;
-    fuelTotalQuantity: number;
     /** in pounds */
     fuelWeightPerGallon: number;
     cockpitCabinTemp: number;

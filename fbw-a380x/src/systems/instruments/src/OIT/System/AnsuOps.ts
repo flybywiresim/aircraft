@@ -48,19 +48,19 @@ export class AnsuOps extends AircraftNetworkServerUnit {
       this.sci.parkBrakeSet.sub((v) => {
         if (v) {
           this.parkBrakeOnTime.set(this.sci.zuluTime.get());
-          this.parkBrakeOnFob.set(this.sci.fuelWeight.get());
+          this.parkBrakeOnFob.set(this.sci.fqmsFuelQuantity.get().valueOr(null));
         } else {
           this.parkBrakeOffTime.set(this.sci.zuluTime.get());
-          this.parkBrakeOffFob.set(this.sci.fuelWeight.get());
+          this.parkBrakeOffFob.set(this.sci.fqmsFuelQuantity.get().valueOr(null));
         }
       }, true),
       this.sci.onGround.sub((v) => {
         if (v) {
           this.touchdownTime.set(this.sci.zuluTime.get());
-          this.touchdownFob.set(this.sci.fuelWeight.get());
+          this.touchdownFob.set(this.sci.fqmsFuelQuantity.get().valueOr(null));
         } else {
           this.takeoffTime.set(this.sci.zuluTime.get());
-          this.takeoffFob.set(this.sci.fuelWeight.get());
+          this.takeoffFob.set(this.sci.fqmsFuelQuantity.get().valueOr(null));
         }
       }, true),
     );

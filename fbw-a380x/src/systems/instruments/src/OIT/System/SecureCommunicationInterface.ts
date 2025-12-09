@@ -4,6 +4,7 @@
 import { ClockEvents, ConsumerSubject, EventBus, Instrument, MappedSubject, Subscription } from '@microsoft/msfs-sdk';
 import { AdrBusEvents, Arinc429LocalVarConsumerSubject, FmsData, FwcBusEvents } from '@flybywiresim/fbw-sdk';
 import { ResetPanelSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/ResetPanelPublisher';
+import { FqmsBusEvents } from '@shared/publishers/FqmsBusPublisher';
 import { OitSimvars } from '../OitSimvarPublisher';
 
 export class SecureCommunicationInterface implements Instrument {
@@ -13,7 +14,7 @@ export class SecureCommunicationInterface implements Instrument {
   private readonly toAircraftSubscriptions: Subscription[] = [];
 
   private readonly sub = this.bus.getSubscriber<
-    ResetPanelSimvars & OitSimvars & FmsData & AdrBusEvents & FwcBusEvents & ClockEvents
+    ResetPanelSimvars & OitSimvars & FmsData & AdrBusEvents & FwcBusEvents & ClockEvents & FqmsBusEvents
   >();
 
   private readonly nssDataToAvncsOff = ConsumerSubject.create(this.sub.on('nssDataToAvncsOff'), false);
@@ -37,14 +38,7 @@ export class SecureCommunicationInterface implements Instrument {
 
   public readonly doorsOpenPercentageOver100 = ConsumerSubject.create(this.sub.on('cabinDoorOpen'), 0);
 
-  private readonly fuelQuantity = ConsumerSubject.create(this.sub.on('fuelTotalQuantity'), 0);
-  private readonly fuelWeightPerGallon = ConsumerSubject.create(this.sub.on('fuelWeightPerGallon'), 0);
-  /** in kgs */
-  public readonly fuelWeight = MappedSubject.create(
-    ([qt, weightPerGallon]) => qt * weightPerGallon,
-    this.fuelQuantity,
-    this.fuelWeightPerGallon,
-  );
+  public readonly fqmsFuelQuantity = Arinc429LocalVarConsumerSubject.create(this.sub.on('fqms_total_fuel_on_board'));
 
   public readonly hydGreenPressurized = ConsumerSubject.create(this.sub.on('hydGreenPressurized'), false);
   public readonly hydYellowPressurized = ConsumerSubject.create(this.sub.on('hydYellowPressurized'), false);
@@ -69,9 +63,7 @@ export class SecureCommunicationInterface implements Instrument {
       this.fwcDiscreteWord126,
       this.onGround,
       this.doorsOpenPercentageOver100,
-      this.fuelQuantity,
-      this.fuelWeightPerGallon,
-      this.fuelWeight,
+      this.fqmsFuelQuantity,
       this.hydGreenPressurized,
       this.hydYellowPressurized,
       this.hydraulicsPressurized,

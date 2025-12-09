@@ -39,50 +39,54 @@ export const FuelPage = () => {
   const [engine3Valve] = useSimVar('FUELSYSTEM VALVE OPEN:3', 'Percent over 100', 1000);
   const [engine4Valve] = useSimVar('FUELSYSTEM VALVE OPEN:4', 'Percent over 100', 1000);
 
+  // Fuel pump states
+  const fqmsLeftPumpStates = useArinc429Var('A32NX_FQMS_LEFT_FUEL_PUMPS_RUNNING', 1000);
+  const fqmsRightPumpStates = useArinc429Var('A32NX_FQMS_RIGHT_FUEL_PUMPS_RUNNING', 1000);
+
   // Feed pumps
-  const [feed1Pump1Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:1', 'Bool', 1000);
+  const feed1Pump1Active = fqmsLeftPumpStates.bitValueOr(12, false);
   const [isFeed1Pump1SwitchOff, setIsFeed1Pump1SwitchOff] = useState(false); // circuit 2
-  const [feed1Pump2Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:2', 'Bool', 1000);
+  const feed1Pump2Active = fqmsLeftPumpStates.bitValueOr(13, false);
   const [isFeed1Pump2SwitchOff, setIsFeed1Pump2SwitchOff] = useState(false); // circuit 3
-  const [feed2Pump1Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:3', 'Bool', 1000);
+  const feed2Pump1Active = fqmsLeftPumpStates.bitValueOr(14, false);
   const [isFeed2Pump1SwitchOff, setIsFeed2Pump1SwitchOff] = useState(false); // circuit 64
-  const [feed2Pump2Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:4', 'Bool', 1000);
+  const feed2Pump2Active = fqmsLeftPumpStates.bitValueOr(15, false);
   const [isFeed2Pump2SwitchOff, setIsFeed2Pump2SwitchOff] = useState(false); // circuit 65
-  const [feed3Pump1Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:5', 'Bool', 1000);
+  const feed3Pump1Active = fqmsRightPumpStates.bitValueOr(12, false);
   const [isFeed3Pump1SwitchOff, setIsFeed3Pump1SwitchOff] = useState(false); // circuit 66
-  const [feed3Pump2Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:6', 'Bool', 1000);
+  const feed3Pump2Active = fqmsRightPumpStates.bitValueOr(13, false);
   const [isFeed3Pump2SwitchOff, setIsFeed3Pump2SwitchOff] = useState(false); // circuit 67
-  const [feed4Pump1Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:7', 'Bool', 1000);
+  const feed4Pump1Active = fqmsRightPumpStates.bitValueOr(14, false);
   const [isFeed4Pump1SwitchOff, setIsFeed4Pump1SwitchOff] = useState(false); // circuit 68
-  const [feed4Pump2Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:8', 'Bool', 1000);
+  const feed4Pump2Active = fqmsRightPumpStates.bitValueOr(15, false);
   const [isFeed4Pump2SwitchOff, setIsFeed4Pump2SwitchOff] = useState(false); // circuit 69
 
   // Transfer pumps
-  const [isLeftOuterTankPumpActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:9', 'Bool', 1000);
+  const isLeftOuterTankPumpActive = fqmsLeftPumpStates.bitValueOr(16, false);
   const [isLeftOuterTankPumpSwitchOff, setIsLeftOuterTankPumpSwitchOff] = useState(false); // circuit 70
-  const [isLeftMidTankPumpFwdActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:10', 'Bool', 1000);
+  const isLeftMidTankPumpFwdActive = fqmsLeftPumpStates.bitValueOr(17, false);
   const [isLeftMidTankPumpFwdSwitchOff, setIsLeftMidTankPumpFwdSwitchOff] = useState(false); // circuit 71
-  const [isLeftMidTankPumpAftActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:11', 'Bool', 1000);
+  const isLeftMidTankPumpAftActive = fqmsLeftPumpStates.bitValueOr(18, false);
   const [isLeftMidTankPumpAftSwitchOff, setIsLeftMidTankPumpAftSwitchOff] = useState(false); // circuit 72
-  const [isLeftInnerTankPumpFwdActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:12', 'Bool', 1000);
+  const isLeftInnerTankPumpFwdActive = fqmsLeftPumpStates.bitValueOr(19, false);
   const [isLeftInnerTankPumpFwdSwitchOff, setIsLeftInnerTankPumpFwdSwitchOff] = useState(false); // circuit 73
-  const [isRightInnerTankPumpFwdActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:13', 'Bool', 1000);
+  const isRightInnerTankPumpFwdActive = fqmsRightPumpStates.bitValueOr(19, false);
   const [isRightInnerTankPumpFwdSwitchOff, setIsRightInnerTankPumpFwdSwitchOff] = useState(false); // circuit 78
-  const [isRightOuterTankPumpActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:14', 'Bool', 1000);
+  const isRightOuterTankPumpActive = fqmsRightPumpStates.bitValueOr(16, false);
   const [isRightOuterTankPumpSwitchOff, setIsRightOuterTankPumpSwitchOff] = useState(false); // circuit 75
-  const [isRightMidTankPumpFwdActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:15', 'Bool', 1000);
+  const isRightMidTankPumpFwdActive = fqmsRightPumpStates.bitValueOr(17, false);
   const [isRightMidTankPumpFwdSwitchOff, setIsRightMidTankPumpFwdSwitchOff] = useState(false); // circuit 76
-  const [isRightMidTankPumpAftActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:16', 'Bool', 1000);
+  const isRightMidTankPumpAftActive = fqmsRightPumpStates.bitValueOr(18, false);
   const [isRightMidTankPumpAftSwitchOff, setIsRightMidTankPumpAftSwitchOff] = useState(false); // circuit 77
-  const [isLeftInnerTankPumpAftActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:17', 'Bool', 1000);
+  const isLeftInnerTankPumpAftActive = fqmsLeftPumpStates.bitValueOr(20, false);
   const [isLeftInnerTankPumpAftSwitchOff, setIsLeftInnerTankPumpAftSwitchOff] = useState(false); // circuit 74
-  const [isRightInnerTankPumpAftActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:18', 'Bool', 1000);
+  const isRightInnerTankPumpAftActive = fqmsRightPumpStates.bitValueOr(20, false);
   const [isRightInnerTankPumpAftSwitchOff, setIsRightInnerTankPumpAftSwitchOff] = useState(false); // circuit 79
 
   // Trim tank pumps
-  const [isLeftTrimTankPumpActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:19', 'Bool', 1000);
+  const isLeftTrimTankPumpActive = fqmsLeftPumpStates.bitValueOr(21, false);
   const [isLeftTrimTankPumpSwitchOff, setIsLeftTrimTankPumpSwitchOff] = useState(false); // circuit 80
-  const [isRightTrimTankPumpActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:20', 'Bool', 1000);
+  const isRightTrimTankPumpActive = fqmsRightPumpStates.bitValueOr(21, false);
   const [isRightTrimTankPumpSwitchOff, setIsRightTrimTankPumpSwitchOff] = useState(false); // circuit 81
 
   useInterval(
