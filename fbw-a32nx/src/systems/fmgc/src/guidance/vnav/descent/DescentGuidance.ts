@@ -219,9 +219,6 @@ export class DescentGuidance {
     const isApproachPhaseActive = this.observer.get().flightPhase === FmgcFlightPhase.Approach;
     const isHoldActive = this.guidanceController.isManualHoldActive();
     const isCruisePhase = this.observer.get().flightPhase === FmgcFlightPhase.Cruise;
-    const hasStepDescent = this.aircraftToDescentProfileRelation.profile?.checkpoints.some(
-      (checkpoint) => checkpoint.reason === VerticalCheckpointReason.StepDescent,
-    );
     const targetVerticalSpeed = this.aircraftToDescentProfileRelation.currentTargetVerticalSpeed();
 
     this.targetAltitudeGuidance = this.atmosphericConditions.currentPressureAltitude - linearDeviation;
@@ -232,11 +229,6 @@ export class DescentGuidance {
     if (isCruisePhase) {
       this.requestedVerticalMode = RequestedVerticalMode.VsSpeed;
       this.targetVerticalSpeed = -1000;
-      return;
-    }
-
-    if (hasStepDescent && this.observer.get().flightPhase === FmgcFlightPhase.Cruise) {
-      this.changeState(DescentVerticalGuidanceState.Observing);
       return;
     }
 
