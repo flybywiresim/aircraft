@@ -6,7 +6,7 @@ use systems::payload::LoadsheetInfo;
 use uom::si::{
     f64::{Mass, Ratio},
     mass::kilogram,
-    ratio::{percent, ratio},
+    ratio::ratio,
 };
 
 static FUEL_TANK_POSITIONS: LazyLock<[Vector3<f64>; A380FuelTankType::LENGTH]> =
