@@ -173,7 +173,7 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
         this.cgGroup.instance.style.visibility = 'inherit';
         this.outOfRangeGroup.instance.style.visibility = 'hidden';
         this.cgValue.instance.classList.add('Green');
-        this.arrowRef.instance.style.fill = '#64da1d';
+        this.arrowRef.instance.style.fill = '#5bea06';
         break;
       case PitchTrimStatus.NotAtTarget:
         this.cgGroup.instance.style.visibility = 'inherit';
@@ -291,7 +291,7 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
               </text>
             </g>
             <g transform={this.gwCgPositionTransform} visibility={this.gwCgVisibility}>
-              <rect x={360} y={117} width={71} height={30} stroke="#c87fda" stroke-width={2} />
+              <rect x={360} y={117} width={71} height={30} stroke="#dc78da" stroke-width={2} />
               <text x={362} y={140} font-size={21.7} class="Magenta">
                 {this.cgPercentText}
               </text>
@@ -308,14 +308,14 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
             <g transform={this.trimAreasTransform}>
               <rect width="28" height="414" x="0" y="0" stroke="black" fill="#323135" />
               <rect width="25" height="207" x="2" y="103.5" fill="none" stroke="#e5dfd6" stroke-width="2" />
-              <rect width="23" height="103.5" x="3" y="175.95" fill="none" stroke="#64da1d" stroke-width="4" />
+              <rect width="23" height="103.5" x="3" y="175.95" fill="none" stroke="#5bea06" stroke-width="4" />
               <rect
                 width="16"
                 height={this.optimalPitchTrimUpperBoxHeight}
                 x="6"
                 y={this.optimalPitchTrimUpperBoxStart}
                 fill="none"
-                stroke="#c87fda"
+                stroke="#dc78da"
                 stroke-width="4"
                 visibility={this.gwCgVisibility}
               />
@@ -325,7 +325,7 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
                 x="6"
                 y={this.optimalPitchTrimCenter}
                 fill="none"
-                stroke="#c87fda"
+                stroke="#dc78da"
                 stroke-width="4"
                 visibility={this.gwCgVisibility}
               />
