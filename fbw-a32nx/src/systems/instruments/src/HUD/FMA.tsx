@@ -5,6 +5,7 @@
 
 import {
   ComponentProps,
+  ConsumerSubject,
   DisplayComponent,
   FSComponent,
   MappedSubject,
@@ -49,6 +50,24 @@ abstract class ShowForSecondsComponent<T extends ComponentProps> extends Display
       this.timeout = setTimeout(() => {
         this.modeChangedPathRef.instance.classList.remove('ModeChangedPath');
       }, this.displayTimeInSeconds * 1000) as unknown as number;
+    }
+  };
+
+  public handleDeclutterMode = (cancel = false, decMode, textRef) => {
+    if (decMode === 2) {
+      if (cancel || !this.isShown) {
+        clearTimeout(this.timeout);
+        textRef.instance.style.visibility = 'hidden';
+      } else {
+        clearTimeout(this.timeout);
+        textRef.instance.style.visibility = 'visible';
+        this.timeout = setTimeout(() => {
+          textRef.instance.style.visibility = 'hidden';
+        }, this.displayTimeInSeconds * 1000) as unknown as number;
+      }
+      this.modeChangedPathRef.instance.classList.remove('ModeChangedPath');
+    } else {
+      textRef.instance.style.visibility = 'visible';
     }
   };
 }
@@ -390,7 +409,7 @@ class Row2 extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: Subscr
 }
 
 class A2Cell extends DisplayComponent<{ bus: ArincEventBus }> {
-  private isArmed = Subject.create('');
+  private sub = this.props.bus.getSubscriber<HUDSimvars & FcuBus & HudElems>();
 
   private text = Subject.create('');
 
@@ -398,74 +417,68 @@ class A2Cell extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private autoBrkRef = FSComponent.createRef<SVGTextElement>();
 
-  private autobrakeActive = false;
-
-  private autobrakeMode = 0;
-
   private fcuAtsFmaDiscreteWord = new Arinc429Word(0);
 
   private fcuAtsDiscreteWord = new Arinc429Word(0);
 
+  private readonly autoBrakeActive = ConsumerSubject.create(this.sub.on('autoBrakeActive').whenChanged(), false);
+  private readonly AThrMode = ConsumerSubject.create(this.sub.on('AThrMode').whenChanged(), 0);
+
+  private readonly autobrakeMode = ConsumerSubject.create(this.sub.on('autoBrakeMode').whenChanged(), 0);
+  private readonly decMode = ConsumerSubject.create(this.sub.on('decMode').whenChanged(), 0);
+
+  private readonly isVisible = MappedSubject.create(
+    ([AThrMode, decMode, autobrakeMode, autoBrakeActive]) => {
+      // ATHR mode overrides BRK LO and MED memo
+      if (
+        (AThrMode > 0 && AThrMode <= 6) ||
+        decMode === 2 ||
+        (autobrakeMode !== 1 && autobrakeMode !== 2) ||
+        autoBrakeActive === true
+      ) {
+        return 'none';
+      } else {
+        return 'block';
+      }
+    },
+    this.AThrMode,
+    this.decMode,
+    this.autobrakeMode,
+    this.autoBrakeActive,
+  );
+
+  private readonly autobrakeModeTxt = MappedSubject.create(
+    ([autobrakeMode, decMode]) => {
+      switch (autobrakeMode) {
+        case 0:
+          this.text.set('');
+          return '';
+        case 1:
+          decMode === 2 ? this.text.set('') : this.text.set('BRK LO ');
+          return 'BRK LO ';
+        case 2:
+          decMode === 2 ? this.text.set('') : this.text.set('BRK MED ');
+          return 'BRK MED ';
+        case 3:
+          // MAX will be shown in 3rd row
+          this.text.set('');
+          return '';
+        default:
+          this.text.set('');
+          return '';
+      }
+    },
+    this.autobrakeMode,
+    this.decMode,
+  );
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-
-    const sub = this.props.bus.getSubscriber<HUDSimvars & FcuBus>();
-
-    sub
-      .on('autoBrakeMode')
-      .whenChanged()
-      .handle((am) => {
-        switch (am) {
-          case 0:
-            this.text.set('');
-            this.isArmed.set('none');
-            break;
-          case 1:
-            this.text.set('BRK LO ');
-            this.isArmed.set('block');
-            break;
-          case 2:
-            this.text.set('BRK MED ');
-            this.isArmed.set('block');
-            break;
-          case 3:
-            // MAX will be shown in 3rd row
-            this.text.set('');
-            break;
-          default:
-            break;
-        }
-      });
-
-    sub
-      .on('autoBrakeActive')
-      .whenChanged()
-      .handle((am) => {
-        if (am) {
-          this.autoBrkRef.instance.style.visibility = 'hidden';
-          this.isArmed.set('none');
-        } else {
-          this.autoBrkRef.instance.style.visibility = 'visible';
-        }
-      });
-
-    sub
-      .on('AThrMode')
-      .whenChanged()
-      .handle((athrMode) => {
-        // ATHR mode overrides BRK LO and MED memo
-        if (athrMode > 0 && athrMode <= 6) {
-          this.autoBrkRef.instance.style.visibility = 'hidden';
-        } else {
-          this.autoBrkRef.instance.style.visibility = 'visible';
-        }
-      });
   }
 
   render(): VNode {
     return (
       <g id="A2Cell">
-        <path id="dash" display={this.isArmed} class="NormalStroke Green" d="m16 40h140" stroke-dasharray="5 9" />
+        <path id="dash" display={this.isVisible} class="NormalStroke Green" d="m16 40h140" stroke-dasharray="5 9" />
         <text ref={this.autoBrkRef} class={this.className} x="83.9" y="68.75" style="white-space: pre">
           {this.text}
         </text>
@@ -640,6 +653,8 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
 
   private autoBrakeMode = 0;
 
+  private decMode = 0;
+
   constructor(props) {
     super(props, 9);
   }
@@ -657,8 +672,14 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
     const hasChanged = text.length > 0 && text !== this.cellRef.instance.innerHTML;
     if (hasChanged) {
       this.displayModeChangedPath();
+      if (this.decMode === 2) {
+        this.handleDeclutterMode(false, this.decMode, this.cellRef);
+      }
     } else if (!this.isShown) {
       this.displayModeChangedPath(true);
+      if (this.decMode === 2) {
+        this.handleDeclutterMode(true, this.decMode, this.cellRef);
+      }
     }
 
     this.cellRef.instance.innerHTML = text;
@@ -669,7 +690,19 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & FcuBus>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & FcuBus & HudElems>();
+
+    sub
+      .on('decMode')
+      .whenChanged()
+      .handle((f) => {
+        this.decMode = f;
+        if (f === 2) {
+          this.handleDeclutterMode(false, this.decMode, this.cellRef);
+        } else {
+          this.cellRef.instance.style.visibility = 'visible';
+        }
+      });
 
     sub
       .on('flexTemp')
@@ -921,6 +954,8 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
 
   private previousText = '';
 
+  private decMode = 0;
+
   constructor(props: CellProps) {
     super(props, 10);
   }
@@ -1019,8 +1054,11 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
 
     if (hasChanged) {
       this.displayModeChangedPath();
+      this.handleDeclutterMode(false, this.decMode, this.fmaTextRef);
     } else if (!this.isShown) {
       this.displayModeChangedPath(true);
+      this.handleDeclutterMode(true, this.decMode, this.fmaTextRef);
+      this.fmaTextRef.instance.style.visibility = 'hidden';
     }
 
     const targetNotHeld = this.fmgcDiscreteWord4.bitValueOr(29, false);
@@ -1061,8 +1099,29 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<Arinc429Values & FgBus & FcuBus & ExtendedClockEvents>();
+    const sub = this.props.bus.getSubscriber<Arinc429Values & FgBus & FcuBus & ExtendedClockEvents & HudElems>();
 
+    sub
+      .on('decMode')
+      .whenChanged()
+      .handle((v) => {
+        this.decMode = v;
+        if (this.decMode === 2) {
+          this.displayModeChangedPath(true);
+          this.handleDeclutterMode(false, this.decMode, this.fmaTextRef);
+        } else {
+          if (this.isShown === false) {
+            this.displayModeChangedPath(true);
+            this.handleDeclutterMode(true, this.decMode, this.fmaTextRef);
+            this.fmaTextRef.instance.style.visibility = 'hidden';
+          } else {
+            this.displayModeChangedPath(true);
+            this.handleDeclutterMode(false, this.decMode, this.fmaTextRef);
+            this.fmaTextRef.instance.style.visibility = 'visible';
+          }
+        }
+        this.getText();
+      });
     sub
       .on('fmgcDiscreteWord1')
       .whenChanged()
@@ -1164,7 +1223,7 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
   }
 }
 
-class B2Cell extends DisplayComponent<CellProps> {
+class B2Cell extends ShowForSecondsComponent<CellProps> {
   private fmaVerticalArmed = Subject.create('');
 
   private text1Sub = Subject.create('');
@@ -1176,6 +1235,14 @@ class B2Cell extends DisplayComponent<CellProps> {
   private altConstraint = new Arinc429Word(0);
 
   private fmgcDiscreteWord3 = new Arinc429Word(0);
+
+  private decMode = 0;
+
+  private modeArmed = FSComponent.createRef<SVGPathElement>();
+
+  private cellTextRef = FSComponent.createRef<SVGTextElement>();
+
+  private cellTextRef2 = FSComponent.createRef<SVGTextElement>();
 
   private handleMessage(): void {
     const altAcqArmed = this.fmgcDiscreteWord3.bitValueOr(12, false);
@@ -1215,8 +1282,27 @@ class B2Cell extends DisplayComponent<CellProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<Arinc429Values & FgBus & HUDSimvars>();
+    const sub = this.props.bus.getSubscriber<Arinc429Values & FgBus & HUDSimvars & HudElems>();
 
+    sub
+      .on('decMode')
+      .whenChanged()
+      .handle((v) => {
+        this.handleMessage();
+        this.decMode = v;
+        if (this.decMode !== 2) {
+          console.log('dec : ' + this.text1Sub.get());
+          this.text2Sub.get() === ''
+            ? this.modeArmed.instance.setAttribute('visibility', 'hidden')
+            : this.modeArmed.instance.setAttribute('visibility', 'visible');
+          this.cellTextRef.instance.setAttribute('visibility', 'visible');
+          this.cellTextRef2.instance.setAttribute('visibility', 'visible');
+        } else {
+          this.modeArmed.instance.setAttribute('visibility', 'hidden');
+          this.cellTextRef.instance.setAttribute('visibility', 'hidden');
+          this.cellTextRef2.instance.setAttribute('visibility', 'hidden');
+        }
+      });
     sub
       .on('fmgcDiscreteWord3')
       .whenChanged()
@@ -1243,9 +1329,21 @@ class B2Cell extends DisplayComponent<CellProps> {
         const gsArmed = (fmv >> 4) & 1;
         const finalArmed = (fmv >> 5) & 1;
 
-        altArmed || altCstArmed || clbArmed || desArmed || gsArmed || finalArmed
-          ? this.fmaVerticalArmed.set('block')
-          : this.fmaVerticalArmed.set('none');
+        if (altArmed || altCstArmed || clbArmed || desArmed || gsArmed || finalArmed) {
+          if (this.decMode !== 2) {
+            this.text2Sub.get() === ''
+              ? this.modeArmed.instance.setAttribute('visibility', 'hidden')
+              : this.modeArmed.instance.setAttribute('visibility', 'visible');
+            this.cellTextRef.instance.setAttribute('visibility', 'visible');
+            this.cellTextRef2.instance.setAttribute('visibility', 'visible');
+          }
+        } else {
+          this.text2Sub.get() === ''
+            ? this.modeArmed.instance.setAttribute('visibility', 'hidden')
+            : this.modeArmed.instance.setAttribute('visibility', 'visible');
+          this.cellTextRef.instance.setAttribute('visibility', 'hidden');
+          this.cellTextRef2.instance.setAttribute('visibility', 'hidden');
+        }
       });
   }
 
@@ -1254,15 +1352,16 @@ class B2Cell extends DisplayComponent<CellProps> {
       <g id="B2Cell">
         <path
           id="dash"
-          display={this.fmaVerticalArmed}
+          ref={this.modeArmed}
+          visibility="hidden"
           class="NormalStroke Green"
           d="m178.5 40h150"
           stroke-dasharray="5 10"
         />
-        <text class={this.classSub} style="white-space: pre" x="203.8" y="65">
+        <text class={this.classSub} ref={this.cellTextRef} style="white-space: pre" x="203.8" y="65">
           {this.text1Sub}
         </text>
-        <text class="FontMediumSmaller Smaller MiddleAlign Green" x="281" y="65">
+        <text ref={this.cellTextRef2} class="FontMediumSmaller Smaller MiddleAlign Green" x="281" y="65">
           {this.text2Sub}
         </text>
       </g>
@@ -1281,6 +1380,9 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
 
   private textSub = Subject.create('');
 
+  private decMode = 0;
+  private hasChanged = false;
+  private cellTextRef = FSComponent.createRef<SVGTextElement>();
   constructor(props: CellProps) {
     super(props, 10);
   }
@@ -1288,8 +1390,27 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<Arinc429Values & FgBus>();
-
+    const sub = this.props.bus.getSubscriber<Arinc429Values & FgBus & HudElems>();
+    sub
+      .on('decMode')
+      .whenChanged()
+      .handle((v) => {
+        this.decMode = v;
+        if (this.decMode === 2) {
+          this.displayModeChangedPath(true);
+          this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
+        } else {
+          if (this.isShown === false) {
+            this.displayModeChangedPath(true);
+            this.handleDeclutterMode(true, this.decMode, this.cellTextRef);
+            this.cellTextRef.instance.style.visibility = 'hidden';
+          } else {
+            this.displayModeChangedPath(true);
+            this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
+            this.cellTextRef.instance.style.visibility = 'visible';
+          }
+        }
+      });
     sub
       .on('fmgcDiscreteWord1')
       .whenChanged()
@@ -1318,7 +1439,7 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
       });
   }
 
-  private updateText(): void {
+  private updateText(): boolean {
     const rollGaActive = this.fmgcDiscreteWord2.bitValueOr(15, false);
     const backbeamMode = this.fmgcDiscreteWord3.bitValueOr(19, false);
     const locCaptActive = this.fmgcDiscreteWord2.bitValueOr(13, false);
@@ -1365,16 +1486,19 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
       this.isShown = false;
     }
 
-    const hasChanged = text.length > 0 && text !== this.textSub.get();
+    this.hasChanged = text.length > 0 && text !== this.textSub.get();
 
-    if (hasChanged || text.length === 0) {
+    if (this.hasChanged || text.length === 0) {
       this.textSub.set(text);
     }
-    if (hasChanged) {
+    if (this.hasChanged) {
       this.displayModeChangedPath();
+      this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
     } else if (!this.isShown) {
       this.displayModeChangedPath(true);
+      this.cellTextRef.instance.style.visibility = 'hidden';
     }
+    return this.hasChanged;
   }
 
   render(): VNode {
@@ -1386,7 +1510,7 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
           visibility="hidden"
           d="m499.35 9.072 v 30.238 h-155.125 v -30.238 z"
         />
-        <text class="FontMediumSmaller  MiddleAlign Green" x="424" y="32.64">
+        <text ref={this.cellTextRef} class="FontMediumSmaller  MiddleAlign Green" x="424" y="32.64">
           {this.textSub}
         </text>
       </g>
@@ -1394,7 +1518,7 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
   }
 }
 
-class C2Cell extends DisplayComponent<CellProps> {
+class C2Cell extends ShowForSecondsComponent<CellProps> {
   private isArmed = Subject.create('');
 
   private fmgcDiscreteWord1 = new Arinc429Word(0);
@@ -1402,6 +1526,10 @@ class C2Cell extends DisplayComponent<CellProps> {
   private fmgcDiscreteWord3 = new Arinc429Word(0);
 
   private textSub = Subject.create('');
+
+  private decMode = 0;
+
+  private cellTextRef = FSComponent.createRef<SVGTextElement>();
 
   private getText() {
     const navArmed = this.fmgcDiscreteWord3.bitValueOr(14, false);
@@ -1427,14 +1555,24 @@ class C2Cell extends DisplayComponent<CellProps> {
     }
 
     this.textSub.set(text);
-    navArmed || locArmed || finalArmed ? this.isArmed.set('block') : this.isArmed.set('none');
+    (navArmed || locArmed || finalArmed) && this.decMode < 2 ? this.isArmed.set('block') : this.isArmed.set('none');
   }
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<Arinc429Values & FgBus>();
-
+    const sub = this.props.bus.getSubscriber<Arinc429Values & FgBus & HudElems>();
+    sub
+      .on('decMode')
+      .whenChanged()
+      .handle((v) => {
+        this.decMode = v;
+        if (this.decMode === 2) {
+          this.cellTextRef.instance.style.visibility = 'hidden';
+        } else {
+          this.cellTextRef.instance.style.visibility = 'visible';
+        }
+      });
     sub
       .on('fmgcDiscreteWord1')
       .whenChanged()
@@ -1456,7 +1594,7 @@ class C2Cell extends DisplayComponent<CellProps> {
     return (
       <g id="C2Cell">
         <path id="dash" display={this.isArmed} class="NormalStroke Green" d="m350 40 h 150" stroke-dasharray="5 10" />
-        <text class="FontMediumSmaller MiddleAlign Green" x="421" y="65">
+        <text ref={this.cellTextRef} class="FontMediumSmaller MiddleAlign Green" x="421" y="65">
           {this.textSub}
         </text>
       </g>
@@ -1472,6 +1610,10 @@ class BC1Cell extends ShowForSecondsComponent<CellProps> {
   private fmgcDiscreteWord4 = new Arinc429Word(0);
 
   private textSub = Subject.create('');
+
+  private decMode = 0;
+
+  private cellTextRef = FSComponent.createRef<SVGTextElement>();
 
   constructor(props: CellProps) {
     super(props, 9);
@@ -1507,16 +1649,24 @@ class BC1Cell extends ShowForSecondsComponent<CellProps> {
     }
     if (hasChanged) {
       this.displayModeChangedPath();
+      this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
     } else if (!this.isShown) {
       this.displayModeChangedPath(true);
+      this.handleDeclutterMode(true, this.decMode, this.cellTextRef);
     }
   }
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<Arinc429Values & FgBus>();
-
+    const sub = this.props.bus.getSubscriber<Arinc429Values & FgBus & HudElems>();
+    sub
+      .on('decMode')
+      .whenChanged()
+      .handle((v) => {
+        this.decMode = v;
+        this.setText();
+      });
     sub
       .on('fmgcDiscreteWord1')
       .whenChanged()
@@ -1551,7 +1701,7 @@ class BC1Cell extends ShowForSecondsComponent<CellProps> {
           visibility="hidden"
           d="m250.89 9.072h175.87v30.238h-175.87z"
         />
-        <text class="FontMediumSmaller  MiddleAlign Green" x="340" y="32.64">
+        <text ref={this.cellTextRef} class="FontMediumSmaller  MiddleAlign Green" x="340" y="32.64">
           {this.textSub}
         </text>
       </g>
@@ -1697,6 +1847,10 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
 
   private text2Sub = Subject.create('');
 
+  private decMode = 0;
+
+  private cellTextRef = FSComponent.createRef<SVGGElement>();
+
   constructor(props: CellProps) {
     super(props, 9);
   }
@@ -1744,7 +1898,7 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
 
     if (hasChanged) {
       this.displayModeChangedPath();
-
+      this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
       this.text1Sub.set(text1);
       this.text2Sub.set(text2);
 
@@ -1755,14 +1909,34 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
       }
     } else if (!this.isShown) {
       this.displayModeChangedPath(true);
+      this.handleDeclutterMode(true, this.decMode, this.cellTextRef);
     }
   }
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<Arinc429Values & FgBus>();
-
+    const sub = this.props.bus.getSubscriber<Arinc429Values & FgBus & HudElems>();
+    sub
+      .on('decMode')
+      .whenChanged()
+      .handle((v) => {
+        this.decMode = v;
+        if (this.decMode === 2) {
+          this.displayModeChangedPath(true);
+          this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
+        } else {
+          if (this.isShown === false) {
+            this.displayModeChangedPath(true);
+            this.handleDeclutterMode(true, this.decMode, this.cellTextRef);
+            this.cellTextRef.instance.style.visibility = 'hidden';
+          } else {
+            this.displayModeChangedPath(true);
+            this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
+            this.cellTextRef.instance.style.visibility = 'visible';
+          }
+        }
+      });
     sub
       .on('fmgcDiscreteWord4')
       .whenChanged()
@@ -1783,12 +1957,14 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
   render(): VNode {
     return (
       <g id="D1D2Cell">
-        <text class="FontMediumSmaller MiddleAlign White" x="592" y="32.64">
-          {this.text1Sub}
-        </text>
-        <text class="FontMediumSmaller MiddleAlign White" x="592" y="68.75">
-          {this.text2Sub}
-        </text>
+        <g ref={this.cellTextRef}>
+          <text class="FontMediumSmaller MiddleAlign White" x="592" y="32.64">
+            {this.text1Sub}
+          </text>
+          <text class="FontMediumSmaller MiddleAlign White" x="592" y="68.75">
+            {this.text2Sub}
+          </text>
+        </g>
         <path ref={this.modeChangedPathRef} class="NormalStroke Green" visibility="hidden" />
       </g>
     );
@@ -1805,6 +1981,7 @@ enum MdaMode {
 class D3Cell extends DisplayComponent<{ bus: ArincEventBus }> {
   private readonly textRef = FSComponent.createRef<SVGTextElement>();
 
+  private sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values & HudElems>();
   /** bit 29 is NO DH selection */
   private readonly fmEisDiscrete2 = Arinc429RegisterSubject.createEmpty();
 
@@ -1814,51 +1991,61 @@ class D3Cell extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private readonly noDhSelected = this.fmEisDiscrete2.map((r) => r.bitValueOr(29, false));
 
+  private readonly decMode = ConsumerSubject.create(this.sub.on('decMode').whenChanged(), 0);
+
   private readonly mdaDhMode = MappedSubject.create(
-    ([noDh, dh, mda]) => {
-      if (noDh) {
-        return MdaMode.NoDh;
-      }
+    ([noDh, dh, mda, decMode]) => {
+      if (decMode !== 2) {
+        if (noDh) {
+          return MdaMode.NoDh;
+        }
 
-      if (!dh.isNoComputedData() && !dh.isFailureWarning()) {
-        return MdaMode.Radio;
-      }
+        if (!dh.isNoComputedData() && !dh.isFailureWarning()) {
+          return MdaMode.Radio;
+        }
 
-      if (!mda.isNoComputedData() && !mda.isFailureWarning()) {
-        return MdaMode.Baro;
-      }
+        if (!mda.isNoComputedData() && !mda.isFailureWarning()) {
+          return MdaMode.Baro;
+        }
 
-      return MdaMode.None;
+        return MdaMode.None;
+      } else {
+        return '';
+      }
     },
     this.noDhSelected,
     this.dh,
     this.mda,
+    this.decMode,
   );
 
   private readonly mdaDhValueText = MappedSubject.create(
-    ([mdaMode, dh, mda]) => {
-      switch (mdaMode) {
-        case MdaMode.Baro:
-          return Math.round(mda.value).toString().padStart(6, '\xa0');
-        case MdaMode.Radio:
-          return Math.round(dh.value).toString().padStart(4, '\xa0');
-        default:
-          return '';
+    ([mdaMode, dh, mda, decMode]) => {
+      if (decMode !== 2) {
+        switch (mdaMode) {
+          case MdaMode.Baro:
+            return Math.round(mda.value).toString().padStart(6, '\xa0');
+          case MdaMode.Radio:
+            return Math.round(dh.value).toString().padStart(4, '\xa0');
+          default:
+            return '';
+        }
+      } else {
+        return '';
       }
     },
     this.mdaDhMode,
     this.dh,
     this.mda,
+    this.decMode,
   );
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getArincSubscriber<HUDSimvars & Arinc429Values>();
-
-    sub.on('fmEisDiscreteWord2Raw').handle(this.fmEisDiscrete2.setWord.bind(this.fmEisDiscrete2));
-    sub.on('fmMdaRaw').handle(this.mda.setWord.bind(this.mda));
-    sub.on('fmDhRaw').handle(this.dh.setWord.bind(this.dh));
+    this.sub.on('fmEisDiscreteWord2Raw').handle(this.fmEisDiscrete2.setWord.bind(this.fmEisDiscrete2));
+    this.sub.on('fmMdaRaw').handle(this.mda.setWord.bind(this.mda));
+    this.sub.on('fmDhRaw').handle(this.dh.setWord.bind(this.dh));
   }
 
   render(): VNode {
@@ -1892,6 +2079,10 @@ class E1Cell extends ShowForSecondsComponent<CellProps> {
 
   private textSub = Subject.create('');
 
+  private decMode = 0;
+
+  private cellTextRef = FSComponent.createRef<SVGTextElement>();
+
   constructor(props: CellProps) {
     super(props, 9);
   }
@@ -1920,15 +2111,32 @@ class E1Cell extends ShowForSecondsComponent<CellProps> {
     }
     if (hasChanged) {
       this.displayModeChangedPath();
+      if (this.decMode === 2) {
+        this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
+      }
     } else if (!this.isShown) {
       this.displayModeChangedPath(true);
+      if (this.decMode === 2) {
+        this.handleDeclutterMode(true, this.decMode, this.cellTextRef);
+      }
     }
   }
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<Arinc429Values & FgBus>();
+    const sub = this.props.bus.getSubscriber<Arinc429Values & FgBus & HudElems>();
+    sub
+      .on('decMode')
+      .whenChanged()
+      .handle((v) => {
+        this.decMode = v;
+        if (this.decMode === 2) {
+          this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
+        } else {
+          this.cellTextRef.instance.style.visibility = 'visible';
+        }
+      });
 
     sub
       .on('fmgc1DiscreteWord4')
@@ -1956,7 +2164,7 @@ class E1Cell extends ShowForSecondsComponent<CellProps> {
           class="NormalStroke Green"
           d="m780.65 9.05 v30.2386h-104.05v-30.2386z"
         />
-        <text class="FontMediumSmaller  MiddleAlign Green" x="728.05 " y="32.64">
+        <text ref={this.cellTextRef} class="FontMediumSmaller  MiddleAlign Green" x="728.05 " y="32.64">
           {this.textSub}
         </text>
       </g>
@@ -1972,6 +2180,10 @@ class E2Cell extends ShowForSecondsComponent<CellProps> {
   private fcuDiscreteWord2 = new Arinc429Word(0);
 
   private textSub = Subject.create('');
+
+  private decMode = 0;
+
+  private cellTextRef = FSComponent.createRef<SVGTextElement>();
 
   constructor(props: CellProps) {
     super(props, 9);
@@ -2024,15 +2236,32 @@ class E2Cell extends ShowForSecondsComponent<CellProps> {
     }
     if (hasChanged) {
       this.displayModeChangedPath();
+      if (this.decMode === 2) {
+        this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
+      }
     } else if (!this.isShown) {
       this.displayModeChangedPath(true);
+      if (this.decMode === 2) {
+        this.handleDeclutterMode(true, this.decMode, this.cellTextRef);
+      }
     }
   }
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<Arinc429Values & FgBus & FcuBus>();
+    const sub = this.props.bus.getSubscriber<Arinc429Values & FgBus & FcuBus & HudElems>();
+    sub
+      .on('decMode')
+      .whenChanged()
+      .handle((v) => {
+        this.decMode = v;
+        if (this.decMode === 2) {
+          this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
+        } else {
+          this.cellTextRef.instance.style.visibility = 'visible';
+        }
+      });
 
     sub
       .on('fmgc1DiscreteWord4')
@@ -2068,7 +2297,13 @@ class E2Cell extends ShowForSecondsComponent<CellProps> {
           visibility="hidden"
           class="NormalStroke Green"
         />
-        <text class="FontMediumSmaller  MiddleAlign Green" x="729.75" style="word-spacing: -10px" y="69">
+        <text
+          ref={this.cellTextRef}
+          class="FontMediumSmaller  MiddleAlign Green"
+          x="729.75"
+          style="word-spacing: -10px"
+          y="69"
+        >
           {this.textSub}
         </text>
       </g>
@@ -2082,6 +2317,10 @@ class E3Cell extends ShowForSecondsComponent<CellProps> {
   private classSub = Subject.create('');
 
   private posSub = Subject.create(0);
+
+  private decMode = 0;
+
+  private cellTextRef = FSComponent.createRef<SVGTextElement>();
 
   constructor(props: CellProps) {
     super(props, 9);
@@ -2107,8 +2346,18 @@ class E3Cell extends ShowForSecondsComponent<CellProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<Arinc429Values & FcuBus>();
-
+    const sub = this.props.bus.getSubscriber<Arinc429Values & FcuBus & HudElems>();
+    sub
+      .on('decMode')
+      .whenChanged()
+      .handle((v) => {
+        this.decMode = v;
+        if (this.decMode === 2) {
+          this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
+        } else {
+          this.cellTextRef.instance.style.visibility = 'visible';
+        }
+      });
     sub
       .on('fcuAtsDiscreteWord')
       .whenChanged()
@@ -2121,8 +2370,14 @@ class E3Cell extends ShowForSecondsComponent<CellProps> {
         const hasChanged = className.length > 0 && className !== this.classSub.get();
         if (hasChanged) {
           this.displayModeChangedPath();
+          if (this.decMode === 2) {
+            this.handleDeclutterMode(false, this.decMode, this.cellTextRef);
+          }
         } else if (!this.isShown) {
           this.displayModeChangedPath(true);
+          if (this.decMode === 2) {
+            this.handleDeclutterMode(true, this.decMode, this.cellTextRef);
+          }
         }
 
         this.posSub.set(!atActive ? 103.25 : 105.75);
@@ -2140,7 +2395,7 @@ class E3Cell extends ShowForSecondsComponent<CellProps> {
           visibility="hidden"
           d="m676.6 81.645 h104.05v30.2386h-104.05z"
         />
-        <text class={this.classSub} x="728.7" y={this.posSub}>
+        <text ref={this.cellTextRef} class={this.classSub} x="728.7" y={this.posSub}>
           A/THR
         </text>
       </g>
