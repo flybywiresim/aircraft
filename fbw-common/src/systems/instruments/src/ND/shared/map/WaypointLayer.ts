@@ -98,7 +98,7 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
   }
 
   private paintSymbolConstraints(context: CanvasRenderingContext2D, x: number, y: number, symbol: NdSymbol) {
-    context.fillStyle = '#c87fda';
+    context.fillStyle = '#dc78da';
 
     for (let i = 0; i < symbol.constraints.length; i++) {
       const line = symbol.constraints[i];
@@ -114,7 +114,7 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
     y: number,
     symbol: NdSymbol,
   ) {
-    const mainColor = symbol.type & NdSymbolTypeFlags.FlightPlan ? '#e5dfd6' : '#c87fda';
+    const mainColor = symbol.type & NdSymbolTypeFlags.FlightPlan ? '#e5dfd6' : '#dc78da';
 
     this.paintAirportShape(context, x, y, isColorLayer ? mainColor : '#000', isColorLayer ? 1.75 : 3.25);
 
@@ -133,9 +133,9 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
     let mainColor = '#000';
     if (isColorLayer) {
       if (symbol.type & NdSymbolTypeFlags.Tuned) {
-        mainColor = '#44d9e1';
+        mainColor = '#17e9f2';
       } else {
-        mainColor = '#c87fda';
+        mainColor = '#dc78da';
       }
     }
 
@@ -174,7 +174,7 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
 
     const TEXT_LENGTH = Math.max(110, symbol.ident.length * 13.5);
     if (px > x - 7 && px < x + 13 + TEXT_LENGTH && py > y - 10 && py < y + 22) {
-      context.strokeStyle = '#44d9e1';
+      context.strokeStyle = '#17e9f2';
       context.lineWidth = 1.75;
       context.strokeRect(x - 7, y - 10, 10 + 13 + TEXT_LENGTH, 29);
     }
