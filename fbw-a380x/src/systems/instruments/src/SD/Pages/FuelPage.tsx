@@ -40,8 +40,8 @@ export const FuelPage = () => {
   const [engine4Valve] = useSimVar('FUELSYSTEM VALVE OPEN:4', 'Percent over 100', 1000);
 
   // Fuel pump states
-  const fqmsLeftPumpStates = useArinc429Var('A32NX_FQMS_LEFT_FUEL_PUMPS_RUNNING', 1000);
-  const fqmsRightPumpStates = useArinc429Var('A32NX_FQMS_RIGHT_FUEL_PUMPS_RUNNING', 1000);
+  const fqmsLeftPumpStates = useArinc429Var('L:A32NX_FQMS_LEFT_FUEL_PUMPS_RUNNING', 1000);
+  const fqmsRightPumpStates = useArinc429Var('L:A32NX_FQMS_RIGHT_FUEL_PUMPS_RUNNING', 1000);
 
   // Feed pumps
   const feed1Pump1Active = fqmsLeftPumpStates.bitValueOr(12, false);
@@ -725,29 +725,29 @@ export const FuelPage = () => {
 
   // Tanks
   // We take the values provided by the FQDCs since the FQMS doesn't provide the values yet (over AFDX)
-  const fqdc1LeftOuterTankWeight = useArinc429Var('A32NX_FQDC_1_LEFT_OUTER_TANK_QUANTITY');
-  const fqdc1Feed1TankWeight = useArinc429Var('A32NX_FQDC_1_FEED_ONE_TANK_QUANTITY');
-  const fqdc1LeftMidTankWeight = useArinc429Var('A32NX_FQDC_1_LEFT_MID_TANK_QUANTITY');
-  const fqdc1LeftInnerTankWeight = useArinc429Var('A32NX_FQDC_1_LEFT_INNER_TANK_QUANTITY');
-  const fqdc1Feed2TankWeight = useArinc429Var('A32NX_FQDC_1_FEED_TWO_TANK_QUANTITY');
-  const fqdc1Feed3TankWeight = useArinc429Var('A32NX_FQDC_1_FEED_THREE_TANK_QUANTITY');
-  const fqdc1RightInnerTankWeight = useArinc429Var('A32NX_FQDC_1_RIGHT_INNER_TANK_QUANTITY');
-  const fqdc1RightMidTankWeight = useArinc429Var('A32NX_FQDC_1_RIGHT_MID_TANK_QUANTITY');
-  const fqdc1Feed4TankWeight = useArinc429Var('A32NX_FQDC_1_FEED_FOUR_TANK_QUANTITY');
-  const fqdc1RightOuterTankWeight = useArinc429Var('A32NX_FQDC_1_RIGHT_OUTER_TANK_QUANTITY');
-  const fqdc1TrimTankWeight = useArinc429Var('A32NX_FQDC_1_TRIM_TANK_QUANTITY');
+  const fqdc1LeftOuterTankWeight = useArinc429Var('L:A32NX_FQDC_1_LEFT_OUTER_TANK_QUANTITY', 1000);
+  const fqdc1Feed1TankWeight = useArinc429Var('L:A32NX_FQDC_1_FEED_ONE_TANK_QUANTITY', 1000);
+  const fqdc1LeftMidTankWeight = useArinc429Var('L:A32NX_FQDC_1_LEFT_MID_TANK_QUANTITY', 1000);
+  const fqdc1LeftInnerTankWeight = useArinc429Var('L:A32NX_FQDC_1_LEFT_INNER_TANK_QUANTITY', 1000);
+  const fqdc1Feed2TankWeight = useArinc429Var('L:A32NX_FQDC_1_FEED_TWO_TANK_QUANTITY', 1000);
+  const fqdc1Feed3TankWeight = useArinc429Var('L:A32NX_FQDC_1_FEED_THREE_TANK_QUANTITY', 1000);
+  const fqdc1RightInnerTankWeight = useArinc429Var('L:A32NX_FQDC_1_RIGHT_INNER_TANK_QUANTITY', 1000);
+  const fqdc1RightMidTankWeight = useArinc429Var('L:A32NX_FQDC_1_RIGHT_MID_TANK_QUANTITY', 1000);
+  const fqdc1Feed4TankWeight = useArinc429Var('L:A32NX_FQDC_1_FEED_FOUR_TANK_QUANTITY', 1000);
+  const fqdc1RightOuterTankWeight = useArinc429Var('L:A32NX_FQDC_1_RIGHT_OUTER_TANK_QUANTITY', 1000);
+  const fqdc1TrimTankWeight = useArinc429Var('L:A32NX_FQDC_1_TRIM_TANK_QUANTITY', 1000);
 
-  const fqdc2LeftOuterTankWeight = useArinc429Var('A32NX_FQDC_2_LEFT_OUTER_TANK_QUANTITY');
-  const fqdc2Feed1TankWeight = useArinc429Var('A32NX_FQDC_2_FEED_ONE_TANK_QUANTITY');
-  const fqdc2LeftMidTankWeight = useArinc429Var('A32NX_FQDC_2_LEFT_MID_TANK_QUANTITY');
-  const fqdc2LeftInnerTankWeight = useArinc429Var('A32NX_FQDC_2_LEFT_INNER_TANK_QUANTITY');
-  const fqdc2Feed2TankWeight = useArinc429Var('A32NX_FQDC_2_FEED_TWO_TANK_QUANTITY');
-  const fqdc2Feed3TankWeight = useArinc429Var('A32NX_FQDC_2_FEED_THREE_TANK_QUANTITY');
-  const fqdc2RightInnerTankWeight = useArinc429Var('A32NX_FQDC_2_RIGHT_INNER_TANK_QUANTITY');
-  const fqdc2RightMidTankWeight = useArinc429Var('A32NX_FQDC_2_RIGHT_MID_TANK_QUANTITY');
-  const fqdc2Feed4TankWeight = useArinc429Var('A32NX_FQDC_2_FEED_FOUR_TANK_QUANTITY');
-  const fqdc2RightOuterTankWeight = useArinc429Var('A32NX_FQDC_2_RIGHT_OUTER_TANK_QUANTITY');
-  const fqdc2TrimTankWeight = useArinc429Var('A32NX_FQDC_2_TRIM_TANK_QUANTITY');
+  const fqdc2LeftOuterTankWeight = useArinc429Var('L:A32NX_FQDC_2_LEFT_OUTER_TANK_QUANTITY', 1000);
+  const fqdc2Feed1TankWeight = useArinc429Var('L:A32NX_FQDC_2_FEED_ONE_TANK_QUANTITY', 1000);
+  const fqdc2LeftMidTankWeight = useArinc429Var('L:A32NX_FQDC_2_LEFT_MID_TANK_QUANTITY', 1000);
+  const fqdc2LeftInnerTankWeight = useArinc429Var('L:A32NX_FQDC_2_LEFT_INNER_TANK_QUANTITY', 1000);
+  const fqdc2Feed2TankWeight = useArinc429Var('L:A32NX_FQDC_2_FEED_TWO_TANK_QUANTITY', 1000);
+  const fqdc2Feed3TankWeight = useArinc429Var('L:A32NX_FQDC_2_FEED_THREE_TANK_QUANTITY', 1000);
+  const fqdc2RightInnerTankWeight = useArinc429Var('L:A32NX_FQDC_2_RIGHT_INNER_TANK_QUANTITY', 1000);
+  const fqdc2RightMidTankWeight = useArinc429Var('L:A32NX_FQDC_2_RIGHT_MID_TANK_QUANTITY', 1000);
+  const fqdc2Feed4TankWeight = useArinc429Var('L:A32NX_FQDC_2_FEED_FOUR_TANK_QUANTITY', 1000);
+  const fqdc2RightOuterTankWeight = useArinc429Var('L:A32NX_FQDC_2_RIGHT_OUTER_TANK_QUANTITY', 1000);
+  const fqdc2TrimTankWeight = useArinc429Var('L:A32NX_FQDC_2_TRIM_TANK_QUANTITY', 1000);
 
   const leftOuterTankWeight = fqdc1LeftOuterTankWeight.isNormalOperation()
     ? fqdc1LeftOuterTankWeight.value
