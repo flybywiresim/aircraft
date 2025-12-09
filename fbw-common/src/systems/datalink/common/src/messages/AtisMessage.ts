@@ -29,9 +29,9 @@ export class AtisMessage extends WeatherMessage {
     // this function is only relevant for the ATC updater
     this.Reports.forEach((report) => {
       report.report.split(' ').forEach((word) => {
-        // expect 'INFORMATION H' or 'INFORMATION HOTEL'
+        // expect 'INFORMATION H', 'INFORMATION HOTEL' or 'YBBN K'
         if (foundInfo === false) {
-          if (word === 'INFORMATION' || word === 'INFO') {
+          if (word === 'INFORMATION' || word === 'INFO' || word === this.Reports[0].airport.toUpperCase()) {
             foundInfo = true;
           }
         } else {
