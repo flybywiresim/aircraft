@@ -75,7 +75,7 @@ export class VerticalDisplayWaypointLayer implements VerticalDisplayMapLayer<VdS
     y: number,
     symbol: VdSymbol,
   ) {
-    const mainColor = symbol.type & NdSymbolTypeFlags.FlightPlan ? '#e5dfd6' : '#c87fda';
+    const mainColor = symbol.type & NdSymbolTypeFlags.FlightPlan ? '#e5dfd6' : '#dc78da';
 
     this.paintAirportShape(context, x, y, isColorLayer ? mainColor : '#000', isColorLayer ? 1.75 : 3.25);
 
@@ -91,9 +91,9 @@ export class VerticalDisplayWaypointLayer implements VerticalDisplayMapLayer<VdS
     y: number,
     symbol: VdSymbol,
   ) {
-    this.paintWaypointShape(context, x, y, isColorLayer ? '#c87fda' : '#000', isColorLayer ? 1.75 : 3.25);
+    this.paintWaypointShape(context, x, y, isColorLayer ? '#dc78da' : '#000', isColorLayer ? 1.75 : 3.25);
     context.font = '21px Ecam';
-    VerticalDisplayPaintUtils.paintText(isColorLayer, context, x + 15, y + 17, symbol.ident, '#c87fda');
+    VerticalDisplayPaintUtils.paintText(isColorLayer, context, x + 15, y + 17, symbol.ident, '#dc78da');
   }
 
   private paintFlightPlanWaypoint(
@@ -105,7 +105,7 @@ export class VerticalDisplayWaypointLayer implements VerticalDisplayMapLayer<VdS
     verticalRange: [number, number],
     isSelectedModeVertical: boolean,
   ) {
-    const mainColor = symbol.type & NdSymbolTypeFlags.ActiveLegTermination ? '#e5dfd6' : '#64da1d';
+    const mainColor = symbol.type & NdSymbolTypeFlags.ActiveLegTermination ? '#e5dfd6' : '#5bea06';
 
     this.paintWaypointShape(context, x, y, isColorLayer ? mainColor : '#000', isColorLayer ? 1.75 : 3.25);
 
