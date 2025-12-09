@@ -1,5 +1,5 @@
 import { EventBus, SimVarPublisher, SimVarValueType } from '@microsoft/msfs-sdk';
-import { LateralMode, VerticalMode } from '@shared/autopilot';
+import { AutoThrustMode, AutoThrustModeMessage, LateralMode, VerticalMode } from '@shared/autopilot';
 
 export enum FgLateralArmedFlags {
   None = 0,
@@ -18,15 +18,6 @@ export enum FgVerticalArmedFlags {
   Tcas = 1 << 6,
 }
 
-export enum AutoThrustModeMessage {
-  None = 0,
-  ThrustLock = 1,
-  LeverToga = 2,
-  LeverClb = 3,
-  LeverMct = 4,
-  LeverAsym = 5,
-}
-
 export interface FGVars {
   'fg.fma.lateralMode': LateralMode;
   'fg.fma.lateralArmedBitmask': FgLateralArmedFlags;
@@ -36,16 +27,8 @@ export interface FGVars {
   /** Altitude constraint in ft. 0 if not set. */
   'fg.altitudeConstraint': number;
 
-  /**
-   * Autothrust mode message.
-   * 0 = None
-   * 1 = THR LK
-   * 2=  LVR TOGA
-   * 3 = LVR CLB
-   * 4 = LVR MCT
-   * 5 = LVR ASYM
-   */
   'fg.athr.message': AutoThrustModeMessage;
+  'fg.athr.mode': AutoThrustMode;
 }
 
 export class FGDataPublisher extends SimVarPublisher<FGVars> {
@@ -59,6 +42,7 @@ export class FGDataPublisher extends SimVarPublisher<FGVars> {
         ['fg.speeds.managed', { name: 'L:A32NX_SPEEDS_MANAGED_PFD', type: SimVarValueType.Knots }],
         ['fg.altitudeConstraint', { name: 'L:A32NX_FG_ALTITUDE_CONSTRAINT', type: SimVarValueType.Number }],
         ['fg.athr.message', { name: 'L:A32NX_AUTOTHRUST_MODE_MESSAGE', type: SimVarValueType.Enum }],
+        ['fg.athr.mode', { name: 'L:A32NX_AUTOTHRUST_MODE', type: SimVarValueType.Enum }],
       ]),
       bus,
     );

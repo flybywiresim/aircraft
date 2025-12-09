@@ -26,7 +26,8 @@ import {
 } from '@flybywiresim/fbw-sdk';
 import { FcdcValueProvider } from './shared/FcdcValueProvider';
 import { DmcLogicEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
-import { AutoThrustModeMessage, FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
+import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
+import { AutoThrustModeMessage } from '@shared/autopilot';
 
 abstract class ShowForSecondsComponent<T extends ComponentProps> extends DisplayComponent<T> {
   private timeout: number = 0;
@@ -275,6 +276,10 @@ export class FMA extends DisplayComponent<{
         this.tdReached = tdr;
         this.handleFMABorders();
       });
+
+    this.autoThrustModeMessage.sub(() => {
+      this.handleFMABorders();
+    });
   }
 
   render(): VNode {
@@ -490,7 +495,7 @@ class Row3 extends DisplayComponent<{
           autoThrustModeMessage={this.props.autoThrustModeMessage}
         />
         <g ref={this.cellsToHide}>
-          <AB3Cell bus={this.props.bus} />
+          <AB3Cell bus={this.props.bus} autoThrustModeMessage={this.props.autoThrustModeMessage} />
           <D3Cell bus={this.props.bus} />
         </g>
         <BC3Cell
@@ -820,19 +825,23 @@ class A3Cell extends DisplayComponent<A3CellProps> {
   }
 }
 
-class AB3Cell extends DisplayComponent<CellProps> {
+interface AB3CellProps extends CellProps {
+  autoThrustModeMessage: Subscribable<AutoThrustModeMessage>;
+}
+
+class AB3Cell extends DisplayComponent<AB3CellProps> {
   // TODO: Connect this to the correct FMGC bus
   private speedPresel = Arinc429Word.empty();
 
   // TODO: Connect these to the correct FMGC bus
   private machPresel = Arinc429Word.empty();
 
-  private athrModeMessage = 0;
+  private athrModeMessage = AutoThrustModeMessage.None;
 
-  private textSub = Subject.create('');
+  private readonly textSub = Subject.create('');
 
   private getText() {
-    if (this.athrModeMessage === 0) {
+    if (this.athrModeMessage === AutoThrustModeMessage.None) {
       if (this.speedPresel.isNormalOperation() && !this.machPresel.isNormalOperation()) {
         const text = Math.round(this.speedPresel.value);
         this.textSub.set(`SPEED SEL ${text}`);
@@ -848,16 +857,10 @@ class AB3Cell extends DisplayComponent<CellProps> {
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-
-    const sub = this.props.bus.getSubscriber<PFDSimvars>();
-
-    sub
-      .on('athrModeMessage')
-      .whenChanged()
-      .handle((m) => {
-        this.athrModeMessage = m;
-        this.getText();
-      });
+    this.props.autoThrustModeMessage.sub((message) => {
+      this.athrModeMessage = message;
+      this.getText();
+    });
   }
 
   render(): VNode {
@@ -1490,7 +1493,7 @@ const getBC3Message = (
     className = 'FontMedium White';
   } else if (thrustLocked) {
     text = 'MOVE THR LEVERS';
-    className = 'PulseAmber9Seconds Amber';
+    className = 'BlinkInfinite Amber';
   } else if (tdReached) {
     text = 'T/D REACHED';
     className = 'FontMedium White';
@@ -1633,6 +1636,10 @@ class BC3Cell extends DisplayComponent<{
         this.tdReached = tdr;
         this.fillBC3Cell();
       });
+
+    this.props.autoThrustModeMessage.sub(() => {
+      this.fillBC3Cell();
+    });
   }
 
   render(): VNode {

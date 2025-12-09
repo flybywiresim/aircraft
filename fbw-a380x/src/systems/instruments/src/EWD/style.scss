@@ -1,4 +1,5 @@
 @import "../MsfsAvionicsCommon/definitions";
+@import "../MsfsAvionicsCommon/animations";
 @import "../MsfsAvionicsCommon/gauges";
 @import "../MFD/pages/common/widget-style.scss"; // Re-use MFD widget style
 
@@ -581,4 +582,10 @@ text, tspan, span {
   right: 3px;
   display: flex;
   flex-direction: row;
+}
+
+.PulseAmberInfinite {
+  @include GenericPulsingFill($display-amber, pulse-amber-fill);
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
 }

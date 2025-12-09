@@ -54,6 +54,8 @@ export class N1Limit extends DisplayComponent<{
     this.thrustLimitMax,
   );
 
+  private readonly activeHiddenElement = this.props.active.map((v) => !v);
+
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
   }
@@ -62,49 +64,43 @@ export class N1Limit extends DisplayComponent<{
     return (
       <g id="Thrust-Rating-Mode" style={{ display: this.props.hidden.map((v) => (v ? 'none' : '')) }}>
         <text
-          class="F26 Center Amber"
+          class={{ F26: true, Center: true, Amber: true, HiddenElement: this.activeHiddenElement }}
           x={this.props.x - 18}
           y={this.props.y}
-          style={{ display: this.props.active.map((a) => (a ? 'none' : '')) }}
         >
           XX
         </text>
 
         <text
-          class="Huge End Cyan"
-          style={{ display: this.props.active.map((a) => (a ? '' : 'none')) }}
+          class={{ Huge: true, End: true, Cyan: true, HiddenElement: this.activeHiddenElement }}
           x={this.props.x}
           y={this.props.y}
         >
           {this.N1LimitType.map((t) => this.thrustLimitTypeArray[t])}
         </text>
         <text
-          class="F26 End Green Spread"
-          style={{ display: this.props.active.map((a) => (a ? '' : 'none')) }}
+          class={{ F26: true, End: true, Green: true, Spread: true, HiddenElement: this.activeHiddenElement }}
           x={this.props.x + 69}
           y={this.props.y - 2}
         >
           {this.thrustLimitTHR.map((l) => splitDecimals(l)[0])}
         </text>
         <text
-          class="F26 End Green"
-          style={{ display: this.props.active.map((a) => (a ? '' : 'none')) }}
+          class={{ F26: true, End: true, Green: true, HiddenElement: this.activeHiddenElement }}
           x={this.props.x + 86}
           y={this.props.y - 2}
         >
           .
         </text>
         <text
-          class="F20 End Green"
-          style={{ display: this.props.active.map((a) => (a ? '' : 'none')) }}
+          class={{ F20: true, End: true, Green: true, HiddenElement: this.activeHiddenElement }}
           x={this.props.x + 101}
           y={this.props.y - 2}
         >
           {this.thrustLimitTHR.map((l) => splitDecimals(l)[1])}
         </text>
         <text
-          class="F20 End Cyan"
-          style={{ display: this.props.active.map((a) => (a ? '' : 'none')) }}
+          class={{ F20: true, End: true, Cyan: true, HiddenElement: this.activeHiddenElement }}
           x={this.props.x + 117}
           y={this.props.y - 2}
         >
