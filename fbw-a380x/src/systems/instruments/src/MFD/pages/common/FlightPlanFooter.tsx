@@ -44,7 +44,7 @@ export class FlightPlanFooter extends DisplayComponent<FlightPlanFooterProps> {
               this.props.fmcService.master?.resetRevisedWaypoint();
               this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln`);
             }}
-            buttonStyle="color: #f5ca4f;"
+            buttonStyle="color: #ffd200;"
           />
         </div>
       </div>
