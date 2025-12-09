@@ -131,7 +131,7 @@ export class VerticalDisplayCanvasMap extends DisplayComponent<VerticalDisplayCa
     const vdRange = this.props.vdRange.get();
     const verticalRange = this.props.verticalRange.get();
 
-    context.strokeStyle = '#64da1d';
+    context.strokeStyle = '#5bea06';
     context.lineWidth = 2;
 
     const targetIsDashed = this.fmsActualVdProfile.get().length > 1;
