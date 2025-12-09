@@ -271,7 +271,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
       ) {
         return '#e5dfd6';
       }
-      return '#44d9e1';
+      return '#17e9f2';
     },
     this.activeVerticalMode,
     this.fgAltConstraint,
@@ -647,7 +647,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
               x2="115"
               y1={this.planeSymbolY}
               y2={this.planeSymbolY}
-              stroke="#f5ca4f"
+              stroke="#ffd200"
               stroke-width="4"
               visibility={this.planeSymbolVisibility}
             />
@@ -664,7 +664,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
           <g transform={this.planeSymbolTransform} visibility={this.planeRotationVisibility}>
             <line
               fill="none"
-              stroke="#f5ca4f"
+              stroke="#ffd200"
               x1="5.31255"
               y1="15.74998"
               x2="33.81273"
@@ -674,8 +674,8 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
             />
             <path
               d="m4.96875,15.81249l-0.03125,-11.0625l11.4375,11"
-              fill="#f5ca4f"
-              stroke="#f5ca4f"
+              fill="#ffd200"
+              stroke="#ffd200"
               stroke-width="3"
               stroke-linejoin="round"
             />
@@ -714,9 +714,9 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
               {this.rangeMarkerText[3]}
             </text>
             <g visibility={this.rangeOver160ArrowVisible} transform="translate(715 777)">
-              <line fill="none" stroke="#44d9e1" x1="0" y1="11.25" x2="22.5" y2="11.25" stroke-width="2" />
-              <line fill="none" x1="22.5" y1="11.25" x2="11.25" y2="3" stroke="#44d9e1" stroke-width="2" />
-              <line fill="none" x1="22.5" y1="11.25" x2="11.25" y2="19.5" stroke="#44d9e1" stroke-width="2" />
+              <line fill="none" stroke="#17e9f2" x1="0" y1="11.25" x2="22.5" y2="11.25" stroke-width="2" />
+              <line fill="none" x1="22.5" y1="11.25" x2="11.25" y2="3" stroke="#17e9f2" stroke-width="2" />
+              <line fill="none" x1="22.5" y1="11.25" x2="11.25" y2="19.5" stroke="#17e9f2" stroke-width="2" />
             </g>
           </g>
           <text
