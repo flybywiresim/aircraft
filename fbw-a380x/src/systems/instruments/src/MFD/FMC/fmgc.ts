@@ -15,45 +15,6 @@ import { Arinc429Word, Fix, Runway, Units } from '@flybywiresim/fbw-sdk';
 import { Feet } from 'msfs-geo';
 import { minGw } from '@shared/PerformanceConstants';
 
-export enum TakeoffPowerSetting {
-  TOGA = 0,
-  FLEX = 1,
-  DERATED = 2,
-}
-
-export enum TakeoffDerated {
-  D01 = 0,
-  D02 = 1,
-  D03 = 2,
-  D04 = 3,
-  D05 = 4,
-}
-
-export enum TakeoffPacks {
-  OFF_APU = 0,
-  ON = 1,
-}
-
-export enum TakeoffAntiIce {
-  OFF = 0,
-  ENG_ONLY = 1,
-  ENG_WINGS = 2,
-}
-
-export enum CostIndexMode {
-  LRC = 0,
-  ECON = 1,
-}
-
-export enum ClimbDerated {
-  NONE = 0,
-  D01 = 1,
-  D02 = 2,
-  D03 = 3,
-  D04 = 4,
-  D05 = 5,
-}
-
 /**
  * Temporary place for data which is found nowhere else. Not associated to flight plans right now, which should be the case for some of these values
  */

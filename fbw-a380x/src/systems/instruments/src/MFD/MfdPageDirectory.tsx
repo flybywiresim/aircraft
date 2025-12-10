@@ -37,6 +37,7 @@ import { MfdFmsFplnFixInfo } from './pages/FMS/F-PLN/MfdFmsFplnFixInfo';
 import { MfdFmsPositionMonitor } from './pages/FMS/POSITION/MfdFmsPositionMonitor';
 import { MfdSurvStatusSwitching } from 'instruments/src/MFD/pages/SURV/MfdSurvStatusSwitching';
 import { MfdFmsDataAirport } from 'instruments/src/MFD/pages/FMS/DATA/MfdFmsDataAirport';
+import { MfdFmsSecIndex } from './pages/FMS/SEC/MfdFmsSecIndex';
 
 export function pageForUrl(
   url: string,
@@ -94,6 +95,8 @@ export function pageForUrl(
       return <MfdFmsFplnHold pageTitle="F-PLN/HOLD" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'fms/active/f-pln-fix-info':
       return <MfdFmsFplnFixInfo pageTitle="F-PLN/FIX INFO" bus={bus} mfd={mfd} fmcService={fmcService} />;
+    case 'fms/sec/index':
+      return <MfdFmsSecIndex pageTitle="SEC INDEX" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'fms/position/monitor':
       return <MfdFmsPositionMonitor pageTitle="MONITOR" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'fms/position/irs':
