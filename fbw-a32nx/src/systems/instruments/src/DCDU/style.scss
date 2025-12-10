@@ -60,7 +60,7 @@ path.dcdu-line {
 }
 
 .station {
-  fill: #80da1d;
+  fill: #5bea06;
   font-size: 134px;
   font-family: dcdu-small-green;
 }
@@ -72,7 +72,7 @@ path.dcdu-line {
 
 .status-open {
   font-family: dcdu-normal-cyan;
-  fill: #44d9e1;
+  fill: #17e9f2;
 }
 
 .status-other {
@@ -95,11 +95,11 @@ path.dcdu-line {
 }
 
 .message-out {
-  fill: #44d9e1;
+  fill: #17e9f2;
 }
 
 .message-sent {
-  fill: #64da1d;
+  fill: #5bea06;
 }
 
 .atc-info {
@@ -113,7 +113,7 @@ path.dcdu-line {
 
 .atc-info-active {
   font-family: dcdu-normal-green;
-  fill: #64da1d;
+  fill: #5bea06;
 }
 
 .message-tspan {
@@ -123,12 +123,12 @@ path.dcdu-line {
 
 .message-highlight {
   font-family: dcdu-normal-cyan;
-  fill: #44d9e1;
+  fill: #17e9f2;
 }
 
 .message-monitoring {
   font-family: dcdu-normal-cyan;
-  fill: #c87fda;
+  fill: #dc78da;
 }
 
 .message-onbackground {
@@ -154,7 +154,7 @@ path.dcdu-line {
 
 .message-content-sent {
   font-family: dcdu-normal-green;
-  fill: #64da1d;
+  fill: #5bea06;
 }
 
 .startup-text {
@@ -165,7 +165,7 @@ path.dcdu-line {
   height: 2912px;
 
   text {
-    fill: #64da1d;
+    fill: #5bea06;
     font-size: 240px;
     text-anchor: middle;
     font-family: dcdu-normal-green;
@@ -178,7 +178,7 @@ path.dcdu-line {
 
 .button-color {
   font-family: dcdu-small-cyan;
-  fill: #44d9e1;
+  fill: #17e9f2;
 }
 
 .button-color-clicked {
