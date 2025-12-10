@@ -155,7 +155,7 @@ export class EngineWarningDisplay extends DestroyableComponent<{ bus: ArincEvent
   private readonly alphaFloorHiddenElement = ConsumerSubject.create(
     this.sub.on('fg.athr.mode'),
     AutoThrustMode.NONE,
-  ).map((v) => v !== AutoThrustMode.A_FLOOR);
+  ).map((v) => v !== AutoThrustMode.A_FLOOR && v !== AutoThrustMode.TOGA_LK);
 
   private readonly thrustLockActive = ConsumerSubject.create(this.sub.on('fg.athr.message'), 0).map(
     (v) => v === AutoThrustModeMessage.ThrustLock,
