@@ -6,7 +6,7 @@
 
 import { Airport, ApproachType, Fix, isMsfs2024, LegType, MathUtils, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
-import { AeroMath, BitFlags, EventBus, MagVar, MutableSubscribable } from '@microsoft/msfs-sdk';
+import { AeroMath, BitFlags, EventBus, MagVar, MutableSubscribable, Vec2Math } from '@microsoft/msfs-sdk';
 import { FixInfoData, FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
 import { loadAllDepartures, loadAllRunways } from '@fmgc/flightplanning/DataLoading';
 import { Coordinates, Degrees } from 'msfs-geo';
@@ -750,13 +750,33 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
    * @param altitude the altitude of the entry to set
    * @param entry the entry to set, or null to delete the entry
    * @param planIndex which flight plan index to set the entry in
+   * @param shouldUpdateTwrWind whether to update the wind on PERF APPR as well if the altitude of the wind entry is at
+   * the destination altitude
    */
-  async setDescentWindEntry(altitude: number, entry: WindEntry | null, maxNumberEntries: number): Promise<void> {
+  async setDescentWindEntry(
+    altitude: number,
+    entry: WindEntry | null,
+    maxNumberEntries: number,
+    shouldUpdateTwrWind: boolean = true,
+  ): Promise<void> {
     const destinationElevation = this.destinationAirport?.location.alt ?? 0;
     const altitudeOrGround = altitude <= destinationElevation + 400 ? destinationElevation : altitude;
 
     if (entry?.altitude <= destinationElevation + 400) {
       entry.altitude = destinationElevation;
+
+      if (shouldUpdateTwrWind) {
+        // If the entry is a GRND entry (i.e within 400 ft of the destination elevation, copy it to PERF APPR too)
+        const destinationMagVar = this.destinationAirport
+          ? Facilities.getMagVar(this.destinationAirport.location.lat, this.destinationAirport.location.long)
+          : 0;
+
+        this.setPerformanceData(
+          'approachWindDirection',
+          A32NX_Util.trueToMagnetic(Vec2Math.theta(entry.vector) * MathUtils.RADIANS_TO_DEGREES, destinationMagVar),
+        );
+        this.setPerformanceData('approachWindMagnitude', Vec2Math.abs(entry.vector));
+      }
     }
 
     this.setClbDesWindEntry(this.performanceData.descentWindEntries.get(), altitudeOrGround, entry, maxNumberEntries);

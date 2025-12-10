@@ -63,7 +63,7 @@ import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 import { FmsDataInterface } from '@fmgc/flightplanning/interface/FmsDataInterface';
-import { BitFlags, EventBus, SimVarValueType, Subscription } from '@microsoft/msfs-sdk';
+import { BitFlags, EventBus, SimVarValueType, Subscription, Vec2Math } from '@microsoft/msfs-sdk';
 import { AdfRadioTuningStatus, MmrRadioTuningStatus, VorRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { FmsFormatters } from './FmsFormatters';
@@ -3812,6 +3812,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.flightPlanService.setPerformanceData('approachWindDirection', null, forPlan);
       this.flightPlanService.setPerformanceData('approachWindMagnitude', null, forPlan);
 
+      this.flightPlanService.setDescentWindEntry(0, null, forPlan);
+
       return true;
     }
 
@@ -3827,6 +3829,22 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
     this.flightPlanService.setPerformanceData('approachWindDirection', dir % 360, forPlan); // 360 is displayed as 0
     this.flightPlanService.setPerformanceData('approachWindMagnitude', mag, forPlan);
+
+    const plan = this.getFlightPlan(forPlan);
+
+    const destinationMagVar = plan.destinationAirport
+      ? Facilities.getMagVar(plan.destinationAirport.location.lat, plan.destinationAirport.location.long)
+      : 0;
+
+    const theta = A32NX_Util.magneticToTrue(dir, destinationMagVar) * MathUtils.DEGREES_TO_RADIANS;
+
+    this.flightPlanService.setDescentWindEntry(
+      0,
+      { altitude: 0, vector: Vec2Math.setFromPolar(mag, theta, Vec2Math.create()) },
+      forPlan,
+      false,
+    );
+
     return true;
   }
 

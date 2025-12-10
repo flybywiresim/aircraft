@@ -924,10 +924,15 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     return plan.setClimbWindEntry(altitude, entry, this.config.NUM_CLIMB_WIND_LEVELS);
   }
 
-  setDescentWindEntry(altitude: number, entry: WindEntry | null, planIndex: number): Promise<void> {
+  setDescentWindEntry(
+    altitude: number,
+    entry: WindEntry | null,
+    planIndex: number,
+    shouldUpdateTwrWind: boolean = true,
+  ): Promise<void> {
     const plan = this.flightPlanManager.get(planIndex);
 
-    return plan.setDescentWindEntry(altitude, entry, this.config.NUM_DESCENT_WIND_LEVELS);
+    return plan.setDescentWindEntry(altitude, entry, this.config.NUM_DESCENT_WIND_LEVELS, shouldUpdateTwrWind);
   }
 
   deleteClimbWindEntries(planIndex: number) {

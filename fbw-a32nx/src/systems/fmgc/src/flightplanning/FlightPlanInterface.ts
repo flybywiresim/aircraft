@@ -460,8 +460,14 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
    * @param altitude the altitude of the entry to set
    * @param entry the entry to set, or null to delete the entry
    * @param planIndex which flight plan index to set the entry in
+   * @param shouldUpdateTwrWind whether to copy the wind to the perf approach page if the altitude is the destination altitude
    */
-  setDescentWindEntry(altitude: number, entry: WindEntry | null, planIndex: number): Promise<void>;
+  setDescentWindEntry(
+    altitude: number,
+    entry: WindEntry | null,
+    planIndex: number,
+    shouldUpdateTwrWind: boolean,
+  ): Promise<void>;
 
   /**
    * Deletes all climb wind entries
