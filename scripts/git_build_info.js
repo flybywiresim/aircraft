@@ -36,7 +36,7 @@ exports.getGitBuildInfo = () => {
     const commitHash = process.env.GITHUB_SHA ? process.env.GITHUB_SHA : evaluate('git show-ref -s HEAD');
     let tag = '';
     try {
-      tag = evaluate('git tag -l --contains HEAD')
+      tag = evaluate('git tag --points-at HEAD')
         .split('\n')
         .filter((it) => !!it)[0];
     } catch (e) {
