@@ -283,7 +283,7 @@ export class FmcAircraftInterface {
     this.subs.push(
       this.fmc.zeroFuelWeight.sub((zfw) => {
         this.arincZeroFuelWeight.setBnrValue(
-          zfw ? zfw : 0,
+          zfw ? zfw * 1_000 : 0,
           zfw ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
           19,
           524288,
@@ -1409,7 +1409,12 @@ export class FmcAircraftInterface {
         towerHeadwind,
         true, // ignore VLS spoiler increase as it's only for display purposes
       );
-      this.flightPlanService.active.setPerformanceData('pilotVapp', approachSpeeds.vapp);
+      if (
+        this.flightPlanService.active.performanceData.pilotVapp.get() === null ||
+        this.flightPlanService.active.performanceData.pilotVapp.get()! - approachSpeeds.vapp > 0.5
+      ) {
+        this.flightPlanService.active.setPerformanceData('pilotVapp', approachSpeeds.vapp);
+      }
 
       this.fmgc.data.approachVls.set(Math.ceil(approachSpeeds.vls));
       this.fmgc.data.approachVref.set(Math.ceil(approachSpeeds.vref));
@@ -1418,7 +1423,10 @@ export class FmcAircraftInterface {
       this.fmgc.data.approachFlapRetractionSpeed.set(Math.ceil(approachSpeeds.f3));
       this.speedVapp.set(Math.round(approachSpeeds.vapp));
     } else {
-      this.flightPlanService.active.setPerformanceData('pilotVapp', null);
+      if (this.flightPlanService.active.performanceData.pilotVapp.get() !== null) {
+        this.flightPlanService.active.setPerformanceData('pilotVapp', null);
+      }
+
       this.fmgc.data.approachVls.set(null);
       this.fmgc.data.approachVref.set(null);
       this.fmgc.data.approachGreenDotSpeed.set(null);
@@ -1488,7 +1496,12 @@ export class FmcAircraftInterface {
     SimVar.SetSimVarValue('L:A32NX_FM_GROSS_WEIGHT', 'Number', gw ?? 0);
 
     if (this.fmc.enginesWereStarted.get() && this.flightPhase.get() !== FmgcFlightPhase.Done) {
-      this.fmc.flightPlanInterface.setPerformanceData('blockFuel', this.fmc.fmgc.getFOB()!);
+      if (
+        this.fmc.flightPlanInterface.active.performanceData.blockFuel.get() !== null &&
+        this.fmc.flightPlanInterface.active.performanceData.blockFuel.get()! - this.fmc.fmgc.getFOB()! > 0.1
+      ) {
+        this.fmc.flightPlanInterface.active.setPerformanceData('blockFuel', this.fmc.fmgc.getFOB()!);
+      }
     }
   }
 

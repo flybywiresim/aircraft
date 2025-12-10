@@ -218,7 +218,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   private readonly toV2 = Subject.create<number | null>(null);
 
   private readonly takeoffFlaps = Subject.create<number | null>(null);
-  private readonly toSelectedFlapsIndex = this.takeoffFlaps.map((flaps) => (flaps !== null ? flaps - 1 : null));
+  private readonly toSelectedFlapsIndex = this.takeoffFlaps.map((flaps) =>
+    flaps !== null && flaps > 0 ? flaps - 1 : null,
+  );
 
   private vSpeedsConfirmationRef = [
     FSComponent.createRef<HTMLDivElement>(),
@@ -755,21 +757,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     );
 
     this.subs.push(
-      this.takeoffFlaps.sub((v) => {
-        // Convert to FlapConf
-        if (v != null) {
-          const flapConf = v + 1;
-          this.props.fmcService.master?.flightPlanInterface.setPerformanceData(
-            'takeoffFlaps',
-            flapConf,
-            this.loadedFlightPlanIndex.get(),
-          );
-
-          if (this.loadedFlightPlanIndex.get() === FlightPlanIndex.Active) {
-            this.props.fmcService.master?.acInterface.setTakeoffFlaps(flapConf);
-          }
-        }
-      }, true),
       this.takeoffPowerSetting.sub((v) => {
         this.showToThrustSettings(v ?? TakeoffPowerSetting.TOGA);
       }, true),
@@ -922,7 +909,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             }
           }
 
-          if (crzPred?.secondsFromPresent !== undefined && crzPred?.distanceFromPresentPosition !== undefined) {
+          if (Number.isFinite(crzPred?.secondsFromPresent) && crzPred?.distanceFromPresentPosition !== undefined) {
             const timePrediction = getEtaUtcOrFromPresent(
               crzPred.distanceFromPresentPosition < 0 ? null : crzPred.secondsFromPresent,
               this.activeFlightPhase.get() == FmgcFlightPhase.Preflight,
@@ -1151,6 +1138,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.loadedFlightPlan.performanceData.costIndexMode!.pipe(this.costIndexMode),
             this.loadedFlightPlan.performanceData.takeoffPowerSetting!.pipe(this.takeoffPowerSetting),
             this.loadedFlightPlan.performanceData.takeoffDeratedSetting!.pipe(this.takeoffDerated),
+            this.loadedFlightPlan.performanceData.takeoffThsFor!.pipe(this.takeoffThsFor),
             this.loadedFlightPlan.performanceData.takeoffPacks!.pipe(this.takeoffPacks),
             this.loadedFlightPlan.performanceData.takeoffAntiIce!.pipe(this.takeoffAntiIce),
             this.loadedFlightPlan.performanceData.noiseEndAltitude!.pipe(this.noiseEndAltitude),
@@ -1161,7 +1149,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.loadedFlightPlan.performanceData.descentCabinRate!.pipe(this.descentCabinRate),
           );
         }
-      }),
+      }, true),
     );
 
     this.subs.push(

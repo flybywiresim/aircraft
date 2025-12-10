@@ -129,8 +129,8 @@ export class FmgcDataService implements Fmgc {
 
   /** in tons */
   getZeroFuelWeight(): number {
-    const zfw = this.flightPlanService.active.performanceData.zeroFuelWeight.get() ?? minGw;
-    return zfw / 1_000;
+    const zfw = this.flightPlanService.active.performanceData.zeroFuelWeight.get() ?? minGw / 1_000;
+    return zfw;
   }
 
   /** in tons */
@@ -143,7 +143,7 @@ export class FmgcDataService implements Fmgc {
       return null;
     }
 
-    return (zfw + fob * 1000) / 1_000;
+    return zfw + fob;
   }
 
   /** in kilograms */
@@ -161,8 +161,9 @@ export class FmgcDataService implements Fmgc {
     // FIXME get from FQMS when implemented
     if (this.isAnEngineOn()) {
       fob =
-        SimVar.GetSimVarValue('L:A32NX_TOTAL_FUEL_VOLUME', 'gallons') *
-        SimVar.GetSimVarValue('FUEL WEIGHT PER GALLON', 'kilograms');
+        (SimVar.GetSimVarValue('L:A32NX_TOTAL_FUEL_VOLUME', 'gallons') *
+          SimVar.GetSimVarValue('FUEL WEIGHT PER GALLON', 'kilograms')) /
+        1_000;
     }
 
     return fob !== null ? fob : null;
@@ -414,7 +415,7 @@ export class FmgcDataService implements Fmgc {
     if (destEfob === null || alternateFuel === null) {
       return null;
     }
-    return destEfob - alternateFuel / 1000;
+    return destEfob - alternateFuel;
   }
 
   /** in feet. null if not set */

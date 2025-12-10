@@ -113,13 +113,14 @@ export class FlightManagementComputer implements FmcInterface {
     this._operatingMode = mode;
   }
 
-  // FIXME A320 data
-  #flightPlanService = new FlightPlanService(
+  #flightPlanService = new FlightPlanService<A380FlightPlanPerformanceData>(
     this.bus,
     new A380FlightPlanPerformanceData(),
     FpmConfigs.A380,
     this._operatingMode === FmcOperatingModes.Master, // TODO Dynamically change this within `FlightPlanService` (proxy things through to an RPC client?)
   );
+
+  private readonly flightPhaseManager = new FlightPhaseManager(this.bus);
 
   #msfsFlightPlanSync: MsfsFlightPlanSync | undefined;
 
@@ -170,8 +171,6 @@ export class FlightManagementComputer implements FmcInterface {
 
   private efisSymbolsLeft!: EfisSymbols<number>;
   private efisSymbolsRight!: EfisSymbols<number>;
-
-  private readonly flightPhaseManager = new FlightPhaseManager(this.bus);
 
   // TODO remove this cyclic dependency, isWaypointInUse should be moved to DataInterface
   private dataManager: DataManager | null = null;
@@ -349,23 +348,25 @@ export class FlightManagementComputer implements FmcInterface {
       // When the active flight plan changes, re-pipe all related subjects
       this.subs.push(
         this.flightPlanChangeNotifier.flightPlanChanged.sub(() => {
-          this.subs.push(
-            this.flightPlanInterface.active.performanceData.zeroFuelWeight.pipe(this.zeroFuelWeight),
-            this.flightPlanInterface.active.performanceData.zeroFuelWeightCenterOfGravity.pipe(
-              this.zeroFuelWeightCenterOfGravity,
-            ),
-            this.flightPlanInterface.active.performanceData.approachQnh.pipe(this.approachQnh),
-            this.flightPlanInterface.active.performanceData.approachTemperature.pipe(this.approachTemperature),
-            this.flightPlanInterface.active.performanceData.approachWindDirection.pipe(this.approachWindDirection),
-            this.flightPlanInterface.active.performanceData.approachWindMagnitude.pipe(this.approachWindMagnitude),
-            this.flightPlanInterface.active.performanceData.minimumDestinationFuelOnBoard.pipe(
-              this.minimumFuelAtDestinationPilotEntry,
-            ),
-            this.flightPlanInterface.active.performanceData.alternateFuel.pipe(this.alternateFuel),
-            this.flightPlanInterface.active.performanceData.pilotFinalHoldingFuel.pipe(this.pilotFinalFuelWeight),
-            this.flightPlanInterface.active.performanceData.pilotFinalHoldingTime.pipe(this.pilotFinalFuelTime),
-          );
-        }),
+          if (this.flightPlanInterface.hasActive) {
+            this.subs.push(
+              this.flightPlanInterface.active.performanceData.zeroFuelWeight.pipe(this.zeroFuelWeight),
+              this.flightPlanInterface.active.performanceData.zeroFuelWeightCenterOfGravity.pipe(
+                this.zeroFuelWeightCenterOfGravity,
+              ),
+              this.flightPlanInterface.active.performanceData.approachQnh.pipe(this.approachQnh),
+              this.flightPlanInterface.active.performanceData.approachTemperature.pipe(this.approachTemperature),
+              this.flightPlanInterface.active.performanceData.approachWindDirection.pipe(this.approachWindDirection),
+              this.flightPlanInterface.active.performanceData.approachWindMagnitude.pipe(this.approachWindMagnitude),
+              this.flightPlanInterface.active.performanceData.minimumDestinationFuelOnBoard.pipe(
+                this.minimumFuelAtDestinationPilotEntry,
+              ),
+              this.flightPlanInterface.active.performanceData.alternateFuel.pipe(this.alternateFuel),
+              this.flightPlanInterface.active.performanceData.pilotFinalHoldingFuel.pipe(this.pilotFinalFuelWeight),
+              this.flightPlanInterface.active.performanceData.pilotFinalHoldingTime.pipe(this.pilotFinalFuelTime),
+            );
+          }
+        }, true),
         this.finalFuelWeight,
         this.pilotEntryMinFuelBelowAltnPlusFinal,
       );
@@ -1196,10 +1197,15 @@ export class FlightManagementComputer implements FmcInterface {
           this.acInterface.resetDestinationPredictions();
         }
         this.acInterface.updateIlsCourse(this.navigation.getNavaidTuner().getMmrRadioTuningStatus(1));
-        this.#flightPlanService.active.setPerformanceData(
-          'alternateExists',
-          this.flightPlanInterface.active.alternateDestinationAirport !== undefined,
-        );
+
+        if (
+          this.#flightPlanService.active.performanceData.alternateExists.get() !==
+          (this.flightPlanInterface.active.alternateDestinationAirport !== undefined)
+        )
+          this.#flightPlanService.active.setPerformanceData(
+            'alternateExists',
+            this.flightPlanInterface.active.alternateDestinationAirport !== undefined,
+          );
       } else {
         this.acInterface.resetDestinationPredictions();
       }

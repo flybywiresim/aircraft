@@ -33,7 +33,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     bus: EventBus,
     performanceDataInit: P,
   ): FlightPlan<P> {
-    return new FlightPlan(context, index, bus, performanceDataInit);
+    return new FlightPlan<P>(context, index, bus, performanceDataInit);
   }
 
   /**
@@ -61,8 +61,8 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
    */
   flags: number = FlightPlanFlags.None;
 
-  constructor(index: number, bus: EventBus, performanceDataInit: P) {
-    super(index, bus);
+  constructor(context: FlightPlanContext, index: number, bus: EventBus, performanceDataInit: P) {
+    super(context, index, bus);
     this.performanceData = performanceDataInit;
   }
 
@@ -609,6 +609,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     value: any,
     notify = true,
   ) {
+    console.log(key, value);
     (this.performanceData[key] as MutableSubscribable<typeof value>).set(value);
 
     if (this.performanceData.hasSubscription(key)) {

@@ -102,7 +102,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
 
   private readonly costIndex = Subject.create<number | null>(null);
 
-  private readonly costIndexMode = Subject.create<CostIndexMode | null>(null);
+  private readonly costIndexMode = Subject.create<CostIndexMode>(CostIndexMode.ECON);
 
   private readonly costIndexModeLabels = ArraySubject.create(['LRC', 'ECON']);
 
@@ -178,17 +178,17 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
 
     this.subs.push(
       this.flightPlanChangeNotifier.flightPlanChanged.sub(() => {
-        if (this.loadedFlightPlan) {
+        if (
+          this.loadedFlightPlan &&
+          this.props.fmcService.master?.flightPlanInterface.has(this.loadedFlightPlanIndex.get())
+        ) {
           this.subs.push(
             this.loadedFlightPlan.performanceData.tropopause.pipe(this.tropopause),
             this.loadedFlightPlan.performanceData.tropopauseIsPilotEntered.pipe(this.tropopauseIsPilotEntered),
+            this.loadedFlightPlan.performanceData.costIndexMode!.pipe(this.costIndexMode),
           );
-
-          if (this.loadedFlightPlan.performanceData.costIndexMode) {
-            this.subs.push(this.loadedFlightPlan.performanceData.costIndexMode?.pipe(this.costIndexMode));
-          }
         }
-      }),
+      }, true),
     );
 
     this.subs.push(
@@ -214,11 +214,6 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
       return;
     }
 
-    this.props.fmcService.master.fmgc.data.cpnyFplnAvailable.set(
-      this.props.fmcService.master.flightPlanInterface.hasUplink &&
-        this.props.fmcService.master.flightPlanInterface.uplink.legCount > 0,
-    );
-
     // Update internal subjects for display purposes or input fields
     if (this.loadedFlightPlan.originAirport) {
       this.fromIcao.set(this.loadedFlightPlan.originAirport.ident);
@@ -236,7 +231,13 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
 
     this.crzFlIsMandatory.set(this.props.fmcService.master.fmgc.getFlightPhase() < FmgcFlightPhase.Descent);
     const cruiseLevel = this.loadedFlightPlan.performanceData.cruiseFlightLevel.get();
-    if (cruiseLevel) {
+    if (
+      cruiseLevel &&
+      this.loadedFlightPlan.performanceData.cruiseTemperatureIsaTemp?.get() &&
+      this.loadedFlightPlan.performanceData.cruiseTemperatureIsaTemp.get()! -
+        A380AltitudeUtils.getIsaTemp(cruiseLevel * 100) >
+        0.5
+    ) {
       this.props.fmcService.master.flightPlanInterface.setPerformanceData(
         'cruiseTemperatureIsaTemp',
         A380AltitudeUtils.getIsaTemp(cruiseLevel * 100),
@@ -257,6 +258,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
   }
 
   protected onFlightPlanChanged(): void {
+    super.onFlightPlanChanged();
     if (!this.loadedFlightPlan) {
       return;
     }
@@ -502,6 +504,13 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
               <DropdownMenu
                 values={this.costIndexModeLabels}
                 selectedIndex={this.costIndexMode}
+                onModified={(v) =>
+                  this.props.fmcService.master?.flightPlanInterface.setPerformanceData(
+                    'costIndexMode',
+                    v,
+                    this.loadedFlightPlanIndex.get(),
+                  )
+                }
                 idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_initCostIndexModeDropdown`}
                 freeTextAllowed={false}
                 containerStyle="width: 175px; margin-right: 65px; "

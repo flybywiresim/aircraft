@@ -21,8 +21,15 @@ import { MappedSubject, Subject } from '@microsoft/msfs-sdk';
 /** Uses A320FlightPlanPerformanceData and a basis and only extends attributes as necessary. */
 export class A380FlightPlanPerformanceData extends A320FlightPlanPerformanceData implements FlightPlanPerformanceData {
   public clone(): this {
-    const cloned = super.clone();
+    const cloned = new A380FlightPlanPerformanceData();
 
+    this.assignFieldsFromOriginal(cloned);
+
+    return cloned as this;
+  }
+
+  protected assignFieldsFromOriginal(cloned: FlightPlanPerformanceData): FlightPlanPerformanceData {
+    super.assignFieldsFromOriginal(cloned);
     cloned.cruiseTemperatureIsaTemp.set(this.cruiseTemperatureIsaTemp.get());
     cloned.paxNumber.set(this.paxNumber.get());
     cloned.jettisonGrossWeight.set(this.jettisonGrossWeight.get());
@@ -40,7 +47,7 @@ export class A380FlightPlanPerformanceData extends A320FlightPlanPerformanceData
     cloned.climbDerated.set(this.climbDerated.get());
     cloned.descentCabinRate.set(this.descentCabinRate.get());
 
-    return cloned as this;
+    return cloned;
   }
 
   readonly cruiseTemperatureIsaTemp: Subject<number | null> = Subject.create(null);
@@ -72,15 +79,15 @@ export class A380FlightPlanPerformanceData extends A320FlightPlanPerformanceData
     this.alternateFuel,
   );
 
-  readonly takeoffPowerSetting: Subject<TakeoffPowerSetting | null> = Subject.create(null);
+  readonly takeoffPowerSetting: Subject<TakeoffPowerSetting> = Subject.create(TakeoffPowerSetting.TOGA);
 
-  readonly takeoffDeratedSetting: Subject<TakeoffDerated | null> = Subject.create(null);
+  readonly takeoffDeratedSetting: Subject<TakeoffDerated> = Subject.create(TakeoffDerated.D01);
 
   readonly takeoffThsFor: Subject<number | null> = Subject.create(null);
 
-  readonly takeoffPacks: Subject<TakeoffPacks | null> = Subject.create(null);
+  readonly takeoffPacks: Subject<TakeoffPacks | null> = Subject.create(TakeoffPacks.ON);
 
-  readonly takeoffAntiIce: Subject<TakeoffAntiIce | null> = Subject.create(null);
+  readonly takeoffAntiIce: Subject<TakeoffAntiIce | null> = Subject.create(TakeoffAntiIce.OFF);
 
   readonly noiseEnabled = Subject.create(false);
 
@@ -90,11 +97,11 @@ export class A380FlightPlanPerformanceData extends A320FlightPlanPerformanceData
 
   readonly noiseEndAltitude = Subject.create<number | null>(null);
 
-  readonly costIndexMode = Subject.create<CostIndexMode | null>(null);
+  readonly costIndexMode = Subject.create<CostIndexMode>(CostIndexMode.ECON);
 
-  readonly climbDerated = Subject.create<ClimbDerated | null>(null);
+  readonly climbDerated = Subject.create<ClimbDerated>(ClimbDerated.NONE);
 
-  readonly descentCabinRate = Subject.create<number | null>(-350);
+  readonly descentCabinRate = Subject.create<number>(-350);
 
   pipeTo(other: A380FlightPlanPerformanceData, isBeforeEngineStart: boolean): void {
     super.pipeTo(other, isBeforeEngineStart);

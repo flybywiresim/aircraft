@@ -258,25 +258,19 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             this.loadedFlightPlan.performanceData.isFinalHoldingFuelPilotEntered.pipe(this.finalFuelIsPilotEntered),
             this.loadedFlightPlan.performanceData.finalHoldingTime.pipe(this.finalFuelTime),
             this.loadedFlightPlan.performanceData.isFinalHoldingTimePilotEntered.pipe(this.finalFuelTimeIsPilotEntered),
+
+            this.loadedFlightPlan.performanceData.minimumDestinationFuelOnBoard.pipe(this.minimumFuelAtDestination),
+            this.loadedFlightPlan.performanceData.isMinimumDestinationFuelOnBoardPilotEntered.pipe(
+              this.minimumFuelAtDestinationIsPilotEntered,
+            ),
+
+            this.loadedFlightPlan.performanceData.paxNumber!.pipe(this.paxNumber),
+            this.loadedFlightPlan.performanceData.costIndexMode!.pipe(this.costIndexMode),
+            this.loadedFlightPlan.performanceData.jettisonGrossWeight!.pipe(this.jettisonGrossWeight),
+            this.loadedFlightPlan.performanceData.alternateExists!.pipe(this.alternateExists),
           );
-
-          if (this.loadedFlightPlan.performanceData.paxNumber) {
-            this.subs.push(this.loadedFlightPlan.performanceData.paxNumber?.pipe(this.paxNumber));
-          }
-
-          if (this.loadedFlightPlan.performanceData.costIndexMode) {
-            this.subs.push(this.loadedFlightPlan.performanceData.costIndexMode?.pipe(this.costIndexMode));
-          }
-
-          if (this.loadedFlightPlan.performanceData.jettisonGrossWeight) {
-            this.subs.push(this.loadedFlightPlan.performanceData.jettisonGrossWeight?.pipe(this.jettisonGrossWeight));
-          }
-
-          if (this.loadedFlightPlan.performanceData.alternateExists) {
-            this.subs.push(this.loadedFlightPlan.performanceData.alternateExists?.pipe(this.alternateExists));
-          }
         }
-      }),
+      }, true),
     );
 
     this.subs.push(
@@ -320,7 +314,9 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             <div style="display: flex; flex-direction: row; margin-bottom: 15px; align-items: center; ">
               <div class="mfd-label mfd-spacing-right fuelLoad">ZFW</div>
               <InputField<number, number, false>
-                dataEntryFormat={new WeightFormat(Subject.create(minZfw), Subject.create(maxZfw), false)}
+                dataEntryFormat={
+                  new WeightFormat(Subject.create(minZfw / 1_000), Subject.create(maxZfw / 1_000), false)
+                }
                 dataHandlerDuringValidation={async (v) =>
                   this.props.fmcService.master?.flightPlanInterface.setPerformanceData(
                     'zeroFuelWeight',
@@ -360,7 +356,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             <div ref={this.blockLineRef} class="mfd-fms-fuel-load-block-line">
               <div class="mfd-label mfd-spacing-right fuelLoad">BLOCK</div>
               <InputField<number, number, false>
-                dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxBlockFuel), false)}
+                dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxBlockFuel / 1_000), false)}
                 dataHandlerDuringValidation={async (v) =>
                   this.props.fmcService.master?.flightPlanInterface.setPerformanceData(
                     'blockFuel',
@@ -399,7 +395,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 <div class="mfd-label mfd-spacing-right middleGrid">TAXI</div>
                 <div style="margin-bottom: 20px;">
                   <InputField<number, number, false>
-                    dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxTaxiFuel), false)}
+                    dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxTaxiFuel / 1_000), false)}
                     dataHandlerDuringValidation={async (v) =>
                       this.props.fmcService.master?.flightPlanInterface.setPerformanceData(
                         'taxiFuel',
@@ -434,8 +430,8 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                     disabled={this.flightPhaseAtLeastTakeoff}
                     dataEntryFormat={
                       new WeightFormat(
-                        Subject.create(AirlineModifiableInformation.EK.rsvMin),
-                        Subject.create(AirlineModifiableInformation.EK.rsvMax),
+                        Subject.create(AirlineModifiableInformation.EK.rsvMin / 1_000),
+                        Subject.create(AirlineModifiableInformation.EK.rsvMax / 1_000),
                         false,
                       )
                     }
@@ -484,7 +480,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 <div class="mfd-label mfd-spacing-right middleGrid">ALTN</div>
                 <div style="margin-bottom: 20px;">
                   <InputField<number, number, false>
-                    dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxAltnFuel), false)}
+                    dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxAltnFuel / 1_000), false)}
                     dataHandlerDuringValidation={async (v) =>
                       this.props.fmcService.master?.flightPlanInterface.setPerformanceData(
                         'pilotAlternateFuel',
@@ -509,7 +505,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 <div class="mfd-label mfd-spacing-right middleGrid">FINAL</div>
                 <div style="margin-bottom: 20px;">
                   <InputField<number, number, false>
-                    dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxFinalFuel), false)}
+                    dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxFinalFuel / 1_000), false)}
                     dataHandlerDuringValidation={async (v) => {
                       this.props.fmcService.master?.flightPlanInterface.setPerformanceData(
                         'pilotFinalHoldingFuel',
@@ -618,7 +614,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 <div class="mfd-label mfd-spacing-right middleGridSmall">JTSN GW</div>
                 <div style="margin-bottom: 10px;">
                   <InputField<number, number, false>
-                    dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxJtsnGw), false)}
+                    dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxJtsnGw / 1_000), false)}
                     dataHandlerDuringValidation={async (v) => {
                       this.props.fmcService.master?.flightPlanInterface?.setPerformanceData(
                         'jettisonGrossWeight',
@@ -689,7 +685,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 </div>
                 <div style="margin-bottom: 30px; display: flex; justify-content: center;">
                   <InputField<number, number, false>
-                    dataEntryFormat={new WeightFormat()}
+                    dataEntryFormat={new WeightFormat(undefined, undefined, false)}
                     dataHandlerDuringValidation={async (v) =>
                       this.props.fmcService.master?.flightPlanInterface?.setPerformanceData(
                         'pilotMinimumDestinationFuelOnBoard',

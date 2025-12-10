@@ -95,7 +95,7 @@ export class MsfsFlightPlanSync {
     Wait.awaitSubscribable(this.isReady).then(async () => {
       console.log('[MsfsFlightPlanSync] Ready');
 
-      const autoLoadRoute = NXDataStore.get('CONFIG_AUTO_SIM_ROUTE_LOAD', 'DISABLED') === 'ENABLED';
+      const autoLoadRoute = NXDataStore.getLegacy('CONFIG_AUTO_SIM_ROUTE_LOAD', 'DISABLED') === 'ENABLED';
 
       if (autoLoadRoute) {
         console.log('[MsfsFlightPlanSync] Configured to automatically load MSFS route - loading...');
@@ -301,7 +301,7 @@ export class MsfsFlightPlanSync {
       }
     }
 
-    await this.flightPlanInterface.uplinkInsert();
+    await this.flightPlanInterface.uplinkInsert(FlightPlanIndex.Active);
   };
 
   private handleAvionicsRouteRequested = async (_requestID: number): Promise<void> => {
@@ -468,8 +468,8 @@ export class MsfsFlightPlanSync {
         __Type: 'JS_FlightAltitude',
         // Altitude in the route is always in feet, even if indicated as a FL. It is divided by 100 by the sim.
         altitude:
-          activePlan.performanceData.cruiseFlightLevel !== null
-            ? activePlan.performanceData.cruiseFlightLevel * 100
+          activePlan.performanceData.cruiseFlightLevel.get() !== null
+            ? activePlan.performanceData.cruiseFlightLevel.get()! * 100
             : 0,
         isFlightLevel: true,
       },

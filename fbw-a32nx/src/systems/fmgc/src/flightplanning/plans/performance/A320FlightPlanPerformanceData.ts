@@ -20,6 +20,12 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
   public clone(): this {
     const cloned = new A320FlightPlanPerformanceData();
 
+    this.assignFieldsFromOriginal(cloned);
+
+    return cloned as this;
+  }
+
+  protected assignFieldsFromOriginal(cloned: FlightPlanPerformanceData): FlightPlanPerformanceData {
     cloned.v1.set(this.v1.get());
     cloned.vr.set(this.vr.get());
     cloned.v2.set(this.v2.get());
@@ -104,7 +110,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
     cloned.approachRadioMinimum.set(this.approachRadioMinimum.get());
     cloned.approachFlapsThreeSelected.set(this.approachFlapsThreeSelected.get());
 
-    return cloned as this;
+    return cloned;
   }
 
   pipeTo(other: A320FlightPlanPerformanceData, isBeforeEngineStart: boolean): void {
@@ -685,6 +691,14 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
   readonly pilotMinimumDestinationFuelOnBoard: Subject<number | null> = Subject.create(null);
 
   readonly minimumDestinationFuelOnBoard = this.pilotMinimumDestinationFuelOnBoard.map((it) => it);
+
+  /**
+   * Whether minimum fuel on board at the destination is pilot entered.
+   */
+  readonly isMinimumDestinationFuelOnBoardPilotEntered = MappedSubject.create(
+    ([pilotMinimumDestinationFuelOnBoard]) => pilotMinimumDestinationFuelOnBoard !== null,
+    this.pilotMinimumDestinationFuelOnBoard,
+  );
 
   /**
    * The trip wind value entered by the pilot in kts, or null if not set.

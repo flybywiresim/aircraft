@@ -448,6 +448,11 @@ export interface FlightPlanPerformanceData {
   get minimumDestinationFuelOnBoard(): Subscribable<number | null>;
 
   /**
+   * Whether minimum fuel on board at the destination is pilot entered.
+   */
+  get isMinimumDestinationFuelOnBoardPilotEntered(): Subscribable<boolean>;
+
+  /**
    * The trip wind value entered by the pilot in kts, or null if not set.
    * Positive values indicate a tailwind, negative values indicate a headwind.
    */
@@ -552,13 +557,13 @@ export interface FlightPlanPerformanceData {
    * The selected power settting for takeoff (TOGA, FLEX, DERATED), or null if not set.
    * A380 specific
    */
-  readonly takeoffPowerSetting?: MutableSubscribable<TakeoffPowerSetting | null>;
+  readonly takeoffPowerSetting?: MutableSubscribable<TakeoffPowerSetting>;
 
   /**
    * The selected derated power settting for takeoff, or null if not set.
    * A380 specific
    */
-  readonly takeoffDeratedSetting?: MutableSubscribable<TakeoffDerated | null>;
+  readonly takeoffDeratedSetting?: MutableSubscribable<TakeoffDerated>;
 
   /**
    * The GW CG for takeoff, or null if not set.
