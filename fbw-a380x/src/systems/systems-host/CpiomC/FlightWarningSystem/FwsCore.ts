@@ -1996,7 +1996,7 @@ export class FwsCore {
 
   public readonly engineThrustLockedAbnormalSensed = Subject.create(false);
 
-  private readonly autoThrustDisconnected5SecondsTriggeredNode = new NXLogicTriggeredMonostableNode(5, false);
+  private readonly autoThrustDisconnected5SecondsTriggeredNode = new NXLogicTriggeredMonostableNode(5, false, true);
 
   private readonly engineThrustLocked5sMtrigNode = new NXLogicTriggeredMonostableNode(5, true);
 
