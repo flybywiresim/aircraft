@@ -6,7 +6,6 @@ import {
   A320EfisNdRangeValue,
   a320EfisRangeSettings,
   Airport,
-  Arinc429LocalVarOutputWord,
   Arinc429Register,
   Arinc429SignStatusMatrix,
   Arinc429Word,
@@ -15,6 +14,7 @@ import {
   EfisSide,
   EnrouteNdbNavaid,
   Fix,
+  FmArinc429OutputWord,
   IlsNavaid,
   ISimbriefData,
   isMsfs2024,
@@ -64,10 +64,8 @@ import { FmsFormatters } from './FmsFormatters';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
 import { FlightPhaseManager } from '@fmgc/flightphase';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
-import {
-  A320FlightPlanPerformanceData,
-  DefaultPerformanceData,
-} from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import { DefaultPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import { A320FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/A320FlightPlanPerformanceData';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { initComponents, updateComponents } from '@fmgc/components';
@@ -5620,20 +5618,5 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     if (this.fmgcDiscreteWord4.isInvalid()) {
       this.fmgcDiscreteWord4.set(this.fmgc2DiscreteWord4.get());
     }
-  }
-}
-
-/** Writes FM output words for both FMS. */
-class FmArinc429OutputWord extends Arinc429LocalVarOutputWord {
-  private readonly localVars = [`L:A32NX_FM1_${this.name}`, `L:A32NX_FM2_${this.name}`];
-
-  override async writeToSimVarIfDirty() {
-    if (this.isDirty) {
-      this.isDirty = false;
-      return Promise.all(
-        this.localVars.map((localVar) => Arinc429Word.toSimVarValue(localVar, this.word.value, this.word.ssm)),
-      );
-    }
-    return Promise.resolve();
   }
 }

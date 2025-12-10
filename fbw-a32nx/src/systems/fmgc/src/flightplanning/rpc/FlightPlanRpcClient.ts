@@ -241,6 +241,10 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
     return this.callFunctionViaRpc('secondaryCopyFromActive', index, isBeforeEngineStart);
   }
 
+  secondaryCopyFromSecondary(from: number, to: number, isBeforeEngineStart: boolean): Promise<void> {
+    return this.callFunctionViaRpc('secondaryCopyFromSecondary', from, to, isBeforeEngineStart);
+  }
+
   secondaryDelete(index: number): Promise<void> {
     return this.callFunctionViaRpc('secondaryDelete', index);
   }

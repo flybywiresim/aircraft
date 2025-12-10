@@ -192,25 +192,26 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
   protected abstract onNewData(): void;
 
   private onNewDataChecks() {
-    const fm = this.props.fmcService.master?.fmgc.data ?? null;
-    const pd = this.loadedFlightPlan?.performanceData ?? null;
-    const fps = this.props.fmcService.master?.flightPlanInterface ?? null;
+    const fm = this.props.fmcService.master?.fmgc.data;
+    const activeFlightPlan = this.props.fmcService.master?.flightPlanInterface.active;
+    const pdActive = activeFlightPlan?.performanceData;
+    const fps = this.props.fmcService.master?.flightPlanInterface;
 
-    if (this.loadedFlightPlan?.originRunway) {
+    // CHECK TO DATA
+    if (activeFlightPlan && pdActive && activeFlightPlan.originRunway) {
       if (!fm?.vSpeedsForRunway.get()) {
-        fm?.vSpeedsForRunway.set(this.loadedFlightPlan.originRunway.ident);
-      } else if (fm.vSpeedsForRunway.get() !== this.loadedFlightPlan.originRunway.ident) {
-        fm.vSpeedsForRunway.set(this.loadedFlightPlan.originRunway.ident);
-        fm.v1ToBeConfirmed.set(pd?.v1.get() ?? null);
-        fps?.setPerformanceData('v1', null, this.loadedFlightPlanIndex.get());
-        fm.vrToBeConfirmed.set(pd?.vr.get() ?? null);
-        fps?.setPerformanceData('vr', null, this.loadedFlightPlanIndex.get());
-        fm.v2ToBeConfirmed.set(pd?.v2.get() ?? null);
-        fps?.setPerformanceData('v2', null, this.loadedFlightPlanIndex.get());
-
+        fm?.vSpeedsForRunway.set(activeFlightPlan.originRunway.ident);
+      } else if (fm.vSpeedsForRunway.get() !== activeFlightPlan.originRunway.ident) {
+        fm.vSpeedsForRunway.set(activeFlightPlan.originRunway.ident);
+        fm.v1ToBeConfirmed.set(pdActive?.v1.get() ?? null);
+        fps?.setPerformanceData('v1', null, FlightPlanIndex.Active);
+        fm.vrToBeConfirmed.set(pdActive?.vr.get() ?? null);
+        fps?.setPerformanceData('vr', null, FlightPlanIndex.Active);
+        fm.v2ToBeConfirmed.set(pdActive?.v2.get() ?? null);
+        fps?.setPerformanceData('v2', null, FlightPlanIndex.Active);
         this.props.fmcService.master?.addMessageToQueue(
           NXSystemMessages.checkToData,
-          () => this.loadedFlightPlan?.performanceData.vr.get() !== null,
+          () => activeFlightPlan.performanceData.vr.get() !== null,
           undefined,
         );
       }

@@ -19,6 +19,8 @@ import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performanc
 export interface ReadonlyFlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> {
   get index(): number;
 
+  get timeCreated(): number;
+
   get legCount(): number;
 
   get enrouteLegCount(): number;

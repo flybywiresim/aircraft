@@ -287,6 +287,12 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
     );
   }
 
+  public destroy(): void {
+    this.flightPlanChangeNotifier.destroy();
+
+    super.destroy();
+  }
+
   render(): VNode {
     return (
       this.props.fmcService.master && (

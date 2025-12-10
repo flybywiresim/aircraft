@@ -100,6 +100,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     public readonly bus: EventBus,
   ) {
     this.perfSyncPub = this.bus.getPublisher<PerformanceDataFlightPlanSyncEvents<P>>();
+    this.timeCreated = Math.floor(SimVar.GetGlobalVarValue('ZULU TIME', 'seconds'));
   }
 
   public async processSyncEvent(
@@ -238,6 +239,11 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       subscription.destroy();
     }
   }
+
+  /**
+   * Timestamp when this flight plan was created. Seconds since unix epoch.
+   */
+  timeCreated: number;
 
   get legCount() {
     return this.allLegs.length;
@@ -1774,6 +1780,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   private autoDeleteCruiseStep(legIndex: number) {
     this.sendEvent('flightPlan.autoDeleteCruiseStep', {
       planIndex: this.index,
+      batchStack: this.context.batchStack,
+      syncClientID: this.context.syncClientID,
       forAlternate: this instanceof AlternateFlightPlan,
     });
 

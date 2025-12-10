@@ -167,7 +167,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
         this.props.fmcService.master.fmgc.data.atcCallsign.sub((c) => {
           if (c) {
             this.connectToNetworks(c);
-            this.props.fmcService.master?.flightPlanInterface.setFlightNumber(c, this.loadedFlightPlanIndex.get());
+            this.props.fmcService.master?.updateFlightNumber(c, this.loadedFlightPlanIndex.get(), () => {});
           } else {
             this.disconnectFromNetworks();
           }
@@ -321,6 +321,12 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
         return id === disconnectRequestId;
       });
     });
+  }
+
+  public destroy(): void {
+    this.flightPlanChangeNotifier.destroy();
+
+    super.destroy();
   }
 
   render(): VNode {

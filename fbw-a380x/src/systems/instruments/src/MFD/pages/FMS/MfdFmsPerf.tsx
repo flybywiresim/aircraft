@@ -1194,6 +1194,12 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     );
   }
 
+  public destroy(): void {
+    this.flightPlanChangeNotifier.destroy();
+
+    super.destroy();
+  }
+
   render(): VNode {
     return (
       this.props.fmcService.master && (

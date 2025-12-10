@@ -15,7 +15,6 @@ import {
   Arinc429LocalVarConsumerSubject,
   Arinc429Register,
   Arinc429SignStatusMatrix,
-  Arinc429Word,
   FmsData,
   MathUtils,
   NXDataStore,
@@ -23,6 +22,7 @@ import {
   NXLogicConfirmNode,
   NXLogicPulseNode,
   RegisteredSimVar,
+  FmArinc429OutputWord,
 } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { MmrRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
@@ -58,46 +58,31 @@ export class FmcAircraftInterface {
   private gameState = GameStateProvider.get();
   // ARINC words
   // arinc bus output words
-  public arincDiscreteWord2 = FmArinc429OutputWord.emptyFm('DISCRETE_WORD_2');
-
-  public arincDiscreteWord3 = FmArinc429OutputWord.emptyFm('DISCRETE_WORD_3');
-
-  public arincTakeoffPitchTrim = FmArinc429OutputWord.emptyFm('TO_PITCH_TRIM');
-
-  public arincLandingElevation = FmArinc429OutputWord.emptyFm('LANDING_ELEVATION');
-
-  public arincDestinationLatitude = FmArinc429OutputWord.emptyFm('DEST_LAT');
-
-  public arincDestinationLongitude = FmArinc429OutputWord.emptyFm('DEST_LONG');
-
-  public arincMDA = FmArinc429OutputWord.emptyFm('MINIMUM_DESCENT_ALTITUDE');
-
-  public arincDH = FmArinc429OutputWord.emptyFm('DECISION_HEIGHT');
-
-  public arincThrustReductionAltitude = FmArinc429OutputWord.emptyFm('THR_RED_ALT');
-
-  public arincAccelerationAltitude = FmArinc429OutputWord.emptyFm('ACC_ALT');
-
-  public arincEoAccelerationAltitude = FmArinc429OutputWord.emptyFm('EO_ACC_ALT');
-
-  public arincMissedThrustReductionAltitude = FmArinc429OutputWord.emptyFm('MISSED_THR_RED_ALT');
-
-  public arincMissedAccelerationAltitude = FmArinc429OutputWord.emptyFm('MISSED_ACC_ALT');
-
-  public arincMissedEoAccelerationAltitude = FmArinc429OutputWord.emptyFm('MISSED_EO_ACC_ALT');
-
-  public arincTransitionAltitude = FmArinc429OutputWord.emptyFm('TRANS_ALT');
-
-  public arincTransitionLevel = FmArinc429OutputWord.emptyFm('TRANS_LVL');
-
-  public arincZeroFuelWeight = FmArinc429OutputWord.emptyFm('ZERO_FUEL_WEIGHT');
-
-  public arincZeroFuelWeightCg = FmArinc429OutputWord.emptyFm('ZERO_FUEL_WEIGHT_CG');
-
-  public arincRemainingFlightTime = FmArinc429OutputWord.emptyFm('REMAINING_FLIGHT_TIME');
-
+  public readonly arincDiscreteWord2 = new FmArinc429OutputWord('DISCRETE_WORD_2');
+  public readonly arincDiscreteWord3 = new FmArinc429OutputWord('DISCRETE_WORD_3');
+  public readonly arincTakeoffPitchTrim = new FmArinc429OutputWord('TO_PITCH_TRIM');
+  public readonly arincLandingElevation = new FmArinc429OutputWord('LANDING_ELEVATION');
+  public readonly arincDestinationLatitude = new FmArinc429OutputWord('DEST_LAT');
+  public readonly arincDestinationLongitude = new FmArinc429OutputWord('DEST_LONG');
+  public readonly arincMDA = new FmArinc429OutputWord('MINIMUM_DESCENT_ALTITUDE');
+  public readonly arincDH = new FmArinc429OutputWord('DECISION_HEIGHT');
+  public readonly arincThrustReductionAltitude = new FmArinc429OutputWord('THR_RED_ALT');
+  public readonly arincAccelerationAltitude = new FmArinc429OutputWord('ACC_ALT');
+  public readonly arincEoAccelerationAltitude = new FmArinc429OutputWord('EO_ACC_ALT');
+  public readonly arincMissedThrustReductionAltitude = new FmArinc429OutputWord('MISSED_THR_RED_ALT');
+  public readonly arincMissedAccelerationAltitude = new FmArinc429OutputWord('MISSED_ACC_ALT');
+  public readonly arincMissedEoAccelerationAltitude = new FmArinc429OutputWord('MISSED_EO_ACC_ALT');
+  public readonly arincTransitionAltitude = new FmArinc429OutputWord('TRANS_ALT');
+  public readonly arincTransitionLevel = new FmArinc429OutputWord('TRANS_LVL');
+  public readonly arincZeroFuelWeight = new FmArinc429OutputWord('ZERO_FUEL_WEIGHT');
+  public readonly arincZeroFuelWeightCg = new FmArinc429OutputWord('ZERO_FUEL_WEIGHT_CG');
+  public readonly arincRemainingFlightTime = new FmArinc429OutputWord('REMAINING_FLIGHT_TIME');
   /** contains fm messages (not yet implemented) and nodh bit */
-  public arincEisWord2 = FmArinc429OutputWord.emptyFm('EIS_DISCRETE_WORD_2');
+  public readonly arincEisWord2 = new FmArinc429OutputWord('EIS_DISCRETE_WORD_2');
+  public readonly arincFlightNumber1 = new FmArinc429OutputWord('FLIGHT_NUMBER_1');
+  public readonly arincFlightNumber2 = new FmArinc429OutputWord('FLIGHT_NUMBER_2');
+  public readonly arincFlightNumber3 = new FmArinc429OutputWord('FLIGHT_NUMBER_3');
+  public readonly arincFlightNumber4 = new FmArinc429OutputWord('FLIGHT_NUMBER_4');
 
   /** These arinc words will be automatically written to the bus, and automatically set to 0/NCD when the FMS resets */
   public arincBusOutputs = [
@@ -121,6 +106,10 @@ export class FmcAircraftInterface {
     this.arincZeroFuelWeightCg,
     this.arincRemainingFlightTime,
     this.arincEisWord2,
+    this.arincFlightNumber1,
+    this.arincFlightNumber2,
+    this.arincFlightNumber3,
+    this.arincFlightNumber4,
   ];
 
   private readonly speedVs1g = Subject.create(0);
@@ -584,7 +573,7 @@ export class FmcAircraftInterface {
     this.arincDiscreteWord3.setBitValue(16, vSpeedDisagree);
     this.arincDiscreteWord3.setBitValue(17, toSpeedsTooLow);
     this.arincDiscreteWord3.setBitValue(18, toSpeedsNotInserted);
-    this.arincDiscreteWord3.ssm = Arinc429SignStatusMatrix.NormalOperation;
+    this.arincDiscreteWord3.setSsm(Arinc429SignStatusMatrix.NormalOperation);
   }
 
   /**
@@ -596,7 +585,7 @@ export class FmcAircraftInterface {
     this.arincDiscreteWord2.setBitValue(14, flaps === 1);
     this.arincDiscreteWord2.setBitValue(15, flaps === 2);
     this.arincDiscreteWord2.setBitValue(16, flaps === 3);
-    this.arincDiscreteWord2.ssm = Arinc429SignStatusMatrix.NormalOperation;
+    this.arincDiscreteWord2.setSsm(Arinc429SignStatusMatrix.NormalOperation);
   }
 
   /**
@@ -705,7 +694,7 @@ export class FmcAircraftInterface {
     this.arincDH.setBnrValue(dhValid ? dhNumerical : 0, dhSsm, 16, 8192, 0);
     this.arincEisWord2.setBitValue(29, inRange && dhNumerical === RADIO_ALTITUDE_NODH_VALUE);
     // FIXME we need to handle these better
-    this.arincEisWord2.ssm = Arinc429SignStatusMatrix.NormalOperation;
+    this.arincEisWord2.setSsm(Arinc429SignStatusMatrix.NormalOperation);
   }
 
   shouldTransmitMinimums(distanceToDestination: number) {
@@ -2167,71 +2156,5 @@ export class FmcAircraftInterface {
     if (this.fmgc.data.engineOut.get() && this.fmgc.isAllEngineOn()) {
       this.fmgc.data.engineOut.set(false);
     }
-  }
-}
-
-class FmArinc429OutputWord extends Arinc429Word {
-  private dirty = true;
-
-  private _ssm = 0;
-
-  constructor(
-    private name: string,
-    private _value: number = 0,
-  ) {
-    super(0);
-  }
-
-  // @ts-ignore
-  get value() {
-    // eslint-disable-next-line no-underscore-dangle
-    return this._value;
-  }
-
-  set value(value) {
-    // eslint-disable-next-line no-underscore-dangle
-    if (this._value !== value) {
-      this.dirty = true;
-    }
-    // eslint-disable-next-line no-underscore-dangle
-    this._value = value;
-  }
-
-  // @ts-ignore
-  get ssm() {
-    // eslint-disable-next-line no-underscore-dangle
-    return this._ssm;
-  }
-
-  set ssm(ssm) {
-    // eslint-disable-next-line no-underscore-dangle
-    if (this._ssm !== ssm) {
-      this.dirty = true;
-    }
-    // eslint-disable-next-line no-underscore-dangle
-    this._ssm = ssm;
-  }
-
-  static emptyFm(name: string) {
-    return new FmArinc429OutputWord(name, 0);
-  }
-
-  async writeToSimVarIfDirty() {
-    if (this.dirty) {
-      this.dirty = false;
-      return Promise.all([
-        Arinc429Word.toSimVarValue(`L:A32NX_FM1_${this.name}`, this.value, this.ssm),
-        Arinc429Word.toSimVarValue(`L:A32NX_FM2_${this.name}`, this.value, this.ssm),
-      ]);
-    }
-    return Promise.resolve();
-  }
-
-  setBnrValue(value: number, ssm: number, bits: number, rangeMax: number, rangeMin = 0) {
-    const quantum = Math.max(Math.abs(rangeMin), rangeMax) / 2 ** bits;
-    const data = Math.max(rangeMin, Math.min(rangeMax, Math.round(value / quantum) * quantum));
-
-    this.value = data;
-    this.ssm = ssm;
   }
 }

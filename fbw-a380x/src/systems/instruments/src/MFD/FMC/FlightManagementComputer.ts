@@ -22,6 +22,8 @@ import { FmgcDataService } from 'instruments/src/MFD/FMC/fmgc';
 import { FmcInterface, FmcOperatingModes } from 'instruments/src/MFD/FMC/FmcInterface';
 import {
   a380EfisRangeSettings,
+  Airport,
+  Arinc429SignStatusMatrix,
   DatabaseItem,
   EfisSide,
   Fix,
@@ -347,26 +349,7 @@ export class FlightManagementComputer implements FmcInterface {
 
       // When the active flight plan changes, re-pipe all related subjects
       this.subs.push(
-        this.flightPlanChangeNotifier.flightPlanChanged.sub(() => {
-          if (this.flightPlanInterface.hasActive) {
-            this.subs.push(
-              this.flightPlanInterface.active.performanceData.zeroFuelWeight.pipe(this.zeroFuelWeight),
-              this.flightPlanInterface.active.performanceData.zeroFuelWeightCenterOfGravity.pipe(
-                this.zeroFuelWeightCenterOfGravity,
-              ),
-              this.flightPlanInterface.active.performanceData.approachQnh.pipe(this.approachQnh),
-              this.flightPlanInterface.active.performanceData.approachTemperature.pipe(this.approachTemperature),
-              this.flightPlanInterface.active.performanceData.approachWindDirection.pipe(this.approachWindDirection),
-              this.flightPlanInterface.active.performanceData.approachWindMagnitude.pipe(this.approachWindMagnitude),
-              this.flightPlanInterface.active.performanceData.minimumDestinationFuelOnBoard.pipe(
-                this.minimumFuelAtDestinationPilotEntry,
-              ),
-              this.flightPlanInterface.active.performanceData.alternateFuel.pipe(this.alternateFuel),
-              this.flightPlanInterface.active.performanceData.pilotFinalHoldingFuel.pipe(this.pilotFinalFuelWeight),
-              this.flightPlanInterface.active.performanceData.pilotFinalHoldingTime.pipe(this.pilotFinalFuelTime),
-            );
-          }
-        }, true),
+        this.flightPlanChangeNotifier.flightPlanChanged.sub(() => this.onActiveFlightPlanChanged(), true),
         this.finalFuelWeight,
         this.pilotEntryMinFuelBelowAltnPlusFinal,
       );
@@ -442,6 +425,8 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   destroy() {
+    this.flightPlanChangeNotifier.destroy();
+
     for (const s of this.subs) {
       s.destroy();
     }
@@ -744,6 +729,132 @@ export class FlightManagementComputer implements FmcInterface {
   onUplinkDone() {
     this.fmgc.data.cpnyFplnUplinkInProgress.set(false);
     this.fmgc.data.cpnyFplnAvailable.set(true);
+  }
+
+  public async swapActiveAndSecondaryPlan(index: number) {
+    const zfwDiff = this.computeZfwDiffToSecondary(index);
+    const oldDestination = this.#flightPlanService.active?.destinationAirport;
+
+    await this.#flightPlanService.activeAndSecondarySwap(index, !this.enginesWereStarted.get());
+
+    await this.onSecondaryActivated(zfwDiff, oldDestination);
+  }
+
+  private async onSecondaryActivated(zfwDiff: number | null, oldDestination: Airport | undefined) {
+    const phase = this.#fmgc.getFlightPhase();
+
+    if (phase === FmgcFlightPhase.Preflight || phase === FmgcFlightPhase.Done) {
+      this.addMessageToQueue(NXSystemMessages.checkToData);
+    }
+
+    if (zfwDiff !== null && zfwDiff > 5) {
+      this.addMessageToQueue(NXSystemMessages.checkZfw);
+      const sub = this.#flightPlanService.active?.performanceData.zeroFuelWeight.sub((_) => {
+        this.removeMessageFromQueue(NXSystemMessages.checkZfw.text);
+        sub.destroy();
+      });
+    }
+
+    if (oldDestination) {
+      this.checkDestination(oldDestination.ident);
+    }
+  }
+
+  /**
+   * Called when the active flight plan changes, e.g. when a secondary flight plan is activated.
+   */
+  private async onActiveFlightPlanChanged(): Promise<void> {
+    // We invalidate because we don't want to show the old active plan predictions on the newly activated secondary plan.
+    this.guidanceController?.vnavDriver?.invalidateFlightPlanProfile();
+
+    if (this.#flightPlanService.hasActive) {
+      if (this.#flightPlanService.active.flightNumber !== undefined) {
+        await this.onActiveFlightNumberChanged(this.#flightPlanService.active.flightNumber);
+      }
+
+      this.subs.push(
+        this.flightPlanInterface.active.performanceData.zeroFuelWeight.pipe(this.zeroFuelWeight),
+        this.flightPlanInterface.active.performanceData.zeroFuelWeightCenterOfGravity.pipe(
+          this.zeroFuelWeightCenterOfGravity,
+        ),
+        this.flightPlanInterface.active.performanceData.approachQnh.pipe(this.approachQnh),
+        this.flightPlanInterface.active.performanceData.approachTemperature.pipe(this.approachTemperature),
+        this.flightPlanInterface.active.performanceData.approachWindDirection.pipe(this.approachWindDirection),
+        this.flightPlanInterface.active.performanceData.approachWindMagnitude.pipe(this.approachWindMagnitude),
+        this.flightPlanInterface.active.performanceData.minimumDestinationFuelOnBoard.pipe(
+          this.minimumFuelAtDestinationPilotEntry,
+        ),
+        this.flightPlanInterface.active.performanceData.alternateFuel.pipe(this.alternateFuel),
+        this.flightPlanInterface.active.performanceData.pilotFinalHoldingFuel.pipe(this.pilotFinalFuelWeight),
+        this.flightPlanInterface.active.performanceData.pilotFinalHoldingTime.pipe(this.pilotFinalFuelTime),
+      );
+    }
+  }
+
+  public async updateFlightNumber(
+    flightNumber: string,
+    forPlan: FlightPlanIndex,
+    callback = EmptyCallback.Boolean,
+  ): Promise<void> {
+    if (flightNumber.length > 7) {
+      this.addMessageToQueue(NXSystemMessages.formatError);
+      return callback(false);
+    }
+
+    await this.#flightPlanService.setFlightNumber(flightNumber, forPlan);
+
+    if (forPlan === FlightPlanIndex.Active) {
+      await this.onActiveFlightNumberChanged(flightNumber);
+    }
+
+    return callback(true);
+  }
+
+  /**
+   * This updates the Arinc429 words for the flight number and set the flight number in the sim for third party stuff.
+   * To be called after the flight number of the active flight plan has changed.
+   * FIXME should probably just be a subscription handler for the flight number subject once we have that
+   * @param flightNumber The flight number to set
+   */
+  private async onActiveFlightNumberChanged(flightNumber: string) {
+    this.acInterface.arincFlightNumber1.setIso5Value(
+      flightNumber.substring(0, 2),
+      Arinc429SignStatusMatrix.NormalOperation,
+    );
+    this.acInterface.arincFlightNumber2.setIso5Value(
+      flightNumber.substring(2, 4),
+      Arinc429SignStatusMatrix.NormalOperation,
+    );
+    this.acInterface.arincFlightNumber3.setIso5Value(
+      flightNumber.substring(4, 6),
+      Arinc429SignStatusMatrix.NormalOperation,
+    );
+    this.acInterface.arincFlightNumber4.setIso5Value(
+      flightNumber.substring(6, 7),
+      Arinc429SignStatusMatrix.NormalOperation,
+    );
+
+    // Send to the sim for third party stuff.
+    SimVar.SetSimVarValue('ATC FLIGHT NUMBER', 'string', flightNumber, 'FMC');
+  }
+
+  private computeZfwDiffToSecondary(secIndex: number): number | null {
+    const activePlan = this.#flightPlanService.active;
+    const secondaryPlan = this.#flightPlanService.secondary(secIndex);
+
+    const activeZfw = activePlan.performanceData.zeroFuelWeight.get();
+    const secondaryZfw = secondaryPlan.performanceData.zeroFuelWeight.get();
+
+    return activeZfw !== null && secondaryZfw !== null ? Math.abs(activeZfw - secondaryZfw) : null;
+  }
+
+  private checkDestination(oldDestination: string) {
+    const newDestination = this.#flightPlanService.active.destinationAirport.ident;
+
+    // Enabling alternate or new DEST should sequence out of the GO AROUND phase
+    if (newDestination !== oldDestination) {
+      this.flightPhaseManager.handleNewDestinationAirportEntered();
+    }
   }
 
   /**

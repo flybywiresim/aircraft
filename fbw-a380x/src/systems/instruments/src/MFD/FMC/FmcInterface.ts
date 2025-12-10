@@ -209,6 +209,10 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
   /** Insert CPNY FPLN into active flight plan */
   insertCpnyFpln(intoPlan: FlightPlanIndex): void;
 
+  swapActiveAndSecondaryPlan(index: number): Promise<void>;
+
+  updateFlightNumber(flightNumber: string, forPlan: FlightPlanIndex, callback: (arg0: boolean) => void): Promise<void>;
+
   /**
    * Calling this function with a message should display the message in the FMS' message area,
    * such as the scratchpad or a dedicated error line. The FMS error type given should be translated

@@ -69,6 +69,7 @@ export const NXSystemMessages = {
   checkMinFuelAtDest: new TypeIIMessage('CHECK MIN FUEL AT DEST'),
   checkSpeedMode: new TypeIIMessage('CHECK SPD MODE'),
   checkToData: new TypeIIMessage('CHECK T.O. DATA', true),
+  checkZfw: new TypeIIMessage('CHECK ZFW', true),
   comFplnRecievedPendingInsertion: new TypeIIMessage('COMPANY F-PLN RECEIVED WAITING FOR INSERTION', false),
   comDatalinkNotAvail: new TypeIMessage('COM DATALINK NOT AVAIL'),
   cstrDelUpToWpt: new TypeIIMessage('CONSTRAINTS BEFORE WWWWW : DELETED', false, 'WWWWW'),

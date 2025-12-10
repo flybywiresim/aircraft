@@ -123,6 +123,22 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     sec.flags |= FlightPlanFlags.CopiedFromActive;
   }
 
+  async secondaryCopyFromSecondary(from: number, to: number, isBeforeEngineStart: boolean) {
+    // TODO copy predictions
+    // We don't copy predictions for now because we don't have the computation of predictions for the secondary flight plan
+    // To keep things consistent, we don't show predictions anywhere and we don't want to show any computed turn radii
+    this.flightPlanManager.copy(
+      FlightPlanIndex.FirstSecondary + (from - 1),
+      FlightPlanIndex.FirstSecondary + (to - 1),
+      // CopyOptions.CopyPredictions,
+    );
+
+    const fromFpln = this.secondary(from);
+    const toFpln = this.secondary(to);
+
+    fromFpln.performanceData.pipeTo(toFpln.performanceData, isBeforeEngineStart);
+  }
+
   async secondaryDelete(index: number) {
     if (!this.hasSecondary(index)) {
       throw new Error('[FMS/FPS] Cannot delete secondary flight plan if none exists');
