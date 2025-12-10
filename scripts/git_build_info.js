@@ -36,12 +36,15 @@ exports.getGitBuildInfo = () => {
     const commitHash = process.env.GITHUB_SHA ? process.env.GITHUB_SHA : evaluate('git show-ref -s HEAD');
     let tag = '';
     try {
-      tag =
-        evaluate('git show-ref --tags')
+      try {
+        if (process.env.GITHUB_REF && process.env.GITHUB_REF.startsWith('refs/tags/')) {
+          tag = process.env.GITHUB_REF.replace('refs/tags/', '');
+        }
+      } catch {
+        tag = evaluate('git tag -l --contains HEAD')
           .split('\n')
-          .filter((line) => line.startsWith(process.env.GITHUB_SHA))
-          .map((line) => line.split(' refs/tags/')[1])
-          .filter(Boolean)[0] || '';
+          .filter((it) => !!it)[0];
+      }
     } catch (e) {
       console.log('No tag', e);
     }
