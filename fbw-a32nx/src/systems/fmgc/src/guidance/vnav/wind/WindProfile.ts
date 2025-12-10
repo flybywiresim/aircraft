@@ -14,7 +14,6 @@ import { ProfilePhase } from '../profile/NavGeometryProfile';
 import { FlightPlanTrackProfile } from './FlightPlanTrackProfile';
 import { WindMeasurement, WindObserver } from './WindObserver';
 import { WindUtils } from './WindUtils';
-import { A32NX_Util } from '../../../../../shared/src/A32NX_Util';
 
 export class WindProfile implements WindInterface {
   private static readonly VectorCache = [Vec2Math.create(), Vec2Math.create()] as const;
@@ -68,9 +67,9 @@ export class WindProfile implements WindInterface {
       const lowestAltitude = climbWindEntries[0].altitude;
 
       if (altitude < lowestAltitude) {
-        // We use 1e-14 instead of 0 to preserve the direction of the vector when scaling it down to zero
+        // We use Number.EPSILON instead of 0 to preserve the direction of the vector when scaling it down to zero
         const scaling = Math.max(
-          1e-14,
+          Number.EPSILON,
           Common.interpolate(MathUtils.clamp(altitude, originAlt, lowestAltitude), originAlt, lowestAltitude, 0, 1),
         );
 
@@ -112,8 +111,6 @@ export class WindProfile implements WindInterface {
     const tripWind: TailwindComponent | null = this.plan.performanceData.pilotTripWind.get();
     const hasTripWindEntry = tripWind !== null;
 
-    const perfPageWind = getPerfPageWindVector(this.plan, WindProfile.VectorCache[0]);
-
     const destinationAlt =
       this.plan.destinationRunway?.thresholdLocation.alt ?? this.plan.destinationAirport?.location.alt ?? 0;
 
@@ -121,14 +118,19 @@ export class WindProfile implements WindInterface {
       const lowestAltitude = descentWindEntries[descentWindEntries.length - 1].altitude;
 
       if (altitude < lowestAltitude) {
-        return Vec2Utils.interpolate(
-          altitude,
-          destinationAlt,
-          lowestAltitude,
-          perfPageWind,
-          descentWindEntries[descentWindEntries.length - 1].vector,
-          result,
+        // We use Number.EPSILON instead of 0 to preserve the direction of the vector when scaling it down to zero
+        const scaling = Math.max(
+          Number.EPSILON,
+          Common.interpolate(
+            MathUtils.clamp(altitude, destinationAlt, lowestAltitude),
+            destinationAlt,
+            lowestAltitude,
+            0,
+            1,
+          ),
         );
+
+        return Vec2Math.multScalar(descentWindEntries[descentWindEntries.length - 1].vector, scaling, result);
       } else {
         return WindUtils.interpolateWindEntries(descentWindEntries, altitude, result);
       }
@@ -378,9 +380,9 @@ export class ConstantWindProfile implements WindInterface {
       const lowestAltitude = climbWindEntries[climbWindEntries.length - 1].altitude;
 
       if (altitude < lowestAltitude) {
-        // We use 1e-14 instead of 0 to preserve the direction of the vector when scaling it down to zero
+        // We use Number.EPSILON instead of 0 to preserve the direction of the vector when scaling it down to zero
         const scaling = Math.max(
-          1e-14,
+          Number.EPSILON,
           Common.interpolate(MathUtils.clamp(altitude, originAlt, lowestAltitude), originAlt, lowestAltitude, 0, 1),
         );
 
@@ -409,8 +411,6 @@ export class ConstantWindProfile implements WindInterface {
     const descentWindEntries = this.plan.performanceData.descentWindEntries.get();
     const hasDescentWindEntry = descentWindEntries.length > 0;
 
-    const perfPageWind = getPerfPageWindVector(this.plan, ConstantWindProfile.VectorCache[0]);
-
     const destinationAlt =
       this.plan.destinationRunway?.thresholdLocation.alt ?? this.plan.destinationAirport?.location.alt ?? 0;
 
@@ -418,14 +418,18 @@ export class ConstantWindProfile implements WindInterface {
       const lowestAltitude = descentWindEntries[descentWindEntries.length - 1].altitude;
 
       if (altitude < lowestAltitude) {
-        Vec2Utils.interpolate(
-          altitude,
-          destinationAlt,
-          lowestAltitude,
-          perfPageWind,
-          descentWindEntries[descentWindEntries.length - 1].vector,
-          result,
+        const scaling = Math.max(
+          Number.EPSILON,
+          Common.interpolate(
+            MathUtils.clamp(altitude, destinationAlt, lowestAltitude),
+            destinationAlt,
+            lowestAltitude,
+            0,
+            1,
+          ),
         );
+
+        return Vec2Math.multScalar(descentWindEntries[descentWindEntries.length - 1].vector, scaling, result);
       } else {
         WindUtils.interpolateWindEntries(descentWindEntries, altitude, result);
       }
@@ -532,17 +536,4 @@ class WindConfig {
   static readonly MaxCruiseWindBlendDistance = 200; // NM
 
   static readonly TripWindMaxAltitude = 20_000; // feet
-}
-
-function getPerfPageWindVector(plan: FlightPlan, result: WindVector) {
-  const destination = plan.destinationAirport;
-  const destinationMagVar = destination ? Facilities.getMagVar(destination.location.lat, destination.location.long) : 0;
-
-  const perfApprWindMag = plan.performanceData.approachWindMagnitude.get() ?? 0;
-  const perfApprWindDir = A32NX_Util.magneticToTrue(
-    plan.performanceData.approachWindDirection.get() ?? 0,
-    destinationMagVar,
-  );
-
-  return Vec2Math.setFromPolar(perfApprWindMag, perfApprWindDir * MathUtils.DEGREES_TO_RADIANS, result);
 }
