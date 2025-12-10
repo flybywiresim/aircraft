@@ -92,6 +92,8 @@ import { PendingWindUplinkParser } from '@fmgc/flightplanning/plans/PendingWindU
 import { isLeg, FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { ProfilePhase } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
+import { bearingTo } from 'msfs-geo';
+import { WindUtils } from '@fmgc/guidance/vnav/wind/WindUtils';
 
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
@@ -5270,8 +5272,16 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         computations.alternateFuel = 0;
         computations.alternateTime = 0;
       } else {
-        // TODO get trip wind from alternate plan
-        const airDistance = A32NX_FuelPred.computeAirDistance(Math.round(distanceToAlt), 0);
+        const trueCourseToAlternate = bearingTo(
+          plan.destinationAirport.location,
+          plan.alternateDestinationAirport.location,
+        );
+        const alternateWind = plan.performanceData.alternateWind.get();
+
+        const windComponent =
+          alternateWind !== null ? WindUtils.computeTailwindComponent(alternateWind, trueCourseToAlternate) : 0;
+
+        const airDistance = A32NX_FuelPred.computeAirDistance(Math.round(distanceToAlt), windComponent);
 
         const deviation =
           (zfw + finalHoldingFuel - A32NX_FuelPred.refWeight) *

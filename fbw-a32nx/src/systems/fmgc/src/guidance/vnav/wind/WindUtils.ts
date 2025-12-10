@@ -1,8 +1,10 @@
 import { Vec2Math } from '@microsoft/msfs-sdk';
 import { WindEntry, WindVector } from '../../../flightplanning/data/wind';
-import { Vec2Utils } from '@flybywiresim/fbw-sdk';
+import { MathUtils, Vec2Utils } from '@flybywiresim/fbw-sdk';
 
 export class WindUtils {
+  private static readonly VectorCache = Vec2Math.create();
+
   /**
    *
    * @param entries sorted array of wind entries ordered by altitude (works for both ascending and descending altitudes)
@@ -38,5 +40,15 @@ export class WindUtils {
     }
 
     return Vec2Math.set(0, 0, result);
+  }
+
+  public static computeTailwindComponent(wind: WindVector, trueCourseDegrees: number): number {
+    // We need a minus here because the wind vector points in the direction that the wind is coming from,
+    // whereas the true track vector points in the direction that the aircraft is going. So if they are pointing in the same direction,
+    // the wind is actually a headwind.
+    return -Vec2Math.dot(
+      wind,
+      Vec2Math.setFromPolar(1, trueCourseDegrees * MathUtils.DEGREES_TO_RADIANS, this.VectorCache),
+    );
   }
 }

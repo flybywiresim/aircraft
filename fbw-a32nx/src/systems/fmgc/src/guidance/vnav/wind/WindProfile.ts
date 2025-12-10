@@ -294,16 +294,7 @@ export class WindProfile implements WindInterface {
       return 0;
     }
 
-    const trueTrackVector = Vec2Math.setFromPolar(
-      1,
-      trueTrack * MathUtils.DEGREES_TO_RADIANS,
-      WindProfile.VectorCache[1],
-    );
-
-    // We need a minus here because the wind vector points in the direction that the wind is coming from,
-    // whereas the true track vector points in the direction that the aircraft is going. So if they are pointing in the same direction,
-    // the wind is actually a headwind.
-    return -Vec2Math.dot(vector, trueTrackVector);
+    return WindUtils.computeTailwindComponent(vector, trueTrack);
   }
 
   private blendWithMeasurement(forecast: WindVector, altitude: Feet, result: WindVector): WindVector {
@@ -455,16 +446,7 @@ export class ConstantWindProfile implements WindInterface {
       return 0;
     }
 
-    const trueTrackVector = Vec2Math.setFromPolar(
-      1,
-      trueTrack * MathUtils.DEGREES_TO_RADIANS,
-      ConstantWindProfile.VectorCache[1],
-    );
-
-    // We need a minus here because the wind vector points in the direction that the wind is coming from,
-    // whereas the true track vector points in the direction that the aircraft is going. So if they are pointing in the same direction,
-    // the wind is actually a headwind.
-    return -Vec2Math.dot(vector, trueTrackVector);
+    return WindUtils.computeTailwindComponent(vector, trueTrack);
   }
 
   private blendWithMeasurement(forecast: WindVector, altitude: Feet, result: WindVector): WindVector {
