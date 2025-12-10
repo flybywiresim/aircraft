@@ -553,7 +553,7 @@ export class CDUWindPage {
 
         mcdu.onLeftInput[numWindRowsOnPage] = async (value, scratchpadCallback) => {
           // I think you can modify the alternate wind in any phase, but not if an uplink exists
-          if (!doesDesWindUplinkExist) {
+          if (doesDesWindUplinkExist) {
             mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
             scratchpadCallback();
             return;
