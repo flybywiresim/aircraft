@@ -26,7 +26,6 @@ import { InsertNextWptFromWindow, NextWptInfo } from 'instruments/src/MFD/pages/
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
-import { WindVector } from '@fmgc/guidance/vnav/wind';
 import { PseudoWaypoint } from '@fmgc/guidance/PseudoWaypoint';
 import { Coordinates, bearingTo } from 'msfs-geo';
 import { FmgcFlightPhase } from '@shared/flightphase';
@@ -42,13 +41,18 @@ import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFpl
 import { ConditionalComponent } from '../../../../MsfsAvionicsCommon/UiWidgets/ConditionalComponent';
 import { InternalKccuKeyEvent } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import {
+  formatWindPredictionDirection,
+  formatWindPredictionMagnitude,
+  TailwindComponent,
+  WindVector,
+} from '@fmgc/flightplanning/data/wind';
 
 interface MfdFmsFplnProps extends AbstractMfdPageProps {}
 
 export interface DerivedFplnLegData {
   trackFromLastWpt: number | null;
   distanceFromLastWpt: number | null;
-  windPrediction: WindVector | null;
 }
 
 export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
@@ -304,7 +308,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       this.emptyFlightPlanRendered = false;
 
       jointFlightPlan.forEach((el, index) => {
-        const newEl: DerivedFplnLegData = { distanceFromLastWpt: null, trackFromLastWpt: null, windPrediction: null };
+        const newEl: DerivedFplnLegData = { distanceFromLastWpt: null, trackFromLastWpt: null };
 
         if (
           index === this.loadedFlightPlan?.allLegs.length ||
@@ -321,13 +325,11 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           if (index === 0 || el.calculated === undefined) {
             newEl.distanceFromLastWpt = null;
             newEl.trackFromLastWpt = null;
-            newEl.windPrediction = WindVector.default();
           } else {
             newEl.distanceFromLastWpt = el.calculated.cumulativeDistanceWithTransitions - lastDistanceFromStart;
             newEl.trackFromLastWpt = el.definition.waypoint
               ? bearingTo(lastLegLatLong, el.definition.waypoint.location)
               : null;
-            newEl.windPrediction = WindVector.default();
           }
 
           if (el.calculated !== undefined) {
@@ -337,7 +339,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         } else {
           newEl.distanceFromLastWpt = null;
           newEl.trackFromLastWpt = null;
-          newEl.windPrediction = WindVector.default();
         }
 
         this.derivedFplnLegData.push(newEl);
@@ -387,7 +388,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
               this.props.fmcService.master?.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)
                 ?.estimatedFuelOnBoard ?? 0,
             ),
-            windPrediction: this.derivedFplnLegData[i].windPrediction,
+            windPrediction: pwp.flightPlanInfo?.windPrediction ?? null,
             trackFromLastWpt: this.derivedFplnLegData[i].trackFromLastWpt,
             distFromLastWpt: reduceDistanceBy,
             fpa: null,
@@ -452,7 +453,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             speedConstraint: leg.speedConstraint ?? null,
             speedConstraintIsRespected: pred?.isSpeedConstraintMet ?? true,
             efobPrediction: pred?.estimatedFuelOnBoard ? Units.poundToKilogram(pred?.estimatedFuelOnBoard) : 0,
-            windPrediction: this.derivedFplnLegData[i].windPrediction,
+            windPrediction: pred?.windPrediction ?? null,
             trackFromLastWpt: this.derivedFplnLegData[i].trackFromLastWpt,
             distFromLastWpt: (this.derivedFplnLegData[i].distanceFromLastWpt ?? -reduceDistanceBy) - reduceDistanceBy,
             fpa: leg.definition.verticalAngle ?? null,
@@ -1236,7 +1237,7 @@ export interface FplnLineWaypointDisplayData extends FplnLineTypeDiscriminator {
   speedConstraintIsRespected: boolean;
   /** in kilograms */
   efobPrediction: number;
-  windPrediction: WindVector | null;
+  windPrediction: WindVector | TailwindComponent | null;
   trackFromLastWpt?: number | null;
   distFromLastWpt: number | null;
   fpa: number | null;
@@ -1571,22 +1572,31 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
     if (
       previousRow &&
       isWaypoint(previousRow) &&
-      previousRow.windPrediction?.direction === data.windPrediction?.direction &&
+      previousRow.windPrediction !== null &&
+      data.windPrediction !== null &&
+      formatWindPredictionDirection(previousRow.windPrediction) ===
+        formatWindPredictionDirection(data.windPrediction) &&
       !(
         FplnLineFlags.AfterSpecial === (this.props.flags.get() & FplnLineFlags.AfterSpecial) ||
         FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine)
       )
     ) {
       directionStr = <span style="font-family: HoneywellMCDU, monospace;">"</span>;
-    } else {
-      directionStr = <span>{data.windPrediction?.direction.toFixed(0).toString().padStart(3, '0')}</span>;
+    } else if (data.windPrediction !== null) {
+      directionStr = <span>{formatWindPredictionDirection(data.windPrediction)}</span>;
     }
 
     let speedStr = '--';
-    if (previousRow && isWaypoint(previousRow) && previousRow.windPrediction?.speed === data.windPrediction?.speed) {
+    if (
+      previousRow &&
+      isWaypoint(previousRow) &&
+      previousRow.windPrediction !== null &&
+      data.windPrediction !== null &&
+      formatWindPredictionMagnitude(previousRow.windPrediction) === formatWindPredictionMagnitude(data.windPrediction)
+    ) {
       speedStr = <span style="font-family: HoneywellMCDU, monospace;">"</span>;
-    } else {
-      speedStr = <span>{data.windPrediction?.speed.toFixed(0).toString().padStart(3, '0')}</span>;
+    } else if (data.windPrediction !== null) {
+      speedStr = <span>{formatWindPredictionMagnitude(data.windPrediction)}</span>;
     }
 
     return (

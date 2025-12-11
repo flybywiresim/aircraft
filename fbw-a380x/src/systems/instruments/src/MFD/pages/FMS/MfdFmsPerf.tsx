@@ -1037,18 +1037,20 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
           // Update APPR page
           this.apprLandingWeight.set(this.props.fmcService.master?.getLandingWeight() ?? null);
-          const apprWind = this.props.fmcService.master?.fmgc.data.approachWind.get();
-          if (apprWind && this.loadedFlightPlan?.destinationRunway) {
+          const apprWindDirection = this.props.fmcService.master?.fmgc.data.approachWindDirection.get();
+          const apprWindSpeed = this.props.fmcService.master?.fmgc.data.approachWindSpeed.get();
+
+          if (apprWindDirection && apprWindSpeed && this.loadedFlightPlan?.destinationRunway) {
             const towerHeadwind = A380SpeedsUtils.getHeadwind(
-              apprWind.speed,
-              apprWind.direction,
+              apprWindSpeed,
+              apprWindDirection,
               this.loadedFlightPlan.destinationRunway.magneticBearing,
             );
             this.towerHeadwind.set(towerHeadwind);
 
             const towerCrosswind = A380SpeedsUtils.getHeadwind(
-              apprWind.speed,
-              apprWind.direction,
+              apprWindSpeed,
+              apprWindDirection,
               this.loadedFlightPlan.destinationRunway.magneticBearing + 90,
             );
             this.apprCrosswind.set(Math.abs(towerCrosswind).toFixed(0).padStart(3, '0'));

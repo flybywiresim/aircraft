@@ -30,13 +30,7 @@ export const formatWindTrueDegrees = (vector: WindVector) =>
     .toFixed(0)
     .padStart(3, '0')}°`;
 export const formatWindPredictionDirection = (prediction: WindVector | TailwindComponent) =>
-  typeof prediction === 'number'
-    ? prediction > 0
-      ? 'TAIL'
-      : 'HEAD'
-    : `${MathUtils.normalise360(Vec2Math.theta(prediction) * MathUtils.RADIANS_TO_DEGREES)
-        .toFixed(0)
-        .padStart(3, '0')}°`;
+  typeof prediction === 'number' ? (prediction > 0 ? 'TAIL' : 'HEAD') : formatWindTrueDegrees(prediction);
 
 export const formatWindMagnitude = (vector: WindVector) => Math.round(Vec2Math.abs(vector)).toFixed(0).padStart(3, '0');
 export const formatWindPredictionMagnitude = (prediction: WindVector | TailwindComponent) =>
