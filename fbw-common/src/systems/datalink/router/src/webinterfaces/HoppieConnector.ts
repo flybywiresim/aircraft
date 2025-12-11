@@ -3,7 +3,6 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
-import { Hoppie } from '@flybywiresim/api-client';
 import {
   AtsuStatusCodes,
   CpdlcMessage,
@@ -19,6 +18,7 @@ import {
   AtsuMessageComStatus,
   AtsuMessageSerializationFormat,
 } from '../../../common/src';
+import { HoppieClient } from './HoppieClient';
 
 /**
  * Defines the connector to the hoppies network
@@ -36,10 +36,10 @@ export class HoppieConnector {
       return;
     }
 
-    if (NXDataStore.getLegacy('CONFIG_HOPPIE_USERID', '') === '') {
+    /*if (NXDataStore.getLegacy('CONFIG_HOPPIE_USERID', '') === '') {
       console.log('No Hoppie-ID set');
       return;
-    }
+    } */
 
     const body = {
       logon: NXDataStore.getLegacy('CONFIG_HOPPIE_USERID', ''),
@@ -49,7 +49,7 @@ export class HoppieConnector {
       packet: '',
     };
 
-    Hoppie.sendRequest(body).then((resp) => {
+    HoppieClient.getData(body).then((resp) => {
       if (resp.response !== 'error {invalid logon code}') {
         SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 1);
         console.log('Activated Hoppie ID');
@@ -95,7 +95,7 @@ export class HoppieConnector {
       type: 'ping',
       packet: station,
     };
-    const text = await Hoppie.sendRequest(body).then((resp) => resp.response);
+    const text = await HoppieClient.getData(body).then((resp) => resp.response);
 
     if (text === 'error {callsign already in use}') {
       return AtsuStatusCodes.CallsignInUse;
@@ -128,7 +128,7 @@ export class HoppieConnector {
       type: 'ping',
       packet: station,
     };
-    const text = await Hoppie.sendRequest(body).then((resp) => resp.response);
+    const text = await HoppieClient.getData(body).then((resp) => resp.response);
 
     if (text === 'error {callsign already in use}') {
       return AtsuStatusCodes.CallsignInUse;
@@ -161,7 +161,7 @@ export class HoppieConnector {
       type,
       packet: message.serialize(AtsuMessageSerializationFormat.Network),
     };
-    const text = await Hoppie.sendRequest(body)
+    const text = await HoppieClient.getData(body)
       .then((resp) => resp.response)
       .catch(() => 'proxy');
 
@@ -331,7 +331,7 @@ export class HoppieConnector {
         to: HoppieConnector.flightNumber,
         type: 'poll',
       };
-      const text = await Hoppie.sendRequest(body)
+      const text = await HoppieClient.getData(body)
         .then((resp) => resp.response)
         .catch(() => 'proxy');
 
@@ -352,7 +352,7 @@ export class HoppieConnector {
       // split up the received data into multiple messages
       let messages = text.split(/({[\s\S\n]*?})/gm);
       messages = messages.filter(
-        (elem) => elem !== 'ok' && elem !== 'ok ' && elem !== '} ' && elem !== '}' && elem !== '',
+        (elem) => elem !== 'ok' && elem !== 'ok ' && elem !== '} ' && elem !== '}' && elem !== '}\n' && elem !== '',
       );
 
       // create the messages
@@ -362,7 +362,7 @@ export class HoppieConnector {
         const entries = element.substring(1).split(/({[\s\S\n]*?})/gm);
 
         // get all relevant information
-        const metadata = entries[0].split(' ');
+        const metadata = entries[0].trim().split(' ');
         const sender = metadata[0].toUpperCase();
         const type = metadata[1].toLowerCase();
         const content = entries[1].replace(/{/, '').replace(/}/, '').toUpperCase();
