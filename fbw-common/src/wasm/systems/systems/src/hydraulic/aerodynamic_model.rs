@@ -197,6 +197,7 @@ fn area_projected(size: Vector3<Length>, projection_vector: Vector3<f64>) -> Are
 
 #[cfg(test)]
 mod tests {
+    use more_asserts::{assert_ge, assert_gt, assert_le, assert_lt};
     use nalgebra::{Unit, Vector3};
 
     use super::*;
@@ -431,14 +432,14 @@ mod tests {
 
         test_bed.run_without_delta();
 
-        assert!(test_bed.measured_airplane_relative_wind_m_s()[0] >= 14.5);
-        assert!(test_bed.measured_airplane_relative_wind_m_s()[0] <= 15.5);
+        assert_ge!(test_bed.measured_airplane_relative_wind_m_s()[0], 14.5);
+        assert_le!(test_bed.measured_airplane_relative_wind_m_s()[0], 15.5);
 
-        assert!(test_bed.measured_airplane_relative_wind_m_s()[1] >= 4.5);
-        assert!(test_bed.measured_airplane_relative_wind_m_s()[1] <= 5.5);
+        assert_ge!(test_bed.measured_airplane_relative_wind_m_s()[1], 4.5);
+        assert_le!(test_bed.measured_airplane_relative_wind_m_s()[1], 5.5);
 
-        assert!(test_bed.measured_airplane_relative_wind_m_s()[2] >= -10.5);
-        assert!(test_bed.measured_airplane_relative_wind_m_s()[2] <= -9.5);
+        assert_ge!(test_bed.measured_airplane_relative_wind_m_s()[2], -10.5);
+        assert_le!(test_bed.measured_airplane_relative_wind_m_s()[2], -9.5);
     }
 
     #[test]
@@ -448,7 +449,7 @@ mod tests {
 
         let test_bed = test_bed(TestAircraft::new(body, aero_model));
         //   let test_bed = SimulationTestBed::new(|_| TestAircraft::new(body, aero_model));
-        assert!(test_bed.query(|a| a.body_aero_force_magnitude() == Force::new::<newton>(0.)));
+        test_bed.query(|a| assert_eq!(a.body_aero_force_magnitude(), Force::new::<newton>(0.)));
     }
 
     #[test]
@@ -478,8 +479,13 @@ mod tests {
 
         test_bed.run_without_delta();
 
-        assert!(test_bed.query(|a| a.body_aero_force_magnitude() >= Force::new::<newton>(50.)));
-        assert!(test_bed.query(|a| a.body_aero_force_forward_value() <= Force::new::<newton>(-50.)));
+        test_bed.query(|a| assert_ge!(a.body_aero_force_magnitude(), Force::new::<newton>(50.)));
+        test_bed.query(|a| {
+            assert_le!(
+                a.body_aero_force_forward_value(),
+                Force::new::<newton>(-50.)
+            )
+        });
         assert!(force_almost_equal_zero(
             test_bed.query(|a| a.body_aero_force_up_value())
         ));
@@ -500,13 +506,14 @@ mod tests {
 
         test_bed.run_without_delta();
 
-        assert!(test_bed.query(|a| a.body_aero_force_magnitude() >= Force::new::<newton>(10.)));
+        test_bed.query(|a| assert_ge!(a.body_aero_force_magnitude(), Force::new::<newton>(10.)));
 
         // Drag force backward
-        assert!(test_bed.query(|a| a.body_aero_force_forward_value() <= Force::new::<newton>(-2.)));
+        test_bed
+            .query(|a| assert_le!(a.body_aero_force_forward_value(), Force::new::<newton>(-2.)));
 
         // Lift force upward
-        assert!(test_bed.query(|a| a.body_aero_force_up_value() > Force::new::<newton>(10.)));
+        test_bed.query(|a| assert_gt!(a.body_aero_force_up_value(), Force::new::<newton>(10.)));
         assert!(force_almost_equal_zero(
             test_bed.query(|a| a.body_aero_force_right_value())
         ));
@@ -524,13 +531,14 @@ mod tests {
 
         test_bed.run_without_delta();
 
-        assert!(test_bed.query(|a| a.body_aero_force_magnitude() >= Force::new::<newton>(10.)));
+        test_bed.query(|a| assert_ge!(a.body_aero_force_magnitude(), Force::new::<newton>(10.)));
 
         // Drag force backward
-        assert!(test_bed.query(|a| a.body_aero_force_forward_value() <= Force::new::<newton>(-2.)));
+        test_bed
+            .query(|a| assert_le!(a.body_aero_force_forward_value(), Force::new::<newton>(-2.)));
 
         // Lift force upward
-        assert!(test_bed.query(|a| a.body_aero_force_up_value() > Force::new::<newton>(10.)));
+        test_bed.query(|a| assert_gt!(a.body_aero_force_up_value(), Force::new::<newton>(10.)));
         assert!(force_almost_equal_zero(
             test_bed.query(|a| a.body_aero_force_right_value())
         ));
@@ -548,13 +556,14 @@ mod tests {
 
         test_bed.run_without_delta();
 
-        assert!(test_bed.query(|a| a.body_aero_force_magnitude() >= Force::new::<newton>(10.)));
+        test_bed.query(|a| assert_ge!(a.body_aero_force_magnitude(), Force::new::<newton>(10.)));
 
         // Drag force backward
-        assert!(test_bed.query(|a| a.body_aero_force_forward_value() <= Force::new::<newton>(-2.)));
+        test_bed
+            .query(|a| assert_le!(a.body_aero_force_forward_value(), Force::new::<newton>(-2.)));
 
         // Lift force downward
-        assert!(test_bed.query(|a| a.body_aero_force_up_value() < Force::new::<newton>(-10.)));
+        test_bed.query(|a| assert_lt!(a.body_aero_force_up_value(), Force::new::<newton>(-10.)));
         assert!(force_almost_equal_zero(
             test_bed.query(|a| a.body_aero_force_right_value())
         ));
@@ -571,9 +580,14 @@ mod tests {
 
         test_bed.run_without_delta();
 
-        assert!(test_bed.query(|a| a.body_aero_force_magnitude() >= Force::new::<newton>(50.)));
-        assert!(test_bed.query(|a| a.body_aero_force_forward_value() <= Force::new::<newton>(-50.)));
-        assert!(test_bed.query(|a| a.body_aero_force_up_value() > Force::new::<newton>(50.)));
+        test_bed.query(|a| assert_ge!(a.body_aero_force_magnitude(), Force::new::<newton>(50.)));
+        test_bed.query(|a| {
+            assert_le!(
+                a.body_aero_force_forward_value(),
+                Force::new::<newton>(-50.)
+            )
+        });
+        test_bed.query(|a| assert_gt!(a.body_aero_force_up_value(), Force::new::<newton>(50.)));
         assert!(force_almost_equal_zero(
             test_bed.query(|a| a.body_aero_force_right_value())
         ));
@@ -590,9 +604,14 @@ mod tests {
 
         test_bed.run_without_delta();
 
-        assert!(test_bed.query(|a| a.body_aero_force_magnitude() >= Force::new::<newton>(50.)));
-        assert!(test_bed.query(|a| a.body_aero_force_forward_value() <= Force::new::<newton>(-50.)));
-        assert!(test_bed.query(|a| a.body_aero_force_up_value() < Force::new::<newton>(-50.)));
+        test_bed.query(|a| assert_ge!(a.body_aero_force_magnitude(), Force::new::<newton>(50.)));
+        test_bed.query(|a| {
+            assert_le!(
+                a.body_aero_force_forward_value(),
+                Force::new::<newton>(-50.)
+            )
+        });
+        test_bed.query(|a| assert_lt!(a.body_aero_force_up_value(), Force::new::<newton>(-50.)));
         assert!(force_almost_equal_zero(
             test_bed.query(|a| a.body_aero_force_right_value())
         ));
@@ -626,7 +645,7 @@ mod tests {
 
         assert!(test_bed.query(|a| force_almost_equal_zero(a.body_aero_force_forward_value())));
         assert!(test_bed.query(|a| force_almost_equal_zero(a.body_aero_force_up_value())));
-        assert!(test_bed.query(|a| a.body_aero_force_right_value() >= Force::new::<newton>(50.)));
+        test_bed.query(|a| assert_ge!(a.body_aero_force_right_value(), Force::new::<newton>(50.)));
     }
 
     #[test]
@@ -675,9 +694,9 @@ mod tests {
         let y_area = area_projected(size, y_projection);
         let z_area = area_projected(size, z_projection);
 
-        assert!(x_area == Area::new::<square_meter>(2. * 3.));
-        assert!(y_area == Area::new::<square_meter>(1. * 3.));
-        assert!(z_area == Area::new::<square_meter>(2. * 1.));
+        assert_eq!(x_area, Area::new::<square_meter>(2. * 3.));
+        assert_eq!(y_area, Area::new::<square_meter>(1. * 3.));
+        assert_eq!(z_area, Area::new::<square_meter>(2. * 1.));
     }
 
     #[test]
@@ -696,9 +715,9 @@ mod tests {
         let y_area = area_projected(size, y_projection);
         let z_area = area_projected(size, z_projection);
 
-        assert!(x_area == Area::new::<square_meter>(2. * 3.));
-        assert!(y_area == Area::new::<square_meter>(1. * 3.));
-        assert!(z_area == Area::new::<square_meter>(2. * 1.));
+        assert_eq!(x_area, Area::new::<square_meter>(2. * 3.));
+        assert_eq!(y_area, Area::new::<square_meter>(1. * 3.));
+        assert_eq!(z_area, Area::new::<square_meter>(2. * 1.));
     }
 
     #[test]
@@ -719,10 +738,10 @@ mod tests {
         let long_force = test_bed_nose_door.query(|a| a.body_aero_force_forward_value());
 
         // There's some drag
-        assert!(long_force <= Force::new::<newton>(-50.));
+        assert_le!(long_force, Force::new::<newton>(-50.));
 
         // Lift from door angle pushes it right (right door pushed open)
-        assert!(lateral_force >= Force::new::<newton>(200.));
+        assert_ge!(lateral_force, Force::new::<newton>(200.));
     }
 
     #[test]
@@ -743,14 +762,14 @@ mod tests {
         let long_force = test_bed.query(|a| a.body_aero_force_forward_value());
 
         // There's lot of drag
-        assert!(long_force <= Force::new::<newton>(-1000.));
+        assert_le!(long_force, Force::new::<newton>(-1000.));
 
         // Up and lateral forces are minimal
-        assert!(lateral_force >= Force::new::<newton>(-50.));
-        assert!(lateral_force <= Force::new::<newton>(50.));
+        assert_ge!(lateral_force, Force::new::<newton>(-50.));
+        assert_le!(lateral_force, Force::new::<newton>(50.));
 
-        assert!(up_force >= Force::new::<newton>(-50.));
-        assert!(up_force <= Force::new::<newton>(50.));
+        assert_ge!(up_force, Force::new::<newton>(-50.));
+        assert_le!(up_force, Force::new::<newton>(50.));
 
         // Retracting
         test_bed.rotate_body(Angle::new::<degree>(-92.));
@@ -758,8 +777,13 @@ mod tests {
         test_bed.run_without_delta();
 
         // Less drag
-        assert!(test_bed.query(|a| a.body_aero_force_forward_value()) > long_force);
-        assert!(test_bed.query(|a| a.body_aero_force_forward_value()) < Force::new::<newton>(250.));
+        test_bed.query(|a| assert_gt!(a.body_aero_force_forward_value(), long_force,));
+        test_bed.query(|a| {
+            assert_lt!(
+                a.body_aero_force_forward_value(),
+                Force::new::<newton>(250.),
+            )
+        });
     }
 
     #[test]
@@ -780,14 +804,14 @@ mod tests {
         let long_force = test_bed.query(|a| a.body_aero_force_forward_value());
 
         // There's drag
-        assert!(long_force <= Force::new::<newton>(-100.));
+        assert_le!(long_force, Force::new::<newton>(-100.));
 
         // Up forces are minimal
-        assert!(up_force >= Force::new::<newton>(-50.));
-        assert!(up_force <= Force::new::<newton>(50.));
+        assert_ge!(up_force, Force::new::<newton>(-50.));
+        assert_le!(up_force, Force::new::<newton>(50.));
 
         // Gear pushed right
-        assert!(lateral_force >= Force::new::<newton>(500.));
+        assert_ge!(lateral_force, Force::new::<newton>(500.));
 
         // Retracting
         test_bed.rotate_body(Angle::new::<degree>(-80.));
@@ -795,8 +819,9 @@ mod tests {
         test_bed.run_without_delta();
 
         // Gear not pushed right
-        assert!(test_bed.query(|a| a.body_aero_force_right_value()) <= Force::new::<newton>(300.));
-        assert!(test_bed.query(|a| a.body_aero_force_right_value()) >= Force::new::<newton>(-300.));
+        test_bed.query(|a| assert_le!(a.body_aero_force_right_value(), Force::new::<newton>(300.)));
+        test_bed
+            .query(|a| assert_ge!(a.body_aero_force_right_value(), Force::new::<newton>(-300.)));
     }
 
     #[test]
@@ -818,7 +843,7 @@ mod tests {
         let lateral_force = test_bed.query(|a| a.body_aero_force_right_value());
 
         // Door pushed left
-        assert!(lateral_force <= Force::new::<newton>(-500.));
+        assert_le!(lateral_force, Force::new::<newton>(-500.));
 
         // Closing
         test_bed.rotate_body(Angle::new::<degree>(0.));
@@ -826,8 +851,8 @@ mod tests {
         test_bed.run_without_delta();
 
         // Gear door not pushed left
-        assert!(test_bed.query(|a| a.body_aero_force_right_value()) <= Force::new::<newton>(50.));
-        assert!(test_bed.query(|a| a.body_aero_force_right_value()) >= Force::new::<newton>(-50.));
+        test_bed.query(|a| assert_le!(a.body_aero_force_right_value(), Force::new::<newton>(50.)));
+        test_bed.query(|a| assert_ge!(a.body_aero_force_right_value(), Force::new::<newton>(-50.)));
     }
 
     #[test]
@@ -848,14 +873,14 @@ mod tests {
         let long_force = test_bed.query(|a| a.body_aero_force_forward_value());
 
         // There's drag
-        assert!(long_force <= Force::new::<newton>(-100.));
+        assert_le!(long_force, Force::new::<newton>(-100.));
 
         // Up forces are minimal
-        assert!(up_force >= Force::new::<newton>(-50.));
-        assert!(up_force <= Force::new::<newton>(50.));
+        assert_ge!(up_force, Force::new::<newton>(-50.));
+        assert_le!(up_force, Force::new::<newton>(50.));
 
         // Gear pushed left
-        assert!(lateral_force <= Force::new::<newton>(-500.));
+        assert_le!(lateral_force, Force::new::<newton>(-500.));
 
         // Retracting
         test_bed.rotate_body(Angle::new::<degree>(80.));
@@ -863,8 +888,9 @@ mod tests {
         test_bed.run_without_delta();
 
         // Gear not pushed left
-        assert!(test_bed.query(|a| a.body_aero_force_right_value()) <= Force::new::<newton>(300.));
-        assert!(test_bed.query(|a| a.body_aero_force_right_value()) >= Force::new::<newton>(-300.));
+        test_bed.query(|a| assert_le!(a.body_aero_force_right_value(), Force::new::<newton>(300.)));
+        test_bed
+            .query(|a| assert_ge!(a.body_aero_force_right_value(), Force::new::<newton>(-300.)));
     }
 
     #[test]
