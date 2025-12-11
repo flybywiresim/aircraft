@@ -1,3 +1,5 @@
+//  Copyright (c) 2025 FlyByWire Simulations
+//  SPDX-License-Identifier: GPL-3.0
 import { ConsumerSubject, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
 import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
 
@@ -17,12 +19,12 @@ export class CruisePage extends DestroyableComponent<SdPageProps> {
 
   private readonly topSvgStyle = this.props.visible.map((v) => `visibility: ${v ? 'visible' : 'hidden'}`);
 
-  private readonly usingMetric = Subject.create('1');
+  private readonly usingMetric = Subject.create(true);
 
-  private readonly metricUnitSubscription = NXDataStore.getAndSubscribe(
+  private readonly metricUnitSubscription = NXDataStore.getAndSubscribeLegacy(
     'CONFIG_USING_METRIC_UNIT',
     (_k, v) => {
-      this.usingMetric.set(v);
+      this.usingMetric.set(v === '1');
     },
     '1',
   );
@@ -42,15 +44,15 @@ export class CruisePage extends DestroyableComponent<SdPageProps> {
   ];
 
   private readonly enginesFuelUsedDisplay = this.enginesFuelUsed.map((fu) =>
-    fu.map((v) => fuelForDisplay(v, this.usingMetric, 5).toFixed(0)),
+    fu.map((v) => fuelForDisplay(v, this.usingMetric.get(), 1, 5).toFixed(0)),
   );
   private readonly engineTotalFuelUsedDisplay = MappedSubject.create(
-    (fu) => (parseInt(fu[0]) + parseInt(fu[1]) + parseInt(fu[2]) + parseInt(fu[3])).toFixed(0),
+    (fu) => parseInt(fu[0]) + parseInt(fu[1]) + parseInt(fu[2]) + parseInt(fu[3]),
     ...this.enginesFuelUsedDisplay,
   );
 
   private readonly enginesFuelFlowDisplay = this.enginesFuelFlow.map((fu) =>
-    fu.map((v) => fuelForDisplay(v, this.usingMetric).toFixed(0)),
+    fu.map((v) => fuelForDisplay(v, this.usingMetric.get()).toFixed(0)),
   );
 
   // TODO Degraded accuracy indication for fuel flow and used
