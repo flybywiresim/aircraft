@@ -25,6 +25,7 @@ import { showReturnButtonUriExtra } from '../../shared/utils';
 import './MfdFmsInit.scss';
 import { FlightPlanChangeNotifier } from '@fmgc/flightplanning/sync/FlightPlanChangeNotifier';
 import { CostIndexMode } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 
 interface MfdFmsInitProps extends AbstractMfdPageProps {}
 
@@ -71,6 +72,14 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
           : [],
       )
     : MappedSubject.create(() => []);
+
+  private readonly mandatoryAndActiveFpln = this.loadedFlightPlanIndex.map(
+    (it) => it === FlightPlanIndex.Active || it === FlightPlanIndex.Temporary,
+  );
+
+  private readonly visibilityConsideringFlightPlanIndex = this.loadedFlightPlanIndex.map((it) =>
+    it === FlightPlanIndex.Active || it === FlightPlanIndex.Temporary ? 'inherit' : 'hidden',
+  );
 
   private readonly fromIcao = Subject.create<string | null>(null);
 
@@ -127,9 +136,10 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
   );
 
   private readonly cpnyRteMandatory = MappedSubject.create(
-    ([toIcao, fromIcao]) => !toIcao || !fromIcao,
+    ([toIcao, fromIcao, mandatoryAndActive]) => (!toIcao || !fromIcao) && mandatoryAndActive,
     this.fromIcao,
     this.toIcao,
+    this.mandatoryAndActiveFpln,
   );
 
   private readonly departureButtonDisabled = MappedSubject.create(
@@ -200,6 +210,8 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     this.subs.push(
       this.cpnyFplnButtonLabel,
       this.cpnyFplnButtonMenuItems,
+      this.mandatoryAndActiveFpln,
+      this.visibilityConsideringFlightPlanIndex,
       this.cityPairDisabled,
       this.altnDisabled,
       this.costIndexDisabled,
@@ -229,7 +241,11 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
       this.altnIcao.set(this.loadedFlightPlan.originAirport && this.loadedFlightPlan.destinationAirport ? 'NONE' : '');
     }
 
-    this.crzFlIsMandatory.set(this.props.fmcService.master.fmgc.getFlightPhase() < FmgcFlightPhase.Descent);
+    this.crzFlIsMandatory.set(
+      this.props.fmcService.master.fmgc.getFlightPhase() < FmgcFlightPhase.Descent &&
+        (this.loadedFlightPlanIndex.get() === FlightPlanIndex.Active ||
+          this.loadedFlightPlanIndex.get() === FlightPlanIndex.Temporary),
+    );
     const cruiseLevel = this.loadedFlightPlan.performanceData.cruiseFlightLevel.get();
     if (
       cruiseLevel &&
@@ -340,7 +356,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
               <div class="mfd-label init-input-field">FLT NBR</div>
               <InputField<string>
                 dataEntryFormat={new LongAlphanumericFormat()}
-                mandatory={Subject.create(true)}
+                mandatory={this.mandatoryAndActiveFpln}
                 value={this.props.fmcService.master.fmgc.data.atcCallsign}
                 containerStyle="width: 200px; margin-right: 5px;"
                 alignText="center"
@@ -376,7 +392,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                   this.fromIcao.set(v);
                   this.cityPairModified();
                 }}
-                mandatory={Subject.create(true)}
+                mandatory={this.mandatoryAndActiveFpln}
                 canBeCleared={Subject.create(false)}
                 value={this.fromIcao}
                 alignText="center"
@@ -392,7 +408,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                   this.toIcao.set(v);
                   this.cityPairModified();
                 }}
-                mandatory={Subject.create(true)}
+                mandatory={this.mandatoryAndActiveFpln}
                 canBeCleared={Subject.create(false)}
                 value={this.toIcao}
                 alignText="center"
@@ -414,7 +430,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                     this.props.fmcService.master?.acInterface.updateFmsData();
                   }
                 }}
-                mandatory={Subject.create(true)}
+                mandatory={this.mandatoryAndActiveFpln}
                 disabled={this.altnDisabled}
                 value={this.altnIcao}
                 alignText="center"
@@ -448,7 +464,6 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
               <div class="mfd-label init-input-field">ALTN RTE</div>
               <InputField<string>
                 dataEntryFormat={new LongAlphanumericFormat()}
-                mandatory={Subject.create(false)}
                 disabled={Subject.create(true)} // TODO
                 canBeCleared={Subject.create(false)}
                 value={this.altnRte}
@@ -470,7 +485,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
               <InputField<number>
                 dataEntryFormat={new FlightLevelFormat(Subject.create(0), Subject.create(maxCertifiedAlt / 100))}
                 dataHandlerDuringValidation={async (v) =>
-                  v ? this.props.fmcService.master?.acInterface.setCruiseFl(v) : false
+                  v ? this.props.fmcService.master?.acInterface.setCruiseFl(v, this.loadedFlightPlanIndex.get()) : false
                 }
                 mandatory={this.crzFlIsMandatory}
                 disabled={this.altnDisabled}
@@ -493,7 +508,6 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                     this.loadedFlightPlanIndex.get(),
                   );
                 }}
-                mandatory={Subject.create(false)}
                 enteredByPilot={this.cruiseTemperatureIsPilotEntered}
                 disabled={this.crzTempDisabled}
                 readonlyValue={this.cruiseTemperature}
@@ -537,7 +551,6 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                     this.loadedFlightPlanIndex.get(),
                   )
                 }
-                mandatory={Subject.create(false)}
                 enteredByPilot={this.tropopauseIsPilotEntered}
                 readonlyValue={this.tropopause}
                 onModified={() => {}}
@@ -564,7 +577,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                       this.loadedFlightPlanIndex.get(),
                     );
                   }}
-                  mandatory={Subject.create(true)}
+                  mandatory={this.mandatoryAndActiveFpln}
                   disabled={this.costIndexDisabled}
                   value={this.costIndex}
                   containerStyle="width: 70px; margin-right: 90px; justify-content: center;"
@@ -582,7 +595,6 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                       this.loadedFlightPlanIndex.get(),
                     )
                   }
-                  mandatory={Subject.create(false)}
                   disabled={this.tripWindDisabled}
                   readonlyValue={this.tripWind}
                   containerStyle="width: 125px; margin-right: 80px; margin-top: 10px;"
@@ -606,62 +618,62 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 buttonStyle="margin-right: 10px; justify-self: flex-end; width: 175px;"
               />
             </div>
-            <Button
-              label="IRS"
-              onClick={() => this.props.mfd.uiService.navigateTo('fms/position/irs')}
-              buttonStyle="width: 160px; margin-left: 150px; margin-bottom: 10px;"
-            />
-            <div
-              style={`display: ${this.props.mfd.uiService.activeUri.get().category === 'active' ? 'flex' : 'none'}; flex-direction: row;`}
-            >
+            <div style={{ visibility: this.visibilityConsideringFlightPlanIndex }}>
               <Button
-                label="DEPARTURE"
-                disabled={this.departureButtonDisabled}
+                label="IRS"
+                onClick={() => this.props.mfd.uiService.navigateTo('fms/position/irs')}
+                buttonStyle="width: 160px; margin-left: 150px; margin-bottom: 10px;"
+              />
+              <div class="fr">
+                <Button
+                  label="DEPARTURE"
+                  disabled={this.departureButtonDisabled}
+                  onClick={() =>
+                    this.props.mfd.uiService.navigateTo(
+                      `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-departure`,
+                    )
+                  }
+                  buttonStyle="width: 160px; margin-left: 150px; margin-bottom: 10px;"
+                />
+                <Button
+                  disabled={Subject.create(true)}
+                  label="RTE SUMMARY"
+                  onClick={() => this.props.mfd.uiService.navigateTo('fms/data/route')}
+                  buttonStyle="margin-left: 50px; margin-bottom: 10px;"
+                />
+              </div>
+              <Button
+                label="NAVAIDS"
+                onClick={() => this.props.mfd.uiService.navigateTo(`fms/position/navaids/${showReturnButtonUriExtra}`)}
+                buttonStyle="width: 160px; margin-left: 150px; margin-bottom: 10px;"
+              />
+              <Button
+                label="FUEL&LOAD"
                 onClick={() =>
                   this.props.mfd.uiService.navigateTo(
-                    `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-departure`,
+                    `fms/${this.props.mfd.uiService.activeUri.get().category}/fuel-load`,
                   )
                 }
                 buttonStyle="width: 160px; margin-left: 150px; margin-bottom: 10px;"
               />
-              <Button
-                disabled={Subject.create(true)}
-                label="RTE SUMMARY"
-                onClick={() => this.props.mfd.uiService.navigateTo('fms/data/route')}
-                buttonStyle="margin-left: 50px; margin-bottom: 10px;"
-              />
-            </div>
-            <Button
-              label="NAVAIDS"
-              onClick={() => this.props.mfd.uiService.navigateTo(`fms/position/navaids/${showReturnButtonUriExtra}`)}
-              buttonStyle="width: 160px; margin-left: 150px; margin-bottom: 10px;"
-            />
-            <Button
-              label="FUEL&LOAD"
-              onClick={() =>
-                this.props.mfd.uiService.navigateTo(
-                  `fms/${this.props.mfd.uiService.activeUri.get().category}/fuel-load`,
-                )
-              }
-              buttonStyle="width: 160px; margin-left: 150px; margin-bottom: 10px;"
-            />
-            <div style="display: flex; flex-direction: row;">
-              <Button
-                label="T.O. PERF"
-                onClick={() =>
-                  this.props.mfd.uiService.navigateTo(
-                    `fms/${this.props.mfd.uiService.activeUri.get().category}/perf/to`,
-                  )
-                }
-                buttonStyle="width: 160px; margin-left: 150px; margin-bottom: 10px; height: 40px;"
-              />
-              <div style="flex-grow: 1" />
-              <Button
-                disabled={Subject.create(true)}
-                label="CPNY T.O.<br />REQUEST"
-                onClick={() => console.log('CPNY T.O. REQUEST')}
-                buttonStyle="margin-right: 10px; justify-self: flex-end; width: 175px;"
-              />
+              <div style="display: flex; flex-direction: row;">
+                <Button
+                  label="T.O. PERF"
+                  onClick={() =>
+                    this.props.mfd.uiService.navigateTo(
+                      `fms/${this.props.mfd.uiService.activeUri.get().category}/perf/to`,
+                    )
+                  }
+                  buttonStyle="width: 160px; margin-left: 150px; margin-bottom: 10px; height: 40px;"
+                />
+                <div style="flex-grow: 1" />
+                <Button
+                  disabled={Subject.create(true)}
+                  label="CPNY T.O.<br />REQUEST"
+                  onClick={() => console.log('CPNY T.O. REQUEST')}
+                  buttonStyle="margin-right: 10px; justify-self: flex-end; width: 175px;"
+                />
+              </div>
             </div>
             {/* end page content */}
           </div>

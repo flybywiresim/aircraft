@@ -10,6 +10,7 @@ import {
   MappedSubject,
   MappedSubscribable,
   Subject,
+  Subscribable,
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
@@ -54,11 +55,13 @@ class MfdFmsSecIndexDataStore {
     }
 
     if (!this.fmc.flightPlanInterface.hasSecondary(this.secIndex)) {
-      this.secExists.set(false);
-      this.timeCreated.set(null);
-      this.fromCity.set(null);
-      this.toCity.set(null);
-      this.legs.set([]);
+      if (this.secExists.get()) {
+        this.secExists.set(false);
+        this.timeCreated.set(null);
+        this.fromCity.set(null);
+        this.toCity.set(null);
+        this.legs.set([]);
+      }
       return;
     }
 
@@ -96,6 +99,8 @@ export class MfdFmsSecIndex extends FmsPage<MfdFmsSecIndexProps> {
 
   private readonly secSelectedPageIndex = Subject.create(0);
 
+  private readonly canNotActivateOrSwapSecondary = Subject.create(false);
+
   protected onNewData() {
     if (!this.props.fmcService.master) {
       return;
@@ -104,6 +109,8 @@ export class MfdFmsSecIndex extends FmsPage<MfdFmsSecIndexProps> {
     this.sec1DataStore.onNewData();
     this.sec2DataStore.onNewData();
     this.sec3DataStore.onNewData();
+
+    this.canNotActivateOrSwapSecondary.set(!this.props.fmcService.master.canActivateOrSwapSecondary());
   }
 
   public onAfterRender(node: VNode): void {
@@ -139,6 +146,7 @@ export class MfdFmsSecIndex extends FmsPage<MfdFmsSecIndexProps> {
                 mfd={this.props.mfd}
                 fmcService={this.props.fmcService}
                 flightPlanIndex={FlightPlanIndex.FirstSecondary}
+                canNotActivateOrSwapSecondary={this.canNotActivateOrSwapSecondary}
               />
             </TopTabNavigatorPage>
             <TopTabNavigatorPage>
@@ -149,6 +157,7 @@ export class MfdFmsSecIndex extends FmsPage<MfdFmsSecIndexProps> {
                 mfd={this.props.mfd}
                 fmcService={this.props.fmcService}
                 flightPlanIndex={FlightPlanIndex.FirstSecondary + 1}
+                canNotActivateOrSwapSecondary={this.canNotActivateOrSwapSecondary}
               />
             </TopTabNavigatorPage>
             <TopTabNavigatorPage>
@@ -159,6 +168,7 @@ export class MfdFmsSecIndex extends FmsPage<MfdFmsSecIndexProps> {
                 mfd={this.props.mfd}
                 fmcService={this.props.fmcService}
                 flightPlanIndex={FlightPlanIndex.FirstSecondary + 2}
+                canNotActivateOrSwapSecondary={this.canNotActivateOrSwapSecondary}
               />
             </TopTabNavigatorPage>
           </TopTabNavigator>
@@ -170,22 +180,28 @@ export class MfdFmsSecIndex extends FmsPage<MfdFmsSecIndexProps> {
 }
 
 interface MfdFmsSecIndexTabProps {
-  dataStore: MfdFmsSecIndexDataStore;
-  bus: EventBus;
-  mfd: FmsDisplayInterface & MfdDisplayInterface;
-  fmcService: FmcServiceInterface;
-  flightPlanIndex: FlightPlanIndex;
+  readonly dataStore: MfdFmsSecIndexDataStore;
+  readonly bus: EventBus;
+  readonly mfd: FmsDisplayInterface & MfdDisplayInterface;
+  readonly fmcService: FmcServiceInterface;
+  readonly flightPlanIndex: FlightPlanIndex;
+  readonly canNotActivateOrSwapSecondary: Subscribable<boolean>;
 }
 
+const NUM_ROUTE_LINES_DISPLAYED = 11;
 export class MfdFmsSecIndexTab extends DestroyableComponent<MfdFmsSecIndexTabProps> {
   private readonly secIndex = this.props.flightPlanIndex - FlightPlanIndex.FirstSecondary + 1;
   private readonly uriPrefix = `fms/sec${this.secIndex}`;
 
   private readonly secDoesNotExist = this.props.dataStore.secExists.map((it) => !it);
 
-  private readonly swapActiveNotAllowed = MappedSubject.create(([exists]) => {
-    return !exists;
-  }, this.props.dataStore.secExists);
+  private readonly swapActiveVisibility = MappedSubject.create(
+    ([exists, cantDoIt]) => {
+      return !exists || cantDoIt ? 'hidden' : 'inherit';
+    },
+    this.props.dataStore.secExists,
+    this.props.canNotActivateOrSwapSecondary,
+  );
 
   private readonly cityPairLabel = MappedSubject.create(
     ([fromCity, toCity]) => {
@@ -250,16 +266,59 @@ export class MfdFmsSecIndexTab extends DestroyableComponent<MfdFmsSecIndexTabPro
       )
     : MappedSubject.create(() => []);
 
+  private readonly routeElementSubjects = Array(NUM_ROUTE_LINES_DISPLAYED * 2)
+    .fill(1)
+    .map(() => [Subject.create<string | null>(null), Subject.create<string | null>(null)]);
+
+  private readonly routeElementVisibility = Array(NUM_ROUTE_LINES_DISPLAYED * 2)
+    .fill(1)
+    .map((_, index) => this.routeElementSubjects[index][1].map((val) => (val !== null ? 'inherit' : 'hidden')));
+
+  private readonly routeStartFromLine = Subject.create(0);
+
+  private readonly routeStartUpDisabled = this.routeStartFromLine.map((line) => line <= 0);
+  private readonly routeStartDownDisabled = MappedSubject.create(
+    ([line, legs]) => Math.ceil(legs.length / 2) - line <= NUM_ROUTE_LINES_DISPLAYED,
+    this.routeStartFromLine,
+    this.props.dataStore.legs,
+  );
+
+  private populateRouteLegs() {
+    for (
+      let i = this.routeStartFromLine.get() * 2;
+      i < (NUM_ROUTE_LINES_DISPLAYED + this.routeStartFromLine.get()) * 2;
+
+    ) {
+      if (i < this.props.dataStore.legs.get().length) {
+        const leg = this.props.dataStore.legs.get()[i];
+        if (leg.isDiscontinuity === false) {
+          this.routeElementSubjects[i][0].set(leg.annotation ?? '\xa0');
+          this.routeElementSubjects[i][1].set(leg.ident);
+          i++;
+        }
+      } else {
+        this.routeElementSubjects[i][0].set(null);
+        this.routeElementSubjects[i][1].set(null);
+      }
+    }
+  }
+
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
     this.subscriptions.push(
+      this.props.dataStore.legs.sub(() => this.populateRouteLegs(), true),
+      this.routeStartFromLine.sub(() => this.populateRouteLegs()),
+    );
+
+    this.subscriptions.push(
       this.secDoesNotExist,
-      this.swapActiveNotAllowed,
+      this.swapActiveVisibility,
       this.cityPairLabel,
       this.createdLabel,
       this.cpnyFplnButtonLabel,
       this.cpnyFplnButtonMenuItems,
+      ...this.routeElementVisibility,
     );
   }
 
@@ -272,7 +331,28 @@ export class MfdFmsSecIndexTab extends DestroyableComponent<MfdFmsSecIndexTabPro
             <span class="mfd-sec-index-title-line2">{this.createdLabel}</span>
           </div>
           <div class="mfd-sec-index-table upper">
-            <div class="mfd-sec-index-table-left route">BLA</div>
+            <div class="mfd-sec-index-table-left route">
+              {Array(NUM_ROUTE_LINES_DISPLAYED * 2)
+                .fill(1)
+                .map((_, index) => {
+                  return (
+                    <>
+                      <div
+                        class="mfd-sec-index-table-lower-button-grid-cell leg-ident"
+                        style={{ visibility: this.routeElementVisibility[index] }}
+                      >
+                        {this.routeElementSubjects[index][0]}
+                      </div>
+                      <div
+                        class="mfd-sec-index-table-lower-button-grid-cell fix-ident"
+                        style={{ visibility: this.routeElementVisibility[index] }}
+                      >
+                        {this.routeElementSubjects[index][1]}
+                      </div>
+                    </>
+                  );
+                })}
+            </div>
             <div class="mfd-sec-index-table-right">
               <Button
                 label={'IMPORT'}
@@ -386,18 +466,25 @@ export class MfdFmsSecIndexTab extends DestroyableComponent<MfdFmsSecIndexTabPro
                 <div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
                   <IconButton
                     icon="double-down"
-                    disabled={Subject.create(true)}
-                    onClick={() => {}}
+                    disabled={this.routeStartDownDisabled}
+                    onClick={() => this.routeStartFromLine.set(this.routeStartFromLine.get() + 1)}
                     containerStyle="width: 60px; height: 60px; margin-right: 5px;"
                   />
                   <IconButton
                     icon="double-up"
-                    disabled={Subject.create(true)}
-                    onClick={() => {}}
+                    disabled={this.routeStartUpDisabled}
+                    onClick={() => this.routeStartFromLine.set(Math.max(0, this.routeStartFromLine.get() - 1))}
                     containerStyle="width: 60px; height: 60px;"
                   />
                 </div>
-                <div style="display: flex; justify-content: flex-end; align-items: center;">
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    alignItems: 'center',
+                    visibility: this.swapActiveVisibility,
+                  }}
+                >
                   <Button
                     label={Subject.create(
                       <div style="display: flex; flex-direction: row; justify-content: space-between;">
@@ -409,7 +496,6 @@ export class MfdFmsSecIndexTab extends DestroyableComponent<MfdFmsSecIndexTabPro
                         <span style="display: flex; align-items: center; justify-content: center;">*</span>
                       </div>,
                     )}
-                    disabled={this.swapActiveNotAllowed}
                     onClick={() => this.props.fmcService.master?.swapActiveAndSecondaryPlan(this.secIndex)}
                     buttonStyle="color: #e68000; padding-right: 2px; width: 160px; height: 60px;"
                     idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_sec${this.props.flightPlanIndex}index_swap-active`}

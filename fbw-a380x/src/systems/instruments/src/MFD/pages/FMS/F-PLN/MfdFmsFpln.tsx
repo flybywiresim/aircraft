@@ -101,10 +101,11 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       : '--:--',
   );
 
-  private readonly destTimeNotAvail = MappedSubject.create(
-    ([tmpy, time]) => !tmpy && time == null,
+  private readonly destTimeNotAvailAndInActive = MappedSubject.create(
+    ([tmpy, time, fpIndex]) => !tmpy && time == null && fpIndex === FlightPlanIndex.Active,
     this.tmpyActive,
     this.destTime,
+    this.loadedFlightPlanIndex,
   );
 
   private readonly destEfob = Subject.create<number | null>(null);
@@ -113,13 +114,14 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     v !== null ? Math.max(0, Units.poundToKilogram(v) / 1_000).toFixed(1) : '---.-',
   );
 
-  private readonly destEfobNotAvailable = MappedSubject.create(
-    ([tmpy, efob]) => !tmpy && efob == null,
+  private readonly destEfobNotAvailableAndInActive = MappedSubject.create(
+    ([tmpy, efob, fpIndex]) => !tmpy && efob == null && fpIndex === FlightPlanIndex.Active,
     this.tmpyActive,
     this.destEfob,
+    this.loadedFlightPlanIndex,
   );
 
-  private readonly destEfobUnitVisiblity = this.destEfobNotAvailable.map((v) => (v ? 'hidden' : 'visible'));
+  private readonly destEfobUnitVisiblity = this.destEfobNotAvailableAndInActive.map((v) => (v ? 'hidden' : 'visible'));
 
   private readonly distanceToDest = Subject.create<number | null>(null);
 
@@ -759,8 +761,8 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       this.destButtonLabelNode,
       this.lineColorIsTemporary,
       this.preflightPhase,
-      this.destTimeNotAvail,
-      this.destEfobNotAvailable,
+      this.destTimeNotAvailAndInActive,
+      this.destEfobNotAvailableAndInActive,
       this.distanceToDestNotAvail,
       this.distanceToDestUnitVisibility,
     );
@@ -1027,7 +1029,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
               class={{
                 'mfd-label': true,
                 'mfd-fms-yellow-text': this.lineColorIsTemporary,
-                'mfd-fms-green-text': this.destTimeNotAvail,
+                'mfd-fms-green-text': this.destTimeNotAvailAndInActive,
               }}
             >
               {this.destTimeLabel}
@@ -1037,7 +1039,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 class={{
                   'mfd-label': true,
                   'mfd-fms-yellow-text': this.lineColorIsTemporary,
-                  'mfd-fms-green-text': this.destEfobNotAvailable,
+                  'mfd-fms-green-text': this.destEfobNotAvailableAndInActive,
                   amber: this.destEfobAmber,
                 }}
               >

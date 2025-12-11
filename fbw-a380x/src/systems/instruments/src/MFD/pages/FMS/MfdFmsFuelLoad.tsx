@@ -33,11 +33,16 @@ import { getEtaFromUtcOrPresent } from '../../shared/utils';
 import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
 import { FlightPlanChangeNotifier } from '@fmgc/flightplanning/sync/FlightPlanChangeNotifier';
 import { CostIndexMode } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 
 interface MfdFmsFuelLoadProps extends AbstractMfdPageProps {}
 
 export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
   private readonly flightPlanChangeNotifier = new FlightPlanChangeNotifier(this.props.bus);
+
+  private readonly mandatoryAndActiveFpln = this.loadedFlightPlanIndex.map(
+    (it) => it === FlightPlanIndex.Active || it === FlightPlanIndex.Temporary,
+  );
 
   private readonly grossWeight = Subject.create<number | null>(null);
   private readonly grossWeightText = this.grossWeight.map((it) => (it ? (it / 1000).toFixed(1) : '---.-'));
@@ -274,6 +279,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
     );
 
     this.subs.push(
+      this.mandatoryAndActiveFpln,
       this.grossWeightText,
       this.centerOfGravityText,
       this.fuelOnBoardText,
@@ -331,7 +337,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   )
                 }
                 readonlyValue={this.zeroFuelWeight}
-                mandatory={Subject.create(true)}
+                mandatory={this.mandatoryAndActiveFpln}
                 canBeCleared={Subject.create(false)}
                 alignText="flex-end"
                 containerStyle="width: 150px;"
@@ -350,7 +356,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   )
                 }
                 readonlyValue={this.zeroFuelWeightCenterOfGravity}
-                mandatory={Subject.create(true)}
+                mandatory={this.mandatoryAndActiveFpln}
                 canBeCleared={Subject.create(false)}
                 alignText="center"
                 containerStyle="width: 125px;"
@@ -371,7 +377,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   )
                 }
                 readonlyValue={this.blockFuel}
-                mandatory={Subject.create(true)}
+                mandatory={this.mandatoryAndActiveFpln}
                 alignText="flex-end"
                 containerStyle="width: 150px;"
                 errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
@@ -574,7 +580,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                       }
                     }}
                     value={this.paxNumber}
-                    mandatory={Subject.create(true)}
+                    mandatory={this.mandatoryAndActiveFpln}
                     alignText="center"
                     containerStyle="width: 75px;"
                     errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
@@ -608,7 +614,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                       );
                     }}
                     value={this.costIndex}
-                    mandatory={Subject.create(true)}
+                    mandatory={this.mandatoryAndActiveFpln}
                     disabled={this.costIndexDisabled}
                     alignText="center"
                     containerStyle="width: 75px;"

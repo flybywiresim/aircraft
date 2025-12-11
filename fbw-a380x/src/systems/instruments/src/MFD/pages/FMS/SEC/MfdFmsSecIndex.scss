@@ -48,8 +48,14 @@
 }
 
 .mfd-sec-index-table-left.route {
-  padding: 20px 0px 20px 0px;
+  padding: 20px 5px 20px 5px;
   border: 1px solid $display-light-grey;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  justify-content: center;
+  align-items: center;
 }
 
 .mfd-sec-index-table-right {
@@ -67,4 +73,17 @@
   grid-template-columns: 1fr 1fr 1fr;
   justify-content: center;
   align-items: center;
+}
+
+.mfd-sec-index-table-lower-button-grid-cell {
+  border-bottom: 1px solid $display-light-grey;
+  height: 28px;
+}
+
+.mfd-sec-index-table-lower-button-grid-cell.leg-ident {
+  font-size: 22px;
+}
+
+.mfd-sec-index-table-lower-button-grid-cell.fix-ident {
+  font-size: 26px;
 }

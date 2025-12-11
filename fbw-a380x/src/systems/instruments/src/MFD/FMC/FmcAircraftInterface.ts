@@ -1811,7 +1811,7 @@ export class FmcAircraftInterface {
    *
    * @param newFl FL in 100 increments (e.g. 240 for 24000ft)
    */
-  public setCruiseFl(newFl: number, intoPlan: FlightPlanIndex = FlightPlanIndex.Active) {
+  public setCruiseFl(newFl: number, intoPlan: FlightPlanIndex) {
     const ret = this.trySetCruiseFl(newFl, intoPlan);
     if (ret && intoPlan === FlightPlanIndex.Active) {
       if (
@@ -1838,6 +1838,10 @@ export class FmcAircraftInterface {
     this.updateConstraints();
 
     this.fmc.handleNewCruiseAltitudeEntered(newCruiseLevel);
+  }
+
+  public isHdgOrTrackModeEngaged() {
+    return this.lateralMode.get() === LateralMode.HDG || this.lateralMode.get() === LateralMode.TRACK;
   }
 
   private isLateralModeManaged() {

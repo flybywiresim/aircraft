@@ -68,15 +68,27 @@ interface MfdFmsPerfProps extends AbstractMfdPageProps {}
 export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   private readonly flightPlanChangeNotifier = new FlightPlanChangeNotifier(this.props.bus);
 
+  private readonly mandatoryAndActiveFpln = this.loadedFlightPlanIndex.map(
+    (it) => it === FlightPlanIndex.Active || it === FlightPlanIndex.Temporary,
+  );
+
+  private readonly visibilityConsideringFlightPlanIndex = this.loadedFlightPlanIndex.map((it) =>
+    it === FlightPlanIndex.Active || it === FlightPlanIndex.Temporary ? 'inherit' : 'hidden',
+  );
+
   private approachPhaseConfirmationDialogVisible = Subject.create<boolean>(false);
 
-  private readonly activateApprButtonVisibility = this.activeFlightPhase.map((fp) =>
-    fp === FmgcFlightPhase.Climb ||
-    fp === FmgcFlightPhase.Cruise ||
-    fp === FmgcFlightPhase.Descent ||
-    fp === FmgcFlightPhase.GoAround
-      ? 'visible'
-      : 'hidden',
+  private readonly activateApprButtonVisibility = MappedSubject.create(
+    ([fp, flightPlanIndex]) =>
+      (flightPlanIndex === FlightPlanIndex.Active || flightPlanIndex === FlightPlanIndex.Temporary) &&
+      (fp === FmgcFlightPhase.Climb ||
+        fp === FmgcFlightPhase.Cruise ||
+        fp === FmgcFlightPhase.Descent ||
+        fp === FmgcFlightPhase.GoAround)
+        ? 'visible'
+        : 'hidden',
+    this.activeFlightPhase,
+    this.loadedFlightPlanIndex,
   );
 
   private clearEoConfirmationDialogVisible = Subject.create<boolean>(false);
@@ -651,7 +663,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     }
 
     this.crzFlIsMandatory.set(
-      (this.props.fmcService.master?.fmgc.getFlightPhase() ?? FmgcFlightPhase.Preflight) < FmgcFlightPhase.Descent,
+      (this.props.fmcService.master?.fmgc.getFlightPhase() ?? FmgcFlightPhase.Preflight) < FmgcFlightPhase.Descent &&
+        this.managedSpeedActive.get(),
     );
 
     this.showNoiseFields(pd.noiseEnabled!.get());
@@ -1153,6 +1166,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     );
 
     this.subs.push(
+      this.mandatoryAndActiveFpln,
+      this.visibilityConsideringFlightPlanIndex,
       this.speedConstraintReason,
       this.climbPreSelSpeedGreen,
       this.climbPreSelSpeedAmber,
@@ -1213,7 +1228,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                 <InputField<number>
                   dataEntryFormat={new FlightLevelFormat()}
                   dataHandlerDuringValidation={async (v) =>
-                    v ? this.props.fmcService.master?.acInterface.setCruiseFl(v) : false
+                    v
+                      ? this.props.fmcService.master?.acInterface.setCruiseFl(v, this.loadedFlightPlanIndex.get())
+                      : false
                   }
                   mandatory={this.crzFlIsMandatory}
                   value={this.crzFl}
@@ -1222,19 +1239,40 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   interactionMode={this.props.mfd.interactionMode}
                 />
               </div>
-              <div class="mfd-label-value-container" style="padding: 0px; justify-content: center;">
+              <div
+                class="mfd-label-value-container"
+                style={{
+                  padding: '0px',
+                  justifyContent: 'center',
+                  visibility: this.visibilityConsideringFlightPlanIndex,
+                }}
+              >
                 <span class="mfd-label mfd-spacing-right">OPT</span>
                 <span class="mfd-label-unit mfd-unit-leading">FL</span>
                 <span class="mfd-value">{this.optFl}</span>
               </div>
-              <div class="mfd-label-value-container" style="padding: 0px 20px 0px 0px; justify-content: flex-end;">
+              <div
+                class="mfd-label-value-container"
+                style={{
+                  padding: '0px 20px 0px 0px',
+                  justifyContent: 'flex-end',
+                  visibility: this.visibilityConsideringFlightPlanIndex,
+                }}
+              >
                 <span class="mfd-label mfd-spacing-right">REC MAX</span>
                 <span class="mfd-label-unit mfd-unit-leading">FL</span>
                 <span class="mfd-value">{this.recMaxFl}</span>
               </div>
               <div />
               <div />
-              <div class="mfd-label-value-container" style="padding: 0px 20px 0px 0px; justify-content: flex-end;">
+              <div
+                class="mfd-label-value-container"
+                style={{
+                  padding: '0px 20px 0px 0px',
+                  justifyContent: 'flex-end',
+                  visibility: this.visibilityConsideringFlightPlanIndex,
+                }}
+              >
                 <span class={{ 'mfd-label': true, 'mfd-spacing-right': true, amber: this.eoActive }}>EO MAX</span>
                 <span class="mfd-label-unit mfd-unit-leading">FL</span>
                 <span class="mfd-value">{this.eoMaxFl}</span>
@@ -1265,7 +1303,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                           this.loadedFlightPlanIndex.get(),
                         )
                       }
-                      mandatory={Subject.create(false)}
                       inactive={this.toPageInactive}
                       value={this.toShift}
                       errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
@@ -1288,7 +1325,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                           );
                           SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'Knots', v);
                         }}
-                        mandatory={Subject.create(true)}
+                        mandatory={this.mandatoryAndActiveFpln}
                         inactive={this.toPageInactive}
                         value={this.toV1}
                         alignText="flex-end"
@@ -1368,7 +1405,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             this.loadedFlightPlanIndex.get(),
                           );
                         }}
-                        mandatory={Subject.create(true)}
+                        mandatory={this.mandatoryAndActiveFpln}
                         inactive={this.toPageInactive}
                         value={this.toVR}
                         alignText="flex-end"
@@ -1404,7 +1441,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             this.loadedFlightPlanIndex.get(),
                           );
                         }}
-                        mandatory={Subject.create(true)}
+                        mandatory={this.mandatoryAndActiveFpln}
                         inactive={this.toPageInactive}
                         value={this.toV2}
                         alignText="flex-end"
@@ -1480,7 +1517,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             this.loadedFlightPlanIndex.get(),
                           );
                         }}
-                        mandatory={Subject.create(false)}
                         inactive={this.toPageInactive}
                         value={this.toFlexTemp}
                         errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
@@ -1566,7 +1602,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                           this.props.fmcService.master?.acInterface.setTakeoffTrim(v);
                         }
                       }}
-                      mandatory={Subject.create(true)}
+                      mandatory={this.mandatoryAndActiveFpln}
                       inactive={this.toPageInactive}
                       readonlyValue={this.takeoffThsFor}
                       alignText="flex-end"
@@ -1646,7 +1682,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                           this.loadedFlightPlanIndex.get(),
                         );
                       }}
-                      mandatory={Subject.create(false)}
                       inactive={this.toPageInactive}
                       enteredByPilot={this.thrRedAltIsPilotEntered}
                       readonlyValue={this.thrRedAlt}
@@ -1682,7 +1717,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             this.loadedFlightPlanIndex.get(),
                           );
                         }}
-                        mandatory={Subject.create(false)}
                         inactive={this.toPageInactive}
                         readonlyValue={this.noiseN1}
                         containerStyle="width: 110px;"
@@ -1729,7 +1763,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                           this.loadedFlightPlanIndex.get(),
                         );
                       }}
-                      mandatory={Subject.create(false)}
                       inactive={this.toPageInactive}
                       enteredByPilot={this.accelAltIsPilotEntered}
                       readonlyValue={this.accelAlt}
@@ -1765,7 +1798,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             this.loadedFlightPlanIndex.get(),
                           )
                         }
-                        mandatory={Subject.create(false)}
                         inactive={this.toPageInactive}
                         readonlyValue={this.noiseSpeed}
                         containerStyle="width: 110px;"
@@ -1814,7 +1846,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             this.loadedFlightPlanIndex.get(),
                           )
                         }
-                        mandatory={Subject.create(false)}
                         inactive={this.toPageInactive}
                         value={this.noiseEndAltitude}
                         containerStyle="width: 150px;"
@@ -1843,7 +1874,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         );
                         this.props.fmcService.master?.acInterface.updateTransitionAltitudeLevel();
                       }}
-                      mandatory={Subject.create(false)}
                       enteredByPilot={this.transAltIsPilotEntered}
                       readonlyValue={this.transAlt}
                       containerStyle="width: 150px;"
@@ -1864,7 +1894,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                           this.loadedFlightPlanIndex.get(),
                         );
                       }}
-                      mandatory={Subject.create(false)}
                       inactive={this.toPageInactive}
                       enteredByPilot={this.eoAccelAltIsPilotEntered}
                       value={this.eoAccelAlt}
@@ -1875,7 +1904,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       interactionMode={this.props.mfd.interactionMode}
                     />
                   </div>
-                  <div>
+                  <div style={{ visibility: this.visibilityConsideringFlightPlanIndex }}>
                     <ConditionalComponent
                       width={176}
                       height={62}
@@ -1925,7 +1954,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                           this.loadedFlightPlanIndex.get(),
                         );
                       }}
-                      mandatory={Subject.create(false)}
                       disabled={this.costIndexDisabled}
                       value={this.costIndex}
                       containerStyle="width: 75px;"
@@ -1981,7 +2009,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       dataHandlerDuringValidation={async (v) =>
                         this.props.fmcService.master?.fmgc.data.climbPredictionsReferencePilotEntry.set(v)
                       }
-                      mandatory={Subject.create(false)}
                       inactive={this.clbPageInactive}
                       enteredByPilot={this.props.fmcService.master.fmgc.data.climbPredictionsReferenceIsPilotEntered}
                       readonlyValue={this.props.fmcService.master.fmgc.data.climbPredictionsReference}
@@ -2010,7 +2037,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       componentIfTrue={
                         <InputField<number>
                           dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
-                          mandatory={Subject.create(false)}
                           inactive={this.clbPageInactive}
                           value={this.props.fmcService.master.fmgc.data.climbPreSelSpeed}
                           alignText="flex-end"
@@ -2086,7 +2112,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   <div style="margin-bottom: 15px;">
                     <InputField<number>
                       dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
-                      mandatory={Subject.create(false)}
                       inactive={this.clbPageInactive}
                       enteredByPilot={this.thrRedAltIsPilotEntered}
                       value={this.thrRedAlt}
@@ -2129,7 +2154,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             this.loadedFlightPlanIndex.get(),
                           );
                         }}
-                        mandatory={Subject.create(false)}
                         inactive={this.clbPageInactive}
                         readonlyValue={this.noiseN1}
                         containerStyle="width: 110px;"
@@ -2176,7 +2200,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   <div style="margin-bottom: 15px;">
                     <InputField<number>
                       dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
-                      mandatory={Subject.create(false)}
                       inactive={this.clbPageInactive}
                       enteredByPilot={this.accelAltIsPilotEntered}
                       value={this.accelAlt}
@@ -2219,7 +2242,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             this.loadedFlightPlanIndex.get(),
                           );
                         }}
-                        mandatory={Subject.create(false)}
                         inactive={this.clbPageInactive}
                         readonlyValue={this.noiseSpeed}
                         containerStyle="width: 110px;"
@@ -2266,7 +2288,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             this.loadedFlightPlanIndex.get(),
                           );
                         }}
-                        mandatory={Subject.create(false)}
                         inactive={this.clbPageInactive}
                         readonlyValue={this.noiseEndAltitude}
                         containerStyle="width: 150px;"
@@ -2317,7 +2338,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         );
                         this.props.fmcService.master?.acInterface.updateTransitionAltitudeLevel();
                       }}
-                      mandatory={Subject.create(false)}
                       enteredByPilot={this.transAltIsPilotEntered}
                       readonlyValue={this.transAlt}
                       containerStyle="width: 150px;"
@@ -2377,7 +2397,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                           this.loadedFlightPlanIndex.get(),
                         );
                       }}
-                      mandatory={Subject.create(false)}
                       disabled={this.costIndexDisabled}
                       value={this.costIndex}
                       containerStyle="width: 75px;"
@@ -2456,7 +2475,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       componentIfTrue={
                         <InputField<number>
                           dataEntryFormat={new SpeedMachFormat(Subject.create(0.1), Subject.create(Mmo))}
-                          mandatory={Subject.create(false)}
                           inactive={this.crzPageInactive}
                           value={this.props.fmcService.master.fmgc.data.cruisePreSelMach}
                           alignText="flex-end"
@@ -2478,7 +2496,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       componentIfTrue={
                         <InputField<number>
                           dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
-                          mandatory={Subject.create(false)}
                           inactive={this.crzPageInactive}
                           value={this.props.fmcService.master.fmgc.data.cruisePreSelSpeed}
                           alignText="flex-end"
@@ -2635,7 +2652,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                           this.loadedFlightPlanIndex.get(),
                         );
                       }}
-                      mandatory={Subject.create(false)}
                       disabled={this.costIndexDisabled}
                       inactive={this.crzPageInactive}
                       value={this.costIndex}
@@ -2646,7 +2662,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       interactionMode={this.props.mfd.interactionMode}
                     />
                   </div>
-                  <div class="mfd-label-value-container" style="padding: 15px;">
+                  <div
+                    class="mfd-label-value-container"
+                    style={{ padding: '15px', visibility: this.visibilityConsideringFlightPlanIndex }}
+                  >
                     <span class="mfd-label mfd-spacing-right">DES CABIN RATE</span>
                     <InputField<number, number, false>
                       dataEntryFormat={new DescentRateFormat(Subject.create(-999), Subject.create(-100))}
@@ -2657,7 +2676,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                           this.loadedFlightPlanIndex.get(),
                         );
                       }}
-                      mandatory={Subject.create(false)}
                       inactive={this.crzPageInactive}
                       readonlyValue={this.descentCabinRate}
                       containerStyle="width: 175px;"
@@ -2688,7 +2706,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                           Subject.create(maxCertifiedAlt),
                         )
                       }
-                      mandatory={Subject.create(false)}
                       disabled={this.notInDescent}
                       value={this.desPredictionsReference}
                       containerStyle="width: 150px; margin-left: 15px;"
@@ -2716,7 +2733,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         <InputField<number>
                           disabled={Subject.create(true)}
                           dataEntryFormat={new SpeedMachFormat(Subject.create(0.1), Subject.create(Mmo))}
-                          mandatory={Subject.create(false)}
                           inactive={this.desPageInactive}
                           value={this.desManagedMachTarget}
                           alignText="flex-end"
@@ -2739,7 +2755,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         <InputField<number>
                           disabled={Subject.create(true)}
                           dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
-                          mandatory={Subject.create(false)}
                           inactive={this.desPageInactive}
                           value={this.desManagedSpdTarget}
                           alignText="flex-end"
@@ -2847,7 +2862,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 this.loadedFlightPlanIndex.get(),
                               );
                             }}
-                            mandatory={Subject.create(false)}
                             readonlyValue={this.approachWindDirection}
                             alignText="center"
                             errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
@@ -2863,7 +2877,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 this.loadedFlightPlanIndex.get(),
                               );
                             }}
-                            mandatory={Subject.create(false)}
                             readonlyValue={this.approachWindMagnitude}
                             containerStyle="margin-left: 10px;"
                             alignText="center"
@@ -2896,7 +2909,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                               this.loadedFlightPlanIndex.get(),
                             );
                           }}
-                          mandatory={Subject.create(true)}
+                          mandatory={this.mandatoryAndActiveFpln}
                           readonlyValue={this.approachTemperature}
                           containerStyle="width: 125px;"
                           alignText="flex-end"
@@ -2927,7 +2940,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             );
                             SimVar.SetSimVarValue('L:A32NX_DESTINATION_QNH', 'Millibar', qnhMillibar);
                           }}
-                          mandatory={Subject.create(true)}
+                          mandatory={this.mandatoryAndActiveFpln}
                           readonlyValue={this.approachQnh}
                           containerStyle="width: 125px;"
                           alignText="flex-end"
@@ -2951,7 +2964,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             );
                             SimVar.SetSimVarValue('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet', v);
                           }}
-                          mandatory={Subject.create(false)}
                           readonlyValue={this.approachBaroMinimum}
                           containerStyle="width: 150px;"
                           alignText="flex-end"
@@ -2975,7 +2987,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 );
                                 SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', v === null ? -1 : v);
                               }}
-                              mandatory={Subject.create(false)}
                               readonlyValue={this.approachRadioMinimum}
                               containerStyle="width: 150px;"
                               alignText="flex-end"
@@ -3017,7 +3028,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         </span>
                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                       </div>
-                      <div class="mfd-label-value-container" style="padding-top: 15px;">
+                      <div
+                        class="mfd-label-value-container"
+                        style={{ paddingTop: '15px', visibility: this.visibilityConsideringFlightPlanIndex }}
+                      >
                         <span class="mfd-label mfd-spacing-right mfd-fms-perf-appr-flap-speeds">VREF</span>
                         <span class="mfd-value">
                           {FmgcData.fmcFormatValue(this.props.fmcService.master.fmgc.data.approachVref)}
@@ -3061,7 +3075,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                               this.loadedFlightPlanIndex.get(),
                             )
                           }
-                          mandatory={Subject.create(false)}
                           readonlyValue={this.pilotVapp}
                           alignText="flex-end"
                           errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
@@ -3092,7 +3105,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         );
                         this.props.fmcService.master?.acInterface.updateTransitionAltitudeLevel();
                       }}
-                      mandatory={Subject.create(false)}
                       enteredByPilot={this.transFlIsPilotEntered}
                       readonlyValue={this.transFl}
                       containerStyle="width: 110px;"
@@ -3152,7 +3164,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             this.loadedFlightPlanIndex.get(),
                           );
                         }}
-                        mandatory={Subject.create(false)}
                         enteredByPilot={this.missedThrRedAltIsPilotEntered}
                         readonlyValue={this.missedThrRedAlt}
                         containerStyle="width: 150px;"
@@ -3177,7 +3188,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             this.loadedFlightPlanIndex.get(),
                           );
                         }}
-                        mandatory={Subject.create(false)}
                         enteredByPilot={this.missedAccelRedAltIsPilotEntered}
                         readonlyValue={this.missedAccelAlt}
                         containerStyle="width: 150px;"
@@ -3200,7 +3210,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             this.loadedFlightPlanIndex.get(),
                           );
                         }}
-                        mandatory={Subject.create(false)}
                         enteredByPilot={this.missedEngineOutAccelAltIsPilotEntered}
                         readonlyValue={this.missedEngineOutAccelAlt}
                         containerStyle="width: 150px;"

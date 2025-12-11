@@ -69,6 +69,7 @@ import { VdAltitudeConstraint } from 'instruments/src/MsfsAvionicsCommon/provide
 import { MsfsFlightPlanSync } from '@fmgc/flightplanning/MsfsFlightPlanSync';
 import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/uplink/SimBriefUplinkAdapter';
 import { FlightPlanChangeNotifier } from '@fmgc/flightplanning/sync/FlightPlanChangeNotifier';
+import { FlightPlanUtils } from '@fmgc/flightplanning/FlightPlanUtils';
 
 export interface FmsErrorMessage {
   message: McduMessage;
@@ -710,7 +711,7 @@ export class FlightManagementComputer implements FmcInterface {
     );
 
     if (this.simBriefOfp?.cruiseAltitude) {
-      this.acInterface.setCruiseFl(this.simBriefOfp.cruiseAltitude / 100);
+      this.acInterface.setCruiseFl(this.simBriefOfp.cruiseAltitude / 100, intoPlan);
     }
 
     this.fmgc.data.cpnyFplnAvailable.set(false);
@@ -731,7 +732,42 @@ export class FlightManagementComputer implements FmcInterface {
     this.fmgc.data.cpnyFplnAvailable.set(true);
   }
 
+  canActivateOrSwapSecondary(): boolean {
+    if (
+      !this.flightPlanInterface.hasSecondary(1) ||
+      !this.flightPlanInterface.hasActive ||
+      this.flightPlanInterface.hasTemporary
+    ) {
+      return false;
+    }
+
+    const activePlan = this.flightPlanInterface.active;
+
+    const secPlan = this.flightPlanInterface.secondary(1);
+    if (!secPlan.originAirport || !secPlan.destinationAirport) {
+      return false;
+    }
+
+    const activeToLeg = activePlan.activeLeg;
+    const secToLeg = secPlan.activeLeg;
+
+    return (
+      this.acInterface.isHdgOrTrackModeEngaged() ||
+      (activeToLeg === undefined && secToLeg === undefined) ||
+      (activeToLeg !== undefined &&
+        secToLeg !== undefined &&
+        FlightPlanUtils.areFlightPlanElementsSame(activeToLeg, secToLeg) &&
+        activePlan.activeLegIndex === secPlan.activeLegIndex)
+    );
+  }
+
   public async swapActiveAndSecondaryPlan(index: number) {
+    const canActivateOrSwapSec = this.canActivateOrSwapSecondary();
+
+    if (!canActivateOrSwapSec) {
+      return;
+    }
+
     const zfwDiff = this.computeZfwDiffToSecondary(index);
     const oldDestination = this.#flightPlanService.active?.destinationAirport;
 
