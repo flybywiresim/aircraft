@@ -1,3 +1,6 @@
+//  Copyright (c) 2025 FlyByWire Simulations
+//  SPDX-License-Identifier: GPL-3.0
+
 import '../../../index.scss';
 
 import { FSComponent, VNode } from '@microsoft/msfs-sdk';
