@@ -95,7 +95,7 @@ export class MsfsFlightPlanSync {
     Wait.awaitSubscribable(this.isReady).then(async () => {
       console.log('[MsfsFlightPlanSync] Ready');
 
-      const autoLoadRoute = NXDataStore.get('CONFIG_AUTO_SIM_ROUTE_LOAD', 'DISABLED') === 'ENABLED';
+      const autoLoadRoute = NXDataStore.getSetting('CONFIG_AUTO_SIM_ROUTE_LOAD').get();
 
       if (autoLoadRoute) {
         console.log('[MsfsFlightPlanSync] Configured to automatically load MSFS route - loading...');
@@ -301,7 +301,8 @@ export class MsfsFlightPlanSync {
       }
     }
 
-    await this.flightPlanInterface.uplinkInsert();
+    // FIXME add a setting to insert into SEC, maybe?
+    await this.flightPlanInterface.uplinkInsert(FlightPlanIndex.Active);
   };
 
   private handleAvionicsRouteRequested = async (_requestID: number): Promise<void> => {
@@ -436,6 +437,8 @@ export class MsfsFlightPlanSync {
       approach.suffix = fbwApproach.multipleIndicator;
     }
 
+    const cruiseFlightLevel = activePlan.performanceData.cruiseFlightLevel.get();
+
     const route: JS_FlightPlanRoute = {
       __Type: 'JS_FlightPlanRoute',
       departureAirport,
@@ -467,10 +470,7 @@ export class MsfsFlightPlanSync {
       cruiseAltitude: {
         __Type: 'JS_FlightAltitude',
         // Altitude in the route is always in feet, even if indicated as a FL. It is divided by 100 by the sim.
-        altitude:
-          activePlan.performanceData.cruiseFlightLevel !== null
-            ? activePlan.performanceData.cruiseFlightLevel * 100
-            : 0,
+        altitude: cruiseFlightLevel !== null ? cruiseFlightLevel * 100 : 0,
         isFlightLevel: true,
       },
     };

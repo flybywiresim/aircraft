@@ -12,6 +12,8 @@ type SubscribeCancellation = () => void;
 
 export interface NXDataStoreSettings {
   EFB_UI_THEME: 'blue' | 'dark' | 'light';
+
+  CONFIG_AUTO_SIM_ROUTE_LOAD: boolean;
 }
 
 export type LegacyDataStoreSettingKey<k extends string> = k & (k extends keyof NXDataStoreSettings ? never : k);
@@ -22,6 +24,7 @@ export type LegacyDataStoreSettingKey<k extends string> = k & (k extends keyof N
 export class NXDataStore {
   private static readonly settingsDefaultValues: { [k in keyof NXDataStoreSettings]: NXDataStoreSettings[k] } = {
     EFB_UI_THEME: 'blue',
+    CONFIG_AUTO_SIM_ROUTE_LOAD: false,
   };
 
   private static readonly aircraftProjectPrefix: string = process.env.AIRCRAFT_PROJECT_PREFIX?.toUpperCase() ?? 'UNK';
@@ -99,7 +102,7 @@ export class NXDataStore {
     try {
       parsed = JSON.parse(rawValue);
     } catch (e) {
-      let newValue: string;
+      let newValue: any;
 
       if (rawValue === '') {
         // Non-existent settings return an empty string
