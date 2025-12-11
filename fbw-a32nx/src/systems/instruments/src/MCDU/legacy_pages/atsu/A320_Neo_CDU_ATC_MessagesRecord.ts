@@ -3,7 +3,7 @@ import { AtsuMessageDirection, AtsuMessageSerializationFormat } from '@datalink/
 import { Keypad } from '../../legacy/A320_Neo_CDU_Keypad';
 import { CDUAtcMenu } from './A320_Neo_CDU_ATC_Menu';
 import { CDUAtcMessage } from './A320_Neo_CDU_ATC_Message';
-import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
+import { LegacyAtsuPageInterface, setKeyNotActiveLskActions } from '../../legacy/LegacyAtsuPageInterface';
 
 export class CDUAtcMessagesRecord {
   static TranslateCpdlcResponse(response) {
@@ -157,5 +157,7 @@ export class CDUAtcMessagesRecord {
     mcdu.onLeftInput[5] = () => {
       CDUAtcMenu.ShowPage(mcdu);
     };
+
+    setKeyNotActiveLskActions(mcdu);
   }
 }

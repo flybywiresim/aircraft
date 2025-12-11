@@ -6,7 +6,7 @@ import { OclMessage } from '@datalink/common';
 import { CDU_SingleValueField } from '../../legacy/A320_Neo_CDU_Field';
 import { CDUAtcFlightReq } from './A320_Neo_CDU_ATC_FlightReq';
 import { McduMessage, NXSystemMessages } from '../../messages/NXSystemMessages';
-import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
+import { LegacyAtsuPageInterface, setKeyNotActiveLskActions } from '../../legacy/LegacyAtsuPageInterface';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 
 export class CDUAtcOceanicReq {
@@ -358,6 +358,8 @@ export class CDUAtcOceanicReq {
     mcdu.onLeftInput[5] = () => {
       CDUAtcOceanicReq.ShowPage1(mcdu, store);
     };
+
+    setKeyNotActiveLskActions(mcdu);
   }
 
   private static waypointType(waypoint: string): [number, McduMessage | null] {

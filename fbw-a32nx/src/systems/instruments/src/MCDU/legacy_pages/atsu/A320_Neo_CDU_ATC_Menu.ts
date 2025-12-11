@@ -13,7 +13,8 @@ import { CDUAtcUsualRequestFansA } from './FansA/A320_Neo_CDU_ATC_UsualRequest';
 import { CDUAtcEmergencyFansB } from './FansB/A320_Neo_CDU_ATC_Emergency';
 import { CDUAtcUsualRequestFansB } from './FansB/A320_Neo_CDU_ATC_UsualRequest';
 import { NXSystemMessages } from '../../messages/NXSystemMessages';
-import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
+import { LegacyAtsuPageInterface, setKeyNotActiveLskActions } from '../../legacy/LegacyAtsuPageInterface';
+import { CDUAtcReports } from './FansA/A320_Neo_CDU_ATC_Reports';
 
 export class CDUAtcMenu {
   static ShowPage(mcdu: LegacyAtsuPageInterface) {
@@ -36,13 +37,13 @@ export class CDUAtcMenu {
     mcdu.setTemplate([
       ['ATC MENU'],
       [''],
-      ['<FLIGHT REQ', 'USUAL REQ>'],
+      ['<FLIGHT REQ', mcdu.atsu.hasActiveAtc() ? 'USUAL REQ>' : ''],
       [''],
       ['<GROUND REQ', 'D-ATIS>'],
       [''],
-      ['<MSG RECORD', 'REPORTS>'],
+      ['<MSG RECORD', mcdu.atsu.fansMode() === FansMode.FansA ? 'REPORTS>' : ''],
       [''],
-      ['<MONITORED MSG', modif],
+      [mcdu.atsu.hasActiveAtc() ? '<MONITORED MSG' : '', modif],
       [''],
       ['<CONNECTION'],
       ['\xa0ATSU DLK'],
@@ -74,7 +75,11 @@ export class CDUAtcMenu {
       return mcdu.getDelaySwitchPage();
     };
     mcdu.onLeftInput[3] = () => {
-      CDUAtcMessageMonitoring.ShowPage(mcdu);
+      if (mcdu.atsu.hasActiveAtc()) {
+        CDUAtcMessageMonitoring.ShowPage(mcdu);
+      } else {
+        mcdu.setScratchpadMessage(NXSystemMessages.keyNotActive);
+      }
     };
 
     mcdu.leftInputDelay[4] = () => {
@@ -95,10 +100,14 @@ export class CDUAtcMenu {
       return mcdu.getDelaySwitchPage();
     };
     mcdu.onRightInput[0] = () => {
-      if (mcdu.atsu.fansMode() === FansMode.FansA) {
-        CDUAtcUsualRequestFansA.ShowPage(mcdu);
+      if (mcdu.atsu.hasActiveAtc()) {
+        if (mcdu.atsu.fansMode() === FansMode.FansA) {
+          CDUAtcUsualRequestFansA.ShowPage(mcdu);
+        } else {
+          CDUAtcUsualRequestFansB.ShowPage(mcdu);
+        }
       } else {
-        CDUAtcUsualRequestFansB.ShowPage(mcdu);
+        mcdu.setScratchpadMessage(NXSystemMessages.keyNotActive);
       }
     };
 
@@ -114,7 +123,7 @@ export class CDUAtcMenu {
     };
     mcdu.onRightInput[2] = () => {
       if (mcdu.atsu.fansMode() === FansMode.FansA) {
-        CDUAtcAtisMenu.ShowPage(mcdu);
+        CDUAtcReports.ShowPage(mcdu);
       } else {
         mcdu.setScratchpadMessage(NXSystemMessages.keyNotActive);
       }
@@ -126,6 +135,8 @@ export class CDUAtcMenu {
     mcdu.onRightInput[3] = () => {
       if (mcdu.atsu.modificationMessage) {
         CDUAtcMessageModify.ShowPage(mcdu, mcdu.atsu.modificationMessage);
+      } else {
+        mcdu.setScratchpadMessage(NXSystemMessages.keyNotActive);
       }
     };
 
@@ -139,5 +150,6 @@ export class CDUAtcMenu {
         CDUAtcEmergencyFansB.ShowPage(mcdu);
       }
     };
+    setKeyNotActiveLskActions(mcdu);
   }
 }

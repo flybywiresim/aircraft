@@ -4,7 +4,7 @@ import { Keypad } from '../../../legacy/A320_Neo_CDU_Keypad';
 import { CDUAtcMenu } from '../A320_Neo_CDU_ATC_Menu';
 import { CDUAtcTextFansA } from '../FansA/A320_Neo_CDU_ATC_Text';
 import { CDUAtcTextFansB } from '../FansB/A320_Neo_CDU_ATC_Text';
-import { LegacyAtsuPageInterface } from '../../../legacy/LegacyAtsuPageInterface';
+import { LegacyAtsuPageInterface, setKeyNotActiveLskActions } from '../../../legacy/LegacyAtsuPageInterface';
 
 export class CDUAtcMessageModifyUM131 {
   static CreateDataBlock(message) {
@@ -29,6 +29,7 @@ export class CDUAtcMessageModifyUM131 {
     let cancel = '\xa0CANCEL';
     let addText = 'ADD TEXT\xa0';
     let transfer = 'DCDU\xa0';
+    mcdu.page.Current = mcdu.page.ATCMessageModifyUM131;
     if (CDUAtcMessageModifyUM131.CanUpdateMessage(data)) {
       cancel = '*CANCEL';
       addText = 'ADD TEXT>';
@@ -135,5 +136,6 @@ export class CDUAtcMessageModifyUM131 {
         CDUAtcMenu.ShowPage(mcdu);
       }
     };
+    setKeyNotActiveLskActions(mcdu);
   }
 }

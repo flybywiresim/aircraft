@@ -11,7 +11,7 @@ import { CDUAtcTextFansA } from './FansA/A320_Neo_CDU_ATC_Text';
 import { CDUAtcVertRequestFansA } from './FansA/A320_Neo_CDU_ATC_VertRequest';
 import { CDUAtcLatRequestFansB } from './FansB/A320_Neo_CDU_ATC_LatRequest';
 import { CDUAtcVertRequestFansB } from './FansB/A320_Neo_CDU_ATC_VertRequest';
-import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
+import { LegacyAtsuPageInterface, setKeyNotActiveLskActions } from '../../legacy/LegacyAtsuPageInterface';
 
 export class CDUAtcFlightReq {
   static ShowPage(mcdu: LegacyAtsuPageInterface) {
@@ -123,5 +123,6 @@ export class CDUAtcFlightReq {
         CDUAtcClearanceReq.ShowPage(mcdu, 'CLEARANCE');
       }
     };
+    setKeyNotActiveLskActions(mcdu);
   }
 }

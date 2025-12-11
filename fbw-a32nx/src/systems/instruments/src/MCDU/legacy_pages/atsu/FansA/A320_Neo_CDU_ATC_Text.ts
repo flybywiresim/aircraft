@@ -3,7 +3,7 @@ import { CpdlcMessage, CpdlcMessagesDownlink, FansMode } from '@datalink/common'
 import { Keypad } from '../../../legacy/A320_Neo_CDU_Keypad';
 import { CDUAtcFlightReq } from '../A320_Neo_CDU_ATC_FlightReq';
 import { NXSystemMessages } from '../../../messages/NXSystemMessages';
-import { LegacyAtsuPageInterface } from '../../../legacy/LegacyAtsuPageInterface';
+import { LegacyAtsuPageInterface, setKeyNotActiveLskActions } from '../../../legacy/LegacyAtsuPageInterface';
 
 export class CDUAtcTextFansA {
   static CreateDataBlock(): any {
@@ -99,6 +99,7 @@ export class CDUAtcTextFansA {
 
   static ShowPage1(mcdu: LegacyAtsuPageInterface, messages = [], data = CDUAtcTextFansA.CreateDataBlock()) {
     mcdu.clearDisplay();
+    mcdu.page.Current = mcdu.page.ATCText;
 
     let erase = '\xa0ERASE';
     let reqDisplay = 'DCDU\xa0[color]cyan';
@@ -286,6 +287,7 @@ export class CDUAtcTextFansA {
 
   static ShowPage2(mcdu: LegacyAtsuPageInterface, messages = [], data = CDUAtcTextFansA.CreateDataBlock()) {
     mcdu.clearDisplay();
+    mcdu.page.Current = mcdu.page.ATCText;
 
     let freetext1 =
       '[\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0][color]cyan';
@@ -420,5 +422,6 @@ export class CDUAtcTextFansA {
     mcdu.onNextPage = () => {
       CDUAtcTextFansA.ShowPage1(mcdu, messages, data);
     };
+    setKeyNotActiveLskActions(mcdu);
   }
 }

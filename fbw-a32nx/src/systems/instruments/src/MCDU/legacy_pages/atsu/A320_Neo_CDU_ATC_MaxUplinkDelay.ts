@@ -3,7 +3,7 @@ import { AtsuStatusCodes } from '@datalink/common';
 import { Keypad } from '../../legacy/A320_Neo_CDU_Keypad';
 import { CDUAtcMenu } from './A320_Neo_CDU_ATC_Menu';
 import { NXSystemMessages } from '../../messages/NXSystemMessages';
-import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
+import { LegacyAtsuPageInterface, setKeyNotActiveLskActions } from '../../legacy/LegacyAtsuPageInterface';
 
 export class CDUAtcMaxUplinkDelay {
   static ShowPage(mcdu: LegacyAtsuPageInterface, updateInProgress = false) {
@@ -77,5 +77,6 @@ export class CDUAtcMaxUplinkDelay {
     mcdu.onLeftInput[5] = () => {
       CDUAtcMenu.ShowPage(mcdu);
     };
+    setKeyNotActiveLskActions(mcdu);
   }
 }

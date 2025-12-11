@@ -7,7 +7,7 @@ import { CDU_SingleValueField } from '../../legacy/A320_Neo_CDU_Field';
 import { Keypad } from '../../legacy/A320_Neo_CDU_Keypad';
 import { CDUAtcClearanceReq } from './A320_Neo_CDU_ATC_ClearanceReq';
 import { NXSystemMessages } from '../../messages/NXSystemMessages';
-import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
+import { LegacyAtsuPageInterface, setKeyNotActiveLskActions } from '../../legacy/LegacyAtsuPageInterface';
 
 export class CDUAtcDepartReq {
   static CreateDataBlock() {
@@ -286,5 +286,6 @@ export class CDUAtcDepartReq {
     mcdu.onLeftInput[5] = () => {
       CDUAtcDepartReq.ShowPage1(mcdu);
     };
+    setKeyNotActiveLskActions(mcdu);
   }
 }

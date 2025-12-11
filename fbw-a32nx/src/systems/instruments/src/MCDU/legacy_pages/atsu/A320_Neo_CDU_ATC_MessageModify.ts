@@ -12,7 +12,7 @@ import { CDUAtcPositionReport } from './FansA/A320_Neo_CDU_ATC_PositionReport';
 import { CDUAtcTextFansA } from './FansA/A320_Neo_CDU_ATC_Text';
 import { CDUAtcTextFansB } from './FansB/A320_Neo_CDU_ATC_Text';
 import { CDUAtcMessageModifyUM131 } from './MessageModify/A320_Neo_CDU_ATC_MessageModifyUM131';
-import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
+import { LegacyAtsuPageInterface, setKeyNotActiveLskActions } from '../../legacy/LegacyAtsuPageInterface';
 
 const ModifyLookupTable = {
   UM132: [
@@ -615,5 +615,6 @@ export class CDUAtcMessageModify {
         CDUAtcMenu.ShowPage(mcdu);
       }
     };
+    setKeyNotActiveLskActions(mcdu);
   }
 }

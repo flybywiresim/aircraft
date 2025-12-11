@@ -38,6 +38,8 @@
 1. [A32NX/FMS] Add - sign to slope value on RAD NAV page - @Jonny23787 (Jonathan)
 1. [A32NX/FMS] Fix "NOT ALLOWED IN NAV" when sequencing TO waypoint while in LOC mode - @BravoMike99 (bruno_pt99)
 1. [A380X/SD] Improve STS page: Add deferred procedures, page switching, MORE page, improve performance - @flogross89 (floridude)
+1. [A32NX/MCDU] Hide ATC MENU prompts depending on CPDLC connection status - @BravoMike99 (bruno_pt99)
+1. [A32NX/MCDU] Add "KEY NOT ACTIVE" scratchpad message to unallocated LSKs on pages under ATC MENU - @BravoMike99 (bruno_pt99)
 
 ## 0.14.0
 

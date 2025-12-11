@@ -2,7 +2,7 @@
 import { AtsuMessageComStatus, AtsuMessageSerializationFormat } from '@datalink/common';
 import { CDUAtcMessageMonitoring } from './A320_Neo_CDU_ATC_MessageMonitoring';
 import { CDUAtcMessagesRecord } from './A320_Neo_CDU_ATC_MessagesRecord';
-import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
+import { LegacyAtsuPageInterface, setKeyNotActiveLskActions } from '../../legacy/LegacyAtsuPageInterface';
 
 export class CDUAtcMessage {
   static TranslateCpdlcResponse(message) {
@@ -122,5 +122,6 @@ export class CDUAtcMessage {
     mcdu.onRightInput[5] = () => {
       mcdu.atsu.printMessage(message);
     };
+    setKeyNotActiveLskActions(mcdu);
   }
 }

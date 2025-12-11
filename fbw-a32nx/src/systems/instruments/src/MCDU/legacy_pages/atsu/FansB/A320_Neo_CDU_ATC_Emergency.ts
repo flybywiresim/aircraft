@@ -1,4 +1,4 @@
-import { LegacyAtsuPageInterface } from '../../../legacy/LegacyAtsuPageInterface';
+import { LegacyAtsuPageInterface, setKeyNotActiveLskActions } from '../../../legacy/LegacyAtsuPageInterface';
 import { CDUAtcMenu } from '../A320_Neo_CDU_ATC_Menu';
 
 export class CDUAtcEmergencyFansB {
@@ -28,5 +28,6 @@ export class CDUAtcEmergencyFansB {
     mcdu.onLeftInput[5] = () => {
       CDUAtcMenu.ShowPage(mcdu);
     };
+    setKeyNotActiveLskActions(mcdu);
   }
 }
