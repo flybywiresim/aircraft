@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -95,7 +96,11 @@ export class DataManager {
         break;
       case LatLonFormatType.UserSetting:
       case undefined:
-        NXDataStore.getAndSubscribe('LATLON_EXT_FMT', (_, value) => (this.latLonExtendedFormat = value === '1'), '0');
+        NXDataStore.getAndSubscribeLegacy(
+          'LATLON_EXT_FMT',
+          (_, value) => (this.latLonExtendedFormat = value === '1'),
+          '0',
+        );
         break;
     }
   }

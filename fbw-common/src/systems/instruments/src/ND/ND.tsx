@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2024 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -14,7 +15,7 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 
-import { GenericAdirsEvents } from '@flybywiresim/fbw-sdk';
+import { FMMessage, GenericAdirsEvents } from '@flybywiresim/fbw-sdk';
 
 import { clampAngle } from 'msfs-geo';
 import { BtvRunwayInfo } from './shared/BtvRunwayInfo';
@@ -79,6 +80,8 @@ export interface NDProps<T extends number> {
   modeChangeMessage: string;
 
   mapOptions?: Partial<MapOptions>;
+
+  fmMessages: FMMessage[];
 }
 
 export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> {
@@ -385,7 +388,7 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
           </div>
           <svg class="nd-svg nd-top-layer" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
             <TcasWxrMessages bus={this.props.bus} mode={this.currentPageMode} />
-            <FmMessages bus={this.props.bus} mode={this.currentPageMode} />
+            <FmMessages bus={this.props.bus} mode={this.currentPageMode} fmMessages={this.props.fmMessages} />
             <RwyAheadAdvisory bus={this.props.bus} />
           </svg>
         </div>
@@ -509,7 +512,7 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
             <Chrono bus={this.props.bus} />
 
             <TcasWxrMessages bus={this.props.bus} mode={this.currentPageMode} />
-            <FmMessages bus={this.props.bus} mode={this.currentPageMode} />
+            <FmMessages bus={this.props.bus} mode={this.currentPageMode} fmMessages={this.props.fmMessages} />
             <CrossTrackError
               bus={this.props.bus}
               currentPageMode={this.currentPageMode}

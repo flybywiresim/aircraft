@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2022 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
@@ -111,6 +112,7 @@ export class CoRouteUplinkAdapter {
 
   static async uplinkFlightPlanFromCoRoute(
     fms: FmsDataInterface & FmsDisplayInterface,
+    intoPlan: number,
     flightPlanService: FlightPlanService,
     ofp: CoRoute,
   ) {
@@ -390,7 +392,7 @@ export class CoRouteUplinkAdapter {
       }
     }
 
-    fms.onUplinkDone();
+    fms.onUplinkDone(intoPlan);
   }
 
   static getRouteFromOfp(ofp: CoRoute): OfpRoute {

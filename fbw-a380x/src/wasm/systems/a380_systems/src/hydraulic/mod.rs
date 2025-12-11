@@ -65,8 +65,8 @@ use systems::{
 
 use std::fmt::Debug;
 
-mod flaps_computer;
-use flaps_computer::SlatFlapComplex;
+mod sfcc;
+use sfcc::SlatFlapComplex;
 mod engine_pump_disc;
 use engine_pump_disc::EnginePumpDisconnectionClutch;
 pub mod autobrakes;
@@ -1733,16 +1733,16 @@ pub(super) struct A380Hydraulic {
 }
 impl A380Hydraulic {
     const FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
-        0., 35.66, 69.32, 89.7, 105.29, 120.22, 145.51, 168.35, 189.87, 210.69, 231.25, 251.97,
+        0., 122.2, 215.68, 259.28, 279.84, 297.59, 338.99, 338.99, 338.99, 338.99, 338.99, 338.99,
     ];
     const FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] =
-        [0., 1.3, 2.5, 5., 7.5, 10., 15., 20., 25., 30., 35., 40.];
+        [0., 0., 8., 17., 22., 26., 33., 33., 33., 33., 33., 33.];
 
     const SLAT_FPPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
-        0., 66.83, 167.08, 222.27, 272.27, 334.16, 334.16, 334.16, 334.16, 334.16, 334.16, 334.16,
+        0., 286.48, 327.39, 327.39, 327.39, 327.39, 327.39, 327.39, 327.39, 327.39, 327.39, 327.39,
     ];
     const SLAT_FPPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] =
-        [0., 5.4, 13.5, 18., 22., 27., 27., 27., 27., 27., 27., 27.];
+        [0., 20., 23., 23., 23., 23., 23., 23., 23., 23., 23., 23.];
 
     const FORWARD_CARGO_DOOR_ID: &'static str = "FWD";
     const AFT_CARGO_DOOR_ID: &'static str = "AFT";
@@ -2003,8 +2003,7 @@ impl A380Hydraulic {
                 left_flaps,
                 right_flaps,
                 Volume::new::<cubic_inch>(0.32),
-                AngularVelocity::new::<radian_per_second>(0.047),
-                Angle::new::<degree>(218.912),
+                AngularVelocity::new::<radian_per_second>(0.07),
                 Ratio::new::<ratio>(140.),
                 Ratio::new::<ratio>(16.632),
                 Ratio::new::<ratio>(314.98),
@@ -2019,7 +2018,6 @@ impl A380Hydraulic {
                 right_slats,
                 Volume::new::<cubic_inch>(0.32),
                 AngularVelocity::new::<radian_per_second>(0.08),
-                Angle::new::<degree>(284.66),
                 Ratio::new::<ratio>(140.),
                 Ratio::new::<ratio>(16.632),
                 Ratio::new::<ratio>(314.98),
@@ -2535,16 +2533,16 @@ impl A380Hydraulic {
 
         self.flap_system.update(
             context,
-            self.slats_flaps_complex.flap_demand(0),
-            self.slats_flaps_complex.flap_demand(1),
+            self.slats_flaps_complex.flap_pcu(0),
+            self.slats_flaps_complex.flap_pcu(1),
             self.green_circuit.system_section(),
             self.yellow_circuit.system_section(),
         );
 
         self.slat_system.update(
             context,
-            self.slats_flaps_complex.slat_demand(0),
-            self.slats_flaps_complex.slat_demand(1),
+            self.slats_flaps_complex.slat_pcu(0),
+            self.slats_flaps_complex.slat_pcu(1),
             self.green_circuit.system_section(),
             self.green_circuit.system_section(),
         );
@@ -7193,6 +7191,9 @@ mod tests {
             fn angle_of_attack(&self, _adiru_number: usize) -> Arinc429Word<Angle> {
                 Arinc429Word::new(Angle::default(), SignStatus::NormalOperation)
             }
+            fn computed_airspeed(&self, _adiru_number: usize) -> Arinc429Word<Velocity> {
+                Arinc429Word::new(Velocity::default(), SignStatus::NormalOperation)
+            }
         }
 
         struct A380TestPneumatics {
@@ -10721,6 +10722,67 @@ mod tests {
             assert!(test_bed.get_slats_left_position_percent() <= 1.);
             assert!(test_bed.get_slats_right_position_percent() <= 1.);
 
+            assert!(!test_bed.is_slats_moving());
+            assert!(!test_bed.is_flaps_moving());
+        }
+
+        #[test]
+        fn flaps_slats_moving() {
+            let mut test_bed = test_bed_on_ground_with()
+                .on_the_ground()
+                .set_park_brake(true)
+                .start_eng1(Ratio::new::<percent>(50.))
+                .start_eng2(Ratio::new::<percent>(50.))
+                .set_flaps_handle_position(0)
+                .run_waiting_for(Duration::from_secs(20));
+            assert!(!test_bed.is_slats_moving());
+            assert!(!test_bed.is_flaps_moving());
+
+            test_bed = test_bed
+                .set_flaps_handle_position(1)
+                .run_waiting_for(Duration::from_secs(60));
+            assert!(!test_bed.is_slats_moving());
+            assert!(!test_bed.is_flaps_moving());
+
+            test_bed = test_bed
+                .set_flaps_handle_position(2)
+                .run_waiting_for(Duration::from_secs(60));
+            assert!(!test_bed.is_slats_moving());
+            assert!(!test_bed.is_flaps_moving());
+
+            test_bed = test_bed
+                .set_flaps_handle_position(3)
+                .run_waiting_for(Duration::from_secs(60));
+            assert!(!test_bed.is_slats_moving());
+            assert!(!test_bed.is_flaps_moving());
+
+            test_bed = test_bed
+                .set_flaps_handle_position(4)
+                .run_waiting_for(Duration::from_secs(60));
+            assert!(!test_bed.is_slats_moving());
+            assert!(!test_bed.is_flaps_moving());
+
+            test_bed = test_bed
+                .set_flaps_handle_position(3)
+                .run_waiting_for(Duration::from_secs(60));
+            assert!(!test_bed.is_slats_moving());
+            assert!(!test_bed.is_flaps_moving());
+
+            test_bed = test_bed
+                .set_flaps_handle_position(2)
+                .run_waiting_for(Duration::from_secs(60));
+            assert!(!test_bed.is_slats_moving());
+            assert!(!test_bed.is_flaps_moving());
+
+            test_bed = test_bed
+                .set_flaps_handle_position(1)
+                .run_waiting_for(Duration::from_secs(60));
+            assert!(!test_bed.is_slats_moving());
+            assert!(!test_bed.is_flaps_moving());
+
+            test_bed = test_bed
+                .set_flaps_handle_position(0)
+                .run_waiting_for(Duration::from_secs(60));
             assert!(!test_bed.is_slats_moving());
             assert!(!test_bed.is_flaps_moving());
         }

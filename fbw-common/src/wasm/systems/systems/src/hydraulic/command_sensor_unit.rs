@@ -21,7 +21,7 @@ pub enum CSU {
                // in case of event `FLAPS_DOWN` followed by `FLAPS_UP` or viceversa.
 }
 impl CSU {
-    fn is_valid(&self) -> bool {
+    pub fn is_valid(&self) -> bool {
         matches!(
             self,
             CSU::Conf0 | CSU::Conf1 | CSU::Conf2 | CSU::Conf3 | CSU::ConfFull
@@ -95,13 +95,11 @@ impl CSUMonitor {
         CSU::get_csu_configuration(self.current_switch_pattern)
     }
 
-    #[cfg(test)]
-    fn get_last_valid_detent(&self) -> CSU {
+    pub fn get_last_valid_detent(&self) -> CSU {
         CSU::get_csu_configuration(self.last_valid_switch_pattern)
     }
 
-    #[cfg(test)]
-    fn time_since_last_valid_detent(&self) -> Duration {
+    pub fn time_since_last_valid_detent(&self) -> Duration {
         self.time_since_last_valid_detent
     }
 

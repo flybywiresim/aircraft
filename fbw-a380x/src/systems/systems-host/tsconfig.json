@@ -1,23 +1,3 @@
 {
-    "extends": "../tsconfig.json",
-    "compilerOptions": {
-      "paths": {
-        "@datalink/aoc": ["../../../fbw-common/src/systems/datalink/aoc/src/index.ts"],
-        "@datalink/atc": ["../../../fbw-common/src/systems/datalink/atc/src/index.ts"],
-        "@datalink/common": ["../../../fbw-common/src/systems/datalink/common/src/index.ts"],
-        "@datalink/router": ["../../../fbw-common/src/systems/datalink/router/src/index.ts"],
-        "@failures": ["./failures/src/index.ts"],
-        "@fmgc/*": ["../../../fbw-a32nx/src/systems/fmgc/src/*"],
-        "@instruments/common/*": ["./instruments/src/Common/*"],
-        "@localization/*": ["../localization/*"],
-        "@sentry/*": ["./sentry-client/src/*"],
-        "@simbridge/*": ["../../../fbw-a32nx/src/systems/simbridge-client/src/*"],
-        "@shared/*": ["./shared/src/*"],
-        "@tcas/*": ["./tcas/src/*"],
-        "@typings/*": ["../../../fbw-common/src/typings/*"],
-        "@flybywiresim/fbw-sdk": ["../../../fbw-common/src/systems/index-no-react.ts"],
-        "@flybywiresim/oanc": ["../../../fbw-common/src/systems/instruments/src/OANC/index.ts"],
-        "@flybywiresim/rmp": ["../../../fbw-common/src/systems/instruments/src/RMP/index.ts"],
-      }
-    }
-  }
+  "extends": "../tsconfig.json",
+}

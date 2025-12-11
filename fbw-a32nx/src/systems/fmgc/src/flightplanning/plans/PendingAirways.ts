@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2022 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
@@ -5,9 +6,10 @@
 
 import { Airway, AirwayDirection, Fix } from '@flybywiresim/fbw-sdk';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
-import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/BaseFlightPlan';
+import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { EnrouteSegment } from '@fmgc/flightplanning/segments/EnrouteSegment';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
+import { FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/FlightPlanQueuedOperation';
 
 export interface PendingAirwayEntry {
   fromIndex?: number;

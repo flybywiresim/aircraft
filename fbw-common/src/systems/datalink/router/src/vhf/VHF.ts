@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 //  Copyright (c) 2021 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
@@ -1585,7 +1586,7 @@ export class Vhf {
   }
 
   private async updateUsedVoiceFrequencies(): Promise<void> {
-    const storedAtisSrc = NXDataStore.get('CONFIG_ATIS_SRC', 'FAA').toLowerCase();
+    const storedAtisSrc = NXDataStore.getLegacy('CONFIG_ATIS_SRC', 'FAA').toLowerCase();
     this.frequencyOverlap = Array(DatalinkProviders.ProviderCount).fill(0);
 
     if (storedAtisSrc === 'vatsim' || storedAtisSrc === 'ivao') {

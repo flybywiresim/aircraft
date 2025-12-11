@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
 import { Column } from './A320_Neo_CDU_Format';
 import { Keypad } from './A320_Neo_CDU_Keypad';

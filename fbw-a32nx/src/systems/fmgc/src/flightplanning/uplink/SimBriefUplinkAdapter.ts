@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2022 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
@@ -8,16 +9,12 @@
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
-import { Airway, Fix } from '@flybywiresim/fbw-sdk';
+import { Airway, Fix, ISimbriefData, simbriefDataParser } from '@flybywiresim/fbw-sdk';
 import { Coordinates, distanceTo } from 'msfs-geo';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { FmsErrorType } from '@fmgc/FmsError';
 // FIXME rogue import from EFB
-import {
-  ISimbriefData,
-  simbriefDataParser,
-} from '../../../../../../../fbw-common/src/systems/instruments/src/EFB/Apis/Simbrief';
 import { FmsDataInterface } from '../interface/FmsDataInterface';
 
 const SIMBRIEF_API_URL = 'https://www.simbrief.com/api/xml.fetcher.php?json=1';
@@ -122,6 +119,7 @@ export class SimBriefUplinkAdapter {
   static async uplinkFlightPlanFromSimbrief<P extends FlightPlanPerformanceData>(
     fms: FmsDataInterface & FmsDisplayInterface,
     flightPlanService: FlightPlanService<P>,
+    intoPlan: number,
     ofp: ISimbriefData,
     options: SimBriefUplinkOptions,
   ) {
@@ -160,9 +158,6 @@ export class SimBriefUplinkAdapter {
       cruiseFlightLevel: ofp.cruiseAltitude / 100,
       pilotTropopause: Number.isFinite(tropopause) ? tropopause : undefined,
     });
-
-    // used by FlightPhaseManager
-    SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number', Number(ofp.cruiseAltitude));
 
     plan.setFlightNumber(route.callsign);
 
@@ -485,7 +480,7 @@ export class SimBriefUplinkAdapter {
       }
     }
 
-    fms.onUplinkDone();
+    fms.onUplinkDone(intoPlan);
   }
 
   static async downloadOfpForUserID(username: string, userID?: string): Promise<ISimbriefData> {

@@ -36,6 +36,8 @@ export class MfdFmsFplnDuplicateNames extends DisplayComponent<MfdFmsFplnDuplica
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
   private subs = [] as Subscription[];
 
+  private readonly eoActive = Subject.create<boolean>(false);
+
   private topRef = FSComponent.createRef<HTMLDivElement>();
 
   private linesDivRef = FSComponent.createRef<HTMLDivElement>();
@@ -70,6 +72,11 @@ export class MfdFmsFplnDuplicateNames extends DisplayComponent<MfdFmsFplnDuplica
           this.topRef.instance.style.display = vis ? 'block' : 'none';
         }
       }, true),
+    );
+    this.subs.push(
+      this.props.fmcService.masterFmcChanged.sub(() =>
+        this.props.fmcService.master?.fmgc.data.engineOut.pipe(this.eoActive),
+      ),
     );
 
     this.update(0);
@@ -182,7 +189,7 @@ export class MfdFmsFplnDuplicateNames extends DisplayComponent<MfdFmsFplnDuplica
           <ActivePageTitleBar
             activePage={Subject.create('DUPLICATE NAMES')}
             offset={Subject.create('')}
-            eoIsActive={Subject.create(false)}
+            eoIsActive={this.eoActive}
             tmpyIsActive={Subject.create(false)}
           />
           {/* begin page content */}

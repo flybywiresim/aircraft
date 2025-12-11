@@ -17,7 +17,7 @@ import './style.scss';
 import '../index.scss';
 import { Arinc429LocalVarConsumerSubject, FmsData, NXDataStore, NXUnits } from '@flybywiresim/fbw-sdk';
 import { SDSimvars } from './SDSimvarPublisher';
-import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
+import { A380XFcuBusEvents } from '@shared/publishers/A380XFcuBusPublisher';
 
 export interface PermanentDataProps {
   readonly bus: EventBus;
@@ -35,7 +35,7 @@ const getCurrentHHMMSS = (seconds: number) => {
 export class PermanentData extends DisplayComponent<PermanentDataProps> {
   private readonly subscriptions: Subscription[] = [];
 
-  private readonly sub = this.props.bus.getSubscriber<SDSimvars & SimplaneValues & ClockEvents & FmsData>();
+  private readonly sub = this.props.bus.getSubscriber<SDSimvars & ClockEvents & FmsData & A380XFcuBusEvents>();
 
   private readonly sat = Arinc429LocalVarConsumerSubject.create(this.sub.on('sat'));
 
@@ -43,7 +43,12 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
 
   private readonly zp = Arinc429LocalVarConsumerSubject.create(this.sub.on('altitude'));
 
-  private readonly baroMode = ConsumerSubject.create(this.sub.on('baroMode'), 'STD');
+  private readonly fcuLeftEisDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a380x_fcu_eis_discrete_word_2_left'),
+  );
+  private readonly fcuRightEisDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a380x_fcu_eis_discrete_word_2_right'),
+  );
 
   private readonly tatClass = this.tat.map((tat) => `F25 EndAlign ${tat.isNormalOperation() ? 'Green' : 'Amber'}`);
   private readonly tatText = this.tat.map((tat) =>
@@ -64,9 +69,14 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
   private readonly isaText = this.isa.map((isa) => getValuePrefix(isa) + isa.toFixed(0));
 
   private readonly isaVisibility = MappedSubject.create(
-    ([baroMode, zp, sat]) =>
-      baroMode === 'STD' && zp.isNormalOperation() && sat.isNormalOperation() ? 'inherit' : 'hidden',
-    this.baroMode,
+    ([fcuLeft, fcuRight, zp, sat]) =>
+      (fcuLeft.bitValueOr(28, false) || fcuRight.bitValueOr(28, false)) &&
+      zp.isNormalOperation() &&
+      sat.isNormalOperation()
+        ? 'inherit'
+        : 'hidden',
+    this.fcuLeftEisDiscreteWord2,
+    this.fcuRightEisDiscreteWord2,
     this.zp,
     this.sat,
   );
@@ -87,7 +97,7 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
   // This call to NXUnits ensures that metricWeightVal is set early on
   private readonly userWeight = Subject.create<'KG' | 'LBS'>(NXUnits.userWeightUnit());
 
-  private readonly configMetricUnitsSub = NXDataStore.getAndSubscribe(
+  private readonly configMetricUnitsSub = NXDataStore.getAndSubscribeLegacy(
     'CONFIG_USING_METRIC_UNIT',
     (_, value) => {
       this.userWeight.set(value === '1' ? 'KG' : 'LBS');
@@ -97,6 +107,9 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
 
   private readonly fm1ZeroFuelWeight = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmZeroFuelWeight_1'));
   private readonly fm2ZeroFuelWeight = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmZeroFuelWeight_2'));
+
+  private readonly fm1ZeroFuelWeightCg = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmZeroFuelWeightCg_1'));
+  private readonly fm2ZeroFuelWeightCg = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmZeroFuelWeightCg_2'));
 
   private readonly fuelQuantity = ConsumerSubject.create(this.sub.on('fuelTotalQuantity'), 0);
   private readonly fuelWeightPerGallon = ConsumerSubject.create(this.sub.on('fuelWeightPerGallon'), 0);
@@ -114,12 +127,15 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
 
   // FIXME replace with FQMS implementation
   private readonly grossWeight = MappedSubject.create(
-    ([fm1Zfw, fm2Zfw, fuelWeight]) =>
-      !fm1Zfw.isNormalOperation() && !fm2Zfw.isNormalOperation()
-        ? null
-        : (fm1Zfw.isNormalOperation() ? fm1Zfw.value : fm2Zfw.value) + fuelWeight,
+    ([fm1Zfw, fm2Zfw, fm1ZfwCg, fm2ZfwCg, fuelWeight]) =>
+      (fm1Zfw.isNormalOperation() && fm1ZfwCg.isNormalOperation()) ||
+      (fm2Zfw.isNormalOperation() && fm2ZfwCg.isNormalOperation())
+        ? (fm1Zfw.isNormalOperation() ? fm1Zfw.value : fm2Zfw.value) + fuelWeight
+        : null,
     this.fm1ZeroFuelWeight,
     this.fm2ZeroFuelWeight,
+    this.fm1ZeroFuelWeightCg,
+    this.fm2ZeroFuelWeightCg,
     this.fuelWeight,
   );
 
@@ -147,7 +163,7 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
       this.sat,
       this.tat,
       this.zp,
-      this.baroMode,
+      this.fcuLeftEisDiscreteWord2,
       this.tatClass,
       this.tatText,
       this.satClass,
@@ -163,6 +179,8 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
       this.timeSS,
       this.fm1ZeroFuelWeight,
       this.fm2ZeroFuelWeight,
+      this.fm1ZeroFuelWeightCg,
+      this.fm2ZeroFuelWeightCg,
       this.fuelQuantity,
       this.fuelWeightPerGallon,
       this.fuelWeight,

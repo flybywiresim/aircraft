@@ -4,7 +4,6 @@
 
 import { EcamInopSys } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { MappedSubject, SubscribableMapFunctions, Subscription } from '@microsoft/msfs-sdk';
-import { isSubscription } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
 import { FwsCore, FwsSuppressableItem } from 'systems-host/CpiomC/FlightWarningSystem/FwsCore';
 
 export enum FwsInopSysPhases {
@@ -16,7 +15,7 @@ export interface FwsInopSysItem extends FwsSuppressableItem {
   /** Relevant phase shown on SD/EWD: ALL PHASES or APPR & LDG */
   phase: FwsInopSysPhases;
   /** Only to be shown under REDUND LOSS on MORE page */
-  redudancyLoss?: boolean;
+  redundancyLoss?: boolean;
 }
 
 export interface FwsInopSysDict {
@@ -48,23 +47,51 @@ export class FwsInopSys {
 
   /** INOP SYS shown on SD */
   inopSys: FwsInopSysDict = {
+    220300026: {
+      // AUTOLAND
+      simVarIsActive: this.fws.land2Inop,
+      phase: FwsInopSysPhases.ApprLdg,
+    },
+    213300005: {
+      // CAB PRESS SYS
+      simVarIsActive: MappedSubject.create(
+        SubscribableMapFunctions.and(),
+        this.fws.flightPhase23,
+        this.fws.pressSysFault,
+      ),
+      phase: FwsInopSysPhases.AllPhases,
+    },
+    210300011: {
+      // PACK 1+2
+      simVarIsActive: MappedSubject.create(
+        SubscribableMapFunctions.and(),
+        this.fws.flightPhase23,
+        this.fws.pressSysFault,
+      ),
+      phase: FwsInopSysPhases.AllPhases,
+    },
+    220300018: {
+      // ROLL OUT
+      simVarIsActive: this.fws.rollOutFault,
+      phase: FwsInopSysPhases.ApprLdg,
+    },
     221300001: {
       // FMC-A
       simVarIsActive: this.fws.fmcAFault,
       phase: FwsInopSysPhases.AllPhases,
-      redudancyLoss: true,
+      redundancyLoss: true,
     },
     221300002: {
       // FMC-B
       simVarIsActive: this.fws.fmcBFault,
       phase: FwsInopSysPhases.AllPhases,
-      redudancyLoss: true,
+      redundancyLoss: true,
     },
     221300003: {
       // FMC-C
       simVarIsActive: this.fws.fmcCFault,
       phase: FwsInopSysPhases.AllPhases,
-      redudancyLoss: true,
+      redundancyLoss: true,
     },
     221300004: {
       // FMS 1
@@ -295,17 +322,17 @@ export class FwsInopSys {
     },
     270300001: {
       // SEC 1
-      simVarIsActive: this.fws.sec1FaultCondition,
+      simVarIsActive: this.fws.sec1Healthy.map(SubscribableMapFunctions.not()),
       phase: FwsInopSysPhases.AllPhases,
     },
     270300002: {
       // SEC 2
-      simVarIsActive: this.fws.sec2FaultCondition,
+      simVarIsActive: this.fws.sec2Healthy.map(SubscribableMapFunctions.not()),
       phase: FwsInopSysPhases.AllPhases,
     },
     270300003: {
       // SEC 3
-      simVarIsActive: this.fws.sec3FaultCondition,
+      simVarIsActive: this.fws.sec3Healthy.map(SubscribableMapFunctions.not()),
       phase: FwsInopSysPhases.AllPhases,
     },
     270300004: {
@@ -322,41 +349,103 @@ export class FwsInopSys {
       simVarIsActive: this.fws.sec1FaultCondition,
       phase: FwsInopSysPhases.AllPhases,
       notActiveWhenItemActive: ['270300004'],
-      redudancyLoss: true,
+      redundancyLoss: true,
     },
     270300006: {
       // RUDDER TRIM 2
       simVarIsActive: this.fws.sec3FaultCondition,
       phase: FwsInopSysPhases.AllPhases,
       notActiveWhenItemActive: ['270300004'],
-      redudancyLoss: true,
+      redundancyLoss: true,
     },
-    // FIXME uncomment when Bruno's PR is merged
-    /*270300010: {
+    270300010: {
       // PRIM 1
-      simVarIsActive: this.fws.prim1FaultCondition,
+      simVarIsActive: this.fws.prim1Healthy.map(SubscribableMapFunctions.not()),
       phase: FwsInopSysPhases.AllPhases,
     },
     270300011: {
       // PRIM 2
-      simVarIsActive: this.fws.prim2FaultCondition,
+      simVarIsActive: this.fws.prim2Healthy.map(SubscribableMapFunctions.not()),
       phase: FwsInopSysPhases.AllPhases,
     },
     270300012: {
       // PRIM 3
-      simVarIsActive: this.fws.prim3FaultCondition,
+      simVarIsActive: this.fws.prim3Healthy.map(SubscribableMapFunctions.not()),
       phase: FwsInopSysPhases.AllPhases,
-    },*/
+    },
+    270300013: {
+      // FCDC 1
+      simVarIsActive: this.fws.fcdc1FaultCondition,
+      notActiveWhenItemActive: ['270300015'],
+      phase: FwsInopSysPhases.AllPhases,
+      redundancyLoss: true,
+    },
+    270300014: {
+      // FCDC 2
+      simVarIsActive: this.fws.fcdc2FaultCondition,
+      notActiveWhenItemActive: ['270300015'],
+      phase: FwsInopSysPhases.AllPhases,
+      redundancyLoss: true,
+    },
+    270300015: {
+      // FCDC 1+2
+      simVarIsActive: this.fws.fcdc12FaultCondition,
+      phase: FwsInopSysPhases.AllPhases,
+      redundancyLoss: true,
+    },
     290100001: {
       // PART SPLRs
       simVarIsActive: this.partSplrs,
       phase: FwsInopSysPhases.AllPhases,
       notActiveWhenItemActive: ['290100011'],
     },
+    290100003: {
+      // FLAP SYS 1
+      simVarIsActive: this.fws.flapSys1Fault,
+      notActiveWhenItemActive: ['290100012'],
+      phase: FwsInopSysPhases.ApprLdg,
+    },
+    290100004: {
+      // FLAP SYS 2
+      simVarIsActive: this.fws.flapSys2Fault,
+      notActiveWhenItemActive: ['290100012'],
+      phase: FwsInopSysPhases.ApprLdg,
+    },
+    290100005: {
+      // SLAT SYS 1
+      simVarIsActive: this.fws.slatSys1Fault,
+      notActiveWhenItemActive: ['290100013'],
+      phase: FwsInopSysPhases.ApprLdg,
+    },
+    290100006: {
+      // SLAT SYS 2
+      simVarIsActive: this.fws.slatSys2Fault,
+      notActiveWhenItemActive: ['290100013'],
+      phase: FwsInopSysPhases.ApprLdg,
+    },
+    290100008: {
+      // F/CTL PROT
+      simVarIsActive: MappedSubject.create(
+        SubscribableMapFunctions.or(),
+        this.fws.altnLawCondition,
+        this.fws.directLawCondition,
+      ),
+      phase: FwsInopSysPhases.AllPhases,
+    },
     290100011: {
       // MOST SPLRs
       simVarIsActive: this.mostSplrs,
       phase: FwsInopSysPhases.AllPhases,
+    },
+    290100012: {
+      // FLAPS
+      simVarIsActive: this.fws.allFlapSysFault,
+      phase: FwsInopSysPhases.ApprLdg,
+    },
+    290100013: {
+      // SLATS
+      simVarIsActive: this.fws.allSlatSysFault,
+      phase: FwsInopSysPhases.ApprLdg,
     },
     290300021: {
       // G HYD SYS
@@ -493,21 +582,21 @@ export class FwsInopSys {
       simVarIsActive: this.fws.height1Failed,
       phase: FwsInopSysPhases.ApprLdg,
       notActiveWhenItemActive: ['340300025', '340300026', '340300028'],
-      redudancyLoss: true,
+      redundancyLoss: true,
     },
     340300023: {
       // RA SYS B
       simVarIsActive: this.fws.height2Failed,
       phase: FwsInopSysPhases.ApprLdg,
       notActiveWhenItemActive: ['340300025', '340300027', '340300028'],
-      redudancyLoss: true,
+      redundancyLoss: true,
     },
     340300024: {
       // RA SYS C
       simVarIsActive: this.fws.height3Failed,
       phase: FwsInopSysPhases.ApprLdg,
       notActiveWhenItemActive: ['340300026', '340300027', '340300028'],
-      redudancyLoss: true,
+      redundancyLoss: true,
     },
     340300025: {
       // RA SYS A+B
@@ -684,7 +773,7 @@ export class FwsInopSys {
 
     for (const key in this.inopSys) {
       const element = this.inopSys[key];
-      if (isSubscription(element.simVarIsActive)) {
+      if ('destroy' in element.simVarIsActive) {
         element.simVarIsActive.destroy();
       }
     }

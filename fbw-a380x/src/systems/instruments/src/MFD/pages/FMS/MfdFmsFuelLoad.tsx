@@ -1,4 +1,4 @@
-import { ClockEvents, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { ArraySubject, ClockEvents, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import './MfdFmsFuelLoad.scss';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
@@ -30,6 +30,8 @@ import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
 import { getEtaFromUtcOrPresent } from '../../shared/utils';
+import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
+import { CostIndexMode } from '../../FMC/fmgc';
 
 interface MfdFmsFuelLoadProps extends AbstractMfdPageProps {}
 
@@ -55,6 +57,14 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
   private readonly tripFuelTime = Subject.create('--:--');
 
   private readonly costIndex = Subject.create<number | null>(null);
+
+  private readonly costIndexModeLabels = ArraySubject.create(['LRC', 'ECON']);
+
+  private readonly costIndexDisabled = MappedSubject.create(
+    ([flightPhase, ciMode]) => flightPhase >= FmgcFlightPhase.Descent || ciMode === CostIndexMode.LRC,
+    this.activeFlightPhase,
+    this.props.fmcService.master?.fmgc.data.costIndexMode ?? Subject.create(CostIndexMode.ECON),
+  );
 
   private readonly takeoffWeight = Subject.create<number | null>(null);
 
@@ -82,7 +92,6 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
   private readonly blockLineRef = FSComponent.createRef<HTMLDivElement>();
 
   private readonly flightPhaseAtLeastTakeoff = this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff);
-  private readonly flightPhaseAtLeastDescent = this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Descent);
 
   private readonly alternateFuelDisabled = Subject.create(true);
 
@@ -91,7 +100,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
       return;
     }
 
-    this.costIndex.set(this.loadedFlightPlan.performanceData.costIndex);
+    this.costIndex.set(this.loadedFlightPlan.performanceData.costIndex.get());
 
     this.updateDestAndAltnPredictions();
   }
@@ -190,6 +199,12 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
     }
 
     this.subs.push(
+      this.eoActive.sub((v) => {
+        this.costIndexModeLabels.set(v ? ['EO-LRC', 'EO-ECON'] : ['LRC', 'ECON']);
+      }, true),
+    );
+
+    this.subs.push(
       this.grossWeightText,
       this.centerOfGravityText,
       this.fuelOnBoardText,
@@ -199,7 +214,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
       this.extraFuelWeightText,
       this.extraFuelTimeText,
       this.flightPhaseAtLeastTakeoff,
-      this.flightPhaseAtLeastDescent,
+      this.costIndexDisabled,
     );
   }
 
@@ -283,182 +298,208 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 />
               </div>
             </div>
-            <div class="mfd-fms-fuel-load-middle-grid">
-              <div class="mfd-label mfd-spacing-right middleGrid">TAXI</div>
-              <div style="margin-bottom: 20px;">
-                <InputField<number, number, false>
-                  dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxTaxiFuel))}
-                  dataHandlerDuringValidation={async (v) => {
-                    this.props.fmcService.master?.fmgc.data.taxiFuelPilotEntry.set(v);
-                  }}
-                  enteredByPilot={this.props.fmcService.master.fmgc.data.taxiFuelIsPilotEntered}
-                  readonlyValue={this.props.fmcService.master.fmgc.data.taxiFuel}
-                  disabled={this.flightPhaseAtLeastTakeoff}
-                  alignText="flex-end"
-                  containerStyle="width: 150px;"
-                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
-                  hEventConsumer={this.props.mfd.hEventConsumer}
-                  interactionMode={this.props.mfd.interactionMode}
-                />
-              </div>
-              <div />
-              <div class="mfd-label mfd-spacing-right middleGrid">PAX NBR</div>
-              <div style="margin-bottom: 20px;">
-                <InputField<number>
-                  dataEntryFormat={new PaxNbrFormat()}
-                  dataHandlerDuringValidation={async (v) => {
-                    if (v !== null) {
-                      this.props.fmcService.master?.fmgc.data.paxNumber.set(v);
-                      this.props.fmcService.master?.acInterface.updatePaxNumber(v);
+            <div class="mfd-fms-fuel-load-middle-flex">
+              <div class="mfd-fms-fuel-load-middle-flex-left">
+                <div class="mfd-label mfd-spacing-right middleGrid">TAXI</div>
+                <div style="margin-bottom: 20px;">
+                  <InputField<number, number, false>
+                    dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxTaxiFuel))}
+                    dataHandlerDuringValidation={async (v) => {
+                      this.props.fmcService.master?.fmgc.data.taxiFuelPilotEntry.set(v);
+                    }}
+                    enteredByPilot={this.props.fmcService.master.fmgc.data.taxiFuelIsPilotEntered}
+                    readonlyValue={this.props.fmcService.master.fmgc.data.taxiFuel}
+                    disabled={this.flightPhaseAtLeastTakeoff}
+                    alignText="flex-end"
+                    containerStyle="width: 150px;"
+                    errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                    hEventConsumer={this.props.mfd.hEventConsumer}
+                    interactionMode={this.props.mfd.interactionMode}
+                  />
+                </div>
+                <div />
+
+                <div class="mfd-label mfd-spacing-right middleGrid">TRIP</div>
+                <div class="mfd-label-value-container" style="justify-content: flex-end; margin-bottom: 20px;">
+                  <span class="mfd-value">{this.tripFuelWeightText}</span>
+                  <span class="mfd-label-unit mfd-unit-trailing">T</span>
+                </div>
+                <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+                  <span class="mfd-value">{this.tripFuelTime}</span>
+                </div>
+
+                <div class="mfd-label mfd-spacing-right middleGrid">RTE RSV</div>
+                <div style="margin-bottom: 20px;">
+                  <InputField<number, number, false>
+                    disabled={this.flightPhaseAtLeastTakeoff}
+                    dataEntryFormat={
+                      new WeightFormat(
+                        Subject.create(AirlineModifiableInformation.EK.rsvMin),
+                        Subject.create(AirlineModifiableInformation.EK.rsvMax),
+                      )
                     }
-                  }}
-                  value={this.props.fmcService.master.fmgc.data.paxNumber}
-                  mandatory={Subject.create(true)}
-                  alignText="center"
-                  containerStyle="width: 75px;"
-                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
-                  hEventConsumer={this.props.mfd.hEventConsumer}
-                  interactionMode={this.props.mfd.interactionMode}
-                />
+                    dataHandlerDuringValidation={async (v) =>
+                      this.props.fmcService.master?.fmgc.data.routeReserveFuelWeightPilotEntry.set(v)
+                    }
+                    enteredByPilot={this.props.fmcService.master.fmgc.data.routeReserveFuelIsPilotEntered}
+                    readonlyValue={this.props.fmcService.master.fmgc.data.routeReserveFuelWeight}
+                    alignText="flex-end"
+                    containerStyle="width: 150px;"
+                    errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                    hEventConsumer={this.props.mfd.hEventConsumer}
+                    interactionMode={this.props.mfd.interactionMode}
+                  />
+                </div>
+                <div style="margin-bottom: 20px; margin-left: 5px">
+                  <InputField<number, number, false>
+                    disabled={this.flightPhaseAtLeastTakeoff}
+                    dataEntryFormat={new PercentageFormat(Subject.create(0), Subject.create(maxRteRsvFuelPerc))}
+                    dataHandlerDuringValidation={async (v) => {
+                      this.props.fmcService.master?.fmgc.data.routeReserveFuelWeightPilotEntry.set(null);
+                      this.props.fmcService.master?.fmgc.data.routeReserveFuelPercentagePilotEntry.set(v);
+                    }}
+                    enteredByPilot={this.props.fmcService.master.fmgc.data.routeReserveFuelPercentageIsPilotEntered}
+                    readonlyValue={this.props.fmcService.master.fmgc.data.routeReserveFuelPercentage}
+                    alignText="center"
+                    containerStyle="width: 120px;"
+                    errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                    hEventConsumer={this.props.mfd.hEventConsumer}
+                    interactionMode={this.props.mfd.interactionMode}
+                  />
+                </div>
+
+                <div class="mfd-label mfd-spacing-right middleGrid">ALTN</div>
+                <div style="margin-bottom: 20px;">
+                  <InputField<number, number, false>
+                    dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxAltnFuel))}
+                    dataHandlerDuringValidation={async (v) =>
+                      this.props.fmcService.master?.fmgc.data.alternateFuelPilotEntry.set(v)
+                    }
+                    disabled={this.alternateFuelDisabled}
+                    enteredByPilot={this.props.fmcService.master.fmgc.data.alternateFuelIsPilotEntered}
+                    readonlyValue={this.props.fmcService.master.fmgc.data.alternateFuel}
+                    alignText="flex-end"
+                    containerStyle="width: 150px;"
+                    errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                    hEventConsumer={this.props.mfd.hEventConsumer}
+                    interactionMode={this.props.mfd.interactionMode}
+                  />
+                </div>
+                <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+                  <span class="mfd-value">--:--</span>
+                </div>
+
+                <div class="mfd-label mfd-spacing-right middleGrid">FINAL</div>
+                <div style="margin-bottom: 20px;">
+                  <InputField<number, number, false>
+                    dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxFinalFuel))}
+                    dataHandlerDuringValidation={async (v) => {
+                      this.props.fmcService.master?.fmgc.data.finalFuelWeightPilotEntry.set(v);
+                      this.props.fmcService.master?.fmgc.data.finalFuelTimePilotEntry.set(v ? v / 200 : null); // assuming 200kg fuel burn per minute FIXME
+                    }}
+                    enteredByPilot={this.props.fmcService.master.fmgc.data.finalFuelIsPilotEntered}
+                    readonlyValue={this.props.fmcService.master.fmgc.data.finalFuelWeight}
+                    alignText="flex-end"
+                    containerStyle="width: 150px;"
+                    errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                    hEventConsumer={this.props.mfd.hEventConsumer}
+                    interactionMode={this.props.mfd.interactionMode}
+                  />
+                </div>
+                <div style="margin-bottom: 20px; margin-left: 5px;">
+                  <InputField<number, number, false>
+                    dataEntryFormat={new TimeHHMMFormat()}
+                    dataHandlerDuringValidation={async (v) => {
+                      this.props.fmcService.master?.fmgc.data.finalFuelTimePilotEntry.set(v);
+                      this.props.fmcService.master?.fmgc.data.finalFuelWeightPilotEntry.set(v ? v * 200 : null); // assuming 200kg fuel burn per minute FIXME
+                    }}
+                    enteredByPilot={this.props.fmcService.master.fmgc.data.finalFuelIsPilotEntered}
+                    readonlyValue={this.props.fmcService.master.fmgc.data.finalFuelTime}
+                    alignText="center"
+                    containerStyle="width: 120px;"
+                    errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                    hEventConsumer={this.props.mfd.hEventConsumer}
+                    interactionMode={this.props.mfd.interactionMode}
+                  />
+                </div>
               </div>
-              <div class="mfd-label mfd-spacing-right middleGrid">TRIP</div>
-              <div class="mfd-label-value-container" style="justify-content: flex-end; margin-bottom: 20px;">
-                <span class="mfd-value">{this.tripFuelWeightText}</span>
-                <span class="mfd-label-unit mfd-unit-trailing">T</span>
-              </div>
-              <div style="display: flex; justify-content: center; margin-bottom: 20px;">
-                <span class="mfd-value">{this.tripFuelTime}</span>
-              </div>
-              <div class="mfd-label mfd-spacing-right middleGrid">CI</div>
-              <div style="margin-bottom: 20px;">
-                <InputField<number>
-                  dataEntryFormat={new CostIndexFormat()}
-                  dataHandlerDuringValidation={async (v) => {
-                    this.loadedFlightPlan?.setPerformanceData('costIndex', v);
-                  }}
-                  value={this.costIndex}
-                  mandatory={Subject.create(true)}
-                  disabled={this.flightPhaseAtLeastDescent}
-                  alignText="center"
-                  containerStyle="width: 75px;"
-                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
-                  hEventConsumer={this.props.mfd.hEventConsumer}
-                  interactionMode={this.props.mfd.interactionMode}
-                />
-              </div>
-              <div class="mfd-label mfd-spacing-right middleGrid">RTE RSV</div>
-              <div style="margin-bottom: 20px;">
-                <InputField<number, number, false>
-                  disabled={this.flightPhaseAtLeastTakeoff}
-                  dataEntryFormat={
-                    new WeightFormat(
-                      Subject.create(AirlineModifiableInformation.EK.rsvMin),
-                      Subject.create(AirlineModifiableInformation.EK.rsvMax),
-                    )
-                  }
-                  dataHandlerDuringValidation={async (v) =>
-                    this.props.fmcService.master?.fmgc.data.routeReserveFuelWeightPilotEntry.set(v)
-                  }
-                  enteredByPilot={this.props.fmcService.master.fmgc.data.routeReserveFuelIsPilotEntered}
-                  readonlyValue={this.props.fmcService.master.fmgc.data.routeReserveFuelWeight}
-                  alignText="flex-end"
-                  containerStyle="width: 150px;"
-                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
-                  hEventConsumer={this.props.mfd.hEventConsumer}
-                  interactionMode={this.props.mfd.interactionMode}
-                />
-              </div>
-              <div style="margin-bottom: 20px; margin-left: 5px">
-                <InputField<number, number, false>
-                  disabled={this.flightPhaseAtLeastTakeoff}
-                  dataEntryFormat={new PercentageFormat(Subject.create(0), Subject.create(maxRteRsvFuelPerc))}
-                  dataHandlerDuringValidation={async (v) => {
-                    this.props.fmcService.master?.fmgc.data.routeReserveFuelWeightPilotEntry.set(null);
-                    this.props.fmcService.master?.fmgc.data.routeReserveFuelPercentagePilotEntry.set(v);
-                  }}
-                  enteredByPilot={this.props.fmcService.master.fmgc.data.routeReserveFuelPercentageIsPilotEntered}
-                  readonlyValue={this.props.fmcService.master.fmgc.data.routeReserveFuelPercentage}
-                  alignText="center"
-                  containerStyle="width: 120px;"
-                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
-                  hEventConsumer={this.props.mfd.hEventConsumer}
-                  interactionMode={this.props.mfd.interactionMode}
-                />
-              </div>
-              <div class="mfd-label mfd-spacing-right middleGrid">JTSN GW</div>
-              <div style="margin-bottom: 20px;">
-                <InputField<number>
-                  dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxJtsnGw))}
-                  value={this.props.fmcService.master.fmgc.data.jettisonGrossWeight}
-                  alignText="flex-end"
-                  containerStyle="width: 150px;"
-                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
-                  hEventConsumer={this.props.mfd.hEventConsumer}
-                  interactionMode={this.props.mfd.interactionMode}
-                />
-              </div>
-              <div class="mfd-label mfd-spacing-right middleGrid">ALTN</div>
-              <div style="margin-bottom: 20px;">
-                <InputField<number, number, false>
-                  dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxAltnFuel))}
-                  dataHandlerDuringValidation={async (v) =>
-                    this.props.fmcService.master?.fmgc.data.alternateFuelPilotEntry.set(v)
-                  }
-                  disabled={this.alternateFuelDisabled}
-                  enteredByPilot={this.props.fmcService.master.fmgc.data.alternateFuelIsPilotEntered}
-                  readonlyValue={this.props.fmcService.master.fmgc.data.alternateFuel}
-                  alignText="flex-end"
-                  containerStyle="width: 150px;"
-                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
-                  hEventConsumer={this.props.mfd.hEventConsumer}
-                  interactionMode={this.props.mfd.interactionMode}
-                />
-              </div>
-              <div style="display: flex; justify-content: center; margin-bottom: 20px;">
-                <span class="mfd-value">--:--</span>
-              </div>
-              <div class="mfd-label mfd-spacing-right middleGrid">TOW</div>
-              <div class="mfd-label-value-container" style="justify-content: flex-end; margin-bottom: 20px;">
-                <span class="mfd-value">{this.takeoffWeight.map((it) => (it ? (it / 1000).toFixed(1) : '---.-'))}</span>
-                <span class="mfd-label-unit mfd-unit-trailing">T</span>
-              </div>
-              <div class="mfd-label mfd-spacing-right middleGrid">FINAL</div>
-              <div style="margin-bottom: 20px;">
-                <InputField<number, number, false>
-                  dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxFinalFuel))}
-                  dataHandlerDuringValidation={async (v) => {
-                    this.props.fmcService.master?.fmgc.data.finalFuelWeightPilotEntry.set(v);
-                    this.props.fmcService.master?.fmgc.data.finalFuelTimePilotEntry.set(v ? v / 200 : null); // assuming 200kg fuel burn per minute FIXME
-                  }}
-                  enteredByPilot={this.props.fmcService.master.fmgc.data.finalFuelIsPilotEntered}
-                  readonlyValue={this.props.fmcService.master.fmgc.data.finalFuelWeight}
-                  alignText="flex-end"
-                  containerStyle="width: 150px;"
-                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
-                  hEventConsumer={this.props.mfd.hEventConsumer}
-                  interactionMode={this.props.mfd.interactionMode}
-                />
-              </div>
-              <div style="margin-bottom: 20px; margin-left: 5px;">
-                <InputField<number, number, false>
-                  dataEntryFormat={new TimeHHMMFormat()}
-                  dataHandlerDuringValidation={async (v) => {
-                    this.props.fmcService.master?.fmgc.data.finalFuelTimePilotEntry.set(v);
-                    this.props.fmcService.master?.fmgc.data.finalFuelWeightPilotEntry.set(v ? v * 200 : null); // assuming 200kg fuel burn per minute FIXME
-                  }}
-                  enteredByPilot={this.props.fmcService.master.fmgc.data.finalFuelIsPilotEntered}
-                  readonlyValue={this.props.fmcService.master.fmgc.data.finalFuelTime}
-                  alignText="center"
-                  containerStyle="width: 120px;"
-                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
-                  hEventConsumer={this.props.mfd.hEventConsumer}
-                  interactionMode={this.props.mfd.interactionMode}
-                />
-              </div>
-              <div class="mfd-label mfd-spacing-right middleGrid">LW</div>
-              <div class="mfd-label-value-container" style="justify-content: flex-end; margin-bottom: 20px;">
-                <span class="mfd-value">{this.landingWeight.map((it) => (it ? (it / 1000).toFixed(1) : '---.-'))}</span>
-                <span class="mfd-label-unit mfd-unit-trailing">T</span>
+              <div class="mfd-fms-fuel-load-middle-flex-right">
+                <div class="mfd-label mfd-spacing-right middleGridSmall">PAX NBR</div>
+                <div style="margin-bottom: 10px;">
+                  <InputField<number>
+                    dataEntryFormat={new PaxNbrFormat()}
+                    dataHandlerDuringValidation={async (v) => {
+                      if (v !== null) {
+                        this.props.fmcService.master?.fmgc.data.paxNumber.set(v);
+                        this.props.fmcService.master?.acInterface.updatePaxNumber(v);
+                      }
+                    }}
+                    value={this.props.fmcService.master.fmgc.data.paxNumber}
+                    mandatory={Subject.create(true)}
+                    alignText="center"
+                    containerStyle="width: 75px;"
+                    errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                    hEventConsumer={this.props.mfd.hEventConsumer}
+                    interactionMode={this.props.mfd.interactionMode}
+                  />
+                </div>
+                <div class="mfd-label mfd-spacing-right middleGridSmall">MODE</div>
+                <div style="margin-bottom: 10px;">
+                  <DropdownMenu
+                    values={this.costIndexModeLabels}
+                    selectedIndex={this.props.fmcService.master.fmgc.data.costIndexMode}
+                    idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_initCostIndexModeDropdown`}
+                    freeTextAllowed={false}
+                    containerStyle="width: 175px; margin-right: 65px; "
+                    numberOfDigitsForInputField={7}
+                    alignLabels="center"
+                    hEventConsumer={this.props.mfd.hEventConsumer}
+                    interactionMode={this.props.mfd.interactionMode}
+                  />
+                </div>
+                <div class="mfd-label mfd-spacing-right middleGridSmall">CI</div>
+                <div style="margin-bottom: 10px;">
+                  <InputField<number>
+                    dataEntryFormat={new CostIndexFormat()}
+                    dataHandlerDuringValidation={async (v) => {
+                      this.loadedFlightPlan?.setPerformanceData('costIndex', v);
+                    }}
+                    value={this.costIndex}
+                    mandatory={Subject.create(true)}
+                    disabled={this.costIndexDisabled}
+                    alignText="center"
+                    containerStyle="width: 75px;"
+                    errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                    hEventConsumer={this.props.mfd.hEventConsumer}
+                    interactionMode={this.props.mfd.interactionMode}
+                  />
+                </div>
+                <div class="mfd-label mfd-spacing-right middleGridSmall">JTSN GW</div>
+                <div style="margin-bottom: 10px;">
+                  <InputField<number>
+                    dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxJtsnGw))}
+                    value={this.props.fmcService.master.fmgc.data.jettisonGrossWeight}
+                    alignText="flex-end"
+                    containerStyle="width: 150px;"
+                    errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                    hEventConsumer={this.props.mfd.hEventConsumer}
+                    interactionMode={this.props.mfd.interactionMode}
+                  />
+                </div>
+                <div class="mfd-label mfd-spacing-right middleGridSmall">TOW</div>
+                <div class="mfd-label-value-container" style="justify-content: center; margin-bottom: 10px;">
+                  <span class="mfd-value">
+                    {this.takeoffWeight.map((it) => (it ? (it / 1000).toFixed(1) : '---.-'))}
+                  </span>
+                  <span class="mfd-label-unit mfd-unit-trailing">T</span>
+                </div>
+                <div class="mfd-label mfd-spacing-right middleGridSmall">LW</div>
+                <div class="mfd-label-value-container" style="justify-content: center; margin-bottom: 10px;">
+                  <span class="mfd-value">
+                    {this.landingWeight.map((it) => (it ? (it / 1000).toFixed(1) : '---.-'))}
+                  </span>
+                  <span class="mfd-label-unit mfd-unit-trailing">T</span>
+                </div>
               </div>
             </div>
             <div style="flex: 1; display: flex; flex-direction: row; margin-top: 25px;">

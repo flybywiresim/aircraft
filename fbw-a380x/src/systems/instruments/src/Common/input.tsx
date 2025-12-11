@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import React, { createContext, FC, useContext, useEffect, useRef } from 'react';
 
 declare const Coherent: any;

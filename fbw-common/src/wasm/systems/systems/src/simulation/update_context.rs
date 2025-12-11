@@ -174,15 +174,15 @@ impl Velocity3D {
         }
     }
 
-    fn long_velocity(&self) -> Velocity {
+    pub fn long_velocity(&self) -> Velocity {
         self.velocity[Self::VELOCITY_Z_AXIS]
     }
 
-    fn lat_velocity(&self) -> Velocity {
+    pub fn lat_velocity(&self) -> Velocity {
         self.velocity[Self::VELOCITY_X_AXIS]
     }
 
-    fn vert_velocity(&self) -> Velocity {
+    pub fn vert_velocity(&self) -> Velocity {
         self.velocity[Self::VELOCITY_Y_AXIS]
     }
 

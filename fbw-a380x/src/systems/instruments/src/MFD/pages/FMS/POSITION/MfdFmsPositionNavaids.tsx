@@ -21,6 +21,7 @@ import { ClockEvents, FSComponent, SimVarValueType, Subject, VNode } from '@micr
 import './MfdFmsPositionNavaids.scss';
 import { SelectedNavaidType } from '@fmgc/navigation/Navigation';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
+import { showReturnButtonUriExtra } from '../../../shared/utils';
 
 interface MfdFmsPositionNavaidsProps extends AbstractMfdPageProps {}
 
@@ -43,7 +44,15 @@ const NAVAID_TYPE_STRINGS: Record<SelectedNavaidType, string> = {
 };
 
 export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
-  private readonly navaidsSelectedPageIndex = Subject.create<number>(0);
+  public static readonly selectedForFmsNavExtra = 'nav';
+
+  private readonly returnButtonVisible =
+    this.props.mfd.uiService.activeUri.get().extra === showReturnButtonUriExtra ||
+    this.props.mfd.uiService.activeUri.get().extra === MfdFmsPositionNavaids.selectedForFmsNavExtra;
+
+  private readonly navaidsSelectedPageIndex = Subject.create<number>(
+    this.props.mfd.uiService.activeUri.get().extra === MfdFmsPositionNavaids.selectedForFmsNavExtra ? 1 : 0,
+  );
 
   private readonly vor1Ident = Subject.create<string | null>(null);
 
@@ -151,7 +160,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
     this.lsIdent.set(mmr.ident ?? null);
     this.lsFreq.set(mmr.frequency ?? null);
     this.lsCourse.set(mmr.course ?? null);
-    this.lsSlope.set(mmr.slope ? mmr.slope.toFixed(1) : '---');
+    this.lsSlope.set(mmr.slope ? `-${mmr.slope.toFixed(1)}` : '---');
     this.lsClass.set(mmr.ident ? 'ILS/DME' : '');
     this.lsIdentEnteredByPilot.set(MfdFmsPositionNavaids.isNavRadioIdentManual(mmr));
     this.lsFrequencyEnteredByPilot.set(MfdFmsPositionNavaids.isNavRadioFreqManual(mmr));
@@ -323,16 +332,6 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-
-    this.subs.push(
-      this.props.mfd.uiService.activeUri.sub((val) => {
-        if (val.extra === 'display') {
-          this.navaidsSelectedPageIndex.set(0);
-        } else if (val.extra === 'nav') {
-          this.navaidsSelectedPageIndex.set(1);
-        }
-      }, true),
-    );
 
     const sub = this.props.bus.getSubscriber<ClockEvents & MfdSimvars>();
     this.subs.push(
@@ -727,6 +726,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
               label="RETURN"
               onClick={() => this.props.mfd.uiService.navigateTo('back')}
               buttonStyle="margin-right: 5px;"
+              visible={this.returnButtonVisible}
             />
           </div>
         </div>

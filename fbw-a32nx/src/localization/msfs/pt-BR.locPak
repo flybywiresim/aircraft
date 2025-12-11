@@ -2,8 +2,8 @@
   "LocalisationPackage": {
     "Language": "pt-BR",
     "Strings": {
-      "A32NX.COCKPIT.TOOLTIPS.OVHD_FUEL_MODESEL_OFF": "Turn fuel model selection to MANUAL",
-      "A32NX.COCKPIT.TOOLTIPS.OVHD_FUEL_MODESEL_ON": "Turn fuel model selection to AUTO",
+      "A32NX.COCKPIT.TOOLTIPS.OVHD_FUEL_MODESEL_OFF": "Mude a seleção do modelo de combustível para MANUAL",
+      "A32NX.COCKPIT.TOOLTIPS.OVHD_FUEL_MODESEL_ON": "Mude a seleção do modelo de combustível para AUTO",
       "A32NX.LOADING.TIPS.A320NEO_001": "O FlyByWire A32NX é uma colaboração entre centenas de colaboradores individuais.",
       "A32NX.LOADING.TIPS.A320NEO_002": "Você sabia? O A320 pode pousar a ventos cruzados de até 38 nós e ventos de cauda de até 15 nós!",
       "A32NX.LOADING.TIPS.A320NEO_003": "FlyByWire tem o nome dos controles fly-by-wire introduzidos pela primeira vez no Airbus A320.",
@@ -58,8 +58,8 @@
       "COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_PFD_DECREASE": "Reduzir brilho do PFD direito",
       "COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_PFD_INCREASE": "Aumentar brilho do PFD direito",
       "COCKPIT.TOOLTIPS.LIGHTS_NOSMOKE_AUTO": "Colocar a luz de aviso \"não fumar\" em AUTO",
-      "COCKPIT.TOOLTIPS.NAV_KNOB_ILS_IDENT_DISABLE": "Turn off the ident of the ILS",
-      "COCKPIT.TOOLTIPS.NAV_KNOB_ILS_IDENT_ENABLE": "Turn on the ident of the ILS",
+      "COCKPIT.TOOLTIPS.NAV_KNOB_ILS_IDENT_DISABLE": "Desative a identificação do ILS",
+      "COCKPIT.TOOLTIPS.NAV_KNOB_ILS_IDENT_ENABLE": "Ative a identificação do ILS",
       "COCKPIT.TOOLTIPS.NAV_KNOB_ILS_VOLUME_DECREASE": "Decrease the volume of the ident of the ILS",
       "COCKPIT.TOOLTIPS.NAV_KNOB_ILS_VOLUME_INCREASE": "Increase the volume of the ident of the ILS",
       "COCKPIT.TOOLTIPS.NAV_KNOB_MARKERS_IDENT_DISABLE": "Turn off the ident of the Markers beacons",

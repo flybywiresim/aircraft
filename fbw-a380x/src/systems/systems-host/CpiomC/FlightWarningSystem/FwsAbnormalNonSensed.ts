@@ -2,16 +2,15 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { MapSubject, SimVarValueType, Subject, Subscription } from '@microsoft/msfs-sdk';
-import { ChecklistState, FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
+import { ChecklistState, FwsEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsPublisher';
 import { FwcAuralWarning, FwsCore } from 'systems-host/CpiomC/FlightWarningSystem/FwsCore';
-import { EcamAbNormalSensedSubMenuVector, WD_NUM_LINES } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import { EcamAbNormalSensedSubMenuVector } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { AbnormalNonSensedProceduresOverview } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalNonSensedProcedures';
 import { EwdAbnormalDict } from 'systems-host/CpiomC/FlightWarningSystem/FwsAbnormalSensed';
 import { SdPages } from '@shared/EcamSystemPages';
-import { isSubscription } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
 
 export class FwsAbnormalNonSensed {
-  private readonly pub = this.fws.bus.getPublisher<FwsEwdEvents>();
+  private readonly pub = this.fws.bus.getPublisher<FwsEvents>();
 
   private readonly subscriptions: Subscription[] = [];
 
@@ -54,6 +53,8 @@ export class FwsAbnormalNonSensed {
       return AbnormalNonSensedProceduresOverview.map((val) => (val.category === category ? 1 : 0) as number).reduce(
         (accumulator, currentValue) => accumulator + currentValue,
       );
+    } else {
+      return 0;
     }
   }
 
@@ -146,11 +147,11 @@ export class FwsAbnormalNonSensed {
 
     for (const key in this.ewdAbnormalNonSensed) {
       const element = this.ewdAbnormalNonSensed[key];
-      if (isSubscription(element.simVarIsActive)) {
+      if ('destroy' in element.simVarIsActive) {
         element.simVarIsActive.destroy();
       }
 
-      if (isSubscription(element.auralWarning)) {
+      if (element.auralWarning && 'destroy' in element.auralWarning) {
         element.auralWarning.destroy();
       }
     }
@@ -244,7 +245,7 @@ export class FwsAbnormalNonSensed {
         ...(this.fws.flapsHandle.get() < 3 ? ['220400001', '800400004', '800400003'] : ''),
       ],
       inopSysApprLdg: () => ['320300007'],
-      info: () => ['800200001'],
+      info: () => ['220200011'],
     },
     270900005: {
       // F/CTL LDG WITH NO SLATS NO FLAPS

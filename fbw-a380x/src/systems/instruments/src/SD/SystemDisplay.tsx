@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -17,7 +18,6 @@ import { DoorPage } from './Pages/Doors/DoorPage';
 import { ElecDcPage } from './Pages/ElecDc/ElecDcPage';
 import { WheelPage } from './Pages/Wheel/WheelPage';
 import { FctlPage } from './Pages/Fctl/FctlPage';
-import { StatusPage } from './Pages/Status/StatusPage';
 
 import '../index.scss';
 import { useSimVar } from '@flybywiresim/fbw-sdk';
@@ -39,7 +39,7 @@ export const SystemDisplay = () => {
     11: <FctlPage />,
     12: <CbPage />,
     13: <></>,
-    14: <StatusPage />,
+    14: <></>,
     15: <></>,
   };
 

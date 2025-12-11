@@ -1,4 +1,5 @@
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// @ts-strict-ignore
+// Copyright (c) 2023-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
@@ -113,7 +114,7 @@ const ValueUnitDisplay: React.FC<NumberUnitDisplayProps> = ({ value, padTo, unit
   );
 };
 
-enum RefuelRate {
+enum RefuelRateSetting {
   REAL = '0',
   FAST = '1',
   INSTANT = '2',
@@ -166,7 +167,7 @@ export const A380Fuel: React.FC<FuelProps> = ({
   const [feedFourGal] = useSimVar('FUELSYSTEM TANK QUANTITY:9', 'Gallons', 2_000);
   const [rightOuterGal] = useSimVar('FUELSYSTEM TANK QUANTITY:10', 'Gallons', 2_000);
   const [trimGal] = useSimVar('FUELSYSTEM TANK QUANTITY:11', 'Gallons', 2_000);
-  const [totalFuelWeightKg] = useSimVar('FUEL TOTAL QUANTITY WEIGHT', 'Kilograms', 2_000);
+  const [totalFuelWeightKg] = useSimVar('L:A32NX_TOTAL_FUEL_QUANTITY', 'Number', 2_000);
 
   const [fuelDesiredKg, setFuelDesiredKg] = useSimVar('L:A32NX_FUEL_DESIRED', 'Kilograms', 2_000);
   const [refuelStartedByUser, setRefuelStartedByUser] = useSimVar('L:A32NX_REFUEL_STARTED_BY_USR', 'Bool', 2_000);
@@ -195,19 +196,21 @@ export const A380Fuel: React.FC<FuelProps> = ({
 
   const gsxRefuelCallable = () => gsxRefuelState === GsxServiceStates.CALLABLE;
 
-  const canRefuel = useCallback(
-    () => !(eng1Running || eng2Running || eng3Running || eng4Running || !isOnGround),
+  const onlyInstantRefuelAllowed = useCallback(
+    () => eng1Running || eng2Running || eng3Running || eng4Running || !isOnGround,
     [eng1Running, eng2Running, eng3Running, eng4Running, isOnGround],
   );
 
-  const isRefuelStartable = useCallback(() => {
-    if (canRefuel()) {
-      if (gsxFuelSyncEnabled === 1) {
-        return gsxFuelHoseConnected === 1 || refuelRate === RefuelRate.INSTANT;
-      }
-      return true;
+  const isRefuelAllowed = useCallback(() => {
+    if (gsxFuelSyncEnabled === 1) {
+      return refuelStartedByUser || gsxFuelHoseConnected === 1 || refuelRate === RefuelRateSetting.INSTANT;
+    } else {
+      return (
+        refuelStartedByUser ||
+        !onlyInstantRefuelAllowed() ||
+        (onlyInstantRefuelAllowed() && refuelRate === RefuelRateSetting.INSTANT)
+      );
     }
-    return !canRefuel() && refuelRate === RefuelRate.INSTANT;
   }, [
     eng1Running,
     eng2Running,
@@ -246,12 +249,12 @@ export const A380Fuel: React.FC<FuelProps> = ({
   const convertToGallon = (curr: number) => curr * (1 / convertUnit) * (1 / FUEL_GALLONS_TO_KG);
 
   const calculateEta = () => {
-    if (isDesiredEqualTo(totalFuelWeightKg) || refuelRate === RefuelRate.INSTANT) {
+    if (isDesiredEqualTo(totalFuelWeightKg) || refuelRate === RefuelRateSetting.INSTANT) {
       return ' 0';
     }
 
     const differentialFuel = Math.abs(convertToGallon(totalFuelWeightKg) - convertToGallon(fuelDesiredKg));
-    const factor = refuelRate === RefuelRate.FAST ? FAST_SPEED_FACTOR : 1.0;
+    const factor = refuelRate === RefuelRateSetting.FAST ? FAST_SPEED_FACTOR : 1.0;
     const estimatedTimeSeconds = differentialFuel / (FUELRATE_TOTAL_GAL_SEC * factor);
 
     if (estimatedTimeSeconds < 35) {
@@ -275,13 +278,13 @@ export const A380Fuel: React.FC<FuelProps> = ({
   const roundUpNearest100 = (plannedFuel: number) => Math.ceil(plannedFuel / 100) * 100;
 
   const switchRefuelState = () => {
-    if (refuelStartedByUser || isRefuelStartable()) {
+    if (refuelStartedByUser || isRefuelAllowed()) {
       setRefuelStartedByUser(!refuelStartedByUser);
     }
   };
 
   const formatRefuelStatusLabel = useCallback(() => {
-    if (canRefuel()) {
+    if (isRefuelAllowed()) {
       if (refuelStartedByUser) {
         return fuelDesiredKg > totalFuelWeightKg
           ? `(${t('Ground.Fuel.Refueling')}...)`
@@ -296,7 +299,7 @@ export const A380Fuel: React.FC<FuelProps> = ({
         if (gsxRefuelActive()) {
           return `(${t('Ground.Fuel.GSXFuelRequested')})`;
         }
-        if (gsxRefuelCallable() && refuelRate !== RefuelRate.INSTANT) {
+        if (gsxRefuelCallable() && refuelRate !== RefuelRateSetting.INSTANT) {
           return `(${t('Ground.Fuel.GSXFuelSyncEnabled')})`;
         }
       }
@@ -312,13 +315,26 @@ export const A380Fuel: React.FC<FuelProps> = ({
       return fuelDesiredKg > totalFuelWeightKg ? 'text-green-500' : 'text-yellow-500';
     }
 
-    if (canRefuel()) {
+    if (isRefuelAllowed()) {
       if (isDesiredEqualTo(totalFuelWeightKg) || !refuelStartedByUser) {
         return 'text-theme-highlight';
       }
     }
     return 'text-theme-accent';
   }, [fuelDesiredKg, totalFuelWeightKg, refuelStartedByUser]);
+
+  const formatRefuelRateStatusClass = useCallback(
+    (rate) => {
+      if (onlyInstantRefuelAllowed()) {
+        if (rate === refuelRate) {
+          return 'bg-theme-highlight opacity-40 text-theme-highlight';
+        } else {
+          return 'opacity-20';
+        }
+      }
+    },
+    [refuelRate, eng1Running, eng2Running, eng3Running, eng4Running, isOnGround],
+  );
 
   return (
     <div className="relative flex flex-col justify-center">
@@ -660,12 +676,12 @@ export const A380Fuel: React.FC<FuelProps> = ({
               </div>
             </div>
           </div>
-          {(!gsxFuelSyncEnabled || (refuelRate === RefuelRate.INSTANT && !gsxRefuelActive())) && (
+          {(!gsxFuelSyncEnabled || (refuelRate === RefuelRateSetting.INSTANT && !gsxRefuelActive())) && (
             <div
               className={`flex w-48 items-center justify-center ${formatRefuelStatusClass()} bg-current`}
               onClick={() => switchRefuelState()}
             >
-              <div className={`${canRefuel() ? 'text-white' : 'text-theme-unselected'}`}>
+              <div className={`${isRefuelAllowed() ? 'text-white' : 'text-theme-unselected'}`}>
                 <PlayFill size={50} className={refuelStartedByUser ? 'hidden' : ''} />
                 <StopCircleFill size={50} className={refuelStartedByUser ? '' : 'hidden'} />
               </div>
@@ -678,35 +694,35 @@ export const A380Fuel: React.FC<FuelProps> = ({
         <h2 className="flex font-medium">{t('Ground.Fuel.RefuelTime')}</h2>
         <SelectGroup>
           <SelectItem
-            selected={canRefuel() ? refuelRate === RefuelRate.INSTANT : !canRefuel()}
-            onSelect={() => setRefuelRate(RefuelRate.INSTANT)}
+            selected={refuelRate === RefuelRateSetting.INSTANT}
+            onSelect={() => setRefuelRate(RefuelRateSetting.INSTANT)}
           >
             {t('Settings.Instant')}
           </SelectItem>
 
           <TooltipWrapper
-            text={!canRefuel() ? `${t('Ground.Fuel.TT.AircraftMustBeColdAndDarkToChangeRefuelTimes')}` : ''}
+            text={!isRefuelAllowed() ? `${t('Ground.Fuel.TT.AircraftMustBeColdAndDarkToChangeRefuelTimes')}` : ''}
           >
             <div>
               <SelectItem
-                className={`${!canRefuel() && 'opacity-20'}`}
-                disabled={!canRefuel()}
-                selected={refuelRate === RefuelRate.FAST}
-                onSelect={() => setRefuelRate(RefuelRate.FAST)}
+                className={`${formatRefuelRateStatusClass(RefuelRateSetting.FAST)}`}
+                disabled={onlyInstantRefuelAllowed()}
+                selected={refuelRate === RefuelRateSetting.FAST}
+                onSelect={() => setRefuelRate(RefuelRateSetting.FAST)}
               >
                 {t('Settings.Fast')}
               </SelectItem>
             </div>
           </TooltipWrapper>
           <TooltipWrapper
-            text={!canRefuel() ? `${t('Ground.Fuel.TT.AircraftMustBeColdAndDarkToChangeRefuelTimes')}` : ''}
+            text={!isRefuelAllowed() ? `${t('Ground.Fuel.TT.AircraftMustBeColdAndDarkToChangeRefuelTimes')}` : ''}
           >
             <div>
               <SelectItem
-                className={`${!canRefuel() && 'opacity-20'}`}
-                disabled={!canRefuel()}
-                selected={refuelRate === RefuelRate.REAL}
-                onSelect={() => setRefuelRate(RefuelRate.REAL)}
+                className={`${formatRefuelRateStatusClass(RefuelRateSetting.REAL)}`}
+                disabled={onlyInstantRefuelAllowed()}
+                selected={refuelRate === RefuelRateSetting.REAL}
+                onSelect={() => setRefuelRate(RefuelRateSetting.REAL)}
               >
                 {t('Settings.Real')}
               </SelectItem>

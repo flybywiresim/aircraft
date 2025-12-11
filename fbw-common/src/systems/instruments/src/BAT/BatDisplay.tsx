@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -48,6 +49,8 @@ export const BatDisplay = ({ batteryNumber, blankWhenOff = false, x, y }) => {
   // It's possible that for example the lights test is turned off mid-cycle and we end up rendering 87.6, as the last
   // two digits were updated before the first one.
   useUpdate((deltaTime) => {
+    // FIXME this should probably use simulation time, not deltaTime
+
     const displayValue = getDisplayValue();
 
     // only update one digit at a time

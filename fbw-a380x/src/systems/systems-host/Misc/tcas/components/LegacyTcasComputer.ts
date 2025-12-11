@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -273,7 +274,7 @@ export class LegacyTcasComputer implements Instrument {
 
     SimVar.SetSimVarValue('L:A32NX_TCAS_STATE', 'Enum', 0);
     this.debug = false;
-    NXDataStore.set('TCAS_DEBUG', '0'); // force debug off
+    NXDataStore.setLegacy('TCAS_DEBUG', '0'); // force debug off
     this.tcasPower = false;
     this.tcasMode = new LocalSimVar('L:A32NX_TCAS_MODE', 'Enum');
     this.tcasState = new LocalSimVar('L:A32NX_TCAS_STATE', 'Enum');

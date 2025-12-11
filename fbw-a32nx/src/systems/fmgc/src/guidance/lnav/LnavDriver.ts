@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2024 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
@@ -19,10 +20,10 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
 import { distanceTo } from 'msfs-geo';
-import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
-import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
 import { GuidanceController } from '../GuidanceController';
 import { GuidanceComponent } from '../GuidanceComponent';
+import { FlightPlanUtils } from '@fmgc/flightplanning/FlightPlanUtils';
+import { FlightPlanIndex } from '../../flightplanning/FlightPlanManager';
 
 /**
  * Represents the current turn state of the LNAV driver
@@ -89,25 +90,22 @@ export class LnavDriver implements GuidanceComponent {
 
     const trueTrack = SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree');
 
-    const geometry = this.guidanceController.activeGeometry;
+    this.updateSecDistanceToDestination(trueTrack);
+
     const activeLegIdx = this.guidanceController.activeLegIndex;
 
+    const geometry = this.guidanceController.activeGeometry;
     if (geometry && geometry.legs.size > 0) {
       const dtg = geometry.getDistanceToGo(this.guidanceController.activeLegIndex, this.ppos);
-
-      const activeLegAlongTrackCompletePathDtg = this.computeAlongTrackDistanceToGo(geometry, activeLegIdx, trueTrack);
-      if (
-        activeLegAlongTrackCompletePathDtg === undefined &&
-        this.guidanceController.activeLegAlongTrackCompletePathDtg !== undefined
-      ) {
-        console.log('[FMS/LNAV] No reference leg found to compute alongTrackDistanceToGo');
-      }
-
-      this.guidanceController.activeLegAlongTrackCompletePathDtg = activeLegAlongTrackCompletePathDtg;
 
       const inboundTrans = geometry.transitions.get(activeLegIdx - 1);
       const activeLeg = geometry.legs.get(activeLegIdx);
       const outboundTrans = geometry.transitions.get(activeLegIdx) ? geometry.transitions.get(activeLegIdx) : null;
+
+      this.guidanceController.setAlongTrackDistanceToDestination(
+        geometry.computeAlongTrackDistanceToDestination(activeLegIdx, this.ppos, trueTrack),
+        FlightPlanIndex.Active,
+      );
 
       if (!activeLeg) {
         if (LnavConfig.DEBUG_GUIDANCE) {
@@ -391,6 +389,8 @@ export class LnavDriver implements GuidanceComponent {
           geometry.onLegSequenced(activeLeg, nextLeg, followingLeg);
         }
       }
+    } else {
+      this.guidanceController.setAlongTrackDistanceToDestination(0);
     }
 
     /* Set FG parameters */
@@ -409,42 +409,39 @@ export class LnavDriver implements GuidanceComponent {
     }
   }
 
-  /**
-   *
-   * @param geometry active geometry
-   * @param activeLegIdx index of active leg in the geometry
-   * @param trueTrack true track of the aircraft
-   * @returns distance to go along the active leg
-   */
-  private computeAlongTrackDistanceToGo(
-    geometry: Geometry,
-    activeLegIdx: number,
-    trueTrack: DegreesTrue,
-  ): NauticalMiles {
-    // Iterate over the upcoming legs until we find one that has a distance to go.
-    // If we sequence a discontinuity for example, there is no geometry leg for the active leg, so we iterate downpath until we find one.
-    // This will typically be an IF leg
-    for (let i = activeLegIdx ?? 0; geometry.legs.has(i) || geometry.legs.has(i + 1); i++) {
-      const leg = geometry.legs.get(i);
-      if (!leg || leg instanceof VMLeg || leg instanceof FMLeg) {
-        continue;
-      }
+  private updateSecDistanceToDestination(trueTrack: number) {
+    const secGeometry = this.guidanceController.getGeometryForFlightPlan(FlightPlanIndex.FirstSecondary);
 
-      const inboundTrans = geometry.transitions.get(i - 1);
-      const outboundTrans = geometry.transitions.get(i);
-
-      const completeLegAlongTrackPathDtg = Geometry.completeLegAlongTrackPathDistanceToGo(
-        this.ppos,
-        trueTrack,
-        leg,
-        inboundTrans,
-        outboundTrans,
-      );
-
-      return completeLegAlongTrackPathDtg;
+    if (!secGeometry || secGeometry.legs.size <= 0) {
+      this.guidanceController.setAlongTrackDistanceToDestination(0, FlightPlanIndex.FirstSecondary);
+      return;
     }
 
-    return undefined;
+    // Check if active legs are the same
+    const activePlan = this.flightPlanService.active;
+    const secPlan = this.flightPlanService.secondary(1);
+
+    const secToLeg = secPlan.maybeElementAt(secPlan.activeLegIndex);
+    const activeToLeg = activePlan.maybeElementAt(activePlan.activeLegIndex);
+
+    const areActiveLegsTheSame =
+      secPlan.activeLegIndex === activePlan.activeLegIndex &&
+      secToLeg !== undefined &&
+      activeToLeg !== undefined &&
+      FlightPlanUtils.areFlightPlanElementsSame(secToLeg, activeToLeg);
+
+    const secFromLeg = secGeometry.legs.get(secPlan.fromLegIndex);
+    const totalFlightPlanDistance = secFromLeg?.calculated?.cumulativeDistanceToEnd;
+
+    // The distance to the destination in the secondary flight plan is either
+    // 1) the along track distance of the active leg + the total distance of the rest of the legs or
+    // 2) the total distance of all the legs
+    // depending on whether the active leg is the same between active and SEC, choosing 1) if that's the case and 2) if not
+    const distanceToDestination = areActiveLegsTheSame
+      ? secGeometry.computeAlongTrackDistanceToDestination(activePlan.activeLegIndex, this.ppos, trueTrack)
+      : totalFlightPlanDistance;
+
+    this.guidanceController.setAlongTrackDistanceToDestination(distanceToDestination, FlightPlanIndex.FirstSecondary);
   }
 
   public legEta(gs: Knots, termination: Coordinates): number {
@@ -463,7 +460,16 @@ export class LnavDriver implements GuidanceComponent {
   sequenceLeg(leg?: Leg, outboundTransition?: Transition): void {
     this.flightPlanService.active.sequence();
 
-    console.log(`[FMGC/Guidance] LNAV - sequencing leg. [new Index: ${this.flightPlanService.active.activeLegIndex}]`);
+    let secIndex = 1;
+    while (this.flightPlanService.hasSecondary(secIndex) && secIndex < 100) {
+      this.trySequenceSecondaryPlan(secIndex++);
+    }
+
+    if (LnavConfig.DEBUG_GUIDANCE) {
+      console.log(
+        `[LnavDriver](sequenceLeg) Sequencing leg [new Index: ${this.flightPlanService.active.activeLegIndex}]`,
+      );
+    }
 
     outboundTransition?.freeze();
 
@@ -483,6 +489,58 @@ export class LnavDriver implements GuidanceComponent {
     } else {
       this.turnState = LnavTurnState.Normal;
     }
+  }
+
+  /**
+   * Attempts to sequence a secondary flight plan, if the previous FROM/TO pair of the active flight plan matches the current
+   * FROM/TO pair of that secondary plan.
+   *
+   * @param secIndex the 1-based index of the secondary plan to try and sequence
+   */
+  trySequenceSecondaryPlan(secIndex: number) {
+    const activePlan = this.flightPlanService.active;
+    const secPlan = this.flightPlanService.secondary(secIndex);
+
+    const secFromLeg = secPlan.maybeElementAt(this.flightPlanService.active.activeLegIndex - 1);
+    const secToLeg = secPlan.maybeElementAt(this.flightPlanService.active.activeLegIndex);
+
+    const activeFromLeg = activePlan.elementAt(this.flightPlanService.active.activeLegIndex - 1);
+    const activeToLeg = activePlan.elementAt(this.flightPlanService.active.activeLegIndex);
+
+    // We see if what used to be the FROM/TO pair in the active plan is currently the FROM/TO in the secondary plan
+    const shouldSequence =
+      secPlan.activeLegIndex === activePlan.activeLegIndex - 1 &&
+      secFromLeg !== undefined &&
+      secToLeg !== undefined &&
+      FlightPlanUtils.areFlightPlanElementsSame(secFromLeg, activeFromLeg) &&
+      FlightPlanUtils.areFlightPlanElementsSame(secToLeg, activeToLeg);
+
+    if (!shouldSequence) {
+      if (LnavConfig.DEBUG_GUIDANCE) {
+        console.log(
+          `[LnavDriver](trySequenceSecondaryPlan) Not sequencing SEC ${secIndex} - FROM/TO pairs were different`,
+        );
+        console.log(
+          `[LnavDriver](trySequenceSecondaryPlan) SEC: FROM: ${secFromLeg.isDiscontinuity === true ? '<disco>' : secFromLeg?.uuid ?? '<none>'}`,
+        );
+        console.log(
+          `[LnavDriver](trySequenceSecondaryPlan) SEC: TO: ${secToLeg.isDiscontinuity === true ? '<disco>' : secToLeg?.uuid ?? '<none>'}`,
+        );
+        console.log(
+          `[LnavDriver](trySequenceSecondaryPlan) ACT: FROM: ${activeFromLeg.isDiscontinuity === true ? '<disco>' : activeFromLeg.uuid}`,
+        );
+        console.log(
+          `[LnavDriver](trySequenceSecondaryPlan) ACT: TO: ${activeToLeg.isDiscontinuity === true ? '<disco>' : activeToLeg.uuid}`,
+        );
+      }
+      return;
+    }
+
+    if (LnavConfig.DEBUG_GUIDANCE) {
+      console.log(`[LnavDriver](trySequenceSecondaryPlan) Sequencing SEC ${secIndex}`);
+    }
+
+    secPlan.sequence();
   }
 
   sequenceDiscontinuity(_leg?: Leg, followingLeg?: Leg): void {

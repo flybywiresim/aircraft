@@ -26,6 +26,8 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
 
   protected readonly secActive = Subject.create<boolean>(false);
 
+  protected readonly eoActive = Subject.create<boolean>(false);
+
   protected readonly activeFlightPhase = Subject.create<FmgcFlightPhase>(FmgcFlightPhase.Preflight);
 
   // protected mfdInViewConsumer: Consumer<boolean>;
@@ -89,6 +91,13 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
           this.onFlightPlanChanged();
         }
       }),
+    );
+
+    this.subs.push(
+      this.props.fmcService.masterFmcChanged.sub(() => {
+        // Check if master FMC exists, re-route subjects
+        this.props.fmcService.master?.fmgc.data.engineOut.pipe(this.eoActive);
+      }, true),
     );
 
     this.onFlightPlanChanged();
@@ -173,16 +182,16 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
         fm?.vSpeedsForRunway.set(this.loadedFlightPlan.originRunway.ident);
       } else if (fm.vSpeedsForRunway.get() !== this.loadedFlightPlan.originRunway.ident) {
         fm.vSpeedsForRunway.set(this.loadedFlightPlan.originRunway.ident);
-        fm.v1ToBeConfirmed.set(pd?.v1 ?? null);
+        fm.v1ToBeConfirmed.set(pd?.v1.get() ?? null);
         this.loadedFlightPlan.setPerformanceData('v1', null);
-        fm.vrToBeConfirmed.set(pd?.vr ?? null);
+        fm.vrToBeConfirmed.set(pd?.vr.get() ?? null);
         this.loadedFlightPlan.setPerformanceData('vr', null);
-        fm.v2ToBeConfirmed.set(pd?.v2 ?? null);
+        fm.v2ToBeConfirmed.set(pd?.v2.get() ?? null);
         this.loadedFlightPlan.setPerformanceData('v2', null);
 
         this.props.fmcService.master?.addMessageToQueue(
           NXSystemMessages.checkToData,
-          () => this.loadedFlightPlan?.performanceData.vr !== null,
+          () => this.loadedFlightPlan?.performanceData.vr.get() !== null,
           undefined,
         );
       }
@@ -208,7 +217,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
       <ActivePageTitleBar
         activePage={this.activePageTitle}
         offset={Subject.create('')}
-        eoIsActive={Subject.create(false)}
+        eoIsActive={this.eoActive}
         tmpyIsActive={this.tmpyActive}
       />
     );

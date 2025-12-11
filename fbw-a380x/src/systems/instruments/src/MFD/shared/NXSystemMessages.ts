@@ -85,6 +85,7 @@ export const NXSystemMessages = {
   newThrRedAlt: new TypeIIMessage('NEW THR RED ALT: HHHHH', false, 'HHHHH'),
   noIntersectionFound: new TypeIMessage('NO INTERSECTION FOUND'),
   notAllowed: new TypeIMessage('NOT ALLOWED'),
+  notAllowedInNav: new TypeIMessage('NOT ALLOWED IN NAV'),
   notInDatabase: new TypeIMessage('NOT IN DATABASE'),
   rwyLsDisagree: new TypeIIMessage('RUNWAY / LS DISAGREE', true),
   setHoldSpeed: new TypeIIMessage('SET HOLD SPD'),
@@ -97,6 +98,8 @@ export const NXSystemMessages = {
   stepAhead: new TypeIIMessage('STEP AHEAD'),
   stepDeleted: new TypeIIMessage('STEP DELETED'),
   tooSteepPathAhead: new TypeIIMessage('TOO STEEP PATH AHEAD'),
+  navprimary: new TypeIIMessage('NAV PRIMARY'),
+  navprimaryLost: new TypeIIMessage('NAV PRIMARY LOST', true),
 };
 
 export const NXFictionalMessages = {
@@ -127,3 +130,7 @@ export const NXFictionalMessages = {
   reverseProxy: new TypeIMessage('REVERSE PROXY ERROR'),
   simBriefNoUser: new TypeIMessage('NO SIMBRIEF PILOT ID PROVIDED'),
 };
+
+export function isTypeIIMessage(message: McduMessage): message is TypeIIMessage {
+  return message instanceof TypeIIMessage;
+}

@@ -33,7 +33,7 @@
             <ANIMTIP_0></ANIMTIP_0>
             <ANIMTIP_1></ANIMTIP_1>
             <ANIM_LAG>60</ANIM_LAG>
-            <ANIM_WRAP>True</ANIM_WRAP>
+            <ANIM_WRAP>False</ANIM_WRAP>
         </Parameters>
         <Parameters Type="Default">
             <DECREMENT>#INCREMENT#</DECREMENT>
@@ -56,53 +56,35 @@
             </ANIM_CODE>
         </UseTemplate>
 
-        <UseTemplate Name="FBW_Continuous_Knob_Finite_From_Simvar_Impl">
-            <!-- If we have INFINITE_ROTATION we allow the knob to rotate 3 times -->
-            <Condition Valid="INFINITE_ROTATION">
-                <True>
-                    <CLOCKWISE_CODE>
-                        (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #INCREMENT# + #ANIM_SIMVAR_MAX# #ANIM_SIMVAR_MIN# - #ANIM_SIMVAR_MAX# + min #SET_CODE#
-                    </CLOCKWISE_CODE>
-                    <ANTICLOCKWISE_CODE>
-                        (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #DECREMENT# - #ANIM_SIMVAR_MAX# #ANIM_SIMVAR_MIN# - #ANIM_SIMVAR_MIN# - max #SET_CODE#
-                    </ANTICLOCKWISE_CODE>
-                    <Condition Valid="WHEEL_INCREMENT">
-                        <True>
-                            <WHEEL_CLOCKWISE_CODE>
-                                (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #WHEEL_INCREMENT# + #ANIM_SIMVAR_MAX# #ANIM_SIMVAR_MIN# - #ANIM_SIMVAR_MAX# + min #SET_CODE#
-                            </WHEEL_CLOCKWISE_CODE>
-                        </True>
-                    </Condition>
-                    <Condition Valid="WHEEL_DECREMENT">
-                        <True>
-                            <WHEEL_ANTICLOCKWISE_CODE>
-                                (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #WHEEL_DECREMENT# - #ANIM_SIMVAR_MAX# #ANIM_SIMVAR_MIN# - #ANIM_SIMVAR_MIN# - max #SET_CODE#
-                            </WHEEL_ANTICLOCKWISE_CODE>
-                        </True>
-                    </Condition>
-                </True>
-                <False>
-                    <CLOCKWISE_CODE>
-                        (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #INCREMENT# + #ANIM_SIMVAR_MAX# min #SET_CODE#
-                    </CLOCKWISE_CODE>
-                    <ANTICLOCKWISE_CODE>
-                        (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #DECREMENT# - #ANIM_SIMVAR_MIN# max #SET_CODE#
-                    </ANTICLOCKWISE_CODE>
+        <UseTemplate Name="ASOBO_GT_Interaction_WheelAndContinuousLeft#EXTRA_INTERACTION#">
+            <CLOCKWISE_CODE>
+                (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #INCREMENT# + #ANIM_SIMVAR_MAX# min #SET_CODE#
+            </CLOCKWISE_CODE>
+            <ANTICLOCKWISE_CODE>
+                (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #DECREMENT# - #ANIM_SIMVAR_MIN# max #SET_CODE#
+            </ANTICLOCKWISE_CODE>
+        </UseTemplate>
 
-                    <!-- Provide the wheel code if we have WHEEL_INCREMENT -->
-                    <Condition Valid="WHEEL_INCREMENT">
-                        <True>
-                            <WHEEL_CLOCKWISE_CODE>
-                                (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #WHEEL_INCREMENT# + #ANIM_SIMVAR_MAX# min #SET_CODE#
-                            </WHEEL_CLOCKWISE_CODE>
-                        </True>
-                    </Condition>
-                    <Condition Valid="WHEEL_DECREMENT">
-                        <WHEEL_ANTICLOCKWISE_CODE>
-                            (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #WHEEL_DECREMENT# - #ANIM_SIMVAR_MIN# max #SET_CODE#
-                        </WHEEL_ANTICLOCKWISE_CODE>
-                    </Condition>
-                </False>
+        <UseTemplate Name="FBW_Continuous_Knob_Finite_From_Simvar_Impl">
+            <CLOCKWISE_CODE>
+                (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #INCREMENT# + #ANIM_SIMVAR_MAX# min #SET_CODE#
+            </CLOCKWISE_CODE>
+            <ANTICLOCKWISE_CODE>
+                (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #DECREMENT# - #ANIM_SIMVAR_MIN# max #SET_CODE#
+            </ANTICLOCKWISE_CODE>
+
+            <!-- Provide the wheel code if we have WHEEL_INCREMENT -->
+            <Condition Valid="WHEEL_INCREMENT">
+                <True>
+                    <WHEEL_CLOCKWISE_CODE>
+                        (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #WHEEL_INCREMENT# + #ANIM_SIMVAR_MAX# min #SET_CODE#
+                    </WHEEL_CLOCKWISE_CODE>
+                </True>
+            </Condition>
+            <Condition Valid="WHEEL_DECREMENT">
+                <WHEEL_ANTICLOCKWISE_CODE>
+                    (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #WHEEL_DECREMENT# - #ANIM_SIMVAR_MIN# max #SET_CODE#
+                </WHEEL_ANTICLOCKWISE_CODE>
             </Condition>
         </UseTemplate>
 

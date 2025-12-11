@@ -13,6 +13,7 @@ import {
 import { FailuresConsumer, FmsData } from '@flybywiresim/fbw-sdk';
 import { A380Failure } from '@failures';
 import { OisInternalData } from './OisInternalPublisher';
+import { OitSimvars } from './OitSimvarPublisher';
 
 type LaptopIndex = 1 | 2;
 
@@ -29,7 +30,14 @@ export class OisLaptop implements Instrument {
   public readonly isHealthy = this._isHealthy as Subscribable<boolean>;
   private readonly isHealthySimVar = `L:A32NX_FLTOPS_LAPTOP_${this.index.toFixed(0)}_IS_HEALTHY`;
 
-  private readonly sub = this.bus.getSubscriber<FmsData & OisInternalData>();
+  private readonly sub = this.bus.getSubscriber<FmsData & OisInternalData & OitSimvars>();
+
+  private readonly laptopSwitchedOn = ConsumerSubject.create(
+    this.sub.on(this.index === 1 ? 'laptopCaptPowered' : 'laptopFoPowered'),
+    false,
+  );
+
+  private readonly nssMasterOff = ConsumerSubject.create(this.sub.on('nssMasterOff'), false);
 
   private readonly fltNumberBus = ConsumerSubject.create(this.sub.on('fmsFlightNumber'), null);
   private readonly fromAirportBus = ConsumerSubject.create(this.sub.on('fmsOrigin'), null);
@@ -67,15 +75,18 @@ export class OisLaptop implements Instrument {
     const failed = this.failuresConsumer.isActive(this.failureKey);
 
     if (this.index === 1) {
-      this.powered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_DC_1_BUS_IS_POWERED', SimVarValueType.Bool));
+      this.powered.set(
+        SimVar.GetSimVarValue('L:A32NX_ELEC_DC_1_BUS_IS_POWERED', SimVarValueType.Bool) && this.laptopSwitchedOn.get(),
+      );
     } else {
       this.powered.set(
-        SimVar.GetSimVarValue('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', SimVarValueType.Bool) ||
-          SimVar.GetSimVarValue('L:A32NX_ELEC_DC_HOT_2_BUS_IS_POWERED', SimVarValueType.Bool),
+        (SimVar.GetSimVarValue('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', SimVarValueType.Bool) ||
+          SimVar.GetSimVarValue('L:A32NX_ELEC_DC_HOT_2_BUS_IS_POWERED', SimVarValueType.Bool)) &&
+          this.laptopSwitchedOn.get(),
       );
     }
 
-    this._isHealthy.set(!failed && this.powered.get());
+    this._isHealthy.set(!failed && this.powered.get() && !this.nssMasterOff.get());
   }
 
   destroy() {

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2025 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -41,7 +42,7 @@ const GEOMETRY_RECOMPUTATION_TIMER = 5_000;
 
 export interface Fmgc {
   getZeroFuelWeight(): number;
-  getFOB(): number | null;
+  getFOB(forPlan: FlightPlanIndex): number | null;
   getGrossWeight(): number | null;
   getV2Speed(): Knots;
   getTropoPause(): Feet;
@@ -50,7 +51,6 @@ export interface Fmgc {
   getAccelerationAltitude(): Feet;
   getThrustReductionAltitude(): Feet;
   getOriginTransitionAltitude(): Feet | undefined;
-  getCruiseAltitude(): Feet;
   getFlightPhase(): FmgcFlightPhase;
   getManagedCruiseSpeed(): Knots;
   getManagedCruiseSpeedMach(): Mach;
@@ -130,17 +130,10 @@ export class GuidanceController {
   displayActiveLegCompleteLegPathDtg: NauticalMiles;
 
   /**
-   * Used for display in the MCDU and vertical guidance.
-   * This is distinctly different from {@link activeLegCompleteLegPathDtg}. For example, path capture transitions use dtg = 1 for lateral guidance,
-   * but vertical guidance and predictions need an accurate distance.
+   * Along track distance to destination in nautical miles per flight plan.
+   * May be undefined if it could not be computed for some reason.
    */
-  activeLegAlongTrackCompletePathDtg: NauticalMiles;
-
-  /**
-   * Along track distance to destination in nautical miles.
-   * Used for vertical guidance and other FMS tasks, such as triggering ENTER DEST DATA
-   */
-  alongTrackDistanceToDestination?: number;
+  private alongTrackDistancesToDestination: Map<FlightPlanIndex, number> = new Map();
 
   focusedWaypointCoordinates: Coordinates = { lat: 0, long: 0 };
 
@@ -232,7 +225,7 @@ export class GuidanceController {
     } else {
       const runway = this.flightPlanService.active.destinationRunway;
       if (runway) {
-        const distanceToDestination = this.alongTrackDistanceToDestination ?? -1;
+        const distanceToDestination = this.getAlongTrackDistanceToDestination() ?? -1;
 
         if (phase > FmgcFlightPhase.Cruise || (phase === FmgcFlightPhase.Cruise && distanceToDestination < 250)) {
           const appr = this.flightPlanService.active.approach;
@@ -531,6 +524,7 @@ export class GuidanceController {
       gs,
       this.lnavDriver.ppos,
       trueTrack,
+      plan,
       plan.activeLegIndex,
       plan.activeLegIndex, // TODO active transition index for temporary plan...?
     );
@@ -583,5 +577,13 @@ export class GuidanceController {
 
   get lastCrosstrackError(): NauticalMiles {
     return this.lnavDriver.lastXTE;
+  }
+
+  setAlongTrackDistanceToDestination(distance: number, forPlan = FlightPlanIndex.Active) {
+    this.alongTrackDistancesToDestination.set(forPlan, distance);
+  }
+
+  getAlongTrackDistanceToDestination(forPlan = FlightPlanIndex.Active) {
+    return this.alongTrackDistancesToDestination.get(forPlan);
   }
 }

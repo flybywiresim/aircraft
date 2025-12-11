@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 //  Copyright (c) 2021 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
@@ -30,18 +31,18 @@ export class HoppieConnector {
   public static async activateHoppie() {
     SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 0);
 
-    if (NXDataStore.get('CONFIG_HOPPIE_ENABLED', 'DISABLED') === 'DISABLED') {
+    if (NXDataStore.getLegacy('CONFIG_HOPPIE_ENABLED', 'DISABLED') === 'DISABLED') {
       console.log('Hoppie deactivated in EFB');
       return;
     }
 
-    if (NXDataStore.get('CONFIG_HOPPIE_USERID', '') === '') {
+    if (NXDataStore.getLegacy('CONFIG_HOPPIE_USERID', '') === '') {
       console.log('No Hoppie-ID set');
       return;
     }
 
     const body = {
-      logon: NXDataStore.get('CONFIG_HOPPIE_USERID', ''),
+      logon: NXDataStore.getLegacy('CONFIG_HOPPIE_USERID', ''),
       from: 'FBWA32NX',
       to: 'SERVER',
       type: 'ping',
@@ -88,7 +89,7 @@ export class HoppieConnector {
     }
 
     const body = {
-      logon: NXDataStore.get('CONFIG_HOPPIE_USERID', ''),
+      logon: NXDataStore.getLegacy('CONFIG_HOPPIE_USERID', ''),
       from: station,
       to: 'SERVER',
       type: 'ping',
@@ -121,7 +122,7 @@ export class HoppieConnector {
     }
 
     const body = {
-      logon: NXDataStore.get('CONFIG_HOPPIE_USERID', ''),
+      logon: NXDataStore.getLegacy('CONFIG_HOPPIE_USERID', ''),
       from: HoppieConnector.flightNumber,
       to: 'SERVER', // Not needed as Hoppie ignores this field usually
       type: 'ping',
@@ -154,7 +155,7 @@ export class HoppieConnector {
     }
 
     const body = {
-      logon: NXDataStore.get('CONFIG_HOPPIE_USERID', ''),
+      logon: NXDataStore.getLegacy('CONFIG_HOPPIE_USERID', ''),
       from: HoppieConnector.flightNumber,
       to: message.Station,
       type,
@@ -325,7 +326,7 @@ export class HoppieConnector {
 
     try {
       const body = {
-        logon: NXDataStore.get('CONFIG_HOPPIE_USERID', ''),
+        logon: NXDataStore.getLegacy('CONFIG_HOPPIE_USERID', ''),
         from: HoppieConnector.flightNumber,
         to: HoppieConnector.flightNumber,
         type: 'poll',

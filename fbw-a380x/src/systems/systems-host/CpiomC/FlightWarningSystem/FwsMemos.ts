@@ -3,14 +3,19 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EcamMemos } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
-import { MappedSubject, Subscribable, SubscribableMapFunctions, Subscription } from '@microsoft/msfs-sdk';
+import {
+  MappedSubject,
+  MappedSubscribable,
+  Subscribable,
+  SubscribableMapFunctions,
+  Subscription,
+} from '@microsoft/msfs-sdk';
 import { FwsCore } from 'systems-host/CpiomC/FlightWarningSystem/FwsCore';
-import { isSubscription } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
 
 interface EwdMemoItem {
   flightPhaseInhib: number[];
   /** warning is active */
-  simVarIsActive: Subscribable<boolean>;
+  simVarIsActive: MappedSubscribable<boolean> | Subscribable<boolean>;
   whichCodeToReturn: () => any[];
   codesToReturn: string[];
   memoInhibit: () => boolean;
@@ -664,14 +669,14 @@ export class FwsMemos {
 
     for (const key in this.ewdMemos) {
       const memo = this.ewdMemos[key];
-      if (isSubscription(memo.simVarIsActive)) {
+      if ('destroy' in memo.simVarIsActive) {
         memo.simVarIsActive.destroy();
       }
     }
 
     for (const key in this.ewdToLdgMemos) {
       const memo = this.ewdToLdgMemos[key];
-      if (isSubscription(memo.simVarIsActive)) {
+      if ('destroy' in memo.simVarIsActive) {
         memo.simVarIsActive.destroy();
       }
     }

@@ -32,7 +32,7 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
   const isFromLeg = legIndex === fpln.loadedFlightPlan?.fromLegIndex;
   const isLegTerminatingAtDatabaseFix =
     revisedLeg &&
-    !revisedLeg.isDiscontinuity &&
+    revisedLeg.isDiscontinuity === false &&
     revisedLeg.isXF() &&
     !BitFlags.isAny(revisedLeg.flags, FlightPlanLegFlags.DirectToTurningPoint);
 
@@ -71,7 +71,7 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
       name: 'DELETE *',
       disabled:
         [FplnRevisionsMenuType.Runway || FplnRevisionsMenuType.TooSteepPath].includes(type) ||
-        (revisedLeg?.isDiscontinuity && !previousLeg?.isDiscontinuity && previousLeg?.isVectors()) ||
+        (revisedLeg?.isDiscontinuity && previousLeg?.isDiscontinuity === false && previousLeg?.isVectors()) ||
         isFromLeg || // TODO allow in HDG/TRK
         planIndex === FlightPlanIndex.Temporary,
       onPressed: () => {
@@ -103,7 +103,7 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
         isFromLeg ||
         !isLegTerminatingAtDatabaseFix,
       onPressed: async () => {
-        if (revisedLeg && !revisedLeg.isDiscontinuity && !revisedLeg.isHX()) {
+        if (revisedLeg && revisedLeg.isDiscontinuity === false && !revisedLeg.isHX()) {
           const alt = revisedLeg.definition.altitude1
             ? revisedLeg.definition.altitude1
             : SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet');
@@ -111,9 +111,9 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
           const previousLeg = fpln.props.fmcService.master?.flightPlanService.active.maybeElementAt(legIndex - 1);
 
           let inboundMagneticCourse = 100;
-          const prevTerm = previousLeg?.isDiscontinuity === false && previousLeg?.terminationWaypoint();
+          const prevTerm = previousLeg?.isDiscontinuity === false && previousLeg.terminationWaypoint();
           const wptTerm = revisedLeg.terminationWaypoint();
-          if (previousLeg && !previousLeg.isDiscontinuity && previousLeg.isXF() && prevTerm && wptTerm) {
+          if (previousLeg && previousLeg.isDiscontinuity === false && previousLeg.isXF() && prevTerm && wptTerm) {
             inboundMagneticCourse = Avionics.Utils.computeGreatCircleHeading(prevTerm.location, wptTerm.location);
           }
 
@@ -156,8 +156,8 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
       name:
         !altnFlightPlan &&
         ![FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type) &&
-        !revisedLeg?.isDiscontinuity &&
-        revisedLeg?.definition.overfly
+        revisedLeg?.isDiscontinuity === false &&
+        revisedLeg.definition.overfly
           ? 'DELETE OVERFLY *'
           : 'OVERFLY *',
       disabled:
@@ -218,14 +218,14 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
       name: '(N/A) WIND',
       disabled: true,
       onPressed: () => {
-        if (!revisedLeg || revisedLeg.isDiscontinuity) {
+        if (!revisedLeg || revisedLeg.isDiscontinuity !== false) {
           return;
         }
 
         // Find out whether waypoint is CLB, CRZ or DES waypoint and direct to appropriate WIND sub-page
-        if (revisedLeg?.segment?.class === SegmentClass.Arrival) {
+        if (revisedLeg.segment.class === SegmentClass.Arrival) {
           fpln.props.mfd.uiService.navigateTo(`fms/${fpln.props.mfd.uiService.activeUri.get().category}/wind/des`);
-        } else if (revisedLeg?.segment?.class === SegmentClass.Enroute) {
+        } else if (revisedLeg.segment.class === SegmentClass.Enroute) {
           fpln.props.mfd.uiService.navigateTo(`fms/${fpln.props.mfd.uiService.activeUri.get().category}/wind/crz`);
         } else {
           fpln.props.mfd.uiService.navigateTo(`fms/${fpln.props.mfd.uiService.activeUri.get().category}/wind/clb`);

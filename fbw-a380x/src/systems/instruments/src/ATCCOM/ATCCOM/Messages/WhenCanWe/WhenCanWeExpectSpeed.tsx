@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import React, { FC } from 'react';
 import { InputValidation } from '@atsu/InputValidation';
 import { AtsuStatusCodes } from '@atsu/AtsuStatusCodes';

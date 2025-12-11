@@ -25,9 +25,12 @@
     - [Flight Augmentation Computer (FAC)](#flight-augmentation-computer-fac)
   - [Flaps / Slats (ATA 27)](#flaps--slats-ata-27)
   - [Flight Controls (ATA 27)](#flight-controls-ata-27)
+  - [Fuel (ATA 28)](#fuel-ata-28)
   - [Indication and Recording Systems (ATA 31)](#indication-and-recording-systems-ata-31)
-    - [ECP](#ecp)
+    - [DMC](#dmc)
       - [ARINC429 Output Bus](#arinc429-output-bus)
+    - [ECP](#ecp)
+      - [ARINC429 Output Bus](#arinc429-output-bus-1)
       - [Hardwired Discretes](#hardwired-discretes)
   - [Landing Gear (ATA 32)](#landing-gear-ata-32)
   - [ATC (ATA 34)](#atc-ata-34)
@@ -212,7 +215,7 @@
     - Position (0-2)
     - 0 is CAPT, 1 is NORM, 2 is F/O
 
-- L:A32NX_DMC_DISPLAYTEST:{1,2,3}
+- A32NX_DMC_DISPLAYTEST:{1,2,3}
     - Enum
     - Provides the display test status (can be set in the CFDS) for the respective DMC {1,2,3}
       Value | Meaning
@@ -1213,6 +1216,7 @@
 - A32NX_FLAPS_CONF_INDEX
     - Number
     - Indicates the desired flap configuration index according to the table
+        DO NOT USE IN SYSTEMS, USE SFCC INSTEAD
     - Value | Meaning
             --- | ---
       0 | Conf0
@@ -1936,11 +1940,6 @@ In the variables below, {number} should be replaced with one item in the set: { 
        15 | ALIGN_1_MINUTES
        18 | COMPUTED_LATITUDE_MISCOMPARE
 
-- A32NX_ADIRS_USES_GPS_AS_PRIMARY
-    - Deprecated, this is an FM function, not ADIRU
-    - Bool
-    - Whether or not the GPS is used as the primary means of navigation/position determination.
-
 - A32NX_PUSH_TRUE_REF
     - Bool
     - True reference pushbutton status
@@ -1994,10 +1993,6 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - {side}
         - L
         - R
-
-- A32NX_FM_VNAV_TRIGGER_STEP_DELETED
-    - Bool
-    - Indicates whether to trigger a step deleted message on the MCDU
 
 - `A32NX_FM{number}_BACKBEAM_SELECTED`
     - Bool
@@ -3575,6 +3570,11 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - {id} is from 1 to 7
     - Flap actual position discrete output
 
+- A32NX_SFCC_{number}_SAP_{id}
+    - {number} is 1 or 2
+    - {id} is from 1 to 7
+    - Slat actual position discrete output
+
 ## Flight Controls (ATA 27)
 
 - A32NX_FLIGHT_CONTROLS_TRACKING_MODE
@@ -3934,7 +3934,114 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Percent
     - Trim wheel position in percent
 
+## Fuel ATA 28
+- A32NX_TOTAL_FUEL_QUANTITY
+  - Number in kilogramm
+  - The total physical quantity of fuel in the tanks
+
+- A32NX_TOTAL_FUEL_VOLUME
+  - Number in Gallons
+  - The total physical volume of fuel in the tanks
+
 ## Indication and Recording Systems (ATA 31)
+
+### DMC
+
+Use the `A32NXDisplayManagementPublisher` for these in A32NX code.
+
+#### ARINC429 Output Bus
+
+- `L:A32NX_DMC_DISCRETE_WORD_271_LEFT`
+  - Left DMC discrete word 5. Raw ARINC word.
+  - Note: incomplete.
+  - Arinc429<Discrete>
+    | Bit |            Description            |
+    |:---:|:---------------------------------:|
+    | 12  | IRS used fail                     |
+    | 26  | Time till NAV used high bit       |
+    | 27  | Time till NAV used middle bit     |
+    | 28  | Time till NAV used low bit        |
+    | 29  | IRS used in align submode         |
+
+- `L:A32NX_DMC_DISCRETE_WORD_271_RIGHT`
+   - Right DMC discrete word 5. Raw ARINC word.
+   - Same as `L:A32NX_DMC_DISCRETE_WORD_271_LEFT`.
+
+- `L:A32NX_DMC_IR_1_DISCRETE_WORD_LEFT`
+   - Left DMC IRS 1 discrete word. Raw ARINC word.
+   - Note: incomplete.
+     | Bit |            Description            |
+     |:---:|:---------------------------------:|
+     | 11  | ALIGNMENT_NOT_READY               |
+     | 12  | REV_ATT_MODE                      |
+     | 13  | NAV_MODE                          |
+     | 14  | VALID_SET_HEADING                 |
+     | 15  | ATTITUDE_INVALID                  |
+     | 16  | DC_FAIL                           |
+     | 17  | ON_DC                             |
+     | 18  | ADR_FAULT                         |
+     | 19  | IR_FAULT                          |
+     | 20  | DC_FAIL_ON_DC                     |
+     | 21  | ALIGN_FAULT                       |
+     | 22  | NO_IRS_INITIAL                    |
+     | 23  | EXCESS_MOTION_ERROR               |
+     | 24  | ADR_IR_FAULT                      |
+     | 25  | EXTREME_LATITUDE                  |
+     | 26  | ALIGN_1_MINUTES                   |
+     | 27  | ALIGN_2_MINUTES                   |
+     | 28  | ALIGN_4_MINUTES                   |
+     | 29  | COMPUTED_LATITUDE_MISCOMPARE      |
+
+- `L:A32NX_DMC_IR_2_DISCRETE_WORD_RIGHT`
+   - Right DMC IRS 2 discrete word. Raw ARINC word.
+   - Same as `L:A32NX_DMC_IR_1_DISCRETE_WORD_LEFT`.
+
+- `L:A32NX_DMC_IR_3_DISCRETE_WORD_LEFT`
+   - Left DMC IRS 3 discrete word. Raw ARINC word.
+   - Same as `L:A32NX_DMC_IR_1_DISCRETE_WORD_LEFT`.
+
+- `L:A32NX_DMC_IR_3_DISCRETE_WORD_RIGHT`
+   - Right DMC IRS 3 discrete word. Raw ARINC word.
+   - Same as `L:A32NX_DMC_IR_1_DISCRETE_WORD_LEFT`.
+
+- `L:A32NX_DMC_DISCRETE_WORD_350_LEFT`
+   - The left DMC discrete word. Raw ARINC word.
+     | Bit |            Description            |
+     |:---:|:---------------------------------:|
+     | 11  | STD baro mode                     |
+     | 12  | QNH baro mode                     |
+
+- `L:A32NX_DMC_DISCRETE_WORD_350_RIGHT`
+   - The right DMC discrete word. Raw ARINC word.
+     | Bit |            Description            |
+     |:---:|:---------------------------------:|
+     | 11  | STD baro mode                     |
+     | 12  | QNH baro mode                     |
+
+- `L:A32NX_DMC_ALTITUDE_LEFT`
+  - The left DMC displayed altitude feedback. Raw ARINC word.
+  - Arinc429Word<Feet>
+
+- `L:A32NX_DMC_ALTITUDE_RIGHT`
+  - The right DMC displayed altitude feedback. Raw ARINC word.
+  - Arinc429Word<Feet>
+
+- `L:A32NX_DMC_IR_1_PITCH_ANGLE_LEFT`
+  - Left DMC copy of IR1 pitch angle.
+  - Arinc429Word<Degrees>
+
+- `L:A32NX_DMC_IR_2_PITCH_ANGLE_RIGHT`
+  - Right DMC copy of IR2 pitch angle.
+  - Arinc429Word<Degrees>
+
+- `L:A32NX_DMC_IR_3_PITCH_ANGLE_LEFT`
+  - Left DMC copy of IR3 pitch angle.
+  - Arinc429Word<Degrees>
+
+- `L:A32NX_DMC_IR_3_PITCH_ANGLE_RIGHT`
+  - Right DMC copy of IR3 pitch angle.
+  - Arinc429Word<Degrees>
+
 
 ### ECP
 

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import React, { FC } from 'react';
 import { AutoPrintIcon } from './AutoPrintIcon';
 import { AutoUpdateIcon } from './AutoUpdateIcon';
