@@ -723,7 +723,7 @@ export class CDUPerformancePage {
 
     const [destEfobCell, destTimeCell] = CDUPerformancePage.formatDestEfobAndTime(mcdu, isFlying, forPlan);
     const [toUtcLabel, toDistLabel] = shouldShowToTdInformation ? ['\xa0UTC', 'DIST'] : ['', ''];
-    const [toReasonCell, toDistCell, toTimeCell, stepWaypoint = ''] = shouldShowToTdInformation
+    const [toReasonCell, toDistCell, toTimeCell, stepWaypoint] = shouldShowToTdInformation
       ? CDUPerformancePage.formatToReasonDistanceAndTime(mcdu, forPlan)
       : ['', '', ''];
 
