@@ -55,12 +55,15 @@ jobs:
       - name: Build A32NX
         run: |
           ./scripts/dev-env/run.sh ./scripts/build_a32nx.sh --no-tty -j 4
-          rm -rf fbw-a32nx/src
           docker system prune -af
-      - name: Remove A380X source files
+      - name: Remove source files
         run: |
+          rm -rf fbw-a32nx/src
           rm -rf ./fbw-a380x/
           rm -rf ./large-files/fbw-a380x/
+          rm -rf ./fbw-common/
+          rm -rf ./.git/objects/
+          rm -rf ./.git/modules/aircraft-large-files/objects/
       - name: Build Fragmenter modules
         run: |
           df -h
@@ -185,18 +188,21 @@ jobs:
       - name: Install dependencies
         run: |
           ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
-      - name: Build A380X
-        run: |
-          ./scripts/dev-env/run.sh ./scripts/build_a380x.sh --no-tty -j 4
-          rm -rf fbw-a380x/src
-          docker system prune -af
-      - name: Remove A32NX source files
-        run: |
-          rm -rf ./fbw-a32nx/
-          rm -rf ./large-files/fbw-a32nx/
       - name: Remove A380X 4K textures
         run: |
           rm -rf ./large-files/fbw-a380x/src/base/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/texture-4k/
+      - name: Build A380X
+        run: |
+          ./scripts/dev-env/run.sh ./scripts/build_a380x.sh --no-tty -j 4
+          docker system prune -af
+      - name: Remove source files
+        run: |
+          rm -rf fbw-a380x/src
+          rm -rf ./fbw-a32nx/
+          rm -rf ./large-files/fbw-a32nx/
+          rm -rf ./fbw-common/
+          rm -rf ./.git/objects/
+          rm -rf ./.git/modules/aircraft-large-files/objects/
       - name: Build Fragmenter modules
         run: |
           df -h
@@ -310,12 +316,15 @@ jobs:
       - name: Build A380X
         run: |
           ./scripts/dev-env/run.sh ./scripts/build_a380x.sh --no-tty -j 4 -4k
-          rm -rf fbw-a380x/src
           docker system prune -af
-      - name: Remove A32NX source files
+      - name: Remove source files
         run: |
+          rm -rf fbw-a380x/src
           rm -rf ./fbw-a32nx/
           rm -rf ./large-files/fbw-a32nx/
+          rm -rf ./fbw-common/
+          rm -rf ./.git/objects/
+          rm -rf ./.git/modules/aircraft-large-files/objects/
       - name: Build Fragmenter modules
         run: |
           df -h

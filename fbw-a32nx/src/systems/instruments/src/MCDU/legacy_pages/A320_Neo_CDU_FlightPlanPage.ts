@@ -1122,7 +1122,7 @@ export class CDUFlightPlanPage {
     if (forPlan === FlightPlanIndex.Active && !forAlternate && fpIndex <= mcdu.flightPlanService.activeLegIndex) {
       // 22-72-00:67
       // Stop clearing TO or FROM waypoints when NAV is engaged
-      if (mcdu.navModeEngaged()) {
+      if (mcdu.isNavModeEngaged()) {
         mcdu.setScratchpadMessage(NXSystemMessages.notAllowedInNav);
         scratchpadCallback();
         return false;
