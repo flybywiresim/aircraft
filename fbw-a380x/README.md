@@ -33,7 +33,6 @@ This list is divided into standardized ATA chapters, if there are no noteworthy 
 
 - Incomplete pages see [fbw-a380x/src/systems/instruments/src/MFD/pages](https://github.com/flybywiresim/aircraft/tree/master/fbw-a380x/src/systems/instruments/src/MFD/pages)
 - Full separation into three synchronized FMCs and two FMSs (currently one FMC serving one FMS)
-- EO modes / EO SID
 - Accurate CI, OPT and REC MAX FL computation
 - NADP (see THR NOISE above)
 - Fuel planning on FMS/FUEL&LOAD page
@@ -55,7 +54,6 @@ This list is divided into standardized ATA chapters, if there are no noteworthy 
 ### ATA 27 Flight Controls
 
 - Completely migrated SLAT/FLAP CTL implementation (adapted A32NX computers at the moment)
-- Automatic THS setting on ground
 
 ### ATA 28 Fuel
 
@@ -84,7 +82,6 @@ This list is divided into standardized ATA chapters, if there are no noteworthy 
 - CDS / displays (automatic) reconfiguration
 - PFD backup scales
 - Interactive ND
-- Vertical Display: Only fixed vertical range (until FL240) w/o FMS trajectory
 - Independent QNH
 - KCCU soft keyboard
 - ECAM: Completely accurate STS page implementation
@@ -92,7 +89,6 @@ This list is divided into standardized ATA chapters, if there are no noteworthy 
 - ECAM: Correct behavior of RCL / RCL LAST
 - ECAM: Time limited failures
 - Video: ETACS due to sim limitation
-- Latest FMA indications for landing modes (e.g. LAND3 instead of CAT3)
 - SD VIDEO page
 
 ### ATA 32 Landing Gear / Braking / BTV
@@ -104,10 +100,6 @@ This list is divided into standardized ATA chapters, if there are no noteworthy 
   - No glide slope adaptation
   - No handling of brakes/OANS errors
 
-### ATA 33 Lights
-
-- Push button in overhead for logo lights
-
 ### ATA 34 Navigation
 
 - MMR implementation including GPIRS position
@@ -115,7 +107,7 @@ This list is divided into standardized ATA chapters, if there are no noteworthy 
 
 ### ATA 34 Surveillance / TCAS / TAWS / WXR / XPDR
 
-- Weather radar / WXR
+- Weather radar / WXR due to sim limitation
 - TAWS obstacles
 
 ### ATA 34 ROW/ROP
@@ -144,7 +136,6 @@ This list is divided into standardized ATA chapters, if there are no noteworthy 
 
 - Custom engine model (current model is modified LEAP-1A)
 - ACUTE
-- METOTS
 - Reversers: Electrical system for triple lock safety system
 
 <!-- ### Misc / Sim specifics -->

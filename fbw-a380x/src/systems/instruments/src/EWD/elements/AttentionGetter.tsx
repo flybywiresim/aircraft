@@ -1,12 +1,6 @@
-import {
-  ConsumerSubject,
-  DisplayComponent,
-  EventBus,
-  FSComponent,
-  MappedSubject,
-  Subscribable,
-} from '@microsoft/msfs-sdk';
-import { EwdSimvars } from 'instruments/src/EWD/shared/EwdSimvarPublisher';
+// Copyright (c) 2024-2025 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+import { DisplayComponent, EventBus, FSComponent, MappedSubject, Subscribable } from '@microsoft/msfs-sdk';
 
 interface AttentionGetterProps {
   bus: EventBus;
@@ -14,29 +8,16 @@ interface AttentionGetterProps {
   y: number;
   engine: number;
   active: Subscribable<boolean>;
+  normal: Subscribable<boolean>;
+  abnormal: Subscribable<boolean>;
 }
 
 export class AttentionGetter extends DisplayComponent<AttentionGetterProps> {
-  private readonly sub = this.props.bus.getSubscriber<EwdSimvars>();
-
-  private readonly n1 = ConsumerSubject.create(
-    this.sub.on(`n1_${this.props.engine}`).withPrecision(1).whenChanged(),
-    0,
-  );
-
-  private readonly engineState = ConsumerSubject.create(
-    this.sub.on(`engine_state_${this.props.engine}`).whenChanged(),
-    0,
-  );
-
-  private readonly n1Idle = ConsumerSubject.create(this.sub.on('n1Idle').withPrecision(1).whenChanged(), 0);
-
   private readonly visible = MappedSubject.create(
-    ([active, n1, n1Idle, es]) => active && !!(n1 < Math.floor(n1Idle) - 1 && es === 2),
+    ([active, normal, abnormal]) => active && (normal || abnormal),
     this.props.active,
-    this.n1,
-    this.n1Idle,
-    this.engineState,
+    this.props.normal,
+    this.props.abnormal,
   );
 
   render() {
@@ -45,8 +26,20 @@ export class AttentionGetter extends DisplayComponent<AttentionGetterProps> {
         id={`attention-getter-${this.props.engine}`}
         visibility={this.visible.map((it) => (it ? 'inherit' : 'hidden'))}
       >
-        <path class="WhiteLine" d={`m ${this.props.x - 74} ${this.props.y - 13} l 0,-72 l 162,0 l 0,72`} />
-        <path class="WhiteLine" d={`m ${this.props.x - 74} ${this.props.y + 168} l 0,72 l 162,0 l 0,-72`} />
+        <path
+          class={{
+            WhiteLine: this.props.normal,
+            AmberLine: this.props.abnormal,
+          }}
+          d={`m ${this.props.x - 74} ${this.props.y - 13} l 0,-72 l 162,0 l 0,72`}
+        />
+        <path
+          class={{
+            WhiteLine: this.props.normal,
+            AmberLine: this.props.abnormal,
+          }}
+          d={`m ${this.props.x - 74} ${this.props.y + 168} l 0,72 l 162,0 l 0,-72`}
+        />
       </g>
     );
   }

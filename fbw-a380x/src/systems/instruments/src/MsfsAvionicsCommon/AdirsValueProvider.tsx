@@ -65,6 +65,10 @@ export class AdirsValueProvider<T extends AdirsSimVars> {
           name: `L:A32NX_ADIRS_IR_${inertialSource}_BODY_LATERAL_ACC`,
           type: SimVarValueType.Number,
         });
+        this.varProvider.updateSimVarSource('normalAccRaw', {
+          name: `L:A32NX_ADIRS_IR_${inertialSource}_BODY_NORMAL_ACC`,
+          type: SimVarValueType.Number,
+        });
         this.varProvider.updateSimVarSource('irMaintWordRaw', {
           name: `L:A32NX_ADIRS_IR_${inertialSource}_MAINT_WORD`,
           type: SimVarValueType.Number,
@@ -92,12 +96,24 @@ export class AdirsValueProvider<T extends AdirsSimVars> {
           name: `L:A32NX_ADIRS_ADR_${airSource}_BAROMETRIC_VERTICAL_SPEED`,
           type: SimVarValueType.Number,
         });
+        this.varProvider.updateSimVarSource('altitude', {
+          name: `L:A32NX_ADIRS_ADR_${airSource}_ALTITUDE`,
+          type: SimVarValueType.Number,
+        });
         this.varProvider.updateSimVarSource('baroCorrectedAltitude', {
           name: `L:A32NX_ADIRS_ADR_${airSource}_BARO_CORRECTED_ALTITUDE_${displayIndex}`,
           type: SimVarValueType.Number,
         });
         this.varProvider.updateSimVarSource('mach', {
           name: `L:A32NX_ADIRS_ADR_${airSource}_MACH`,
+          type: SimVarValueType.Number,
+        });
+        this.varProvider.updateSimVarSource('sat', {
+          name: `L:A32NX_ADIRS_ADR_${airSource}_STATIC_AIR_TEMPERATURE`,
+          type: SimVarValueType.Number,
+        });
+        this.varProvider.updateSimVarSource('tat', {
+          name: `L:A32NX_ADIRS_ADR_${airSource}_TOTAL_AIR_TEMPERATURE`,
           type: SimVarValueType.Number,
         });
       });

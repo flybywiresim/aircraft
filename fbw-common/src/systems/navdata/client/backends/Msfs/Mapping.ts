@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021, 2022, 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -27,7 +28,6 @@ import {
   ProcedureLeg,
   ProcedureTransition,
   SpeedDescriptor,
-  TerminalWaypoint,
   TurnDirection,
   VhfNavaid,
   VhfNavaidType,
@@ -81,6 +81,7 @@ import {
   NavaidSubsectionCode,
   SectionCode,
 } from '../../../shared/types/SectionCode';
+import { ErrorLogger } from '../../../shared/types/ErrorLogger';
 
 type FacilityType<T> = T extends JS_FacilityIntersection
   ? Waypoint
@@ -90,7 +91,9 @@ type FacilityType<T> = T extends JS_FacilityIntersection
       ? VhfNavaid
       : T extends JS_FacilityAirport
         ? Airport
-        : never;
+        : T extends JS_Runway
+          ? Runway
+          : never;
 
 export class MsfsMapping {
   private static readonly letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -100,6 +103,7 @@ export class MsfsMapping {
   // eslint-disable-next-line no-useless-constructor
   constructor(
     private cache: FacilityCache,
+    private readonly logError: ErrorLogger,
     // eslint-disable-next-line no-empty-function
   ) {}
 
@@ -749,7 +753,7 @@ export class MsfsMapping {
 
             return ret;
           } catch (e) {
-            console.error(`Error mapping approach ${msAirport.icao} ${approach.name}`, e);
+            this.logError(`[MsfsMapping] Error mapping approach ${msAirport.icao} ${approach.name}: ${String(e)}`);
           }
           return null;
         })
@@ -785,7 +789,7 @@ export class MsfsMapping {
           };
           return ret;
         } catch (e) {
-          console.error(`Error mapping arrival ${msAirport.icao} ${arrival.name}`, e);
+          this.logError(`[MsfsMapping] Error mapping arrival ${msAirport.icao} ${arrival.name}: ${String(e)}`);
         }
         return null;
       })
@@ -832,7 +836,7 @@ export class MsfsMapping {
           };
           return ret;
         } catch (e) {
-          console.error(`Error mapping departure ${msAirport.icao} ${departure.name}`, e);
+          this.logError(`[MsfsMapping] Error mapping departure ${msAirport.icao} ${departure.name}: ${String(e)}`);
         }
         return null;
       })
@@ -1203,26 +1207,12 @@ export class MsfsMapping {
     }
   }
 
-  private mapRunwayWaypoint(airport: JS_FacilityAirport, icao: string): TerminalWaypoint | undefined {
+  private mapRunwayWaypoint(airport: JS_FacilityAirport, icao: string): Runway | undefined {
     const airportIdent = FacilityCache.ident(airport.icao);
     const runwayIdent = `${airportIdent}${icao.substring(9).trim()}`;
     const runways = this.mapAirportRunwaysPartial(airport);
 
-    for (const runway of runways) {
-      if (runway.ident === runwayIdent) {
-        return {
-          sectionCode: SectionCode.Airport,
-          subSectionCode: AirportSubsectionCode.Runways,
-          databaseId: icao,
-          icaoCode: icao.substring(1, 3),
-          ident: runwayIdent,
-          location: runway.thresholdLocation,
-          area: WaypointArea.Terminal,
-          airportIdent,
-        };
-      }
-    }
-    return undefined;
+    return runways.find((r) => r.ident === runwayIdent);
   }
 
   private mapApproachName(approach: JS_Approach): string {
@@ -1666,19 +1656,20 @@ export class MsfsMapping {
     return msAirport.icao.substring(7, 11);
   }
 
-  public async getAirways(fixIdent: string, icaoCode: string, airwayIdent?: string): Promise<Airway[]> {
+  public async getAirway(fixIdent: string, icaoCode: string, airwayIdent: string): Promise<Airway[]> {
     const fixes = (await this.cache.searchByIdent(fixIdent, IcaoSearchFilter.Intersections, 100)).filter(
       (wp) => wp.icao.substring(1, 3) === icaoCode,
     );
-    if (fixes.length < 1 || fixes[0].routes.length < 1) {
-      return [];
-    }
     if (fixes.length > 1) {
       console.warn(`Multiple fixes named ${fixIdent} in region ${icaoCode}`);
     }
+    const bestFix = fixes.find((f) => f.routes.find((r) => r.name === airwayIdent));
+    if (!bestFix) {
+      return [];
+    }
 
-    const fix = this.mapFacilityToWaypoint(fixes[0]);
-    const routes = fixes[0].routes.filter((route) => !airwayIdent || route.name === airwayIdent);
+    const fix = this.mapFacilityToWaypoint(bestFix);
+    const routes = bestFix.routes.filter((route) => route.name === airwayIdent);
 
     const airways = routes.map(
       (route) =>

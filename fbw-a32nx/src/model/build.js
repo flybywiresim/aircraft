@@ -110,7 +110,7 @@ function combineGltf(pathA, pathB, outputPath) {
     const bufferSize = gltfA.buffers[0].byteLength;
 
     // Add bufferViews
-    for (const bufferView of gltfB.bufferViews) {
+    for (const bufferView of gltfB.bufferViews ?? []) {
         if (Number.isFinite(bufferView.byteOffset)) {
             bufferView.byteOffset += bufferSize + ((4 - (bufferSize % 4)) % 4);
         } else {
@@ -120,7 +120,7 @@ function combineGltf(pathA, pathB, outputPath) {
     }
 
     // Add accessors
-    for (const accessor of gltfB.accessors) {
+    for (const accessor of gltfB.accessors ?? []) {
         accessor.bufferView += bufferViewsCount;
         gltfA.accessors.push(accessor);
     }
@@ -169,7 +169,7 @@ function combineGltf(pathA, pathB, outputPath) {
     }
 
     // Add meshes
-    for (const mesh of gltfB.meshes) {
+    for (const mesh of gltfB.meshes ?? []) {
         Object.keys(mesh.primitives[0].attributes)
             .forEach((attribute) => {
                 mesh.primitives[0].attributes[attribute] += accessorsCount;
@@ -248,7 +248,9 @@ function combineGltf(pathA, pathB, outputPath) {
     }
 
     // Adjust buffer size
-    gltfA.buffers[0].byteLength += gltfB.buffers[0].byteLength + ((4 - (bufferSize % 4)) % 4);
+    if (gltfB.buffers) {
+        gltfA.buffers[0].byteLength += gltfB.buffers[0].byteLength + ((4 - (bufferSize % 4)) % 4);
+    }
 
     // Write output file
     const data = JSON.stringify(gltfA);
@@ -444,11 +446,13 @@ for (const model of models) {
             } else {
                 combineGltf(p(model.output.gltf[i]), p(addition.gltf), p(model.output.gltf[i]));
 
-                // add some zeroes to the end of the bin file to make sure its length is divisible by 4
-                fs.appendFileSync(p(model.output.bin[i]), Buffer.alloc((4 - (fs.statSync(p(model.output.bin[i])).size % 4)) % 4));
+                if (addition.bin) {
+                    // add some zeroes to the end of the bin file to make sure its length is divisible by 4
+                    fs.appendFileSync(p(model.output.bin[i]), Buffer.alloc((4 - (fs.statSync(p(model.output.bin[i])).size % 4)) % 4));
 
-                // add the second bin file to the end of the first one
-                fs.appendFileSync(p(model.output.bin[i]), fs.readFileSync(p(addition.bin)));
+                    // add the second bin file to the end of the first one
+                    fs.appendFileSync(p(model.output.bin[i]), fs.readFileSync(p(addition.bin)));
+                }
             }
         }
 

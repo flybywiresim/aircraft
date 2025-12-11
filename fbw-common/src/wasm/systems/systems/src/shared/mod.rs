@@ -7,11 +7,10 @@ use crate::{
 
 use arinc429::Arinc429Word;
 use nalgebra::Vector3;
-use ntest::MaxDifference;
 use num_derive::FromPrimitive;
 use std::{cell::Ref, fmt::Display, time::Duration};
 use uom::si::{
-    angle::radian,
+    angle::{degree, radian},
     f64::*,
     length::meter,
     mass_rate::kilogram_per_second,
@@ -24,6 +23,8 @@ use uom::si::{
 
 pub mod low_pass_filter;
 pub mod pid;
+// The module `test` isn't marked #[cfg(test)] to allow usage in other crates.
+pub mod test;
 pub mod update_iterator;
 
 mod random;
@@ -90,7 +91,7 @@ pub trait AngularSpeedSensor {
     fn speed(&self) -> AngularVelocity;
 }
 
-pub trait FeedbackPositionPickoffUnit {
+pub trait PositionPickoffUnit {
     fn angle(&self) -> Angle;
 }
 
@@ -252,6 +253,7 @@ pub trait AdirsMeasurementOutputs {
     fn vertical_speed(&self, adiru_number: usize) -> Arinc429Word<Velocity>;
     fn altitude(&self, adiru_number: usize) -> Arinc429Word<Length>;
     fn angle_of_attack(&self, adiru_number: usize) -> Arinc429Word<Angle>;
+    fn computed_airspeed(&self, adiru_number: usize) -> Arinc429Word<Velocity>;
 }
 
 pub trait AdirsDiscreteOutputs {
@@ -624,6 +626,20 @@ impl DelayedFalseLogicGate {
         }
     }
 
+    pub fn starting_as(mut self, state: bool) -> Self {
+        self.set_output(state);
+        self
+    }
+
+    fn set_output(&mut self, state: bool) {
+        self.expression_result = state;
+        self.false_duration = if !state {
+            self.delay
+        } else {
+            Duration::from_millis(0)
+        };
+    }
+
     pub fn update(&mut self, context: &UpdateContext, expression_result: bool) {
         if !expression_result {
             self.false_duration += context.delta();
@@ -862,12 +878,6 @@ impl From<MachNumber> for f64 {
     }
 }
 
-impl MaxDifference for MachNumber {
-    fn max_diff(self, other: Self) -> f64 {
-        (f64::from(self) - f64::from(other)).abs()
-    }
-}
-
 impl MachNumber {
     // All formulas from Jet Transport Performance Methods by Boeing (March 2009 revision)
 
@@ -1022,6 +1032,23 @@ impl Average for Ratio {
     }
 }
 
+impl Average for Angle {
+    fn average<I>(iter: I) -> Self
+    where
+        I: Iterator<Item = Angle>,
+    {
+        let mut sum = 0.0;
+        let mut count: usize = 0;
+
+        for v in iter {
+            sum += v.get::<degree>();
+            count += 1;
+        }
+
+        Angle::new::<degree>(if count > 0 { sum / (count as f64) } else { 0. })
+    }
+}
+
 impl<'a> Average<&'a Pressure> for Pressure {
     fn average<I>(iter: I) -> Self
     where
@@ -1053,6 +1080,15 @@ impl<'a> Average<&'a Ratio> for Ratio {
     fn average<I>(iter: I) -> Self
     where
         I: Iterator<Item = &'a Ratio>,
+    {
+        iter.copied().average()
+    }
+}
+
+impl<'a> Average<&'a Angle> for Angle {
+    fn average<I>(iter: I) -> Self
+    where
+        I: Iterator<Item = &'a Angle>,
     {
         iter.copied().average()
     }
@@ -2095,7 +2131,7 @@ mod local_acceleration_at_plane_coordinate {
 
 #[cfg(test)]
 mod mach_number_tests {
-    use ntest::assert_about_eq;
+    use ntest::{assert_about_eq, MaxDifference};
     use uom::si::{
         length::foot,
         quantities::{Length, Velocity},
@@ -2103,6 +2139,12 @@ mod mach_number_tests {
     };
 
     use crate::shared::{InternationalStandardAtmosphere, MachNumber};
+
+    impl MaxDifference for MachNumber {
+        fn max_diff(self, other: Self) -> f64 {
+            (f64::from(self) - f64::from(other)).abs()
+        }
+    }
 
     // All of the test values are obtained from
     // - https://aerotoolbox.com/airspeed-conversions/

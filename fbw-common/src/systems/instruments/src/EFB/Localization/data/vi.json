@@ -92,12 +92,14 @@
   },
   "Dispatch": {
     "Ofp": {
-      "ImportSimBriefData": "Nhập dữ liệu SimBrief",
       "TT": {
         "IncreaseFontSize": "Tăng cỡ phông chữ",
+        "NextLoadsheetSection": "Phần loadsheet tiếp theo",
+        "PreviousLoadsheetSection": "Phần loadsheet trước",
         "ReduceFontSize": "Giảm cỡ phông chữ"
       },
       "Title": "OFP",
+      "UnavailableLoadsheetSection": "Thông tin không có sẵn hoặc phần không được bật trong Simbrief.",
       "YouHaveNotYetImportedAnySimBriefData": "Bạn chưa nhập bất kỳ dữ liệu SimBrief nào."
     },
     "Overview": {
@@ -287,6 +289,7 @@
   "Performance": {
     "Data": "Dữ liệu",
     "Landing": {
+      "Airport": "Sân bay",
       "AirportIcao": "ICAO của sân bay",
       "ApproachSpeed": "Tốc độ tiếp cận",
       "ApproachSpeedUnit": "kt",
@@ -295,8 +298,10 @@
       "Clear": "Xoá",
       "DropDownNo": "Không",
       "DropDownYes": "Có",
+      "EnterManually": "Nhập thủ công",
       "FillDataFrom": "Điền dữ liệu từ",
       "FlapsConfiguration": "Cấu hình cánh tà",
+      "LandingWeight": "Trọng lượng hạ cánh",
       "Low": "Thấp",
       "MaximumManual": "Mức độ tối đa khi lái tay",
       "Medium": "Trung bình",
@@ -305,6 +310,7 @@
       "OverweightProcedure": "Thủ tục quá trọng lượng",
       "Qnh": "QNH",
       "ReverseThrust": "Lực đẩy ngược",
+      "Runway": "Đường băng",
       "RunwayAltitude": "Độ cao đường băng",
       "RunwayAltitudeUnit": "ft ASL",
       "RunwayCondition": "Điều kiện đường băng",
@@ -316,6 +322,8 @@
         "MediumPoor": "Trung bình kém (2)",
         "Poor": "Kém (1)"
       },
+      "RunwayElevation": "Độ cao đường băng",
+      "RunwayElevationUnit": "ft AMSL",
       "RunwayHeading": "Hướng của đường băng",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "Đường băng LDA",
@@ -331,10 +339,11 @@
       "UnitFt": "ft",
       "UnitMeter": "m",
       "Weight": "Trọng lượng",
+      "Wind": "Gió",
       "WindDirection": "Hướng gió",
       "WindDirectionUnit": "°",
       "WindMagnitude": "Cường độ gió",
-      "WindMagnitudeUnit": "kt"
+      "WindMagnitudeUnit": "kts"
     },
     "SYNC": "Đồng bộ hóa",
     "Takeoff": {
@@ -396,6 +405,8 @@
       },
       "RunwayElevation": "Độ cao đường băng",
       "RunwayElevationUnit": "ft",
+      "RunwayHeading": "Hướng đường băng",
+      "RunwayHeadingUnit": "°",
       "RunwayLengthUnitFt": "ft",
       "RunwayLengthUnitMeter": "m",
       "RunwaySlope": "Độ dốc đường băng",
@@ -556,6 +567,8 @@
       "AlignAdirs": "Căn chỉnh ADIRS ngay lập tức",
       "AutoBrightness": "Bật/Tắt độ sáng tự động",
       "Brightness": "Cài đặt độ sáng của flyPad",
+      "CabinAutoBrightness": "Bật/Tắt đèn buồng tự động",
+      "CabinLighting": "Đặt độ sáng buồng",
       "FinishBoarding": "Hoàn thành việc cho lên máy bay ngay lập tức",
       "OnScreenKeyboard": "Bật/Tắt Bàn phím trên Màn hình",
       "PauseAtTod": "Kích hoạt Tạm dừng tại điểm hạ độ cao",
@@ -567,8 +580,6 @@
     },
     "Title": "Bảng điều khiển nhanh"
   },
-  "QuickControls.TT.CabinAutoBrightness": "Bật/Tắt đèn cabin tự động",
-  "QuickControls.TT.CabinLighting": "Đặt độ sáng cabin",
   "Settings": {
     "About": {
       "Title": "Giới thiệu"
@@ -585,7 +596,7 @@
       "Select": "Chọn",
       "ThrustReductionHeight": "Độ cao giảm lực đẩy (ft)",
       "Title": "Tùy chọn máy bay / Pin Programs",
-      "WeightUnit": "Đơn vị trọng lượng"
+      "WeightUnit": "Đơn vị kiểu Mỹ"
     },
     "AtsuAoc": {
       "AtisAtcSource": "Nguồn ATIS/ATC",
@@ -644,18 +655,17 @@
       "PauseAtTodDistance": "Khoảng cách dừng từ điểm hạ độ cao (nm)",
       "PilotAvatar": "Hiện thị Avatar Phi công",
       "SeparateTillerFromRudderInputs": "Tách rời Điều Khiển Bánh Mũi với Bàn Đạp",
-      "SyncEfis": "Đồng bộ hóa các điều khiển EFIS giữa cơ trưởng và cơ phó",
+      "SyncEfis": "Đồng bộ hóa bộ điều khiển EFIS giữa cơ trưởng và cơ phó",
       "Title": "Mức thực tế"
     },
     "SimOptions": {
       "Active": "Hoạt động",
       "Auto": "Tự động",
       "Both": "Đã đồng bộ hóa",
+      "CabinAutoBrightness": "Độ sáng buồng tự động",
+      "CabinManualBrightness": "Độ sáng của đèn trong buồng",
       "Calibrate": "Hiệu chỉnh",
-      "Captain": "Cơ trưởng",
-      "CockpitSeatUsedToControl": "Ghế buồng lái được sử dụng để điều khiển",
       "ConesEnabled": "Chóp nón An toàn",
-      "Copilot": "Cơ phó",
       "DefaultBarometerUnit": "Đơn vị áp kế mặc định",
       "DynamicRegistrationDecal": "Đề-can đăng ký động",
       "EnableSimBridge": "Bật kết nối Simbridge (Tự động ngừng kích hoạt sau 5 phút nếu không có kết nối thành công)",
@@ -698,6 +708,7 @@
         "SettingTitle": "Liên kết tài khoản Navigraph",
         "SubscriptionStatus": {
           "None": "Không",
+          "Standard": "Navigraph Standard",
           "Unknown": "Không xác định",
           "Unlimited": "Navigraph Unlimited"
         },
@@ -705,6 +716,7 @@
       },
       "OverrideSimBriefUserID": "Ghi đè ID SimBrief",
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Vui lòng kiểm tra xem bạn đã nhập đúng tên người dùng SimBrief hoặc ID của mình chưa.",
+      "SimbriefLoadsheetNavigationEnabled": "Điều hướng Simbrief Loadsheet",
       "TT": {
         "OverrideSimBriefUserID": "ID SimBrief để sử dụng thay cho tải khoản Navigraph đã được liên kết"
       },
@@ -736,6 +748,9 @@
       "TogaOnAxis": "TOGA trên trục"
     },
     "Title": "Cài đặt",
+    "Troubleshooting": {
+      "Title": "Xử lý sự cố"
+    },
     "Unrealistic": "Không thực tế",
     "flyPad": {
       "AutoBrightness": "Tự động điều chỉnh độ sáng",
@@ -744,7 +759,6 @@
       "Blue": "Xanh lam",
       "Brightness": "Độ sáng",
       "Dark": "Tối",
-      "DisablePushbackConflictWarning": "Tắt cảnh báo xung đột hệ thống đẩy lùi",
       "Language": "Ngôn ngữ",
       "Light": "Sáng",
       "Local": "Cục bộ",
@@ -761,8 +775,6 @@
       "UtcAndLocal": "UTC và địa phương"
     }
   },
-  "Settings.SimOptions.CabinAutoBrightness": "Độ sáng cabin tự động",
-  "Settings.SimOptions.CabinManualBrightness": "Độ sáng của đèn trong cabin",
   "StatusBar": {
     "Apr": "Thg 4",
     "Aug": "Thg 8",

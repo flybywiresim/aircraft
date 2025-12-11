@@ -1,4 +1,7 @@
 {
   "index": "./instrument.tsx",
-  "isInteractive": false
+  "isInteractive": false,
+  "extraDeps": [
+    "/fbw-a32nx/src/systems/shared/src/publishers"
+  ]
 }

@@ -41,6 +41,7 @@ import {
 import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
 import { ConditionalComponent } from '../../../../MsfsAvionicsCommon/UiWidgets/ConditionalComponent';
 import { InternalKccuKeyEvent } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 
 interface MfdFmsFplnProps extends AbstractMfdPageProps {}
 
@@ -179,6 +180,8 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
   private emptyFlightPlanRendered = false;
 
+  private readonly destEfobAmber = Subject.create(false);
+
   protected onNewData(): void {
     if (!this.loadedFlightPlan) {
       return;
@@ -230,23 +233,19 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     const destPred = this.props.fmcService?.master?.guidanceController?.vnavDriver?.getDestinationPrediction();
 
     const distanceToDestination =
-      this.props.fmcService.master?.fmgc?.guidanceController?.alongTrackDistanceToDestination;
-
-    if (distanceToDestination) {
-      this.distanceToDest.set(distanceToDestination);
-    } else {
-      this.distanceToDest.set(null);
-    }
+      this.props.fmcService.master?.fmgc?.guidanceController?.getAlongTrackDistanceToDestination(
+        FlightPlanIndex.Active,
+      );
+    this.distanceToDest.set(distanceToDestination ?? null);
 
     if (destPred && this.props.fmcService.master) {
+      this.destEfobAmber.set(this.props.fmcService.master.fmgc.data.destEfobBelowMin.get());
       this.destTime.set(new Date(this.predictionTimestamp(destPred.secondsFromPresent)));
-      this.destEfob.set(
-        this.props.fmcService.master.guidanceController?.vnavDriver?.getDestinationPrediction()?.estimatedFuelOnBoard ??
-          null,
-      );
+      this.destEfob.set(destPred.estimatedFuelOnBoard ?? null);
     } else {
       this.destEfob.set(null);
       this.destTime.set(null);
+      this.destEfobAmber.set(false);
     }
     this.checkScrollButtons();
   }
@@ -375,7 +374,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             overfly: false,
             annotation: pwp.mcduHeader ?? '',
             etaOrSecondsFromPresent: this.predictionTimestamp(pwp.flightPlanInfo?.secondsFromPresent ?? 0),
-            transitionAltitude: this.loadedFlightPlan.performanceData.transitionAltitude,
+            transitionAltitude: this.loadedFlightPlan.performanceData.transitionAltitude.get(),
             altitudePrediction: pwp.flightPlanInfo?.altitude ?? null,
             hasAltitudeConstraint: false, // TODO
             altitudeConstraint: null, // TODO
@@ -398,8 +397,8 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         }
 
         if (leg instanceof FlightPlanLeg) {
-          const transAlt = this.loadedFlightPlan.performanceData.transitionAltitude;
-          const transLevel = this.loadedFlightPlan.performanceData.transitionLevel;
+          const transAlt = this.loadedFlightPlan.performanceData.transitionAltitude.get();
+          const transLevel = this.loadedFlightPlan.performanceData.transitionLevel.get();
           const transLevelAsAlt = transLevel !== null && transLevel !== undefined ? transLevel * 100 : null;
           const useTransLevel =
             i >=
@@ -1038,6 +1037,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                   'mfd-label': true,
                   'mfd-fms-yellow-text': this.lineColorIsTemporary,
                   'mfd-fms-green-text': this.destEfobNotAvailable,
+                  amber: this.destEfobAmber,
                 }}
               >
                 {this.destEfobLabel}

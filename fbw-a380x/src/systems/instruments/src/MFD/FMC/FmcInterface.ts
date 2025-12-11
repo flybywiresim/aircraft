@@ -9,7 +9,7 @@ import { FmcAircraftInterface } from 'instruments/src/MFD/FMC/FmcAircraftInterfa
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { FmgcDataService } from 'instruments/src/MFD/FMC/fmgc';
 import { TypeIMessage, TypeIIMessage } from 'instruments/src/MFD/shared/NXSystemMessages';
-import { EfisSide, Fix, Waypoint } from '@flybywiresim/fbw-sdk';
+import { EfisSide, Fix, FMMessage, Waypoint } from '@flybywiresim/fbw-sdk';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { DataManager } from '@fmgc/flightplanning/DataManager';
@@ -157,11 +157,18 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
   /** in kilograms */
   getExtraFuel(): number | null;
 
-  /** as flight level */
-  getRecMaxFlightLevel(): number | null;
+  /**
+   * Calculates the recommended maximum flight level.
+   * @param grossWeight The gross weight in kilograms. Defaults to current gross weight (if undefined).
+   * @returns The recommended maxium flight level (in hundreds of feet) if gross weight is valid, else null.
+   */
+  getRecMaxFlightLevel(grossWeight?: number): number | null;
 
   /** as flight level */
   getOptFlightLevel(): number | null;
+
+  /** as flight level */
+  getEoMaxFlightLevel(): number | null;
 
   /**
    * Add message to fmgc message queue
@@ -210,6 +217,10 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
     planDisplayLegIndex: number,
     planDisplayInAltn: boolean,
   ): void;
+
+  sendNdFmMessage(message: FMMessage, side: EfisSide): void;
+
+  removeNdFmMessage(message: FMMessage, side: EfisSide): void;
 
   clearCheckSpeedModeMessage(): void;
 

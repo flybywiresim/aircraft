@@ -1,19 +1,23 @@
-// Copyright (c) 2024 FlyByWire Simulations
+// @ts-strict-ignore
+// Copyright (c) 2024-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
+
+import { MathUtils } from './MathUtils';
+import { ObjectUtils } from './ObjectUtils';
 
 export enum RadioChannelType {
   /** 1 kHz channels. */
-  Hf1,
+  Hf1 = 'Hf1',
   /** 8.33 kHz channels only. */
-  VhfCom8_33,
+  VhfCom8_33 = 'VhfCom8_33',
   /** 25 kHz channels only. */
-  VhfCom25,
+  VhfCom25 = 'VhfCom25',
   /** Combination of 8.33 kHz and 25 kHz channels. */
-  VhfCom8_33_25,
+  VhfCom8_33_25 = 'VhfCom8_33_25',
   /** 50 kHz channels. */
-  VhfNavaid50,
+  VhfNavaid50 = 'VhfNavaid50',
   /** 50 kHz ILS channels. */
-  IlsNavaid50,
+  IlsNavaid50 = 'IlsNavaid50',
 }
 
 interface ChannelParameters {
@@ -25,6 +29,8 @@ interface ChannelParameters {
   min: number;
   /** The maximum valid channel in BCD32. */
   max: number;
+  /** The mask to apply to limit increments without carry. */
+  carryMask: number;
 }
 
 export class RadioUtils {
@@ -40,12 +46,14 @@ export class RadioUtils {
       channels: [0x50, 0x100, 0x150, 0x300, 0x350, 0x400, 0x550, 0x600, 0x650, 0x800, 0x850, 0x900],
       min: 0x1180000,
       max: 0x1369750,
+      carryMask: 0xffff,
     },
     [RadioChannelType.VhfCom25]: {
       channelMask: 0xfff,
       channels: [0, 0x250, 0x500, 0x750],
       min: 0x1180000,
       max: 0x1369750,
+      carryMask: 0xffff,
     },
     [RadioChannelType.VhfCom8_33_25]: {
       channelMask: 0xfff,
@@ -54,26 +62,34 @@ export class RadioUtils {
       ],
       min: 0x1180000,
       max: 0x1369750,
+      carryMask: 0xffff,
     },
     [RadioChannelType.VhfNavaid50]: {
       channelMask: 0xfff,
       channels: [0, 0x500],
       min: 0x1080000,
       max: 0x1179500,
+      carryMask: 0xffff,
     },
     [RadioChannelType.IlsNavaid50]: {
       channelMask: 0xfff,
       channels: [0, 0x500],
       min: 0x1080000,
       max: 0x1119500,
+      carryMask: 0xffff,
     },
     [RadioChannelType.Hf1]: {
       channelMask: 0xff,
       channels: [0, 0x10, 0x20, 0x30, 0x40, 0x50, 0x60, 0x70, 0x80, 0x90],
       min: 0x0028000,
       max: 0x0239990,
+      carryMask: 0xfff,
     },
   };
+
+  private static channelsCache = ObjectUtils.fromEntries(
+    Object.keys(RadioUtils.CHANNEL_TYPES).map((type) => [type, [...RadioUtils.CHANNEL_TYPES[type].channels]]),
+  ) as Record<RadioChannelType, ChannelParameters['channels']>;
 
   /**
    * Packs a VHF com frequency into the data portion of an arinc word.
@@ -266,5 +282,92 @@ export class RadioUtils {
   public static isValidSpacing(bcd32: number, type: RadioChannelType): boolean {
     const channelInfo = RadioUtils.CHANNEL_TYPES[type];
     return channelInfo.channels.includes(bcd32 & channelInfo.channelMask);
+  }
+
+  private static findClosestChannel(bcd32: number, type: RadioChannelType): number {
+    const channelInfo = RadioUtils.CHANNEL_TYPES[type];
+    const channel = bcd32 & channelInfo.channelMask;
+
+    const channelsArray = RadioUtils.channelsCache[type];
+    channelsArray.sort((a, b) => Math.abs(a - channel) - Math.abs(b - channel));
+    return channelsArray[0];
+  }
+
+  /**
+   * Increments a BCD32 digit by 1 in the given direction, carrying overflow to the more significant digits.
+   * @param bcd32 The BCD32 value to start with.
+   * @param nibble The nibble to increment, numbered from 0 at the least significant nibble/digit.
+   * @param direction The direction of the increment.
+   * @returns The incremented BCD32 value.
+   */
+  public static incrementBcd32(bcd32: number, nibble: number, direction: -1 | 1): number {
+    let ret = bcd32;
+    for (let i = nibble; i < 8; i++) {
+      const currentDigit = (ret >>> (i * 4)) & 0xf;
+      const newDigit = currentDigit + direction;
+      const clearDigitMask = ~(0xf << (i * 4));
+      if (newDigit < 0) {
+        ret = (ret & clearDigitMask) | (9 << (i * 4));
+      } else if (newDigit > 9) {
+        ret = ret & clearDigitMask;
+      } else {
+        ret = (ret & clearDigitMask) | (newDigit << (i * 4));
+        break;
+      }
+    }
+    return MathUtils.clamp(ret, 0, 2 ** 32 - 1);
+  }
+
+  /**
+   * Finds and returns the next valid channel, within the min/max limits.
+   * @param bcd32 The starting frequency in BCD32.
+   * @param direction The direction to increment.
+   * @param carry Whether to carry beyond the fractional part.
+   * @param type The channel type.
+   * @returns The incremented frequency in BCD32.
+   */
+  public static getNextValidChannel(
+    bcd32: number,
+    direction: -1 | 1,
+    carry: boolean,
+    type = RadioChannelType.VhfCom8_33_25,
+  ): number {
+    const channelInfo = RadioUtils.CHANNEL_TYPES[type];
+    const currentChannel = RadioUtils.findClosestChannel(bcd32, type);
+    const currentChannelIndex = channelInfo.channels.indexOf(currentChannel);
+    const newChannelIndex = currentChannelIndex + direction;
+
+    let ret: number;
+    if (newChannelIndex >= 0 && newChannelIndex < channelInfo.channels.length) {
+      ret = (bcd32 & ~channelInfo.channelMask) | channelInfo.channels[newChannelIndex];
+    } else {
+      ret =
+        (bcd32 & ~channelInfo.channelMask) |
+        channelInfo.channels[newChannelIndex < 0 ? channelInfo.channels.length - 1 : 0];
+      const firstNibble = (32 - Math.clz32(channelInfo.channelMask)) >>> 2;
+      ret = RadioUtils.incrementBcd32(ret, firstNibble, direction);
+      if (!carry) {
+        const min = (bcd32 & ~channelInfo.carryMask) | channelInfo.channels[0];
+        const max =
+          (bcd32 & ~channelInfo.carryMask) |
+          (0x99999999 & channelInfo.carryMask & ~channelInfo.channelMask) |
+          channelInfo.channels[channelInfo.channels.length - 1];
+        ret = MathUtils.clamp(ret, min, max);
+      }
+    }
+
+    return MathUtils.clamp(ret, channelInfo.min, channelInfo.max);
+  }
+
+  /**
+   * Finds the closest valid frequency for a given frequency.
+   * @param bcd32 The desired frequency.
+   * @param type The channel type.
+   * @returns The closest valid frequency.
+   */
+  public static getClosestValidFrequency(bcd32: number, type = RadioChannelType.VhfCom8_33_25): number {
+    const channelInfo = RadioUtils.CHANNEL_TYPES[type];
+    const desiredChannel = RadioUtils.findClosestChannel(bcd32, type);
+    return MathUtils.clamp((bcd32 & ~channelInfo.channelMask) | desiredChannel, channelInfo.min, channelInfo.max);
   }
 }

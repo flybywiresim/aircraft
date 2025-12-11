@@ -1,11 +1,13 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// @ts-strict-ignore
+// Copyright (c) 2021-2025 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
-import { Trigger, FMMessage, FMMessageTypes } from '@flybywiresim/fbw-sdk';
+import { Trigger, FMMessage } from '@flybywiresim/fbw-sdk';
 import { FMMessageSelector, FMMessageUpdate } from './FmsMessages';
 import { Navigation } from '@fmgc/navigation/Navigation';
+import { FMMessageTypes } from './FmMessages';
 
 abstract class SpecifiedNdbUnavailable implements FMMessageSelector {
   message: FMMessage = FMMessageTypes.SpecifiedNdbUnavailble;

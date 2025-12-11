@@ -33,6 +33,7 @@ import { MfdFmsPageNotAvail } from 'instruments/src/MFD/pages/FMS/MfdFmsPageNotA
 
 import './pages/common/style.scss';
 import { InteractionMode } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 
 export const getDisplayIndex = () => {
   const url = document.getElementsByTagName('a380x-mfd')[0].getAttribute('url');
@@ -145,8 +146,8 @@ export class MfdComponent
   /**
    * Called when a flight plan uplink is done
    */
-  onUplinkDone() {
-    this.props.fmcService.master?.onUplinkDone();
+  onUplinkDone(intoPlan: FlightPlanIndex) {
+    this.props.fmcService.master?.onUplinkDone(intoPlan);
   }
 
   /**
@@ -339,6 +340,10 @@ export class MfdComponent
 
   fmcChanged() {
     // Will be called if the FMC providing all the data has changed.
+  }
+
+  public logTroubleshootingError(msg: any) {
+    this.props.bus.pub('troubleshooting_log_error', String(msg), true, false);
   }
 
   destroy(): void {

@@ -31,6 +31,7 @@ import { Gate } from '../../../shared/types/Gate';
 import { NearbyFacilityType, NearbyFacilityMonitor } from '../../NearbyFacilityMonitor';
 import { isMsfs2024 } from '../../../../shared/src/MsfsDetect';
 import { Msfs2020NearbyFacilityMonitor, MsfsNearbyFacilityMonitor } from './MsfsNearbyFacilityMonitor';
+import { ErrorLogger } from '../../../shared/types/ErrorLogger';
 
 export class MsfsBackend implements DataInterface {
   private static readonly AIRPORT_LOAD_TIMEOUT = 15_000_000;
@@ -46,9 +47,9 @@ export class MsfsBackend implements DataInterface {
 
   private mapping: MsfsMapping;
 
-  constructor() {
-    this.cache = new FacilityCache();
-    this.mapping = new MsfsMapping(this.cache);
+  constructor(private readonly logError: ErrorLogger) {
+    this.cache = new FacilityCache(this.logError);
+    this.mapping = new MsfsMapping(this.cache, this.logError);
 
     RegisterViewListener('JS_LISTENER_FACILITY', EmptyCallback.Void, true);
   }
@@ -67,7 +68,7 @@ export class MsfsBackend implements DataInterface {
 
     const match = facilitiesDateRange.match(MsfsBackend.MSFS_DATE_RANGE_REGEX);
     if (match === null) {
-      console.warn('AiracUtils: Failed to parse facilitiesDateRange', facilitiesDateRange);
+      this.logError(`[MsfsBackend]: Failed to parse facilitiesDateRange: ${facilitiesDateRange}`);
       return out;
     }
 
@@ -328,8 +329,8 @@ export class MsfsBackend implements DataInterface {
   }
 
   /** @inheritdoc */
-  public async getAirwaysByFix(ident: string, icaoCode: string, airwayIdent?: string): Promise<Airway[]> {
-    return this.mapping.getAirways(ident, icaoCode, airwayIdent);
+  public async getAirwayByFix(ident: string, icaoCode: string, airwayIdent: string): Promise<Airway[]> {
+    return this.mapping.getAirway(ident, icaoCode, airwayIdent);
   }
 
   public async getVhfNavaidFromId(databaseId: string): Promise<VhfNavaid> {

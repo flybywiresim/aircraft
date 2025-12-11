@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { CpdlcMessage, CpdlcMessagesDownlink, FansMode } from '@datalink/common';
 import { Keypad } from '../../legacy/A320_Neo_CDU_Keypad';
 import { CDUAtcDepartReq } from './A320_Neo_CDU_ATC_DepartReq';

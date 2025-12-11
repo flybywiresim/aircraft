@@ -24,6 +24,7 @@ export interface FcuBus {
   fcuDiscreteWord1: Arinc429Word;
   fcuDiscreteWord2: Arinc429Word;
 }
+/** @deprecated Use the new style publisher in shared/src and Arinc429LocalVarConsumerSubject. This avoids a lot of memory allocations. */
 export class FcuBusProvider implements Instrument {
   private fcuEisDiscreteWord2 = new Arinc429Word(0);
 

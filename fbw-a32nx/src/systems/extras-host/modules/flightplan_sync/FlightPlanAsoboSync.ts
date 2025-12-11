@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -64,7 +65,7 @@ export class FlightPlanAsoboSync {
 
   init(): void {
     // FIXME this should only ever be used within the FMGC
-    NavigationDatabaseService.activeDatabase = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
+    NavigationDatabaseService.activeDatabase = new NavigationDatabase(this.bus, NavigationDatabaseBackend.Msfs);
 
     const sub = this.bus.getSubscriber<
       FlightPlanEvents & SyncFlightPlanEvents & PerformanceDataFlightPlanSyncEvents<A320FlightPlanPerformanceData>
@@ -72,7 +73,7 @@ export class FlightPlanAsoboSync {
 
     this.subs.push(
       sub.on('flightPlanManager.syncResponse').handle(async (event) => {
-        if (NXDataStore.get('FP_SYNC', 'NONE') === 'SAVE') {
+        if (NXDataStore.getLegacy('FP_SYNC', 'NONE') === 'SAVE') {
           const plan = event.plans[FlightPlanIndex.Active];
           this.enrouteLegs = plan.segments.enrouteSegment.allLegs;
           this.originAirport = plan.originAirport;
@@ -120,7 +121,7 @@ export class FlightPlanAsoboSync {
 
     this.subs.push(
       sub.on('flightPlanManager.copy').handle(async (event) => {
-        if (NXDataStore.get('FP_SYNC', 'LOAD') === 'SAVE' && event.targetPlanIndex === FlightPlanIndex.Active) {
+        if (NXDataStore.getLegacy('FP_SYNC', 'LOAD') === 'SAVE' && event.targetPlanIndex === FlightPlanIndex.Active) {
           const pub = this.bus.getPublisher<FlightPlanEvents>();
           pub.pub('flightPlanManager.syncRequest', undefined, true);
         }
@@ -128,13 +129,13 @@ export class FlightPlanAsoboSync {
     );
     this.subs.push(
       sub.on('flightPlanManager.create').handle(async (event) => {
-        if (NXDataStore.get('FP_SYNC', 'LOAD') === 'SAVE' && event.planIndex === FlightPlanIndex.Active) {
+        if (NXDataStore.getLegacy('FP_SYNC', 'LOAD') === 'SAVE' && event.planIndex === FlightPlanIndex.Active) {
           const pub = this.bus.getPublisher<FlightPlanEvents>();
           pub.pub('flightPlanManager.syncRequest', undefined, true);
         }
       }),
     );
-    NXDataStore.getAndSubscribe(
+    NXDataStore.getAndSubscribeLegacy(
       'FP_SYNC',
       async (_, val) => {
         if (val !== 'NONE') {
@@ -206,7 +207,7 @@ export class FlightPlanAsoboSync {
           }
         }
 
-        await rpcClient.uplinkInsert();
+        await rpcClient.uplinkInsert(FlightPlanIndex.Active);
       }
     } catch (e) {
       console.error('Error in loading FlightPlan from MSFS', e);
@@ -217,7 +218,7 @@ export class FlightPlanAsoboSync {
 
   private async syncFlightPlanToGame(): Promise<void> {
     // TODO make better
-    if (NXDataStore.get('FP_SYNC', 'LOAD') !== 'SAVE') {
+    if (NXDataStore.getLegacy('FP_SYNC', 'LOAD') !== 'SAVE') {
       return;
     }
     try {

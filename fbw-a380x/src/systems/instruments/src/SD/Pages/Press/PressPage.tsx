@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import React from 'react';
 import { PageTitle } from '../Generic/PageTitle';
 import LandingElevation from './elements/LandingElevation';

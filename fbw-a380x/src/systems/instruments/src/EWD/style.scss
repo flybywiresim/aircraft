@@ -404,7 +404,6 @@ text, tspan, span {
   display: flex;
   flex-direction: row;
   flex: 1;
-  padding: 4px 0px 4px 0px;
   margin-left: 10px;
   align-items: center;
   border: 3px solid transparent;
@@ -427,7 +426,7 @@ text, tspan, span {
   color: $display-white;
 }
 
-.EclLine.ChecklistItemInactive {
+.EclLine.Inactive {
   color: $display-grey !important;
 }
 
@@ -436,27 +435,35 @@ text, tspan, span {
 }
 
 .EclLine.DeferredProcedure {
-  color: $display-amber !important;
+  color: $display-amber;
 }
 
 .EclLine.CompletedDeferredProcedure {
-  color: $display-white !important;
+  color: $display-white;
+}
+
+.EclLine.Underline {
+  text-decoration: underline;
+}
+
+.EclLine.Centered {
+  justify-content: center;
 }
 
 .EclLine.Green {
-  color: $display-green !important;
+  color: $display-green;
 }
 
 .EclLine.Cyan {
-  color: $display-cyan !important;
+  color: $display-cyan;
 }
 
 .EclLine.Amber {
-  color: $display-amber !important;
+  color: $display-amber;
 }
 
 .EclLine.White {
-  color: $display-white !important;
+  color: $display-white;
 }
 
 .EclLine.Selected {
@@ -465,25 +472,25 @@ text, tspan, span {
 }
 
 .EclLine.Headline {
-  color: $display-white !important;
+  color: $display-white;
   text-decoration: underline;
 }
 
 .EclLine.ChecklistCondition {
-  color: $display-white !important;
+  color: $display-white;
 }
 
 .EclLine.OmissionDots {
-  color: $display-cyan !important;
+  color: $display-white;
 }
 
 .EclLine.LandAnsa {
-  color: $display-amber !important;
+  color: $display-amber;
   justify-content: flex-end;
 }
 
 .EclLine.LandAsap {
-  color: $display-red !important;
+  color: $display-red;
   justify-content: flex-end;
 }
 
@@ -491,42 +498,41 @@ text, tspan, span {
   text-align: center;
   justify-content: center;
   align-items: center;
-  padding-top: 2px;
-  width: 32px;
+  width: 24px;
   font-size: 26px;
-  color: $display-cyan;
+  margin-right: 20px;
 }
 
 .EclLineCheckboxArea.Checked {
   color: $display-green;
 }
 
-.EclLineCheckboxArea.AbnormalItem {
-  color: $display-cyan;
-}
 
 .EclLineCheckboxArea.AbnormalItem.Checked {
   color: $display-white;
 }
 
 .EclLineCheckboxArea.ChecklistCondition {
-  color: $display-white !important;
+  color: $display-white;
 }
 
-.EclLineCheckboxArea.AbnormalItem.ChecklistItemInactive {
-  color: $display-grey;
+.EclLineCheckboxArea.AbnormalItem.Inactive {
+  color: $display-grey !important;
 }
 
 .EclLineText {
-  margin: 0px 10px 0px 10px;
   font-size: 26px;
+}
+
+.EclLineText.smaller {
+  font-size: 24px;
 }
 
 .EclSeparationLine {
   flex: 1;
   border-bottom: 2px solid $display-white;
-  padding-top: 16px;
-  margin-bottom: 16px;
+  padding-top: 14px;
+  margin-bottom: 14px;
   align-self: center;
   justify-self: center;
   margin-right: 10px;
@@ -535,8 +541,17 @@ text, tspan, span {
 .EclLineContainer {
   height: 34px;
   display: flex;
+  visibility: visible;
   flex-direction: row;
   flex: 1;
+}
+
+.EclLineContainer.smaller {
+  height: 30px;
+}
+
+.EclLineContainer.invisible {
+  visibility: hidden;
 }
 
 .EclLineEndMarker {

@@ -12,7 +12,7 @@ import {
   Subscribable,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { FMMessage, FMMessageTypes } from '@flybywiresim/fbw-sdk';
+import { FMMessage } from '@flybywiresim/fbw-sdk';
 
 import { EfisNdMode } from '../NavigationDisplay';
 import { Layer } from '../MsfsAvionicsCommon/Layer';
@@ -22,6 +22,8 @@ export interface FmMessagesProps {
   bus: EventBus;
 
   mode: Subscribable<EfisNdMode>;
+
+  fmMessages: FMMessage[];
 }
 
 export class FmMessages extends DisplayComponent<FmMessagesProps> {
@@ -75,7 +77,7 @@ export class FmMessages extends DisplayComponent<FmMessagesProps> {
     const newActiveMessages = this.activeMessages.getArray().slice();
 
     // the list must be ordered by priority, and LIFO for equal priority
-    for (const message of Object.values(FMMessageTypes)) {
+    for (const message of this.props.fmMessages) {
       if (((message.ndFlag ?? 0) & messageFlags) > 0) {
         if (newActiveMessages.findIndex(({ ndFlag }) => ndFlag === message.ndFlag) === -1) {
           newActiveMessages.push(message);

@@ -14,8 +14,10 @@ export interface FmsDisplayInterface {
 
   /**
    * Called when a flight plan uplink is done
+   *
+   * @param intoPlan the index of the flight plan into which the uplink was done
    */
-  onUplinkDone(): void;
+  onUplinkDone(intoPlan: number): void;
 
   /**
    * Calling this function with a message should display 1the message in the FMS' message area,
@@ -52,4 +54,7 @@ export interface FmsDisplayInterface {
    * @param waypoint the waypoint to look for
    */
   isWaypointInUse(waypoint: Waypoint): Promise<boolean>;
+
+  /** Logs a message to the troubleshooting log on the EFB. */
+  logTroubleshootingError(msg: any): void;
 }

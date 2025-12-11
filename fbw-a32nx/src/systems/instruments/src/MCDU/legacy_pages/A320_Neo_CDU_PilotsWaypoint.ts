@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { PilotWaypointType } from '@fmgc/flightplanning/DataManager';
 import { CDUNewWaypoint } from './A320_Neo_CDU_NewWaypoint';
 import { CDUDataIndexPage } from './A320_Neo_CDU_DataIndexPage';

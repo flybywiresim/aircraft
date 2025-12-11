@@ -1,0 +1,12 @@
+.Blink10Seconds {
+  animation-name: blinking;
+  animation-duration: 1s;
+  animation-iteration-count: 10;
+}
+
+@keyframes blinking {
+  0% {opacity: 0;}
+  50% {opacity: 0;}
+  51% {opacity: 1;}
+  100% {opacity: 1;}
+}

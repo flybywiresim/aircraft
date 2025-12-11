@@ -31,6 +31,10 @@
   font-size: 20px;
 }
 
+.mfd-label-unit.bigger {
+  font-size: 24px;
+}
+
 .mfd-value {
   color: $display-green;
   font-size: 25px;
@@ -97,6 +101,10 @@
 .mfd-button.selected {
   background-color: $display-dark-grey;
   border: 2px inset $display-light-grey;
+}
+
+.mfd-button.selected:hover {
+  border-color: $display-cyan;
 }
 
 .mfd-button.disabled:hover {
@@ -250,6 +258,10 @@
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
+}
+
+.mfd-spacing-right-small {
+  margin-right: 10px;
 }
 
 .mfd-spacing-right {
@@ -435,6 +447,10 @@
   border: 2px outset $display-cyan;
 }
 
+.mfd-radio-button.amber {
+  color:  $display-amber
+}
+
 .mfd-context-menu {
   font-family: "FBW-Display-EIS-A380-SlashedZero", monospace;
   background-color: $display-mfd-darker-grey;
@@ -540,6 +556,10 @@
 .mfd-input-field-text-input.disabled {
   background-color: $display-mfd-darker-grey;
   color: $display-dark-grey;
+}
+
+div.yellow-when-disabled > div > div > .mfd-input-field-text-input.disabled {
+  color: $display-yellow;
 }
 
 .mfd-input-field-text-input.mandatory {

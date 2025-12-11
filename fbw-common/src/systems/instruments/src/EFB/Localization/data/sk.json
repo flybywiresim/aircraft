@@ -92,12 +92,14 @@
   },
   "Dispatch": {
     "Ofp": {
-      "ImportSimBriefData": "Import údajov z SimBrief",
       "TT": {
         "IncreaseFontSize": "Zväčšiť veľkosť písma",
+        "NextLoadsheetSection": "Next loadsheet section",
+        "PreviousLoadsheetSection": "Previous loadsheet section",
         "ReduceFontSize": "Zmenšiť veľkosť písma"
       },
       "Title": "OFP",
+      "UnavailableLoadsheetSection": "Info not available or section not enabled in Simbrief.",
       "YouHaveNotYetImportedAnySimBriefData": "Ešte ste neimportovali žiadne údaje z SimBrief."
     },
     "Overview": {
@@ -287,6 +289,7 @@
   "Performance": {
     "Data": "Dáta",
     "Landing": {
+      "Airport": "Airport",
       "AirportIcao": "ICAO letiska",
       "ApproachSpeed": "Rýchlosť priblíženia",
       "ApproachSpeedUnit": "kts",
@@ -295,8 +298,10 @@
       "Clear": "Vymazať",
       "DropDownNo": "Nie",
       "DropDownYes": "Áno",
+      "EnterManually": "Enter Manually",
       "FillDataFrom": "Vyplniť údaje z",
       "FlapsConfiguration": "Konfigurácia klapiek",
+      "LandingWeight": "Landing Weight",
       "Low": "Nízka",
       "MaximumManual": "Maximálna príručka",
       "Medium": "Stredné",
@@ -305,6 +310,7 @@
       "OverweightProcedure": "Postup s nadváhou",
       "Qnh": "QNH",
       "ReverseThrust": "Spätný ťah",
+      "Runway": "Runway",
       "RunwayAltitude": "Výška dráhy",
       "RunwayAltitudeUnit": "ft ASL",
       "RunwayCondition": "Stav dráhy",
@@ -316,6 +322,8 @@
         "MediumPoor": "Medium-Poor (2)",
         "Poor": "Poor (1)"
       },
+      "RunwayElevation": "Runway Elevation",
+      "RunwayElevationUnit": "ft AMSL",
       "RunwayHeading": "Smer dráhy",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "Dráha LDA",
@@ -331,6 +339,7 @@
       "UnitFt": "ft",
       "UnitMeter": "m",
       "Weight": "Hmotnosť",
+      "Wind": "Wind",
       "WindDirection": "Smer vetra",
       "WindDirectionUnit": "°",
       "WindMagnitude": "Sila vetra",
@@ -396,6 +405,8 @@
       },
       "RunwayElevation": "Runway Elevation",
       "RunwayElevationUnit": "ft",
+      "RunwayHeading": "Runway Heading",
+      "RunwayHeadingUnit": "°",
       "RunwayLengthUnitFt": "ft",
       "RunwayLengthUnitMeter": "m",
       "RunwaySlope": "Runway Slope",
@@ -556,6 +567,8 @@
       "AlignAdirs": "Instantly align ADIRS",
       "AutoBrightness": "Turn Auto Brightness On/Off",
       "Brightness": "Set flyPad brightness",
+      "CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+      "CabinLighting": "Set Cabin Lighting",
       "FinishBoarding": "Instantly finish boarding",
       "OnScreenKeyboard": "Turn OnScreen Keyboard On/Off",
       "PauseAtTod": "Arm or Disarm pause at Top of Descent",
@@ -567,8 +580,6 @@
     },
     "Title": "Quick Controls"
   },
-  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
-  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "O aplikácií"
@@ -644,18 +655,17 @@
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "Oddeľte Tiller od vstupov kormidla",
-      "SyncEfis": "Sync EFIS and audio controls between Captain and FO",
+      "SyncEfis": "Sync EFIS and Audio Controls Between Captain and FO",
       "Title": "Realizmus"
     },
     "SimOptions": {
       "Active": "Aktívne",
       "Auto": "Automaticky",
       "Both": "Synchronized",
+      "CabinAutoBrightness": "Auto Cabin Lighting",
+      "CabinManualBrightness": "Cabin Lighting Brightness",
       "Calibrate": "Skalibrovať",
-      "Captain": "Captain",
-      "CockpitSeatUsedToControl": "Cockpit Seat Used To Control",
       "ConesEnabled": "Safety Cones",
-      "Copilot": "Copilot",
       "DefaultBarometerUnit": "Štandardná jednotka barometra",
       "DynamicRegistrationDecal": "Dynamický registračný kód",
       "EnableSimBridge": "Povoliť pripojenie servera MCDU (automaticky sa deaktivuje po 5 minútach, ak nie je úspešné pripojenie)",
@@ -698,6 +708,7 @@
         "SettingTitle": "Navigraph Account Link",
         "SubscriptionStatus": {
           "None": "None",
+          "Standard": "Navigraph Standard",
           "Unknown": "Unknown",
           "Unlimited": "Navigraph Unlimited"
         },
@@ -705,6 +716,7 @@
       },
       "OverrideSimBriefUserID": "Override SimBrief User ID",
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
+      "SimbriefLoadsheetNavigationEnabled": "Simbrief Loadsheet Navigation",
       "TT": {
         "OverrideSimBriefUserID": "Alternative SimBrief user ID to use instead of the linked Navigraph Account"
       },
@@ -736,6 +748,9 @@
       "TogaOnAxis": "TOGA On Axis"
     },
     "Title": "Nastavenia",
+    "Troubleshooting": {
+      "Title": "Troubleshooting"
+    },
     "Unrealistic": "Nereálne",
     "flyPad": {
       "AutoBrightness": "Automatický jas",
@@ -744,7 +759,6 @@
       "Blue": "Modrá",
       "Brightness": "Jas",
       "Dark": "Tmavá",
-      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "Jazyk",
       "Light": "Svetlá",
       "Local": "Lokálne",
@@ -761,8 +775,6 @@
       "UtcAndLocal": "UTC a lokálne"
     }
   },
-  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
-  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "apr",
     "Aug": "aug",

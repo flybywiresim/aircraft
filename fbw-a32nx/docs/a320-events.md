@@ -152,7 +152,7 @@
 
 - A32NX.FCU_EFIS_{side}_BARO_SET
     - Triggered to set the baro value on FCU
-    - Value is expected as the first parameter, in hPa * 16 (i.e. with a factor 16 applied, same as KOHLSMANN_SET).
+    - Value is expected as the first parameter, in hPa * 16 (i.e. with a factor 16 applied, same as KOHLSMAN_SET).
     - side = L, R
 
 - A32NX.FCU_EFIS_{side}_BARO_PUSH

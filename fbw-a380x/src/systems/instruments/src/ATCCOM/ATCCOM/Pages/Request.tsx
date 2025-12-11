@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import React, { FC, useState } from 'react';
 import { FansMode } from '@atsu/com/FutureAirNavigationSystem';
 import { CpdlcMessageElement } from '@atsu/messages/CpdlcMessageElements';

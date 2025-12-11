@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 /* eslint-disable no-case-declarations */
 // Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
@@ -62,9 +63,9 @@ export class LightSync implements Instrument {
   public initLighting(): void {
     console.log('[LightSync] initializing lighting to defaults');
 
-    const msfsCabinCircuitVar = SimVar.GetSimVarValue('A:CIRCUIT SWITCH ON:146', 'bool');
+    const msfsCabinCircuitVar = SimVar.GetSimVarValue('A:CIRCUIT SWITCH ON:151', 'bool');
     if (!msfsCabinCircuitVar) {
-      SimVar.SetSimVarValue('K:ELECTRICAL_CIRCUIT_TOGGLE', 'number', 146);
+      SimVar.SetSimVarValue('K:ELECTRICAL_CIRCUIT_TOGGLE', 'number', 151);
     }
 
     const autoBrightness = this.getAutoBrightness();

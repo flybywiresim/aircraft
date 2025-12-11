@@ -224,6 +224,10 @@ text.Yellow {
   fill: $display-yellow;
   stroke: none;
 }
+.DimmedYellow {
+  stroke: scale-color($display-yellow, $lightness: -30%);
+  fill: none;
+}
 
 .Red {
   stroke: $display-red;

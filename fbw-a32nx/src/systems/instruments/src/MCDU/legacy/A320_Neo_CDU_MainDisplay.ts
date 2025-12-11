@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023, 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -15,7 +16,6 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { CDU_Field } from './A320_Neo_CDU_Field';
 import { AtsuStatusCodes } from '@datalink/common';
 import { EventBus, GameStateProvider, HEvent } from '@microsoft/msfs-sdk';
-import { CDUInitPage } from '../legacy_pages/A320_Neo_CDU_InitPage';
 import { LegacyFmsPageInterface, LskCallback, LskDelayFunction } from './LegacyFmsPageInterface';
 import { LegacyAtsuPageInterface } from './LegacyAtsuPageInterface';
 
@@ -127,7 +127,6 @@ export class A320_Neo_CDU_MainDisplay
     IRSInit: 18,
     IRSMonitor: 19,
     IRSStatus: 20,
-    IRSStatusFrozen: 21,
     LateralRevisionPage: 22,
     MenuPage: 23,
     NavaidPage: 24,
@@ -404,7 +403,7 @@ export class A320_Neo_CDU_MainDisplay
 
     SimVar.SetSimVarValue('L:A32NX_GPS_PRIMARY_LOST_MSG', 'Bool', 0).then();
 
-    NXDataStore.subscribe('*', () => {
+    NXDataStore.subscribeLegacy('*', () => {
       this.requestUpdate();
     });
 
@@ -1114,8 +1113,8 @@ export class A320_Neo_CDU_MainDisplay
 
   private initKeyboardScratchpad() {
     window.document.addEventListener('click', () => {
-      const mcduInput = NXDataStore.get('MCDU_KB_INPUT', 'DISABLED');
-      const mcduTimeout = parseInt(NXDataStore.get('CONFIG_MCDU_KB_TIMEOUT', '60'));
+      const mcduInput = NXDataStore.getLegacy('MCDU_KB_INPUT', 'DISABLED');
+      const mcduTimeout = parseInt(NXDataStore.getLegacy('CONFIG_MCDU_KB_TIMEOUT', '60'));
       const isPoweredL = SimVar.GetSimVarValue('L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED', 'Number');
       const isPoweredR = SimVar.GetSimVarValue('L:A32NX_ELEC_AC_2_BUS_IS_POWERED', 'Number');
 
@@ -1618,14 +1617,6 @@ export class A320_Neo_CDU_MainDisplay
   }
 
   /* END OF WEBSOCKET */
-
-  public goToFuelPredPage() {
-    if (this.isAnEngineOn()) {
-      CDUFuelPredPage.ShowPage(this);
-    } else {
-      CDUInitPage.ShowPage2(this);
-    }
-  }
 
   public logTroubleshootingError(msg: any) {
     this.bus.pub('troubleshooting_log_error', String(msg), true, false);

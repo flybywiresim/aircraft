@@ -158,7 +158,7 @@ bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "AIRSPEED MACH", "MACH");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "GROUND VELOCITY", "KNOTS");
   // workaround for altitude issues due to MSFS bug, needs to be changed to PRESSURE ALTITUDE again when solved
-  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "INDICATED ALTITUDE:3", "FEET");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "INDICATED ALTITUDE:4", "FEET");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "INDICATED ALTITUDE", "FEET");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "PLANE ALT ABOVE GROUND MINUS CG", "FEET");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "VELOCITY WORLD Y", "FEET PER MINUTE");
@@ -230,9 +230,9 @@ bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "ENG ANTI ICE:1", "BOOL");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "ENG ANTI ICE:2", "BOOL");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "SIM ON GROUND", "BOOL");
-  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "KOHLSMAN SETTING MB:0", "MBAR");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "KOHLSMAN SETTING MB:1", "MBAR");
-  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "KOHLSMAN SETTING STD:3", "BOOL");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "KOHLSMAN SETTING MB:2", "MBAR");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "KOHLSMAN SETTING STD:4", "BOOL");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "CAMERA STATE", "NUMBER");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "PLANE ALTITUDE", "METERS");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "NAV MAGVAR:3", "DEGREES");
@@ -390,9 +390,9 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_VS_HOLD, "AP_VS_HOLD", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_ATT_HOLD, "AP_ATT_HOLD", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_MACH_HOLD, "AP_MACH_HOLD", true);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::KOHLSMANN_SET, "KOHLSMAN_SET", true);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::KOHLSMANN_INC, "KOHLSMAN_INC", true);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::KOHLSMANN_DEC, "KOHLSMAN_DEC", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::KOHLSMAN_SET, "KOHLSMAN_SET", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::KOHLSMAN_INC, "KOHLSMAN_INC", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::KOHLSMAN_DEC, "KOHLSMAN_DEC", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::BAROMETRIC_STD_PRESSURE, "BAROMETRIC_STD_PRESSURE", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::BAROMETRIC, "BAROMETRIC", true);
 
@@ -484,9 +484,10 @@ bool SimConnectInterface::prepareSimOutputSimConnectDataDefinitions() {
 
   result &= addDataDefinition(hSimConnect, 6, SIMCONNECT_DATATYPE_FLOAT64, "SPOILERS HANDLE POSITION", "POSITION");
 
-  result &= addDataDefinition(hSimConnect, 7, SIMCONNECT_DATATYPE_INT64, "KOHLSMAN SETTING STD:3", "BOOL");
+  result &= addDataDefinition(hSimConnect, 7, SIMCONNECT_DATATYPE_INT64, "KOHLSMAN SETTING STD:4", "BOOL");
 
-  result &= addDataDefinition(hSimConnect, 8, SIMCONNECT_DATATYPE_INT64, "KOHLSMAN SETTING STD:0", "BOOL");
+  result &= addDataDefinition(hSimConnect, 8, SIMCONNECT_DATATYPE_INT64, "KOHLSMAN SETTING STD:1", "BOOL");
+  result &= addDataDefinition(hSimConnect, 9, SIMCONNECT_DATATYPE_INT64, "KOHLSMAN SETTING STD:2", "BOOL");
 
   return result;
 }
@@ -919,10 +920,8 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   result &= SimConnect_CreateClientData(hSimConnect, ClientData::FMGC_DISCRETE_OUTPUTS, sizeof(base_fmgc_discrete_outputs),
                                         SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
   // add data definitions
-  for (int i = 0; i < 6; i++) {
-    result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FMGC_DISCRETE_OUTPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                   SIMCONNECT_CLIENTDATATYPE_INT8);
-  }
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FMGC_DISCRETE_OUTPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 sizeof(base_fmgc_discrete_inputs));
 
   // request data to be updated when set
   result &= SimConnect_RequestClientData(hSimConnect, ClientData::FMGC_DISCRETE_OUTPUTS, ClientData::FMGC_DISCRETE_OUTPUTS,
@@ -1065,9 +1064,23 @@ bool SimConnectInterface::sendData(SimOutputAltimeter output) {
   return sendData(7, sizeof(output), &output);
 }
 
-bool SimConnectInterface::sendData(SimOutputAltimeter output, bool altimeter3) {
+bool SimConnectInterface::sendData(SimOutputAltimeter output, int altimeterIndex) {
   // write data and return result
-  return sendData(altimeter3 ? 7 : 8, sizeof(output), &output);
+  SIMCONNECT_DATA_DEFINITION_ID dataDefId;
+  switch (altimeterIndex) {
+    case 1:
+      dataDefId = 8;
+      break;
+    case 2:
+      dataDefId = 9;
+      break;
+    case 4:
+      dataDefId = 7;
+      break;
+    default:
+      return false;
+  }
+  return sendData(dataDefId, sizeof(output), &output);
 }
 
 bool SimConnectInterface::sendEvent(Events eventId) {
@@ -2066,84 +2079,94 @@ void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, c
       break;
     }
 
-    // TODO Unsync EFIS baro
-    case Events::KOHLSMANN_INC: {
-      if (data1 == 0 || data1 == 1) {
-        fcuEfisPanelInputs[0].baro_knob.turns = 1;
-        fcuEfisPanelInputs[1].baro_knob.turns = 1;
+    case Events::KOHLSMAN_INC: {
+      // Match the MSFS behaviour here; 0 only sets altimeter 1
+      const DWORD altimeterIndex = data0 == 0 ? 1 : data0;
+      if (altimeterIndex == 1) {
+        processEvent(A32NX_FCU_EFIS_L_BARO_INC, 0, 0);
+      } else if (altimeterIndex == 2) {
+        processEvent(A32NX_FCU_EFIS_R_BARO_INC, 0, 0);
+      } else {
+        sendEventEx1(KOHLSMAN_INC, SIMCONNECT_GROUP_PRIORITY_STANDARD, data0, data1);
       }
-      if (data1 != 1) {
-        sendEventEx1(KOHLSMANN_INC, SIMCONNECT_GROUP_PRIORITY_STANDARD, data0, data1);
-      }
-      std::cout << "WASM: event triggered: KOHLSMANN_INC, index " << data1 << std::endl;
+      std::cout << "WASM: event triggered: KOHLSMAN_INC, index " << altimeterIndex << std::endl;
       break;
     }
     case Events::A32NX_FCU_EFIS_L_BARO_INC: {
-      fcuEfisPanelInputs[0].baro_knob.turns = 1;
-      fcuEfisPanelInputs[1].baro_knob.turns = 1;
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_L_BARO_INC" << std::endl;
+      fcuEfisPanelInputs[0].baro_knob.turns = 1;
+      lastBaroInputWasRightSide = false;
       break;
     }
 
-    case Events::KOHLSMANN_DEC: {
-      if (data1 == 0 || data1 == 1) {
-        fcuEfisPanelInputs[0].baro_knob.turns = -1;
-        fcuEfisPanelInputs[1].baro_knob.turns = -1;
+    case Events::KOHLSMAN_DEC: {
+      // Match the MSFS behaviour here; 0 only sets altimeter 1
+      const DWORD altimeterIndex = data0 == 0 ? 1 : data0;
+      if (altimeterIndex == 1) {
+        processEvent(A32NX_FCU_EFIS_L_BARO_DEC, 0, 0);
+      } else if (altimeterIndex == 2) {
+        processEvent(A32NX_FCU_EFIS_R_BARO_DEC, 0, 0);
+      } else {
+        sendEventEx1(KOHLSMAN_DEC, SIMCONNECT_GROUP_PRIORITY_STANDARD, data0, data1);
       }
-      if (data1 != 1) {
-        sendEventEx1(KOHLSMANN_DEC, SIMCONNECT_GROUP_PRIORITY_STANDARD, data0, data1);
-      }
-      std::cout << "WASM: event triggered: KOHLSMANN_DEC, index " << data1 << std::endl;
+      std::cout << "WASM: event triggered: KOHLSMAN_DEC, index " << altimeterIndex << std::endl;
       break;
     }
     case Events::A32NX_FCU_EFIS_L_BARO_DEC: {
-      fcuEfisPanelInputs[0].baro_knob.turns = -1;
-      fcuEfisPanelInputs[1].baro_knob.turns = -1;
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_L_BARO_DEC" << std::endl;
+      fcuEfisPanelInputs[0].baro_knob.turns = -1;
+      lastBaroInputWasRightSide = false;
       break;
     }
 
-    case Events::KOHLSMANN_SET: {
-      if (data1 == 0 || data1 == 1) {
-        simInputAutopilot.baro_left_set = data0 / 16.;
-        simInputAutopilot.baro_right_set = data0 / 16.;
+    case Events::KOHLSMAN_SET: {
+      const DWORD kohlsmanValue = data0;
+      const DWORD altimeterIndex = data1;
+      if (altimeterIndex == 0 || altimeterIndex == 2) {
+        processEvent(A32NX_FCU_EFIS_R_BARO_SET, kohlsmanValue, 0);
       }
-      if (data1 != 1) {
-        sendEventEx1(KOHLSMANN_SET, SIMCONNECT_GROUP_PRIORITY_STANDARD, data0, data1);
+      if (altimeterIndex == 0 || altimeterIndex == 1) {
+        processEvent(A32NX_FCU_EFIS_L_BARO_SET, kohlsmanValue, 0);
       }
-      std::cout << "WASM: event triggered: KOHLSMANN_SET, index " << data1 << std::endl;
+      if (altimeterIndex != 1 && altimeterIndex != 2) {
+        sendEventEx1(KOHLSMAN_SET, SIMCONNECT_GROUP_PRIORITY_STANDARD, data0, data1);
+      }
+      std::cout << "WASM: event triggered: KOHLSMAN_SET, index " << altimeterIndex << "value" << kohlsmanValue << std::endl;
       break;
     }
 
     case Events::A32NX_FCU_EFIS_L_BARO_SET: {
       simInputAutopilot.baro_left_set = static_cast<long>(data0) / 16.;
-      simInputAutopilot.baro_right_set = static_cast<long>(data0) / 16.;
+      lastBaroInputWasRightSide = false;
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_L_BARO_SET: " << static_cast<long>(data0) << std::endl;
       break;
     }
 
     case Events::BAROMETRIC_STD_PRESSURE: {
-      if (data0 == 0 || data0 == 1) {
-        simInputAutopilot.baro_left_set = 1013;
-        simInputAutopilot.baro_right_set = 1013;
+      const DWORD altimeterIndex = data0;
+      if (altimeterIndex == 0 || altimeterIndex == 1) {
+        processEvent(A32NX_FCU_EFIS_L_BARO_PULL, 0, 0);
       }
-      if (data0 != 1) {
+      if (altimeterIndex == 0 || altimeterIndex == 2) {
+        processEvent(A32NX_FCU_EFIS_R_BARO_PULL, 0, 0);
+      }
+      if (altimeterIndex != 1 && altimeterIndex != 2) {
         sendEvent(BAROMETRIC_STD_PRESSURE, 0, SIMCONNECT_GROUP_PRIORITY_STANDARD);
       }
-      std::cout << "WASM: event triggered: BAROMETRIC_STD_PRESSURE, index " << data0 << std::endl;
+      std::cout << "WASM: event triggered: BAROMETRIC_STD_PRESSURE, index " << altimeterIndex << std::endl;
       break;
     }
 
     case Events::A32NX_FCU_EFIS_L_BARO_PUSH: {
       fcuEfisPanelInputs[0].baro_knob.pushed = true;
-      fcuEfisPanelInputs[1].baro_knob.pushed = true;
+      lastBaroInputWasRightSide = false;
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_L_BARO_PUSH" << std::endl;
       break;
     }
 
     case Events::A32NX_FCU_EFIS_L_BARO_PULL: {
       fcuEfisPanelInputs[0].baro_knob.pulled = true;
-      fcuEfisPanelInputs[1].baro_knob.pulled = true;
+      lastBaroInputWasRightSide = false;
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_L_BARO_PULL" << std::endl;
       break;
     }
@@ -2196,38 +2219,37 @@ void SimConnectInterface::processEvent(const DWORD eventId, const DWORD data0, c
       break;
     }
 
-    // TODO Unsync EFIS baro
     case Events::A32NX_FCU_EFIS_R_BARO_INC: {
-      fcuEfisPanelInputs[1].baro_knob.turns = 1;
-      fcuEfisPanelInputs[0].baro_knob.turns = 1;
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_R_BARO_INC" << std::endl;
+      fcuEfisPanelInputs[1].baro_knob.turns = 1;
+      lastBaroInputWasRightSide = true;
       break;
     }
 
     case Events::A32NX_FCU_EFIS_R_BARO_DEC: {
-      fcuEfisPanelInputs[1].baro_knob.turns = -1;
-      fcuEfisPanelInputs[0].baro_knob.turns = -1;
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_R_BARO_DEC" << std::endl;
+      fcuEfisPanelInputs[1].baro_knob.turns = -1;
+      lastBaroInputWasRightSide = true;
       break;
     }
 
     case Events::A32NX_FCU_EFIS_R_BARO_SET: {
-      simInputAutopilot.baro_left_set = static_cast<long>(data0) / 16.;
       simInputAutopilot.baro_right_set = static_cast<long>(data0) / 16.;
+      lastBaroInputWasRightSide = true;
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_R_BARO_SET: " << static_cast<long>(data0) << std::endl;
       break;
     }
 
     case Events::A32NX_FCU_EFIS_R_BARO_PUSH: {
       fcuEfisPanelInputs[1].baro_knob.pushed = true;
-      fcuEfisPanelInputs[0].baro_knob.pushed = true;
+      lastBaroInputWasRightSide = true;
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_R_BARO_PUSH" << std::endl;
       break;
     }
 
     case Events::A32NX_FCU_EFIS_R_BARO_PULL: {
       fcuEfisPanelInputs[1].baro_knob.pulled = true;
-      fcuEfisPanelInputs[0].baro_knob.pulled = true;
+      lastBaroInputWasRightSide = true;
       std::cout << "WASM: event triggered: A32NX_FCU_EFIS_R_BARO_PULL" << std::endl;
       break;
     }

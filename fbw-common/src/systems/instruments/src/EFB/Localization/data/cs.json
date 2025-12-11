@@ -92,12 +92,14 @@
   },
   "Dispatch": {
     "Ofp": {
-      "ImportSimBriefData": "Importovat SimBrief data",
       "TT": {
         "IncreaseFontSize": "Zvětšit písmo",
+        "NextLoadsheetSection": "Další část loadsheetu",
+        "PreviousLoadsheetSection": "Předchozí část loadsheetu",
         "ReduceFontSize": "Zmenšit písmo"
       },
       "Title": "OFP",
+      "UnavailableLoadsheetSection": "Informace není dostupná nebo sekce není zapnutá v Simbrief.",
       "YouHaveNotYetImportedAnySimBriefData": "Dosud jste neimportovali žádná SimBrief data."
     },
     "Overview": {
@@ -287,6 +289,7 @@
   "Performance": {
     "Data": "Údaje",
     "Landing": {
+      "Airport": "Letiště",
       "AirportIcao": "ICAO letiště",
       "ApproachSpeed": "Rychlost přiblížení",
       "ApproachSpeedUnit": "kts",
@@ -295,8 +298,10 @@
       "Clear": "Vymazat",
       "DropDownNo": "Ne",
       "DropDownYes": "Ano",
+      "EnterManually": "Zadejte ručně",
       "FillDataFrom": "Vyplnit data z",
       "FlapsConfiguration": "Konfigurace klapek",
+      "LandingWeight": "Přistávací hmotnost",
       "Low": "Low",
       "MaximumManual": "Maximální manuální",
       "Medium": "Medium",
@@ -305,6 +310,7 @@
       "OverweightProcedure": "Overweight postup",
       "Qnh": "QNH",
       "ReverseThrust": "Zpětný tah",
+      "Runway": "Dráha",
       "RunwayAltitude": "Nadmořská výška dráhy",
       "RunwayAltitudeUnit": "ft ASL (stopy nad mořem)",
       "RunwayCondition": "Stav dráhy",
@@ -316,6 +322,8 @@
         "MediumPoor": "Střední-Špatný (2)",
         "Poor": "Špatný (1)"
       },
+      "RunwayElevation": "Nadmořská výška dráhy",
+      "RunwayElevationUnit": "ft AMSL",
       "RunwayHeading": "Směr dráhy",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "Použitelná délka přistání",
@@ -331,6 +339,7 @@
       "UnitFt": "ft",
       "UnitMeter": "m",
       "Weight": "Hmotnost",
+      "Wind": "Vítr",
       "WindDirection": "Směr větru",
       "WindDirectionUnit": "°",
       "WindMagnitude": "Rychlost větru",
@@ -396,6 +405,8 @@
       },
       "RunwayElevation": "Výška dráhy",
       "RunwayElevationUnit": "ft",
+      "RunwayHeading": "Kurz dráhy",
+      "RunwayHeadingUnit": "°",
       "RunwayLengthUnitFt": "ft",
       "RunwayLengthUnitMeter": "m",
       "RunwaySlope": "Sklon dráhy",
@@ -556,6 +567,8 @@
       "AlignAdirs": "Okamžitě zarovnat ADIRS",
       "AutoBrightness": "Zapnutí/vypnutí automatického jasu",
       "Brightness": "Nastavení jasu flyPad",
+      "CabinAutoBrightness": "Zapnout/vypnout automatické osvětlení kabiny",
+      "CabinLighting": "Nastavit osvětlení kabiny",
       "FinishBoarding": "Okamžitě dokončit nástup (boarding)",
       "OnScreenKeyboard": "Zapnutí/vypnutí klávesnice na obrazovce",
       "PauseAtTod": "Aktivovat nebo deaktivovat pauzu na vrcholu sestupu",
@@ -567,8 +580,6 @@
     },
     "Title": "Rychlé ovládání"
   },
-  "QuickControls.TT.CabinAutoBrightness": "Zapnutí/vypnutí automatického osvětlení kabiny",
-  "QuickControls.TT.CabinLighting": "Nastavení osvětlení kabiny",
   "Settings": {
     "About": {
       "Title": "O zařízení"
@@ -585,7 +596,7 @@
       "Select": "Vybrat",
       "ThrustReductionHeight": "Výška snížení tahu (ft AGL)",
       "Title": "Možnosti letadla / Pin programy",
-      "WeightUnit": "Jednotky hmotnosti"
+      "WeightUnit": "Americké jednotky"
     },
     "AtsuAoc": {
       "AtisAtcSource": "Zdroj ATIS/ATC",
@@ -644,18 +655,17 @@
       "PauseAtTodDistance": "Vzdálenost zapauzování před T/D (nm)",
       "PilotAvatar": "Zobrazit avatar pilota",
       "SeparateTillerFromRudderInputs": "Oddělit vstupy pro tiller a směrovku",
-      "SyncEfis": "Synchronizovat EFIS a ovládání zvuku mezi kapitánem a prvním důstojníkem",
+      "SyncEfis": "Synchronizovat EFIS a ovládací prvky zvuku mezi kapitánem a prvním důstojníkem",
       "Title": "Realismus"
     },
     "SimOptions": {
       "Active": "Aktivní",
       "Auto": "Auto.",
       "Both": "Synchronizováno",
+      "CabinAutoBrightness": "Automatické osvětlení kabiny",
+      "CabinManualBrightness": "Jas osvětlení kabiny",
       "Calibrate": "Kalibrovat",
-      "Captain": "Kapitán",
-      "CockpitSeatUsedToControl": "Sedadlo používané k ovládání",
       "ConesEnabled": "Výstražné kužely",
-      "Copilot": "Kopilot",
       "DefaultBarometerUnit": "Výchozí jednotky tlaku vzduchu",
       "DynamicRegistrationDecal": "Dynamická imatrikulace letadla",
       "EnableSimBridge": "Povolit připojení SimBridge (Bez úspěšného připojení se po 5 minutách automaticky vypne)",
@@ -698,6 +708,7 @@
         "SettingTitle": "Propojení s účtem Navigraph",
         "SubscriptionStatus": {
           "None": "Žádný",
+          "Standard": "Navigraph Standard",
           "Unknown": "Neznámý",
           "Unlimited": "Navigraph Unlimited"
         },
@@ -705,6 +716,7 @@
       },
       "OverrideSimBriefUserID": "Přepsat uživatelské ID SimBrief",
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Zkontrolujte prosím, zda jste správně zadali své SimBrief uživatelské jméno nebo ID pilota.",
+      "SimbriefLoadsheetNavigationEnabled": "Navigace Nákladního Listu Simbrief",
       "TT": {
         "OverrideSimBriefUserID": "Alternativní SimBrief uživatelské ID, které se použije místo propojeného účtu Navigraph"
       },
@@ -736,6 +748,9 @@
       "TogaOnAxis": "TOGA na ose"
     },
     "Title": "Nastavení",
+    "Troubleshooting": {
+      "Title": "Řešení problémů"
+    },
     "Unrealistic": "Nerealistické",
     "flyPad": {
       "AutoBrightness": "Automatický jas",
@@ -744,7 +759,6 @@
       "Blue": "Modrý",
       "Brightness": "Jas",
       "Dark": "Tmavý",
-      "DisablePushbackConflictWarning": "Vypnout varování o kompatibilitě Pushback systému",
       "Language": "Jazyk",
       "Light": "Světlý",
       "Local": "Místní",
@@ -761,8 +775,6 @@
       "UtcAndLocal": "UTC a místní"
     }
   },
-  "Settings.SimOptions.CabinAutoBrightness": "Automatické osvětlení kabiny",
-  "Settings.SimOptions.CabinManualBrightness": "Jas osvětlení kabiny",
   "StatusBar": {
     "Apr": "Dub",
     "Aug": "Srp",

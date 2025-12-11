@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -8,6 +9,7 @@ import {
   IndexedEvents,
   Instrument,
   MutableSubscribable,
+  SimVarValueType,
   Subject,
   Subscription,
   Wait,
@@ -16,8 +18,8 @@ import {
 import { Arinc429SignStatusMatrix, Arinc429Word, RadioUtils } from '@flybywiresim/fbw-sdk';
 import { FrequencyMode, VhfComIndices } from '../../../../shared/src/RadioTypes';
 
-import { InterRmpBusEvents } from './InterRmpBus';
 import { RmpState, RmpStateControllerEvents } from './RmpStateControllerTypes';
+import { RmpUtils } from '../RmpUtils';
 
 interface VhfComManagerIndexedDataEventsRoot {
   vhf_com_active_frequency: number | null;
@@ -39,11 +41,13 @@ export type VhfComManagerControlEvents = IndexedEvents<VhfComManagerIndexedContr
 
 /** Manages the external interfaces to other RMPs and to the transceiver for one VHF COM radio. */
 export class VhfComManager implements Instrument {
-  private readonly sub = this.bus.getSubscriber<
-    InterRmpBusEvents & RmpStateControllerEvents & VhfComManagerControlEvents
-  >();
+  // FIXME ATSU should supply this. Use SITA worldwide primary frequency until then.
+  private static readonly DATA_FREQUENCY = 0x131_550_0;
+  private static readonly EMERGENCY_FREQUENCY = 0x121_500_0;
 
-  private readonly pub = this.bus.getPublisher<InterRmpBusEvents & VhfComManagerDataEvents>();
+  private readonly sub = this.bus.getSubscriber<RmpStateControllerEvents & VhfComManagerControlEvents>();
+
+  private readonly pub = this.bus.getPublisher<VhfComManagerDataEvents>();
 
   private readonly activeFrequency = Subject.create<number | null>(null);
 
@@ -58,20 +62,16 @@ export class VhfComManager implements Instrument {
   );
 
   private readonly activeDataTopic: keyof VhfComManagerDataEvents = `vhf_com_active_frequency_${this.index}`;
+  private readonly activeFrequencyLocalVar = `L:FBW_RMP_FREQUENCY_ACTIVE_${this.index}` as const;
 
   private readonly activeModeDataTopic: keyof VhfComManagerDataEvents = `vhf_com_active_mode_${this.index}`;
+  private readonly activeModeLocalVar = `L:FBW_RMP_MODE_ACTIVE_${this.index}` as const;
 
   private readonly standbyDataTopic: keyof VhfComManagerDataEvents = `vhf_com_standby_frequency_${this.index}`;
+  private readonly standbyFrequencyLocalVar = `L:FBW_RMP_FREQUENCY_STANDBY_${this.index}` as const;
 
   private readonly standbyModeDataTopic: keyof VhfComManagerDataEvents = `vhf_com_standby_mode_${this.index}`;
-
-  private readonly activeSyncTopic: keyof InterRmpBusEvents = `inter_rmp_set_vhf_active_${this.index}`;
-
-  private readonly activeModeSyncTopic: keyof InterRmpBusEvents = `inter_rmp_set_vhf_active_mode_${this.index}`;
-
-  private readonly standbySyncTopic: keyof InterRmpBusEvents = `inter_rmp_set_vhf_standby_${this.index}`;
-
-  private readonly standbyModeSyncTopic: keyof InterRmpBusEvents = `inter_rmp_set_vhf_standby_mode_${this.index}`;
+  private readonly standbyModeLocalVar = `L:FBW_RMP_MODE_STANDBY_${this.index}` as const;
 
   private readonly standbyControlTopic: keyof VhfComManagerControlEvents = `vhf_com_set_standby_frequency_${this.index}`;
 
@@ -79,25 +79,11 @@ export class VhfComManager implements Instrument {
 
   private readonly swapControlTopic: keyof VhfComManagerControlEvents = `vhf_com_swap_frequencies_${this.index}`;
 
-  private readonly activeSyncSub = this.sub.on(this.activeSyncTopic).handle(this.onReceiveActive.bind(this), true);
-
-  private readonly activeModeSyncSub = this.sub
-    .on(this.activeModeSyncTopic)
-    .handle(this.onReceiveActiveMode.bind(this), true);
-
-  private readonly standbySyncSub = this.sub.on(this.standbySyncTopic).handle(this.onReceiveStandby.bind(this), true);
-
-  private readonly standbyModeSyncSub = this.sub
-    .on(this.standbyModeSyncTopic)
-    .handle(this.onReceiveStandbyMode.bind(this), true);
-
   private readonly subs: Subscription[] = [
-    this.activeSyncSub,
-    this.activeModeSyncSub,
-    this.standbySyncSub,
-    this.standbyModeSyncSub,
     this.activeFrequency.sub(this.onActiveFrequencyChanged.bind(this), false, true),
     this.standbyFrequency.sub(this.onStandbyFrequencyChanged.bind(this), false, true),
+    this.activeMode.sub(this.onActiveModeChanged.bind(this), false, true),
+    this.standbyMode.sub(this.onStandbyModeChanged.bind(this), false, true),
     this.sub.on(this.standbyControlTopic).handle(this.setStandbyFrequency.bind(this)),
     this.sub.on(this.standbyModeControlTopic).handle(this.setStandbyMode.bind(this)),
     this.sub.on(this.swapControlTopic).handle(this.swapFrequencies.bind(this)),
@@ -165,10 +151,28 @@ export class VhfComManager implements Instrument {
       }
     }, true);
 
-    Wait.awaitSubscribable(GameStateProvider.get(), (v) => v === GameState.ingame, true).then(() => {
-      this.activeFrequency.set(SimVar.GetSimVarValue(`COM ACTIVE FREQUENCY:${this.index}`, 'Frequency BCD32'));
-      this.standbyFrequency.set(SimVar.GetSimVarValue(`COM STANDBY FREQUENCY:${this.index}`, 'Frequency BCD32'));
-    });
+    // Initial load from sim variables (flt file) on RMP 1 only
+    if (this.rmpIndex === 1) {
+      Wait.awaitSubscribable(GameStateProvider.get(), (v) => v === GameState.ingame, true).then(() => {
+        // VHF3 default is data mode
+        if (this.index === 3) {
+          SimVar.SetSimVarValue(this.activeFrequencyLocalVar, 'Frequency BCD32', VhfComManager.DATA_FREQUENCY);
+          SimVar.SetSimVarValue(this.activeModeLocalVar, SimVarValueType.Enum, FrequencyMode.Data);
+        } else {
+          SimVar.SetSimVarValue(
+            this.activeFrequencyLocalVar,
+            'Frequency BCD32',
+            SimVar.GetSimVarValue(`COM ACTIVE FREQUENCY:${this.index}`, 'Frequency BCD32'),
+          );
+        }
+
+        SimVar.SetSimVarValue(
+          this.standbyFrequencyLocalVar,
+          'Frequency BCD32',
+          SimVar.GetSimVarValue(`COM STANDBY FREQUENCY:${this.index}`, 'Frequency BCD32'),
+        );
+      });
+    }
   }
 
   /** @inheritdoc */
@@ -176,30 +180,23 @@ export class VhfComManager implements Instrument {
     if (this.rmpState.get() !== RmpState.On && this.powerOffRelayValue && this.powerOffRelayVar) {
       this.powerOffRelayValue.set(SimVar.GetSimVarValue(this.powerOffRelayVar, 'number'));
     }
+
+    this.updateInterRmpBus();
   }
 
-  private onReceiveStandby(frequency: number): void {
-    this.standbyFrequency.set(frequency);
+  private updateInterRmpBus(): void {
+    this.activeFrequency.set(SimVar.GetSimVarValue(this.activeFrequencyLocalVar, 'Frequency BCD32'));
+    this.activeMode.set(SimVar.GetSimVarValue(this.activeModeLocalVar, SimVarValueType.Enum));
+    this.standbyFrequency.set(SimVar.GetSimVarValue(this.standbyFrequencyLocalVar, 'Frequency BCD32'));
+    this.standbyMode.set(SimVar.GetSimVarValue(this.standbyModeLocalVar, SimVarValueType.Enum));
   }
 
-  private onReceiveStandbyMode(mode: FrequencyMode): void {
-    this.standbyMode.set(mode);
-  }
-
-  private onReceiveActive(frequency: number): void {
-    this.activeFrequency.set(frequency);
-  }
-
-  private onReceiveActiveMode(mode: FrequencyMode): void {
-    this.activeMode.set(mode);
-  }
-
-  private onActiveModeChanged(mode: FrequencyMode | null): void {
+  private onActiveModeChanged(mode: FrequencyMode): void {
     this.pub.pub(this.activeModeDataTopic, mode);
   }
 
-  private onActiveFrequencyChanged(frequency: number | null): void {
-    if (frequency === null) {
+  private onActiveFrequencyChanged(frequency: number): void {
+    if (frequency < 1) {
       Arinc429Word.toSimVarValue(this.tuningVar, 0, Arinc429SignStatusMatrix.NoComputedData);
     } else {
       Arinc429Word.toSimVarValue(
@@ -208,15 +205,15 @@ export class VhfComManager implements Instrument {
         Arinc429SignStatusMatrix.NormalOperation,
       );
     }
-    this.pub.pub(this.activeDataTopic, frequency);
+    this.pub.pub(this.activeDataTopic, frequency > 0 ? frequency : null);
   }
 
-  private onStandbyModeChanged(mode: FrequencyMode | null): void {
+  private onStandbyModeChanged(mode: FrequencyMode): void {
     this.pub.pub(this.standbyModeDataTopic, mode);
   }
 
   private onStandbyFrequencyChanged(frequency: number | null): void {
-    this.pub.pub(this.standbyDataTopic, frequency);
+    this.pub.pub(this.standbyDataTopic, frequency > 0 ? frequency : null);
   }
 
   /**
@@ -225,7 +222,7 @@ export class VhfComManager implements Instrument {
    */
   public setActiveFrequency(frequency: number): void {
     if (this.rmpState.get() === RmpState.On) {
-      this.pub.pub(this.activeSyncTopic, frequency, true, true);
+      SimVar.SetSimVarValue(this.activeFrequencyLocalVar, 'Frequency BCD32', frequency);
     }
   }
 
@@ -233,9 +230,18 @@ export class VhfComManager implements Instrument {
    * Sets the active mode.
    * @param mode New mode.
    */
-  public setActiveMode(mode: FrequencyMode | null): void {
+  public setActiveMode(mode: FrequencyMode): void {
     if (this.rmpState.get() === RmpState.On) {
-      this.pub.pub(this.activeModeSyncTopic, mode, true, true);
+      SimVar.SetSimVarValue(this.activeModeLocalVar, SimVarValueType.Enum, mode);
+
+      switch (mode) {
+        case FrequencyMode.Data:
+          SimVar.SetSimVarValue(this.activeFrequencyLocalVar, 'Frequency BCD32', VhfComManager.DATA_FREQUENCY);
+          break;
+        case FrequencyMode.Emergency:
+          SimVar.SetSimVarValue(this.activeFrequencyLocalVar, 'Frequency BCD32', VhfComManager.EMERGENCY_FREQUENCY);
+          break;
+      }
     }
   }
 
@@ -245,7 +251,7 @@ export class VhfComManager implements Instrument {
    */
   public setStandbyFrequency(frequency: number): void {
     if (this.rmpState.get() === RmpState.On) {
-      this.pub.pub(this.standbySyncTopic, frequency, true, true);
+      SimVar.SetSimVarValue(this.standbyFrequencyLocalVar, 'Frequency BCD32', frequency);
     }
   }
 
@@ -253,27 +259,24 @@ export class VhfComManager implements Instrument {
    * Sets the standby mode.
    * @param mode New mode.
    */
-  public setStandbyMode(mode: FrequencyMode | null): void {
+  public setStandbyMode(mode: FrequencyMode): void {
     if (this.rmpState.get() === RmpState.On) {
-      this.pub.pub(this.standbyModeSyncTopic, mode, true, true);
+      SimVar.SetSimVarValue(this.standbyModeLocalVar, SimVarValueType.Enum, mode);
+
+      switch (mode) {
+        case FrequencyMode.Data:
+          SimVar.SetSimVarValue(this.standbyFrequencyLocalVar, 'Frequency BCD32', VhfComManager.DATA_FREQUENCY);
+          break;
+        case FrequencyMode.Emergency:
+          SimVar.SetSimVarValue(this.standbyFrequencyLocalVar, 'Frequency BCD32', VhfComManager.EMERGENCY_FREQUENCY);
+          break;
+      }
     }
   }
 
   public swapFrequencies(): void {
     if (this.rmpState.get() === RmpState.On) {
-      const newStandbyFreq = this.activeFrequency.get();
-      const newActiveFreq = this.standbyFrequency.get();
-      if (newStandbyFreq !== null && newActiveFreq !== null) {
-        this.pub.pub(this.activeSyncTopic, newActiveFreq, true, true);
-        this.pub.pub(this.standbySyncTopic, newStandbyFreq, true, true);
-      }
-
-      const newStandbyMode = this.activeMode.get();
-      const newActiveMode = this.standbyMode.get();
-      if (newStandbyMode !== null && newActiveMode !== null) {
-        this.pub.pub(this.activeModeSyncTopic, newActiveMode, true, true);
-        this.pub.pub(this.standbyModeSyncTopic, newStandbyMode, true, true);
-      }
+      RmpUtils.swapVhfFrequency(this.index);
     }
   }
 }

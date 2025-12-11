@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { AtsuMessageComStatus, AtsuMessageSerializationFormat } from '@datalink/common';
 import { CDUAtcMessageMonitoring } from './A320_Neo_CDU_ATC_MessageMonitoring';
 import { CDUAtcMessagesRecord } from './A320_Neo_CDU_ATC_MessagesRecord';

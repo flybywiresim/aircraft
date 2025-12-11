@@ -166,5 +166,6 @@
                "cmd": "cargo fmt"
            }
     ]
-}
+  },
+  "typescript.tsdk": "node_modules\\typescript\\lib"
 }

@@ -92,12 +92,14 @@
   },
   "Dispatch": {
     "Ofp": {
-      "ImportSimBriefData": "Importar datos de SimBrief",
       "TT": {
         "IncreaseFontSize": "Aumentar tamaño de la fuente",
+        "NextLoadsheetSection": "Next loadsheet section",
+        "PreviousLoadsheetSection": "Previous loadsheet section",
         "ReduceFontSize": "Reducir tamaño de la fuente"
       },
       "Title": "OFP",
+      "UnavailableLoadsheetSection": "Info not available or section not enabled in Simbrief.",
       "YouHaveNotYetImportedAnySimBriefData": "Aún no ha importado datos de SimBrief."
     },
     "Overview": {
@@ -287,6 +289,7 @@
   "Performance": {
     "Data": "Datos",
     "Landing": {
+      "Airport": "Airport",
       "AirportIcao": "ICAO de aeropuerto",
       "ApproachSpeed": "Velocidad de aproximación",
       "ApproachSpeedUnit": "kts",
@@ -295,8 +298,10 @@
       "Clear": "Borrar",
       "DropDownNo": "No",
       "DropDownYes": "Sí",
+      "EnterManually": "Enter Manually",
       "FillDataFrom": "Rellenar datos de",
       "FlapsConfiguration": "Configuración de flaps",
+      "LandingWeight": "Landing Weight",
       "Low": "Bajo",
       "MaximumManual": "Manual máximo",
       "Medium": "Medio",
@@ -305,6 +310,7 @@
       "OverweightProcedure": "Procedimiento de sobrepeso",
       "Qnh": "QNH",
       "ReverseThrust": "Empuje inverso",
+      "Runway": "Runway",
       "RunwayAltitude": "Altitud de pista",
       "RunwayAltitudeUnit": "ft ASL",
       "RunwayCondition": "Estado de la pista",
@@ -316,6 +322,8 @@
         "MediumPoor": "Moderado-Pobre (2)",
         "Poor": "Pobre (1)"
       },
+      "RunwayElevation": "Runway Elevation",
+      "RunwayElevationUnit": "ft AMSL",
       "RunwayHeading": "Rumbo de pista",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "Pista LDA",
@@ -331,6 +339,7 @@
       "UnitFt": "ft",
       "UnitMeter": "m",
       "Weight": "Peso",
+      "Wind": "Wind",
       "WindDirection": "Dirección del viento",
       "WindDirectionUnit": "°",
       "WindMagnitude": "Magnitud del viento",
@@ -396,6 +405,8 @@
       },
       "RunwayElevation": "Runway Elevation",
       "RunwayElevationUnit": "ft",
+      "RunwayHeading": "Runway Heading",
+      "RunwayHeadingUnit": "°",
       "RunwayLengthUnitFt": "ft",
       "RunwayLengthUnitMeter": "m",
       "RunwaySlope": "Runway Slope",
@@ -556,6 +567,8 @@
       "AlignAdirs": "Alinear Inerciales Instantaneamente",
       "AutoBrightness": "Activar/desactivar el brillo automático",
       "Brightness": "Configurar el brillo del flyPad",
+      "CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+      "CabinLighting": "Set Cabin Lighting",
       "FinishBoarding": "Finalice el embarque al instante",
       "OnScreenKeyboard": "Activar/desactivar el teclado en pantalla",
       "PauseAtTod": "Arm or Disarm pause at Top of Descent",
@@ -567,8 +580,6 @@
     },
     "Title": "Controles rápidos"
   },
-  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
-  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "Acerca de"
@@ -651,11 +662,10 @@
       "Active": "Activo",
       "Auto": "Auto",
       "Both": "Sincronizado",
+      "CabinAutoBrightness": "Auto Cabin Lighting",
+      "CabinManualBrightness": "Cabin Lighting Brightness",
       "Calibrate": "Calibrar",
-      "Captain": "Capitán",
-      "CockpitSeatUsedToControl": "Asiento de cabina utilizado para controlar",
       "ConesEnabled": "Conos de seguridad",
-      "Copilot": "Copiloto",
       "DefaultBarometerUnit": "Unidad del barómetro predeterminado",
       "DynamicRegistrationDecal": "Calcomanía de registro dinámica",
       "EnableSimBridge": "Activar la conexión con SimBridge (se desactivará automáticamente tras 5 minutos si no ha habido una conexión exitosa)",
@@ -698,6 +708,7 @@
         "SettingTitle": "Navigraph Account Link",
         "SubscriptionStatus": {
           "None": "None",
+          "Standard": "Navigraph Standard",
           "Unknown": "Unknown",
           "Unlimited": "Navigraph Unlimited"
         },
@@ -705,6 +716,7 @@
       },
       "OverrideSimBriefUserID": "Override SimBrief User ID",
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
+      "SimbriefLoadsheetNavigationEnabled": "Simbrief Loadsheet Navigation",
       "TT": {
         "OverrideSimBriefUserID": "Alternative SimBrief user ID to use instead of the linked Navigraph Account"
       },
@@ -736,6 +748,9 @@
       "TogaOnAxis": "TOGA On Axis"
     },
     "Title": "Ajustes",
+    "Troubleshooting": {
+      "Title": "Troubleshooting"
+    },
     "Unrealistic": "No realista",
     "flyPad": {
       "AutoBrightness": "Brillo automático",
@@ -744,7 +759,6 @@
       "Blue": "Azul",
       "Brightness": "Brillo",
       "Dark": "Oscuro",
-      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "Idioma",
       "Light": "Claro",
       "Local": "Local",
@@ -761,8 +775,6 @@
       "UtcAndLocal": "UTC y local"
     }
   },
-  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
-  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "Abr",
     "Aug": "Ago",

@@ -1,4 +1,13 @@
-import { ArraySubject, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+// @ts-strict-ignore
+import {
+  ArraySubject,
+  DisplayComponent,
+  FSComponent,
+  MutableSubscribable,
+  Subject,
+  Subscribable,
+  VNode,
+} from '@microsoft/msfs-sdk';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 
 import { AirportFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
@@ -11,7 +20,7 @@ import { AutoPrintIcon } from 'instruments/src/MFD/pages/ATCCOM/Elements/AutoPri
 
 interface DAtisBlockProps extends AbstractMfdPageProps {
   readonly index: 1 | 2 | 3;
-  atisIcao: Subscribable<string | null>;
+  atisIcao: MutableSubscribable<string | null>;
   atisMessage?: Subscribable<string | null>;
   atisType?: '' | 'ARR' | 'DEP';
   atisTime?: Subscribable<string | null>;
@@ -42,7 +51,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
     return (
       <div class="mfd-atccom-datis-block">
         <div class="mfd-atccom-datis-block-header-row">
-          <InputField<String>
+          <InputField<string>
             dataEntryFormat={new AirportFormat()}
             mandatory={Subject.create(false)}
             value={this.props.atisIcao}

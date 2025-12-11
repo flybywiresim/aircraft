@@ -290,6 +290,10 @@ tspan.Transparent,
     stroke: currentColor !important;
 }
 
+.StartAlign {
+    text-anchor: start;
+}
+
 .MiddleAlign {
     text-anchor: middle;
     dominant-baseline: middle;

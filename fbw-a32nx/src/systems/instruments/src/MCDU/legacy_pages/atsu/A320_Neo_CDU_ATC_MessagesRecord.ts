@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { AtsuMessageDirection, AtsuMessageSerializationFormat } from '@datalink/common';
 import { Keypad } from '../../legacy/A320_Neo_CDU_Keypad';
 import { CDUAtcMenu } from './A320_Neo_CDU_ATC_Menu';

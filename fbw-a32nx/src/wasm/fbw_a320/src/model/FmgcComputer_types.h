@@ -802,6 +802,7 @@ struct base_fmgc_discrete_outputs
   boolean_T fcu_own_fail;
   boolean_T fmgc_healthy;
   boolean_T ils_test_inhibit;
+  boolean_T stick_rudder_lock;
 };
 
 #endif

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -11,7 +12,7 @@ import { getSimBridgeIp } from '../common';
 export class McduServerClient {
   public static ip = (): string => getSimBridgeIp();
 
-  public static port = (): string => NXDataStore.get('CONFIG_SIMBRIDGE_PORT', '8380');
+  public static port = (): string => NXDataStore.getLegacy('CONFIG_SIMBRIDGE_PORT', '8380');
 
   public static url = (): string => `ws://${this.ip()}:${this.port()}/interfaces/v1/mcdu`.replace(/\s+/g, '');
 

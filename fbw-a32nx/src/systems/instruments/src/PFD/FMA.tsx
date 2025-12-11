@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -12,14 +13,19 @@ import {
   SubscribableMapFunctions,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { ArincEventBus, Arinc429Word, Arinc429RegisterSubject, Arinc429Register } from '@flybywiresim/fbw-sdk';
+import {
+  ArincEventBus,
+  Arinc429Word,
+  Arinc429RegisterSubject,
+  Arinc429Register,
+  Arinc429LocalVarConsumerSubject,
+} from '@flybywiresim/fbw-sdk';
 
-import { FgBus } from 'instruments/src/PFD/shared/FgBusProvider';
-import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
+import { FgBus } from './shared/FgBusProvider';
+import { FcuBus } from './shared/FcuBusProvider';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
-import { FlashOneHertz } from 'instruments/src/MsfsAvionicsCommon/FlashingElementUtils';
-import { ExtendedClockEvents } from 'instruments/src/MsfsAvionicsCommon/providers/ExtendedClockProvider';
+import { FlashOneHertz } from '../MsfsAvionicsCommon/FlashingElementUtils';
 
 /* eslint-disable no-constant-condition,no-dupe-else-if -- for keeping the FMA code while it's not active yet */
 
@@ -115,8 +121,8 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
   private BC3MessageActive = MappedSubject.create(([BC3Message]) => BC3Message[0] !== null, this.BC3Message);
 
   private A3Message = MappedSubject.create(
-    ([fcuAtsFmaDiscreteWord, ecu1MaintenanceWord6, ecu2MaintenanceWord6, autobrakeMode, AB3Message]) =>
-      getA3Message(fcuAtsFmaDiscreteWord, ecu1MaintenanceWord6, ecu2MaintenanceWord6, autobrakeMode, AB3Message),
+    ([fcuAtsFmaDiscreteWord, ecu1MaintenanceWord6, ecu2MaintenanceWord6, autobrakeMode]) =>
+      getA3Message(fcuAtsFmaDiscreteWord, ecu1MaintenanceWord6, ecu2MaintenanceWord6, autobrakeMode),
     this.fcuAtsFmaDiscreteWord,
     this.ecu1MaintenanceWord6,
     this.ecu2MaintenanceWord6,
@@ -697,7 +703,6 @@ const getA3Message = (
   ecu1MaintenanceWord6: Arinc429Register,
   ecu2MaintenanceWord6: Arinc429Register,
   autobrakeMode: number,
-  AB3Message: boolean,
 ) => {
   const clbDemand = fcuAtsFmaDiscreteWord.bitValueOr(22, false);
   const mctDemand = fcuAtsFmaDiscreteWord.bitValueOr(23, false);
@@ -726,7 +731,7 @@ const getA3Message = (
   } else if (assymThrust) {
     text = 'LVR ASYM';
     className = 'Amber';
-  } else if (autobrakeMode === 3 && !AB3Message) {
+  } else if (autobrakeMode === 3) {
     text = 'BRK MAX';
     className = 'FontMediumSmaller MiddleAlign Cyan';
   } else {
@@ -999,7 +1004,7 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<Arinc429Values & FgBus & FcuBus & ExtendedClockEvents>();
+    const sub = this.props.bus.getSubscriber<Arinc429Values & FgBus & FcuBus>();
 
     sub
       .on('fmgcDiscreteWord1')
@@ -1719,14 +1724,16 @@ enum MdaMode {
 }
 
 class D3Cell extends DisplayComponent<{ bus: ArincEventBus }> {
+  private readonly sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values>();
+
   private readonly textRef = FSComponent.createRef<SVGTextElement>();
 
   /** bit 29 is NO DH selection */
-  private readonly fmEisDiscrete2 = Arinc429RegisterSubject.createEmpty();
+  private readonly fmEisDiscrete2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmEisDiscreteWord2Raw'));
 
-  private readonly mda = Arinc429RegisterSubject.createEmpty();
+  private readonly mda = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmMdaRaw'));
 
-  private readonly dh = Arinc429RegisterSubject.createEmpty();
+  private readonly dh = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmDhRaw'));
 
   private readonly noDhSelected = this.fmEisDiscrete2.map((r) => r.bitValueOr(29, false));
 
@@ -1766,15 +1773,13 @@ class D3Cell extends DisplayComponent<{ bus: ArincEventBus }> {
     this.dh,
     this.mda,
   );
+  private readonly DhModexPos = MappedSubject.create(
+    ([noDhSelected]) => (noDhSelected ? 118.38384 : 103.47),
+    this.noDhSelected,
+  );
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-
-    const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values>();
-
-    sub.on('fmEisDiscreteWord2Raw').handle(this.fmEisDiscrete2.setWord.bind(this.fmEisDiscrete2));
-    sub.on('fmMdaRaw').handle(this.mda.setWord.bind(this.mda));
-    sub.on('fmDhRaw').handle(this.dh.setWord.bind(this.dh));
   }
 
   render(): VNode {
@@ -1783,17 +1788,19 @@ class D3Cell extends DisplayComponent<{ bus: ArincEventBus }> {
         ref={this.textRef}
         class={{
           FontSmallest: this.noDhSelected.map(SubscribableMapFunctions.not()),
+          StartAlign: this.noDhSelected.map(SubscribableMapFunctions.not()),
           FontMedium: this.noDhSelected,
-          MiddleAlign: true,
+          MiddleAlign: this.noDhSelected,
           White: true,
         }}
-        x="118.38384"
-        y="21.104172"
+        x={this.DhModexPos}
+        y="20.75"
       >
         <tspan>{this.mdaDhMode}</tspan>
         <tspan
-          class={{ Cyan: true, HiddenElement: this.mdaDhValueText.map((v) => v.length <= 0) }}
-          style="white-space: pre"
+          class={{ EndAlign: true, Cyan: true, HiddenElement: this.mdaDhValueText.map((v) => v.length <= 0) }}
+          x="133.425"
+          y="20.75"
         >
           {this.mdaDhValueText}
         </tspan>

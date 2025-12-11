@@ -1,12 +1,13 @@
+// @ts-strict-ignore
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import {
-  usePersistentProperty,
   useSimVar,
   Units,
   PayloadChartLimits,
   AirframePerformanceEnvelope,
+  usePersistentSetting,
 } from '@flybywiresim/fbw-sdk';
 import React, { useEffect, useRef, useState } from 'react';
 import { CanvasConst } from './Constants';
@@ -39,7 +40,7 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
   const { usingMetric } = Units;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [ctx, setCtx] = useState<CanvasRenderingContext2D | null>(null);
-  const [theme] = usePersistentProperty('EFB_UI_THEME', 'blue');
+  const [theme] = usePersistentSetting('EFB_UI_THEME');
   const [flightPhase] = useSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'enum');
 
   const getTheme = (theme: string): [string, string, string, string] => {

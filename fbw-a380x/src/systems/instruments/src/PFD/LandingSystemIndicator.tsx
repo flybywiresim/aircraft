@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import {
   ConsumerSubject,
   DisplayComponent,
@@ -9,12 +10,16 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 import { getDisplayIndex } from 'instruments/src/PFD/PFD';
-import { Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { Arinc429ConsumerSubject, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { LagFilter } from './PFDUtils';
 
-export class LandingSystem extends DisplayComponent<{ bus: EventBus; instrument: BaseInstrument }> {
+export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus; instrument: BaseInstrument }> {
+  private readonly altitude = Arinc429ConsumerSubject.create(
+    this.props.bus.getArincSubscriber<Arinc429Values>().on('altitudeAr'),
+  );
+
   private lsButtonPressedVisibility = false;
 
   private xtkValid = Subject.create(false);
@@ -31,10 +36,8 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus; instrument:
 
   private vdevRef = FSComponent.createRef<SVGGElement>();
 
-  private altitude = Arinc429Word.empty();
-
   private handleGsReferenceLine() {
-    if (this.lsButtonPressedVisibility || this.altitude.isNormalOperation()) {
+    if (this.lsButtonPressedVisibility || this.altitude.get().isNormalOperation()) {
       this.gsReferenceLine.instance.style.display = 'inline';
     } else if (!this.lsButtonPressedVisibility) {
       this.gsReferenceLine.instance.style.display = 'none';
@@ -56,10 +59,7 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus; instrument:
         this.handleGsReferenceLine();
       });
 
-    sub.on('altitudeAr').handle((altitude) => {
-      this.altitude = altitude;
-      this.handleGsReferenceLine();
-    });
+    this.altitude.sub(this.handleGsReferenceLine.bind(this), true);
 
     sub
       .on(getDisplayIndex() === 1 ? 'ldevRequestLeft' : 'ldevRequestRight')

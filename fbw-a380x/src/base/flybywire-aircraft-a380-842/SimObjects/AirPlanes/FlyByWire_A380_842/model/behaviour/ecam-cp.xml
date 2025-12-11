@@ -133,7 +133,7 @@
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
-                <ANIM_NAME>#ANIM_NAME_BUTTON#</ANIM_NAME>
+                <ANIM_NAME>#NODE_ID#</ANIM_NAME>
                 <LEFT_SINGLE_CODE>
                     1 (&gt;L:#SIMVAR#)
                 </LEFT_SINGLE_CODE>
@@ -167,7 +167,7 @@
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
-                <ANIM_NAME>#ANIM_NAME_BUTTON#</ANIM_NAME>
+                <ANIM_NAME>#NODE_ID#</ANIM_NAME>
                 <LEFT_SINGLE_CODE>
                     1 (&gt;L:#SIMVAR#)
                 </LEFT_SINGLE_CODE>
@@ -210,11 +210,21 @@
             <SIMVAR>A32NX_BTN_CLR2</SIMVAR>
         </UseTemplate>
 
-        <!-- ECAM RCL -->
+        <!-- ECAM RCL LAST -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_ECAM_BUTTON_Template</ANIM_TEMPLATE>
             <BASE_NAME>RCLLAST</BASE_NAME>
+            <PART_ID>ECAM_RCLLAST</PART_ID>
+            <TOOLTIPID>Recall Last ECAM message</TOOLTIPID>
+            <SIMVAR>A32NX_BTN_RCL</SIMVAR>
+        </UseTemplate>
+
+        <!-- ECAM RCL -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_ECAM_BUTTON_Template</ANIM_TEMPLATE>
+            <BASE_NAME>RCL</BASE_NAME>
             <PART_ID>ECAM_RCL</PART_ID>
             <TOOLTIPID>Recall ECAM messages</TOOLTIPID>
             <SIMVAR>A32NX_BTN_RCL</SIMVAR>

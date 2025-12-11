@@ -7,6 +7,7 @@ import {
   MappedSubject,
   Subject,
   SubscribableMapFunctions,
+  UnitType,
   VNode,
 } from '@microsoft/msfs-sdk';
 
@@ -194,13 +195,16 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   protected onNewData(): void {
     const pd = this.loadedFlightPlan?.performanceData;
 
-    if (pd?.transitionAltitude) {
-      this.transitionAltitude.set(pd.transitionAltitude);
+    const ta = pd?.transitionAltitude.get();
+    if (ta) {
+      this.transitionAltitude.set(ta);
     } else {
       this.transitionAltitude.set(null);
     }
-    if (pd?.transitionLevel) {
-      this.transitionLevel.set(pd.transitionLevel * 100);
+
+    const tl = pd?.transitionLevel.get();
+    if (tl) {
+      this.transitionLevel.set(tl * 100);
     } else {
       this.transitionLevel.set(null);
     }
@@ -230,7 +234,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       this.selectedLegIndex = revWptIdx ?? null;
     }
 
-    this.crzFl.set(pd?.cruiseFlightLevel ?? null);
+    this.crzFl.set(pd?.cruiseFlightLevel.get() ?? null);
 
     this.updateConstraints();
     this.updateCruiseSteps();
@@ -280,24 +284,24 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     const climbSpeedLimit = this.speedLimitType.get() === SpeedLimitType.CLB;
 
     const speedLimitSpeed = climbSpeedLimit
-      ? this.loadedFlightPlan.performanceData.climbSpeedLimitSpeed
-      : this.loadedFlightPlan.performanceData.descentSpeedLimitSpeed;
+      ? this.loadedFlightPlan.performanceData.climbSpeedLimitSpeed.get()
+      : this.loadedFlightPlan.performanceData.descentSpeedLimitSpeed.get();
 
     const speedLimitAltitude = climbSpeedLimit
-      ? this.loadedFlightPlan.performanceData.climbSpeedLimitAltitude
-      : this.loadedFlightPlan.performanceData.descentSpeedLimitAltitude;
+      ? this.loadedFlightPlan.performanceData.climbSpeedLimitAltitude.get()
+      : this.loadedFlightPlan.performanceData.descentSpeedLimitAltitude.get();
 
     this.speedLimitSpeed.set(speedLimitSpeed);
     this.speedLimitAltitude.set(speedLimitAltitude);
     this.speedLimitPilotEntered.set(
       climbSpeedLimit
-        ? this.loadedFlightPlan.performanceData.isClimbSpeedLimitPilotEntered
-        : this.loadedFlightPlan.performanceData.isDescentSpeedLimitPilotEntered,
+        ? this.loadedFlightPlan.performanceData.isClimbSpeedLimitPilotEntered.get()
+        : this.loadedFlightPlan.performanceData.isDescentSpeedLimitPilotEntered.get(),
     );
     this.speedLimitTransition.set(
       climbSpeedLimit
-        ? this.loadedFlightPlan.performanceData.transitionAltitude
-        : this.loadedFlightPlan.performanceData.transitionLevel,
+        ? this.loadedFlightPlan.performanceData.transitionAltitude.get()
+        : this.loadedFlightPlan.performanceData.transitionLevel.get(),
     );
 
     this.speedConstraintInput.set(leg.speedConstraint?.speed ?? null);
@@ -452,9 +456,11 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
           this.stepAltsTimes[line].set('--:--');
         }
         this.stepAltsIgnored[line].set(cruiseSteps[i].isIgnored);
+
+        const estGrossWeight = this.getEstimatedGrossWeightAtIndex(cruiseStepLegIndices[i]);
         this.stepAltsAboveMaxFl[line].set(
           cruiseSteps[i].toAltitude / 100 >
-            (this.props.fmcService.master?.getRecMaxFlightLevel() ?? maxCertifiedAlt / 100),
+            (this.props.fmcService.master?.getRecMaxFlightLevel(estGrossWeight ?? undefined) ?? maxCertifiedAlt / 100),
         );
 
         if (this.stepAltsIgnored[line].get()) {
@@ -520,7 +526,11 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   }
 
   private async tryUpdateAltitudeConstraint(newAlt?: number) {
-    if (!this.checkLegModificationAllowed() && this.altConstraintTypeRadioSelected.get() === null) {
+    if (
+      !this.checkLegModificationAllowed() ||
+      this.altConstraintTypeRadioSelected.get() === null ||
+      this.selectedAltitudeConstraintOption.get() === null
+    ) {
       return;
     }
 
@@ -699,7 +709,11 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         .filter((it) => it !== null);
       const isValid = MfdFmsFplnVertRev.checkStepInsertionRules(crzFl, cruiseSteps, legIndex, flightLevel * 100);
 
-      if (flightLevel > (this.props.fmcService.master?.getRecMaxFlightLevel() ?? maxCertifiedAlt / 100)) {
+      const estGrossWeight = this.getEstimatedGrossWeightAtIndex(legIndex);
+      if (
+        flightLevel >
+        (this.props.fmcService.master?.getRecMaxFlightLevel(estGrossWeight ?? undefined) ?? maxCertifiedAlt / 100)
+      ) {
         this.props.fmcService.master?.addMessageToQueue(NXSystemMessages.stepAboveMaxFl, undefined, undefined);
       }
 
@@ -758,6 +772,15 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     }
     this.stepAltsFlightLevel[lineIndex].set(newFlightLevel);
     this.updateCruiseSteps();
+  }
+
+  private getEstimatedGrossWeightAtIndex(legIndex: number): number | null {
+    const zfw = this.props.fmcService.master?.fmgc.data.zeroFuelWeight.get() ?? null;
+    const pred =
+      this.props.fmcService?.master?.guidanceController?.vnavDriver?.mcduProfile?.waypointPredictions?.get(legIndex);
+    return pred !== undefined && zfw !== null
+      ? zfw + UnitType.KILOGRAM.convertFrom(pred.estimatedFuelOnBoard, UnitType.POUND)
+      : null;
   }
 
   public onAfterRender(node: VNode): void {

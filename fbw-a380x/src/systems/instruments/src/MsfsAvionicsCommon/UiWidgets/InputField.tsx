@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 //  Copyright (c) 2024-2025 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
@@ -29,6 +30,7 @@ interface InputFieldProps<T, U = T, S = T extends U ? true : false> extends Comp
   inactive?: Subscribable<boolean>;
   /** Whether value can be set (if disabled, rendered as input field but greyed out)  */
   disabled?: Subscribable<boolean>;
+  /** Whether field can be cleared by user */
   canBeCleared?: Subscribable<boolean>;
   /** Value will be displayed in smaller font, if not entered by pilot (i.e. computed) */
   enteredByPilot?: Subscribable<boolean>;
@@ -61,6 +63,9 @@ interface InputFieldProps<T, U = T, S = T extends U ? true : false> extends Comp
   /** Used for OIT, where placeholders are [] for mandatory fields */
   overrideEmptyMandatoryPlaceholder?: string;
   // inViewEvent?: Consumer<boolean>; // Consider activating when we have a larger collision mesh for the screens
+
+  /* Whether to display the unit in a larger font size */
+  bigUnit?: boolean;
 }
 
 export type ConditionalInputFieldProps<T, U, S extends boolean> = S extends true
@@ -133,6 +138,10 @@ export class InputField<
 
       if (this.props.mandatory?.get()) {
         this.textInputRef.getOrDefault()?.classList.remove('mandatory');
+      }
+    } else {
+      if (this.props.mandatory?.get()) {
+        this.textInputRef.getOrDefault()?.classList.add('mandatory');
       }
     }
     this.updateDisplayElement();
@@ -633,7 +642,10 @@ export class InputField<
     return (
       <div ref={this.topRef} class={`mfd-input-field-root ${this.props.class ?? ''}`}>
         <div ref={this.containerRef} class="mfd-input-field-container" style={`${this.props.containerStyle ?? ''}`}>
-          <span ref={this.leadingUnitRef} class="mfd-label-unit mfd-unit-leading mfd-input-field-unit">
+          <span
+            ref={this.leadingUnitRef}
+            class={`mfd-label-unit ${this.props.bigUnit ? 'bigger' : ''} mfd-unit-leading mfd-input-field-unit`}
+          >
             {this.leadingUnit}
           </span>
           <div
@@ -646,7 +658,10 @@ export class InputField<
             </span>
             <span ref={this.caretRef} class="mfd-input-field-caret" />
           </div>
-          <span ref={this.trailingUnitRef} class="mfd-label-unit mfd-unit-trailing mfd-input-field-unit">
+          <span
+            ref={this.trailingUnitRef}
+            class={`mfd-label-unit ${this.props.bigUnit ? 'bigger' : ''} mfd-unit-trailing mfd-input-field-unit`}
+          >
             {this.trailingUnit}
           </span>
         </div>

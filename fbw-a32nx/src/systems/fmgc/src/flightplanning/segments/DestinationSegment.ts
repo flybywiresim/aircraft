@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2022 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
@@ -5,12 +6,13 @@
 
 import { Airport, Runway } from '@flybywiresim/fbw-sdk';
 import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
-import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/BaseFlightPlan';
+import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { loadAllApproaches, loadAllArrivals, loadAllRunways } from '@fmgc/flightplanning/DataLoading';
 import { RestringOptions } from '@fmgc/flightplanning/plans/RestringOptions';
 import { FlightPlanSegment, SerializedFlightPlanSegment } from './FlightPlanSegment';
 import { NavigationDatabaseService } from '../NavigationDatabaseService';
+import { FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/FlightPlanQueuedOperation';
 
 export class DestinationSegment extends FlightPlanSegment {
   class = SegmentClass.Arrival;
@@ -109,11 +111,13 @@ export class DestinationSegment extends FlightPlanSegment {
     this.flightPlan.syncSegmentLegsChange(this);
   }
 
-  clone(forPlan: BaseFlightPlan): DestinationSegment {
+  clone(forPlan: BaseFlightPlan, options?: number): DestinationSegment {
     const newSegment = new DestinationSegment(forPlan);
 
     newSegment.strung = this.strung;
-    newSegment.allLegs = [...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment) : it))];
+    newSegment.allLegs = [
+      ...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment, options) : it)),
+    ];
     newSegment.airport = this.airport;
     newSegment.runway = this.runway;
 

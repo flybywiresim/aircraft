@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Subject, Subscribable, Subscription } from '@microsoft/msfs-sdk';
 
 import { Fix } from '@flybywiresim/fbw-sdk';
@@ -267,6 +268,60 @@ export class FlightLevelFormat extends SubscriptionCollector implements DataEntr
   public async parse(input: string) {
     if (input === '') {
       return null;
+    }
+
+    const nbr = Number(input);
+    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
+      return nbr;
+    }
+    if (nbr > this.maxValue || nbr < this.minValue) {
+      throw new FmsError(FmsErrorType.EntryOutOfRange);
+    } else {
+      throw new FmsError(FmsErrorType.FormatError);
+    }
+  }
+
+  destroy(): void {
+    super.destroy();
+  }
+}
+
+export const RADIO_ALTITUDE_NODH_VALUE = -2;
+export class RadioAltitudeFormat extends SubscriptionCollector implements DataEntryFormat<number> {
+  public placeholder = '-----';
+
+  public maxDigits = 5;
+
+  private minValue = 0;
+
+  private maxValue = maxCertifiedAlt;
+
+  constructor(
+    minValue: Subscribable<number> = Subject.create(1),
+    maxValue: Subscribable<number> = Subject.create(maxCertifiedAlt),
+  ) {
+    super();
+    this.subscriptions.push(minValue.sub((val) => (this.minValue = val), true));
+    this.subscriptions.push(maxValue.sub((val) => (this.maxValue = val), true));
+  }
+
+  public format(value: number) {
+    if (value === null || value === undefined) {
+      return [this.placeholder, null, 'FT'] as FieldFormatTuple;
+    }
+    if (value === RADIO_ALTITUDE_NODH_VALUE) {
+      return ['NO DH', null, null] as FieldFormatTuple;
+    }
+    return [value.toFixed(0).toString(), null, 'FT'] as FieldFormatTuple;
+  }
+
+  public async parse(input: string) {
+    if (input === '') {
+      return null;
+    }
+
+    if (input === 'NO DH' || input === 'NODH' || input === 'NONE' || input === 'NO') {
+      return RADIO_ALTITUDE_NODH_VALUE;
     }
 
     const nbr = Number(input);
@@ -1612,6 +1667,39 @@ export class RadiusFormat implements DataEntryFormat<number> {
       return nbr;
     }
 
+    if (nbr > this.maxValue || nbr < this.minValue) {
+      throw new FmsError(FmsErrorType.EntryOutOfRange);
+    } else {
+      throw new FmsError(FmsErrorType.FormatError);
+    }
+  }
+}
+
+export class RnpFormat implements DataEntryFormat<number> {
+  public placeholder = '--.-';
+
+  public maxDigits = 4;
+
+  private minValue = 0.01;
+
+  private maxValue = 20.0;
+
+  public format(value: number) {
+    if (value === null || value === undefined) {
+      return [this.placeholder, null, null] as FieldFormatTuple;
+    }
+    return [value > 10.0 ? value.toFixed(1) : value.toFixed(2), null, 'NM'] as FieldFormatTuple;
+  }
+
+  public async parse(input: string) {
+    if (input === '') {
+      return null;
+    }
+
+    const nbr = Number(input);
+    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
+      return nbr;
+    }
     if (nbr > this.maxValue || nbr < this.minValue) {
       throw new FmsError(FmsErrorType.EntryOutOfRange);
     } else {

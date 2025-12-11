@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 
 export class CDUGPSMonitor {
