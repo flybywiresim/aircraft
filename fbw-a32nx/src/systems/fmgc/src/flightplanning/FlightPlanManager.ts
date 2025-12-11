@@ -17,8 +17,8 @@ import {
 import { FlightPlanContext, SerializedFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { CopyOptions } from '@fmgc/flightplanning/plans/CloningOptions';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
-import { FlightPlanBatch, FlightPlanBatchUtils } from '@fmgc/flightplanning/plans/FlightPlanBatch';
 import { FlightPlanUtils } from './FlightPlanUtils';
+import { FlightPlanBatch, FlightPlanBatchUtils } from '@fmgc/flightplanning/plans/FlightPlanBatch';
 
 export enum FlightPlanIndex {
   Active,

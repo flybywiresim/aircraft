@@ -1341,8 +1341,6 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     await this.approachViaSegment.setProcedure(undefined);
     await this.arrivalEnrouteTransitionSegment.setProcedure(undefined);
     await this.arrivalSegment.setProcedure(undefined);
-    await this.destinationSegment.setAirport(airportIdent);
-    await this.destinationSegment.setRunway(undefined);
 
     await this.setDestinationAirport(airportIdent);
     await this.setDestinationRunway(undefined);
@@ -1779,9 +1777,9 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
   private autoDeleteCruiseStep(legIndex: number) {
     this.sendEvent('flightPlan.autoDeleteCruiseStep', {
+      syncClientID: this.context.syncClientID,
       planIndex: this.index,
       batchStack: this.context.batchStack,
-      syncClientID: this.context.syncClientID,
       forAlternate: this instanceof AlternateFlightPlan,
     });
 

@@ -11,8 +11,8 @@ import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { loadAllApproaches, loadAllArrivals, loadAllRunways } from '@fmgc/flightplanning/DataLoading';
 import { RestringOptions } from '@fmgc/flightplanning/plans/RestringOptions';
 import { NavigationDatabaseService } from '../NavigationDatabaseService';
-import { FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/FlightPlanQueuedOperation';
 import { TerminalSegment } from '@fmgc/flightplanning/segments/TerminalSegment';
+import { FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/FlightPlanQueuedOperation';
 
 export class DestinationSegment extends TerminalSegment {
   class = SegmentClass.Arrival;

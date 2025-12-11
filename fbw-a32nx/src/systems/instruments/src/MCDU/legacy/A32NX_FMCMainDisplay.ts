@@ -16,8 +16,8 @@ import {
   Fix,
   FmArinc429OutputWord,
   IlsNavaid,
-  ISimbriefData,
   isMsfs2024,
+  ISimbriefData,
   MathUtils,
   NdbNavaid,
   NXDataStore,
@@ -2658,7 +2658,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       const oldDestination = this.currFlightPlanService.active.destinationAirport
         ? this.currFlightPlanService.active.destinationAirport.ident
         : undefined;
+
       await this.flightPlanService.temporaryInsert();
+
       this.checkCostIndex(oldCostIndex);
       // FIXME I don't know if it is actually possible to insert TMPY with no FROM/TO, but we should not crash here, so check this for now
       if (oldDestination !== undefined) {
