@@ -2,7 +2,7 @@ mod fuel_measuring;
 
 use super::{A380FuelTankType, SetFuelLevel};
 use crate::{
-    fuel::{ArincFuelPumpStatusProvider, ArincFuelQuantityProvider},
+    fuel::{ArincFuelPumpStatusProvider, FuelQuantityDataConcentrator},
     systems::simulation::SimulationElement,
 };
 use bitflags::{bitflags, Flags};
@@ -17,7 +17,7 @@ use systems::{
     pneumatic::EngineState,
     shared::{
         arinc429::{Arinc429Word, SignStatus},
-        DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses, Resolution,
+        ConsumePower, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses, Resolution,
     },
     simulation::{
         InitContext, Read, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
@@ -25,8 +25,9 @@ use systems::{
     },
 };
 use uom::si::{
-    f64::{Mass, Ratio, Velocity},
+    f64::{Mass, Power, Ratio, Velocity},
     mass::kilogram,
+    power::watt,
     ratio::percent,
     velocity::knot,
 };
@@ -235,7 +236,15 @@ impl IntegratedRefuelPanel {
 }
 impl SimulationElement for IntegratedRefuelPanel {
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        // TODO: should only be powered when the refuel panel is open
         self.is_powered = buses.is_powered(self.powered_by);
+    }
+
+    fn consume_power<T: ConsumePower>(&mut self, _context: &UpdateContext, power: &mut T) {
+        if self.is_powered {
+            // NOTE: this is the assumed consumption
+            power.consume_from_bus(self.powered_by, Power::new::<watt>(20.));
+        }
     }
 
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -250,7 +259,7 @@ pub struct RefuelApplication {
     trim_tank_map: TrimTankMapping,
 }
 impl RefuelApplication {
-    pub fn new(_context: &mut InitContext, _powered_by: ElectricalBusType) -> Self {
+    pub fn new(_context: &mut InitContext) -> Self {
         Self {
             refuel_driver: RefuelDriver::new(),
             trim_tank_map: toml::from_str(TRIM_TANK_TOML)
@@ -666,13 +675,10 @@ impl A380FuelQuantityManagementSystem {
             self_test_finished: DelayedTrueLogicGate::new(Self::SELF_TEST_DURATION),
             cpioms_available: [false; 4],
             fuel_measuring_application: FuelMeasuringApplication::new(),
-            refuel_application: RefuelApplication::new(
-                context,
-                ElectricalBusType::DirectCurrentEssential, // 501PP
-            ),
+            refuel_application: RefuelApplication::new(context),
             integrated_refuel_panel: IntegratedRefuelPanel::new(
                 context,
-                ElectricalBusType::DirectCurrentEssential, // 501PP
+                ElectricalBusType::DirectCurrentNamed("502PP"),
             ),
 
             fuel_pump_running_word_id: ["LEFT", "RIGHT"]
@@ -707,7 +713,7 @@ impl A380FuelQuantityManagementSystem {
         context: &UpdateContext,
         fuel_system: &mut (impl SetFuelLevel + FuelPayload),
         loadsheet: &LoadsheetInfo,
-        fqdc: &(impl ArincFuelQuantityProvider + ArincFuelPumpStatusProvider),
+        fqdcs: &[FuelQuantityDataConcentrator; 2],
         cpioms_available: [bool; 4],
     ) {
         // Currently this is excluded from the powered check to support
@@ -727,9 +733,16 @@ impl A380FuelQuantityManagementSystem {
             return;
         }
 
+        // TODO: replace with better logic (F1 & F3 default to FQDC 1 - F2 & F4 default to FQDC 2)
+        let selected_fqdc = if fqdcs[0].is_healthy() {
+            &fqdcs[0]
+        } else {
+            &fqdcs[1]
+        };
+
         self.fuel_pump_running_words = [
-            fqdc.get_left_fuel_pump_running_word(),
-            fqdc.get_right_fuel_pump_running_word(),
+            selected_fqdc.get_left_fuel_pump_running_word(),
+            selected_fqdc.get_right_fuel_pump_running_word(),
         ];
 
         let (fms_zfw, flags1) = Self::get_fms_data_and_status(self.fms_zero_fuel_weights);
@@ -737,7 +750,7 @@ impl A380FuelQuantityManagementSystem {
         self.fqms_status_word = flags1 | flags2;
 
         self.fuel_measuring_application
-            .update(loadsheet, fqdc, fms_zfw, fms_zfwcg);
+            .update(loadsheet, selected_fqdc, fms_zfw, fms_zfwcg);
     }
 
     fn reset(&mut self) {

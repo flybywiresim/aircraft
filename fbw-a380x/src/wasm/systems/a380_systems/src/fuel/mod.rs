@@ -163,7 +163,7 @@ impl A380Fuel {
             context,
             &mut self.fuel_system,
             loadsheet,
-            &self.fuel_quantity_data_concentrators[0], // TODO
+            &self.fuel_quantity_data_concentrators,
             cpioms.map(|cpiom| cpiom.is_available()),
         );
     }

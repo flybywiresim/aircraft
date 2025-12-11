@@ -114,6 +114,10 @@ impl FuelQuantityDataConcentrator {
         });
         Arinc429Word::new(value, ssm)
     }
+
+    pub(super) fn is_healthy(&self) -> bool {
+        self.is_powered
+    }
 }
 impl ArincFuelQuantityProvider for FuelQuantityDataConcentrator {
     fn get_tank_quantity(&self, tank: A380FuelTankType) -> Arinc429Word<Mass> {
