@@ -17,6 +17,7 @@ import {
 import { FlightPlanContext, SerializedFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { CopyOptions } from '@fmgc/flightplanning/plans/CloningOptions';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import { FlightPlanUtils } from './FlightPlanUtils';
 import { FlightPlanBatch, FlightPlanBatchUtils } from '@fmgc/flightplanning/plans/FlightPlanBatch';
 
 export enum FlightPlanIndex {
@@ -217,6 +218,31 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
     }
   }
 
+  reset(notify = true) {
+    const activePlan = this.has(FlightPlanIndex.Active) ? this.get(FlightPlanIndex.Active) : undefined;
+    const activeToLeg = activePlan?.activeLeg;
+
+    for (const plan of this.plans) {
+      if (!plan) {
+        continue;
+      }
+
+      // We only want to delete secondary plans if their active leg matches the active plan's active leg.
+      const shouldDeletePlan =
+        plan.index < FlightPlanIndex.FirstSecondary ||
+        activePlan === undefined ||
+        (activeToLeg === undefined && plan.activeLeg === undefined) ||
+        (activeToLeg !== undefined &&
+          plan.activeLeg !== undefined &&
+          FlightPlanUtils.areFlightPlanElementsSame(activeToLeg, plan.activeLeg) &&
+          activePlan.activeLegIndex === plan.activeLegIndex);
+
+      if (shouldDeletePlan) {
+        this.delete(plan.index, notify);
+      }
+    }
+  }
+
   copy(from: number, to: number, options = CopyOptions.Default, notify = true) {
     this.assertFlightPlanExists(from);
 
@@ -243,8 +269,9 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
     this.assertFlightPlanExists(a);
     this.assertFlightPlanExists(b);
 
-    const planA = this.get(a);
-    const planB = this.get(b);
+    // Clone the plans, so we can give them a new index
+    const planA = this.get(a).clone(b);
+    const planB = this.get(b).clone(a);
 
     this.delete(a, false);
     this.delete(b, false);

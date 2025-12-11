@@ -111,7 +111,11 @@ export class DataManager {
         break;
       case LatLonFormatType.UserSetting:
       case undefined:
-        NXDataStore.getAndSubscribe('LATLON_EXT_FMT', (_, value) => (this.latLonExtendedFormat = value === '1'), '0');
+        NXDataStore.getAndSubscribeLegacy(
+          'LATLON_EXT_FMT',
+          (_, value) => (this.latLonExtendedFormat = value === '1'),
+          '0',
+        );
         break;
     }
 

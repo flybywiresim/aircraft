@@ -119,7 +119,7 @@ abstract class GsxSync implements Instrument {
   }
 
   protected isSyncEnabled(service: SyncServices): boolean {
-    return NXDataStore.get(service, '0') === '1';
+    return NXDataStore.getLegacy(service, '0') === '1';
   }
 
   protected setRefuelStartedState(state: boolean): void {

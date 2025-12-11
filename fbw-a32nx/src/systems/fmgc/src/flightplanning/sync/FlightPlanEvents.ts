@@ -7,7 +7,10 @@ import { FlightPlanLegDefinition } from '@fmgc/flightplanning/legs/FlightPlanLeg
 import { FixInfoData } from '@fmgc/flightplanning/plans/FixInfo';
 import { SerializedFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
-import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import {
+  FlightPlanPerformanceData,
+  FlightPlanPerformanceDataProperties,
+} from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { SerializedFlightPlanSegment } from '@fmgc/flightplanning/segments/FlightPlanSegment';
 import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
 import { PendingAirwayEntry } from '@fmgc/flightplanning/plans/ReadonlyPendingAirways';
@@ -86,7 +89,9 @@ export interface FlightPlanPendingAirwaysEditEvent extends FlightPlanEditSyncEve
 }
 
 export type PerformanceDataFlightPlanSyncEvents<P extends FlightPlanPerformanceData> = {
-  [k in keyof Omit<P, 'clone'> as `flightPlan.setPerformanceData.${k & string}`]: PerformanceDataSetEvent<P[k]>;
+  [k in keyof FlightPlanPerformanceDataProperties as `flightPlan.setPerformanceData.${k & string}`]: PerformanceDataSetEvent<
+    P[k]
+  >;
 };
 
 /**
@@ -108,6 +113,7 @@ export interface FlightPlanEvents {
   'flightPlan.setSegment': FlightPlanSetSegmentEvent;
   'flightPlan.legFlagsEdit': FlightPlanLegFlagsEditEvent;
   'flightPlan.legDefinitionEdit': FlightPlanLegDefinitionEditEvent;
+  'flightPlan.autoDeleteCruiseStep': FlightPlanEditSyncEvent;
   'flightPlan.setLegCruiseStep': FlightPlanLegCruiseStepEditEvent;
   'flightPlan.setFixInfoEntry': FlightPlanSetFixInfoEntryEvent;
   'flightPlan.setFlightNumber': FlightPlanFlightNumberEditEvent;
