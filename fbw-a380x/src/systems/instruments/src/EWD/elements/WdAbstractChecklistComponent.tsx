@@ -11,7 +11,7 @@ import {
 } from '@microsoft/msfs-sdk';
 import { EwdSimvars } from 'instruments/src/EWD/shared/EwdSimvarPublisher';
 import { FcdcSimvars } from '../../MsfsAvionicsCommon/providers/FcdcPublisher';
-import { FwsEwdEvents } from '../../MsfsAvionicsCommon/providers/FwsEwdPublisher';
+import { FwsEvents } from '../../MsfsAvionicsCommon/providers/FwsPublisher';
 import {
   ChecklistLineStyle,
   WD_NUM_LINES,
@@ -20,7 +20,7 @@ import {
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
 import { FormattedFwcText } from 'instruments/src/EWD/elements/FormattedFwcText';
-import { EclSoftKeys } from 'instruments/src/EWD/elements/EclClickspots';
+import { EclSoftKeys } from 'instruments/src/EWD/elements/EclSoftKeys';
 import { AdrBusEvents, CpiomData, IrBusEvents } from '@flybywiresim/fbw-sdk';
 import { CpiomEwdAvailabilityChecker } from '../EWD';
 
@@ -34,7 +34,7 @@ interface WdAbstractChecklistComponentProps {
 
 export class WdAbstractChecklistComponent extends DestroyableComponent<WdAbstractChecklistComponentProps> {
   protected readonly sub = this.props.bus.getSubscriber<
-    AdrBusEvents & ClockEvents & CpiomData & EwdSimvars & FcdcSimvars & FwsEwdEvents & IrBusEvents
+    AdrBusEvents & ClockEvents & CpiomData & EwdSimvars & FcdcSimvars & FwsEvents & IrBusEvents
   >();
 
   protected readonly lineData: WdLineData[] = [];
@@ -128,7 +128,7 @@ export class WdAbstractChecklistComponent extends DestroyableComponent<WdAbstrac
             <EclLine data={this.lineDataSubject[index]} selected={this.lineSelected[index]} />
           ))}
         </div>
-        <EclSoftKeys bus={this.props.bus} />
+        <EclSoftKeys />
       </div>
     );
   }
