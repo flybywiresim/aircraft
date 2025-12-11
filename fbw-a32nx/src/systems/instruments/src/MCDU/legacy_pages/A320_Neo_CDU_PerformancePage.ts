@@ -634,17 +634,8 @@ export class CDUPerformancePage {
 
     const [destEfobCell, destTimeCell] = CDUPerformancePage.formatDestEfobAndTime(mcdu, isFlying);
     const [toUtcLabel, toDistLabel] = isFlying ? ['\xa0UTC', 'DIST'] : ['', ''];
-    const legsWithSteps = mcdu.flightPlanService.active.allLegs
-      .filter((it) => it.isDiscontinuity === false)
-      .filter((it) => it.cruiseStep);
-
     const [toReasonCell = '', toDistCell = '', toTimeCell = '', stepWaypoint = ''] = isFlying
-      ? CDUPerformancePage.formatToReasonDistanceAndTime(
-          mcdu,
-          legsWithSteps?.[0] && 'cruiseStep' in legsWithSteps[0] && legsWithSteps[0].cruiseStep
-            ? legsWithSteps[0].cruiseStep.toAltitude
-            : undefined,
-        )
+      ? CDUPerformancePage.formatToReasonDistanceAndTime(mcdu)
       : [];
     const desCabinRateCell = '{small}-350{end}';
     const shouldShowStepAltsOption =
@@ -1372,6 +1363,11 @@ export class CDUPerformancePage {
 
     const prefCrzPrediction = mcdu.guidanceController?.vnavDriver.getPerfCrzToPrediction();
 
+    let flightLevel = '';
+    if (nextLegWithStep?.cruiseStep?.toAltitude !== undefined) {
+      flightLevel = Math.round(nextLegWithStep.cruiseStep.toAltitude / 100).toString();
+    }
+
     let stepWaypoint = '';
     let toReasonCell = '';
     let toDistCell = '---';
@@ -1393,13 +1389,13 @@ export class CDUPerformancePage {
         (prefCrzPrediction.reason === 'StepClimb' || prefCrzPrediction.reason === 'StepDescent')
       ) {
         stepWaypoint = `{small}AT\xa0\xa0 {green}${nextLegWithStep.ident}{end}`;
-        toReasonCell = `{white}{small}STEP TO{end} {green}FL${nextLegWithStep.cruiseStep.toAltitude}{end}`;
+        toReasonCell = `{white}{small}STEP TO{end} {green}FL${flightLevel}{end}`;
       } else if (prefCrzPrediction.reason === 'TopOfDescent') {
-        toReasonCell = `{white}TO{end}\xa0{green}(T/D){end}`;
+        toReasonCell = `{white}{small}TO{end}\xa0{green}(T/D){end}`;
       }
     }
 
-    return [stepWaypoint, toReasonCell, toDistCell, toTimeCell];
+    return [toReasonCell, toDistCell, toTimeCell, stepWaypoint];
   }
 
   static formatCostIndexCell(mcdu: LegacyFmsPageInterface, hasFromToPair, allowModification) {

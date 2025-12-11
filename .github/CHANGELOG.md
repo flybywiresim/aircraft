@@ -42,7 +42,7 @@
 1. [A32NX/ECP] Implemented realistic simulation of the ECAM control panel - @tracernz (Mike)
 1. [A32NX] Fix speedbrake handle not animating smoothly - @heclak (Heclak)
 1. [A380X] Fix speedbrake handle not animating smoothly - @heclak (Heclak)
-1. [A32NX/FMS] Fix step alts predictions on PERF CRZ page - @Jonny23787 (Jonathan)
+1. [A32NX/FMS] Fix step alts predictions on PERF CRZ page - @Jonny23787 (Jonathan) & @BlueberryKing (BlueberryKing)
 
 ## 0.13.0
 
