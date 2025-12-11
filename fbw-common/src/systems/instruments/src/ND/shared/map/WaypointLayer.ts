@@ -161,11 +161,11 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
     y: number,
     symbol: NdSymbol,
   ) {
-    this.paintWaypointShape(context, x, y, isColorLayer ? '#c87fda' : '#000', isColorLayer ? 1.75 : 3.25);
+    this.paintWaypointShape(context, x, y, isColorLayer ? '#dc78da' : '#000', isColorLayer ? 1.75 : 3.25);
 
     context.font = '21px Ecam';
 
-    PaintUtils.paintText(isColorLayer, context, x + 15, y + 17, symbol.ident, '#c87fda');
+    PaintUtils.paintText(isColorLayer, context, x + 15, y + 17, symbol.ident, '#dc78da');
   }
 
   private paintWaypointBox(context: CanvasRenderingContext2D, x: number, y: number, symbol: NdSymbol) {
