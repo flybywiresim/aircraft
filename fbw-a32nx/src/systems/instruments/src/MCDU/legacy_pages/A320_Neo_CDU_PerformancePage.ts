@@ -725,7 +725,7 @@ export class CDUPerformancePage {
     const [toUtcLabel, toDistLabel] = shouldShowToTdInformation ? ['\xa0UTC', 'DIST'] : ['', ''];
     const [toReasonCell, toDistCell, toTimeCell, stepWaypoint] = shouldShowToTdInformation
       ? CDUPerformancePage.formatToReasonDistanceAndTime(mcdu, forPlan)
-      : ['', '', ''];
+      : ['', '', '', ''];
 
     const desCabinRateCell = shouldShowCabinRate ? '{small}-350{end}' : '';
 
