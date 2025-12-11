@@ -72,6 +72,7 @@ export class CruisePathBuilder {
       );
 
       const addingStepSuccessful = this.tryAddStepFromLastCheckpoint(
+        profile,
         sequence,
         step,
         stepClimbStrategy,
@@ -170,6 +171,7 @@ export class CruisePathBuilder {
    * @returns
    */
   private tryAddStepFromLastCheckpoint(
+    profile: NavGeometryProfile,
     sequence: TemporaryCheckpointSequence,
     step: GeographicCruiseStep,
     stepClimbStrategy: ClimbStrategy,
@@ -187,6 +189,12 @@ export class CruisePathBuilder {
         : VerticalCheckpointReason.StepDescent;
     }
 
+    const headwind = -profile.winds.getCruiseTailwind(
+      distanceFromStart,
+      distanceFromStart - profile.distanceToPresentPosition,
+      sequence.lastCheckpoint.altitude,
+    );
+
     const stepResults = isClimbVsDescent
       ? stepClimbStrategy.predictToAltitude(
           altitude,
@@ -194,8 +202,7 @@ export class CruisePathBuilder {
           managedCruiseSpeed,
           managedCruiseSpeedMach,
           remainingFuelOnBoard,
-          // TODO winds - make wind prediction here
-          0,
+          headwind,
         )
       : stepDescentStrategy.predictToAltitude(
           altitude,
@@ -203,8 +210,7 @@ export class CruisePathBuilder {
           managedCruiseSpeed,
           managedCruiseSpeed,
           remainingFuelOnBoard,
-          // TODO winds - make wind prediction here
-          0,
+          headwind,
         );
 
     // If the step end is closer than 50 NM to T/D, the step is ignored.

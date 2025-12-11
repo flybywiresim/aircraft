@@ -23,7 +23,12 @@ export type PropagatedWindEntry = WindEntry & {
 export const formatWindVector = (vector: WindVector) =>
   `${formatWindTrueDegrees(vector)}/${formatWindMagnitude(vector)}`;
 
-export const formatWindEntry = (entry: WindEntry) => `${formatWindVector(entry.vector)}/${formatWindAltitude(entry)}`;
+export const debugFormatWindEntry = (entry: WindEntry) =>
+  `${formatWindVector(entry.vector)}/${formatWindAltitude(entry)}`;
+const formatWindAltitude = (entry: WindEntry) =>
+  `FL${Math.round(entry.altitude / 100)
+    .toFixed(0)
+    .padStart(3, '0')}`;
 
 export const formatWindTrueDegrees = (vector: WindVector) =>
   `${MathUtils.normalise360(Vec2Math.theta(vector) * MathUtils.RADIANS_TO_DEGREES)
@@ -37,9 +42,3 @@ export const formatWindPredictionMagnitude = (prediction: WindVector | TailwindC
   Math.round(typeof prediction === 'number' ? Math.abs(prediction) : Vec2Math.abs(prediction))
     .toFixed(0)
     .padStart(3, '0');
-
-// TODO winds TA/TL
-export const formatWindAltitude = (entry: WindEntry) =>
-  `FL${Math.round(entry.altitude / 100)
-    .toFixed(0)
-    .padStart(3, '0')}`;

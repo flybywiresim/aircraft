@@ -209,6 +209,8 @@ export class CDUWindPage {
       return;
     }
 
+    const leg = plan.legElementAt(fpIndex);
+
     const doesWindUplinkExist = plan.pendingWindUplink.isWindUplinkReadyToInsert();
     const doesCrzWindUplinkExist = doesWindUplinkExist && plan.pendingWindUplink.cruiseWinds !== undefined;
     const isWindUplinkInProgress = plan.pendingWindUplink.isWindUplinkInProgress();
@@ -217,9 +219,6 @@ export class CDUWindPage {
     if (!doesWindUplinkExist) {
       requestButton = isWindUplinkInProgress ? 'REQUEST [color]amber' : 'REQUEST*[color]amber';
     }
-
-    // TODO winds handle non-leg gracefully
-    const leg = plan.legElementAt(fpIndex);
 
     const maxNumCruiseWindEntries = 4;
 

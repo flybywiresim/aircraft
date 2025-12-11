@@ -624,7 +624,6 @@ class PhaseTable {
       }
 
       if (phase.shouldExecute(sequence.lastCheckpoint)) {
-        // TODO winds get rid of WindComponent
         const phaseResult = phase.execute(phase.shouldFlyAsLevelSegment ? levelFlightStrategy : descentStrategy)(
           sequence.lastCheckpoint,
           -this.winds.getDescentTailwind(sequence.lastCheckpoint.distanceFromStart, sequence.lastCheckpoint.altitude),
