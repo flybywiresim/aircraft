@@ -1,5 +1,4 @@
-// @ts-strict-ignore
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
@@ -9,9 +8,9 @@ import {
   DefaultPilotSeatConfig,
   isMsfs2024,
   PilotSeatConfig,
-  usePersistentBooleanProperty,
   usePersistentNumberProperty,
   usePersistentProperty,
+  usePersistentSetting,
   useSimVar,
 } from '@flybywiresim/fbw-sdk';
 
@@ -36,7 +35,7 @@ export const SimOptionsPage = () => {
   // Legacy MSFS2020 flight plan sync
   const [fpSync, setFpSync] = usePersistentProperty('FP_SYNC', 'LOAD');
 
-  const [autoRouteLoad, setAutoRouteLoad] = usePersistentBooleanProperty('CONFIG_AUTO_SIM_ROUTE_LOAD', false);
+  const [autoRouteLoad, setAutoRouteLoad] = usePersistentSetting('CONFIG_AUTO_SIM_ROUTE_LOAD');
 
   const [simbridgeRemote, setSimbridgeRemoteStatus] = usePersistentProperty('CONFIG_SIMBRIDGE_REMOTE', 'local');
   const [simbridgeIp, setSimbridgeIp] = usePersistentProperty('CONFIG_SIMBRIDGE_IP', 'localhost');

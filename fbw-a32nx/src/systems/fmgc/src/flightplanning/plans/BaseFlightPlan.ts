@@ -1771,7 +1771,9 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
   private autoDeleteCruiseStep(legIndex: number) {
     this.sendEvent('flightPlan.autoDeleteCruiseStep', {
+      syncClientID: this.context.syncClientID,
       planIndex: this.index,
+      batchStack: this.context.batchStack,
       forAlternate: this instanceof AlternateFlightPlan,
     });
 
