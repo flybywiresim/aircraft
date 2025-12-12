@@ -557,11 +557,11 @@ class FlapsSpeedPointBugs extends DisplayComponent<{ bus: ArincEventBus }> {
       if (ias.isNormalOperation() && shortTermSpeed) {
         const diff = Math.abs(ias.value - shortTermSpeed);
         if (diff < DisplayRange) {
-          return `m101.45 361.5 a 6.296 6.3 0 1 0 -12.592 0 6.296 6.3 0 1 0 12.592 0z`;
+          return `m93 361.5 a 6.296 6.3 0 1 0 -12.592 0 6.296 6.3 0 1 0 12.592 0z`;
         } else if (ias.value > shortTermSpeed) {
-          return `m89.55 361.5 c 0.002 3.119 2.692 5.646 6.01 5.646 3.317 0 6.008 -2.527 6.01 -5.646h-6.01z`;
+          return `m83.55 361.5 c 0.002 3.119 2.692 5.646 6.01 5.646 3.317 0 6.008 -2.527 6.01 -5.646h-6.01z`;
         } else {
-          return `m89.55 361.5 c 0.002 3.372 2.806 6.103 6.265 6.103 3.458 0 6.262 -2.732 6.265 -6.103h-6.265z`;
+          return `m83.55 361.5 c 0.002 3.372 2.806 6.103 6.265 6.103 3.458 0 6.262 -2.732 6.265 -6.103h-6.265z`;
         }
       } else {
         return '';
