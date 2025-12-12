@@ -41,6 +41,12 @@ export interface ReadonlyFlightPlanLeg {
 
   readonly speedConstraint: SpeedConstraint | undefined;
 
+  isXF(): boolean;
+
+  isHX(): boolean;
+
+  isVectors(): boolean;
+
   readonly cruiseStep: CruiseStepEntry | undefined;
 
   readonly pilotEnteredAltitudeConstraint: AltitudeConstraint | undefined;

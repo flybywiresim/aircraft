@@ -298,7 +298,7 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
   addOrEditManualHold(
     atIndex: number,
     desiredHold: HoldData,
-    modifiedHold: HoldData,
+    modifiedHold: HoldData | undefined,
     defaultHold: HoldData,
     planIndex: number,
     alternate?: boolean,
@@ -341,6 +341,10 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
     planIndex?: number,
     alternate?: boolean,
   ): Promise<void>;
+
+  setOverfly(atIndex: number, overfly: boolean, planIndex: number, alternate: boolean): Promise<void>;
+
+  toggleOverfly(atIndex: number, planIndex: number, alternate: boolean): Promise<void>;
 
   setFixInfoEntry(index: 1 | 2 | 3 | 4, fixInfo: FixInfoEntry | null, planIndex: number): Promise<void>;
 

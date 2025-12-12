@@ -144,7 +144,13 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
           <div ref={this.returnButtonDiv} class="mfd-fms-direct-to-erase-return-btn">
             <Button
               label="RETURN"
-              onClick={() => {
+              onClick={async () => {
+                if (this.loadedFlightPlanIndex.get() >= FlightPlanIndex.FirstSecondary) {
+                  await this.props.fmcService.master?.flightPlanInterface.finaliseAirwayEntry(
+                    this.loadedFlightPlanIndex.get(),
+                    this.props.fmcService.master?.revisedLegIsAltn.get() ?? false,
+                  );
+                }
                 this.props.fmcService.master?.resetRevisedWaypoint();
                 this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln`);
               }}
@@ -157,6 +163,7 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
                 if (this.loadedFlightPlan) {
                   await this.props.fmcService.master?.flightPlanInterface.finaliseAirwayEntry(
                     this.loadedFlightPlanIndex.get(),
+                    this.props.fmcService.master?.revisedLegIsAltn.get() ?? false,
                   );
                   this.props.fmcService.master?.resetRevisedWaypoint();
                   this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln`);
@@ -222,6 +229,7 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
               const success = await this.props.fmc.flightPlanInterface.continueAirwayEntryViaAirway(
                 airways[0],
                 this.props.loadedFlightPlanIndex.get(),
+                this.props.fmc.revisedLegIsAltn.get() ?? false,
               );
               if (success) {
                 this.viaFieldDisabled.set(true);
@@ -294,6 +302,7 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
                 chosenFix,
                 isDct,
                 this.props.loadedFlightPlanIndex.get(),
+                this.props.fmc.revisedLegIsAltn.get() ?? false,
               );
               if (success) {
                 this.toFieldDisabled.set(true);

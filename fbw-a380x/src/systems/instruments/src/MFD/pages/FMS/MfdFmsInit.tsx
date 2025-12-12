@@ -292,15 +292,21 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     const fromIcao = this.fromIcao.get();
     const toIcao = this.toIcao.get();
     const cityPairIsDifferent =
-      fromIcao !== this.props.fmcService.master?.flightPlanInterface.active.originAirport?.ident ||
-      toIcao !== this.props.fmcService.master.flightPlanInterface.active.destinationAirport?.ident;
+      fromIcao !== this.loadedFlightPlan?.originAirport?.ident ||
+      toIcao !== this.loadedFlightPlan?.destinationAirport?.ident;
     if (fromIcao && toIcao && cityPairIsDifferent) {
+      // We can't use this.loadedFlightPlanIndex here because the flight plan might not exist yet
+
       await this.props.fmcService.master?.flightPlanInterface.newCityPair(
         fromIcao,
         toIcao,
         this.altnIcao.get() ?? undefined,
+        this.loadedFlightPlanIndex.get(),
       );
-      this.props.fmcService.master?.acInterface.updateFmsData();
+
+      if (this.loadedFlightPlanIndex.get() === FlightPlanIndex.Active) {
+        this.props.fmcService.master?.acInterface.updateFmsData();
+      }
     }
   }
 

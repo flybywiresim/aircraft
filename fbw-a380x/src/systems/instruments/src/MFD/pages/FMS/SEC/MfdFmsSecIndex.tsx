@@ -10,7 +10,6 @@ import {
   MappedSubject,
   MappedSubscribable,
   Subject,
-  Subscribable,
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
@@ -22,7 +21,7 @@ import { FmcInterface } from '../../../FMC/FmcInterface';
 import { FmcServiceInterface } from '../../../FMC/FmcServiceInterface';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
-import { ReadonlyFlightPlanElement } from '@fmgc/flightplanning/legs/ReadonlyFlightPlanLeg';
+import { ReadonlyFlightPlanLeg } from '@fmgc/flightplanning/legs/ReadonlyFlightPlanLeg';
 import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
 
 const getCurrentHHMMSS = (seconds: number) => {
@@ -46,7 +45,17 @@ class MfdFmsSecIndexDataStore {
   readonly fromCity = Subject.create<string | null>(null);
   readonly toCity = Subject.create<string | null>(null);
 
-  readonly legs = Subject.create<readonly ReadonlyFlightPlanElement[]>([]);
+  readonly routeOverviewLegs = Subject.create<readonly ReadonlyFlightPlanLeg[]>([]);
+
+  readonly canNotActivateOrSwapSecondary = Subject.create(false);
+
+  checkIfCanActivateOrSwapSecondary() {
+    if (!this.fmc) {
+      this.canNotActivateOrSwapSecondary.set(true);
+      return;
+    }
+    this.canNotActivateOrSwapSecondary.set(!this.fmc.canActivateOrSwapSecondary(this.secIndex));
+  }
 
   // Called from page when new data is available
   onNewData() {
@@ -60,7 +69,7 @@ class MfdFmsSecIndexDataStore {
         this.timeCreated.set(null);
         this.fromCity.set(null);
         this.toCity.set(null);
-        this.legs.set([]);
+        this.routeOverviewLegs.set([]);
       }
       return;
     }
@@ -71,7 +80,33 @@ class MfdFmsSecIndexDataStore {
     this.timeCreated.set(flightPlan.timeCreated);
     this.fromCity.set(flightPlan.originAirport?.ident ?? null);
     this.toCity.set(flightPlan.destinationAirport?.ident ?? null);
-    this.legs.set(flightPlan.allLegs);
+    this.routeOverviewLegs.set(
+      flightPlan.allLegs
+        .filter((_, index) => index < flightPlan.firstMissedApproachLegIndex) // Need this concatenation to satisfy TS
+        .filter((leg) => leg.isDiscontinuity === false)
+        .filter((leg, index, array) => {
+          const nextLeg = index < array.length - 1 ? array[index + 1] : null;
+
+          if (
+            !nextLeg ||
+            (nextLeg && (nextLeg.annotation !== leg.annotation || leg.annotation === '' || leg.isRunway()))
+          ) {
+            if (
+              leg.ident === flightPlan.originAirport?.ident ||
+              leg.ident === flightPlan.destinationAirport?.ident ||
+              //flightPlan.firstMissedApproachLegIndex
+              (nextLeg &&
+                leg.definition.procedureIdent !== '' &&
+                nextLeg.definition.procedureIdent === leg.definition.procedureIdent &&
+                nextLeg.annotation !== leg.annotation)
+            ) {
+              return false;
+            }
+            return true;
+          }
+          return false;
+        }),
+    );
   }
 
   constructor(
@@ -82,7 +117,9 @@ class MfdFmsSecIndexDataStore {
     this.subscriptions.push(
       this.flightPlanChangeNotifier.flightPlanChanged.sub(() => {
         this.onNewData();
+        this.checkIfCanActivateOrSwapSecondary();
       }, true),
+      this.fmc!.acInterface.fmaLateralMode.sub(() => this.checkIfCanActivateOrSwapSecondary(), true),
     );
   }
 
@@ -99,8 +136,6 @@ export class MfdFmsSecIndex extends FmsPage<MfdFmsSecIndexProps> {
 
   private readonly secSelectedPageIndex = Subject.create(0);
 
-  private readonly canNotActivateOrSwapSecondary = Subject.create(false);
-
   protected onNewData() {
     if (!this.props.fmcService.master) {
       return;
@@ -109,8 +144,6 @@ export class MfdFmsSecIndex extends FmsPage<MfdFmsSecIndexProps> {
     this.sec1DataStore.onNewData();
     this.sec2DataStore.onNewData();
     this.sec3DataStore.onNewData();
-
-    this.canNotActivateOrSwapSecondary.set(!this.props.fmcService.master.canActivateOrSwapSecondary());
   }
 
   public onAfterRender(node: VNode): void {
@@ -146,7 +179,6 @@ export class MfdFmsSecIndex extends FmsPage<MfdFmsSecIndexProps> {
                 mfd={this.props.mfd}
                 fmcService={this.props.fmcService}
                 flightPlanIndex={FlightPlanIndex.FirstSecondary}
-                canNotActivateOrSwapSecondary={this.canNotActivateOrSwapSecondary}
               />
             </TopTabNavigatorPage>
             <TopTabNavigatorPage>
@@ -157,7 +189,6 @@ export class MfdFmsSecIndex extends FmsPage<MfdFmsSecIndexProps> {
                 mfd={this.props.mfd}
                 fmcService={this.props.fmcService}
                 flightPlanIndex={FlightPlanIndex.FirstSecondary + 1}
-                canNotActivateOrSwapSecondary={this.canNotActivateOrSwapSecondary}
               />
             </TopTabNavigatorPage>
             <TopTabNavigatorPage>
@@ -168,7 +199,6 @@ export class MfdFmsSecIndex extends FmsPage<MfdFmsSecIndexProps> {
                 mfd={this.props.mfd}
                 fmcService={this.props.fmcService}
                 flightPlanIndex={FlightPlanIndex.FirstSecondary + 2}
-                canNotActivateOrSwapSecondary={this.canNotActivateOrSwapSecondary}
               />
             </TopTabNavigatorPage>
           </TopTabNavigator>
@@ -185,7 +215,6 @@ interface MfdFmsSecIndexTabProps {
   readonly mfd: FmsDisplayInterface & MfdDisplayInterface;
   readonly fmcService: FmcServiceInterface;
   readonly flightPlanIndex: FlightPlanIndex;
-  readonly canNotActivateOrSwapSecondary: Subscribable<boolean>;
 }
 
 const NUM_ROUTE_LINES_DISPLAYED = 11;
@@ -200,7 +229,7 @@ export class MfdFmsSecIndexTab extends DestroyableComponent<MfdFmsSecIndexTabPro
       return !exists || cantDoIt ? 'hidden' : 'inherit';
     },
     this.props.dataStore.secExists,
-    this.props.canNotActivateOrSwapSecondary,
+    this.props.dataStore.canNotActivateOrSwapSecondary,
   );
 
   private readonly cityPairLabel = MappedSubject.create(
@@ -280,22 +309,29 @@ export class MfdFmsSecIndexTab extends DestroyableComponent<MfdFmsSecIndexTabPro
   private readonly routeStartDownDisabled = MappedSubject.create(
     ([line, legs]) => Math.ceil(legs.length / 2) - line <= NUM_ROUTE_LINES_DISPLAYED,
     this.routeStartFromLine,
-    this.props.dataStore.legs,
+    this.props.dataStore.routeOverviewLegs,
   );
 
   private populateRouteLegs() {
+    const legs = this.props.dataStore.routeOverviewLegs.get();
     for (
       let i = this.routeStartFromLine.get() * 2;
       i < (NUM_ROUTE_LINES_DISPLAYED + this.routeStartFromLine.get()) * 2;
-
+      i++
     ) {
-      if (i < this.props.dataStore.legs.get().length) {
-        const leg = this.props.dataStore.legs.get()[i];
-        if (leg.isDiscontinuity === false) {
-          this.routeElementSubjects[i][0].set(leg.annotation ?? '\xa0');
-          this.routeElementSubjects[i][1].set(leg.ident);
-          i++;
+      if (i < legs.length) {
+        let annotation = legs[i].annotation ?? '\xa0';
+        let ident = legs[i].ident;
+
+        if (legs[i].annotation === '') {
+          annotation = 'DIR';
+        } else if (legs[i].isRunway()) {
+          annotation = 'RWY';
+          ident = ident.substring(4);
         }
+
+        this.routeElementSubjects[i][0].set(annotation ?? '\xa0');
+        this.routeElementSubjects[i][1].set(ident);
       } else {
         this.routeElementSubjects[i][0].set(null);
         this.routeElementSubjects[i][1].set(null);
@@ -307,7 +343,7 @@ export class MfdFmsSecIndexTab extends DestroyableComponent<MfdFmsSecIndexTabPro
     super.onAfterRender(node);
 
     this.subscriptions.push(
-      this.props.dataStore.legs.sub(() => this.populateRouteLegs(), true),
+      this.props.dataStore.routeOverviewLegs.sub(() => this.populateRouteLegs(), true),
       this.routeStartFromLine.sub(() => this.populateRouteLegs()),
     );
 
@@ -480,8 +516,8 @@ export class MfdFmsSecIndexTab extends DestroyableComponent<MfdFmsSecIndexTabPro
                 <div
                   style={{
                     display: 'flex',
-                    justifyContent: 'flex-end',
-                    alignItems: 'center',
+                    'justify-content': 'flex-end',
+                    'align-items': 'center',
                     visibility: this.swapActiveVisibility,
                   }}
                 >

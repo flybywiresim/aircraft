@@ -732,18 +732,22 @@ export class FlightManagementComputer implements FmcInterface {
     this.fmgc.data.cpnyFplnAvailable.set(true);
   }
 
-  canActivateOrSwapSecondary(): boolean {
-    if (
-      !this.flightPlanInterface.hasSecondary(1) ||
-      !this.flightPlanInterface.hasActive ||
-      this.flightPlanInterface.hasTemporary
-    ) {
+  canActivateOrSwapSecondary(secIndex: number): boolean {
+    if (!this.flightPlanInterface.hasSecondary(secIndex) || this.flightPlanInterface.hasTemporary) {
       return false;
+    }
+
+    if (
+      this.flightPhase.get() === FmgcFlightPhase.Preflight ||
+      this.flightPhase.get() === FmgcFlightPhase.Takeoff ||
+      this.flightPhase.get() === FmgcFlightPhase.Done
+    ) {
+      return true;
     }
 
     const activePlan = this.flightPlanInterface.active;
 
-    const secPlan = this.flightPlanInterface.secondary(1);
+    const secPlan = this.flightPlanInterface.secondary(secIndex);
     if (!secPlan.originAirport || !secPlan.destinationAirport) {
       return false;
     }
@@ -762,7 +766,7 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   public async swapActiveAndSecondaryPlan(index: number) {
-    const canActivateOrSwapSec = this.canActivateOrSwapSecondary();
+    const canActivateOrSwapSec = this.canActivateOrSwapSecondary(index);
 
     if (!canActivateOrSwapSec) {
       return;
@@ -771,7 +775,11 @@ export class FlightManagementComputer implements FmcInterface {
     const zfwDiff = this.computeZfwDiffToSecondary(index);
     const oldDestination = this.#flightPlanService.active?.destinationAirport;
 
-    await this.#flightPlanService.activeAndSecondarySwap(index, !this.enginesWereStarted.get());
+    if (this.#flightPlanService.hasActive) {
+      await this.#flightPlanService.activeAndSecondarySwap(index, !this.enginesWereStarted.get());
+    } else {
+      await this.#flightPlanService.secondaryActivate(index, !this.enginesWereStarted.get());
+    }
 
     await this.onSecondaryActivated(zfwDiff, oldDestination);
   }
@@ -882,6 +890,31 @@ export class FlightManagementComputer implements FmcInterface {
     const secondaryZfw = secondaryPlan.performanceData.zeroFuelWeight.get();
 
     return activeZfw !== null && secondaryZfw !== null ? Math.abs(activeZfw - secondaryZfw) : null;
+  }
+
+  computeAlternateCruiseLevel(forPlan: FlightPlanIndex): number | undefined {
+    const plan = this.#flightPlanService.get(forPlan);
+    if (!plan) {
+      return undefined;
+    }
+
+    if (!plan.destinationAirport || !plan.alternateDestinationAirport) {
+      return undefined;
+    }
+
+    // TODO use actual flight plan distance rather than great circle distance
+    const distance = Avionics.Utils.computeGreatCircleDistance(
+      plan.destinationAirport.location,
+      plan.alternateDestinationAirport.location,
+    );
+
+    if (distance > 300) {
+      return 310;
+    } else if (distance > 150) {
+      return 220;
+    }
+
+    return 100;
   }
 
   private checkDestination(oldDestination: string) {

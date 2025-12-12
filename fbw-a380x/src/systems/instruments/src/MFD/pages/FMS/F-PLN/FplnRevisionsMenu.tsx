@@ -145,10 +145,10 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
         ].includes(type) ||
         isFromLeg ||
         !isLegTerminatingAtDatabaseFix ||
-        revisedLeg.waypointDescriptor === WaypointDescriptor.Airport ||
-        revisedLeg.waypointDescriptor === WaypointDescriptor.Runway,
+        revisedLeg.definition.waypointDescriptor === WaypointDescriptor.Airport ||
+        revisedLeg.definition.waypointDescriptor === WaypointDescriptor.Runway,
       onPressed: () => {
-        fpln.props.fmcService.master?.flightPlanInterface.startAirwayEntry(legIndex);
+        fpln.props.fmcService.master?.flightPlanInterface.startAirwayEntry(legIndex, planIndex, altnFlightPlan);
         fpln.props.mfd.uiService.navigateTo(`fms/${fpln.props.mfd.uiService.activeUri.get().category}/f-pln-airways`);
       },
     },
@@ -172,7 +172,8 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
       name: 'ENABLE ALTN *',
       disabled: !revisedLeg || revisedLeg.isDiscontinuity,
       onPressed: () => {
-        fpln.props.fmcService.master?.flightPlanInterface.enableAltn(legIndex, planIndex);
+        const cruiseLevel = fpln.props.fmcService.master?.computeAlternateCruiseLevel(planIndex) ?? 100;
+        fpln.props.fmcService.master?.flightPlanInterface.enableAltn(legIndex, cruiseLevel, planIndex);
         fpln.props.fmcService.master?.acInterface.updateFmsData();
       },
     },

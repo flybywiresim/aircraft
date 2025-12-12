@@ -39,6 +39,8 @@ export interface ReadonlyFlightPlan<P extends FlightPlanPerformanceData = Flight
 
   get activeLeg(): ReadonlyFlightPlanElement;
 
+  get fromLegIndex(): number;
+
   get isApproachActive(): boolean;
 
   findLegIndexByFixIdent(ident: string): number;

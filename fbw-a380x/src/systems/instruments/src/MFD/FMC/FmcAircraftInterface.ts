@@ -21,7 +21,6 @@ import {
   VerticalPathCheckpoint,
   NXLogicConfirmNode,
   NXLogicPulseNode,
-  RegisteredSimVar,
   FmArinc429OutputWord,
 } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
@@ -137,10 +136,11 @@ export class FmcAircraftInterface {
     this.bus.getSubscriber<FlightPhaseManagerEvents>().on('fmgc_flight_phase'),
     FmgcFlightPhase.Preflight,
   );
-  private readonly fmaVerticalMode = ConsumerSubject.create(
+  public readonly fmaVerticalMode = ConsumerSubject.create(
     this.bus.getSubscriber<FGVars>().on('fg.fma.verticalMode'),
     0,
   );
+  public readonly fmaLateralMode = ConsumerSubject.create(this.bus.getSubscriber<FGVars>().on('fg.fma.lateralMode'), 0);
 
   private readonly altActiveInClimbForMoreThan10Min = new NXLogicConfirmNode(600);
 
@@ -213,8 +213,6 @@ export class FmcAircraftInterface {
         this.fmc.addMessageToQueue(NXSystemMessages.navprimaryLost, undefined, undefined);
       }
     });
-
-  private readonly lateralMode = RegisteredSimVar.create('L:A32NX_FMA_LATERAL_MODE', SimVarValueType.Number);
 
   constructor(
     private bus: EventBus,
@@ -1841,11 +1839,11 @@ export class FmcAircraftInterface {
   }
 
   public isHdgOrTrackModeEngaged() {
-    return this.lateralMode.get() === LateralMode.HDG || this.lateralMode.get() === LateralMode.TRACK;
+    return this.fmaLateralMode.get() === LateralMode.HDG || this.fmaLateralMode.get() === LateralMode.TRACK;
   }
 
   private isLateralModeManaged() {
-    switch (this.lateralMode.get()) {
+    switch (this.fmaLateralMode.get()) {
       case LateralMode.NAV:
       case LateralMode.LOC_CPT:
       case LateralMode.LOC_TRACK:

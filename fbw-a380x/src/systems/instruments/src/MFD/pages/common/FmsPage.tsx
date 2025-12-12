@@ -114,7 +114,8 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
   }
 
   protected onFlightPlanChanged() {
-    switch (this.props.mfd.uiService.activeUri.get().category) {
+    const activeUri = this.props.mfd.uiService.activeUri.get();
+    switch (activeUri.category) {
       case 'active':
         if (
           this.props.fmcService.master?.flightPlanInterface.hasActive ||
@@ -133,6 +134,9 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
           );
           this.secActive.set(false);
           this.tmpyActive.set(this.props.fmcService.master?.flightPlanInterface.hasTemporary ?? false);
+        } else if (activeUri.page === 'init') {
+          // Flight plan might not have been created yet
+          this.loadedFlightPlanIndex.set(FlightPlanIndex.Active);
         }
         break;
       case 'sec1':
@@ -144,6 +148,9 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
           this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary);
           this.secActive.set(true);
           this.tmpyActive.set(false);
+        } else if (activeUri.page === 'init') {
+          // Flight plan might not have been created yet
+          this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary);
         }
         break;
       case 'sec2':
@@ -155,6 +162,9 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
           this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary + 1);
           this.secActive.set(true);
           this.tmpyActive.set(false);
+        } else if (activeUri.page === 'init') {
+          // Flight plan might not have been created yet
+          this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary + 1);
         }
         break;
       case 'sec3':
@@ -166,6 +176,9 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
           this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary + 2);
           this.secActive.set(true);
           this.tmpyActive.set(false);
+        } else if (activeUri.page === 'init') {
+          // Flight plan might not have been created yet
+          this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary + 2);
         }
         break;
 
