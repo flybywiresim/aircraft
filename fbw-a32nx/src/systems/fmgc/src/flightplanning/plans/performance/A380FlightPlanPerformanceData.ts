@@ -50,7 +50,7 @@ export class A380FlightPlanPerformanceData extends A320FlightPlanPerformanceData
     return cloned;
   }
 
-  readonly cruiseTemperatureIsaTemp: Subject<number | null> = Subject.create(null);
+  readonly cruiseTemperatureIsaTemp = Subject.create<number | null>(null);
 
   readonly cruiseTemperature = MappedSubject.create(
     ([isa, pe]) => (pe !== null ? pe : isa),
@@ -79,19 +79,18 @@ export class A380FlightPlanPerformanceData extends A320FlightPlanPerformanceData
     this.alternateFuel,
   );
 
-  readonly takeoffPowerSetting: Subject<TakeoffPowerSetting> = Subject.create(TakeoffPowerSetting.TOGA);
+  readonly takeoffPowerSetting = Subject.create<TakeoffPowerSetting>(TakeoffPowerSetting.TOGA);
 
-  readonly takeoffDeratedSetting: Subject<TakeoffDerated> = Subject.create(TakeoffDerated.D01);
+  readonly takeoffDeratedSetting = Subject.create<TakeoffDerated>(TakeoffDerated.D01);
 
-  readonly takeoffThsFor: Subject<number | null> = Subject.create(null);
+  readonly takeoffThsFor = Subject.create<number | null>(null);
+  readonly takeoffPacks = Subject.create<TakeoffPacks | null>(TakeoffPacks.ON);
 
-  readonly takeoffPacks: Subject<TakeoffPacks | null> = Subject.create(TakeoffPacks.ON);
+  readonly takeoffAntiIce = Subject.create<TakeoffAntiIce | null>(TakeoffAntiIce.OFF);
 
-  readonly takeoffAntiIce: Subject<TakeoffAntiIce | null> = Subject.create(TakeoffAntiIce.OFF);
+  readonly noiseEnabled = Subject.create<boolean>(false);
 
-  readonly noiseEnabled = Subject.create(false);
-
-  readonly noiseN1 = Subject.create(null);
+  readonly noiseN1 = Subject.create<number | null>(null);
 
   readonly noiseSpeed = Subject.create<Knots | null>(null);
 
@@ -108,10 +107,6 @@ export class A380FlightPlanPerformanceData extends A320FlightPlanPerformanceData
 
     other.pipe('cruiseTemperatureIsaTemp', this.cruiseTemperatureIsaTemp, other.cruiseTemperatureIsaTemp);
     other.pipe('paxNumber', this.paxNumber, other.paxNumber);
-
-    if (isBeforeEngineStart) {
-      //...
-    }
   }
 
   serialize(): SerializedFlightPlanPerformanceData {
