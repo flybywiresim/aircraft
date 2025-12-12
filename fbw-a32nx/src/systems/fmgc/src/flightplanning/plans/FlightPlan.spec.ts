@@ -67,9 +67,9 @@ describe('a base flight plan', () => {
 
     await fp.finaliseAirwayEntry();
 
-    expect(fp.legElementAt(2).terminationWaypoint().ident).toBe('NOSUS');
-    expect(fp.legElementAt(3).terminationWaypoint().ident).toBe('DEBUS');
-    expect(fp.legElementAt(4).terminationWaypoint().ident).toBe('DUTIL');
+    expect(fp.legElementAt(2).terminationWaypoint()?.ident).toBe('NOSUS');
+    expect(fp.legElementAt(3).terminationWaypoint()?.ident).toBe('DEBUS');
+    expect(fp.legElementAt(4).terminationWaypoint()?.ident).toBe('DUTIL');
   });
 
   describe.skip('deleting legs', () => {

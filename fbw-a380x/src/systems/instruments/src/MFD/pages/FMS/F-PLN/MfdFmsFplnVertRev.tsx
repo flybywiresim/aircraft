@@ -783,7 +783,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   }
 
   private getEstimatedGrossWeightAtIndex(legIndex: number): number | null {
-    const zfw = this.props.fmcService.master?.fmgc.data.zeroFuelWeight.get() ?? null;
+    const zfw = this.loadedFlightPlan?.performanceData.zeroFuelWeight.get() ?? null;
     const pred =
       this.props.fmcService?.master?.guidanceController?.vnavDriver?.mcduProfile?.waypointPredictions?.get(legIndex);
     return pred !== undefined && zfw !== null
