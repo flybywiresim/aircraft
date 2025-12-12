@@ -609,7 +609,6 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     value: any,
     notify = true,
   ) {
-    console.log(key, value);
     (this.performanceData[key] as MutableSubscribable<typeof value>).set(value);
 
     if (this.performanceData.hasSubscription(key)) {
