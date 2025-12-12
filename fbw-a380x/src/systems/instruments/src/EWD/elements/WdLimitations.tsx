@@ -1,77 +1,61 @@
 import {
   ClockEvents,
   ConsumerSubject,
-  DisplayComponent,
   EventBus,
   FSComponent,
   MappedSubject,
-  Subject,
   Subscribable,
-  SubscribableMapFunctions,
   VNode,
 } from '@microsoft/msfs-sdk';
+import { DestroyableComponent } from '../../MsfsAvionicsCommon/DestroyableComponent';
 import { FormattedFwcText } from 'instruments/src/EWD/elements/FormattedFwcText';
 import { EwdSimvars } from 'instruments/src/EWD/shared/EwdSimvarPublisher';
 import { EcamLimitations } from '../../MsfsAvionicsCommon/EcamMessages';
+import { FwsEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsPublisher';
 
 interface WdLimitationsProps {
   bus: EventBus;
   visible: Subscribable<boolean>;
 }
 
-export class WdLimitations extends DisplayComponent<WdLimitationsProps> {
-  private readonly sub = this.props.bus.getSubscriber<ClockEvents & EwdSimvars>();
+export class WdLimitations extends DestroyableComponent<WdLimitationsProps> {
+  private readonly sub = this.props.bus.getSubscriber<ClockEvents & EwdSimvars & FwsEvents>();
 
-  private readonly limitationsLeftSvgRef = FSComponent.createRef<SVGGraphicsElement>();
+  private readonly limitationsLeft = ConsumerSubject.create(this.sub.on(`fws_limitations_all_phases`), []);
+  private readonly limitationsRight = ConsumerSubject.create(this.sub.on(`fws_limitations_appr_ldg`), []);
 
-  private readonly limitationsRightSvgRef = FSComponent.createRef<SVGGraphicsElement>();
-
-  private readonly limitationsLeft = Array.from(Array(10), (_, idx) =>
-    ConsumerSubject.create(this.sub.on(`limitations_all_${idx + 1}`).whenChanged(), 0),
+  private readonly limitationsLeftFormatString = this.limitationsLeft.map((limits) =>
+    limits.map((val) => EcamLimitations[val]).join('\r'),
   );
 
-  private readonly limitationsRight = Array.from(Array(10), (_, idx) =>
-    ConsumerSubject.create(this.sub.on(`limitations_apprldg_${idx + 1}`).whenChanged(), 0),
+  private readonly limitationsRightFormatString = this.limitationsRight.map((limits) =>
+    limits.map((val) => EcamLimitations[val]).join('\r'),
   );
 
-  private readonly limitationsLeftFormatString = Subject.create('');
-
-  private readonly limitationsRightFormatString = Subject.create('');
-
-  private readonly limitationsDisplay = Subject.create(false);
-
-  private update() {
-    this.limitationsLeftFormatString.set(
-      this.limitationsLeft
-        .filter((v) => !!v.get())
-        .map((val) => EcamLimitations[val.get()])
-        .join('\r'),
-    );
-    this.limitationsRightFormatString.set(
-      this.limitationsRight
-        .filter((v) => !!v.get())
-        .map((val) => EcamLimitations[val.get()])
-        .join('\r'),
-    );
-
-    this.limitationsLeftSvgRef.instance.style.height = `${this.limitationsLeft.filter((v) => !!v.get()).length * 30 + 3}px`;
-    this.limitationsRightSvgRef.instance.style.height = `${this.limitationsRight.filter((v) => !!v.get()).length * 30 + 3}px`;
-
-    this.limitationsDisplay.set(
-      this.limitationsLeftFormatString.get().length > 0 || this.limitationsRightFormatString.get().length > 0,
-    );
-  }
+  private readonly limitationsLines = MappedSubject.create(
+    ([all, apprLdg]) => (all.length > 0 || apprLdg.length > 0 ? Math.max(all.length, apprLdg.length) : 0),
+    this.limitationsLeft,
+    this.limitationsRight,
+  );
+  private readonly limitationsDisplay = MappedSubject.create(
+    ([lines, visible]) => (lines > 0 && visible ? 'flex' : 'none'),
+    this.limitationsLines,
+    this.props.visible,
+  );
+  private readonly limitationsHeight = this.limitationsLines.map((lines) => `${lines * 30 + 3}px`);
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.limitationsLeft.forEach((el) => el.sub(() => this.update(), true));
-    this.limitationsRight.forEach((el) => el.sub(() => this.update(), true));
-
-    this.sub
-      .on('realTime')
-      .atFrequency(0.05)
-      .handle(() => this.update());
+    this.subscriptions.push(
+      this.limitationsLeft,
+      this.limitationsRight,
+      this.limitationsLeftFormatString,
+      this.limitationsRightFormatString,
+      this.limitationsLines,
+      this.limitationsDisplay,
+      this.limitationsHeight,
+    );
   }
 
   render() {
@@ -80,24 +64,20 @@ export class WdLimitations extends DisplayComponent<WdLimitationsProps> {
         <div
           class="LimitationsContainer"
           style={{
-            display: MappedSubject.create(
-              SubscribableMapFunctions.and(),
-              this.limitationsDisplay,
-              this.props.visible,
-            ).map((it) => (it ? 'flex' : 'none')),
+            display: this.limitationsDisplay,
           }}
         >
           <span class="LimitationsHeading Underline">LIMITATIONS</span>
           <div class="MemosDividedArea">
             <div class="MemosLeft">
               <span class="LimitationsHeading">ALL PHASES</span>
-              <svg ref={this.limitationsLeftSvgRef} version="1.1" xmlns="http://www.w3.org/2000/svg">
+              <svg version="1.1" xmlns="http://www.w3.org/2000/svg" style={{ height: this.limitationsHeight }}>
                 <FormattedFwcText x={0} y={24} message={this.limitationsLeftFormatString} />
               </svg>
             </div>
             <div class="MemosRight">
               <span class="LimitationsHeading">APPR & LDG</span>
-              <svg ref={this.limitationsRightSvgRef} version="1.1" xmlns="http://www.w3.org/2000/svg">
+              <svg version="1.1" xmlns="http://www.w3.org/2000/svg" style={{ height: this.limitationsHeight }}>
                 <FormattedFwcText x={0} y={24} message={this.limitationsRightFormatString} />
               </svg>
             </div>
