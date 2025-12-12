@@ -635,7 +635,7 @@ export interface FlightPlanPerformanceData {
 }
 
 export type FlightPlanPerformanceDataProperties = {
-  [K in keyof FlightPlanPerformanceData as FlightPlanPerformanceData[K] extends MutableSubscribable<any>
+  [K in keyof FlightPlanPerformanceData as FlightPlanPerformanceData[K] extends MutableSubscribable<any> | undefined
     ? K
     : never]: FlightPlanPerformanceData[K] extends MutableSubscribable<infer T> ? MutableSubscribable<T> : never;
 };
