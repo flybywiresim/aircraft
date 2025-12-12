@@ -297,7 +297,8 @@ tspan.Black {
 
 text.Green {
   fill: $display-green;
-  stroke: none;
+  // stroke: none;
+  stroke: #000000;
 }
 tspan.Green {
   fill: $display-green;
