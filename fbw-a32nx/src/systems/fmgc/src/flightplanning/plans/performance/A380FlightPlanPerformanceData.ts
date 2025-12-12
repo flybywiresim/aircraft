@@ -30,22 +30,22 @@ export class A380FlightPlanPerformanceData extends A320FlightPlanPerformanceData
 
   protected assignFieldsFromOriginal(cloned: FlightPlanPerformanceData): FlightPlanPerformanceData {
     super.assignFieldsFromOriginal(cloned);
-    cloned.cruiseTemperatureIsaTemp.set(this.cruiseTemperatureIsaTemp.get());
-    cloned.paxNumber.set(this.paxNumber.get());
-    cloned.jettisonGrossWeight.set(this.jettisonGrossWeight.get());
-    cloned.alternateExists.set(this.alternateExists.get());
-    cloned.takeoffPowerSetting.set(this.takeoffPowerSetting.get());
-    cloned.takeoffDeratedSetting.set(this.takeoffDeratedSetting.get());
-    cloned.takeoffThsFor.set(this.takeoffThsFor.get());
-    cloned.takeoffPacks.set(this.takeoffPacks.get());
-    cloned.takeoffAntiIce.set(this.takeoffAntiIce.get());
-    cloned.noiseEnabled.set(this.noiseEnabled.get());
-    cloned.noiseN1.set(this.noiseN1.get());
-    cloned.noiseSpeed.set(this.noiseSpeed.get());
-    cloned.noiseEndAltitude.set(this.noiseEndAltitude.get());
-    cloned.costIndexMode.set(this.costIndexMode.get());
-    cloned.climbDerated.set(this.climbDerated.get());
-    cloned.descentCabinRate.set(this.descentCabinRate.get());
+    cloned.cruiseTemperatureIsaTemp?.set(this.cruiseTemperatureIsaTemp.get());
+    cloned.paxNumber?.set(this.paxNumber.get());
+    cloned.jettisonGrossWeight?.set(this.jettisonGrossWeight.get());
+    cloned.alternateExists?.set(this.alternateExists.get());
+    cloned.takeoffPowerSetting?.set(this.takeoffPowerSetting.get());
+    cloned.takeoffDeratedSetting?.set(this.takeoffDeratedSetting.get());
+    cloned.takeoffThsFor?.set(this.takeoffThsFor.get());
+    cloned.takeoffPacks?.set(this.takeoffPacks.get());
+    cloned.takeoffAntiIce?.set(this.takeoffAntiIce.get());
+    cloned.noiseEnabled?.set(this.noiseEnabled.get());
+    cloned.noiseN1?.set(this.noiseN1.get());
+    cloned.noiseSpeed?.set(this.noiseSpeed.get());
+    cloned.noiseEndAltitude?.set(this.noiseEndAltitude.get());
+    cloned.costIndexMode?.set(this.costIndexMode.get());
+    cloned.climbDerated?.set(this.climbDerated.get());
+    cloned.descentCabinRate?.set(this.descentCabinRate.get());
 
     return cloned;
   }

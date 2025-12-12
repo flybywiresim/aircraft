@@ -198,7 +198,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
   /**
    * Default tropopause altitude; Unit: Feet; Null if not set.
    */
-  readonly defaultTropopause = Subject.create<number | null>(36090);
+  readonly defaultTropopause = Subject.create<number>(36090);
 
   readonly tropopause = MappedSubject.create(
     ([pilotTropopause, defaultTropopause]) => {

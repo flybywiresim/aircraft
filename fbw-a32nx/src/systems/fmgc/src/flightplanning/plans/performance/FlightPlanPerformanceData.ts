@@ -648,7 +648,7 @@ export interface SerializedFlightPlanPerformanceData {
   pilotGroundTemperature: number | null;
   costIndex: number | null;
   defaultTropopause: number;
-  pilotTropopause: number;
+  pilotTropopause: number | null;
 
   v1: number | null;
 
