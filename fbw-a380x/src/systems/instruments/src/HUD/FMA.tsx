@@ -42,21 +42,33 @@ abstract class ShowForSecondsComponent<T extends ComponentProps> extends Display
     this.displayTimeInSeconds = displayTimeInSeconds;
   }
 
-  public handleDeclutterMode = (cancel = false, decMode, textRef) => {
+  public handleDeclutterMode = (cancel = false, decMode, textRef, textRef2?) => {
     if (decMode === 2) {
       if (cancel || !this.isShown) {
         clearTimeout(this.timeout);
         textRef.instance.style.visibility = 'hidden';
+        if (typeof textRef2 !== 'undefined') {
+          textRef2.instance.style.visibility = 'hidden';
+        }
       } else {
         clearTimeout(this.timeout);
         textRef.instance.style.visibility = 'visible';
+        if (typeof textRef2 !== 'undefined') {
+          textRef2.instance.style.visibility = 'visible';
+        }
         this.timeout = setTimeout(() => {
           textRef.instance.style.visibility = 'hidden';
+          if (typeof textRef2 !== 'undefined') {
+            textRef2.instance.style.visibility = 'hidden';
+          }
         }, this.displayTimeInSeconds * 1000) as unknown as number;
       }
       this.modeChangedPathRef.instance.classList.remove('ModeChangedPath');
     } else {
       textRef.instance.style.visibility = 'visible';
+      if (typeof textRef2 !== 'undefined') {
+        textRef2.instance.style.visibility = 'visible';
+      }
     }
   };
 
@@ -1859,20 +1871,6 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps & { readonly fcdcData: 
     super(props, 9);
   }
 
-  private handleDeclutterModeLocal(decMode, textRef, textRef2) {
-    if (decMode === 2) {
-      if (!this.isShown) {
-        textRef.instance.style.visibility = 'hidden';
-        textRef2.instance.style.visibility = 'hidden';
-        clearTimeout(this.delay);
-      }
-      this.modeChangedPathRef.instance.classList.remove('ModeChangedPath');
-    } else {
-      textRef.instance.style.visibility = 'visible';
-      textRef2.instance.style.visibility = 'visible';
-    }
-  }
-
   private setText() {
     let text1: string;
     let text2: string | undefined;
@@ -1910,7 +1908,6 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps & { readonly fcdcData: 
 
     if (hasChanged) {
       this.displayModeChangedPath();
-      this.handleDeclutterModeLocal(this.decMode, this.cellTextRef, this.cellTextRef2);
 
       this.text1Sub.set(text1);
       this.text2Sub.set(text2);
@@ -1920,9 +1917,10 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps & { readonly fcdcData: 
       } else {
         this.modeChangedPathRef.instance.setAttribute('d', 'm 732  9 h 135 v 30.2 h -135 z');
       }
+      this.handleDeclutterMode(false, this.decMode, this.cellTextRef, this.cellTextRef2);
     } else if (!this.isShown) {
       this.displayModeChangedPath();
-      this.handleDeclutterModeLocal(this.decMode, this.cellTextRef, this.cellTextRef2);
+      this.handleDeclutterMode(false, this.decMode, this.cellTextRef, this.cellTextRef2);
     }
   }
 
@@ -1938,8 +1936,13 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps & { readonly fcdcData: 
       .whenChanged()
       .handle((mode) => {
         this.decMode = mode;
-        this.isShown = false;
-        this.handleDeclutterModeLocal(this.decMode, this.cellTextRef, this.cellTextRef2);
+        if (this.decMode === 2) {
+          this.cellTextRef.instance.style.visibility = 'hidden';
+          this.cellTextRef2.instance.style.visibility = 'hidden';
+        } else {
+          this.cellTextRef.instance.style.visibility = 'visible';
+          this.cellTextRef2.instance.style.visibility = 'visible';
+        }
       });
   }
 
