@@ -290,6 +290,63 @@ export class FwsAbnormalNonSensed {
       inopSysApprLdg: () => ['320300007'],
       info: () => ['800200003'],
     },
+    340900001: {
+      // IR ALIGNMENT IN ATT MODE
+      flightPhaseInhib: [],
+      simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(340900001)),
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [true, true, true, true, true],
+      whichItemsChecked: () => [false, false, false, false, false],
+      failure: 1,
+      auralWarning: Subject.create(FwcAuralWarning.None),
+      sysPage: SdPages.None,
+    },
+    990900002: {
+      // CKPT WINDOW CRACKED
+      flightPhaseInhib: [],
+      simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(990900002)),
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [true, true, true, true, true, true, true, true, true, true, true],
+      whichItemsChecked: () => [
+        false,
+        false,
+        false,
+        false,
+        false,
+        this.fws.manCabinAltMode.get(),
+        false,
+        false,
+        this.fws.aicuResetSwitch1.get(),
+        false,
+        this.fws.aicuResetSwitch2.get(),
+      ],
+      failure: 1,
+      auralWarning: Subject.create(FwcAuralWarning.None),
+      sysPage: SdPages.None,
+      limitationsAllPhases: () => ['210400002'],
+      limitationsPfd: () => ['210400002'],
+      inopSysAllPhases: () => [
+        this.fws.aicuResetSwitch1.get() && this.fws.aicuResetSwitch2.get() ? '300000002' : '',
+        ...(this.fws.aicuResetSwitch1.get() ? ['300000004', '300000005', '300000006'] : ''),
+        ...(this.fws.aicuResetSwitch2.get() ? ['300000007', '300000008', '300000009'] : ''),
+      ],
+    },
+    990900003: {
+      // CKPT WINDOW ARCING
+      flightPhaseInhib: [],
+      simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(990900003)),
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [true, true, true, true],
+      whichItemsChecked: () => [false, this.fws.aicuResetSwitch1.get(), false, this.fws.aicuResetSwitch2.get()],
+      failure: 1,
+      auralWarning: Subject.create(FwcAuralWarning.None),
+      sysPage: SdPages.None,
+      inopSysAllPhases: () => [
+        this.fws.aicuResetSwitch1.get() && this.fws.aicuResetSwitch2.get() ? '300000002' : '',
+        ...(this.fws.aicuResetSwitch1.get() ? ['300000004', '300000005', '300000006'] : ''),
+        ...(this.fws.aicuResetSwitch2.get() ? ['300000007', '300000008', '300000009'] : ''),
+      ],
+    },
     990900005: {
       // EMER DESCENT
       flightPhaseInhib: [],

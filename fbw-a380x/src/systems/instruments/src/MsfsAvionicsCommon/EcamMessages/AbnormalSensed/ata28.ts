@@ -865,7 +865,7 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
       { name: 'WHEN JETTISON COMPLETED (AUTO RCL)', condition: true, sensed: false },
       { name: 'JETTISON ACTIVE', labelNotCompleted: 'OFF', sensed: true, level: 1 },
       { name: 'JETTISON ARM', labelNotCompleted: 'OFF', sensed: true, level: 1 },
-      { name: 'IF JETTISON MANUAL STOP RQRD', condition: true, sensed: false },
+      { name: 'JETTISON MANUAL STOP RQRD', condition: true, sensed: false },
       { name: 'JETTISON ACTIVE', labelNotCompleted: 'OFF', sensed: true, level: 1 },
       { name: 'JETTISON ARM', labelNotCompleted: 'OFF', sensed: true, level: 1 },
     ],
@@ -875,7 +875,7 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
     sensed: false,
     items: [
       { name: 'ALL TKs QTY & FOB & FU', labelNotCompleted: 'CHECK', sensed: false },
-      { name: 'IF FOB+FU / BLOCK DISAGREE', condition: true, sensed: false },
+      { name: 'FOB+FU / BLOCK DISAGREE', condition: true, sensed: false },
       { name: 'ALL CROSSFEEDS', labelNotCompleted: 'OFF', sensed: true, level: 1 },
       { name: 'INR TKs PMPs', labelNotCompleted: 'OFF', sensed: true, level: 1 },
       { name: 'MID TKs PMPs', labelNotCompleted: 'OFF', sensed: true, level: 1 },

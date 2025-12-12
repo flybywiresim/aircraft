@@ -4806,6 +4806,12 @@
                     <UseTemplate Name="FBW_Airbus_RESET_PANEL_BUTTON">
                         <NAME>NSS_FLT_OPS</NAME>
                     </UseTemplate>
+                    <UseTemplate Name="FBW_Airbus_RESET_PANEL_BUTTON">
+                        <NAME>AICU1</NAME>
+                    </UseTemplate>
+                    <UseTemplate Name="FBW_Airbus_RESET_PANEL_BUTTON">
+                        <NAME>AICU2</NAME>
+                    </UseTemplate>
                 </Component>
             </Component>
 
