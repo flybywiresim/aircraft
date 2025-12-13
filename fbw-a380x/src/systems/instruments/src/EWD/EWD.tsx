@@ -170,8 +170,8 @@ export class EngineWarningDisplay extends DestroyableComponent<{ bus: ArincEvent
     SubscribableMapFunctions.or(),
     this.reverserSelected,
     this.thrustLockActive,
-    );
-  
+  );
+
   private readonly deferredProcedures = ConsumerSubject.create(this.sub.on('fws_deferred_procedures'), []);
   private readonly stsIndicationLabel = MappedSubject.create(
     ([sts, deferred]) => (sts && deferred.length > 0 ? 'STS & DEFRD PROC' : 'STS'),
