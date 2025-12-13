@@ -120,6 +120,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
     active.performanceData.pipeTo(sec.performanceData, isBeforeEngineStart);
 
+    sec.flags &= 0;
     sec.flags |= FlightPlanFlags.CopiedFromActive;
   }
 
@@ -164,6 +165,9 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
   async activeAndSecondarySwap(secIndex: number, isBeforeEngineStart: boolean): Promise<void> {
     this.persistActivePerfDataAcrossModification(isBeforeEngineStart, () => {
       this.flightPlanManager.swap(FlightPlanIndex.FirstSecondary + secIndex - 1, FlightPlanIndex.Active);
+      const sec = this.secondary(secIndex);
+      sec.flags &= 0;
+      sec.flags |= FlightPlanFlags.SwappedWithActive;
     });
   }
 
@@ -261,6 +265,8 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       });
     }
 
+    temporaryPlan.wasModified = true;
+
     this.flightPlanManager.copy(FlightPlanIndex.Temporary, FlightPlanIndex.Active, CopyOptions.IncludeFixInfos);
     this.flightPlanManager.delete(FlightPlanIndex.Temporary);
   }
@@ -280,6 +286,8 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
     this.flightPlanManager.copy(FlightPlanIndex.Uplink, intoPlan);
     this.flightPlanManager.delete(FlightPlanIndex.Uplink);
+
+    this.flightPlanManager.get(intoPlan).flags |= FlightPlanFlags.CompanyFlightPlan;
 
     if (this.hasTemporary) {
       this.flightPlanManager.delete(FlightPlanIndex.Temporary);
@@ -315,6 +323,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
       finalIndex = FlightPlanIndex.Temporary;
     }
+    this.flightPlanManager.get(finalIndex).wasModified = true;
 
     return finalIndex;
   }
@@ -340,6 +349,8 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       await this.flightPlanManager.get(planIndex).setAlternateDestinationAirport(altnIcao);
     }
 
+    this.flightPlanManager.get(planIndex).flags |= FlightPlanFlags.ManualCreation;
+
     // Support code for TELEX API, should move somewhere else
     NXDataStore.setLegacy('PLAN_ORIGIN', fromIcao);
     NXDataStore.setLegacy('PLAN_DESTINATION', toIcao);
@@ -351,6 +362,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     }
 
     const plan = this.flightPlanManager.get(planIndex);
+    plan.wasModified = true;
 
     if (altnIcao === undefined) {
       return plan.deleteAlternateFlightPlan();
@@ -738,6 +750,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       true,
     );
 
+    plan.wasModified = true;
     plan.incrementVersion();
   }
 
@@ -758,6 +771,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       true,
     );
 
+    plan.wasModified = true;
     plan.incrementVersion();
   }
 
@@ -773,6 +787,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       true,
     );
 
+    plan.wasModified = true;
     plan.incrementVersion();
   }
 
@@ -793,6 +808,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       true,
     );
 
+    plan.wasModified = true;
     plan.incrementVersion();
   }
 
@@ -813,6 +829,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       true,
     );
 
+    plan.wasModified = true;
     plan.incrementVersion();
   }
 
@@ -828,6 +845,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       true,
     );
 
+    plan.wasModified = true;
     plan.incrementVersion();
   }
 

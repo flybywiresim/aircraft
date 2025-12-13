@@ -5,6 +5,7 @@ import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvioni
 import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
 
 import {
+  BitFlags,
   EventBus,
   FSComponent,
   MappedSubject,
@@ -23,6 +24,7 @@ import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayIn
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { ReadonlyFlightPlanLeg } from '@fmgc/flightplanning/legs/ReadonlyFlightPlanLeg';
 import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
+import { FlightPlanFlags } from '@fmgc/flightplanning/plans/FlightPlanFlags';
 
 const getCurrentHHMMSS = (seconds: number) => {
   const hours = Math.floor(seconds / 3600);
@@ -41,6 +43,8 @@ class MfdFmsSecIndexDataStore {
   readonly secExists = Subject.create(false);
 
   readonly timeCreated = Subject.create<number | null>(null);
+  readonly flags = Subject.create<number>(0);
+  readonly wasModified = Subject.create(false);
 
   readonly fromCity = Subject.create<string | null>(null);
   readonly toCity = Subject.create<string | null>(null);
@@ -67,6 +71,8 @@ class MfdFmsSecIndexDataStore {
       if (this.secExists.get()) {
         this.secExists.set(false);
         this.timeCreated.set(null);
+        this.flags.set(0);
+        this.wasModified.set(false);
         this.fromCity.set(null);
         this.toCity.set(null);
         this.routeOverviewLegs.set([]);
@@ -78,6 +84,8 @@ class MfdFmsSecIndexDataStore {
 
     const flightPlan = this.fmc.flightPlanInterface.secondary(this.secIndex);
     this.timeCreated.set(flightPlan.timeCreated);
+    this.flags.set(this.fmc.flightPlanInterface.get(FlightPlanIndex.FirstSecondary + this.secIndex - 1).flags);
+    this.wasModified.set(flightPlan.wasModified);
     this.fromCity.set(flightPlan.originAirport?.ident ?? null);
     this.toCity.set(flightPlan.destinationAirport?.ident ?? null);
     this.routeOverviewLegs.set(
@@ -244,14 +252,29 @@ export class MfdFmsSecIndexTab extends DestroyableComponent<MfdFmsSecIndexTabPro
   );
 
   private readonly createdLabel = MappedSubject.create(
-    ([exists, timeCreated]) => {
+    ([exists, timeCreated, flags, wasModified]) => {
+      let creationSource = '';
+
+      if (BitFlags.isAll(flags, FlightPlanFlags.CopiedFromActive)) {
+        creationSource = ` (IMPORT ACTIVE${wasModified ? '-MODIFIED' : ''})`;
+      } else if (BitFlags.isAll(flags, FlightPlanFlags.SwappedWithActive)) {
+        creationSource = ` (SWAP ACTIVE${wasModified ? '-MODIFIED' : ''})`;
+      } else if (BitFlags.isAll(flags, FlightPlanFlags.ManualCreation)) {
+        creationSource = ` (MANUAL)`;
+      } else if (BitFlags.isAll(flags, FlightPlanFlags.CompanyFlightPlan)) {
+        creationSource = ` (CPNY F-PLN${wasModified ? '-MODIFIED' : ''})`;
+      } else if (BitFlags.isAll(flags, FlightPlanFlags.AtcFlightPlan)) {
+        creationSource = ` (ATC F-PLN${wasModified ? '-MODIFIED' : ''})`;
+      }
       if (exists && timeCreated) {
-        return `CREATED ${getCurrentHHMMSS(timeCreated).substring(0, 5)}`;
+        return `CREATED ${getCurrentHHMMSS(timeCreated).substring(0, 5)}${creationSource}`;
       }
       return '';
     },
     this.props.dataStore.secExists,
     this.props.dataStore.timeCreated,
+    this.props.dataStore.flags,
+    this.props.dataStore.wasModified,
   );
 
   private readonly cpnyFplnButtonLabel = this.props.fmcService.master

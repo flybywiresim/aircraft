@@ -21,6 +21,8 @@ export interface ReadonlyFlightPlan<P extends FlightPlanPerformanceData = Flight
 
   get timeCreated(): number;
 
+  get wasModified(): boolean;
+
   get legCount(): number;
 
   get enrouteLegCount(): number;
