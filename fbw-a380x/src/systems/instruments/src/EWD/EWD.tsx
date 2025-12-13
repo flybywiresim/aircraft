@@ -152,14 +152,18 @@ export class EngineWarningDisplay extends DestroyableComponent<{ bus: ArincEvent
     this.fwsAvailChecker.fwsAvail,
   ).map((s) => (s ? 'visible' : 'hidden'));
 
-  private readonly alphaFloorHiddenElement = ConsumerSubject.create(
-    this.sub.on('fg.athr.mode'),
-    AutoThrustMode.NONE,
-  ).map((v) => v !== AutoThrustMode.A_FLOOR && v !== AutoThrustMode.TOGA_LK);
+  private readonly autoThrustMode = ConsumerSubject.create(this.sub.on('fg.athr.mode'), AutoThrustMode.NONE);
 
-  private readonly thrustLockActive = ConsumerSubject.create(this.sub.on('fg.athr.message'), 0).map(
-    (v) => v === AutoThrustModeMessage.ThrustLock,
+  private readonly alphaFloorHiddenElement = this.autoThrustMode.map(
+    (v) => v !== AutoThrustMode.A_FLOOR && v !== AutoThrustMode.TOGA_LK,
   );
+
+  private readonly autoThrustModeMessage = ConsumerSubject.create(
+    this.sub.on('fg.athr.message'),
+    AutoThrustModeMessage.None,
+  );
+
+  private readonly thrustLockActive = this.autoThrustModeMessage.map((v) => v === AutoThrustModeMessage.ThrustLock);
 
   private readonly thrustLockHiddenElement = this.thrustLockActive.map((v) => !v);
 
@@ -200,6 +204,8 @@ export class EngineWarningDisplay extends DestroyableComponent<{ bus: ArincEvent
       this.thrustLockActive,
       this.thrustLockHiddenElement,
       this.n1LimitHidden,
+      this.autoThrustMode,
+      this.autoThrustModeMessage,
     );
   }
 
