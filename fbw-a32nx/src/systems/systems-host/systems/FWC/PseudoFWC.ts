@@ -759,6 +759,10 @@ export class PseudoFWC {
 
   private readonly speedBrakeStillOutWarning = Subject.create(false);
 
+  private readonly speedBrakeDisagreeWarning = Subject.create(false);
+
+  private readonly speedBrakeDoNotUseWarning = Subject.create(false);
+
   private readonly amberSpeedBrake = Subject.create(false);
 
   private readonly phase84s5Trigger = new NXLogicTriggeredMonostableNode(4.5, false);
@@ -2758,6 +2762,9 @@ export class PseudoFWC {
         !this.slatFlapSelectionS0F0,
     );
 
+    // spd brk disagree
+    this.speedBrakeDisagreeWarning.set(fcdc1DiscreteWord5.bitValue(26) || fcdc2DiscreteWord5.bitValue(26));
+
     // spd brk still out
     this.speedBrakeCommand5sConfirm.write(this.speedBrakeCommand.get(), deltaTime);
     this.speedBrakeCommand50sConfirm.write(this.speedBrakeCommand.get(), deltaTime);
@@ -2795,7 +2802,7 @@ export class PseudoFWC {
         speedBrakeCaution3 ||
         !this.flightPhase67.get(),
     );
-    const speedBrakeDoNotUse = fcdc1DiscreteWord5.bitValue(27) || fcdc2DiscreteWord5.bitValue(27);
+    this.speedBrakeDoNotUseWarning.set(fcdc1DiscreteWord5.bitValue(27) || fcdc2DiscreteWord5.bitValue(27));
     this.speedBrakeCaution1Pulse.write(speedBrakeCaution1, deltaTime);
     this.speedBrakeCaution2Pulse.write(speedBrakeCaution2, deltaTime);
     const speedBrakeCaution = speedBrakeCaution1 || speedBrakeCaution2 || speedBrakeCaution3;
@@ -2803,7 +2810,8 @@ export class PseudoFWC {
       !this.speedBrakeCaution1Pulse.read() &&
         !this.speedBrakeCaution2Pulse.read() &&
         speedBrakeCaution &&
-        !speedBrakeDoNotUse,
+        !this.speedBrakeDoNotUseWarning.get() &&
+        !this.speedBrakeDisagreeWarning.get(),
     );
 
     // gnd splr not armed
@@ -4320,6 +4328,17 @@ export class PseudoFWC {
         '270036507',
         '270036508',
       ],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: 10,
+      side: 'LEFT',
+    },
+    2700370: {
+      // SPD BRK DISAGREE
+      flightPhaseInhib: [3, 4, 5],
+      simVarIsActive: this.speedBrakeDisagreeWarning,
+      whichCodeToReturn: () => [0, 1, this.speedBrakeDoNotUseWarning.get() ? 2 : null],
+      codesToReturn: ['270037001', '270037002', '270037003'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: 10,

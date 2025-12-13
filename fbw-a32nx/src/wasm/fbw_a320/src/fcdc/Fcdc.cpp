@@ -634,6 +634,38 @@ FcdcBus Fcdc::getBusOutputs() {
   output.efcsStatus4.setBit(29, bitFromValueOr(busInputs.elac1.discrete_status_word_2, 21, false) ||
                                     bitFromValueOr(busInputs.elac2.discrete_status_word_2, 21, false));
 
+  const bool sec1Valid = discreteInputs.sec1Valid;
+  const bool sec1LeverValid = isNo(busInputs.sec1.speed_brake_lever_command_deg);
+  const bool sec1CommandValid = isNo(busInputs.sec1.speed_brake_command_deg);
+  const bool sec3Valid = discreteInputs.sec3Valid;
+  const bool sec3LeverValid = isNo(busInputs.sec3.speed_brake_lever_command_deg);
+  const bool sec3CommandValid = isNo(busInputs.sec3.speed_brake_command_deg);
+
+  const float sec1CommandDeg = valueOr(busInputs.sec1.speed_brake_command_deg, 0);
+  const float sec3CommandDeg = valueOr(busInputs.sec3.speed_brake_command_deg, 0);
+
+  const bool sec1CommandMoving =
+      sec1Valid && sec1CommandValid && prevSec1SpeedbrakeCommandValid &&
+      std::abs(sec1CommandDeg - prevSec1SpeedbrakeCommandDeg) > 0.1;
+  const bool sec3CommandMoving =
+      sec3Valid && sec3CommandValid && prevSec3SpeedbrakeCommandValid &&
+      std::abs(sec3CommandDeg - prevSec3SpeedbrakeCommandDeg) > 0.1;
+
+  const bool sec1LeverExtended =
+      sec1Valid && sec1LeverValid && valueOr(busInputs.sec1.speed_brake_lever_command_deg, 0) > 1.5;
+  const bool sec3LeverExtended =
+      sec3Valid && sec3LeverValid && valueOr(busInputs.sec3.speed_brake_lever_command_deg, 0) > 1.5;
+
+  const bool sec1CommandExtended =
+      sec1Valid && sec1CommandValid && sec1CommandDeg < -1.5;
+  const bool sec3CommandExtended =
+      sec3Valid && sec3CommandValid && sec3CommandDeg < -1.5;
+
+  const bool sec1Disagree =
+      sec1LeverValid && sec1CommandValid && !sec1CommandMoving && (sec1LeverExtended != sec1CommandExtended);
+  const bool sec3Disagree =
+      sec3LeverValid && sec3CommandValid && !sec3CommandMoving && (sec3LeverExtended != sec3CommandExtended);
+
   output.efcsStatus5.setSsm(Arinc429SignStatus::NormalOperation);
   output.efcsStatus5.setBit(11, !isNo(busInputs.sec1.speed_brake_lever_command_deg) && discreteInputs.sec1Valid);
   output.efcsStatus5.setBit(12, !isNo(busInputs.sec2.speed_brake_lever_command_deg) && discreteInputs.sec2Valid);
@@ -650,10 +682,17 @@ FcdcBus Fcdc::getBusOutputs() {
   output.efcsStatus5.setBit(23, bitFromValueOr(busInputs.sec1.discrete_status_word_1, 11, false));
   output.efcsStatus5.setBit(24, bitFromValueOr(busInputs.sec1.discrete_status_word_1, 12, false));
   output.efcsStatus5.setBit(25, bitFromValueOr(busInputs.sec2.discrete_status_word_1, 11, false));
-  output.efcsStatus5.setBit(26, false);
-  output.efcsStatus5.setBit(27, false);
+  // Technically SPD BRK 2+3+4 DISAGREE, but SPD BRK 3+4 FAULT (bit 27 below) adds to this bit, so only check 3+4 DISAGREE
+  output.efcsStatus5.setBit(26, sec1Disagree);
+  // Only SPD BRK 3+4 fault, so SPD BRK 2 must be working fine
+  output.efcsStatus5.setBit(27, !sec3Disagree && (!sec1Valid || sec1Disagree));
   output.efcsStatus5.setBit(28, false);
   output.efcsStatus5.setBit(29, false);
+
+  prevSec1SpeedbrakeCommandDeg = sec1CommandDeg;
+  prevSec1SpeedbrakeCommandValid = sec1CommandValid;
+  prevSec3SpeedbrakeCommandDeg = sec3CommandDeg;
+  prevSec3SpeedbrakeCommandValid = sec3CommandValid;
 
   // Roll Data
   if (leftAileronPosValid) {

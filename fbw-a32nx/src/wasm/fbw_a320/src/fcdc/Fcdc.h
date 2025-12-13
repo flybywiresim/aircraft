@@ -104,6 +104,14 @@ class Fcdc {
 
   bool rudderPedalPosValid;
 
+  float prevSec1SpeedbrakeCommandDeg = 0;
+
+  bool prevSec1SpeedbrakeCommandValid = false;
+
+  float prevSec3SpeedbrakeCommandDeg = 0;
+
+  bool prevSec3SpeedbrakeCommandValid = false;
+
   // Sidestick priority vars
   bool leftSidestickDisabled;
 
