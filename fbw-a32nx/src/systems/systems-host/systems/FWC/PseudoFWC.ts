@@ -2762,9 +2762,6 @@ export class PseudoFWC {
         !this.slatFlapSelectionS0F0,
     );
 
-    // spd brk disagree
-    this.speedBrakeDisagreeWarning.set(fcdc1DiscreteWord5.bitValue(26) || fcdc2DiscreteWord5.bitValue(26));
-
     // spd brk still out
     this.speedBrakeCommand5sConfirm.write(this.speedBrakeCommand.get(), deltaTime);
     this.speedBrakeCommand50sConfirm.write(this.speedBrakeCommand.get(), deltaTime);
@@ -2802,7 +2799,6 @@ export class PseudoFWC {
         speedBrakeCaution3 ||
         !this.flightPhase67.get(),
     );
-    this.speedBrakeDoNotUseWarning.set(fcdc1DiscreteWord5.bitValue(27) || fcdc2DiscreteWord5.bitValue(27));
     this.speedBrakeCaution1Pulse.write(speedBrakeCaution1, deltaTime);
     this.speedBrakeCaution2Pulse.write(speedBrakeCaution2, deltaTime);
     const speedBrakeCaution = speedBrakeCaution1 || speedBrakeCaution2 || speedBrakeCaution3;
@@ -2810,9 +2806,12 @@ export class PseudoFWC {
       !this.speedBrakeCaution1Pulse.read() &&
         !this.speedBrakeCaution2Pulse.read() &&
         speedBrakeCaution &&
-        !this.speedBrakeDoNotUseWarning.get() &&
         !this.speedBrakeDisagreeWarning.get(),
     );
+
+    // spd brk disagree
+    this.speedBrakeDisagreeWarning.set(fcdc1DiscreteWord5.bitValue(26) || fcdc2DiscreteWord5.bitValue(26));
+    this.speedBrakeDoNotUseWarning.set(fcdc1DiscreteWord5.bitValue(27) || fcdc2DiscreteWord5.bitValue(27));
 
     // gnd splr not armed
     const raBelow500 = this.radioHeight1.valueOr(Infinity) < 500 || this.radioHeight2.valueOr(Infinity) < 500;
