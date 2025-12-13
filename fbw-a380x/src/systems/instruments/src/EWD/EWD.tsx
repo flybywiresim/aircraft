@@ -21,7 +21,7 @@ import { BleedSupply } from 'instruments/src/EWD/elements/BleedSupply';
 import { WdMemos } from 'instruments/src/EWD/elements/WdMemos';
 import { WdLimitations } from 'instruments/src/EWD/elements/WdLimitations';
 import { WdNormalChecklists } from 'instruments/src/EWD/elements/WdNormalChecklists';
-import { FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
+import { FwsEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsPublisher';
 import { WdAbnormalSensedProcedures } from 'instruments/src/EWD/elements/WdAbnormalSensedProcedures';
 import { WdAbnormalNonSensedProcedures } from 'instruments/src/EWD/elements/WdAbnormalNonSensed';
 import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
@@ -30,7 +30,7 @@ import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPubli
 import { AutoThrustMode, AutoThrustModeMessage } from '@shared/autopilot';
 
 export class EngineWarningDisplay extends DestroyableComponent<{ bus: ArincEventBus }> {
-  private readonly sub = this.props.bus.getSubscriber<EwdSimvars & FwsEwdEvents & FGVars>();
+  private readonly sub = this.props.bus.getSubscriber<EwdSimvars & FwsEvents & FgVars>();
 
   private readonly fwsAvailChecker = new FwsEwdAvailabilityChecker(this.props.bus);
   private readonly cpiomAvailChecker = new CpiomEwdAvailabilityChecker(this.props.bus, this.fwsAvailChecker);
@@ -144,7 +144,6 @@ export class EngineWarningDisplay extends DestroyableComponent<{ bus: ArincEvent
     this.stsIndicationRequested,
     this.fwsAvailChecker.fwsAvail,
   ).map((s) => (s ? 'visible' : 'hidden'));
-
   private readonly advIndicationRequested = ConsumerSubject.create(this.sub.on('fws_show_adv_indication'), false);
   private readonly advIndicationVisibility = MappedSubject.create(
     SubscribableMapFunctions.and(),
@@ -171,6 +170,13 @@ export class EngineWarningDisplay extends DestroyableComponent<{ bus: ArincEvent
     SubscribableMapFunctions.or(),
     this.reverserSelected,
     this.thrustLockActive,
+    );
+  
+  private readonly deferredProcedures = ConsumerSubject.create(this.sub.on('fws_deferred_procedures'), []);
+  private readonly stsIndicationLabel = MappedSubject.create(
+    ([sts, deferred]) => (sts && deferred.length > 0 ? 'STS & DEFRD PROC' : 'STS'),
+    this.stsIndicationRequested,
+    this.deferredProcedures,
   );
 
   public onAfterRender(node: VNode): void {
@@ -411,7 +417,7 @@ export class EngineWarningDisplay extends DestroyableComponent<{ bus: ArincEvent
                   visibility: this.stsIndicationVisibility,
                 }}
               >
-                STS
+                {this.stsIndicationLabel}
               </div>
               <div
                 class="AdvBox"
