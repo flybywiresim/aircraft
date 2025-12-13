@@ -203,7 +203,7 @@ export class CDUSecFplnMain {
     const secToLeg = secPlan.activeLeg;
 
     return (
-      !mcdu.navModeEngaged() ||
+      !mcdu.isNavModeEngaged() ||
       (activeToLeg === undefined && secToLeg === undefined) ||
       (activeToLeg !== undefined &&
         secToLeg !== undefined &&
