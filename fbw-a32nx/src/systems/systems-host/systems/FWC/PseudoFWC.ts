@@ -761,7 +761,7 @@ export class PseudoFWC {
 
   private readonly speedBrakeDisagreeWarning = Subject.create(false);
 
-  private readonly speedBrakeDoNotUseWarning = Subject.create(false);
+  private readonly speedBrakeDoNotUse = Subject.create(false);
 
   private readonly amberSpeedBrake = Subject.create(false);
 
@@ -2811,7 +2811,7 @@ export class PseudoFWC {
 
     // spd brk disagree
     this.speedBrakeDisagreeWarning.set(fcdc1DiscreteWord5.bitValue(26) || fcdc2DiscreteWord5.bitValue(26));
-    this.speedBrakeDoNotUseWarning.set(fcdc1DiscreteWord5.bitValue(27) || fcdc2DiscreteWord5.bitValue(27));
+    this.speedBrakeDoNotUse.set(fcdc1DiscreteWord5.bitValue(27) || fcdc2DiscreteWord5.bitValue(27));
 
     // gnd splr not armed
     const raBelow500 = this.radioHeight1.valueOr(Infinity) < 500 || this.radioHeight2.valueOr(Infinity) < 500;
@@ -4336,7 +4336,7 @@ export class PseudoFWC {
       // SPD BRK DISAGREE
       flightPhaseInhib: [3, 4, 5],
       simVarIsActive: this.speedBrakeDisagreeWarning,
-      whichCodeToReturn: () => [0, 1, this.speedBrakeDoNotUseWarning.get() ? 2 : null],
+      whichCodeToReturn: () => [0, 1, this.speedBrakeDoNotUse.get() ? 2 : null],
       codesToReturn: ['270037001', '270037002', '270037003'],
       memoInhibit: () => false,
       failure: 2,
