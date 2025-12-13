@@ -109,17 +109,20 @@ class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
     Arinc429Register.empty().rawWord,
   );
 
-  private readonly configClean = MappedSubject.create(([word]) => word.bitValue(17), this.slatFlapStatusWord);
+  private readonly configClean = MappedSubject.create(([word]) => word.bitValueOr(17, false), this.slatFlapStatusWord);
 
-  private readonly config1 = MappedSubject.create(([word]) => word.bitValue(18), this.slatFlapStatusWord);
+  private readonly config1 = MappedSubject.create(([word]) => word.bitValueOr(18, false), this.slatFlapStatusWord);
 
-  private readonly config2 = MappedSubject.create(([word]) => word.bitValue(19), this.slatFlapStatusWord);
+  private readonly config2 = MappedSubject.create(([word]) => word.bitValueOr(19, false), this.slatFlapStatusWord);
 
-  private readonly config3 = MappedSubject.create(([word]) => word.bitValue(20), this.slatFlapStatusWord);
+  private readonly config3 = MappedSubject.create(([word]) => word.bitValueOr(20, false), this.slatFlapStatusWord);
 
-  private readonly configFull = MappedSubject.create(([word]) => word.bitValue(21), this.slatFlapStatusWord);
+  private readonly configFull = MappedSubject.create(([word]) => word.bitValueOr(21, false), this.slatFlapStatusWord);
 
-  private readonly flaps1AutoRetract = MappedSubject.create(([word]) => word.bitValue(26), this.slatFlapStatusWord);
+  private readonly flaps1AutoRetract = MappedSubject.create(
+    ([word]) => word.bitValueOr(26, false),
+    this.slatFlapStatusWord,
+  );
 
   private readonly slatsOut = MappedSubject.create(([word]) => word.valueOr(0) > 6.1, this.slatPositionWord);
 
@@ -231,15 +234,11 @@ class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
     this.slatsTargetPos,
   );
 
-  private readonly targetClass = MappedSubject.create(
-    ([inMotion]) => (inMotion ? 'FontMedium Cyan MiddleAlign' : 'FontMedium Green MiddleAlign'),
-    this.inMotion,
+  private readonly targetClass = this.inMotion.map((inMotion) =>
+    inMotion ? 'FontMedium Cyan MiddleAlign' : 'FontMedium Green MiddleAlign',
   );
 
-  private readonly targetBoxVisible = MappedSubject.create(
-    ([inMotion]) => (inMotion ? 'visible' : 'hidden'),
-    this.inMotion,
-  );
+  private readonly targetBoxVisible = this.inMotion.map((inMotion) => (inMotion ? 'visible' : 'hidden'));
 
   private readonly slatIndexClass = MappedSubject.create(
     ([slatsFault, slatsOut, flapsOut, configClean]) => {
