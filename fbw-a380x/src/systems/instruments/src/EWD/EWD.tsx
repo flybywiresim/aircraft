@@ -30,7 +30,7 @@ import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPubli
 import { AutoThrustMode, AutoThrustModeMessage } from '@shared/autopilot';
 
 export class EngineWarningDisplay extends DestroyableComponent<{ bus: ArincEventBus }> {
-  private readonly sub = this.props.bus.getSubscriber<EwdSimvars & FwsEvents & FgVars>();
+  private readonly sub = this.props.bus.getSubscriber<EwdSimvars & FwsEvents & FGVars>();
 
   private readonly fwsAvailChecker = new FwsEwdAvailabilityChecker(this.props.bus);
   private readonly cpiomAvailChecker = new CpiomEwdAvailabilityChecker(this.props.bus, this.fwsAvailChecker);
