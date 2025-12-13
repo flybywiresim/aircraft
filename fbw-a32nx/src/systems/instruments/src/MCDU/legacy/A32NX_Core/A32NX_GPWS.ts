@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2025 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 // @ts-strict-ignore
 import { Arinc429Word, NXDataStore, NXLogicConfirmNode, NXLogicTriggeredMonostableNode } from '@flybywiresim/fbw-sdk';
 import { A32NX_Util } from '../../../../../shared/src/A32NX_Util';
@@ -49,7 +53,7 @@ export class A32NX_GPWS {
   init() {
     console.log('A32NX_GPWS init');
 
-    NXDataStore.getAndSubscribe(
+    NXDataStore.getAndSubscribeLegacy(
       'CONFIG_A32NX_FWC_RADIO_AUTO_CALL_OUT_PINS',
       (k, v) => k === 'CONFIG_A32NX_FWC_RADIO_AUTO_CALL_OUT_PINS' && (this.autoCallOutPins = Number(v)),
       A32NX_DEFAULT_RADIO_AUTO_CALL_OUTS.toString(),

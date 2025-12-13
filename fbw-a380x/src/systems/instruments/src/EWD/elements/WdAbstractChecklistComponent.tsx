@@ -10,25 +10,32 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 import { EwdSimvars } from 'instruments/src/EWD/shared/EwdSimvarPublisher';
-import { FwsEwdEvents } from '../../MsfsAvionicsCommon/providers/FwsEwdPublisher';
+import { FcdcSimvars } from '../../MsfsAvionicsCommon/providers/FcdcPublisher';
+import { FwsEvents } from '../../MsfsAvionicsCommon/providers/FwsPublisher';
 import {
   ChecklistLineStyle,
   WD_NUM_LINES,
   WdLineData,
   WdSpecialLine,
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
 import { FormattedFwcText } from 'instruments/src/EWD/elements/FormattedFwcText';
-import { EclSoftKeys } from 'instruments/src/EWD/elements/EclClickspots';
+import { EclSoftKeys } from 'instruments/src/EWD/elements/EclSoftKeys';
+import { AdrBusEvents, CpiomData, IrBusEvents } from '@flybywiresim/fbw-sdk';
+import { CpiomEwdAvailabilityChecker } from '../EWD';
 
 interface WdAbstractChecklistComponentProps {
   bus: EventBus;
   visible: Subscribable<boolean>;
   abnormal: boolean;
   fwsAvail?: Subscribable<boolean>;
+  cpiomAvailChecker?: CpiomEwdAvailabilityChecker;
 }
 
-export class WdAbstractChecklistComponent extends DisplayComponent<WdAbstractChecklistComponentProps> {
-  protected readonly sub = this.props.bus.getSubscriber<ClockEvents & EwdSimvars & FwsEwdEvents>();
+export class WdAbstractChecklistComponent extends DestroyableComponent<WdAbstractChecklistComponentProps> {
+  protected readonly sub = this.props.bus.getSubscriber<
+    AdrBusEvents & ClockEvents & CpiomData & EwdSimvars & FcdcSimvars & FwsEvents & IrBusEvents
+  >();
 
   protected readonly lineData: WdLineData[] = [];
 
@@ -104,7 +111,7 @@ export class WdAbstractChecklistComponent extends DisplayComponent<WdAbstractChe
     this.showFromLine.sub(() => this.updateChecklists());
   }
 
-  // 17 lines
+  // 18 lines
   render() {
     return (
       <div class="ProceduresContainer" style={{ display: this.props.visible.map((it) => (it ? 'flex' : 'none')) }}>
@@ -121,7 +128,7 @@ export class WdAbstractChecklistComponent extends DisplayComponent<WdAbstractChe
             <EclLine data={this.lineDataSubject[index]} selected={this.lineSelected[index]} />
           ))}
         </div>
-        <EclSoftKeys bus={this.props.bus} />
+        <EclSoftKeys />
       </div>
     );
   }
