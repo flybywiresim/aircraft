@@ -649,8 +649,6 @@ export class PseudoFWC {
 
   private readonly sec1FaultLine123Display = Subject.create(false);
 
-  private readonly sec1FaultLine45Display = Subject.create(false);
-
   private readonly sec2FaultLine123Display = Subject.create(false);
 
   private readonly sec3FaultLine123Display = Subject.create(false);
@@ -4237,7 +4235,7 @@ export class PseudoFWC {
         this.sec1FaultLine123Display.get() ? 1 : null,
         this.sec1FaultLine123Display.get() ? 2 : null,
         this.sec1FaultLine123Display.get() ? 3 : null,
-        this.sec1FaultLine45Display.get() ? 4 : null,
+        this.speedBrakeDoNotUse.get() ? 4 : null,
       ],
       codesToReturn: ['270021001', '270021002', '270021003', '270021004', '270021005'],
       memoInhibit: () => false,
