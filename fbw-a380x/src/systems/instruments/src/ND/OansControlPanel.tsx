@@ -224,6 +224,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
   private readonly ropsDetectedAirport = ConsumerSubject.create(this.sub.on('ropsDetectedAirport'), null);
   private readonly ropsDetectedRunway = ConsumerSubject.create(this.sub.on('ropsDetectedRunway'), null);
   private readonly ropsDetectedRunwayLda = ConsumerSubject.create(this.sub.on('ropsDetectedRunwayLda'), null);
+  private readonly oansSelectedLandingRunway = ConsumerSubject.create(this.sub.on('oansSelectedLandingRunway'), null);
 
   private readonly airportDatabase = this.navigraphAvailable.map((a) => (a ? 'FBW9027250BB04' : 'N/A'));
 
@@ -328,16 +329,18 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
     this.subs.push(
       MappedSubject.create(
-        async ([arpt, rwy]) => {
-          if (arpt && rwy) {
-            this.runwayLda.set((this.ropsDetectedRunwayLda.get() ?? 0).toFixed(0));
-            this.runwayTora.set((this.ropsDetectedRunwayLda.get() ?? 0).toFixed(0));
+        async ([arpt, ropsRwy, lda, oansRwy]) => {
+          if (oansRwy || (arpt && ropsRwy)) {
+            this.runwayLda.set((lda ?? 0).toFixed(0));
+            this.runwayTora.set((lda ?? 0).toFixed(0));
           } else {
             this.clearRunwayInfo();
           }
         },
         this.ropsDetectedAirport,
         this.ropsDetectedRunway,
+        this.ropsDetectedRunwayLda,
+        this.oansSelectedLandingRunway,
       ),
     );
 

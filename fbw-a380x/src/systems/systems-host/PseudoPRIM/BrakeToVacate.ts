@@ -390,6 +390,7 @@ export class BrakeToVacate implements Instrument {
     this.bus.getPublisher<FmsOansData>().pub('ropsDetectedAirport', null, true);
     this.bus.getPublisher<FmsOansData>().pub('ropsDetectedRunway', null, true);
     this.bus.getPublisher<FmsOansData>().pub('oansSelectedLandingRunway', null, true);
+    this.bus.getPublisher<FmsOansData>().pub('ndBtvMessage', '', true);
     this.btvApprDifferentRunwaySimvar.set(false);
   }
 
