@@ -1,4 +1,4 @@
-import { cyrb53 } from '@flybywiresim/fbw-sdk';
+import { cyrb53_bytes } from '@flybywiresim/fbw-sdk';
 
 export interface HashMismatchResult {
   vfsPath: string;
@@ -18,8 +18,8 @@ export async function checkFileHashes(hashFile: string, hashSeed = 0): Promise<H
   const result: HashMismatchResult[] = [];
 
   for (const [vfsPath, expectedHash] of Object.entries(hashes)) {
-    const content = await (await fetch(`/VFS/${vfsPath}`)).text();
-    const actualHash = cyrb53(content, hashSeed);
+    const buffer = await (await fetch(`/VFS/${vfsPath}`)).arrayBuffer();
+    const actualHash = cyrb53_bytes(buffer, hashSeed);
 
     if (actualHash !== expectedHash) {
       result.push({

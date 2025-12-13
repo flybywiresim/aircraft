@@ -6,7 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const { cyrb53 } = require(path.resolve(__dirname, 'hash.js'));
+const { cyrb53_bytes } = require(path.resolve(__dirname, 'hash.js'));
 
 function* readdir(d) {
   for (const dirent of fs.readdirSync(d, { withFileTypes: true })) {
@@ -74,8 +74,8 @@ function createHashFiles(baseDir) {
   const hashes = {};
 
   for (const file of HASHED_FILES) {
-    const content = fs.readFileSync(path.resolve(baseDir, file)).toString();
-    hashes[file] = cyrb53(content, 320);
+    const buf = fs.readFileSync(path.resolve(baseDir, file));
+    hashes[file] = cyrb53_bytes(buf, 320);
   }
 
   const dataDir = path.resolve(baseDir, 'html_ui/Data');
