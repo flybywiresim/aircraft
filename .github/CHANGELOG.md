@@ -36,6 +36,7 @@
 1. [A32NX/FMS] Adjusted TRANS ALT allowed entry range - @Jonny23787 (Jonathan)
 1. [A32NX/FMS] Add - sign to slope value on RAD NAV page - @Jonny23787 (Jonathan)
 1. [A32NX/FMS] Fix "NOT ALLOWED IN NAV" when sequencing TO waypoint while in LOC mode - @BravoMike99 (bruno_pt99)
+1. [A380X/FUEL] Add first FQMS fuel measuring implementation - @Gurgel100 (Pascal)
 
 ## 0.14.0
 
