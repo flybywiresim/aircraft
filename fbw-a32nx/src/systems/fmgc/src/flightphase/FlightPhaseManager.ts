@@ -19,6 +19,7 @@ import { VerticalMode } from '@shared/autopilot';
 import { FmgcFlightPhase, isAllEngineOn, isAnEngineOn, isOnGround, isReady, isSlewActive } from '@shared/flightphase';
 import { ConsumerValue, EventBus, GameStateProvider, SimVarValueType, Subject, Wait } from '@microsoft/msfs-sdk';
 import { NavigationEvents } from '@fmgc/navigation/Navigation';
+import { VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 
 export interface FlightPhaseManagerEvents {
   /** The FMGC flight phase. */
@@ -29,10 +30,11 @@ function canInitiateDes(distanceToDestination: number): boolean {
   const fl = Math.round(Simplane.getAltitude() / 100);
   const fcuSelFl = Simplane.getAutoPilotDisplayedAltitudeLockValue('feet') / 100;
   const cruiseFl = SimVar.GetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number') / 100;
+  const stepDescentActive = VerticalCheckpointReason.StepDescent;
 
   // Can initiate descent? OR Can initiate early descent?
   return (
-    ((distanceToDestination < 200 || fl < 200) && fcuSelFl < cruiseFl && fcuSelFl < fl) ||
+    ((distanceToDestination < 200 || fl < 200) && fcuSelFl < cruiseFl && fcuSelFl < fl && !stepDescentActive) ||
     (distanceToDestination >= 200 && fl > 200 && fcuSelFl <= 200)
   );
 }
