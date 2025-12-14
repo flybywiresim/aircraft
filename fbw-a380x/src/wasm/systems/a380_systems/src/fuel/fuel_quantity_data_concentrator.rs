@@ -8,7 +8,10 @@ use systems::{
     },
     simulation::{InitContext, SimulationElement, SimulatorWriter, VariableIdentifier, Write},
 };
-use uom::{si::f64::*, ConstZero};
+use uom::{
+    si::{f64::*, mass::kilogram},
+    ConstZero,
+};
 
 pub(super) struct FuelQuantityDataConcentrator {
     powered_by: ElectricalBusType,
@@ -144,7 +147,11 @@ impl SimulationElement for FuelQuantityDataConcentrator {
             .iter()
             .zip(self.tank_quantities)
         {
-            writer.write(identifier, quantity);
+            writer.write_arinc429(
+                identifier,
+                quantity.value().get::<kilogram>(),
+                quantity.ssm(),
+            );
         }
     }
 }

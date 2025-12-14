@@ -1021,7 +1021,7 @@
   - The center of gravity of the aircraft
 
 
-- A32NX_FQMS_{side}_FUEL_PUMPS_RUNNING
+- A32NX_FQMS_{side}_FUEL_PUMP_RUNNING_WORD
   - Arinc429<Discrete>
   - Status word indicating different status
   - {side}

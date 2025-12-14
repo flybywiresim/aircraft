@@ -40,8 +40,8 @@ export const FuelPage = () => {
   const [engine4Valve] = useSimVar('FUELSYSTEM VALVE OPEN:4', 'Percent over 100', 1000);
 
   // Fuel pump states
-  const fqmsLeftPumpStates = useArinc429Var('L:A32NX_FQMS_LEFT_FUEL_PUMPS_RUNNING', 1000);
-  const fqmsRightPumpStates = useArinc429Var('L:A32NX_FQMS_RIGHT_FUEL_PUMPS_RUNNING', 1000);
+  const fqmsLeftPumpStates = useArinc429Var('L:A32NX_FQMS_LEFT_FUEL_PUMP_RUNNING_WORD', 1000);
+  const fqmsRightPumpStates = useArinc429Var('L:A32NX_FQMS_RIGHT_FUEL_PUMP_RUNNING_WORD', 1000);
 
   // Feed pumps
   const feed1Pump1Active = fqmsLeftPumpStates.bitValueOr(12, false);
