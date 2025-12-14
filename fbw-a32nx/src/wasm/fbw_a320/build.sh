@@ -8,7 +8,7 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 COMMON_DIR="${DIR}/../../../../fbw-common/src/wasm"
 FBW_COMMON_DIR="${COMMON_DIR}/fbw_common"
-OUTPUT="${DIR}/../../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fbw.wasm"
+OUTPUT="${DIR}/../../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/common/panel/fbw.wasm"
 
 if [ "$1" == "--debug" ]; then
   WASMLD_ARGS=""
