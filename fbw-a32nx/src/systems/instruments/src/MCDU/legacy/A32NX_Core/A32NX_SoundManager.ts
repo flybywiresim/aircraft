@@ -86,9 +86,6 @@ export class A32NX_SoundManager {
     }
 
     this.periodicList.forEach((element) => {
-      console.log(
-        `Sound: ${element.sound.name}, Time Since Last Played: ${element.timeSinceLastPlayed}, Period: ${element.period}`,
-      );
       if (isNaN(element.timeSinceLastPlayed) || element.timeSinceLastPlayed >= element.period) {
         if (this.tryPlaySound(element.sound)) {
           element.timeSinceLastPlayed = 0;
