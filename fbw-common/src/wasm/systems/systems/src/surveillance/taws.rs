@@ -2,7 +2,7 @@ use crate::shared::arinc429::Arinc429Word;
 
 #[derive(Default)]
 pub struct TerrainAwarenessWarningSystemDiscreteInputs {
-    pub glideslop_inhibit: bool,
+    pub glideslope_inhibit: bool,
     pub gpws_inhibit: bool,
     pub momentary_audio_suppression: bool,
     pub self_test: bool,

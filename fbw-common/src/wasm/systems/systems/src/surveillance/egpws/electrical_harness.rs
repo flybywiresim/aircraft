@@ -90,7 +90,7 @@ impl SimulationElement for EgpwsElectricalHarness {
         self.flaps_mode_off = reader.read(&self.flap_mode_off_id);
         self.landing_flaps_3 = reader.read(&self.landing_flap_3_on_id);
 
-        self.discrete_inputs.glideslop_inhibit = reader.read(&self.gs_mode_off_id);
+        self.discrete_inputs.glideslope_inhibit = reader.read(&self.gs_mode_off_id);
         self.discrete_inputs.gpws_inhibit = reader.read(&self.sys_off_id);
         self.discrete_inputs.momentary_audio_suppression = reader.read(&self.ecam_cp_emer_canc_id);
         self.discrete_inputs.self_test = reader.read(&self.gs_cancel_self_test_id);

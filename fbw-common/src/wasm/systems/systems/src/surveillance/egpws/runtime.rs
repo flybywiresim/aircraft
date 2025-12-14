@@ -996,7 +996,7 @@ impl EnhancedGroundProximityWarningComputerRuntime {
         let mode_5_active = !fls_selected
             && !mix_loc_fls_selected
             && ils.glideslope_deviation().is_normal_operation()
-            && !discrete_inputs.glideslop_inhibit
+            && !discrete_inputs.glideslope_inhibit
             && (discrete_inputs.landing_flaps || self.flight_phase == FlightPhase::Approach)
             && (discrete_inputs.landing_gear_downlocked || false) // TODO Implement envelope modulation override
             && !self.mode_5_cancel_active
