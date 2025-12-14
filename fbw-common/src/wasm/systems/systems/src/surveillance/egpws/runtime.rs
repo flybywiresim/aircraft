@@ -15,6 +15,7 @@ use crate::{
         radio_altimeter::RadioAltimeter,
     },
     shared::{
+        arinc429::SignStatus,
         derivative::DerivativeNode,
         interpolation,
         logic_nodes::{ConfirmationNode, MonostableTriggerNode, PulseNode},
@@ -1211,7 +1212,7 @@ impl EnhancedGroundProximityWarningComputerRuntime {
     pub fn set_outputs(
         &self,
         discrete_outputs: &mut TerrainAwarenessWarningSystemDiscreteOutputs,
-        _bus_outputs: &mut TerrainAwarenessWarningSystemBusOutputs,
+        bus_outputs: &mut TerrainAwarenessWarningSystemBusOutputs,
     ) {
         discrete_outputs.alert_lamp = self.alert_lamp_activated;
         discrete_outputs.warning_lamp = self.warning_lamp_activated;
@@ -1225,5 +1226,51 @@ impl EnhancedGroundProximityWarningComputerRuntime {
         discrete_outputs.raas_inop = false;
         discrete_outputs.capt_terrain_display_active = false;
         discrete_outputs.fo_terrain_display_active = false;
+
+        bus_outputs
+            .alert_discrete_1
+            .set_ssm(SignStatus::NormalOperation);
+        bus_outputs
+            .alert_discrete_1
+            .set_bit(11, self.aural_output == AuralWarning::SinkRate);
+        bus_outputs
+            .alert_discrete_1
+            .set_bit(12, self.aural_output == AuralWarning::PullUp);
+        bus_outputs
+            .alert_discrete_1
+            .set_bit(13, self.aural_output == AuralWarning::Terrain);
+        bus_outputs
+            .alert_discrete_1
+            .set_bit(14, self.aural_output == AuralWarning::DontSink);
+        bus_outputs
+            .alert_discrete_1
+            .set_bit(15, self.aural_output == AuralWarning::TooLowGear);
+        bus_outputs
+            .alert_discrete_1
+            .set_bit(16, self.aural_output == AuralWarning::TooLowFlaps);
+        bus_outputs
+            .alert_discrete_1
+            .set_bit(17, self.aural_output == AuralWarning::TooLowTerrain);
+        bus_outputs.alert_discrete_1.set_bit(
+            18,
+            self.aural_output == AuralWarning::GlideslopeHard
+                || self.aural_output == AuralWarning::GlideslopeSoft,
+        );
+
+        bus_outputs
+            .alert_discrete_2
+            .set_ssm(SignStatus::NormalOperation);
+        bus_outputs
+            .alert_discrete_2
+            .set_bit(12, self.alert_lamp_activated);
+        bus_outputs
+            .alert_discrete_2
+            .set_bit(13, self.warning_lamp_activated);
+        bus_outputs
+            .alert_discrete_2
+            .set_bit(14, self.gpws_general_fault);
+        bus_outputs
+            .alert_discrete_2
+            .set_bit(15, discrete_outputs.audio_on);
     }
 }

@@ -12,6 +12,10 @@ impl<T: Copy> Arinc429Word<T> {
         self.value
     }
 
+    pub fn set_value(&mut self, value: T) {
+        self.value = value;
+    }
+
     pub fn value_or(&self, default: T) -> T {
         if self.is_failure_warning() {
             default
@@ -42,6 +46,10 @@ impl<T: Copy> Arinc429Word<T> {
 
     pub fn ssm(&self) -> SignStatus {
         self.ssm
+    }
+
+    pub fn set_ssm(&mut self, ssm: SignStatus) {
+        self.ssm = ssm;
     }
 
     pub fn is_failure_warning(&self) -> bool {
