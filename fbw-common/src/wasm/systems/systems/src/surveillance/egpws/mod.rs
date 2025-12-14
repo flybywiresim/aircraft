@@ -113,7 +113,7 @@ impl EnhancedGroundProximityWarningComputer {
             discrete_output_data: TerrainAwarenessWarningSystemDiscreteOutputs::default(),
             bus_output_data: TerrainAwarenessWarningSystemBusOutputs::default(),
 
-            on_ground: on_ground,
+            on_ground,
             flight_phase: if on_ground {
                 FlightPhase::Takeoff
             } else {

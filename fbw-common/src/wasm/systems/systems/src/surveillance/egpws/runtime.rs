@@ -384,11 +384,9 @@ impl EnhancedGroundProximityWarningComputerRuntime {
         );
 
         if self.flight_phase == FlightPhase::Takeoff && !self.on_ground {
-            self.takeoff_to_approach_condition_integrator += (self.chosen_altitude_ft
-                - self.field_elevation_ft)
-                .max(0.)
-                .min(700.)
-                * context.delta().as_secs_f64();
+            self.takeoff_to_approach_condition_integrator +=
+                (self.chosen_altitude_ft - self.field_elevation_ft).clamp(0., 700.)
+                    * context.delta().as_secs_f64();
         } else {
             self.takeoff_to_approach_condition_integrator = 0.;
         }
@@ -801,17 +799,20 @@ impl EnhancedGroundProximityWarningComputerRuntime {
         let mode_4_b_alternate = true;
 
         // TODO Implement TAD hi integrity condition
-        let mode_4_a_boundary_limit = if discrete_inputs.landing_flaps || false {
-            500.
-        } else {
-            1000.
-        };
-        let mode_4_b_boundary_limit =
-            if mode_4_b_alternate && discrete_inputs.landing_flaps || false {
-                245.
+        let terr_awareness_tcf_active_high_integrity = false;
+        let mode_4_a_boundary_limit =
+            if discrete_inputs.landing_flaps || terr_awareness_tcf_active_high_integrity {
+                500.
             } else {
                 1000.
             };
+        let mode_4_b_boundary_limit = if mode_4_b_alternate && discrete_inputs.landing_flaps
+            || terr_awareness_tcf_active_high_integrity
+        {
+            245.
+        } else {
+            1000.
+        };
         let mode_4_a_boundary = self
             .mode_4_a_alert_upper_boundary
             .min(mode_4_a_boundary_limit);
@@ -872,8 +873,8 @@ impl EnhancedGroundProximityWarningComputerRuntime {
         }
 
         // Ratcheting logic for Mode 4AB declutter threshold increase
-        let mode_4_ab_submode = (mode_4_submode_too_low_gear as u8) << 2
-            | (mode_4_submode_too_low_flaps as u8) << 1
+        let mode_4_ab_submode = ((mode_4_submode_too_low_gear as u8) << 2)
+            | ((mode_4_submode_too_low_flaps as u8) << 1)
             | (mode_4_submode_too_low_terrain as u8);
         let aural_changed = mode_4_ab_submode != self.mode_4_ab_prev_submode_active;
         self.mode_4_ab_prev_submode_active = mode_4_ab_submode;
@@ -989,6 +990,7 @@ impl EnhancedGroundProximityWarningComputerRuntime {
 
         let fls_selected = false; // TODO implement
         let mix_loc_fls_selected = false; // TODO implement
+        let envelope_mod_gear_down_override = false; // TODO implement
         let heading_difference = (ir.magnetic_track().value().get::<degree>()
             - ils.runway_heading().value().get::<degree>()
             + 540.)
@@ -999,7 +1001,7 @@ impl EnhancedGroundProximityWarningComputerRuntime {
             && ils.glideslope_deviation().is_normal_operation()
             && !discrete_inputs.glideslope_inhibit
             && (discrete_inputs.landing_flaps || self.flight_phase == FlightPhase::Approach)
-            && (discrete_inputs.landing_gear_downlocked || false) // TODO Implement envelope modulation override
+            && (discrete_inputs.landing_gear_downlocked || envelope_mod_gear_down_override)
             && !self.mode_5_cancel_active
             && (heading_difference.abs() < 50. || !ir.magnetic_track().is_normal_operation())
             && (loc_deviation_dots.abs() < 2. || self.ra_ft < 500.);
