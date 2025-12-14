@@ -43,7 +43,7 @@ function createHashFiles(baseDir) {
 
   for (const file of HASHED_FILES) {
     const buf = fs.readFileSync(path.resolve(baseDir, file));
-    hashes[file] = cyrb53_bytes(buf, 320);
+    hashes[file] = cyrb53_bytes(buf, 380);
   }
 
   const dataDir = path.resolve(baseDir, 'html_ui/Data');
