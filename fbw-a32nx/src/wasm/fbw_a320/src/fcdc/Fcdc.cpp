@@ -634,37 +634,21 @@ FcdcBus Fcdc::getBusOutputs() {
   output.efcsStatus4.setBit(29, bitFromValueOr(busInputs.elac1.discrete_status_word_2, 21, false) ||
                                     bitFromValueOr(busInputs.elac2.discrete_status_word_2, 21, false));
 
-  const bool sec1Valid = discreteInputs.sec1Valid;
-  const bool sec1LeverValid = isNo(busInputs.sec1.speed_brake_lever_command_deg);
-  const bool sec1CommandValid = isNo(busInputs.sec1.speed_brake_command_deg);
-  const bool sec3Valid = discreteInputs.sec3Valid;
-  const bool sec3LeverValid = isNo(busInputs.sec3.speed_brake_lever_command_deg);
-  const bool sec3CommandValid = isNo(busInputs.sec3.speed_brake_command_deg);
+  const bool sec1LeverExtended = valueOr(busInputs.sec1.speed_brake_lever_command_deg, 0) > 1.5;
+  const bool sec3LeverExtended = valueOr(busInputs.sec3.speed_brake_lever_command_deg, 0) > 1.5;
 
-  const float sec1CommandDeg = valueOr(busInputs.sec1.speed_brake_command_deg, 0);
-  const float sec3CommandDeg = valueOr(busInputs.sec3.speed_brake_command_deg, 0);
+  const bool sec1CommandExtended = valueOr(busInputs.sec1.speed_brake_command_deg, 0) < -1.5;
+  const bool sec3CommandExtended = valueOr(busInputs.sec3.speed_brake_command_deg, 0) < -1.5;
 
-  const bool sec1LeverExtended =
-      sec1Valid && sec1LeverValid && valueOr(busInputs.sec1.speed_brake_lever_command_deg, 0) > 1.5;
-  const bool sec3LeverExtended =
-      sec3Valid && sec3LeverValid && valueOr(busInputs.sec3.speed_brake_lever_command_deg, 0) > 1.5;
-
-  const bool sec1CommandExtended =
-      sec1Valid && sec1CommandValid && sec1CommandDeg < -1.5;
-  const bool sec3CommandExtended =
-      sec3Valid && sec3CommandValid && sec3CommandDeg < -1.5;
-
-  const bool sec1Disagree =
-      sec1LeverValid && sec1CommandValid && sec1LeverExtended && !sec1CommandExtended;
-  const bool sec3Disagree =
-      sec3LeverValid && sec3CommandValid && sec3LeverExtended && !sec3CommandExtended;
+  const bool sec1Disagree = sec1LeverExtended && !sec1CommandExtended;
+  const bool sec3Disagree = sec3LeverExtended && !sec3CommandExtended;
 
   const bool spoiler2Fault = bitFromValueOr(busInputs.sec3.discrete_status_word_1, 12, false);
   const bool spoiler3Fault = bitFromValueOr(busInputs.sec1.discrete_status_word_1, 11, false);
   const bool spoiler4Fault = bitFromValueOr(busInputs.sec1.discrete_status_word_1, 12, false);
 
-  const bool spoiler2Avail = sec3Valid && !spoiler2Fault;
-  const bool spoiler34Avail = sec1Valid && !spoiler3Fault && !spoiler4Fault;
+  const bool spoiler2Avail = discreteInputs.sec3Valid && !spoiler2Fault;
+  const bool spoiler34Avail = discreteInputs.sec1Valid && !spoiler3Fault && !spoiler4Fault;
 
   output.efcsStatus5.setSsm(Arinc429SignStatus::NormalOperation);
   output.efcsStatus5.setBit(11, !isNo(busInputs.sec1.speed_brake_lever_command_deg) && discreteInputs.sec1Valid);
