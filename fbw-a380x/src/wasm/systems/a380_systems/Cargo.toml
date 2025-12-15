@@ -8,7 +8,7 @@ edition = "2021"
 bitflags = "2.9.1"
 uom.workspace = true
 nalgebra = "0.33.0"
-fxhash = "0.2.1"
+rustc-hash = "2.1.1"
 rand.workspace = true
 serde = { version = "1.0.215", features = ["derive"] }
 serde_with = { version = "3.11.0" }

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useEffect, useState } from 'react';
-import { t } from '@flybywiresim/flypad';
+import { t, useAppSelector } from '@flybywiresim/flypad';
 import { SettingsPage } from '../Settings';
 // @ts-ignore
 import { useTroubleshooting } from '../../TroubleshootingContext';
@@ -16,6 +16,7 @@ export const TroubleshootingPage = () => {
   const [navDates, setNavDates] = useState('');
   const [naviInstalled, setNaviInstalled] = useState(false);
   const [buildInfo, setBuildInfo] = useState<BuildInfo | undefined>(undefined);
+  const { mismatches: fileHashMismatches } = useAppSelector((state) => state.fileHashes);
 
   useEffect(() => {
     fetch('/VFS/scenery/fs-base-jep/scenery/world/airaccycle.bgl', { method: 'HEAD' }).then((r) =>
@@ -36,6 +37,11 @@ export const TroubleshootingPage = () => {
         MSFS2024: {isMsfs2024() ? 'True\n' : 'False\n'}
         NavData Dates: {navDates + '\n'}
         Navigraph NavData: {naviInstalled ? 'True\n' : 'False\n'}
+        {fileHashMismatches.length > 0
+          ? fileHashMismatches.map(
+              (m) => `File tampered: ${m.vfsPath}; expected ${m.expectedHash}, actual ${m.actualHash}\n`,
+            )
+          : 'No critical files tampered.'}
         {'\n'}
         {errorLog.map((msg) => msg + '\n')}
       </pre>

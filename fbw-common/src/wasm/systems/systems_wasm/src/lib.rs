@@ -25,7 +25,7 @@ use ::msfs::{
     sys, MSFSEvent,
 };
 use failures::Failures;
-use fxhash::FxHashMap;
+use rustc_hash::FxHashMap;
 use std::cell::RefCell;
 use std::fmt::{Display, Formatter};
 use std::rc::Rc;
