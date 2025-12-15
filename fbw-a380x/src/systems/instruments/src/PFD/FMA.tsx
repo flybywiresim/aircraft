@@ -28,6 +28,7 @@ import { FcdcValueProvider } from './shared/FcdcValueProvider';
 import { DmcLogicEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
 import { AutoThrustModeMessage } from '@shared/autopilot';
+import { getDisplayIndex } from './PFD';
 
 abstract class ShowForSecondsComponent<T extends ComponentProps> extends DisplayComponent<T> {
   private timeout: number = 0;
@@ -1650,6 +1651,8 @@ class BC3Cell extends DisplayComponent<{
 class D1D2Cell extends ShowForSecondsComponent<CellProps & { readonly fcdcData: FcdcValueProvider }> {
   private sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & DmcLogicEvents>();
 
+  private readonly lsButton = ConsumerSubject.create(null, false);
+
   private readonly fmaLateralActive = ConsumerSubject.create(this.sub.on('activeLateralMode'), 0);
   private readonly fmaLateralArmed = ConsumerSubject.create(this.sub.on('fmaLateralArmed'), 0);
 
@@ -1666,9 +1669,9 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps & { readonly fcdcData: 
     this.fmaVerticalArmed,
   );
 
-  private text1Sub = Subject.create('');
+  private readonly text1Sub = Subject.create('');
 
-  private text2Sub = Subject.create('');
+  private readonly text2Sub = Subject.create('');
 
   constructor(props: CellProps & { readonly fcdcData: FcdcValueProvider }) {
     super(props, 9);
@@ -1687,9 +1690,6 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps & { readonly fcdcData: 
     } else if (this.props.fcdcData.land3FailOperationalCapacity.get()) {
       text1 = 'LAND3';
       text2 = 'DUAL';
-    } else if (this.landModesArmedOrActive.get()) {
-      text1 = 'APPR1';
-      text2 = '';
     } else if (false) {
       text1 = 'LAND1';
       text2 = '';
@@ -1701,6 +1701,9 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps & { readonly fcdcData: 
     } else if (false) {
       text1 = 'RAW';
       text2 = 'ONLY';
+    } else if (this.lsButton.get() || this.landModesArmedOrActive.get()) {
+      text1 = 'APPR1';
+      text2 = '';
     } else {
       text1 = '';
       text2 = '';
@@ -1728,7 +1731,14 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps & { readonly fcdcData: 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    MappedSubject.create(() => this.setText(), this.props.fcdcData.fcdcFgDiscreteWord4, this.landModesArmedOrActive);
+    MappedSubject.create(
+      () => this.setText(),
+      this.props.fcdcData.fcdcFgDiscreteWord4,
+      this.landModesArmedOrActive,
+      this.lsButton,
+    );
+
+    this.lsButton.setConsumer(this.sub.on(getDisplayIndex() == 1 ? 'ls1Button' : 'ls2Button'));
   }
 
   render(): VNode {
