@@ -425,7 +425,7 @@ export class FmgcDataService implements Fmgc {
     return gw ? gw * 1_000 : null;
   }
 
-  getGrossWeightCg(): number | null {
+  public getGrossWeightCg(): number | null {
     // Value received from FQMS, or falls back to value from WBBC
     return this.fqms_gwcg.get().valueOr(null);
   }

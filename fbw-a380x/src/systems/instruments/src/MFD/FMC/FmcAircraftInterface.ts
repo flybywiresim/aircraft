@@ -1360,6 +1360,7 @@ export class FmcAircraftInterface {
     const estLdgWeight = this.tryEstimateLandingWeight();
     let ldgWeight = estLdgWeight;
     const grossWeight = this.fmc.fmgc.getGrossWeightKg() ?? maxZfw + (this.fmc.fmgc.getFOB() ?? 0) * 1_000;
+    const grossWeightCG = this.fmc.fmgc.getGrossWeightCg() ?? 35;
     const vnavPrediction = this.fmc.guidanceController?.vnavDriver?.getDestinationPrediction();
     // Actual weight is used during approach phase (FCOM bulletin 46/2), and we also assume during go-around
     if (this.flightPhase.get() >= FmgcFlightPhase.Approach || estLdgWeight === null) {
@@ -1384,7 +1385,8 @@ export class FmcAircraftInterface {
     }
 
     // Calculate approach speeds. Independent from ADR data
-    const landingCg = this.fmgc.getGrossWeightCg();
+    // TODO: is this the correct way of getting the landing CG?
+    const landingCg = grossWeightCG;
     if (ldgWeight !== null && landingCg !== null) {
       const approachSpeeds = new A380OperatingSpeeds(
         ldgWeight,
@@ -1422,6 +1424,7 @@ export class FmcAircraftInterface {
       const flapLever = SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Enum');
       const speeds = new A380OperatingSpeeds(
         grossWeight,
+        grossWeightCG,
         this.fmc.navigation.getComputedAirspeed() ?? 0, // CAS is NCD for low speeds/standstill, leading to null here
         flapLever,
         this.flightPhase.get(),
