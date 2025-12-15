@@ -40,6 +40,7 @@
 1. [A380X/SD] Improve STS page: Add deferred procedures, page switching, MORE page, improve performance - @flogross89 (floridude)
 1. [A32NX/FMS] Adjusted position of flight phase and flight number on PROG page  - @Jonny23787 (Jonathan)
 1. [A32NX/A380X] Properly handle `PARKING_BRAKE_ON` and `PARKING_BRAKE_OFF` key events - @tracernz (Mike)
+1. [A380X/PFD] Increase PFD trim wheel rotation speed - @lukecologne (luke)
 
 ## 0.14.0
 
