@@ -1211,11 +1211,19 @@ impl EnhancedGroundProximityWarningComputerRuntime {
         self.flight_phase
     }
 
+    fn is_initialized(&self) -> bool {
+        self.remaining_startup == Duration::ZERO
+    }
+
     pub fn set_outputs(
         &self,
         discrete_outputs: &mut TerrainAwarenessWarningSystemDiscreteOutputs,
         bus_outputs: &mut TerrainAwarenessWarningSystemBusOutputs,
     ) {
+        if !self.is_initialized() {
+            return;
+        }
+
         discrete_outputs.alert_lamp = self.alert_lamp_activated;
         discrete_outputs.warning_lamp = self.warning_lamp_activated;
         discrete_outputs.audio_on = self.aural_output != AuralWarning::None;
