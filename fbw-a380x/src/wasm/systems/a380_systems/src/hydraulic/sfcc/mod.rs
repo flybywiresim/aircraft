@@ -120,7 +120,7 @@ impl SlatFlapControlComputer {
                 FlapsConf::Conf1F
             }
             (CSU::Conf0 | CSU::Conf1, CSU::Conf1)
-                // If we're not already in Conf0, then we've oversped Conf1 instead of specfically moving the flaps handle
+                // If we're not already in Conf0, then we've oversped Conf1 instead of explicitly moving the flaps handle
                 if self.flaps_conf == FlapsConf::Conf0
                     && (context.indicated_airspeed().get::<knot>()
                     > Self::CRUISE_BAULK_AIRSPEED_THRESHOLD_KNOTS
