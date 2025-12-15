@@ -649,8 +649,6 @@ export class PseudoFWC {
 
   private readonly sec1FaultLine123Display = Subject.create(false);
 
-  private readonly sec1FaultLine45Display = Subject.create(false);
-
   private readonly sec2FaultLine123Display = Subject.create(false);
 
   private readonly sec3FaultLine123Display = Subject.create(false);
@@ -758,6 +756,10 @@ export class PseudoFWC {
   private readonly speedBrakeCaution2Pulse = new NXLogicPulseNode(true);
 
   private readonly speedBrakeStillOutWarning = Subject.create(false);
+
+  private readonly speedBrakeDisagreeWarning = Subject.create(false);
+
+  private readonly speedBrakeDoNotUse = Subject.create(false);
 
   private readonly amberSpeedBrake = Subject.create(false);
 
@@ -2795,7 +2797,6 @@ export class PseudoFWC {
         speedBrakeCaution3 ||
         !this.flightPhase67.get(),
     );
-    const speedBrakeDoNotUse = fcdc1DiscreteWord5.bitValue(27) || fcdc2DiscreteWord5.bitValue(27);
     this.speedBrakeCaution1Pulse.write(speedBrakeCaution1, deltaTime);
     this.speedBrakeCaution2Pulse.write(speedBrakeCaution2, deltaTime);
     const speedBrakeCaution = speedBrakeCaution1 || speedBrakeCaution2 || speedBrakeCaution3;
@@ -2803,8 +2804,12 @@ export class PseudoFWC {
       !this.speedBrakeCaution1Pulse.read() &&
         !this.speedBrakeCaution2Pulse.read() &&
         speedBrakeCaution &&
-        !speedBrakeDoNotUse,
+        !this.speedBrakeDisagreeWarning.get(),
     );
+
+    // spd brk disagree
+    this.speedBrakeDisagreeWarning.set(fcdc1DiscreteWord5.bitValue(26) || fcdc2DiscreteWord5.bitValue(26));
+    this.speedBrakeDoNotUse.set(fcdc1DiscreteWord5.bitValue(27) || fcdc2DiscreteWord5.bitValue(27));
 
     // gnd splr not armed
     const raBelow500 = this.radioHeight1.valueOr(Infinity) < 500 || this.radioHeight2.valueOr(Infinity) < 500;
@@ -4230,7 +4235,7 @@ export class PseudoFWC {
         this.sec1FaultLine123Display.get() ? 1 : null,
         this.sec1FaultLine123Display.get() ? 2 : null,
         this.sec1FaultLine123Display.get() ? 3 : null,
-        this.sec1FaultLine45Display.get() ? 4 : null,
+        this.speedBrakeDoNotUse.get() ? 4 : null,
       ],
       codesToReturn: ['270021001', '270021002', '270021003', '270021004', '270021005'],
       memoInhibit: () => false,
@@ -4320,6 +4325,17 @@ export class PseudoFWC {
         '270036507',
         '270036508',
       ],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: 10,
+      side: 'LEFT',
+    },
+    2700370: {
+      // SPD BRK DISAGREE
+      flightPhaseInhib: [3, 4, 5],
+      simVarIsActive: this.speedBrakeDisagreeWarning,
+      whichCodeToReturn: () => [0, 1, this.speedBrakeDoNotUse.get() ? 2 : null],
+      codesToReturn: ['270037001', '270037002', '270037003'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: 10,
