@@ -5,7 +5,13 @@
 /* eslint-disable max-len */
 import React from 'react';
 
-import { usePersistentProperty, SENTRY_CONSENT_KEY, SentryConsentState, isMsfs2024 } from '@flybywiresim/fbw-sdk';
+import {
+  usePersistentProperty,
+  SENTRY_CONSENT_KEY,
+  SentryConsentState,
+  isMsfs2024,
+  usePersistentSetting,
+} from '@flybywiresim/fbw-sdk';
 
 import { Hoppie } from '@flybywiresim/api-client';
 import { toast } from 'react-toastify';
@@ -25,6 +31,7 @@ export const AtsuAocPage = () => {
 
   const [hoppieEnabled, setHoppieEnabled] = usePersistentProperty('CONFIG_HOPPIE_ENABLED', 'DISABLED');
   const [hoppieUserId, setHoppieUserId] = usePersistentProperty('CONFIG_HOPPIE_USERID');
+  const [cpdlcProvider, setCpdlcProvider] = usePersistentSetting('CPDLC_PROVIDER');
 
   const [sentryEnabled, setSentryEnabled] = usePersistentProperty(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
 
@@ -74,6 +81,12 @@ export const AtsuAocPage = () => {
     }
   };
 
+  const handleCpdlcProviderChange = (provider: 'NONE' | 'HOPPIE' | 'BATC' | 'SAI') => {
+    setCpdlcProvider(provider);
+    HoppieConnector.deactivateHoppie();
+    HoppieConnector.activateHoppie();
+  };
+
   const atisSourceButtons: ButtonType[] = [
     { name: 'FAA (US)', setting: 'FAA' },
     { name: 'PilotEdge', setting: 'PILOTEDGE' },
@@ -95,6 +108,12 @@ export const AtsuAocPage = () => {
   if (!isMsfs2024()) {
     tafSourceButtons = tafSourceButtons.slice(1);
   }
+
+  const hoppieProviderButtons = [
+    { name: t('Settings.AtsuAoc.HoppieProviderNone'), setting: 'NONE' },
+    { name: t('Settings.AtsuAoc.HoppieProviderHoppie'), setting: 'HOPPIE' },
+    { name: t('Settings.AtsuAoc.HoppieProviderBatc'), setting: 'BATC' },
+  ] as const;
 
   const { showModal } = useModals();
 
@@ -206,10 +225,25 @@ export const AtsuAocPage = () => {
         <Toggle value={hoppieEnabled === 'ENABLED'} onToggle={(toggleValue) => handleHoppieEnabled(toggleValue)} />
       </SettingItem>
 
+      <SettingItem name={t('Settings.AtsuAoc.HoppieProvider')}>
+        <SelectGroup>
+          {hoppieProviderButtons.map((button) => (
+            <SelectItem
+              key={button.setting}
+              onSelect={() => handleCpdlcProviderChange(button.setting)}
+              selected={cpdlcProvider === button.setting}
+            >
+              {button.name}
+            </SelectItem>
+          ))}
+        </SelectGroup>
+      </SettingItem>
+
       <SettingItem name={t('Settings.AtsuAoc.HoppieUserId')}>
         <SimpleInput
           className="w-30 text-center"
           value={hoppieUserId}
+          disabled={cpdlcProvider == 'BATC'}
           onBlur={(value) => handleHoppieUsernameInput(value.replace(/\s/g, ''))}
           onChange={(value) => setHoppieUserId(value)}
         />

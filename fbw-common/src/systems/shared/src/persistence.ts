@@ -12,6 +12,7 @@ type SubscribeCancellation = () => void;
 
 export interface NXDataStoreSettings {
   EFB_UI_THEME: 'blue' | 'dark' | 'light';
+  CPDLC_PROVIDER: 'NONE' | 'HOPPIE' | 'BATC' | 'SAI';
 }
 
 export type LegacyDataStoreSettingKey<k extends string> = k & (k extends keyof NXDataStoreSettings ? never : k);
@@ -22,6 +23,7 @@ export type LegacyDataStoreSettingKey<k extends string> = k & (k extends keyof N
 export class NXDataStore {
   private static readonly settingsDefaultValues: { [k in keyof NXDataStoreSettings]: NXDataStoreSettings[k] } = {
     EFB_UI_THEME: 'blue',
+    CPDLC_PROVIDER: 'NONE',
   };
 
   private static readonly aircraftProjectPrefix: string = process.env.AIRCRAFT_PROJECT_PREFIX?.toUpperCase() ?? 'UNK';
