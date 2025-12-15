@@ -261,6 +261,7 @@ export class SpeedChevrons extends DisplayComponent<{ bus: ArincEventBus; instru
 
   private readonly groundSpeed = Arinc429LocalVarConsumerSubject.create(this.sub.on('groundSpeed'), 0);
   private readonly hudmode = ConsumerSubject.create(this.sub.on('hudFlightPhaseMode'), 0);
+  private readonly spdChevronsVis = ConsumerSubject.create(this.sub.on('spdChevrons'), 'block');
 
   private previousAirspeed = 0;
   private thresholdSpeed = 35;
@@ -348,7 +349,7 @@ export class SpeedChevrons extends DisplayComponent<{ bus: ArincEventBus; instru
 
   render(): VNode | null {
     return (
-      <g id="SpeedChevrons" ref={this.refElement}>
+      <g id="SpeedChevrons" ref={this.refElement} display={this.spdChevronsVis}>
         <path ref={this.leftChevron} class="NormalStroke Green" d="m 574,500 12,12 -12,12" />
         <path ref={this.rightChevron} class="NormalStroke Green" d="m 706,500 -12,12 12,12" />
       </g>

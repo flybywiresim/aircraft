@@ -260,6 +260,7 @@ export interface HudElems {
   hudFlightPhaseMode: number;
   cWndMode: boolean;
   decMode: number;
+  spdChevrons: string;
 }
 
 export enum MdaMode {

@@ -81,6 +81,8 @@ interface SelectedHeadingProps {
 }
 
 class SelectedHeading extends DisplayComponent<SelectedHeadingProps> {
+  private readonly sub = this.props.bus.getSubscriber<SimplaneValues & HUDSimvars & HudElems>();
+
   private selectedHeading = NaN;
 
   private showSelectedHeading = 0;
@@ -89,14 +91,12 @@ class SelectedHeading extends DisplayComponent<SelectedHeadingProps> {
 
   private text = Subject.create('');
 
+  private readonly spdChevronsVis = ConsumerSubject.create(this.sub.on('spdChevrons'), 'block');
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars>();
-
-    const spsub = this.props.bus.getSubscriber<SimplaneValues>();
-
-    spsub
+    this.sub
       .on('selectedHeading')
       .whenChanged()
       .handle((h) => {
@@ -108,7 +108,7 @@ class SelectedHeading extends DisplayComponent<SelectedHeadingProps> {
         }
       });
 
-    sub
+    this.sub
       .on('showSelectedHeading')
       .whenChanged()
       .handle((sh) => {
@@ -149,6 +149,7 @@ class SelectedHeading extends DisplayComponent<SelectedHeadingProps> {
       <>
         <path
           ref={this.targetIndicator}
+          display={this.spdChevronsVis}
           id="HeadingTargetIndicator"
           class="NormalStroke Green CornerRound"
           d="m641 512 10 -20 h -22 l 10 20"
