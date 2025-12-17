@@ -18,7 +18,7 @@ import {
   ProcedureLinesGenerator,
   ProcedureType,
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/ProcedureLinesGenerator';
-import { ChecklistState, FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
+import { ChecklistState, FwsEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsPublisher';
 import { FwcAuralWarning, FwsCore, FwsSuppressableItem } from 'systems-host/CpiomC/FlightWarningSystem/FwsCore';
 
 export interface EwdAbnormalItem extends FwsSuppressableItem {
@@ -85,7 +85,7 @@ export interface EwdAbnormalDict {
  */
 
 export class FwsAbnormalSensed {
-  private readonly pub = this.fws.bus.getPublisher<FwsEwdEvents>();
+  private readonly pub = this.fws.bus.getPublisher<FwsEvents>();
 
   private readonly subscriptions: Subscription[] = [];
 
@@ -2541,10 +2541,7 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [false],
       failure: 2,
       sysPage: SdPages.None,
-      limitationsAllPhases: () => [this.fws.altn1ALawCondition.get() ? '270400002' : ''],
-      limitationsPfd: () => [this.fws.altn1ALawCondition.get() ? '270400002' : ''],
       inopSysAllPhases: () => [
-        '340300013',
         this.fws.altn2LawConfirmNodeOutput.get() ? '220300007' : '',
         this.fws.altn2LawConfirmNodeOutput.get() ? '220300024' : '',
       ],
@@ -2559,10 +2556,37 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [false, false, false, false],
       failure: 2,
       sysPage: SdPages.None,
-      inopSysAllPhases: () => ['290100008', '220300007', '220300024'],
-      limitationsAllPhases: () => ['240400002', '240400004'],
-      limitationsPfd: () => ['240400002', '240400004'],
-      info: () => ['340200004', this.fws.allPrimAndSecFailed.get() ? '270200002' : ''],
+      inopSysAllPhases: () => ['220300007', '220300024'],
+    },
+    271800013: {
+      // FCDC 1 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: this.fws.fcdc1FaultCondition,
+      notActiveWhenItemActive: ['271800015'],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 2,
+      sysPage: SdPages.Fctl,
+    },
+    271800014: {
+      // FCDC 2 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
+      simVarIsActive: this.fws.fcdc2FaultCondition,
+      notActiveWhenItemActive: ['271800015'],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 2,
+      sysPage: SdPages.Fctl,
+    },
+    271800015: {
+      // FCDC 1+2 FAULT
+      flightPhaseInhib: [4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.fcdc12FaultCondition,
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [true, true],
+      whichItemsChecked: () => [false, false],
+      failure: 2,
+      sysPage: SdPages.Fctl,
     },
     // PRIM 1 FAULT
     271800036: {
@@ -2803,6 +2827,104 @@ export class FwsAbnormalSensed {
       failure: 3,
       sysPage: SdPages.None,
       inopSysAllPhases: () => [],
+    },
+    272800006: {
+      // FLAP SYS 1 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.flapSys1Fault,
+      notActiveWhenItemActive: ['272800008'],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [false],
+      failure: 2,
+      sysPage: SdPages.Fctl,
+    },
+    272800007: {
+      // FLAP SYS 2 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.flapSys2Fault,
+      notActiveWhenItemActive: ['272800008'],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [false],
+      failure: 2,
+      sysPage: SdPages.Fctl,
+    },
+    272800008: {
+      // FLAP SYS 1+2 FAULT
+      flightPhaseInhib: [4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.allFlapSysFault,
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [
+        true,
+        this.fws.flapsJammed.get(),
+        this.fws.flapsJammed.get(),
+        true,
+        this.fws.flapsHandle.get() < 3,
+        !this.fws.flapPositionValid.get(),
+        !this.fws.flapsRetracted.get(),
+        !this.fws.flapsRetracted.get(),
+        true,
+        true,
+        true,
+        true,
+      ],
+      whichItemsChecked: () => [
+        false,
+        false,
+        false,
+        false,
+        this.fws.tawsFlapModeOff.get(),
+        this.fws.tawsGpwsOff.get(),
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+      ],
+      failure: 2,
+      sysPage: SdPages.Fctl,
+    },
+    272800021: {
+      // SLAT SYS 1 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.slatSys1Fault,
+      notActiveWhenItemActive: ['272800023'],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [false],
+      failure: 2,
+      sysPage: SdPages.Fctl,
+    },
+    272800022: {
+      // SLAT SYS 2 FAULT
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.slatSys2Fault,
+      notActiveWhenItemActive: ['272800023'],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [false],
+      failure: 2,
+      sysPage: SdPages.Fctl,
+    },
+    272800023: {
+      // SLAT SYS 1+2 FAULT
+      flightPhaseInhib: [4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.allSlatSysFault,
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [
+        this.fws.elecEmerConfig.get(),
+        true,
+        this.fws.slatsJammed.get(),
+        this.fws.slatsJammed.get(),
+        true,
+        !this.fws.slatsRetracted.get(),
+        !this.fws.slatsRetracted.get(),
+        true,
+        true,
+        true,
+        true,
+      ],
+      whichItemsChecked: () => [false, false, false, false, false, false, false, false, false, false, false],
+      failure: 2,
+      sysPage: SdPages.Fctl,
     },
     272800028: {
       // TO FLAPS FMS DISAGREE
@@ -3390,7 +3512,7 @@ export class FwsAbnormalSensed {
       ),
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
-      notActiveWhenItemActive: ['314800002', '314800003', '314800004'],
+      notActiveWhenItemActive: ['314800003', '314800004'],
       failure: 1,
       sysPage: -1,
       redundLoss: () => ['310300002'],
@@ -3401,7 +3523,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.fws2Failed, this.fws.dc2BusPowered),
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
-      notActiveWhenItemActive: ['314800002', '314800003', '314800004'],
+      notActiveWhenItemActive: ['314800003', '314800004'],
       failure: 1,
       sysPage: -1,
       redundLoss: () => ['310300003'],
@@ -3558,7 +3680,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => [
-        '340300013',
+        '290100008',
         '340300014',
         '340300021',
         '220300007',
@@ -3590,7 +3712,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => [
-        '340300013',
+        '290100008',
         '340300014',
         '340300021',
         '220300007',
@@ -3622,7 +3744,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => [
-        '340300013',
+        '290100008',
         '340300014',
         '340300021',
         '220300007',
@@ -3656,7 +3778,7 @@ export class FwsAbnormalSensed {
       failure: 3,
       sysPage: -1,
       inopSysAllPhases: () => [
-        '340300013',
+        '290100008',
         '340300014',
         '340300021',
         '220300007',
@@ -3755,7 +3877,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => [
-        '340300013',
+        '290100008',
         '340300033',
         this.fws.attKnob.get() === 0 ? '340300038' : '340300043',
         this.fws.attKnob.get() === 0 ? '340300012' : '340300029',
@@ -3781,7 +3903,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => [
-        '340300013',
+        '290100008',
         '340300034',
         '220300005',
         '220300022',
@@ -3808,7 +3930,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: -1,
       inopSysAllPhases: () => [
-        '340300013',
+        '290100008',
         '340300035',
         '220300006',
         '220300023',

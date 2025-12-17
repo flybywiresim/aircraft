@@ -36,13 +36,10 @@ export interface BaseEwdSimvars {
   cpiomB3AgsDiscreteRaw: number;
   cpiomB4AgsDiscreteRaw: number;
   fwc_flight_phase: number;
-  limitations_apprldg: number;
-  limitations_all: number;
   memo_left: number;
   memo_right: number;
   nose_gear_compressed: boolean;
   engine_fire_pb: boolean;
-  cas: number;
   fws1_is_healthy: boolean;
   fws2_is_healthy: boolean;
   afdx_3_3_reachable: boolean;
@@ -62,13 +59,10 @@ type IndexedTopics =
   | 'reverser_deployed'
   | 'thrust_reverse'
   | 'eng_anti_ice'
-  | 'limitations_apprldg'
-  | 'limitations_all'
   | 'memo_left'
   | 'memo_right'
   | 'nose_gear_compressed'
-  | 'engine_fire_pb'
-  | 'cas';
+  | 'engine_fire_pb';
 type EwdIndexedEvents = {
   [P in keyof Pick<BaseEwdSimvars, IndexedTopics> as IndexedEventType<P>]: BaseEwdSimvars[P];
 };
@@ -114,14 +108,6 @@ export class EwdSimvarPublisher extends SimVarPublisher<EwdSimvars> {
       ['cpiomB3AgsDiscreteRaw', { name: 'L:A32NX_COND_CPIOM_B3_AGS_DISCRETE_WORD', type: SimVarValueType.Number }],
       ['cpiomB4AgsDiscreteRaw', { name: 'L:A32NX_COND_CPIOM_B4_AGS_DISCRETE_WORD', type: SimVarValueType.Number }],
       ['fwc_flight_phase', { name: 'L:A32NX_FWC_FLIGHT_PHASE', type: SimVarValueType.Enum }],
-      [
-        'limitations_apprldg',
-        { name: 'L:A32NX_EWD_LIMITATIONS_LDG_LINE_#index#', type: SimVarValueType.Number, indexed: true },
-      ],
-      [
-        'limitations_all',
-        { name: 'L:A32NX_EWD_LIMITATIONS_ALL_LINE_#index#', type: SimVarValueType.Number, indexed: true },
-      ],
       ['memo_left', { name: 'L:A32NX_EWD_LOWER_LEFT_LINE_#index#', type: SimVarValueType.Number, indexed: true }],
       ['memo_right', { name: 'L:A32NX_EWD_LOWER_RIGHT_LINE_#index#', type: SimVarValueType.Number, indexed: true }],
       [
@@ -129,7 +115,6 @@ export class EwdSimvarPublisher extends SimVarPublisher<EwdSimvars> {
         { name: 'L:A32NX_LGCIU_#index#_NOSE_GEAR_COMPRESSED', type: SimVarValueType.Bool, indexed: true },
       ],
       ['engine_fire_pb', { name: 'L:A32NX_FIRE_BUTTON_ENG#index#', type: SimVarValueType.Bool, indexed: true }],
-      ['cas', { name: 'L:A32NX_ADIRS_ADR_#index#_COMPUTED_AIRSPEED', type: SimVarValueType.Number, indexed: true }],
       ['fws1_is_healthy', { name: 'L:A32NX_FWS1_IS_HEALTHY', type: SimVarValueType.Bool }],
       ['fws2_is_healthy', { name: 'L:A32NX_FWS2_IS_HEALTHY', type: SimVarValueType.Bool }],
       ['afdx_3_3_reachable', { name: 'L:A32NX_AFDX_3_3_REACHABLE', type: SimVarValueType.Bool }],
