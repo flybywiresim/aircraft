@@ -1054,6 +1054,11 @@ void EngineControl_A32NX::updateThrustLimits(double                  simulationT
 
   const double flexTemp      = simData.airlinerToFlexTemp->get();
   const double pressAltitude = simData.simVarsDataPtr->data().pressureAltitude;
+  const double thrustLimitType = simData.thrustLimitType->get();
+
+  if (!isTransitionActive && thrustLimitType != 3 /* FLEX */) {
+    latchedFlexTemperature = flexTemp;
+  }
 
   double to      = 0;
   double ga      = 0;
@@ -1067,11 +1072,11 @@ void EngineControl_A32NX::updateThrustLimits(double                  simulationT
   // Write all N1 Limits
   to = ThrustLimits_A32NX::limitN1(0, (std::min)(16600.0, pressAltitude), ambientTemperature, ambientPressure, 0, packs, nai, wai);
   ga = ThrustLimits_A32NX::limitN1(1, (std::min)(16600.0, pressAltitude), ambientTemperature, ambientPressure, 0, packs, nai, wai);
-  if (flexTemp > 0) {
+  if (latchedFlexTemperature > 0) {
     flex_to =
-        ThrustLimits_A32NX::limitN1(0, (std::min)(16600.0, pressAltitude), ambientTemperature, ambientPressure, flexTemp, packs, nai, wai);
+        ThrustLimits_A32NX::limitN1(0, (std::min)(16600.0, pressAltitude), ambientTemperature, ambientPressure, latchedFlexTemperature, packs, nai, wai);
     flex_ga =
-        ThrustLimits_A32NX::limitN1(1, (std::min)(16600.0, pressAltitude), ambientTemperature, ambientPressure, flexTemp, packs, nai, wai);
+        ThrustLimits_A32NX::limitN1(1, (std::min)(16600.0, pressAltitude), ambientTemperature, ambientPressure, latchedFlexTemperature, packs, nai, wai);
   }
   clb = ThrustLimits_A32NX::limitN1(2, pressAltitude, ambientTemperature, ambientPressure, 0, packs, nai, wai);
   mct = ThrustLimits_A32NX::limitN1(3, pressAltitude, ambientTemperature, ambientPressure, 0, packs, nai, wai);
@@ -1082,10 +1087,9 @@ void EngineControl_A32NX::updateThrustLimits(double                  simulationT
   flex                 = flex_to + (flex_ga - flex_to) * machFactorLow;
 
   // adaption of CLB due to FLX limit if necessary ------------------------------------------------------------------
-  const double thrustLimitType = simData.thrustLimitType->get();
-  if ((prevThrustLimitType != 3 && thrustLimitType == 3) || (prevFlexTemperature == 0 && flexTemp > 0)) {
+  if (prevThrustLimitType != 3 && thrustLimitType == 3) {
     wasFlexActive = true;
-  } else if ((flexTemp == 0) || (thrustLimitType == 4)) {
+  } else if (thrustLimitType == 4) {
     wasFlexActive = false;
   }
 
@@ -1117,7 +1121,6 @@ void EngineControl_A32NX::updateThrustLimits(double                  simulationT
   }
 
   prevThrustLimitType = thrustLimitType;
-  prevFlexTemperature = flexTemp;
 
   // thrust transitions for MCT and TOGA ----------------------------------------------------------------------------
 

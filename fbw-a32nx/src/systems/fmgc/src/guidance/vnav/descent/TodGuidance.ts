@@ -39,7 +39,7 @@ export class TodGuidance {
     this.tdPauseEnabled = false;
     this.tdArmed = new LocalSimVar('L:A32NX_PAUSE_AT_TOD_ARMED', 'bool');
 
-    NXDataStore.getAndSubscribe(
+    NXDataStore.getAndSubscribeLegacy(
       'PAUSE_AT_TOD_DISTANCE',
       (_, value: string) => {
         const pF = parseFloat(value);
@@ -52,7 +52,7 @@ export class TodGuidance {
       '10',
     );
 
-    NXDataStore.getAndSubscribe(
+    NXDataStore.getAndSubscribeLegacy(
       'PAUSE_AT_TOD',
       (_, value: string) => {
         if (value === 'ENABLED') {

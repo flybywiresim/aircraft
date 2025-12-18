@@ -119,6 +119,7 @@ export class SimBriefUplinkAdapter {
   static async uplinkFlightPlanFromSimbrief<P extends FlightPlanPerformanceData>(
     fms: FmsDataInterface & FmsDisplayInterface,
     flightPlanService: FlightPlanService<P>,
+    intoPlan: number,
     ofp: ISimbriefData,
     options: SimBriefUplinkOptions,
   ) {
@@ -157,9 +158,6 @@ export class SimBriefUplinkAdapter {
       cruiseFlightLevel: ofp.cruiseAltitude / 100,
       pilotTropopause: Number.isFinite(tropopause) ? tropopause : undefined,
     });
-
-    // used by FlightPhaseManager
-    SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number', Number(ofp.cruiseAltitude));
 
     plan.setFlightNumber(route.callsign);
 
@@ -482,7 +480,7 @@ export class SimBriefUplinkAdapter {
       }
     }
 
-    fms.onUplinkDone();
+    fms.onUplinkDone(intoPlan);
   }
 
   static async downloadOfpForUserID(username: string, userID?: string): Promise<ISimbriefData> {
