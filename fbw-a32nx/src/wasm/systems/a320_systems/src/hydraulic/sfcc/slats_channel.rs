@@ -56,8 +56,8 @@ impl SlatsChannel {
     const SLAT_FUNCTIONS_ACTIVE_SPEED_KNOTS: f64 = 60.; //kts
     const SLAT_BAULK_LOW_SPEED_KNOTS: f64 = 148.; //deg
     const SLAT_BAULK_HIGH_SPEED_KNOTS: f64 = 154.; //deg
-    const SLAT_LOCK_LOW_ALPHA_DEGREES: f64 = 8.5; //deg
-    const SLAT_LOCK_HIGH_ALPHA_DEGREES: f64 = 7.6; //deg
+    const SLAT_LOCK_LOW_ALPHA_DEGREES: f64 = 7.6; //deg
+    const SLAT_LOCK_HIGH_ALPHA_DEGREES: f64 = 8.5; //deg
 
     pub(super) fn new(context: &mut InitContext, num: u8, powered_by: ElectricalBusType) -> Self {
         Self {

@@ -150,6 +150,7 @@ struct TestAdirus {
     is_failed: [bool; 3],
     override_airspeed: [Option<Arinc429Word<Velocity>>; 3],
     computed_airspeed: Arinc429Word<Velocity>,
+    angle_of_attack: [Arinc429Word<Angle>; 3],
 }
 impl TestAdirus {
     const MINIMUM_CAS: f64 = 30.;
@@ -172,6 +173,10 @@ impl TestAdirus {
 
     fn set_adiru_speed(&mut self, adiru_number: usize, speed: Option<Arinc429Word<Velocity>>) {
         self.override_airspeed[adiru_number - 1] = speed;
+    }
+
+    fn set_adiru_angle_of_attack(&mut self, adiru_number: usize, angle: Arinc429Word<Angle>) {
+        self.angle_of_attack[adiru_number - 1] = angle;
     }
 }
 impl AdirsMeasurementOutputs for TestAdirus {
@@ -203,8 +208,11 @@ impl AdirsMeasurementOutputs for TestAdirus {
         Arinc429Word::new(Length::default(), SignStatus::NormalOperation)
     }
 
-    fn angle_of_attack(&self, _adiru_number: usize) -> Arinc429Word<Angle> {
-        Arinc429Word::new(Angle::default(), SignStatus::NormalOperation)
+    fn angle_of_attack(&self, adiru_number: usize) -> Arinc429Word<Angle> {
+        if self.is_failed[adiru_number - 1] {
+            return Arinc429Word::new(Angle::default(), SignStatus::NoComputedData);
+        }
+        self.angle_of_attack[adiru_number - 1]
     }
 
     fn computed_airspeed(&self, adiru_number: usize) -> Arinc429Word<Velocity> {
@@ -427,6 +435,19 @@ impl A320FlapsTestBed {
             let speed = knots
                 .map(|x| Arinc429Word::new(Velocity::new::<knot>(x), SignStatus::NormalOperation));
             a.adirus.set_adiru_speed(adiru_number, speed);
+        });
+        self
+    }
+
+    fn set_adiru_angle_of_attack(mut self, adiru_number: usize, degrees: Option<f64>) -> Self {
+        self.command(|a| {
+            let angle = degrees
+                .map(|x| Arinc429Word::new(Angle::new::<degree>(x), SignStatus::NormalOperation))
+                .unwrap_or(Arinc429Word::new(
+                    Angle::default(),
+                    SignStatus::NoComputedData,
+                ));
+            a.adirus.set_adiru_angle_of_attack(adiru_number, angle);
         });
         self
     }
@@ -891,6 +912,305 @@ fn sfcc_slat_baulk() {
     assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(24));
     assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(25));
     test_bed.test_flap_conf(0, 0., 0., FlapsConf::Conf0, angle_delta);
+}
+
+#[test]
+fn sfcc_slat_baulk_edge_cases() {
+    let angle_delta: f64 = 0.18;
+    let mut test_bed = test_bed_with()
+        .set_green_hyd_pressure()
+        .set_yellow_hyd_pressure()
+        .set_blue_hyd_pressure()
+        .set_lgciu_on_ground(false)
+        .set_adiru_airspeed(1, Some(145.))
+        .set_adiru_airspeed(2, Some(155.))
+        .set_adiru_airspeed(3, Some(156.))
+        .set_flaps_handle_position(1)
+        .run_for_some_time();
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(25));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(25));
+
+    // The highest CAS between 1 and 2 is 155, therefore slats are retracted
+    test_bed = test_bed.set_flaps_handle_position(0).run_for_some_time();
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(25));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(25));
+    test_bed.test_flap_conf(0, 0., 0., FlapsConf::Conf0, angle_delta);
+
+    let mut test_bed = test_bed_with()
+        .set_green_hyd_pressure()
+        .set_yellow_hyd_pressure()
+        .set_blue_hyd_pressure()
+        .set_lgciu_on_ground(false)
+        .set_adiru_airspeed(1, Some(145.))
+        .set_adiru_airspeed(2, Some(146.))
+        .set_adiru_airspeed(3, Some(156.))
+        .set_flaps_handle_position(1)
+        .run_for_some_time();
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(25));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(25));
+
+    // The highest CAS between 1 and 2 is 146, therefore slats are locked at 1
+    test_bed = test_bed.set_flaps_handle_position(0).run_for_some_time();
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(24));
+    assert!(test_bed.read_slat_flap_system_status_word(1).get_bit(25));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(24));
+    assert!(test_bed.read_slat_flap_system_status_word(2).get_bit(25));
+    test_bed.test_flap_conf(0, 0., 222.27, FlapsConf::Conf1, angle_delta);
+
+    let mut test_bed = test_bed_with()
+        .set_green_hyd_pressure()
+        .set_yellow_hyd_pressure()
+        .set_blue_hyd_pressure()
+        .set_lgciu_on_ground(false)
+        .set_adiru_failed(1)
+        .set_adiru_failed(2)
+        .set_adiru_airspeed(3, Some(145.))
+        .set_flaps_handle_position(1)
+        .run_for_some_time();
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(25));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(25));
+
+    // When CAS is failed for 1 and 2, no slat lock
+    test_bed = test_bed.set_flaps_handle_position(0).run_for_some_time();
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(25));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(25));
+    test_bed.test_flap_conf(0, 0., 0., FlapsConf::Conf0, angle_delta);
+
+    let mut test_bed = test_bed_with()
+        .set_green_hyd_pressure()
+        .set_yellow_hyd_pressure()
+        .set_blue_hyd_pressure()
+        .set_lgciu_on_ground(false)
+        .set_adiru_failed(1)
+        .set_adiru_airspeed(2, Some(146.))
+        .set_adiru_airspeed(3, Some(156.))
+        .set_flaps_handle_position(1)
+        .run_for_some_time();
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(25));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(25));
+
+    // When CAS 1 is failed, it uses CAS 2 which is 146, therefore slats are locked at 1
+    test_bed = test_bed.set_flaps_handle_position(0).run_for_some_time();
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(24));
+    assert!(test_bed.read_slat_flap_system_status_word(1).get_bit(25));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(24));
+    assert!(test_bed.read_slat_flap_system_status_word(2).get_bit(25));
+    test_bed.test_flap_conf(0, 0., 222.27, FlapsConf::Conf1, angle_delta);
+
+    let mut test_bed = test_bed_with()
+        .set_green_hyd_pressure()
+        .set_yellow_hyd_pressure()
+        .set_blue_hyd_pressure()
+        .set_lgciu_on_ground(false)
+        .set_adiru_airspeed(1, Some(146.))
+        .set_adiru_failed(2)
+        .set_adiru_airspeed(3, Some(156.))
+        .set_flaps_handle_position(1)
+        .run_for_some_time();
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(25));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(25));
+
+    // When CAS 2 is failed, it uses CAS 1 which is 146, therefore slats are locked at 1
+    test_bed = test_bed.set_flaps_handle_position(0).run_for_some_time();
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(24));
+    assert!(test_bed.read_slat_flap_system_status_word(1).get_bit(25));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(24));
+    assert!(test_bed.read_slat_flap_system_status_word(2).get_bit(25));
+    test_bed.test_flap_conf(0, 0., 222.27, FlapsConf::Conf1, angle_delta);
+}
+
+#[test]
+fn sfcc_slat_alpha_lock() {
+    let angle_delta: f64 = 0.18;
+    let mut test_bed = test_bed_with()
+        .set_green_hyd_pressure()
+        .set_yellow_hyd_pressure()
+        .set_blue_hyd_pressure()
+        .set_lgciu_on_ground(false)
+        .set_indicated_airspeed(160.)
+        .set_adiru_angle_of_attack(1, Some(8.6))
+        .set_adiru_angle_of_attack(2, Some(8.6))
+        .set_adiru_angle_of_attack(3, Some(8.6))
+        .set_flaps_handle_position(1)
+        .run_for_some_time();
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(25));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(25));
+
+    test_bed = test_bed.set_flaps_handle_position(0).run_for_some_time();
+    assert!(test_bed.read_slat_flap_system_status_word(1).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(25));
+    assert!(test_bed.read_slat_flap_system_status_word(2).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(25));
+    test_bed.test_flap_conf(0, 0., 222.27, FlapsConf::Conf1, angle_delta);
+
+    test_bed = test_bed
+        .set_adiru_angle_of_attack(1, Some(7.5))
+        .set_adiru_angle_of_attack(2, Some(7.5))
+        .set_adiru_angle_of_attack(3, Some(7.5))
+        .run_for_some_time();
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(25));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(25));
+    test_bed.test_flap_conf(0, 0., 0., FlapsConf::Conf0, angle_delta);
+}
+
+#[test]
+fn sfcc_slat_alpha_lock_edge_cases() {
+    let angle_delta: f64 = 0.18;
+    let mut test_bed = test_bed_with()
+        .set_green_hyd_pressure()
+        .set_yellow_hyd_pressure()
+        .set_blue_hyd_pressure()
+        .set_lgciu_on_ground(false)
+        .set_adiru_angle_of_attack(1, Some(7.3))
+        .set_adiru_angle_of_attack(2, Some(8.6))
+        .set_adiru_angle_of_attack(3, Some(5.0))
+        .set_flaps_handle_position(1)
+        .run_for_some_time();
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(25));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(25));
+
+    // The lowest AoA between 1 and 2 is 7.3, therefore slats are retracted
+    test_bed = test_bed.set_flaps_handle_position(0).run_for_some_time();
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(25));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(25));
+    test_bed.test_flap_conf(0, 0., 0., FlapsConf::Conf0, angle_delta);
+
+    let mut test_bed = test_bed_with()
+        .set_green_hyd_pressure()
+        .set_yellow_hyd_pressure()
+        .set_blue_hyd_pressure()
+        .set_lgciu_on_ground(false)
+        .set_adiru_angle_of_attack(1, Some(8.7))
+        .set_adiru_angle_of_attack(2, Some(8.6))
+        .set_adiru_angle_of_attack(3, Some(5.0))
+        .set_flaps_handle_position(1)
+        .run_for_some_time();
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(25));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(25));
+
+    // The lowest AoA between 1 and 2 is 8.6, therefore slats are locked at 1
+    test_bed = test_bed.set_flaps_handle_position(0).run_for_some_time();
+    assert!(test_bed.read_slat_flap_system_status_word(1).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(25));
+    assert!(test_bed.read_slat_flap_system_status_word(2).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(25));
+    test_bed.test_flap_conf(0, 0., 222.27, FlapsConf::Conf1, angle_delta);
+
+    let mut test_bed = test_bed_with()
+        .set_green_hyd_pressure()
+        .set_yellow_hyd_pressure()
+        .set_blue_hyd_pressure()
+        .set_lgciu_on_ground(false)
+        .set_adiru_angle_of_attack(1, Some(8.7))
+        .set_adiru_angle_of_attack(2, Some(8.2))
+        .set_adiru_angle_of_attack(3, Some(5.0))
+        .set_flaps_handle_position(1)
+        .run_for_some_time();
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(25));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(25));
+
+    // The lowest AoA between 1 and 2 is 8.2, therefore slats are retracted
+    test_bed = test_bed.set_flaps_handle_position(0).run_for_some_time();
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(25));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(25));
+    test_bed.test_flap_conf(0, 0., 0., FlapsConf::Conf0, angle_delta);
+
+    let mut test_bed = test_bed_with()
+        .set_green_hyd_pressure()
+        .set_yellow_hyd_pressure()
+        .set_blue_hyd_pressure()
+        .set_lgciu_on_ground(false)
+        .set_adiru_failed(1)
+        .set_adiru_failed(2)
+        .set_adiru_angle_of_attack(3, Some(8.7))
+        .set_flaps_handle_position(1)
+        .run_for_some_time();
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(25));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(25));
+
+    // When AoA is failed for 1 and 2, no slat lock
+    test_bed = test_bed.set_flaps_handle_position(0).run_for_some_time();
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(25));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(25));
+    test_bed.test_flap_conf(0, 0., 0., FlapsConf::Conf0, angle_delta);
+
+    let mut test_bed = test_bed_with()
+        .set_green_hyd_pressure()
+        .set_yellow_hyd_pressure()
+        .set_blue_hyd_pressure()
+        .set_lgciu_on_ground(false)
+        .set_adiru_failed(1)
+        .set_adiru_angle_of_attack(2, Some(8.7))
+        .set_adiru_angle_of_attack(3, Some(8.3))
+        .set_flaps_handle_position(1)
+        .run_for_some_time();
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(25));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(25));
+
+    // When AoA 1 is failed, it uses AoA 2 which is 8.7, therefore slats are locked at 1
+    test_bed = test_bed.set_flaps_handle_position(0).run_for_some_time();
+    assert!(test_bed.read_slat_flap_system_status_word(1).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(25));
+    assert!(test_bed.read_slat_flap_system_status_word(2).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(25));
+    test_bed.test_flap_conf(0, 0., 222.27, FlapsConf::Conf1, angle_delta);
+
+    let mut test_bed = test_bed_with()
+        .set_green_hyd_pressure()
+        .set_yellow_hyd_pressure()
+        .set_blue_hyd_pressure()
+        .set_lgciu_on_ground(false)
+        .set_adiru_angle_of_attack(1, Some(8.7))
+        .set_adiru_failed(2)
+        .set_adiru_angle_of_attack(3, Some(8.3))
+        .set_flaps_handle_position(1)
+        .run_for_some_time();
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(25));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(25));
+
+    // When AoA 2 is failed, it uses AoA 1 which is 8.7, therefore slats are locked at 1
+    test_bed = test_bed.set_flaps_handle_position(0).run_for_some_time();
+    assert!(test_bed.read_slat_flap_system_status_word(1).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(25));
+    assert!(test_bed.read_slat_flap_system_status_word(2).get_bit(24));
+    assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(25));
+    test_bed.test_flap_conf(0, 0., 222.27, FlapsConf::Conf1, angle_delta);
 }
 
 #[test]
