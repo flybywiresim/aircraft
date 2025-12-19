@@ -25,9 +25,9 @@ enum ValveState {
 
 /* TODO: remove this file after proper FQMS is implemented in Rust */
 export class LegacyFuel implements Instrument {
-  private static NUMBER_OF_TRIGGERS = 42;
-  private static NUMBER_OF_JUNCTIONS = 13;
-  private static NUMBER_OF_VALVES = 60;
+  private static NUMBER_OF_TRIGGERS = 44;
+  private static NUMBER_OF_JUNCTIONS = 17;
+  private static NUMBER_OF_VALVES = 59;
 
   /** These Valves are set to true in the FLT files so we dont want to set them to false.*/
   private static VALVES_TO_SKIP = [37, 40, 50, 51];
@@ -365,65 +365,77 @@ export class LegacyFuel implements Instrument {
       ) {
         this.toggleTrigger(31);
       }
-      if (
-        (this.feed1TankQty.get() < 1316 && !this.triggerStates.get(33).get()) ||
-        (this.feed1TankQty.get() >= 1317 && this.triggerStates.get(33).get())
+       if (
+        (Math.abs(this.feed1TankQty.get() - this.feed4TankQty.get()) < 2 && !this.triggerStates.get(32).get()) ||
+        (Math.abs(this.feed1TankQty.get() - this.feed4TankQty.get()) >= 3 && this.triggerStates.get(32).get())
+      ) {
+        this.toggleTrigger(32);
+      }
+       if (
+        (Math.abs(this.feed2TankQty.get() - this.feed3TankQty.get()) < 2 && !this.triggerStates.get(33).get()) ||
+        (Math.abs(this.feed2TankQty.get() - this.feed3TankQty.get()) >= 3 && this.triggerStates.get(33).get())
       ) {
         this.toggleTrigger(33);
       }
       if (
-        (this.feed2TankQty.get() < 1316 && !this.triggerStates.get(34).get()) ||
-        (this.feed2TankQty.get() >= 1317 && this.triggerStates.get(34).get())
-      ) {
-        this.toggleTrigger(34);
-      }
-      if (
-        (this.feed4TankQty.get() < 1316 && !this.triggerStates.get(35).get()) ||
-        (this.feed4TankQty.get() >= 1317 && this.triggerStates.get(35).get())
+        (this.feed1TankQty.get() < 1316 && !this.triggerStates.get(35).get()) ||
+        (this.feed1TankQty.get() >= 1317 && this.triggerStates.get(35).get())
       ) {
         this.toggleTrigger(35);
       }
       if (
-        (this.feed3TankQty.get() < 1316 && !this.triggerStates.get(36).get()) ||
-        (this.feed3TankQty.get() >= 1317 && this.triggerStates.get(36).get())
+        (this.feed2TankQty.get() < 1316 && !this.triggerStates.get(36).get()) ||
+        (this.feed2TankQty.get() >= 1317 && this.triggerStates.get(36).get())
       ) {
         this.toggleTrigger(36);
       }
       if (
-        (this.feed1TankQty.get() > 1481 && !this.triggerStates.get(37).get()) ||
-        (this.feed1TankQty.get() <= 1480 && this.triggerStates.get(37).get())
+        (this.feed4TankQty.get() < 1316 && !this.triggerStates.get(37).get()) ||
+        (this.feed4TankQty.get() >= 1317 && this.triggerStates.get(37).get())
       ) {
         this.toggleTrigger(37);
       }
       if (
-        (this.feed2TankQty.get() > 1481 && !this.triggerStates.get(38).get()) ||
-        (this.feed2TankQty.get() <= 1480 && this.triggerStates.get(38).get())
+        (this.feed3TankQty.get() < 1316 && !this.triggerStates.get(38).get()) ||
+        (this.feed3TankQty.get() >= 1317 && this.triggerStates.get(38).get())
       ) {
         this.toggleTrigger(38);
       }
       if (
-        (this.feed3TankQty.get() > 1481 && !this.triggerStates.get(39).get()) ||
-        (this.feed3TankQty.get() <= 1480 && this.triggerStates.get(39).get())
+        (this.feed1TankQty.get() > 1481 && !this.triggerStates.get(39).get()) ||
+        (this.feed1TankQty.get() <= 1480 && this.triggerStates.get(39).get())
       ) {
         this.toggleTrigger(39);
       }
       if (
-        (this.feed4TankQty.get() > 1481 && !this.triggerStates.get(40).get()) ||
-        (this.feed4TankQty.get() <= 1480 && this.triggerStates.get(40).get())
+        (this.feed2TankQty.get() > 1481 && !this.triggerStates.get(40).get()) ||
+        (this.feed2TankQty.get() <= 1480 && this.triggerStates.get(40).get())
       ) {
         this.toggleTrigger(40);
       }
       if (
-        (this.cgPercent.get() > cgTargetStart && !this.triggerStates.get(41).get()) ||
-        (this.cgPercent.get() <= cgTargetStart - 0.1 && this.triggerStates.get(41).get())
+        (this.feed3TankQty.get() > 1481 && !this.triggerStates.get(41).get()) ||
+        (this.feed3TankQty.get() <= 1480 && this.triggerStates.get(41).get())
       ) {
         this.toggleTrigger(41);
       }
       if (
-        (this.cgPercent.get() < cgTargetStop && !this.triggerStates.get(42).get()) ||
-        (this.cgPercent.get() >= cgTargetStop + 0.1 && this.triggerStates.get(42).get())
+        (this.feed4TankQty.get() > 1481 && !this.triggerStates.get(42).get()) ||
+        (this.feed4TankQty.get() <= 1480 && this.triggerStates.get(42).get())
       ) {
         this.toggleTrigger(42);
+      }
+      if (
+        (this.cgPercent.get() > cgTargetStart && !this.triggerStates.get(43).get()) ||
+        (this.cgPercent.get() <= cgTargetStart - 0.1 && this.triggerStates.get(43).get())
+      ) {
+        this.toggleTrigger(43);
+      }
+      if (
+        (this.cgPercent.get() < cgTargetStop && !this.triggerStates.get(44).get()) ||
+        (this.cgPercent.get() >= cgTargetStop + 0.1 && this.triggerStates.get(44).get())
+      ) {
+        this.toggleTrigger(44);
       }
     }
   }
