@@ -120,14 +120,17 @@ impl TestAdiru {
     }
 }
 impl AirDataReferenceBus for TestAdiru {
+    fn corrected_average_static_pressure(&self) -> Arinc429Word<Pressure> {
+        Arinc429Word::new(Pressure::default(), self.adr_ssm)
+    }
     fn standard_altitude(&self) -> Arinc429Word<Length> {
         Arinc429Word::new(self.altitude, self.adr_ssm)
     }
     fn baro_corrected_altitude_1(&self) -> Arinc429Word<Length> {
         Arinc429Word::new(self.altitude, self.adr_ssm)
     }
-    fn mach(&self) -> Arinc429Word<MachNumber> {
-        Arinc429Word::new(MachNumber::default(), self.adr_ssm)
+    fn mach(&self) -> Arinc429Word<Ratio> {
+        Arinc429Word::new(Ratio::default(), self.adr_ssm)
     }
     fn computed_airspeed(&self) -> Arinc429Word<Velocity> {
         Arinc429Word::new(self.computed_airspeed, self.adr_ssm)
@@ -150,10 +153,16 @@ impl AirDataReferenceBus for TestAdiru {
     fn baro_corrected_altitude_2(&self) -> Arinc429Word<Length> {
         Arinc429Word::new(self.altitude, self.adr_ssm)
     }
-    fn baro_correction_1(&self) -> Arinc429Word<Pressure> {
+    fn baro_correction_1_hpa(&self) -> Arinc429Word<Pressure> {
         Arinc429Word::new(Pressure::default(), self.adr_ssm)
     }
-    fn baro_correction_2(&self) -> Arinc429Word<Pressure> {
+    fn baro_correction_1_inhg(&self) -> Arinc429Word<Pressure> {
+        Arinc429Word::new(Pressure::default(), self.adr_ssm)
+    }
+    fn baro_correction_2_hpa(&self) -> Arinc429Word<Pressure> {
+        Arinc429Word::new(Pressure::default(), self.adr_ssm)
+    }
+    fn baro_correction_2_inhg(&self) -> Arinc429Word<Pressure> {
         Arinc429Word::new(Pressure::default(), self.adr_ssm)
     }
     fn corrected_angle_of_attack(&self) -> Arinc429Word<Angle> {

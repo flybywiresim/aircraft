@@ -122,6 +122,9 @@ export const A320Failure = Object.freeze({
   RadioAntennaDirectCoupling1: 34020,
   RadioAntennaDirectCoupling2: 34021,
   Egpwc: 34030,
+  Adiru1: 34040,
+  Adiru2: 34041,
+  Adiru3: 34042,
 });
 
 export const A320FailureDefinitions: FailureDefinition[] = [
@@ -238,4 +241,8 @@ export const A320FailureDefinitions: FailureDefinition[] = [
   [34, A320Failure.RadioAntennaDirectCoupling2, 'RA 2 Direct Coupling'],
 
   [34, A320Failure.Egpwc, 'EGPWC'],
+
+  [34, A320Failure.Adiru1, 'ADIRU 1'],
+  [34, A320Failure.Adiru2, 'ADIRU 2'],
+  [34, A320Failure.Adiru3, 'ADIRU 3'],
 ];

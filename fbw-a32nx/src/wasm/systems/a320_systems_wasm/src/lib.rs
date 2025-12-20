@@ -398,6 +398,10 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_named_variable("FSDT_GSX_BOARDING_CARGO_PERCENT")?
     .provides_named_variable("FSDT_GSX_DEBOARDING_CARGO_PERCENT")?
     .provides_named_variable("FSDT_GSX_BYPASS_PIN")?
+    .provides_named_variable("A32NX_ATT_HDG_SWITCHING_KNOB")?
+    .provides_named_variable("A32NX_AIR_DATA_SWITCHING_KNOB")?
+    .provides_named_variable("A32NX_FCU_LEFT_EIS_BARO_HPA")?
+    .provides_named_variable("A32NX_FCU_RIGHT_EIS_BARO_HPA")?
     .with_aspect(|builder| {
         builder.copy(
             Variable::named("FSDT_GSX_BYPASS_PIN"),
