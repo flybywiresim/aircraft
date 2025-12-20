@@ -257,11 +257,11 @@ export const FuelPage = () => {
 
   const [trimLineIsolationValveFwdOpen] = useSimVar('FUELSYSTEM VALVE OPEN:44', 'Percent over 100', 1000);
   const [trimLineIsolationValveAftOpen] = useSimVar('FUELSYSTEM VALVE OPEN:45', 'Percent over 100', 1000);
-  
+
   const areTrimLineIsolationValvesClosed =
     trimLineIsolationValveFwdOpen < TRANSFER_VALVE_CLOSED_THRESHOLD &&
     trimLineIsolationValveAftOpen < TRANSFER_VALVE_CLOSED_THRESHOLD;
-    
+
   const areTrimTankInletValvesClosed =
     trimTankInletValve1Open < TRANSFER_VALVE_CLOSED_THRESHOLD &&
     trimTankInletValve2Open < TRANSFER_VALVE_CLOSED_THRESHOLD;
