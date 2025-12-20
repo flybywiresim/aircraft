@@ -497,9 +497,9 @@ void FlyByWireInterface::setupLocalVariables() {
 
   idWingAntiIce = std::make_unique<LocalVariable>("A32NX_PNEU_WING_ANTI_ICE_SYSTEM_ON");
 
-  idFmGrossWeight = std::make_unique<LocalVariable>("A32NX_FM_GROSS_WEIGHT");
+  idFmGrossWeight = std::make_unique<LocalVariable>("A32NX_FQMS_GROSS_WEIGHT");
 
-  idCgPercentMac = std::make_unique<LocalVariable>("A32NX_AIRFRAME_GW_CG_PERCENT_MAC");
+  idCgPercentMac = std::make_unique<LocalVariable>("A32NX_FQMS_CENTER_OF_GRAVITY_MAC");
 
   for (int i = 0; i < 3; i++) {
     std::string idString = std::to_string(i + 1);
@@ -2582,15 +2582,14 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
   fmgcBBusOutputs.delta_r_cmd_deg.Data = autopilotLawsOutput.autopilot.Beta_c_deg;
   fmgcBBusOutputs.delta_q_cmd_deg.SSM = Arinc429SignStatus::NormalOperation;
   fmgcBBusOutputs.delta_q_cmd_deg.Data = autopilotLawsOutput.autopilot.Theta_c_deg;
-  fmgcBBusOutputs.fm_weight_lbs.SSM =
-      idFmGrossWeight->get() == 0 ? Arinc429SignStatus::NoComputedData : Arinc429SignStatus::NormalOperation;
-  fmgcBBusOutputs.fm_weight_lbs.Data = idFmGrossWeight->get() * 2205;
-  fmgcBBusOutputs.fm_cg_percent.SSM = Arinc429SignStatus::NormalOperation;
-  fmgcBBusOutputs.fm_cg_percent.Data = idCgPercentMac->get() / 100;
+  fmgcBBusOutputs.fm_weight_lbs = Arinc429Utils::fromSimVar(idFmGrossWeight->get());
+  fmgcBBusOutputs.fm_weight_lbs.Data *= 2205;
+  fmgcBBusOutputs.fm_cg_percent = Arinc429Utils::fromSimVar(idCgPercentMac->get());
+  fmgcBBusOutputs.fm_cg_percent.Data /= 100;
   fmgcBBusOutputs.fac_weight_lbs.SSM = Arinc429SignStatus::NormalOperation;
   fmgcBBusOutputs.fac_weight_lbs.Data = simData.total_weight_kg * 2.20462262;
-  fmgcBBusOutputs.fac_cg_percent.SSM = Arinc429SignStatus::NormalOperation;
-  fmgcBBusOutputs.fac_cg_percent.Data = idCgPercentMac->get() / 100;
+  fmgcBBusOutputs.fac_cg_percent = Arinc429Utils::fromSimVar(idCgPercentMac->get());
+  fmgcBBusOutputs.fac_cg_percent.Data /= 100;
   fmgcBBusOutputs.n1_left_percent.SSM = Arinc429SignStatus::NormalOperation;
   fmgcBBusOutputs.n1_left_percent.Data = simData.engine_N1_1_percent;
   fmgcBBusOutputs.n1_right_percent.SSM = Arinc429SignStatus::NormalOperation;
