@@ -1,3 +1,5 @@
+#WARNING: This script needs to be run in pwsh to work correctly. It will not work in powershell 5.1.
+
 # Input and output file paths
 $inputFile  = "..\..\..\..\base\flybywire-aircraft-a380-842\SimObjects\AirPlanes\FlyByWire_A380_842\flight_model.cfg"
 $outputFile = "FuelSystemData.h"
@@ -72,8 +74,8 @@ $startStruct = @'
 
 struct FuelSystemData {
 '@
-$startStruct | Out-File $outputFile
+$startStruct | Out-File $outputFile -Encoding utf8NoBOM
 foreach ($e in $entries) {
-    "  double $e;" | Out-File $outputFile -Append
+    "  double $e;" | Out-File $outputFile -Append -Encoding utf8NoBOM
 }
-"};" | Out-File $outputFile -Append
+"};" | Out-File $outputFile -Append -Encoding utf8NoBOM
