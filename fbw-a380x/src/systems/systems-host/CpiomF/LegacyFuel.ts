@@ -140,7 +140,7 @@ export class LegacyFuel implements Instrument {
       (this.trimTankQty.get() < 0.1 && !this.triggerStates.get(32).get()) ||
       (this.trimTankQty.get() >= 1 && this.triggerStates.get(32).get())
     ) {
-      this.toggleTrigger(32);
+      this.toggleTrigger(34);
     }
   }
 
@@ -342,37 +342,49 @@ export class LegacyFuel implements Instrument {
         this.toggleTrigger(27);
       }
       if (
-        (Math.abs(this.feed1TankQty.get() - this.feed3TankQty.get()) < 2 && !this.triggerStates.get(28).get()) ||
+        (Math.abs(this.feed1TankQty.get() - this.feed3TankQty.get()) < 2 &&
+          !this.triggerStates.get(28).get() &&
+          this.trimTransfersActive()) ||
         (Math.abs(this.feed1TankQty.get() - this.feed3TankQty.get()) >= 3 && this.triggerStates.get(28).get())
       ) {
         this.toggleTrigger(28);
       }
       if (
-        (Math.abs(this.feed1TankQty.get() - this.feed2TankQty.get()) < 2 && !this.triggerStates.get(29).get()) ||
+        (Math.abs(this.feed1TankQty.get() - this.feed2TankQty.get()) < 2 &&
+          !this.triggerStates.get(29).get() &&
+          this.trimTransfersActive()) ||
         (Math.abs(this.feed1TankQty.get() - this.feed2TankQty.get()) >= 3 && this.triggerStates.get(29).get())
       ) {
         this.toggleTrigger(29);
       }
       if (
-        (Math.abs(this.feed2TankQty.get() - this.feed4TankQty.get()) < 2 && !this.triggerStates.get(30).get()) ||
+        (Math.abs(this.feed2TankQty.get() - this.feed4TankQty.get()) < 2 &&
+          !this.triggerStates.get(30).get() &&
+          this.trimTransfersActive()) ||
         (Math.abs(this.feed2TankQty.get() - this.feed4TankQty.get()) >= 3 && this.triggerStates.get(30).get())
       ) {
         this.toggleTrigger(30);
       }
       if (
-        (Math.abs(this.feed3TankQty.get() - this.feed4TankQty.get()) < 2 && !this.triggerStates.get(31).get()) ||
+        (Math.abs(this.feed3TankQty.get() - this.feed4TankQty.get()) < 2 &&
+          !this.triggerStates.get(31).get() &&
+          this.trimTransfersActive()) ||
         (Math.abs(this.feed3TankQty.get() - this.feed4TankQty.get()) >= 3 && this.triggerStates.get(31).get())
       ) {
         this.toggleTrigger(31);
       }
-       if (
-        (Math.abs(this.feed1TankQty.get() - this.feed4TankQty.get()) < 2 && !this.triggerStates.get(32).get()) ||
+      if (
+        (Math.abs(this.feed1TankQty.get() - this.feed4TankQty.get()) < 2 &&
+          !this.triggerStates.get(32).get() &&
+          this.trimTransfersActive()) ||
         (Math.abs(this.feed1TankQty.get() - this.feed4TankQty.get()) >= 3 && this.triggerStates.get(32).get())
       ) {
         this.toggleTrigger(32);
       }
-       if (
-        (Math.abs(this.feed2TankQty.get() - this.feed3TankQty.get()) < 2 && !this.triggerStates.get(33).get()) ||
+      if (
+        (Math.abs(this.feed2TankQty.get() - this.feed3TankQty.get()) < 2 &&
+          !this.triggerStates.get(33).get() &&
+          this.trimTransfersActive()) ||
         (Math.abs(this.feed2TankQty.get() - this.feed3TankQty.get()) >= 3 && this.triggerStates.get(33).get())
       ) {
         this.toggleTrigger(33);
@@ -453,6 +465,15 @@ export class LegacyFuel implements Instrument {
 
   private setValve(index: number, state: ValveState): void {
     this.keyEventManager.triggerKey('FUELSYSTEM_VALVE_SET', true, index, state);
+  }
+
+  private trimTransfersActive(): boolean {
+    return (
+      this.triggerStates.get(24).get() ||
+      this.triggerStates.get(25).get() ||
+      this.triggerStates.get(26).get() ||
+      this.triggerStates.get(27).get()
+    );
   }
   /**
    * Calculates the CG Target based on aircraft total weight in kLBS
