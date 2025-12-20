@@ -225,6 +225,10 @@ where
         }
         self.output
     }
+
+    pub fn get_output(&self) -> bool {
+        self.output
+    }
 }
 
 /// A node that memorizes the value from the preceding call.
