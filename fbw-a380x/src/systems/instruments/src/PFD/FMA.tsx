@@ -1673,6 +1673,12 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps & { readonly fcdcData: 
 
   private readonly text2Sub = Subject.create('');
 
+  private static readonly FiveCharactersPerLineSingleLineModeChangePath = 'm108.1 1.8143h19.994v6.0476h-19.994z';
+
+  private static readonly FiveCharactersPerLineTwoLinesModeChangePath = 'm107.1 1.8143h22.994v13.506h-22.994z';
+
+  private static readonly FourCharactersPerLineTwoLinesModeChangePath = 'm110.1 1.8143h15.994v13.506h-15.994z';
+
   constructor(props: CellProps & { readonly fcdcData: FcdcValueProvider }) {
     super(props, 9);
   }
@@ -1680,30 +1686,39 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps & { readonly fcdcData: 
   private setText() {
     let text1: string;
     let text2: string | undefined;
+    let modeChangedPath: string | undefined;
     this.isShown = true;
     if (this.props.fcdcData.land2Capacity.get()) {
       text1 = 'LAND2';
       text2 = '';
+      modeChangedPath = D1D2Cell.FiveCharactersPerLineSingleLineModeChangePath;
     } else if (this.props.fcdcData.land3FailPassiveCapacity.get()) {
       text1 = 'LAND3';
       text2 = 'SINGLE';
+      modeChangedPath = D1D2Cell.FiveCharactersPerLineTwoLinesModeChangePath;
     } else if (this.props.fcdcData.land3FailOperationalCapacity.get()) {
       text1 = 'LAND3';
       text2 = 'DUAL';
+      modeChangedPath = D1D2Cell.FiveCharactersPerLineTwoLinesModeChangePath;
     } else if (false) {
       text1 = 'LAND1';
       text2 = '';
+      modeChangedPath = D1D2Cell.FiveCharactersPerLineSingleLineModeChangePath;
     } else if (false) {
       text1 = 'F-APP';
+      modeChangedPath = D1D2Cell.FiveCharactersPerLineSingleLineModeChangePath;
     } else if (false) {
       text1 = 'F-APP';
       text2 = '+ RAW';
+      modeChangedPath = D1D2Cell.FiveCharactersPerLineTwoLinesModeChangePath;
     } else if (false) {
       text1 = 'RAW';
       text2 = 'ONLY';
+      modeChangedPath = D1D2Cell.FourCharactersPerLineTwoLinesModeChangePath;
     } else if (this.lsButton.get() || this.landModesArmedOrActive.get()) {
       text1 = 'APPR1';
       text2 = '';
+      modeChangedPath = D1D2Cell.FiveCharactersPerLineSingleLineModeChangePath;
     } else {
       text1 = '';
       text2 = '';
@@ -1717,12 +1732,7 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps & { readonly fcdcData: 
 
       this.text1Sub.set(text1);
       this.text2Sub.set(text2);
-
-      if (text2 !== '') {
-        this.modeChangedPathRef.instance.setAttribute('d', 'm104.1 1.8143h27.994v13.506h-27.994z');
-      } else {
-        this.modeChangedPathRef.instance.setAttribute('d', 'm104.1 1.8143h27.994v6.0476h-27.994z');
-      }
+      this.modeChangedPathRef.instance.setAttribute('d', modeChangedPath!);
     } else if (!this.isShown) {
       this.displayModeChangedPath(true);
     }
