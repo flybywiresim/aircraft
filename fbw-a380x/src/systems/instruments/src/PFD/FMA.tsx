@@ -1649,9 +1649,12 @@ class BC3Cell extends DisplayComponent<{
 }
 
 class D1D2Cell extends ShowForSecondsComponent<CellProps & { readonly fcdcData: FcdcValueProvider }> {
-  private sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & DmcLogicEvents>();
+  private readonly sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & DmcLogicEvents>();
 
-  private readonly lsButton = ConsumerSubject.create(null, false);
+  private readonly lsButton = ConsumerSubject.create(
+    this.sub.on(getDisplayIndex() == 1 ? 'ls1Button' : 'ls2Button'),
+    false,
+  );
 
   private readonly fmaLateralActive = ConsumerSubject.create(this.sub.on('activeLateralMode'), 0);
   private readonly fmaLateralArmed = ConsumerSubject.create(this.sub.on('fmaLateralArmed'), 0);
@@ -1747,8 +1750,6 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps & { readonly fcdcData: 
       this.landModesArmedOrActive,
       this.lsButton,
     );
-
-    this.lsButton.setConsumer(this.sub.on(getDisplayIndex() == 1 ? 'ls1Button' : 'ls2Button'));
   }
 
   render(): VNode {
