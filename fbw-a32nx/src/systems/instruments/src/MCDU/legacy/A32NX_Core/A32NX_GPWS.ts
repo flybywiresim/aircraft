@@ -186,8 +186,7 @@ export class A32NX_GPWS {
       case 1:
         return soundList.pull_up;
       case 2:
-        // Use retard as a placeholder, as "terrain" is not implemented.
-        return soundList.retard;
+        return soundList.terrain;
       case 3:
         return soundList.too_low_terrain;
       case 4:
@@ -195,16 +194,17 @@ export class A32NX_GPWS {
       case 5:
         return soundList.too_low_flaps;
       case 6:
-        // Use retard as a placeholder, as sink_rate is not functional.
-        //return soundList.sink_rate;
-        return soundList.retard;
+        return soundList.sink_rate;
       case 7:
         return soundList.dont_sink;
-      // Placeholders, not implemented
       case 8:
-        return soundList.alt_1000;
+        return soundList.glideslope_quiet;
       case 9:
-        return soundList.alt_2000;
+        return soundList.glideslope_loud;
+      case 10:
+        return soundList.terrain_ahead;
+      case 11:
+        return soundList.obstacle_ahead;
       default:
         return '';
     }

@@ -58,7 +58,7 @@ impl AuralWarning {
         match self {
             AuralWarning::None => Duration::from_secs(0),
             AuralWarning::PullUp => Duration::from_secs_f64(1.1),
-            AuralWarning::Terrain => Duration::from_secs_f64(0.6),
+            AuralWarning::Terrain => Duration::from_secs_f64(1.2),
             AuralWarning::TooLowTerrain => Duration::from_secs_f64(1.1),
             AuralWarning::TooLowGear => Duration::from_secs_f64(1.1),
             AuralWarning::TooLowFlaps => Duration::from_secs_f64(1.1),
@@ -66,8 +66,8 @@ impl AuralWarning {
             AuralWarning::DontSink => Duration::from_secs_f64(1.1),
             AuralWarning::GlideslopeSoft => Duration::from_secs_f64(1.6),
             AuralWarning::GlideslopeHard => Duration::from_secs_f64(1.6),
-            AuralWarning::TerrainAhead => Duration::from_secs_f64(2.4),
-            AuralWarning::ObstacleAhead => Duration::from_secs_f64(2.4),
+            AuralWarning::TerrainAhead => Duration::from_secs_f64(1.7),
+            AuralWarning::ObstacleAhead => Duration::from_secs_f64(2.),
         }
     }
 }

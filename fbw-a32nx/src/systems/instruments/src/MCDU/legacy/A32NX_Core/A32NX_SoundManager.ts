@@ -99,13 +99,37 @@ export class A32NX_SoundManager {
 
 // many lengths are approximate until we can get them accuratly (when boris re-makes them and we have the sources)
 export const soundList: Record<string, SoundDefinition> = {
+  terrain: {
+    name: 'aural_terrain',
+    length: 0.6,
+  },
+  glideslope_quiet: {
+    name: 'aural_glideslope_quiet',
+    length: 1.2,
+  },
+  glideslope_loud: {
+    name: 'aural_glideslope_loud',
+    length: 1.2,
+  },
+  terrain_ahead: {
+    name: 'aural_terrain_ahead',
+    length: 1.5,
+  },
+  obstacle_ahead: {
+    name: 'aural_obstacle_ahead',
+    length: 1.8,
+  },
+  obstacle: {
+    name: 'aural_obstacle',
+    length: 0.8,
+  },
   pull_up: {
     name: 'aural_pullup_new',
     length: 0.9,
   },
   sink_rate: {
     name: 'aural_sink_rate_new',
-    length: 0.9,
+    length: 0.6,
   },
   dont_sink: {
     name: 'aural_dontsink_new',

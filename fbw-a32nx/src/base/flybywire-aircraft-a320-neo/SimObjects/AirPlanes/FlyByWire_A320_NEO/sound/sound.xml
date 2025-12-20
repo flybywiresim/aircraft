@@ -2318,43 +2318,16 @@
     <!-- AvionicSounds ========================================================================================== -->
 
     <AvionicSounds>
+        <!-- FWS sounds ====================================================================================-->
+        <Sound WwiseData="true" WwiseEvent="aural_crickets" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside"/>
         <Sound WwiseData="true" WwiseEvent="cchordshort" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside"/>
         <Sound WwiseData="true" WwiseEvent="cchordloop" Continuous="true" NodeName="PEDALS_LEFT" ViewPoint="Inside"/>
-        <Sound WwiseData="true" WwiseEvent="aural_pull_up" />
-        <Sound WwiseData="true" WwiseEvent="aural_pullup_new" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside"/>
-        <Sound WwiseData="true" WwiseEvent="aural_overspeed" />
-        <Sound WwiseData="true" WwiseEvent="aural_sink_rate" />
-        <Sound WwiseData="true" WwiseEvent="aural_sink_rate_new" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" />
-        <Sound WwiseData="true" WwiseEvent="aural_dont_sink" />
-        <Sound WwiseData="true" WwiseEvent="aural_dontsink_new" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" />
-        <Sound WwiseData="true" WwiseEvent="GPWS_test_short" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" />
-        <Sound WwiseData="true" WwiseEvent="GPWS_test_long" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" />
-        <Sound WwiseData="true" WwiseEvent="aural_too_low_gear" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" />
-        <Sound WwiseData="true" WwiseEvent="aural_too_low_flaps" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" />
-        <Sound WwiseData="true" WwiseEvent="aural_too_low_terrain" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" />
-        <Sound WwiseData="true" WwiseEvent="aural_5ft" />
-        <Sound WwiseData="true" WwiseEvent="aural_10ft" />
-        <Sound WwiseData="true" WwiseEvent="aural_20ft" />
-        <Sound WwiseData="true" WwiseEvent="aural_30ft" />
-        <Sound WwiseData="true" WwiseEvent="aural_40ft" />
-        <Sound WwiseData="true" WwiseEvent="aural_50ft" />
-        <Sound WwiseData="true" WwiseEvent="aural_60ft" />
-        <Sound WwiseData="true" WwiseEvent="aural_70ft" />
-        <Sound WwiseData="true" WwiseEvent="aural_100ft" />
-        <Sound WwiseData="true" WwiseEvent="aural_200ft" />
-        <Sound WwiseData="true" WwiseEvent="aural_300ft" />
-        <Sound WwiseData="true" WwiseEvent="aural_400ft" />
-        <Sound WwiseData="true" WwiseEvent="aural_500ft" />
-        <Sound WwiseData="true" WwiseEvent="aural_1000ft" />
-        <Sound WwiseData="true" WwiseEvent="aural_2500ft" />
-        <Sound WwiseData="true" WwiseEvent="aural_retard" />
-        <Sound WwiseData="true" WwiseEvent="aural_v1" />
         <Sound WwiseEvent="cavcharge" WwiseData="true" NodeName="PEDALS_LEFT" Continuous="false" />
         <Sound WwiseEvent="3click" WwiseData="true" NodeName="PEDALS_LEFT" Continuous="false" />
         <Sound WwiseData="true" WwiseEvent="fwdgalley" NodeName="SOUND_SPEAKER_LEFT" />
         <Sound WwiseData="true" WwiseEvent="cpdlc_ring" NodeName="SOUND_SPEAKER_LEFT" />
 
-        <!-- New RA callouts ====================================================================================-->
+        <!-- FWS callouts ====================================================================================-->
         <Sound WwiseData="true" WwiseEvent="new_5" NodeName="SOUND_SPEAKER_LEFT" />
         <Sound WwiseData="true" WwiseEvent="new_10" NodeName="SOUND_SPEAKER_LEFT" />
         <Sound WwiseData="true" WwiseEvent="new_20" NodeName="SOUND_SPEAKER_LEFT" />
@@ -2374,6 +2347,11 @@
         <Sound WwiseData="true" WwiseEvent="aural_minimumnew" NodeName="SOUND_SPEAKER_LEFT" />
         <Sound WwiseData="true" WwiseEvent="aural_100above" NodeName="SOUND_SPEAKER_LEFT" />
 
+        <Sound WwiseData="true" WwiseEvent="aural_speed" NodeName="SOUND_SPEAKER_LEFT" />
+        <Sound WwiseData="true" WwiseEvent="aural_bank_bank" NodeName="SOUND_SPEAKER_LEFT" />
+        <Sound WwiseData="true" WwiseEvent="aural_pitch" NodeName="SOUND_SPEAKER_LEFT" />
+        <Sound WwiseData="true" WwiseEvent="aural_stall_stall" NodeName="SOUND_SPEAKER_LEFT" />
+
         <!-- TCAS callouts ====================================================================================-->
 
         <Sound WwiseData="true" WwiseEvent="clear_of_conflict" NodeName="SOUND_SPEAKER_LEFT" />
@@ -2392,6 +2370,26 @@
         <Sound WwiseData="true" WwiseEvent="traffic" NodeName="SOUND_SPEAKER_LEFT" />
         <Sound WwiseData="true" WwiseEvent="traffic_traffic" NodeName="SOUND_SPEAKER_LEFT" />
         <Sound WwiseData="true" WwiseEvent="TCAS_sys_test_OK" NodeName="SOUND_SPEAKER_LEFT" />
+
+        <!-- GPWS callouts ====================================================================================-->
+        <Sound WwiseData="true" WwiseEvent="aural_terrain" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" />
+        <Sound WwiseData="true" WwiseEvent="aural_pull_up" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" />
+        <Sound WwiseData="true" WwiseEvent="aural_pullup_new" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside"/>
+        <Sound WwiseData="true" WwiseEvent="aural_overspeed" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" />
+        <Sound WwiseData="true" WwiseEvent="aural_sink_rate" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" />
+        <Sound WwiseData="true" WwiseEvent="aural_sink_rate_new" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" />
+        <Sound WwiseData="true" WwiseEvent="aural_dont_sink" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" />
+        <Sound WwiseData="true" WwiseEvent="aural_dontsink_new" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" />
+        <Sound WwiseData="true" WwiseEvent="GPWS_test_short" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" />
+        <Sound WwiseData="true" WwiseEvent="GPWS_test_long" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" />
+        <Sound WwiseData="true" WwiseEvent="aural_too_low_gear" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" />
+        <Sound WwiseData="true" WwiseEvent="aural_too_low_flaps" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" />
+        <Sound WwiseData="true" WwiseEvent="aural_too_low_terrain" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" />
+        <Sound WwiseData="true" WwiseEvent="aural_glideslope_quiet" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" />
+        <Sound WwiseData="true" WwiseEvent="aural_glideslope_loud" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" />
+        <Sound WwiseData="true" WwiseEvent="aural_terrain_ahead" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" />
+        <Sound WwiseData="true" WwiseEvent="aural_obstacle_ahead" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" />
+        <Sound WwiseData="true" WwiseEvent="aural_obstacle" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" />
 
     </AvionicSounds>
 
