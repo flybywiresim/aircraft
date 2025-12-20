@@ -344,7 +344,7 @@ export class LegacyFuel implements Instrument {
       if (
         (Math.abs(this.feed1TankQty.get() - this.feed3TankQty.get()) < 2 &&
           !this.triggerStates.get(28).get() &&
-          this.trimTransfersActive()) ||
+          this.trimTransfersActiveAndTankLowest(1, 3)) ||
         (Math.abs(this.feed1TankQty.get() - this.feed3TankQty.get()) >= 3 && this.triggerStates.get(28).get())
       ) {
         this.toggleTrigger(28);
@@ -352,7 +352,7 @@ export class LegacyFuel implements Instrument {
       if (
         (Math.abs(this.feed1TankQty.get() - this.feed2TankQty.get()) < 2 &&
           !this.triggerStates.get(29).get() &&
-          this.trimTransfersActive()) ||
+          this.trimTransfersActiveAndTankLowest(1, 2)) ||
         (Math.abs(this.feed1TankQty.get() - this.feed2TankQty.get()) >= 3 && this.triggerStates.get(29).get())
       ) {
         this.toggleTrigger(29);
@@ -360,7 +360,7 @@ export class LegacyFuel implements Instrument {
       if (
         (Math.abs(this.feed2TankQty.get() - this.feed4TankQty.get()) < 2 &&
           !this.triggerStates.get(30).get() &&
-          this.trimTransfersActive()) ||
+          this.trimTransfersActiveAndTankLowest(2, 4)) ||
         (Math.abs(this.feed2TankQty.get() - this.feed4TankQty.get()) >= 3 && this.triggerStates.get(30).get())
       ) {
         this.toggleTrigger(30);
@@ -368,7 +368,7 @@ export class LegacyFuel implements Instrument {
       if (
         (Math.abs(this.feed3TankQty.get() - this.feed4TankQty.get()) < 2 &&
           !this.triggerStates.get(31).get() &&
-          this.trimTransfersActive()) ||
+          this.trimTransfersActiveAndTankLowest(3, 4)) ||
         (Math.abs(this.feed3TankQty.get() - this.feed4TankQty.get()) >= 3 && this.triggerStates.get(31).get())
       ) {
         this.toggleTrigger(31);
@@ -376,7 +376,7 @@ export class LegacyFuel implements Instrument {
       if (
         (Math.abs(this.feed1TankQty.get() - this.feed4TankQty.get()) < 2 &&
           !this.triggerStates.get(32).get() &&
-          this.trimTransfersActive()) ||
+          this.trimTransfersActiveAndTankLowest(1, 4)) ||
         (Math.abs(this.feed1TankQty.get() - this.feed4TankQty.get()) >= 3 && this.triggerStates.get(32).get())
       ) {
         this.toggleTrigger(32);
@@ -384,7 +384,7 @@ export class LegacyFuel implements Instrument {
       if (
         (Math.abs(this.feed2TankQty.get() - this.feed3TankQty.get()) < 2 &&
           !this.triggerStates.get(33).get() &&
-          this.trimTransfersActive()) ||
+          this.trimTransfersActiveAndTankLowest(2, 3)) ||
         (Math.abs(this.feed2TankQty.get() - this.feed3TankQty.get()) >= 3 && this.triggerStates.get(33).get())
       ) {
         this.toggleTrigger(33);
@@ -466,13 +466,30 @@ export class LegacyFuel implements Instrument {
   private setValve(index: number, state: ValveState): void {
     this.keyEventManager.triggerKey('FUELSYSTEM_VALVE_SET', true, index, state);
   }
+  /**
+   * Helper function for the equalize triggers regarding trim tank transfers
+   *
+   * Checks if trim tank transfers are active and if at least on of the tanks provided have the lowest fuel quantity
+   * @param tank1 first tank to check
+   * @param tank2 second tank to check
+   * @returns if the condition is true or not
+   */
+  private trimTransfersActiveAndTankLowest(tank1: number, tank2: number): boolean {
+    const feedTankQuantities: readonly number[] = [
+      this.feed1TankQty.get(),
+      this.feed2TankQty.get(),
+      this.feed3TankQty.get(),
+      this.feed4TankQty.get(),
+    ];
 
-  private trimTransfersActive(): boolean {
+    const lowestQTY = Math.min(...feedTankQuantities);
+
     return (
-      this.triggerStates.get(24).get() ||
-      this.triggerStates.get(25).get() ||
-      this.triggerStates.get(26).get() ||
-      this.triggerStates.get(27).get()
+      (this.triggerStates.get(24).get() ||
+        this.triggerStates.get(25).get() ||
+        this.triggerStates.get(26).get() ||
+        this.triggerStates.get(27).get()) &&
+      (feedTankQuantities[tank1] <= lowestQTY + 3 || feedTankQuantities[tank2] <= lowestQTY + 3)
     );
   }
   /**
