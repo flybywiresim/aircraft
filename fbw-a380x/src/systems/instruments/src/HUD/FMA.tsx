@@ -26,7 +26,7 @@ import {
 } from '@flybywiresim/fbw-sdk';
 import { FcdcValueProvider } from './shared/FcdcValueProvider';
 import { DmcLogicEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
-
+import { getDisplayIndex } from './HUD';
 import { HudElems } from './HUDUtils';
 abstract class ShowForSecondsComponent<T extends ComponentProps> extends DisplayComponent<T> {
   private timeout: number = 0;
@@ -1843,15 +1843,20 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps & { readonly fcdcData: 
 
   private cellTextRef2 = FSComponent.createRef<SVGTextElement>();
 
-  private decMode = 0;
+  private prevDecMode = 0;
 
-  private sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & DmcLogicEvents>();
+  private readonly sub = this.props.bus.getSubscriber<HUDSimvars & Arinc429Values & DmcLogicEvents & HudElems>();
 
+  private readonly lsButton = ConsumerSubject.create(
+    this.sub.on(getDisplayIndex() == 1 ? 'ls1Button' : 'ls2Button'),
+    false,
+  );
   private readonly fmaLateralActive = ConsumerSubject.create(this.sub.on('activeLateralMode'), 0);
   private readonly fmaLateralArmed = ConsumerSubject.create(this.sub.on('fmaLateralArmed'), 0);
 
   private readonly fmaVerticalActive = ConsumerSubject.create(this.sub.on('activeVerticalMode'), 0);
   private readonly fmaVerticalArmed = ConsumerSubject.create(this.sub.on('fmaVerticalArmed'), 0);
+  private readonly decMode = ConsumerSubject.create(this.sub.on('decMode'), 0);
 
   private readonly landModesArmedOrActive = MappedSubject.create(
     ([latAct, latArm, vertAct, vertArm]) =>
@@ -1863,9 +1868,15 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps & { readonly fcdcData: 
     this.fmaVerticalArmed,
   );
 
-  private text1Sub = Subject.create('');
+  private readonly text1Sub = Subject.create('');
 
-  private text2Sub = Subject.create('');
+  private readonly text2Sub = Subject.create('');
+
+  private static readonly FiveCharactersPerLineSingleLineModeChangePath = 'm 732  9.5 h 135 v 30.2 h -135 z';
+
+  private static readonly FiveCharactersPerLineTwoLinesModeChangePath = 'm 732  9.5 h 135 v 67.5 h -135 z';
+
+  private static readonly FourCharactersPerLineTwoLinesModeChangePath = 'm 732  9.5 h 135 v 67.5 h -135 z';
 
   constructor(props: CellProps & { readonly fcdcData: FcdcValueProvider }) {
     super(props, 9);
@@ -1874,30 +1885,38 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps & { readonly fcdcData: 
   private setText() {
     let text1: string;
     let text2: string | undefined;
+    let modeChangedPath: string | undefined;
     this.isShown = true;
     if (this.props.fcdcData.land2Capacity.get()) {
       text1 = 'LAND2';
       text2 = '';
+      modeChangedPath = D1D2Cell.FiveCharactersPerLineSingleLineModeChangePath;
     } else if (this.props.fcdcData.land3FailPassiveCapacity.get()) {
       text1 = 'LAND3';
       text2 = 'SINGLE';
+      modeChangedPath = D1D2Cell.FiveCharactersPerLineTwoLinesModeChangePath;
     } else if (this.props.fcdcData.land3FailOperationalCapacity.get()) {
       text1 = 'LAND3';
       text2 = 'DUAL';
-    } else if (this.landModesArmedOrActive.get()) {
-      text1 = 'APPR1';
-      text2 = '';
+      modeChangedPath = D1D2Cell.FiveCharactersPerLineSingleLineModeChangePath;
     } else if (false) {
       text1 = 'LAND1';
       text2 = '';
+      modeChangedPath = D1D2Cell.FiveCharactersPerLineSingleLineModeChangePath;
     } else if (false) {
       text1 = 'F-APP';
     } else if (false) {
       text1 = 'F-APP';
       text2 = '+ RAW';
+      modeChangedPath = D1D2Cell.FiveCharactersPerLineTwoLinesModeChangePath;
     } else if (false) {
       text1 = 'RAW';
       text2 = 'ONLY';
+      modeChangedPath = D1D2Cell.FourCharactersPerLineTwoLinesModeChangePath;
+    } else if (this.lsButton.get() || this.landModesArmedOrActive.get()) {
+      text1 = 'APPR1';
+      text2 = '';
+      modeChangedPath = D1D2Cell.FiveCharactersPerLineSingleLineModeChangePath;
     } else {
       text1 = '';
       text2 = '';
@@ -1907,43 +1926,43 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps & { readonly fcdcData: 
     const hasChanged = text1 !== this.text1Sub.get() || text2 !== this.text2Sub.get();
 
     if (hasChanged) {
-      this.displayModeChangedPath();
-
       this.text1Sub.set(text1);
       this.text2Sub.set(text2);
 
-      if (text2 !== '') {
-        this.modeChangedPathRef.instance.setAttribute('d', 'm 732  9 h 135 v 67.5 h -135 z');
+      this.modeChangedPathRef.instance.setAttribute('d', modeChangedPath!);
+      if (this.decMode.get() === 2) {
+        this.displayModeChangedPath(true);
+        this.handleDeclutterMode(false, this.decMode.get(), this.cellTextRef, this.cellTextRef2);
       } else {
-        this.modeChangedPathRef.instance.setAttribute('d', 'm 732  9 h 135 v 30.2 h -135 z');
+        this.displayModeChangedPath();
+        this.handleDeclutterMode(false, this.decMode.get(), this.cellTextRef, this.cellTextRef2);
       }
-      this.handleDeclutterMode(false, this.decMode, this.cellTextRef, this.cellTextRef2);
     } else if (!this.isShown) {
-      this.displayModeChangedPath();
-      this.handleDeclutterMode(false, this.decMode, this.cellTextRef, this.cellTextRef2);
+      this.displayModeChangedPath(true);
+    }
+
+    if (this.prevDecMode !== this.decMode.get()) {
+      if (this.decMode.get() === 2) {
+        this.cellTextRef.instance.style.visibility = 'hidden';
+        this.cellTextRef2.instance.style.visibility = 'hidden';
+      } else {
+        this.cellTextRef.instance.style.visibility = 'visible';
+        this.cellTextRef2.instance.style.visibility = 'visible';
+      }
+      this.prevDecMode = this.decMode.get();
     }
   }
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    MappedSubject.create(() => this.setText(), this.props.fcdcData.fcdcFgDiscreteWord4, this.landModesArmedOrActive);
-
-    const sub = this.props.bus.getSubscriber<HUDSimvars & HudElems>();
-
-    sub
-      .on('decMode')
-      .whenChanged()
-      .handle((mode) => {
-        this.decMode = mode;
-        if (this.decMode === 2) {
-          this.cellTextRef.instance.style.visibility = 'hidden';
-          this.cellTextRef2.instance.style.visibility = 'hidden';
-        } else {
-          this.cellTextRef.instance.style.visibility = 'visible';
-          this.cellTextRef2.instance.style.visibility = 'visible';
-        }
-      });
+    MappedSubject.create(
+      () => this.setText(),
+      this.props.fcdcData.fcdcFgDiscreteWord4,
+      this.landModesArmedOrActive,
+      this.lsButton,
+      this.decMode,
+    );
   }
 
   render(): VNode {
