@@ -1,6 +1,4 @@
 export class CpdlcMessageDto {
-  logon: string;
-
   from: string;
 
   to: string;

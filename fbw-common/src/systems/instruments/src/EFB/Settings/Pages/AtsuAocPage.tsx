@@ -36,14 +36,13 @@ export const AtsuAocPage = () => {
 
   const [sentryEnabled, setSentryEnabled] = usePersistentProperty(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
 
-  const getHoppieResponse = (value: string): Promise<any> =>
+  const getAcarsResponse = (value: string): Promise<any> =>
     new Promise((resolve, reject) => {
       if (!value || value === '') {
         resolve(value);
       }
 
       const body = {
-        logon: value,
         from: 'FBWA32NX',
         to: 'SERVER',
         type: 'ping',
@@ -58,8 +57,8 @@ export const AtsuAocPage = () => {
       });
     });
 
-  const handleHoppieUsernameInput = (value: string) => {
-    getHoppieResponse(value)
+  const handleAcarsUsernameInput = (value: string) => {
+    getAcarsResponse(value)
       .then((response) => {
         if (!value) {
           toast.success(`${t('Settings.AtsuAoc.YourHoppieIdHasBeenRemoved')} ${response}`);
@@ -256,9 +255,9 @@ export const AtsuAocPage = () => {
               if (acarsProvider === 'SAI') {
                 setSaiLogonKey(trimmed);
               } else {
-                handleHoppieUsernameInput(trimmed);
                 setHoppieUserId(trimmed);
               }
+              handleAcarsUsernameInput(trimmed);
             }}
             onChange={(value) => {
               if (acarsProvider === 'SAI') {

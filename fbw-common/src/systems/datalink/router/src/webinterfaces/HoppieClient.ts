@@ -20,9 +20,12 @@ export class HoppieClient {
     const baseUrl = HOPPIE_PROVIDER_ENDPOINTS[this.acarsProvider.get()] ?? HOPPIE_PROVIDER_ENDPOINTS.HOPPIE;
 
     const params = new URLSearchParams();
-    if (this.acarsProvider.get() !== 'BATC') {
-      params.append('logon', dto.logon);
+    if (this.acarsProvider.get() === 'SAI') {
+      params.append('logon', NXDataStore.getLegacy('CONFIG_SAI_LOGON_KEY', ''));
+    } else if (this.acarsProvider.get() === 'HOPPIE') {
+      params.append('logon', NXDataStore.getLegacy('CONFIG_HOPPIE_USERID', ''));
     }
+
     params.append('from', dto.from);
     params.append('to', dto.to);
     params.append('type', dto.type);

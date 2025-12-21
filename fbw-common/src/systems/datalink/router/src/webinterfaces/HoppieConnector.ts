@@ -31,10 +31,10 @@ export class HoppieConnector {
   public static async activateHoppie() {
     SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 0);
 
-    /*     if (NXDataStore.getLegacy('CONFIG_HOPPIE_ENABLED', 'DISABLED') === 'DISABLED') {
-      console.log('Hoppie deactivated in EFB');
+    if (NXDataStore.getSetting('ACARS_PROVIDER').get() === 'NONE') {
+      console.log('CPDLC deactivated in EFB');
       return;
-    } */
+    }
 
     /*
     /*if (NXDataStore.getLegacy('CONFIG_HOPPIE_USERID', '') === '') {
@@ -43,7 +43,6 @@ export class HoppieConnector {
     } */
 
     const body = {
-      logon: NXDataStore.getLegacy('CONFIG_HOPPIE_USERID', ''),
       from: 'FBWA32NX',
       to: 'SERVER',
       type: 'ping',
@@ -90,7 +89,6 @@ export class HoppieConnector {
     }
 
     const body = {
-      logon: NXDataStore.getLegacy('CONFIG_HOPPIE_USERID', ''),
       from: station,
       to: 'SERVER',
       type: 'ping',
@@ -123,7 +121,6 @@ export class HoppieConnector {
     }
 
     const body = {
-      logon: NXDataStore.getLegacy('CONFIG_HOPPIE_USERID', ''),
       from: HoppieConnector.flightNumber,
       to: 'SERVER', // Not needed as Hoppie ignores this field usually
       type: 'ping',
@@ -156,7 +153,6 @@ export class HoppieConnector {
     }
 
     const body = {
-      logon: NXDataStore.getLegacy('CONFIG_HOPPIE_USERID', ''),
       from: HoppieConnector.flightNumber,
       to: message.Station,
       type,
