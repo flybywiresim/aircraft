@@ -296,7 +296,7 @@ export class LegacyFuel implements Instrument {
           Math.abs(this.feed1TankQty.get() - this.feed2TankQty.get()) < 2 &&
           !this.triggerActive(19) &&
           this.triggerActive(13) &&
-         !this.triggerActiveAny(7, 10) &&
+          !this.triggerActiveAny(7, 10) &&
           !this.triggerActive(16)) ||
         ((this.feed1TankQty.get() >= 6766 ||
           this.feed2TankQty.get() >= 6766 ||
@@ -326,7 +326,7 @@ export class LegacyFuel implements Instrument {
           Math.abs(this.feed3TankQty.get() - this.feed4TankQty.get()) < 2 &&
           !this.triggerActive(21) &&
           this.triggerActive(13) &&
-         !this.triggerActiveAny(7, 10) &&
+          !this.triggerActiveAny(7, 10) &&
           !this.triggerActive(17)) ||
         ((this.feed3TankQty.get() >= 6766 ||
           this.feed4TankQty.get() >= 6766 ||
@@ -407,7 +407,8 @@ export class LegacyFuel implements Instrument {
       if (
         (Math.abs(this.feed2TankQty.get() - this.feed3TankQty.get()) < 2 &&
           !this.triggerActive(33) &&
-          this.trimTransfersActiveAndTankLowest(2, 3)) ||
+          !this.triggerActiveAny(25, 26) &&
+          this.TankLowest(2, 3)) ||
         (Math.abs(this.feed2TankQty.get() - this.feed3TankQty.get()) >= 3 && this.triggerActive(33))
       ) {
         this.toggleTrigger(33);
@@ -507,9 +508,7 @@ export class LegacyFuel implements Instrument {
 
     const lowestQTY = Math.min(...feedTankQuantities);
 
-    return (
-      (feedTankQuantities[tank1] <= lowestQTY + 3 || feedTankQuantities[tank2] <= lowestQTY + 3)
-    );
+    return feedTankQuantities[tank1] <= lowestQTY + 3 || feedTankQuantities[tank2] <= lowestQTY + 3;
   }
   /**
    * Calculates the CG Target based on aircraft total weight in kLBS
