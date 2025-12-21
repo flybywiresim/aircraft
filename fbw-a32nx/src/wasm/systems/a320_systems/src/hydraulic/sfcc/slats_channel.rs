@@ -156,7 +156,7 @@ impl SlatsChannel {
         let current_detent = self.csu_monitor.get_current_detent();
         let valid_detent = self.csu_monitor.get_last_valid_detent();
 
-        match cas {
+        self.slat_baulk_engaged = match cas {
             // If the CAS is less than the minimum limit and the flaps lever
             // position is 0 and slats are already extended, then keep slats extended
             Some(cas)
@@ -167,11 +167,11 @@ impl SlatsChannel {
                         self.conf1_slats,
                     ) =>
             {
-                self.slat_baulk_engaged = true;
+                true
             }
             // If the flaps lever position is in out of detent position, then
             // don't change the status
-            Some(_) if current_detent == CSU::OutOfDetent => {}
+            Some(_) if current_detent == CSU::OutOfDetent => self.slat_baulk_engaged,
             // If the CAS is higher than the max limit and the flaps lever
             // position is 0 and slats are locked at extended position, then retract the slats
             Some(cas)
@@ -179,18 +179,14 @@ impl SlatsChannel {
                     && current_detent == CSU::Conf0
                     && self.slat_baulk_engaged =>
             {
-                self.slat_baulk_engaged = false;
+                false
             }
             // If CAS is invalid and the last valid flaps lever position is 0,
             // then retract the slats
-            None if valid_detent == CSU::Conf0 => {
-                self.slat_baulk_engaged = false;
-            }
+            None if valid_detent == CSU::Conf0 => false,
             // In any oher case, don't influence slats movement
-            _ => {
-                self.slat_baulk_engaged = false;
-            }
-        }
+            _ => false,
+        };
     }
 
     fn update_slat_alpha_lock(&mut self, adirs: &impl AdirsMeasurementOutputs) {
@@ -198,7 +194,7 @@ impl SlatsChannel {
         let current_detent = self.csu_monitor.get_current_detent();
         let valid_detent = self.csu_monitor.get_last_valid_detent();
 
-        match aoa {
+        self.slat_alpha_lock_engaged = match aoa {
             // If the AoA is greater than the max limit and the flaps lever
             // position is 0 and slats are already extended, then keep slats extended
             Some(aoa)
@@ -209,11 +205,11 @@ impl SlatsChannel {
                         self.conf1_slats,
                     ) =>
             {
-                self.slat_alpha_lock_engaged = true;
+                true
             }
             // If the flaps lever position is in out of detent position, then
             // don't change the status
-            Some(_) if current_detent == CSU::OutOfDetent => {}
+            Some(_) if current_detent == CSU::OutOfDetent => self.slat_alpha_lock_engaged,
             // If the AoA is lower than the min limit and the flaps lever
             // position is 0 and slats are locked at extended position, then retract the slats
             Some(aoa)
@@ -221,18 +217,14 @@ impl SlatsChannel {
                     && current_detent == CSU::Conf0
                     && self.slat_alpha_lock_engaged =>
             {
-                self.slat_alpha_lock_engaged = false;
+                false
             }
             // If AoA is invalid and the last valid flaps lever position is 0,
             // then retract the slats
-            None if valid_detent == CSU::Conf0 => {
-                self.slat_alpha_lock_engaged = false;
-            }
+            None if valid_detent == CSU::Conf0 => false,
             // In any oher case, don't influence slats movement
-            _ => {
-                self.slat_alpha_lock_engaged = false;
-            }
-        }
+            _ => false,
+        };
     }
 
     fn power_loss_reset(&mut self) {

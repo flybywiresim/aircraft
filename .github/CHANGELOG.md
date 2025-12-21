@@ -26,7 +26,6 @@
 1. [A380X/OIT] Fix tooltips for OIT switches - @heclak (Heclak)
 1. [A32NX/MCDU] Fix managed speed units in IAS/MACH on perf climb page - @Lucas-IQ21 (Lucas)
 1. [A32NX/FMS] Implement ability to create, modify, activate and swap a secondary flight plan - @Benjozork (Benjamin Dupont), @BlueberyKing (BlueberryKing)
-1. [A32NX/SFCC] Added implementation of slat baulk and slat alpha lock functions in SFCC - @Eagle941 (Joe)
 1. [A380X] Fix PFD F RELIEF indication and SD status area ISA visibility - @flogross89 (floridude)
 1. [A380X/FMS] Add - sign to LS slope value - @Jonny23787 (Jonathan)
 1. [A380X/MFD] Implement Position Monitor page - @BravoMike99 (bruno_pt99)
@@ -44,6 +43,7 @@
 1. [A380X/PFD] Increase PFD trim wheel rotation speed - @lukecologne (luke)
 1. [A380X/FWS] Add FCTL and OVERSPEED abnormal sensed procedures - @Jonny23787 (Jonathan)
 1. [A380X/SFCC] Improved slats/flaps cruise baulk trigger and display - @FozzieHi (fozzie), @lukecologne (luke)
+1. [A32NX/SFCC] Added implementation of slat baulk and slat alpha lock functions in SFCC - @Eagle941 (Joe)
 
 ## 0.14.0
 
