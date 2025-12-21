@@ -3,4 +3,5 @@
 
 export * from './databus';
 export * from './webinterfaces/HoppieConnector';
+export * from './webinterfaces/HoppieClient';
 export * from './Router';

@@ -13,7 +13,6 @@ import {
   usePersistentSetting,
 } from '@flybywiresim/fbw-sdk';
 
-import { Hoppie } from '@flybywiresim/api-client';
 import { toast } from 'react-toastify';
 import { t } from '../../Localization/translation';
 import { useModals, PromptModal } from '../../UtilComponents/Modals/Modals';
@@ -21,7 +20,7 @@ import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ButtonType, SettingItem, SettingsPage } from '../Settings';
-import { HoppieConnector } from '../../../../../datalink/router/src';
+import { HoppieConnector, HoppieClient } from '../../../../../datalink/router/src';
 
 export const AtsuAocPage = () => {
   const [atisSource, setAtisSource] = usePersistentProperty('CONFIG_ATIS_SRC', 'FAA');
@@ -31,7 +30,9 @@ export const AtsuAocPage = () => {
 
   const [hoppieEnabled, setHoppieEnabled] = usePersistentProperty('CONFIG_HOPPIE_ENABLED', 'DISABLED');
   const [hoppieUserId, setHoppieUserId] = usePersistentProperty('CONFIG_HOPPIE_USERID');
-  const [cpdlcProvider, setCpdlcProvider] = usePersistentSetting('CPDLC_PROVIDER');
+  const [saiLogonKey, setSaiLogonKey] = usePersistentProperty('CONFIG_SAI_LOGON_KEY');
+
+  const [acarsProvider, setAcarsProvider] = usePersistentSetting('ACARS_PROVIDER');
 
   const [sentryEnabled, setSentryEnabled] = usePersistentProperty(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
 
@@ -48,7 +49,7 @@ export const AtsuAocPage = () => {
         type: 'ping',
         packet: '',
       };
-      return Hoppie.sendRequest(body).then((resp) => {
+      return HoppieClient.getData(body).then((resp) => {
         if (resp.response === 'error {invalid logon code}') {
           reject(new Error(`Error: Unknown user ID: ${resp.response}`));
         } else {
@@ -81,8 +82,8 @@ export const AtsuAocPage = () => {
     }
   };
 
-  const handleCpdlcProviderChange = (provider: 'NONE' | 'HOPPIE' | 'BATC' | 'SAI') => {
-    setCpdlcProvider(provider);
+  const handleAcarsProviderChange = (provider: 'NONE' | 'HOPPIE' | 'BATC' | 'SAI') => {
+    setAcarsProvider(provider);
     HoppieConnector.deactivateHoppie();
     HoppieConnector.activateHoppie();
   };
@@ -230,8 +231,8 @@ export const AtsuAocPage = () => {
           {hoppieProviderButtons.map((button) => (
             <SelectItem
               key={button.setting}
-              onSelect={() => handleCpdlcProviderChange(button.setting)}
-              selected={cpdlcProvider === button.setting}
+              onSelect={() => handleAcarsProviderChange(button.setting)}
+              selected={acarsProvider === button.setting}
             >
               {button.name}
             </SelectItem>
@@ -239,15 +240,36 @@ export const AtsuAocPage = () => {
         </SelectGroup>
       </SettingItem>
 
-      <SettingItem name={t('Settings.AtsuAoc.HoppieUserId')}>
-        <SimpleInput
-          className="w-30 text-center"
-          value={hoppieUserId}
-          disabled={cpdlcProvider == 'BATC'}
-          onBlur={(value) => handleHoppieUsernameInput(value.replace(/\s/g, ''))}
-          onChange={(value) => setHoppieUserId(value)}
-        />
-      </SettingItem>
+      {(acarsProvider === 'HOPPIE' || acarsProvider === 'SAI') && (
+        <SettingItem
+          name={
+            acarsProvider === 'SAI'
+              ? t('Settings.AtsuAoc.SaiLogonKey') ?? 'SAI Logon Key'
+              : t('Settings.AtsuAoc.HoppieUserId')
+          }
+        >
+          <SimpleInput
+            className="w-30 text-center"
+            value={acarsProvider === 'SAI' ? saiLogonKey : hoppieUserId}
+            onBlur={(value) => {
+              const trimmed = value.replace(/\s/g, '');
+              if (acarsProvider === 'SAI') {
+                setSaiLogonKey(trimmed);
+              } else {
+                handleHoppieUsernameInput(trimmed);
+                setHoppieUserId(trimmed);
+              }
+            }}
+            onChange={(value) => {
+              if (acarsProvider === 'SAI') {
+                setSaiLogonKey(value);
+              } else {
+                setHoppieUserId(value);
+              }
+            }}
+          />
+        </SettingItem>
+      )}
     </SettingsPage>
   );
 };
