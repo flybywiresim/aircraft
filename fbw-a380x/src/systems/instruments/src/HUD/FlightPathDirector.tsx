@@ -12,7 +12,7 @@ import { getDisplayIndex } from './HUD';
 import { calculateHorizonOffsetFromPitch, HudElems } from './HUDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
-import { ONE_DEG, FIVE_DEG } from './HUDUtils';
+import { ONE_DEG, FIVE_DEG, circlePath } from './HUDUtils';
 const DistanceSpacing = FIVE_DEG;
 const ValueSpacing = 5;
 
@@ -236,13 +236,9 @@ export class FlightPathDirector extends DisplayComponent<{ bus: EventBus; isAttE
       <g ref={this.birdPath}>
         <svg>
           <g id="FlightPathDirector" display={this.sVisibility}>
-            {/* <circle class="SmallStroke Green" cx="640" cy="512" r="10" /> */}
             <path
               ref={this.birdPathCircle}
-              d="M 631 512 C 631 517,  635 521,      640 521
-                S 649 517,      649 512
-                S 645 503,      640 503
-                S 631 507,      631 512 Z"
+              d={circlePath(8, 640, 512)}
               class="NormalStroke Green"
               stroke-dasharray="3 6"
             />

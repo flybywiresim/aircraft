@@ -269,3 +269,7 @@ export enum MdaMode {
   Radio = 'RADIO',
   Baro = 'BARO',
 }
+
+export function circlePath(r: number, cx: number, cy: number) {
+  return `M ${cx} ${cy} m ${r} 0 a ${r} ${r} 0 1 0 ${-2 * r} 0 a ${r} ${r} 0 1 0 ${2 * r} 0`;
+}
