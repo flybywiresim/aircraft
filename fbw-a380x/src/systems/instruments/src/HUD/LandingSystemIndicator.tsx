@@ -823,7 +823,7 @@ class LsTitle extends DisplayComponent<{ bus: EventBus }> {
 }
 
 class LsReminderIndicator extends DisplayComponent<{ bus: EventBus }> {
-  private readonly sub = this.props.bus.getSubscriber<HUDSimvars>();
+  private readonly sub = this.props.bus.getSubscriber<HUDSimvars & HudElems>();
 
   private readonly lsReminder = FSComponent.createRef<SVGTextElement>();
 
@@ -843,6 +843,8 @@ class LsReminderIndicator extends DisplayComponent<{ bus: EventBus }> {
     this.lsButton,
   );
 
+  private readonly decMode = ConsumerSubject.create(this.sub.on('decMode'), 0);
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
     this.lsButton.setConsumer(this.sub.on(getDisplayIndex() === 2 ? 'ls2Button' : 'ls1Button'));
@@ -857,7 +859,13 @@ class LsReminderIndicator extends DisplayComponent<{ bus: EventBus }> {
 
   render(): VNode {
     return (
-      <text class="FontLargest Green Blink9Seconds" x="905" y="800" ref={this.lsReminder}>
+      <text
+        visibility={this.decMode.map((v) => (v == 2 ? 'hidden' : 'visible'))}
+        class="FontLargest Green Blink9Seconds"
+        x="905"
+        y="800"
+        ref={this.lsReminder}
+      >
         LS
       </text>
     );
