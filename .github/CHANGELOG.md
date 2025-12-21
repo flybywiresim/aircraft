@@ -43,7 +43,7 @@
 1. [A380X/PFD] Increase PFD trim wheel rotation speed - @lukecologne (luke)
 1. [A380X/FWS] Add FCTL and OVERSPEED abnormal sensed procedures - @Jonny23787 (Jonathan)
 1. [A380X/SFCC] Improved slats/flaps cruise baulk trigger and display - @FozzieHi (fozzie), @lukecologne (luke)
-1. [A380X/FUEL SYSTEM] Fuel system update - @donstim (donbikes)
+1. [A380X/FUEL SYSTEM] Fuel system update - @donstim (donbikes) & @Maximilian-Reuter (\_chaoz_)
 
 ## 0.14.0
 
