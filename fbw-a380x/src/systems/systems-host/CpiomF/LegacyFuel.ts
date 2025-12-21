@@ -206,7 +206,6 @@ export class LegacyFuel implements Instrument {
       if (
         (Math.abs(this.feed1TankQty.get() - this.feed4TankQty.get()) < 2 &&
           !this.triggerActive(5) &&
-          this.triggerActiveAny(1, 4) &&
           !this.triggerActiveAny(7, 10)) ||
         (Math.abs(this.feed1TankQty.get() - this.feed4TankQty.get()) >= 3 && this.triggerActive(5))
       ) {
@@ -214,8 +213,8 @@ export class LegacyFuel implements Instrument {
       }
       if (Math.abs(this.feed2TankQty.get() - this.feed3TankQty.get()) < 2 && !this.triggerActive(6)) {
         if (
-          (this.triggerActive(13) && this.triggerActiveAny(14, 15) && !this.triggerActiveAny(16, 17)) ||
-          (!this.triggerActive(13) && this.triggerActiveAny(2, 3) && !this.triggerActiveAny(8, 9))
+          (this.triggerActive(13) && !this.triggerActiveAny(16, 17)) ||
+          (!this.triggerActive(13) && !this.triggerActiveAny(8, 9))
         ) {
           this.toggleTrigger(6);
         }
@@ -282,7 +281,6 @@ export class LegacyFuel implements Instrument {
           Math.abs(this.feed1TankQty.get() - this.feed3TankQty.get()) < 2 &&
           !this.triggerActive(18) &&
           this.triggerActive(13) &&
-          this.triggerActiveAny(1, 15) &&
           !this.triggerActiveAny(7, 10) &&
           !this.triggerActive(17)) ||
         ((this.feed1TankQty.get() >= 6766 ||
@@ -298,8 +296,7 @@ export class LegacyFuel implements Instrument {
           Math.abs(this.feed1TankQty.get() - this.feed2TankQty.get()) < 2 &&
           !this.triggerActive(19) &&
           this.triggerActive(13) &&
-          this.triggerActiveAny(1, 14) &&
-          !this.triggerActiveAny(7, 10) &&
+         !this.triggerActiveAny(7, 10) &&
           !this.triggerActive(16)) ||
         ((this.feed1TankQty.get() >= 6766 ||
           this.feed2TankQty.get() >= 6766 ||
@@ -314,7 +311,6 @@ export class LegacyFuel implements Instrument {
           Math.abs(this.feed2TankQty.get() - this.feed4TankQty.get()) < 2 &&
           !this.triggerActive(20) &&
           this.triggerActive(13) &&
-          this.triggerActiveAny(4, 14) &&
           !this.triggerActiveAny(7, 10) &&
           !this.triggerActive(16)) ||
         ((this.feed2TankQty.get() >= 6766 ||
@@ -330,8 +326,7 @@ export class LegacyFuel implements Instrument {
           Math.abs(this.feed3TankQty.get() - this.feed4TankQty.get()) < 2 &&
           !this.triggerActive(21) &&
           this.triggerActive(13) &&
-          this.triggerActiveAny(4, 15) &&
-          !this.triggerActiveAny(7, 10) &&
+         !this.triggerActiveAny(7, 10) &&
           !this.triggerActive(17)) ||
         ((this.feed3TankQty.get() >= 6766 ||
           this.feed4TankQty.get() >= 6766 ||
@@ -367,7 +362,8 @@ export class LegacyFuel implements Instrument {
       if (
         (Math.abs(this.feed1TankQty.get() - this.feed3TankQty.get()) < 2 &&
           !this.triggerActive(28) &&
-          this.trimTransfersActiveAndTankLowest(1, 3)) ||
+          !this.triggerActiveAny(24, 26) &&
+          this.TankLowest(1, 3)) ||
         (Math.abs(this.feed1TankQty.get() - this.feed3TankQty.get()) >= 3 && this.triggerActive(28))
       ) {
         this.toggleTrigger(28);
@@ -375,7 +371,8 @@ export class LegacyFuel implements Instrument {
       if (
         (Math.abs(this.feed1TankQty.get() - this.feed2TankQty.get()) < 2 &&
           !this.triggerActive(29) &&
-          this.trimTransfersActiveAndTankLowest(1, 2)) ||
+          !this.triggerActiveAny(24, 25) &&
+          this.TankLowest(1, 2)) ||
         (Math.abs(this.feed1TankQty.get() - this.feed2TankQty.get()) >= 3 && this.triggerActive(29))
       ) {
         this.toggleTrigger(29);
@@ -383,7 +380,8 @@ export class LegacyFuel implements Instrument {
       if (
         (Math.abs(this.feed2TankQty.get() - this.feed4TankQty.get()) < 2 &&
           !this.triggerActive(30) &&
-          this.trimTransfersActiveAndTankLowest(2, 4)) ||
+          !this.triggerActiveAny(25, 27) &&
+          this.TankLowest(2, 4)) ||
         (Math.abs(this.feed2TankQty.get() - this.feed4TankQty.get()) >= 3 && this.triggerActive(30))
       ) {
         this.toggleTrigger(30);
@@ -391,7 +389,8 @@ export class LegacyFuel implements Instrument {
       if (
         (Math.abs(this.feed3TankQty.get() - this.feed4TankQty.get()) < 2 &&
           !this.triggerActive(31) &&
-          this.trimTransfersActiveAndTankLowest(3, 4)) ||
+          !this.triggerActiveAny(26, 27) &&
+          this.TankLowest(3, 4)) ||
         (Math.abs(this.feed3TankQty.get() - this.feed4TankQty.get()) >= 3 && this.triggerActive(31))
       ) {
         this.toggleTrigger(31);
@@ -399,7 +398,8 @@ export class LegacyFuel implements Instrument {
       if (
         (Math.abs(this.feed1TankQty.get() - this.feed4TankQty.get()) < 2 &&
           !this.triggerActive(32) &&
-          this.trimTransfersActiveAndTankLowest(1, 4)) ||
+          !this.triggerActiveAny(24, 27) &&
+          this.TankLowest(1, 4)) ||
         (Math.abs(this.feed1TankQty.get() - this.feed4TankQty.get()) >= 3 && this.triggerActive(32))
       ) {
         this.toggleTrigger(32);
@@ -492,12 +492,12 @@ export class LegacyFuel implements Instrument {
   /**
    * Helper function for the equalize triggers regarding trim tank transfers
    *
-   * Checks if trim tank transfers are active and if at least on of the tanks provided have the lowest fuel quantity
+   * Checks if at least one of the tanks provided have the lowest fuel quantity
    * @param tank1 first tank to check
    * @param tank2 second tank to check
    * @returns if the condition is true or not
    */
-  private trimTransfersActiveAndTankLowest(tank1: number, tank2: number): boolean {
+  private TankLowest(tank1: number, tank2: number): boolean {
     const feedTankQuantities: readonly number[] = [
       this.feed1TankQty.get(),
       this.feed2TankQty.get(),
@@ -508,7 +508,6 @@ export class LegacyFuel implements Instrument {
     const lowestQTY = Math.min(...feedTankQuantities);
 
     return (
-      (this.triggerActive(24) || this.triggerActive(25) || this.triggerActive(26) || this.triggerActive(27)) &&
       (feedTankQuantities[tank1] <= lowestQTY + 3 || feedTankQuantities[tank2] <= lowestQTY + 3)
     );
   }
