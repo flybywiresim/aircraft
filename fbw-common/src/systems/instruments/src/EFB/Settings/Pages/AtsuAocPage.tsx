@@ -111,10 +111,10 @@ export const AtsuAocPage = () => {
   }
 
   const acarsProviderButtons = [
-    { name: t('Settings.AtsuAoc.HoppieProviderNone'), setting: 'NONE' },
-    { name: t('Settings.AtsuAoc.HoppieProviderHoppie'), setting: 'HOPPIE' },
-    { name: t('Settings.AtsuAoc.HoppieProviderBatc'), setting: 'BATC' },
-    { name: t('Settings.AtsuAoc.HoppieProviderSAI'), setting: 'SAI' },
+    { name: t('Settings.AtsuAoc.AcarsProviderNone'), setting: 'NONE' },
+    { name: t('Settings.AtsuAoc.AcarsProviderHoppie'), setting: 'HOPPIE' },
+    { name: t('Settings.AtsuAoc.AcarsProviderBatc'), setting: 'BATC' },
+    { name: t('Settings.AtsuAoc.AcarsProviderSAI'), setting: 'SAI' },
   ] as const;
 
   const { showModal } = useModals();
