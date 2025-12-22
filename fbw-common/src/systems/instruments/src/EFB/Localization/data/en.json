@@ -607,6 +607,7 @@
       "HoppieProviderNone": "None",
       "HoppieProviderHoppie": "Hoppie Network",
       "HoppieProviderBatc": "BATC",
+      "HoppieProviderSai": "SAI",
       "MetarSource": "METAR Source",
       "OptionalA32nxErrorReporting": "Optional A32NX Error Reporting",
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
