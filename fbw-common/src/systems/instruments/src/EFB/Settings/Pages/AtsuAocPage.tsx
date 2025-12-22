@@ -21,7 +21,7 @@ import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ButtonType, SettingItem, SettingsPage } from '../Settings';
-import { HoppieConnector, HoppieClient } from '../../../../../datalink/router/src';
+import { AcarsConnector, AcarsClient } from '../../../../../datalink/router/src';
 
 export const AtsuAocPage = () => {
   const [atisSource, setAtisSource] = usePersistentProperty('CONFIG_ATIS_SRC', 'FAA');
@@ -49,7 +49,7 @@ export const AtsuAocPage = () => {
         type: 'ping',
         packet: '',
       };
-      return HoppieClient.getData(body).then((resp) => {
+      return AcarsClient.getData(body).then((resp) => {
         if (resp.response === 'error {invalid logon code}') {
           reject(new Error(`Error: Unknown user ID: ${resp.response}`));
         } else {
@@ -75,17 +75,17 @@ export const AtsuAocPage = () => {
   const handleHoppieEnabled = (toggleValue: boolean) => {
     if (toggleValue) {
       setHoppieEnabled('ENABLED');
-      HoppieConnector.activateHoppie();
+      AcarsConnector.activateHoppie();
     } else {
       setHoppieEnabled('DISABLED');
-      HoppieConnector.deactivateHoppie();
+      AcarsConnector.deactivateHoppie();
     }
   };
 
   const handleAcarsProviderChange = (provider: NXDataStoreSettings['ACARS_PROVIDER']) => {
     setAcarsProvider(provider);
-    HoppieConnector.deactivateHoppie();
-    HoppieConnector.activateHoppie();
+    AcarsConnector.deactivateHoppie();
+    AcarsConnector.activateHoppie();
   };
 
   const atisSourceButtons: ButtonType[] = [
@@ -110,7 +110,7 @@ export const AtsuAocPage = () => {
     tafSourceButtons = tafSourceButtons.slice(1);
   }
 
-  const hoppieProviderButtons = [
+  const acarsProviderButtons = [
     { name: t('Settings.AtsuAoc.HoppieProviderNone'), setting: 'NONE' },
     { name: t('Settings.AtsuAoc.HoppieProviderHoppie'), setting: 'HOPPIE' },
     { name: t('Settings.AtsuAoc.HoppieProviderBatc'), setting: 'BATC' },
@@ -152,7 +152,7 @@ export const AtsuAocPage = () => {
 
   function handleWeatherSource(source: string, type: string) {
     if (type !== 'TAF') {
-      HoppieConnector.deactivateHoppie();
+      AcarsConnector.deactivateHoppie();
     }
 
     if (type === 'ATIS') {
@@ -164,7 +164,7 @@ export const AtsuAocPage = () => {
     }
 
     if (type !== 'TAF') {
-      HoppieConnector.activateHoppie();
+      AcarsConnector.activateHoppie();
     }
   }
 
@@ -229,7 +229,7 @@ export const AtsuAocPage = () => {
 
       <SettingItem name={t('Settings.AtsuAoc.HoppieProvider')}>
         <SelectGroup>
-          {hoppieProviderButtons.map((button) => (
+          {acarsProviderButtons.map((button) => (
             <SelectItem
               key={button.setting}
               onSelect={() => handleAcarsProviderChange(button.setting)}

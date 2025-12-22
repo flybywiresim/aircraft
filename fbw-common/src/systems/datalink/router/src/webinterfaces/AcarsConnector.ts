@@ -18,12 +18,12 @@ import {
   AtsuMessageComStatus,
   AtsuMessageSerializationFormat,
 } from '../../../common/src';
-import { HoppieClient } from './HoppieClient';
+import { AcarsClient } from './AcarsClient';
 
 /**
  * Defines the connector to the hoppies network
  */
-export class HoppieConnector {
+export class AcarsConnector {
   private static flightNumber: string = '';
 
   public static fansMode: FansMode = FansMode.FansNone;
@@ -49,7 +49,7 @@ export class HoppieConnector {
       packet: '',
     };
 
-    HoppieClient.getData(body)
+    AcarsClient.getData(body)
       .then((resp) => {
         if (resp.response !== 'error {invalid logon code}') {
           SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 1);
@@ -69,21 +69,21 @@ export class HoppieConnector {
 
   public static async connect(flightNo: string): Promise<AtsuStatusCodes> {
     if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1) {
-      HoppieConnector.flightNumber = flightNo;
+      AcarsConnector.flightNumber = flightNo;
       return AtsuStatusCodes.NoHoppieConnection;
     }
 
-    return HoppieConnector.isCallsignInUse(flightNo).then((code) => {
+    return AcarsConnector.isCallsignInUse(flightNo).then((code) => {
       if (code === AtsuStatusCodes.Ok) {
-        HoppieConnector.flightNumber = flightNo;
-        return HoppieConnector.poll().then(() => code);
+        AcarsConnector.flightNumber = flightNo;
+        return AcarsConnector.poll().then(() => code);
       }
       return code;
     });
   }
 
   public static disconnect(): AtsuStatusCodes {
-    HoppieConnector.flightNumber = '';
+    AcarsConnector.flightNumber = '';
     return AtsuStatusCodes.Ok;
   }
 
@@ -98,7 +98,7 @@ export class HoppieConnector {
       type: 'ping',
       packet: station,
     };
-    const text = await HoppieClient.getData(body).then((resp) => resp.response);
+    const text = await AcarsClient.getData(body).then((resp) => resp.response);
 
     if (text === 'error {callsign already in use}') {
       return AtsuStatusCodes.CallsignInUse;
@@ -116,21 +116,21 @@ export class HoppieConnector {
   }
 
   public static async isStationAvailable(station: string): Promise<AtsuStatusCodes> {
-    if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1 || HoppieConnector.flightNumber === '') {
+    if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1 || AcarsConnector.flightNumber === '') {
       return AtsuStatusCodes.NoHoppieConnection;
     }
 
-    if (station === HoppieConnector.flightNumber) {
+    if (station === AcarsConnector.flightNumber) {
       return AtsuStatusCodes.OwnCallsign;
     }
 
     const body = {
-      from: HoppieConnector.flightNumber,
+      from: AcarsConnector.flightNumber,
       to: 'SERVER', // Not needed as Hoppie ignores this field usually
       type: 'ping',
       packet: station,
     };
-    const text = await HoppieClient.getData(body).then((resp) => resp.response);
+    const text = await AcarsClient.getData(body).then((resp) => resp.response);
 
     if (text === 'error {callsign already in use}') {
       return AtsuStatusCodes.CallsignInUse;
@@ -152,17 +152,17 @@ export class HoppieConnector {
   }
 
   private static async sendMessage(message: AtsuMessage, type: string): Promise<AtsuStatusCodes> {
-    if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1 || HoppieConnector.flightNumber === '') {
+    if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1 || AcarsConnector.flightNumber === '') {
       return AtsuStatusCodes.NoHoppieConnection;
     }
 
     const body = {
-      from: HoppieConnector.flightNumber,
+      from: AcarsConnector.flightNumber,
       to: message.Station,
       type,
       packet: message.serialize(AtsuMessageSerializationFormat.Network),
     };
-    const text = await HoppieClient.getData(body)
+    const text = await AcarsClient.getData(body)
       .then((resp) => resp.response)
       .catch(() => 'proxy');
 
@@ -183,20 +183,20 @@ export class HoppieConnector {
 
   public static async sendTelexMessage(message: AtsuMessage, force: boolean): Promise<AtsuStatusCodes> {
     if (
-      HoppieConnector.flightNumber !== '' &&
+      AcarsConnector.flightNumber !== '' &&
       (force || SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1)
     ) {
-      return HoppieConnector.sendMessage(message, 'telex');
+      return AcarsConnector.sendMessage(message, 'telex');
     }
     return AtsuStatusCodes.NoHoppieConnection;
   }
 
   public static async sendCpdlcMessage(message: CpdlcMessage, force: boolean): Promise<AtsuStatusCodes> {
     if (
-      HoppieConnector.flightNumber !== '' &&
+      AcarsConnector.flightNumber !== '' &&
       (force || SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1)
     ) {
-      return HoppieConnector.sendMessage(message, 'cpdlc');
+      return AcarsConnector.sendMessage(message, 'cpdlc');
     }
     return AtsuStatusCodes.NoHoppieConnection;
   }
@@ -250,11 +250,11 @@ export class HoppieConnector {
       if ({}.hasOwnProperty.call(CpdlcMessagesUplink, ident)) {
         const data = CpdlcMessagesUplink[ident];
 
-        if (HoppieConnector.fansMode === FansMode.FansNone || data[1].FansModes.includes(HoppieConnector.fansMode)) {
+        if (AcarsConnector.fansMode === FansMode.FansNone || data[1].FansModes.includes(AcarsConnector.fansMode)) {
           let minDistance = 100000;
 
           data[0].forEach((template) => {
-            const distance = HoppieConnector.levenshteinDistance(template, clearedMessage, data[1].Content);
+            const distance = AcarsConnector.levenshteinDistance(template, clearedMessage, data[1].Content);
             if (minDistance > distance) minDistance = distance;
           });
 
@@ -321,17 +321,17 @@ export class HoppieConnector {
   public static async poll(): Promise<[AtsuStatusCodes, AtsuMessage[]]> {
     const retval: AtsuMessage[] = [];
 
-    if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1 || HoppieConnector.flightNumber === '') {
+    if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1 || AcarsConnector.flightNumber === '') {
       return [AtsuStatusCodes.NoHoppieConnection, retval];
     }
 
     try {
       const body = {
-        from: HoppieConnector.flightNumber,
-        to: HoppieConnector.flightNumber,
+        from: AcarsConnector.flightNumber,
+        to: AcarsConnector.flightNumber,
         type: 'poll',
       };
-      const text = await HoppieClient.getData(body)
+      const text = await AcarsClient.getData(body)
         .then((resp) => resp.response)
         .catch(() => 'proxy');
 
@@ -391,7 +391,7 @@ export class HoppieConnector {
               cpdlc.PreviousTransmissionId = parseInt(elements[3]);
             }
             cpdlc.Message = elements[5];
-            cpdlc.Content.push(HoppieConnector.cpdlcMessageClassification(cpdlc.Message));
+            cpdlc.Content.push(AcarsConnector.cpdlcMessageClassification(cpdlc.Message));
             if ((elements[4] as CpdlcMessageExpectedResponseType) !== cpdlc.Content[0]?.ExpectedResponse) {
               cpdlc.Content[0].ExpectedResponse = elements[4] as CpdlcMessageExpectedResponseType;
             }

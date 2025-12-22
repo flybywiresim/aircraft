@@ -2,6 +2,6 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 export * from './databus';
-export * from './webinterfaces/HoppieConnector';
-export * from './webinterfaces/HoppieClient';
+export * from './webinterfaces/AcarsConnector';
+export * from './webinterfaces/AcarsClient';
 export * from './Router';

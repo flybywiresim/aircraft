@@ -14,7 +14,7 @@ const PROVIDER_LOGON_CONFIG: Record<string, { legacyKey: string; missingMessage:
   HOPPIE: { legacyKey: 'CONFIG_HOPPIE_USERID', missingMessage: 'Missing Hoppie user ID' },
 };
 
-export class HoppieClient {
+export class AcarsClient {
   static async getData(dto: CpdlcMessageDto): Promise<Cpdlc> {
     const acarsProvider = NXDataStore.getSetting('ACARS_PROVIDER').get();
     const baseUrl = HOPPIE_PROVIDER_ENDPOINTS[acarsProvider];
@@ -25,7 +25,7 @@ export class HoppieClient {
     if (logonConfig) {
       const logon = NXDataStore.getLegacy(logonConfig.legacyKey, '');
       if (!logon) {
-        throw HoppieClient.generateNotAvailableException(logonConfig.missingMessage);
+        throw AcarsClient.generateNotAvailableException(logonConfig.missingMessage);
       }
       params.append('logon', logon);
     }
@@ -50,12 +50,12 @@ export class HoppieClient {
       })
       .then((data) => {
         if (!data) {
-          throw HoppieClient.generateNotAvailableException('Empty response');
+          throw AcarsClient.generateNotAvailableException('Empty response');
         }
         return { response: data };
       })
       .catch((err) => {
-        throw HoppieClient.generateNotAvailableException(err);
+        throw AcarsClient.generateNotAvailableException(err);
       });
   }
 

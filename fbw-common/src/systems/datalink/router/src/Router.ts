@@ -20,7 +20,7 @@ import {
 } from '../../common/src';
 import { MsfsConnector } from './msfs/MsfsConnector';
 import { Vdl } from './vhf/VDL';
-import { HoppieConnector } from './webinterfaces/HoppieConnector';
+import { AcarsConnector } from './webinterfaces/AcarsConnector';
 import { NXApiConnector } from './webinterfaces/NXApiConnector';
 import { DigitalInputs } from './DigitalInputs';
 import { DigitalOutputs } from './DigitalOutputs';
@@ -101,7 +101,7 @@ export class Router {
     synchronizedAoc: boolean,
   ) {
     NXDataStore.getSetting('ACARS_PROVIDER').sub((_) => {
-      HoppieConnector.activateHoppie();
+      AcarsConnector.activateHoppie();
     });
 
     this.digitalInputs = new DigitalInputs(this.bus, synchronizedAtc, synchronizedAoc);
@@ -183,8 +183,8 @@ export class Router {
       hf: DatalinkModeCode.None,
     });
 
-    if (HoppieConnector.pollInterval() <= this.waitedTimeHoppie) {
-      HoppieConnector.poll().then((retval) => {
+    if (AcarsConnector.pollInterval() <= this.waitedTimeHoppie) {
+      AcarsConnector.poll().then((retval) => {
         if (retval[0] === AtsuStatusCodes.Ok) {
           // delete all data in the first call (Hoppie stores old data)
           if (!this.firstPollHoppie && this.poweredUp) {
@@ -217,7 +217,7 @@ export class Router {
       if (code === AtsuStatusCodes.TelexDisabled) code = AtsuStatusCodes.Ok;
 
       if (code === AtsuStatusCodes.Ok) {
-        return HoppieConnector.connect(flightNo).then((code) => {
+        return AcarsConnector.connect(flightNo).then((code) => {
           if (code === AtsuStatusCodes.NoHoppieConnection) code = AtsuStatusCodes.Ok;
           return code;
         });
@@ -231,7 +231,7 @@ export class Router {
     let retvalNXApi = await NXApiConnector.disconnect();
     if (retvalNXApi === AtsuStatusCodes.TelexDisabled) retvalNXApi = AtsuStatusCodes.Ok;
 
-    let retvalHoppie = HoppieConnector.disconnect();
+    let retvalHoppie = AcarsConnector.disconnect();
     if (retvalHoppie === AtsuStatusCodes.NoHoppieConnection) retvalHoppie = AtsuStatusCodes.Ok;
 
     if (retvalNXApi !== AtsuStatusCodes.Ok) return retvalNXApi;
@@ -338,7 +338,7 @@ export class Router {
   }
 
   private async isStationAvailable(callsign: string): Promise<AtsuStatusCodes> {
-    return HoppieConnector.isStationAvailable(callsign);
+    return AcarsConnector.isStationAvailable(callsign);
   }
 
   private async sendMessage(message: AtsuMessage, force: boolean): Promise<AtsuStatusCodes> {
@@ -357,12 +357,12 @@ export class Router {
           if (message.Network === AtsuMessageNetwork.FBW) {
             NXApiConnector.sendTelexMessage(message).then((code) => resolve(code));
           } else {
-            HoppieConnector.sendTelexMessage(message, force).then((code) => resolve(code));
+            AcarsConnector.sendTelexMessage(message, force).then((code) => resolve(code));
           }
         } else if (message.Type === AtsuMessageType.DCL) {
-          HoppieConnector.sendTelexMessage(message, force).then((code) => resolve(code));
+          AcarsConnector.sendTelexMessage(message, force).then((code) => resolve(code));
         } else if (message.Type < AtsuMessageType.ATC) {
-          HoppieConnector.sendCpdlcMessage(message as CpdlcMessage, force).then((code) => resolve(code));
+          AcarsConnector.sendCpdlcMessage(message as CpdlcMessage, force).then((code) => resolve(code));
         } else {
           resolve(AtsuStatusCodes.UnknownMessage);
         }
