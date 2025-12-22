@@ -127,6 +127,7 @@ export class NXDataStore {
     const rawValue = JSON.stringify(value);
 
     NXDataStore.setRaw(key, rawValue);
+    this.listener.triggerToAllSubscribers('FBW_NXDATASTORE_UPDATE', key, rawValue);
   }
 
   /**
