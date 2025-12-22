@@ -29,7 +29,6 @@ export const AtsuAocPage = () => {
   const [tafSource, setTafSource] = usePersistentProperty('CONFIG_TAF_SRC', isMsfs2024() ? 'MSFS' : 'NOAA');
   const [telexEnabled, setTelexEnabled] = usePersistentProperty('CONFIG_ONLINE_FEATURES_STATUS', 'DISABLED');
 
-  const [hoppieEnabled, setHoppieEnabled] = usePersistentProperty('CONFIG_HOPPIE_ENABLED', 'DISABLED');
   const [hoppieUserId, setHoppieUserId] = usePersistentProperty('CONFIG_HOPPIE_USERID');
   const [saiLogonKey, setSaiLogonKey] = usePersistentProperty('CONFIG_SAI_LOGON_KEY');
 
@@ -72,20 +71,13 @@ export const AtsuAocPage = () => {
       });
   };
 
-  const handleHoppieEnabled = (toggleValue: boolean) => {
-    if (toggleValue) {
-      setHoppieEnabled('ENABLED');
-      AcarsConnector.activateHoppie();
-    } else {
-      setHoppieEnabled('DISABLED');
-      AcarsConnector.deactivateHoppie();
-    }
-  };
-
   const handleAcarsProviderChange = (provider: NXDataStoreSettings['ACARS_PROVIDER']) => {
     setAcarsProvider(provider);
-    AcarsConnector.deactivateHoppie();
-    AcarsConnector.activateHoppie();
+    if (provider == 'NONE') {
+      AcarsConnector.deactivateHoppie();
+    } else {
+      AcarsConnector.activateHoppie();
+    }
   };
 
   const atisSourceButtons: ButtonType[] = [
@@ -221,10 +213,6 @@ export const AtsuAocPage = () => {
 
       <SettingItem name={t('Settings.AtsuAoc.Telex')}>
         <Toggle value={telexEnabled === 'ENABLED'} onToggle={(toggleValue) => handleTelexToggle(toggleValue)} />
-      </SettingItem>
-
-      <SettingItem name={t('Settings.AtsuAoc.HoppieEnabled')}>
-        <Toggle value={hoppieEnabled === 'ENABLED'} onToggle={(toggleValue) => handleHoppieEnabled(toggleValue)} />
       </SettingItem>
 
       <SettingItem name={t('Settings.AtsuAoc.HoppieProvider')}>
