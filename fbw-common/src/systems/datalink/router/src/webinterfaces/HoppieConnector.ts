@@ -49,14 +49,18 @@ export class HoppieConnector {
       packet: '',
     };
 
-    HoppieClient.getData(body).then((resp) => {
-      if (resp.response !== 'error {invalid logon code}') {
-        SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 1);
-        console.log('Activated Hoppie ID');
-      } else {
-        console.log('Invalid Hoppie-ID set');
-      }
-    });
+    HoppieClient.getData(body)
+      .then((resp) => {
+        if (resp.response !== 'error {invalid logon code}') {
+          SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 1);
+          console.log('Activated Hoppie ID');
+        } else {
+          console.log('Invalid Hoppie-ID set');
+        }
+      })
+      .catch((e) => {
+        console.log(`Could not connect to ACARS`, e);
+      });
   }
 
   public static deactivateHoppie(): void {
@@ -323,7 +327,6 @@ export class HoppieConnector {
 
     try {
       const body = {
-        logon: NXDataStore.getLegacy('CONFIG_HOPPIE_USERID', ''),
         from: HoppieConnector.flightNumber,
         to: HoppieConnector.flightNumber,
         type: 'poll',

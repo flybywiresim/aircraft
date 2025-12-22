@@ -100,7 +100,9 @@ export class Router {
     synchronizedAtc: boolean,
     synchronizedAoc: boolean,
   ) {
-    HoppieConnector.activateHoppie();
+    NXDataStore.getSetting('ACARS_PROVIDER').sub((_) => {
+      HoppieConnector.activateHoppie();
+    });
 
     this.digitalInputs = new DigitalInputs(this.bus, synchronizedAtc, synchronizedAoc);
     this.digitalOutputs = new DigitalOutputs(this.bus, synchronizedAtc, synchronizedAoc);
