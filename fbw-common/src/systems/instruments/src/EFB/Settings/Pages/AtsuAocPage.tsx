@@ -106,7 +106,7 @@ export const AtsuAocPage = () => {
     { name: t('Settings.AtsuAoc.AcarsProviderNone'), setting: 'NONE' },
     { name: t('Settings.AtsuAoc.AcarsProviderHoppie'), setting: 'HOPPIE' },
     { name: t('Settings.AtsuAoc.AcarsProviderBatc'), setting: 'BATC' },
-    { name: t('Settings.AtsuAoc.AcarsProviderSAI'), setting: 'SAI' },
+    { name: t('Settings.AtsuAoc.AcarsProviderSai'), setting: 'SAI' },
   ] as const;
 
   const { showModal } = useModals();
