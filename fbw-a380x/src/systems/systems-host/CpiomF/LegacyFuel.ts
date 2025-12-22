@@ -537,18 +537,10 @@ export class LegacyFuel implements Instrument {
       this.feed4TankQty.get(),
     ];
 
-    console.log(`checking trigger conditions for tank ${tank1} and ${tank2}`);
-    console.log(`tank qty in feedTankQuantities: ${feedTankQuantities}`);
-
     const lowestQTY = Math.min(...feedTankQuantities);
 
-    console.log(`lowest qty: ${lowestQTY}`);
-
-    console.log(`transfer active for tank ${tank1}: ${this.trimTransfersActiveForFeedTank.get(tank1)}`);
-    console.log(`transfer active for tank ${tank2}: ${this.trimTransfersActiveForFeedTank.get(tank2)}`);
-
     return (
-      (feedTankQuantities[tank1] <= lowestQTY + 3 || feedTankQuantities[tank2] <= lowestQTY + 3) &&
+      (feedTankQuantities[tank1 - 1] <= lowestQTY + 3 || feedTankQuantities[tank2 - 1] <= lowestQTY + 3) &&
       (this.trimTransfersActiveForFeedTank.get(tank1) || this.trimTransfersActiveForFeedTank.get(tank2))
     );
   }
