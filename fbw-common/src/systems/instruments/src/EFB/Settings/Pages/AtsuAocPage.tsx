@@ -11,6 +11,7 @@ import {
   SentryConsentState,
   isMsfs2024,
   usePersistentSetting,
+  NXDataStoreSettings,
 } from '@flybywiresim/fbw-sdk';
 
 import { toast } from 'react-toastify';
@@ -81,7 +82,7 @@ export const AtsuAocPage = () => {
     }
   };
 
-  const handleAcarsProviderChange = (provider: 'NONE' | 'HOPPIE' | 'BATC' | 'SAI') => {
+  const handleAcarsProviderChange = (provider: NXDataStoreSettings['ACARS_PROVIDER']) => {
     setAcarsProvider(provider);
     HoppieConnector.deactivateHoppie();
     HoppieConnector.activateHoppie();
