@@ -1,4 +1,4 @@
-export class CpdlcMessageDto {
+export type CpdlcMessageDto = {
   from: string;
 
   to: string;
@@ -6,4 +6,4 @@ export class CpdlcMessageDto {
   type: string;
 
   packet?: string;
-}
+};

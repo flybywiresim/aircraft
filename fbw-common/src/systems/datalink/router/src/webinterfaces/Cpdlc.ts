@@ -1,3 +1,3 @@
-export class Cpdlc {
+export type Cpdlc = {
   response: string;
-}
+};
