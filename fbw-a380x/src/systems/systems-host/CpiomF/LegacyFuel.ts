@@ -369,28 +369,28 @@ export class LegacyFuel implements Instrument {
         this.toggleTrigger(21);
       }
       if (
-        (this.feed1TankQty.get() < 1974 && !this.triggerActive(24)) ||
+        (this.feed1TankQty.get() < 1974 && !this.triggerActive(24) && !this.triggerActive(34)) ||
         (this.feed1TankQty.get() >= 1975 && this.triggerActive(24))
       ) {
         this.toggleTrigger(24);
         this.trimTransfersActiveForFeedTank.set(1, true);
       }
       if (
-        (this.feed2TankQty.get() < 1974 && !this.triggerActive(25)) ||
+        (this.feed2TankQty.get() < 1974 && !this.triggerActive(25) && !this.triggerActive(34)) ||
         (this.feed2TankQty.get() >= 1975 && this.triggerActive(25))
       ) {
         this.toggleTrigger(25);
         this.trimTransfersActiveForFeedTank.set(2, true);
       }
       if (
-        (this.feed3TankQty.get() < 1974 && !this.triggerActive(26)) ||
+        (this.feed3TankQty.get() < 1974 && !this.triggerActive(26) && !this.triggerActive(34)) ||
         (this.feed3TankQty.get() >= 1975 && this.triggerActive(26))
       ) {
         this.toggleTrigger(26);
         this.trimTransfersActiveForFeedTank.set(3, true);
       }
       if (
-        (this.feed4TankQty.get() < 1974 && !this.triggerActive(27)) ||
+        (this.feed4TankQty.get() < 1974 && !this.triggerActive(27) && !this.triggerActive(34)) ||
         (this.feed4TankQty.get() >= 1975 && this.triggerActive(27))
       ) {
         this.toggleTrigger(27);
@@ -493,7 +493,7 @@ export class LegacyFuel implements Instrument {
         this.toggleTrigger(42);
       }
       if (
-        (this.cgPercent.get() > cgTargetStart && !this.triggerActive(43)) ||
+        (this.cgPercent.get() > cgTargetStart && !this.triggerActive(43) && !this.triggerActive(34)) ||
         (this.cgPercent.get() <= cgTargetStart - 0.1 && this.triggerActive(43))
       ) {
         this.toggleTrigger(43);
