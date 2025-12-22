@@ -25,7 +25,7 @@ enum ValveState {
 
 /* TODO: remove this file after proper FQMS is implemented in Rust */
 export class LegacyFuel implements Instrument {
-  private static NUMBER_OF_TRIGGERS = 46;
+  private static NUMBER_OF_TRIGGERS = 47;
   private static NUMBER_OF_JUNCTIONS = 17;
   private static NUMBER_OF_VALVES = 59;
 
@@ -158,6 +158,7 @@ export class LegacyFuel implements Instrument {
       // both mid and inner tanks are empty
 
       this.setJunctionOption(10, 3);
+      this.toggleTrigger(47);
     } else if (this.rightInnerTankQty.get() >= 0.1 || this.leftInnerTankQty.get() >= 0.1) {
       // inner tanks arent empty
 
