@@ -153,8 +153,8 @@ export class LegacyFuel implements Instrument {
     }
 
     if (
-      (this.trimTankQty.get() < 0.1 && !this.triggerActive(32)) ||
-      (this.trimTankQty.get() >= 1 && this.triggerActive(32))
+      (this.trimTankQty.get() < 0.1 && !this.triggerActive(34)) ||
+      (this.trimTankQty.get() >= 1 && this.triggerActive(34))
     ) {
       this.toggleTrigger(34);
       for (let i = 1; i < 5; i++) {
@@ -537,7 +537,15 @@ export class LegacyFuel implements Instrument {
       this.feed4TankQty.get(),
     ];
 
+    console.log(`checking trigger conditions for tank ${tank1} and ${tank2}`);
+    console.log(`tank qty in feedTankQuantities: ${feedTankQuantities}`);
+
     const lowestQTY = Math.min(...feedTankQuantities);
+
+    console.log(`lowest qty: ${lowestQTY}`);
+
+    console.log(`transfer active for tank ${tank1}: ${this.trimTransfersActiveForFeedTank.get(tank1)}`);
+    console.log(`transfer active for tank ${tank2}: ${this.trimTransfersActiveForFeedTank.get(tank2)}`);
 
     return (
       (feedTankQuantities[tank1] <= lowestQTY + 3 || feedTankQuantities[tank2] <= lowestQTY + 3) &&
