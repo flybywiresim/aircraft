@@ -317,29 +317,20 @@ export class PseudoWaypoints implements GuidanceComponent {
         );
         const totalLegPathLength = inboundTransLength + legPartLength + outboundTransLength;
 
-        const distanceFromEndOfLeg = distanceFromEnd - accumulator;
+        const distanceFromEndOfLeg = Math.min(distanceFromEnd - accumulator, totalLegPathLength);
 
         let lla: Coordinates | undefined;
-        if (distanceFromEndOfLeg > totalLegPathLength) {
-          // PWP in disco
-          if (VnavConfig.DEBUG_PROFILE) {
-            console.log(
-              `[FMS/PWP] Placed PWP '${debugString}' in discontinuity before leg #${i} (${distanceFromEndOfLeg.toFixed(2)}nm before end)`,
-            );
-          }
-
-          lla = geometryLeg.getPseudoWaypointLocation(distanceFromEndOfLeg);
-        } else if (distanceFromEndOfLeg < outboundTransLength) {
+        if (distanceFromEndOfLeg < outboundTransLength) {
           // Point is in outbound transition segment
-          const distanceBeforeTerminator = distanceFromEndOfLeg;
+          const distanceBeforeTerminator = outboundTransLength + distanceFromEndOfLeg;
 
           if (VnavConfig.DEBUG_PROFILE) {
             console.log(
-              `[FMS/PWP] Placed PWP '${debugString}' on leg #${i} outbound segment (${distanceFromEndOfLeg.toFixed(2)}nm before end)`,
+              `[FMS/PWP] Placed PWP '${debugString}' on leg #${i} outbound segment (${distanceBeforeTerminator.toFixed(2)}nm before end)`,
             );
           }
 
-          lla = outboundTrans.getPseudoWaypointLocation(outboundTransLength + distanceBeforeTerminator);
+          lla = outboundTrans.getPseudoWaypointLocation(distanceBeforeTerminator);
         } else if (
           distanceFromEndOfLeg >= outboundTransLength &&
           distanceFromEndOfLeg <= outboundTransLength + legPartLength
@@ -355,7 +346,7 @@ export class PseudoWaypoints implements GuidanceComponent {
 
           lla = geometryLeg.getPseudoWaypointLocation(distanceBeforeTerminator);
         } else {
-          // Point is in inbound transition segment
+          // Point is in inbound transition segment or in the discontinuity before this leg
           const distanceBeforeTerminator = distanceFromEndOfLeg - outboundTransLength - legPartLength;
 
           if (VnavConfig.DEBUG_PROFILE) {
