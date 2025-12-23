@@ -1,6 +1,6 @@
 # A380X Project Files
 
-The project directory is structured as follows:
+The project directory  is structured as follows:
 
 ```text
 - docs            <Specific docs for the project>
