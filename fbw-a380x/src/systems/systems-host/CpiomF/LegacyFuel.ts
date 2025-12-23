@@ -141,7 +141,7 @@ export class LegacyFuel implements Instrument {
     ) {
       this.toggleTrigger(45);
     }
-     if (
+    if (
       (this.rightOuterTankQty.get() < 0.1 && !this.triggerActive(46)) ||
       (this.rightOuterTankQty.get() >= 1 && this.triggerActive(46))
     ) {
@@ -166,7 +166,7 @@ export class LegacyFuel implements Instrument {
 
       this.setJunctionOption(10, 2);
     }
-    
+
     if (
       (this.trimTankQty.get() < 0.1 && !this.triggerActive(34)) ||
       (this.trimTankQty.get() >= 1 && this.triggerActive(34))
