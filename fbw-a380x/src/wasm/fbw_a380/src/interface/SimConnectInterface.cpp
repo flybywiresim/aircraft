@@ -611,8 +611,6 @@ bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM TRIGGER STATUS:42", "NUMBER");
   result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM TRIGGER STATUS:43", "NUMBER");
   result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM TRIGGER STATUS:44", "NUMBER");
-  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM TRIGGER STATUS:45", "NUMBER");
-  result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "FUELSYSTEM TRIGGER STATUS:46", "NUMBER");
 
   return result;
 }
