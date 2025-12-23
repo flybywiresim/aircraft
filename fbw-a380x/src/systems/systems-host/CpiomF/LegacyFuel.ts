@@ -141,24 +141,23 @@ export class LegacyFuel implements Instrument {
     ) {
       this.toggleTrigger(45);
     }
-  
-    if (
+     if (
       (this.rightOuterTankQty.get() < 0.1 && !this.triggerActive(46)) ||
       (this.rightOuterTankQty.get() >= 1 && this.triggerActive(46))
     ) {
       this.toggleTrigger(46);
     }
-    
-  if (
+
+    if (
       this.rightInnerTankQty.get() < 0.1 &&
       this.leftInnerTankQty.get() < 0.1 &&
       this.rightMidTankQty.get() < 0.1 &&
       this.leftMidTankQty.get() < 0.1
-    )  {
+    ) {
       // both mid and inner tanks are empty
 
       this.setJunctionOption(10, 3);
-     } else if (this.rightInnerTankQty.get() >= 0.1 || this.leftInnerTankQty.get() >= 0.1) {
+    } else if (this.rightInnerTankQty.get() >= 0.1 || this.leftInnerTankQty.get() >= 0.1) {
       // inner tanks arent empty
 
       this.setJunctionOption(10, 1);
@@ -166,8 +165,8 @@ export class LegacyFuel implements Instrument {
       // mid tanks arent empty but inner tanks are
 
       this.setJunctionOption(10, 2);
-     }
-   
+    }
+    
     if (
       (this.trimTankQty.get() < 0.1 && !this.triggerActive(34)) ||
       (this.trimTankQty.get() >= 1 && this.triggerActive(34))
@@ -178,7 +177,6 @@ export class LegacyFuel implements Instrument {
       }
     }
   }
-  
   public onUpdate(): void {
     const dt = this.sysHost.deltaTime;
     const totalDtSinceLastUpdate = this.throttler.canUpdate(dt);
