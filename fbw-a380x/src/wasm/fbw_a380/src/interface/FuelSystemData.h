@@ -334,6 +334,4 @@ struct FuelSystemData {
   double trigger_42_outer_tanks_transfer_to_feed_tank4_end;
   double trigger_43_cg_control_transfer_start;
   double trigger_44_cg_control_transfer_end;
-  double trigger_45_outer_tank_left_empty;
-  double trigger_46_outer_tank_right_empty;
 };
