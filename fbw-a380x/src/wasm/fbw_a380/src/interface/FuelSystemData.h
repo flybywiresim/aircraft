@@ -336,5 +336,4 @@ struct FuelSystemData {
   double trigger_44_cg_control_transfer_end;
   double trigger_45_outer_tank_left_empty;
   double trigger_46_outer_tank_right_empty;
-  double trigger_47_inner_and_mid_tanks_empty;
 };
