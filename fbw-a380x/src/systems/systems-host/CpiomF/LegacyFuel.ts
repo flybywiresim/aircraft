@@ -157,10 +157,8 @@ export class LegacyFuel implements Instrument {
     )  {
       // both mid and inner tanks are empty
 
-      this.setJunctionOption(10, 3)    
-      if (!this.triggerActive(47))
-    { (this.toggleTrigger(47));
-    } else if (this.rightInnerTankQty.get() >= 0.1 || this.leftInnerTankQty.get() >= 0.1) {
+      this.setJunctionOption(10, 3);
+     } else if (this.rightInnerTankQty.get() >= 0.1 || this.leftInnerTankQty.get() >= 0.1) {
       // inner tanks arent empty
 
       this.setJunctionOption(10, 1);
@@ -169,8 +167,7 @@ export class LegacyFuel implements Instrument {
 
       this.setJunctionOption(10, 2);
      }
-   }
-
+   
     if (
       (this.trimTankQty.get() < 0.1 && !this.triggerActive(34)) ||
       (this.trimTankQty.get() >= 1 && this.triggerActive(34))
@@ -181,7 +178,7 @@ export class LegacyFuel implements Instrument {
       }
     }
   }
-
+  
   public onUpdate(): void {
     const dt = this.sysHost.deltaTime;
     const totalDtSinceLastUpdate = this.throttler.canUpdate(dt);
@@ -387,6 +384,14 @@ export class LegacyFuel implements Instrument {
       ) {
         this.toggleTrigger(21);
       }
+      if (
+      this.rightInnerTankQty.get() < 0.1 &&
+      this.leftInnerTankQty.get() < 0.1 &&
+      this.rightMidTankQty.get() < 0.1 &&
+      this.leftMidTankQty.get() < 0.1 &&
+      !this.triggerActive(47))
+    { this.toggleTrigger(47);
+    }
       if (
         (this.feed1TankQty.get() < 1974 && !this.triggerActive(24) && !this.triggerActive(34)) ||
         (this.feed1TankQty.get() >= 1975 && this.triggerActive(24))
