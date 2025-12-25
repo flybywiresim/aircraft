@@ -17,6 +17,8 @@ import { FwsPfdSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/provid
 import { VorBusPublisher } from '../MsfsAvionicsCommon/providers/VorBusPublisher';
 import { FcdcSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FcdcPublisher';
 import { SfccSimVarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/SfccPublisher';
+import { FGDataPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
+
 class A380X_HUD extends BaseInstrument {
   private readonly bus = new ArincEventBus();
 
@@ -60,6 +62,8 @@ class A380X_HUD extends BaseInstrument {
 
   private readonly vorBusPublisher = new VorBusPublisher(this.bus);
 
+  private readonly fgDataPublisher = new FGDataPublisher(this.bus);
+
   constructor() {
     super();
 
@@ -86,6 +90,7 @@ class A380X_HUD extends BaseInstrument {
     this.backplane.addInstrument('HudProvider', this.hudProvider);
     this.backplane.addPublisher('HUDSymbolsPublisher', this.symbolPublisher);
     this.backplane.addPublisher('vor', this.vorBusPublisher);
+    this.backplane.addPublisher('FgDataPublisher', this.fgDataPublisher);
   }
 
   get templateID(): string {

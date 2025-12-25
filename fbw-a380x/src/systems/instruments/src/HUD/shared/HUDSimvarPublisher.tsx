@@ -55,7 +55,6 @@ export interface HUDSimvars {
   fd1Active: boolean;
   fd2Active: boolean;
   athrStatus: number;
-  athrModeMessage: number;
   machPreselVal: number;
   speedPreselVal: number;
   mda: number;
@@ -248,7 +247,6 @@ export enum HUDVars {
   fd1Active = 'AUTOPILOT FLIGHT DIRECTOR ACTIVE:1',
   fd2Active = 'AUTOPILOT FLIGHT DIRECTOR ACTIVE:2',
   athrStatus = 'L:A32NX_AUTOTHRUST_STATUS',
-  athrModeMessage = 'L:A32NX_AUTOTHRUST_MODE_MESSAGE',
   machPreselVal = 'L:A32NX_MachPreselVal',
   speedPreselVal = 'L:A32NX_SpeedPreselVal',
   mda = 'L:AIRLINER_MINIMUM_DESCENT_ALTITUDE',
@@ -441,7 +439,6 @@ export class HUDSimvarPublisher extends UpdatableSimVarPublisher<HUDSimvars> {
     ['fd1Active', { name: HUDVars.fd1Active, type: SimVarValueType.Bool }],
     ['fd2Active', { name: HUDVars.fd2Active, type: SimVarValueType.Bool }],
     ['athrStatus', { name: HUDVars.athrStatus, type: SimVarValueType.Number }],
-    ['athrModeMessage', { name: HUDVars.athrModeMessage, type: SimVarValueType.Number }],
     ['machPreselVal', { name: HUDVars.machPreselVal, type: SimVarValueType.Number }],
     ['speedPreselVal', { name: HUDVars.speedPreselVal, type: SimVarValueType.Knots }],
     ['mda', { name: HUDVars.mda, type: SimVarValueType.Feet }],

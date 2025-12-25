@@ -1,3 +1,5 @@
+@import "../MsfsAvionicsCommon/animations";
+
 @keyframes blinking {
   0% {opacity: 0;}
   50% {opacity: 0;}
@@ -11,15 +13,6 @@
     50% {stroke: scale-color($color, $lightness: -50%);}
     51% {stroke: scale-color($color, $lightness: 50%);}
     100% {stroke: scale-color($color, $lightness: 50%);}
-  }
-  animation-name: $name;
-}
-@mixin GenericPulsingFill($color, $name) {
-  @keyframes #{$name} {
-    0% {fill: scale-color($color, $lightness: -30%);}
-    50% {fill: scale-color($color, $lightness: -30%);}
-    51% {fill: scale-color($color, $lightness: 30%);}
-    100% {fill: scale-color($color, $lightness: 30%);}
   }
   animation-name: $name;
 }
