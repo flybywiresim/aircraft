@@ -213,28 +213,28 @@ export class LegacyFuel implements Instrument {
       const cgTargetStop = cgTargetStart - 1;
 
       if (
-        (this.feed1TankQty.get() < 6436 && !this.triggerActive(1)) ||
+        (this.feed1TankQty.get() < 6436 && !this.triggerActive(1) && !this.innerAndMidsEmpty()) ||
         (this.feed1TankQty.get() >= 6437 && this.triggerActive(1))
       ) {
         this.toggleTrigger(1);
         this.innerAndMidTransfersActiveForFeedTank.set(1, true);
       }
       if (
-        (this.feed2TankQty.get() < 6857 && !this.triggerActive(2)) ||
+        (this.feed2TankQty.get() < 6857 && !this.triggerActive(2) && !this.innerAndMidsEmpty()) ||
         (this.feed2TankQty.get() >= 6858 && this.triggerActive(2))
       ) {
         this.toggleTrigger(2);
         this.innerAndMidTransfersActiveForFeedTank.set(2, true);
       }
       if (
-        (this.feed3TankQty.get() < 6857 && !this.triggerActive(3)) ||
+        (this.feed3TankQty.get() < 6857 && !this.triggerActive(3) && !this.innerAndMidsEmpty()) ||
         (this.feed3TankQty.get() >= 6858 && this.triggerActive(3))
       ) {
         this.toggleTrigger(3);
         this.innerAndMidTransfersActiveForFeedTank.set(3, true);
       }
       if (
-        (this.feed4TankQty.get() < 6436 && !this.triggerActive(4)) ||
+        (this.feed4TankQty.get() < 6436 && !this.triggerActive(4) && !this.innerAndMidsEmpty()) ||
         (this.feed4TankQty.get() >= 6437 && this.triggerActive(4))
       ) {
         this.toggleTrigger(4);
@@ -579,12 +579,16 @@ export class LegacyFuel implements Instrument {
     return this.triggerStates.get(index).get();
   }
 
-  private triggerActiveAny(...indices: number[]): boolean {
+  private triggerActiveAll(...indices: number[]): boolean {
     for (let i = 0, triggerIndex; (triggerIndex = indices[i]); i++) {
-      if (this.triggerActive(triggerIndex)) {
-        return true;
+      if (!this.triggerActive(triggerIndex)) {
+        return false;
       }
     }
-    return false;
+    return true;
+  }
+
+  private innerAndMidsEmpty(): boolean {
+    return this.triggerActiveAll(11, 12, 22, 23);
   }
 }
