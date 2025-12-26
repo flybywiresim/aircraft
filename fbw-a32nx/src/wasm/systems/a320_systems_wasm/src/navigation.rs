@@ -1,4 +1,5 @@
 use std::error::Error;
+use systems::payload::BoardingRate;
 use systems::shared::to_bool;
 use systems_wasm::aspects::{ExecuteOn, MsfsAspectBuilder};
 use systems_wasm::Variable;
@@ -42,6 +43,25 @@ pub(super) fn navigation(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn 
             .into()
         },
         Variable::aspect("ADIRS_IR_INSTANT_ALIGN"),
+    );
+
+    builder.map_many(
+        ExecuteOn::PreTick,
+        vec![
+            Variable::named("BOARDING_STARTED_BY_USR"),
+            Variable::named("BOARDING_RATE"),
+        ],
+        |values| {
+            let boarding_rate = BoardingRate::from(values[1]);
+            let boarding_started_by_user = to_bool(values[0]);
+
+            match boarding_rate {
+                BoardingRate::Instant | BoardingRate::Fast => boarding_started_by_user,
+                _ => false,
+            }
+            .into()
+        },
+        Variable::aspect("ADIRS_IR_EXCESS_MOTION_INHIBIT"),
     );
 
     Ok(())
