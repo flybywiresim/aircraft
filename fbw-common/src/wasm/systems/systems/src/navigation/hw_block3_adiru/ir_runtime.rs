@@ -321,8 +321,14 @@ impl InertialReferenceRuntime {
             IrOperationMode::RealignDecision
                 if mode_selector == ModeSelectorPosition::Navigation =>
             {
-                self.mode_timer = Self::REALIGN_DURATION;
-                IrOperationMode::Realign
+                if self.measurement_inputs.ground_speed
+                    < Velocity::new::<knot>(Self::MAX_REALIGN_VELOCITY_KNOT)
+                {
+                    self.mode_timer = Self::REALIGN_DURATION;
+                    IrOperationMode::Realign
+                } else {
+                    IrOperationMode::Navigation
+                }
             }
             IrOperationMode::RealignDecision if self.mode_timer == Duration::ZERO => {
                 self.mode_timer = Self::POWER_OFF_DURATION;
