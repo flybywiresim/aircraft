@@ -1,7 +1,6 @@
 use std::ops::{Index, IndexMut};
 use std::time::Duration;
 
-use systems::accept_iterable;
 use systems::navigation::adirs::{
     AdrDiscreteInputs, AirDataReferenceDiscreteOutput, InertialReferenceDiscreteOutput,
     IrDiscreteInputs, ModeSelectorPosition,
@@ -156,6 +155,10 @@ pub(crate) struct A320AdiruElectricalHarness {
     adr_fault_warn: bool,
     ir_fault_warn: bool,
     ir_align_discrete: bool,
+
+    // Simulator inputs
+    ir_fast_align_mode_id: VariableIdentifier,
+    ir_instant_align_id: VariableIdentifier,
 }
 impl A320AdiruElectricalHarness {
     const RELAY_OPENING_TIME_DELAY: Duration = Duration::from_secs(300);
@@ -224,6 +227,9 @@ impl A320AdiruElectricalHarness {
             adr_fault_warn: false,
             ir_fault_warn: false,
             ir_align_discrete: false,
+
+            ir_fast_align_mode_id: context.get_identifier("ADIRS_IR_FAST_ALIGN_MODE".to_owned()),
+            ir_instant_align_id: context.get_identifier("ADIRS_IR_INSTANT_ALIGN".to_owned()),
         }
     }
 
@@ -325,7 +331,11 @@ impl SimulationElement for A320AdiruElectricalHarness {
         self.adr_discrete_input.adr_off_command = reader.read(&self.adr_off_command_id);
 
         self.att_hdg_swtg_knob_position = reader.read(&self.att_hdg_swtg_knob_id);
-        self.air_data_swtg_knob_position = reader.read(&self.air_data_swtg_knob_id)
+        self.air_data_swtg_knob_position = reader.read(&self.air_data_swtg_knob_id);
+
+        self.ir_discrete_input.simulator_fast_align_mode_active =
+            reader.read(&self.ir_fast_align_mode_id);
+        self.ir_discrete_input.simulator_instant_align = reader.read(&self.ir_instant_align_id);
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {

@@ -300,6 +300,9 @@ pub struct IrDiscreteInputs {
     pub auto_dads_select: bool,
     pub manual_dads_select: bool,
     pub gps_priority_select: bool,
+
+    pub simulator_instant_align: bool,
+    pub simulator_fast_align_mode_active: bool,
 }
 
 #[derive(Default)]

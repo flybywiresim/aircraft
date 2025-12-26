@@ -91,10 +91,10 @@ impl InertialReferenceRuntime {
     const EXCESS_MOTION_INHIBIT_TIME: Duration = Duration::from_secs(2);
     const IR_FAULT_FLASH_DURATION: Duration = Duration::from_millis(50);
     const COARSE_ALIGN_DURATION: Duration = Duration::from_secs(30);
-    const COARSE_ALIGN_QUICK_DURATION: Duration = Duration::from_secs(2);
+    const COARSE_ALIGN_QUICK_DURATION: Duration = Duration::from_secs(10);
+    const FINE_ALIGN_QUICK_DURATION: Duration = Duration::from_secs(80);
     const HDG_ALIGN_AVAIL_DURATION: Duration = Duration::from_secs(270);
     const ERECT_ATT_DURATION: Duration = Duration::from_secs(30);
-    const ERECT_ATT_QUICK_DURATION: Duration = Duration::from_secs(2);
     const REALIGN_DECISION_TIME: Duration = Duration::from_secs(5);
     const REALIGN_DURATION: Duration = Duration::from_secs(30);
     const POWER_OFF_DURATION: Duration = Duration::from_secs(5);
@@ -163,7 +163,19 @@ impl InertialReferenceRuntime {
             return;
         }
 
-        // If the ADR OFF P/B has been pushed, toggle between OFF and ON status. When the power is reset through the
+        self.measurement_inputs = measurement_inputs;
+
+        self.update_off_status(discrete_inputs);
+
+        self.update_state(context, discrete_inputs);
+
+        self.update_adr_selection(discrete_inputs, adr_own, adr_a, adr_b);
+
+        self.update_wind_velocity(context);
+    }
+
+    fn update_off_status(&mut self, discrete_inputs: &IrDiscreteInputs) {
+        // If the IR OFF P/B has been pushed, toggle between OFF and ON status. When the power is reset through the
         // mode selector knob, the off status is reset.
         let pulsed_on_off_command = self
             .on_off_command_pulse_node
@@ -178,14 +190,6 @@ impl InertialReferenceRuntime {
         {
             self.output_inhibited = false;
         }
-
-        self.measurement_inputs = measurement_inputs;
-
-        self.update_state(context, discrete_inputs);
-
-        self.update_adr_selection(discrete_inputs, adr_own, adr_a, adr_b);
-
-        self.update_wind_velocity(context);
     }
 
     fn update_state(&mut self, context: &UpdateContext, discrete_inputs: &IrDiscreteInputs) {
@@ -194,21 +198,31 @@ impl InertialReferenceRuntime {
             discrete_inputs.mode_select_m2,
         ));
 
-        if let Some(new_timer) = self.mode_timer.checked_sub(context.delta()) {
-            self.mode_timer = new_timer;
+        self.mode_timer = self.mode_timer.saturating_sub(context.delta());
+
+        let coarse_align_duration = if !discrete_inputs.simulator_fast_align_mode_active {
+            Self::COARSE_ALIGN_DURATION
         } else {
-            self.mode_timer = Duration::ZERO;
-        }
+            Self::COARSE_ALIGN_QUICK_DURATION
+        };
+
+        let fine_align_duration = if !discrete_inputs.simulator_fast_align_mode_active {
+            self.total_alignment_duration_from_configuration(
+                discrete_inputs.simulator_fast_align_mode_active,
+            )
+        } else {
+            Self::FINE_ALIGN_QUICK_DURATION
+        };
 
         self.active_mode = match self.active_mode {
             IrOperationMode::Off if mode_selector != ModeSelectorPosition::Off => {
-                self.mode_timer = Self::COARSE_ALIGN_DURATION;
+                self.mode_timer = coarse_align_duration;
                 IrOperationMode::AlignCoarse
             }
             IrOperationMode::Off => IrOperationMode::Off,
 
             IrOperationMode::PowerOff if mode_selector != ModeSelectorPosition::Off => {
-                self.mode_timer = Self::COARSE_ALIGN_DURATION;
+                self.mode_timer = coarse_align_duration;
                 IrOperationMode::AlignCoarse
             }
             IrOperationMode::PowerOff
@@ -229,12 +243,18 @@ impl InertialReferenceRuntime {
                 IrOperationMode::PowerOff
             }
 
+            // Instant align
+            IrOperationMode::AlignCoarse | IrOperationMode::AlignFine
+                if discrete_inputs.simulator_instant_align =>
+            {
+                IrOperationMode::Navigation
+            }
+
             IrOperationMode::AlignCoarse
                 if self.mode_timer == Duration::ZERO
                     && mode_selector == ModeSelectorPosition::Navigation =>
             {
-                self.mode_timer =
-                    Self::total_alignment_duration_from_configuration(Angle::new::<degree>(0.));
+                self.mode_timer = fine_align_duration;
                 IrOperationMode::AlignFine
             }
             IrOperationMode::AlignCoarse if mode_selector == ModeSelectorPosition::Attitude => {
@@ -376,6 +396,7 @@ impl InertialReferenceRuntime {
         self.set_non_attitude_values(bus_outputs);
         self.set_heading_values(bus_outputs);
         self.set_wind_velocity(bus_outputs);
+        self.set_baro_inertial_values(bus_outputs);
     }
 
     //fn update_latitude(&mut self, simulator_data: &IrSimulatorData) {
@@ -452,9 +473,9 @@ impl InertialReferenceRuntime {
         // Heading is available after 4.5min in the align fine submode (30s in the coarse align submode not included)
 
         let heading_available = (self.active_mode == IrOperationMode::AlignFine
-            && (Self::total_alignment_duration_from_configuration(
-                self.measurement_inputs.latitude,
-            ) - self.mode_timer)
+            && self
+                .total_alignment_duration_from_configuration(false)
+                .saturating_sub(self.mode_timer)
                 > Self::HDG_ALIGN_AVAIL_DURATION)
             || self.active_mode == IrOperationMode::Navigation;
 
@@ -666,14 +687,32 @@ impl InertialReferenceRuntime {
             ssm,
         );
 
-        bus.inertial_vertical_speed
-            .set(self.measurement_inputs.vertical_speed, ssm);
         bus.ground_speed
             .set(self.measurement_inputs.ground_speed, ssm);
 
         bus.ppos_latitude.set(self.measurement_inputs.latitude, ssm);
         bus.ppos_longitude
             .set(self.measurement_inputs.longitude, ssm);
+    }
+
+    fn set_baro_inertial_values(&self, bus: &mut InertialReferenceBusOutputs) {
+        let baro_inertial_loop_available = self.selected_altitude.is_normal_operation()
+            && ((self.active_mode == IrOperationMode::AlignFine
+                && self
+                    .total_alignment_duration_from_configuration(false)
+                    .saturating_sub(self.mode_timer)
+                    > Self::HDG_ALIGN_AVAIL_DURATION)
+                || self.active_mode == IrOperationMode::Navigation
+                || self.active_mode == IrOperationMode::Attitude);
+
+        let ssm = if baro_inertial_loop_available {
+            SignStatus::NormalOperation
+        } else {
+            SignStatus::NoComputedData
+        };
+
+        bus.inertial_vertical_speed
+            .set(self.measurement_inputs.vertical_speed, ssm);
     }
 
     fn set_discrete_words(&self, bus_outputs: &mut InertialReferenceBusOutputs) {
@@ -746,14 +785,18 @@ impl InertialReferenceRuntime {
         // TODO tests!
     }
 
-    fn total_alignment_duration_from_configuration(latitude: Angle) -> Duration {
-        let abs_lat = latitude.get::<degree>().abs();
+    fn total_alignment_duration_from_configuration(&self, fast_align_active: bool) -> Duration {
+        if fast_align_active {
+            return Self::FINE_ALIGN_QUICK_DURATION;
+        }
+
+        let abs_lat = self.measurement_inputs.latitude.get::<degree>().abs();
         Duration::from_secs_f64(if abs_lat > 73. {
             1020.
         } else if abs_lat > 60. {
             600.
         } else {
-            (300. / latitude.get::<radian>().cos()).abs()
+            (300. / self.measurement_inputs.latitude.get::<radian>().cos()).abs()
         })
     }
 

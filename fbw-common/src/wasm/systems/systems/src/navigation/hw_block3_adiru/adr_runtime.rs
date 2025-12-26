@@ -1,6 +1,9 @@
 use crate::auto_flight::FlightControlUnitBusOutput;
-use crate::navigation::adirs::{AdrDiscreteInputs, AdrDiscreteOutputs, AirDataReferenceBusOutputs};
+use crate::navigation::adirs::{
+    AdrDiscreteInputs, AdrDiscreteOutputs, AirDataReferenceBusOutputs, ModeSelectorPosition,
+};
 use crate::navigation::hw_block3_adiru::simulator_data::AdrSimulatorData;
+use crate::shared::derivative::DerivativeNode;
 use crate::shared::logic_nodes::{HysteresisNode, PulseNode};
 use crate::shared::InternationalStandardAtmosphere;
 use crate::{
@@ -15,7 +18,8 @@ use bitflags::bitflags;
 use std::time::Duration;
 use uom::si::angle::degree;
 use uom::si::ratio::ratio;
-use uom::si::{f64::*, length::foot, pressure::hectopascal, time::second, velocity::knot};
+use uom::si::velocity::foot_per_minute;
+use uom::si::{f64::*, length::foot, pressure::hectopascal, velocity::knot};
 
 pub struct AirDataReferenceRuntime {
     /// If non-Duration::ZERO, the remaining time the runtime needs to initialize itself. Otherwise
@@ -30,6 +34,9 @@ pub struct AirDataReferenceRuntime {
 
     /// This filtering should be done in the ADM
     static_pressure_filter: LowPassFilter<Pressure>,
+
+    // V/S Computation
+    vertical_speed_derivative: DerivativeNode<f64>,
     vertical_speed_filter: LowPassFilter<Velocity>,
 
     // Baro Correction Values
@@ -91,6 +98,8 @@ impl AirDataReferenceRuntime {
                 Self::STATIC_PORT_TIME_CONSTANT,
                 InternationalStandardAtmosphere::ground_pressure(),
             ),
+
+            vertical_speed_derivative: DerivativeNode::new(),
             vertical_speed_filter: LowPassFilter::new(Self::VERTICAL_SPEED_TIME_CONSTANT),
 
             baro_correction_1_hpa: Pressure::default(),
@@ -144,6 +153,15 @@ impl AirDataReferenceRuntime {
 
         self.measurement_inputs = measurement_inputs;
 
+        self.update_off_status(discrete_inputs);
+
+        self.update_filters_and_vs(context);
+        self.update_baro_corrections(fcu);
+        self.update_overspeed_status();
+        self.update_low_speed_warning_status();
+    }
+
+    fn update_off_status(&mut self, discrete_inputs: &AdrDiscreteInputs) {
         // If the ADR OFF P/B has been pushed, toggle between OFF and ON status. When the power is reset through the
         // mode selector knob, the off status is reset. Also Inhibit the output if the mode selector is OFF, since
         // the power off is delayed for a period by the powersupply.
@@ -153,32 +171,30 @@ impl AirDataReferenceRuntime {
         if pulsed_on_off_command {
             self.is_off = !self.output_inhibited;
         }
-
-        self.update_filters(context);
-        self.update_baro_corrections(fcu);
-        self.update_overspeed_status();
-        self.update_low_speed_warning_status();
+        let mode_sel_off = ModeSelectorPosition::from((
+            discrete_inputs.mode_select_m1,
+            discrete_inputs.mode_select_m2,
+        )) == ModeSelectorPosition::Off;
+        if mode_sel_off {
+            self.is_off = false;
+        }
+        self.output_inhibited = self.is_off || mode_sel_off;
     }
 
-    fn update_filters(&mut self, context: &UpdateContext) {
-        // This filter is not reset when invalid, as we want to keep the last valid value.
-        let last_valid_static_pressure = self.static_pressure_filter.output();
+    fn update_filters_and_vs(&mut self, context: &UpdateContext) {
         let static_pressure = self
             .static_pressure_filter
             .update(context.delta(), context.ambient_pressure());
 
         let pressure_altitude =
             AirDataReferenceRuntime::calculate_altitude_from_static_pressure(static_pressure);
-        let last_valid_pressure_altitude =
-            AirDataReferenceRuntime::calculate_altitude_from_static_pressure(
-                last_valid_static_pressure,
-            );
 
-        let delta_alt = pressure_altitude - last_valid_pressure_altitude;
-        if context.delta() > Duration::default() {
-            let raw_vs = delta_alt / Time::new::<second>(context.delta_as_secs_f64());
-            self.vertical_speed_filter.update(context.delta(), raw_vs);
-        }
+        let raw_vs = self.vertical_speed_derivative.update(
+            pressure_altitude.get::<foot>(),
+            context.delta().div_f64(60.),
+        );
+        self.vertical_speed_filter
+            .update(context.delta(), Velocity::new::<foot_per_minute>(raw_vs));
     }
 
     fn update_baro_corrections(&mut self, fcu: &impl FlightControlUnitBusOutput) {
