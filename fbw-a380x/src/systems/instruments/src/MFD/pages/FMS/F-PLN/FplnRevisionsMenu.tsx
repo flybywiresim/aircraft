@@ -6,6 +6,7 @@ import { MfdFmsFpln } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFpln';
 import { ContextMenuElement } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/ContextMenu';
 import { BitFlags } from '@microsoft/msfs-sdk';
 import { FlightPlanLegFlags } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { ADIRS } from '../../../shared/Adirs';
 
 export enum FplnRevisionsMenuType {
   Waypoint,
@@ -48,10 +49,12 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
         !isLegTerminatingAtDatabaseFix,
       onPressed: () => {
         const ppos = fpln.props.fmcService.master?.navigation.getPpos();
-        if (ppos) {
+        const magneticTrack = ADIRS.getMagneticTrack();
+
+        if (ppos && magneticTrack?.isNormalOperation()) {
           fpln.props.fmcService.master?.flightPlanService.directToLeg(
             ppos,
-            SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree'),
+            magneticTrack.value,
             legIndex,
             true,
             planIndex,
