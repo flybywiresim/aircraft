@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModelInfo>
+	<LODS>
+		<LOD minSize="1" ModelFile="..\..\Part_Interior_A380\model\FBW_A380X_INTERIOR.gltf"/>
+	</LODS>
+  <Behaviors>
+    <Include ModelBehaviorFile="Asobo\Generic\Visibility.xml" />
+    <Component ID="ATTACH_CABIN" Node="ATTACH_CABIN">
+        <UseTemplate Name="ASOBO_GT_Visibility_Code">
+            <VISIBILITY_CODE>(L:A380X_CABIN_HIDDEN, bool) 0 ==</VISIBILITY_CODE>
+        </UseTemplate>
+    </Component>
+  </Behaviors>
+</ModelInfo>

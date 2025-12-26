@@ -23,19 +23,19 @@ function* readdir(d) {
 }
 
 const HASHED_FILES = [
-  'SimObjects/AirPlanes/FlyByWire_A380_842/engines.cfg',
-  'SimObjects/AirPlanes/FlyByWire_A380_842/flight_model.cfg',
-  'SimObjects/AirPlanes/FlyByWire_A380_842/systems.cfg',
+  'SimObjects/AirPlanes/FlyByWire_A380X/common/config/engines.cfg',
+  'SimObjects/AirPlanes/FlyByWire_A380X/common/config/flight_model.cfg',
+  'SimObjects/AirPlanes/FlyByWire_A380X/attachments/flybywire/Part_Interior_Cockpit/config/systems.cfg',
 
   'html_ui/Pages/VCockpit/Instruments/A380X/MFD/mfd.js',
   'html_ui/Pages/VCockpit/Instruments/A380X/ND/nd.js',
   'html_ui/Pages/VCockpit/Instruments/A380X/PFD/pfd.js',
 
-  'SimObjects/AirPlanes/FlyByWire_A380_842/model/A380_COCKPIT.xml',
+  'SimObjects/AirPlanes/FlyByWire_A380X/attachments/flybywire/Part_Interior_Cockpit/model/A380_COCKPIT.xml',
 
-  'SimObjects/AirPlanes/FlyByWire_A380_842/panel/fadec-a380x.wasm',
-  'SimObjects/AirPlanes/FlyByWire_A380_842/panel/fbw.wasm',
-  'SimObjects/AirPlanes/FlyByWire_A380_842/panel/systems.wasm',
+  'SimObjects/AirPlanes/FlyByWire_A380X/attachments/flybywire/Part_Interior_Cockpit/panel/fadec-a380x.wasm',
+  'SimObjects/AirPlanes/FlyByWire_A380X/attachments/flybywire/Part_Interior_Cockpit/panel/fbw.wasm',
+  'SimObjects/AirPlanes/FlyByWire_A380X/attachments/flybywire/Part_Interior_Cockpit/panel/systems.wasm',
 ];
 
 function createHashFiles(baseDir) {

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2023-2024 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+<ModelInfo>
+	<LODS>
+		<LOD minSize="0" ModelFile="../../Part_Interior_Cabin/model/A380_CABIN_LOD00.gltf"/>
+	</LODS>
+	<Behaviors>
+		<IncludeBase RelativeFile="A380_Cabin_Behavior.xml"/>
+	</Behaviors>
+</ModelInfo>

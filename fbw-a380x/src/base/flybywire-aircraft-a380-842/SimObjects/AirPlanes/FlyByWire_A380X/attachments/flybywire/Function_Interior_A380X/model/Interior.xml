@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModelInfo>
+	<LODS>
+		<LOD minSize="1" ModelFile="..\..\Part_Interior_A380\model\FBW_A380X_INTERIOR.gltf"/>
+	</LODS>
+  <Behaviors>
+    <!-- <IncludeBase RelativeFile="..\..\Part_Interior_Cockpit\model\A380_Cockpit_Behavior.xml"/> -->
+  </Behaviors>
+</ModelInfo>
