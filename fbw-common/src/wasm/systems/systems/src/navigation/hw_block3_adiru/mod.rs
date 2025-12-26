@@ -61,7 +61,7 @@ impl AirDataInertialReferenceSystem {
         electrical_harness: &impl AdirsElectricalHarness,
         fcu: &impl FlightControlUnitBusOutput,
     ) {
-        (1..=3).into_iter().for_each(|adiru_num| {
+        (1..=3).for_each(|adiru_num| {
             // For the ADR input:
             // Nr. | Input 1 | Input 2
             // ----|---------|--------
