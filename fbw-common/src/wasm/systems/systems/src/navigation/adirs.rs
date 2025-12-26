@@ -303,6 +303,7 @@ pub struct IrDiscreteInputs {
 
     pub simulator_instant_align: bool,
     pub simulator_fast_align_mode_active: bool,
+    pub simulator_excess_motion_inhibit: bool,
 }
 
 #[derive(Default)]
