@@ -4,6 +4,7 @@ mod brakes;
 mod elevators;
 mod flaps;
 mod gear;
+mod navigation;
 mod nose_wheel_steering;
 mod payload;
 mod reversers;
@@ -18,6 +19,7 @@ use brakes::brakes;
 use elevators::elevators;
 use flaps::flaps;
 use gear::gear;
+use navigation::navigation;
 use nose_wheel_steering::nose_wheel_steering;
 use payload::payload;
 use reversers::reversers;
@@ -464,6 +466,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .with_aspect(gear)?
     .with_aspect(payload)?
     .with_aspect(trimmable_horizontal_stabilizer)?
+    .with_aspect(navigation)?
     .build(A320::new)?;
 
     while let Some(event) = gauge.next_event().await {
