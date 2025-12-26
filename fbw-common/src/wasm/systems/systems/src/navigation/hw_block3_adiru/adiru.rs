@@ -799,7 +799,7 @@ impl InertialReferenceBus for AirDataInertialReferenceUnit {
     }
 
     fn discrete_word_3(&self) -> Arinc429Word<u32> {
-        self.ir_bus_output_data.discrete_word_2
+        self.ir_bus_output_data.discrete_word_3
     }
 }
 impl SimulationElement for AirDataInertialReferenceUnit {
