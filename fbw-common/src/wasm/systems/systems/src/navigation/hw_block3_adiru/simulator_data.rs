@@ -1,8 +1,5 @@
-use crate::{
-    payload::BoardingRate,
-    simulation::{
-        InitContext, Read, SimulationElement, SimulatorReader, UpdateContext, VariableIdentifier,
-    },
+use crate::simulation::{
+    InitContext, Read, SimulationElement, SimulatorReader, UpdateContext, VariableIdentifier,
 };
 use uom::si::{angular_velocity::degree_per_second, f64::*, velocity::foot_per_minute};
 
@@ -121,12 +118,6 @@ pub(crate) struct IrSimulatorData {
 
     ground_speed_id: VariableIdentifier,
     pub ground_speed: Velocity,
-
-    is_boarding_started_by_user_id: VariableIdentifier,
-    boarding_rate_id: VariableIdentifier,
-
-    is_boarding_started_by_user: bool,
-    //boarding_rate: BoardingRate,
 }
 impl IrSimulatorData {
     const INERTIAL_VERTICAL_SPEED: &'static str = "VELOCITY WORLD Y";
@@ -142,8 +133,6 @@ impl IrSimulatorData {
     const TRACK: &'static str = "GPS GROUND MAGNETIC TRACK";
     const TRUE_TRACK: &'static str = "GPS GROUND TRUE TRACK";
     const GROUND_SPEED: &'static str = "GPS GROUND SPEED";
-    const BOARDING_STARTED_BY_USR: &'static str = "BOARDING_STARTED_BY_USR";
-    const BOARDING_RATE: &'static str = "BOARDING_RATE";
 
     pub(crate) fn new(context: &mut InitContext) -> Self {
         Self {
@@ -191,13 +180,6 @@ impl IrSimulatorData {
 
             ground_speed_id: context.get_identifier(Self::GROUND_SPEED.to_owned()),
             ground_speed: Default::default(),
-
-            is_boarding_started_by_user_id: context
-                .get_identifier(Self::BOARDING_STARTED_BY_USR.to_owned()),
-            boarding_rate_id: context.get_identifier(Self::BOARDING_RATE.to_owned()),
-
-            is_boarding_started_by_user: false,
-            //boarding_rate: BoardingRate::Instant,
         }
     }
 
@@ -227,7 +209,5 @@ impl SimulationElement for IrSimulatorData {
         self.track = reader.read(&self.track_id);
         self.true_track = reader.read(&self.true_track_id);
         self.ground_speed = reader.read(&self.ground_speed_id);
-        self.is_boarding_started_by_user = reader.read(&self.is_boarding_started_by_user_id);
-        //self.boarding_rate = reader.read(&self.boarding_rate_id);
     }
 }
