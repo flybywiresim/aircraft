@@ -494,12 +494,13 @@ export class VnavDriver implements GuidanceComponent {
 
     for (let i = 1; i < this.profileManager.ndProfile.checkpoints.length - 1; i++) {
       const checkpoint = this.profileManager.ndProfile.checkpoints[i];
+      const prevCheckpoint = this.profileManager.ndProfile.checkpoints[i - 1];
 
       if (checkpoint.distanceFromStart < distanceToPresentPosition) {
         continue;
       } else if (
-        checkpoint.reason === VerticalCheckpointReason.TopOfClimb ||
-        checkpoint.reason === VerticalCheckpointReason.TopOfDescent
+        prevCheckpoint.reason === VerticalCheckpointReason.TopOfClimb ||
+        prevCheckpoint.reason === VerticalCheckpointReason.TopOfDescent
       ) {
         // At T/C, T/D, we expect to see a speed change the the respective ECON speed, but this is not indicated to the pilots
         return null;
@@ -511,11 +512,11 @@ export class VnavDriver implements GuidanceComponent {
             checkpoint.speed,
             this.atmosphericConditions.computeCasFromMach(checkpoint.altitude, checkpoint.mach),
           ) -
-            Math.max(this.profileManager.ndProfile.checkpoints[i - 1].speed, speedTarget) >
+            Math.max(prevCheckpoint.speed, speedTarget) >
           1
         ) {
           // Candiate for a climb speed change
-          return this.profileManager.ndProfile.checkpoints[i - 1].distanceFromStart;
+          return prevCheckpoint.distanceFromStart;
         }
       } else if (
         isSpeedChangePoint(checkpoint) &&
