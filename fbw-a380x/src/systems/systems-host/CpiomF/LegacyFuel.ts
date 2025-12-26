@@ -157,6 +157,11 @@ export class LegacyFuel implements Instrument {
       // both mid and inner tanks are empty
 
       this.setJunctionOption(10, 3);
+      // terminate all inner and mid transfers
+      if (!this.triggerActive(7)) this.toggleTrigger(7);
+      if (!this.triggerActive(8)) this.toggleTrigger(8);
+      if (!this.triggerActive(9)) this.toggleTrigger(9);
+      if (!this.triggerActive(10)) this.toggleTrigger(10);
     } else if (this.rightInnerTankQty.get() >= 0.1 || this.leftInnerTankQty.get() >= 0.1) {
       // inner tanks arent empty
 
@@ -291,11 +296,11 @@ export class LegacyFuel implements Instrument {
         this.toggleTrigger(13);
       }
       if (
-        (this.feed2TankQty.get() < 6436 && !this.triggerActive(14)) ||
+        (this.feed2TankQty.get() < 6436 && !this.triggerActive(14) && this.triggerActive(13)) ||
         (this.feed2TankQty.get() >= 6437 && this.triggerActive(14))
       ) {
         this.toggleTrigger(14);
-        if (this.triggerActive(13)) {
+        if (!this.triggerActive(14)) {
           this.innerAndMidTransfersActiveForFeedTank.set(2, true);
         }
       }
@@ -304,7 +309,7 @@ export class LegacyFuel implements Instrument {
         (this.feed3TankQty.get() >= 6437 && this.triggerActive(15))
       ) {
         this.toggleTrigger(15);
-        if (this.triggerActive(13)) {
+        if (!this.triggerActive(15)) {
           this.innerAndMidTransfersActiveForFeedTank.set(3, true);
         }
       }
@@ -313,7 +318,7 @@ export class LegacyFuel implements Instrument {
         (this.feed2TankQty.get() <= 6764 && this.triggerActive(16))
       ) {
         this.toggleTrigger(16);
-        if (this.triggerActive(13)) {
+        if (!this.triggerActive(16)) {
           this.innerAndMidTransfersActiveForFeedTank.set(2, false);
         }
       }
@@ -322,7 +327,7 @@ export class LegacyFuel implements Instrument {
         (this.feed3TankQty.get() <= 6764 && this.triggerActive(17))
       ) {
         this.toggleTrigger(17);
-        if (this.triggerActive(13)) {
+        if (!this.triggerActive(17)) {
           this.innerAndMidTransfersActiveForFeedTank.set(3, false);
         }
       }
