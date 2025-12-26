@@ -159,6 +159,7 @@ pub(crate) struct A320AdiruElectricalHarness {
     // Simulator inputs
     ir_fast_align_mode_id: VariableIdentifier,
     ir_instant_align_id: VariableIdentifier,
+    ir_excess_motion_inhibit_id: VariableIdentifier,
 }
 impl A320AdiruElectricalHarness {
     const RELAY_OPENING_TIME_DELAY: Duration = Duration::from_secs(300);
@@ -230,6 +231,8 @@ impl A320AdiruElectricalHarness {
 
             ir_fast_align_mode_id: context.get_identifier("ADIRS_IR_FAST_ALIGN_MODE".to_owned()),
             ir_instant_align_id: context.get_identifier("ADIRS_IR_INSTANT_ALIGN".to_owned()),
+            ir_excess_motion_inhibit_id: context
+                .get_identifier("ADIRS_IR_EXCESS_MOTION_INHIBIT".to_owned()),
         }
     }
 
@@ -336,6 +339,8 @@ impl SimulationElement for A320AdiruElectricalHarness {
         self.ir_discrete_input.simulator_fast_align_mode_active =
             reader.read(&self.ir_fast_align_mode_id);
         self.ir_discrete_input.simulator_instant_align = reader.read(&self.ir_instant_align_id);
+        self.ir_discrete_input.simulator_excess_motion_inhibit =
+            reader.read(&self.ir_excess_motion_inhibit_id);
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
