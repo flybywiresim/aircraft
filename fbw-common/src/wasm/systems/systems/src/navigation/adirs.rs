@@ -34,12 +34,12 @@ impl From<(bool, bool)> for ModeSelectorPosition {
     }
 }
 
-impl Into<(bool, bool)> for ModeSelectorPosition {
-    fn into(self) -> (bool, bool) {
-        match self {
-            Self::Off => (false, false),
-            Self::Navigation => (true, false),
-            Self::Attitude => (false, true),
+impl From<ModeSelectorPosition> for (bool, bool) {
+    fn from(val: ModeSelectorPosition) -> Self {
+        match val {
+            ModeSelectorPosition::Off => (false, false),
+            ModeSelectorPosition::Navigation => (true, false),
+            ModeSelectorPosition::Attitude => (false, true),
         }
     }
 }
