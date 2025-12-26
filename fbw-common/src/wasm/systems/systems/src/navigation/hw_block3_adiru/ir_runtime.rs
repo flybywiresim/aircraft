@@ -3,8 +3,7 @@ use crate::navigation::adirs::{
     ModeSelectorPosition,
 };
 use crate::navigation::hw_block3_adiru::simulator_data::IrSimulatorData;
-use crate::payload::BoardingRate;
-use crate::shared::logic_nodes::PulseNode;
+use crate::shared::logic_nodes::{MonostableTriggerNode, PulseNode};
 use crate::shared::low_pass_filter::LowPassFilter;
 use crate::{
     shared::arinc429::{Arinc429Word, SignStatus},
@@ -15,7 +14,7 @@ use nalgebra::{Rotation2, Vector2};
 use std::time::Duration;
 use uom::si::acceleration::meter_per_second_squared;
 use uom::si::ratio::ratio;
-use uom::si::velocity::knot;
+use uom::si::velocity::{foot_per_second, knot};
 use uom::si::{angle::degree, angle::radian, f64::*};
 
 #[derive(PartialEq, Debug)]
@@ -71,8 +70,16 @@ pub struct InertialReferenceRuntime {
 
     measurement_inputs: IrSimulatorData,
 
+    // Alignment and Modes
     active_mode: IrOperationMode,
     mode_timer: Duration,
+
+    excess_motion_error: bool,
+    excess_motion_realign_pulse: PulseNode,
+    excess_motion_inhibit_mtrig: MonostableTriggerNode,
+    excess_motion_body_velocity_filter: LowPassFilter<Vector2<f64>>,
+
+    alignment_failed: bool,
 
     // Selected ADR data
     selected_adr_valid: bool,
@@ -82,16 +89,13 @@ pub struct InertialReferenceRuntime {
     wind_velocity_filter: LowPassFilter<Vector2<f64>>,
 
     extreme_latitude: bool,
-    excess_motion: bool,
-    excess_motion_inhibit_time: Option<Duration>,
-    quick_realign_remaining_available_time: Duration,
-    alignment_failed: bool,
 }
 impl InertialReferenceRuntime {
-    const EXCESS_MOTION_INHIBIT_TIME: Duration = Duration::from_secs(2);
+    // Mode transition durations
     const IR_FAULT_FLASH_DURATION: Duration = Duration::from_millis(50);
     const COARSE_ALIGN_DURATION: Duration = Duration::from_secs(30);
     const COARSE_ALIGN_QUICK_DURATION: Duration = Duration::from_secs(10);
+    const FINE_ALIGN_MAX_DURATION: Duration = Duration::from_secs(570);
     const FINE_ALIGN_QUICK_DURATION: Duration = Duration::from_secs(80);
     const HDG_ALIGN_AVAIL_DURATION: Duration = Duration::from_secs(270);
     const ERECT_ATT_DURATION: Duration = Duration::from_secs(30);
@@ -99,13 +103,21 @@ impl InertialReferenceRuntime {
     const REALIGN_DURATION: Duration = Duration::from_secs(30);
     const POWER_OFF_DURATION: Duration = Duration::from_secs(5);
 
+    // SSM Thresholds
     pub(super) const MINIMUM_TRUE_AIRSPEED_FOR_WIND_DETERMINATION_KNOTS: f64 = 100.;
     pub(super) const MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS: f64 = 50.;
 
+    // Filter time constants
     const WIND_VELOCITY_TIME_CONSTANT: Duration = Duration::from_millis(100);
     const ALIGNMENT_VELOCITY_TIME_CONSTANT: Duration = Duration::from_millis(500);
-    const MAX_ALIGNMENT_VELOCITY_FPS: f64 = 0.011;
+
+    // Alignment thresholds
+    const MAX_REALIGN_VELOCITY_KNOT: f64 = 20.;
     const MAX_LATITUDE_FOR_ALIGNMENT: f64 = 82.;
+
+    // Excess Motion fault durations and thresholds
+    const EXCESS_MOTION_INHIBIT_TIME: Duration = Duration::from_secs(2);
+    const MAX_ALIGNMENT_VELOCITY_FPS: f64 = 0.011;
 
     pub fn new_running() -> Self {
         Self::new(Duration::ZERO, IrOperationMode::Navigation)
@@ -127,6 +139,17 @@ impl InertialReferenceRuntime {
             active_mode,
             mode_timer: Duration::ZERO,
 
+            excess_motion_error: false,
+            excess_motion_realign_pulse: PulseNode::new_rising(),
+            excess_motion_inhibit_mtrig: MonostableTriggerNode::new_rising(
+                Self::EXCESS_MOTION_INHIBIT_TIME,
+            ),
+            excess_motion_body_velocity_filter: LowPassFilter::new(
+                Self::ALIGNMENT_VELOCITY_TIME_CONSTANT,
+            ),
+
+            alignment_failed: false,
+
             selected_adr_valid: false,
             selected_tas: Default::default(),
             selected_altitude: Default::default(),
@@ -134,10 +157,6 @@ impl InertialReferenceRuntime {
             wind_velocity_filter: LowPassFilter::new(Self::WIND_VELOCITY_TIME_CONSTANT),
 
             extreme_latitude: false,
-            excess_motion: false,
-            excess_motion_inhibit_time: None,
-            quick_realign_remaining_available_time: Duration::default(),
-            alignment_failed: false,
         }
     }
 
@@ -166,6 +185,8 @@ impl InertialReferenceRuntime {
         self.measurement_inputs = measurement_inputs;
 
         self.update_off_status(discrete_inputs);
+
+        self.update_alignment_excess_motion_monitor(context, discrete_inputs);
 
         self.update_state(context, discrete_inputs);
 
@@ -200,18 +221,21 @@ impl InertialReferenceRuntime {
 
         self.mode_timer = self.mode_timer.saturating_sub(context.delta());
 
+        // Compute the alignment durations depending on current fast align status
         let coarse_align_duration = if !discrete_inputs.simulator_fast_align_mode_active {
             Self::COARSE_ALIGN_DURATION
         } else {
             Self::COARSE_ALIGN_QUICK_DURATION
         };
 
-        let fine_align_duration = if !discrete_inputs.simulator_fast_align_mode_active {
+        let fine_align_duration = if discrete_inputs.simulator_fast_align_mode_active {
+            Self::FINE_ALIGN_QUICK_DURATION
+        } else if self.excess_motion_error {
+            Self::FINE_ALIGN_MAX_DURATION
+        } else {
             self.total_alignment_duration_from_configuration(
                 discrete_inputs.simulator_fast_align_mode_active,
             )
-        } else {
-            Self::FINE_ALIGN_QUICK_DURATION
         };
 
         self.active_mode = match self.active_mode {
@@ -241,6 +265,16 @@ impl InertialReferenceRuntime {
             {
                 self.mode_timer = Self::POWER_OFF_DURATION;
                 IrOperationMode::PowerOff
+            }
+
+            // Excess motion auto-reset
+            IrOperationMode::AlignCoarse
+            | IrOperationMode::AlignFine
+            | IrOperationMode::Realign
+                if self.excess_motion_realign_pulse.output() =>
+            {
+                self.mode_timer = coarse_align_duration;
+                IrOperationMode::AlignCoarse
             }
 
             // Instant align
@@ -355,6 +389,47 @@ impl InertialReferenceRuntime {
 
         self.selected_tas = selected_adr.true_airspeed;
         self.selected_altitude = selected_adr.standard_altitude;
+    }
+
+    fn update_alignment_excess_motion_monitor(
+        &mut self,
+        context: &UpdateContext,
+        discrete_inputs: &IrDiscreteInputs,
+    ) {
+        self.excess_motion_inhibit_mtrig.update(
+            discrete_inputs.simulator_excess_motion_inhibit,
+            context.delta(),
+        );
+
+        let body_velocity = Vector2::new(
+            context
+                .local_velocity()
+                .lat_velocity()
+                .get::<foot_per_second>(),
+            context
+                .local_velocity()
+                .long_velocity()
+                .get::<foot_per_second>(),
+        );
+        self.excess_motion_body_velocity_filter
+            .update(context.delta(), body_velocity);
+
+        let alignment_active = self.active_mode == IrOperationMode::AlignFine
+            || self.active_mode == IrOperationMode::AlignCoarse
+            || self.active_mode == IrOperationMode::Realign;
+        let excess_motion_detected = self.excess_motion_body_velocity_filter.output().max()
+            > Self::MAX_ALIGNMENT_VELOCITY_FPS
+            && alignment_active
+            && !self.excess_motion_inhibit_mtrig.output();
+
+        if excess_motion_detected {
+            self.excess_motion_error = true;
+        } else if !excess_motion_detected && self.active_mode != IrOperationMode::AlignCoarse {
+            self.excess_motion_error = false;
+        }
+
+        self.excess_motion_realign_pulse
+            .update(self.excess_motion_error);
     }
 
     //fn update_fault_flash_duration(
@@ -751,7 +826,7 @@ impl InertialReferenceRuntime {
 
         // TODO No IRS initial pos
 
-        if self.excess_motion {
+        if self.excess_motion_error {
             maint_word |= IrMaintFlags::EXCESS_MOTION_ERROR;
         }
 
