@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Copyright (c) 2023-2024 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
+<ModelInfo>
+	<LODS>
+		<LOD minSize="0" ModelFile="../../Part_Exterior_Fuselage/model/A380_FUSELAGE.gltf"/>
+	</LODS>
+	<Behaviors>
+		<IncludeBase RelativeFile="../../Part_Exterior_Fuselage/model/A380_Fuselage_Behavior.xml"/>
+	</Behaviors>
+</ModelInfo>
