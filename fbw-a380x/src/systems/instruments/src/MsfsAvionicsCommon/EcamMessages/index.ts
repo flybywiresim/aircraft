@@ -26,7 +26,7 @@ import { EcamAbnormalSensedAta46495256 } from 'instruments/src/MsfsAvionicsCommo
 import { EcamAbnormalSensedAta70 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata70';
 import { EcamAbnormalSensedAta80Rest } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata80-rest';
 import { EcamAbnormalSecondaryFailures } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/secondary-failures';
-import { AbnormalNonSensedCategory } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
+import { AbnormalNonSensedCategory } from 'instruments/src/MsfsAvionicsCommon/providers/FwsPublisher';
 
 // Convention for IDs:
 // First two digits: ATA chapter. 00 for T.O and LDG memos
@@ -177,7 +177,17 @@ export const EcamMemos: { [n: string]: string } = {
 };
 
 /** Only these IDs will be shown in the PFD MEMO section */
-export const pfdMemoDisplay: string[] = ['000006002', '220000001', '220000002', '300000001', '300000002', '320000001'];
+
+export const AThrOffMemoKey = '220000002';
+
+export const pfdMemoDisplay: string[] = [
+  '000006002',
+  '220000001',
+  AThrOffMemoKey,
+  '300000001',
+  '300000002',
+  '320000001',
+];
 
 /** All possible INFOs (e.g. LAND 3 SINGLE ONLY), with special formatting characters. */
 export const EcamInfos: { [n: string]: string } = {
@@ -730,6 +740,7 @@ export enum DeferredProcedureType {
   FOR_APPROACH,
   FOR_LANDING,
 }
+export const DEFERRED_PROCEDURE_TYPE_TO_STRING = ['ALL PHASES', 'AT TOP OF DESCENT', 'FOR APPROACH', 'FOR LANDING'];
 export interface DeferredProcedure {
   /** Which abnormal procedures triggers this deferred procedure */
   fromAbnormalProcs: string[];
