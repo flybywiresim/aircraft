@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { Approach, ApproachType } from '@flybywiresim/fbw-sdk';
@@ -60,3 +60,7 @@ export function getApproachName(approach: Approach, withRnpSuffix = true): strin
     withRnpSuffix && (approach.authorisationRequired || approach.missedApproachAuthorisationRequired) ? ' (RNP)' : '';
   return `${approachTypeNames[approach.type]}${approach.runwayIdent.substring(4)}${approachSuffix}${arSuffix}`;
 }
+
+export const noPositionAvailableText = '--°--.--/---°--.--';
+
+export const showReturnButtonUriExtra = 'withReturn';

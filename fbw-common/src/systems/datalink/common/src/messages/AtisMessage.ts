@@ -20,7 +20,7 @@ export class AtisMessage extends WeatherMessage {
   constructor() {
     super();
     this.Type = AtsuMessageType.ATIS;
-    this.Station = NXDataStore.get('CONFIG_ATIS_SRC', 'MSFS');
+    this.Station = NXDataStore.getLegacy('CONFIG_ATIS_SRC', 'MSFS');
   }
 
   public parseInformation(): void {
@@ -29,9 +29,9 @@ export class AtisMessage extends WeatherMessage {
     // this function is only relevant for the ATC updater
     this.Reports.forEach((report) => {
       report.report.split(' ').forEach((word) => {
-        // expect 'INFORMATION H' or 'INFORMATION HOTEL'
+        // expect 'INFORMATION H', 'INFORMATION HOTEL' or 'YBBN K'
         if (foundInfo === false) {
-          if (word === 'INFORMATION' || word === 'INFO') {
+          if (word === 'INFORMATION' || word === 'INFO' || word === report.airport.toUpperCase()) {
             foundInfo = true;
           }
         } else {
