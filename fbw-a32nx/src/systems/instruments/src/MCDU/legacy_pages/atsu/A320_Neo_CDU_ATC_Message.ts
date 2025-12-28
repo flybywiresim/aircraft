@@ -6,9 +6,9 @@ import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
 
 export class CDUAtcMessage {
   static TranslateCpdlcResponse(message) {
-    let retval;
+    let retval = '';
 
-    switch (message.Content[0].TypeId) {
+    switch (message.Content[0]?.TypeId) {
       case 'DM0':
         retval = 'WILC';
         break;
