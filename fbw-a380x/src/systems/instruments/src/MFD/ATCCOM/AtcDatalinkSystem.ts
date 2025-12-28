@@ -1,9 +1,9 @@
+import { ArraySubject, EventBus, Instrument, Subscription } from '@microsoft/msfs-sdk';
 import { AtcFmsMessages, FmsAtcMessages } from '@datalink/atc';
 import { AtisMessage, AtisType, AtsuStatusCodes, DatalinkModeCode, DatalinkStatusCode } from '@datalink/common';
 import { FmsRouterMessages, RouterFmsMessages } from '@datalink/router';
-import { ArraySubject, EventBus, Instrument, InstrumentBackplane } from '@microsoft/msfs-sdk';
 import { MessageStorage } from './MessageStorage';
-import { FmsDataPublisher } from '@flybywiresim/fbw-sdk';
+import { FmsData } from '@flybywiresim/fbw-sdk';
 import { FmsErrorType } from '@fmgc/FmsError';
 import { McduMessage, ATCCOMMessage, NXFictionalMessages, NXSystemMessages } from '../shared/NXSystemMessages';
 
@@ -23,14 +23,13 @@ export interface AtcErrorMessage {
 }
 
 export class AtcDatalinkSystem implements Instrument {
-  private readonly bus = new EventBus();
-  private readonly backplane = new InstrumentBackplane();
+  private readonly subscriptions: Subscription[] = [];
 
   private readonly messageStorage: MessageStorage;
 
   private readonly publisher = this.bus.getPublisher<FmsAtcMessages & FmsRouterMessages>();
 
-  private readonly subscriber = this.bus.getSubscriber<AtcFmsMessages & RouterFmsMessages & FmsRouterMessages>();
+  private readonly sub = this.bus.getSubscriber<AtcFmsMessages & FmsData & RouterFmsMessages & FmsRouterMessages>();
 
   private requestId: number = 0;
 
@@ -64,12 +63,12 @@ export class AtcDatalinkSystem implements Instrument {
     hf: DatalinkModeCode.None,
   };
 
-  constructor() {
-    this.messageStorage = new MessageStorage(this.subscriber);
+  constructor(private readonly bus: EventBus) {
+    this.messageStorage = new MessageStorage(this.sub);
 
-    this.backplane.addPublisher('FmBus', new FmsDataPublisher(this.bus));
+    // this.backplane.addPublisher('FmBus', new FmsDataPublisher(this.bus));
 
-    this.subscriber.on('atcResetData').handle(() => {
+    this.sub.on('atcResetData').handle(() => {
       this.messageStorage.resetAtcData();
       this.atisAutoUpdates = [];
       this.atisReportsPrintActive = false;
@@ -87,11 +86,11 @@ export class AtcDatalinkSystem implements Instrument {
       };
     });
 
-    this.subscriber.on('routerDatalinkStatus').handle((data) => (this.datalinkStatus = data));
-    this.subscriber.on('routerDatalinkMode').handle((data) => (this.datalinkMode = data));
+    this.sub.on('routerDatalinkStatus').handle((data) => (this.datalinkStatus = data));
+    this.sub.on('routerDatalinkMode').handle((data) => (this.datalinkMode = data));
 
-    this.subscriber.on('atcActiveAtisAutoUpdates').handle((airports) => (this.atisAutoUpdates = airports));
-    this.subscriber.on('atcRequestAtsuStatusCode').handle((response) => {
+    this.sub.on('atcActiveAtisAutoUpdates').handle((airports) => (this.atisAutoUpdates = airports));
+    this.sub.on('atcRequestAtsuStatusCode').handle((response) => {
       this.requestAtsuStatusCodeCallbacks.every((callback, index) => {
         if (callback(response.code, response.requestId)) {
           this.requestAtsuStatusCodeCallbacks.splice(index, 1);
@@ -100,10 +99,38 @@ export class AtcDatalinkSystem implements Instrument {
         return true;
       });
     });
+
+    this.sub
+      .on('fmsOrigin')
+      .whenChanged()
+      .handle((icao) => {
+        this.atisAirports[0].icao = icao;
+        console.log('origin airport updated');
+      });
+    this.sub
+      .on('fmsDestination')
+      .whenChanged()
+      .handle((icao) => {
+        this.atisAirports[1].icao = icao;
+        console.log('dest airport updated');
+      });
+    this.sub
+      .on('fmsAlternate')
+      .whenChanged()
+      .handle((icao) => {
+        this.atisAirports[2].icao = icao;
+        console.log('altn airport updated');
+      });
   }
 
-  public init(): void {}
-  public onUpdate(): void {}
+  init(): void {}
+  onUpdate(): void {}
+
+  destroy() {
+    for (const s of this.subscriptions) {
+      s.destroy();
+    }
+  }
 
   showAtcErrorMessage(errorType: FmsErrorType) {
     switch (errorType) {

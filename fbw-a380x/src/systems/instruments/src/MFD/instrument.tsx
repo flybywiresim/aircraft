@@ -48,7 +48,7 @@ class MfdInstrument implements FsInstrument {
 
   private readonly fmcService: FmcServiceInterface;
 
-  private readonly atcService: AtcDatalinkSystem;
+  private readonly atcService = new AtcDatalinkSystem(this.bus);
 
   private readonly fmcAFailed = Subject.create(false);
   private readonly fmcBFailed = Subject.create(false);
@@ -72,8 +72,6 @@ class MfdInstrument implements FsInstrument {
       this.fmcBFailed,
       this.fmcCFailed,
     );
-
-    this.atcService = new AtcDatalinkSystem();
 
     this.doInit();
   }

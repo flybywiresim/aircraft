@@ -329,7 +329,8 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
             />
             <Button
               label="AUTO<br/>UPDATE"
-              disabled={this.isIcaoEmpty}
+              // disabled={this.isIcaoEmpty}
+              disabled={Subject.create(true)}
               onClick={() => {}}
               visible={this.showDropdownMenu}
               buttonStyle="width: 159px; padding-left: 5px; padding-top: 3px; padding-bottom: 3px;"
