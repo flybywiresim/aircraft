@@ -43,6 +43,10 @@
 1. [A380X/PFD] Increase PFD trim wheel rotation speed - @lukecologne (luke)
 1. [A380X/FWS] Add FCTL and OVERSPEED abnormal sensed procedures - @Jonny23787 (Jonathan)
 1. [A380X/SFCC] Improved slats/flaps cruise baulk trigger and display - @FozzieHi (fozzie), @lukecologne (luke)
+1. [A380X/EWD] Add "THR LK" and "A.FLOOR" indications - @BravoMike99 (bruno_pt99)
+1. [A380X/PFD] Add "MOVE THR LEVERS" message in case of thrust lock - @BravoMike99 (bruno_pt99)
+1. [A380X/FWS] Add ENG THRUST LOCKED & AUTO FLT A/THR LIMITED abnornmal sensed procedures - @BravoMike99 (bruno_pt99)
+1. [ATSU] Fix certain aerodromes ATIS letter not being retrieved correctly - @clc0609 (Coby)
 
 ## 0.14.0
 
