@@ -2,6 +2,7 @@ use crate::navigation::adirs::{
     AirDataReferenceBusOutputs, InertialReferenceBusOutputs, IrDiscreteInputs, IrDiscreteOutputs,
     ModeSelectorPosition,
 };
+use crate::navigation::hw_block3_adiru::adiru::InternalIrDiscreteInputs;
 use crate::navigation::hw_block3_adiru::simulator_data::IrSimulatorData;
 use crate::shared::logic_nodes::{MonostableTriggerNode, PulseNode};
 use crate::shared::low_pass_filter::LowPassFilter;
@@ -88,6 +89,10 @@ pub struct InertialReferenceRuntime {
 
     wind_velocity_filter: LowPassFilter<Vector2<f64>>,
 
+    // Powersupply status
+    on_battery_power: bool,
+    dc_power_failed: bool,
+
     extreme_latitude: bool,
 }
 impl InertialReferenceRuntime {
@@ -156,6 +161,9 @@ impl InertialReferenceRuntime {
 
             wind_velocity_filter: LowPassFilter::new(Self::WIND_VELOCITY_TIME_CONSTANT),
 
+            on_battery_power: false,
+            dc_power_failed: false,
+
             extreme_latitude: false,
         }
     }
@@ -164,6 +172,7 @@ impl InertialReferenceRuntime {
         &mut self,
         context: &UpdateContext,
         discrete_inputs: &IrDiscreteInputs,
+        internal_discrete_inputs: &InternalIrDiscreteInputs,
         adr_own: &AirDataReferenceBusOutputs,
         adr_a: &AirDataReferenceBusOutputs,
         adr_b: &AirDataReferenceBusOutputs,
@@ -183,6 +192,9 @@ impl InertialReferenceRuntime {
         }
 
         self.measurement_inputs = measurement_inputs;
+
+        self.on_battery_power = internal_discrete_inputs.on_battery_power;
+        self.dc_power_failed = internal_discrete_inputs.dc_fail;
 
         self.update_off_status(discrete_inputs);
 
@@ -466,7 +478,7 @@ impl InertialReferenceRuntime {
 
         discrete_outputs.ir_off = self.output_inhibited;
         discrete_outputs.ir_fault = false;
-        discrete_outputs.battery_operation = false;
+        discrete_outputs.battery_operation = self.on_battery_power;
         discrete_outputs.align = self.is_aligning();
     }
 
@@ -804,7 +816,9 @@ impl InertialReferenceRuntime {
             maint_word |= IrMaintFlags::ALIGNMENT_NOT_READY;
         }
 
-        if self.active_mode == IrOperationMode::Attitude {
+        if self.active_mode == IrOperationMode::Attitude
+            || self.active_mode == IrOperationMode::ErectAttitude
+        {
             maint_word |= IrMaintFlags::REV_ATT_MODE;
         }
 
@@ -816,11 +830,17 @@ impl InertialReferenceRuntime {
 
         // TODO attitude invalid fault
 
-        // TODO dc < 18 V
+        if self.dc_power_failed {
+            maint_word |= IrMaintFlags::DC_FAIL;
+        }
 
-        // TODO on DC (re-implement ON BAT light properly at the same time)
+        if self.on_battery_power {
+            maint_word |= IrMaintFlags::ON_DC;
+        }
 
-        // TODO ADR input data fault
+        if !self.selected_adr_valid {
+            maint_word |= IrMaintFlags::ADR_FAULT;
+        }
 
         // TODO unimportant nav fault
 
