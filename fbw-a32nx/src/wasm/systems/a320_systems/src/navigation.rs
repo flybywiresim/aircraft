@@ -26,17 +26,28 @@ pub(crate) struct A320AdirsElectricalHarness {
     on_bat_light_id: VariableIdentifier,
     on_bat_light: bool,
 
+    mech_horn_id: VariableIdentifier,
+    relay_delay_on_close_mech_call: ConfirmationNode,
+
     pub adiru_1_electrical_harness: A320AdiruElectricalHarness,
     pub adiru_2_electrical_harness: A320AdiruElectricalHarness,
     pub adiru_3_electrical_harness: A320AdiruElectricalHarness,
 }
 impl A320AdirsElectricalHarness {
-    const ADIRS_ON_BAT_NAME: &'static str = "ADIRS_ON_BAT";
+    const ADIRS_ON_BAT_NAME: &'static str = "OVHD_ADIRS_ON_BAT_IS_ILLUMINATED";
+    const ADIRS_MECH_HORN_NAME: &'static str = "ADIRS_MECH_HORN_CALL_ON";
+
+    const RELAY_MECH_HORN_DELAY: Duration = Duration::from_secs(15);
 
     pub fn new(context: &mut InitContext) -> Self {
         Self {
             on_bat_light_id: context.get_identifier(Self::ADIRS_ON_BAT_NAME.to_owned()),
             on_bat_light: false,
+
+            mech_horn_id: context.get_identifier(Self::ADIRS_MECH_HORN_NAME.to_owned()),
+            relay_delay_on_close_mech_call: ConfirmationNode::new_rising(
+                Self::RELAY_MECH_HORN_DELAY,
+            ),
 
             adiru_1_electrical_harness: A320AdiruElectricalHarness::new(context, 1),
             adiru_2_electrical_harness: A320AdiruElectricalHarness::new(context, 2),
@@ -53,6 +64,9 @@ impl A320AdirsElectricalHarness {
             let adiru_harness = &mut self[adiru_num];
             adiru_harness.update_before_adirus(context, &mut adirs[adiru_num]);
         });
+
+        self.relay_delay_on_close_mech_call
+            .update(self.on_bat_light, context.delta());
     }
 
     pub fn update_after_adirus(&mut self, adirs: &AirDataInertialReferenceSystem) {
@@ -110,6 +124,10 @@ impl SimulationElement for A320AdirsElectricalHarness {
 
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.on_bat_light_id, self.on_bat_light);
+        writer.write(
+            &self.mech_horn_id,
+            self.relay_delay_on_close_mech_call.get_output(),
+        );
     }
 }
 
@@ -165,7 +183,9 @@ impl A320AdiruElectricalHarness {
     const RELAY_OPENING_TIME_DELAY: Duration = Duration::from_secs(300);
 
     pub fn new(context: &mut InitContext, num: usize) -> Self {
-        Self {
+        let is_powered = context.has_engines_running();
+
+        let mut result = Self {
             ir_discrete_input: IrDiscreteInputs::default(),
             adr_discrete_input: AdrDiscreteInputs::default(),
 
@@ -178,7 +198,7 @@ impl A320AdiruElectricalHarness {
                 3 => ElectricalBusType::AlternatingCurrent(1),
                 _ => panic!("ADIRU Harness: Impossible installation position"),
             },
-            primary_powered: false,
+            primary_powered: is_powered,
             backup_powersupply: match num {
                 1 => ElectricalBusType::DirectCurrentHot(2),
                 2 => ElectricalBusType::DirectCurrentHot(2),
@@ -197,9 +217,9 @@ impl A320AdiruElectricalHarness {
                 3 => Some(ElectricalBusType::DirectCurrentBattery),
                 _ => panic!("ADIRU Harness: Impossible installation position"),
             },
-            backup_powered: false,
-            backup_powersupply_relay_switching_powered_1: false,
-            backup_powersupply_relay_switching_powered_2: false,
+            backup_powered: is_powered,
+            backup_powersupply_relay_switching_powered_1: is_powered,
+            backup_powersupply_relay_switching_powered_2: is_powered,
 
             att_hdg_swtg_knob_id: context.get_identifier("ATT_HDG_SWITCHING_KNOB".to_owned()),
             att_hdg_swtg_knob_position: 1,
@@ -233,7 +253,14 @@ impl A320AdiruElectricalHarness {
             ir_instant_align_id: context.get_identifier("ADIRS_IR_INSTANT_ALIGN".to_owned()),
             ir_excess_motion_inhibit_id: context
                 .get_identifier("ADIRS_IR_EXCESS_MOTION_INHIBIT".to_owned()),
-        }
+        };
+
+        // Update the relay once, so that it is closed initially when spawning in powered.
+        result
+            .relay_time_delay_opening
+            .update(is_powered, Duration::from_millis(1));
+
+        result
     }
 
     pub fn update_before_adirus(
