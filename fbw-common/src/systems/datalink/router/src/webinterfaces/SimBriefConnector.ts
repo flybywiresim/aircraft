@@ -55,7 +55,7 @@ export class SimBriefConnector {
 
       const wptAltitude = parseInt(clbWpt.altitude_feet, 10);
 
-      if (wptIdx == 0) {
+      if (wptIdx === 0) {
         let altIdx = 0;
         // we need to backfill from altitude 0 to below wptAltitude in windData
         while (lastAltitude < wptAltitude) {
@@ -258,7 +258,7 @@ export class SimBriefConnector {
 
       const wptAltitude = parseInt(desWpt.altitude_feet, 10);
 
-      if (wptIdx == 0) {
+      if (wptIdx === 0) {
         let altIdx = desWpt.wind_data.level.length - 1;
         // we need to backfill from crz altitude to above next clbWpt.altitude_feet in windData
         while (lastAltitude > wptAltitude) {
@@ -272,20 +272,21 @@ export class SimBriefConnector {
 
       // Now we add the closest wind data to the altitude of the desWpt
       for (let levelIdx = desWpt.wind_data.level.length - 1; levelIdx >= 0; levelIdx--) {
+        // Iterate in reverse
         const wind = desWpt.wind_data.level[levelIdx];
         const altitude = parseInt(wind.altitude);
 
         let deltaNextLevel = 0;
         let deltaThisLevel = 0;
         // Look forwards for the closest level
-        if (levelIdx < desWpt.wind_data.level.length - 2) {
-          deltaNextLevel = Math.abs(wptAltitude - parseInt(desWpt.wind_data.level[levelIdx + 1].altitude));
+        if (levelIdx > 0) {
+          deltaNextLevel = Math.abs(wptAltitude - parseInt(desWpt.wind_data.level[levelIdx - 1].altitude));
           deltaThisLevel = Math.abs(wptAltitude - altitude);
         }
 
         // Check that altitude isn't backtracking
         if (altitude >= lastAltitude && lastAltitude > wptAltitude) {
-          const idx = deltaNextLevel > deltaThisLevel ? levelIdx : levelIdx + 1;
+          const idx = deltaNextLevel > deltaThisLevel ? levelIdx : levelIdx - 1;
 
           const idxAltitude = parseInt(desWpt.wind_data.level[idx].altitude);
           const trueDegrees = parseInt(desWpt.wind_data.level[idx].wind_dir);
