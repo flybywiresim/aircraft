@@ -36,12 +36,6 @@ export class AcarsConnector {
       return;
     }
 
-    /*
-    /*if (NXDataStore.getLegacy('CONFIG_HOPPIE_USERID', '') === '') {
-      console.log('No Hoppie-ID set');
-      return;
-    } */
-
     const body = {
       from: 'FBWA32NX',
       to: 'SERVER',
@@ -70,7 +64,7 @@ export class AcarsConnector {
   public static async connect(flightNo: string): Promise<AtsuStatusCodes> {
     if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1) {
       AcarsConnector.flightNumber = flightNo;
-      return AtsuStatusCodes.NoHoppieConnection;
+      return AtsuStatusCodes.NoAcarsConnection;
     }
 
     return AcarsConnector.isCallsignInUse(flightNo).then((code) => {
@@ -89,7 +83,7 @@ export class AcarsConnector {
 
   public static async isCallsignInUse(station: string): Promise<AtsuStatusCodes> {
     if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1) {
-      return AtsuStatusCodes.NoHoppieConnection;
+      return AtsuStatusCodes.NoAcarsConnection;
     }
 
     const body = {
@@ -117,7 +111,7 @@ export class AcarsConnector {
 
   public static async isStationAvailable(station: string): Promise<AtsuStatusCodes> {
     if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1 || AcarsConnector.flightNumber === '') {
-      return AtsuStatusCodes.NoHoppieConnection;
+      return AtsuStatusCodes.NoAcarsConnection;
     }
 
     if (station === AcarsConnector.flightNumber) {
@@ -153,7 +147,7 @@ export class AcarsConnector {
 
   private static async sendMessage(message: AtsuMessage, type: string): Promise<AtsuStatusCodes> {
     if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1 || AcarsConnector.flightNumber === '') {
-      return AtsuStatusCodes.NoHoppieConnection;
+      return AtsuStatusCodes.NoAcarsConnection;
     }
 
     const body = {
@@ -188,7 +182,7 @@ export class AcarsConnector {
     ) {
       return AcarsConnector.sendMessage(message, 'telex');
     }
-    return AtsuStatusCodes.NoHoppieConnection;
+    return AtsuStatusCodes.NoAcarsConnection;
   }
 
   public static async sendCpdlcMessage(message: CpdlcMessage, force: boolean): Promise<AtsuStatusCodes> {
@@ -198,7 +192,7 @@ export class AcarsConnector {
     ) {
       return AcarsConnector.sendMessage(message, 'cpdlc');
     }
-    return AtsuStatusCodes.NoHoppieConnection;
+    return AtsuStatusCodes.NoAcarsConnection;
   }
 
   private static levenshteinDistance(template: string, message: string, content: CpdlcMessageContent[]): number {
@@ -322,7 +316,7 @@ export class AcarsConnector {
     const retval: AtsuMessage[] = [];
 
     if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1 || AcarsConnector.flightNumber === '') {
-      return [AtsuStatusCodes.NoHoppieConnection, retval];
+      return [AtsuStatusCodes.NoAcarsConnection, retval];
     }
 
     try {
@@ -406,7 +400,7 @@ export class AcarsConnector {
 
       return [AtsuStatusCodes.Ok, retval];
     } catch (_err) {
-      return [AtsuStatusCodes.NoHoppieConnection, []];
+      return [AtsuStatusCodes.NoAcarsConnection, []];
     }
   }
 

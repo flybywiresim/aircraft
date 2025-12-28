@@ -61,13 +61,13 @@ export const AtsuAocPage = () => {
     getAcarsResponse(value)
       .then((response) => {
         if (!value) {
-          toast.success(`${t('Settings.AtsuAoc.YourHoppieIdHasBeenRemoved')} ${response}`);
+          toast.success(`${t('Settings.AtsuAoc.YourAcarsIdHasBeenRemoved')} ${response}`);
           return;
         }
-        toast.success(`${t('Settings.AtsuAoc.YourHoppieIdHasBeenValidated')} ${response}`);
+        toast.success(`${t('Settings.AtsuAoc.YourAcarsIdHasBeenValidated')} ${response}`);
       })
       .catch((_error) => {
-        toast.error(t('Settings.AtsuAoc.ThereWasAnErrorEncounteredWhenValidatingYourHoppieID'));
+        toast.error(t('Settings.AtsuAoc.ThereWasAnErrorEncounteredWhenValidatingYourAcarsId'));
       });
   };
 

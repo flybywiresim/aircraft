@@ -218,7 +218,7 @@ export class Router {
 
       if (code === AtsuStatusCodes.Ok) {
         return AcarsConnector.connect(flightNo).then((code) => {
-          if (code === AtsuStatusCodes.NoHoppieConnection) code = AtsuStatusCodes.Ok;
+          if (code === AtsuStatusCodes.NoAcarsConnection) code = AtsuStatusCodes.Ok;
           return code;
         });
       }
@@ -232,7 +232,7 @@ export class Router {
     if (retvalNXApi === AtsuStatusCodes.TelexDisabled) retvalNXApi = AtsuStatusCodes.Ok;
 
     let retvalHoppie = AcarsConnector.disconnect();
-    if (retvalHoppie === AtsuStatusCodes.NoHoppieConnection) retvalHoppie = AtsuStatusCodes.Ok;
+    if (retvalHoppie === AtsuStatusCodes.NoAcarsConnection) retvalHoppie = AtsuStatusCodes.Ok;
 
     if (retvalNXApi !== AtsuStatusCodes.Ok) return retvalNXApi;
     return retvalHoppie;
