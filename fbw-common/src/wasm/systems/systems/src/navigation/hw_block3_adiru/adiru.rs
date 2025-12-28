@@ -44,6 +44,12 @@ fn output_data_id(data_type: OutputDataType, number: usize, name: &str) -> Strin
     format!("ADIRS_{}_{}_{}", data_type, number, name)
 }
 
+#[derive(Default)]
+pub(super) struct InternalIrDiscreteInputs {
+    pub on_battery_power: bool,
+    pub dc_fail: bool,
+}
+
 pub struct AirDataInertialReferenceUnit {
     adr_failure: Failure,
     ir_failure: Failure,
@@ -64,6 +70,10 @@ pub struct AirDataInertialReferenceUnit {
 
     /// Confirmation node for the power down
     power_down_confirm: ConfirmationNode,
+
+    /// Powersupply monitoring values
+    on_battery_power: bool,
+    dc_failure: bool,
 
     /// How long the self checks take for runtimes running on this computer.
     adr_self_check_time: Duration,
@@ -184,7 +194,7 @@ impl AirDataInertialReferenceUnit {
     pub fn new(context: &mut InitContext, num: usize) -> Self {
         let is_powered = context.has_engines_running();
 
-        Self {
+        let mut result = Self {
             adr_failure: Failure::new(FailureType::Adr(num)),
             ir_failure: Failure::new(FailureType::Ir(num)),
 
@@ -210,6 +220,8 @@ impl AirDataInertialReferenceUnit {
             power_down_confirm: ConfirmationNode::new_rising(Duration::from_millis(
                 Self::POWER_DOWN_DURATION,
             )),
+            on_battery_power: false,
+            dc_failure: false,
             adr_self_check_time: Duration::from_secs_f64(random_from_range(
                 Self::ADR_AVERAGE_STARTUP_TIME_MILLIS as f64 / 1000. - 1.,
                 Self::ADR_AVERAGE_STARTUP_TIME_MILLIS as f64 / 1000. + 1.,
@@ -435,7 +447,15 @@ impl AirDataInertialReferenceUnit {
                 num,
                 Self::MAINT_WORD,
             )),
-        }
+        };
+
+        // Update so that the ADIRU starts fully powered down in C/D
+        result.power_down_confirm.update(
+            !is_powered,
+            Duration::from_millis(Self::POWER_DOWN_DURATION),
+        );
+
+        result
     }
 
     pub fn set_powered(&mut self, primary_powered: bool, backup_powered: bool) {
@@ -477,10 +497,16 @@ impl AirDataInertialReferenceUnit {
         }
 
         // Technically this should also reset if unpowered
-        self.power_down_confirm.update(
+        let is_powered = !self.power_down_confirm.update(
             !ir_discrete_inputs.mode_select_m1 && !ir_discrete_inputs.mode_select_m2,
             context.delta(),
         );
+
+        self.on_battery_power = is_powered
+            && self.backup_unpowered_for < self.power_holdover
+            && self.primary_unpowered_for > self.power_holdover;
+
+        self.dc_failure = is_powered && self.backup_unpowered_for > self.power_holdover;
     }
 
     fn update_adr(
@@ -566,6 +592,10 @@ impl AirDataInertialReferenceUnit {
             runtime.update(
                 context,
                 ir_discrete_inputs,
+                &InternalIrDiscreteInputs {
+                    on_battery_power: self.on_battery_power,
+                    dc_fail: self.dc_failure,
+                },
                 &self.adr_bus_output_data,
                 adr_1.bus_outputs(),
                 adr_2.bus_outputs(),
