@@ -344,9 +344,9 @@ export class AcarsConnector {
       }
 
       // split up the received data into multiple messages
-      let messages = text.split(/({[\s\S\n]*?})/gm);
+      let messages = text.trim().split(/({[\s\S\n]*?})/gm);
       messages = messages.filter(
-        (elem) => elem !== 'ok' && elem !== 'ok ' && elem !== '} ' && elem !== '}' && elem !== '}\n' && elem !== '',
+        (elem) => elem !== 'ok' && elem !== 'ok ' && elem !== '} ' && elem !== '}' && elem !== '',
       );
 
       // create the messages
@@ -356,7 +356,7 @@ export class AcarsConnector {
         const entries = element.substring(1).split(/({[\s\S\n]*?})/gm);
 
         // get all relevant information
-        const metadata = entries[0].trim().split(' ');
+        const metadata = entries[0].split(' ');
         const sender = metadata[0].toUpperCase();
         const type = metadata[1].toLowerCase();
         const content = entries[1].replace(/{/, '').replace(/}/, '').toUpperCase();
