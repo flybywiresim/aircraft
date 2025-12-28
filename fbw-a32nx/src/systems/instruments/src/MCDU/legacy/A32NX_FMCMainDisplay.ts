@@ -94,6 +94,7 @@ import { ProfilePhase } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { bearingTo } from 'msfs-geo';
 import { WindUtils } from '@fmgc/guidance/vnav/wind/WindUtils';
+import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
 
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
@@ -5626,7 +5627,12 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
         console.log(`[FMS] Uplinked winds: ${formatWindUplinkMessage(uplink)}`);
 
-        PendingWindUplinkParser.setFromUplink(uplink, plan, this.flightPhaseManager.phase);
+        PendingWindUplinkParser.setFromUplink(
+          uplink,
+          plan,
+          this.flightPhaseManager.phase,
+          FpmConfigs.A320_HONEYWELL_H3,
+        );
 
         this.addMessageToQueue(
           NXSystemMessages.windTempDataUplk,

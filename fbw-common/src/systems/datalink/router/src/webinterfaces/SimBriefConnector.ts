@@ -1,7 +1,7 @@
 //  Copyright (c) 2023 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { getSimBriefOfp, ISimbriefData, MathUtils, Vec2Utils } from '@flybywiresim/fbw-sdk';
+import { getSimBriefOfp, ISimbriefData, MathUtils, Vec2Utils, IWindLevel, INavlogFix } from '@flybywiresim/fbw-sdk';
 import {
   AtsuStatusCodes,
   UplinkedCruiseWindEntry,
@@ -13,6 +13,8 @@ import {
 import { Vec2Math } from '@microsoft/msfs-sdk';
 
 export class SimBriefConnector {
+  private static readonly WindVectorCache = [Vec2Math.create(), Vec2Math.create(), Vec2Math.create()];
+
   public static async receiveSimBriefWinds(request: WindRequestMessage): Promise<[AtsuStatusCodes, WindUplinkMessage]> {
     try {
       const body = await getSimBriefOfp();
@@ -36,43 +38,40 @@ export class SimBriefConnector {
     };
   }
 
-  private static parseClimbWinds(
-    navlog: Required<ISimbriefData>['navlog'],
-    request: WindRequestMessage,
-  ): UplinkedWindLevel[] | undefined {
+  private static parseClimbWinds(navlog: INavlogFix[], request: WindRequestMessage): UplinkedWindLevel[] | undefined {
     if (request.climbWindLevel === undefined) {
       return undefined;
     }
 
     const result: UplinkedWindLevel[] = [];
 
-    const clbWpts = navlog.filter((val) => val.stage === 'CLB');
     let lastAltitude = 0;
 
-    // iterate through each clbWpt grabbing the wind data
-    clbWpts.forEach((clbWpt, wptIdx) => {
+    for (let wptIdx = 0; wptIdx < navlog.length; wptIdx++) {
+      const clbWpt = navlog[wptIdx];
+      if (clbWpt.stage !== 'CLB') {
+        continue;
+      }
+
       const wptAltitude = parseInt(clbWpt.altitude_feet, 10);
 
       if (wptIdx == 0) {
         let altIdx = 0;
         // we need to backfill from altitude 0 to below wptAltitude in windData
         while (lastAltitude < wptAltitude) {
-          const altitude = parseInt(clbWpt.wind_data.level[altIdx].altitude);
-          const magnitude = parseInt(clbWpt.wind_data.level[altIdx].wind_spd);
-          const trueDegrees = parseInt(clbWpt.wind_data.level[altIdx].wind_dir);
+          const windLevel = this.parseWindLevel(clbWpt.wind_data.level[altIdx]);
 
-          result.push({
-            trueDegrees,
-            magnitude,
-            flightLevel: Math.round(altitude / 100),
-          });
+          result.push(windLevel);
 
-          lastAltitude = altitude;
+          lastAltitude = windLevel.flightLevel * 100;
           altIdx++;
         }
       }
+
       // Now we add the closest wind data to the altitude of the clbWpt
-      clbWpt.wind_data.level.forEach((wind, levelIdx) => {
+      for (let levelIdx = 0; levelIdx < clbWpt.wind_data.level.length; levelIdx++) {
+        const wind = clbWpt.wind_data.level[levelIdx];
+
         const altitude = parseInt(wind.altitude);
 
         let deltaPrevLevel = 0;
@@ -101,14 +100,14 @@ export class SimBriefConnector {
             lastAltitude = idxAltitude;
           }
         }
-      });
-    });
+      }
+    }
 
     return result.sort((a, b) => b.flightLevel - a.flightLevel);
   }
 
   private static parseCruiseWinds(
-    navlog: Required<ISimbriefData>['navlog'],
+    navlog: INavlogFix[],
     request: WindRequestMessage,
   ): UplinkedCruiseWindSet[] | undefined {
     if (request.cruiseWinds === undefined || request.cruiseWinds.flightLevels.length === 0) {
@@ -197,12 +196,12 @@ export class SimBriefConnector {
             const vec1 = Vec2Math.setFromPolar(
               lowerWindSpd,
               lowerWindDir * MathUtils.DEGREES_TO_RADIANS,
-              Vec2Math.create(),
+              this.WindVectorCache[0],
             );
             const vec2 = Vec2Math.setFromPolar(
               upperWindSpd,
               upperWindDir * MathUtils.DEGREES_TO_RADIANS,
-              Vec2Math.create(),
+              this.WindVectorCache[1],
             );
 
             const interpolatedVector = Vec2Utils.interpolate(
@@ -211,7 +210,7 @@ export class SimBriefConnector {
               upperLevel,
               vec1,
               vec2,
-              Vec2Math.create(),
+              this.WindVectorCache[2],
             );
 
             responseFix.trueDegrees = Math.round(
@@ -240,10 +239,7 @@ export class SimBriefConnector {
     return result;
   }
 
-  private static parseDescentWinds(
-    navlog: Required<ISimbriefData>['navlog'],
-    request: WindRequestMessage,
-  ): UplinkedWindLevel[] | undefined {
+  private static parseDescentWinds(navlog: INavlogFix[], request: WindRequestMessage): UplinkedWindLevel[] | undefined {
     if (request.descentWindLevel === undefined) {
       return undefined;
     }
@@ -251,10 +247,13 @@ export class SimBriefConnector {
     const result: UplinkedWindLevel[] = [];
 
     let lastAltitude = 45000;
-    navlog.forEach((desWpt, wptIdx) => {
-      // TOD is marked as cruise stage, but we want it's topmost wind data
+
+    for (let wptIdx = 0; wptIdx < navlog.length; wptIdx++) {
+      const desWpt = navlog[wptIdx];
+
+      // TOD is marked as cruise stage, but we want its topmost wind data
       if (desWpt.ident !== 'TOD' && desWpt.stage !== 'DSC') {
-        return;
+        continue;
       }
 
       const wptAltitude = parseInt(desWpt.altitude_feet, 10);
@@ -263,21 +262,17 @@ export class SimBriefConnector {
         let altIdx = desWpt.wind_data.level.length - 1;
         // we need to backfill from crz altitude to above next clbWpt.altitude_feet in windData
         while (lastAltitude > wptAltitude) {
-          const altitude = parseInt(desWpt.wind_data.level[altIdx].altitude);
-          const magnitude = parseInt(desWpt.wind_data.level[altIdx].wind_spd);
-          const trueDegrees = parseInt(desWpt.wind_data.level[altIdx].wind_dir);
+          const windLevel = this.parseWindLevel(desWpt.wind_data.level[altIdx]);
 
-          result.push({
-            trueDegrees,
-            magnitude,
-            flightLevel: Math.round(altitude / 100),
-          });
-          lastAltitude = altitude;
+          result.push(windLevel);
+          lastAltitude = windLevel.flightLevel * 100;
           altIdx--;
         }
       }
+
       // Now we add the closest wind data to the altitude of the desWpt
-      desWpt.wind_data.level.reverse().forEach((wind, levelIdx) => {
+      for (let levelIdx = desWpt.wind_data.level.length - 1; levelIdx >= 0; levelIdx--) {
+        const wind = desWpt.wind_data.level[levelIdx];
         const altitude = parseInt(wind.altitude);
 
         let deltaNextLevel = 0;
@@ -303,11 +298,12 @@ export class SimBriefConnector {
               magnitude,
               flightLevel: Math.round(idxAltitude / 100),
             });
+
             lastAltitude = idxAltitude;
           }
         }
-      });
-    });
+      }
+    }
 
     return result;
   }
@@ -324,6 +320,18 @@ export class SimBriefConnector {
       flightLevel: Math.round(alternate.cruiseAltitude / 100),
       trueDegrees: alternate.averageWindDirection,
       magnitude: alternate.averageWindSpeed,
+    };
+  }
+
+  private static parseWindLevel(windLevel: IWindLevel): UplinkedWindLevel {
+    const altitude = parseInt(windLevel.altitude);
+    const magnitude = parseInt(windLevel.wind_spd);
+    const trueDegrees = parseInt(windLevel.wind_dir);
+
+    return {
+      trueDegrees,
+      magnitude,
+      flightLevel: Math.round(altitude / 100),
     };
   }
 }
