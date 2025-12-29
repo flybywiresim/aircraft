@@ -28,7 +28,7 @@ export class AcarsConnector {
 
   public static fansMode: FansMode = FansMode.FansNone;
 
-  public static async activateHoppie() {
+  public static async activateAcars() {
     SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 0);
 
     if (NXDataStore.getSetting('ACARS_PROVIDER').get() === 'NONE') {
@@ -47,9 +47,9 @@ export class AcarsConnector {
       .then((resp) => {
         if (resp.response !== 'error {invalid logon code}') {
           SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 1);
-          console.log('Activated Hoppie ID');
+          console.log('Activated ACARS-ID');
         } else {
-          console.log('Invalid Hoppie-ID set');
+          console.log('Invalid ACARS-ID set');
         }
       })
       .catch((e) => {
@@ -57,7 +57,7 @@ export class AcarsConnector {
       });
   }
 
-  public static deactivateHoppie(): void {
+  public static deactivateAcars(): void {
     SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 0);
   }
 

@@ -74,9 +74,9 @@ export const AtsuAocPage = () => {
   const handleAcarsProviderChange = (provider: NXDataStoreSettings['ACARS_PROVIDER']) => {
     setAcarsProvider(provider);
     if (provider == 'NONE') {
-      AcarsConnector.deactivateHoppie();
+      AcarsConnector.deactivateAcars();
     } else {
-      AcarsConnector.activateHoppie();
+      AcarsConnector.activateAcars();
     }
   };
 
@@ -144,7 +144,7 @@ export const AtsuAocPage = () => {
 
   function handleWeatherSource(source: string, type: string) {
     if (type !== 'TAF') {
-      AcarsConnector.deactivateHoppie();
+      AcarsConnector.deactivateAcars();
     }
 
     if (type === 'ATIS') {
@@ -156,7 +156,7 @@ export const AtsuAocPage = () => {
     }
 
     if (type !== 'TAF') {
-      AcarsConnector.activateHoppie();
+      AcarsConnector.activateAcars();
     }
   }
 
