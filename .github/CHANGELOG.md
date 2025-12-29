@@ -12,9 +12,6 @@
 
 ## 0.15.0
 
-<<<<<<< HEAD
-1. [A32NX/OVHD] Update battery button annunciators to be bright regardless of BRT/DIM switch position - @BravoMike99 (bruno_pt99)
-=======
 1. [OVHD] Implement FAULT light flickering during self-test sequence of PRIM, SEC, ELAC, FAC - @flogross89 (floridude)
 1. [A32NX/SFCC] Added implementation of SAP and FAP in SFCC - @Eagle941 (Joe)
 1. [A32NX/SFCC] Connected SFCC to electrical busses with simulation of power consumption and power restoration behaviour - @Eagle941 (Joe)
@@ -50,7 +47,7 @@
 1. [ATSU] Fix certain aerodromes ATIS letter not being retrieved correctly - @clc0609 (Coby)
 1. [A380X/FUEL SYSTEM] Fuel system update - @donstim (donbikes) & @Maximilian-Reuter (\_chaoz_)
 1. [FMS] Fix incorrect sign on glideslope angle (FS2020 only) - @tracernz (Mike)
->>>>>>> upstream/master
+1. [A32NX/OVHD] Update battery button annunciators to be bright regardless of BRT/DIM switch position - @BravoMike99 (bruno_pt99)
 
 ## 0.14.0
 
