@@ -233,7 +233,7 @@ export class CDUHoldAtPage {
     rows.push(['', '', '----\xa0\xa0----']);
     rows.push(['']);
     rows.push(['']);
-    rows.push([tmpy ? '{amber}{ERASE{end}' : '', tmpy ? '{amber}INSERT*{end}' : '', '']);
+    rows.push([tmpy ? '{amber}{ERASE{end}' : '{RETURN', tmpy ? '{amber}INSERT*{end}' : '', '']);
 
     mcdu.setTemplate([...rows]);
 
@@ -315,7 +315,7 @@ export class CDUHoldAtPage {
       };
     }
 
-    // erase
+    // erase/return
     mcdu.onLeftInput[5] = () => {
       if (tmpy) {
         mcdu.eraseTemporaryFlightPlan(() => {
@@ -327,6 +327,14 @@ export class CDUHoldAtPage {
             inAlternate,
           );
         });
+      } else {
+        CDULateralRevisionPage.ShowPage(
+          mcdu,
+          targetPlan.maybeElementAt(originalFpIndex),
+          originalFpIndex,
+          forPlan,
+          inAlternate,
+        );
       }
     };
 
