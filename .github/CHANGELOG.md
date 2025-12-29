@@ -34,7 +34,6 @@
 1. [A380X/FWS] Add FCDC, SLAT/FLAP SYS, FWS+FCDC, FWS+CPIOM faults - @flogross89 (floridude)
 1. [A32NX/FMS] Removed required leading zeros for acceleration, thrust reduction, and transition altitudes - @Jonny23787 (Jonathan)
 1. [A32NX/FMS] Adjusted TRANS ALT allowed entry range - @Jonny23787 (Jonathan)
-1. [A32NX/FMS] Add - sign to slope value on RAD NAV page - @Jonny23787 (Jonathan)
 1. [A32NX/FMS] Fix "NOT ALLOWED IN NAV" when sequencing TO waypoint while in LOC mode - @BravoMike99 (bruno_pt99)
 1. [A380X/SD] Improve STS page: Add deferred procedures, page switching, MORE page, improve performance - @flogross89 (floridude)
 1. [A32NX/FMS] Adjusted position of flight phase and flight number on PROG page  - @Jonny23787 (Jonathan)
@@ -47,6 +46,7 @@
 1. [A380X/FWS] Add ENG THRUST LOCKED & AUTO FLT A/THR LIMITED abnornmal sensed procedures - @BravoMike99 (bruno_pt99)
 1. [ATSU] Fix certain aerodromes ATIS letter not being retrieved correctly - @clc0609 (Coby)
 1. [A380X/FUEL SYSTEM] Fuel system update - @donstim (donbikes) & @Maximilian-Reuter (\_chaoz_)
+1. [FMS] Fix incorrect sign on glideslope angle (FS2020 only) - @tracernz (Mike)
 
 ## 0.14.0
 
