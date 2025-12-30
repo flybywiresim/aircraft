@@ -13,9 +13,7 @@ interface MfdAtccomDAtisProps extends AtccomMfdPageProps {}
 export class MfdAtccomDAtis extends DisplayComponent<MfdAtccomDAtisProps> {
   protected onNewData() {}
 
-  private datalink = this.props.atcService;
-
-  private airports = this.datalink.getAtisAirports();
+  private airports = this.props.atcService.getAtisAirports();
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -64,7 +62,7 @@ export class MfdAtccomDAtis extends DisplayComponent<MfdAtccomDAtisProps> {
               label="UPDATE<br/>ALL"
               disabled={Subject.create(false)}
               onClick={() => {
-                this.datalink.updateAllAtis();
+                this.props.atcService.updateAllAtis();
               }}
               buttonStyle="width: 190px;"
               containerStyle="position:absolute; top: 3px; right:0px"

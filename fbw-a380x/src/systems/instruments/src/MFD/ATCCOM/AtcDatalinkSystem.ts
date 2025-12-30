@@ -134,21 +134,18 @@ export class AtcDatalinkSystem implements Instrument {
       .whenChanged()
       .handle((icao) => {
         this.initAtis(0, icao);
-        console.log('origin airport updated');
       });
     this.sub
       .on('fmsDestination')
       .whenChanged()
       .handle((icao) => {
         this.initAtis(1, icao);
-        console.log('dest airport updated');
       });
     this.sub
       .on('fmsAlternate')
       .whenChanged()
       .handle((icao) => {
         this.initAtis(2, icao);
-        console.log('altn airport updated');
       });
   }
 

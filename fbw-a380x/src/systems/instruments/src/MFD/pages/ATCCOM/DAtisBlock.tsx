@@ -31,14 +31,6 @@ interface DAtisBlockProps extends AtccomMfdPageProps {
   isAutoPrintEnabled?: Subscribable<boolean>;
 }
 
-// MESSAGES
-// D-ATIS RECEIVED
-// D-ATIS GROUND MSG
-// D-ATIS NO REPLY
-// D-ATIS SEND FAIL
-// CHECK FMS MESSAGE
-// IND
-
 export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
   private readonly subs = [] as Subscription[];
 
