@@ -1,15 +1,13 @@
-use crate::{
+use systems::{
     shared::LgciuGearExtension,
     simulation::{InitContext, Read, SimulationElement, SimulatorReader, VariableIdentifier},
     surveillance::{
-        egpws::runtime::EnhancedGroundProximityWarningComputerPinProgramming,
-        taws::TerrainAwarenessWarningSystemDiscreteInputs,
+        egpws::EgpwsElectricalHarness, taws::TerrainAwarenessWarningSystemDiscreteInputs,
     },
 };
 
-pub struct EgpwsElectricalHarness {
+pub struct A320EgpwsElectricalHarness {
     discrete_inputs: TerrainAwarenessWarningSystemDiscreteInputs,
-    pin_programs: EnhancedGroundProximityWarningComputerPinProgramming,
 
     flaps_mode_off: bool,
     landing_flaps_3: bool,
@@ -29,7 +27,7 @@ pub struct EgpwsElectricalHarness {
     slew_active_id: VariableIdentifier,
 }
 
-impl EgpwsElectricalHarness {
+impl A320EgpwsElectricalHarness {
     pub(super) const GPWS_TERR_OFF_KEY: &str = "GPWS_TERR_OFF";
     pub(super) const GPWS_SYS_OFF_KEY: &str = "GPWS_SYS_OFF";
     pub(super) const GPWS_GS_OFF_KEY: &str = "GPWS_GS_OFF";
@@ -44,7 +42,6 @@ impl EgpwsElectricalHarness {
     pub fn new(context: &mut InitContext) -> Self {
         Self {
             discrete_inputs: TerrainAwarenessWarningSystemDiscreteInputs::default(),
-            pin_programs: EnhancedGroundProximityWarningComputerPinProgramming::default(),
 
             flaps_mode_off: false,
             landing_flaps_3: false,
@@ -75,17 +72,13 @@ impl EgpwsElectricalHarness {
         self.discrete_inputs.steep_approach_mode = false; // TODO
         self.discrete_inputs.audio_inhibit = false; // TODO: Comes from FWC during e.g. STALL STALL
     }
-
-    pub fn discrete_inputs(&self) -> &TerrainAwarenessWarningSystemDiscreteInputs {
+}
+impl EgpwsElectricalHarness for A320EgpwsElectricalHarness {
+    fn discrete_inputs(&self) -> &TerrainAwarenessWarningSystemDiscreteInputs {
         &self.discrete_inputs
     }
-
-    pub fn pin_programs(&self) -> &EnhancedGroundProximityWarningComputerPinProgramming {
-        &self.pin_programs
-    }
 }
-
-impl SimulationElement for EgpwsElectricalHarness {
+impl SimulationElement for A320EgpwsElectricalHarness {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.flaps_mode_off = reader.read(&self.flap_mode_off_id);
         self.landing_flaps_3 = reader.read(&self.landing_flap_3_on_id);

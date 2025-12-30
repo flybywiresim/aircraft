@@ -9,12 +9,14 @@ mod navigation;
 mod payload;
 mod pneumatic;
 mod power_consumption;
+mod surveillance;
 
 use self::{
     air_conditioning::A320AirConditioning,
     fuel::A320Fuel,
     payload::A320Payload,
     pneumatic::{A320Pneumatic, A320PneumaticOverheadPanel},
+    surveillance::A320EgpwsElectricalHarness,
 };
 use airframe::A320Airframe;
 use electrical::{
@@ -27,10 +29,7 @@ use power_consumption::A320PowerConsumption;
 use systems::navigation::ils::MultiModeReceiverShim;
 use systems::{
     enhanced_gpwc::EnhancedGroundProximityWarningComputer,
-    surveillance::egpws::{
-        electrical_harness::EgpwsElectricalHarness,
-        EnhancedGroundProximityWarningComputer as EnhancedGroundProximityWarningComputer2,
-    },
+    surveillance::egpws::EnhancedGroundProximityWarningComputer as EnhancedGroundProximityWarningComputer2,
 };
 use systems::{hydraulic::brake::BrakeFanPanel, simulation::InitContext};
 use uom::si::{f64::Length, length::nautical_mile};
@@ -83,7 +82,7 @@ pub struct A320 {
     radio_altimeters: A320RadioAltimeters,
     egpwc: EnhancedGroundProximityWarningComputer,
     egpwc_2: EnhancedGroundProximityWarningComputer2,
-    egpws_electrical_harness: EgpwsElectricalHarness,
+    egpws_electrical_harness: A320EgpwsElectricalHarness,
     mmr: MultiModeReceiverShim,
     reverse_thrust: ReverserForce,
 }
@@ -144,7 +143,7 @@ impl A320 {
                 context,
                 ElectricalBusType::AlternatingCurrent(1),
             ),
-            egpws_electrical_harness: EgpwsElectricalHarness::new(context),
+            egpws_electrical_harness: A320EgpwsElectricalHarness::new(context),
             mmr: MultiModeReceiverShim::new(context),
             reverse_thrust: ReverserForce::new(context),
         }

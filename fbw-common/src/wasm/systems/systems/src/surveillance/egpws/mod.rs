@@ -1,4 +1,3 @@
-pub mod electrical_harness;
 mod runtime;
 #[cfg(test)]
 mod test;
@@ -16,12 +15,12 @@ use crate::{
         VariableIdentifier, Write,
     },
     surveillance::{
-        egpws::{
-            electrical_harness::EgpwsElectricalHarness,
-            runtime::{AuralWarning, EnhancedGroundProximityWarningComputerRuntime, FlightPhase},
+        egpws::runtime::{
+            AuralWarning, EnhancedGroundProximityWarningComputerRuntime, FlightPhase,
         },
         taws::{
             TerrainAwarenessWarningSystemBusOutput, TerrainAwarenessWarningSystemBusOutputs,
+            TerrainAwarenessWarningSystemDiscreteInputs,
             TerrainAwarenessWarningSystemDiscreteOutput,
             TerrainAwarenessWarningSystemDiscreteOutputs,
         },
@@ -29,6 +28,16 @@ use crate::{
 };
 use std::time::Duration;
 use uom::si::{f64::Power, power::watt};
+
+pub trait EgpwsElectricalHarness {
+    fn discrete_inputs(&self) -> &TerrainAwarenessWarningSystemDiscreteInputs;
+}
+
+#[derive(Default, Clone, Copy, Debug)]
+pub struct EnhancedGroundProximityWarningComputerPinProgramming {
+    pub audio_declutter_disable: bool,
+    pub alternate_lamp_format: bool,
+}
 
 pub struct EnhancedGroundProximityWarningComputer {
     failure: Failure,
@@ -132,7 +141,7 @@ impl EnhancedGroundProximityWarningComputer {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        electrical_harness: &EgpwsElectricalHarness,
+        electrical_harness: &impl EgpwsElectricalHarness,
         ra1: &impl RadioAltimeter,
         ra2: &impl RadioAltimeter,
         adr: &impl AirDataReferenceBus,

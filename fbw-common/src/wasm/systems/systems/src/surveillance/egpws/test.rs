@@ -14,7 +14,7 @@ use crate::{
     electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
     shared::{
         arinc429::{Arinc429Word, SignStatus},
-        LgciuGearExtension, MachNumber, PotentialOrigin, PowerConsumptionReport,
+        MachNumber, PotentialOrigin, PowerConsumptionReport,
     },
     simulation::{
         test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
@@ -23,42 +23,6 @@ use crate::{
 };
 
 use super::*;
-
-struct TestLgciu {
-    extended: bool,
-}
-impl TestLgciu {
-    fn new(extended: bool) -> Self {
-        Self { extended }
-    }
-
-    fn set_gear_extended(&mut self, extended: bool) {
-        self.extended = extended;
-    }
-}
-impl LgciuGearExtension for TestLgciu {
-    fn all_down_and_locked(&self) -> bool {
-        self.extended
-    }
-    fn all_up_and_locked(&self) -> bool {
-        !self.extended
-    }
-    fn main_down_and_locked(&self) -> bool {
-        self.extended
-    }
-    fn main_up_and_locked(&self) -> bool {
-        !self.extended
-    }
-    fn nose_down_and_locked(&self) -> bool {
-        self.extended
-    }
-    fn nose_up_and_locked(&self) -> bool {
-        !self.extended
-    }
-    fn left_down_and_locked(&self) -> bool {
-        self.extended
-    }
-}
 
 struct TestRa {
     radio_altitude: Length,
@@ -408,14 +372,50 @@ impl InstrumentLandingSystemBus for TestIls {
     }
 }
 
+struct TestElectricalHarness {
+    discrete_inputs: TerrainAwarenessWarningSystemDiscreteInputs,
+}
+impl TestElectricalHarness {
+    pub fn new() -> Self {
+        Self {
+            discrete_inputs: TerrainAwarenessWarningSystemDiscreteInputs::default(),
+        }
+    }
+
+    fn set_sys_button_pressed(&mut self, pressed: bool) {
+        self.discrete_inputs.gpws_inhibit = pressed;
+    }
+
+    fn set_gs_mode_button_pressed(&mut self, pressed: bool) {
+        self.discrete_inputs.glideslope_inhibit = pressed;
+    }
+
+    fn set_gs_cancel_self_test_pressed(&mut self, pressed: bool) {
+        self.discrete_inputs.gs_cancel = pressed;
+        self.discrete_inputs.self_test = pressed;
+    }
+
+    fn set_landing_flaps_extended(&mut self, extended: bool) {
+        self.discrete_inputs.landing_flaps = extended;
+    }
+
+    fn set_gear_extended(&mut self, extended: bool) {
+        self.discrete_inputs.landing_gear_downlocked = extended;
+    }
+}
+impl EgpwsElectricalHarness for TestElectricalHarness {
+    fn discrete_inputs(&self) -> &TerrainAwarenessWarningSystemDiscreteInputs {
+        &self.discrete_inputs
+    }
+}
+
 struct TestAircraft {
     electricity_source: TestElectricitySource,
     ac_1_bus: ElectricalBus,
-    lgciu: TestLgciu,
     ra: TestRa,
     adiru: TestAdiru,
     ils: TestIls,
-    egpws_electrical_harness: EgpwsElectricalHarness,
+    egpws_electrical_harness: TestElectricalHarness,
     egpwc: EnhancedGroundProximityWarningComputer,
     is_ac_1_powered: bool,
     power_consumption: Power,
@@ -428,11 +428,10 @@ impl TestAircraft {
                 PotentialOrigin::EngineGenerator(1),
             ),
             ac_1_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(1)),
-            lgciu: TestLgciu::new(false),
             ra: TestRa::new(context, Length::new::<foot>(0.0)),
             adiru: TestAdiru::new(context),
             ils: TestIls::new(),
-            egpws_electrical_harness: EgpwsElectricalHarness::new(context),
+            egpws_electrical_harness: TestElectricalHarness::new(),
             egpwc: EnhancedGroundProximityWarningComputer::new(
                 context,
                 ElectricalBusType::AlternatingCurrent(1),
@@ -462,7 +461,6 @@ impl Aircraft for TestAircraft {
     }
 
     fn update_after_power_distribution(&mut self, context: &UpdateContext) {
-        self.egpws_electrical_harness.update(&self.lgciu);
         self.egpwc.update(
             context,
             &self.egpws_electrical_harness,
@@ -484,12 +482,9 @@ impl SimulationElement for TestAircraft {
     }
 
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        //self.ils.accept(visitor);
         self.adiru.accept(visitor);
         self.ra.accept(visitor);
-        //self.lgciu.accept(visitor);
         self.egpwc.accept(visitor);
-        self.egpws_electrical_harness.accept(visitor);
 
         visitor.visit(self);
     }
@@ -569,33 +564,36 @@ impl EgpwcTestBed {
     }
 
     fn gear_extended(mut self, extended: bool) -> Self {
-        self.command(|a| a.lgciu.set_gear_extended(extended));
-        self
-    }
-
-    fn flaps_mode_button_pressed(mut self, pressed: bool) -> Self {
-        self.write_by_name(EgpwsElectricalHarness::GPWS_FLAP_OFF_KEY, pressed);
+        self.command(|a| a.egpws_electrical_harness.set_gear_extended(extended));
         self
     }
 
     fn gs_mode_button_pressed(mut self, pressed: bool) -> Self {
-        self.write_by_name(EgpwsElectricalHarness::GPWS_GS_OFF_KEY, pressed);
+        self.command(|a| {
+            a.egpws_electrical_harness
+                .set_gs_mode_button_pressed(pressed)
+        });
         self
     }
 
     fn gpws_sys_button_pressed(mut self, pressed: bool) -> Self {
-        self.write_by_name(EgpwsElectricalHarness::GPWS_SYS_OFF_KEY, pressed);
+        self.command(|a| a.egpws_electrical_harness.set_sys_button_pressed(pressed));
         self
     }
 
     fn gpws_gs_cancel_self_test_pressed(mut self, pressed: bool) -> Self {
-        self.write_by_name(EgpwsElectricalHarness::GPWS_TEST_KEY, pressed);
+        self.command(|a| {
+            a.egpws_electrical_harness
+                .set_gs_cancel_self_test_pressed(pressed)
+        });
         self
     }
 
     fn flaps_extended(mut self, extended: bool) -> Self {
-        self.write_by_name(EgpwsElectricalHarness::SFCC_1_FAP_1_KEY, extended);
-        self.write_by_name(EgpwsElectricalHarness::SFCC_1_FAP_5_KEY, extended);
+        self.command(|a| {
+            a.egpws_electrical_harness
+                .set_landing_flaps_extended(extended)
+        });
         self
     }
 
@@ -1130,13 +1128,7 @@ fn mode_4_b_test() {
     test_bed.run_with_delta(Duration::from_millis(50));
     test_bed.assert_no_warning_active();
 
-    test_bed = test_bed
-        .flaps_extended(false)
-        .flaps_mode_button_pressed(true);
-    test_bed.run_with_delta(Duration::from_millis(50));
-    test_bed.assert_no_warning_active();
-
-    test_bed = test_bed.flaps_mode_button_pressed(false);
+    test_bed = test_bed.flaps_extended(false);
     test_bed.run_with_delta(Duration::from_millis(50));
     assert!(test_bed.get_audio_on());
     assert_eq!(

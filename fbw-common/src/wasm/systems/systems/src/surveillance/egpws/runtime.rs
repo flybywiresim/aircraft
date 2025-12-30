@@ -23,9 +23,12 @@ use crate::{
         rate_limiter::RateLimiter,
     },
     simulation::UpdateContext,
-    surveillance::taws::{
-        TerrainAwarenessWarningSystemBusOutputs, TerrainAwarenessWarningSystemDiscreteInputs,
-        TerrainAwarenessWarningSystemDiscreteOutputs,
+    surveillance::{
+        egpws::EnhancedGroundProximityWarningComputerPinProgramming,
+        taws::{
+            TerrainAwarenessWarningSystemBusOutputs, TerrainAwarenessWarningSystemDiscreteInputs,
+            TerrainAwarenessWarningSystemDiscreteOutputs,
+        },
     },
 };
 
@@ -70,12 +73,6 @@ impl AuralWarning {
             AuralWarning::ObstacleAhead => Duration::from_secs_f64(2.),
         }
     }
-}
-
-#[derive(Default, Clone, Copy, Debug)]
-pub struct EnhancedGroundProximityWarningComputerPinProgramming {
-    pub audio_declutter_disable: bool,
-    pub alternate_lamp_format: bool,
 }
 
 pub(super) struct EnhancedGroundProximityWarningComputerRuntime {
