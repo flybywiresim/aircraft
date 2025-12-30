@@ -195,8 +195,8 @@ impl MemoryNode {
 /// condition subsequently fails, the circuit will continue outputting hi until the down condition
 /// is met (value <= dn).
 pub struct HysteresisNode<T> {
-    up: T,
-    dn: T,
+    upper: T,
+    lower: T,
     output: bool,
 }
 
@@ -204,29 +204,23 @@ impl<T> HysteresisNode<T>
 where
     T: PartialOrd,
 {
-    pub fn new(dn: T, up: T) -> Self {
-        if up <= dn {
-            panic!("Up must be strictly greater than Dn");
+    pub fn new(lower: T, upper: T) -> Self {
+        if upper <= lower {
+            panic!("Upper threshold must be strictly greater than the lower threshold");
         }
         Self {
-            up,
-            dn,
+            upper,
+            lower,
             output: false,
         }
     }
 
     pub fn update(&mut self, value: T) -> bool {
-        self.output = if self.output {
-            if value <= self.dn {
-                false
-            } else {
-                self.output
-            }
-        } else if value >= self.up {
-            true
-        } else {
-            self.output
-        };
+        if value <= self.lower {
+            self.output = false;
+        } else if value >= self.upper {
+            self.output = true;
+        }
         self.output
     }
 }

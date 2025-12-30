@@ -161,13 +161,11 @@ impl EnhancedGroundProximityWarningComputer {
             self.discrete_output_data.terrain_inop = true;
             self.discrete_output_data.terrain_not_available = true;
             self.bus_output_data = TerrainAwarenessWarningSystemBusOutputs::default();
-            return;
-        }
+        } else if self.is_powered {
+            // As long as we're powered, we can proceed normally. If not, we can't run the runtime, but
+            // it's state will be frozen and if power is restored soon enough, we can proceed
+            // immediately without waiting for the runtime to start up again.
 
-        // As long as we're powered, we can proceed normally. If not, we can't run the runtime, but
-        // it's state will be frozen and if power is restored soon enough, we can proceed
-        // immediately without waiting for the runtime to start up again.
-        if self.is_powered {
             // Either initialize and run or continue running the existing runtime
             let runtime = self.runtime.get_or_insert_with(|| {
                 EnhancedGroundProximityWarningComputerRuntime::new(

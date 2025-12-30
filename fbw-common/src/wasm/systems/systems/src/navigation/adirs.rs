@@ -17,20 +17,18 @@ use crate::{
 use bitflags::bitflags;
 use nalgebra::{Rotation2, Vector2};
 use std::{fmt::Display, time::Duration};
-use uom::si::acceleration::meter_per_second_squared;
-use uom::si::angular_acceleration::degree_per_second_squared;
-use uom::si::pressure::inch_of_mercury;
 use uom::si::{
-    angle::degree,
-    angle::radian,
+    acceleration::meter_per_second_squared,
+    angle::{degree, radian},
     angular_velocity::degree_per_second,
     f64::*,
     length::foot,
-    pressure::hectopascal,
+    pressure::{hectopascal, inch_of_mercury},
     ratio::ratio,
     time::second,
     velocity::{foot_per_minute, foot_per_second, knot},
 };
+use uom::ConstZero;
 
 pub trait AirDataReferenceBus {
     /// Label 203
@@ -2412,24 +2410,15 @@ impl InertialReference {
 }
 impl InertialReferenceBus for InertialReference {
     fn pitch_angular_acc(&self) -> Arinc429Word<AngularAcceleration> {
-        Arinc429Word::new(
-            AngularAcceleration::new::<degree_per_second_squared>(0.),
-            SignStatus::NoComputedData,
-        )
+        Arinc429Word::new(AngularAcceleration::ZERO, SignStatus::NoComputedData)
     }
 
     fn roll_angular_acc(&self) -> Arinc429Word<AngularAcceleration> {
-        Arinc429Word::new(
-            AngularAcceleration::new::<degree_per_second_squared>(0.),
-            SignStatus::NoComputedData,
-        )
+        Arinc429Word::new(AngularAcceleration::ZERO, SignStatus::NoComputedData)
     }
 
     fn yaw_angular_acc(&self) -> Arinc429Word<AngularAcceleration> {
-        Arinc429Word::new(
-            AngularAcceleration::new::<degree_per_second_squared>(0.),
-            SignStatus::NoComputedData,
-        )
+        Arinc429Word::new(AngularAcceleration::ZERO, SignStatus::NoComputedData)
     }
 
     fn ppos_latitude(&self) -> Arinc429Word<Angle> {
@@ -2480,7 +2469,7 @@ impl InertialReferenceBus for InertialReference {
     }
 
     fn flight_path_accel(&self) -> Arinc429Word<Ratio> {
-        Arinc429Word::new(Ratio::new::<ratio>(0.), SignStatus::NoComputedData)
+        Arinc429Word::new(Ratio::ZERO, SignStatus::NoComputedData)
     }
 
     fn pitch_angle(&self) -> Arinc429Word<Angle> {
@@ -2519,7 +2508,7 @@ impl InertialReferenceBus for InertialReference {
     }
 
     fn inertial_altitude(&self) -> Arinc429Word<Length> {
-        Arinc429Word::new(Length::new::<foot>(0.), SignStatus::NoComputedData)
+        Arinc429Word::new(Length::ZERO, SignStatus::NoComputedData)
     }
 
     fn inertial_vertical_speed(&self) -> Arinc429Word<Velocity> {

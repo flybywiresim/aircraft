@@ -454,7 +454,7 @@ impl EnhancedGroundProximityWarningComputerRuntime {
                 vs
             } else {
                 self.vs_fault = true;
-                adr.vertical_speed().value_or_default()
+                Default::default()
             }
             .get::<foot_per_minute>();
 
@@ -466,7 +466,7 @@ impl EnhancedGroundProximityWarningComputerRuntime {
             alt
         } else {
             self.altitude_fault = true;
-            adr.standard_altitude().value_or_default()
+            Default::default()
         }
         .get::<foot>();
 
