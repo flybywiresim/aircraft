@@ -313,7 +313,7 @@ impl EnhancedGroundProximityWarningComputerRuntime {
         self.remaining_startup = self.remaining_startup.saturating_sub(context.delta());
 
         // If there's any startup time remaining, do nothing
-        if self.remaining_startup > Duration::ZERO {
+        if !self.is_initialized() {
             return;
         }
 
@@ -902,7 +902,8 @@ impl EnhancedGroundProximityWarningComputerRuntime {
             self.mode_5_cancel_active = false;
         }
 
-        // 0.0875 is 1 dot
+        // Rescale to dots with the respective glideslope and localizer scaling factors.
+        // See description of the ILS trait functions for more details.
         let loc_deviation_dots = ils.localizer_deviation().value().get::<ratio>() / 0.0775;
         let gs_deviation_dots_fly_up = -ils.glideslope_deviation().value().get::<ratio>() / 0.0875;
 
@@ -1062,31 +1063,31 @@ impl EnhancedGroundProximityWarningComputerRuntime {
 
         let basic_gpws_inhibit = discrete_inputs.gpws_inhibit || discrete_inputs.audio_inhibit;
 
-        if self.mode_1_pull_up_active && !basic_gpws_inhibit {
-            self.aural_output = AuralWarning::PullUp;
+        self.aural_output = if self.mode_1_pull_up_active && !basic_gpws_inhibit {
+            AuralWarning::PullUp
         } else if self.mode_2_pull_up_preface_active && !basic_gpws_inhibit {
-            self.aural_output = AuralWarning::Terrain;
+            AuralWarning::Terrain
         } else if self.mode_2_pull_up_active && !basic_gpws_inhibit {
-            self.aural_output = AuralWarning::PullUp;
+            AuralWarning::PullUp
         } else if self.mode_2_terrain_active && !basic_gpws_inhibit {
-            self.aural_output = AuralWarning::Terrain;
+            AuralWarning::Terrain
         } else if self.mode_4_too_low_terrain_voice_active && !basic_gpws_inhibit {
-            self.aural_output = AuralWarning::TooLowTerrain;
+            AuralWarning::TooLowTerrain
         } else if self.mode_4_too_low_gear_voice_active && !basic_gpws_inhibit {
-            self.aural_output = AuralWarning::TooLowGear;
+            AuralWarning::TooLowGear
         } else if self.mode_4_too_low_flaps_voice_active && !basic_gpws_inhibit {
-            self.aural_output = AuralWarning::TooLowFlaps;
+            AuralWarning::TooLowFlaps
         } else if self.mode_1_sinkrate_voice_active && !basic_gpws_inhibit {
-            self.aural_output = AuralWarning::SinkRate;
+            AuralWarning::SinkRate
         } else if self.mode_3_dont_sink_voice_active && !basic_gpws_inhibit {
-            self.aural_output = AuralWarning::DontSink;
+            AuralWarning::DontSink
         } else if self.mode_5_glideslope_soft_voice_active && !basic_gpws_inhibit {
-            self.aural_output = AuralWarning::GlideslopeSoft;
+            AuralWarning::GlideslopeSoft
         } else if self.mode_5_glideslope_hard_voice_active && !basic_gpws_inhibit {
-            self.aural_output = AuralWarning::GlideslopeHard;
+            AuralWarning::GlideslopeHard
         } else {
-            self.aural_output = AuralWarning::None;
-        }
+            AuralWarning::None
+        };
 
         // Also compute the number of times the current active aural warning has been emitted
         // This is used in different warning logics (i.e. Mode 1 sink rate warning)
