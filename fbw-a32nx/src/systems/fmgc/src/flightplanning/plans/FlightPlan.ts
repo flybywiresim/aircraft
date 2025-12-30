@@ -261,18 +261,6 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
     const removedLegs = this.enrouteSegment.allLegs.splice(0, indexInEnrouteSegment + 1, turningPoint, turnEnd);
 
-    if (isDirectWithAbeam(directTo))
-      this.abeamPointRequests.push(
-        ...removedLegs
-          .slice(1, -1)
-          .filter((leg) => isLeg(leg))
-          .filter((leg) => leg.isXF())
-          .map((leg) => ({
-            referenceFix: leg.abeamReference()!,
-            endLeg: this.activeLegIndex + 1,
-          })),
-      );
-
     this.incrementVersion();
 
     // In case of radial out, insert a discontinuity after the turn end
@@ -295,6 +283,19 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
     if (!this.requiresTurnDirectionAt(turnEndLegIndexInPlan + 1)) {
       this.removeForcedTurnAt(turnEndLegIndexInPlan + 1);
+    }
+
+    if (isDirectWithAbeam(directTo)) {
+      this.abeamPointRequests.push(
+        ...removedLegs
+          .slice(1, -1)
+          .filter((leg) => isLeg(leg))
+          .filter((leg) => leg.isXF())
+          .map((leg) => ({
+            referenceFix: leg.abeamReference()!,
+            endLeg: turnEndLegIndexInPlan + 1,
+          })),
+      );
     }
 
     this.setActiveLegIndex(turnEndLegIndexInPlan);
