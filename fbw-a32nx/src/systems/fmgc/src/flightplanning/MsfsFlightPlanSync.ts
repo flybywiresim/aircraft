@@ -164,24 +164,6 @@ export class MsfsFlightPlanSync {
       );
     }
 
-    let departure: Departure | undefined;
-    if (route.departure !== '') {
-      const departures = await db.backendDatabase.getDepartures(route.departureAirport.ident);
-      departure = departures.find((it) => it.ident === route.departure);
-
-      if (departure) {
-        await this.flightPlanInterface.setDepartureProcedure(departure.databaseId, FlightPlanIndex.Uplink);
-      }
-    }
-
-    if (route.departureTransition !== '' && departure) {
-      const transition = departure.enrouteTransitions.find((it) => it.ident === route.departureTransition);
-
-      if (transition) {
-        await this.flightPlanInterface.setDepartureEnrouteTransition(transition.databaseId, FlightPlanIndex.Uplink);
-      }
-    }
-
     let insertHead = 0;
 
     const updateInsertHead = () => {
@@ -260,6 +242,24 @@ export class MsfsFlightPlanSync {
       } else {
         await this.flightPlanInterface.nextWaypoint(insertHead, fix, FlightPlanIndex.Uplink, false);
         updateInsertHead();
+      }
+    }
+
+    let departure: Departure | undefined;
+    if (route.departure !== '') {
+      const departures = await db.backendDatabase.getDepartures(route.departureAirport.ident);
+      departure = departures.find((it) => it.ident === route.departure);
+
+      if (departure) {
+        await this.flightPlanInterface.setDepartureProcedure(departure.databaseId, FlightPlanIndex.Uplink);
+      }
+    }
+
+    if (route.departureTransition !== '' && departure) {
+      const transition = departure.enrouteTransitions.find((it) => it.ident === route.departureTransition);
+
+      if (transition) {
+        await this.flightPlanInterface.setDepartureEnrouteTransition(transition.databaseId, FlightPlanIndex.Uplink);
       }
     }
 
