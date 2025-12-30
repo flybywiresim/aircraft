@@ -1,7 +1,7 @@
 // Copyright (c) 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { Arinc429Register } from '@flybywiresim/fbw-sdk';
+import { Arinc429Register, RegisteredSimVar } from '@flybywiresim/fbw-sdk';
 import { SimVarValueType, Subject, Subscription } from '@microsoft/msfs-sdk';
 import { SdPages } from '@shared/EcamSystemPages';
 import { FwsCore } from 'systems-host/CpiomC/FlightWarningSystem/FwsCore';
@@ -14,8 +14,22 @@ const STS_DISPLAY_TIMER_DURATION = 3;
 const ECAM_LIGHT_DELAY_ALL = 200;
 const ECAM_ALL_CYCLE_DELAY = 3000;
 
+const MORE_AVAILABLE_FOR_PAGES = [SdPages.Status];
+
 export class FwsSystemDisplayLogic {
   private readonly subscriptions: Subscription[] = [];
+
+  private readonly sdCurrentPageIndexSimvar = RegisteredSimVar.create<SdPages>(
+    'L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX',
+    SimVarValueType.Enum,
+  );
+  private readonly sdFailPageIndexSimvar = RegisteredSimVar.create<SdPages>('L:A32NX_ECAM_SFAIL', SimVarValueType.Enum);
+  private readonly ecamAllButtonPushedSimvar = RegisteredSimVar.createBoolean('L:A32NX_BTN_ALL');
+
+  private readonly sdMoreShownSimvar = RegisteredSimVar.create<number>(
+    'L:A32NX_ECAM_SD_MORE_SHOWN',
+    SimVarValueType.Number,
+  );
 
   private readonly userSelectedPage = Subject.create<SdPages>(SdPages.None);
   private readonly currentPage = Subject.create<SdPages>(SdPages.Door);
@@ -40,24 +54,63 @@ export class FwsSystemDisplayLogic {
 
   private readonly apuRpm = Arinc429Register.empty();
 
+  private readonly stsNumberOfPagesSimvar = RegisteredSimVar.create<number>(
+    'L:A32NX_ECAM_SD_STS_NUMBER_OF_PAGES',
+    SimVarValueType.Number,
+  );
+  private readonly stsPageToShowSimvar = RegisteredSimVar.create<number>(
+    'L:A32NX_ECAM_SD_STS_PAGE_TO_SHOW',
+    SimVarValueType.Number,
+  );
+  private readonly stsMoreAvailableSimvar = RegisteredSimVar.create<number>(
+    'L:A32NX_ECAM_SD_STS_MORE_AVAILABLE',
+    SimVarValueType.Number,
+  );
+
   constructor(private fws: FwsCore) {}
+
+  init() {
+    this.subscriptions.push(
+      this.fws.sub.on('hEvent').handle((eventName) => {
+        // Handle next STS page event. To reduce code clutter, the SD tells us how many pages there are,
+        // and the ECAM CP (behavior code) only emits this event when the STS pages is selected, it doesn't de-select.
+        // FIXME this should be handled in a future ECAM CP implementation I would guess
+        if (eventName === 'A32NX_SD_STS_NEXT_PAGE') {
+          const currentPage = this.stsPageToShowSimvar.get();
+          const numberOfPages = this.stsNumberOfPagesSimvar.get();
+          if (currentPage + 2 > numberOfPages) {
+            this.stsPageToShowSimvar.set(0);
+            this.sdCurrentPageIndexSimvar.set(SdPages.None);
+            this.sdMoreShownSimvar.set(0);
+          } else {
+            this.stsPageToShowSimvar.set(currentPage + 1);
+          }
+        } else if (eventName === 'A32NX_SD_REQUEST_MORE' && MORE_AVAILABLE_FOR_PAGES.includes(this.currentPage.get())) {
+          if (this.currentPage.get() === SdPages.Status && !this.stsMoreAvailableSimvar.get()) {
+            // Only switch if MORE available
+            this.sdMoreShownSimvar.set(0);
+            return;
+          }
+          this.stsPageToShowSimvar.set(0);
+          this.sdMoreShownSimvar.set(this.sdMoreShownSimvar.get() === 1 ? 0 : 1);
+        }
+      }),
+    );
+  }
 
   update(deltaTime: number) {
     // FIXME convoluted, confusing logic, someone please, please, please re-write it from scratch
-    // FIXME backup for ALL button needed when both FWS are failed
-    const failPage = SimVar.GetSimVarValue('L:A32NX_ECAM_SFAIL', SimVarValueType.Enum);
-
-    const ecamAllButtonPushed = SimVar.GetSimVarValue('L:A32NX_BTN_ALL', SimVarValueType.Bool);
-
+    // FIXME backup needed when both FWS are failed (for all ECAM CP buttons, they are somehow wired directly to the CDS)
+    const failPage = this.sdFailPageIndexSimvar.get();
+    const ecamAllButtonPushed = this.ecamAllButtonPushedSimvar.get();
     this.apuRpm.setFromSimVar('L:A32NX_APU_N');
-
-    this.userSelectedPage.set(SimVar.GetSimVarValue('L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX', SimVarValueType.Enum));
+    this.userSelectedPage.set(this.sdCurrentPageIndexSimvar.get());
 
     if (this.ecamButtonLightDelayTimer.get() != Number.MIN_SAFE_INTEGER) {
       const t = this.ecamButtonLightDelayTimer.get();
       this.ecamButtonLightDelayTimer.set(t - deltaTime);
       if (this.ecamButtonLightDelayTimer.get() <= 0) {
-        SimVar.SetSimVarValue('L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX', SimVarValueType.Enum, this.currentPage.get());
+        this.sdCurrentPageIndexSimvar.set(this.currentPage.get());
         this.ecamButtonLightDelayTimer.set(Number.MIN_SAFE_INTEGER);
       }
     }
@@ -186,7 +239,7 @@ export class FwsSystemDisplayLogic {
 
         // Disable user selected page when new failure detected
         if (this.prevFailPage.get() !== failPage) {
-          SimVar.SetSimVarValue('L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX', SimVarValueType.Enum, SdPages.None);
+          this.sdCurrentPageIndexSimvar.set(SdPages.None);
           this.userSelectedPage.set(SdPages.None);
           this.currentPage.set(failPage);
         }
@@ -253,7 +306,7 @@ export class FwsSystemDisplayLogic {
         this.stsPressedTimer.set(prev - deltaTime / 1000);
         this.pageWhenUnselected.set(SdPages.Status);
       } else {
-        SimVar.SetSimVarValue('L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX', 'number', this.stsPrevPage.get());
+        this.sdCurrentPageIndexSimvar.set(this.stsPrevPage.get());
       }
     } else {
       this.stsPressedTimer.set(STS_DISPLAY_TIMER_DURATION);
