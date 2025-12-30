@@ -48,6 +48,7 @@
 1. [A380X/FUEL SYSTEM] Fuel system update - @donstim (donbikes) & @Maximilian-Reuter (\_chaoz_)
 1. [FMS] Fix incorrect sign on glideslope angle (FS2020 only) - @tracernz (Mike)
 1. [A32NX/OVHD] Update battery button annunciators to be bright regardless of BRT/DIM switch position - @BravoMike99 (bruno_pt99)
+1. [A380X] Fix aircraft resting on nose in aircraft selection window in 2024 - @heclak (Heclak)
 
 ## 0.14.0
 
