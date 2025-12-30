@@ -34,11 +34,11 @@ export class MsfsFlightPlanSync {
   private static readonly FBW_APPROACH_TO_MSFS_APPROACH: Record<ApproachType, string> = {
     [ApproachType.Unknown]: '',
     [ApproachType.LocBackcourse]: 'BLOC',
-    [ApproachType.VorDme]: 'VDM',
+    [ApproachType.VorDme]: 'VORDME',
     [ApproachType.Fms]: '',
     [ApproachType.Igs]: 'LDA',
     [ApproachType.Ils]: 'ILS',
-    [ApproachType.Gls]: ' ',
+    [ApproachType.Gls]: '',
     [ApproachType.Loc]: 'LOC',
     [ApproachType.Mls]: '',
     [ApproachType.Ndb]: 'NDB',
