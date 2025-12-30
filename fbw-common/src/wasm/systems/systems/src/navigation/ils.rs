@@ -27,6 +27,8 @@ pub trait InstrumentLandingSystemBus {
     fn ground_station_ident_2(&self) -> Arinc429Word<u32>;
 }
 
+/// This represents an interface to an MMR, which is implemented outside of the rust systems.
+/// Currently, this implementation is done by MSFS.
 pub struct MultiModeReceiverShim {
     frequency: Frequency,
     nav_valid: bool,
@@ -80,13 +82,13 @@ impl MultiModeReceiverShim {
     }
 
     fn normalize_180(angle: Angle) -> Angle {
-        let mut normalized_360 = Self::normalize_360(angle);
+        let normalized_360 = Self::normalize_360(angle);
 
         if normalized_360 >= Angle::new::<degree>(180.0) {
-            normalized_360 -= Angle::new::<degree>(360.0);
+            normalized_360 - Angle::new::<degree>(360.0)
+        } else {
+            normalized_360
         }
-
-        normalized_360
     }
 
     fn normalize_360(angle: Angle) -> Angle {
@@ -118,8 +120,7 @@ impl InstrumentLandingSystemBus for MultiModeReceiverShim {
     }
     fn localizer_deviation(&self) -> Arinc429Word<Ratio> {
         Arinc429Word::new(
-            self.get_corrected_localizer_deviation() / Angle::new::<degree>(0.8)
-                * Ratio::new::<ratio>(0.0775),
+            self.get_corrected_localizer_deviation() / Angle::new::<degree>(0.8) * 0.0775,
             if self.loc_valid {
                 SignStatus::NormalOperation
             } else {
@@ -129,7 +130,7 @@ impl InstrumentLandingSystemBus for MultiModeReceiverShim {
     }
     fn glideslope_deviation(&self) -> Arinc429Word<Ratio> {
         Arinc429Word::new(
-            self.glideslope_deviation / Angle::new::<degree>(0.4) * Ratio::new::<ratio>(0.0875),
+            self.glideslope_deviation / Angle::new::<degree>(0.4) * 0.0875,
             if self.glideslope_valid {
                 SignStatus::NormalOperation
             } else {

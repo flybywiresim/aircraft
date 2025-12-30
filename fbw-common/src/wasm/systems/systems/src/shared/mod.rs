@@ -36,7 +36,7 @@ pub mod can_bus;
 pub mod derivative;
 pub mod logic_nodes;
 pub mod power_supply_relay;
-pub mod rate_lmiter;
+pub mod rate_limiter;
 
 pub trait ReservoirAirPressure {
     fn green_reservoir_pressure(&self) -> Pressure;

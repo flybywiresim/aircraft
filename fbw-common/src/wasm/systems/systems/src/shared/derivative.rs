@@ -14,10 +14,7 @@ where
     T: Sub<Output = T> + Div<f64, Output = T> + Copy + Default,
 {
     pub fn new() -> Self {
-        Self {
-            predecessor: None,
-            output: T::default(),
-        }
+        Self::default()
     }
 
     pub fn update(&mut self, value: T, delta: Duration) -> T {

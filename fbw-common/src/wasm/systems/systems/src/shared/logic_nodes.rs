@@ -97,10 +97,7 @@ impl MonostableTriggerNode {
     }
 
     pub fn update(&mut self, hi: bool, delta: Duration) -> bool {
-        self.remaining_trigger = self
-            .remaining_trigger
-            .checked_sub(delta)
-            .unwrap_or_default();
+        self.remaining_trigger = self.remaining_trigger.saturating_sub(delta);
         if self.retriggerable || self.remaining_trigger == Duration::ZERO {
             let condition_met =
                 self.last_hi.unwrap_or(!self.rising_edge) != hi && hi == self.rising_edge;
@@ -163,7 +160,7 @@ impl PulseNode {
 /// is received on both set and reset at the same time, the input with a star will have precedence.
 pub struct MemoryNode {
     has_set_precedence: bool,
-    pub output: bool,
+    output: bool,
 }
 
 impl MemoryNode {
@@ -184,6 +181,10 @@ impl MemoryNode {
         } else {
             self.output
         };
+        self.output
+    }
+
+    pub fn output(&self) -> bool {
         self.output
     }
 }

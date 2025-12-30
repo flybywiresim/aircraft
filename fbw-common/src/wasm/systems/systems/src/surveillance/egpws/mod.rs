@@ -65,10 +65,10 @@ pub struct EnhancedGroundProximityWarningComputer {
 }
 
 impl EnhancedGroundProximityWarningComputer {
-    const MINIMUM_STARTUP_TIME_MILLIS: u64 = 18_000;
-    const MAXIMUM_STARTUP_TIME_MILLIS: u64 = 20_000;
-    const MINIMUM_POWER_HOLDOVER: u64 = 200;
-    const MAXIMUM_POWER_HOLDOVER: u64 = 300;
+    const MINIMUM_STARTUP_TIME_MILLIS: Duration = Duration::from_millis(18_000);
+    const MAXIMUM_STARTUP_TIME_MILLIS: Duration = Duration::from_millis(20_000);
+    const MINIMUM_POWER_HOLDOVER: Duration = Duration::from_millis(200);
+    const MAXIMUM_POWER_HOLDOVER: Duration = Duration::from_millis(300);
 
     const TERR_FAULT_KEY: &str = "GPWS_TERR_FAULT";
     const SYS_FAULT_KEY: &str = "GPWS_SYS_FAULT";
@@ -83,17 +83,17 @@ impl EnhancedGroundProximityWarningComputer {
             powered_by,
             is_powered: false,
             power_holdover: Duration::from_secs_f64(random_from_range(
-                Self::MINIMUM_POWER_HOLDOVER as f64 / 1000.,
-                Self::MAXIMUM_POWER_HOLDOVER as f64 / 1000.,
+                Self::MINIMUM_POWER_HOLDOVER.as_secs_f64(),
+                Self::MAXIMUM_POWER_HOLDOVER.as_secs_f64(),
             )),
             unpowered_for: if is_powered {
                 Duration::ZERO
             } else {
-                Duration::from_millis(Self::MAXIMUM_POWER_HOLDOVER)
+                Self::MAXIMUM_POWER_HOLDOVER
             },
             self_check_time: Duration::from_secs_f64(random_from_range(
-                Self::MINIMUM_STARTUP_TIME_MILLIS as f64 / 1000.,
-                Self::MAXIMUM_STARTUP_TIME_MILLIS as f64 / 1000.,
+                Self::MINIMUM_STARTUP_TIME_MILLIS.as_secs_f64(),
+                Self::MAXIMUM_STARTUP_TIME_MILLIS.as_secs_f64(),
             )),
 
             runtime: if is_powered {
@@ -149,11 +149,10 @@ impl EnhancedGroundProximityWarningComputer {
         // power holdover has been exceed
         if self.failure.is_active() || self.unpowered_for > self.power_holdover {
             // Throw away the simulated software runtime, but first save to NVM
-            if let Some(runtime) = self.runtime.as_ref() {
+            if let Some(runtime) = self.runtime.take() {
                 self.on_ground = runtime.get_on_ground();
                 self.flight_phase = runtime.get_flight_phase();
             }
-            self.runtime = None;
 
             // Set outputs to default failure state
             self.discrete_output_data = TerrainAwarenessWarningSystemDiscreteOutputs::default();
@@ -170,10 +169,9 @@ impl EnhancedGroundProximityWarningComputer {
         // immediately without waiting for the runtime to start up again.
         if self.is_powered {
             // Either initialize and run or continue running the existing runtime
-            let self_check = self.self_check_time;
             let runtime = self.runtime.get_or_insert_with(|| {
                 EnhancedGroundProximityWarningComputerRuntime::new(
-                    self_check,
+                    self.self_check_time,
                     self.on_ground,
                     self.flight_phase,
                 )

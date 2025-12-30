@@ -66,7 +66,7 @@ pub trait InertialReferenceBus {
     fn pitch_angular_acc(&self) -> Arinc429Word<AngularAcceleration>;
     /// Label 053
     fn roll_angular_acc(&self) -> Arinc429Word<AngularAcceleration>;
-    /// Label 053
+    /// Label 054
     fn yaw_angular_acc(&self) -> Arinc429Word<AngularAcceleration>;
     /// Label 310
     fn ppos_latitude(&self) -> Arinc429Word<Angle>;
