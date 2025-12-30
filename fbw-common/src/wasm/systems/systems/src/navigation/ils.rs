@@ -5,7 +5,6 @@ use crate::{
 use uom::si::{
     angle::degree,
     f64::{Angle, Frequency, Ratio},
-    ratio::ratio,
 };
 
 pub trait InstrumentLandingSystemBus {
@@ -60,7 +59,7 @@ impl MultiModeReceiverShim {
             frequency_id: context.get_identifier("NAV FREQUENCY:3".to_owned()),
             nav_valid_id: context.get_identifier("NAV HAS NAV:3".to_owned()),
             loc_valid_id: context.get_identifier("NAV HAS LOC:3".to_owned()),
-            localizer_course_id: context.get_identifier("A32NX_FM_LS_COURSE".to_owned()),
+            localizer_course_id: context.get_identifier("FM_LS_COURSE".to_owned()),
             localizer_deviation_id: context.get_identifier("NAV RADIAL ERROR:3".to_owned()),
             glideslope_valid_id: context.get_identifier("NAV HAS GLIDE SLOPE:3".to_owned()),
             glideslope_deviation_id: context.get_identifier("NAV GLIDE SLOPE ERROR:3".to_owned()),
