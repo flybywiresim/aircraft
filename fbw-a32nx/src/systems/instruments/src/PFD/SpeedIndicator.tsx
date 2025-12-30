@@ -27,6 +27,7 @@ import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { VerticalTape } from './VerticalTape';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { FlashOneHertz } from 'instruments/src/MsfsAvionicsCommon/FlashingElementUtils';
+import { RateLimiter } from './PFDUtils';
 
 const ValueSpacing = 10;
 const DistanceSpacing = 10;
@@ -525,68 +526,76 @@ class SpeedTrendArrow extends DisplayComponent<{
   instrument: BaseInstrument;
   bus: ArincEventBus;
 }> {
-  private refElement = FSComponent.createRef<SVGGElement>();
+  private readonly sub = this.props.bus.getArincSubscriber<Arinc429Values & ClockEvents>();
 
-  private arrowBaseRef = FSComponent.createRef<SVGPathElement>();
+  private vCTrendWord = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('vCTrend'),
+    Arinc429Register.empty().rawWord,
+  );
 
-  private arrowHeadRef = FSComponent.createRef<SVGPathElement>();
+  private vCTrendInvalid = this.vCTrendWord.map((input) => {
+    return input.isFailureWarning() || input.isNoComputedData();
+  });
 
-  private offset = Subject.create<string>('');
+  private vCTrendRateLimit = new RateLimiter(12, -12);
 
-  private pathString = Subject.create<string>('');
+  private vCTrendRateLimited = Subject.create(0);
 
-  private vCTrend = new Arinc429Word(0);
+  private vCTrendSign = this.vCTrendRateLimited.map((input) => {
+    return input > 0;
+  });
 
-  private vCTrendHysteresis = false;
+  private offset = this.vCTrendRateLimited.map((value) => (-value * DistanceSpacing) / ValueSpacing);
 
-  private handleVCTrend(): void {
-    if (Math.abs(this.vCTrend.value) < 1) {
-      this.vCTrendHysteresis = false;
-    } else if (Math.abs(this.vCTrend.value) > 2) {
-      this.vCTrendHysteresis = true;
-    }
+  private offsetString = this.offset.map((offset) => `m15.455 80.823v${offset.toFixed(3)}`);
 
-    if (!this.vCTrendHysteresis || !this.vCTrend.isNormalOperation()) {
-      this.refElement.instance.style.visibility = 'hidden';
-    } else {
-      this.refElement.instance.style.visibility = 'visible';
-      let pathString;
-      const sign = Math.sign(this.vCTrend.value);
-
-      const offset = (-this.vCTrend.value * DistanceSpacing) / ValueSpacing;
+  private pathString = MappedSubject.create(
+    ([vCTrendSign, offset]) => {
       const neutralPos = 80.823;
-      if (sign > 0) {
-        pathString = `m15.455 ${neutralPos + offset} l -1.2531 2.4607 M15.455 ${neutralPos + offset} l 1.2531 2.4607`;
+      if (vCTrendSign) {
+        return `m15.455 ${neutralPos + offset} l -1.2531 2.4607 M15.455 ${neutralPos + offset} l 1.2531 2.4607`;
       } else {
-        pathString = `m15.455 ${neutralPos + offset} l 1.2531 -2.4607 M15.455 ${neutralPos + offset} l -1.2531 -2.4607`;
+        return `m15.455 ${neutralPos + offset} l 1.2531 -2.4607 M15.455 ${neutralPos + offset} l -1.2531 -2.4607`;
       }
+    },
+    this.vCTrendSign,
+    this.offset,
+  );
 
-      this.offset.set(`m15.455 80.823v${offset.toFixed(10)}`);
+  private vCTrendHysteresis = Subject.create(false);
 
-      this.pathString.set(pathString);
+  private vCTrendVisible = MappedSubject.create(
+    ([vCTrendInvalid, vCTrendHysteresis]) => {
+      return !(vCTrendInvalid || !vCTrendHysteresis);
+    },
+    this.vCTrendInvalid,
+    this.vCTrendHysteresis,
+  );
+
+  private handleVCTrend(word: Arinc429WordData): void {
+    if (Math.abs(word.value) < 1) {
+      this.vCTrendHysteresis.set(false);
+    } else if (Math.abs(word.value) > 2) {
+      this.vCTrendHysteresis.set(true);
     }
   }
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getArincSubscriber<Arinc429Values>();
+    this.vCTrendWord.sub((word) => this.handleVCTrend(word), true);
 
-    sub
-      .on('vCTrend')
-      .withArinc429Precision(2)
-      .handle((word) => {
-        this.vCTrend = word;
-
-        this.handleVCTrend();
-      });
+    this.sub.on('realTime').handle((_) => {
+      const { deltaTime } = this.props.instrument;
+      this.vCTrendRateLimited.set(this.vCTrendRateLimit.step(this.vCTrendWord.get().value, deltaTime / 1000));
+    });
   }
 
   render(): VNode | null {
     return (
-      <g id="SpeedTrendArrow" ref={this.refElement}>
-        <path id="SpeedTrendArrowBase" ref={this.arrowBaseRef} class="NormalStroke Yellow" d={this.offset} />
-        <path id="SpeedTrendArrowHead" ref={this.arrowHeadRef} class="NormalStroke Yellow" d={this.pathString} />
+      <g id="SpeedTrendArrow" visibility={this.vCTrendVisible.map((visible) => (visible ? 'visible' : 'hidden'))}>
+        <path id="SpeedTrendArrowBase" class="NormalStroke Yellow" d={this.offsetString} />
+        <path id="SpeedTrendArrowHead" class="NormalStroke Yellow" d={this.pathString} />
       </g>
     );
   }
