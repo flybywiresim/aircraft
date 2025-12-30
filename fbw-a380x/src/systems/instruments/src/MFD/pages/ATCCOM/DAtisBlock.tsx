@@ -20,7 +20,7 @@ import { NewAtisIcon } from 'instruments/src/MFD/pages/ATCCOM/Elements/NewAtisIc
 import { AutoUpdateIcon } from 'instruments/src/MFD/pages/ATCCOM/Elements/AutoUpdateIcon';
 import { AutoPrintIcon } from 'instruments/src/MFD/pages/ATCCOM/Elements/AutoPrintIcon';
 import { AirportAtis } from '../../ATCCOM/AtcDatalinkSystem';
-import { AtisMessage, AtisType, AtsuStatusCodes } from '@datalink/common';
+import { AtisMessage } from '@datalink/common';
 import { AtcDatalinkMessages } from '../../ATCCOM/AtcDatalinkPublisher';
 
 interface DAtisBlockProps extends AtccomMfdPageProps {
@@ -58,6 +58,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
 
   private isAtisNew = Subject.create<boolean>(false);
 
+  private isAutoUpdate = Subject.create<boolean>(false);
 
   private readonly atisTimestamp = Subject.create<string>('');
 
@@ -135,13 +136,13 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
   public toggleAtisAutoUpdate(icao: string): void {
     if (this.datalink.atisAutoUpdateActive(icao)) {
       // atis update is on
-      this.datalink.deactivateAtisAutoUpdate(icao).then((status) => {
+      this.datalink.deactivateAtisAutoUpdate(this.props.index).then((status) => {
         // return status
         console.log(status);
       });
     } else {
       // atis update is off
-      this.datalink.activateAtisAutoUpdate(icao, AtisType.Arrival).then((status) => {
+      this.datalink.activateAtisAutoUpdate(this.props.index).then((status) => {
         // return status
         console.log(status);
       });
@@ -190,8 +191,6 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
 
     this.subs.push(
       this.subscriber.on(`atcAtis_${this.props.index}`).handle((atisData) => {
-        console.log('atis received' + this.props.index);
-        console.log(atisData);
         this.atisIcao.set(atisData.icao);
         this.isAutoUpdate.set(atisData.autoupdate);
         this.updateAtisData(atisData.icao);
@@ -236,7 +235,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
             <span>{this.atisTimestamp}</span>
           </div>
           <NewAtisIcon visible={this.isAtisNew} />
-          <AutoUpdateIcon visible={Subject.create(false)} />
+          <AutoUpdateIcon visible={this.isAutoUpdate} />
           <AutoPrintIcon visible={Subject.create(false)} />
           <div>
             {/* FSM Status Message Button */}
@@ -268,7 +267,6 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
                 },
                 {
                   label: 'AUTO UPDATE',
-                  disabled: true,
                   action: () => {
                     this.toggleAtisAutoUpdate(this.atisIcao.get());
                   },
@@ -291,9 +289,10 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
             />
             <Button
               label="AUTO<br/>UPDATE"
-              // disabled={this.isIcaoEmpty}
-              disabled={Subject.create(true)}
-              onClick={() => {}}
+              disabled={this.isIcaoEmpty}
+              onClick={() => {
+                this.toggleAtisAutoUpdate(this.atisIcao.get());
+              }}
               visible={this.showDropdownMenu}
               buttonStyle="width: 159px; padding-left: 5px; padding-top: 3px; padding-bottom: 3px;"
               containerStyle="position: absolute; left: 600px; top: 61px;"

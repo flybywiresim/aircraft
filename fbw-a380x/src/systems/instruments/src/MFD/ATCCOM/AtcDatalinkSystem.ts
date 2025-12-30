@@ -1,4 +1,4 @@
-import { ArraySubject, ClockEvents, EventBus, Instrument, Subscription } from '@microsoft/msfs-sdk';
+import { ArraySubject, EventBus, Instrument, Subscription } from '@microsoft/msfs-sdk';
 import { AtcFmsMessages, FmsAtcMessages } from '@datalink/atc';
 import { AtisMessage, AtisType, AtsuStatusCodes, DatalinkModeCode, DatalinkStatusCode } from '@datalink/common';
 import { FmsRouterMessages, RouterFmsMessages } from '@datalink/router';
@@ -107,7 +107,18 @@ export class AtcDatalinkSystem implements Instrument {
     this.sub.on('routerDatalinkStatus').handle((data) => (this.datalinkStatus = data));
     this.sub.on('routerDatalinkMode').handle((data) => (this.datalinkMode = data));
 
-    this.sub.on('atcActiveAtisAutoUpdates').handle((airports) => (this.atisAutoUpdates = airports));
+    this.sub.on('atcActiveAtisAutoUpdates').handle((airports) => {
+      this.atisAutoUpdates = airports;
+      this.atisAirports.forEach((airportData, index) => {
+        if (airports.includes(airportData.icao) && airportData.autoupdate == false) {
+          this.atisAirports[index].autoupdate = true;
+          this.publisher.pub(`atcAtis_${index}`, this.atisAirports[index]);
+        } else if (!airports.includes(airportData.icao) && airportData.autoupdate == true) {
+          this.atisAirports[index].autoupdate = false;
+          this.publisher.pub(`atcAtis_${index}`, this.atisAirports[index]);
+        }
+      });
+    });
     this.sub.on('atcRequestAtsuStatusCode').handle((response) => {
       this.requestAtsuStatusCodeCallbacks.every((callback, index) => {
         if (callback(response.code, response.requestId)) {
@@ -233,7 +244,9 @@ export class AtcDatalinkSystem implements Instrument {
     return this.atisAutoUpdates.findIndex((airport) => icao === airport) !== -1;
   }
 
-  public async deactivateAtisAutoUpdate(icao: string): Promise<AtsuStatusCodes> {
+  public async deactivateAtisAutoUpdate(index): Promise<AtsuStatusCodes> {
+    const airportData = this.atisAirports[index];
+    const icao = airportData.icao;
     return new Promise<AtsuStatusCodes>((resolve, _reject) => {
       const requestId = this.requestId++;
       this.publisher.pub('atcDeactivateAtisAutoUpdate', { icao, requestId }, true, false);
@@ -244,7 +257,10 @@ export class AtcDatalinkSystem implements Instrument {
     });
   }
 
-  public async activateAtisAutoUpdate(icao: string, type: AtisType): Promise<AtsuStatusCodes> {
+  public async activateAtisAutoUpdate(index: number): Promise<AtsuStatusCodes> {
+    const airportData = this.atisAirports[index];
+    const icao = airportData.icao;
+    const type = airportData.type;
     return new Promise<AtsuStatusCodes>((resolve, _reject) => {
       const requestId = this.requestId++;
       this.publisher.pub('atcActivateAtisAutoUpdate', { icao, type, requestId }, true, false);
@@ -297,18 +313,16 @@ export class AtcDatalinkSystem implements Instrument {
         switch (response) {
           case AtsuStatusCodes.ComFailed:
             this.atisAirports[index].status = PredefinedMessages.sendFailed;
-            this.publisher.pub(`atcAtis_${index}`, this.atisAirports[index]);
             break;
           case AtsuStatusCodes.NoAtisReceived:
             this.atisAirports[index].status = PredefinedMessages.noReply;
-            this.publisher.pub(`atcAtis_${index}`, this.atisAirports[index]);
             this.addMessageToQueue(ATCCOMMessages.datisNoReply, undefined, undefined);
             break;
           case AtsuStatusCodes.NewAtisReceived:
             this.atisAirports[index].status = '';
-            this.publisher.pub(`atcAtis_${index}`, this.atisAirports[index]);
-            this.addMessageToQueue(ATCCOMMessages.datisReceived, undefined, undefined);
+          // this.addMessageToQueue(ATCCOMMessages.datisReceived, undefined, undefined);
         }
+        this.publisher.pub(`atcAtis_${index}`, this.atisAirports[index]);
         airport.requested = false;
       });
     }

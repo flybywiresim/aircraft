@@ -25,6 +25,7 @@ export class MfdAtccomDAtisReceived extends DisplayComponent<MfdAtccomDAtisRecei
     requested: false,
     autoupdate: false,
     lastReadAtis: '',
+    status: '',
   };
 
   protected onNewData() {}
