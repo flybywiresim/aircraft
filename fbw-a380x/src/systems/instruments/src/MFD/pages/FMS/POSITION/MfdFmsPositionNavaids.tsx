@@ -160,7 +160,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
     this.lsIdent.set(mmr.ident ?? null);
     this.lsFreq.set(mmr.frequency ?? null);
     this.lsCourse.set(mmr.course ?? null);
-    this.lsSlope.set(mmr.slope ? `-${mmr.slope.toFixed(1)}` : '---');
+    this.lsSlope.set(mmr.slope ? mmr.slope.toFixed(1) : '---');
     this.lsClass.set(mmr.ident ? 'ILS/DME' : '');
     this.lsIdentEnteredByPilot.set(MfdFmsPositionNavaids.isNavRadioIdentManual(mmr));
     this.lsFrequencyEnteredByPilot.set(MfdFmsPositionNavaids.isNavRadioFreqManual(mmr));
