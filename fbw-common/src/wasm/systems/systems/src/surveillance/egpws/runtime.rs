@@ -423,25 +423,26 @@ impl EnhancedGroundProximityWarningComputerRuntime {
         // RA computation (TODO implement reasonableness check and maybe filtering)
         let ra_fault =
             ra1.radio_altitude().is_failure_warning() && ra2.radio_altitude().is_failure_warning();
-        if !ra1.radio_altitude().is_failure_warning() && !ra2.radio_altitude().is_failure_warning()
+        self.ra_ft = if !ra1.radio_altitude().is_failure_warning()
+            && !ra2.radio_altitude().is_failure_warning()
         {
             let ra1_ft = ra1.radio_altitude().value().get::<foot>();
             let ra2_ft = ra2.radio_altitude().value().get::<foot>();
 
-            self.ra_ft = if ra1_ft < 2500. || ra2_ft < 2500. && (ra1_ft - ra2_ft).abs() < 500. {
+            if (ra1_ft < 2500. || ra2_ft < 2500.) && (ra1_ft - ra2_ft).abs() < 500. {
                 ra1_ft
             } else {
                 // Consistency check failed. Use the greater of the two values
                 ra1_ft.max(ra2_ft)
             }
         } else if !ra1.radio_altitude().is_failure_warning() {
-            self.ra_ft = ra1.radio_altitude().value().get::<foot>();
+            ra1.radio_altitude().value().get::<foot>()
         } else if !ra2.radio_altitude().is_failure_warning() {
-            self.ra_ft = ra2.radio_altitude().value().get::<foot>();
+            ra2.radio_altitude().value().get::<foot>()
         } else {
             // Both RAs are faulty
-            self.ra_ft = 0.;
-        }
+            0.
+        };
 
         // V/S Selection: First, choose IR Baro-Inertial Vertical speed, if valid. Otherwise, choose internally computed Baro-Inertial Vertical speed, if valid (not implemented)
         // Finally, choose the ADR barometric Vertical speed.
