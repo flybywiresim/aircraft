@@ -406,17 +406,6 @@ impl EnhancedGroundProximityWarningComputerRuntime {
         if takeoff_goaround {
             self.field_elevation_ft = self.chosen_altitude_ft - self.ra_ft;
         }
-
-        // println!(
-        //     "EGPWS General Logic: on_ground: {}, flight_phase: {:?}, takeoff_to_approach_integrator: {:.1}, field_elev: {:.1} ft
-        //     mode_4_c_filter: {:.1}, mode_4_a_upper_boundary: {:.1}",
-        //     self.on_ground,
-        //     self.flight_phase,
-        //     self.takeoff_to_approach_condition_integrator,
-        //     self.field_elevation_ft,
-        //     self.mode_4_c_filter_value,
-        //     self.mode_4_a_alert_upper_boundary,
-        // );
     }
 
     fn update_fault_logic(
@@ -585,18 +574,6 @@ impl EnhancedGroundProximityWarningComputerRuntime {
             && !self.mode_1_pull_up_active
             && (self.pin_programs.audio_declutter_disable
                 || !self.mode_1_sinkrate_emitted_for_current_time_to_impact);
-
-        // println!(
-        //     "Mode 1: ra: {:.1} ft, biased_vs: {:.1} ft/min, alert_boundary_met: {}, warning_boundary_met: {},
-        //     sinkrate_lamp: {}, sinkrate_voice: {}, pull_up_active: {}",
-        //     self.ra_ft,
-        //     biased_vertical_speed,
-        //     mode_1_alert_boundary_met,
-        //     mode_1_warning_boundary_met,
-        //     self.mode_1_sinkrate_lamp_active,
-        //     self.mode_1_sinkrate_voice_active,
-        //     self.mode_1_pull_up_active,
-        // );
     }
 
     fn update_mode_2_logic(
@@ -682,22 +659,6 @@ impl EnhancedGroundProximityWarningComputerRuntime {
         self.mode_2_pull_up_active =
             !aural_terrain_only && mode_2_boundary_met && self.mode_2_pull_up_preface_voice_emitted;
         self.mode_2_terrain_active = aural_terrain_only && mode_2_boundary_met;
-
-        //println!(
-        //    "Mode 2: ra: {:.1} ft, ra_lim: {:.1} ft, closure rate: {:.1} ({:.1} raw) ft/min, lower boundary: {:.1} ft, upper boundary: {:.1} ft,
-        //    boundary met: {}, preface emitted: {}, preface active: {}, pull up active: {}, terrain active: {}",
-        //    self.ra_ft,
-        //    ra_ratelim,
-        //    filtered_closure_rate_ft,
-        //    closure_rate_ft_per_min_raw,
-        //    mode_2_lower_boundary_ft,
-        //    mode_2_upper_boundary_ft,
-        //    mode_2_boundary_met,
-        //    self.mode_2_pull_up_preface_voice_emitted,
-        //    self.mode_2_pull_up_preface_active,
-        //    self.mode_2_pull_up_active,
-        //    self.mode_2_terrain_active,
-        //);
     }
 
     fn update_mode_3_logic(
@@ -762,18 +723,6 @@ impl EnhancedGroundProximityWarningComputerRuntime {
         {
             self.mode_3_declutter_threshold_increase += 0.20;
         }
-
-        // println!(
-        //     "Mode 3: phase: {:?}, enabled: {}, max achieved alt: {:.1} ft, altitude loss: {:.1} ft, mode 3 boundary: {:.1} ft, lamp active: {}, voice active: {}, declutter increase: {:.2}",
-        //     self.flight_phase,
-        //     mode_3_enabled,
-        //     self.mode_3_max_achieved_alt_ft.unwrap_or_default(),
-        //     altitude_loss_ft.unwrap_or_default(),
-        //     mode_3_boundary,
-        //     self.mode_3_lamp_active,
-        //     self.mode_3_dont_sink_voice_active,
-        //     self.mode_3_declutter_threshold_increase,
-        // );
     }
 
     fn update_mode_4_logic(
@@ -892,23 +841,6 @@ impl EnhancedGroundProximityWarningComputerRuntime {
         let mode_4_ab_too_low_terrain_voice_active =
             mode_4_ab_voice_active && mode_4_submode_too_low_terrain;
 
-        // println!(
-        //     "Mode 4AB: ra: {:.1} ft, cas: {:.1} kts, mode 4B active: {}, app. mode: {}, mode 4A boundary: {:.1} ft, mode 4B boundary: {:.1} ft,
-        //     lamp active: {}, too low gear voice active: {}, too low flaps voice active: {}, too low terrain voice active: {}, declutter increase: {:.1}, n_emiss: {}",
-        //     self.ra_ft,
-        //     cas_kts,
-        //     self.mode_4_b_active,
-        //     self.flight_phase == FlightPhase::Approach,
-        //     mode_4_a_boundary,
-        //     mode_4_b_boundary,
-        //     mode_4_ab_lamp_active,
-        //     self.mode_4_too_low_gear_voice_active,
-        //     self.mode_4_too_low_flaps_voice_active,
-        //     mode_4_ab_too_low_terrain_voice_active,
-        //     self.mode_4_ab_declutter_threshold_increase,
-        //     self.number_of_aural_warning_emissions
-        // );
-
         // Mode 4C Logic
         if !self.on_ground && self.flight_phase == FlightPhase::Takeoff {
             // When enabled, update a low-pass filter towards 0.75 * RA. This filter can only
@@ -948,17 +880,6 @@ impl EnhancedGroundProximityWarningComputerRuntime {
         let biased_ra_ft = self.ra_ft * (1. + self.mode_4_c_declutter_threshold_increase);
         let mode_4_c_too_low_terrain_voice_active =
             mode_4_c_enabled && mode_4_c_boundary >= biased_ra_ft && biased_ra_ft > 100.;
-
-        //println!("Mode 4: ra: {:.1} ft, filter: {:.1} ft, upper boundary: {:.1} ft, biased ra: {:.1} ft, enabled: {},
-        // lamp active: {}, too low terrain voice active: {}",
-        //         self.ra_ft,
-        //         self.mode_4_c_filter_value,
-        //         self.mode_4_a_alert_upper_boundary,
-        //         biased_ra_ft,
-        //         mode_4_c_enabled,
-        //         mode_4_c_lamp_active,
-        //         mode_4_c_too_low_terrain_voice_active,
-        //     );
 
         // Just write to the output, as mode 4C cannot be active at the same time as 4AB
         self.mode_4_lamp_active = mode_4_c_lamp_active || mode_4_ab_lamp_active;
@@ -1098,22 +1019,6 @@ impl EnhancedGroundProximityWarningComputerRuntime {
                     .checked_sub(context.delta())
                     .unwrap_or(Duration::ZERO);
             }
-
-            //println!(
-            //    "Mode 5: ra: {:.1} ft, gs dev: {:.2} dots, mode 5 active: {}, soft light met: {}, soft aural met: {}, hard met: {},
-            //    soft_upper_bound: {:.1}ft, soft voice active: {}, hard voice active: {}, declutter increase: {:.1}, time to next aural: {:.1} s",
-            //    self.ra_ft,
-            //    gs_deviation_dots_fly_up,
-            //    mode_5_active,
-            //    mode_5_soft_alert_light_boundary_met,
-            //    mode_5_soft_alert_aural_boundary_met,
-            //    mode_5_hard_alert_boundary_met,
-            //    mode_5_soft_alert_upper_boundary_ft,
-            //    self.mode_5_glideslope_soft_voice_active,
-            //    self.mode_5_glideslope_hard_voice_active,
-            //    self.mode_5_declutter_threshold_increase,
-            //    self.mode_5_time_to_next_aural.as_secs_f64(),
-            //);
         }
     }
 
