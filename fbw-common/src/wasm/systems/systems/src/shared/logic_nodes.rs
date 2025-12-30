@@ -1,5 +1,7 @@
 use std::time::Duration;
 
+use crate::shared::derivative::DerivativeNode;
+
 // Logic nodes, taken from https://github.com/flybywiresim/aircraft/pull/4872, and adapted Confirmation node to better adhere to sensible
 // initial condition behaviour.
 
@@ -250,21 +252,20 @@ impl PreceedingValueNode {
 /// The derivative is calculated over two subsequent .update calls.
 #[derive(Default)]
 pub struct DerivativeThresholdNode {
-    predecessor: f64,
+    derivative: DerivativeNode<f64>,
     threshold: f64,
 }
 
 impl DerivativeThresholdNode {
     pub fn new(threshold: f64) -> Self {
         Self {
-            predecessor: 0.,
+            derivative: DerivativeNode::new(),
             threshold,
         }
     }
 
     pub fn update(&mut self, value: f64, delta: Duration) -> bool {
-        let derivative = (value - self.predecessor) / delta.as_secs_f64();
-        self.predecessor = value;
+        let derivative = self.derivative.update(value, delta);
         derivative > self.threshold
     }
 }
