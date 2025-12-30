@@ -1,11 +1,18 @@
-import { ArraySubject, EventBus, Instrument, Subscription } from '@microsoft/msfs-sdk';
+import { ArraySubject, ClockEvents, EventBus, Instrument, Subscription } from '@microsoft/msfs-sdk';
 import { AtcFmsMessages, FmsAtcMessages } from '@datalink/atc';
 import { AtisMessage, AtisType, AtsuStatusCodes, DatalinkModeCode, DatalinkStatusCode } from '@datalink/common';
 import { FmsRouterMessages, RouterFmsMessages } from '@datalink/router';
 import { MessageStorage } from './MessageStorage';
 import { FmsData } from '@flybywiresim/fbw-sdk';
 import { FmsErrorType } from '@fmgc/FmsError';
-import { McduMessage, ATCCOMMessage, NXFictionalMessages, NXSystemMessages } from '../shared/NXSystemMessages';
+import { AtcDatalinkMessages } from './AtcDatalinkPublisher';
+import {
+  McduMessage,
+  ATCCOMMessage,
+  ATCCOMMessages,
+  NXFictionalMessages,
+  NXSystemMessages,
+} from '../shared/NXSystemMessages';
 
 export type AirportAtis = {
   icao: string;
@@ -13,6 +20,19 @@ export type AirportAtis = {
   requested: boolean;
   autoupdate: boolean;
   lastReadAtis: string;
+  status: string;
+};
+
+export const PredefinedMessages = {
+  sending: 'SENDING',
+  sent: 'SENT',
+  useVoice: 'USE<br/>VOICE',
+  sendFailed: 'SEND<br/>FAILED',
+  noReply: 'NO REPLY',
+  noAutoUpdate: 'NO AUTO<br/>UPDATE',
+  endOfUpdate: 'END OF<br/>UPDATE',
+  atisXRejected: 'ATIS X<br/>REJECTED',
+  gndSysMsg: 'GND SYS<br/>MSG >>>',
 };
 
 export interface AtcErrorMessage {
@@ -27,7 +47,7 @@ export class AtcDatalinkSystem implements Instrument {
 
   private readonly messageStorage: MessageStorage;
 
-  private readonly publisher = this.bus.getPublisher<FmsAtcMessages & FmsRouterMessages>();
+  private readonly publisher = this.bus.getPublisher<AtcDatalinkMessages & FmsAtcMessages & FmsRouterMessages>();
 
   private readonly sub = this.bus.getSubscriber<AtcFmsMessages & FmsData & RouterFmsMessages & FmsRouterMessages>();
 
@@ -46,9 +66,9 @@ export class AtcDatalinkSystem implements Instrument {
   atcErrors = ArraySubject.create<AtcErrorMessage>();
 
   private readonly atisAirports: AirportAtis[] = [
-    { icao: '', type: AtisType.Departure, requested: false, autoupdate: false, lastReadAtis: '' },
-    { icao: '', type: AtisType.Arrival, requested: false, autoupdate: false, lastReadAtis: '' },
-    { icao: '', type: AtisType.Arrival, requested: false, autoupdate: false, lastReadAtis: '' },
+    { icao: '', type: AtisType.Departure, requested: false, autoupdate: false, lastReadAtis: '', status: '' },
+    { icao: '', type: AtisType.Arrival, requested: false, autoupdate: false, lastReadAtis: '', status: '' },
+    { icao: '', type: AtisType.Arrival, requested: false, autoupdate: false, lastReadAtis: '', status: '' },
   ];
 
   private datalinkStatus: { vhf: DatalinkStatusCode; satellite: DatalinkStatusCode; hf: DatalinkStatusCode } = {
@@ -65,8 +85,6 @@ export class AtcDatalinkSystem implements Instrument {
 
   constructor(private readonly bus: EventBus) {
     this.messageStorage = new MessageStorage(this.sub);
-
-    // this.backplane.addPublisher('FmBus', new FmsDataPublisher(this.bus));
 
     this.sub.on('atcResetData').handle(() => {
       this.messageStorage.resetAtcData();
@@ -104,21 +122,21 @@ export class AtcDatalinkSystem implements Instrument {
       .on('fmsOrigin')
       .whenChanged()
       .handle((icao) => {
-        this.atisAirports[0].icao = icao;
+        this.initAtis(0, icao);
         console.log('origin airport updated');
       });
     this.sub
       .on('fmsDestination')
       .whenChanged()
       .handle((icao) => {
-        this.atisAirports[1].icao = icao;
+        this.initAtis(1, icao);
         console.log('dest airport updated');
       });
     this.sub
       .on('fmsAlternate')
       .whenChanged()
       .handle((icao) => {
-        this.atisAirports[2].icao = icao;
+        this.initAtis(2, icao);
         console.log('altn airport updated');
       });
   }
@@ -261,5 +279,64 @@ export class AtcDatalinkSystem implements Instrument {
       default:
         return DatalinkModeCode.None;
     }
+  }
+
+  public requestAtis(index: number): void {
+    const airport = this.atisAirports[index];
+    if (airport.icao !== null && !airport.requested) {
+      airport.requested = true;
+
+      this.atisAirports[index].status = PredefinedMessages.sending;
+      this.publisher.pub(`atcAtis_${index}`, this.atisAirports[index]);
+
+      this.receiveAtcAtis(airport.icao, airport.type).then((response) => {
+        if (response !== AtsuStatusCodes.Ok) {
+          // log error
+        }
+
+        switch (response) {
+          case AtsuStatusCodes.ComFailed:
+            this.atisAirports[index].status = PredefinedMessages.sendFailed;
+            this.publisher.pub(`atcAtis_${index}`, this.atisAirports[index]);
+            break;
+          case AtsuStatusCodes.NoAtisReceived:
+            this.atisAirports[index].status = PredefinedMessages.noReply;
+            this.publisher.pub(`atcAtis_${index}`, this.atisAirports[index]);
+            this.addMessageToQueue(ATCCOMMessages.datisNoReply, undefined, undefined);
+            break;
+          case AtsuStatusCodes.NewAtisReceived:
+            this.atisAirports[index].status = '';
+            this.publisher.pub(`atcAtis_${index}`, this.atisAirports[index]);
+            this.addMessageToQueue(ATCCOMMessages.datisReceived, undefined, undefined);
+        }
+        airport.requested = false;
+      });
+    }
+  }
+
+  public updateAllAtis(): void {
+    for (let i = 0; i < this.atisAirports.length; i++) {
+      this.requestAtis(i);
+    }
+  }
+
+  // TODO: improve icao checks
+  private initAtis(index: number, icao?: string): void {
+    const newAtisData = {
+      icao: '',
+      type: AtisType.Arrival,
+      requested: false,
+      autoupdate: false,
+      lastReadAtis: '',
+      status: '',
+    };
+    if (icao !== undefined) {
+      newAtisData.icao = icao;
+    }
+    if (index == 0) {
+      newAtisData.type = AtisType.Departure;
+    }
+    this.atisAirports[index] = newAtisData;
+    this.publisher.pub(`atcAtis_${index}`, this.atisAirports[index]);
   }
 }

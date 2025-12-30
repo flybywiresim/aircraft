@@ -21,33 +21,15 @@ import { AutoUpdateIcon } from 'instruments/src/MFD/pages/ATCCOM/Elements/AutoUp
 import { AutoPrintIcon } from 'instruments/src/MFD/pages/ATCCOM/Elements/AutoPrintIcon';
 import { AirportAtis } from '../../ATCCOM/AtcDatalinkSystem';
 import { AtisMessage, AtisType, AtsuStatusCodes } from '@datalink/common';
-import { ATCCOMMessages } from '../../shared/NXSystemMessages';
+import { AtcDatalinkMessages } from '../../ATCCOM/AtcDatalinkPublisher';
 
 interface DAtisBlockProps extends AtccomMfdPageProps {
-  readonly index: 0 | 1 | 2;
+  readonly index: number;
   data: AirportAtis;
   atisType?: '' | 'ARR' | 'DEP';
   isAutoUpdateEnabled?: Subscribable<boolean>;
   isAutoPrintEnabled?: Subscribable<boolean>;
 }
-
-enum AtisStatus {
-  EMPTY,
-  SENT,
-  RECEIVED,
-}
-
-const PredefinedMessages = {
-  sending: 'SENDING',
-  sent: 'SENT',
-  useVoice: 'USE<br/>VOICE',
-  sendFailed: 'SEND<br/>FAILED',
-  noReply: 'NO REPLY',
-  noAutoUpdate: 'NO AUTO<br/>UPDATE',
-  endOfUpdate: 'END OF<br/>UPDATE',
-  atisXRejected: 'ATIS X<br/>REJECTED',
-  gndSysMsg: 'GND SYS<br/>MSG >>>',
-};
 
 // MESSAGES
 // D-ATIS RECEIVED
@@ -59,6 +41,8 @@ const PredefinedMessages = {
 
 export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
   private readonly subs = [] as Subscription[];
+
+  private readonly subscriber = this.props.bus.getSubscriber<AtcDatalinkMessages>();
 
   private dropdownMenuRef = FSComponent.createRef<DropdownMenu>();
 
@@ -74,9 +58,8 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
 
   private isAtisNew = Subject.create<boolean>(false);
 
-  private readonly atisTimestamp = Subject.create<string>('');
 
-  private readonly atisStatus = Subject.create<AtisStatus>(AtisStatus.EMPTY);
+  private readonly atisTimestamp = Subject.create<string>('');
 
   private readonly messageStatusLabel = Subject.create<string>('');
 
@@ -84,36 +67,6 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
     if (icao !== '' && icao !== '----') return false;
     return true;
   });
-
-  private requestAtis(airport: AirportAtis): void {
-    if (airport.icao !== '' && !airport.requested) {
-      airport.requested = true;
-
-      this.messageStatusLabel.set(PredefinedMessages.sending);
-
-      this.datalink.receiveAtcAtis(airport.icao, airport.type).then((response) => {
-        if (response !== AtsuStatusCodes.Ok) {
-          // log error
-        }
-
-        switch (response) {
-          case AtsuStatusCodes.ComFailed:
-            this.messageStatusLabel.set(PredefinedMessages.sendFailed);
-            break;
-          case AtsuStatusCodes.NoAtisReceived:
-            this.messageStatusLabel.set(PredefinedMessages.noReply);
-            this.datalink.addMessageToQueue(ATCCOMMessages.datisNoReply, undefined, undefined);
-            break;
-          case AtsuStatusCodes.NewAtisReceived:
-            this.updateAtisData(airport.icao);
-            this.atisStatus.set(AtisStatus.RECEIVED);
-            this.messageStatusLabel.set('');
-            this.datalink.addMessageToQueue(ATCCOMMessages.datisReceived, undefined, undefined);
-        }
-        airport.requested = false;
-      });
-    }
-  }
 
   private truncateAtis(string: string): string {
     if (string.length === 0) return '';
@@ -140,22 +93,22 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
     }
   }
 
-  private readonly isAtisEmpty = MappedSubject.create(([status]) => {
-    if (status === AtisStatus.EMPTY) {
+  private readonly isAtisEmpty = MappedSubject.create(([message]) => {
+    if (message.length == 0) {
       return true;
     }
     return false;
-  }, this.atisStatus);
+  }, this.atisMessage);
 
   private readonly showDropdownMenu = MappedSubject.create(
-    ([status]) => {
-      if (status === AtisStatus.EMPTY && this.messageStatusLabel.get() === '') {
+    ([messageStatus, atisMessage]) => {
+      if (messageStatus === '' && atisMessage.length == 0) {
         return true;
       }
       return false;
     },
-    this.atisStatus,
     this.messageStatusLabel,
+    this.atisMessage,
   );
 
   private readonly isStatusButtonVisible = MappedSubject.create(([status]) => {
@@ -200,7 +153,6 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
 
     if (this.props.data.icao !== '') {
       this.updateAtisData(this.props.data.icao);
-      this.atisStatus.set(AtisStatus.RECEIVED);
       this.messageStatusLabel.set('');
     }
 
@@ -210,7 +162,6 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
         this.datalink.setAtisAirport(this.props.data, this.props.index);
 
         // clear existing data
-        this.atisStatus.set(AtisStatus.EMPTY);
         this.atisCode.set('');
         this.atisTimestamp.set('');
         this.atisMessage.set('');
@@ -234,6 +185,17 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
         } else {
           this.isAtisNew.set(false);
         }
+      }),
+    );
+
+    this.subs.push(
+      this.subscriber.on(`atcAtis_${this.props.index}`).handle((atisData) => {
+        console.log('atis received' + this.props.index);
+        console.log(atisData);
+        this.atisIcao.set(atisData.icao);
+        this.isAutoUpdate.set(atisData.autoupdate);
+        this.updateAtisData(atisData.icao);
+        this.messageStatusLabel.set(atisData.status);
       }),
     );
   }
@@ -301,7 +263,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
                 {
                   label: 'UPDATE',
                   action: () => {
-                    this.requestAtis(this.props.data);
+                    this.datalink.requestAtis(this.props.index);
                   },
                 },
                 {
@@ -321,7 +283,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
               label="SEND<br/>REQUEST"
               disabled={this.isIcaoEmpty}
               onClick={() => {
-                this.requestAtis(this.props.data);
+                this.datalink.requestAtis(this.props.index);
               }}
               visible={this.showDropdownMenu}
               buttonStyle="width: 159px; padding-left: 5px; padding-top: 3px; padding-bottom: 3px;"

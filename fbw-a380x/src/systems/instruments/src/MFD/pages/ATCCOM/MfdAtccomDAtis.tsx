@@ -63,7 +63,9 @@ export class MfdAtccomDAtis extends DisplayComponent<MfdAtccomDAtisProps> {
             <Button
               label="UPDATE<br/>ALL"
               disabled={Subject.create(false)}
-              onClick={() => {}}
+              onClick={() => {
+                this.datalink.updateAllAtis();
+              }}
               buttonStyle="width: 190px;"
               containerStyle="position:absolute; top: 3px; right:0px"
             />
