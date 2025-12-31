@@ -49,6 +49,7 @@ export class AcarsConnector {
 
     const attemptConnection = async (): Promise<void> => {
       try {
+        // TODO SayIntentions allows ping without valid logon so we cannot fully verify here, awaiting reply of developers
         const resp = await AcarsClient.getData(body);
         if (resp.response !== 'error {invalid logon code}') {
           SimVar.SetSimVarValue('L:A32NX_ACARS_ACTIVE', 'number', 1);
