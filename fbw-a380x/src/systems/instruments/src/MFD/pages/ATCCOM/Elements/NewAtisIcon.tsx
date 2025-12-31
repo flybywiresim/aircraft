@@ -5,12 +5,19 @@ interface NewAtisIconProps extends ComponentProps {
 }
 
 export class NewAtisIcon extends DisplayComponent<NewAtisIconProps> {
+  private readonly visibility = this.props.visible.map((v) => (v ? 'inherit' : 'hidden'));
+
+  destroy(): void {
+    this.visibility.destroy();
+    super.destroy();
+  }
+
   render(): VNode {
     return (
       <div
         class="d-atis-icon new-atis-symbol"
         style={{
-          visibility: this.props.visible.map((v) => (v ? 'inherit' : 'hidden')),
+          visibility: this.visibility,
         }}
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="40" height="30" viewBox="0 0 40 28" fill="none">

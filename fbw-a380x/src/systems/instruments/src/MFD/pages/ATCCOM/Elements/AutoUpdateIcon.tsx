@@ -5,12 +5,19 @@ interface AutoUpdateIconProps extends ComponentProps {
 }
 
 export class AutoUpdateIcon extends DisplayComponent<AutoUpdateIconProps> {
+  private readonly visibility = this.props.visible.map((v) => (v ? 'inherit' : 'hidden'));
+
+  destroy(): void {
+    this.visibility.destroy();
+    super.destroy();
+  }
+
   render(): VNode {
     return (
       <div
         class="d-atis-icon auto-update-symbol"
         style={{
-          visibility: this.props.visible.map((v) => (v ? 'inherit' : 'hidden')),
+          visibility: this.visibility,
         }}
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" viewBox="0 0 40 37" fill="none">

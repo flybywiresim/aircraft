@@ -38,9 +38,9 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
 
   private readonly subscriber = this.props.bus.getSubscriber<AtcDatalinkMessages>();
 
-  private dropdownMenuRef = FSComponent.createRef<DropdownMenu>();
+  private readonly dropdownMenuRef = FSComponent.createRef<DropdownMenu>();
 
-  private datalink = this.props.atcService;
+  private readonly datalink = this.props.atcService;
 
   private readonly atisIcao = Subject.create<string>(this.props.data.icao);
 
@@ -48,17 +48,17 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
 
   private readonly atisMessage = Subject.create<string>('');
 
-  private readonly atisCode = Subject.create<string>('');
+  private readonly atisCode = Subject.create<string>(null);
 
-  private isAtisNew = Subject.create<boolean>(false);
+  private readonly isAtisNew = Subject.create<boolean>(false);
 
-  private isAutoUpdate = Subject.create<boolean>(false);
+  private readonly isAutoUpdate = Subject.create<boolean>(false);
 
-  private readonly atisTimestamp = Subject.create<string>('');
+  private readonly atisTimestamp = Subject.create<string>(null);
 
-  private readonly messageStatusLabel = Subject.create<string>('');
+  private readonly messageStatusLabel = Subject.create<string>(null);
 
-  private isIcaoEmpty = this.atisIcao.map((icao) => {
+  private readonly isIcaoEmpty = this.atisIcao.map((icao) => {
     if (icao !== '' && icao !== '----') return false;
     return true;
   });
@@ -87,9 +87,9 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
     }
   }
 
-  private readonly isAtisEmpty = this.atisMessage.map((message) => message.length === 0);
+  private readonly readMoreVisible = this.atisMessage.map((message) => message.length !== 0);
 
-  private readonly showDropdownMenu = MappedSubject.create(
+  private readonly dropdownMenuVisible = MappedSubject.create(
     ([messageStatus, atisMessage]) => {
       if (messageStatus === '' && atisMessage.length == 0) {
         return true;
@@ -100,7 +100,9 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
     this.atisMessage,
   );
 
-  private readonly isStatusButtonVisible = this.messageStatusLabel.map((status) => status !== '');
+  private readonly combinedMenuVisible = this.dropdownMenuVisible.map(SubscribableMapFunctions.not());
+
+  private readonly statusButtonVisible = this.messageStatusLabel.map((status) => status !== '');
 
   private updateAtisData(airportIcao: string): void {
     const atisReport: AtisMessage = this.datalink.atisReports(airportIcao)[0];
@@ -118,17 +120,11 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
 
   public toggleAtisAutoUpdate(icao: string): void {
     if (this.datalink.atisAutoUpdateActive(icao)) {
-      // atis update is on
-      this.datalink.deactivateAtisAutoUpdate(this.props.index).then((status) => {
-        // return status
-        console.log(status);
-      });
+      // could check FCOM if some error handling could be added
+      this.datalink.deactivateAtisAutoUpdate(this.props.index).then(() => {});
     } else {
-      // atis update is off
-      this.datalink.activateAtisAutoUpdate(this.props.index).then((status) => {
-        // return status
-        console.log(status);
-      });
+      // could check FCOM if some error handling could be added
+      this.datalink.activateAtisAutoUpdate(this.props.index).then(() => {});
     }
   }
 
@@ -180,9 +176,21 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
         this.messageStatusLabel.set(atisData.status);
       }),
     );
+
+    this.subs.push(
+      this.isIcaoEmpty,
+      this.readMoreVisible,
+      this.dropdownMenuVisible,
+      this.combinedMenuVisible,
+      this.statusButtonVisible,
+    );
   }
 
-  destroy(): void {}
+  destroy(): void {
+    for (const s of this.subs) {
+      s.destroy();
+    }
+  }
 
   render(): VNode {
     return (
@@ -228,7 +236,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
               ))}
               disabled={Subject.create(false)}
               onClick={() => {}}
-              visible={this.isStatusButtonVisible}
+              visible={this.statusButtonVisible}
               highlighted={Subject.create(true)}
               buttonStyle="width: 131px; padding-top: 3px; padding-bottom: 3px; height: 54px;"
               containerStyle="position: absolute; left: 469px; top: 7px;"
@@ -237,7 +245,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
               label="UPDATE<br/>OR PRINT"
               disabled={Subject.create(false)}
               onClick={() => {}}
-              visible={this.showDropdownMenu.map(SubscribableMapFunctions.not())}
+              visible={this.combinedMenuVisible}
               buttonStyle="width: 159px; padding-left: 5px; padding-top: 3px; padding-bottom: 3px;"
               containerStyle="position: absolute; left: 600px; top: 7px;"
               idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_datisblock_btn_${this.props.index}`}
@@ -266,7 +274,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
               onClick={() => {
                 this.datalink.requestAtis(this.props.index);
               }}
-              visible={this.showDropdownMenu}
+              visible={this.dropdownMenuVisible}
               buttonStyle="width: 159px; padding-left: 5px; padding-top: 3px; padding-bottom: 3px;"
               containerStyle="position: absolute; left: 600px; top: 7px;"
             />
@@ -276,7 +284,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
               onClick={() => {
                 this.toggleAtisAutoUpdate(this.atisIcao.get());
               }}
-              visible={this.showDropdownMenu}
+              visible={this.dropdownMenuVisible}
               buttonStyle="width: 159px; padding-left: 5px; padding-top: 3px; padding-bottom: 3px;"
               containerStyle="position: absolute; left: 600px; top: 61px;"
             />
@@ -287,7 +295,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
           <Button
             label=">>>"
             disabled={Subject.create(false)}
-            visible={this.isAtisEmpty.map(SubscribableMapFunctions.not())}
+            visible={this.readMoreVisible}
             onClick={() => {
               this.props.data.lastReadAtis = this.atisCode.get();
               this.props.mfd.uiService.navigateTo('atccom/d-atis/received/' + this.props.index);

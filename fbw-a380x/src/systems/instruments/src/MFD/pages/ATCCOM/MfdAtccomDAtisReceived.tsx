@@ -17,7 +17,7 @@ export class MfdAtccomDAtisReceived extends DisplayComponent<MfdAtccomDAtisRecei
 
   private readonly datalink = this.props.atcService;
 
-  private atisIndex: number = Number(this.props.mfd.uiService.activeUri.get().extra);
+  private readonly atisIndex: number = Number(this.props.mfd.uiService.activeUri.get().extra);
 
   private atisData: AirportAtis = {
     icao: '',
@@ -32,15 +32,18 @@ export class MfdAtccomDAtisReceived extends DisplayComponent<MfdAtccomDAtisRecei
 
   private rowsPerPage = 18;
 
-  private messageArray = Subject.create<string[]>(['']);
+  private readonly messageArray = Subject.create<string[]>(['']);
   private readonly message = Subject.create<string>('');
-  private currentPageNumber = Subject.create<number>(1);
-  private numberOfPages = Subject.create<number>(0);
+  private readonly currentPageNumber = Subject.create<number>(1);
+  private readonly numberOfPages = Subject.create<number>(0);
 
-  private previousMessageArray = Subject.create<string[]>(['']);
+  private readonly previousMessageArray = Subject.create<string[]>(['']);
   private readonly previousMessage = Subject.create<string>('');
-  private previousMessageCurrentPageNumber = Subject.create<number>(1);
-  private previousMessageNumberOfPages = Subject.create<number>(0);
+  private readonly previousMessageCurrentPageNumber = Subject.create<number>(1);
+  private readonly previousMessageNumberOfPages = Subject.create<number>(0);
+
+  private readonly currentAtisNavVisibility = this.numberOfPages.map((v) => (v > 1 ? 'visible' : 'hidden'));
+  private readonly prevAtisNavVisibility = this.previousMessageNumberOfPages.map((v) => (v > 1 ? 'visible' : 'hidden'));
 
   private formatAtis(messageArray: string[], page: number = 1): string {
     return messageArray.slice(this.rowsPerPage * (page - 1), this.rowsPerPage * page).join(' ');
@@ -105,6 +108,8 @@ export class MfdAtccomDAtisReceived extends DisplayComponent<MfdAtccomDAtisRecei
         );
       }
     }
+
+    this.subs.push(this.currentAtisNavVisibility, this.prevAtisNavVisibility);
   }
 
   public destroy(): void {
@@ -139,7 +144,7 @@ export class MfdAtccomDAtisReceived extends DisplayComponent<MfdAtccomDAtisRecei
                   position: 'absolute',
                   top: '37px',
                   right: '16px',
-                  visibility: this.numberOfPages.map((v) => (v > 1 ? 'visible' : 'hidden')),
+                  visibility: this.currentAtisNavVisibility,
                 }}
               >
                 <IconButton
@@ -168,7 +173,7 @@ export class MfdAtccomDAtisReceived extends DisplayComponent<MfdAtccomDAtisRecei
                 class="mfd-label"
                 style="position:absolute; bottom:12px; right:17px; font-size:21px;"
               >
-                <span style={{ visibility: this.numberOfPages.map((v) => (v > 1 ? 'visible' : 'hidden')) }}>
+                <span style={{ visibility: this.currentAtisNavVisibility }}>
                   PGE
                   <br />
                   {this.currentPageNumber}/{this.numberOfPages}
@@ -184,7 +189,7 @@ export class MfdAtccomDAtisReceived extends DisplayComponent<MfdAtccomDAtisRecei
                   position: 'absolute',
                   top: '37px',
                   right: '16px',
-                  visibility: this.previousMessageNumberOfPages.map((v) => (v > 1 ? 'visible' : 'hidden')),
+                  visibility: this.prevAtisNavVisibility,
                 }}
               >
                 <IconButton
@@ -215,9 +220,7 @@ export class MfdAtccomDAtisReceived extends DisplayComponent<MfdAtccomDAtisRecei
                 class="mfd-label"
                 style="position:absolute; bottom:12px; right:17px; font-size:21px;"
               >
-                <span
-                  style={{ visibility: this.previousMessageNumberOfPages.map((v) => (v > 1 ? 'visible' : 'hidden')) }}
-                >
+                <span style={{ visibility: this.prevAtisNavVisibility }}>
                   PGE
                   <br />
                   {this.previousMessageCurrentPageNumber}/{this.previousMessageNumberOfPages}
