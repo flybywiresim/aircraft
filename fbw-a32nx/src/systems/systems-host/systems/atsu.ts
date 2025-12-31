@@ -8,10 +8,16 @@ import { SimVarHandling } from '@datalink/common';
 import { Router, vhfRadioInterface } from '@datalink/router';
 import { EventBus, EventSubscriber, Instrument, SimVarValueType } from '@microsoft/msfs-sdk';
 import { PowerSupplyBusTypes } from 'systems-host/systems/powersupply';
+import { RegisteredSimVar } from '@flybywiresim/fbw-sdk';
 
 class a32nxVhfProvider implements vhfRadioInterface {
+  private readonly ComActiveFrequency3 = RegisteredSimVar.create<number>(
+    'A:COM ACTIVE FREQUENCY:3',
+    SimVarValueType.MHz,
+  );
+
   isDataModeActive(): boolean {
-    if (SimVar.GetSimVarValue('A:COM ACTIVE FREQUENCY:3', SimVarValueType.MHz) === 0) {
+    if (this.ComActiveFrequency3.get() === 0) {
       return true;
     }
     return false;

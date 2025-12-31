@@ -4,10 +4,13 @@ import { SimVarHandling } from '@datalink/common';
 import { Router, vhfRadioInterface } from '@datalink/router';
 import { EventBus, EventSubscriber, Instrument, SimVarValueType } from '@microsoft/msfs-sdk';
 import { PowerSupplyBusTypes } from 'systems-host/Misc/powersupply';
+import { RegisteredSimVar } from '@flybywiresim/fbw-sdk';
 
 class a380xVhfProvider implements vhfRadioInterface {
+  private readonly RmpModeActive3 = RegisteredSimVar.create<number>('L:FBW_RMP_MODE_ACTIVE_3', SimVarValueType.Enum);
+
   isDataModeActive(): boolean {
-    if (SimVar.GetSimVarValue('L:FBW_RMP_MODE_ACTIVE_3', SimVarValueType.Enum) === 1) {
+    if (this.RmpModeActive3.get() === 1) {
       return true;
     }
     return false;
