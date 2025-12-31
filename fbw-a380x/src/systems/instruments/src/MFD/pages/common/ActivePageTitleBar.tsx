@@ -14,7 +14,10 @@ interface ActivePageTitleBarProps extends ComponentProps {
   offset: Subscribable<string>;
   eoIsActive: Subscribable<boolean>;
   tmpyIsActive?: Subscribable<boolean>;
+  /** Whether to display the PENALTY seciton on the title bar */
   penaltyIsActive?: Subscribable<boolean>;
+  /** Whether this is an FMS page. If it is, title section for EO AND TMPY are visible */
+  isFmsPage?: boolean;
 }
 
 /*
@@ -35,6 +38,8 @@ export class ActivePageTitleBar extends DisplayComponent<ActivePageTitleBarProps
   private readonly penaltyVisibility = (this.props.penaltyIsActive ?? Subject.create(false)).map((v) =>
     v ? 'visible' : 'hidden',
   );
+
+  private readonly titleBarMargin = Subject.create(this.props.isFmsPage ? '2px' : '0px'); // As the bars are still rendered, removing the margin removes the black bars.
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -70,12 +75,12 @@ export class ActivePageTitleBar extends DisplayComponent<ActivePageTitleBarProps
             PENALTY
           </span>
         </div>
-        <div class="mfd-title-bar-eo-section">
+        <div class="mfd-title-bar-section eo" style={{ 'margin-left': this.titleBarMargin }}>
           <span ref={this.eoRef} class="mfd-label mfd-title-bar-text label amber" style="display: none">
             EO
           </span>
         </div>
-        <div class="mfd-title-bar-tmpy-section">
+        <div class="mfd-title-bar-section tmpy" style={{ 'margin-left': this.titleBarMargin }}>
           <span class="mfd-label mfd-title-bar-text label yellow" style={{ visibility: this.temporaryVisibility }}>
             TMPY
           </span>

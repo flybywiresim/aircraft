@@ -47,6 +47,8 @@ import {
   dataStatusUri,
   performancePage,
   initPage,
+  fixInfoUri,
+  dirToUri,
 } from './shared/utils';
 
 export function pageForUrl(
@@ -91,7 +93,7 @@ export function pageForUrl(
     case 'fms/sec2/f-pln-arrival':
     case 'fms/sec3/f-pln-arrival':
       return <MfdFmsFplnArr pageTitle="F-PLN/ARRIVAL" bus={bus} mfd={mfd} fmcService={fmcService} />;
-    case 'fms/active/f-pln-direct-to':
+    case dirToUri:
       return <MfdFmsFplnDirectTo pageTitle="F-PLN/DIRECT-TO" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'fms/active/f-pln-vert-rev':
     case 'fms/sec1/f-pln-vert-rev':
@@ -103,7 +105,7 @@ export function pageForUrl(
     case 'fms/sec2/' + lateralRevisionHoldPage:
     case 'fms/sec3/' + lateralRevisionHoldPage:
       return <MfdFmsFplnHold pageTitle="F-PLN/HOLD" bus={bus} mfd={mfd} fmcService={fmcService} />;
-    case 'fms/active/f-pln-fix-info':
+    case fixInfoUri:
       return <MfdFmsFplnFixInfo pageTitle="F-PLN/FIX INFO" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'fms/position/monitor':
       return <MfdFmsPositionMonitor pageTitle="MONITOR" bus={bus} mfd={mfd} fmcService={fmcService} />;

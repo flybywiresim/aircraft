@@ -24,12 +24,13 @@ import {
   performancePage,
   secIndexPageUri,
   initPage,
-  dirToPage,
+  dirToUri,
   airwaysPage,
   departurePage,
   arrivalPage,
   lateralRevisionPage,
   verticalRevisionPage,
+  fixInfoUri,
 } from '../../shared/utils';
 
 export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPageProps> extends DisplayComponent<T> {
@@ -56,14 +57,15 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
         uri.page === fuelAndLoadPage ||
         uri.page === initPage ||
         uri.page === flightPlanUriPage ||
-        uri.page === dirToPage ||
         uri.page === airwaysPage ||
         uri.page === departurePage ||
         uri.page === arrivalPage ||
         uri.page === lateralRevisionPage ||
         uri.page === lateralRevisionHoldPage ||
         uri.page === verticalRevisionPage ||
-        uri.uri === secIndexPageUri),
+        uri.uri === fixInfoUri ||
+        uri.uri === secIndexPageUri ||
+        uri.uri === dirToUri),
   );
 
   private readonly displayTmpy = MappedSubject.create(
@@ -289,6 +291,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
         eoIsActive={this.eoActive}
         tmpyIsActive={this.displayTmpy}
         penaltyIsActive={this.displayPenalty}
+        isFmsPage={true}
       />
     );
   }

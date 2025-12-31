@@ -42,7 +42,7 @@
   font-size: 30px;
 }
 
-.mfd-title-bar-eo-section {
+.mfd-title-bar-section {
   display: flex;
   width: 70px;
   background-color: $display-dark-grey;
@@ -51,13 +51,12 @@
   align-items: center;
 }
 
-.mfd-title-bar-tmpy-section {
-  display: flex;
+.mfd-title-bar-section.eo {
+  width: 70px;
+}
+
+.mfd-title-bar-section.tmpy {
   width: 100px;
-  background-color: $display-dark-grey;
-  margin-left: 2px;
-  justify-content: center;
-  align-items: center;
 }
 
 .mfd-title-bar-text.label {
