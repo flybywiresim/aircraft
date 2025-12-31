@@ -86,7 +86,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
     }
   }
 
-  private readonly isAtisEmpty = MappedSubject.create(([message]) => {
+  private readonly isAtisEmpty = this.atisMessage.map((message) => message.length === 0);
     if (message.length == 0) {
       return true;
     }
