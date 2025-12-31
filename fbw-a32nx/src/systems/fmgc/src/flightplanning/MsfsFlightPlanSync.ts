@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+import { EventBus, MappedSubject, Subject, Wait } from '@microsoft/msfs-sdk';
+
 import {
   AirportSubsectionCode,
   Approach,
@@ -17,18 +19,18 @@ import {
   RunwayUtils,
   SectionCode,
 } from '@flybywiresim/fbw-sdk';
-import { EventBus, MappedSubject, Subject, Wait } from '@microsoft/msfs-sdk';
+
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
+import { DataManager, PilotWaypointType } from '@fmgc/flightplanning/DataManager';
+import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
 import {
   JS_ApproachIdentifier,
   JS_EnrouteLeg,
   JS_FlightPlanRoute,
   JS_ICAO,
   JS_RunwayIdentifier,
-} from '../../../../../../fbw-common/src/systems/navdata/client/backends/Msfs/FsTypes';
-import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
-import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
-import { DataManager, PilotWaypointType } from '@fmgc/flightplanning/DataManager';
-import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
+} from './MsfsFlightPlanSyncTypes';
 
 export class MsfsFlightPlanSync {
   private static readonly FBW_APPROACH_TO_MSFS_APPROACH: Record<ApproachType, string> = {
