@@ -1709,7 +1709,7 @@ export class RnpFormat implements DataEntryFormat<number> {
 }
 
 export class FuelPenaltyPercentFormat implements DataEntryFormat<number> {
-  public readonly placeholder = '000.0';
+  public readonly placeholder = '000.0'; // Always exists even if cleared
 
   readonly maxDigits = 4;
 
@@ -1717,13 +1717,18 @@ export class FuelPenaltyPercentFormat implements DataEntryFormat<number> {
 
   private readonly maxValue = 999.9;
 
+  private readonly unit = '%';
+
+  private readonly leadingUnit = '+';
+
   format(value: number): FieldFormatTuple {
     if (value === null || value === undefined) {
-      return [this.placeholder, null, '%'] as FieldFormatTuple;
+      return [this.placeholder, this.leadingUnit, this.unit] as FieldFormatTuple;
     }
 
-    return [value.toFixed(1).padStart(5, '0'), null, '%'] as FieldFormatTuple;
+    return [value.toFixed(1).padStart(5, '0'), this.leadingUnit, this.unit] as FieldFormatTuple;
   }
+
   public async parse(input: string) {
     if (input === '') {
       return null;

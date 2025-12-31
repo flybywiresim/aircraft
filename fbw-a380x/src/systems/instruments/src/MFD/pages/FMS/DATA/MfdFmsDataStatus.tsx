@@ -1,4 +1,4 @@
-// Copyright (c) 2024 FlyByWire Simulations
+// Copyright (c) 2024-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { ClockEvents, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
@@ -6,7 +6,6 @@ import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
-import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
@@ -15,6 +14,8 @@ import { ConfirmationDialog } from '../../../../MsfsAvionicsCommon/UiWidgets/Con
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 
 import './MfdFmsDataStatus.scss';
+import { FuelPenaltyPercentFormat } from '../../common/DataEntryFormats';
+import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 
 interface MfdFmsDataStatusProps extends AbstractMfdPageProps {}
 
@@ -34,24 +35,21 @@ const DB_MONTHS: Record<string, string> = {
 };
 
 export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
-  private selectedPageIndex = Subject.create<number>(0);
+  private readonly selectedPageIndex = Subject.create<number>(0);
 
-  private navDatabase = Subject.create('');
+  private readonly navDatabase = Subject.create('');
 
-  private activeDatabase = Subject.create('');
+  private readonly activeDatabase = Subject.create('');
+  private readonly secondDatabase = Subject.create('');
 
-  private secondDatabase = Subject.create('');
+  private readonly storedWaypoints = Subject.create('00');
 
-  private storedWaypoints = Subject.create('00');
+  private readonly storedRoutes = Subject.create('00');
+  private readonly storedNavaids = Subject.create('00');
 
-  private storedRoutes = Subject.create('00');
+  private readonly storedRunways = Subject.create('00');
 
-  private storedNavaids = Subject.create('00');
-
-  private storedRunways = Subject.create('00');
-
-  private deleteStoredElementsDisabled = Subject.create(true);
-
+  private readonly deleteStoredElementsDisabled = Subject.create(true);
   private readonly isSwapConfirmVisible = Subject.create(false);
 
   protected onNewData() {
@@ -88,11 +86,11 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
       }, true),
     );
 
-    const sub = this.props.bus.getSubscriber<ClockEvents & MfdSimvars>();
+    const sub = this.props.bus.getSubscriber<ClockEvents>();
     this.subs.push(
       sub
         .on('realTime')
-        .atFrequency(0.5)
+        .atFrequency(1)
         .handle((_t) => {
           this.onNewData();
         }),
@@ -126,43 +124,50 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
           >
             <TopTabNavigatorPage>
               {/* ACFT STATUS */}
-              <div class="mfd-data-status-airframe-label mfd-value bigger">A380-800</div>
-              <div class="mfd-data-status-first-section">
-                <div>
-                  <span class="mfd-label" style="margin-right: 50px;">
-                    ENGINE
+              <div class="mfd-data-status-airframe-label mfd-value bigger">A380-800&nbsp;/&nbsp;TRENT 972</div>
+              <div class="mfd-data-status-performance-row">
+                <div style="margin-bottom: 10px;">
+                  <span class="mfd-label" style="margin-right: 10px;">
+                    IDLE
                   </span>
-                  <span class="mfd-value bigger">TRENT 972</span>
+                  <span class="mfd-value bigger">
+                    {`${AirlineModifiableInformation.EK.idleFactor >= 0 ? '+' : '-'}${AirlineModifiableInformation.EK.idleFactor.toFixed(1)}`}
+                  </span>
                 </div>
                 <div>
-                  <div style="border: 1px solid lightgrey; padding: 10px; display: flex; flex-direction: column;">
-                    <div style="margin-bottom: 10px;">
-                      <span class="mfd-label" style="margin-right: 10px;">
-                        IDLE
-                      </span>
-                      <span class="mfd-value bigger">
-                        {`${AirlineModifiableInformation.EK.idleFactor >= 0 ? '+' : '-'}${AirlineModifiableInformation.EK.idleFactor.toFixed(1)}`}
-                      </span>
-                    </div>
-                    <div>
-                      <span class="mfd-label" style="margin-right: 10px;">
-                        PERF
-                      </span>
-                      <span class="mfd-value bigger">
-                        {`${AirlineModifiableInformation.EK.perfFactor >= 0 ? '+' : '-'}${AirlineModifiableInformation.EK.perfFactor.toFixed(1)}`}
-                      </span>
-                    </div>
-                  </div>
-                  <div style="margin-top: 10px; display: flex; justify-content: center;">
-                    <Button
-                      label="MODIFY"
-                      onClick={() => {}}
-                      disabled={Subject.create(true)}
-                      buttonStyle="width: 125px;"
-                    />
-                  </div>
+                  <span class="mfd-label" style="margin-right: 10px;">
+                    PERF
+                  </span>
+                  <span class="mfd-value bigger">
+                    {`${AirlineModifiableInformation.EK.perfFactor >= 0 ? '+' : '-'}${AirlineModifiableInformation.EK.perfFactor.toFixed(1)}`}
+                  </span>
+                </div>
+                <div style="margin-left: 10px; display: flex; justify-content: center;">
+                  <Button
+                    label="MODIFY"
+                    onClick={() => {}}
+                    disabled={Subject.create(true)}
+                    buttonStyle="width: 125px;"
+                  />
                 </div>
               </div>
+              <div class="mfd-data-status-performance-row">
+                <span class={'mfd-label'}>FUEL PENALTY</span>
+                <InputField<number>
+                  dataEntryFormat={new FuelPenaltyPercentFormat()}
+                  value={this.props.fmcService.master?.fmgc.data.fuelPenaltyPercentage!}
+                  enteredByPilot={this.props.fmcService.master?.fmgc.data.fuelPenaltyActive!}
+                  canBeCleared={Subject.create(true)}
+                  containerStyle="width: 155px;"
+                  alignText="center"
+                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  hEventConsumer={this.props.mfd.hEventConsumer}
+                  interactionMode={this.props.mfd.interactionMode}
+                />
+              </div>
+
+              <div class="mfd-data-status-first-section-divider"></div>
+
               <div class="mfd-data-status-second-section">
                 <div style="position: relative; display: flex; justify-content: center; width: 100%;">
                   <ConfirmationDialog

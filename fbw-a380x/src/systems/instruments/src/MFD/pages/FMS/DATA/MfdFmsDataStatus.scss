@@ -24,15 +24,19 @@
   margin-bottom: 40px;
 }
 
-.mfd-data-status-first-section {
-  width: 100%;
+.mfd-data-status-performance-row {
+  border: 1px solid $display-light-grey;
+  padding: 10px;
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
-  align-items: flex-start;
-  padding-bottom: 15px;
-  border-bottom: 2px solid $display-light-grey;
 }
+
+.mfd-data-status-first-section-divider {
+  width: 100%;
+border: 2px outset $display-light-grey;
+ height: 2px;
+}
+
 
 .mfd-data-status-second-section {
   width: 100%;
