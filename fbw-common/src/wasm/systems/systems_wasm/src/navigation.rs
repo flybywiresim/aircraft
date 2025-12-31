@@ -1,8 +1,8 @@
+use crate::aspects::{ExecuteOn, MsfsAspectBuilder};
+use crate::Variable;
 use std::error::Error;
 use systems::payload::BoardingRate;
 use systems::shared::to_bool;
-use systems_wasm::aspects::{ExecuteOn, MsfsAspectBuilder};
-use systems_wasm::Variable;
 
 #[derive(Clone, Copy, PartialEq)]
 enum AlignTime {
@@ -21,7 +21,7 @@ impl From<f64> for AlignTime {
     }
 }
 
-pub(super) fn navigation(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
+pub fn navigation(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
     builder.map(
         ExecuteOn::PreTick,
         Variable::named("CONFIG_ADIRS_IR_ALIGN_TIME"),
