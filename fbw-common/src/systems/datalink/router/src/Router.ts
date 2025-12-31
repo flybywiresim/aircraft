@@ -100,9 +100,7 @@ export class Router {
     synchronizedAtc: boolean,
     synchronizedAoc: boolean,
   ) {
-    NXDataStore.getSetting('ACARS_PROVIDER').sub((_) => {
-      AcarsConnector.activateAcars();
-    });
+    AcarsConnector.activateAcars();
 
     this.digitalInputs = new DigitalInputs(this.bus, synchronizedAtc, synchronizedAoc);
     this.digitalOutputs = new DigitalOutputs(this.bus, synchronizedAtc, synchronizedAoc);

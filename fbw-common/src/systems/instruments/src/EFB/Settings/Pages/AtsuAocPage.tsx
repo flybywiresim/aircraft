@@ -65,6 +65,7 @@ export const AtsuAocPage = () => {
           return;
         }
         toast.success(`${t('Settings.AtsuAoc.YourAcarsIdHasBeenValidated')} ${response}`);
+        AcarsConnector.activateAcars();
       })
       .catch((_error) => {
         toast.error(t('Settings.AtsuAoc.ThereWasAnErrorEncounteredWhenValidatingYourAcarsId'));

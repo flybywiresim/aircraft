@@ -3,7 +3,7 @@ import { NXDataStore } from '@flybywiresim/fbw-sdk';
 import { Cpdlc } from './Cpdlc';
 import { CpdlcMessageDto } from './CpdlcMessageDto';
 
-const HOPPIE_PROVIDER_ENDPOINTS: Record<string, string> = {
+const ACARS_PROVIDER_ENDPOINTS: Record<string, string> = {
   HOPPIE: 'https://www.hoppie.nl/acars/system/connect.html',
   BATC: 'http://localhost:57698/acars/system/connect.html',
   SAI: 'https://acars.sayintentions.ai/acars/system/connect.html',
@@ -17,7 +17,7 @@ const PROVIDER_LOGON_CONFIG: Record<string, { legacyKey: string; missingMessage:
 export class AcarsClient {
   static async getData(dto: CpdlcMessageDto): Promise<Cpdlc> {
     const acarsProvider = NXDataStore.getSetting('ACARS_PROVIDER').get();
-    const baseUrl = HOPPIE_PROVIDER_ENDPOINTS[acarsProvider];
+    const baseUrl = ACARS_PROVIDER_ENDPOINTS[acarsProvider];
     const logonConfig = PROVIDER_LOGON_CONFIG[acarsProvider];
 
     const params = new URLSearchParams();

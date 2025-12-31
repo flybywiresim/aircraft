@@ -29,7 +29,7 @@ export class AcarsConnector {
   public static fansMode: FansMode = FansMode.FansNone;
 
   public static async activateAcars() {
-    SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 0);
+    SimVar.SetSimVarValue('L:A32NX_ACARS_ACTIVE', 'number', 0);
 
     if (NXDataStore.getSetting('ACARS_PROVIDER').get() === 'NONE') {
       console.log('CPDLC deactivated in EFB');
@@ -46,7 +46,7 @@ export class AcarsConnector {
     AcarsClient.getData(body)
       .then((resp) => {
         if (resp.response !== 'error {invalid logon code}') {
-          SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 1);
+          SimVar.SetSimVarValue('L:A32NX_ACARS_ACTIVE', 'number', 1);
           console.log('Activated ACARS-ID');
         } else {
           console.log('Invalid ACARS-ID set');
@@ -58,11 +58,11 @@ export class AcarsConnector {
   }
 
   public static deactivateAcars(): void {
-    SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 0);
+    SimVar.SetSimVarValue('L:A32NX_ACARS_ACTIVE', 'number', 0);
   }
 
   public static async connect(flightNo: string): Promise<AtsuStatusCodes> {
-    if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1) {
+    if (SimVar.GetSimVarValue('L:A32NX_ACARS_ACTIVE', 'number') !== 1) {
       AcarsConnector.flightNumber = flightNo;
       return AtsuStatusCodes.NoAcarsConnection;
     }
@@ -82,7 +82,7 @@ export class AcarsConnector {
   }
 
   public static async isCallsignInUse(station: string): Promise<AtsuStatusCodes> {
-    if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1) {
+    if (SimVar.GetSimVarValue('L:A32NX_ACARS_ACTIVE', 'number') !== 1) {
       return AtsuStatusCodes.NoAcarsConnection;
     }
 
@@ -110,7 +110,7 @@ export class AcarsConnector {
   }
 
   public static async isStationAvailable(station: string): Promise<AtsuStatusCodes> {
-    if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1 || AcarsConnector.flightNumber === '') {
+    if (SimVar.GetSimVarValue('L:A32NX_ACARS_ACTIVE', 'number') !== 1 || AcarsConnector.flightNumber === '') {
       return AtsuStatusCodes.NoAcarsConnection;
     }
 
@@ -146,7 +146,7 @@ export class AcarsConnector {
   }
 
   private static async sendMessage(message: AtsuMessage, type: string): Promise<AtsuStatusCodes> {
-    if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1 || AcarsConnector.flightNumber === '') {
+    if (SimVar.GetSimVarValue('L:A32NX_ACARS_ACTIVE', 'number') !== 1 || AcarsConnector.flightNumber === '') {
       return AtsuStatusCodes.NoAcarsConnection;
     }
 
@@ -178,7 +178,7 @@ export class AcarsConnector {
   public static async sendTelexMessage(message: AtsuMessage, force: boolean): Promise<AtsuStatusCodes> {
     if (
       AcarsConnector.flightNumber !== '' &&
-      (force || SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1)
+      (force || SimVar.GetSimVarValue('L:A32NX_ACARS_ACTIVE', 'number') === 1)
     ) {
       return AcarsConnector.sendMessage(message, 'telex');
     }
@@ -188,7 +188,7 @@ export class AcarsConnector {
   public static async sendCpdlcMessage(message: CpdlcMessage, force: boolean): Promise<AtsuStatusCodes> {
     if (
       AcarsConnector.flightNumber !== '' &&
-      (force || SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1)
+      (force || SimVar.GetSimVarValue('L:A32NX_ACARS_ACTIVE', 'number') === 1)
     ) {
       return AcarsConnector.sendMessage(message, 'cpdlc');
     }
@@ -315,7 +315,7 @@ export class AcarsConnector {
   public static async poll(): Promise<[AtsuStatusCodes, AtsuMessage[]]> {
     const retval: AtsuMessage[] = [];
 
-    if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1 || AcarsConnector.flightNumber === '') {
+    if (SimVar.GetSimVarValue('L:A32NX_ACARS_ACTIVE', 'number') !== 1 || AcarsConnector.flightNumber === '') {
       return [AtsuStatusCodes.NoAcarsConnection, retval];
     }
 
