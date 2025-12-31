@@ -4,7 +4,6 @@ mod brakes;
 mod elevators;
 mod flaps;
 mod gear;
-mod navigation;
 mod nose_wheel_steering;
 mod payload;
 mod reversers;
@@ -19,7 +18,6 @@ use brakes::brakes;
 use elevators::elevators;
 use flaps::flaps;
 use gear::gear;
-use navigation::navigation;
 use nose_wheel_steering::nose_wheel_steering;
 use payload::payload;
 use reversers::reversers;
@@ -35,6 +33,7 @@ use systems::shared::{
     HydraulicColor, LgciuId, ProximityDetectorId,
 };
 use systems_wasm::aspects::ExecuteOn;
+use systems_wasm::navigation::navigation;
 use systems_wasm::{MsfsSimulationBuilder, Variable};
 use trimmable_horizontal_stabilizer::trimmable_horizontal_stabilizer;
 
@@ -400,10 +399,6 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_named_variable("FSDT_GSX_BOARDING_CARGO_PERCENT")?
     .provides_named_variable("FSDT_GSX_DEBOARDING_CARGO_PERCENT")?
     .provides_named_variable("FSDT_GSX_BYPASS_PIN")?
-    .provides_named_variable("A32NX_ATT_HDG_SWITCHING_KNOB")?
-    .provides_named_variable("A32NX_AIR_DATA_SWITCHING_KNOB")?
-    .provides_named_variable("A32NX_FCU_LEFT_EIS_BARO_HPA")?
-    .provides_named_variable("A32NX_FCU_RIGHT_EIS_BARO_HPA")?
     .with_aspect(|builder| {
         builder.copy(
             Variable::named("FSDT_GSX_BYPASS_PIN"),
