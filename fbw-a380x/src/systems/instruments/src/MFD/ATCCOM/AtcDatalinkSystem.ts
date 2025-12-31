@@ -107,6 +107,16 @@ export class AtcDatalinkSystem implements Instrument {
     this.sub.on('routerDatalinkStatus').handle((data) => (this.datalinkStatus = data));
     this.sub.on('routerDatalinkMode').handle((data) => (this.datalinkMode = data));
 
+    this.sub.on('atcSystemStatus').handle((status) => {
+      switch (status) {
+        // TODO: Add feature to track atis that was updated
+        case AtsuStatusCodes.NewAtisReceived:
+          this.atisAirports.forEach((data, index) => {
+            this.publisher.pub(`atcAtis_${index}`, this.atisAirports[index]);
+          });
+      }
+    });
+
     this.sub.on('atcActiveAtisAutoUpdates').handle((airports) => {
       this.atisAutoUpdates = airports;
       this.atisAirports.forEach((airportData, index) => {
@@ -119,6 +129,7 @@ export class AtcDatalinkSystem implements Instrument {
         }
       });
     });
+
     this.sub.on('atcRequestAtsuStatusCode').handle((response) => {
       this.requestAtsuStatusCodeCallbacks.every((callback, index) => {
         if (callback(response.code, response.requestId)) {
@@ -135,12 +146,14 @@ export class AtcDatalinkSystem implements Instrument {
       .handle((icao) => {
         this.initAtis(0, icao);
       });
+
     this.sub
       .on('fmsDestination')
       .whenChanged()
       .handle((icao) => {
         this.initAtis(1, icao);
       });
+
     this.sub
       .on('fmsAlternate')
       .whenChanged()
