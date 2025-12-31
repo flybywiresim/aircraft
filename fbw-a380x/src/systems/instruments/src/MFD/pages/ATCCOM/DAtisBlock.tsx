@@ -46,7 +46,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
 
   private readonly atisType = Subject.create<number | null>(this.props.data.type);
 
-  private readonly atisMessage = Subject.create<string>('');
+  private readonly atisMessage = Subject.create<string>(null);
 
   private readonly atisCode = Subject.create<string>(null);
 
@@ -59,7 +59,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
   private readonly messageStatusLabel = Subject.create<string>(null);
 
   private readonly isIcaoEmpty = this.atisIcao.map((icao) => {
-    if (icao !== '' && icao !== '----') return false;
+    if (icao !== null && icao !== '----') return false;
     return true;
   });
 
@@ -87,11 +87,11 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
     }
   }
 
-  private readonly readMoreVisible = this.atisMessage.map((message) => message.length !== 0);
+  private readonly readMoreVisible = this.atisMessage.map((message) => message !== null);
 
   private readonly dropdownMenuVisible = MappedSubject.create(
     ([messageStatus, atisMessage]) => {
-      if (messageStatus === '' && atisMessage.length == 0) {
+      if (messageStatus === null && atisMessage === null) {
         return true;
       }
       return false;
@@ -102,7 +102,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
 
   private readonly combinedMenuVisible = this.dropdownMenuVisible.map(SubscribableMapFunctions.not());
 
-  private readonly statusButtonVisible = this.messageStatusLabel.map((status) => status !== '');
+  private readonly statusButtonVisible = this.messageStatusLabel.map((status) => status != null && status.length !== 0);
 
   private updateAtisData(airportIcao: string): void {
     const atisReport: AtisMessage = this.datalink.atisReports(airportIcao)[0];
@@ -131,9 +131,9 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    if (this.props.data.icao !== '') {
+    if (this.props.data.icao !== null) {
       this.updateAtisData(this.props.data.icao);
-      this.messageStatusLabel.set('');
+      this.messageStatusLabel.set(null);
     }
 
     this.subs.push(
@@ -142,10 +142,10 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
         this.datalink.setAtisAirport(this.props.data, this.props.index);
 
         // clear existing data
-        this.atisCode.set('');
-        this.atisTimestamp.set('');
-        this.atisMessage.set('');
-        this.messageStatusLabel.set('');
+        this.atisCode.set(null);
+        this.atisTimestamp.set(null);
+        this.atisMessage.set(null);
+        this.messageStatusLabel.set(null);
       }),
     );
 
@@ -160,7 +160,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
 
     this.subs.push(
       this.atisCode.sub((value) => {
-        if (this.props.data.lastReadAtis !== value && value !== '') {
+        if (this.props.data.lastReadAtis !== value && value !== null) {
           this.isAtisNew.set(true);
         } else {
           this.isAtisNew.set(false);

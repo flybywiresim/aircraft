@@ -66,9 +66,9 @@ export class AtcDatalinkSystem implements Instrument {
   atcErrors = ArraySubject.create<AtcErrorMessage>();
 
   private readonly atisAirports: AirportAtis[] = [
-    { icao: '', type: AtisType.Departure, requested: false, autoupdate: false, lastReadAtis: '', status: '' },
-    { icao: '', type: AtisType.Arrival, requested: false, autoupdate: false, lastReadAtis: '', status: '' },
-    { icao: '', type: AtisType.Arrival, requested: false, autoupdate: false, lastReadAtis: '', status: '' },
+    { icao: null, type: AtisType.Departure, requested: false, autoupdate: false, lastReadAtis: null, status: null },
+    { icao: null, type: AtisType.Arrival, requested: false, autoupdate: false, lastReadAtis: null, status: null },
+    { icao: null, type: AtisType.Arrival, requested: false, autoupdate: false, lastReadAtis: null, status: null },
   ];
 
   private datalinkStatus: { vhf: DatalinkStatusCode; satellite: DatalinkStatusCode; hf: DatalinkStatusCode } = {
