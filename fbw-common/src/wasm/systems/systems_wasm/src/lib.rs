@@ -4,6 +4,7 @@ mod anti_ice;
 mod electrical;
 mod failures;
 mod msfs;
+pub mod navigation;
 
 #[cfg(not(target_arch = "wasm32"))]
 use crate::msfs::legacy::{AircraftVariable, NamedVariable};

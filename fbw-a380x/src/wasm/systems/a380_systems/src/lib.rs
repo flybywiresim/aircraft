@@ -34,7 +34,7 @@ use fire_and_smoke_protection::A380FireAndSmokeProtection;
 use fuel::FuelLevel;
 use hydraulic::{autobrakes::A380AutobrakePanel, A380Hydraulic, A380HydraulicOverheadPanel};
 use icing::Icing;
-use navigation::{A380AirDataInertialReferenceSystemBuilder, A380RadioAltimeters};
+use navigation::{A380AdirsElectricalHarness, A380RadioAltimeters};
 use payload::A380Payload;
 use power_consumption::A380PowerConsumption;
 use reverser::{A380ReverserController, A380Reversers};
@@ -46,13 +46,12 @@ use systems::{
         AuxiliaryPowerUnit, AuxiliaryPowerUnitFactory, AuxiliaryPowerUnitFireOverheadPanel,
         AuxiliaryPowerUnitOverheadPanel, Pw980ApuGenerator, Pw980Constants, Pw980StartMotor,
     },
+    auto_flight::FlightControlUnitShim,
     electrical::{Electricity, ElectricitySource, ExternalPowerSource},
     engine::{reverser_thrust::ReverserForce, trent_engine::TrentEngine, EngineFireOverheadPanel},
     enhanced_gpwc::EnhancedGroundProximityWarningComputer,
     landing_gear::{LandingGear, LandingGearControlInterfaceUnitSet},
-    navigation::adirs::{
-        AirDataInertialReferenceSystem, AirDataInertialReferenceSystemOverheadPanel,
-    },
+    navigation::hw_block3_adiru::AirDataInertialReferenceSystem,
     shared::ElectricalBusType,
     simulation::{
         Aircraft, InitContext, SimulationElement, SimulationElementVisitor, UpdateContext,
@@ -63,7 +62,7 @@ pub struct A380 {
     adcn: A380AvionicsDataCommunicationNetwork,
     adcn_simvar_translation: A380AvionicsDataCommunicationNetworkSimvarTranslator,
     adirs: AirDataInertialReferenceSystem,
-    adirs_overhead: AirDataInertialReferenceSystemOverheadPanel,
+    adirs_electrical_harness: A380AdirsElectricalHarness,
     air_conditioning: A380AirConditioning,
     apu: AuxiliaryPowerUnit<Pw980ApuGenerator, Pw980StartMotor, Pw980Constants, 2>,
     apu_fire_overhead: AuxiliaryPowerUnitFireOverheadPanel,
@@ -76,6 +75,7 @@ pub struct A380 {
     airframe: A380Airframe,
     fire_and_smoke_protection: A380FireAndSmokeProtection,
     fuel: A380Fuel,
+    fcu: FlightControlUnitShim,
     engine_1: TrentEngine,
     engine_2: TrentEngine,
     engine_3: TrentEngine,
@@ -108,8 +108,8 @@ impl A380 {
         A380 {
             adcn,
             adcn_simvar_translation,
-            adirs: A380AirDataInertialReferenceSystemBuilder::build(context),
-            adirs_overhead: AirDataInertialReferenceSystemOverheadPanel::new(context),
+            adirs: AirDataInertialReferenceSystem::new(context),
+            adirs_electrical_harness: A380AdirsElectricalHarness::new(context),
             air_conditioning: A380AirConditioning::new(context),
             apu: AuxiliaryPowerUnitFactory::new_pw980(
                 context,
@@ -127,6 +127,7 @@ impl A380 {
             airframe: A380Airframe::new(context),
             fire_and_smoke_protection: A380FireAndSmokeProtection::new(context),
             fuel: A380Fuel::new(context),
+            fcu: FlightControlUnitShim::new(context),
             engine_1: TrentEngine::new(context, 1),
             engine_2: TrentEngine::new(context, 2),
             engine_3: TrentEngine::new(context, 3),
@@ -276,9 +277,12 @@ impl Aircraft for A380 {
 
         self.hydraulic_overhead.update(&self.hydraulic);
 
-        self.adirs.update(context, &self.adirs_overhead);
-        self.adirs_overhead.update(context, &self.adirs);
-
+        self.adirs_electrical_harness
+            .update_before_adirus(context, &mut self.adirs);
+        self.adirs
+            .update(context, &self.adirs_electrical_harness, &self.fcu);
+        self.adirs_electrical_harness
+            .update_after_adirus(&self.adirs);
         self.power_consumption.update(context);
 
         self.pneumatic.update(
@@ -362,7 +366,7 @@ impl SimulationElement for A380 {
         self.adcn.accept(visitor);
         self.adcn_simvar_translation.accept(visitor);
         self.adirs.accept(visitor);
-        self.adirs_overhead.accept(visitor);
+        self.adirs_electrical_harness.accept(visitor);
         self.air_conditioning.accept(visitor);
         self.apu.accept(visitor);
         self.apu_fire_overhead.accept(visitor);
@@ -371,6 +375,7 @@ impl SimulationElement for A380 {
         self.emergency_electrical_overhead.accept(visitor);
         self.fire_and_smoke_protection.accept(visitor);
         self.fuel.accept(visitor);
+        self.fcu.accept(visitor);
         self.payload.accept(visitor);
         self.airframe.accept(visitor);
         self.pneumatic_overhead.accept(visitor);
