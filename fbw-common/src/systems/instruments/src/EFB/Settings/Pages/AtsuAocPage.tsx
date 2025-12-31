@@ -57,18 +57,24 @@ export const AtsuAocPage = () => {
       });
     });
 
+  const formatAcarsMessage = (messageKey: string) =>
+    t(messageKey).replace(
+      '{acarsid}',
+      acarsProvider === 'SAI' ? t('Settings.AtsuAoc.SAIApiKey') : t('Settings.AtsuAoc.HoppieUserId'),
+    );
+
   const handleAcarsUsernameInput = (value: string) => {
     getAcarsResponse(value)
       .then((response) => {
         if (!value) {
-          toast.success(`${t('Settings.AtsuAoc.YourAcarsIdHasBeenRemoved')} ${response}`);
+          toast.success(`${formatAcarsMessage('Settings.AtsuAoc.YourAcarsIdHasBeenRemoved')} ${response}`);
           return;
         }
-        toast.success(`${t('Settings.AtsuAoc.YourAcarsIdHasBeenValidated')} ${response}`);
+        toast.success(`${formatAcarsMessage('Settings.AtsuAoc.YourAcarsIdHasBeenValidated')} ${response}`);
         AcarsConnector.activateAcars();
       })
-      .catch((_error) => {
-        toast.error(t('Settings.AtsuAoc.ThereWasAnErrorEncounteredWhenValidatingYourAcarsId'));
+      .catch(() => {
+        toast.error(formatAcarsMessage('Settings.AtsuAoc.ThereWasAnErrorEncounteredWhenValidatingYourAcarsId'));
       });
   };
 
@@ -231,13 +237,7 @@ export const AtsuAocPage = () => {
       </SettingItem>
 
       {(acarsProvider === 'HOPPIE' || acarsProvider === 'SAI') && (
-        <SettingItem
-          name={
-            acarsProvider === 'SAI'
-              ? t('Settings.AtsuAoc.SaiLogonKey') ?? 'SAI Logon Key'
-              : t('Settings.AtsuAoc.HoppieUserId')
-          }
-        >
+        <SettingItem name={acarsProvider === 'SAI' ? 'SAI API Key' : t('Settings.AtsuAoc.HoppieUserId')}>
           <SimpleInput
             className="w-30 text-center"
             value={acarsProvider === 'SAI' ? saiLogonKey : hoppieUserId}

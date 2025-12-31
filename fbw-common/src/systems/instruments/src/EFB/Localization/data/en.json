@@ -614,12 +614,13 @@
       "Telex": "TELEX",
       "TelexEnablesFreeTextAndLiveMap": "TELEX enables free text and live map. If enabled, aircraft position data is published for the duration of the flight. Messages are public and not moderated. USE THIS FEATURE AT YOUR OWN RISK. To learn more about TELEX and the features it enables, please go to https://docs.flybywiresim.com/telex.",
       "TelexWarning": "TELEX Warning",
-      "ThereWasAnErrorEncounteredWhenValidatingYourAcarsId": "There was an error validating your ACARS-ID",
+      "ThereWasAnErrorEncounteredWhenValidatingYourAcarsId": "There was an error validating your {acarsid}",
       "Title": "ATSU / AOC",
       "YouAreAbleToOptIntoAnonymousErrorReporting": "You are able to opt into anonymous error reporting that will allow us to diagnose, monitor, and take care of issues at a faster rate. This feature is completely optional and we will never collect your personal data, but may allow you to more easily get support and have the issues you encounter fixed at a faster rate.",
-      "YourAcarsIdHasBeenRemoved": "Your ACARS login has been removed",
-      "YourAcarsIdHasBeenValidated": "Your ACARS login has been validated",
-      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "Your SimBrief PilotID has been validated and updated to"
+      "YourAcarsIdHasBeenRemoved": "Your {acarsid} has been removed",
+      "YourAcarsIdHasBeenValidated": "Your {acarsid} has been validated",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "Your SimBrief PilotID has been validated and updated to",
+      "SAIApiKey": "SAI API Key"
     },
     "Audio": {
       "Announcements": "Announcements",
