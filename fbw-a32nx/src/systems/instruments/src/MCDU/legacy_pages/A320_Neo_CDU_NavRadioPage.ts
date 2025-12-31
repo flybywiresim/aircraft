@@ -328,7 +328,7 @@ export class CDUNavRadioPage {
     const mmr = mcdu.getMmrTuningData(1);
     const showSlope = CDUNavRadioPage.showSlope(mcdu, mmr);
     const slope =
-      mmr.slope !== null ? `\xa0\xa0{small}{green}-${mmr.slope.toFixed(1)}{end}{end}` : '{white}\xa0\xa0\xa0-.-{end}';
+      mmr.slope !== null ? `\xa0\xa0{small}{green}${mmr.slope.toFixed(1)}{end}{end}` : '{white}\xa0\xa0\xa0-.-{end}';
     if (mmr.course !== null) {
       return `{${mmr.courseManual ? 'big' : 'small'}}{cyan}${mmr.backcourse ? 'B' : 'F'}${mmr.course.toFixed(0).padStart(3, '0')}{end}{end}${showSlope ? slope : ''}`;
     }
