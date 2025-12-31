@@ -18,7 +18,7 @@ import {
 } from '../../common/src';
 import { AtcAocRouterMessages, FmsRouterMessages } from './databus';
 import { AtsuFlightPhase } from '../../common/src/types/AtsuFlightPhase';
-import { vhfRadioInterface } from './Router';
+import { VhfRadioInterface } from './Router';
 
 export type RouterDigitalInputCallbacks = {
   sendFreetextMessage: (message: FreetextMessage, force: boolean) => Promise<AtsuStatusCodes>;
@@ -72,7 +72,7 @@ export class DigitalInputs {
     private readonly bus: EventBus,
     private readonly synchronizedAtc: boolean,
     private readonly synchronizedAoc: boolean,
-    private readonly vhfRadios: vhfRadioInterface,
+    private readonly vhfRadios: VhfRadioInterface,
   ) {
     this.resetData();
   }

@@ -5,12 +5,12 @@
 import { Atc } from '@datalink/atc';
 import { Aoc } from '@datalink/aoc';
 import { SimVarHandling } from '@datalink/common';
-import { Router, vhfRadioInterface } from '@datalink/router';
+import { Router, VhfRadioInterface } from '@datalink/router';
 import { EventBus, EventSubscriber, Instrument, SimVarValueType } from '@microsoft/msfs-sdk';
 import { PowerSupplyBusTypes } from 'systems-host/systems/powersupply';
 import { RegisteredSimVar } from '@flybywiresim/fbw-sdk';
 
-class a32nxVhfProvider implements vhfRadioInterface {
+class A32nxVhfProvider implements VhfRadioInterface {
   private readonly ComActiveFrequency3 = RegisteredSimVar.create<number>(
     'A:COM ACTIVE FREQUENCY:3',
     SimVarValueType.MHz,
@@ -37,7 +37,7 @@ export class AtsuSystem implements Instrument {
 
   constructor(private readonly bus: EventBus) {
     this.simVarHandling = new SimVarHandling(this.bus);
-    this.router = new Router(this.bus, false, false, new a32nxVhfProvider());
+    this.router = new Router(this.bus, false, false, new A32nxVhfProvider());
     this.atc = new Atc(this.bus, false, false);
     this.aoc = new Aoc(this.bus, false);
 

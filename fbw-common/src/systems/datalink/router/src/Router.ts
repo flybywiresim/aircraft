@@ -32,7 +32,7 @@ enum ActiveCommunicationInterface {
   SATCOM,
 }
 
-export interface vhfRadioInterface {
+export interface VhfRadioInterface {
   isDataModeActive(): boolean;
 }
 
@@ -59,7 +59,7 @@ export class Router {
 
   private lastUpdateTime: number = -1;
 
-  private vhfRadios: vhfRadioInterface;
+  private vhfRadios: VhfRadioInterface;
 
   private removeTransmissionTimeout(timeout: number): void {
     const index = this.transmissionSimulationTimeouts.findIndex((value) => value === timeout);
@@ -105,7 +105,7 @@ export class Router {
     private readonly bus: EventBus,
     synchronizedAtc: boolean,
     synchronizedAoc: boolean,
-    vhfRadios: vhfRadioInterface,
+    vhfRadios: VhfRadioInterface,
   ) {
     HoppieConnector.activateHoppie();
 
