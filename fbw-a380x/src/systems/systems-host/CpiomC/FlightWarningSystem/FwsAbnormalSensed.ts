@@ -1652,12 +1652,22 @@ export class FwsAbnormalSensed {
       flightPhaseInhib: [3, 4, 5, 10],
       simVarIsActive: this.fws.autoThrustOffInvoluntary,
       notActiveWhenItemActive: [],
-      whichItemsToShow: () => [false],
-      whichItemsChecked: () => [SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_MODE_MESSAGE', 'number') !== 1],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [!this.fws.engineThrustLocked],
       failure: 2,
       sysPage: -1,
       monitorConfirmTime: 0.0,
       info: () => [],
+    },
+    220800003: {
+      // A/THR LIMITED
+      flightPhaseInhib: [2, 3, 4, 5, 6, 10, 11],
+      simVarIsActive: this.fws.autoThrustLimited,
+      whichItemsToShow: () => [this.fws.autoThrustLimitedClb, this.fws.autoThrustLimitedMct],
+      whichItemsChecked: () => [false, false],
+      failure: 2,
+      sysPage: SdPages.None,
+      monitorConfirmTime: 0,
     },
     // 22 - AUTOFLIGHT
     220800013: {
@@ -2692,6 +2702,16 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.Fctl,
     },
+    271800017: {
+      // GND SPLRs NOT ARMED
+      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 10, 11, 12],
+      simVarIsActive: this.fws.groundSpoilerNotArmedWarning,
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 2,
+      sysPage: SdPages.None,
+    },
     271800058: {
       // SEC 1 FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
@@ -2792,6 +2812,26 @@ export class FwsAbnormalSensed {
       limitationsAllPhases: () => ['800400001'],
       inopSysAllPhases: () => ['290100008', this.fws.lowerRudderFault.get() ? '270300009' : '270300008'],
       info: () => ['340200002', '220200011'],
+    },
+    271800064: {
+      // SPEED BRAKES POS/LEVER DISAGREE
+      flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
+      simVarIsActive: this.fws.speedBrakePosLeverDisagree,
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [false],
+      failure: 2,
+      sysPage: SdPages.Fctl,
+    },
+    271800065: {
+      // SPEED BRAKES STILL EXTENDED
+      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 10, 11, 12],
+      simVarIsActive: this.fws.speedBrakesStillExtended,
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 2,
+      sysPage: SdPages.None,
     },
     272800001: {
       // SLAT NOT IN TO CONFIG
@@ -2964,6 +3004,16 @@ export class FwsAbnormalSensed {
       failure: 3,
       sysPage: -1,
       inopSysAllPhases: () => [],
+    },
+    271800070: {
+      // LOAD ANALYSIS REQUIRED
+      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+      simVarIsActive: this.fws.loadAnalysysRequired,
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [],
+      whichItemsChecked: () => [],
+      failure: 1,
+      sysPage: SdPages.None,
     },
     // 29 FUEL
     281800002: {
@@ -4585,6 +4635,16 @@ export class FwsAbnormalSensed {
       whichItemsChecked: () => [],
       sysPage: SdPages.Eng,
       failure: 3,
+    },
+    701800158: {
+      // ENGINE THRUST LOCKED
+      simVarIsActive: this.fws.engineThrustLockedAbnormalSensed,
+      flightPhaseInhib: [1, 2, 3, 4, 5, 6, 10, 11, 12],
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [false],
+      sysPage: SdPages.None,
+      failure: 2,
     },
 
     // SECONDARY FAILURES
