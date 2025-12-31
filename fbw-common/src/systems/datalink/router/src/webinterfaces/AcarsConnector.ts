@@ -361,7 +361,7 @@ export class AcarsConnector {
       // split up the received data into multiple messages
       let messages = text.trim().split(/({[\s\S\n]*?})/gm);
       messages = messages.filter(
-        (elem) => elem !== 'ok' && elem !== 'ok ' && elem !== '} ' && elem !== '}' && elem !== '',
+        (elem) => elem !== 'ok' && elem !== 'ok ' && elem !== '} ' && elem !== '}\n' && elem !== '}' && elem !== '',
       );
 
       // create the messages
