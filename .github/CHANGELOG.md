@@ -47,7 +47,7 @@
 1. [A380X/PFD] Add "MOVE THR LEVERS" message in case of thrust lock - @BravoMike99 (bruno_pt99)
 1. [A380X/FWS] Add ENG THRUST LOCKED & AUTO FLT A/THR LIMITED abnornmal sensed procedures - @BravoMike99 (bruno_pt99)
 1. [ATSU] Fix certain aerodromes ATIS letter not being retrieved correctly - @clc0609 (Coby)
-
+1. [ATSU] Add support for BeyondATC and SayIntentionsAI ACARS - @saschl
 ## 0.14.0
 
 1. [A380X/FMS] Fix speed margins being displayed in the wrong place for a Mach target - @BlueberryKing (BlueberryKing)
