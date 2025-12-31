@@ -1,4 +1,12 @@
-import { ComponentProps, DisplayComponent, FSComponent, Subscribable, Subscription, VNode } from '@microsoft/msfs-sdk';
+import {
+  ComponentProps,
+  DisplayComponent,
+  FSComponent,
+  Subject,
+  Subscribable,
+  Subscription,
+  VNode,
+} from '@microsoft/msfs-sdk';
 import './style.scss';
 
 interface ActivePageTitleBarProps extends ComponentProps {
@@ -6,6 +14,7 @@ interface ActivePageTitleBarProps extends ComponentProps {
   offset: Subscribable<string>;
   eoIsActive: Subscribable<boolean>;
   tmpyIsActive: Subscribable<boolean>;
+  penaltyIsActive?: Subscribable<boolean>;
 }
 
 /*
@@ -17,9 +26,13 @@ export class ActivePageTitleBar extends DisplayComponent<ActivePageTitleBarProps
 
   private readonly offsetText = this.props.offset.map((it) => (it ? `     OFFSET${this.props.offset.get()}` : ''));
 
-  private eoRef = FSComponent.createRef<HTMLSpanElement>();
+  private readonly eoRef = FSComponent.createRef<HTMLSpanElement>();
 
-  private tmpyRef = FSComponent.createRef<HTMLSpanElement>();
+  private readonly tmpyRef = FSComponent.createRef<HTMLSpanElement>();
+
+  private readonly penaltyVisibility = (this.props.penaltyIsActive ?? Subject.create(false)).map((v) =>
+    v ? 'visible' : 'hidden',
+  );
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -39,7 +52,7 @@ export class ActivePageTitleBar extends DisplayComponent<ActivePageTitleBarProps
       }, true),
     );
 
-    this.subs.push(this.offsetText);
+    this.subs.push(this.offsetText, this.penaltyVisibility);
   }
 
   public destroy(): void {
@@ -52,19 +65,22 @@ export class ActivePageTitleBar extends DisplayComponent<ActivePageTitleBarProps
   render(): VNode {
     return (
       <div class="mfd-title-bar-container">
-        <div class="mfd-title-bar-title">
-          <span class="mfd-label mfd-title-bar-title-label">
+        <div class="mfd-title-bar-title fr space-between">
+          <span class="mfd-label mfd-title-bar-text">
             {this.props.activePage}
             {this.offsetText}
           </span>
+          <span class="mfd-title-bar-text label white" style={{ visibility: this.penaltyVisibility }}>
+            PENALTY
+          </span>
         </div>
         <div class="mfd-title-bar-eo-section">
-          <span ref={this.eoRef} class="mfd-label mfd-title-bar-eo-label" style="display: none">
+          <span ref={this.eoRef} class="mfd-label mfd-title-bar-text label amber" style="display: none">
             EO
           </span>
         </div>
         <div class="mfd-title-bar-tmpy-section">
-          <span ref={this.tmpyRef} class="mfd-label mfd-title-bar-tmpy-label" style="display: none">
+          <span ref={this.tmpyRef} class="mfd-label mfd-title-bar-text label yellow" style="display: none">
             TMPY
           </span>
         </div>

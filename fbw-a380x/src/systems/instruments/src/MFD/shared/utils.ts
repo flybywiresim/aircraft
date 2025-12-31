@@ -64,3 +64,11 @@ export function getApproachName(approach: Approach, withRnpSuffix = true): strin
 export const noPositionAvailableText = '--°--.--/---°--.--';
 
 export const showReturnButtonUriExtra = 'withReturn';
+
+export const flightPlanUriPage = 'f-pln';
+export const lateralRevisionHoldPage = 'f-pln-hold';
+export const dataStatusUri = 'fms/data/status';
+export const fuelAndLoadPage = 'fuel-load';
+export const activeFlightPlanPageUri = 'fms/active/' + flightPlanUriPage;
+export const activeFlightPlanFuelAndLoadUri = 'fms/active/' + fuelAndLoadPage;
+export const activeFlightPlanHoldUri = 'fms/active/' + lateralRevisionHoldPage;

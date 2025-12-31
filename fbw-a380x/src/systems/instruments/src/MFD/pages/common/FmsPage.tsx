@@ -1,12 +1,22 @@
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
-import { DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
+import {
+  DisplayComponent,
+  FSComponent,
+  MappedSubject,
+  Subject,
+  SubscribableMapFunctions,
+  Subscription,
+  VNode,
+} from '@microsoft/msfs-sdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { NXSystemMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
 import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { FlightPlanEvents } from '@fmgc/flightplanning/sync/FlightPlanEvents';
+import { MfdSystem } from './MfdUiService';
+import { dataStatusUri, fuelAndLoadPage, flightPlanUriPage, lateralRevisionHoldPage } from '../../shared/utils';
 
 export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPageProps> extends DisplayComponent<T> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
@@ -28,6 +38,23 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
 
   protected readonly eoActive = Subject.create<boolean>(false);
 
+  private readonly penaltyActive = Subject.create<boolean>(false);
+
+  private readonly penaltyUri = this.props.mfd.uiService.activeUri.map(
+    (uri) =>
+      uri.sys === MfdSystem.Fms &&
+      (uri.uri === dataStatusUri ||
+        uri.page === fuelAndLoadPage ||
+        uri.page === flightPlanUriPage ||
+        uri.page === lateralRevisionHoldPage),
+  );
+
+  private readonly displayPenalty = MappedSubject.create(
+    SubscribableMapFunctions.and(),
+    this.penaltyUri,
+    this.penaltyActive,
+  );
+
   protected readonly activeFlightPhase = Subject.create<FmgcFlightPhase>(FmgcFlightPhase.Preflight);
 
   // protected mfdInViewConsumer: Consumer<boolean>;
@@ -45,6 +72,8 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
           this.activeFlightPhase.set(val);
         }),
     );
+
+    this.subs.push(this.penaltyUri, this.displayPenalty);
 
     // this.mfdInViewConsumer = sub.on(this.props.mfd.uiService.captOrFo === 'CAPT' ? 'leftMfdInView' : 'rightMfdInView');
 
@@ -97,6 +126,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
       this.props.fmcService.masterFmcChanged.sub(() => {
         // Check if master FMC exists, re-route subjects
         this.props.fmcService.master?.fmgc.data.engineOut.pipe(this.eoActive);
+        this.props.fmcService.master?.fmgc.data.fuelPenaltyActive.pipe(this.penaltyActive);
       }, true),
     );
 
@@ -219,6 +249,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
         offset={Subject.create('')}
         eoIsActive={this.eoActive}
         tmpyIsActive={this.tmpyActive}
+        penaltyIsActive={this.displayPenalty}
       />
     );
   }
