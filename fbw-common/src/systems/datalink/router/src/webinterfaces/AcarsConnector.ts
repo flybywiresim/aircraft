@@ -43,18 +43,32 @@ export class AcarsConnector {
       packet: '',
     };
 
-    AcarsClient.getData(body)
-      .then((resp) => {
+    const maxRetryDuration = 5 * 60 * 1000;
+    const retryInterval = 5000;
+    const startTime = Date.now();
+
+    const attemptConnection = async (): Promise<void> => {
+      try {
+        const resp = await AcarsClient.getData(body);
         if (resp.response !== 'error {invalid logon code}') {
           SimVar.SetSimVarValue('L:A32NX_ACARS_ACTIVE', 'number', 1);
           console.log('Activated ACARS-ID');
         } else {
           console.log('Invalid ACARS-ID set');
         }
-      })
-      .catch((e) => {
-        console.log(`Could not connect to ACARS`, e);
-      });
+      } catch (e) {
+        const elapsed = Date.now() - startTime;
+        if (elapsed < maxRetryDuration) {
+          console.log(`Could not connect to ACARS, retrying in ${retryInterval / 1000}s...`, e);
+          await new Promise((resolve) => setTimeout(resolve, retryInterval));
+          return attemptConnection();
+        } else {
+          console.log(`Could not connect to ACARS after 5 minutes, giving up`, e);
+        }
+      }
+    };
+
+    await attemptConnection();
   }
 
   public static deactivateAcars(): void {
