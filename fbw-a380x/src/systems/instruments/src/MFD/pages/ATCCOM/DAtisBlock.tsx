@@ -104,7 +104,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
     this.atisMessage,
   );
 
-  private readonly isStatusButtonVisible = MappedSubject.create(([status]) => {
+  private readonly isStatusButtonVisible = this.messageStatusLabel.map((status) => status !== '');
     if (status !== '') {
       return true;
     }
