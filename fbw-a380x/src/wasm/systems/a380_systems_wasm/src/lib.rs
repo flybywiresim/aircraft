@@ -40,6 +40,7 @@ use systems::shared::{
     FireDetectionZone, GearActuatorId, HydraulicColor, LgciuId, ProximityDetectorId,
 };
 
+use systems_wasm::navigation::navigation;
 use systems_wasm::{MsfsSimulationBuilder, Variable};
 use trimmable_horizontal_stabilizer::trimmable_horizontal_stabilizer;
 
@@ -606,6 +607,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .with_aspect(payload)?
     .with_aspect(fuel)?
     .with_aspect(trimmable_horizontal_stabilizer)?
+    .with_aspect(navigation)?
     .build(A380::new)?;
 
     while let Some(event) = gauge.next_event().await {
