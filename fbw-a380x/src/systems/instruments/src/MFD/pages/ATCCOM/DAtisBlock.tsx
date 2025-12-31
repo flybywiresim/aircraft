@@ -31,6 +31,8 @@ interface DAtisBlockProps extends AtccomMfdPageProps {
   isAutoPrintEnabled?: Subscribable<boolean>;
 }
 
+const datisBlocklineLengths: number[] = [44, 44, 44, 44, 32];
+
 export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
   private readonly subs = [] as Subscription[];
 
@@ -63,14 +65,13 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
 
   private truncateAtis(string: string): string {
     if (string.length === 0) return '';
-    const lineLengths: number[] = [44, 44, 44, 44, 32];
     const messageArray: string[] = ['', '', '', '', ''];
     const words: string[] = string.split(' ');
     let wordIndex: number = 0;
     messageArray.forEach((value, index) => {
       while (
         wordIndex < words.length &&
-        messageArray[index].length + words[wordIndex].length <= lineLengths[index] - 1
+        messageArray[index].length + words[wordIndex].length <= datisBlocklineLengths[index] - 1
       ) {
         messageArray[index] += words[wordIndex];
         messageArray[index] += ' ';
@@ -87,11 +88,6 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
   }
 
   private readonly isAtisEmpty = this.atisMessage.map((message) => message.length === 0);
-    if (message.length == 0) {
-      return true;
-    }
-    return false;
-  }, this.atisMessage);
 
   private readonly showDropdownMenu = MappedSubject.create(
     ([messageStatus, atisMessage]) => {
@@ -105,11 +101,6 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
   );
 
   private readonly isStatusButtonVisible = this.messageStatusLabel.map((status) => status !== '');
-    if (status !== '') {
-      return true;
-    }
-    return false;
-  }, this.messageStatusLabel);
 
   private updateAtisData(airportIcao: string): void {
     const atisReport: AtisMessage = this.datalink.atisReports(airportIcao)[0];
