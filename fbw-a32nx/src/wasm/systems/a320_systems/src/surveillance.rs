@@ -28,16 +28,16 @@ pub struct A320EgpwsElectricalHarness {
 }
 
 impl A320EgpwsElectricalHarness {
-    pub(super) const GPWS_TERR_OFF_KEY: &str = "GPWS_TERR_OFF";
-    pub(super) const GPWS_SYS_OFF_KEY: &str = "GPWS_SYS_OFF";
-    pub(super) const GPWS_GS_OFF_KEY: &str = "GPWS_GS_OFF";
-    pub(super) const GPWS_FLAP_OFF_KEY: &str = "GPWS_FLAP_OFF";
-    pub(super) const GPWS_FLAPS3_KEY: &str = "GPWS_FLAPS3";
-    pub(super) const GPWS_TEST_KEY: &str = "GPWS_TEST";
-    pub(super) const SFCC_1_FAP_1_KEY: &str = "SFCC_1_FAP_1";
-    pub(super) const SFCC_1_FAP_5_KEY: &str = "SFCC_1_FAP_5";
-    pub(super) const ECP_DISCRETE_OUT_EMER_CANC_KEY: &str = "ECP_DISCRETE_OUT_EMER_CANC";
-    pub(super) const IS_SLEW_ACTIVE_KEY: &str = "IS SLEW ACTIVE";
+    const GPWS_TERR_OFF_KEY: &str = "GPWS_TERR_OFF";
+    const GPWS_SYS_OFF_KEY: &str = "GPWS_SYS_OFF";
+    const GPWS_GS_OFF_KEY: &str = "GPWS_GS_OFF";
+    const GPWS_FLAP_OFF_KEY: &str = "GPWS_FLAP_OFF";
+    const GPWS_FLAPS3_KEY: &str = "GPWS_FLAPS3";
+    const GPWS_TEST_KEY: &str = "GPWS_TEST";
+    const SFCC_1_FAP_1_KEY: &str = "SFCC_1_FAP_1";
+    const SFCC_1_FAP_5_KEY: &str = "SFCC_1_FAP_5";
+    const ECP_DISCRETE_OUT_EMER_CANC_KEY: &str = "ECP_DISCRETE_OUT_EMER_CANC";
+    const IS_SLEW_ACTIVE_KEY: &str = "IS SLEW ACTIVE";
 
     pub fn new(context: &mut InitContext) -> Self {
         Self {
