@@ -17,7 +17,6 @@ export class MfdAtccomMsgRecordExpand extends DisplayComponent<MfdAtccomMsgRecor
           activePage={Subject.create('MSG RECORD/ALL MSG/EXPAND')}
           offset={Subject.create('')}
           eoIsActive={Subject.create(false)}
-          tmpyIsActive={Subject.create(false)}
         />
         {/* begin page content */}
         <div class="mfd-page-container">

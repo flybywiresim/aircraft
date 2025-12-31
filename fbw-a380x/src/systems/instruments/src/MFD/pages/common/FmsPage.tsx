@@ -16,7 +16,21 @@ import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageT
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { FlightPlanEvents } from '@fmgc/flightplanning/sync/FlightPlanEvents';
 import { MfdSystem } from './MfdUiService';
-import { dataStatusUri, fuelAndLoadPage, flightPlanUriPage, lateralRevisionHoldPage } from '../../shared/utils';
+import {
+  dataStatusUri,
+  fuelAndLoadPage,
+  flightPlanUriPage,
+  lateralRevisionHoldPage,
+  performancePage,
+  secIndexPageUri,
+  initPage,
+  dirToPage,
+  airwaysPage,
+  departurePage,
+  arrivalPage,
+  lateralRevisionPage,
+  verticalRevisionPage,
+} from '../../shared/utils';
 
 export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPageProps> extends DisplayComponent<T> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
@@ -34,12 +48,37 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
 
   protected readonly tmpyActive = Subject.create<boolean>(false);
 
+  /** TMPY is only shown in PERF, FUEL & LOAD, INIT, SEC INDEX, WIND & FPLN + REVISION Pages (lat rev, vert rev, airways, hold, departure, arrival) */
+  private readonly shouldShowTemporaryPageUris = this.props.mfd.uiService.activeUri.map(
+    (uri) =>
+      uri.sys === MfdSystem.Fms &&
+      (uri.page === performancePage ||
+        uri.page === fuelAndLoadPage ||
+        uri.page === initPage ||
+        uri.page === flightPlanUriPage ||
+        uri.page === dirToPage ||
+        uri.page === airwaysPage ||
+        uri.page === departurePage ||
+        uri.page === arrivalPage ||
+        uri.page === lateralRevisionPage ||
+        uri.page === lateralRevisionHoldPage ||
+        uri.page === verticalRevisionPage ||
+        uri.uri === secIndexPageUri),
+  );
+
+  private readonly displayTmpy = MappedSubject.create(
+    SubscribableMapFunctions.and(),
+    this.shouldShowTemporaryPageUris,
+    this.tmpyActive,
+  );
+
   protected readonly secActive = Subject.create<boolean>(false);
 
   protected readonly eoActive = Subject.create<boolean>(false);
 
   private readonly penaltyActive = Subject.create<boolean>(false);
 
+  /** Penalty is only displayed in DATA STATUS, FUEL & LOAD, F-PLN, HOLD, ALTERNATE & WHAT IF Pages */
   private readonly penaltyUri = this.props.mfd.uiService.activeUri.map(
     (uri) =>
       uri.sys === MfdSystem.Fms &&
@@ -73,7 +112,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
         }),
     );
 
-    this.subs.push(this.penaltyUri, this.displayPenalty);
+    this.subs.push(this.penaltyUri, this.displayPenalty, this.shouldShowTemporaryPageUris, this.displayTmpy);
 
     // this.mfdInViewConsumer = sub.on(this.props.mfd.uiService.captOrFo === 'CAPT' ? 'leftMfdInView' : 'rightMfdInView');
 
@@ -248,7 +287,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
         activePage={this.activePageTitle}
         offset={Subject.create('')}
         eoIsActive={this.eoActive}
-        tmpyIsActive={this.tmpyActive}
+        tmpyIsActive={this.displayTmpy}
         penaltyIsActive={this.displayPenalty}
       />
     );

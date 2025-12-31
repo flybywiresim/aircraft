@@ -45,6 +45,8 @@ import {
   activeFlightPlanHoldUri,
   lateralRevisionHoldPage,
   dataStatusUri,
+  performancePage,
+  initPage,
 } from './shared/utils';
 
 export function pageForUrl(
@@ -54,15 +56,15 @@ export function pageForUrl(
   fmcService: FmcServiceInterface,
 ): VNode {
   switch (url) {
-    case 'fms/active/perf':
-    case 'fms/sec1/perf':
-    case 'fms/sec2/perf':
-    case 'fms/sec3/perf':
+    case 'fms/active/' + performancePage:
+    case 'fms/sec1/' + performancePage:
+    case 'fms/sec2/' + performancePage:
+    case 'fms/sec3/' + performancePage:
       return <MfdFmsPerf pageTitle="PERF" bus={bus} mfd={mfd} fmcService={fmcService} />;
-    case 'fms/active/init':
-    case 'fms/sec1/init':
-    case 'fms/sec2/init':
-    case 'fms/sec3/init':
+    case 'fms/active/' + initPage:
+    case 'fms/sec1/' + initPage:
+    case 'fms/sec2/' + initPage:
+    case 'fms/sec3/' + initPage:
       return <MfdFmsInit pageTitle="INIT" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case activeFlightPlanFuelAndLoadUri:
     case 'fms/sec1/' + fuelAndLoadPage:

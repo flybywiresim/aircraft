@@ -13,7 +13,7 @@ interface ActivePageTitleBarProps extends ComponentProps {
   activePage: Subscribable<string>;
   offset: Subscribable<string>;
   eoIsActive: Subscribable<boolean>;
-  tmpyIsActive: Subscribable<boolean>;
+  tmpyIsActive?: Subscribable<boolean>;
   penaltyIsActive?: Subscribable<boolean>;
 }
 
@@ -28,7 +28,9 @@ export class ActivePageTitleBar extends DisplayComponent<ActivePageTitleBarProps
 
   private readonly eoRef = FSComponent.createRef<HTMLSpanElement>();
 
-  private readonly tmpyRef = FSComponent.createRef<HTMLSpanElement>();
+  private readonly temporaryVisibility = (this.props.tmpyIsActive ?? Subject.create(false)).map((v) =>
+    v ? 'visible' : 'hidden',
+  );
 
   private readonly penaltyVisibility = (this.props.penaltyIsActive ?? Subject.create(false)).map((v) =>
     v ? 'visible' : 'hidden',
@@ -44,13 +46,7 @@ export class ActivePageTitleBar extends DisplayComponent<ActivePageTitleBarProps
         }
       }, true),
     );
-    this.subs.push(
-      this.props.tmpyIsActive.sub((v) => {
-        if (this.tmpyRef.getOrDefault()) {
-          this.tmpyRef.instance.style.display = v ? 'block' : 'none';
-        }
-      }, true),
-    );
+    this.subs.push(this.temporaryVisibility);
 
     this.subs.push(this.offsetText, this.penaltyVisibility);
   }
@@ -80,7 +76,7 @@ export class ActivePageTitleBar extends DisplayComponent<ActivePageTitleBarProps
           </span>
         </div>
         <div class="mfd-title-bar-tmpy-section">
-          <span ref={this.tmpyRef} class="mfd-label mfd-title-bar-text label yellow" style="display: none">
+          <span class="mfd-label mfd-title-bar-text label yellow" style={{ visibility: this.temporaryVisibility }}>
             TMPY
           </span>
         </div>

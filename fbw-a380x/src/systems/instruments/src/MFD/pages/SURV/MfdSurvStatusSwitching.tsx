@@ -104,7 +104,6 @@ export class MfdSurvStatusSwitching extends DisplayComponent<MfdSurvStatusSwitch
           activePage={Subject.create('STATUS & SWITCHING')}
           offset={Subject.create('')}
           eoIsActive={this.eoActive}
-          tmpyIsActive={Subject.create(false)}
         />
         {/* begin page content */}
         <div class="mfd-page-container">

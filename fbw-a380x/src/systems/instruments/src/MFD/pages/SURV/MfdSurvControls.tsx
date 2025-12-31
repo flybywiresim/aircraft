@@ -273,7 +273,6 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
           activePage={Subject.create('CONTROLS')}
           offset={Subject.create('')}
           eoIsActive={this.eoActive}
-          tmpyIsActive={Subject.create(false)}
         />
         {/* begin page content */}
         <div class="mfd-page-container">

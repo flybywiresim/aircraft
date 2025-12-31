@@ -24,7 +24,6 @@ export class MfdAtccomDAtis extends DisplayComponent<MfdAtccomDAtisProps> {
           activePage={Subject.create('D-ATIS/LIST')}
           offset={Subject.create('')}
           eoIsActive={Subject.create(false)}
-          tmpyIsActive={Subject.create(false)}
         />
         {/* begin page content */}
         <div class="mfd-page-container">

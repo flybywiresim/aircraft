@@ -28,7 +28,6 @@ export class MfdAtccomDAtisReceived extends DisplayComponent<MfdAtccomDAtisRecei
           activePage={Subject.create('D-ATIS/RECEIVED')}
           offset={Subject.create('')}
           eoIsActive={Subject.create(false)}
-          tmpyIsActive={Subject.create(false)}
         />
         {/* begin page content */}
         <div class="mfd-page-container">

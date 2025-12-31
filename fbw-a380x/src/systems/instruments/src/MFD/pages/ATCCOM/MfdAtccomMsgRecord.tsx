@@ -23,7 +23,6 @@ export class MfdAtccomMsgRecord extends DisplayComponent<MfdAtccomMsgRecordProps
           activePage={Subject.create('MSG RECORD')}
           offset={Subject.create('')}
           eoIsActive={Subject.create(false)}
-          tmpyIsActive={Subject.create(false)}
         />
         {/* begin page content */}
         <div class="mfd-page-container" style="position:relative; width:100%">

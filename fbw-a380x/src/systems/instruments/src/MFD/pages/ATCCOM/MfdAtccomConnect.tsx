@@ -37,7 +37,6 @@ export class MfdAtccomConnect extends DisplayComponent<MfdAtccomConnectProps> {
           activePage={Subject.create('CONNECT')}
           offset={Subject.create('')}
           eoIsActive={Subject.create(false)}
-          tmpyIsActive={Subject.create(false)}
         />
         {/* begin page content */}
         <div class="mfd-page-container">
