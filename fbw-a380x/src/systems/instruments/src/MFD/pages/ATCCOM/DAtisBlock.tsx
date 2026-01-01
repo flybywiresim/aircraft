@@ -59,7 +59,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
 
   private readonly messageStatusLabel = Subject.create<string>(null);
 
-  private static readonly datisBlocklineLengths: number[] = [44, 44, 44, 44, 32];
+  private static readonly datisBlocklineLengths: number[] = [44, 44, 44, 44, 29];
 
   private readonly isIcaoEmpty = this.atisIcao.map((icao) => {
     if (icao !== null && icao !== '----') return false;
@@ -76,17 +76,19 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
         wordIndex < words.length &&
         messageArray[index].length + words[wordIndex].length <= DAtisBlock.datisBlocklineLengths[index] - 1
       ) {
+        if (messageArray[index].length !== 0) {
+          messageArray[index] += ' ';
+        }
         messageArray[index] += words[wordIndex];
-        messageArray[index] += ' ';
         wordIndex++;
       }
     });
 
     if (wordIndex === words.length) {
-      return messageArray.join('');
+      return messageArray.join(' ');
     } else {
       // add ellipses for truncated message
-      return messageArray.join('') + ' ......';
+      return messageArray.join(' ') + '  ......';
     }
   }
 

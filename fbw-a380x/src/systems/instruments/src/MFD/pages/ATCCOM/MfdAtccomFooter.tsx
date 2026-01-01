@@ -1,3 +1,6 @@
+// Copyright (c) 2025-2026 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 import { DisplayComponent, FSComponent, Subscription, Subject, VNode } from '@microsoft/msfs-sdk';
 import { AtccomMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
