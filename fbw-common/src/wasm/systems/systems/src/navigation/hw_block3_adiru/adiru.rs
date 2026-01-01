@@ -184,10 +184,10 @@ impl AirDataInertialReferenceUnit {
     const LONGITUDE: &'static str = "LONGITUDE";
     const MAINT_WORD: &'static str = "MAINT_WORD";
 
-    const ADR_AVERAGE_STARTUP_TIME_MILLIS: u64 = 3_000;
-    const IR_AVERAGE_STARTUP_TIME_MILLIS: u64 = 3_000;
-    const MINIMUM_POWER_HOLDOVER: u64 = 200;
-    const MAXIMUM_POWER_HOLDOVER: u64 = 300;
+    const ADR_AVERAGE_STARTUP_TIME_MILLIS: Duration = Duration::from_millis(3_000);
+    const IR_AVERAGE_STARTUP_TIME_MILLIS: Duration = Duration::from_millis(3_000);
+    const MINIMUM_POWER_HOLDOVER: Duration = Duration::from_millis(200);
+    const MAXIMUM_POWER_HOLDOVER: Duration = Duration::from_millis(300);
 
     const POWER_DOWN_DURATION: u64 = 15_000;
 
@@ -204,18 +204,18 @@ impl AirDataInertialReferenceUnit {
             backup_is_powered: false,
 
             power_holdover: Duration::from_secs_f64(random_from_range(
-                Self::MINIMUM_POWER_HOLDOVER as f64 / 1000.,
-                Self::MAXIMUM_POWER_HOLDOVER as f64 / 1000.,
+                Self::MINIMUM_POWER_HOLDOVER.as_secs_f64(),
+                Self::MAXIMUM_POWER_HOLDOVER.as_secs_f64(),
             )),
             primary_unpowered_for: if is_powered {
                 Duration::ZERO
             } else {
-                Duration::from_millis(Self::MAXIMUM_POWER_HOLDOVER)
+                Self::MAXIMUM_POWER_HOLDOVER
             },
             backup_unpowered_for: if is_powered {
                 Duration::ZERO
             } else {
-                Duration::from_millis(Self::MAXIMUM_POWER_HOLDOVER)
+                Self::MAXIMUM_POWER_HOLDOVER
             },
             power_down_confirm: ConfirmationNode::new_rising(Duration::from_millis(
                 Self::POWER_DOWN_DURATION,
@@ -223,12 +223,12 @@ impl AirDataInertialReferenceUnit {
             on_battery_power: false,
             dc_failure: false,
             adr_self_check_time: Duration::from_secs_f64(random_from_range(
-                Self::ADR_AVERAGE_STARTUP_TIME_MILLIS as f64 / 1000. - 1.,
-                Self::ADR_AVERAGE_STARTUP_TIME_MILLIS as f64 / 1000. + 1.,
+                Self::ADR_AVERAGE_STARTUP_TIME_MILLIS.as_secs_f64() - 1.,
+                Self::ADR_AVERAGE_STARTUP_TIME_MILLIS.as_secs_f64() + 1.,
             )),
             ir_self_check_time: Duration::from_secs_f64(random_from_range(
-                Self::IR_AVERAGE_STARTUP_TIME_MILLIS as f64 / 1000. - 1.,
-                Self::IR_AVERAGE_STARTUP_TIME_MILLIS as f64 / 1000. + 1.,
+                Self::IR_AVERAGE_STARTUP_TIME_MILLIS.as_secs_f64() - 1.,
+                Self::IR_AVERAGE_STARTUP_TIME_MILLIS.as_secs_f64() + 1.,
             )),
 
             adr_runtime: if is_powered {
