@@ -64,7 +64,11 @@ export class AtcDatalinkSystem implements Instrument {
 
   private atisReportsPrintActive: boolean = false;
 
-  atcErrors = ArraySubject.create<AtcErrorMessage>();
+  #atcErrors = ArraySubject.create<AtcErrorMessage>();
+
+  get atcErrors() {
+    return this.#atcErrors;
+  }
 
   private readonly atisAirports: AirportAtis[] = [
     { icao: null, type: AtisType.Departure, requested: false, autoupdate: false, lastReadAtis: null, status: null },
