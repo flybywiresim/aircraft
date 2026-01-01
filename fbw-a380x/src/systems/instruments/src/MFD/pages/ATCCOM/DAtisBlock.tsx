@@ -34,8 +34,6 @@ interface DAtisBlockProps extends AtccomMfdPageProps {
   isAutoPrintEnabled?: Subscribable<boolean>;
 }
 
-const datisBlocklineLengths: number[] = [44, 44, 44, 44, 32];
-
 export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
   private readonly subs = [] as Subscription[];
 
@@ -61,6 +59,8 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
 
   private readonly messageStatusLabel = Subject.create<string>(null);
 
+  private static readonly datisBlocklineLengths: number[] = [44, 44, 44, 44, 32];
+
   private readonly isIcaoEmpty = this.atisIcao.map((icao) => {
     if (icao !== null && icao !== '----') return false;
     return true;
@@ -74,7 +74,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
     messageArray.forEach((value, index) => {
       while (
         wordIndex < words.length &&
-        messageArray[index].length + words[wordIndex].length <= datisBlocklineLengths[index] - 1
+        messageArray[index].length + words[wordIndex].length <= DAtisBlock.datisBlocklineLengths[index] - 1
       ) {
         messageArray[index] += words[wordIndex];
         messageArray[index] += ' ';
