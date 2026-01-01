@@ -279,7 +279,7 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
                 this.props.fmcService.master?.resetRevisedWaypoint();
                 this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln`);
               }}
-              buttonStyle="color: yellow"
+              buttonStyle="color: #ffd200;"
             />
           </div>
         </div>
