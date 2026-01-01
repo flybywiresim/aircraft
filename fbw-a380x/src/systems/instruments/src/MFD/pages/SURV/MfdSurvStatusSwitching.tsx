@@ -32,8 +32,6 @@ export class MfdSurvStatusSwitching extends DisplayComponent<MfdSurvStatusSwitch
 
   private readonly sub = this.props.bus.getSubscriber<MfdSimvars & MfdSurvEvents>();
 
-  private readonly eoActive = Subject.create<boolean>(false);
-
   private readonly tcas1Failed = ConsumerSubject.create(this.sub.on('tcasFail'), true);
 
   private readonly wxr1Failed = Subject.create<boolean>(false);
@@ -82,9 +80,6 @@ export class MfdSurvStatusSwitching extends DisplayComponent<MfdSurvStatusSwitch
       this.activeSystemGroupWxrTaws,
       this.wxrTaws1Active,
       this.wxrTaws2Active,
-      this.props.fmcService.masterFmcChanged.sub(() =>
-        this.props.fmcService.master?.fmgc.data.engineOut.pipe(this.eoActive),
-      ),
     );
   }
 
@@ -100,11 +95,7 @@ export class MfdSurvStatusSwitching extends DisplayComponent<MfdSurvStatusSwitch
   render(): VNode {
     return (
       <>
-        <ActivePageTitleBar
-          activePage={Subject.create('STATUS & SWITCHING')}
-          offset={Subject.create('')}
-          eoIsActive={this.eoActive}
-        />
+        <ActivePageTitleBar activePage={Subject.create('STATUS & SWITCHING')} offset={Subject.create('')} />
         {/* begin page content */}
         <div class="mfd-page-container">
           <div style="width: 100%; display: flex; flex-direction: row; justify-content: space-between; align-items: top; padding: 50px;">

@@ -20,11 +20,7 @@ export class MfdAtccomMsgRecordMonitored extends DisplayComponent<MfdAtccomMsgRe
   render(): VNode {
     return (
       <>
-        <ActivePageTitleBar
-          activePage={Subject.create('MSG RECORD/MONITORED MSG')}
-          offset={Subject.create('')}
-          eoIsActive={Subject.create(false)}
-        />
+        <ActivePageTitleBar activePage={Subject.create('MSG RECORD/MONITORED MSG')} offset={Subject.create('')} />
         {/* begin page content */}
         <div class="mfd-page-container">
           <div style="display:flex; flex: 1 1 auto; width:100%">

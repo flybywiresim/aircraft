@@ -98,7 +98,7 @@ export class MfdMsgList extends DisplayComponent<MfdMsgListProps> {
             activePage={Subject.create('MESSAGE LIST')}
             offset={Subject.create('')}
             eoIsActive={this.eoActive}
-            isFmsPage={true}
+            isFmsSubsystemPage={true}
           />
           {/* begin page content */}
           <div class="mfd-page-container">

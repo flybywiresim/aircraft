@@ -349,8 +349,6 @@ export class FmgcData {
   /** Indicates OEI situation */
   public readonly engineOut = Subject.create(false);
 
-  public readonly performanceFactor = Subject.create(0);
-
   /** Fuel Penalty Factor in percentage between none and 999. Reset at done phase
    */
   public readonly fuelPenaltyPercentage = Subject.create<number | null>(null);
@@ -696,9 +694,9 @@ export class FmgcDataService implements Fmgc {
     return this.guidanceController?.vnavDriver.getDestinationPrediction()?.distanceFromAircraft ?? null;
   }
 
-  /** In percentage over 100. Null if not set */
+  /** In percentage. Null if not set */
   getPerformanceFactorPercent(): number | null {
-    return this.data.performanceFactor.get() + this.data.fuelPenaltyPercentage.get();
+    return this.data.fuelPenaltyPercentage.get(); // TODO add performance factor when implemented
   }
 
   getNavDataDateRange(): string {

@@ -12,12 +12,12 @@ import './style.scss';
 interface ActivePageTitleBarProps extends ComponentProps {
   activePage: Subscribable<string>;
   offset: Subscribable<string>;
-  eoIsActive: Subscribable<boolean>;
+  eoIsActive?: Subscribable<boolean>;
   tmpyIsActive?: Subscribable<boolean>;
   /** Whether to display the PENALTY seciton on the title bar */
   penaltyIsActive?: Subscribable<boolean>;
-  /** Whether this is an FMS page. If it is, title section for EO AND TMPY are visible */
-  isFmsPage?: boolean;
+  /** Whether this is an FMS subsystem page. If it is, title section for EO AND TMPY are visible */
+  isFmsSubsystemPage?: boolean;
 }
 
 /*
@@ -29,31 +29,23 @@ export class ActivePageTitleBar extends DisplayComponent<ActivePageTitleBarProps
 
   private readonly offsetText = this.props.offset.map((it) => (it ? `     OFFSET${this.props.offset.get()}` : ''));
 
-  private readonly eoRef = FSComponent.createRef<HTMLSpanElement>();
+  private readonly engineOutVisibility = (this.props.eoIsActive ?? Subject.create(false)).map((v) =>
+    v && this.props.isFmsSubsystemPage ? 'visible' : 'hidden',
+  );
 
   private readonly temporaryVisibility = (this.props.tmpyIsActive ?? Subject.create(false)).map((v) =>
-    v ? 'visible' : 'hidden',
+    v && this.props.isFmsSubsystemPage ? 'visible' : 'hidden',
   );
 
   private readonly penaltyVisibility = (this.props.penaltyIsActive ?? Subject.create(false)).map((v) =>
-    v ? 'visible' : 'hidden',
+    v && this.props.isFmsSubsystemPage ? 'visible' : 'hidden',
   );
 
-  private readonly titleBarMargin = Subject.create(this.props.isFmsPage ? '2px' : '0px'); // As the bars are still rendered, removing the margin removes the black bars.
+  private readonly titleBarMargin = this.props.isFmsSubsystemPage ? '2px' : '0px'; // As the bars are still rendered, removing the margin removes the black bars.
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-
-    this.subs.push(
-      this.props.eoIsActive.sub((v) => {
-        if (this.eoRef.getOrDefault()) {
-          this.eoRef.instance.style.display = v ? 'block' : 'none';
-        }
-      }, true),
-    );
-    this.subs.push(this.temporaryVisibility);
-
-    this.subs.push(this.offsetText, this.penaltyVisibility);
+    this.subs.push(this.offsetText, this.penaltyVisibility, this.engineOutVisibility, this.temporaryVisibility);
   }
 
   public destroy(): void {
@@ -76,7 +68,7 @@ export class ActivePageTitleBar extends DisplayComponent<ActivePageTitleBarProps
           </span>
         </div>
         <div class="mfd-title-bar-section eo" style={{ 'margin-left': this.titleBarMargin }}>
-          <span ref={this.eoRef} class="mfd-label mfd-title-bar-text label amber" style="display: none">
+          <span class="mfd-label mfd-title-bar-text label amber" style={{ visibility: this.engineOutVisibility }}>
             EO
           </span>
         </div>

@@ -190,7 +190,7 @@ export class MfdFmsFplnDuplicateNames extends DisplayComponent<MfdFmsFplnDuplica
             activePage={Subject.create('DUPLICATE NAMES')}
             offset={Subject.create('')}
             eoIsActive={this.eoActive}
-            isFmsPage={true}
+            isFmsSubsystemPage={true}
           />
           {/* begin page content */}
           <div class="mfd-fms-fpln-duplicate-table" style="margin-top: 100px;">

@@ -33,11 +33,7 @@ export class MfdAtccomConnect extends DisplayComponent<MfdAtccomConnectProps> {
   render(): VNode {
     return (
       <>
-        <ActivePageTitleBar
-          activePage={Subject.create('CONNECT')}
-          offset={Subject.create('')}
-          eoIsActive={Subject.create(false)}
-        />
+        <ActivePageTitleBar activePage={Subject.create('CONNECT')} offset={Subject.create('')} />
         {/* begin page content */}
         <div class="mfd-page-container">
           <div class="mfd-atccom-connect-row">

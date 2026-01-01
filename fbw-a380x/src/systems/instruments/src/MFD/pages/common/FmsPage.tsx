@@ -291,7 +291,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
         eoIsActive={this.eoActive}
         tmpyIsActive={this.displayTmpy}
         penaltyIsActive={this.displayPenalty}
-        isFmsPage={true}
+        isFmsSubsystemPage={true}
       />
     );
   }

@@ -24,11 +24,7 @@ export class MfdAtccomDAtisReceived extends DisplayComponent<MfdAtccomDAtisRecei
   render(): VNode {
     return (
       <>
-        <ActivePageTitleBar
-          activePage={Subject.create('D-ATIS/RECEIVED')}
-          offset={Subject.create('')}
-          eoIsActive={Subject.create(false)}
-        />
+        <ActivePageTitleBar activePage={Subject.create('D-ATIS/RECEIVED')} offset={Subject.create('')} />
         {/* begin page content */}
         <div class="mfd-page-container">
           <TopTabNavigator
