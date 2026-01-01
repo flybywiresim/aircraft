@@ -1,4 +1,7 @@
-import { ArraySubject, EventBus, Instrument, Subscription } from '@microsoft/msfs-sdk';
+// Copyright (c) 2025-2026 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
+import { ArraySubject, EventBus, Instrument } from '@microsoft/msfs-sdk';
 import { AtcFmsMessages, FmsAtcMessages } from '@datalink/atc';
 import { AtisMessage, AtisType, AtsuStatusCodes, DatalinkModeCode, DatalinkStatusCode } from '@datalink/common';
 import { FmsRouterMessages, RouterFmsMessages } from '@datalink/router';
@@ -43,8 +46,6 @@ export interface AtcErrorMessage {
 }
 
 export class AtcDatalinkSystem implements Instrument {
-  private readonly subscriptions: Subscription[] = [];
-
   private readonly messageStorage: MessageStorage;
 
   private readonly publisher = this.bus.getPublisher<AtcDatalinkMessages & FmsAtcMessages & FmsRouterMessages>();
@@ -165,11 +166,7 @@ export class AtcDatalinkSystem implements Instrument {
   init(): void {}
   onUpdate(): void {}
 
-  destroy() {
-    for (const s of this.subscriptions) {
-      s.destroy();
-    }
-  }
+  destroy() {}
 
   showAtcErrorMessage(errorType: FmsErrorType) {
     switch (errorType) {
@@ -189,6 +186,7 @@ export class AtcDatalinkSystem implements Instrument {
         break;
     }
   }
+
   clearLatestAtcErrorMessage() {
     const arr = this.atcErrors.getArray();
     const index = arr.findIndex((val) => !val.cleared);

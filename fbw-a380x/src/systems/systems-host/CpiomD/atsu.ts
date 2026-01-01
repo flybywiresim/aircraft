@@ -12,7 +12,7 @@ class A380xVhfProvider implements VhfRadioInterface {
     SimVarValueType.Enum,
   );
 
-  isDataModeActive(): boolean {
+  public isDataModeActive(): boolean {
     if (A380xVhfProvider.RmpModeActive3.get() === 1) {
       return true;
     }

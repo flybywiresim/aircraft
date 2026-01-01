@@ -16,7 +16,7 @@ class A32nxVhfProvider implements VhfRadioInterface {
     SimVarValueType.MHz,
   );
 
-  isDataModeActive(): boolean {
+  public isDataModeActive(): boolean {
     if (A32nxVhfProvider.ComActiveFrequency3.get() === 0) {
       return true;
     }

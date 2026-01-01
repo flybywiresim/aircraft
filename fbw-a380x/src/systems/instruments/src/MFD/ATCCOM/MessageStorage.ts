@@ -1,3 +1,6 @@
+// Copyright (c) 2025-2026 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 import { AtcFmsMessages } from '@datalink/atc';
 import { AtisMessage, AtsuMessage, Conversion, CpdlcMessage, DclMessage, OclMessage } from '@datalink/common';
 import { EventSubscriber } from '@microsoft/msfs-sdk';
