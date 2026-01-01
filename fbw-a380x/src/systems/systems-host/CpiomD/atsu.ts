@@ -7,10 +7,13 @@ import { PowerSupplyBusTypes } from 'systems-host/Misc/powersupply';
 import { RegisteredSimVar } from '@flybywiresim/fbw-sdk';
 
 class A380xVhfProvider implements VhfRadioInterface {
-  private readonly RmpModeActive3 = RegisteredSimVar.create<number>('L:FBW_RMP_MODE_ACTIVE_3', SimVarValueType.Enum);
+  private static readonly RmpModeActive3 = RegisteredSimVar.create<number>(
+    'L:FBW_RMP_MODE_ACTIVE_3',
+    SimVarValueType.Enum,
+  );
 
   isDataModeActive(): boolean {
-    if (this.RmpModeActive3.get() === 1) {
+    if (A380xVhfProvider.RmpModeActive3.get() === 1) {
       return true;
     }
     return false;

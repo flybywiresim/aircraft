@@ -11,13 +11,13 @@ import { PowerSupplyBusTypes } from 'systems-host/systems/powersupply';
 import { RegisteredSimVar } from '@flybywiresim/fbw-sdk';
 
 class A32nxVhfProvider implements VhfRadioInterface {
-  private readonly ComActiveFrequency3 = RegisteredSimVar.create<number>(
+  private static readonly ComActiveFrequency3 = RegisteredSimVar.create<number>(
     'A:COM ACTIVE FREQUENCY:3',
     SimVarValueType.MHz,
   );
 
   isDataModeActive(): boolean {
-    if (this.ComActiveFrequency3.get() === 0) {
+    if (A32nxVhfProvider.ComActiveFrequency3.get() === 0) {
       return true;
     }
     return false;
