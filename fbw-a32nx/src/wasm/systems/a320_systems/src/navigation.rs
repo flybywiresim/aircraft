@@ -2,8 +2,8 @@ use std::ops::{Index, IndexMut};
 use std::time::Duration;
 
 use systems::navigation::adirs::{
-    AdrDiscreteInputs, AirDataReferenceDiscreteOutput, InertialReferenceDiscreteOutput,
-    IrDiscreteInputs, ModeSelectorPosition,
+    AdrDiscreteInputs, AirDataAttHdgSwitchingKnobPosition, AirDataReferenceDiscreteOutput,
+    InertialReferenceDiscreteOutput, IrDiscreteInputs, ModeSelectorPosition,
 };
 use systems::navigation::ala52b::{
     Ala52BAircraftInstallationDelay, Ala52BRadioAltimeter, Ala52BTransceiverPair,
@@ -151,11 +151,11 @@ pub(crate) struct A320AdiruElectricalHarness {
 
     // ATT HDG switching knob position (for powersupply)
     att_hdg_swtg_knob_id: VariableIdentifier,
-    att_hdg_swtg_knob_position: usize,
+    att_hdg_swtg_knob_position: AirDataAttHdgSwitchingKnobPosition,
 
     // AIR DATA switching knob position (for IR 3 ADR input select)
     air_data_swtg_knob_id: VariableIdentifier,
-    air_data_swtg_knob_position: usize,
+    air_data_swtg_knob_position: AirDataAttHdgSwitchingKnobPosition,
 
     // User input discretes
     adr_off_command_id: VariableIdentifier,
@@ -222,10 +222,10 @@ impl A320AdiruElectricalHarness {
             backup_powersupply_relay_switching_powered_2: is_powered,
 
             att_hdg_swtg_knob_id: context.get_identifier("ATT_HDG_SWITCHING_KNOB".to_owned()),
-            att_hdg_swtg_knob_position: 1,
+            att_hdg_swtg_knob_position: AirDataAttHdgSwitchingKnobPosition::Norm,
 
             air_data_swtg_knob_id: context.get_identifier("AIR_DATA_SWITCHING_KNOB".to_owned()),
-            air_data_swtg_knob_position: 1,
+            air_data_swtg_knob_position: AirDataAttHdgSwitchingKnobPosition::Norm,
 
             adr_off_command_id: context
                 .get_identifier(format!("OVHD_ADIRS_ADR_{}_ON_OFF_COMMAND", num)),
@@ -272,7 +272,8 @@ impl A320AdiruElectricalHarness {
         let relay_input = if self.backup_powersupply_relay_switching_2.is_some() {
             // For ADIRU 3: power is shed 300s after the switching supply is off, which depends on the ATT/HDG switching knob:
             // If DC ESS is powered and ATT/HDG is on CAPT on 3, use DC ESS, else use DC BAT.
-            let relay_adirs3_28vdc_ctl_closed = self.att_hdg_swtg_knob_position == 0
+            let relay_adirs3_28vdc_ctl_closed = self.att_hdg_swtg_knob_position
+                == AirDataAttHdgSwitchingKnobPosition::CaptOn3
                 && self.backup_powersupply_relay_switching_powered_1;
 
             if relay_adirs3_28vdc_ctl_closed {
@@ -304,7 +305,7 @@ impl A320AdiruElectricalHarness {
         } else {
             // IR 3 has AUTO DADS SELECT grounded only if IR SWTG is NORM, or if
             // ADR and IR SWTG is on the same position.
-            self.att_hdg_swtg_knob_position == 1
+            self.att_hdg_swtg_knob_position == AirDataAttHdgSwitchingKnobPosition::Norm
                 || self.att_hdg_swtg_knob_position == self.air_data_swtg_knob_position
         };
 
@@ -314,7 +315,8 @@ impl A320AdiruElectricalHarness {
         } else {
             // Open: Input port 1 is used, Grounded: Input port 2 is used (if AUTO DADS is Open)
             // MANUAL DADS SELECT is open unless IR SWTG is FO, and ADR SWTG is NORM or CAPT
-            self.att_hdg_swtg_knob_position == 2 && self.air_data_swtg_knob_position != 2
+            self.att_hdg_swtg_knob_position == AirDataAttHdgSwitchingKnobPosition::FoOn3
+                && self.air_data_swtg_knob_position != AirDataAttHdgSwitchingKnobPosition::FoOn3
         };
     }
 
