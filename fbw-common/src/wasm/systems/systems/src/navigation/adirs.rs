@@ -5,6 +5,27 @@ use crate::{
 use uom::si::f64::*;
 
 #[derive(Clone, Copy, PartialEq, Debug)]
+pub enum AirDataAttHdgSwitchingKnobPosition {
+    Norm,
+    CaptOn3,
+    FoOn3,
+}
+impl From<f64> for AirDataAttHdgSwitchingKnobPosition {
+    fn from(value: f64) -> Self {
+        match value as usize {
+            0 => AirDataAttHdgSwitchingKnobPosition::CaptOn3,
+            1 => AirDataAttHdgSwitchingKnobPosition::Norm,
+            2 => AirDataAttHdgSwitchingKnobPosition::FoOn3,
+            i => panic!(
+                "Cannot convert from {} to AirDataAttHdgSwitchingKnobPosition.",
+                i
+            ),
+        }
+    }
+}
+read_write_enum!(AirDataAttHdgSwitchingKnobPosition);
+
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub enum ModeSelectorPosition {
     Off = 0,
     Navigation = 1,
