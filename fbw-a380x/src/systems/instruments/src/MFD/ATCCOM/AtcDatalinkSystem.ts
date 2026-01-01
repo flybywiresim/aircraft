@@ -175,16 +175,16 @@ export class AtcDatalinkSystem implements Instrument {
   showAtcErrorMessage(errorType: FmsErrorType) {
     switch (errorType) {
       case FmsErrorType.EntryOutOfRange:
-        this.addMessageToQueue(NXSystemMessages.entryOutOfRange, undefined, undefined);
+        this.addMessageToQueue(NXSystemMessages.entryOutOfRange);
         break;
       case FmsErrorType.FormatError:
-        this.addMessageToQueue(NXSystemMessages.formatError, undefined, undefined);
+        this.addMessageToQueue(NXSystemMessages.formatError);
         break;
       case FmsErrorType.NotInDatabase:
-        this.addMessageToQueue(NXSystemMessages.notInDatabase, undefined, undefined);
+        this.addMessageToQueue(NXSystemMessages.notInDatabase);
         break;
       case FmsErrorType.NotYetImplemented:
-        this.addMessageToQueue(NXFictionalMessages.notYetImplemented, undefined, undefined);
+        this.addMessageToQueue(NXFictionalMessages.notYetImplemented);
         break;
       default:
         break;
@@ -207,11 +207,7 @@ export class AtcDatalinkSystem implements Instrument {
     }
   }
 
-  public addMessageToQueue(
-    message: ATCCOMMessage,
-    _isResolvedOverride: (() => boolean) | undefined = undefined,
-    _onClearOverride: (() => void) | undefined = undefined,
-  ) {
+  public addMessageToQueue(message: ATCCOMMessage) {
     const msg: AtcErrorMessage = {
       message: message,
       messageText: message.text,
@@ -291,12 +287,12 @@ export class AtcDatalinkSystem implements Instrument {
             break;
           case AtsuStatusCodes.NoAtisReceived:
             this.atisAirports[index].status = PredefinedMessages.noReply;
-            this.addMessageToQueue(ATCCOMMessages.datisNoReply, undefined, undefined);
+            this.addMessageToQueue(ATCCOMMessages.datisNoReply);
             break;
           case AtsuStatusCodes.NewAtisReceived:
             this.atisAirports[index].status = '';
           // TODO: Message should only appear on certain pages
-          // this.addMessageToQueue(ATCCOMMessages.datisReceived, undefined, undefined);
+          // this.addMessageToQueue(ATCCOMMessages.datisReceived);
         }
         this.publisher.pub(`atcAtis_${index}`, this.atisAirports[index]);
         airport.requested = false;
