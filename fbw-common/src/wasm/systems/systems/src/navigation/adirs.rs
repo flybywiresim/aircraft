@@ -88,13 +88,13 @@ pub struct AirDataReferenceBusOutputs {
     /// Label 220
     pub baro_corrected_altitude_2: Arinc429Word<Length>,
     /// Label 234
-    pub baro_correction_1_hpa: Arinc429Word<Pressure>,
+    pub baro_correction_1_hpa: Arinc429Word<f64>,
     /// Label 235
-    pub baro_correction_1_inhg: Arinc429Word<Pressure>,
+    pub baro_correction_1_inhg: Arinc429Word<f64>,
     /// Label 236
-    pub baro_correction_2_hpa: Arinc429Word<Pressure>,
+    pub baro_correction_2_hpa: Arinc429Word<f64>,
     /// Label 237
-    pub baro_correction_2_inhg: Arinc429Word<Pressure>,
+    pub baro_correction_2_inhg: Arinc429Word<f64>,
     /// Label 241
     pub corrected_angle_of_attack: Arinc429Word<Angle>,
     /// Label 246
@@ -133,13 +133,13 @@ pub trait AirDataReferenceBus {
     /// Label 220
     fn baro_corrected_altitude_2(&self) -> Arinc429Word<Length>;
     /// Label 234
-    fn baro_correction_1_hpa(&self) -> Arinc429Word<Pressure>;
+    fn baro_correction_1_hpa(&self) -> Arinc429Word<f64>;
     /// Label 235
-    fn baro_correction_1_inhg(&self) -> Arinc429Word<Pressure>;
+    fn baro_correction_1_inhg(&self) -> Arinc429Word<f64>;
     /// Label 236
-    fn baro_correction_2_hpa(&self) -> Arinc429Word<Pressure>;
+    fn baro_correction_2_hpa(&self) -> Arinc429Word<f64>;
     /// Label 237
-    fn baro_correction_2_inhg(&self) -> Arinc429Word<Pressure>;
+    fn baro_correction_2_inhg(&self) -> Arinc429Word<f64>;
     /// Label 241
     fn corrected_angle_of_attack(&self) -> Arinc429Word<Angle>;
     /// Label 246
