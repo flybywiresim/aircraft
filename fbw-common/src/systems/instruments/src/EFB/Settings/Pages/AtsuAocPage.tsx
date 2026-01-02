@@ -221,24 +221,27 @@ export const AtsuAocPage = () => {
       </SettingItem>
 
       <SettingItem name={t('Settings.AtsuAoc.HoppieProvider')}>
-        {acarsProvider == 'BATC' && (
-          <p className="flex items-center justify-center gap-2">
-            {acarsState ? t('Settings.AtsuAoc.BATCConnected') : t('Settings.AtsuAoc.DisconnectedCheckBatcClient')}
-            <span className={`inline-block h-3 w-3 rounded-full ${acarsState ? 'bg-green-500' : 'bg-orange-500'}`} />
-          </p>
-        )}
-
-        <SelectGroup>
-          {acarsProviderButtons.map((button) => (
-            <SelectItem
-              key={button.setting}
-              onSelect={() => handleAcarsProviderChange(button.setting)}
-              selected={acarsProvider === button.setting}
-            >
-              {button.name}
-            </SelectItem>
-          ))}
-        </SelectGroup>
+        <div className="flex items-center">
+          {acarsProvider !== 'NONE' && (
+            <span className="mr-6 flex items-center">
+              {acarsState ? t('Settings.AtsuAoc.AcarsConnected') : t('Settings.AtsuAoc.WaitingForConnection')}
+              <span
+                className={`ml-2 inline-block h-4 w-4 rounded-full ${acarsState ? 'bg-green-600' : 'bg-orange-600'}`}
+              />
+            </span>
+          )}
+          <SelectGroup>
+            {acarsProviderButtons.map((button) => (
+              <SelectItem
+                key={button.setting}
+                onSelect={() => handleAcarsProviderChange(button.setting)}
+                selected={acarsProvider === button.setting}
+              >
+                {button.name}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        </div>
       </SettingItem>
       {(acarsProvider === 'HOPPIE' || acarsProvider === 'SAI') && (
         <SettingItem name={acarsProvider === 'SAI' ? 'SAI API Key' : t('Settings.AtsuAoc.HoppieUserId')}>

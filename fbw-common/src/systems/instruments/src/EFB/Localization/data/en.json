@@ -621,8 +621,8 @@
       "YourAcarsIdHasBeenValidated": "Your {acarsid} has been validated",
       "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "Your SimBrief PilotID has been validated and updated to",
       "SAIApiKey": "SAI API Key",
-      "BATCConnected": "Connected with BeyondATC",
-      "DisconnectedCheckBatcClient": "Disconnected from BeyondATC. Please check that the BeyondATC client is running and connected."
+      "AcarsConnected": "Connected",
+      "WaitingForConnection": "Waiting for Connection"
     },
     "Audio": {
       "Announcements": "Announcements",
