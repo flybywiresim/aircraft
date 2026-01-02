@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
@@ -89,9 +88,11 @@ export class CDUWindPage {
         template[i * 2 + 2][0] = `---°/---/-----`;
       }
     } else {
-      const climbWindEntries = doesClbWindUplinkExist
-        ? plan.pendingWindUplink.climbWinds
-        : plan.performanceData.climbWindEntries.get();
+      const climbWindEntries =
+        // Check `plan.pendingWindUplink.climbWinds !== undefined` again to make TS happy
+        doesClbWindUplinkExist && plan.pendingWindUplink.climbWinds !== undefined
+          ? plan.pendingWindUplink.climbWinds
+          : plan.performanceData.climbWindEntries.get();
 
       let numEntries = 0;
       for (let i = 0; i < Math.min(climbWindEntries.length, maxNumClimbWindEntries); i++) {
@@ -245,21 +246,25 @@ export class CDUWindPage {
       for (let i = 0; i < maxNumCruiseWindEntries; i++) {
         template[i * 2 + 4][0] = `---°/---/-----`;
       }
-    } else if (doesCrzWindUplinkExist) {
+    } else if (
+      doesCrzWindUplinkExist &&
+      plan.pendingWindUplink.cruiseWinds !==
+        undefined /** Check `plan.pendingWindUplink.cruiseWinds !== undefined` again to make TS happy */
+    ) {
       const winds =
         plan.pendingWindUplink.cruiseWinds.find(
           (fix) =>
             (fix.type === 'waypoint' && fix.fixIdent === leg.ident) ||
             (fix.type === 'latlon' &&
-              MathUtils.isAboutEqual(fix.lat, leg.terminationWaypoint().location.lat) &&
-              MathUtils.isAboutEqual(fix.long, leg.terminationWaypoint().location.long)),
+              MathUtils.isAboutEqual(fix.lat, leg.terminationWaypoint()!.location.lat) &&
+              MathUtils.isAboutEqual(fix.long, leg.terminationWaypoint()!.location.long)),
         )?.levels ?? [];
 
       for (let i = 0; i < winds.length; i++) {
         const wind = winds[i];
 
         template[i * 2 + 4][0] =
-          `${formatWindVector(wind.vector)}/${this.formatCruiseWindAltitude(wind.altitude)}[color]green`;
+          `${formatWindVector(wind.vector)}/${this.formatCruiseWindAltitude(plan, wind.altitude)}[color]green`;
 
         mcdu.onLeftInput[i + 1] = async (_, scratchpadCallback) => {
           mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
@@ -277,14 +282,14 @@ export class CDUWindPage {
         switch (wind.type) {
           case PropagationType.Forward:
             template[i * 2 + 4][0] =
-              `{small}${formatWindVector(wind.vector)}{end}/${this.formatCruiseWindAltitude(wind.altitude)}[color]cyan`;
+              `{small}${formatWindVector(wind.vector)}{end}/${this.formatCruiseWindAltitude(plan, wind.altitude)}[color]cyan`;
             break;
           case PropagationType.Entry:
             template[i * 2 + 4][0] =
-              `${formatWindVector(wind.vector)}/${this.formatCruiseWindAltitude(wind.altitude)}[color]cyan`;
+              `${formatWindVector(wind.vector)}/${this.formatCruiseWindAltitude(plan, wind.altitude)}[color]cyan`;
             break;
           case PropagationType.Backward:
-            template[i * 2 + 4][0] = `[\xa0]°/[\xa0]/${this.formatCruiseWindAltitude(wind.altitude)}[color]cyan`;
+            template[i * 2 + 4][0] = `[\xa0]°/[\xa0]/${this.formatCruiseWindAltitude(plan, wind.altitude)}[color]cyan`;
             break;
         }
 
@@ -361,7 +366,7 @@ export class CDUWindPage {
     };
 
     mcdu.onRightInput[1] = async (value) => {
-      if (doesCrzWindUplinkExist) {
+      if (doesWindUplinkExist && plan.pendingWindUplink.cruiseWinds !== undefined) {
         if (value === Keypad.clrValue) {
           plan.pendingWindUplink.delete();
           CDUWindPage.ShowCRZPage(mcdu, forPlan, fpIndex);
@@ -418,6 +423,7 @@ export class CDUWindPage {
 
     const doesWindUplinkExist = plan.pendingWindUplink.isWindUplinkReadyToInsert();
     const doesDesWindUplinkExist = doesWindUplinkExist && plan.pendingWindUplink.descentWinds !== undefined;
+    const doesAltnWindUplinkExist = doesWindUplinkExist && plan.pendingWindUplink.alternateWind !== undefined;
     const isWindUplinkInProgress = plan.pendingWindUplink.isWindUplinkInProgress();
 
     let requestButton = 'UPLINK*[color]cyan';
@@ -429,7 +435,7 @@ export class CDUWindPage {
 
     const phase = mcdu.flightPhaseManager.phase;
     const canGoToPrevPhase = phase < FmgcFlightPhase.Descent || phase === FmgcFlightPhase.Done;
-    const canModifyWinds =
+    const canModifyDesWinds =
       !doesDesWindUplinkExist && (phase >= FmgcFlightPhase.Descent || phase <= FmgcFlightPhase.GoAround);
 
     const template = [
@@ -451,9 +457,11 @@ export class CDUWindPage {
     const numDescentWindEntriesPerPage = 6;
     const maxNumDescentWindEntries = FpmConfigs.A320_HONEYWELL_H3.NUM_DESCENT_WIND_LEVELS;
 
-    const descentWindEntries = doesDesWindUplinkExist
-      ? plan.pendingWindUplink.descentWinds
-      : plan.performanceData.descentWindEntries.get();
+    const descentWindEntries =
+      // Check `plan.pendingWindUplink.descentWinds !== undefined` again to make TS happy
+      doesDesWindUplinkExist && plan.pendingWindUplink.descentWinds !== undefined
+        ? plan.pendingWindUplink.descentWinds
+        : plan.performanceData.descentWindEntries.get();
 
     if (isWindUplinkInProgress) {
       for (let i = 0; i < numDescentWindEntriesPerPage; i++) {
@@ -470,10 +478,10 @@ export class CDUWindPage {
         const wind = descentWindEntries[i + page * numDescentWindEntriesPerPage];
 
         template[i * 2 + 2][0] =
-          `${formatWindVector(wind.vector)}/${this.formatDescentWindAltitude(plan, wind.altitude)}[color]${canModifyWinds ? 'cyan' : 'green'}`;
+          `${formatWindVector(wind.vector)}/${this.formatDescentWindAltitude(plan, wind.altitude)}[color]${canModifyDesWinds ? 'cyan' : 'green'}`;
 
         mcdu.onLeftInput[i] = async (value, scratchpadCallback) => {
-          if (!canModifyWinds) {
+          if (!canModifyDesWinds) {
             mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
             scratchpadCallback();
             return;
@@ -504,7 +512,7 @@ export class CDUWindPage {
 
       // Whether to show "[ ]°/[ ]/[   ]" on this page
       const canAddEntryOnPage =
-        canModifyWinds &&
+        canModifyDesWinds &&
         descentWindEntries.length >= page * numDescentWindEntriesPerPage &&
         descentWindEntries.length < (page + 1) * numDescentWindEntriesPerPage &&
         descentWindEntries.length < maxNumDescentWindEntries;
@@ -537,21 +545,27 @@ export class CDUWindPage {
       const shouldShowAlternateOnPage = alternateAirport && numWindRowsOnPage < numDescentWindEntriesPerPage;
 
       if (shouldShowAlternateOnPage) {
-        const alternateWind = doesDesWindUplinkExist
-          ? plan.pendingWindUplink.alternateWind?.vector ?? null
-          : plan.performanceData.alternateWind.get();
+        const alternateWind =
+          // Check `plan.pendingWindUplink.alternateWind !== undefined` again to make TS happy
+          doesAltnWindUplinkExist && plan.pendingWindUplink.alternateWind !== undefined
+            ? plan.pendingWindUplink.alternateWind.vector
+            : plan.performanceData.alternateWind.get();
 
         const alternateCruiseLevel = mcdu.computeAlternateCruiseLevel(forPlan);
+        const alternateCruiseLevelString =
+          alternateCruiseLevel !== undefined
+            ? `{small}{green}/FL${alternateCruiseLevel.toFixed(0).padStart(3, '0')}{end}{end}`
+            : `{white}/-----{end}`;
 
         template[numWindRowsOnPage * 2 + 1][0] = ' ALTERNATE';
         template[numWindRowsOnPage * 2 + 2][0] =
           alternateWind !== null
-            ? `${formatWindVector(alternateWind)}{small}{green}/FL${alternateCruiseLevel.toFixed(0).padStart(3, '0')}{end}{end}[color]cyan`
-            : `[\xa0]°/[\xa0]{small}{green}/FL${alternateCruiseLevel.toFixed(0).padStart(3, '0')}{end}{end}[color]cyan`;
+            ? `${formatWindVector(alternateWind)}${alternateCruiseLevelString}[color]${doesAltnWindUplinkExist ? 'green' : 'cyan'}`
+            : `[\xa0]°/[\xa0]${alternateCruiseLevelString}[color]cyan`;
 
         mcdu.onLeftInput[numWindRowsOnPage] = async (value, scratchpadCallback) => {
           // I think you can modify the alternate wind in any phase, but not if an uplink exists
-          if (doesDesWindUplinkExist) {
+          if (doesAltnWindUplinkExist) {
             mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
             scratchpadCallback();
             return;
@@ -786,7 +800,7 @@ export class CDUWindPage {
    */
   private static findNextCruiseLegIndex(mcdu: LegacyFmsPageInterface, plan: BaseFlightPlan, fromIndex: number): number {
     const legPredictions =
-      plan.index === FlightPlanIndex.Active
+      plan.index === FlightPlanIndex.Active && mcdu.guidanceController
         ? mcdu.guidanceController.vnavDriver.mcduProfile?.waypointPredictions
         : undefined;
 
@@ -822,7 +836,7 @@ export class CDUWindPage {
     plan: BaseFlightPlan,
     fromIndex: number,
   ): number {
-    const legPredictions = mcdu.guidanceController.vnavDriver.mcduProfile?.waypointPredictions;
+    const legPredictions = mcdu.guidanceController?.vnavDriver.mcduProfile?.waypointPredictions;
 
     for (let i = fromIndex; i >= Math.max(0, plan.activeLegIndex); i--) {
       const leg = plan.maybeElementAt(i);
@@ -876,7 +890,15 @@ export class CDUWindPage {
     return (Math.round(alt / 10) * 10).toFixed(0);
   }
 
-  private static formatCruiseWindAltitude(alt: number | undefined): string {
+  private static formatCruiseWindAltitude(plan: FlightPlan, alt: number): string {
+    // TODO does it use trans level at destination or transition altitude at origin for cruise winds?
+    const transLevel = plan.performanceData.transitionLevel.get();
+    const isFl = transLevel !== null && alt >= transLevel * 100;
+
+    if (isFl) {
+      return `FL${(alt / 100).toFixed(0).padStart(3, '0')}`;
+    }
+
     return (Math.round(alt / 10) * 10).toFixed(0);
   }
 }
