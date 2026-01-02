@@ -2,7 +2,7 @@ use crate::simulation::{
     InitContext, Read, SimulationElement, SimulatorReader, UpdateContext, VariableIdentifier,
 };
 use uom::si::{
-    angular_velocity::revolution_per_minute, f64::*, ratio::ratio, velocity::foot_per_minute,
+    angular_velocity::degree_per_second, f64::*, ratio::ratio, velocity::foot_per_minute,
 };
 
 #[derive(Clone, Copy, Default)]
@@ -195,12 +195,9 @@ impl SimulationElement for IrSimulatorData {
         let body_rotation_rate_x: f64 = reader.read(&self.body_rotation_rate_x_id);
         let body_rotation_rate_y: f64 = reader.read(&self.body_rotation_rate_y_id);
         let body_rotation_rate_z: f64 = reader.read(&self.body_rotation_rate_z_id);
-        self.body_rotation_rate_x =
-            AngularVelocity::new::<revolution_per_minute>(body_rotation_rate_x);
-        self.body_rotation_rate_y =
-            AngularVelocity::new::<revolution_per_minute>(body_rotation_rate_y);
-        self.body_rotation_rate_z =
-            AngularVelocity::new::<revolution_per_minute>(body_rotation_rate_z);
+        self.body_rotation_rate_x = AngularVelocity::new::<degree_per_second>(body_rotation_rate_x);
+        self.body_rotation_rate_y = AngularVelocity::new::<degree_per_second>(body_rotation_rate_y);
+        self.body_rotation_rate_z = AngularVelocity::new::<degree_per_second>(body_rotation_rate_z);
         self.heading = reader.read(&self.heading_id);
         self.true_heading = reader.read(&self.true_heading_id);
         self.track = reader.read(&self.track_id);
