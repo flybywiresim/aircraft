@@ -394,21 +394,9 @@ function getApproachMagCorrection(legIndex: number, plan: BaseFlightPlan): numbe
   }
 
   // for RNAV procedures use recommended navaid station declination for these leg types
-  let useStationDeclination =
+  // For ILS approaches, this will be the localizer navaid
+  const useStationDeclination =
     currentLeg.type === LegType.CF || currentLeg.type === LegType.FA || currentLeg.type === LegType.FM;
-
-  switch (approachType) {
-    case ApproachType.LocBackcourse:
-    case ApproachType.Ils:
-    case ApproachType.Loc:
-    case ApproachType.Mls:
-    case ApproachType.Igs:
-    case ApproachType.Sdf:
-    case ApproachType.Lda:
-    case ApproachType.MlsTypeA:
-    case ApproachType.MlsTypeBC:
-      useStationDeclination = useStationDeclination && legIndex < plan.getFinalApproachCourseFixIndex();
-  }
 
   if (useStationDeclination) {
     const recNavaid = currentLeg.definition.recommendedNavaid;
