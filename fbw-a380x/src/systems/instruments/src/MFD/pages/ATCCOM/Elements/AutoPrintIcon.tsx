@@ -10,6 +10,11 @@ interface AutoPrintIconProps extends ComponentProps {
 export class AutoPrintIcon extends DisplayComponent<AutoPrintIconProps> {
   private readonly visibility = this.props.visible.map((v) => (v ? 'inherit' : 'hidden'));
 
+  destroy(): void {
+    this.visibility.destroy();
+    super.destroy();
+  }
+
   render(): VNode {
     return (
       <div
