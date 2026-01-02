@@ -674,19 +674,19 @@ impl AirDataReferenceBus for AirDataInertialReferenceUnit {
         self.adr_bus_output_data.baro_corrected_altitude_2
     }
 
-    fn baro_correction_1_hpa(&self) -> Arinc429Word<Pressure> {
+    fn baro_correction_1_hpa(&self) -> Arinc429Word<f64> {
         self.adr_bus_output_data.baro_correction_1_hpa
     }
 
-    fn baro_correction_1_inhg(&self) -> Arinc429Word<Pressure> {
+    fn baro_correction_1_inhg(&self) -> Arinc429Word<f64> {
         self.adr_bus_output_data.baro_correction_1_inhg
     }
 
-    fn baro_correction_2_hpa(&self) -> Arinc429Word<Pressure> {
+    fn baro_correction_2_hpa(&self) -> Arinc429Word<f64> {
         self.adr_bus_output_data.baro_correction_2_hpa
     }
 
-    fn baro_correction_2_inhg(&self) -> Arinc429Word<Pressure> {
+    fn baro_correction_2_inhg(&self) -> Arinc429Word<f64> {
         self.adr_bus_output_data.baro_correction_2_inhg
     }
 
@@ -844,30 +844,10 @@ impl SimulationElement for AirDataInertialReferenceUnit {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        write_to_converted(
-            writer,
-            &self.baro_correction_1_hpa,
-            self.baro_correction_1_hpa(),
-            |value| value.get::<hectopascal>(),
-        );
-        write_to_converted(
-            writer,
-            &self.baro_correction_1_inhg,
-            self.baro_correction_1_inhg(),
-            |value| value.get::<inch_of_mercury>(),
-        );
-        write_to_converted(
-            writer,
-            &self.baro_correction_2_hpa,
-            self.baro_correction_2_hpa(),
-            |value| value.get::<hectopascal>(),
-        );
-        write_to_converted(
-            writer,
-            &self.baro_correction_2_inhg,
-            self.baro_correction_2_inhg(),
-            |value| value.get::<inch_of_mercury>(),
-        );
+        writer.write(&self.baro_correction_1_hpa, self.baro_correction_1_hpa());
+        writer.write(&self.baro_correction_1_inhg, self.baro_correction_1_inhg());
+        writer.write(&self.baro_correction_2_hpa, self.baro_correction_2_hpa());
+        writer.write(&self.baro_correction_2_inhg, self.baro_correction_2_inhg());
         write_to_converted(
             writer,
             &self.corrected_average_static_pressure,
