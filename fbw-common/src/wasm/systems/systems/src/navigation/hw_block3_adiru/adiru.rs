@@ -9,7 +9,7 @@ use crate::navigation::adirs::{
 use crate::navigation::hw_block3_adiru::ir_runtime::InertialReferenceRuntime;
 use crate::navigation::hw_block3_adiru::simulator_data::{AdrSimulatorData, IrSimulatorData};
 use crate::shared::arinc429::Arinc429Word;
-use crate::shared::logic_nodes::ConfirmationNode;
+use crate::shared::logic_nodes::{ConfirmationNode, MonostableTriggerNode};
 use crate::shared::random_from_range;
 use crate::simulation::{InitContext, VariableIdentifier, Writer};
 use crate::{
@@ -74,6 +74,10 @@ pub struct AirDataInertialReferenceUnit {
     /// Powersupply monitoring values
     on_battery_power: bool,
     dc_failure: bool,
+
+    /// Powersupply backup test values
+    startup_begin_confirm: ConfirmationNode,
+    backup_supply_test_timer_mtrig: MonostableTriggerNode,
 
     /// How long the self checks take for runtimes running on this computer.
     adr_self_check_time: Duration,
@@ -191,7 +195,6 @@ impl AirDataInertialReferenceUnit {
 
     pub(super) const POWER_DOWN_DURATION: u64 = 15_000;
 
-    // TODO Implement battery test
     pub(super) const BACKUP_SUPPLY_TEST_START_TIME: Duration = Duration::from_millis(10500);
     pub(super) const BACKUP_SUPPLY_TEST_DURATION: Duration = Duration::from_millis(5500);
 
@@ -226,6 +229,12 @@ impl AirDataInertialReferenceUnit {
             )),
             on_battery_power: false,
             dc_failure: false,
+            startup_begin_confirm: ConfirmationNode::new_rising(
+                Self::BACKUP_SUPPLY_TEST_START_TIME,
+            ),
+            backup_supply_test_timer_mtrig: MonostableTriggerNode::new_rising(
+                Self::BACKUP_SUPPLY_TEST_DURATION,
+            ),
             adr_self_check_time: Duration::from_secs_f64(random_from_range(
                 Self::ADR_AVERAGE_STARTUP_TIME_MILLIS.as_secs_f64() - 1.,
                 Self::ADR_AVERAGE_STARTUP_TIME_MILLIS.as_secs_f64() + 1.,
@@ -489,7 +498,9 @@ impl AirDataInertialReferenceUnit {
         context: &UpdateContext,
         ir_discrete_inputs: &IrDiscreteInputs,
     ) {
-        if self.primary_is_powered {
+        // If the backup supply test is active, inhibit the primary supply.
+        let supply_test_active = self.backup_supply_test_timer_mtrig.output();
+        if self.primary_is_powered && !supply_test_active {
             self.primary_unpowered_for = Duration::ZERO;
         } else {
             self.primary_unpowered_for += context.delta();
@@ -506,6 +517,12 @@ impl AirDataInertialReferenceUnit {
             context.delta(),
         );
 
+        let begin_supply_test = self
+            .startup_begin_confirm
+            .update(is_powered, context.delta());
+        self.backup_supply_test_timer_mtrig
+            .update(begin_supply_test, context.delta());
+
         self.on_battery_power = is_powered
             && self.backup_unpowered_for < self.power_holdover
             && self.primary_unpowered_for > self.power_holdover;
@@ -519,12 +536,11 @@ impl AirDataInertialReferenceUnit {
         adr_discrete_inputs: &AdrDiscreteInputs,
         fcu: &impl FlightControlUnitBusOutput,
     ) {
-        let is_powered = !self.power_down_confirm.get_output()
-            && self.primary_unpowered_for < self.power_holdover;
+        let is_powered = self.computer_powered();
 
         // Check if the internal state (runtime) is lost because either the unit failed, the
         // power holdover has been exceed, or the ADIRU has entered standby mode
-        if self.adr_failure.is_active() || !is_powered {
+        if self.adr_failure.is_active() || !self.computer_powered() {
             // Throw away the simulated software runtime
             self.adr_runtime = None;
 
@@ -568,9 +584,7 @@ impl AirDataInertialReferenceUnit {
         adr_1: &impl AirDataReferenceBusOutput,
         adr_2: &impl AirDataReferenceBusOutput,
     ) {
-        let is_powered = !self.power_down_confirm.get_output()
-            && (self.primary_unpowered_for < self.power_holdover
-                || self.backup_unpowered_for < self.power_holdover);
+        let is_powered = self.computer_powered();
 
         // Check if the internal state (runtime) is lost because either the unit failed, the
         // power holdover has been exceed, or the ADIRU has entered standby mode
@@ -614,6 +628,12 @@ impl AirDataInertialReferenceUnit {
                 self.ir_bus_output_data = InertialReferenceBusOutputs::default();
             }
         }
+    }
+
+    fn computer_powered(&self) -> bool {
+        !self.power_down_confirm.get_output()
+            && (self.primary_unpowered_for < self.power_holdover
+                || self.backup_unpowered_for < self.power_holdover)
     }
 }
 impl AirDataReferenceBusOutput for AirDataInertialReferenceUnit {
