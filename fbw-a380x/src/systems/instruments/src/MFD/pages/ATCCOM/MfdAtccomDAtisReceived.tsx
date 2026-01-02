@@ -48,6 +48,13 @@ export class MfdAtccomDAtisReceived extends DisplayComponent<MfdAtccomDAtisRecei
   private readonly currentAtisNavVisibility = this.numberOfPages.map((v) => (v > 1 ? 'visible' : 'hidden'));
   private readonly prevAtisNavVisibility = this.previousMessageNumberOfPages.map((v) => (v > 1 ? 'visible' : 'hidden'));
 
+  private readonly isCurrentMsgFirstPage = this.currentPageNumber.map((v) => v === 1);
+  private readonly isCurrentMsgLastPage = this.currentPageNumber.map((v) => v === this.numberOfPages.get());
+  private readonly isPrevMsgFirstPage = this.previousMessageCurrentPageNumber.map((v) => v === 1);
+  private readonly isPrevMsgLastPage = this.previousMessageCurrentPageNumber.map(
+    (v) => v === this.previousMessageNumberOfPages.get(),
+  );
+
   private formatAtis(messageArray: string[], page: number = 1): string {
     return messageArray.slice(this.rowsPerPage * (page - 1), this.rowsPerPage * page).join(' ');
   }
@@ -112,7 +119,14 @@ export class MfdAtccomDAtisReceived extends DisplayComponent<MfdAtccomDAtisRecei
       }
     }
 
-    this.subs.push(this.currentAtisNavVisibility, this.prevAtisNavVisibility);
+    this.subs.push(
+      this.currentAtisNavVisibility,
+      this.prevAtisNavVisibility,
+      this.isCurrentMsgFirstPage,
+      this.isCurrentMsgLastPage,
+      this.isPrevMsgFirstPage,
+      this.isPrevMsgLastPage,
+    );
   }
 
   public destroy(): void {
@@ -157,7 +171,7 @@ export class MfdAtccomDAtisReceived extends DisplayComponent<MfdAtccomDAtisRecei
                       this.currentPageNumber.set(this.currentPageNumber.get() - 1);
                     }
                   }}
-                  disabled={this.currentPageNumber.map((v) => (v === 1 ? true : false))}
+                  disabled={this.isCurrentMsgFirstPage}
                   containerStyle="width: 40px; height: 40px; padding:4px"
                 />
                 <IconButton
@@ -167,7 +181,7 @@ export class MfdAtccomDAtisReceived extends DisplayComponent<MfdAtccomDAtisRecei
                       this.currentPageNumber.set(this.currentPageNumber.get() + 1);
                     }
                   }}
-                  disabled={this.currentPageNumber.map((v) => (v === this.numberOfPages.get() ? true : false))}
+                  disabled={this.isCurrentMsgLastPage}
                   containerStyle="width: 40px; height: 40px; padding:4px"
                 />
               </div>
@@ -202,7 +216,7 @@ export class MfdAtccomDAtisReceived extends DisplayComponent<MfdAtccomDAtisRecei
                       this.previousMessageCurrentPageNumber.set(this.previousMessageCurrentPageNumber.get() - 1);
                     }
                   }}
-                  disabled={this.previousMessageCurrentPageNumber.map((v) => (v === 1 ? true : false))}
+                  disabled={this.isPrevMsgFirstPage}
                   containerStyle="width: 40px; height: 40px; padding:4px"
                 />
                 <IconButton
@@ -212,9 +226,7 @@ export class MfdAtccomDAtisReceived extends DisplayComponent<MfdAtccomDAtisRecei
                       this.previousMessageCurrentPageNumber.set(this.previousMessageCurrentPageNumber.get() + 1);
                     }
                   }}
-                  disabled={this.previousMessageCurrentPageNumber.map((v) =>
-                    v === this.previousMessageNumberOfPages.get() ? true : false,
-                  )}
+                  disabled={this.isPrevMsgLastPage}
                   containerStyle="width: 40px; height: 40px; padding:4px"
                 />
               </div>

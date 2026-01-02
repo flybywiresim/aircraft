@@ -62,9 +62,10 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
   private static readonly datisBlocklineLengths: number[] = [44, 44, 44, 44, 29];
 
   private readonly isIcaoEmpty = this.atisIcao.map((icao) => {
-    if (icao !== null && icao !== '----') return false;
-    return true;
+    return icao == null || icao == '----';
   });
+
+  private readonly messageStatusSpan = this.messageStatusLabel.map((s) => <>{s}</>);
 
   private truncateAtis(string: string): string {
     if (string.length === 0) return '';
@@ -188,6 +189,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
       this.dropdownMenuVisible,
       this.combinedMenuVisible,
       this.statusButtonVisible,
+      this.messageStatusSpan,
     );
   }
 
@@ -236,9 +238,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
           <div>
             {/* FSM Status Message Button */}
             <Button
-              label={this.messageStatusLabel.map((s) => (
-                <>{s}</>
-              ))}
+              label={this.messageStatusSpan}
               disabled={Subject.create(false)}
               onClick={() => {}}
               visible={this.statusButtonVisible}

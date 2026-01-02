@@ -8,12 +8,14 @@ interface AutoPrintIconProps extends ComponentProps {
 }
 
 export class AutoPrintIcon extends DisplayComponent<AutoPrintIconProps> {
+  private readonly visibility = this.props.visible.map((v) => (v ? 'inherit' : 'hidden'));
+
   render(): VNode {
     return (
       <div
         class="d-atis-icon auto-print-symbol"
         style={{
-          visibility: this.props.visible.map((v) => (v ? 'inherit' : 'hidden')),
+          visibility: this.visibility,
         }}
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" fill="none">

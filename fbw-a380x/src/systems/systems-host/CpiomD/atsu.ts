@@ -4,7 +4,7 @@ import { SimVarHandling } from '@datalink/common';
 import { Router, VhfRadioInterface } from '@datalink/router';
 import { EventBus, EventSubscriber, Instrument, SimVarValueType } from '@microsoft/msfs-sdk';
 import { PowerSupplyBusTypes } from 'systems-host/Misc/powersupply';
-import { RegisteredSimVar } from '@flybywiresim/fbw-sdk';
+import { FrequencyMode, RegisteredSimVar } from '@flybywiresim/fbw-sdk';
 
 class A380xVhfProvider implements VhfRadioInterface {
   private static readonly RmpModeActive3 = RegisteredSimVar.create<number>(
@@ -13,10 +13,7 @@ class A380xVhfProvider implements VhfRadioInterface {
   );
 
   public isDataModeActive(): boolean {
-    if (A380xVhfProvider.RmpModeActive3.get() === 1) {
-      return true;
-    }
-    return false;
+    return A380xVhfProvider.RmpModeActive3.get() === FrequencyMode.Data;
   }
 }
 export class AtsuSystem implements Instrument {
