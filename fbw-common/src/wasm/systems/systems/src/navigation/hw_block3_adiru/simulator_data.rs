@@ -8,9 +8,6 @@ pub(crate) struct AdrSimulatorData {
     mach_id: VariableIdentifier,
     pub mach: Ratio,
 
-    vertical_speed_id: VariableIdentifier,
-    pub vertical_speed: Velocity,
-
     true_airspeed_id: VariableIdentifier,
     pub true_airspeed: Velocity,
 
@@ -25,19 +22,15 @@ pub(crate) struct AdrSimulatorData {
     pub ambient_temperature: ThermodynamicTemperature,
 }
 impl AdrSimulatorData {
-    const MACH: &'static str = "AIRSPEED MACH";
-    const INERTIAL_VERTICAL_SPEED: &'static str = "VELOCITY WORLD Y";
-    const TRUE_AIRSPEED: &'static str = "AIRSPEED TRUE";
-    const TOTAL_AIR_TEMPERATURE: &'static str = "TOTAL AIR TEMPERATURE";
-    const ANGLE_OF_ATTACK: &'static str = "INCIDENCE ALPHA";
+    pub(super) const MACH: &'static str = "AIRSPEED MACH";
+    pub(super) const TRUE_AIRSPEED: &'static str = "AIRSPEED TRUE";
+    pub(super) const TOTAL_AIR_TEMPERATURE: &'static str = "TOTAL AIR TEMPERATURE";
+    pub(super) const ANGLE_OF_ATTACK: &'static str = "INCIDENCE ALPHA";
 
     pub(crate) fn new(context: &mut InitContext) -> Self {
         Self {
             mach_id: context.get_identifier(Self::MACH.to_owned()),
             mach: Default::default(),
-
-            vertical_speed_id: context.get_identifier(Self::INERTIAL_VERTICAL_SPEED.to_owned()),
-            vertical_speed: Default::default(),
 
             true_airspeed_id: context.get_identifier(Self::TRUE_AIRSPEED.to_owned()),
             true_airspeed: Default::default(),
@@ -64,8 +57,6 @@ impl SimulationElement for AdrSimulatorData {
     fn read(&mut self, reader: &mut SimulatorReader) {
         // To reduce reads, we only read these values once and then share it with the underlying ADRs and IRs.
         self.mach = reader.read(&self.mach_id);
-        let vertical_speed: f64 = reader.read(&self.vertical_speed_id);
-        self.vertical_speed = Velocity::new::<foot_per_minute>(vertical_speed);
         self.true_airspeed = reader.read(&self.true_airspeed_id);
         self.total_air_temperature = reader.read(&self.total_air_temperature_id);
         self.angle_of_attack = reader.read(&self.angle_of_attack_id);
@@ -120,19 +111,19 @@ pub(crate) struct IrSimulatorData {
     pub ground_speed: Velocity,
 }
 impl IrSimulatorData {
-    const INERTIAL_VERTICAL_SPEED: &'static str = "VELOCITY WORLD Y";
-    const LATITUDE: &'static str = "PLANE LATITUDE";
-    const LONGITUDE: &'static str = "PLANE LONGITUDE";
-    const PITCH: &'static str = "PLANE PITCH DEGREES";
-    const ROLL: &'static str = "PLANE BANK DEGREES";
-    const BODY_ROTATION_RATE_X: &'static str = "ROTATION VELOCITY BODY X";
-    const BODY_ROTATION_RATE_Y: &'static str = "ROTATION VELOCITY BODY Y";
-    const BODY_ROTATION_RATE_Z: &'static str = "ROTATION VELOCITY BODY Z";
-    const HEADING: &'static str = "PLANE HEADING DEGREES MAGNETIC";
-    const TRUE_HEADING: &'static str = "PLANE HEADING DEGREES TRUE";
-    const TRACK: &'static str = "GPS GROUND MAGNETIC TRACK";
-    const TRUE_TRACK: &'static str = "GPS GROUND TRUE TRACK";
-    const GROUND_SPEED: &'static str = "GPS GROUND SPEED";
+    pub(super) const INERTIAL_VERTICAL_SPEED: &'static str = "VELOCITY WORLD Y";
+    pub(super) const LATITUDE: &'static str = "PLANE LATITUDE";
+    pub(super) const LONGITUDE: &'static str = "PLANE LONGITUDE";
+    pub(super) const PITCH: &'static str = "PLANE PITCH DEGREES";
+    pub(super) const ROLL: &'static str = "PLANE BANK DEGREES";
+    pub(super) const BODY_ROTATION_RATE_X: &'static str = "ROTATION VELOCITY BODY X";
+    pub(super) const BODY_ROTATION_RATE_Y: &'static str = "ROTATION VELOCITY BODY Y";
+    pub(super) const BODY_ROTATION_RATE_Z: &'static str = "ROTATION VELOCITY BODY Z";
+    pub(super) const HEADING: &'static str = "PLANE HEADING DEGREES MAGNETIC";
+    pub(super) const TRUE_HEADING: &'static str = "PLANE HEADING DEGREES TRUE";
+    pub(super) const TRACK: &'static str = "GPS GROUND MAGNETIC TRACK";
+    pub(super) const TRUE_TRACK: &'static str = "GPS GROUND TRUE TRACK";
+    pub(super) const GROUND_SPEED: &'static str = "GPS GROUND SPEED";
 
     pub(crate) fn new(context: &mut InitContext) -> Self {
         Self {
