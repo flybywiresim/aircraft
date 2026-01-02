@@ -254,6 +254,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
               buttonStyle="width: 159px; padding-left: 5px; padding-top: 3px; padding-bottom: 3px;"
               containerStyle="position: absolute; left: 600px; top: 7px;"
               idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_datisblock_btn_${this.props.index}`}
+              dropdownMenuRightAligned={true}
               menuItems={Subject.create<ButtonMenuItem[]>([
                 {
                   label: 'UPDATE',

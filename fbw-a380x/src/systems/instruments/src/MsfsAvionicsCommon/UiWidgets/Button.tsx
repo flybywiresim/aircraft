@@ -32,6 +32,7 @@ export interface ButtonProps extends ComponentProps {
   containerStyle?: string;
   onClick: () => void;
   scrollToMenuItem?: Subscribable<number>;
+  dropdownMenuRightAligned?: boolean;
 }
 
 /*
@@ -244,6 +245,8 @@ export class Button extends DisplayComponent<ButtonProps> {
         if (this.props.scrollToMenuItem !== undefined) {
           this.scrollMenuTo(this.props.scrollToMenuItem.get());
         }
+
+        if (this.props.dropdownMenuRightAligned) this.dropdownMenuRef.instance.style.right = '0px';
       }),
     );
 
