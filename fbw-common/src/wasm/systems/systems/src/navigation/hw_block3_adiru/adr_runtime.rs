@@ -16,7 +16,6 @@ use crate::{
 };
 use bitflags::bitflags;
 use std::time::Duration;
-use uom::si::angle::degree;
 use uom::si::pressure::inch_of_mercury;
 use uom::si::ratio::ratio;
 use uom::si::velocity::foot_per_minute;
@@ -339,15 +338,14 @@ impl AirDataReferenceRuntime {
                 .set(Velocity::new::<knot>(0.), SignStatus::NoComputedData);
         };
 
-        if computed_airspeed >= Velocity::new::<knot>(Self::MINIMUM_CAS_FOR_AOA) {
-            bus.corrected_angle_of_attack.set(
-                self.measurement_inputs.angle_of_attack,
-                SignStatus::NormalOperation,
-            );
-        } else {
-            bus.corrected_angle_of_attack
-                .set(Angle::new::<degree>(0.), SignStatus::NoComputedData);
-        };
+        bus.corrected_angle_of_attack.set(
+            self.measurement_inputs.angle_of_attack,
+            if computed_airspeed >= Velocity::new::<knot>(Self::MINIMUM_CAS_FOR_AOA) {
+                SignStatus::NormalOperation
+            } else {
+                SignStatus::NoComputedData
+            },
+        );
 
         bus.total_air_temperature.set(
             self.measurement_inputs.total_air_temperature,
