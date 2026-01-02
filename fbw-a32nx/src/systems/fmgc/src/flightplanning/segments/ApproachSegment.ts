@@ -89,7 +89,7 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
 
     if (procedureRunwayIdent) {
       // TODO temporary workaround for bug in msfs backend
-      await this.flightPlan.destinationSegment.setDestinationRunway(procedureRunwayIdent, true);
+      await this.flightPlan.destinationSegment.setRunway(procedureRunwayIdent, true);
     }
 
     const mappedMissedApproachLegs = matchingProcedure.missedLegs.map((leg) =>

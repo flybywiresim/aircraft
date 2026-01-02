@@ -29,7 +29,7 @@ import { ApproachType as MSApproachType } from '../../../../../../fbw-common/src
 import { FacilityCache } from '../../../../../../fbw-common/src/systems/navdata/client/backends/Msfs/FacilityCache';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
-import { A320FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import { A320FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/A320FlightPlanPerformanceData';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 
 export class FlightPlanAsoboSync {
@@ -110,10 +110,10 @@ export class FlightPlanAsoboSync {
       }),
     );
     this.subs.push(
-      sub.on('SYNC_flightPlan.setSegmentLegs').handle(async (event) => {
+      sub.on('SYNC_flightPlan.setSegment').handle(async (event) => {
         console.log('SEGMENT LEGS', event);
         if (event.planIndex === FlightPlanIndex.Active && event.segmentIndex === 4) {
-          this.enrouteLegs = event.legs;
+          this.enrouteLegs = event.serialized.allLegs;
           await this.syncFlightPlanToGame();
         }
       }),

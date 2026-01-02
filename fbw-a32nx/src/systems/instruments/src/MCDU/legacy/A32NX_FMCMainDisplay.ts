@@ -6,7 +6,6 @@ import {
   A320EfisNdRangeValue,
   a320EfisRangeSettings,
   Airport,
-  Arinc429LocalVarOutputWord,
   Arinc429Register,
   Arinc429SignStatusMatrix,
   Arinc429Word,
@@ -15,7 +14,9 @@ import {
   EfisSide,
   EnrouteNdbNavaid,
   Fix,
+  FmArinc429OutputWord,
   IlsNavaid,
+  isMsfs2024,
   ISimbriefData,
   MathUtils,
   NdbNavaid,
@@ -63,10 +64,8 @@ import { FmsFormatters } from './FmsFormatters';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
 import { FlightPhaseManager } from '@fmgc/flightphase';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
-import {
-  A320FlightPlanPerformanceData,
-  DefaultPerformanceData,
-} from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import { DefaultPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import { A320FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/A320FlightPlanPerformanceData';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { initComponents, updateComponents } from '@fmgc/components';
@@ -74,12 +73,14 @@ import { CoRouteUplinkAdapter } from '@fmgc/flightplanning/uplink/CoRouteUplinkA
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 import { SimbriefOfpState } from './LegacyFmsPageInterface';
 import { CDUInitPage } from '../legacy_pages/A320_Neo_CDU_InitPage';
+import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
 import { FmcWindVector } from '@fmgc/guidance/vnav/wind/types';
 import { FlightPlanFlags } from '@fmgc/flightplanning/plans/FlightPlanFlags';
 import { CDUFuelPredPage } from '../legacy_pages/A320_Neo_CDU_FuelPredPage';
 import { ObservableFlightPlanManager } from '@fmgc/flightplanning/ObservableFlightPlanManager';
 import { CDUFlightPlanPage } from '../legacy_pages/A320_Neo_CDU_FlightPlanPage';
 import { FuelPredComputations } from '@fmgc/flightplanning/fuel/FuelPredComputations';
+import { MsfsFlightPlanSync } from '@fmgc/flightplanning/MsfsFlightPlanSync';
 
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
@@ -89,11 +90,17 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   public readonly navDatabaseBackend = NavigationDatabaseBackend.Msfs;
   public readonly currFlightPhaseManager = new FlightPhaseManager(this.bus);
-  public readonly currFlightPlanService = new FlightPlanService(this.bus, new A320FlightPlanPerformanceData());
+  public readonly currFlightPlanService = new FlightPlanService(
+    this.bus,
+    new A320FlightPlanPerformanceData(),
+    FpmConfigs.A320_HONEYWELL_H3,
+    true,
+  );
   private readonly observableFlightPlanManager = new ObservableFlightPlanManager(this.bus, this.currFlightPlanService);
   public readonly rpcServer = new FlightPlanRpcServer(this.bus, this.currFlightPlanService);
   public readonly currNavigationDatabaseService = NavigationDatabaseService;
   public readonly navigationDatabase = new NavigationDatabase(this.bus, NavigationDatabaseBackend.Msfs);
+  public readonly msfsRouteSync = isMsfs2024() ? new MsfsFlightPlanSync(this.bus, this.currFlightPlanService) : null;
 
   private readonly flightPhaseUpdateThrottler = new UpdateThrottler(800);
   private readonly fmsUpdateThrottler = new UpdateThrottler(250);
@@ -347,7 +354,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.A32NXCore = new A32NX_Core();
     this.A32NXCore.init();
 
-    this.dataManager = new DataManager(this);
+    this.dataManager = new DataManager(this.bus, this);
 
     this.efisInterfaces = {
       L: new EfisInterface('L', this.currFlightPlanService),
@@ -2651,7 +2658,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       const oldDestination = this.currFlightPlanService.active.destinationAirport
         ? this.currFlightPlanService.active.destinationAirport.ident
         : undefined;
+
       await this.flightPlanService.temporaryInsert();
+
       this.checkCostIndex(oldCostIndex);
       // FIXME I don't know if it is actually possible to insert TMPY with no FROM/TO, but we should not crash here, so check this for now
       if (oldDestination !== undefined) {
@@ -5611,20 +5620,5 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     if (this.fmgcDiscreteWord4.isInvalid()) {
       this.fmgcDiscreteWord4.set(this.fmgc2DiscreteWord4.get());
     }
-  }
-}
-
-/** Writes FM output words for both FMS. */
-class FmArinc429OutputWord extends Arinc429LocalVarOutputWord {
-  private readonly localVars = [`L:A32NX_FM1_${this.name}`, `L:A32NX_FM2_${this.name}`];
-
-  override async writeToSimVarIfDirty() {
-    if (this.isDirty) {
-      this.isDirty = false;
-      return Promise.all(
-        this.localVars.map((localVar) => Arinc429Word.toSimVarValue(localVar, this.word.value, this.word.ssm)),
-      );
-    }
-    return Promise.resolve();
   }
 }

@@ -1,4 +1,4 @@
-﻿import { ComponentProps, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+﻿import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 
 import './MfdFmsFplnAirways.scss';
 import '../../common/style.scss';
@@ -6,7 +6,6 @@ import { AbstractMfdPageProps, MfdDisplayInterface } from 'instruments/src/MFD/M
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
-import { PendingAirways } from '@fmgc/flightplanning/plans/PendingAirways';
 import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import { AirwayFormat, WaypointFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
@@ -16,6 +15,8 @@ import { FmcInterface } from 'instruments/src/MFD/FMC/FmcInterface';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { Fix } from '@flybywiresim/fbw-sdk';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
+import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 
 interface MfdFmsFplnAirwaysProps extends AbstractMfdPageProps {}
 
@@ -54,7 +55,8 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
             fmc={this.props.fmcService.master}
             mfd={this.props.mfd}
             tmpyActive={this.tmpyActive}
-            pendingAirways={this.loadedFlightPlan.pendingAirways}
+            loadedFlightPlan={this.loadedFlightPlan}
+            loadedFlightPlanIndex={this.loadedFlightPlanIndex}
             fromFix={fromFix}
             isFirstLine={false}
             nextLineCallback={(fix) => this.renderNextLine(fix)}
@@ -89,7 +91,8 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
           fmc={this.props.fmcService.master}
           mfd={this.props.mfd}
           tmpyActive={this.tmpyActive}
-          pendingAirways={this.loadedFlightPlan.pendingAirways}
+          loadedFlightPlan={this.loadedFlightPlan}
+          loadedFlightPlanIndex={this.loadedFlightPlanIndex}
           fromFix={revWpt}
           isFirstLine
           nextLineCallback={(fix) => this.renderNextLine(fix)}
@@ -141,7 +144,13 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
           <div ref={this.returnButtonDiv} class="mfd-fms-direct-to-erase-return-btn">
             <Button
               label="RETURN"
-              onClick={() => {
+              onClick={async () => {
+                if (this.loadedFlightPlanIndex.get() >= FlightPlanIndex.FirstSecondary) {
+                  await this.props.fmcService.master?.flightPlanInterface.finaliseAirwayEntry(
+                    this.loadedFlightPlanIndex.get(),
+                    this.props.fmcService.master?.revisedLegIsAltn.get() ?? false,
+                  );
+                }
                 this.props.fmcService.master?.resetRevisedWaypoint();
                 this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln`);
               }}
@@ -152,8 +161,10 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
               label="TMPY F-PLN"
               onClick={async () => {
                 if (this.loadedFlightPlan) {
-                  this.loadedFlightPlan.pendingAirways?.finalize();
-                  this.loadedFlightPlan.pendingAirways = undefined; // Reset, so it's not finalized twice when performing tmpy insert
+                  await this.props.fmcService.master?.flightPlanInterface.finaliseAirwayEntry(
+                    this.loadedFlightPlanIndex.get(),
+                    this.props.fmcService.master?.revisedLegIsAltn.get() ?? false,
+                  );
                   this.props.fmcService.master?.resetRevisedWaypoint();
                   this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln`);
                 }
@@ -173,7 +184,8 @@ interface AirwayLineProps extends ComponentProps {
   fmc: FmcInterface;
   mfd: FmsDisplayInterface & MfdDisplayInterface;
   tmpyActive: Subject<boolean>;
-  pendingAirways: PendingAirways;
+  loadedFlightPlan: ReadonlyFlightPlan;
+  loadedFlightPlanIndex: Subscribable<FlightPlanIndex>;
   fromFix: Fix;
   isFirstLine: boolean;
   nextLineCallback: (f: Fix) => void;
@@ -214,7 +226,11 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
                 return false;
               }
 
-              const success = this.props.pendingAirways.thenAirway(airways[0]);
+              const success = await this.props.fmc.flightPlanInterface.continueAirwayEntryViaAirway(
+                airways[0],
+                this.props.loadedFlightPlanIndex.get(),
+                this.props.fmc.revisedLegIsAltn.get() ?? false,
+              );
               if (success) {
                 this.viaFieldDisabled.set(true);
                 this.toFieldDisabled.set(false);
@@ -253,7 +269,7 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
 
               if (this.viaField.get() !== 'DCT') {
                 try {
-                  chosenFix = await this.props.pendingAirways.fixAlongTailAirway(v);
+                  chosenFix = this.props.loadedFlightPlan.pendingAirways?.fixAlongTailAirway(v);
                 } catch (msg: unknown) {
                   if (msg instanceof FmsError) {
                     this.props.fmc.showFmsErrorMessage(msg.type);
@@ -282,7 +298,12 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
                 return false;
               }
 
-              const success = this.props.pendingAirways.thenTo(chosenFix, isDct);
+              const success = await this.props.fmc.flightPlanInterface.continueAirwayEntryToFix(
+                chosenFix,
+                isDct,
+                this.props.loadedFlightPlanIndex.get(),
+                this.props.fmc.revisedLegIsAltn.get() ?? false,
+              );
               if (success) {
                 this.toFieldDisabled.set(true);
                 this.props.nextLineCallback(chosenFix);

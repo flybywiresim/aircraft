@@ -6,11 +6,13 @@
 
 /* eslint-disable no-await-in-loop */
 
+import { Fix, Airway } from '@flybywiresim/fbw-sdk';
+
+import { Coordinates, distanceTo } from 'msfs-geo';
+
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
-import { Fix, Airway } from '@flybywiresim/fbw-sdk';
-import { Coordinates, distanceTo } from 'msfs-geo';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import type { Fix as CoRouteFix } from '@simbridge/Coroute/Fix';
 import { FmsDataInterface } from '../interface/FmsDataInterface';
@@ -156,9 +158,9 @@ export class CoRouteUplinkAdapter {
 
     setInsertHeadToEndOfEnroute();
 
-    const ensureAirwaysFinalized = () => {
+    const ensureAirwaysFinalized = async () => {
       if (flightPlanService.uplink.pendingAirways) {
-        flightPlanService.uplink.pendingAirways.finalize();
+        await flightPlanService.uplink.finaliseAirwayEntry();
         flightPlanService.uplink.pendingAirways = undefined;
 
         setInsertHeadToEndOfEnroute();
@@ -292,7 +294,10 @@ export class CoRouteUplinkAdapter {
             const airways = await NavigationDatabaseService.activeDatabase.searchAirway(chunk.ident, airwaySearchFix);
 
             if (airways.length > 0) {
-              plan.pendingAirways.thenAirway(pickAirway(airways, chunk.locationHint));
+              await flightPlanService.continueAirwayEntryViaAirway(
+                pickAirway(airways, chunk.locationHint),
+                FlightPlanIndex.Uplink,
+              );
             } else {
               CoRouteUplinkAdapter.logTroubleshootingError(
                 fms,
@@ -342,9 +347,9 @@ export class CoRouteUplinkAdapter {
 
             const airwayFix = pickAirwayFix(tailAirway, fixes);
             if (airwayFix) {
-              plan.pendingAirways.thenTo(airwayFix);
+              await flightPlanService.continueAirwayEntryToFix(airwayFix, false, FlightPlanIndex.Uplink);
 
-              ensureAirwaysFinalized();
+              await ensureAirwaysFinalized();
             } else {
               // Fixes with the name of the airway termination are found but they're not on that airway
               CoRouteUplinkAdapter.logTroubleshootingError(

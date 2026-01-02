@@ -286,7 +286,7 @@ export class FlightLevelFormat extends SubscriptionCollector implements DataEntr
   }
 }
 
-export const RADIO_ALTITUDE_NODH_VALUE = -2;
+export const RADIO_ALTITUDE_NODH_VALUE = 0;
 export class RadioAltitudeFormat extends SubscriptionCollector implements DataEntryFormat<number> {
   public placeholder = '-----';
 
@@ -431,6 +431,7 @@ export class WeightFormat extends SubscriptionCollector implements DataEntryForm
   constructor(
     minValue: Subscribable<number> = Subject.create(0),
     maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY),
+    private readonly isKg: boolean = true,
   ) {
     super();
     this.subscriptions.push(minValue.sub((val) => (this.minValue = val), true));
@@ -441,7 +442,7 @@ export class WeightFormat extends SubscriptionCollector implements DataEntryForm
     if (value === null || value === undefined) {
       return [this.placeholder, null, 'T'] as FieldFormatTuple;
     }
-    return [(value / 1000).toFixed(1), null, 'T'] as FieldFormatTuple;
+    return [(value / (this.isKg ? 1000 : 1)).toFixed(1), null, 'T'] as FieldFormatTuple;
   }
 
   public async parse(input: string) {
@@ -449,7 +450,7 @@ export class WeightFormat extends SubscriptionCollector implements DataEntryForm
       return null;
     }
 
-    const nbr = Number(input) * 1000;
+    const nbr = Number(input) * (this.isKg ? 1000 : 1);
     if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
     }

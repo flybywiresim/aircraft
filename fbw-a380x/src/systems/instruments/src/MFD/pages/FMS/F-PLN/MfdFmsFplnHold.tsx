@@ -77,7 +77,8 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
 
   private async modifyHold() {
     const revWptIdx = this.props.fmcService.master?.revisedLegIndex.get();
-    if (revWptIdx && this.props.fmcService.master?.revisedWaypoint()) {
+    const revPlanIdx = this.props.fmcService.master?.revisedLegPlanIndex.get();
+    if (revWptIdx && revPlanIdx && this.props.fmcService.master?.revisedWaypoint()) {
       const desiredHold: HoldData = {
         type: HoldType.Pilot,
         distance: this.legDefiningParameterSelectedIndex.get() === 0 ? undefined : this.legDistance.get() ?? undefined,
@@ -94,13 +95,13 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
         turnDirection: TurnDirection.Right,
       };
 
-      await this.props.fmcService.master.flightPlanService.addOrEditManualHold(
+      await this.props.fmcService.master.flightPlanInterface.addOrEditManualHold(
         revWptIdx,
         { ...desiredHold },
         desiredHold,
         this.loadedFlightPlan?.legElementAt(revWptIdx).defaultHold ?? fallbackDefaultHold,
-        this.props.fmcService.master.revisedLegPlanIndex.get() ?? undefined,
-        this.props.fmcService.master.revisedLegIsAltn.get() ?? undefined,
+        revPlanIdx,
+        this.props.fmcService.master.revisedLegIsAltn.get() ?? false,
       );
       this.onNewData();
     }
@@ -243,11 +244,12 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
               label="COMPUTED"
               onClick={() => {
                 const revWptIdx = this.props.fmcService.master?.revisedLegIndex.get();
-                if (revWptIdx && this.props.fmcService.master?.revisedWaypoint()) {
-                  this.props.fmcService.master.flightPlanService.revertHoldToComputed(
+                const revPlanIdx = this.props.fmcService.master?.revisedLegPlanIndex.get();
+                if (revWptIdx && revPlanIdx && this.props.fmcService.master?.revisedWaypoint()) {
+                  this.props.fmcService.master.flightPlanInterface.revertHoldToComputed(
                     revWptIdx,
-                    this.props.fmcService.master.revisedLegPlanIndex.get() ?? undefined,
-                    this.props.fmcService.master.revisedLegIsAltn.get() ?? undefined,
+                    revPlanIdx,
+                    this.props.fmcService.master.revisedLegIsAltn.get() ?? false,
                   );
                 }
               }}
