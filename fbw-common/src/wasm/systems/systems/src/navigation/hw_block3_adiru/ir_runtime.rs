@@ -293,7 +293,9 @@ impl InertialReferenceRuntime {
             }
 
             // Instant align
-            IrOperationMode::AlignCoarse | IrOperationMode::AlignFine
+            IrOperationMode::AlignCoarse
+            | IrOperationMode::AlignFine
+            | IrOperationMode::Realign
                 if discrete_inputs.simulator_instant_align =>
             {
                 IrOperationMode::Navigation
