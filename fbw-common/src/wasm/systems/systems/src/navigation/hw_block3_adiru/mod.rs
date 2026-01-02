@@ -14,6 +14,7 @@ use crate::simulation::{
     Read, Reader, SimulationElement, SimulationElementVisitor, UpdateContext, Write, Writer,
 };
 use uom::si::f64::*;
+use uom::si::pressure::hectopascal;
 
 pub mod adiru;
 mod adr_runtime;
@@ -168,7 +169,9 @@ impl AdirsToAirCondInterface for AirDataInertialReferenceSystem {
         AirDataReferenceBusOutput::bus_outputs(&self[adiru_number]).true_airspeed
     }
     fn baro_correction(&self, adiru_number: usize) -> Arinc429Word<Pressure> {
-        AirDataReferenceBusOutput::bus_outputs(&self[adiru_number]).baro_correction_1_hpa
+        let word =
+            AirDataReferenceBusOutput::bus_outputs(&self[adiru_number]).baro_correction_1_hpa;
+        Arinc429Word::new(Pressure::new::<hectopascal>(word.value()), word.ssm())
     }
     fn ambient_static_pressure(&self, adiru_number: usize) -> Arinc429Word<Pressure> {
         AirDataReferenceBusOutput::bus_outputs(&self[adiru_number])
