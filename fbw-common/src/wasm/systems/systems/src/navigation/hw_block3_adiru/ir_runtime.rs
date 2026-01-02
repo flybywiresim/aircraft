@@ -602,21 +602,6 @@ impl InertialReferenceRuntime {
         );
     }
 
-    //fn update_body_velocity(&mut self, context: &UpdateContext) {
-    //    let body_velocity = Vector2::new(
-    //        context
-    //            .local_velocity()
-    //            .lat_velocity()
-    //            .get::<foot_per_second>(),
-    //        context
-    //            .local_velocity()
-    //            .long_velocity()
-    //            .get::<foot_per_second>(),
-    //    );
-    //    self.body_velocity_filter
-    //        .update(context.delta(), body_velocity);
-    //}
-    //
     fn update_wind_velocity(&mut self, context: &UpdateContext) {
         let wind_speed_valid = self.active_mode == IrOperationMode::Navigation;
 
