@@ -17,6 +17,7 @@ use crate::{
 use bitflags::bitflags;
 use std::time::Duration;
 use uom::si::angle::degree;
+use uom::si::pressure::inch_of_mercury;
 use uom::si::ratio::ratio;
 use uom::si::velocity::foot_per_minute;
 use uom::si::{f64::*, length::foot, pressure::hectopascal, velocity::knot};
@@ -256,10 +257,14 @@ impl AirDataReferenceRuntime {
                 &mut bus.baro_corrected_altitude_1,
             );
 
-            bus.baro_correction_1_hpa
-                .set(self.baro_correction_1_hpa, SignStatus::NormalOperation);
-            bus.baro_correction_1_inhg
-                .set(self.baro_correction_1_hpa, SignStatus::NormalOperation);
+            bus.baro_correction_1_hpa.set(
+                self.baro_correction_1_hpa.get::<hectopascal>(),
+                SignStatus::NormalOperation,
+            );
+            bus.baro_correction_1_inhg.set(
+                self.baro_correction_1_hpa.get::<inch_of_mercury>(),
+                SignStatus::NormalOperation,
+            );
         } else {
             bus.baro_corrected_altitude_1
                 .set(Default::default(), SignStatus::NoComputedData);
@@ -275,10 +280,14 @@ impl AirDataReferenceRuntime {
                 &mut bus.baro_corrected_altitude_2,
             );
 
-            bus.baro_correction_2_hpa
-                .set(self.baro_correction_2_hpa, SignStatus::NormalOperation);
-            bus.baro_correction_2_inhg
-                .set(self.baro_correction_2_hpa, SignStatus::NormalOperation);
+            bus.baro_correction_2_hpa.set(
+                self.baro_correction_2_hpa.get::<hectopascal>(),
+                SignStatus::NormalOperation,
+            );
+            bus.baro_correction_2_inhg.set(
+                self.baro_correction_2_hpa.get::<inch_of_mercury>(),
+                SignStatus::NormalOperation,
+            );
         } else {
             bus.baro_corrected_altitude_2
                 .set(Default::default(), SignStatus::NoComputedData);
