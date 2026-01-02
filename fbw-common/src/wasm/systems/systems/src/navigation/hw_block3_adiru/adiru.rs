@@ -22,7 +22,7 @@ use std::fmt::Display;
 use std::time::Duration;
 use uom::si::angular_velocity::degree_per_second;
 use uom::si::f64::*;
-use uom::si::pressure::{hectopascal, inch_of_mercury};
+use uom::si::pressure::hectopascal;
 use uom::si::ratio::ratio;
 use uom::si::velocity::foot_per_minute;
 
@@ -184,12 +184,16 @@ impl AirDataInertialReferenceUnit {
     const LONGITUDE: &'static str = "LONGITUDE";
     const MAINT_WORD: &'static str = "MAINT_WORD";
 
-    const ADR_AVERAGE_STARTUP_TIME_MILLIS: Duration = Duration::from_millis(3_000);
-    const IR_AVERAGE_STARTUP_TIME_MILLIS: Duration = Duration::from_millis(3_000);
-    const MINIMUM_POWER_HOLDOVER: Duration = Duration::from_millis(200);
-    const MAXIMUM_POWER_HOLDOVER: Duration = Duration::from_millis(300);
+    pub(super) const ADR_AVERAGE_STARTUP_TIME_MILLIS: Duration = Duration::from_millis(3_000);
+    pub(super) const IR_AVERAGE_STARTUP_TIME_MILLIS: Duration = Duration::from_millis(3_000);
+    pub(super) const MINIMUM_POWER_HOLDOVER: Duration = Duration::from_millis(200);
+    pub(super) const MAXIMUM_POWER_HOLDOVER: Duration = Duration::from_millis(300);
 
-    const POWER_DOWN_DURATION: u64 = 15_000;
+    pub(super) const POWER_DOWN_DURATION: u64 = 15_000;
+
+    // TODO Implement battery test
+    pub(super) const BACKUP_SUPPLY_TEST_START_TIME: Duration = Duration::from_millis(10500);
+    pub(super) const BACKUP_SUPPLY_TEST_DURATION: Duration = Duration::from_millis(5500);
 
     pub fn new(context: &mut InitContext, num: usize) -> Self {
         let is_powered = context.has_engines_running();
