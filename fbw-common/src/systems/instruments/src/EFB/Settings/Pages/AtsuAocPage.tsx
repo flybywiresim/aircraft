@@ -12,6 +12,7 @@ import {
   isMsfs2024,
   usePersistentSetting,
   NXDataStoreSettings,
+  useSimVar,
 } from '@flybywiresim/fbw-sdk';
 
 import { toast } from 'react-toastify';
@@ -33,6 +34,7 @@ export const AtsuAocPage = () => {
   const [saiLogonKey, setSaiLogonKey] = usePersistentProperty('CONFIG_SAI_LOGON_KEY');
 
   const [acarsProvider, setAcarsProvider] = usePersistentSetting('ACARS_PROVIDER');
+  const [acarsState] = useSimVar('L:A32NX_ACARS_ACTIVE', 'boolean', 1000);
 
   const [sentryEnabled, setSentryEnabled] = usePersistentProperty(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
 
@@ -182,7 +184,6 @@ export const AtsuAocPage = () => {
           ))}
         </SelectGroup>
       </SettingItem>
-
       <SettingItem name={t('Settings.AtsuAoc.MetarSource')}>
         <SelectGroup>
           {metarSourceButtons.map((button) => (
@@ -196,7 +197,6 @@ export const AtsuAocPage = () => {
           ))}
         </SelectGroup>
       </SettingItem>
-
       <SettingItem name={t('Settings.AtsuAoc.TafSource')}>
         <SelectGroup>
           {tafSourceButtons.map((button) => (
@@ -210,19 +210,24 @@ export const AtsuAocPage = () => {
           ))}
         </SelectGroup>
       </SettingItem>
-
       <SettingItem name={t('Settings.AtsuAoc.ErrorReporting')}>
         <Toggle
           value={sentryEnabled === SentryConsentState.Given}
           onToggle={(toggleValue) => handleSentryToggle(toggleValue)}
         />
       </SettingItem>
-
       <SettingItem name={t('Settings.AtsuAoc.Telex')}>
         <Toggle value={telexEnabled === 'ENABLED'} onToggle={(toggleValue) => handleTelexToggle(toggleValue)} />
       </SettingItem>
 
       <SettingItem name={t('Settings.AtsuAoc.HoppieProvider')}>
+        {acarsProvider == 'BATC' && (
+          <p className="flex items-center justify-center gap-2">
+            {acarsState ? t('Settings.AtsuAoc.BATCConnected') : t('Settings.AtsuAoc.DisconnectedCheckBatcClient')}
+            <span className={`inline-block h-3 w-3 rounded-full ${acarsState ? 'bg-green-500' : 'bg-orange-500'}`} />
+          </p>
+        )}
+
         <SelectGroup>
           {acarsProviderButtons.map((button) => (
             <SelectItem
@@ -235,7 +240,6 @@ export const AtsuAocPage = () => {
           ))}
         </SelectGroup>
       </SettingItem>
-
       {(acarsProvider === 'HOPPIE' || acarsProvider === 'SAI') && (
         <SettingItem name={acarsProvider === 'SAI' ? 'SAI API Key' : t('Settings.AtsuAoc.HoppieUserId')}>
           <SimpleInput
