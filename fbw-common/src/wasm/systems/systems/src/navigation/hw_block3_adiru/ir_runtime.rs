@@ -4,6 +4,7 @@ use crate::navigation::adirs::{
 };
 use crate::navigation::hw_block3_adiru::adiru::InternalIrDiscreteInputs;
 use crate::navigation::hw_block3_adiru::simulator_data::IrSimulatorData;
+use crate::navigation::hw_block3_adiru::NormaliseAngleExt;
 use crate::shared::logic_nodes::{MonostableTriggerNode, PulseNode};
 use crate::shared::low_pass_filter::LowPassFilter;
 use crate::{
@@ -97,16 +98,16 @@ pub struct InertialReferenceRuntime {
 }
 impl InertialReferenceRuntime {
     // Mode transition durations
-    const IR_FAULT_FLASH_DURATION: Duration = Duration::from_millis(50);
-    const COARSE_ALIGN_DURATION: Duration = Duration::from_secs(30);
-    const COARSE_ALIGN_QUICK_DURATION: Duration = Duration::from_secs(10);
-    const FINE_ALIGN_MAX_DURATION: Duration = Duration::from_secs(570);
-    const FINE_ALIGN_QUICK_DURATION: Duration = Duration::from_secs(80);
-    const HDG_ALIGN_AVAIL_DURATION: Duration = Duration::from_secs(270);
-    const ERECT_ATT_DURATION: Duration = Duration::from_secs(30);
-    const REALIGN_DECISION_TIME: Duration = Duration::from_secs(5);
-    const REALIGN_DURATION: Duration = Duration::from_secs(30);
-    const POWER_OFF_DURATION: Duration = Duration::from_secs(5);
+    pub(super) const IR_FAULT_FLASH_DURATION: Duration = Duration::from_millis(50);
+    pub(super) const COARSE_ALIGN_DURATION: Duration = Duration::from_secs(30);
+    pub(super) const COARSE_ALIGN_QUICK_DURATION: Duration = Duration::from_secs(10);
+    pub(super) const FINE_ALIGN_MAX_DURATION: Duration = Duration::from_secs(570);
+    pub(super) const FINE_ALIGN_QUICK_DURATION: Duration = Duration::from_secs(80);
+    pub(super) const HDG_ALIGN_AVAIL_DURATION: Duration = Duration::from_secs(270);
+    pub(super) const ERECT_ATT_DURATION: Duration = Duration::from_secs(30);
+    pub(super) const REALIGN_DECISION_TIME: Duration = Duration::from_secs(5);
+    pub(super) const REALIGN_DURATION: Duration = Duration::from_secs(30);
+    pub(super) const POWER_OFF_DURATION: Duration = Duration::from_secs(5);
 
     // SSM Thresholds
     pub(super) const MINIMUM_TRUE_AIRSPEED_FOR_WIND_DETERMINATION_KNOTS: f64 = 100.;
@@ -875,16 +876,20 @@ impl InertialReferenceRuntime {
 
     fn total_alignment_duration_from_configuration(&self, fast_align_active: bool) -> Duration {
         if fast_align_active {
-            return Self::FINE_ALIGN_QUICK_DURATION;
+            Self::FINE_ALIGN_QUICK_DURATION
+        } else {
+            Self::realistic_align_time(self.measurement_inputs.latitude)
         }
+    }
 
-        let abs_lat = self.measurement_inputs.latitude.get::<degree>().abs();
+    pub(super) fn realistic_align_time(latitude: Angle) -> Duration {
+        let abs_lat = latitude.get::<degree>().abs();
         Duration::from_secs_f64(if abs_lat > 73. {
             1020.
         } else if abs_lat > 60. {
             600.
         } else {
-            (300. / self.measurement_inputs.latitude.get::<radian>().cos()).abs()
+            (300. / latitude.get::<radian>().cos()).abs()
         })
     }
 
@@ -911,47 +916,5 @@ impl InertialReferenceRuntime {
 
     pub(super) fn is_output_inhibited(&self) -> bool {
         self.output_inhibited
-    }
-}
-
-trait NormaliseAngleExt {
-    fn normalised(self) -> Angle;
-    #[allow(dead_code)]
-    fn normalised_180(self) -> Angle;
-}
-
-impl NormaliseAngleExt for Angle {
-    /// Create a new angle by normalizing the value into the range of
-    /// [0, 2π) rad.
-    #[inline]
-    fn normalised(self) -> Angle {
-        if self < Angle::FULL_TURN && self >= Angle::default() {
-            self
-        } else {
-            let v = self % Angle::FULL_TURN;
-
-            if v >= Angle::default() {
-                v
-            } else {
-                v + Angle::FULL_TURN
-            }
-        }
-    }
-
-    /// Create a new angle by normalizing the value into the range of
-    /// [-π, π) rad.
-    #[inline]
-    fn normalised_180(self) -> Angle {
-        if self < Angle::HALF_TURN && self >= -Angle::HALF_TURN {
-            self
-        } else {
-            let v = self % Angle::FULL_TURN;
-
-            if v < Angle::HALF_TURN {
-                v
-            } else {
-                v - Angle::FULL_TURN
-            }
-        }
     }
 }
