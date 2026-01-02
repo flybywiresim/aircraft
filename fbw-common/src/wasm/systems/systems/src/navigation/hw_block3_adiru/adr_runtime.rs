@@ -308,7 +308,7 @@ impl AirDataReferenceRuntime {
         // If CAS is below 30kn, output as 0 with SSM = NCD
         let computed_airspeed = self.measurement_inputs.indicated_airspeed;
 
-        if computed_airspeed > Velocity::new::<knot>(Self::MINIMUM_CAS) {
+        if computed_airspeed >= Velocity::new::<knot>(Self::MINIMUM_CAS) {
             bus.computed_airspeed
                 .set(computed_airspeed, SignStatus::NormalOperation);
         } else {
@@ -320,7 +320,7 @@ impl AirDataReferenceRuntime {
             .set(self.max_allowable_speed, SignStatus::NormalOperation);
 
         // If mach is below 0.1, output as 0 with SSM = NCD
-        if self.measurement_inputs.mach > Ratio::new::<ratio>(Self::MINIMUM_MACH) {
+        if self.measurement_inputs.mach >= Ratio::new::<ratio>(Self::MINIMUM_MACH) {
             bus.mach
                 .set(self.measurement_inputs.mach, SignStatus::NormalOperation);
         } else {
@@ -329,7 +329,7 @@ impl AirDataReferenceRuntime {
         }
 
         // If TAS is below 60 kts, output as 0 kt with SSM = NCD.
-        if self.measurement_inputs.true_airspeed > Velocity::new::<knot>(Self::MINIMUM_TAS) {
+        if self.measurement_inputs.true_airspeed >= Velocity::new::<knot>(Self::MINIMUM_TAS) {
             bus.true_airspeed.set(
                 self.measurement_inputs.true_airspeed,
                 SignStatus::NormalOperation,
@@ -339,7 +339,7 @@ impl AirDataReferenceRuntime {
                 .set(Velocity::new::<knot>(0.), SignStatus::NoComputedData);
         };
 
-        if computed_airspeed > Velocity::new::<knot>(Self::MINIMUM_CAS_FOR_AOA) {
+        if computed_airspeed >= Velocity::new::<knot>(Self::MINIMUM_CAS_FOR_AOA) {
             bus.corrected_angle_of_attack.set(
                 self.measurement_inputs.angle_of_attack,
                 SignStatus::NormalOperation,
