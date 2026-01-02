@@ -204,6 +204,8 @@ impl InertialReferenceRuntime {
 
         self.update_adr_selection(discrete_inputs, adr_own, adr_a, adr_b);
 
+        self.update_extreme_latitude_status();
+
         self.update_wind_velocity(context);
     }
 
@@ -450,6 +452,19 @@ impl InertialReferenceRuntime {
             .update(self.excess_motion_error);
     }
 
+    fn update_extreme_latitude_status(&mut self) {
+        let latitude = self.measurement_inputs.latitude.get::<degree>();
+        let longitude = self.measurement_inputs.longitude.get::<degree>();
+
+        let hysteresis_sign = if self.extreme_latitude { 1. } else { -1. };
+
+        self.extreme_latitude = !((-60. + hysteresis_sign * 0.5) <= latitude
+            && (latitude <= (73. - hysteresis_sign * 0.5)
+                || (latitude <= (82. - hysteresis_sign * 0.5)
+                    && (longitude <= (-120. - hysteresis_sign * 2.5)
+                        || longitude >= (-90. + hysteresis_sign * 2.5)))))
+    }
+
     //fn update_fault_flash_duration(
     //    &mut self,
     //    context: &UpdateContext,
@@ -491,19 +506,6 @@ impl InertialReferenceRuntime {
         self.set_wind_velocity(bus_outputs);
         self.set_baro_inertial_values(bus_outputs);
     }
-
-    //fn update_latitude(&mut self, simulator_data: &IrSimulatorData) {
-    //    let latitude = simulator_data.latitude.get::<degree>();
-    //    let longitude = simulator_data.longitude.get::<degree>();
-    //
-    //    let hysteresis_sign = if self.extreme_latitude { 1. } else { -1. };
-    //
-    //    self.extreme_latitude = !((-60. + hysteresis_sign * 0.5) <= latitude
-    //        && (latitude <= (73. - hysteresis_sign * 0.5)
-    //            || (latitude <= (82. - hysteresis_sign * 0.5)
-    //                && (longitude <= (-120. - hysteresis_sign * 2.5)
-    //                    || longitude >= (-90. + hysteresis_sign * 2.5)))))
-    //}
 
     fn set_attitude_values(&self, bus: &mut InertialReferenceBusOutputs) {
         let ssm = if self.active_mode == IrOperationMode::AlignFine
