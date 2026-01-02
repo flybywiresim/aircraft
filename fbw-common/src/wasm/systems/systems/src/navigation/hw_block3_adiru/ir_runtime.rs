@@ -502,8 +502,8 @@ impl InertialReferenceRuntime {
         self.set_discrete_words(bus_outputs);
 
         self.set_attitude_values(bus_outputs);
-        self.set_non_attitude_values(bus_outputs);
         self.set_heading_values(bus_outputs);
+        self.set_non_attitude_values(bus_outputs);
         self.set_wind_velocity(bus_outputs);
         self.set_baro_inertial_values(bus_outputs);
     }
