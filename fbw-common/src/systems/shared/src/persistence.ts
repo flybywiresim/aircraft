@@ -12,6 +12,7 @@ type SubscribeCancellation = () => void;
 
 export interface NXDataStoreSettings {
   EFB_UI_THEME: 'blue' | 'dark' | 'light';
+  ACARS_PROVIDER: 'NONE' | 'HOPPIE' | 'BATC' | 'SAI';
 }
 
 export type LegacyDataStoreSettingKey<k extends string> = k & (k extends keyof NXDataStoreSettings ? never : k);
@@ -22,6 +23,7 @@ export type LegacyDataStoreSettingKey<k extends string> = k & (k extends keyof N
 export class NXDataStore {
   private static readonly settingsDefaultValues: { [k in keyof NXDataStoreSettings]: NXDataStoreSettings[k] } = {
     EFB_UI_THEME: 'blue',
+    ACARS_PROVIDER: 'NONE',
   };
 
   private static readonly aircraftProjectPrefix: string = process.env.AIRCRAFT_PROJECT_PREFIX?.toUpperCase() ?? 'UNK';
@@ -125,6 +127,7 @@ export class NXDataStore {
     const rawValue = JSON.stringify(value);
 
     NXDataStore.setRaw(key, rawValue);
+    this.listener.triggerToAllSubscribers('FBW_NXDATASTORE_UPDATE', key, rawValue);
   }
 
   /**
