@@ -182,8 +182,6 @@ Valve.56=False
 Valve.57=False
 Valve.58=False
 Valve.59=False
-Valve.60=False
-
 Pump.1=True
 Pump.2=True
 Pump.3=True
@@ -204,7 +202,7 @@ Pump.17=False
 Pump.18=False
 Pump.19=False
 Pump.20=False
-Pump.21=True
+Pump.21=False
 Pump.22=True
 Pump.23=True
 Pump.24=True
@@ -229,6 +227,7 @@ Junction.7=1
 Junction.8=1
 Junction.9=1
 Junction.10=1
+Junction.11=1
 
 [Systems.0]
 BatterySwitch=True

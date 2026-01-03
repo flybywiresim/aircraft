@@ -27,7 +27,6 @@
 1. [A32NX/MCDU] Fix managed speed units in IAS/MACH on perf climb page - @Lucas-IQ21 (Lucas)
 1. [A32NX/FMS] Implement ability to create, modify, activate and swap a secondary flight plan - @Benjozork (Benjamin Dupont), @BlueberyKing (BlueberryKing)
 1. [A380X] Fix PFD F RELIEF indication and SD status area ISA visibility - @flogross89 (floridude)
-1. [A380X/FMS] Add - sign to LS slope value - @Jonny23787 (Jonathan)
 1. [A380X/MFD] Implement Position Monitor page - @BravoMike99 (bruno_pt99)
 1. [A380X/MFD] Only show "RETURN" button on PERF & POS NAVAIDS if acessed via INIT page keys - @BravoMike99 (bruno_pt99)
 1. [A32NX/FWS] Make master caution from autobrake off trigger for 3 seconds - @BravoMike99 (bruno_pt99)
@@ -35,7 +34,6 @@
 1. [A380X/FWS] Add FCDC, SLAT/FLAP SYS, FWS+FCDC, FWS+CPIOM faults - @flogross89 (floridude)
 1. [A32NX/FMS] Removed required leading zeros for acceleration, thrust reduction, and transition altitudes - @Jonny23787 (Jonathan)
 1. [A32NX/FMS] Adjusted TRANS ALT allowed entry range - @Jonny23787 (Jonathan)
-1. [A32NX/FMS] Add - sign to slope value on RAD NAV page - @Jonny23787 (Jonathan)
 1. [A32NX/FMS] Fix "NOT ALLOWED IN NAV" when sequencing TO waypoint while in LOC mode - @BravoMike99 (bruno_pt99)
 1. [A380X/SD] Improve STS page: Add deferred procedures, page switching, MORE page, improve performance - @flogross89 (floridude)
 1. [A32NX/FMS] Adjusted position of flight phase and flight number on PROG page  - @Jonny23787 (Jonathan)
@@ -46,6 +44,12 @@
 1. [A380X/EWD] Add "THR LK" and "A.FLOOR" indications - @BravoMike99 (bruno_pt99)
 1. [A380X/PFD] Add "MOVE THR LEVERS" message in case of thrust lock - @BravoMike99 (bruno_pt99)
 1. [A380X/FWS] Add ENG THRUST LOCKED & AUTO FLT A/THR LIMITED abnornmal sensed procedures - @BravoMike99 (bruno_pt99)
+1. [ATSU] Fix certain aerodromes ATIS letter not being retrieved correctly - @clc0609 (Coby)
+1. [A380X/FUEL SYSTEM] Fuel system update - @donstim (donbikes) & @Maximilian-Reuter (\_chaoz_)
+1. [FMS] Fix incorrect sign on glideslope angle (FS2020 only) - @tracernz (Mike)
+1. [A32NX/OVHD] Update battery button annunciators to be bright regardless of BRT/DIM switch position - @BravoMike99 (bruno_pt99)
+1. [A380X] Fix aircraft resting on nose in aircraft selection window in 2024 - @heclak (Heclak)
+1. [FMS] Fixed pseudo waypoints symbols being offset after a direct to - @BlueberryKing (BlueberryKing)
 1. [A32NX/SFCC] Added implementation of slat baulk and slat alpha lock functions in SFCC - @Eagle941 (Joe)
 
 ## 0.14.0
