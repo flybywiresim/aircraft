@@ -43,6 +43,20 @@ export interface ReadonlyFlightPlanLeg {
   readonly pilotEnteredSpeedConstraint: SpeedConstraint | undefined;
 
   readonly calculated: LegCalculations | undefined;
+
+  isCourseReversal(): boolean;
+
+  isXF(): boolean;
+
+  isFX(): boolean;
+
+  isHX(): boolean;
+
+  isXI(): boolean;
+
+  isXA(): boolean;
+
+  isVectors(): boolean;
 }
 
 export interface ReadonlyDiscontinuity {

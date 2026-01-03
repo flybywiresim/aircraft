@@ -253,6 +253,10 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     return this.definition.waypointDescriptor === WaypointDescriptor.Runway;
   }
 
+  isCourseReversal(): boolean {
+    return this.isHX() || this.type === LegType.PI;
+  }
+
   /**
    * Returns the termination waypoint is this is an XF leg, `null` otherwise
    */

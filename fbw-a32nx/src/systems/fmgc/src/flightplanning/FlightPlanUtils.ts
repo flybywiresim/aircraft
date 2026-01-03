@@ -5,6 +5,7 @@
 import { PathVector } from '@flybywiresim/fbw-sdk';
 import { ReadonlyFlightPlan } from './plans/ReadonlyFlightPlan';
 import { ReadonlyFlightPlanElement } from './legs/ReadonlyFlightPlanLeg';
+import { LnavConfig } from '../guidance/LnavConfig';
 
 export class FlightPlanUtils {
   public static getAllPathVectorsInFlightPlan(
@@ -19,10 +20,18 @@ export class FlightPlanUtils {
       : plan.activeLegIndex;
     const end = missedApproach ? plan.legCount : plan.firstMissedApproachLegIndex;
 
-    for (let i = start; i < end; i++) {
-      const element = plan.elementAt(i);
+    for (let index = start; index < end; index++) {
+      const element = plan.elementAt(index);
 
       if (element.isDiscontinuity === true) {
+        continue;
+      }
+
+      const transmitCourseReversal =
+        LnavConfig.DEBUG_FORCE_INCLUDE_COURSE_REVERSAL_VECTORS ||
+        (activeLegIndex !== undefined && (index === activeLegIndex || index === activeLegIndex + 1));
+
+      if (element.isCourseReversal() && !transmitCourseReversal) {
         continue;
       }
 
