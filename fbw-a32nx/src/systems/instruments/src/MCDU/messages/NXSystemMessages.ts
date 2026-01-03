@@ -117,6 +117,7 @@ export const NXSystemMessages = {
   temporaryFplnExists: new TypeIMessage('TEMPORARY F-PLN EXISTS'),
   windTempDataUplk: new TypeIIMessage('WIND/TEMP DATA UPLK'),
   windUplinkPending: new TypeIIMessage('WIND UPLINK PENDING', true),
+  noAnswerToRequest: new TypeIMessage('NO ANSWER TO REQUEST'),
 };
 
 // FIXME move ATSU messages out of FMS

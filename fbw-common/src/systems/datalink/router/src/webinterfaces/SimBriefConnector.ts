@@ -10,20 +10,30 @@ import {
   WindRequestMessage,
   WindUplinkMessage,
 } from '../../../common/src';
-import { Vec2Math } from '@microsoft/msfs-sdk';
+import { Vec2Math, Wait } from '@microsoft/msfs-sdk';
 
 export class SimBriefConnector {
   private static readonly WindVectorCache = [Vec2Math.create(), Vec2Math.create(), Vec2Math.create()];
 
-  public static async receiveSimBriefWinds(request: WindRequestMessage): Promise<[AtsuStatusCodes, WindUplinkMessage]> {
-    try {
-      const body = await getSimBriefOfp();
-
-      return [AtsuStatusCodes.Ok, SimBriefConnector.parseSimBriefWinds(body, request)];
-    } catch (e) {
-      console.error('SimBrief OFP download failed');
-      throw e;
-    }
+  public static async receiveSimBriefWinds(
+    request: WindRequestMessage,
+  ): Promise<[AtsuStatusCodes, WindUplinkMessage | null]> {
+    return Promise.race([
+      getSimBriefOfp()
+        .then((body): [AtsuStatusCodes, WindUplinkMessage | null] => [
+          AtsuStatusCodes.Ok,
+          SimBriefConnector.parseSimBriefWinds(body, request),
+        ])
+        .catch((err): [AtsuStatusCodes, WindUplinkMessage | null] => {
+          console.error('SimBrief OFP download failed: ' + err);
+          return [AtsuStatusCodes.FormatError, null];
+        }),
+      // Time out after 4 minutes
+      Wait.awaitDelay(4 * 60 * 1000).then((_): [AtsuStatusCodes, WindUplinkMessage | null] => [
+        AtsuStatusCodes.ComFailed,
+        null,
+      ]),
+    ]);
   }
 
   private static parseSimBriefWinds(simbriefJson: ISimbriefData, request: WindRequestMessage): WindUplinkMessage {

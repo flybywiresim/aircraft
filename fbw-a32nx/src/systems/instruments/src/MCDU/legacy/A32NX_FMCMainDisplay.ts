@@ -5621,7 +5621,13 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
         if (status !== AtsuStatusCodes.Ok) {
           plan.pendingWindUplink.onUplinkAborted();
-          this.addMessageToQueue(NXSystemMessages.invalidWindTempUplk);
+
+          if (status === AtsuStatusCodes.ComFailed) {
+            this.setScratchpadMessage(NXSystemMessages.noAnswerToRequest);
+          } else {
+            this.addMessageToQueue(NXSystemMessages.invalidWindTempUplk);
+          }
+
           return;
         }
 
