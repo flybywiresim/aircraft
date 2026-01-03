@@ -399,11 +399,15 @@ impl AirDataReferenceRuntime {
 
         discrete_outputs.adr_off = self.is_off;
         discrete_outputs.adr_fault = false;
-        discrete_outputs.overspeed_warning = self.overspeed_active;
-        discrete_outputs.low_speed_warning_1 = self.low_speed_warning_1_hysteresis.get_output();
-        discrete_outputs.low_speed_warning_2 = self.low_speed_warning_2_hysteresis.get_output();
-        discrete_outputs.low_speed_warning_3 = self.low_speed_warning_3_hysteresis.get_output();
-        discrete_outputs.low_speed_warning_4 = !self.low_speed_warning_4_hysteresis.get_output();
+        discrete_outputs.overspeed_warning = self.overspeed_active && !self.output_inhibited;
+        discrete_outputs.low_speed_warning_1 =
+            self.low_speed_warning_1_hysteresis.get_output() && !self.output_inhibited;
+        discrete_outputs.low_speed_warning_2 =
+            self.low_speed_warning_2_hysteresis.get_output() && !self.output_inhibited;
+        discrete_outputs.low_speed_warning_3 =
+            self.low_speed_warning_3_hysteresis.get_output() && !self.output_inhibited;
+        discrete_outputs.low_speed_warning_4 =
+            !self.low_speed_warning_4_hysteresis.get_output() && !self.output_inhibited;
     }
 
     fn compute_discrete_word_1(&self, discrete_word_1: &mut Arinc429Word<u32>) {
