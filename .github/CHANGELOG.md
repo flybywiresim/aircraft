@@ -49,6 +49,7 @@
 1. [FMS] Fix incorrect sign on glideslope angle (FS2020 only) - @tracernz (Mike)
 1. [A32NX/OVHD] Update battery button annunciators to be bright regardless of BRT/DIM switch position - @BravoMike99 (bruno_pt99)
 1. [A380X] Fix aircraft resting on nose in aircraft selection window in 2024 - @heclak (Heclak)
+1. [A32NX/EFB] Fix landing performance calculator not loading OFP airport correctly - @tracernz (Mike)
 
 ## 0.14.0
 
