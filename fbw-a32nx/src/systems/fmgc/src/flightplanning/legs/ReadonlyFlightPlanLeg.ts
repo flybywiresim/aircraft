@@ -1,8 +1,9 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2025 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { AltitudeConstraint, LegType, SpeedConstraint, WaypointConstraintType } from '@flybywiresim/fbw-sdk';
+import { AltitudeConstraint, Fix, LegType, SpeedConstraint, WaypointConstraintType } from '@flybywiresim/fbw-sdk';
+
 import { FlightPlanSegment } from '@fmgc/flightplanning/segments/FlightPlanSegment';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/legs/FlightPlanLegDefinition';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
@@ -43,6 +44,8 @@ export interface ReadonlyFlightPlanLeg {
   readonly pilotEnteredSpeedConstraint: SpeedConstraint | undefined;
 
   readonly calculated: LegCalculations | undefined;
+
+  terminationWaypoint(): Fix | null;
 }
 
 export interface ReadonlyDiscontinuity {
