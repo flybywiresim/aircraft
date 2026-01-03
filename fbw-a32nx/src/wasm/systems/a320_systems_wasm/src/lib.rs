@@ -387,7 +387,6 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("NAV HAS NAV", "Bool", 3)?
     .provides_aircraft_variable("NAV HAS LOC", "Bool", 3)?
     .provides_aircraft_variable("NAV HAS GLIDE SLOPE", "Bool", 3)?
-    //.provides_aircraft_variable("NAV IDENT", "String", 3)?
     .provides_aircraft_variable("NAV MAGVAR", "degree", 3)?
     .provides_aircraft_variable("NAV RADIAL ERROR", "degree", 3)?
     .provides_aircraft_variable("NAV GLIDE SLOPE ERROR", "degree", 3)?

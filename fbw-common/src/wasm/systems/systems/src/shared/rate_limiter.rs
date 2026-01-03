@@ -3,12 +3,14 @@ use std::ops::Mul;
 use std::ops::Sub;
 use std::time::Duration;
 
+use crate::shared::Clamp;
+
 #[derive(PartialEq, Eq, Copy, Clone, Debug)]
 /// Rate limiter
 /// y(k) = y(k-1) + min(max(x(k) - y(k-1), falling_max_rate), rising_max_rate) with the rates being in the units of T per second
 pub struct RateLimiter<T>
 where
-    T: PartialOrd + Add<T, Output = T> + Sub<Output = T> + Mul<f64, Output = T> + Copy,
+    T: Clamp + Add<T, Output = T> + Sub<Output = T> + Mul<f64, Output = T> + Copy,
 {
     rising_max_rate: T,
     falling_max_rate: T,
@@ -16,7 +18,7 @@ where
 }
 impl<T> RateLimiter<T>
 where
-    T: PartialOrd + Add<T, Output = T> + Sub<Output = T> + Mul<f64, Output = T> + Copy + Default,
+    T: Clamp + Add<T, Output = T> + Sub<Output = T> + Mul<f64, Output = T> + Copy + Default,
 {
     pub fn new(rising_max_rate: T, falling_max_rate: T) -> Self {
         Self {
@@ -43,14 +45,12 @@ where
             self.limited_output = Some(new_input);
             return new_input;
         }
-        // We need to do this stupid shit because rust doesnt implement Ord for floats.
-        // If anyone has a better way to solve this, please let me know.
-        let mut clamped_delta = new_input - self.limited_output.unwrap();
-        if clamped_delta > self.rising_max_rate * time_delta.as_secs_f64() {
-            clamped_delta = self.rising_max_rate * time_delta.as_secs_f64();
-        } else if clamped_delta < self.falling_max_rate * time_delta.as_secs_f64() {
-            clamped_delta = self.falling_max_rate * time_delta.as_secs_f64();
-        }
+
+        let clamped_delta = (new_input - self.limited_output.unwrap()).clamp(
+            self.falling_max_rate * time_delta.as_secs_f64(),
+            self.rising_max_rate * time_delta.as_secs_f64(),
+        );
+
         self.limited_output = Some(self.limited_output.unwrap() + clamped_delta);
 
         self.limited_output.unwrap()
