@@ -68,6 +68,7 @@ pub struct InertialReferenceRuntime {
     remaining_startup: Duration,
 
     on_off_command_pulse_node: PulseNode,
+    is_off: bool,
     output_inhibited: bool,
 
     measurement_inputs: IrSimulatorData,
@@ -138,6 +139,7 @@ impl InertialReferenceRuntime {
             remaining_startup: self_check,
 
             on_off_command_pulse_node: PulseNode::new_rising(),
+            is_off: false,
             output_inhibited: false,
 
             measurement_inputs: IrSimulatorData::default(),
@@ -217,15 +219,16 @@ impl InertialReferenceRuntime {
             .on_off_command_pulse_node
             .update(discrete_inputs.ir_off_command);
         if pulsed_on_off_command {
-            self.output_inhibited = !self.output_inhibited;
+            self.is_off = !self.output_inhibited;
         }
-        if ModeSelectorPosition::from((
+        let mode_sel_off = ModeSelectorPosition::from((
             discrete_inputs.mode_select_m1,
             discrete_inputs.mode_select_m2,
-        )) == ModeSelectorPosition::Off
-        {
-            self.output_inhibited = false;
+        )) == ModeSelectorPosition::Off;
+        if mode_sel_off {
+            self.is_off = false;
         }
+        self.output_inhibited = self.is_off || mode_sel_off;
     }
 
     fn update_state(&mut self, context: &UpdateContext, discrete_inputs: &IrDiscreteInputs) {
