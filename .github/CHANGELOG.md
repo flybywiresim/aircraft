@@ -50,6 +50,7 @@
 1. [A32NX/OVHD] Update battery button annunciators to be bright regardless of BRT/DIM switch position - @BravoMike99 (bruno_pt99)
 1. [A380X] Fix aircraft resting on nose in aircraft selection window in 2024 - @heclak (Heclak)
 1. [FMS] Fixed pseudo waypoints symbols being offset after a direct to - @BlueberryKing (BlueberryKing)
+1. [A32NX/SFCC] Added implementation of slat baulk and slat alpha lock functions in SFCC - @Eagle941 (Joe)
 
 ## 0.14.0
 
