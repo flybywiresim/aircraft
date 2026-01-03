@@ -1167,17 +1167,7 @@ impl<D: uom::si::Dimension + ?Sized, U: uom::si::Units<f64> + ?Sized> Clamp
 
 impl Clamp for f64 {
     fn clamp(self, min: Self, max: Self) -> Self {
-        assert!(
-            min <= max,
-            "min > max, or either was NaN. min = {min:?}, max = {max:?}"
-        );
-        if self > max {
-            max
-        } else if self < min {
-            min
-        } else {
-            self
-        }
+        self.clamp(min, max)
     }
 }
 
