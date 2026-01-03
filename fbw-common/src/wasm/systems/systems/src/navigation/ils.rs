@@ -80,6 +80,7 @@ impl MultiModeReceiverShim {
         }
     }
 
+    /// Normalises an angle into the range [-180; 180).
     fn normalize_180(angle: Angle) -> Angle {
         let normalized_360 = Self::normalize_360(angle);
 
@@ -90,6 +91,7 @@ impl MultiModeReceiverShim {
         }
     }
 
+    /// Normalises an angle into the range [0; 360).
     fn normalize_360(angle: Angle) -> Angle {
         let angle = angle % Angle::new::<degree>(360.0);
 
