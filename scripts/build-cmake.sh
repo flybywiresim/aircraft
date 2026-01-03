@@ -36,7 +36,7 @@ while [ $# -gt 0 ]; do
 shift
 done
 
-A32NX_WASM_OUT_DIR="../fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel"
+A32NX_WASM_OUT_DIR="../fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/common/panel"
 if [ ! -d "$A32NX_WASM_OUT_DIR" ]; then
   echo "$A32NX_WASM_OUT_DIR directory does not exist."
   mkdir -p $A32NX_WASM_OUT_DIR
