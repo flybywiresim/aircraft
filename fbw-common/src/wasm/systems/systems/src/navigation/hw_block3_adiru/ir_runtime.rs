@@ -105,7 +105,7 @@ impl InertialReferenceRuntime {
     pub(super) const FINE_ALIGN_MAX_DURATION: Duration = Duration::from_secs(570);
     pub(super) const FINE_ALIGN_QUICK_DURATION: Duration = Duration::from_secs(80);
     pub(super) const HDG_ALIGN_AVAIL_DURATION: Duration = Duration::from_secs(270);
-    pub(super) const ERECT_ATT_DURATION: Duration = Duration::from_secs(30);
+    pub(super) const ERECT_ATT_DURATION: Duration = Duration::from_secs(20);
     pub(super) const REALIGN_DECISION_TIME: Duration = Duration::from_secs(5);
     pub(super) const REALIGN_DURATION: Duration = Duration::from_secs(30);
     pub(super) const POWER_OFF_DURATION: Duration = Duration::from_secs(5);
@@ -257,22 +257,28 @@ impl InertialReferenceRuntime {
         };
 
         self.active_mode = match self.active_mode {
-            IrOperationMode::Off if mode_selector != ModeSelectorPosition::Off => {
+            IrOperationMode::Off | IrOperationMode::PowerOff
+                if mode_selector == ModeSelectorPosition::Navigation =>
+            {
                 self.mode_timer = coarse_align_duration;
                 IrOperationMode::AlignCoarse
             }
-            IrOperationMode::Off => IrOperationMode::Off,
 
-            IrOperationMode::PowerOff if mode_selector != ModeSelectorPosition::Off => {
-                self.mode_timer = coarse_align_duration;
-                IrOperationMode::AlignCoarse
+            IrOperationMode::Off | IrOperationMode::PowerOff
+                if mode_selector == ModeSelectorPosition::Attitude =>
+            {
+                self.mode_timer = Self::ERECT_ATT_DURATION;
+                IrOperationMode::ErectAttitude
             }
+
             IrOperationMode::PowerOff
                 if self.mode_timer == Duration::ZERO
                     && mode_selector == ModeSelectorPosition::Off =>
             {
                 IrOperationMode::Off
             }
+
+            IrOperationMode::Off => IrOperationMode::Off,
             IrOperationMode::PowerOff => IrOperationMode::PowerOff,
 
             IrOperationMode::AlignCoarse
