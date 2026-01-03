@@ -16,12 +16,12 @@
 }
 
 .mfd-data-status-airframe-label {
-  width: 100%;
+  width: 99%;
   display: flex;
   justify-content: center;
   align-items: center;
   margin-top: 20px;
-  margin-bottom: 40px;
+  margin-bottom: 200px;
 }
 
 .mfd-data-status-performance-row {
@@ -29,12 +29,13 @@
   padding: 10px;
   display: flex;
   flex-direction: row;
+  align-items: center;
 }
 
 .mfd-data-status-first-section-divider {
   width: 100%;
-border: 2px outset $display-light-grey;
- height: 2px;
+  border: 1px outset $display-light-grey;
+ height: 1px;
 }
 
 
