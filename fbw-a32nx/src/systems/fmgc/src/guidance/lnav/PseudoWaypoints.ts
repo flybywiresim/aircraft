@@ -3,11 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { GuidanceComponent } from '@fmgc/guidance/GuidanceComponent';
-import {
-  PseudoWaypoint,
-  PseudoWaypointFlightPlanInfo,
-  PseudoWaypointSequencingAction,
-} from '@fmgc/guidance/PseudoWaypoint';
+import { PseudoWaypoint, PseudoWaypointSequencingAction } from '@fmgc/guidance/PseudoWaypoint';
 import { VnavConfig, VnavDescentMode } from '@fmgc/guidance/vnav/VnavConfig';
 import { EfisNdMode, EfisSide, NdSymbolTypeFlags, NdPwpSymbolTypeFlags } from '@flybywiresim/fbw-sdk';
 import { Geometry } from '@fmgc/guidance/Geometry';
@@ -15,10 +11,16 @@ import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { LateralMode } from '@shared/autopilot';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
-import { VerticalCheckpoint, VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
+import {
+  NavGeometryProfile,
+  VerticalCheckpoint,
+  VerticalCheckpointReason,
+  VerticalWaypointPrediction,
+} from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
 import { pathVectorLength } from './PathVector';
+import { Vec2Math } from '@microsoft/msfs-sdk';
 
 const PWP_IDENT_TOC = '(T/C)';
 const PWP_IDENT_STEP_CLIMB = '(S/C)';
@@ -150,7 +152,7 @@ export class PseudoWaypoints implements GuidanceComponent {
 
       waypointsLeftToDraw.delete(checkpoint.reason);
 
-      const pwp = this.createPseudoWaypointFromVerticalCheckpoint(geometry, wptCount, totalDistance, checkpoint);
+      const pwp = this.createPseudoWaypointFromVerticalCheckpoint(geometry, wptCount, navGeometryProfile, checkpoint);
       if (pwp) {
         newPseudoWaypoints.push(pwp);
       }
@@ -380,7 +382,7 @@ export class PseudoWaypoints implements GuidanceComponent {
   private createPseudoWaypointFromVerticalCheckpoint(
     geometry: Geometry,
     wptCount: number,
-    totalDistance: number,
+    geometryProfile: NavGeometryProfile,
     checkpoint: VerticalCheckpoint,
   ): PseudoWaypoint | undefined {
     let [efisSymbolLla, distanceFromLegTermination, alongLegIndex] = [undefined, undefined, undefined];
@@ -397,7 +399,7 @@ export class PseudoWaypoints implements GuidanceComponent {
       const pwp = this.pointFromEndOfPath(
         geometry,
         wptCount,
-        totalDistance - checkpoint?.distanceFromStart,
+        geometryProfile.totalFlightPlanDistance - checkpoint?.distanceFromStart,
         checkpoint.reason,
       );
       if (!pwp) {
@@ -442,7 +444,7 @@ export class PseudoWaypoints implements GuidanceComponent {
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: true,
           mcduHeader: PWP_SPD_LIM_HEADER,
-          flightPlanInfo: this.formatFlightPlanInfo(checkpoint),
+          flightPlanInfo: this.formatFlightPlanInfo(checkpoint, geometryProfile),
           displayedOnNd: false,
         };
       case VerticalCheckpointReason.CrossingDescentSpeedLimit:
@@ -455,7 +457,7 @@ export class PseudoWaypoints implements GuidanceComponent {
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: true,
           mcduHeader: PWP_SPD_LIM_HEADER,
-          flightPlanInfo: this.formatFlightPlanInfo(checkpoint),
+          flightPlanInfo: this.formatFlightPlanInfo(checkpoint, geometryProfile),
           displayedOnNd: false,
         };
       case VerticalCheckpointReason.CrossingFcuAltitudeClimb:
@@ -479,7 +481,7 @@ export class PseudoWaypoints implements GuidanceComponent {
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: true,
-          flightPlanInfo: this.formatFlightPlanInfo(checkpoint),
+          flightPlanInfo: this.formatFlightPlanInfo(checkpoint, geometryProfile),
           displayedOnNd: false,
         };
       case VerticalCheckpointReason.StepClimb:
@@ -492,7 +494,7 @@ export class PseudoWaypoints implements GuidanceComponent {
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: true,
-          flightPlanInfo: this.formatFlightPlanInfo(checkpoint),
+          flightPlanInfo: this.formatFlightPlanInfo(checkpoint, geometryProfile),
           displayedOnNd: this.guidanceController.vnavDriver.isLatAutoControlActive(),
         };
       case VerticalCheckpointReason.StepDescent:
@@ -505,7 +507,7 @@ export class PseudoWaypoints implements GuidanceComponent {
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: true,
-          flightPlanInfo: this.formatFlightPlanInfo(checkpoint),
+          flightPlanInfo: this.formatFlightPlanInfo(checkpoint, geometryProfile),
           displayedOnNd: this.guidanceController.vnavDriver.isLatAutoControlActive(),
           mcduIdent: PWP_IDENT_STEP_DESCENT,
         };
@@ -544,7 +546,7 @@ export class PseudoWaypoints implements GuidanceComponent {
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: true,
-          flightPlanInfo: this.formatFlightPlanInfo(checkpoint),
+          flightPlanInfo: this.formatFlightPlanInfo(checkpoint, geometryProfile),
           displayedOnNd:
             this.guidanceController.vnavDriver.isLatAutoControlActive() ||
             this.guidanceController.vnavDriver.isFlightPhasePreflight(),
@@ -612,7 +614,7 @@ export class PseudoWaypoints implements GuidanceComponent {
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: true,
-          flightPlanInfo: this.formatFlightPlanInfo(checkpoint),
+          flightPlanInfo: this.formatFlightPlanInfo(checkpoint, geometryProfile),
           displayedOnNd: true,
         };
       case VerticalCheckpointReason.Flaps1:
@@ -625,7 +627,7 @@ export class PseudoWaypoints implements GuidanceComponent {
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: true,
-          flightPlanInfo: this.formatFlightPlanInfo(checkpoint),
+          flightPlanInfo: this.formatFlightPlanInfo(checkpoint, geometryProfile),
           displayedOnNd: true,
         };
       case VerticalCheckpointReason.Flaps2:
@@ -638,7 +640,7 @@ export class PseudoWaypoints implements GuidanceComponent {
           efisSymbolLla,
           distanceFromStart: checkpoint.distanceFromStart,
           displayedOnMcdu: true,
-          flightPlanInfo: this.formatFlightPlanInfo(checkpoint),
+          flightPlanInfo: this.formatFlightPlanInfo(checkpoint, geometryProfile),
           displayedOnNd: true,
         };
       default:
@@ -727,10 +729,28 @@ export class PseudoWaypoints implements GuidanceComponent {
     };
   }
 
-  private formatFlightPlanInfo(checkpoint: VerticalCheckpoint): PseudoWaypointFlightPlanInfo {
+  private formatFlightPlanInfo(
+    checkpoint: VerticalCheckpoint,
+    geometryProfile: NavGeometryProfile,
+  ): VerticalWaypointPrediction {
+    const windPrediction = geometryProfile.winds.getWindForecast(
+      checkpoint.distanceFromStart,
+      checkpoint.altitude,
+      checkpoint.profilePhase,
+      Vec2Math.create(),
+    );
+
     return {
       ...checkpoint,
+      windPrediction,
       speed: this.atmosphericConditions.casOrMach(checkpoint.speed, checkpoint.mach, checkpoint.altitude),
+      altitudeConstraint: undefined,
+      speedConstraint: undefined, // TODO speed limit
+      isAltitudeConstraintMet: false,
+      isSpeedConstraintMet: false,
+      altError: 0,
+      distanceFromAircraft: checkpoint.distanceFromStart - geometryProfile.distanceToPresentPosition,
+      estimatedFuelOnBoard: checkpoint.remainingFuelOnBoard,
     };
   }
 }

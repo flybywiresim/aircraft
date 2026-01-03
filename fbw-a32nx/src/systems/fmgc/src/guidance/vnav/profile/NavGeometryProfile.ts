@@ -10,10 +10,19 @@ import { isAltitudeConstraintMet } from '@fmgc/guidance/vnav/descent/DescentPath
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { AltitudeConstraint, AltitudeDescriptor, SpeedConstraint } from '@flybywiresim/fbw-sdk';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { WindProfile } from '../wind/WindProfile';
+import { EventBus, Vec2Math } from '@microsoft/msfs-sdk';
+import { TailwindComponent, WindVector } from '../../../flightplanning/data/wind';
+import { FlightPlanIndex } from '../../../flightplanning/FlightPlanManager';
+
+export enum ProfilePhase {
+  Climb,
+  Cruise,
+  Descent,
+}
 
 // TODO: Merge this with VerticalCheckpoint
 export interface VerticalWaypointPrediction {
-  waypointIndex: number;
   distanceFromStart: NauticalMiles;
   secondsFromPresent: Seconds;
   altitude: Feet;
@@ -23,9 +32,10 @@ export interface VerticalWaypointPrediction {
   isAltitudeConstraintMet: boolean;
   isSpeedConstraintMet: boolean;
   altError: number;
-  distanceToTopOfDescent: NauticalMiles | null;
   estimatedFuelOnBoard: Pounds;
   distanceFromAircraft: NauticalMiles;
+  profilePhase: ProfilePhase;
+  windPrediction: WindVector | TailwindComponent;
 }
 
 export enum VerticalCheckpointReason {
@@ -83,6 +93,8 @@ export interface VerticalCheckpoint {
   remainingFuelOnBoard: number;
   speed: Knots;
   mach: Mach;
+  // wind: WindVector;
+  profilePhase: ProfilePhase;
 }
 
 export interface VerticalCheckpointForDeceleration extends VerticalCheckpoint {
@@ -142,7 +154,10 @@ export interface GeographicCruiseStep {
 export class NavGeometryProfile extends BaseGeometryProfile {
   public waypointPredictions: Map<number, VerticalWaypointPrediction> = new Map();
 
+  readonly winds = new WindProfile(this.bus, this.flightPlanService, FlightPlanIndex.Active);
+
   constructor(
+    private readonly bus: EventBus,
     private flightPlanService: FlightPlanService,
     private constraintReader: ConstraintReader,
     private atmosphericConditions: AtmosphericConditions,
@@ -212,9 +227,6 @@ export class NavGeometryProfile extends BaseGeometryProfile {
       return predictions;
     }
 
-    const topOfDescent = this.findVerticalCheckpoint(VerticalCheckpointReason.TopOfDescent);
-    const distanceToPresentPosition = this.distanceToPresentPosition;
-
     const activePlan = this.flightPlanService.active;
 
     for (let i = activePlan.activeLegIndex - 1; i < activePlan.firstMissedApproachLegIndex; i++) {
@@ -225,14 +237,15 @@ export class NavGeometryProfile extends BaseGeometryProfile {
       }
 
       const distanceFromStart = leg.calculated?.cumulativeDistanceWithTransitions;
-      const { secondsFromPresent, altitude, speed, mach, remainingFuelOnBoard } =
+      const { secondsFromPresent, altitude, speed, mach, remainingFuelOnBoard, profilePhase } =
         this.interpolateEverythingFromStart(distanceFromStart);
 
       const altitudeConstraint = leg.altitudeConstraint;
       const speedConstraint = leg.speedConstraint;
 
+      const windPrediction = this.winds.getWindForecastAtLeg(i, altitude, profilePhase, Vec2Math.create());
+
       predictions.set(i, {
-        waypointIndex: i,
         distanceFromStart,
         secondsFromPresent,
         altitude,
@@ -242,9 +255,10 @@ export class NavGeometryProfile extends BaseGeometryProfile {
         speedConstraint,
         isSpeedConstraintMet: this.isSpeedConstraintMet(speed, speedConstraint),
         altError: this.computeAltError(altitude, altitudeConstraint),
-        distanceToTopOfDescent: topOfDescent ? topOfDescent.distanceFromStart - distanceFromStart : null,
         estimatedFuelOnBoard: remainingFuelOnBoard,
-        distanceFromAircraft: distanceFromStart - distanceToPresentPosition,
+        distanceFromAircraft: distanceFromStart - this.distanceToPresentPosition,
+        profilePhase,
+        windPrediction,
       });
     }
 

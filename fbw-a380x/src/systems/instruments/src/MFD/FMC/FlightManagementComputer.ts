@@ -228,7 +228,8 @@ export class FlightManagementComputer implements FmcInterface {
     ([qnh, temperature, wind]) => qnh !== null && temperature !== null && wind !== null,
     this.fmgc.data.approachQnh,
     this.fmgc.data.approachTemperature,
-    this.fmgc.data.approachWind,
+    this.fmgc.data.approachWindDirection,
+    this.fmgc.data.approachWindSpeed,
   );
 
   private destDataCheckedInCruise = false;

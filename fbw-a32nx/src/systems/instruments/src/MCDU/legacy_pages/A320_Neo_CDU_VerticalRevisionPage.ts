@@ -13,6 +13,9 @@ import { AltitudeDescriptor, WaypointConstraintType } from '@flybywiresim/fbw-sd
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { CDUInitPage } from './A320_Neo_CDU_InitPage';
+import { ProfilePhase, VerticalWaypointPrediction } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
+import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 
 export class CDUVerticalRevisionPage {
   /**
@@ -25,9 +28,9 @@ export class CDUVerticalRevisionPage {
    */
   static ShowPage(
     mcdu: LegacyFmsPageInterface,
-    waypoint,
-    wpIndex,
-    verticalWaypoint,
+    waypoint: FlightPlanLeg,
+    wpIndex: number,
+    verticalWaypoint: VerticalWaypointPrediction | null,
     confirmSpeed = undefined,
     confirmAlt = undefined,
     confirmCode = undefined,
@@ -480,7 +483,15 @@ export class CDUVerticalRevisionPage {
             inAlternate,
           );
         };
-        CDUWindPage.ShowPage(mcdu);
+
+        const phase = this.getProfilePhase(waypoint, verticalWaypoint);
+        if (phase === ProfilePhase.Cruise) {
+          CDUWindPage.ShowCRZPage(mcdu, forPlan, wpIndex);
+        } else if (phase === ProfilePhase.Descent) {
+          CDUWindPage.ShowDESPage(mcdu, forPlan);
+        } else {
+          CDUWindPage.ShowPage(mcdu, forPlan);
+        }
       }; // WIND
     }
     mcdu.onRightInput[4] = () => {
@@ -614,6 +625,25 @@ export class CDUVerticalRevisionPage {
     }
   }
 
+  private static getProfilePhase(
+    leg: FlightPlanLeg,
+    verticalWaypoint: VerticalWaypointPrediction | null,
+  ): ProfilePhase {
+    if (verticalWaypoint) {
+      return verticalWaypoint.profilePhase;
+    }
+
+    switch (leg.segment.class) {
+      case SegmentClass.Departure:
+        return ProfilePhase.Climb;
+      case SegmentClass.Enroute:
+        return ProfilePhase.Cruise;
+      case SegmentClass.Arrival:
+      default:
+        return ProfilePhase.Descent;
+    }
+  }
+
   static formatFl(constraint, transAlt) {
     if (transAlt >= 100 && constraint > transAlt) {
       return 'FL' + Math.round(constraint / 100);
@@ -714,7 +744,7 @@ export class CDUVerticalRevisionPage {
 
       mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
 
-      CDUFlightPlanPage.ShowPage(mcdu, offset, forPlan);
+      CDUFlightPlanPage.ShowPage(mcdu, offset, false, forPlan);
       return;
     }
 
@@ -764,7 +794,7 @@ export class CDUVerticalRevisionPage {
 
       mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
 
-      CDUFlightPlanPage.ShowPage(mcdu, offset, forPlan);
+      CDUFlightPlanPage.ShowPage(mcdu, offset, false, forPlan);
     }
 
     if (alt !== undefined) {
@@ -781,7 +811,7 @@ export class CDUVerticalRevisionPage {
 
       mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
 
-      CDUFlightPlanPage.ShowPage(mcdu, offset, forPlan);
+      CDUFlightPlanPage.ShowPage(mcdu, offset, false, forPlan);
     }
   }
 

@@ -8,7 +8,6 @@ import { Fmgc, GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { FmcWindVector, FmcWinds } from '@fmgc/guidance/vnav/wind/types';
 import { MappedSubject, MutableSubscribable, Subject, Subscribable, SubscribableUtils } from '@microsoft/msfs-sdk';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { Arinc429Word, Fix, Runway, Units } from '@flybywiresim/fbw-sdk';
@@ -255,12 +254,6 @@ export class FmgcData {
   public readonly approachWindDirection = Subject.create<number | null>(null);
 
   public readonly approachWindSpeed = Subject.create<number | null>(null);
-
-  public readonly approachWind: MappedSubject<number[], FmcWindVector | null> = MappedSubject.create(
-    ([direction, speed]) => (direction !== null && speed !== null ? { direction: direction, speed: speed } : null),
-    this.approachWindDirection,
-    this.approachWindSpeed,
-  );
 
   public readonly approachQnh = Subject.create<number | null>(null);
 
@@ -606,19 +599,6 @@ export class FmgcDataService implements Fmgc {
   /** in knots */
   getTripWind(): number {
     return this.data.tripWind.get() ?? 0;
-  }
-
-  getWinds(): FmcWinds {
-    return {
-      climb: [{ direction: 0, speed: 0 }],
-      cruise: [{ direction: 0, speed: 0 }],
-      des: [{ direction: 0, speed: 0 }],
-      alternate: null,
-    };
-  }
-
-  getApproachWind(): FmcWindVector | null {
-    return this.data.approachWind.get();
   }
 
   /** in hPa */
