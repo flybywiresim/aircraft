@@ -23,7 +23,7 @@ import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ButtonType, SettingItem, SettingsPage } from '../Settings';
 import { AcarsConnector, AcarsClient } from '../../../../../datalink/router/src';
-import { CpdlcMessageDto } from '../../../../../datalink/router/src/webinterfaces';
+import { CpdlcMessageDto } from '../../../../../datalink/router/src/webinterfaces/CpdlcMessageDto';
 
 export const AtsuAocPage = () => {
   const aircraftProjectPrefix: string = process.env.AIRCRAFT_PROJECT_PREFIX.toUpperCase();
