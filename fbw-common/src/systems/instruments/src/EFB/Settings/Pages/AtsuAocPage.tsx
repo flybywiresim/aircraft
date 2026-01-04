@@ -23,8 +23,11 @@ import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ButtonType, SettingItem, SettingsPage } from '../Settings';
 import { AcarsConnector, AcarsClient } from '../../../../../datalink/router/src';
+import { CpdlcMessageDto } from '../../../../../datalink/router/src/webinterfaces';
 
 export const AtsuAocPage = () => {
+  const aircraftProjectPrefix: string = process.env.AIRCRAFT_PROJECT_PREFIX.toUpperCase();
+
   const [atisSource, setAtisSource] = usePersistentProperty('CONFIG_ATIS_SRC', 'FAA');
   const [metarSource, setMetarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
   const [tafSource, setTafSource] = usePersistentProperty('CONFIG_TAF_SRC', isMsfs2024() ? 'MSFS' : 'NOAA');
@@ -38,26 +41,24 @@ export const AtsuAocPage = () => {
 
   const [sentryEnabled, setSentryEnabled] = usePersistentProperty(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
 
-  const getAcarsResponse = (value: string): Promise<any> =>
-    new Promise((resolve, reject) => {
-      if (!value || value === '') {
-        resolve(value);
-      }
+  const getAcarsResponse = async (value: string): Promise<string> => {
+    if (!value || value === '') {
+        return value;
+    }
 
-      const body = {
-        from: 'FBWA32NX',
-        to: 'SERVER',
-        type: 'ping',
-        packet: '',
-      };
-      return AcarsClient.getData(body).then((resp) => {
-        if (resp.response === 'error {invalid logon code}') {
-          reject(new Error(`Error: Unknown user ID: ${resp.response}`));
-        } else {
-          resolve(value);
-        }
-      });
-    });
+    try {
+        const body: CpdlcMessageDto = {
+            from: `FBW${aircraftProjectPrefix}`,
+            to: 'SERVER',
+            type: 'ping',
+        };
+
+        await AcarsClient.getData(body);
+        return value;
+    } catch (err: any) {
+        throw new Error(`Error: Unknown user ID: ${err.message || err}`);
+    }
+  }
 
   const formatAcarsMessage = (messageKey: string) =>
     t(messageKey).replace(
@@ -66,6 +67,7 @@ export const AtsuAocPage = () => {
     );
 
   const handleAcarsUsernameInput = (value: string) => {
+    AcarsConnector.deactivateAcars();
     getAcarsResponse(value)
       .then((response) => {
         if (!value) {
