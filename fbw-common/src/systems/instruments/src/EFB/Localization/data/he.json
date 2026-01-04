@@ -587,6 +587,7 @@
     "AircraftOptionsPinPrograms": {
       "AccelerationHeight": "גובה האצה (רגל)",
       "EngineOutAccelerationHeight": "גובה האצה - איבוד מנוע (רגל)",
+      "hudXwindFpvType": "Crosswind FPV Type ",
       "IsisBaroUnit": "ISIS - יחידות ברומטר",
       "IsisMetricAltitude": "ISIS - גובה מטרי",
       "LatLonExtendedFormat": "FMGC - פורמט נקודת ציון של קו רוחב/אורך",
