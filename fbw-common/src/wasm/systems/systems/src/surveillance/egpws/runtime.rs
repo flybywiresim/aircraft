@@ -338,6 +338,12 @@ impl EnhancedGroundProximityWarningComputerRuntime {
         adr: &impl AirDataReferenceBus,
         ir: &impl InertialReferenceBus,
     ) {
+        // If there is a general fault, do not update the modes and mode transitions.
+        // The current modes will be kept, and once the GPWS is valid again, the modes will again be updated.
+        if self.gpws_general_fault {
+            return;
+        }
+
         // General mode logics
         let ground_to_air_ra_speed_condition =
             self.ra_ft >= 25. && adr.computed_airspeed().value() >= Velocity::new::<knot>(90.);
@@ -901,8 +907,10 @@ impl EnhancedGroundProximityWarningComputerRuntime {
 
         // Rescale to dots with the respective glideslope and localizer scaling factors.
         // See description of the ILS trait functions for more details.
-        let loc_deviation_dots = ils.localizer_deviation().value().get::<ratio>() / 0.0775;
-        let gs_deviation_dots_fly_up = -ils.glideslope_deviation().value().get::<ratio>() / 0.0875;
+        let loc_deviation_dots =
+            ils.localizer_deviation().value_or_default().get::<ratio>() / 0.0775;
+        let gs_deviation_dots_fly_up =
+            -ils.glideslope_deviation().value_or_default().get::<ratio>() / 0.0875;
 
         let fls_selected = false; // TODO implement
         let mix_loc_fls_selected = false; // TODO implement
@@ -972,7 +980,7 @@ impl EnhancedGroundProximityWarningComputerRuntime {
                 mode_5_hard_alert_boundary_met && self.mode_5_time_to_next_aural == Duration::ZERO;
 
             let mode_5_aural_pause =
-                Duration::from_secs_f64(self.ra_ft / gs_deviation_dots_fly_up.abs() * 0.0067);
+                Duration::from_secs_f64(self.ra_ft / gs_deviation_dots_fly_up.max(0.1) * 0.0067);
             if !(mode_5_hard_alert_boundary_met || mode_5_soft_alert_aural_boundary_met) {
                 self.mode_5_time_to_next_aural = Duration::ZERO;
             } else if self.mode_5_time_to_next_aural == Duration::ZERO
@@ -1029,14 +1037,16 @@ impl EnhancedGroundProximityWarningComputerRuntime {
             // TODO Complete rest of the modes.
             self.warning_lamp_activated = (self.mode_1_pull_up_active
                 || self.mode_2_pull_up_active)
-                && !discrete_inputs.gpws_inhibit;
+                && !discrete_inputs.gpws_inhibit
+                && !self.gpws_general_fault;
             self.alert_lamp_activated = (self.mode_1_sinkrate_lamp_active
                 || self.mode_2_pull_up_preface_active
                 || self.mode_2_terrain_active
                 || self.mode_3_lamp_active
                 || self.mode_5_glideslope_lamp_active
                 || self.mode_4_lamp_active)
-                && !discrete_inputs.gpws_inhibit;
+                && !discrete_inputs.gpws_inhibit
+                && !self.gpws_general_fault;
         } else {
             self.warning_lamp_activated = (self.mode_1_sinkrate_lamp_active
                 || self.mode_1_pull_up_active
@@ -1045,9 +1055,11 @@ impl EnhancedGroundProximityWarningComputerRuntime {
                 || self.mode_2_terrain_active
                 || self.mode_3_lamp_active
                 || self.mode_4_lamp_active)
-                && !discrete_inputs.gpws_inhibit;
-            self.alert_lamp_activated =
-                self.mode_5_glideslope_lamp_active && !discrete_inputs.gpws_inhibit;
+                && !discrete_inputs.gpws_inhibit
+                && !self.gpws_general_fault;
+            self.alert_lamp_activated = self.mode_5_glideslope_lamp_active
+                && !discrete_inputs.gpws_inhibit
+                && !self.gpws_general_fault;
         }
     }
 
@@ -1060,7 +1072,9 @@ impl EnhancedGroundProximityWarningComputerRuntime {
 
         let basic_gpws_inhibit = discrete_inputs.gpws_inhibit || discrete_inputs.audio_inhibit;
 
-        self.aural_output = if self.mode_1_pull_up_active && !basic_gpws_inhibit {
+        self.aural_output = if self.gpws_general_fault {
+            AuralWarning::None
+        } else if self.mode_1_pull_up_active && !basic_gpws_inhibit {
             AuralWarning::PullUp
         } else if self.mode_2_pull_up_preface_active && !basic_gpws_inhibit {
             AuralWarning::Terrain
