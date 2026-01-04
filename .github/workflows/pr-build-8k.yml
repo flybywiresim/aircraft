@@ -75,7 +75,7 @@ jobs:
           rm -rf ./large-files/fbw-a380x/src/base/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/texture-4k/
       - name: Build A380X
         run: |
-          ./scripts/dev-env/run.sh ./scripts/build_a380x.sh --no-tty -j 4
+          ./scripts/dev-env/run.sh ./scripts/build.sh -r "a380x" --no-tty -j 4
           docker system prune -af
       - name: Remove source files
         run: |
