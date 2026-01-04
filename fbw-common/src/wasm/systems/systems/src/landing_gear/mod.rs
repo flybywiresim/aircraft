@@ -561,6 +561,9 @@ impl LgciuGearExtension for LgciuSensorInputs {
     fn nose_up_and_locked(&self) -> bool {
         self.is_powered && self.nose_gear_up_and_locked
     }
+    fn left_down_and_locked(&self) -> bool {
+        self.is_powered && self.left_gear_down_and_locked
+    }
 }
 impl LgciuDoorPosition for LgciuSensorInputs {
     fn all_fully_opened(&self) -> bool {
@@ -1365,6 +1368,9 @@ impl LgciuGearExtension for LandingGearControlInterfaceUnit {
     }
     fn nose_up_and_locked(&self) -> bool {
         self.sensor_inputs.nose_up_and_locked()
+    }
+    fn left_down_and_locked(&self) -> bool {
+        self.sensor_inputs.left_down_and_locked()
     }
 }
 impl LgciuDoorPosition for LandingGearControlInterfaceUnit {
