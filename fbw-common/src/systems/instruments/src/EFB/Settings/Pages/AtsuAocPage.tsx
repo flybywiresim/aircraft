@@ -43,22 +43,22 @@ export const AtsuAocPage = () => {
 
   const getAcarsResponse = async (value: string): Promise<string> => {
     if (!value || value === '') {
-        return value;
+      return value;
     }
 
     try {
-        const body: CpdlcMessageDto = {
-            from: `FBW${aircraftProjectPrefix}`,
-            to: 'SERVER',
-            type: 'ping',
-        };
+      const body: CpdlcMessageDto = {
+        from: `FBW${aircraftProjectPrefix}`,
+        to: 'SERVER',
+        type: 'ping',
+      };
 
-        await AcarsClient.getData(body);
-        return value;
+      await AcarsClient.getData(body);
+      return value;
     } catch (err: any) {
-        throw new Error(`Error: Unknown user ID: ${err.message || err}`);
+      throw new Error(`Error: Unknown user ID: ${err.message || err}`);
     }
-  }
+  };
 
   const formatAcarsMessage = (messageKey: string) =>
     t(messageKey).replace(

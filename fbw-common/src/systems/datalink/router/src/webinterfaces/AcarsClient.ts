@@ -9,8 +9,15 @@ const ACARS_PROVIDER_ENDPOINTS: Record<string, string> = {
   SAI: 'https://acars.sayintentions.ai/acars/system/connect.html',
 };
 
-const PROVIDER_LOGON_CONFIG: Record<string, { legacyKey: string; missingMessage: string, validationUrl?: (key: string) => string }> = {
-  SAI: { legacyKey: 'CONFIG_SAI_LOGON_KEY', missingMessage: 'Missing SAI logon key', validationUrl: (key: string) => `https://portal.sayintentions.ai/api/mep/validateKey?key=${key}` },
+const PROVIDER_LOGON_CONFIG: Record<
+  string,
+  { legacyKey: string; missingMessage: string; validationUrl?: (key: string) => string }
+> = {
+  SAI: {
+    legacyKey: 'CONFIG_SAI_LOGON_KEY',
+    missingMessage: 'Missing SAI logon key',
+    validationUrl: (key: string) => `https://portal.sayintentions.ai/api/mep/validateKey?key=${key}`,
+  },
   HOPPIE: { legacyKey: 'CONFIG_HOPPIE_USERID', missingMessage: 'Missing Hoppie user ID' },
 };
 
@@ -29,7 +36,7 @@ export class AcarsClient {
       }
 
       if (acarsProvider === 'SAI' && logonConfig.validationUrl) {
-          await AcarsClient.validateSayIntentionsKey(logonConfig.validationUrl(logon));
+        await AcarsClient.validateSayIntentionsKey(logonConfig.validationUrl(logon));
       }
       params.append('logon', logon);
     }
@@ -57,7 +64,7 @@ export class AcarsClient {
           throw AcarsClient.generateNotAvailableException('Empty response');
         }
         if (data.includes('error {invalid logon code}')) {
-             throw AcarsClient.generateNotAvailableException('Invalid Hoppie User ID');
+          throw AcarsClient.generateNotAvailableException('Invalid Hoppie User ID');
         }
         return { response: data };
       })
@@ -68,18 +75,18 @@ export class AcarsClient {
 
   private static async validateSayIntentionsKey(url: string): Promise<void> {
     try {
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw AcarsClient.generateNotAvailableException(`Validation server returned ${response.status}`);
-        }
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw AcarsClient.generateNotAvailableException(`Validation server returned ${response.status}`);
+      }
 
-        const result = await response.json() as { is_valid: number; flight_id: number };
+      const result = (await response.json()) as { is_valid: number; flight_id: number };
 
-        if (!result.is_valid) {
-            throw AcarsClient.generateNotAvailableException('Invalid SAI API Key');
-        }
+      if (!result.is_valid) {
+        throw AcarsClient.generateNotAvailableException('Invalid SAI API Key');
+      }
     } catch (err) {
-        throw AcarsClient.generateNotAvailableException(`Validation failed: ${err}`);
+      throw AcarsClient.generateNotAvailableException(`Validation failed: ${err}`);
     }
   }
 
