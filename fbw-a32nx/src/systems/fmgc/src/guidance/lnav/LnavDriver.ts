@@ -616,10 +616,11 @@ export class LnavDriver implements GuidanceComponent {
 
   private computeNavCaptureCondition(trueAirspeed: number, groundSpeed: number): boolean {
     const plan = this.flightPlanService.active;
-    const geometry = this.guidanceController.activeGeometry;
     const activeLeg = plan.activeLeg;
+    const geometry = this.guidanceController.activeGeometry;
+    const activeGeometryLeg = geometry?.legs.get(plan.activeLegIndex);
 
-    if (!isLeg(activeLeg) || this.cannotCaptureLegType(activeLeg) || this.isNavCaptureInhibited) {
+    if (!isLeg(activeLeg) || !activeGeometryLeg || this.cannotCaptureLegType(activeLeg) || this.isNavCaptureInhibited) {
       return false;
     } else if (this.canAlwaysCaptureLeg(activeLeg)) {
       return true;
@@ -644,7 +645,6 @@ export class LnavDriver implements GuidanceComponent {
           (Math.cos(unsaturatedTrackAngleError * MathUtils.DEGREES_TO_RADIANS) -
             Math.cos(this.lastTAE * MathUtils.DEGREES_TO_RADIANS));
 
-        const activeGeometryLeg = geometry.legs.get(plan.activeLegIndex);
         const legGs = activeGeometryLeg.predictedGs ?? groundSpeed;
         const nominalRollAngle = activeGeometryLeg.getNominalRollAngle(groundSpeed) ?? 0;
         const unsaturatedCaptureZone =
