@@ -8,11 +8,19 @@
   margin-bottom: 20px;
 }
 
+.mfd-data-status-pse-label.no-margin {
+  margin-bottom: 0px;
+}
+
 .mfd-data-status-pse-value {
   display: flex;
   justify-content: flex-start;
   align-items: center;
   margin-bottom: 20px;
+}
+
+.mfd-data-status-pse-value.no-margin {
+  margin-bottom: 0px;
 }
 
 .mfd-data-status-airframe-label {
@@ -56,5 +64,5 @@
   flex-direction: column;
   justify-content: space-between;
   align-items: flex-start;
-  padding-top: 25px;
+  padding-top: 15px;
 }

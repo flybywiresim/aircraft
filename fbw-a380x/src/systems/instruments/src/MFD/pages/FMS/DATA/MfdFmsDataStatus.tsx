@@ -186,41 +186,44 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
                   </span>
                   <span class="mfd-value bigger">{this.navDatabase}</span>
                 </div>
-                <div style="width: 100%; display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
-                  <div style="border: 1px solid lightgrey; padding: 15px; display: flex; flex-direction: column;">
-                    <div class="mfd-label bigger" style="display: flex; justify-content: center; margin-bottom: 15px;">
+                <div style="width: 100%; display: flex; flex-direction: row; align-items: center; margin-bottom:10px;">
+                  <div style="border: 1px solid lightgrey; padding:20px 15px 15px 15px; display: flex; flex-direction: column; height:117px; margin-right:70px;">
+                    <div class="mfd-label bigger" style="display: flex; justify-content: center; margin-bottom: 25px;">
                       ACTIVE
                     </div>
                     <div>
                       <span class="mfd-value bigger">{this.activeDatabase}</span>
                     </div>
                   </div>
-                  <div>
+                  <div style=" margin-right:55px;">
                     <Button
                       label={Subject.create(
                         <div style="display: flex; flex-direction: row; justify-content: space-between; width: 100px; height: 40px;">
                           <span style="display: flex; align-items: center; justify-content: center; margin-left: 10px;">
                             SWAP
                           </span>
-                          <span style="display: flex; align-items: center; justify-content: center;">*</span>
+                          <span style="display: flex; align-items: center; justify-content: center;">
+                            &nbsp;&nbsp;*
+                          </span>
                         </div>,
                       )}
                       onClick={() => this.isSwapConfirmVisible.set(true)}
+                      buttonStyle="width: 140px; height: 62px;"
                     />
                   </div>
-                  <div style="padding: 15px; display: flex; flex-direction: column;">
-                    <div class="mfd-label bigger" style="display: flex; justify-content: center; margin-bottom: 15px;">
+                  <div style="display: flex; flex-direction: column; margin-top:8px;">
+                    <div class="mfd-label bigger" style="display: flex; justify-content: center;">
                       SECOND
                     </div>
-                    <div>
-                      <span class="mfd-value">{this.secondDatabase}</span>
-                    </div>
+                    <span class="mfd-value" style="margin-top:27px;">
+                      &nbsp;&nbsp;{this.secondDatabase}
+                    </span>
                   </div>
                 </div>
               </div>
               <div class="mfd-data-status-third-section">
-                <div style="margin-bottom: 35px;">
-                  <span class="mfd-label bigger" style="margin-left: 15px;">
+                <div style="margin-bottom: 17px;">
+                  <span class="mfd-label bigger" style="margin-left: 19px;">
                     PILOT STORED ELEMENTS
                   </span>
                 </div>
