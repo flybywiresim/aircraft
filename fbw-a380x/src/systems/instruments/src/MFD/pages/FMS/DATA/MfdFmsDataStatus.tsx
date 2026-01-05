@@ -122,7 +122,7 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
             selectedTabTextColor="white"
             tabBarSlantedEdgeAngle={25}
           >
-            <TopTabNavigatorPage>
+            <TopTabNavigatorPage containerStyle="height: 735px;">
               {/* ACFT STATUS */}
               <div class="mfd-data-status-airframe-label mfd-value bigger">A380-800&nbsp;/&nbsp;TRENT 972</div>
               <div class="mfd-data-status-performance-row" style="width:655px; margin-bottom: 10px;">
@@ -233,10 +233,10 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
                     <div class="mfd-value bigger mfd-data-status-pse-value">{this.storedWaypoints}</div>
                     <div class="mfd-label bigger mfd-data-status-pse-label">ROUTES</div>
                     <div class="mfd-value bigger mfd-data-status-pse-value">{this.storedRoutes}</div>
-                    <div class="mfd-label bigger mfd-data-status-pse-label">NAVAIDS</div>
-                    <div class="mfd-value bigger mfd-data-status-pse-value">{this.storedNavaids}</div>
-                    <div class="mfd-label bigger mfd-data-status-pse-label">RUNWAYS</div>
-                    <div class="mfd-value bigger mfd-data-status-pse-value">{this.storedRunways}</div>
+                    <div class="mfd-label bigger mfd-data-status-pse-label no-margin">NAVAIDS</div>
+                    <div class="mfd-value bigger mfd-data-status-pse-value no-margin">{this.storedNavaids}</div>
+                    <div class="mfd-label bigger mfd-data-status-pse-label no-margin">RUNWAYS</div>
+                    <div class="mfd-value bigger mfd-data-status-pse-value no-margin">{this.storedRunways}</div>
                   </div>
                   <div style="flex: 1;">
                     <Button
