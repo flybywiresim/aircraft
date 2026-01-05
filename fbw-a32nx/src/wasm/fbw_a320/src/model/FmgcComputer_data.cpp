@@ -141,6 +141,7 @@ base_fmgc_discrete_outputs rtP_fmgc_discrete_output_MATLABStruct{
   false,
   false,
   false,
+  false,
   false
 } ;
 
@@ -2873,6 +2874,7 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
     },
 
     {
+      false,
       false,
       false,
       false,

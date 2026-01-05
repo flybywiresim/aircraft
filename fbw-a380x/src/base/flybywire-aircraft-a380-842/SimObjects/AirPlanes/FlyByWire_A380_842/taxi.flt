@@ -179,7 +179,6 @@ Valve.56=False
 Valve.57=False
 Valve.58=False
 Valve.59=False
-Valve.60=False
 Pump.1=True
 Pump.2=True
 Pump.3=True
@@ -200,7 +199,7 @@ Pump.17=False
 Pump.18=False
 Pump.19=False
 Pump.20=False
-Pump.21=True
+Pump.21=False
 Pump.22=True
 Pump.23=True
 Pump.24=True
@@ -209,6 +208,7 @@ Junction.7=1
 Junction.8=1
 Junction.9=1
 Junction.10=1
+Junction.11=1
 
 [Systems.0]
 BatterySwitch=True
@@ -475,6 +475,14 @@ BIGARMREST_CPT_TILT=34
 BIGARMREST_CPT_UP_DOWN=41
 BIGARMREST_FO_TILT=34
 BIGARMREST_FO_UP_DOWN=41
+A32NX_ENGINE_N2:1=70
+A32NX_ENGINE_N2:2=70
+A32NX_ENGINE_N2:3=70
+A32NX_ENGINE_N2:4=70
+A32NX_ENGINE_N3:1=75
+A32NX_ENGINE_N3:2=75
+A32NX_ENGINE_N3:3=75
+A32NX_ENGINE_N3:4=75
 
 [Gauges.0]
 KollsmanSetting=29.921342849731445313
