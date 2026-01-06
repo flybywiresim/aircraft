@@ -2800,16 +2800,18 @@ export class PseudoFWC {
     this.speedBrakeCaution1Pulse.write(speedBrakeCaution1, deltaTime);
     this.speedBrakeCaution2Pulse.write(speedBrakeCaution2, deltaTime);
     const speedBrakeCaution = speedBrakeCaution1 || speedBrakeCaution2 || speedBrakeCaution3;
+
+    // spd brk disagree
+    const speedBrakeDisagree = fcdc1DiscreteWord5.bitValue(26) || fcdc2DiscreteWord5.bitValue(26);
+    this.speedBrakeDisagreeWarning.set(speedBrakeDisagree);
+    this.speedBrakeDoNotUse.set(fcdc1DiscreteWord5.bitValue(27) || fcdc2DiscreteWord5.bitValue(27));
+
     this.speedBrakeStillOutWarning.set(
       !this.speedBrakeCaution1Pulse.read() &&
         !this.speedBrakeCaution2Pulse.read() &&
         speedBrakeCaution &&
-        !this.speedBrakeDisagreeWarning.get(),
+        !speedBrakeDisagree,
     );
-
-    // spd brk disagree
-    this.speedBrakeDisagreeWarning.set(fcdc1DiscreteWord5.bitValue(26) || fcdc2DiscreteWord5.bitValue(26));
-    this.speedBrakeDoNotUse.set(fcdc1DiscreteWord5.bitValue(27) || fcdc2DiscreteWord5.bitValue(27));
 
     // gnd splr not armed
     const raBelow500 = this.radioHeight1.valueOr(Infinity) < 500 || this.radioHeight2.valueOr(Infinity) < 500;
