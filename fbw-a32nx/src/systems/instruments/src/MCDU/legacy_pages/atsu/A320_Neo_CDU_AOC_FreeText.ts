@@ -10,7 +10,7 @@ export class CDUAocFreeText {
     mcdu: LegacyAtsuPageInterface,
     store = {
       msg_to: '',
-      reqID: SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 0 ? 0 : 1,
+      reqID: SimVar.GetSimVarValue('L:A32NX_ACARS_ACTIVE', 'number') !== 0 ? 0 : 1,
       msg_line1: '',
       msg_line2: '',
       msg_line3: '',
