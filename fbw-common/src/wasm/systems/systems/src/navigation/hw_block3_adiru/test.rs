@@ -38,9 +38,26 @@ struct TestAdr {
 }
 impl TestAdr {
     fn new() -> Self {
-        Self {
-            bus: AirDataReferenceBusOutputs::default(),
-        }
+        let mut bus = AirDataReferenceBusOutputs::default();
+        bus.true_airspeed.set_ssm(SignStatus::NormalOperation);
+        bus.standard_altitude.set_ssm(SignStatus::NormalOperation);
+
+        Self { bus }
+    }
+
+    fn set_failed(&mut self, failed: bool) {
+        let ssm = if failed {
+            SignStatus::FailureWarning
+        } else {
+            SignStatus::NormalOperation
+        };
+
+        self.bus.standard_altitude.set_ssm(ssm);
+        self.bus.true_airspeed.set_ssm(ssm);
+    }
+
+    fn set_true_airspeed(&mut self, speed: Velocity) {
+        self.bus.true_airspeed.set_value(speed);
     }
 }
 impl AirDataReferenceBusOutput for TestAdr {
@@ -169,7 +186,8 @@ impl AdiruElectricalHarness for TestAdiruElectricalHarness {
 
 struct TestAircraft {
     test_fcu: TestFcu,
-    test_adr: TestAdr,
+    test_adr_1: TestAdr,
+    test_adr_2: TestAdr,
     adiru: AirDataInertialReferenceUnit,
     harness: TestAdiruElectricalHarness,
 }
@@ -177,7 +195,8 @@ impl TestAircraft {
     fn new(context: &mut InitContext, num: usize) -> Self {
         Self {
             test_fcu: TestFcu::default(),
-            test_adr: TestAdr::default(),
+            test_adr_1: TestAdr::new(),
+            test_adr_2: TestAdr::new(),
             adiru: AirDataInertialReferenceUnit::new(context, num),
             harness: TestAdiruElectricalHarness::new(),
         }
@@ -190,8 +209,8 @@ impl Aircraft for TestAircraft {
             &self.harness.adr_discrete_inputs(),
             &self.harness.ir_discrete_inputs(),
             &self.test_fcu,
-            &self.test_adr,
-            &self.test_adr,
+            &self.test_adr_1,
+            &self.test_adr_2,
         );
     }
 }
@@ -413,6 +432,38 @@ impl AdirsTestBed {
 
     fn backup_power_set_to(mut self, powered: bool) -> Self {
         self.command(|a| a.harness.set_backup_supply(powered, &mut a.adiru));
+        self
+    }
+
+    fn adr_failed(mut self, adr_num: usize, failed: bool) -> Self {
+        self.command(|a| match adr_num {
+            1 => a.test_adr_1.set_failed(failed),
+            2 => a.test_adr_2.set_failed(failed),
+            num => println!("Invalid external ADR number {num}"),
+        });
+        self
+    }
+
+    fn adr_tas_of(mut self, adr_num: usize, speed: Velocity) -> Self {
+        self.command(|a| match adr_num {
+            1 => a.test_adr_1.set_true_airspeed(speed),
+            2 => a.test_adr_2.set_true_airspeed(speed),
+            num => println!("Invalid external ADR number {num}"),
+        });
+        self
+    }
+
+    fn auto_dads_select_set_to(mut self, set: bool) -> Self {
+        self.command(|a| {
+            a.harness.set_auto_dads_select(set);
+        });
+        self
+    }
+
+    fn manual_dads_select_set_to(mut self, set: bool) -> Self {
+        self.command(|a| {
+            a.harness.set_manual_dads_select(set);
+        });
         self
     }
 
@@ -690,13 +741,13 @@ impl AdirsTestBed {
 
     fn assert_ir_adr_dependent_data_available(&mut self, available: bool) {
         assert_eq!(
-            self.inertial_vertical_speed().is_no_computed_data(),
+            self.inertial_vertical_speed().is_normal_operation(),
             available
         );
-        assert_eq!(self.wind_direction().is_no_computed_data(), available);
-        assert_eq!(self.wind_direction_bnr().is_no_computed_data(), available);
-        assert_eq!(self.wind_speed().is_no_computed_data(), available);
-        assert_eq!(self.wind_speed_bnr().is_no_computed_data(), available);
+        assert_eq!(self.wind_direction().is_normal_operation(), available);
+        assert_eq!(self.wind_direction_bnr().is_normal_operation(), available);
+        assert_eq!(self.wind_speed().is_normal_operation(), available);
+        assert_eq!(self.wind_speed_bnr().is_normal_operation(), available);
     }
 
     fn assert_ir_attitude_data_available(&mut self, available: bool) {
@@ -2475,5 +2526,64 @@ mod ir {
         test_bed.run();
 
         assert_eq!(test_bed.longitude().normal_value().unwrap(), longitude);
+    }
+
+    #[rstest]
+    #[case(1)]
+    #[case(2)]
+    #[case(3)]
+    fn manual_adr_select_discretes_force_external_adr_usage(#[case] adiru_number: usize) {
+        let velocity = Velocity::new::<knot>(
+            InertialReferenceRuntime::MINIMUM_TRUE_AIRSPEED_FOR_WIND_DETERMINATION_KNOTS + 1.,
+        );
+
+        let mut test_bed = adiru_aligned_test_bed_with(adiru_number)
+            .true_airspeed_of(velocity)
+            .adr_tas_of(1, velocity)
+            .adr_tas_of(2, velocity);
+        test_bed.run();
+
+        // Check that IR ADR based values are normal
+        test_bed.assert_ir_adr_dependent_data_available(true);
+
+        // Check that own ADR is correctly used with AUTO DADS select set
+        test_bed = test_bed
+            .then_continue_with()
+            .adr_failed(1, true)
+            .adr_failed(2, true);
+        test_bed.run();
+
+        test_bed.assert_ir_adr_dependent_data_available(true);
+
+        // Check that no ADR values are available if all ADRs are failed
+        test_bed = test_bed.adr_push_button_pushed(true);
+        test_bed.run();
+        test_bed = test_bed.adr_push_button_pushed(false);
+        test_bed.assert_ir_adr_dependent_data_available(false);
+
+        // Check that ADR own is not selected if AUTO DADS SELECT is not set
+        test_bed = test_bed.adr_push_button_pushed(true);
+        test_bed.run();
+        test_bed = test_bed
+            .adr_push_button_pushed(false)
+            .then_continue_with()
+            .auto_dads_select_set_to(false)
+            .and()
+            .manual_dads_select_set_to(false);
+        test_bed.run();
+        test_bed.assert_ir_adr_dependent_data_available(false);
+
+        // Check that the external ADRs are properly switched with the MANUAL DADS select discrete
+        test_bed = test_bed.then_continue_with().adr_failed(1, false);
+        test_bed.run();
+        test_bed.assert_ir_adr_dependent_data_available(true);
+
+        test_bed = test_bed
+            .then_continue_with()
+            .adr_failed(1, true)
+            .adr_failed(2, false)
+            .manual_dads_select_set_to(true);
+        test_bed.run();
+        test_bed.assert_ir_adr_dependent_data_available(true);
     }
 }
