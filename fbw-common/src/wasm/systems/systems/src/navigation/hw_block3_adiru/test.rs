@@ -834,7 +834,7 @@ fn adiru_aligned_test_bed(num: usize) -> AdirsTestBed {
 #[case(1)]
 #[case(2)]
 #[case(3)]
-fn starts_aligned(#[case] adiru_number: usize) {
+fn starts_initialized_and_aligned(#[case] adiru_number: usize) {
     // The structs start in an aligned state to support starting a flight
     // on the runway or in the air with the mode selectors in the NAV position.
     let mut test_bed = adiru_aligned_test_bed(adiru_number);
@@ -888,222 +888,6 @@ fn adiru_instantly_aligns_when_instant_align_is_set(#[case] adiru_number: usize)
         IrMaintFlags::NAV_MODE
     );
     test_bed.assert_all_adr_words_available(true);
-}
-
-#[rstest]
-#[case(1)]
-#[case(2)]
-#[case(3)]
-fn adirs_aligns_in_90_seconds_when_configured_align_time_is_fast(#[case] adiru_number: usize) {
-    let mut test_bed = test_bed_with(adiru_number)
-        .fast_align_set_to(true)
-        .and()
-        .ir_mode_selector_set_to(ModeSelectorPosition::Navigation);
-
-    // Set the state without any time passing to be able to measure exact time afterward.
-    test_bed.run_with_delta(Duration::from_secs(0));
-
-    test_bed.run_with_delta(
-        AirDataInertialReferenceUnit::IR_AVERAGE_STARTUP_TIME_MILLIS
-            + InertialReferenceRuntime::COARSE_ALIGN_QUICK_DURATION
-            + Duration::from_secs(2),
-    );
-    assert!(test_bed.is_align_discrete_set());
-    let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word().value());
-    assert_eq!(
-        maint_word_flags.unwrap() & IrMaintFlags::ALIGNMENT_NOT_READY,
-        IrMaintFlags::ALIGNMENT_NOT_READY
-    );
-
-    test_bed.run_with_delta(InertialReferenceRuntime::FINE_ALIGN_QUICK_DURATION);
-    let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word().value());
-    assert_eq!(
-        maint_word_flags.unwrap() & IrMaintFlags::NAV_MODE,
-        IrMaintFlags::NAV_MODE
-    );
-}
-
-#[rstest]
-#[case(Angle::new::<degree>(85.))]
-#[case(Angle::new::<degree>(-85.))]
-fn adirs_does_not_align_near_the_poles(#[case] polar_latitude: Angle) {
-    let adiru_number = 1;
-    let mut test_bed = start_align_at_latitude(polar_latitude, adiru_number);
-    test_bed.run();
-    test_bed.run_with_delta(Duration::from_secs(20 * 60)); // run for 20 minutes, enough for any alignment
-
-    let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word().value());
-    assert_eq!(
-        maint_word_flags.unwrap() & IrMaintFlags::ALIGNMENT_NOT_READY,
-        IrMaintFlags::ALIGNMENT_NOT_READY
-    );
-}
-
-#[rstest]
-#[case(Angle::new::<degree>(85.))]
-#[case(Angle::new::<degree>(-85.))]
-fn adirs_stays_aligned_near_the_poles(#[case] polar_latitude: Angle) {
-    let adiru_number = 1;
-    let mut test_bed = adiru_aligned_test_bed(adiru_number)
-        .ir_mode_selector_set_to(ModeSelectorPosition::Navigation)
-        .and()
-        .latitude_of(polar_latitude);
-    test_bed.run();
-
-    let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word().value());
-    assert_eq!(
-        maint_word_flags.unwrap() & IrMaintFlags::NAV_MODE,
-        IrMaintFlags::NAV_MODE
-    );
-}
-
-#[rstest]
-fn adiru_detects_excess_motion_during_alignment() {
-    let adiru_number = 1;
-    let mut test_bed = adiru_unaligned_test_bed_with(adiru_number)
-        .body_lateral_velocity_of(Velocity::new::<foot_per_second>(0.1))
-        .ir_mode_selector_set_to(ModeSelectorPosition::Navigation);
-    test_bed.run();
-    test_bed.run();
-
-    let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word().value());
-    assert_eq!(
-        maint_word_flags.unwrap() & IrMaintFlags::EXCESS_MOTION_ERROR,
-        IrMaintFlags::EXCESS_MOTION_ERROR
-    );
-}
-
-#[rstest]
-#[case(1)]
-#[case(2)]
-#[case(3)]
-fn adirs_does_not_detect_excess_motion_with_excess_motion_inhibit(#[case] adiru_number: usize) {
-    let mut test_bed = adiru_unaligned_test_bed_with(adiru_number)
-        .excess_motion_inhibit_set_to(true)
-        .body_lateral_velocity_of(Velocity::new::<foot_per_second>(0.1))
-        .ir_mode_selector_set_to(ModeSelectorPosition::Navigation);
-    test_bed.run();
-    test_bed.run();
-
-    let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word().value());
-    assert_eq!(
-        maint_word_flags.unwrap() & IrMaintFlags::EXCESS_MOTION_ERROR,
-        IrMaintFlags::empty()
-    );
-}
-
-#[rstest]
-#[case(Angle::new::<degree>(80.))]
-#[case(Angle::new::<degree>(-80.))]
-fn adirs_aligns_quicker_near_equator_than_near_the_poles_when_configured_align_time_is_realistic(
-    #[case] polar_latitude: Angle,
-) {
-    let adiru_number = 1;
-
-    let step_duration = Duration::from_secs(10);
-
-    let mut equator_alignment_time = Duration::ZERO;
-    let mut test_bed = start_align_at_latitude(Angle::new::<degree>(0.), adiru_number);
-    while test_bed.is_align_discrete_set() {
-        test_bed.run_with_delta(step_duration);
-        equator_alignment_time = equator_alignment_time.saturating_add(step_duration);
-    }
-
-    let mut south_pole_alignment_time = Duration::ZERO;
-    let mut test_bed = start_align_at_latitude(polar_latitude, adiru_number);
-    while test_bed.is_align_discrete_set() {
-        test_bed.run_with_delta(step_duration);
-        south_pole_alignment_time = south_pole_alignment_time.saturating_add(step_duration);
-    }
-
-    assert!(equator_alignment_time < south_pole_alignment_time);
-}
-
-fn start_align_at_latitude(latitude: Angle, adiru_number: usize) -> AdirsTestBed {
-    let mut test_bed = adiru_unaligned_test_bed_with(adiru_number)
-        .latitude_of(latitude)
-        .and()
-        .ir_mode_selector_set_to(ModeSelectorPosition::Navigation);
-
-    // Run for startup duration to begin alignment
-    test_bed.run_with_delta(
-        AirDataInertialReferenceUnit::IR_AVERAGE_STARTUP_TIME_MILLIS + Duration::from_secs(1),
-    );
-    test_bed
-}
-
-#[rstest]
-#[case(Angle::new::<degree>(0.))]
-#[case(Angle::new::<degree>(63.))]
-#[case(Angle::new::<degree>(-63.))]
-fn adirs_aligns_quick_when_mode_selector_off_for_3_secs(#[case] latitude: Angle) {
-    let adiru_number = 1;
-    // Create the conditions for a quick align (aligned, then less than 5 secs off)
-    let mut test_bed = adiru_aligned_test_bed(adiru_number)
-        .latitude_of(latitude)
-        .and()
-        .ir_mode_selector_set_to(ModeSelectorPosition::Off);
-    test_bed.run_without_delta();
-    test_bed
-        .run_with_delta(InertialReferenceRuntime::REALIGN_DECISION_TIME - Duration::from_secs(1));
-
-    // Perform the quick align
-    test_bed = test_bed
-        .then_continue_with()
-        .ir_mode_selector_set_to(ModeSelectorPosition::Navigation);
-    test_bed.run();
-
-    test_bed.assert_all_ir_data_available(false);
-    test_bed.assert_ir_status_words_available(true);
-
-    test_bed.run_with_delta(InertialReferenceRuntime::REALIGN_DURATION + Duration::from_secs(1));
-
-    let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word().value());
-    assert_eq!(
-        maint_word_flags.unwrap() & IrMaintFlags::NAV_MODE,
-        IrMaintFlags::NAV_MODE
-    );
-}
-
-#[rstest]
-#[case(ModeSelectorPosition::Navigation)]
-#[case(ModeSelectorPosition::Attitude)]
-fn ir_fault_light_briefly_flashes_when_moving_mode_selector_from_off_to(
-    #[case] mode: ModeSelectorPosition,
-) {
-    let adiru_number = 1;
-    let mut test_bed = test_bed_with(adiru_number).ir_mode_selector_set_to(mode);
-
-    test_bed.run_without_delta();
-    assert!(test_bed.ir_fault_light_illuminated());
-
-    test_bed.run_with_delta(
-        InertialReferenceRuntime::IR_FAULT_FLASH_DURATION - Duration::from_millis(1),
-    );
-    assert!(test_bed.ir_fault_light_illuminated());
-
-    test_bed.run_with_delta(Duration::from_millis(1));
-    assert!(!test_bed.ir_fault_light_illuminated());
-}
-
-#[rstest]
-#[case(1)]
-#[case(2)]
-#[case(3)]
-fn ir_fault_light_doesnt_briefly_flash_when_moving_mode_selector_between_nav_and_att(
-    #[case] adiru_number: usize,
-) {
-    let mut test_bed =
-        test_bed_with(adiru_number).ir_mode_selector_set_to(ModeSelectorPosition::Navigation);
-    test_bed.run_without_delta();
-    test_bed.run();
-
-    test_bed = test_bed
-        .then_continue_with()
-        .ir_mode_selector_set_to(ModeSelectorPosition::Attitude);
-    test_bed.run_with_delta(Duration::from_millis(1));
-
-    assert!(!test_bed.ir_fault_light_illuminated());
 }
 
 #[rstest]
@@ -1712,6 +1496,224 @@ mod ir {
         angular_velocity::{degree_per_second, revolution_per_minute},
         ratio::ratio,
     };
+
+    #[rstest]
+    #[case(1)]
+    #[case(2)]
+    #[case(3)]
+    fn adirs_aligns_in_90_seconds_when_configured_align_time_is_fast(#[case] adiru_number: usize) {
+        let mut test_bed = test_bed_with(adiru_number)
+            .fast_align_set_to(true)
+            .and()
+            .ir_mode_selector_set_to(ModeSelectorPosition::Navigation);
+
+        // Set the state without any time passing to be able to measure exact time afterward.
+        test_bed.run_with_delta(Duration::from_secs(0));
+
+        test_bed.run_with_delta(
+            AirDataInertialReferenceUnit::IR_AVERAGE_STARTUP_TIME_MILLIS
+                + InertialReferenceRuntime::COARSE_ALIGN_QUICK_DURATION
+                + Duration::from_secs(2),
+        );
+        assert!(test_bed.is_align_discrete_set());
+        let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word().value());
+        assert_eq!(
+            maint_word_flags.unwrap() & IrMaintFlags::ALIGNMENT_NOT_READY,
+            IrMaintFlags::ALIGNMENT_NOT_READY
+        );
+
+        test_bed.run_with_delta(InertialReferenceRuntime::FINE_ALIGN_QUICK_DURATION);
+        let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word().value());
+        assert_eq!(
+            maint_word_flags.unwrap() & IrMaintFlags::NAV_MODE,
+            IrMaintFlags::NAV_MODE
+        );
+    }
+
+    #[rstest]
+    #[case(Angle::new::<degree>(85.))]
+    #[case(Angle::new::<degree>(-85.))]
+    fn adirs_does_not_align_near_the_poles(#[case] polar_latitude: Angle) {
+        let adiru_number = 1;
+        let mut test_bed = start_align_at_latitude(polar_latitude, adiru_number);
+        test_bed.run();
+        test_bed.run_with_delta(Duration::from_secs(20 * 60)); // run for 20 minutes, enough for any alignment
+
+        let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word().value());
+        assert_eq!(
+            maint_word_flags.unwrap() & IrMaintFlags::ALIGNMENT_NOT_READY,
+            IrMaintFlags::ALIGNMENT_NOT_READY
+        );
+    }
+
+    #[rstest]
+    #[case(Angle::new::<degree>(85.))]
+    #[case(Angle::new::<degree>(-85.))]
+    fn adirs_stays_aligned_near_the_poles(#[case] polar_latitude: Angle) {
+        let adiru_number = 1;
+        let mut test_bed = adiru_aligned_test_bed(adiru_number)
+            .ir_mode_selector_set_to(ModeSelectorPosition::Navigation)
+            .and()
+            .latitude_of(polar_latitude);
+        test_bed.run();
+
+        let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word().value());
+        assert_eq!(
+            maint_word_flags.unwrap() & IrMaintFlags::NAV_MODE,
+            IrMaintFlags::NAV_MODE
+        );
+    }
+
+    #[rstest]
+    fn adiru_detects_excess_motion_during_alignment() {
+        let adiru_number = 1;
+        let mut test_bed = adiru_unaligned_test_bed_with(adiru_number)
+            .body_lateral_velocity_of(Velocity::new::<foot_per_second>(0.1))
+            .ir_mode_selector_set_to(ModeSelectorPosition::Navigation);
+        test_bed.run();
+        test_bed.run();
+
+        let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word().value());
+        assert_eq!(
+            maint_word_flags.unwrap() & IrMaintFlags::EXCESS_MOTION_ERROR,
+            IrMaintFlags::EXCESS_MOTION_ERROR
+        );
+    }
+
+    #[rstest]
+    #[case(1)]
+    #[case(2)]
+    #[case(3)]
+    fn adirs_does_not_detect_excess_motion_with_excess_motion_inhibit(#[case] adiru_number: usize) {
+        let mut test_bed = adiru_unaligned_test_bed_with(adiru_number)
+            .excess_motion_inhibit_set_to(true)
+            .body_lateral_velocity_of(Velocity::new::<foot_per_second>(0.1))
+            .ir_mode_selector_set_to(ModeSelectorPosition::Navigation);
+        test_bed.run();
+        test_bed.run();
+
+        let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word().value());
+        assert_eq!(
+            maint_word_flags.unwrap() & IrMaintFlags::EXCESS_MOTION_ERROR,
+            IrMaintFlags::empty()
+        );
+    }
+
+    #[rstest]
+    #[case(Angle::new::<degree>(80.))]
+    #[case(Angle::new::<degree>(-80.))]
+    fn adirs_aligns_quicker_near_equator_than_near_the_poles_when_configured_align_time_is_realistic(
+        #[case] polar_latitude: Angle,
+    ) {
+        let adiru_number = 1;
+
+        let step_duration = Duration::from_secs(10);
+
+        let mut equator_alignment_time = Duration::ZERO;
+        let mut test_bed = start_align_at_latitude(Angle::new::<degree>(0.), adiru_number);
+        while test_bed.is_align_discrete_set() {
+            test_bed.run_with_delta(step_duration);
+            equator_alignment_time = equator_alignment_time.saturating_add(step_duration);
+        }
+
+        let mut south_pole_alignment_time = Duration::ZERO;
+        let mut test_bed = start_align_at_latitude(polar_latitude, adiru_number);
+        while test_bed.is_align_discrete_set() {
+            test_bed.run_with_delta(step_duration);
+            south_pole_alignment_time = south_pole_alignment_time.saturating_add(step_duration);
+        }
+
+        assert!(equator_alignment_time < south_pole_alignment_time);
+    }
+
+    fn start_align_at_latitude(latitude: Angle, adiru_number: usize) -> AdirsTestBed {
+        let mut test_bed = adiru_unaligned_test_bed_with(adiru_number)
+            .latitude_of(latitude)
+            .and()
+            .ir_mode_selector_set_to(ModeSelectorPosition::Navigation);
+
+        // Run for startup duration to begin alignment
+        test_bed.run_with_delta(
+            AirDataInertialReferenceUnit::IR_AVERAGE_STARTUP_TIME_MILLIS + Duration::from_secs(1),
+        );
+        test_bed
+    }
+
+    #[rstest]
+    #[case(Angle::new::<degree>(0.))]
+    #[case(Angle::new::<degree>(63.))]
+    #[case(Angle::new::<degree>(-63.))]
+    fn adirs_aligns_quick_when_mode_selector_off_for_3_secs(#[case] latitude: Angle) {
+        let adiru_number = 1;
+        // Create the conditions for a quick align (aligned, then less than 5 secs off)
+        let mut test_bed = adiru_aligned_test_bed(adiru_number)
+            .latitude_of(latitude)
+            .and()
+            .ir_mode_selector_set_to(ModeSelectorPosition::Off);
+        test_bed.run_without_delta();
+        test_bed.run_with_delta(
+            InertialReferenceRuntime::REALIGN_DECISION_TIME - Duration::from_secs(1),
+        );
+
+        // Perform the quick align
+        test_bed = test_bed
+            .then_continue_with()
+            .ir_mode_selector_set_to(ModeSelectorPosition::Navigation);
+        test_bed.run();
+
+        test_bed.assert_all_ir_data_available(false);
+        test_bed.assert_ir_status_words_available(true);
+
+        test_bed
+            .run_with_delta(InertialReferenceRuntime::REALIGN_DURATION + Duration::from_secs(1));
+
+        let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word().value());
+        assert_eq!(
+            maint_word_flags.unwrap() & IrMaintFlags::NAV_MODE,
+            IrMaintFlags::NAV_MODE
+        );
+    }
+
+    #[rstest]
+    #[case(ModeSelectorPosition::Navigation)]
+    #[case(ModeSelectorPosition::Attitude)]
+    fn ir_fault_light_briefly_flashes_when_moving_mode_selector_from_off_to(
+        #[case] mode: ModeSelectorPosition,
+    ) {
+        let adiru_number = 1;
+        let mut test_bed = test_bed_with(adiru_number).ir_mode_selector_set_to(mode);
+
+        test_bed.run_without_delta();
+        assert!(test_bed.ir_fault_light_illuminated());
+
+        test_bed.run_with_delta(
+            InertialReferenceRuntime::IR_FAULT_FLASH_DURATION - Duration::from_millis(1),
+        );
+        assert!(test_bed.ir_fault_light_illuminated());
+
+        test_bed.run_with_delta(Duration::from_millis(1));
+        assert!(!test_bed.ir_fault_light_illuminated());
+    }
+
+    #[rstest]
+    #[case(1)]
+    #[case(2)]
+    #[case(3)]
+    fn ir_fault_light_doesnt_briefly_flash_when_moving_mode_selector_between_nav_and_att(
+        #[case] adiru_number: usize,
+    ) {
+        let mut test_bed =
+            test_bed_with(adiru_number).ir_mode_selector_set_to(ModeSelectorPosition::Navigation);
+        test_bed.run_without_delta();
+        test_bed.run();
+
+        test_bed = test_bed
+            .then_continue_with()
+            .ir_mode_selector_set_to(ModeSelectorPosition::Attitude);
+        test_bed.run_with_delta(Duration::from_millis(1));
+
+        assert!(!test_bed.ir_fault_light_illuminated());
+    }
 
     #[rstest]
     #[case(1)]
