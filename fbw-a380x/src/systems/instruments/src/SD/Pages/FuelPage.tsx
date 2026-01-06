@@ -193,26 +193,26 @@ export const FuelPage = () => {
   //     Feed tanks
   const [feedTank1AftTransferValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:23', 'Percent over 100', 1000);
   const [feedTank1AftTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:27', 'Percent over 100', 1000);
-  const areBothFeedTank1AftTransferValvesOpen =
-    feedTank1AftTransferValve1Open >= TRANSFER_VALVE_CLOSED_THRESHOLD &&
+  const isAnyFeedTank1AftTransferValveOpen =
+    feedTank1AftTransferValve1Open >= TRANSFER_VALVE_CLOSED_THRESHOLD ||
     feedTank1AftTransferValve2Open >= TRANSFER_VALVE_CLOSED_THRESHOLD;
 
   const [feedTank2AftTransferValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:24', 'Percent over 100', 1000);
   const [feedTank2AftTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:28', 'Percent over 100', 1000);
-  const areBothFeedTank2AftTransferValvesOpen =
-    feedTank2AftTransferValve1Open >= TRANSFER_VALVE_CLOSED_THRESHOLD &&
+  const isAnyFeedTank2AftTransferValveOpen =
+    feedTank2AftTransferValve1Open >= TRANSFER_VALVE_CLOSED_THRESHOLD ||
     feedTank2AftTransferValve2Open >= TRANSFER_VALVE_CLOSED_THRESHOLD;
 
   const [feedTank3AftTransferValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:25', 'Percent over 100', 1000);
   const [feedTank3AftTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:29', 'Percent over 100', 1000);
-  const areBothFeedTank3AftTransferValvesOpen =
-    feedTank3AftTransferValve1Open >= TRANSFER_VALVE_CLOSED_THRESHOLD &&
+  const isAnyFeedTank3AftTransferValveOpen =
+    feedTank3AftTransferValve1Open >= TRANSFER_VALVE_CLOSED_THRESHOLD ||
     feedTank3AftTransferValve2Open >= TRANSFER_VALVE_CLOSED_THRESHOLD;
 
   const [feedTank4AftTransferValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:26', 'Percent over 100', 1000);
   const [feedTank4AftTransferValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:30', 'Percent over 100', 1000);
-  const areBothFeedTank4AftTransferValvesOpen =
-    feedTank4AftTransferValve1Open >= TRANSFER_VALVE_CLOSED_THRESHOLD &&
+  const isAnyFeedTank4AftTransferValveOpen =
+    feedTank4AftTransferValve1Open >= TRANSFER_VALVE_CLOSED_THRESHOLD ||
     feedTank4AftTransferValve2Open >= TRANSFER_VALVE_CLOSED_THRESHOLD;
 
   //    Transfer tanks
@@ -253,16 +253,14 @@ export const FuelPage = () => {
     rightOuterAftTransferValve2Open >= TRANSFER_VALVE_CLOSED_THRESHOLD;
 
   const [trimTankInletValve1Open] = useSimVar('FUELSYSTEM VALVE OPEN:43', 'Percent over 100', 1000);
-  const [trimTankInletValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:60', 'Percent over 100', 1000);
+  const [trimTankInletValve2Open] = useSimVar('FUELSYSTEM VALVE OPEN:59', 'Percent over 100', 1000);
 
   const [trimLineIsolationValveFwdOpen] = useSimVar('FUELSYSTEM VALVE OPEN:44', 'Percent over 100', 1000);
-  const [trimLineIsolationValveAft1Open] = useSimVar('FUELSYSTEM VALVE OPEN:45', 'Percent over 100', 1000);
-  const [trimLineIsolationValveAft2Open] = useSimVar('FUELSYSTEM VALVE OPEN:59', 'Percent over 100', 1000);
+  const [trimLineIsolationValveAftOpen] = useSimVar('FUELSYSTEM VALVE OPEN:45', 'Percent over 100', 1000);
 
   const areTrimLineIsolationValvesClosed =
     trimLineIsolationValveFwdOpen < TRANSFER_VALVE_CLOSED_THRESHOLD &&
-    trimLineIsolationValveAft1Open < TRANSFER_VALVE_CLOSED_THRESHOLD &&
-    trimLineIsolationValveAft2Open < TRANSFER_VALVE_CLOSED_THRESHOLD;
+    trimLineIsolationValveAftOpen < TRANSFER_VALVE_CLOSED_THRESHOLD;
 
   const areTrimTankInletValvesClosed =
     trimTankInletValve1Open < TRANSFER_VALVE_CLOSED_THRESHOLD &&
@@ -527,7 +525,7 @@ export const FuelPage = () => {
       y1: 472,
       x2: 111,
       y2: 376,
-      active: areBothFeedTank1AftTransferValvesOpen,
+      active: isAnyFeedTank1AftTransferValveOpen,
       endArrow: 'break-left',
       displayWhenInactive: showMore,
     },
@@ -536,7 +534,7 @@ export const FuelPage = () => {
       y1: 350,
       x2: 111,
       y2: 342,
-      active: areBothFeedTank1AftTransferValvesOpen,
+      active: isAnyFeedTank1AftTransferValveOpen,
       startArrow: 'break-left',
       endArrow: 'out',
       displayWhenInactive: showMore,
@@ -582,7 +580,7 @@ export const FuelPage = () => {
       y1: 472,
       x2: 314,
       y2: 358,
-      active: areBothFeedTank2AftTransferValvesOpen,
+      active: isAnyFeedTank2AftTransferValveOpen,
       endArrow: 'break-left',
       displayWhenInactive: showMore,
     },
@@ -591,7 +589,7 @@ export const FuelPage = () => {
       y1: 332,
       x2: 314,
       y2: 322,
-      active: areBothFeedTank2AftTransferValvesOpen,
+      active: isAnyFeedTank2AftTransferValveOpen,
       startArrow: 'break-left',
       endArrow: 'out',
       displayWhenInactive: showMore,
@@ -603,7 +601,7 @@ export const FuelPage = () => {
       y1: 472,
       x2: 448,
       y2: 358,
-      active: areBothFeedTank3AftTransferValvesOpen,
+      active: isAnyFeedTank3AftTransferValveOpen,
       endArrow: 'break-left',
       displayWhenInactive: showMore,
     },
@@ -612,7 +610,7 @@ export const FuelPage = () => {
       y1: 332,
       x2: 448,
       y2: 322,
-      active: areBothFeedTank3AftTransferValvesOpen,
+      active: isAnyFeedTank3AftTransferValveOpen,
       startArrow: 'break-left',
       endArrow: 'out',
       displayWhenInactive: showMore,
@@ -658,7 +656,7 @@ export const FuelPage = () => {
       y1: 472,
       x2: 653,
       y2: 376,
-      active: areBothFeedTank4AftTransferValvesOpen,
+      active: isAnyFeedTank4AftTransferValveOpen,
       endArrow: 'break-left',
       displayWhenInactive: showMore,
     },
@@ -667,7 +665,7 @@ export const FuelPage = () => {
       y1: 350,
       x2: 653,
       y2: 342,
-      active: areBothFeedTank4AftTransferValvesOpen,
+      active: isAnyFeedTank4AftTransferValveOpen,
       startArrow: 'break-left',
       endArrow: 'out',
       displayWhenInactive: showMore,
