@@ -54,6 +54,7 @@
 1. [ATSU] Add support for BeyondATC and SayIntentions AI ACARS - @saschl
 1. [A380X/MODEL] Add animation for thrust reverser levers - @heclak (Heclak)
 1. [A32NX/EFB] Fix landing performance calculator not loading OFP airport correctly - @tracernz (Mike)
+1. [EFB] Navigraph login link is now clickable - @tracernz (Mike)
 
 ## 0.14.0
 
