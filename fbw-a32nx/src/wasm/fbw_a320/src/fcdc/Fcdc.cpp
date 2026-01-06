@@ -666,6 +666,7 @@ FcdcBus Fcdc::getBusOutputs() {
   output.efcsStatus5.setBit(23, spoiler3Fault);
   output.efcsStatus5.setBit(24, spoiler4Fault);
   output.efcsStatus5.setBit(25, bitFromValueOr(busInputs.sec2.discrete_status_word_1, 11, false));
+  // TODO: Check SPD BRK (2+)3+4 FAULT behaviour on bits 26 and 27 when added
   output.efcsStatus5.setBit(26, sec3Disagree || sec1Disagree);
   // Only SPD BRK 3+4 fault, so SPD BRK 2 must be working fine
   output.efcsStatus5.setBit(27, !spoiler34Avail && spoiler2Avail);
