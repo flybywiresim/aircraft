@@ -18,6 +18,7 @@ use uom::si::acceleration::meter_per_second_squared;
 use uom::si::ratio::ratio;
 use uom::si::velocity::{foot_per_second, knot};
 use uom::si::{angle::degree, angle::radian, f64::*};
+use uom::ConstZero;
 
 #[derive(PartialEq, Debug)]
 enum IrOperationMode {
@@ -802,9 +803,13 @@ impl InertialReferenceRuntime {
         } else {
             SignStatus::NoComputedData
         };
+        let value = if baro_inertial_loop_available {
+            self.measurement_inputs.vertical_speed
+        } else {
+            Velocity::ZERO
+        };
 
-        bus.inertial_vertical_speed
-            .set(self.measurement_inputs.vertical_speed, ssm);
+        bus.inertial_vertical_speed.set(value, ssm);
     }
 
     fn set_discrete_words(&self, bus_outputs: &mut InertialReferenceBusOutputs) {
