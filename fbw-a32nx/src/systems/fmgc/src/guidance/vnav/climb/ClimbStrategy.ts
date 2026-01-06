@@ -89,10 +89,10 @@ export class VerticalSpeedStrategy implements ClimbStrategy, DescentStrategy {
       this.atmosphericConditions.isaDeviation,
       headwindComponent.value,
       tropoPause,
+      perfFactor,
       config.gearExtended,
       config.flapConfig,
       config.gearExtended,
-      perfFactor,
     );
   }
 
@@ -119,10 +119,10 @@ export class VerticalSpeedStrategy implements ClimbStrategy, DescentStrategy {
       this.atmosphericConditions.isaDeviation,
       headwindComponent.value,
       tropoPause,
+      perfFactor,
       config.speedbrakesExtended,
       config.flapConfig,
       config.gearExtended,
-      perfFactor,
     );
   }
 
@@ -166,10 +166,10 @@ export class VerticalSpeedStrategy implements ClimbStrategy, DescentStrategy {
       headwindComponent.value,
       this.atmosphericConditions.isaDeviation,
       tropoPause,
+      perfFactor,
       config.speedbrakesExtended,
       config.flapConfig,
       config.gearExtended,
-      perfFactor,
     );
   }
 }
@@ -208,10 +208,10 @@ export class FlightPathAngleStrategy implements ClimbStrategy, DescentStrategy {
       this.atmosphericConditions.isaDeviation,
       headwindComponent.value,
       tropoPause,
+      perfFactor,
       config.gearExtended,
       config.flapConfig,
       config.speedbrakesExtended,
-      perfFactor,
     );
   }
 
@@ -242,10 +242,10 @@ export class FlightPathAngleStrategy implements ClimbStrategy, DescentStrategy {
       this.atmosphericConditions.isaDeviation,
       headwindComponent.value,
       tropoPause,
+      perfFactor,
       config.gearExtended,
       config.flapConfig,
       config.speedbrakesExtended,
-      perfFactor,
     );
   }
 
@@ -293,11 +293,10 @@ export class FlightPathAngleStrategy implements ClimbStrategy, DescentStrategy {
       headwindComponent.value,
       this.atmosphericConditions.isaDeviation,
       tropoPause,
+      perfFactor,
       config.gearExtended,
       config.flapConfig,
       config.speedbrakesExtended,
-      0,
-      perfFactor,
     );
   }
 }
@@ -336,10 +335,10 @@ export class ClimbThrustClimbStrategy implements ClimbStrategy {
       headwindComponent.value,
       this.atmosphericConditions.isaDeviation,
       tropoPause,
+      perfFactor,
       config.speedbrakesExtended,
       config.flapConfig,
       config.gearExtended,
-      perfFactor,
     );
   }
 
@@ -366,10 +365,10 @@ export class ClimbThrustClimbStrategy implements ClimbStrategy {
       headwindComponent.value,
       this.atmosphericConditions.isaDeviation,
       tropoPause,
+      perfFactor,
       config.speedbrakesExtended,
       config.flapConfig,
       config.gearExtended,
-      perfFactor,
     );
   }
 
@@ -396,10 +395,10 @@ export class ClimbThrustClimbStrategy implements ClimbStrategy {
       headwindComponent.value,
       this.atmosphericConditions.isaDeviation,
       tropoPause,
+      perfFactor,
       config.speedbrakesExtended,
       config.flapConfig,
       config.gearExtended,
-      perfFactor,
     );
   }
 }

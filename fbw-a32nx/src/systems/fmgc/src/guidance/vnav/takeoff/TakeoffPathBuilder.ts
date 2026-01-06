@@ -75,10 +75,10 @@ export class TakeoffPathBuilder {
       0,
       this.atmosphericConditions.isaDeviation,
       tropoPause,
+      perfFactor,
       false,
       takeoffFlapsSetting,
       false,
-      perfFactor,
     );
 
     profile.checkpoints.push({
@@ -121,10 +121,10 @@ export class TakeoffPathBuilder {
       0,
       this.atmosphericConditions.isaDeviation,
       tropoPause,
+      perfFactor,
       false,
       FlapConf.CLEAN,
       false,
-      perfFactor,
     );
 
     profile.checkpoints.push({

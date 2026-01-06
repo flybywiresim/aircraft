@@ -228,10 +228,10 @@ export class IdleDescentStrategy implements DescentStrategy {
       headwindComponent.value,
       this.atmosphericConditions.isaDeviation,
       tropoPause,
+      perfFactor,
       speedbrakesExtended,
       flapConfig,
       gearExtended,
-      perfFactor,
     );
   }
 
@@ -264,10 +264,10 @@ export class IdleDescentStrategy implements DescentStrategy {
       headwindComponent.value,
       this.atmosphericConditions.isaDeviation,
       tropoPause,
+      perfFactor,
       speedbrakesExtended,
       flapConfig,
       gearExtended,
-      perfFactor,
     );
   }
 
@@ -305,10 +305,10 @@ export class IdleDescentStrategy implements DescentStrategy {
       headwindComponent.value,
       this.atmosphericConditions.isaDeviation,
       tropoPause,
+      perfFactor,
       gearExtended,
       flapConfig,
       speedbrakesExtended,
-      perfFactor,
     );
   }
 }

@@ -219,7 +219,7 @@ export class CruisePathBuilder {
   ) {
     const MaxStepDistance = 50;
 
-    const { zeroFuelWeight, managedCruiseSpeedMach, tropoPause } = this.computationParametersObserver.get();
+    const { zeroFuelWeight, managedCruiseSpeedMach, tropoPause, perfFactor } = this.computationParametersObserver.get();
 
     // Keep track of the state here instead of adding a checkpoint for every step to reduce the number of allocations
     const state = {
@@ -243,6 +243,7 @@ export class CruisePathBuilder {
         headwind.value,
         this.atmosphericConditions.isaDeviation,
         tropoPause,
+        perfFactor,
       );
 
       state.distanceFromStart += step.distanceTraveled;
@@ -270,7 +271,7 @@ export class CruisePathBuilder {
     finalSpeed: Knots,
     headwind: WindComponent,
   ): StepResults {
-    const { zeroFuelWeight, cruiseAltitude, managedCruiseSpeedMach, tropoPause } =
+    const { zeroFuelWeight, cruiseAltitude, managedCruiseSpeedMach, tropoPause, perfFactor } =
       this.computationParametersObserver.get();
 
     const staticAirTemperature = this.atmosphericConditions.predictStaticAirTemperatureAtAltitude(cruiseAltitude);
@@ -289,6 +290,7 @@ export class CruisePathBuilder {
       headwind.value,
       this.atmosphericConditions.isaDeviation,
       tropoPause,
+      perfFactor,
     );
   }
 
