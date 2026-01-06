@@ -516,7 +516,7 @@ export class MsfsMapping {
           category = this.mapIlsCatString(nameMatch[1]);
         }
         locBearing = jsFrequency.localizerCourse;
-        gsSlope = jsFrequency.hasGlideslope ? jsFrequency.glideslopeAngle : undefined;
+        gsSlope = jsFrequency.hasGlideslope ? -jsFrequency.glideslopeAngle : undefined;
       } else if (approach) {
         gsSlope = this.approachHasGlideslope(approach)
           ? approach.finalLegs[approach.finalLegs.length - 1].verticalAngle - 360

@@ -6,7 +6,7 @@ use systems::hydraulic::command_sensor_unit::CSU;
 use systems::hydraulic::flap_slat::ValveBlock;
 use systems::shared::{
     AdirsMeasurementOutputs, ConsumePower, DelayedFalseLogicGate, ElectricalBusType,
-    ElectricalBuses, PositionPickoffUnit,
+    ElectricalBuses, LgciuWeightOnWheels, PositionPickoffUnit,
 };
 
 use systems::simulation::{
@@ -96,14 +96,17 @@ impl SlatFlapControlComputer {
         flaps_feedback: &impl PositionPickoffUnit,
         slats_feedback: &impl PositionPickoffUnit,
         adirs: &impl AdirsMeasurementOutputs,
+        lgciu: &impl LgciuWeightOnWheels,
     ) {
         self.is_powered_delayed.update(context, self.is_powered);
 
         self.flaps_channel.update(context, flaps_feedback, adirs);
-        self.slats_channel.update(context, slats_feedback);
+        self.slats_channel
+            .update(context, slats_feedback, adirs, lgciu);
     }
 
     fn slat_flap_system_status_word(&self) -> Arinc429Word<u32> {
+        // Label 046
         if !self.is_powered_delayed.output() {
             return Arinc429Word::default();
         }
@@ -114,6 +117,8 @@ impl SlatFlapControlComputer {
             .get_csu_monitor()
             .time_since_last_valid_detent();
         let flap_auto_command_engaged = self.flaps_channel.get_flap_auto_command_engaged();
+        let slat_baulk_engaged = self.slats_channel.get_slat_baulk_engaged();
+        let slat_alpha_lock_engaged = self.slats_channel.get_slat_alpha_lock_engaged();
 
         // label 046
         let mut word = Arinc429Word::new(0, SignStatus::NormalOperation);
@@ -131,8 +136,8 @@ impl SlatFlapControlComputer {
         word.set_bit(21, current_detent == CSU::ConfFull);
         word.set_bit(22, false);
         word.set_bit(23, false);
-        word.set_bit(24, false);
-        word.set_bit(25, false);
+        word.set_bit(24, slat_alpha_lock_engaged);
+        word.set_bit(25, slat_baulk_engaged);
         word.set_bit(26, flap_auto_command_engaged);
         word.set_bit(
             27,
@@ -220,8 +225,16 @@ impl SlatFlapControlComputer {
 
         let current_detent = self.flaps_channel.get_csu_monitor().get_current_detent();
         let flap_auto_command_engaged = self.flaps_channel.get_flap_auto_command_engaged();
+        let slat_alpha_lock_engaged = self.slats_channel.get_slat_alpha_lock_engaged();
+        let slat_baulk_engaged = self.slats_channel.get_slat_baulk_engaged();
         match current_detent {
-            CSU::Conf0 => Some(FlapsConf::Conf0),
+            CSU::Conf0 => {
+                if slat_alpha_lock_engaged || slat_baulk_engaged {
+                    Some(FlapsConf::Conf1)
+                } else {
+                    Some(FlapsConf::Conf0)
+                }
+            }
             CSU::Conf1 => {
                 if flap_auto_command_engaged {
                     Some(FlapsConf::Conf1)
@@ -293,9 +306,11 @@ impl SlatFlapComplex {
         flaps_feedback: &impl PositionPickoffUnit,
         slats_feedback: &impl PositionPickoffUnit,
         adirs: &impl AdirsMeasurementOutputs,
+        lgciu1: &impl LgciuWeightOnWheels,
+        lgciu2: &impl LgciuWeightOnWheels,
     ) {
-        self.sfcc[0].update(context, flaps_feedback, slats_feedback, adirs);
-        self.sfcc[1].update(context, flaps_feedback, slats_feedback, adirs);
+        self.sfcc[0].update(context, flaps_feedback, slats_feedback, adirs, lgciu1);
+        self.sfcc[1].update(context, flaps_feedback, slats_feedback, adirs, lgciu2);
     }
 
     pub fn flap_pcu(&self, idx: usize) -> &impl ValveBlock {
