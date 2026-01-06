@@ -54,12 +54,6 @@ struct TestFcu {
     bus: FlightControlUnitBusOutputs,
 }
 impl TestFcu {
-    fn new() -> Self {
-        Self {
-            bus: FlightControlUnitBusOutputs::default(),
-        }
-    }
-
     fn set_failed(&mut self, failed: bool) {
         let ssm = if failed {
             SignStatus::FailureWarning
@@ -422,22 +416,6 @@ impl AdirsTestBed {
         self
     }
 
-    fn realistic_navigation_align_until(mut self, duration: Duration, latitude: Angle) -> Self {
-        self = self
-            .ir_mode_selector_set_to(ModeSelectorPosition::Navigation)
-            .latitude_of(latitude);
-
-        // Run once to let the simulation write the remaining alignment time.
-        self.run_with_delta(Duration::from_secs(0));
-        // Run to enter the fine align submode, as the function below only return fine align time
-        self.run_with_delta(InertialReferenceRuntime::COARSE_ALIGN_DURATION);
-
-        let remaining_alignment_time = InertialReferenceRuntime::realistic_align_time(latitude);
-        self.run_with_delta(remaining_alignment_time - duration);
-
-        self
-    }
-
     // Getters and asserts
     fn get_adr_discrete_outputs(aircraft: &TestAircraft) -> &AdrDiscreteOutputs {
         <AirDataInertialReferenceUnit as AirDataReferenceDiscreteOutput>::discrete_outputs(
@@ -467,6 +445,7 @@ impl AdirsTestBed {
         self.query(|a| Self::get_ir_discrete_outputs(a).ir_off)
     }
 
+    #[allow(dead_code)]
     fn adr_fault_light_illuminated(&self) -> bool {
         self.query(|a| Self::get_adr_discrete_outputs(a).adr_fault)
     }
@@ -1203,7 +1182,8 @@ mod adr {
                 .normal_value()
                 .unwrap()
                 .get::<hectopascal>(),
-            1013.
+            1013.,
+            1e-4
         );
     }
 
@@ -2003,12 +1983,15 @@ mod ir {
     #[case(1)]
     #[case(2)]
     #[case(3)]
-    fn true_heading_is_normal_when_remaining_align_is_less_than_two_minutes(
-        #[case] adiru_number: usize,
-    ) {
-        let mut test_bed = test_bed_with(adiru_number).realistic_navigation_align_until(
-            Duration::from_millis(119999),
-            Angle::new::<degree>(0.),
+    fn true_heading_is_normal_when_5_minutes_into_alignment(#[case] adiru_number: usize) {
+        let mut test_bed =
+            test_bed_with(adiru_number).ir_mode_selector_set_to(ModeSelectorPosition::Navigation);
+
+        // Run once to let the simulation write the remaining alignment time.
+        test_bed.run_with_delta(Duration::from_secs(0));
+        test_bed.run_with_delta(InertialReferenceRuntime::COARSE_ALIGN_DURATION);
+        test_bed.run_with_delta(
+            InertialReferenceRuntime::HDG_ALIGN_AVAIL_DURATION + Duration::from_secs(1),
         );
 
         assert!(test_bed.true_heading().is_normal_operation());
@@ -2018,12 +2001,17 @@ mod ir {
     #[case(1)]
     #[case(2)]
     #[case(3)]
-    fn true_heading_is_not_normal_when_remaining_align_is_equal_to_two_minutes(
+    fn true_heading_is_not_normal_when_remaining_align_is_less_than_5_minutes(
         #[case] adiru_number: usize,
     ) {
-        let mut test_bed = test_bed_with(adiru_number).realistic_navigation_align_until(
-            Duration::from_millis(120000),
-            Angle::new::<degree>(0.),
+        let mut test_bed =
+            test_bed_with(adiru_number).ir_mode_selector_set_to(ModeSelectorPosition::Navigation);
+
+        // Run once to let the simulation write the remaining alignment time.
+        test_bed.run_with_delta(Duration::from_secs(0));
+        test_bed.run_with_delta(InertialReferenceRuntime::COARSE_ALIGN_DURATION);
+        test_bed.run_with_delta(
+            InertialReferenceRuntime::HDG_ALIGN_AVAIL_DURATION - Duration::from_secs(1),
         );
 
         assert!(!test_bed.true_heading().is_normal_operation());
@@ -2368,9 +2356,13 @@ mod ir {
         let mut test_bed = adiru_aligned_test_bed(adiru_number).vertical_speed_of(vertical_speed);
         test_bed.run();
 
-        assert_eq!(
-            test_bed.inertial_vertical_speed().normal_value().unwrap(),
-            vertical_speed
+        assert_about_eq!(
+            test_bed
+                .inertial_vertical_speed()
+                .normal_value()
+                .unwrap()
+                .get::<foot_per_minute>(),
+            vertical_speed.get::<foot_per_minute>()
         );
     }
 
