@@ -940,6 +940,43 @@ fn switching_between_nav_and_att_doesnt_affect_the_on_bat_light_illumination(
     assert!(test_bed.on_bat_light_illuminated());
 }
 
+#[rstest]
+#[case(1)]
+#[case(2)]
+#[case(3)]
+fn adiru_is_powered_on_both_primary_and_backup_supply(#[case] adiru_number: usize) {
+    let mut test_bed = adiru_aligned_test_bed(adiru_number);
+    test_bed.run_without_delta();
+
+    test_bed = test_bed.then_continue_with().primary_power_set_to(false);
+    test_bed.run();
+
+    let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word().value());
+    assert_eq!(
+        maint_word_flags.unwrap() & IrMaintFlags::ON_DC,
+        IrMaintFlags::ON_DC
+    );
+    test_bed.assert_all_adr_words_available(true);
+    test_bed.assert_all_ir_words_available(true);
+    assert!(test_bed.on_bat_light_illuminated());
+
+    test_bed = test_bed
+        .then_continue_with()
+        .primary_power_set_to(true)
+        .and()
+        .backup_power_set_to(false);
+    test_bed.run();
+
+    let maint_word_flags = IrMaintFlags::from_bits(test_bed.maint_word().value());
+    assert_eq!(
+        maint_word_flags.unwrap() & IrMaintFlags::DC_FAIL,
+        IrMaintFlags::DC_FAIL
+    );
+    test_bed.assert_all_adr_words_available(true);
+    test_bed.assert_all_ir_words_available(true);
+    assert!(!test_bed.on_bat_light_illuminated());
+}
+
 mod adr {
     use ntest::{assert_false, assert_true};
     use uom::si::{pressure::inch_of_mercury, time::second};
