@@ -25,13 +25,7 @@ import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { ReadonlyFlightPlanLeg } from '@fmgc/flightplanning/legs/ReadonlyFlightPlanLeg';
 import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
 import { FlightPlanFlags } from '@fmgc/flightplanning/plans/FlightPlanFlags';
-
-const getCurrentHHMMSS = (seconds: number) => {
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const secondsLeft = Math.floor(seconds - hours * 3600 - minutes * 60).toFixed(0);
-  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secondsLeft.toString().padStart(2, '0')}`;
-};
+import { secondsToHHmmssString } from '@shared/dateFormatting';
 
 interface MfdFmsSecIndexProps extends AbstractMfdPageProps {}
 
@@ -102,7 +96,6 @@ class MfdFmsSecIndexDataStore {
             if (
               leg.ident === flightPlan.originAirport?.ident ||
               leg.ident === flightPlan.destinationAirport?.ident ||
-              //flightPlan.firstMissedApproachLegIndex
               (nextLeg &&
                 leg.definition.procedureIdent !== '' &&
                 nextLeg.definition.procedureIdent === leg.definition.procedureIdent &&
@@ -267,7 +260,7 @@ export class MfdFmsSecIndexTab extends DestroyableComponent<MfdFmsSecIndexTabPro
         creationSource = ` (ATC F-PLN${wasModified ? '-MODIFIED' : ''})`;
       }
       if (exists && timeCreated) {
-        return `CREATED ${getCurrentHHMMSS(timeCreated).substring(0, 5)}${creationSource}`;
+        return `CREATED\xa0\xa0\xa0${secondsToHHmmssString(timeCreated).substring(0, 5)}${creationSource}`;
       }
       return '';
     },

@@ -737,14 +737,6 @@ export class FlightManagementComputer implements FmcInterface {
       return false;
     }
 
-    if (
-      this.flightPhase.get() === FmgcFlightPhase.Preflight ||
-      this.flightPhase.get() === FmgcFlightPhase.Takeoff ||
-      this.flightPhase.get() === FmgcFlightPhase.Done
-    ) {
-      return true;
-    }
-
     const activePlan = this.flightPlanInterface.active;
 
     const secPlan = this.flightPlanInterface.secondary(secIndex);
@@ -761,7 +753,8 @@ export class FlightManagementComputer implements FmcInterface {
       (activeToLeg !== undefined &&
         secToLeg !== undefined &&
         FlightPlanUtils.areFlightPlanElementsSame(activeToLeg, secToLeg) &&
-        activePlan.activeLegIndex === secPlan.activeLegIndex)
+        activePlan.activeLegIndex === secPlan.activeLegIndex) ||
+      this.flightPhase.get() === FmgcFlightPhase.Preflight
     );
   }
 
@@ -773,6 +766,7 @@ export class FlightManagementComputer implements FmcInterface {
     }
 
     const zfwDiff = this.computeZfwDiffToSecondary(index);
+    const zfwCgDiff = this.computeZfwCgDiffToSecondary(index);
     const oldDestination = this.#flightPlanService.active?.destinationAirport;
 
     if (this.#flightPlanService.hasActive) {
@@ -781,17 +775,21 @@ export class FlightManagementComputer implements FmcInterface {
       await this.#flightPlanService.secondaryActivate(index, !this.enginesWereStarted.get());
     }
 
-    await this.onSecondaryActivated(zfwDiff, oldDestination);
+    await this.onSecondaryActivated(zfwDiff, zfwCgDiff, oldDestination);
   }
 
-  private async onSecondaryActivated(zfwDiff: number | null, oldDestination: Airport | undefined) {
+  private async onSecondaryActivated(
+    zfwDiff: number | null,
+    zfwCgDiff: number | null,
+    oldDestination: Airport | undefined,
+  ) {
     const phase = this.#fmgc.getFlightPhase();
 
     if (phase === FmgcFlightPhase.Preflight || phase === FmgcFlightPhase.Done) {
       this.addMessageToQueue(NXSystemMessages.checkToData);
     }
 
-    if (zfwDiff !== null && zfwDiff > 5) {
+    if (zfwDiff !== null && zfwDiff > 5 && zfwCgDiff !== null && zfwCgDiff > 0.5) {
       this.addMessageToQueue(NXSystemMessages.checkZfw);
       const sub = this.#flightPlanService.active?.performanceData.zeroFuelWeight.sub((_) => {
         this.removeMessageFromQueue(NXSystemMessages.checkZfw.text);
@@ -890,6 +888,16 @@ export class FlightManagementComputer implements FmcInterface {
     const secondaryZfw = secondaryPlan.performanceData.zeroFuelWeight.get();
 
     return activeZfw !== null && secondaryZfw !== null ? Math.abs(activeZfw - secondaryZfw) : null;
+  }
+
+  private computeZfwCgDiffToSecondary(secIndex: number): number | null {
+    const activePlan = this.#flightPlanService.active;
+    const secondaryPlan = this.#flightPlanService.secondary(secIndex);
+
+    const activeZfwCg = activePlan.performanceData.zeroFuelWeightCenterOfGravity.get();
+    const secondaryZfwCg = secondaryPlan.performanceData.zeroFuelWeightCenterOfGravity.get();
+
+    return activeZfwCg !== null && secondaryZfwCg !== null ? Math.abs(activeZfwCg - secondaryZfwCg) : null;
   }
 
   computeAlternateCruiseLevel(forPlan: FlightPlanIndex): number | undefined {

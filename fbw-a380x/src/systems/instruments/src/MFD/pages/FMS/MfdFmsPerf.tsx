@@ -3287,7 +3287,11 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   buttonStyle="color: #e68000; padding-right: 2px;"
                 />
               </div>
-              <div>
+              <div
+                style={{
+                  visibility: this.visibilityConsideringFlightPlanIndex,
+                }}
+              >
                 <Button
                   label="POS MONITOR"
                   onClick={() =>

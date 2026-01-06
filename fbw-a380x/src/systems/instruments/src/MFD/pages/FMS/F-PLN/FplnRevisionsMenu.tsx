@@ -43,6 +43,7 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
         altnFlightPlan ||
         legIndex >= (fpln.loadedFlightPlan?.firstMissedApproachLegIndex ?? Infinity) ||
         planIndex === FlightPlanIndex.Temporary ||
+        planIndex >= FlightPlanIndex.FirstSecondary ||
         [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type) ||
         isFromLeg ||
         !isLegTerminatingAtDatabaseFix,
