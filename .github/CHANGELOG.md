@@ -53,7 +53,7 @@
 1. [A32NX/SFCC] Added implementation of slat baulk and slat alpha lock functions in SFCC - @Eagle941 (Joe)
 1. [ATSU] Add support for BeyondATC and SayIntentions AI ACARS - @saschl
 1. [A380X/MODEL] Add animation for thrust reverser levers - @heclak (Heclak)
-
+1. [A32NX/EFB] Fix landing performance calculator not loading OFP airport correctly - @tracernz (Mike)
 
 ## 0.14.0
 
