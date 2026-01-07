@@ -53,7 +53,10 @@
 1. [A32NX/SFCC] Added implementation of slat baulk and slat alpha lock functions in SFCC - @Eagle941 (Joe)
 1. [ATSU] Add support for BeyondATC and SayIntentions AI ACARS - @saschl
 1. [A380X/MODEL] Add animation for thrust reverser levers - @heclak (Heclak)
-
+1. [A32NX/EFB] Fix landing performance calculator not loading OFP airport correctly - @tracernz (Mike)
+1. [EFB] Navigraph login link is now clickable - @tracernz (Mike)
+1. [A32NX/FCDC] Add `SPD BRK DISAGREE` master caution, and `SPD BRK DO NOT USE` ECAM action - @FozzieHi (fozzie)
+1. [FMS] Remove alttiude restriction for approach phase activation when overflying DECEL waypoint . @BravoMike99 (bruno_pt99)
 
 ## 0.14.0
 

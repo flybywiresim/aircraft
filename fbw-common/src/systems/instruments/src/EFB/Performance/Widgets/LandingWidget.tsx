@@ -104,7 +104,7 @@ export const LandingWidget = () => {
     displayedRunwayLength,
   } = useAppSelector((state) => state.performance.landing);
 
-  const { arrivingAirport, arrivingMetar } = useAppSelector((state) => state.simbrief.data);
+  const { arrivingAirport, arrivingMetar, arrivingRunway } = useAppSelector((state) => state.simbrief.data);
 
   useEffect(() => {
     // in case of head- or tailwind entry only, the runway heading is used to set the wind direction
@@ -221,6 +221,63 @@ export const LandingWidget = () => {
       );
     } catch (err) {
       toast.error('Could not fetch airport');
+    }
+  };
+
+  const syncValuesWithOfp = async () => {
+    try {
+      const parsedMetar: MetarParserType = parseMetar(arrivingMetar);
+
+      const weightKgs = Math.round(Units.poundToKilogram(totalWeight));
+
+      if (!isValidIcao(arrivingAirport)) {
+        toast.error('OFP airport is invalid');
+        return;
+      }
+
+      const values: Partial<typeof initialState.landing> = {
+        icao: arrivingAirport,
+        weight: weightKgs,
+        windDirection,
+        windMagnitude: parsedMetar.wind.speed_kts,
+        windEntry: undefined,
+        temperature: parsedMetar.temperature.celsius,
+        pressure: parsedMetar.barometer.mb,
+      };
+
+      try {
+        values.availableRunways = await getRunways(arrivingAirport);
+        const magvar = await getAirportMagVar(arrivingAirport);
+
+        const runwayIndex = values.availableRunways.findIndex((r) => r.ident === arrivingRunway);
+        if (runwayIndex >= 0) {
+          const newRunway = values.availableRunways[runwayIndex];
+          const windDirection = Math.round(MathUtils.normalise360(parsedMetar.wind.degrees - magvar));
+
+          values.windEntry = `${windDirection.toFixed(0).padStart(3, '0')}/${parsedMetar.wind.speed_kts}`;
+          values.selectedRunwayIndex = runwayIndex;
+          values.runwayHeading = newRunway.magneticBearing;
+          values.runwayLength = newRunway.length;
+          values.slope = -Math.tan(newRunway.gradient * Avionics.Utils.DEG2RAD) * 100;
+          values.elevation = newRunway.elevation;
+        } else {
+          toast.error('Could not find OFP runway!');
+        }
+      } catch (e) {
+        toast.error(e);
+      }
+
+      dispatch(setLandingValues(values));
+    } catch (err) {
+      showModal(
+        <PromptModal
+          title={t('Performance.Landing.MetarErrorDialogTitle')}
+          bodyText={t('Performance.Landing.MetarErrorDialogMessage')}
+          cancelText="No"
+          confirmText="Yes"
+          onConfirm={() => syncValuesWithApiMetar(arrivingAirport)}
+        />,
+      );
     }
   };
 
@@ -484,33 +541,7 @@ export const LandingWidget = () => {
     if (autoFillSource === 'METAR') {
       syncValuesWithApiMetar(icao);
     } else {
-      try {
-        const parsedMetar: MetarParserType = parseMetar(arrivingMetar);
-
-        const weightKgs = Math.round(Units.poundToKilogram(totalWeight));
-
-        dispatch(
-          setLandingValues({
-            weight: weightKgs,
-            windDirection: parsedMetar.wind.degrees,
-            windMagnitude: parsedMetar.wind.speed_kts,
-            temperature: parsedMetar.temperature.celsius,
-            pressure: parsedMetar.barometer.mb,
-          }),
-        );
-      } catch (err) {
-        showModal(
-          <PromptModal
-            title={t('Performance.Landing.MetarErrorDialogTitle')}
-            bodyText={t('Performance.Landing.MetarErrorDialogMessage')}
-            cancelText="No"
-            confirmText="Yes"
-            onConfirm={() => syncValuesWithApiMetar(arrivingAirport)}
-          />,
-        );
-      }
-
-      dispatch(setLandingValues({ icao: arrivingAirport }));
+      syncValuesWithOfp();
     }
   };
 
