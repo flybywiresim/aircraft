@@ -4,12 +4,18 @@ import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvioni
 
 import { ArraySubject, ClockEvents, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
 
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
-import { RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
+import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
+import { RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
 
-import './MfdFmsPerf.scss';
+import { ApproachType } from '@flybywiresim/fbw-sdk';
+import { FlapConf } from '@fmgc/guidance/vnav/common';
+import { VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
+import { FmgcFlightPhase } from '@shared/flightphase';
+import { A380SpeedsUtils } from '@shared/OperatingSpeeds';
+import { maxCertifiedAlt, Mmo, Vmo } from '@shared/PerformanceConstants';
+import { CostIndexMode, FmgcData, TakeoffDerated, TakeoffPowerSetting } from 'instruments/src/MFD/FMC/fmgc';
 import {
   AltitudeFormat,
   AltitudeOrFlightLevelFormat,
@@ -19,7 +25,6 @@ import {
   LengthFormat,
   PercentageFormat,
   QnhFormat,
-  RADIO_ALTITUDE_NODH_VALUE,
   RadioAltitudeFormat,
   SpeedKnotsFormat,
   SpeedMachFormat,
@@ -27,25 +32,18 @@ import {
   WindDirectionFormat,
   WindSpeedFormat,
 } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { maxCertifiedAlt, Mmo, Vmo } from '@shared/PerformanceConstants';
-import { ConfirmationDialog } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/ConfirmationDialog';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
-import { FmgcFlightPhase } from '@shared/flightphase';
-import { CostIndexMode, FmgcData, TakeoffDerated, TakeoffPowerSetting } from 'instruments/src/MFD/FMC/fmgc';
-import { ConditionalComponent } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/ConditionalComponent';
+import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
-import { VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
-import { A380SpeedsUtils } from '@shared/OperatingSpeeds';
+import { ConditionalComponent } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/ConditionalComponent';
+import { ConfirmationDialog } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/ConfirmationDialog';
+import { Lrc } from '../../shared/Lrc';
 import { NXSystemMessages } from '../../shared/NXSystemMessages';
 import {
-  getEtaFromUtcOrPresent as getEtaUtcOrFromPresent,
   getApproachName,
+  getEtaFromUtcOrPresent as getEtaUtcOrFromPresent,
   showReturnButtonUriExtra,
 } from '../../shared/utils';
-import { ApproachType } from '@flybywiresim/fbw-sdk';
-import { FlapConf } from '@fmgc/guidance/vnav/common';
-import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
-import { Lrc } from '../../shared/Lrc';
 
 interface MfdFmsPerfProps extends AbstractMfdPageProps {}
 
