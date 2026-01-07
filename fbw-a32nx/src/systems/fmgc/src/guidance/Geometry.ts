@@ -728,6 +728,7 @@ export class Geometry {
     activeLegIndex: number,
     wptCount: number,
     distanceFromEnd: NauticalMiles,
+    snapToLegs: boolean = false,
     debugString?: string,
   ): [lla: Coordinates, distanceFromLegTermination: number, legIndex: number] | undefined {
     if (!distanceFromEnd || distanceFromEnd < 0) {
@@ -762,10 +763,13 @@ export class Geometry {
         );
         const totalLegPathLength = inboundTransLength + legPartLength + outboundTransLength;
 
+        const isInDiscontinuity = distanceFromEnd - accumulator > totalLegPathLength;
         const distanceFromEndOfLeg = Math.min(distanceFromEnd - accumulator, totalLegPathLength);
 
         let lla: Coordinates | undefined;
-        if (distanceFromEndOfLeg < outboundTransLength) {
+        if (!snapToLegs && isInDiscontinuity) {
+          return undefined;
+        } else if (distanceFromEndOfLeg < outboundTransLength) {
           // Point is in outbound transition segment
           const distanceBeforeTerminator = outboundTransLength + distanceFromEndOfLeg;
 
