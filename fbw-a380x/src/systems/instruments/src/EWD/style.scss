@@ -1,4 +1,5 @@
 @import "../MsfsAvionicsCommon/definitions";
+@import "../MsfsAvionicsCommon/animations";
 @import "../MsfsAvionicsCommon/gauges";
 @import "../MFD/pages/common/widget-style.scss"; // Re-use MFD widget style
 
@@ -404,7 +405,6 @@ text, tspan, span {
   display: flex;
   flex-direction: row;
   flex: 1;
-  padding: 4px 0px 4px 0px;
   margin-left: 10px;
   align-items: center;
   border: 3px solid transparent;
@@ -499,9 +499,9 @@ text, tspan, span {
   text-align: center;
   justify-content: center;
   align-items: center;
-  padding-top: 2px;
-  width: 32px;
+  width: 24px;
   font-size: 26px;
+  margin-right: 20px;
 }
 
 .EclLineCheckboxArea.Checked {
@@ -522,15 +522,18 @@ text, tspan, span {
 }
 
 .EclLineText {
-  margin: 0px 10px 0px 10px;
   font-size: 26px;
+}
+
+.EclLineText.smaller {
+  font-size: 24px;
 }
 
 .EclSeparationLine {
   flex: 1;
   border-bottom: 2px solid $display-white;
-  padding-top: 16px;
-  margin-bottom: 16px;
+  padding-top: 14px;
+  margin-bottom: 14px;
   align-self: center;
   justify-self: center;
   margin-right: 10px;
@@ -539,8 +542,17 @@ text, tspan, span {
 .EclLineContainer {
   height: 34px;
   display: flex;
+  visibility: visible;
   flex-direction: row;
   flex: 1;
+}
+
+.EclLineContainer.smaller {
+  height: 30px;
+}
+
+.EclLineContainer.invisible {
+  visibility: hidden;
 }
 
 .EclLineEndMarker {
@@ -566,8 +578,14 @@ text, tspan, span {
 
 .EclSoftKeys {
   position: absolute;
-  top: 965px;
+  top: 855px;
   right: 3px;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
+}
+
+.PulseAmberInfinite {
+  @include GenericPulsingFill($display-amber, pulse-amber-fill);
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
 }

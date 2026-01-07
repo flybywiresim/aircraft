@@ -8,8 +8,8 @@ TOC:
 
 <span style="color: red">
 OBS:
-The localization files for the flyPad are now in the fbw-common EFB section. The process is the same as described here. 
-The only difference is the path to the localization files. The path is `fbw-a32nx/src/localization/flypad` instead of 
+The localization files for the flyPad are now in the fbw-common EFB section. The process is the same as described here.
+The only difference is the path to the localization files. The path is `fbw-a32nx/src/localization/flypad` instead of
 `fbw-a32nx/src/localization/a32nx`.
 </span>
 
@@ -139,4 +139,6 @@ Localazy filename is `flybywire.locPak`.
 
 - Go to the respective project
 - Use the UI to add/remove/change keys
-- https://localazy.com/docs/general/importing-localization-files#add-new-keys-in-ui 
+- https://localazy.com/docs/general/importing-localization-files#add-new-keys-in-ui
+
+If adding or renaming the keys, make sure to check the "Use dot (.) to create nested keys" option, and then escape the dots in the MSFS key with ^, e.g. `LocalisationPackage.Strings.A380X^.TOOLTIPS^.AUTOBRAKE_2`.

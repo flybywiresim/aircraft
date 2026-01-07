@@ -25,6 +25,7 @@ import { FmsRouterMessages } from '@datalink/router';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { CostIndexMode } from '../../FMC/fmgc';
 import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
+import { showReturnButtonUriExtra } from '../../shared/utils';
 
 import './MfdFmsInit.scss';
 
@@ -621,7 +622,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
             </div>
             <Button
               label="NAVAIDS"
-              onClick={() => this.props.mfd.uiService.navigateTo('fms/position/navaids')}
+              onClick={() => this.props.mfd.uiService.navigateTo(`fms/position/navaids/${showReturnButtonUriExtra}`)}
               buttonStyle="width: 160px; margin-left: 150px; margin-bottom: 10px;"
             />
             <Button
