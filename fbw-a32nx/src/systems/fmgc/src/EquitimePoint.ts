@@ -1,4 +1,4 @@
-import { Fix, MathUtils } from '@flybywiresim/fbw-sdk';
+import { Arinc429Register, Fix, MathUtils } from '@flybywiresim/fbw-sdk';
 import { AeroMath, ConsumerValue, EventBus, UnitType, Vec2Math, Wait } from '@microsoft/msfs-sdk';
 import { FlightPlanInterface } from './flightplanning/FlightPlanInterface';
 import { Navigation } from './navigation/Navigation';
@@ -17,7 +17,7 @@ export interface EquitimePointInterface {
 }
 
 export class EquitimePoint {
-  private static readonly DefaultWind = Vec2Math.create(0, 0);
+  private static readonly DefaultWind = Vec2Math.create();
 
   private static readonly AbsoluteToleranceSeconds = 10;
 
@@ -36,6 +36,8 @@ export class EquitimePoint {
     this.bus.getSubscriber<FlightPhaseManagerEvents>().on('fmgc_flight_phase'),
     FmgcFlightPhase.Preflight,
   );
+
+  private readonly casTargetRegister: Arinc429Register = Arinc429Register.empty();
 
   constructor(
     private readonly bus: EventBus,
@@ -61,19 +63,28 @@ export class EquitimePoint {
     const plan = this.flightPlanService.get(FlightPlanIndex.Active);
 
     const cruiseLevel = plan.performanceData.cruiseFlightLevel.get();
+    const casRegister = this.casTargetRegister.setFromSimVar('L:A32NX_FMGC_1_PFD_SELECTED_SPEED').isInvalid()
+      ? this.casTargetRegister.setFromSimVar('L:A32NX_FMGC_2_PFD_SELECTED_SPEED')
+      : this.casTargetRegister;
 
     if (!ref1 || !ref2 || !ppos || !plan || !this.geometry || !cruiseLevel) {
       return undefined;
     }
 
-    // TODO consider CI and speed limit
+    const managedCruiseCas = Math.min(
+      AeroMath.casToTasIsa(
+        UnitType.KNOT.convertTo(290, UnitType.MPS),
+        UnitType.FOOT.convertTo(cruiseLevel * 100, UnitType.METER),
+      ),
+      AeroMath.machToTasIsa(0.78, UnitType.FOOT.convertTo(cruiseLevel * 100, UnitType.METER)),
+    );
+
+    const cas =
+      this.flightPhase.get() === FmgcFlightPhase.Cruise ? casRegister.valueOr(managedCruiseCas) : managedCruiseCas;
     const tas = UnitType.MPS.convertTo(
-      Math.min(
-        AeroMath.casToTasIsa(
-          UnitType.KNOT.convertTo(290, UnitType.MPS),
-          UnitType.FOOT.convertTo(cruiseLevel * 100, UnitType.METER),
-        ),
-        AeroMath.machToTasIsa(0.78, UnitType.FOOT.convertTo(cruiseLevel * 100, UnitType.METER)),
+      AeroMath.casToTasIsa(
+        UnitType.KNOT.convertTo(cas, UnitType.MPS),
+        UnitType.FOOT.convertTo(cruiseLevel * 100, UnitType.METER),
       ),
       UnitType.KNOT,
     );
@@ -96,6 +107,7 @@ export class EquitimePoint {
         plan.activeLegIndex,
         plan.firstMissedApproachLegIndex,
         etpAlongTrackDistanceGuess,
+        false,
         'ETP',
       );
 
@@ -181,6 +193,7 @@ export class EquitimePoint {
     return this.pilotEnteredReferenceFix2 !== undefined;
   }
 
+  /** Bearing from the current A/C position to reference fix 1, in degrees true, or undefined */
   get pposBearingToReferenceFix1(): number | undefined {
     const ppos = this.navigation.getPpos();
 
@@ -191,6 +204,7 @@ export class EquitimePoint {
     return bearingTo(ppos, this.referenceFix1.location);
   }
 
+  /** Bearing from the current A/C position to reference fix 2, in degrees true, or undefined */
   get pposBearingToReferenceFix2(): number | undefined {
     const ppos = this.navigation.getPpos();
 
@@ -201,6 +215,7 @@ export class EquitimePoint {
     return bearingTo(ppos, this.referenceFix2.location);
   }
 
+  /** Distance from the current A/C position to reference fix 1, in nautical miles, or undefined */
   get pposDistanceToReferenceFix1(): number | undefined {
     const ppos = this.navigation.getPpos();
 
@@ -211,6 +226,7 @@ export class EquitimePoint {
     return distanceTo(ppos, this.referenceFix1.location);
   }
 
+  /** Distance from the current A/C position to reference fix 2, in nautical miles, or undefined */
   get pposDistanceToReferenceFix2(): number | undefined {
     const ppos = this.navigation.getPpos();
 
@@ -221,14 +237,17 @@ export class EquitimePoint {
     return distanceTo(ppos, this.referenceFix2.location);
   }
 
+  /** Time in hours to reach reference fix 1 from the current A/C position, or undefined */
   get pposTimeToReferenceFix1(): number | undefined {
     return this.result.pposTimeToRef1;
   }
 
+  /** Time in hours to reach reference fix 2 from the current A/C position, or undefined */
   get pposTimeToReferenceFix2(): number | undefined {
     return this.result.pposTimeToRef2;
   }
 
+  /** Bearing from the ETP to reference fix 1, in degrees true, or undefined */
   get etpBearingToReferenceFix1(): number | undefined {
     if (!this.result.etp || !this.referenceFix1) {
       return undefined;
@@ -237,6 +256,7 @@ export class EquitimePoint {
     return bearingTo(this.result.etp[0], this.referenceFix1.location);
   }
 
+  /** Bearing from the ETP to reference fix 2, in degrees true, or undefined */
   get etpBearingToReferenceFix2(): number | undefined {
     if (!this.result.etp || !this.referenceFix2) {
       return undefined;
@@ -245,6 +265,7 @@ export class EquitimePoint {
     return bearingTo(this.result.etp[0], this.referenceFix2.location);
   }
 
+  /** Distance from the ETP to reference fix 1, in nautical miles, or undefined */
   get etpDistanceToReferenceFix1(): number | undefined {
     if (!this.result.etp || !this.referenceFix1) {
       return undefined;
@@ -253,6 +274,7 @@ export class EquitimePoint {
     return distanceTo(this.result.etp[0], this.referenceFix1.location);
   }
 
+  /** Distance from the ETP to reference fix 2, in nautical miles, or undefined */
   get etpDistanceToReferenceFix2(): number | undefined {
     if (!this.result.etp || !this.referenceFix2) {
       return undefined;
@@ -261,10 +283,12 @@ export class EquitimePoint {
     return distanceTo(this.result.etp[0], this.referenceFix2.location);
   }
 
+  /** Time from the ETP to reference fix 2, in hours, or undefined */
   get etpTimeToReferenceFix1(): number | undefined {
     return this.result.etpTimeToRef1;
   }
 
+  /** Time from the ETP to reference fix 2, in hours, or undefined */
   get etpTimeToReferenceFix2(): number | undefined {
     return this.result.etpTimeToRef2;
   }
