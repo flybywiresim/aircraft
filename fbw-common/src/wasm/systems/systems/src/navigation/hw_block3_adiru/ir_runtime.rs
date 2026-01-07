@@ -504,7 +504,7 @@ impl InertialReferenceRuntime {
             return;
         }
 
-        discrete_outputs.ir_off = self.output_inhibited;
+        discrete_outputs.ir_off = self.is_off;
         discrete_outputs.ir_fault = false;
         discrete_outputs.battery_operation = self.on_battery_power;
         discrete_outputs.align = self.is_aligning();
