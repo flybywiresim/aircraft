@@ -10,7 +10,7 @@ import {
   SubscribableMapFunctions,
   Subscription,
 } from '@microsoft/msfs-sdk';
-import { ChecklistState, FwsEwdEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
+import { ChecklistState, FwsEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FwsPublisher';
 import { FwsCore } from 'systems-host/CpiomC/FlightWarningSystem/FwsCore';
 import {
   deferredProcedureIds,
@@ -37,7 +37,7 @@ export interface FwsNormalChecklistsDict {
   [key: keyof typeof EcamNormalProcedures]: NormalEclSensedItems;
 }
 export class FwsNormalChecklists {
-  private readonly pub = this.fws.bus.getPublisher<FwsEwdEvents>();
+  private readonly pub = this.fws.bus.getPublisher<FwsEvents>();
 
   private readonly subscriptions: Subscription[] = [];
 

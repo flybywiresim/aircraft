@@ -459,12 +459,18 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   271800064: {
-    title: '\x1b<4m\x1b4mF/CTL\x1bm SPD BRKs POSITION/LVR DISAGREE',
+    title: '\x1b<4m\x1b4mF/CTL\x1bm SPEED BRAKES POS/LEVER DISAGREE',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'SPEED BRAKES LEVER',
+        sensed: true,
+        labelNotCompleted: 'RETRACT',
+      },
+    ],
   },
   271800065: {
-    title: '\x1b<4m\x1b4mF/CTL\x1bm SPD BRKs STILL EXTENDED',
+    title: '\x1b<4m\x1b4mF/CTL\x1bm SPEED BRAKES STILL EXTENDED',
     sensed: true,
     items: [],
   },
@@ -523,6 +529,11 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
         labelNotCompleted: '182',
       },
     ],
+  },
+  271800070: {
+    title: '\x1b<4m\x1b4mOVERSPEED\x1bm LOAD ANALYSIS REQUIRED',
+    sensed: true,
+    items: [],
   },
   // ATA 27: FLAPS/SLATS
   272800001: {
