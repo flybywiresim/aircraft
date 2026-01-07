@@ -60,7 +60,7 @@ export class EquitimePoint {
     const ppos = this.navigation.getPpos();
     const plan = this.flightPlanService.get(FlightPlanIndex.Active);
 
-    const cruiseLevel = plan.performanceData.cruiseFlightLevel;
+    const cruiseLevel = plan.performanceData.cruiseFlightLevel.get();
 
     if (!ref1 || !ref2 || !ppos || !plan || !this.geometry || !cruiseLevel) {
       return undefined;

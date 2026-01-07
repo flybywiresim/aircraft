@@ -21,7 +21,6 @@ import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions
 import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
 import { pathVectorLength } from './PathVector';
 import { Vec2Math } from '@microsoft/msfs-sdk';
-import { distanceTo } from 'msfs-geo';
 import { EquitimePoint } from '../../EquitimePoint';
 
 const PWP_IDENT_TOC = '(T/C)';
@@ -301,62 +300,6 @@ export class PseudoWaypoints implements GuidanceComponent {
       }
       default:
     }
-  }
-
-  private computeEtp(geometry: Geometry, wptCount: number): PseudoWaypoint | undefined {
-    const origin = this.flightPlanService.active.originAirport;
-    const destination = this.flightPlanService.active.destinationAirport;
-
-    const ppos = this.guidanceController.lnavDriver.ppos;
-
-    if (!origin || !destination || !ppos) {
-      return undefined;
-    }
-
-    let distToOrigin = distanceTo(ppos, origin.location); // 20
-    let distToDestination = distanceTo(ppos, destination.location); // 30
-
-    if (distToOrigin > distToDestination) {
-      // We are already past the ETP
-      return undefined;
-    }
-
-    let etpAlongTrackDistanceGuess = this.guidanceController.getAlongTrackDistanceToDestination();
-    let etp = this.pointFromEndOfPath(geometry, wptCount, etpAlongTrackDistanceGuess, 'ETP');
-    let iterations = 0;
-
-    while (Math.abs(distToDestination - distToOrigin) > 0.1 && iterations++ < 10) {
-      const totalDistance = distToOrigin + distToDestination; // 50
-
-      etpAlongTrackDistanceGuess -= distToDestination - totalDistance / 2;
-
-      etp = this.pointFromEndOfPath(geometry, wptCount, etpAlongTrackDistanceGuess, 'ETP');
-
-      if (!etp) break;
-
-      const [etpLla, _] = etp;
-
-      distToOrigin = distanceTo(etpLla, origin.location);
-      distToDestination = distanceTo(etpLla, destination.location);
-    }
-
-    if (!etp) {
-      return undefined;
-    }
-
-    const [etpLla, distanceFromLegTermination, alongLegIndex] = etp;
-
-    return {
-      ident: PWP_IDENT_ETP,
-      alongLegIndex,
-      distanceFromLegTermination,
-      efisSymbolFlag: NdSymbolTypeFlags.None,
-      efisPwpSymbolFlag: NdPwpSymbolTypeFlags.PwpEtp,
-      efisSymbolLla: etpLla,
-      distanceFromStart: undefined,
-      displayedOnMcdu: false,
-      displayedOnNd: true,
-    };
   }
 
   private pointFromEndOfPath(
