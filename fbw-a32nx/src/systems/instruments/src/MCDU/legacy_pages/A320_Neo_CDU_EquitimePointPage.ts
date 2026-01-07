@@ -8,6 +8,7 @@ import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { CDUWindPage } from './A320_Neo_CDU_WindPage';
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
+import { FmgcFlightPhase } from '@shared/flightphase';
 
 export class CDUEquitimePointPage {
   static ShowPage(mcdu: LegacyFmsPageInterface) {
@@ -17,7 +18,10 @@ export class CDUEquitimePointPage {
 
     const plan = mcdu.getFlightPlan(FlightPlanIndex.Active);
 
-    const ref1IdentColumn = new Column(0, '[    ]', Column.cyan, Column.big);
+    const flightPhase = mcdu.flightPhaseManager.phase;
+    const isFlying = flightPhase >= FmgcFlightPhase.Takeoff && flightPhase !== FmgcFlightPhase.Done;
+
+    const ref1IdentColumn = new Column(0, '[     ]', Column.cyan, Column.big);
     const ref1BrgColumn = new Column(9, '---', Column.white, Column.big);
     const ref1DistColumn = new Column(18, '----', Column.white, Column.big, Column.right);
     const ref1UtcColumn = new Column(20, '----', Column.white, Column.big);
@@ -30,7 +34,7 @@ export class CDUEquitimePointPage {
     const etpToRef1DistColumn = new Column(18, '', Column.white, Column.small, Column.right);
     const etpToRef1UtcColumn = new Column(20, '', Column.white, Column.small);
 
-    const ref2IdentColumn = new Column(0, '[    ]', Column.cyan, Column.big);
+    const ref2IdentColumn = new Column(0, '[     ]', Column.cyan, Column.big);
     const ref2BrgColumn = new Column(9, '---', Column.white, Column.big);
     const ref2DistColumn = new Column(18, '----', Column.white, Column.big, Column.right);
     const ref2UtcColumn = new Column(20, '----', Column.white, Column.big);
@@ -65,7 +69,7 @@ export class CDUEquitimePointPage {
         etpService.isReferenceFix1PilotEntered ? Column.big : Column.small,
       );
       if (etpService.pposBearingToReferenceFix1 !== undefined) {
-        ref1BrgColumn.update(`${etpService.pposBearingToReferenceFix1.toFixed(0).padStart(3, '0')}°T`, Column.green);
+        ref1BrgColumn.update(`${etpService.pposBearingToReferenceFix1.toFixed(0).padStart(3, '0')}°`, Column.green);
       }
       if (etpService.pposDistanceToReferenceFix1 !== undefined) {
         ref1DistColumn.update(etpService.pposDistanceToReferenceFix1.toFixed(0), Column.green);
@@ -73,7 +77,9 @@ export class CDUEquitimePointPage {
 
       if (etpService.pposTimeToReferenceFix1 !== undefined) {
         ref1UtcColumn.update(
-          FmsFormatters.secondsToUTC(utcTime + etpService.pposTimeToReferenceFix1 * 3600),
+          isFlying
+            ? FmsFormatters.secondsToUTC(utcTime + etpService.pposTimeToReferenceFix1 * 3600)
+            : FmsFormatters.secondsTohhmm(etpService.pposTimeToReferenceFix1 * 3600),
           Column.green,
         );
       }
@@ -86,16 +92,13 @@ export class CDUEquitimePointPage {
           ? `${MathUtils.normalise360(Vec2Math.theta(etpService.windToReferenceFix1) * MathUtils.RADIANS_TO_DEGREES)
               .toFixed(0)
               .padStart(3, '0')}°/${Vec2Math.abs(etpService.windToReferenceFix1).toFixed(0).padStart(3, '0')}`
-          : '000°/000',
+          : '[ ]°/[ ]',
         etpService.isWindToReferenceFix1PilotEntered ? Column.big : Column.small,
       );
 
       etpToRef1BrgColumn.update('----');
       if (etpService.etpBearingToReferenceFix1 !== undefined) {
-        etpToRef1BrgColumn.update(
-          `${etpService.etpBearingToReferenceFix1.toFixed(0).padStart(3, '0')}°T`,
-          Column.green,
-        );
+        etpToRef1BrgColumn.update(`${etpService.etpBearingToReferenceFix1.toFixed(0).padStart(3, '0')}°`, Column.green);
       }
 
       etpToRef1DistColumn.update('----');
@@ -106,7 +109,9 @@ export class CDUEquitimePointPage {
       etpToRef1UtcColumn.update('----');
       if (etpService.etpTimeToReferenceFix1 !== undefined) {
         etpToRef1UtcColumn.update(
-          FmsFormatters.secondsToUTC(utcTime + etpService.etpTimeToReferenceFix1 * 3600),
+          isFlying
+            ? FmsFormatters.secondsToUTC(utcTime + etpService.etpTimeToReferenceFix1 * 3600)
+            : FmsFormatters.secondsTohhmm(etpService.etpTimeToReferenceFix1 * 3600),
           Column.green,
         );
       }
@@ -148,7 +153,7 @@ export class CDUEquitimePointPage {
         etpService.isReferenceFix2PilotEntered ? Column.big : Column.small,
       );
       if (etpService.pposBearingToReferenceFix2 !== undefined) {
-        ref2BrgColumn.update(`${etpService.pposBearingToReferenceFix2.toFixed(0).padStart(3, '0')}°T`, Column.green);
+        ref2BrgColumn.update(`${etpService.pposBearingToReferenceFix2.toFixed(0).padStart(3, '0')}°`, Column.green);
       }
       if (etpService.pposDistanceToReferenceFix2 !== undefined) {
         ref2DistColumn.update(etpService.pposDistanceToReferenceFix2.toFixed(0), Column.green);
@@ -156,7 +161,9 @@ export class CDUEquitimePointPage {
 
       if (etpService.pposTimeToReferenceFix2 !== undefined) {
         ref2UtcColumn.update(
-          FmsFormatters.secondsToUTC(utcTime + etpService.pposTimeToReferenceFix2 * 3600),
+          isFlying
+            ? FmsFormatters.secondsToUTC(utcTime + etpService.pposTimeToReferenceFix2 * 3600)
+            : FmsFormatters.secondsTohhmm(etpService.pposTimeToReferenceFix2 * 3600),
           Column.green,
         );
       }
@@ -169,16 +176,13 @@ export class CDUEquitimePointPage {
           ? `${MathUtils.normalise360(Vec2Math.theta(etpService.windToReferenceFix2) * MathUtils.RADIANS_TO_DEGREES)
               .toFixed(0)
               .padStart(3, '0')}°/${Vec2Math.abs(etpService.windToReferenceFix2).toFixed(0).padStart(3, '0')}`
-          : '000°/000',
+          : '[ ]°/[ ]',
         etpService.isWindToReferenceFix2PilotEntered ? Column.big : Column.small,
       );
 
       etpToRef2BrgColumn.update('----');
       if (etpService.etpBearingToReferenceFix2 !== undefined) {
-        etpToRef2BrgColumn.update(
-          `${etpService.etpBearingToReferenceFix2.toFixed(0).padStart(3, '0')}°T`,
-          Column.green,
-        );
+        etpToRef2BrgColumn.update(`${etpService.etpBearingToReferenceFix2.toFixed(0).padStart(3, '0')}°`, Column.green);
       }
 
       etpToRef2DistColumn.update('----');
@@ -189,7 +193,9 @@ export class CDUEquitimePointPage {
       etpToRef2UtcColumn.update('----');
       if (etpService.etpTimeToReferenceFix2 !== undefined) {
         etpToRef2UtcColumn.update(
-          FmsFormatters.secondsToUTC(utcTime + etpService.etpTimeToReferenceFix2 * 3600),
+          isFlying
+            ? FmsFormatters.secondsToUTC(utcTime + etpService.etpTimeToReferenceFix2 * 3600)
+            : FmsFormatters.secondsTohhmm(etpService.etpTimeToReferenceFix2 * 3600),
           Column.green,
         );
       }
@@ -240,7 +246,7 @@ export class CDUEquitimePointPage {
         etpLocationLegColumn.update(legIdent ?? '-----', legIdent ? Column.green : Column.white);
         etpLocationLegDistanceColumn.update(`/${(-etp[1]).toFixed(1).padStart(6, ' ')}`, Column.green);
 
-        acToColumn.update('(ETP)');
+        acToColumn.update('(ETP)', Column.green);
         acToDistColumn.update('412', Column.green);
         acToUtcColumn.update('1744', Column.green);
       }
@@ -289,7 +295,7 @@ export class CDUEquitimePointPage {
           new Column(0, 'A/C TO', Column.white, Column.small),
           new Column(9, 'BRG', Column.white, Column.small),
           new Column(18, 'DIST', Column.white, Column.small, Column.right),
-          new Column(20, 'UTC', Column.white, Column.small),
+          new Column(20, isFlying ? 'UTC' : 'TIME', Column.white, Column.small),
         ],
         [ref1IdentColumn, ref1BrgColumn, ref1DistColumn, ref1UtcColumn],
         [trueWindRef1LabelColumn, etpToRef1LabelColumn],
@@ -300,7 +306,7 @@ export class CDUEquitimePointPage {
         [trueWindRef2Column, etpToRef2BrgColumn, etpToRef2DistColumn, etpToRef2UtcColumn],
         [etpLocationLabelColumn],
         [etpLocationLegColumn, etpLocationLegDistanceColumn],
-        [acToLabelColumn, new Column(15, 'DIST'), new Column(20, 'UTC')],
+        [acToLabelColumn, new Column(15, 'DIST'), new Column(20, isFlying ? 'UTC' : 'TIME')],
         [acToColumn, acToDistColumn, acToUtcColumn],
       ]),
     );
