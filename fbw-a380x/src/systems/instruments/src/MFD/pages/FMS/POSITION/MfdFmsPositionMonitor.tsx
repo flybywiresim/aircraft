@@ -428,7 +428,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                   canBeCleared={Subject.create(true)}
                   containerStyle="width: 155px;"
                   alignText="center"
-                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
                   bigUnit={true}
@@ -653,7 +653,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                   enteredByPilot={this.waypointEntered}
                   canBeCleared={Subject.create(true)}
                   alignText="center"
-                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
                   containerStyle='"width:130px;'
