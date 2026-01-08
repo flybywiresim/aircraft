@@ -60,6 +60,7 @@ import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationD
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
 import { VdAltitudeConstraint } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
+import { LOWEST_FUEL_ESTIMATE_KGS, LOWEST_FUEL_ESTIMATE_POUNDS } from '@fmgc/guidance/vnav/VnavConfig';
 
 export interface FmsErrorMessage {
   message: McduMessage;
@@ -481,16 +482,20 @@ export class FlightManagementComputer implements FmcInterface {
     if (destPred) {
       if (this.flightPhase.get() === FmgcFlightPhase.Preflight) {
         // EXTRA = BLOCK - TAXI - TRIP - MIN FUEL DEST - RTE RSV
-        return (
+        return Math.max(
           (this.enginesWereStarted.get() ? this.fmgc.getFOB()! * 1_000 : this.fmgc.data.blockFuel.get() ?? 0) -
-          (this.fmgc.data.taxiFuel.get() ?? 0) -
-          (this.getTripFuel() ?? 0) -
-          (this.fmgc.data.minimumFuelAtDestination.get() ?? 0) -
-          (this.fmgc.data.routeReserveFuelWeight.get() ?? 0)
+            (this.fmgc.data.taxiFuel.get() ?? 0) -
+            (this.getTripFuel() ?? 0) -
+            (this.fmgc.data.minimumFuelAtDestination.get() ?? 0) -
+            (this.fmgc.data.routeReserveFuelWeight.get() ?? 0),
+          LOWEST_FUEL_ESTIMATE_KGS,
         );
       } else {
-        return (
-          Units.poundToKilogram(destPred.estimatedFuelOnBoard) - (this.fmgc.data.minimumFuelAtDestination.get() ?? 0)
+        return Units.poundToKilogram(
+          Math.max(
+            destPred.estimatedFuelOnBoard - (this.fmgc.data.minimumFuelAtDestination.get() ?? 0),
+            LOWEST_FUEL_ESTIMATE_POUNDS,
+          ),
         );
       }
     }
@@ -511,12 +516,14 @@ export class FlightManagementComputer implements FmcInterface {
 
   /** @inheritdoc */
   public getOptFlightLevel(): number | null {
-    return Math.floor((0.96 * (this.getRecMaxFlightLevel() ?? maxCertifiedAlt / 100)) / 5) * 5; // FIXME remove magic
+    const recMax = this.getRecMaxFlightLevel();
+    return recMax != null ? Math.floor((0.96 * (recMax / 100)) / 5) * 5 : null; // FIXME remove magic
   }
 
   /** @inheritdoc */
   public getEoMaxFlightLevel(): number | null {
-    return Math.floor((0.8 * (this.getRecMaxFlightLevel() ?? maxCertifiedAlt / 100)) / 5) * 5; // FIXME remove magic
+    const recMax = this.getRecMaxFlightLevel();
+    return recMax != null ? Math.floor((0.8 * (recMax / 100)) / 5) * 5 : null; // FIXME remove magic
   }
 
   private initSimVars() {

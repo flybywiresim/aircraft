@@ -15,6 +15,7 @@ import { HeadwindProfile } from '@fmgc/guidance/vnav/wind/HeadwindProfile';
 import { TemporaryCheckpointSequence } from '@fmgc/guidance/vnav/profile/TemporaryCheckpointSequence';
 import { ProfileInterceptCalculator } from '@fmgc/guidance/vnav/descent/ProfileInterceptCalculator';
 import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
+import { LOWEST_FUEL_ESTIMATE_POUNDS } from './VnavConfig';
 
 export class CruiseToDescentCoordinator {
   private lastEstimatedFuelAtDestination: Pounds = 4000;
@@ -34,7 +35,10 @@ export class CruiseToDescentCoordinator {
 
     // Use INIT FUEL PRED entry as initial estimate for destination EFOB. Clamp it to avoid unrealistic entries from erroneous pilot input.
     this.lastEstimatedFuelAtDestination = Number.isFinite(estimatedDestinationFuel)
-      ? Math.min(Math.max(estimatedDestinationFuel, 0), this.acConfig.vnavConfig.MAXIMUM_FUEL_ESTIMATE)
+      ? Math.min(
+          Math.max(estimatedDestinationFuel, LOWEST_FUEL_ESTIMATE_POUNDS),
+          this.acConfig.vnavConfig.MAXIMUM_FUEL_ESTIMATE,
+        )
       : 4000;
     this.lastEstimatedTimeAtDestination = 0;
   }

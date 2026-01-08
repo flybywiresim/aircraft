@@ -47,6 +47,7 @@ import {
   VerticalCheckpointReason,
 } from './profile/NavGeometryProfile';
 import { ClimbPathBuilder } from './climb/ClimbPathBuilder';
+import { LOWEST_FUEL_ESTIMATE_POUNDS } from './VnavConfig';
 
 export class VerticalProfileManager {
   private takeoffPathBuilder: TakeoffPathBuilder;
@@ -214,7 +215,10 @@ export class VerticalProfileManager {
     const { estimatedDestinationFuel } = this.observer.get();
     // Use INIT FUEL PRED entry as initial estimate for destination EFOB. Clamp it to avoid potentially crashing predictions entirely from erroneous pilot input.
     const fuelEstimation = Number.isFinite(estimatedDestinationFuel)
-      ? Math.min(Math.max(estimatedDestinationFuel, 0), this.acConfig.vnavConfig.MAXIMUM_FUEL_ESTIMATE)
+      ? Math.min(
+          Math.max(estimatedDestinationFuel, LOWEST_FUEL_ESTIMATE_POUNDS),
+          this.acConfig.vnavConfig.MAXIMUM_FUEL_ESTIMATE,
+        )
       : 4000;
     const finalCruiseAltitude = this.cruisePathBuilder.getFinalCruiseAltitude(descentProfile.cruiseSteps);
 

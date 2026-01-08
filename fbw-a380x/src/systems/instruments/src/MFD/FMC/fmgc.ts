@@ -15,6 +15,7 @@ import { Arinc429Word, Fix, Runway, Units } from '@flybywiresim/fbw-sdk';
 import { Feet } from 'msfs-geo';
 import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
 import { minGw } from '@shared/PerformanceConstants';
+import { LOWEST_FUEL_ESTIMATE_KGS } from '@fmgc/guidance/vnav/VnavConfig';
 
 export enum TakeoffPowerSetting {
   TOGA = 0,
@@ -351,9 +352,9 @@ export class FmgcData {
 
   /** Fuel Penalty Factor in percentage between none and 999. Reset at done phase
    */
-  public readonly fuelPenaltyPercentage = Subject.create<number | null>(null);
+  public readonly fuelPenaltyPercentage = Subject.create<number>(null);
 
-  public readonly fuelPenaltyActive = this.fuelPenaltyPercentage.map((v) => v !== null);
+  public readonly fuelPenaltyActive = this.fuelPenaltyPercentage.map((v) => v !== null && v > 0);
 
   private static readonly DEFAULT_SETTINGS = new FmgcData();
 
@@ -664,7 +665,7 @@ export class FmgcDataService implements Fmgc {
     if (destEfob === null || alternateFuel === null) {
       return null;
     }
-    return destEfob - alternateFuel / 1000;
+    return Math.max(destEfob - alternateFuel, LOWEST_FUEL_ESTIMATE_KGS) / 1000;
   }
 
   /** in feet. null if not set */
@@ -695,7 +696,7 @@ export class FmgcDataService implements Fmgc {
   }
 
   /** In percentage. Null if not set */
-  getPerformanceFactorPercent(): number | null {
+  getPerformanceFactorPercent(): number {
     return this.data.fuelPenaltyPercentage.get(); // TODO add performance factor when implemented
   }
 

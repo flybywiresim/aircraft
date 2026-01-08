@@ -110,7 +110,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
   private readonly destEfob = Subject.create<number | null>(null);
 
   private readonly destEfobLabel = this.destEfob.map((v) =>
-    v !== null ? Math.max(0, Units.poundToKilogram(v) / 1_000).toFixed(1) : '---.-',
+    v !== null ? (Units.poundToKilogram(v) / 1_000).toFixed(1) : '---.-',
   );
 
   private readonly destEfobNotAvailable = this.destEfob.map((efob) => efob == null);
