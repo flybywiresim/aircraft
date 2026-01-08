@@ -264,7 +264,7 @@ export class CDUWindPage {
         const wind = winds[i];
 
         template[i * 2 + 4][0] =
-          `${formatWindVector(wind.vector)}/${this.formatCruiseWindAltitude(plan, wind.altitude)}[color]green`;
+          `${formatWindVector(wind.vector)}/${this.formatCruiseWindAltitude(wind.altitude)}[color]green`;
 
         mcdu.onLeftInput[i + 1] = async (_, scratchpadCallback) => {
           mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
@@ -282,14 +282,14 @@ export class CDUWindPage {
         switch (wind.type) {
           case PropagationType.Forward:
             template[i * 2 + 4][0] =
-              `{small}${formatWindVector(wind.vector)}{end}/${this.formatCruiseWindAltitude(plan, wind.altitude)}[color]cyan`;
+              `{small}${formatWindVector(wind.vector)}{end}/${this.formatCruiseWindAltitude(wind.altitude)}[color]cyan`;
             break;
           case PropagationType.Entry:
             template[i * 2 + 4][0] =
-              `${formatWindVector(wind.vector)}/${this.formatCruiseWindAltitude(plan, wind.altitude)}[color]cyan`;
+              `${formatWindVector(wind.vector)}/${this.formatCruiseWindAltitude(wind.altitude)}[color]cyan`;
             break;
           case PropagationType.Backward:
-            template[i * 2 + 4][0] = `[\xa0]°/[\xa0]/${this.formatCruiseWindAltitude(plan, wind.altitude)}[color]cyan`;
+            template[i * 2 + 4][0] = `[\xa0]°/[\xa0]/${this.formatCruiseWindAltitude(wind.altitude)}[color]cyan`;
             break;
         }
 
@@ -890,15 +890,8 @@ export class CDUWindPage {
     return (Math.round(alt / 10) * 10).toFixed(0);
   }
 
-  private static formatCruiseWindAltitude(plan: FlightPlan, alt: number): string {
-    // TODO does it use trans level at destination or transition altitude at origin for cruise winds?
-    const transLevel = plan.performanceData.transitionLevel.get();
-    const isFl = transLevel !== null && alt >= transLevel * 100;
-
-    if (isFl) {
-      return `FL${(alt / 100).toFixed(0).padStart(3, '0')}`;
-    }
-
-    return (Math.round(alt / 10) * 10).toFixed(0);
+  private static formatCruiseWindAltitude(alt: number): string {
+    // The cruise page always shows flight levels
+    return `FL${(alt / 100).toFixed(0).padStart(3, '0')}`;
   }
 }
