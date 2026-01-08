@@ -860,9 +860,9 @@ export class CDUWindPage {
 
   private static formatClimbWindAltitude(plan: FlightPlan, alt: number): string {
     const transAlt = plan.performanceData.transitionAltitude.get();
-    const originAlt = plan.originAirport.location.alt;
+    const originAlt = plan.originAirport?.location.alt;
 
-    const isGnd = alt <= originAlt + 400;
+    const isGnd = originAlt !== undefined && alt <= originAlt + 400;
     const isFl = transAlt !== null && alt > transAlt;
 
     if (isGnd) {
@@ -876,9 +876,9 @@ export class CDUWindPage {
 
   private static formatDescentWindAltitude(plan: FlightPlan, alt: number): string {
     const transLevel = plan.performanceData.transitionLevel.get();
-    const destinationAlt = plan.destinationAirport.location.alt;
+    const destinationAlt = plan.destinationAirport?.location.alt;
 
-    const isGnd = alt <= destinationAlt + 400;
+    const isGnd = destinationAlt !== undefined && alt <= destinationAlt + 400;
     const isFl = transLevel !== null && alt >= transLevel * 100;
 
     if (isGnd) {

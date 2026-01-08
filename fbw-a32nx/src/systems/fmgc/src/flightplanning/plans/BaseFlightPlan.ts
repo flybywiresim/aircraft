@@ -890,7 +890,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
   }
 
-  get originAirport(): Airport {
+  get originAirport(): Airport | undefined {
     return this.originSegment.originAirport;
   }
 
@@ -901,7 +901,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     this.incrementVersion();
   }
 
-  get originRunway(): Runway {
+  get originRunway(): Runway | undefined {
     return this.originSegment.originRunway;
   }
 
@@ -1006,7 +1006,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     this.incrementVersion();
   }
 
-  get destinationAirport(): Airport {
+  get destinationAirport(): Airport | undefined {
     return this.destinationSegment.destinationAirport;
   }
 
@@ -1017,7 +1017,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     this.incrementVersion();
   }
 
-  get destinationRunway(): Runway {
+  get destinationRunway(): Runway | undefined {
     return this.destinationSegment.destinationRunway;
   }
 
