@@ -28,6 +28,7 @@ import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { DataManager } from '@fmgc/flightplanning/DataManager';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { FuelPredictions } from '@fmgc/flightplanning/fuel/FuelPredictions';
+import { WindEntry } from '@fmgc/flightplanning/data/wind';
 
 export type LskCallback = (
   /** The scratchpad content when the LSK was pressed. */
@@ -222,6 +223,7 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   uplinkWinds(forPlan: FlightPlanIndex): Promise<void>;
   computeAlternateCruiseLevel(forPlan: FlightPlanIndex): number | undefined;
   uplinkWinds(forPlan: FlightPlanIndex, sentCallback?: () => void): Promise<void>;
+  getHistoryWinds(): WindEntry[] | undefined;
 
   flightPlanService: FlightPlanService;
   navigationDatabase: NavigationDatabase;

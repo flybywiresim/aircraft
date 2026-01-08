@@ -70,6 +70,7 @@ import { FmsFormatters } from './FmsFormatters';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
 import { FlightPhaseManager } from '@fmgc/flightphase';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
+import { HistoryWind } from '@fmgc/wind/HistoryWind';
 import {
   A320FlightPlanPerformanceData,
   DefaultPerformanceData,
@@ -304,6 +305,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public efisInterfaces?: Record<EfisSide, EfisInterface>;
   public guidanceController?: GuidanceController;
   public navigation?: Navigation;
+  private historyWinds?: HistoryWind;
 
   public casToMachManualCrossoverCurve;
   public machToCasManualCrossoverCurve;
@@ -395,6 +397,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.efisInterfaces.R,
       a320EfisRangeSettings,
     );
+    if (!this.historyWinds) {
+      this.historyWinds = new HistoryWind(this.bus, this.flightPlanService.active);
+    }
 
     initComponents(this.bus, this.navigation, this.guidanceController, this.flightPlanService);
 
@@ -5754,6 +5759,10 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       descentWindLevel: shouldRequestDescentWinds ? finalCruiseLevel ?? null : undefined,
       alternateWind,
     };
+  }
+
+  public getHistoryWinds() {
+    return this.historyWinds?.getClimbWinds();
   }
   // ---------------------------
   // CDUMainDisplay Types

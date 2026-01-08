@@ -64,12 +64,12 @@ export class CDUWindPage {
 
     const phase = mcdu.flightPhaseManager.phase;
     const canModifyWinds = !doesClbWindUplinkExist && (phase < FmgcFlightPhase.Climb || phase === FmgcFlightPhase.Done);
-    const allowHistoryWindAccess = phase === FmgcFlightPhase.Preflight;
+    const allowHistoryWindAccess = forPlan === FlightPlanIndex.Active && phase === FmgcFlightPhase.Preflight;
 
     const template = [
       ['CLIMB WIND'],
-      ['TRU WIND/ALT', allowHistoryWindAccess ? 'HISTORY\xa0[color]inop' : ''],
-      ['', allowHistoryWindAccess ? 'WIND>[color]inop' : ''],
+      ['TRU WIND/ALT', allowHistoryWindAccess ? 'HISTORY\xa0' : ''],
+      ['', allowHistoryWindAccess ? 'WIND>' : ''],
       ['', doesWindUplinkExist ? 'INSERT{sp}[color]cyan' : 'WIND/TEMP{sp}[color]amber'],
       ['', requestButton],
       ['', ''],
@@ -158,15 +158,14 @@ export class CDUWindPage {
 
     mcdu.setTemplate(template);
 
-    mcdu.onRightInput[4] = () => {
-      const nextCruiseLegIndex = this.findNextCruiseLegIndex(mcdu, plan, 0);
-      if (nextCruiseLegIndex >= 0) {
-        CDUWindPage.ShowCRZPage(mcdu, forPlan, nextCruiseLegIndex);
-      } else {
-        CDUWindPage.ShowDESPage(mcdu, forPlan);
-      }
-    };
+    if (allowHistoryWindAccess) {
+      // HISTORY WIND
+      mcdu.onRightInput[0] = async () => {
+        CDUWindPage.ShowHistoryPage(mcdu, forPlan);
+      };
+    }
 
+    // WIND REQUEST
     mcdu.onRightInput[1] = async (value) => {
       if (doesClbWindUplinkExist) {
         if (value === Keypad.clrValue) {
@@ -192,6 +191,16 @@ export class CDUWindPage {
 
       if (mcdu.page.Current === mcdu.page.ClimbWind) {
         CDUWindPage.ShowCLBPage(mcdu, forPlan);
+      }
+    };
+
+    // NEXT PHASE
+    mcdu.onRightInput[4] = () => {
+      const nextCruiseLegIndex = this.findNextCruiseLegIndex(mcdu, plan, 0);
+      if (nextCruiseLegIndex >= 0) {
+        CDUWindPage.ShowCRZPage(mcdu, forPlan, nextCruiseLegIndex);
+      } else {
+        CDUWindPage.ShowDESPage(mcdu, forPlan);
       }
     };
   }
@@ -663,6 +672,65 @@ export class CDUWindPage {
     // TODO temperature entries
     mcdu.onNextPage = () => mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
     mcdu.onPrevPage = () => mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
+  }
+
+  static ShowHistoryPage(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex) {
+    mcdu.clearDisplay();
+    mcdu.page.Current = mcdu.page.ClimbWind;
+
+    const plan = mcdu.getFlightPlan(forPlan);
+    const historyWinds: WindEntry[] = mcdu.getHistoryWinds() ?? [
+      { altitude: 5_000, vector: Vec2Math.setFromPolar(20, 50 * MathUtils.DEGREES_TO_RADIANS, Vec2Math.create()) },
+      { altitude: 15_000, vector: Vec2Math.setFromPolar(30, 70 * MathUtils.DEGREES_TO_RADIANS, Vec2Math.create()) },
+      { altitude: 25_000, vector: Vec2Math.setFromPolar(35, 70 * MathUtils.DEGREES_TO_RADIANS, Vec2Math.create()) },
+      { altitude: 35_000, vector: Vec2Math.setFromPolar(45, 65 * MathUtils.DEGREES_TO_RADIANS, Vec2Math.create()) },
+      { altitude: 37_000, vector: Vec2Math.setFromPolar(45, 65 * MathUtils.DEGREES_TO_RADIANS, Vec2Math.create()) },
+    ];
+
+    historyWinds.sort((a, b) => a.altitude - b.altitude);
+
+    const template = [
+      ['HISTORY WIND'],
+      ['', ''],
+      ['', ''],
+      ['', ''],
+      ['', ''],
+      ['', ''],
+      ['', ''],
+      ['', ''],
+      ['', ''],
+      ['', ''],
+      ['', ''],
+      ['', ''],
+      ['<CLIMB WIND', 'INSERT*[color]amber'],
+    ];
+
+    for (let i = 0; i < historyWinds.length; i++) {
+      const wind = historyWinds[i];
+
+      if (i === historyWinds.length - 1) {
+        template[i * 2 + 1][0] = '\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0CRZ FL';
+      }
+
+      template[i * 2 + 2][0] =
+        `{small}${formatWindVector(wind.vector)}\xa0${this.formatClimbWindAltitude(plan, wind.altitude)}{end}[color]green`;
+    }
+
+    mcdu.setTemplate(template);
+
+    // RETURN
+    mcdu.onLeftInput[5] = () => {
+      this.ShowCLBPage(mcdu, forPlan);
+    };
+
+    // INSERT
+    mcdu.onRightInput[5] = async () => {
+      for (const wind of historyWinds) {
+        await mcdu.flightPlanService.setClimbWindEntry(wind.altitude, wind, forPlan);
+      }
+
+      this.ShowCLBPage(mcdu, forPlan);
+    };
   }
 
   private static parseWindEntry(mcdu: LegacyFmsPageInterface, input: string, grndAltitude: number): WindEntry | null {
