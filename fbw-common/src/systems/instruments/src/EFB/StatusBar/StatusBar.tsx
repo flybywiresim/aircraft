@@ -4,6 +4,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { FastForwardFill, Wifi, WifiOff } from 'react-bootstrap-icons';
+import { useHistory } from 'react-router-dom';
 import {
   useSimVar,
   usePersistentNumberProperty,
@@ -12,7 +13,7 @@ import {
   useGlobalVar,
 } from '@flybywiresim/fbw-sdk';
 import { useInterval } from '@flybywiresim/react-components';
-import { t, TooltipWrapper, initialState } from '@flybywiresim/flypad';
+import { t, TooltipWrapper, initialState, useTroubleshooting, pathify } from '@flybywiresim/flypad';
 import { BatteryStatus } from './BatteryStatus';
 import { useAppSelector } from '../Store/store';
 import { QuickControls } from './QuickControls';
@@ -85,6 +86,12 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
   const { flightPlanProgress } = useAppSelector((state) => state.flightProgress);
   const { departingAirport, arrivingAirport, schedIn, schedOut } = useAppSelector((state) => state.simbrief.data);
   const { data } = useAppSelector((state) => state.simbrief);
+  const { mismatches: fileHashMismatches } = useAppSelector((state) => state.fileHashes);
+  const troubleshootingLog = useTroubleshooting();
+
+  const history = useHistory();
+
+  const hasTroubleshootingIssue = fileHashMismatches.length > 0 || troubleshootingLog.length > 0;
 
   const [showSchedTimes, setShowSchedTimes] = useState(false);
 
@@ -128,7 +135,12 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
   }, []);
 
   return (
-    <div className="fixed z-30 flex h-10 w-full items-center justify-between bg-theme-statusbar px-6 text-lg font-medium leading-none text-theme-text">
+    <div
+      onClick={() => {
+        hasTroubleshootingIssue && history.push(`/settings/${pathify('About')}/${pathify('Troubleshooting')}`);
+      }}
+      className={`fixed z-30 flex h-10 w-full items-center justify-between ${hasTroubleshootingIssue ? 'bg-theme-statusbar-mismatch' : 'bg-theme-statusbar'} px-6 text-lg font-medium leading-none text-theme-text`}
+    >
       <p>{`${dayName} ${monthName} ${dayOfMonth}`}</p>
 
       {outdatedVersionFlag ? (
