@@ -155,6 +155,21 @@ export class MfdFmsSecIndex extends FmsPage<MfdFmsSecIndexProps> {
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+
+    switch (this.props.mfd.uiService.activeUri.get().extra) {
+      case '1':
+        this.secSelectedPageIndex.set(0);
+        break;
+      case '2':
+        this.secSelectedPageIndex.set(1);
+        break;
+      case '3':
+        this.secSelectedPageIndex.set(2);
+        break;
+
+      default:
+        break;
+    }
   }
 
   public destroy(): void {
