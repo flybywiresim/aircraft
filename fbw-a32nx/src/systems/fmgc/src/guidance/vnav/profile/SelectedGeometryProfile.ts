@@ -8,9 +8,10 @@ import {
   GeographicCruiseStep,
   MaxAltitudeConstraint,
   MaxSpeedConstraint,
-  VerticalCheckpoint,
-  VerticalCheckpointReason,
 } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
+import { ConstantWindProfile, WindInterface } from '../wind/WindProfile';
+import { FlightPlan } from '../../../flightplanning/plans/FlightPlan';
+import { EventBus } from '@microsoft/msfs-sdk';
 
 export class SelectedGeometryProfile extends BaseGeometryProfile {
   public override maxAltitudeConstraints: MaxAltitudeConstraint[] = [];
@@ -25,14 +26,13 @@ export class SelectedGeometryProfile extends BaseGeometryProfile {
 
   public override distanceToPresentPosition: number = 0;
 
-  private checkpointsToShowAlongFlightPlan: Set<VerticalCheckpointReason> = new Set([
-    VerticalCheckpointReason.CrossingFcuAltitudeClimb,
-    VerticalCheckpointReason.CrossingFcuAltitudeDescent,
-    VerticalCheckpointReason.CrossingClimbSpeedLimit,
-  ]);
+  public override readonly winds: WindInterface = new ConstantWindProfile(this.bus, this.plan);
 
-  getCheckpointsToShowOnTrackLine(): VerticalCheckpoint[] {
-    return this.checkpoints.filter((checkpoint) => this.checkpointsToShowAlongFlightPlan.has(checkpoint.reason));
+  constructor(
+    private readonly bus: EventBus,
+    private readonly plan: FlightPlan,
+  ) {
+    super();
   }
 
   override resetAltitudeConstraints(): void {

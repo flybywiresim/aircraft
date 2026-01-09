@@ -360,7 +360,8 @@ export class CDUInitPage {
         CDUWindPage.Return = () => {
           CDUInitPage.ShowPage1(mcdu, forPlan);
         };
-        CDUWindPage.ShowPage(mcdu);
+
+        CDUWindPage.ShowPage(mcdu, forPlan);
       };
     }
 
@@ -551,7 +552,7 @@ export class CDUInitPage {
     const tripWindDirCell = new Column(19, '--');
     const tripWindAvgCell = new Column(21, '---');
 
-    if (plan.originAirport && plan.destinationAirport) {
+    if (plan.originAirport && plan.destinationAirport && !plan.hasWindEntries()) {
       const isTripWindPilotEntered = plan.performanceData.pilotTripWind.get() !== null;
 
       tripWindDirCell.update(

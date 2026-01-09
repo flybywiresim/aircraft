@@ -13,6 +13,7 @@ import {
 } from '@flybywiresim/fbw-sdk';
 import { FlightPlanSegment } from '@fmgc/flightplanning/segments/FlightPlanSegment';
 import { ReadonlyFlightPlanElement, ReadonlyFlightPlanLeg } from '@fmgc/flightplanning/legs/ReadonlyFlightPlanLeg';
+import { PropagatedWindEntry } from '../data/wind';
 
 export interface ReadonlyFlightPlan {
   get index(): number;
@@ -87,4 +88,6 @@ export interface ReadonlyFlightPlan {
   glideslopeIntercept(): number | undefined;
 
   allLegs: readonly ReadonlyFlightPlanElement[];
+
+  propagateWindsAt(atIndex: number, result: PropagatedWindEntry[], maxNumEntries: number): PropagatedWindEntry[];
 }

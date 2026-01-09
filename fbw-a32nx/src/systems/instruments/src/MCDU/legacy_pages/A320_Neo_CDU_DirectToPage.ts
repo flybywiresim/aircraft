@@ -13,6 +13,15 @@ import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 
 export class CDUDirectToPage {
   static ShowPage(mcdu: LegacyFmsPageInterface, directWaypoint?: Fix, wptsListIndex = 0) {
+    // Prevent direct to if wind uplink is pending
+    if (mcdu.flightPlanService.active?.pendingWindUplink?.isWindUplinkReadyToInsert()) {
+      mcdu.addMessageToQueue(
+        NXSystemMessages.windUplinkPending,
+        () => !plan.pendingWindUplink.isWindUplinkReadyToInsert(),
+      );
+      return;
+    }
+
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.DirectToPage;
     mcdu.returnPageCallback = () => {

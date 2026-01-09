@@ -219,6 +219,9 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   activateSecondaryPlan(index: number): Promise<void>;
   swapActiveAndSecondaryPlan(index: number): Promise<void>;
   computeAlternateCruiseLevel(forPlan: FlightPlanIndex): number | undefined;
+  uplinkWinds(forPlan: FlightPlanIndex): Promise<void>;
+  computeAlternateCruiseLevel(forPlan: FlightPlanIndex): number | undefined;
+  uplinkWinds(forPlan: FlightPlanIndex, sentCallback?: () => void): Promise<void>;
 
   flightPlanService: FlightPlanService;
   navigationDatabase: NavigationDatabase;
@@ -275,13 +278,6 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   progBearing: number;
   progDistance: number;
   progWaypointIdent: string | undefined;
-  /** Mess.. replace with wind manager. */
-  winds: {
-    climb: any[];
-    cruise: any[];
-    des: any[];
-    alternate: any | null;
-  };
   isTrueRefMode: boolean;
 }
 

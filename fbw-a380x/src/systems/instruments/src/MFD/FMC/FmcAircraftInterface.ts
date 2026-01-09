@@ -1152,11 +1152,13 @@ export class FmcAircraftInterface {
   getVAppGsMini() {
     let vAppTarget = this.fmgc.data.approachSpeed.get() ?? SimVar.GetSimVarValue('L:A32NX_SPEEDS_F', 'number');
     let towerHeadwind = 0;
-    const appWind = this.fmgc.data.approachWind.get();
+    const appWindDirection = this.fmgc.data.approachWindDirection.get();
+    const appWindSpeed = this.fmgc.data.approachWindSpeed.get();
+
     const destRwy = this.fmgc.getDestinationRunway();
-    if (appWind !== null) {
+    if (appWindDirection !== null && appWindSpeed !== null) {
       if (destRwy) {
-        towerHeadwind = A380SpeedsUtils.getHeadwind(appWind.speed, appWind.direction, destRwy.magneticBearing);
+        towerHeadwind = A380SpeedsUtils.getHeadwind(appWindSpeed, appWindDirection, destRwy.magneticBearing);
       }
       vAppTarget = A380SpeedsUtils.getVtargetGSMini(vAppTarget, A380SpeedsUtils.getHeadWindDiff(towerHeadwind));
     }
@@ -1371,13 +1373,15 @@ export class FmcAircraftInterface {
     }
 
     // if pilot has set approach wind in MCDU we use it, otherwise fall back to current measured wind
-    const appWind = this.fmgc.data.approachWind.get();
+    const appWindDirection = this.fmgc.data.approachWindDirection.get();
+    const appWindSpeed = this.fmgc.data.approachWindSpeed.get();
+
     let towerHeadwind = 0;
-    if (appWind !== null) {
+    if (appWindDirection !== null && appWindSpeed !== null) {
       if (this.flightPlanService.active.destinationRunway) {
         towerHeadwind = A380SpeedsUtils.getHeadwind(
-          appWind.speed,
-          appWind.direction,
+          appWindSpeed,
+          appWindDirection,
           this.flightPlanService.active.destinationRunway.magneticBearing,
         );
       }
