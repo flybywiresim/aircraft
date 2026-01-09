@@ -345,6 +345,11 @@ export class BrakeToVacate implements Instrument {
     if (
       this.radioAltitude.get() < 300 ||
       this.radioAltitude.get() > 500 ||
+      this.fwsFlightPhase.get() < 9 ||
+      this.fwsFlightPhase.get() > 11 ||
+      this.verticalSpeed1.get().valueOr(0) > 400 ||
+      this.verticalSpeed2.get().valueOr(0) > 400 ||
+      this.verticalSpeed3.get().valueOr(0) > 400 ||
       (this.ppos.lat === 0 && this.ppos.long === 0)
     ) {
       this.nearbyAirportMonitor.setLocation(undefined, undefined); // Invalidate location to prevent unnecessary searching
