@@ -1,7 +1,6 @@
 #include "A380LateralNormalLaw.h"
 #include "rtwtypes.h"
 #include <cmath>
-#include <cstring>
 #include "look1_binlxpw.h"
 
 A380LateralNormalLaw::Parameters_A380LateralNormalLaw_T A380LateralNormalLaw::A380LateralNormalLaw_rtP{
@@ -269,77 +268,11 @@ void A380LateralNormalLaw::A380LateralNormalLaw_RateLimiter(real_T rtu_u, real_T
   *rty_Y = localDW->pY;
 }
 
-void A380LateralNormalLaw::A380LateralNormalLaw_TransportDelay_Init(rtDW_TransportDelay_A380LateralNormalLaw_T *localDW)
-{
-  localDW->pointer = 1.0;
-}
-
-void A380LateralNormalLaw::A380LateralNormalLaw_TransportDelay_Reset(rtDW_TransportDelay_A380LateralNormalLaw_T *localDW)
-{
-  std::memset(&localDW->stack[0], 0, 70U * sizeof(real_T));
-  localDW->pointer = 1.0;
-  localDW->timeSinceLastSample = 0.0;
-}
-
-void A380LateralNormalLaw::A380LateralNormalLaw_TransportDelay(real_T rtu_u, const real_T *rtu_dt, boolean_T rtu_reset,
-  real_T *rty_y, rtDW_TransportDelay_A380LateralNormalLaw_T *localDW)
-{
-  if (!rtu_reset) {
-    real_T finalIdx;
-    real_T idx;
-    real_T timeSinceIdx;
-    boolean_T exitg1;
-    timeSinceIdx = 0.0;
-    idx = localDW->pointer;
-    finalIdx = localDW->pointer + 1.0;
-    if (localDW->pointer + 1.0 > 35.0) {
-      finalIdx = 1.0;
-    }
-
-    *rty_y = localDW->stack[static_cast<int32_T>(localDW->pointer) - 1];
-    exitg1 = false;
-    while ((!exitg1) && (idx != finalIdx)) {
-      timeSinceIdx += localDW->stack[static_cast<int32_T>(idx) + 34];
-      *rty_y = localDW->stack[static_cast<int32_T>(idx) - 1];
-      if (timeSinceIdx >= 0.35) {
-        exitg1 = true;
-      } else {
-        idx--;
-        if (idx < 1.0) {
-          idx = 35.0;
-        }
-      }
-    }
-
-    localDW->timeSinceLastSample += *rtu_dt;
-    if (localDW->timeSinceLastSample > 0.01) {
-      localDW->stack[static_cast<int32_T>(localDW->pointer) - 1] = rtu_u;
-      localDW->stack[static_cast<int32_T>(localDW->pointer) + 34] = localDW->timeSinceLastSample;
-      localDW->pointer++;
-      if (localDW->pointer > 35.0) {
-        localDW->pointer = 1.0;
-      }
-
-      localDW->timeSinceLastSample = 0.0;
-    }
-  } else {
-    localDW->timeSinceLastSample = 0.0;
-    std::memset(&localDW->stack[0], 0, 70U * sizeof(real_T));
-    for (int32_T i{0}; i < 35; i++) {
-      localDW->stack[i] = rtu_u;
-    }
-
-    *rty_y = rtu_u;
-  }
-}
-
 void A380LateralNormalLaw::init(void)
 {
   A380LateralNormalLaw_DWork.Delay_DSTATE = A380LateralNormalLaw_rtP.DiscreteDerivativeVariableTs_InitialCondition;
   A380LateralNormalLaw_DWork.Delay1_DSTATE = A380LateralNormalLaw_rtP.Delay1_InitialCondition;
   A380LateralNormalLaw_DWork.icLoad = true;
-  A380LateralNormalLaw_TransportDelay_Init(&A380LateralNormalLaw_DWork.sf_TransportDelay_p);
-  A380LateralNormalLaw_TransportDelay_Init(&A380LateralNormalLaw_DWork.sf_TransportDelay);
 }
 
 void A380LateralNormalLaw::reset(void)
@@ -355,10 +288,8 @@ void A380LateralNormalLaw::reset(void)
   A380LateralNormalLaw_DWork.pY_not_empty_a = false;
   A380LateralNormalLaw_RateLimiter_Reset(&A380LateralNormalLaw_DWork.sf_RateLimiter_go);
   A380LateralNormalLaw_RateLimiter_Reset(&A380LateralNormalLaw_DWork.sf_RateLimiter_g);
-  A380LateralNormalLaw_TransportDelay_Reset(&A380LateralNormalLaw_DWork.sf_TransportDelay_p);
   A380LateralNormalLaw_RateLimiter_Reset(&A380LateralNormalLaw_DWork.sf_RateLimiter_l);
   A380LateralNormalLaw_RateLimiter_Reset(&A380LateralNormalLaw_DWork.sf_RateLimiter_i);
-  A380LateralNormalLaw_TransportDelay_Reset(&A380LateralNormalLaw_DWork.sf_TransportDelay);
 }
 
 void A380LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_Theta_deg, const real_T
@@ -388,7 +319,7 @@ void A380LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_
   int32_T low_ip1;
   int32_T mid_i;
   int16_T r_tmp;
-  boolean_T rtb_NOT_o;
+  boolean_T rtb_NOT;
   static const int16_T b[4]{ 0, 120, 150, 380 };
 
   static const int8_T c[4]{ -15, -15, -15, -2 };
@@ -397,14 +328,13 @@ void A380LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_
 
   static const real_T c_0[5]{ 0.3, 0.3, 0.4, 0.8, 0.8 };
 
-  boolean_T tmp;
-  rtb_NOT_o = !*rtu_In_on_ground;
-  if (static_cast<real_T>(rtb_NOT_o) > A380LateralNormalLaw_rtP.Saturation_UpperSat) {
+  rtb_NOT = !*rtu_In_on_ground;
+  if (static_cast<real_T>(rtb_NOT) > A380LateralNormalLaw_rtP.Saturation_UpperSat) {
     Vias = A380LateralNormalLaw_rtP.Saturation_UpperSat;
-  } else if (static_cast<real_T>(rtb_NOT_o) < A380LateralNormalLaw_rtP.Saturation_LowerSat) {
+  } else if (static_cast<real_T>(rtb_NOT) < A380LateralNormalLaw_rtP.Saturation_LowerSat) {
     Vias = A380LateralNormalLaw_rtP.Saturation_LowerSat;
   } else {
-    Vias = rtb_NOT_o;
+    Vias = rtb_NOT;
   }
 
   A380LateralNormalLaw_RateLimiter(Vias, A380LateralNormalLaw_rtP.RateLimiterVariableTs_up,
@@ -628,9 +558,9 @@ void A380LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_
     A380LateralNormalLaw_DWork.pY_not_empty_a = true;
   }
 
-  A380LateralNormalLaw_DWork.pY_a += std::fmax(std::fmin(static_cast<real_T>(rtb_NOT_o) -
-    A380LateralNormalLaw_DWork.pY_a, std::abs(A380LateralNormalLaw_rtP.RateLimiterVariableTs1_up_j) * *rtu_In_time_dt),
-    -std::abs(A380LateralNormalLaw_rtP.RateLimiterVariableTs1_lo_n) * *rtu_In_time_dt);
+  A380LateralNormalLaw_DWork.pY_a += std::fmax(std::fmin(static_cast<real_T>(rtb_NOT) - A380LateralNormalLaw_DWork.pY_a,
+    std::abs(A380LateralNormalLaw_rtP.RateLimiterVariableTs1_up_j) * *rtu_In_time_dt), -std::abs
+    (A380LateralNormalLaw_rtP.RateLimiterVariableTs1_lo_n) * *rtu_In_time_dt);
   if (A380LateralNormalLaw_DWork.pY_a > A380LateralNormalLaw_rtP.Saturation_UpperSat_n) {
     rtb_Limiterxi = A380LateralNormalLaw_rtP.Saturation_UpperSat_n;
   } else if (A380LateralNormalLaw_DWork.pY_a < A380LateralNormalLaw_rtP.Saturation_LowerSat_b) {
@@ -675,7 +605,7 @@ void A380LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_
     A380LateralNormalLaw_rtP.RateLimiterVariableTs3_lo, rtu_In_time_dt,
     A380LateralNormalLaw_rtP.RateLimiterVariableTs3_InitialCondition, &rtb_Y_j,
     &A380LateralNormalLaw_DWork.sf_RateLimiter_g);
-  if (static_cast<real_T>(rtb_NOT_o) > A380LateralNormalLaw_rtP.Switch1_Threshold) {
+  if (static_cast<real_T>(rtb_NOT) > A380LateralNormalLaw_rtP.Switch1_Threshold) {
     rtb_Limiterxi = A380LateralNormalLaw_rtP.Gain3_Gain * rtb_Y_j;
   } else {
     rtb_Limiterxi = rtb_Y_j;
@@ -689,15 +619,12 @@ void A380LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_
     *rty_Out_zeta_lower_deg = rtb_Limiterxi;
   }
 
-  tmp = !rtb_NOT_o;
-  A380LateralNormalLaw_TransportDelay(rtb_Y_j, rtu_In_time_dt, tmp, &rtb_Limiterxi,
-    &A380LateralNormalLaw_DWork.sf_TransportDelay_p);
-  if (rtb_Limiterxi > A380LateralNormalLaw_rtP.Saturation5_UpperSat) {
+  if (rtb_Y_j > A380LateralNormalLaw_rtP.Saturation5_UpperSat) {
     *rty_Out_zeta_upper_deg = A380LateralNormalLaw_rtP.Saturation5_UpperSat;
-  } else if (rtb_Limiterxi < A380LateralNormalLaw_rtP.Saturation5_LowerSat) {
+  } else if (rtb_Y_j < A380LateralNormalLaw_rtP.Saturation5_LowerSat) {
     *rty_Out_zeta_upper_deg = A380LateralNormalLaw_rtP.Saturation5_LowerSat;
   } else {
-    *rty_Out_zeta_upper_deg = rtb_Limiterxi;
+    *rty_Out_zeta_upper_deg = rtb_Y_j;
   }
 
   if (A380LateralNormalLaw_DWork.Delay_DSTATE > A380LateralNormalLaw_rtP.Saturation_UpperSat_h) {
@@ -729,20 +656,10 @@ void A380LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_
     A380LateralNormalLaw_rtP.RateLimiterVariableTs1_lo_k, rtu_In_time_dt,
     A380LateralNormalLaw_rtP.RateLimiterVariableTs1_InitialCondition_e, &rtb_Y_j,
     &A380LateralNormalLaw_DWork.sf_RateLimiter_i);
-  if (static_cast<real_T>(rtb_NOT_o) > A380LateralNormalLaw_rtP.Switch_Threshold) {
+  if (static_cast<real_T>(rtb_NOT) > A380LateralNormalLaw_rtP.Switch_Threshold) {
     Vias = A380LateralNormalLaw_rtP.Gain_Gain * rtb_Y_j;
   } else {
     Vias = rtb_Y_j;
-  }
-
-  A380LateralNormalLaw_TransportDelay(Vias, rtu_In_time_dt, tmp, &A380LateralNormalLaw_DWork.Delay_DSTATE,
-    &A380LateralNormalLaw_DWork.sf_TransportDelay);
-  if (A380LateralNormalLaw_DWork.Delay_DSTATE > A380LateralNormalLaw_rtP.Saturation3_UpperSat_o) {
-    *rty_Out_xi_midboard_deg = A380LateralNormalLaw_rtP.Saturation3_UpperSat_o;
-  } else if (A380LateralNormalLaw_DWork.Delay_DSTATE < A380LateralNormalLaw_rtP.Saturation3_LowerSat_o) {
-    *rty_Out_xi_midboard_deg = A380LateralNormalLaw_rtP.Saturation3_LowerSat_o;
-  } else {
-    *rty_Out_xi_midboard_deg = A380LateralNormalLaw_DWork.Delay_DSTATE;
   }
 
   if (Vias > A380LateralNormalLaw_rtP.Saturation_UpperSat_a) {
@@ -751,6 +668,14 @@ void A380LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_
     *rty_Out_xi_inboard_deg = A380LateralNormalLaw_rtP.Saturation_LowerSat_m;
   } else {
     *rty_Out_xi_inboard_deg = Vias;
+  }
+
+  if (Vias > A380LateralNormalLaw_rtP.Saturation3_UpperSat_o) {
+    *rty_Out_xi_midboard_deg = A380LateralNormalLaw_rtP.Saturation3_UpperSat_o;
+  } else if (Vias < A380LateralNormalLaw_rtP.Saturation3_LowerSat_o) {
+    *rty_Out_xi_midboard_deg = A380LateralNormalLaw_rtP.Saturation3_LowerSat_o;
+  } else {
+    *rty_Out_xi_midboard_deg = Vias;
   }
 
   if (A380LateralNormalLaw_rtP.Constant_Value_li) {
