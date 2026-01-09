@@ -47,11 +47,11 @@ export class ClimbPathBuilder {
     );
 
     if (this.shouldAddFcuAltAsCheckpoint(fcuVerticalMode, fcuArmedVerticalMode)) {
-      this.addFcuAltitudeAsCheckpoint(profile);
+      this.addFcuAltitudeAsCheckpoint(profile, config);
     }
 
     if (speedProfile.shouldTakeClimbSpeedLimitIntoAccount()) {
-      this.addSpeedLimitAsCheckpoint(profile);
+      this.addSpeedLimitAsCheckpoint(profile, config);
     }
   }
 
@@ -479,7 +479,7 @@ export class ClimbPathBuilder {
     );
   }
 
-  addSpeedLimitAsCheckpoint(profile: BaseGeometryProfile) {
+  addSpeedLimitAsCheckpoint(profile: BaseGeometryProfile, config: AircraftConfig) {
     const {
       climbSpeedLimit: { underAltitude },
       presentPosition: { alt },
@@ -492,10 +492,10 @@ export class ClimbPathBuilder {
 
     const distance = profile.interpolateDistanceAtAltitude(underAltitude);
 
-    profile.addInterpolatedCheckpoint(distance, { reason: VerticalCheckpointReason.CrossingClimbSpeedLimit });
+    profile.addInterpolatedCheckpoint(distance, { reason: VerticalCheckpointReason.CrossingClimbSpeedLimit }, config);
   }
 
-  private addFcuAltitudeAsCheckpoint(profile: BaseGeometryProfile) {
+  private addFcuAltitudeAsCheckpoint(profile: BaseGeometryProfile, config: AircraftConfig) {
     const { fcuAltitude, presentPosition, cruiseAltitude } = this.computationParametersObserver.get();
 
     if (fcuAltitude <= presentPosition.alt || fcuAltitude > cruiseAltitude) {
@@ -504,7 +504,7 @@ export class ClimbPathBuilder {
 
     const distance = profile.interpolateDistanceAtAltitude(fcuAltitude);
 
-    profile.addInterpolatedCheckpoint(distance, { reason: VerticalCheckpointReason.CrossingFcuAltitudeClimb });
+    profile.addInterpolatedCheckpoint(distance, { reason: VerticalCheckpointReason.CrossingFcuAltitudeClimb }, config);
   }
 
   private shouldAddFcuAltAsCheckpoint(verticalMode: VerticalMode, armedVerticalMode: ArmedVerticalMode) {

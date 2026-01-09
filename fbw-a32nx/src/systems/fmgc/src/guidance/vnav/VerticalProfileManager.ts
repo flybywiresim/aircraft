@@ -133,6 +133,7 @@ export class VerticalProfileManager {
       this.flightPlanService,
       this.constraintReader,
       this.atmosphericConditions,
+      this.acConfig,
     );
 
     const speedProfile = new McduSpeedProfile(
@@ -200,6 +201,7 @@ export class VerticalProfileManager {
       this.flightPlanService,
       this.constraintReader,
       this.atmosphericConditions,
+      this.acConfig,
     );
 
     const speedProfile = new McduSpeedProfile(
@@ -286,7 +288,7 @@ export class VerticalProfileManager {
     const { fcuAltitude, cleanSpeed, presentPosition, fuelOnBoard, approachSpeed } = this.observer.get();
 
     const ndProfile = this.fcuModes.isLatAutoControlActive()
-      ? new NavGeometryProfile(this.flightPlanService, this.constraintReader, this.atmosphericConditions)
+      ? new NavGeometryProfile(this.flightPlanService, this.constraintReader, this.atmosphericConditions, this.acConfig)
       : new SelectedGeometryProfile();
 
     let speedProfile: SpeedProfile;

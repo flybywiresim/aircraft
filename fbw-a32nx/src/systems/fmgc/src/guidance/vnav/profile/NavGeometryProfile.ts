@@ -10,6 +10,7 @@ import { isAltitudeConstraintMet } from '@fmgc/guidance/vnav/descent/DescentPath
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { AltitudeConstraint, AltitudeDescriptor, SpeedConstraint } from '@flybywiresim/fbw-sdk';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { AircraftConfig } from '../../../flightplanning/AircraftConfigTypes';
 
 // TODO: Merge this with VerticalCheckpoint
 export interface VerticalWaypointPrediction {
@@ -146,6 +147,7 @@ export class NavGeometryProfile extends BaseGeometryProfile {
     private flightPlanService: FlightPlanService,
     private constraintReader: ConstraintReader,
     private atmosphericConditions: AtmosphericConditions,
+    private config: AircraftConfig,
   ) {
     super();
   }
@@ -225,8 +227,10 @@ export class NavGeometryProfile extends BaseGeometryProfile {
       }
 
       const distanceFromStart = leg.calculated?.cumulativeDistanceWithTransitions;
-      const { secondsFromPresent, altitude, speed, mach, remainingFuelOnBoard } =
-        this.interpolateEverythingFromStart(distanceFromStart);
+      const { secondsFromPresent, altitude, speed, mach, remainingFuelOnBoard } = this.interpolateEverythingFromStart(
+        distanceFromStart,
+        this.config,
+      );
 
       const altitudeConstraint = leg.altitudeConstraint;
       const speedConstraint = leg.speedConstraint;
