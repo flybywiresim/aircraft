@@ -120,7 +120,8 @@ export const NavigraphAuthUI = () => {
     }
   }, 1000);
 
-  const hasQr = !!params?.verification_uri_complete;
+  const verificationUrl = params?.verification_uri_complete ?? '';
+  const hasQr = !!verificationUrl;
 
   return (
     <div className="flex h-full w-full items-center justify-center overflow-x-hidden rounded-lg bg-theme-accent p-6">
@@ -133,7 +134,12 @@ export const NavigraphAuthUI = () => {
 
         <p className="mt-6 w-2/3 text-center">
           {t('NavigationAndCharts.Navigraph.ScanTheQrCodeOrOpen')}{' '}
-          <span className="text-theme-highlight">{params?.verification_uri_complete ?? ''}</span>{' '}
+          <span
+            className="text-theme-highlight"
+            onClick={() => verificationUrl && Coherent.call('OPEN_WEB_BROWSER', verificationUrl)}
+          >
+            {verificationUrl}
+          </span>{' '}
           {t('NavigationAndCharts.Navigraph.IntoYourBrowserAndEnterTheCodeBelow')}
         </p>
 
