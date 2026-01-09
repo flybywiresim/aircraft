@@ -206,8 +206,8 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
    */
   cpnyFplnRequest(intoPlan: FlightPlanIndex): void;
 
-  /** Insert CPNY FPLN into active flight plan */
-  insertCpnyFpln(intoPlan: FlightPlanIndex): void;
+  /** Insert CPNY FPLN into flight plan where request has been made from */
+  insertCpnyFpln(): void;
 
   /**
    * Whether the secondary flight plan can be activated or swapped with the active flight plan

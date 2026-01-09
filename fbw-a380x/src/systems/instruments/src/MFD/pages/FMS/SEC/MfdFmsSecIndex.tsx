@@ -11,6 +11,7 @@ import {
   MappedSubject,
   MappedSubscribable,
   Subject,
+  SubscribableUtils,
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
@@ -26,6 +27,11 @@ import { ReadonlyFlightPlanLeg } from '@fmgc/flightplanning/legs/ReadonlyFlightP
 import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
 import { FlightPlanFlags } from '@fmgc/flightplanning/plans/FlightPlanFlags';
 import { secondsToHHmmssString } from '@shared/dateFormatting';
+import {
+  cpnyFplnButtonDisabled,
+  cpnyFplnButtonLabel,
+  cpnyFplnButtonMenuItems,
+} from '../../../shared/cpnyFplnButtonUtils';
 
 interface MfdFmsSecIndexProps extends AbstractMfdPageProps {}
 
@@ -260,7 +266,7 @@ export class MfdFmsSecIndexTab extends DestroyableComponent<MfdFmsSecIndexTabPro
         creationSource = ` (ATC F-PLN${wasModified ? '-MODIFIED' : ''})`;
       }
       if (exists && timeCreated) {
-        return `CREATED\xa0\xa0\xa0${secondsToHHmmssString(timeCreated).substring(0, 5)}${creationSource}`;
+        return `CREATED\xa0\xa0${secondsToHHmmssString(timeCreated).substring(0, 5)}${creationSource}`;
       }
       return '';
     },
@@ -270,46 +276,20 @@ export class MfdFmsSecIndexTab extends DestroyableComponent<MfdFmsSecIndexTabPro
     this.props.dataStore.wasModified,
   );
 
-  private readonly cpnyFplnButtonLabel = this.props.fmcService.master
-    ? this.props.fmcService.master.fmgc.data.cpnyFplnAvailable.map((it) => {
-        if (!it) {
-          return (
-            <span>
-              CPNY F-PLN
-              <br />
-              REQUEST
-            </span>
-          );
-        }
-        return (
-          <span>
-            RECEIVED
-            <br />
-            CPNY F-PLN
-          </span>
-        );
-      })
-    : MappedSubject.create(() => <></>);
+  private readonly cpnyFplnButtonLabel = cpnyFplnButtonLabel(
+    this.props.fmcService.master,
+    SubscribableUtils.toSubscribable(this.props.flightPlanIndex, true),
+  );
 
-  private readonly cpnyFplnButtonMenuItems: MappedSubscribable<ButtonMenuItem[]> = this.props.fmcService.master
-    ? this.props.fmcService.master.fmgc.data.cpnyFplnAvailable.map((it) =>
-        it
-          ? [
-              {
-                label: 'INSERT*',
-                action: () => this.props.fmcService.master?.insertCpnyFpln(this.props.flightPlanIndex),
-              },
-              {
-                label: 'CLEAR*',
-                action: () => {
-                  this.props.fmcService.master?.flightPlanInterface.uplinkDelete();
-                  this.props.fmcService.master?.fmgc.data.cpnyFplnAvailable.set(false);
-                },
-              },
-            ]
-          : [],
-      )
-    : MappedSubject.create(() => []);
+  private readonly cpnyFplnButtonDisabled = cpnyFplnButtonDisabled(
+    this.props.fmcService.master,
+    SubscribableUtils.toSubscribable(this.props.flightPlanIndex, true),
+  );
+
+  private readonly cpnyFplnButtonMenuItems: MappedSubscribable<ButtonMenuItem[]> = cpnyFplnButtonMenuItems(
+    this.props.fmcService.master,
+    SubscribableUtils.toSubscribable(this.props.flightPlanIndex, true),
+  );
 
   private readonly routeElementSubjects = Array(NUM_ROUTE_LINES_DISPLAYED * 2)
     .fill(1)
@@ -446,7 +426,7 @@ export class MfdFmsSecIndexTab extends DestroyableComponent<MfdFmsSecIndexTabPro
               />
               <Button
                 label={this.cpnyFplnButtonLabel}
-                disabled={this.props.fmcService.master.fmgc.data.cpnyFplnUplinkInProgress}
+                disabled={this.cpnyFplnButtonDisabled}
                 onClick={() =>
                   this.props.fmcService.master?.fmgc.data.cpnyFplnAvailable.get()
                     ? {}

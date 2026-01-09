@@ -385,10 +385,19 @@ export class FlightManagementComputer implements FmcInterface {
         }),
 
         this.fmgc.data.cpnyFplnAvailable.sub((v) => {
+          let flightPlanString = 'ACTIVE';
+          const planIndex = this.fmgc.data.cpnyFplnRequestedForPlan.get();
+          if (planIndex !== null && planIndex >= FlightPlanIndex.FirstSecondary) {
+            flightPlanString = `SEC ${planIndex - FlightPlanIndex.FirstSecondary + 1}`;
+          }
           if (v) {
-            this.addMessageToQueue(NXSystemMessages.comFplnRecievedPendingInsertion);
+            this.addMessageToQueue(
+              NXSystemMessages.comFplnRecievedPendingInsertion.getModifiedMessage(flightPlanString),
+            );
           } else {
-            this.removeMessageFromQueue(NXSystemMessages.comFplnRecievedPendingInsertion.text);
+            this.removeMessageFromQueue(
+              NXSystemMessages.comFplnRecievedPendingInsertion.getModifiedMessage(flightPlanString).text,
+            );
           }
         }),
         this.destDataEntered,
@@ -680,16 +689,20 @@ export class FlightManagementComputer implements FmcInterface {
     this.simBriefOfp = await SimBriefUplinkAdapter.downloadOfpForUserID(navigraphUsername, overrideSimBriefUserID);
 
     try {
+      this.fmgc.data.cpnyFplnRequestedForPlan.set(intoPlan);
+      console.log(intoPlan);
       SimBriefUplinkAdapter.uplinkFlightPlanFromSimbrief(this, this.#flightPlanService, intoPlan, this.simBriefOfp, {
         doUplinkProcedures: false,
       });
     } catch (e) {
+      this.fmgc.data.cpnyFplnRequestedForPlan.set(null);
       console.error(e);
       logTroubleshootingError(this.bus, e);
     }
   }
 
-  async insertCpnyFpln(intoPlan: FlightPlanIndex) {
+  async insertCpnyFpln() {
+    const intoPlan = this.fmgc.data.cpnyFplnRequestedForPlan.get() ?? FlightPlanIndex.Active;
     try {
       this.flightPlanInterface.uplinkInsert(intoPlan);
     } catch (e) {
@@ -715,6 +728,7 @@ export class FlightManagementComputer implements FmcInterface {
     }
 
     this.fmgc.data.cpnyFplnAvailable.set(false);
+    this.fmgc.data.cpnyFplnRequestedForPlan.set(null);
   }
 
   /**

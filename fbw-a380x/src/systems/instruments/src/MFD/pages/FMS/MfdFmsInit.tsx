@@ -26,52 +26,24 @@ import './MfdFmsInit.scss';
 import { FlightPlanChangeNotifier } from '@fmgc/flightplanning/sync/FlightPlanChangeNotifier';
 import { CostIndexMode } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { cpnyFplnButtonDisabled, cpnyFplnButtonLabel, cpnyFplnButtonMenuItems } from '../../shared/cpnyFplnButtonUtils';
 
 interface MfdFmsInitProps extends AbstractMfdPageProps {}
 
 export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
   private readonly flightPlanChangeNotifier = new FlightPlanChangeNotifier(this.props.bus);
 
-  private readonly cpnyFplnButtonLabel = this.props.fmcService.master
-    ? this.props.fmcService.master.fmgc.data.cpnyFplnAvailable.map((it) => {
-        if (!it) {
-          return (
-            <span>
-              CPNY F-PLN
-              <br />
-              REQUEST
-            </span>
-          );
-        }
-        return (
-          <span>
-            RECEIVED
-            <br />
-            CPNY F-PLN
-          </span>
-        );
-      })
-    : MappedSubject.create(() => <></>);
+  private readonly cpnyFplnButtonLabel = cpnyFplnButtonLabel(this.props.fmcService.master, this.loadedFlightPlanIndex);
 
-  private readonly cpnyFplnButtonMenuItems: MappedSubscribable<ButtonMenuItem[]> = this.props.fmcService.master
-    ? this.props.fmcService.master.fmgc.data.cpnyFplnAvailable.map((it) =>
-        it
-          ? [
-              {
-                label: 'INSERT*',
-                action: () => this.props.fmcService.master?.insertCpnyFpln(this.loadedFlightPlanIndex.get()),
-              },
-              {
-                label: 'CLEAR*',
-                action: () => {
-                  this.props.fmcService.master?.flightPlanInterface.uplinkDelete();
-                  this.props.fmcService.master?.fmgc.data.cpnyFplnAvailable.set(false);
-                },
-              },
-            ]
-          : [],
-      )
-    : MappedSubject.create(() => []);
+  private readonly cpnyFplnButtonMenuItems: MappedSubscribable<ButtonMenuItem[]> = cpnyFplnButtonMenuItems(
+    this.props.fmcService.master,
+    this.loadedFlightPlanIndex,
+  );
+
+  private readonly cpnyFplnButtonDisabled = cpnyFplnButtonDisabled(
+    this.props.fmcService.master,
+    this.loadedFlightPlanIndex,
+  );
 
   private readonly mandatoryAndActiveFpln = this.loadedFlightPlanIndex.map(
     (it) => it === FlightPlanIndex.Active || it === FlightPlanIndex.Temporary,
@@ -378,7 +350,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
               <div style="flex-grow: 1" />
               <Button
                 label={this.cpnyFplnButtonLabel}
-                disabled={this.props.fmcService.master.fmgc.data.cpnyFplnUplinkInProgress}
+                disabled={this.cpnyFplnButtonDisabled}
                 onClick={() =>
                   this.props.fmcService.master?.fmgc.data.cpnyFplnAvailable.get()
                     ? {}

@@ -25,6 +25,8 @@ export class FmgcData {
 
   public readonly cpnyFplnAvailable = Subject.create(false);
 
+  public readonly cpnyFplnRequestedForPlan = Subject.create<FlightPlanIndex | null>(null);
+
   public readonly cpnyFplnUplinkInProgress = Subject.create(false);
 
   public readonly atcCallsign = Subject.create<string | null>(null);

@@ -70,7 +70,11 @@ export const NXSystemMessages = {
   checkSpeedMode: new TypeIIMessage('CHECK SPD MODE'),
   checkToData: new TypeIIMessage('CHECK T.O. DATA', true),
   checkZfw: new TypeIIMessage('CHECK ZFW', true),
-  comFplnRecievedPendingInsertion: new TypeIIMessage('COMPANY F-PLN RECEIVED WAITING FOR INSERTION', false),
+  comFplnRecievedPendingInsertion: new TypeIIMessage(
+    'COMPANY F-PLN RECEIVED WAITING FOR INSERTION IN XXXXXX',
+    false,
+    'XXXXXX',
+  ),
   comDatalinkNotAvail: new TypeIMessage('COM DATALINK NOT AVAIL'),
   cstrDelUpToWpt: new TypeIIMessage('CONSTRAINTS BEFORE WWWWW : DELETED', false, 'WWWWW'),
   costIndexInUse: new TypeIMessage('COST INDEX-NNN IN USE', false, 'NNN'),
