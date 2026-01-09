@@ -47,7 +47,6 @@ import {
   VerticalCheckpointReason,
 } from './profile/NavGeometryProfile';
 import { ClimbPathBuilder } from './climb/ClimbPathBuilder';
-import { LOWEST_FUEL_ESTIMATE_POUNDS } from './VnavConfig';
 
 export class VerticalProfileManager {
   private takeoffPathBuilder: TakeoffPathBuilder;
@@ -216,7 +215,7 @@ export class VerticalProfileManager {
     // Use INIT FUEL PRED entry as initial estimate for destination EFOB. Clamp it to avoid potentially crashing predictions entirely from erroneous pilot input.
     const fuelEstimation = Number.isFinite(estimatedDestinationFuel)
       ? Math.min(
-          Math.max(estimatedDestinationFuel, LOWEST_FUEL_ESTIMATE_POUNDS),
+          Math.max(estimatedDestinationFuel, this.acConfig.vnavConfig.LOWEST_FUEL_ESTIMATE),
           this.acConfig.vnavConfig.MAXIMUM_FUEL_ESTIMATE,
         )
       : 4000;
@@ -388,7 +387,11 @@ export class VerticalProfileManager {
       const interceptReason = isDesActive
         ? VerticalCheckpointReason.InterceptDescentProfileManaged
         : VerticalCheckpointReason.InterceptDescentProfileSelected;
-      const interceptCheckpoint = ndProfile.addInterpolatedCheckpoint(interceptDistance, { reason: interceptReason });
+      const interceptCheckpoint = ndProfile.addInterpolatedCheckpoint(
+        interceptDistance,
+        { reason: interceptReason },
+        this.acConfig,
+      );
 
       const isAircraftTooCloseToIntercept = Math.abs(presentPosition.alt - interceptCheckpoint.altitude) < 100;
       if (isAircraftTooCloseToIntercept) {
@@ -424,9 +427,11 @@ export class VerticalProfileManager {
       // If we appended the managed profile directly after the intercept, we will have spliced away the level off arrow, so we have to add it again
       // At this point, we have to add the level off arrow again, because we spliced the previous one away as it lies after the intercept
       const levelOffDistance = ndProfile.interpolateDistanceAtAltitudeBackwards(fcuAltitude, true);
-      ndProfile.addInterpolatedCheckpoint(levelOffDistance, {
-        reason: VerticalCheckpointReason.CrossingFcuAltitudeDescent,
-      });
+      ndProfile.addInterpolatedCheckpoint(
+        levelOffDistance,
+        { reason: VerticalCheckpointReason.CrossingFcuAltitudeDescent },
+        this.acConfig,
+      );
     } else {
       ndProfile.checkpoints.push(
         ...this.descentProfile.checkpoints
@@ -484,9 +489,11 @@ export class VerticalProfileManager {
         (isInLevelFlight && isDescentArmed && currentAlt - checkpoint.altitude > 100) ||
         constraintAlt - checkpoint.altitude > 100
       ) {
-        ndProfile.addInterpolatedCheckpoint(previousCheckpoint.distanceFromStart, {
-          reason: VerticalCheckpointReason.ContinueDescentArmed,
-        });
+        ndProfile.addInterpolatedCheckpoint(
+          previousCheckpoint.distanceFromStart,
+          { reason: VerticalCheckpointReason.ContinueDescentArmed },
+          this.acConfig,
+        );
 
         break;
       }
@@ -528,9 +535,11 @@ export class VerticalProfileManager {
         continue;
       }
 
-      ndProfile.addInterpolatedCheckpoint(Math.max(levelOffDistance, previousCheckpoint.distanceFromStart), {
-        reason: VerticalCheckpointReason.ContinueDescent,
-      });
+      ndProfile.addInterpolatedCheckpoint(
+        Math.max(levelOffDistance, previousCheckpoint.distanceFromStart),
+        { reason: VerticalCheckpointReason.ContinueDescent },
+        this.acConfig,
+      );
 
       return;
     }
@@ -555,9 +564,9 @@ export class VerticalProfileManager {
     if (index >= 0) {
       // If we have an intercept, adjust the fuel predictions/time predictions based on the current aircraft state
       const { secondsFromPresent: tacticalTimeAtIntercept, remainingFuelOnBoard: tacticalFuelAtIntercept } =
-        mcduProfile.interpolateEverythingFromStart(interceptDistance, false);
+        mcduProfile.interpolateEverythingFromStart(interceptDistance, this.acConfig, false);
       const { secondsFromPresent: guidanceTimeAtIntercept, remainingFuelOnBoard: guidanceFuelAtIntercept } =
-        this.descentProfile.interpolateEverythingFromStart(interceptDistance - offset, false);
+        this.descentProfile.interpolateEverythingFromStart(interceptDistance - offset, this.acConfig, false);
 
       // How much more fuel is predicted in the tactical profile vs the guidance profile
       const fuelOffset = tacticalFuelAtIntercept - guidanceFuelAtIntercept;
@@ -581,9 +590,11 @@ export class VerticalProfileManager {
     if (!decelPointInMcdu) {
       const decelPointInGuidanceProfile = this.descentProfile.findVerticalCheckpoint(VerticalCheckpointReason.Decel);
 
-      mcduProfile.addInterpolatedCheckpoint(decelPointInGuidanceProfile.distanceFromStart + offset, {
-        reason: VerticalCheckpointReason.Decel,
-      });
+      mcduProfile.addInterpolatedCheckpoint(
+        decelPointInGuidanceProfile.distanceFromStart + offset,
+        { reason: VerticalCheckpointReason.Decel },
+        this.acConfig,
+      );
     }
 
     const spdLimCrossingInMcdu = mcduProfile.findVerticalCheckpoint(VerticalCheckpointReason.CrossingDescentSpeedLimit);
@@ -596,9 +607,11 @@ export class VerticalProfileManager {
           spdLimCrossingInGuidanceProfile.altitude,
         );
 
-        mcduProfile.addInterpolatedCheckpoint(spdLimCrossingDistance, {
-          reason: VerticalCheckpointReason.CrossingDescentSpeedLimit,
-        });
+        mcduProfile.addInterpolatedCheckpoint(
+          spdLimCrossingDistance,
+          { reason: VerticalCheckpointReason.CrossingDescentSpeedLimit },
+          this.acConfig,
+        );
       }
     }
   }

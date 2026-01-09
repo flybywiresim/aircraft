@@ -18,7 +18,7 @@ import { A380AltitudeUtils } from '@shared/OperatingAltitudes';
 import { maxBlockFuel, maxCertifiedAlt, maxZfw } from '@shared/PerformanceConstants';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FmcAircraftInterface } from 'instruments/src/MFD/FMC/FmcAircraftInterface';
-import { FmgcDataService } from 'instruments/src/MFD/FMC/fmgc';
+import { FmgcDataService, LOWEST_FUEL_ESTIMATE_KGS } from 'instruments/src/MFD/FMC/fmgc';
 import { FmcInterface, FmcOperatingModes } from 'instruments/src/MFD/FMC/FmcInterface';
 import {
   DatabaseItem,
@@ -60,7 +60,6 @@ import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationD
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
 import { VdAltitudeConstraint } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
-import { LOWEST_FUEL_ESTIMATE_KGS, LOWEST_FUEL_ESTIMATE_POUNDS } from '@fmgc/guidance/vnav/VnavConfig';
 
 export interface FmsErrorMessage {
   message: McduMessage;
@@ -494,7 +493,7 @@ export class FlightManagementComputer implements FmcInterface {
         return Units.poundToKilogram(
           Math.max(
             destPred.estimatedFuelOnBoard - (this.fmgc.data.minimumFuelAtDestination.get() ?? 0),
-            LOWEST_FUEL_ESTIMATE_POUNDS,
+            A380AircraftConfig.vnavConfig.LOWEST_FUEL_ESTIMATE,
           ),
         );
       }

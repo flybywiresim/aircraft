@@ -2,8 +2,6 @@
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
-export const LOWEST_FUEL_ESTIMATE_KGS = -35000;
-export const LOWEST_FUEL_ESTIMATE_POUNDS = -77161.8; // 35 tons
 
 export enum VnavDescentMode {
   NORMAL,

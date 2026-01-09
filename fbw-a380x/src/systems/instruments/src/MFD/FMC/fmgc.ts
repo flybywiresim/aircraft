@@ -15,7 +15,7 @@ import { Arinc429Word, Fix, Runway, Units } from '@flybywiresim/fbw-sdk';
 import { Feet } from 'msfs-geo';
 import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
 import { minGw } from '@shared/PerformanceConstants';
-import { LOWEST_FUEL_ESTIMATE_KGS } from '@fmgc/guidance/vnav/VnavConfig';
+import { A380AircraftConfig } from '@fmgc/flightplanning/A380AircraftConfig';
 
 export enum TakeoffPowerSetting {
   TOGA = 0,
@@ -55,6 +55,8 @@ export enum ClimbDerated {
   D04 = 4,
   D05 = 5,
 }
+
+export const LOWEST_FUEL_ESTIMATE_KGS = Units.poundToKilogram(A380AircraftConfig.vnavConfig.LOWEST_FUEL_ESTIMATE);
 
 /**
  * Temporary place for data which is found nowhere else. Not associated to flight plans right now, which should be the case for some of these values
@@ -665,7 +667,7 @@ export class FmgcDataService implements Fmgc {
     if (destEfob === null || alternateFuel === null) {
       return null;
     }
-    return Math.max(destEfob - alternateFuel, LOWEST_FUEL_ESTIMATE_KGS) / 1000;
+    return Math.max(destEfob - alternateFuel, LOWEST_FUEL_ESTIMATE_KGS / 1000);
   }
 
   /** in feet. null if not set */
@@ -696,7 +698,7 @@ export class FmgcDataService implements Fmgc {
   }
 
   /** In percentage. Null if not set */
-  getPerformanceFactorPercent(): number {
+  getPerformanceFactorPercent(): number | null {
     return this.data.fuelPenaltyPercentage.get(); // TODO add performance factor when implemented
   }
 

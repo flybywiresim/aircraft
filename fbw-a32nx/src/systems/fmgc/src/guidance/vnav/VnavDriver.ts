@@ -573,6 +573,7 @@ export class VnavDriver implements GuidanceComponent {
 
       const prediction = this.profileManager.mcduProfile.interpolateEverythingFromStart(
         leg.calculated.cumulativeDistanceWithTransitions,
+        this.acConfig,
       );
       const tasPrediction = this.atmosphericConditions.computeTasFromCas(prediction.altitude, prediction.speed);
 

@@ -73,7 +73,7 @@ export interface Fmgc {
   getDestEFOB(useFob: boolean): number | null; // Metric tons
   getDepartureElevation(): Feet | null;
   getDestinationElevation(): Feet;
-  getPerformanceFactorPercent?(): number | null;
+  getPerformanceFactorPercent(): number | null;
 }
 
 export class GuidanceController {

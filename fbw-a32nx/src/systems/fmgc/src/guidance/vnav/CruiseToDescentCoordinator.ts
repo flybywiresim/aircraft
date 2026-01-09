@@ -15,7 +15,6 @@ import { HeadwindProfile } from '@fmgc/guidance/vnav/wind/HeadwindProfile';
 import { TemporaryCheckpointSequence } from '@fmgc/guidance/vnav/profile/TemporaryCheckpointSequence';
 import { ProfileInterceptCalculator } from '@fmgc/guidance/vnav/descent/ProfileInterceptCalculator';
 import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
-import { LOWEST_FUEL_ESTIMATE_POUNDS } from './VnavConfig';
 
 export class CruiseToDescentCoordinator {
   private lastEstimatedFuelAtDestination: Pounds = 4000;
@@ -36,7 +35,7 @@ export class CruiseToDescentCoordinator {
     // Use INIT FUEL PRED entry as initial estimate for destination EFOB. Clamp it to avoid unrealistic entries from erroneous pilot input.
     this.lastEstimatedFuelAtDestination = Number.isFinite(estimatedDestinationFuel)
       ? Math.min(
-          Math.max(estimatedDestinationFuel, LOWEST_FUEL_ESTIMATE_POUNDS),
+          Math.max(estimatedDestinationFuel, this.acConfig.vnavConfig.LOWEST_FUEL_ESTIMATE),
           this.acConfig.vnavConfig.MAXIMUM_FUEL_ESTIMATE,
         )
       : 4000;
@@ -144,9 +143,13 @@ export class CruiseToDescentCoordinator {
           }
 
           // If there is an intercept, place the T/D wherever we need it
-          const combinedTopOfClimbTopOfDescent = profile.addInterpolatedCheckpoint(climbDescentInterceptDistance, {
-            reason: VerticalCheckpointReason.TopOfClimb,
-          });
+          const combinedTopOfClimbTopOfDescent = profile.addInterpolatedCheckpoint(
+            climbDescentInterceptDistance,
+            {
+              reason: VerticalCheckpointReason.TopOfClimb,
+            },
+            this.acConfig,
+          );
           const savedTopOfDescent = descentPath.lastCheckpoint;
           descentPath.checkpoints = descentPath.checkpoints.filter(
             (checkpoint) => checkpoint.distanceFromStart >= combinedTopOfClimbTopOfDescent.distanceFromStart,
