@@ -150,9 +150,8 @@ FcdcBus Fcdc::getBusOutputs() {
   output.efcsStatus5.setData(0);
 
   output.efcsStatus5.setSsm(ssm);
-  bool spoilersRetracted =
-      valueOr(busInputs.prims[masterPrim].left_spoiler_position_deg, 0.0f)  >= -2.5f &&
-      valueOr(busInputs.prims[masterPrim].right_spoiler_position_deg, 0.0f) >= -2.5f;
+  bool spoilersRetracted = valueOr(busInputs.prims[masterPrimIndex].left_spoiler_position_deg, 0.0f) >= -2.5f &&
+                           valueOr(busInputs.prims[masterPrimIndex].right_spoiler_position_deg, 0.0f) >= -2.5f;
   output.efcsStatus5.setBit(26, (analogInputs.spoilersLeverPos > 0.05) && spoilersRetracted);
 
   output.primFgDiscreteWord4.setSsm(ssm);
