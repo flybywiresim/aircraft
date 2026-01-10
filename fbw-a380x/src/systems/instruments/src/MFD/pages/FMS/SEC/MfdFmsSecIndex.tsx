@@ -11,7 +11,6 @@ import {
   MappedSubject,
   MappedSubscribable,
   Subject,
-  SubscribableUtils,
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
@@ -291,19 +290,16 @@ export class MfdFmsSecIndexTab extends DestroyableComponent<MfdFmsSecIndexTabPro
     this.props.dataStore.wasModified,
   );
 
-  private readonly cpnyFplnButtonLabel = cpnyFplnButtonLabel(
-    this.props.fmcService.master,
-    SubscribableUtils.toSubscribable(this.props.flightPlanIndex, true),
-  );
+  private readonly cpnyFplnButtonLabel = cpnyFplnButtonLabel(this.props.fmcService.master);
 
   private readonly cpnyFplnButtonDisabled = cpnyFplnButtonDisabled(
     this.props.fmcService.master,
-    SubscribableUtils.toSubscribable(this.props.flightPlanIndex, true),
+    this.secIndex + FlightPlanIndex.FirstSecondary - 1,
   );
 
   private readonly cpnyFplnButtonMenuItems: MappedSubscribable<ButtonMenuItem[]> = cpnyFplnButtonMenuItems(
     this.props.fmcService.master,
-    SubscribableUtils.toSubscribable(this.props.flightPlanIndex, true),
+    this.secIndex + FlightPlanIndex.FirstSecondary - 1,
   );
 
   private readonly routeElementSubjects = Array(NUM_ROUTE_LINES_DISPLAYED * 2)

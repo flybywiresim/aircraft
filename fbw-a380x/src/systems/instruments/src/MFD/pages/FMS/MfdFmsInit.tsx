@@ -33,16 +33,16 @@ interface MfdFmsInitProps extends AbstractMfdPageProps {}
 export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
   private readonly flightPlanChangeNotifier = new FlightPlanChangeNotifier(this.props.bus);
 
-  private readonly cpnyFplnButtonLabel = cpnyFplnButtonLabel(this.props.fmcService.master, this.loadedFlightPlanIndex);
+  private readonly cpnyFplnButtonLabel = cpnyFplnButtonLabel(this.props.fmcService.master);
 
   private readonly cpnyFplnButtonMenuItems: MappedSubscribable<ButtonMenuItem[]> = cpnyFplnButtonMenuItems(
     this.props.fmcService.master,
-    this.loadedFlightPlanIndex,
+    FlightPlanIndex.Active,
   );
 
   private readonly cpnyFplnButtonDisabled = cpnyFplnButtonDisabled(
     this.props.fmcService.master,
-    this.loadedFlightPlanIndex,
+    FlightPlanIndex.Active,
   );
 
   private readonly mandatoryAndActiveFpln = this.loadedFlightPlanIndex.map(

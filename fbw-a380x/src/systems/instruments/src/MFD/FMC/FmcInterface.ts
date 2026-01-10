@@ -104,9 +104,14 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
   get revisedLegIsAltn(): Subject<boolean | null>;
 
   /**
-   * Returns, whether number 2&3 engines were started
+   * Returns whether number 2&3 engines were started
    */
   get enginesWereStarted(): Subject<boolean>;
+
+  /**
+   * Returns whether active flight plan exists
+   */
+  get hasActiveFlightPlan(): Subject<boolean>;
 
   /**
    * Returns currently revised waypoint as Fix
@@ -202,12 +207,14 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
   clearLatestFmsErrorMessage(): void;
 
   /** Request CPNY FPLN from SimBrief
+   * @param forPlan Flight plan to request CPNY FPLN for
+   */
+  cpnyFplnRequest(forPlan: FlightPlanIndex): void;
+
+  /** Insert CPNY FPLN into flight plan where request has been made from
    * @param intoPlan Flight plan to insert CPNY FPLN into
    */
-  cpnyFplnRequest(intoPlan: FlightPlanIndex): void;
-
-  /** Insert CPNY FPLN into flight plan where request has been made from */
-  insertCpnyFpln(): void;
+  insertCpnyFpln(intoPlan: FlightPlanIndex): void;
 
   /**
    * Whether the secondary flight plan can be activated or swapped with the active flight plan

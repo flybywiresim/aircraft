@@ -51,7 +51,6 @@ import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayIn
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { FmcIndex } from 'instruments/src/MFD/FMC/FmcServiceInterface';
 import { FmsErrorType } from '@fmgc/FmsError';
-import { A380Failure } from '@failures';
 import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
 import { FlightPhaseManager, FlightPhaseManagerEvents } from '@fmgc/flightphase';
 import { MfdUIData } from 'instruments/src/MFD/shared/MfdUIData';
@@ -225,12 +224,7 @@ export class FlightManagementComputer implements FmcInterface {
 
   public enginesWereStarted = Subject.create<boolean>(false);
 
-  private readonly failureKey =
-    this.instance === FmcIndex.FmcA
-      ? A380Failure.FmcA
-      : this.instance === FmcIndex.FmcB
-        ? A380Failure.FmcB
-        : A380Failure.FmcC;
+  public hasActiveFlightPlan = Subject.create<boolean>(false);
 
   private readonly legacyFmsIsHealthy = Subject.create(false);
 
@@ -385,19 +379,10 @@ export class FlightManagementComputer implements FmcInterface {
         }),
 
         this.fmgc.data.cpnyFplnAvailable.sub((v) => {
-          let flightPlanString = 'ACTIVE';
-          const planIndex = this.fmgc.data.cpnyFplnRequestedForPlan.get();
-          if (planIndex !== null && planIndex >= FlightPlanIndex.FirstSecondary) {
-            flightPlanString = `SEC ${planIndex - FlightPlanIndex.FirstSecondary + 1}`;
-          }
           if (v) {
-            this.addMessageToQueue(
-              NXSystemMessages.comFplnRecievedPendingInsertion.getModifiedMessage(flightPlanString),
-            );
+            this.addMessageToQueue(NXSystemMessages.comFplnReceivedPendingInsertion);
           } else {
-            this.removeMessageFromQueue(
-              NXSystemMessages.comFplnRecievedPendingInsertion.getModifiedMessage(flightPlanString).text,
-            );
+            this.removeMessageFromQueue(NXSystemMessages.comFplnReceivedPendingInsertion.text);
           }
         }),
         this.destDataEntered,
@@ -690,7 +675,6 @@ export class FlightManagementComputer implements FmcInterface {
 
     try {
       this.fmgc.data.cpnyFplnRequestedForPlan.set(intoPlan);
-      console.log(intoPlan);
       SimBriefUplinkAdapter.uplinkFlightPlanFromSimbrief(this, this.#flightPlanService, intoPlan, this.simBriefOfp, {
         doUplinkProcedures: false,
       });
@@ -701,30 +685,32 @@ export class FlightManagementComputer implements FmcInterface {
     }
   }
 
-  async insertCpnyFpln() {
-    const intoPlan = this.fmgc.data.cpnyFplnRequestedForPlan.get() ?? FlightPlanIndex.Active;
+  async insertCpnyFpln(intoPlan: FlightPlanIndex) {
     try {
       this.flightPlanInterface.uplinkInsert(intoPlan);
     } catch (e) {
       console.error(e);
       logTroubleshootingError(this.bus, e);
     }
-    this.acInterface.updateFmsData();
-    this.fmgc.data.atcCallsign.set(this.simBriefOfp?.callsign ?? '----------');
 
-    this.flightPlanInterface.setPerformanceData(
-      'paxNumber',
-      Number(this.simBriefOfp?.weights?.passengerCount ?? null),
-      intoPlan,
-    );
-    this.flightPlanInterface.setPerformanceData(
-      'pilotTropopause',
-      this.simBriefOfp?.averageTropopause ? Number(this.simBriefOfp.averageTropopause) : null,
-      intoPlan,
-    );
+    if (intoPlan === FlightPlanIndex.Active) {
+      this.acInterface.updateFmsData();
+      this.fmgc.data.atcCallsign.set(this.simBriefOfp?.callsign ?? '----------');
 
-    if (this.simBriefOfp?.cruiseAltitude) {
-      this.acInterface.setCruiseFl(this.simBriefOfp.cruiseAltitude / 100, intoPlan);
+      this.flightPlanInterface.setPerformanceData(
+        'paxNumber',
+        Number(this.simBriefOfp?.weights?.passengerCount ?? null),
+        intoPlan,
+      );
+      this.flightPlanInterface.setPerformanceData(
+        'pilotTropopause',
+        this.simBriefOfp?.averageTropopause ? Number(this.simBriefOfp.averageTropopause) : null,
+        intoPlan,
+      );
+
+      if (this.simBriefOfp?.cruiseAltitude) {
+        this.acInterface.setCruiseFl(this.simBriefOfp.cruiseAltitude / 100, intoPlan);
+      }
     }
 
     this.fmgc.data.cpnyFplnAvailable.set(false);
@@ -822,6 +808,12 @@ export class FlightManagementComputer implements FmcInterface {
   private async onActiveFlightPlanChanged(): Promise<void> {
     // We invalidate because we don't want to show the old active plan predictions on the newly activated secondary plan.
     this.guidanceController?.vnavDriver?.invalidateFlightPlanProfile();
+
+    this.hasActiveFlightPlan.set(
+      this.#flightPlanService.hasActive &&
+        this.#flightPlanService.active.originAirport !== undefined &&
+        this.#flightPlanService.active.destinationAirport !== undefined,
+    );
 
     if (this.#flightPlanService.hasActive) {
       if (this.#flightPlanService.active.flightNumber !== undefined) {

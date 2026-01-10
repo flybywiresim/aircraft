@@ -1,58 +1,57 @@
-// Copyright (c) 2023-2025 FlyByWire Simulations
+// Copyright (c) 2023-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { FSComponent, MappedSubject, Subscribable } from '@microsoft/msfs-sdk';
+import { FSComponent, MappedSubject } from '@microsoft/msfs-sdk';
 import { FmcInterface } from '../FMC/FmcInterface';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 
-export function cpnyFplnButtonDisabled(fmc: FmcInterface | null, flightPlanIndex: Subscribable<number>) {
+export function cpnyFplnButtonDisabled(fmc: FmcInterface | null, flightPlanIndex: number) {
   return fmc
     ? MappedSubject.create(
-        ([uplinkInProgress, forPlan, flightPlanIndex]) =>
-          uplinkInProgress || (forPlan !== null && forPlan !== flightPlanIndex),
+        ([uplinkInProgress, forPlan, enginesStarted, hasActiveFlightPlan]) =>
+          uplinkInProgress ||
+          (flightPlanIndex === FlightPlanIndex.Active &&
+            (enginesStarted || hasActiveFlightPlan || (forPlan !== null && forPlan >= FlightPlanIndex.FirstSecondary))),
         fmc.fmgc.data.cpnyFplnUplinkInProgress,
         fmc.fmgc.data.cpnyFplnRequestedForPlan,
-        flightPlanIndex,
+        fmc.enginesWereStarted,
+        fmc.hasActiveFlightPlan,
       )
     : MappedSubject.create(() => true);
 }
 
-export function cpnyFplnButtonLabel(fmc: FmcInterface | null, flightPlanIndex: Subscribable<number>) {
+export function cpnyFplnButtonLabel(fmc: FmcInterface | null) {
   return fmc
-    ? MappedSubject.create(
-        ([avail, forPlan, flightPlanIndex]) => {
-          if (!avail || forPlan !== flightPlanIndex) {
-            return (
-              <span>
-                CPNY F-PLN
-                <br />
-                REQUEST
-              </span>
-            );
-          }
+    ? MappedSubject.create(([avail]) => {
+        if (!avail) {
           return (
             <span>
-              RECEIVED
-              <br />
               CPNY F-PLN
+              <br />
+              REQUEST
             </span>
           );
-        },
-        fmc.fmgc.data.cpnyFplnAvailable,
-        fmc.fmgc.data.cpnyFplnRequestedForPlan,
-        flightPlanIndex,
-      )
+        }
+        return (
+          <span>
+            RECEIVED
+            <br />
+            CPNY F-PLN
+          </span>
+        );
+      }, fmc.fmgc.data.cpnyFplnAvailable)
     : MappedSubject.create(() => <></>);
 }
 
-export function cpnyFplnButtonMenuItems(fmc: FmcInterface | null, flightPlanIndex: Subscribable<number>) {
+export function cpnyFplnButtonMenuItems(fmc: FmcInterface | null, flightPlanIndex: number) {
   return fmc
     ? MappedSubject.create(
-        ([avail, forPlan, flightPlanIndex]) =>
-          avail && forPlan === flightPlanIndex
+        ([avail]) =>
+          avail
             ? [
                 {
                   label: 'INSERT*',
-                  action: () => fmc.insertCpnyFpln(),
+                  action: () => fmc.insertCpnyFpln(flightPlanIndex),
                 },
                 {
                   label: 'CLEAR*',
@@ -65,8 +64,6 @@ export function cpnyFplnButtonMenuItems(fmc: FmcInterface | null, flightPlanInde
               ]
             : [],
         fmc.fmgc.data.cpnyFplnAvailable,
-        fmc.fmgc.data.cpnyFplnRequestedForPlan,
-        flightPlanIndex,
       )
     : MappedSubject.create(() => []);
 }
