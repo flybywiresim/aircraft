@@ -8,6 +8,7 @@ import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { Fix } from '@flybywiresim/fbw-sdk';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
+import { Wait } from '@microsoft/msfs-sdk';
 
 // TODO this whole thing is thales layout...
 
@@ -49,9 +50,11 @@ export class CDUDirectToPage {
         });
       };
       mcdu.onRightInput[5] = () => {
-        mcdu.insertTemporaryFlightPlan(() => {
-          SimVar.SetSimVarValue('K:A32NX.FMGC_DIR_TO_TRIGGER', 'number', 0);
+        mcdu.insertTemporaryFlightPlan(async () => {
           CDUFlightPlanPage.ShowPage(mcdu);
+
+          await Wait.awaitDelay(300);
+          await SimVar.SetSimVarValue('K:A32NX.FMGC_DIR_TO_TRIGGER', 'number', 0);
         });
       };
     }

@@ -227,10 +227,18 @@ export class VnavDriver implements GuidanceComponent {
   }
 
   isLatAutoControlArmedWithIntercept(): boolean {
-    const { fcuArmedLateralMode } = this.computationParametersObserver.get();
+    const { fcuArmedLateralMode, fcuLateralMode } = this.computationParametersObserver.get();
 
-    // FIXME: Figure out if intercept exists
-    return isArmed(fcuArmedLateralMode, ArmedLateralMode.NAV);
+    // FIXME actually compute intercept. At the moment, we never compute an intercept,
+    // so an intercept won't exist as long as a selected mode is active.
+    // Importantly, this condition is true on the ground (as it should be) since no lateral mode will be engaged there
+    const interceptExists =
+      fcuLateralMode !== LateralMode.HDG &&
+      fcuLateralMode !== LateralMode.TRACK &&
+      fcuLateralMode !== LateralMode.GA_TRACK &&
+      fcuLateralMode !== LateralMode.RWY_TRACK;
+
+    return isArmed(fcuArmedLateralMode, ArmedLateralMode.NAV) && interceptExists;
   }
 
   isSelectedVerticalModeActive(): boolean {
