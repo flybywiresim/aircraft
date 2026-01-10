@@ -25,7 +25,7 @@ import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { A32NX_Util } from '../../../../shared/src/A32NX_Util';
 import { FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/FlightPlanQueuedOperation';
 import { FlightPlanFlags } from './FlightPlanFlags';
-import { WindEntry, WindVector } from '../data/wind';
+import { debugFormatWindEntry, WindEntry, WindVector } from '../data/wind';
 import { PendingWindUplink } from './PendingWindUplink';
 
 export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> extends BaseFlightPlan<P> {
@@ -810,7 +810,16 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
       } else {
         // Add
         if (windEntries.length >= maxNumberEntries) {
-          console.error('[FPM] Attempting to add a wind entry when the maximum number of entries is reached');
+          // Special case is adding a PERF APPR wind when the maximum number of entries exists. In that case, we replace the lowest level
+          if (altitude <= windEntries[windEntries.length - 1].altitude) {
+            console.info(
+              `[FPM] Replacing ${debugFormatWindEntry(windEntries[windEntries.length - 1])} by ${debugFormatWindEntry(entry)}`,
+            );
+            windEntries[windEntries.length - 1] = entry;
+          } else {
+            console.error('[FPM] Attempting to add a wind entry when the maximum number of entries is reached');
+          }
+
           return;
         }
 
