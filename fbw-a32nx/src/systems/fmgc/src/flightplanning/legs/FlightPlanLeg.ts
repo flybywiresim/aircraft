@@ -408,22 +408,20 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
   }
 
   static manualHold(segment: FlightPlanSegment, waypoint: Fix, hold: HoldData): FlightPlanLeg {
-    return new FlightPlanLeg(
-      segment,
-      {
-        procedureIdent: '',
-        type: LegType.HM,
-        overfly: false,
-        waypoint,
-        turnDirection: hold.turnDirection,
-        magneticCourse: hold.inboundMagneticCourse,
-        length: hold.distance,
-        lengthTime: hold.time,
-      },
-      waypoint.ident,
-      '',
-      undefined,
-    );
+    const definition = {
+      procedureIdent: '',
+      type: LegType.HM,
+      overfly: false,
+      waypoint,
+      turnDirection: hold.turnDirection,
+      magneticCourse: hold.inboundMagneticCourse,
+      length: hold.distance,
+      lengthTime: hold.time,
+    };
+
+    const [ident, annotation] = procedureLegIdentAndAnnotation(definition, definition.procedureIdent);
+
+    return new FlightPlanLeg(segment, definition, ident, annotation, undefined);
   }
 
   static fromProcedureLeg(
