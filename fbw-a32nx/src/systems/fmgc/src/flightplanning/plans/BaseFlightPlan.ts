@@ -2702,18 +2702,6 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   protected hasLegAt(index: number): boolean {
     return isLeg(this.maybeElementAt(index));
   }
-
-  /**
-   * Finds the index of the final approach fix
-   * @returns The leg index, or -1 if not found.
-   */
-  getFinalApproachCourseFixIndex(): number {
-    return this.allLegs.findIndex(
-      (el) =>
-        el.isDiscontinuity === false &&
-        el.definition.approachWaypointDescriptor === ApproachWaypointDescriptor.FinalApproachCourseFix,
-    );
-  }
 }
 
 export interface SerializedFlightPlan {
