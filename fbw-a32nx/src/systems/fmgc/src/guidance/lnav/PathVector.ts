@@ -61,11 +61,15 @@ export function pathVectorLength(vector: PathVector) {
 export function pathVectorValid(vector: PathVector) {
   switch (vector.type) {
     case PathVectorType.Line:
-      return !!(vector.startPoint?.lat && vector.endPoint?.lat);
+      return Number.isFinite(vector.startPoint?.lat) && Number.isFinite(vector.endPoint?.lat);
     case PathVectorType.Arc:
-      return !!(vector.endPoint?.lat && vector.centrePoint?.lat && vector.sweepAngle);
+      return (
+        Number.isFinite(vector.endPoint?.lat) &&
+        Number.isFinite(vector.centrePoint?.lat) &&
+        Number.isFinite(vector.sweepAngle)
+      );
     case PathVectorType.DebugPoint:
-      return !!vector.startPoint?.lat;
+      return Number.isFinite(vector.startPoint?.lat);
     default:
       return true;
   }

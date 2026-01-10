@@ -60,6 +60,7 @@
 1. [A32NX/FMS] Fix step alts predictions on PERF CRZ page - @Jonny23787 (Jonathan) & @BlueberryKing (BlueberryKing)
 1. [A32NX/FWS] Replace `A/SKID N/WS FAULT` master caution with `A/SKID N/WS OFF` master caution - @FozzieHi (fozzie)
 1. [FMS] Implement MSFS 2024 EFB route sync - @Benjozork (Benjamin Dupont)
+1. [FMS] Use localizer station declination for true courses on approach legs - @BlueberryKing (BlueberryKing)
 
 ## 0.14.0
 
