@@ -367,7 +367,8 @@ impl EnhancedGroundProximityWarningComputerRuntime {
         }
 
         // On ground state machine logic
-        if self.on_ground & ground_to_air_ra_speed_condition
+        if self.on_ground
+            && ground_to_air_ra_speed_condition
             && (ground_to_air_pitch_condition || self.ground_to_air_confirm_node.get_output())
         {
             self.on_ground = false;
