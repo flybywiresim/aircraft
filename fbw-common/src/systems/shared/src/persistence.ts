@@ -12,6 +12,9 @@ type SubscribeCancellation = () => void;
 
 export interface NXDataStoreSettings {
   EFB_UI_THEME: 'blue' | 'dark' | 'light';
+
+  CONFIG_AUTO_SIM_ROUTE_LOAD: boolean;
+
   ACARS_PROVIDER: 'NONE' | 'HOPPIE' | 'BATC' | 'SAI';
 
   CONFIG_AUTO_SIM_ROUTE_LOAD: boolean;
@@ -25,6 +28,7 @@ export type LegacyDataStoreSettingKey<k extends string> = k & (k extends keyof N
 export class NXDataStore {
   private static readonly settingsDefaultValues: { [k in keyof NXDataStoreSettings]: NXDataStoreSettings[k] } = {
     EFB_UI_THEME: 'blue',
+    CONFIG_AUTO_SIM_ROUTE_LOAD: false,
     ACARS_PROVIDER: 'NONE',
     CONFIG_AUTO_SIM_ROUTE_LOAD: false,
   };

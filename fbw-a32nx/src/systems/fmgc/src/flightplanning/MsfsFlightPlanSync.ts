@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+import { EventBus, MappedSubject, Subject, Wait } from '@microsoft/msfs-sdk';
+
 import {
   AirportSubsectionCode,
   Approach,
@@ -17,28 +19,28 @@ import {
   RunwayUtils,
   SectionCode,
 } from '@flybywiresim/fbw-sdk';
-import { EventBus, MappedSubject, Subject, Wait } from '@microsoft/msfs-sdk';
+
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
+import { DataManager, PilotWaypointType } from '@fmgc/flightplanning/DataManager';
+import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
 import {
   JS_ApproachIdentifier,
   JS_EnrouteLeg,
   JS_FlightPlanRoute,
   JS_ICAO,
   JS_RunwayIdentifier,
-} from '../../../../../../fbw-common/src/systems/navdata/client/backends/Msfs/FsTypes';
-import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
-import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
-import { DataManager, PilotWaypointType } from '@fmgc/flightplanning/DataManager';
-import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
+} from './MsfsFlightPlanSyncTypes';
 
 export class MsfsFlightPlanSync {
   private static readonly FBW_APPROACH_TO_MSFS_APPROACH: Record<ApproachType, string> = {
     [ApproachType.Unknown]: '',
     [ApproachType.LocBackcourse]: 'BLOC',
-    [ApproachType.VorDme]: 'VDM',
+    [ApproachType.VorDme]: 'VORDME',
     [ApproachType.Fms]: '',
     [ApproachType.Igs]: 'LDA',
     [ApproachType.Ils]: 'ILS',
-    [ApproachType.Gls]: ' ',
+    [ApproachType.Gls]: '',
     [ApproachType.Loc]: 'LOC',
     [ApproachType.Mls]: '',
     [ApproachType.Ndb]: 'NDB',
@@ -164,24 +166,6 @@ export class MsfsFlightPlanSync {
       );
     }
 
-    let departure: Departure | undefined;
-    if (route.departure !== '') {
-      const departures = await db.backendDatabase.getDepartures(route.departureAirport.ident);
-      departure = departures.find((it) => it.ident === route.departure);
-
-      if (departure) {
-        await this.flightPlanInterface.setDepartureProcedure(departure.databaseId, FlightPlanIndex.Uplink);
-      }
-    }
-
-    if (route.departureTransition !== '' && departure) {
-      const transition = departure.enrouteTransitions.find((it) => it.ident === route.departureTransition);
-
-      if (transition) {
-        await this.flightPlanInterface.setDepartureEnrouteTransition(transition.databaseId, FlightPlanIndex.Uplink);
-      }
-    }
-
     let insertHead = 0;
 
     const updateInsertHead = () => {
@@ -260,6 +244,24 @@ export class MsfsFlightPlanSync {
       } else {
         await this.flightPlanInterface.nextWaypoint(insertHead, fix, FlightPlanIndex.Uplink, false);
         updateInsertHead();
+      }
+    }
+
+    let departure: Departure | undefined;
+    if (route.departure !== '') {
+      const departures = await db.backendDatabase.getDepartures(route.departureAirport.ident);
+      departure = departures.find((it) => it.ident === route.departure);
+
+      if (departure) {
+        await this.flightPlanInterface.setDepartureProcedure(departure.databaseId, FlightPlanIndex.Uplink);
+      }
+    }
+
+    if (route.departureTransition !== '' && departure) {
+      const transition = departure.enrouteTransitions.find((it) => it.ident === route.departureTransition);
+
+      if (transition) {
+        await this.flightPlanInterface.setDepartureEnrouteTransition(transition.databaseId, FlightPlanIndex.Uplink);
       }
     }
 
