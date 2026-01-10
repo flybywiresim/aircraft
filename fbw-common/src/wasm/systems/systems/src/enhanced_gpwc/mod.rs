@@ -332,6 +332,10 @@ mod tests {
         fn nose_up_and_locked(&self) -> bool {
             !self.gear_down
         }
+
+        fn left_down_and_locked(&self) -> bool {
+            self.gear_down
+        }
     }
 
     struct EgpwcTestAircraft {

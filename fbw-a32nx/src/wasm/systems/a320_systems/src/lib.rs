@@ -9,12 +9,14 @@ mod navigation;
 mod payload;
 mod pneumatic;
 mod power_consumption;
+mod surveillance;
 
 use self::{
     air_conditioning::A320AirConditioning,
     fuel::A320Fuel,
     payload::A320Payload,
     pneumatic::{A320Pneumatic, A320PneumaticOverheadPanel},
+    surveillance::A320EgpwsElectricalHarness,
 };
 use airframe::A320Airframe;
 use electrical::{
@@ -22,9 +24,16 @@ use electrical::{
     APU_START_MOTOR_BUS_TYPE,
 };
 use hydraulic::{A320Hydraulic, A320HydraulicOverheadPanel};
-use navigation::{A320AirDataInertialReferenceSystemBuilder, A320RadioAltimeters};
+use navigation::{A320AdirsElectricalHarness, A320RadioAltimeters};
 use power_consumption::A320PowerConsumption;
-use systems::enhanced_gpwc::EnhancedGroundProximityWarningComputer;
+use systems::{
+    auto_flight::FlightControlUnitShim,
+    navigation::{hw_block3_adiru::AirDataInertialReferenceSystem, ils::MultiModeReceiverShim},
+};
+use systems::{
+    enhanced_gpwc::EnhancedGroundProximityWarningComputer,
+    surveillance::egpws::EnhancedGroundProximityWarningComputer as EnhancedGroundProximityWarningComputer2,
+};
 use systems::{hydraulic::brake::BrakeFanPanel, simulation::InitContext};
 use uom::si::{f64::Length, length::nautical_mile};
 
@@ -39,16 +48,13 @@ use systems::{
     engine::{leap_engine::LeapEngine, reverser_thrust::ReverserForce, EngineFireOverheadPanel},
     hydraulic::brake_circuit::AutobrakePanel,
     landing_gear::{LandingGear, LandingGearControlInterfaceUnitSet},
-    navigation::adirs::{
-        AirDataInertialReferenceSystem, AirDataInertialReferenceSystemOverheadPanel,
-    },
     shared::ElectricalBusType,
     simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
 
 pub struct A320 {
     adirs: AirDataInertialReferenceSystem,
-    adirs_overhead: AirDataInertialReferenceSystemOverheadPanel,
+    adirs_electrical_harness: A320AdirsElectricalHarness,
     air_conditioning: A320AirConditioning,
     apu: AuxiliaryPowerUnit<Aps3200ApuGenerator, Aps3200StartMotor, Aps3200Constants, 1>,
     asu: AirStarterUnit,
@@ -60,6 +66,7 @@ pub struct A320 {
     payload: A320Payload,
     airframe: A320Airframe,
     fuel: A320Fuel,
+    fcu: FlightControlUnitShim,
     engine_1: LeapEngine,
     engine_2: LeapEngine,
     engine_fire_overhead: EngineFireOverheadPanel<2>,
@@ -75,13 +82,16 @@ pub struct A320 {
     pneumatic: A320Pneumatic,
     radio_altimeters: A320RadioAltimeters,
     egpwc: EnhancedGroundProximityWarningComputer,
+    egpwc_2: EnhancedGroundProximityWarningComputer2,
+    egpws_electrical_harness: A320EgpwsElectricalHarness,
+    mmr: MultiModeReceiverShim,
     reverse_thrust: ReverserForce,
 }
 impl A320 {
     pub fn new(context: &mut InitContext) -> A320 {
         A320 {
-            adirs: A320AirDataInertialReferenceSystemBuilder::build(context),
-            adirs_overhead: AirDataInertialReferenceSystemOverheadPanel::new(context),
+            adirs: AirDataInertialReferenceSystem::new(context),
+            adirs_electrical_harness: A320AdirsElectricalHarness::new(context),
             air_conditioning: A320AirConditioning::new(context),
             apu: AuxiliaryPowerUnitFactory::new_aps3200(
                 context,
@@ -99,6 +109,7 @@ impl A320 {
             payload: A320Payload::new(context),
             airframe: A320Airframe::new(context),
             fuel: A320Fuel::new(context),
+            fcu: FlightControlUnitShim::new(context),
             engine_1: LeapEngine::new(context, 1),
             engine_2: LeapEngine::new(context, 2),
             engine_fire_overhead: EngineFireOverheadPanel::new(context),
@@ -119,7 +130,7 @@ impl A320 {
             radio_altimeters: A320RadioAltimeters::new(context),
             egpwc: EnhancedGroundProximityWarningComputer::new(
                 context,
-                ElectricalBusType::DirectCurrent(1),
+                ElectricalBusType::AlternatingCurrent(1),
                 vec![
                     Length::new::<nautical_mile>(10.0),
                     Length::new::<nautical_mile>(20.0),
@@ -130,6 +141,12 @@ impl A320 {
                 ],
                 0,
             ),
+            egpwc_2: EnhancedGroundProximityWarningComputer2::new(
+                context,
+                ElectricalBusType::AlternatingCurrent(1),
+            ),
+            egpws_electrical_harness: A320EgpwsElectricalHarness::new(context),
+            mmr: MultiModeReceiverShim::new(context),
             reverse_thrust: ReverserForce::new(context),
         }
     }
@@ -228,8 +245,12 @@ impl Aircraft for A320 {
         self.hydraulic_overhead.update(&self.hydraulic);
         self.brake_fan_panel.update(self.hydraulic.brakes_hot());
 
-        self.adirs.update(context, &self.adirs_overhead);
-        self.adirs_overhead.update(context, &self.adirs);
+        self.adirs_electrical_harness
+            .update_before_adirus(context, &mut self.adirs);
+        self.adirs
+            .update(context, &self.adirs_electrical_harness, &self.fcu);
+        self.adirs_electrical_harness
+            .update_after_adirus(&self.adirs);
 
         self.power_consumption.update(context);
 
@@ -256,12 +277,22 @@ impl Aircraft for A320 {
         );
 
         self.egpwc.update(&self.adirs, self.lgcius.lgciu1());
+        self.egpws_electrical_harness.update(self.lgcius.lgciu1());
+        self.egpwc_2.update(
+            context,
+            &self.egpws_electrical_harness,
+            self.radio_altimeters.radio_altimeter_1(),
+            self.radio_altimeters.radio_altimeter_2(),
+            &self.adirs[1],
+            &self.adirs[1],
+            &self.mmr,
+        );
     }
 }
 impl SimulationElement for A320 {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.adirs.accept(visitor);
-        self.adirs_overhead.accept(visitor);
+        self.adirs_electrical_harness.accept(visitor);
         self.air_conditioning.accept(visitor);
         self.apu.accept(visitor);
         self.asu.accept(visitor);
@@ -272,6 +303,7 @@ impl SimulationElement for A320 {
         self.electrical_overhead.accept(visitor);
         self.emergency_electrical_overhead.accept(visitor);
         self.fuel.accept(visitor);
+        self.fcu.accept(visitor);
         self.pneumatic_overhead.accept(visitor);
         self.engine_1.accept(visitor);
         self.engine_2.accept(visitor);
@@ -288,6 +320,9 @@ impl SimulationElement for A320 {
         self.landing_gear.accept(visitor);
         self.pneumatic.accept(visitor);
         self.egpwc.accept(visitor);
+        self.egpws_electrical_harness.accept(visitor);
+        self.egpwc_2.accept(visitor);
+        self.mmr.accept(visitor);
         self.reverse_thrust.accept(visitor);
 
         visitor.visit(self);
