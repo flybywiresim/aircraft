@@ -21,6 +21,7 @@ import { FGDataPublisher } from '../MsfsAvionicsCommon/providers/FGDataPublisher
 import { ResetPanelSimvarPublisher } from '../MsfsAvionicsCommon/providers/ResetPanelPublisher';
 import { FmsMessagePublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FmsMessagePublisher';
 import { RadioAltimeterPublisher } from '@flybywiresim/msfs-avionics-common';
+import { dataStatusUri } from './shared/utils';
 
 class MfdInstrument implements FsInstrument {
   private readonly bus = new EventBus();
@@ -106,8 +107,8 @@ class MfdInstrument implements FsInstrument {
     }
 
     // Navigate to initial page
-    this.mfdCaptRef.instance.uiService.navigateTo('fms/data/status');
-    this.mfdFoRef.instance.uiService.navigateTo('fms/data/status');
+    this.mfdCaptRef.instance.uiService.navigateTo(dataStatusUri);
+    this.mfdFoRef.instance.uiService.navigateTo(dataStatusUri);
 
     // Remove "instrument didn't load" text
     mfd?.querySelector(':scope > h1')?.remove();

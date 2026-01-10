@@ -5612,6 +5612,10 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.fmgcDiscreteWord4.set(this.fmgc2DiscreteWord4.get());
     }
   }
+
+  getPerformanceFactorPercent(): number | null {
+    return null; // TODO implement with PERF FACTOR in AC STATUS page
+  }
 }
 
 /** Writes FM output words for both FMS. */

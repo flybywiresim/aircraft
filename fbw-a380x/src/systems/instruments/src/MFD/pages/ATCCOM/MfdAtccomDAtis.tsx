@@ -20,12 +20,7 @@ export class MfdAtccomDAtis extends DisplayComponent<MfdAtccomDAtisProps> {
   render(): VNode {
     return (
       <>
-        <ActivePageTitleBar
-          activePage={Subject.create('D-ATIS/LIST')}
-          offset={Subject.create('')}
-          eoIsActive={Subject.create(false)}
-          tmpyIsActive={Subject.create(false)}
-        />
+        <ActivePageTitleBar activePage={Subject.create('D-ATIS/LIST')} offset={Subject.create('')} />
         {/* begin page content */}
         <div class="mfd-page-container">
           <DAtisBlock

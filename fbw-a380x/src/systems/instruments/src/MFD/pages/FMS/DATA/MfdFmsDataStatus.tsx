@@ -1,4 +1,4 @@
-// Copyright (c) 2024 FlyByWire Simulations
+// Copyright (c) 2024-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { ClockEvents, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
@@ -6,7 +6,6 @@ import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
-import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
@@ -15,6 +14,8 @@ import { ConfirmationDialog } from '../../../../MsfsAvionicsCommon/UiWidgets/Con
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 
 import './MfdFmsDataStatus.scss';
+import { FuelPenaltyPercentFormat } from '../../common/DataEntryFormats';
+import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 
 interface MfdFmsDataStatusProps extends AbstractMfdPageProps {}
 
@@ -34,24 +35,21 @@ const DB_MONTHS: Record<string, string> = {
 };
 
 export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
-  private selectedPageIndex = Subject.create<number>(0);
+  private readonly selectedPageIndex = Subject.create<number>(0);
 
-  private navDatabase = Subject.create('');
+  private readonly navDatabase = Subject.create('');
 
-  private activeDatabase = Subject.create('');
+  private readonly activeDatabase = Subject.create('');
+  private readonly secondDatabase = Subject.create('');
 
-  private secondDatabase = Subject.create('');
+  private readonly storedWaypoints = Subject.create('00');
 
-  private storedWaypoints = Subject.create('00');
+  private readonly storedRoutes = Subject.create('00');
+  private readonly storedNavaids = Subject.create('00');
 
-  private storedRoutes = Subject.create('00');
+  private readonly storedRunways = Subject.create('00');
 
-  private storedNavaids = Subject.create('00');
-
-  private storedRunways = Subject.create('00');
-
-  private deleteStoredElementsDisabled = Subject.create(true);
-
+  private readonly deleteStoredElementsDisabled = Subject.create(true);
   private readonly isSwapConfirmVisible = Subject.create(false);
 
   protected onNewData() {
@@ -88,11 +86,11 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
       }, true),
     );
 
-    const sub = this.props.bus.getSubscriber<ClockEvents & MfdSimvars>();
+    const sub = this.props.bus.getSubscriber<ClockEvents>();
     this.subs.push(
       sub
         .on('realTime')
-        .atFrequency(0.5)
+        .atFrequency(1)
         .handle((_t) => {
           this.onNewData();
         }),
@@ -124,45 +122,48 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
             selectedTabTextColor="white"
             tabBarSlantedEdgeAngle={25}
           >
-            <TopTabNavigatorPage>
+            <TopTabNavigatorPage containerStyle="height: 735px;">
               {/* ACFT STATUS */}
-              <div class="mfd-data-status-airframe-label mfd-value bigger">A380-800</div>
-              <div class="mfd-data-status-first-section">
-                <div>
-                  <span class="mfd-label" style="margin-right: 50px;">
-                    ENGINE
-                  </span>
-                  <span class="mfd-value bigger">TRENT 972</span>
-                </div>
-                <div>
-                  <div style="border: 1px solid lightgrey; padding: 10px; display: flex; flex-direction: column;">
-                    <div style="margin-bottom: 10px;">
-                      <span class="mfd-label" style="margin-right: 10px;">
-                        IDLE
-                      </span>
-                      <span class="mfd-value bigger">
-                        {`${AirlineModifiableInformation.EK.idleFactor >= 0 ? '+' : '-'}${AirlineModifiableInformation.EK.idleFactor.toFixed(1)}`}
-                      </span>
-                    </div>
-                    <div>
-                      <span class="mfd-label" style="margin-right: 10px;">
-                        PERF
-                      </span>
-                      <span class="mfd-value bigger">
-                        {`${AirlineModifiableInformation.EK.perfFactor >= 0 ? '+' : '-'}${AirlineModifiableInformation.EK.perfFactor.toFixed(1)}`}
-                      </span>
-                    </div>
-                  </div>
-                  <div style="margin-top: 10px; display: flex; justify-content: center;">
-                    <Button
-                      label="MODIFY"
-                      onClick={() => {}}
-                      disabled={Subject.create(true)}
-                      buttonStyle="width: 125px;"
-                    />
-                  </div>
+              <div class="mfd-data-status-airframe-label mfd-value bigger">A380-800&nbsp;/&nbsp;TRENT 972</div>
+              <div class="mfd-data-status-performance-row" style="width:655px; margin-bottom: 10px;">
+                <span class="mfd-label bigger" style="margin-right: 25px;">
+                  IDLE
+                </span>
+                <span class="mfd-value bigger" style="margin-right: 60px;">
+                  {`${AirlineModifiableInformation.EK.idleFactor >= 0 ? '+' : '-'}${AirlineModifiableInformation.EK.idleFactor.toFixed(1)}`}
+                </span>
+                <span class="mfd-label bigger" style="margin-right: 25px;">
+                  PERF
+                </span>
+                <span class="mfd-value bigger" style="margin-right: 95px;">
+                  {`${AirlineModifiableInformation.EK.perfFactor >= 0 ? '+' : '-'}${AirlineModifiableInformation.EK.perfFactor.toFixed(1)}`}
+                </span>
+                <div style="display: flex; justify-content: center;">
+                  <Button
+                    label="MODIFY"
+                    onClick={() => {}}
+                    disabled={Subject.create(true)}
+                    buttonStyle="width: 125px;"
+                  />
                 </div>
               </div>
+              <div class="mfd-data-status-performance-row" style="width:380px; margin-bottom: 10px;">
+                <span class={'mfd-label bigger'}>FUEL PENALTY&nbsp;</span>
+                <InputField<number>
+                  dataEntryFormat={new FuelPenaltyPercentFormat()}
+                  value={this.props.fmcService.master?.fmgc.data.fuelPenaltyPercentage!}
+                  enteredByPilot={this.props.fmcService.master?.fmgc.data.fuelPenaltyActive!}
+                  canBeCleared={Subject.create(true)}
+                  containerStyle="width: 155px;"
+                  alignText="center"
+                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  hEventConsumer={this.props.mfd.hEventConsumer}
+                  interactionMode={this.props.mfd.interactionMode}
+                />
+              </div>
+
+              <div class="mfd-data-status-first-section-divider"></div>
+
               <div class="mfd-data-status-second-section">
                 <div style="position: relative; display: flex; justify-content: center; width: 100%;">
                   <ConfirmationDialog
@@ -179,60 +180,63 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
                     SWAP&nbsp;?
                   </ConfirmationDialog>
                 </div>
-                <div style="margin-bottom: 15px;">
-                  <span class="mfd-label" style="margin-right: 25px;">
+                <div style="margin-bottom: 15px; margin-left: 10px;">
+                  <span class="mfd-label bigger" style="margin-right: 25px; ">
                     NAV DATABASE
                   </span>
                   <span class="mfd-value bigger">{this.navDatabase}</span>
                 </div>
-                <div style="width: 100%; display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
-                  <div style="border: 1px solid lightgrey; padding: 15px; display: flex; flex-direction: column;">
-                    <div class="mfd-label" style="display: flex; justify-content: center; margin-bottom: 15px;">
+                <div style="width: 100%; display: flex; flex-direction: row; align-items: center; margin-bottom:10px;">
+                  <div style="border: 1px solid lightgrey; padding:20px 15px 15px 15px; display: flex; flex-direction: column; height:117px; margin-right:70px;">
+                    <div class="mfd-label bigger" style="display: flex; justify-content: center; margin-bottom: 25px;">
                       ACTIVE
                     </div>
                     <div>
                       <span class="mfd-value bigger">{this.activeDatabase}</span>
                     </div>
                   </div>
-                  <div>
+                  <div style=" margin-right:55px;">
                     <Button
                       label={Subject.create(
                         <div style="display: flex; flex-direction: row; justify-content: space-between; width: 100px; height: 40px;">
                           <span style="display: flex; align-items: center; justify-content: center; margin-left: 10px;">
                             SWAP
                           </span>
-                          <span style="display: flex; align-items: center; justify-content: center;">*</span>
+                          <span style="display: flex; align-items: center; justify-content: center;">
+                            &nbsp;&nbsp;*
+                          </span>
                         </div>,
                       )}
                       onClick={() => this.isSwapConfirmVisible.set(true)}
+                      buttonStyle="width: 140px; height: 62px;"
                     />
                   </div>
-                  <div style="padding: 15px; display: flex; flex-direction: column;">
-                    <div class="mfd-label" style="display: flex; justify-content: center; margin-bottom: 15px;">
+                  <div style="display: flex; flex-direction: column; margin-top:8px;">
+                    <div class="mfd-label bigger" style="display: flex; justify-content: center;">
                       SECOND
                     </div>
-                    <div>
-                      <span class="mfd-value">{this.secondDatabase}</span>
-                    </div>
+                    <span class="mfd-value" style="margin-top:27px;">
+                      &nbsp;&nbsp;{this.secondDatabase}
+                    </span>
                   </div>
                 </div>
               </div>
               <div class="mfd-data-status-third-section">
-                <div style="margin-bottom: 35px;">
-                  <span class="mfd-label" style="margin-right: 25px;">
+                <div style="margin-bottom: 17px;">
+                  <span class="mfd-label bigger" style="margin-left: 19px;">
                     PILOT STORED ELEMENTS
                   </span>
                 </div>
                 <div style="width: 100%; display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
-                  <div style="flex: 3; display: grid; grid-template-columns: 40% 10% 40% 10%; margin-right: 200px;">
-                    <div class="mfd-label mfd-data-status-pse-label">WAYPOINTS</div>
-                    <div class="mfd-value mfd-data-status-pse-value">{this.storedWaypoints}</div>
-                    <div class="mfd-label mfd-data-status-pse-label">ROUTES</div>
-                    <div class="mfd-value mfd-data-status-pse-value">{this.storedRoutes}</div>
-                    <div class="mfd-label mfd-data-status-pse-label">NAVAIDS</div>
-                    <div class="mfd-value mfd-data-status-pse-value">{this.storedNavaids}</div>
-                    <div class="mfd-label mfd-data-status-pse-label">RUNWAYS</div>
-                    <div class="mfd-value mfd-data-status-pse-value">{this.storedRunways}</div>
+                  <div style="flex: 3; display: grid; grid-template-columns: 52% 22% 40% 10%; margin-right: 200px;">
+                    <div class="mfd-label  bigger mfd-data-status-pse-label">WAYPOINTS</div>
+                    <div class="mfd-value bigger mfd-data-status-pse-value">{this.storedWaypoints}</div>
+                    <div class="mfd-label bigger mfd-data-status-pse-label">ROUTES</div>
+                    <div class="mfd-value bigger mfd-data-status-pse-value">{this.storedRoutes}</div>
+                    <div class="mfd-label bigger mfd-data-status-pse-label no-margin">NAVAIDS</div>
+                    <div class="mfd-value bigger mfd-data-status-pse-value no-margin">{this.storedNavaids}</div>
+                    <div class="mfd-label bigger mfd-data-status-pse-label no-margin">RUNWAYS</div>
+                    <div class="mfd-value bigger mfd-data-status-pse-value no-margin">{this.storedRunways}</div>
                   </div>
                   <div style="flex: 1;">
                     <Button

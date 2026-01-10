@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2024 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -228,10 +228,10 @@ export class IdleDescentStrategy implements DescentStrategy {
       headwindComponent.value,
       this.atmosphericConditions.isaDeviation,
       tropoPause,
+      perfFactor,
       speedbrakesExtended,
       flapConfig,
       gearExtended,
-      perfFactor,
     );
   }
 
@@ -264,10 +264,10 @@ export class IdleDescentStrategy implements DescentStrategy {
       headwindComponent.value,
       this.atmosphericConditions.isaDeviation,
       tropoPause,
+      perfFactor,
       speedbrakesExtended,
       flapConfig,
       gearExtended,
-      perfFactor,
     );
   }
 
@@ -305,10 +305,10 @@ export class IdleDescentStrategy implements DescentStrategy {
       headwindComponent.value,
       this.atmosphericConditions.isaDeviation,
       tropoPause,
+      perfFactor,
       gearExtended,
       flapConfig,
       speedbrakesExtended,
-      perfFactor,
     );
   }
 }

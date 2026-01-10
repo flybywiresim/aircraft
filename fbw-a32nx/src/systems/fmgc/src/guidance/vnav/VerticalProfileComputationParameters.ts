@@ -100,7 +100,7 @@ export class VerticalProfileComputationParametersObserver {
       fuelOnBoard: this.getFuelOnBoard(),
       v2Speed: this.getV2Speed(),
       tropoPause: this.fmgc.getTropoPause(),
-      perfFactor: 0, // FIXME: Use actual value,
+      perfFactor: this.fmgc.getPerformanceFactorPercent() ?? 0,
       departureElevation: this.fmgc.getDepartureElevation() ?? DefaultVerticalProfileParameters.departureElevation,
       /**
        * This differs from the altitude I use to start building the descent profile.
