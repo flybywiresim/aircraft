@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -255,7 +255,7 @@ export class VerticalProfileManager {
       }
 
       const selectedSpeedProfile = new ExpediteSpeedProfile(greenDotSpeed);
-      this.expediteProfile = new SelectedGeometryProfile();
+      this.expediteProfile = new SelectedGeometryProfile(this.acConfig);
       const climbStrategy = new ClimbThrustClimbStrategy(this.observer, this.atmosphericConditions, this.acConfig);
       const climbWinds = new HeadwindProfile(this.windProfileFactory.getClimbWinds(), this.headingProfile);
 
@@ -277,7 +277,7 @@ export class VerticalProfileManager {
       this.expediteProfile.finalizeProfile();
     } catch (e) {
       console.error(e);
-      this.expediteProfile = new SelectedGeometryProfile();
+      this.expediteProfile = new SelectedGeometryProfile(this.acConfig);
     }
   }
 
@@ -289,7 +289,7 @@ export class VerticalProfileManager {
 
     const ndProfile = this.fcuModes.isLatAutoControlActive()
       ? new NavGeometryProfile(this.flightPlanService, this.constraintReader, this.atmosphericConditions, this.acConfig)
-      : new SelectedGeometryProfile();
+      : new SelectedGeometryProfile(this.acConfig);
 
     let speedProfile: SpeedProfile;
     if (this.fcuModes.isExpediteModeActive()) {
@@ -389,11 +389,7 @@ export class VerticalProfileManager {
       const interceptReason = isDesActive
         ? VerticalCheckpointReason.InterceptDescentProfileManaged
         : VerticalCheckpointReason.InterceptDescentProfileSelected;
-      const interceptCheckpoint = ndProfile.addInterpolatedCheckpoint(
-        interceptDistance,
-        { reason: interceptReason },
-        this.acConfig,
-      );
+      const interceptCheckpoint = ndProfile.addInterpolatedCheckpoint(interceptDistance, { reason: interceptReason });
 
       const isAircraftTooCloseToIntercept = Math.abs(presentPosition.alt - interceptCheckpoint.altitude) < 100;
       if (isAircraftTooCloseToIntercept) {
@@ -429,11 +425,9 @@ export class VerticalProfileManager {
       // If we appended the managed profile directly after the intercept, we will have spliced away the level off arrow, so we have to add it again
       // At this point, we have to add the level off arrow again, because we spliced the previous one away as it lies after the intercept
       const levelOffDistance = ndProfile.interpolateDistanceAtAltitudeBackwards(fcuAltitude, true);
-      ndProfile.addInterpolatedCheckpoint(
-        levelOffDistance,
-        { reason: VerticalCheckpointReason.CrossingFcuAltitudeDescent },
-        this.acConfig,
-      );
+      ndProfile.addInterpolatedCheckpoint(levelOffDistance, {
+        reason: VerticalCheckpointReason.CrossingFcuAltitudeDescent,
+      });
     } else {
       ndProfile.checkpoints.push(
         ...this.descentProfile.checkpoints
@@ -491,11 +485,9 @@ export class VerticalProfileManager {
         (isInLevelFlight && isDescentArmed && currentAlt - checkpoint.altitude > 100) ||
         constraintAlt - checkpoint.altitude > 100
       ) {
-        ndProfile.addInterpolatedCheckpoint(
-          previousCheckpoint.distanceFromStart,
-          { reason: VerticalCheckpointReason.ContinueDescentArmed },
-          this.acConfig,
-        );
+        ndProfile.addInterpolatedCheckpoint(previousCheckpoint.distanceFromStart, {
+          reason: VerticalCheckpointReason.ContinueDescentArmed,
+        });
 
         break;
       }
@@ -537,11 +529,9 @@ export class VerticalProfileManager {
         continue;
       }
 
-      ndProfile.addInterpolatedCheckpoint(
-        Math.max(levelOffDistance, previousCheckpoint.distanceFromStart),
-        { reason: VerticalCheckpointReason.ContinueDescent },
-        this.acConfig,
-      );
+      ndProfile.addInterpolatedCheckpoint(Math.max(levelOffDistance, previousCheckpoint.distanceFromStart), {
+        reason: VerticalCheckpointReason.ContinueDescent,
+      });
 
       return;
     }
@@ -566,9 +556,9 @@ export class VerticalProfileManager {
     if (index >= 0) {
       // If we have an intercept, adjust the fuel predictions/time predictions based on the current aircraft state
       const { secondsFromPresent: tacticalTimeAtIntercept, remainingFuelOnBoard: tacticalFuelAtIntercept } =
-        mcduProfile.interpolateEverythingFromStart(interceptDistance, this.acConfig, false);
+        mcduProfile.interpolateEverythingFromStart(interceptDistance, false);
       const { secondsFromPresent: guidanceTimeAtIntercept, remainingFuelOnBoard: guidanceFuelAtIntercept } =
-        this.descentProfile.interpolateEverythingFromStart(interceptDistance - offset, this.acConfig, false);
+        this.descentProfile.interpolateEverythingFromStart(interceptDistance - offset, false);
 
       // How much more fuel is predicted in the tactical profile vs the guidance profile
       const fuelOffset = tacticalFuelAtIntercept - guidanceFuelAtIntercept;
@@ -592,11 +582,9 @@ export class VerticalProfileManager {
     if (!decelPointInMcdu) {
       const decelPointInGuidanceProfile = this.descentProfile.findVerticalCheckpoint(VerticalCheckpointReason.Decel);
 
-      mcduProfile.addInterpolatedCheckpoint(
-        decelPointInGuidanceProfile.distanceFromStart + offset,
-        { reason: VerticalCheckpointReason.Decel },
-        this.acConfig,
-      );
+      mcduProfile.addInterpolatedCheckpoint(decelPointInGuidanceProfile.distanceFromStart + offset, {
+        reason: VerticalCheckpointReason.Decel,
+      });
     }
 
     const spdLimCrossingInMcdu = mcduProfile.findVerticalCheckpoint(VerticalCheckpointReason.CrossingDescentSpeedLimit);
@@ -609,11 +597,9 @@ export class VerticalProfileManager {
           spdLimCrossingInGuidanceProfile.altitude,
         );
 
-        mcduProfile.addInterpolatedCheckpoint(
-          spdLimCrossingDistance,
-          { reason: VerticalCheckpointReason.CrossingDescentSpeedLimit },
-          this.acConfig,
-        );
+        mcduProfile.addInterpolatedCheckpoint(spdLimCrossingDistance, {
+          reason: VerticalCheckpointReason.CrossingDescentSpeedLimit,
+        });
       }
     }
   }

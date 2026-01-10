@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -143,13 +143,9 @@ export class CruiseToDescentCoordinator {
           }
 
           // If there is an intercept, place the T/D wherever we need it
-          const combinedTopOfClimbTopOfDescent = profile.addInterpolatedCheckpoint(
-            climbDescentInterceptDistance,
-            {
-              reason: VerticalCheckpointReason.TopOfClimb,
-            },
-            this.acConfig,
-          );
+          const combinedTopOfClimbTopOfDescent = profile.addInterpolatedCheckpoint(climbDescentInterceptDistance, {
+            reason: VerticalCheckpointReason.TopOfClimb,
+          });
           const savedTopOfDescent = descentPath.lastCheckpoint;
           descentPath.checkpoints = descentPath.checkpoints.filter(
             (checkpoint) => checkpoint.distanceFromStart >= combinedTopOfClimbTopOfDescent.distanceFromStart,

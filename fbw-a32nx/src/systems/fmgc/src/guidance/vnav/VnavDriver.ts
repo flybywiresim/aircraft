@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-//  Copyright (c) 2023 FlyByWire Simulations
+//  Copyright (c) 2023-2026 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
@@ -573,7 +573,6 @@ export class VnavDriver implements GuidanceComponent {
 
       const prediction = this.profileManager.mcduProfile.interpolateEverythingFromStart(
         leg.calculated.cumulativeDistanceWithTransitions,
-        this.acConfig,
       );
       const tasPrediction = this.atmosphericConditions.computeTasFromCas(prediction.altitude, prediction.speed);
 

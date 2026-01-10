@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2025 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -30,6 +30,7 @@ export interface PerfCrzToPrediction {
 }
 
 export abstract class BaseGeometryProfile {
+  constructor(protected config: AircraftConfig) {}
   public isReadyToDisplay: boolean = false;
 
   public checkpoints: VerticalCheckpoint[] = [];
@@ -58,9 +59,9 @@ export abstract class BaseGeometryProfile {
     this.checkpoints.push({ ...this.lastCheckpoint, ...checkpointBuilder(this.lastCheckpoint) });
   }
 
-  predictAtTime(secondsFromPresent: Seconds, aircraftConfig: AircraftConfig): PseudoWaypointFlightPlanInfo {
+  predictAtTime(secondsFromPresent: Seconds): PseudoWaypointFlightPlanInfo {
     const distanceFromStart = this.interpolateDistanceAtTime(secondsFromPresent);
-    const { altitude, speed } = this.interpolateEverythingFromStart(distanceFromStart, aircraftConfig);
+    const { altitude, speed } = this.interpolateEverythingFromStart(distanceFromStart);
 
     return {
       distanceFromStart,
@@ -180,7 +181,6 @@ export abstract class BaseGeometryProfile {
 
   interpolateEverythingFromStart(
     distanceFromStart: NauticalMiles,
-    aircraftConfig: AircraftConfig,
     doInterpolateAltitude = true,
   ): Omit<VerticalCheckpoint, 'reason'> {
     if (distanceFromStart <= this.checkpoints[0].distanceFromStart) {
@@ -218,7 +218,7 @@ export abstract class BaseGeometryProfile {
               )
             : this.checkpoints[i].altitude,
           remainingFuelOnBoard: Math.max(
-            aircraftConfig.vnavConfig.LOWEST_FUEL_ESTIMATE,
+            this.config.vnavConfig.LOWEST_FUEL_ESTIMATE,
             Common.interpolate(
               distanceFromStart,
               this.checkpoints[i].distanceFromStart,
@@ -334,7 +334,6 @@ export abstract class BaseGeometryProfile {
   addInterpolatedCheckpoint(
     distanceFromStart: NauticalMiles,
     additionalProperties: HasAtLeast<VerticalCheckpoint, 'reason'>,
-    aircraftConfig: AircraftConfig,
   ): VerticalCheckpoint {
     if (distanceFromStart <= this.checkpoints[0].distanceFromStart) {
       this.checkpoints.unshift({
@@ -379,7 +378,7 @@ export abstract class BaseGeometryProfile {
               this.checkpoints[i].remainingFuelOnBoard,
               this.checkpoints[i + 1].remainingFuelOnBoard,
             ),
-            aircraftConfig.vnavConfig.LOWEST_FUEL_ESTIMATE,
+            this.config.vnavConfig.LOWEST_FUEL_ESTIMATE,
           ),
 
           speed: Common.interpolate(

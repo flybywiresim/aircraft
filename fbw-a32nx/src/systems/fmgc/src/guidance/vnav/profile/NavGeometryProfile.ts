@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -147,9 +147,9 @@ export class NavGeometryProfile extends BaseGeometryProfile {
     private flightPlanService: FlightPlanService,
     private constraintReader: ConstraintReader,
     private atmosphericConditions: AtmosphericConditions,
-    private config: AircraftConfig,
+    config: AircraftConfig,
   ) {
-    super();
+    super(config);
   }
 
   override get maxAltitudeConstraints(): MaxAltitudeConstraint[] {
@@ -227,10 +227,8 @@ export class NavGeometryProfile extends BaseGeometryProfile {
       }
 
       const distanceFromStart = leg.calculated?.cumulativeDistanceWithTransitions;
-      const { secondsFromPresent, altitude, speed, mach, remainingFuelOnBoard } = this.interpolateEverythingFromStart(
-        distanceFromStart,
-        this.config,
-      );
+      const { secondsFromPresent, altitude, speed, mach, remainingFuelOnBoard } =
+        this.interpolateEverythingFromStart(distanceFromStart);
 
       const altitudeConstraint = leg.altitudeConstraint;
       const speedConstraint = leg.speedConstraint;
