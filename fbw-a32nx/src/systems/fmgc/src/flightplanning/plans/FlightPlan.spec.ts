@@ -1,48 +1,78 @@
-// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2025 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { beforeAll, describe, it, expect } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { setupTestDatabase } from '../test/Database';
 import { assertDiscontinuity, assertNotDiscontinuity } from '../test/LegUtils';
 import { LegType, WaypointDescriptor } from '@flybywiresim/fbw-sdk';
 import { loadAirwayLegs } from '../segments/enroute/AirwayLoading';
 import { emptyFlightPlan } from '../test/FlightPlan';
+import { testFlightPlanService } from '@fmgc/flightplanning/test/TestFlightPlanService';
+import { FlightPlanEvents } from '@fmgc/flightplanning/sync/FlightPlanEvents';
+import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
+import { testEventBus } from '@fmgc/flightplanning/test/TestEventBus';
 
-describe.skip('a base flight plan', () => {
+describe('a base flight plan', () => {
   beforeAll(() => {
     setupTestDatabase();
   });
 
-  it.skip('can insert a leg', async () => {
-    const fp = emptyFlightPlan();
-
-    await fp.setOriginAirport('CYUL');
-    await fp.setOriginRunway('CYYZ06R');
-    await fp.setDeparture('CYUL1');
-
-    await fp.setDestinationAirport('CYYZ');
-    await fp.setDestinationRunway('CYYZ05');
-    await fp.setApproach('I05');
-    await fp.setArrival('BOXUM5');
-
-    // const waypoint = await loadSingleWaypoint('NOSUS', 'WCYCYULNOSUS');
-
-    // const leg = FlightPlanLeg.fromEnrouteFix(fp.enrouteSegment, waypoint);
-
-    // FIXME fix when un-skipping
-    // await fp.insertElementAfter(3, leg, true);
-
-    const fpLeg = assertNotDiscontinuity(fp.allLegs[4]);
-
-    expect(fpLeg.ident).toBe('NOSUS');
-    expect(fp.allLegs[5].isDiscontinuity).toBeTruthy();
-
-    expect(fp.allLegs).toHaveLength(23);
+  beforeEach(() => {
+    testFlightPlanService.reset(true);
   });
 
-  describe('deleting legs', () => {
+  it('can insert a leg', async () => {
+    const fp = emptyFlightPlan();
+
+    await fp.setOriginAirport('CYVR');
+    await fp.setDestinationAirport('CYYZ');
+
+    const waypoint = await NavigationDatabaseService.activeDatabase.searchWaypoint('NOSUS');
+
+    await fp.insertWaypointBefore(1, waypoint[0]);
+
+    const fpLeg = fp.legElementAt(1);
+
+    expect(fpLeg.ident).toBe('NOSUS');
+    expect(fp.allLegs[2].isDiscontinuity).toBeTruthy();
+
+    expect(fp.allLegs).toHaveLength(4);
+  });
+
+  it('can insert an airway', async ({ onTestFinished }) => {
+    const handlerFn = vi.fn(() => {});
+
+    const sub = testEventBus.getSubscriber<FlightPlanEvents>().on('flightPlan.pendingAirwaysEdit').handle(handlerFn);
+    onTestFinished(() => sub.destroy());
+
+    const fp = emptyFlightPlan();
+    await fp.setOriginAirport('CYYZ');
+    await fp.setDestinationAirport('CYVR');
+
+    const fix = await NavigationDatabaseService.activeDatabase.searchWaypoint('NOSUS');
+
+    await fp.nextWaypoint(1, fix[0]);
+
+    await fp.startAirwayEntry(2);
+
+    const airway = await NavigationDatabaseService.activeDatabase.searchAirway('A1', fix[0]);
+
+    await fp.continueAirwayEntryViaAirway(airway[0]);
+
+    const terminationFix = await NavigationDatabaseService.activeDatabase.searchWaypoint('DUTIL');
+
+    await fp.continueAirwayEntryToFix(terminationFix[0]);
+
+    await fp.finaliseAirwayEntry();
+
+    expect(fp.legElementAt(2).terminationWaypoint().ident).toBe('NOSUS');
+    expect(fp.legElementAt(3).terminationWaypoint().ident).toBe('DEBUS');
+    expect(fp.legElementAt(4).terminationWaypoint().ident).toBe('DUTIL');
+  });
+
+  describe.skip('deleting legs', () => {
     it('without inserting a discontinuity', async () => {
       const fp = emptyFlightPlan();
 
@@ -81,7 +111,7 @@ describe.skip('a base flight plan', () => {
     });
   });
 
-  describe('editing the departure or arrival', () => {
+  describe.skip('editing the departure or arrival', () => {
     it('should truncate departure segment after it is edited', async () => {
       const flightPlan = emptyFlightPlan();
 
@@ -123,7 +153,7 @@ describe.skip('a base flight plan', () => {
     });
   });
 
-  describe('collapsing waypoints', () => {
+  describe.skip('collapsing waypoints', () => {
     it('should collapse waypoints within one segment', async () => {
       const flightPlan = emptyFlightPlan();
       // const segment = flightPlan.enrouteSegment;
@@ -185,7 +215,7 @@ describe.skip('a base flight plan', () => {
     });
   });
 
-  it('connects segments by merging TF -> FX legs with the same waypoint', async () => {
+  it.skip('connects segments by merging TF -> FX legs with the same waypoint', async () => {
     const fp = emptyFlightPlan();
 
     await fp.setDestinationAirport('EGLL');
@@ -203,7 +233,7 @@ describe.skip('a base flight plan', () => {
     expect(assertNotDiscontinuity(leg5).type).toBe(LegType.FD);
   });
 
-  it('does not connect segments by merging TF -> FX legs with a different waypoint', async () => {
+  it.skip('does not connect segments by merging TF -> FX legs with a different waypoint', async () => {
     const fp = emptyFlightPlan();
 
     await fp.setOriginAirport('EGLL');
@@ -229,7 +259,7 @@ describe.skip('a base flight plan', () => {
     expect(assertNotDiscontinuity(leg7).type).toBe(LegType.IF);
   });
 
-  describe('plan info', () => {
+  describe.skip('plan info', () => {
     describe('destination leg', () => {
       it('returns the right leg for an approach ending at the runway', async () => {
         const fp = emptyFlightPlan();

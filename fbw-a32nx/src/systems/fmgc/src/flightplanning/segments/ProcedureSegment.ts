@@ -8,7 +8,7 @@ import { FlightPlanSegment, SerializedFlightPlanSegment } from './FlightPlanSegm
 /**
  * A flight plan segment representing a procedure
  */
-export abstract class ProcedureSegment<T extends { ident: string }> extends FlightPlanSegment {
+export abstract class ProcedureSegment<T extends { ident: string; databaseId: string }> extends FlightPlanSegment {
   abstract get procedure(): T | undefined | null;
 
   /**
@@ -27,8 +27,8 @@ export abstract class ProcedureSegment<T extends { ident: string }> extends Flig
    *
    * @param serialized the serialized flight plan segment
    */
-  setFromSerializedSegment(serialized: SerializedFlightPlanSegment): void {
-    this.setProcedure(serialized.procedureIdent, true);
+  async setFromSerializedSegment(serialized: SerializedFlightPlanSegment): Promise<void> {
+    await this.setProcedure(serialized.procedureDatabaseId, true);
     this.allLegs = serialized.allLegs.map((it) =>
       it.isDiscontinuity === false ? FlightPlanLeg.deserialize(it, this) : it,
     );
@@ -37,7 +37,8 @@ export abstract class ProcedureSegment<T extends { ident: string }> extends Flig
   override serialize(): SerializedFlightPlanSegment {
     return {
       allLegs: this.allLegs.map((it) => (it.isDiscontinuity === false ? it.serialize() : it)),
-      procedureIdent: this.procedure?.ident ?? undefined,
+      procedureIdent: this.procedure?.ident,
+      procedureDatabaseId: this.procedure?.databaseId,
     };
   }
 }
