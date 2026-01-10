@@ -634,6 +634,22 @@ FcdcBus Fcdc::getBusOutputs() {
   output.efcsStatus4.setBit(29, bitFromValueOr(busInputs.elac1.discrete_status_word_2, 21, false) ||
                                     bitFromValueOr(busInputs.elac2.discrete_status_word_2, 21, false));
 
+  const bool sec1LeverExtended = valueOr(busInputs.sec1.speed_brake_lever_command_deg, 0) > 1.5;
+  const bool sec3LeverExtended = valueOr(busInputs.sec3.speed_brake_lever_command_deg, 0) > 1.5;
+
+  const bool sec1CommandExtended = valueOr(busInputs.sec1.speed_brake_command_deg, 0) < -1.5;
+  const bool sec3CommandExtended = valueOr(busInputs.sec3.speed_brake_command_deg, 0) < -1.5;
+
+  const bool sec1Disagree = sec1LeverExtended && !sec1CommandExtended;
+  const bool sec3Disagree = sec3LeverExtended && !sec3CommandExtended;
+
+  const bool spoiler2Fault = bitFromValueOr(busInputs.sec3.discrete_status_word_1, 12, false);
+  const bool spoiler3Fault = bitFromValueOr(busInputs.sec1.discrete_status_word_1, 11, false);
+  const bool spoiler4Fault = bitFromValueOr(busInputs.sec1.discrete_status_word_1, 12, false);
+
+  const bool spoiler2Avail = discreteInputs.sec3Valid && !spoiler2Fault;
+  const bool spoiler34Avail = discreteInputs.sec1Valid && !spoiler3Fault && !spoiler4Fault;
+
   output.efcsStatus5.setSsm(Arinc429SignStatus::NormalOperation);
   output.efcsStatus5.setBit(11, !isNo(busInputs.sec1.speed_brake_lever_command_deg) && discreteInputs.sec1Valid);
   output.efcsStatus5.setBit(12, !isNo(busInputs.sec2.speed_brake_lever_command_deg) && discreteInputs.sec2Valid);
@@ -646,12 +662,14 @@ FcdcBus Fcdc::getBusOutputs() {
   output.efcsStatus5.setBit(19, false);
   output.efcsStatus5.setBit(20, false);
   output.efcsStatus5.setBit(21, bitFromValueOr(busInputs.sec3.discrete_status_word_1, 11, false));
-  output.efcsStatus5.setBit(22, bitFromValueOr(busInputs.sec3.discrete_status_word_1, 12, false));
-  output.efcsStatus5.setBit(23, bitFromValueOr(busInputs.sec1.discrete_status_word_1, 11, false));
-  output.efcsStatus5.setBit(24, bitFromValueOr(busInputs.sec1.discrete_status_word_1, 12, false));
+  output.efcsStatus5.setBit(22, spoiler2Fault);
+  output.efcsStatus5.setBit(23, spoiler3Fault);
+  output.efcsStatus5.setBit(24, spoiler4Fault);
   output.efcsStatus5.setBit(25, bitFromValueOr(busInputs.sec2.discrete_status_word_1, 11, false));
-  output.efcsStatus5.setBit(26, false);
-  output.efcsStatus5.setBit(27, false);
+  // TODO: Check SPD BRK (2+)3+4 FAULT behaviour on bits 26 and 27 when added
+  output.efcsStatus5.setBit(26, sec3Disagree || sec1Disagree);
+  // Only SPD BRK 3+4 fault, so SPD BRK 2 must be working fine
+  output.efcsStatus5.setBit(27, !spoiler34Avail && spoiler2Avail);
   output.efcsStatus5.setBit(28, false);
   output.efcsStatus5.setBit(29, false);
 
