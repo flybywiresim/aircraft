@@ -397,10 +397,14 @@ export class CDUFlightPlanPage {
         let spdColor = 'white';
 
         // Should show empty speed prediction for waypoint after hold
-        let speedConstraint: string = wp.type === 'HM' ? Speed.Empty : Speed.NoPrediction;
+        let speedConstraint: string = isPageB
+          ? Wind.NoTrueDegreesPrediction
+          : wp.type === 'HM'
+            ? Speed.Empty
+            : Speed.NoPrediction;
         let speedPrefix = '';
 
-        if (targetPlan.index !== FlightPlanIndex.Temporary && wp.type !== 'HM') {
+        if (targetPlan.index !== FlightPlanIndex.Temporary) {
           if (isPageB) {
             speedConstraint = Wind.NoTrueDegreesPrediction;
 
@@ -415,27 +419,29 @@ export class CDUFlightPlanPage {
                 : `{small}${formatWindPredictionDirection(verticalWaypoint?.windPrediction)}{end}`;
               spdColor = color;
             }
-          } else if (!inAlternate && fpIndex === targetPlan.originLegIndex) {
-            speedConstraint = Number.isFinite(targetPlan.performanceData.v1.get())
-              ? `{big}${Math.round(targetPlan.performanceData.v1.get())}{end}`
-              : Speed.NoPrediction;
-            spdColor = Number.isFinite(targetPlan.performanceData.v1.get()) ? color : 'white';
-          } else if (isFromLeg) {
-            speedConstraint = Speed.Empty;
-          } else {
-            if (verticalWaypoint && verticalWaypoint.speed) {
-              speedConstraint = `{small}${verticalWaypoint.speed < 1 ? formatMachNumber(verticalWaypoint.speed) : Math.round(verticalWaypoint.speed)}{end}`;
+          } else if (wp.type !== 'HM') {
+            if (!inAlternate && fpIndex === targetPlan.originLegIndex) {
+              speedConstraint = Number.isFinite(targetPlan.performanceData.v1.get())
+                ? `{big}${Math.round(targetPlan.performanceData.v1.get())}{end}`
+                : Speed.NoPrediction;
+              spdColor = Number.isFinite(targetPlan.performanceData.v1.get()) ? color : 'white';
+            } else if (isFromLeg) {
+              speedConstraint = Speed.Empty;
+            } else {
+              if (verticalWaypoint && verticalWaypoint.speed) {
+                speedConstraint = `{small}${verticalWaypoint.speed < 1 ? formatMachNumber(verticalWaypoint.speed) : Math.round(verticalWaypoint.speed)}{end}`;
 
-              if (verticalWaypoint.speedConstraint) {
-                speedPrefix = `${verticalWaypoint.isSpeedConstraintMet ? '{magenta}' : '{amber}'}*{end}`;
+                if (verticalWaypoint.speedConstraint) {
+                  speedPrefix = `${verticalWaypoint.isSpeedConstraintMet ? '{magenta}' : '{amber}'}*{end}`;
+                }
+                spdColor = color;
+              } else if (wp.hasPilotEnteredSpeedConstraint()) {
+                speedConstraint = Math.round(wp.pilotEnteredSpeedConstraint.speed).toString();
+                spdColor = 'magenta';
+              } else if (wp.hasDatabaseSpeedConstraint()) {
+                speedConstraint = `{small}${Math.round(wp.definition.speed)}{end}`;
+                spdColor = 'magenta';
               }
-              spdColor = color;
-            } else if (wp.hasPilotEnteredSpeedConstraint()) {
-              speedConstraint = Math.round(wp.pilotEnteredSpeedConstraint.speed).toString();
-              spdColor = 'magenta';
-            } else if (wp.hasDatabaseSpeedConstraint()) {
-              speedConstraint = `{small}${Math.round(wp.definition.speed)}{end}`;
-              spdColor = 'magenta';
             }
           }
         }
