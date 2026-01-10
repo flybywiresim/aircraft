@@ -488,12 +488,14 @@ export class SimBriefUplinkAdapter {
     fms.onUplinkDone(intoPlan);
   }
 
-  static async downloadOfpForUserID(username: string, userID?: string): Promise<ISimbriefData> {
+  static async downloadOfpForUserID(username?: string, userID?: string): Promise<ISimbriefData> {
     let url = `${SIMBRIEF_API_URL}`;
     if (userID) {
       url += `&userid=${userID}`;
-    } else {
+    } else if (username) {
       url += `&username=${username}`;
+    } else {
+      throw new Error('SimBriefUplinkAdapter.downloadOfpForUserID: Either username or userID must be provided');
     }
 
     try {

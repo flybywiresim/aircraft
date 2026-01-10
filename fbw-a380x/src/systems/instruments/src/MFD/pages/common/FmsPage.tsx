@@ -1,22 +1,28 @@
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
-import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
-import { DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { NXSystemMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
 import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { FlightPlanEvents } from '@fmgc/flightplanning/sync/FlightPlanEvents';
+import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
+import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
+import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 
 export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPageProps> extends DisplayComponent<T> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
   protected readonly subs = [] as Subscription[];
 
+  private readonly sub = this.props.bus.getSubscriber<MfdSimvars>();
+
   private newDataIntervalId: ReturnType<typeof setTimeout> | undefined = undefined;
 
   protected readonly activePageTitle = Subject.create<string>('');
 
-  public loadedFlightPlan: FlightPlan | null = null;
+  public loadedFlightPlan: ReadonlyFlightPlan<FlightPlanPerformanceData> | null = null;
+
+  public loadedAlternateFlightPlan: AlternateFlightPlan<FlightPlanPerformanceData> | null = null;
 
   protected readonly loadedFlightPlanIndex = Subject.create<FlightPlanIndex>(FlightPlanIndex.Active);
 
@@ -28,23 +34,15 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
 
   protected readonly eoActive = Subject.create<boolean>(false);
 
-  protected readonly activeFlightPhase = Subject.create<FmgcFlightPhase>(FmgcFlightPhase.Preflight);
+  protected readonly activeFlightPhase = ConsumerSubject.create<FmgcFlightPhase>(
+    this.sub.on('flightPhase'),
+    FmgcFlightPhase.Preflight,
+  );
 
   // protected mfdInViewConsumer: Consumer<boolean>;
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-
-    const sub = this.props.bus.getSubscriber<MfdSimvars>();
-
-    this.subs.push(
-      sub
-        .on('flightPhase')
-        .whenChanged()
-        .handle((val) => {
-          this.activeFlightPhase.set(val);
-        }),
-    );
 
     // this.mfdInViewConsumer = sub.on(this.props.mfd.uiService.captOrFo === 'CAPT' ? 'leftMfdInView' : 'rightMfdInView');
 
@@ -116,53 +114,86 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
   }
 
   protected onFlightPlanChanged() {
-    switch (this.props.mfd.uiService.activeUri.get().category) {
+    const activeUri = this.props.mfd.uiService.activeUri.get();
+    switch (activeUri.category) {
       case 'active':
         if (
-          this.props.fmcService.master?.flightPlanService.hasActive ||
-          this.props.fmcService.master?.flightPlanService.hasTemporary
+          this.props.fmcService.master?.flightPlanInterface.hasActive ||
+          this.props.fmcService.master?.flightPlanInterface.hasTemporary
         ) {
-          this.loadedFlightPlan = this.props.fmcService.master?.flightPlanService.activeOrTemporary ?? null;
+          this.loadedFlightPlan = this.props.fmcService.master?.flightPlanInterface.activeOrTemporary ?? null;
+          this.loadedAlternateFlightPlan = this.props.fmcService.master?.flightPlanInterface.get(
+            this.props.fmcService.master?.flightPlanInterface.hasTemporary
+              ? FlightPlanIndex.Temporary
+              : FlightPlanIndex.Active,
+          ).alternateFlightPlan;
           this.loadedFlightPlanIndex.set(
-            this.props.fmcService.master?.flightPlanService.hasTemporary
+            this.props.fmcService.master?.flightPlanInterface.hasTemporary
               ? FlightPlanIndex.Temporary
               : FlightPlanIndex.Active,
           );
           this.secActive.set(false);
-          this.tmpyActive.set(this.props.fmcService.master?.flightPlanService.hasTemporary ?? false);
+          this.tmpyActive.set(this.props.fmcService.master?.flightPlanInterface.hasTemporary ?? false);
+        } else if (activeUri.page === 'init') {
+          // Flight plan might not have been created yet
+          this.loadedFlightPlanIndex.set(FlightPlanIndex.Active);
         }
         break;
       case 'sec1':
-        if (this.props.fmcService.master?.flightPlanService.hasSecondary(1)) {
-          this.loadedFlightPlan = this.props.fmcService.master?.flightPlanService.secondary(1) ?? null;
+        if (this.props.fmcService.master?.flightPlanInterface.hasSecondary(1)) {
+          this.loadedFlightPlan = this.props.fmcService.master?.flightPlanInterface.secondary(1) ?? null;
+          this.loadedAlternateFlightPlan = this.props.fmcService.master?.flightPlanInterface.get(
+            FlightPlanIndex.FirstSecondary,
+          ).alternateFlightPlan;
           this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary);
           this.secActive.set(true);
           this.tmpyActive.set(false);
+        } else if (activeUri.page === 'init') {
+          // Flight plan might not have been created yet
+          this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary);
         }
         break;
       case 'sec2':
-        if (this.props.fmcService.master?.flightPlanService.hasSecondary(2)) {
-          this.loadedFlightPlan = this.props.fmcService.master?.flightPlanService.secondary(2) ?? null;
+        if (this.props.fmcService.master?.flightPlanInterface.hasSecondary(2)) {
+          this.loadedFlightPlan = this.props.fmcService.master?.flightPlanInterface.secondary(2) ?? null;
+          this.loadedAlternateFlightPlan = this.props.fmcService.master?.flightPlanInterface.get(
+            FlightPlanIndex.FirstSecondary + 1,
+          ).alternateFlightPlan;
           this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary + 1);
           this.secActive.set(true);
           this.tmpyActive.set(false);
+        } else if (activeUri.page === 'init') {
+          // Flight plan might not have been created yet
+          this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary + 1);
         }
         break;
       case 'sec3':
-        if (this.props.fmcService.master?.flightPlanService.hasSecondary(3)) {
-          this.loadedFlightPlan = this.props.fmcService.master?.flightPlanService.secondary(3) ?? null;
+        if (this.props.fmcService.master?.flightPlanInterface.hasSecondary(3)) {
+          this.loadedFlightPlan = this.props.fmcService.master?.flightPlanInterface.secondary(3) ?? null;
+          this.loadedAlternateFlightPlan = this.props.fmcService.master?.flightPlanInterface.get(
+            FlightPlanIndex.FirstSecondary + 2,
+          ).alternateFlightPlan;
           this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary + 2);
           this.secActive.set(true);
           this.tmpyActive.set(false);
+        } else if (activeUri.page === 'init') {
+          // Flight plan might not have been created yet
+          this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary + 2);
         }
         break;
 
       default:
         if (
-          this.props.fmcService.master?.flightPlanService.hasActive ||
-          this.props.fmcService.master?.flightPlanService.hasTemporary
+          this.props.fmcService.master?.flightPlanInterface.hasActive ||
+          this.props.fmcService.master?.flightPlanInterface.hasTemporary
         ) {
-          this.loadedFlightPlan = this.props.fmcService.master?.flightPlanService.activeOrTemporary ?? null;
+          this.loadedFlightPlan = this.props.fmcService.master?.flightPlanInterface.activeOrTemporary ?? null;
+          this.loadedAlternateFlightPlan =
+            this.props.fmcService.master?.flightPlanInterface.get(
+              this.props.fmcService.master?.flightPlanInterface.hasTemporary
+                ? FlightPlanIndex.Temporary
+                : FlightPlanIndex.Active,
+            ).alternateFlightPlan ?? null;
         }
         break;
     }
@@ -174,24 +205,26 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
   protected abstract onNewData(): void;
 
   private onNewDataChecks() {
-    const fm = this.props.fmcService.master?.fmgc.data ?? null;
-    const pd = this.loadedFlightPlan?.performanceData ?? null;
+    const fm = this.props.fmcService.master?.fmgc.data;
+    const activeFlightPlan = this.props.fmcService.master?.flightPlanInterface.active;
+    const pdActive = activeFlightPlan?.performanceData;
+    const fps = this.props.fmcService.master?.flightPlanInterface;
 
-    if (this.loadedFlightPlan?.originRunway) {
+    // CHECK TO DATA
+    if (activeFlightPlan && pdActive && activeFlightPlan.originRunway) {
       if (!fm?.vSpeedsForRunway.get()) {
-        fm?.vSpeedsForRunway.set(this.loadedFlightPlan.originRunway.ident);
-      } else if (fm.vSpeedsForRunway.get() !== this.loadedFlightPlan.originRunway.ident) {
-        fm.vSpeedsForRunway.set(this.loadedFlightPlan.originRunway.ident);
-        fm.v1ToBeConfirmed.set(pd?.v1.get() ?? null);
-        this.loadedFlightPlan.setPerformanceData('v1', null);
-        fm.vrToBeConfirmed.set(pd?.vr.get() ?? null);
-        this.loadedFlightPlan.setPerformanceData('vr', null);
-        fm.v2ToBeConfirmed.set(pd?.v2.get() ?? null);
-        this.loadedFlightPlan.setPerformanceData('v2', null);
-
+        fm?.vSpeedsForRunway.set(activeFlightPlan.originRunway.ident);
+      } else if (fm.vSpeedsForRunway.get() !== activeFlightPlan.originRunway.ident) {
+        fm.vSpeedsForRunway.set(activeFlightPlan.originRunway.ident);
+        fm.v1ToBeConfirmed.set(pdActive?.v1.get() ?? null);
+        fps?.setPerformanceData('v1', null, FlightPlanIndex.Active);
+        fm.vrToBeConfirmed.set(pdActive?.vr.get() ?? null);
+        fps?.setPerformanceData('vr', null, FlightPlanIndex.Active);
+        fm.v2ToBeConfirmed.set(pdActive?.v2.get() ?? null);
+        fps?.setPerformanceData('v2', null, FlightPlanIndex.Active);
         this.props.fmcService.master?.addMessageToQueue(
           NXSystemMessages.checkToData,
-          () => this.loadedFlightPlan?.performanceData.vr.get() !== null,
+          () => activeFlightPlan.performanceData.vr.get() !== null,
           undefined,
         );
       }
