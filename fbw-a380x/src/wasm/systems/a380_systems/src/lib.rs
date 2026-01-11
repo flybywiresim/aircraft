@@ -51,7 +51,7 @@ use systems::{
     engine::{reverser_thrust::ReverserForce, trent_engine::TrentEngine, EngineFireOverheadPanel},
     enhanced_gpwc::EnhancedGroundProximityWarningComputer,
     landing_gear::{LandingGear, LandingGearControlInterfaceUnitSet},
-    navigation::hw_block3_adiru::AirDataInertialReferenceSystem,
+    navigation::adirs::hw_block3_adiru::AirDataInertialReferenceSystem,
     shared::ElectricalBusType,
     simulation::{
         Aircraft, InitContext, SimulationElement, SimulationElementVisitor, UpdateContext,

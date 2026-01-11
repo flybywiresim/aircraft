@@ -3,9 +3,9 @@ use super::adr_runtime::*;
 use super::ir_runtime::*;
 use super::*;
 use crate::auto_flight::FlightControlUnitBusOutputs;
+use crate::navigation::adirs::hw_block3_adiru::simulator_data::AdrSimulatorData;
+use crate::navigation::adirs::hw_block3_adiru::simulator_data::IrSimulatorData;
 use crate::navigation::adirs::*;
-use crate::navigation::hw_block3_adiru::simulator_data::AdrSimulatorData;
-use crate::navigation::hw_block3_adiru::simulator_data::IrSimulatorData;
 use crate::shared::arinc429::SignStatus;
 use crate::shared::MachNumber;
 use crate::simulation::test::WriteByName;
@@ -982,7 +982,7 @@ mod adr {
     use uom::si::{pressure::inch_of_mercury, time::second};
 
     use crate::{
-        navigation::hw_block3_adiru::adr_runtime::AirDataReferenceRuntime,
+        navigation::adirs::hw_block3_adiru::adr_runtime::AirDataReferenceRuntime,
         shared::InternationalStandardAtmosphere,
     };
 

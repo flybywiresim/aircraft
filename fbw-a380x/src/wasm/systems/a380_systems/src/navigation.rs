@@ -1,16 +1,16 @@
 use std::ops::{Index, IndexMut};
 use std::time::Duration;
 
+use systems::navigation::adirs::hw_block3_adiru::adiru::AirDataInertialReferenceUnit;
+use systems::navigation::adirs::hw_block3_adiru::{
+    AdirsElectricalHarness, AdiruElectricalHarness, AirDataInertialReferenceSystem,
+};
 use systems::navigation::adirs::{
     AdrDiscreteInputs, AirDataAttHdgSwitchingKnobPosition, AirDataReferenceDiscreteOutput,
     InertialReferenceDiscreteOutput, IrDiscreteInputs, ModeSelectorPosition,
 };
 use systems::navigation::ala52b::{
     Ala52BAircraftInstallationDelay, Ala52BRadioAltimeter, Ala52BTransceiverPair,
-};
-use systems::navigation::hw_block3_adiru::adiru::AirDataInertialReferenceUnit;
-use systems::navigation::hw_block3_adiru::{
-    AdirsElectricalHarness, AdiruElectricalHarness, AirDataInertialReferenceSystem,
 };
 use systems::navigation::radio_altimeter::AntennaInstallation;
 use systems::shared::logic_nodes::ConfirmationNode;

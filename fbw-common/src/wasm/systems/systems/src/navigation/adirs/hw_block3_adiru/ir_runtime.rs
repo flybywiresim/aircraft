@@ -1,10 +1,10 @@
+use crate::navigation::adirs::hw_block3_adiru::adiru::InternalIrDiscreteInputs;
+use crate::navigation::adirs::hw_block3_adiru::simulator_data::IrSimulatorData;
+use crate::navigation::adirs::hw_block3_adiru::NormaliseAngleExt;
 use crate::navigation::adirs::{
     AirDataReferenceBusOutputs, InertialReferenceBusOutputs, IrDiscreteInputs, IrDiscreteOutputs,
     ModeSelectorPosition,
 };
-use crate::navigation::hw_block3_adiru::adiru::InternalIrDiscreteInputs;
-use crate::navigation::hw_block3_adiru::simulator_data::IrSimulatorData;
-use crate::navigation::hw_block3_adiru::NormaliseAngleExt;
 use crate::shared::logic_nodes::{MonostableTriggerNode, PulseNode};
 use crate::shared::low_pass_filter::LowPassFilter;
 use crate::{
