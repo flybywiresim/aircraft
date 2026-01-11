@@ -1,25 +1,28 @@
 use crate::auto_flight::FlightControlUnitBusOutput;
-use crate::navigation::adirs::hw_block3_adiru::simulator_data::AdrSimulatorData;
 use crate::navigation::adirs::{
-    AdrDiscreteInputs, AdrDiscreteOutputs, AirDataReferenceBusOutputs, ModeSelectorPosition,
+    hw_block3_adiru::simulator_data::AdrSimulatorData, AdrDiscreteInputs, AdrDiscreteOutputs,
+    AirDataReferenceBusOutputs, ModeSelectorPosition,
 };
-use crate::shared::derivative::DerivativeNode;
-use crate::shared::logic_nodes::{HysteresisNode, PulseNode};
-use crate::shared::InternationalStandardAtmosphere;
 use crate::{
     shared::{
         arinc429::{Arinc429Word, SignStatus},
+        derivative::DerivativeNode,
+        logic_nodes::{HysteresisNode, PulseNode},
         low_pass_filter::LowPassFilter,
-        MachNumber,
+        InternationalStandardAtmosphere, MachNumber,
     },
     simulation::UpdateContext,
 };
 use bitflags::bitflags;
 use std::time::Duration;
-use uom::si::pressure::inch_of_mercury;
-use uom::si::ratio::ratio;
-use uom::si::velocity::foot_per_minute;
-use uom::si::{f64::*, length::foot, pressure::hectopascal, velocity::knot};
+use uom::si::{
+    f64::*,
+    length::foot,
+    pressure::hectopascal,
+    pressure::inch_of_mercury,
+    ratio::ratio,
+    velocity::{foot_per_minute, knot},
+};
 
 pub struct AirDataReferenceRuntime {
     /// If non-Duration::ZERO, the remaining time the runtime needs to initialize itself. Otherwise

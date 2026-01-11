@@ -1,32 +1,32 @@
 use crate::auto_flight::FlightControlUnitBusOutput;
 use crate::failures::{Failure, FailureType};
-use crate::navigation::adirs::hw_block3_adiru::ir_runtime::InertialReferenceRuntime;
-use crate::navigation::adirs::hw_block3_adiru::simulator_data::{
-    AdrSimulatorData, IrSimulatorData,
-};
 use crate::navigation::adirs::{
+    hw_block3_adiru::ir_runtime::InertialReferenceRuntime,
+    hw_block3_adiru::simulator_data::{AdrSimulatorData, IrSimulatorData},
     AdrDiscreteInputs, AdrDiscreteOutputs, AirDataReferenceBus, AirDataReferenceBusOutput,
     AirDataReferenceBusOutputs, AirDataReferenceDiscreteOutput, InertialReferenceBus,
     InertialReferenceBusOutput, InertialReferenceBusOutputs, InertialReferenceDiscreteOutput,
     IrDiscreteInputs, IrDiscreteOutputs,
 };
-use crate::shared::arinc429::Arinc429Word;
-use crate::shared::logic_nodes::{ConfirmationNode, MonostableTriggerNode};
-use crate::shared::random_from_range;
-use crate::simulation::{InitContext, VariableIdentifier, Writer};
+use crate::shared::{
+    arinc429::Arinc429Word,
+    logic_nodes::{ConfirmationNode, MonostableTriggerNode},
+    random_from_range,
+};
 use crate::{
     navigation::adirs::hw_block3_adiru::adr_runtime::AirDataReferenceRuntime,
     simulation::{
-        SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
+        InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
+        VariableIdentifier, Write, Writer,
     },
 };
 use std::fmt::Display;
 use std::time::Duration;
-use uom::si::angular_velocity::degree_per_second;
 use uom::si::f64::*;
-use uom::si::pressure::hectopascal;
-use uom::si::ratio::ratio;
-use uom::si::velocity::foot_per_minute;
+use uom::si::{
+    angular_velocity::degree_per_second, pressure::hectopascal, ratio::ratio,
+    velocity::foot_per_minute,
+};
 
 #[derive(Clone, Copy)]
 enum OutputDataType {
