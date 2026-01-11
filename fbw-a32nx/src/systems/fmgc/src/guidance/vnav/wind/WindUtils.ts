@@ -33,7 +33,7 @@ export class WindUtils {
         const lower = isDescendingOrder ? entries[i + 1] : entries[i];
         const upper = !isDescendingOrder ? entries[i + 1] : entries[i];
 
-        if (lower.altitude <= altitude) {
+        if (lower.altitude <= altitude && altitude <= upper.altitude) {
           return Vec2Utils.interpolate(altitude, lower.altitude, upper.altitude, lower.vector, upper.vector, result);
         }
       }
