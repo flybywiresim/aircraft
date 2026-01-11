@@ -107,6 +107,11 @@
   border-color: $display-cyan;
 }
 
+.mfd-button.highlighted {
+  color: $display-mfd-darker-grey;
+  background-color: $display-white;
+}
+
 .mfd-button.disabled:hover {
   border-color: $display-light-grey;
 }
