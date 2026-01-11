@@ -450,7 +450,7 @@ export class CDUWindPage {
     const phase = mcdu.flightPhaseManager.phase;
     const canGoToPrevPhase = phase < FmgcFlightPhase.Descent || phase === FmgcFlightPhase.Done;
     const canModifyDesWinds =
-      !doesDesWindUplinkExist && (phase >= FmgcFlightPhase.Descent || phase <= FmgcFlightPhase.GoAround);
+      !doesDesWindUplinkExist && (phase < FmgcFlightPhase.Descent || phase === FmgcFlightPhase.Done);
 
     const template = [
       ['DESCENT WIND'],
