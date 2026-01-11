@@ -142,37 +142,31 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
       this.messageStatusLabel.set(null);
     }
 
-    this.subs.push(
-      this.atisIcao.sub((value) => {
-        this.props.data.icao = value;
+    this.atisIcao.sub((value) => {
+      this.props.data.icao = value;
+      this.datalink.setAtisAirport(this.props.data, this.props.index);
+
+      // clear existing data
+      this.atisCode.set(null);
+      this.atisTimestamp.set(null);
+      this.atisMessage.set(null);
+      this.messageStatusLabel.set(null);
+    });
+
+    this.atisType.sub((value) => {
+      if (value !== null) {
+        this.props.data.type = value;
         this.datalink.setAtisAirport(this.props.data, this.props.index);
+      }
+    });
 
-        // clear existing data
-        this.atisCode.set(null);
-        this.atisTimestamp.set(null);
-        this.atisMessage.set(null);
-        this.messageStatusLabel.set(null);
-      }),
-    );
-
-    this.subs.push(
-      this.atisType.sub((value) => {
-        if (value !== null) {
-          this.props.data.type = value;
-          this.datalink.setAtisAirport(this.props.data, this.props.index);
-        }
-      }),
-    );
-
-    this.subs.push(
-      this.atisCode.sub((value) => {
-        if (this.props.data.lastReadAtis !== value && value !== null) {
-          this.isAtisNew.set(true);
-        } else {
-          this.isAtisNew.set(false);
-        }
-      }),
-    );
+    this.atisCode.sub((value) => {
+      if (this.props.data.lastReadAtis !== value && value !== null) {
+        this.isAtisNew.set(true);
+      } else {
+        this.isAtisNew.set(false);
+      }
+    });
 
     this.subs.push(
       this.subscriber.on(`atcAtis_${this.props.index}`).handle((atisData) => {

@@ -268,36 +268,38 @@ export class AtcDatalinkSystem implements Instrument {
     return [];
   }
 
-  public requestAtis(index: number): void {
+  public async requestAtis(index: number): Promise<void> {
     const airport = this.atisAirports[index];
-    if (airport.icao !== null && !airport.requested) {
-      airport.requested = true;
 
-      this.atisAirports[index].status = PredefinedMessages.sending;
-      this.publisher.pub(`atcAtis_${index}`, this.atisAirports[index]);
-
-      this.receiveAtcAtis(airport.icao, airport.type).then((response) => {
-        if (response !== AtsuStatusCodes.Ok) {
-          // TODO: log error
-        }
-
-        switch (response) {
-          case AtsuStatusCodes.ComFailed:
-            this.atisAirports[index].status = PredefinedMessages.sendFailed;
-            break;
-          case AtsuStatusCodes.NoAtisReceived:
-            this.atisAirports[index].status = PredefinedMessages.noReply;
-            this.addMessageToQueue(ATCCOMMessages.datisNoReply);
-            break;
-          case AtsuStatusCodes.NewAtisReceived:
-            this.atisAirports[index].status = '';
-          // TODO: Message should only appear on certain pages
-          // this.addMessageToQueue(ATCCOMMessages.datisReceived);
-        }
-        this.publisher.pub(`atcAtis_${index}`, this.atisAirports[index]);
-        airport.requested = false;
-      });
+    if (airport.icao == null || airport.requested) {
+      return;
     }
+    airport.requested = true;
+
+    this.atisAirports[index].status = PredefinedMessages.sending;
+    this.publisher.pub(`atcAtis_${index}`, this.atisAirports[index]);
+
+    const response = await this.receiveAtcAtis(airport.icao, airport.type);
+
+    if (response !== AtsuStatusCodes.Ok) {
+      // TODO: log error
+    }
+
+    switch (response) {
+      case AtsuStatusCodes.ComFailed:
+        this.atisAirports[index].status = PredefinedMessages.sendFailed;
+        break;
+      case AtsuStatusCodes.NoAtisReceived:
+        this.atisAirports[index].status = PredefinedMessages.noReply;
+        this.addMessageToQueue(ATCCOMMessages.datisNoReply);
+        break;
+      case AtsuStatusCodes.NewAtisReceived:
+        this.atisAirports[index].status = '';
+      // TODO: Message should only appear on certain pages
+      // this.addMessageToQueue(ATCCOMMessages.datisReceived);
+    }
+    this.publisher.pub(`atcAtis_${index}`, this.atisAirports[index]);
+    airport.requested = false;
   }
 
   public updateAllAtis(): void {
