@@ -679,14 +679,14 @@ export class CDUWindPage {
     mcdu.onPrevPage = () => mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
   }
 
-  static ShowHistoryPage(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex) {
+  static ShowHistoryPage(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex, confirmInsert = false) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.ClimbWind;
 
     const plan = mcdu.getFlightPlan(forPlan);
     const cruiseLevel = plan.performanceData.cruiseFlightLevel.get();
 
-    const historyWinds: (WindEntry & { flags?: FlightPlanWindEntryFlags })[] = mcdu.getHistoryWinds(cruiseLevel) ?? [];
+    const historyWinds: WindEntry[] = mcdu.getHistoryWinds(cruiseLevel) ?? [];
 
     historyWinds.sort((a, b) => a.altitude - b.altitude);
 
@@ -715,12 +715,12 @@ export class CDUWindPage {
     for (let i = 0; i < historyWinds.length; i++) {
       const wind = historyWinds[i];
 
-      if (cruiseLevel === null ? i === historyWinds.length - 1 : wind.altitude === cruiseLevel * 100) {
-        template[i * 2 + 1][0] = '\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0CRZ FL';
+      if (cruiseLevel !== null && wind.altitude === cruiseLevel * 100) {
+        template[i * 2 + 1][0] = '\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0CRZ FL';
       }
 
       template[i * 2 + 2][0] =
-        `{small}${formatWindVector(wind.vector)}\xa0${this.formatClimbWindAltitude(plan, wind.altitude)}{end}[color]green`;
+        `{small}${formatWindVector(wind.vector)}\xa0\xa0${this.formatCruiseWindAltitude(wind.altitude)}{end}[color]green`;
     }
 
     // RETURN
@@ -730,17 +730,31 @@ export class CDUWindPage {
 
     // INSERT
     if (shouldAllowInsertion) {
-      template[12][1] = 'INSERT*[color]amber';
-      mcdu.onRightInput[5] = async () => {
-        await mcdu.flightPlanService.deleteClimbWindEntries(forPlan);
+      if (confirmInsert) {
+        template[12][1] = 'CONFIRM*[color]cyan';
 
-        for (const wind of historyWinds) {
-          wind.flags = FlightPlanWindEntryFlags.InsertedFromHistory;
-          await mcdu.flightPlanService.setClimbWindEntry(wind.altitude, wind as FlightPlanWindEntry, forPlan);
-        }
+        mcdu.onRightInput[5] = async () => {
+          await mcdu.flightPlanService.deleteClimbWindEntries(forPlan);
 
-        this.ShowCLBPage(mcdu, forPlan);
-      };
+          for (const wind of historyWinds) {
+            const windEntryToInsert: FlightPlanWindEntry = {
+              flags: FlightPlanWindEntryFlags.InsertedFromHistory,
+              altitude: wind.altitude,
+              vector: Vec2Math.copy(wind.vector, Vec2Math.create()),
+            };
+
+            await mcdu.flightPlanService.setClimbWindEntry(wind.altitude, windEntryToInsert, forPlan);
+          }
+
+          this.ShowCLBPage(mcdu, forPlan);
+        };
+      } else {
+        template[12][1] = 'INSERT*[color]amber';
+
+        mcdu.onRightInput[5] = async () => {
+          this.ShowHistoryPage(mcdu, forPlan, true);
+        };
+      }
     }
 
     mcdu.setTemplate(template);
