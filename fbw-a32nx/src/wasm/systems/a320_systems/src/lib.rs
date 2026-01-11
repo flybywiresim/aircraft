@@ -28,7 +28,9 @@ use navigation::{A320AdirsElectricalHarness, A320RadioAltimeters};
 use power_consumption::A320PowerConsumption;
 use systems::{
     auto_flight::FlightControlUnitShim,
-    navigation::{hw_block3_adiru::AirDataInertialReferenceSystem, ils::MultiModeReceiverShim},
+    navigation::{
+        adirs::hw_block3_adiru::AirDataInertialReferenceSystem, ils::MultiModeReceiverShim,
+    },
 };
 use systems::{
     enhanced_gpwc::EnhancedGroundProximityWarningComputer,

@@ -4,6 +4,8 @@ use crate::{
 };
 use uom::si::f64::*;
 
+pub mod hw_block3_adiru;
+
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub enum AirDataAttHdgSwitchingKnobPosition {
     Norm,
