@@ -14,16 +14,16 @@
     ],
     "output": {
       "gltf": [
-        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/A320_NEO_INTERIOR_LOD01.gltf",
-        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/A320_NEO_INTERIOR_LOD02.gltf",
-        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/A320_NEO_INTERIOR_LOD03.gltf",
-        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/A320_NEO_INTERIOR_LOD04.gltf"
+        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/common/model/A320_NEO_INTERIOR_LOD01.gltf",
+        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/common/model/A320_NEO_INTERIOR_LOD02.gltf",
+        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/common/model/A320_NEO_INTERIOR_LOD03.gltf",
+        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/common/model/A320_NEO_INTERIOR_LOD04.gltf"
       ],
       "bin": [
-        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/A320_NEO_INTERIOR_LOD01.bin",
-        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/A320_NEO_INTERIOR_LOD02.bin",
-        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/A320_NEO_INTERIOR_LOD03.bin",
-        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/A320_NEO_INTERIOR_LOD04.bin"
+        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/common/model/A320_NEO_INTERIOR_LOD01.bin",
+        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/common/model/A320_NEO_INTERIOR_LOD02.bin",
+        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/common/model/A320_NEO_INTERIOR_LOD03.bin",
+        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/common/model/A320_NEO_INTERIOR_LOD04.bin"
       ]
     },
     "additions": [
@@ -890,7 +890,7 @@
   },
   {
     "gltf": [
-      "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/A320_NEO_LOD00.gltf",
+      "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/common/model/A320_NEO_LOD00.gltf",
       "./a320-exterior/A320_NEO_LOD01.gltf",
       "./a320-exterior/A320_NEO_LOD02.gltf",
       "./a320-exterior/A320_NEO_LOD03.gltf",
@@ -899,7 +899,7 @@
       "./a320-exterior/A320_NEO_LOD06.gltf"
     ],
     "bin": [
-      "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/A320_NEO_LOD00.bin",
+      "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/common/model/A320_NEO_LOD00.bin",
       "./a320-exterior/A320_NEO_LOD01.bin",
       "./a320-exterior/A320_NEO_LOD02.bin",
       "./a320-exterior/A320_NEO_LOD03.bin",
@@ -909,22 +909,22 @@
     ],
     "output": {
       "gltf": [
-        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/A320_NEO_LOD00.gltf",
-        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/A320_NEO_LOD01.gltf",
-        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/A320_NEO_LOD02.gltf",
-        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/A320_NEO_LOD03.gltf",
-        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/A320_NEO_LOD04.gltf",
-        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/A320_NEO_LOD05.gltf",
-        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/A320_NEO_LOD06.gltf"
+        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/common/model/A320_NEO_LOD00.gltf",
+        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/common/model/A320_NEO_LOD01.gltf",
+        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/common/model/A320_NEO_LOD02.gltf",
+        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/common/model/A320_NEO_LOD03.gltf",
+        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/common/model/A320_NEO_LOD04.gltf",
+        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/common/model/A320_NEO_LOD05.gltf",
+        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/common/model/A320_NEO_LOD06.gltf"
       ],
       "bin": [
-        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/A320_NEO_LOD00.bin",
-        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/A320_NEO_LOD01.bin",
-        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/A320_NEO_LOD02.bin",
-        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/A320_NEO_LOD03.bin",
-        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/A320_NEO_LOD04.bin",
-        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/A320_NEO_LOD05.bin",
-        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/A320_NEO_LOD06.bin"
+        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/common/model/A320_NEO_LOD00.bin",
+        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/common/model/A320_NEO_LOD01.bin",
+        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/common/model/A320_NEO_LOD02.bin",
+        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/common/model/A320_NEO_LOD03.bin",
+        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/common/model/A320_NEO_LOD04.bin",
+        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/common/model/A320_NEO_LOD05.bin",
+        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/common/model/A320_NEO_LOD06.bin"
       ]
     },
     "additions": [

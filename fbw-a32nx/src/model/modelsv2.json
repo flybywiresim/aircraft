@@ -265,6 +265,6 @@
         }
       }
     ],
-    "output": "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/A320_NEO_LOD00.gltf"
+    "output": "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/common/model/A320_NEO_LOD00.gltf"
   }
 ]
