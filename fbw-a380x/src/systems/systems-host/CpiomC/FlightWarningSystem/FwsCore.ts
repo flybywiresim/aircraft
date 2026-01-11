@@ -42,10 +42,11 @@ import {
   RegisteredSimVar,
   UpdateThrottler,
 } from '@flybywiresim/fbw-sdk';
-import { VerticalMode, LateralMode } from '@shared/autopilot';
+import { VerticalMode, LateralMode, AutoThrustModeMessage } from '@shared/autopilot';
 import { RmpState, VhfComManagerDataEvents } from '@flybywiresim/rmp';
 import { PseudoFwcSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
 import {
+  AThrOffMemoKey,
   EcamAbnormalProcedures,
   EcamDeferredProcedures,
   EcamLimitations,
@@ -669,12 +670,13 @@ export class FwsCore {
 
   public readonly autoThrustOffInvoluntaryNode = new NXLogicMemoryNode(false);
 
+  private readonly autoThrustInvoluntaryPfdMemoMemoryNode = new NXLogicMemoryNode(false);
+
   public autoThrustInhibitCaution = false; // Inhibit for 10 sec
 
   public readonly autoThrustOffVoluntary = Subject.create(false);
 
   public readonly autoThrustOffInvoluntary = Subject.create(false);
-
   public autoThrustOffVoluntaryMemoInhibited = false;
 
   public readonly fmsSwitchingKnob = Subject.create(0);
@@ -1958,6 +1960,35 @@ export class FwsCore {
   public readonly eng3Or4TakeoffPowerConfirm = new NXLogicConfirmNode(60, false);
 
   public readonly eng3Or4TakeoffPower = Subject.create(false);
+
+  public autoThrustModeMessage = AutoThrustModeMessage.None;
+
+  private readonly autoThrustModeMessageSimVar = RegisteredSimVar.create<AutoThrustModeMessage>(
+    'L:A32NX_AUTOTHRUST_MODE_MESSAGE',
+    SimVarValueType.Enum,
+  );
+
+  private readonly autoThrustLimitedConfNode = new NXLogicConfirmNode(5, true);
+
+  private readonly autoThrustLimitedMtrigNode = new NXLogicTriggeredMonostableNode(5, true);
+
+  private autoThrustLimitedDelayNode = false;
+
+  public readonly autoThrustLimited = Subject.create(false);
+
+  public autoThrustLimitedMct = false;
+
+  public autoThrustLimitedClb = false;
+
+  public engineThrustLocked = false;
+
+  public readonly engineThrustLockedAbnormalSensed = Subject.create(false);
+
+  private readonly autoThrustDisconnected5SecondsConfNode = new NXLogicConfirmNode(5, true);
+
+  private readonly engineThrustLocked5sMtrigNode = new NXLogicTriggeredMonostableNode(5, true);
+
+  private engineThrustLockedDelayNode = false;
 
   /** 42 AVIONICS NETWORK */
   public readonly cpiomC1Available = Subject.create(false);
@@ -3419,9 +3450,9 @@ export class FwsCore {
     );
 
     // A/THR OFF
-    const aThrEngaged = this.autoThrustStatus.get() === 2 || this.autoThrustMode.get() !== 0;
-    this.autoThrustEngaged.set(aThrEngaged);
-    this.autoThrustDisengagedInstantPulse.write(aThrEngaged, deltaTime);
+    const athrEngagedOrArmed = this.autoThrustStatus.get() === 2 || this.autoThrustMode.get() !== 0;
+    this.autoThrustEngaged.set(athrEngagedOrArmed);
+    this.autoThrustDisengagedInstantPulse.write(athrEngagedOrArmed, deltaTime);
     this.autoThrustInstinctiveDiscPressed.write(false, deltaTime);
 
     const below50ft =
@@ -3440,8 +3471,8 @@ export class FwsCore {
       !this.autoThrustInhibitCaution;
 
     // Voluntary A/THR disconnect
-    this.autoThrustOffVoluntaryMemoNode.write(voluntaryAThrDisc && !aThrEngaged, deltaTime);
-    this.autoThrustOffVoluntaryCautionNode.write(voluntaryAThrDisc && !aThrEngaged, deltaTime);
+    this.autoThrustOffVoluntaryMemoNode.write(voluntaryAThrDisc && !athrEngagedOrArmed, deltaTime);
+    this.autoThrustOffVoluntaryCautionNode.write(voluntaryAThrDisc && !athrEngagedOrArmed, deltaTime);
 
     if (!this.autoThrustOffVoluntaryMemoNode.read()) {
       this.autoThrustInhibitCaution = false;
@@ -3460,7 +3491,7 @@ export class FwsCore {
       this.requestSingleChimeFromAThrOff = false;
     }
     this.autoThrustOffVoluntary.set(
-      this.autoThrustOffVoluntaryMemoNode.read() && !this.autoThrustInhibitCaution && !aThrEngaged,
+      this.autoThrustOffVoluntaryMemoNode.read() && !this.autoThrustInhibitCaution && !athrEngagedOrArmed,
     );
 
     // Involuntary A/THR disconnect
@@ -3469,14 +3500,51 @@ export class FwsCore {
       this.autoThrustDisengagedInstantPulse.read() &&
       !(this.autoThrustInstinctiveDiscPressed.read() || (below50ft && this.allThrottleIdle.get()));
 
-    this.autoThrustOffInvoluntaryNode.write(involuntaryAThrDisc, aThrEngaged || voluntaryAThrDisc);
+    this.autoThrustOffInvoluntaryNode.write(involuntaryAThrDisc, athrEngagedOrArmed || voluntaryAThrDisc);
     this.autoThrustOffInvoluntary.set(this.autoThrustOffInvoluntaryNode.read());
 
-    // AUTO BRAKE OFF
-    this.autobrakeDeactivatedPulseNode.write(
-      !!SimVar.GetSimVarValue('L:A32NX_AUTOBRAKES_ACTIVE', 'boolean'),
+    // PFD ONLY memo A/THR OFF
+    this.autoThrustInvoluntaryPfdMemoMemoryNode.write(
+      involuntaryAThrDisc,
+      athrEngagedOrArmed || this.autoThrustInstinctiveDiscPressed.read(),
+    );
+
+    // A/THR LIMITED
+    this.autoThrustModeMessage = this.autoThrustModeMessageSimVar.get();
+    this.autoThrustLimitedClb = this.autoThrustModeMessage === AutoThrustModeMessage.LeverClb;
+    this.autoThrustLimitedMct = this.autoThrustModeMessage === AutoThrustModeMessage.LeverMct;
+    const athrEngaged = this.autoThrustStatus.get() === 2;
+    const athrIsLimited = !below50ft && athrEngaged && (this.autoThrustLimitedClb || this.autoThrustLimitedMct);
+    this.autoThrustLimitedConfNode.write(athrIsLimited, deltaTime);
+    this.autoThrustLimitedMtrigNode.write(
+      this.autoThrustLimitedConfNode.read() && !this.autoThrustLimitedDelayNode,
       deltaTime,
     );
+    this.autoThrustLimitedDelayNode = this.autoThrustLimitedMtrigNode.read();
+
+    this.autoThrustLimited.set(this.autoThrustLimitedConfNode.read() && this.autoThrustLimitedDelayNode);
+
+    // ENG THRUST LOCKED
+    this.engineThrustLocked = this.autoThrustModeMessage === AutoThrustModeMessage.ThrustLock;
+
+    const engineThrustLockedAndAthrDisconnected5s = this.autoThrustDisconnected5SecondsConfNode.write(
+      this.engineThrustLocked && !athrEngagedOrArmed,
+      deltaTime,
+    );
+
+    this.engineThrustLocked5sMtrigNode.write(
+      engineThrustLockedAndAthrDisconnected5s && !this.engineThrustLockedDelayNode,
+      deltaTime,
+    );
+
+    this.engineThrustLockedDelayNode = this.engineThrustLocked5sMtrigNode.read();
+
+    this.engineThrustLockedAbnormalSensed.set(
+      engineThrustLockedAndAthrDisconnected5s && this.engineThrustLockedDelayNode,
+    );
+
+    this.autobrakeDeactivatedPulseNode // AUTO BRAKE OFF
+      .write(!!SimVar.GetSimVarValue('L:A32NX_AUTOBRAKES_ACTIVE', 'boolean'), deltaTime);
 
     const autoBrakeOffShouldTrigger = this.autoBrakeDeactivatedNode.write(
       this.autobrakeDeactivatedPulseNode.read() &&
@@ -5585,10 +5653,15 @@ export class FwsCore {
     // TODO order by decreasing importance
     this.ewdMessageLinesRight.forEach((l, i) => l.set(orderedMemoArrayRight[i] ?? ''));
 
+    const pfdMemosFiltered = orderedMemoArrayRight.filter((it) => pfdMemoDisplay.includes(it));
+    // Add A/THR OFF PFD only memo in case of involuntary auto thrust disconnect
+    if (this.autoThrustInvoluntaryPfdMemoMemoryNode.read() && pfdMemosFiltered.indexOf(AThrOffMemoKey) == -1) {
+      pfdMemosFiltered.push(AThrOffMemoKey);
+    }
+    const pfdMemos = pfdMemosFiltered.sort(
+      (a, b) => this.messagePriority(EcamMemos[a]) - this.messagePriority(EcamMemos[b]),
+    );
     // TODO order by decreasing importance
-    const pfdMemos = orderedMemoArrayRight
-      .filter((it) => pfdMemoDisplay.includes(it))
-      .sort((a, b) => this.messagePriority(EcamMemos[a]) - this.messagePriority(EcamMemos[b]));
     this.pfdMemoLines.forEach((l, i) => l.set(pfdMemos[i] ?? ''));
 
     // TODO order by decreasing importance
