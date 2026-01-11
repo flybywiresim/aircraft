@@ -1,8 +1,8 @@
 use crate::auto_flight::FlightControlUnitBusOutput;
+use crate::navigation::adirs::hw_block3_adiru::simulator_data::AdrSimulatorData;
 use crate::navigation::adirs::{
     AdrDiscreteInputs, AdrDiscreteOutputs, AirDataReferenceBusOutputs, ModeSelectorPosition,
 };
-use crate::navigation::hw_block3_adiru::simulator_data::AdrSimulatorData;
 use crate::shared::derivative::DerivativeNode;
 use crate::shared::logic_nodes::{HysteresisNode, PulseNode};
 use crate::shared::InternationalStandardAtmosphere;

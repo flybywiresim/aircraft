@@ -1,19 +1,21 @@
 use crate::auto_flight::FlightControlUnitBusOutput;
 use crate::failures::{Failure, FailureType};
+use crate::navigation::adirs::hw_block3_adiru::ir_runtime::InertialReferenceRuntime;
+use crate::navigation::adirs::hw_block3_adiru::simulator_data::{
+    AdrSimulatorData, IrSimulatorData,
+};
 use crate::navigation::adirs::{
     AdrDiscreteInputs, AdrDiscreteOutputs, AirDataReferenceBus, AirDataReferenceBusOutput,
     AirDataReferenceBusOutputs, AirDataReferenceDiscreteOutput, InertialReferenceBus,
     InertialReferenceBusOutput, InertialReferenceBusOutputs, InertialReferenceDiscreteOutput,
     IrDiscreteInputs, IrDiscreteOutputs,
 };
-use crate::navigation::hw_block3_adiru::ir_runtime::InertialReferenceRuntime;
-use crate::navigation::hw_block3_adiru::simulator_data::{AdrSimulatorData, IrSimulatorData};
 use crate::shared::arinc429::Arinc429Word;
 use crate::shared::logic_nodes::{ConfirmationNode, MonostableTriggerNode};
 use crate::shared::random_from_range;
 use crate::simulation::{InitContext, VariableIdentifier, Writer};
 use crate::{
-    navigation::hw_block3_adiru::adr_runtime::AirDataReferenceRuntime,
+    navigation::adirs::hw_block3_adiru::adr_runtime::AirDataReferenceRuntime,
     simulation::{
         SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
     },

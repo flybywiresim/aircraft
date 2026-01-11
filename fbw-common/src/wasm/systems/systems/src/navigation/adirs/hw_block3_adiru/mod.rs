@@ -2,11 +2,11 @@ use std::ops::{Index, IndexMut};
 
 use crate::air_conditioning::AdirsToAirCondInterface;
 use crate::auto_flight::FlightControlUnitBusOutput;
+use crate::navigation::adirs::hw_block3_adiru::adiru::AirDataInertialReferenceUnit;
 use crate::navigation::adirs::{
     AdrDiscreteInputs, AirDataReferenceBusOutput, AirDataReferenceDiscreteOutput,
     InertialReferenceBusOutput, IrDiscreteInputs,
 };
-use crate::navigation::hw_block3_adiru::adiru::AirDataInertialReferenceUnit;
 use crate::shared::arinc429::Arinc429Word;
 use crate::shared::{AdirsDiscreteOutputs, AdirsMeasurementOutputs};
 use crate::simulation::InitContext;
