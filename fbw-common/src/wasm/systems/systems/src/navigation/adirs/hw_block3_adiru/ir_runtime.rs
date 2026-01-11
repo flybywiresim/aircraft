@@ -1,23 +1,27 @@
-use crate::navigation::adirs::hw_block3_adiru::adiru::InternalIrDiscreteInputs;
-use crate::navigation::adirs::hw_block3_adiru::simulator_data::IrSimulatorData;
-use crate::navigation::adirs::hw_block3_adiru::NormaliseAngleExt;
 use crate::navigation::adirs::{
+    hw_block3_adiru::{
+        adiru::InternalIrDiscreteInputs, simulator_data::IrSimulatorData, NormaliseAngleExt,
+    },
     AirDataReferenceBusOutputs, InertialReferenceBusOutputs, IrDiscreteInputs, IrDiscreteOutputs,
     ModeSelectorPosition,
 };
-use crate::shared::logic_nodes::{MonostableTriggerNode, PulseNode};
-use crate::shared::low_pass_filter::LowPassFilter;
 use crate::{
     shared::arinc429::{Arinc429Word, SignStatus},
+    shared::logic_nodes::{MonostableTriggerNode, PulseNode},
+    shared::low_pass_filter::LowPassFilter,
     simulation::UpdateContext,
 };
 use bitflags::bitflags;
 use nalgebra::{Rotation2, Vector2};
 use std::time::Duration;
-use uom::si::acceleration::meter_per_second_squared;
-use uom::si::ratio::ratio;
-use uom::si::velocity::{foot_per_second, knot};
-use uom::si::{angle::degree, angle::radian, f64::*};
+use uom::si::{
+    acceleration::meter_per_second_squared,
+    angle::degree,
+    angle::radian,
+    f64::*,
+    ratio::ratio,
+    velocity::{foot_per_second, knot},
+};
 use uom::ConstZero;
 
 #[derive(PartialEq, Debug)]
