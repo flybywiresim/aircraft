@@ -6,6 +6,10 @@ export interface WindEntry {
   altitude: number;
 }
 
+export interface FlightPlanWindEntry extends WindEntry {
+  flags: number;
+}
+
 export type WindVector = Float64Array;
 export type TailwindComponent = number;
 
@@ -19,6 +23,10 @@ export type PropagatedWindEntry = WindEntry & {
   type: PropagationType;
   sourceLegIndex: number;
 };
+
+export enum FlightPlanWindEntryFlags {
+  InsertedFromHistory = 1 << 0,
+}
 
 export const formatWindVector = (vector: WindVector) =>
   `${formatWindTrueDegrees(vector)}/${formatWindMagnitude(vector)}`;
@@ -42,3 +50,8 @@ export const formatWindPredictionMagnitude = (prediction: WindVector | TailwindC
   Math.round(typeof prediction === 'number' ? Math.abs(prediction) : Vec2Math.abs(prediction))
     .toFixed(0)
     .padStart(3, '0');
+
+export const areWindEntriesTheSame = (one: WindEntry, two: WindEntry) =>
+  MathUtils.isAboutEqual(one.altitude, two.altitude) && areWindVectorsTheSame(one.vector, two.vector);
+export const areWindVectorsTheSame = (one: WindVector, two: WindVector) =>
+  MathUtils.isAboutEqual(one[0], two[0]) && MathUtils.isAboutEqual(one[1], two[1]);

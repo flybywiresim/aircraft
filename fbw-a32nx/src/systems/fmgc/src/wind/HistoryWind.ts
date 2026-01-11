@@ -3,9 +3,12 @@ import { NavigationEvents } from '../navigation/Navigation';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { debugFormatWindEntry, WindEntry } from '../flightplanning/data/wind';
 import { FlightPlan } from '../flightplanning/plans/FlightPlan';
+import { FlightPhaseManagerEvents } from '../flightphase';
+import { FmgcFlightPhase } from '../../../shared/src/flightphase';
+import { WindUtils } from '../guidance/vnav/wind/WindUtils';
 
 export class HistoryWind {
-  private readonly sub = this.bus.getSubscriber<NavigationEvents>();
+  private readonly sub = this.bus.getSubscriber<NavigationEvents & FlightPhaseManagerEvents>();
 
   private previousAltitude: number | null = null;
 
@@ -13,63 +16,72 @@ export class HistoryWind {
   private readonly windDirection = ConsumerSubject.create(this.sub.on('fms_nav_wind_direction'), null);
   private readonly windSpeed = ConsumerSubject.create(this.sub.on('fms_nav_wind_speed'), null);
 
-  private readonly climbWinds: Map<number, WindEntry> = new Map();
+  private readonly RecordedWindCache: WindEntry[] = [
+    { altitude: 5_000, vector: Vec2Math.create() },
+    { altitude: 15_000, vector: Vec2Math.create() },
+    { altitude: 25_000, vector: Vec2Math.create() },
+    { altitude: 35_000, vector: Vec2Math.create() },
+  ] as const;
+  private readonly cruiseWind = { altitude: NaN, vector: Vec2Math.create() };
+  private readonly interpolationCache = { altitude: NaN, vector: Vec2Math.create() };
 
-  /** The altitudes at which winds are recorded on the descent. Winds will also be recorded at the T/C */
-  private readonly DefaultRecordedAltitudes = [5000, 15_000, 25_000, 35_000];
+  // private readonly historyWinds: (WindEntry | null)[] = [null, null, null, null, null];
+  // TODO for debugging only
+  private readonly historyWinds: (WindEntry | null)[] = [
+    { altitude: 5_000, vector: Vec2Math.setFromPolar(20, 50 * MathUtils.DEGREES_TO_RADIANS, Vec2Math.create()) },
+    { altitude: 15_000, vector: Vec2Math.setFromPolar(30, 70 * MathUtils.DEGREES_TO_RADIANS, Vec2Math.create()) },
+    { altitude: 25_000, vector: Vec2Math.setFromPolar(35, 70 * MathUtils.DEGREES_TO_RADIANS, Vec2Math.create()) },
+    { altitude: 35_000, vector: Vec2Math.setFromPolar(45, 65 * MathUtils.DEGREES_TO_RADIANS, Vec2Math.create()) },
+    { altitude: 37_000, vector: Vec2Math.setFromPolar(45, 65 * MathUtils.DEGREES_TO_RADIANS, Vec2Math.create()) },
+  ];
 
-  private previousCruiseAltitude: number | null = null;
+  private flightPhase = FmgcFlightPhase.Preflight;
 
   constructor(
     private readonly bus: EventBus,
     private readonly activePlan: FlightPlan,
   ) {
     this.altitude.sub(this.handleAltitudeChange.bind(this));
+    this.sub.on('fmgc_flight_phase').handle((newPhase) => {
+      if (this.flightPhase === FmgcFlightPhase.Preflight && newPhase !== FmgcFlightPhase.Preflight) {
+        this.resetRecordedWinds();
+      }
+
+      this.flightPhase = newPhase;
+    });
   }
 
   private handleAltitudeChange(currentAltitude: number | null) {
-    const currentWindSpeed = this.windSpeed.get();
-    const currentWindDirection = this.windDirection.get();
+    const windSpeed = this.windSpeed.get();
+    const windDirection = this.windDirection.get();
 
-    if (
-      currentAltitude !== null &&
-      this.previousAltitude !== null &&
-      currentWindDirection !== null &&
-      currentWindSpeed !== null
-    ) {
-      for (const recordedAlt of this.DefaultRecordedAltitudes) {
+    if (currentAltitude !== null && this.previousAltitude !== null && windDirection !== null && windSpeed !== null) {
+      for (let i = 0; i < this.RecordedWindCache.length; i++) {
+        const windEntry = this.RecordedWindCache[i];
+        const recordedAlt = windEntry.altitude;
+
         if (currentAltitude <= recordedAlt && this.previousAltitude > recordedAlt) {
-          const windEntry = {
-            altitude: recordedAlt,
-            vector: Vec2Math.setFromPolar(
-              currentWindSpeed,
-              currentWindDirection * MathUtils.DEGREES_TO_RADIANS,
-              Vec2Math.create(),
-            ),
-          };
+          Vec2Math.setFromPolar(windSpeed, windDirection * MathUtils.DEGREES_TO_RADIANS, windEntry.vector);
+          this.historyWinds[i] = windEntry;
 
           console.log(`[FMS/History Winds] Recording wind ${debugFormatWindEntry(windEntry)}`);
-          this.climbWinds.set(recordedAlt, windEntry);
         }
       }
 
       const cruiseLevel = this.activePlan.performanceData.cruiseFlightLevel.get();
       if (cruiseLevel !== null) {
         const cruiseAltitude = cruiseLevel * 100;
+        const cruiseAltAlreadyExists = this.historyWinds.some(
+          (wind) => wind !== null && wind.altitude === cruiseAltitude,
+        );
 
-        if (currentAltitude <= cruiseAltitude && this.previousAltitude > cruiseAltitude) {
-          const windEntry = {
-            altitude: cruiseAltitude,
-            vector: Vec2Math.setFromPolar(
-              currentWindSpeed,
-              currentWindDirection * MathUtils.DEGREES_TO_RADIANS,
-              Vec2Math.create(),
-            ),
-          };
+        if (!cruiseAltAlreadyExists && currentAltitude <= cruiseAltitude && this.previousAltitude > cruiseAltitude) {
+          this.cruiseWind.altitude = cruiseAltitude;
+          Vec2Math.setFromPolar(windSpeed, windDirection * MathUtils.DEGREES_TO_RADIANS, this.cruiseWind.vector);
 
-          console.log(`[FMS/History Winds] Recording wind ${debugFormatWindEntry(windEntry)}`);
-          this.climbWinds.set(cruiseAltitude, windEntry);
-          this.previousCruiseAltitude = cruiseAltitude;
+          this.historyWinds[this.RecordedWindCache.length] = this.cruiseWind;
+
+          console.log(`[FMS/History Winds] Recording wind ${debugFormatWindEntry(this.cruiseWind)}`);
         }
       }
     }
@@ -77,7 +89,29 @@ export class HistoryWind {
     this.previousAltitude = currentAltitude;
   }
 
-  public getClimbWinds(): WindEntry[] {
-    return [...this.climbWinds.values()];
+  private resetRecordedWinds() {
+    for (let i = 0; i < this.historyWinds.length; i++) {
+      this.historyWinds[i] = null;
+    }
+  }
+
+  public getRecordedWinds(cruiseLevel: number | null): Readonly<WindEntry>[] {
+    const hasRecordedCruiseWind = this.historyWinds[this.historyWinds.length - 1] !== null;
+    const filtered = this.historyWinds.filter((wind) => wind !== null).sort((a, b) => a.altitude - b.altitude);
+
+    if (cruiseLevel !== null && filtered.length >= 0) {
+      const cruiseAltitude = cruiseLevel * 100;
+
+      this.interpolationCache.altitude = cruiseAltitude;
+      WindUtils.interpolateWindEntries(filtered, cruiseAltitude, this.interpolationCache.vector);
+
+      if (hasRecordedCruiseWind) {
+        filtered[filtered.length - 1] = this.interpolationCache;
+      } else {
+        filtered.push(this.interpolationCache);
+      }
+    }
+
+    return filtered.sort((a, b) => a.altitude - b.altitude);
   }
 }

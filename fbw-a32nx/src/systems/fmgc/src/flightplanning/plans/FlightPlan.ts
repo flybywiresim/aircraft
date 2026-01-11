@@ -25,7 +25,7 @@ import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { A32NX_Util } from '../../../../shared/src/A32NX_Util';
 import { FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/FlightPlanQueuedOperation';
 import { FlightPlanFlags } from './FlightPlanFlags';
-import { debugFormatWindEntry, WindEntry, WindVector } from '../data/wind';
+import { debugFormatWindEntry, FlightPlanWindEntry, WindVector } from '../data/wind';
 import { PendingWindUplink } from './PendingWindUplink';
 
 export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> extends BaseFlightPlan<P> {
@@ -728,7 +728,11 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
    * @param entry the entry to set, or null to delete the entry
    * @param planIndex which flight plan index to set the entry in
    */
-  async setClimbWindEntry(altitude: number, entry: WindEntry | null, maxNumberEntries: number): Promise<void> {
+  async setClimbWindEntry(
+    altitude: number,
+    entry: FlightPlanWindEntry | null,
+    maxNumberEntries: number,
+  ): Promise<void> {
     const originElevation = this.originAirport?.location.alt ?? 0;
     const altitudeOrGround = altitude <= originElevation + 400 ? originElevation : altitude;
 
@@ -755,7 +759,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
    */
   async setDescentWindEntry(
     altitude: number,
-    entry: WindEntry | null,
+    entry: FlightPlanWindEntry | null,
     maxNumberEntries: number,
     shouldUpdateTwrWind: boolean = true,
   ): Promise<void> {
@@ -788,9 +792,9 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
   }
 
   private setClbDesWindEntry(
-    windEntries: WindEntry[],
+    windEntries: FlightPlanWindEntry[],
     altitude: number,
-    entry: WindEntry | null,
+    entry: FlightPlanWindEntry | null,
     maxNumberEntries: number,
   ) {
     const existingEntryIndex = windEntries.findIndex((it) => it.altitude === altitude);

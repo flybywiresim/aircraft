@@ -1,7 +1,7 @@
-import { WindEntry } from '../data/wind';
+import { FlightPlanWindEntry } from '../data/wind';
 
 interface BasePendingCruiseWind {
-  levels: WindEntry[];
+  levels: FlightPlanWindEntry[];
 }
 
 interface PendingWaypointCruiseWind extends BasePendingCruiseWind {
@@ -24,10 +24,10 @@ enum PendingWindUplinkState {
 }
 
 export class PendingWindUplink {
-  climbWinds?: WindEntry[];
+  climbWinds?: FlightPlanWindEntry[];
   cruiseWinds?: PendingCruiseWind[];
-  descentWinds?: WindEntry[];
-  alternateWind?: WindEntry;
+  descentWinds?: FlightPlanWindEntry[];
+  alternateWind?: FlightPlanWindEntry;
 
   private state: PendingWindUplinkState = PendingWindUplinkState.Idle;
 

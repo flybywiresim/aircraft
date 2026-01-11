@@ -6,7 +6,7 @@
 
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { MappedSubject, MutableSubscribable, Subject, Subscribable, Subscription } from '@microsoft/msfs-sdk';
-import { WindEntry, WindVector } from '../../data/wind';
+import { FlightPlanWindEntry, WindVector } from '../../data/wind';
 import { Vec2Math } from '@microsoft/msfs-sdk';
 
 export interface FlightPlanPerformanceData {
@@ -485,12 +485,12 @@ export interface FlightPlanPerformanceData {
   /**
    * The wind entries for the climb segment entered by the pilot
    */
-  readonly climbWindEntries: Subject<WindEntry[]>;
+  readonly climbWindEntries: Subject<FlightPlanWindEntry[]>;
 
   /**
    * The wind entries for the descent segment entered by the pilot
    */
-  readonly descentWindEntries: Subject<WindEntry[]>;
+  readonly descentWindEntries: Subject<FlightPlanWindEntry[]>;
 
   /**
    * The average wind vector for the alternate flight plan, or null if not set.
@@ -605,15 +605,15 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
     cloned.approachFlapsThreeSelected.set(this.approachFlapsThreeSelected.get());
 
     cloned.climbWindEntries.set(
-      this.climbWindEntries.get().map(({ altitude, vector }) => ({
-        altitude,
+      this.climbWindEntries.get().map(({ vector, ...rest }) => ({
         vector: Vec2Math.copy(vector, Vec2Math.create()),
+        ...rest,
       })),
     );
     cloned.descentWindEntries.set(
-      this.descentWindEntries.get().map(({ altitude, vector }) => ({
-        altitude,
+      this.descentWindEntries.get().map(({ vector, ...rest }) => ({
         vector: Vec2Math.copy(vector, Vec2Math.create()),
+        ...rest,
       })),
     );
     cloned.alternateWind.set(
@@ -1267,12 +1267,12 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
   /**
    * The wind entries for the climb segment entered by the pilot
    */
-  readonly climbWindEntries: Subject<WindEntry[]> = Subject.create([]);
+  readonly climbWindEntries: Subject<FlightPlanWindEntry[]> = Subject.create([]);
 
   /**
    * The wind entries for the descent segment entered by the pilot
    */
-  readonly descentWindEntries: Subject<WindEntry[]> = Subject.create([]);
+  readonly descentWindEntries: Subject<FlightPlanWindEntry[]> = Subject.create([]);
 
   /**
    * The average wind vector for the alternate flight plan, or null if not set.
@@ -1444,8 +1444,8 @@ export interface SerializedFlightPlanPerformanceData {
   approachRadioMinimum: 'NO DH' | number | null;
   approachFlapsThreeSelected: boolean;
 
-  climbWindEntries: WindEntry[];
-  descentWindEntries: WindEntry[];
+  climbWindEntries: FlightPlanWindEntry[];
+  descentWindEntries: FlightPlanWindEntry[];
   alternateWind: WindVector | null;
 }
 

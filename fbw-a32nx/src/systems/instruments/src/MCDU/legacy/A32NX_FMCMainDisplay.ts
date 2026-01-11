@@ -396,9 +396,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.efisInterfaces.R,
       a320EfisRangeSettings,
     );
-    if (!this.historyWinds) {
-      this.historyWinds = new HistoryWind(this.bus, this.flightPlanService.active);
-    }
+    this.historyWinds = new HistoryWind(this.bus, this.flightPlanService.active);
 
     initComponents(this.bus, this.navigation, this.guidanceController, this.flightPlanService);
 
@@ -3845,12 +3843,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
     const theta = A32NX_Util.magneticToTrue(dir, destinationMagVar) * MathUtils.DEGREES_TO_RADIANS;
 
-    this.flightPlanService.setDescentWindEntry(
-      0,
-      { altitude: 0, vector: Vec2Math.setFromPolar(mag, theta, Vec2Math.create()) },
-      forPlan,
-      false,
-    );
+    const groundWind = { altitude: 0, vector: Vec2Math.setFromPolar(mag, theta, Vec2Math.create()), flags: 0 };
+    this.flightPlanService.setDescentWindEntry(0, groundWind, forPlan, false);
 
     return true;
   }
@@ -5760,8 +5754,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     };
   }
 
-  public getHistoryWinds() {
-    return this.historyWinds?.getClimbWinds();
+  public getHistoryWinds(cruiseLevel: number | null) {
+    return this.historyWinds?.getRecordedWinds(cruiseLevel);
   }
   // ---------------------------
   // CDUMainDisplay Types
