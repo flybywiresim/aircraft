@@ -1,35 +1,30 @@
-use super::adiru::*;
-use super::adr_runtime::*;
-use super::ir_runtime::*;
-use super::*;
+use super::{adiru::*, adr_runtime::*, ir_runtime::*, *};
 use crate::auto_flight::FlightControlUnitBusOutputs;
-use crate::navigation::adirs::hw_block3_adiru::simulator_data::AdrSimulatorData;
-use crate::navigation::adirs::hw_block3_adiru::simulator_data::IrSimulatorData;
-use crate::navigation::adirs::*;
-use crate::shared::arinc429::SignStatus;
-use crate::shared::MachNumber;
-use crate::simulation::test::WriteByName;
-use crate::simulation::SimulatorReader;
+use crate::navigation::adirs::{
+    hw_block3_adiru::simulator_data::AdrSimulatorData,
+    hw_block3_adiru::simulator_data::IrSimulatorData, *,
+};
 use crate::{
-    shared::arinc429::Arinc429Word,
+    shared::{
+        arinc429::{Arinc429Word, SignStatus},
+        MachNumber,
+    },
     simulation::{
-        test::{SimulationTestBed, TestBed},
-        Aircraft, SimulationElementVisitor, SimulatorWriter, UpdateContext,
+        test::{SimulationTestBed, TestBed, WriteByName},
+        Aircraft, SimulationElementVisitor, SimulatorReader, SimulatorWriter, UpdateContext,
     },
 };
 use ntest::assert_about_eq;
 use rstest::rstest;
 use std::time::Duration;
-use uom::si::angular_velocity::degree_per_second;
-use uom::si::pressure::hectopascal;
-use uom::si::ratio::ratio;
-use uom::si::velocity::foot_per_second;
 use uom::si::{
     angle::degree,
-    angular_velocity::radian_per_second,
+    angular_velocity::{degree_per_second, radian_per_second},
     length::foot,
+    pressure::hectopascal,
+    ratio::ratio,
     thermodynamic_temperature::degree_celsius,
-    velocity::{foot_per_minute, knot},
+    velocity::{foot_per_minute, foot_per_second, knot},
 };
 
 #[derive(Default)]

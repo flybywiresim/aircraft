@@ -2,16 +2,15 @@ use std::ops::{Index, IndexMut};
 
 use crate::air_conditioning::AdirsToAirCondInterface;
 use crate::auto_flight::FlightControlUnitBusOutput;
-use crate::navigation::adirs::hw_block3_adiru::adiru::AirDataInertialReferenceUnit;
 use crate::navigation::adirs::{
-    AdrDiscreteInputs, AirDataReferenceBusOutput, AirDataReferenceDiscreteOutput,
-    InertialReferenceBusOutput, IrDiscreteInputs,
+    hw_block3_adiru::adiru::AirDataInertialReferenceUnit, AdrDiscreteInputs,
+    AirDataReferenceBusOutput, AirDataReferenceDiscreteOutput, InertialReferenceBusOutput,
+    IrDiscreteInputs,
 };
-use crate::shared::arinc429::Arinc429Word;
-use crate::shared::{AdirsDiscreteOutputs, AdirsMeasurementOutputs};
-use crate::simulation::InitContext;
+use crate::shared::{arinc429::Arinc429Word, AdirsDiscreteOutputs, AdirsMeasurementOutputs};
 use crate::simulation::{
-    Read, Reader, SimulationElement, SimulationElementVisitor, UpdateContext, Write, Writer,
+    InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, UpdateContext, Write,
+    Writer,
 };
 use uom::si::f64::*;
 use uom::si::pressure::hectopascal;
