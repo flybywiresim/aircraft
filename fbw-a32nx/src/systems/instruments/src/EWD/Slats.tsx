@@ -305,6 +305,11 @@ export class Slats extends DisplayComponent<SlatsProps> {
     this.sfccFlapsPosition.sub(this.setFlapsPath.bind(this), true);
     this.sfccSlatsPosition.sub(this.setSlatsPath.bind(this), true);
 
+    this.alphaLockEngaged.sub((_) => {
+      this.setFlapsPath(this.sfccFlapsPosition.get());
+      this.setSlatsPath(this.sfccSlatsPosition.get());
+    });
+
     // FIXME should not need realtime and alloc strings every frame for this
     sub.on('realTime').handle((_t) => {
       const inMotion = this.slatsTargetPath.get() !== '' || this.flapsTargetPath.get() !== '';
