@@ -277,13 +277,13 @@ export class CDUInitPage {
               .catch((error) => {
                 console.error(error);
                 mcdu.logTroubleshootingError(error);
-                mcdu.setScratchpadMessage(NXSystemMessages.invalidFplnUplink);
+                mcdu.addMessageToQueue(NXSystemMessages.invalidFplnUplink);
               });
           })
           .catch((error) => {
             console.error(error);
             mcdu.logTroubleshootingError(error);
-            mcdu.setScratchpadMessage(NXSystemMessages.invalidFplnUplink);
+            mcdu.addMessageToQueue(NXSystemMessages.invalidFplnUplink);
           });
       }
     };
