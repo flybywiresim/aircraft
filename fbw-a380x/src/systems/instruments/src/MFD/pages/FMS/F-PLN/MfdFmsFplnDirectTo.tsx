@@ -259,6 +259,7 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
               onClick={async () => {
                 SimVar.SetSimVarValue('K:A32NX.FMGC_DIR_TO_TRIGGER', 'number', 0);
                 this.props.fmcService.master?.flightPlanService.temporaryInsert();
+                this.props.fmcService.master?.guidanceController?.vnavDriver?.invalidateFlightPlanProfile();
                 this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln`);
               }}
               buttonStyle="color: #e68000;"

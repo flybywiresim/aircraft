@@ -139,7 +139,7 @@ export const NXFictionalMessages = {
   noWptInfos: new TypeIMessage('NO WAYPOINT INFOS'),
   emptyMessage: new TypeIMessage(''),
   reloadPlaneApply: new TypeIIMessage('RELOAD A/C TO APPLY', true),
-  noHoppieConnection: new TypeIMessage('NO HOPPIE CONNECTION'),
+  noAcarsConnection: new TypeIMessage('NO ACARS CONNECTION'),
   unknownAtsuMessage: new TypeIMessage('UNKNOWN ATSU MESSAGE'),
   reverseProxy: new TypeIMessage('REVERSE PROXY ERROR'),
   simBriefNoUser: new TypeIMessage('NO SIMBRIEF PILOT ID PROVIDED'),

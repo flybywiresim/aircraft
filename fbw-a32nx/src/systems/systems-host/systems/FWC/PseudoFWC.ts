@@ -649,8 +649,6 @@ export class PseudoFWC {
 
   private readonly sec1FaultLine123Display = Subject.create(false);
 
-  private readonly sec1FaultLine45Display = Subject.create(false);
-
   private readonly sec2FaultLine123Display = Subject.create(false);
 
   private readonly sec3FaultLine123Display = Subject.create(false);
@@ -758,6 +756,10 @@ export class PseudoFWC {
   private readonly speedBrakeCaution2Pulse = new NXLogicPulseNode(true);
 
   private readonly speedBrakeStillOutWarning = Subject.create(false);
+
+  private readonly speedBrakeDisagreeWarning = Subject.create(false);
+
+  private readonly speedBrakeDoNotUse = Subject.create(false);
 
   private readonly amberSpeedBrake = Subject.create(false);
 
@@ -940,7 +942,11 @@ export class PseudoFWC {
 
   private readonly aircraftOnGround = Subject.create(false);
 
-  private readonly antiskidActive = Subject.create(false);
+  private readonly antiSkidOffPhase2Confirm = new NXLogicConfirmNode(60);
+
+  private readonly antiSkidOffPhase2Pulse = new NXLogicPulseNode(true);
+
+  private readonly antiSkidOffWarning = Subject.create(false);
 
   private readonly brakeFan = Subject.create(false);
 
@@ -1739,7 +1745,6 @@ export class PseudoFWC {
 
     /* LANDING GEAR AND LIGHTS acquisition */
 
-    this.antiskidActive.set(SimVar.GetSimVarValue('ANTISKID BRAKES ACTIVE', 'bool'));
     this.brakeFan.set(SimVar.GetSimVarValue('L:A32NX_BRAKE_FAN_RUNNING', 'bool'));
     this.brakesHot.set(SimVar.GetSimVarValue('L:A32NX_BRAKES_HOT', 'Bool') > 0);
     // FIX ME ldg lt extended signal should come from SDAC
@@ -1755,6 +1760,14 @@ export class PseudoFWC {
     this.lgciu2DiscreteWord2.setFromSimVar('L:A32NX_LGCIU_2_DISCRETE_WORD_2');
     this.parkBrake.set(SimVar.GetSimVarValue('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool'));
     this.nwSteeringDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool'));
+
+    const antiSkidActive = SimVar.GetSimVarValue('ANTISKID BRAKES ACTIVE', 'bool');
+    // TODO: Check !NORM+ALTN BRK FAULT when implemented, plus change all of this to use SDAC discretes
+    const acBusOff = !this.ac1BusPowered.get() || !this.ac2BusPowered.get();
+    const phase2For60Seconds = this.antiSkidOffPhase2Confirm.write(this.fwcFlightPhase.get() === 2, deltaTime);
+    const phase2Pulse = this.antiSkidOffPhase2Pulse.write(phase2For60Seconds, deltaTime);
+    this.antiSkidOffWarning.set(!antiSkidActive && !acBusOff && !phase2Pulse);
+
     const leftCompressedHardwireLgciu1 =
       this.dcESSBusPowered.get() && SimVar.GetSimVarValue('L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED', 'bool') > 0;
     const leftCompressedHardwireLgciu2 =
@@ -2795,15 +2808,20 @@ export class PseudoFWC {
         speedBrakeCaution3 ||
         !this.flightPhase67.get(),
     );
-    const speedBrakeDoNotUse = fcdc1DiscreteWord5.bitValue(27) || fcdc2DiscreteWord5.bitValue(27);
     this.speedBrakeCaution1Pulse.write(speedBrakeCaution1, deltaTime);
     this.speedBrakeCaution2Pulse.write(speedBrakeCaution2, deltaTime);
     const speedBrakeCaution = speedBrakeCaution1 || speedBrakeCaution2 || speedBrakeCaution3;
+
+    // spd brk disagree
+    const speedBrakeDisagree = fcdc1DiscreteWord5.bitValue(26) || fcdc2DiscreteWord5.bitValue(26);
+    this.speedBrakeDisagreeWarning.set(speedBrakeDisagree);
+    this.speedBrakeDoNotUse.set(fcdc1DiscreteWord5.bitValue(27) || fcdc2DiscreteWord5.bitValue(27));
+
     this.speedBrakeStillOutWarning.set(
       !this.speedBrakeCaution1Pulse.read() &&
         !this.speedBrakeCaution2Pulse.read() &&
         speedBrakeCaution &&
-        !speedBrakeDoNotUse,
+        !speedBrakeDisagree,
     );
 
     // gnd splr not armed
@@ -4230,7 +4248,7 @@ export class PseudoFWC {
         this.sec1FaultLine123Display.get() ? 1 : null,
         this.sec1FaultLine123Display.get() ? 2 : null,
         this.sec1FaultLine123Display.get() ? 3 : null,
-        this.sec1FaultLine45Display.get() ? 4 : null,
+        this.speedBrakeDoNotUse.get() ? 4 : null,
       ],
       codesToReturn: ['270021001', '270021002', '270021003', '270021004', '270021005'],
       memoInhibit: () => false,
@@ -4320,6 +4338,17 @@ export class PseudoFWC {
         '270036507',
         '270036508',
       ],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: 10,
+      side: 'LEFT',
+    },
+    2700370: {
+      // SPD BRK DISAGREE
+      flightPhaseInhib: [3, 4, 5],
+      simVarIsActive: this.speedBrakeDisagreeWarning,
+      whichCodeToReturn: () => [0, 1, this.speedBrakeDoNotUse.get() ? 2 : null],
+      codesToReturn: ['270037001', '270037002', '270037003'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: 10,
@@ -4908,12 +4937,12 @@ export class PseudoFWC {
       sysPage: -1,
       side: 'LEFT',
     },
-    3200060: {
-      // NW ANTI SKID INACTIVE
+    3200070: {
+      // A/SKID N/WS OFF
       flightPhaseInhib: [4, 5],
-      simVarIsActive: this.antiskidActive.map((v) => !v),
+      simVarIsActive: this.antiSkidOffWarning,
       whichCodeToReturn: () => [0, 1],
-      codesToReturn: ['320006001', '320006002'],
+      codesToReturn: ['320007001', '320007002'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: 9,
