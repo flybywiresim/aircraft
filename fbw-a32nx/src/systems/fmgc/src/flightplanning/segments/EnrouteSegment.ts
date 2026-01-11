@@ -7,7 +7,7 @@ import { Waypoint } from '@flybywiresim/fbw-sdk';
 import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
-import { FlightPlanSegment, SerializedFlightPlanSegment } from './FlightPlanSegment';
+import { FlightPlanSegment } from './FlightPlanSegment';
 
 export class EnrouteSegment extends FlightPlanSegment {
   class = SegmentClass.Enroute;
@@ -33,18 +33,6 @@ export class EnrouteSegment extends FlightPlanSegment {
     ];
 
     return newSegment;
-  }
-
-  /**
-   * Sets the contents of this enroute segment using a serialized flight plan segment.
-   *
-   * @param serialized the serialized flight plan segment
-   */
-  setFromSerializedSegment(serialized: SerializedFlightPlanSegment): void {
-    this.strung = true;
-    this.allLegs = serialized.allLegs.map((it) =>
-      it.isDiscontinuity === false ? FlightPlanLeg.deserialize(it, this) : it,
-    );
   }
 }
 

@@ -10,27 +10,31 @@ import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { loadAllApproaches, loadAllArrivals, loadAllRunways } from '@fmgc/flightplanning/DataLoading';
 import { RestringOptions } from '@fmgc/flightplanning/plans/RestringOptions';
-import { FlightPlanSegment, SerializedFlightPlanSegment } from './FlightPlanSegment';
 import { NavigationDatabaseService } from '../NavigationDatabaseService';
+import { TerminalSegment } from '@fmgc/flightplanning/segments/TerminalSegment';
 import { FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/FlightPlanQueuedOperation';
 
-export class DestinationSegment extends FlightPlanSegment {
+export class DestinationSegment extends TerminalSegment {
   class = SegmentClass.Arrival;
 
   allLegs: FlightPlanElement[] = [];
 
-  private airport: Airport;
+  protected airport: Airport | undefined;
+
+  protected runway: Runway | undefined;
 
   public get destinationAirport() {
     return this.airport;
   }
 
-  public async setDestinationIcao(icao: string | undefined) {
+  public async setAirport(icao: string | undefined, skipUpdateLegs?: boolean) {
     if (icao === undefined) {
       this.airport = undefined;
       this.runway = undefined;
 
-      await this.refresh();
+      if (!skipUpdateLegs) {
+        await this.refresh();
+      }
       return;
     }
 
@@ -48,25 +52,27 @@ export class DestinationSegment extends FlightPlanSegment {
     this.flightPlan.availableDestinationRunways = await loadAllRunways(this.destinationAirport);
 
     // TODO do we clear arrival/via/approach ...?
-    await this.refresh();
+    if (!skipUpdateLegs) {
+      await this.refresh();
+    }
 
     this.flightPlan.availableArrivals = await loadAllArrivals(this.destinationAirport);
     this.flightPlan.availableApproaches = await loadAllApproaches(this.destinationAirport);
   }
 
-  private runway?: Runway;
-
   public get destinationRunway() {
     return this.runway;
   }
 
-  public async setDestinationRunway(runwayIdent: string | undefined, setByApproach = false) {
+  public async setRunway(runwayIdent: string | undefined, setByApproach = false, skipUpdateLegs = false) {
     const oldRunwayIdent = this.runway?.ident;
 
     if (runwayIdent === undefined) {
       this.runway = undefined;
 
-      this.flightPlan.arrivalRunwayTransitionSegment.setProcedure(undefined);
+      if (!skipUpdateLegs) {
+        await this.flightPlan.arrivalRunwayTransitionSegment.setProcedure(undefined);
+      }
     } else {
       if (!this.airport) {
         throw new Error('[FMS/FPM] Cannot set destination runway without destination airport');
@@ -83,10 +89,14 @@ export class DestinationSegment extends FlightPlanSegment {
 
       this.runway = matchingRunway;
 
-      await this.flightPlan.arrivalRunwayTransitionSegment.setProcedure(matchingRunway.ident);
+      if (!skipUpdateLegs) {
+        await this.flightPlan.arrivalRunwayTransitionSegment.setProcedure(matchingRunway.ident);
+      }
     }
 
-    await this.refresh(oldRunwayIdent !== this.runway?.ident && !setByApproach);
+    if (!skipUpdateLegs) {
+      await this.refresh(oldRunwayIdent !== this.runway?.ident && !setByApproach);
+    }
   }
 
   async refresh(doRemoveApproach = true) {
@@ -122,18 +132,5 @@ export class DestinationSegment extends FlightPlanSegment {
     newSegment.runway = this.runway;
 
     return newSegment;
-  }
-
-  /**
-   * Sets the contents of this segment using a serialized flight plan segment.
-   *
-   * @param serialized the serialized flight plan segment
-   */
-  setFromSerializedSegment(serialized: SerializedFlightPlanSegment): void {
-    // TODO sync the airport
-    // TODO sync the runway
-    this.allLegs = serialized.allLegs.map((it) =>
-      it.isDiscontinuity === false ? FlightPlanLeg.deserialize(it, this) : it,
-    );
   }
 }
