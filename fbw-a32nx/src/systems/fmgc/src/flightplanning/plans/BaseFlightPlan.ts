@@ -597,7 +597,9 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
     if (leg.isDiscontinuity === false) {
       this.sendEvent('flightPlan.setCruiseWinds', {
+        syncClientID: this.context.syncClientID,
         planIndex: this.index,
+        batchStack: this.context.batchStack,
         atIndex,
         forAlternate: this instanceof AlternateFlightPlan,
         newCruiseWinds: leg.cruiseWindEntries,
@@ -2870,7 +2872,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     );
   }
 
-  async propagateWindsAt(atIndex: number, result: PropagatedWindEntry[], maxNumEntries: number): Promise<number> {
+  propagateWindsAt(atIndex: number, result: PropagatedWindEntry[], maxNumEntries: number): PropagatedWindEntry[] {
     let numWindEntries = 0;
 
     for (let i = 0; i < this.firstMissedApproachLegIndex; i++) {
