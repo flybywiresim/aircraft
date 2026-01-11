@@ -4,9 +4,18 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
-import { AltitudeConstraint, Fix, Waypoint } from '@flybywiresim/fbw-sdk';
+import { Airway, AltitudeConstraint, Fix, MathUtils, Waypoint } from '@flybywiresim/fbw-sdk';
 import { FlightPlanIndex, FlightPlanManager } from '@fmgc/flightplanning/FlightPlanManager';
-import { EventBus, EventSubscriber, Publisher, Subscription } from '@microsoft/msfs-sdk';
+import {
+  EventBus,
+  EventSubscriber,
+  MappedSubject,
+  Publisher,
+  SubEvent,
+  Subject,
+  Subscription,
+  Wait,
+} from '@microsoft/msfs-sdk';
 import { v4 } from 'uuid';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
@@ -16,6 +25,8 @@ import { FlightPlanLegDefinition } from '../legs/FlightPlanLegDefinition';
 import { FixInfoEntry } from '../plans/FixInfo';
 import { FlightPlan } from '../plans/FlightPlan';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
+import { FlightPlanEvents } from '@fmgc/flightplanning/sync/FlightPlanEvents';
 
 export type FunctionsOnlyAndUnwrapPromises<T> = {
   [k in keyof T as T[k] extends (...args: any) => Promise<any> ? k : never]: T[k] extends (
@@ -34,20 +45,34 @@ export interface FlightPlanRemoteClientRpcEvents<P extends FlightPlanPerformance
 export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements FlightPlanInterface<P> {
   private subs: Subscription[] = [];
 
+  public readonly onAvailable = new SubEvent();
+
+  public readonly batchStack: FlightPlanBatch[] = [];
+
   private readonly flightPlanManager: FlightPlanManager<P>;
+
+  private readonly rpcAvailable = Subject.create(false);
+
+  private readonly flightPlanManagerInitialized = Subject.create(false);
 
   private readonly pub: Publisher<FlightPlanRemoteClientRpcEvents<P>>;
 
   private readonly sub: EventSubscriber<FlightPlanServerRpcEvents>;
 
+  public syncClientID = MathUtils.randomInt32();
+
   constructor(
     private readonly bus: EventBus,
     private readonly performanceDataInit: P,
+    private readonly useBatches = true,
   ) {
     this.pub = this.bus.getPublisher<FlightPlanRemoteClientRpcEvents<P>>();
     this.sub = this.bus.getSubscriber<FlightPlanServerRpcEvents>();
 
     this.subs.push(
+      this.sub.on('flightPlanServer_heartbeat').handle(() => {
+        this.rpcAvailable.set(true);
+      }),
       this.sub.on('flightPlanServer_rpcCommandResponse').handle(([responseId, response]) => {
         if (this.rpcCommandsSent.has(responseId)) {
           const [resolve] = this.rpcCommandsSent.get(responseId) ?? [];
@@ -58,13 +83,38 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
           }
         }
       }),
+      this.sub.on('flightPlanServer_rpcCommandErrorResponse').handle(([responseId, error]) => {
+        if (this.rpcCommandsSent.has(responseId)) {
+          const [, reject] = this.rpcCommandsSent.get(responseId) ?? [];
+
+          if (reject) {
+            reject(
+              `Error from RPC server: ${typeof error === 'object' && 'message' in error && typeof error.message === 'string' ? error.message : error.toString()}`,
+            );
+            this.rpcCommandsSent.delete(responseId);
+          }
+        }
+      }),
     );
+
     this.flightPlanManager = new FlightPlanManager<P>(
+      this,
       this.bus,
       this
         .performanceDataInit as P /*  TODO, is this comment still valid? "This flight plan manager will never create plans, so this is fine" */,
-      Math.round(Math.random() * 10_000),
+      this.syncClientID,
       false,
+    );
+    this.flightPlanManager.initialized.on(() => this.flightPlanManagerInitialized.set(true));
+
+    MappedSubject.create(
+      ([rpcAvailable, flightPlanManagerInitialized]) => {
+        if (rpcAvailable && flightPlanManagerInitialized) {
+          this.onAvailable.notify(undefined, undefined);
+        }
+      },
+      this.rpcAvailable,
+      this.flightPlanManagerInitialized,
     );
   }
 
@@ -74,19 +124,57 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
     funcName: T,
     ...args: Parameters<FunctionsOnlyAndUnwrapPromises<FlightPlanInterface<P>>[T]>
   ): Promise<ReturnType<FunctionsOnlyAndUnwrapPromises<FlightPlanInterface<P>>[T]>> {
-    const id = v4();
+    const batchState = { batch: null, remoteBatchClosed: false };
 
-    this.pub.pub('flightPlanRemoteClient_rpcCommand', [funcName, id, ...args], true);
+    let batchSubscription: Subscription | null = null;
+    if (this.useBatches) {
+      batchSubscription = this.bus
+        .getSubscriber<FlightPlanEvents>()
+        .on('flightPlanService.batchChange')
+        .handle((event) => {
+          if (
+            batchState.batch &&
+            event.syncClientID === this.syncClientID &&
+            event.type === 'close' &&
+            event.batch.id === batchState.batch.id
+          ) {
+            batchState.remoteBatchClosed = true;
+          }
+        });
+      batchState.batch = await this.doCallFunctionViaRpc('openBatch', `rpcFunctionExec_${funcName}`);
+    }
 
-    const result =
-      await this.waitForRpcCommandResponse<ReturnType<FunctionsOnlyAndUnwrapPromises<FlightPlanInterface<P>>[T]>>(id);
+    const result = await this.doCallFunctionViaRpc(funcName, ...args);
+
+    if (this.useBatches) {
+      await this.doCallFunctionViaRpc('closeBatch', batchState.batch.id);
+      await Wait.awaitCondition(() => batchState.remoteBatchClosed === true);
+    }
+
+    batchSubscription?.destroy();
 
     return result;
   }
 
-  private waitForRpcCommandResponse<T>(id: string): Promise<T> {
+  private async doCallFunctionViaRpc<T extends keyof FunctionsOnlyAndUnwrapPromises<FlightPlanInterface<P>> & string>(
+    funcName: T,
+    ...args: Parameters<FunctionsOnlyAndUnwrapPromises<FlightPlanInterface<P>>[T]>
+  ): Promise<ReturnType<FunctionsOnlyAndUnwrapPromises<FlightPlanInterface<P>>[T]>> {
+    const id = v4();
+
+    const result = await this.waitForRpcCommandResponse<
+      ReturnType<FunctionsOnlyAndUnwrapPromises<FlightPlanInterface<P>>[T]>
+    >(id, funcName, ...args);
+
+    return result;
+  }
+
+  private waitForRpcCommandResponse<T>(id: string, command: keyof FlightPlanInterface<P>, ...args: any[]): Promise<T> {
     return new Promise((resolve, reject) => {
       this.rpcCommandsSent.set(id, [resolve, reject]);
+
+      this.pub.pub('flightPlanRemoteClient_rpcCommand', [command, id, ...args], true, false);
+
       setTimeout(() => {
         if (this.rpcCommandsSent.has(id)) {
           this.rpcCommandsSent.delete(id);
@@ -189,6 +277,10 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
     return this.callFunctionViaRpc('reset');
   }
 
+  deleteAll(): Promise<void> {
+    return this.callFunctionViaRpc('deleteAll');
+  }
+
   newCityPair(fromIcao: string, toIcao: string, altnIcao?: string, planIndex?: number): Promise<void> {
     return this.callFunctionViaRpc('newCityPair', fromIcao, toIcao, altnIcao, planIndex);
   }
@@ -258,8 +350,20 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
     return this.callFunctionViaRpc('newDest', atIndex, airportIdent, planIndex, alternate);
   }
 
-  startAirwayEntry(at: number, planIndex: number, alternate: boolean): Promise<void> {
+  startAirwayEntry(at: number, planIndex: number, alternate?: boolean): Promise<number> {
     return this.callFunctionViaRpc('startAirwayEntry', at, planIndex, alternate);
+  }
+
+  continueAirwayEntryViaAirway(airway: Airway, planIndex: number, alternate?: boolean): Promise<boolean> {
+    return this.callFunctionViaRpc('continueAirwayEntryViaAirway', airway, planIndex, alternate);
+  }
+
+  continueAirwayEntryToFix(fix: Fix, isDct: boolean, planIndex: number, alternate?: boolean): Promise<boolean> {
+    return this.callFunctionViaRpc('continueAirwayEntryToFix', fix, isDct, planIndex, alternate);
+  }
+
+  finaliseAirwayEntry(planIndex: number, alternate?: boolean): Promise<void> {
+    return this.callFunctionViaRpc('finaliseAirwayEntry', planIndex, alternate);
   }
 
   directToLeg(
@@ -406,5 +510,13 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
 
   stringMissedApproach(onConstraintsDeleted?: (_: FlightPlanLeg) => void, planIndex?: number): Promise<void> {
     return this.callFunctionViaRpc('stringMissedApproach', onConstraintsDeleted, planIndex);
+  }
+
+  openBatch(name: string): Promise<FlightPlanBatch> {
+    return this.callFunctionViaRpc('openBatch', name);
+  }
+
+  closeBatch(uuid: string): Promise<FlightPlanBatch> {
+    return this.callFunctionViaRpc('closeBatch', uuid);
   }
 }

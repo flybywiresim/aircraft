@@ -10,6 +10,7 @@ fbw-a32nx/bundles/*
 fbw-a380x/bundles/*
 /bundles/*
 
+fbw-a32nx/src/base/flybywire-aircraft-a320-neo/html_ui/Pages/A32NX_Core/math.js
 fbw-a32nx/src/systems/fmgc/src/utils/LzUtf8.js
 
 fbw-a380x/src/base/flybywire-aircraft-a380-842/html_ui/Pages/VCockpit/Instruments/LegacyA380X/*
