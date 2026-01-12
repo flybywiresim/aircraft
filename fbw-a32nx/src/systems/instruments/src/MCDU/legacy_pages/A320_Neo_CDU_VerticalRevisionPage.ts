@@ -49,8 +49,6 @@ export class CDUVerticalRevisionPage {
     const constraintType = CDUVerticalRevisionPage.constraintType(mcdu, wpIndex, forPlan, inAlternate);
     const isOrigin = wpIndex === 0;
     const isDestination = wpIndex === targetPlan.destinationLegIndex;
-    const allowWindsOnSecondary = false; // TODO
-    const shouldEnableWindOption = allowWindsOnSecondary || forPlan !== FlightPlanIndex.FirstSecondary;
 
     let waypointIdent = '---';
     if (waypoint) {
@@ -210,7 +208,7 @@ export class CDUVerticalRevisionPage {
       [l4Title, r4Title],
       [l4Cell, r4Cell],
       [''],
-      [shouldEnableWindOption ? '<WIND/TEMP' : '', r5Cell],
+      ['<WIND/TEMP', r5Cell],
       [''],
       [
         confirmConstraint ? '{amber}*CLB{end}' : '<RETURN',
@@ -467,33 +465,31 @@ export class CDUVerticalRevisionPage {
       }; // ALT CSTR
     }
 
-    if (shouldEnableWindOption) {
-      mcdu.onLeftInput[4] = () => {
-        //TODO: show appropriate wind page based on waypoint
-        CDUWindPage.Return = () => {
-          CDUVerticalRevisionPage.ShowPage(
-            mcdu,
-            waypoint,
-            wpIndex,
-            verticalWaypoint,
-            undefined,
-            undefined,
-            undefined,
-            forPlan,
-            inAlternate,
-          );
-        };
+    mcdu.onLeftInput[4] = () => {
+      CDUWindPage.Return = () => {
+        CDUVerticalRevisionPage.ShowPage(
+          mcdu,
+          waypoint,
+          wpIndex,
+          verticalWaypoint,
+          undefined,
+          undefined,
+          undefined,
+          forPlan,
+          inAlternate,
+        );
+      };
 
-        const phase = this.getProfilePhase(waypoint, verticalWaypoint);
-        if (phase === ProfilePhase.Cruise) {
-          CDUWindPage.ShowCRZPage(mcdu, forPlan, wpIndex);
-        } else if (phase === ProfilePhase.Descent) {
-          CDUWindPage.ShowDESPage(mcdu, forPlan);
-        } else {
-          CDUWindPage.ShowPage(mcdu, forPlan);
-        }
-      }; // WIND
-    }
+      const phase = this.getProfilePhase(waypoint, verticalWaypoint);
+      if (phase === ProfilePhase.Cruise) {
+        CDUWindPage.ShowCRZPage(mcdu, forPlan, wpIndex);
+      } else if (phase === ProfilePhase.Descent) {
+        CDUWindPage.ShowDESPage(mcdu, forPlan);
+      } else {
+        CDUWindPage.ShowPage(mcdu, forPlan);
+      }
+    }; // WIND
+
     mcdu.onRightInput[4] = () => {
       if (!performanceData.cruiseFlightLevel.get()) {
         return;

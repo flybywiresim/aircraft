@@ -55,6 +55,7 @@ export class CDUWindPage {
 
     const plan = mcdu.getFlightPlan(forPlan);
     const originElevation = plan.originAirport?.location.alt ?? 0;
+    const isSec = forPlan >= FlightPlanIndex.FirstSecondary;
 
     const doesWindUplinkExist = plan.pendingWindUplink.isWindUplinkReadyToInsert();
     const doesClbWindUplinkExist = doesWindUplinkExist && plan.pendingWindUplink.climbWinds !== undefined;
@@ -70,7 +71,7 @@ export class CDUWindPage {
     const allowHistoryWindAccess = forPlan === FlightPlanIndex.Active && phase === FmgcFlightPhase.Preflight;
 
     const template = [
-      ['CLIMB WIND'],
+      [isSec ? '\xa0SEC\xa0\xa0\xa0CLIMB WIND\xa0\xa0\xa0\xa0\xa0\xa0\xa0' : 'CLIMB WIND'],
       ['TRU WIND/ALT', allowHistoryWindAccess ? 'HISTORY\xa0' : ''],
       ['', allowHistoryWindAccess ? 'WIND>' : ''],
       ['', doesWindUplinkExist ? 'INSERT{sp}[color]cyan' : 'WIND/TEMP{sp}[color]amber'],
@@ -215,6 +216,7 @@ export class CDUWindPage {
     mcdu.page.Current = mcdu.page.CruiseWind;
 
     const plan = mcdu.getFlightPlan(forPlan);
+    const isSec = forPlan >= FlightPlanIndex.FirstSecondary;
 
     // If - for any reason - we cannot find a suitable leg at the requested index or downstream of it, just show the
     // descent wind page instead
@@ -241,7 +243,7 @@ export class CDUWindPage {
     const canGoToPrevPhase = phase < FmgcFlightPhase.Cruise || phase === FmgcFlightPhase.Done;
 
     const template = [
-      ['CRZ WIND'],
+      [isSec ? '\xa0SEC\xa0\xa0\xa0\xa0CRZ WIND\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0' : 'CRZ WIND'],
       ['', '', `AT {green}{big}${(leg.ident ?? '').padEnd(7, '\xa0')}{end}{end}`],
       ['', ''],
       ['TRU WIND/ALT', doesWindUplinkExist ? 'INSERT{sp}[color]cyan' : 'WIND/TEMP{sp}[color]amber'],
@@ -434,6 +436,7 @@ export class CDUWindPage {
 
     const plan = mcdu.getFlightPlan(forPlan);
     const destinationElevation = plan.destinationAirport?.location.alt ?? 0;
+    const isSec = forPlan >= FlightPlanIndex.FirstSecondary;
 
     const doesWindUplinkExist = plan.pendingWindUplink.isWindUplinkReadyToInsert();
     const doesDesWindUplinkExist = doesWindUplinkExist && plan.pendingWindUplink.descentWinds !== undefined;
@@ -453,7 +456,7 @@ export class CDUWindPage {
       !doesDesWindUplinkExist && (phase < FmgcFlightPhase.Descent || phase === FmgcFlightPhase.Done);
 
     const template = [
-      ['DESCENT WIND'],
+      [isSec ? '\xa0SEC\xa0\xa0DESCENT WIND\xa0\xa0\xa0\xa0\xa0\xa0' : 'DESCENT WIND'],
       ['TRU WIND/ALT', ''],
       ['', ''],
       ['', doesWindUplinkExist ? 'INSERT{sp}[color]cyan' : 'WIND/TEMP{sp}[color]amber'],
