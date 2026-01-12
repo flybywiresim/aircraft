@@ -679,7 +679,7 @@ export class CDUWindPage {
     mcdu.onPrevPage = () => mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
   }
 
-  static ShowHistoryPage(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex, confirmInsert = false) {
+  static ShowHistoryPage(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.ClimbWind;
 
@@ -730,31 +730,23 @@ export class CDUWindPage {
 
     // INSERT
     if (shouldAllowInsertion) {
-      if (confirmInsert) {
-        template[12][1] = 'CONFIRM*[color]cyan';
+      template[12][1] = 'INSERT*[color]amber';
 
-        mcdu.onRightInput[5] = async () => {
-          await mcdu.flightPlanService.deleteClimbWindEntries(forPlan);
+      mcdu.onRightInput[5] = async () => {
+        await mcdu.flightPlanService.deleteClimbWindEntries(forPlan);
 
-          for (const wind of historyWinds) {
-            const windEntryToInsert: FlightPlanWindEntry = {
-              flags: FlightPlanWindEntryFlags.InsertedFromHistory,
-              altitude: wind.altitude,
-              vector: Vec2Math.copy(wind.vector, Vec2Math.create()),
-            };
+        for (const wind of historyWinds) {
+          const windEntryToInsert: FlightPlanWindEntry = {
+            flags: FlightPlanWindEntryFlags.InsertedFromHistory,
+            altitude: wind.altitude,
+            vector: Vec2Math.copy(wind.vector, Vec2Math.create()),
+          };
 
-            await mcdu.flightPlanService.setClimbWindEntry(wind.altitude, windEntryToInsert, forPlan);
-          }
+          await mcdu.flightPlanService.setClimbWindEntry(wind.altitude, windEntryToInsert, forPlan);
+        }
 
-          this.ShowCLBPage(mcdu, forPlan);
-        };
-      } else {
-        template[12][1] = 'INSERT*[color]amber';
-
-        mcdu.onRightInput[5] = async () => {
-          this.ShowHistoryPage(mcdu, forPlan, true);
-        };
-      }
+        this.ShowCLBPage(mcdu, forPlan);
+      };
     }
 
     mcdu.setTemplate(template);
