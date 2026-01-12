@@ -4492,7 +4492,7 @@ export class PseudoFWC {
       side: 'LEFT',
     },
     3200050: {
-      // PK BRK ON
+      // CONFIG PARK BRK ON
       flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10],
       simVarIsActive: MappedSubject.create(
         ([fwcFlightPhase, parkBrake]) => fwcFlightPhase === 3 && parkBrake,
@@ -4964,7 +4964,7 @@ export class PseudoFWC {
       side: 'LEFT',
     },
     3200081: {
-      // PARK BRK ON
+      // BRAKES PARK BRK ON
       flightPhaseInhib: [1, 2, 3, 4, 5, 8, 9, 10],
       simVarIsActive: this.parkBrakeOnWarning,
       whichCodeToReturn: () => [0, 1],
