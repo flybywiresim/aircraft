@@ -667,7 +667,7 @@ export class FmgcDataService implements Fmgc {
     if (destEfob === null || alternateFuel === null) {
       return null;
     }
-    return Math.max(destEfob - alternateFuel, LOWEST_FUEL_ESTIMATE_KGS / 1000);
+    return Math.max(destEfob - alternateFuel / 1000, LOWEST_FUEL_ESTIMATE_KGS / 1000);
   }
 
   /** in feet. null if not set */

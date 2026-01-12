@@ -1732,11 +1732,12 @@ export class FuelPenaltyPercentFormat implements DataEntryFormat<number> {
       return null;
     }
 
-    const numberInput = Number(input);
-
-    if (Number.isNaN(numberInput)) {
+    // Validate format (+)NNN.N.
+    if (!/^[+]?\d{1,3}(?:\.\d)?$/.test(input)) {
       throw new FmsError(FmsErrorType.FormatError);
     }
+
+    const numberInput = Number(input);
 
     if (numberInput < this.minValue || numberInput > this.maxValue) {
       throw new FmsError(FmsErrorType.EntryOutOfRange);
