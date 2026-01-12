@@ -63,12 +63,9 @@ pub struct AirDataInertialReferenceUnit {
     primary_is_powered: bool,
     backup_is_powered: bool,
 
-    /// How long the computer can tolerate a power loss and continue functioning.
-    power_holdover: Duration,
-
-    /// How long the computer has been unpowered for.
-    primary_unpowered_for: Duration,
-    backup_unpowered_for: Duration,
+    /// If the computer is powered, taking into account the power holdover.
+    primary_powered_confirm: ConfirmationNode,
+    backup_powered_confirm: ConfirmationNode,
 
     /// Confirmation node for the power down
     power_down_confirm: ConfirmationNode,
@@ -212,20 +209,18 @@ impl AirDataInertialReferenceUnit {
             primary_is_powered: false,
             backup_is_powered: false,
 
-            power_holdover: Duration::from_secs_f64(random_from_range(
-                Self::MINIMUM_POWER_HOLDOVER.as_secs_f64(),
-                Self::MAXIMUM_POWER_HOLDOVER.as_secs_f64(),
+            primary_powered_confirm: ConfirmationNode::new_falling(Duration::from_secs_f64(
+                random_from_range(
+                    Self::MINIMUM_POWER_HOLDOVER.as_secs_f64(),
+                    Self::MAXIMUM_POWER_HOLDOVER.as_secs_f64(),
+                ),
             )),
-            primary_unpowered_for: if is_powered {
-                Duration::ZERO
-            } else {
-                Self::MAXIMUM_POWER_HOLDOVER
-            },
-            backup_unpowered_for: if is_powered {
-                Duration::ZERO
-            } else {
-                Self::MAXIMUM_POWER_HOLDOVER
-            },
+            backup_powered_confirm: ConfirmationNode::new_falling(Duration::from_secs_f64(
+                random_from_range(
+                    Self::MINIMUM_POWER_HOLDOVER.as_secs_f64(),
+                    Self::MAXIMUM_POWER_HOLDOVER.as_secs_f64(),
+                ),
+            )),
             power_down_confirm: ConfirmationNode::new_rising(Duration::from_millis(
                 Self::POWER_DOWN_DURATION,
             )),
@@ -502,16 +497,12 @@ impl AirDataInertialReferenceUnit {
     ) {
         // If the backup supply test is active, inhibit the primary supply.
         let supply_test_active = self.backup_supply_test_timer_mtrig.output();
-        if self.primary_is_powered && !supply_test_active {
-            self.primary_unpowered_for = Duration::ZERO;
-        } else {
-            self.primary_unpowered_for += context.delta();
-        }
-        if self.backup_is_powered {
-            self.backup_unpowered_for = Duration::ZERO;
-        } else {
-            self.backup_unpowered_for += context.delta();
-        }
+        self.primary_powered_confirm.update(
+            self.primary_is_powered && !supply_test_active,
+            context.delta(),
+        );
+        self.backup_powered_confirm
+            .update(self.backup_is_powered, context.delta());
 
         // Technically this should also reset if unpowered
         let is_powered = !self.power_down_confirm.update(
@@ -526,10 +517,10 @@ impl AirDataInertialReferenceUnit {
             .update(begin_supply_test, context.delta());
 
         self.on_battery_power = is_powered
-            && self.backup_unpowered_for < self.power_holdover
-            && self.primary_unpowered_for > self.power_holdover;
+            && self.backup_powered_confirm.get_output()
+            && !self.primary_powered_confirm.get_output();
 
-        self.dc_failure = is_powered && self.backup_unpowered_for > self.power_holdover;
+        self.dc_failure = is_powered && !self.backup_powered_confirm.get_output();
     }
 
     fn update_adr(
@@ -634,8 +625,8 @@ impl AirDataInertialReferenceUnit {
 
     fn computer_powered(&self) -> bool {
         !self.power_down_confirm.get_output()
-            && (self.primary_unpowered_for < self.power_holdover
-                || self.backup_unpowered_for < self.power_holdover)
+            && (self.primary_powered_confirm.get_output()
+                || self.backup_powered_confirm.get_output())
     }
 }
 impl AirDataReferenceBusOutput for AirDataInertialReferenceUnit {
