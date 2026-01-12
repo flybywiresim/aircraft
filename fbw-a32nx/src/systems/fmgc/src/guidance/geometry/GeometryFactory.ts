@@ -338,7 +338,7 @@ function getMagCorrection(legIndex: number, plan: BaseFlightPlan): number {
   // we try to interpret PANS OPs as accurately as possible within the limits of available data
   const currentLeg = plan.legElementAt(legIndex);
 
-  let airportMagVar = 0;
+  let airportMagVar: number | undefined = undefined;
   if (legIndex <= plan.findLastDepartureLeg()[2]) {
     airportMagVar = Facilities.getMagVar(plan.originAirport.location.lat, plan.originAirport.location.long);
   } else if (legIndex >= plan.findFirstArrivalLeg()[2]) {
@@ -355,16 +355,22 @@ function getMagCorrection(legIndex: number, plan: BaseFlightPlan): number {
 
     if (vor?.stationDeclination === undefined) {
       console.warn('Leg coded incorrectly (missing vor fix or station declination)', currentLeg, vor);
-      return airportMagVar;
+      return airportMagVar ?? 0;
     }
 
     return vor.stationDeclination;
   } else if (isLegOnApproach) {
-    return getApproachMagCorrection(legIndex, plan) ?? airportMagVar;
+    return getApproachMagCorrection(legIndex, plan) ?? airportMagVar ?? 0;
+  } else if (airportMagVar === undefined && currentLeg.definition.waypoint) {
+    // Enroute leg
+    return Facilities.getMagVar(
+      currentLeg.definition.waypoint.location.lat,
+      currentLeg.definition.waypoint.location.long,
+    );
   }
 
   // for all other terminal procedure legs we use airport magnetic variation
-  return airportMagVar;
+  return airportMagVar ?? 0;
 }
 
 function getApproachMagCorrection(legIndex: number, plan: BaseFlightPlan): number | undefined {

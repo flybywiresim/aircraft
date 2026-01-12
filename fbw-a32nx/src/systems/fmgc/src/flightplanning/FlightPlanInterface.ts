@@ -262,7 +262,7 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
 
   directToLeg(
     ppos: Coordinates,
-    trueTrack: Degrees,
+    magneticTrack: Degrees,
     targetLegIndex: number,
     withAbeam: boolean,
     planIndex: number,
@@ -271,7 +271,7 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
   // TODO do not pass in fix object (rpc)
   directToWaypoint(
     ppos: Coordinates,
-    trueTrack: Degrees,
+    magneticTrack: Degrees,
     waypoint: Fix,
     withAbeam: boolean,
     planIndex: number,

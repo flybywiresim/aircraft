@@ -5116,9 +5116,10 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     // FIXME fm pos
     const adirLat = ADIRS.getLatitude();
     const adirLong = ADIRS.getLongitude();
-    const trueTrack = ADIRS.getTrueTrack();
+    const magneticTrack = ADIRS.getMagneticTrack();
 
-    if (!adirLat.isNormalOperation() || !adirLong.isNormalOperation() || !trueTrack.isNormalOperation()) {
+    // FIXME use true track if magnetic track invalid
+    if (!adirLat?.isNormalOperation() || !adirLong?.isNormalOperation() || !magneticTrack?.isNormalOperation()) {
       return;
     }
 
@@ -5127,7 +5128,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       long: adirLong.value,
     };
 
-    await this.flightPlanService.directToWaypoint(ppos, trueTrack.value, waypoint);
+    await this.flightPlanService.directToWaypoint(ppos, magneticTrack.value, waypoint);
   }
 
   /**
@@ -5138,9 +5139,10 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     // FIXME fm pos
     const adirLat = ADIRS.getLatitude();
     const adirLong = ADIRS.getLongitude();
-    const trueTrack = ADIRS.getTrueTrack();
+    const magneticTrack = ADIRS.getMagneticTrack();
 
-    if (!adirLat.isNormalOperation() || !adirLong.isNormalOperation() || !trueTrack.isNormalOperation()) {
+    // FIXME use true track if magnetic track invalid
+    if (!adirLat?.isNormalOperation() || !adirLong?.isNormalOperation() || !magneticTrack?.isNormalOperation()) {
       return;
     }
 
@@ -5149,7 +5151,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       long: adirLong.value,
     };
 
-    await this.flightPlanService.directToLeg(ppos, trueTrack.value, legIndex);
+    await this.flightPlanService.directToLeg(ppos, magneticTrack.value, legIndex);
   }
 
   /**

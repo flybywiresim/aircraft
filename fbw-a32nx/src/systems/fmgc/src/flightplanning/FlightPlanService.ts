@@ -531,7 +531,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
   async directToWaypoint(
     ppos: Coordinates,
-    trueTrack: Degrees,
+    magneticTrack: Degrees,
     waypoint: Fix,
     withAbeam = false,
     planIndex = FlightPlanIndex.Active,
@@ -540,12 +540,12 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
     const plan = this.flightPlanManager.get(finalIndex);
 
-    plan.directToWaypoint(ppos, trueTrack, waypoint, withAbeam);
+    plan.directToWaypoint(ppos, magneticTrack, waypoint, withAbeam);
   }
 
   async directToLeg(
     ppos: Coordinates,
-    trueTrack: Degrees,
+    magneticTrack: Degrees,
     targetLegIndex: number,
     withAbeam = false,
     planIndex = FlightPlanIndex.Active,
@@ -554,7 +554,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
     const plan = this.flightPlanManager.get(finalIndex);
 
-    plan.directToLeg(ppos, trueTrack, targetLegIndex, withAbeam);
+    plan.directToLeg(ppos, magneticTrack, targetLegIndex, withAbeam);
   }
 
   async addOrEditManualHold(
