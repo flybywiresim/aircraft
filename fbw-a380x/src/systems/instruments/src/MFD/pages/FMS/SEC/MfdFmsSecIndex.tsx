@@ -25,32 +25,28 @@ import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { ReadonlyFlightPlanLeg } from '@fmgc/flightplanning/legs/ReadonlyFlightPlanLeg';
 import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
 import { FlightPlanFlags } from '@fmgc/flightplanning/plans/FlightPlanFlags';
-import { secondsToHHmmssString } from '@shared/dateFormatting';
-import {
-  cpnyFplnButtonDisabled,
-  cpnyFplnButtonLabel,
-  cpnyFplnButtonMenuItems,
-} from '../../../shared/cpnyFplnButtonUtils';
+import { DateFormatting } from '@shared/DateFormatting';
+import { CpnyFplnButtonUtils } from '../../../shared/CpnyFplnButtonUtils';
 
 interface MfdFmsSecIndexProps extends AbstractMfdPageProps {}
 
 class MfdFmsSecIndexDataStore {
   private readonly subscriptions: Subscription[] = [];
 
-  readonly flightPlanChangeNotifier = new FlightPlanChangeNotifier(this.bus);
+  public readonly flightPlanChangeNotifier = new FlightPlanChangeNotifier(this.bus);
 
-  readonly secExists = Subject.create(false);
+  public readonly secExists = Subject.create(false);
 
-  readonly timeCreated = Subject.create<number | null>(null);
-  readonly flags = Subject.create<number>(0);
-  readonly wasModified = Subject.create(false);
+  public readonly timeCreated = Subject.create<number | null>(null);
+  public readonly flags = Subject.create<number>(0);
+  public readonly wasModified = Subject.create(false);
 
-  readonly fromCity = Subject.create<string | null>(null);
-  readonly toCity = Subject.create<string | null>(null);
+  public readonly fromCity = Subject.create<string | null>(null);
+  public readonly toCity = Subject.create<string | null>(null);
 
-  readonly routeOverviewLegs = Subject.create<readonly ReadonlyFlightPlanLeg[]>([]);
+  public readonly routeOverviewLegs = Subject.create<readonly ReadonlyFlightPlanLeg[]>([]);
 
-  readonly canNotActivateOrSwapSecondary = Subject.create(false);
+  public readonly canNotActivateOrSwapSecondary = Subject.create(false);
 
   checkIfCanActivateOrSwapSecondary() {
     if (!this.fmc) {
@@ -280,7 +276,7 @@ export class MfdFmsSecIndexTab extends DestroyableComponent<MfdFmsSecIndexTabPro
         creationSource = ` (ATC F-PLN${wasModified ? '-MODIFIED' : ''})`;
       }
       if (exists && timeCreated) {
-        return `CREATED\xa0\xa0${secondsToHHmmssString(timeCreated).substring(0, 5)}${creationSource}`;
+        return `CREATED\xa0\xa0${DateFormatting.secondsToHHmmssString(timeCreated).substring(0, 5)}${creationSource}`;
       }
       return '';
     },
@@ -290,17 +286,18 @@ export class MfdFmsSecIndexTab extends DestroyableComponent<MfdFmsSecIndexTabPro
     this.props.dataStore.wasModified,
   );
 
-  private readonly cpnyFplnButtonLabel = cpnyFplnButtonLabel(this.props.fmcService.master);
+  private readonly cpnyFplnButtonLabel = CpnyFplnButtonUtils.cpnyFplnButtonLabel(this.props.fmcService.master);
 
-  private readonly cpnyFplnButtonDisabled = cpnyFplnButtonDisabled(
+  private readonly cpnyFplnButtonDisabled = CpnyFplnButtonUtils.cpnyFplnButtonDisabled(
     this.props.fmcService.master,
     this.secIndex + FlightPlanIndex.FirstSecondary - 1,
   );
 
-  private readonly cpnyFplnButtonMenuItems: MappedSubscribable<ButtonMenuItem[]> = cpnyFplnButtonMenuItems(
-    this.props.fmcService.master,
-    this.secIndex + FlightPlanIndex.FirstSecondary - 1,
-  );
+  private readonly cpnyFplnButtonMenuItems: MappedSubscribable<ButtonMenuItem[]> =
+    CpnyFplnButtonUtils.cpnyFplnButtonMenuItems(
+      this.props.fmcService.master,
+      this.secIndex + FlightPlanIndex.FirstSecondary - 1,
+    );
 
   private readonly routeElementSubjects = Array(NUM_ROUTE_LINES_DISPLAYED * 2)
     .fill(1)

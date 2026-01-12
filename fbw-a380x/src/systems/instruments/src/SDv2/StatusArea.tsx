@@ -16,7 +16,7 @@ import {
 import './style.scss';
 import '../index.scss';
 import { Arinc429LocalVarConsumerSubject, FmsData, NXDataStore, NXUnits } from '@flybywiresim/fbw-sdk';
-import { secondsToHHmmssString } from '@shared/dateFormatting';
+import { DateFormatting } from '@shared/DateFormatting';
 import { SDSimvars } from './SDSimvarPublisher';
 import { A380XFcuBusEvents } from '@shared/publishers/A380XFcuBusPublisher';
 
@@ -85,8 +85,10 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
 
   private readonly zuluTime = ConsumerSubject.create(this.sub.on('zuluTime'), 0);
 
-  private readonly timeHHMM = this.zuluTime.map((seconds) => secondsToHHmmssString(seconds).substring(0, 6));
-  private readonly timeSS = this.zuluTime.map((seconds) => secondsToHHmmssString(seconds).substring(6));
+  private readonly timeHHMM = this.zuluTime.map((seconds) =>
+    DateFormatting.secondsToHHmmssString(seconds).substring(0, 6),
+  );
+  private readonly timeSS = this.zuluTime.map((seconds) => DateFormatting.secondsToHHmmssString(seconds).substring(6));
 
   // This call to NXUnits ensures that metricWeightVal is set early on
   private readonly userWeight = Subject.create<'KG' | 'LBS'>(NXUnits.userWeightUnit());

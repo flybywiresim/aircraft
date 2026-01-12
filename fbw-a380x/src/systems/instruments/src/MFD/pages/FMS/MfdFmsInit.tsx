@@ -26,21 +26,19 @@ import './MfdFmsInit.scss';
 import { FlightPlanChangeNotifier } from '@fmgc/flightplanning/sync/FlightPlanChangeNotifier';
 import { CostIndexMode } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
-import { cpnyFplnButtonDisabled, cpnyFplnButtonLabel, cpnyFplnButtonMenuItems } from '../../shared/cpnyFplnButtonUtils';
+import { CpnyFplnButtonUtils } from '../../shared/CpnyFplnButtonUtils';
 
 interface MfdFmsInitProps extends AbstractMfdPageProps {}
 
 export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
   private readonly flightPlanChangeNotifier = new FlightPlanChangeNotifier(this.props.bus);
 
-  private readonly cpnyFplnButtonLabel = cpnyFplnButtonLabel(this.props.fmcService.master);
+  private readonly cpnyFplnButtonLabel = CpnyFplnButtonUtils.cpnyFplnButtonLabel(this.props.fmcService.master);
 
-  private readonly cpnyFplnButtonMenuItems: MappedSubscribable<ButtonMenuItem[]> = cpnyFplnButtonMenuItems(
-    this.props.fmcService.master,
-    FlightPlanIndex.Active,
-  );
+  private readonly cpnyFplnButtonMenuItems: MappedSubscribable<ButtonMenuItem[]> =
+    CpnyFplnButtonUtils.cpnyFplnButtonMenuItems(this.props.fmcService.master, FlightPlanIndex.Active);
 
-  private readonly cpnyFplnButtonDisabled = cpnyFplnButtonDisabled(
+  private readonly cpnyFplnButtonDisabled = CpnyFplnButtonUtils.cpnyFplnButtonDisabled(
     this.props.fmcService.master,
     FlightPlanIndex.Active,
   );

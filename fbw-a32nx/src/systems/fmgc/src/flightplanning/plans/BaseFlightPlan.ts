@@ -244,12 +244,12 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   /**
    * Timestamp when this flight plan was created. Seconds since unix epoch.
    */
-  timeCreated: number;
+  public readonly timeCreated: number;
 
   /**
    * Whether the flight plan was modified after import or creation using a lateral or vertical flight plan revision.
    */
-  wasModified: boolean;
+  public wasModified: boolean;
 
   get legCount() {
     return this.allLegs.length;
