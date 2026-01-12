@@ -188,11 +188,7 @@ impl InertialReferenceRuntime {
     ) {
         // First, check if we're still starting up and if so, simulate a wait until all self tests
         // have completed.
-        if let Some(new_remaining) = self.remaining_startup.checked_sub(context.delta()) {
-            self.remaining_startup = new_remaining;
-        } else {
-            self.remaining_startup = Duration::ZERO;
-        }
+        self.remaining_startup = self.remaining_startup.saturating_sub(context.delta());
 
         // If there's any startup time remaining, do nothing
         if self.remaining_startup > Duration::ZERO {
