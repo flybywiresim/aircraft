@@ -243,6 +243,8 @@ class FlyByWireInterface {
 
   std::unique_ptr<LocalVariable> idFwcFlightPhase;
   std::unique_ptr<LocalVariable> idFwsDiscreteWord126[2];
+  std::unique_ptr<LocalVariable> idFwsAbnProcImpactingLdgPerfActive[2];
+  std::unique_ptr<LocalVariable> idFwsAbnProcImpactingLdgDistActive[2];
 
   std::unique_ptr<LocalVariable> idElecApuGenContactorClosed[2];
   std::unique_ptr<LocalVariable> idElecTrContactorClosed[4];
@@ -256,6 +258,9 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idTcasTargetGreenMax;
   std::unique_ptr<LocalVariable> idTcasTargetRedMin;
   std::unique_ptr<LocalVariable> idTcasTargetRedMax;
+
+  std::unique_ptr<LocalVariable> idOansFailed;
+  std::unique_ptr<LocalVariable> idOansPposLost;
 
   std::unique_ptr<LocalVariable> idFmgcFlightPhase;
   std::unique_ptr<LocalVariable> idFmgcV2;
@@ -322,6 +327,8 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idBrakePedalLeftPos;
   std::unique_ptr<LocalVariable> idBrakePedalRightPos;
   std::unique_ptr<LocalVariable> idAutobrakeArmedMode;
+  std::unique_ptr<LocalVariable> idAutobrakeActive;
+  std::unique_ptr<LocalVariable> idBtvState;
   std::unique_ptr<LocalVariable> idAutobrakeDecelLight;
   std::unique_ptr<LocalVariable> idMasterWarning;
   std::unique_ptr<LocalVariable> idMasterCaution;
@@ -424,6 +431,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFcdcDiscreteWord5[2];
   std::unique_ptr<LocalVariable> idFcdcFgDiscreteWord4[2];
   std::unique_ptr<LocalVariable> idFcdcFgDiscreteWord8[2];
+  std::unique_ptr<LocalVariable> idFcdcLandingFctDiscreteWord[2];
   std::unique_ptr<LocalVariable> idFcdcCaptRollCommand[2];
   std::unique_ptr<LocalVariable> idFcdcFoRollCommand[2];
   std::unique_ptr<LocalVariable> idFcdcCaptPitchCommand[2];
@@ -450,6 +458,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFcdcPriorityCaptRed[2];
   std::unique_ptr<LocalVariable> idFcdcPriorityFoGreen[2];
   std::unique_ptr<LocalVariable> idFcdcPriorityFoRed[2];
+  std::unique_ptr<LocalVariable> idBtvLost;
 
   // PRIM discrete input Lvars
   std::unique_ptr<LocalVariable> idPrimPushbuttonPressed[3];
@@ -555,6 +564,8 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idElecDcEssBusPowered;
   std::unique_ptr<LocalVariable> idElecDcEhaBusPowered;
   std::unique_ptr<LocalVariable> idElecDc1BusPowered;
+  std::unique_ptr<LocalVariable> idElecDc2BusPowered;
+  std::unique_ptr<LocalVariable> idElecAc2BusPowered;
   std::unique_ptr<LocalVariable> idRatContactorClosed;
   std::unique_ptr<LocalVariable> idRatPosition;
 
