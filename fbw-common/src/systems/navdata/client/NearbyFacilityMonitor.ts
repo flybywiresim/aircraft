@@ -37,7 +37,7 @@ export interface NearbyFacilityMonitor {
    * Set the centre location for the search area, in degrees of latitude and longitude.
    * No searching will be performed until the location is valid.
    */
-  setLocation(lat: number, lon: number): void;
+  setLocation(lat: number | undefined, lon: number | undefined): void;
   /** Set the search radius in nautical miles. Defaults to 250 NM. */
   setRadius(radius: number): void;
   /** Set the maximum result count. Defaults to 100. */

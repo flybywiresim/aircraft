@@ -4,9 +4,10 @@ import { DataManager, PilotWaypoint } from '@fmgc/flightplanning/DataManager';
 import { FmsErrorType } from '@fmgc/FmsError';
 import { DatabaseItem, SectionCode, Waypoint } from '@flybywiresim/fbw-sdk';
 import { Coordinates, DegreesTrue, NauticalMiles } from 'msfs-geo';
+import { testEventBus } from '@fmgc/flightplanning/test/TestEventBus';
 
 export const testFms: FmsDisplayInterface & FmsDataInterface & { dataManager: DataManager; storedIndex: number } = {
-  dataManager: new DataManager(this),
+  dataManager: new DataManager(testEventBus, this),
 
   storedIndex: 0,
 

@@ -21,16 +21,17 @@ import { FmcAircraftInterface } from 'instruments/src/MFD/FMC/FmcAircraftInterfa
 import { FmgcDataService, LOWEST_FUEL_ESTIMATE_KGS } from 'instruments/src/MFD/FMC/fmgc';
 import { FmcInterface, FmcOperatingModes } from 'instruments/src/MFD/FMC/FmcInterface';
 import {
+  a380EfisRangeSettings,
   DatabaseItem,
   EfisSide,
-  FMMessage,
   Fix,
+  FMMessage,
+  isMsfs2024,
   NXDataStore,
   Units,
   UpdateThrottler,
   VerticalPathCheckpoint,
   Waypoint,
-  a380EfisRangeSettings,
 } from '@flybywiresim/fbw-sdk';
 import {
   isTypeIIMessage,
@@ -41,7 +42,7 @@ import {
   TypeIMessage,
 } from 'instruments/src/MFD/shared/NXSystemMessages';
 import { DataManager, LatLonFormatType, PilotWaypoint } from '@fmgc/flightplanning/DataManager';
-import { Coordinates, bearingTo } from 'msfs-geo';
+import { bearingTo, Coordinates } from 'msfs-geo';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { FmcIndex } from 'instruments/src/MFD/FMC/FmcServiceInterface';
@@ -58,8 +59,10 @@ import { EfisSymbols } from '@fmgc/efis/EfisSymbols';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
+import { FlightPlanRpcServer } from '@fmgc/flightplanning/rpc/FlightPlanRpcServer';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
 import { VdAltitudeConstraint } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
+import { MsfsFlightPlanSync } from '@fmgc/flightplanning/MsfsFlightPlanSync';
 
 export interface FmsErrorMessage {
   message: McduMessage;
@@ -93,23 +96,30 @@ export class FlightManagementComputer implements FmcInterface {
     this.#mfdReference = value;
 
     if (value) {
-      this.dataManager = new DataManager(value, { latLonFormat: LatLonFormatType.ExtendedFormat });
+      this.dataManager = new DataManager(this.bus, value, { latLonFormat: LatLonFormatType.ExtendedFormat });
     }
   }
 
-  #operatingMode: FmcOperatingModes;
-
   get operatingMode(): FmcOperatingModes {
     // TODO amend once
-    return this.#operatingMode;
+    return this._operatingMode;
   }
 
-  set operatingMode(value: FmcOperatingModes) {
-    this.#operatingMode = value;
+  set operatingMode(mode: FmcOperatingModes) {
+    this._operatingMode = mode;
   }
 
   // FIXME A320 data
-  #flightPlanService = new FlightPlanService(this.bus, new A320FlightPlanPerformanceData(), FpmConfigs.A380);
+  #flightPlanService = new FlightPlanService(
+    this.bus,
+    new A320FlightPlanPerformanceData(),
+    FpmConfigs.A380,
+    this._operatingMode === FmcOperatingModes.Master, // TODO Dynamically change this within `FlightPlanService` (proxy things through to an RPC client?)
+  );
+
+  #msfsFlightPlanSync: MsfsFlightPlanSync | undefined;
+
+  #rpcServer: FlightPlanRpcServer | undefined;
 
   get flightPlanService() {
     return this.#flightPlanService;
@@ -235,12 +245,11 @@ export class FlightManagementComputer implements FmcInterface {
 
   constructor(
     private instance: FmcIndex,
-    operatingMode: FmcOperatingModes,
+    private _operatingMode: FmcOperatingModes,
     private readonly bus: EventBus,
     private readonly fmcInop: Subscribable<boolean>,
     mfdReference: (FmsDisplayInterface & MfdDisplayInterface) | null,
   ) {
-    this.#operatingMode = operatingMode;
     this.#mfdReference = mfdReference;
 
     const db = new NavigationDatabase(this.bus, NavigationDatabaseBackend.Msfs);
@@ -282,6 +291,12 @@ export class FlightManagementComputer implements FmcInterface {
         a380EfisRangeSettings,
         true,
       );
+
+      // FIXME this needs to be changed when operating mode can vary. Need some other way of only instantiating this on only
+      // one FMC.
+      if (isMsfs2024() && this.operatingMode === FmcOperatingModes.Master) {
+        this.#msfsFlightPlanSync = new MsfsFlightPlanSync(this.bus, this.flightPlanService);
+      }
 
       this.#navigation.init();
       this.efisSymbolsLeft.init();
@@ -1132,7 +1147,7 @@ export class FlightManagementComputer implements FmcInterface {
   private updateVerticalPath() {
     // Transmit active vertical geometry
     const predictions = this.guidanceController.vnavDriver.mcduProfile?.waypointPredictions;
-    const plan: ReadonlyFlightPlan = this.flightPlanService.active;
+    const plan: ReadonlyFlightPlan<A320FlightPlanPerformanceData> = this.flightPlanService.active;
 
     if (!predictions || !this.flightPlanService.hasActive) {
       this.acInterface.transmitVerticalPath([], [], [], [], null);
