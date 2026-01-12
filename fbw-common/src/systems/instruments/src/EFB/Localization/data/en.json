@@ -682,6 +682,7 @@
       "SimBridgeIp": "External SimBridge Host Address",
       "SimBridgePort": "External SimBridge Port",
       "SyncMsfsFlightPlan": "Sync MSFS Flight Plan",
+      "AutoLoadMsfsRoute": "Automatically Load MSFS Route",
       "ThrottleDetents": "Throttle Detents",
       "Title": "Sim Options",
       "UseCalculatedIlsSignals": "Use Calculated ILS Signals",
