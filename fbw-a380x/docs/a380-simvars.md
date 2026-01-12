@@ -18,6 +18,7 @@
   - [Indicating-Recording ATA 31](#indicating-recording-ata-31)
   - [ECAM Control Panel ATA 31](#ecam-control-panel-ata-31)
   - [EFIS Control Panel ATA 31](#efis-control-panel-ata-31)
+  - [Landing Gear ATA 32](#landing-gear-ata-32)
   - [Bleed Air ATA 36](#bleed-air-ata-36)
   - [Integrated Modular Avionics ATA 42](#integrated-modular-avionics-ata-42)
   - [Auxiliary Power Unit ATA 49](#auxiliary-power-unit-ata-49)
@@ -927,7 +928,7 @@
       |:---:|:---------------------------------:|
       | 11  | Capability Downgrade triple click |
       | 12  | Mode reversion triple click       |
-      | 13  | BTV Exit Missed triple click      |
+      | 13  | BTV triple click                  |
       | 14  | AP 1 INOP                         |
       | 15  | AP 2 INOP                         |
       | 16  | FD 1 INOP                         |
@@ -1133,6 +1134,19 @@
     - Pre-selected QNH when in STD mode, or 0 when not displayed.
     - Not for FBW systems use!
     - {side} = L or R
+
+## Landing Gear ATA 32
+
+- A32NX_BTV_STATE
+    - Boolean
+    - Indicates the current state of the BTV system
+    - | State             | Value |
+      |-------------------|-------|
+      | DISABLED          | 0     |
+      | ARMED             | 1     |
+      | ROT OPTIMIZATION  | 2     |
+      | DECEL             | 3     |
+      | END OF BRAKING    | 4     |
 
 ## Bleed Air ATA 36
 
