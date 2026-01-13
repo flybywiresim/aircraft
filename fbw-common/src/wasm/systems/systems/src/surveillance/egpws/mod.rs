@@ -9,10 +9,7 @@ use crate::{
         ils::InstrumentLandingSystemBus,
         radio_altimeter::RadioAltimeter,
     },
-    shared::{
-        logic_nodes::ConfirmationNode, random_from_range, ConsumePower, ElectricalBusType,
-        ElectricalBuses,
-    },
+    shared::{random_from_range, ConsumePower, ElectricalBusType, ElectricalBuses},
     simulation::{
         InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
         VariableIdentifier, Write,
@@ -49,8 +46,11 @@ pub struct EnhancedGroundProximityWarningComputer {
     powered_by: ElectricalBusType,
     is_powered: bool,
 
-    /// If the computer is powered, taking into account the power holdover.
-    powered_confirm: ConfirmationNode,
+    /// How long the computer can tolerate a power loss and continue functioning.
+    power_holdover: Duration,
+
+    /// How long the computer has been unpowered for.
+    unpowered_for: Duration,
 
     /// How long the self checks take for runtimes running on this computer.
     self_check_time: Duration,
@@ -88,17 +88,18 @@ impl EnhancedGroundProximityWarningComputer {
     pub fn new(context: &mut InitContext, powered_by: ElectricalBusType) -> Self {
         let is_powered = context.has_engines_running();
         let on_ground = context.is_on_ground();
-
-        let unpowered_confirm_node =
-            ConfirmationNode::new_falling(Duration::from_secs_f64(random_from_range(
-                Self::MINIMUM_POWER_HOLDOVER.as_secs_f64(),
-                Self::MAXIMUM_POWER_HOLDOVER.as_secs_f64(),
-            )));
-
         Self {
             powered_by,
             is_powered: false,
-            powered_confirm: unpowered_confirm_node,
+            power_holdover: Duration::from_secs_f64(random_from_range(
+                Self::MINIMUM_POWER_HOLDOVER.as_secs_f64(),
+                Self::MAXIMUM_POWER_HOLDOVER.as_secs_f64(),
+            )),
+            unpowered_for: if is_powered {
+                Duration::ZERO
+            } else {
+                Self::MAXIMUM_POWER_HOLDOVER
+            },
             self_check_time: Duration::from_secs_f64(random_from_range(
                 Self::MINIMUM_STARTUP_TIME_MILLIS.as_secs_f64(),
                 Self::MAXIMUM_STARTUP_TIME_MILLIS.as_secs_f64(),
@@ -147,12 +148,15 @@ impl EnhancedGroundProximityWarningComputer {
         ir: &impl InertialReferenceBus,
         ils: &impl InstrumentLandingSystemBus,
     ) {
-        self.powered_confirm
-            .update(self.is_powered, context.delta());
+        if self.is_powered {
+            self.unpowered_for = Duration::ZERO;
+        } else {
+            self.unpowered_for += context.delta();
+        }
 
         // Check if the internal state (runtime) is lost because either the unit failed, or the
         // power holdover has been exceed
-        if self.failure.is_active() || !self.powered_confirm.get_output() {
+        if self.failure.is_active() || !self.is_powered_with_holdover() {
             // Throw away the simulated software runtime, but first save to NVM
             if let Some(runtime) = self.runtime.take() {
                 self.on_ground = runtime.get_on_ground();
@@ -190,6 +194,10 @@ impl EnhancedGroundProximityWarningComputer {
             );
             runtime.set_outputs(&mut self.discrete_output_data, &mut self.bus_output_data);
         }
+    }
+
+    pub fn is_powered_with_holdover(&self) -> bool {
+        self.unpowered_for <= self.power_holdover
     }
 
     pub fn has_failed(&self) -> bool {
