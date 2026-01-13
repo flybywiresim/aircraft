@@ -3,9 +3,13 @@ contact_links:
   - name: Installer
     url: https://github.com/flybywiresim/installer/issues/new/choose
     about: File a bug report or suggest a new feature for the installer
-  - name: Support on GitHub
-    url: https://github.com/flybywiresim/a32nx/discussions
-    about: Find your question already answered or share it with the github community
+  - name: SimBridge
+    url: https://github.com/flybywiresim/simbridge/issues/new/choose
+    about: File a bug report or suggest a new feature for SimBridge
   - name: Support on Discord
     url: https://discord.com/channels/738864299392630914/785976111875751956
-    about: Ask questions directly to our support on discord
+    about: Ask questions directly to our support on Discord
+  - name: Support on GitHub
+    url: https://github.com/flybywiresim/aircraft/discussions
+    about: Find your question already answered or share it with the GitHub community
+  
