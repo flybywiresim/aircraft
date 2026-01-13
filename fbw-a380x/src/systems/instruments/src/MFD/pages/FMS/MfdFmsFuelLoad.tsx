@@ -100,7 +100,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
   private readonly costIndexDisabled = MappedSubject.create(
     ([ciModeDisabled, ciMode]) => ciModeDisabled || ciMode === CostIndexMode.LRC,
     this.costIndexModeDisabled,
-    this.props.fmcService.master?.fmgc.data.costIndexMode ?? Subject.create(CostIndexMode.ECON),
+    this.props.fmcService.master?.fmgc.data.costIndexMode,
   );
 
   protected onNewData() {

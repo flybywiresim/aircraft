@@ -112,7 +112,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
   private readonly costIndexDisabled = MappedSubject.create(
     ([ciModeDisabled, ciMode]) => ciModeDisabled || ciMode === CostIndexMode.LRC,
     this.costIndexModeDisabled,
-    this.props.fmcService.master?.fmgc.data.costIndexMode ?? Subject.create(CostIndexMode.ECON),
+    this.props.fmcService.master?.fmgc.data.costIndexMode,
   );
 
   private readonly tripWindDisabled = MappedSubject.create(
