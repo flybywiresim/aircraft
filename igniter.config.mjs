@@ -51,7 +51,7 @@ export default new TaskOfTasks('all', [
             [
                 new ExecTask('model', 'npm run build-a32nx:model', [
                     'fbw-a32nx/src/model',
-                    'fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model',
+                    'fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/common/model',
                 ]),
                 new ExecTask('behavior', 'npm run build-a32nx:behavior', [
                     'fbw-a32nx/src/behavior',
@@ -81,19 +81,19 @@ export default new TaskOfTasks('all', [
                     'fbw-common/src/wasm/systems',
                     'Cargo.lock',
                     'Cargo.toml',
-                    'fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/systems.wasm',
+                    'fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/common/panel/systems.wasm',
                 ]),
                 new ExecTask('systems-fbw', 'npm run build-a32nx:fbw', [
                     'fbw-a32nx/src/wasm/fbw_a320',
                     'fbw-common/src/wasm/fbw_common',
-                    'fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fbw.wasm',
+                    'fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/common/panel/fbw.wasm',
                 ]),
                 new ExecTask(
                     'systems-terronnd',
                     ['npm run build-a32nx:terronnd'],
                     [
                         'fbw-common/src/wasm/terronnd',
-                        'fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/terronnd.wasm',
+                        'fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/common/panel/terronnd.wasm',
                         'fbw-common/src/wasm/terronnd/out/terronnd_A32NX.wasm',
                     ],
                 ),
@@ -103,8 +103,8 @@ export default new TaskOfTasks('all', [
                     'fbw-common/src/wasm/fadec_common',
                     'fbw-a32nx/src/wasm/extra-backend-a32nx',
                     'fbw-a32nx/src/wasm/fadec_a32nx',
-                    'fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/extra-backend-a32nx.wasm',
-                    'fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fadec-a32nx.wasm',
+                    'fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/common/panel/extra-backend-a32nx.wasm',
+                    'fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/common/panel/fadec-a32nx.wasm',
                 ]),
             ],
             true,
