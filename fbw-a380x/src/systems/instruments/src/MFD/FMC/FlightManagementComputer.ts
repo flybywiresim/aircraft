@@ -1070,7 +1070,11 @@ export class FlightManagementComputer implements FmcInterface {
           this.acInterface.resetDestinationPredictions();
         }
         this.acInterface.updateIlsCourse(this.navigation.getNavaidTuner().getMmrRadioTuningStatus(1));
-        this.fmgc.data.alternateExists.set(this.flightPlanService.active.alternateDestinationAirport !== undefined);
+        const alternateExists = this.flightPlanService.active.alternateDestinationAirport !== undefined;
+        this.fmgc.data.alternateExists.set(alternateExists);
+        if (!alternateExists) {
+          this.fmgc.data.alternateFuelPilotEntry.set(null);
+        }
       } else {
         this.acInterface.resetDestinationPredictions();
         this.fmgc.data.alternateExists.set(false);

@@ -158,7 +158,7 @@ export class FmgcData {
   public readonly alternateFuelPilotEntry = Subject.create<number | null>(null);
 
   /** in kg. null if not set. */
-  public readonly alternateFuelCalculated = this.alternateExists.map((v) => (v ? 6_500 : null)); // FIXME Hardcoded value. Derive from FMS predictions.
+  public readonly alternateFuelCalculated = this.alternateExists.map((v) => (v ? 6_500 : 0)); // FIXME Hardcoded value. Derive from FMS predictions.
 
   public readonly alternateFuel = MappedSubject.create(
     ([calc, pe]) => (pe !== null ? pe : calc),
