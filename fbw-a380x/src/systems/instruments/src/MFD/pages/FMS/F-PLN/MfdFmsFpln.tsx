@@ -1136,7 +1136,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                     ),
                 },
                 {
-                  label: 'TIME MARKER',
+                  label: 'TIME',
                   disabled: true,
                   action: () =>
                     this.props.mfd.uiService.navigateTo(
