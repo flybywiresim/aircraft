@@ -5,17 +5,22 @@ use systems::{electrical::Electricity, fuel::RefuelRate, simulation::test::ReadB
 use uom::si::mass::kilogram;
 
 use super::*;
-use crate::systems::simulation::{
-    test::{SimulationTestBed, TestBed, WriteByName},
-    Aircraft, SimulationElement, SimulationElementVisitor,
+use crate::{
+    airframe::A380Airframe,
+    systems::simulation::{
+        test::{SimulationTestBed, TestBed, WriteByName},
+        Aircraft, SimulationElement, SimulationElementVisitor,
+    },
 };
 struct FuelTestAircraft {
+    acdn: A380AvionicsDataCommunicationNetwork,
     fuel: A380Fuel,
 }
 
 impl FuelTestAircraft {
     fn new(context: &mut InitContext) -> Self {
         Self {
+            acdn: A380AvionicsDataCommunicationNetwork::new(context),
             fuel: A380Fuel::new(context),
         }
     }
@@ -35,11 +40,14 @@ impl Aircraft for FuelTestAircraft {
         context: &UpdateContext,
         _electricity: &mut Electricity,
     ) {
-        self.fuel.update(context);
+        self.acdn.update();
+        self.fuel
+            .update(context, &self.acdn, A380Airframe::get_loadsheet());
     }
 }
 impl SimulationElement for FuelTestAircraft {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.acdn.accept(visitor);
         self.fuel.accept(visitor);
 
         visitor.visit(self);

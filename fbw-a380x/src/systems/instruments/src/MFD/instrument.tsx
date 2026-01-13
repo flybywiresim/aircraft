@@ -20,6 +20,7 @@ import { A380Failure } from '@failures';
 import { FGDataPublisher } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
 import { ResetPanelSimvarPublisher } from '../MsfsAvionicsCommon/providers/ResetPanelPublisher';
 import { FmsMessagePublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FmsMessagePublisher';
+import { FqmsBusPublisher } from '@shared/publishers/FqmsBusPublisher';
 import { dataStatusUri } from './shared/utils';
 
 class MfdInstrument implements FsInstrument {
@@ -41,6 +42,8 @@ class MfdInstrument implements FsInstrument {
 
   private readonly radioAltimeterPublisher = new RaBusPublisher(this.bus);
 
+  private readonly fqmsPublisher = new FqmsBusPublisher(this.bus);
+
   private readonly mfdCaptRef = FSComponent.createRef<MfdComponent>();
 
   private readonly mfdFoRef = FSComponent.createRef<MfdComponent>();
@@ -61,6 +64,7 @@ class MfdInstrument implements FsInstrument {
     this.backplane.addPublisher('fmsMessage', this.fmsMessagePublisher);
     this.backplane.addPublisher('resetPanel', this.resetPanelPublisher);
     this.backplane.addPublisher('radioAltimeter', this.radioAltimeterPublisher);
+    this.backplane.addPublisher('fqms', this.fqmsPublisher);
 
     this.fmcService = new FmcService(
       this.bus,
