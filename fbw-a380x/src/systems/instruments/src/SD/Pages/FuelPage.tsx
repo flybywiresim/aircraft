@@ -747,61 +747,17 @@ export const FuelPage = () => {
   const fqdc2RightOuterTankWeight = useArinc429Var('L:A32NX_FQDC_2_RIGHT_OUTER_TANK_QUANTITY', 1000);
   const fqdc2TrimTankWeight = useArinc429Var('L:A32NX_FQDC_2_TRIM_TANK_QUANTITY', 1000);
 
-  const leftOuterTankWeight = fqdc1LeftOuterTankWeight.isNormalOperation()
-    ? fqdc1LeftOuterTankWeight.value
-    : fqdc2LeftOuterTankWeight.isNormalOperation()
-      ? fqdc2LeftOuterTankWeight.value
-      : null;
-  const feed1TankWeight = fqdc1Feed1TankWeight.isNormalOperation()
-    ? fqdc1Feed1TankWeight.value
-    : fqdc2Feed1TankWeight.isNormalOperation()
-      ? fqdc2Feed1TankWeight.value
-      : null;
-  const leftMidTankWeight = fqdc1LeftMidTankWeight.isNormalOperation()
-    ? fqdc1LeftMidTankWeight.value
-    : fqdc2LeftMidTankWeight.isNormalOperation()
-      ? fqdc2LeftMidTankWeight.value
-      : null;
-  const leftInnerTankWeight = fqdc1LeftInnerTankWeight.isNormalOperation()
-    ? fqdc1LeftInnerTankWeight.value
-    : fqdc2LeftInnerTankWeight.isNormalOperation()
-      ? fqdc2LeftInnerTankWeight.value
-      : null;
-  const feed2TankWeight = fqdc1Feed2TankWeight.isNormalOperation()
-    ? fqdc1Feed2TankWeight.value
-    : fqdc2Feed2TankWeight.isNormalOperation()
-      ? fqdc2Feed2TankWeight.value
-      : null;
-  const feed3TankWeight = fqdc1Feed3TankWeight.isNormalOperation()
-    ? fqdc1Feed3TankWeight.value
-    : fqdc2Feed3TankWeight.isNormalOperation()
-      ? fqdc2Feed3TankWeight.value
-      : null;
-  const rightInnerTankWeight = fqdc1RightInnerTankWeight.isNormalOperation()
-    ? fqdc1RightInnerTankWeight.value
-    : fqdc2RightInnerTankWeight.isNormalOperation()
-      ? fqdc2RightInnerTankWeight.value
-      : null;
-  const rightMidTankWeight = fqdc1RightMidTankWeight.isNormalOperation()
-    ? fqdc1RightMidTankWeight.value
-    : fqdc2RightMidTankWeight.isNormalOperation()
-      ? fqdc2RightMidTankWeight.value
-      : null;
-  const feed4TankWeight = fqdc1Feed4TankWeight.isNormalOperation()
-    ? fqdc1Feed4TankWeight.value
-    : fqdc2Feed4TankWeight.isNormalOperation()
-      ? fqdc2Feed4TankWeight.value
-      : null;
-  const rightOuterTankWeight = fqdc1RightOuterTankWeight.isNormalOperation()
-    ? fqdc1RightOuterTankWeight.value
-    : fqdc2RightOuterTankWeight.isNormalOperation()
-      ? fqdc2RightOuterTankWeight.value
-      : null;
-  const trimTankWeight = fqdc1TrimTankWeight.isNormalOperation()
-    ? fqdc1TrimTankWeight.value
-    : fqdc2TrimTankWeight.isNormalOperation()
-      ? fqdc2TrimTankWeight.value
-      : null;
+  const leftOuterTankWeight = fqdc1LeftOuterTankWeight.valueOr(fqdc2LeftOuterTankWeight.valueOr(null));
+  const feed1TankWeight = fqdc1Feed1TankWeight.valueOr(fqdc2Feed1TankWeight.valueOr(null));
+  const leftMidTankWeight = fqdc1LeftMidTankWeight.valueOr(fqdc2LeftMidTankWeight.valueOr(null));
+  const leftInnerTankWeight = fqdc1LeftInnerTankWeight.valueOr(fqdc2LeftInnerTankWeight.valueOr(null));
+  const feed2TankWeight = fqdc1Feed2TankWeight.valueOr(fqdc2Feed2TankWeight.valueOr(null));
+  const feed3TankWeight = fqdc1Feed3TankWeight.valueOr(fqdc2Feed3TankWeight.valueOr(null));
+  const rightInnerTankWeight = fqdc1RightInnerTankWeight.valueOr(fqdc2RightInnerTankWeight.valueOr(null));
+  const rightMidTankWeight = fqdc1RightMidTankWeight.valueOr(fqdc2RightMidTankWeight.valueOr(null));
+  const feed4TankWeight = fqdc1Feed4TankWeight.valueOr(fqdc2Feed4TankWeight.valueOr(null));
+  const rightOuterTankWeight = fqdc1RightOuterTankWeight.valueOr(fqdc2RightOuterTankWeight.valueOr(null));
+  const trimTankWeight = fqdc1TrimTankWeight.valueOr(fqdc2TrimTankWeight.valueOr(null));
 
   return (
     <>

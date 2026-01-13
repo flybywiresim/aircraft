@@ -14,10 +14,10 @@ import { FwcPublisher, RopRowOansPublisher, SecPublisher, TawsPublisher } from '
 import { FwsPfdSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FwsPfdPublisher';
 import { FcdcSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FcdcPublisher';
 import { SfccSimVarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/SfccPublisher';
-
-import './style.scss';
 import { FGDataPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
 import { FqmsBusPublisher } from '@shared/publishers/FqmsBusPublisher';
+
+import './style.scss';
 
 class A380X_PFD extends BaseInstrument {
   private readonly bus = new ArincEventBus();

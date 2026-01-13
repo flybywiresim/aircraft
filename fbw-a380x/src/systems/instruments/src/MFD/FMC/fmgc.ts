@@ -381,15 +381,15 @@ export class FmgcDataService implements Fmgc {
 
   private readonly sub = this.bus.getSubscriber<FqmsBusEvents>();
 
-  private readonly fqms_fob = Arinc429LocalVarConsumerSubject.create(this.sub.on('fqms_total_fuel_on_board'));
-  private readonly fqms_gw = Arinc429LocalVarConsumerSubject.create(this.sub.on('fqms_gross_weight'));
-  private readonly fqms_gwcg = Arinc429LocalVarConsumerSubject.create(this.sub.on('fqms_center_of_gravity_mac'));
+  private readonly fqmsFob = Arinc429LocalVarConsumerSubject.create(this.sub.on('fqms_total_fuel_on_board'));
+  private readonly fqmsGw = Arinc429LocalVarConsumerSubject.create(this.sub.on('fqms_gross_weight'));
+  private readonly fqmsGwCg = Arinc429LocalVarConsumerSubject.create(this.sub.on('fqms_center_of_gravity_mac'));
 
   constructor(
     private readonly bus: EventBus,
     private flightPlanService: FlightPlanService,
   ) {
-    this.subs.push(this.fqms_fob, this.fqms_gw, this.fqms_gwcg);
+    this.subs.push(this.fqmsFob, this.fqmsGw, this.fqmsGwCg);
   }
 
   public destroy() {
@@ -405,8 +405,8 @@ export class FmgcDataService implements Fmgc {
   /** in tons */
   public getGrossWeight(): number | null {
     // Value received from FQMS, or falls back to entered ZFW + entered FOB
-    if (this.fqms_gw.get().isNormalOperation()) {
-      return this.fqms_gw.get().value / 1000;
+    if (this.fqmsGw.get().isNormalOperation()) {
+      return this.fqmsGw.get().value / 1000;
     } else {
       const zfw = this.data.zeroFuelWeight.get();
       const fob = this.getFOB();
@@ -425,9 +425,15 @@ export class FmgcDataService implements Fmgc {
     return gw ? gw * 1_000 : null;
   }
 
+  /**
+   * The center of gravity is calculated by the FQMS.
+   * If it is not available then the value computed by the WBBC is returned.
+   *
+   * @returns the gross weight center of gravity in %
+   */
   public getGrossWeightCg(): number | null {
-    // Value received from FQMS, or falls back to value from WBBC
-    return this.fqms_gwcg.get().valueOr(null);
+    // Value received from FQMS, or falls back to value from WBBC (TODO)
+    return this.fqmsGwCg.get().valueOr(null);
   }
 
   /**
@@ -436,8 +442,8 @@ export class FmgcDataService implements Fmgc {
    */
   getFOB(): number | null {
     let fob = this.data.blockFuel.get();
-    if (this.isAnEngineOn() && this.fqms_fob.get().isNormalOperation()) {
-      fob = this.fqms_fob.get().value;
+    if (this.isAnEngineOn() && this.fqmsFob.get().isNormalOperation()) {
+      fob = this.fqmsFob.get().value;
     }
 
     return fob !== null ? fob / 1_000 : null; // Needs to be returned in tonnes
