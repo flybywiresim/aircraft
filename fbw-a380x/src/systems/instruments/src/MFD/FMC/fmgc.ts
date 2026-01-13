@@ -299,7 +299,7 @@ export class FmgcData {
   /** in feet. null if not set. */
   public readonly noiseEndAltitude = Subject.create<number | null>(null);
 
-  public readonly costIndexMode = Subject.create<CostIndexMode | null>(CostIndexMode.ECON);
+  public readonly costIndexMode = Subject.create<CostIndexMode>(CostIndexMode.ECON);
 
   public readonly climbDerated = Subject.create<ClimbDerated | null>(ClimbDerated.NONE);
 
