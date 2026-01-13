@@ -1347,6 +1347,8 @@ export class FwsCore {
 
   private readonly eng3Or4RunningAndPhaseConfirmationNode = new NXLogicConfirmNode(1);
 
+  public readonly eng1Or2AndEng3Or4RunningAndPhase = Subject.create(false);
+
   public readonly threeYellowPumpsFailed = Subject.create(false);
 
   public readonly yellowElecAandBPumpOff = Subject.create(false);
@@ -1530,19 +1532,22 @@ export class FwsCore {
   public readonly rowRopStatusWord = Arinc429Register.empty();
 
   public readonly rowLost = MappedSubject.create(
-    ([w1, w2]) => w1.bitValueOr(11, false) || w2.bitValueOr(11, false),
+    ([w1, w2, engRunning]) => engRunning && (w1.bitValueOr(11, false) || w2.bitValueOr(11, false)),
     this.fcdc1LandingFctDiscreteWord,
     this.fcdc2LandingFctDiscreteWord,
+    this.eng1Or2AndEng3Or4RunningAndPhase,
   );
   public readonly ropLost = MappedSubject.create(
-    ([w1, w2]) => w1.bitValueOr(12, false) || w2.bitValueOr(12, false),
+    ([w1, w2, engRunning]) => engRunning && (w1.bitValueOr(12, false) || w2.bitValueOr(12, false)),
     this.fcdc1LandingFctDiscreteWord,
     this.fcdc2LandingFctDiscreteWord,
+    this.eng1Or2AndEng3Or4RunningAndPhase,
   );
   public readonly btvLost = MappedSubject.create(
-    ([w1, w2]) => w1.bitValueOr(13, false) || w2.bitValueOr(13, false),
+    ([w1, w2, engRunning]) => engRunning && (w1.bitValueOr(13, false) || w2.bitValueOr(13, false)),
     this.fcdc1LandingFctDiscreteWord,
     this.fcdc2LandingFctDiscreteWord,
+    this.eng1Or2AndEng3Or4RunningAndPhase,
   );
 
   public readonly oansFailedSimvar = RegisteredSimVar.createBoolean('L:A32NX_OANS_FAILED');
@@ -1550,34 +1555,39 @@ export class FwsCore {
   public readonly oansPposLostSimVar = RegisteredSimVar.createBoolean('L:A32NX_ARPT_NAV_POS_LOST');
   public readonly oansPposLost = Subject.create(false);
   public readonly arptNavLost = MappedSubject.create(
-    ([oansFailed, pposLost]) => oansFailed || pposLost,
+    ([oansFailed, pposLost, engRunning]) => engRunning && (oansFailed || pposLost),
     this.oansFailed,
     this.oansPposLost,
+    this.eng1Or2AndEng3Or4RunningAndPhase,
   );
 
   public readonly ldgPerfAffected = MappedSubject.create(
-    ([w1, w2]) =>
-      w1.bitValueOr(21, false) ||
-      w2.bitValueOr(21, false) ||
-      w1.bitValueOr(23, false) ||
-      w2.bitValueOr(23, false) ||
-      w1.bitValueOr(25, false) ||
-      w2.bitValueOr(25, false),
+    ([w1, w2, engRunning]) =>
+      engRunning &&
+      (w1.bitValueOr(21, false) ||
+        w2.bitValueOr(21, false) ||
+        w1.bitValueOr(23, false) ||
+        w2.bitValueOr(23, false) ||
+        w1.bitValueOr(25, false) ||
+        w2.bitValueOr(25, false)),
     this.fcdc1LandingFctDiscreteWord,
     this.fcdc2LandingFctDiscreteWord,
+    this.eng1Or2AndEng3Or4RunningAndPhase,
   );
   public readonly ldgDistAffected = MappedSubject.create(
-    ([w1, w2, perfAffected]) =>
+    ([w1, w2, perfAffected, engRunning]) =>
       (w1.bitValueOr(20, false) ||
         w2.bitValueOr(20, false) ||
         w1.bitValueOr(22, false) ||
         w2.bitValueOr(22, false) ||
         w1.bitValueOr(24, false) ||
         w2.bitValueOr(24, false)) &&
-      !perfAffected,
+      !perfAffected &&
+      engRunning,
     this.fcdc1LandingFctDiscreteWord,
     this.fcdc2LandingFctDiscreteWord,
     this.ldgPerfAffected,
+    this.eng1Or2AndEng3Or4RunningAndPhase,
   );
 
   /* NAVIGATION */
@@ -2976,6 +2986,10 @@ export class FwsCore {
     this.eng3Or4RunningAndPhaseConfirmationNode.write(
       this.engine3Running.get() || this.engine4Running.get() || !this.flightPhase12Or1112.get(),
       deltaTime,
+    );
+
+    this.eng1Or2AndEng3Or4RunningAndPhase.set(
+      this.eng1Or2RunningAndPhaseConfirmationNode.read() && this.eng3Or4RunningAndPhaseConfirmationNode.read(),
     );
 
     const greenAbnormLoPressure = gLoPressure && this.eng1Or2RunningAndPhaseConfirmationNode.read();
