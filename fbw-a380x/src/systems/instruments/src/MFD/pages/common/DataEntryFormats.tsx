@@ -1,4 +1,4 @@
-//  Copyright (c) 2024-2025 FlyByWire Simulations
+//  Copyright (c) 2024-2025-2026 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 import { Subject, Subscribable, Subscription } from '@microsoft/msfs-sdk';
 import { Fix } from '@flybywiresim/fbw-sdk';
@@ -1876,7 +1876,9 @@ export class FuelPenaltyPercentFormat implements DataEntryFormat<number> {
 
   private readonly maxValue = 999.9;
 
-  private readonly unit = '%';
+  readonly unit = '%';
+
+  private readonly requiredFormat = '+NNN.N';
 
   format(value: number): FieldFormatTuple {
     if (value === null || value === undefined) {
@@ -1893,13 +1895,13 @@ export class FuelPenaltyPercentFormat implements DataEntryFormat<number> {
 
     // Validate format (+)NNN.N.
     if (!/^[+]?\d{1,3}(?:\.\d)?$/.test(input)) {
-      throw new FmsError(FmsErrorType.FormatError);
+      throw getFormattedFormatError(this.requiredFormat, this.unit);
     }
 
     const numberInput = Number(input);
 
     if (numberInput < this.minValue || numberInput > this.maxValue) {
-      throw new FmsError(FmsErrorType.EntryOutOfRange);
+      throw getFormattedEntryOutOfRangeError(this.minValue.toFixed(1), this.maxValue.toFixed(1), this.unit);
     }
 
     return numberInput;
