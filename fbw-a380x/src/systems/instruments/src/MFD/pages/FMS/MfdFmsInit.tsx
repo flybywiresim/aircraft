@@ -425,9 +425,9 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
               <InputField<string>
                 dataEntryFormat={new AirportFormat()}
                 dataHandlerDuringValidation={async (v) => {
-                  this.altnIcao.set(v);
+                  this.altnIcao.set(v === 'NONE' ? null : v);
                   if (v) {
-                    await this.props.fmcService.master?.flightPlanService.setAlternate(v);
+                    await this.props.fmcService.master?.flightPlanService.setAlternate(v === 'NONE' ? undefined : v);
                     this.props.fmcService.master?.acInterface.updateFmsData();
                   }
                 }}
