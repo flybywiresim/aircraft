@@ -142,6 +142,21 @@ jobs:
           CDN_BUCKET_DESTINATION: addons/a32nx/pr-${{ github.event.pull_request.number }}
         run: |
           ./scripts/cf-cdn.sh /tmp/build-modules-a32nx $CDN_BUCKET_DESTINATION
+      - name: Add QA config entry
+        if: github.event.pull_request.auto_merge == false
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          ADDON_KEYS: a32nx-msfs2020,a32nx-msfs2024
+          TEXTURE_QUALITY: 4k
+          CLOUDFLARE_CDN_ZONE_ID: ${{ secrets.CLOUDFLARE_CDN_ZONE_ID }}
+          CLOUDFLARE_PURGE_TOKEN: ${{ secrets.CLOUDFLARE_PURGE_TOKEN }}
+          CDN_BUCKET_DESTINATION: installer/qa-config/
+        run: |
+          node ./scripts/add_qa_config.js
+          ./scripts/cf-cdn.sh ./qa-config $CDN_BUCKET_DESTINATION
+
   build_a380x_4k:
     name: Build and upload A380X (4K)
     runs-on: ubuntu-latest
@@ -262,3 +277,17 @@ jobs:
           CDN_BUCKET_DESTINATION: addons/a380x/pr-${{ github.event.pull_request.number }}-4k
         run: |
           ./scripts/cf-cdn.sh /tmp/build-modules-a380x $CDN_BUCKET_DESTINATION
+      - name: Add QA config entry
+        if: github.event.pull_request.auto_merge == false
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          ADDON_KEYS: a380x-msfs2020,a380x-msfs2024
+          TEXTURE_QUALITY: 4k
+          CLOUDFLARE_CDN_ZONE_ID: ${{ secrets.CLOUDFLARE_CDN_ZONE_ID }}
+          CLOUDFLARE_PURGE_TOKEN: ${{ secrets.CLOUDFLARE_PURGE_TOKEN }}
+          CDN_BUCKET_DESTINATION: installer/qa-config/
+        run: |
+          node ./scripts/add_qa_config.js
+          ./scripts/cf-cdn.sh ./qa-config $CDN_BUCKET_DESTINATION
