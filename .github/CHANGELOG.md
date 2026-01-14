@@ -63,6 +63,7 @@
 1. [FMS] Use localizer station declination for true courses on approach legs - @BlueberryKing (BlueberryKing)
 1. [A380X/FMS] Add FUEL PENALTY function - @BravoMike99 (bruno_pt99)
 1. [A380X/MFD] Update DATA/STATUS page with newer software layout - @BravoMike99 (bruno_pt99)
+1. [A32NX/FWC] Improve CAB PR LO DIFF PR warning logic to avoid spurious warnings - @tracernz (Mike)
 
 ## 0.14.0
 
