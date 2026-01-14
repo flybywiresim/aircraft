@@ -280,7 +280,7 @@ export class FlightLevelFormat extends SubscriptionCollector implements DataEntr
 
   public readonly maxDigits = 3;
 
-  public readonly maxOverflowDigits = 3;
+  public readonly maxOverflowDigits = 2;
 
   public readonly unit = 'FL';
 
