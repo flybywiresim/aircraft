@@ -1,6 +1,6 @@
 name: PR Tests & Build
 on:
-  pull_request:
+  pull_request_target:
     types:
       - opened
       - synchronize
@@ -48,9 +48,10 @@ jobs:
           sudo npm uninstall -g netlify-cli --save
           sudo npm uninstall -g parcel --save
           df -h
-      - name: Checkout source
+      - name: Checkout PR source
         uses: actions/checkout@v4
         with:
+          ref: refs/pull/${{ github.event.pull_request.number }}/head
           submodules: recursive
       - name: Set BUILT_DATE_TIME
         run: echo "BUILT_DATE_TIME=$(date -u -Iseconds)" >> $GITHUB_ENV
@@ -58,18 +59,19 @@ jobs:
         run: |
           echo FBW_PRODUCTION_BUILD=1 >> fbw-a380x/.env
           echo FBW_TYPECHECK=1 >> fbw-a380x/.env
-          echo CLIENT_ID=\"${{ secrets.NAVIGRAPH_CLIENT_ID_A380X }}\" >> fbw-a380x/.env
-          echo CLIENT_SECRET=\"${{ secrets.NAVIGRAPH_CLIENT_SECRET_A380X }}\" >> fbw-a380x/.env
-          echo CHARTFOX_SECRET=\"${{ secrets.CHARTFOX_SECRET }}\" >> fbw-a380x/.env
-          echo SENTRY_DSN=\"${{ secrets.SENTRY_DSN }}\" >> fbw-a380x/.env
+          echo CLIENT_ID=\"\" >> fbw-a380x/.env
+          echo CLIENT_SECRET=\"\" >> fbw-a380x/.env
+          echo CHARTFOX_SECRET=\"\" >> fbw-a380x/.env
+          echo SENTRY_DSN=\"\" >> fbw-a380x/.env
           echo AIRCRAFT_PROJECT_PREFIX=${{ env.AIRCRAFT_PROJECT_PREFIX }} >> fbw-a380x/.env
           echo AIRCRAFT_VARIANT=${{ env.AIRCRAFT_VARIANT }} >> fbw-a380x/.env
           echo BUILD_DIR_NAME=${{ env.BUILD_DIR_NAME }} >> .env
-          echo LOCALAZY_READ_KEY=${{ secrets.LOCALAZY_READ_KEY }} >> .env
+          echo LOCALAZY_READ_KEY=\"\" >> .env
           echo VITE_BUILD=false >> .env
       - name: Install dependencies
         run: |
           ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
+          sudo apt-get install -y rclone
       - name: Remove A380X 4K textures
         run: |
           rm -rf ./large-files/fbw-a380x/src/base/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/texture-4k/
@@ -85,7 +87,7 @@ jobs:
           rm -rf ./fbw-common/
           rm -rf ./.git/objects/
           rm -rf ./.git/modules/aircraft-large-files/objects/
-      - name: Generate install.json
+      - name: Build Fragmenter modules
         if: github.event.pull_request.auto_merge == false
         run: |
           df -h
@@ -93,9 +95,40 @@ jobs:
           cp ./fbw-a380x/out/build-modules/modules.json ./fbw-a380x/out/flybywire-aircraft-a380-842/install.json
           node ./scripts/install-source_a380x.js
           df -h
-      - name: Upload PR artifact
+      - name: Upload PR artifact (GitHub)
         uses: actions/upload-artifact@v4
         if: github.event.pull_request.auto_merge == false
         with:
           name: flybywire-aircraft-a380-842 (8K)
           path: ./fbw-a380x/out/flybywire-aircraft-a380-842/
+      - name: Preserve build modules for upload
+        if: github.event.pull_request.auto_merge == false
+        run: |
+          mkdir -p /tmp/build-modules-a380x
+          mv ./fbw-a380x/out/build-modules/* /tmp/build-modules-a380x/
+      - name: Checkout trusted source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+      - name: Configure rclone for Cloudflare R2
+        if: github.event.pull_request.auto_merge == false
+        run: |
+            mkdir -p ~/.config/rclone
+            cat > ~/.config/rclone/rclone.conf <<EOF
+            [cloudflare-r2]
+            type = s3
+            provider = Cloudflare
+            env_auth = false
+            access_key_id = ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
+            secret_access_key = ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
+            endpoint = ${{ secrets.CLOUDFLARE_R2_ENDPOINT }}
+            region = auto
+            EOF
+      - name: Upload to CloudFlare CDN (Installer)
+        if: github.event.pull_request.auto_merge == false
+        env:
+          CLOUDFLARE_CDN_ZONE_ID: ${{ secrets.CLOUDFLARE_CDN_ZONE_ID }}
+          CLOUDFLARE_PURGE_TOKEN: ${{ secrets.CLOUDFLARE_PURGE_TOKEN }}
+          CDN_BUCKET_DESTINATION: addons/a380x/pr-${{ github.event.pull_request.number }}-8k
+        run: |
+          ./scripts/cf-cdn.sh /tmp/build-modules-a380x $CDN_BUCKET_DESTINATION
