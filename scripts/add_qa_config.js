@@ -103,14 +103,18 @@ function addOrUpdateTrack(addon, track) {
   }
 }
 
+function cacheKiller(url) {
+  return `${url}?t=${Date.now()}`;
+}
+
 async function main() {
   try {
     console.log(`Processing PR #${PR_NUMBER}: ${PR_TITLE}`);
-    console.log(`Fetching QA config from: ${QA_CONFIG_URL}`);
+    console.log(`Fetching QA config from: ${cacheKiller(QA_CONFIG_URL)}`);
 
     let config;
     try {
-      const configData = await fetchUrl(QA_CONFIG_URL);
+      const configData = await fetchUrl(cacheKiller(QA_CONFIG_URL));
       config = JSON.parse(configData);
     } catch (error) {
       if (error.message.includes('HTTP 404')) {
