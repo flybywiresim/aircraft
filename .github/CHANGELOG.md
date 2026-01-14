@@ -49,6 +49,20 @@
 1. [FMS] Fix incorrect sign on glideslope angle (FS2020 only) - @tracernz (Mike)
 1. [A32NX/OVHD] Update battery button annunciators to be bright regardless of BRT/DIM switch position - @BravoMike99 (bruno_pt99)
 1. [A380X] Fix aircraft resting on nose in aircraft selection window in 2024 - @heclak (Heclak)
+1. [FMS] Fixed pseudo waypoints symbols being offset after a direct to - @BlueberryKing (BlueberryKing)
+1. [A32NX/SFCC] Added implementation of slat baulk and slat alpha lock functions in SFCC - @Eagle941 (Joe)
+1. [ATSU] Add support for BeyondATC and SayIntentions AI ACARS - @saschl
+1. [A380X/MODEL] Add animation for thrust reverser levers - @heclak (Heclak)
+1. [A32NX/EFB] Fix landing performance calculator not loading OFP airport correctly - @tracernz (Mike)
+1. [EFB] Navigraph login link is now clickable - @tracernz (Mike)
+1. [A32NX/FCDC] Add `SPD BRK DISAGREE` master caution, and `SPD BRK DO NOT USE` ECAM action - @FozzieHi (fozzie)
+1. [FMS] Remove alttiude restriction for approach phase activation when overflying DECEL waypoint . @BravoMike99 (bruno_pt99)
+1. [A32NX/FMS] Fix step alts predictions on PERF CRZ page - @Jonny23787 (Jonathan) & @BlueberryKing (BlueberryKing)
+1. [A32NX/FWS] Replace `A/SKID N/WS FAULT` master caution with `A/SKID N/WS OFF` master caution - @FozzieHi (fozzie)
+1. [FMS] Implement MSFS 2024 EFB route sync - @Benjozork (Benjamin Dupont)
+1. [FMS] Use localizer station declination for true courses on approach legs - @BlueberryKing (BlueberryKing)
+1. [A380X/FMS] Add FUEL PENALTY function - @BravoMike99 (bruno_pt99)
+1. [A380X/MFD] Update DATA/STATUS page with newer software layout - @BravoMike99 (bruno_pt99)
 
 ## 0.14.0
 

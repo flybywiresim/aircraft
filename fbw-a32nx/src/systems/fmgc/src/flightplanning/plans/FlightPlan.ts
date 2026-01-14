@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2025 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -20,7 +20,7 @@ import {
   FlightPlanPerformanceData,
   FlightPlanPerformanceDataProperties,
 } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
-import { BaseFlightPlan, SerializedFlightPlan } from './BaseFlightPlan';
+import { BaseFlightPlan, FlightPlanContext, SerializedFlightPlan } from './BaseFlightPlan';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { A32NX_Util } from '../../../../shared/src/A32NX_Util';
 import { FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/FlightPlanQueuedOperation';
@@ -28,17 +28,18 @@ import { FlightPlanFlags } from './FlightPlanFlags';
 
 export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> extends BaseFlightPlan<P> {
   static empty<P extends FlightPlanPerformanceData>(
+    context: FlightPlanContext,
     index: number,
     bus: EventBus,
     performanceDataInit: P,
   ): FlightPlan<P> {
-    return new FlightPlan(index, bus, performanceDataInit);
+    return new FlightPlan(context, index, bus, performanceDataInit);
   }
 
   /**
    * Alternate flight plan associated with this flight plan
    */
-  alternateFlightPlan = new AlternateFlightPlan<P>(this.index, this);
+  alternateFlightPlan = new AlternateFlightPlan<P>(this.context, this.index, this);
 
   /**
    * Performance data for this flight plan
@@ -60,8 +61,8 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
    */
   flags: number = FlightPlanFlags.None;
 
-  constructor(index: number, bus: EventBus, performanceDataInit: P) {
-    super(index, bus);
+  constructor(context: FlightPlanContext, index: number, bus: EventBus, performanceDataInit: P) {
+    super(context, index, bus);
     this.performanceData = performanceDataInit;
   }
 
@@ -73,7 +74,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
   }
 
   clone(newIndex: number, options: number = CopyOptions.Default): FlightPlan<P> {
-    const newPlan = FlightPlan.empty(newIndex, this.bus, this.performanceData.clone());
+    const newPlan = FlightPlan.empty(this.context, newIndex, this.bus, this.performanceData.clone());
 
     newPlan.version = this.version;
     newPlan.originSegment = this.originSegment.clone(newPlan, options);
@@ -89,7 +90,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     newPlan.destinationSegment = this.destinationSegment.clone(newPlan, options);
     newPlan.missedApproachSegment = this.missedApproachSegment.clone(newPlan, options);
 
-    newPlan.alternateFlightPlan = this.alternateFlightPlan.clone(newPlan, options);
+    newPlan.alternateFlightPlan = this.alternateFlightPlan.clone(this.context, newPlan, options);
 
     newPlan.availableOriginRunways = [...this.availableOriginRunways];
     newPlan.availableDepartures = [...this.availableDepartures];
@@ -296,8 +297,8 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     }
 
     // We call the segment methods because we only want to rebuild the arrival/approach when we've changed all the procedures
-    await this.destinationSegment.setDestinationIcao(this.alternateDestinationAirport.ident);
-    await this.destinationSegment.setDestinationRunway(this.alternateFlightPlan.destinationRunway?.ident ?? undefined);
+    await this.destinationSegment.setAirport(this.alternateDestinationAirport.ident);
+    await this.destinationSegment.setRunway(this.alternateFlightPlan.destinationRunway?.ident ?? undefined);
     await this.approachSegment.setProcedure(this.alternateFlightPlan.approach?.databaseId ?? undefined);
     await this.approachViaSegment.setProcedure(this.alternateFlightPlan.approachVia?.databaseId ?? undefined);
     await this.arrivalSegment.setProcedure(this.alternateFlightPlan.arrival?.databaseId ?? undefined);
@@ -362,7 +363,9 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
     if (notify) {
       this.sendEvent('flightPlan.setFixInfoEntry', {
+        syncClientID: this.context.syncClientID,
         planIndex: this.index,
+        batchStack: this.context.batchStack,
         forAlternate: false,
         index,
         fixInfo: planFixInfo[index] ? planFixInfo[index].clone() : null,
@@ -383,7 +386,9 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
     if (notify) {
       this.sendEvent('flightPlan.setFixInfoEntry', {
+        syncClientID: this.context.syncClientID,
         planIndex: this.index,
+        batchStack: this.context.batchStack,
         forAlternate: false,
         index,
         fixInfo: planFixInfo[index] ? planFixInfo[index].clone() : null,
@@ -465,7 +470,13 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     this.flightNumber = flightNumber;
 
     if (notify) {
-      this.sendEvent('flightPlan.setFlightNumber', { planIndex: this.index, forAlternate: false, flightNumber });
+      this.sendEvent('flightPlan.setFlightNumber', {
+        syncClientID: this.context.syncClientID,
+        planIndex: this.index,
+        batchStack: this.context.batchStack,
+        forAlternate: false,
+        flightNumber,
+      });
     }
   }
 
@@ -549,36 +560,40 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     plan.setPerformanceData('databaseTransitionLevel', airport?.transitionLevel ?? null);
   }
 
-  static fromSerializedFlightPlan<P extends FlightPlanPerformanceData>(
+  static async fromSerializedFlightPlan<P extends FlightPlanPerformanceData>(
+    context: FlightPlanContext,
     index: number,
     serialized: SerializedFlightPlan,
     bus: EventBus,
     performanceDataInit: P,
-  ): FlightPlan<P> {
-    const newPlan = FlightPlan.empty<P>(index, bus, performanceDataInit);
+  ): Promise<FlightPlan<P>> {
+    const newPlan = FlightPlan.empty<P>(context, index, bus, performanceDataInit);
 
     // TODO init performance data
 
     newPlan.activeLegIndex = serialized.activeLegIndex;
     newPlan.fixInfos = serialized.fixInfo;
 
-    newPlan.originSegment.setFromSerializedSegment(serialized.segments.originSegment);
-    newPlan.departureSegment.setFromSerializedSegment(serialized.segments.departureSegment);
-    newPlan.departureRunwayTransitionSegment.setFromSerializedSegment(
+    await newPlan.originSegment.setFromSerializedSegment(serialized.segments.originSegment);
+    await newPlan.destinationSegment.setFromSerializedSegment(serialized.segments.destinationSegment);
+
+    await newPlan.departureSegment.setFromSerializedSegment(serialized.segments.departureSegment);
+    await newPlan.departureRunwayTransitionSegment.setFromSerializedSegment(
       serialized.segments.departureRunwayTransitionSegment,
     );
-    newPlan.departureEnrouteTransitionSegment.setFromSerializedSegment(
+    await newPlan.departureEnrouteTransitionSegment.setFromSerializedSegment(
       serialized.segments.departureEnrouteTransitionSegment,
     );
-    newPlan.enrouteSegment.setFromSerializedSegment(serialized.segments.enrouteSegment);
-    newPlan.arrivalSegment.setFromSerializedSegment(serialized.segments.arrivalSegment);
-    newPlan.arrivalRunwayTransitionSegment.setFromSerializedSegment(serialized.segments.arrivalRunwayTransitionSegment);
-    newPlan.arrivalEnrouteTransitionSegment.setFromSerializedSegment(
+    await newPlan.enrouteSegment.setFromSerializedSegment(serialized.segments.enrouteSegment);
+    await newPlan.arrivalSegment.setFromSerializedSegment(serialized.segments.arrivalSegment);
+    await newPlan.arrivalRunwayTransitionSegment.setFromSerializedSegment(
+      serialized.segments.arrivalRunwayTransitionSegment,
+    );
+    await newPlan.arrivalEnrouteTransitionSegment.setFromSerializedSegment(
       serialized.segments.arrivalEnrouteTransitionSegment,
     );
-    newPlan.approachSegment.setFromSerializedSegment(serialized.segments.approachSegment);
-    newPlan.approachViaSegment.setFromSerializedSegment(serialized.segments.approachViaSegment);
-    newPlan.destinationSegment.setFromSerializedSegment(serialized.segments.destinationSegment);
+    await newPlan.approachSegment.setFromSerializedSegment(serialized.segments.approachSegment);
+    await newPlan.approachViaSegment.setFromSerializedSegment(serialized.segments.approachViaSegment);
 
     return newPlan;
   }
