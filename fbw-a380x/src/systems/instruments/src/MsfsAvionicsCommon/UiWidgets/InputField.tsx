@@ -35,7 +35,6 @@ interface InputFieldProps<T, U = T, S = T extends U ? true : false> extends Comp
   canBeCleared?: Subscribable<boolean>;
   /** Value will be displayed in smaller font, if not entered by pilot (i.e. computed) */
   enteredByPilot?: Subscribable<boolean>;
-  canOverflow?: boolean;
   modifyValue?: S;
   /** If defined, this component does not update the value prop, but rather calls this method. */
   onModified?: (newValue: U | null) => void | Promise<unknown>;
@@ -121,6 +120,8 @@ export class InputField<
     true,
   );
 
+  private readonly canOverFlow = this.props.dataEntryFormat.maxOverflowDigits !== undefined;
+
   private isOverFlow = false;
 
   private onNewValue() {
@@ -134,7 +135,7 @@ export class InputField<
       this.modifiedFieldValue.set(null);
     }
     if (this.readValue.get() !== null) {
-      if (this.props.canOverflow) {
+      if (this.overflow) {
         // If item was overflowing, check whether overflow is still needed
         this.overflow((this.readValue.get()?.toString().length ?? 0) > this.props.dataEntryFormat.maxDigits);
       }
@@ -163,8 +164,11 @@ export class InputField<
       }
     } else {
       // Else, render modifiedFieldValue
-      const numDigits = this.props.dataEntryFormat.maxDigits;
-      if ((this.modifiedFieldValue.get()?.length ?? 0) < numDigits || !this.isFocused.get() || this.props.canOverflow) {
+      const numDigits = this.canOverFlow
+        ? this.props.dataEntryFormat.maxDigits + this.props.dataEntryFormat.maxOverflowDigits!
+        : this.props.dataEntryFormat.maxDigits;
+
+      if ((this.modifiedFieldValue.get()?.length ?? 0) < numDigits || !this.isFocused.get()) {
         this.textInputRef.instance.innerText = this.modifiedFieldValue.get() ?? '';
         this.caretRef.instance.innerText = '';
       } else {
@@ -176,7 +180,7 @@ export class InputField<
 
   // Called when the input field changes
   private onInput() {
-    if (this.props.canOverflow && this.modifiedFieldValue.get()?.length === this.props.dataEntryFormat.maxDigits) {
+    if (this.canOverFlow && this.modifiedFieldValue.get()?.length === this.props.dataEntryFormat.maxDigits) {
       this.overflow(true);
     }
 
@@ -190,8 +194,17 @@ export class InputField<
       if (overflow) {
         this.topRef.instance.classList.add('overflow');
         this.containerRef.instance.classList.add('overflow');
-        const remainingWidth = 768 - 50 - this.containerRef.instance.getBoundingClientRect().left;
-        this.containerRef.instance.style.width = `${remainingWidth}px`; // TODO extend to right edge
+        if (!this.props.dataEntryFormat.maxOverflowDigits) {
+          const remainingWidth = 768 - 50 - this.containerRef.instance.getBoundingClientRect().left;
+          this.containerRef.instance.style.width = `${remainingWidth}px`; // TODO extend to right edge
+        } else {
+          this.containerRef.instance.style.width = InputField.calculateWidthForDigits(
+            this.props.dataEntryFormat.maxOverflowDigits +
+              this.props.dataEntryFormat.maxDigits +
+              (this.props.dataEntryFormat.unit?.length ?? 0) +
+              1, // Always a space for one extra character is displayed
+          );
+        }
         this.isOverFlow = true;
       } else {
         this.topRef.instance.classList.remove('overflow');
@@ -262,7 +275,12 @@ export class InputField<
       this.spanningDivRef.instance.style.justifyContent = 'flex-start';
     }
 
-    if ((this.modifiedFieldValue.get()?.length ?? 0) < this.props.dataEntryFormat.maxDigits || this.props.canOverflow) {
+    const modifiedFieldValueLength = this.modifiedFieldValue.get()?.length ?? 0;
+    if (
+      modifiedFieldValueLength < this.props.dataEntryFormat.maxDigits ||
+      (this.canOverFlow &&
+        modifiedFieldValueLength < this.props.dataEntryFormat.maxOverflowDigits! + this.props.dataEntryFormat.maxDigits)
+    ) {
       this.modifiedFieldValue.set(`${this.modifiedFieldValue.get()}${key}`);
       this.caretRef.instance.style.display = 'inline';
     }
@@ -328,7 +346,7 @@ export class InputField<
           await this.validateAndUpdate(this.modifiedFieldValue.get() ?? '');
         }
 
-        if (this.isOverFlow) {
+        if (this.canOverFlow) {
           this.overflow(false);
         }
       }
@@ -409,11 +427,11 @@ export class InputField<
           );
         }
       }
-      return updateWasSuccessful;
     }
 
     this.modifiedFieldValue.set(null);
     this.isValidating.set(false);
+    return updateWasSuccessful;
   }
 
   private onFocusTextInput() {
@@ -447,15 +465,13 @@ export class InputField<
     if (this.props.handleFocusBlurExternally === undefined) {
       this.props.handleFocusBlurExternally = false;
     }
-    if (this.props.canOverflow === undefined) {
-      this.props.canOverflow = false;
-    }
     if (this.props.tmpyActive === undefined) {
       this.props.tmpyActive = Subject.create(false);
     }
 
-    // Aspect ratio for font: 2:3 WxH
-    this.spanningDivRef.instance.style.minWidth = `${Math.round((this.props.dataEntryFormat.maxDigits * 27.0) / 1.5)}px`;
+    this.spanningDivRef.instance.style.minWidth = InputField.calculateWidthForDigits(
+      this.props.dataEntryFormat.maxDigits,
+    );
 
     // Hide caret
     this.caretRef.instance.style.display = 'none';
@@ -628,6 +644,11 @@ export class InputField<
                 }
             }));
         } */
+  }
+
+  private static calculateWidthForDigits(digits: number): string {
+    // Aspect ratio for font: 2:3 WxH
+    return `${Math.round((digits * 27.0) / 1.5)}px`;
   }
 
   destroy(): void {
