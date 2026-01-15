@@ -1,13 +1,15 @@
 use crate::auto_flight::FlightControlUnitBusOutput;
 use crate::failures::{Failure, FailureType};
 use crate::navigation::adirs::{
+    air_data_sensors::air_data_module::AirDataModuleBusOutput,
     hw_block3_adiru::ir_runtime::InertialReferenceRuntime,
-    hw_block3_adiru::simulator_data::{AdrSimulatorData, IrSimulatorData},
-    AdrDiscreteInputs, AdrDiscreteOutputs, AirDataReferenceBus, AirDataReferenceBusOutput,
-    AirDataReferenceBusOutputs, AirDataReferenceDiscreteOutput, InertialReferenceBus,
-    InertialReferenceBusOutput, InertialReferenceBusOutputs, InertialReferenceDiscreteOutput,
-    IrDiscreteInputs, IrDiscreteOutputs,
+    hw_block3_adiru::simulator_data::IrSimulatorData, AdrDiscreteInputs, AdrDiscreteOutputs,
+    AirDataReferenceBus, AirDataReferenceBusOutput, AirDataReferenceBusOutputs,
+    AirDataReferenceDiscreteOutput, InertialReferenceBus, InertialReferenceBusOutput,
+    InertialReferenceBusOutputs, InertialReferenceDiscreteOutput, IrDiscreteInputs,
+    IrDiscreteOutputs,
 };
+use crate::navigation::adirs::{AdrAnalogInputs, AirDataModulePowerProvider};
 use crate::shared::{
     arinc429::Arinc429Word,
     logic_nodes::{ConfirmationNode, MonostableTriggerNode},
@@ -95,7 +97,6 @@ pub struct AirDataInertialReferenceUnit {
     ir_discrete_output_data: IrDiscreteOutputs,
     ir_bus_output_data: InertialReferenceBusOutputs,
 
-    adr_measurement_inputs: AdrSimulatorData,
     ir_measurement_inputs: IrSimulatorData,
 
     // ADR Output Lvars
@@ -268,7 +269,6 @@ impl AirDataInertialReferenceUnit {
             ir_discrete_output_data: IrDiscreteOutputs::default(),
             ir_bus_output_data: InertialReferenceBusOutputs::default(),
 
-            adr_measurement_inputs: AdrSimulatorData::new(context),
             ir_measurement_inputs: IrSimulatorData::new(context),
 
             baro_correction_1_hpa: context.get_identifier(output_data_id(
@@ -487,16 +487,27 @@ impl AirDataInertialReferenceUnit {
         &mut self,
         context: &UpdateContext,
         adr_discrete_inputs: &AdrDiscreteInputs,
+        adr_analog_inputs: &AdrAnalogInputs,
         ir_discrete_inputs: &IrDiscreteInputs,
         fcu: &impl FlightControlUnitBusOutput,
         adr_1: &impl AirDataReferenceBusOutput,
         adr_2: &impl AirDataReferenceBusOutput,
+        adm_1: &impl AirDataModuleBusOutput,
+        adm_2: &impl AirDataModuleBusOutput,
+        adm_3: Option<&impl AirDataModuleBusOutput>,
     ) {
-        self.adr_measurement_inputs.update(context);
         self.ir_measurement_inputs.update(context);
 
         self.update_powersupply(context, ir_discrete_inputs);
-        self.update_adr(context, adr_discrete_inputs, fcu);
+        self.update_adr(
+            context,
+            adr_discrete_inputs,
+            adr_analog_inputs,
+            fcu,
+            adm_1,
+            adm_2,
+            adm_3,
+        );
         self.update_ir(context, ir_discrete_inputs, adr_1, adr_2);
     }
 
@@ -541,7 +552,11 @@ impl AirDataInertialReferenceUnit {
         &mut self,
         context: &UpdateContext,
         adr_discrete_inputs: &AdrDiscreteInputs,
+        adr_analog_inputs: &AdrAnalogInputs,
         fcu: &impl FlightControlUnitBusOutput,
+        adm_1: &impl AirDataModuleBusOutput,
+        adm_2: &impl AirDataModuleBusOutput,
+        adm_3: Option<&impl AirDataModuleBusOutput>,
     ) {
         let is_powered = self.computer_powered();
 
@@ -569,8 +584,11 @@ impl AirDataInertialReferenceUnit {
             runtime.update(
                 context,
                 adr_discrete_inputs,
+                adr_analog_inputs,
                 fcu,
-                self.adr_measurement_inputs,
+                adm_1,
+                adm_2,
+                adm_3,
             );
 
             runtime.set_discrete_outputs(&mut self.adr_discrete_output_data);
@@ -870,12 +888,17 @@ impl InertialReferenceBus for AirDataInertialReferenceUnit {
         self.ir_bus_output_data.discrete_word_3
     }
 }
+impl AirDataModulePowerProvider for AirDataInertialReferenceUnit {
+    /// If the ADIRU currently provides power on the output to the ADMs
+    fn provides_power(&self) -> bool {
+        self.computer_powered()
+    }
+}
 impl SimulationElement for AirDataInertialReferenceUnit {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.adr_failure.accept(visitor);
         self.ir_failure.accept(visitor);
 
-        self.adr_measurement_inputs.accept(visitor);
         self.ir_measurement_inputs.accept(visitor);
 
         visitor.visit(self);
