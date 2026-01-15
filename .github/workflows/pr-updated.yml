@@ -1,0 +1,44 @@
+name: PR Updated
+on:
+  pull_request_target:
+    types:
+      - edited
+
+jobs:
+  update-qa-config:
+    name: Update PR in QA Config
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout trusted source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+      - name: Install dependencies
+        run: |
+          sudo apt-get install -y rclone
+      - name: Configure rclone for Cloudflare R2
+        run: |
+            mkdir -p ~/.config/rclone
+            cat > ~/.config/rclone/rclone.conf <<EOF
+            [cloudflare-r2]
+            type = s3
+            provider = Cloudflare
+            env_auth = false
+            access_key_id = ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
+            secret_access_key = ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
+            endpoint = ${{ secrets.CLOUDFLARE_R2_ENDPOINT }}
+            region = auto
+            EOF
+      - name: Update QA config entries
+        if: github.event.pull_request.auto_merge == false
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          ADDON_KEYS: a32nx-msfs2020,a32nx-msfs2024,a380x-msfs2020,a380x-msfs2024
+          CLOUDFLARE_CDN_ZONE_ID: ${{ secrets.CLOUDFLARE_CDN_ZONE_ID }}
+          CLOUDFLARE_PURGE_TOKEN: ${{ secrets.CLOUDFLARE_PURGE_TOKEN }}
+          CDN_BUCKET_DESTINATION: installer/qa-config/
+        run: |
+          node ./scripts/update_qa_config.js
+          ./scripts/cf-cdn.sh ./qa-config $CDN_BUCKET_DESTINATION
