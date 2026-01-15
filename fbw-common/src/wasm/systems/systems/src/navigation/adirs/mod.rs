@@ -4,6 +4,7 @@ use crate::{
 };
 use uom::si::f64::*;
 
+pub mod air_data_sensors;
 pub mod hw_block3_adiru;
 
 #[derive(Clone, Copy, PartialEq, Debug)]
@@ -301,6 +302,17 @@ pub struct AdrDiscreteInputs {
 }
 
 #[derive(Default)]
+pub struct AdrAnalogInputs {
+    pub aoa_excitation_voltage_v: f64,
+    pub aoa_resolver_angle_deg: f64,
+    pub tat_value_deg_c: f64,
+}
+
+pub trait AdrAnalogInput {
+    fn analog_input(&self) -> &AdrAnalogInputs;
+}
+
+#[derive(Default)]
 pub struct AdrDiscreteOutputs {
     pub adr_off: bool,
     pub adr_fault: bool,
@@ -339,4 +351,8 @@ pub struct IrDiscreteOutputs {
 
 pub trait InertialReferenceDiscreteOutput {
     fn discrete_outputs(&self) -> &IrDiscreteOutputs;
+}
+
+pub trait AirDataModulePowerProvider {
+    fn provides_power(&self) -> bool;
 }
