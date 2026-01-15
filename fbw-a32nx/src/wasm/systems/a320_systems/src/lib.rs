@@ -24,14 +24,12 @@ use electrical::{
     APU_START_MOTOR_BUS_TYPE,
 };
 use hydraulic::{A320Hydraulic, A320HydraulicOverheadPanel};
-use navigation::{A320AdirsElectricalHarness, A320RadioAltimeters};
-use power_consumption::A320PowerConsumption;
-use systems::{
-    auto_flight::FlightControlUnitShim,
-    navigation::{
-        adirs::hw_block3_adiru::AirDataInertialReferenceSystem, ils::MultiModeReceiverShim,
-    },
+use navigation::{
+    adirs::A320AdirsElectricalHarness, adirs::A320AirDataInertialReferenceSystem,
+    A320RadioAltimeters,
 };
+use power_consumption::A320PowerConsumption;
+use systems::{auto_flight::FlightControlUnitShim, navigation::ils::MultiModeReceiverShim};
 use systems::{
     enhanced_gpwc::EnhancedGroundProximityWarningComputer,
     surveillance::egpws::EnhancedGroundProximityWarningComputer as EnhancedGroundProximityWarningComputer2,
@@ -55,7 +53,7 @@ use systems::{
 };
 
 pub struct A320 {
-    adirs: AirDataInertialReferenceSystem,
+    adirs: A320AirDataInertialReferenceSystem,
     adirs_electrical_harness: A320AdirsElectricalHarness,
     air_conditioning: A320AirConditioning,
     apu: AuxiliaryPowerUnit<Aps3200ApuGenerator, Aps3200StartMotor, Aps3200Constants, 1>,
@@ -92,7 +90,7 @@ pub struct A320 {
 impl A320 {
     pub fn new(context: &mut InitContext) -> A320 {
         A320 {
-            adirs: AirDataInertialReferenceSystem::new(context),
+            adirs: A320AirDataInertialReferenceSystem::new(context),
             adirs_electrical_harness: A320AdirsElectricalHarness::new(context),
             air_conditioning: A320AirConditioning::new(context),
             apu: AuxiliaryPowerUnitFactory::new_aps3200(

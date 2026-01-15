@@ -1,7 +1,7 @@
 use crate::auto_flight::FlightControlUnitBusOutput;
 use crate::navigation::adirs::{
-    hw_block3_adiru::simulator_data::AdrSimulatorData, AdrDiscreteInputs, AdrDiscreteOutputs,
-    AirDataReferenceBusOutputs, ModeSelectorPosition,
+    air_data_sensors::air_data_module::AirDataModuleBusOutput, AdrAnalogInputs, AdrDiscreteInputs,
+    AdrDiscreteOutputs, AirDataReferenceBusOutputs, ModeSelectorPosition,
 };
 use crate::{
     shared::{
@@ -16,13 +16,16 @@ use crate::{
 use bitflags::bitflags;
 use std::time::Duration;
 use uom::si::{
+    angle::degree,
     f64::*,
     length::foot,
     pressure::hectopascal,
     pressure::inch_of_mercury,
     ratio::ratio,
+    thermodynamic_temperature::degree_celsius,
     velocity::{foot_per_minute, knot},
 };
+use uom::ConstZero;
 
 pub struct AirDataReferenceRuntime {
     /// If non-Duration::ZERO, the remaining time the runtime needs to initialize itself. Otherwise
@@ -33,25 +36,53 @@ pub struct AirDataReferenceRuntime {
     is_off: bool,
     output_inhibited: bool,
 
-    measurement_inputs: AdrSimulatorData,
+    // AOA
+    angle_of_attack_deg: f64,
+    angle_of_attack_valid: bool,
 
-    /// This filtering should be done in the ADM
-    static_pressure_filter: LowPassFilter<Pressure>,
+    // Pressures from the ADMs
+    left_static_pressure_hpa: f64,
+    left_static_pressure_avail: bool,
+    right_static_pressure_hpa: f64,
+    right_static_pressure_avail: bool,
+    averaged_static_pressure_hpa: f64,
+    averaged_static_pressure_avail: bool,
+    corrected_averaged_static_pressure_avail: bool,
+    total_pressure_hpa: f64,
+    total_pressure_avail: bool,
+
+    // Baro Correction Values
+    baro_correction_1_hpa: f64,
+    baro_correction_1_ft: f64,
+    baro_correction_1_valid: bool,
+    baro_correction_2_hpa: f64,
+    baro_correction_2_ft: f64,
+    baro_correction_2_valid: bool,
+
+    // Computed altitudes
+    pressure_altitude_ft: f64,
+    pressure_altitude_valid: bool,
 
     // V/S Computation
     vertical_speed_derivative: DerivativeNode<f64>,
     vertical_speed_filter: LowPassFilter<Velocity>,
 
-    // Baro Correction Values
-    baro_correction_1_hpa: Pressure,
-    baro_correction_1_ft: Length,
-    baro_correction_1_valid: bool,
-    baro_correction_2_hpa: Pressure,
-    baro_correction_2_ft: Length,
-    baro_correction_2_valid: bool,
+    // Temperatures
+    total_air_temperature_deg_c: f64,
+    total_air_temperature_valid: bool,
+    static_air_temperature_deg_c: f64,
+    static_air_temperature_valid: bool,
+
+    // Airspeeds
+    computed_airspeed_knot: f64,
+    computed_airspeed_valid: bool,
+    mach: f64,
+    mach_valid: bool,
+    true_airspeed_knot: f64,
+    true_airspeed_valid: bool,
 
     // Overspeed
-    max_allowable_speed: Velocity,
+    max_allowable_speed_knot: f64,
     overspeed_active: bool,
 
     // Low Speed Warnings
@@ -78,10 +109,14 @@ impl AirDataReferenceRuntime {
     const V_MO: f64 = 350.;
     const M_MO: f64 = 0.82;
 
-    // Approx 8 Hz filter
-    const STATIC_PORT_TIME_CONSTANT: Duration = Duration::from_millis(125);
     // 1 second filter
     const VERTICAL_SPEED_TIME_CONSTANT: Duration = Duration::from_secs(1);
+
+    // ADR Computation constants
+    const STANDARD_SPEED_OF_SOUND_KNOT: f64 = 661.4746;
+    const STANDARD_SEA_LEVEL_PRESSURE_HPA: f64 = 1013.25;
+    const STANDARD_SEA_LEVEL_TEMPERATURE_KEVLIN: f64 = 288.15;
+    const ABSOLUTE_ZERO_DEG_C: f64 = -273.15;
 
     pub fn new_running() -> Self {
         Self::new(Duration::ZERO)
@@ -95,24 +130,46 @@ impl AirDataReferenceRuntime {
             is_off: false,
             output_inhibited: false,
 
-            measurement_inputs: AdrSimulatorData::default(),
+            angle_of_attack_deg: 0.,
+            angle_of_attack_valid: false,
 
-            static_pressure_filter: LowPassFilter::new_with_init_value(
-                Self::STATIC_PORT_TIME_CONSTANT,
-                InternationalStandardAtmosphere::ground_pressure(),
-            ),
+            left_static_pressure_hpa: 0.,
+            left_static_pressure_avail: false,
+            right_static_pressure_hpa: 0.,
+            right_static_pressure_avail: false,
+            averaged_static_pressure_hpa: 0.,
+            averaged_static_pressure_avail: false,
+            corrected_averaged_static_pressure_avail: false,
+            total_pressure_hpa: 0.,
+            total_pressure_avail: false,
+
+            baro_correction_1_hpa: 0.,
+            baro_correction_1_ft: 0.,
+            baro_correction_1_valid: false,
+            baro_correction_2_hpa: 0.,
+            baro_correction_2_ft: 0.,
+            baro_correction_2_valid: false,
+
+            pressure_altitude_ft: 0.,
+            pressure_altitude_valid: false,
 
             vertical_speed_derivative: DerivativeNode::new(),
             vertical_speed_filter: LowPassFilter::new(Self::VERTICAL_SPEED_TIME_CONSTANT),
 
-            baro_correction_1_hpa: Pressure::default(),
-            baro_correction_1_ft: Length::default(),
-            baro_correction_1_valid: false,
-            baro_correction_2_hpa: Pressure::default(),
-            baro_correction_2_ft: Length::default(),
-            baro_correction_2_valid: false,
+            total_air_temperature_deg_c: 0.,
+            total_air_temperature_valid: false,
+            static_air_temperature_deg_c: 0.,
+            static_air_temperature_valid: false,
 
-            max_allowable_speed: Velocity::default(),
+            // Airspeeds
+            computed_airspeed_knot: 0.,
+            computed_airspeed_valid: false,
+            mach: 0.,
+            mach_valid: false,
+            true_airspeed_knot: 0.,
+            true_airspeed_valid: false,
+
+            max_allowable_speed_knot: 0.,
             overspeed_active: false,
 
             low_speed_warning_1_hysteresis: HysteresisNode::new(
@@ -138,8 +195,11 @@ impl AirDataReferenceRuntime {
         &mut self,
         context: &UpdateContext,
         discrete_inputs: &AdrDiscreteInputs,
+        analog_inputs: &AdrAnalogInputs,
         fcu: &impl FlightControlUnitBusOutput,
-        measurement_inputs: AdrSimulatorData,
+        adm_1: &impl AirDataModuleBusOutput,
+        adm_2: &impl AirDataModuleBusOutput,
+        adm_3: Option<&impl AirDataModuleBusOutput>,
     ) {
         // First, check if we're still starting up and if so, simulate a wait until all self tests
         // have completed.
@@ -150,12 +210,15 @@ impl AirDataReferenceRuntime {
             return;
         }
 
-        self.measurement_inputs = measurement_inputs;
-
         self.update_off_status(discrete_inputs);
 
-        self.update_filters_and_vs(context);
+        self.update_aoa(analog_inputs);
+        self.update_pressures(adm_1, adm_2, adm_3);
         self.update_baro_corrections(fcu);
+        self.update_pressure_altitude_and_vs(context);
+        self.update_cas_mach();
+        self.update_temperatures(analog_inputs);
+        self.update_tas();
         self.update_overspeed_status();
         self.update_low_speed_warning_status();
     }
@@ -180,58 +243,167 @@ impl AirDataReferenceRuntime {
         self.output_inhibited = self.is_off || mode_sel_off;
     }
 
-    fn update_filters_and_vs(&mut self, context: &UpdateContext) {
-        let static_pressure = self
-            .static_pressure_filter
-            .update(context.delta(), context.ambient_pressure());
+    fn update_aoa(&mut self, analog_inputs: &AdrAnalogInputs) {
+        // This should be an AC input, currently simply simulate some arbitrary value.
+        self.angle_of_attack_valid = analog_inputs.aoa_excitation_voltage_v > 20.;
 
-        let pressure_altitude =
-            AirDataReferenceRuntime::calculate_altitude_from_static_pressure(static_pressure);
+        // No correction of AOA is currently simulated.
+        self.angle_of_attack_deg = if self.angle_of_attack_valid {
+            analog_inputs.aoa_resolver_angle_deg
+        } else {
+            0.
+        };
+    }
 
-        let raw_vs = self.vertical_speed_derivative.update(
-            pressure_altitude.get::<foot>(),
-            context.delta().div_f64(60.),
-        );
-        self.vertical_speed_filter
-            .update(context.delta(), Velocity::new::<foot_per_minute>(raw_vs));
+    fn update_pressures(
+        &mut self,
+        adm_1: &impl AirDataModuleBusOutput,
+        adm_2: &impl AirDataModuleBusOutput,
+        adm_3: Option<&impl AirDataModuleBusOutput>,
+    ) {
+        self.total_pressure_hpa = adm_1.bus_outputs().total_pressure_hpa.value_or_default();
+        self.total_pressure_avail = adm_1.bus_outputs().total_pressure_hpa.is_normal_operation();
+
+        // ADIRU 1 and 2
+        if let Some(adm_3) = adm_3 {
+            self.left_static_pressure_hpa = adm_2
+                .bus_outputs()
+                .left_static_pressure_hpa
+                .value_or_default();
+            self.left_static_pressure_avail = adm_2
+                .bus_outputs()
+                .left_static_pressure_hpa
+                .is_normal_operation();
+            self.right_static_pressure_hpa = adm_3
+                .bus_outputs()
+                .right_static_pressure_hpa
+                .value_or_default();
+            self.right_static_pressure_avail = adm_3
+                .bus_outputs()
+                .right_static_pressure_hpa
+                .is_normal_operation();
+
+            self.averaged_static_pressure_avail =
+                self.left_static_pressure_avail && self.right_static_pressure_avail;
+            self.averaged_static_pressure_hpa =
+                (self.left_static_pressure_hpa + self.right_static_pressure_hpa) / 2.;
+        } else {
+            // ADIRU 3
+            self.averaged_static_pressure_hpa = adm_2
+                .bus_outputs()
+                .averaged_static_pressure_uncorrected_hpa
+                .value_or_default();
+            self.averaged_static_pressure_avail = adm_2
+                .bus_outputs()
+                .averaged_static_pressure_uncorrected_hpa
+                .is_normal_operation();
+
+            self.left_static_pressure_avail = false;
+            self.right_static_pressure_avail = false;
+        }
+
+        self.corrected_averaged_static_pressure_avail =
+            self.averaged_static_pressure_avail && self.angle_of_attack_valid
     }
 
     fn update_baro_corrections(&mut self, fcu: &impl FlightControlUnitBusOutput) {
         let baro_corr_1 = fcu.bus_outputs().baro_correction_1_hpa;
-        self.baro_correction_1_hpa = Pressure::new::<hectopascal>(baro_corr_1.value_or_default());
+        self.baro_correction_1_hpa = baro_corr_1.value_or_default();
         self.baro_correction_1_ft =
             AirDataReferenceRuntime::calculate_baro_alt_correction(self.baro_correction_1_hpa);
         self.baro_correction_1_valid =
             baro_corr_1.is_normal_operation() || baro_corr_1.is_functional_test();
 
         let baro_corr_2 = fcu.bus_outputs().baro_correction_2_hpa;
-        self.baro_correction_2_hpa = Pressure::new::<hectopascal>(baro_corr_2.value_or_default());
+        self.baro_correction_2_hpa = baro_corr_2.value_or_default();
         self.baro_correction_2_ft =
             AirDataReferenceRuntime::calculate_baro_alt_correction(self.baro_correction_2_hpa);
         self.baro_correction_2_valid =
             baro_corr_2.is_normal_operation() || baro_corr_2.is_functional_test();
     }
 
+    fn update_pressure_altitude_and_vs(&mut self, context: &UpdateContext) {
+        self.pressure_altitude_ft =
+            AirDataReferenceRuntime::calculate_altitude_from_static_pressure(Pressure::new::<
+                hectopascal,
+            >(
+                self.averaged_static_pressure_hpa,
+            ))
+            .get::<foot>();
+        self.pressure_altitude_valid = self.corrected_averaged_static_pressure_avail;
+
+        let raw_vs = self
+            .vertical_speed_derivative
+            .update(self.pressure_altitude_ft, context.delta().div_f64(60.));
+        self.vertical_speed_filter
+            .update(context.delta(), Velocity::new::<foot_per_minute>(raw_vs));
+    }
+
+    fn update_cas_mach(&mut self) {
+        let dynamic_pressure = self.total_pressure_hpa - self.averaged_static_pressure_hpa;
+
+        self.computed_airspeed_valid =
+            self.total_pressure_avail && self.corrected_averaged_static_pressure_avail;
+        if self.computed_airspeed_valid {
+            self.computed_airspeed_knot = Self::STANDARD_SPEED_OF_SOUND_KNOT
+                * (5.
+                    * ((dynamic_pressure / Self::STANDARD_SEA_LEVEL_PRESSURE_HPA + 1.)
+                        .powf(2. / 7.)
+                        - 1.))
+                    .sqrt();
+        } else {
+            self.computed_airspeed_knot = 0.;
+        }
+
+        self.mach_valid =
+            self.total_pressure_avail && self.corrected_averaged_static_pressure_avail;
+        if self.mach_valid {
+            self.mach = (5.
+                * ((dynamic_pressure / self.averaged_static_pressure_hpa + 1.).powf(2. / 7.) - 1.))
+                .sqrt();
+        } else {
+            self.mach = 0.;
+        }
+    }
+
+    fn update_temperatures(&mut self, analog_inputs: &AdrAnalogInputs) {
+        self.total_air_temperature_deg_c = analog_inputs.tat_value_deg_c;
+        self.total_air_temperature_valid = true;
+
+        self.static_air_temperature_valid = self.total_air_temperature_valid && self.mach_valid;
+        let tat_kelvin = self.total_air_temperature_deg_c - Self::ABSOLUTE_ZERO_DEG_C;
+        self.static_air_temperature_deg_c =
+            tat_kelvin / (1. + 0.2 * self.mach.powi(2)) + Self::ABSOLUTE_ZERO_DEG_C;
+    }
+
+    fn update_tas(&mut self) {
+        self.true_airspeed_valid = self.mach_valid && self.static_air_temperature_valid;
+
+        let sat_kelvin = self.static_air_temperature_deg_c - Self::ABSOLUTE_ZERO_DEG_C;
+        self.true_airspeed_knot = Self::STANDARD_SPEED_OF_SOUND_KNOT
+            * self.mach
+            * (sat_kelvin / Self::STANDARD_SEA_LEVEL_TEMPERATURE_KEVLIN).sqrt()
+    }
+
     fn update_overspeed_status(&mut self) {
-        let static_pressure = self.static_pressure_filter.output();
+        let m_mo_equivalent_speed = MachNumber(Self::M_MO).to_cas(Pressure::new::<hectopascal>(
+            self.averaged_static_pressure_hpa,
+        ));
+        self.max_allowable_speed_knot = Self::V_MO.min(m_mo_equivalent_speed.get::<knot>());
 
-        let m_mo_equivalent_speed = MachNumber(Self::M_MO).to_cas(static_pressure);
-        self.max_allowable_speed = Velocity::new::<knot>(Self::V_MO).min(m_mo_equivalent_speed);
-
-        self.overspeed_active = self.measurement_inputs.indicated_airspeed
-            > (self.max_allowable_speed
-                + Velocity::new::<knot>(if self.overspeed_active { 4. } else { 8. }));
+        self.overspeed_active = self.computed_airspeed_knot
+            > (self.max_allowable_speed_knot + if self.overspeed_active { 4. } else { 8. });
     }
 
     fn update_low_speed_warning_status(&mut self) {
         self.low_speed_warning_1_hysteresis
-            .update(self.measurement_inputs.indicated_airspeed.get::<knot>());
+            .update(self.computed_airspeed_knot);
         self.low_speed_warning_2_hysteresis
-            .update(self.measurement_inputs.indicated_airspeed.get::<knot>());
+            .update(self.computed_airspeed_knot);
         self.low_speed_warning_3_hysteresis
-            .update(self.measurement_inputs.indicated_airspeed.get::<knot>());
+            .update(self.computed_airspeed_knot);
         self.low_speed_warning_4_hysteresis
-            .update(self.measurement_inputs.indicated_airspeed.get::<knot>());
+            .update(self.computed_airspeed_knot);
     }
 
     pub fn set_bus_outputs(&self, bus: &mut AirDataReferenceBusOutputs) {
@@ -241,26 +413,23 @@ impl AirDataReferenceRuntime {
 
         self.compute_discrete_word_1(&mut bus.discrete_word_1);
 
-        let static_pressure = self.static_pressure_filter.output();
-        let pressure_altitude = Self::calculate_altitude_from_static_pressure(static_pressure);
-
         AirDataReferenceRuntime::update_altitude_word(
-            pressure_altitude,
+            self.pressure_altitude_ft,
+            self.pressure_altitude_valid,
             &mut bus.standard_altitude,
         );
 
         if self.baro_correction_1_valid {
             AirDataReferenceRuntime::update_altitude_word(
-                pressure_altitude + self.baro_correction_1_ft,
+                self.pressure_altitude_ft + self.baro_correction_1_ft,
+                self.pressure_altitude_valid,
                 &mut bus.baro_corrected_altitude_1,
             );
 
-            bus.baro_correction_1_hpa.set(
-                self.baro_correction_1_hpa.get::<hectopascal>(),
-                SignStatus::NormalOperation,
-            );
+            bus.baro_correction_1_hpa
+                .set(self.baro_correction_1_hpa, SignStatus::NormalOperation);
             bus.baro_correction_1_inhg.set(
-                self.baro_correction_1_hpa.get::<inch_of_mercury>(),
+                Pressure::new::<hectopascal>(self.baro_correction_1_hpa).get::<inch_of_mercury>(),
                 SignStatus::NormalOperation,
             );
         } else {
@@ -274,16 +443,15 @@ impl AirDataReferenceRuntime {
 
         if self.baro_correction_2_valid {
             AirDataReferenceRuntime::update_altitude_word(
-                pressure_altitude + self.baro_correction_2_ft,
+                self.pressure_altitude_ft + self.baro_correction_2_ft,
+                self.pressure_altitude_valid,
                 &mut bus.baro_corrected_altitude_2,
             );
 
-            bus.baro_correction_2_hpa.set(
-                self.baro_correction_2_hpa.get::<hectopascal>(),
-                SignStatus::NormalOperation,
-            );
+            bus.baro_correction_2_hpa
+                .set(self.baro_correction_2_hpa, SignStatus::NormalOperation);
             bus.baro_correction_2_inhg.set(
-                self.baro_correction_2_hpa.get::<inch_of_mercury>(),
+                Pressure::new::<hectopascal>(self.baro_correction_2_hpa).get::<inch_of_mercury>(),
                 SignStatus::NormalOperation,
             );
         } else {
@@ -295,8 +463,10 @@ impl AirDataReferenceRuntime {
                 .set(Default::default(), SignStatus::NoComputedData);
         }
 
-        bus.corrected_average_static_pressure
-            .set(static_pressure, SignStatus::NormalOperation);
+        bus.corrected_average_static_pressure.set(
+            Pressure::new::<hectopascal>(self.averaged_static_pressure_hpa),
+            SignStatus::NormalOperation,
+        );
 
         bus.vertical_speed.set(
             self.vertical_speed_filter.output(),
@@ -304,32 +474,42 @@ impl AirDataReferenceRuntime {
         );
 
         // If CAS is below 30kn, output as 0 with SSM = NCD
-        let computed_airspeed = self.measurement_inputs.indicated_airspeed;
-
-        if computed_airspeed >= Velocity::new::<knot>(Self::MINIMUM_CAS) {
+        if !self.computed_airspeed_valid {
             bus.computed_airspeed
-                .set(computed_airspeed, SignStatus::NormalOperation);
+                .set(Velocity::new::<knot>(0.), SignStatus::FailureWarning);
+        } else if self.computed_airspeed_knot >= Self::MINIMUM_CAS {
+            bus.computed_airspeed.set(
+                Velocity::new::<knot>(self.computed_airspeed_knot),
+                SignStatus::NormalOperation,
+            );
         } else {
             bus.computed_airspeed
                 .set(Velocity::new::<knot>(0.), SignStatus::NoComputedData);
         };
 
-        bus.max_allowable_airspeed
-            .set(self.max_allowable_speed, SignStatus::NormalOperation);
+        bus.max_allowable_airspeed.set(
+            Velocity::new::<knot>(self.max_allowable_speed_knot),
+            SignStatus::NormalOperation,
+        );
 
         // If mach is below 0.1, output as 0 with SSM = NCD
-        if self.measurement_inputs.mach >= Ratio::new::<ratio>(Self::MINIMUM_MACH) {
+        if !self.mach_valid {
+            bus.mach.set(Ratio::ZERO, SignStatus::FailureWarning);
+        } else if self.mach >= Self::MINIMUM_MACH {
             bus.mach
-                .set(self.measurement_inputs.mach, SignStatus::NormalOperation);
+                .set(Ratio::new::<ratio>(self.mach), SignStatus::NormalOperation);
         } else {
             bus.mach
                 .set(Ratio::new::<ratio>(0.), SignStatus::NoComputedData);
         }
 
         // If TAS is below 60 kts, output as 0 kt with SSM = NCD.
-        if self.measurement_inputs.true_airspeed >= Velocity::new::<knot>(Self::MINIMUM_TAS) {
+        if !self.true_airspeed_valid {
+            bus.true_airspeed
+                .set(Velocity::ZERO, SignStatus::FailureWarning);
+        } else if self.true_airspeed_knot >= Self::MINIMUM_TAS {
             bus.true_airspeed.set(
-                self.measurement_inputs.true_airspeed,
+                Velocity::new::<knot>(self.true_airspeed_knot),
                 SignStatus::NormalOperation,
             );
         } else {
@@ -337,36 +517,52 @@ impl AirDataReferenceRuntime {
                 .set(Velocity::new::<knot>(0.), SignStatus::NoComputedData);
         };
 
-        bus.corrected_angle_of_attack.set(
-            self.measurement_inputs.angle_of_attack,
-            if computed_airspeed >= Velocity::new::<knot>(Self::MINIMUM_CAS_FOR_AOA) {
-                SignStatus::NormalOperation
-            } else {
-                SignStatus::NoComputedData
-            },
-        );
+        if !self.angle_of_attack_valid {
+            bus.corrected_angle_of_attack
+                .set(Angle::ZERO, SignStatus::FailureWarning);
+        } else {
+            bus.corrected_angle_of_attack.set(
+                Angle::new::<degree>(self.angle_of_attack_deg),
+                if self.computed_airspeed_knot >= Self::MINIMUM_CAS_FOR_AOA {
+                    SignStatus::NormalOperation
+                } else {
+                    SignStatus::NoComputedData
+                },
+            );
+        }
 
-        bus.total_air_temperature.set(
-            self.measurement_inputs.total_air_temperature,
-            SignStatus::NormalOperation,
-        );
-        bus.static_air_temperature.set(
-            self.measurement_inputs.ambient_temperature,
-            SignStatus::NormalOperation,
-        );
+        if !self.total_air_temperature_valid {
+            bus.total_air_temperature
+                .set(ThermodynamicTemperature::ZERO, SignStatus::FailureWarning);
+        } else {
+            bus.total_air_temperature.set(
+                ThermodynamicTemperature::new::<degree_celsius>(self.total_air_temperature_deg_c),
+                SignStatus::NormalOperation,
+            );
+        }
+
+        if !self.total_air_temperature_valid {
+            bus.static_air_temperature
+                .set(ThermodynamicTemperature::ZERO, SignStatus::FailureWarning);
+        } else {
+            bus.static_air_temperature.set(
+                ThermodynamicTemperature::new::<degree_celsius>(self.static_air_temperature_deg_c),
+                SignStatus::NormalOperation,
+            );
+        }
     }
 
-    fn calculate_baro_alt_correction(baro_correction: Pressure) -> Length {
-        Length::new::<foot>(
-            -145442.15 * (1. - (baro_correction.get::<hectopascal>() / 1013.25).powf(0.192263)),
-        )
+    fn calculate_baro_alt_correction(baro_correction_hpa: f64) -> f64 {
+        -145442.15
+            * (1. - (baro_correction_hpa / Self::STANDARD_SEA_LEVEL_PRESSURE_HPA).powf(0.192263))
     }
 
-    fn update_altitude_word(value: Length, output: &mut Arinc429Word<Length>) {
+    fn update_altitude_word(value: f64, valid: bool, output: &mut Arinc429Word<Length>) {
         // the output is 17 bits with 1 foot resolution, and we're already clamping the value on the next line
-        let rounded_alt = Length::new::<foot>(value.get::<foot>().round());
+        let rounded_alt = Length::new::<foot>(value.round());
         if rounded_alt >= Length::new::<foot>(Self::MINIMUM_VALID_ALTITUDE)
             && rounded_alt <= Length::new::<foot>(Self::MAXIMUM_VALID_ALTITUDE)
+            && valid
         {
             output.set_value(rounded_alt);
             output.set_ssm(SignStatus::NormalOperation);

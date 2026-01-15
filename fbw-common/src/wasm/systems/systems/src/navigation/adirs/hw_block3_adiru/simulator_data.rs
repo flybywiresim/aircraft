@@ -1,70 +1,7 @@
 use crate::simulation::{
     InitContext, Read, SimulationElement, SimulatorReader, UpdateContext, VariableIdentifier,
 };
-use uom::si::{
-    angular_velocity::degree_per_second, f64::*, ratio::ratio, velocity::foot_per_minute,
-};
-
-#[derive(Clone, Copy, Default)]
-pub(crate) struct AdrSimulatorData {
-    mach_id: VariableIdentifier,
-    pub mach: Ratio,
-
-    true_airspeed_id: VariableIdentifier,
-    pub true_airspeed: Velocity,
-
-    total_air_temperature_id: VariableIdentifier,
-    pub total_air_temperature: ThermodynamicTemperature,
-
-    angle_of_attack_id: VariableIdentifier,
-    pub angle_of_attack: Angle,
-
-    pub indicated_airspeed: Velocity,
-
-    pub ambient_temperature: ThermodynamicTemperature,
-}
-impl AdrSimulatorData {
-    pub(super) const MACH: &'static str = "AIRSPEED MACH";
-    pub(super) const TRUE_AIRSPEED: &'static str = "AIRSPEED TRUE";
-    pub(super) const TOTAL_AIR_TEMPERATURE: &'static str = "TOTAL AIR TEMPERATURE";
-    pub(super) const ANGLE_OF_ATTACK: &'static str = "INCIDENCE ALPHA";
-
-    pub(crate) fn new(context: &mut InitContext) -> Self {
-        Self {
-            mach_id: context.get_identifier(Self::MACH.to_owned()),
-            mach: Default::default(),
-
-            true_airspeed_id: context.get_identifier(Self::TRUE_AIRSPEED.to_owned()),
-            true_airspeed: Default::default(),
-
-            total_air_temperature_id: context
-                .get_identifier(Self::TOTAL_AIR_TEMPERATURE.to_owned()),
-            total_air_temperature: Default::default(),
-
-            angle_of_attack_id: context.get_identifier(Self::ANGLE_OF_ATTACK.to_owned()),
-            angle_of_attack: Default::default(),
-
-            indicated_airspeed: Default::default(),
-
-            ambient_temperature: Default::default(),
-        }
-    }
-
-    pub(crate) fn update(&mut self, context: &UpdateContext) {
-        self.indicated_airspeed = context.indicated_airspeed();
-        self.ambient_temperature = context.ambient_temperature();
-    }
-}
-impl SimulationElement for AdrSimulatorData {
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        // To reduce reads, we only read these values once and then share it with the underlying ADRs and IRs.
-        let mach = reader.read(&self.mach_id);
-        self.mach = Ratio::new::<ratio>(mach);
-        self.true_airspeed = reader.read(&self.true_airspeed_id);
-        self.total_air_temperature = reader.read(&self.total_air_temperature_id);
-        self.angle_of_attack = reader.read(&self.angle_of_attack_id);
-    }
-}
+use uom::si::{angular_velocity::degree_per_second, f64::*, velocity::foot_per_minute};
 
 #[derive(Clone, Copy, Default)]
 pub(crate) struct IrSimulatorData {
