@@ -67,6 +67,10 @@ pub enum FailureType {
     EnhancedGroundProximityWarningSystemComputer,
     Adr(usize),
     Ir(usize),
+    Adm(usize),
+    PitotBlockage(usize),
+    StaticBlockage(usize),
+    AoaProbeStuck(usize),
 }
 
 pub struct Failure {

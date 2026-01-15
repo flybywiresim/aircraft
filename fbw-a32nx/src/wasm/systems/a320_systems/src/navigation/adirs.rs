@@ -1,26 +1,336 @@
 use std::ops::{Index, IndexMut};
 use std::time::Duration;
 
-use systems::navigation::adirs::hw_block3_adiru::adiru::AirDataInertialReferenceUnit;
-use systems::navigation::adirs::hw_block3_adiru::{
-    AdirsElectricalHarness, AdiruElectricalHarness, AirDataInertialReferenceSystem,
+use systems::air_conditioning::AdirsToAirCondInterface;
+use systems::auto_flight::FlightControlUnitBusOutput;
+use systems::navigation::adirs::air_data_sensors::air_data_module::{
+    AirDataModule, AirDataModuleInstallationPosition,
 };
 use systems::navigation::adirs::{
-    AdrDiscreteInputs, AirDataAttHdgSwitchingKnobPosition, AirDataReferenceDiscreteOutput,
-    InertialReferenceDiscreteOutput, IrDiscreteInputs, ModeSelectorPosition,
+    air_data_sensors::{
+        AngleOfAttackVane, PitotTube, PressureTube, StaticPort, TemperatureProbe,
+        TotalAirTemperatureProbe, WindVane,
+    },
+    hw_block3_adiru::{adiru::AirDataInertialReferenceUnit, AdiruElectricalHarness},
+    AdrAnalogInput, AdrAnalogInputs, AdrDiscreteInputs, AirDataAttHdgSwitchingKnobPosition,
+    AirDataModulePowerProvider, AirDataReferenceBusOutput, AirDataReferenceDiscreteOutput,
+    InertialReferenceBusOutput, InertialReferenceDiscreteOutput, IrDiscreteInputs,
+    ModeSelectorPosition,
 };
-use systems::navigation::ala52b::{
-    Ala52BAircraftInstallationDelay, Ala52BRadioAltimeter, Ala52BTransceiverPair,
+use systems::shared::{
+    arinc429::Arinc429Word, logic_nodes::ConfirmationNode, AdirsDiscreteOutputs,
+    AdirsMeasurementOutputs, ElectricalBusType, ElectricalBuses,
 };
-use systems::navigation::radio_altimeter::{AntennaInstallation, RadioAltimeter};
-use systems::shared::logic_nodes::ConfirmationNode;
-use systems::shared::{ElectricalBusType, ElectricalBuses};
 use systems::simulation::{
     InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
     SimulatorWriter, UpdateContext, VariableIdentifier, Write,
 };
-use uom::si::f64::*;
-use uom::si::length::{foot, meter};
+use uom::si::{
+    angle::degree, f64::*, pressure::hectopascal, thermodynamic_temperature::degree_celsius,
+};
+
+pub struct A320AirDataInertialReferenceSystem {
+    pub adiru_1: AirDataInertialReferenceUnit,
+    pub adiru_2: AirDataInertialReferenceUnit,
+    pub adiru_3: AirDataInertialReferenceUnit,
+
+    pub sensor_complex_1: A320AirDataSensorsComplex,
+    pub sensor_complex_2: A320AirDataSensorsComplex,
+    pub sensor_complex_3: A320AirDataSensorsComplex,
+}
+impl A320AirDataInertialReferenceSystem {
+    pub fn new(context: &mut InitContext) -> Self {
+        Self {
+            adiru_1: AirDataInertialReferenceUnit::new(context, 1),
+            adiru_2: AirDataInertialReferenceUnit::new(context, 2),
+            adiru_3: AirDataInertialReferenceUnit::new(context, 3),
+
+            sensor_complex_1: A320AirDataSensorsComplex::new(context, 1),
+            sensor_complex_2: A320AirDataSensorsComplex::new(context, 2),
+            sensor_complex_3: A320AirDataSensorsComplex::new(context, 3),
+        }
+    }
+
+    pub fn update(
+        &mut self,
+        context: &UpdateContext,
+        electrical_harness: &A320AdirsElectricalHarness,
+        fcu: &impl FlightControlUnitBusOutput,
+    ) {
+        (1..=3).for_each(|adiru_num| {
+            // For the ADR input:
+            // Nr. | Input 1 | Input 2
+            // ----|---------|--------
+            // 1   | ADR 3   | ADR 2
+            // 2   | ADR 3   | ADR 1
+            // 3   | ADR 1   | ADR 2
+
+            let (adiru_own, adr_1, adr_2) = match adiru_num {
+                1 => (&mut self.adiru_1, &self.adiru_3, &self.adiru_2),
+                2 => (&mut self.adiru_2, &self.adiru_3, &self.adiru_1),
+                3 => (&mut self.adiru_3, &self.adiru_1, &self.adiru_2),
+                _ => panic!("Impossible Installation position encountered"),
+            };
+
+            let adiru_harness = electrical_harness.get_adiru_electrical_harness(adiru_num);
+            let (sensor_complex, tat_probe_1) = match adiru_num {
+                1 => (&mut self.sensor_complex_1, None),
+                2 => (&mut self.sensor_complex_2, None),
+                3 => (
+                    &mut self.sensor_complex_3,
+                    Some(
+                        self.sensor_complex_1
+                            .tat_probe
+                            .as_ref()
+                            .expect("Sensor complex 1 did not have TAT probe."),
+                    ),
+                ),
+                _ => panic!("Impossible Installation position encountered"),
+            };
+
+            sensor_complex.update(context, adiru_own, adiru_harness, tat_probe_1);
+
+            adiru_own.update(
+                context,
+                adiru_harness.adr_discrete_inputs(),
+                &sensor_complex.analog_input_data,
+                adiru_harness.ir_discrete_inputs(),
+                fcu,
+                adr_1,
+                adr_2,
+                &sensor_complex.adm_1,
+                &sensor_complex.adm_2,
+                sensor_complex.adm_3.as_ref(),
+            );
+        });
+    }
+}
+impl Index<usize> for A320AirDataInertialReferenceSystem {
+    type Output = AirDataInertialReferenceUnit;
+
+    fn index(&self, num: usize) -> &Self::Output {
+        match num {
+            1 => &self.adiru_1,
+            2 => &self.adiru_2,
+            3 => &self.adiru_3,
+            _ => panic!("Invalid ADIRU Index {num}"),
+        }
+    }
+}
+impl IndexMut<usize> for A320AirDataInertialReferenceSystem {
+    fn index_mut(&mut self, num: usize) -> &mut Self::Output {
+        match num {
+            1 => &mut self.adiru_1,
+            2 => &mut self.adiru_2,
+            3 => &mut self.adiru_3,
+            _ => panic!("Invalid ADIRU Index {num}"),
+        }
+    }
+}
+// Implement legacy discrete outputs to satisfy trait bounds
+impl AdirsDiscreteOutputs for A320AirDataInertialReferenceSystem {
+    fn low_speed_warning_1(&self, adiru_number: usize) -> bool {
+        AirDataReferenceDiscreteOutput::discrete_outputs(&self[adiru_number]).low_speed_warning_1
+    }
+
+    fn low_speed_warning_2(&self, adiru_number: usize) -> bool {
+        AirDataReferenceDiscreteOutput::discrete_outputs(&self[adiru_number]).low_speed_warning_2
+    }
+
+    fn low_speed_warning_3(&self, adiru_number: usize) -> bool {
+        AirDataReferenceDiscreteOutput::discrete_outputs(&self[adiru_number]).low_speed_warning_3
+    }
+
+    fn low_speed_warning_4(&self, adiru_number: usize) -> bool {
+        AirDataReferenceDiscreteOutput::discrete_outputs(&self[adiru_number]).low_speed_warning_4
+    }
+}
+impl AdirsMeasurementOutputs for A320AirDataInertialReferenceSystem {
+    fn is_fully_aligned(&self, adiru_number: usize) -> bool {
+        InertialReferenceBusOutput::bus_outputs(&self[adiru_number])
+            .discrete_word_1
+            .get_bit(13)
+    }
+    fn latitude(&self, adiru_number: usize) -> Arinc429Word<Angle> {
+        InertialReferenceBusOutput::bus_outputs(&self[adiru_number]).ppos_latitude
+    }
+    fn longitude(&self, adiru_number: usize) -> Arinc429Word<Angle> {
+        InertialReferenceBusOutput::bus_outputs(&self[adiru_number]).ppos_longitude
+    }
+    fn heading(&self, adiru_number: usize) -> Arinc429Word<Angle> {
+        InertialReferenceBusOutput::bus_outputs(&self[adiru_number]).magnetic_heading
+    }
+    fn true_heading(&self, adiru_number: usize) -> Arinc429Word<Angle> {
+        InertialReferenceBusOutput::bus_outputs(&self[adiru_number]).true_heading
+    }
+    fn vertical_speed(&self, adiru_number: usize) -> Arinc429Word<Velocity> {
+        InertialReferenceBusOutput::bus_outputs(&self[adiru_number]).inertial_vertical_speed
+    }
+    fn altitude(&self, adiru_number: usize) -> Arinc429Word<Length> {
+        AirDataReferenceBusOutput::bus_outputs(&self[adiru_number]).standard_altitude
+    }
+    fn angle_of_attack(&self, adiru_number: usize) -> Arinc429Word<Angle> {
+        AirDataReferenceBusOutput::bus_outputs(&self[adiru_number]).corrected_angle_of_attack
+    }
+    fn computed_airspeed(&self, adiru_number: usize) -> Arinc429Word<Velocity> {
+        AirDataReferenceBusOutput::bus_outputs(&self[adiru_number]).computed_airspeed
+    }
+}
+impl AdirsToAirCondInterface for A320AirDataInertialReferenceSystem {
+    fn ground_speed(&self, adiru_number: usize) -> Arinc429Word<Velocity> {
+        InertialReferenceBusOutput::bus_outputs(&self[adiru_number]).ground_speed
+    }
+    fn true_airspeed(&self, adiru_number: usize) -> Arinc429Word<Velocity> {
+        AirDataReferenceBusOutput::bus_outputs(&self[adiru_number]).true_airspeed
+    }
+    fn baro_correction(&self, adiru_number: usize) -> Arinc429Word<Pressure> {
+        let word =
+            AirDataReferenceBusOutput::bus_outputs(&self[adiru_number]).baro_correction_1_hpa;
+        Arinc429Word::new(Pressure::new::<hectopascal>(word.value()), word.ssm())
+    }
+    fn ambient_static_pressure(&self, adiru_number: usize) -> Arinc429Word<Pressure> {
+        AirDataReferenceBusOutput::bus_outputs(&self[adiru_number])
+            .corrected_average_static_pressure
+    }
+}
+impl SimulationElement for A320AirDataInertialReferenceSystem {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.sensor_complex_1.accept(visitor);
+        self.sensor_complex_2.accept(visitor);
+        self.sensor_complex_3.accept(visitor);
+
+        self.adiru_1.accept(visitor);
+        self.adiru_2.accept(visitor);
+        self.adiru_3.accept(visitor);
+
+        visitor.visit(self);
+    }
+}
+
+pub struct A320AirDataSensorsComplex {
+    pitot_tube: PitotTube,
+
+    left_static_port: StaticPort,
+    right_static_port: StaticPort,
+
+    pressure_tube: Option<PressureTube>,
+
+    aoa_probe: AngleOfAttackVane,
+
+    tat_probe: Option<TotalAirTemperatureProbe>,
+
+    pub adm_1: AirDataModule,
+    pub adm_2: AirDataModule,
+    pub adm_3: Option<AirDataModule>,
+
+    analog_input_data: AdrAnalogInputs,
+}
+impl A320AirDataSensorsComplex {
+    pub fn new(context: &mut InitContext, num: usize) -> Self {
+        Self {
+            pitot_tube: PitotTube::new(context, num),
+
+            left_static_port: StaticPort::new(context, num),
+            right_static_port: StaticPort::new(context, num),
+
+            pressure_tube: if num == 3 {
+                Some(PressureTube::new())
+            } else {
+                None
+            },
+
+            aoa_probe: AngleOfAttackVane::new(context, num),
+
+            tat_probe: if num == 3 {
+                None
+            } else {
+                Some(TotalAirTemperatureProbe::new(context))
+            },
+
+            adm_1: AirDataModule::new(context, AirDataModuleInstallationPosition::TotalPressure),
+            adm_2: AirDataModule::new(
+                context,
+                if num == 3 {
+                    AirDataModuleInstallationPosition::AverageStaticPressure
+                } else {
+                    AirDataModuleInstallationPosition::LeftStaticPressure
+                },
+            ),
+            adm_3: if num == 3 {
+                None
+            } else {
+                Some(AirDataModule::new(
+                    context,
+                    AirDataModuleInstallationPosition::RightStaticPressure,
+                ))
+            },
+
+            analog_input_data: AdrAnalogInputs::default(),
+        }
+    }
+
+    pub fn update(
+        &mut self,
+        context: &UpdateContext,
+        adiru: &impl AirDataModulePowerProvider,
+        adiru_harness: &A320AdiruElectricalHarness,
+        tat_probe_1: Option<&TotalAirTemperatureProbe>,
+    ) {
+        self.adm_1.set_powered(adiru.provides_power());
+        self.adm_2.set_powered(adiru.provides_power());
+        if let Some(adm_3) = &mut self.adm_3 {
+            adm_3.set_powered(adiru.provides_power());
+        }
+
+        self.adm_1.update(context, &self.pitot_tube);
+
+        if let Some(pressure_tube) = &mut self.pressure_tube {
+            pressure_tube.update(&self.left_static_port, &self.right_static_port);
+
+            self.adm_2.update(context, pressure_tube);
+        } else {
+            self.adm_2.update(context, &self.left_static_port);
+        };
+
+        if let Some(adm_3) = &mut self.adm_3 {
+            adm_3.update(context, &self.right_static_port);
+        };
+
+        self.analog_input_data.aoa_excitation_voltage_v = if adiru_harness.aoa_excitation_powered()
+        {
+            26.
+        } else {
+            0.
+        };
+        self.analog_input_data.aoa_resolver_angle_deg = self.aoa_probe.get_angle().get::<degree>();
+        self.analog_input_data.tat_value_deg_c = if let Some(tat_probe) = &self.tat_probe {
+            tat_probe.get_temperature()
+        } else {
+            tat_probe_1
+                .expect("No TAT probe 1 received in ADIRU 3 sensors.")
+                .get_temperature()
+        }
+        .get::<degree_celsius>()
+    }
+}
+impl AdrAnalogInput for A320AirDataSensorsComplex {
+    fn analog_input(&self) -> &AdrAnalogInputs {
+        &self.analog_input_data
+    }
+}
+impl SimulationElement for A320AirDataSensorsComplex {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.aoa_probe.accept(visitor);
+        if let Some(tat_probe) = &mut self.tat_probe {
+            tat_probe.accept(visitor);
+        }
+        self.pitot_tube.accept(visitor);
+        self.left_static_port.accept(visitor);
+        self.right_static_port.accept(visitor);
+
+        visitor.visit(self);
+    }
+}
 
 pub(crate) struct A320AdirsElectricalHarness {
     on_bat_light_id: VariableIdentifier,
@@ -58,7 +368,7 @@ impl A320AdirsElectricalHarness {
     pub fn update_before_adirus(
         &mut self,
         context: &UpdateContext,
-        adirs: &mut AirDataInertialReferenceSystem,
+        adirs: &mut A320AirDataInertialReferenceSystem,
     ) {
         (1..=3).into_iter().for_each(|adiru_num| {
             let adiru_harness = &mut self[adiru_num];
@@ -69,7 +379,7 @@ impl A320AdirsElectricalHarness {
             .update(self.on_bat_light, context.delta());
     }
 
-    pub fn update_after_adirus(&mut self, adirs: &AirDataInertialReferenceSystem) {
+    pub fn update_after_adirus(&mut self, adirs: &A320AirDataInertialReferenceSystem) {
         self.on_bat_light = false;
 
         (1..=3).into_iter().for_each(|adiru_num| {
@@ -85,9 +395,8 @@ impl A320AdirsElectricalHarness {
                 self.on_bat_light |= adiru_is_on_bat;
             });
     }
-}
-impl AdirsElectricalHarness for A320AdirsElectricalHarness {
-    fn get_adiru_electrical_harness(&self, num: usize) -> &impl AdiruElectricalHarness {
+
+    fn get_adiru_electrical_harness(&self, num: usize) -> &A320AdiruElectricalHarness {
         &self[num]
     }
 }
@@ -148,6 +457,9 @@ pub(crate) struct A320AdiruElectricalHarness {
     backup_powered: bool,
     backup_powersupply_relay_switching_powered_1: bool,
     backup_powersupply_relay_switching_powered_2: bool,
+
+    aoa_excitation_power_source: ElectricalBusType,
+    aoa_excitation_powered: bool,
 
     // ATT HDG switching knob position (for powersupply)
     att_hdg_swtg_knob_id: VariableIdentifier,
@@ -220,6 +532,14 @@ impl A320AdiruElectricalHarness {
             backup_powered: is_powered,
             backup_powersupply_relay_switching_powered_1: is_powered,
             backup_powersupply_relay_switching_powered_2: is_powered,
+
+            aoa_excitation_power_source: match num {
+                1 => ElectricalBusType::AlternatingCurrentEssentialShed,
+                2 => ElectricalBusType::AlternatingCurrent(2),
+                3 => ElectricalBusType::AlternatingCurrent(1),
+                _ => panic!("ADIRU Harness: Impossible installation position"),
+            },
+            aoa_excitation_powered: false,
 
             att_hdg_swtg_knob_id: context.get_identifier("ATT_HDG_SWITCHING_KNOB".to_owned()),
             att_hdg_swtg_knob_position: AirDataAttHdgSwitchingKnobPosition::Norm,
@@ -336,6 +656,10 @@ impl A320AdiruElectricalHarness {
         self.ir_fault_warn = ir_discrete_outputs.ir_fault;
         self.ir_align_discrete = ir_discrete_outputs.align;
     }
+
+    fn aoa_excitation_powered(&self) -> bool {
+        self.aoa_excitation_powered
+    }
 }
 impl AdiruElectricalHarness for A320AdiruElectricalHarness {
     fn adr_discrete_inputs(&self) -> &AdrDiscreteInputs {
@@ -389,139 +713,7 @@ impl SimulationElement for A320AdiruElectricalHarness {
         self.backup_powersupply_relay_switching_powered_2 = self
             .backup_powersupply_relay_switching_2
             .map_or(false, |bus| buses.is_powered(bus));
-    }
-}
 
-//pub(crate) struct A320AirDataInertialReferenceSystemBuilder;
-//impl A320AirDataInertialReferenceSystemBuilder {
-//    pub(crate) fn build(context: &mut InitContext) -> AirDataInertialReferenceSystem {
-//        let adirs_programming = AirDataInertialReferenceUnitProgramming::new(
-//            Velocity::new::<knot>(350.),
-//            MachNumber(0.82),
-//            [
-//                LowSpeedWarningThreshold::new(
-//                    Velocity::new::<knot>(100.),
-//                    Velocity::new::<knot>(104.),
-//                ),
-//                LowSpeedWarningThreshold::new(
-//                    Velocity::new::<knot>(50.),
-//                    Velocity::new::<knot>(54.),
-//                ),
-//                LowSpeedWarningThreshold::new(
-//                    Velocity::new::<knot>(155.),
-//                    Velocity::new::<knot>(159.),
-//                ),
-//                LowSpeedWarningThreshold::new(
-//                    Velocity::new::<knot>(260.),
-//                    Velocity::new::<knot>(264.),
-//                ),
-//            ],
-//        );
-//        AirDataInertialReferenceSystem::new(context, adirs_programming)
-//    }
-//}
-
-pub struct A320RadioAltimeters {
-    radio_altimeter_1: A320RadioAltimeter,
-    radio_altimeter_2: A320RadioAltimeter,
-}
-
-impl A320RadioAltimeters {
-    pub fn new(context: &mut InitContext) -> Self {
-        Self {
-            radio_altimeter_1: A320RadioAltimeter::new(
-                context,
-                1,
-                ElectricalBusType::AlternatingCurrent(1),
-                AntennaInstallation::new(
-                    // Sim CG minus RA height over ground
-                    Length::new::<foot>(8.617) - Length::new::<meter>(1.8),
-                    // Aft distance from Sim CG
-                    Length::new::<meter>(9.89),
-                    // Electric length of the antennas and cable modeling some material variation
-                    Length::new::<foot>(22.4),
-                ),
-                AntennaInstallation::new(
-                    Length::new::<foot>(8.617) - Length::new::<meter>(1.8),
-                    Length::new::<meter>(9.19),
-                    Length::new::<foot>(22.4),
-                ),
-            ),
-            radio_altimeter_2: A320RadioAltimeter::new(
-                context,
-                2,
-                ElectricalBusType::AlternatingCurrent(2),
-                AntennaInstallation::new(
-                    Length::new::<foot>(8.617) - Length::new::<meter>(1.8),
-                    Length::new::<meter>(11.27),
-                    Length::new::<foot>(21.4),
-                ),
-                AntennaInstallation::new(
-                    Length::new::<foot>(8.617) - Length::new::<meter>(1.8),
-                    Length::new::<meter>(11.96),
-                    Length::new::<foot>(21.4),
-                ),
-            ),
-        }
-    }
-
-    pub fn update(&mut self, context: &UpdateContext) {
-        self.radio_altimeter_1.update(context);
-        self.radio_altimeter_2.update(context);
-    }
-
-    pub fn radio_altimeter_1(&self) -> &impl RadioAltimeter {
-        &self.radio_altimeter_1.radio_altimeter
-    }
-
-    pub fn radio_altimeter_2(&self) -> &impl RadioAltimeter {
-        &self.radio_altimeter_2.radio_altimeter
-    }
-}
-
-impl SimulationElement for A320RadioAltimeters {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.radio_altimeter_1.accept(visitor);
-        self.radio_altimeter_2.accept(visitor);
-
-        visitor.visit(self);
-    }
-}
-
-pub struct A320RadioAltimeter {
-    radio_altimeter: Ala52BRadioAltimeter,
-    transceivers: Ala52BTransceiverPair,
-}
-
-impl A320RadioAltimeter {
-    fn new(
-        context: &mut InitContext,
-        number: usize,
-        powered_by: ElectricalBusType,
-        transmitter: AntennaInstallation,
-        receiver: AntennaInstallation,
-    ) -> Self {
-        Self {
-            radio_altimeter: Ala52BRadioAltimeter::new(
-                context,
-                number,
-                Ala52BAircraftInstallationDelay::FiftySevenFeet,
-                powered_by,
-            ),
-            transceivers: Ala52BTransceiverPair::new(context, number, transmitter, receiver),
-        }
-    }
-
-    fn update(&mut self, context: &UpdateContext) {
-        self.radio_altimeter.update(context, &self.transceivers);
-    }
-}
-
-impl SimulationElement for A320RadioAltimeter {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.transceivers.accept(visitor);
-        self.radio_altimeter.accept(visitor);
-
-        visitor.visit(self);
+        self.aoa_excitation_powered = buses.is_powered(self.aoa_excitation_power_source);
     }
 }
