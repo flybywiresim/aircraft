@@ -56,3 +56,13 @@ jobs:
         run: |
           node ./scripts/remove_qa_config.js
           ./scripts/cf-cdn.sh ./qa-config $CDN_BUCKET_DESTINATION
+      - name: Remove PR files from CloudFlare CDN
+        env:
+          R2_BUCKET: flybywiresim
+          CDN_BUCKET_DESTINATION_A32NX: addons/a32nx/pr-${{ github.event.pull_request.number }}
+          CDN_BUCKET_DESTINATION_A380X_4K: addons/a380x/pr-${{ github.event.pull_request.number }}-4k
+          CDN_BUCKET_DESTINATION_A380X_8K: addons/a380x/pr-${{ github.event.pull_request.number }}-8k
+        run: |
+          rclone delete cloudflare-r2:$R2_BUCKET/$CDN_BUCKET_DESTINATION_A32NX || true
+          rclone delete cloudflare-r2:$R2_BUCKET/$CDN_BUCKET_DESTINATION_A380X_4K || true
+          rclone delete cloudflare-r2:$R2_BUCKET/$CDN_BUCKET_DESTINATION_A380X_8K || true
