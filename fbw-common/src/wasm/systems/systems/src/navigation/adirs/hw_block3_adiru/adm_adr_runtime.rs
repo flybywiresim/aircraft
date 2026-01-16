@@ -37,6 +37,10 @@ pub struct AdmAirDataReferenceRuntime {
     is_off: bool,
     output_inhibited: bool,
 
+    // Fault Detection
+    sensor_fault_detected: bool,
+    internal_fault_detected: bool,
+
     // AOA
     angle_of_attack_deg: f64,
     angle_of_attack_valid: bool,
@@ -104,6 +108,9 @@ impl AdrRuntimeTemplate for AdmAirDataReferenceRuntime {
             on_off_command_pulse_node: PulseNode::new_rising(),
             is_off: false,
             output_inhibited: false,
+
+            sensor_fault_detected: false,
+            internal_fault_detected: false,
 
             angle_of_attack_deg: 0.,
             angle_of_attack_valid: false,
@@ -202,6 +209,7 @@ impl AdmAirDataReferenceRuntime {
         adm_1: &impl AirDataModuleBusOutput,
         adm_2: &impl AirDataModuleBusOutput,
         adm_3: Option<&impl AirDataModuleBusOutput>,
+        fault_active: bool,
     ) {
         // First, check if we're still starting up and if so, simulate a wait until all self tests
         // have completed.
@@ -223,6 +231,7 @@ impl AdmAirDataReferenceRuntime {
         self.update_tas();
         self.update_overspeed_status();
         self.update_low_speed_warning_status();
+        self.update_fault_status(fault_active);
     }
 
     fn update_off_status(&mut self, discrete_inputs: &AdrDiscreteInputs) {
@@ -243,6 +252,13 @@ impl AdmAirDataReferenceRuntime {
             self.is_off = false;
         }
         self.output_inhibited = self.is_off || mode_sel_off;
+    }
+
+    fn update_fault_status(&mut self, internal_fault_active: bool) {
+        self.sensor_fault_detected = !self.averaged_static_pressure_avail
+            || !self.total_pressure_avail
+            || !self.angle_of_attack_valid;
+        self.internal_fault_detected = internal_fault_active;
     }
 
     fn update_aoa(&mut self, analog_inputs: &AdrAnalogInputs) {
@@ -595,7 +611,8 @@ impl AdmAirDataReferenceRuntime {
         }
 
         discrete_outputs.adr_off = self.is_off;
-        discrete_outputs.adr_fault = false;
+        discrete_outputs.adr_fault =
+            !self.is_off && (self.internal_fault_detected || self.sensor_fault_detected);
         discrete_outputs.overspeed_warning = self.overspeed_active && !self.output_inhibited;
         discrete_outputs.low_speed_warning_1 =
             self.low_speed_warning_1_hysteresis.get_output() && !self.output_inhibited;
@@ -613,7 +630,7 @@ impl AdmAirDataReferenceRuntime {
         // FIXME implement icing detector heat
         // FIXME implement pitot heat
 
-        if false {
+        if self.internal_fault_detected || self.sensor_fault_detected {
             discrete_word |= AdrDiscrete1Flags::ADR_STATUS_FAIL;
         }
 
@@ -648,7 +665,7 @@ impl AdmAirDataReferenceRuntime {
     }
 
     pub(super) fn is_output_inhibited(&self) -> bool {
-        self.output_inhibited
+        self.output_inhibited || self.internal_fault_detected
     }
 }
 

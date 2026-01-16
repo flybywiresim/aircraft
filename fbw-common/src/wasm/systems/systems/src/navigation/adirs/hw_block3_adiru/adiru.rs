@@ -194,7 +194,7 @@ impl AirDataInertialReferenceUnit<AdmAirDataReferenceRuntime> {
 
         // Check if the internal state (runtime) is lost because either the unit failed, the
         // power holdover has been exceed, or the ADIRU has entered standby mode
-        if self.adr_failure.is_active() || !self.computer_powered() {
+        if !self.computer_powered() {
             // Throw away the simulated software runtime
             self.adr_runtime = None;
 
@@ -221,6 +221,7 @@ impl AirDataInertialReferenceUnit<AdmAirDataReferenceRuntime> {
                 adm_1,
                 adm_2,
                 adm_3,
+                self.adr_failure.is_active(),
             );
 
             runtime.set_discrete_outputs(&mut self.adr_discrete_output_data);
@@ -280,7 +281,7 @@ impl AirDataInertialReferenceUnit<IntegratedAirDataReferenceRuntime> {
 
         // Check if the internal state (runtime) is lost because either the unit failed, the
         // power holdover has been exceed, or the ADIRU has entered standby mode
-        if self.adr_failure.is_active() || !self.computer_powered() {
+        if !self.computer_powered() {
             // Throw away the simulated software runtime
             self.adr_runtime = None;
 
@@ -308,6 +309,7 @@ impl AirDataInertialReferenceUnit<IntegratedAirDataReferenceRuntime> {
                 isp_left,
                 isp_right,
                 ssa,
+                self.adr_failure.is_active(),
             );
 
             runtime.set_discrete_outputs(&mut self.adr_discrete_output_data);
