@@ -34,7 +34,10 @@ use fire_and_smoke_protection::A380FireAndSmokeProtection;
 use fuel::FuelLevel;
 use hydraulic::{autobrakes::A380AutobrakePanel, A380Hydraulic, A380HydraulicOverheadPanel};
 use icing::Icing;
-use navigation::{A380AdirsElectricalHarness, A380RadioAltimeters};
+use navigation::{
+    adirs::{A380AdirsElectricalHarness, A380AirDataInertialReferenceSystem},
+    A380RadioAltimeters,
+};
 use payload::A380Payload;
 use power_consumption::A380PowerConsumption;
 use reverser::{A380ReverserController, A380Reversers};
@@ -51,7 +54,6 @@ use systems::{
     engine::{reverser_thrust::ReverserForce, trent_engine::TrentEngine, EngineFireOverheadPanel},
     enhanced_gpwc::EnhancedGroundProximityWarningComputer,
     landing_gear::{LandingGear, LandingGearControlInterfaceUnitSet},
-    navigation::adirs::hw_block3_adiru::AirDataInertialReferenceSystem,
     shared::ElectricalBusType,
     simulation::{
         Aircraft, InitContext, SimulationElement, SimulationElementVisitor, UpdateContext,
@@ -61,7 +63,7 @@ use systems::{
 pub struct A380 {
     adcn: A380AvionicsDataCommunicationNetwork,
     adcn_simvar_translation: A380AvionicsDataCommunicationNetworkSimvarTranslator,
-    adirs: AirDataInertialReferenceSystem,
+    adirs: A380AirDataInertialReferenceSystem,
     adirs_electrical_harness: A380AdirsElectricalHarness,
     air_conditioning: A380AirConditioning,
     apu: AuxiliaryPowerUnit<Pw980ApuGenerator, Pw980StartMotor, Pw980Constants, 2>,
@@ -108,7 +110,7 @@ impl A380 {
         A380 {
             adcn,
             adcn_simvar_translation,
-            adirs: AirDataInertialReferenceSystem::new(context),
+            adirs: A380AirDataInertialReferenceSystem::new(context),
             adirs_electrical_harness: A380AdirsElectricalHarness::new(context),
             air_conditioning: A380AirConditioning::new(context),
             apu: AuxiliaryPowerUnitFactory::new_pw980(

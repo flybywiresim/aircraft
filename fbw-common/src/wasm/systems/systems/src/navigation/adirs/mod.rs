@@ -102,6 +102,8 @@ pub struct AirDataReferenceBusOutputs {
     pub corrected_angle_of_attack: Arinc429Word<Angle>,
     /// Label 246
     pub corrected_average_static_pressure: Arinc429Word<Pressure>,
+    /// Label 251
+    pub corrected_side_slip_angle: Arinc429Word<Angle>,
     /// Label 270
     pub discrete_word_1: Arinc429Word<u32>,
     /// Label 271
@@ -147,6 +149,8 @@ pub trait AirDataReferenceBus {
     fn corrected_angle_of_attack(&self) -> Arinc429Word<Angle>;
     /// Label 246
     fn corrected_average_static_pressure(&self) -> Arinc429Word<Pressure>;
+    /// Label 251
+    fn corrected_side_slip_angle(&self) -> Arinc429Word<Angle>;
 }
 
 #[derive(Default)]
