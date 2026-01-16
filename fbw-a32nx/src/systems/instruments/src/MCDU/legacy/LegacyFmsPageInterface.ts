@@ -220,7 +220,6 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   activateSecondaryPlan(index: number): Promise<void>;
   swapActiveAndSecondaryPlan(index: number): Promise<void>;
   computeAlternateCruiseLevel(forPlan: FlightPlanIndex): number | undefined;
-  uplinkWinds(forPlan: FlightPlanIndex): Promise<void>;
   computeAlternateCruiseLevel(forPlan: FlightPlanIndex): number | undefined;
   uplinkWinds(forPlan: FlightPlanIndex, sentCallback?: () => void): Promise<void>;
   getHistoryWinds(cruiseLevel: number | null): Readonly<WindEntry>[] | undefined;
