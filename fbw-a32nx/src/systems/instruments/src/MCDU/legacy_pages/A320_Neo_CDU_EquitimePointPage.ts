@@ -205,30 +205,12 @@ export class CDUEquitimePointPage {
         etpToRef1DistColumn.update(etpService.etpDistanceToReferenceFix1.toFixed(0), Column.green);
       }
 
-      if (etpService.etpTimeToReferenceFix1 !== undefined) {
-        etpToRef1UtcColumn.update(
-          isFlying
-            ? FmsFormatters.secondsToUTC(utcTime + etpService.etpTimeToReferenceFix1 * 3600)
-            : FmsFormatters.secondsTohhmm(etpService.etpTimeToReferenceFix1 * 3600),
-          Column.green,
-        );
-      }
-
       if (etpService.etpBearingToReferenceFix2 !== undefined) {
         etpToRef2BrgColumn.update(`${etpService.etpBearingToReferenceFix2.toFixed(0).padStart(3, '0')}°`, Column.green);
       }
 
       if (etpService.etpDistanceToReferenceFix2 !== undefined) {
         etpToRef2DistColumn.update(etpService.etpDistanceToReferenceFix2.toFixed(0), Column.green);
-      }
-
-      if (etpService.etpTimeToReferenceFix2 !== undefined) {
-        etpToRef2UtcColumn.update(
-          isFlying
-            ? FmsFormatters.secondsToUTC(utcTime + etpService.etpTimeToReferenceFix2 * 3600)
-            : FmsFormatters.secondsTohhmm(etpService.etpTimeToReferenceFix2 * 3600),
-          Column.green,
-        );
       }
 
       etpToRef1LabelColumn.update(`ETP TO ${etpService.referenceFix1.ident}`);
@@ -253,6 +235,28 @@ export class CDUEquitimePointPage {
             : FmsFormatters.secondsTohhmm(etpService.pposTimeToEtp * 3600),
           Column.green,
         );
+
+        if (etpService.etpTimeToReferenceFix1 !== undefined) {
+          etpToRef1UtcColumn.update(
+            isFlying
+              ? FmsFormatters.secondsToUTC(
+                  utcTime + etpService.pposTimeToEtp + etpService.etpTimeToReferenceFix1 * 3600,
+                )
+              : FmsFormatters.secondsTohhmm(etpService.etpTimeToReferenceFix1 * 3600),
+            Column.green,
+          );
+        }
+
+        if (etpService.etpTimeToReferenceFix2 !== undefined) {
+          etpToRef2UtcColumn.update(
+            isFlying
+              ? FmsFormatters.secondsToUTC(
+                  utcTime + etpService.pposTimeToEtp + etpService.etpTimeToReferenceFix2 * 3600,
+                )
+              : FmsFormatters.secondsTohhmm(etpService.etpTimeToReferenceFix2 * 3600),
+            Column.green,
+          );
+        }
       }
     }
 
