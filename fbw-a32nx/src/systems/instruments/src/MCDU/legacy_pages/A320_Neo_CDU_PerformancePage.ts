@@ -921,7 +921,7 @@ export class CDUPerformancePage {
       isPhaseActive,
       isSelected,
     );
-    const timeLabel = isFlying ? '\xa0UTC' : 'TIME';
+    const timeLabel = mcdu.getTimePredictionHeader().padStart(4, '\xa0');
     const [destEfobCell, destTimeCell] = CDUPerformancePage.formatDestEfobAndTime(mcdu, isFlying, forPlan);
     const [toUtcLabel, toDistLabel] = shouldShowPredTo ? ['\xa0UTC', 'DIST'] : ['', ''];
 
@@ -1508,11 +1508,7 @@ export class CDUPerformancePage {
       }
 
       if (Number.isFinite(destinationPrediction.secondsFromPresent)) {
-        const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
-
-        const predToTimeCellText = isFlying
-          ? FmsFormatters.secondsToUTC(utcTime + destinationPrediction.secondsFromPresent)
-          : FmsFormatters.secondsTohhmm(destinationPrediction.secondsFromPresent);
+        const predToTimeCellText = mcdu.getTimePrediction(destinationPrediction.secondsFromPresent);
 
         destTimeCell = predToTimeCellText + '[color]green';
       }

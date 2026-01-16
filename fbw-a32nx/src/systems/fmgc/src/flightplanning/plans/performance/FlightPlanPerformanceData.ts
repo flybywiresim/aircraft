@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2022 2026 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -480,6 +480,8 @@ export interface FlightPlanPerformanceData {
    */
   readonly approachFlapsThreeSelected: MutableSubscribable<boolean>;
 
+  readonly estimatedTakeoffTime: Subject<number | null>;
+
   clone(): this;
 
   destroy(): void;
@@ -586,6 +588,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
     cloned.approachBaroMinimum.set(this.approachBaroMinimum.get());
     cloned.approachRadioMinimum.set(this.approachRadioMinimum.get());
     cloned.approachFlapsThreeSelected.set(this.approachFlapsThreeSelected.get());
+    cloned.estimatedTakeoffTime.set(this.estimatedTakeoffTime.get());
 
     return cloned as this;
   }
@@ -1231,6 +1234,11 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
    */
   readonly approachFlapsThreeSelected = Subject.create(false);
 
+  /**
+   * Estimated takeoff time in seconds since midnight
+   */
+  readonly estimatedTakeoffTime = Subject.create<number | null>(null);
+
   serialize(): SerializedFlightPlanPerformanceData {
     return {
       cruiseFlightLevel: this.cruiseFlightLevel.get(),
@@ -1301,6 +1309,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
       approachBaroMinimum: this.approachBaroMinimum.get(),
       approachRadioMinimum: this.approachRadioMinimum.get(),
       approachFlapsThreeSelected: this.approachFlapsThreeSelected.get(),
+      estimatedTakeoffTime: this.estimatedTakeoffTime.get(),
     };
   }
 }
@@ -1391,6 +1400,7 @@ export interface SerializedFlightPlanPerformanceData {
   approachBaroMinimum: number | null;
   approachRadioMinimum: 'NO DH' | number | null;
   approachFlapsThreeSelected: boolean;
+  estimatedTakeoffTime: number | null;
 }
 
 // FIXME move to AMI database

@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023, 2025 FlyByWire Simulations
+// Copyright (c) 2021-2023, 2025-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { A32NX_Util } from '../../../../shared/src/A32NX_Util';
@@ -12,7 +12,6 @@ import { AltitudeDescriptor, NXUnits, WaypointConstraintType } from '@flybywires
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FlightPlanLeg, isDiscontinuity } from '@fmgc/flightplanning/legs/FlightPlanLeg';
-import { FmsFormatters } from '../legacy/FmsFormatters';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { Column, FormatLine } from '../legacy/A320_Neo_CDU_Format';
 
@@ -339,13 +338,12 @@ export class CDUFlightPlanPage {
         let timeCell: string = Time.NoPrediction;
         let timeColor = 'white';
         if (verticalWaypoint && isFinite(verticalWaypoint.secondsFromPresent)) {
-          const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
-
-          timeCell = `${isFromLeg ? '{big}' : '{small}'}${
-            isFlying
-              ? FmsFormatters.secondsToUTC(utcTime + verticalWaypoint.secondsFromPresent)
-              : FmsFormatters.secondsTohhmm(verticalWaypoint.secondsFromPresent)
-          }{end}`;
+          if (isFromLeg && mcdu.flightPlanService.active.performanceData.estimatedTakeoffTime.get() === null) {
+            timeColor = 'magenta';
+          }
+          timeCell = `${isFromLeg ? '{big}' : '{small}'}${mcdu.getTimePrediction(
+            verticalWaypoint.secondsFromPresent,
+          )}{end}`;
 
           timeColor = color;
         } else if (!inAlternate && fpIndex === targetPlan.originLegIndex) {
@@ -645,12 +643,9 @@ export class CDUFlightPlanPage {
         let timeCell: string = Time.NoPrediction;
         let timeColor = 'white';
         if (!shouldHidePredictions && Number.isFinite(pwp.flightPlanInfo.secondsFromPresent)) {
-          const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
           timeColor = color;
 
-          timeCell = isFlying
-            ? `${FmsFormatters.secondsToUTC(utcTime + pwp.flightPlanInfo.secondsFromPresent)}[s-text]`
-            : `${FmsFormatters.secondsTohhmm(pwp.flightPlanInfo.secondsFromPresent)}[s-text]`;
+          timeCell = `${mcdu.getTimePrediction(pwp.flightPlanInfo.secondsFromPresent)}[s-text]`;
         }
 
         let speed: string = Speed.NoPrediction;
@@ -954,11 +949,7 @@ export class CDUFlightPlanPage {
 
           const timeRemaining = fmsGeometryProfile.getTimeToDestination();
           if (Number.isFinite(timeRemaining)) {
-            const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
-
-            destTimeCell = isFlying
-              ? FmsFormatters.secondsToUTC(utcTime + timeRemaining)
-              : FmsFormatters.secondsTohhmm(timeRemaining);
+            destTimeCell = mcdu.getTimePrediction(timeRemaining);
           }
         }
       }

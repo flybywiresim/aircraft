@@ -13,6 +13,7 @@ import { AltitudeDescriptor, WaypointConstraintType } from '@flybywiresim/fbw-sd
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { CDUInitPage } from './A320_Neo_CDU_InitPage';
+import { CduRtaPage } from './CDU_RTA_Page';
 
 export class CDUVerticalRevisionPage {
   /**
@@ -201,7 +202,7 @@ export class CDUVerticalRevisionPage {
       [],
       [''],
       [speedLimitTitle, ''],
-      [speedLimitCell, 'RTA>[color]inop'],
+      [speedLimitCell, 'RTA>'],
       [l3Title, r3Title],
       [l3Cell, r3Cell],
       [l4Title, r4Title],
@@ -322,7 +323,9 @@ export class CDUVerticalRevisionPage {
         inAlternate,
       );
     }; // SPD LIM
-    mcdu.onRightInput[1] = () => {}; // RTA
+    mcdu.onRightInput[1] = () => {
+      CduRtaPage.ShowPage(mcdu, waypoint, wpIndex, verticalWaypoint);
+    }; // RTA
     mcdu.onLeftInput[2] = async (value, scratchpadCallback) => {
       if (value === Keypad.clrValue) {
         await mcdu.flightPlanService.setPilotEnteredSpeedConstraintAt(

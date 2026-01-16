@@ -321,6 +321,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     SimVarValueType.Enum,
   );
 
+  private readonly zuluTime = RegisteredSimVar.create<number>('E:ZULU TIME', SimVarValueType.Seconds);
+
   constructor(public readonly bus: EventBus) {
     FMCMainDisplay.DEBUG_INSTANCE = this;
 
@@ -5626,6 +5628,60 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   getPerformanceFactorPercent(): number | null {
     return null; // TODO implement with PERF FACTOR in AC STATUS page
+  }
+
+  setEstimatedTakeoffTime(text: string): void {
+    if (/\d{1.4}/.exec(text)) {
+      const now = new Date();
+      const ettDate = new Date();
+      let minutes: number;
+      let hours: number;
+      if (text.length <= 2) {
+        minutes = Number(text);
+      } else {
+        const is24H = text.length === 4;
+        hours = Number(text.slice(0, text.length - 2));
+        minutes = Number(text.slice(is24H ? -2 : -1));
+      }
+
+      if (minutes >= 59 || hours >= 23) {
+        this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+      } else {
+        ettDate.setUTCHours(hours, minutes, 0, 0);
+        this.flightPlanService.active?.performanceData.estimatedTakeoffTime.set(
+          Math.abs(now.getTime() - ettDate.getTime()) / 1000,
+        );
+      }
+    } else {
+      this.setScratchpadMessage(NXSystemMessages.formatError);
+    }
+  }
+
+  getTimePrediction(secondsFromPresent: number) {
+    const phase = this.getFlightPhase();
+    let time: number | null = null;
+    if (phase >= FmgcFlightPhase.Preflight && phase < FmgcFlightPhase.GoAround) {
+      time = this.zuluTime.get();
+    } else {
+      time = this.flightPlanService.active?.performanceData.estimatedTakeoffTime.get();
+    }
+
+    if (time !== null) {
+      return FmsFormatters.secondsToUTC(time + secondsFromPresent);
+    } else {
+      return FmsFormatters.secondsTohhmm(secondsFromPresent);
+    }
+  }
+
+  getTimePredictionHeader(): string {
+    const phase = this.getFlightPhase();
+    const ett = this.flightPlanService.active?.performanceData.estimatedTakeoffTime.get();
+    if ((phase >= FmgcFlightPhase.Preflight && phase < FmgcFlightPhase.GoAround) || ett !== null) {
+      //TODO check for valid clock signal
+      return 'UTC';
+    } else {
+      return 'TIME';
+    }
   }
 }
 

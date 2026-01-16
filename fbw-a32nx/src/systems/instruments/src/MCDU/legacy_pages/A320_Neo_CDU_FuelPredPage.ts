@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2023 2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -128,8 +128,6 @@ export class CDUFuelPredPage {
     }
 
     if (CDUInitPage.fuelPredConditionsMet(mcdu, FlightPlanIndex.Active)) {
-      const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
-
       if (Number.isFinite(plan.performanceData.pilotFinalHoldingFuel.get())) {
         finalFuelCell = `{cyan}${NXUnits.kgToUser(plan.performanceData.pilotFinalHoldingFuel.get()).toFixed(1).padStart(5, '\xa0')}{end}`;
       } else if (Number.isFinite(predictions.finalHoldingFuel)) {
@@ -200,19 +198,13 @@ export class CDUFuelPredPage {
       }
 
       if (Number.isFinite(predictions.tripTime)) {
-        destTimeCell = isFlying
-          ? FmsFormatters.secondsToUTC(utcTime + FmsFormatters.minuteToSeconds(predictions.tripTime))
-          : FmsFormatters.minutesTohhmm(predictions.tripTime);
+        destTimeCell = mcdu.getTimePrediction(predictions.tripTime);
         destTimeCellColor = '[color]green';
       }
 
       if (alternate) {
         if (Number.isFinite(predictions.alternateTime) && Number.isFinite(predictions.tripTime)) {
-          altTimeCell = isFlying
-            ? FmsFormatters.secondsToUTC(
-                utcTime + FmsFormatters.minuteToSeconds(predictions.tripTime + predictions.alternateTime),
-              )
-            : FmsFormatters.minutesTohhmm(predictions.tripTime + predictions.alternateTime);
+          altTimeCell = mcdu.getTimePrediction(predictions.tripTime + predictions.alternateTime);
           altTimeCellColor = '[color]green';
         } else {
           altTimeCell = '----';
@@ -298,7 +290,7 @@ export class CDUFuelPredPage {
 
     mcdu.setTemplate([
       ['FUEL PRED{sp}'],
-      ['\xa0AT', 'EFOB', isFlying ? '{sp}UTC' : 'TIME'],
+      ['\xa0AT', 'EFOB', mcdu.getTimePredictionHeader().padStart(4, '{sp}')],
       [destIdentCell + '[color]green', destEFOBCell + destEFOBCellColor, destTimeCell + destTimeCellColor],
       [''],
       [altIdentCell + '[color]green', altEFOBCell + altEFOBCellColor, altTimeCell + altTimeCellColor],

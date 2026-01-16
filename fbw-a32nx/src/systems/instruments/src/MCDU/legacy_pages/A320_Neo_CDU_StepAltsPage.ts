@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2023 2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -7,7 +7,6 @@ import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessa
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
-import { FmsFormatters } from '../legacy/FmsFormatters';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { VerticalWaypointPrediction } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
@@ -144,11 +143,7 @@ export class CDUStepAltsPage {
             lastColumn = 'STEP\xa0AHEAD[s-text]';
           } else {
             const distanceCell = '{green}' + Math.round(distanceFromAircraft).toFixed(0) + '{end}';
-
-            const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
-            const timeCell = isFlying
-              ? `{green}${FmsFormatters.secondsToUTC(utcTime + secondsFromPresent)}[s-text]{end}`
-              : `{green}${FmsFormatters.secondsTohhmm(secondsFromPresent)}[s-text]{end}`;
+            const timeCell = `{green}${mcdu.getTimePrediction(secondsFromPresent)}[s-text]{end}`;
 
             lastColumn = distanceCell + '\xa0' + timeCell;
           }
