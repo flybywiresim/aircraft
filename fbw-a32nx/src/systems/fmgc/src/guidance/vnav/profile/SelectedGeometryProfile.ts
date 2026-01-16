@@ -12,6 +12,7 @@ import {
 import { ConstantWindProfile, WindInterface } from '../wind/WindProfile';
 import { FlightPlan } from '../../../flightplanning/plans/FlightPlan';
 import { EventBus } from '@microsoft/msfs-sdk';
+import { AircraftConfig } from '../../../flightplanning/AircraftConfigTypes';
 
 export class SelectedGeometryProfile extends BaseGeometryProfile {
   public override maxAltitudeConstraints: MaxAltitudeConstraint[] = [];
@@ -31,8 +32,9 @@ export class SelectedGeometryProfile extends BaseGeometryProfile {
   constructor(
     private readonly bus: EventBus,
     private readonly plan: FlightPlan,
+    config: AircraftConfig,
   ) {
-    super();
+    super(config);
   }
 
   override resetAltitudeConstraints(): void {

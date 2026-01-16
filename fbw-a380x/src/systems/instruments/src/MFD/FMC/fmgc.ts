@@ -14,6 +14,7 @@ import { Arinc429Word, Fix, Runway, Units } from '@flybywiresim/fbw-sdk';
 import { Feet } from 'msfs-geo';
 import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
 import { minGw } from '@shared/PerformanceConstants';
+import { A380AircraftConfig } from '@fmgc/flightplanning/A380AircraftConfig';
 
 export enum TakeoffPowerSetting {
   TOGA = 0,
@@ -53,6 +54,8 @@ export enum ClimbDerated {
   D04 = 4,
   D05 = 5,
 }
+
+export const LOWEST_FUEL_ESTIMATE_KGS = Units.poundToKilogram(A380AircraftConfig.vnavConfig.LOWEST_FUEL_ESTIMATE);
 
 /**
  * Temporary place for data which is found nowhere else. Not associated to flight plans right now, which should be the case for some of these values
@@ -342,14 +345,27 @@ export class FmgcData {
   /** Indicates OEI situation */
   public readonly engineOut = Subject.create(false);
 
+  /** Fuel Penalty Factor in percentage between none and 999. Reset at done phase
+   */
+  public readonly fuelPenaltyPercentage = Subject.create<number>(null);
+
+  public readonly fuelPenaltyActive = this.fuelPenaltyPercentage.map((v) => v !== null && v > 0);
+
   private static readonly DEFAULT_SETTINGS = new FmgcData();
 
-  public reset(): void {
+  /**
+   *
+   * @param dueToDonePhase indicates wheter to reset all fmgs data or only data which is wiped at DONE phase
+   */
+  public reset(dueToDonePhase?: boolean): void {
     for (const key in FmgcData.DEFAULT_SETTINGS) {
       const prop = key as keyof FmgcData;
       if (SubscribableUtils.isMutableSubscribable(this[prop])) {
         (this[prop] as MutableSubscribable<any>).set((FmgcData.DEFAULT_SETTINGS[prop] as Subscribable<any>).get());
       }
+    }
+    if (dueToDonePhase) {
+      this.fuelPenaltyPercentage.set(null);
     }
   }
 }
@@ -631,7 +647,7 @@ export class FmgcDataService implements Fmgc {
     if (destEfob === null || alternateFuel === null) {
       return null;
     }
-    return destEfob - alternateFuel / 1000;
+    return Math.max(destEfob - alternateFuel / 1000, LOWEST_FUEL_ESTIMATE_KGS / 1000);
   }
 
   /** in feet. null if not set */
@@ -659,6 +675,11 @@ export class FmgcDataService implements Fmgc {
   /** in nautical miles. null if not set */
   getDistanceToDestination(): number | null {
     return this.guidanceController?.vnavDriver.getDestinationPrediction()?.distanceFromAircraft ?? null;
+  }
+
+  /** In percentage. Null if not set */
+  getPerformanceFactorPercent(): number | null {
+    return this.data.fuelPenaltyPercentage.get(); // TODO add performance factor when implemented
   }
 
   getNavDataDateRange(): string {

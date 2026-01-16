@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -16,6 +16,7 @@ import {
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { WindInterface } from '../wind/WindProfile';
+import { AircraftConfig } from '../../../flightplanning/AircraftConfigTypes';
 
 export interface PerfToAltPrediction {
   altitude: Feet;
@@ -30,6 +31,7 @@ export interface PerfCrzToPrediction {
 }
 
 export abstract class BaseGeometryProfile {
+  constructor(protected config: AircraftConfig) {}
   public isReadyToDisplay: boolean = false;
 
   public checkpoints: VerticalCheckpoint[] = [];
@@ -207,12 +209,15 @@ export abstract class BaseGeometryProfile {
                 this.checkpoints[i + 1].altitude,
               )
             : this.checkpoints[i].altitude,
-          remainingFuelOnBoard: Common.interpolate(
-            distanceFromStart,
-            this.checkpoints[i].distanceFromStart,
-            this.checkpoints[i + 1].distanceFromStart,
-            this.checkpoints[i].remainingFuelOnBoard,
-            this.checkpoints[i + 1].remainingFuelOnBoard,
+          remainingFuelOnBoard: Math.max(
+            this.config.vnavConfig.LOWEST_FUEL_ESTIMATE,
+            Common.interpolate(
+              distanceFromStart,
+              this.checkpoints[i].distanceFromStart,
+              this.checkpoints[i + 1].distanceFromStart,
+              this.checkpoints[i].remainingFuelOnBoard,
+              this.checkpoints[i + 1].remainingFuelOnBoard,
+            ),
           ),
           speed: Common.interpolate(
             distanceFromStart,
@@ -360,13 +365,17 @@ export abstract class BaseGeometryProfile {
             this.checkpoints[i].altitude,
             this.checkpoints[i + 1].altitude,
           ),
-          remainingFuelOnBoard: Common.interpolate(
-            distanceFromStart,
-            this.checkpoints[i].distanceFromStart,
-            this.checkpoints[i + 1].distanceFromStart,
-            this.checkpoints[i].remainingFuelOnBoard,
-            this.checkpoints[i + 1].remainingFuelOnBoard,
+          remainingFuelOnBoard: Math.max(
+            Common.interpolate(
+              distanceFromStart,
+              this.checkpoints[i].distanceFromStart,
+              this.checkpoints[i + 1].distanceFromStart,
+              this.checkpoints[i].remainingFuelOnBoard,
+              this.checkpoints[i + 1].remainingFuelOnBoard,
+            ),
+            this.config.vnavConfig.LOWEST_FUEL_ESTIMATE,
           ),
+
           speed: Common.interpolate(
             distanceFromStart,
             this.checkpoints[i].distanceFromStart,

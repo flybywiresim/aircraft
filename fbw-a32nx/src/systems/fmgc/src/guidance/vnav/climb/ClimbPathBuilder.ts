@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2024 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -406,7 +406,7 @@ export class ClimbPathBuilder {
     initialSpeed: Knots,
     fuelWeight: number,
   ): StepResults {
-    const { zeroFuelWeight, managedClimbSpeedMach, tropoPause } = this.computationParametersObserver.get();
+    const { zeroFuelWeight, managedClimbSpeedMach, tropoPause, perfFactor } = this.computationParametersObserver.get();
 
     return Predictions.levelFlightStep(
       config,
@@ -419,6 +419,7 @@ export class ClimbPathBuilder {
       0,
       this.atmosphericConditions.isaDeviation,
       tropoPause,
+      perfFactor,
     );
   }
 
@@ -429,7 +430,7 @@ export class ClimbPathBuilder {
     speedTarget: Knots,
     fuelWeight: number,
   ): StepResults {
-    const { zeroFuelWeight, managedClimbSpeedMach, tropoPause } = this.computationParametersObserver.get();
+    const { zeroFuelWeight, managedClimbSpeedMach, tropoPause, perfFactor } = this.computationParametersObserver.get();
 
     const staticAirTemperature = this.atmosphericConditions.predictStaticAirTemperatureAtAltitude(altitude);
 
@@ -447,6 +448,7 @@ export class ClimbPathBuilder {
       0,
       this.atmosphericConditions.isaDeviation,
       tropoPause,
+      perfFactor,
     );
   }
 

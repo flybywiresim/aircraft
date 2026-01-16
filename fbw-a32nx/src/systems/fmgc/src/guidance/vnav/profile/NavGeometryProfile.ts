@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -14,6 +14,7 @@ import { WindProfile } from '../wind/WindProfile';
 import { EventBus, Vec2Math } from '@microsoft/msfs-sdk';
 import { TailwindComponent, WindVector } from '../../../flightplanning/data/wind';
 import { FlightPlanIndex } from '../../../flightplanning/FlightPlanManager';
+import { AircraftConfig } from '../../../flightplanning/AircraftConfigTypes';
 
 export enum ProfilePhase {
   Climb,
@@ -161,8 +162,9 @@ export class NavGeometryProfile extends BaseGeometryProfile {
     private flightPlanService: FlightPlanService,
     private constraintReader: ConstraintReader,
     private atmosphericConditions: AtmosphericConditions,
+    config: AircraftConfig,
   ) {
-    super();
+    super(config);
   }
 
   override get maxAltitudeConstraints(): MaxAltitudeConstraint[] {

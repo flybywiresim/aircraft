@@ -47,6 +47,7 @@ import {
   TailwindComponent,
   WindVector,
 } from '@fmgc/flightplanning/data/wind';
+import { dirToUri, fixInfoUri } from '../../../shared/utils';
 
 interface MfdFmsFplnProps extends AbstractMfdPageProps {}
 
@@ -113,14 +114,10 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
   private readonly destEfob = Subject.create<number | null>(null);
 
   private readonly destEfobLabel = this.destEfob.map((v) =>
-    v !== null ? Math.max(0, Units.poundToKilogram(v) / 1_000).toFixed(1) : '---.-',
+    v !== null ? (Units.poundToKilogram(v) / 1_000).toFixed(1) : '---.-',
   );
 
-  private readonly destEfobNotAvailable = MappedSubject.create(
-    ([tmpy, efob]) => !tmpy && efob == null,
-    this.tmpyActive,
-    this.destEfob,
-  );
+  private readonly destEfobNotAvailable = this.destEfob.map((efob) => efob == null);
 
   private readonly destEfobUnitVisiblity = this.destEfobNotAvailable.map((v) => (v ? 'hidden' : 'visible'));
 
@@ -1129,10 +1126,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 },
                 {
                   label: 'FIX INFO',
-                  action: () =>
-                    this.props.mfd.uiService.navigateTo(
-                      `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-fix-info`,
-                    ),
+                  action: () => this.props.mfd.uiService.navigateTo(fixInfoUri),
                 },
                 {
                   label: 'LL CROSSING',
@@ -1159,11 +1153,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             />
             <Button
               label="DIR TO"
-              onClick={() =>
-                this.props.mfd.uiService.navigateTo(
-                  `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-direct-to`,
-                )
-              }
+              onClick={() => this.props.mfd.uiService.navigateTo(dirToUri)}
               buttonStyle="margin-right: 5px;"
             />
           </div>
