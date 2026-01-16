@@ -16,6 +16,13 @@ export class CDUEquitimePointPage {
     mcdu.page.Current = mcdu.page.EquitimePointPage;
     mcdu.activeSystem = 'FMGC';
 
+    // regular update due to showing dynamic data on this page
+    mcdu.SelfPtr = setTimeout(() => {
+      if (mcdu.page.Current === mcdu.page.EquitimePointPage) {
+        CDUEquitimePointPage.ShowPage(mcdu);
+      }
+    }, mcdu.PageTimeout.Medium);
+
     const plan = mcdu.getFlightPlan(FlightPlanIndex.Active);
 
     const flightPhase = mcdu.flightPhaseManager.phase;
@@ -85,7 +92,6 @@ export class CDUEquitimePointPage {
       }
 
       trueWindRef1LabelColumn.update('TRU WIND');
-      etpToRef1LabelColumn.update(`ETP TO ${ref1Ident}`);
 
       trueWindRef1Column.update(
         etpService.isWindToReferenceFix1PilotEntered
@@ -93,28 +99,7 @@ export class CDUEquitimePointPage {
               .toFixed(0)
               .padStart(3, '0')}°/${Vec2Math.abs(etpService.windToReferenceFix1).toFixed(0).padStart(3, '0')}`
           : '[ ]°/[ ]',
-        etpService.isWindToReferenceFix1PilotEntered ? Column.big : Column.small,
       );
-
-      etpToRef1BrgColumn.update('----');
-      if (etpService.etpBearingToReferenceFix1 !== undefined) {
-        etpToRef1BrgColumn.update(`${etpService.etpBearingToReferenceFix1.toFixed(0).padStart(3, '0')}°`, Column.green);
-      }
-
-      etpToRef1DistColumn.update('----');
-      if (etpService.etpDistanceToReferenceFix1 !== undefined) {
-        etpToRef1DistColumn.update(etpService.etpDistanceToReferenceFix1.toFixed(0), Column.green);
-      }
-
-      etpToRef1UtcColumn.update('----');
-      if (etpService.etpTimeToReferenceFix1 !== undefined) {
-        etpToRef1UtcColumn.update(
-          isFlying
-            ? FmsFormatters.secondsToUTC(utcTime + etpService.etpTimeToReferenceFix1 * 3600)
-            : FmsFormatters.secondsTohhmm(etpService.etpTimeToReferenceFix1 * 3600),
-          Column.green,
-        );
-      }
 
       // Update wind 1
       mcdu.onLeftInput[1] = async (value, scratchpadCallback) => {
@@ -169,7 +154,6 @@ export class CDUEquitimePointPage {
       }
 
       trueWindRef2LabelColumn.update('TRU WIND');
-      etpToRef2LabelColumn.update(`ETP TO ${ref2Ident}`);
 
       trueWindRef2Column.update(
         etpService.isWindToReferenceFix2PilotEntered
@@ -177,28 +161,7 @@ export class CDUEquitimePointPage {
               .toFixed(0)
               .padStart(3, '0')}°/${Vec2Math.abs(etpService.windToReferenceFix2).toFixed(0).padStart(3, '0')}`
           : '[ ]°/[ ]',
-        etpService.isWindToReferenceFix2PilotEntered ? Column.big : Column.small,
       );
-
-      etpToRef2BrgColumn.update('----');
-      if (etpService.etpBearingToReferenceFix2 !== undefined) {
-        etpToRef2BrgColumn.update(`${etpService.etpBearingToReferenceFix2.toFixed(0).padStart(3, '0')}°`, Column.green);
-      }
-
-      etpToRef2DistColumn.update('----');
-      if (etpService.etpDistanceToReferenceFix2 !== undefined) {
-        etpToRef2DistColumn.update(etpService.etpDistanceToReferenceFix2.toFixed(0), Column.green);
-      }
-
-      etpToRef2UtcColumn.update('----');
-      if (etpService.etpTimeToReferenceFix2 !== undefined) {
-        etpToRef2UtcColumn.update(
-          isFlying
-            ? FmsFormatters.secondsToUTC(utcTime + etpService.etpTimeToReferenceFix2 * 3600)
-            : FmsFormatters.secondsTohhmm(etpService.etpTimeToReferenceFix2 * 3600),
-          Column.green,
-        );
-      }
 
       // Update wind 2
       mcdu.onLeftInput[3] = async (value, scratchpadCallback) => {
@@ -228,27 +191,68 @@ export class CDUEquitimePointPage {
       };
     }
 
-    if (etpService.referenceFix2 !== undefined || etpService.referenceFix2 !== undefined) {
-      etpLocationLegColumn.update('-----');
-      etpLocationLegDistanceColumn.update('/-----');
+    if (etpService.referenceFix1 !== undefined || etpService.referenceFix2 !== undefined) {
+      acToColumn.update('NO (ETP)');
+    }
+
+    const etp = etpService.get();
+    if (etpService.referenceFix1 !== undefined && etpService.referenceFix2 !== undefined && etp) {
+      if (etpService.etpBearingToReferenceFix1 !== undefined) {
+        etpToRef1BrgColumn.update(`${etpService.etpBearingToReferenceFix1.toFixed(0).padStart(3, '0')}°`, Column.green);
+      }
+
+      if (etpService.etpDistanceToReferenceFix1 !== undefined) {
+        etpToRef1DistColumn.update(etpService.etpDistanceToReferenceFix1.toFixed(0), Column.green);
+      }
+
+      if (etpService.etpTimeToReferenceFix1 !== undefined) {
+        etpToRef1UtcColumn.update(
+          isFlying
+            ? FmsFormatters.secondsToUTC(utcTime + etpService.etpTimeToReferenceFix1 * 3600)
+            : FmsFormatters.secondsTohhmm(etpService.etpTimeToReferenceFix1 * 3600),
+          Column.green,
+        );
+      }
+
+      if (etpService.etpBearingToReferenceFix2 !== undefined) {
+        etpToRef2BrgColumn.update(`${etpService.etpBearingToReferenceFix2.toFixed(0).padStart(3, '0')}°`, Column.green);
+      }
+
+      if (etpService.etpDistanceToReferenceFix2 !== undefined) {
+        etpToRef2DistColumn.update(etpService.etpDistanceToReferenceFix2.toFixed(0), Column.green);
+      }
+
+      if (etpService.etpTimeToReferenceFix2 !== undefined) {
+        etpToRef2UtcColumn.update(
+          isFlying
+            ? FmsFormatters.secondsToUTC(utcTime + etpService.etpTimeToReferenceFix2 * 3600)
+            : FmsFormatters.secondsTohhmm(etpService.etpTimeToReferenceFix2 * 3600),
+          Column.green,
+        );
+      }
+
+      etpToRef1LabelColumn.update(`ETP TO ${etpService.referenceFix1.ident}`);
+      etpToRef2LabelColumn.update(`ETP TO ${etpService.referenceFix2.ident}`);
 
       etpLocationLabelColumn.update('ETP LOCATION');
-      acToDistColumn.update('----');
-      acToUtcColumn.update('----');
-
       acToLabelColumn.update('A/C TO');
-      acToColumn.update('(NO ETP)');
 
-      const etp = etpService.get();
-      if (etpService?.isComputed() && etp) {
-        const legIdent = plan.legElementAt(etp[2])?.ident;
+      const legIdent = plan.legElementAt(etp[2])?.ident;
 
-        etpLocationLegColumn.update(legIdent ?? '-----', legIdent ? Column.green : Column.white);
-        etpLocationLegDistanceColumn.update(`/${(-etp[1]).toFixed(1).padStart(6, ' ')}`, Column.green);
+      etpLocationLegColumn.update(legIdent ?? '-----', legIdent ? Column.green : Column.white);
+      etpLocationLegDistanceColumn.update(`/${(-etp[1]).toFixed(1).padStart(6, ' ')}`, Column.green);
 
-        acToColumn.update('(ETP)', Column.green);
-        acToDistColumn.update('412', Column.green);
-        acToUtcColumn.update('1744', Column.green);
+      acToColumn.update('(ETP)', Column.green);
+
+      if (etpService.pposDistanceToEtp !== undefined && etpService.pposTimeToEtp !== undefined) {
+        acToDistColumn.update(etpService.pposDistanceToEtp.toFixed(0), Column.green);
+
+        acToUtcColumn.update(
+          isFlying
+            ? FmsFormatters.secondsToUTC(utcTime + etpService.pposTimeToEtp * 3600)
+            : FmsFormatters.secondsTohhmm(etpService.pposTimeToEtp * 3600),
+          Column.green,
+        );
       }
     }
 

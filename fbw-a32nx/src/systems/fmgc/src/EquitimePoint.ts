@@ -1,18 +1,21 @@
 import { Arinc429Register, Fix, MathUtils } from '@flybywiresim/fbw-sdk';
 import { AeroMath, ConsumerValue, EventBus, UnitType, Vec2Math, Wait } from '@microsoft/msfs-sdk';
 import { FlightPlanInterface } from './flightplanning/FlightPlanInterface';
-import { Navigation } from './navigation/Navigation';
 import { bearingTo, Coordinates, distanceTo } from 'msfs-geo';
 import { Geometry } from './guidance/Geometry';
 import { FlightPlanIndex } from './flightplanning/FlightPlanManager';
 import { FlightPhaseManagerEvents } from './flightphase/FlightPhaseManager';
 import { FmgcFlightPhase } from '@shared/flightphase';
+import { GuidanceController } from './guidance/GuidanceController';
+import { NavigationProvider } from './navigation/NavigationProvider';
 
 export interface EquitimePointInterface {
   etpTimeToRef1: number;
   etpTimeToRef2: number;
   pposTimeToRef1: number;
   pposTimeToRef2: number;
+  pposDistanceToEtp: number;
+  pposTimeToEtp: number;
   etp: ReturnType<Geometry['pointFromEndOfPath']>;
 }
 
@@ -42,7 +45,8 @@ export class EquitimePoint {
   constructor(
     private readonly bus: EventBus,
     private readonly flightPlanService: FlightPlanInterface,
-    private readonly navigation: Navigation,
+    private readonly navigation: NavigationProvider,
+    private readonly guidanceController: GuidanceController,
   ) {}
 
   acceptMultipleLegGeometry(geometry: Geometry): void {
@@ -67,16 +71,20 @@ export class EquitimePoint {
       ? this.casTargetRegister.setFromSimVar('L:A32NX_FMGC_2_PFD_SELECTED_SPEED')
       : this.casTargetRegister;
 
-    if (!ref1 || !ref2 || !ppos || !plan || !this.geometry || !cruiseLevel) {
+    const predictions = this.guidanceController.vnavDriver.mcduProfile;
+    const { managedCruiseSpeed, managedCruiseSpeedMach } =
+      this.guidanceController.verticalProfileComputationParametersObserver.get();
+
+    if (!ref1 || !ref2 || !ppos || !plan || !this.geometry || !cruiseLevel || !predictions?.isReadyToDisplay) {
       return undefined;
     }
 
     const managedCruiseCas = Math.min(
       AeroMath.casToTasIsa(
-        UnitType.KNOT.convertTo(290, UnitType.MPS),
+        UnitType.KNOT.convertTo(managedCruiseSpeed, UnitType.MPS),
         UnitType.FOOT.convertTo(cruiseLevel * 100, UnitType.METER),
       ),
-      AeroMath.machToTasIsa(0.78, UnitType.FOOT.convertTo(cruiseLevel * 100, UnitType.METER)),
+      AeroMath.machToTasIsa(managedCruiseSpeedMach, UnitType.FOOT.convertTo(cruiseLevel * 100, UnitType.METER)),
     );
 
     const cas =
@@ -131,6 +139,17 @@ export class EquitimePoint {
       this.reset();
       return undefined;
     }
+
+    const [_, distanceFromLegTermination, legIndex] = this.result.etp;
+    const legPredictions = predictions.waypointPredictions.get(legIndex);
+
+    if (!legPredictions) {
+      this.reset();
+      return;
+    }
+
+    this.result.pposDistanceToEtp = legPredictions.distanceFromAircraft - distanceFromLegTermination;
+    this.result.pposTimeToEtp = predictions.interpolateTimeAtDistance(this.result.pposDistanceToEtp) / 3600;
   }
 
   private reset(): void {
@@ -139,6 +158,8 @@ export class EquitimePoint {
     this.result.pposTimeToRef2 = undefined;
     this.result.etpTimeToRef1 = undefined;
     this.result.etpTimeToRef2 = undefined;
+    this.result.pposDistanceToEtp = undefined;
+    this.result.pposTimeToEtp = undefined;
   }
 
   async resetAndRecompute() {
@@ -307,6 +328,16 @@ export class EquitimePoint {
 
   get isWindToReferenceFix2PilotEntered(): boolean {
     return this.pilotEnteredWindToReferenceFix2 !== undefined;
+  }
+
+  /** Distance along the flight plan from the present position to the ETP, or undefined */
+  get pposDistanceToEtp(): number | undefined {
+    return this.result.pposDistanceToEtp;
+  }
+
+  /** Time in hours to reach the ETP from the current A/C position following the flight plan, or undefined */
+  get pposTimeToEtp(): number | undefined {
+    return this.result.pposTimeToEtp;
   }
 
   /**

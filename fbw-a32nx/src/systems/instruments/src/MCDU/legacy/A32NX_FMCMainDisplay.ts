@@ -329,7 +329,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public guidanceController?: GuidanceController;
   public navigation?: Navigation;
   private historyWinds?: HistoryWind;
-  public equitimePoint: EquitimePoint;
 
   public casToMachManualCrossoverCurve;
   public machToCasManualCrossoverCurve;
@@ -508,15 +507,14 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       R: new EfisInterface(this.bus, 'R', this.currFlightPlanService),
     };
     this.navigation = new Navigation(this.bus, this.currFlightPlanService);
-    this.equitimePoint = new EquitimePoint(this.bus, this.flightPlanService, this.navigation);
     this.guidanceController = new GuidanceController(
       this.bus,
       this,
       this.currFlightPlanService,
       this.efisInterfaces,
-      this.equitimePoint,
       a320EfisRangeSettings,
       A320AircraftConfig,
+      this.navigation,
     );
     this.efisSymbolsLeft = new EfisSymbols(
       this.bus,
@@ -5630,6 +5628,11 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public getHistoryWinds(cruiseLevel: number | null) {
     return this.historyWinds?.getRecordedWinds(cruiseLevel);
   }
+
+  public get equitimePoint(): EquitimePoint {
+    return this.guidanceController.equitimePoint;
+  }
+
   // ---------------------------
   // CDUMainDisplay Types
   // ---------------------------
