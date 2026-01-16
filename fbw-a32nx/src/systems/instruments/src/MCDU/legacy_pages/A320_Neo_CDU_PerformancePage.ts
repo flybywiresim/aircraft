@@ -719,7 +719,11 @@ export class CDUPerformancePage {
       };
     }
 
-    const timeLabel = isFlying && targetPlan.isActiveOrCopiedFromActive() ? '\xa0UTC' : 'TIME';
+    const timeLabel =
+      targetPlan.performanceData.estimatedTakeoffTime.get() != null ||
+      (isFlying && targetPlan.isActiveOrCopiedFromActive())
+        ? '\xa0UTC'
+        : 'TIME';
 
     const [destEfobCell, destTimeCell] = CDUPerformancePage.formatDestEfobAndTime(mcdu, isFlying, forPlan);
     const [toUtcLabel, toDistLabel] = shouldShowToTdInformation ? ['\xa0UTC', 'DIST'] : ['', ''];

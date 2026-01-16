@@ -336,7 +336,7 @@ export class CDUFlightPlanPage {
         let timeColor = 'white';
         if (verticalWaypoint && isFinite(verticalWaypoint.secondsFromPresent)) {
           if (isFromLeg && mcdu.flightPlanService.active.performanceData.estimatedTakeoffTime.get() !== null) {
-            timeColor = 'magenta';
+            color = 'magenta';
           }
           timeCell = `${isFromLeg ? '{big}' : '{small}'}${mcdu.getTimePrediction(
             verticalWaypoint.secondsFromPresent,
