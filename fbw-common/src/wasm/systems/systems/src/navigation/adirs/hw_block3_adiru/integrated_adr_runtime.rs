@@ -1,7 +1,11 @@
 use crate::auto_flight::FlightControlUnitBusOutput;
+use crate::navigation::adirs::air_data_sensors::integrated_probes::{
+    IntegratedStaticProbeBusOutput, MultifunctionProbeBusOutput, SideslipAngleProbeBusOutput,
+};
+use crate::navigation::adirs::hw_block3_adiru::AdrRuntimeTemplate;
 use crate::navigation::adirs::{
-    air_data_sensors::air_data_module::AirDataModuleBusOutput, AdrAnalogInputs, AdrDiscreteInputs,
-    AdrDiscreteOutputs, AirDataReferenceBusOutputs, ModeSelectorPosition,
+    AdrAnalogInputs, AdrDiscreteInputs, AdrDiscreteOutputs, AirDataReferenceBusOutputs,
+    ModeSelectorPosition,
 };
 use crate::{
     shared::{
@@ -27,7 +31,7 @@ use uom::si::{
 };
 use uom::ConstZero;
 
-pub struct AirDataReferenceRuntime {
+pub struct IntegratedAirDataReferenceRuntime {
     /// If non-Duration::ZERO, the remaining time the runtime needs to initialize itself. Otherwise
     /// the self-check has been completed.
     remaining_startup: Duration,
@@ -39,6 +43,10 @@ pub struct AirDataReferenceRuntime {
     // AOA
     angle_of_attack_deg: f64,
     angle_of_attack_valid: bool,
+
+    // Sideslip
+    sideslip_angle_deg: f64,
+    sideslip_angle_valid: bool,
 
     // Pressures from the ADMs
     left_static_pressure_hpa: f64,
@@ -91,38 +99,12 @@ pub struct AirDataReferenceRuntime {
     low_speed_warning_3_hysteresis: HysteresisNode<f64>,
     low_speed_warning_4_hysteresis: HysteresisNode<f64>,
 }
-impl AirDataReferenceRuntime {
-    pub(super) const MINIMUM_TAS: f64 = 60.;
-    pub(super) const MINIMUM_CAS: f64 = 30.;
-    pub(super) const MINIMUM_MACH: f64 = 0.1;
-    pub(super) const MINIMUM_CAS_FOR_AOA: f64 = 60.;
-    pub(super) const MINIMUM_VALID_ALTITUDE: f64 = -2000.;
-    pub(super) const MAXIMUM_VALID_ALTITUDE: f64 = 50000.;
-
-    // TODO These should be configurable
-    const LOW_SPEED_WARNING_1_THRESHOLD: f64 = 100.;
-    const LOW_SPEED_WARNING_2_THRESHOLD: f64 = 50.;
-    const LOW_SPEED_WARNING_3_THRESHOLD: f64 = 155.;
-    const LOW_SPEED_WARNING_4_THRESHOLD: f64 = 260.;
-    const LOW_SPEED_WARNING_HYSTERESIS: f64 = 4.;
-
-    const V_MO: f64 = 350.;
-    const M_MO: f64 = 0.82;
-
-    // 1 second filter
-    const VERTICAL_SPEED_TIME_CONSTANT: Duration = Duration::from_secs(1);
-
-    // ADR Computation constants
-    const STANDARD_SPEED_OF_SOUND_KNOT: f64 = 661.4746;
-    const STANDARD_SEA_LEVEL_PRESSURE_HPA: f64 = 1013.25;
-    const STANDARD_SEA_LEVEL_TEMPERATURE_KEVLIN: f64 = 288.15;
-    const ABSOLUTE_ZERO_DEG_C: f64 = -273.15;
-
-    pub fn new_running() -> Self {
+impl AdrRuntimeTemplate for IntegratedAirDataReferenceRuntime {
+    fn new_running() -> Self {
         Self::new(Duration::ZERO)
     }
 
-    pub fn new(self_check: Duration) -> Self {
+    fn new(self_check: Duration) -> Self {
         Self {
             remaining_startup: self_check,
 
@@ -132,6 +114,9 @@ impl AirDataReferenceRuntime {
 
             angle_of_attack_deg: 0.,
             angle_of_attack_valid: false,
+
+            sideslip_angle_deg: 0.,
+            sideslip_angle_valid: false,
 
             left_static_pressure_hpa: 0.,
             left_static_pressure_avail: false,
@@ -190,6 +175,33 @@ impl AirDataReferenceRuntime {
             ),
         }
     }
+}
+impl IntegratedAirDataReferenceRuntime {
+    pub(super) const MINIMUM_TAS: f64 = 60.;
+    pub(super) const MINIMUM_CAS: f64 = 30.;
+    pub(super) const MINIMUM_MACH: f64 = 0.1;
+    pub(super) const MINIMUM_CAS_FOR_AOA: f64 = 60.;
+    pub(super) const MINIMUM_VALID_ALTITUDE: f64 = -2000.;
+    pub(super) const MAXIMUM_VALID_ALTITUDE: f64 = 50000.;
+
+    // TODO These should be configurable
+    const LOW_SPEED_WARNING_1_THRESHOLD: f64 = 50.;
+    const LOW_SPEED_WARNING_2_THRESHOLD: f64 = 260.;
+    const LOW_SPEED_WARNING_3_THRESHOLD: f64 = 100.;
+    const LOW_SPEED_WARNING_4_THRESHOLD: f64 = 260.;
+    const LOW_SPEED_WARNING_HYSTERESIS: f64 = 4.;
+
+    const V_MO: f64 = 340.;
+    const M_MO: f64 = 0.89;
+
+    // 1 second filter
+    const VERTICAL_SPEED_TIME_CONSTANT: Duration = Duration::from_secs(1);
+
+    // ADR Computation constants
+    const STANDARD_SPEED_OF_SOUND_KNOT: f64 = 661.4746;
+    const STANDARD_SEA_LEVEL_PRESSURE_HPA: f64 = 1013.25;
+    const STANDARD_SEA_LEVEL_TEMPERATURE_KELVIN: f64 = 288.15;
+    const ABSOLUTE_ZERO_DEG_C: f64 = -273.15;
 
     pub fn update(
         &mut self,
@@ -197,9 +209,10 @@ impl AirDataReferenceRuntime {
         discrete_inputs: &AdrDiscreteInputs,
         analog_inputs: &AdrAnalogInputs,
         fcu: &impl FlightControlUnitBusOutput,
-        adm_1: &impl AirDataModuleBusOutput,
-        adm_2: &impl AirDataModuleBusOutput,
-        adm_3: Option<&impl AirDataModuleBusOutput>,
+        mfp: &impl MultifunctionProbeBusOutput,
+        isp_left: &impl IntegratedStaticProbeBusOutput,
+        isp_right: &impl IntegratedStaticProbeBusOutput,
+        ssa: &impl SideslipAngleProbeBusOutput,
     ) {
         // First, check if we're still starting up and if so, simulate a wait until all self tests
         // have completed.
@@ -212,12 +225,13 @@ impl AirDataReferenceRuntime {
 
         self.update_off_status(discrete_inputs);
 
-        self.update_aoa(analog_inputs);
-        self.update_pressures(adm_1, adm_2, adm_3);
+        self.update_aoa(mfp);
+        self.update_sideslip(ssa);
+        self.update_pressures(mfp, isp_left, isp_right);
         self.update_baro_corrections(fcu);
         self.update_pressure_altitude_and_vs(context);
         self.update_cas_mach();
-        self.update_temperatures(analog_inputs);
+        self.update_temperatures(mfp);
         self.update_tas();
         self.update_overspeed_status();
         self.update_low_speed_warning_status();
@@ -243,64 +257,46 @@ impl AirDataReferenceRuntime {
         self.output_inhibited = self.is_off || mode_sel_off;
     }
 
-    fn update_aoa(&mut self, analog_inputs: &AdrAnalogInputs) {
-        // This should be an AC input, currently simply simulate some arbitrary value.
-        self.angle_of_attack_valid = analog_inputs.aoa_excitation_voltage_v > 20.;
+    fn update_aoa(&mut self, mfp: &impl MultifunctionProbeBusOutput) {
+        self.angle_of_attack_deg = mfp.bus_outputs().angle_of_attack_deg.value_or_default();
+        self.angle_of_attack_valid = mfp.bus_outputs().angle_of_attack_deg.is_normal_operation();
+    }
 
-        // No correction of AOA is currently simulated.
-        self.angle_of_attack_deg = if self.angle_of_attack_valid {
-            analog_inputs.aoa_resolver_angle_deg
-        } else {
-            0.
-        };
+    fn update_sideslip(&mut self, ssa: &impl SideslipAngleProbeBusOutput) {
+        self.sideslip_angle_deg = ssa.bus_outputs().sideslip_angle_deg.value_or_default();
+        self.sideslip_angle_valid = ssa.bus_outputs().sideslip_angle_deg.is_normal_operation();
     }
 
     fn update_pressures(
         &mut self,
-        adm_1: &impl AirDataModuleBusOutput,
-        adm_2: &impl AirDataModuleBusOutput,
-        adm_3: Option<&impl AirDataModuleBusOutput>,
+        mfp: &impl MultifunctionProbeBusOutput,
+        isp_left: &impl IntegratedStaticProbeBusOutput,
+        isp_right: &impl IntegratedStaticProbeBusOutput,
     ) {
-        self.total_pressure_hpa = adm_1.bus_outputs().total_pressure_hpa.value_or_default();
-        self.total_pressure_avail = adm_1.bus_outputs().total_pressure_hpa.is_normal_operation();
+        self.total_pressure_hpa = mfp.bus_outputs().total_pressure_hpa.value_or_default();
+        self.total_pressure_avail = mfp.bus_outputs().total_pressure_hpa.is_normal_operation();
 
-        // ADIRU 1 and 2
-        if let Some(adm_3) = adm_3 {
-            self.left_static_pressure_hpa = adm_2
-                .bus_outputs()
-                .left_static_pressure_hpa
-                .value_or_default();
-            self.left_static_pressure_avail = adm_2
-                .bus_outputs()
-                .left_static_pressure_hpa
-                .is_normal_operation();
-            self.right_static_pressure_hpa = adm_3
-                .bus_outputs()
-                .right_static_pressure_hpa
-                .value_or_default();
-            self.right_static_pressure_avail = adm_3
-                .bus_outputs()
-                .right_static_pressure_hpa
-                .is_normal_operation();
+        self.left_static_pressure_hpa = isp_left
+            .bus_outputs()
+            .left_static_pressure_hpa
+            .value_or_default();
+        self.left_static_pressure_avail = isp_left
+            .bus_outputs()
+            .left_static_pressure_hpa
+            .is_normal_operation();
+        self.right_static_pressure_hpa = isp_right
+            .bus_outputs()
+            .right_static_pressure_hpa
+            .value_or_default();
+        self.right_static_pressure_avail = isp_right
+            .bus_outputs()
+            .right_static_pressure_hpa
+            .is_normal_operation();
 
-            self.averaged_static_pressure_avail =
-                self.left_static_pressure_avail && self.right_static_pressure_avail;
-            self.averaged_static_pressure_hpa =
-                (self.left_static_pressure_hpa + self.right_static_pressure_hpa) / 2.;
-        } else {
-            // ADIRU 3
-            self.averaged_static_pressure_hpa = adm_2
-                .bus_outputs()
-                .averaged_static_pressure_uncorrected_hpa
-                .value_or_default();
-            self.averaged_static_pressure_avail = adm_2
-                .bus_outputs()
-                .averaged_static_pressure_uncorrected_hpa
-                .is_normal_operation();
-
-            self.left_static_pressure_avail = false;
-            self.right_static_pressure_avail = false;
-        }
+        self.averaged_static_pressure_avail =
+            self.left_static_pressure_avail && self.right_static_pressure_avail;
+        self.averaged_static_pressure_hpa =
+            (self.left_static_pressure_hpa + self.right_static_pressure_hpa) / 2.;
 
         self.corrected_averaged_static_pressure_avail =
             self.averaged_static_pressure_avail && self.angle_of_attack_valid
@@ -310,25 +306,27 @@ impl AirDataReferenceRuntime {
         let baro_corr_1 = fcu.bus_outputs().baro_correction_1_hpa;
         self.baro_correction_1_hpa = baro_corr_1.value_or_default();
         self.baro_correction_1_ft =
-            AirDataReferenceRuntime::calculate_baro_alt_correction(self.baro_correction_1_hpa);
+            IntegratedAirDataReferenceRuntime::calculate_baro_alt_correction(
+                self.baro_correction_1_hpa,
+            );
         self.baro_correction_1_valid =
             baro_corr_1.is_normal_operation() || baro_corr_1.is_functional_test();
 
         let baro_corr_2 = fcu.bus_outputs().baro_correction_2_hpa;
         self.baro_correction_2_hpa = baro_corr_2.value_or_default();
         self.baro_correction_2_ft =
-            AirDataReferenceRuntime::calculate_baro_alt_correction(self.baro_correction_2_hpa);
+            IntegratedAirDataReferenceRuntime::calculate_baro_alt_correction(
+                self.baro_correction_2_hpa,
+            );
         self.baro_correction_2_valid =
             baro_corr_2.is_normal_operation() || baro_corr_2.is_functional_test();
     }
 
     fn update_pressure_altitude_and_vs(&mut self, context: &UpdateContext) {
         self.pressure_altitude_ft =
-            AirDataReferenceRuntime::calculate_altitude_from_static_pressure(Pressure::new::<
-                hectopascal,
-            >(
-                self.averaged_static_pressure_hpa,
-            ))
+            IntegratedAirDataReferenceRuntime::calculate_altitude_from_static_pressure(
+                Pressure::new::<hectopascal>(self.averaged_static_pressure_hpa),
+            )
             .get::<foot>();
         self.pressure_altitude_valid = self.corrected_averaged_static_pressure_avail;
 
@@ -366,9 +364,15 @@ impl AirDataReferenceRuntime {
         }
     }
 
-    fn update_temperatures(&mut self, analog_inputs: &AdrAnalogInputs) {
-        self.total_air_temperature_deg_c = analog_inputs.tat_value_deg_c;
-        self.total_air_temperature_valid = true;
+    fn update_temperatures(&mut self, mfp: &impl MultifunctionProbeBusOutput) {
+        self.total_air_temperature_deg_c = mfp
+            .bus_outputs()
+            .total_air_temperature_deg_c
+            .value_or_default();
+        self.total_air_temperature_valid = mfp
+            .bus_outputs()
+            .total_air_temperature_deg_c
+            .is_normal_operation();
 
         self.static_air_temperature_valid = self.total_air_temperature_valid && self.mach_valid;
         let tat_kelvin = self.total_air_temperature_deg_c - Self::ABSOLUTE_ZERO_DEG_C;
@@ -382,7 +386,7 @@ impl AirDataReferenceRuntime {
         let sat_kelvin = self.static_air_temperature_deg_c - Self::ABSOLUTE_ZERO_DEG_C;
         self.true_airspeed_knot = Self::STANDARD_SPEED_OF_SOUND_KNOT
             * self.mach
-            * (sat_kelvin / Self::STANDARD_SEA_LEVEL_TEMPERATURE_KEVLIN).sqrt()
+            * (sat_kelvin / Self::STANDARD_SEA_LEVEL_TEMPERATURE_KELVIN).sqrt()
     }
 
     fn update_overspeed_status(&mut self) {
@@ -413,14 +417,14 @@ impl AirDataReferenceRuntime {
 
         self.compute_discrete_word_1(&mut bus.discrete_word_1);
 
-        AirDataReferenceRuntime::update_altitude_word(
+        IntegratedAirDataReferenceRuntime::update_altitude_word(
             self.pressure_altitude_ft,
             self.pressure_altitude_valid,
             &mut bus.standard_altitude,
         );
 
         if self.baro_correction_1_valid {
-            AirDataReferenceRuntime::update_altitude_word(
+            IntegratedAirDataReferenceRuntime::update_altitude_word(
                 self.pressure_altitude_ft + self.baro_correction_1_ft,
                 self.pressure_altitude_valid,
                 &mut bus.baro_corrected_altitude_1,
@@ -442,7 +446,7 @@ impl AirDataReferenceRuntime {
         }
 
         if self.baro_correction_2_valid {
-            AirDataReferenceRuntime::update_altitude_word(
+            IntegratedAirDataReferenceRuntime::update_altitude_word(
                 self.pressure_altitude_ft + self.baro_correction_2_ft,
                 self.pressure_altitude_valid,
                 &mut bus.baro_corrected_altitude_2,
@@ -531,6 +535,20 @@ impl AirDataReferenceRuntime {
             );
         }
 
+        if !self.sideslip_angle_valid {
+            bus.corrected_side_slip_angle
+                .set(Angle::ZERO, SignStatus::FailureWarning);
+        } else {
+            bus.corrected_side_slip_angle.set(
+                Angle::new::<degree>(self.sideslip_angle_deg),
+                if self.computed_airspeed_knot >= Self::MINIMUM_CAS_FOR_AOA {
+                    SignStatus::NormalOperation
+                } else {
+                    SignStatus::NoComputedData
+                },
+            );
+        }
+
         if !self.total_air_temperature_valid {
             bus.total_air_temperature
                 .set(ThermodynamicTemperature::ZERO, SignStatus::FailureWarning);
@@ -541,7 +559,7 @@ impl AirDataReferenceRuntime {
             );
         }
 
-        if !self.total_air_temperature_valid {
+        if !self.static_air_temperature_valid {
             bus.static_air_temperature
                 .set(ThermodynamicTemperature::ZERO, SignStatus::FailureWarning);
         } else {
