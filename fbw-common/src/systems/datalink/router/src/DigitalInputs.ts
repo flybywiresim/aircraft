@@ -20,6 +20,7 @@ import {
 } from '../../common/src';
 import { AtcAocRouterMessages, FmsRouterMessages } from './databus';
 import { AtsuFlightPhase } from '../../common/src/types/AtsuFlightPhase';
+import { logTroubleshootingError } from 'shared/src';
 
 export type RouterDigitalInputCallbacks = {
   sendFreetextMessage: (message: FreetextMessage, force: boolean) => Promise<AtsuStatusCodes>;
@@ -307,6 +308,15 @@ export class DigitalInputs {
           .requestWinds(request, () => this.publisher.pub('routerRequestSent', request.requestId, synchronized, false))
           .then((response) => {
             this.publisher.pub('routerReceivedWinds', { requestId: request.requestId, response }, synchronized, false);
+          })
+          .catch((error) => {
+            this.logError(`[Router/WindUplink] Error during wind request: ${error}`);
+            this.publisher.pub(
+              'routerReceivedWinds',
+              { requestId: request.requestId, response: [AtsuStatusCodes.ComFailed, null] },
+              synchronized,
+              false,
+            );
           });
       } else {
         this.publisher.pub(
@@ -333,5 +343,10 @@ export class DigitalInputs {
     callback: RouterDigitalInputCallbacks[K],
   ): void {
     this.callbacks[event] = callback;
+  }
+
+  private logError(msg: any) {
+    console.error(msg);
+    logTroubleshootingError(this.bus, msg);
   }
 }

@@ -5612,7 +5612,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       plan.pendingWindUplink.onUplinkRequested();
 
       const request = this.formatWindRequest(forPlan);
-      console.log(`[FMS] Downlink wind request: ${formatWindDownlinkMessage(request)}`);
+      console.log(`[FMS/WindUplink] Downlink wind request: ${formatWindDownlinkMessage(request)}`);
 
       try {
         const [status, uplink] = await this.atsu.receiveWindUplink(request, sentCallback);
@@ -5620,7 +5620,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         if (status !== AtsuStatusCodes.Ok) {
           plan.pendingWindUplink.onUplinkAborted();
 
-          if (status === AtsuStatusCodes.ComFailed) {
+          if (status === AtsuStatusCodes.RequestTimeout) {
             this.setScratchpadMessage(NXSystemMessages.noAnswerToRequest);
           } else {
             this.addMessageToQueue(NXSystemMessages.invalidWindTempUplk);
@@ -5629,7 +5629,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           return;
         }
 
-        console.log(`[FMS] Uplinked winds: ${formatWindUplinkMessage(uplink)}`);
+        console.log(`[FMS/WindUplink] Uplinked winds: ${formatWindUplinkMessage(uplink)}`);
 
         PendingWindUplinkParser.setFromUplink(
           uplink,
@@ -5655,7 +5655,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           return;
         }
       } catch (error) {
-        console.error(error);
+        const msg = `[FMS/WindUplink] Error during wind uplink: ${error}`;
+        console.error(msg);
+        this.logTroubleshootingError(msg);
         plan.pendingWindUplink.onUplinkAborted();
         this.addMessageToQueue(NXSystemMessages.invalidWindTempUplk);
       }

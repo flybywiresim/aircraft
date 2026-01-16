@@ -404,6 +404,6 @@ export class Router {
 
     requestSent();
 
-    return SimBriefConnector.receiveSimBriefWinds(request);
+    return SimBriefConnector.receiveSimBriefWinds(this.bus, request);
   }
 }

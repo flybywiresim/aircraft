@@ -18,6 +18,7 @@ import { FwcDataBusTypes } from '../../common/src/databus/FwcBus';
 import { ClockDataBusTypes } from '../../common/src/databus/ClockBus';
 import { RouterAtcAocMessages } from '../../router/src';
 import { Clock } from '../../common/src/types/Clock';
+import { logTroubleshootingError } from 'shared/src';
 
 export type AocDigitalInputCallbacks = {
   receivedFreetextMessage: (message: FreetextMessage) => void;
@@ -167,6 +168,15 @@ export class DigitalInputs {
           .requestWinds(request, () => {})
           .then((data) => {
             this.publisher.pub('aocWindsResponse', { requestId: request.requestId, data }, true, false);
+          })
+          .catch((error) => {
+            this.logTroubleshootingError(`[AOC/WindUplink] Error during wind request: ${error}`);
+            this.publisher.pub(
+              'aocWindsResponse',
+              { requestId: request.requestId, data: [AtsuStatusCodes.ComFailed, null] },
+              true,
+              false,
+            );
           });
       }
     });
@@ -186,5 +196,10 @@ export class DigitalInputs {
     callback: AocDigitalInputCallbacks[K],
   ): void {
     this.callbacks[event] = callback;
+  }
+
+  private logTroubleshootingError(msg: any) {
+    console.error(msg);
+    logTroubleshootingError(this.bus, msg);
   }
 }

@@ -1,7 +1,15 @@
 //  Copyright (c) 2023 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { getSimBriefOfp, ISimbriefData, MathUtils, Vec2Utils, IWindLevel, INavlogFix } from '@flybywiresim/fbw-sdk';
+import {
+  getSimBriefOfp,
+  ISimbriefData,
+  MathUtils,
+  Vec2Utils,
+  IWindLevel,
+  INavlogFix,
+  logTroubleshootingError,
+} from '@flybywiresim/fbw-sdk';
 import {
   AtsuStatusCodes,
   UplinkedCruiseWindEntry,
@@ -10,12 +18,13 @@ import {
   WindRequestMessage,
   WindUplinkMessage,
 } from '../../../common/src';
-import { Vec2Math, Wait } from '@microsoft/msfs-sdk';
+import { EventBus, Vec2Math, Wait } from '@microsoft/msfs-sdk';
 
 export class SimBriefConnector {
   private static readonly WindVectorCache = [Vec2Math.create(), Vec2Math.create(), Vec2Math.create()];
 
   public static async receiveSimBriefWinds(
+    bus: EventBus,
     request: WindRequestMessage,
   ): Promise<[AtsuStatusCodes, WindUplinkMessage | null]> {
     return Promise.race([
@@ -25,12 +34,14 @@ export class SimBriefConnector {
           SimBriefConnector.parseSimBriefWinds(body, request),
         ])
         .catch((err): [AtsuStatusCodes, WindUplinkMessage | null] => {
-          console.error('SimBrief OFP download failed: ' + err);
-          return [AtsuStatusCodes.FormatError, null];
+          const errorMsg = `[SimBriefConnector/WindUplink] SimBrief OFP download or parsing failed: ${err}`;
+          console.error(errorMsg);
+          logTroubleshootingError(bus, errorMsg);
+          return [AtsuStatusCodes.ComFailed, null];
         }),
       // Time out after 4 minutes
       Wait.awaitDelay(4 * 60 * 1000).then((_): [AtsuStatusCodes, WindUplinkMessage | null] => [
-        AtsuStatusCodes.ComFailed,
+        AtsuStatusCodes.RequestTimeout,
         null,
       ]),
     ]);
