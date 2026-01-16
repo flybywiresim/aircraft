@@ -68,9 +68,6 @@ export class CDUFlightPlanPage {
       }
     }, mcdu.PageTimeout.Medium);
 
-    const flightPhase = mcdu.flightPhaseManager.phase;
-    const isFlying = flightPhase >= FmgcFlightPhase.Takeoff && flightPhase != FmgcFlightPhase.Done;
-
     let showFrom = false;
 
     const forActiveOrTemporary = forPlan === 0;
@@ -338,7 +335,7 @@ export class CDUFlightPlanPage {
         let timeCell: string = Time.NoPrediction;
         let timeColor = 'white';
         if (verticalWaypoint && isFinite(verticalWaypoint.secondsFromPresent)) {
-          if (isFromLeg && mcdu.flightPlanService.active.performanceData.estimatedTakeoffTime.get() === null) {
+          if (isFromLeg && mcdu.flightPlanService.active.performanceData.estimatedTakeoffTime.get() !== null) {
             timeColor = 'magenta';
           }
           timeCell = `${isFromLeg ? '{big}' : '{small}'}${mcdu.getTimePrediction(
@@ -954,7 +951,11 @@ export class CDUFlightPlanPage {
         }
       }
 
-      destText[0] = ['\xa0DEST', 'DIST\xa0\xa0EFOB', isFlying ? '\xa0UTC{sp}{sp}{sp}{sp}' : 'TIME{sp}{sp}{sp}{sp}'];
+      destText[0] = [
+        '\xa0DEST',
+        'DIST\xa0\xa0EFOB',
+        `${mcdu.getTimePredictionHeader().padStart(4, '\xa0')}{sp}{sp}{sp}{sp}`,
+      ];
       destText[1] = [
         destCell,
         `{small}${destDistCell.padStart(4, '\xa0')}\xa0${destEFOBCell.padStart(5, '\xa0')}{end}`,
@@ -1039,7 +1040,7 @@ export class CDUFlightPlanPage {
     }
     mcdu.setArrows(allowScroll, allowScroll, true, true);
     scrollText[0][1] = 'SPD/ALT\xa0\xa0\xa0';
-    scrollText[0][2] = isFlying ? '\xa0UTC{sp}{sp}{sp}{sp}' : 'TIME{sp}{sp}{sp}{sp}';
+    scrollText[0][2] = `${mcdu.getTimePredictionHeader().padStart(4, '\xa0')}{sp}{sp}{sp}{sp}`;
 
     if (!showFrom) {
       fromHeader.update('');

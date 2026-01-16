@@ -4,13 +4,14 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { CDUVerticalRevisionPage } from './A320_Neo_CDU_VerticalRevisionPage';
 import { Column, FormatTemplate } from '../legacy/A320_Neo_CDU_Format';
 import { VerticalWaypointPrediction } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
+import { FmsFormatters } from '../legacy/FmsFormatters';
 
 export class CduRtaPage {
   static readonly RtaHeaderColumn = new Column(12, 'RTA');
 
   static readonly EttHeaderColumn = new Column(0, 'ETT');
 
-  static readonly returnColumn = new Column(23, 'RETURN>');
+  static readonly returnColumn = new Column(0, 'RETURN>');
 
   static ShowPage(
     mcdu: LegacyFmsPageInterface,
@@ -23,7 +24,11 @@ export class CduRtaPage {
     const isPreFlight = mcdu.flightPhaseManager.phase === FmgcFlightPhase.Preflight;
     const ett = mcdu.flightPlanService.active.performanceData.estimatedTakeoffTime.get();
     const rtaExists = ett != null;
-    const rtaCell = isPreFlight ? (rtaExists ? `${this.formatTime(ett)}` : '[\xa0\xa0\xa0\xa0\xa0\xa0]*') : '';
+    const rtaCell = isPreFlight
+      ? rtaExists
+        ? `${FmsFormatters.secondsTohhmmss(ett)}`
+        : '[\xa0\xa0\xa0\xa0\xa0\xa0]*'
+      : '';
     mcdu.setTemplate(
       FormatTemplate([
         [this.RtaHeaderColumn],
@@ -45,21 +50,11 @@ export class CduRtaPage {
     mcdu.onLeftInput[2] = (value) => {
       if (isPreFlight) {
         mcdu.setEstimatedTakeoffTime(value);
+        CduRtaPage.ShowPage(mcdu, waypoint, index, verticalWaypoint);
       }
     };
     mcdu.onLeftInput[5] = () => {
       CDUVerticalRevisionPage.ShowPage(mcdu, waypoint, index, verticalWaypoint);
     };
-  }
-
-  private static formatTime(secondsSinceMidnight: number): string {
-    const date = new Date(secondsSinceMidnight);
-    return (
-      date.getHours().toString().padStart(2, '0') +
-      ':' +
-      date.getMinutes().toString().padStart(2, '0') +
-      ':' +
-      date.getSeconds().toString().padStart(2, '0')
-    );
   }
 }

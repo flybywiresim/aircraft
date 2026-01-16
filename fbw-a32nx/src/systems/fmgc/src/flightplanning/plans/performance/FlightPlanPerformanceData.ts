@@ -1235,7 +1235,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
   readonly approachFlapsThreeSelected = Subject.create(false);
 
   /**
-   * Estimated takeoff time in seconds since midnight
+   * Estimated takeoff time in seconds from midnight
    */
   readonly estimatedTakeoffTime = Subject.create<number | null>(null);
 

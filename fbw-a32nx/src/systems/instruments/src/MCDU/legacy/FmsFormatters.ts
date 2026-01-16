@@ -8,8 +8,12 @@ export class FmsFormatters {
     return h.toFixed(0).padStart(2, '0') + m.toFixed(0).padStart(2, '0');
   }
 
-  public static minuteToSeconds(minutes: number) {
+  public static minutesToSeconds(minutes: number) {
     return minutes * 60;
+  }
+
+  public static hoursToSeconds(hours: number) {
+    return hours * 3600;
   }
 
   public static secondsToUTC(seconds: number) {
@@ -41,5 +45,12 @@ export class FmsFormatters {
     const h = parseInt(hhmm.substring(0, 2));
     const m = parseInt(hhmm.substring(2, 4));
     return h * 60 + m;
+  }
+
+  public static secondsTohhmmss(seconds: number): string {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds - h * 3600) / 60);
+    const s = Math.floor(seconds - h * 3600 - m * 60);
+    return h.toFixed(0).padStart(2, '0') + ':' + m.toFixed(0).padStart(2, '0') + ':' + s.toFixed(0).padStart(2, '0');
   }
 }

@@ -5631,25 +5631,28 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   setEstimatedTakeoffTime(text: string): void {
-    if (/\d{1.4}/.exec(text)) {
-      const now = new Date();
-      const ettDate = new Date();
+    if (text == Keypad.clrValue) {
+      this.flightPlanService.active?.performanceData.estimatedTakeoffTime.set(null);
+      return;
+    }
+
+    if (/^\d{1,4}$/.exec(text)) {
       let minutes: number;
       let hours: number;
       if (text.length <= 2) {
         minutes = Number(text);
+        hours = 0;
       } else {
         const is24H = text.length === 4;
         hours = Number(text.slice(0, text.length - 2));
         minutes = Number(text.slice(is24H ? -2 : -1));
       }
 
-      if (minutes >= 59 || hours >= 23) {
+      if (minutes > 59 || hours > 23) {
         this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
       } else {
-        ettDate.setUTCHours(hours, minutes, 0, 0);
         this.flightPlanService.active?.performanceData.estimatedTakeoffTime.set(
-          Math.abs(now.getTime() - ettDate.getTime()) / 1000,
+          FmsFormatters.hoursToSeconds(hours) + FmsFormatters.minutesToSeconds(minutes),
         );
       }
     } else {
@@ -5660,7 +5663,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   getTimePrediction(secondsFromPresent: number) {
     const phase = this.getFlightPhase();
     let time: number | null = null;
-    if (phase >= FmgcFlightPhase.Preflight && phase < FmgcFlightPhase.GoAround) {
+    if (phase > FmgcFlightPhase.Preflight && phase < FmgcFlightPhase.Done) {
       time = this.zuluTime.get();
     } else {
       time = this.flightPlanService.active?.performanceData.estimatedTakeoffTime.get();
@@ -5676,7 +5679,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   getTimePredictionHeader(): string {
     const phase = this.getFlightPhase();
     const ett = this.flightPlanService.active?.performanceData.estimatedTakeoffTime.get();
-    if ((phase >= FmgcFlightPhase.Preflight && phase < FmgcFlightPhase.GoAround) || ett !== null) {
+    if ((phase > FmgcFlightPhase.Preflight && phase < FmgcFlightPhase.Done) || ett !== null) {
       //TODO check for valid clock signal
       return 'UTC';
     } else {
