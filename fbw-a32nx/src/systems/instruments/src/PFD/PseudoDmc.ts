@@ -48,6 +48,7 @@ export class PseudoDmc implements Instrument {
   private readonly fcuDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(null);
 
   private readonly adrSwitchingKnob = ConsumerSubject.create(this.sub.on('airKnob'), 0);
+  private readonly irSwitchingKnob = ConsumerSubject.create(this.sub.on('attHdgKnob'), 0);
 
   private readonly mainElecSupply = ConsumerSubject.create(null, false);
   private readonly alternateElecSupply = ConsumerSubject.create(null, false);
@@ -151,6 +152,20 @@ export class PseudoDmc implements Instrument {
         true,
         true,
       ),
+      this.irSwitchingKnob.sub(
+        (knobPosition) => {
+          if (this.isRightSide) {
+            this.dmcDiscreteWord272.setBitValue(11, knobPosition === 2);
+            this.dmcDiscreteWord272.setBitValue(12, knobPosition === 1 || knobPosition === 2);
+          } else {
+            this.dmcDiscreteWord272.setBitValue(11, knobPosition === 0 || knobPosition === 1);
+            this.dmcDiscreteWord272.setBitValue(12, knobPosition === 0);
+          }
+          this.dmcDiscreteWord272.setSsm(Arinc429SignStatusMatrix.NormalOperation);
+        },
+        true,
+        true,
+      ),
     ];
 
     this._isAcPowered.sub((isPowered) => {
@@ -184,6 +199,13 @@ export class PseudoDmc implements Instrument {
       (word) =>
         word.writeToSimVar(
           this.isRightSide ? 'L:A32NX_DMC_DISCRETE_WORD_271_RIGHT' : 'L:A32NX_DMC_DISCRETE_WORD_271_LEFT',
+        ),
+      true,
+    );
+    this.dmcDiscreteWord272.sub(
+      (word) =>
+        word.writeToSimVar(
+          this.isRightSide ? 'L:A32NX_DMC_DISCRETE_WORD_272_RIGHT' : 'L:A32NX_DMC_DISCRETE_WORD_272_LEFT',
         ),
       true,
     );
