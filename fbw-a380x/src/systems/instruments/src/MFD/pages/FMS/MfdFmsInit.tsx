@@ -240,9 +240,13 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     const navigraphUsername = NXDataStore.getLegacy('NAVIGRAPH_USERNAME', '');
     const overrideSimBriefUserID = NXDataStore.getLegacy('CONFIG_OVERRIDE_SIMBRIEF_USERID', '');
 
-    if (!navigraphUsername && !overrideSimBriefUserID) {
+    if (this.props.test == 0 && !navigraphUsername && !overrideSimBriefUserID) {
       this.props.fmcService.master.addMessageToQueue(NXFictionalMessages.noNavigraphUser, undefined, undefined);
+      this.props.test = 1;
       throw new Error('No Navigraph username provided');
+    } else {
+      this.props.test = 0;
+      this.props.fmcService.master.addMessageToQueue(NXFictionalMessages.reloadPlaneApply, undefined, undefined);
     }
 
     this.simBriefOfp = await SimBriefUplinkAdapter.downloadOfpForUserID(navigraphUsername, overrideSimBriefUserID);

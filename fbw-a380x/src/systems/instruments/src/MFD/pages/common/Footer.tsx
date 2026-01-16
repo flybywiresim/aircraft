@@ -16,7 +16,8 @@ export class Footer extends DisplayComponent<AbstractMfdPageProps> {
     </span>,
   );
 
-  private readonly messageRef = FSComponent.createRef<HTMLSpanElement>();
+  private readonly line1Ref = FSComponent.createRef<SVGTextElement>();
+  private readonly line2Ref = FSComponent.createRef<SVGTextElement>();
 
   private readonly messageToBeCleared = Subject.create<boolean>(false);
 
@@ -28,17 +29,44 @@ export class Footer extends DisplayComponent<AbstractMfdPageProps> {
         this.props.fmcService.master.fmsErrors.sub((_, __, ___, arr) => {
           const ind = arr.findIndex((el) => !el.cleared);
 
-          if (ind > -1 && this.messageRef.getOrDefault()) {
+          if (ind > -1 && this.line1Ref.getOrDefault() && this.line2Ref.getOrDefault()) {
             this.messageToBeCleared.set(true);
-            this.messageRef.instance.textContent = arr[ind].messageText;
+
+            let lineFeed = arr[ind].messageText.search('\n');
+
+            if(lineFeed == -1) {
+              this.line1Ref.instance.textContent = arr[ind].messageText;
+
+              this.line2Ref.instance.textContent = '';
+              this.line2Ref.instance.style.display = 'none';
+            } else {
+              this.line1Ref.instance.textContent = arr[ind].messageText.slice(0, lineFeed);
+
+              this.line2Ref.instance.textContent = arr[ind].messageText.slice(lineFeed + 1, arr[ind].messageText.length);
+              this.line2Ref.instance.style.display = 'inherit';
+            }
 
             if (arr[ind].backgroundColor === 'white') {
-              this.messageRef.instance.style.backgroundColor = '#ffffff';
+              this.line1Ref.instance.style.backgroundColor = '#ffffff';
+              // According to references, single white lines are centered
+              this.line1Ref.instance.style.marginBottom = '0px';
+              this.line1Ref.instance.style.marginTop = '0px';
+              this.line1Ref.instance.style.verticalAlign = 'middle';
+              //this.line1Ref.instance.style.transform = 'translateY(18px)';
             } else if (arr[ind].backgroundColor === 'cyan') {
-              this.messageRef.instance.style.backgroundColor = '#00ffff';
+              this.line1Ref.instance.style.backgroundColor = '#00ffff';
             } else if (arr[ind].backgroundColor === 'amber') {
-              this.messageRef.instance.style.backgroundColor = '#e68000';
+              this.line1Ref.instance.style.backgroundColor = '#e68000';
             }
+            this.line2Ref.instance.style.backgroundColor = this.line1Ref.instance.style.backgroundColor;
+
+            // According to references, amber lines or first lines are at the top of the footer
+            if (arr[ind].backgroundColor === 'amber' || lineFeed != -1) {
+              this.line1Ref.instance.style.marginBottom = '1px';
+              this.line1Ref.instance.style.marginTop = '2px';
+              this.line1Ref.instance.style.transform = 'translateY(0%)';
+            }
+
             this.buttonText.set(
               <span>
                 CLEAR
@@ -48,8 +76,11 @@ export class Footer extends DisplayComponent<AbstractMfdPageProps> {
             );
           } else {
             this.messageToBeCleared.set(false);
-            this.messageRef.instance.textContent = '';
-            this.messageRef.instance.style.backgroundColor = 'none';
+            this.line1Ref.instance.textContent = '';
+            this.line1Ref.instance.style.backgroundColor = 'none';
+            this.line2Ref.instance.textContent = this.line1Ref.instance.textContent;
+            this.line2Ref.instance.style.backgroundColor = this.line1Ref.instance.style.backgroundColor;
+
             this.buttonText.set(
               <span>
                 MSG
@@ -86,7 +117,8 @@ export class Footer extends DisplayComponent<AbstractMfdPageProps> {
           }}
         />
         <div class="mfd-footer-message-area">
-          <span ref={this.messageRef} />
+              <div class="mfd-footer-message-area-line" ref={this.line1Ref} />
+              <div class="mfd-footer-message-area-line" ref={this.line2Ref} />
         </div>
       </div>
     );
