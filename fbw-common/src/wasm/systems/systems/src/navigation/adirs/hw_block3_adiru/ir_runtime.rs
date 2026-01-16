@@ -82,6 +82,13 @@ pub struct InertialReferenceRuntime {
     active_mode: IrOperationMode,
     mode_timer: Duration,
 
+    // Faults
+    one_hertz_clock: Duration,
+    unrecoverable_fault_active: bool,
+    att_recoverable_fault_active: bool,
+
+    alignment_in_air_fault: bool,
+
     excess_motion_error: bool,
     excess_motion_realign_pulse: PulseNode,
     excess_motion_inhibit_mtrig: MonostableTriggerNode,
@@ -126,6 +133,7 @@ impl InertialReferenceRuntime {
     // Alignment thresholds
     const MAX_REALIGN_VELOCITY_KNOT: f64 = 20.;
     const MAX_LATITUDE_FOR_ALIGNMENT: f64 = 82.;
+    const ALIGN_IN_AIR_MAX_TAS_KNOT: f64 = 100.;
 
     // Excess Motion fault durations and thresholds
     const EXCESS_MOTION_INHIBIT_TIME: Duration = Duration::from_secs(2);
@@ -152,8 +160,14 @@ impl InertialReferenceRuntime {
             active_mode,
             mode_timer: Duration::ZERO,
 
+            one_hertz_clock: Duration::ZERO,
+            unrecoverable_fault_active: false,
+            att_recoverable_fault_active: false,
+
+            alignment_in_air_fault: false,
+
             excess_motion_error: false,
-            excess_motion_realign_pulse: PulseNode::new_rising(),
+            excess_motion_realign_pulse: PulseNode::new_falling(),
             excess_motion_inhibit_mtrig: MonostableTriggerNode::new_rising(
                 Self::EXCESS_MOTION_INHIBIT_TIME,
             ),
@@ -202,7 +216,11 @@ impl InertialReferenceRuntime {
 
         self.update_off_status(discrete_inputs);
 
-        self.update_alignment_excess_motion_monitor(context, discrete_inputs);
+        self.update_faults_logic(
+            context,
+            discrete_inputs,
+            internal_discrete_inputs.hardware_fault,
+        );
 
         self.update_state(context, discrete_inputs);
 
@@ -238,7 +256,13 @@ impl InertialReferenceRuntime {
             discrete_inputs.mode_select_m2,
         ));
 
-        self.mode_timer = self.mode_timer.saturating_sub(context.delta());
+        // The mode timer in the align modes is halted if a fault has occured.
+        if !((self.active_mode == IrOperationMode::AlignCoarse
+            || self.active_mode == IrOperationMode::AlignFine)
+            && (self.excess_motion_error || self.alignment_in_air_fault))
+        {
+            self.mode_timer = self.mode_timer.saturating_sub(context.delta());
+        }
 
         // Compute the alignment durations depending on current fast align status
         let coarse_align_duration = if !discrete_inputs.simulator_fast_align_mode_active {
@@ -424,6 +448,26 @@ impl InertialReferenceRuntime {
         self.selected_altitude = selected_adr.standard_altitude;
     }
 
+    fn update_faults_logic(
+        &mut self,
+        context: &UpdateContext,
+        discrete_inputs: &IrDiscreteInputs,
+        hardware_fault: bool,
+    ) {
+        self.update_alignment_excess_motion_monitor(context, discrete_inputs);
+        self.update_alignment_in_air_fault();
+
+        if let Some(timer) = self.one_hertz_clock.checked_sub(context.delta()) {
+            self.one_hertz_clock = timer;
+        } else {
+            self.one_hertz_clock = Duration::from_secs(2);
+        }
+
+        // TODO add other failure modes
+        self.unrecoverable_fault_active = hardware_fault;
+        self.att_recoverable_fault_active = self.alignment_in_air_fault
+    }
+
     fn update_alignment_excess_motion_monitor(
         &mut self,
         context: &UpdateContext,
@@ -450,19 +494,29 @@ impl InertialReferenceRuntime {
         let alignment_active = self.active_mode == IrOperationMode::AlignFine
             || self.active_mode == IrOperationMode::AlignCoarse
             || self.active_mode == IrOperationMode::Realign;
-        let excess_motion_detected = self.excess_motion_body_velocity_filter.output().max()
+        self.excess_motion_error = self.excess_motion_body_velocity_filter.output().max()
             > Self::MAX_ALIGNMENT_VELOCITY_FPS
             && alignment_active
             && !self.excess_motion_inhibit_mtrig.output();
 
-        if excess_motion_detected {
-            self.excess_motion_error = true;
-        } else if !excess_motion_detected && self.active_mode != IrOperationMode::AlignCoarse {
-            self.excess_motion_error = false;
-        }
-
         self.excess_motion_realign_pulse
             .update(self.excess_motion_error);
+    }
+
+    fn update_alignment_in_air_fault(&mut self) {
+        if (self.active_mode == IrOperationMode::AlignCoarse
+            || self.active_mode == IrOperationMode::AlignFine)
+            && self
+                .selected_tas
+                .value_or(Velocity::new::<knot>(Self::ALIGN_IN_AIR_MAX_TAS_KNOT + 10.))
+                > Velocity::new::<knot>(Self::ALIGN_IN_AIR_MAX_TAS_KNOT)
+        {
+            self.alignment_in_air_fault = true;
+        } else if !(self.active_mode == IrOperationMode::AlignCoarse
+            || self.active_mode == IrOperationMode::AlignFine)
+        {
+            self.alignment_in_air_fault = false;
+        }
     }
 
     fn update_extreme_latitude_status(&mut self) {
@@ -505,7 +559,10 @@ impl InertialReferenceRuntime {
         }
 
         discrete_outputs.ir_off = self.is_off;
-        discrete_outputs.ir_fault = false;
+        discrete_outputs.ir_fault = !self.is_off
+            && (self.unrecoverable_fault_active
+                || (self.att_recoverable_fault_active
+                    && self.one_hertz_clock < Duration::from_secs(1)));
         discrete_outputs.battery_operation = self.on_battery_power;
         discrete_outputs.align = self.is_aligning();
     }
@@ -932,5 +989,7 @@ impl InertialReferenceRuntime {
 
     pub(super) fn is_output_inhibited(&self) -> bool {
         self.output_inhibited
+            || self.unrecoverable_fault_active
+            || self.att_recoverable_fault_active
     }
 }
