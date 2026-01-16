@@ -1,6 +1,6 @@
 use std::error::Error;
 
-use systems_wasm::aspects::{MsfsAspectBuilder, ObjectWrite, VariablesToObject};
+use systems_wasm::aspects::{ExecuteOn, MsfsAspectBuilder, ObjectWrite, VariablesToObject};
 use systems_wasm::{set_data_on_sim_object, Variable};
 
 use systems::shared::to_bool;
@@ -12,6 +12,14 @@ pub(super) fn trimmable_horizontal_stabilizer(
     builder: &mut MsfsAspectBuilder,
 ) -> Result<(), Box<dyn Error>> {
     builder.variables_to_object(Box::new(PitchTrimSimOutput { elevator_trim: 0. }));
+
+    // Send actual THS position to Lvar
+    builder.map(
+        ExecuteOn::PostTick,
+        Variable::aspect("HYD_FINAL_THS_DEFLECTION"),
+        |value| value,
+        Variable::named("HYD_THS_DEFLECTION"),
+    );
 
     Ok(())
 }

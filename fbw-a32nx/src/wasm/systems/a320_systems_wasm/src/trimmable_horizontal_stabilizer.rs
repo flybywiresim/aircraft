@@ -96,6 +96,14 @@ pub(super) fn trimmable_horizontal_stabilizer(
         Variable::aspect("THS_MANUAL_CONTROL_ACTIVE"),
     );
 
+    // Send actual THS position to Lvar
+    builder.map(
+        ExecuteOn::PostTick,
+        Variable::aspect("HYD_FINAL_THS_DEFLECTION"),
+        |value| value,
+        Variable::named("HYD_THS_DEFLECTION"),
+    );
+
     builder.variables_to_object(Box::new(PitchTrimSimOutput { elevator_trim: 0. }));
 
     Ok(())
