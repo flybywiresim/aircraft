@@ -63,6 +63,7 @@
 1. [FMS] Use localizer station declination for true courses on approach legs - @BlueberryKing (BlueberryKing)
 1. [A380X/FMS] Add FUEL PENALTY function - @BravoMike99 (bruno_pt99)
 1. [A380X/MFD] Update DATA/STATUS page with newer software layout - @BravoMike99 (bruno_pt99)
+1. [A32NX/FMS] Fix pilot entered managed descent mach being ignored - @BlueberryKing (BlueberryKing)
 
 ## 0.14.0
 
