@@ -2,7 +2,6 @@ import { ConsumerSubject, EventBus, Vec2Math } from '@microsoft/msfs-sdk';
 import { NavigationEvents } from '../navigation/Navigation';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { WindEntry } from '../flightplanning/data/wind';
-import { FlightPlan } from '../flightplanning/plans/FlightPlan';
 import { FlightPhaseManagerEvents } from '../flightphase';
 import { FmgcFlightPhase } from '../../../shared/src/flightphase';
 import { WindUtils } from '../guidance/vnav/wind/WindUtils';
@@ -31,18 +30,9 @@ export class HistoryWind {
 
   private readonly historyWinds: (WindEntry | null)[] = Array(this.defaultRecordedWind.length + 1).fill(null);
 
-  constructor(
-    private readonly bus: EventBus,
-    private readonly activePlan: FlightPlan,
-  ) {
+  constructor(private readonly bus: EventBus) {
     this.altitude.sub(this.handleAltitudeChange.bind(this));
-    this.sub.on('fmgc_flight_phase').handle((newPhase) => {
-      if (this.flightPhase === FmgcFlightPhase.Preflight && newPhase !== FmgcFlightPhase.Preflight) {
-        this.resetRecordedWinds();
-      }
-
-      this.flightPhase = newPhase;
-    });
+    this.sub.on('fmgc_flight_phase').handle(this.handleFlightPhaseChange.bind(this));
 
     this.syncFromLocalStorage();
   }
@@ -64,26 +54,6 @@ export class HistoryWind {
           requiresSync = true;
         }
       }
-
-      const cruiseLevel = this.activePlan.performanceData.cruiseFlightLevel.get();
-      if (cruiseLevel !== null) {
-        const cruiseAltitude = cruiseLevel * 100;
-        const cruiseAltAlreadyExists = this.historyWinds.some(
-          (wind) => wind !== null && wind.altitude === cruiseAltitude,
-        );
-
-        if (!cruiseAltAlreadyExists && currentAltitude <= cruiseAltitude && this.previousAltitude > cruiseAltitude) {
-          this.recordedCruiseWind.altitude = cruiseAltitude;
-          Vec2Math.setFromPolar(
-            windSpeed,
-            windDirection * MathUtils.DEGREES_TO_RADIANS,
-            this.recordedCruiseWind.vector,
-          );
-
-          this.historyWinds[this.defaultRecordedWind.length] = this.recordedCruiseWind;
-          requiresSync = true;
-        }
-      }
     }
 
     if (requiresSync) {
@@ -91,6 +61,32 @@ export class HistoryWind {
     }
 
     this.previousAltitude = currentAltitude;
+  }
+
+  private handleFlightPhaseChange(newPhase: FmgcFlightPhase) {
+    if (this.flightPhase === FmgcFlightPhase.Preflight && newPhase !== FmgcFlightPhase.Preflight) {
+      this.resetRecordedWinds();
+    }
+    if (this.flightPhase <= FmgcFlightPhase.Cruise && newPhase > FmgcFlightPhase.Cruise) {
+      this.tryRecordCruiseWind();
+    }
+
+    this.flightPhase = newPhase;
+  }
+
+  private tryRecordCruiseWind() {
+    const cruiseAltitude = this.altitude.get();
+    const windSpeed = this.windSpeed.get();
+    const windDirection = this.windDirection.get();
+
+    if (cruiseAltitude !== null && windSpeed !== null && windDirection !== null) {
+      this.recordedCruiseWind.altitude = cruiseAltitude;
+      Vec2Math.setFromPolar(windSpeed, windDirection * MathUtils.DEGREES_TO_RADIANS, this.recordedCruiseWind.vector);
+
+      this.historyWinds[this.defaultRecordedWind.length] = this.recordedCruiseWind;
+    }
+
+    this.syncToLocalStorage();
   }
 
   private resetRecordedWinds() {
