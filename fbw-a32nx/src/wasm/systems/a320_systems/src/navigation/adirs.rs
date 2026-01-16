@@ -535,7 +535,7 @@ impl A320AdiruElectricalHarness {
             backup_powersupply_relay_switching_powered_2: is_powered,
 
             aoa_excitation_power_source: match num {
-                1 => ElectricalBusType::AlternatingCurrentEssentialShed,
+                1 => ElectricalBusType::AlternatingCurrentEssential,
                 2 => ElectricalBusType::AlternatingCurrent(2),
                 3 => ElectricalBusType::AlternatingCurrent(1),
                 _ => panic!("ADIRU Harness: Impossible installation position"),
