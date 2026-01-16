@@ -55,6 +55,7 @@ fn output_data_id(data_type: OutputDataType, number: usize, name: &str) -> Strin
 pub(super) struct InternalIrDiscreteInputs {
     pub on_battery_power: bool,
     pub dc_fail: bool,
+    pub hardware_fault: bool,
 }
 
 pub struct AirDataInertialReferenceUnit<AdrRuntime> {
@@ -711,7 +712,7 @@ impl<AdrRuntime: AdrRuntimeTemplate> AirDataInertialReferenceUnit<AdrRuntime> {
 
         // Check if the internal state (runtime) is lost because either the unit failed, the
         // power holdover has been exceed, or the ADIRU has entered standby mode
-        if self.ir_failure.is_active() || !is_powered {
+        if !is_powered {
             // Throw away the simulated software runtime
             self.ir_runtime = None;
 
@@ -736,6 +737,7 @@ impl<AdrRuntime: AdrRuntimeTemplate> AirDataInertialReferenceUnit<AdrRuntime> {
                 &InternalIrDiscreteInputs {
                     on_battery_power: self.on_battery_power,
                     dc_fail: self.dc_failure,
+                    hardware_fault: self.ir_failure.is_active(),
                 },
                 &self.adr_bus_output_data,
                 adr_1.bus_outputs(),
