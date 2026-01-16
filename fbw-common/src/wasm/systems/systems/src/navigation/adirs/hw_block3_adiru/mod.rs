@@ -1,9 +1,12 @@
+use std::time::Duration;
+
 use crate::navigation::adirs::{AdrDiscreteInputs, IrDiscreteInputs};
 use crate::simulation::{Read, Reader, Write, Writer};
 use uom::si::f64::*;
 
 pub mod adiru;
-mod adr_runtime;
+pub mod adm_adr_runtime;
+pub mod integrated_adr_runtime;
 mod ir_runtime;
 mod simulator_data;
 #[cfg(test)]
@@ -73,4 +76,9 @@ impl NormaliseAngleExt for Angle {
 pub trait AdiruElectricalHarness {
     fn adr_discrete_inputs(&self) -> &AdrDiscreteInputs;
     fn ir_discrete_inputs(&self) -> &IrDiscreteInputs;
+}
+
+pub trait AdrRuntimeTemplate {
+    fn new(self_check: Duration) -> Self;
+    fn new_running() -> Self;
 }

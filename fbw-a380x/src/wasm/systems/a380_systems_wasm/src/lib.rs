@@ -417,6 +417,21 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
         (34_020, FailureType::RadioAntennaDirectCoupling(1)),
         (34_021, FailureType::RadioAntennaDirectCoupling(2)),
         (34_022, FailureType::RadioAntennaDirectCoupling(3)),
+        (34_100, FailureType::Adr(1)),
+        (34_101, FailureType::Adr(2)),
+        (34_102, FailureType::Adr(3)),
+        (34_103, FailureType::Ir(1)),
+        (34_104, FailureType::Ir(2)),
+        (34_105, FailureType::Ir(3)),
+        (34_110, FailureType::PitotBlockage(1)),
+        (34_111, FailureType::PitotBlockage(2)),
+        (34_112, FailureType::PitotBlockage(3)),
+        (34_113, FailureType::StaticBlockage(1)),
+        (34_114, FailureType::StaticBlockage(2)),
+        (34_115, FailureType::StaticBlockage(3)),
+        (34_116, FailureType::AoaProbeStuck(1)),
+        (34_117, FailureType::AoaProbeStuck(2)),
+        (34_118, FailureType::AoaProbeStuck(3)),
     ])
     .provides_aircraft_variable("ACCELERATION BODY X", "feet per second squared", 0)?
     .provides_aircraft_variable("ACCELERATION BODY Y", "feet per second squared", 0)?
@@ -472,6 +487,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("GPS GROUND MAGNETIC TRACK", "Degrees", 0)?
     .provides_aircraft_variable("GPS GROUND TRUE TRACK", "Degrees", 0)?
     .provides_aircraft_variable("INCIDENCE ALPHA", "Degrees", 0)?
+    .provides_aircraft_variable("INCIDENCE BETA", "Degrees", 0)?
     .provides_aircraft_variable("INDICATED ALTITUDE", "Feet", 0)?
     .provides_aircraft_variable("INTERACTIVE POINT OPEN:0", "Percent", 0)?
     .provides_aircraft_variable("INTERACTIVE POINT OPEN", "Percent", 2)?
@@ -494,6 +510,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("SIM ON GROUND", "Bool", 0)?
     .provides_aircraft_variable("SURFACE TYPE", "Enum", 0)?
     .provides_aircraft_variable("TOTAL AIR TEMPERATURE", "celsius", 0)?
+    .provides_aircraft_variable("DYNAMIC PRESSURE", "inHg", 0)?
     .provides_aircraft_variable("TOTAL WEIGHT", "Pounds", 0)?
     .provides_aircraft_variable("TOTAL WEIGHT YAW MOI", "Slugs feet squared", 0)?
     .provides_aircraft_variable("TOTAL WEIGHT PITCH MOI", "Slugs feet squared", 0)?

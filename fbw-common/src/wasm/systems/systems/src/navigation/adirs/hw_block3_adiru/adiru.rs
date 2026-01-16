@@ -1,5 +1,11 @@
 use crate::auto_flight::FlightControlUnitBusOutput;
 use crate::failures::{Failure, FailureType};
+use crate::navigation::adirs::air_data_sensors::integrated_probes::{
+    IntegratedStaticProbeBusOutput, MultifunctionProbeBusOutput, SideslipAngleProbeBusOutput,
+};
+use crate::navigation::adirs::hw_block3_adiru::adm_adr_runtime::AdmAirDataReferenceRuntime;
+use crate::navigation::adirs::hw_block3_adiru::integrated_adr_runtime::IntegratedAirDataReferenceRuntime;
+use crate::navigation::adirs::hw_block3_adiru::AdrRuntimeTemplate;
 use crate::navigation::adirs::{
     air_data_sensors::air_data_module::AirDataModuleBusOutput,
     hw_block3_adiru::ir_runtime::InertialReferenceRuntime,
@@ -15,12 +21,9 @@ use crate::shared::{
     logic_nodes::{ConfirmationNode, MonostableTriggerNode},
     random_from_range,
 };
-use crate::{
-    navigation::adirs::hw_block3_adiru::adr_runtime::AirDataReferenceRuntime,
-    simulation::{
-        InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
-        VariableIdentifier, Write, Writer,
-    },
+use crate::simulation::{
+    InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
+    VariableIdentifier, Write, Writer,
 };
 use std::fmt::Display;
 use std::time::Duration;
@@ -54,7 +57,7 @@ pub(super) struct InternalIrDiscreteInputs {
     pub dc_fail: bool,
 }
 
-pub struct AirDataInertialReferenceUnit {
+pub struct AirDataInertialReferenceUnit<AdrRuntime> {
     adr_failure: Failure,
     ir_failure: Failure,
 
@@ -88,7 +91,7 @@ pub struct AirDataInertialReferenceUnit {
     adr_self_check_time: Duration,
     ir_self_check_time: Duration,
 
-    adr_runtime: Option<AirDataReferenceRuntime>,
+    adr_runtime: Option<AdrRuntime>,
     ir_runtime: Option<InertialReferenceRuntime>,
 
     adr_discrete_output_data: AdrDiscreteOutputs,
@@ -116,6 +119,7 @@ pub struct AirDataInertialReferenceUnit {
     static_air_temperature: VariableIdentifier,
     total_air_temperature: VariableIdentifier,
     angle_of_attack: VariableIdentifier,
+    sideslip_angle: VariableIdentifier,
     discrete_word_1: VariableIdentifier,
 
     // IR Output Lvars
@@ -146,7 +150,177 @@ pub struct AirDataInertialReferenceUnit {
     longitude: VariableIdentifier,
     maint_word: VariableIdentifier,
 }
-impl AirDataInertialReferenceUnit {
+impl AirDataInertialReferenceUnit<AdmAirDataReferenceRuntime> {
+    pub fn update(
+        &mut self,
+        context: &UpdateContext,
+        adr_discrete_inputs: &AdrDiscreteInputs,
+        adr_analog_inputs: &AdrAnalogInputs,
+        ir_discrete_inputs: &IrDiscreteInputs,
+        fcu: &impl FlightControlUnitBusOutput,
+        adr_1: &impl AirDataReferenceBusOutput,
+        adr_2: &impl AirDataReferenceBusOutput,
+        adm_1: &impl AirDataModuleBusOutput,
+        adm_2: &impl AirDataModuleBusOutput,
+        adm_3: Option<&impl AirDataModuleBusOutput>,
+    ) {
+        self.ir_measurement_inputs.update(context);
+
+        self.update_powersupply(context, ir_discrete_inputs);
+        self.update_adr(
+            context,
+            adr_discrete_inputs,
+            adr_analog_inputs,
+            fcu,
+            adm_1,
+            adm_2,
+            adm_3,
+        );
+        self.update_ir(context, ir_discrete_inputs, adr_1, adr_2);
+    }
+
+    fn update_adr(
+        &mut self,
+        context: &UpdateContext,
+        adr_discrete_inputs: &AdrDiscreteInputs,
+        adr_analog_inputs: &AdrAnalogInputs,
+        fcu: &impl FlightControlUnitBusOutput,
+        adm_1: &impl AirDataModuleBusOutput,
+        adm_2: &impl AirDataModuleBusOutput,
+        adm_3: Option<&impl AirDataModuleBusOutput>,
+    ) {
+        let is_powered = self.computer_powered();
+
+        // Check if the internal state (runtime) is lost because either the unit failed, the
+        // power holdover has been exceed, or the ADIRU has entered standby mode
+        if self.adr_failure.is_active() || !self.computer_powered() {
+            // Throw away the simulated software runtime
+            self.adr_runtime = None;
+
+            // Set outputs to default failure state
+            self.adr_discrete_output_data = AdrDiscreteOutputs::default();
+            self.adr_bus_output_data = AirDataReferenceBusOutputs::default();
+
+            return;
+        }
+
+        // As long as we're powered, we can proceed normally. If not, we can't run the runtime, but
+        // it's state will be frozen and if power is restored soon enough, we can proceed
+        // immediately without waiting for the runtime to start up again.
+        if is_powered {
+            // Either initialize and run or continue running the existing runtime
+            let runtime = self
+                .adr_runtime
+                .get_or_insert_with(|| AdmAirDataReferenceRuntime::new(self.adr_self_check_time));
+            runtime.update(
+                context,
+                adr_discrete_inputs,
+                adr_analog_inputs,
+                fcu,
+                adm_1,
+                adm_2,
+                adm_3,
+            );
+
+            runtime.set_discrete_outputs(&mut self.adr_discrete_output_data);
+
+            // If the runtime indicates that the bus output is switched off, disable all bus transmission.
+            if !runtime.is_output_inhibited() {
+                runtime.set_bus_outputs(&mut self.adr_bus_output_data);
+            } else {
+                self.adr_bus_output_data = AirDataReferenceBusOutputs::default();
+            }
+        }
+    }
+}
+impl AirDataInertialReferenceUnit<IntegratedAirDataReferenceRuntime> {
+    pub fn update(
+        &mut self,
+        context: &UpdateContext,
+        adr_discrete_inputs: &AdrDiscreteInputs,
+        adr_analog_inputs: &AdrAnalogInputs,
+        ir_discrete_inputs: &IrDiscreteInputs,
+        fcu: &impl FlightControlUnitBusOutput,
+        adr_1: &impl AirDataReferenceBusOutput,
+        adr_2: &impl AirDataReferenceBusOutput,
+        mfp: &impl MultifunctionProbeBusOutput,
+        isp_left: &impl IntegratedStaticProbeBusOutput,
+        isp_right: &impl IntegratedStaticProbeBusOutput,
+        ssa: &impl SideslipAngleProbeBusOutput,
+    ) {
+        self.ir_measurement_inputs.update(context);
+
+        self.update_powersupply(context, ir_discrete_inputs);
+        self.update_adr(
+            context,
+            adr_discrete_inputs,
+            adr_analog_inputs,
+            fcu,
+            mfp,
+            isp_left,
+            isp_right,
+            ssa,
+        );
+        self.update_ir(context, ir_discrete_inputs, adr_1, adr_2);
+    }
+
+    fn update_adr(
+        &mut self,
+        context: &UpdateContext,
+        adr_discrete_inputs: &AdrDiscreteInputs,
+        adr_analog_inputs: &AdrAnalogInputs,
+        fcu: &impl FlightControlUnitBusOutput,
+        mfp: &impl MultifunctionProbeBusOutput,
+        isp_left: &impl IntegratedStaticProbeBusOutput,
+        isp_right: &impl IntegratedStaticProbeBusOutput,
+        ssa: &impl SideslipAngleProbeBusOutput,
+    ) {
+        let is_powered = self.computer_powered();
+
+        // Check if the internal state (runtime) is lost because either the unit failed, the
+        // power holdover has been exceed, or the ADIRU has entered standby mode
+        if self.adr_failure.is_active() || !self.computer_powered() {
+            // Throw away the simulated software runtime
+            self.adr_runtime = None;
+
+            // Set outputs to default failure state
+            self.adr_discrete_output_data = AdrDiscreteOutputs::default();
+            self.adr_bus_output_data = AirDataReferenceBusOutputs::default();
+
+            return;
+        }
+
+        // As long as we're powered, we can proceed normally. If not, we can't run the runtime, but
+        // it's state will be frozen and if power is restored soon enough, we can proceed
+        // immediately without waiting for the runtime to start up again.
+        if is_powered {
+            // Either initialize and run or continue running the existing runtime
+            let runtime = self.adr_runtime.get_or_insert_with(|| {
+                IntegratedAirDataReferenceRuntime::new(self.adr_self_check_time)
+            });
+            runtime.update(
+                context,
+                adr_discrete_inputs,
+                adr_analog_inputs,
+                fcu,
+                mfp,
+                isp_left,
+                isp_right,
+                ssa,
+            );
+
+            runtime.set_discrete_outputs(&mut self.adr_discrete_output_data);
+
+            // If the runtime indicates that the bus output is switched off, disable all bus transmission.
+            if !runtime.is_output_inhibited() {
+                runtime.set_bus_outputs(&mut self.adr_bus_output_data);
+            } else {
+                self.adr_bus_output_data = AirDataReferenceBusOutputs::default();
+            }
+        }
+    }
+}
+impl<AdrRuntime: AdrRuntimeTemplate> AirDataInertialReferenceUnit<AdrRuntime> {
     const BARO_CORRECTION_1_HPA: &'static str = "BARO_CORRECTION_1_HPA";
     const BARO_CORRECTION_1_INHG: &'static str = "BARO_CORRECTION_1_INHG";
     const BARO_CORRECTION_2_HPA: &'static str = "BARO_CORRECTION_2_HPA";
@@ -163,6 +337,7 @@ impl AirDataInertialReferenceUnit {
     const STATIC_AIR_TEMPERATURE: &'static str = "STATIC_AIR_TEMPERATURE";
     const TOTAL_AIR_TEMPERATURE: &'static str = "TOTAL_AIR_TEMPERATURE";
     const ANGLE_OF_ATTACK: &'static str = "ANGLE_OF_ATTACK";
+    const SIDESLIP_ANGLE: &'static str = "SIDESLIP_ANGLE";
     const DISCRETE_WORD_1: &'static str = "DISCRETE_WORD_1";
 
     const PITCH: &'static str = "PITCH";
@@ -253,7 +428,7 @@ impl AirDataInertialReferenceUnit {
             )),
 
             adr_runtime: if is_powered {
-                Some(AirDataReferenceRuntime::new_running())
+                Some(AdrRuntime::new_running())
             } else {
                 None
             },
@@ -346,6 +521,11 @@ impl AirDataInertialReferenceUnit {
                 OutputDataType::Adr,
                 num,
                 Self::ANGLE_OF_ATTACK,
+            )),
+            sideslip_angle: context.get_identifier(output_data_id(
+                OutputDataType::Adr,
+                num,
+                Self::SIDESLIP_ANGLE,
             )),
             discrete_word_1: context.get_identifier(output_data_id(
                 OutputDataType::Adr,
@@ -483,34 +663,6 @@ impl AirDataInertialReferenceUnit {
         self.backup_is_powered = backup_powered;
     }
 
-    pub fn update(
-        &mut self,
-        context: &UpdateContext,
-        adr_discrete_inputs: &AdrDiscreteInputs,
-        adr_analog_inputs: &AdrAnalogInputs,
-        ir_discrete_inputs: &IrDiscreteInputs,
-        fcu: &impl FlightControlUnitBusOutput,
-        adr_1: &impl AirDataReferenceBusOutput,
-        adr_2: &impl AirDataReferenceBusOutput,
-        adm_1: &impl AirDataModuleBusOutput,
-        adm_2: &impl AirDataModuleBusOutput,
-        adm_3: Option<&impl AirDataModuleBusOutput>,
-    ) {
-        self.ir_measurement_inputs.update(context);
-
-        self.update_powersupply(context, ir_discrete_inputs);
-        self.update_adr(
-            context,
-            adr_discrete_inputs,
-            adr_analog_inputs,
-            fcu,
-            adm_1,
-            adm_2,
-            adm_3,
-        );
-        self.update_ir(context, ir_discrete_inputs, adr_1, adr_2);
-    }
-
     fn update_powersupply(
         &mut self,
         context: &UpdateContext,
@@ -546,60 +698,6 @@ impl AirDataInertialReferenceUnit {
             && !self.primary_is_powered_with_holdover();
 
         self.dc_failure = is_powered && !self.backup_is_powered_with_holdover();
-    }
-
-    fn update_adr(
-        &mut self,
-        context: &UpdateContext,
-        adr_discrete_inputs: &AdrDiscreteInputs,
-        adr_analog_inputs: &AdrAnalogInputs,
-        fcu: &impl FlightControlUnitBusOutput,
-        adm_1: &impl AirDataModuleBusOutput,
-        adm_2: &impl AirDataModuleBusOutput,
-        adm_3: Option<&impl AirDataModuleBusOutput>,
-    ) {
-        let is_powered = self.computer_powered();
-
-        // Check if the internal state (runtime) is lost because either the unit failed, the
-        // power holdover has been exceed, or the ADIRU has entered standby mode
-        if self.adr_failure.is_active() || !self.computer_powered() {
-            // Throw away the simulated software runtime
-            self.adr_runtime = None;
-
-            // Set outputs to default failure state
-            self.adr_discrete_output_data = AdrDiscreteOutputs::default();
-            self.adr_bus_output_data = AirDataReferenceBusOutputs::default();
-
-            return;
-        }
-
-        // As long as we're powered, we can proceed normally. If not, we can't run the runtime, but
-        // it's state will be frozen and if power is restored soon enough, we can proceed
-        // immediately without waiting for the runtime to start up again.
-        if is_powered {
-            // Either initialize and run or continue running the existing runtime
-            let runtime = self
-                .adr_runtime
-                .get_or_insert_with(|| AirDataReferenceRuntime::new(self.adr_self_check_time));
-            runtime.update(
-                context,
-                adr_discrete_inputs,
-                adr_analog_inputs,
-                fcu,
-                adm_1,
-                adm_2,
-                adm_3,
-            );
-
-            runtime.set_discrete_outputs(&mut self.adr_discrete_output_data);
-
-            // If the runtime indicates that the bus output is switched off, disable all bus transmission.
-            if !runtime.is_output_inhibited() {
-                runtime.set_bus_outputs(&mut self.adr_bus_output_data);
-            } else {
-                self.adr_bus_output_data = AirDataReferenceBusOutputs::default();
-            }
-        }
     }
 
     fn update_ir(
@@ -668,28 +766,28 @@ impl AirDataInertialReferenceUnit {
         self.backup_unpowered_for <= self.backup_power_holdover
     }
 }
-impl AirDataReferenceBusOutput for AirDataInertialReferenceUnit {
+impl<AdrRuntime> AirDataReferenceBusOutput for AirDataInertialReferenceUnit<AdrRuntime> {
     fn bus_outputs(&self) -> &AirDataReferenceBusOutputs {
         &self.adr_bus_output_data
     }
 }
-impl AirDataReferenceDiscreteOutput for AirDataInertialReferenceUnit {
+impl<AdrRuntime> AirDataReferenceDiscreteOutput for AirDataInertialReferenceUnit<AdrRuntime> {
     fn discrete_outputs(&self) -> &AdrDiscreteOutputs {
         &self.adr_discrete_output_data
     }
 }
-impl InertialReferenceBusOutput for AirDataInertialReferenceUnit {
+impl<AdrRuntime> InertialReferenceBusOutput for AirDataInertialReferenceUnit<AdrRuntime> {
     fn bus_outputs(&self) -> &InertialReferenceBusOutputs {
         &self.ir_bus_output_data
     }
 }
-impl InertialReferenceDiscreteOutput for AirDataInertialReferenceUnit {
+impl<AdrRuntime> InertialReferenceDiscreteOutput for AirDataInertialReferenceUnit<AdrRuntime> {
     fn discrete_outputs(&self) -> &IrDiscreteOutputs {
         &self.ir_discrete_output_data
     }
 }
 // This should be deprecated in favor of the BusOutput traits above
-impl AirDataReferenceBus for AirDataInertialReferenceUnit {
+impl<AdrRuntime> AirDataReferenceBus for AirDataInertialReferenceUnit<AdrRuntime> {
     fn standard_altitude(&self) -> Arinc429Word<Length> {
         self.adr_bus_output_data.standard_altitude
     }
@@ -753,9 +851,13 @@ impl AirDataReferenceBus for AirDataInertialReferenceUnit {
     fn corrected_average_static_pressure(&self) -> Arinc429Word<Pressure> {
         self.adr_bus_output_data.corrected_average_static_pressure
     }
+
+    fn corrected_side_slip_angle(&self) -> Arinc429Word<Angle> {
+        self.adr_bus_output_data.corrected_side_slip_angle
+    }
 }
 // This should be deprecated in favor of the BusOutput traits above
-impl InertialReferenceBus for AirDataInertialReferenceUnit {
+impl<AdrRuntime> InertialReferenceBus for AirDataInertialReferenceUnit<AdrRuntime> {
     fn wind_speed_bcd(&self) -> Arinc429Word<Velocity> {
         self.ir_bus_output_data.wind_speed_bcd
     }
@@ -888,13 +990,15 @@ impl InertialReferenceBus for AirDataInertialReferenceUnit {
         self.ir_bus_output_data.discrete_word_3
     }
 }
-impl AirDataModulePowerProvider for AirDataInertialReferenceUnit {
+impl<AdrRuntime: AdrRuntimeTemplate> AirDataModulePowerProvider
+    for AirDataInertialReferenceUnit<AdrRuntime>
+{
     /// If the ADIRU currently provides power on the output to the ADMs
     fn provides_power(&self) -> bool {
         self.computer_powered()
     }
 }
-impl SimulationElement for AirDataInertialReferenceUnit {
+impl<AdrRuntime> SimulationElement for AirDataInertialReferenceUnit<AdrRuntime> {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.adr_failure.accept(visitor);
         self.ir_failure.accept(visitor);
@@ -939,7 +1043,11 @@ impl SimulationElement for AirDataInertialReferenceUnit {
         writer.write(&self.static_air_temperature, self.static_air_temperature());
         writer.write(&self.total_air_temperature, self.total_air_temperature());
         writer.write(&self.angle_of_attack, self.corrected_angle_of_attack());
-        writer.write(&self.discrete_word_1, self.discrete_word_1());
+        writer.write(&self.sideslip_angle, self.corrected_side_slip_angle());
+        writer.write(
+            &self.discrete_word_1,
+            self.adr_bus_output_data.discrete_word_1,
+        );
 
         writer.write(&self.wind_speed, self.wind_speed_bcd());
         writer.write(&self.wind_direction, self.wind_dir_true_bcd());
