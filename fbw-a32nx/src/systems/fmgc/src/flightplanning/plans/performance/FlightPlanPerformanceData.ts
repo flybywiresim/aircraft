@@ -482,6 +482,8 @@ export interface FlightPlanPerformanceData {
 
   readonly estimatedTakeoffTime: Subject<number | null>;
 
+  readonly ettExpired: Subject<boolean | null>;
+
   clone(): this;
 
   destroy(): void;
@@ -589,6 +591,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
     cloned.approachRadioMinimum.set(this.approachRadioMinimum.get());
     cloned.approachFlapsThreeSelected.set(this.approachFlapsThreeSelected.get());
     cloned.estimatedTakeoffTime.set(this.estimatedTakeoffTime.get());
+    cloned.ettExpired.set(this.ettExpired.get());
 
     return cloned as this;
   }
@@ -607,6 +610,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
     other.pipe('pilotFinalHoldingFuel', this.pilotFinalHoldingFuel, other.pilotFinalHoldingFuel);
     other.pipe('pilotFinalHoldingTime', this.pilotFinalHoldingTime, other.pilotFinalHoldingTime);
     other.pipe('estimatedTakeoffTime', this.estimatedTakeoffTime, other.estimatedTakeoffTime);
+    other.pipe('ettExpired', this.ettExpired, other.ettExpired);
 
     if (isBeforeEngineStart) {
       other.pipe('zeroFuelWeight', this.zeroFuelWeight, other.zeroFuelWeight);
@@ -1239,6 +1243,11 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
    * Estimated takeoff time in seconds from midnight
    */
   readonly estimatedTakeoffTime = Subject.create<number | null>(null);
+
+  /**
+   * Indicates whether the estimated takeoff time has expired. Null if no estimated takeoff time exists.
+   */
+  readonly ettExpired: Subject<boolean | null>;
 
   serialize(): SerializedFlightPlanPerformanceData {
     return {

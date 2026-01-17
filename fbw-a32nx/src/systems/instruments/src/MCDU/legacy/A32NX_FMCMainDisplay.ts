@@ -606,6 +606,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.toSpeedsChecks();
 
     this.setRequest('FMGC');
+
+    this.clearEttAndInterval();
   }
 
   public onUpdate(deltaTime: number) {
@@ -718,7 +720,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
     switch (nextPhase) {
       case FmgcFlightPhase.Takeoff: {
-        this.clearEtt();
+        this.clearEttAndInterval();
         this._destDataChecked = false;
         if (plan.performanceData.accelerationAltitude.get() === null) {
           // it's important to set this immediately as we don't want to immediately sequence to the climb phase
@@ -2225,7 +2227,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
 
     this.atsu.resetAtisAutoUpdate();
-    this.clearEtt();
+    this.clearEttAndInterval();
 
     await this.flightPlanService.newCityPair(from, to, undefined, forPlan);
   }
@@ -5653,7 +5655,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     // If its not active or copy of active allow setting in any phase
     if (!activeOrCopyOfActive || this.getFlightPhase() === FmgcFlightPhase.Preflight) {
       if (text == Keypad.clrValue) {
-        this.clearEtt();
+        this.clearEttAndInterval();
         return;
       }
 
@@ -5679,7 +5681,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
             }, 30000);
           }
 
-          flightplan.performanceData.estimatedTakeoffTime.set(seconds);
+          this.flightPlanService.setPerformanceData('estimatedTakeoffTime', seconds, forPlan);
         }
       } else {
         this.setScratchpadMessage(NXSystemMessages.formatError);
@@ -5694,7 +5696,10 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     if (plan.isActiveOrCopiedFromActive() && phase > FmgcFlightPhase.Preflight && phase < FmgcFlightPhase.Done) {
       time = this.zuluTime.get();
     } else {
-      time = plan.performanceData.estimatedTakeoffTime.get();
+      const ett = plan.performanceData.estimatedTakeoffTime.get();
+      if (ett !== null) {
+        time = Math.max(ett, this.zuluTime.get()); // Once ett has expired we use current time for predictions
+      }
     }
 
     if (time !== null) {
@@ -5724,22 +5729,29 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   private checkEttExpired(seconds: number): boolean {
-    const isExpired = seconds < this.zuluTime.get();
-    if (isExpired) {
-      this.setScratchpadMessage(NXSystemMessages.clockIsTakeoffTime);
-      if (this.ettInterval !== null) {
-        clearInterval(this.ettInterval);
-        this.ettInterval = null;
+    const performanceDataEttExpired = this.flightPlanService.active.performanceData.ettExpired.get();
+
+    if (performanceDataEttExpired === false) {
+      const isExpired = seconds < this.zuluTime.get();
+      if (isExpired) {
+        this.setScratchpadMessage(NXSystemMessages.clockIsTakeoffTime);
+        if (this.ettInterval !== null) {
+          clearInterval(this.ettInterval);
+          this.ettInterval = null;
+        }
+        this.flightPlanService.setPerformanceData('ettExpired', isExpired, FlightPlanIndex.Active);
       }
+      return isExpired;
     }
-    return isExpired;
+    return performanceDataEttExpired ?? false;
   }
 
   /**
    * Clears the ETT check interval and from the active flight plan
    */
-  private clearEtt() {
-    this.flightPlanService.active?.performanceData.estimatedTakeoffTime.set(null);
+  private clearEttAndInterval() {
+    this.flightPlanService.setPerformanceData('estimatedTakeoffTime', null, FlightPlanIndex.Active);
+    this.flightPlanService.setPerformanceData('ettExpired', null, FlightPlanIndex.Active);
     if (this.ettInterval !== null) {
       clearInterval(this.ettInterval);
       this.ettInterval = null;

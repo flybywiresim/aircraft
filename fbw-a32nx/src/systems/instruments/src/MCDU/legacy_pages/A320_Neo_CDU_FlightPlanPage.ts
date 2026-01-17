@@ -335,14 +335,14 @@ export class CDUFlightPlanPage {
         let timeCell: string = Time.NoPrediction;
         let timeColor = 'white';
         if (verticalWaypoint && isFinite(verticalWaypoint.secondsFromPresent)) {
-          const isFromAndHasEtt =
-            isFromLeg && mcdu.flightPlanService.active.performanceData.estimatedTakeoffTime.get() !== null;
           timeCell = `${isFromLeg ? '{big}' : '{small}'}${mcdu.getTimePrediction(
             verticalWaypoint.secondsFromPresent,
             forPlan,
           )}{end}`;
 
-          timeColor = isFromAndHasEtt ? 'magenta' : color;
+          const flightplan = mcdu.flightPlanService.get(forPlan);
+
+          timeColor = isFromLeg && flightplan.performanceData.ettExpired.get() === false ? 'magenta' : color;
         } else if (!inAlternate && fpIndex === targetPlan.originLegIndex) {
           timeCell = '{big}0000{end}';
           timeColor = color;
