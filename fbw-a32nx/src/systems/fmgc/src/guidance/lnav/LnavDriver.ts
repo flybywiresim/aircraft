@@ -5,7 +5,14 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ControlLaw, LateralMode } from '@shared/autopilot';
-import { Arinc429Register, Constants, LegType, MathUtils, TurnDirection } from '@flybywiresim/fbw-sdk';
+import {
+  Arinc429Register,
+  Constants,
+  LegType,
+  MathUtils,
+  RegisteredSimVar,
+  TurnDirection,
+} from '@flybywiresim/fbw-sdk';
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
@@ -71,9 +78,25 @@ export class LnavDriver implements GuidanceComponent {
 
   public ppos: LatLongAlt = new LatLongAlt();
 
-  private register = Arinc429Register.empty();
+  private fmDiscreteWord2 = Arinc429Register.empty();
 
   private listener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
+
+  private static readonly fmgc1DiscreteWord2Var = RegisteredSimVar.create<number>(
+    'L:A32NX_FMGC_1_DISCRETE_WORD_2',
+    'number',
+  );
+
+  private static readonly fmgc2DiscreteWord2Var = RegisteredSimVar.create<number>(
+    'L:A32NX_FMGC_1_DISCRETE_WORD_2',
+    'number',
+  );
+
+  private static readonly latitudeVar = RegisteredSimVar.create<number>('PLANE LATITUDE', 'degree latitude');
+  private static readonly longitudeVar = RegisteredSimVar.create<number>('PLANE LONGITUDE', 'degree longitude');
+  private static readonly trueAirspeedVar = RegisteredSimVar.create<number>('AIRSPEED TRUE', 'knots');
+  private static readonly groundSpeedVar = RegisteredSimVar.create<number>('GPS GROUND SPEED', 'knots');
+  private static readonly trueTrackVar = RegisteredSimVar.create<number>('GPS GROUND TRUE TRACK', 'degree');
 
   constructor(
     private readonly flightPlanService: FlightPlanService,
@@ -96,18 +119,18 @@ export class LnavDriver implements GuidanceComponent {
     let available = false;
 
     // TODO FIXME: Use FM position
-    this.ppos.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
-    this.ppos.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
+    this.ppos.lat = LnavDriver.latitudeVar.get();
+    this.ppos.long = LnavDriver.longitudeVar.get();
 
-    const trueTrack = SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree');
+    const trueTrack = LnavDriver.trueTrackVar.get();
 
     this.updateSecDistanceToDestination(trueTrack);
 
     const activeLegIdx = this.guidanceController.activeLegIndex;
 
     // this is not the correct groundspeed to use, but it will suffice for now
-    const tas = SimVar.GetSimVarValue('AIRSPEED TRUE', 'Knots');
-    const gs = SimVar.GetSimVarValue('GPS GROUND SPEED', 'knots');
+    const tas = LnavDriver.trueAirspeedVar.get();
+    const gs = LnavDriver.groundSpeedVar.get();
 
     const geometry = this.guidanceController.activeGeometry;
     if (geometry && geometry.legs.size > 0) {
@@ -604,12 +627,12 @@ export class LnavDriver implements GuidanceComponent {
 
   private isNavModeEngaged(): boolean {
     // TODO use correct FM
-    return this.register
-      .setFromSimVar('L:A32NX_FMGC_1_DISCRETE_WORD_2')
+    return this.fmDiscreteWord2
+      .set(LnavDriver.fmgc1DiscreteWord2Var.get())
       .bitValueOr(
         12,
-        this.register
-          .setFromSimVar('L:A32NX_FMGC_2_DISCRETE_WORD_2')
+        this.fmDiscreteWord2
+          .set(LnavDriver.fmgc2DiscreteWord2Var.get())
           .bitValueOr(12, SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_MODE', 'number') === LateralMode.NAV),
       );
   }
