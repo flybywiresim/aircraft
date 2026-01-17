@@ -97,10 +97,13 @@ export class EquitimePoint {
       UnitType.KNOT,
     );
 
+    // TODO
+    const pposWind = EquitimePoint.DefaultWind;
+
     // Time to reference waypoints is only computed in cruise phase
     if (this.flightPhase.get() === FmgcFlightPhase.Cruise) {
-      this.result.pposTimeToRef1 = EquitimePoint.timeTo(ppos, ref1.location, this.windToReferenceFix1, tas);
-      this.result.pposTimeToRef2 = EquitimePoint.timeTo(ppos, ref2.location, this.windToReferenceFix2, tas);
+      this.result.pposTimeToRef1 = EquitimePoint.timeTo(ppos, ref1.location, pposWind, this.windToReferenceFix1, tas);
+      this.result.pposTimeToRef2 = EquitimePoint.timeTo(ppos, ref2.location, pposWind, this.windToReferenceFix2, tas);
     }
 
     let numIterations = 0;
@@ -126,8 +129,11 @@ export class EquitimePoint {
 
       const [etpLla, _] = this.result.etp;
 
-      this.result.etpTimeToRef1 = EquitimePoint.timeTo(etpLla, ref1.location, this.windToReferenceFix1, tas);
-      this.result.etpTimeToRef2 = EquitimePoint.timeTo(etpLla, ref2.location, this.windToReferenceFix2, tas);
+      // TODO
+      const windAtEtp = EquitimePoint.DefaultWind;
+
+      this.result.etpTimeToRef1 = EquitimePoint.timeTo(etpLla, ref1.location, windAtEtp, this.windToReferenceFix1, tas);
+      this.result.etpTimeToRef2 = EquitimePoint.timeTo(etpLla, ref2.location, windAtEtp, this.windToReferenceFix2, tas);
 
       etpAlongTrackDistanceGuess -= ((this.result.etpTimeToRef2 - this.result.etpTimeToRef1) * tas) / 2;
     } while (
@@ -344,17 +350,32 @@ export class EquitimePoint {
    * Computes the time to fly from one coordinate to another, taking into account the wind and true airspeed.
    * @param from the starting coordinates
    * @param to the destination coordinates
-   * @param wind the wind vector as a Float64Array
+   * @param toWind the wind vector as a Float64Array
    * @param tas the true airspeed in knots
    * @returns the time in hours to fly from `from` to `to`
    */
-  private static timeTo(from: Coordinates, to: Coordinates, wind: Float64Array, tas: number): number {
+  private static timeTo(
+    from: Coordinates,
+    to: Coordinates,
+    fromWind: Float64Array,
+    toWind: Float64Array,
+    tas: number,
+  ): number {
     const distance = distanceTo(from, to);
     const bearing = bearingTo(from, to);
 
-    const tailwindComponent =
-      -Vec2Math.abs(wind) * Math.cos(bearing * MathUtils.DEGREES_TO_RADIANS - Vec2Math.theta(wind));
+    const fromTailwindComponent =
+      -Vec2Math.abs(fromWind) * Math.cos(bearing * MathUtils.DEGREES_TO_RADIANS - Vec2Math.theta(fromWind));
+    const toTailwindComponent =
+      -Vec2Math.abs(toWind) * Math.cos(bearing * MathUtils.DEGREES_TO_RADIANS - Vec2Math.theta(toWind));
 
-    return distance / (tas + tailwindComponent);
+    if (fromTailwindComponent === toTailwindComponent) {
+      return distance / (tas + fromTailwindComponent);
+    } else {
+      return (
+        (distance / (toTailwindComponent - fromTailwindComponent)) *
+        Math.log((tas + toTailwindComponent) / (tas + fromTailwindComponent))
+      );
+    }
   }
 }
