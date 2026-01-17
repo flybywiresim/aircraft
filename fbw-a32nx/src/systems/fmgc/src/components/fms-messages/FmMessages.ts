@@ -1,5 +1,4 @@
 import { FMMessage } from '@flybywiresim/fbw-sdk';
-
 /** See a320-coherent-triggers.md */
 export const FMMessageTriggers = {
   SEND_TO_MCDU: 'A32NX_FMGC_SEND_MESSAGE_TO_MCDU',
@@ -185,6 +184,12 @@ export const FMMessageTypes: Readonly<Record<string, FMMessage>> = {
     id: 20,
     text: 'TOO STEEP PATH AHEAD',
     color: 'Amber',
+    clearable: true,
+  },
+  ClockIsTakeoffTime: {
+    id: 21,
+    text: 'CLK IS TAKEOFF TIME',
+    color: 'White',
     clearable: true,
   },
 };

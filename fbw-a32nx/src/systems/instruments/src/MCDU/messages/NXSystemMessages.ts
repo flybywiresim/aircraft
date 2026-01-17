@@ -73,7 +73,6 @@ export const NXSystemMessages = {
   checkToData: new TypeIIMessage('CHECK TAKE OFF DATA', true),
   checkWeight: new TypeIIMessage('CHECK WEIGHT', true),
   comUnavailable: new TypeIMessage('COM UNAVAILABLE'), // FIXME move out of FMS
-  clockIsTakeoffTime: new TypeIIMessage('CLK IS TAKEOFF TIME'),
   cstrDelUpToWpt: new TypeIIMessage('CSTR DEL UP TO WWWWW', false, 'WWWWW'),
   databaseCodingError: new TypeIIMessage('DATABASE CODING ERROR'),
   dcduFileFull: new TypeIMessage('DCDU FILE FULL'), // FIXME move out of FMS
