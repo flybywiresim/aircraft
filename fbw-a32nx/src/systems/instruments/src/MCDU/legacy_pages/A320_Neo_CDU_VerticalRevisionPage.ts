@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2023 2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -14,6 +14,8 @@ import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { CDUInitPage } from './A320_Neo_CDU_InitPage';
 import { CduRtaPage } from './CDU_RTA_Page';
+import { VerticalWaypointPrediction } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
+import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 
 export class CDUVerticalRevisionPage {
   /**
@@ -26,13 +28,13 @@ export class CDUVerticalRevisionPage {
    */
   static ShowPage(
     mcdu: LegacyFmsPageInterface,
-    waypoint,
-    wpIndex,
-    verticalWaypoint,
+    waypoint: FlightPlanLeg,
+    wpIndex: number,
+    verticalWaypoint: VerticalWaypointPrediction,
+    confirmSpeed?: number,
+    confirmAlt?: number,
+    confirmCode?: AltitudeDescriptor,
     forPlan = FlightPlanIndex.Active,
-    confirmSpeed = undefined,
-    confirmAlt = undefined,
-    confirmCode = undefined,
     inAlternate = false,
   ) {
     mcdu.clearDisplay();
@@ -735,7 +737,12 @@ export class CDUVerticalRevisionPage {
       speed = parseInt(matchResult[2]);
     }
 
-    const code = matchResult[4] === undefined ? '@' : matchResult[4] === '-' ? '-' : '+';
+    const code =
+      matchResult[4] === undefined
+        ? AltitudeDescriptor.AtAlt1
+        : matchResult[4] === '-'
+          ? AltitudeDescriptor.AtOrAboveAlt1
+          : AltitudeDescriptor.AtOrBelowAlt1;
 
     if (matchResult[8] !== undefined) {
       alt = parseInt(matchResult[8]) * 100;

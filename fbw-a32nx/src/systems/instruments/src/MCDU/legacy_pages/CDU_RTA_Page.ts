@@ -1,4 +1,3 @@
-import { FlightPlanLeg } from '@microsoft/msfs-sdk';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { CDUVerticalRevisionPage } from './A320_Neo_CDU_VerticalRevisionPage';
@@ -6,6 +5,7 @@ import { Column, FormatTemplate } from '../legacy/A320_Neo_CDU_Format';
 import { VerticalWaypointPrediction } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { FmsFormatters } from '../legacy/FmsFormatters';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 
 export class CduRtaPage {
   static readonly RtaHeaderColumn = new Column(12, 'RTA');
