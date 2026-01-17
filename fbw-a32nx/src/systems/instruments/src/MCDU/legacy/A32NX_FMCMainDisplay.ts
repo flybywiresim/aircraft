@@ -5729,9 +5729,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   private checkEttExpired(seconds: number): boolean {
-    const performanceDataEttExpired = this.flightPlanService.active.performanceData.ettExpired.get();
-
-    if (performanceDataEttExpired === false) {
+    if (!this.flightPlanService.active.performanceData.ettExpired.get()) {
       const isExpired = seconds < this.zuluTime.get();
       if (isExpired) {
         this.setScratchpadMessage(NXSystemMessages.clockIsTakeoffTime);
@@ -5743,7 +5741,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       }
       return isExpired;
     }
-    return performanceDataEttExpired ?? false;
+    return true;
   }
 
   /**
@@ -5751,7 +5749,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
    */
   private clearEttAndInterval() {
     this.flightPlanService.setPerformanceData('estimatedTakeoffTime', null, FlightPlanIndex.Active);
-    this.flightPlanService.setPerformanceData('ettExpired', null, FlightPlanIndex.Active);
+    this.flightPlanService.setPerformanceData('ettExpired', false, FlightPlanIndex.Active);
     if (this.ettInterval !== null) {
       clearInterval(this.ettInterval);
       this.ettInterval = null;

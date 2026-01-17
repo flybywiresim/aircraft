@@ -1245,9 +1245,9 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
   readonly estimatedTakeoffTime = Subject.create<number | null>(null);
 
   /**
-   * Indicates whether the estimated takeoff time has expired. Null if no estimated takeoff time exists.
+   * Indicates whether the estimated takeoff time has expired.
    */
-  readonly ettExpired: Subject<boolean | null>;
+  readonly ettExpired = Subject.create(false);
 
   serialize(): SerializedFlightPlanPerformanceData {
     return {

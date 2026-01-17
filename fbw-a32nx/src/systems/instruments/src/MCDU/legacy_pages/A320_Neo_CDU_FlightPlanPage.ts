@@ -342,7 +342,12 @@ export class CDUFlightPlanPage {
 
           const flightplan = mcdu.flightPlanService.get(forPlan);
 
-          timeColor = isFromLeg && flightplan.performanceData.ettExpired.get() === false ? 'magenta' : color;
+          timeColor =
+            isFromLeg &&
+            flightplan.performanceData.estimatedTakeoffTime.get() !== null &&
+            !flightplan.performanceData.ettExpired.get()
+              ? 'magenta'
+              : color;
         } else if (!inAlternate && fpIndex === targetPlan.originLegIndex) {
           timeCell = '{big}0000{end}';
           timeColor = color;
