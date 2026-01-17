@@ -188,7 +188,7 @@ export const FMMessageTypes: Readonly<Record<string, FMMessage>> = {
   },
   ClockIsTakeoffTime: {
     id: 21,
-    text: 'CLK IS TAKEOFF TIME',
+    text: 'CLK IS TAKE OFF TIME',
     color: 'White',
     clearable: true,
   },
