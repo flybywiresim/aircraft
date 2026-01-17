@@ -1,4 +1,4 @@
-import { EventBus, FSComponent, Publisher, Subject } from '@microsoft/msfs-sdk';
+import { EventBus, Publisher, Subject } from '@microsoft/msfs-sdk';
 import { MfdUIData } from 'instruments/src/MFD/shared/MfdUIData';
 
 export enum MfdSystem {
@@ -76,11 +76,9 @@ export class MfdUiService {
       if (this.navigationStack.length < 2) {
         return;
       }
-      console.info('Navigate back');
       this.navigationStack.pop();
       nextUri = this.navigationStack[this.navigationStack.length - 1];
     } else {
-      console.info(`Navigate to ${uri}`);
       this.navigationStack.push(uri);
       nextUri = uri;
     }
