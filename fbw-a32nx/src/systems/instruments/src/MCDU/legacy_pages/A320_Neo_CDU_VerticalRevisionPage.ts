@@ -29,10 +29,10 @@ export class CDUVerticalRevisionPage {
     waypoint,
     wpIndex,
     verticalWaypoint,
+    forPlan = FlightPlanIndex.Active,
     confirmSpeed = undefined,
     confirmAlt = undefined,
     confirmCode = undefined,
-    forPlan = FlightPlanIndex.Active,
     inAlternate = false,
   ) {
     mcdu.clearDisplay();
@@ -324,7 +324,7 @@ export class CDUVerticalRevisionPage {
       );
     }; // SPD LIM
     mcdu.onRightInput[1] = () => {
-      CduRtaPage.ShowPage(mcdu, waypoint, wpIndex, verticalWaypoint);
+      CduRtaPage.ShowPage(mcdu, waypoint, wpIndex, verticalWaypoint, forPlan);
     }; // RTA
     mcdu.onLeftInput[2] = async (value, scratchpadCallback) => {
       if (value === Keypad.clrValue) {

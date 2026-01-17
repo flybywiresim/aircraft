@@ -335,14 +335,14 @@ export class CDUFlightPlanPage {
         let timeCell: string = Time.NoPrediction;
         let timeColor = 'white';
         if (verticalWaypoint && isFinite(verticalWaypoint.secondsFromPresent)) {
-          if (isFromLeg && mcdu.flightPlanService.active.performanceData.estimatedTakeoffTime.get() !== null) {
-            color = 'magenta';
-          }
+          const isFromAndHasEtt =
+            isFromLeg && mcdu.flightPlanService.active.performanceData.estimatedTakeoffTime.get() !== null;
           timeCell = `${isFromLeg ? '{big}' : '{small}'}${mcdu.getTimePrediction(
             verticalWaypoint.secondsFromPresent,
+            forPlan,
           )}{end}`;
 
-          timeColor = color;
+          timeColor = isFromAndHasEtt ? 'magenta' : color;
         } else if (!inAlternate && fpIndex === targetPlan.originLegIndex) {
           timeCell = '{big}0000{end}';
           timeColor = color;
@@ -642,7 +642,7 @@ export class CDUFlightPlanPage {
         if (!shouldHidePredictions && Number.isFinite(pwp.flightPlanInfo.secondsFromPresent)) {
           timeColor = color;
 
-          timeCell = `${mcdu.getTimePrediction(pwp.flightPlanInfo.secondsFromPresent)}[s-text]`;
+          timeCell = `${mcdu.getTimePrediction(pwp.flightPlanInfo.secondsFromPresent, forPlan)}[s-text]`;
         }
 
         let speed: string = Speed.NoPrediction;
@@ -946,7 +946,7 @@ export class CDUFlightPlanPage {
 
           const timeRemaining = fmsGeometryProfile.getTimeToDestination();
           if (Number.isFinite(timeRemaining)) {
-            destTimeCell = mcdu.getTimePrediction(timeRemaining);
+            destTimeCell = mcdu.getTimePrediction(timeRemaining, forPlan);
           }
         }
       }
@@ -954,7 +954,7 @@ export class CDUFlightPlanPage {
       destText[0] = [
         '\xa0DEST',
         'DIST\xa0\xa0EFOB',
-        `${mcdu.getTimePredictionHeader().padStart(4, '\xa0')}{sp}{sp}{sp}{sp}`,
+        `${mcdu.getTimePredictionHeader(forPlan).padStart(4, '\xa0')}{sp}{sp}{sp}{sp}`,
       ];
       destText[1] = [
         destCell,
@@ -1040,7 +1040,7 @@ export class CDUFlightPlanPage {
     }
     mcdu.setArrows(allowScroll, allowScroll, true, true);
     scrollText[0][1] = 'SPD/ALT\xa0\xa0\xa0';
-    scrollText[0][2] = `${mcdu.getTimePredictionHeader().padStart(4, '\xa0')}{sp}{sp}{sp}{sp}`;
+    scrollText[0][2] = `${mcdu.getTimePredictionHeader(forPlan).padStart(4, '\xa0')}{sp}{sp}{sp}{sp}`;
 
     if (!showFrom) {
       fromHeader.update('');

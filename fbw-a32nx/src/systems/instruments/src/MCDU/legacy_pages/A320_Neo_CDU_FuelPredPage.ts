@@ -198,13 +198,16 @@ export class CDUFuelPredPage {
       }
 
       if (Number.isFinite(predictions.tripTime)) {
-        destTimeCell = mcdu.getTimePrediction(predictions.tripTime);
+        destTimeCell = mcdu.getTimePrediction(predictions.tripTime, FlightPlanIndex.Active);
         destTimeCellColor = '[color]green';
       }
 
       if (alternate) {
         if (Number.isFinite(predictions.alternateTime) && Number.isFinite(predictions.tripTime)) {
-          altTimeCell = mcdu.getTimePrediction(predictions.tripTime + predictions.alternateTime);
+          altTimeCell = mcdu.getTimePrediction(
+            predictions.tripTime + predictions.alternateTime,
+            FlightPlanIndex.Active,
+          );
           altTimeCellColor = '[color]green';
         } else {
           altTimeCell = '----';
@@ -290,7 +293,7 @@ export class CDUFuelPredPage {
 
     mcdu.setTemplate([
       ['FUEL PRED{sp}'],
-      ['\xa0AT', 'EFOB', mcdu.getTimePredictionHeader().padStart(4, '{sp}')],
+      ['\xa0AT', 'EFOB', mcdu.getTimePredictionHeader(FlightPlanIndex.Active).padStart(4, '\xa0')],
       [destIdentCell + '[color]green', destEFOBCell + destEFOBCellColor, destTimeCell + destTimeCellColor],
       [''],
       [altIdentCell + '[color]green', altEFOBCell + altEFOBCellColor, altTimeCell + altTimeCellColor],

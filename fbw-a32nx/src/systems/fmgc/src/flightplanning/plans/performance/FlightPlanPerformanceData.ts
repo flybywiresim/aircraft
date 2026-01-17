@@ -606,6 +606,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
     );
     other.pipe('pilotFinalHoldingFuel', this.pilotFinalHoldingFuel, other.pilotFinalHoldingFuel);
     other.pipe('pilotFinalHoldingTime', this.pilotFinalHoldingTime, other.pilotFinalHoldingTime);
+    other.pipe('estimatedTakeoffTime', this.estimatedTakeoffTime, other.estimatedTakeoffTime);
 
     if (isBeforeEngineStart) {
       other.pipe('zeroFuelWeight', this.zeroFuelWeight, other.zeroFuelWeight);

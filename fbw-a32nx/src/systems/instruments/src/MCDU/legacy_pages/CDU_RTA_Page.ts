@@ -5,6 +5,7 @@ import { CDUVerticalRevisionPage } from './A320_Neo_CDU_VerticalRevisionPage';
 import { Column, FormatTemplate } from '../legacy/A320_Neo_CDU_Format';
 import { VerticalWaypointPrediction } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { FmsFormatters } from '../legacy/FmsFormatters';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 
 export class CduRtaPage {
   static readonly RtaHeaderColumn = new Column(12, 'RTA');
@@ -18,6 +19,7 @@ export class CduRtaPage {
     waypoint: FlightPlanLeg,
     index: number,
     verticalWaypoint: VerticalWaypointPrediction,
+    forplan: FlightPlanIndex,
   ): void {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.RTAPage;
@@ -49,12 +51,21 @@ export class CduRtaPage {
 
     mcdu.onLeftInput[2] = (value) => {
       if (isPreFlight) {
-        mcdu.setEstimatedTakeoffTime(value);
-        CduRtaPage.ShowPage(mcdu, waypoint, index, verticalWaypoint);
+        mcdu.setEstimatedTakeoffTime(value, forplan);
+        CduRtaPage.ShowPage(mcdu, waypoint, index, verticalWaypoint, forplan);
       }
     };
     mcdu.onLeftInput[5] = () => {
-      CDUVerticalRevisionPage.ShowPage(mcdu, waypoint, index, verticalWaypoint);
+      CDUVerticalRevisionPage.ShowPage(
+        mcdu,
+        waypoint,
+        index,
+        verticalWaypoint,
+        undefined,
+        undefined,
+        undefined,
+        forplan,
+      );
     };
   }
 }

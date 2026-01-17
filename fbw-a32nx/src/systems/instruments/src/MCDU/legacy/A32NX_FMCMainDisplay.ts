@@ -323,6 +323,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   private readonly zuluTime = RegisteredSimVar.create<number>('E:ZULU TIME', SimVarValueType.Seconds);
 
+  private ettInterval: NodeJS.Timeout | null = null;
+
   constructor(public readonly bus: EventBus) {
     FMCMainDisplay.DEBUG_INSTANCE = this;
 
@@ -716,6 +718,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
     switch (nextPhase) {
       case FmgcFlightPhase.Takeoff: {
+        this.clearEtt();
         this._destDataChecked = false;
         if (plan.performanceData.accelerationAltitude.get() === null) {
           // it's important to set this immediately as we don't want to immediately sequence to the climb phase
@@ -2222,6 +2225,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
 
     this.atsu.resetAtisAutoUpdate();
+    this.clearEtt();
 
     await this.flightPlanService.newCityPair(from, to, undefined, forPlan);
   }
@@ -5445,6 +5449,12 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     const phase = this.getFlightPhase();
 
     if (phase === FmgcFlightPhase.Preflight || phase === FmgcFlightPhase.Done) {
+      const ett = this.flightPlanService.active.performanceData.estimatedTakeoffTime.get();
+      if (ett !== null && !this.checkEttExpired(ett)) {
+        this.ettInterval = setInterval(() => {
+          this.checkEttExpired(ett);
+        }, 30000);
+      }
       this.addMessageToQueue(NXSystemMessages.checkToData);
     }
 
@@ -5630,43 +5640,61 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     return null; // TODO implement with PERF FACTOR in AC STATUS page
   }
 
-  setEstimatedTakeoffTime(text: string): void {
-    if (text == Keypad.clrValue) {
-      this.flightPlanService.active?.performanceData.estimatedTakeoffTime.set(null);
-      return;
-    }
+  /**
+   *
+   * @param text
+   * @param forPlan
+   * @returns
+   */
+  setEstimatedTakeoffTime(text: string, forPlan: number): void {
+    const flightplan = this.flightPlanService.get(forPlan);
+    const activeOrCopyOfActive = flightplan.isActiveOrCopiedFromActive();
 
-    if (/^\d{1,4}$/.exec(text)) {
-      let minutes: number;
-      let hours: number;
-      if (text.length <= 2) {
-        minutes = Number(text);
-        hours = 0;
-      } else {
-        const is24H = text.length === 4;
-        hours = Number(text.slice(0, text.length - 2));
-        minutes = Number(text.slice(is24H ? -2 : -1));
+    // If its not active or copy of active allow setting in any phase
+    if (!activeOrCopyOfActive || this.getFlightPhase() === FmgcFlightPhase.Preflight) {
+      if (text == Keypad.clrValue) {
+        this.clearEtt();
+        return;
       }
 
-      if (minutes > 59 || hours > 23) {
-        this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+      if (/^\d{1,4}$/.exec(text)) {
+        let minutes: number;
+        let hours: number;
+        if (text.length <= 2) {
+          minutes = Number(text);
+          hours = 0;
+        } else {
+          const is24H = text.length === 4;
+          hours = Number(text.slice(0, text.length - 2));
+          minutes = Number(text.slice(is24H ? -2 : -1));
+        }
+
+        if (minutes > 59 || hours > 23) {
+          this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+        } else {
+          const seconds = FmsFormatters.hoursToSeconds(hours) + FmsFormatters.minutesToSeconds(minutes);
+          if (activeOrCopyOfActive && !this.checkEttExpired(seconds) && this.ettInterval === null) {
+            this.ettInterval = setInterval(() => {
+              this.checkEttExpired(flightplan.performanceData.estimatedTakeoffTime.get());
+            }, 30000);
+          }
+
+          flightplan.performanceData.estimatedTakeoffTime.set(seconds);
+        }
       } else {
-        this.flightPlanService.active?.performanceData.estimatedTakeoffTime.set(
-          FmsFormatters.hoursToSeconds(hours) + FmsFormatters.minutesToSeconds(minutes),
-        );
+        this.setScratchpadMessage(NXSystemMessages.formatError);
       }
-    } else {
-      this.setScratchpadMessage(NXSystemMessages.formatError);
     }
   }
 
-  getTimePrediction(secondsFromPresent: number) {
+  getTimePrediction(secondsFromPresent: number, forPlan: FlightPlanIndex): string {
     const phase = this.getFlightPhase();
+    const plan = this.flightPlanService.get(forPlan);
     let time: number | null = null;
-    if (phase > FmgcFlightPhase.Preflight && phase < FmgcFlightPhase.Done) {
+    if (plan.isActiveOrCopiedFromActive() && phase > FmgcFlightPhase.Preflight && phase < FmgcFlightPhase.Done) {
       time = this.zuluTime.get();
     } else {
-      time = this.flightPlanService.active?.performanceData.estimatedTakeoffTime.get();
+      time = plan.performanceData.estimatedTakeoffTime.get();
     }
 
     if (time !== null) {
@@ -5676,15 +5704,47 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
   }
 
-  getTimePredictionHeader(): string {
+  /**
+   * Gets the header to be used in pages for time predictions.
+   * @returns TIME if in flight or ETT exists during preflight, otherwise UTC
+   */
+  getTimePredictionHeader(forPlan: FlightPlanIndex): 'UTC' | 'TIME' {
     const phase = this.getFlightPhase();
-    const ett = this.flightPlanService.active?.performanceData.estimatedTakeoffTime.get();
-    if ((phase > FmgcFlightPhase.Preflight && phase < FmgcFlightPhase.Done) || ett !== null) {
+    const plan = this.flightPlanService.get(forPlan);
+    const ett = plan.performanceData.estimatedTakeoffTime.get();
+    if (
+      (plan.isActiveOrCopiedFromActive() && phase > FmgcFlightPhase.Preflight && phase < FmgcFlightPhase.Done) ||
+      ett !== null
+    ) {
       //TODO check for valid clock signal
       return 'UTC';
     } else {
       return 'TIME';
     }
+  }
+
+  private checkEttExpired(seconds: number): boolean {
+    const isExpired = seconds < this.zuluTime.get();
+    if (isExpired) {
+      this.setScratchpadMessage(NXSystemMessages.clockIsTakeoffTime);
+      if (this.ettInterval !== null) {
+        clearInterval(this.ettInterval);
+        this.ettInterval = null;
+      }
+    }
+    return isExpired;
+  }
+
+  /**
+   * Clears the ETT check interval and from the active flight plan
+   */
+  private clearEtt() {
+    this.flightPlanService.active?.performanceData.estimatedTakeoffTime.set(null);
+    if (this.ettInterval !== null) {
+      clearInterval(this.ettInterval);
+      this.ettInterval = null;
+    }
+    this.removeMessageFromQueue(NXSystemMessages.clockIsTakeoffTime.text);
   }
 }
 
