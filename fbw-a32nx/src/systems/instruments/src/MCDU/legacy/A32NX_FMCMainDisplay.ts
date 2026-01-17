@@ -127,7 +127,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public unconfirmedV2Speed = undefined;
   public _toFlexChecked = true;
   private toRunway = undefined;
-  private _debug = undefined;
   public isDestEfobAmber = false;
   private isBelowMinDestFobForTwoMinutes?: NXLogicConfirmNode;
   private shouldShowBelowMinDestEfobMessage = false;
@@ -460,7 +459,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.unconfirmedV2Speed = undefined;
     this._toFlexChecked = true;
     this.toRunway = '';
-    this._debug = 0;
     this.isDestEfobAmber = false;
     this.isBelowMinDestFobForTwoMinutes = new NXLogicConfirmNode(120_000, true);
     this.shouldShowBelowMinDestEfobMessage = false;
@@ -622,10 +620,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     updateComponents(deltaTime);
 
     this.isTrueRefMode = SimVar.GetSimVarValue('L:A32NX_FMGC_TRUE_REF', 'boolean');
-
-    if (this._debug++ > 180) {
-      this._debug = 0;
-    }
     const flightPhaseManagerDelta = this.flightPhaseUpdateThrottler.canUpdate(deltaTime);
     if (flightPhaseManagerDelta !== -1) {
       this.flightPhaseManager.shouldActivateNextPhase(flightPhaseManagerDelta);
@@ -5643,10 +5637,10 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   /**
-   *
-   * @param text
-   * @param forPlan
-   * @returns
+   * Sets the estimated takeoff time on the specified flightplan.
+   * @param text estimated takeoff time text. Must be in HHMMSS format.
+   * @param forPlan flightplan to set ETT on
+   * @returns void
    */
   setEstimatedTakeoffTime(text: string, forPlan: number): void {
     const flightplan = this.flightPlanService.get(forPlan);
@@ -5662,6 +5656,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       if (/^\d{1,4}$/.exec(text)) {
         let minutes: number;
         let hours: number;
+        // Less than 2 digits is assumed as minutes
         if (text.length <= 2) {
           minutes = Number(text);
           hours = 0;
@@ -5694,6 +5689,12 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
   }
 
+  /**
+   * Formats a time prediction based on seconds from present time, fms flightphase and ETT from the specified flightplan.
+   * @param secondsFromPresent seconds from present time
+   * @param forPlan plan to check ETT against.
+   * @returns formatted time prediction string in hhmm
+   */
   getTimePrediction(secondsFromPresent: number, forPlan: FlightPlanIndex): string {
     const phase = this.getFlightPhase();
     const plan = this.flightPlanService.get(forPlan);
@@ -5716,7 +5717,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   /**
    * Gets the header to be used in pages for time predictions.
-   * @returns TIME if in flight or ETT exists during preflight, otherwise UTC
+   * @returns TIME if in flight or if ETT exists during preflight, otherwise UTC
    */
   getTimePredictionHeader(forPlan: FlightPlanIndex): 'UTC' | 'TIME' {
     const phase = this.getFlightPhase();
@@ -5733,6 +5734,12 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
   }
 
+  /**
+   * Checks if the time specified in seconds is behind compared to the current zulu time. If it is, ett is set as expired in the active flight plan.
+   * @param seconds time in seconds to check
+   * @param zulutime if specified, this value is used instead of the zulu time simvar.
+   * @returns  true if seconds is behind the zulu time, false otherwise.
+   */
   private checkEttExpired(seconds: number, zulutime?: number): boolean {
     if (!this.flightPlanService.active.performanceData.ettExpired.get()) {
       const isExpired = seconds < (zulutime ?? this.zuluTime.get());
@@ -5749,7 +5756,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   /**
-   * Clears the ETT check interval and from the active flight plan
+   * Clears the ETT from the active flightpland and clears the interval checking if it has expired.
    */
   private clearEttAndInterval() {
     this.flightPlanService.setPerformanceData('estimatedTakeoffTime', null, FlightPlanIndex.Active);
