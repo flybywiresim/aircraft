@@ -14,3 +14,5 @@ a320_systems = { path = "../a320_systems" }
 systems = { path = "../../../../../fbw-common/src/wasm/systems/systems" }
 systems_wasm = { path = "../../../../../fbw-common/src/wasm/systems/systems_wasm" }
 msfs = { git = "https://github.com/flybywiresim/msfs-rs", branch = "main" }
+ndarray = "0.16.1"
+lookup-tables = "0.1.0"

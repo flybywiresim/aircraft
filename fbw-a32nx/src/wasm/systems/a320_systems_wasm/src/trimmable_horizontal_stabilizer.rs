@@ -1,4 +1,5 @@
 use std::error::Error;
+use std::sync::LazyLock;
 
 use systems_wasm::aspects::{
     EventToVariableMapping, ExecuteOn, MsfsAspectBuilder, ObjectWrite, VariablesToObject,
@@ -9,6 +10,13 @@ use systems::shared::to_bool;
 
 use msfs::sim_connect;
 use msfs::{sim_connect::SimConnect, sim_connect::SIMCONNECT_OBJECT_ID_USER};
+
+use lookup_tables::{Axis, Binary, Clamp, LookupTable2D};
+use ndarray::Array2;
+use uom::si::{
+    f64::*,
+    mass::{pound, ton},
+};
 
 pub(super) fn trimmable_horizontal_stabilizer(
     builder: &mut MsfsAspectBuilder,
@@ -104,10 +112,53 @@ pub(super) fn trimmable_horizontal_stabilizer(
         Variable::named("HYD_THS_DEFLECTION"),
     );
 
+    builder.map_many(
+        ExecuteOn::PostTick,
+        vec![
+            Variable::named("TOTAL WEIGHT"),
+            Variable::named("CG PERCENT"),
+        ],
+        |values| {
+            let weight_tons = Mass::new::<pound>(values[0]).get::<ton>();
+            let cg_percent = values[1];
+
+            println!("weight: {:.3}, CG: {:.3}", weight_tons, cg_percent);
+
+            TABLE.lookup(weight_tons, cg_percent)
+        },
+        Variable::named("TEST_TABLE_LUT"),
+    );
+
     builder.variables_to_object(Box::new(PitchTrimSimOutput { elevator_trim: 0. }));
 
     Ok(())
 }
+
+type AxisType = Axis<f64, Binary, Clamp, Clamp>;
+type TableType = LookupTable2D<AxisType, AxisType, f64>;
+
+const LUT_SHAPE: (usize, usize) = (8, 9);
+
+const WEIGHT_BREAKPOINTS: [f64; LUT_SHAPE.0] = [48., 50., 55., 60., 65., 70., 75., 79.];
+const CG_BREAKPOINTS: [f64; LUT_SHAPE.1] = [15., 17., 20., 24., 27., 30., 32., 35., 40.];
+
+const TABLE_DATA: [f64; LUT_SHAPE.0 * LUT_SHAPE.1] = [
+    3.7, 3.2, 2.7, 2.0, 1.4, 0.9, 0.4, 0.0, -0.9, 4.3, 3.7, 3.2, 2.5, 1.8, 1.3, 0.9, 0.4, -0.6,
+    5.6, 5.1, 4.4, 3.7, 2.9, 2.1, 1.7, 1.1, -0.2, 5.5, 5.0, 4.4, 3.4, 2.9, 2.2, 1.7, 1.1, 0.1, 6.1,
+    5.5, 4.9, 3.9, 3.2, 2.4, 1.9, 1.2, 0.0, 6.6, 5.7, 5.1, 4.1, 3.4, 2.5, 2.1, 1.5, 0.3, 6.6, 6.1,
+    5.3, 4.3, 3.7, 2.9, 2.5, 1.7, 0.5, 6.6, 6.2, 5.4, 4.4, 3.6, 2.9, 2.5, 1.8, 0.6,
+];
+
+const TABLE: LazyLock<TableType> = LazyLock::new(|| {
+    TableType::new(
+        WEIGHT_BREAKPOINTS.to_vec(),
+        Binary::default(),
+        CG_BREAKPOINTS.to_vec(),
+        Binary::default(),
+        Array2::from_shape_vec(LUT_SHAPE, TABLE_DATA.to_vec()).expect("THS Table unwrap failed"),
+    )
+    .expect("THS Table unwrap failed")
+});
 
 #[sim_connect::data_definition]
 struct PitchTrimSimOutput {
