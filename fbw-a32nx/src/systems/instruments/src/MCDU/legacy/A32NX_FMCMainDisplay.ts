@@ -5671,17 +5671,22 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           minutes = Number(text.slice(is24H ? -2 : -1));
         }
 
+        const zuluTime = this.zuluTime.get();
         if (minutes > 59 || hours > 23) {
           this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
         } else {
           const seconds = FmsFormatters.hoursToSeconds(hours) + FmsFormatters.minutesToSeconds(minutes);
-          if (activeOrCopyOfActive && !this.checkEttExpired(seconds) && this.ettInterval === null) {
-            this.ettInterval = setInterval(() => {
-              this.checkEttExpired(flightplan.performanceData.estimatedTakeoffTime.get());
-            }, 30000);
+          if (seconds - zuluTime > 72000) {
+            // ETT cannot be more than 20 hours ahead of present time
+            this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+          } else {
+            if (activeOrCopyOfActive && !this.checkEttExpired(seconds, zuluTime) && this.ettInterval === null) {
+              this.ettInterval = setInterval(() => {
+                this.checkEttExpired(flightplan.performanceData.estimatedTakeoffTime.get());
+              }, 30000);
+            }
+            this.flightPlanService.setPerformanceData('estimatedTakeoffTime', seconds, forPlan);
           }
-
-          this.flightPlanService.setPerformanceData('estimatedTakeoffTime', seconds, forPlan);
         }
       } else {
         this.setScratchpadMessage(NXSystemMessages.formatError);
@@ -5728,11 +5733,10 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
   }
 
-  private checkEttExpired(seconds: number): boolean {
+  private checkEttExpired(seconds: number, zulutime?: number): boolean {
     if (!this.flightPlanService.active.performanceData.ettExpired.get()) {
-      const isExpired = seconds < this.zuluTime.get();
+      const isExpired = seconds < (zulutime ?? this.zuluTime.get());
       if (isExpired) {
-        this.setScratchpadMessage(NXSystemMessages.clockIsTakeoffTime);
         if (this.ettInterval !== null) {
           clearInterval(this.ettInterval);
           this.ettInterval = null;
@@ -5754,7 +5758,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       clearInterval(this.ettInterval);
       this.ettInterval = null;
     }
-    this.removeMessageFromQueue(NXSystemMessages.clockIsTakeoffTime.text);
   }
 }
 
