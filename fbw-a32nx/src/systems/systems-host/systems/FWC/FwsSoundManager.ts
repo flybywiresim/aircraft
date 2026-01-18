@@ -239,7 +239,7 @@ export const FwsAuralsList: Record<string, FwsAural> = {
   },
 };
 
-const MutableSounds = [FwsAuralsList.cavalryChargeCont];
+const MutableSounds = [FwsAuralsList.cavalryChargeOnce, FwsAuralsList.cavalryChargeCont];
 
 // FIXME Not all sounds are added to this yet (e.g. CIDS chimes), consider adding them in the future
 // Also, single chimes are not filtered (in RL only once every two seconds)
@@ -369,6 +369,11 @@ export class FwsSoundManager {
       }
     });
 
+    // TODO: Once all sounds are mutable, this.manualAudioInhibition shouldn't be needed anymore
+    if (this.manualAudioInhibition && !MutableSounds.includes(FwsAuralsList[selectedSoundKey])) {
+      return;
+    }
+
     if (selectedSoundKey) {
       this.playSound(selectedSoundKey);
       return selectedSoundKey;
@@ -431,10 +436,6 @@ export class FwsSoundManager {
       }
     } else {
       // Play next sound
-      // TODO: Once all sounds are mutable, this.manualAudioInhibition shouldn't be needed anymore
-      if (this.manualAudioInhibition && !MutableSounds.includes(FwsAuralsList[this.currentSoundPlaying])) {
-        return;
-      }
       this.selectAndPlayMostImportantSound();
     }
   }
