@@ -531,13 +531,13 @@ export class FlightManagementComputer implements FmcInterface {
   /** @inheritdoc */
   public getOptFlightLevel(): number | null {
     const recMax = this.getRecMaxFlightLevel();
-    return recMax !== null ? Math.floor((0.96 * (recMax / 100)) / 5) * 5 : null; // FIXME remove magic
+    return recMax !== null ? Math.floor((0.96 * recMax) / 5) * 5 : null; // FIXME remove magic
   }
 
   /** @inheritdoc */
   public getEoMaxFlightLevel(): number | null {
     const recMax = this.getRecMaxFlightLevel();
-    return recMax !== null ? Math.floor((0.8 * (recMax / 100)) / 5) * 5 : null; // FIXME remove magic
+    return recMax !== null ? Math.floor((0.8 * recMax) / 5) * 5 : null; // FIXME remove magic
   }
 
   private initSimVars() {
