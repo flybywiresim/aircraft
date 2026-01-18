@@ -5172,7 +5172,6 @@ export class FwsCore {
       this.auralCrcActive.set(this.nonCancellableWarningCount > 0);
     }
     if (emerCancelPressed) {
-      this.soundManager.stopAllSounds();
       this.requestMasterWarningFromFaults = false;
       this.requestMasterWarningFromApOff = false;
       this.auralCrcActive.set(false);

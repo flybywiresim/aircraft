@@ -251,6 +251,8 @@ export class FwsSoundManager {
   /** in seconds */
   private currentSoundPlayTimeRemaining = 0;
 
+  private manualAudioInhibition = false;
+
   constructor(
     private bus: EventBus,
     private startupCompleted: Subscribable<boolean>,
@@ -270,6 +272,11 @@ export class FwsSoundManager {
   /** Get the current emitted sound, for example for the AP OFF logic computation. */
   getCurrentSoundPlaying() {
     return this.currentSoundPlaying;
+  }
+
+  /** Inhibit starting any new broadcasts (MAI). */
+  setManualAudioInhibition(inhibit: boolean) {
+    this.manualAudioInhibition = inhibit;
   }
 
   /** Add sound to queue. Don't add if already playing */
@@ -293,21 +300,6 @@ export class FwsSoundManager {
       this.stopCurrentSound();
     }
     this.soundQueue.delete(soundKey);
-  }
-
-  /** Stop any currently playing sound and clear pending queue. E.g. from EMER CANC button */
-  stopAllSounds() {
-    if (this.currentSoundPlaying) {
-      const sound = FwsAuralsList[this.currentSoundPlaying];
-      if (sound?.localVarName) {
-        SimVar.SetSimVarValue(`L:${sound.localVarName}`, SimVarValueType.Bool, false);
-      }
-      this.currentSoundPlaying = null;
-      this.currentSoundPlayTimeRemaining = 0;
-    }
-
-    this.soundQueue.clear();
-    this.singleChimesPending = 0;
   }
 
   private stopCurrentSound() {
@@ -437,7 +429,9 @@ export class FwsSoundManager {
       }
     } else {
       // Play next sound
-      this.selectAndPlayMostImportantSound();
+      if (!this.manualAudioInhibition) {
+        this.selectAndPlayMostImportantSound();
+      }
     }
   }
 }

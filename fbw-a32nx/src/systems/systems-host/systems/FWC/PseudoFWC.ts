@@ -1605,11 +1605,12 @@ export class PseudoFWC {
       return;
     }
 
-    // Play sounds
-    this.soundManager.onUpdate(deltaTime);
-
     // Inputs update
     this.processEcpButtons(deltaTime);
+    this.soundManager.setManualAudioInhibition(this.ecpEmergencyCancelLevel);
+
+    // Play sounds
+    this.soundManager.onUpdate(deltaTime);
 
     this.flightPhaseEndedPulseNode.write(false, deltaTime);
 
@@ -3195,11 +3196,14 @@ export class PseudoFWC {
       this.auralCrcActive.set(this.nonCancellableWarningCount > 0);
       this.cChordActive.set(this.nonCancellableWarningCount > 0);
     }
+    // Emergency audio cancel (EAC)
     if (this.ecpEmergencyCancelPulseUp) {
-      this.soundManager.stopAllSounds();
       this.requestMasterWarningFromFaults = false;
-      this.auralCrcActive.set(false);
-      this.cChordActive.set(false);
+      if (this.auralCrcActive.get()) {
+        this.auralCrcActive.set(false);
+      } else if (this.cChordActive.get()) {
+        this.cChordActive.set(false);
+      }
     }
 
     /* T.O. CONFIG CHECK */
