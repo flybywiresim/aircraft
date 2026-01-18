@@ -3545,6 +3545,7 @@
                                 <NODE_ID>PUSH_OVHD_GPWS_TERR</NODE_ID>
                                 <TOGGLE_SIMVAR>L:A32NX_GPWS_TERR_OFF</TOGGLE_SIMVAR>
                                 <DOWN_CODE>(L:A32NX_GPWS_TERR_OFF, Bool) !</DOWN_CODE>
+                                <SEQ1_CODE>(L:A32NX_GPWS_TERR_FAULT, Bool) (L:A32NX_GPWS_TERR_OFF, Bool) ! and</SEQ1_CODE>
                                 <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                                 <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                                 <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
@@ -3558,6 +3559,7 @@
                                 <NODE_ID>PUSH_OVHD_GPWS_SYS</NODE_ID>
                                 <TOGGLE_SIMVAR>L:A32NX_GPWS_SYS_OFF</TOGGLE_SIMVAR>
                                 <DOWN_CODE>(L:A32NX_GPWS_SYS_OFF, Bool) !</DOWN_CODE>
+                                <SEQ1_CODE>(L:A32NX_GPWS_SYS_FAULT, Bool) (L:A32NX_GPWS_SYS_OFF, Bool) ! and</SEQ1_CODE>
                                 <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                                 <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                                 <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
