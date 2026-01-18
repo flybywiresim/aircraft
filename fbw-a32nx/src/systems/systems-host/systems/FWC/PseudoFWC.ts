@@ -169,6 +169,8 @@ export class PseudoFWC {
 
   private auralCChordKeys: string[] = [];
 
+  // Catch-all to handle extinguishing the master warning light for level 3 warnings we don't yet handle the sound here for, e.g the STALL warning
+  // This does mean that that sound is not currently cancelled by the EMER CANC button
   private activeWarningKeys: string[] = [];
 
   private readonly emergencyCancelledWarnings = new Set<keyof EWDMessageDict>();
