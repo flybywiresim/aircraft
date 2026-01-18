@@ -1623,6 +1623,8 @@ export class PseudoFWC {
 
     // Inputs update
     this.processEcpButtons(deltaTime);
+
+    // Manual audio inhibition (MAI)
     if (this.ecpEmergencyCancelLevel !== this.wasEcpEmergencyCancelLevel) {
       if (this.ecpEmergencyCancelLevel) {
         this.lastAuralVolume = SimVar.GetSimVarValue('L:A32NX_FWS_AUDIO_VOLUME', SimVarValueType.Enum);
