@@ -251,8 +251,6 @@ export class FwsSoundManager {
   /** in seconds */
   private currentSoundPlayTimeRemaining = 0;
 
-  private manualAudioInhibition = false;
-
   constructor(
     private bus: EventBus,
     private startupCompleted: Subscribable<boolean>,
