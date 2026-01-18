@@ -169,6 +169,8 @@ export class PseudoFWC {
 
   private auralCChordKeys: string[] = [];
 
+  private activeWarningKeys: string[] = [];
+
   private readonly emergencyCancelledWarnings = new Set<keyof EWDMessageDict>();
 
   private readonly auralCrcActive = Subject.create(false);
@@ -1511,6 +1513,8 @@ export class PseudoFWC {
   private ecpEmergencyCancelLevel = false;
 
   private emergencyCancelHandled = false;
+  // TODO: Change this to disable the caution for the entire flight once status page is implemented
+  private emergencyCancelClearCaution = false;
 
   private processEcpButtons(deltaTime: number): void {
     const warningButtons = this.ecpWarningButtonStatus.get();
@@ -3217,9 +3221,14 @@ export class PseudoFWC {
         singleChime: this.auralScKeys,
       };
       const keys = currentSound ? soundToKeys[currentSound] : undefined;
-      const cancelKey = keys?.find((key) => !this.emergencyCancelledWarnings.has(key)) ?? null;
+      const cancelKey =
+        keys?.find((key) => !this.emergencyCancelledWarnings.has(key)) ??
+        this.activeWarningKeys.find((key) => !this.emergencyCancelledWarnings.has(key)) ??
+        null;
       if (cancelKey) {
         this.emergencyCancelledWarnings.add(cancelKey);
+      } else if (this.masterCaution.get()) {
+        this.emergencyCancelClearCaution = true;
       }
       this.emergencyCancelHandled = true;
     } else if (!this.ecpEmergencyCancelPulseUp) {
@@ -3272,10 +3281,11 @@ export class PseudoFWC {
     this.bat2Off.set(this.bat2PbOff.get() && (this.phase6For60Seconds.read() || this.fwcFlightPhase.get() === 2));
 
     /* CLEAR AND RECALL */
-    if (this.ecpClearPulseUp) {
+    if (this.ecpClearPulseUp || this.emergencyCancelClearCaution) {
       // delete the first failure
       this.failuresLeft.splice(0, 1);
       this.recallFailures = this.allCurrentFailures.filter((item) => !this.failuresLeft.includes(item));
+      this.emergencyCancelClearCaution = false;
     }
 
     if (this.ecpRecallPulseUp) {
@@ -3320,6 +3330,7 @@ export class PseudoFWC {
     let rightFailureSystemCount = 0;
     let activeWarningCount = 0;
     let activeCautionCount = 0;
+    const activeWarningKeys: string[] = [];
     const auralCrcKeys: string[] = [];
     const auralScKeys: string[] = [];
     const auralCavchargeKeys: string[] = [];
@@ -3360,6 +3371,7 @@ export class PseudoFWC {
         if (!isCancelled) {
           if (value.failure === 3) {
             activeWarningCount++;
+            activeWarningKeys.push(key);
           }
           if (value.failure === 2) {
             activeCautionCount++;
@@ -3471,6 +3483,7 @@ export class PseudoFWC {
     this.auralScKeys = auralScKeys;
     this.auralCavchargeKeys = auralCavchargeKeys;
     this.auralCChordKeys = auralCChordKeys;
+    this.activeWarningKeys = activeWarningKeys;
 
     if (this.auralCrcKeys.length === 0) {
       this.auralCrcActive.set(false);
