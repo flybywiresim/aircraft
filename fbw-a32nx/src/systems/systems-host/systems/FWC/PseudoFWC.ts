@@ -165,6 +165,12 @@ export class PseudoFWC {
 
   private auralScKeys: string[] = [];
 
+  private auralCavchargeKeys: string[] = [];
+
+  private auralCChordKeys: string[] = [];
+
+  private readonly emergencyCancelledWarnings = new Set<keyof EWDMessageDict>();
+
   private readonly auralCrcActive = Subject.create(false);
 
   private auralSingleChimePending = false;
@@ -1503,6 +1509,8 @@ export class PseudoFWC {
   private ecpEmergencyCancelPulseUp = false;
   private ecpEmergencyCancelPulseDown = false;
   private ecpEmergencyCancelLevel = false;
+
+  private emergencyCancelHandled = false;
 
   private processEcpButtons(deltaTime: number): void {
     const warningButtons = this.ecpWarningButtonStatus.get();
@@ -3197,13 +3205,25 @@ export class PseudoFWC {
       this.cChordActive.set(this.nonCancellableWarningCount > 0);
     }
     // Emergency audio cancel (EAC)
-    if (this.ecpEmergencyCancelPulseUp) {
-      this.requestMasterWarningFromFaults = false;
-      if (this.auralCrcActive.get()) {
-        this.auralCrcActive.set(false);
-      } else if (this.cChordActive.get()) {
-        this.cChordActive.set(false);
+    // !this.ecpEmergencyCancelHandled ensures we only cancel one signal at a time
+    if (this.ecpEmergencyCancelPulseUp && !this.emergencyCancelHandled) {
+      // Get the highest priority signal from the sound manager
+      const currentSound = this.soundManager.getCurrentSoundPlaying();
+      const soundToKeys: Record<string, string[]> = {
+        continuousRepetitiveChime: this.auralCrcKeys,
+        cavalryChargeCont: this.auralCavchargeKeys,
+        cavalryChargeOnce: this.auralCavchargeKeys,
+        cChordCont: this.auralCChordKeys,
+        singleChime: this.auralScKeys,
+      };
+      const keys = currentSound ? soundToKeys[currentSound] : undefined;
+      const cancelKey = keys?.find((key) => !this.emergencyCancelledWarnings.has(key)) ?? null;
+      if (cancelKey) {
+        this.emergencyCancelledWarnings.add(cancelKey);
       }
+      this.emergencyCancelHandled = true;
+    } else if (!this.ecpEmergencyCancelPulseUp) {
+      this.emergencyCancelHandled = false;
     }
 
     /* T.O. CONFIG CHECK */
@@ -3298,6 +3318,8 @@ export class PseudoFWC {
     const failureKeysRight: string[] = this.failuresRight;
     let leftFailureSystemCount = 0;
     let rightFailureSystemCount = 0;
+    let activeWarningCount = 0;
+    let activeCautionCount = 0;
     const auralCrcKeys: string[] = [];
     const auralScKeys: string[] = [];
     const auralCavchargeKeys: string[] = [];
@@ -3308,6 +3330,7 @@ export class PseudoFWC {
       if (!value.simVarIsActive.get()) {
         failureKeysLeft = failureKeysLeft.filter((e) => e !== key);
         recallFailureKeys = recallFailureKeys.filter((e) => e !== key);
+        this.emergencyCancelledWarnings.delete(key as keyof EWDMessageDict);
       }
     }
 
@@ -3319,6 +3342,7 @@ export class PseudoFWC {
 
     // Failures first
     for (const [key, value] of Object.entries(this.ewdMessageFailures)) {
+      const isCancelled = this.emergencyCancelledWarnings.has(key as keyof EWDMessageDict);
       // new warning?
       const newWarning =
         (value.side === 'LEFT' && !this.failuresLeft.includes(key) && !recallFailureKeys.includes(key)) ||
@@ -3333,6 +3357,15 @@ export class PseudoFWC {
         // consider monitor input confirm time (0.3 sec by default)
         simTime >= (this.ewdFailureActivationTime.get(key) ?? 0) + (value.monitorConfirmTime ?? 0.3)
       ) {
+        if (!isCancelled) {
+          if (value.failure === 3) {
+            activeWarningCount++;
+          }
+          if (value.failure === 2) {
+            activeCautionCount++;
+          }
+        }
+
         if (newWarning) {
           if (value.side === 'LEFT') {
             failureKeysLeft.push(key);
@@ -3340,29 +3373,31 @@ export class PseudoFWC {
             failureKeysRight.push(key);
           }
 
-          if (value.failure === 3) {
-            this.requestMasterWarningFromFaults = true;
-          }
-          if (value.failure === 2) {
-            this.requestMasterCautionFromFaults = true;
-          }
-          if (value.auralWarning?.get() === FwcAuralWarning.CChord) {
-            this.cChordActive.set(true);
+          if (!isCancelled) {
+            if (value.failure === 3) {
+              this.requestMasterWarningFromFaults = true;
+            }
+            if (value.failure === 2) {
+              this.requestMasterCautionFromFaults = true;
+            }
+            if (value.auralWarning?.get() === FwcAuralWarning.CChord) {
+              this.cChordActive.set(true);
+            }
           }
         }
 
-        if (value.cancel === false && value.failure === 3) {
+        if (!isCancelled && value.cancel === false && value.failure === 3) {
           this.nonCancellableWarningCount++;
         }
 
         // if the warning is the same as the aural
-        if (value.auralWarning === undefined && value.failure === 3) {
+        if (!isCancelled && value.auralWarning === undefined && value.failure === 3) {
           if (newWarning) {
             this.auralCrcActive.set(true);
           }
           auralCrcKeys.push(key);
         }
-        if (value.auralWarning === undefined && value.failure === 2) {
+        if (!isCancelled && value.auralWarning === undefined && value.failure === 2) {
           if (newWarning) {
             this.auralSingleChimePending = true;
           }
@@ -3404,36 +3439,38 @@ export class PseudoFWC {
         }
       }
 
-      if (value.auralWarning?.get() === FwcAuralWarning.Crc) {
+      if (!isCancelled && value.auralWarning?.get() === FwcAuralWarning.Crc) {
         if (!this.auralCrcKeys.includes(key)) {
           this.auralCrcActive.set(true);
         }
         auralCrcKeys.push(key);
       }
 
-      if (value.auralWarning?.get() === FwcAuralWarning.SingleChime) {
+      if (!isCancelled && value.auralWarning?.get() === FwcAuralWarning.SingleChime) {
         if (!this.auralScKeys.includes(key)) {
           this.auralSingleChimePending = true;
         }
         auralScKeys.push(key);
       }
 
-      if (value.auralWarning?.get() === FwcAuralWarning.CavalryCharge) {
+      if (!isCancelled && value.auralWarning?.get() === FwcAuralWarning.CavalryCharge) {
         auralCavchargeKeys.push(key);
       }
 
-      if (newWarning && value.auralWarning?.get() === FwcAuralWarning.TripleClick) {
+      if (!isCancelled && newWarning && value.auralWarning?.get() === FwcAuralWarning.TripleClick) {
         this.soundManager.enqueueSound('pause0p8s');
         this.soundManager.enqueueSound('tripleClick');
       }
 
-      if (value.auralWarning?.get() === FwcAuralWarning.CChord) {
+      if (!isCancelled && value.auralWarning?.get() === FwcAuralWarning.CChord) {
         auralCChordKeys.push(key);
       }
     }
 
     this.auralCrcKeys = auralCrcKeys;
     this.auralScKeys = auralScKeys;
+    this.auralCavchargeKeys = auralCavchargeKeys;
+    this.auralCChordKeys = auralCChordKeys;
 
     if (this.auralCrcKeys.length === 0) {
       this.auralCrcActive.set(false);
@@ -3532,6 +3569,13 @@ export class PseudoFWC {
           this.requestMasterWarningFromFaults = false;
         }
       }
+    }
+
+    if (activeWarningCount === 0) {
+      this.requestMasterWarningFromFaults = false;
+    }
+    if (activeCautionCount === 0) {
+      this.requestMasterCautionFromFaults = false;
     }
 
     this.masterCaution.set(this.requestMasterCautionFromFaults || this.requestMasterCautionFromABrkOff);
