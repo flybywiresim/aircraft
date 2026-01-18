@@ -42,7 +42,7 @@ import { A32NXAdrBusEvents } from '../../../shared/src/publishers/A32NXAdrBusPub
 import { A32NXDisplayManagementEvents } from '../../../shared/src/publishers/A32NXDisplayManagementPublisher';
 import { A32NXElectricalSystemEvents } from '../../../shared/src/publishers/A32NXElectricalSystemPublisher';
 import { A32NXFcuBusEvents } from '../../../shared/src/publishers/A32NXFcuBusPublisher';
-import { FwsSoundManager } from 'systems-host/systems/FWC/FwsSoundManager';
+import { FwsAuralVolume, FwsSoundManager } from 'systems-host/systems/FWC/FwsSoundManager';
 import { PseudoFwcSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
 import { A32NXEcpBusEvents } from '@shared/publishers/A32NXEcpBusPublisher';
 
@@ -1513,6 +1513,8 @@ export class PseudoFWC {
   private ecpEmergencyCancelPulseUp = false;
   private ecpEmergencyCancelPulseDown = false;
   private ecpEmergencyCancelLevel = false;
+  private wasEcpEmergencyCancelLevel = false;
+  private lastAuralVolume = FwsAuralVolume.Full;
 
   private emergencyCancelHandled = false;
   // TODO: Change this to disable the caution for the entire flight once status page is implemented
@@ -1621,7 +1623,15 @@ export class PseudoFWC {
 
     // Inputs update
     this.processEcpButtons(deltaTime);
-    this.soundManager.setManualAudioInhibition(this.ecpEmergencyCancelLevel);
+    if (this.ecpEmergencyCancelLevel !== this.wasEcpEmergencyCancelLevel) {
+      if (this.ecpEmergencyCancelLevel) {
+        this.lastAuralVolume = SimVar.GetSimVarValue('L:A32NX_FWS_AUDIO_VOLUME', SimVarValueType.Enum);
+        this.soundManager.setVolume(FwsAuralVolume.Silent);
+      } else {
+        this.soundManager.setVolume(this.lastAuralVolume);
+      }
+      this.wasEcpEmergencyCancelLevel = this.ecpEmergencyCancelLevel;
+    }
 
     // Play sounds
     this.soundManager.onUpdate(deltaTime);

@@ -274,11 +274,6 @@ export class FwsSoundManager {
     return this.currentSoundPlaying;
   }
 
-  /** Inhibit starting any new broadcasts (MAI). */
-  setManualAudioInhibition(inhibit: boolean) {
-    this.manualAudioInhibition = inhibit;
-  }
-
   /** Add sound to queue. Don't add if already playing */
   enqueueSound(soundKey: keyof typeof FwsAuralsList) {
     const sound = FwsAuralsList[soundKey];
@@ -429,9 +424,7 @@ export class FwsSoundManager {
       }
     } else {
       // Play next sound
-      if (!this.manualAudioInhibition) {
-        this.selectAndPlayMostImportantSound();
-      }
+      this.selectAndPlayMostImportantSound();
     }
   }
 }
