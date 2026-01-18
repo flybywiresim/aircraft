@@ -64,6 +64,7 @@ pub enum FailureType {
     RadioAltimeter(usize),
     RadioAntennaInterrupted(usize),
     RadioAntennaDirectCoupling(usize),
+    EnhancedGroundProximityWarningSystemComputer,
 }
 
 pub struct Failure {
