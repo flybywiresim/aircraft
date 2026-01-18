@@ -2390,6 +2390,7 @@
         <Sound WwiseData="true" WwiseEvent="aural_terrain_ahead" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" />
         <Sound WwiseData="true" WwiseEvent="aural_obstacle_ahead" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" />
         <Sound WwiseData="true" WwiseEvent="aural_obstacle" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" />
+        <Sound WwiseData="true" WwiseEvent="aural_altimeter_setting" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" />
 
     </AvionicSounds>
 

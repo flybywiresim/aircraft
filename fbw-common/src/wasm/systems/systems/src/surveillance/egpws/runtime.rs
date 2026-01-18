@@ -61,7 +61,7 @@ impl AuralWarning {
         match self {
             AuralWarning::None => Duration::from_secs(0),
             AuralWarning::PullUp => Duration::from_secs_f64(1.1),
-            AuralWarning::Terrain => Duration::from_secs_f64(1.2),
+            AuralWarning::Terrain => Duration::from_secs_f64(0.7),
             AuralWarning::TooLowTerrain => Duration::from_secs_f64(1.1),
             AuralWarning::TooLowGear => Duration::from_secs_f64(1.1),
             AuralWarning::TooLowFlaps => Duration::from_secs_f64(1.1),

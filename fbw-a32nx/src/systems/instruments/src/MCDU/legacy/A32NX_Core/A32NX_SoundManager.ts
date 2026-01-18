@@ -101,7 +101,7 @@ export class A32NX_SoundManager {
 export const soundList: Record<string, SoundDefinition> = {
   terrain: {
     name: 'aural_terrain',
-    length: 0.6,
+    length: 0.7,
   },
   glideslope_quiet: {
     name: 'aural_glideslope_quiet',
