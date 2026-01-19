@@ -1514,9 +1514,9 @@ export class PseudoFWC {
   private ecpEmergencyCancelPulseDown = false;
   private ecpEmergencyCancelLevel = false;
   private wasEcpEmergencyCancelLevel = false;
+  private emergencyCancelReady = true;
   private lastAuralVolume = FwsAuralVolume.Full;
 
-  private emergencyCancelHandled = false;
   // TODO: Change this to disable the caution for the entire flight once status page is implemented
   private emergencyCancelClearCaution = false;
 
@@ -3224,8 +3224,11 @@ export class PseudoFWC {
       this.cChordActive.set(this.nonCancellableWarningCount > 0);
     }
     // Emergency audio cancel (EAC)
-    // !this.ecpEmergencyCancelHandled ensures we only cancel one signal at a time
-    if (this.ecpEmergencyCancelPulseUp && !this.emergencyCancelHandled) {
+    // Listening to the pulse down ensures we only cancel one signal at a time
+    if (this.ecpEmergencyCancelPulseDown) {
+      this.emergencyCancelReady = true;
+    }
+    if (this.ecpEmergencyCancelLevel && this.emergencyCancelReady) {
       // Get the highest priority signal from the sound manager
       const currentSound = this.soundManager.getCurrentSoundPlaying();
       const soundToKeys: Record<string, string[]> = {
@@ -3245,9 +3248,7 @@ export class PseudoFWC {
       } else if (this.masterCaution.get()) {
         this.emergencyCancelClearCaution = true;
       }
-      this.emergencyCancelHandled = true;
-    } else if (!this.ecpEmergencyCancelPulseUp) {
-      this.emergencyCancelHandled = false;
+      this.emergencyCancelReady = false;
     }
 
     /* T.O. CONFIG CHECK */
