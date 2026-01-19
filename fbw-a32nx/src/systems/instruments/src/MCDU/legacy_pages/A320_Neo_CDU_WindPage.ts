@@ -443,17 +443,25 @@ export class CDUWindPage {
     const doesAltnWindUplinkExist = doesWindUplinkExist && plan.pendingWindUplink.alternateWind !== undefined;
     const isWindUplinkInProgress = plan.pendingWindUplink.isWindUplinkInProgress();
 
+    const alternateAirport = plan ? plan.alternateDestinationAirport : undefined;
+
+    const phase = mcdu.flightPhaseManager.phase;
+    const nextCruiseLegIndex = this.findNextCruiseLegIndex(mcdu, plan, 0);
+    const hasCruiseLegs = nextCruiseLegIndex >= 0;
+
+    // Make sure we can only go the cruise page if we have cruise legs
+    const canGoToPrevPhase =
+      phase < FmgcFlightPhase.Cruise ||
+      phase === FmgcFlightPhase.Done ||
+      (phase === FmgcFlightPhase.Cruise && hasCruiseLegs);
+
+    const canModifyDesWinds =
+      !doesDesWindUplinkExist && (phase < FmgcFlightPhase.Descent || phase === FmgcFlightPhase.Done);
+
     let requestButton = 'UPLINK*[color]cyan';
     if (!doesWindUplinkExist) {
       requestButton = isWindUplinkInProgress ? 'REQUEST [color]amber' : 'REQUEST*[color]amber';
     }
-
-    const alternateAirport = plan ? plan.alternateDestinationAirport : undefined;
-
-    const phase = mcdu.flightPhaseManager.phase;
-    const canGoToPrevPhase = phase < FmgcFlightPhase.Descent || phase === FmgcFlightPhase.Done;
-    const canModifyDesWinds =
-      !doesDesWindUplinkExist && (phase < FmgcFlightPhase.Descent || phase === FmgcFlightPhase.Done);
 
     const template = [
       [isSec ? '\xa0SEC\xa0\xa0DESCENT WIND\xa0\xa0\xa0\xa0\xa0\xa0' : 'DESCENT WIND'],
@@ -640,8 +648,7 @@ export class CDUWindPage {
 
     if (canGoToPrevPhase) {
       mcdu.onRightInput[3] = () => {
-        const nextCruiseLegIndex = this.findNextCruiseLegIndex(mcdu, plan, 0);
-        if (nextCruiseLegIndex >= 0) {
+        if (hasCruiseLegs) {
           CDUWindPage.ShowCRZPage(mcdu, forPlan, nextCruiseLegIndex);
         } else {
           CDUWindPage.ShowCLBPage(mcdu, forPlan);
