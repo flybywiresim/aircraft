@@ -598,49 +598,33 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
     }
 
     fn update_low_diff_pressure_warning(&mut self) {
-        self.low_diff_pressure_warning = self.calculate_low_diff_pressure_warning();
-    }
-
-    fn calculate_low_diff_pressure_warning(&self) -> bool {
-        if !self.adirs_data_is_valid {
-            return false;
-        }
-
-        if !matches!(
+        let in_descent = !matches!(
             self.pressure_schedule_manager,
             Some(PressureScheduleManager::DescentInternal(_))
-        ) {
-            return false;
-        }
-
+        );
         let delta_p_psi = self.cabin_delta_p().get::<psi>();
-        if delta_p_psi <= 0. {
-            return false;
-        }
-
         let delta_p_rate = self.cabin_delta_p_rate;
-        if delta_p_rate >= -f64::EPSILON {
-            return false;
-        }
 
         let time_to_delta_p_zero_secs = delta_p_psi / -delta_p_rate;
-        if time_to_delta_p_zero_secs >= 90. {
-            return false;
-        }
 
         let cabin_vs_fpm = self.cabin_vertical_speed().get::<foot_per_minute>();
         let cabin_alt_diff_ft = (self.cabin_alt - self.landing_elevation).get::<foot>();
-        if cabin_vs_fpm >= -f64::EPSILON || cabin_alt_diff_ft <= 0. {
-            return false;
-        }
-
         let time_to_cabin_landing_secs = cabin_alt_diff_ft / -cabin_vs_fpm * 60.;
+
         let altitude_above_landing_ft =
             (self.exterior_flight_altitude - self.landing_elevation).get::<foot>();
-        let above_or_was_above_3000 =
-            altitude_above_landing_ft >= 3000. || self.low_diff_pressure_warning;
 
-        time_to_delta_p_zero_secs + 30. < time_to_cabin_landing_secs && above_or_was_above_3000
+        let activation_condition = time_to_delta_p_zero_secs < 90.
+            && time_to_delta_p_zero_secs < time_to_cabin_landing_secs + 30.
+            && altitude_above_landing_ft > 3000.
+            && self.adirs_data_is_valid
+            && in_descent;
+
+        if activation_condition && altitude_above_landing_ft > 3000. {
+            self.low_diff_pressure_warning = true;
+        } else if !activation_condition {
+            self.low_diff_pressure_warning = false;
+        }
     }
 
     fn cabin_delta_p_out(&self) -> Pressure {
