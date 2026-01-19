@@ -18,7 +18,7 @@ import { FwcDataBusTypes } from '../../common/src/databus/FwcBus';
 import { ClockDataBusTypes } from '../../common/src/databus/ClockBus';
 import { RouterAtcAocMessages } from '../../router/src';
 import { Clock } from '../../common/src/types/Clock';
-import { logTroubleshootingError } from 'shared/src';
+import { logTroubleshootingError } from '../../../shared/src';
 
 export type AocDigitalInputCallbacks = {
   receivedFreetextMessage: (message: FreetextMessage) => void;

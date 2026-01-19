@@ -20,7 +20,7 @@ import {
 } from '../../common/src';
 import { AtcAocRouterMessages, FmsRouterMessages } from './databus';
 import { AtsuFlightPhase } from '../../common/src/types/AtsuFlightPhase';
-import { logTroubleshootingError } from 'shared/src';
+import { logTroubleshootingError } from '../../../shared/src';
 
 export type RouterDigitalInputCallbacks = {
   sendFreetextMessage: (message: FreetextMessage, force: boolean) => Promise<AtsuStatusCodes>;
