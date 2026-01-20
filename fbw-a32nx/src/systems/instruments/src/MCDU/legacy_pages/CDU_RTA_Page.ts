@@ -25,6 +25,16 @@ export class CduRtaPage {
     const flightplan = mcdu.flightPlanService.get(forplan);
     const ett = flightplan.performanceData.estimatedTakeoffDate.get();
     const rtaExists = ett != null && !flightplan.performanceData.estimatedTakeoffTimeExpired.get();
+
+    // Regular updating due to expiration of EET
+    if (rtaExists) {
+      mcdu.SelfPtr = setTimeout(() => {
+        if (mcdu.page.Current === mcdu.page.RTAPage) {
+          CduRtaPage.ShowPage(mcdu, waypoint, index, verticalWaypoint, forplan);
+        }
+      }, mcdu.PageTimeout.Slow);
+    }
+
     const allowRta = isPreFlight || !flightplan.isActiveOrCopiedFromActive();
     const rtaCell = allowRta
       ? rtaExists
@@ -40,11 +50,11 @@ export class CduRtaPage {
             Column.white,
           ),
         ],
-        [new Column(1, '\xa0AT WPT')],
+        [new Column(1, 'AT WPT')],
         [],
         [new Column(1, 'ACCUR'.padEnd(14, '\xa0') + 'ETA', Column.inop)],
         [new Column(0, '*10/30')],
-        [this.EttHeaderColumn],
+        [new Column(1, allowRta ? 'ETT' : '')],
         [new Column(0, rtaCell, rtaExists ? Column.magenta : Column.cyan)],
         [],
         [],
