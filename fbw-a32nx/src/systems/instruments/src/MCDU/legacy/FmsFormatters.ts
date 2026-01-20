@@ -53,4 +53,14 @@ export class FmsFormatters {
     const s = Math.floor(seconds - h * 3600 - m * 60);
     return h.toFixed(0).padStart(2, '0') + ':' + m.toFixed(0).padStart(2, '0') + ':' + s.toFixed(0).padStart(2, '0');
   }
+
+  /**
+   * Returns the number of seconds since midnight UTC for a given date.
+   * @param date the date to extract the seconds from
+   * @returns number of seconds since midnight UTC
+   */
+  public static dateToSecondsSinceMidnightUTC(date: Date): number {
+    const midNight = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 0, 0);
+    return (date.getTime() - midNight.getTime()) / 1000;
+  }
 }

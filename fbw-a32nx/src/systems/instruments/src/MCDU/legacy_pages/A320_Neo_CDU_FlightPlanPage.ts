@@ -344,8 +344,8 @@ export class CDUFlightPlanPage {
 
           timeColor =
             isFromLeg &&
-            flightplan.performanceData.estimatedTakeoffTime.get() !== null &&
-            !flightplan.performanceData.ettExpired.get()
+            flightplan.performanceData.estimatedTakeoffDate.get() !== null &&
+            !flightplan.performanceData.estimatedTakeoffTimeExpired.get()
               ? 'magenta'
               : color;
         } else if (!inAlternate && fpIndex === targetPlan.originLegIndex) {

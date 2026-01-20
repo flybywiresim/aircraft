@@ -719,12 +719,6 @@ export class CDUPerformancePage {
       };
     }
 
-    const timeLabel =
-      targetPlan.performanceData.estimatedTakeoffTime.get() != null ||
-      (isFlying && targetPlan.isActiveOrCopiedFromActive())
-        ? '\xa0UTC'
-        : 'TIME';
-
     const [destEfobCell, destTimeCell] = CDUPerformancePage.formatDestEfobAndTime(mcdu, isFlying, forPlan);
     const [toUtcLabel, toDistLabel] = shouldShowToTdInformation ? ['\xa0UTC', 'DIST'] : ['', ''];
     const [toReasonCell, toDistCell, toTimeCell, stepWaypoint] = shouldShowToTdInformation
@@ -816,7 +810,7 @@ export class CDUPerformancePage {
 
     mcdu.setTemplate([
       [titleCell],
-      ['ACT MODE', 'DEST EFOB', timeLabel],
+      ['ACT MODE', 'DEST EFOB', mcdu.getTimePredictionHeader(forPlan).padStart(4, '\xa0')],
       [`${actModeCell}[color]green`, destEfobCell, destTimeCell],
       ['CI', stepWaypoint],
       [costIndexCell, toReasonCell],

@@ -14,7 +14,7 @@ export class ClockIsTakeoffTime implements FMMessageSelector {
     this.flightplanService = flightPlanService;
   }
   process(_deltaTime: number): FMMessageUpdate {
-    const isEttExpired = this.flightplanService.active.performanceData.ettExpired.get();
+    const isEttExpired = this.flightplanService.active.performanceData.estimatedTakeoffTimeExpired.get();
     if (isEttExpired && !this.shouldTrigger) {
       this.shouldTrigger = true;
       return FMMessageUpdate.SEND;

@@ -320,7 +320,17 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     SimVarValueType.Enum,
   );
 
+  /** Seconds since midnight */
   private readonly zuluTime = RegisteredSimVar.create<number>('E:ZULU TIME', SimVarValueType.Seconds);
+
+  /** Day of the month between 1 and 31 */
+  private readonly dayOfMonth = RegisteredSimVar.create<number>('E:ZULU DAY OF MONTH', SimVarValueType.Number);
+
+  /** Month of the year between 1 and 12 */
+  private readonly month = RegisteredSimVar.create<number>('E:ZULU MONTH', SimVarValueType.Number);
+
+  /** Year */
+  private readonly year = RegisteredSimVar.create<number>('E:ZULU YEAR', SimVarValueType.Number);
 
   private ettInterval: NodeJS.Timeout | null = null;
 
@@ -5445,10 +5455,10 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     const phase = this.getFlightPhase();
 
     if (phase === FmgcFlightPhase.Preflight || phase === FmgcFlightPhase.Done) {
-      const ett = this.flightPlanService.active.performanceData.estimatedTakeoffTime.get();
+      const ett = this.flightPlanService.active.performanceData.estimatedTakeoffDate.get();
       if (ett !== null) {
-        if (ett < this.zuluTime.get()) {
-          this.flightPlanService.active.performanceData.ettExpired.set(true);
+        if (this.checkEttExpired()) {
+          this.flightPlanService.active.performanceData.estimatedTakeoffTimeExpired.set(true);
         } else {
           this.ettInterval = setInterval(() => {
             this.checkEttExpired();
@@ -5656,7 +5666,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     // If its not active or copy of active allow setting in any phase
     if (!activeOrCopyOfActive || this.getFlightPhase() === FmgcFlightPhase.Preflight) {
       // If ETT has expired we don't show it on the RTA page, as such, ignore clearing if thats the case
-      if (!flightplan.performanceData.ettExpired.get() && text == Keypad.clrValue) {
+      if (!flightplan.performanceData.estimatedTakeoffTimeExpired.get() && text == Keypad.clrValue) {
         this.clearEttAndInterval();
         return;
       }
@@ -5679,24 +5689,28 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         if (minutes > 59 || hours > 23 || seconds > 59) {
           this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
         } else {
-          let ettInSeconds = FmsFormatters.hoursToSeconds(hours) + FmsFormatters.minutesToSeconds(minutes) + seconds;
+          const ettInSeconds = FmsFormatters.hoursToSeconds(hours) + FmsFormatters.minutesToSeconds(minutes) + seconds;
+          let ettAdjustedToDayDifferences = ettInSeconds;
 
           // If ETT is less than current Zulu time, assume its for the next day
           if (ettInSeconds < zuluTime) {
-            ettInSeconds = 86400 - (zuluTime - ettInSeconds);
+            ettAdjustedToDayDifferences = 86400 - (zuluTime - ettInSeconds);
           }
 
           // ETT cannot be more than 20 hours ahead of present time.
-          if (ettInSeconds - zuluTime > 72000) {
+          if (ettAdjustedToDayDifferences - zuluTime > 72000) {
             this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
           } else {
+            const ettDate = new Date();
+            ettDate.setUTCHours(hours, minutes, seconds, 0);
+            ettDate.setFullYear(this.year.get(), this.month.get() - 1, this.dayOfMonth.get());
+            this.flightPlanService.setPerformanceData('estimatedTakeoffDate', ettDate.getTime(), forPlan);
+            this.flightPlanService.setPerformanceData('estimatedTakeoffTimeExpired', false, forPlan);
             if (activeOrCopyOfActive && this.ettInterval === null) {
               this.ettInterval = setInterval(() => {
                 this.checkEttExpired();
               }, 30000);
             }
-            this.flightPlanService.setPerformanceData('estimatedTakeoffTime', ettInSeconds, forPlan);
-            this.flightPlanService.setPerformanceData('ettExpired', false, forPlan);
           }
         }
       } else {
@@ -5718,9 +5732,15 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     if (plan.isActiveOrCopiedFromActive() && phase > FmgcFlightPhase.Preflight && phase < FmgcFlightPhase.Done) {
       time = this.zuluTime.get();
     } else {
-      const ett = plan.performanceData.estimatedTakeoffTime.get();
+      const ett = plan.performanceData.estimatedTakeoffDate.get();
       if (ett !== null) {
-        time = Math.max(ett, this.zuluTime.get()); // Once ett has expired we use current time for predictions
+        // Extract time since midnight UTC from ETT date
+        if (!plan.performanceData.estimatedTakeoffTimeExpired.get()) {
+          time = FmsFormatters.dateToSecondsSinceMidnightUTC(new Date(ett));
+        } else {
+          // If ETT expired, use current zulu time.
+          time = this.zuluTime.get();
+        }
       }
     }
 
@@ -5738,7 +5758,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   getTimePredictionHeader(forPlan: FlightPlanIndex): 'UTC' | 'TIME' {
     const phase = this.getFlightPhase();
     const plan = this.flightPlanService.get(forPlan);
-    const ett = plan.performanceData.estimatedTakeoffTime.get();
+    const ett = plan.performanceData.estimatedTakeoffDate.get();
     if (
       (plan.isActiveOrCopiedFromActive() && phase > FmgcFlightPhase.Preflight && phase < FmgcFlightPhase.Done) ||
       ett !== null
@@ -5754,26 +5774,32 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
    * Checks if the ETT of the active flightplan has expired compared to zulu time.
    * If it has, the associated flag is set on the performance data and the periodic interval check is cleared.
    */
-  private checkEttExpired(): void {
-    const ett = this.flightPlanService.active.performanceData.estimatedTakeoffTime.get();
-    if (ett !== null && this.flightPlanService.active.performanceData.ettExpired.get()) {
-      const isExpired = ett < this.zuluTime.get();
+  private checkEttExpired(): boolean {
+    const ett = this.flightPlanService.active.performanceData.estimatedTakeoffDate.get();
+    if (ett !== null && !this.flightPlanService.active.performanceData.estimatedTakeoffTimeExpired.get()) {
+      const nowDate = new Date();
+      const zuluTimeSeconds = this.zuluTime.get();
+      nowDate.setUTCFullYear(this.year.get(), this.month.get() - 1, this.dayOfMonth.get());
+      nowDate.setUTCHours(zuluTimeSeconds / 3600, (zuluTimeSeconds % 3600) / 60, zuluTimeSeconds % 60, 0);
+      const isExpired = ett < nowDate.getTime();
       if (isExpired) {
         if (this.ettInterval !== null) {
           clearInterval(this.ettInterval);
           this.ettInterval = null;
         }
-        this.flightPlanService.setPerformanceData('ettExpired', isExpired, FlightPlanIndex.Active);
+        this.flightPlanService.setPerformanceData('estimatedTakeoffTimeExpired', isExpired, FlightPlanIndex.Active);
       }
+      return isExpired;
     }
+    return false;
   }
 
   /**
    * Clears the ETT from the active flightplan and clears the interval checking if it has expired.
    */
   private clearEttAndInterval() {
-    this.flightPlanService.setPerformanceData('estimatedTakeoffTime', null, FlightPlanIndex.Active);
-    this.flightPlanService.setPerformanceData('ettExpired', false, FlightPlanIndex.Active);
+    this.flightPlanService.setPerformanceData('estimatedTakeoffDate', null, FlightPlanIndex.Active);
+    this.flightPlanService.setPerformanceData('estimatedTakeoffTimeExpired', false, FlightPlanIndex.Active);
     if (this.ettInterval !== null) {
       clearInterval(this.ettInterval);
       this.ettInterval = null;
