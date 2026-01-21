@@ -480,7 +480,8 @@ export interface FlightPlanPerformanceData {
    */
   readonly approachFlapsThreeSelected: MutableSubscribable<boolean>;
 
-  readonly estimatedTakeoffDate: Subject<number | null>;
+  /** Estimated takeoff time in seconds since 1/1/AD */
+  readonly estimatedTakeoffTime: Subject<number | null>;
 
   readonly estimatedTakeoffTimeExpired: Subject<boolean | null>;
 
@@ -590,7 +591,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
     cloned.approachBaroMinimum.set(this.approachBaroMinimum.get());
     cloned.approachRadioMinimum.set(this.approachRadioMinimum.get());
     cloned.approachFlapsThreeSelected.set(this.approachFlapsThreeSelected.get());
-    cloned.estimatedTakeoffDate.set(this.estimatedTakeoffDate.get());
+    cloned.estimatedTakeoffTime.set(this.estimatedTakeoffTime.get());
     cloned.estimatedTakeoffTimeExpired.set(this.estimatedTakeoffTimeExpired.get());
 
     return cloned as this;
@@ -609,7 +610,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
     );
     other.pipe('pilotFinalHoldingFuel', this.pilotFinalHoldingFuel, other.pilotFinalHoldingFuel);
     other.pipe('pilotFinalHoldingTime', this.pilotFinalHoldingTime, other.pilotFinalHoldingTime);
-    other.pipe('estimatedTakeoffDate', this.estimatedTakeoffDate, other.estimatedTakeoffDate);
+    other.pipe('estimatedTakeoffTime', this.estimatedTakeoffTime, other.estimatedTakeoffTime);
     other.pipe('estimatedTakeoffTimeExpired', this.estimatedTakeoffTimeExpired, other.estimatedTakeoffTimeExpired);
 
     if (isBeforeEngineStart) {
@@ -1240,9 +1241,9 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
   readonly approachFlapsThreeSelected = Subject.create(false);
 
   /**
-   * Estimated takeoff time in epoch milliseconds
+   * Estimated takeoff time in seconds since 1/1/AD
    */
-  readonly estimatedTakeoffDate = Subject.create<number | null>(null);
+  readonly estimatedTakeoffTime = Subject.create<number | null>(null);
 
   /**
    * Indicates whether the estimated takeoff time has expired.
@@ -1319,7 +1320,8 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
       approachBaroMinimum: this.approachBaroMinimum.get(),
       approachRadioMinimum: this.approachRadioMinimum.get(),
       approachFlapsThreeSelected: this.approachFlapsThreeSelected.get(),
-      estimatedTakeoffTime: this.estimatedTakeoffDate.get(),
+      estimatedTakeoffTime: this.estimatedTakeoffTime.get(),
+      estimatedTakeoffTimeExpired: this.estimatedTakeoffTimeExpired.get(),
     };
   }
 }
@@ -1411,6 +1413,7 @@ export interface SerializedFlightPlanPerformanceData {
   approachRadioMinimum: 'NO DH' | number | null;
   approachFlapsThreeSelected: boolean;
   estimatedTakeoffTime: number | null;
+  estimatedTakeoffTimeExpired: boolean;
 }
 
 // FIXME move to AMI database

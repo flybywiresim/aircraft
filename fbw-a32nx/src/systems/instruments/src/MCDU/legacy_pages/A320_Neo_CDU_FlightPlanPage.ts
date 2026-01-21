@@ -11,7 +11,7 @@ import { CDUHoldAtPage } from './A320_Neo_CDU_HoldAtPage';
 import { AltitudeDescriptor, NXUnits, WaypointConstraintType } from '@flybywiresim/fbw-sdk';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
-import { FlightPlanLeg, isDiscontinuity } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { FlightPlanLeg, isDiscontinuity, isLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { Column, FormatLine } from '../legacy/A320_Neo_CDU_Format';
 
@@ -332,7 +332,11 @@ export class CDUFlightPlanPage {
         }
 
         // Time
+        const flightplan = mcdu.flightPlanService.get(forPlan);
         let timeCell: string = Time.NoPrediction;
+        const isEttValid =
+          flightplan.performanceData.estimatedTakeoffTime.get() !== null &&
+          !flightplan.performanceData.estimatedTakeoffTimeExpired.get();
         let timeColor = 'white';
         if (verticalWaypoint && isFinite(verticalWaypoint.secondsFromPresent)) {
           timeCell = `${isFromLeg ? '{big}' : '{small}'}${mcdu.getTimePrediction(
@@ -340,17 +344,10 @@ export class CDUFlightPlanPage {
             forPlan,
           )}{end}`;
 
-          const flightplan = mcdu.flightPlanService.get(forPlan);
-
-          timeColor =
-            isFromLeg &&
-            flightplan.performanceData.estimatedTakeoffDate.get() !== null &&
-            !flightplan.performanceData.estimatedTakeoffTimeExpired.get()
-              ? 'magenta'
-              : color;
+          timeColor = isFromLeg && isEttValid ? 'magenta' : color;
         } else if (!inAlternate && fpIndex === targetPlan.originLegIndex) {
-          timeCell = '{big}0000{end}';
-          timeColor = color;
+          timeCell = `{big}${mcdu.getTimePrediction(0, forPlan)}{end}`;
+          timeColor = isEttValid ? 'magenta' : color;
         }
 
         // Fix Header
@@ -981,7 +978,7 @@ export class CDUFlightPlanPage {
         () => {
           CDUVerticalRevisionPage.ShowPage(
             mcdu,
-            targetPlan.destinationLeg,
+            isLeg(targetPlan.destinationLeg) ? targetPlan.destinationLeg : undefined,
             targetPlan.destinationLegIndex,
             undefined,
             undefined,
