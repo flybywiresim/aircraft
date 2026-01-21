@@ -33,6 +33,13 @@ const getReleaseName = (commitHash, branch, tag) => {
 exports.getGitBuildInfo = () => {
   // all git commands are wrapped in a try block so the build can still succeed outside of a git repo.
   try {
+    try {
+      // set safe.directory to avoid errors
+      evaluate('git config --global --add safe.directory /external');
+    } catch (e) {
+      console.log('Failed to set safe.directory', e);
+    }
+
     const commitHash = process.env.GITHUB_SHA ? process.env.GITHUB_SHA : evaluate('git show-ref -s HEAD');
     let tag = '';
     try {
