@@ -2225,7 +2225,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
 
     this.atsu.resetAtisAutoUpdate();
-    this.clearEttAndInterval();
+    this.clearEttAndInterval(forPlan);
 
     await this.flightPlanService.newCityPair(from, to, undefined, forPlan);
   }
@@ -5456,7 +5456,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         } else {
           this.ettInterval = setInterval(() => {
             this.checkEttExpired();
-          }, 30000);
+          }, 1000);
         }
       }
       this.addMessageToQueue(NXSystemMessages.checkToData);
@@ -5661,7 +5661,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     if (!activeOrCopyOfActive || this.getFlightPhase() === FmgcFlightPhase.Preflight) {
       // If ETT has expired we don't show it on the RTA page, as such, ignore clearing if thats the case
       if (!flightplan.performanceData.estimatedTakeoffTimeExpired.get() && text == Keypad.clrValue) {
-        this.clearEttAndInterval();
+        this.clearEttAndInterval(forPlan);
         return;
       }
 
@@ -5706,7 +5706,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
             if (activeOrCopyOfActive && this.ettInterval === null) {
               this.ettInterval = setInterval(() => {
                 this.checkEttExpired();
-              }, 30000);
+              }, 1000);
             }
           }
         }
@@ -5731,9 +5731,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     } else {
       const ett = plan.performanceData.estimatedTakeoffTime.get();
       if (ett !== null) {
-        // Extract time since midnight UTC from ETT date
+        // Extract time since midnight UTC from ETT
         if (!plan.performanceData.estimatedTakeoffTimeExpired.get()) {
-          time = FmsFormatters.dateToSecondsSinceMidnightUTC(new Date(ett));
+          time = ett % 86400;
         } else {
           // If ETT expired, use current zulu time.
           time = this.zuluTime.get();
@@ -5788,12 +5788,12 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   /**
-   * Clears the ETT from the active flightplan and clears the interval checking if it has expired.
+   * Clears the ETT from the a flightplan and clears the periodic interval check if it is the active
    */
-  private clearEttAndInterval() {
-    this.flightPlanService.setPerformanceData('estimatedTakeoffTime', null, FlightPlanIndex.Active);
-    this.flightPlanService.setPerformanceData('estimatedTakeoffTimeExpired', false, FlightPlanIndex.Active);
-    if (this.ettInterval !== null) {
+  private clearEttAndInterval(forPlan: FlightPlanIndex = FlightPlanIndex.Active): void {
+    this.flightPlanService.setPerformanceData('estimatedTakeoffTime', null, forPlan);
+    this.flightPlanService.setPerformanceData('estimatedTakeoffTimeExpired', false, forPlan);
+    if (forPlan === FlightPlanIndex.Active && this.ettInterval !== null) {
       clearInterval(this.ettInterval);
       this.ettInterval = null;
     }
