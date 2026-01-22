@@ -231,6 +231,7 @@ export class FwsCore {
   private readonly inopSysApprLdgKeys = Subject.create<string[]>([]);
   private readonly alertsImpactingLdgPerfKeys = Subject.create<string[]>([]);
   private readonly inopSysRedundLossKeys = Subject.create<string[]>([]);
+  private readonly cancelledCautionKeys = Subject.create<string[]>([]);
 
   // Input buffering
   public readonly toConfigInputBuffer = new NXLogicMemoryNode(false);
@@ -293,6 +294,7 @@ export class FwsCore {
   private activeWarningKeys: string[] = [];
 
   private readonly emergencyCancelledWarnings = new Set<string>();
+  private readonly cancelledCautions = new Set<string>();
 
   public readonly auralCrcActive = Subject.create(false);
 
@@ -1430,6 +1432,10 @@ export class FwsCore {
   public readonly clrPulseNode = new NXLogicPulseNode();
 
   public readonly rclUpPulseNode = new NXLogicPulseNode();
+  private readonly rclHeld3sConfNode = new NXLogicConfirmNode(3);
+  private readonly rclHeld3sPulseNode = new NXLogicPulseNode();
+  private readonly emerCancResetIrsAlignConfNode = new NXLogicConfirmNode(30);
+  private readonly emerCancResetIrsAlignPulseNode = new NXLogicPulseNode();
 
   public readonly clPulseNode = new NXLogicPulseNode();
 
@@ -2405,6 +2411,7 @@ export class FwsCore {
       this.inopSysApprLdgKeys.sub((v) => this.publisher.pub('fws_inop_sys_appr_ldg', v, true)),
       this.alertsImpactingLdgPerfKeys.sub((v) => this.publisher.pub('fws_alerts_impacting_ldg_perf', v, true)),
       this.inopSysRedundLossKeys.sub((v) => this.publisher.pub('fws_inop_sys_redundancy_loss', v, true)),
+      this.cancelledCautionKeys.sub((v) => this.publisher.pub('fws_cancelled_caution', v, true)),
     );
 
     this.subs.push(
@@ -3308,6 +3315,20 @@ export class FwsCore {
     this.adiru1ModeSelector.set(SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB', 'enum'));
     this.adiru2ModeSelector.set(SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB', 'enum'));
     this.adiru3ModeSelector.set(SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB', 'enum'));
+
+    const rclHeld3s = this.rclHeld3sConfNode.write(recallButton && !this.fwsEcpFailed.get(), deltaTime);
+    const rclHeld3sPulse = this.rclHeld3sPulseNode.write(rclHeld3s, deltaTime);
+    const irsAlignConfirmed = this.emerCancResetIrsAlignConfNode.write(
+      this.ir1Align.get() && this.ir2Align.get(),
+      deltaTime,
+    );
+    const irsAlignPulse = this.emerCancResetIrsAlignPulseNode.write(irsAlignConfirmed, deltaTime);
+    if (rclHeld3sPulse || (irsAlignPulse && this.flightPhase1Or2.get())) {
+      if (this.cancelledCautions.size > 0) {
+        this.cancelledCautions.clear();
+      }
+    }
+
     // RA acquisition
     this.radioHeight1.setFromSimVar('L:A32NX_RA_1_RADIO_ALTITUDE');
     this.radioHeight2.setFromSimVar('L:A32NX_RA_2_RADIO_ALTITUDE');
@@ -5220,21 +5241,25 @@ export class FwsCore {
         singleChime: this.auralScKeys,
       };
       const keys = currentSound ? soundToKeys[currentSound] : undefined;
+      const isKeyCancelled = (key: string) =>
+        this.emergencyCancelledWarnings.has(key) || this.cancelledCautions.has(key);
       const cancelKey =
-        keys?.find((key) => !this.emergencyCancelledWarnings.has(key)) ??
-        this.activeWarningKeys.find((key) => !this.emergencyCancelledWarnings.has(key)) ??
-        null;
+        keys?.find((key) => !isKeyCancelled(key)) ?? this.activeWarningKeys.find((key) => !isKeyCancelled(key)) ?? null;
       if (cancelKey) {
-        this.emergencyCancelledWarnings.add(cancelKey);
         if (this.ewdAbnormal[cancelKey]?.failure === 2) {
+          if (!this.cancelledCautions.has(cancelKey)) {
+            this.cancelledCautions.add(cancelKey);
+          }
           this.emergencyCancelClearCautionKey = cancelKey;
+        } else {
+          this.emergencyCancelledWarnings.add(cancelKey);
         }
       } else if (this.masterCaution.get()) {
         const cautionKey = this.presentedFailures.find(
-          (key) => this.ewdAbnormal[key]?.failure === 2 && !this.emergencyCancelledWarnings.has(key),
+          (key) => this.ewdAbnormal[key]?.failure === 2 && !this.cancelledCautions.has(key),
         );
         if (cautionKey) {
-          this.emergencyCancelledWarnings.add(cautionKey);
+          this.cancelledCautions.add(cautionKey);
           this.emergencyCancelClearCautionKey = cautionKey;
         }
       }
@@ -5349,6 +5374,10 @@ export class FwsCore {
     const auralCrcKeys: string[] = [];
     const auralScKeys: string[] = [];
     const auralCavchargeKeys: string[] = [];
+    if (this.cancelledCautions.size > 0) {
+      failureKeys = failureKeys.filter((key) => !this.cancelledCautions.has(key));
+      recallFailureKeys = recallFailureKeys.filter((key) => !this.cancelledCautions.has(key));
+    }
 
     const itemIsActiveConsideringFaultSuppression = (
       item: FwsSuppressableItem,
@@ -5390,7 +5419,9 @@ export class FwsCore {
       if (!itemIsActiveConsideringFaultSuppression(value, key, 0.6)) {
         failureKeys = failureKeys.filter((e) => e !== key);
         recallFailureKeys = recallFailureKeys.filter((e) => e !== key);
-        this.emergencyCancelledWarnings.delete(key);
+        if (value.failure === 3) {
+          this.emergencyCancelledWarnings.delete(key);
+        }
       }
     }
 
@@ -5406,7 +5437,9 @@ export class FwsCore {
     for (const [key, value] of ewdAbnormalEntries) {
       // new warning?
       const newWarning = !this.presentedFailures.includes(key) && !recallFailureKeys.includes(key);
-      const isCancelled = this.emergencyCancelledWarnings.has(key);
+      const isCancelledCaution = value.failure === 2 && this.cancelledCautions.has(key);
+      const isCancelledWarning = value.failure === 3 && this.emergencyCancelledWarnings.has(key);
+      const isCancelled = isCancelledWarning || isCancelledCaution;
       const proc = EcamAbnormalProcedures[key];
 
       if (proc === undefined) {
@@ -5436,7 +5469,9 @@ export class FwsCore {
         }
 
         if (newWarning) {
-          failureKeys.push(key);
+          if (!isCancelledCaution) {
+            failureKeys.push(key);
+          }
 
           if (!isCancelled) {
             if (value.failure === 3) {
@@ -5448,103 +5483,105 @@ export class FwsCore {
           }
         }
 
-        const previousPresentedState = this.presentedAbnormalProceduresList.getValue(key);
-        const previousClearedState = this.clearedAbnormalProceduresList.getValue(key);
-        if (!previousPresentedState && !previousClearedState) {
-          // Insert into internal map
-          if (value.whichItemsActive) {
-            if (proc.items.length !== value.whichItemsActive().length) {
+        if (!isCancelledCaution) {
+          const previousPresentedState = this.presentedAbnormalProceduresList.getValue(key);
+          const previousClearedState = this.clearedAbnormalProceduresList.getValue(key);
+          if (!previousPresentedState && !previousClearedState) {
+            // Insert into internal map
+            if (value.whichItemsActive) {
+              if (proc.items.length !== value.whichItemsActive().length) {
+                console.warn(
+                  proc.title,
+                  'ECAM alert definition error: whichItemsActive() not the same size as number of procedure items',
+                );
+              }
+            }
+            if (value.whichItemsToShow) {
+              if (proc.items.length !== value.whichItemsToShow().length) {
+                console.warn(
+                  proc.title,
+                  'ECAM alert definition error: whichItemsToShow() not the same size as number of procedure items',
+                );
+              }
+            }
+            if (proc.items.length !== value.whichItemsChecked().length) {
               console.warn(
                 proc.title,
-                'ECAM alert definition error: whichItemsActive() not the same size as number of procedure items',
+                'ECAM alert definition error: whichItemsChecked() not the same size as number of procedure items',
               );
             }
-          }
-          if (value.whichItemsToShow) {
-            if (proc.items.length !== value.whichItemsToShow().length) {
-              console.warn(
-                proc.title,
-                'ECAM alert definition error: whichItemsToShow() not the same size as number of procedure items',
-              );
-            }
-          }
-          if (proc.items.length !== value.whichItemsChecked().length) {
-            console.warn(
-              proc.title,
-              'ECAM alert definition error: whichItemsChecked() not the same size as number of procedure items',
-            );
-          }
-          this.presentedAbnormalProceduresList.setValue(key, {
-            id: key,
-            procedureActivated: true,
-            procedureCompleted: false,
-            itemsActive: itemsActive,
-            itemsChecked: itemsChecked,
-            itemsToShow: itemsToShow,
-            itemsTimeStamp: itemsTimer,
-          });
-
-          for (const [deferredKey, deferredValue] of ewdDeferredEntries) {
-            if (
-              EcamDeferredProcedures[deferredKey].fromAbnormalProcs.includes(key) &&
-              this.abnormalSensed.ewdDeferredProcs[deferredKey]
-            ) {
-              const deferredItemsActive = Array(deferredValue.whichItemsChecked().length).fill(false); // not activated, hence all false
-              const deferredItemsChecked = deferredValue.whichItemsChecked
-                ? deferredValue.whichItemsChecked()
-                : Array(deferredItemsActive.length).fill(true);
-              ProcedureLinesGenerator.conditionalActiveItems(
-                EcamDeferredProcedures[deferredKey],
-                deferredItemsChecked,
-                deferredItemsActive,
-              );
-              this.activeDeferredProceduresList.setValue(deferredKey, {
-                id: deferredKey,
-                procedureCompleted: false,
-                procedureActivated: false,
-                itemsChecked: deferredItemsChecked,
-                itemsActive: deferredItemsActive,
-                itemsToShow: deferredValue.whichItemsToShow
-                  ? deferredValue.whichItemsToShow()
-                  : Array(deferredValue.whichItemsChecked().length).fill(true),
-              });
-            }
-          }
-        } else if (previousPresentedState) {
-          // Update internal map
-          const fusedChecked = [...previousPresentedState.itemsChecked].map((val, index) =>
-            proc.items[index].sensed ? itemsChecked[index] : !!val,
-          );
-          ProcedureLinesGenerator.conditionalActiveItems(proc, fusedChecked, itemsActive, itemsTimer);
-          this.abnormalUpdatedItems.set(key, []);
-          proc.items.forEach((item, idx) => {
-            if (
-              previousPresentedState.itemsToShow[idx] !== itemsToShow[idx] ||
-              previousPresentedState.itemsActive[idx] !== itemsActive[idx] ||
-              (previousPresentedState.itemsChecked[idx] !== fusedChecked[idx] && item.sensed) ||
-              (isTimedItem(item) !== undefined &&
-                itemsTimer !== undefined &&
-                previousPresentedState.itemsTimeStamp !== undefined &&
-                previousPresentedState.itemsTimeStamp[idx] !== itemsTimer[idx])
-            ) {
-              this.abnormalUpdatedItems.get(key)?.push(idx);
-            }
-          });
-
-          if ((this.abnormalUpdatedItems.has(key) && this.abnormalUpdatedItems.get(key)?.length) ?? 0 > 0) {
             this.presentedAbnormalProceduresList.setValue(key, {
               id: key,
-              procedureActivated: previousPresentedState.procedureActivated,
-              procedureCompleted: previousPresentedState.procedureCompleted,
-              itemsChecked: fusedChecked,
-              itemsActive: [...previousPresentedState.itemsActive].map((_, index) => itemsActive[index]),
-              itemsToShow: [...previousPresentedState.itemsToShow].map((_, index) => itemsToShow[index]),
-              itemsTimeStamp: previousPresentedState.itemsTimeStamp
-                ? [...previousPresentedState.itemsTimeStamp].map((_, index) =>
-                    itemsTimer ? itemsTimer[index] : undefined,
-                  )
-                : undefined,
+              procedureActivated: true,
+              procedureCompleted: false,
+              itemsActive: itemsActive,
+              itemsChecked: itemsChecked,
+              itemsToShow: itemsToShow,
+              itemsTimeStamp: itemsTimer,
             });
+
+            for (const [deferredKey, deferredValue] of ewdDeferredEntries) {
+              if (
+                EcamDeferredProcedures[deferredKey].fromAbnormalProcs.includes(key) &&
+                this.abnormalSensed.ewdDeferredProcs[deferredKey]
+              ) {
+                const deferredItemsActive = Array(deferredValue.whichItemsChecked().length).fill(false); // not activated, hence all false
+                const deferredItemsChecked = deferredValue.whichItemsChecked
+                  ? deferredValue.whichItemsChecked()
+                  : Array(deferredItemsActive.length).fill(true);
+                ProcedureLinesGenerator.conditionalActiveItems(
+                  EcamDeferredProcedures[deferredKey],
+                  deferredItemsChecked,
+                  deferredItemsActive,
+                );
+                this.activeDeferredProceduresList.setValue(deferredKey, {
+                  id: deferredKey,
+                  procedureCompleted: false,
+                  procedureActivated: false,
+                  itemsChecked: deferredItemsChecked,
+                  itemsActive: deferredItemsActive,
+                  itemsToShow: deferredValue.whichItemsToShow
+                    ? deferredValue.whichItemsToShow()
+                    : Array(deferredValue.whichItemsChecked().length).fill(true),
+                });
+              }
+            }
+          } else if (previousPresentedState) {
+            // Update internal map
+            const fusedChecked = [...previousPresentedState.itemsChecked].map((val, index) =>
+              proc.items[index].sensed ? itemsChecked[index] : !!val,
+            );
+            ProcedureLinesGenerator.conditionalActiveItems(proc, fusedChecked, itemsActive, itemsTimer);
+            this.abnormalUpdatedItems.set(key, []);
+            proc.items.forEach((item, idx) => {
+              if (
+                previousPresentedState.itemsToShow[idx] !== itemsToShow[idx] ||
+                previousPresentedState.itemsActive[idx] !== itemsActive[idx] ||
+                (previousPresentedState.itemsChecked[idx] !== fusedChecked[idx] && item.sensed) ||
+                (isTimedItem(item) !== undefined &&
+                  itemsTimer !== undefined &&
+                  previousPresentedState.itemsTimeStamp !== undefined &&
+                  previousPresentedState.itemsTimeStamp[idx] !== itemsTimer[idx])
+              ) {
+                this.abnormalUpdatedItems.get(key)?.push(idx);
+              }
+            });
+
+            if ((this.abnormalUpdatedItems.has(key) && this.abnormalUpdatedItems.get(key)?.length) ?? 0 > 0) {
+              this.presentedAbnormalProceduresList.setValue(key, {
+                id: key,
+                procedureActivated: previousPresentedState.procedureActivated,
+                procedureCompleted: previousPresentedState.procedureCompleted,
+                itemsChecked: fusedChecked,
+                itemsActive: [...previousPresentedState.itemsActive].map((_, index) => itemsActive[index]),
+                itemsToShow: [...previousPresentedState.itemsToShow].map((_, index) => itemsToShow[index]),
+                itemsTimeStamp: previousPresentedState.itemsTimeStamp
+                  ? [...previousPresentedState.itemsTimeStamp].map((_, index) =>
+                      itemsTimer ? itemsTimer[index] : undefined,
+                    )
+                  : undefined,
+              });
+            }
           }
         }
 
@@ -5593,7 +5630,7 @@ export class FwsCore {
           return [];
         }, ewdLimitationsAllPhasesKeys);
 
-        if (!recallFailureKeys.includes(key)) {
+        if (!recallFailureKeys.includes(key) && !isCancelledCaution) {
           if (value.sysPage > -1) {
             failureSystemCount++;
           }
@@ -5675,6 +5712,19 @@ export class FwsCore {
         this.activeDeferredProceduresList.delete(activeDeferredKey);
       }
     });
+
+    if (this.cancelledCautions.size > 0) {
+      this.presentedAbnormalProceduresList.get().forEach((_, key) => {
+        if (this.cancelledCautions.has(key)) {
+          this.presentedAbnormalProceduresList.delete(key);
+        }
+      });
+      this.clearedAbnormalProceduresList.get().forEach((_, key) => {
+        if (this.cancelledCautions.has(key)) {
+          this.clearedAbnormalProceduresList.delete(key);
+        }
+      });
+    }
 
     // Delete inactive failures from internal map
     this.presentedAbnormalProceduresList.get().forEach((procedure, key) => {
@@ -5887,6 +5937,13 @@ export class FwsCore {
       !this.inopSysRedundLossKeys.get().every((value, index) => value === stsInopRedundLossKeys[index])
     ) {
       this.inopSysRedundLossKeys.set(stsInopRedundLossKeys);
+    }
+    const cancelledCautionKeysList = [...this.cancelledCautions];
+    if (
+      this.cancelledCautionKeys.get().length !== cancelledCautionKeysList.length ||
+      !this.cancelledCautionKeys.get().every((value, index) => value === cancelledCautionKeysList[index])
+    ) {
+      this.cancelledCautionKeys.set(cancelledCautionKeysList);
     }
 
     // TODO order by decreasing importance, only color-based for now
