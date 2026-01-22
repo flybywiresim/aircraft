@@ -269,6 +269,8 @@ export const FwsAuralsList: Record<string, FwsAural> = {
   },
 };
 
+const MutableSounds = [FwsAuralsList.cavalryChargeOnce, FwsAuralsList.cavalryChargeCont];
+
 // FIXME Not all sounds are added to this yet (e.g. CIDS chimes), consider adding them in the future
 // Also, single chimes are not filtered (in RL only once every two seconds)
 export class FwsSoundManager {
@@ -280,6 +282,8 @@ export class FwsSoundManager {
 
   /** in seconds */
   private currentSoundPlayTimeRemaining = 0;
+
+  private manualAudioInhibition = false;
 
   constructor(
     private readonly bus: EventBus,
@@ -296,6 +300,15 @@ export class FwsSoundManager {
     const sub = this.bus.getSubscriber<FwsSoundManagerControlEvents>();
     sub.on('enqueueSound').handle((s) => this.enqueueSound(s));
     sub.on('dequeueSound').handle((s) => this.dequeueSound(s));
+  }
+
+  getCurrentSoundPlaying(): keyof typeof FwsAuralsList | null {
+    return this.currentSoundPlaying;
+  }
+
+  /** Inhibit starting any new broadcasts (MAI). */
+  setManualAudioInhibition(inhibit: boolean) {
+    this.manualAudioInhibition = inhibit;
   }
 
   /** Add sound to queue. Don't add if already playing */
@@ -386,6 +399,11 @@ export class FwsSoundManager {
         selectedSoundKey = sk;
       }
     });
+
+    // TODO: Once all sounds are mutable, this.manualAudioInhibition shouldn't be needed anymore
+    if (this.manualAudioInhibition && selectedSoundKey && !MutableSounds.includes(FwsAuralsList[selectedSoundKey])) {
+      return null;
+    }
 
     if (selectedSoundKey) {
       this.playSound(selectedSoundKey);
