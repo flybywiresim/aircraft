@@ -855,6 +855,8 @@ export class PseudoFWC {
 
   private readonly flightPhase67 = Subject.create(false);
 
+  private readonly flightPhase678 = Subject.create(false);
+
   private readonly flightPhase78 = Subject.create(false);
 
   private readonly ldgInhibitTimer = new NXLogicConfirmNode(3);
@@ -875,6 +877,8 @@ export class PseudoFWC {
   private readonly toConfigNormalConf = new NXLogicConfirmNode(0.3, false);
 
   private readonly flightPhase3PulseNode = new NXLogicPulseNode();
+
+  private readonly flightPhase7PulseNode = new NXLogicPulseNode();
 
   private readonly flightPhaseEndedPulseNode = new NXLogicPulseNode();
 
@@ -947,6 +951,10 @@ export class PseudoFWC {
   private readonly antiSkidOffPhase2Pulse = new NXLogicPulseNode(true);
 
   private readonly antiSkidOffWarning = Subject.create(false);
+
+  private readonly parkBrakeOnConfirm = new NXLogicConfirmNode(2);
+
+  private readonly parkBrakeOnWarning = Subject.create(false);
 
   private readonly brakeFan = Subject.create(false);
 
@@ -1607,16 +1615,18 @@ export class PseudoFWC {
 
     this.fwcFlightPhase.set(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum'));
     const flightPhase = this.fwcFlightPhase.get();
-    this.flightPhase3PulseNode.write(this.fwcFlightPhase.get() === 3, deltaTime);
+    this.flightPhase3PulseNode.write(flightPhase === 3, deltaTime);
+    this.flightPhase7PulseNode.write(flightPhase === 7, deltaTime);
     // flight phase convenience vars
-    this.flightPhase126.set([1, 2, 6].includes(this.fwcFlightPhase.get()));
-    this.flightPhase23.set([2, 3].includes(this.fwcFlightPhase.get()));
-    this.flightPhase34.set([3, 4].includes(this.fwcFlightPhase.get()));
-    this.flightPhase345.set(this.flightPhase34.get() || this.fwcFlightPhase.get() === 5);
-    this.flightPhase129.set([1, 2, 9].includes(this.fwcFlightPhase.get()));
-    this.flightPhase67.set([6, 7].includes(this.fwcFlightPhase.get()));
-    this.flightPhase78.set([7, 8].includes(this.fwcFlightPhase.get()));
-    const flightPhase567 = [5, 6, 7].includes(this.fwcFlightPhase.get());
+    this.flightPhase126.set(flightPhase === 1 || flightPhase === 2 || flightPhase === 6);
+    this.flightPhase129.set(flightPhase === 1 || flightPhase === 2 || flightPhase === 9);
+    this.flightPhase23.set(flightPhase === 2 || flightPhase === 3);
+    this.flightPhase34.set(flightPhase === 3 || flightPhase === 4);
+    this.flightPhase345.set(this.flightPhase34.get() || flightPhase === 5);
+    this.flightPhase67.set(flightPhase === 6 || flightPhase === 7);
+    this.flightPhase678.set(this.flightPhase67.get() || flightPhase === 8);
+    this.flightPhase78.set(flightPhase === 7 || flightPhase === 8);
+    const flightPhase567 = flightPhase === 5 || flightPhase === 6 || flightPhase === 7;
 
     // TO Config convenience vars
     const toConfigTest = this.ecpWarningButtonStatus.get().bitValue(18);
@@ -1767,6 +1777,11 @@ export class PseudoFWC {
     const phase2For60Seconds = this.antiSkidOffPhase2Confirm.write(this.fwcFlightPhase.get() === 2, deltaTime);
     const phase2Pulse = this.antiSkidOffPhase2Pulse.write(phase2For60Seconds, deltaTime);
     this.antiSkidOffWarning.set(!antiSkidActive && !acBusOff && !phase2Pulse);
+
+    const parkBrakeFor2Seconds = this.parkBrakeOnConfirm.write(this.parkBrake.get(), deltaTime);
+    this.parkBrakeOnWarning.set(
+      parkBrakeFor2Seconds && this.flightPhase678.get() && !this.flightPhase7PulseNode.read(),
+    );
 
     const leftCompressedHardwireLgciu1 =
       this.dcESSBusPowered.get() && SimVar.GetSimVarValue('L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED', 'bool') > 0;
@@ -4477,7 +4492,7 @@ export class PseudoFWC {
       side: 'LEFT',
     },
     3200050: {
-      // PK BRK ON
+      // CONFIG PARK BRK ON
       flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10],
       simVarIsActive: MappedSubject.create(
         ([fwcFlightPhase, parkBrake]) => fwcFlightPhase === 3 && parkBrake,
@@ -4946,6 +4961,17 @@ export class PseudoFWC {
       memoInhibit: () => false,
       failure: 2,
       sysPage: 9,
+      side: 'LEFT',
+    },
+    3200081: {
+      // BRAKES PARK BRK ON
+      flightPhaseInhib: [1, 2, 3, 4, 5, 8, 9, 10],
+      simVarIsActive: this.parkBrakeOnWarning,
+      whichCodeToReturn: () => [0, 1],
+      codesToReturn: ['320008101', '320008102'],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: -1,
       side: 'LEFT',
     },
     3200150: {

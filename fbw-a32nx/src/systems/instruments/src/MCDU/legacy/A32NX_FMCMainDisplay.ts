@@ -4875,7 +4875,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public getManagedDescentSpeedMach() {
     const plan = this.getFlightPlan(FlightPlanIndex.Active);
 
-    return plan.performanceData.pilotManagedDescentSpeed.get() ?? this.managedSpeedDescendMach;
+    return plan.performanceData.pilotManagedDescentMach.get() ?? this.managedSpeedDescendMach;
   }
 
   // FIXME... ambiguous name that doesn't say if it's Vapp, GSmini, or something else
