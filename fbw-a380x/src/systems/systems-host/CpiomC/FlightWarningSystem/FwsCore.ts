@@ -236,6 +236,7 @@ export class FwsCore {
   public readonly toConfigInputBuffer = new NXLogicMemoryNode(false);
   public readonly clearButtonInputBuffer = new NXLogicMemoryNode(false);
   public readonly recallButtonInputBuffer = new NXLogicMemoryNode(false);
+  public readonly emergencyCancelInputBuffer = new NXLogicMemoryNode(false);
   public readonly clInputBuffer = new NXLogicMemoryNode(false);
   public readonly clCheckInputBuffer = new NXLogicMemoryNode(false);
   public readonly clUpInputBuffer = new NXLogicMemoryNode(false);
@@ -287,6 +288,12 @@ export class FwsCore {
 
   private auralScKeys: string[] = [];
 
+  private auralCavchargeKeys: string[] = [];
+
+  private activeWarningKeys: string[] = [];
+
+  private readonly emergencyCancelledWarnings = new Set<string>();
+
   public readonly auralCrcActive = Subject.create(false);
 
   private auralSingleChimePending = false;
@@ -300,6 +307,16 @@ export class FwsCore {
   public readonly masterCaution = Subject.create(false);
 
   private nonCancellableWarningCount = 0;
+
+  private emergencyCancelReady = true;
+
+  private emergencyCancelClearCautionKey: string | null = null;
+
+  private ecpEmergencyCancelLevel = false;
+
+  private wasEcpEmergencyCancelLevel = false;
+
+  private lastAuralVolume = FwsAuralVolume.Full;
 
   public readonly stallWarning = Subject.create(false);
 
@@ -2671,6 +2688,13 @@ export class FwsCore {
       this.recallButtonInputBuffer.write(true, false);
     }
 
+    // EMER CANC button
+    const emergencyCancelButton = SimVar.GetSimVarValue('L:A32NX_BTN_EMERCANC', 'bool');
+    if (emergencyCancelButton) {
+      this.emergencyCancelInputBuffer.write(true, false);
+    }
+    this.ecpEmergencyCancelLevel = emergencyCancelButton;
+
     // C/L buttons
     if (SimVar.GetSimVarValue('L:A32NX_BTN_CL', 'bool')) {
       this.clInputBuffer.write(true, false);
@@ -2727,6 +2751,18 @@ export class FwsCore {
 
     // Update flight phases
     this.flightPhases.update(deltaTime);
+
+    // Manual audio inhibition (MAI)
+    this.soundManager.setManualAudioInhibition(this.ecpEmergencyCancelLevel);
+    if (this.ecpEmergencyCancelLevel !== this.wasEcpEmergencyCancelLevel) {
+      if (this.ecpEmergencyCancelLevel) {
+        this.lastAuralVolume = SimVar.GetSimVarValue('L:A32NX_FWS_AUDIO_VOLUME', SimVarValueType.Enum);
+        this.soundManager.setVolume(FwsAuralVolume.Silent);
+      } else {
+        this.soundManager.setVolume(this.lastAuralVolume);
+      }
+      this.wasEcpEmergencyCancelLevel = this.ecpEmergencyCancelLevel;
+    }
 
     // Play sounds
     this.soundManager.onUpdate(deltaTime);
@@ -5171,6 +5207,40 @@ export class FwsCore {
       this.auralCrcActive.set(this.nonCancellableWarningCount > 0);
     }
 
+    // Emergency audio cancel (EAC)
+    if (!this.ecpEmergencyCancelLevel) {
+      this.emergencyCancelReady = true;
+    }
+    if (this.emergencyCancelInputBuffer.read() && this.emergencyCancelReady) {
+      const currentSound = this.soundManager.getCurrentSoundPlaying();
+      const soundToKeys: Record<string, string[]> = {
+        continuousRepetitiveChime: this.auralCrcKeys,
+        cavalryChargeCont: this.auralCavchargeKeys,
+        cavalryChargeOnce: this.auralCavchargeKeys,
+        singleChime: this.auralScKeys,
+      };
+      const keys = currentSound ? soundToKeys[currentSound] : undefined;
+      const cancelKey =
+        keys?.find((key) => !this.emergencyCancelledWarnings.has(key)) ??
+        this.activeWarningKeys.find((key) => !this.emergencyCancelledWarnings.has(key)) ??
+        null;
+      if (cancelKey) {
+        this.emergencyCancelledWarnings.add(cancelKey);
+        if (this.ewdAbnormal[cancelKey]?.failure === 2) {
+          this.emergencyCancelClearCautionKey = cancelKey;
+        }
+      } else if (this.masterCaution.get()) {
+        const cautionKey = this.presentedFailures.find(
+          (key) => this.ewdAbnormal[key]?.failure === 2 && !this.emergencyCancelledWarnings.has(key),
+        );
+        if (cautionKey) {
+          this.emergencyCancelledWarnings.add(cautionKey);
+          this.emergencyCancelClearCautionKey = cautionKey;
+        }
+      }
+      this.emergencyCancelReady = false;
+    }
+
     /* T.O. CONFIG CHECK */
 
     if (this.toMemo.get() && this.toConfigTestRaw) {
@@ -5225,6 +5295,27 @@ export class FwsCore {
       }
     }
 
+    if (this.emergencyCancelClearCautionKey) {
+      const clearKey = this.emergencyCancelClearCautionKey;
+      if (this.abnormalSensed.abnormalShown.get() && this.abnormalSensed.activeProcedureId.get() === clearKey) {
+        this.abnormalSensed.clearActiveProcedure();
+      } else {
+        const index = this.presentedFailures.indexOf(clearKey);
+        if (index === -1) {
+          return;
+        }
+
+        this.presentedFailures.splice(index, 1);
+        const clearedState = this.presentedAbnormalProceduresList.getValue(clearKey);
+        if (clearedState) {
+          this.clearedAbnormalProceduresList.setValue(clearKey, clearedState);
+          this.presentedAbnormalProceduresList.delete(clearKey);
+        }
+        this.recallFailures = this.allCurrentFailures.filter((item) => !this.presentedFailures.includes(item));
+      }
+      this.emergencyCancelClearCautionKey = null;
+    }
+
     // Output logic
 
     this.landAsap.set(
@@ -5252,8 +5343,12 @@ export class FwsCore {
     let failureKeys: string[] = this.presentedFailures;
     let recallFailureKeys: string[] = this.recallFailures;
     let failureSystemCount = 0;
+    let activeWarningCount = 0;
+    let activeCautionCount = 0;
+    const activeWarningKeys: string[] = [];
     const auralCrcKeys: string[] = [];
     const auralScKeys: string[] = [];
+    const auralCavchargeKeys: string[] = [];
 
     const itemIsActiveConsideringFaultSuppression = (
       item: FwsSuppressableItem,
@@ -5295,6 +5390,7 @@ export class FwsCore {
       if (!itemIsActiveConsideringFaultSuppression(value, key, 0.6)) {
         failureKeys = failureKeys.filter((e) => e !== key);
         recallFailureKeys = recallFailureKeys.filter((e) => e !== key);
+        this.emergencyCancelledWarnings.delete(key);
       }
     }
 
@@ -5310,6 +5406,7 @@ export class FwsCore {
     for (const [key, value] of ewdAbnormalEntries) {
       // new warning?
       const newWarning = !this.presentedFailures.includes(key) && !recallFailureKeys.includes(key);
+      const isCancelled = this.emergencyCancelledWarnings.has(key);
       const proc = EcamAbnormalProcedures[key];
 
       if (proc === undefined) {
@@ -5328,14 +5425,26 @@ export class FwsCore {
         const itemsTimer = value.whichItemsTimer ? value.whichItemsTimer() : undefined;
         ProcedureLinesGenerator.conditionalActiveItems(proc, itemsChecked, itemsActive, itemsTimer);
 
+        if (!isCancelled) {
+          if (value.failure === 3) {
+            activeWarningCount++;
+            activeWarningKeys.push(key);
+          }
+          if (value.failure === 2) {
+            activeCautionCount++;
+          }
+        }
+
         if (newWarning) {
           failureKeys.push(key);
 
-          if (value.failure === 3) {
-            this.requestMasterWarningFromFaults = true;
-          }
-          if (value.failure === 2) {
-            this.requestMasterCautionFromFaults = true;
+          if (!isCancelled) {
+            if (value.failure === 3) {
+              this.requestMasterWarningFromFaults = true;
+            }
+            if (value.failure === 2) {
+              this.requestMasterCautionFromFaults = true;
+            }
           }
         }
 
@@ -5439,18 +5548,18 @@ export class FwsCore {
           }
         }
 
-        if (value.cancel === false && value.failure === 3) {
+        if (!isCancelled && value.cancel === false && value.failure === 3) {
           this.nonCancellableWarningCount++;
         }
 
         // if the warning is the same as the aural
-        if (value.auralWarning === undefined && value.failure === 3) {
+        if (!isCancelled && value.auralWarning === undefined && value.failure === 3) {
           if (newWarning) {
             this.auralCrcActive.set(true);
           }
           auralCrcKeys.push(key);
         }
-        if (value.auralWarning === undefined && value.failure === 2) {
+        if (!isCancelled && value.auralWarning === undefined && value.failure === 2) {
           if (newWarning) {
             this.auralSingleChimePending = true;
             console.log('single chime pending');
@@ -5491,22 +5600,23 @@ export class FwsCore {
         }
       }
 
-      if (value.auralWarning?.get() === FwcAuralWarning.Crc) {
+      if (!isCancelled && value.auralWarning?.get() === FwcAuralWarning.Crc) {
         if (!this.auralCrcKeys.includes(key)) {
           this.auralCrcActive.set(true);
         }
         auralCrcKeys.push(key);
       }
 
-      if (value.auralWarning?.get() === FwcAuralWarning.SingleChime) {
+      if (!isCancelled && value.auralWarning?.get() === FwcAuralWarning.SingleChime) {
         if (!this.auralScKeys.includes(key)) {
           this.auralSingleChimePending = true;
         }
         auralScKeys.push(key);
       }
 
-      if (value.auralWarning?.get() === FwcAuralWarning.CavalryCharge) {
+      if (!isCancelled && value.auralWarning?.get() === FwcAuralWarning.CavalryCharge) {
         this.soundManager.enqueueSound('cavalryChargeCont');
+        auralCavchargeKeys.push(key);
       }
     }
 
@@ -5586,6 +5696,8 @@ export class FwsCore {
 
     this.auralCrcKeys = auralCrcKeys;
     this.auralScKeys = auralScKeys;
+    this.auralCavchargeKeys = auralCavchargeKeys;
+    this.activeWarningKeys = activeWarningKeys;
 
     if (this.auralCrcKeys.length === 0) {
       this.auralCrcActive.set(false);
@@ -5697,15 +5809,12 @@ export class FwsCore {
     }
 
     // Reset master caution light if appropriate
-    if (allFailureKeys.filter((key) => this.ewdAbnormal[key].failure === 2).length === 0) {
+    if (activeCautionCount === 0) {
       this.requestMasterCautionFromFaults = false;
     }
 
     // Reset master warning light if appropriate
-    if (
-      allFailureKeys.filter((key) => this.ewdAbnormal[key].failure === 3).length === 0 &&
-      this.nonCancellableWarningCount === 0
-    ) {
+    if (activeWarningCount === 0) {
       this.requestMasterWarningFromFaults = false;
     }
 
@@ -5902,6 +6011,7 @@ export class FwsCore {
     this.toConfigInputBuffer.write(false, true);
     this.clearButtonInputBuffer.write(false, true);
     this.recallButtonInputBuffer.write(false, true);
+    this.emergencyCancelInputBuffer.write(false, true);
     this.clInputBuffer.write(false, true);
     this.clCheckInputBuffer.write(false, true);
     this.clUpInputBuffer.write(false, true);
