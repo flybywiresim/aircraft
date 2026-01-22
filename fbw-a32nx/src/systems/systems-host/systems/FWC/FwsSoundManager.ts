@@ -36,6 +36,8 @@ interface FwsAural {
   /** If this is set, this sound is repeated periodically with the specified pause in seconds */
   periodicWithPause?: number;
   continuous?: boolean;
+  /** If this is set, this sound is repeated for the specified number of times */
+  repeatFor?: number;
 }
 
 export const FwsAuralsList: Record<string, FwsAural> = {
@@ -126,6 +128,20 @@ export const FwsAuralsList: Record<string, FwsAural> = {
     priority: 3,
     type: FwsAuralWarningType.AuralWarning,
     continuous: true,
+  },
+  pitchPitch: {
+    wwiseEventName: 'aural_pitch',
+    priority: 3,
+    length: 0.48,
+    type: FwsAuralWarningType.SyntheticVoice,
+    repeatFor: 2,
+  },
+  speedSpeedSpeed: {
+    wwiseEventName: 'aural_speed',
+    priority: 3,
+    length: 0.68,
+    type: FwsAuralWarningType.SyntheticVoice,
+    repeatFor: 3,
   },
   // Altitude callouts
   minimums: {
@@ -337,7 +353,11 @@ export class FwsSoundManager {
       Coherent.call('PLAY_INSTRUMENT_SOUND', sound.wwiseEventName);
     }
     this.currentSoundPlaying = soundKey;
-    this.currentSoundPlayTimeRemaining = sound.continuous ? Infinity : sound.length;
+    if (sound.repeatFor) {
+      this.currentSoundPlayTimeRemaining = sound.length * sound.repeatFor;
+    } else {
+      this.currentSoundPlayTimeRemaining = sound.continuous ? Infinity : sound.length;
+    }
     this.soundQueue.delete(soundKey);
   }
   /** Find most important sound from soundQueue and play */
@@ -380,8 +400,14 @@ export class FwsSoundManager {
     // Either wait for the current sound to finish, or schedule the next sound
     if (this.currentSoundPlaying && this.currentSoundPlayTimeRemaining > 0) {
       if (this.currentSoundPlayTimeRemaining - deltaTime / 1_000 > 0) {
-        // Wait for sound to be finished
+        // Wait for sound to be finished, or retrigger if multiple emissions are needed
         this.currentSoundPlayTimeRemaining -= deltaTime / 1_000;
+
+        const sound = FwsAuralsList[this.currentSoundPlaying];
+        const shouldRetrigger = !!sound.repeatFor;
+        if (sound.wwiseEventName && shouldRetrigger) {
+          Coherent.call('PLAY_INSTRUMENT_SOUND', sound.wwiseEventName);
+        }
       } else {
         // Sound finishes in this cycle
         if (FwsAuralsList[this.currentSoundPlaying].localVarName) {
