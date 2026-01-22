@@ -1554,40 +1554,16 @@ export class FwsCore {
   public readonly oansFailed = Subject.create(false);
   public readonly oansPposLostSimVar = RegisteredSimVar.createBoolean('L:A32NX_ARPT_NAV_POS_LOST');
   public readonly oansPposLost = Subject.create(false);
-  public readonly arptNavLost = MappedSubject.create(
-    ([oansFailed, pposLost, engRunning]) => engRunning && (oansFailed || pposLost),
+  public readonly arptNavInop = MappedSubject.create(
+    ([oansFailed, pposLost]) => oansFailed || pposLost,
     this.oansFailed,
     this.oansPposLost,
-    this.eng1Or2AndEng3Or4RunningAndPhase,
   );
-
-  public readonly ldgPerfAffected = MappedSubject.create(
-    ([w1, w2, engRunning]) =>
-      engRunning &&
-      (w1.bitValueOr(21, false) ||
-        w2.bitValueOr(21, false) ||
-        w1.bitValueOr(23, false) ||
-        w2.bitValueOr(23, false) ||
-        w1.bitValueOr(25, false) ||
-        w2.bitValueOr(25, false)),
-    this.fcdc1LandingFctDiscreteWord,
-    this.fcdc2LandingFctDiscreteWord,
-    this.eng1Or2AndEng3Or4RunningAndPhase,
-  );
-  public readonly ldgDistAffected = MappedSubject.create(
-    ([w1, w2, perfAffected, engRunning]) =>
-      (w1.bitValueOr(20, false) ||
-        w2.bitValueOr(20, false) ||
-        w1.bitValueOr(22, false) ||
-        w2.bitValueOr(22, false) ||
-        w1.bitValueOr(24, false) ||
-        w2.bitValueOr(24, false)) &&
-      !perfAffected &&
-      engRunning,
-    this.fcdc1LandingFctDiscreteWord,
-    this.fcdc2LandingFctDiscreteWord,
-    this.ldgPerfAffected,
-    this.eng1Or2AndEng3Or4RunningAndPhase,
+  public readonly arptNavFault = MappedSubject.create(
+    ([arptNavInop, ac4, dc1]) => arptNavInop && (ac4 || dc1),
+    this.arptNavInop,
+    this.ac4BusPowered,
+    this.dc1BusPowered,
   );
 
   /* NAVIGATION */
@@ -2109,6 +2085,39 @@ export class FwsCore {
     ([onGround, engRunning]) => !onGround && engRunning,
     this.aircraftOnGround,
     this.oneEngineRunning,
+  );
+
+  // Need to be placed at the end to use allEnginesFailure
+  public readonly ldgPerfAffected = MappedSubject.create(
+    ([w1, w2, flightPhase, allEnginesFailed]) =>
+      flightPhase !== 1 &&
+      flightPhase !== 10 &&
+      !allEnginesFailed &&
+      (w1.bitValueOr(21, false) ||
+        w2.bitValueOr(21, false) ||
+        w1.bitValueOr(23, false) ||
+        w2.bitValueOr(23, false) ||
+        w1.bitValueOr(25, false) ||
+        w2.bitValueOr(25, false)),
+    this.fcdc1LandingFctDiscreteWord,
+    this.fcdc2LandingFctDiscreteWord,
+    this.flightPhase,
+    this.allEnginesFailure,
+  );
+  public readonly ldgDistAffected = MappedSubject.create(
+    ([w1, w2, perfAffected, engRunning]) =>
+      (w1.bitValueOr(20, false) ||
+        w2.bitValueOr(20, false) ||
+        w1.bitValueOr(22, false) ||
+        w2.bitValueOr(22, false) ||
+        w1.bitValueOr(24, false) ||
+        w2.bitValueOr(24, false)) &&
+      !perfAffected &&
+      engRunning,
+    this.fcdc1LandingFctDiscreteWord,
+    this.fcdc2LandingFctDiscreteWord,
+    this.ldgPerfAffected,
+    this.eng1Or2AndEng3Or4RunningAndPhase,
   );
 
   /** Secondary Failures */

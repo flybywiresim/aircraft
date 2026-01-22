@@ -751,7 +751,7 @@ export class FwsInopSys {
     },
     340300049: {
       // ARPT NAV
-      simVarIsActive: this.fws.arptNavLost,
+      simVarIsActive: this.fws.arptNavInop,
       phase: FwsInopSysPhases.ApprLdg,
     },
 
