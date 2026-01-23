@@ -264,6 +264,10 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
 
   0.5,
 
+  2.0,
+
+  2.0,
+
   30.0,
 
   30.0,
@@ -297,6 +301,10 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
   50.0F,
 
   false,
+
+  true,
+
+  true,
 
   true,
 

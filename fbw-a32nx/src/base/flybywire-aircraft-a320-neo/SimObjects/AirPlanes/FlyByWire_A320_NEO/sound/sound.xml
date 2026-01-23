@@ -2352,6 +2352,10 @@
         <Sound WwiseData="true" WwiseEvent="aural_pitch" NodeName="SOUND_SPEAKER_LEFT" />
         <Sound WwiseData="true" WwiseEvent="aural_stall_stall" NodeName="SOUND_SPEAKER_LEFT" />
 
+        <Sound WwiseData="true" WwiseEvent="dualinput" NodeName="SOUND_SPEAKER_LEFT" />
+        <Sound WwiseData="true" WwiseEvent="priorityleft" NodeName="SOUND_SPEAKER_LEFT" />
+        <Sound WwiseData="true" WwiseEvent="priorityright" NodeName="SOUND_SPEAKER_LEFT" />
+
         <!-- TCAS callouts ====================================================================================-->
 
         <Sound WwiseData="true" WwiseEvent="clear_of_conflict" NodeName="SOUND_SPEAKER_LEFT" />

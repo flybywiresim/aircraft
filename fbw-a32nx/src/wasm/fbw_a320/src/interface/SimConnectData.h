@@ -123,6 +123,7 @@ struct SimData {
 
 struct SimInput {
   double inputs[3];
+  double secondaryInputs[2];
 };
 
 struct SimInputRudderTrim {
@@ -136,6 +137,7 @@ struct SimInputAutopilot {
   double AP_1_push;
   double AP_2_push;
   double AP_disconnect;
+  double secondary_AP_disconnect;
   double HDG_push;
   double HDG_pull;
   double ALT_push;

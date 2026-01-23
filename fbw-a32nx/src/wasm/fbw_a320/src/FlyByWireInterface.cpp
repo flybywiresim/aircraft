@@ -363,8 +363,11 @@ void FlyByWireInterface::setupLocalVariables() {
   idFdrEvent = std::make_unique<LocalVariable>("A32NX_DFDR_EVENT_ON");
 
   // register L variables for the sidestick
-  idSideStickPositionX = std::make_unique<LocalVariable>("A32NX_SIDESTICK_POSITION_X");
-  idSideStickPositionY = std::make_unique<LocalVariable>("A32NX_SIDESTICK_POSITION_Y");
+  idSideStickLPositionX = std::make_unique<LocalVariable>("A32NX_SIDESTICK_L_POSITION_X");
+  idSideStickLPositionY = std::make_unique<LocalVariable>("A32NX_SIDESTICK_L_POSITION_Y");
+  idSideStickRPositionX = std::make_unique<LocalVariable>("A32NX_SIDESTICK_R_POSITION_X");
+  idSideStickRPositionY = std::make_unique<LocalVariable>("A32NX_SIDESTICK_R_POSITION_Y");
+  idSideStickPrimarySide = std::make_unique<LocalVariable>("FBW_PILOT_SEAT");
   idRudderPedalPosition = std::make_unique<LocalVariable>("A32NX_RUDDER_PEDAL_POSITION");
 
   // register L variables for flight guidance
@@ -1417,6 +1420,9 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
   const int oppElacIndex = elacIndex == 0 ? 1 : 0;
   SimData simData = simConnectInterface.getSimData();
   SimInput simInput = simConnectInterface.getSimInput();
+  SimInputAutopilot simInputAutopilot = simConnectInterface.getSimInputAutopilot();
+
+  const bool leftIsPrimary = idSideStickPrimarySide->get() == 0;
 
   elacs[elacIndex].modelInputs.in.time.dt = sampleTime;
   elacs[elacIndex].modelInputs.in.time.simulation_time = simData.simulationTime;
@@ -1454,17 +1460,19 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
   elacs[elacIndex].modelInputs.in.discrete_inputs.r_elev_servo_failed = idElevFaultRight[elacIndex]->get();
   elacs[elacIndex].modelInputs.in.discrete_inputs.ths_override_active = idThsOverrideActive->get();
   elacs[elacIndex].modelInputs.in.discrete_inputs.yellow_low_pressure = !idHydYellowPressurised->get();
-  elacs[elacIndex].modelInputs.in.discrete_inputs.capt_priority_takeover_pressed = idCaptPriorityButtonPressed->get();
-  elacs[elacIndex].modelInputs.in.discrete_inputs.fo_priority_takeover_pressed = idFoPriorityButtonPressed->get();
+  elacs[elacIndex].modelInputs.in.discrete_inputs.capt_priority_takeover_pressed =
+      idCaptPriorityButtonPressed->get() || (leftIsPrimary ? (simInputAutopilot.AP_disconnect) : simInputAutopilot.secondary_AP_disconnect);
+  elacs[elacIndex].modelInputs.in.discrete_inputs.fo_priority_takeover_pressed =
+      idFoPriorityButtonPressed->get() || (!leftIsPrimary ? simInputAutopilot.AP_disconnect : simInputAutopilot.secondary_AP_disconnect);
   elacs[elacIndex].modelInputs.in.discrete_inputs.blue_low_pressure = !idHydBluePressurised->get();
   elacs[elacIndex].modelInputs.in.discrete_inputs.green_low_pressure = !idHydGreenPressurised->get();
   elacs[elacIndex].modelInputs.in.discrete_inputs.elac_engaged_from_switch = idElacPushbuttonPressed[elacIndex]->get();
   elacs[elacIndex].modelInputs.in.discrete_inputs.normal_powersupply_lost = false;
 
-  elacs[elacIndex].modelInputs.in.analog_inputs.capt_pitch_stick_pos = -simInput.inputs[0];
-  elacs[elacIndex].modelInputs.in.analog_inputs.fo_pitch_stick_pos = 0;
-  elacs[elacIndex].modelInputs.in.analog_inputs.capt_roll_stick_pos = -simInput.inputs[1];
-  elacs[elacIndex].modelInputs.in.analog_inputs.fo_roll_stick_pos = 0;
+  elacs[elacIndex].modelInputs.in.analog_inputs.capt_pitch_stick_pos = -(leftIsPrimary ? simInput.inputs[0] : simInput.secondaryInputs[0]);
+  elacs[elacIndex].modelInputs.in.analog_inputs.fo_pitch_stick_pos = -(!leftIsPrimary ? simInput.inputs[0] : simInput.secondaryInputs[0]);
+  elacs[elacIndex].modelInputs.in.analog_inputs.capt_roll_stick_pos = -(leftIsPrimary ? simInput.inputs[1] : simInput.secondaryInputs[1]);
+  elacs[elacIndex].modelInputs.in.analog_inputs.fo_roll_stick_pos = -(!leftIsPrimary ? simInput.inputs[1] : simInput.secondaryInputs[1]);
   double leftElevPos = -idLeftElevatorPosition->get();
   double rightElevPos = -idRightElevatorPosition->get();
   elacs[elacIndex].modelInputs.in.analog_inputs.left_elevator_pos_deg = leftElevPos * 30;
@@ -1559,6 +1567,9 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
   const int oppSecIndex = secIndex == 0 ? 1 : 0;
   SimData simData = simConnectInterface.getSimData();
   SimInput simInput = simConnectInterface.getSimInput();
+  SimInputAutopilot simInputAutopilot = simConnectInterface.getSimInputAutopilot();
+
+  const bool leftIsPrimary = idSideStickPrimarySide->get() == 0;
 
   secs[secIndex].modelInputs.in.time.dt = sampleTime;
   secs[secIndex].modelInputs.in.time.simulation_time = simData.simulationTime;
@@ -1614,12 +1625,14 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
     secs[secIndex].modelInputs.in.discrete_inputs.r_spoiler_2_servo_failed = false;
   }
 
-  secs[secIndex].modelInputs.in.discrete_inputs.capt_priority_takeover_pressed = idCaptPriorityButtonPressed->get();
-  secs[secIndex].modelInputs.in.discrete_inputs.fo_priority_takeover_pressed = idFoPriorityButtonPressed->get();
+  secs[secIndex].modelInputs.in.discrete_inputs.capt_priority_takeover_pressed =
+      idCaptPriorityButtonPressed->get() || (leftIsPrimary ? simInputAutopilot.AP_disconnect : simInputAutopilot.secondary_AP_disconnect);
+  secs[secIndex].modelInputs.in.discrete_inputs.fo_priority_takeover_pressed =
+      idFoPriorityButtonPressed->get() || (!leftIsPrimary ? simInputAutopilot.AP_disconnect : simInputAutopilot.secondary_AP_disconnect);
 
   if (secIndex < 2) {
-    secs[secIndex].modelInputs.in.analog_inputs.capt_pitch_stick_pos = -simInput.inputs[0];
-    secs[secIndex].modelInputs.in.analog_inputs.fo_pitch_stick_pos = 0;
+    secs[secIndex].modelInputs.in.analog_inputs.capt_pitch_stick_pos = -(leftIsPrimary ? simInput.inputs[0] : simInput.secondaryInputs[0]);
+    secs[secIndex].modelInputs.in.analog_inputs.fo_pitch_stick_pos = -(!leftIsPrimary ? simInput.inputs[0] : simInput.secondaryInputs[0]);
     double leftElevPos = -idLeftElevatorPosition->get();
     double rightElevPos = -idRightElevatorPosition->get();
     secs[secIndex].modelInputs.in.analog_inputs.left_elevator_pos_deg = leftElevPos * 30;
@@ -1636,8 +1649,8 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
     secs[secIndex].modelInputs.in.analog_inputs.load_factor_acc_1_g = 0;
     secs[secIndex].modelInputs.in.analog_inputs.load_factor_acc_2_g = 0;
   }
-  secs[secIndex].modelInputs.in.analog_inputs.capt_roll_stick_pos = -simInput.inputs[1];
-  secs[secIndex].modelInputs.in.analog_inputs.fo_roll_stick_pos = 0;
+  secs[secIndex].modelInputs.in.analog_inputs.capt_roll_stick_pos = -(leftIsPrimary ? simInput.inputs[1] : simInput.secondaryInputs[1]);
+  secs[secIndex].modelInputs.in.analog_inputs.fo_roll_stick_pos = -(!leftIsPrimary ? simInput.inputs[1] : simInput.secondaryInputs[1]);
   secs[secIndex].modelInputs.in.analog_inputs.spd_brk_lever_pos =
       spoilersHandler->getIsArmed() ? -0.05 : spoilersHandler->getHandlePosition();
   secs[secIndex].modelInputs.in.analog_inputs.thr_lever_1_pos = thrustLeverAngle_1->get();
@@ -2640,12 +2653,20 @@ bool FlyByWireInterface::updateServoSolenoidStatus() {
 
 bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
   // get data from interface ------------------------------------------------------------------------------------------
-  SimData simData = simConnectInterface.getSimData();
   SimInput simInput = simConnectInterface.getSimInput();
 
   // write sidestick position
-  idSideStickPositionX->set(-1.0 * simInput.inputs[1]);
-  idSideStickPositionY->set(-1.0 * simInput.inputs[0]);
+  if (idSideStickPrimarySide->get() == 0) {
+    idSideStickLPositionX->set(-1.0 * simInput.inputs[1]);
+    idSideStickLPositionY->set(-1.0 * simInput.inputs[0]);
+    idSideStickRPositionX->set(-1.0 * simInput.secondaryInputs[1]);
+    idSideStickRPositionY->set(-1.0 * simInput.secondaryInputs[0]);
+  } else {
+    idSideStickLPositionX->set(-1.0 * simInput.secondaryInputs[1]);
+    idSideStickLPositionY->set(-1.0 * simInput.secondaryInputs[0]);
+    idSideStickRPositionX->set(-1.0 * simInput.inputs[1]);
+    idSideStickRPositionY->set(-1.0 * simInput.inputs[0]);
+  }
 
   // set rudder pedals position
   idRudderPedalPosition->set(std::max(-100., std::min(100., (-100. * simInput.inputs[2]))));
