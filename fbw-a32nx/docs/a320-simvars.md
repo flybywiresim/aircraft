@@ -25,7 +25,7 @@
     - [Flight Augmentation Computer (FAC)](#flight-augmentation-computer-fac)
   - [Flaps / Slats (ATA 27)](#flaps--slats-ata-27)
   - [Flight Controls (ATA 27)](#flight-controls-ata-27)
-  - [Fuel (ATA 28)](#fuel-ata-28)
+  - [Fuel ATA 28](#fuel-ata-28)
   - [Indication and Recording Systems (ATA 31)](#indication-and-recording-systems-ata-31)
     - [DMC](#dmc)
       - [ARINC429 Output Bus](#arinc429-output-bus)
@@ -291,14 +291,6 @@
 - A32NX_FWC_SKIP_STARTUP
   - Bool
   - Set to true in a non-cold and dark flight phase to skip the initial memorization step
-
-- A32NX_FWC_TOMEMO
-    - Bool
-    - True when the FWC decides that the takeoff memo should be shown
-
-- A32NX_FWC_LDGMEMO
-    - Bool
-    - True when the FWC decides that the landing memo should be shown
 
 - A32NX_FWC_INHIBOVRD
     - Bool
