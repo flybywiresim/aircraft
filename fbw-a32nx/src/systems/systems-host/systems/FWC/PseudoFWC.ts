@@ -5501,7 +5501,7 @@ export class PseudoFWC {
         }
       },
       codesToReturn: [],
-      memoInhibit: () => false,
+      memoInhibit: () => this.toMemo.get() || this.ldgMemo.get(),
       failure: 0,
       sysPage: -1,
       side: 'LEFT',
@@ -5547,7 +5547,7 @@ export class PseudoFWC {
         }
       },
       codesToReturn: [],
-      memoInhibit: () => false,
+      memoInhibit: () => this.toMemo.get() || this.ldgMemo.get(),
       failure: 0,
       sysPage: -1,
       side: 'LEFT',
@@ -5580,7 +5580,7 @@ export class PseudoFWC {
         }
       },
       codesToReturn: [],
-      memoInhibit: () => false,
+      memoInhibit: () => this.toMemo.get() || this.ldgMemo.get(),
       failure: 0,
       sysPage: -1,
       side: 'LEFT',
