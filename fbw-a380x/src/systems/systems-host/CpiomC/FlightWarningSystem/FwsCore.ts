@@ -5228,6 +5228,8 @@ export class FwsCore {
       this.auralCrcActive.set(this.nonCancellableWarningCount > 0);
     }
 
+    let emergencyCancelCautionUsedThisCycle = false;
+
     // Emergency audio cancel (EAC)
     if (!this.ecpEmergencyCancelLevel) {
       this.emergencyCancelReady = true;
@@ -5251,6 +5253,7 @@ export class FwsCore {
             this.cancelledCautions.add(cancelKey);
           }
           this.emergencyCancelClearCautionKey = cancelKey;
+          emergencyCancelCautionUsedThisCycle = true;
         } else {
           this.emergencyCancelledWarnings.add(cancelKey);
         }
@@ -5261,6 +5264,7 @@ export class FwsCore {
         if (cautionKey) {
           this.cancelledCautions.add(cautionKey);
           this.emergencyCancelClearCautionKey = cautionKey;
+          emergencyCancelCautionUsedThisCycle = true;
         }
       }
       this.emergencyCancelReady = false;
@@ -5370,6 +5374,8 @@ export class FwsCore {
     let failureSystemCount = 0;
     let activeWarningCount = 0;
     let activeCautionCount = 0;
+    let emergencyCancelHoldUsedThisCycle = false;
+    const emergencyCancelHeld = this.ecpEmergencyCancelLevel;
     const activeWarningKeys: string[] = [];
     const auralCrcKeys: string[] = [];
     const auralScKeys: string[] = [];
@@ -5437,9 +5443,6 @@ export class FwsCore {
     for (const [key, value] of ewdAbnormalEntries) {
       // new warning?
       const newWarning = !this.presentedFailures.includes(key) && !recallFailureKeys.includes(key);
-      const isCancelledCaution = value.failure === 2 && this.cancelledCautions.has(key);
-      const isCancelledWarning = value.failure === 3 && this.emergencyCancelledWarnings.has(key);
-      const isCancelled = isCancelledWarning || isCancelledCaution;
       const proc = EcamAbnormalProcedures[key];
 
       if (proc === undefined) {
@@ -5451,7 +5454,26 @@ export class FwsCore {
         continue;
       }
 
-      if (itemIsActiveConsideringFaultSuppression(value, key, 0.6)) {
+      const isActive = itemIsActiveConsideringFaultSuppression(value, key, 0.6);
+
+      if (
+        emergencyCancelHeld &&
+        !emergencyCancelCautionUsedThisCycle &&
+        !emergencyCancelHoldUsedThisCycle &&
+        isActive &&
+        newWarning &&
+        value.failure === 2 &&
+        !this.cancelledCautions.has(key)
+      ) {
+        this.cancelledCautions.add(key);
+        emergencyCancelHoldUsedThisCycle = true;
+      }
+
+      const isCancelledCaution = value.failure === 2 && this.cancelledCautions.has(key);
+      const isCancelledWarning = value.failure === 3 && this.emergencyCancelledWarnings.has(key);
+      const isCancelled = isCancelledWarning || isCancelledCaution;
+
+      if (isActive) {
         const itemsChecked = value.whichItemsChecked().map((v, i) => (!proc.items[i]?.sensed ? false : !!v));
         const itemsToShow = value.whichItemsToShow ? value.whichItemsToShow() : Array(itemsChecked.length).fill(true);
         const itemsActive = value.whichItemsActive ? value.whichItemsActive() : Array(itemsChecked.length).fill(true);
