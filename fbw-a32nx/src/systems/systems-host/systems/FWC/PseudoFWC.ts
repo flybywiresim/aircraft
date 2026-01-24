@@ -106,7 +106,7 @@ export class PseudoFWC {
 
   private readonly fwsUpdateThrottler = new UpdateThrottler(125); // has to be > 100 due to pulse nodes
 
-  private readonly simTime = RegisteredSimVar.create<number>('E:SIMULATION TIME', SimVarValueType.Seconds);
+  private readonly simTime = RegisteredSimVar.create('E:SIMULATION TIME', SimVarValueType.Seconds);
 
   private keyEventManager: KeyEventManager;
 
@@ -1567,27 +1567,27 @@ export class PseudoFWC {
     this.ecpEmergencyCancelLevel = warningButtons.bitValue(17) || this.ecpEmergencyCancelButtonHardwired.get();
   }
 
-  private readonly ir1AlignDiscreteVar = RegisteredSimVar.createBoolean(
+  private readonly ir1AlignDiscreteVar = RegisteredSimVar.create(
     'L:A32NX_ADIRS_IR_1_ALIGN_DISCRETE',
     SimVarValueType.Bool,
   );
-  private readonly ir2AlignDiscreteVar = RegisteredSimVar.createBoolean(
+  private readonly ir2AlignDiscreteVar = RegisteredSimVar.create(
     'L:A32NX_ADIRS_IR_2_ALIGN_DISCRETE',
     SimVarValueType.Bool,
   );
-  private readonly ir3AlignDiscreteVar = RegisteredSimVar.createBoolean(
+  private readonly ir3AlignDiscreteVar = RegisteredSimVar.create(
     'L:A32NX_ADIRS_IR_3_ALIGN_DISCRETE',
     SimVarValueType.Bool,
   );
-  private readonly ir1FaultDiscreteVar = RegisteredSimVar.createBoolean(
+  private readonly ir1FaultDiscreteVar = RegisteredSimVar.create(
     'L:A32NX_ADIRS_IR_1_FAULT_WARN_DISCRETE',
     SimVarValueType.Bool,
   );
-  private readonly ir2FaultDiscreteVar = RegisteredSimVar.createBoolean(
+  private readonly ir2FaultDiscreteVar = RegisteredSimVar.create(
     'L:A32NX_ADIRS_IR_2_FAULT_WARN_DISCRETE',
     SimVarValueType.Bool,
   );
-  private readonly ir3FaultDiscreteVar = RegisteredSimVar.createBoolean(
+  private readonly ir3FaultDiscreteVar = RegisteredSimVar.create(
     'L:A32NX_ADIRS_IR_3_FAULT_WARN_DISCRETE',
     SimVarValueType.Bool,
   );

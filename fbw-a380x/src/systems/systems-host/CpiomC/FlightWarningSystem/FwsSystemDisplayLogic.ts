@@ -24,12 +24,9 @@ export class FwsSystemDisplayLogic {
     SimVarValueType.Enum,
   );
   private readonly sdFailPageIndexSimvar = RegisteredSimVar.create<SdPages>('L:A32NX_ECAM_SFAIL', SimVarValueType.Enum);
-  private readonly ecamAllButtonPushedSimvar = RegisteredSimVar.createBoolean('L:A32NX_BTN_ALL');
+  private readonly ecamAllButtonPushedSimvar = RegisteredSimVar.create('L:A32NX_BTN_ALL', SimVarValueType.Bool);
 
-  private readonly sdMoreShownSimvar = RegisteredSimVar.create<number>(
-    'L:A32NX_ECAM_SD_MORE_SHOWN',
-    SimVarValueType.Number,
-  );
+  private readonly sdMoreShownSimvar = RegisteredSimVar.create('L:A32NX_ECAM_SD_MORE_SHOWN', SimVarValueType.Number);
 
   private readonly userSelectedPage = Subject.create<SdPages>(SdPages.None);
   private readonly currentPage = Subject.create<SdPages>(SdPages.Door);
