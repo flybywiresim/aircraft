@@ -298,6 +298,8 @@ export class FwsCore {
 
   public readonly auralCrcActive = Subject.create(false);
 
+  private readonly cavalryChargeActive = Subject.create(false);
+
   private auralSingleChimePending = false;
 
   public readonly auralSingleChimeInhibitTimer = new DebounceTimer();
@@ -2445,6 +2447,13 @@ export class FwsCore {
 
     this.subs.push(
       this.auralCrcActive.sub((crc) => this.soundManager.handleSoundCondition('continuousRepetitiveChime', crc), true),
+    );
+
+    this.subs.push(
+      this.cavalryChargeActive.sub(
+        (cavcharge) => this.soundManager.handleSoundCondition('cavalryChargeCont', cavcharge),
+        true,
+      ),
     );
 
     this.subs.push(
@@ -5705,7 +5714,6 @@ export class FwsCore {
       }
 
       if (!isCancelled && value.auralWarning?.get() === FwcAuralWarning.CavalryCharge) {
-        this.soundManager.enqueueSound('cavalryChargeCont');
         auralCavchargeKeys.push(key);
       }
     }
@@ -5809,6 +5817,8 @@ export class FwsCore {
     if (this.auralScKeys.length === 0) {
       this.auralSingleChimePending = false;
     }
+
+    this.cavalryChargeActive.set(auralCavchargeKeys.length !== 0);
 
     this.allCurrentFailures.length = 0;
     this.allCurrentFailures.push(...allFailureKeys);
