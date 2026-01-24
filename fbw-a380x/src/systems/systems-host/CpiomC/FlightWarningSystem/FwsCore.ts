@@ -5280,14 +5280,23 @@ export class FwsCore {
         } else {
           this.emergencyCancelledWarnings.add(cancelKey);
         }
-      } else if (this.masterCaution.get()) {
-        const cautionKey = this.presentedFailures.find(
-          (key) => this.ewdAbnormal[key]?.failure === 2 && !this.cancelledCautions.has(key),
-        );
-        if (cautionKey) {
-          this.cancelledCautions.add(cautionKey);
-          this.emergencyCancelClearCautionKey = cautionKey;
-          emergencyCancelCautionUsed = true;
+      } else {
+        let nonSensedDeactivated = false;
+        const activeProcedureId = this.abnormalSensed.activeProcedureId.get();
+        if (activeProcedureId && !EcamAbnormalProcedures[activeProcedureId]?.sensed) {
+          const activeNonSensedId = Number(activeProcedureId);
+          nonSensedDeactivated = this.activeAbnormalNonSensedKeys.delete(activeNonSensedId);
+        }
+
+        if (!nonSensedDeactivated && this.masterCaution.get()) {
+          const cautionKey = this.presentedFailures.find(
+            (key) => this.ewdAbnormal[key]?.failure === 2 && !this.cancelledCautions.has(key),
+          );
+          if (cautionKey) {
+            this.cancelledCautions.add(cautionKey);
+            this.emergencyCancelClearCautionKey = cautionKey;
+            emergencyCancelCautionUsed = true;
+          }
         }
       }
       this.emergencyCancelReady = false;
