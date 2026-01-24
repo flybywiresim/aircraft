@@ -389,3 +389,18 @@ export class Arinc429LocalVarOutputWord extends Arinc429OutputWord {
     return this.performActionIfDirty(this.writeToSimvar);
   }
 }
+
+/** Writes FM output words for both FMS. */
+export class FmArinc429OutputWord extends Arinc429LocalVarOutputWord {
+  private readonly localVars = [`L:A32NX_FM1_${this.name}`, `L:A32NX_FM2_${this.name}`];
+
+  override async writeToSimVarIfDirty() {
+    if (this.isDirty) {
+      this.isDirty = false;
+      return Promise.all(
+        this.localVars.map((localVar) => Arinc429Word.toSimVarValue(localVar, this.word.value, this.word.ssm)),
+      );
+    }
+    return Promise.resolve();
+  }
+}

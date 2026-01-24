@@ -59,6 +59,14 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
    */
   secondaryCopyFromActive(index: number, isBeforeEngineStart: boolean): Promise<void>;
 
+  /**
+   * Copies the secondary flight plan into another secondary flight plan
+   *
+   * @param from the 1-indexed index of the source secondary flight plan
+   * @param to the 1-indexed index of the destination secondary flight plan
+   */
+  secondaryCopyFromSecondary(from: number, to: number, isBeforeEngineStart: boolean): Promise<void>;
+
   secondaryDelete(index: number): Promise<void>;
 
   secondaryReset(index: number): Promise<void>;
@@ -290,7 +298,7 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
   addOrEditManualHold(
     atIndex: number,
     desiredHold: HoldData,
-    modifiedHold: HoldData,
+    modifiedHold: HoldData | undefined,
     defaultHold: HoldData,
     planIndex: number,
     alternate?: boolean,
@@ -333,6 +341,10 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
     planIndex?: number,
     alternate?: boolean,
   ): Promise<void>;
+
+  setOverfly(atIndex: number, overfly: boolean, planIndex: number, alternate: boolean): Promise<void>;
+
+  toggleOverfly(atIndex: number, planIndex: number, alternate: boolean): Promise<void>;
 
   setFixInfoEntry(index: 1 | 2 | 3 | 4, fixInfo: FixInfoEntry | null, planIndex: number): Promise<void>;
 

@@ -26,7 +26,7 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
     if (newDest) {
       const revWpt = this.props.fmcService.master?.revisedLegIndex.get();
       if (newDest.length === 4 && revWpt) {
-        this.props.fmcService.master?.flightPlanService.newDest(
+        this.props.fmcService.master?.flightPlanInterface.newDest(
           revWpt,
           newDest,
           this.props.fmcService.master.revisedLegPlanIndex.get() ?? undefined,
