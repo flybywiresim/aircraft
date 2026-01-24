@@ -418,7 +418,11 @@ export class FwsFlightPhases {
     const warningPressed =
       !!SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_L', 'Bool') ||
       !!SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_R', 'Bool');
-    if (warningPressed === true || this.fws.emergencyCancelInputBuffer.read()) {
+    const emergencyCancelPressed = this.fws.emergencyCancelInputBuffer.read();
+    const currentSound = this.fws.soundManager.getCurrentSoundPlaying();
+    const cChordPlaying = currentSound === 'cChordOnce' || currentSound === 'cChordCont';
+    // Check cChordPlaying, otherwise the warning / EMER CANC press could be trying to cancel something else
+    if ((warningPressed || emergencyCancelPressed) && cChordPlaying) {
       this._wasBelowThreshold = false;
       this._wasAboveThreshold = false;
       this._wasInRange = false;
