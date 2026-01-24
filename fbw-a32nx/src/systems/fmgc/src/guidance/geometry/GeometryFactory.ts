@@ -41,6 +41,7 @@ export namespace GeometryFactory {
 
     const planElements = plan.allLegs;
     for (let i = 0; i < planElements.length; i++) {
+      const prevPrevElement = planElements[i - 2];
       const prevElement = planElements[i - 1];
       const element = planElements[i];
       const nextElement = planElements[i + 1];
@@ -60,11 +61,13 @@ export namespace GeometryFactory {
       const magVar = getMagCorrection(i, plan);
       const geometryLeg = geometryLegFromFlightPlanLeg(magVar, prevElement, element, nextGeometryLeg);
 
+      // If we have a xI-IF-xF sequence, we want to generate the transition between the xI and the xF leg.
+      const previousGeometryLeg = isXiIfXf(prevPrevElement, prevElement, element) ? legs.get(i - 2) : legs.get(i - 1);
+
       if (isXiIfXf(prevElement, element, nextElement)) {
         geometryLeg.isNull = true;
       }
 
-      const previousGeometryLeg = legs.get(i - 1);
       if (previousGeometryLeg && doGenerateTransitions && doGenerateTransitionsForLeg(geometryLeg, i, plan)) {
         const transition = TransitionPicker.forLegs(previousGeometryLeg, geometryLeg);
 
@@ -87,6 +90,7 @@ export namespace GeometryFactory {
     for (let i = 0; i < flightPlan.legCount; i++) {
       const oldLeg = geometry.legs.get(i);
 
+      const prevPrevPlanLeg = flightPlan.allLegs[i - 2];
       const prevPlanLeg = flightPlan.allLegs[i - 1];
       const nextPlanLeg = flightPlan.allLegs[i + 1];
       const nextNextPlanLeg = flightPlan.allLegs[i + 2];
@@ -121,6 +125,11 @@ export namespace GeometryFactory {
         console.log(`[FMS/Geometry/Update] New leg #${i} = ${newLeg?.repr ?? '<none>'}`);
       }
 
+      // If we have a xI-IF-xF sequence, we want to generate the transition between the xI and the xF leg.
+      const prevLeg = isXiIfXf(prevPrevPlanLeg, prevPlanLeg, planLeg)
+        ? geometry.legs.get(i - 2)
+        : geometry.legs.get(i - 1);
+
       const legsMatch = oldLeg?.repr === newLeg?.repr;
 
       if (legsMatch) {
@@ -137,8 +146,6 @@ export namespace GeometryFactory {
         if (oldLeg && newLeg) {
           oldLeg.metadata = newLeg.metadata;
         }
-
-        const prevLeg = geometry.legs.get(i - 1);
 
         if (prevLeg && newLeg) {
           const oldInboundTransition = geometry.transitions.get(i - 1);
@@ -159,8 +166,6 @@ export namespace GeometryFactory {
 
         if (newLeg) {
           geometry.legs.set(i, newLeg);
-
-          const prevLeg = geometry.legs.get(i - 1);
 
           if (prevLeg && doGenerateTransitions && doGenerateTransitionsForLeg(newLeg, i, flightPlan)) {
             const newInboundTransition = TransitionPicker.forLegs(prevLeg, newLeg);
@@ -389,21 +394,9 @@ function getApproachMagCorrection(legIndex: number, plan: BaseFlightPlan): numbe
   }
 
   // for RNAV procedures use recommended navaid station declination for these leg types
-  let useStationDeclination =
+  // For ILS approaches, this will be the localizer navaid
+  const useStationDeclination =
     currentLeg.type === LegType.CF || currentLeg.type === LegType.FA || currentLeg.type === LegType.FM;
-
-  switch (approachType) {
-    case ApproachType.LocBackcourse:
-    case ApproachType.Ils:
-    case ApproachType.Loc:
-    case ApproachType.Mls:
-    case ApproachType.Igs:
-    case ApproachType.Sdf:
-    case ApproachType.Lda:
-    case ApproachType.MlsTypeA:
-    case ApproachType.MlsTypeBC:
-      useStationDeclination = useStationDeclination && legIndex < plan.getFinalApproachCourseFixIndex();
-  }
 
   if (useStationDeclination) {
     const recNavaid = currentLeg.definition.recommendedNavaid;

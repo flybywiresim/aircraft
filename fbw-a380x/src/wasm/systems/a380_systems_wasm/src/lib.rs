@@ -71,7 +71,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
         (ElectricalBusType::DirectCurrentHot(4), 15),
         (ElectricalBusType::DirectCurrentGndFltService, 17),
     ])?
-    .with_auxiliary_power_unit(Variable::named("OVHD_APU_START_PB_IS_AVAILABLE"), 8, 7)?
+    .with_auxiliary_power_unit(Variable::named("OVHD_APU_START_PB_IS_AVAILABLE"), 8, 21)?
     .with_engine_anti_ice(4)?
     .with_wing_anti_ice()?
     .with_failures([
@@ -444,7 +444,6 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("ENG ON FIRE", "Bool", 2)?
     .provides_aircraft_variable("ENG ON FIRE", "Bool", 3)?
     .provides_aircraft_variable("ENG ON FIRE", "Bool", 4)?
-    .provides_aircraft_variable("FUEL TOTAL QUANTITY WEIGHT", "Pounds", 0)?
     .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 1)?
     .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 2)?
     .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 3)?

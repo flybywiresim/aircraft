@@ -1,14 +1,12 @@
+// Copyright (c) 2021-2025 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 // @ts-strict-ignore
-import {
-  Arinc429SignStatusMatrix,
-  Arinc429Word,
-  NXDataStore,
-  NXLogicConfirmNode,
-  NXLogicTriggeredMonostableNode,
-} from '@flybywiresim/fbw-sdk';
+import { Arinc429Word, NXDataStore, NXLogicConfirmNode, NXLogicTriggeredMonostableNode } from '@flybywiresim/fbw-sdk';
 import { A32NX_Util } from '../../../../../shared/src/A32NX_Util';
 import { A32NX_DEFAULT_RADIO_AUTO_CALL_OUTS, A32NXRadioAutoCallOutFlags } from '@shared/AutoCallOuts';
-import { SoundDefinition, soundList } from './A32NX_SoundManager';
+import { soundList } from './A32NX_SoundManager';
 import { FmgcFlightPhase } from '@shared/flightphase';
 
 // FIXME move GPWS logic to systems host, and ACOs to PseudoFWC
@@ -17,70 +15,11 @@ export class A32NX_GPWS {
 
   private minimumsState = 0;
 
-  private Mode3MaxBaroAlt = NaN;
-
   private Mode4MaxRAAlt = 0;
-
-  private Mode2BoundaryLeaveAlt = NaN;
-  private Mode2NumTerrain = 0;
-  private Mode2NumFramesInBoundary = 0;
 
   private RadioAltRate = NaN;
   private prevRadioAlt = NaN;
   private prevRadioAlt2 = NaN;
-
-  private modes: {
-    type: { sound?: SoundDefinition; soundPeriod?: number; gpwsLight?: boolean; pullUp?: boolean }[];
-    current: number;
-    previous: number;
-    onChange?: (current: number, _: any) => void;
-  }[] = [
-    // Mode 1
-    {
-      // 0: no warning, 1: "sink rate", 2 "pull up"
-      current: 0,
-      previous: 0,
-      type: [{}, { sound: soundList.sink_rate, soundPeriod: 1.1, gpwsLight: true }, { gpwsLight: true, pullUp: true }],
-    },
-    // Mode 2 is currently inactive.
-    {
-      // 0: no warning, 1: "terrain", 2: "pull up"
-      current: 0,
-      previous: 0,
-      type: [{}, { gpwsLight: true }, { gpwsLight: true, pullUp: true }],
-    },
-    // Mode 3
-    {
-      // 0: no warning, 1: "don't sink"
-      current: 0,
-      previous: 0,
-      type: [{}, { sound: soundList.dont_sink, soundPeriod: 1.1, gpwsLight: true }],
-    },
-    // Mode 4
-    {
-      // 0: no warning, 1: "too low gear", 2: "too low flaps", 3: "too low terrain"
-      current: 0,
-      previous: 0,
-      type: [
-        {},
-        { sound: soundList.too_low_gear, soundPeriod: 1.1, gpwsLight: true },
-        { sound: soundList.too_low_flaps, soundPeriod: 1.1, gpwsLight: true },
-        { sound: soundList.too_low_terrain, soundPeriod: 1.1, gpwsLight: true },
-      ],
-    },
-    // Mode 5, not all warnings are fully implemented
-    {
-      // 0: no warning, 1: "glideslope", 2: "hard glideslope" (louder)
-      current: 0,
-      previous: 0,
-      type: [{}, {}, {}],
-      onChange: (current: number, _: any) => {
-        this.setGlideSlopeWarning(current >= 1);
-      },
-    },
-  ];
-
-  private PrevShouldPullUpPlay = false;
 
   private AltCallState = A32NX_Util.createMachine(AltCallStateMachine);
 
@@ -96,14 +35,13 @@ export class A32NX_GPWS {
   // Only relevant if alternate mode 4b is enabled
   private isMode4aInhibited = false;
 
+  private prevAuralWarning = 0;
+
   // PIN PROGs
   private isAudioDeclutterEnabled = false;
   private isAlternateMode4bEnabled = false;
   private isTerrainClearanceFloorEnabled = false;
   private isTerrainAwarenessEnabled = false;
-
-  private egpwsAlertDiscreteWord1 = Arinc429Word.empty();
-  private egpwsAlertDiscreteWord2 = Arinc429Word.empty();
 
   constructor(private core) {
     console.log('A32NX_GPWS constructed');
@@ -112,80 +50,10 @@ export class A32NX_GPWS {
     this.RetardState.setState('landed');
   }
 
-  gpwsUpdateDiscreteWords() {
-    this.egpwsAlertDiscreteWord1.ssm = Arinc429SignStatusMatrix.NormalOperation;
-    this.egpwsAlertDiscreteWord1.setBitValue(11, this.modes[0].current === 1);
-    this.egpwsAlertDiscreteWord1.setBitValue(12, this.modes[0].current === 2);
-    this.egpwsAlertDiscreteWord1.setBitValue(13, this.modes[1].current === 1);
-    this.egpwsAlertDiscreteWord1.setBitValue(12, this.modes[1].current === 2);
-    this.egpwsAlertDiscreteWord1.setBitValue(14, this.modes[2].current === 1);
-    this.egpwsAlertDiscreteWord1.setBitValue(15, this.modes[3].current === 1);
-    this.egpwsAlertDiscreteWord1.setBitValue(16, this.modes[3].current === 2);
-    this.egpwsAlertDiscreteWord1.setBitValue(17, this.modes[3].current === 3);
-    this.egpwsAlertDiscreteWord1.setBitValue(18, this.modes[4].current === 1);
-    Arinc429Word.toSimVarValue(
-      'L:A32NX_EGPWS_ALERT_1_DISCRETE_WORD_1',
-      this.egpwsAlertDiscreteWord1.value,
-      this.egpwsAlertDiscreteWord1.ssm,
-    );
-    Arinc429Word.toSimVarValue(
-      'L:A32NX_EGPWS_ALERT_2_DISCRETE_WORD_1',
-      this.egpwsAlertDiscreteWord1.value,
-      this.egpwsAlertDiscreteWord1.ssm,
-    );
-
-    this.egpwsAlertDiscreteWord2.ssm = Arinc429SignStatusMatrix.NormalOperation;
-    this.egpwsAlertDiscreteWord2.setBitValue(14, false);
-    Arinc429Word.toSimVarValue(
-      'L:A32NX_EGPWS_ALERT_1_DISCRETE_WORD_2',
-      this.egpwsAlertDiscreteWord2.value,
-      this.egpwsAlertDiscreteWord2.ssm,
-    );
-    Arinc429Word.toSimVarValue(
-      'L:A32NX_EGPWS_ALERT_2_DISCRETE_WORD_2',
-      this.egpwsAlertDiscreteWord2.value,
-      this.egpwsAlertDiscreteWord2.ssm,
-    );
-  }
-
-  setGlideSlopeWarning(state) {
-    SimVar.SetSimVarValue('L:A32NX_GPWS_GS_Warning_Active', 'Bool', state ? 1 : 0); // Still need this for XML
-    this.egpwsAlertDiscreteWord2.setBitValue(11, state);
-    Arinc429Word.toSimVarValue(
-      'L:A32NX_EGPWS_ALERT_1_DISCRETE_WORD_2',
-      this.egpwsAlertDiscreteWord2.value,
-      this.egpwsAlertDiscreteWord2.ssm,
-    );
-    Arinc429Word.toSimVarValue(
-      'L:A32NX_EGPWS_ALERT_2_DISCRETE_WORD_2',
-      this.egpwsAlertDiscreteWord2.value,
-      this.egpwsAlertDiscreteWord2.ssm,
-    );
-  }
-
-  setGpwsWarning(state) {
-    SimVar.SetSimVarValue('L:A32NX_GPWS_Warning_Active', 'Bool', state ? 1 : 0); // Still need this for XML
-    this.egpwsAlertDiscreteWord2.setBitValue(12, state);
-    this.egpwsAlertDiscreteWord2.setBitValue(13, state);
-    Arinc429Word.toSimVarValue(
-      'L:A32NX_EGPWS_ALERT_1_DISCRETE_WORD_2',
-      this.egpwsAlertDiscreteWord2.value,
-      this.egpwsAlertDiscreteWord2.ssm,
-    );
-    Arinc429Word.toSimVarValue(
-      'L:A32NX_EGPWS_ALERT_2_DISCRETE_WORD_2',
-      this.egpwsAlertDiscreteWord2.value,
-      this.egpwsAlertDiscreteWord2.ssm,
-    );
-  }
-
   init() {
     console.log('A32NX_GPWS init');
 
-    this.setGlideSlopeWarning(false);
-    this.setGpwsWarning(false);
-
-    NXDataStore.getAndSubscribe(
+    NXDataStore.getAndSubscribeLegacy(
       'CONFIG_A32NX_FWC_RADIO_AUTO_CALL_OUT_PINS',
       (k, v) => k === 'CONFIG_A32NX_FWC_RADIO_AUTO_CALL_OUT_PINS' && (this.autoCallOutPins = Number(v)),
       A32NX_DEFAULT_RADIO_AUTO_CALL_OUTS.toString(),
@@ -201,15 +69,12 @@ export class A32NX_GPWS {
     const baroAlt = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_BARO_CORRECTED_ALTITUDE_1');
     const computedAirspeed = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_COMPUTED_AIRSPEED');
     const pitch = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_IR_1_PITCH');
-    const inertialVs = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_IR_1_VERTICAL_SPEED');
-    const barometricVs = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_BAROMETRIC_VERTICAL_SPEED');
     const radioAlt1 = Arinc429Word.fromSimVarValue('L:A32NX_RA_1_RADIO_ALTITUDE');
     const radioAlt2 = Arinc429Word.fromSimVarValue('L:A32NX_RA_2_RADIO_ALTITUDE');
     const radioAlt = radioAlt1.isFailureWarning() || radioAlt1.isNoComputedData() ? radioAlt2 : radioAlt1;
     const radioAltValid = radioAlt.isNormalOperation();
     const isOnGround = !this.isAirVsGroundMode;
 
-    const isGpwsSysOff = SimVar.GetSimVarValue('L:A32NX_GPWS_SYS_OFF', 'Bool') === 1;
     const isTerrModeOff = SimVar.GetSimVarValue('L:A32NX_GPWS_TERR_OFF', 'Bool') === 1;
     const isFlapModeOff = SimVar.GetSimVarValue('L:A32NX_GPWS_FLAP_OFF', 'Bool') === 1;
     const isLdgFlap3On = SimVar.GetSimVarValue('L:A32NX_GPWS_FLAPS3', 'Bool') === 1;
@@ -247,38 +112,7 @@ export class A32NX_GPWS {
       isOverflightDetected,
     );
 
-    if (!isGpwsSysOff && radioAltValid && radioAlt.value >= 10 && radioAlt.value <= 2450) {
-      //Activate between 10 - 2450 radio alt unless SYS is off
-      const altRate = this.selectAltitudeRate(inertialVs, barometricVs);
-
-      this.GPWSMode1(this.modes[0], radioAlt.value, altRate);
-      //Mode 2 is disabled because of an issue with the terrain height simvar which causes false warnings very frequently. See PR#1742 for more info
-      //this.GPWSMode2(this.modes[1], radioAlt, computedAirspeed, areFlapsInLandingConfig, isGearDownLocked);
-      this.GPWSMode3(this.modes[2], baroAlt, radioAlt.value, altRate, areFlapsInLandingConfig, isGearDownLocked);
-      this.GPWSMode4(
-        this.modes[3],
-        radioAlt.value,
-        computedAirspeed,
-        areFlapsInLandingConfig,
-        isGearDownLocked,
-        isTcfOperational,
-        isTafOperational,
-        isOverflightDetected,
-      );
-      this.GPWSMode5(this.modes[4], radioAlt.value);
-    } else {
-      this.modes.forEach((mode) => {
-        mode.current = 0;
-      });
-
-      this.Mode3MaxBaroAlt = NaN;
-
-      this.setGlideSlopeWarning(false);
-      this.setGpwsWarning(false);
-    }
-
     this.GPWSComputeLightsAndCallouts();
-    this.gpwsUpdateDiscreteWords();
 
     if (mda !== 0 || (dh !== -1 && dh !== -2 && this.isApproachVsTakeoffState)) {
       let minimumsDA; //MDA or DH
@@ -347,263 +181,44 @@ export class A32NX_GPWS {
     }
   }
 
+  GetWarningFromEnum(num: number) {
+    switch (num) {
+      case 1:
+        return soundList.pull_up;
+      case 2:
+        return soundList.terrain;
+      case 3:
+        return soundList.too_low_terrain;
+      case 4:
+        return soundList.too_low_gear;
+      case 5:
+        return soundList.too_low_flaps;
+      case 6:
+        return soundList.sink_rate;
+      case 7:
+        return soundList.dont_sink;
+      case 8:
+        return soundList.glideslope_quiet;
+      case 9:
+        return soundList.glideslope_loud;
+      case 10:
+        return soundList.terrain_ahead;
+      case 11:
+        return soundList.obstacle_ahead;
+      default:
+        return '';
+    }
+  }
+
   GPWSComputeLightsAndCallouts() {
-    this.modes.forEach((mode) => {
-      if (mode.current === mode.previous) {
-        return;
+    const currentAuralWarning = SimVar.GetSimVarValue('L:A32NX_GPWS_AURAL_OUTPUT', 'number');
+    if (currentAuralWarning !== this.prevAuralWarning) {
+      if (currentAuralWarning !== 0) {
+        this.core.soundManager.addPeriodicSound(this.GetWarningFromEnum(currentAuralWarning), 1.1);
       }
+      this.core.soundManager.removePeriodicSound(this.GetWarningFromEnum(this.prevAuralWarning));
 
-      const previousType = mode.type[mode.previous];
-      this.core.soundManager.removePeriodicSound(previousType.sound);
-
-      const currentType = mode.type[mode.current];
-      this.core.soundManager.addPeriodicSound(currentType.sound, currentType.soundPeriod);
-
-      if (mode.onChange) {
-        mode.onChange(mode.current, mode.previous);
-      }
-
-      mode.previous = mode.current;
-    });
-
-    const activeTypes = this.modes.map((mode) => mode.type[mode.current]);
-
-    const shouldPullUpPlay = activeTypes.some((type) => type.pullUp);
-    if (shouldPullUpPlay !== this.PrevShouldPullUpPlay) {
-      if (shouldPullUpPlay) {
-        this.core.soundManager.addPeriodicSound(soundList.pull_up, 1.1);
-      } else {
-        this.core.soundManager.removePeriodicSound(soundList.pull_up);
-      }
-      this.PrevShouldPullUpPlay = shouldPullUpPlay;
-    }
-
-    const illuminateGpwsLight = activeTypes.some((type) => type.gpwsLight);
-    this.setGpwsWarning(illuminateGpwsLight);
-  }
-
-  /**
-   * Compute the GPWS Mode 1 state.
-   * @param mode - The mode object which stores the state.
-   * @param radioAlt - Radio altitude in feet
-   * @param vSpeed - Vertical speed, in feet/min, NaN if not available
-   */
-  GPWSMode1(mode, radioAlt, vSpeed) {
-    const sinkrate = -vSpeed;
-
-    if (!Number.isFinite(sinkrate) || sinkrate <= 1000) {
-      mode.current = 0;
-      return;
-    }
-
-    const maxSinkrateAlt = 0.61 * sinkrate - 600;
-    const maxPullUpAlt = sinkrate < 1700 ? 1.3 * sinkrate - 1940 : 0.4 * sinkrate - 410;
-
-    if (radioAlt <= maxPullUpAlt) {
-      mode.current = 2;
-    } else if (radioAlt <= maxSinkrateAlt) {
-      mode.current = 1;
-    } else {
-      mode.current = 0;
-    }
-  }
-
-  /**
-   * Compute the GPWS Mode 2 state.
-   * @param mode - The mode object which stores the state.
-   * @param radioAlt - Radio altitude in feet
-   * @param computedAirspeed - Arinc429 value of the computed airspeed in knots.
-   * @param areFlapsInLandingConfig - If flaps is in landing config
-   * @param gearExtended - If the gear is deployed
-   */
-  GPWSMode2(mode, radioAlt, computedAirspeed, areFlapsInLandingConfig, gearExtended) {
-    if (!computedAirspeed.isNormalOperation()) {
-      return false;
-    }
-
-    let IsInBoundary = false;
-    const UpperBoundaryRate =
-      -this.RadioAltRate < 3500 ? 0.7937 * -this.RadioAltRate - 1557.5 : 0.19166 * -this.RadioAltRate + 610;
-    const UpperBoundarySpeed = Math.max(1650, Math.min(2450, 8.8888 * computedAirspeed.value - 305.555));
-
-    if (!areFlapsInLandingConfig && -this.RadioAltRate > 2000) {
-      if (radioAlt < UpperBoundarySpeed && radioAlt < UpperBoundaryRate) {
-        this.Mode2NumFramesInBoundary += 1;
-      } else {
-        this.Mode2NumFramesInBoundary = 0;
-      }
-    } else if (areFlapsInLandingConfig && -this.RadioAltRate > 2000) {
-      if (radioAlt < 775 && radioAlt < UpperBoundaryRate && -this.RadioAltRate < 10000) {
-        this.Mode2NumFramesInBoundary += 1;
-      } else {
-        this.Mode2NumFramesInBoundary = 0;
-      }
-    }
-    // This is to prevent very quick changes in radio alt rate triggering the alarm. The derivative is sadly pretty jittery.
-    if (this.Mode2NumFramesInBoundary > 5) {
-      IsInBoundary = true;
-    }
-
-    if (IsInBoundary) {
-      this.Mode2BoundaryLeaveAlt = -1;
-      if (this.Mode2NumTerrain < 2 || gearExtended) {
-        if (this.core.soundManager.tryPlaySound(soundList.too_low_terrain)) {
-          // too low terrain is not correct, but no "terrain" call yet
-          this.Mode2NumTerrain += 1;
-        }
-        mode.current = 1;
-      } else if (!gearExtended) {
-        mode.current = 2;
-      }
-    } else if (this.Mode2BoundaryLeaveAlt === -1) {
-      this.Mode2BoundaryLeaveAlt = radioAlt;
-    } else if (this.Mode2BoundaryLeaveAlt + 300 > radioAlt) {
-      mode.current = 1;
-      this.core.soundManager.tryPlaySound(soundList.too_low_terrain);
-    } else if (this.Mode2BoundaryLeaveAlt + 300 <= radioAlt) {
-      mode.current = 0;
-      this.Mode2NumTerrain = 0;
-      this.Mode2BoundaryLeaveAlt = NaN;
-    }
-  }
-
-  /**
-   * Compute the GPWS Mode 3 state.
-   * @param {*} mode - The mode object which stores the state.
-   * @param {*} baroAlt - Arinc429 value of the barometric altitude in feet.
-   * @param {*} radioAlt - Radio altitude in feet
-   * @param {*} altRate - Altitude rate in feet per minute
-   * @param {*} areFlapsInLandingConfig - True if flaps is in landing config
-   * @param {*} isGearDownLocked - True if the gear is down and locked
-   */
-  GPWSMode3(mode, baroAlt, radioAlt, altRate, areFlapsInLandingConfig, isGearDownLocked) {
-    if (
-      (isGearDownLocked && areFlapsInLandingConfig) ||
-      this.isApproachVsTakeoffState ||
-      radioAlt > 1500 ||
-      radioAlt < 10 ||
-      !baroAlt.isNormalOperation()
-    ) {
-      this.Mode3MaxBaroAlt = NaN;
-      mode.current = 0;
-      return;
-    }
-
-    const maxAltLoss = 0.09 * radioAlt + 7.1;
-    const hasPositiveAltRate = Number.isFinite(altRate) && altRate > 0;
-
-    if (baroAlt.value > this.Mode3MaxBaroAlt || isNaN(this.Mode3MaxBaroAlt)) {
-      this.Mode3MaxBaroAlt = baroAlt.value;
-      mode.current = 0;
-    } else if (!hasPositiveAltRate && this.Mode3MaxBaroAlt - baroAlt.value > maxAltLoss) {
-      mode.current = 1;
-    } else {
-      mode.current = 0;
-    }
-  }
-
-  /**
-   * Compute the GPWS Mode 4 state.
-   * @param mode - The mode object which stores the state.
-   * @param radioAlt - Radio altitude in feet
-   * @param computedAirspeed - ARINC value of the computed airspeed in knots.
-   * @param areFlapsInLandingConfig - If flaps is in landing config
-   * @param gearExtended - If the gear is extended
-   * @param tcfOperational - If the terrain clearance floor is operational
-   * @param tafOperational - If the terrain awareness floor is operational
-   * @param isOverflightDetected - If an overflight is detected
-   * @constructor
-   */
-  GPWSMode4(
-    mode,
-    radioAlt,
-    computedAirspeed,
-    areFlapsInLandingConfig,
-    gearExtended,
-    tcfOperational,
-    tafOperational,
-    isOverflightDetected,
-  ) {
-    mode.current = 0;
-
-    if (!computedAirspeed.isNormalOperation() || radioAlt < 30 || radioAlt > 1000 || !this.isAirVsGroundMode) {
-      return;
-    }
-
-    const isMode4cEnabled =
-      !this.isApproachVsTakeoffState && (!areFlapsInLandingConfig || !gearExtended) && this.isAirVsGroundMode;
-
-    // Mode 4 A
-    if (this.isApproachVsTakeoffState && !gearExtended && !this.isMode4aInhibited) {
-      const boundary = this.mode4aUpperBoundary(
-        computedAirspeed.value,
-        areFlapsInLandingConfig,
-        tcfOperational,
-        tafOperational,
-        isOverflightDetected,
-      );
-
-      if (computedAirspeed.value < 190 && radioAlt < 500) {
-        mode.current = 1; // TOO LOW GEAR
-      } else if (computedAirspeed.value >= 190 && radioAlt < boundary) {
-        mode.current = areFlapsInLandingConfig ? 1 : 3; // TOO LOW GEAR or TOO LOW TERRAIN
-      }
-      // Mode 4 B
-    } else if (this.isApproachVsTakeoffState && (!areFlapsInLandingConfig || !gearExtended)) {
-      // Normal 4b mode, flaps down, what is the boundary?
-      const boundary = this.mode4bUpperBoundary(
-        computedAirspeed.value,
-        areFlapsInLandingConfig,
-        tcfOperational,
-        tafOperational,
-        isOverflightDetected,
-      );
-
-      if (computedAirspeed.value < 159 && radioAlt < 245) {
-        mode.current = !gearExtended ? 1 : 2; // TOO LOW GEAR or TOO LOW FLAPS
-      } else if (computedAirspeed.value >= 159 && radioAlt < boundary) {
-        mode.current = this.isMode4aInhibited ? 1 : 3; // TOO LOW GEAR or TOO LOW TERRAIN
-      }
-      // Mode 4 C
-    } else if (isMode4cEnabled) {
-      const maximumFloor = this.mode4cUpperBoundary(computedAirspeed.value);
-      const maximumFilterValue = Math.min(maximumFloor, this.Mode4MaxRAAlt);
-
-      if (radioAlt < maximumFilterValue) {
-        mode.current = 3;
-      }
-    }
-  }
-
-  /**
-   * Compute the GPWS Mode 5 state.
-   * @param mode - The mode object which stores the state.
-   * @param - radioAlt Radio altitude in feet
-   * @constructor
-   */
-  GPWSMode5(mode, radioAlt) {
-    if (radioAlt > 1000 || radioAlt < 30 || SimVar.GetSimVarValue('L:A32NX_GPWS_GS_OFF', 'Bool')) {
-      mode.current = 0;
-      return;
-    }
-
-    // FIXME add backcourse inhibit
-    if (!SimVar.GetSimVarValue('L:A32NX_RADIO_RECEIVER_GS_IS_VALID', 'number')) {
-      mode.current = 0;
-      return;
-    }
-    const error = SimVar.GetSimVarValue('L:A32NX_RADIO_RECEIVER_GS_DEVIATION', 'number');
-    const dots = -error * 2.5; //According to the FCOM, one dot is approx. 0.4 degrees. 1/0.4 = 2.5
-
-    const minAltForWarning = dots < 2.9 ? -75 * dots + 247.5 : 30;
-    const minAltForHardWarning = dots < 3.8 ? -66.66 * dots + 283.33 : 30;
-
-    if (dots > 2 && radioAlt > minAltForHardWarning && radioAlt < 350) {
-      mode.current = 2;
-    } else if (dots > 1.3 && radioAlt > minAltForWarning) {
-      mode.current = 1;
-    } else {
-      mode.current = 0;
+      this.prevAuralWarning = currentAuralWarning;
     }
   }
 

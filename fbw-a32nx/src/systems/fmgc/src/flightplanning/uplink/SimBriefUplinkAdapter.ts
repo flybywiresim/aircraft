@@ -6,11 +6,13 @@
 
 /* eslint-disable no-await-in-loop */
 
+import { Airway, Fix, ISimbriefData, simbriefDataParser } from '@flybywiresim/fbw-sdk';
+
+import { Coordinates, distanceTo } from 'msfs-geo';
+
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
-import { Airway, Fix, ISimbriefData, simbriefDataParser } from '@flybywiresim/fbw-sdk';
-import { Coordinates, distanceTo } from 'msfs-geo';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { FmsErrorType } from '@fmgc/FmsError';
@@ -119,6 +121,7 @@ export class SimBriefUplinkAdapter {
   static async uplinkFlightPlanFromSimbrief<P extends FlightPlanPerformanceData>(
     fms: FmsDataInterface & FmsDisplayInterface,
     flightPlanService: FlightPlanService<P>,
+    intoPlan: number,
     ofp: ISimbriefData,
     options: SimBriefUplinkOptions,
   ) {
@@ -158,9 +161,6 @@ export class SimBriefUplinkAdapter {
       pilotTropopause: Number.isFinite(tropopause) ? tropopause : undefined,
     });
 
-    // used by FlightPhaseManager
-    SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number', Number(ofp.cruiseAltitude));
-
     plan.setFlightNumber(route.callsign);
 
     let insertHead = -1;
@@ -185,9 +185,9 @@ export class SimBriefUplinkAdapter {
 
     setInsertHeadToEndOfEnroute();
 
-    const ensureAirwaysFinalized = () => {
+    const ensureAirwaysFinalized = async () => {
       if (flightPlanService.uplink.pendingAirways) {
-        flightPlanService.uplink.pendingAirways.finalize();
+        await flightPlanService.finaliseAirwayEntry(FlightPlanIndex.Uplink);
         flightPlanService.uplink.pendingAirways = undefined;
 
         setInsertHeadToEndOfEnroute();
@@ -380,7 +380,10 @@ export class SimBriefUplinkAdapter {
             const airways = await NavigationDatabaseService.activeDatabase.searchAirway(chunk.ident, airwaySearchFix);
 
             if (airways.length > 0) {
-              plan.pendingAirways.thenAirway(pickAirway(airways, chunk.locationHint));
+              await flightPlanService.continueAirwayEntryViaAirway(
+                pickAirway(airways, chunk.locationHint),
+                FlightPlanIndex.Uplink,
+              );
             } else {
               SimBriefUplinkAdapter.logTroubleshootingError(
                 fms,
@@ -432,9 +435,9 @@ export class SimBriefUplinkAdapter {
 
             const airwayFix = pickAirwayFix(tailAirway, fixes);
             if (airwayFix) {
-              plan.pendingAirways.thenTo(airwayFix);
+              await flightPlanService.continueAirwayEntryToFix(airwayFix, false, FlightPlanIndex.Uplink);
 
-              ensureAirwaysFinalized();
+              await ensureAirwaysFinalized();
             } else {
               // Fixes with the name of the airway termination are found but they're not on that airway
               SimBriefUplinkAdapter.logTroubleshootingError(
@@ -482,7 +485,7 @@ export class SimBriefUplinkAdapter {
       }
     }
 
-    fms.onUplinkDone();
+    fms.onUplinkDone(intoPlan);
   }
 
   static async downloadOfpForUserID(username: string, userID?: string): Promise<ISimbriefData> {

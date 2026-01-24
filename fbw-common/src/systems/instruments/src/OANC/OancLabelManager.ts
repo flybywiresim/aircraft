@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { clampAngle } from 'msfs-geo';
-import { Feature, LineString } from '@turf/turf';
+import { Feature, LineString } from 'geojson';
 import { ArraySubject } from '@microsoft/msfs-sdk';
 import { MathUtils, OansFmsDataStore } from '@flybywiresim/fbw-sdk';
 import { filterLabel, labelStyle, OancLabelFilter } from './OancLabelFilter';

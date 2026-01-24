@@ -831,6 +831,8 @@ void AutopilotLawsModelClass::step()
   rtb_BusAssignment.data.altimeter_setting_changed = (rtb_Compare_jy ||
     (AutopilotLaws_U.in.data.altimeter_setting_right_mbar != AutopilotLaws_DWork.DelayInput1_DSTATE));
   rtb_BusAssignment.data.total_weight_kg = AutopilotLaws_U.in.data.total_weight_kg;
+  rtb_BusAssignment.data.gear_is_extended = AutopilotLaws_U.in.data.gear_is_extended;
+  rtb_BusAssignment.data.land_capability = AutopilotLaws_U.in.data.land_capability;
   rtb_BusAssignment.input = AutopilotLaws_U.in.input;
   AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_U.in.data.Psi_true_deg + AutopilotLaws_P.Constant3_Value_e;
   AutopilotLaws_DWork.DelayInput1_DSTATE = (AutopilotLaws_U.in.data.Psi_magnetic_deg -

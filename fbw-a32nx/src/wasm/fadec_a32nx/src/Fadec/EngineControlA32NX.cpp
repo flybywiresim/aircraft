@@ -22,6 +22,7 @@ void EngineControl_A32NX::initialize(MsfsHandler* msfsHandler) {
   this->msfsHandlerPtr = msfsHandler;
   this->dataManagerPtr = &msfsHandler->getDataManager();
   this->simData.initialize(dataManagerPtr);
+  fuelConfiguration.setConfigFilename(FILENAME_FADEC_CONF_DIRECTORY + atcId + FILENAME_FADEC_CONF_FILE_EXTENSION);
   LOG_INFO("Fadec::EngineControl_A32NX::initialize() - initialized");
 }
 
@@ -34,17 +35,18 @@ void EngineControl_A32NX::update() {
   profilerUpdate.start();
 #endif
 
-  // Get ATC ID from sim to be able to load and store fuel levels
-  // If not yet available, request it from sim and return early
-  // If available initialize the engine control data
-  if (atcId.empty()) {
+  bool isSimulationReady = msfsHandlerPtr->getAircraftIsReadyVar();
+
+  if (!isSimulationReady) {
+    // still request atc id so it is ready once the initialization starts
     simData.atcIdDataPtr->requestUpdateFromSim(msfsHandlerPtr->getTimeStamp(), msfsHandlerPtr->getTickCounter());
-    if (simData.atcIdDataPtr->hasChanged()) {
-      atcId = simData.atcIdDataPtr->data().atcID;
-      LOG_INFO("Fadec::EngineControl_A32NX::update() - received ATC ID: " + atcId);
-      initializeEngineControlData();
-    }
     return;
+  }
+
+  if (!fadecInitialized) {
+    loadFuelConfigIfPossible();
+    initializeEngineControlData();
+    fadecInitialized = true;
   }
 
   const double deltaTime          = std::max(0.002, msfsHandlerPtr->getSimulationDeltaTime());
@@ -151,6 +153,38 @@ void EngineControl_A32NX::update() {
 // PRIVATE
 // =============================================================================
 
+void EngineControl_A32NX::loadFuelConfigIfPossible() {
+#ifdef PROFILING
+  profilerEnsureFadecIsInitialized.start();
+#endif
+  const FLOAT64 simTime     = msfsHandlerPtr->getSimulationTime();
+  const UINT64  tickCounter = msfsHandlerPtr->getTickCounter();
+
+  if (!hasLoadedFuelConfig) {
+    bool isSimulationReady = msfsHandlerPtr->getAircraftIsReadyVar();
+
+    // we only receive the data one tick later as we request it via simconnect. But it should be enought to only perform the check after
+    // isSimulationReady as this is set by the JS instruments after spawn
+    if (isSimulationReady) {
+      if (simData.atcIdDataPtr->data().atcID[0] != '\0') {
+        atcId = simData.atcIdDataPtr->data().atcID;
+        LOG_INFO("Fadec::EngineControl_A32NX::ensureFadecIsInitialized() - received ATC ID: " + atcId);
+        initializeFuelTanks(simTime, tickCounter);
+      } else {
+        LOG_INFO("Fadec::EngineControl_A32NX::ensureFadecIsInitialized() - no ATC ID received, taking default: " + atcId);
+      }
+      // if ATC ID is empty, we take the default and still set hasLoadedFuelConfig to as it won't change anymore
+      hasLoadedFuelConfig = true;
+    }
+  }
+
+#ifdef PROFILING
+  profilerEnsureFadecIsInitialized.stop();
+  if (msfsHandlerPtr->getTickCounter() % 100 == 0) {
+    profilerEnsureFadecIsInitialized.print();
+  }
+#endif
+}
 /**
  * @brief Initializes the engine control data.
  *
@@ -209,7 +243,26 @@ void EngineControl_A32NX::initializeEngineControlData() {
   simData.engineTimer[L]->set(0);
   simData.engineTimer[R]->set(0);
 
-  // Initialize Fuel Tanks
+  initializeFuelTanks(timeStamp, tickCounter);
+
+  // Initialize Pump State
+  simData.fuelPumpState[L]->set(0);
+  simData.fuelPumpState[R]->set(0);
+
+  // Initialize Thrust Limits
+  simData.thrustLimitIdle->set(0);
+  simData.thrustLimitClimb->set(0);
+  simData.thrustLimitFlex->set(0);
+  simData.thrustLimitMct->set(0);
+  simData.thrustLimitToga->set(0);
+}
+
+void EngineControl_A32NX::initializeFuelTanks(FLOAT64 timeStamp, UINT64 tickCounter) {
+  LOG_INFO("Fadec::EngineControl_A32NX::initializeFuelTanks()");
+
+#ifdef PROFILING
+  ScopedTimer timer("Fadec::EngineControl_A32NX::initializeFuelTanks()");
+#endif
   const double fuelWeightGallon = simData.simVarsDataPtr->data().fuelWeightPerGallon;  // weight of gallon of jet A in lbs
 
   const double centerQuantity   = simData.simVarsDataPtr->data().fuelTankQuantityCenter;    // gal
@@ -247,17 +300,6 @@ void EngineControl_A32NX::initializeEngineControlData() {
     simData.fuelAuxLeftPre->set(leftAuxQuantity * fuelWeightGallon);    // in Pounds
     simData.fuelAuxRightPre->set(rightAuxQuantity * fuelWeightGallon);  // in Pounds
   }
-
-  // Initialize Pump State
-  simData.fuelPumpState[L]->set(0);
-  simData.fuelPumpState[R]->set(0);
-
-  // Initialize Thrust Limits
-  simData.thrustLimitIdle->set(0);
-  simData.thrustLimitClimb->set(0);
-  simData.thrustLimitFlex->set(0);
-  simData.thrustLimitMct->set(0);
-  simData.thrustLimitToga->set(0);
 }
 
 double EngineControl_A32NX::generateEngineImbalance() {
@@ -973,8 +1015,11 @@ void EngineControl_A32NX::updateFuel(double deltaTimeSeconds) {
 
   //--------------------------------------------
   // Will save the current fuel quantities at a certain interval
-  // if the aircraft is on the ground and the engines are off/shutting down
-  if (msfsHandlerPtr->getSimOnGround() && (msfsHandlerPtr->getSimulationTime() - lastFuelSaveTime) > FUEL_SAVE_INTERVAL &&
+  // if the simulation is ready
+  // and the aircraft is on the ground and the engines are off/shutting down
+
+  if (msfsHandlerPtr->getAircraftIsReadyVar() && msfsHandlerPtr->getSimOnGround() &&
+      (msfsHandlerPtr->getSimulationTime() - lastFuelSaveTime) > FUEL_SAVE_INTERVAL &&
       (engine1State == OFF || engine1State == SHUTTING || engine2State == OFF || engine2State == SHUTTING)) {
     fuelConfiguration.setFuelLeft(simData.fuelLeftPre->get() / weightLbsPerGallon);
     fuelConfiguration.setFuelRight(simData.fuelRightPre->get() / weightLbsPerGallon);
@@ -1009,6 +1054,11 @@ void EngineControl_A32NX::updateThrustLimits(double                  simulationT
 
   const double flexTemp      = simData.airlinerToFlexTemp->get();
   const double pressAltitude = simData.simVarsDataPtr->data().pressureAltitude;
+  const double thrustLimitType = simData.thrustLimitType->get();
+
+  if (!isTransitionActive && thrustLimitType != 3 /* FLEX */) {
+    latchedFlexTemperature = flexTemp;
+  }
 
   double to      = 0;
   double ga      = 0;
@@ -1022,11 +1072,11 @@ void EngineControl_A32NX::updateThrustLimits(double                  simulationT
   // Write all N1 Limits
   to = ThrustLimits_A32NX::limitN1(0, (std::min)(16600.0, pressAltitude), ambientTemperature, ambientPressure, 0, packs, nai, wai);
   ga = ThrustLimits_A32NX::limitN1(1, (std::min)(16600.0, pressAltitude), ambientTemperature, ambientPressure, 0, packs, nai, wai);
-  if (flexTemp > 0) {
+  if (latchedFlexTemperature > 0) {
     flex_to =
-        ThrustLimits_A32NX::limitN1(0, (std::min)(16600.0, pressAltitude), ambientTemperature, ambientPressure, flexTemp, packs, nai, wai);
+        ThrustLimits_A32NX::limitN1(0, (std::min)(16600.0, pressAltitude), ambientTemperature, ambientPressure, latchedFlexTemperature, packs, nai, wai);
     flex_ga =
-        ThrustLimits_A32NX::limitN1(1, (std::min)(16600.0, pressAltitude), ambientTemperature, ambientPressure, flexTemp, packs, nai, wai);
+        ThrustLimits_A32NX::limitN1(1, (std::min)(16600.0, pressAltitude), ambientTemperature, ambientPressure, latchedFlexTemperature, packs, nai, wai);
   }
   clb = ThrustLimits_A32NX::limitN1(2, pressAltitude, ambientTemperature, ambientPressure, 0, packs, nai, wai);
   mct = ThrustLimits_A32NX::limitN1(3, pressAltitude, ambientTemperature, ambientPressure, 0, packs, nai, wai);
@@ -1037,10 +1087,9 @@ void EngineControl_A32NX::updateThrustLimits(double                  simulationT
   flex                 = flex_to + (flex_ga - flex_to) * machFactorLow;
 
   // adaption of CLB due to FLX limit if necessary ------------------------------------------------------------------
-  const double thrustLimitType = simData.thrustLimitType->get();
-  if ((prevThrustLimitType != 3 && thrustLimitType == 3) || (prevFlexTemperature == 0 && flexTemp > 0)) {
+  if (prevThrustLimitType != 3 && thrustLimitType == 3) {
     wasFlexActive = true;
-  } else if ((flexTemp == 0) || (thrustLimitType == 4)) {
+  } else if (thrustLimitType == 4) {
     wasFlexActive = false;
   }
 
@@ -1072,7 +1121,6 @@ void EngineControl_A32NX::updateThrustLimits(double                  simulationT
   }
 
   prevThrustLimitType = thrustLimitType;
-  prevFlexTemperature = flexTemp;
 
   // thrust transitions for MCT and TOGA ----------------------------------------------------------------------------
 

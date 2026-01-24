@@ -20,12 +20,7 @@ export class MfdAtccomDAtis extends DisplayComponent<MfdAtccomDAtisProps> {
   render(): VNode {
     return (
       <>
-        <ActivePageTitleBar
-          activePage={Subject.create('D-ATIS/LIST')}
-          offset={Subject.create('')}
-          eoIsActive={Subject.create(false)}
-          tmpyIsActive={Subject.create(false)}
-        />
+        <ActivePageTitleBar activePage={Subject.create('D-ATIS/LIST')} offset={Subject.create('')} />
         {/* begin page content */}
         <div class="mfd-page-container">
           <DAtisBlock
@@ -36,7 +31,7 @@ export class MfdAtccomDAtis extends DisplayComponent<MfdAtccomDAtisProps> {
             atisIcao={Subject.create('LFBO')}
             atisType="DEP"
             atisMessage={Subject.create(
-              'LFBO DEP ATIS K 1005Z RWY 32L ILS RWY 32L RWY 32R CLOSED TRANS LVL 5000FT TWY N1 N2 N6 M2 CLSD EXPECT TKOF FROM M4 2700M AVLB IF UNABLE ADV PREFLIGHT WIND 34009KT VIS 10 KM CLOUD FEW011 BKN041 OVC054 TEMP ......',
+              'LFBO DEP ATIS K = 1005Z RWY 32L ILS RWY 32L RWY 32R CLOSED TRANS LVL 5000FT TWY N1 N2 N6 M2 CLSD EXPECT TKOF FROM M4 2700M AVLB IF UNABLE ADV PREFLIGHT WIND 34009KT VIS 10 KM CLOUD FEW011 BKN041 OVC054 TEMP ......',
             )}
             atisCode={Subject.create('K')}
             atisTime={Subject.create('1005Z')}

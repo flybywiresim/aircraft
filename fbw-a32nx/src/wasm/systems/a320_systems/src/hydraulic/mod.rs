@@ -1768,7 +1768,6 @@ impl A320Hydraulic {
                 right_flaps,
                 Volume::new::<cubic_inch>(0.32),
                 AngularVelocity::new::<radian_per_second>(0.13),
-                Angle::new::<degree>(251.97),
                 Ratio::new::<ratio>(140.),
                 Ratio::new::<ratio>(16.632),
                 Ratio::new::<ratio>(314.98),
@@ -1783,7 +1782,6 @@ impl A320Hydraulic {
                 right_slats,
                 Volume::new::<cubic_inch>(0.32),
                 AngularVelocity::new::<radian_per_second>(0.13),
-                Angle::new::<degree>(334.16),
                 Ratio::new::<ratio>(140.),
                 Ratio::new::<ratio>(16.632),
                 Ratio::new::<ratio>(314.98),
@@ -2232,8 +2230,14 @@ impl A320Hydraulic {
             engine2,
         );
 
-        self.slats_flaps_complex
-            .update(context, &self.flap_system, &self.slat_system, adirs);
+        self.slats_flaps_complex.update(
+            context,
+            &self.flap_system,
+            &self.slat_system,
+            adirs,
+            lgciu1,
+            lgciu2,
+        );
 
         self.flap_system.update(
             context,
@@ -2263,8 +2267,14 @@ impl A320Hydraulic {
             self.yellow_circuit.system_section(),
         );
 
-        self.slats_flaps_complex
-            .update(context, &self.flap_system, &self.slat_system, adirs);
+        self.slats_flaps_complex.update(
+            context,
+            &self.flap_system,
+            &self.slat_system,
+            adirs,
+            lgciu1,
+            lgciu2,
+        );
 
         self.rudder_mechanical_assembly.update(
             context,
@@ -6157,6 +6167,7 @@ mod tests {
     mod a320_hydraulics {
         use super::*;
         use systems::{
+            assert_gt_lt,
             electrical::{
                 test::TestElectricitySource, ElectricalBus, Electricity, ElectricitySource,
                 ExternalPowerSource,
@@ -6178,14 +6189,17 @@ mod tests {
             },
         };
 
-        use uom::si::{
-            angle::degree,
-            angular_velocity::degree_per_second,
-            electric_potential::volt,
-            length::foot,
-            mass_density::kilogram_per_cubic_meter,
-            ratio::{percent, ratio},
-            volume::liter,
+        use uom::{
+            si::{
+                angle::degree,
+                angular_velocity::degree_per_second,
+                electric_potential::volt,
+                length::foot,
+                mass_density::kilogram_per_cubic_meter,
+                ratio::{percent, ratio},
+                volume::liter,
+            },
+            ConstZero,
         };
 
         struct A320TestEmergencyElectricalOverheadPanel {
@@ -7283,6 +7297,10 @@ mod tests {
                 values.iter().sum::<f64>() / (values.len() as f64)
             }
 
+            fn get_flaps_fppu(&mut self) -> Angle {
+                self.read_by_name("FLAPS_FPPU_ANGLE")
+            }
+
             fn get_slats_left_position_percent(&mut self) -> f64 {
                 let values: &[f64] = &[
                     self.read_by_name("LEFT_SLATS_1_POSITION_PERCENT"),
@@ -7303,6 +7321,10 @@ mod tests {
                     self.read_by_name("RIGHT_SLATS_5_POSITION_PERCENT"),
                 ];
                 values.iter().sum::<f64>() / (values.len() as f64)
+            }
+
+            fn get_slats_fppu(&mut self) -> Angle {
+                self.read_by_name("SLATS_FPPU_ANGLE")
             }
 
             fn get_real_gear_position(&mut self, wheel_id: GearWheel) -> Ratio {
@@ -10525,6 +10547,262 @@ mod tests {
 
             assert!(!test_bed.is_slats_moving());
             assert!(!test_bed.is_flaps_moving());
+        }
+
+        #[test]
+        fn no_sfcc_1_flaps_slats() {
+            let positioning_tolerance = Angle::new::<degree>(0.18);
+            let mut test_bed = test_bed_on_ground_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .set_flaps_handle_position(0)
+                .run_one_tick();
+
+            test_bed = test_bed
+                .start_eng1(Ratio::new::<percent>(80.))
+                .start_eng2(Ratio::new::<percent>(80.))
+                .run_waiting_for(Duration::from_secs(20));
+
+            test_bed = test_bed
+                .dc_ess_lost()
+                .run_waiting_for(Duration::from_secs(20));
+
+            assert_gt_lt!(
+                test_bed.get_flaps_fppu(),
+                Angle::ZERO,
+                positioning_tolerance
+            );
+
+            assert_gt_lt!(
+                test_bed.get_slats_fppu(),
+                Angle::ZERO,
+                positioning_tolerance
+            );
+
+            test_bed = test_bed
+                .set_flaps_handle_position(2)
+                .run_waiting_for(Duration::from_secs(160));
+
+            assert_gt_lt!(
+                test_bed.get_flaps_fppu(),
+                Angle::new::<degree>(145.51),
+                positioning_tolerance
+            );
+
+            assert_gt_lt!(
+                test_bed.get_slats_fppu(),
+                Angle::new::<degree>(272.27),
+                positioning_tolerance
+            );
+
+            test_bed = test_bed
+                .set_flaps_handle_position(3)
+                .run_waiting_for(Duration::from_secs(120));
+
+            assert_gt_lt!(
+                test_bed.get_flaps_fppu(),
+                Angle::new::<degree>(168.35),
+                positioning_tolerance
+            );
+
+            assert_gt_lt!(
+                test_bed.get_slats_fppu(),
+                Angle::new::<degree>(272.27),
+                positioning_tolerance
+            );
+
+            test_bed = test_bed
+                .set_flaps_handle_position(4)
+                .run_waiting_for(Duration::from_secs(120));
+
+            assert_gt_lt!(
+                test_bed.get_flaps_fppu(),
+                Angle::new::<degree>(251.97),
+                positioning_tolerance
+            );
+
+            assert_gt_lt!(
+                test_bed.get_slats_fppu(),
+                Angle::new::<degree>(334.16),
+                positioning_tolerance
+            );
+
+            test_bed = test_bed
+                .set_flaps_handle_position(3)
+                .run_waiting_for(Duration::from_secs(120));
+
+            assert_gt_lt!(
+                test_bed.get_flaps_fppu(),
+                Angle::new::<degree>(168.35),
+                positioning_tolerance
+            );
+
+            assert_gt_lt!(
+                test_bed.get_slats_fppu(),
+                Angle::new::<degree>(272.27),
+                positioning_tolerance
+            );
+
+            test_bed = test_bed
+                .set_flaps_handle_position(2)
+                .run_waiting_for(Duration::from_secs(120));
+
+            assert_gt_lt!(
+                test_bed.get_flaps_fppu(),
+                Angle::new::<degree>(145.51),
+                positioning_tolerance
+            );
+
+            assert_gt_lt!(
+                test_bed.get_slats_fppu(),
+                Angle::new::<degree>(272.27),
+                positioning_tolerance
+            );
+
+            test_bed = test_bed
+                .set_flaps_handle_position(0)
+                .run_waiting_for(Duration::from_secs(120));
+
+            assert_gt_lt!(
+                test_bed.get_flaps_fppu(),
+                Angle::ZERO,
+                positioning_tolerance
+            );
+
+            assert_gt_lt!(
+                test_bed.get_slats_fppu(),
+                Angle::ZERO,
+                positioning_tolerance
+            );
+        }
+
+        #[test]
+        fn no_sfcc_2_flaps_slats() {
+            let positioning_tolerance = Angle::new::<degree>(0.18);
+            let mut test_bed = test_bed_on_ground_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .set_flaps_handle_position(0)
+                .run_one_tick();
+
+            test_bed = test_bed
+                .start_eng1(Ratio::new::<percent>(80.))
+                .start_eng2(Ratio::new::<percent>(80.))
+                .run_waiting_for(Duration::from_secs(20));
+
+            test_bed = test_bed
+                .dc_bus_2_lost()
+                .run_waiting_for(Duration::from_secs(20));
+
+            assert_gt_lt!(
+                test_bed.get_flaps_fppu(),
+                Angle::ZERO,
+                positioning_tolerance
+            );
+
+            assert_gt_lt!(
+                test_bed.get_slats_fppu(),
+                Angle::ZERO,
+                positioning_tolerance
+            );
+
+            test_bed = test_bed
+                .set_flaps_handle_position(2)
+                .run_waiting_for(Duration::from_secs(160));
+
+            assert_gt_lt!(
+                test_bed.get_flaps_fppu(),
+                Angle::new::<degree>(145.51),
+                positioning_tolerance
+            );
+
+            assert_gt_lt!(
+                test_bed.get_slats_fppu(),
+                Angle::new::<degree>(272.27),
+                positioning_tolerance
+            );
+
+            test_bed = test_bed
+                .set_flaps_handle_position(3)
+                .run_waiting_for(Duration::from_secs(120));
+
+            assert_gt_lt!(
+                test_bed.get_flaps_fppu(),
+                Angle::new::<degree>(168.35),
+                positioning_tolerance
+            );
+
+            assert_gt_lt!(
+                test_bed.get_slats_fppu(),
+                Angle::new::<degree>(272.27),
+                positioning_tolerance
+            );
+
+            test_bed = test_bed
+                .set_flaps_handle_position(4)
+                .run_waiting_for(Duration::from_secs(120));
+
+            assert_gt_lt!(
+                test_bed.get_flaps_fppu(),
+                Angle::new::<degree>(251.97),
+                positioning_tolerance
+            );
+
+            assert_gt_lt!(
+                test_bed.get_slats_fppu(),
+                Angle::new::<degree>(334.16),
+                positioning_tolerance
+            );
+
+            test_bed = test_bed
+                .set_flaps_handle_position(3)
+                .run_waiting_for(Duration::from_secs(120));
+
+            assert_gt_lt!(
+                test_bed.get_flaps_fppu(),
+                Angle::new::<degree>(168.35),
+                positioning_tolerance
+            );
+
+            assert_gt_lt!(
+                test_bed.get_slats_fppu(),
+                Angle::new::<degree>(272.27),
+                positioning_tolerance
+            );
+
+            test_bed = test_bed
+                .set_flaps_handle_position(2)
+                .run_waiting_for(Duration::from_secs(120));
+
+            assert_gt_lt!(
+                test_bed.get_flaps_fppu(),
+                Angle::new::<degree>(145.51),
+                positioning_tolerance
+            );
+
+            assert_gt_lt!(
+                test_bed.get_slats_fppu(),
+                Angle::new::<degree>(272.27),
+                positioning_tolerance
+            );
+
+            test_bed = test_bed
+                .set_flaps_handle_position(0)
+                .run_waiting_for(Duration::from_secs(120));
+
+            assert_gt_lt!(
+                test_bed.get_flaps_fppu(),
+                Angle::ZERO,
+                positioning_tolerance
+            );
+
+            assert_gt_lt!(
+                test_bed.get_slats_fppu(),
+                Angle::ZERO,
+                positioning_tolerance
+            );
         }
 
         #[test]

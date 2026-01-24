@@ -13,7 +13,9 @@ import { UpdatableSimVarPublisher } from '../MsfsAvionicsCommon/UpdatableSimVarP
 // FIXME ideally migrate to singular publishers (split by source)
 export type BaseSDSimvars = AdirsSimVars &
   SwitchingPanelVSimVars & {
+    moreActive: boolean;
     sdPageToShow: number;
+    sdStsPageToShow: number;
     zuluTime: number;
     /** in gallons */
     grossWeightCg: number;
@@ -37,7 +39,12 @@ export type BaseSDSimvars = AdirsSimVars &
     cpcsBxDiscreteWord: number;
     engineFuelUsed: number;
     engineFuelFlow: number;
-    baroMode: number;
+    fws1_is_healthy: boolean;
+    fws2_is_healthy: boolean;
+    afdx_4_4_reachable: boolean;
+    afdx_14_14_reachable: boolean;
+    afdx_4_3_reachable: boolean;
+    afdx_14_13_reachable: boolean;
   };
 
 type IndexedTopics =
@@ -60,10 +67,12 @@ export class SDSimvarPublisher extends UpdatableSimVarPublisher<SDSimvars> {
   private static simvars = new Map<keyof SDSimvars, SimVarPublisherEntry<any>>([
     ...AdirsSimVarDefinitions,
     ...SwitchingPanelSimVarsDefinitions,
+    ['moreActive', { name: 'L:A32NX_ECAM_SD_MORE_SHOWN', type: SimVarValueType.Bool }],
     ['sdPageToShow', { name: 'L:A32NX_ECAM_SD_PAGE_TO_SHOW', type: SimVarValueType.Enum }],
+    ['sdStsPageToShow', { name: 'L:A32NX_ECAM_SD_STS_PAGE_TO_SHOW', type: SimVarValueType.Enum }],
     ['zuluTime', { name: 'E:ZULU TIME', type: SimVarValueType.Seconds }],
     ['grossWeightCg', { name: 'L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC', type: SimVarValueType.Number }],
-    ['fuelTotalQuantity', { name: 'FUEL TOTAL QUANTITY', type: SimVarValueType.GAL }],
+    ['fuelTotalQuantity', { name: 'L:A32NX_TOTAL_FUEL_VOLUME', type: SimVarValueType.GAL }],
     ['fuelWeightPerGallon', { name: 'FUEL WEIGHT PER GALLON', type: SimVarValueType.Number }],
     ['cockpitCabinTemp', { name: 'L:A32NX_COND_CKPT_TEMP', type: SimVarValueType.Number }],
     ['fwdCargoTemp', { name: 'L:A32NX_COND_CARGO_FWD_TEMP', type: SimVarValueType.Number }],
@@ -96,7 +105,12 @@ export class SDSimvarPublisher extends UpdatableSimVarPublisher<SDSimvars> {
     ],
     ['engineFuelUsed', { name: 'L:A32NX_FUEL_USED:#index#', type: SimVarValueType.Number, indexed: true }],
     ['engineFuelFlow', { name: 'L:A32NX_ENGINE_FF:#index#', type: SimVarValueType.Number, indexed: true }],
-    ['baroMode', { name: 'L:A32NX_FCU_EFIS_L_DISPLAY_BARO_MODE', type: SimVarValueType.Number }],
+    ['fws1_is_healthy', { name: 'L:A32NX_FWS1_IS_HEALTHY', type: SimVarValueType.Bool }],
+    ['fws2_is_healthy', { name: 'L:A32NX_FWS2_IS_HEALTHY', type: SimVarValueType.Bool }],
+    ['afdx_4_4_reachable', { name: 'L:A32NX_AFDX_4_4_REACHABLE', type: SimVarValueType.Bool }],
+    ['afdx_14_14_reachable', { name: 'L:A32NX_AFDX_14_14_REACHABLE', type: SimVarValueType.Bool }],
+    ['afdx_4_3_reachable', { name: 'L:A32NX_AFDX_4_3_REACHABLE', type: SimVarValueType.Bool }],
+    ['afdx_14_13_reachable', { name: 'L:A32NX_AFDX_14_13_REACHABLE', type: SimVarValueType.Bool }],
   ]);
 
   public constructor(bus: EventBus) {

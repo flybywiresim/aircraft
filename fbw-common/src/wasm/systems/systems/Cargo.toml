@@ -6,15 +6,15 @@ edition = "2021"
 
 [dependencies]
 uom.workspace = true
-rand = { version = "0.9.1", features = ["small_rng"] }
+rand.workspace = true
 rand_distr = "0.5.1"
-ntest = "0.9.3"
 num-derive = "0.4.2"
 num-traits = "0.2.19"
 nalgebra = "0.33.0"
 bounded-vec-deque = "0.1.1"
-fxhash = "0.2.1"
+rustc-hash = "2.1.1"
 bitflags = "2.9.1"
 
 [dev-dependencies]
+ntest.workspace = true
 rstest.workspace = true

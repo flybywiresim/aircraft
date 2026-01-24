@@ -1,7 +1,8 @@
 // Copyright (c) 2024-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-export const WD_NUM_LINES = 17;
+export const WD_NUM_LINES = 18;
+export const WD_LINE_CHARACTERS = 41; // Characters without the leading checkbox and the space after it
 
 import {
   EcamAbnormalSensedAta212223,
@@ -25,7 +26,7 @@ import { EcamAbnormalSensedAta46495256 } from 'instruments/src/MsfsAvionicsCommo
 import { EcamAbnormalSensedAta70 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata70';
 import { EcamAbnormalSensedAta80Rest } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/ata80-rest';
 import { EcamAbnormalSecondaryFailures } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/AbnormalSensed/secondary-failures';
-import { AbnormalNonSensedCategory } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
+import { AbnormalNonSensedCategory } from 'instruments/src/MsfsAvionicsCommon/providers/FwsPublisher';
 
 // Convention for IDs:
 // First two digits: ATA chapter. 00 for T.O and LDG memos
@@ -176,9 +177,19 @@ export const EcamMemos: { [n: string]: string } = {
 };
 
 /** Only these IDs will be shown in the PFD MEMO section */
-export const pfdMemoDisplay: string[] = ['000006002', '220000001', '220000002', '300000001', '300000002', '320000001'];
 
-/** All possible INFOs (e.g. CAT 3 SINGLE ONLY), with special formatting characters. */
+export const AThrOffMemoKey = '220000002';
+
+export const pfdMemoDisplay: string[] = [
+  '000006002',
+  '220000001',
+  AThrOffMemoKey,
+  '300000001',
+  '300000002',
+  '320000001',
+];
+
+/** All possible INFOs (e.g. LAND 3 SINGLE ONLY), with special formatting characters. */
 export const EcamInfos: { [n: string]: string } = {
   210200001: '\x1b<3mCABIN TEMP REGUL DEGRADED',
   210200002: '\x1b<3mFWD CRG VENT DEGRADED',
@@ -186,21 +197,23 @@ export const EcamInfos: { [n: string]: string } = {
   220200001: '\x1b<3mFMS 1 ON FMC-C',
   220200002: '\x1b<3mFMS 2 ON FMC-C',
   220200003: '\x1b<3mSTBY INSTRUMENTS NAV AVAIL',
-  220200004: '\x1b<3mCAT 2 ONLY',
-  220200005: '\x1b<3mCAT 3 SINGLE ONLY',
+  220200004: '\x1b<3mLAND 2 ONLY',
+  220200005: '\x1b<3mLAND 3 SINGLE ONLY',
   220200006: '\x1b<3mFOR AUTOLAND: MAN ROLL OUT ONLY',
-  220200007: '\x1b<3mAPPR MODE NOT AVAIL',
+  220200007: '\x1b<3mAD/FD APPR MODE NOT AVAIL',
   220200008: '\x1b<3mLOC MODE AVAIL ONLY',
   220200009: '\x1b<3mWHEN L/G DOWN AND AP OFF: USE MAN PITCH TRIM',
-  220200010: '\x1b<3mCAT 1 ONLY',
+  220200010: '\x1b<3mAPPR 1 ONLY',
   220200011: '\x1b<3mFMS PRED UNRELIABLE', // TODO add without accurate fms penalty once multiple lines supported
   220200012: '\x1b<3mMINIMIZE XWIND FOR LANDING',
   220200013: '\x1b<3mAUTOLAND : RECOMMENDED',
   230200001: '\x1b<3mSATCOM DATALINK AVAIL',
   260200001: '\x1b<3mBEFORE CARGO OPENING : PAX DISEMBARK',
   270200001: '\x1b<3mON DRY RWY ONLY : LDG DIST AFFECTED < 15%',
-  270200002: '\x1bGND SPLRs WILL EXTEND AT REV SELECTION',
-  270200003: '\x1bF/CTL BKUP CTL ACTIVE',
+  270200002: '\x1b<3mGND SPLRs WILL EXTEND AT REV SELECTION',
+  270200003: '\x1b<3mF/CTL BKUP CTL ACTIVE',
+  270200004: '\x1b<3mAUDIOS NOT AVAIL : WINDHSHEAR, SPEED SPEED',
+  270200005: '\x1b<3mF/CTL INDICATIONS LOST',
   320200001: '\x1b<3mALTN BRK WITH A-SKID',
   320200002: '\x1b<3mBRK PRESS AUTO LIMITED ON ALL L/Gs',
   320200003: '\x1b<3mDELAY BRAKING UNTIL NLG TOUCHDOWN',
@@ -472,17 +485,21 @@ export const EcamInopSys: { [n: string]: string } = {
   270300010: '\x1b<4mPRIM 1',
   270300011: '\x1b<4mPRIM 2',
   270300012: '\x1b<4mPRIM 3',
+  270300013: '\x1b<4mFCDC 1',
+  270300014: '\x1b<4mFCDC 2',
+  270300015: '\x1b<4mFCDC 1+2',
   290100001: '\x1b<4mPART SPLRs',
-  290100003: '\x1b<4mFLAPS SYS 1',
-  290100004: '\x1b<4mFLAPS SYS 2',
-  290100005: '\x1b<4mSLATS SYS 1',
-  290100006: '\x1b<4mSLATS SYS 2',
+  290100003: '\x1b<4mFLAP SYS 1',
+  290100004: '\x1b<4mFLAP SYS 2',
+  290100005: '\x1b<4mSLAT SYS 1',
+  290100006: '\x1b<4mSLAT SYS 2',
   290100007: '\x1b<4mSTABILIZER',
   290100008: '\x1b<4mF/CTL PROT',
   290100009: '\x1b<4mL OUTR AILERON',
   290100010: '\x1b<4mR OUTR AILERON',
   290100011: '\x1b<4mMOST SPLRs',
   290100012: '\x1b<4mFLAPS',
+  290100013: '\x1b<4mSLATS',
   290300001: '\x1b<4mG ELEC PMP A',
   290300002: '\x1b<4mG ELEC PMP B',
   290300003: '\x1b<4mY ELEC PMP A',
@@ -521,7 +538,7 @@ export const EcamInopSys: { [n: string]: string } = {
   320300007: '\x1b<4mBTV',
   320300008: '\x1b<4mNORM BRK',
   320300009: '\x1b<4mPARK BRK',
-  320300010: '\x1b<4mPPEDAL BRAKING',
+  320300010: '\x1b<4mPEDAL BRAKING',
   320300011: '\x1b<4mL/G CTL 1+2',
   320300012: '\x1b<4mL/G DOORS',
   320300013: '\x1b<4mL/G RETRACTION',
@@ -536,6 +553,7 @@ export const EcamInopSys: { [n: string]: string } = {
   320300022: '\x1b<4mROW/ROP',
   320300023: '\x1b<4mPART L/G RETRACTION',
   320300024: '\x1b<4mNORM B/W STEER',
+  320300025: '\x1b<4mRWY OVERRUN PROT',
   340300001: '\x1b<4mGPWS 1',
   340300002: '\x1b<4mGPWS 2',
   340300003: '\x1b<4mGPWS 1+2',
@@ -548,7 +566,6 @@ export const EcamInopSys: { [n: string]: string } = {
   340300010: '\x1b<4mADR 1+2+3',
   340300011: '\x1b<4mTCAS 1',
   340300012: '\x1b<4mTCAS 2',
-  340300013: '\x1b<4mF/CTL PROT',
   340300014: '\x1b<4mLOAD ALLEVIATION',
   340300021: '\x1b<4mGUST LOAD PROT',
   340300022: '\x1b<4mRA SYS A',
@@ -581,6 +598,7 @@ export const EcamInopSys: { [n: string]: string } = {
   340300046: '\x1b<4mTAWS SYS 1',
   340300047: '\x1b<4mTAWS SYS 2',
   340300048: '\x1b<4mTAWS SYS 1+2',
+  340300049: '\x1b<4mARPT NAV',
   700300001: '\x1b<4mENG 2 REVERSER',
   700300002: '\x1b<4mENG 3 REVERSER',
   700300003: '\x1b<4mENG 2+3 REVERSERs',
@@ -596,6 +614,7 @@ export enum ChecklistLineStyle {
   SubHeadline = 'SubHeadline',
   CenteredSubHeadline = 'CenteredSubHeadline',
   SeparationLine = 'SeparationLine',
+  Empty = 'Empty',
   ChecklistItem = 'ChecklistItem',
   CompletedChecklist = 'CompletedChecklist',
   CompletedDeferredProcedure = 'CompletedDeferredProcedure',
@@ -723,6 +742,7 @@ export enum DeferredProcedureType {
   FOR_APPROACH,
   FOR_LANDING,
 }
+export const DEFERRED_PROCEDURE_TYPE_TO_STRING = ['ALL PHASES', 'AT TOP OF DESCENT', 'FOR APPROACH', 'FOR LANDING'];
 export interface DeferredProcedure {
   /** Which abnormal procedures triggers this deferred procedure */
   fromAbnormalProcs: string[];

@@ -1721,12 +1721,12 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [
       {
-        name: 'ALL THR LEVERS', // When all ENG operative
+        name: 'ALL THR LEVERS',
         sensed: true,
         labelNotCompleted: 'CLB',
       },
       {
-        name: 'THR LEVERS', // In case of ENG out
+        name: 'THR LEVERS',
         sensed: true,
         labelNotCompleted: 'MCT',
       },
@@ -1835,8 +1835,8 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [
       {
-        name: 'FOR AUTOLAND: MAN ROLL OUT ONLY', // Always completed
-        sensed: true,
+        name: 'FOR AUTOLAND : MAN ROLL OUT ONLY',
+        sensed: false,
         style: ChecklistLineStyle.Green,
       },
     ],
@@ -1846,18 +1846,18 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [
       {
-        name: 'FOR TCAS ALERT', // Always completed
+        name: 'FOR TCAS ALERT',
         sensed: true,
         style: ChecklistLineStyle.Green,
       },
       {
-        name: 'AP & FD', // Always completed
+        name: 'AP & FD',
         sensed: true,
         labelNotCompleted: 'OFF',
         style: ChecklistLineStyle.Green,
       },
       {
-        name: 'FLY MANUALLY TCAS RA ORDER', // Always completed
+        name: 'FLY MANUALLY TCAS RA ORDER',
         sensed: true,
         style: ChecklistLineStyle.Green,
       },

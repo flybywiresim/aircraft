@@ -35,7 +35,7 @@ export class SecureCommunicationInterface implements Instrument {
 
   public readonly onGround = this.fwcDiscreteWord126.map((dw) => dw.bitValueOr(28, true));
 
-  public readonly doorsOpen = ConsumerSubject.create(this.sub.on('cabinDoorOpen'), 0);
+  public readonly doorsOpenPercentageOver100 = ConsumerSubject.create(this.sub.on('cabinDoorOpen'), 0);
 
   private readonly fuelQuantity = ConsumerSubject.create(this.sub.on('fuelTotalQuantity'), 0);
   private readonly fuelWeightPerGallon = ConsumerSubject.create(this.sub.on('fuelWeightPerGallon'), 0);
@@ -44,6 +44,14 @@ export class SecureCommunicationInterface implements Instrument {
     ([qt, weightPerGallon]) => qt * weightPerGallon,
     this.fuelQuantity,
     this.fuelWeightPerGallon,
+  );
+
+  public readonly hydGreenPressurized = ConsumerSubject.create(this.sub.on('hydGreenPressurized'), false);
+  public readonly hydYellowPressurized = ConsumerSubject.create(this.sub.on('hydYellowPressurized'), false);
+  public readonly hydraulicsPressurized = MappedSubject.create(
+    ([green, yellow]) => green || yellow,
+    this.hydGreenPressurized,
+    this.hydYellowPressurized,
   );
 
   constructor(private readonly bus: EventBus) {}
@@ -60,10 +68,13 @@ export class SecureCommunicationInterface implements Instrument {
       this.airspeed,
       this.fwcDiscreteWord126,
       this.onGround,
-      this.doorsOpen,
+      this.doorsOpenPercentageOver100,
       this.fuelQuantity,
       this.fuelWeightPerGallon,
       this.fuelWeight,
+      this.hydGreenPressurized,
+      this.hydYellowPressurized,
+      this.hydraulicsPressurized,
     );
 
     this.nssDataToAvncsOff.sub((v) => this.toAircraftSubscriptions.forEach((s) => (v ? s.pause() : s.resume())));

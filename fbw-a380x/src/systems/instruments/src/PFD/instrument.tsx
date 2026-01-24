@@ -12,8 +12,11 @@ import { SimplaneValueProvider } from 'instruments/src/MsfsAvionicsCommon/provid
 import { A380XFcuBusPublisher } from '../../../shared/src/publishers/A380XFcuBusPublisher';
 import { FwcPublisher, RopRowOansPublisher, SecPublisher, TawsPublisher } from '@flybywiresim/msfs-avionics-common';
 import { FwsPfdSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FwsPfdPublisher';
+import { FcdcSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FcdcPublisher';
+import { SfccSimVarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/SfccPublisher';
 
 import './style.scss';
+import { FGDataPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
 
 class A380X_PFD extends BaseInstrument {
   private readonly bus = new ArincEventBus();
@@ -48,6 +51,12 @@ class A380X_PFD extends BaseInstrument {
 
   private readonly fcuBusPublisher = new A380XFcuBusPublisher(this.bus);
 
+  private readonly fcdcPublisher = new FcdcSimvarPublisher(this.bus);
+
+  private readonly sfccPublisher = new SfccSimVarPublisher(this.bus);
+
+  private readonly fgDataPublisher = new FGDataPublisher(this.bus);
+
   constructor() {
     super();
 
@@ -69,6 +78,9 @@ class A380X_PFD extends BaseInstrument {
     this.backplane.addPublisher('TawsPublisher', this.tawsPublisher);
     this.backplane.addPublisher('FwsPfdPublisher', this.fwsPfdPublisher);
     this.backplane.addPublisher('FcuBusPublisher', this.fcuBusPublisher);
+    this.backplane.addPublisher('FcdcPublisher', this.fcdcPublisher);
+    this.backplane.addPublisher('SfccPublisher', this.sfccPublisher);
+    this.backplane.addPublisher('FgDataPublisher', this.fgDataPublisher);
   }
 
   get templateID(): string {

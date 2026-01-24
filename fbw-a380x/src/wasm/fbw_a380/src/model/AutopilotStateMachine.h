@@ -286,9 +286,9 @@ class AutopilotStateMachine final
   void AutopilotStateMachine_LOC_CPT_entry(void);
   void AutopilotStateMachine_OFF_entry(void);
   void AutopilotStateMachine_ROLL_OUT_entry(void);
+  void AutopilotStateMachine_LOC_TRACK_entry(void);
   void AutopilotStateMachine_FLARE_entry(void);
   boolean_T AutopilotStateMachine_LOC_TO_X(const ap_sm_output *BusAssignment);
-  void AutopilotStateMachine_LOC_TRACK_entry(void);
   void AutopilotStateMachine_LAND_entry(void);
   void AutopilotStateMachine_LOC(const ap_sm_output *BusAssignment);
   boolean_T AutopilotStateMachine_NAV_TO_HDG(const ap_sm_output *BusAssignment);

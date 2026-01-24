@@ -38,8 +38,6 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
   private readonly subs = [] as Subscription[];
 
-  private readonly eoActive = Subject.create<boolean>(false);
-
   private readonly sub = this.props.bus.getSubscriber<MfdSimvars & MfdSurvEvents>();
 
   private readonly xpdrFailed = Subject.create<boolean>(false);
@@ -74,8 +72,14 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
   );
 
   private readonly tcasTaraSelectedIndex = Subject.create<number | null>(2);
+  private readonly tcasTaraRadioColor = this.tcasTaraSelectedIndex.map((it) =>
+    it === 0 ? RadioButtonColor.Green : RadioButtonColor.White,
+  );
 
   private readonly tcasNormAbvBlwSelectedIndex = Subject.create<number | null>(0);
+  private readonly tcasNormAbvBlwRadioColor = this.tcasNormAbvBlwSelectedIndex.map((it) =>
+    it === 0 ? RadioButtonColor.Green : RadioButtonColor.Cyan,
+  );
 
   private readonly wxrFailed = Subject.create<boolean>(true);
 
@@ -181,6 +185,8 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
       this.xpdrState,
       this.xpdrAltRptgDisabled,
       this.xpdrStatusRadioColor,
+      this.tcasTaraRadioColor,
+      this.tcasNormAbvBlwRadioColor,
       this.tcasFailed,
       this.tcasRadioGroupDisabled,
       this.activeSystemGroupWxrTaws,
@@ -191,9 +197,6 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
       this.tawsTerrFailed,
       this.tawsGpwsFailed,
       this.allTawsFailed,
-      this.props.fmcService.masterFmcChanged.sub(() =>
-        this.props.fmcService.master?.fmgc.data.engineOut.pipe(this.eoActive),
-      ),
     );
   }
 
@@ -261,12 +264,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
   render(): VNode {
     return (
       <>
-        <ActivePageTitleBar
-          activePage={Subject.create('CONTROLS')}
-          offset={Subject.create('')}
-          eoIsActive={this.eoActive}
-          tmpyIsActive={Subject.create(false)}
-        />
+        <ActivePageTitleBar activePage={Subject.create('CONTROLS')} offset={Subject.create('')} />
         {/* begin page content */}
         <div class="mfd-page-container">
           <div class="mfd-surv-controls-first-section">
@@ -333,7 +331,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
                   idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_survControlsTcasTara`}
                   additionalVerticalSpacing={10}
                   valuesDisabled={this.tcasRadioGroupDisabled}
-                  color={Subject.create(RadioButtonColor.Green)}
+                  color={this.tcasTaraRadioColor}
                 />
               </div>
               <div class="mfd-surv-controls-tcas-right">
@@ -346,7 +344,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
                   valuesDisabled={this.tcasRadioGroupDisabled}
                   idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_survControlsTcasNormAbvBlw`}
                   additionalVerticalSpacing={10}
-                  color={Subject.create(RadioButtonColor.Green)}
+                  color={this.tcasNormAbvBlwRadioColor}
                 />
               </div>
             </div>

@@ -1,12 +1,12 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2025 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
 import { Airport, ApproachType, Fix, isMsfs2024, LegType, MathUtils, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
-import { EventBus, MagVar } from '@microsoft/msfs-sdk';
+import { AeroMath, BitFlags, EventBus, MagVar, MutableSubscribable } from '@microsoft/msfs-sdk';
 import { FixInfoData, FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
 import { loadAllDepartures, loadAllRunways } from '@fmgc/flightplanning/DataLoading';
 import { Coordinates, Degrees } from 'msfs-geo';
@@ -20,23 +20,26 @@ import {
   FlightPlanPerformanceData,
   FlightPlanPerformanceDataProperties,
 } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
-import { BaseFlightPlan, FlightPlanQueuedOperation, SerializedFlightPlan } from './BaseFlightPlan';
+import { BaseFlightPlan, FlightPlanContext, SerializedFlightPlan } from './BaseFlightPlan';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { A32NX_Util } from '../../../../shared/src/A32NX_Util';
+import { FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/FlightPlanQueuedOperation';
+import { FlightPlanFlags } from './FlightPlanFlags';
 
 export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> extends BaseFlightPlan<P> {
   static empty<P extends FlightPlanPerformanceData>(
+    context: FlightPlanContext,
     index: number,
     bus: EventBus,
     performanceDataInit: P,
   ): FlightPlan<P> {
-    return new FlightPlan(index, bus, performanceDataInit);
+    return new FlightPlan(context, index, bus, performanceDataInit);
   }
 
   /**
    * Alternate flight plan associated with this flight plan
    */
-  alternateFlightPlan = new AlternateFlightPlan<P>(this.index, this);
+  alternateFlightPlan = new AlternateFlightPlan<P>(this.context, this.index, this);
 
   /**
    * Performance data for this flight plan
@@ -53,35 +56,41 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
    */
   flightNumber: string | undefined = undefined;
 
-  constructor(index: number, bus: EventBus, performanceDataInit: P) {
-    super(index, bus);
+  /**
+   * Possible flags for this flight plan. See {@link FlightPlanFlags} for a list of flags.
+   */
+  flags: number = FlightPlanFlags.None;
+
+  constructor(context: FlightPlanContext, index: number, bus: EventBus, performanceDataInit: P) {
+    super(context, index, bus);
     this.performanceData = performanceDataInit;
   }
 
   destroy() {
     super.destroy();
 
+    this.performanceData.destroy();
     this.alternateFlightPlan.destroy();
   }
 
   clone(newIndex: number, options: number = CopyOptions.Default): FlightPlan<P> {
-    const newPlan = FlightPlan.empty(newIndex, this.bus, this.performanceData.clone());
+    const newPlan = FlightPlan.empty(this.context, newIndex, this.bus, this.performanceData.clone());
 
     newPlan.version = this.version;
-    newPlan.originSegment = this.originSegment.clone(newPlan);
-    newPlan.departureRunwayTransitionSegment = this.departureRunwayTransitionSegment.clone(newPlan);
-    newPlan.departureSegment = this.departureSegment.clone(newPlan);
-    newPlan.departureEnrouteTransitionSegment = this.departureEnrouteTransitionSegment.clone(newPlan);
-    newPlan.enrouteSegment = this.enrouteSegment.clone(newPlan);
-    newPlan.arrivalEnrouteTransitionSegment = this.arrivalEnrouteTransitionSegment.clone(newPlan);
-    newPlan.arrivalSegment = this.arrivalSegment.clone(newPlan);
-    newPlan.arrivalRunwayTransitionSegment = this.arrivalRunwayTransitionSegment.clone(newPlan);
-    newPlan.approachViaSegment = this.approachViaSegment.clone(newPlan);
-    newPlan.approachSegment = this.approachSegment.clone(newPlan);
-    newPlan.destinationSegment = this.destinationSegment.clone(newPlan);
-    newPlan.missedApproachSegment = this.missedApproachSegment.clone(newPlan);
+    newPlan.originSegment = this.originSegment.clone(newPlan, options);
+    newPlan.departureRunwayTransitionSegment = this.departureRunwayTransitionSegment.clone(newPlan, options);
+    newPlan.departureSegment = this.departureSegment.clone(newPlan, options);
+    newPlan.departureEnrouteTransitionSegment = this.departureEnrouteTransitionSegment.clone(newPlan, options);
+    newPlan.enrouteSegment = this.enrouteSegment.clone(newPlan, options);
+    newPlan.arrivalEnrouteTransitionSegment = this.arrivalEnrouteTransitionSegment.clone(newPlan, options);
+    newPlan.arrivalSegment = this.arrivalSegment.clone(newPlan, options);
+    newPlan.arrivalRunwayTransitionSegment = this.arrivalRunwayTransitionSegment.clone(newPlan, options);
+    newPlan.approachViaSegment = this.approachViaSegment.clone(newPlan, options);
+    newPlan.approachSegment = this.approachSegment.clone(newPlan, options);
+    newPlan.destinationSegment = this.destinationSegment.clone(newPlan, options);
+    newPlan.missedApproachSegment = this.missedApproachSegment.clone(newPlan, options);
 
-    newPlan.alternateFlightPlan = this.alternateFlightPlan.clone(newPlan);
+    newPlan.alternateFlightPlan = this.alternateFlightPlan.clone(this.context, newPlan, options);
 
     newPlan.availableOriginRunways = [...this.availableOriginRunways];
     newPlan.availableDepartures = [...this.availableDepartures];
@@ -94,7 +103,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
     newPlan.flightNumber = this.flightNumber;
 
-    if (options & CopyOptions.IncludeFixInfos) {
+    if (BitFlags.isAll(options, CopyOptions.IncludeFixInfos)) {
       newPlan.fixInfos = this.fixInfos.map((it) => it?.clone());
     }
 
@@ -144,6 +153,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     this.setPerformanceData('alternateDescentSpeedLimitSpeed', DefaultPerformanceData.DescentSpeedLimitSpeed);
     this.setPerformanceData('alternateDescentSpeedLimitAltitude', DefaultPerformanceData.DescentSpeedLimitAltitude);
     this.setPerformanceData('isAlternateDescentSpeedLimitPilotEntered', false);
+    this.setPerformanceData('pilotAlternateFuel', null);
   }
 
   directToLeg(ppos: Coordinates, trueTrack: Degrees, targetLegIndex: number, _withAbeam = false) {
@@ -287,8 +297,8 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     }
 
     // We call the segment methods because we only want to rebuild the arrival/approach when we've changed all the procedures
-    await this.destinationSegment.setDestinationIcao(this.alternateDestinationAirport.ident);
-    await this.destinationSegment.setDestinationRunway(this.alternateFlightPlan.destinationRunway?.ident ?? undefined);
+    await this.destinationSegment.setAirport(this.alternateDestinationAirport.ident);
+    await this.destinationSegment.setRunway(this.alternateFlightPlan.destinationRunway?.ident ?? undefined);
     await this.approachSegment.setProcedure(this.alternateFlightPlan.approach?.databaseId ?? undefined);
     await this.approachViaSegment.setProcedure(this.alternateFlightPlan.approachVia?.databaseId ?? undefined);
     await this.arrivalSegment.setProcedure(this.alternateFlightPlan.arrival?.databaseId ?? undefined);
@@ -319,17 +329,17 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
     this.setPerformanceData('cruiseFlightLevel', cruiseLevel);
     this.setPerformanceData('costIndex', 0);
-    this.setPerformanceData('climbSpeedLimitSpeed', this.performanceData.alternateClimbSpeedLimitSpeed);
-    this.setPerformanceData('climbSpeedLimitAltitude', this.performanceData.alternateClimbSpeedLimitAltitude);
+    this.setPerformanceData('climbSpeedLimitSpeed', this.performanceData.alternateClimbSpeedLimitSpeed.get());
+    this.setPerformanceData('climbSpeedLimitAltitude', this.performanceData.alternateClimbSpeedLimitAltitude.get());
     this.setPerformanceData(
       'isClimbSpeedLimitPilotEntered',
-      this.performanceData.isAlternateClimbSpeedLimitPilotEntered,
+      this.performanceData.isAlternateClimbSpeedLimitPilotEntered.get(),
     );
-    this.setPerformanceData('descentSpeedLimitSpeed', this.performanceData.alternateDescentSpeedLimitSpeed);
-    this.setPerformanceData('descentSpeedLimitAltitude', this.performanceData.alternateDescentSpeedLimitAltitude);
+    this.setPerformanceData('descentSpeedLimitSpeed', this.performanceData.alternateDescentSpeedLimitSpeed.get());
+    this.setPerformanceData('descentSpeedLimitAltitude', this.performanceData.alternateDescentSpeedLimitAltitude.get());
     this.setPerformanceData(
       'isDescentSpeedLimitPilotEntered',
-      this.performanceData.isAlternateDescentSpeedLimitPilotEntered,
+      this.performanceData.isAlternateDescentSpeedLimitPilotEntered.get(),
     );
 
     this.deleteAlternateFlightPlan();
@@ -343,7 +353,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
   override async newDest(index: number, airportIdent: string): Promise<void> {
     await super.newDest(index, airportIdent);
 
-    this.deleteAlternateFlightPlan();
+    await this.deleteAlternateFlightPlan();
   }
 
   setFixInfoEntry(index: 1 | 2 | 3 | 4, fixInfo: FixInfoData | null, notify = true): void {
@@ -353,7 +363,9 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
     if (notify) {
       this.sendEvent('flightPlan.setFixInfoEntry', {
+        syncClientID: this.context.syncClientID,
         planIndex: this.index,
+        batchStack: this.context.batchStack,
         forAlternate: false,
         index,
         fixInfo: planFixInfo[index] ? planFixInfo[index].clone() : null,
@@ -374,7 +386,9 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
     if (notify) {
       this.sendEvent('flightPlan.setFixInfoEntry', {
+        syncClientID: this.context.syncClientID,
         planIndex: this.index,
+        batchStack: this.context.batchStack,
         forAlternate: false,
         index,
         fixInfo: planFixInfo[index] ? planFixInfo[index].clone() : null,
@@ -456,7 +470,13 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     this.flightNumber = flightNumber;
 
     if (notify) {
-      this.sendEvent('flightPlan.setFlightNumber', { planIndex: this.index, forAlternate: false, flightNumber });
+      this.sendEvent('flightPlan.setFlightNumber', {
+        syncClientID: this.context.syncClientID,
+        planIndex: this.index,
+        batchStack: this.context.batchStack,
+        forAlternate: false,
+        flightNumber,
+      });
     }
   }
 
@@ -475,15 +495,19 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     if (referenceAltitude !== undefined) {
       plan.setPerformanceData(
         'defaultThrustReductionAltitude',
-        referenceAltitude + parseInt(NXDataStore.get('CONFIG_THR_RED_ALT', '1500')),
+        referenceAltitude + parseInt(NXDataStore.getLegacy('CONFIG_THR_RED_ALT', '1500')),
       );
       plan.setPerformanceData(
         'defaultAccelerationAltitude',
-        referenceAltitude + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500')),
+        referenceAltitude + parseInt(NXDataStore.getLegacy('CONFIG_ACCEL_ALT', '1500')),
       );
       plan.setPerformanceData(
         'defaultEngineOutAccelerationAltitude',
-        referenceAltitude + parseInt(NXDataStore.get('CONFIG_ENG_OUT_ACCEL_ALT', '1500')),
+        referenceAltitude + parseInt(NXDataStore.getLegacy('CONFIG_ENG_OUT_ACCEL_ALT', '1500')),
+      );
+      plan.setPerformanceData(
+        'defaultGroundTemperature',
+        Math.round(AeroMath.isaTemperature(referenceAltitude * 0.3048)),
       );
     } else {
       plan.setPerformanceData('defaultThrustReductionAltitude', null);
@@ -513,15 +537,15 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     if (referenceAltitude !== undefined) {
       plan.setPerformanceData(
         'defaultMissedThrustReductionAltitude',
-        referenceAltitude + parseInt(NXDataStore.get('CONFIG_THR_RED_ALT', '1500')),
+        referenceAltitude + parseInt(NXDataStore.getLegacy('CONFIG_THR_RED_ALT', '1500')),
       );
       plan.setPerformanceData(
         'defaultMissedAccelerationAltitude',
-        referenceAltitude + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500')),
+        referenceAltitude + parseInt(NXDataStore.getLegacy('CONFIG_ACCEL_ALT', '1500')),
       );
       plan.setPerformanceData(
         'defaultMissedEngineOutAccelerationAltitude',
-        referenceAltitude + parseInt(NXDataStore.get('CONFIG_ENG_OUT_ACCEL_ALT', '1500')),
+        referenceAltitude + parseInt(NXDataStore.getLegacy('CONFIG_ENG_OUT_ACCEL_ALT', '1500')),
       );
     } else {
       plan.setPerformanceData('defaultMissedThrustReductionAltitude', null);
@@ -536,38 +560,45 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     plan.setPerformanceData('databaseTransitionLevel', airport?.transitionLevel ?? null);
   }
 
-  static fromSerializedFlightPlan<P extends FlightPlanPerformanceData>(
+  static async fromSerializedFlightPlan<P extends FlightPlanPerformanceData>(
+    context: FlightPlanContext,
     index: number,
     serialized: SerializedFlightPlan,
     bus: EventBus,
     performanceDataInit: P,
-  ): FlightPlan<P> {
-    const newPlan = FlightPlan.empty<P>(index, bus, performanceDataInit);
+  ): Promise<FlightPlan<P>> {
+    const newPlan = FlightPlan.empty<P>(context, index, bus, performanceDataInit);
+
+    // TODO init performance data
 
     newPlan.activeLegIndex = serialized.activeLegIndex;
     newPlan.fixInfos = serialized.fixInfo;
 
-    newPlan.originSegment.setFromSerializedSegment(serialized.segments.originSegment);
-    newPlan.departureSegment.setFromSerializedSegment(serialized.segments.departureSegment);
-    newPlan.departureRunwayTransitionSegment.setFromSerializedSegment(
+    await newPlan.originSegment.setFromSerializedSegment(serialized.segments.originSegment);
+    await newPlan.destinationSegment.setFromSerializedSegment(serialized.segments.destinationSegment);
+
+    await newPlan.departureSegment.setFromSerializedSegment(serialized.segments.departureSegment);
+    await newPlan.departureRunwayTransitionSegment.setFromSerializedSegment(
       serialized.segments.departureRunwayTransitionSegment,
     );
-    newPlan.departureEnrouteTransitionSegment.setFromSerializedSegment(
+    await newPlan.departureEnrouteTransitionSegment.setFromSerializedSegment(
       serialized.segments.departureEnrouteTransitionSegment,
     );
-    newPlan.enrouteSegment.setFromSerializedSegment(serialized.segments.enrouteSegment);
-    newPlan.arrivalSegment.setFromSerializedSegment(serialized.segments.arrivalSegment);
-    newPlan.arrivalRunwayTransitionSegment.setFromSerializedSegment(serialized.segments.arrivalRunwayTransitionSegment);
-    newPlan.arrivalEnrouteTransitionSegment.setFromSerializedSegment(
+    await newPlan.enrouteSegment.setFromSerializedSegment(serialized.segments.enrouteSegment);
+    await newPlan.arrivalSegment.setFromSerializedSegment(serialized.segments.arrivalSegment);
+    await newPlan.arrivalRunwayTransitionSegment.setFromSerializedSegment(
+      serialized.segments.arrivalRunwayTransitionSegment,
+    );
+    await newPlan.arrivalEnrouteTransitionSegment.setFromSerializedSegment(
       serialized.segments.arrivalEnrouteTransitionSegment,
     );
-    newPlan.approachSegment.setFromSerializedSegment(serialized.segments.approachSegment);
-    newPlan.approachViaSegment.setFromSerializedSegment(serialized.segments.approachViaSegment);
-    newPlan.destinationSegment.setFromSerializedSegment(serialized.segments.destinationSegment);
+    await newPlan.approachSegment.setFromSerializedSegment(serialized.segments.approachSegment);
+    await newPlan.approachViaSegment.setFromSerializedSegment(serialized.segments.approachViaSegment);
 
     return newPlan;
   }
 
+  // FIXME types
   /**
    * Sets a performance data parameter
    *
@@ -575,10 +606,15 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
    */
   setPerformanceData<k extends keyof (P & FlightPlanPerformanceDataProperties) & string>(
     key: k,
-    value: P[k] | null,
+    value: any,
     notify = true,
   ) {
-    this.performanceData[key] = value;
+    (this.performanceData[key] as MutableSubscribable<typeof value>).set(value);
+
+    if (this.performanceData.hasSubscription(key)) {
+      console.log('[FMS/FPS] Setting performance data for a linked property, destroying subscriptions');
+      this.performanceData.destroy();
+    }
 
     if (notify) {
       this.sendPerfEvent(
@@ -598,19 +634,19 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     const lowestClimbConstraint = MathUtils.round(this.lowestClimbConstraint(), 10);
     if (
       Number.isFinite(lowestClimbConstraint) &&
-      this.performanceData.thrustReductionAltitude !== null &&
-      this.performanceData.thrustReductionAltitude > lowestClimbConstraint
+      this.performanceData.thrustReductionAltitude.get() !== null &&
+      this.performanceData.thrustReductionAltitude.get() > lowestClimbConstraint
     ) {
       this.setPerformanceData(
         'defaultThrustReductionAltitude',
-        this.performanceData.defaultThrustReductionAltitude !== null
-          ? Math.min(this.performanceData.defaultThrustReductionAltitude, lowestClimbConstraint)
+        this.performanceData.defaultThrustReductionAltitude.get() !== null
+          ? Math.min(this.performanceData.defaultThrustReductionAltitude.get(), lowestClimbConstraint)
           : null,
       );
       this.setPerformanceData(
         'pilotThrustReductionAltitude',
-        this.performanceData.pilotThrustReductionAltitude !== null
-          ? Math.min(this.performanceData.pilotThrustReductionAltitude, lowestClimbConstraint)
+        this.performanceData.pilotThrustReductionAltitude.get() !== null
+          ? Math.min(this.performanceData.pilotThrustReductionAltitude.get(), lowestClimbConstraint)
           : null,
       );
 
@@ -628,19 +664,19 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     const lowestClimbConstraint = MathUtils.round(this.lowestClimbConstraint(), 10);
     if (
       Number.isFinite(lowestClimbConstraint) &&
-      this.performanceData.accelerationAltitude !== null &&
-      this.performanceData.accelerationAltitude > lowestClimbConstraint
+      this.performanceData.accelerationAltitude.get() !== null &&
+      this.performanceData.accelerationAltitude.get() > lowestClimbConstraint
     ) {
       this.setPerformanceData(
         'defaultAccelerationAltitude',
-        this.performanceData.defaultAccelerationAltitude !== null
-          ? Math.min(this.performanceData.defaultAccelerationAltitude, lowestClimbConstraint)
+        this.performanceData.defaultAccelerationAltitude.get() !== null
+          ? Math.min(this.performanceData.defaultAccelerationAltitude.get(), lowestClimbConstraint)
           : null,
       );
       this.setPerformanceData(
         'pilotAccelerationAltitude',
-        this.performanceData.pilotAccelerationAltitude !== null
-          ? Math.min(this.performanceData.pilotAccelerationAltitude, lowestClimbConstraint)
+        this.performanceData.pilotAccelerationAltitude.get() !== null
+          ? Math.min(this.performanceData.pilotAccelerationAltitude.get(), lowestClimbConstraint)
           : null,
       );
 
@@ -667,5 +703,13 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     }
 
     return false;
+  }
+
+  isActiveOrCopiedFromActive(): boolean {
+    return (
+      this.index === FlightPlanIndex.Active ||
+      this.index === FlightPlanIndex.Temporary ||
+      (this.flags & FlightPlanFlags.CopiedFromActive) === FlightPlanFlags.CopiedFromActive
+    );
   }
 }

@@ -9,15 +9,17 @@ import { Airway, Fix } from '@flybywiresim/fbw-sdk';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
+import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 
 export class A320_Neo_CDU_AirwaysFromWaypointPage {
-  static ShowPage(
+  static async ShowPage(
     mcdu: LegacyFmsPageInterface,
     reviseIndex: number,
     pendingAirway: Airway,
     lastIndex: number,
     forPlan: number,
     inAlternate: boolean,
+    planIndexToEdit = forPlan,
   ) {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.AirwaysFromWaypointPage;
@@ -32,12 +34,14 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
     let prevFpIndex = reviseIndex;
 
     if (!targetPlan.pendingAirways) {
-      mcdu.flightPlanService.startAirwayEntry(reviseIndex, forPlan, inAlternate);
+      planIndexToEdit = await mcdu.flightPlanService.startAirwayEntry(reviseIndex, forPlan, inAlternate);
     }
 
     const rows = [['----'], [''], [''], [''], ['']];
     const subRows = [['VIA', ''], [''], [''], [''], ['']];
-    const allRows = lastIndex ? A320_Neo_CDU_AirwaysFromWaypointPage._GetAllRows(targetPlan) : [];
+    const allRows = lastIndex
+      ? A320_Neo_CDU_AirwaysFromWaypointPage._GetAllRows(fpIsTmpy ? mcdu.flightPlanService.temporary : targetPlan)
+      : [];
 
     let rowBottomLine = ['<RETURN'];
     mcdu.onLeftInput[5] = () => {
@@ -50,11 +54,11 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
       rowBottomLine = ['<RETURN', 'INSERT*[color]cyan'];
 
       mcdu.onRightInput[5] = async () => {
-        targetPlan.pendingAirways.finalize(); // TODO replace with fps call (fms-v2)
+        mcdu.insertTemporaryFlightPlan(() => {
+          mcdu.updateConstraints();
 
-        mcdu.updateConstraints();
-
-        CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
+          CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
+        });
       };
     } else if (fpIsTmpy && targetPlan.pendingAirways && targetPlan.pendingAirways.elements.length > 0) {
       rowBottomLine = ['{ERASE[color]amber', 'INSERT*[color]amber'];
@@ -67,8 +71,6 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
 
       mcdu.onRightInput[5] = async () => {
         mcdu.insertTemporaryFlightPlan(() => {
-          targetPlan.pendingAirways = undefined;
-
           mcdu.updateConstraints();
 
           CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
@@ -91,7 +93,9 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
           rows[i] = ['[\xa0\xa0\xa0][color]cyan', ''];
 
           mcdu.onLeftInput[i] = async (value, scratchpadCallback) => {
-            const targetPlan = inAlternate ? mcdu.getAlternateFlightPlan(forPlan) : mcdu.getFlightPlan(forPlan);
+            const targetPlan = inAlternate
+              ? mcdu.getAlternateFlightPlan(planIndexToEdit)
+              : mcdu.getFlightPlan(planIndexToEdit);
 
             if (value.length > 0) {
               const elements = targetPlan.pendingAirways.elements;
@@ -101,14 +105,17 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
 
               const airway = await this._getAirway(
                 mcdu,
-                prevFpIndex,
                 tailElement ? tailElement.airway : undefined,
                 lastFix,
                 value,
               ).catch(console.error);
 
               if (airway) {
-                const result = targetPlan.pendingAirways.thenAirway(airway);
+                const result = await mcdu.flightPlanService.continueAirwayEntryViaAirway(
+                  airway,
+                  planIndexToEdit,
+                  inAlternate,
+                );
 
                 A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(
                   mcdu,
@@ -117,6 +124,7 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
                   result ? 1 : -1,
                   forPlan,
                   inAlternate,
+                  planIndexToEdit,
                 );
               } else {
                 mcdu.setScratchpadMessage(NXSystemMessages.awyWptMismatch);
@@ -128,27 +136,31 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
           subRows[i] = ['\xa0VIA', 'TO\xa0'];
           rows[i] = [`${pendingAirway.ident}[color]cyan`, '[\xa0\xa0\xa0][color]cyan'];
 
-          mcdu.onRightInput[i] = (value, scratchpadCallback) => {
-            const targetPlan = inAlternate ? mcdu.getAlternateFlightPlan(forPlan) : mcdu.getFlightPlan(forPlan);
-
+          mcdu.onRightInput[i] = async (value, scratchpadCallback) => {
             if (value.length > 0) {
-              WaypointEntryUtils.getOrCreateWaypoint(mcdu, value, false).then((wp) => {
-                if (wp) {
-                  const result = targetPlan.pendingAirways.thenTo(wp);
+              const wp = await WaypointEntryUtils.getOrCreateWaypoint(mcdu, value, false);
 
-                  A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(
-                    mcdu,
-                    reviseIndex,
-                    undefined,
-                    result ? 1 : -1,
-                    forPlan,
-                    inAlternate,
-                  );
-                } else {
-                  mcdu.setScratchpadMessage(NXSystemMessages.awyWptMismatch);
-                  scratchpadCallback();
-                }
-              });
+              if (wp) {
+                const result = await mcdu.flightPlanService.continueAirwayEntryToFix(
+                  wp,
+                  false,
+                  planIndexToEdit,
+                  inAlternate,
+                );
+
+                A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(
+                  mcdu,
+                  reviseIndex,
+                  undefined,
+                  result ? 1 : -1,
+                  forPlan,
+                  inAlternate,
+                  planIndexToEdit,
+                );
+              } else {
+                mcdu.setScratchpadMessage(NXSystemMessages.awyWptMismatch);
+                scratchpadCallback();
+              }
             }
           };
           if (i + 1 < rows.length) {
@@ -156,14 +168,16 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
             subRows[i + 1] = ['\xa0VIA', ''];
 
             mcdu.onLeftInput[i + 1] = async (value, scratchpadCallback) => {
-              const targetPlan = inAlternate ? mcdu.getAlternateFlightPlan(forPlan) : mcdu.getFlightPlan(forPlan);
-
               if (value.length > 0) {
                 const airway = await this._getFirstIntersection(mcdu, pendingAirway, prevIcao, value).catch(
                   console.error,
                 );
                 if (airway) {
-                  const result = targetPlan.pendingAirways.thenAirway(airway);
+                  const result = await mcdu.flightPlanService.continueAirwayEntryViaAirway(
+                    airway,
+                    planIndexToEdit,
+                    inAlternate,
+                  );
 
                   A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(
                     mcdu,
@@ -172,6 +186,7 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
                     result ? 1 : -1,
                     forPlan,
                     inAlternate,
+                    planIndexToEdit,
                   );
                 } else {
                   mcdu.setScratchpadMessage(NXSystemMessages.awyWptMismatch);
@@ -204,7 +219,7 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
   /**
    * @param plan {FlightPlan}
    */
-  static _GetAllRows(plan) {
+  static _GetAllRows(plan: BaseFlightPlan) {
     const allRows = [];
     const elements = plan.pendingAirways.elements;
 
@@ -226,7 +241,6 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
 
   static async _getAirway(
     mcdu: LegacyFmsPageInterface,
-    fromFpIndex: number,
     lastAirway: Airway,
     lastFix: Fix,
     value: string,
