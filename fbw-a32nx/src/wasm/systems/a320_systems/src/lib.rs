@@ -9,12 +9,14 @@ mod navigation;
 mod payload;
 mod pneumatic;
 mod power_consumption;
+mod surveillance;
 
 use self::{
     air_conditioning::A320AirConditioning,
     fuel::A320Fuel,
     payload::A320Payload,
     pneumatic::{A320Pneumatic, A320PneumaticOverheadPanel},
+    surveillance::A320EgpwsElectricalHarness,
 };
 use airframe::A320Airframe;
 use electrical::{
@@ -24,7 +26,11 @@ use electrical::{
 use hydraulic::{A320Hydraulic, A320HydraulicOverheadPanel};
 use navigation::{A320AirDataInertialReferenceSystemBuilder, A320RadioAltimeters};
 use power_consumption::A320PowerConsumption;
-use systems::enhanced_gpwc::EnhancedGroundProximityWarningComputer;
+use systems::navigation::ils::MultiModeReceiverShim;
+use systems::{
+    enhanced_gpwc::EnhancedGroundProximityWarningComputer,
+    surveillance::egpws::EnhancedGroundProximityWarningComputer as EnhancedGroundProximityWarningComputer2,
+};
 use systems::{hydraulic::brake::BrakeFanPanel, simulation::InitContext};
 use uom::si::{f64::Length, length::nautical_mile};
 
@@ -75,6 +81,9 @@ pub struct A320 {
     pneumatic: A320Pneumatic,
     radio_altimeters: A320RadioAltimeters,
     egpwc: EnhancedGroundProximityWarningComputer,
+    egpwc_2: EnhancedGroundProximityWarningComputer2,
+    egpws_electrical_harness: A320EgpwsElectricalHarness,
+    mmr: MultiModeReceiverShim,
     reverse_thrust: ReverserForce,
 }
 impl A320 {
@@ -119,7 +128,7 @@ impl A320 {
             radio_altimeters: A320RadioAltimeters::new(context),
             egpwc: EnhancedGroundProximityWarningComputer::new(
                 context,
-                ElectricalBusType::DirectCurrent(1),
+                ElectricalBusType::AlternatingCurrent(1),
                 vec![
                     Length::new::<nautical_mile>(10.0),
                     Length::new::<nautical_mile>(20.0),
@@ -130,6 +139,12 @@ impl A320 {
                 ],
                 0,
             ),
+            egpwc_2: EnhancedGroundProximityWarningComputer2::new(
+                context,
+                ElectricalBusType::AlternatingCurrent(1),
+            ),
+            egpws_electrical_harness: A320EgpwsElectricalHarness::new(context),
+            mmr: MultiModeReceiverShim::new(context),
             reverse_thrust: ReverserForce::new(context),
         }
     }
@@ -256,6 +271,16 @@ impl Aircraft for A320 {
         );
 
         self.egpwc.update(&self.adirs, self.lgcius.lgciu1());
+        self.egpws_electrical_harness.update(self.lgcius.lgciu1());
+        self.egpwc_2.update(
+            context,
+            &self.egpws_electrical_harness,
+            self.radio_altimeters.radio_altimeter_1(),
+            self.radio_altimeters.radio_altimeter_2(),
+            self.adirs.adr_bus(1),
+            self.adirs.ir_bus(1),
+            &self.mmr,
+        );
     }
 }
 impl SimulationElement for A320 {
@@ -288,6 +313,9 @@ impl SimulationElement for A320 {
         self.landing_gear.accept(visitor);
         self.pneumatic.accept(visitor);
         self.egpwc.accept(visitor);
+        self.egpws_electrical_harness.accept(visitor);
+        self.egpwc_2.accept(visitor);
+        self.mmr.accept(visitor);
         self.reverse_thrust.accept(visitor);
 
         visitor.visit(self);

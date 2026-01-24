@@ -42,6 +42,7 @@ import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFpl
 import { ConditionalComponent } from '../../../../MsfsAvionicsCommon/UiWidgets/ConditionalComponent';
 import { InternalKccuKeyEvent } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { dirToUri, fixInfoUri } from '../../../shared/utils';
 import { ReadonlyFlightPlanElement } from '@fmgc/flightplanning/legs/ReadonlyFlightPlanLeg';
 
 interface MfdFmsFplnProps extends AbstractMfdPageProps {}
@@ -111,7 +112,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
   private readonly destEfob = Subject.create<number | null>(null);
 
   private readonly destEfobLabel = this.destEfob.map((v) =>
-    v !== null ? Math.max(0, Units.poundToKilogram(v) / 1_000).toFixed(1) : '---.-',
+    v !== null ? (Units.poundToKilogram(v) / 1_000).toFixed(1) : '---.-',
   );
 
   private readonly destEfobNotAvailableAndInActive = MappedSubject.create(
@@ -1131,10 +1132,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 },
                 {
                   label: 'FIX INFO',
-                  action: () =>
-                    this.props.mfd.uiService.navigateTo(
-                      `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-fix-info`,
-                    ),
+                  action: () => this.props.mfd.uiService.navigateTo(fixInfoUri),
                 },
                 {
                   label: 'LL CROSSING',
@@ -1161,11 +1159,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             />
             <Button
               label="DIR TO"
-              onClick={() =>
-                this.props.mfd.uiService.navigateTo(
-                  `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-direct-to`,
-                )
-              }
+              onClick={() => this.props.mfd.uiService.navigateTo(dirToUri)}
               buttonStyle="margin-right: 5px;"
             />
           </div>

@@ -18,7 +18,7 @@ import { A380AltitudeUtils } from '@shared/OperatingAltitudes';
 import { maxBlockFuel, maxCertifiedAlt, maxZfw } from '@shared/PerformanceConstants';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FmcAircraftInterface } from 'instruments/src/MFD/FMC/FmcAircraftInterface';
-import { FmgcDataService } from 'instruments/src/MFD/FMC/fmgc';
+import { FmgcDataService, LOWEST_FUEL_ESTIMATE_KGS } from 'instruments/src/MFD/FMC/fmgc';
 import { FmcInterface, FmcOperatingModes } from 'instruments/src/MFD/FMC/FmcInterface';
 import {
   a380EfisRangeSettings,
@@ -556,20 +556,24 @@ export class FlightManagementComputer implements FmcInterface {
         const rteRsv = pd.pilotRouteReserveFuel.get()
           ? (pd.pilotRouteReserveFuel.get() ?? 0) * 1_000
           : ((this.getTripFuel() ?? 0) * rteRsvPercentage) / 100;
-        return (
+        return Math.max(
           (this.enginesWereStarted.get()
             ? this.fmgc.getFOB()! * 1_000
             : this.flightPlanInterface.active.performanceData.blockFuel.get() ?? 0) *
             1000 -
-          (this.flightPlanInterface.active.performanceData.taxiFuel.get() ?? 0) * 1000 -
-          (this.getTripFuel() ?? 0) -
-          (this.flightPlanInterface.active.performanceData.minimumDestinationFuelOnBoard.get() ?? 0) * 1000 -
-          rteRsv
+            (this.flightPlanInterface.active.performanceData.taxiFuel.get() ?? 0) * 1000 -
+            (this.getTripFuel() ?? 0) -
+            (this.flightPlanInterface.active.performanceData.minimumDestinationFuelOnBoard.get() ?? 0) * 1000 -
+            rteRsv,
+          LOWEST_FUEL_ESTIMATE_KGS,
         );
       } else {
-        return (
-          Units.poundToKilogram(destPred.estimatedFuelOnBoard) -
-          (this.flightPlanInterface.active.performanceData.minimumDestinationFuelOnBoard.get() ?? 0) * 1000
+        return Units.poundToKilogram(
+          Math.max(
+            destPred.estimatedFuelOnBoard -
+              (this.flightPlanInterface.active.performanceData.minimumDestinationFuelOnBoard.get() ?? 0),
+            A380AircraftConfig.vnavConfig.LOWEST_FUEL_ESTIMATE,
+          ) * 1000,
         );
       }
     }
@@ -590,12 +594,14 @@ export class FlightManagementComputer implements FmcInterface {
 
   /** @inheritdoc */
   public getOptFlightLevel(): number | null {
-    return Math.floor((0.96 * (this.getRecMaxFlightLevel() ?? maxCertifiedAlt / 100)) / 5) * 5; // FIXME remove magic
+    const recMax = this.getRecMaxFlightLevel();
+    return recMax !== null ? Math.floor((0.96 * recMax) / 5) * 5 : null; // FIXME remove magic
   }
 
   /** @inheritdoc */
   public getEoMaxFlightLevel(): number | null {
-    return Math.floor((0.8 * (this.getRecMaxFlightLevel() ?? maxCertifiedAlt / 100)) / 5) * 5; // FIXME remove magic
+    const recMax = this.getRecMaxFlightLevel();
+    return recMax !== null ? Math.floor((0.8 * recMax) / 5) * 5 : null; // FIXME remove magic
   }
 
   private initSimVars() {
@@ -1245,7 +1251,7 @@ export class FlightManagementComputer implements FmcInterface {
         this.flightPlanInterface
           .reset()
           .then(() => {
-            this.fmgc.data.reset();
+            this.fmgc.data.reset(true);
             this.initSimVars();
             this.deleteAllStoredWaypoints();
             this.clearLatestFmsErrorMessage();

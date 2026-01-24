@@ -6,6 +6,7 @@ import { MfdFmsFpln } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFpln';
 import { ContextMenuElement } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/ContextMenu';
 import { BitFlags } from '@microsoft/msfs-sdk';
 import { FlightPlanLegFlags } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { lateralRevisionHoldPage } from '../../../shared/utils';
 
 export enum FplnRevisionsMenuType {
   Waypoint,
@@ -135,7 +136,9 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
 
           fpln.props.fmcService.master?.revisedLegIndex.set(legIndex + 1); // We just inserted a new HOLD leg
         }
-        fpln.props.mfd.uiService.navigateTo(`fms/${fpln.props.mfd.uiService.activeUri.get().category}/f-pln-hold`);
+        fpln.props.mfd.uiService.navigateTo(
+          `fms/${fpln.props.mfd.uiService.activeUri.get().category}/${lateralRevisionHoldPage}`,
+        );
       },
     },
     {

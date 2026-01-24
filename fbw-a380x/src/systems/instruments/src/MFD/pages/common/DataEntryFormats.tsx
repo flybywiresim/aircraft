@@ -1708,3 +1708,42 @@ export class RnpFormat implements DataEntryFormat<number> {
     }
   }
 }
+
+export class FuelPenaltyPercentFormat implements DataEntryFormat<number> {
+  public readonly placeholder = '+000.0'; // Always exists even if cleared
+
+  readonly maxDigits = 6;
+
+  private readonly minValue = 0;
+
+  private readonly maxValue = 999.9;
+
+  private readonly unit = '%';
+
+  format(value: number): FieldFormatTuple {
+    if (value === null || value === undefined) {
+      return [this.placeholder, null, this.unit] as FieldFormatTuple;
+    }
+
+    return ['+' + value.toFixed(1).padStart(5, '0'), null, this.unit] as FieldFormatTuple;
+  }
+
+  public async parse(input: string) {
+    if (input === '') {
+      return null;
+    }
+
+    // Validate format (+)NNN.N.
+    if (!/^[+]?\d{1,3}(?:\.\d)?$/.test(input)) {
+      throw new FmsError(FmsErrorType.FormatError);
+    }
+
+    const numberInput = Number(input);
+
+    if (numberInput < this.minValue || numberInput > this.maxValue) {
+      throw new FmsError(FmsErrorType.EntryOutOfRange);
+    }
+
+    return numberInput;
+  }
+}

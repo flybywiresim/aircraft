@@ -51,3 +51,22 @@ export function getApproachName(approach: Approach, withRnpSuffix = true): strin
 export const noPositionAvailableText = '--°--.--/---°--.--';
 
 export const showReturnButtonUriExtra = 'withReturn';
+
+export const flightPlanUriPage = 'f-pln';
+export const lateralRevisionHoldPage = 'f-pln-hold';
+export const dataStatusUri = 'fms/data/status';
+export const fuelAndLoadPage = 'fuel-load';
+export const performancePage = 'perf';
+export const initPage = 'init';
+export const verticalRevisionPage = 'f-pln-vert-rev';
+export const lateralRevisionPage = 'f-pln-lat-rev';
+export const departurePage = 'f-pln-departure';
+export const arrivalPage = 'f-pln-arrival';
+export const airwaysPage = 'f-pln-airways';
+
+export const secIndexPageUri = 'fms/sec/index';
+export const activeFlightPlanPageUri = 'fms/active/' + flightPlanUriPage;
+export const activeFlightPlanFuelAndLoadUri = 'fms/active/' + fuelAndLoadPage;
+export const activeFlightPlanHoldUri = 'fms/active/' + lateralRevisionHoldPage;
+export const fixInfoUri = 'fms/active/f-pln-fix-info';
+export const dirToUri = 'fms/active/f-pln-direct-to';
