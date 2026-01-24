@@ -17,8 +17,6 @@ interface AlignAttribute {
 
 type Attribute = ColorAttribute | SizeAttribute | AlignAttribute;
 
-const emptyColumn = new Column(0, '');
-
 /** Used to displayed data on a mcdu page when using the formatting helper */
 export class Column {
   public static left: AlignAttribute = { alignRight: false };

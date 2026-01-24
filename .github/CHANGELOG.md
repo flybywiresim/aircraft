@@ -66,6 +66,7 @@
 1. [A32NX/FMS] Fix pilot entered managed descent mach being ignored - @BlueberryKing (BlueberryKing)
 1. [A32NX/FWS] Add `PARK BRK ON` master caution - @FozzieHi (fozzie)
 1. [A32NX/GPWS] Implement simulated GPWC in rust systems - @lukecologne (luke)
+1. [A32NX/FMS] Add pilot entry ETT (Estimated Takeoff Time) functionality  - @BravoMike99 (bruno_pt99)
 
 ## 0.14.0
 

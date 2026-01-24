@@ -976,17 +976,19 @@ export class CDUFlightPlanPage {
         5,
         () => mcdu.getDelaySwitchPage(),
         () => {
-          CDUVerticalRevisionPage.ShowPage(
-            mcdu,
-            isLeg(targetPlan.destinationLeg) ? targetPlan.destinationLeg : undefined,
-            targetPlan.destinationLegIndex,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            forPlan,
-            false,
-          );
+          if (isLeg(targetPlan.destinationLeg)) {
+            CDUVerticalRevisionPage.ShowPage(
+              mcdu,
+              targetPlan.destinationLeg,
+              targetPlan.destinationLegIndex,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              forPlan,
+              false,
+            );
+          }
         },
       );
     }

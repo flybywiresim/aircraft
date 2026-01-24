@@ -323,7 +323,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   /** Seconds since midnight */
   private readonly zuluTime = RegisteredSimVar.create<number>('E:ZULU TIME', SimVarValueType.Seconds);
 
-  /** Day of the month between 1 and 31 */
+  /** Seconds since 1/1/1AD */
   private readonly absoluteTime = RegisteredSimVar.create<number>('E:ABSOLUTE TIME', SimVarValueType.Seconds);
 
   private ettInterval: NodeJS.Timeout | null = null;
@@ -5679,10 +5679,10 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           seconds = Number(text.slice(4));
         }
 
-        const zuluTime = this.zuluTime.get();
         if (minutes > 59 || hours > 23 || seconds > 59) {
           this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
         } else {
+          const zuluTime = this.zuluTime.get();
           const ettInSeconds = FmsFormatters.hoursToSeconds(hours) + FmsFormatters.minutesToSeconds(minutes) + seconds;
           let ettSecondsFromNow = ettInSeconds;
 
@@ -5694,12 +5694,12 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           }
 
           // ETT cannot be more than 20 hours ahead of present time.
-          if (ettSecondsFromNow - zuluTime > 72000) {
+          if (ettSecondsFromNow > 72000) {
             this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
           } else {
             this.flightPlanService.setPerformanceData(
               'estimatedTakeoffTime',
-              this.absoluteTime.get() + ettSecondsFromNow,
+              Math.round(this.absoluteTime.get() + ettSecondsFromNow),
               forPlan,
             );
             this.flightPlanService.setPerformanceData('estimatedTakeoffTimeExpired', false, forPlan);

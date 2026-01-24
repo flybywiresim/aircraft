@@ -199,12 +199,16 @@ export class CDUVerticalRevisionPage {
       }
     }
 
+    // Disable RTA if EET insertion not possible as nothing else is simulated for the time being
+    const allowRta =
+      !mainTargetPlan.isActiveOrCopiedFromActive() || mcdu.flightPhaseManager.phase === FmgcFlightPhase.Preflight;
+
     mcdu.setTemplate([
       ['VERT REV {small}AT{end}{green} ' + waypointIdent + '{end}'],
       [],
       [''],
       [speedLimitTitle, ''],
-      [speedLimitCell, 'RTA>'],
+      [speedLimitCell, `${allowRta ? '' : '{inop}'}RTA>`],
       [l3Title, r3Title],
       [l3Cell, r3Cell],
       [l4Title, r4Title],
@@ -326,7 +330,9 @@ export class CDUVerticalRevisionPage {
       );
     }; // SPD LIM
     mcdu.onRightInput[1] = () => {
-      CduRtaPage.ShowPage(mcdu, waypoint, wpIndex, verticalWaypoint, forPlan);
+      if (allowRta) {
+        CduRtaPage.ShowPage(mcdu, waypoint, wpIndex, verticalWaypoint, forPlan);
+      }
     }; // RTA
     mcdu.onLeftInput[2] = async (value, scratchpadCallback) => {
       if (value === Keypad.clrValue) {
