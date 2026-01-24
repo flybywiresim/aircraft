@@ -5464,6 +5464,7 @@ export class FwsCore {
         value.failure === 2 &&
         !this.cancelledCautions.has(key)
       ) {
+        // TODO: Add cancelled caution ordering when we implement an ordering system within  priority 2 groups
         this.cancelledCautions.add(key);
         emergencyCancelHoldUsed = true;
       }
