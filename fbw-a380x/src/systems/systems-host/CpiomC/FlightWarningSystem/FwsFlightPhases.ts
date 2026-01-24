@@ -418,7 +418,7 @@ export class FwsFlightPhases {
     const warningPressed =
       !!SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_L', 'Bool') ||
       !!SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_R', 'Bool');
-    if (warningPressed === true) {
+    if (warningPressed === true || this.fws.emergencyCancelInputBuffer.read()) {
       this._wasBelowThreshold = false;
       this._wasAboveThreshold = false;
       this._wasInRange = false;
