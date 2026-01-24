@@ -719,8 +719,6 @@ export class CDUPerformancePage {
       };
     }
 
-    const timeLabel = isFlying && targetPlan.isActiveOrCopiedFromActive() ? '\xa0UTC' : 'TIME';
-
     const [destEfobCell, destTimeCell] = CDUPerformancePage.formatDestEfobAndTime(mcdu, isFlying, forPlan);
     const [toUtcLabel, toDistLabel] = shouldShowToTdInformation ? ['\xa0UTC', 'DIST'] : ['', ''];
     const [toReasonCell, toDistCell, toTimeCell, stepWaypoint] = shouldShowToTdInformation
@@ -812,7 +810,7 @@ export class CDUPerformancePage {
 
     mcdu.setTemplate([
       [titleCell],
-      ['ACT MODE', 'DEST EFOB', timeLabel],
+      ['ACT MODE', 'DEST EFOB', mcdu.getTimePredictionHeader(forPlan).padStart(4, '\xa0')],
       [`${actModeCell}[color]green`, destEfobCell, destTimeCell],
       ['CI', stepWaypoint],
       [costIndexCell, toReasonCell],
@@ -921,7 +919,7 @@ export class CDUPerformancePage {
       isPhaseActive,
       isSelected,
     );
-    const timeLabel = isFlying ? '\xa0UTC' : 'TIME';
+    const timeLabel = mcdu.getTimePredictionHeader(forPlan).padStart(4, '\xa0');
     const [destEfobCell, destTimeCell] = CDUPerformancePage.formatDestEfobAndTime(mcdu, isFlying, forPlan);
     const [toUtcLabel, toDistLabel] = shouldShowPredTo ? ['\xa0UTC', 'DIST'] : ['', ''];
 
@@ -1508,11 +1506,7 @@ export class CDUPerformancePage {
       }
 
       if (Number.isFinite(destinationPrediction.secondsFromPresent)) {
-        const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
-
-        const predToTimeCellText = isFlying
-          ? FmsFormatters.secondsToUTC(utcTime + destinationPrediction.secondsFromPresent)
-          : FmsFormatters.secondsTohhmm(destinationPrediction.secondsFromPresent);
+        const predToTimeCellText = mcdu.getTimePrediction(destinationPrediction.secondsFromPresent, forPlan);
 
         destTimeCell = predToTimeCellText + '[color]green';
       }

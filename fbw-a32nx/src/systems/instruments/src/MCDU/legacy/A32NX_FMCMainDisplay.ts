@@ -127,7 +127,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public unconfirmedV2Speed = undefined;
   public _toFlexChecked = true;
   private toRunway = undefined;
-  private _debug = undefined;
   public isDestEfobAmber = false;
   private isBelowMinDestFobForTwoMinutes?: NXLogicConfirmNode;
   private shouldShowBelowMinDestEfobMessage = false;
@@ -321,6 +320,14 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     SimVarValueType.Enum,
   );
 
+  /** Seconds since midnight */
+  private readonly zuluTime = RegisteredSimVar.create<number>('E:ZULU TIME', SimVarValueType.Seconds);
+
+  /** Seconds since 1/1/1AD */
+  private readonly absoluteTime = RegisteredSimVar.create<number>('E:ABSOLUTE TIME', SimVarValueType.Seconds);
+
+  private ettInterval: NodeJS.Timeout | null = null;
+
   constructor(public readonly bus: EventBus) {
     FMCMainDisplay.DEBUG_INSTANCE = this;
 
@@ -456,7 +463,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.unconfirmedV2Speed = undefined;
     this._toFlexChecked = true;
     this.toRunway = '';
-    this._debug = 0;
     this.isDestEfobAmber = false;
     this.isBelowMinDestFobForTwoMinutes = new NXLogicConfirmNode(120_000, true);
     this.shouldShowBelowMinDestEfobMessage = false;
@@ -602,6 +608,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.toSpeedsChecks();
 
     this.setRequest('FMGC');
+
+    this.clearEttAndInterval();
   }
 
   public onUpdate(deltaTime: number) {
@@ -616,10 +624,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     updateComponents(deltaTime);
 
     this.isTrueRefMode = SimVar.GetSimVarValue('L:A32NX_FMGC_TRUE_REF', 'boolean');
-
-    if (this._debug++ > 180) {
-      this._debug = 0;
-    }
     const flightPhaseManagerDelta = this.flightPhaseUpdateThrottler.canUpdate(deltaTime);
     if (flightPhaseManagerDelta !== -1) {
       this.flightPhaseManager.shouldActivateNextPhase(flightPhaseManagerDelta);
@@ -714,6 +718,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
     switch (nextPhase) {
       case FmgcFlightPhase.Takeoff: {
+        this.clearEttAndInterval();
         this._destDataChecked = false;
         if (plan.performanceData.accelerationAltitude.get() === null) {
           // it's important to set this immediately as we don't want to immediately sequence to the climb phase
@@ -2220,6 +2225,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
 
     this.atsu.resetAtisAutoUpdate();
+    this.clearEttAndInterval(forPlan);
 
     await this.flightPlanService.newCityPair(from, to, undefined, forPlan);
   }
@@ -5443,7 +5449,20 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     const phase = this.getFlightPhase();
 
     if (phase === FmgcFlightPhase.Preflight || phase === FmgcFlightPhase.Done) {
+      const ett = this.flightPlanService.active.performanceData.estimatedTakeoffTime.get();
+      if (ett !== null) {
+        if (this.checkEttExpired()) {
+          this.flightPlanService.active.performanceData.estimatedTakeoffTimeExpired.set(true);
+        } else {
+          this.ettInterval = setInterval(() => {
+            this.checkEttExpired();
+          }, 1000);
+        }
+      }
       this.addMessageToQueue(NXSystemMessages.checkToData);
+    } else {
+      // Clear ETT if we are beyond the preflight phase
+      this.clearEttAndInterval();
     }
 
     if (zfwDiff !== null && zfwDiff > 5) {
@@ -5626,6 +5645,158 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   getPerformanceFactorPercent(): number | null {
     return null; // TODO implement with PERF FACTOR in AC STATUS page
+  }
+
+  /**
+   * Sets the estimated takeoff time on the specified flightplan.
+   * @param text estimated takeoff time text. Must be in HHMMSS format.
+   * @param forPlan flightplan to set ETT on
+   * @returns void
+   */
+  setEstimatedTakeoffTime(text: string, forPlan: number): void {
+    const flightplan = this.flightPlanService.get(forPlan);
+    const activeOrCopyOfActive = flightplan.isActiveOrCopiedFromActive();
+
+    // If its not active or copy of active allow setting in any phase
+    if (!activeOrCopyOfActive || this.getFlightPhase() === FmgcFlightPhase.Preflight) {
+      // If ETT has expired we don't show it on the RTA page, as such, ignore clearing if thats the case
+      if (!flightplan.performanceData.estimatedTakeoffTimeExpired.get() && text == Keypad.clrValue) {
+        this.clearEttAndInterval(forPlan);
+        return;
+      }
+
+      if (/^\d{3,6}$/.exec(text)) {
+        let minutes: number;
+        let hours: number;
+        let seconds: number = 0;
+        if (text.length <= 4) {
+          const is24H = text.length === 4;
+          hours = Number(text.slice(0, is24H ? 2 : 1));
+          minutes = Number(text.slice(-2));
+        } else {
+          hours = Number(text.slice(0, 2));
+          minutes = Number(text.slice(2, 4));
+          seconds = Number(text.slice(4));
+        }
+
+        if (minutes > 59 || hours > 23 || seconds > 59) {
+          this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+        } else {
+          const zuluTime = this.zuluTime.get();
+          const ettInSeconds = FmsFormatters.hoursToSeconds(hours) + FmsFormatters.minutesToSeconds(minutes) + seconds;
+          let ettSecondsFromNow = ettInSeconds;
+
+          // If ETT is less than current Zulu time, assume its for the next day
+          if (ettInSeconds < zuluTime) {
+            ettSecondsFromNow = 86400 - (zuluTime - ettInSeconds);
+          } else {
+            ettSecondsFromNow = ettInSeconds - zuluTime;
+          }
+
+          // ETT cannot be more than 20 hours ahead of present time.
+          if (ettSecondsFromNow > 72000) {
+            this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+          } else {
+            this.flightPlanService.setPerformanceData(
+              'estimatedTakeoffTime',
+              Math.round(this.absoluteTime.get() + ettSecondsFromNow),
+              forPlan,
+            );
+            this.flightPlanService.setPerformanceData('estimatedTakeoffTimeExpired', false, forPlan);
+            if (activeOrCopyOfActive && this.ettInterval === null) {
+              this.ettInterval = setInterval(() => {
+                this.checkEttExpired();
+              }, 1000);
+            }
+          }
+        }
+      } else {
+        this.setScratchpadMessage(NXSystemMessages.formatError);
+      }
+    }
+  }
+
+  /**
+   * Formats a time prediction based on seconds from present time, fms flightphase and ETT from the specified flightplan.
+   * @param secondsFromPresent seconds from present time
+   * @param forPlan plan to check ETT against.
+   * @returns formatted time prediction string in hhmm
+   */
+  getTimePrediction(secondsFromPresent: number, forPlan: FlightPlanIndex): string {
+    const phase = this.getFlightPhase();
+    const plan = this.flightPlanService.get(forPlan);
+    let time: number | null = null;
+    if (plan.isActiveOrCopiedFromActive() && phase > FmgcFlightPhase.Preflight && phase < FmgcFlightPhase.Done) {
+      time = this.zuluTime.get();
+    } else {
+      const ett = plan.performanceData.estimatedTakeoffTime.get();
+      if (ett !== null) {
+        // Extract time since midnight UTC from ETT
+        if (!plan.performanceData.estimatedTakeoffTimeExpired.get()) {
+          time = ett % 86400;
+        } else {
+          // If ETT expired, use current zulu time.
+          time = this.zuluTime.get();
+        }
+      }
+    }
+
+    if (time !== null) {
+      return FmsFormatters.secondsToUTC(time + secondsFromPresent);
+    } else {
+      return FmsFormatters.secondsTohhmm(secondsFromPresent);
+    }
+  }
+
+  /**
+   * Gets the header to be used in pages for time predictions.
+   * @returns TIME if in flight or if ETT exists during preflight, otherwise UTC
+   */
+  getTimePredictionHeader(forPlan: FlightPlanIndex): 'UTC' | 'TIME' {
+    const phase = this.getFlightPhase();
+    const plan = this.flightPlanService.get(forPlan);
+    const ett = plan.performanceData.estimatedTakeoffTime.get();
+    if (
+      (plan.isActiveOrCopiedFromActive() && phase > FmgcFlightPhase.Preflight && phase < FmgcFlightPhase.Done) ||
+      ett !== null
+    ) {
+      //TODO check for valid clock signal
+      return 'UTC';
+    } else {
+      return 'TIME';
+    }
+  }
+
+  /**
+   * Checks if the ETT of the active flightplan has expired compared to zulu time.
+   * If it has, the associated flag is set on the performance data and the periodic interval check is cleared.
+   */
+  private checkEttExpired(): boolean {
+    const ett = this.flightPlanService.active.performanceData.estimatedTakeoffTime.get();
+    if (ett !== null && !this.flightPlanService.active.performanceData.estimatedTakeoffTimeExpired.get()) {
+      const isExpired = ett < this.absoluteTime.get();
+      if (isExpired) {
+        if (this.ettInterval !== null) {
+          clearInterval(this.ettInterval);
+          this.ettInterval = null;
+        }
+        this.flightPlanService.setPerformanceData('estimatedTakeoffTimeExpired', isExpired, FlightPlanIndex.Active);
+      }
+      return isExpired;
+    }
+    return false;
+  }
+
+  /**
+   * Clears the ETT from the a flightplan and clears the periodic interval check if it is the active
+   */
+  private clearEttAndInterval(forPlan: FlightPlanIndex = FlightPlanIndex.Active): void {
+    this.flightPlanService.setPerformanceData('estimatedTakeoffTime', null, forPlan);
+    this.flightPlanService.setPerformanceData('estimatedTakeoffTimeExpired', false, forPlan);
+    if (forPlan === FlightPlanIndex.Active && this.ettInterval !== null) {
+      clearInterval(this.ettInterval);
+      this.ettInterval = null;
+    }
   }
 }
 
