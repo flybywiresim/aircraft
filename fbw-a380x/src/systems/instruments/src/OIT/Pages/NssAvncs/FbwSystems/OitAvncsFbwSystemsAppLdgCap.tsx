@@ -16,8 +16,8 @@ export class OitAvncsFbwSystemsAppLdgCap extends DestroyableComponent<OitAvncsFb
 
   private readonly sub = this.props.bus.getSubscriber<ClockEvents>();
 
-  private readonly ap1Engaged = RegisteredSimVar.create<boolean>('L:A32NX_AUTOPILOT_1_ACTIVE', SimVarValueType.Bool);
-  private readonly ap2Engaged = RegisteredSimVar.create<boolean>('L:A32NX_AUTOPILOT_2_ACTIVE', SimVarValueType.Bool);
+  private readonly ap1Engaged = RegisteredSimVar.create('L:A32NX_AUTOPILOT_1_ACTIVE', SimVarValueType.Bool);
+  private readonly ap2Engaged = RegisteredSimVar.create('L:A32NX_AUTOPILOT_2_ACTIVE', SimVarValueType.Bool);
   private readonly oneApEngaged = Subject.create(false);
   private readonly twoApEngaged = Subject.create(false);
 
@@ -28,15 +28,15 @@ export class OitAvncsFbwSystemsAppLdgCap extends DestroyableComponent<OitAvncsFb
   private readonly autoThrustMode = RegisteredSimVar.create<number>('L:A32NX_AUTOTHRUST_MODE', SimVarValueType.Enum);
   private readonly athrEngaged = Subject.create(false);
 
-  private readonly prim1Healthy = RegisteredSimVar.create<boolean>('L:A32NX_PRIM_1_HEALTHY', SimVarValueType.Bool);
-  private readonly prim2Healthy = RegisteredSimVar.create<boolean>('L:A32NX_PRIM_2_HEALTHY', SimVarValueType.Bool);
-  private readonly prim3Healthy = RegisteredSimVar.create<boolean>('L:A32NX_PRIM_3_HEALTHY', SimVarValueType.Bool);
+  private readonly prim1Healthy = RegisteredSimVar.create('L:A32NX_PRIM_1_HEALTHY', SimVarValueType.Bool);
+  private readonly prim2Healthy = RegisteredSimVar.create('L:A32NX_PRIM_2_HEALTHY', SimVarValueType.Bool);
+  private readonly prim3Healthy = RegisteredSimVar.create('L:A32NX_PRIM_3_HEALTHY', SimVarValueType.Bool);
   private readonly onePrimHealthy = Subject.create(false);
   private readonly twoPrimHealthy = Subject.create(false);
 
-  private readonly sec1Healthy = RegisteredSimVar.create<boolean>('L:A32NX_SEC_1_HEALTHY', SimVarValueType.Bool);
-  private readonly sec2Healthy = RegisteredSimVar.create<boolean>('L:A32NX_SEC_2_HEALTHY', SimVarValueType.Bool);
-  private readonly sec3Healthy = RegisteredSimVar.create<boolean>('L:A32NX_SEC_3_HEALTHY', SimVarValueType.Bool);
+  private readonly sec1Healthy = RegisteredSimVar.create('L:A32NX_SEC_1_HEALTHY', SimVarValueType.Bool);
+  private readonly sec2Healthy = RegisteredSimVar.create('L:A32NX_SEC_2_HEALTHY', SimVarValueType.Bool);
+  private readonly sec3Healthy = RegisteredSimVar.create('L:A32NX_SEC_3_HEALTHY', SimVarValueType.Bool);
   private readonly oneSecHealthy = Subject.create(false);
 
   private readonly sfcc1StatusWord = RegisteredSimVar.create<number>(
@@ -80,15 +80,12 @@ export class OitAvncsFbwSystemsAppLdgCap extends DestroyableComponent<OitAvncsFb
   private readonly oneFwsWithAudio = Subject.create(true);
   private readonly twoFwsWithAudio = Subject.create(true);
 
-  private readonly fcdc1Healthy = RegisteredSimVar.create<boolean>('L:A32NX_FCDC_1_HEALTHY', SimVarValueType.Bool);
-  private readonly fcdc2Healthy = RegisteredSimVar.create<boolean>('L:A32NX_FCDC_2_HEALTHY', SimVarValueType.Bool);
+  private readonly fcdc1Healthy = RegisteredSimVar.create('L:A32NX_FCDC_1_HEALTHY', SimVarValueType.Bool);
+  private readonly fcdc2Healthy = RegisteredSimVar.create('L:A32NX_FCDC_2_HEALTHY', SimVarValueType.Bool);
   private readonly oneFcdcHealthy = Subject.create(false);
   private readonly twoFcdcHealthy = Subject.create(false);
 
-  private readonly antiskidAvailableSimVar = RegisteredSimVar.create<boolean>(
-    'A:ANTISKID BRAKES ACTIVE',
-    SimVarValueType.Bool,
-  );
+  private readonly antiskidAvailableSimVar = RegisteredSimVar.create('A:ANTISKID BRAKES ACTIVE', SimVarValueType.Bool);
   private readonly antiskidAvailable = Subject.create(true);
 
   private readonly fcdc1FgDiscreteWord4 = RegisteredSimVar.create<number>(
@@ -133,15 +130,15 @@ export class OitAvncsFbwSystemsAppLdgCap extends DestroyableComponent<OitAvncsFb
   private readonly twoAdrAvailable = Subject.create(false);
   private readonly threeAdrAvailable = Subject.create(false);
 
-  private readonly engine1Combustion = RegisteredSimVar.create<boolean>('A:ENG COMBUSTION:1', SimVarValueType.Bool);
-  private readonly engine2Combustion = RegisteredSimVar.create<boolean>('A:ENG COMBUSTION:2', SimVarValueType.Bool);
-  private readonly engine3Combustion = RegisteredSimVar.create<boolean>('A:ENG COMBUSTION:3', SimVarValueType.Bool);
-  private readonly engine4Combustion = RegisteredSimVar.create<boolean>('A:ENG COMBUSTION:4', SimVarValueType.Bool);
-  private readonly apuGen1ContactorClosed = RegisteredSimVar.create<boolean>(
+  private readonly engine1Combustion = RegisteredSimVar.create('A:ENG COMBUSTION:1', SimVarValueType.Bool);
+  private readonly engine2Combustion = RegisteredSimVar.create('A:ENG COMBUSTION:2', SimVarValueType.Bool);
+  private readonly engine3Combustion = RegisteredSimVar.create('A:ENG COMBUSTION:3', SimVarValueType.Bool);
+  private readonly engine4Combustion = RegisteredSimVar.create('A:ENG COMBUSTION:4', SimVarValueType.Bool);
+  private readonly apuGen1ContactorClosed = RegisteredSimVar.create(
     'L:A32NX_ELEC_CONTACTOR_990XS1_IS_CLOSED',
     SimVarValueType.Bool,
   );
-  private readonly apuGen2ContactorClosed = RegisteredSimVar.create<boolean>(
+  private readonly apuGen2ContactorClosed = RegisteredSimVar.create(
     'L:A32NX_ELEC_CONTACTOR_990XS2_IS_CLOSED',
     SimVarValueType.Bool,
   );
