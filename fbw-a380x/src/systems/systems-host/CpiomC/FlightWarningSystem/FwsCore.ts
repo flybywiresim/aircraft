@@ -5284,8 +5284,7 @@ export class FwsCore {
         let nonSensedDeactivated = false;
         const activeProcedureId = this.abnormalSensed.activeProcedureId.get();
         if (activeProcedureId && !EcamAbnormalProcedures[activeProcedureId]?.sensed) {
-          const activeNonSensedId = Number(activeProcedureId);
-          nonSensedDeactivated = this.activeAbnormalNonSensedKeys.delete(activeNonSensedId);
+          nonSensedDeactivated = this.activeAbnormalNonSensedKeys.delete(Number(activeProcedureId));
         }
 
         if (!nonSensedDeactivated && this.masterCaution.get()) {
