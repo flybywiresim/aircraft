@@ -8,18 +8,18 @@ import { FMMessageTypes } from './FmMessages';
 
 export class ClockIsTakeoffTime implements FMMessageSelector {
   message = FMMessageTypes.ClockIsTakeoffTime;
-  private flightplanService: FlightPlanService;
-  shouldTrigger = false;
+  private flightplanService?: FlightPlanService;
+  private isActive = false;
   init?(_navigation: Navigation, _guidanceController: GuidanceController, flightPlanService: FlightPlanService): void {
     this.flightplanService = flightPlanService;
   }
   process(_deltaTime: number): FMMessageUpdate {
-    const isEttExpired = this.flightplanService.active.performanceData.estimatedTakeoffTimeExpired.get();
-    if (isEttExpired && !this.shouldTrigger) {
-      this.shouldTrigger = true;
+    const isEttExpired = this.flightplanService?.active.performanceData.estimatedTakeoffTimeExpired.get();
+    if (isEttExpired && !this.isActive) {
+      this.isActive = true;
       return FMMessageUpdate.SEND;
-    } else if (!isEttExpired && this.shouldTrigger) {
-      this.shouldTrigger = false;
+    } else if (!isEttExpired && this.isActive) {
+      this.isActive = false;
       return FMMessageUpdate.RECALL;
     }
     return FMMessageUpdate.NO_ACTION;
