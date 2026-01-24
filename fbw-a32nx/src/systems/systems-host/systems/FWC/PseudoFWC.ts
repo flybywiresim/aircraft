@@ -1810,7 +1810,7 @@ export class PseudoFWC {
     const eitherRaInvalid = this.radioHeight1.isFailureWarning() || this.radioHeight2.isFailureWarning();
     const bothRaInvalid = this.radioHeight1.isFailureWarning() && this.radioHeight2.isFailureWarning();
     const bothRaInvalidOrNcd =
-      (this.radioHeight1.isNoComputedData || this.radioHeight1.isFailureWarning()) &&
+      (this.radioHeight1.isNoComputedData() || this.radioHeight1.isFailureWarning()) &&
       (this.radioHeight2.isNoComputedData() || this.radioHeight2.isFailureWarning());
 
     // on ground logic
