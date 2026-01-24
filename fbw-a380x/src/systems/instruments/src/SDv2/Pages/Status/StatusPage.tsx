@@ -227,7 +227,10 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
       .join('\r'),
   );
 
-  private readonly cancelledCautionLines = this.cancelledCautionFormatString.map((lines) => lines.length);
+  private readonly cancelledCautionLines = MappedSubject.create(
+    ([cancelledCaution]) => (cancelledCaution.length > 0 ? cancelledCaution.length : 0),
+    this.cancelledCautionCurrentPage,
+  );
   private readonly cancelledCautionDisplay = MappedSubject.create(
     ([lines]) => (lines > 0 ? 'flex' : 'none'),
     this.cancelledCautionLines,
