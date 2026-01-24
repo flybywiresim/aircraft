@@ -5,6 +5,7 @@ import {
   EventBus,
   FSComponent,
   MappedSubject,
+  Subscription,
   SimVarValueType,
   Subject,
   Subscribable,
@@ -40,6 +41,8 @@ enum StatusPageSectionDisplayStatus {
 }
 export class StatusPage extends DestroyableComponent<SdPageProps> {
   private readonly sub = this.props.bus.getSubscriber<SDSimvars & FwsEvents>();
+
+  private readonly persistentSubscriptions: Subscription[] = [];
 
   private readonly availChecker = new FwsSdAvailabilityChecker(this.props.bus);
 
@@ -483,6 +486,9 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
         this.inopSysRedund,
         this.cancelledCaution,
       ),
+    );
+
+    this.persistentSubscriptions.push(
       this.moreAvailable.sub((v) => {
         this.stsMoreAvailableSimvar.set(v ? 1 : 0);
       }, true),
@@ -490,6 +496,9 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
   }
 
   destroy(): void {
+    for (const s of this.persistentSubscriptions) {
+      s.destroy();
+    }
     super.destroy();
   }
 
