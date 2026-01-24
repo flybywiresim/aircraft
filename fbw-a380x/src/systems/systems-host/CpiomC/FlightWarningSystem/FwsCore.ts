@@ -5228,7 +5228,7 @@ export class FwsCore {
       this.auralCrcActive.set(this.nonCancellableWarningCount > 0);
     }
 
-    let emergencyCancelCautionUsedThisCycle = false;
+    let emergencyCancelCautionUsed = false;
 
     // Emergency audio cancel (EAC)
     if (!this.ecpEmergencyCancelLevel) {
@@ -5253,7 +5253,7 @@ export class FwsCore {
             this.cancelledCautions.add(cancelKey);
           }
           this.emergencyCancelClearCautionKey = cancelKey;
-          emergencyCancelCautionUsedThisCycle = true;
+          emergencyCancelCautionUsed = true;
         } else {
           this.emergencyCancelledWarnings.add(cancelKey);
         }
@@ -5264,7 +5264,7 @@ export class FwsCore {
         if (cautionKey) {
           this.cancelledCautions.add(cautionKey);
           this.emergencyCancelClearCautionKey = cautionKey;
-          emergencyCancelCautionUsedThisCycle = true;
+          emergencyCancelCautionUsed = true;
         }
       }
       this.emergencyCancelReady = false;
@@ -5374,8 +5374,7 @@ export class FwsCore {
     let failureSystemCount = 0;
     let activeWarningCount = 0;
     let activeCautionCount = 0;
-    let emergencyCancelHoldUsedThisCycle = false;
-    const emergencyCancelHeld = this.ecpEmergencyCancelLevel;
+    let emergencyCancelHoldUsed = false;
     const activeWarningKeys: string[] = [];
     const auralCrcKeys: string[] = [];
     const auralScKeys: string[] = [];
@@ -5457,16 +5456,16 @@ export class FwsCore {
       const isActive = itemIsActiveConsideringFaultSuppression(value, key, 0.6);
 
       if (
-        emergencyCancelHeld &&
-        !emergencyCancelCautionUsedThisCycle &&
-        !emergencyCancelHoldUsedThisCycle &&
+        this.ecpEmergencyCancelLevel &&
+        !emergencyCancelCautionUsed &&
+        !emergencyCancelHoldUsed &&
         isActive &&
         newWarning &&
         value.failure === 2 &&
         !this.cancelledCautions.has(key)
       ) {
         this.cancelledCautions.add(key);
-        emergencyCancelHoldUsedThisCycle = true;
+        emergencyCancelHoldUsed = true;
       }
 
       const isCancelledCaution = value.failure === 2 && this.cancelledCautions.has(key);
