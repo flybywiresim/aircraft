@@ -67,6 +67,7 @@
 1. [A32NX/FWS] Add `PARK BRK ON` master caution - @FozzieHi (fozzie)
 1. [A32NX/GPWS] Implement simulated GPWC in rust systems - @lukecologne (luke)
 1. [A32NX/FWC] Improve CAB PR LO DIFF PR warning logic to avoid spurious warnings - @tracernz (Mike)
+1. [A32NX/FWS] Fixed stall warning not working - @tracernz (Mike)
 
 ## 0.14.0
 
