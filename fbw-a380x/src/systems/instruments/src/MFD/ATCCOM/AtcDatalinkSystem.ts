@@ -125,7 +125,11 @@ export class AtcDatalinkSystem implements Instrument {
     this.sub.on('atcActiveAtisAutoUpdates').handle((airports) => {
       this.atisAutoUpdates = airports;
       this.atisAirports.forEach((airportData, index) => {
-        if (airports.includes(airportData.icao) && airportData.autoupdate == false) {
+        if (
+          airports.includes(airportData.icao) &&
+          airportData.autoupdate == false &&
+          airportData.type !== AtisType.Departure
+        ) {
           this.atisAirports[index].autoupdate = true;
           this.publisher.pub(`atcAtis_${index}`, this.atisAirports[index]);
         } else if (!airports.includes(airportData.icao) && airportData.autoupdate == true) {
