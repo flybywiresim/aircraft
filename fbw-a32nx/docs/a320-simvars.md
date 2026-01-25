@@ -33,6 +33,7 @@
       - [ARINC429 Output Bus](#arinc429-output-bus-1)
       - [Hardwired Discretes](#hardwired-discretes)
   - [Landing Gear (ATA 32)](#landing-gear-ata-32)
+  - [Lighting (ATA 33)](#lighting-ata-33)
   - [ATC (ATA 34)](#atc-ata-34)
   - [Radio Altimeter (ATA 34)](#radio-altimeter-ata-34)
   - [GPWS / TAWS (ATA 34)](#gpws--taws-ata-34)
@@ -3934,7 +3935,8 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Percent
     - Trim wheel position in percent
 
-## Fuel ATA 28
+## Fuel (ATA 28)
+
 - A32NX_TOTAL_FUEL_QUANTITY
   - Number in kilogramm
   - The total physical quantity of fuel in the tanks
@@ -4267,6 +4269,16 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
 - A32NX_GEAR_HANDLE_HITS_LOCK_SOUND
     - Indicates that gear lever just hit the baulk lock mechanism
     - Boolean
+
+## Lighting (ATA 33)
+
+- `L:A32NX_LIGHTS_NAV_LOGO`
+  - The state of the NAV/LOGO LT switch.
+  - Enum
+    Mode     | Value
+    Off      | 0
+    System 1 | 1
+    System 2 | 2
 
 ## ATC (ATA 34)
 

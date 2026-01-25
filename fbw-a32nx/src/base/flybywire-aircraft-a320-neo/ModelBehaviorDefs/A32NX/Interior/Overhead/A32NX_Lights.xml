@@ -1,0 +1,71 @@
+<!-- Copyright (c) 2026 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
+<Template Name="FBW_A32NX_NAV_LOGO_LT_SW_Template">
+    <Parameters Type="Default">
+        <INPUT_EVENT_ID_SOURCE>A32NX_OVH_LIGHTS</INPUT_EVENT_ID_SOURCE>
+        <STATE_VAR_NAME>A32NX_LIGHTS_NAV_LOGO</STATE_VAR_NAME>
+        <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+        <ANIM_LAG>1000</ANIM_LAG>
+        <ANIM_LENGTH>3</ANIM_LENGTH>
+        <WWISE_EVENT>lswitch</WWISE_EVENT>
+        <TOOLTIP_TITLE>A32NX.TOOLTIPS.LIGHTS_NAV_LOGO_TITLE</TOOLTIP_TITLE>
+        <TT_DESCRIPTION_ID>A32NX.TOOLTIPS.LIGHTS_NAV_LOGO_ACTION</TT_DESCRIPTION_ID>
+    </Parameters>
+    <Parameters Type="Override">
+        <POS_OFF>0</POS_OFF>
+        <POS_SYS1>1</POS_SYS1>
+        <POS_SYS2>2</POS_SYS2>
+    </Parameters>
+    <Component ID="#NODE_ID#" Node="#NODE_ID#">
+        <UseTemplate Name="ASOBO_Interaction_Base_Template">
+            <USE_INPUT_EVENT_ID>#INPUT_EVENT_ID_SOURCE#</USE_INPUT_EVENT_ID>
+            <IE_NAME>NAV_LOGO_SW</IE_NAME>
+			<INTERACTION_TYPE>Switch</INTERACTION_TYPE>
+			<NUM_STATES>3</NUM_STATES>
+			<STR_STATE_0>OFF</STR_STATE_0>
+			<STR_STATE_1>SYS_1</STR_STATE_1>
+			<STR_STATE_2>SYS_2</STR_STATE_2>
+			<TT_VALUE_0>@TT_Package.GT_STATE_OFF</TT_VALUE_0>
+			<TT_VALUE_1>A32NX.TOOLTIPS.STATE_SYS_1</TT_VALUE_1>
+			<TT_VALUE_2>A32NX.TOOLTIPS.STATE_SYS_2</TT_VALUE_2>
+			<SET_STATE_0>#POS_OFF# (&gt;L:#STATE_VAR_NAME#)</SET_STATE_0>
+			<SET_STATE_1>#POS_SYS1# (&gt;L:#STATE_VAR_NAME#)</SET_STATE_1>
+			<SET_STATE_2>#POS_SYS2# (&gt;L:#STATE_VAR_NAME#)</SET_STATE_2>
+			<LOCAL_VAR_TO_WATCH_0>#STATE_VAR_NAME#</LOCAL_VAR_TO_WATCH_0>
+            <SIMVAR_TO_WATCH_0>LIGHT NAV</SIMVAR_TO_WATCH_0>
+            <SIMVAR_TO_WATCH_1>LIGHT LOGO</SIMVAR_TO_WATCH_1>
+			<GET_STATE_EXTERNAL>(L:#STATE_VAR_NAME#) sp0</GET_STATE_EXTERNAL>
+			<ENUM_VAL_TO_POS_EXTERNAL>
+                l0 #POS_OFF# == if{
+                    0 (&gt;A:LIGHT NAV)
+                    0 (&gt;A:LIGHT LOGO)
+                    0 0 (&gt;K:2:NAV_LIGHTS_SET)
+                    0 0 (&gt;K:2:LOGO_LIGHTS_SET)
+                } els{
+                    1 (&gt;A:LIGHT NAV)
+                    1 (&gt;A:LIGHT LOGO)
+                    0 1 (&gt;K:2:LOGO_LIGHTS_SET)
+
+                    l0 #POS_SYS1# == if{
+                        4 0 (&gt;K:2:NAV_LIGHTS_SET)
+                        5 0 (&gt;K:2:NAV_LIGHTS_SET)
+                        6 0 (&gt;K:2:NAV_LIGHTS_SET)
+                        1 1 (&gt;K:2:NAV_LIGHTS_SET)
+                        2 1 (&gt;K:2:NAV_LIGHTS_SET)
+                        3 1 (&gt;K:2:NAV_LIGHTS_SET)
+                    } els{
+                        1 0 (&gt;K:2:NAV_LIGHTS_SET)
+                        2 0 (&gt;K:2:NAV_LIGHTS_SET)
+                        3 0 (&gt;K:2:NAV_LIGHTS_SET)
+                        4 1 (&gt;K:2:NAV_LIGHTS_SET)
+                        5 1 (&gt;K:2:NAV_LIGHTS_SET)
+                        6 1 (&gt;K:2:NAV_LIGHTS_SET)
+                    }
+                }
+                l0
+            </ENUM_VAL_TO_POS_EXTERNAL>
+			<SWITCH_DIRECTION>Vertical</SWITCH_DIRECTION>
+        </UseTemplate>
+    </Component>
+</Template>

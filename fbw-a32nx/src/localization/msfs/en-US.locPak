@@ -70,6 +70,12 @@
       "A32NX.TOOLTIPS.ECP_BRAKES_ACTION": "Toggle the ECAM wheel/brake page",
       "A32NX.TOOLTIPS.ECP_ALL_TITLE": "ALL Key",
       "A32NX.TOOLTIPS.ECP_ALL_ACTION": "Cycle through all system pages on the ECAM"
+
+      "A32NX.TOOLTIPS.LIGHTS_NAV_LOGO_TITLE": "NAV & Logo Lights",
+      "A32NX.TOOLTIPS.LIGHTS_NAV_LOGO_ACTION": "Switch the NAV & LOGO lights on/off",
+
+      "A32NX.TOOLTIPS.STATE_SYS_1": "System 1",
+      "A32NX.TOOLTIPS.STATE_SYS_2": "System 2",
     }
   }
 }

@@ -1941,20 +1941,10 @@
                 </UseTemplate>
 
                 <!-- EXT LT NAV & LOGO -->
-                <UseTemplate Name="FBW_Anim_Interactions">
-                    <ANIM_TYPE>SWITCH</ANIM_TYPE>
-                    <ANIM_TEMPLATE>FBW_Switch_LeftClick_MouseWheel</ANIM_TEMPLATE>
+                <UseTemplate Name="FBW_A32NX_NAV_LOGO_LT_SW_Template">
                     <NODE_ID>SWITCH_OVHD_EXTLT_NAVLOGO</NODE_ID>
-                    <PART_ID>SWITCH_OVHD_EXTLT_NAVLOGO</PART_ID>
-                    <ANIM_NAME>SWITCH_OVHD_EXTLT_NAVLOGO</ANIM_NAME>
-                    <SIMVAR_NAME>LIGHT LOGO</SIMVAR_NAME>
-                    <SIMVAR_NAME_2>LIGHT NAV</SIMVAR_NAME_2>
-                    <TOGGLE_EVENT>LOGO_LIGHTS_SET</TOGGLE_EVENT>
-                    <TOGGLE_EVENT_2>NAV_LIGHTS_SET</TOGGLE_EVENT_2>
-                    <SIMVAR_INDEX_1>0</SIMVAR_INDEX_1>
-                    <SIMVAR_INDEX_2>0</SIMVAR_INDEX_2>
-                    <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LOGO_LIGHT_OFF</ANIMTIP_0>
-                    <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LOGO_LIGHT_OFF</ANIMTIP_1>
+                    <INVERT_DRAG_POSITIVE_CONDITION>True</INVERT_DRAG_POSITIVE_CONDITION>
+                    <INVERT_WHEEL_INTERACTION>True</INVERT_WHEEL_INTERACTION>
                 </UseTemplate>
 
                 <!-- turn off the connection to the logo lights when the plane is not on ground and the flaps are retracted -->
