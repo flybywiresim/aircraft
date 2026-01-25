@@ -1,10 +1,21 @@
 import { Atc } from '@datalink/atc';
 import { Aoc } from '@datalink/aoc';
 import { SimVarHandling } from '@datalink/common';
-import { Router } from '@datalink/router';
-import { EventBus, EventSubscriber, Instrument } from '@microsoft/msfs-sdk';
+import { Router, VhfRadioInterface } from '@datalink/router';
+import { EventBus, EventSubscriber, Instrument, SimVarValueType } from '@microsoft/msfs-sdk';
 import { PowerSupplyBusTypes } from 'systems-host/Misc/powersupply';
+import { FrequencyMode, RegisteredSimVar } from '@flybywiresim/fbw-sdk';
 
+class A380xVhfProvider implements VhfRadioInterface {
+  private static readonly RmpModeActive3 = RegisteredSimVar.create<number>(
+    'L:FBW_RMP_MODE_ACTIVE_3',
+    SimVarValueType.Enum,
+  );
+
+  public isDataModeActive(): boolean {
+    return A380xVhfProvider.RmpModeActive3.get() === FrequencyMode.Data;
+  }
+}
 export class AtsuSystem implements Instrument {
   private readonly simVarHandling: SimVarHandling;
 
@@ -18,7 +29,7 @@ export class AtsuSystem implements Instrument {
 
   constructor(private readonly bus: EventBus) {
     this.simVarHandling = new SimVarHandling(this.bus);
-    this.router = new Router(this.bus, false, false);
+    this.router = new Router(this.bus, false, false, new A380xVhfProvider());
     this.atc = new Atc(this.bus, false, false);
     this.aoc = new Aoc(this.bus, false);
 
