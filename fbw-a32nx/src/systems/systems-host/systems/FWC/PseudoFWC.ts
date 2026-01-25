@@ -258,6 +258,7 @@ export class PseudoFWC {
 
   private readonly excessResidualPr = Subject.create(false);
 
+  private readonly lowDiffPressConfirm = new NXLogicConfirmNode(10, true);
   private readonly lowDiffPress = Subject.create(false);
 
   private readonly acsc1Lane1Fault = Subject.create(false);
@@ -1361,6 +1362,12 @@ export class PseudoFWC {
 
   private readonly voiceVhf3 = Subject.create(0);
 
+  private readonly excessCabAlt = MappedSubject.create(
+    ([aircraftOnGround, excessPressure]) => !aircraftOnGround && excessPressure,
+    this.aircraftOnGround,
+    this.excessPressure,
+  );
+
   /* SETTINGS */
 
   private readonly configPortableDevices = Subject.create(false);
@@ -2404,7 +2411,12 @@ export class PseudoFWC {
       this.excessResidualPrConfirm.write(this.enginesOffAndOnGroundSignal.read() && residualPressureSignal, deltaTime),
     );
 
-    this.lowDiffPress.set(activeCpc.bitValueOr(15, false));
+    this.lowDiffPress.set(
+      this.lowDiffPressConfirm.write(
+        this.cpc1DiscreteWord.bitValue(15) || this.cpc2DiscreteWord.bitValue(15),
+        deltaTime,
+      ),
+    );
 
     this.pressurizationAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO', 'bool'));
 
@@ -4678,11 +4690,7 @@ export class PseudoFWC {
     2131221: {
       // EXCESS CAB ALT
       flightPhaseInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
-      simVarIsActive: MappedSubject.create(
-        ([aircraftOnGround, excessPressure]) => !aircraftOnGround && excessPressure,
-        this.aircraftOnGround,
-        this.excessPressure,
-      ),
+      simVarIsActive: this.excessCabAlt,
       // TODO no separate slats indication
       whichCodeToReturn: () => [
         0,
@@ -4775,7 +4783,7 @@ export class PseudoFWC {
       // LO DIFF PR
       flightPhaseInhib: [2, 3, 4, 5, 7, 8, 9, 10],
       simVarIsActive: this.lowDiffPress,
-      whichCodeToReturn: () => [0, 1, 2],
+      whichCodeToReturn: () => [0, 1, this.excessCabAlt.get() ? null : 2],
       codesToReturn: ['213123101', '213123102', '213123103'],
       memoInhibit: () => false,
       failure: 2,
