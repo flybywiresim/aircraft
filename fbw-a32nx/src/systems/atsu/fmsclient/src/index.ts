@@ -122,8 +122,14 @@ export class FmsClient implements Instrument {
     this.subscriber.on('atcMessageModify').handle((message) => (this.modificationMessage = message));
     this.subscriber.on('atcPrintMessage').handle((message) => this.printMessage(message));
     this.subscriber.on('aocPrintMessage').handle((message) => this.printMessage(message));
-    this.subscriber.on('atcActiveAtisAutoUpdates').handle((airports) => (this.atisAutoUpdates = airports));
-    this.subscriber.on('atcPrintAtisReportsPrint').handle((active) => (this.atisReportsPrintActive = active));
+    this.subscriber.on('atcActiveAtisAutoUpdates').handle((airports) => {
+      console.log('FMSClient: received atisAutoUpdates', airports);
+      this.atisAutoUpdates = airports;
+    });
+    this.subscriber.on('atcPrintAtisReportsPrint').handle((active) => {
+      console.log('FMSClient: received atisReportsPrintActive', active);
+      this.atisReportsPrintActive = active;
+    });
     this.subscriber.on('atcStationStatus').handle((status) => (this.atcStationStatus = status));
     this.subscriber.on('atcMaxUplinkDelay').handle((delay) => (this.maxUplinkDelay = delay));
     this.subscriber
@@ -270,12 +276,11 @@ export class FmsClient implements Instrument {
 
   public printAocAtis(data: any): void {
     const message = WeatherMessage.deserialize(data);
-    this.printMessage(message);
+    this.printMessage(message.serialize(AtsuMessageSerializationFormat.Printer));
   }
 
-  public printMessage(message: AtsuMessage): void {
-    const text = message.serialize(AtsuMessageSerializationFormat.Printer);
-    this.fms.printPage(text.split('\n'));
+  public printMessage(message: string): void {
+    this.fms.printPage(message.split('\n'));
   }
 
   public removeMessage(uid: number, aocMessage: boolean): void {

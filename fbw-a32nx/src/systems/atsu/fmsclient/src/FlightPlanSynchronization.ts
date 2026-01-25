@@ -107,6 +107,8 @@ export class FlightPlanSynchronization {
 
         if (origin) {
           if (origin.ident !== this.originIdent || destination.ident !== this.destination.ident) {
+            this.originIdent = origin.ident;
+            this.destination = destination;
             // new route entered -> reset ATIS updater
             this.publisher.pub('atcResetAtisAutoUpdate', true, true, false);
           }

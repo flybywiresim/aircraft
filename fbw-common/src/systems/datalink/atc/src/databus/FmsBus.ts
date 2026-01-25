@@ -33,7 +33,10 @@ export interface AtcFmsMessages {
   // requests from ATSU to FMS
   atcSystemStatus: AtsuStatusCodes;
   atcMessageModify: CpdlcMessage;
-  atcPrintMessage: AtsuMessage;
+
+  // FIXME when sending the object via the event bus, the prototype is lost, so AtsuMessage methods are not available anymores
+
+  atcPrintMessage: string;
 
   // synchronization stream from ATSU to FMS
   atcActiveAtisAutoUpdates: string[];
