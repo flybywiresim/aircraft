@@ -3319,8 +3319,9 @@ export class PseudoFWC {
     const gen2OffWarningConfirmNode2 = this.gen2OffWarningConfirmNode2.write(!engine2NotRunning && !phase6, deltaTime);
 
     const gen1OffPart1 = gen1PbOffFor5Seconds && !this.idg1Disconnected.get(); // TODO: && !(Gen 1 fault memory || this.idg1Disconnected.get()) when implemented
-    const gen2OffPart1 = gen2PbOffFor5Seconds && !this.idg2Disconnected.get(); // TODO: && !(Gen 2 fault memory || this.idg1Disconnected.get()) when implemented
+    const gen2OffPart1 = gen2PbOffFor5Seconds && !this.idg2Disconnected.get(); // TODO: && !(Gen 2 fault memory || this.idg2Disconnected.get()) when implemented
 
+    // Avoids one-cycle delay in exchange for looking awful
     const gen1NotOperating =
       (gen1OffPart1 &&
         (gen1OffWarningConfirmNode2 || phase6For60Seconds || (phase6 && this.gen12NotOperating.get()))) ||
@@ -3329,9 +3330,8 @@ export class PseudoFWC {
       (gen2OffPart1 &&
         (gen2OffWarningConfirmNode2 || phase6For60Seconds || (phase6 && this.gen12NotOperating.get()))) ||
       idg2DisconnectWarnNext; // TODO: Gen 2 fault memory || when implemented
-
-    // Avoids one-cycle delay in exchange for looking awful
     const gen12NotOperatingNext = gen1NotOperating && gen2NotOperating;
+
     const gen1OffPart2 = gen1OffWarningConfirmNode2 || phase6For60Seconds || (phase6 && gen12NotOperatingNext);
     const gen2OffPart2 = gen2OffWarningConfirmNode2 || phase6For60Seconds || (phase6 && gen12NotOperatingNext);
 
