@@ -39,9 +39,7 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
 
     const rows = [['----'], [''], [''], [''], ['']];
     const subRows = [['VIA', ''], [''], [''], [''], ['']];
-    const allRows = lastIndex
-      ? A320_Neo_CDU_AirwaysFromWaypointPage._GetAllRows(fpIsTmpy ? mcdu.flightPlanService.temporary : targetPlan)
-      : [];
+    const allRows = lastIndex ? A320_Neo_CDU_AirwaysFromWaypointPage._GetAllRows(targetPlan) : [];
 
     let rowBottomLine = ['<RETURN'];
     mcdu.onLeftInput[5] = () => {
