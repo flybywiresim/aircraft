@@ -649,8 +649,6 @@ export class PseudoFWC {
 
   private readonly sec1FaultLine123Display = Subject.create(false);
 
-  private readonly sec1FaultLine45Display = Subject.create(false);
-
   private readonly sec2FaultLine123Display = Subject.create(false);
 
   private readonly sec3FaultLine123Display = Subject.create(false);
@@ -759,6 +757,10 @@ export class PseudoFWC {
 
   private readonly speedBrakeStillOutWarning = Subject.create(false);
 
+  private readonly speedBrakeDisagreeWarning = Subject.create(false);
+
+  private readonly speedBrakeDoNotUse = Subject.create(false);
+
   private readonly amberSpeedBrake = Subject.create(false);
 
   private readonly phase84s5Trigger = new NXLogicTriggeredMonostableNode(4.5, false);
@@ -853,6 +855,8 @@ export class PseudoFWC {
 
   private readonly flightPhase67 = Subject.create(false);
 
+  private readonly flightPhase678 = Subject.create(false);
+
   private readonly flightPhase78 = Subject.create(false);
 
   private readonly ldgInhibitTimer = new NXLogicConfirmNode(3);
@@ -873,6 +877,8 @@ export class PseudoFWC {
   private readonly toConfigNormalConf = new NXLogicConfirmNode(0.3, false);
 
   private readonly flightPhase3PulseNode = new NXLogicPulseNode();
+
+  private readonly flightPhase7PulseNode = new NXLogicPulseNode();
 
   private readonly flightPhaseEndedPulseNode = new NXLogicPulseNode();
 
@@ -940,7 +946,15 @@ export class PseudoFWC {
 
   private readonly aircraftOnGround = Subject.create(false);
 
-  private readonly antiskidActive = Subject.create(false);
+  private readonly antiSkidOffPhase2Confirm = new NXLogicConfirmNode(60);
+
+  private readonly antiSkidOffPhase2Pulse = new NXLogicPulseNode(true);
+
+  private readonly antiSkidOffWarning = Subject.create(false);
+
+  private readonly parkBrakeOnConfirm = new NXLogicConfirmNode(2);
+
+  private readonly parkBrakeOnWarning = Subject.create(false);
 
   private readonly brakeFan = Subject.create(false);
 
@@ -1000,13 +1014,18 @@ export class PseudoFWC {
 
   private onGroundImmediate = false;
 
-  public readonly autoBrakeDeactivatedNode = new NXLogicTriggeredMonostableNode(9, false); // When ABRK deactivated, emit this for 9 sec
+  private readonly autobrakeDeactivatedPulseNode = new NXLogicPulseNode(false);
 
-  public readonly autoBrakeOffAuralConfirmNode = new NXLogicConfirmNode(1, true);
+  /** When ABRK deactivated, emit this for 9 sec */
+  private readonly autoBrakeDeactivatedMemoTriggeredNode = new NXLogicTriggeredMonostableNode(9, false);
 
-  public readonly autoBrakeOff = Subject.create(false);
+  private readonly autobrakeDeactivatedMcNode = new NXLogicTriggeredMonostableNode(3);
 
-  public autoBrakeOffAuralTriggered = false;
+  private readonly autoBrakeOffAuralConfirmNode = new NXLogicConfirmNode(1, true);
+
+  private readonly autoBrakeOff = Subject.create(false);
+
+  private autoBrakeOffAuralTriggered = false;
 
   /* NAVIGATION */
   private readonly adr1Cas = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_adr_computed_airspeed_1'));
@@ -1596,16 +1615,18 @@ export class PseudoFWC {
 
     this.fwcFlightPhase.set(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum'));
     const flightPhase = this.fwcFlightPhase.get();
-    this.flightPhase3PulseNode.write(this.fwcFlightPhase.get() === 3, deltaTime);
+    this.flightPhase3PulseNode.write(flightPhase === 3, deltaTime);
+    this.flightPhase7PulseNode.write(flightPhase === 7, deltaTime);
     // flight phase convenience vars
-    this.flightPhase126.set([1, 2, 6].includes(this.fwcFlightPhase.get()));
-    this.flightPhase23.set([2, 3].includes(this.fwcFlightPhase.get()));
-    this.flightPhase34.set([3, 4].includes(this.fwcFlightPhase.get()));
-    this.flightPhase345.set(this.flightPhase34.get() || this.fwcFlightPhase.get() === 5);
-    this.flightPhase129.set([1, 2, 9].includes(this.fwcFlightPhase.get()));
-    this.flightPhase67.set([6, 7].includes(this.fwcFlightPhase.get()));
-    this.flightPhase78.set([7, 8].includes(this.fwcFlightPhase.get()));
-    const flightPhase567 = [5, 6, 7].includes(this.fwcFlightPhase.get());
+    this.flightPhase126.set(flightPhase === 1 || flightPhase === 2 || flightPhase === 6);
+    this.flightPhase129.set(flightPhase === 1 || flightPhase === 2 || flightPhase === 9);
+    this.flightPhase23.set(flightPhase === 2 || flightPhase === 3);
+    this.flightPhase34.set(flightPhase === 3 || flightPhase === 4);
+    this.flightPhase345.set(this.flightPhase34.get() || flightPhase === 5);
+    this.flightPhase67.set(flightPhase === 6 || flightPhase === 7);
+    this.flightPhase678.set(this.flightPhase67.get() || flightPhase === 8);
+    this.flightPhase78.set(flightPhase === 7 || flightPhase === 8);
+    const flightPhase567 = flightPhase === 5 || flightPhase === 6 || flightPhase === 7;
 
     // TO Config convenience vars
     const toConfigTest = this.ecpWarningButtonStatus.get().bitValue(18);
@@ -1734,7 +1755,6 @@ export class PseudoFWC {
 
     /* LANDING GEAR AND LIGHTS acquisition */
 
-    this.antiskidActive.set(SimVar.GetSimVarValue('ANTISKID BRAKES ACTIVE', 'bool'));
     this.brakeFan.set(SimVar.GetSimVarValue('L:A32NX_BRAKE_FAN_RUNNING', 'bool'));
     this.brakesHot.set(SimVar.GetSimVarValue('L:A32NX_BRAKES_HOT', 'Bool') > 0);
     // FIX ME ldg lt extended signal should come from SDAC
@@ -1750,6 +1770,19 @@ export class PseudoFWC {
     this.lgciu2DiscreteWord2.setFromSimVar('L:A32NX_LGCIU_2_DISCRETE_WORD_2');
     this.parkBrake.set(SimVar.GetSimVarValue('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool'));
     this.nwSteeringDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool'));
+
+    const antiSkidActive = SimVar.GetSimVarValue('ANTISKID BRAKES ACTIVE', 'bool');
+    // TODO: Check !NORM+ALTN BRK FAULT when implemented, plus change all of this to use SDAC discretes
+    const acBusOff = !this.ac1BusPowered.get() || !this.ac2BusPowered.get();
+    const phase2For60Seconds = this.antiSkidOffPhase2Confirm.write(this.fwcFlightPhase.get() === 2, deltaTime);
+    const phase2Pulse = this.antiSkidOffPhase2Pulse.write(phase2For60Seconds, deltaTime);
+    this.antiSkidOffWarning.set(!antiSkidActive && !acBusOff && !phase2Pulse);
+
+    const parkBrakeFor2Seconds = this.parkBrakeOnConfirm.write(this.parkBrake.get(), deltaTime);
+    this.parkBrakeOnWarning.set(
+      parkBrakeFor2Seconds && this.flightPhase678.get() && !this.flightPhase7PulseNode.read(),
+    );
+
     const leftCompressedHardwireLgciu1 =
       this.dcESSBusPowered.get() && SimVar.GetSimVarValue('L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED', 'bool') > 0;
     const leftCompressedHardwireLgciu2 =
@@ -2031,21 +2064,26 @@ export class PseudoFWC {
     this.autoThrustLimited.set(this.autoThrustLimitedConfNode.read() && this.autoThrustLimitedMtrigNode.read());
 
     // AUTO BRAKE OFF
-    this.autoBrakeDeactivatedNode.write(!!SimVar.GetSimVarValue('L:A32NX_AUTOBRAKES_ACTIVE', 'boolean'), deltaTime);
+    this.autobrakeDeactivatedPulseNode.write(
+      !!SimVar.GetSimVarValue('L:A32NX_AUTOBRAKES_ACTIVE', 'boolean'),
+      deltaTime,
+    );
 
-    if (!this.autoBrakeDeactivatedNode.read()) {
-      this.requestMasterCautionFromABrkOff = false;
+    const autoBrakeOffShouldTrigger = this.autoBrakeDeactivatedMemoTriggeredNode.write(
+      this.autobrakeDeactivatedPulseNode.read() &&
+        this.aircraftOnGround.get() &&
+        this.computedAirSpeedToNearest2.get() > 33,
+      deltaTime,
+    );
+
+    // Emit audio
+    this.autoBrakeOffAuralConfirmNode.write(autoBrakeOffShouldTrigger, deltaTime);
+
+    // Emit master caution for 3s
+    this.requestMasterCautionFromABrkOff = this.autobrakeDeactivatedMcNode.write(autoBrakeOffShouldTrigger, deltaTime);
+
+    if (!this.autoBrakeDeactivatedMemoTriggeredNode.read()) {
       this.autoBrakeOffAuralTriggered = false;
-    }
-
-    this.autoBrakeOffAuralConfirmNode.write(this.autoBrakeDeactivatedNode.read(), deltaTime);
-
-    const autoBrakeOffShouldTrigger =
-      this.aircraftOnGround.get() && this.computedAirSpeedToNearest2.get() > 33 && this.autoBrakeDeactivatedNode.read();
-
-    if (autoBrakeOffShouldTrigger && !this.autoBrakeOff.get()) {
-      // Triggered in this cycle -> request master caution
-      this.requestMasterCautionFromABrkOff = true;
     }
 
     // FIXME double callout if ABRK fails
@@ -2785,15 +2823,20 @@ export class PseudoFWC {
         speedBrakeCaution3 ||
         !this.flightPhase67.get(),
     );
-    const speedBrakeDoNotUse = fcdc1DiscreteWord5.bitValue(27) || fcdc2DiscreteWord5.bitValue(27);
     this.speedBrakeCaution1Pulse.write(speedBrakeCaution1, deltaTime);
     this.speedBrakeCaution2Pulse.write(speedBrakeCaution2, deltaTime);
     const speedBrakeCaution = speedBrakeCaution1 || speedBrakeCaution2 || speedBrakeCaution3;
+
+    // spd brk disagree
+    const speedBrakeDisagree = fcdc1DiscreteWord5.bitValue(26) || fcdc2DiscreteWord5.bitValue(26);
+    this.speedBrakeDisagreeWarning.set(speedBrakeDisagree);
+    this.speedBrakeDoNotUse.set(fcdc1DiscreteWord5.bitValue(27) || fcdc2DiscreteWord5.bitValue(27));
+
     this.speedBrakeStillOutWarning.set(
       !this.speedBrakeCaution1Pulse.read() &&
         !this.speedBrakeCaution2Pulse.read() &&
         speedBrakeCaution &&
-        !speedBrakeDoNotUse,
+        !speedBrakeDisagree,
     );
 
     // gnd splr not armed
@@ -3554,14 +3597,6 @@ export class PseudoFWC {
     );
   }
 
-  autoThrottleInstinctiveDisconnect() {
-    // When instinctive A/THR disc. p/b is pressed after ABRK deactivation, inhibit audio+memo, don't request master caution
-    // Unclear refs, whether this has to happen within the audio confirm node time (1s)
-    if (this.autoBrakeDeactivatedNode.read()) {
-      this.requestMasterCautionFromABrkOff = false;
-    }
-  }
-
   private readonly ewdFailureActivationTime = new Map<keyof EWDMessageDict, number>();
 
   ewdMessageFailures: EWDMessageDict = {
@@ -4228,7 +4263,7 @@ export class PseudoFWC {
         this.sec1FaultLine123Display.get() ? 1 : null,
         this.sec1FaultLine123Display.get() ? 2 : null,
         this.sec1FaultLine123Display.get() ? 3 : null,
-        this.sec1FaultLine45Display.get() ? 4 : null,
+        this.speedBrakeDoNotUse.get() ? 4 : null,
       ],
       codesToReturn: ['270021001', '270021002', '270021003', '270021004', '270021005'],
       memoInhibit: () => false,
@@ -4318,6 +4353,17 @@ export class PseudoFWC {
         '270036507',
         '270036508',
       ],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: 10,
+      side: 'LEFT',
+    },
+    2700370: {
+      // SPD BRK DISAGREE
+      flightPhaseInhib: [3, 4, 5],
+      simVarIsActive: this.speedBrakeDisagreeWarning,
+      whichCodeToReturn: () => [0, 1, this.speedBrakeDoNotUse.get() ? 2 : null],
+      codesToReturn: ['270037001', '270037002', '270037003'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: 10,
@@ -4446,7 +4492,7 @@ export class PseudoFWC {
       side: 'LEFT',
     },
     3200050: {
-      // PK BRK ON
+      // CONFIG PARK BRK ON
       flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10],
       simVarIsActive: MappedSubject.create(
         ([fwcFlightPhase, parkBrake]) => fwcFlightPhase === 3 && parkBrake,
@@ -4906,15 +4952,26 @@ export class PseudoFWC {
       sysPage: -1,
       side: 'LEFT',
     },
-    3200060: {
-      // NW ANTI SKID INACTIVE
+    3200070: {
+      // A/SKID N/WS OFF
       flightPhaseInhib: [4, 5],
-      simVarIsActive: this.antiskidActive.map((v) => !v),
+      simVarIsActive: this.antiSkidOffWarning,
       whichCodeToReturn: () => [0, 1],
-      codesToReturn: ['320006001', '320006002'],
+      codesToReturn: ['320007001', '320007002'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: 9,
+      side: 'LEFT',
+    },
+    3200081: {
+      // BRAKES PARK BRK ON
+      flightPhaseInhib: [1, 2, 3, 4, 5, 8, 9, 10],
+      simVarIsActive: this.parkBrakeOnWarning,
+      whichCodeToReturn: () => [0, 1],
+      codesToReturn: ['320008101', '320008102'],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: -1,
       side: 'LEFT',
     },
     3200150: {

@@ -1,11 +1,23 @@
-import { ComponentProps, DisplayComponent, FSComponent, Subscribable, Subscription, VNode } from '@microsoft/msfs-sdk';
+import {
+  ComponentProps,
+  DisplayComponent,
+  FSComponent,
+  Subject,
+  Subscribable,
+  Subscription,
+  VNode,
+} from '@microsoft/msfs-sdk';
 import './style.scss';
 
 interface ActivePageTitleBarProps extends ComponentProps {
   activePage: Subscribable<string>;
   offset: Subscribable<string>;
-  eoIsActive: Subscribable<boolean>;
-  tmpyIsActive: Subscribable<boolean>;
+  eoIsActive?: Subscribable<boolean>;
+  tmpyIsActive?: Subscribable<boolean>;
+  /** Whether to display the PENALTY seciton on the title bar */
+  penaltyIsActive?: Subscribable<boolean>;
+  /** Whether this is an FMS subsystem page. If it is, title section for EO AND TMPY are visible */
+  isFmsSubsystemPage?: boolean;
 }
 
 /*
@@ -17,29 +29,23 @@ export class ActivePageTitleBar extends DisplayComponent<ActivePageTitleBarProps
 
   private readonly offsetText = this.props.offset.map((it) => (it ? `     OFFSET${this.props.offset.get()}` : ''));
 
-  private eoRef = FSComponent.createRef<HTMLSpanElement>();
+  private readonly engineOutVisibility = (this.props.eoIsActive ?? Subject.create(false)).map((v) =>
+    v && this.props.isFmsSubsystemPage ? 'visible' : 'hidden',
+  );
 
-  private tmpyRef = FSComponent.createRef<HTMLSpanElement>();
+  private readonly temporaryVisibility = (this.props.tmpyIsActive ?? Subject.create(false)).map((v) =>
+    v && this.props.isFmsSubsystemPage ? 'visible' : 'hidden',
+  );
+
+  private readonly penaltyVisibility = (this.props.penaltyIsActive ?? Subject.create(false)).map((v) =>
+    v && this.props.isFmsSubsystemPage ? 'visible' : 'hidden',
+  );
+
+  private readonly titleBarMargin = this.props.isFmsSubsystemPage ? '2px' : '0px'; // As the bars are still rendered, removing the margin removes the black bars.
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-
-    this.subs.push(
-      this.props.eoIsActive.sub((v) => {
-        if (this.eoRef.getOrDefault()) {
-          this.eoRef.instance.style.display = v ? 'block' : 'none';
-        }
-      }, true),
-    );
-    this.subs.push(
-      this.props.tmpyIsActive.sub((v) => {
-        if (this.tmpyRef.getOrDefault()) {
-          this.tmpyRef.instance.style.display = v ? 'block' : 'none';
-        }
-      }, true),
-    );
-
-    this.subs.push(this.offsetText);
+    this.subs.push(this.offsetText, this.penaltyVisibility, this.engineOutVisibility, this.temporaryVisibility);
   }
 
   public destroy(): void {
@@ -52,19 +58,22 @@ export class ActivePageTitleBar extends DisplayComponent<ActivePageTitleBarProps
   render(): VNode {
     return (
       <div class="mfd-title-bar-container">
-        <div class="mfd-title-bar-title">
-          <span class="mfd-label mfd-title-bar-title-label">
+        <div class="mfd-title-bar-title fr space-between">
+          <span class="mfd-label mfd-title-bar-text">
             {this.props.activePage}
             {this.offsetText}
           </span>
+          <span class="mfd-title-bar-text label white" style={{ visibility: this.penaltyVisibility }}>
+            PENALTY
+          </span>
         </div>
-        <div class="mfd-title-bar-eo-section">
-          <span ref={this.eoRef} class="mfd-label mfd-title-bar-eo-label" style="display: none">
+        <div class="mfd-title-bar-section eo" style={{ 'margin-left': this.titleBarMargin }}>
+          <span class="mfd-label mfd-title-bar-text label amber" style={{ visibility: this.engineOutVisibility }}>
             EO
           </span>
         </div>
-        <div class="mfd-title-bar-tmpy-section">
-          <span ref={this.tmpyRef} class="mfd-label mfd-title-bar-tmpy-label" style="display: none">
+        <div class="mfd-title-bar-section tmpy" style={{ 'margin-left': this.titleBarMargin }}>
+          <span class="mfd-label mfd-title-bar-text label yellow" style={{ visibility: this.temporaryVisibility }}>
             TMPY
           </span>
         </div>

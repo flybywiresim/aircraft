@@ -39,7 +39,7 @@ pub use engine_generator::{
     INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME,
 };
 pub use external_power_source::ExternalPowerSource;
-use fxhash::{FxHashMap, FxHashSet};
+use rustc_hash::{FxHashMap, FxHashSet};
 pub use static_inverter::StaticInverter;
 pub use transformer_rectifier::TransformerRectifier;
 use uom::si::{electric_potential::volt, f64::*, power::watt, velocity::knot};

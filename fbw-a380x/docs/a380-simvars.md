@@ -18,6 +18,7 @@
   - [Indicating-Recording ATA 31](#indicating-recording-ata-31)
   - [ECAM Control Panel ATA 31](#ecam-control-panel-ata-31)
   - [EFIS Control Panel ATA 31](#efis-control-panel-ata-31)
+  - [Landing Gear ATA 32](#landing-gear-ata-32)
   - [Bleed Air ATA 36](#bleed-air-ata-36)
   - [Integrated Modular Avionics ATA 42](#integrated-modular-avionics-ata-42)
   - [Auxiliary Power Unit ATA 49](#auxiliary-power-unit-ata-49)
@@ -926,7 +927,7 @@
       |:---:|:---------------------------------:|
       | 11  | Capability Downgrade triple click |
       | 12  | Mode reversion triple click       |
-      | 13  | BTV Exit Missed triple click      |
+      | 13  | BTV triple click                  |
       | 14  | AP 1 INOP                         |
       | 15  | AP 2 INOP                         |
       | 16  | FD 1 INOP                         |
@@ -936,28 +937,29 @@
 - A32NX_SFCC_{number}_SLAT_FLAP_ACTUAL_POSITION_WORD
     - {number} is 1 or 2
     - Slat/Flap actual position discrete word of the SFCC bus output
+    - This ARINC word has been adapted from the A320 with A380 angles
     - Arinc429<Discrete>
-    - | Bit |      Description A380X, if different     |
-      |:---:|:----------------------------------------:|
-      | 11  | Slat Data Valid                          |
-      | 12  | Slats Retracted 0° (6.2° > FPPU > -5°)   |
-      | 13  | Slats >= 19° (337° > FPPU > 234.7°)      |
-      | 14  | Slats >= 22 (337° > FPPU > 272.2°)       |
-      | 15  | Slats Extended 23° (337° > FPPU > 280°)  |
-      | 16  | Slat WTB Engaged                         |
-      | 17  | Slat Fault                               |
-      | 18  | Flap Data Valid                          |
-      | 19  | Flaps Retracted 0° (2.5° > FPPU > -5°)   |
-      | 20  | Flaps >= 7° (254° > FPPU > 102.1°)       |
-      | 21  | Flaps >= 16° (254° > FPPU > 150.0°)      |
-      | 22  | Flaps >= 25° (254° > FPPU > 189.8°)      |
-      | 23  | Flaps Extended 32° (254° > FPPU > 218°)  |
-      | 24  | Flap WTB engaged                         |
-      | 25  | Flap Fault                               |
-      | 26  | Spoiler Lift Demand                      |
-      | 27  | Spoiler Limit Demand                     |
-      | 28  | Slat System Jam                          |
-      | 29  | Flap System Jam                          |
+    - | Bit |      Description A380X, if different        |
+      |:---:|:-------------------------------------------:|
+      | 11  | Slat Data Valid                             |
+      | 12  | Slats Retracted 0° (9.5° > FPPU > -16°)     |
+      | 13  | Slats >= 20° (343° >= FPPU >= 276.9°)       |
+      | 14  | Slats >= 23 (343° >= FPPU >= 317.8°)        |
+      | 15  | Slats Extended 23° (343° >= FPPU >= 317.8°) |
+      | 16  | Slat WTB Engaged                            |
+      | 17  | Slat Fault                                  |
+      | 18  | Flap Data Valid                             |
+      | 19  | Flaps Retracted 0° (10° > FPPU > -10°)      |
+      | 20  | Flaps >= 8° (350° >= FPPU >= 208.0°)        |
+      | 21  | Flaps >= 17° (350° >= FPPU >= 251.6°)       |
+      | 22  | Flaps >= 26° (350° >= FPPU >= 289.9°)       |
+      | 23  | Flaps Extended 33° (350° >= FPPU >= 331°)   |
+      | 24  | Flap WTB engaged                            |
+      | 25  | Flap Fault                                  |
+      | 26  | Spoiler Lift Demand                         |
+      | 27  | Spoiler Limit Demand                        |
+      | 28  | Slat System Jam                             |
+      | 29  | Flap System Jam                             |
 
 - A32NX_FLAPS_CONF_INDEX
   - Number
@@ -1131,6 +1133,19 @@
     - Pre-selected QNH when in STD mode, or 0 when not displayed.
     - Not for FBW systems use!
     - {side} = L or R
+
+## Landing Gear ATA 32
+
+- A32NX_BTV_STATE
+    - Boolean
+    - Indicates the current state of the BTV system
+    - | State             | Value |
+      |-------------------|-------|
+      | DISABLED          | 0     |
+      | ARMED             | 1     |
+      | ROT OPTIMIZATION  | 2     |
+      | DECEL             | 3     |
+      | END OF BRAKING    | 4     |
 
 ## Bleed Air ATA 36
 

@@ -24,6 +24,10 @@ enum PitchTrimStatus {
   NotAtTarget,
 }
 
+const TRIM_WHEEL_HEIGHT = 600;
+const TRIM_POS_TO_WHEEL_GAIN = 140;
+const SVG_HEIGHT = 252;
+
 export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible: Subscribable<boolean> }> {
   private readonly subscriptions: Subscription[] = [];
   private readonly sub = this.props.bus.getSubscriber<PFDSimvars>();
@@ -51,7 +55,10 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
     (Math.round(PitchTrimUtils.pitchTrimToCg(it) * 10) / 10).toFixed(1),
   );
 
-  private readonly rightWheelY = this.trimPosition.map((it) => (it + 2) * 31 + 23 - 400);
+  // Use modulo TRIM_WHEEL_HEIGHT / 4 to wrap around, otherwise the trim indication would not be long enough.
+  private readonly rightWheelY = this.trimPosition.map(
+    (it) => ((it * TRIM_POS_TO_WHEEL_GAIN) % (TRIM_WHEEL_HEIGHT / 4)) - TRIM_WHEEL_HEIGHT / 2 + SVG_HEIGHT / 2,
+  );
 
   private readonly trimAreasTransform = this.trimPosition.map(
     (it) => `translate(276 ${-(this.degreesToPixel(it) - 103.5) + 23})`,
@@ -301,7 +308,14 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
             </g>
           </g>
           <g clip-path="url(#cut-right)">
-            <rect width="14" height="600" x="320" y={this.rightWheelY} stroke="black" fill="url(#rightWheelGradient)" />
+            <rect
+              width="14"
+              height={TRIM_WHEEL_HEIGHT}
+              x="320"
+              y={this.rightWheelY}
+              stroke="black"
+              fill="url(#rightWheelGradient)"
+            />
             <rect x="319" y="23" width="16" height="207" fill="url(#shadowGradient)" />
           </g>
           <g clip-path="url(#cut-left)">
