@@ -1721,12 +1721,12 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [
       {
-        name: 'ALL THR LEVERS', // When all ENG operative
+        name: 'ALL THR LEVERS',
         sensed: true,
         labelNotCompleted: 'CLB',
       },
       {
-        name: 'THR LEVERS', // In case of ENG out
+        name: 'THR LEVERS',
         sensed: true,
         labelNotCompleted: 'MCT',
       },

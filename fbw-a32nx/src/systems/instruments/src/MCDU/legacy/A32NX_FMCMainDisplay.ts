@@ -7,6 +7,7 @@ import {
   a320EfisRangeSettings,
   Airport,
   Arinc429LocalVarOutputWord,
+  Arinc429Register,
   Arinc429SignStatusMatrix,
   Arinc429Word,
   DatabaseIdent,
@@ -15,12 +16,14 @@ import {
   EnrouteNdbNavaid,
   Fix,
   IlsNavaid,
+  isMsfs2024,
   ISimbriefData,
   MathUtils,
   NdbNavaid,
   NXDataStore,
   NXLogicConfirmNode,
   NXUnits,
+  RegisteredSimVar,
   TerminalNdbNavaid,
   UpdateThrottler,
   VhfNavaid,
@@ -54,7 +57,7 @@ import { A320_Neo_CDU_MainDisplay } from './A320_Neo_CDU_MainDisplay';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 import { FmsDataInterface } from '@fmgc/flightplanning/interface/FmsDataInterface';
-import { BitFlags, EventBus, Subscription } from '@microsoft/msfs-sdk';
+import { BitFlags, EventBus, Subscription, SimVarValueType } from '@microsoft/msfs-sdk';
 import { AdfRadioTuningStatus, MmrRadioTuningStatus, VorRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { FmsFormatters } from './FmsFormatters';
@@ -72,12 +75,14 @@ import { CoRouteUplinkAdapter } from '@fmgc/flightplanning/uplink/CoRouteUplinkA
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 import { SimbriefOfpState } from './LegacyFmsPageInterface';
 import { CDUInitPage } from '../legacy_pages/A320_Neo_CDU_InitPage';
+import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
 import { FmcWindVector } from '@fmgc/guidance/vnav/wind/types';
 import { FlightPlanFlags } from '@fmgc/flightplanning/plans/FlightPlanFlags';
 import { CDUFuelPredPage } from '../legacy_pages/A320_Neo_CDU_FuelPredPage';
 import { ObservableFlightPlanManager } from '@fmgc/flightplanning/ObservableFlightPlanManager';
 import { CDUFlightPlanPage } from '../legacy_pages/A320_Neo_CDU_FlightPlanPage';
 import { FuelPredComputations } from '@fmgc/flightplanning/fuel/FuelPredComputations';
+import { MsfsFlightPlanSync } from '@fmgc/flightplanning/MsfsFlightPlanSync';
 
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
@@ -87,11 +92,17 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   public readonly navDatabaseBackend = NavigationDatabaseBackend.Msfs;
   public readonly currFlightPhaseManager = new FlightPhaseManager(this.bus);
-  public readonly currFlightPlanService = new FlightPlanService(this.bus, new A320FlightPlanPerformanceData());
+  public readonly currFlightPlanService = new FlightPlanService(
+    this.bus,
+    new A320FlightPlanPerformanceData(),
+    FpmConfigs.A320_HONEYWELL_H3,
+    true,
+  );
   private readonly observableFlightPlanManager = new ObservableFlightPlanManager(this.bus, this.currFlightPlanService);
   public readonly rpcServer = new FlightPlanRpcServer(this.bus, this.currFlightPlanService);
   public readonly currNavigationDatabaseService = NavigationDatabaseService;
   public readonly navigationDatabase = new NavigationDatabase(this.bus, NavigationDatabaseBackend.Msfs);
+  public readonly msfsRouteSync = isMsfs2024() ? new MsfsFlightPlanSync(this.bus, this.currFlightPlanService) : null;
 
   private readonly flightPhaseUpdateThrottler = new UpdateThrottler(800);
   private readonly fmsUpdateThrottler = new UpdateThrottler(250);
@@ -291,6 +302,25 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public casToMachManualCrossoverCurve;
   public machToCasManualCrossoverCurve;
 
+  private readonly fmgcDiscreteWord2 = Arinc429Register.empty();
+  private readonly fmgc1DiscreteWord2 = RegisteredSimVar.create<number>(
+    'L:A32NX_FMGC_1_DISCRETE_WORD_2',
+    SimVarValueType.Enum,
+  );
+  private readonly fmgc2DiscreteWord2 = RegisteredSimVar.create<number>(
+    'L:A32NX_FMGC_2_DISCRETE_WORD_2',
+    SimVarValueType.Enum,
+  );
+  private readonly fmgcDiscreteWord4 = Arinc429Register.empty();
+  private readonly fmgc1DiscreteWord4 = RegisteredSimVar.create<number>(
+    'L:A32NX_FMGC_1_DISCRETE_WORD_4',
+    SimVarValueType.Enum,
+  );
+  private readonly fmgc2DiscreteWord4 = RegisteredSimVar.create<number>(
+    'L:A32NX_FMGC_2_DISCRETE_WORD_4',
+    SimVarValueType.Enum,
+  );
+
   constructor(public readonly bus: EventBus) {
     FMCMainDisplay.DEBUG_INSTANCE = this;
 
@@ -326,7 +356,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.A32NXCore = new A32NX_Core();
     this.A32NXCore.init();
 
-    this.dataManager = new DataManager(this);
+    this.dataManager = new DataManager(this.bus, this);
 
     this.efisInterfaces = {
       L: new EfisInterface('L', this.currFlightPlanService),
@@ -1335,6 +1365,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
 
     if (this.updateAutopilotCooldown < 0) {
+      this.fgAcquisition();
       this.updatePerfSpeeds();
       this.updateConstraints();
       this.updateManagedSpeed();
@@ -1500,7 +1531,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   // TODO/VNAV: Speed constraint
   private getSpeedConstraint() {
-    if (!this.navModeEngaged()) {
+    if (!this.isLateralModeManaged()) {
       return Infinity;
     }
 
@@ -2629,7 +2660,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       const oldDestination = this.currFlightPlanService.active.destinationAirport
         ? this.currFlightPlanService.active.destinationAirport.ident
         : undefined;
+
       await this.flightPlanService.temporaryInsert();
+
       this.checkCostIndex(oldCostIndex);
       // FIXME I don't know if it is actually possible to insert TMPY with no FROM/TO, but we should not crash here, so check this for now
       if (oldDestination !== undefined) {
@@ -2866,13 +2899,13 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
 
     let value = parseInt(s);
-    if (!isFinite(value) || !/^\d{4,5}$/.test(s)) {
+    if (!isFinite(value) || !/^\d{1,5}$/.test(s)) {
       this.setScratchpadMessage(NXSystemMessages.formatError);
       return false;
     }
 
     value = Math.round(value / 10) * 10;
-    if (value < 1000 || value > 45000) {
+    if (value < 0 || value > 39800) {
       this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
       return false;
     }
@@ -2907,7 +2940,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       return false;
     }
 
-    const match = s.match(/^(([0-9]{4,5})\/?)?(\/([0-9]{4,5}))?$/);
+    const match = s.match(/^(([0-9]{3,5})\/?)?(\/([0-9]{3,5}))?$/);
     if (match === null || (match[2] === undefined && match[4] === undefined) || s.split('/').length > 2) {
       this.setScratchpadMessage(NXSystemMessages.formatError);
       return false;
@@ -2971,7 +3004,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       return false;
     }
 
-    const match = s.match(/^([0-9]{4,5})$/);
+    const match = s.match(/^([0-9]{3,5})$/);
     if (match === null) {
       this.setScratchpadMessage(NXSystemMessages.formatError);
       return false;
@@ -3021,7 +3054,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       return false;
     }
 
-    const match = s.match(/^(([0-9]{4,5})\/?)?(\/([0-9]{4,5}))?$/);
+    const match = s.match(/^(([0-9]{3,5})\/?)?(\/([0-9]{3,5}))?$/);
     if (match === null || (match[2] === undefined && match[4] === undefined) || s.split('/').length > 2) {
       this.setScratchpadMessage(NXSystemMessages.formatError);
       return false;
@@ -3080,7 +3113,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       return false;
     }
 
-    const match = s.match(/^([0-9]{4,5})$/);
+    const match = s.match(/^([0-9]{3,5})$/);
     if (match === null) {
       this.setScratchpadMessage(NXSystemMessages.formatError);
       return false;
@@ -3802,12 +3835,12 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       return true;
     }
 
-    if (!/^\d{4,5}$/.test(s)) {
+    if (!/^\d{1,5}$/.test(s)) {
       this.setScratchpadMessage(NXSystemMessages.formatError);
       return false;
     }
     const value = Math.round(parseInt(s) / 10) * 10;
-    if (value < 1000 || value > 45000) {
+    if (value < 0 || value > 39800) {
       this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
       return false;
     }
@@ -4395,18 +4428,17 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.flightPlanService.setPerformanceData('pilotGroundTemperature', parseInt(scratchpadValue), forPlan);
   }
 
-  public navModeEngaged() {
-    const lateralMode = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_MODE', 'Number');
-    switch (lateralMode) {
-      case 20: // NAV
-      case 30: // LOC*
-      case 31: // LOC
-      case 32: // LAND
-      case 33: // FLARE
-      case 34: // ROLL OUT
-        return true;
-    }
-    return false;
+  public isNavModeEngaged() {
+    return this.fmgcDiscreteWord2.bitValueOr(12, false);
+  }
+
+  private isLateralModeManaged() {
+    return (
+      this.isNavModeEngaged() ||
+      this.fmgcDiscreteWord2.bitValueOr(13, false) || // LOC Capture
+      this.fmgcDiscreteWord2.bitValueOr(14, false) || // LOC track
+      this.fmgcDiscreteWord4.bitValueOr(14, false) // LAND, FLARE, ROLLOUT
+    );
   }
 
   // FIXME check why steps alts page is the only one outside FMS/CDU calling this...
@@ -4843,7 +4875,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public getManagedDescentSpeedMach() {
     const plan = this.getFlightPlan(FlightPlanIndex.Active);
 
-    return plan.performanceData.pilotManagedDescentSpeed.get() ?? this.managedSpeedDescendMach;
+    return plan.performanceData.pilotManagedDescentMach.get() ?? this.managedSpeedDescendMach;
   }
 
   // FIXME... ambiguous name that doesn't say if it's Vapp, GSmini, or something else
@@ -5577,6 +5609,24 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   protected abstract setScratchpadText(value: string): void;
   protected abstract setScratchpadMessage(message: McduMessage): void;
   protected abstract addNewAtsuMessage(code: AtsuStatusCodes): void;
+
+  /**
+   * Acquisition of FMGC discrete words from an operating FMGC
+   */
+  private fgAcquisition() {
+    this.fmgcDiscreteWord2.set(this.fmgc1DiscreteWord2.get());
+    if (this.fmgcDiscreteWord2.isInvalid()) {
+      this.fmgcDiscreteWord2.set(this.fmgc2DiscreteWord2.get());
+    }
+    this.fmgcDiscreteWord4.set(this.fmgc1DiscreteWord4.get());
+    if (this.fmgcDiscreteWord4.isInvalid()) {
+      this.fmgcDiscreteWord4.set(this.fmgc2DiscreteWord4.get());
+    }
+  }
+
+  getPerformanceFactorPercent(): number | null {
+    return null; // TODO implement with PERF FACTOR in AC STATUS page
+  }
 }
 
 /** Writes FM output words for both FMS. */

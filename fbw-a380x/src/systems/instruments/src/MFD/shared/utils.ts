@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { Approach, ApproachType } from '@flybywiresim/fbw-sdk';
@@ -60,3 +60,26 @@ export function getApproachName(approach: Approach, withRnpSuffix = true): strin
     withRnpSuffix && (approach.authorisationRequired || approach.missedApproachAuthorisationRequired) ? ' (RNP)' : '';
   return `${approachTypeNames[approach.type]}${approach.runwayIdent.substring(4)}${approachSuffix}${arSuffix}`;
 }
+
+export const noPositionAvailableText = '--°--.--/---°--.--';
+
+export const showReturnButtonUriExtra = 'withReturn';
+
+export const flightPlanUriPage = 'f-pln';
+export const lateralRevisionHoldPage = 'f-pln-hold';
+export const dataStatusUri = 'fms/data/status';
+export const fuelAndLoadPage = 'fuel-load';
+export const performancePage = 'perf';
+export const initPage = 'init';
+export const verticalRevisionPage = 'f-pln-vert-rev';
+export const lateralRevisionPage = 'f-pln-lat-rev';
+export const departurePage = 'f-pln-departure';
+export const arrivalPage = 'f-pln-arrival';
+export const airwaysPage = 'f-pln-airways';
+
+export const secIndexPageUri = 'fms/sec/index';
+export const activeFlightPlanPageUri = 'fms/active/' + flightPlanUriPage;
+export const activeFlightPlanFuelAndLoadUri = 'fms/active/' + fuelAndLoadPage;
+export const activeFlightPlanHoldUri = 'fms/active/' + lateralRevisionHoldPage;
+export const fixInfoUri = 'fms/active/f-pln-fix-info';
+export const dirToUri = 'fms/active/f-pln-direct-to';

@@ -22,6 +22,8 @@ import {
   VerticalPathCheckpoint,
   NXLogicConfirmNode,
   NXLogicPulseNode,
+  RegisteredSimVar,
+  RaBusEvents,
 } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { MmrRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
@@ -34,13 +36,12 @@ import { A380OperatingSpeeds, A380SpeedsUtils } from '@shared/OperatingSpeeds';
 import { FmcInterface } from 'instruments/src/MFD/FMC/FmcInterface';
 import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
-import { VerticalMode } from '@shared/autopilot';
+import { LateralMode, VerticalMode } from '@shared/autopilot';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { FmsMessageVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsMessagePublisher';
 import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
 import { MfdSurvEvents, VdAltitudeConstraint } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
 import { VerticalWaypointPrediction } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
-import { RadioAltimeterEvents } from '@flybywiresim/msfs-avionics-common';
 import { RADIO_ALTITUDE_NODH_VALUE } from '../pages/common/DataEntryFormats';
 import { FMS_CYCLE_TIME } from './FlightManagementComputer';
 import { NavigationEvents } from '@fmgc/navigation/Navigation';
@@ -169,15 +170,15 @@ export class FmcAircraftInterface {
   /* The following RA subs are paused during any FMS flightphase outside go around or approach as they are not needed outside those phases for the destination EFOB logic
    */
   private readonly radioAltitudeA = Arinc429LocalVarConsumerSubject.create(
-    this.bus.getSubscriber<RadioAltimeterEvents>().on('radio_altitude_1'),
+    this.bus.getSubscriber<RaBusEvents>().on('ra_radio_altitude_1'),
     Arinc429Register.empty().rawWord,
   );
   private readonly radioAltitudeB = Arinc429LocalVarConsumerSubject.create(
-    this.bus.getSubscriber<RadioAltimeterEvents>().on('radio_altitude_2'),
+    this.bus.getSubscriber<RaBusEvents>().on('ra_radio_altitude_2'),
     Arinc429Register.empty().rawWord,
   );
   private readonly radioAltitudeC = Arinc429LocalVarConsumerSubject.create(
-    this.bus.getSubscriber<RadioAltimeterEvents>().on('radio_altitude_3'),
+    this.bus.getSubscriber<RaBusEvents>().on('ra_radio_altitude_3'),
     Arinc429Register.empty().rawWord,
   );
 
@@ -224,6 +225,8 @@ export class FmcAircraftInterface {
         this.fmc.addMessageToQueue(NXSystemMessages.navprimaryLost, undefined, undefined);
       }
     });
+
+  private readonly lateralMode = RegisteredSimVar.create('L:A32NX_FMA_LATERAL_MODE', SimVarValueType.Number);
 
   constructor(
     private bus: EventBus,
@@ -1815,15 +1818,14 @@ export class FmcAircraftInterface {
     this.fmc.handleNewCruiseAltitudeEntered(newCruiseLevel);
   }
 
-  navModeEngaged() {
-    const lateralMode = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_MODE', 'Number');
-    switch (lateralMode) {
-      case 20: // NAV
-      case 30: // LOC*
-      case 31: // LOC
-      case 32: // LAND
-      case 33: // FLARE
-      case 34: // ROLL OUT
+  private isLateralModeManaged() {
+    switch (this.lateralMode.get()) {
+      case LateralMode.NAV:
+      case LateralMode.LOC_CPT:
+      case LateralMode.LOC_TRACK:
+      case LateralMode.LAND:
+      case LateralMode.FLARE:
+      case LateralMode.ROLL_OUT:
         return true;
       default:
         return false;
@@ -1864,7 +1866,7 @@ export class FmcAircraftInterface {
 
   // TODO/VNAV: Speed constraint
   getSpeedConstraint() {
-    if (!this.navModeEngaged()) {
+    if (!this.isLateralModeManaged()) {
       return Infinity;
     }
 

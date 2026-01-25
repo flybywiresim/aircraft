@@ -5,7 +5,7 @@ use systems::navigation::adirs::{
 use systems::navigation::ala52b::{
     Ala52BAircraftInstallationDelay, Ala52BRadioAltimeter, Ala52BTransceiverPair,
 };
-use systems::navigation::radio_altimeter::AntennaInstallation;
+use systems::navigation::radio_altimeter::{AntennaInstallation, RadioAltimeter};
 use systems::shared::{ElectricalBusType, MachNumber};
 use systems::simulation::{
     InitContext, SimulationElement, SimulationElementVisitor, UpdateContext,
@@ -90,6 +90,14 @@ impl A320RadioAltimeters {
     pub fn update(&mut self, context: &UpdateContext) {
         self.radio_altimeter_1.update(context);
         self.radio_altimeter_2.update(context);
+    }
+
+    pub fn radio_altimeter_1(&self) -> &impl RadioAltimeter {
+        &self.radio_altimeter_1.radio_altimeter
+    }
+
+    pub fn radio_altimeter_2(&self) -> &impl RadioAltimeter {
+        &self.radio_altimeter_2.radio_altimeter
     }
 }
 

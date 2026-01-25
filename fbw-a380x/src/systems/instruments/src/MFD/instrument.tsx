@@ -15,12 +15,12 @@ import { FmcService } from 'instruments/src/MFD/FMC/FmcService';
 import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
 import { MfdComponent } from './MFD';
 import { MfdSimvarPublisher } from './shared/MFDSimvarPublisher';
-import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
+import { FailuresConsumer, RaBusPublisher } from '@flybywiresim/fbw-sdk';
 import { A380Failure } from '@failures';
 import { FGDataPublisher } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
 import { ResetPanelSimvarPublisher } from '../MsfsAvionicsCommon/providers/ResetPanelPublisher';
 import { FmsMessagePublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FmsMessagePublisher';
-import { RadioAltimeterPublisher } from '@flybywiresim/msfs-avionics-common';
+import { dataStatusUri } from './shared/utils';
 
 class MfdInstrument implements FsInstrument {
   private readonly bus = new EventBus();
@@ -39,7 +39,7 @@ class MfdInstrument implements FsInstrument {
 
   private readonly resetPanelPublisher = new ResetPanelSimvarPublisher(this.bus);
 
-  private readonly radioAltimeterPublisher = new RadioAltimeterPublisher(this.bus);
+  private readonly radioAltimeterPublisher = new RaBusPublisher(this.bus);
 
   private readonly mfdCaptRef = FSComponent.createRef<MfdComponent>();
 
@@ -106,8 +106,8 @@ class MfdInstrument implements FsInstrument {
     }
 
     // Navigate to initial page
-    this.mfdCaptRef.instance.uiService.navigateTo('fms/data/status');
-    this.mfdFoRef.instance.uiService.navigateTo('fms/data/status');
+    this.mfdCaptRef.instance.uiService.navigateTo(dataStatusUri);
+    this.mfdFoRef.instance.uiService.navigateTo(dataStatusUri);
 
     // Remove "instrument didn't load" text
     mfd?.querySelector(':scope > h1')?.remove();
