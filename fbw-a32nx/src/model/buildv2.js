@@ -756,12 +756,26 @@ function appendNodes(baseGltf, sourceGltf, nodes, options) {
         }
         baseGltf.meshes.push(newMesh);
 
-        assert.ok(baseGltf.scenes.length === 1);
-        baseGltf.scenes[0].nodes.push(baseGltf.nodes.length);
+        if (!options.parent) {
+          assert.ok(baseGltf.scenes.length === 1);
+          baseGltf.scenes[0].nodes.push(baseGltf.nodes.length);
+        } else {
+          const parent = baseGltf.nodes.find((n) => n.name === options.parent);
+          if (!parent) {
+            throw new Error(`Could not find parent node named '${options.parent}'!`);
+          }
+  
+          if (!('children' in parent)) {
+            parent['children'] = [];
+          }
+          parent['children'].push(baseGltf.nodes.length);
+          parent['children'].sort((a, b) => a - b);
+        }
+
         baseGltf.nodes.push(newNode);
     }
 
-    if (options.copyAnimations !== 'false') {
+    if (options.copyAnimations !== 'false' && sourceGltf.animations) {
         const animsToCopy = sourceGltf.animations.filter((a) => a.channels.some((c) => nodes.indexOf(c.target.node.name) >= 0));
         assert.ok(animsToCopy.every((a) => a.channels.every((c) => nodes.indexOf(c.target.node.name) >= 0)));
         baseGltf.animations.push(...animsToCopy.map((a) => ({ ...a, channels: a.channels.map((c) => ({ ...c })),  })));
