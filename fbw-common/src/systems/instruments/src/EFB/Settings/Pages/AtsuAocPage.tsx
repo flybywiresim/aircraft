@@ -94,6 +94,8 @@ export const AtsuAocPage = () => {
     { name: 'PilotEdge', setting: 'PILOTEDGE' },
     { name: 'IVAO', setting: 'IVAO' },
     { name: 'VATSIM', setting: 'VATSIM' },
+    { name: 'BeyondATC', setting: 'BEYONDATC' },
+    { name: 'SayIntentions.AI', setting: 'SAI' },
   ];
 
   const metarSourceButtons: ButtonType[] = [
@@ -101,6 +103,8 @@ export const AtsuAocPage = () => {
     { name: 'NOAA', setting: 'NOAA' },
     { name: 'PilotEdge', setting: 'PILOTEDGE' },
     { name: 'VATSIM', setting: 'VATSIM' },
+    { name: 'BeyondATC', setting: 'BEYONDATC' },
+    { name: 'SayIntentions.AI', setting: 'SAI' },
   ];
 
   let tafSourceButtons: ButtonType[] = [

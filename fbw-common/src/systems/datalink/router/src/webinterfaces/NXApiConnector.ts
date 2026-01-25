@@ -15,6 +15,8 @@ import {
   AtisMessage,
   AtisType,
 } from '../../../common/src';
+import { BeyondATCConnector } from './BeyondATCConnector';
+import { SayIntentionsConnector } from './SayIntentionsConnector';
 
 /**
  * Defines the NXApi connector for the AOC system
@@ -118,6 +120,15 @@ export class NXApiConnector {
   public static async receiveMetar(icao: string, message: WeatherMessage): Promise<AtsuStatusCodes> {
     const storedMetarSrc = NXDataStore.getLegacy('CONFIG_METAR_SRC', 'MSFS');
 
+    // Use BeyondATC connector for local API
+    if (storedMetarSrc === 'BEYONDATC') {
+      return BeyondATCConnector.receiveMetar(icao, message);
+    }
+
+    if (storedMetarSrc === 'SAI') {
+      return SayIntentionsConnector.receiveMetar(icao, message);
+    }
+
     return Metar.get(icao, ConfigWeatherMap[storedMetarSrc])
       .then((data) => {
         let metar = data.metar;
@@ -155,6 +166,15 @@ export class NXApiConnector {
 
   public static async receiveAtis(icao: string, type: AtisType, message: AtisMessage): Promise<AtsuStatusCodes> {
     const storedAtisSrc = NXDataStore.getLegacy('CONFIG_ATIS_SRC', 'FAA');
+
+    // Use BeyondATC connector for local API
+    if (storedAtisSrc === 'BEYONDATC') {
+      return BeyondATCConnector.receiveAtis(icao, type, message);
+    }
+
+    if (storedAtisSrc === 'SAI') {
+      return SayIntentionsConnector.receiveAtis(icao, type, message);
+    }
 
     await Atis.get(icao, ConfigWeatherMap[storedAtisSrc])
       .then((data) => {
