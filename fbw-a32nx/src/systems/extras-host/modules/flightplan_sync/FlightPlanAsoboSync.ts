@@ -110,10 +110,10 @@ export class FlightPlanAsoboSync {
       }),
     );
     this.subs.push(
-      sub.on('SYNC_flightPlan.setSegmentLegs').handle(async (event) => {
+      sub.on('SYNC_flightPlan.setSegment').handle(async (event) => {
         console.log('SEGMENT LEGS', event);
         if (event.planIndex === FlightPlanIndex.Active && event.segmentIndex === 4) {
-          this.enrouteLegs = event.legs;
+          this.enrouteLegs = event.serialized.allLegs;
           await this.syncFlightPlanToGame();
         }
       }),
@@ -207,7 +207,7 @@ export class FlightPlanAsoboSync {
           }
         }
 
-        await rpcClient.uplinkInsert();
+        await rpcClient.uplinkInsert(FlightPlanIndex.Active);
       }
     } catch (e) {
       console.error('Error in loading FlightPlan from MSFS', e);

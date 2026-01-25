@@ -6,6 +6,8 @@ import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { Column, FormatLine } from '../legacy/A320_Neo_CDU_Format';
 
 export class CDUProgressPage {
   static ShowPage(mcdu: LegacyFmsPageInterface) {
@@ -15,13 +17,17 @@ export class CDUProgressPage {
       CDUProgressPage.ShowPage(mcdu);
     };
     mcdu.activeSystem = 'FMGC';
-    const flightNo = mcdu.flightNumber ?? '';
+
+    const plan = mcdu.getFlightPlan(FlightPlanIndex.Active);
+
+    const flightNo = plan.flightNumber ?? '';
+    const cruiseLevel = plan.performanceData.cruiseFlightLevel.get();
     const recMaxFl = mcdu.getMaxFlCorrected();
     const flMaxText = recMaxFl !== null ? `{magenta}FL${recMaxFl.toString()}{end}` : `-----`;
     const flOpt =
       recMaxFl !== null &&
-      mcdu._zeroFuelWeightZFWCGEntered &&
-      mcdu._blockFuelEntered &&
+      plan.performanceData.zeroFuelWeightCenterOfGravity.get() !== null &&
+      plan.performanceData.blockFuel.get() !== null &&
       (mcdu.isAllEngineOn() || mcdu.isOnGround())
         ? '{green}FL' + (Math.floor(recMaxFl / 5) * 5).toString() + '{end}'
         : '-----';
@@ -32,21 +38,21 @@ export class CDUProgressPage {
     switch (mcdu.flightPhaseManager.phase) {
       case FmgcFlightPhase.Preflight:
       case FmgcFlightPhase.Takeoff: {
-        if (mcdu.cruiseLevel) {
-          flCrz = 'FL' + mcdu.cruiseLevel.toFixed(0).padStart(3, '0') + '[color]cyan';
+        if (cruiseLevel) {
+          flCrz = 'FL' + cruiseLevel.toFixed(0).padStart(3, '0') + '[color]cyan';
         }
         break;
       }
       case FmgcFlightPhase.Climb: {
         const alt = Math.round(Simplane.getAutoPilotSelectedAltitudeLockValue('feet') / 100);
         const altCtn = Math.round(mcdu.constraintAlt / 100);
-        if (!mcdu.cruiseLevel && !mcdu._activeCruiseFlightLevelDefaulToFcu) {
+        if (!cruiseLevel && !mcdu._activeCruiseFlightLevelDefaulToFcu) {
           flCrz =
             'FL' +
             (altCtn && alt > altCtn ? altCtn.toFixed(0).padStart(3, '0') : alt.toFixed(0).padStart(3, '0')) +
             '[color]cyan';
         } else {
-          flCrz = 'FL' + mcdu.cruiseLevel.toFixed(0).padStart(3, '0') + '[color]cyan';
+          flCrz = 'FL' + cruiseLevel.toFixed(0).padStart(3, '0') + '[color]cyan';
         }
         break;
       }
@@ -55,8 +61,8 @@ export class CDUProgressPage {
         // We can get here by taking off without FROM/TO entered, and climbing to the FCU altitude (which will then be used as cruise altitude)
         // to enter the cruise phase. We then enter a new FROM/TO which resets the cruise altitude, but I don't know if it puts us in the CLB phase
         // or keeps us in CRZ.
-        if (mcdu.cruiseLevel) {
-          flCrz = 'FL' + mcdu.cruiseLevel.toFixed(0).padStart(3, '0') + '[color]cyan';
+        if (cruiseLevel) {
+          flCrz = 'FL' + cruiseLevel.toFixed(0).padStart(3, '0') + '[color]cyan';
         }
         break;
       }
@@ -102,7 +108,7 @@ export class CDUProgressPage {
     }
 
     mcdu.onLeftInput[0] = (value, scratchpadCallback) => {
-      if (mcdu.trySetCruiseFlCheckInput(value)) {
+      if (mcdu.trySetCruiseFlCheckInput(value, FlightPlanIndex.Active)) {
         CDUProgressPage.ShowPage(mcdu);
       } else {
         scratchpadCallback();
@@ -190,9 +196,9 @@ export class CDUProgressPage {
     }
 
     mcdu.setTemplate([
-      ['{green}' + flightPhase.padStart(15, '\xa0') + '{end}\xa0' + flightNo.padEnd(11, '\xa0')],
+      [...FormatLine(new Column(11, flightPhase, Column.green, { alignRight: true }), new Column(13, flightNo))],
       ['\xa0' + 'CRZ\xa0', 'OPT\xa0\xa0\xa0\xa0REC MAX'],
-      [flCrz, flOpt + '\xa0\xa0\xa0\xa0' + flMaxText + '\xa0{end}'],
+      [flCrz, flOpt + '\xa0\xa0\xa0\xa0' + flMaxText + '\xa0'],
       [''],
       ['<REPORT', vDevCell],
       [gpsPrimary ? '' : '\xa0POSITION UPDATE AT'],

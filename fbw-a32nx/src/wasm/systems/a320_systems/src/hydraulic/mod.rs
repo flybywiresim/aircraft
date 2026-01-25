@@ -1768,7 +1768,6 @@ impl A320Hydraulic {
                 right_flaps,
                 Volume::new::<cubic_inch>(0.32),
                 AngularVelocity::new::<radian_per_second>(0.13),
-                Angle::new::<degree>(251.97),
                 Ratio::new::<ratio>(140.),
                 Ratio::new::<ratio>(16.632),
                 Ratio::new::<ratio>(314.98),
@@ -1783,7 +1782,6 @@ impl A320Hydraulic {
                 right_slats,
                 Volume::new::<cubic_inch>(0.32),
                 AngularVelocity::new::<radian_per_second>(0.13),
-                Angle::new::<degree>(334.16),
                 Ratio::new::<ratio>(140.),
                 Ratio::new::<ratio>(16.632),
                 Ratio::new::<ratio>(314.98),
@@ -2232,8 +2230,14 @@ impl A320Hydraulic {
             engine2,
         );
 
-        self.slats_flaps_complex
-            .update(context, &self.flap_system, &self.slat_system, adirs);
+        self.slats_flaps_complex.update(
+            context,
+            &self.flap_system,
+            &self.slat_system,
+            adirs,
+            lgciu1,
+            lgciu2,
+        );
 
         self.flap_system.update(
             context,
@@ -2263,8 +2267,14 @@ impl A320Hydraulic {
             self.yellow_circuit.system_section(),
         );
 
-        self.slats_flaps_complex
-            .update(context, &self.flap_system, &self.slat_system, adirs);
+        self.slats_flaps_complex.update(
+            context,
+            &self.flap_system,
+            &self.slat_system,
+            adirs,
+            lgciu1,
+            lgciu2,
+        );
 
         self.rudder_mechanical_assembly.update(
             context,

@@ -3,22 +3,31 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Discontinuity, SerializedFlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/legs/FlightPlanLegDefinition';
 import { FixInfoData } from '@fmgc/flightplanning/plans/FixInfo';
 import { SerializedFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
-import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import {
+  FlightPlanPerformanceData,
+  FlightPlanPerformanceDataProperties,
+} from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import { SerializedFlightPlanSegment } from '@fmgc/flightplanning/segments/FlightPlanSegment';
+import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
+import { PendingAirwayEntry } from '@fmgc/flightplanning/plans/ReadonlyPendingAirways';
 
-export interface FlightPlanSyncResponsePacket {
+export interface FlightPlanSyncEvent {
+  syncClientID: number;
+}
+
+export interface FlightPlanSyncResponsePacket extends FlightPlanSyncEvent {
   plans: Record<number, SerializedFlightPlan>;
 }
 
-export interface FlightPlanSyncEvent {
+export interface FlightPlanSpecificSyncEvent extends FlightPlanSyncEvent {
   planIndex: number;
 }
 
-export interface FlightPlanManagerEvent extends FlightPlanSyncEvent {
+export interface FlightPlanManagerEvent extends FlightPlanSpecificSyncEvent {
   targetPlanIndex?: number;
 }
 
@@ -26,17 +35,24 @@ export interface FlightPlanCopyEvent extends FlightPlanManagerEvent {
   options: number;
 }
 
-export interface FlightPlanEditSyncEvent extends FlightPlanSyncEvent {
+export interface FlightPlanEditSyncEvent extends FlightPlanSpecificSyncEvent {
+  batchStack: readonly FlightPlanBatch[];
   forAlternate: boolean;
+}
+
+export interface FlightPlanBatchChangeEvent extends FlightPlanSyncEvent {
+  type: 'open' | 'close';
+  batch: FlightPlanBatch;
+  batchStack: readonly FlightPlanBatch[];
 }
 
 export interface FlightPlanSetActiveLegIndexEvent extends FlightPlanEditSyncEvent {
   activeLegIndex: number;
 }
 
-export interface FlightPlanSetSegmentLegsEvent extends FlightPlanEditSyncEvent {
+export interface FlightPlanSetSegmentEvent extends FlightPlanEditSyncEvent {
   segmentIndex: number;
-  legs: (SerializedFlightPlanLeg | Discontinuity)[];
+  serialized: SerializedFlightPlanSegment;
 }
 
 export interface FlightPlanLegFlagsEditEvent extends FlightPlanEditSyncEvent {
@@ -67,8 +83,15 @@ export interface FlightPlanFlightNumberEditEvent extends FlightPlanEditSyncEvent
   flightNumber: string;
 }
 
+export interface FlightPlanPendingAirwaysEditEvent extends FlightPlanEditSyncEvent {
+  type: 'edit' | 'create' | 'delete';
+  elements: PendingAirwayEntry[];
+}
+
 export type PerformanceDataFlightPlanSyncEvents<P extends FlightPlanPerformanceData> = {
-  [k in keyof Omit<P, 'clone'> as `flightPlan.setPerformanceData.${k & string}`]: PerformanceDataSetEvent<P[k]>;
+  [k in keyof FlightPlanPerformanceDataProperties as `flightPlan.setPerformanceData.${k & string}`]: PerformanceDataSetEvent<
+    P[k]
+  >;
 };
 
 /**
@@ -84,13 +107,17 @@ export interface FlightPlanEvents {
   'flightPlanManager.copy': FlightPlanCopyEvent;
   'flightPlanManager.swap': FlightPlanManagerEvent;
 
+  'flightPlanService.batchChange': FlightPlanBatchChangeEvent;
+
   'flightPlan.setActiveLegIndex': FlightPlanSetActiveLegIndexEvent;
-  'flightPlan.setSegmentLegs': FlightPlanSetSegmentLegsEvent;
+  'flightPlan.setSegment': FlightPlanSetSegmentEvent;
   'flightPlan.legFlagsEdit': FlightPlanLegFlagsEditEvent;
   'flightPlan.legDefinitionEdit': FlightPlanLegDefinitionEditEvent;
+  'flightPlan.autoDeleteCruiseStep': FlightPlanEditSyncEvent;
   'flightPlan.setLegCruiseStep': FlightPlanLegCruiseStepEditEvent;
   'flightPlan.setFixInfoEntry': FlightPlanSetFixInfoEntryEvent;
   'flightPlan.setFlightNumber': FlightPlanFlightNumberEditEvent;
+  'flightPlan.pendingAirwaysEdit': FlightPlanPendingAirwaysEditEvent;
 }
 
 /**
