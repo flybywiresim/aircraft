@@ -31,7 +31,11 @@ export class AtisMessage extends WeatherMessage {
       report.report.split(' ').forEach((word) => {
         // expect 'INFORMATION H', 'INFORMATION HOTEL' or 'YBBN K'
         if (foundInfo === false) {
-          if (word === 'INFORMATION' || word === 'INFO' || word === report.airport.toUpperCase()) {
+          if (
+            word.toUpperCase() === 'INFORMATION' ||
+            word.toUpperCase() === 'INFO' ||
+            word.toUpperCase() === report.airport.toUpperCase()
+          ) {
             foundInfo = true;
           }
         } else {
