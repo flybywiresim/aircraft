@@ -3979,7 +3979,7 @@ export class FwsAbnormalSensed {
       inopSysApprLdg: () => ['320300007', '320300022', '340300028', '310300001', '220300010', '220300021'],
       info: () => ['220200007', '220200008', '220200009'],
     },
-    // 34 - SURVEILLANCE
+    // ATA 34 - SURVEILLANCE
     341800016: {
       // TCAS 1 FAULT
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10, 11],
