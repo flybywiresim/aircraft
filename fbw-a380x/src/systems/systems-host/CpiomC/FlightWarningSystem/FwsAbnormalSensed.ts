@@ -1659,7 +1659,7 @@ export class FwsAbnormalSensed {
       monitorConfirmTime: 0.0,
       info: () => [],
     },
-    
+
     // ATA 22 - AUTOFLIGHT
     220800003: {
       // A/THR LIMITED
@@ -2856,6 +2856,7 @@ export class FwsAbnormalSensed {
       failure: 3,
       sysPage: SdPages.None,
       inopSysAllPhases: () => [],
+    },
     272800001: {
       // SLAT NOT IN TO CONFIG
       flightPhaseInhib: [5, 6, 7, 8, 9, 10, 12],
@@ -3534,7 +3535,6 @@ export class FwsAbnormalSensed {
       failure: -1,
       sysPage: SdPages.None,
       inopSysApprLdg: () => ['320300007', '320300022'],
-      sysPage: -1,
     },
     314800007: {
       // ECP FAULT
@@ -3868,7 +3868,6 @@ export class FwsAbnormalSensed {
       inopSysApprLdg: () => [''],
       redundLoss: () => [''],
       info: () => [''],
-      sysPage: -1,
     },
     340800040: {
       // IR 1 FAULT
