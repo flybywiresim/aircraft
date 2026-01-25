@@ -128,7 +128,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
       this.atisTimestamp.set(atisReport.Timestamp.mailboxTimestamp());
     }
     if (atisReport.Reports[0].report) {
-      this.atisMessage.set(this.truncateAtis(atisReport.Reports[0].report));
+      this.atisMessage.set(this.truncateAtis(atisReport.Reports[0].report).toUpperCase());
     }
   }
 

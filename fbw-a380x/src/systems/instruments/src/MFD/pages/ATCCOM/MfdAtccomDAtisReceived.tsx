@@ -56,7 +56,10 @@ export class MfdAtccomDAtisReceived extends DisplayComponent<MfdAtccomDAtisRecei
   );
 
   private formatAtis(messageArray: string[], page: number = 1): string {
-    return messageArray.slice(this.rowsPerPage * (page - 1), this.rowsPerPage * page).join(' ');
+    return messageArray
+      .slice(this.rowsPerPage * (page - 1), this.rowsPerPage * page)
+      .join(' ')
+      .toUpperCase();
   }
 
   private processAtisToArray(string: string, numberOfPages: Subject<number>): string[] {
