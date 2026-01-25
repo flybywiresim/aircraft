@@ -25,7 +25,7 @@
     - [Flight Augmentation Computer (FAC)](#flight-augmentation-computer-fac)
   - [Flaps / Slats (ATA 27)](#flaps--slats-ata-27)
   - [Flight Controls (ATA 27)](#flight-controls-ata-27)
-  - [Fuel ATA 28](#fuel-ata-28)
+  - [Fuel (ATA 28)](#fuel-ata-28)
   - [Indication and Recording Systems (ATA 31)](#indication-and-recording-systems-ata-31)
     - [DMC](#dmc)
       - [ARINC429 Output Bus](#arinc429-output-bus)
@@ -3926,7 +3926,8 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Percent
     - Trim wheel position in percent
 
-## Fuel ATA 28
+## Fuel (ATA 28)
+
 - A32NX_TOTAL_FUEL_QUANTITY
   - Number in kilogramm
   - The total physical quantity of fuel in the tanks
