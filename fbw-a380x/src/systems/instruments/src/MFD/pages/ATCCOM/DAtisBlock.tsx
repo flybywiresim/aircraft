@@ -23,7 +23,7 @@ import { NewAtisIcon } from 'instruments/src/MFD/pages/ATCCOM/Elements/NewAtisIc
 import { AutoUpdateIcon } from 'instruments/src/MFD/pages/ATCCOM/Elements/AutoUpdateIcon';
 import { AutoPrintIcon } from 'instruments/src/MFD/pages/ATCCOM/Elements/AutoPrintIcon';
 import { AirportAtis } from '../../ATCCOM/AtcDatalinkSystem';
-import { AtisMessage } from '@datalink/common';
+import { AtisMessage, AtisType } from '@datalink/common';
 import { AtcDatalinkMessages } from '../../ATCCOM/AtcDatalinkPublisher';
 
 interface DAtisBlockProps extends AtccomMfdPageProps {
@@ -66,6 +66,14 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
   });
 
   private readonly messageStatusSpan = this.messageStatusLabel.map((s) => <>{s}</>);
+
+  private readonly isAutoUpdateNotAllowed = MappedSubject.create(
+    ([atisType, isIcaoEmpty]) => {
+      return atisType === AtisType.Departure || isIcaoEmpty;
+    },
+    this.atisType,
+    this.isIcaoEmpty,
+  );
 
   private truncateAtis(string: string): string {
     if (string.length === 0) return '';
@@ -184,6 +192,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
       this.combinedMenuVisible,
       this.statusButtonVisible,
       this.messageStatusSpan,
+      this.isAutoUpdateNotAllowed,
     );
   }
 
@@ -252,12 +261,14 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
               menuItems={Subject.create<ButtonMenuItem[]>([
                 {
                   label: 'UPDATE',
+                  disabled: this.isIcaoEmpty,
                   action: () => {
                     this.datalink.requestAtis(this.props.index);
                   },
                 },
                 {
                   label: 'AUTO UPDATE',
+                  disabled: this.isAutoUpdateNotAllowed,
                   action: () => {
                     this.toggleAtisAutoUpdate(this.atisIcao.get());
                   },
@@ -280,7 +291,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
             />
             <Button
               label="AUTO<br/>UPDATE"
-              disabled={this.isIcaoEmpty}
+              disabled={this.isAutoUpdateNotAllowed}
               onClick={() => {
                 this.toggleAtisAutoUpdate(this.atisIcao.get());
               }}

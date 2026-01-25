@@ -15,7 +15,7 @@ import { TriangleDown, TriangleUp } from 'instruments/src/MsfsAvionicsCommon/UiW
 
 export type ButtonMenuItem = {
   label: string;
-  disabled?: boolean;
+  disabled?: boolean | Subscribable<boolean>;
   action(): void;
 };
 
@@ -67,8 +67,14 @@ export class Button extends DisplayComponent<ButtonProps> {
   private onClickHandler = this.onClick.bind(this);
 
   onDropdownMenuElementClick(val: ButtonMenuItem) {
-    val.action();
-    this.dropdownIsOpened.set(false);
+    if (
+      val.disabled === undefined ||
+      (typeof val.disabled === 'boolean' && val.disabled === false) ||
+      (SubscribableUtils.isSubscribable(val.disabled) && val.disabled.get() === false)
+    ) {
+      val.action();
+      this.dropdownIsOpened.set(false);
+    }
   }
 
   private onDropdownMenuElementClickHandler = this.onDropdownMenuElementClick.bind(this);
@@ -155,7 +161,7 @@ export class Button extends DisplayComponent<ButtonProps> {
                     id={`${this.props.idPrefix}_${idx}`}
                     class={{
                       'mfd-dropdown-menu-element': true,
-                      disabled: el.disabled === true,
+                      disabled: el.disabled,
                     }}
                   >
                     {el.label}
@@ -169,7 +175,7 @@ export class Button extends DisplayComponent<ButtonProps> {
 
           // Add click event listener
           for (const val of items) {
-            if (val.disabled === true) {
+            if (typeof val.disabled === 'boolean' && val.disabled === true) {
               continue;
             }
 
