@@ -263,6 +263,39 @@
           ],
           "name": "glass006"
         }
+      },
+      {
+        "type": "replace_nodes",
+        "file": "./nav-lights/nav_lights.gltf",
+        "nodes": [
+          "LIGHT_ASOBO_NavigationGreen",
+          "LIGHT_ASOBO_NavigationRed"
+        ],
+        "options": {
+          "materials": "keep"
+        }
+      },
+      {
+        "type": "append_nodes",
+        "file": "./nav-lights/nav_lights.gltf",
+        "nodes": [
+          "LIGHT_ASOBO_NavigationGreenInboard"
+        ],
+        "options": {
+          "parent": "WING_BONE_RIGHT_04",
+          "materials": "keep"
+        }
+      },
+      {
+        "type": "append_nodes",
+        "file": "./nav-lights/nav_lights.gltf",
+        "nodes": [
+          "LIGHT_ASOBO_NavigationRedInboard"
+        ],
+        "options": {
+          "parent": "WING_BONE_LEFT_04",
+          "materials": "keep"
+        }
       }
     ],
     "output": "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/A320_NEO_LOD00.gltf"
