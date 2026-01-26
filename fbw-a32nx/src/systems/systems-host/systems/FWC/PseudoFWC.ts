@@ -3080,7 +3080,8 @@ export class PseudoFWC {
       (gen2OffPart1 &&
         (gen2OffWarningConfirmNode2 || phase6For60Seconds || (phase6 && this.gen12NotOperating.get()))) ||
       idg2DisconnectWarnNext; // TODO: Gen 2 fault memory || when implemented
-    const gen12NotOperatingNext = gen1NotOperating && gen2NotOperating;
+    const gen12NotOperatingNext =
+      (gen1NotOperating || !this.engine1Generator.get()) && (gen2NotOperating || !this.engine2Generator.get()); // TODO: Remove engine1Generator / engine2Generator checks when fault memory above implemented
 
     const gen1OffPart2 = gen1OffWarningConfirmNode2 || phase6For60Seconds || (phase6 && gen12NotOperatingNext);
     const gen2OffPart2 = gen2OffWarningConfirmNode2 || phase6For60Seconds || (phase6 && gen12NotOperatingNext);
