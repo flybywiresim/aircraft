@@ -3044,6 +3044,81 @@ export class PseudoFWC {
       this.iceNotDetTimer2.write(iceNotDetected1 && !(icePercentage >= 0.1 || (tat < 10 && inCloud === 1)), deltaTime),
     );
 
+    /* ELECTRICAL */
+    this.bat1Off.set(this.bat1PbOff.get() && (this.flightPhase6For60Seconds.read() || this.fwcFlightPhase.get() === 2));
+    this.bat2Off.set(this.bat2PbOff.get() && (this.flightPhase6For60Seconds.read() || this.fwcFlightPhase.get() === 2));
+
+    const engine1NotRunning = this.engine1State.get() === 0;
+    const engine2NotRunning = this.engine2State.get() === 0;
+    const phase2Pulse = this.flightPhase2PulseNode.read();
+
+    const idg1DisconnectedFor1Second = this.idg1DisconnectedConfirmNode.write(this.idg1Disconnected.get(), deltaTime);
+    // TODO: Check !Low oil pressure memory && !IDG 1 oil overheat S / R* flip flop with phase 1 pulse when implemented
+    const idg1DisconnectWarnNext = idg1DisconnectedFor1Second && !engine1NotRunning && !phase2Pulse;
+    const idg2DisconnectedFor1Second = this.idg2DisconnectedConfirmNode.write(this.idg2Disconnected.get(), deltaTime);
+    // TODO: Check !Low oil pressure memory && !IDG 2 oil overheat S / R* flip flop with phase 1 pulse when implemented
+    const idg2DisconnectWarnNext = idg2DisconnectedFor1Second && !engine2NotRunning && !phase2Pulse;
+
+    const gen1PbOffFor5Seconds = this.gen1PbOffConfirmNode.write(this.gen1PbOff.get(), deltaTime);
+    const gen2PbOffFor5Seconds = this.gen2PbOffConfirmNode.write(this.gen2PbOff.get(), deltaTime);
+
+    const phase6 = this.fwcFlightPhase.get() === 6;
+    const phase6For60Seconds = this.flightPhase6For60Seconds.read();
+
+    const gen1OffWarningConfirmNode2 = this.gen1OffWarningConfirmNode2.write(!engine1NotRunning && !phase6, deltaTime);
+    const gen2OffWarningConfirmNode2 = this.gen2OffWarningConfirmNode2.write(!engine2NotRunning && !phase6, deltaTime);
+
+    const gen1OffPart1 = gen1PbOffFor5Seconds && !this.idg1Disconnected.get(); // TODO: && !(Gen 1 fault memory || this.idg1Disconnected.get()) when implemented
+    const gen2OffPart1 = gen2PbOffFor5Seconds && !this.idg2Disconnected.get(); // TODO: && !(Gen 2 fault memory || this.idg2Disconnected.get()) when implemented
+
+    // Avoids one-cycle delay in exchange for looking awful
+    const gen1NotOperating =
+      (gen1OffPart1 &&
+        (gen1OffWarningConfirmNode2 || phase6For60Seconds || (phase6 && this.gen12NotOperating.get()))) ||
+      idg1DisconnectWarnNext; // TODO: Gen 1 fault memory || when implemented
+    const gen2NotOperating =
+      (gen2OffPart1 &&
+        (gen2OffWarningConfirmNode2 || phase6For60Seconds || (phase6 && this.gen12NotOperating.get()))) ||
+      idg2DisconnectWarnNext; // TODO: Gen 2 fault memory || when implemented
+    const gen12NotOperatingNext = gen1NotOperating && gen2NotOperating;
+
+    const gen1OffPart2 = gen1OffWarningConfirmNode2 || phase6For60Seconds || (phase6 && gen12NotOperatingNext);
+    const gen2OffPart2 = gen2OffWarningConfirmNode2 || phase6For60Seconds || (phase6 && gen12NotOperatingNext);
+
+    this.gen1Off.set(gen1OffPart1 && gen1OffPart2);
+    this.gen2Off.set(gen2OffPart1 && gen2OffPart2);
+
+    const gen1OffWarningPart1 = gen1OffPart1 && gen1OffPart2;
+    const gen1OffWarningPart2 = this.gen1OffWarningPulseNode.write(
+      this.fwcFlightPhase.get() === 3 && gen12NotOperatingNext,
+      deltaTime,
+    );
+    const gen1OffWarningPart3 =
+      gen12NotOperatingNext && this.toConfigHalfSecondTriggeredNode.read() && this.flightPhase29.get();
+    const gen2OffWarningPart1 = gen2OffPart1 && gen2OffPart2;
+    const gen2OffWarningPart2 = this.gen2OffWarningPulseNode.write(
+      this.fwcFlightPhase.get() === 3 && gen12NotOperatingNext,
+      deltaTime,
+    );
+    const gen2OffWarningPart3 =
+      gen12NotOperatingNext && this.toConfigHalfSecondTriggeredNode.read() && this.flightPhase29.get();
+
+    this.gen1OffWarning.set(gen1OffWarningPart1 && !gen1OffWarningPart2 && !gen1OffWarningPart3);
+    this.gen2OffWarning.set(gen2OffWarningPart1 && !gen2OffWarningPart2 && !gen2OffWarningPart3);
+
+    const idg1DisconnectedWarningPart2 =
+      this.flightPhase29.get() && gen12NotOperatingNext && this.toConfigHalfSecondTriggeredNode.read();
+    const idg2DisconnectedWarningPart2 =
+      this.flightPhase29.get() && gen12NotOperatingNext && this.toConfigHalfSecondTriggeredNode.read();
+
+    this.idg1DisconnectWarn.set(idg1DisconnectWarnNext);
+    this.idg1DisconnectedWarning.set(idg1DisconnectWarnNext && !idg1DisconnectedWarningPart2);
+
+    this.idg2DisconnectWarn.set(idg2DisconnectWarnNext);
+    this.idg2DisconnectedWarning.set(idg2DisconnectWarnNext && !idg2DisconnectedWarningPart2);
+
+    this.gen12NotOperating.set(gen12NotOperatingNext);
+
     /* NAV logic */
     const dmcLStdBit = this.dmcLeftDiscreteWord.get().bitValueOr(11, false) && fcu1Healthy;
     const dmcLQnhBit = this.dmcLeftDiscreteWord.get().bitValueOr(12, false) && fcu1Healthy;
@@ -3266,8 +3341,7 @@ export class PseudoFWC {
     /* T.O. CONFIG CHECK */
     // TODO Note that fuel tank low pressure and gravity feed warnings are not included
     const systemStatus =
-      this.engine1Generator.get() &&
-      this.engine2Generator.get() &&
+      this.gen12NotOperating.get() &&
       !this.greenLP.get() &&
       !this.yellowLP.get() &&
       !this.blueLP.get() &&
@@ -3302,81 +3376,6 @@ export class PseudoFWC {
     this.toConfigMemoNormal.set(this.toConfigTestMemoryNode.read() && toConfigNormal);
 
     this.toConfigOrPhase3.set(!(this.flightPhase3PulseNode.read() || this.toConfigHalfSecondTriggeredNode.read()));
-
-    /* ELECTRICAL */
-    this.bat1Off.set(this.bat1PbOff.get() && (this.flightPhase6For60Seconds.read() || this.fwcFlightPhase.get() === 2));
-    this.bat2Off.set(this.bat2PbOff.get() && (this.flightPhase6For60Seconds.read() || this.fwcFlightPhase.get() === 2));
-
-    const engine1NotRunning = this.engine1State.get() === 0;
-    const engine2NotRunning = this.engine2State.get() === 0;
-    const phase2Pulse = this.flightPhase2PulseNode.read();
-
-    const idg1DisconnectedFor1Second = this.idg1DisconnectedConfirmNode.write(this.idg1Disconnected.get(), deltaTime);
-    // TODO: Check !Low oil pressure memory && !IDG 1 oil overheat S / R* flip flop with phase 1 pulse when implemented
-    const idg1DisconnectWarnNext = idg1DisconnectedFor1Second && !engine1NotRunning && !phase2Pulse;
-    const idg2DisconnectedFor1Second = this.idg2DisconnectedConfirmNode.write(this.idg2Disconnected.get(), deltaTime);
-    // TODO: Check !Low oil pressure memory && !IDG 2 oil overheat S / R* flip flop with phase 1 pulse when implemented
-    const idg2DisconnectWarnNext = idg2DisconnectedFor1Second && !engine2NotRunning && !phase2Pulse;
-
-    const gen1PbOffFor5Seconds = this.gen1PbOffConfirmNode.write(this.gen1PbOff.get(), deltaTime);
-    const gen2PbOffFor5Seconds = this.gen2PbOffConfirmNode.write(this.gen2PbOff.get(), deltaTime);
-
-    const phase6 = this.fwcFlightPhase.get() === 6;
-    const phase6For60Seconds = this.flightPhase6For60Seconds.read();
-
-    const gen1OffWarningConfirmNode2 = this.gen1OffWarningConfirmNode2.write(!engine1NotRunning && !phase6, deltaTime);
-    const gen2OffWarningConfirmNode2 = this.gen2OffWarningConfirmNode2.write(!engine2NotRunning && !phase6, deltaTime);
-
-    const gen1OffPart1 = gen1PbOffFor5Seconds && !this.idg1Disconnected.get(); // TODO: && !(Gen 1 fault memory || this.idg1Disconnected.get()) when implemented
-    const gen2OffPart1 = gen2PbOffFor5Seconds && !this.idg2Disconnected.get(); // TODO: && !(Gen 2 fault memory || this.idg2Disconnected.get()) when implemented
-
-    // Avoids one-cycle delay in exchange for looking awful
-    const gen1NotOperating =
-      (gen1OffPart1 &&
-        (gen1OffWarningConfirmNode2 || phase6For60Seconds || (phase6 && this.gen12NotOperating.get()))) ||
-      idg1DisconnectWarnNext; // TODO: Gen 1 fault memory || when implemented
-    const gen2NotOperating =
-      (gen2OffPart1 &&
-        (gen2OffWarningConfirmNode2 || phase6For60Seconds || (phase6 && this.gen12NotOperating.get()))) ||
-      idg2DisconnectWarnNext; // TODO: Gen 2 fault memory || when implemented
-    const gen12NotOperatingNext = gen1NotOperating && gen2NotOperating;
-
-    const gen1OffPart2 = gen1OffWarningConfirmNode2 || phase6For60Seconds || (phase6 && gen12NotOperatingNext);
-    const gen2OffPart2 = gen2OffWarningConfirmNode2 || phase6For60Seconds || (phase6 && gen12NotOperatingNext);
-
-    this.gen1Off.set(gen1OffPart1 && gen1OffPart2);
-    this.gen2Off.set(gen2OffPart1 && gen2OffPart2);
-
-    const gen1OffWarningPart1 = gen1OffPart1 && gen1OffPart2;
-    const gen1OffWarningPart2 = this.gen1OffWarningPulseNode.write(
-      this.fwcFlightPhase.get() === 3 && gen12NotOperatingNext,
-      deltaTime,
-    );
-    const gen1OffWarningPart3 =
-      gen12NotOperatingNext && this.toConfigHalfSecondTriggeredNode.read() && this.flightPhase29.get();
-    const gen2OffWarningPart1 = gen2OffPart1 && gen2OffPart2;
-    const gen2OffWarningPart2 = this.gen2OffWarningPulseNode.write(
-      this.fwcFlightPhase.get() === 3 && gen12NotOperatingNext,
-      deltaTime,
-    );
-    const gen2OffWarningPart3 =
-      gen12NotOperatingNext && this.toConfigHalfSecondTriggeredNode.read() && this.flightPhase29.get();
-
-    this.gen1OffWarning.set(gen1OffWarningPart1 && !gen1OffWarningPart2 && !gen1OffWarningPart3);
-    this.gen2OffWarning.set(gen2OffWarningPart1 && !gen2OffWarningPart2 && !gen2OffWarningPart3);
-
-    const idg1DisconnectedWarningPart2 =
-      this.flightPhase29.get() && gen12NotOperatingNext && this.toConfigHalfSecondTriggeredNode.read();
-    const idg2DisconnectedWarningPart2 =
-      this.flightPhase29.get() && gen12NotOperatingNext && this.toConfigHalfSecondTriggeredNode.read();
-
-    this.idg1DisconnectWarn.set(idg1DisconnectWarnNext);
-    this.idg1DisconnectedWarning.set(idg1DisconnectWarnNext && !idg1DisconnectedWarningPart2);
-
-    this.idg2DisconnectWarn.set(idg2DisconnectWarnNext);
-    this.idg2DisconnectedWarning.set(idg2DisconnectWarnNext && !idg2DisconnectedWarningPart2);
-
-    this.gen12NotOperating.set(gen12NotOperatingNext);
 
     /* CLEAR AND RECALL */
     if (this.ecpClearPulseUp) {
