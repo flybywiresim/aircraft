@@ -46,7 +46,10 @@ export class CDUAvailableDeparturesPage {
     const selectedSid = targetPlan.originDeparture;
     const selectedTransition = targetPlan.departureEnrouteTransition;
 
-    const showEosid = selectedRunway && sidSelection;
+    const eoSidIdent =
+      selectedRunway && sidSelection
+        ? targetPlan.departureRunwayTransitionSegment?.getEngineOutIdent() ?? 'NONE'
+        : undefined;
 
     const availableRunways = [...targetPlan.availableOriginRunways].sort((a, b) => a.ident.localeCompare(b.ident));
     let availableSids = [...targetPlan.availableDepartures].sort((a, b) => a.ident.localeCompare(b.ident)) as (
@@ -313,7 +316,7 @@ export class CDUAvailableDeparturesPage {
       };
     }
 
-    if (showEosid) {
+    if (eoSidIdent) {
       rows[7][2] = 'EOSID';
     }
 
@@ -342,7 +345,7 @@ export class CDUAvailableDeparturesPage {
       [
         editingTmpy ? '{ERASE[color]amber' : '{RETURN',
         editingTmpy ? 'INSERT*[color]amber' : '',
-        showEosid ? `{${selectedColour}}{sp}NONE{end}` : '',
+        eoSidIdent ? `{${selectedColour}}{sp}${eoSidIdent}{end}` : '',
       ],
     ]);
     mcdu.onPrevPage = () => {

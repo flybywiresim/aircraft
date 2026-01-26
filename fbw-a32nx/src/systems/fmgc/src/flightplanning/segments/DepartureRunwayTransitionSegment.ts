@@ -1,11 +1,16 @@
-// @ts-strict-ignore
-// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
 import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
-import { LegType, ProcedureTransition, WaypointConstraintType } from '@flybywiresim/fbw-sdk';
+import {
+  Departure,
+  DepartureRunwayTransition,
+  LegType,
+  ProcedureTransition,
+  WaypointConstraintType,
+} from '@flybywiresim/fbw-sdk';
 import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { ProcedureSegment } from '@fmgc/flightplanning/segments/ProcedureSegment';
@@ -17,11 +22,19 @@ export class DepartureRunwayTransitionSegment extends ProcedureSegment<Procedure
 
   allLegs: FlightPlanElement[] = [];
 
-  get procedure(): ProcedureTransition | undefined {
+  get procedure(): DepartureRunwayTransition | undefined {
     return this.departureRunwayTransition;
   }
 
-  private departureRunwayTransition: ProcedureTransition | undefined = undefined;
+  public getEngineOutIdent(): string | undefined {
+    return this.departureRunwayTransition?.engineOutDeparture?.ident;
+  }
+
+  public getEngineOutDeparture(): Departure | undefined {
+    return this.departureRunwayTransition?.engineOutDeparture;
+  }
+
+  private departureRunwayTransition: DepartureRunwayTransition | undefined = undefined;
 
   async setProcedure(runwayIdent: string | undefined, skipUpdateLegs?: boolean): Promise<void> {
     const existingDeparture = this.flightPlan.originDeparture;
