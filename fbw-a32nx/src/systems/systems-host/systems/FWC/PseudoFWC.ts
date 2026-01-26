@@ -3341,7 +3341,7 @@ export class PseudoFWC {
     /* T.O. CONFIG CHECK */
     // TODO Note that fuel tank low pressure and gravity feed warnings are not included
     const systemStatus =
-      this.gen12NotOperating.get() &&
+      !this.gen12NotOperating.get() &&
       !this.greenLP.get() &&
       !this.yellowLP.get() &&
       !this.blueLP.get() &&
