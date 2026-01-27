@@ -52,11 +52,9 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
       rowBottomLine = ['<RETURN', 'INSERT*[color]cyan'];
 
       mcdu.onRightInput[5] = async () => {
-        mcdu.insertTemporaryFlightPlan(() => {
-          mcdu.updateConstraints();
+        await mcdu.flightPlanService.finaliseAirwayEntry(forPlan, inAlternate);
 
-          CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
-        });
+        CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
       };
     } else if (fpIsTmpy && targetPlan.pendingAirways && targetPlan.pendingAirways.elements.length > 0) {
       rowBottomLine = ['{ERASE[color]amber', 'INSERT*[color]amber'];
