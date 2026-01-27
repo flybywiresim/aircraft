@@ -68,6 +68,7 @@
 1. [A32NX/GPWS] Implement simulated GPWC in rust systems - @lukecologne (luke)
 1. [A32NX/FWC] Improve CAB PR LO DIFF PR warning logic to avoid spurious warnings - @tracernz (Mike)
 1. [A32NX/FWS] Fixed stall warning not working - @tracernz (Mike)
+1. [A32NX/MCDU] Fixed inHg destination QNH conversion bug which resulted in incorrect diff pressure calculation - @FozzieHi (fozzie)
 
 ## 0.14.0
 
