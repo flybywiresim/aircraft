@@ -3,15 +3,15 @@
 :root {
   font-family: "HoneywellMCDU" !important;
 
-  --mcduWhite: #ffffff;
-  --mcduLightGrey: #666666;
-  --mcduGrey: #787878;
-  --mcduGreen: #00ff00;
-  --mcduAmber: #ff9a00;
-  --mcduCyan: #00ffff;
-  --mcduYellow: #ffff00;
-  --mcduRed: #ff0000;
-  --mcduMagenta: #ff94ff;
+  --mcduWhite: #e5dfd6;
+  --mcduLightGrey: #636267;
+  --mcduGrey: #323135;
+  --mcduGreen: #5bea06;
+  --mcduAmber: #eb880c;
+  --mcduCyan: #17e9f2;
+  --mcduYellow: #ffd200;
+  --mcduRed: #c21d1a;
+  --mcduMagenta: #dc78da;
 }
 
 @font-face {
@@ -66,7 +66,7 @@
   z-index: -99999;
   position: absolute;
   opacity: 1;
-  background-color: rgba(4, 4, 4, 1);
+  background-color: #030204;
 }
 
 #Mainframe {

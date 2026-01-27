@@ -73,7 +73,7 @@ export class RunwayLayer implements MapLayer<NdSymbol> {
     context.translate(-x, -y);
 
     context.lineWidth = isColorLayer ? 1.75 : 3.25;
-    context.strokeStyle = isColorLayer ? '#fff' : '#000';
+    context.strokeStyle = isColorLayer ? '#e5dfd6' : '#000';
 
     context.beginPath();
     context.moveTo(x - 5, y);
@@ -106,7 +106,7 @@ export class RunwayLayer implements MapLayer<NdSymbol> {
     context.translate(-x, -y);
 
     context.lineWidth = isColorLayer ? 1.75 : 3.25;
-    context.strokeStyle = isColorLayer ? '#fff' : '#000';
+    context.strokeStyle = isColorLayer ? '#e5dfd6' : '#000';
 
     context.strokeRect(x - 5, y - 12.5, 10, 25);
 
@@ -136,7 +136,7 @@ export class RunwayLayer implements MapLayer<NdSymbol> {
     context.rotate(-rotation * MathUtils.DEGREES_TO_RADIANS);
     context.translate(-(x + 40), -(y - 20));
 
-    PaintUtils.paintText(isColorLayer, context, x + 40, y - 30, identIcao, 'white');
+    PaintUtils.paintText(isColorLayer, context, x + 40, y - 30, identIcao, 'e5dfd6');
     PaintUtils.paintText(isColorLayer, context, x + 40, y - 10, identRwy.padEnd(4, '\xa0'), 'white');
 
     context.restore();
