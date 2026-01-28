@@ -24,16 +24,18 @@ import {
 import { NDSimvars } from 'instruments/src/ND/NDSimvarPublisher';
 
 import '../style.scss';
+import { FmgcFlightPhase } from '@shared/flightphase';
 import { SimplaneValues } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import { FmsSymbolsData } from 'instruments/src/ND/FmsSymbolsPublisher';
 import { NDControlEvents } from 'instruments/src/ND/NDControlEvents';
 import { VerticalDisplayCanvasMap } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayCanvasMap';
-import { VerticalMode } from '@shared/autopilot';
 import { A380XFcuBusEvents } from '@shared/publishers/A380XFcuBusPublisher';
+import { LateralMode, VerticalMode } from '@shared/autopilot';
 import { GenericFcuEvents, GenericTawsEvents, TrackLine } from '@flybywiresim/navigation-display';
 import { AesuBusEvents } from 'instruments/src/MsfsAvionicsCommon/providers/AesuBusPublisher';
 import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
 import { MfdSurvEvents } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
+import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 
 export interface VerticalDisplayProps extends ComponentProps {
   bus: ArincEventBus;
@@ -55,6 +57,8 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
       A380XFcuBusEvents &
       ClockEvents &
       FcuSimVars &
+      MfdSimvars &
+      A380XFcuBusEvents &
       FGVars &
       FmsSymbolsData &
       GenericFcuEvents &
@@ -214,6 +218,16 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
     this.activeLateralMode,
     this.armedLateralMode,
   );
+
+  private readonly isGaTrack = this.activeLateralMode.map((mode) => mode === LateralMode.GA_TRACK);
+
+  private readonly activeFlightPhase = ConsumerSubject.create(this.sub.on('flightPhase'), 0);
+
+  private readonly takeoffNoIls = MappedSubject.create(
+    ([fp]) => fp === FmgcFlightPhase.Takeoff,
+    this.activeFlightPhase,
+  );
+
   private readonly activeVerticalMode = ConsumerSubject.create(this.sub.on('fg.fma.verticalMode'), 0);
   private readonly fgAltConstraint = ConsumerSubject.create(this.sub.on('fg.altitudeConstraint'), 0);
   private readonly selectedAltitude = ConsumerSubject.create(this.sub.on('selectedAltitude'), 0);
@@ -418,6 +432,13 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
     this.wxrInop,
   );
 
+  private readonly viewAlongAcftTrkFlagVisibility = MappedSubject.create(
+    ([trajNotAvail, isGaTrack, takeoffNoIls]) => (trajNotAvail || isGaTrack || takeoffNoIls ? 'inherit' : 'hidden'),
+    this.trajNotAvailFlagCondition,
+    this.isGaTrack,
+    this.takeoffNoIls,
+  );
+
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
     this.subscriptions.push(
@@ -478,6 +499,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
       this.noTerrAndWxDataAvailFlagVisibility,
       this.terrInopFlagVisibility,
       this.wxrInopFlagVisibility,
+      this.viewAlongAcftTrkFlagVisibility,
       this.targetAltitudeFormatted,
     );
 
@@ -766,6 +788,14 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
             style={{ visibility: this.trajNotAvailFlagVisibility }}
           >
             TRAJ NOT AVAIL
+          </text>
+          <text
+            x={422}
+            y={990}
+            class="White FontSmall MiddleAlign shadow"
+            style={{ visibility: this.viewAlongAcftTrkFlagVisibility }}
+          >
+            VIEW ALONG AIRCRAFT TRACK
           </text>
         </svg>
       </>
