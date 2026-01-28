@@ -10,6 +10,8 @@ on:
 jobs:
   lint:
     name: Lint
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
     steps:
@@ -26,6 +28,8 @@ jobs:
           ./scripts/dev-env/run.sh scripts/lint-rust.sh
   test-rust:
     name: Tests (Rust)
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
     steps:
@@ -38,6 +42,8 @@ jobs:
           ./scripts/dev-env/run.sh scripts/test-rust.sh
   test-js:
     name: Tests (JS)
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
     steps:
@@ -51,6 +57,9 @@ jobs:
         run: npm test
   build-a32nx:
     name: Build and upload A32NX
+    permissions:
+      contents: read
+      actions: write
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
     env:
@@ -161,6 +170,9 @@ jobs:
 
   build_a380x_4k:
     name: Build and upload A380X (4K)
+    permissions:
+      contents: read
+      actions: write
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
     env:

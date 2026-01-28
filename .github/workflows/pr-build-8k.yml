@@ -11,6 +11,8 @@ on:
 jobs:
   build_a380x_8k:
     name: Build and upload A380X (8K)
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false && contains(join(github.event.pull_request.labels.*.name, ', '), 'pr-build-8k')
     env:
