@@ -122,6 +122,22 @@ export const A320Failure = Object.freeze({
   RadioAntennaDirectCoupling1: 34020,
   RadioAntennaDirectCoupling2: 34021,
   Egpwc: 34030,
+
+  Adr1: 34100,
+  Adr2: 34101,
+  Adr3: 34102,
+  Ir1: 34103,
+  Ir2: 34104,
+  Ir3: 34105,
+  PitotBlockage1: 34110,
+  PitotBlockage2: 34111,
+  PitotBlockage3: 34112,
+  StaticBlockage1: 34113,
+  StaticBlockage2: 34114,
+  StaticBlockage3: 34115,
+  AoaStuck1: 34116,
+  AoaStuck2: 34117,
+  AoaStuck3: 34118,
 });
 
 export const A320FailureDefinitions: FailureDefinition[] = [
@@ -238,4 +254,20 @@ export const A320FailureDefinitions: FailureDefinition[] = [
   [34, A320Failure.RadioAntennaDirectCoupling2, 'RA 2 Direct Coupling'],
 
   [34, A320Failure.Egpwc, 'EGPWC'],
+
+  [34, A320Failure.Adr1, 'ADR 1'],
+  [34, A320Failure.Adr2, 'ADR 2'],
+  [34, A320Failure.Adr3, 'ADR 3'],
+  [34, A320Failure.Ir1, 'IR 1'],
+  [34, A320Failure.Ir2, 'IR 2'],
+  [34, A320Failure.Ir3, 'IR 3'],
+  [34, A320Failure.PitotBlockage1, 'Total Pitot Blockage, System 1'],
+  [34, A320Failure.PitotBlockage2, 'Total Pitot Blockage, System 2'],
+  [34, A320Failure.PitotBlockage3, 'Total Pitot Blockage, System 3'],
+  [34, A320Failure.StaticBlockage1, 'Total Static Blockage, System 1'],
+  [34, A320Failure.StaticBlockage2, 'Total Static Blockage, System 2'],
+  [34, A320Failure.StaticBlockage3, 'Total Static Blockage, System 3'],
+  [34, A320Failure.AoaStuck1, 'AOA Probe Stuck, System 1'],
+  [34, A320Failure.AoaStuck2, 'AOA Probe Stuck, System 2'],
+  [34, A320Failure.AoaStuck3, 'AOA Probe Stuck, System 3'],
 ];
