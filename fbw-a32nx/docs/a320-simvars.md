@@ -292,14 +292,6 @@
   - Bool
   - Set to true in a non-cold and dark flight phase to skip the initial memorization step
 
-- A32NX_FWC_TOMEMO
-    - Bool
-    - True when the FWC decides that the takeoff memo should be shown
-
-- A32NX_FWC_LDGMEMO
-    - Bool
-    - True when the FWC decides that the landing memo should be shown
-
 - A32NX_FWC_INHIBOVRD
     - Bool
     - True when the FWC decides that flight phase inhibits should be overridden (and ignored)
@@ -3934,7 +3926,8 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Percent
     - Trim wheel position in percent
 
-## Fuel ATA 28
+## Fuel (ATA 28)
+
 - A32NX_TOTAL_FUEL_QUANTITY
   - Number in kilogramm
   - The total physical quantity of fuel in the tanks
