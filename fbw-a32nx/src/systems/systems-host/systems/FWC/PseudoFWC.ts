@@ -588,11 +588,51 @@ export class PseudoFWC {
 
   private readonly bat2PbOff = Subject.create(false);
 
-  private readonly phase6For60Seconds = new NXLogicConfirmNode(60, true);
+  private readonly gen1PbOff = Subject.create(false);
+
+  private readonly gen1PbOffConfirmNode = new NXLogicConfirmNode(5, true);
+
+  private readonly gen2PbOff = Subject.create(false);
+
+  private readonly gen2PbOffConfirmNode = new NXLogicConfirmNode(5, true);
+
+  private readonly idg1Disconnected = Subject.create(false);
+
+  private readonly idg1DisconnectedConfirmNode = new NXLogicConfirmNode(1, true);
+
+  private readonly idg2Disconnected = Subject.create(false);
+
+  private readonly idg2DisconnectedConfirmNode = new NXLogicConfirmNode(1, true);
 
   private readonly bat1Off = Subject.create(false);
 
   private readonly bat2Off = Subject.create(false);
+
+  private readonly gen1Off = Subject.create(false);
+
+  private readonly gen2Off = Subject.create(false);
+
+  private readonly gen12NotOperating = Subject.create(false);
+
+  private readonly idg1DisconnectWarn = Subject.create(false);
+
+  private readonly idg2DisconnectWarn = Subject.create(false);
+
+  private readonly idg1DisconnectedWarning = Subject.create(false);
+
+  private readonly idg2DisconnectedWarning = Subject.create(false);
+
+  private readonly gen1OffWarningConfirmNode2 = new NXLogicConfirmNode(60, true);
+
+  private readonly gen2OffWarningConfirmNode2 = new NXLogicConfirmNode(60, true);
+
+  private readonly gen1OffWarningPulseNode = new NXLogicPulseNode(true);
+
+  private readonly gen2OffWarningPulseNode = new NXLogicPulseNode(true);
+
+  private readonly gen1OffWarning = Subject.create(false);
+
+  private readonly gen2OffWarning = Subject.create(false);
 
   /* 27 - FLIGHT CONTROLS */
 
@@ -848,6 +888,8 @@ export class PseudoFWC {
 
   private readonly flightPhase23 = Subject.create(false);
 
+  private readonly flightPhase29 = Subject.create(false);
+
   private readonly flightPhase34 = Subject.create(false);
 
   private readonly flightPhase345 = Subject.create(false);
@@ -873,13 +915,17 @@ export class PseudoFWC {
 
   private readonly toConfigTestMemoryNode = new NXLogicMemoryNode();
 
-  private readonly toConfighalfSecondTriggeredNode = new NXLogicTriggeredMonostableNode(0.5);
+  private readonly toConfigHalfSecondTriggeredNode = new NXLogicTriggeredMonostableNode(0.5);
 
   private readonly toConfigNormalConf = new NXLogicConfirmNode(0.3, false);
+
+  private readonly flightPhase2PulseNode = new NXLogicPulseNode();
 
   private readonly flightPhase3PulseNode = new NXLogicPulseNode();
 
   private readonly flightPhase7PulseNode = new NXLogicPulseNode();
+
+  private readonly flightPhase6For60Seconds = new NXLogicConfirmNode(60, true);
 
   private readonly flightPhaseEndedPulseNode = new NXLogicPulseNode();
 
@@ -1622,12 +1668,15 @@ export class PseudoFWC {
 
     this.fwcFlightPhase.set(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum'));
     const flightPhase = this.fwcFlightPhase.get();
+    this.flightPhase2PulseNode.write(flightPhase === 2, deltaTime);
     this.flightPhase3PulseNode.write(flightPhase === 3, deltaTime);
     this.flightPhase7PulseNode.write(flightPhase === 7, deltaTime);
+    this.flightPhase6For60Seconds.write(flightPhase === 6, deltaTime);
     // flight phase convenience vars
     this.flightPhase126.set(flightPhase === 1 || flightPhase === 2 || flightPhase === 6);
     this.flightPhase129.set(flightPhase === 1 || flightPhase === 2 || flightPhase === 9);
     this.flightPhase23.set(flightPhase === 2 || flightPhase === 3);
+    this.flightPhase29.set(flightPhase === 2 || flightPhase === 9);
     this.flightPhase34.set(flightPhase === 3 || flightPhase === 4);
     this.flightPhase345.set(this.flightPhase34.get() || flightPhase === 5);
     this.flightPhase67.set(flightPhase === 6 || flightPhase === 7);
@@ -1723,6 +1772,12 @@ export class PseudoFWC {
     this.bat1PbOff.set(!SimVar.GetSimVarValue('L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO', 'bool'));
     this.bat2PbOff.set(!SimVar.GetSimVarValue('L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO', 'bool'));
 
+    this.gen1PbOff.set(!SimVar.GetSimVarValue('A:GENERAL ENG MASTER ALTERNATOR:1', 'bool'));
+    this.gen2PbOff.set(!SimVar.GetSimVarValue('A:GENERAL ENG MASTER ALTERNATOR:2', 'bool'));
+
+    this.idg1Disconnected.set(!SimVar.GetSimVarValue('L:A32NX_ELEC_ENG_GEN_1_IDG_IS_CONNECTED', 'bool'));
+    this.idg2Disconnected.set(!SimVar.GetSimVarValue('L:A32NX_ELEC_ENG_GEN_2_IDG_IS_CONNECTED', 'bool'));
+
     /* HYDRAULICS acquisition */
 
     this.blueElecPumpPBAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMPB_PB_IS_AUTO', 'bool'));
@@ -1782,8 +1837,8 @@ export class PseudoFWC {
     // TODO: Check !NORM+ALTN BRK FAULT when implemented, plus change all of this to use SDAC discretes
     const acBusOff = !this.ac1BusPowered.get() || !this.ac2BusPowered.get();
     const phase2For60Seconds = this.antiSkidOffPhase2Confirm.write(this.fwcFlightPhase.get() === 2, deltaTime);
-    const phase2Pulse = this.antiSkidOffPhase2Pulse.write(phase2For60Seconds, deltaTime);
-    this.antiSkidOffWarning.set(!antiSkidActive && !acBusOff && !phase2Pulse);
+    const phase2For60SecondsPulse = this.antiSkidOffPhase2Pulse.write(phase2For60Seconds, deltaTime);
+    this.antiSkidOffWarning.set(!antiSkidActive && !acBusOff && !phase2For60SecondsPulse);
 
     const parkBrakeFor2Seconds = this.parkBrakeOnConfirm.write(this.parkBrake.get(), deltaTime);
     this.parkBrakeOnWarning.set(
@@ -2989,6 +3044,82 @@ export class PseudoFWC {
       this.iceNotDetTimer2.write(iceNotDetected1 && !(icePercentage >= 0.1 || (tat < 10 && inCloud === 1)), deltaTime),
     );
 
+    /* ELECTRICAL */
+    this.bat1Off.set(this.bat1PbOff.get() && (this.flightPhase6For60Seconds.read() || this.fwcFlightPhase.get() === 2));
+    this.bat2Off.set(this.bat2PbOff.get() && (this.flightPhase6For60Seconds.read() || this.fwcFlightPhase.get() === 2));
+
+    const engine1NotRunning = this.engine1State.get() === 0;
+    const engine2NotRunning = this.engine2State.get() === 0;
+    const phase2Pulse = this.flightPhase2PulseNode.read();
+
+    const idg1DisconnectedFor1Second = this.idg1DisconnectedConfirmNode.write(this.idg1Disconnected.get(), deltaTime);
+    // TODO: Check !Low oil pressure memory && !IDG 1 oil overheat S / R* flip flop with phase 1 pulse when implemented
+    const idg1DisconnectWarnNext = idg1DisconnectedFor1Second && !engine1NotRunning && !phase2Pulse;
+    const idg2DisconnectedFor1Second = this.idg2DisconnectedConfirmNode.write(this.idg2Disconnected.get(), deltaTime);
+    // TODO: Check !Low oil pressure memory && !IDG 2 oil overheat S / R* flip flop with phase 1 pulse when implemented
+    const idg2DisconnectWarnNext = idg2DisconnectedFor1Second && !engine2NotRunning && !phase2Pulse;
+
+    const gen1PbOffFor5Seconds = this.gen1PbOffConfirmNode.write(this.gen1PbOff.get(), deltaTime);
+    const gen2PbOffFor5Seconds = this.gen2PbOffConfirmNode.write(this.gen2PbOff.get(), deltaTime);
+
+    const phase6 = this.fwcFlightPhase.get() === 6;
+    const phase6For60Seconds = this.flightPhase6For60Seconds.read();
+
+    const gen1OffWarningConfirmNode2 = this.gen1OffWarningConfirmNode2.write(!engine1NotRunning && !phase6, deltaTime);
+    const gen2OffWarningConfirmNode2 = this.gen2OffWarningConfirmNode2.write(!engine2NotRunning && !phase6, deltaTime);
+
+    const gen1OffPart1 = gen1PbOffFor5Seconds && !this.idg1Disconnected.get(); // TODO: && !(Gen 1 fault memory || this.idg1Disconnected.get()) when implemented
+    const gen2OffPart1 = gen2PbOffFor5Seconds && !this.idg2Disconnected.get(); // TODO: && !(Gen 2 fault memory || this.idg2Disconnected.get()) when implemented
+
+    // Avoids one-cycle delay in exchange for looking awful
+    const gen1NotOperating =
+      (gen1OffPart1 &&
+        (gen1OffWarningConfirmNode2 || phase6For60Seconds || (phase6 && this.gen12NotOperating.get()))) ||
+      idg1DisconnectWarnNext; // TODO: Gen 1 fault memory || when implemented
+    const gen2NotOperating =
+      (gen2OffPart1 &&
+        (gen2OffWarningConfirmNode2 || phase6For60Seconds || (phase6 && this.gen12NotOperating.get()))) ||
+      idg2DisconnectWarnNext; // TODO: Gen 2 fault memory || when implemented
+    const gen12NotOperatingNext =
+      (gen1NotOperating || !this.engine1Generator.get()) && (gen2NotOperating || !this.engine2Generator.get()); // TODO: Remove engine1Generator / engine2Generator checks when fault memory above implemented
+
+    const gen1OffPart2 = gen1OffWarningConfirmNode2 || phase6For60Seconds || (phase6 && gen12NotOperatingNext);
+    const gen2OffPart2 = gen2OffWarningConfirmNode2 || phase6For60Seconds || (phase6 && gen12NotOperatingNext);
+
+    this.gen1Off.set(gen1OffPart1 && gen1OffPart2);
+    this.gen2Off.set(gen2OffPart1 && gen2OffPart2);
+
+    const gen1OffWarningPart1 = gen1OffPart1 && gen1OffPart2;
+    const gen1OffWarningPart2 = this.gen1OffWarningPulseNode.write(
+      this.fwcFlightPhase.get() === 3 && gen12NotOperatingNext,
+      deltaTime,
+    );
+    const gen1OffWarningPart3 =
+      gen12NotOperatingNext && this.toConfigHalfSecondTriggeredNode.read() && this.flightPhase29.get();
+    const gen2OffWarningPart1 = gen2OffPart1 && gen2OffPart2;
+    const gen2OffWarningPart2 = this.gen2OffWarningPulseNode.write(
+      this.fwcFlightPhase.get() === 3 && gen12NotOperatingNext,
+      deltaTime,
+    );
+    const gen2OffWarningPart3 =
+      gen12NotOperatingNext && this.toConfigHalfSecondTriggeredNode.read() && this.flightPhase29.get();
+
+    this.gen1OffWarning.set(gen1OffWarningPart1 && !gen1OffWarningPart2 && !gen1OffWarningPart3);
+    this.gen2OffWarning.set(gen2OffWarningPart1 && !gen2OffWarningPart2 && !gen2OffWarningPart3);
+
+    const idg1DisconnectedWarningPart2 =
+      this.flightPhase29.get() && gen12NotOperatingNext && this.toConfigHalfSecondTriggeredNode.read();
+    const idg2DisconnectedWarningPart2 =
+      this.flightPhase29.get() && gen12NotOperatingNext && this.toConfigHalfSecondTriggeredNode.read();
+
+    this.idg1DisconnectWarn.set(idg1DisconnectWarnNext);
+    this.idg1DisconnectedWarning.set(idg1DisconnectWarnNext && !idg1DisconnectedWarningPart2);
+
+    this.idg2DisconnectWarn.set(idg2DisconnectWarnNext);
+    this.idg2DisconnectedWarning.set(idg2DisconnectWarnNext && !idg2DisconnectedWarningPart2);
+
+    this.gen12NotOperating.set(gen12NotOperatingNext);
+
     /* NAV logic */
     const dmcLStdBit = this.dmcLeftDiscreteWord.get().bitValueOr(11, false) && fcu1Healthy;
     const dmcLQnhBit = this.dmcLeftDiscreteWord.get().bitValueOr(12, false) && fcu1Healthy;
@@ -3211,8 +3342,7 @@ export class PseudoFWC {
     /* T.O. CONFIG CHECK */
     // TODO Note that fuel tank low pressure and gravity feed warnings are not included
     const systemStatus =
-      this.engine1Generator.get() &&
-      this.engine2Generator.get() &&
+      !this.gen12NotOperating.get() &&
       !this.greenLP.get() &&
       !this.yellowLP.get() &&
       !this.blueLP.get() &&
@@ -3239,19 +3369,14 @@ export class PseudoFWC {
     const toConfigNormal = this.toConfigNormalConf.write(toConfigSystemStatusNormal, deltaTime);
 
     this.toConfigTestMemoryNode.write(
-      this.toConfighalfSecondTriggeredNode.write(this.toConfigPulseNode.read(), deltaTime) &&
+      this.toConfigHalfSecondTriggeredNode.write(this.toConfigPulseNode.read(), deltaTime) &&
         (fwcFlightPhase === 2 || fwcFlightPhase === 9),
       flightPhase6 || !toConfigNormal,
     );
 
     this.toConfigMemoNormal.set(this.toConfigTestMemoryNode.read() && toConfigNormal);
 
-    this.toConfigOrPhase3.set(!(this.flightPhase3PulseNode.read() || this.toConfighalfSecondTriggeredNode.read()));
-
-    /* ELECTRICAL */
-    this.phase6For60Seconds.write(this.fwcFlightPhase.get() === 6, deltaTime);
-    this.bat1Off.set(this.bat1PbOff.get() && (this.phase6For60Seconds.read() || this.fwcFlightPhase.get() === 2));
-    this.bat2Off.set(this.bat2PbOff.get() && (this.phase6For60Seconds.read() || this.fwcFlightPhase.get() === 2));
+    this.toConfigOrPhase3.set(!(this.flightPhase3PulseNode.read() || this.toConfigHalfSecondTriggeredNode.read()));
 
     /* CLEAR AND RECALL */
     if (this.ecpClearPulseUp) {
@@ -3860,6 +3985,50 @@ export class PseudoFWC {
       codesToReturn: ['240061001'],
       memoInhibit: () => false,
       failure: 1,
+      sysPage: 3,
+      side: 'LEFT',
+    },
+    2400400: {
+      // IDG 1 DISCONNECTED
+      flightPhaseInhib: [1, 3, 4, 5, 6, 7, 8, 9, 10],
+      simVarIsActive: this.idg1DisconnectedWarning,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['240040001'],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: 3,
+      side: 'LEFT',
+    },
+    2400405: {
+      // IDG 2 DISCONNECTED
+      flightPhaseInhib: [1, 3, 4, 5, 6, 7, 8, 9, 10],
+      simVarIsActive: this.idg2DisconnectedWarning,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['240040501'],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: 3,
+      side: 'LEFT',
+    },
+    2400060: {
+      // GEN 1 OFF
+      flightPhaseInhib: [1, 4, 5, 7, 8, 10],
+      simVarIsActive: this.gen1OffWarning,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['240006001'],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: 3,
+      side: 'LEFT',
+    },
+    2400070: {
+      // GEN 2 OFF
+      flightPhaseInhib: [1, 4, 5, 7, 8, 10],
+      simVarIsActive: this.gen2OffWarning,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['240007001'],
+      memoInhibit: () => false,
+      failure: 2,
       sysPage: 3,
       side: 'LEFT',
     },
