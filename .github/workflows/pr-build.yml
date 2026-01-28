@@ -123,6 +123,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.base.ref }}
       - name: Configure rclone for Cloudflare R2
+        if: github.event.pull_request.auto_merge == false
         run: |
             mkdir -p ~/.config/rclone
             cat > ~/.config/rclone/rclone.conf <<EOF
@@ -136,6 +137,7 @@ jobs:
             region = auto
             EOF
       - name: Upload to CloudFlare CDN (Installer)
+        if: github.event.pull_request.auto_merge == false
         env:
           CLOUDFLARE_CDN_ZONE_ID: ${{ secrets.CLOUDFLARE_CDN_ZONE_ID }}
           CLOUDFLARE_PURGE_TOKEN: ${{ secrets.CLOUDFLARE_PURGE_TOKEN }}
