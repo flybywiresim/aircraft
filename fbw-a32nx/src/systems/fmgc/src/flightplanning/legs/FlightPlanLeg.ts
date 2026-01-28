@@ -32,6 +32,8 @@ import { OriginSegment } from '@fmgc/flightplanning/segments/OriginSegment';
 import { ReadonlyFlightPlanLeg } from '@fmgc/flightplanning/legs/ReadonlyFlightPlanLeg';
 import { v4 } from 'uuid';
 import { CopyOptions } from '@fmgc/flightplanning/plans/CloningOptions';
+import { WindEntry } from '../data/wind';
+import { Vec2Math } from '@microsoft/msfs-sdk';
 
 /**
  * A serialized flight plan leg, to be sent across FMSes
@@ -51,6 +53,7 @@ export interface SerializedFlightPlanLeg {
   pilotEnteredAltitudeConstraint: AltitudeConstraint | undefined;
   pilotEnteredSpeedConstraint: SpeedConstraint | undefined;
   calculated: LegCalculations;
+  cruiseWindEntries: WindEntry[];
 }
 
 export enum FlightPlanLegFlags {
@@ -77,6 +80,11 @@ export interface LegCalculations {
   cumulativeDistanceToEndWithTransitions: number;
   /** Whether the leg terminates in a vertical discontinuity */
   endsInTooSteepPath: boolean;
+  /**
+   * The average true track from the last valid leg termination prior to this one to the termination of this leg
+   * or undefined if it could not be computed.
+   */
+  trueTrack?: number;
 }
 
 /**
@@ -121,6 +129,8 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
 
   calculated: LegCalculations | undefined;
 
+  cruiseWindEntries: WindEntry[] = [];
+
   serialize(): SerializedFlightPlanLeg {
     return {
       uuid: this.uuid,
@@ -141,6 +151,10 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         ? JSON.parse(JSON.stringify(this.pilotEnteredSpeedConstraint))
         : undefined,
       calculated: this.calculated ? JSON.parse(JSON.stringify(this.calculated)) : undefined,
+      cruiseWindEntries: this.cruiseWindEntries.map((entry) => ({
+        vector: Vec2Math.copy(entry.vector, Vec2Math.create()),
+        altitude: entry.altitude,
+      })),
     };
   }
 
@@ -172,6 +186,10 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     leg.pilotEnteredAltitudeConstraint = serialized.pilotEnteredAltitudeConstraint;
     leg.pilotEnteredSpeedConstraint = serialized.pilotEnteredSpeedConstraint;
     leg.calculated = serialized.calculated;
+    leg.cruiseWindEntries = serialized.cruiseWindEntries.map((entry) => ({
+      vector: Vec2Math.copy(entry.vector, Vec2Math.create()),
+      altitude: entry.altitude,
+    }));
 
     return leg;
   }
@@ -317,6 +335,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     this.pilotEnteredSpeedConstraint = from.pilotEnteredSpeedConstraint;
     this.constraintType = from.constraintType;
     this.cruiseStep = from.cruiseStep;
+    this.cruiseWindEntries = from.cruiseWindEntries;
     /**
      * Don't copy holds. When we string the arrival to the upstream plan, the upstream plan may have a hold
      * and the downstream leg doesn't, but the upstream leg is the one that's kept. In this case, we don't want to remove the hold
@@ -352,6 +371,10 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     this.clearSpeedConstraints();
   }
 
+  hasCruiseWindEntryAt(altitude: number): boolean {
+    return this.cruiseWindEntries.some((entry) => Math.round(entry.altitude / 100) === Math.round(altitude / 100));
+  }
+
   static turningPoint(segment: EnrouteSegment, location: Coordinates, magneticCourse: DegreesMagnetic): FlightPlanLeg {
     return new FlightPlanLeg(
       segment,
@@ -385,22 +408,20 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
   }
 
   static manualHold(segment: FlightPlanSegment, waypoint: Fix, hold: HoldData): FlightPlanLeg {
-    return new FlightPlanLeg(
-      segment,
-      {
-        procedureIdent: '',
-        type: LegType.HM,
-        overfly: false,
-        waypoint,
-        turnDirection: hold.turnDirection,
-        magneticCourse: hold.inboundMagneticCourse,
-        length: hold.distance,
-        lengthTime: hold.time,
-      },
-      waypoint.ident,
-      '',
-      undefined,
-    );
+    const definition = {
+      procedureIdent: '',
+      type: LegType.HM,
+      overfly: false,
+      waypoint,
+      turnDirection: hold.turnDirection,
+      magneticCourse: hold.inboundMagneticCourse,
+      length: hold.distance,
+      lengthTime: hold.time,
+    };
+
+    const [ident, annotation] = procedureLegIdentAndAnnotation(definition, definition.procedureIdent);
+
+    return new FlightPlanLeg(segment, definition, ident, annotation, undefined);
   }
 
   static fromProcedureLeg(

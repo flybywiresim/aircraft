@@ -19,4 +19,5 @@ export enum AtsuStatusCodes {
   EntryOutOfRange,
   FormatError,
   NotInDatabase,
+  RequestTimeout,
 }

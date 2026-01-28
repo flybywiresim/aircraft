@@ -23,8 +23,6 @@ import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
 import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
-import { WindProfileFactory } from '@fmgc/guidance/vnav/wind/WindProfileFactory';
-import { FmcWinds, FmcWindVector } from '@fmgc/guidance/vnav/wind/types';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
@@ -66,8 +64,6 @@ export interface Fmgc {
   getSlatRetractionSpeed(): Knots;
   getCleanSpeed(): Knots;
   getTripWind(): number;
-  getWinds(): FmcWinds;
-  getApproachWind(): FmcWindVector | null;
   getApproachQnh(): number;
   getApproachTemperature(): number;
   getDestEFOB(useFob: boolean): number | null; // Metric tons
@@ -155,8 +151,6 @@ export class GuidanceController {
   verticalProfileComputationParametersObserver: VerticalProfileComputationParametersObserver;
 
   viewListener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
-
-  private windProfileFactory: WindProfileFactory;
 
   public atmosphericConditions: AtmosphericConditions;
 
@@ -304,17 +298,16 @@ export class GuidanceController {
       fmgc,
       flightPlanService,
     );
-    this.windProfileFactory = new WindProfileFactory(fmgc, 1);
 
     this.atmosphericConditions = new AtmosphericConditions(this.verticalProfileComputationParametersObserver);
 
     this.lnavDriver = new LnavDriver(flightPlanService, this, this.acConfig);
     this.vnavDriver = new VnavDriver(
+      bus,
       flightPlanService,
       this,
       this.verticalProfileComputationParametersObserver,
       this.atmosphericConditions,
-      this.windProfileFactory,
       this.acConfig,
     );
     this.pseudoWaypoints = new PseudoWaypoints(flightPlanService, this, this.atmosphericConditions, this.acConfig);
@@ -384,7 +377,6 @@ export class GuidanceController {
 
     try {
       this.verticalProfileComputationParametersObserver.update();
-      this.windProfileFactory.updateFmgcInputs();
       this.atmosphericConditions.update();
     } catch (e) {
       console.error('[FMS] Error during update of VNAV input parameters. See exception below.');
@@ -531,9 +523,9 @@ export class GuidanceController {
     );
 
     // Update distance to destination
-    geometry.updateDistances(plan, Math.max(0, plan.activeLegIndex - 1), plan.firstMissedApproachLegIndex);
+    geometry.updateDistancesAndTracks(plan, Math.max(0, plan.activeLegIndex - 1), plan.firstMissedApproachLegIndex);
     // Update distances in missed approach segment
-    geometry.updateDistances(plan, Math.max(plan.firstMissedApproachLegIndex), plan.legCount);
+    geometry.updateDistancesAndTracks(plan, Math.max(plan.firstMissedApproachLegIndex), plan.legCount);
   }
 
   /**

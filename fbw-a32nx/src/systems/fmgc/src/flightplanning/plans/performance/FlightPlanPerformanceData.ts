@@ -6,6 +6,8 @@
 
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { MappedSubject, MutableSubscribable, Subject, Subscribable, Subscription } from '@microsoft/msfs-sdk';
+import { FlightPlanWindEntry, WindVector } from '../../data/wind';
+import { Vec2Math } from '@microsoft/msfs-sdk';
 
 export interface FlightPlanPerformanceData {
   /**
@@ -480,6 +482,21 @@ export interface FlightPlanPerformanceData {
    */
   readonly approachFlapsThreeSelected: MutableSubscribable<boolean>;
 
+  /**
+   * The wind entries for the climb segment entered by the pilot
+   */
+  readonly climbWindEntries: Subject<FlightPlanWindEntry[]>;
+
+  /**
+   * The wind entries for the descent segment entered by the pilot
+   */
+  readonly descentWindEntries: Subject<FlightPlanWindEntry[]>;
+
+  /**
+   * The average wind vector for the alternate flight plan, or null if not set.
+   */
+  readonly alternateWind: Subject<WindVector | null>;
+
   clone(): this;
 
   destroy(): void;
@@ -586,6 +603,22 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
     cloned.approachBaroMinimum.set(this.approachBaroMinimum.get());
     cloned.approachRadioMinimum.set(this.approachRadioMinimum.get());
     cloned.approachFlapsThreeSelected.set(this.approachFlapsThreeSelected.get());
+
+    cloned.climbWindEntries.set(
+      this.climbWindEntries.get().map(({ vector, ...rest }) => ({
+        vector: Vec2Math.copy(vector, Vec2Math.create()),
+        ...rest,
+      })),
+    );
+    cloned.descentWindEntries.set(
+      this.descentWindEntries.get().map(({ vector, ...rest }) => ({
+        vector: Vec2Math.copy(vector, Vec2Math.create()),
+        ...rest,
+      })),
+    );
+    cloned.alternateWind.set(
+      this.alternateWind.get() !== null ? Vec2Math.copy(this.alternateWind.get(), Vec2Math.create()) : null,
+    );
 
     return cloned as this;
   }
@@ -1231,6 +1264,21 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
    */
   readonly approachFlapsThreeSelected = Subject.create(false);
 
+  /**
+   * The wind entries for the climb segment entered by the pilot
+   */
+  readonly climbWindEntries: Subject<FlightPlanWindEntry[]> = Subject.create([]);
+
+  /**
+   * The wind entries for the descent segment entered by the pilot
+   */
+  readonly descentWindEntries: Subject<FlightPlanWindEntry[]> = Subject.create([]);
+
+  /**
+   * The average wind vector for the alternate flight plan, or null if not set.
+   */
+  readonly alternateWind: Subject<WindVector | null> = Subject.create(null);
+
   serialize(): SerializedFlightPlanPerformanceData {
     return {
       cruiseFlightLevel: this.cruiseFlightLevel.get(),
@@ -1301,6 +1349,10 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
       approachBaroMinimum: this.approachBaroMinimum.get(),
       approachRadioMinimum: this.approachRadioMinimum.get(),
       approachFlapsThreeSelected: this.approachFlapsThreeSelected.get(),
+
+      climbWindEntries: this.climbWindEntries.get(),
+      descentWindEntries: this.descentWindEntries.get(),
+      alternateWind: this.alternateWind.get(),
     };
   }
 }
@@ -1391,6 +1443,10 @@ export interface SerializedFlightPlanPerformanceData {
   approachBaroMinimum: number | null;
   approachRadioMinimum: 'NO DH' | number | null;
   approachFlapsThreeSelected: boolean;
+
+  climbWindEntries: FlightPlanWindEntry[];
+  descentWindEntries: FlightPlanWindEntry[];
+  alternateWind: WindVector | null;
 }
 
 // FIXME move to AMI database

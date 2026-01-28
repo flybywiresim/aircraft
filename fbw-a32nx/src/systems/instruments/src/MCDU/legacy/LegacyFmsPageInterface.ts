@@ -28,6 +28,7 @@ import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { DataManager } from '@fmgc/flightplanning/DataManager';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { FuelPredictions } from '@fmgc/flightplanning/fuel/FuelPredictions';
+import { WindEntry } from '@fmgc/flightplanning/data/wind';
 
 export type LskCallback = (
   /** The scratchpad content when the LSK was pressed. */
@@ -219,6 +220,9 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   activateSecondaryPlan(index: number): Promise<void>;
   swapActiveAndSecondaryPlan(index: number): Promise<void>;
   computeAlternateCruiseLevel(forPlan: FlightPlanIndex): number | undefined;
+  computeAlternateCruiseLevel(forPlan: FlightPlanIndex): number | undefined;
+  uplinkWinds(forPlan: FlightPlanIndex, sentCallback?: () => void): Promise<void>;
+  getHistoryWinds(cruiseLevel: number | null): Readonly<WindEntry>[] | undefined;
 
   flightPlanService: FlightPlanService;
   navigationDatabase: NavigationDatabase;
@@ -275,13 +279,6 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   progBearing: number;
   progDistance: number;
   progWaypointIdent: string | undefined;
-  /** Mess.. replace with wind manager. */
-  winds: {
-    climb: any[];
-    cruise: any[];
-    des: any[];
-    alternate: any | null;
-  };
   isTrueRefMode: boolean;
 }
 

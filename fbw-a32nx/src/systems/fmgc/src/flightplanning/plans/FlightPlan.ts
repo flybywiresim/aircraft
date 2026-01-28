@@ -6,11 +6,11 @@
 
 import { Airport, ApproachType, Fix, isMsfs2024, LegType, MathUtils, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
-import { AeroMath, BitFlags, EventBus, MagVar, MutableSubscribable } from '@microsoft/msfs-sdk';
+import { AeroMath, BitFlags, EventBus, MagVar, MutableSubscribable, Vec2Math } from '@microsoft/msfs-sdk';
 import { FixInfoData, FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
 import { loadAllDepartures, loadAllRunways } from '@fmgc/flightplanning/DataLoading';
 import { Coordinates, Degrees } from 'msfs-geo';
-import { FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { FlightPlanLeg, FlightPlanLegFlags, isLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { FlightArea } from '@fmgc/navigation/FlightArea';
 import { CopyOptions } from '@fmgc/flightplanning/plans/CloningOptions';
@@ -25,6 +25,8 @@ import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { A32NX_Util } from '../../../../shared/src/A32NX_Util';
 import { FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/FlightPlanQueuedOperation';
 import { FlightPlanFlags } from './FlightPlanFlags';
+import { debugFormatWindEntry, FlightPlanWindEntry, WindVector } from '../data/wind';
+import { PendingWindUplink } from './PendingWindUplink';
 
 export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> extends BaseFlightPlan<P> {
   static empty<P extends FlightPlanPerformanceData>(
@@ -61,8 +63,11 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
    */
   flags: number = FlightPlanFlags.None;
 
+  public readonly pendingWindUplink: PendingWindUplink = new PendingWindUplink();
+
   constructor(context: FlightPlanContext, index: number, bus: EventBus, performanceDataInit: P) {
     super(context, index, bus);
+
     this.performanceData = performanceDataInit;
   }
 
@@ -154,6 +159,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     this.setPerformanceData('alternateDescentSpeedLimitAltitude', DefaultPerformanceData.DescentSpeedLimitAltitude);
     this.setPerformanceData('isAlternateDescentSpeedLimitPilotEntered', false);
     this.setPerformanceData('pilotAlternateFuel', null);
+    this.setPerformanceData('alternateWind', null);
   }
 
   directToLeg(ppos: Coordinates, trueTrack: Degrees, targetLegIndex: number, _withAbeam = false) {
@@ -558,6 +564,8 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     plan.setPerformanceData('pilotMissedEngineOutAccelerationAltitude', null);
 
     plan.setPerformanceData('databaseTransitionLevel', airport?.transitionLevel ?? null);
+
+    plan.setPerformanceData('descentWindEntries', []);
   }
 
   static async fromSerializedFlightPlan<P extends FlightPlanPerformanceData>(
@@ -711,5 +719,204 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
       this.index === FlightPlanIndex.Temporary ||
       (this.flags & FlightPlanFlags.CopiedFromActive) === FlightPlanFlags.CopiedFromActive
     );
+  }
+
+  /**
+   * Sets the climb wind entry at the specified altitude rounded to the nearest 100 feet.
+   * If the provided entry is null, the entry is deleted.
+   * @param altitude the altitude of the entry to set
+   * @param entry the entry to set, or null to delete the entry
+   * @param planIndex which flight plan index to set the entry in
+   */
+  async setClimbWindEntry(
+    altitude: number,
+    entry: FlightPlanWindEntry | null,
+    maxNumberEntries: number,
+  ): Promise<void> {
+    const originElevation = this.originAirport?.location.alt ?? 0;
+    const altitudeOrGround = altitude <= originElevation + 400 ? originElevation : altitude;
+
+    if (entry?.altitude <= originElevation + 400) {
+      entry.altitude = originElevation;
+    }
+
+    this.setClbDesWindEntry(this.performanceData.climbWindEntries.get(), altitudeOrGround, entry, maxNumberEntries);
+    // Do this so the RPC event is sent
+    this.setPerformanceData(
+      'climbWindEntries',
+      this.performanceData.climbWindEntries.get().sort((a, b) => a.altitude - b.altitude),
+    );
+  }
+
+  /**
+   * Sets the descent wind entry at the specified altitude rounded to the nearest 100 feet.
+   * If the provided entry is null, the entry is deleted.
+   * @param altitude the altitude of the entry to set
+   * @param entry the entry to set, or null to delete the entry
+   * @param planIndex which flight plan index to set the entry in
+   * @param shouldUpdateTwrWind whether to update the wind on PERF APPR as well if the altitude of the wind entry is at
+   * the destination altitude
+   */
+  async setDescentWindEntry(
+    altitude: number,
+    entry: FlightPlanWindEntry | null,
+    maxNumberEntries: number,
+    shouldUpdateTwrWind: boolean = true,
+  ): Promise<void> {
+    const destinationElevation = this.destinationAirport?.location.alt ?? 0;
+    const altitudeOrGround = altitude <= destinationElevation + 400 ? destinationElevation : altitude;
+
+    if (entry?.altitude <= destinationElevation + 400) {
+      entry.altitude = destinationElevation;
+
+      if (shouldUpdateTwrWind) {
+        // If the entry is a GRND entry (i.e within 400 ft of the destination elevation, copy it to PERF APPR too)
+        const destinationMagVar = this.destinationAirport
+          ? Facilities.getMagVar(this.destinationAirport.location.lat, this.destinationAirport.location.long)
+          : 0;
+
+        this.setPerformanceData(
+          'approachWindDirection',
+          A32NX_Util.trueToMagnetic(Vec2Math.theta(entry.vector) * MathUtils.RADIANS_TO_DEGREES, destinationMagVar),
+        );
+        this.setPerformanceData('approachWindMagnitude', Vec2Math.abs(entry.vector));
+      }
+    }
+
+    this.setClbDesWindEntry(this.performanceData.descentWindEntries.get(), altitudeOrGround, entry, maxNumberEntries);
+    // Do this so the RPC event is sent
+    this.setPerformanceData(
+      'descentWindEntries',
+      this.performanceData.descentWindEntries.get().sort((a, b) => b.altitude - a.altitude),
+    );
+  }
+
+  private setClbDesWindEntry(
+    windEntries: FlightPlanWindEntry[],
+    altitude: number,
+    entry: FlightPlanWindEntry | null,
+    maxNumberEntries: number,
+  ) {
+    const existingEntryIndex = windEntries.findIndex((it) => it.altitude === altitude);
+
+    if (entry === null) {
+      // Delete
+      if (existingEntryIndex < 0) {
+        console.error('[FPM] Attempting to delete a wind entry that does not exist');
+        return;
+      } else {
+        windEntries.splice(existingEntryIndex, 1);
+      }
+    } else {
+      if (existingEntryIndex !== -1) {
+        // Edit
+        windEntries[existingEntryIndex] = entry;
+      } else {
+        // Add
+        if (windEntries.length >= maxNumberEntries) {
+          // Special case is adding a PERF APPR wind when the maximum number of entries exists. In that case, we replace the lowest level
+          if (altitude <= windEntries[windEntries.length - 1].altitude) {
+            console.info(
+              `[FPM] Replacing ${debugFormatWindEntry(windEntries[windEntries.length - 1])} by ${debugFormatWindEntry(entry)}`,
+            );
+            windEntries[windEntries.length - 1] = entry;
+          } else {
+            console.error('[FPM] Attempting to add a wind entry when the maximum number of entries is reached');
+          }
+
+          return;
+        }
+
+        if (altitude !== entry.altitude) {
+          console.warn(
+            `[FPM] Ambiguous wind entry altitudes. Adding wind entry at altitude ${entry.altitude.toFixed(0)} ft because no entry was found at ${altitude.toFixed(0)} ft`,
+          );
+        }
+
+        windEntries.push(entry);
+      }
+    }
+  }
+
+  async deleteClimbWindEntries(): Promise<void> {
+    this.setPerformanceData('climbWindEntries', []);
+  }
+
+  async deleteDescentWindEntries(): Promise<void> {
+    this.setPerformanceData('descentWindEntries', []);
+  }
+
+  private deleteAllCruiseWindEntries(): void {
+    for (let i = 0; i < this.allLegs.length; i++) {
+      if (this.hasLegAt(i)) {
+        const leg = this.legElementAt(i);
+
+        leg.cruiseWindEntries.length = 0;
+        this.syncCruiseWindChange(i);
+      }
+    }
+  }
+
+  async setAlternateWind(entry: WindVector | null): Promise<void> {
+    this.setPerformanceData('alternateWind', entry);
+  }
+
+  hasWindEntries() {
+    return (
+      this.performanceData.climbWindEntries.get().length > 0 ||
+      this.performanceData.descentWindEntries.get().length > 0 ||
+      this.allLegs.some((el) => isLeg(el) && el.cruiseWindEntries.length > 0)
+    );
+  }
+
+  async insertWindUplink(
+    maxNumClimbWindEntries: number,
+    maxNumCruiseWindEntries: number,
+    maxNumDescentWindEntries: number,
+  ): Promise<void> {
+    if (!this.pendingWindUplink.isWindUplinkReadyToInsert()) {
+      throw new Error('[FPM] Cannot insert wind uplink when it is not ready to insert');
+    }
+
+    if (this.pendingWindUplink.climbWinds) {
+      await this.deleteClimbWindEntries();
+
+      for (const wind of this.pendingWindUplink.climbWinds) {
+        await this.setClimbWindEntry(wind.altitude, wind, maxNumClimbWindEntries);
+      }
+    }
+
+    if (this.pendingWindUplink.cruiseWinds) {
+      this.deleteAllCruiseWindEntries();
+
+      for (const fix of this.pendingWindUplink.cruiseWinds) {
+        const legIndex =
+          fix.type === 'waypoint'
+            ? this.findLegIndexByFixIdent(fix.fixIdent)
+            : this.findLegIndexByCoordinates(fix.lat, fix.long);
+
+        if (legIndex < 0) {
+          continue;
+        }
+
+        for (const wind of fix.levels) {
+          await this.addCruiseWindEntry(legIndex, wind, maxNumCruiseWindEntries);
+        }
+      }
+    }
+
+    if (this.pendingWindUplink.descentWinds) {
+      await this.deleteDescentWindEntries();
+
+      for (const wind of this.pendingWindUplink.descentWinds) {
+        await this.setDescentWindEntry(wind.altitude, wind, maxNumDescentWindEntries);
+      }
+    }
+
+    if (this.pendingWindUplink.alternateWind) {
+      await this.setAlternateWind(this.pendingWindUplink.alternateWind.vector);
+    }
+
+    this.pendingWindUplink.onUplinkInserted();
   }
 }
