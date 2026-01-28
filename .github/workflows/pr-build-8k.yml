@@ -13,6 +13,7 @@ jobs:
     name: Build and upload A380X (8K)
     permissions:
       contents: read
+      actions: write
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false && contains(join(github.event.pull_request.labels.*.name, ', '), 'pr-build-8k')
     env:
@@ -53,6 +54,7 @@ jobs:
       - name: Checkout PR source
         uses: actions/checkout@v4
         with:
+          persist-credentials: false
           ref: refs/pull/${{ github.event.pull_request.number }}/head
           submodules: recursive
       - name: Set BUILT_DATE_TIME
@@ -111,6 +113,7 @@ jobs:
       - name: Checkout trusted source
         uses: actions/checkout@v4
         with:
+          persist-credentials: false
           ref: ${{ github.event.pull_request.base.ref }}
       - name: Configure rclone for Cloudflare R2
         if: github.event.pull_request.auto_merge == false

@@ -18,6 +18,7 @@ jobs:
       - name: Checkout PR source
         uses: actions/checkout@v4
         with:
+          persist-credentials: false
           ref: refs/pull/${{ github.event.pull_request.number }}/head
       - name: install
         run: ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
@@ -36,6 +37,7 @@ jobs:
       - name: Checkout PR source
         uses: actions/checkout@v4
         with:
+          persist-credentials: false
           ref: refs/pull/${{ github.event.pull_request.number }}/head
       - name: test-rust.sh
         run: |
@@ -50,6 +52,7 @@ jobs:
       - name: Checkout PR source
         uses: actions/checkout@v4
         with:
+          persist-credentials: false
           ref: refs/pull/${{ github.event.pull_request.number }}/head
       - name: npm install
         run: ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
@@ -79,6 +82,7 @@ jobs:
       - name: Checkout PR source
         uses: actions/checkout@v4
         with:
+          persist-credentials: false
           ref: refs/pull/${{ github.event.pull_request.number }}/head
           submodules: recursive
       - name: Create .env file
@@ -130,6 +134,7 @@ jobs:
       - name: Checkout trusted source
         uses: actions/checkout@v4
         with:
+          persist-credentials: false
           ref: ${{ github.event.pull_request.base.ref }}
       - name: Configure rclone for Cloudflare R2
         if: github.event.pull_request.auto_merge == false
@@ -213,6 +218,7 @@ jobs:
       - name: Checkout PR source
         uses: actions/checkout@v4
         with:
+          persist-credentials: false
           ref: refs/pull/${{ github.event.pull_request.number }}/head
           submodules: recursive
       - name: Set BUILT_DATE_TIME
@@ -268,6 +274,7 @@ jobs:
       - name: Checkout trusted source
         uses: actions/checkout@v4
         with:
+          persist-credentials: false
           ref: ${{ github.event.pull_request.base.ref }}
       - name: Configure rclone for Cloudflare R2
         if: github.event.pull_request.auto_merge == false
