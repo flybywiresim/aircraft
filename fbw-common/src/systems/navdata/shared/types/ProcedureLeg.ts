@@ -109,6 +109,8 @@ export interface ProcedureLeg {
    * General waypoint type
    */
   waypointDescriptor?: WaypointDescriptor;
+  /** Whether the end of the leg is the engine-out branch point for the EOSID. */
+  isEngineOutBranch?: true;
 }
 
 export enum AltitudeDescriptor {
