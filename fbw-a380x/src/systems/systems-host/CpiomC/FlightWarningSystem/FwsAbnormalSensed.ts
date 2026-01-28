@@ -2998,6 +2998,7 @@ export class FwsAbnormalSensed {
       failure: 3,
       sysPage: -1,
       inopSysAllPhases: () => [],
+      cancel: false,
     },
     271800070: {
       // LOAD ANALYSIS REQUIRED

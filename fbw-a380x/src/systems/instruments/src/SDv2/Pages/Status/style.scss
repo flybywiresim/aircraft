@@ -99,6 +99,12 @@
   text-decoration: underline;
 }
 
+.WhiteLine {
+  stroke: $display-white !important;
+  stroke-width: 2;
+  fill: none;
+}
+
 .sd-sts-section-divided-area-heading {
   display: flex;
   justify-content: center;
