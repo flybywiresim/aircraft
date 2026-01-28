@@ -199,7 +199,7 @@ export class CDUVerticalRevisionPage {
       }
     }
 
-    // Disable RTA if EET insertion not possible as nothing else is simulated for the time being
+    // Disable RTA if ETT insertion not possible as nothing else is simulated for the time being
     const allowRta =
       !mainTargetPlan.isActiveOrCopiedFromActive() || mcdu.flightPhaseManager.phase === FmgcFlightPhase.Preflight;
 

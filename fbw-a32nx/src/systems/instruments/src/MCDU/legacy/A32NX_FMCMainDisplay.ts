@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023, 2025 FlyByWire Simulations
+// Copyright (c) 2021-2023, 2025-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import {
@@ -5451,12 +5451,14 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     if (phase === FmgcFlightPhase.Preflight || phase === FmgcFlightPhase.Done) {
       const ett = this.flightPlanService.active.performanceData.estimatedTakeoffTime.get();
       if (ett !== null) {
-        if (this.checkEttExpired()) {
-          this.flightPlanService.active.performanceData.estimatedTakeoffTimeExpired.set(true);
-        } else {
-          this.ettInterval = setInterval(() => {
-            this.checkEttExpired();
-          }, 1000);
+        if (this.ettInterval === null) {
+          if (this.checkEttExpired()) {
+            this.flightPlanService.active.performanceData.estimatedTakeoffTimeExpired.set(true);
+          } else {
+            this.ettInterval = setInterval(() => {
+              this.checkEttExpired();
+            }, 1000);
+          }
         }
       }
       this.addMessageToQueue(NXSystemMessages.checkToData);
@@ -5665,20 +5667,12 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         return;
       }
 
-      if (/^\d{3,6}$/.exec(text)) {
-        let minutes: number;
-        let hours: number;
-        let seconds: number = 0;
-        if (text.length <= 4) {
-          const is24H = text.length === 4;
-          hours = Number(text.slice(0, is24H ? 2 : 1));
-          minutes = Number(text.slice(-2));
-        } else {
-          hours = Number(text.slice(0, 2));
-          minutes = Number(text.slice(2, 4));
-          seconds = Number(text.slice(4));
-        }
+      const matches = /^(\d{1,2})(\d{2})(\d{0,2})$/.exec(text);
 
+      if (matches) {
+        const hours = parseInt(matches[1]);
+        const minutes = parseInt(matches[2]);
+        const seconds = matches[3] ? parseInt(matches[3]) : 0;
         if (minutes > 59 || hours > 23 || seconds > 59) {
           this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
         } else {

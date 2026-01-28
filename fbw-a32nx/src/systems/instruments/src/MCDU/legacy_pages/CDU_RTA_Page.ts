@@ -24,9 +24,9 @@ export class CduRtaPage {
     const isPreFlight = mcdu.flightPhaseManager.phase === FmgcFlightPhase.Preflight;
     const flightplan = mcdu.flightPlanService.get(forplan);
     const ett = flightplan.performanceData.estimatedTakeoffTime.get();
-    const ettExists = ett != null && !flightplan.performanceData.estimatedTakeoffTimeExpired.get();
+    const ettExists = ett !== null && !flightplan.performanceData.estimatedTakeoffTimeExpired.get();
 
-    // Regular updating due to expiration of EET
+    // Regular updating due to expiration of ETT
     if (ettExists) {
       mcdu.SelfPtr = setTimeout(() => {
         if (mcdu.page.Current === mcdu.page.RTAPage) {
