@@ -14,6 +14,8 @@ Please keep all IEs under the correct ATA chapter where they relate to aircraft 
   - [31 - Indication and Recording Systems](#31---indication-and-recording-systems)
     - [ECP Warning Input Events](#ecp-warning-input-events)
     - [ECP System Input Events](#ecp-system-input-events)
+  - [33 - Lights](#33---lights)
+    - [Overhead Lights Input Events](#overhead-lights-input-events)
 
 ## 31 - Indication and Recording Systems
 
@@ -203,3 +205,18 @@ Please keep all IEs under the correct ATA chapter where they relate to aircraft 
     - `B:A32NX_PED_ECP_ALL_PB_Push`: pushes the button
     - `B:A32NX_PED_ECP_ALL_PB_Release`: releases the button
     - `B:A32NX_PED_ECP_ALL_PB_Set`: meaningless
+
+## 33 - Lights
+
+### Overhead Lights Input Events
+
+- `B:A32NX_OVH_LIGHTS_NAV_LOGO_SW`
+  - This represents the ENG (engine page) pushbutton on the ECP.
+  - Value: boolean indicating whether the button is pressed.
+  - Bindings:
+    - `B:A32NX_PED_ECP_ENG_PB_Inc`: increments the switch position
+    - `B:A32NX_PED_ECP_ENG_PB_Dec`: decrements the switch position
+    - `B:A32NX_PED_ECP_ENG_PB_Set`: sets the switch position (0-2 as arg)
+    - `B:A32NX_PED_ECP_ENG_PB_OFF`: sets the switch to off position
+    - `B:A32NX_PED_ECP_ENG_PB_SYS_1`: sets the switch to system 1 position
+    - `B:A32NX_PED_ECP_ENG_PB_SYS_2`: sets the switch to system 2 position
