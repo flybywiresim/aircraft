@@ -2920,9 +2920,12 @@ export class PseudoFWC {
       (lgciu1GearLeverSelectDown && lgciu2GearLeverSelectDown) ||
       (lgciu1Or2DiscreteWord1Invalid && (lgciu1GearLeverSelectDown || lgciu2GearLeverSelectDown));
 
+    const gearLeverSelectDownPhase67Pulse = this.gearLeverSelectDownPhase67PulseNode.write(
+      gearLeverSelectDown && this.flightPhase67.get(),
+      deltaTime,
+    );
     this.gearNotDownlockedMemoryNode.write(
-      this.gearNotDownlocked.get() &&
-        this.gearLeverSelectDownPhase67PulseNode.write(gearLeverSelectDown && this.flightPhase67.get(), deltaTime),
+      this.gearNotDownlocked.get() && gearLeverSelectDownPhase67Pulse,
       this.fwcFlightPhase.get() === 8,
     );
 
