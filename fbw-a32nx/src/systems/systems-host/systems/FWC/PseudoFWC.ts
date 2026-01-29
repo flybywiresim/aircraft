@@ -969,6 +969,12 @@ export class PseudoFWC {
 
   private readonly lgciu2Fault = Subject.create(false);
 
+  private readonly lgciu12Fault = Subject.create(false);
+
+  private readonly lgciu1FaultWarning = Subject.create(false);
+
+  private readonly lgciu2FaultWarning = Subject.create(false);
+
   private readonly lgciu1DiscreteWord1 = Arinc429Register.empty();
 
   private readonly lgciu2DiscreteWord1 = Arinc429Register.empty();
@@ -977,6 +983,14 @@ export class PseudoFWC {
 
   private readonly lgciu2DiscreteWord2 = Arinc429Register.empty();
 
+  private readonly lgciu1DiscreteWord3 = Arinc429Register.empty();
+
+  private readonly lgciu2DiscreteWord3 = Arinc429Register.empty();
+
+  private readonly lgciu1DiscreteWord4 = Arinc429Register.empty();
+
+  private readonly lgciu2DiscreteWord4 = Arinc429Register.empty();
+
   private readonly nwSteeringDisc = Subject.create(false);
 
   private readonly parkBrake = Subject.create(false);
@@ -984,6 +998,8 @@ export class PseudoFWC {
   private readonly mainLgDownlocked = Subject.create(false);
 
   private readonly lgDownlocked = Subject.create(false);
+
+  private readonly lgNotDownlocked = Subject.create(false);
 
   private readonly gearNotDownlockedAndSelectDown = Subject.create(false);
 
@@ -1783,12 +1799,14 @@ export class PseudoFWC {
     const rightLdgLtPosition = SimVar.GetSimVarValue('L:A32NX_LANDING_3_POSITION', 'number');
     this.leftLandingLightExtended.set(leftLdgLtPosition >= 30);
     this.rightlandingLightExtended.set(rightLdgLtPosition >= 30);
-    this.lgciu1Fault.set(SimVar.GetSimVarValue('L:A32NX_LGCIU_1_FAULT', 'bool'));
-    this.lgciu2Fault.set(SimVar.GetSimVarValue('L:A32NX_LGCIU_2_FAULT', 'bool'));
     this.lgciu1DiscreteWord1.setFromSimVar('L:A32NX_LGCIU_1_DISCRETE_WORD_1');
     this.lgciu2DiscreteWord1.setFromSimVar('L:A32NX_LGCIU_2_DISCRETE_WORD_1');
     this.lgciu1DiscreteWord2.setFromSimVar('L:A32NX_LGCIU_1_DISCRETE_WORD_2');
     this.lgciu2DiscreteWord2.setFromSimVar('L:A32NX_LGCIU_2_DISCRETE_WORD_2');
+    this.lgciu1DiscreteWord3.setFromSimVar('L:A32NX_LGCIU_1_DISCRETE_WORD_3');
+    this.lgciu2DiscreteWord3.setFromSimVar('L:A32NX_LGCIU_2_DISCRETE_WORD_3');
+    this.lgciu1DiscreteWord4.setFromSimVar('L:A32NX_LGCIU_1_DISCRETE_WORD_4');
+    this.lgciu2DiscreteWord4.setFromSimVar('L:A32NX_LGCIU_2_DISCRETE_WORD_4');
     this.parkBrake.set(SimVar.GetSimVarValue('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool'));
     this.nwSteeringDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool'));
 
@@ -2860,23 +2878,48 @@ export class PseudoFWC {
     // gnd splr not armed
     const raBelow500 = this.radioHeight1.valueOr(Infinity) < 500 || this.radioHeight2.valueOr(Infinity) < 500;
 
-    // l/g downlocked
     const lgciu1Or2DiscreteWord1Invalid = this.lgciu1DiscreteWord1.isInvalid() || this.lgciu2DiscreteWord1.isInvalid();
+    const lgciu1Or2DiscreteWord2Invalid = this.lgciu1DiscreteWord2.isInvalid() || this.lgciu2DiscreteWord2.isInvalid();
+    const lgciu1Or2DiscreteWord3Invalid = this.lgciu1DiscreteWord3.isInvalid() || this.lgciu2DiscreteWord3.isInvalid();
+    const lgciu1Or2DiscreteWord4Invalid = this.lgciu1DiscreteWord4.isInvalid() || this.lgciu2DiscreteWord4.isInvalid();
 
-    const lgciu1LhGearDownlock = this.lgciu1DiscreteWord1.bitValue(23);
-    const lgciu2LhGearDownlock = this.lgciu2DiscreteWord1.bitValue(23);
+    // lgciu fault
+    this.lgciu1Fault.set(
+      this.lgciu1DiscreteWord4.bitValueOr(29, false) ||
+        this.lgciu1DiscreteWord2.bitValueOr(29, false) ||
+        (lgciu1Or2DiscreteWord1Invalid &&
+          lgciu1Or2DiscreteWord2Invalid &&
+          lgciu1Or2DiscreteWord3Invalid &&
+          lgciu1Or2DiscreteWord4Invalid),
+    );
+    this.lgciu2Fault.set(
+      this.lgciu2DiscreteWord4.bitValueOr(29, false) ||
+        this.lgciu2DiscreteWord2.bitValueOr(29, false) ||
+        (lgciu1Or2DiscreteWord1Invalid &&
+          lgciu1Or2DiscreteWord2Invalid &&
+          lgciu1Or2DiscreteWord3Invalid &&
+          lgciu1Or2DiscreteWord4Invalid),
+    );
+    this.lgciu12Fault.set(this.lgciu1Fault.get() && this.lgciu2Fault.get());
+
+    this.lgciu1FaultWarning.set(!this.lgciu12Fault.get() && this.dcESSBusPowered.get() && this.lgciu1Fault.get());
+    this.lgciu2FaultWarning.set(!this.lgciu12Fault.get() && this.dc2BusPowered.get() && this.lgciu2Fault.get());
+
+    // l/g downlocked
+    const lgciu1LhGearDownlock = this.lgciu1DiscreteWord1.bitValueOr(23, false);
+    const lgciu2LhGearDownlock = this.lgciu2DiscreteWord1.bitValueOr(23, false);
     const lhGearDownLock =
       (lgciu1LhGearDownlock && lgciu2LhGearDownlock) ||
       (lgciu1Or2DiscreteWord1Invalid && (lgciu1LhGearDownlock || lgciu2LhGearDownlock));
 
-    const lgciu1RhGearDownlock = this.lgciu1DiscreteWord1.bitValue(24);
-    const lgciu2RhGearDownlock = this.lgciu2DiscreteWord1.bitValue(24);
+    const lgciu1RhGearDownlock = this.lgciu1DiscreteWord1.bitValueOr(24, false);
+    const lgciu2RhGearDownlock = this.lgciu2DiscreteWord1.bitValueOr(24, false);
     const rhGearDownLock =
       (lgciu1RhGearDownlock && lgciu2RhGearDownlock) ||
       (lgciu1Or2DiscreteWord1Invalid && (lgciu1RhGearDownlock || lgciu2RhGearDownlock));
 
-    const lgciu1NoseGearDownlock = this.lgciu1DiscreteWord1.bitValue(25);
-    const lgciu2NoseGearDownlock = this.lgciu2DiscreteWord1.bitValue(25);
+    const lgciu1NoseGearDownlock = this.lgciu1DiscreteWord1.bitValueOr(25, false);
+    const lgciu2NoseGearDownlock = this.lgciu2DiscreteWord1.bitValueOr(25, false);
     const noseGearDownLock =
       (lgciu1NoseGearDownlock && lgciu2NoseGearDownlock) ||
       (lgciu1Or2DiscreteWord1Invalid && (lgciu1NoseGearDownlock || lgciu2NoseGearDownlock));
@@ -2884,21 +2927,30 @@ export class PseudoFWC {
     this.mainLgDownlocked.set(lhGearDownLock && rhGearDownLock);
     this.lgDownlocked.set(lhGearDownLock && rhGearDownLock && noseGearDownLock);
 
+    this.lgNotDownlocked.set(
+      (!lgciu1LhGearDownlock && !lgciu2LhGearDownlock) ||
+        (lgciu1Or2DiscreteWord1Invalid && !(lgciu1LhGearDownlock || lgciu2LhGearDownlock)) ||
+        (!lgciu1RhGearDownlock && !lgciu2RhGearDownlock) ||
+        (lgciu1Or2DiscreteWord1Invalid && !(lgciu1RhGearDownlock || lgciu2RhGearDownlock)) ||
+        (!lgciu1NoseGearDownlock && !lgciu2NoseGearDownlock) ||
+        (lgciu1Or2DiscreteWord1Invalid && !(lgciu1NoseGearDownlock || lgciu2NoseGearDownlock)),
+    );
+
     // l/g gear not downlocked
-    const lgciu1LhNotLockDownAndSelectDown = this.lgciu1DiscreteWord1.bitValue(14);
-    const lgciu2LhNotLockDownAndSelectDown = this.lgciu2DiscreteWord1.bitValue(14);
+    const lgciu1LhNotLockDownAndSelectDown = this.lgciu1DiscreteWord1.bitValueOr(14, false);
+    const lgciu2LhNotLockDownAndSelectDown = this.lgciu2DiscreteWord1.bitValueOr(14, false);
     const lhNotLockDownAndSelectDown =
       (!lgciu1Or2DiscreteWord1Invalid && lgciu1LhNotLockDownAndSelectDown && lgciu2LhNotLockDownAndSelectDown) ||
       (lgciu1Or2DiscreteWord1Invalid && (lgciu1LhNotLockDownAndSelectDown || lgciu2LhNotLockDownAndSelectDown));
 
-    const lgciu1RhNotLockDownAndSelectDown = this.lgciu1DiscreteWord1.bitValue(15);
-    const lgciu2RhNotLockDownAndSelectDown = this.lgciu2DiscreteWord1.bitValue(15);
+    const lgciu1RhNotLockDownAndSelectDown = this.lgciu1DiscreteWord1.bitValueOr(15, false);
+    const lgciu2RhNotLockDownAndSelectDown = this.lgciu2DiscreteWord1.bitValueOr(15, false);
     const rhNotLockDownAndSelectDown =
       (!lgciu1Or2DiscreteWord1Invalid && lgciu1RhNotLockDownAndSelectDown && lgciu2RhNotLockDownAndSelectDown) ||
       (lgciu1Or2DiscreteWord1Invalid && (lgciu1RhNotLockDownAndSelectDown || lgciu2RhNotLockDownAndSelectDown));
 
-    const lgciu1NoseNotLockDownAndSelectDown = this.lgciu1DiscreteWord1.bitValue(16);
-    const lgciu2NoseNotLockDownAndSelectDown = this.lgciu2DiscreteWord1.bitValue(16);
+    const lgciu1NoseNotLockDownAndSelectDown = this.lgciu1DiscreteWord1.bitValueOr(16, false);
+    const lgciu2NoseNotLockDownAndSelectDown = this.lgciu2DiscreteWord1.bitValueOr(16, false);
     const noseNotLockDownAndSelectDown =
       (!lgciu1Or2DiscreteWord1Invalid && lgciu1NoseNotLockDownAndSelectDown && lgciu2NoseNotLockDownAndSelectDown) ||
       (lgciu1Or2DiscreteWord1Invalid && (lgciu1NoseNotLockDownAndSelectDown || lgciu2NoseNotLockDownAndSelectDown));
@@ -2914,8 +2966,8 @@ export class PseudoFWC {
       ),
     );
 
-    const lgciu1GearLeverSelectDown = this.lgciu1DiscreteWord1.bitValue(29);
-    const lgciu2GearLeverSelectDown = this.lgciu2DiscreteWord1.bitValue(29);
+    const lgciu1GearLeverSelectDown = this.lgciu1DiscreteWord1.bitValueOr(29, false);
+    const lgciu2GearLeverSelectDown = this.lgciu2DiscreteWord1.bitValueOr(29, false);
     const gearLeverSelectDown =
       (lgciu1GearLeverSelectDown && lgciu2GearLeverSelectDown) ||
       (lgciu1Or2DiscreteWord1Invalid && (lgciu1GearLeverSelectDown || lgciu2GearLeverSelectDown));
@@ -2929,9 +2981,6 @@ export class PseudoFWC {
       this.fwcFlightPhase.get() === 8,
     );
 
-    const lgDown =
-      this.lgciu1DiscreteWord1.bitValueOr(29, false) ||
-      (this.lgciu2DiscreteWord1.bitValueOr(29, false) && this.mainLgDownlocked.get());
     this.phase84s5Trigger.write(this.fwcFlightPhase.get() === 8, deltaTime);
     this.groundSpoiler5sDelayed.write(
       fcdc1DiscreteWord4.bitValueOr(27, false) || fcdc2DiscreteWord4.bitValueOr(27, false),
@@ -2944,7 +2993,8 @@ export class PseudoFWC {
 
     this.groundSpoilerNotArmedWarning.set(
       raBelow500 &&
-        lgDown &&
+        gearLeverSelectDown &&
+        this.mainLgDownlocked.get() &&
         this.flightPhase67.get() &&
         !this.phase84s5Trigger.read() &&
         !this.eng1Or2TakeoffPower.get() &&
@@ -2964,12 +3014,11 @@ export class PseudoFWC {
       !this.radioHeight1.isNormalOperation() &&
       !this.radioHeight2.isNoComputedData() &&
       !this.radioHeight2.isNormalOperation();
-    const gearNotDownlocked = !this.mainLgDownlocked.get() && (!this.lgciu1Fault.get() || !this.lgciu2Fault.get());
     const below750Condition =
       this.flapsSuperiorToPositionDOrSlatsSuperiorToPositionC.get() &&
       !this.eng1Or2TakeoffPower.get() &&
       below750Ra &&
-      gearNotDownlocked;
+      this.lgNotDownlocked.get();
     const bothRaInvalid = this.radioHeight1.isFailureWarning() && this.radioHeight2.isFailureWarning();
     const bothRaInvalidOrNcd =
       (this.radioHeight1.isNoComputedData || this.radioHeight1.isFailureWarning()) &&
@@ -2978,7 +3027,7 @@ export class PseudoFWC {
       ((this.flapsSuperiorToPositionD.get() && !this.flapsSuperiorToPositionF.get() && bothRaInvalid) ||
         (this.flapsSuperiorToPositionF.get() && bothRaInvalidOrNcd)) &&
       flightPhase6 &&
-      gearNotDownlocked;
+      this.lgNotDownlocked.get();
     const lgNotDownResetPulse =
       this.lgNotDownPulse1.write(below750Condition, deltaTime) ||
       this.lgNotDownPulse2.write(flapsApprCondition, deltaTime);
@@ -2988,7 +3037,9 @@ export class PseudoFWC {
     const apprN1 =
       (n1Eng1 < 75 && n1Eng2 < 75) ||
       (n1Eng1 < 97 && n1Eng2 < 97 && !this.engine1Master.get() && !this.engine2Master.get());
-    this.lgNotDown.set(gearNotDownlocked && !altInhibit && !this.eng1Or2TakeoffPower.get() && apprN1 && below750Ra);
+    this.lgNotDown.set(
+      this.lgNotDownlocked.get() && !altInhibit && !this.eng1Or2TakeoffPower.get() && apprN1 && below750Ra,
+    );
     // goes to discrete out (RMP02B) and out word 126-11/25
     const redArrow =
       !((flightPhase6 && !bothRaInvalid) || flightPhase45) && (this.lgNotDownNoCancel.get() || this.lgNotDown.get());
@@ -5105,13 +5156,7 @@ export class PseudoFWC {
     3200180: {
       // LGCIU 1 FAULT
       flightPhaseInhib: [3, 4, 5, 7, 8],
-      simVarIsActive: MappedSubject.create(
-        ([lgciu1Fault, lgciu2Fault, dcESSBusPowered]) =>
-          lgciu1Fault && !(lgciu1Fault && lgciu2Fault) && dcESSBusPowered,
-        this.lgciu1Fault,
-        this.lgciu2Fault,
-        this.dcESSBusPowered,
-      ),
+      simVarIsActive: this.lgciu1FaultWarning,
       whichCodeToReturn: () => [0, !SimVar.GetSimVarValue('L:A32NX_GPWS_SYS_OFF', 'Bool') ? 1 : null],
       codesToReturn: ['320018001', '320018002'],
       memoInhibit: () => false,
@@ -5122,12 +5167,7 @@ export class PseudoFWC {
     3200190: {
       // LGCIU 2 FAULT
       flightPhaseInhib: [3, 4, 5, 7, 8],
-      simVarIsActive: MappedSubject.create(
-        ([lgciu1Fault, lgciu2Fault, dc2BusPowered]) => lgciu2Fault && !(lgciu1Fault && lgciu2Fault) && dc2BusPowered,
-        this.lgciu1Fault,
-        this.lgciu2Fault,
-        this.dc2BusPowered,
-      ),
+      simVarIsActive: this.lgciu2FaultWarning,
       whichCodeToReturn: () => [0],
       codesToReturn: ['320019001'],
       memoInhibit: () => false,
@@ -5139,10 +5179,8 @@ export class PseudoFWC {
       // LGCIU 1+2 FAULT
       flightPhaseInhib: [4, 5, 7, 8],
       simVarIsActive: MappedSubject.create(
-        ([lgciu1Fault, lgciu2Fault, dc2BusPowered, dcESSBusPowered]) =>
-          lgciu1Fault && lgciu2Fault && dc2BusPowered && dcESSBusPowered,
-        this.lgciu1Fault,
-        this.lgciu2Fault,
+        ([lgciu12Fault, dc2BusPowered, dcESSBusPowered]) => lgciu12Fault && dc2BusPowered && dcESSBusPowered,
+        this.lgciu12Fault,
         this.dc2BusPowered,
         this.dcESSBusPowered,
       ),

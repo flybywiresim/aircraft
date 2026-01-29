@@ -3335,8 +3335,6 @@ export class FwsCore {
 
     this.brakesHot.set(brakesHot && !this.phase815MinConfNode.read());
 
-    this.lgciu1Fault.set(SimVar.GetSimVarValue('L:A32NX_LGCIU_1_FAULT', 'bool'));
-    this.lgciu2Fault.set(SimVar.GetSimVarValue('L:A32NX_LGCIU_2_FAULT', 'bool'));
     this.lgciu1DiscreteWord1.setFromSimVar('L:A32NX_LGCIU_1_DISCRETE_WORD_1');
     this.lgciu2DiscreteWord1.setFromSimVar('L:A32NX_LGCIU_2_DISCRETE_WORD_1');
     this.lgciu1DiscreteWord2.setFromSimVar('L:A32NX_LGCIU_1_DISCRETE_WORD_2');
@@ -4694,6 +4692,8 @@ export class FwsCore {
       !this.radioHeight2.isNormalOperation() &&
       !this.radioHeight3.isNoComputedData() &&
       !this.radioHeight3.isNormalOperation();
+    this.lgciu1Fault.set(this.lgciu1DiscreteWord2.bitValueOr(29, false));
+    this.lgciu2Fault.set(this.lgciu2DiscreteWord2.bitValueOr(29, false));
     const gearNotDownlocked = !mainGearDownlocked && (!this.lgciu1Fault.get() || !this.lgciu2Fault.get());
     const below750Condition =
       this.flapsInConf3OrFull.get() &&

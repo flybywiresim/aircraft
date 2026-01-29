@@ -877,7 +877,6 @@ pub struct LandingGearControlInterfaceUnit {
     nose_gear_unlock_id: VariableIdentifier,
     right_gear_downlock_id: VariableIdentifier,
     right_gear_unlock_id: VariableIdentifier,
-    fault_ecam_id: VariableIdentifier,
 
     discrete_word_1_id: VariableIdentifier,
     discrete_word_2_id: VariableIdentifier,
@@ -939,8 +938,6 @@ impl LandingGearControlInterfaceUnit {
                 "LGCIU_{}_RIGHT_GEAR_UNLOCKED",
                 lgciu_number(lgciu_id)
             )),
-            fault_ecam_id: context
-                .get_identifier(format!("LGCIU_{}_FAULT", lgciu_number(lgciu_id))),
 
             discrete_word_1_id: context
                 .get_identifier(format!("LGCIU_{}_DISCRETE_WORD_1", lgciu_number(lgciu_id))),
@@ -1204,6 +1201,8 @@ impl LandingGearControlInterfaceUnit {
                 self.sensor_inputs.left_gear_down_and_locked
                     && self.sensor_inputs.right_gear_down_and_locked,
             );
+            // Control fault (before version 4D, control fault + proximity sensor disagree)
+            word.set_bit(29, false);
 
             word
         }
@@ -1249,6 +1248,9 @@ impl LandingGearControlInterfaceUnit {
 
             // RH flat attachment sensor valid
             word.set_bit(26, true);
+
+            // SYS fault (for version 4D and later)
+            word.set_bit(29, self.status() != LgciuStatus::Ok);
 
             word
         }
@@ -1304,8 +1306,6 @@ impl SimulationElement for LandingGearControlInterfaceUnit {
             &self.right_gear_downlock_id,
             self.is_powered && self.sensor_inputs.downlock_state(GearWheel::RIGHT),
         );
-
-        writer.write(&self.fault_ecam_id, self.status() != LgciuStatus::Ok);
 
         writer.write(&self.discrete_word_1_id, self.discrete_word_1());
         writer.write(&self.discrete_word_2_id, self.discrete_word_2());
@@ -1807,8 +1807,6 @@ mod tests {
         assert!(test_bed.contains_variable_with_name("LGCIU_2_RIGHT_GEAR_DOWNLOCKED"));
         assert!(test_bed.contains_variable_with_name("LGCIU_1_RIGHT_GEAR_UNLOCKED"));
         assert!(test_bed.contains_variable_with_name("LGCIU_2_RIGHT_GEAR_UNLOCKED"));
-        assert!(test_bed.contains_variable_with_name("LGCIU_1_FAULT"));
-        assert!(test_bed.contains_variable_with_name("LGCIU_2_FAULT"));
         assert!(test_bed.contains_variable_with_name("LGCIU_1_DISCRETE_WORD_1"));
         assert!(test_bed.contains_variable_with_name("LGCIU_2_DISCRETE_WORD_1"));
         assert!(test_bed.contains_variable_with_name("LGCIU_1_DISCRETE_WORD_2"));

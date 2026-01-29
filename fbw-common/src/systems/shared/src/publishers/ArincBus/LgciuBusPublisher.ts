@@ -38,6 +38,7 @@ interface LgciuBusBaseEvents {
       | 13  | LH gear shock absorber compressed (Don't treat GND PWR connected as on ground)      |
       | 14  | RH gear shock absorber compressed (Don't treat GND PWR connected as on ground)      |
       | 15  | LH & RH gear downlocked                                                             |
+      | 29  | Control fault                                                                           |
    */
   lgciu_discrete_word_2: number;
   /**
@@ -56,12 +57,13 @@ interface LgciuBusBaseEvents {
   lgciu_discrete_word_3: number;
   /**
    * Discrete Data word 4 of the LGCIU bus output. Raw ARINC Word.
-   *  | Bit |             Description             |
+   *  | Bit |             Description               |
       |:---:|:-----------------------------------:|
       | 21  | LH flap attachment failure detected |
       | 22  | LH flap attachment sensor valid     |
       | 25  | RH flap attachment failure detected |
       | 26  | RH flap attachment sensor valid     |
+      | 29  | SYS fault                           |
    */
   lgciu_discrete_word_4: number;
 }
