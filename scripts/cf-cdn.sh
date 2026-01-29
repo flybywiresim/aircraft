@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 RCLONE_REMOTE="cloudflare-r2"
 CDN_URL="flybywirecdn.com"
