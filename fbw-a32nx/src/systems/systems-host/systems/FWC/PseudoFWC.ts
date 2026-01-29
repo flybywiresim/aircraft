@@ -993,6 +993,10 @@ export class PseudoFWC {
 
   private readonly gearNotDownlocked = Subject.create(false);
 
+  private readonly gearLeverSelectDownPhase67PulseNode = new NXLogicPulseNode();
+
+  private readonly gearNotDownlockedMemoryNode = new NXLogicMemoryNode(true);
+
   private readonly lgNotDown = Subject.create(false);
 
   private readonly lgNotDownNoCancel = Subject.create(false);
@@ -2908,6 +2912,18 @@ export class PseudoFWC {
         this.gearNotDownlockedAndSelectDownFor30Seconds.write(this.gearNotDownlockedAndSelectDown.get(), deltaTime),
         this.lgDownlocked.get(),
       ),
+    );
+
+    const lgciu1GearLeverSelectDown = this.lgciu1DiscreteWord1.bitValue(29);
+    const lgciu2GearLeverSelectDown = this.lgciu2DiscreteWord1.bitValue(29);
+    const gearLeverSelectDown =
+      (lgciu1GearLeverSelectDown && lgciu2GearLeverSelectDown) ||
+      (lgciu1Or2DiscreteWord1Invalid && (lgciu1GearLeverSelectDown || lgciu2GearLeverSelectDown));
+
+    this.gearNotDownlockedMemoryNode.write(
+      this.gearNotDownlocked.get() &&
+        this.gearLeverSelectDownPhase67PulseNode.write(gearLeverSelectDown && this.flightPhase67.get(), deltaTime),
+      this.fwcFlightPhase.get() === 8,
     );
 
     const lgDown =
@@ -5042,7 +5058,13 @@ export class PseudoFWC {
       // GEAR NOT DOWNLOCKED
       flightPhaseInhib: [3, 4, 5, 8],
       simVarIsActive: this.gearNotDownlocked,
-      whichCodeToReturn: () => [0, 1, 2, 3, 4],
+      whichCodeToReturn: () => [
+        0,
+        !this.gearNotDownlockedMemoryNode.read() ? 1 : null,
+        !this.gearNotDownlockedMemoryNode.read() ? 2 : null,
+        3,
+        4,
+      ],
       codesToReturn: ['320014001', '320014002', '320014003', '320014004', '320014005'],
       memoInhibit: () => false,
       failure: 3,
