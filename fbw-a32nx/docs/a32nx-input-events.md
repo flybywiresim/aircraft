@@ -211,12 +211,17 @@ Please keep all IEs under the correct ATA chapter where they relate to aircraft 
 ### Overhead Lights Input Events
 
 - `B:A32NX_OVH_LIGHTS_NAV_LOGO_SW`
-  - This represents the ENG (engine page) pushbutton on the ECP.
-  - Value: boolean indicating whether the button is pressed.
+  - This represents the NAV & LOGO light switch on the overhead.
+  - Value:
+    | Mode     | Value |
+    |----------|-------|
+    | Off      | 0     |
+    | System 1 | 1     |
+    | System 2 | 2     |
   - Bindings:
-    - `B:A32NX_PED_ECP_ENG_PB_Inc`: increments the switch position
-    - `B:A32NX_PED_ECP_ENG_PB_Dec`: decrements the switch position
-    - `B:A32NX_PED_ECP_ENG_PB_Set`: sets the switch position (0-2 as arg)
-    - `B:A32NX_PED_ECP_ENG_PB_OFF`: sets the switch to off position
-    - `B:A32NX_PED_ECP_ENG_PB_SYS_1`: sets the switch to system 1 position
-    - `B:A32NX_PED_ECP_ENG_PB_SYS_2`: sets the switch to system 2 position
+    - `B:A32NX_OVH_LIGHTS_NAV_LOGO_SW_Inc`: increments the switch position
+    - `B:A32NX_OVH_LIGHTS_NAV_LOGO_SW_Dec`: decrements the switch position
+    - `B:A32NX_OVH_LIGHTS_NAV_LOGO_SW_Set`: sets the switch position (0-2 as arg)
+    - `B:A32NX_OVH_LIGHTS_NAV_LOGO_SW_OFF`: sets the switch to off position
+    - `B:A32NX_OVH_LIGHTS_NAV_LOGO_SW_SYS_1`: sets the switch to system 1 position
+    - `B:A32NX_OVH_LIGHTS_NAV_LOGO_SW_SYS_2`: sets the switch to system 2 position

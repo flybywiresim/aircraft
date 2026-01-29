@@ -4275,10 +4275,11 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
 - `L:A32NX_LIGHTS_NAV_LOGO`
   - The state of the NAV/LOGO LT switch.
   - Enum
-    Mode     | Value
-    Off      | 0
-    System 1 | 1
-    System 2 | 2
+    | Mode     | Value |
+    |----------|-------|
+    | Off      | 0     |
+    | System 1 | 1     |
+    | System 2 | 2     |
 
 ## ATC (ATA 34)
 
