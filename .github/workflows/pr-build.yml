@@ -132,6 +132,7 @@ jobs:
           mkdir -p /tmp/build-modules-a32nx
           mv ./fbw-a32nx/out/build-modules/* /tmp/build-modules-a32nx/
       - name: Checkout trusted source
+        if: github.event.pull_request.auto_merge == false
         uses: actions/checkout@v4
         with:
           persist-credentials: false
@@ -272,6 +273,7 @@ jobs:
           mkdir -p /tmp/build-modules-a380x
           mv ./fbw-a380x/out/build-modules/* /tmp/build-modules-a380x/
       - name: Checkout trusted source
+        if: github.event.pull_request.auto_merge == false
         uses: actions/checkout@v4
         with:
           persist-credentials: false
