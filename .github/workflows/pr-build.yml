@@ -153,6 +153,7 @@ jobs:
       - name: Create .env file
         run: |
           echo FBW_PRODUCTION_BUILD=1 >> fbw-a380x/.env
+          echo FBW_TYPECHECK=1 >> fbw-a380x/.env
           echo CLIENT_ID=\"${{ secrets.NAVIGRAPH_CLIENT_ID_A380X }}\" >> fbw-a380x/.env
           echo CLIENT_SECRET=\"${{ secrets.NAVIGRAPH_CLIENT_SECRET_A380X }}\" >> fbw-a380x/.env
           echo CHARTFOX_SECRET=\"${{ secrets.CHARTFOX_SECRET }}\" >> fbw-a380x/.env
