@@ -5452,11 +5452,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
     if (phase === FmgcFlightPhase.Preflight || phase === FmgcFlightPhase.Done) {
       const ett = this.flightPlanService.active.performanceData.estimatedTakeoffTime.get();
-      if (ett !== null) {
+      if (ett !== null && this.ettCheckSub.isPaused) {
         if (!this.checkEttExpired()) {
-          if (this.ettCheckSub.isPaused) {
-            this.ettCheckSub.resume();
-          }
+          this.ettCheckSub.resume();
         }
       }
       this.addMessageToQueue(NXSystemMessages.checkToData);
