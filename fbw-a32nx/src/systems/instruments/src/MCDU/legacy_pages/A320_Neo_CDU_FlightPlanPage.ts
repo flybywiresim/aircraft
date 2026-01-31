@@ -8,7 +8,7 @@ import { CDULateralRevisionPage } from './A320_Neo_CDU_LateralRevisionPage';
 import { CDUVerticalRevisionPage } from './A320_Neo_CDU_VerticalRevisionPage';
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
 import { CDUHoldAtPage } from './A320_Neo_CDU_HoldAtPage';
-import { AltitudeDescriptor, NXUnits, WaypointConstraintType } from '@flybywiresim/fbw-sdk';
+import { AltitudeDescriptor, NXUnits, WaypointConstraintType, WaypointDescriptor } from '@flybywiresim/fbw-sdk';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FlightPlanLeg, isDiscontinuity } from '@fmgc/flightplanning/legs/FlightPlanLeg';
@@ -1301,11 +1301,11 @@ function legHasAltConstraint(leg: FlightPlanLeg): boolean {
 }
 
 function legIsRunway(leg: FlightPlanLeg): boolean {
-  return leg.definition && leg.definition.waypointDescriptor === 4;
+  return leg.definition && leg.definition.waypointDescriptor === WaypointDescriptor.Runway;
 }
 
 function legIsAirport(leg: FlightPlanLeg): boolean {
-  return leg.definition && leg.definition.waypointDescriptor === 1;
+  return leg.definition && leg.definition.waypointDescriptor === WaypointDescriptor.Airport;
 }
 
 /**
