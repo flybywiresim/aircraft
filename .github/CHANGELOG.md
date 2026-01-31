@@ -69,6 +69,7 @@
 1. [A32NX/FWC] Improve CAB PR LO DIFF PR warning logic to avoid spurious warnings - @tracernz (Mike)
 1. [A32NX/FWS] Fixed stall warning not working - @tracernz (Mike)
 1. [A380X/MFD] Add initial implementation of D-ATIS page in ATCCOM - @heclak (Heclak)
+1. [FMS] Fixed an issue where the LNAV could crash after enabling the alternate flightplan - @tracernz (Mike)
 
 ## 0.14.0
 
