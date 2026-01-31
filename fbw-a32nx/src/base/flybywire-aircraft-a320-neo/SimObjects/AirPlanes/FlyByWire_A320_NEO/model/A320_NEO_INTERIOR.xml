@@ -8,12 +8,30 @@
         <!-- Highest LOD -->
         <!-- minimum display size in % (should be bounding sphere vertical screen size, sphere will often be slightly larger than you expect) -->
         <!-- default minSize is 0 -->
-        <LOD minSize="150" ModelFile="A320_NEO_INTERIOR_LOD00.gltf"/>
-        <LOD minSize="100" ModelFile="A320_NEO_INTERIOR_LOD01.gltf"/>
-        <LOD minSize="60" ModelFile="A320_NEO_INTERIOR_LOD02.gltf"/>
-        <LOD minSize="20" ModelFile="A320_NEO_INTERIOR_LOD03.gltf"/>
-        <LOD minSize="10" ModelFile="A320_NEO_INTERIOR_LOD04.gltf"/>
+        <LOD minSize="150" ModelFile="A320_NEO_INTERIOR_LOD00.gltf">
+            <AttachModel id="aicopilot_fbw_A320"/>
+        </LOD>
+        <LOD minSize="100" ModelFile="A320_NEO_INTERIOR_LOD01.gltf">
+            <AttachModel id="aicopilot_fbw_A320"/>
+        </LOD>
+        <LOD minSize="60" ModelFile="A320_NEO_INTERIOR_LOD02.gltf">
+            <AttachModel id="aicopilot_fbw_A320"/>
+        </LOD>
+        <LOD minSize="20" ModelFile="A320_NEO_INTERIOR_LOD03.gltf">
+            <AttachModel id="aicopilot_fbw_A320"/>
+        </LOD>
+        <LOD minSize="10" ModelFile="A320_NEO_INTERIOR_LOD04.gltf">
+            <AttachModel id="aicopilot_fbw_A320"/>
+        </LOD>
     </LODS>
+
+    <ModelAttachments>
+        <!-- This attachment file is overriden by FS2Crew to attach their objects to the plane. Do not use for anything else! -->
+        <ModelAttachment id="aicopilot_fbw_A320">
+            <AttachToNode>DYN_SCREEN</AttachToNode>
+            <Model>..\model.aic\aicopilot_fbw_A320.xml</Model>
+        </ModelAttachment>
+    </ModelAttachments>
 
     <Behaviors>
         <Include ModelBehaviorFile="A32NX\Interior\A32NX_Interior_Includes.xml"/>
@@ -21,6 +39,9 @@
         <Include ModelBehaviorFile="Asobo\Common.xml"/>
         <Include ModelBehaviorFile="Asobo\Airliner\GlassCockpit.xml"/>
         <Include ModelBehaviorFile="A32NX\LockHighlight.xml"/>
+
+        <!-- This attachment file is overriden by FS2Crew to attach their objects to the plane. Do not use for anything else! -->
+        <IncludeBase RelativeFile="..\model.aic\aicopilot_fbw_A320.xml"/>
 
         <!-- EFB -->
 
