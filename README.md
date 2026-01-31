@@ -27,6 +27,7 @@ The following aircraft configurations are currently simulated or targeted:
  FMS         Honeywell Release H4
  FWC Std.    H2F13
  EFIS        EIS2 S18
+ LGCIU Std.  4D
  RA          Honeywell ALA-52B
  TAWS        Honeywell EGPWS
  ACAS        Honeywell TPA-100B
