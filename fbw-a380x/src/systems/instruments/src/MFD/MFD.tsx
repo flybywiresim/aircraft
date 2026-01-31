@@ -33,6 +33,7 @@ import { MfdFmsPageNotAvail } from 'instruments/src/MFD/pages/FMS/MfdFmsPageNotA
 
 import './pages/common/style.scss';
 import { InteractionMode } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
+import { AtcDatalinkSystem } from './ATCCOM/AtcDatalinkSystem';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 
 export const getDisplayIndex = () => {
@@ -47,9 +48,17 @@ export interface AbstractMfdPageProps extends ComponentProps {
   fmcService: FmcServiceInterface;
 }
 
+export interface AtccomMfdPageProps extends ComponentProps {
+  pageTitle?: string;
+  bus: EventBus;
+  mfd: MfdDisplayInterface;
+  atcService: AtcDatalinkSystem;
+}
+
 interface MfdComponentProps extends ComponentProps {
   bus: EventBus;
   fmcService: FmcServiceInterface;
+  atcService: AtcDatalinkSystem;
   captOrFo: 'CAPT' | 'FO';
 }
 
@@ -327,9 +336,16 @@ export class MfdComponent
         this.props.bus,
         this,
         this.props.fmcService,
+        this.props.atcService,
       );
     } else {
-      this.activePage = pageForUrl(`${uri.sys}/${uri.category}`, this.props.bus, this, this.props.fmcService);
+      this.activePage = pageForUrl(
+        `${uri.sys}/${uri.category}`,
+        this.props.bus,
+        this,
+        this.props.fmcService,
+        this.props.atcService,
+      );
     }
 
     FSComponent.render(this.activeHeader, this.activeHeaderRef.getOrDefault());
