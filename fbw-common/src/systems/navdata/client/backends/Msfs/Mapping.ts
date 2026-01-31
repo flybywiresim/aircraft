@@ -1203,15 +1203,24 @@ export class MsfsMapping {
           : undefined;
 
     let magVar = leg.trueDegrees ? null : Facilities.getMagVar(airport.lat, airport.lon);
-    if (!leg.trueDegrees && leg.fixIcao[0] === 'V') {
-      const navaid = await this.cache.getFacility(leg.fixIcao, LoadType.Vor);
-      if (navaid && !navaid.trueReferenced) {
-        magVar = MathUtils.normalise180(360 - navaid.magneticVariation);
-      } else if (navaid) {
-        console.warn(
-          `[MsfsMapping.mapLeg] ${procedureIdent} leg ${legIndex} is not true referenced but the waypoint navaid is!`,
-        );
-        magVar = null;
+    if (!leg.trueDegrees) {
+      let magVarIcao: string | undefined;
+      if (leg.fixIcao[0] === 'V') {
+        magVarIcao = leg.fixIcao;
+      } else if (leg.originIcao[0] === 'V') {
+        magVarIcao = leg.originIcao;
+      }
+
+      if (magVarIcao !== undefined) {
+        const navaid = await this.cache.getFacility(magVarIcao, LoadType.Vor);
+        if (navaid && !navaid.trueReferenced) {
+          magVar = MathUtils.normalise180(360 - navaid.magneticVariation);
+        } else if (navaid) {
+          console.warn(
+            `[MsfsMapping.mapLeg] ${procedureIdent} leg ${legIndex} is not true referenced but the waypoint navaid is!`,
+          );
+          magVar = null;
+        }
       }
     }
 
