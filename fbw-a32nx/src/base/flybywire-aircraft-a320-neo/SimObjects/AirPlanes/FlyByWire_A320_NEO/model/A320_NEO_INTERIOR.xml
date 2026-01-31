@@ -22,6 +22,198 @@
         <Include ModelBehaviorFile="Asobo\Airliner\GlassCockpit.xml"/>
         <Include ModelBehaviorFile="A32NX\LockHighlight.xml"/>
 
+        <!-- HUD -->
+
+        <Component ID="HUD_KNOB_INTEG">
+            <Parameters Type="Default">
+                <POTENTIOMETER>84</POTENTIOMETER>
+                <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
+            </Parameters>
+
+            <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
+                <NODE_ID>KNOB_EFIS_HUD_L_BRIGHTNESS</NODE_ID>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
+                <NODE_ID>KNOB_EFIS_HUD_R_BRIGHTNESS</NODE_ID>
+            </UseTemplate>
+        </Component>
+
+        <Component ID="Hud_Dome_Lights" >
+            <!-- CPT DOME LT -->
+            <UseTemplate Name="ASOBO_LIGHTING_Cabin_Emissive_Template">
+                <NODE_ID>HUD_L_PROJ_FLOOD_LIGHT</NODE_ID>
+                <POTENTIOMETER>7</POTENTIOMETER>
+                <FAILURE>1</FAILURE>
+                <SIMVAR_INDEX>1</SIMVAR_INDEX>
+                <EMISSIVE_CODE>(L:A32NX_ELEC_DC_GND_FLT_SVC_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
+            </UseTemplate>
+
+            <!-- F/O DOME LT -->
+            <UseTemplate Name="ASOBO_LIGHTING_Cabin_Emissive_Template">
+                <NODE_ID>HUD_R_PROJ_FLOOD_LIGHT</NODE_ID>
+                <POTENTIOMETER>7</POTENTIOMETER>
+                <FAILURE>1</FAILURE>
+                <SIMVAR_INDEX>2</SIMVAR_INDEX>
+                <NO_SIMVAR_LIGHT/>
+                <EMISSIVE_CODE>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
+            </UseTemplate>
+        </Component>
+
+            <!-- CPT BTNS -->
+        <Component ID="Hud_Panel_Left" >
+            <!-- placeholder for hud panel decals -->
+            <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
+                <NODE_ID>LIGHTS_HUD</NODE_ID>
+                <SIMVAR_INDEX>2</SIMVAR_INDEX>
+                <POTENTIOMETER>84</POTENTIOMETER>
+                <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
+            </UseTemplate>
+
+            <!-- CPT HUD BRIGHTNESS -->
+            <UseTemplate Name="FBW_Stepless_Potentiometer">
+                <NODE_ID>KNOB_EFIS_HUD_L_BRIGHTNESS</NODE_ID>
+                <ANIMTIP_0>HUD Brightness Decrease</ANIMTIP_0>
+                <ANIMTIP_1>HUD Brightness Increase</ANIMTIP_1>
+                <POTENTIOMETER>71</POTENTIOMETER>
+            </UseTemplate>
+
+            <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                <NODE_ID>HUD_SCREEN_L_TEX</NODE_ID>
+                <POTENTIOMETER>71</POTENTIOMETER>
+                <PART_ID>HUD_SCREEN_L_TEX</PART_ID>
+                <CAMERA_TITLE>HUD</CAMERA_TITLE>
+                <EMISSIVE_CODE>12</EMISSIVE_CODE>
+            </UseTemplate>
+
+            <!-- XWIND MODE -->
+            <UseTemplate Name="FBW_HANDLING_Switch_Hud_Xwind_Template">
+                <SIDE>L</SIDE>
+                <NODE_ID>SWITCH_EFIS_HUD_L_XWIND</NODE_ID>
+                <PART_ID>SWITCH_EFIS_HUD_L_XWIND</PART_ID>
+                <ANIM_NAME>SWITCH_EFIS_HUD_L_XWIND</ANIM_NAME>
+                <ANIMTIP_0>Turn HUD Crosswind mode ON</ANIMTIP_0>
+                <ANIMTIP_1>Turn HUD Crosswind mode OFF</ANIMTIP_1>
+            </UseTemplate>
+
+            <!-- DECLUTTER MODE -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
+                <NODE_ID>PUSH_EFIS_HUD_L_DECLUTTER</NODE_ID>
+                <LEFT_SINGLE_CODE>1 (L:A32NX_HUD_L_DECLUTTER_MODE, Number) + 3 % (&gt;L:A32NX_HUD_L_DECLUTTER_MODE)</LEFT_SINGLE_CODE>
+                <MOMENTARY />
+                <NO_SEQ1 />
+                <NO_SEQ2 />
+                <ROUND />
+            </UseTemplate>
+        </Component>
+
+        <!-- FO BTNS -->
+
+        <Component ID="Hud_Panel_Right" >
+            <!-- FO HUD BRIGHTNESS -->
+            <UseTemplate Name="FBW_Stepless_Potentiometer">
+                <NODE_ID>KNOB_EFIS_HUD_R_BRIGHTNESS</NODE_ID>
+                <PART_ID>KNOB_EFIS_HUD_R_BRIGHTNESS</PART_ID>
+                <ANIMTIP_0>HUD Brightness Decrease</ANIMTIP_0>
+                <ANIMTIP_1>HUD Brightness Increase</ANIMTIP_1>
+                <POTENTIOMETER>72</POTENTIOMETER>
+            </UseTemplate>
+
+            <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                <NODE_ID>HUD_SCREEN_R_TEX</NODE_ID>
+                <POTENTIOMETER>72</POTENTIOMETER>
+                <PART_ID>HUD_SCREEN_R_TEX</PART_ID>
+                <CAMERA_TITLE>HUD2</CAMERA_TITLE>
+                <EMISSIVE_CODE>12</EMISSIVE_CODE>
+            </UseTemplate>
+
+            <!-- XWIND MODE -->
+            <UseTemplate Name="FBW_HANDLING_Switch_Hud_Xwind_Template">
+                <SIDE>R</SIDE>
+                <NODE_ID>SWITCH_EFIS_HUD_R_XWIND</NODE_ID>
+                <PART_ID>SWITCH_EFIS_HUD_R_XWIND</PART_ID>
+                <ANIM_NAME>SWITCH_EFIS_HUD_R_XWIND</ANIM_NAME>
+                <ANIMTIP_0>Turn HUD Crosswind mode ON</ANIMTIP_0>
+                <ANIMTIP_1>Turn HUD Crosswind mode OFF</ANIMTIP_1>
+            </UseTemplate>
+
+            <!-- DECLUTTER MODE -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
+                <NODE_ID>PUSH_EFIS_HUD_R_DECLUTTER</NODE_ID>
+                <LEFT_SINGLE_CODE>1 (L:A32NX_HUD_R_DECLUTTER_MODE, Number) + 3 % (&gt;L:A32NX_HUD_R_DECLUTTER_MODE)</LEFT_SINGLE_CODE>
+                <MOMENTARY/>
+                <NO_SEQ1/>
+                <NO_SEQ2/>
+                <ROUND/>
+            </UseTemplate>
+        </Component>
+
+        <!-- HUD MODEL -->
+
+        <Component ID="ARM1_L" Node="ARM1_L">
+            <UseTemplate Name="ASOBO_GT_Anim_Code">
+                <NODE_ID>ARM1_L</NODE_ID>
+                <ANIM_NAME>ARM1_L</ANIM_NAME>
+                <ANIM_CODE>(L:A320_Neo_HUD_L_POS) 100 *</ANIM_CODE>
+                <ANIM_LENGTH>50</ANIM_LENGTH>
+                <ANIM_LAG>40</ANIM_LAG>
+            </UseTemplate>
+        </Component>
+
+        <Component ID="ARM1_LOCK_L" Node="ARM1_LOCK_L">
+                <UseTemplate Name="ASOBO_GT_Switch_Dummy">
+                    <NODE_ID>ARM1_LOCK_L</NODE_ID>
+                    <ANIM_NAME>ARM1_LOCK_L</ANIM_NAME>
+                    <ANIM_LENGTH>50</ANIM_LENGTH>
+                    <ANIM_LAG>40</ANIM_LAG>
+                    <LEFT_SINGLE_CODE>(&gt;H:A320_Neo_HUD_L_POS)</LEFT_SINGLE_CODE>
+                </UseTemplate>
+        </Component>
+
+        <Component ID="HUD_SCREEN_FRAME_L" Node="HUD_SCREEN_FRAME_L">
+            <UseTemplate Name="ASOBO_GT_Anim_Code">
+                <NODE_ID>HUD_SCREEN_FRAME_L</NODE_ID>
+                <ANIM_NAME>HUD_SCREEN_FRAME_L</ANIM_NAME>
+                <ANIM_CODE>(L:A320_Neo_HUD_L_POS) 100 *</ANIM_CODE>
+                <ANIM_LENGTH>50</ANIM_LENGTH>
+                <ANIM_LAG>40</ANIM_LAG>
+            </UseTemplate>
+        </Component>
+
+        <Component ID="ARM1_R" Node="ARM1_R">
+            <UseTemplate Name="ASOBO_GT_Anim_Code">
+                <NODE_ID>ARM1_R</NODE_ID>
+                <ANIM_NAME>ARM1_R</ANIM_NAME>
+                <ANIM_CODE>(L:A320_Neo_HUD_R_POS) 100 *</ANIM_CODE>
+                <ANIM_LENGTH>50</ANIM_LENGTH>
+                <ANIM_LAG>40</ANIM_LAG>
+            </UseTemplate>
+        </Component>
+
+        <Component ID="ARM1_LOCK_R" Node="ARM1_LOCK_R">
+                <UseTemplate Name="ASOBO_GT_Switch_Dummy">
+                    <NODE_ID>ARM1_LOCK_R</NODE_ID>
+                    <ANIM_NAME>ARM1_LOCK_R</ANIM_NAME>
+                    <ANIM_LENGTH>50</ANIM_LENGTH>
+                    <ANIM_LAG>40</ANIM_LAG>
+                    <LEFT_SINGLE_CODE>(&gt;H:A320_Neo_HUD_R_POS)</LEFT_SINGLE_CODE>
+                </UseTemplate>
+        </Component>
+
+
+        <Component ID="HUD_SCREEN_FRAME_R" Node="HUD_SCREEN_FRAME_R">
+            <UseTemplate Name="ASOBO_GT_Anim_Code">
+                <NODE_ID>HUD_SCREEN_FRAME_R</NODE_ID>
+                <ANIM_NAME>HUD_SCREEN_FRAME_R</ANIM_NAME>
+                <ANIM_CODE>(L:A320_Neo_HUD_R_POS) 100 *</ANIM_CODE>
+                <ANIM_LENGTH>50</ANIM_LENGTH>
+                <ANIM_LAG>40</ANIM_LAG>
+            </UseTemplate>
+        </Component>
+
         <!-- EFB -->
 
         <Component ID="EFB_L">
@@ -819,13 +1011,14 @@
                         <NODE_ID>KNOB_EFIS_CS_PFD</NODE_ID>
                     </UseTemplate>
                     <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
+                        <NODE_ID>KNOB_EFIS_CS_LOUDSPKR</NODE_ID>
+                    </UseTemplate>
+
+                    <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
                         <NODE_ID>KNOB_EFIS_CS_ND</NODE_ID>
                     </UseTemplate>
                     <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
                         <NODE_ID>KNOB_EFIS_CS_ND_SMALL</NODE_ID>
-                    </UseTemplate>
-                    <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
-                        <NODE_ID>KNOB_EFIS_CS_LOUDSPKR</NODE_ID>
                     </UseTemplate>
                 </Component>
 
@@ -3642,6 +3835,7 @@
                                 <PART_ID>PUSH_OVHD_RCDR_TEST</PART_ID>
                                 <HOLD_SIMVAR>L:A32NX_RCDR_TEST</HOLD_SIMVAR>
                                 <TOOLTIPID>Test CVR</TOOLTIPID>
+
                             </UseTemplate>
                         </Component>
 
@@ -3692,6 +3886,7 @@
                         </Component>
 
                         <Component ID="CALLS">
+
                             <!-- CALLS MECH -->
                             <UseTemplate Name="FBW_Anim_Interactions">
                                 <ANIM_TYPE>BUTTON_HELD</ANIM_TYPE>

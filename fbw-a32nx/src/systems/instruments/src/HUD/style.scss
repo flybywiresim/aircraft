@@ -1,0 +1,357 @@
+@import "./shared/definitions";
+@import "animations";
+
+@font-face {
+  font-family: "Ecam";
+  //noinspection CssUnknownTarget
+  src: url("/Fonts/fbw-a32nx/ECAMFontRegular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+
+.debug{
+  fill:none;
+  stroke:red;
+  stroke-width: 3px;
+}
+
+
+.hud-svg {
+  position: absolute;
+  width: 1280x;
+  height: 1024px;
+  background: $display-background;
+  font-family: "Ecam", monospace !important;
+}
+
+.PulseCyanFill {
+  @include GenericPulsingFill($display-cyan, pulse-cyan-fill);
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
+}
+
+.PulseAmber9Seconds {
+  @include GenericPulsingFill($display-amber, pulse-amber-fill);
+  animation-duration: 1s;
+  animation-iteration-count: 9;
+}
+
+.Wind text{
+  fill: $display-green;
+  stroke: none;
+}
+
+.BarAmber {
+  fill: $display-amber;
+  stroke: $display-amber;
+  stroke-width: 0.13px;
+}
+.BarRed {
+  fill: $display-red;
+  stroke: $display-red;
+  stroke-width: 0.11px;
+}
+.BarGreenThin {
+  fill: $display-green;
+  stroke: $display-green;
+  stroke-width: 0.13px;
+}
+.BarGreen {
+  fill: $display-green;
+  stroke: $display-green;
+  stroke-width: 0.37px;
+}
+
+.SmallStroke {
+  stroke-width: 0.3mm;
+  stroke-linecap: round;
+}
+
+.NormalStroke {
+  stroke-width: 0.5mm;   //// .16
+  stroke-linecap: round;
+}
+
+.ThickStroke {
+  stroke-width: 0.6mm;
+  stroke-linecap: round;
+}
+
+.HugeStroke {
+  stroke-width: 0.7mm;
+  stroke-linecap: round;
+}
+
+.ScaledStroke {
+  stroke-width: 0.2mm;
+  stroke-linecap: square;
+}
+.ScaledStrokeThin {
+  stroke-width: 0.05mm;
+  stroke-linecap: square;
+}
+.SmallOutline {
+  stroke-width: 0.09mm;
+  stroke: $display-background !important;
+  paint-order: markers stroke fill;
+}
+.NormalOutline {
+  stroke-width: 0.21mm;
+  stroke: $display-background;
+  fill: none;
+  stroke-linecap: round;
+}
+.ThickOutline {
+  stroke-width: 0.29mm;
+  stroke: $display-background;
+  fill: none;
+  stroke-linecap: round;
+}
+.HugeOutline {
+  stroke-width: 0.15mm;
+  stroke: $display-background;
+  fill: none;
+  stroke-linecap: round;
+}
+
+.CornerRound {
+  stroke-linejoin: round;
+}
+
+.TextOutline {
+  paint-order: stroke fill markers;
+
+  stroke-width: 0.05mm;
+  stroke: $display-background !important;
+}
+
+.FontLargest {
+  font-size: 30px;
+}
+
+.FontLarge {
+  font-size: 28px;
+}
+
+.FontNormal {
+  font-size: 26px;
+}
+
+.FontMedium {
+  font-size: 24px;
+}
+
+.FontMediumSmaller {
+  font-size: 22px;
+}
+
+.FontMediumSmallest {
+  font-size: 20px;
+}
+
+.FontSmall {
+  font-size: 18px;
+}
+
+.FontSmallest {
+  font-size: 16px;
+}
+
+.FontTiny {
+  font-size: 14px;
+}
+
+.StartAlign {
+  text-align: start;
+  text-anchor: start;
+}
+.MiddleAlign {
+  text-align: center;
+  text-anchor: middle;
+}
+.EndAlign {
+  text-align: end;
+  text-anchor: end;
+}
+
+.Magenta {
+  fill: none;
+  stroke: $display-green;
+}
+text.Magenta {
+  fill: $display-green;
+  stroke: none;
+}
+
+.Cyan {
+  fill: none;
+  stroke: $display-cyan;
+}
+text.Cyan {
+  fill: $display-green;
+  stroke: none;
+}
+tspan.Cyan {
+  fill: $display-green;
+  stroke: none;
+}
+
+tspan.Green {
+  fill: $display-green;
+  stroke: none;
+}
+.None {
+  fill: none;
+  stroke: none;
+}
+
+.White {
+  fill: none;
+  stroke: $display-white;
+}
+.White.Fill {
+  fill: $display-white;
+  stroke: none;
+}
+text.White {
+  fill: $display-green;
+  stroke: none;
+}
+
+.Green {
+  stroke: $display-green;
+  fill: none;
+}
+
+.Green.Fill {
+  fill: $display-green;
+  stroke: $display-green;
+}
+
+text.Green {
+  fill: $display-green;
+  stroke: none;
+}
+
+.Amber {
+  stroke: $display-green;
+  fill: none;
+}
+.Amber.Fill {
+  fill: $display-green;
+  stroke: none;
+}
+text.Amber {
+  fill: $display-green;
+  stroke: none;
+}
+
+.Yellow {
+  stroke: $display-green;
+  fill: none;
+}
+.Yellow.Fill {
+  fill: $display-green;
+  stroke: none;
+}
+text.Yellow {
+  fill: $display-green;
+  stroke: none;
+}
+
+.Red {
+  stroke: $display-green;
+  fill: none;
+}
+.Red.Fill {
+  fill: $display-green;
+  stroke: none;
+}
+text.Red {
+  fill: $display-green;
+  stroke: none;
+}
+
+.Grey {
+  stroke: $display-grey;
+  fill: none;
+}
+
+.EarthFill {
+  fill: #9c480c;
+}
+.SkyFill {
+  fill: #0698ff;
+}
+.BlackFill {
+  fill: $display-background;
+}
+
+.TapeBackground {
+  fill: $display-grey;
+  stroke: none;
+}
+.BackgroundFill {
+  fill: $display-background;
+  stroke: none;
+  fill-rule: evenodd;
+}
+.ReadoutBackgroundFill {
+  fill: $display-background;
+  stroke: $display-green;
+  stroke-width: .2mm;
+  fill-rule: evenodd;
+}
+.ModeChangedPath {
+  visibility: visible !important;
+}
+
+.HiddenElement {
+  display: none;
+}
+.GreenFill{
+  fill: #00ff0080;
+}
+.GreenFill2{
+  fill: rgba(0, 255, 0, 0.3);
+}
+.InverseGreen{
+  stroke: #000000;
+}
+.Test{
+  fill: #ff000080;
+  stroke: #ff0000
+}
+.Test{
+  stroke: #ff0000;
+}
+
+.noFill{
+  fill: none;
+}
+
+.blue{
+  stroke: blue;
+  fill: #0000ff80;
+  stroke-width: 2px;
+}
+.yellow{
+  stroke: yellow;
+  fill: rgba(255, 255, 0, 0.144);
+  stroke-width: .5px;
+}
+.purple{
+  stroke: purple;
+  fill: purple;
+  stroke-width: 2px;
+}
+.red{
+  stroke: red;
+  fill: red;
+  stroke-width: 2px;
+}
+
+.DEBUG{
+  display: none;
+}
