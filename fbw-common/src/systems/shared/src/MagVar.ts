@@ -65,7 +65,10 @@ export class MagVar {
    * @returns The magnetic course in degrees if available, null if true referenced, or undefined if the leg has no course defined.
    */
   public static getLegMagneticCourse(leg: ProcedureLeg): number | null | undefined {
-    return leg.magVar === null ? null : leg.magneticCourse;
+    if (leg.course === undefined) {
+      return undefined;
+    }
+    return leg.magVar === null ? null : leg.course;
   }
 
   /**
@@ -74,10 +77,10 @@ export class MagVar {
    * @returns The true course in degrees, or undefined if the leg has no course defined.
    */
   public static getLegTrueCourse(leg: ProcedureLeg): number | undefined {
-    if (leg.magneticCourse === undefined) {
+    if (leg.course === undefined) {
       return undefined;
     }
-    return leg.magVar === null ? leg.magneticCourse : MagVar.magneticToTrue(leg.magneticCourse, leg.magVar);
+    return leg.magVar === null ? leg.course : MagVar.magneticToTrue(leg.course, leg.magVar);
   }
 
   /**
