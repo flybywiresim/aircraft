@@ -269,6 +269,8 @@ export const FwsAuralsList: Record<string, FwsAural> = {
   },
 };
 
+const MutableSounds = [FwsAuralsList.cavalryChargeOnce, FwsAuralsList.cavalryChargeCont];
+
 // FIXME Not all sounds are added to this yet (e.g. CIDS chimes), consider adding them in the future
 // Also, single chimes are not filtered (in RL only once every two seconds)
 export class FwsSoundManager {
@@ -280,6 +282,8 @@ export class FwsSoundManager {
 
   /** in seconds */
   private currentSoundPlayTimeRemaining = 0;
+
+  private manualAudioInhibition = false;
 
   constructor(
     private readonly bus: EventBus,
@@ -296,6 +300,15 @@ export class FwsSoundManager {
     const sub = this.bus.getSubscriber<FwsSoundManagerControlEvents>();
     sub.on('enqueueSound').handle((s) => this.enqueueSound(s));
     sub.on('dequeueSound').handle((s) => this.dequeueSound(s));
+  }
+
+  getCurrentSoundPlaying(): keyof typeof FwsAuralsList | null {
+    return this.currentSoundPlaying;
+  }
+
+  /** Inhibit starting any new broadcasts (MAI). */
+  setManualAudioInhibition(inhibit: boolean) {
+    this.manualAudioInhibition = inhibit;
   }
 
   /** Add sound to queue. Don't add if already playing */
@@ -387,6 +400,11 @@ export class FwsSoundManager {
       }
     });
 
+    // TODO: Once all sounds are mutable, this.manualAudioInhibition shouldn't be needed anymore
+    if (this.manualAudioInhibition && selectedSoundKey && !MutableSounds.includes(FwsAuralsList[selectedSoundKey])) {
+      return null;
+    }
+
     if (selectedSoundKey) {
       this.playSound(selectedSoundKey);
       return selectedSoundKey;
@@ -432,17 +450,18 @@ export class FwsSoundManager {
       // Interrupt if sound with higher category is present in queue and current sound is continuous
       let shouldInterrupt = false;
       let rescheduleSound: keyof typeof FwsAuralsList | null = null;
-      this.soundQueue.forEach((sk) => {
-        const s = FwsAuralsList[sk];
-        if (
-          s &&
-          this.currentSoundPlaying &&
-          FwsAuralsList[this.currentSoundPlaying]?.continuous &&
-          s.type > FwsAuralsList[this.currentSoundPlaying].type
-        ) {
-          shouldInterrupt = true;
-        }
-      });
+      const currentSound = this.currentSoundPlaying ? FwsAuralsList[this.currentSoundPlaying] : undefined;
+      if (currentSound?.continuous) {
+        this.soundQueue.forEach((sk) => {
+          const s = FwsAuralsList[sk];
+          if (
+            s &&
+            (s.type > currentSound.type || (s.type === currentSound.type && s.priority > currentSound.priority))
+          ) {
+            shouldInterrupt = true;
+          }
+        });
+      }
 
       if (shouldInterrupt) {
         if (this.currentSoundPlaying && FwsAuralsList[this.currentSoundPlaying]?.continuous) {
