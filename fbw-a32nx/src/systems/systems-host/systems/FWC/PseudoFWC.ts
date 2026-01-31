@@ -45,6 +45,7 @@ import { A32NXFcuBusEvents } from '../../../shared/src/publishers/A32NXFcuBusPub
 import { FwsSoundManager } from 'systems-host/systems/FWC/FwsSoundManager';
 import { PseudoFwcSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
 import { A32NXEcpBusEvents } from '@shared/publishers/A32NXEcpBusPublisher';
+import { A32NXFacBusEvents } from '@shared/publishers/A32NXFacBusPublisher';
 
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));
@@ -99,6 +100,7 @@ export class PseudoFWC {
       A32NXEcpBusEvents &
       A32NXElectricalSystemEvents &
       A32NXFcuBusEvents &
+      A32NXFacBusEvents &
       KeyEvents &
       PseudoFwcSimvars &
       StallWarningEvents
@@ -347,6 +349,14 @@ export class PseudoFWC {
 
   /* 22 - AUTOFLIGHT */
 
+  private readonly fac1DiscreteWord3 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_fac_discrete_word_3_1'),
+  );
+
+  private readonly fac2DiscreteWord3 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a32nx_fac_discrete_word_3_2'),
+  );
+
   private readonly toConfigAndNoToSpeedsPulseNode = new NXLogicPulseNode();
 
   /** TO speeds not inserted RS */
@@ -555,6 +565,18 @@ export class PseudoFWC {
   public readonly capabilityChangeConfNode1 = new NXLogicConfirmNode(0.3, true);
 
   public readonly capabilityChange = Subject.create(false);
+
+  // PITCH PITCH Auto Callout
+  public readonly pitchPitchFlipFlop = new NXLogicMemoryNode(true);
+
+  public readonly pitchPitchActive = Subject.create(false);
+
+  // Low Energy Warning Auto Callout
+  public readonly lowEnergyMtrig1 = new NXLogicTriggeredMonostableNode(3, true);
+
+  public readonly lowEnergyMtrig2 = new NXLogicTriggeredMonostableNode(6, true);
+
+  public readonly lowEnergyWarningActive = Subject.create(false);
 
   /** TO CONF pressed in phase 2 or 3 SR */
   private toConfigCheckedInPhase2Or3 = false;
@@ -1393,6 +1415,13 @@ export class PseudoFWC {
 
     this.cChordActive.sub((cChord) => this.soundManager.handleSoundCondition('cChordCont', cChord), true);
 
+    this.pitchPitchActive.sub((active) => this.soundManager.handleSoundCondition('pitchPitch', active), true);
+
+    this.lowEnergyWarningActive.sub(
+      (active) => this.soundManager.handleSoundCondition('speedSpeedSpeed', active),
+      true,
+    );
+
     this.masterCaution.sub((caution) => {
       // Inhibit master warning/cautions until FWC startup has been completed
       SimVar.SetSimVarValue('L:A32NX_MASTER_CAUTION', 'bool', this.startupCompleted.get() ? caution : false);
@@ -2077,6 +2106,34 @@ export class PseudoFWC {
     this.autoThrustLimitedDelayNode = this.autoThrustLimitedMtrigNode.read();
 
     this.autoThrustLimited.set(this.autoThrustLimitedConfNode.read() && this.autoThrustLimitedMtrigNode.read());
+
+    // PITCH PITCH Auto Callout
+    const pitchPitchGenerated = this.soundManager.getCurrentSoundPlaying() == 'pitchPitch';
+    const pitchPitchRequested =
+      this.fac1DiscreteWord3.get().bitValueOr(15, false) || this.fac2DiscreteWord3.get().bitValueOr(15, false);
+    const pitchPitchInhibition = false;
+    const raBelow50 = this.radioHeight1.valueOr(100) < 50 || this.radioHeight2.valueOr(100) < 50;
+    const pitchPitchCondition = pitchPitchRequested && (flightPhase == 8 || (raBelow50 && this.flightPhase67.get()));
+    this.pitchPitchFlipFlop.write(pitchPitchGenerated, !pitchPitchRequested);
+
+    this.pitchPitchActive.set(!this.pitchPitchFlipFlop.read() && !pitchPitchInhibition && pitchPitchCondition);
+
+    // Low Energy Warning Auto Callout
+    const lowEnergyDetected =
+      this.fac1DiscreteWord3.get().bitValueOr(11, false) || this.fac2DiscreteWord3.get().bitValueOr(11, false);
+    this.lowEnergyMtrig1.write(lowEnergyDetected, deltaTime);
+
+    const speedGenerated = this.soundManager.getCurrentSoundPlaying() == 'speedSpeedSpeed';
+    this.lowEnergyMtrig2.write(speedGenerated, deltaTime);
+
+    const lowEnergyInhibition = false;
+
+    this.lowEnergyWarningActive.set(
+      flightPhase567 &&
+        (this.lowEnergyMtrig1.read() || lowEnergyDetected) &&
+        !this.lowEnergyMtrig2.read() &&
+        !lowEnergyInhibition,
+    );
 
     // AUTO BRAKE OFF
     this.autobrakeDeactivatedPulseNode.write(
