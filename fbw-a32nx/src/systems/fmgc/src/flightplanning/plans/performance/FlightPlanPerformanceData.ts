@@ -1248,7 +1248,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
   /**
    * Indicates whether the estimated takeoff time has expired.
    */
-  readonly estimatedTakeoffTimeExpired = Subject.create(false);
+  readonly estimatedTakeoffTimeExpired = Subject.create<boolean | null>(null);
 
   serialize(): SerializedFlightPlanPerformanceData {
     return {
@@ -1413,7 +1413,7 @@ export interface SerializedFlightPlanPerformanceData {
   approachRadioMinimum: 'NO DH' | number | null;
   approachFlapsThreeSelected: boolean;
   estimatedTakeoffTime: number | null;
-  estimatedTakeoffTimeExpired: boolean;
+  estimatedTakeoffTimeExpired: boolean | null;
 }
 
 // FIXME move to AMI database
