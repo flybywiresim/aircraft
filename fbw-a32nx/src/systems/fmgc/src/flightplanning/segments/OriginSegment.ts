@@ -1,5 +1,4 @@
-// @ts-strict-ignore
-// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -40,16 +39,20 @@ export class OriginSegment extends TerminalSegment {
       return;
     }
 
-    this.airport = await loadAirport(icao);
+    const airport = await loadAirport(icao);
+
+    if (!airport) {
+      throw new Error(`[FMS/FPM] Can't find airport with ICAO '${icao}'`);
+    }
+
+    this.airport = airport;
 
     if (!skipUpdateLegs) {
       await this.refreshDepartureLegs();
     }
 
-    if (this.originAirport) {
-      this.flightPlan.availableOriginRunways = await loadAllRunways(this.originAirport);
-      this.flightPlan.availableDepartures = await loadAllDepartures(this.originAirport);
-    }
+    this.flightPlan.availableOriginRunways = await loadAllRunways(this.airport);
+    this.flightPlan.availableDepartures = await loadAllDepartures(this.airport);
   }
 
   public async setRunway(runwayIdent: string | undefined, setByApproach?: boolean, skipUpdateLegs?: boolean) {

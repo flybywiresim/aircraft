@@ -353,7 +353,6 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     );
 
     this.deleteAlternateFlightPlan();
-    this.resetAlternatePerformanceData();
 
     this.enqueueOperation(FlightPlanQueuedOperation.RebuildArrivalAndApproach);
     this.enqueueOperation(FlightPlanQueuedOperation.Restring);
