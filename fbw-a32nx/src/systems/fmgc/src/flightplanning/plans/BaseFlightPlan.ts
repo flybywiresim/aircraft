@@ -17,6 +17,7 @@ import {
   Departure,
   Fix,
   LegType,
+  MagVar,
   ProcedureTransition,
   Runway,
   SpeedDescriptor,
@@ -1491,7 +1492,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
 
     const [insertSegment, indexInSegment] = this.segmentPositionForIndex(atIndex);
-    const manualHoldLeg = FlightPlanLeg.manualHold(insertSegment, waypoint, desiredHold);
+    const magVar = MagVar.getForFix(waypoint);
+    const manualHoldLeg = FlightPlanLeg.manualHold(insertSegment, waypoint, desiredHold, magVar);
 
     manualHoldLeg.modifiedHold = modifiedHold;
     manualHoldLeg.defaultHold = defaultHold;
