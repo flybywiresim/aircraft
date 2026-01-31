@@ -56,6 +56,7 @@ export class A32NX_Util {
    * Compute a true heading from a magnetic heading
    * @param {Number} heading true heading
    * @param {Number=} magVar falls back to current aircraft position magvar
+   * @deprecated Use MagVar.trueToMagnetic
    * @returns magnetic heading
    */
   public static trueToMagnetic(heading: number, magVar?: number) {
@@ -66,6 +67,7 @@ export class A32NX_Util {
    * Compute a magnetic heading from a true heading
    * @param {Number} heading magnetic heading
    * @param {Number=} magVar falls back to current aircraft position magvar
+   * @deprecated Use MagVar.magneticToTrue
    * @returns true heading
    */
   public static magneticToTrue(heading: number, magVar?: number) {
