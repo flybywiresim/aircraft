@@ -37,6 +37,27 @@ export interface BaseFmsData {
   /** Symbols displayed on VD */
   vdSymbols_L: VdSymbol[];
   vdSymbols_R: VdSymbol[];
+  /** HUD synthetic runway symbols */
+  gradient: number | null;
+  location: string | null;
+  direction: number | null;
+  startLocation: string | null;
+  thresholdLocation: string | null;
+  thresholdCrossingHeight: number | null;
+  latitude: number | null;
+  longitude: number | null;
+  elevation: number | null;
+  length: number | null;
+  width: number | null;
+  srwyP1: string | null;
+  srwyP2: string | null;
+  srwyP3: string | null;
+  srwyP4: string | null;
+  srwyP5: string | null;
+  srwyP6: string | null;
+  srwyP7: string | null;
+  srwyP8: string | null;
+  srwyP9: string | null;
 }
 
 type IndexedTopics = 'fmZeroFuelWeight' | 'fmZeroFuelWeightCg' | 'fmLandingElevation';

@@ -198,3 +198,22 @@ export const enum NavAidMode {
 export interface TcasWxrMessage {
   text: string;
 }
+
+export interface HUDSyntheticRunway {
+  // LatLongAlt
+  location: Coordinates;
+  thresholdLocation: Coordinates;
+  startLocation: Coordinates;
+  // degrees
+  gradient: number | null;
+  direction: number | null;
+  latitude: number | null;
+  longitude: number | null;
+  // metres
+  thresholdCrossingHeight: number | null;
+  elevation: number | null;
+  length: number | null;
+  width: number | null;
+  cornerCoordinates: LatLongAlt[];
+  centerlineCoordinates: LatLongAlt[];
+}
