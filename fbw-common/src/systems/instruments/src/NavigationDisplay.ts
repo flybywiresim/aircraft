@@ -69,6 +69,7 @@ export enum NdSymbolTypeFlags {
   MagentaColor = 1 << 17,
   LeftSideOnly = 1 << 18,
   RightSideOnly = 1 << 19,
+  SecondaryFlightPlan = 1 << 20,
 }
 
 /** NdSymbolTypeFlags was filling up, so we had to separate the PWP flags into this enum */

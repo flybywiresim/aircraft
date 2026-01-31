@@ -752,6 +752,8 @@ export class EfisSymbols<T extends number> {
           type |= NdSymbolTypeFlags.CourseReversalRight;
         }
         direction = leg.definition.magneticCourse; // TODO true
+      } else if (flightPlan.index >= FlightPlanIndex.FirstSecondary) {
+        type |= NdSymbolTypeFlags.SecondaryFlightPlan;
       }
 
       if (i >= flightPlan.firstMissedApproachLegIndex && !transmitMissed) {
