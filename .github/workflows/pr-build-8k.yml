@@ -11,11 +11,11 @@ on:
 jobs:
   build_a380x_8k:
     name: Build and upload A380X (8K)
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false && contains(join(github.event.pull_request.labels.*.name, ', '), 'pr-build-8k')
     permissions:
       contents: read
       actions: write
-    runs-on: ubuntu-latest
-    if: github.event.pull_request.draft == false && contains(join(github.event.pull_request.labels.*.name, ', '), 'pr-build-8k')
     env:
       FBW_PRODUCTION_BUILD: 1
       AIRCRAFT_PROJECT_PREFIX: a380x
