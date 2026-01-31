@@ -3,6 +3,7 @@
 
 import {
   Clock,
+  ClockPublisher,
   DebounceTimer,
   EventBus,
   FSComponent,
@@ -35,6 +36,8 @@ export class McduFsInstrument implements FsInstrument {
 
   private readonly legacyFms = new A320_Neo_CDU_MainDisplay(this.bus);
 
+  private readonly clockPublisher = new ClockPublisher(this.bus);
+
   private lastTime = Date.now();
 
   /**
@@ -50,6 +53,7 @@ export class McduFsInstrument implements FsInstrument {
 
     this.backplane.addInstrument('Clock', this.clock);
     this.backplane.addPublisher('HEvent', this.hEventPublisher);
+    this.backplane.addPublisher('Clock', this.clockPublisher);
 
     this.doInit();
   }
