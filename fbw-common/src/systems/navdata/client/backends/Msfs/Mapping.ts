@@ -802,45 +802,108 @@ export class MsfsMapping {
 
     const facilities = await this.loadFacilitiesFromProcedures(msAirport.departures);
 
-    return msAirport.departures
-      .map((departure) => {
-        try {
-          let authorisationRequired = departure.rnpAr;
-          if (authorisationRequired === undefined) {
-            // fallback heuristic for MSFS2020
-            authorisationRequired =
-              this.isAnyRfLegPresent(departure.commonLegs) ||
-              this.isAnyRfLegPresent(departure.runwayTransitions) ||
-              this.isAnyRfLegPresent(departure.enRouteTransitions);
+    return MsfsMapping.matchEngineOutDepartures(
+      msAirport.departures
+        .map((departure) => {
+          try {
+            let authorisationRequired = departure.rnpAr;
+            if (authorisationRequired === undefined) {
+              // fallback heuristic for MSFS2020
+              authorisationRequired =
+                this.isAnyRfLegPresent(departure.commonLegs) ||
+                this.isAnyRfLegPresent(departure.runwayTransitions) ||
+                this.isAnyRfLegPresent(departure.enRouteTransitions);
+            }
+
+            const commonLegsRnp = authorisationRequired ? 0.3 : undefined;
+
+            const ret: Departure = {
+              sectionCode: SectionCode.Airport,
+              subSectionCode: AirportSubsectionCode.SIDs,
+              databaseId: `P${icaoCode}${airportIdent}${departure.name}`,
+              icaoCode,
+              ident: departure.name,
+              authorisationRequired,
+              commonLegs: departure.commonLegs.map((leg, legIndex) =>
+                this.mapLeg(leg, legIndex, facilities, msAirport, departure.name, undefined, commonLegsRnp),
+              ),
+              enrouteTransitions: departure.enRouteTransitions.map((trans, idx) =>
+                this.mapEnrouteTransition(trans, facilities, msAirport, departure.name, departure.name + idx),
+              ),
+              runwayTransitions: departure.runwayTransitions.map((trans, idx) =>
+                this.mapRunwayTransition(trans, facilities, msAirport, departure.name, departure.name + idx),
+              ),
+            };
+            return ret;
+          } catch (e) {
+            this.logError(`[MsfsMapping] Error mapping departure ${msAirport.icao} ${departure.name}: ${String(e)}`);
           }
+          return null;
+        })
+        .filter((v) => v !== null),
+    );
+  }
 
-          const commonLegsRnp = authorisationRequired ? 0.3 : undefined;
+  private static readonly eoSidRegex = /^EO\d\d[LCRT]?(-[A-Z0-9]+)?$/;
 
-          const ret: Departure = {
-            sectionCode: SectionCode.Airport,
-            subSectionCode: AirportSubsectionCode.SIDs,
-            databaseId: `P${icaoCode}${airportIdent}${departure.name}`,
-            icaoCode,
-            ident: departure.name,
-            authorisationRequired,
-            commonLegs: departure.commonLegs.map((leg, legIndex) =>
-              this.mapLeg(leg, legIndex, facilities, msAirport, departure.name, undefined, commonLegsRnp),
-            ),
-            engineOutLegs: [],
-            enrouteTransitions: departure.enRouteTransitions.map((trans, idx) =>
-              this.mapEnrouteTransition(trans, facilities, msAirport, departure.name, departure.name + idx),
-            ),
-            runwayTransitions: departure.runwayTransitions.map((trans, idx) =>
-              this.mapRunwayTransition(trans, facilities, msAirport, departure.name, departure.name + idx),
-            ),
-          };
-          return ret;
-        } catch (e) {
-          this.logError(`[MsfsMapping] Error mapping departure ${msAirport.icao} ${departure.name}: ${String(e)}`);
+  /**
+   * Matches EOSIDs to SIDs and mutates the SIDs in-place.
+   * @param departures The departures to match, including the EOSIDs
+   * @returns The same array, for convenience.
+   */
+  private static matchEngineOutDepartures(departures: Departure[]): Departure[] {
+    const eoSidsByRunway = departures.reduce((byRunway, sid) => {
+      const m = sid.ident.match(MsfsMapping.eoSidRegex);
+      if (m !== null) {
+        for (const runwayTrans of sid.runwayTransitions) {
+          byRunway.get(runwayTrans.ident)?.push(sid) ?? byRunway.set(runwayTrans.ident, [sid]);
         }
-        return null;
-      })
-      .filter((v) => v !== null);
+      }
+      return byRunway;
+    }, new Map<string, Departure[]>());
+
+    if (eoSidsByRunway.size === 0) {
+      return departures;
+    }
+
+    for (const sid of departures) {
+      for (const sidTrans of sid.runwayTransitions) {
+        const eoSidCandidates = eoSidsByRunway.get(sidTrans.ident);
+
+        let bestEoSid: Departure | undefined;
+        let bestEoBranchIndex = -1;
+
+        for (const eoSid of eoSidCandidates) {
+          const eoTrans = eoSid.runwayTransitions.find((t) => t.ident === sidTrans.ident);
+          if (eoTrans) {
+            let branchIndex = -1;
+            for (let i = 0; i < sidTrans.legs.length && i < eoTrans.legs.length; i++) {
+              const sid = sidTrans.legs[i];
+              const eo = eoTrans.legs[i];
+              if (
+                sid.type === eo.type &&
+                sid.waypoint?.databaseId === eo.waypoint?.databaseId &&
+                sid.arcCentreFix?.databaseId === eo.arcCentreFix?.databaseId
+              ) {
+                branchIndex = i;
+              }
+            }
+
+            if (branchIndex >= 1 && branchIndex > bestEoBranchIndex) {
+              bestEoSid = eoSid;
+              bestEoBranchIndex = branchIndex;
+            }
+          }
+        }
+
+        if (bestEoSid) {
+          sidTrans.engineOutDeparture = bestEoSid;
+          sidTrans.legs[bestEoBranchIndex].isEngineOutBranch = true;
+        }
+      }
+    }
+
+    return departures;
   }
 
   public async mapGates(msAirport: JS_FacilityAirport): Promise<Gate[]> {
