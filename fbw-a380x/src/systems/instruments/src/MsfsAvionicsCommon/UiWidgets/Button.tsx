@@ -15,7 +15,7 @@ import { TriangleDown, TriangleUp } from 'instruments/src/MsfsAvionicsCommon/UiW
 
 export type ButtonMenuItem = {
   label: string;
-  disabled?: boolean;
+  disabled?: boolean | Subscribable<boolean>;
   action(): void;
 };
 
@@ -27,10 +27,12 @@ export interface ButtonProps extends ComponentProps {
   disabled?: boolean | Subscribable<boolean>;
   visible?: boolean | Subscribable<boolean>;
   selected?: Subscribable<boolean>; // Renders with lighter grey if selected (e.g. for segmented controls)
+  highlighted?: Subscribable<boolean>;
   buttonStyle?: string | Subscribable<string>;
   containerStyle?: string;
   onClick: () => void;
   scrollToMenuItem?: Subscribable<number>;
+  dropdownMenuRightAligned?: boolean;
 }
 
 /*
@@ -65,8 +67,14 @@ export class Button extends DisplayComponent<ButtonProps> {
   private onClickHandler = this.onClick.bind(this);
 
   onDropdownMenuElementClick(val: ButtonMenuItem) {
-    val.action();
-    this.dropdownIsOpened.set(false);
+    if (
+      val.disabled === undefined ||
+      (typeof val.disabled === 'boolean' && val.disabled === false) ||
+      (SubscribableUtils.isSubscribable(val.disabled) && val.disabled.get() === false)
+    ) {
+      val.action();
+      this.dropdownIsOpened.set(false);
+    }
   }
 
   private onDropdownMenuElementClickHandler = this.onDropdownMenuElementClick.bind(this);
@@ -84,6 +92,9 @@ export class Button extends DisplayComponent<ButtonProps> {
     }
     if (this.props.selected === undefined) {
       this.props.selected = Subject.create(false);
+    }
+    if (this.props.highlighted === undefined) {
+      this.props.highlighted = Subject.create(false);
     }
     if (typeof this.props.label === 'string') {
       this.props.label = Subject.create(<span>{this.props.label}</span>);
@@ -117,6 +128,12 @@ export class Button extends DisplayComponent<ButtonProps> {
       }, true),
     );
 
+    this.subs.push(
+      this.props.highlighted.sub((val) => {
+        this.buttonRef.getOrDefault()?.classList.toggle('highlighted', val);
+      }, true),
+    );
+
     // Menu handling
     if (this.props.menuItems !== undefined) {
       this.subs.push(
@@ -144,7 +161,7 @@ export class Button extends DisplayComponent<ButtonProps> {
                     id={`${this.props.idPrefix}_${idx}`}
                     class={{
                       'mfd-dropdown-menu-element': true,
-                      disabled: el.disabled === true,
+                      disabled: el.disabled ?? false,
                     }}
                   >
                     {el.label}
@@ -158,7 +175,7 @@ export class Button extends DisplayComponent<ButtonProps> {
 
           // Add click event listener
           for (const val of items) {
-            if (val.disabled === true) {
+            if (typeof val.disabled === 'boolean' && val.disabled === true) {
               continue;
             }
 
@@ -234,6 +251,8 @@ export class Button extends DisplayComponent<ButtonProps> {
         if (this.props.scrollToMenuItem !== undefined) {
           this.scrollMenuTo(this.props.scrollToMenuItem.get());
         }
+
+        if (this.props.dropdownMenuRightAligned) this.dropdownMenuRef.instance.style.right = '0px';
       }),
     );
 
