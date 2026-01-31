@@ -26,7 +26,7 @@ import { ObservableFlightPlanManager } from '@fmgc/flightplanning/ObservableFlig
 import { FlightPlanFooter } from '../../common/FlightPlanFooter';
 
 import './MfdFmsFplnFixInfo.scss';
-import { Fix } from '@flybywiresim/fbw-sdk';
+import { Fix, MagVar } from '@flybywiresim/fbw-sdk';
 
 export class MfdFmsFplnFixInfo extends FmsPage {
   private readonly flightPlanManager = new ObservableFlightPlanManager(
@@ -126,7 +126,7 @@ export class MfdFmsFplnFixInfo extends FmsPage {
                           if (radial !== null) {
                             fixInfo.radials[0] = {
                               magneticBearing: radial,
-                              trueBearing: A32NX_Util.magneticToTrue(radial, A32NX_Util.getRadialMagVar(fixInfo.fix)),
+                              trueBearing: MagVar.magneticToTrue(radial, MagVar.getForFix(fixInfo.fix) ?? 0),
                             };
                           } else {
                             delete fixInfo.radials[0];
@@ -160,7 +160,7 @@ export class MfdFmsFplnFixInfo extends FmsPage {
                           if (radial !== null) {
                             fixInfo.radials[1] = {
                               magneticBearing: radial,
-                              trueBearing: A32NX_Util.magneticToTrue(radial, A32NX_Util.getRadialMagVar(fixInfo.fix)),
+                              trueBearing: MagVar.magneticToTrue(radial, MagVar.getForFix(fixInfo.fix) ?? 0),
                             };
                           } else {
                             delete fixInfo.radials[1];
