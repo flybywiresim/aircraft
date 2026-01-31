@@ -22,8 +22,8 @@ export type AirportAtis = {
   type: AtisType;
   requested: boolean;
   autoupdate: boolean;
-  lastReadAtis: string;
-  status: string;
+  lastReadAtis: string | null;
+  status: string | null;
 };
 
 export const PredefinedMessages = {
@@ -71,9 +71,9 @@ export class AtcDatalinkSystem implements Instrument {
   }
 
   private readonly atisAirports: AirportAtis[] = [
-    { icao: null, type: AtisType.Departure, requested: false, autoupdate: false, lastReadAtis: null, status: null },
-    { icao: null, type: AtisType.Arrival, requested: false, autoupdate: false, lastReadAtis: null, status: null },
-    { icao: null, type: AtisType.Arrival, requested: false, autoupdate: false, lastReadAtis: null, status: null },
+    { icao: '', type: AtisType.Departure, requested: false, autoupdate: false, lastReadAtis: null, status: null },
+    { icao: '', type: AtisType.Arrival, requested: false, autoupdate: false, lastReadAtis: null, status: null },
+    { icao: '', type: AtisType.Arrival, requested: false, autoupdate: false, lastReadAtis: null, status: null },
   ];
 
   private datalinkStatus: { vhf: DatalinkStatusCode; satellite: DatalinkStatusCode; hf: DatalinkStatusCode } = {
@@ -126,13 +126,18 @@ export class AtcDatalinkSystem implements Instrument {
       this.atisAutoUpdates = airports;
       this.atisAirports.forEach((airportData, index) => {
         if (
+          airportData.icao !== null &&
           airports.includes(airportData.icao) &&
           airportData.autoupdate == false &&
           airportData.type !== AtisType.Departure
         ) {
           this.atisAirports[index].autoupdate = true;
           this.publisher.pub(`atcAtis_${index}`, this.atisAirports[index]);
-        } else if (!airports.includes(airportData.icao) && airportData.autoupdate == true) {
+        } else if (
+          airportData.icao !== null &&
+          !airports.includes(airportData.icao) &&
+          airportData.autoupdate == true
+        ) {
           this.atisAirports[index].autoupdate = false;
           this.publisher.pub(`atcAtis_${index}`, this.atisAirports[index]);
         }
@@ -227,7 +232,7 @@ export class AtcDatalinkSystem implements Instrument {
   }
 
   // TODO: improve icao checks
-  private initAtis(index: number, icao?: string): void {
+  private initAtis(index: number, icao?: string | null): void {
     const newAtisData = {
       icao: '',
       type: AtisType.Arrival,
@@ -236,7 +241,7 @@ export class AtcDatalinkSystem implements Instrument {
       lastReadAtis: '',
       status: '',
     };
-    if (icao !== undefined) {
+    if (icao !== undefined && icao !== null) {
       newAtisData.icao = icao;
     }
     if (index == 0) {
@@ -330,7 +335,7 @@ export class AtcDatalinkSystem implements Instrument {
     });
   }
 
-  public async deactivateAtisAutoUpdate(index): Promise<AtsuStatusCodes> {
+  public async deactivateAtisAutoUpdate(index: number): Promise<AtsuStatusCodes> {
     const airportData = this.atisAirports[index];
     const icao = airportData.icao;
     return new Promise<AtsuStatusCodes>((resolve, _reject) => {

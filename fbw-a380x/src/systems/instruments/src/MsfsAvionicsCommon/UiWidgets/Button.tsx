@@ -161,7 +161,7 @@ export class Button extends DisplayComponent<ButtonProps> {
                     id={`${this.props.idPrefix}_${idx}`}
                     class={{
                       'mfd-dropdown-menu-element': true,
-                      disabled: el.disabled,
+                      disabled: el.disabled ?? false,
                     }}
                   >
                     {el.label}
