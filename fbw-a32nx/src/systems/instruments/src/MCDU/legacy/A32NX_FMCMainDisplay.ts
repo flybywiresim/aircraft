@@ -321,20 +321,13 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     SimVarValueType.Enum,
   );
 
-  /** Unix epoch in milliseconds. Paused when no ETT present in active flightplan */
-  private readonly simTime = ConsumerSubject.create(
-    this.bus.getSubscriber<ClockEvents>().on('simTime').onlyAfter(1000),
-    0,
-  );
+  private readonly sub = this.bus.getSubscriber<ClockEvents>();
+
+  /** Simulation time in milliseconds since the UNIX epoch (JS timestamp). Hint: this clock is affected by sim rate. */
+  private readonly simTime = ConsumerSubject.create(this.sub.on('simTime'), 0);
 
   /** Paused if ETT is expired or does not exist */
-  private readonly ettCheck = this.simTime.sub(
-    (time) => {
-      this.checkEttExpired(time);
-    },
-    false,
-    true,
-  );
+  private readonly ettCheckSub = this.sub.on('simTime').onlyAfter(1000).handle(this.checkEttExpired.bind(this), true);
 
   private static readonly MILISECONDS_IN_DAY = 86400000;
 
@@ -5460,7 +5453,11 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     if (phase === FmgcFlightPhase.Preflight || phase === FmgcFlightPhase.Done) {
       const ett = this.flightPlanService.active.performanceData.estimatedTakeoffTime.get();
       if (ett !== null) {
-        this.checkEttExpired();
+        if (!this.checkEttExpired()) {
+          if (this.ettCheckSub.isPaused) {
+            this.ettCheckSub.resume();
+          }
+        }
       }
       this.addMessageToQueue(NXSystemMessages.checkToData);
     } else {
@@ -5707,8 +5704,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
                 forPlan,
               );
               this.flightPlanService.setPerformanceData('estimatedTakeoffTimeExpired', false, forPlan);
-              if (forPlan === FlightPlanIndex.Active) {
-                this.ettCheck.resume();
+              if (forPlan === FlightPlanIndex.Active && this.ettCheckSub.isPaused) {
+                this.ettCheckSub.resume();
               }
             }
           }
@@ -5775,7 +5772,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       const isExpired = ett < (time ?? this.simTime.get());
       if (isExpired) {
         this.flightPlanService.setPerformanceData('estimatedTakeoffTimeExpired', isExpired, FlightPlanIndex.Active);
-        this.ettCheck.pause();
+        this.ettCheckSub.pause();
       }
       return isExpired;
     }
@@ -5789,7 +5786,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.flightPlanService.setPerformanceData('estimatedTakeoffTime', null, forPlan);
     this.flightPlanService.setPerformanceData('estimatedTakeoffTimeExpired', false, forPlan);
     if (forPlan === FlightPlanIndex.Active) {
-      this.ettCheck.pause();
+      this.ettCheckSub.pause();
     }
   }
 }
