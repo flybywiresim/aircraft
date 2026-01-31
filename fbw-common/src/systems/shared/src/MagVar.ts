@@ -87,9 +87,9 @@ export class MagVar {
    * Compute a true heading from a magnetic heading
    * @param heading True heading in degrees.
    * @param magVar Magnetic variation in degrees.
-   * @returns Magnetic heading in degrees, or null if unavailable.
+   * @returns Magnetic heading in degrees.
    */
-  public static trueToMagnetic(heading: number, magVar: number): number | null {
+  public static trueToMagnetic(heading: number, magVar: number): number {
     return MathUtils.normalise360(heading - magVar);
   }
 

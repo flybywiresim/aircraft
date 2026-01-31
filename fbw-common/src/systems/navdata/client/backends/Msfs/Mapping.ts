@@ -7,7 +7,7 @@
 import { Coordinates, bearingTo, distanceTo, placeBearingDistance } from 'msfs-geo';
 // FIXME remove msfs-sdk dep
 import { AirportClassMask } from '@microsoft/msfs-sdk';
-import { ElevatedCoordinates, isMsfs2024, MagVar, MathUtils } from '@flybywiresim/fbw-sdk';
+import { ElevatedCoordinates, isMsfs2024, MathUtils } from '@flybywiresim/fbw-sdk';
 import {
   AirportCommunication,
   Airway,
@@ -156,7 +156,7 @@ export class MsfsMapping {
 
     const ident = this.mapAirportIdent(msAirport);
 
-    const magVar = MagVar.get(msAirport.lat, msAirport.lon);
+    const magVar = Facilities.getMagVar(msAirport.lat, msAirport.lon);
 
     return {
       databaseId: msAirport.icao,
@@ -962,7 +962,7 @@ export class MsfsMapping {
           speedDescriptor,
           speed,
           turnDirection: hold.turnRight ? TurnDirection.Right : TurnDirection.Left,
-          magneticCourse: hold.inboundCourse,
+          course: hold.inboundCourse,
           magVar,
         });
       }
@@ -1234,7 +1234,7 @@ export class MsfsMapping {
       speed: speedDescriptor !== undefined ? leg.speedRestriction : undefined,
       speedDescriptor,
       turnDirection: this.mapMsTurnDirection(leg.turnDirection),
-      magneticCourse: leg.course, // TODO check magnetic/true
+      course: leg.course, // TODO check magnetic/true
       magVar,
       waypointDescriptor: this.mapMsIcaoToWaypointDescriptor(leg.fixIcao),
       approachWaypointDescriptor,

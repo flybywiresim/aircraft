@@ -10,7 +10,7 @@ import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { Transition } from '@fmgc/guidance/lnav/Transition';
 import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
-import { isVhfNavaid, LegType } from '@flybywiresim/fbw-sdk';
+import { isVhfNavaid, LegType, MagVar } from '@flybywiresim/fbw-sdk';
 import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
 import { SegmentType } from '@fmgc/flightplanning/FlightPlanSegment';
 import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
@@ -230,8 +230,8 @@ function geometryLegFromFlightPlanLeg(
   const metadata = legMetadataFromFlightPlanLeg(flightPlanLeg);
 
   const waypoint = flightPlanLeg.terminationWaypoint();
-  const magneticCourse = flightPlanLeg.definition.magneticCourse;
-  const trueCourse = courseMagVar === null ? magneticCourse : A32NX_Util.magneticToTrue(magneticCourse, courseMagVar);
+  const course = flightPlanLeg.definition.course;
+  const trueCourse = courseMagVar === null ? course : MagVar.magneticToTrue(course, courseMagVar);
   const recommendedNavaid = flightPlanLeg.definition.recommendedNavaid;
   const length = flightPlanLeg.definition.length;
 
@@ -245,7 +245,7 @@ function geometryLegFromFlightPlanLeg(
         recommendedNavaid,
         flightPlanLeg.definition.rho,
         flightPlanLeg.definition.theta,
-        flightPlanLeg.definition.magneticCourse,
+        flightPlanLeg.definition.course,
         metadata,
         SegmentType.Departure,
       );

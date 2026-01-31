@@ -96,7 +96,7 @@ export interface ProcedureLeg {
    * For CF legs this is the course to the specified fix.
    * When the magvar field has a value of null, this is a true north referenced course instead.
    */
-  magneticCourse?: number;
+  course?: number;
   /**
    * Specifies the descent vertical angle (negative) referenced to the terminating fix
    * Should be projected back up to the last coded altitude

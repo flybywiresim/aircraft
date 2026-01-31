@@ -374,7 +374,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         type: LegType.CF,
         overfly: false,
         waypoint: WaypointFactory.fromLocation('T-P', location),
-        magneticCourse: course,
+        course,
         magVar,
         length: 0,
       },
@@ -409,7 +409,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         overfly: false,
         waypoint,
         turnDirection: hold.turnDirection,
-        magneticCourse: hold.inboundMagneticCourse,
+        course: hold.inboundMagneticCourse,
         length: hold.distance,
         lengthTime: hold.time,
         magVar,
@@ -451,7 +451,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
           overfly: false,
           waypoint: runway,
           waypointDescriptor: WaypointDescriptor.Runway,
-          magneticCourse: runway?.magneticBearing,
+          course: runway?.magneticBearing,
           magVar: airport.magVar,
         },
         runway.ident,
@@ -468,7 +468,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         overfly: false,
         waypoint: airport,
         waypointDescriptor: WaypointDescriptor.Airport,
-        magneticCourse: runway?.magneticBearing,
+        course: runway?.magneticBearing,
         magVar: airport.magVar,
       },
       airport.ident,
@@ -483,7 +483,6 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
       : 1500;
     const bearing = runway.magneticBearing;
 
-    // TODO true ref format we probably have to calculate this in the UI code instead
     const annotation = runwayLeg.ident.substring(0, 3) + Math.round(bearing).toString().padStart(3, '0');
     const ident = Math.round(altitude).toFixed(0);
 
@@ -494,7 +493,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         type: LegType.FA,
         overfly: false,
         waypoint: runwayLeg.terminationWaypoint(),
-        magneticCourse: bearing,
+        course: bearing,
         altitude1: altitude,
         magVar: runway.magVar,
       },
