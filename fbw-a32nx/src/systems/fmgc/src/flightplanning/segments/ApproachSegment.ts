@@ -38,6 +38,8 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
     if (databaseId === undefined) {
       this.approach = undefined;
 
+      this.flightPlan.availableApproachVias.length = 0;
+
       if (!skipUpdateLegs) {
         await this.flightPlan.approachViaSegment.setProcedure(undefined);
         await this.flightPlan.arrivalSegment.setProcedure(undefined);

@@ -33,6 +33,9 @@ export class OriginSegment extends TerminalSegment {
       this.airport = undefined;
       this.runway = undefined;
 
+      this.flightPlan.availableDepartures.length = 0;
+      this.flightPlan.availableOriginRunways.length = 0;
+
       if (!skipUpdateLegs) {
         await this.refreshDepartureLegs();
       }
