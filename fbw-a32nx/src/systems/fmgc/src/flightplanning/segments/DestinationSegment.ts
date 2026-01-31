@@ -1,5 +1,4 @@
-// @ts-strict-ignore
-// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -49,7 +48,7 @@ export class DestinationSegment extends TerminalSegment {
 
     this.airport = airport;
 
-    this.flightPlan.availableDestinationRunways = await loadAllRunways(this.destinationAirport);
+    this.flightPlan.availableDestinationRunways = await loadAllRunways(this.airport);
 
     // TODO do we clear arrival/via/approach ...?
     if (!skipUpdateLegs) {

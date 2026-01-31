@@ -29,28 +29,40 @@ export class OriginSegment extends TerminalSegment {
     return this.airport;
   }
 
-  public async setAirport(icao: string, skipUpdateLegs?: boolean) {
+  public async setAirport(icao: string | undefined, skipUpdateLegs?: boolean) {
+    if (icao === undefined) {
+      this.airport = undefined;
+      this.runway = undefined;
+
+      if (!skipUpdateLegs) {
+        await this.refreshDepartureLegs();
+      }
+      return;
+    }
+
     this.airport = await loadAirport(icao);
 
     if (!skipUpdateLegs) {
       await this.refreshDepartureLegs();
     }
 
-    this.flightPlan.availableOriginRunways = await loadAllRunways(this.originAirport);
-    this.flightPlan.availableDepartures = await loadAllDepartures(this.originAirport);
+    if (this.originAirport) {
+      this.flightPlan.availableOriginRunways = await loadAllRunways(this.originAirport);
+      this.flightPlan.availableDepartures = await loadAllDepartures(this.originAirport);
+    }
   }
 
   public async setRunway(runwayIdent: string | undefined, setByApproach?: boolean, skipUpdateLegs?: boolean) {
-    if (!this.originAirport) {
-      throw new Error('[FMS/FPM] Cannot set origin runway with no origin airport');
-    }
-
     if (runwayIdent === undefined) {
       this.runway = undefined;
       if (!skipUpdateLegs) {
         await this.refreshDepartureLegs();
       }
       return;
+    }
+
+    if (!this.originAirport) {
+      throw new Error('[FMS/FPM] Cannot set origin runway with no origin airport');
     }
 
     this.runway = await loadRunway(this.originAirport, runwayIdent);
@@ -109,8 +121,9 @@ export class OriginSegment extends TerminalSegment {
       );
 
       if (currentSidCompatibleWithNewRunway) {
+        const ident = this.runway.ident;
         const currentSidNewRunwayTransition = this.flightPlan.originDeparture.runwayTransitions.find(
-          (transition) => transition.ident === this.runway.ident,
+          (transition) => transition.ident === ident,
         );
 
         if (
@@ -151,13 +164,14 @@ export class OriginSegment extends TerminalSegment {
       }
 
       if (firstDepartureLeg?.isDiscontinuity === false && firstDepartureLeg.type === LegType.IF) {
-        if (areDatabaseItemsEqual(firstDepartureLeg.terminationWaypoint(), this.runway)) {
+        const firstTermFix = firstDepartureLeg.terminationWaypoint();
+        if (areDatabaseItemsEqual(firstTermFix, this.runway)) {
           // TODO should this stuff go into DepartureRunwayTransitionSegment?
           firstDepartureLeg.flags |= FlightPlanLegFlags.Origin;
 
           addOriginLeg = false;
-        } else {
-          const bearing = bearingTo(this.runway.thresholdLocation, firstDepartureLeg.terminationWaypoint().location);
+        } else if (firstTermFix) {
+          const bearing = bearingTo(this.runway.thresholdLocation, firstTermFix.location);
           const diff = FbwMathUtils.normalise180(MsMathUtils.diffAngleDeg(bearing, this.runway.bearing));
 
           isDisconnectedIdf = Math.abs(diff) > 1.0;
@@ -168,11 +182,11 @@ export class OriginSegment extends TerminalSegment {
     }
 
     this.allLegs.length = 0;
-    if (addOriginLeg) {
+    if (addOriginLeg && this.airport) {
       const originLeg = FlightPlanLeg.fromAirportAndRunway(
         this,
         this.flightPlan.departureSegment.procedure?.ident ?? '',
-        this.originAirport,
+        this.airport,
         this.runway,
       );
       originLeg.flags |= FlightPlanLegFlags.Origin;
@@ -181,7 +195,7 @@ export class OriginSegment extends TerminalSegment {
       this.strung = false;
     }
 
-    if (addInitalAltitudeLeg) {
+    if (addInitalAltitudeLeg && this.runway) {
       const runwayLeg = this.allLegs[this.allLegs.length - 1];
 
       if (runwayLeg.isDiscontinuity === true) {

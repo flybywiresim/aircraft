@@ -18,7 +18,10 @@ export class Icao {
   }
 }
 
-export function areDatabaseItemsEqual<T extends SectionCode>(a: DatabaseItem<T>, b: DatabaseItem<T>): boolean {
+export function areDatabaseItemsEqual<T extends SectionCode>(
+  a: DatabaseItem<T> | undefined | null,
+  b: DatabaseItem<T> | undefined | null,
+): boolean {
   if (!a || !b) {
     return false;
   }
