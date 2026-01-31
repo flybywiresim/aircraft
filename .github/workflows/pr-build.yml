@@ -12,6 +12,8 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
+    permissions:
+      contents: read
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
@@ -26,6 +28,8 @@ jobs:
     name: Tests (Rust)
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
+    permissions:
+      contents: read
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
@@ -46,6 +50,9 @@ jobs:
   build-a32nx:
     name: Build and upload A32NX
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
     if: github.event.pull_request.draft == false
     env:
       FBW_PRODUCTION_BUILD: 1
@@ -109,6 +116,9 @@ jobs:
     name: Build and upload A380X (4K)
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
+    permissions:
+      contents: read
+      actions: write
     env:
       FBW_PRODUCTION_BUILD: 1
       AIRCRAFT_PROJECT_PREFIX: a380x
