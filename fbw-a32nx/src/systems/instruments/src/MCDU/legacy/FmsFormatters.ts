@@ -1,7 +1,13 @@
-// Copyright (c) 2021-2023, 2025 FlyByWire Simulations
+// Copyright (c) 2021-2023, 2025-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
+import { DateTimeFormatter } from '@microsoft/msfs-sdk';
+
 export class FmsFormatters {
+  private static hhmmssFormatter = DateTimeFormatter.create('{hh}:{mm}:{ss}');
+
+  private static hhmmFormatter = DateTimeFormatter.create('{hh}{mm}');
+
   public static secondsTohhmm(seconds: number) {
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds - h * 3600) / 60);
@@ -47,20 +53,21 @@ export class FmsFormatters {
     return h * 60 + m;
   }
 
-  public static secondsTohhmmss(seconds: number): string {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds - h * 3600) / 60);
-    const s = Math.floor(seconds - h * 3600 - m * 60);
-    return h.toFixed(0).padStart(2, '0') + ':' + m.toFixed(0).padStart(2, '0') + ':' + s.toFixed(0).padStart(2, '0');
+  /**
+   * Formats a time expressed as unix timestamp in miliseconds to hh:mm:ss
+   * @param miliSeconds the time in milliseconds
+   * @returns the formatted time in hh:mm:ss
+   */
+  public static milisecondsTohhmmss(miliSeconds: number): string {
+    return this.hhmmssFormatter(miliSeconds);
   }
 
   /**
-   * Returns the number of seconds since midnight UTC for a given date.
-   * @param date the date to extract the seconds from
-   * @returns number of seconds since midnight UTC
+   * Formats a time expressed as a unix timestamp in miliseconds to hhmm
+   * @param miliSeconds the time in miliseconds
+   * @returns the formatted time in hh:mm
    */
-  public static dateToSecondsSinceMidnightUTC(date: Date): number {
-    const midNight = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 0, 0);
-    return (date.getTime() - midNight.getTime()) / 1000;
+  public static milisecondsTohhmm(miliSeconds: number): string {
+    return this.hhmmFormatter(miliSeconds);
   }
 }

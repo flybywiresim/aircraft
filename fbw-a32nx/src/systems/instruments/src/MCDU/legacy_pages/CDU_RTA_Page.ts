@@ -38,7 +38,7 @@ export class CduRtaPage {
     const allowEtt = isPreFlight || !flightplan.isActiveOrCopiedFromActive();
     const ettCell = allowEtt
       ? ettExists
-        ? `${FmsFormatters.secondsTohhmmss(ett % 86400)}`
+        ? `${FmsFormatters.milisecondsTohhmmss(ett)}`
         : '*[\xa0\xa0\xa0\xa0\xa0]'
       : '';
     mcdu.setTemplate(

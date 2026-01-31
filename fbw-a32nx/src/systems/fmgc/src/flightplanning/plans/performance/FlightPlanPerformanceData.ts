@@ -480,7 +480,7 @@ export interface FlightPlanPerformanceData {
    */
   readonly approachFlapsThreeSelected: MutableSubscribable<boolean>;
 
-  /** Estimated takeoff time in seconds since 1/1/AD */
+  /** Estimated takeoff time timestamp, in unix epoch milliseconds */
   readonly estimatedTakeoffTime: Subject<number | null>;
 
   readonly estimatedTakeoffTimeExpired: Subject<boolean | null>;
@@ -1241,7 +1241,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
   readonly approachFlapsThreeSelected = Subject.create(false);
 
   /**
-   * Estimated takeoff time in seconds since 1/1/AD
+   * Estimated takeoff time timestamp, in unix epoch milliseconds
    */
   readonly estimatedTakeoffTime = Subject.create<number | null>(null);
 
