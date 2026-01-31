@@ -9,6 +9,8 @@ jobs:
   create_github_release:
     name: Create GitHub release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
       id: ${{ steps.create_release.outputs.id }}
@@ -166,6 +168,8 @@ jobs:
     if: github.repository_owner == 'flybywiresim'
     needs: create_github_release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     env:
       FBW_PRODUCTION_BUILD: 1
       PRE_RELEASE_TAG: assets/stable
@@ -314,6 +318,8 @@ jobs:
     if: github.repository_owner == 'flybywiresim'
     needs: create_github_release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     env:
       FBW_PRODUCTION_BUILD: 1
       PRE_RELEASE_TAG: assets/stable

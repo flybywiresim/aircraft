@@ -17,6 +17,8 @@ jobs:
     if: github.repository_owner == 'flybywiresim'
     name: 'Build InGamePanels Checklist Fix'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     env:
       FBW_PRODUCTION_BUILD: 1
       MASTER_ZIP_NAME: ingamepanels-checklist-fix-master.zip
