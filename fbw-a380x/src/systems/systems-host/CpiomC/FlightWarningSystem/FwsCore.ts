@@ -1467,6 +1467,10 @@ export class FwsCore {
 
   public readonly lgciu2DiscreteWord2 = Arinc429Register.empty();
 
+  public readonly lgciu1DiscreteWord4 = Arinc429Register.empty();
+
+  public readonly lgciu2DiscreteWord4 = Arinc429Register.empty();
+
   public isAllGearDownlocked = false;
 
   public readonly nwSteeringDisc = Subject.create(false);
@@ -3339,6 +3343,8 @@ export class FwsCore {
     this.lgciu2DiscreteWord1.setFromSimVar('L:A32NX_LGCIU_2_DISCRETE_WORD_1');
     this.lgciu1DiscreteWord2.setFromSimVar('L:A32NX_LGCIU_1_DISCRETE_WORD_2');
     this.lgciu2DiscreteWord2.setFromSimVar('L:A32NX_LGCIU_2_DISCRETE_WORD_2');
+    this.lgciu1DiscreteWord4.setFromSimVar('L:A32NX_LGCIU_1_DISCRETE_WORD_4');
+    this.lgciu2DiscreteWord4.setFromSimVar('L:A32NX_LGCIU_2_DISCRETE_WORD_4');
     const parkBrakeSet = SimVar.GetSimVarValue('L:A32NX_PARK_BRAKE_LEVER_POS', 'Number') === 1;
     this.parkBrakeSet.set(parkBrakeSet);
     this.lgParkBrkOn.set(this.parkBrake2sConfNode.write(parkBrakeSet, deltaTime));
@@ -4692,8 +4698,8 @@ export class FwsCore {
       !this.radioHeight2.isNormalOperation() &&
       !this.radioHeight3.isNoComputedData() &&
       !this.radioHeight3.isNormalOperation();
-    this.lgciu1Fault.set(this.lgciu1DiscreteWord2.bitValueOr(29, false));
-    this.lgciu2Fault.set(this.lgciu2DiscreteWord2.bitValueOr(29, false));
+    this.lgciu1Fault.set(this.lgciu1DiscreteWord4.bitValueOr(29, false));
+    this.lgciu2Fault.set(this.lgciu2DiscreteWord4.bitValueOr(29, false));
     const gearNotDownlocked = !mainGearDownlocked && (!this.lgciu1Fault.get() || !this.lgciu2Fault.get());
     const below750Condition =
       this.flapsInConf3OrFull.get() &&

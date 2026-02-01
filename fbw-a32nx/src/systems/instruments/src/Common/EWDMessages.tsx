@@ -405,7 +405,7 @@ const EWDMessages = {
   '320008102': '\x1b<5m -PARK BRK...........OFF',
   '320014001': '\x1b<2m\x1b4mL/G\x1bm GEAR NOT DOWNLOCKED',
   '320014002': '\x1b<5m -L/G LEVER......RECYCLE',
-  '320014003': '\x1b<7m   .IF UNSUCCESSFUL:',
+  '320014003': '\x1b<7m   .IF UNSUCCESSFUL',
   '320014004': '\x1b<7m      AFTER 120S:',
   '320014005': '\x1b<5m -L/G.........GRVTY EXTN',
   '320015001': '\x1b<2m\x1b4mL/G\x1bm GEAR NOT DOWN',
