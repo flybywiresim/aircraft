@@ -242,7 +242,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       );
     this.distanceToDest.set(distanceToDestination ?? null);
 
-    if (destPred && this.props.fmcService.master) {
+    if (destPred && this.props.fmcService.master && this.loadedFlightPlanIndex.get() < FlightPlanIndex.Uplink) {
       this.destEfobAmber.set(this.props.fmcService.master.fmgc.data.destEfobBelowMin.get());
       this.destTime.set(new Date(this.predictionTimestamp(destPred.secondsFromPresent)));
       this.destEfob.set(destPred.estimatedFuelOnBoard ?? null);
@@ -1087,18 +1087,37 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           </div>
           <div class="mfd-fms-fpln-footer">
             <ConditionalComponent
-              condition={this.preflightPhase}
+              condition={this.secActive}
               width={125}
               componentIfTrue={
                 <Button
-                  label="INIT"
+                  label="RETURN"
                   onClick={() =>
-                    this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/init`)
+                    this.props.mfd.uiService.navigateTo(
+                      `fms/sec/index/${this.loadedFlightPlanIndex.get() - FlightPlanIndex.FirstSecondary + 1}`,
+                    )
                   }
                   buttonStyle="width: 125px;"
                 />
               }
-              componentIfFalse={<></>}
+              componentIfFalse={
+                <ConditionalComponent
+                  condition={this.preflightPhase}
+                  width={125}
+                  componentIfTrue={
+                    <Button
+                      label="INIT"
+                      onClick={() =>
+                        this.props.mfd.uiService.navigateTo(
+                          `fms/${this.props.mfd.uiService.activeUri.get().category}/init`,
+                        )
+                      }
+                      buttonStyle="width: 125px;"
+                    />
+                  }
+                  componentIfFalse={<></>}
+                ></ConditionalComponent>
+              }
             />
             <Button
               disabled={false}
@@ -1157,10 +1176,18 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 },
               ] as ButtonMenuItem[])}
             />
-            <Button
-              label="DIR TO"
-              onClick={() => this.props.mfd.uiService.navigateTo(dirToUri)}
-              buttonStyle="margin-right: 5px;"
+
+            <ConditionalComponent
+              condition={this.secActive}
+              width={125}
+              componentIfTrue={<></>}
+              componentIfFalse={
+                <Button
+                  label="DIR TO"
+                  onClick={() => this.props.mfd.uiService.navigateTo(dirToUri)}
+                  buttonStyle="margin-right: 5px;"
+                />
+              }
             />
           </div>
           {/* end page content */}

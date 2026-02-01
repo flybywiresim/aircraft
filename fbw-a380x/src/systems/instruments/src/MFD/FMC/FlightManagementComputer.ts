@@ -292,10 +292,9 @@ export class FlightManagementComputer implements FmcInterface {
 
     this.#navigation = new Navigation(this.bus, this.flightPlanInterface);
 
-    this.flightPlanInterface.createFlightPlans();
-
     // FIXME implement sync between FMCs and also let FMC-B and FMC-C compute
     if (this.instance === FmcIndex.FmcA) {
+      this.flightPlanInterface.createFlightPlans();
       this.acInterface = new FmcAircraftInterface(this.bus, this, this.fmgc, this.flightPlanInterface);
 
       this.#guidanceController = new GuidanceController(
@@ -814,9 +813,6 @@ export class FlightManagementComputer implements FmcInterface {
    * Called when the active flight plan changes, e.g. when a secondary flight plan is activated.
    */
   private async onActiveFlightPlanChanged(): Promise<void> {
-    // We invalidate because we don't want to show the old active plan predictions on the newly activated secondary plan.
-    this.guidanceController?.vnavDriver?.invalidateFlightPlanProfile();
-
     this.hasActiveFlightPlan.set(
       this.#flightPlanService.hasActive &&
         this.#flightPlanService.active.originAirport !== undefined &&
@@ -824,6 +820,9 @@ export class FlightManagementComputer implements FmcInterface {
     );
 
     if (this.#flightPlanService.hasActive) {
+      // We invalidate because we don't want to show the old active plan predictions on the newly activated secondary plan.
+      this.guidanceController?.vnavDriver?.invalidateFlightPlanProfile();
+
       if (this.#flightPlanService.active.flightNumber !== undefined) {
         await this.onActiveFlightNumberChanged(this.#flightPlanService.active.flightNumber);
       }
@@ -1344,8 +1343,8 @@ export class FlightManagementComputer implements FmcInterface {
       !SimVar.GetSimVarValue('L:A32NX_FMC_C_IS_HEALTHY', SimVarValueType.Bool);
 
     this.legacyFmsIsHealthy.set(!allFmcInop);
-    if (this.instance !== FmcIndex.FmcA || (this.instance === FmcIndex.FmcA && allFmcInop)) {
-      if (this.instance === FmcIndex.FmcA && (allFmcResetsPulled || allFmcInop) && this.wasReset === false) {
+    if (this.instance !== FmcIndex.FmcA || (this.instance === FmcIndex.FmcA && (allFmcResetsPulled || allFmcInop))) {
+      if (this.instance === FmcIndex.FmcA && this.wasReset === false) {
         this.reset();
       }
       return;

@@ -278,9 +278,9 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
 
   private onNewDataChecks() {
     const fm = this.props.fmcService.master?.fmgc.data;
-    const activeFlightPlan = this.props.fmcService.master?.flightPlanInterface.active;
-    const pdActive = activeFlightPlan?.performanceData;
     const fps = this.props.fmcService.master?.flightPlanInterface;
+    const activeFlightPlan = fps?.hasActive ? fps.active : undefined;
+    const pdActive = activeFlightPlan?.performanceData;
 
     // CHECK TO DATA
     if (activeFlightPlan && pdActive && activeFlightPlan.originRunway) {

@@ -156,12 +156,20 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
       this.destIcao.set(this.loadedFlightPlan.destinationAirport.ident);
       const destPred = this.props.fmcService.master.guidanceController.vnavDriver.getDestinationPrediction();
 
-      // TODO Should display ETA if EET present
-      this.destEta.set(
-        getEtaFromUtcOrPresent(destPred?.secondsFromPresent, this.activeFlightPhase.get() == FmgcFlightPhase.Preflight),
-      );
-      const destEfob = this.props.fmcService.master.fmgc.getDestEFOB(true);
-      this.destEfob.set(destEfob !== null ? destEfob.toFixed(1) : '---.-');
+      if (this.loadedFlightPlanIndex.get() < FlightPlanIndex.Uplink) {
+        // TODO Should display ETA if EET present
+        this.destEta.set(
+          getEtaFromUtcOrPresent(
+            destPred?.secondsFromPresent,
+            this.activeFlightPhase.get() == FmgcFlightPhase.Preflight,
+          ),
+        );
+        const destEfob = this.props.fmcService.master.fmgc.getDestEFOB(true);
+        this.destEfob.set(destEfob !== null ? destEfob.toFixed(1) : '---.-');
+      } else {
+        this.destEta.set('--:--');
+        this.destEfob.set('---.-');
+      }
     }
 
     if (
@@ -172,7 +180,11 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
           .alternateDestinationAirport.ident,
       );
       this.altnEta.set('--:--');
-      this.altnEfob.set(this.props.fmcService.master.fmgc.getAltEFOB());
+      this.altnEfob.set(
+        this.loadedFlightPlanIndex.get() < FlightPlanIndex.Uplink
+          ? this.props.fmcService.master.fmgc.getAltEFOB()
+          : null,
+      );
     } else {
       this.altnIcao.set('NONE');
       this.altnEta.set('--:--');
