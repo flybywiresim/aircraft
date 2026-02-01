@@ -1021,7 +1021,7 @@
   - Arinc429<Percent>
   - The center of gravity of the aircraft
 
-- A32NX_FQMS_{tank}_QUANTITY
+- A32NX_FQMS_{tank}_TANK_QUANTITY
   - Arinc429<Kilogram>
   - The fuel quantity in a specific tank
   -{tank}

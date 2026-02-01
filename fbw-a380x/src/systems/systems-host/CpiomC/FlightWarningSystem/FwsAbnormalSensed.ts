@@ -3115,7 +3115,7 @@ export class FwsAbnormalSensed {
       whichItemsToShow: () => [true],
       whichItemsChecked: () => [false],
       failure: 2,
-      sysPage: null,
+      sysPage: SdPages.None,
     },
     281800102: {
       // FEED TKs 1+2 LEVEL LO

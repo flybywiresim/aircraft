@@ -722,7 +722,20 @@ export const FuelPage = () => {
     isCollectorCell1NotFull || isCollectorCell2NotFull || isCollectorCell3NotFull || isCollectorCell4NotFull;
 
   // Tanks
-  // We take the values provided by the FQDCs since the FQMS doesn't provide the values yet (over AFDX)
+  // We prioritize the values published by the FQMS and take the values provided by the FQDCs as a backup
+  // TODO: when we take the FQDC values show degraded indication (strike through)
+  const fqmsLeftOuterTankWeight = useArinc429Var('L:A32NX_FQMS_LEFT_OUTER_TANK_QUANTITY', 1000);
+  const fqmsFeed1TankWeight = useArinc429Var('L:A32NX_FQMS_FEED_1_TANK_QUANTITY', 1000);
+  const fqmsLeftMidTankWeight = useArinc429Var('L:A32NX_FQMS_LEFT_MID_TANK_QUANTITY', 1000);
+  const fqmsLeftInnerTankWeight = useArinc429Var('L:A32NX_FQMS_LEFT_INNER_TANK_QUANTITY', 1000);
+  const fqmsFeed2TankWeight = useArinc429Var('L:A32NX_FQMS_FEED_2_TANK_QUANTITY', 1000);
+  const fqmsFeed3TankWeight = useArinc429Var('L:A32NX_FQMS_FEED_3_TANK_QUANTITY', 1000);
+  const fqmsRightInnerTankWeight = useArinc429Var('L:A32NX_FQMS_RIGHT_INNER_TANK_QUANTITY', 1000);
+  const fqmsRightMidTankWeight = useArinc429Var('L:A32NX_FQMS_RIGHT_MID_TANK_QUANTITY', 1000);
+  const fqmsFeed4TankWeight = useArinc429Var('L:A32NX_FQMS_FEED_4_TANK_QUANTITY', 1000);
+  const fqmsRightOuterTankWeight = useArinc429Var('L:A32NX_FQMS_RIGHT_OUTER_TANK_QUANTITY', 1000);
+  const fqmsTrimTankWeight = useArinc429Var('L:A32NX_FQMS_TRIM_TANK_QUANTITY', 1000);
+
   const fqdc1LeftOuterTankWeight = useArinc429Var('L:A32NX_FQDC_1_LEFT_OUTER_TANK_QUANTITY', 1000);
   const fqdc1Feed1TankWeight = useArinc429Var('L:A32NX_FQDC_1_FEED_1_TANK_QUANTITY', 1000);
   const fqdc1LeftMidTankWeight = useArinc429Var('L:A32NX_FQDC_1_LEFT_MID_TANK_QUANTITY', 1000);
@@ -747,17 +760,29 @@ export const FuelPage = () => {
   const fqdc2RightOuterTankWeight = useArinc429Var('L:A32NX_FQDC_2_RIGHT_OUTER_TANK_QUANTITY', 1000);
   const fqdc2TrimTankWeight = useArinc429Var('L:A32NX_FQDC_2_TRIM_TANK_QUANTITY', 1000);
 
-  const leftOuterTankWeight = fqdc1LeftOuterTankWeight.valueOr(fqdc2LeftOuterTankWeight.valueOr(null));
-  const feed1TankWeight = fqdc1Feed1TankWeight.valueOr(fqdc2Feed1TankWeight.valueOr(null));
-  const leftMidTankWeight = fqdc1LeftMidTankWeight.valueOr(fqdc2LeftMidTankWeight.valueOr(null));
-  const leftInnerTankWeight = fqdc1LeftInnerTankWeight.valueOr(fqdc2LeftInnerTankWeight.valueOr(null));
-  const feed2TankWeight = fqdc1Feed2TankWeight.valueOr(fqdc2Feed2TankWeight.valueOr(null));
-  const feed3TankWeight = fqdc1Feed3TankWeight.valueOr(fqdc2Feed3TankWeight.valueOr(null));
-  const rightInnerTankWeight = fqdc1RightInnerTankWeight.valueOr(fqdc2RightInnerTankWeight.valueOr(null));
-  const rightMidTankWeight = fqdc1RightMidTankWeight.valueOr(fqdc2RightMidTankWeight.valueOr(null));
-  const feed4TankWeight = fqdc1Feed4TankWeight.valueOr(fqdc2Feed4TankWeight.valueOr(null));
-  const rightOuterTankWeight = fqdc1RightOuterTankWeight.valueOr(fqdc2RightOuterTankWeight.valueOr(null));
-  const trimTankWeight = fqdc1TrimTankWeight.valueOr(fqdc2TrimTankWeight.valueOr(null));
+  const leftOuterTankWeight = fqmsLeftOuterTankWeight.valueOr(
+    fqdc1LeftOuterTankWeight.valueOr(fqdc2LeftOuterTankWeight.valueOr(null)),
+  );
+  const feed1TankWeight = fqmsFeed1TankWeight.valueOr(fqdc1Feed1TankWeight.valueOr(fqdc2Feed1TankWeight.valueOr(null)));
+  const leftMidTankWeight = fqmsLeftMidTankWeight.valueOr(
+    fqdc1LeftMidTankWeight.valueOr(fqdc2LeftMidTankWeight.valueOr(null)),
+  );
+  const leftInnerTankWeight = fqmsLeftInnerTankWeight.valueOr(
+    fqdc1LeftInnerTankWeight.valueOr(fqdc2LeftInnerTankWeight.valueOr(null)),
+  );
+  const feed2TankWeight = fqmsFeed2TankWeight.valueOr(fqdc1Feed2TankWeight.valueOr(fqdc2Feed2TankWeight.valueOr(null)));
+  const feed3TankWeight = fqmsFeed3TankWeight.valueOr(fqdc1Feed3TankWeight.valueOr(fqdc2Feed3TankWeight.valueOr(null)));
+  const rightInnerTankWeight = fqmsRightInnerTankWeight.valueOr(
+    fqdc1RightInnerTankWeight.valueOr(fqdc2RightInnerTankWeight.valueOr(null)),
+  );
+  const rightMidTankWeight = fqmsRightMidTankWeight.valueOr(
+    fqdc1RightMidTankWeight.valueOr(fqdc2RightMidTankWeight.valueOr(null)),
+  );
+  const feed4TankWeight = fqmsFeed4TankWeight.valueOr(fqdc1Feed4TankWeight.valueOr(fqdc2Feed4TankWeight.valueOr(null)));
+  const rightOuterTankWeight = fqmsRightOuterTankWeight.valueOr(
+    fqdc1RightOuterTankWeight.valueOr(fqdc2RightOuterTankWeight.valueOr(null)),
+  );
+  const trimTankWeight = fqmsTrimTankWeight.valueOr(fqdc1TrimTankWeight.valueOr(fqdc2TrimTankWeight.valueOr(null)));
 
   return (
     <>

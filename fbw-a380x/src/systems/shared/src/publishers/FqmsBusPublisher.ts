@@ -67,31 +67,22 @@ interface FqmsBusBaseEvents {
    */
   fqms_fuel_pump_running_right: number;
 }
-
-type IndexedTopics = null;
-
-type FqmsBusIndexedEvents = {
-  [P in keyof Pick<FqmsBusBaseEvents, IndexedTopics> as IndexedEventType<P>]: FqmsBusBaseEvents[P];
-};
-
-interface FqmsBusPublisherEvents extends FqmsBusBaseEvents, FqmsBusIndexedEvents {}
-
 /**
  * Events for FQMS bus local vars.
  */
-export interface FqmsBusEvents extends Omit<FqmsBusBaseEvents, IndexedTopics>, FqmsBusIndexedEvents {}
+export interface FqmsBusEvents extends FqmsBusBaseEvents {}
 
 /**
  * Publisher for FQMS bus local vars.
  */
-export class FqmsBusPublisher extends SimVarPublisher<FqmsBusPublisherEvents> {
+export class FqmsBusPublisher extends SimVarPublisher<FqmsBusEvents> {
   /**
    * Create a publisher.
    * @param bus The EventBus to publish to
    * @param pacer An optional pacer to use to control the rate of publishing
    */
-  public constructor(bus: EventBus, pacer?: PublishPacer<FqmsBusPublisherEvents>) {
-    const simvars = new Map<keyof FqmsBusPublisherEvents, SimVarPublisherEntry<any>>([
+  public constructor(bus: EventBus, pacer?: PublishPacer<FqmsBusEvents>) {
+    const simvars = new Map<keyof FqmsBusEvents, SimVarPublisherEntry<any>>([
       ['fqms_status_word', { name: 'L:A32NX_FQMS_STATUS_WORD', type: SimVarValueType.Enum }],
       ['fqms_total_fuel_on_board', { name: 'L:A32NX_FQMS_TOTAL_FUEL_ON_BOARD', type: SimVarValueType.Enum }],
       ['fqms_gross_weight', { name: 'L:A32NX_FQMS_GROSS_WEIGHT', type: SimVarValueType.Enum }],

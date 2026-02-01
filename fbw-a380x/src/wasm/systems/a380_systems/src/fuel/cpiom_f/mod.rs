@@ -695,7 +695,7 @@ impl A380FuelQuantityManagementSystem {
             fms_zero_fuel_weight_cgs: Default::default(),
 
             fuel_tank_quantities_id: A380FuelTankType::iterator()
-                .map(|tank| context.get_identifier(format!("FQMS_{tank}_QUANTITY")))
+                .map(|tank| context.get_identifier(format!("FQMS_{tank}_TANK_QUANTITY")))
                 .collect::<Vec<_>>()
                 .try_into()
                 .expect("Failed to create fuel tank quantities identifiers"),
