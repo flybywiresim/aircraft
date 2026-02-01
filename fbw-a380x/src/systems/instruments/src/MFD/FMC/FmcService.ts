@@ -14,6 +14,7 @@ import { FmcIndex, FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServic
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { ResetPanelSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/ResetPanelPublisher';
+import { DummyFlightManagementComputer } from './DummyFlightManagementComputer';
 
 /*
  * Handles navigation (and potentially other aspects) for MFD pages
@@ -24,6 +25,7 @@ export class FmcService implements FmcServiceInterface {
   private readonly sub = this.bus.getSubscriber<MfdSimvars & ResetPanelSimvars>();
 
   protected fmc: FmcInterface[] = [];
+  protected dummyFmc: DummyFlightManagementComputer[] = [];
 
   private readonly dcEssBusPowered = ConsumerSubject.create(this.sub.on('dcBusEss'), false);
   private readonly fmcAReset = ConsumerSubject.create(this.sub.on('a380x_reset_panel_fmc_a'), false);
@@ -100,13 +102,8 @@ export class FmcService implements FmcServiceInterface {
       new FlightManagementComputer(FmcIndex.FmcA, FmcOperatingModes.Master, this.bus, this.fmcAInop, mfdReference),
     );
 
-    this.fmc.push(
-      new FlightManagementComputer(FmcIndex.FmcB, FmcOperatingModes.Slave, this.bus, this.fmcBInop, mfdReference),
-    );
-
-    this.fmc.push(
-      new FlightManagementComputer(FmcIndex.FmcC, FmcOperatingModes.Standby, this.bus, this.fmcCInop, mfdReference),
-    );
+    this.dummyFmc.push(new DummyFlightManagementComputer(FmcIndex.FmcB, this.fmcBInop));
+    this.dummyFmc.push(new DummyFlightManagementComputer(FmcIndex.FmcC, this.fmcCInop));
 
     this.masterFmcChanged.notify();
   }

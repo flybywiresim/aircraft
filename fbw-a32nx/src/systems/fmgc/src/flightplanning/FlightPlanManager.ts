@@ -61,105 +61,101 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
   ) {
     const sub = bus.getSubscriber<FlightPlanEvents>();
 
-    // FIXME once we properly use flight plan sync across different FMC/FMS instances, remove this condition.
-    // At the moment, it prohibits non-master instances to react to sync messages to improve performance.
-    if (this.master) {
-      this.subs.push(
-        sub.on('flightPlanManager.syncRequest').handle(() => {
-          // TODO clarify, I guess only one instance should reply to this
-          if (!this.ignoreSync && this.master) {
-            const plansRecord: Record<number, SerializedFlightPlan> = {};
+    this.subs.push(
+      sub.on('flightPlanManager.syncRequest').handle(() => {
+        // TODO clarify, I guess only one instance should reply to this
+        if (!this.ignoreSync && this.master) {
+          const plansRecord: Record<number, SerializedFlightPlan> = {};
 
-            for (const plan of this.plans) {
-              if (plan) {
-                plansRecord[plan.index] = plan.serialize();
-              }
-            }
-
-            const response: FlightPlanSyncResponsePacket = { syncClientID: this.syncClientID, plans: plansRecord };
-
-            this.sendEvent('flightPlanManager.syncResponse', response);
-          }
-        }),
-      );
-
-      // TODO handle this in the event queue
-      this.subs.push(
-        sub.on('flightPlanManager.syncResponse').handle(async (event) => {
-          if (!this.ignoreSync && this.syncClientID === event.syncClientID) {
-            for (const [index, serialisedPlan] of Object.entries(event.plans)) {
-              const intIndex = parseInt(index);
-
-              const newPlan = await FlightPlan.fromSerializedFlightPlan(
-                this.context,
-                intIndex,
-                serialisedPlan,
-                this.bus,
-                this.performanceDataInit.clone(),
-              );
-
-              this.set(intIndex, newPlan);
-            }
-
-            this._initialized.set(true);
-          }
-        }),
-      );
-
-      this.subs.push(
-        sub.on('flightPlanManager.create').handle((event) => {
-          if (!this.ignoreSync && this.syncClientID === event.syncClientID) {
-            this.create(event.planIndex, false);
-          }
-        }),
-      );
-
-      this.subs.push(
-        sub.on('flightPlanManager.delete').handle((event) => {
-          if (!this.ignoreSync && this.syncClientID === event.syncClientID) {
-            this.delete(event.planIndex, false);
-          }
-        }),
-      );
-
-      this.subs.push(
-        sub.on('flightPlanManager.deleteAll').handle(() => {
-          if (!this.ignoreSync) {
-            this.deleteAll(false);
-          }
-        }),
-      );
-
-      this.subs.push(
-        sub.on('flightPlanManager.copy').handle((event) => {
-          if (!this.ignoreSync && this.syncClientID !== event.syncClientID) {
-            this.copy(event.planIndex, event.targetPlanIndex, event.options, false);
-          }
-        }),
-      );
-
-      this.subs.push(
-        sub.on('flightPlanManager.swap').handle((event) => {
-          if (!this.ignoreSync && this.syncClientID !== event.syncClientID) {
-            this.swap(event.planIndex, event.targetPlanIndex, false);
-          }
-        }),
-      );
-
-      this.subs.push(
-        this.bus.onAll((key, event: FlightPlanEditSyncEvent | FlightPlanBatchChangeEvent) => {
-          if (!this.ignoreSync && key.startsWith('SYNC_flightPlan') && typeof event === 'object') {
-            this.syncEventQueue.push([key as keyof SyncFlightPlanEvents, event]);
-
-            if (!this.processingSyncEvents) {
-              this.processSyncEventQueue();
+          for (const plan of this.plans) {
+            if (plan) {
+              plansRecord[plan.index] = plan.serialize();
             }
           }
-        }),
-      );
 
-      this.subs.push(this._initialized.sub(() => this.initialized.notify(undefined, undefined)));
-    }
+          const response: FlightPlanSyncResponsePacket = { syncClientID: this.syncClientID, plans: plansRecord };
+
+          this.sendEvent('flightPlanManager.syncResponse', response);
+        }
+      }),
+    );
+
+    // TODO handle this in the event queue
+    this.subs.push(
+      sub.on('flightPlanManager.syncResponse').handle(async (event) => {
+        if (!this.ignoreSync && this.syncClientID === event.syncClientID) {
+          for (const [index, serialisedPlan] of Object.entries(event.plans)) {
+            const intIndex = parseInt(index);
+
+            const newPlan = await FlightPlan.fromSerializedFlightPlan(
+              this.context,
+              intIndex,
+              serialisedPlan,
+              this.bus,
+              this.performanceDataInit.clone(),
+            );
+
+            this.set(intIndex, newPlan);
+          }
+
+          this._initialized.set(true);
+        }
+      }),
+    );
+
+    this.subs.push(
+      sub.on('flightPlanManager.create').handle((event) => {
+        if (!this.ignoreSync && this.syncClientID === event.syncClientID) {
+          this.create(event.planIndex, false);
+        }
+      }),
+    );
+
+    this.subs.push(
+      sub.on('flightPlanManager.delete').handle((event) => {
+        if (!this.ignoreSync && this.syncClientID === event.syncClientID) {
+          this.delete(event.planIndex, false);
+        }
+      }),
+    );
+
+    this.subs.push(
+      sub.on('flightPlanManager.deleteAll').handle(() => {
+        if (!this.ignoreSync) {
+          this.deleteAll(false);
+        }
+      }),
+    );
+
+    this.subs.push(
+      sub.on('flightPlanManager.copy').handle((event) => {
+        if (!this.ignoreSync && this.syncClientID !== event.syncClientID) {
+          this.copy(event.planIndex, event.targetPlanIndex, event.options, false);
+        }
+      }),
+    );
+
+    this.subs.push(
+      sub.on('flightPlanManager.swap').handle((event) => {
+        if (!this.ignoreSync && this.syncClientID !== event.syncClientID) {
+          this.swap(event.planIndex, event.targetPlanIndex, false);
+        }
+      }),
+    );
+
+    this.subs.push(
+      this.bus.onAll((key, event: FlightPlanEditSyncEvent | FlightPlanBatchChangeEvent) => {
+        if (!this.ignoreSync && key.startsWith('SYNC_flightPlan') && typeof event === 'object') {
+          this.syncEventQueue.push([key as keyof SyncFlightPlanEvents, event]);
+
+          if (!this.processingSyncEvents) {
+            this.processSyncEventQueue();
+          }
+        }
+      }),
+    );
+
+    this.subs.push(this._initialized.sub(() => this.initialized.notify(undefined, undefined)));
 
     if (!this.master) {
       setTimeout(() => this.sendEvent('flightPlanManager.syncRequest', undefined), 5_000);

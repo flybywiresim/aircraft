@@ -32,6 +32,7 @@ import {
   isMsfs2024,
   logTroubleshootingError,
   NXDataStore,
+  RegisteredSimVar,
   Units,
   UpdateThrottler,
   VerticalPathCheckpoint,
@@ -81,13 +82,17 @@ export interface FmsErrorMessage {
 
 export const FMS_CYCLE_TIME = 250; // ms
 export const A380X_NUM_LEGS_ON_FPLN_PAGE = 9;
-export const A380X_NUM_SECONDARY_FLIGHT_PLANS = 3;
 
 /*
  * Handles navigation (and potentially other aspects) for MFD pages
  */
 export class FlightManagementComputer implements FmcInterface {
   protected readonly subs = [] as Subscription[];
+
+  // TODO change after tracers PR
+  private readonly healythSimvar = RegisteredSimVar.createBoolean(
+    `L:A32NX_FMC_${this.instance === FmcIndex.FmcA ? 'A' : this.instance === FmcIndex.FmcB ? 'B' : 'C'}_IS_HEALTHY`,
+  );
 
   private readonly ndMessageFlags: Record<'L' | 'R', number> = {
     L: 0,
@@ -147,8 +152,18 @@ export class FlightManagementComputer implements FmcInterface {
   private fmsUpdateThrottler = new UpdateThrottler(FMS_CYCLE_TIME);
 
   private efisInterfaces = {
-    L: new EfisInterface('L', this.flightPlanInterface, A380X_NUM_LEGS_ON_FPLN_PAGE, A380X_NUM_SECONDARY_FLIGHT_PLANS),
-    R: new EfisInterface('R', this.flightPlanInterface, A380X_NUM_LEGS_ON_FPLN_PAGE, A380X_NUM_SECONDARY_FLIGHT_PLANS),
+    L: new EfisInterface(
+      'L',
+      this.flightPlanInterface,
+      A380X_NUM_LEGS_ON_FPLN_PAGE,
+      A380AircraftConfig.lnavConfig.NUM_SECONDARY_FLIGHT_PLANS,
+    ),
+    R: new EfisInterface(
+      'R',
+      this.flightPlanInterface,
+      A380X_NUM_LEGS_ON_FPLN_PAGE,
+      A380AircraftConfig.lnavConfig.NUM_SECONDARY_FLIGHT_PLANS,
+    ),
   };
 
   #guidanceController!: GuidanceController;
@@ -293,119 +308,118 @@ export class FlightManagementComputer implements FmcInterface {
     this.#navigation = new Navigation(this.bus, this.flightPlanInterface);
 
     // FIXME implement sync between FMCs and also let FMC-B and FMC-C compute
-    if (this.instance === FmcIndex.FmcA) {
-      this.flightPlanInterface.createFlightPlans();
-      this.acInterface = new FmcAircraftInterface(this.bus, this, this.fmgc, this.flightPlanInterface);
+    this.flightPlanInterface.createFlightPlans();
+    this.acInterface = new FmcAircraftInterface(this.bus, this, this.fmgc, this.flightPlanInterface);
 
-      this.#guidanceController = new GuidanceController(
-        this.bus,
-        this.fmgc,
-        this.flightPlanInterface,
-        this.efisInterfaces,
-        a380EfisRangeSettings,
-        A380AircraftConfig,
-      );
-      this.efisSymbolsLeft = new EfisSymbols(
-        this.bus,
-        'L',
-        this.#guidanceController,
-        this.flightPlanInterface,
-        this.navaidTuner,
-        this.efisInterfaces.L,
-        a380EfisRangeSettings,
-        true,
-      );
-      this.efisSymbolsRight = new EfisSymbols(
-        this.bus,
-        'R',
-        this.#guidanceController,
-        this.flightPlanInterface,
-        this.navaidTuner,
-        this.efisInterfaces.R,
-        a380EfisRangeSettings,
-        true,
-      );
+    this.#guidanceController = new GuidanceController(
+      this.bus,
+      this.fmgc,
+      this.flightPlanInterface,
+      this.efisInterfaces,
+      a380EfisRangeSettings,
+      A380AircraftConfig,
+    );
+    this.efisSymbolsLeft = new EfisSymbols(
+      this.bus,
+      'L',
+      this.#guidanceController,
+      this.flightPlanInterface,
+      this.navaidTuner,
+      this.efisInterfaces.L,
+      a380EfisRangeSettings,
+      true,
+    );
+    this.efisSymbolsRight = new EfisSymbols(
+      this.bus,
+      'R',
+      this.#guidanceController,
+      this.flightPlanInterface,
+      this.navaidTuner,
+      this.efisInterfaces.R,
+      a380EfisRangeSettings,
+      true,
+    );
 
-      // FIXME this needs to be changed when operating mode can vary. Need some other way of only instantiating this on only
-      // one FMC.
-      if (isMsfs2024() && this.operatingMode === FmcOperatingModes.Master) {
-        this.#msfsFlightPlanSync = new MsfsFlightPlanSync(this.bus, this.flightPlanInterface);
-      }
-
-      this.#navigation.init();
-      this.efisSymbolsLeft.init();
-      this.efisSymbolsRight.init();
-      this.flightPhaseManager.init();
-      this.#guidanceController.init();
-      this.fmgc.guidanceController = this.#guidanceController;
-
-      this.initSimVars();
-
-      this.flightPhaseManager.addOnPhaseChanged((prev, next) => this.onFlightPhaseChanged(prev, next));
-
-      // When the active flight plan changes, re-pipe all related subjects
-      this.subs.push(
-        this.flightPlanChangeNotifier.flightPlanChanged.sub(() => this.onActiveFlightPlanChanged(), true),
-        this.finalFuelWeight,
-        this.pilotEntryMinFuelBelowAltnPlusFinal,
-      );
-
-      this.subs.push(
-        this.shouldBePreflightPhase.sub((shouldBePreflight) => {
-          if (shouldBePreflight) {
-            this.flightPhaseManager.changePhase(FmgcFlightPhase.Preflight);
-          }
-        }, true),
-        this.enginesWereStarted.sub((val) => {
-          if (
-            val &&
-            this.flightPlanInterface.hasActive &&
-            !Number.isFinite(this.flightPlanInterface.active.performanceData.costIndex.get())
-          ) {
-            this.flightPlanInterface.active.setPerformanceData('costIndex', 0);
-            this.addMessageToQueue(NXSystemMessages.costIndexInUse.getModifiedMessage('000'));
-          }
-        }),
-        this.legacyFmsIsHealthy.sub((v) => {
-          // FIXME some of the systems require the A320 FMS health bits, need to refactor/split FMS stuff
-          SimVar.SetSimVarValue('L:A32NX_FM1_HEALTHY_DISCRETE', 'boolean', v);
-          SimVar.SetSimVarValue('L:A32NX_FM2_HEALTHY_DISCRETE', 'boolean', v);
-        }, true),
-
-        this.ZfwOrZfwCgUndefined,
-        this.ZfwOrZfwCgUndefined.sub((v) => {
-          if (!v) {
-            this.removeMessageFromQueue(NXSystemMessages.initializeZfwOrZfwCg.text);
-          }
-        }),
-
-        this.fmgc.data.cpnyFplnAvailable.sub((v) => {
-          if (v) {
-            this.addMessageToQueue(NXSystemMessages.comFplnReceivedPendingInsertion);
-          } else {
-            this.removeMessageFromQueue(NXSystemMessages.comFplnReceivedPendingInsertion.text);
-          }
-        }),
-        this.destDataEntered,
-        this.destDataEntered.sub((v) => {
-          if (v) {
-            this.removeMessageFromQueue(NXSystemMessages.enterDestData.text);
-          }
-        }),
-      );
-
-      this.subs.push(this.shouldBePreflightPhase, this.flightPhase, this.activePage);
-
-      this.subs.push(
-        this.fmgc.data.engineOut.sub((eo) => {
-          if (eo) {
-            this.enterEngineOut();
-          } else {
-            this.exitEngineOut();
-          }
-        }),
-      );
+    // FIXME this needs to be changed when operating mode can vary. Need some other way of only instantiating this on only
+    // one FMC.
+    if (isMsfs2024() && this.operatingMode === FmcOperatingModes.Master) {
+      this.#msfsFlightPlanSync = new MsfsFlightPlanSync(this.bus, this.flightPlanInterface);
     }
+
+    this.#navigation.init();
+    this.efisSymbolsLeft.init();
+    this.efisSymbolsRight.init();
+    this.flightPhaseManager.init();
+    this.#guidanceController.init();
+    this.fmgc.guidanceController = this.#guidanceController;
+
+    this.initSimVars();
+
+    this.flightPhaseManager.addOnPhaseChanged((prev, next) => this.onFlightPhaseChanged(prev, next));
+
+    // When the active flight plan changes, re-pipe all related subjects
+    this.subs.push(
+      this.flightPlanChangeNotifier.flightPlanChanged.sub(() => this.onActiveFlightPlanChanged(), true),
+      this.finalFuelWeight,
+      this.pilotEntryMinFuelBelowAltnPlusFinal,
+    );
+
+    this.subs.push(
+      this.shouldBePreflightPhase.sub((shouldBePreflight) => {
+        if (shouldBePreflight) {
+          this.flightPhaseManager.changePhase(FmgcFlightPhase.Preflight);
+        }
+      }, true),
+      this.enginesWereStarted.sub((val) => {
+        if (
+          val &&
+          this.flightPlanInterface.hasActive &&
+          !Number.isFinite(this.flightPlanInterface.active.performanceData.costIndex.get())
+        ) {
+          this.flightPlanInterface.active.setPerformanceData('costIndex', 0);
+          this.addMessageToQueue(NXSystemMessages.costIndexInUse.getModifiedMessage('000'));
+        }
+      }),
+      this.legacyFmsIsHealthy.sub((v) => {
+        // FIXME some of the systems require the A320 FMS health bits, need to refactor/split FMS stuff
+        SimVar.SetSimVarValue('L:A32NX_FM1_HEALTHY_DISCRETE', 'boolean', v);
+        SimVar.SetSimVarValue('L:A32NX_FM2_HEALTHY_DISCRETE', 'boolean', v);
+      }, true),
+
+      this.ZfwOrZfwCgUndefined,
+      this.ZfwOrZfwCgUndefined.sub((v) => {
+        if (!v) {
+          this.removeMessageFromQueue(NXSystemMessages.initializeZfwOrZfwCg.text);
+        }
+      }),
+
+      this.fmgc.data.cpnyFplnAvailable.sub((v) => {
+        if (v) {
+          this.addMessageToQueue(NXSystemMessages.comFplnReceivedPendingInsertion);
+        } else {
+          this.removeMessageFromQueue(NXSystemMessages.comFplnReceivedPendingInsertion.text);
+        }
+      }),
+      this.destDataEntered,
+      this.destDataEntered.sub((v) => {
+        if (v) {
+          this.removeMessageFromQueue(NXSystemMessages.enterDestData.text);
+        }
+      }),
+      this.fmcInop.sub((value) => this.healythSimvar.set(!value), true),
+    );
+
+    this.subs.push(this.shouldBePreflightPhase, this.flightPhase, this.activePage);
+
+    this.subs.push(
+      this.fmgc.data.engineOut.sub((eo) => {
+        if (eo) {
+          this.enterEngineOut();
+        } else {
+          this.exitEngineOut();
+        }
+      }),
+    );
 
     let lastUpdateTime = Date.now();
     setInterval(() => {
@@ -1324,14 +1338,6 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   private onUpdate(dt: number) {
-    const isHealthy = !this.fmcInop.get();
-
-    SimVar.SetSimVarValue(
-      `L:A32NX_FMC_${this.instance === FmcIndex.FmcA ? 'A' : this.instance === FmcIndex.FmcB ? 'B' : 'C'}_IS_HEALTHY`,
-      SimVarValueType.Bool,
-      isHealthy,
-    );
-
     // Stop early, if not FmcA or if all FMCs failed
     const allFmcResetsPulled =
       SimVar.GetSimVarValue('L:A32NX_RESET_PANEL_FMC_A', SimVarValueType.Bool) &&
@@ -1343,8 +1349,9 @@ export class FlightManagementComputer implements FmcInterface {
       !SimVar.GetSimVarValue('L:A32NX_FMC_C_IS_HEALTHY', SimVarValueType.Bool);
 
     this.legacyFmsIsHealthy.set(!allFmcInop);
-    if (this.instance !== FmcIndex.FmcA || (this.instance === FmcIndex.FmcA && (allFmcResetsPulled || allFmcInop))) {
-      if (this.instance === FmcIndex.FmcA && this.wasReset === false) {
+    // FIXME remove this condition if proper FMC sync is implemented. For now, we only reset if all FMCs failed.
+    if (allFmcResetsPulled || allFmcInop) {
+      if (this.wasReset === false) {
         this.reset();
       }
       return;
@@ -1624,18 +1631,16 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   async reset(): Promise<void> {
-    if (this.instance === FmcIndex.FmcA) {
-      // FIXME reset ATSU when it is added to A380X
-      // this.atsu.resetAtisAutoUpdate();
-      this.wasReset = true;
-      await this.flightPlanInterface.reset();
-      this.fmgc.data.reset();
-      this.initSimVars();
-      this.deleteAllStoredWaypoints();
-      this.clearLatestFmsErrorMessage();
-      this.mfdReference?.uiService.navigateTo('fms/data/status');
-      this.navigation.resetState();
-    }
+    // FIXME reset ATSU when it is added to A380X
+    // this.atsu.resetAtisAutoUpdate();
+    this.wasReset = true;
+    await this.flightPlanInterface.reset();
+    this.fmgc.data.reset();
+    this.initSimVars();
+    this.deleteAllStoredWaypoints();
+    this.clearLatestFmsErrorMessage();
+    this.mfdReference?.uiService.navigateTo('fms/data/status');
+    this.navigation.resetState();
   }
 
   public logTroubleshootingError(msg: any) {
