@@ -63,6 +63,13 @@
 1. [FMS] Use localizer station declination for true courses on approach legs - @BlueberryKing (BlueberryKing)
 1. [A380X/FMS] Add FUEL PENALTY function - @BravoMike99 (bruno_pt99)
 1. [A380X/MFD] Update DATA/STATUS page with newer software layout - @BravoMike99 (bruno_pt99)
+1. [A32NX/FMS] Fix pilot entered managed descent mach being ignored - @BlueberryKing (BlueberryKing)
+1. [A32NX/FWS] Add `PARK BRK ON` master caution - @FozzieHi (fozzie)
+1. [A32NX/GPWS] Implement simulated GPWC in rust systems - @lukecologne (luke)
+1. [A32NX/FWC] Improve CAB PR LO DIFF PR warning logic to avoid spurious warnings - @tracernz (Mike)
+1. [A32NX/FWS] Fixed stall warning not working - @tracernz (Mike)
+1. [A380X/MFD] Add initial implementation of D-ATIS page in ATCCOM - @heclak (Heclak)
+1. [A32NX/FWS] Fixed takeoff memo not working in flight phase 9 (after landing) - @tracernz (Mike)
 1. [A380X/FUEL] Add first FQMS fuel measuring implementation - @Gurgel100 (Pascal)
 
 ## 0.14.0

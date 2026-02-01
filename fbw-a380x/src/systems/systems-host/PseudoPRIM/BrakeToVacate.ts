@@ -1,7 +1,7 @@
 // Copyright (c) 2023-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { ConsumerSubject, EventBus, Instrument, MappedSubject, SimVarValueType } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, EventBus, Instrument, MappedSubject } from '@microsoft/msfs-sdk';
 import {
   Arinc429LocalVarConsumerSubject,
   Arinc429RegisterSubject,
@@ -65,10 +65,7 @@ export class BrakeToVacate implements Instrument {
 
   private readonly runwayBearingArinc = Arinc429RegisterSubject.createEmpty();
 
-  private readonly btvApprDifferentRunwaySimvar = RegisteredSimVar.create<boolean>(
-    'L:A32NX_BTV_APPR_DIFFERENT_RUNWAY',
-    SimVarValueType.Bool,
-  );
+  private readonly btvApprDifferentRunwaySimvar = RegisteredSimVar.createBoolean('L:A32NX_BTV_APPR_DIFFERENT_RUNWAY');
 
   private readonly oansSelectedRunway = ConsumerSubject.create(this.sub.on('oansSelectedLandingRunway'), null);
   private readonly oansSelectedExit = ConsumerSubject.create(this.sub.on('oansSelectedExit'), null);
@@ -210,7 +207,7 @@ export class BrakeToVacate implements Instrument {
     );
 
     this.remainingDistToExitArinc.sub((v) => {
-      v.writeToSimVar('L:A32NX_OANS_BTV_REQ_STOPPING_DISTANCE');
+      v.writeToSimVar('L:A32NX_OANS_BTV_REMAINING_DIST_TO_EXIT');
     }, true);
     this.remaininingDistToRwyEndArinc.sub((v) => {
       v.writeToSimVar('L:A32NX_OANS_BTV_REMAINING_DIST_TO_RWY_END');

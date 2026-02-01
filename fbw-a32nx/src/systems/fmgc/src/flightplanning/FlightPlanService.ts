@@ -210,7 +210,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     }
 
     if (temporaryPlan.alternateFlightPlan.pendingAirways) {
-      await temporaryPlan.finaliseAirwayEntry();
+      await temporaryPlan.alternateFlightPlan.finaliseAirwayEntry();
     }
 
     const tmpyFromLeg = temporaryPlan.maybeElementAt(temporaryPlan.activeLegIndex - 1);

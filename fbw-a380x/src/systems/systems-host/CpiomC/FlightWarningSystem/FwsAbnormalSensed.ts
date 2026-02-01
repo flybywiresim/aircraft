@@ -3854,7 +3854,7 @@ export class FwsAbnormalSensed {
     340800015: {
       // ARPT NAV LOST
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
-      simVarIsActive: this.fws.arptNavLost,
+      simVarIsActive: this.fws.arptNavFault,
       notActiveWhenItemActive: [],
       whichItemsToShow: () => [],
       whichItemsChecked: () => [],
