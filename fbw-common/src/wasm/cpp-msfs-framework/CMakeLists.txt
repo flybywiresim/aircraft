@@ -50,3 +50,6 @@ target_compile_definitions(cpp-msfs-framework-a32nx PUBLIC A32NX)
 
 add_library(cpp-msfs-framework-a380x OBJECT ${SOURCE_FILES} ${INCLUDE_FILES})
 target_compile_definitions(cpp-msfs-framework-a380x PUBLIC A380X)
+
+add_library(cpp-msfs-framework-lvar-provider OBJECT ${SOURCE_FILES} ${INCLUDE_FILES})
+target_compile_definitions(cpp-msfs-framework-lvar-provider PUBLIC LVAR_PROVIDER)
