@@ -360,6 +360,10 @@ export class FwsCore {
 
   public readonly wingAntiIce = Subject.create(false);
 
+  public readonly aicuResetSwitch1 = Subject.create(false);
+
+  public readonly aicuResetSwitch2 = Subject.create(false);
+
   public readonly voiceVhf3 = Subject.create(false);
 
   public readonly smokeFumesActivated = this.activeAbnormalNonSensedKeys.map((set) => set.has(260900097));
@@ -2959,6 +2963,8 @@ export class FwsCore {
     this.eng3AntiIce.set(!!SimVar.GetSimVarValue('A:ENG ANTI ICE:3', 'bool'));
     this.eng4AntiIce.set(!!SimVar.GetSimVarValue('A:ENG ANTI ICE:4', 'bool'));
     this.wingAntiIce.set(!!SimVar.GetSimVarValue('A:STRUCTURAL DEICE SWITCH', 'bool'));
+    this.aicuResetSwitch1.set(!!SimVar.GetSimVarValue('L:A32NX_RESET_PANEL_AICU1', 'bool'));
+    this.aicuResetSwitch2.set(!!SimVar.GetSimVarValue('L:A32NX_RESET_PANEL_AICU2', 'bool'));
     this.throttle1Position.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:1', 'number'));
     this.throttle2Position.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:2', 'number'));
     this.throttle3Position.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:3', 'number'));

@@ -1,7 +1,7 @@
 ﻿// Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { AbnormalProcedure } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import { AbnormalProcedure, ChecklistLineStyle } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 
 // Convention for IDs:
 // First two digits: ATA chapter
@@ -853,18 +853,40 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
     ],
   },
   280900001: {
-    title: '\x1b<4m\x1b4mFUEL\x1bm JETTISON (WIP)',
+    title: '\x1b<4m\x1b4mFUEL\x1bm JETTISON',
     sensed: false,
-    items: [], // TODO
+    items: [
+      { name: 'FMS FUEL & LOAD PAGE', labelNotCompleted: 'SELECT', sensed: false },
+      { name: 'JETTISON GW', labelNotCompleted: 'ENTER', sensed: false },
+      { name: 'TRIM TK FEED', labelNotCompleted: 'AUTO', sensed: true },
+      { name: 'JETTISON ARM', labelNotCompleted: 'ON', sensed: true },
+      { name: 'JETTISON ACTIVE', labelNotCompleted: 'ON', sensed: true },
+      { name: 'JETTISON & CG', labelNotCompleted: 'MONITOR', sensed: false },
+      { name: 'WHEN JETTISON COMPLETED (AUTO RCL)', condition: true, sensed: false },
+      { name: 'JETTISON ACTIVE', labelNotCompleted: 'OFF', sensed: true, level: 1 },
+      { name: 'JETTISON ARM', labelNotCompleted: 'OFF', sensed: true, level: 1 },
+      { name: 'JETTISON MANUAL STOP RQRD', condition: true, sensed: false },
+      { name: 'JETTISON ACTIVE', labelNotCompleted: 'OFF', sensed: true, level: 1 },
+      { name: 'JETTISON ARM', labelNotCompleted: 'OFF', sensed: true, level: 1 },
+    ],
   },
   280900002: {
-    title: '\x1b<4m\x1b4mFUEL\x1bm FUEL LEAK (WIP)',
+    title: '\x1b<4m\x1b4mFUEL\x1bm FUEL LEAK',
     sensed: false,
-    items: [], // TODO
+    items: [
+      { name: 'ALL TKs QTY & FOB & FU', labelNotCompleted: 'CHECK', sensed: false },
+      { name: 'FOB+FU / BLOCK DISAGREE', condition: true, sensed: false },
+      { name: 'ALL CROSSFEEDS', labelNotCompleted: 'OFF', sensed: true, level: 1 },
+      { name: 'INR TKs PMPs', labelNotCompleted: 'OFF', sensed: true, level: 1 },
+      { name: 'MID TKs PMPs', labelNotCompleted: 'OFF', sensed: true, level: 1 },
+      { name: 'OUTR TKs PMPs', labelNotCompleted: 'OFF', sensed: true, level: 1 },
+      { name: 'TRIM TK PMPs', labelNotCompleted: 'OFF', sensed: true, level: 1 },
+      { name: 'EXPECT FUEL IMBALANCE', sensed: false, level: 1, style: ChecklistLineStyle.Green },
+    ],
   },
   280900003: {
-    title: '\x1b<4m\x1b4mFUEL\x1bm MAN BALANCING PROCEDURE (WIP)',
+    title: '\x1b<4m\x1b4mFUEL\x1bm MAN BALANCING PROCEDURE',
     sensed: false,
-    items: [], // TODO
+    items: [],
   },
 };
