@@ -209,19 +209,30 @@ export class EfisSymbols<T extends number> {
     const tempFpVersion = this.flightPlanService.has(FlightPlanIndex.Temporary)
       ? this.flightPlanService.temporary.version
       : -1;
-    const secFpVersion = this.flightPlanService.has(FlightPlanIndex.FirstSecondary)
-      ? this.flightPlanService.secondary(1).version
-      : -1;
 
     const activeFPVersionChanged = this.lastFpVersions[FlightPlanIndex.Active] !== activeFpVersion;
     const tempFPVersionChanged = this.lastFpVersions[FlightPlanIndex.Temporary] !== tempFpVersion;
-    const secFPVersionChanged = this.lastFpVersions[FlightPlanIndex.FirstSecondary] !== secFpVersion;
+    let secFPVersionChanged = false;
+    for (let i = 0; i < this.efisInterface.numSecondaryFlightPlans; i++) {
+      secFPVersionChanged =
+        secFPVersionChanged ||
+        this.lastFpVersions[FlightPlanIndex.FirstSecondary + i] !==
+          (this.flightPlanService.has(FlightPlanIndex.FirstSecondary + i)
+            ? this.flightPlanService.secondary(i + 1).version
+            : -1);
+    }
 
     const fpChanged = activeFPVersionChanged || tempFPVersionChanged || secFPVersionChanged;
 
     this.lastFpVersions[FlightPlanIndex.Active] = activeFpVersion;
     this.lastFpVersions[FlightPlanIndex.Temporary] = tempFpVersion;
-    this.lastFpVersions[FlightPlanIndex.FirstSecondary] = secFpVersion;
+    for (let i = 0; i < this.efisInterface.numSecondaryFlightPlans; i++) {
+      this.lastFpVersions[FlightPlanIndex.FirstSecondary + i] = this.flightPlanService.has(
+        FlightPlanIndex.FirstSecondary + i,
+      )
+        ? this.flightPlanService.secondary(i + 1).version
+        : -1;
+    }
 
     const navaidsChanged = this.lastNavaidVersion !== this.navaidTuner.navaidVersion;
     this.lastNavaidVersion = this.navaidTuner.navaidVersion;
@@ -502,41 +513,31 @@ export class EfisSymbols<T extends number> {
       }
     }
 
-    // SEC
-    if (
-      this.flightPlanService.hasSecondary(1) &&
-      this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.FirstSecondary) &&
-      this.efisInterface.shouldTransmitSecondary()
-    ) {
-      const symbols = this.getFlightPlanSymbols(
-        false,
-        this.flightPlanService.secondary(1),
-        this.guidanceController.secondaryGeometry,
-        range,
-        efisOption,
-        mode,
-        this.side,
-        mapReferencePoint,
-        mapOrientation,
-        editArea,
-        formatConstraintAlt,
-        formatConstraintSpeed,
+    if (this.side === 'L') {
+      console.log(
+        this.efisInterface.shouldTransmitSecondary(1),
+        this.efisInterface.shouldTransmitSecondary(2),
+        this.efisInterface.shouldTransmitSecondary(3),
       );
 
-      for (const symbol of symbols) {
-        upsertSymbol(symbol);
-      }
+      console.log(
+        this.flightPlanService.hasSecondary(3),
+        this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.FirstSecondary + 3 - 1),
+        this.efisInterface.shouldTransmitSecondary(3),
+      );
+    }
 
-      // SEC ALTN
+    // SEC
+    for (let secIndex = 1; secIndex <= this.efisInterface.numSecondaryFlightPlans; secIndex++) {
       if (
-        this.flightPlanService.secondary(1).alternateFlightPlan.legCount > 0 &&
-        this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.FirstSecondary) &&
-        this.efisInterface.shouldTransmitAlternate(FlightPlanIndex.FirstSecondary, mode === EfisNdMode.PLAN)
+        this.flightPlanService.hasSecondary(secIndex) &&
+        this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.FirstSecondary + secIndex - 1) &&
+        this.efisInterface.shouldTransmitSecondary(secIndex)
       ) {
         const symbols = this.getFlightPlanSymbols(
-          true,
-          this.flightPlanService.secondary(1).alternateFlightPlan,
-          this.guidanceController.getGeometryForFlightPlan(FlightPlanIndex.FirstSecondary, true),
+          false,
+          this.flightPlanService.secondary(secIndex),
+          this.guidanceController.secondaryGeometry(secIndex),
           range,
           efisOption,
           mode,
@@ -550,6 +551,35 @@ export class EfisSymbols<T extends number> {
 
         for (const symbol of symbols) {
           upsertSymbol(symbol);
+        }
+
+        // SEC ALTN
+        if (
+          this.flightPlanService.secondary(secIndex).alternateFlightPlan.legCount > 0 &&
+          this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.FirstSecondary + secIndex - 1) &&
+          this.efisInterface.shouldTransmitAlternate(
+            FlightPlanIndex.FirstSecondary + secIndex - 1,
+            mode === EfisNdMode.PLAN,
+          )
+        ) {
+          const symbols = this.getFlightPlanSymbols(
+            true,
+            this.flightPlanService.secondary(secIndex).alternateFlightPlan,
+            this.guidanceController.getGeometryForFlightPlan(FlightPlanIndex.FirstSecondary + secIndex - 1, true),
+            range,
+            efisOption,
+            mode,
+            this.side,
+            mapReferencePoint,
+            mapOrientation,
+            editArea,
+            formatConstraintAlt,
+            formatConstraintSpeed,
+          );
+
+          for (const symbol of symbols) {
+            upsertSymbol(symbol);
+          }
         }
       }
     }

@@ -1169,6 +1169,18 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       </>
     );
   }
+
+  public destroy(): void {
+    this.props.fmcService.master?.updateEfisPlanCentre(
+      this.props.mfd.uiService.captOrFo === 'CAPT' ? 'L' : 'R',
+      FlightPlanIndex.Active,
+      this.props.fmcService.master?.flightPlanInterface.active.activeLegIndex,
+      this.props.fmcService.master?.flightPlanInterface.active.activeLegIndex >=
+        this.props.fmcService.master?.flightPlanInterface.active.allLegs.length,
+    );
+
+    super.destroy();
+  }
 }
 
 interface FplnLineCommonProps extends ComponentProps {

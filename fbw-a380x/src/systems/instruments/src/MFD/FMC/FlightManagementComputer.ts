@@ -80,6 +80,8 @@ export interface FmsErrorMessage {
 }
 
 export const FMS_CYCLE_TIME = 250; // ms
+export const A380X_NUM_LEGS_ON_FPLN_PAGE = 9;
+export const A380X_NUM_SECONDARY_FLIGHT_PLANS = 3;
 
 /*
  * Handles navigation (and potentially other aspects) for MFD pages
@@ -145,8 +147,8 @@ export class FlightManagementComputer implements FmcInterface {
   private fmsUpdateThrottler = new UpdateThrottler(FMS_CYCLE_TIME);
 
   private efisInterfaces = {
-    L: new EfisInterface('L', this.flightPlanInterface),
-    R: new EfisInterface('R', this.flightPlanInterface),
+    L: new EfisInterface('L', this.flightPlanInterface, A380X_NUM_LEGS_ON_FPLN_PAGE, A380X_NUM_SECONDARY_FLIGHT_PLANS),
+    R: new EfisInterface('R', this.flightPlanInterface, A380X_NUM_LEGS_ON_FPLN_PAGE, A380X_NUM_SECONDARY_FLIGHT_PLANS),
   };
 
   #guidanceController!: GuidanceController;
@@ -1456,7 +1458,11 @@ export class FlightManagementComputer implements FmcInterface {
   ) {
     this.efisInterfaces[side].setNumLegsOnFplnPage(this.flightPlanInterface.hasTemporary ? 7 : 8);
     this.efisInterfaces[side].setPlanCentre(planDisplayForPlan, planDisplayLegIndex, planDisplayInAltn);
-    this.efisInterfaces[side].setSecRelatedPageOpen(planDisplayForPlan >= FlightPlanIndex.FirstSecondary);
+    this.efisInterfaces[side].setSecRelatedPageOpen(
+      planDisplayForPlan >= FlightPlanIndex.FirstSecondary
+        ? planDisplayForPlan - FlightPlanIndex.FirstSecondary + 1
+        : null,
+    );
   }
 
   handleFcuAltKnobPushPull(distanceToDestination: number): void {

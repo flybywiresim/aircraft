@@ -18,6 +18,7 @@ const lnavConfig: LnavConfig = {
   TURN_RADIUS_FACTOR: 1.0,
   NUM_COMPUTED_TRANSITIONS_AFTER_ACTIVE: -1,
   EMIT_END_OF_VD_MARKER: true,
+  NUM_SECONDARY_FLIGHT_PLANS: 3,
 };
 
 const vnavConfig: VnavConfig = {
