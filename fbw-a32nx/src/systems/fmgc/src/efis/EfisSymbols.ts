@@ -513,20 +513,6 @@ export class EfisSymbols<T extends number> {
       }
     }
 
-    if (this.side === 'L') {
-      console.log(
-        this.efisInterface.shouldTransmitSecondary(1),
-        this.efisInterface.shouldTransmitSecondary(2),
-        this.efisInterface.shouldTransmitSecondary(3),
-      );
-
-      console.log(
-        this.flightPlanService.hasSecondary(3),
-        this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.FirstSecondary + 3 - 1),
-        this.efisInterface.shouldTransmitSecondary(3),
-      );
-    }
-
     // SEC
     for (let secIndex = 1; secIndex <= this.efisInterface.numSecondaryFlightPlans; secIndex++) {
       if (

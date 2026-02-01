@@ -237,13 +237,13 @@ export class FmcAircraftInterface {
 
     // write local vars for other systems
     this.subs.push(
-      this.fmgc.data.greenDotSpeed.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_GD', 'number', v), true),
+      this.fmgc.data.greenDotSpeed.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_GD', 'number', v ?? 0), true),
     );
     this.subs.push(
-      this.fmgc.data.slatRetractionSpeed.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_S', 'number', v), true),
+      this.fmgc.data.slatRetractionSpeed.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_S', 'number', v ?? 0), true),
     );
     this.subs.push(
-      this.fmgc.data.flapRetractionSpeed.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_F', 'number', v), true),
+      this.fmgc.data.flapRetractionSpeed.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_F', 'number', v ?? 0), true),
     );
 
     this.subs.push(this.speedVs1g.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VS', 'number', v), true));
