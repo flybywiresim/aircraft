@@ -47,6 +47,8 @@ class Fcdc {
 
   void updateApproachCapability(double deltaTime);
 
+  void updateBtvRowRop(double deltaTime);
+
   PitchLaw getPitchLawStatusFromBits(bool bit1, bool bit2, bool bit3);
 
   LateralLaw getLateralLawStatusFromBits(bool bit1, bool bit2);
@@ -67,7 +69,25 @@ class Fcdc {
 
   const double minimumPowerOutageTimeForFailure = 0.01;
 
+  int masterPrimIndex = 0;
+  bool allPrimsDead = false;
+
+  double radioAlt = 0.0;
+
   bool lastBtvExitMissed = false;
+  bool lastBtvActive = false;
+  bool lastBtvArmed = false;
+  bool ldgPerfAffectedRowRopLost = false;
+  bool ldgPerfAffectedBtvLost = false;
+  bool ldgDistAffectedRowRopLost = false;
+  bool ldgDistAffectedBtvLost = false;
+  bool arptNavLost = false;
+  bool rowLost = false;
+  bool ropLost = false;
+  bool btvLost = false;
+
+  bool ldgPerfAffectedMisc = false;
+  bool ldgDistAffectedMisc = false;
 
   bool land2Capacity = false;
   bool land3FailPassiveCapacity = false;
@@ -78,7 +98,7 @@ class Fcdc {
   bool land3FailPassiveInop = false;
   bool land3FailOperationalInop = false;
 
-  TriggeredMonostableNode btvExitMissedMtrig = TriggeredMonostableNode(1);  // Emit for 1s to make sure it reaches FWS
+  TriggeredMonostableNode btvTripleClickMtrig = TriggeredMonostableNode(1);  // Emit for 1s to make sure it reaches FWS
   TriggeredMonostableNode capabilityTripleClickMtrig = TriggeredMonostableNode(1);
   TriggeredMonostableNode modeReversionTripleClickMtrig = TriggeredMonostableNode(1);
 

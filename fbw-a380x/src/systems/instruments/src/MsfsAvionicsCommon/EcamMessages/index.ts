@@ -177,7 +177,17 @@ export const EcamMemos: { [n: string]: string } = {
 };
 
 /** Only these IDs will be shown in the PFD MEMO section */
-export const pfdMemoDisplay: string[] = ['000006002', '220000001', '220000002', '300000001', '300000002', '320000001'];
+
+export const AThrOffMemoKey = '220000002';
+
+export const pfdMemoDisplay: string[] = [
+  '000006002',
+  '220000001',
+  AThrOffMemoKey,
+  '300000001',
+  '300000002',
+  '320000001',
+];
 
 /** All possible INFOs (e.g. LAND 3 SINGLE ONLY), with special formatting characters. */
 export const EcamInfos: { [n: string]: string } = {
@@ -528,7 +538,7 @@ export const EcamInopSys: { [n: string]: string } = {
   320300007: '\x1b<4mBTV',
   320300008: '\x1b<4mNORM BRK',
   320300009: '\x1b<4mPARK BRK',
-  320300010: '\x1b<4mPPEDAL BRAKING',
+  320300010: '\x1b<4mPEDAL BRAKING',
   320300011: '\x1b<4mL/G CTL 1+2',
   320300012: '\x1b<4mL/G DOORS',
   320300013: '\x1b<4mL/G RETRACTION',
@@ -543,6 +553,7 @@ export const EcamInopSys: { [n: string]: string } = {
   320300022: '\x1b<4mROW/ROP',
   320300023: '\x1b<4mPART L/G RETRACTION',
   320300024: '\x1b<4mNORM B/W STEER',
+  320300025: '\x1b<4mRWY OVERRUN PROT',
   340300001: '\x1b<4mGPWS 1',
   340300002: '\x1b<4mGPWS 2',
   340300003: '\x1b<4mGPWS 1+2',
@@ -587,6 +598,7 @@ export const EcamInopSys: { [n: string]: string } = {
   340300046: '\x1b<4mTAWS SYS 1',
   340300047: '\x1b<4mTAWS SYS 2',
   340300048: '\x1b<4mTAWS SYS 1+2',
+  340300049: '\x1b<4mARPT NAV',
   700300001: '\x1b<4mENG 2 REVERSER',
   700300002: '\x1b<4mENG 3 REVERSER',
   700300003: '\x1b<4mENG 2+3 REVERSERs',

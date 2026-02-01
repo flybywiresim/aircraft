@@ -8,7 +8,7 @@ import { LegacyAtsuPageInterface, setKeyNotActiveLskActions } from '../../legacy
 export class CDUAtcMessageMonitoring {
   static TranslateCpdlcResponse(response) {
     if (response) {
-      switch (response.Content[0].TypeId) {
+      switch (response.Content[0]?.TypeId) {
         case 'DM0':
           return 'WILC';
         case 'UM0':
