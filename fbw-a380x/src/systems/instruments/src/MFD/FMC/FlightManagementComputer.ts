@@ -479,7 +479,8 @@ export class FlightManagementComputer implements FmcInterface {
     // Preflight, engines on
     // LW = GW - TRIP - TAXI
     // TOW after engine start: TOW = GW - TAXI
-    return this.fmgc.getGrossWeightKg() - (this.fmgc.data.taxiFuel.get() ?? 0);
+    const gw = this.fmgc.getGrossWeightKg();
+    return gw ? gw - (this.fmgc.data.taxiFuel.get() ?? 0) : null;
   }
 
   public getTripFuel(): number | null {
