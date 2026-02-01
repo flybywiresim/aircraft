@@ -409,17 +409,17 @@ export class LnavDriver implements GuidanceComponent {
     }
   }
 
-  private updateSecDistanceToDestination(trueTrack: number) {
-    const secGeometry = this.guidanceController.getGeometryForFlightPlan(FlightPlanIndex.FirstSecondary);
+  private updateSecDistanceToDestination(trueTrack: number, secIndex: number = 1): void {
+    const secGeometry = this.guidanceController.getGeometryForFlightPlan(FlightPlanIndex.FirstSecondary + secIndex - 1);
 
     if (!secGeometry || secGeometry.legs.size <= 0) {
-      this.guidanceController.setAlongTrackDistanceToDestination(0, FlightPlanIndex.FirstSecondary);
+      this.guidanceController.setAlongTrackDistanceToDestination(0, FlightPlanIndex.FirstSecondary + secIndex - 1);
       return;
     }
 
     // Check if active legs are the same
     const activePlan = this.flightPlanService.active;
-    const secPlan = this.flightPlanService.secondary(1);
+    const secPlan = this.flightPlanService.secondary(secIndex);
 
     const secToLeg = secPlan.maybeElementAt(secPlan.activeLegIndex);
     const activeToLeg = activePlan.maybeElementAt(activePlan.activeLegIndex);
@@ -441,7 +441,10 @@ export class LnavDriver implements GuidanceComponent {
       ? secGeometry.computeAlongTrackDistanceToDestination(activePlan.activeLegIndex, this.ppos, trueTrack)
       : totalFlightPlanDistance;
 
-    this.guidanceController.setAlongTrackDistanceToDestination(distanceToDestination, FlightPlanIndex.FirstSecondary);
+    this.guidanceController.setAlongTrackDistanceToDestination(
+      distanceToDestination,
+      FlightPlanIndex.FirstSecondary + secIndex - 1,
+    );
   }
 
   public legEta(gs: Knots, termination: Coordinates): number {

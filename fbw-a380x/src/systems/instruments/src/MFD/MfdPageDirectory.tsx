@@ -51,6 +51,7 @@ import {
   fixInfoUri,
   dirToUri,
 } from './shared/utils';
+import { MfdFmsSecIndex } from './pages/FMS/SEC/MfdFmsSecIndex';
 
 export function pageForUrl(
   url: string,
@@ -109,6 +110,8 @@ export function pageForUrl(
       return <MfdFmsFplnHold pageTitle="F-PLN/HOLD" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case fixInfoUri:
       return <MfdFmsFplnFixInfo pageTitle="F-PLN/FIX INFO" bus={bus} mfd={mfd} fmcService={fmcService} />;
+    case 'fms/sec/index':
+      return <MfdFmsSecIndex pageTitle="SEC INDEX" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'fms/position/monitor':
       return <MfdFmsPositionMonitor pageTitle="MONITOR" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'fms/position/irs':
