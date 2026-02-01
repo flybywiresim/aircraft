@@ -1,14 +1,7 @@
 // Copyright (c) 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import {
-  EventBus,
-  IndexedEventType,
-  PublishPacer,
-  SimVarPublisher,
-  SimVarPublisherEntry,
-  SimVarValueType,
-} from '@microsoft/msfs-sdk';
+import { EventBus, PublishPacer, SimVarPublisher, SimVarPublisherEntry, SimVarValueType } from '@microsoft/msfs-sdk';
 
 interface FqmsBusBaseEvents {
   /**
