@@ -890,7 +890,7 @@ export const FuelPage = () => {
         x={154}
         y={300}
         quantity={feed1TankWeight}
-        hasFault={feed1TankWeight < FEED_TANK_LOW_LEVEL_THRESHOLD_KG}
+        hasFault={feed1TankWeight === null || feed1TankWeight < FEED_TANK_LOW_LEVEL_THRESHOLD_KG}
       />
       {(showMore || isAnyCollectorCellNotFull) && (
         // FEED TANK 1 collector cell (inop.)
@@ -931,7 +931,7 @@ export const FuelPage = () => {
         x={322}
         y={288}
         quantity={feed2TankWeight}
-        hasFault={feed2TankWeight < FEED_TANK_LOW_LEVEL_THRESHOLD_KG}
+        hasFault={feed2TankWeight === null || feed2TankWeight < FEED_TANK_LOW_LEVEL_THRESHOLD_KG}
       />
       {(showMore || isAnyCollectorCellNotFull) && (
         // FEED TANK 2 collector cell (inop.)
@@ -967,7 +967,7 @@ export const FuelPage = () => {
         x={528}
         y={288}
         quantity={feed3TankWeight}
-        hasFault={feed3TankWeight < FEED_TANK_LOW_LEVEL_THRESHOLD_KG}
+        hasFault={feed3TankWeight === null || feed3TankWeight < FEED_TANK_LOW_LEVEL_THRESHOLD_KG}
       />
       {(showMore || isAnyCollectorCellNotFull) && (
         // FEED TANK 3 collector cell (inop.)
@@ -1008,7 +1008,7 @@ export const FuelPage = () => {
         x={696}
         y={300}
         quantity={feed4TankWeight}
-        hasFault={feed4TankWeight < FEED_TANK_LOW_LEVEL_THRESHOLD_KG}
+        hasFault={feed4TankWeight === null || feed4TankWeight < FEED_TANK_LOW_LEVEL_THRESHOLD_KG}
       />
       {(showMore || isAnyCollectorCellNotFull) && (
         // FEED TANK 4 collector cell (inop.)
