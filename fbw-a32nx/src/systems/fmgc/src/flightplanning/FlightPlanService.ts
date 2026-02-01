@@ -39,15 +39,13 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
   ) {
     // FIXME once we properly use flight plan sync across different FMC/FMS instances, remove this condition.
     // At the moment, it prohibits non-master instances to keep flight plans and react to sync messages to improve performance.
-    if (master) {
-      this.flightPlanManager = new FlightPlanManager<P>(
-        this,
-        this.bus,
-        this.performanceDataInit,
-        this.syncClientID,
-        master,
-      );
-    }
+    this.flightPlanManager = new FlightPlanManager<P>(
+      this,
+      this.bus,
+      this.performanceDataInit,
+      this.syncClientID,
+      master,
+    );
   }
 
   createFlightPlans() {
