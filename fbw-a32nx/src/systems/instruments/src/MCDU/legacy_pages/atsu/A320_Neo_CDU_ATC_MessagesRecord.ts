@@ -1,9 +1,13 @@
 // @ts-strict-ignore
+// Copyright (c) 2026 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 import { AtsuMessageDirection, AtsuMessageSerializationFormat } from '@datalink/common';
 import { Keypad } from '../../legacy/A320_Neo_CDU_Keypad';
 import { CDUAtcMenu } from './A320_Neo_CDU_ATC_Menu';
 import { CDUAtcMessage } from './A320_Neo_CDU_ATC_Message';
-import { LegacyAtsuPageInterface, setKeyNotActiveLskActions } from '../../legacy/LegacyAtsuPageInterface';
+import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
+import { setKeyNotActiveLskActions } from './AtsuDatalinkPageUtils';
 
 export class CDUAtcMessagesRecord {
   static TranslateCpdlcResponse(response) {

@@ -1,4 +1,8 @@
-import { LegacyAtsuPageInterface, setKeyNotActiveLskActions } from '../../../legacy/LegacyAtsuPageInterface';
+// Copyright (c) 2026 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
+import { LegacyAtsuPageInterface } from '../../../legacy/LegacyAtsuPageInterface';
+import { setKeyNotActiveLskActions } from '../AtsuDatalinkPageUtils';
 import { CDUAtcMenu } from '../A320_Neo_CDU_ATC_Menu';
 
 export class CDUAtcEmergencyFansB {

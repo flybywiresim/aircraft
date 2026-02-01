@@ -1,8 +1,12 @@
 // @ts-strict-ignore
+// Copyright (c) 2026 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 import { AtsuMessageSerializationFormat } from '@datalink/common';
 import { CDUAtcAtisMenu } from './A320_Neo_CDU_ATC_AtisMenu';
 import { NXSystemMessages } from '../../messages/NXSystemMessages';
-import { LegacyAtsuPageInterface, setKeyNotActiveLskActions } from '../../legacy/LegacyAtsuPageInterface';
+import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
+import { setKeyNotActiveLskActions } from './AtsuDatalinkPageUtils';
 
 export class CDUAtcReportAtis {
   static ConvertAtisInformation(info) {

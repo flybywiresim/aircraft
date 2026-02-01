@@ -1,12 +1,13 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023, 2025 FlyByWire Simulations
+// Copyright (c) 2021-2023, 2025-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { OclMessage } from '@datalink/common';
 import { CDU_SingleValueField } from '../../legacy/A320_Neo_CDU_Field';
 import { CDUAtcFlightReq } from './A320_Neo_CDU_ATC_FlightReq';
 import { McduMessage, NXSystemMessages } from '../../messages/NXSystemMessages';
-import { LegacyAtsuPageInterface, setKeyNotActiveLskActions } from '../../legacy/LegacyAtsuPageInterface';
+import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
+import { setKeyNotActiveLskActions } from './AtsuDatalinkPageUtils';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 
 export class CDUAtcOceanicReq {

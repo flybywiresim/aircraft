@@ -1,9 +1,13 @@
 // @ts-strict-ignore
+// Copyright (c) 2026 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 import { AtsuStatusCodes } from '@datalink/common';
 import { CDUAtcConnection } from './A320_Neo_CDU_ATC_Connection';
 import { CDUAtcConnectionNotification } from './A320_Neo_CDU_ATC_ConnectionNotification';
 import { NXSystemMessages } from '../../messages/NXSystemMessages';
-import { LegacyAtsuPageInterface, setKeyNotActiveLskActions } from '../../legacy/LegacyAtsuPageInterface';
+import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
+import { setKeyNotActiveLskActions } from './AtsuDatalinkPageUtils';
 
 export class CDUAtcConnectionStatus {
   static ShowPage(

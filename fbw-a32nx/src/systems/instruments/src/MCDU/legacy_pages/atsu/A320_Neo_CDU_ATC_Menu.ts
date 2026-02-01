@@ -1,4 +1,7 @@
 // @ts-strict-ignore
+// Copyright (c) 2026 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 import { FansMode } from '@datalink/common';
 import { CDUAtcAtisMenu } from './A320_Neo_CDU_ATC_AtisMenu';
 import { CDUAtcClearanceReq } from './A320_Neo_CDU_ATC_ClearanceReq';
@@ -13,7 +16,8 @@ import { CDUAtcUsualRequestFansA } from './FansA/A320_Neo_CDU_ATC_UsualRequest';
 import { CDUAtcEmergencyFansB } from './FansB/A320_Neo_CDU_ATC_Emergency';
 import { CDUAtcUsualRequestFansB } from './FansB/A320_Neo_CDU_ATC_UsualRequest';
 import { NXSystemMessages } from '../../messages/NXSystemMessages';
-import { LegacyAtsuPageInterface, setKeyNotActiveLskActions } from '../../legacy/LegacyAtsuPageInterface';
+import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
+import { setKeyNotActiveLskActions } from './AtsuDatalinkPageUtils';
 import { CDUAtcReports } from './FansA/A320_Neo_CDU_ATC_Reports';
 
 export class CDUAtcMenu {
