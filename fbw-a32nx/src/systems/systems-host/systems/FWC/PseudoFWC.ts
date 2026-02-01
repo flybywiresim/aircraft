@@ -1830,6 +1830,41 @@ export class PseudoFWC {
     const leftCompressedHardwireLgciu2 =
       this.dc2BusPowered.get() && SimVar.GetSimVarValue('L:A32NX_LGCIU_2_LEFT_GEAR_COMPRESSED', 'bool') > 0;
 
+    const lgciu1Or2DiscreteWord1Invalid = this.lgciu1DiscreteWord1.isInvalid() || this.lgciu2DiscreteWord1.isInvalid();
+    const lgciu1Or2DiscreteWord2Invalid = this.lgciu1DiscreteWord2.isInvalid() || this.lgciu2DiscreteWord2.isInvalid();
+    const lgciu1Or2DiscreteWord3Invalid = this.lgciu1DiscreteWord3.isInvalid() || this.lgciu2DiscreteWord3.isInvalid();
+    const lgciu1Or2DiscreteWord4Invalid = this.lgciu1DiscreteWord4.isInvalid() || this.lgciu2DiscreteWord4.isInvalid();
+
+    const lgciu1LhGearDownlock = this.lgciu1DiscreteWord1.bitValueOr(23, false);
+    const lgciu2LhGearDownlock = this.lgciu2DiscreteWord1.bitValueOr(23, false);
+    const lhGearDownLock =
+      (lgciu1LhGearDownlock && lgciu2LhGearDownlock) ||
+      (lgciu1Or2DiscreteWord1Invalid && (lgciu1LhGearDownlock || lgciu2LhGearDownlock));
+
+    const lgciu1RhGearDownlock = this.lgciu1DiscreteWord1.bitValueOr(24, false);
+    const lgciu2RhGearDownlock = this.lgciu2DiscreteWord1.bitValueOr(24, false);
+    const rhGearDownLock =
+      (lgciu1RhGearDownlock && lgciu2RhGearDownlock) ||
+      (lgciu1Or2DiscreteWord1Invalid && (lgciu1RhGearDownlock || lgciu2RhGearDownlock));
+
+    const lgciu1NoseGearDownlock = this.lgciu1DiscreteWord1.bitValueOr(25, false);
+    const lgciu2NoseGearDownlock = this.lgciu2DiscreteWord1.bitValueOr(25, false);
+    const noseGearDownLock =
+      (lgciu1NoseGearDownlock && lgciu2NoseGearDownlock) ||
+      (lgciu1Or2DiscreteWord1Invalid && (lgciu1NoseGearDownlock || lgciu2NoseGearDownlock));
+
+    this.mainLgDownlocked.set(lhGearDownLock && rhGearDownLock);
+    this.lgDownlocked.set(lhGearDownLock && rhGearDownLock && noseGearDownLock);
+
+    this.lgNotDownlocked.set(
+      (!lgciu1LhGearDownlock && !lgciu2LhGearDownlock) ||
+        (lgciu1Or2DiscreteWord1Invalid && !(lgciu1LhGearDownlock || lgciu2LhGearDownlock)) ||
+        (!lgciu1RhGearDownlock && !lgciu2RhGearDownlock) ||
+        (lgciu1Or2DiscreteWord1Invalid && !(lgciu1RhGearDownlock || lgciu2RhGearDownlock)) ||
+        (!lgciu1NoseGearDownlock && !lgciu2NoseGearDownlock) ||
+        (lgciu1Or2DiscreteWord1Invalid && !(lgciu1NoseGearDownlock || lgciu2NoseGearDownlock)),
+    );
+
     // ra validity
     const eitherRaInvalid = this.radioHeight1.isFailureWarning() || this.radioHeight2.isFailureWarning();
     const bothRaInvalid = this.radioHeight1.isFailureWarning() && this.radioHeight2.isFailureWarning();
@@ -2916,11 +2951,6 @@ export class PseudoFWC {
     // gnd splr not armed
     const raBelow500 = this.radioHeight1.valueOr(Infinity) < 500 || this.radioHeight2.valueOr(Infinity) < 500;
 
-    const lgciu1Or2DiscreteWord1Invalid = this.lgciu1DiscreteWord1.isInvalid() || this.lgciu2DiscreteWord1.isInvalid();
-    const lgciu1Or2DiscreteWord2Invalid = this.lgciu1DiscreteWord2.isInvalid() || this.lgciu2DiscreteWord2.isInvalid();
-    const lgciu1Or2DiscreteWord3Invalid = this.lgciu1DiscreteWord3.isInvalid() || this.lgciu2DiscreteWord3.isInvalid();
-    const lgciu1Or2DiscreteWord4Invalid = this.lgciu1DiscreteWord4.isInvalid() || this.lgciu2DiscreteWord4.isInvalid();
-
     // lgciu fault
     this.lgciu1Fault.set(
       this.lgciu1DiscreteWord4.bitValueOr(29, false) ||
@@ -2942,37 +2972,6 @@ export class PseudoFWC {
 
     this.lgciu1FaultWarning.set(!this.lgciu12Fault.get() && this.dcESSBusPowered.get() && this.lgciu1Fault.get());
     this.lgciu2FaultWarning.set(!this.lgciu12Fault.get() && this.dc2BusPowered.get() && this.lgciu2Fault.get());
-
-    // l/g downlocked
-    const lgciu1LhGearDownlock = this.lgciu1DiscreteWord1.bitValueOr(23, false);
-    const lgciu2LhGearDownlock = this.lgciu2DiscreteWord1.bitValueOr(23, false);
-    const lhGearDownLock =
-      (lgciu1LhGearDownlock && lgciu2LhGearDownlock) ||
-      (lgciu1Or2DiscreteWord1Invalid && (lgciu1LhGearDownlock || lgciu2LhGearDownlock));
-
-    const lgciu1RhGearDownlock = this.lgciu1DiscreteWord1.bitValueOr(24, false);
-    const lgciu2RhGearDownlock = this.lgciu2DiscreteWord1.bitValueOr(24, false);
-    const rhGearDownLock =
-      (lgciu1RhGearDownlock && lgciu2RhGearDownlock) ||
-      (lgciu1Or2DiscreteWord1Invalid && (lgciu1RhGearDownlock || lgciu2RhGearDownlock));
-
-    const lgciu1NoseGearDownlock = this.lgciu1DiscreteWord1.bitValueOr(25, false);
-    const lgciu2NoseGearDownlock = this.lgciu2DiscreteWord1.bitValueOr(25, false);
-    const noseGearDownLock =
-      (lgciu1NoseGearDownlock && lgciu2NoseGearDownlock) ||
-      (lgciu1Or2DiscreteWord1Invalid && (lgciu1NoseGearDownlock || lgciu2NoseGearDownlock));
-
-    this.mainLgDownlocked.set(lhGearDownLock && rhGearDownLock);
-    this.lgDownlocked.set(lhGearDownLock && rhGearDownLock && noseGearDownLock);
-
-    this.lgNotDownlocked.set(
-      (!lgciu1LhGearDownlock && !lgciu2LhGearDownlock) ||
-        (lgciu1Or2DiscreteWord1Invalid && !(lgciu1LhGearDownlock || lgciu2LhGearDownlock)) ||
-        (!lgciu1RhGearDownlock && !lgciu2RhGearDownlock) ||
-        (lgciu1Or2DiscreteWord1Invalid && !(lgciu1RhGearDownlock || lgciu2RhGearDownlock)) ||
-        (!lgciu1NoseGearDownlock && !lgciu2NoseGearDownlock) ||
-        (lgciu1Or2DiscreteWord1Invalid && !(lgciu1NoseGearDownlock || lgciu2NoseGearDownlock)),
-    );
 
     // l/g gear not downlocked
     const lgciu1LhNotLockDownAndSelectDown = this.lgciu1DiscreteWord1.bitValueOr(14, false);
