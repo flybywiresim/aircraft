@@ -44,7 +44,7 @@ export class MagVar {
    * @returns true if the point is within the magnetic database coverage.
    */
   public static isAvailable(lat: number, lon: number): boolean {
-    return (lat >= -60.5 && lat <= 73.5) || (lon <= -117.5 && lon >= -87.5 && lat <= 82.5 && lat >= 0);
+    return (lat >= -60.5 && lat <= 73.5) || ((lon <= -117.5 || lon >= -87.5) && lat <= 82.5 && lat >= 0);
   }
 
   /**
