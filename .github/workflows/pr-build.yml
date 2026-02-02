@@ -1,6 +1,6 @@
 name: PR Tests & Build
 on:
-  pull_request_target:
+  pull_request:
     types:
       - opened
       - synchronize
@@ -19,7 +19,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           persist-credentials: false
-          ref: refs/pull/${{ github.event.pull_request.number }}/head
       - name: install
         run: ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
       - name: npm run lint
@@ -38,7 +37,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           persist-credentials: false
-          ref: refs/pull/${{ github.event.pull_request.number }}/head
       - name: test-rust.sh
         run: |
           ./scripts/dev-env/run.sh scripts/test-rust.sh
@@ -53,13 +51,12 @@ jobs:
         uses: actions/checkout@v4
         with:
           persist-credentials: false
-          ref: refs/pull/${{ github.event.pull_request.number }}/head
       - name: npm install
         run: ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
       - name: npm test
         run: npm test
   build-a32nx:
-    name: Build and upload A32NX
+    name: Build A32NX
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
     permissions:
@@ -83,24 +80,22 @@ jobs:
         uses: actions/checkout@v4
         with:
           persist-credentials: false
-          ref: refs/pull/${{ github.event.pull_request.number }}/head
           submodules: recursive
       - name: Create .env file
         run: |
           echo FBW_PRODUCTION_BUILD=1 >> fbw-a32nx/.env
           echo FBW_TYPECHECK=1 >> fbw-a32nx/.env
-          echo CLIENT_ID=\"\" >> fbw-a32nx/.env
-          echo CLIENT_SECRET=\"\" >> fbw-a32nx/.env
-          echo CHARTFOX_SECRET=\"\" >> fbw-a32nx/.env
-          echo SENTRY_DSN=\"\" >> fbw-a32nx/.env
+          echo CLIENT_ID=\"${{ secrets.NAVIGRAPH_CLIENT_ID }}\" >> fbw-a32nx/.env
+          echo CLIENT_SECRET=\"${{ secrets.NAVIGRAPH_CLIENT_SECRET }}\" >> fbw-a32nx/.env
+          echo CHARTFOX_SECRET=\"${{ secrets.CHARTFOX_SECRET }}\" >> fbw-a32nx/.env
+          echo SENTRY_DSN=\"${{ secrets.SENTRY_DSN }}\" >> fbw-a32nx/.env
           echo AIRCRAFT_PROJECT_PREFIX=${{ env.AIRCRAFT_PROJECT_PREFIX }} >> fbw-a32nx/.env
           echo AIRCRAFT_VARIANT=${{ env.AIRCRAFT_VARIANT }} >> fbw-a32nx/.env
-          echo LOCALAZY_READ_KEY=\"\" >> .env
+          echo LOCALAZY_READ_KEY=${{ secrets.LOCALAZY_READ_KEY }} >> .env
           echo VITE_BUILD=false >> .env
       - name: Install dependencies
         run: |
           ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
-          sudo apt-get install -y rclone
       - name: Build A32NX
         run: |
           ./scripts/dev-env/run.sh ./scripts/build_a32nx.sh --no-tty -j 4
@@ -126,56 +121,15 @@ jobs:
         with:
           name: flybywire-aircraft-a320-neo
           path: ./fbw-a32nx/out/flybywire-aircraft-a320-neo/
-      - name: Preserve build modules for upload
+      - name: Upload modules as artifact
+        uses: actions/upload-artifact@v4
         if: github.event.pull_request.auto_merge == false
-        run: |
-          mkdir -p /tmp/build-modules-a32nx
-          mv ./fbw-a32nx/out/build-modules/* /tmp/build-modules-a32nx/
-      - name: Checkout trusted source
-        if: github.event.pull_request.auto_merge == false
-        uses: actions/checkout@v4
         with:
-          persist-credentials: false
-          ref: ${{ github.event.pull_request.base.ref }}
-      - name: Configure rclone for Cloudflare R2
-        if: github.event.pull_request.auto_merge == false
-        run: |
-            mkdir -p ~/.config/rclone
-            cat > ~/.config/rclone/rclone.conf <<EOF
-            [cloudflare-r2]
-            type = s3
-            provider = Cloudflare
-            env_auth = false
-            access_key_id = ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
-            secret_access_key = ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
-            endpoint = ${{ secrets.CLOUDFLARE_R2_ENDPOINT }}
-            region = auto
-            EOF
-      - name: Upload to CloudFlare CDN (Installer)
-        if: github.event.pull_request.auto_merge == false
-        env:
-          CLOUDFLARE_CDN_ZONE_ID: ${{ secrets.CLOUDFLARE_CDN_ZONE_ID }}
-          CLOUDFLARE_PURGE_TOKEN: ${{ secrets.CLOUDFLARE_PURGE_TOKEN }}
-          CDN_BUCKET_DESTINATION: addons/a32nx/pr-${{ github.event.pull_request.number }}
-        run: |
-          ./scripts/cf-cdn.sh /tmp/build-modules-a32nx $CDN_BUCKET_DESTINATION
-      - name: Add QA config entry
-        if: github.event.pull_request.auto_merge == false
-        env:
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          PR_TITLE: ${{ github.event.pull_request.title }}
-          PR_BODY: ${{ github.event.pull_request.body }}
-          ADDON_KEYS: a32nx-msfs2020,a32nx-msfs2024
-          TEXTURE_QUALITY: 4k
-          CLOUDFLARE_CDN_ZONE_ID: ${{ secrets.CLOUDFLARE_CDN_ZONE_ID }}
-          CLOUDFLARE_PURGE_TOKEN: ${{ secrets.CLOUDFLARE_PURGE_TOKEN }}
-          CDN_BUCKET_DESTINATION: installer/qa-config/
-        run: |
-          node ./scripts/add_qa_config.js
-          ./scripts/cf-cdn.sh ./qa-config $CDN_BUCKET_DESTINATION
+          name: build-modules-a32nx
+          path: ./fbw-a32nx/out/build-modules/
 
   build_a380x_4k:
-    name: Build and upload A380X (4K)
+    name: Build A380X (4K)
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
     permissions:
@@ -220,7 +174,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           persist-credentials: false
-          ref: refs/pull/${{ github.event.pull_request.number }}/head
           submodules: recursive
       - name: Set BUILT_DATE_TIME
         run: echo "BUILT_DATE_TIME=$(date -u -Iseconds)" >> $GITHUB_ENV
@@ -228,19 +181,18 @@ jobs:
         run: |
           echo FBW_PRODUCTION_BUILD=1 >> fbw-a380x/.env
           echo FBW_TYPECHECK=1 >> fbw-a380x/.env
-          echo CLIENT_ID=\"\" >> fbw-a380x/.env
-          echo CLIENT_SECRET=\"\" >> fbw-a380x/.env
-          echo CHARTFOX_SECRET=\"\" >> fbw-a380x/.env
-          echo SENTRY_DSN=\"\" >> fbw-a380x/.env
+          echo CLIENT_ID=\"${{ secrets.NAVIGRAPH_CLIENT_ID_A380X }}\" >> fbw-a380x/.env
+          echo CLIENT_SECRET=\"${{ secrets.NAVIGRAPH_CLIENT_SECRET_A380X }}\" >> fbw-a380x/.env
+          echo CHARTFOX_SECRET=\"${{ secrets.CHARTFOX_SECRET }}\" >> fbw-a380x/.env
+          echo SENTRY_DSN=\"${{ secrets.SENTRY_DSN }}\" >> fbw-a380x/.env
           echo AIRCRAFT_PROJECT_PREFIX=${{ env.AIRCRAFT_PROJECT_PREFIX }} >> fbw-a380x/.env
           echo AIRCRAFT_VARIANT=${{ env.AIRCRAFT_VARIANT }} >> fbw-a380x/.env
           echo BUILD_DIR_NAME=${{ env.BUILD_DIR_NAME }} >> .env
-          echo LOCALAZY_READ_KEY=\"\" >> .env
+          echo LOCALAZY_READ_KEY=\"${{ secrets.LOCALAZY_READ_KEY }}\" >> .env
           echo VITE_BUILD=false >> .env
       - name: Install dependencies
         run: |
           ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
-          sudo apt-get install -y rclone
       - name: Build A380X
         run: |
           ./scripts/dev-env/run.sh ./scripts/build_a380x.sh --no-tty -j 4 -4k
@@ -268,50 +220,9 @@ jobs:
         with:
           name: flybywire-aircraft-a380-842 (4K)
           path: ./fbw-a380x/out/flybywire-aircraft-a380-842/
-      - name: Preserve build modules for upload
+      - name: Upload modules as artifact
+        uses: actions/upload-artifact@v4
         if: github.event.pull_request.auto_merge == false
-        run: |
-          mkdir -p /tmp/build-modules-a380x
-          mv ./fbw-a380x/out/build-modules/* /tmp/build-modules-a380x/
-      - name: Checkout trusted source
-        if: github.event.pull_request.auto_merge == false
-        uses: actions/checkout@v4
         with:
-          persist-credentials: false
-          ref: ${{ github.event.pull_request.base.ref }}
-      - name: Configure rclone for Cloudflare R2
-        if: github.event.pull_request.auto_merge == false
-        run: |
-            mkdir -p ~/.config/rclone
-            cat > ~/.config/rclone/rclone.conf <<EOF
-            [cloudflare-r2]
-            type = s3
-            provider = Cloudflare
-            env_auth = false
-            access_key_id = ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
-            secret_access_key = ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
-            endpoint = ${{ secrets.CLOUDFLARE_R2_ENDPOINT }}
-            region = auto
-            EOF
-      - name: Upload to CloudFlare CDN (Installer)
-        if: github.event.pull_request.auto_merge == false
-        env:
-          CLOUDFLARE_CDN_ZONE_ID: ${{ secrets.CLOUDFLARE_CDN_ZONE_ID }}
-          CLOUDFLARE_PURGE_TOKEN: ${{ secrets.CLOUDFLARE_PURGE_TOKEN }}
-          CDN_BUCKET_DESTINATION: addons/a380x/pr-${{ github.event.pull_request.number }}-4k
-        run: |
-          ./scripts/cf-cdn.sh /tmp/build-modules-a380x $CDN_BUCKET_DESTINATION
-      - name: Add QA config entry
-        if: github.event.pull_request.auto_merge == false
-        env:
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          PR_TITLE: ${{ github.event.pull_request.title }}
-          PR_BODY: ${{ github.event.pull_request.body }}
-          ADDON_KEYS: a380x-msfs2020,a380x-msfs2024
-          TEXTURE_QUALITY: 4k
-          CLOUDFLARE_CDN_ZONE_ID: ${{ secrets.CLOUDFLARE_CDN_ZONE_ID }}
-          CLOUDFLARE_PURGE_TOKEN: ${{ secrets.CLOUDFLARE_PURGE_TOKEN }}
-          CDN_BUCKET_DESTINATION: installer/qa-config/
-        run: |
-          node ./scripts/add_qa_config.js
-          ./scripts/cf-cdn.sh ./qa-config $CDN_BUCKET_DESTINATION
+          name: build-modules-a380x-4k
+          path: ./fbw-a380x/out/build-modules/
