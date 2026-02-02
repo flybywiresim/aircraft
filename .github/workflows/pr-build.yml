@@ -127,6 +127,7 @@ jobs:
         with:
           name: build-modules-a32nx
           path: ./fbw-a32nx/out/build-modules/
+          retention-days: 1
 
   build_a380x_4k:
     name: Build A380X (4K)
@@ -226,3 +227,4 @@ jobs:
         with:
           name: build-modules-a380x-4k
           path: ./fbw-a380x/out/build-modules/
+          retention-days: 1
