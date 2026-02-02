@@ -106,10 +106,6 @@ bool FlyByWireInterface::update(double sampleTime) {
   }
 
   for (int i = 0; i < 2; i++) {
-    result &= updateFadec(i);
-  }
-
-  for (int i = 0; i < 2; i++) {
     result &= updateIls(i);
   }
 
@@ -1265,22 +1261,6 @@ bool FlyByWireInterface::updateSfcc(int sfccIndex) {
 
   if (clientDataEnabled) {
     simConnectInterface.setClientDataSfcc(sfccBusOutputs[sfccIndex], sfccIndex);
-  }
-
-  return true;
-}
-
-bool FlyByWireInterface::updateFadec(int fadecIndex) {
-  fadecBusOutputs[fadecIndex].selected_tla_deg.SSM = Arinc429SignStatus::NormalOperation;
-  fadecBusOutputs[fadecIndex].selected_tla_deg.Data = fadecIndex == 0 ? thrustLeverAngle_1->get() : thrustLeverAngle_2->get();
-
-  double flexTemp = idFmgcFlexTemperature->get();
-  fadecBusOutputs[fadecIndex].selected_flex_temp_deg.SSM =
-      flexTemp > 0 ? Arinc429SignStatus::NormalOperation : Arinc429SignStatus::NoComputedData;
-  fadecBusOutputs[fadecIndex].selected_flex_temp_deg.Data = flexTemp;
-
-  if (clientDataEnabled) {
-    simConnectInterface.setClientDataFadec(fadecBusOutputs[fadecIndex], fadecIndex);
   }
 
   return true;
@@ -2733,6 +2713,10 @@ bool FlyByWireInterface::updateFadec(double sampleTime, int fadecIndex) {
   }
 
   idEcuMaintenanceWord6[fadecIndex]->set(Arinc429Utils::toSimVar(fadecBusOutputs[fadecIndex].ecu_maintenance_word_6));
+
+  if (clientDataEnabled) {
+    simConnectInterface.setClientDataFadec(fadecBusOutputs[fadecIndex], fadecIndex);
+  }
 
   // write output to sim (only after both FADECs have been updated) -------------------------------------------------
   if (fadecIndex == 1) {
