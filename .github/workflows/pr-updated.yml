@@ -8,6 +8,8 @@ jobs:
   update-qa-config:
     name: Update PR in QA Config
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout trusted source
         uses: actions/checkout@v4

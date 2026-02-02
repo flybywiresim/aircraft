@@ -9,6 +9,7 @@ jobs:
     name: Cancel other workflows
     runs-on: ubuntu-latest
     permissions:
+      contents: read
       actions: write
     steps:
       - name: Cancel PR build
