@@ -36,6 +36,7 @@ pub trait SimulatorReaderWriter {
 
 pub trait VariableRegistry {
     fn get(&mut self, name: String) -> VariableIdentifier;
+    fn get_without_prefix(&mut self, name: String) -> VariableIdentifier;
 }
 
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Hash)]
@@ -132,6 +133,10 @@ impl<'a> InitContext<'a> {
 
     pub fn get_identifier(&mut self, name: String) -> VariableIdentifier {
         self.registry.get(name)
+    }
+
+    pub fn get_identifier_without_prefix(&mut self, name: String) -> VariableIdentifier {
+        self.registry.get_without_prefix(name)
     }
 
     pub fn start_state(&self) -> StartState {
