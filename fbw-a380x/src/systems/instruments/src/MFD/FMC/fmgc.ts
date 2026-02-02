@@ -444,6 +444,7 @@ export class FmgcDataService implements Fmgc {
   /**
    * The center of gravity is calculated by the FQMS.
    * If it is not available then the value computed by the WBBC is returned.
+   * If neither the FQMS nor the WBBC provide any value then `null` is returned.
    *
    * @returns the gross weight center of gravity in %
    */
