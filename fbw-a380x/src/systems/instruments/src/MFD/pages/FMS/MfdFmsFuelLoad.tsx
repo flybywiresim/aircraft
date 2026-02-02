@@ -87,7 +87,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
   private readonly extraFuelWeightText = this.extraFuelWeight.map((it) => (it ? (it / 1000).toFixed(1) : '---.-'));
 
   private readonly extraFuelTime = Subject.create<number | null>(null);
-  private readonly extraFuelTimeText = this.extraFuelTime.map((it) => new TimeHHMMFormat().format(it ?? 0));
+  private readonly extraFuelTimeText = this.extraFuelTime.map((it) => new TimeHHMMFormat().format(it ?? 0)[0]);
 
   private readonly blockLineRef = FSComponent.createRef<HTMLDivElement>();
 
