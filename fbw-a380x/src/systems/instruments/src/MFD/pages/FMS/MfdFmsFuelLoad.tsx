@@ -29,7 +29,7 @@ import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
-import { getEtaFromUtcOrPresent } from '../../shared/utils';
+import { getEtaFromUtcOrPresent, hhmmFormatter } from '../../shared/utils';
 import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
 import { CostIndexMode } from '../../FMC/fmgc';
 
@@ -87,7 +87,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
   private readonly extraFuelWeightText = this.extraFuelWeight.map((it) => (it ? (it / 1000).toFixed(1) : '---.-'));
 
   private readonly extraFuelTime = Subject.create<number | null>(null);
-  private readonly extraFuelTimeText = this.extraFuelTime.map((it) => new TimeHHMMFormat().format(it ?? 0)[0]);
+  private readonly extraFuelTimeText = this.extraFuelTime.map((it) => hhmmFormatter(it ?? NaN));
 
   private readonly blockLineRef = FSComponent.createRef<HTMLDivElement>();
 
