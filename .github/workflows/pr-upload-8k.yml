@@ -62,8 +62,8 @@ jobs:
       - name: Download PR artifacts
         uses: actions/download-artifact@v5
         with:
-          pattern: build-modules-*
-          path: /tmp/artifacts/
+          name: build-modules-a380x-8k
+          path: /tmp/artifacts/build-modules-a380x-8k
           github-token: ${{ secrets.GITHUB_TOKEN }}
           run-id: ${{ github.event.workflow_run.id }}
         continue-on-error: true
@@ -94,7 +94,7 @@ jobs:
         env:
           CLOUDFLARE_CDN_ZONE_ID: ${{ secrets.CLOUDFLARE_CDN_ZONE_ID }}
           CLOUDFLARE_PURGE_TOKEN: ${{ secrets.CLOUDFLARE_PURGE_TOKEN }}
-          CDN_BUCKET_DESTINATION: addons/a380x/pr-${{ steps.pr.outputs.number }}
+          CDN_BUCKET_DESTINATION: addons/a380x/pr-${{ steps.pr.outputs.number }}-8k
         run: |
           ./scripts/cf-cdn.sh /tmp/artifacts/build-modules-a380x-8k $CDN_BUCKET_DESTINATION
       - name: Add QA config entry
