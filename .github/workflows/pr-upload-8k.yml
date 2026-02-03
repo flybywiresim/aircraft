@@ -1,4 +1,4 @@
-name: Upload PR for Installer QA
+name: Upload PR for Installer QA (8K)
 on:
   workflow_run:
     workflows: ['PR Tests & Build (8K)']
