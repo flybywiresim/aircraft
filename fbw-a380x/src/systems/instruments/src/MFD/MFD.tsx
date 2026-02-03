@@ -178,12 +178,11 @@ export class MfdComponent
    * @param items the items to de-duplicate
    *
    * @returns the chosen item
+   * @throws If another request came in over top of this one.
    */
   async deduplicateFacilities<T extends DatabaseItem<any>>(items: T[]): Promise<T | undefined> {
     if (items.length > 1) {
-      return new Promise((resolve) => {
-        this.duplicateNamesRef.instance.deduplicateFacilities(items, resolve);
-      });
+      return this.duplicateNamesRef.instance.deduplicateFacilities(items);
     }
     return items[0];
   }
