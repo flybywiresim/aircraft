@@ -3,7 +3,6 @@ import { ObservableFlightPlan } from '@fmgc/flightplanning/plans/ObservableFligh
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import {
   ComponentProps,
-  DateTimeFormatter,
   DisplayComponent,
   FSComponent,
   NumberFormatter,
@@ -27,6 +26,7 @@ import { FlightPlanFooter } from '../../common/FlightPlanFooter';
 
 import './MfdFmsFplnFixInfo.scss';
 import { Fix } from '@flybywiresim/fbw-sdk';
+import { hhmmFormatter } from '../../../shared/utils';
 
 export class MfdFmsFplnFixInfo extends FmsPage {
   private readonly flightPlanManager = new ObservableFlightPlanManager(
@@ -251,8 +251,6 @@ class FixInfoPredictionRow extends DisplayComponent<FixInfoPredictionRowProps> {
 
   private readonly ete = Subject.create(NaN);
 
-  private readonly eteFormatter = DateTimeFormatter.create('{HH}:{mm}', { nanString: '--:--' });
-
   private readonly eteText = Subject.create('');
 
   private readonly distance = Subject.create(NaN);
@@ -276,7 +274,7 @@ class FixInfoPredictionRow extends DisplayComponent<FixInfoPredictionRowProps> {
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
 
-    this.subscriptions.push(this.ete.pipe(this.eteText, this.eteFormatter));
+    this.subscriptions.push(this.ete.pipe(this.eteText, hhmmFormatter));
     this.subscriptions.push(this.distance.pipe(this.distanceText, this.distanceFormatter));
     this.subscriptions.push(this.distance.pipe(this.distanceUnitVisible, (distance) => Number.isFinite(distance)));
     this.subscriptions.push(this.altitude.pipe(this.altitudeText, this.altitudeFormatter));
