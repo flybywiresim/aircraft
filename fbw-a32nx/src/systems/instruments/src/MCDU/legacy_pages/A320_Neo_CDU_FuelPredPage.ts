@@ -198,14 +198,14 @@ export class CDUFuelPredPage {
       }
 
       if (Number.isFinite(predictions.tripTime)) {
-        destTimeCell = mcdu.getTimePrediction(predictions.tripTime, FlightPlanIndex.Active);
+        destTimeCell = mcdu.getTimePrediction(predictions.tripTime * 60, FlightPlanIndex.Active);
         destTimeCellColor = '[color]green';
       }
 
       if (alternate) {
         if (Number.isFinite(predictions.alternateTime) && Number.isFinite(predictions.tripTime)) {
           altTimeCell = mcdu.getTimePrediction(
-            predictions.tripTime + predictions.alternateTime,
+            (predictions.tripTime + predictions.alternateTime) * 60,
             FlightPlanIndex.Active,
           );
           altTimeCellColor = '[color]green';
