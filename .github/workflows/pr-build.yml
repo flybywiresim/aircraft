@@ -28,8 +28,6 @@ jobs:
           ./scripts/dev-env/run.sh scripts/lint-rust.sh
   test-rust:
     name: Tests (Rust)
-    permissions:
-      contents: read
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
     permissions:
