@@ -15,7 +15,7 @@ scripts                                         <flybywire monorepo - will be re
 
 ├── build.sh                                    Builds everything e.g. A32NX and A380X
 ├── build_a32nx.js                              Additional script after igniter build to create layout.json and manifest.json (also does version sticker)
-├── builds.sh                                   Builds A32NX & A380X (use -r "a32nx" or -r "a380x" to build a respective plane only)
+├── build.sh                                   Builds A32NX & A380X (use -r "a32nx" or -r "a380x" to build a respective plane only)
 ├── cdn.sh                                      Upload to CDN (bunny - deprecated)
 ├── cf-cdn.sh                                   Upload to CloudFlare CDN
 ├── fragment_a32nx.js                           Splits up A32NX downloadable files into fragments
