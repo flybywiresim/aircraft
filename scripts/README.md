@@ -2,7 +2,7 @@
 
 This directory contains the build scripts for the project.
 
-This documentation is s snapshot and things might have changed without this documentation being updated.
+This documentation is a snapshot and things might have changed without this documentation being updated.
 Please check the source code for the latest information.
 
 ```
@@ -16,8 +16,6 @@ scripts                                         <flybywire monorepo - will be re
 ├── add_qa_config.js                            CI script used to add a PR to the installer QA config
 ├── build.sh                                    Builds everything e.g. A32NX and A380X
 ├── build_a32nx.js                              Additional script after igniter build to create layout.json and manifest.json (also does version sticker)
-├── build_a32nx.sh                              Only builds A32NX
-├── build_a380x.sh                              Only builds A380X (only wasm for now)
 ├── cf-cdn.sh                                   Upload to CloudFlare CDN
 ├── fragment_a32nx.js                           Splits up A32NX downloadable files into fragments
 ├── install-source_a32nx.js                     Creates A32NX install.json
