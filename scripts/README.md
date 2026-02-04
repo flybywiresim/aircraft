@@ -2,7 +2,7 @@
 
 This directory contains the build scripts for the project.
 
-This documentation is s snapshot and things might have changed without this documentation being updated.
+This documentation is a snapshot and things might have changed without this documentation being updated.
 Please check the source code for the latest information.
 
 ```
