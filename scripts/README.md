@@ -13,6 +13,7 @@ scripts                                         <flybywire monorepo - will be re
 │   ├── run-local.cmd                           <used for container development>
 │   ├── run-local.sh                            <used for container development>
 
+├── add_qa_config.js                            CI script used to add a PR to the installer QA config
 ├── build.sh                                    Builds everything e.g. A32NX and A380X
 ├── build_a32nx.js                              Additional script after igniter build to create layout.json and manifest.json (also does version sticker)
 ├── build_a32nx.sh                              Only builds A32NX
@@ -22,10 +23,12 @@ scripts                                         <flybywire monorepo - will be re
 ├── install-source_a32nx.js                     Creates A32NX install.json
 ├── lint-rust.js                                Start the rust linter
 ├── metadata.js                                 Creates A3xxx_build_info.json
+├── remove_qa_config.js                         CI script used to remove a closed PR from the installer QA config
 ├── pretty-realease-name.js                     Helper to get a better release name
 ├── setup.sh                                    Prepares the repo for building - mainly cleans and npm install
 ├── symlink_a32nx.cmd                           To link your out folder to your MSFS Community folder this tools helps build a link
 ├── test-js.sh                                  Starts npm test
 ├── test-rust.sh                                Start cargo test
+├── update_qa_config.js                         CI script used to update the title and description of a PR in the installer QA config
 
 ```

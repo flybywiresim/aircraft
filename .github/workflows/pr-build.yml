@@ -15,8 +15,10 @@ jobs:
     permissions:
       contents: read
     steps:
-      - name: Checkout source
+      - name: Checkout PR source
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: install
         run: ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
       - name: npm run lint
@@ -26,13 +28,17 @@ jobs:
           ./scripts/dev-env/run.sh scripts/lint-rust.sh
   test-rust:
     name: Tests (Rust)
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
     permissions:
       contents: read
     steps:
-      - name: Checkout source
+      - name: Checkout PR source
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: test-rust.sh
         run: |
           ./scripts/dev-env/run.sh scripts/test-rust.sh
@@ -40,15 +46,19 @@ jobs:
     name: Tests (JS)
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
+    permissions:
+      contents: read
     steps:
-      - name: Checkout source
+      - name: Checkout PR source
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: npm install
         run: ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
       - name: npm test
         run: npm test
   build-a32nx:
-    name: Build and upload A32NX
+    name: Build A32NX
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
     permissions:
@@ -68,9 +78,10 @@ jobs:
           remove-codeql: 'true'
           remove-large-packages: 'true'
           remove-cached-tools: 'true'
-      - name: Checkout source
+      - name: Checkout PR source
         uses: actions/checkout@v4
         with:
+          persist-credentials: false
           submodules: recursive
       - name: Create .env file
         run: |
@@ -99,21 +110,29 @@ jobs:
           rm -rf ./fbw-common/
           rm -rf ./.git/objects/
           rm -rf ./.git/modules/aircraft-large-files/objects/
-      - name: Generate install.json
-        if: github.event.pull_request.auto_merge == false
+      - name: Build Fragmenter modules
         run: |
           df -h
           node ./scripts/fragment_a32nx.js
           cp ./fbw-a32nx/out/build-modules/modules.json ./fbw-a32nx/out/flybywire-aircraft-a320-neo/install.json
           node ./scripts/install-source_a32nx.js
-      - name: Upload PR artifact
+          df -h
+      - name: Upload PR artifact (GitHub)
         uses: actions/upload-artifact@v4
         if: github.event.pull_request.auto_merge == false
         with:
           name: flybywire-aircraft-a320-neo
           path: ./fbw-a32nx/out/flybywire-aircraft-a320-neo/
+      - name: Upload modules as artifact
+        uses: actions/upload-artifact@v4
+        if: github.event.pull_request.auto_merge == false
+        with:
+          name: build-modules-a32nx
+          path: ./fbw-a32nx/out/build-modules/
+          retention-days: 1
+
   build_a380x_4k:
-    name: Build and upload A380X (4K)
+    name: Build A380X (4K)
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
     permissions:
@@ -154,9 +173,10 @@ jobs:
           sudo npm uninstall -g netlify-cli --save
           sudo npm uninstall -g parcel --save
           df -h
-      - name: Checkout source
+      - name: Checkout PR source
         uses: actions/checkout@v4
         with:
+          persist-credentials: false
           submodules: recursive
       - name: Set BUILT_DATE_TIME
         run: echo "BUILT_DATE_TIME=$(date -u -Iseconds)" >> $GITHUB_ENV
@@ -171,7 +191,7 @@ jobs:
           echo AIRCRAFT_PROJECT_PREFIX=${{ env.AIRCRAFT_PROJECT_PREFIX }} >> fbw-a380x/.env
           echo AIRCRAFT_VARIANT=${{ env.AIRCRAFT_VARIANT }} >> fbw-a380x/.env
           echo BUILD_DIR_NAME=${{ env.BUILD_DIR_NAME }} >> .env
-          echo LOCALAZY_READ_KEY=${{ secrets.LOCALAZY_READ_KEY }} >> .env
+          echo LOCALAZY_READ_KEY=\"${{ secrets.LOCALAZY_READ_KEY }}\" >> .env
           echo VITE_BUILD=false >> .env
       - name: Install dependencies
         run: |
@@ -188,7 +208,7 @@ jobs:
           rm -rf ./fbw-common/
           rm -rf ./.git/objects/
           rm -rf ./.git/modules/aircraft-large-files/objects/
-      - name: Generate install.json
+      - name: Build Fragmenter modules
         if: github.event.pull_request.auto_merge == false
         run: |
           df -h
@@ -196,9 +216,17 @@ jobs:
           cp ./fbw-a380x/out/build-modules/modules.json ./fbw-a380x/out/flybywire-aircraft-a380-842/install.json
           node ./scripts/install-source_a380x.js
           df -h
-      - name: Upload PR artifact
+
+      - name: Upload PR artifact (GitHub)
         uses: actions/upload-artifact@v4
         if: github.event.pull_request.auto_merge == false
         with:
           name: flybywire-aircraft-a380-842 (4K)
           path: ./fbw-a380x/out/flybywire-aircraft-a380-842/
+      - name: Upload modules as artifact
+        uses: actions/upload-artifact@v4
+        if: github.event.pull_request.auto_merge == false
+        with:
+          name: build-modules-a380x-4k
+          path: ./fbw-a380x/out/build-modules/
+          retention-days: 1

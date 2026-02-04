@@ -1,4 +1,4 @@
-name: PR Tests & Build
+name: PR Tests & Build (8K)
 on:
   pull_request:
     types:
@@ -10,7 +10,7 @@ on:
 
 jobs:
   build_a380x_8k:
-    name: Build and upload A380X (8K)
+    name: Build A380X (8K)
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false && contains(join(github.event.pull_request.labels.*.name, ', '), 'pr-build-8k')
     permissions:
@@ -51,9 +51,10 @@ jobs:
           sudo npm uninstall -g netlify-cli --save
           sudo npm uninstall -g parcel --save
           df -h
-      - name: Checkout source
+      - name: Checkout PR source
         uses: actions/checkout@v4
         with:
+          persist-credentials: false
           submodules: recursive
       - name: Set BUILT_DATE_TIME
         run: echo "BUILT_DATE_TIME=$(date -u -Iseconds)" >> $GITHUB_ENV
@@ -87,7 +88,7 @@ jobs:
           rm -rf ./fbw-common/
           rm -rf ./.git/objects/
           rm -rf ./.git/modules/aircraft-large-files/objects/
-      - name: Generate install.json
+      - name: Build Fragmenter modules
         if: github.event.pull_request.auto_merge == false
         run: |
           df -h
@@ -95,9 +96,16 @@ jobs:
           cp ./fbw-a380x/out/build-modules/modules.json ./fbw-a380x/out/flybywire-aircraft-a380-842/install.json
           node ./scripts/install-source_a380x.js
           df -h
-      - name: Upload PR artifact
+      - name: Upload PR artifact (GitHub)
         uses: actions/upload-artifact@v4
         if: github.event.pull_request.auto_merge == false
         with:
           name: flybywire-aircraft-a380-842 (8K)
           path: ./fbw-a380x/out/flybywire-aircraft-a380-842/
+      - name: Upload modules as artifact
+        uses: actions/upload-artifact@v4
+        if: github.event.pull_request.auto_merge == false
+        with:
+          name: build-modules-a380x-8k
+          path: ./fbw-a380x/out/build-modules/
+          retention-days: 1
