@@ -112,7 +112,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
   private readonly costIndexDisabled = MappedSubject.create(
     ([ciModeDisabled, ciMode]) => ciModeDisabled || ciMode === CostIndexMode.LRC,
     this.costIndexModeDisabled,
-    this.props.fmcService.master?.fmgc.data.costIndexMode,
+    this.props.fmcService.master?.fmgc.data.costIndexMode!,
   );
 
   private readonly tripWindDisabled = MappedSubject.create(
@@ -497,7 +497,6 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
-                canOverflow={true}
               />
               <div class="mfd-label init-input-field" style="width: auto;">
                 CRZ TEMP

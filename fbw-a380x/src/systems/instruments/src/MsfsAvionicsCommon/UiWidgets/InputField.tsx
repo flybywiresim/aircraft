@@ -35,6 +35,7 @@ interface InputFieldProps<T, U = T, S = T extends U ? true : false> extends Comp
   canBeCleared?: Subscribable<boolean>;
   /** Value will be displayed in smaller font, if not entered by pilot (i.e. computed) */
   enteredByPilot?: Subscribable<boolean>;
+  freeText?: boolean;
   modifyValue?: S;
   /** If defined, this component does not update the value prop, but rather calls this method. */
   onModified?: (newValue: U | null) => void | Promise<unknown>;
@@ -84,6 +85,8 @@ export class InputField<
   U = T,
   S extends U extends T ? boolean : false = U extends T ? true : false,
 > extends DisplayComponent<ConditionalInputFieldProps<T, U, S>> {
+  private static readonly MAX_CHARACTERS_FREE_TEXT = 24;
+
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
   private readonly subs = [] as Subscription[];
 
@@ -120,7 +123,7 @@ export class InputField<
     true,
   );
 
-  private readonly canOverFlow = this.props.dataEntryFormat.maxOverflowDigits !== undefined;
+  private readonly canOverFlow = this.props.freeText || this.props.dataEntryFormat.maxOverflowDigits !== undefined;
 
   private isOverFlow = false;
 
@@ -135,7 +138,7 @@ export class InputField<
       this.modifiedFieldValue.set(null);
     }
     if (this.readValue.get() !== null) {
-      if (this.overflow) {
+      if (this.canOverFlow) {
         // If item was overflowing, check whether overflow is still needed
         this.overflow((this.readValue.get()?.toString().length ?? 0) > this.props.dataEntryFormat.maxDigits);
       }
@@ -165,7 +168,9 @@ export class InputField<
     } else {
       // Else, render modifiedFieldValue
       const numDigits = this.canOverFlow
-        ? this.props.dataEntryFormat.maxDigits + this.props.dataEntryFormat.maxOverflowDigits!
+        ? this.props.freeText
+          ? InputField.MAX_CHARACTERS_FREE_TEXT
+          : this.props.dataEntryFormat.maxDigits + this.props.dataEntryFormat.maxOverflowDigits!
         : this.props.dataEntryFormat.maxDigits;
 
       if ((this.modifiedFieldValue.get()?.length ?? 0) < numDigits || !this.isFocused.get()) {
@@ -194,17 +199,14 @@ export class InputField<
       if (overflow) {
         this.topRef.instance.classList.add('overflow');
         this.containerRef.instance.classList.add('overflow');
-        if (!this.props.dataEntryFormat.maxOverflowDigits) {
-          const remainingWidth = 768 - 50 - this.containerRef.instance.getBoundingClientRect().left;
-          this.containerRef.instance.style.width = `${remainingWidth}px`; // TODO extend to right edge
-        } else {
-          this.containerRef.instance.style.width = InputField.calculateWidthForDigits(
-            this.props.dataEntryFormat.maxOverflowDigits +
-              this.props.dataEntryFormat.maxDigits +
-              (this.props.dataEntryFormat.unit?.length ?? 0) +
-              1, // Always a space for one extra character is displayed
-          );
-        }
+        this.containerRef.instance.style.width = InputField.calculateWidthForDigits(
+          this.props.freeText
+            ? InputField.MAX_CHARACTERS_FREE_TEXT
+            : this.props.dataEntryFormat.maxOverflowDigits! +
+                this.props.dataEntryFormat.maxDigits +
+                (this.props.dataEntryFormat.unit?.length ?? 0) +
+                1, // Always a space for one extra character is displayed
+        );
         this.isOverFlow = true;
       } else {
         this.topRef.instance.classList.remove('overflow');
@@ -279,7 +281,10 @@ export class InputField<
     if (
       modifiedFieldValueLength < this.props.dataEntryFormat.maxDigits ||
       (this.canOverFlow &&
-        modifiedFieldValueLength < this.props.dataEntryFormat.maxOverflowDigits! + this.props.dataEntryFormat.maxDigits)
+        modifiedFieldValueLength <
+          (this.props.freeText
+            ? InputField.MAX_CHARACTERS_FREE_TEXT
+            : this.props.dataEntryFormat.maxOverflowDigits! + this.props.dataEntryFormat.maxDigits))
     ) {
       this.modifiedFieldValue.set(`${this.modifiedFieldValue.get()}${key}`);
       this.caretRef.instance.style.display = 'inline';
@@ -346,7 +351,7 @@ export class InputField<
           await this.validateAndUpdate(this.modifiedFieldValue.get() ?? '');
         }
 
-        if (this.canOverFlow) {
+        if (this.isOverFlow) {
           this.overflow(false);
         }
       }
