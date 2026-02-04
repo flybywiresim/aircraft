@@ -242,7 +242,7 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
                 await this.props.fmcService.master?.flightPlanService.temporaryDelete();
                 this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln`);
               }}
-              buttonStyle="color: #e68000;"
+              buttonStyle="color: #eb880c;"
             />
           </div>
           <div ref={this.returnButtonDiv} class="mfd-fms-direct-to-erase-return-btn">
@@ -262,7 +262,7 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
                 this.props.fmcService.master?.guidanceController?.vnavDriver?.invalidateFlightPlanProfile();
                 this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln`);
               }}
-              buttonStyle="color: #e68000;"
+              buttonStyle="color: #eb880c;"
             />
           </div>
         </div>

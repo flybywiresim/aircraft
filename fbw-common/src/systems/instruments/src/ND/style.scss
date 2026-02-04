@@ -72,25 +72,25 @@ $font-factor: 5;
 
 .Magenta {
   fill: none;
-  stroke: $display-magenta;
+  stroke: #dc78da;
 }
 text.Magenta,
 tspan.Magenta,
 .Magenta text,
 .Magenta tspan {
-  fill: $display-magenta;
+  fill: #dc78da;
   stroke: none;
 }
 
 .Cyan {
   fill: none;
-  stroke: $display-cyan;
+  stroke: #17e9f2;
 }
 text.Cyan,
 tspan.Cyan,
 .Cyan text,
 .Cyan tspan {
-  fill: $display-cyan;
+  fill: #17e9f2;
   stroke: none;
 }
 
@@ -101,27 +101,27 @@ tspan.Cyan,
 
 .White {
   fill: none;
-  stroke: $display-white;
+  stroke: #e5dfd6;
 }
 .White.Fill {
-  fill: $display-white;
+  fill: #e5dfd6;
   stroke: none;
 }
 text.White,
 tspan.White,
 .White text,
 .White tspan {
-  fill: $display-white;
+  fill: #e5dfd6;
   stroke: none;
 }
 
 .Green {
-  stroke: $display-green;
+  stroke: #5bea06;
   fill: none;
 }
 
 .Green.Fill {
-  fill: $display-green;
+  fill: #5bea06;
   stroke: none;
 }
 
@@ -129,60 +129,60 @@ text.Green,
 tspan.Green,
 .Green text,
 .Green tspan {
-  fill: $display-green;
+  fill: #5bea06;
   stroke: none;
 }
 
 .Amber {
-  stroke: $display-amber;
+  stroke: #eb880c;
   fill: none;
 }
 text.Amber,
 tspan.Amber,
 .Amber text,
 .Amber tspan {
-  fill: $display-amber;
+  fill: #eb880c;
   stroke: none;
 }
 
 .Yellow {
-  stroke: $display-yellow;
+  stroke: #ffd200;
   fill: none;
 }
 .Yellow.Fill {
-  fill: $display-yellow;
+  fill: #ffd200;
   stroke: none;
 }
 text.Yellow,
 tspan.Yellow,
 .Yellow text,
 .Yellow tspan {
-  fill: $display-yellow;
+  fill: #ffd200;
   stroke: none;
 }
 
 .Red {
-  stroke: $display-red;
+  stroke: #c21d1a;
   fill: none;
 }
 .Red.Fill {
-  fill: $display-red;
+  fill: #c21d1a;
   stroke: none;
 }
 text.Red,
 tspan.Red,
 .Red text,
 .Red tspan {
-  fill: $display-red;
+  fill: #c21d1a;
   stroke: none;
 }
 
 .Grey {
-  stroke: $display-grey;
+  stroke: #323135;
   fill: none;
 }
 .Grey.Fill {
-  fill: $display-grey;
+  fill: #323135;
   stroke: none;
 }
 

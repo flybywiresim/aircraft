@@ -103,7 +103,7 @@ export class EisDisplay extends DisplayComponent<EisDisplayProps> {
         <text id="QNH" class={this.qnhLabelSub} x="300" y="61.5" text-anchor="end">
           QNH
         </text>
-        <text id="Value" class="Value" x="28" y="165">
+        <text id="Value" class="Value" x="28" y="168" letter-spacing="-12px" font-size="115px">
           {this.baroValueSub}
         </text>
       </g>

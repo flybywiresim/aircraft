@@ -96,7 +96,7 @@ export class HdgDisplay extends DisplayComponent<{ x: number; y: number; bus: Ev
         <text id="LAT" class="Active" x="328" y="57.6">
           LAT
         </text>
-        <text id="Value" class="Value" x="87" y="163">
+        <text id="Value" class="Value" x="87" y="167">
           {this.valueSub}
         </text>
         <circle id="Illuminator" r="28" cx="374" cy="119" visibility={this.dotVisibilitySub} />

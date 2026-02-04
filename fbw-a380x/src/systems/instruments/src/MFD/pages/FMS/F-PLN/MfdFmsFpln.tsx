@@ -979,7 +979,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 </div>,
               )}
               onClick={() => this.props.fmcService.master?.flightPlanService.temporaryDelete()}
-              buttonStyle="color: #e68000; padding-right: 2px;"
+              buttonStyle="color: #eb880c; padding-right: 2px;"
             />
             <Button
               label={Subject.create(
@@ -993,7 +993,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 </div>,
               )}
               onClick={() => this.props.fmcService.master?.flightPlanService.temporaryInsert()}
-              buttonStyle="color: #e68000; padding-right: 2px;"
+              buttonStyle="color: #eb880c; padding-right: 2px;"
             />
           </div>
           <div style="flex-grow: 1;" />
@@ -1168,10 +1168,10 @@ interface FplnLineCommonProps extends ComponentProps {
   openRevisionsMenuCallback: () => void;
 }
 enum FplnLineColor {
-  Active = '#00ff00',
-  Temporary = '#ffff00',
-  Secondary = '#ffffff',
-  Alternate = '#00ffff',
+  Active = '#5bea06',
+  Temporary = '#ffd200',
+  Secondary = '#e5dfd6',
+  Alternate = '#17e9f2',
 }
 
 enum FplnLineFlags {
@@ -1894,10 +1894,10 @@ function FplnLineConnectorFirstLineNotBeforeActiveLeg(
         y1="18"
         x2="0"
         y2="18"
-        style={`stroke:${activeLeg && lineColor === FplnLineColor.Active ? '#fff' : lineColor};stroke-width:2`}
+        style={`stroke:${activeLeg && lineColor === FplnLineColor.Active ? '#e5dfd6' : lineColor};stroke-width:2`}
       />
       <g
-        style={`fill:none;stroke:${activeLeg && lineColor !== FplnLineColor.Temporary ? '#fff' : lineColor};stroke-width:2`}
+        style={`fill:none;stroke:${activeLeg && lineColor !== FplnLineColor.Temporary ? '#e5dfd6' : lineColor};stroke-width:2`}
       >
         <polyline points="15,31 8,19 15,5 22,19 15,31" />
       </g>
@@ -1935,7 +1935,7 @@ function FplnLineConnectorActiveLeg(lineColor: FplnLineColor): VNode {
   return (
     <svg height="72" width="30">
       <line x1="15" y1="72" x2="15" y2="62" style={`stroke:${lineColor};stroke-width:2`} />
-      <g style={`fill:none;stroke:${lineColor === FplnLineColor.Active ? '#fff' : lineColor};stroke-width:2`}>
+      <g style={`fill:none;stroke:${lineColor === FplnLineColor.Active ? '#e5dfd6' : lineColor};stroke-width:2`}>
         <line x1="15" y1="9" x2="15" y2="37" />
         <polyline points="15,63 8,51 15,37 22,51 15,63" />
         <line x1="8" y1="50" x2="0" y2="50" />

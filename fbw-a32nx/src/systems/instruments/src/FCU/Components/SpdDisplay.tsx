@@ -98,7 +98,7 @@ export class SpdDisplay extends DisplayComponent<{ x: number; y: number; bus: Ev
         >
           MACH
         </text>
-        <text id="Value" class="Value" x="92" y="163">
+        <text id="Value" class="Value" x="92" y="167">
           {this.valueSub}
         </text>
         <circle id="Illuminator" r="28" cx="374" cy="119" visibility={this.dotVisibilitySub} />

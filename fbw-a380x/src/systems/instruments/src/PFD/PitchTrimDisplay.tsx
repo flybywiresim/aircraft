@@ -169,24 +169,24 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
         this.cgGroup.instance.style.visibility = 'inherit';
         this.outOfRangeGroup.instance.style.visibility = 'hidden';
         this.cgValue.instance.classList.add('White');
-        this.arrowRef.instance.style.fill = 'white';
+        this.arrowRef.instance.style.fill = '#e5dfd6';
         break;
       case PitchTrimStatus.OutOfRange:
         this.cgGroup.instance.style.visibility = 'hidden';
         this.outOfRangeGroup.instance.style.visibility = 'inherit';
-        this.arrowRef.instance.style.fill = 'red';
+        this.arrowRef.instance.style.fill = '#c21d1a';
         break;
       case PitchTrimStatus.AtTarget:
         this.cgGroup.instance.style.visibility = 'inherit';
         this.outOfRangeGroup.instance.style.visibility = 'hidden';
         this.cgValue.instance.classList.add('Green');
-        this.arrowRef.instance.style.fill = '#00ff00';
+        this.arrowRef.instance.style.fill = '#5bea06';
         break;
       case PitchTrimStatus.NotAtTarget:
         this.cgGroup.instance.style.visibility = 'inherit';
         this.outOfRangeGroup.instance.style.visibility = 'hidden';
         this.cgValue.instance.classList.add('Amber');
-        this.arrowRef.instance.style.fill = '#e68000';
+        this.arrowRef.instance.style.fill = '#eb880c';
         break;
     }
   }
@@ -244,8 +244,8 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
                 .map((_, index) => {
                   return (
                     <>
-                      <stop offset={`${index * 6.25 + 0.001}%`} stop-color="#555f72" />
-                      <stop offset={`${index * 6.25 + 2.6}%`} stop-color="#555f72" />
+                      <stop offset={`${index * 6.25 + 0.001}%`} stop-color="#323135" />
+                      <stop offset={`${index * 6.25 + 2.6}%`} stop-color="#323135" />
                       <stop offset={`${index * 6.25 + 2.6001}%`} stop-color="white" />
                       <stop offset={`${(index + 1) * 6.25 + 0.001}%`} stop-color="white" />
                     </>
@@ -259,13 +259,13 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
               <stop offset="100%" stop-color="black" stop-opacity="1" />
             </linearGradient>
             <linearGradient id="markerGradient1" x1="0%" x2="0%" y1="0%" y2="100%">
-              <stop offset="0%" stop-color="#8fadc0" />
-              <stop offset="90%" stop-color="#6387a1" />
+              <stop offset="0%" stop-color="#667b88" />
+              <stop offset="90%" stop-color="#48657b" />
             </linearGradient>
             <linearGradient id="markerGradient2" x1="0%" x2="0%" y1="0%" y2="100%">
-              <stop offset="0%" stop-color="#8fadc0" />
-              <stop offset="60%" stop-color="#444444" />
-              <stop offset="100%" stop-color="#8fadc0" />
+              <stop offset="0%" stop-color="#667b88" />
+              <stop offset="60%" stop-color="#151416" />
+              <stop offset="100%" stop-color="#667b88" />
             </linearGradient>
             <clipPath id="cut-right">
               <rect x="319" y="23" width="16" height="207" />
@@ -298,7 +298,7 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
               </text>
             </g>
             <g transform={this.gwCgPositionTransform} visibility={this.gwCgVisibility}>
-              <rect x={360} y={117} width={71} height={30} stroke="#ff94ff" stroke-width={2} />
+              <rect x={360} y={117} width={71} height={30} stroke="#dc78da" stroke-width={2} />
               <text x={362} y={140} font-size={21.7} class="Magenta">
                 {this.cgPercentText}
               </text>
@@ -320,16 +320,16 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
           </g>
           <g clip-path="url(#cut-left)">
             <g transform={this.trimAreasTransform}>
-              <rect width="28" height="414" x="0" y="0" stroke="black" fill="#555f72" />
-              <rect width="25" height="207" x="2" y="103.5" fill="none" stroke="white" stroke-width="2" />
-              <rect width="23" height="103.5" x="3" y="175.95" fill="none" stroke="#00ff00" stroke-width="4" />
+              <rect width="28" height="414" x="0" y="0" stroke="black" fill="#323135" />
+              <rect width="25" height="207" x="2" y="103.5" fill="none" stroke="#e5dfd6" stroke-width="2" />
+              <rect width="23" height="103.5" x="3" y="175.95" fill="none" stroke="#5bea06" stroke-width="4" />
               <rect
                 width="16"
                 height={this.optimalPitchTrimUpperBoxHeight}
                 x="6"
                 y={this.optimalPitchTrimUpperBoxStart}
                 fill="none"
-                stroke="#ff94ff"
+                stroke="#dc78da"
                 stroke-width="4"
                 visibility={this.gwCgVisibility}
               />
@@ -339,7 +339,7 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
                 x="6"
                 y={this.optimalPitchTrimCenter}
                 fill="none"
-                stroke="#ff94ff"
+                stroke="#dc78da"
                 stroke-width="4"
                 visibility={this.gwCgVisibility}
               />
@@ -348,7 +348,7 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
                 height="4"
                 x="5"
                 y="274"
-                fill="white"
+                fill="#e5dfd6"
                 visibility={this.maintenancePositionWhiteLineVisibility}
               />
             </g>

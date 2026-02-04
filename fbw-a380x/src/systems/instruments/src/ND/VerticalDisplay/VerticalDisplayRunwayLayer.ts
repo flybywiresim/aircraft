@@ -76,7 +76,7 @@ export class VerticalDisplayRunwayLayer implements VerticalDisplayMapLayer<VdSym
     context.translate(-x, -y);
 
     context.lineWidth = isColorLayer ? 1.75 : 3.25;
-    context.strokeStyle = isColorLayer ? '#fff' : '#000';
+    context.strokeStyle = isColorLayer ? '#e5dfd6' : '#000';
 
     context.beginPath();
     context.moveTo(x - 5, y);
@@ -106,7 +106,7 @@ export class VerticalDisplayRunwayLayer implements VerticalDisplayMapLayer<VdSym
     context.translate(-x, -y);
 
     context.lineWidth = isColorLayer ? 1.75 : 3.25;
-    context.strokeStyle = isColorLayer ? '#fff' : '#000';
+    context.strokeStyle = isColorLayer ? '#e5dfd6' : '#000';
 
     context.strokeRect(x - 5, y - 12.5, 10, 25);
 
@@ -136,8 +136,8 @@ export class VerticalDisplayRunwayLayer implements VerticalDisplayMapLayer<VdSym
     context.rotate(-rotation * MathUtils.DEGREES_TO_RADIANS);
     context.translate(-(x + 40), -(y - 20));
 
-    VerticalDisplayPaintUtils.paintText(isColorLayer, context, x + 40, y - 100, identIcao, 'white');
-    VerticalDisplayPaintUtils.paintText(isColorLayer, context, x + 40, y - 80, identRwy.padEnd(4, '\xa0'), 'white');
+    VerticalDisplayPaintUtils.paintText(isColorLayer, context, x + 40, y - 100, identIcao, '#e5dfd6');
+    VerticalDisplayPaintUtils.paintText(isColorLayer, context, x + 40, y - 80, identRwy.padEnd(4, '\xa0'), '#e5dfd6');
 
     context.restore();
   }

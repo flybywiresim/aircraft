@@ -1273,7 +1273,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                       `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln`,
                     );
                   }}
-                  buttonStyle="color: yellow"
+                  buttonStyle="color: #ffd200;"
                 />
               </div>
             </div>

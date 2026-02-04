@@ -5,7 +5,7 @@
 #endif
 
 #ifndef A380X
-#define INSTRUMENT_BG_COLOR nvgRGBA(4, 4, 4, 255)
+#define INSTRUMENT_BG_COLOR nvgRGBA(0, 0, 0, 255)
 #endif
 
 using namespace navigationdisplay;
