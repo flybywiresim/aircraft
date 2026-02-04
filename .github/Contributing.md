@@ -33,7 +33,7 @@ git submodule update --init
 
 Note that you should use `run.sh` instead of `run.cmd` if you are on Linux (including WSL).
 
-To build only the A32NX or the A380X, change `build.sh` to `build_a32nx.sh` or `build_a380x.sh`. To build the A380X with 4K textures instead of maximum quality (8K), add the `-4k` flag at the end of the command. Note that the `-4k` flag only works with the build `build.sh` and not with `build_a32nx.sh` or `build_a380x.sh`. Alternatively you can define the `USE_4K_TEXTURES=true` environment variable in a `.env` file at the root of the repo.
+To build only the A32NX or the A380X, change `build.sh` to `build_a32nx.sh` or `build_a380x.sh`. To build the A380X with 4K textures instead of maximum quality (8K), add the `-4k` flag at the end of the command. Note that the `-4k` flag only works with `build.sh` and not with `build_a32nx.sh` or `build_a380x.sh`. Alternatively you can define the `USE_4K_TEXTURES=true` environment variable in a `.env` file at the root of the repo.
 
 If you are using WSL, ensure that the `Vmmem` process is not memory limited. At least `10GB` of memory is the recommended setting. This can be configured in `C:\<user>\.wslconfig`.
 
