@@ -100,7 +100,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
   private readonly costIndexDisabled = MappedSubject.create(
     ([ciModeDisabled, ciMode]) => ciModeDisabled || ciMode === CostIndexMode.LRC,
     this.costIndexModeDisabled,
-    this.props.fmcService.master?.fmgc.data.costIndexMode,
+    this.props.fmcService.master?.fmgc.data.costIndexMode!,
   );
 
   protected onNewData() {
@@ -159,7 +159,9 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             return;
           }
 
-          this.alternateFuelDisabled.set(!this.props.fmcService.master.fmgc.data.alternateExists.get());
+          const alternateExists = this.loadedFlightPlan?.alternateDestinationAirport !== undefined;
+          this.props.fmcService.master.fmgc.data.alternateExists.set(alternateExists);
+          this.alternateFuelDisabled.set(!alternateExists);
           this.landingWeight.set(this.props.fmcService.master.getLandingWeight());
           this.takeoffWeight.set(this.props.fmcService.master.getTakeoffWeight());
 
@@ -461,7 +463,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   <DropdownMenu
                     disabled={this.costIndexModeDisabled}
                     values={this.costIndexModeLabels}
-                    selectedIndex={this.props.fmcService.master.fmgc.data.costIndexMode}
+                    selectedIndex={this.props.fmcService.master?.fmgc.data.costIndexMode}
                     idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_initCostIndexModeDropdown`}
                     freeTextAllowed={false}
                     containerStyle="width: 175px; margin-right: 65px; "

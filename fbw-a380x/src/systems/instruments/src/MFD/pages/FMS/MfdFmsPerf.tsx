@@ -1138,7 +1138,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
-                  canOverflow={true}
                 />
               </div>
               <div class="mfd-label-value-container" style="padding: 0px; justify-content: center;">
@@ -2773,7 +2772,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
-                      canOverflow={true}
                     />
                   </div>
                   <div class="mfd-label-value-container" style="padding: 15px;">

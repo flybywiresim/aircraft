@@ -19,7 +19,7 @@ import { DropdownFieldFormat } from 'instruments/src/MFD/pages/common/DataEntryF
 
 interface DropdownMenuProps extends ComponentProps {
   values: SubscribableArray<string>;
-  selectedIndex: Subject<number | null>;
+  selectedIndex: Subject<number | null> | Subject<number>;
   freeTextAllowed: boolean;
   idPrefix: string;
   /** If defined, this component does not update the selectedIndex prop by itself, but rather calls this method. */
@@ -60,8 +60,9 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
 
   private readonly inputFieldValue = Subject.create<string | null>('');
 
-  private readonly dropdownArrowFill =
-    this.props.disabled?.map((isDisabled) => (isDisabled ? 'gray' : 'white')) ?? Subject.create('white');
+  private readonly dropdownArrowFill = (this.props.disabled ?? Subject.create(false)).map((isDisabled) =>
+    isDisabled ? 'gray' : 'white',
+  );
 
   private freeTextEntered = false;
 
@@ -220,22 +221,23 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
           this.dropdownArrowRef.getOrDefault()?.classList.remove('inactive');
         }
       }, true),
-
-      this.props.disabled?.sub((val) => {
-        if (!this.props.inactive?.get()) {
-          if (val) {
-            this.dropdownSelectorRef.getOrDefault()?.classList.add('disabled');
-            this.dropdownArrowRef.getOrDefault()?.classList.add('disabled');
-          } else {
-            this.dropdownSelectorRef.getOrDefault()?.classList.remove('disabled');
-            this.dropdownArrowRef.getOrDefault()?.classList.remove('disabled');
-          }
-        }
-      }, true),
-
       this.dropdownArrowFill,
     );
-
+    if (this.props.disabled) {
+      this.subs.push(
+        this.props.disabled?.sub((val) => {
+          if (!this.props.inactive?.get()) {
+            if (val) {
+              this.dropdownSelectorRef.getOrDefault()?.classList.add('disabled');
+              this.dropdownArrowRef.getOrDefault()?.classList.add('disabled');
+            } else {
+              this.dropdownSelectorRef.getOrDefault()?.classList.remove('disabled');
+              this.dropdownArrowRef.getOrDefault()?.classList.remove('disabled');
+            }
+          }
+        }, true),
+      );
+    }
     // TODO add KCCU events
   }
 
@@ -301,7 +303,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
               value={this.inputFieldValue}
               containerStyle="border: 2px inset transparent"
               alignText={this.props.alignLabels}
-              canOverflow={this.props.freeTextAllowed}
+              freeText={this.props.freeTextAllowed}
               onModified={(text) => this.onFieldSubmit(text ?? '')}
               onInput={(text) => this.onFieldChanged(text)}
               inactive={this.props.inactive}

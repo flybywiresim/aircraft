@@ -934,6 +934,7 @@ export class FlightManagementComputer implements FmcInterface {
             this.initSimVars();
             this.deleteAllStoredWaypoints();
             this.clearLatestFmsErrorMessage();
+            this.acInterface.resetDestinationPredictions();
             SimVar.SetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', true).then(() => {
               this.mfdReference?.uiService.navigateTo('fms/data/status');
               this.isReset.set(true);
@@ -1064,21 +1065,8 @@ export class FlightManagementComputer implements FmcInterface {
         }
 
         const destPred = this.guidanceController.vnavDriver.getDestinationPrediction();
-        if (destPred) {
-          this.acInterface.updateDestinationPredictions(destPred);
-        } else {
-          this.acInterface.resetDestinationPredictions();
-        }
+        this.acInterface.updateDestinationPredictions(destPred);
         this.acInterface.updateIlsCourse(this.navigation.getNavaidTuner().getMmrRadioTuningStatus(1));
-        const alternateExists = this.flightPlanService.active.alternateDestinationAirport !== undefined;
-        this.fmgc.data.alternateExists.set(alternateExists);
-        if (!alternateExists) {
-          this.fmgc.data.alternateFuelPilotEntry.set(null);
-        }
-      } else {
-        this.acInterface.resetDestinationPredictions();
-        this.fmgc.data.alternateExists.set(false);
-        this.fmgc.data.alternateFuelPilotEntry.set(null);
       }
       this.checkZfwParams();
       this.updateMessageQueue();
@@ -1301,6 +1289,7 @@ export class FlightManagementComputer implements FmcInterface {
       this.clearLatestFmsErrorMessage();
       this.mfdReference?.uiService.navigateTo('fms/data/status');
       this.navigation.resetState();
+      this.acInterface.resetDestinationPredictions();
     }
   }
 

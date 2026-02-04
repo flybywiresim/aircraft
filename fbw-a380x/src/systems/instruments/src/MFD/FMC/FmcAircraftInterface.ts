@@ -667,12 +667,14 @@ export class FmcAircraftInterface {
     }
   }
 
-  updateDestinationPredictions(destPred?: VerticalWaypointPrediction) {
+  updateDestinationPredictions(destPred?: VerticalWaypointPrediction | null) {
     this.updateMinimums(destPred?.distanceFromAircraft);
 
     this.arincRemainingFlightTime.setBnrValue(
       destPred?.secondsFromPresent ?? 0,
-      destPred == null ? Arinc429SignStatusMatrix.NoComputedData : Arinc429SignStatusMatrix.NormalOperation,
+      destPred === undefined || destPred === null
+        ? Arinc429SignStatusMatrix.NoComputedData
+        : Arinc429SignStatusMatrix.NormalOperation,
       17,
       131072,
     );
@@ -701,9 +703,9 @@ export class FmcAircraftInterface {
     this.arincEisWord2.ssm = Arinc429SignStatusMatrix.NormalOperation;
   }
 
-  shouldTransmitMinimums(distanceToDestination?: number) {
+  shouldTransmitMinimums(distanceToDestination: number | undefined) {
     const phase = this.flightPhase.get();
-    const isCloseToDestination = Number.isFinite(distanceToDestination) ? distanceToDestination < 250 : true;
+    const isCloseToDestination = distanceToDestination !== undefined ? distanceToDestination < 250 : true;
 
     return phase > FmgcFlightPhase.Cruise || (phase === FmgcFlightPhase.Cruise && isCloseToDestination);
   }
