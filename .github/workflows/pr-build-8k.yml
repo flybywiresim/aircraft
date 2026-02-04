@@ -12,7 +12,7 @@ jobs:
   pr-metadata:
     name: Upload PR metadata
     runs-on: ubuntu-latest
-    if: github.event.pull_request.draft == false
+    if: github.event.pull_request.draft == false && contains(join(github.event.pull_request.labels.*.name, ', '), 'pr-build-8k')
     permissions:
       contents: read
       pull-requests: read
