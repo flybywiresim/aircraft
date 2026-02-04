@@ -967,19 +967,6 @@ mod tests {
         volume::{cubic_meter, gallon},
     };
 
-    struct TestPneumaticValveSignal {
-        target_open_amount: Ratio,
-    }
-    impl PneumaticValveSignal for TestPneumaticValveSignal {
-        fn new(target_open_amount: Ratio) -> Self {
-            Self { target_open_amount }
-        }
-
-        fn target_open_amount(&self) -> Ratio {
-            self.target_open_amount
-        }
-    }
-
     pub struct ConstantPressureController {
         target_pressure: Pressure,
     }

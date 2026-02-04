@@ -4021,9 +4021,7 @@ impl A320HydraulicBrakeSteerComputerUnit {
 
     fn brakes_hot(&self) -> bool {
         self.brake_temperatures.iter().any(|t| {
-            t.map_or(false, |t| {
-                t.get::<degree_celsius>() >= Self::BRAKES_HOT_THRESHOLD_CELSIUS
-            })
+            t.is_some_and(|t| t.get::<degree_celsius>() >= Self::BRAKES_HOT_THRESHOLD_CELSIUS)
         })
     }
 }

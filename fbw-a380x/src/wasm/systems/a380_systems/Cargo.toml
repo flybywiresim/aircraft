@@ -11,7 +11,7 @@ rustc-hash = "2.1.1"
 rand.workspace = true
 serde = { version = "1.0.215", features = ["derive"] }
 serde_with = { version = "3.11.0" }
-toml = { version = "0.9.6", default_features = false, features = ["std", "serde", "parse"] }
+toml = { version = "0.9.6", default-features = false, features = ["std", "serde", "parse"] }
 systems = { path = "../../../../../fbw-common/src/wasm/systems/systems" }
 
 [dev-dependencies]
