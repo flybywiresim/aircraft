@@ -30,7 +30,7 @@ jobs:
       - name: Checkout trusted source
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.base.ref }}
+          ref: ${{ github.event.repository.default_branch }}
       - name: Install dependencies
         run: |
           sudo apt-get install -y rclone
