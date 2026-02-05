@@ -329,7 +329,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     NXDataStore.setLegacy('PLAN_DESTINATION', toIcao);
   }
 
-  async setAlternate(altnIcao: string, planIndex = FlightPlanIndex.Active) {
+  async setAlternate(altnIcao: string | undefined, planIndex = FlightPlanIndex.Active) {
     if (planIndex === FlightPlanIndex.Temporary) {
       throw new Error('[FMS/FPM] Cannot set alternate on temporary flight plan');
     }

@@ -158,7 +158,7 @@ export class FmgcData {
   public readonly alternateFuelPilotEntry = Subject.create<number | null>(null);
 
   /** in kg. null if not set. */
-  public readonly alternateFuelCalculated = this.alternateExists.map((v) => (v ? 6_500 : null)); // FIXME Hardcoded value. Derive from FMS predictions.
+  public readonly alternateFuelCalculated = this.alternateExists.map((v) => (v ? 6_500 : 0)); // FIXME Hardcoded value. Derive from FMS predictions.
 
   public readonly alternateFuel = MappedSubject.create(
     ([calc, pe]) => (pe !== null ? pe : calc),
@@ -245,7 +245,7 @@ export class FmgcData {
    */
   readonly v2ToBeConfirmed = Subject.create<Knots | null>(null);
 
-  public readonly takeoffFlapsSetting = Subject.create<FlapConf>(FlapConf.CONF_1);
+  public readonly takeoffFlapsSetting = Subject.create<FlapConf | null>(null);
 
   public readonly flapRetractionSpeed = Subject.create<Knots | null>(null);
 
@@ -299,7 +299,7 @@ export class FmgcData {
   /** in feet. null if not set. */
   public readonly noiseEndAltitude = Subject.create<number | null>(null);
 
-  public readonly costIndexMode = Subject.create<CostIndexMode | null>(CostIndexMode.ECON);
+  public readonly costIndexMode = Subject.create<CostIndexMode>(CostIndexMode.ECON);
 
   public readonly climbDerated = Subject.create<ClimbDerated | null>(ClimbDerated.NONE);
 

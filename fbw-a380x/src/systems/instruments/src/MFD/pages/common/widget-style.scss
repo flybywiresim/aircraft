@@ -151,6 +151,10 @@
   border-color: $display-cyan;
 }
 
+.mfd-dropdown-outer.disabled:hover {
+  border-color: $display-light-grey;
+}
+
 .mfd-dropdown-inner {
   background-color: $display-background;
   display: flex;

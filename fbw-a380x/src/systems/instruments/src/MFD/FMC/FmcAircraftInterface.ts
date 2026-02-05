@@ -298,6 +298,9 @@ export class FmcAircraftInterface {
           0,
         ),
       ),
+      this.fmgc.data.takeoffFlapsSetting.sub((v) => {
+        this.setTakeoffFlaps(v);
+      }),
     );
 
     const pub = this.bus.getPublisher<FmsData>();
@@ -584,7 +587,7 @@ export class FmcAircraftInterface {
    * Set the takeoff flap config
    * @param {0 | 1 | 2 | 3 | null} flaps
    */
-  setTakeoffFlaps(flaps: FlapConf) {
+  setTakeoffFlaps(flaps: FlapConf | null) {
     this.arincDiscreteWord2.setBitValue(13, flaps === 0);
     this.arincDiscreteWord2.setBitValue(14, flaps === 1);
     this.arincDiscreteWord2.setBitValue(15, flaps === 2);
@@ -664,14 +667,14 @@ export class FmcAircraftInterface {
     }
   }
 
-  updateDestinationPredictions(destPred?: VerticalWaypointPrediction) {
-    if (destPred != null) {
-      this.updateMinimums(destPred.distanceFromAircraft);
-    }
+  updateDestinationPredictions(destPred?: VerticalWaypointPrediction | null) {
+    this.updateMinimums(destPred?.distanceFromAircraft);
 
     this.arincRemainingFlightTime.setBnrValue(
       destPred?.secondsFromPresent ?? 0,
-      destPred == null ? Arinc429SignStatusMatrix.NoComputedData : Arinc429SignStatusMatrix.NormalOperation,
+      destPred === undefined || destPred === null
+        ? Arinc429SignStatusMatrix.NoComputedData
+        : Arinc429SignStatusMatrix.NormalOperation,
       17,
       131072,
     );
@@ -681,7 +684,7 @@ export class FmcAircraftInterface {
     this.updateDestinationPredictions();
   }
 
-  updateMinimums(distanceToDestination: number) {
+  updateMinimums(distanceToDestination?: number) {
     const inRange = this.shouldTransmitMinimums(distanceToDestination);
 
     const mda = this.fmgc.data.approachBaroMinimum.get();
@@ -700,9 +703,9 @@ export class FmcAircraftInterface {
     this.arincEisWord2.ssm = Arinc429SignStatusMatrix.NormalOperation;
   }
 
-  shouldTransmitMinimums(distanceToDestination: number) {
+  shouldTransmitMinimums(distanceToDestination: number | undefined) {
     const phase = this.flightPhase.get();
-    const isCloseToDestination = Number.isFinite(distanceToDestination) ? distanceToDestination < 250 : true;
+    const isCloseToDestination = distanceToDestination !== undefined ? distanceToDestination < 250 : true;
 
     return phase > FmgcFlightPhase.Cruise || (phase === FmgcFlightPhase.Cruise && isCloseToDestination);
   }
@@ -1757,10 +1760,13 @@ export class FmcAircraftInterface {
     }
 
     if (!Number.isFinite(fl)) {
-      this.fmc.addMessageToQueue(NXSystemMessages.notAllowed, undefined, undefined);
+      this.fmc.addMessageToQueue(NXSystemMessages.formatError, undefined, undefined);
       return false;
     }
-    if (fl > (this.fmc.getRecMaxFlightLevel() ?? maxCertifiedAlt / 100)) {
+
+    const flBelowMinOrMax = fl <= 0 || fl > maxCertifiedAlt / 100;
+
+    if (flBelowMinOrMax) {
       this.fmc.addMessageToQueue(NXSystemMessages.entryOutOfRange, undefined, undefined);
       return false;
     }
@@ -1774,12 +1780,10 @@ export class FmcAircraftInterface {
       return false;
     }
 
-    if (fl <= 0 || fl > (this.fmc.getRecMaxFlightLevel() ?? maxCertifiedAlt / 100)) {
-      this.fmc.addMessageToQueue(NXSystemMessages.entryOutOfRange, undefined, undefined);
-      return false;
-    }
-
     this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', fl);
+    if (fl > (this.fmc.getRecMaxFlightLevel() ?? Infinity)) {
+      this.fmc.addMessageToQueue(NXSystemMessages.crzFlAboveMaxFL, undefined, undefined);
+    }
     this.onUpdateCruiseLevel(fl);
 
     return true;

@@ -22,6 +22,8 @@ import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { RadioButtonColor, RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { SurvButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/SurvButton';
+import { NXSystemMessages } from '../../shared/NXSystemMessages';
+import { FmsErrorType } from '@fmgc/FmsError';
 
 interface MfdSurvControlsProps extends AbstractMfdPageProps {}
 
@@ -283,7 +285,17 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
                   }
                   value={this.squawkCode}
                   containerStyle="width: 100px; margin-bottom: 5px;"
-                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  errorHandler={(e) => {
+                    if (e.type == FmsErrorType.FormatError) {
+                      this.props.fmcService.master?.addMessageToQueue(
+                        NXSystemMessages.sqwkCodeNotValid,
+                        undefined,
+                        undefined,
+                      );
+                    } else {
+                      this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details);
+                    }
+                  }}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
                   alignText={'center'}
