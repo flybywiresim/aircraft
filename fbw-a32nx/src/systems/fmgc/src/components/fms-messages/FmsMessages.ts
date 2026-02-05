@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2025 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { FMMessage } from '@flybywiresim/fbw-sdk';
@@ -28,6 +28,7 @@ import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { TooSteepPathAhead } from '@fmgc/components/fms-messages/TooSteepPathAhead';
 import { EventBus } from '@microsoft/msfs-sdk';
 import { FMMessageTriggers } from './FmMessages';
+import { ClockIsTakeoffTime } from './ClockIsTakeoffTime';
 
 /**
  * This class manages Type II messages sent from the FMGC.
@@ -50,6 +51,7 @@ export class FmsMessages implements FmgcComponent {
   };
 
   private messageSelectors: FMMessageSelector[] = [
+    new ClockIsTakeoffTime(),
     new GpsPrimary(this.bus),
     new GpsPrimaryLost(this.bus),
     new MapPartlyDisplayedLeft(),
