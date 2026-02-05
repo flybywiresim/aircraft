@@ -450,7 +450,11 @@ export class InputField<
     this.caretRef.instance.innerText = '';
 
     // TODO sub leak!
-    this.subs.push(this.readValue.sub(() => this.onNewValue(), true));
+    const onNewValue = this.onNewValue.bind(this);
+    this.subs.push(this.readValue.sub(onNewValue, true));
+    if (this.props.dataEntryFormat.unitFamily) {
+      this.subs.push(this.props.dataEntryFormat.unitFamily.sub(onNewValue));
+    }
     this.subs.push(this.modifiedFieldValue.sub(() => this.updateDisplayElement()));
     this.subs.push(
       this.isValidating.sub((val) => {

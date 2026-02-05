@@ -26,7 +26,7 @@ const distanceUnitFormatter = (unit: Unit<UnitFamily.Distance>) => {
 };
 
 const weightUnitFormatter = (unit: Unit<UnitFamily.Weight>) => {
-  return unit === UnitType.KILOGRAM ? 'T' : 'LBS';
+  return unit === UnitType.KILOGRAM ? 'T' : 'KLB';
 };
 
 class SubscriptionCollector {
@@ -450,17 +450,14 @@ export class WeightFormat extends SubscriptionCollector implements DataEntryForm
 
   private maxValue = Number.POSITIVE_INFINITY;
 
-  public unitFamily?: Subscribable<Unit<UnitFamily.Weight>> = Subject.create(UnitType.KILOGRAM);
-
   constructor(
     minValue: Subscribable<number> = Subject.create(0),
     maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY),
-    unitFamily?: Subscribable<Unit<UnitFamily.Weight>>,
+    public readonly unitFamily: Subscribable<Unit<UnitFamily.Weight>> = Subject.create(UnitType.KILOGRAM),
   ) {
     super();
     this.subscriptions.push(minValue.sub((val) => (this.minValue = val), true));
     this.subscriptions.push(maxValue.sub((val) => (this.maxValue = val), true));
-    this.unitFamily = unitFamily;
   }
 
   public format(value: number) {
