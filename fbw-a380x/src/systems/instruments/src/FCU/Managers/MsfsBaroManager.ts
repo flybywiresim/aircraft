@@ -12,6 +12,7 @@ import {
   KeyEvents,
   SimVarValueType,
   Subscribable,
+  UnitType,
   Wait,
 } from '@microsoft/msfs-sdk';
 import { BaroEvents, BaroIndex, BaroManager, BaroMode, BaroUnit } from './BaroManager';
@@ -37,7 +38,7 @@ type BaroState = BaroKeyManagerConfig['baros'][number] & {
 export class MsfsBaroManager implements Instrument {
   private static H_EVENT_REGEX = /^A380X_EFIS_CP_BARO_(PULL|PUSH)_(\d)$/;
 
-  private static readonly HG_TO_KOHLSMAN = 541.822186666672;
+  private static readonly HG_TO_KOHLSMAN = UnitType.HPA.convertFrom(1, UnitType.IN_HG) * 16;
   private static readonly HPA_TO_KOHLSMAN = 16;
 
   private readonly sub = this.bus.getSubscriber<BaroEvents & HEvent>();
