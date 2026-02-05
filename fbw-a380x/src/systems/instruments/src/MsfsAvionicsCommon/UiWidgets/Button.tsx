@@ -14,7 +14,7 @@ import {
 import { TriangleDown, TriangleUp } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/shapes';
 
 export type ButtonMenuItem = {
-  label: string;
+  label: string | Subscribable<string>;
   disabled?: boolean | Subscribable<boolean>;
   action(): void;
 };
