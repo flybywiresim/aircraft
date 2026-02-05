@@ -1,4 +1,4 @@
-name: PR Tests & Build
+name: PR Tests & Build (8K)
 on:
   pull_request:
     types:
@@ -9,10 +9,37 @@ on:
       - labeled
 
 jobs:
-  build_a380x_8k:
-    name: Build and upload A380X (8K)
+  pr-metadata:
+    name: Upload PR metadata
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false && contains(join(github.event.pull_request.labels.*.name, ', '), 'pr-build-8k')
+    permissions:
+      contents: read
+      pull-requests: read
+      actions: write
+    steps:
+      - name: Checkout PR source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Save PR metadata
+        env:
+          PR_JSON: ${{ toJson(github.event.pull_request) }}
+        run: |
+          echo "$PR_JSON" > pr.json
+      - name: Upload PR metadata as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-metadata
+          path: pr.json
+          retention-days: 1
+  build_a380x_8k:
+    name: Build A380X (8K)
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false && contains(join(github.event.pull_request.labels.*.name, ', '), 'pr-build-8k')
+    permissions:
+      contents: read
+      actions: write
     env:
       FBW_PRODUCTION_BUILD: 1
       AIRCRAFT_PROJECT_PREFIX: a380x
@@ -48,9 +75,10 @@ jobs:
           sudo npm uninstall -g netlify-cli --save
           sudo npm uninstall -g parcel --save
           df -h
-      - name: Checkout source
+      - name: Checkout PR source
         uses: actions/checkout@v4
         with:
+          persist-credentials: false
           submodules: recursive
       - name: Set BUILT_DATE_TIME
         run: echo "BUILT_DATE_TIME=$(date -u -Iseconds)" >> $GITHUB_ENV
@@ -74,7 +102,7 @@ jobs:
           rm -rf ./large-files/fbw-a380x/src/base/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/texture-4k/
       - name: Build A380X
         run: |
-          ./scripts/dev-env/run.sh ./scripts/build_a380x.sh --no-tty -j 4
+          ./scripts/dev-env/run.sh ./scripts/build.sh -r "a380x" --no-tty -j 4
           docker system prune -af
       - name: Remove source files
         run: |
@@ -84,7 +112,7 @@ jobs:
           rm -rf ./fbw-common/
           rm -rf ./.git/objects/
           rm -rf ./.git/modules/aircraft-large-files/objects/
-      - name: Generate install.json
+      - name: Build Fragmenter modules
         if: github.event.pull_request.auto_merge == false
         run: |
           df -h
@@ -92,9 +120,16 @@ jobs:
           cp ./fbw-a380x/out/build-modules/modules.json ./fbw-a380x/out/flybywire-aircraft-a380-842/install.json
           node ./scripts/install-source_a380x.js
           df -h
-      - name: Upload PR artifact
+      - name: Upload PR artifact (GitHub)
         uses: actions/upload-artifact@v4
         if: github.event.pull_request.auto_merge == false
         with:
           name: flybywire-aircraft-a380-842 (8K)
           path: ./fbw-a380x/out/flybywire-aircraft-a380-842/
+      - name: Upload modules as artifact
+        uses: actions/upload-artifact@v4
+        if: github.event.pull_request.auto_merge == false
+        with:
+          name: build-modules-a380x-8k
+          path: ./fbw-a380x/out/build-modules/
+          retention-days: 1
