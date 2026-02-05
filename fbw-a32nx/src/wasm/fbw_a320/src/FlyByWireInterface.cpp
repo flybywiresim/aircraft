@@ -2714,7 +2714,7 @@ bool FlyByWireInterface::updateFadec(double sampleTime, int fadecIndex) {
 
   idEcuMaintenanceWord6[fadecIndex]->set(Arinc429Utils::toSimVar(fadecBusOutputs[fadecIndex].ecu_maintenance_word_6));
 
-  if (clientDataEnabled) {
+  if (fmgcDisabled != -1) {
     simConnectInterface.setClientDataFadec(fadecBusOutputs[fadecIndex], fadecIndex);
   }
 
