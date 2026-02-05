@@ -16,7 +16,7 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { DatabaseItem, Waypoint } from '@flybywiresim/fbw-sdk';
+import { DatabaseItem, EfisSide, Waypoint } from '@flybywiresim/fbw-sdk';
 
 import { MouseCursor } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/MouseCursor';
 
@@ -64,9 +64,11 @@ interface MfdComponentProps extends ComponentProps {
 
 // TODO integrate in fmgc's DisplayInterface
 export interface MfdDisplayInterface {
+  side: EfisSide;
+
   get uiService(): MfdUiService;
 
-  hEventConsumer: Consumer<string>;
+  hEventConsumer: Consumer<[EfisSide, string]>;
 
   interactionMode: Subscribable<InteractionMode>;
 
@@ -80,6 +82,8 @@ export class MfdComponent
   private readonly subs: Subscription[] = [];
 
   private readonly sub = this.props.bus.getSubscriber<ClockEvents & MfdSimvars>();
+
+  side: EfisSide = this.props.captOrFo === 'CAPT' ? 'L' : 'R';
 
   #uiService = new MfdUiService(this.props.captOrFo, this.props.bus);
 
@@ -232,7 +236,9 @@ export class MfdComponent
           if (eventName.startsWith(this.props.captOrFo === 'CAPT' ? 'A32NX_KCCU_L' : 'A32NX_KCCU_R')) {
             const key = eventName.substring(13);
 
-            this.props.bus.getPublisher<InternalKccuKeyEvent>().pub('kccuKeyEvent', key, false);
+            this.props.bus
+              .getPublisher<InternalKccuKeyEvent>()
+              .pub('kccuKeyEvent', [this.props.captOrFo === 'CAPT' ? 'L' : 'R', key]);
 
             switch (key) {
               case 'DIR':

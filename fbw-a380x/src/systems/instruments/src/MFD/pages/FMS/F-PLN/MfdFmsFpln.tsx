@@ -756,9 +756,9 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
     this.subs.push(
       sub.on('kccuKeyEvent').handle((k) => {
-        if (k === 'UP') {
+        if (k[0] === this.props.mfd.side && k[1] === 'UP') {
           this.displayFplnFromLineIndex.set(this.displayFplnFromLineIndex.get() - 1);
-        } else if (k === 'DOWN') {
+        } else if (k[0] === this.props.mfd.side && k[1] === 'DOWN') {
           this.displayFplnFromLineIndex.set(Math.min(this.displayFplnFromLineIndex.get() + 1, this.lineData.length));
         }
       }),

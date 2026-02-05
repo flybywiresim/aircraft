@@ -17,6 +17,7 @@ import {
 } from '@microsoft/msfs-sdk';
 import { InputField, InteractionMode } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import { DropdownFieldFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
+import { EfisSide } from '@flybywiresim/fbw-sdk';
 
 interface DropdownMenuProps extends ComponentProps {
   values: SubscribableArray<string>;
@@ -32,7 +33,7 @@ interface DropdownMenuProps extends ComponentProps {
   numberOfDigitsForInputField?: number;
   tmpyActive?: Subscribable<boolean>;
   /** Only handles KCCU input for respective side, receives key name only */
-  hEventConsumer: Consumer<string>;
+  hEventConsumer: Consumer<[EfisSide, string]>;
   /** Kccu uses the HW keys, and doesn't focus input fields */
   interactionMode: Subscribable<InteractionMode>;
 }
