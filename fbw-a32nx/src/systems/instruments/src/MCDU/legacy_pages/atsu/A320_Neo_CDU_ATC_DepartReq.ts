@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023, 2025 FlyByWire Simulations
+// Copyright (c) 2021-2023, 2025-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { AtsuStatusCodes, DclMessage } from '@datalink/common';
@@ -8,6 +8,7 @@ import { Keypad } from '../../legacy/A320_Neo_CDU_Keypad';
 import { CDUAtcClearanceReq } from './A320_Neo_CDU_ATC_ClearanceReq';
 import { NXSystemMessages } from '../../messages/NXSystemMessages';
 import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
+import { setKeyNotActiveLskActions } from './AtsuDatalinkPageUtils';
 
 export class CDUAtcDepartReq {
   static CreateDataBlock() {
@@ -286,5 +287,6 @@ export class CDUAtcDepartReq {
     mcdu.onLeftInput[5] = () => {
       CDUAtcDepartReq.ShowPage1(mcdu);
     };
+    setKeyNotActiveLskActions(mcdu);
   }
 }

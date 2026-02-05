@@ -1,4 +1,7 @@
 // @ts-strict-ignore
+// Copyright (c) 2026 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 import { FansMode } from '@datalink/common';
 import { CDUAtcConnectionNotification } from './A320_Neo_CDU_ATC_ConnectionNotification';
 import { CDUAtcConnectionStatus } from './A320_Neo_CDU_ATC_ConnectionStatus';
@@ -6,6 +9,7 @@ import { CDUAtcMaxUplinkDelay } from './A320_Neo_CDU_ATC_MaxUplinkDelay';
 import { CDUAtcMenu } from './A320_Neo_CDU_ATC_Menu';
 import { NXSystemMessages } from '../../messages/NXSystemMessages';
 import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
+import { setKeyNotActiveLskActions } from './AtsuDatalinkPageUtils';
 
 export class CDUAtcConnection {
   static ShowPage(mcdu: LegacyAtsuPageInterface) {
@@ -59,5 +63,6 @@ export class CDUAtcConnection {
         mcdu.setScratchpadMessage(NXSystemMessages.keyNotActive);
       }
     };
+    setKeyNotActiveLskActions(mcdu);
   }
 }

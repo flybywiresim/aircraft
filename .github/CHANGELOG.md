@@ -70,6 +70,8 @@
 1. [A32NX/FWS] Fixed stall warning not working - @tracernz (Mike)
 1. [A380X/MFD] Add initial implementation of D-ATIS page in ATCCOM - @heclak (Heclak)
 1. [A32NX/FWS] Fixed takeoff memo not working in flight phase 9 (after landing) - @tracernz (Mike)
+1. [A32NX/MCDU] Hide ATC MENU prompts depending on CPDLC connection status - @BravoMike99 (bruno_pt99)
+1. [A32NX/MCDU] Add "KEY NOT ACTIVE" scratchpad message to unallocated LSKs on pages under ATC MENU - @BravoMike99 (bruno_pt99)
 
 ## 0.14.0
 
