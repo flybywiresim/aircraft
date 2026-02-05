@@ -14,8 +14,8 @@ export class Arinc429RegisterSubject extends Subject<Arinc429Register> {
     return this.value;
   }
 
-  set(_value: Arinc429Register) {
-    throw new Error('Cannot directly set Arinc429RegisterSubject');
+  set(value: Arinc429Register) {
+    this.setWord(value.rawWord);
   }
 
   setWord(word: number) {
@@ -32,7 +32,7 @@ export class Arinc429RegisterSubject extends Subject<Arinc429Register> {
   setValue(value: number): void {
     const oldValue = this.value.value;
 
-    this.value.value = value;
+    this.value.setValue(value);
 
     if (oldValue !== value) {
       this.notify();
@@ -42,7 +42,7 @@ export class Arinc429RegisterSubject extends Subject<Arinc429Register> {
   setSsm(ssm: number): void {
     const oldSsm = this.value.ssm;
 
-    this.value.ssm = ssm;
+    this.value.setSsm(ssm);
 
     if (oldSsm !== ssm) {
       this.notify();
@@ -53,8 +53,8 @@ export class Arinc429RegisterSubject extends Subject<Arinc429Register> {
     const oldSsm = this.value.ssm;
     const oldValue = this.value.value;
 
-    this.value.value = value;
-    this.value.ssm = ssm;
+    this.value.setValue(value);
+    this.value.setSsm(ssm);
 
     if (oldSsm !== this.value.ssm || oldValue !== this.value.value) {
       this.notify();

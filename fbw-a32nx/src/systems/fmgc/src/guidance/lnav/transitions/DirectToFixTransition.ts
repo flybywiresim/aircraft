@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2022 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
@@ -16,6 +17,7 @@ import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { bearingTo, distanceTo, placeBearingDistance } from 'msfs-geo';
+import { FCLeg } from '@fmgc/guidance/lnav/legs/FC';
 import { FDLeg } from '@fmgc/guidance/lnav/legs/FD';
 import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
 import { FALeg } from '@fmgc/guidance/lnav/legs/FA';
@@ -39,6 +41,7 @@ type PrevLeg =
   | CILeg
   | CRLeg
   | DFLeg
+  | FCLeg
   | FDLeg
   | FALeg
   | FMLeg

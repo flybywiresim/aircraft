@@ -626,7 +626,7 @@ declare global {
             on(name: string, callback: (...args: any[]) => void, context?: any): void;
             trigger(name: string, ...args: any[]): void;
             triggerToAllSubscribers(event: any, ...args: any[]): void;
-            call(arg0: string, arg1: string, arg2: string);
+            call(name: string, ...args: any[]);
         }
 
         class ViewListenerMgr {
@@ -639,10 +639,10 @@ declare global {
         let g_ViewListenersMgr: ViewListenerMgr;
     }
 
-    function RegisterViewListenerT<T>(name: string, callback: (() => void) | void, type: new() => T,
-                                      requiresSingleton?: boolean): T;
-    function RegisterViewListener(name: string, callback?: (listener: ViewListener.ViewListener) => void,
-                                  requiresSingleton?: boolean): ViewListener.ViewListener;
+    function RegisterViewListenerT<T extends ViewListener.ViewListener>(
+      name: string, callback: () => void, type: { new (name: string): T; }, requiresSingleton?: boolean
+    ): T;
+    function RegisterViewListener(name: string, callback?: () => void, requiresSingleton?: boolean): ViewListener.ViewListener;
 
     class Name_Z {
         static isValid(a: Name_Z | void): boolean;
@@ -930,21 +930,6 @@ declare global {
 
     function RegisterGameFeaturesListener(callback?: () => void): GameFeaturesListener;
 
-    class NotificationButton {
-        constructor(title?: string, event?: string, close?: boolean, theme?: string, toGlobalFlow?: boolean);
-
-        toGlobalFlow: boolean;
-
-        close: boolean;
-
-        enabled: boolean;
-
-        title: string;
-
-        event: string;
-
-        theme: any;
-    }
 
     function isWindowEnabled(): boolean;
     function setWindowEnabled(value: boolean): void;

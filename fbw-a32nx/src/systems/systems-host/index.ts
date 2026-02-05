@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
+  AdcPublisher,
   Clock,
   ClockEvents,
   EventBus,
@@ -16,6 +17,13 @@ import { PseudoFWC } from 'systems-host/systems/FWC/PseudoFWC';
 import { FuelSystemPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
 import { A32NXFcuBusPublisher } from '@shared/publishers/A32NXFcuBusPublisher';
 import { PseudoFwcSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
+import { A32NXAdrBusPublisher } from '@shared/publishers/A32NXAdrBusPublisher';
+import { A32NXDisplayManagementPublisher } from '@shared/publishers/A32NXDisplayManagementPublisher';
+import { A32NXElectricalSystemPublisher } from '@shared/publishers/A32NXElectricalSystemPublisher';
+import { Ecp } from './systems/ECP/Ecp';
+import { A32NXOverheadDiscretePublisher } from '../shared/src/publishers/A32NXOverheadDiscretePublisher';
+import { A32NXEcpBusPublisher } from '../shared/src/publishers/A32NXEcpBusPublisher';
+import { FakeDmc } from './systems/ECP/FakeDmc';
 
 class SystemsHost extends BaseInstrument {
   private readonly bus = new EventBus();
@@ -32,32 +40,39 @@ class SystemsHost extends BaseInstrument {
 
   private readonly fuelSystemPublisher = new FuelSystemPublisher(this.bus);
 
+  private readonly adcPublisher = new AdcPublisher(this.bus);
+  // stall warning publisher depends on adc publisher
   private readonly stallWarningPublisher = new StallWarningPublisher(this.bus, 0.9);
 
-  private readonly a32nxFcuBusPublisher = new A32NXFcuBusPublisher(this.bus);
+  private readonly adrBusPublisher = new A32NXAdrBusPublisher(this.bus);
+  private readonly dmcBusPublisher = new A32NXDisplayManagementPublisher(this.bus);
+  private readonly elecSysPublisher = new A32NXElectricalSystemPublisher(this.bus);
+  private readonly fcuBusPublisher = new A32NXFcuBusPublisher(this.bus);
 
   private readonly pseudoFwcPublisher = new PseudoFwcSimvarPublisher(this.bus);
 
   private readonly pseudoFwc = new PseudoFWC(this.bus, this);
-
-  /**
-   * "mainmenu" = 0
-   * "loading" = 1
-   * "briefing" = 2
-   * "ingame" = 3
-   */
-  private gameState = 0;
 
   constructor() {
     super();
 
     this.backplane.addInstrument('Clock', this.clock);
     this.backplane.addInstrument('AtsuSystem', this.atsu);
+    this.backplane.addInstrument('Ecp', new Ecp(this.bus));
+    this.backplane.addInstrument('FakeDmc', new FakeDmc(this.bus));
+
+    this.backplane.addPublisher('HEvent', this.hEventPublisher);
     this.backplane.addPublisher('FuelSystem', this.fuelSystemPublisher);
     this.backplane.addPublisher('PowerPublisher', this.powerSupply);
+    this.backplane.addPublisher('Adc', this.adcPublisher);
     this.backplane.addPublisher('stallWarning', this.stallWarningPublisher);
-    this.backplane.addPublisher('a32nxFcuBusPublisher', this.a32nxFcuBusPublisher);
+    this.backplane.addPublisher('AdrBus', this.adrBusPublisher);
+    this.backplane.addPublisher('DmcBus', this.dmcBusPublisher);
+    this.backplane.addPublisher('ElecSys', this.elecSysPublisher);
+    this.backplane.addPublisher('FcuBus', this.fcuBusPublisher);
     this.backplane.addPublisher('PseudoFwcPublisher', this.pseudoFwcPublisher);
+    this.backplane.addPublisher('OverheadPublisher', new A32NXOverheadDiscretePublisher(this.bus));
+    this.backplane.addPublisher('A32NXEcpBusPublisher', new A32NXEcpBusPublisher(this.bus));
 
     this.pseudoFwc.init();
     let lastUpdateTime: number;
@@ -102,14 +117,6 @@ class SystemsHost extends BaseInstrument {
 
   public Update(): void {
     super.Update();
-
-    if (this.gameState !== 3) {
-      const gamestate = this.getGameState();
-      if (gamestate === 3) {
-        this.hEventPublisher.startPublish();
-      }
-      this.gameState = gamestate;
-    }
 
     this.backplane.onUpdate();
   }

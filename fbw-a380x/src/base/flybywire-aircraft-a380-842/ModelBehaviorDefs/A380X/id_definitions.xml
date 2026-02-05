@@ -1,0 +1,4 @@
+<ModelBehaviors>
+    <Macro Name="POT_EFIS_CS_OIT">78</Macro>
+    <Macro Name="POT_EFIS_FO_OIT">79</Macro>
+</ModelBehaviors>

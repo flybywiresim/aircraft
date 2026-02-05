@@ -1,49 +1,69 @@
-import { QueuedSimVarReader, SimVarReaderWriter } from './communication';
-import { getActivateFailureSimVarName, getDeactivateFailureSimVarName } from './sim-vars';
+// Copyright (c) 2021-2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
+import { GenericDataListenerSync } from '../GenericDataListenerSync';
 
 export class FailuresConsumer {
-  private activeFailures = new Map<number, boolean>();
+  // FIXME replace with EventBus once EFB and RMP ported to avionics framework
+  private readonly genericDataListener = new GenericDataListenerSync(
+    this.onDataListenerMessage.bind(this),
+    'FBW_FAILURE_UPDATE',
+  );
 
-  private callbacks: Map<number, (isActive: boolean) => void> = new Map();
+  private readonly activeFailures = new Map<number, boolean>();
 
-  private activateFailureReader: QueuedSimVarReader;
+  private readonly callbacks: Map<number, (isActive: boolean) => void> = new Map();
 
-  private deactivateFailureReader: QueuedSimVarReader;
+  private isInit = false;
 
-  constructor(simVarPrefix: string) {
-    this.activateFailureReader = new QueuedSimVarReader(
-      new SimVarReaderWriter(getActivateFailureSimVarName(simVarPrefix)),
-    );
-    this.deactivateFailureReader = new QueuedSimVarReader(
-      new SimVarReaderWriter(getDeactivateFailureSimVarName(simVarPrefix)),
-    );
+  private onDataListenerMessage(topic: string, data: any): void {
+    if (topic === 'FBW_FAILURE_UPDATE') {
+      const activeFailures = new Set(data as number[]);
+      this.onActiveFailuresChanged(activeFailures);
+    }
   }
 
-  register(identifier: number, callback?: (isActive: boolean) => void) {
+  private onActiveFailuresChanged(activeFailures: ReadonlySet<number>): void {
+    for (const identifier of this.activeFailures.keys()) {
+      if (!activeFailures.has(identifier) && this.activeFailures.get(identifier)) {
+        this.activeFailures.set(identifier, false);
+        this.callbacks.get(identifier)?.(false);
+      }
+    }
+    for (const identifier of activeFailures) {
+      if (!this.activeFailures.get(identifier)) {
+        this.activeFailures.set(identifier, true);
+        this.callbacks.get(identifier)?.(true);
+      }
+    }
+  }
+
+  public update(): void {
+    // FIXME replace with Wait.awaitSubscribable(GameStateProvider.get(), (s) => s === GameState.ingame, true).then(() => {})
+    // when we can use the avionics framework.
+    if (!this.isInit) {
+      const inGame = window.parent && window.parent.document.body.getAttribute('gamestate') === 'ingame';
+      if (inGame) {
+        this.genericDataListener.sendEvent('FBW_FAILURE_REQUEST', undefined);
+        this.isInit = true;
+      }
+    }
+  }
+
+  // FIXME replace mechanism with event bus when we are able to use it.
+  public register(identifier: number, callback?: (isActive: boolean) => void) {
+    if (!callback) {
+      return;
+    }
+
     if (this.callbacks.get(identifier) !== undefined) {
       throw new Error(`Cannot register the same failure identifier (${identifier}) multiple times.`);
     }
 
-    this.callbacks.set(identifier, callback || ((_) => {}));
-    this.activateFailureReader.register(identifier, () => {
-      this.onReadCallback(identifier, true);
-    });
-    this.deactivateFailureReader.register(identifier, () => {
-      this.onReadCallback(identifier, false);
-    });
+    this.callbacks.set(identifier, callback);
   }
 
-  update() {
-    this.activateFailureReader.update();
-    this.deactivateFailureReader.update();
-  }
-
-  isActive(identifier: number): boolean {
+  public isActive(identifier: number): boolean {
     return this.activeFailures.get(identifier) === true;
-  }
-
-  private onReadCallback(identifier: number, value: boolean) {
-    this.callbacks.get(identifier)(value);
-    this.activeFailures.set(identifier, value);
   }
 }

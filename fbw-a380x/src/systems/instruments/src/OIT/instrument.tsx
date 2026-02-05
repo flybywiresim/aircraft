@@ -10,10 +10,13 @@ import {
   FsBaseInstrument,
   ClockPublisher,
 } from '@microsoft/msfs-sdk';
-import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
+import { AdrBusPublisher, FwcBusPublisher, FailuresConsumer } from '@flybywiresim/fbw-sdk';
 import { OIT } from './OIT';
 import { OitSimvarPublisher } from './OitSimvarPublisher';
 import { OisLaptop } from './OisLaptop';
+import { AircraftNetworkServerUnit } from './System/AircraftNetworkServerUnit';
+import { AnsuOps } from './System/AnsuOps';
+import { ResetPanelSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/ResetPanelPublisher';
 
 class OitInstrument implements FsInstrument {
   private readonly bus = new EventBus();
@@ -24,9 +27,15 @@ class OitInstrument implements FsInstrument {
 
   private readonly oitSimvarPublisher = new OitSimvarPublisher(this.bus);
 
+  private readonly adrPublisher = new AdrBusPublisher(this.bus);
+
+  private readonly fwcPublisher = new FwcBusPublisher(this.bus);
+
+  private readonly resetPanelPublisher = new ResetPanelSimvarPublisher(this.bus);
+
   private readonly hEventPublisher = new HEventPublisher(this.bus);
 
-  private readonly failuresConsumer = new FailuresConsumer('A32NX');
+  private readonly failuresConsumer = new FailuresConsumer();
 
   private readonly laptop = new OisLaptop(
     this.bus,
@@ -34,13 +43,21 @@ class OitInstrument implements FsInstrument {
     this.failuresConsumer,
   );
 
+  private readonly avncsAnsu = new AnsuOps(this.bus, 1, 'nss-avncs', this.failuresConsumer);
+  private readonly fltOpsAnsu = new AircraftNetworkServerUnit(this.bus, 1, 'flt-ops', this.failuresConsumer);
+
   constructor(public readonly instrument: BaseInstrument) {
     this.hEventPublisher = new HEventPublisher(this.bus);
 
     this.backplane.addPublisher('hEvent', this.hEventPublisher);
     this.backplane.addPublisher('clock', this.clockPublisher);
     this.backplane.addPublisher('oitSimvar', this.oitSimvarPublisher);
+    this.backplane.addPublisher('adr', this.adrPublisher);
+    this.backplane.addPublisher('fwc', this.fwcPublisher);
+    this.backplane.addPublisher('resetPanel', this.resetPanelPublisher);
     this.backplane.addInstrument('Laptop', this.laptop);
+    this.backplane.addInstrument('nssAnsu', this.avncsAnsu, true);
+    this.backplane.addInstrument('fltOpsAnsu', this.fltOpsAnsu, true);
 
     this.doInit();
   }
@@ -57,6 +74,7 @@ class OitInstrument implements FsInstrument {
         captOrFo={this.instrument.instrumentIndex === 1 ? 'CAPT' : 'FO'}
         failuresConsumer={this.failuresConsumer}
         laptop={this.laptop}
+        avncsAnsu={this.avncsAnsu}
       />,
       document.getElementById('OIT_CONTENT'),
     );

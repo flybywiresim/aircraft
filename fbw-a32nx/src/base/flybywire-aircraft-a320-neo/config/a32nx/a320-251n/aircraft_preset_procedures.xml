@@ -513,10 +513,10 @@ The StepType also defines if the step is executed in normal mode, expedited mode
             </Condition>
         </Step>
         <Step Name="T.O Config" Type="NOEX" Delay="200">
-            <Action>1 (&gt;L:A32NX_BTN_TOCONFIG)</Action>
+            <Action>(&gt;H:A32NX_ECP_TO_CONF_TEST_PRESSED)</Action>
         </Step>
         <Step Name="T.O Config" Type="STEP" Delay="2000">
-            <Action>0 (&gt;L:A32NX_BTN_TOCONFIG)</Action>
+            <Action>(&gt;H:A32NX_ECP_TO_CONF_TEST_RELEASED)</Action>
         </Step>
     </Procedure>
 

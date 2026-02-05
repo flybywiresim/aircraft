@@ -12,6 +12,7 @@ import {
 interface TopTabElementProps extends ComponentProps {
   title: string;
   isSelected: boolean;
+  isLast: boolean;
   selectedTextColor: string;
   isHighlighted: boolean;
   height: number; // height of tab bar element
@@ -48,11 +49,15 @@ class TopTabElement extends DisplayComponent<TopTabElementProps> {
 
   render(): VNode {
     return (
-      <div ref={this.divRef} class={`mfd-top-tab-navigator-bar-element-outer${this.props.isSelected ? ' active' : ''}`}>
+      <div
+        ref={this.divRef}
+        class={`mfd-top-tab-navigator-bar-element-outer${this.props.isSelected ? ' active' : ''}`}
+        style={`margin-right: ${this.props.isLast ? 0 : -15}px`}
+      >
         <svg height={this.props.height} width={this.triangleWidth}>
           <polygon
             points={`0,${this.props.height} ${this.triangleWidth},0 ${this.triangleWidth},${this.props.height}`}
-            style={`fill:${this.props.isSelected ? '#000000' : '#3c3c3c'};`}
+            style={`fill:${this.props.isSelected ? '#000000' : '#272525'};`}
           />
           <line
             x1="0"
@@ -75,14 +80,14 @@ class TopTabElement extends DisplayComponent<TopTabElementProps> {
           ref={this.textRef}
           class={`mfd-top-tab-navigator-bar-element-label${this.props.isSelected ? ' active' : ''}`}
           // eslint-disable-next-line max-len
-          style={`font-size: ${Math.floor(this.props.height * 0.55)}px;`}
+          style={`font-size: ${Math.round(this.props.height * 0.66)}px;`}
         >
           {this.props.title}
         </span>
         <svg height={this.props.height} width={this.triangleWidth}>
           <polygon
             points={`0,0 ${this.triangleWidth},${this.props.height} 0,${this.props.height}`}
-            style={`fill:${this.props.isSelected ? '#000000' : '#3c3c3c'};`}
+            style={`fill:${this.props.isSelected ? '#000000' : '#272525'};`}
           />
           <line
             x1="0"
@@ -208,8 +213,9 @@ export class TopTabNavigator extends DisplayComponent<TopTabNavigatorProps> {
         <TopTabElement
           title={pageTitle}
           isSelected={selectedTab === index}
+          isLast={index === this.pageTitles.get().length - 1}
           height={this.props.tabBarHeight || 36}
-          slantedEdgeAngle={this.props.tabBarSlantedEdgeAngle || 10}
+          slantedEdgeAngle={this.props.tabBarSlantedEdgeAngle || 30}
           selectedTextColor={this.props.selectedTabTextColor || 'white'}
           onClick={() => this.onPageChange(index)}
           isHighlighted={this.props.highlightedTab ? this.props.highlightedTab?.get() === index : false}
@@ -255,8 +261,9 @@ export class TopTabNavigator extends DisplayComponent<TopTabNavigatorProps> {
             <TopTabElement
               title={pageTitle}
               isSelected={this.props.selectedPageIndex.get() === index}
+              isLast={index === this.pageTitles.get().length - 1}
               height={this.props.tabBarHeight || 36}
-              slantedEdgeAngle={this.props.tabBarSlantedEdgeAngle || 10}
+              slantedEdgeAngle={this.props.tabBarSlantedEdgeAngle || 30}
               selectedTextColor={this.props.selectedTabTextColor || 'white'}
               onClick={() => this.onPageChange(index)}
               isHighlighted={false}

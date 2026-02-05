@@ -1,18 +1,19 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2025 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Fix, Waypoint } from '@flybywiresim/fbw-sdk';
+import { Airway, AltitudeConstraint, Fix, Waypoint } from '@flybywiresim/fbw-sdk';
 import { Coordinates, Degrees } from 'msfs-geo';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/legs/FlightPlanLegDefinition';
 import { FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
 import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
-import { AltitudeConstraint } from '@fmgc/flightplanning/data/constraint';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
+import { FlightPlanContext } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 
 /**
  * Interface for querying, modifying and creating flight plans.
@@ -25,20 +26,21 @@ import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
  * - {@link FlightPlanService} - a local implementation for use where the FMS software is located
  * - {@link FlightPlanRpcClient} - a remote implementation using RPC calls to a distant `FlightPlanService` - for use in remote FMS UIs
  */
-export interface FlightPlanInterface<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> {
+export interface FlightPlanInterface<P extends FlightPlanPerformanceData = FlightPlanPerformanceData>
+  extends FlightPlanContext {
   get(index: number): FlightPlan<P>;
 
   has(index: number): boolean;
 
-  get active(): ReadonlyFlightPlan;
+  get active(): ReadonlyFlightPlan<P>;
 
-  get temporary(): ReadonlyFlightPlan;
+  get temporary(): ReadonlyFlightPlan<P>;
 
-  get activeOrTemporary(): ReadonlyFlightPlan;
+  get activeOrTemporary(): ReadonlyFlightPlan<P>;
 
-  get uplink(): ReadonlyFlightPlan;
+  get uplink(): ReadonlyFlightPlan<P>;
 
-  secondary(index: number): ReadonlyFlightPlan;
+  secondary(index: number): ReadonlyFlightPlan<P>;
 
   get hasActive(): boolean;
 
@@ -48,19 +50,34 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
 
   get hasUplink(): boolean;
 
+  secondaryInit(index: number): Promise<void>;
+
+  /**
+   * Copies the active flight plan into a secondary flight plan
+   *
+   * @param index the 1-indexed index of the secondary flight plan
+   */
+  secondaryCopyFromActive(index: number, isBeforeEngineStart: boolean): Promise<void>;
+
   secondaryDelete(index: number): Promise<void>;
 
   secondaryReset(index: number): Promise<void>;
+
+  secondaryActivate(index: number, isBeforeEngineStart: boolean): Promise<void>;
+
+  activeAndSecondarySwap(secIndex: number, isBeforeEngineStart: boolean): Promise<void>;
 
   temporaryInsert(): Promise<void>;
 
   temporaryDelete(): Promise<void>;
 
-  uplinkInsert(): Promise<void>;
+  uplinkInsert(intoPlan: number): Promise<void>;
 
   uplinkDelete(): Promise<void>;
 
   reset(): Promise<void>;
+
+  deleteAll(): Promise<void>;
 
   /**
    * Resets the flight plan with a new FROM/TO/ALTN city pair
@@ -214,8 +231,34 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
    * @param atIndex the index of the leg to start the pending airway entry at
    * @param planIndex which flight plan to make the change on
    * @param alternate whether to edit the plan's alternate flight plan
+   *
+   * @returns the index of the flight plan where the airway entry was started
    */
-  startAirwayEntry(atIndex: number, planIndex: number, alternate?: boolean): Promise<void>;
+  startAirwayEntry(atIndex: number, planIndex: number, alternate?: boolean): Promise<number>;
+
+  /**
+   * Continues an existing AIRWAYS revision, starting a VIA entry.
+   * @param airway the airway to insert
+   * @param planIndex which flight plan to make the change on
+   * @param alternate whether to edit the plan's alternate flight plan
+   */
+  continueAirwayEntryViaAirway(airway: Airway, planIndex: number, alternate?: boolean): Promise<boolean>;
+
+  /**
+   * Continues an existing AIRWAYS revision, inserting a fix.
+   * @param fix the fix to insert
+   * @param isDct whether the fix is a DCT
+   * @param planIndex which flight plan to make the change on
+   * @param alternate whether to edit the plan's alternate flight plan
+   */
+  continueAirwayEntryToFix(fix: Fix, isDct: boolean, planIndex: number, alternate?: boolean): Promise<boolean>;
+
+  /**
+   * Finalises an existing AIRWAYS revision.
+   * @param planIndex which flight plan to make the change on
+   * @param alternate whether to edit the plan's alternate flight plan
+   */
+  finaliseAirwayEntry(planIndex: number, alternate?: boolean): Promise<void>;
 
   directToLeg(
     ppos: Coordinates,
@@ -300,12 +343,67 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
     planIndex: number,
   ): Promise<void>;
 
+  /**
+   * Sets a pilot entry speed value on the climb speed limit of the performance data.
+   * If no altitude is previously defined, a default value is applied to it.
+   * @param value which speed in knots to apply
+   * @param planIndex which flightplan index to apply to speed limit
+   * @param alternate whether to apply the speedlimit to the alternate flightplan performance data
+   */
+  setPilotEntryClimbSpeedLimitSpeed(value: number, planIndex: FlightPlanIndex, alternate: boolean): Promise<void>;
+
+  /**
+   * Sets a pilot entry altitude value on the climb speed limit of the performance data.
+   * If no speed is previously defined, a default value is applied to it
+   * @param value which altitude in feet to apply
+   * @param planIndex which flightplan index to apply to speed limit
+   * @param alternate whether to apply the speedlimit to the alternate flightplan performance data
+   */
+  setPilotEntryClimbSpeedLimitAltitude(value: number, planIndex: FlightPlanIndex, alternate: boolean): Promise<void>;
+
+  /**
+   * Deletes the climb speed limit from the performance data
+   * @param planIndex which flightplan index to delete the climb speed limit from
+   * @param alternate whether to delete the speed limit from the alternate performance data
+   */
+  deleteClimbSpeedLimit(planIndex: FlightPlanIndex, alternate: boolean): Promise<void>;
+
+  /**
+   * Sets a pilot entry speed value on the descent speed limit of the performance data.
+   * If no altitude is previously defined, a default value is applied to it.
+   * @param value which speed in knots to apply
+   * @param planIndex which flightplan index to apply to speed limit
+   * @param alternate whether to apply the speedlimit to the alternate flightplan performance data
+   */
+  setPilotEntryDescentSpeedLimitSpeed(value: number, planIndex: FlightPlanIndex, alternate: boolean): Promise<void>;
+
+  /**
+   * Sets a pilot entry altitude value on the descent speed limit performance data.
+   * If no speed is previously defined, a default value is applied to it
+   * @param value which altitude in feet to apply
+   * @param planIndex which flightplan index to apply to speed limit
+   * @param alternate whether to apply the speedlimit to the alternate flightplan performance data
+   */
+  setPilotEntryDescentSpeedLimitAltitude(value: number, planIndex: FlightPlanIndex, alternate: boolean): Promise<void>;
+
+  /**
+   * Deletes the descent speed limit from the performance data
+   * @param planIndex which flightplan index to delete the climb speed limit from
+   * @param alternate whether to delete the speed limit from the alternate performance data
+   */
+  deleteDescentSpeedLimit(planIndex: FlightPlanIndex, alternate: boolean): Promise<void>;
+
   // TODO do not pass in waypoint object (rpc)
   isWaypointInUse(waypoint: Waypoint): Promise<boolean>;
 
   setFlightNumber(flightNumber: string, planIndex: number): Promise<void>;
 
-  setPerformanceData<T extends keyof P & string>(key: T, value: P[T], planIndex: number): Promise<void>;
+  // FIXME types
+  setPerformanceData<T extends keyof P & string>(key: T, value: any, planIndex: number): Promise<void>;
 
   stringMissedApproach(onConstraintsDeleted?: (map: FlightPlanLeg) => void, planIndex?: number): Promise<void>;
+
+  openBatch(name: string): Promise<FlightPlanBatch>;
+
+  closeBatch(uuid: string): Promise<FlightPlanBatch>;
 }

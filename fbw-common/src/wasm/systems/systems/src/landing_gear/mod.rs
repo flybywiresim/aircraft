@@ -110,8 +110,7 @@ impl TiltingGear {
             let ground_tilt_raw = Ratio::new::<ratio>(
                 (1. - (fwd_current_tire_height.abs() / self.tilt_height_from_low_to_up)
                     .get::<ratio>())
-                .min(1.)
-                .max(0.),
+                .clamp(0., 1.),
             );
 
             ground_tilt_raw.max(self.max_ground_tilt_from_plane_pitch(context))
@@ -124,8 +123,7 @@ impl TiltingGear {
         {
             Ratio::new::<ratio>(
                 ((aft_current_tire_height.abs() / self.tilt_height_from_low_to_up).get::<ratio>())
-                    .min(1.)
-                    .max(0.),
+                    .clamp(0., 1.),
             )
         } else {
             Ratio::default()
@@ -563,6 +561,9 @@ impl LgciuGearExtension for LgciuSensorInputs {
     fn nose_up_and_locked(&self) -> bool {
         self.is_powered && self.nose_gear_up_and_locked
     }
+    fn left_down_and_locked(&self) -> bool {
+        self.is_powered && self.left_gear_down_and_locked
+    }
 }
 impl LgciuDoorPosition for LgciuSensorInputs {
     fn all_fully_opened(&self) -> bool {
@@ -881,6 +882,7 @@ pub struct LandingGearControlInterfaceUnit {
     discrete_word_1_id: VariableIdentifier,
     discrete_word_2_id: VariableIdentifier,
     discrete_word_3_id: VariableIdentifier,
+    discrete_word_4_id: VariableIdentifier,
 
     is_powered: bool,
     is_powered_previous_state: bool,
@@ -946,6 +948,8 @@ impl LandingGearControlInterfaceUnit {
                 .get_identifier(format!("LGCIU_{}_DISCRETE_WORD_2", lgciu_number(lgciu_id))),
             discrete_word_3_id: context
                 .get_identifier(format!("LGCIU_{}_DISCRETE_WORD_3", lgciu_number(lgciu_id))),
+            discrete_word_4_id: context
+                .get_identifier(format!("LGCIU_{}_DISCRETE_WORD_4", lgciu_number(lgciu_id))),
 
             is_powered: false,
             is_powered_previous_state: false,
@@ -1223,6 +1227,32 @@ impl LandingGearControlInterfaceUnit {
             word
         }
     }
+
+    pub fn discrete_word_4(&self) -> Arinc429Word<u32> {
+        if !self.is_powered {
+            Arinc429Word::new(0, SignStatus::FailureWarning)
+        } else {
+            // Label 23
+            let mut word = Arinc429Word::new(0, SignStatus::NormalOperation);
+
+            // If the differential movement between the inboard and outboard flap is more than 15mm, sensors send failure signal.
+            // Failures not implemented.
+
+            // LH Flap attachment failure
+            word.set_bit(21, false);
+
+            // LH flat attachment sensor valid
+            word.set_bit(22, true);
+
+            // RH Flap attachment failure
+            word.set_bit(25, false);
+
+            // RH flat attachment sensor valid
+            word.set_bit(26, true);
+
+            word
+        }
+    }
 }
 impl SimulationElement for LandingGearControlInterfaceUnit {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -1280,6 +1310,7 @@ impl SimulationElement for LandingGearControlInterfaceUnit {
         writer.write(&self.discrete_word_1_id, self.discrete_word_1());
         writer.write(&self.discrete_word_2_id, self.discrete_word_2());
         writer.write(&self.discrete_word_3_id, self.discrete_word_3());
+        writer.write(&self.discrete_word_4_id, self.discrete_word_4());
     }
 }
 
@@ -1337,6 +1368,9 @@ impl LgciuGearExtension for LandingGearControlInterfaceUnit {
     }
     fn nose_up_and_locked(&self) -> bool {
         self.sensor_inputs.nose_up_and_locked()
+    }
+    fn left_down_and_locked(&self) -> bool {
+        self.sensor_inputs.left_down_and_locked()
     }
 }
 impl LgciuDoorPosition for LandingGearControlInterfaceUnit {
@@ -1554,8 +1588,8 @@ mod tests {
                 }
             }
 
-            self.door_position = self.door_position.max(1).min(Self::UP_LOCK_TRESHOLD);
-            self.gear_position = self.gear_position.max(1).min(Self::UP_LOCK_TRESHOLD);
+            self.door_position = self.door_position.clamp(1, Self::UP_LOCK_TRESHOLD);
+            self.gear_position = self.gear_position.clamp(1, Self::UP_LOCK_TRESHOLD);
 
             // Ensuring gear and doors never move at the same time
             if self.door_position != 1 && self.door_position != Self::UP_LOCK_TRESHOLD {
@@ -1744,6 +1778,45 @@ mod tests {
 
     fn test_bed_in_flight_with() -> LgciusTestBed {
         test_bed(StartState::Cruise)
+    }
+
+    #[test]
+    fn landing_gear_simvars() {
+        let test_bed = test_bed_on_ground_with().on_the_ground();
+
+        assert!(test_bed.contains_variable_with_name("LGCIU_1_NOSE_GEAR_COMPRESSED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_2_NOSE_GEAR_COMPRESSED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_1_LEFT_GEAR_COMPRESSED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_2_LEFT_GEAR_COMPRESSED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_1_RIGHT_GEAR_COMPRESSED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_2_RIGHT_GEAR_COMPRESSED"));
+
+        assert!(test_bed.contains_variable_with_name("GEAR_HANDLE_POSITION"));
+        assert!(test_bed.contains_variable_with_name("GEAR_LEVER_POSITION_REQUEST"));
+        assert!(test_bed.contains_variable_with_name("GEAR_HANDLE_HITS_LOCK_SOUND"));
+
+        assert!(test_bed.contains_variable_with_name("LGCIU_1_LEFT_GEAR_DOWNLOCKED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_2_LEFT_GEAR_DOWNLOCKED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_1_LEFT_GEAR_UNLOCKED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_2_LEFT_GEAR_UNLOCKED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_1_NOSE_GEAR_DOWNLOCKED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_2_NOSE_GEAR_DOWNLOCKED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_1_NOSE_GEAR_UNLOCKED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_2_NOSE_GEAR_UNLOCKED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_1_RIGHT_GEAR_DOWNLOCKED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_2_RIGHT_GEAR_DOWNLOCKED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_1_RIGHT_GEAR_UNLOCKED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_2_RIGHT_GEAR_UNLOCKED"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_1_FAULT"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_2_FAULT"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_1_DISCRETE_WORD_1"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_2_DISCRETE_WORD_1"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_1_DISCRETE_WORD_2"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_2_DISCRETE_WORD_2"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_1_DISCRETE_WORD_3"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_2_DISCRETE_WORD_3"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_1_DISCRETE_WORD_4"));
+        assert!(test_bed.contains_variable_with_name("LGCIU_2_DISCRETE_WORD_4"));
     }
 
     #[test]

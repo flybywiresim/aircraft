@@ -369,6 +369,12 @@ class A380SecComputer final
     uint32_T SSM_kh;
     uint32_T SSM_h2;
     uint32_T SSM_ago;
+    uint32_T SSM_ep;
+    uint32_T SSM_kc;
+    uint32_T SSM_cnf;
+    uint32_T SSM_lwa;
+    uint32_T SSM_aq;
+    uint32_T SSM_ja2;
     real32_T Data;
     real32_T Data_f;
     real32_T Data_fw;
@@ -679,6 +685,12 @@ class A380SecComputer final
     real32_T Data_p1d;
     real32_T Data_lyv;
     real32_T Data_ke;
+    real32_T Data_cv;
+    real32_T Data_pfh;
+    real32_T Data_jy4;
+    real32_T Data_o1;
+    real32_T Data_ga;
+    real32_T Data_kd;
     boolean_T is_unit_1;
     boolean_T is_unit_2;
     boolean_T is_unit_3;

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 /*
  * This file contains various nodes that can be used for logical processing. Systems like the FWC may use them to
  * accurately implement their functionality.
@@ -7,7 +8,7 @@
  * The following class represents a monostable circuit. It is inspired by the MTRIG nodes as described in the ESLD and
  * used by the FWC.
  * When it detects either a rising or a falling edge (depending on it's type) it will emit a signal for a certain time t
- * after the detection. It is not retriggerable, so a rising/falling edge within t will not reset the timer.
+ * after the detection. If it is retriggerable, a rising/falling edge within t will reset the timer, otherwise not.
  */
 export class NXLogicTriggeredMonostableNode {
   private timer = 0;
@@ -20,10 +21,12 @@ export class NXLogicTriggeredMonostableNode {
    * Constructors a new Monostable Trigger Node
    * @param t The time constant in seconds
    * @param risingEdge Whether to detect a rising edge, or falling edge
+   * @param retriggerable Whether the node is retriggerable.
    */
   constructor(
     private readonly t: number,
     private readonly risingEdge = true,
+    private readonly retriggerable = false,
   ) {}
 
   private setOutput(output: boolean): boolean {
@@ -35,31 +38,18 @@ export class NXLogicTriggeredMonostableNode {
     if (this.previousValue === null && SimVar.GetSimVarValue('L:A32NX_FWC_SKIP_STARTUP', 'Bool')) {
       this.previousValue = value;
     }
-    if (this.risingEdge) {
-      if (this.timer > 0) {
-        this.timer = Math.max(this.timer - _deltaTime / 1000, 0);
-        this.previousValue = value;
-        return this.setOutput(true);
-      }
-      if (!this.previousValue && value) {
-        this.timer = this.t;
-        this.previousValue = value;
-        return this.setOutput(true);
-      }
-    } else {
-      if (this.timer > 0) {
-        this.timer = Math.max(this.timer - _deltaTime / 1000, 0);
-        this.previousValue = value;
-        return this.setOutput(true);
-      }
-      if (this.previousValue && !value) {
-        this.timer = this.t;
-        this.previousValue = value;
-        return this.setOutput(true);
-      }
+    if (this.timer > 0) {
+      this.timer = Math.max(this.timer - _deltaTime / 1000, 0);
     }
+    if (
+      (this.retriggerable || this.timer == 0) &&
+      ((this.risingEdge && value && !this.previousValue) || (!this.risingEdge && !value && this.previousValue))
+    ) {
+      this.timer = this.t;
+    }
+
     this.previousValue = value;
-    return this.setOutput(false);
+    return this.setOutput(this.timer > 0);
   }
 
   read(): boolean {

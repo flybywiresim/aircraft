@@ -1,50 +1,4 @@
-export type FMMessageColor = 'White' | 'Amber';
-
-export interface FMMessage {
-  /**
-   * Unique ID for this message type
-   */
-  id: number;
-
-  /**
-   * Text on the MCDU scratchpad
-   */
-  text?: string;
-
-  /**
-   * ND message flag, if applicable
-   */
-  ndFlag?: NdFmMessageFlag;
-
-  /**
-   * ND priority, if applicable
-   */
-  ndPriority?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
-
-  /**
-   * EFIS display text, if different than MCDU scratchpad text
-   */
-  efisText?: string;
-
-  /**
-   * Display color for both MCDU and EFIS
-   */
-  color: FMMessageColor;
-
-  /**
-   * Can the message be cleared by the MCDU CLR key?
-   */
-  clearable?: boolean;
-}
-
-/** See a320-coherent-triggers.md */
-export const FMMessageTriggers = {
-  SEND_TO_MCDU: 'A32NX_FMGC_SEND_MESSAGE_TO_MCDU',
-
-  RECALL_FROM_MCDU_WITH_ID: 'A32NX_FMGC_RECALL_MESSAGE_FROM_MCDU_WITH_ID',
-
-  POP_FROM_STACK: 'A32NX_FMGC_POP_MESSAGE',
-};
+import { FMMessage } from '@flybywiresim/fbw-sdk';
 
 /* eslint-disable no-multi-spaces */
 export enum NdFmMessageFlag {
@@ -52,29 +6,23 @@ export enum NdFmMessageFlag {
   SelectTrueRef = 1 << 0,
   CheckNorthRef = 1 << 1,
   NavAccuracyDowngrade = 1 << 2,
-  NavAccuracyUpgradeNoGps = 1 << 3,
-  SpecifiedVorDmeUnavailble = 1 << 4,
+  NavAccuracyUpgrade = 1 << 3,
+  SpecifiedVorDmeUnavailable = 1 << 4,
   NavAccuracyUpgradeGps = 1 << 5,
-  GpsPrimary = 1 << 6,
+  NavPrimary = 1 << 6,
   MapPartlyDisplayed = 1 << 7,
-  SetOffsideRangeMode = 1 << 8,
-  OffsideFmControl = 1 << 9,
-  OffsideFmWxrControl = 1 << 10,
-  OffsideWxrControl = 1 << 11,
-  GpsPrimaryLost = 1 << 12,
-  RtaMissed = 1 << 13,
-  BackupNav = 1 << 14,
+  OffsideFmControl = 1 << 8,
+  NavPrimaryLost = 1 << 9,
 }
 /* eslint-enable no-multi-spaces */
 
-export const FMMessageTypes: Readonly<Record<string, FMMessage>> = {
+export const NDFMMessageTypes: Readonly<Record<string, FMMessage>> = {
   SelectTrueRef: {
     id: 1,
     ndFlag: NdFmMessageFlag.SelectTrueRef,
-    text: 'SELECT TRUE REF',
+    text: 'SELECT TRUE NORTH REF',
     color: 'Amber',
     ndPriority: 1,
-    clearable: true,
   },
   CheckNorthRef: {
     id: 2,
@@ -82,7 +30,6 @@ export const FMMessageTypes: Readonly<Record<string, FMMessage>> = {
     text: 'CHECK NORTH REF',
     color: 'Amber',
     ndPriority: 1,
-    clearable: true,
   },
   NavAccuracyDowngrade: {
     id: 3,
@@ -90,39 +37,27 @@ export const FMMessageTypes: Readonly<Record<string, FMMessage>> = {
     text: 'NAV ACCUR DOWNGRAD',
     color: 'Amber',
     ndPriority: 1,
-    clearable: true,
   },
-  NavAccuracyUpgradeNoGps: {
+  NavAccuracyUpgraded: {
     id: 4,
-    ndFlag: NdFmMessageFlag.NavAccuracyUpgradeNoGps,
-    text: 'NAV ACCUR UPGRAD',
-    color: 'Amber',
+    ndFlag: NdFmMessageFlag.NavAccuracyUpgrade,
+    text: 'NAV ACCUR UPGRADED',
+    color: 'White',
     ndPriority: 1,
-    clearable: true,
   },
-  SpecifiedVorDmeUnavailble: {
+  SpecifiedVorDmeUnavailable: {
     id: 5,
-    ndFlag: NdFmMessageFlag.SpecifiedVorDmeUnavailble,
-    text: 'SPECIF VOR/D UNAVAIL',
+    ndFlag: NdFmMessageFlag.SpecifiedVorDmeUnavailable,
+    text: 'SPECIF VOR-D NOT AVAIL',
     color: 'Amber',
     ndPriority: 1,
-    clearable: true,
   },
-  NavAccuracyUpgradeGps: {
-    id: 6,
-    ndFlag: NdFmMessageFlag.NavAccuracyUpgradeGps,
-    text: 'NAV ACCUR UPGRAD',
-    color: 'White',
-    ndPriority: 1,
-    clearable: true,
-  },
-  GpsPrimary: {
+  NavPrimary: {
     id: 7,
-    ndFlag: NdFmMessageFlag.GpsPrimary,
-    text: 'GPS PRIMARY',
+    ndFlag: NdFmMessageFlag.NavPrimary,
+    text: 'NAV PRIMARY',
     color: 'White',
     ndPriority: 1,
-    clearable: true,
   },
   MapPartlyDisplayed: {
     id: 8,
@@ -131,53 +66,18 @@ export const FMMessageTypes: Readonly<Record<string, FMMessage>> = {
     color: 'Amber',
     ndPriority: 2,
   },
-  SetOffsideRangeMode: {
-    id: 9,
-    ndFlag: NdFmMessageFlag.SetOffsideRangeMode,
-    text: 'SET OFFSIDE RNG/MODE',
-    color: 'Amber',
-    ndPriority: 3,
-  },
   OffsideFmControl: {
-    id: 10,
+    id: 9,
     ndFlag: NdFmMessageFlag.OffsideFmControl,
     text: 'OFFSIDE FM CONTROL',
     color: 'Amber',
     ndPriority: 4,
   },
-  OffsideFmWxrControl: {
-    id: 11,
-    ndFlag: NdFmMessageFlag.OffsideFmWxrControl,
-    text: 'OFFSIDE FM/WXR CONTROL',
-    color: 'Amber',
-    ndPriority: 5,
-  },
-  OffsideWxrControl: {
-    id: 12,
-    ndFlag: NdFmMessageFlag.OffsideWxrControl,
-    text: 'OFFSIDE WXR CONTROL',
-    color: 'Amber',
-    ndPriority: 6,
-  },
-  GpsPrimaryLost: {
-    id: 13,
-    ndFlag: NdFmMessageFlag.GpsPrimaryLost,
-    text: 'GPS PRIMARY LOST',
+  NavPrimaryLost: {
+    id: 10,
+    ndFlag: NdFmMessageFlag.NavPrimaryLost,
+    text: 'NAV PRIMARY LOST',
     color: 'Amber',
     ndPriority: 7,
-  },
-  RtaMissed: {
-    id: 14,
-    ndFlag: NdFmMessageFlag.RtaMissed,
-    text: 'RTA MISSED',
-    color: 'Amber',
-    ndPriority: 8,
-  },
-  BackupNav: {
-    id: 15,
-    ndFlag: NdFmMessageFlag.BackupNav,
-    text: 'BACK UP NAV',
-    color: 'Amber',
-    ndPriority: 9,
   },
 };

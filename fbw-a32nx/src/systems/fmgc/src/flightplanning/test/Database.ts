@@ -3,9 +3,12 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+import { EventBus } from '@microsoft/msfs-sdk';
 import { NavigationDatabase, NavigationDatabaseBackend } from '../../NavigationDatabase';
 import { NavigationDatabaseService } from '../NavigationDatabaseService';
 
+const eventBus = new EventBus();
+
 export function setupTestDatabase() {
-  NavigationDatabaseService.activeDatabase = new NavigationDatabase(NavigationDatabaseBackend.Test);
+  NavigationDatabaseService.activeDatabase = new NavigationDatabase(eventBus, NavigationDatabaseBackend.Test);
 }

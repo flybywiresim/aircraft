@@ -5,12 +5,12 @@ authors = ["FlyByWire Simulations"]
 edition = "2021"
 
 [dependencies]
-uom = "0.36.0"
+uom.workspace = true
 nalgebra = "0.33.0"
-ntest = "0.9.0"
 systems = { path = "../../../../../fbw-common/src/wasm/systems/systems" }
 
 [dev-dependencies]
-rstest = "0.12.0"
-rand = "0.8.0"
-rand_pcg = "0.3.1"
+ntest.workspace = true
+rstest.workspace = true
+rand.workspace = true
+rand_pcg = "0.9.0"

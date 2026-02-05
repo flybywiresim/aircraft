@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 //import { UplinkMessageStateMachine } from '@datalink/atc';
 import { AtsuMessageDirection, AtsuMessageSerializationFormat } from '@datalink/common';
 import { CDUAtcMenu } from './A320_Neo_CDU_ATC_Menu';
@@ -7,7 +8,7 @@ import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
 export class CDUAtcMessageMonitoring {
   static TranslateCpdlcResponse(response) {
     if (response) {
-      switch (response.Content[0].TypeId) {
+      switch (response.Content[0]?.TypeId) {
         case 'DM0':
           return 'WILC';
         case 'UM0':

@@ -1,11 +1,11 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2022 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Fix, NdbNavaid, VhfNavaid, Waypoint } from '@flybywiresim/fbw-sdk';
+import { Fix, NdbNavaid, Runway, VhfNavaid } from '@flybywiresim/fbw-sdk';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
-import { WaypointFactory } from '@fmgc/flightplanning/waypoints/WaypointFactory';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { Coordinates } from 'msfs-geo';
 import { FmsDataInterface } from '@fmgc/flightplanning/interface/FmsDataInterface';
@@ -44,7 +44,13 @@ export class WaypointEntryUtils {
 
       return fms.createPlaceBearingDistWaypoint(wp, bearing, dist, stored, ident).waypoint;
     } else if (WaypointEntryUtils.isPlaceFormat(place)) {
-      return WaypointEntryUtils.parsePlace(fms, place).then((fix) => fix ?? fms.createNewWaypoint(place));
+      return WaypointEntryUtils.parsePlace(fms, place).catch((e) => {
+        if (e instanceof FmsError && e.type === FmsErrorType.NotInDatabase) {
+          fms.showFmsErrorMessage(FmsErrorType.NotInDatabase);
+          return fms.createNewWaypoint(place);
+        }
+        throw e;
+      });
     }
 
     throw new FmsError(FmsErrorType.FormatError);
@@ -61,11 +67,11 @@ export class WaypointEntryUtils {
     }
 
     const airport = await NavigationDatabaseService.activeDatabase.searchAirport(place);
-    const waypoints = await NavigationDatabaseService.activeDatabase.searchWaypoint(place);
+    const waypoints: Fix[] = await NavigationDatabaseService.activeDatabase.searchWaypoint(place);
     const navaids = await NavigationDatabaseService.activeDatabase.searchAllNavaid(place);
 
     if (airport !== undefined) {
-      waypoints.push(WaypointFactory.fromAirport(airport));
+      waypoints.push(airport);
     }
 
     const storedWaypoints = fms.getStoredWaypointsByIdent(place).map((stored) => stored.waypoint);
@@ -73,7 +79,7 @@ export class WaypointEntryUtils {
 
     // Sometimes navaids also exist as waypoints/intersections in the navdata (when they live on airways)
     // In this case, we only want to return the actual VOR facility
-    const items = WaypointEntryUtils.mergeNavaidsWithWaypoints(navaids, waypoints);
+    const items = WaypointEntryUtils.mergeNavaidsWithFixes(navaids, waypoints);
 
     if (items.length === 0) {
       throw new FmsError(FmsErrorType.NotInDatabase);
@@ -88,7 +94,7 @@ export class WaypointEntryUtils {
     return ret;
   }
 
-  static mergeNavaidsWithWaypoints(navaids: (VhfNavaid | NdbNavaid)[], waypoints: Waypoint[]): Fix[] {
+  static mergeNavaidsWithFixes(navaids: (VhfNavaid | NdbNavaid)[], waypoints: Fix[]): Fix[] {
     const items: Fix[] = [...navaids];
 
     for (const wp of waypoints) {
@@ -102,9 +108,9 @@ export class WaypointEntryUtils {
 
   /**
    * Parse a runway string and return the location of the threshold
-   * Returns undefined if invalid format or not in database
+   * Throws an FmsError if the runway is not found in the database.
    */
-  static async parseRunway(place: string): Promise<Waypoint> {
+  static async parseRunway(place: string): Promise<Runway> {
     const rwy = place.match(/^([A-Z]{4})([0-9]{2}[RCL]?)$/);
 
     if (rwy !== null) {
@@ -112,13 +118,10 @@ export class WaypointEntryUtils {
 
       if (airport) {
         const runways = await NavigationDatabaseService.activeDatabase.backendDatabase.getRunways(airport.ident);
+        const runway = runways.find((r) => r.ident === place);
 
-        for (let i = 0; i < runways.length; i++) {
-          const runway = runways[i];
-
-          if (runway.ident === place) {
-            return WaypointFactory.fromRunway(runway);
-          }
+        if (runway) {
+          return runway;
         }
       }
     }

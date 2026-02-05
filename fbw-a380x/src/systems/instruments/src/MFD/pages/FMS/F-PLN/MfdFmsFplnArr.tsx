@@ -424,7 +424,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
       }, true),
     );
 
-    NXDataStore.getAndSubscribe(
+    NXDataStore.getAndSubscribeLegacy(
       'CONFIG_USING_METRIC_UNIT',
       (key, value) => {
         this.lengthUnit.set(value === '0' ? UnitType.FOOT : UnitType.METER);

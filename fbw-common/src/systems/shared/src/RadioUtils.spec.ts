@@ -1,4 +1,4 @@
-// Copyright (c) 2024 FlyByWire Simulations
+// Copyright (c) 2024-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { describe, it, expect } from 'vitest';
@@ -148,5 +148,77 @@ describe('RadioUtils.isValidFrequency', () => {
     expect(RadioUtils.isValidFrequency(0x118_000_0, RadioChannelType.VhfNavaid50)).toBeFalsy();
     expect(RadioUtils.isValidFrequency(0x2_790_0, RadioChannelType.Hf1)).toBeFalsy();
     expect(RadioUtils.isValidFrequency(0x24_000_0, RadioChannelType.Hf1)).toBeFalsy();
+  });
+});
+
+describe('RadioUtils.CHANNEL_TYPES', () => {
+  it('contains only valid channel masks', () => {
+    expect(
+      Object.values(RadioUtils.CHANNEL_TYPES).every((info) => {
+        let foundZero = false;
+        for (let i = 0; i < 8; i++) {
+          const v = (info.channelMask >>> (i * 4)) & 0xf;
+          if (foundZero && v !== 0) {
+            return false;
+          }
+          foundZero = v === 0;
+          if (!foundZero && v !== 0xf) {
+            return false;
+          }
+        }
+        return true;
+      }),
+    ).toBeTruthy();
+  });
+});
+
+describe('RadioUtils.incrementBcd', () => {
+  it('increments upward correctly', () => {
+    expect(RadioUtils.incrementBcd32(0, 0, 1)).toEqual(1);
+    expect(RadioUtils.incrementBcd32(0x10, 0, 1)).toEqual(0x11);
+    expect(RadioUtils.incrementBcd32(0x09, 0, 1)).toEqual(0x10);
+    expect(RadioUtils.incrementBcd32(0x1000000, 0, 1)).toEqual(0x1000001);
+    expect(RadioUtils.incrementBcd32(0x0999999, 0, 1)).toEqual(0x1000000);
+  });
+  it('increments downward correctly', () => {
+    expect(RadioUtils.incrementBcd32(1, 0, -1)).toEqual(0);
+    expect(RadioUtils.incrementBcd32(0x11, 0, -1)).toEqual(0x10);
+    expect(RadioUtils.incrementBcd32(0x10, 0, -1)).toEqual(0x09);
+    expect(RadioUtils.incrementBcd32(0x1000001, 0, -1)).toEqual(0x1000000);
+    expect(RadioUtils.incrementBcd32(0x1000000, 0, -1)).toEqual(0x0999999);
+  });
+});
+
+describe('RadioUtils.getNextValidChannel', () => {
+  it('finds the correct channel without carry', () => {
+    expect(RadioUtils.getNextValidChannel(0x118_005_0, -1, false)).toBe(0x118_000_0);
+    expect(RadioUtils.getNextValidChannel(0x118_090_0, 1, false)).toBe(0x118_100_0);
+    expect(RadioUtils.getNextValidChannel(0x119_000_0, -1, false)).toBe(0x119_000_0);
+    expect(RadioUtils.getNextValidChannel(0x118_990_0, 1, false)).toBe(0x118_990_0);
+  });
+  it('finds the correct channel with carry', () => {
+    expect(RadioUtils.getNextValidChannel(0x118_000_0, -1, true)).toBe(0x118_000_0);
+    expect(RadioUtils.getNextValidChannel(0x118_005_0, -1, true)).toBe(0x118_000_0);
+    expect(RadioUtils.getNextValidChannel(0x118_090_0, 1, true)).toBe(0x118_100_0);
+    expect(RadioUtils.getNextValidChannel(0x119_990_0, 1, true)).toBe(0x120_000_0);
+  });
+  it('clamps to the min and max channels', () => {
+    expect(RadioUtils.getNextValidChannel(0x118_000_0, -1, true)).toBe(0x118_000_0);
+    expect(RadioUtils.getNextValidChannel(0x118_000_0, -1, false)).toBe(0x118_000_0);
+    expect(RadioUtils.getNextValidChannel(0x136_975_0, 1, true)).toBe(0x136_975_0);
+    expect(RadioUtils.getNextValidChannel(0x136_975_0, 1, false)).toBe(0x136_975_0);
+  });
+
+  describe('RadioUtils.getClosestValidFrequency', () => {
+    it('finds the same frequency when it is valid', () => {
+      expect(RadioUtils.getClosestValidFrequency(0x118_000_0)).toBe(0x118_000_0);
+      expect(RadioUtils.getClosestValidFrequency(0x136_975_0)).toBe(0x136_975_0);
+    });
+    it('finds the closest valid frequency when it is not valid', () => {
+      expect(RadioUtils.getClosestValidFrequency(0x0)).toBe(0x118_000_0);
+      expect(RadioUtils.getClosestValidFrequency(0x117_975_0)).toBe(0x118_000_0);
+      expect(RadioUtils.getClosestValidFrequency(0x137_000_0)).toBe(0x136_975_0);
+      expect(RadioUtils.getClosestValidFrequency(0x510_000_0)).toBe(0x136_975_0);
+    });
   });
 });

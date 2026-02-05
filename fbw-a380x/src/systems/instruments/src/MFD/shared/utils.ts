@@ -1,7 +1,8 @@
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { Approach, ApproachType } from '@flybywiresim/fbw-sdk';
+import { DateTimeFormatter } from '@microsoft/msfs-sdk';
 
 export function getEtaFromUtcOrPresent(seconds: number | null | undefined, fromPresent: boolean) {
   if (seconds === null || seconds === undefined) {
@@ -54,8 +55,34 @@ const approachTypeNames: Record<ApproachType, string> = {
 
 export function getApproachName(approach: Approach, withRnpSuffix = true): string {
   // we don't need to worry about circling approaches as they aren't available, so we can always expect a runway ident
-  // FIXME add (RNP) suffix for RNP-AR missed approaches (even on non-RNAV approaches)
-  const approachSuffix = approach.suffix ? `-${approach.suffix}` : '';
-  const arSuffix = withRnpSuffix && approach.authorisationRequired ? ' (RNP)' : '';
-  return `${approachTypeNames[approach.type]}${approach.runwayIdent?.substring(4)}${approachSuffix}${arSuffix}`;
+  // The (RNP) suffix is added RNP-AR approaches, and for RNP-AR missed approaches (even on non-RNAV approaches).
+  const approachSuffix = approach.multipleIndicator ? `-${approach.multipleIndicator}` : '';
+  const arSuffix =
+    withRnpSuffix && (approach.authorisationRequired || approach.missedApproachAuthorisationRequired) ? ' (RNP)' : '';
+  return `${approachTypeNames[approach.type]}${approach.runwayIdent.substring(4)}${approachSuffix}${arSuffix}`;
 }
+
+export const noPositionAvailableText = '--°--.--/---°--.--';
+
+export const showReturnButtonUriExtra = 'withReturn';
+
+export const flightPlanUriPage = 'f-pln';
+export const lateralRevisionHoldPage = 'f-pln-hold';
+export const dataStatusUri = 'fms/data/status';
+export const fuelAndLoadPage = 'fuel-load';
+export const performancePage = 'perf';
+export const initPage = 'init';
+export const verticalRevisionPage = 'f-pln-vert-rev';
+export const lateralRevisionPage = 'f-pln-lat-rev';
+export const departurePage = 'f-pln-departure';
+export const arrivalPage = 'f-pln-arrival';
+export const airwaysPage = 'f-pln-airways';
+
+export const secIndexPageUri = 'fms/sec/index';
+export const activeFlightPlanPageUri = 'fms/active/' + flightPlanUriPage;
+export const activeFlightPlanFuelAndLoadUri = 'fms/active/' + fuelAndLoadPage;
+export const activeFlightPlanHoldUri = 'fms/active/' + lateralRevisionHoldPage;
+export const fixInfoUri = 'fms/active/f-pln-fix-info';
+export const dirToUri = 'fms/active/f-pln-direct-to';
+
+export const hhmmFormatter = DateTimeFormatter.create('{HH}:{mm}', { nanString: '--:--' });

@@ -1,6 +1,12 @@
 {
     "compilerOptions": {
       "target": "es2017" /* Specifies the ES2017 target, compatible with Coherent GT */,
+      "strict": false,
+      "plugins": [
+        {
+          "name": "typescript-strict-plugin"
+        }
+      ],
       "baseUrl": ".",
       "resolveJsonModule" : true,
       "skipLibCheck": true,
@@ -10,18 +16,32 @@
       ],
       "moduleResolution": "node",
       "allowSyntheticDefaultImports": true,
-      "jsx": "react",
+      "forceConsistentCasingInFileNames": true,
       "paths": {
-        "@shared/*": ["./shared/src/*"],
-        "@instruments/common/*": ["./instruments/src/Common/*"],
-        "@fmgc/*": ["../../../fbw-a32nx/src/systems/fmgc/src/*"],
+        "@atsu/*": ["./atsu/src/*"],
+        "@datalink/aoc": ["../../../fbw-common/src/systems/datalink/aoc/src/index.ts"],
+        "@datalink/atc": ["../../../fbw-common/src/systems/datalink/atc/src/index.ts"],
+        "@datalink/common": ["../../../fbw-common/src/systems/datalink/common/src/index.ts"],
+        "@datalink/router": ["../../../fbw-common/src/systems/datalink/router/src/index.ts"],
+        "@failures": ["./failures/src/index.ts"],
+        "@flybywiresim/bat": ["../../../fbw-common/src/systems/instruments/src/BAT/index.ts"],
+        "@flybywiresim/clock": ["../../../fbw-common/src/systems/instruments/src/Clock/index.ts"],
         "@flybywiresim/failures": ["failures"],
+        "@flybywiresim/fbw-sdk": ["../../../fbw-common/src/systems/index.ts"],
+        "@flybywiresim/flypad": ["../../../fbw-common/src/systems/instruments/src/EFB/index.ts"],
+        "@flybywiresim/msfs-avionics-common": ["../../../fbw-common/src/systems/instruments/src/MsfsAvionicsCommon/index.ts"],
+        "@flybywiresim/navigation-display": ["../../../fbw-common/src/systems/instruments/src/ND/index.ts"],
+        "@flybywiresim/oanc": ["../../../fbw-common/src/systems/instruments/src/OANC/index.ts"],
+        "@flybywiresim/pfd": ["../../../fbw-common/src/systems/instruments/src/PFD/index.ts"],
+        "@flybywiresim/rmp": ["../../../fbw-common/src/systems/instruments/src/RMP/index.ts"],
+        "@fmgc/*": ["../../../fbw-a32nx/src/systems/fmgc/src/*"],
+        "@instruments/common/*": ["./instruments/src/Common/*"],
+        "@localization/*": ["../localization/*"],
+        "@sentry/*": ["./sentry-client/src/*"],
+        "@shared/*": ["./shared/src/*"],
         "@simbridge/*": ["../../../fbw-a32nx/src/systems/simbridge-client/src/*"],
         "@tcas/*": ["./tcas/src/*"],
         "@typings/*": ["../typings"],
-        "@flybywiresim/fbw-sdk": ["../../../fbw-common/src/systems/index.ts"],
-        "@flybywiresim/clock": ["../../../fbw-common/src/systems/instruments/src/Clock/index.ts"],
-        "@flybywiresim/bat": ["../../../fbw-common/src/systems/instruments/src/BAT/index.ts"]
       }
     }
 }

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2024 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -16,7 +17,8 @@ import {
 import { Arinc429Word, ConfirmationNode } from '@flybywiresim/fbw-sdk';
 import { VerticalMode } from '@shared/autopilot';
 import { FmgcFlightPhase, isAllEngineOn, isAnEngineOn, isOnGround, isReady, isSlewActive } from '@shared/flightphase';
-import { EventBus, Subject } from '@microsoft/msfs-sdk';
+import { ConsumerValue, EventBus, GameStateProvider, SimVarValueType, Subject, Wait } from '@microsoft/msfs-sdk';
+import { NavigationEvents } from '@fmgc/navigation/Navigation';
 
 export interface FlightPhaseManagerEvents {
   /** The FMGC flight phase. */
@@ -36,19 +38,23 @@ function canInitiateDes(distanceToDestination: number): boolean {
 }
 
 export class FlightPhaseManager {
+  private readonly sub = this.bus.getSubscriber<NavigationEvents>();
+
+  private readonly pressureAltitude = ConsumerValue.create(this.sub.on('fms_nav_pressure_altitude'), null);
+
   private onGroundConfirmationNode = new ConfirmationNode(30 * 1000);
 
-  private readonly activePhase = Subject.create(this.initialPhase || FmgcFlightPhase.Preflight);
+  private readonly activePhase = Subject.create(FmgcFlightPhase.Preflight);
 
   private phases: { [key in FmgcFlightPhase]: Phase } = {
-    [FmgcFlightPhase.Preflight]: new PreFlightPhase(),
-    [FmgcFlightPhase.Takeoff]: new TakeOffPhase(),
-    [FmgcFlightPhase.Climb]: new ClimbPhase(),
-    [FmgcFlightPhase.Cruise]: new CruisePhase(),
-    [FmgcFlightPhase.Descent]: new DescentPhase(),
-    [FmgcFlightPhase.Approach]: new ApproachPhase(),
-    [FmgcFlightPhase.GoAround]: new GoAroundPhase(),
-    [FmgcFlightPhase.Done]: new DonePhase(),
+    [FmgcFlightPhase.Preflight]: new PreFlightPhase(this.pressureAltitude),
+    [FmgcFlightPhase.Takeoff]: new TakeOffPhase(this.pressureAltitude),
+    [FmgcFlightPhase.Climb]: new ClimbPhase(this.pressureAltitude),
+    [FmgcFlightPhase.Cruise]: new CruisePhase(this.pressureAltitude),
+    [FmgcFlightPhase.Descent]: new DescentPhase(this.pressureAltitude),
+    [FmgcFlightPhase.Approach]: new ApproachPhase(this.pressureAltitude),
+    [FmgcFlightPhase.GoAround]: new GoAroundPhase(this.pressureAltitude),
+    [FmgcFlightPhase.Done]: new DonePhase(this.pressureAltitude),
   };
 
   private phaseChangeListeners: Array<(prev: FmgcFlightPhase, next: FmgcFlightPhase) => void> = [];
@@ -57,16 +63,31 @@ export class FlightPhaseManager {
     return this.activePhase.get();
   }
 
-  get initialPhase(): FmgcFlightPhase {
-    return SimVar.GetSimVarValue('L:A32NX_INITIAL_FLIGHT_PHASE', 'number');
-  }
-
   constructor(private readonly bus: EventBus) {}
   init(): void {
     console.log(`FMGC Flight Phase: ${this.phase}`);
     this.phases[this.phase].init();
     this.changePhase(this.phase);
-    this.activePhase.sub((v) => this.bus.getPublisher<FlightPhaseManagerEvents>().pub('fmgc_flight_phase', v));
+    this.activePhase.sub((v) => this.bus.getPublisher<FlightPhaseManagerEvents>().pub('fmgc_flight_phase', v), true);
+
+    // For simulation purposes we need to handle loading or spawning in various states.
+    // In here we should not rely on aircraft systems, but instead simvars from MSFS.
+    Wait.awaitSubscribable(GameStateProvider.get(), (v) => v === GameState.ingame).then(() => {
+      switch (true) {
+        case SimVar.GetSimVarValue('GEAR IS ON GROUND', SimVarValueType.Bool) > 0:
+          this.changePhase(FmgcFlightPhase.Preflight);
+          break;
+        case SimVar.GetSimVarValue('PLANE ALTITUDE', SimVarValueType.Feet) > 18_000:
+          this.changePhase(FmgcFlightPhase.Cruise);
+          break;
+        case SimVar.GetSimVarValue('FLAPS HANDLE INDEX', SimVarValueType.Enum) > 0:
+          this.changePhase(FmgcFlightPhase.Approach);
+          break;
+        default:
+          this.changePhase(FmgcFlightPhase.Climb);
+          break;
+      }
+    });
   }
 
   shouldActivateNextPhase(_deltaTime: number): void {
@@ -79,10 +100,6 @@ export class FlightPhaseManager {
       }
     } else if (isReady() && isSlewActive()) {
       this.handleSlewSituation(_deltaTime);
-    } else if (this.phase !== this.initialPhase) {
-      // ensure correct init of phase
-
-      this.changePhase(this.initialPhase);
     }
   }
 
@@ -146,12 +163,19 @@ export class FlightPhaseManager {
   }
 
   handleNewCruiseAltitudeEntered(newCruiseFlightLevel: number): void {
-    const currentFlightLevel = Math.round(SimVar.GetSimVarValue('INDICATED ALTITUDE:3', 'feet') / 100);
+    const pressureAltitude = this.pressureAltitude.get();
+    const currentFlightLevel = pressureAltitude === null ? null : Math.round(pressureAltitude / 100);
+
     if (this.phase === FmgcFlightPhase.Approach) {
       this.changePhase(FmgcFlightPhase.Climb);
-    } else if (currentFlightLevel < newCruiseFlightLevel && this.phase === FmgcFlightPhase.Descent) {
+    } else if (
+      currentFlightLevel !== null &&
+      currentFlightLevel < newCruiseFlightLevel &&
+      this.phase === FmgcFlightPhase.Descent
+    ) {
       this.changePhase(FmgcFlightPhase.Climb);
     } else if (
+      currentFlightLevel !== null &&
       currentFlightLevel > newCruiseFlightLevel &&
       (this.phase === FmgcFlightPhase.Climb || this.phase === FmgcFlightPhase.Descent)
     ) {

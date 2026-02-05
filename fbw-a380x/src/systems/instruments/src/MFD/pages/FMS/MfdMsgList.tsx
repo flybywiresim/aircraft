@@ -23,6 +23,8 @@ export class MfdMsgList extends DisplayComponent<MfdMsgListProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
   private readonly subs = [] as Subscription[];
 
+  private readonly eoActive = Subject.create<boolean>(false);
+
   private readonly topRef = FSComponent.createRef<HTMLDivElement>();
 
   private readonly msgListContainer = FSComponent.createRef<HTMLDivElement>();
@@ -73,6 +75,13 @@ export class MfdMsgList extends DisplayComponent<MfdMsgListProps> {
         .atFrequency(1)
         .handle((_t) => this.renderMessageList()),
     );
+
+    this.subs.push(
+      this.props.fmcService.masterFmcChanged.sub(() => {
+        // FIXME the previous pipe leaks...
+        this.props.fmcService.master?.fmgc.data.engineOut.pipe(this.eoActive);
+      }),
+    );
   }
 
   public destroy(): void {
@@ -89,8 +98,8 @@ export class MfdMsgList extends DisplayComponent<MfdMsgListProps> {
           <ActivePageTitleBar
             activePage={Subject.create('MESSAGE LIST')}
             offset={Subject.create('')}
-            eoIsActive={Subject.create(false)}
-            tmpyIsActive={Subject.create(false)}
+            eoIsActive={this.eoActive}
+            isFmsSubsystemPage={true}
           />
           {/* begin page content */}
           <div class="mfd-page-container">

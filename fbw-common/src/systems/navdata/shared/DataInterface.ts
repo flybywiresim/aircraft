@@ -1,20 +1,20 @@
-import { Coordinates, NauticalMiles } from 'msfs-geo';
+import { Coordinates } from 'msfs-geo';
 import { Airport } from './types/Airport';
 import { Departure } from './types/Departure';
 import { Arrival } from './types/Arrival';
 import { Approach } from './types/Approach';
 import { DatabaseIdent } from './types/DatabaseIdent';
 import { Waypoint } from './types/Waypoint';
-import { NdbNavaid, NdbClass } from './types/NdbNavaid';
+import { NdbNavaid } from './types/NdbNavaid';
 import { IlsNavaid } from './types/IlsNavaid';
 import { Runway } from './types/Runway';
-import { Airway, AirwayLevel } from './types/Airway';
-import { VhfNavaid, VhfNavaidType, VorClass } from './types/VhfNavaid';
+import { Airway } from './types/Airway';
+import { VhfNavaid } from './types/VhfNavaid';
 import { AirportCommunication } from './types/Communication';
-import { ControlledAirspace, RestrictiveAirspace } from './types/Airspace';
 import { Fix, ProcedureLeg } from '.';
 import { Marker } from './types/Marker';
 import { Gate } from './types/Gate';
+import { NearbyFacilityMonitor, NearbyFacilityType } from '../client/NearbyFacilityMonitor';
 
 // FIXME move to more appropriate place..
 export enum NavaidArea {
@@ -163,42 +163,14 @@ export interface DataInterface {
   getAirways(idents: string[]): Promise<Airway[]>;
 
   /**
-   * Retrieve airways to/from a given fix
+   * Retrieve an airway to/from a given fix
    * @param ident fix identifier
    * @param icaoCode 2-letter ICAO region code of the fix (to uniquely identify it)
-   * @param airwayIdent optional airway identifier to filter results by, no filter is applied if undefined
+   * @param airwayIdent airway identifier to fetch
    */
-  getAirwaysByFix(ident: string, icaoCode: string, airwayIdent?: string): Promise<Airway[]>;
+  getAirwayByFix(ident: string, icaoCode: string, airwayIdent: string): Promise<Airway[]>;
 
-  getNearbyAirports(
-    center: Coordinates,
-    range: NauticalMiles,
-    limit?: number,
-    longestRunwaySurfaces?: number,
-    longestRunwayLength?: number,
-  ): Promise<readonly Airport[]>;
-  getNearbyAirways(
-    center: Coordinates,
-    range: NauticalMiles,
-    limit?: number,
-    levels?: AirwayLevel,
-  ): Promise<readonly Airway[]>;
-  getNearbyVhfNavaids(
-    center: Coordinates,
-    range: number,
-    limit?: number,
-    classes?: VorClass,
-    types?: VhfNavaidType,
-  ): Promise<readonly VhfNavaid[]>;
-  getNearbyNdbNavaids(
-    center: Coordinates,
-    range: NauticalMiles,
-    limit?: number,
-    classes?: NdbClass,
-  ): Promise<readonly NdbNavaid[]>;
-  getNearbyWaypoints(center: Coordinates, range: NauticalMiles, limit?: number): Promise<readonly Waypoint[]>;
-  getNearbyFixes(center: Coordinates, range: NauticalMiles, limit?: number): Promise<readonly Fix[]>;
+  createNearbyFacilityMonitor(type: NearbyFacilityType): NearbyFacilityMonitor;
 
-  getControlledAirspaceInRange(center: Coordinates, range: NauticalMiles): Promise<readonly ControlledAirspace[]>;
-  getRestrictiveAirspaceInRange(center: Coordinates, range: NauticalMiles): Promise<readonly RestrictiveAirspace[]>;
+  getVhfNavaidFromId(databaseId: string): Promise<VhfNavaid>;
 }

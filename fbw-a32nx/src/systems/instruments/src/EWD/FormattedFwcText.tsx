@@ -1,10 +1,21 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
-//
+// Copyright (c) 2021-2023, 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { DisplayComponent, FSComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import {
+  ConsumerSubject,
+  DisplayComponent,
+  EventBus,
+  FSComponent,
+  Subscribable,
+  SubscribableMapFunctions,
+  VNode,
+} from '@microsoft/msfs-sdk';
+import { ExtendedClockEvents } from '../MsfsAvionicsCommon/providers/ExtendedClockProvider';
+
+type Destroyable = { destroy: () => void };
 
 interface FormattedFwcTextProps {
+  bus: EventBus;
   message: Subscribable<string>;
   x: number;
   y: number;
@@ -14,12 +25,33 @@ export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
 
   private decorationRef = FSComponent.createRef<SVGGElement>();
 
+  private readonly flash1Hz = ConsumerSubject.create(
+    this.props.bus.getSubscriber<ExtendedClockEvents>().on('ext_clock_one_hertz'),
+    false,
+  );
+
+  private readonly textSubs: Destroyable[] = [];
+
+  private addTextSub<T extends Destroyable>(sub: T): T {
+    this.textSubs.push(sub);
+    return sub;
+  }
+
+  private destroyTextSubs(): void {
+    for (let i = 0; i < this.textSubs.length; i++) {
+      this.textSubs[i].destroy();
+    }
+    this.textSubs.length = 0;
+  }
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
     this.props.message.sub((message) => {
       const LINE_SPACING = 30;
       const LETTER_WIDTH = 16;
+
+      this.destroyTextSubs();
 
       this.linesRef.instance.innerHTML = '';
       this.decorationRef.instance.innerHTML = '';
@@ -29,7 +61,7 @@ export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
 
       let color = 'White';
       let underlined = false;
-      // const flashing = false; TODO
+      let flashing = false;
       let framed = false;
 
       let buffer = '';
@@ -41,7 +73,14 @@ export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
           if (buffer !== '') {
             // close current part
             spans.push(
-              <tspan key={buffer} class={{ [color]: true, EWDWarn: true }}>
+              <tspan
+                key={buffer}
+                class={{
+                  [color]: true,
+                  EWDWarn: true,
+                  DimColor: flashing ? this.addTextSub(this.flash1Hz.map(SubscribableMapFunctions.identity())) : false,
+                }}
+              >
                 {buffer}
               </tspan>,
             );
@@ -49,7 +88,7 @@ export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
 
             if (underlined) {
               const d = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-              d.setAttribute('class', `Undeline ${color}Line`);
+              d.setAttribute('class', `Underline ${color}Line`);
               d.setAttribute('strokeLinecap', 'round');
               d.setAttribute(
                 'd',
@@ -60,7 +99,7 @@ export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
 
             if (framed) {
               const d = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-              d.setAttribute('class', `Undeline ${color}Line`);
+              d.setAttribute('class', `Underline ${color}Line`);
               d.setAttribute('strokeLinecap', 'round');
               d.setAttribute(
                 'd',
@@ -84,7 +123,7 @@ export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
                 case 'm':
                   // Reset attribute
                   underlined = false;
-                  // flashing = false;
+                  flashing = false;
                   framed = false;
                   break;
                 case '4m':
@@ -93,7 +132,7 @@ export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
                   break;
                 case ')m':
                   // Flashing attribute
-                  // flashing = true;
+                  flashing = true;
                   break;
                 case "'m":
                   // Characters which follow must be framed

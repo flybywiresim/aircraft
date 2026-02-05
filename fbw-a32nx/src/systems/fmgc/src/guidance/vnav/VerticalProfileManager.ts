@@ -1,4 +1,5 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// @ts-strict-ignore
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -37,7 +38,6 @@ import { HeadwindProfile } from '@fmgc/guidance/vnav/wind/HeadwindProfile';
 import { ProfileInterceptCalculator } from '@fmgc/guidance/vnav/descent/ProfileInterceptCalculator';
 import { BaseGeometryProfile } from '@fmgc/guidance/vnav/profile/BaseGeometryProfile';
 import { AircraftToDescentProfileRelation } from '@fmgc/guidance/vnav/descent/AircraftToProfileRelation';
-import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
 import {
@@ -133,6 +133,7 @@ export class VerticalProfileManager {
       this.flightPlanService,
       this.constraintReader,
       this.atmosphericConditions,
+      this.acConfig,
     );
 
     const speedProfile = new McduSpeedProfile(
@@ -200,6 +201,7 @@ export class VerticalProfileManager {
       this.flightPlanService,
       this.constraintReader,
       this.atmosphericConditions,
+      this.acConfig,
     );
 
     const speedProfile = new McduSpeedProfile(
@@ -214,7 +216,10 @@ export class VerticalProfileManager {
     const { estimatedDestinationFuel } = this.observer.get();
     // Use INIT FUEL PRED entry as initial estimate for destination EFOB. Clamp it to avoid potentially crashing predictions entirely from erroneous pilot input.
     const fuelEstimation = Number.isFinite(estimatedDestinationFuel)
-      ? Math.min(Math.max(estimatedDestinationFuel, 0), VnavConfig.MAXIMUM_FUEL_ESTIMATE)
+      ? Math.min(
+          Math.max(estimatedDestinationFuel, this.acConfig.vnavConfig.LOWEST_FUEL_ESTIMATE),
+          this.acConfig.vnavConfig.MAXIMUM_FUEL_ESTIMATE,
+        )
       : 4000;
     const finalCruiseAltitude = this.cruisePathBuilder.getFinalCruiseAltitude(descentProfile.cruiseSteps);
 
@@ -250,7 +255,7 @@ export class VerticalProfileManager {
       }
 
       const selectedSpeedProfile = new ExpediteSpeedProfile(greenDotSpeed);
-      this.expediteProfile = new SelectedGeometryProfile();
+      this.expediteProfile = new SelectedGeometryProfile(this.acConfig);
       const climbStrategy = new ClimbThrustClimbStrategy(this.observer, this.atmosphericConditions, this.acConfig);
       const climbWinds = new HeadwindProfile(this.windProfileFactory.getClimbWinds(), this.headingProfile);
 
@@ -272,7 +277,7 @@ export class VerticalProfileManager {
       this.expediteProfile.finalizeProfile();
     } catch (e) {
       console.error(e);
-      this.expediteProfile = new SelectedGeometryProfile();
+      this.expediteProfile = new SelectedGeometryProfile(this.acConfig);
     }
   }
 
@@ -283,8 +288,8 @@ export class VerticalProfileManager {
     const { fcuAltitude, cleanSpeed, presentPosition, fuelOnBoard, approachSpeed } = this.observer.get();
 
     const ndProfile = this.fcuModes.isLatAutoControlActive()
-      ? new NavGeometryProfile(this.flightPlanService, this.constraintReader, this.atmosphericConditions)
-      : new SelectedGeometryProfile();
+      ? new NavGeometryProfile(this.flightPlanService, this.constraintReader, this.atmosphericConditions, this.acConfig)
+      : new SelectedGeometryProfile(this.acConfig);
 
     let speedProfile: SpeedProfile;
     if (this.fcuModes.isExpediteModeActive()) {
@@ -725,7 +730,7 @@ export class VerticalProfileManager {
    * This is naturally the case because the descent profile and the "starting point" is not updated during descent.
    * @returns Offset between the aircraft's distance from start and the descent profile's distance from start
    */
-  private computeTacticalToGuidanceProfileOffset(): NauticalMiles {
+  public computeTacticalToGuidanceProfileOffset(): NauticalMiles {
     if (!this.descentProfile || !this.aircraftToDescentProfileRelation?.isValid) {
       return 0;
     }
@@ -754,7 +759,7 @@ export class VerticalProfileManager {
     const isDesOrApprPhase = flightPhase === FmgcFlightPhase.Descent || flightPhase === FmgcFlightPhase.Approach;
     const isCruisePhase = flightPhase === FmgcFlightPhase.Cruise;
     const isCloseToDestination =
-      ((this.constraintReader.distanceToEnd ?? Infinity) > 150 && isCruisePhase) || isDesOrApprPhase;
+      ((this.constraintReader.distanceToEnd ?? Infinity) < 150 && isCruisePhase) || isDesOrApprPhase;
 
     if (!isManagedLateralMode || !isCloseToDestination) {
       return false;

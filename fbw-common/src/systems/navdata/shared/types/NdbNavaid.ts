@@ -1,8 +1,7 @@
-import { NauticalMiles } from 'msfs-geo';
+import { Coordinates, NauticalMiles } from 'msfs-geo';
 import { BaseFix, WaypointArea } from '..';
 import { DatabaseItem, KiloHertz } from './Common';
 import { AirportSubsectionCode, NavaidSubsectionCode, SectionCode } from './SectionCode';
-import { Coordinates } from '@fmgc/flightplanning/data/geo';
 
 interface BaseNdbNavaid extends DatabaseItem<SectionCode.Airport | SectionCode.Navaid> {
   sectionCode: SectionCode.Airport | SectionCode.Navaid;

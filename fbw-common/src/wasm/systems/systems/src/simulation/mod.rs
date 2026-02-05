@@ -10,7 +10,7 @@ use crate::{
     shared::arinc825::{from_arinc825, to_arinc825, Arinc825Word},
     shared::{to_bool, ConsumePower, ElectricalBuses, MachNumber, PowerConsumptionReport},
 };
-
+use rustc_hash::FxHashSet;
 use uom::si::mass_rate::kilogram_per_second;
 use uom::si::{
     acceleration::foot_per_second_squared, angle::degree, angular_velocity::revolution_per_minute,
@@ -166,7 +166,7 @@ impl<'a> InitContext<'a> {
     }
 }
 
-impl<'a> ElectricalElementIdentifierProvider for InitContext<'a> {
+impl ElectricalElementIdentifierProvider for InitContext<'_> {
     fn next_electrical_identifier(&mut self) -> ElectricalElementIdentifier {
         self.electrical_identifier_provider
             .next_electrical_identifier()
@@ -328,7 +328,7 @@ pub trait SimulationElement {
     }
 
     /// Receives a failure in order to activate or deactivate it.
-    fn receive_failure(&mut self, _failure_type: FailureType, _is_active: bool) {}
+    fn receive_failure(&mut self, _active_failures: &FxHashSet<FailureType>) {}
 }
 
 /// Trait for visitors that visit the aircraft's system simulation to call
@@ -461,20 +461,9 @@ impl<T: Aircraft> Simulation<T> {
         self.aircraft.accept(&mut visitor);
     }
 
-    pub fn activate_failure(&mut self, failure_type: FailureType) {
-        self.handle_failure(failure_type, true);
-    }
-
-    pub fn deactivate_failure(&mut self, failure_type: FailureType) {
-        self.handle_failure(failure_type, false);
-    }
-
-    fn handle_failure(&mut self, failure_type: FailureType, is_active: bool) {
+    pub fn update_active_failures(&mut self, active_failures: FxHashSet<FailureType>) {
         self.aircraft
-            .accept(&mut FailureSimulationElementVisitor::new(
-                failure_type,
-                is_active,
-            ));
+            .accept(&mut FailureSimulationElementVisitor::new(active_failures));
     }
 
     fn electricity(&self) -> &Electricity {
@@ -498,20 +487,16 @@ impl<T: Aircraft> Simulation<T> {
 }
 
 struct FailureSimulationElementVisitor {
-    failure_type: FailureType,
-    is_active: bool,
+    active_failures: FxHashSet<FailureType>,
 }
 impl FailureSimulationElementVisitor {
-    fn new(failure_type: FailureType, is_active: bool) -> Self {
-        Self {
-            failure_type,
-            is_active,
-        }
+    fn new(active_failures: FxHashSet<FailureType>) -> Self {
+        Self { active_failures }
     }
 }
 impl SimulationElementVisitor for FailureSimulationElementVisitor {
     fn visit<T: SimulationElement>(&mut self, visited: &mut T) {
-        visited.receive_failure(self.failure_type, self.is_active);
+        visited.receive_failure(&self.active_failures);
     }
 }
 
@@ -541,7 +526,7 @@ impl<'a> SimulationToSimulatorVisitor<'a> {
         SimulationToSimulatorVisitor { writer }
     }
 }
-impl<'a> SimulationElementVisitor for SimulationToSimulatorVisitor<'a> {
+impl SimulationElementVisitor for SimulationToSimulatorVisitor<'_> {
     fn visit<T: SimulationElement>(&mut self, visited: &mut T) {
         visited.write(self.writer);
     }
@@ -562,7 +547,7 @@ impl<'a> SimulatorReader<'a> {
         }
     }
 }
-impl<'a> Reader for SimulatorReader<'a> {
+impl Reader for SimulatorReader<'_> {
     fn read_f64(&mut self, identifier: &VariableIdentifier) -> f64 {
         self.simulator_read_writer.read(identifier)
     }
@@ -583,7 +568,7 @@ impl<'a> SimulatorWriter<'a> {
         }
     }
 }
-impl<'a> Writer for SimulatorWriter<'a> {
+impl Writer for SimulatorWriter<'_> {
     fn write_f64(&mut self, identifier: &VariableIdentifier, value: f64) {
         self.simulator_read_writer.write(identifier, value);
     }
@@ -865,8 +850,8 @@ mod tests {
 
     mod start_state {
         use super::*;
-        use fxhash::FxHashMap;
         use ntest::assert_about_eq;
+        use rustc_hash::FxHashMap;
 
         #[rstest]
         #[case(1., StartState::Hangar)]

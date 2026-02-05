@@ -132,6 +132,9 @@ impl A320Electrical {
             spd_cond,
         );
 
+        self.alternating_current
+            .update_auxiliary(electricity, emergency_overhead);
+
         self.main_galley
             .update(context, electricity, &self.alternating_current, overhead);
         self.secondary_galley
@@ -2622,7 +2625,7 @@ mod a320_electrical_circuit_tests {
         }
 
         fn on_the_ground(mut self) -> Self {
-            self.set_indicated_altitude(Length::new::<foot>(0.));
+            self.set_pressure_altitude(Length::new::<foot>(0.));
             self.set_on_ground(true);
             self
         }

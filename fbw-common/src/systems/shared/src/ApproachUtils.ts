@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -46,7 +47,7 @@ export class ApproachUtils {
     }
 
     const runway = appr.runway;
-    const suffix = appr.designator ? `${runway.length > 2 ? '' : '-'}${appr.designator}` : '';
+    const suffix = appr.designator ? `-${appr.designator}` : '';
 
     return `${appr.type.replace('RNAV', 'RNV')}${runway}${suffix}`;
   }

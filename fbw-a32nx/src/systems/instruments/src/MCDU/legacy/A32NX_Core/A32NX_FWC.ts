@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import {
   Arinc429Word,
   NXLogicConfirmNode,
@@ -7,13 +8,8 @@ import {
 
 // FIXME move to PseudoFWC
 export class A32NX_FWC {
-  // momentary
-  private toConfigTest = null; // WTOCT
-
   // persistent
   private flightPhase = null;
-  private ldgMemo = null;
-  private toMemo = null;
 
   // ESDL 1. 0. 60
   private gndMemo = new NXLogicConfirmNode(1); // outptuts ZGND
@@ -44,39 +40,8 @@ export class A32NX_FWC {
   private phase5Memo = new NXLogicTriggeredMonostableNode(120); // MTRIG 01
   private phase67Memo = new NXLogicTriggeredMonostableNode(180); // MTRIG 02
 
-  // ESDL 1. 0.180
-  private memoTo_conf01 = new NXLogicConfirmNode(120, true); // CONF 01
-  private memoTo_memo = new NXLogicMemoryNode(false);
-
-  // ESDL 1. 0.190
-  private memoLdgMemo_conf01 = new NXLogicConfirmNode(1, true); // CONF 01
-  private memoLdgMemo_inhibit = new NXLogicMemoryNode(false);
-  private memoLdgMemo_conf02 = new NXLogicConfirmNode(10, true); // CONF 01
-  private memoLdgMemo_below2000ft = new NXLogicMemoryNode(true);
-
-  // ESDL 1. 0.310
-  private memoToInhibit_conf01 = new NXLogicConfirmNode(3, true); // CONF 01
-
-  // ESDL 1. 0.320
-  private memoLdgInhibit_conf01 = new NXLogicConfirmNode(3, true); // CONF 01
-
-  // altitude warning
-  private previousTargetAltitude = NaN;
-  private _wasBellowThreshold = false;
-  private _wasAboveThreshold = false;
-  private _wasInRange = false;
-  private _wasReach200ft = false;
-
   update(_deltaTime, _core) {
     this._updateFlightPhase(_deltaTime);
-    this._updateButtons(_deltaTime);
-    this._updateTakeoffMemo(_deltaTime);
-    this._updateLandingMemo(_deltaTime);
-    this._updateAltitudeWarning();
-  }
-
-  _updateButtons(_deltaTime) {
-    this.toConfigTest = SimVar.GetSimVarValue('L:A32NX_FWS_TO_CONFIG_TEST', 'boolean');
   }
 
   _updateFlightPhase(_deltaTime) {
@@ -228,163 +193,5 @@ export class A32NX_FWC {
     // update flight phase
     this.flightPhase = flightPhase;
     SimVar.SetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum', this.flightPhase || 0);
-  }
-
-  _updateTakeoffMemo(_deltaTime) {
-    /// FWC ESLD 1.0.180
-    const setFlightPhaseMemo = this.flightPhase === 2 && this.toConfigTest;
-    const resetFlightPhaseMemo =
-      this.flightPhase === 10 || this.flightPhase === 3 || this.flightPhase === 1 || this.flightPhase === 6;
-    const flightPhaseMemo = this.memoTo_memo.write(setFlightPhaseMemo, resetFlightPhaseMemo);
-
-    const eng1NotRunning = SimVar.GetSimVarValue('ENG N1 RPM:1', 'Percent') < 15;
-    const eng2NotRunning = SimVar.GetSimVarValue('ENG N1 RPM:2', 'Percent') < 15;
-    const toTimerElapsed = this.memoTo_conf01.write(!eng1NotRunning && !eng2NotRunning, _deltaTime);
-
-    this.toMemo = flightPhaseMemo || (this.flightPhase === 2 && toTimerElapsed);
-    SimVar.SetSimVarValue('L:A32NX_FWC_TOMEMO', 'Bool', this.toMemo);
-  }
-
-  _updateLandingMemo(_deltaTime) {
-    const radioHeight1 = Arinc429Word.fromSimVarValue('L:A32NX_RA_1_RADIO_ALTITUDE');
-    const radioHeight2 = Arinc429Word.fromSimVarValue('L:A32NX_RA_2_RADIO_ALTITUDE');
-    const radioHeight1Invalid = radioHeight1.isFailureWarning() || radioHeight1.isNoComputedData();
-    const radioHeight2Invalid = radioHeight2.isFailureWarning() || radioHeight2.isNoComputedData();
-    const gearDownlocked = SimVar.GetSimVarValue('GEAR TOTAL PCT EXTENDED', 'percent') > 0.95;
-
-    // FWC ESLD 1.0.190
-    const setBelow2000ft =
-      (radioHeight1.value < 2000 && !radioHeight1Invalid) || (radioHeight2.value < 2000 && !radioHeight2Invalid);
-    const resetBelow2000ft =
-      (radioHeight1.value > 2200 || radioHeight1Invalid) && (radioHeight2.value > 2200 || radioHeight2Invalid);
-    const memo2 = this.memoLdgMemo_below2000ft.write(setBelow2000ft, resetBelow2000ft);
-
-    const setInhibitMemo = this.memoLdgMemo_conf01.write(
-      resetBelow2000ft && !radioHeight1Invalid && !radioHeight2Invalid,
-      _deltaTime,
-    );
-    const resetInhibitMemo = !(this.flightPhase === 7 || this.flightPhase === 8 || this.flightPhase === 6);
-    const memo1 = this.memoLdgMemo_inhibit.write(setInhibitMemo, resetInhibitMemo);
-
-    const showInApproach = memo1 && memo2 && this.flightPhase === 6;
-
-    const invalidRadioMemo = this.memoLdgMemo_conf02.write(
-      radioHeight1Invalid && radioHeight2Invalid && gearDownlocked && this.flightPhase === 6,
-      _deltaTime,
-    );
-
-    this.ldgMemo = showInApproach || invalidRadioMemo || this.flightPhase === 8 || this.flightPhase === 7;
-    SimVar.SetSimVarValue('L:A32NX_FWC_LDGMEMO', 'Bool', this.ldgMemo);
-  }
-
-  _updateAltitudeWarning() {
-    const indicatedAltitude = Simplane.getAltitude();
-    const shortAlert = SimVar.GetSimVarValue('L:A32NX_ALT_DEVIATION_SHORT', 'Bool');
-    if (shortAlert === 1) {
-      SimVar.SetSimVarValue('L:A32NX_ALT_DEVIATION_SHORT', 'Bool', false);
-    }
-
-    const warningPressed =
-      SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_L', 'Bool') ||
-      SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_R', 'Bool');
-    if (warningPressed) {
-      this._wasBellowThreshold = false;
-      this._wasAboveThreshold = false;
-      this._wasInRange = false;
-      SimVar.SetSimVarValue('L:A32NX_ALT_DEVIATION', 'Bool', false);
-      return;
-    }
-
-    if (Simplane.getIsGrounded()) {
-      SimVar.SetSimVarValue('L:A32NX_ALT_DEVIATION', 'Bool', false);
-    }
-
-    // Use FCU displayed value
-    const currentAltitudeConstraint = SimVar.GetSimVarValue('L:A32NX_FG_ALTITUDE_CONSTRAINT', 'feet');
-    const currentFCUAltitude = SimVar.GetSimVarValue('AUTOPILOT ALTITUDE LOCK VAR:3', 'feet');
-    const targetAltitude =
-      currentAltitudeConstraint && !this.hasAltitudeConstraint() ? currentAltitudeConstraint : currentFCUAltitude;
-
-    // Exit when selected altitude is being changed
-    if (this.previousTargetAltitude !== targetAltitude) {
-      this.previousTargetAltitude = targetAltitude;
-      this._wasBellowThreshold = false;
-      this._wasAboveThreshold = false;
-      this._wasInRange = false;
-      this._wasReach200ft = false;
-      SimVar.SetSimVarValue('L:A32NX_ALT_DEVIATION_SHORT', 'Bool', false);
-      SimVar.SetSimVarValue('L:A32NX_ALT_DEVIATION', 'Bool', false);
-      return;
-    }
-
-    // Exit when:
-    // - Landing gear down & slats extended
-    // - Glide slope captured
-    // - Landing locked down
-
-    const landingGearIsDown =
-      SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Enum') >= 1 &&
-      SimVar.GetSimVarValue('L:A32NX_GEAR_HANDLE_POSITION', 'Percent over 100') > 0.5;
-    const verticalMode = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'Number');
-    const glideSlopeCaptured = verticalMode >= 30 && verticalMode <= 34;
-    const landingGearIsLockedDown = SimVar.GetSimVarValue('GEAR POSITION:0', 'Enum') > 0.9;
-    const isTcasResolutionAdvisoryActive = SimVar.GetSimVarValue('L:A32NX_TCAS_STATE', 'Enum') > 1;
-    if (landingGearIsDown || glideSlopeCaptured || landingGearIsLockedDown || isTcasResolutionAdvisoryActive) {
-      this._wasBellowThreshold = false;
-      this._wasAboveThreshold = false;
-      this._wasInRange = false;
-      this._wasReach200ft = false;
-      SimVar.SetSimVarValue('L:A32NX_ALT_DEVIATION_SHORT', 'Bool', false);
-      SimVar.SetSimVarValue('L:A32NX_ALT_DEVIATION', 'Bool', false);
-      return;
-    }
-
-    const delta = Math.abs(indicatedAltitude - targetAltitude);
-
-    if (delta < 200) {
-      this._wasBellowThreshold = true;
-      this._wasAboveThreshold = false;
-      this._wasReach200ft = true;
-    }
-    if (750 < delta) {
-      this._wasAboveThreshold = true;
-      this._wasBellowThreshold = false;
-    }
-    if (200 <= delta && delta <= 750) {
-      this._wasInRange = true;
-    }
-
-    if (this._wasBellowThreshold && this._wasReach200ft) {
-      if (delta >= 200) {
-        SimVar.SetSimVarValue('L:A32NX_ALT_DEVIATION', 'Bool', true);
-      } else if (delta < 200) {
-        SimVar.SetSimVarValue('L:A32NX_ALT_DEVIATION', 'Bool', false);
-      }
-    } else if (this._wasAboveThreshold && delta <= 750 && !this._wasReach200ft) {
-      if (
-        !SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_1_ACTIVE', 'Bool') &&
-        !SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_2_ACTIVE', 'Bool')
-      ) {
-        SimVar.SetSimVarValue('L:A32NX_ALT_DEVIATION', 'Bool', false);
-        SimVar.SetSimVarValue('L:A32NX_ALT_DEVIATION_SHORT', 'Bool', true);
-      }
-    } else if (750 < delta && this._wasInRange && !this._wasReach200ft) {
-      if (750 < delta) {
-        SimVar.SetSimVarValue('L:A32NX_ALT_DEVIATION', 'Bool', true);
-      } else if (delta >= 750) {
-        SimVar.SetSimVarValue('L:A32NX_ALT_DEVIATION', 'Bool', false);
-      }
-    }
-  }
-
-  hasAltitudeConstraint() {
-    // FIXME SUSSY code reading an LVar that's never written
-    if (
-      Simplane.getAutoPilotAltitudeManaged() &&
-      SimVar.GetSimVarValue('L:AP_CURRENT_TARGET_ALTITUDE_IS_CONSTRAINT', 'number') != 0
-    ) {
-      return false;
-    }
-    return true;
   }
 }

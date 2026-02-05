@@ -11,11 +11,14 @@ export interface AdirsSimVars {
   pitch: number;
   roll: number;
   magHeadingRaw: number;
+  trueHeadingRaw: number;
+  altitude: number;
   baroCorrectedAltitude: number;
   speed: number;
   vsInert: number;
   vsBaro: number;
   magTrackRaw: number;
+  trueTrackRaw: number;
   groundSpeed: number;
   trueAirSpeed: number;
   windDirection: number;
@@ -23,12 +26,13 @@ export interface AdirsSimVars {
   fpaRaw: number;
   daRaw: number;
   mach: number;
+  sat: number;
+  tat: number;
   latitude: number;
   longitude: number;
   latAccRaw: number;
+  normalAccRaw: number;
   irMaintWordRaw: number;
-  trueHeadingRaw: number;
-  trueTrackRaw: number;
 }
 
 export enum AdirsVars {
@@ -36,6 +40,7 @@ export enum AdirsVars {
   roll = 'L:A32NX_ADIRS_IR_1_ROLL',
   magHeadingRaw = 'L:A32NX_ADIRS_IR_1_HEADING',
   trueHeadingRaw = 'L:A32NX_ADIRS_IR_1_TRUE_HEADING',
+  altitude = 'L:A32NX_ADIRS_ADR_1_ALTITUDE',
   baroCorrectedAltitude1 = 'L:A32NX_ADIRS_ADR_1_BARO_CORRECTED_ALTITUDE_1',
   speed = 'L:A32NX_ADIRS_ADR_1_COMPUTED_AIRSPEED',
   vsInert = 'L:A32NX_ADIRS_IR_1_VERTICAL_SPEED',
@@ -49,8 +54,12 @@ export enum AdirsVars {
   fpaRaw = 'L:A32NX_ADIRS_IR_1_FLIGHT_PATH_ANGLE',
   daRaw = 'L:A32NX_ADIRS_IR_1_DRIFT_ANGLE',
   mach = 'L:A32NX_ADIRS_ADR_1_MACH',
+  sat = 'L:A32NX_ADIRS_ADR_1_STATIC_AIR_TEMPERATURE',
+  tat = 'L:A32NX_ADIRS_ADR_1_TOTAL_AIR_TEMPERATURE',
   latitude = 'L:A32NX_ADIRS_IR_1_LATITUDE',
   longitude = 'L:A32NX_ADIRS_IR_1_LONGITUDE',
+  latAccRaw = 'L:A32NX_ADIRS_IR_1_BODY_LATERAL_ACC',
+  normalAccRaw = 'L:A32NX_ADIRS_IR_1_BODY_NORMAL_ACC',
   irMaintWordRaw = 'L:A32NX_ADIRS_IR_1_MAINT_WORD',
 }
 
@@ -59,6 +68,7 @@ export const AdirsSimVarDefinitions = new Map<keyof AdirsSimVars, SimVarDefiniti
   ['roll', { name: AdirsVars.roll, type: SimVarValueType.Number }],
   ['magHeadingRaw', { name: AdirsVars.magHeadingRaw, type: SimVarValueType.Number }],
   ['trueHeadingRaw', { name: AdirsVars.trueHeadingRaw, type: SimVarValueType.Number }],
+  ['altitude', { name: AdirsVars.altitude, type: SimVarValueType.Number }],
   ['baroCorrectedAltitude', { name: AdirsVars.baroCorrectedAltitude1, type: SimVarValueType.Number }],
   ['speed', { name: AdirsVars.speed, type: SimVarValueType.Number }],
   ['magTrackRaw', { name: AdirsVars.magTrackRaw, type: SimVarValueType.Number }],
@@ -70,8 +80,12 @@ export const AdirsSimVarDefinitions = new Map<keyof AdirsSimVars, SimVarDefiniti
   ['fpaRaw', { name: AdirsVars.fpaRaw, type: SimVarValueType.Number }],
   ['daRaw', { name: AdirsVars.daRaw, type: SimVarValueType.Number }],
   ['mach', { name: AdirsVars.mach, type: SimVarValueType.Number }],
+  ['sat', { name: AdirsVars.sat, type: SimVarValueType.Number }],
+  ['tat', { name: AdirsVars.tat, type: SimVarValueType.Number }],
   ['latitude', { name: AdirsVars.latitude, type: SimVarValueType.Number }],
   ['longitude', { name: AdirsVars.longitude, type: SimVarValueType.Number }],
+  ['latAccRaw', { name: AdirsVars.normalAccRaw, type: SimVarValueType.Number }],
+  ['normalAccRaw', { name: AdirsVars.normalAccRaw, type: SimVarValueType.Number }],
   ['irMaintWordRaw', { name: AdirsVars.irMaintWordRaw, type: SimVarValueType.Number }],
 ]);
 

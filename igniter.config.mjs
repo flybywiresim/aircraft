@@ -10,7 +10,29 @@ export default new TaskOfTasks('all', [
         new TaskOfTasks(
             'preparation',
             [
-                new ExecTask('copy-base-files', 'npm run build-a32nx:copy-base-files'),
+                new TaskOfTasks(
+                    'ci-build',
+                    [
+                        new ExecTask('copy-base-files', [
+                            'npm run build-a32nx:link-base-files',
+                            'npm run unchunkLargeFiles fbw-a32nx',
+                            'npm run build-a32nx:link-large-files',
+                        ]),
+                    ],
+                    false,
+                ),
+                new TaskOfTasks(
+                    'local-build',
+                    [
+                        new ExecTask('copy-base-files', [
+                            'npm run build-a32nx:copy-base-files',
+                            'npm run unchunkLargeFiles fbw-a32nx',
+                            'npm run build-a32nx:copy-large-files',
+                            'npm run chunkLargeFiles fbw-a32nx',
+                        ]),
+                    ],
+                    false,
+                ),
                 new TaskOfTasks(
                     'localization',
                     [
@@ -72,7 +94,7 @@ export default new TaskOfTasks('all', [
                     [
                         'fbw-common/src/wasm/terronnd',
                         'fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/terronnd.wasm',
-                        'fbw-common/src/wasm/terronnd/out/terronnd.wasm',
+                        'fbw-common/src/wasm/terronnd/out/terronnd_A32NX.wasm',
                     ],
                 ),
                 new ExecTask('cpp-wasm-cmake', 'npm run build:cpp-wasm-cmake', [
@@ -105,7 +127,7 @@ export default new TaskOfTasks('all', [
                     [
                         new ExecTask('copy-base-files (8K)', [
                             'npm run build-a380x:link-base-files',
-                            'npm run unchunkLargeFiles',
+                            'npm run unchunkLargeFiles fbw-a380x',
                             'npm run build-a380x:link-large-files',
                             'npm run build-a380x:link-large-files-texture-8k',
                             // temporary until folder exists
@@ -113,7 +135,7 @@ export default new TaskOfTasks('all', [
                         ]),
                         new ExecTask('copy-base-files (4K)', [
                             'npm run build-a380x:link-base-files',
-                            'npm run unchunkLargeFiles',
+                            'npm run unchunkLargeFiles fbw-a380x',
                             'npm run build-a380x:link-large-files',
                             'npm run build-a380x:link-large-files-texture-4k',
                             // temporary until folder exists
@@ -127,19 +149,19 @@ export default new TaskOfTasks('all', [
                     [
                         new ExecTask('copy-base-files (8K)', [
                             'npm run build-a380x:copy-base-files',
-                            'npm run unchunkLargeFiles',
+                            'npm run unchunkLargeFiles fbw-a380x',
                             'npm run build-a380x:copy-large-files',
                             'npm run build-a380x:copy-large-files-texture-8k',
-                            'npm run chunkLargeFiles',
+                            'npm run chunkLargeFiles fbw-a380x',
                             // temporary until folder exists
                             'mkdir -p fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/',
                         ]),
                         new ExecTask('copy-base-files (4K)', [
                             'npm run build-a380x:copy-base-files',
-                            'npm run unchunkLargeFiles',
+                            'npm run unchunkLargeFiles fbw-a380x',
                             'npm run build-a380x:copy-large-files',
                             'npm run build-a380x:copy-large-files-texture-4k',
-                            'npm run chunkLargeFiles',
+                            'npm run chunkLargeFiles fbw-a380x',
                             // temporary until folder exists
                             'mkdir -p fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/',
                         ]),
@@ -195,7 +217,7 @@ export default new TaskOfTasks('all', [
                     ['npm run build-a380x:terronnd'],
                     [
                         'fbw-common/src/wasm/terronnd',
-                        'fbw-common/src/wasm/terronnd/out/terronnd.wasm',
+                        'fbw-common/src/wasm/terronnd/out/terronnd_A380X.wasm',
                         'fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/terronnd.wasm',
                     ],
                 ),

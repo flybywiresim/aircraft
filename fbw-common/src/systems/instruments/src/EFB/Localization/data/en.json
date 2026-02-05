@@ -2,7 +2,6 @@
   "AirTrafficControl": {
     "Active": "Active",
     "ChangeATISATCSourceButton": "Change ATIS/ATC source",
-    "ConnectHoppieACARS": "Connect Hoppie ACARS",
     "NoInformationAvailableForThisFrequency": "No information available for this frequency",
     "SearchPlaceholder": "Search",
     "SelectCorrectATISATCSource": "This page is only available when IVAO or VATSIM is selected as the ATIS/ATC source in the settings page.",
@@ -134,6 +133,7 @@
       "EstimatedDuration": "Estimated duration (minutes)",
       "EstimatedTime": "Estimated Time",
       "GSXFuelSyncEnabled": "Call GSX Refuel",
+      "GSXFuelRequested": "GSX Refuel requested",
       "LeftInnerTank": "Left Inner Tank",
       "LeftOuterTank": "Left Outer Tank",
       "ReadyToStart": "Ready to Start",
@@ -203,7 +203,8 @@
       "JetBridge": "Jet Bridge",
       "Title": "Services",
       "WheelChocks": "Wheel Chocks",
-      "AirStarterUnit": "Air Starter Unit"
+      "AirStarterUnit": "Air Starter Unit",
+      "Stairs": "Passenger Stairs"
     },
     "Title": "Ground"
   },
@@ -286,6 +287,7 @@
   "Performance": {
     "Data": "Data",
     "Landing": {
+      "Airport": "Airport",
       "AirportIcao": "Airport ICAO",
       "ApproachSpeed": "Approach Speed",
       "ApproachSpeedUnit": "kts",
@@ -294,8 +296,10 @@
       "Clear": "Clear",
       "DropDownNo": "No",
       "DropDownYes": "Yes",
+      "EnterManually": "Enter Manually",
       "FillDataFrom": "Fill data from",
       "FlapsConfiguration": "Flaps Configuration",
+      "LandingWeight": "Landing Weight",
       "Low": "Low",
       "MaximumManual": "Maximum Manual",
       "Medium": "Medium",
@@ -304,8 +308,6 @@
       "OverweightProcedure": "Overweight Procedure",
       "Qnh": "QNH",
       "ReverseThrust": "Reverse Thrust",
-      "RunwayAltitude": "Runway Elevation",
-      "RunwayAltitudeUnit": "ft ASL",
       "RunwayCondition": "Runway Condition",
       "RunwayConditions": {
         "Dry": "Dry (6)",
@@ -315,6 +317,9 @@
         "MediumPoor": "Medium-Poor (2)",
         "Poor": "Poor (1)"
       },
+      "Runway": "Runway",
+      "RunwayElevation": "Runway Elevation",
+      "RunwayElevationUnit": "ft AMSL",
       "RunwayHeading": "Runway Heading",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "Runway LDA",
@@ -329,11 +334,8 @@
       "Title": "Landing",
       "UnitFt": "ft",
       "UnitMeter": "m",
-      "Weight": "Weight",
-      "WindDirection": "Wind Direction",
-      "WindDirectionUnit": "°",
-      "WindMagnitude": "Wind Magnitude",
-      "WindMagnitudeUnit": "kts"
+      "Wind": "Wind",
+      "WindMagnitudeUnit": "kts or °/kts"
     },
     "SYNC": "SYNC",
     "Takeoff": {
@@ -376,8 +378,6 @@
       "Packs": "Packs",
       "Qnh": "QNH",
       "Runway": "Runway",
-      "RunwayBearing": "Runway Bearing",
-      "RunwayBearingUnit": "°",
       "RunwayCondition": "Runway Condition",
       "RunwayConditions": {
         "Dry": "Dry",
@@ -394,7 +394,9 @@
         "Contaminated100mmDrySnow": "Dry Snow - 100 mm/4\""
       },
       "RunwayElevation": "Runway Elevation",
-      "RunwayElevationUnit": "ft",
+      "RunwayElevationUnit": "ft AMSL",
+      "RunwayHeading": "Runway Heading",
+      "RunwayHeadingUnit": "°",
       "RunwayLengthUnitFt": "ft",
       "RunwayLengthUnitMeter": "m",
       "RunwaySlope": "Runway Slope",
@@ -584,7 +586,7 @@
       "Select": "Select",
       "ThrustReductionHeight": "Thrust Reduction Height (ft)",
       "Title": "Aircraft Options / Pin Programs",
-      "WeightUnit": "Weight Unit"
+      "WeightUnit": "US Units"
     },
     "AutomaticCallOuts": {
       "Title": "Automatic Call Outs",
@@ -598,8 +600,12 @@
       "Enable": "Enable",
       "EnableTelex": "Enable TELEX",
       "ErrorReporting": "Error Reporting",
-      "HoppieEnabled": "Hoppie enabled",
       "HoppieUserId": "Hoppie User ID",
+      "HoppieProvider": "ACARS Provider",
+      "AcarsProviderNone": "None",
+      "AcarsProviderHoppie": "Hoppie",
+      "AcarsProviderBatc": "BATC",
+      "AcarsProviderSai": "SAI",
       "MetarSource": "METAR Source",
       "OptionalA32nxErrorReporting": "Optional A32NX Error Reporting",
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
@@ -608,12 +614,15 @@
       "Telex": "TELEX",
       "TelexEnablesFreeTextAndLiveMap": "TELEX enables free text and live map. If enabled, aircraft position data is published for the duration of the flight. Messages are public and not moderated. USE THIS FEATURE AT YOUR OWN RISK. To learn more about TELEX and the features it enables, please go to https://docs.flybywiresim.com/telex.",
       "TelexWarning": "TELEX Warning",
-      "ThereWasAnErrorEncounteredWhenValidatingYourHoppieID": "There was an error validating your Hoppie-ID",
+      "ThereWasAnErrorEncounteredWhenValidatingYourAcarsId": "There was an error validating your {acarsid}",
       "Title": "ATSU / AOC",
       "YouAreAbleToOptIntoAnonymousErrorReporting": "You are able to opt into anonymous error reporting that will allow us to diagnose, monitor, and take care of issues at a faster rate. This feature is completely optional and we will never collect your personal data, but may allow you to more easily get support and have the issues you encounter fixed at a faster rate.",
-      "YourHoppieIdHasBeenRemoved": "Your Hoppie-ID has been removed",
-      "YourHoppieIdHasBeenValidated": "Your Hoppie-ID has been validated",
-      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "Your SimBrief PilotID has been validated and updated to"
+      "YourAcarsIdHasBeenRemoved": "Your {acarsid} has been removed",
+      "YourAcarsIdHasBeenValidated": "Your {acarsid} has been validated",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "Your SimBrief PilotID has been validated and updated to",
+      "SAIApiKey": "SAI API Key",
+      "AcarsConnected": "Connected",
+      "WaitingForConnection": "Waiting for Connection"
     },
     "Audio": {
       "Announcements": "Announcements",
@@ -673,6 +682,7 @@
       "SimBridgeIp": "External SimBridge Host Address",
       "SimBridgePort": "External SimBridge Port",
       "SyncMsfsFlightPlan": "Sync MSFS Flight Plan",
+      "AutoLoadMsfsRoute": "Automatically Load MSFS Route",
       "ThrottleDetents": "Throttle Detents",
       "Title": "Sim Options",
       "UseCalculatedIlsSignals": "Use Calculated ILS Signals",
@@ -708,6 +718,7 @@
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
       "GsxFuelEnabled": "GSX Fueling Synchronization",
       "GsxPayloadEnabled": "GSX Payload Synchronization",
+      "GsxPowerEnabled": "GSX External Power Synchronization",
       "Title": "3rd Party Options"
     },
     "ThrottleConfig": {

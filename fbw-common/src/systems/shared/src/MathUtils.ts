@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2022-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -649,5 +650,16 @@ export class MathUtils {
    */
   public static isCloseToLessThan(a: number, b: number, epsilon = 1e-4): boolean {
     return this.isCloseToNegative(a - b, epsilon);
+  }
+
+  public static pointDistance(x1: number, y1: number, x2: number, y2: number): number {
+    return Math.hypot(x2 - x1, y2 - y1);
+  }
+
+  /**
+   * Returns a random valid JS 32-bit signed integer
+   */
+  public static randomInt32(): number {
+    return Math.floor(Math.random() * 4294967296) - 2147483648;
   }
 }

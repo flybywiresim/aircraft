@@ -1,3 +1,8 @@
+// @ts-strict-ignore
+// Copyright (c) 2021-2024 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { PilotWaypointType } from '@fmgc/flightplanning/DataManager';
 import { CDUNewWaypoint } from './A320_Neo_CDU_NewWaypoint';
 import { CDUDataIndexPage } from './A320_Neo_CDU_DataIndexPage';
@@ -45,12 +50,12 @@ export class CDUPilotsWaypoint {
         case PilotWaypointType.Pbd:
           template[4][0] = `{green}{small}${CDUPilotsWaypoint.formatLatLong(storedWp.waypoint.location)}{end}{end}`;
           template[5][0] = 'PLACE\xa0\xa0/BRG\xa0/DIST';
-          template[6][0] = `{green}${storedWp.pbdPlace.padEnd(7, '\xa0')}/${CDUPilotsWaypoint.formatBearing(storedWp.pbdBearing)}/${storedWp.pbdDistance.toFixed(1)}{end}`;
+          template[6][0] = `{green}${storedWp.pbdPlace.ident.padEnd(7, '\xa0')}/${CDUPilotsWaypoint.formatBearing(storedWp.pbdBearing)}/${storedWp.pbdDistance.toFixed(1)}{end}`;
           break;
         case PilotWaypointType.Pbx:
           template[4][0] = `{green}{small}${CDUPilotsWaypoint.formatLatLong(storedWp.waypoint.location)}{end}{end}`;
           template[7][0] = 'PLACE-BRG\xa0\xa0/PLACE-BRG';
-          template[8][0] = `{green}${storedWp.pbxPlace1.substr(0, 5).padStart(5, '\xa0')}-${CDUPilotsWaypoint.formatBearing(storedWp.pbxBearing1)}\xa0/${storedWp.pbxPlace2.substr(0, 5).padStart(5, '\xa0')}-${CDUPilotsWaypoint.formatBearing(storedWp.pbxBearing2)}{end}`;
+          template[8][0] = `{green}${storedWp.pbxPlace1.ident.substr(0, 5).padStart(5, '\xa0')}-${CDUPilotsWaypoint.formatBearing(storedWp.pbxBearing1)}\xa0/${storedWp.pbxPlace2.ident.substr(0, 5).padStart(5, '\xa0')}-${CDUPilotsWaypoint.formatBearing(storedWp.pbxBearing2)}{end}`;
           break;
         default:
       }

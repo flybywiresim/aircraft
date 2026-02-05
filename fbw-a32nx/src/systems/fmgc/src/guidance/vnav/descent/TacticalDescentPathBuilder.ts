@@ -1,8 +1,9 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2024 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ConstraintUtils } from '@fmgc/flightplanning/data/constraint';
+import { ConstraintUtils } from '@flybywiresim/fbw-sdk';
 import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { VerticalSpeedStrategy } from '@fmgc/guidance/vnav/climb/ClimbStrategy';

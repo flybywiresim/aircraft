@@ -92,12 +92,14 @@
   },
   "Dispatch": {
     "Ofp": {
-      "ImportSimBriefData": "Importa datele din SimBrief",
       "TT": {
         "IncreaseFontSize": "Măriți dimensiunea fontului",
+        "NextLoadsheetSection": "Next loadsheet section",
+        "PreviousLoadsheetSection": "Previous loadsheet section",
         "ReduceFontSize": "Reduceți dimensiunea fontului"
       },
       "Title": "OFP",
+      "UnavailableLoadsheetSection": "Info not available or section not enabled in Simbrief.",
       "YouHaveNotYetImportedAnySimBriefData": "Încă nu ați încărcat datele din SimBrief"
     },
     "Overview": {
@@ -287,6 +289,7 @@
   "Performance": {
     "Data": "Date",
     "Landing": {
+      "Airport": "Airport",
       "AirportIcao": "Codul ICAO al aeroportului",
       "ApproachSpeed": "Viteza de apropiere",
       "ApproachSpeedUnit": "Noduri",
@@ -295,8 +298,10 @@
       "Clear": "Goleşte",
       "DropDownNo": "Nu",
       "DropDownYes": "Da",
+      "EnterManually": "Enter Manually",
       "FillDataFrom": "Completați datele din",
       "FlapsConfiguration": "Configurare flaps-uri",
+      "LandingWeight": "Landing Weight",
       "Low": "Jos",
       "MaximumManual": "Manual maxim",
       "Medium": "Mediu",
@@ -305,6 +310,7 @@
       "OverweightProcedure": "Procedura supraponderală",
       "Qnh": "QNH",
       "ReverseThrust": "Reversor de jet",
+      "Runway": "Runway",
       "RunwayAltitude": "Altitudinea pistei",
       "RunwayAltitudeUnit": "ft ASL",
       "RunwayCondition": "Starea pistei",
@@ -316,6 +322,8 @@
         "MediumPoor": "Medium-Poor (2)",
         "Poor": "Poor (1)"
       },
+      "RunwayElevation": "Runway Elevation",
+      "RunwayElevationUnit": "ft AMSL",
       "RunwayHeading": "Traiectorie pistă ",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "Pista LDA",
@@ -331,6 +339,7 @@
       "UnitFt": "ft",
       "UnitMeter": "m",
       "Weight": "Greutate",
+      "Wind": "Wind",
       "WindDirection": "Direcţia vântului",
       "WindDirectionUnit": "°",
       "WindMagnitude": "Magnitudinea vântului",
@@ -396,6 +405,8 @@
       },
       "RunwayElevation": "Runway Elevation",
       "RunwayElevationUnit": "ft",
+      "RunwayHeading": "Runway Heading",
+      "RunwayHeadingUnit": "°",
       "RunwayLengthUnitFt": "ft",
       "RunwayLengthUnitMeter": "m",
       "RunwaySlope": "Runway Slope",
@@ -556,6 +567,8 @@
       "AlignAdirs": "Instantly align ADIRS",
       "AutoBrightness": "Turn Auto Brightness On/Off",
       "Brightness": "Set flyPad brightness",
+      "CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+      "CabinLighting": "Set Cabin Lighting",
       "FinishBoarding": "Instantly finish boarding",
       "OnScreenKeyboard": "Turn OnScreen Keyboard On/Off",
       "PauseAtTod": "Arm or Disarm pause at Top of Descent",
@@ -567,8 +580,6 @@
     },
     "Title": "Quick Controls"
   },
-  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
-  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "Despre"
@@ -644,18 +655,17 @@
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "Separați cârma de intrările cârmei",
-      "SyncEfis": "Sync EFIS and audio controls between Captain and FO",
+      "SyncEfis": "Sync EFIS and Audio Controls Between Captain and FO",
       "Title": "Realism"
     },
     "SimOptions": {
       "Active": "Activ",
       "Auto": "Automat",
       "Both": "Synchronized",
+      "CabinAutoBrightness": "Auto Cabin Lighting",
+      "CabinManualBrightness": "Cabin Lighting Brightness",
       "Calibrate": "Calibrare",
-      "Captain": "Captain",
-      "CockpitSeatUsedToControl": "Cockpit Seat Used To Control",
       "ConesEnabled": "Safety Cones",
-      "Copilot": "Copilot",
       "DefaultBarometerUnit": "Unitate Barometrica Implicită",
       "DynamicRegistrationDecal": "Număr de înregistrare dinamic",
       "EnableSimBridge": "Activează conexiune server MCDU (Auto dezactivează după 5 minute dacă nu s-a stabilit conexiunea)",
@@ -667,6 +677,7 @@
       "Left": "Left",
       "LoadOnly": "Doar încărcătura",
       "None": "Niciunul",
+      "OansPerformanceMode": "OANS Performance Mode (Unload Airport Map When Not Used)",
       "Off": "Dezactivată",
       "PilotSeat": "Pilot Seat for Control",
       "Right": "Right",
@@ -697,6 +708,7 @@
         "SettingTitle": "Navigraph Account Link",
         "SubscriptionStatus": {
           "None": "None",
+          "Standard": "Navigraph Standard",
           "Unknown": "Unknown",
           "Unlimited": "Navigraph Unlimited"
         },
@@ -704,6 +716,7 @@
       },
       "OverrideSimBriefUserID": "Override SimBrief User ID",
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
+      "SimbriefLoadsheetNavigationEnabled": "Simbrief Loadsheet Navigation",
       "TT": {
         "OverrideSimBriefUserID": "Alternative SimBrief user ID to use instead of the linked Navigraph Account"
       },
@@ -735,6 +748,9 @@
       "TogaOnAxis": "TOGA On Axis"
     },
     "Title": "Setări",
+    "Troubleshooting": {
+      "Title": "Troubleshooting"
+    },
     "Unrealistic": "Nerealist",
     "flyPad": {
       "AutoBrightness": "Luminozitate automatică",
@@ -743,7 +759,6 @@
       "Blue": "Albastru",
       "Brightness": "Luminozitate",
       "Dark": "Întuneric",
-      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "Limbă",
       "Light": "Lumină",
       "Local": "Local",
@@ -760,8 +775,6 @@
       "UtcAndLocal": "UTC și local"
     }
   },
-  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
-  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "Apr",
     "Aug": "Aug",

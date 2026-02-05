@@ -4,7 +4,8 @@ mod fuel_quantity_management_system;
 use fuel_quantity_management_system::A380FuelQuantityManagementSystem;
 use nalgebra::Vector3;
 use systems::{
-    fuel::{FuelCG, FuelInfo, FuelPayload, FuelSystem},
+    fuel::{FuelCG, FuelInfo, FuelPayload, FuelPumpProperties, FuelSystem},
+    shared::ElectricalBusType,
     simulation::{InitContext, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
 use uom::si::f64::*;
@@ -12,6 +13,7 @@ use uom::si::f64::*;
 #[cfg(test)]
 mod test;
 
+#[allow(dead_code)]
 pub trait FuelLevel {
     fn left_outer_tank_has_fuel(&self) -> bool;
     fn feed_one_tank_has_fuel(&self) -> bool;
@@ -135,11 +137,175 @@ impl A380Fuel {
         },
     ];
 
+    const FUEL_PUMPS: [(usize, FuelPumpProperties); 20] = [
+        (
+            // Feed 1 main pump
+            1,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::AlternatingCurrent(4),
+                consumption_current_ampere: 9.,
+            },
+        ),
+        (
+            // Feed 1 stby pump
+            2,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::AlternatingCurrent(2),
+                consumption_current_ampere: 9.,
+            },
+        ),
+        (
+            // Feed 2 main pump
+            3,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::AlternatingCurrentEssential, // TODO: + DC ESS
+                consumption_current_ampere: 9.,
+            },
+        ),
+        (
+            // Feed 2 stby pump
+            4,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::AlternatingCurrent(3),
+                consumption_current_ampere: 9.,
+            },
+        ),
+        (
+            // Feed 3 main pump
+            5,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::AlternatingCurrent(3),
+                consumption_current_ampere: 9.,
+            },
+        ),
+        (
+            // Feed 3 stby pump
+            6,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::AlternatingCurrentEssential, // TODO: + DC ESS
+                consumption_current_ampere: 9.,
+            },
+        ),
+        (
+            // Feed 4 main pump
+            7,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::AlternatingCurrent(2),
+                consumption_current_ampere: 9.,
+            },
+        ),
+        (
+            // Feed 4 stby pump
+            8,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::AlternatingCurrent(4),
+                consumption_current_ampere: 9.,
+            },
+        ),
+        (
+            // Left outer pump
+            9,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::AlternatingCurrent(2), // TODO: + DC 1
+                consumption_current_ampere: 8.,
+            },
+        ),
+        (
+            // Left mid fwd pump
+            10,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::AlternatingCurrent(3), // TODO: + DC 2
+                consumption_current_ampere: 8.,
+            },
+        ),
+        (
+            // Left mid aft pump
+            11,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::AlternatingCurrent(1), // TODO: + DC 1
+                consumption_current_ampere: 8.,
+            },
+        ),
+        (
+            // Left inner fwd pump
+            12,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::AlternatingCurrent(4), // TODO: + DC 2
+                consumption_current_ampere: 8.,
+            },
+        ),
+        (
+            // Left inner aft pump
+            17,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::AlternatingCurrent(2), // TODO: + DC 1
+                consumption_current_ampere: 8.,
+            },
+        ),
+        (
+            // Right outer pump
+            14,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::AlternatingCurrent(2), // TODO: + DC 1
+                consumption_current_ampere: 8.,
+            },
+        ),
+        (
+            // Right mid fwd pump
+            15,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::AlternatingCurrent(3), // TODO: + DC 2
+                consumption_current_ampere: 8.,
+            },
+        ),
+        (
+            // Right mid aft pump
+            16,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::AlternatingCurrent(1), // TODO: + DC 1
+                consumption_current_ampere: 8.,
+            },
+        ),
+        (
+            // Right inner fwd pump
+            13,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::AlternatingCurrent(4), // TODO: + DC 2
+                consumption_current_ampere: 8.,
+            },
+        ),
+        (
+            // Right inner aft pump
+            18,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::AlternatingCurrent(2), // TODO: + DC 1
+                consumption_current_ampere: 8.,
+            },
+        ),
+        (
+            // Trim left pump
+            19,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::AlternatingCurrentEssential, // TODO: + DC ESS
+                consumption_current_ampere: 5.,
+            },
+        ),
+        (
+            // Trim right pump
+            20,
+            FuelPumpProperties {
+                powered_by: ElectricalBusType::AlternatingCurrent(2), // TODO: + DC 1
+                consumption_current_ampere: 5.,
+            },
+        ),
+    ];
+
     pub fn new(context: &mut InitContext) -> Self {
         A380Fuel {
             fuel_quantity_management_system: A380FuelQuantityManagementSystem::new(
                 context,
                 Self::A380_FUEL,
+                Self::FUEL_PUMPS,
             ),
         }
     }
@@ -148,7 +314,7 @@ impl A380Fuel {
         self.fuel_quantity_management_system.update(context);
     }
 
-    fn fuel_system(&self) -> &FuelSystem<11> {
+    fn fuel_system(&self) -> &FuelSystem<11, 20> {
         self.fuel_quantity_management_system.fuel_system()
     }
 

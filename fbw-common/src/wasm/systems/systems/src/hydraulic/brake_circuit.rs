@@ -66,8 +66,7 @@ impl BrakeActuator {
     fn get_max_position_reachable(&self, received_pressure: Pressure) -> f64 {
         if received_pressure.get::<psi>() > Self::MIN_PRESSURE_ALLOWED_TO_MOVE_ACTUATOR_PSI {
             (received_pressure.get::<psi>() / Self::PRESSURE_FOR_MAX_BRAKE_DEFLECTION_PSI)
-                .min(1.)
-                .max(0.)
+                .clamp(0., 1.)
         } else {
             0.
         }
@@ -102,7 +101,7 @@ impl BrakeActuator {
             new_position = self.current_position - context.delta_as_secs_f64() * self.base_speed;
             new_position = new_position.max(self.current_position + delta_position_required);
         }
-        new_position = new_position.min(1.).max(0.);
+        new_position = new_position.clamp(0., 1.);
         let final_delta_position = new_position - self.current_position;
         self.current_position = new_position;
 

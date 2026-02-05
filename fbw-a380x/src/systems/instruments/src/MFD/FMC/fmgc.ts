@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -8,12 +9,13 @@ import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FmcWindVector, FmcWinds } from '@fmgc/guidance/vnav/wind/types';
-import { MappedSubject, Subject, Subscribable, SubscribableUtils } from '@microsoft/msfs-sdk';
+import { MappedSubject, MutableSubscribable, Subject, Subscribable, SubscribableUtils } from '@microsoft/msfs-sdk';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
-import { Arinc429Word, Runway, Units } from '@flybywiresim/fbw-sdk';
+import { Arinc429Word, Fix, Runway, Units } from '@flybywiresim/fbw-sdk';
 import { Feet } from 'msfs-geo';
 import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
 import { minGw } from '@shared/PerformanceConstants';
+import { A380AircraftConfig } from '@fmgc/flightplanning/A380AircraftConfig';
 
 export enum TakeoffPowerSetting {
   TOGA = 0,
@@ -40,6 +42,11 @@ export enum TakeoffAntiIce {
   ENG_WINGS = 2,
 }
 
+export enum CostIndexMode {
+  LRC = 0,
+  ECON = 1,
+}
+
 export enum ClimbDerated {
   NONE = 0,
   D01 = 1,
@@ -48,6 +55,8 @@ export enum ClimbDerated {
   D04 = 4,
   D05 = 5,
 }
+
+export const LOWEST_FUEL_ESTIMATE_KGS = Units.poundToKilogram(A380AircraftConfig.vnavConfig.LOWEST_FUEL_ESTIMATE);
 
 /**
  * Temporary place for data which is found nowhere else. Not associated to flight plans right now, which should be the case for some of these values
@@ -136,16 +145,20 @@ export class FmgcData {
     (v) => v !== null,
   );
 
+  public readonly destEfobBelowMin = Subject.create(false);
+
   public readonly paxNumber = Subject.create<number | null>(null);
 
   /** in kg. null if not set. */
   public readonly jettisonGrossWeight = Subject.create<number | null>(null);
 
+  public readonly alternateExists = Subject.create(false);
+
   /** in kg. null if not set. */
   public readonly alternateFuelPilotEntry = Subject.create<number | null>(null);
 
   /** in kg. null if not set. */
-  public readonly alternateFuelCalculated = Subject.create<number | null>(null);
+  public readonly alternateFuelCalculated = this.alternateExists.map((v) => (v ? 6_500 : null)); // FIXME Hardcoded value. Derive from FMS predictions.
 
   public readonly alternateFuel = MappedSubject.create(
     ([calc, pe]) => (pe !== null ? pe : calc),
@@ -159,7 +172,7 @@ export class FmgcData {
   public readonly finalFuelWeightPilotEntry = Subject.create<number | null>(null);
 
   /** in kg. null if not set. */
-  public readonly finalFuelWeightCalculated = Subject.create<number | null>(null);
+  public readonly finalFuelWeightCalculated = Subject.create<number | null>(4_650); // FIXME Hardcoded value. Derive from configured final time based on hold at 1500ft with flaps 1.
 
   public readonly finalFuelWeight = MappedSubject.create(
     ([calc, pe]) => (pe !== null ? pe : calc),
@@ -190,8 +203,18 @@ export class FmgcData {
     this.alternateFuel,
   );
 
+  public readonly minFuelAtDestTon = this.minimumFuelAtDestination.map((v) => (v ? v / 1000 : null));
+
   public readonly minimumFuelAtDestinationIsPilotEntered = this.minimumFuelAtDestinationPilotEntry.map(
     (it) => it !== null,
+  );
+
+  public readonly pilotEntryMinFuelBelowAltnPlusFinal = MappedSubject.create(
+    ([minFuel, altnFuel, finalFuel]) =>
+      minFuel != null && altnFuel != null && finalFuel != null && minFuel < altnFuel + finalFuel,
+    this.minimumFuelAtDestinationPilotEntry,
+    this.alternateFuel,
+    this.finalFuelWeight,
   );
 
   /** in feet. null if not set. */
@@ -232,7 +255,15 @@ export class FmgcData {
 
   public readonly approachSpeed = Subject.create<Knots | null>(null);
 
-  public readonly approachWind = Subject.create<FmcWindVector | null>(null);
+  public readonly approachWindDirection = Subject.create<number | null>(null);
+
+  public readonly approachWindSpeed = Subject.create<number | null>(null);
+
+  public readonly approachWind: MappedSubject<number[], FmcWindVector | null> = MappedSubject.create(
+    ([direction, speed]) => (direction !== null && speed !== null ? { direction: direction, speed: speed } : null),
+    this.approachWindDirection,
+    this.approachWindSpeed,
+  );
 
   public readonly approachQnh = Subject.create<number | null>(null);
 
@@ -268,6 +299,8 @@ export class FmgcData {
   /** in feet. null if not set. */
   public readonly noiseEndAltitude = Subject.create<number | null>(null);
 
+  public readonly costIndexMode = Subject.create<CostIndexMode | null>(CostIndexMode.ECON);
+
   public readonly climbDerated = Subject.create<ClimbDerated | null>(ClimbDerated.NONE);
 
   /** in feet. null if not set. */
@@ -288,15 +321,11 @@ export class FmgcData {
 
   public readonly climbPreSelSpeed = Subject.create<Knots | null>(null);
 
-  public readonly climbSpeedLimit = Subject.create<SpeedLimit>({ speed: 250, underAltitude: 10_000 });
-
   public readonly cruisePreSelMach = Subject.create<number | null>(null);
 
   public readonly cruisePreSelSpeed = Subject.create<Knots | null>(null);
 
   public readonly descentPreSelSpeed = Subject.create<Knots | null>(null);
-
-  public readonly descentSpeedLimit = Subject.create<SpeedLimit>({ speed: 250, underAltitude: 10_000 });
 
   /** in feet/min. null if not set. */
   public readonly descentCabinRate = Subject.create<number>(-350);
@@ -313,19 +342,37 @@ export class FmgcData {
 
   public readonly approachVls = Subject.create<Knots | null>(null);
 
+  public readonly positionMonitorFix = Subject.create<Fix | null>(null);
+
   /**
    * Estimated take-off time, in seconds. Displays as HH:mm:ss. Null if not set
    */
   public readonly estimatedTakeoffTime = Subject.create<number | null>(null);
 
+  /** Indicates OEI situation */
+  public readonly engineOut = Subject.create(false);
+
+  /** Fuel Penalty Factor in percentage between none and 999. Reset at done phase
+   */
+  public readonly fuelPenaltyPercentage = Subject.create<number>(null);
+
+  public readonly fuelPenaltyActive = this.fuelPenaltyPercentage.map((v) => v !== null && v > 0);
+
   private static readonly DEFAULT_SETTINGS = new FmgcData();
 
-  public reset(): void {
+  /**
+   *
+   * @param dueToDonePhase indicates wheter to reset all fmgs data or only data which is wiped at DONE phase
+   */
+  public reset(dueToDonePhase?: boolean): void {
     for (const key in FmgcData.DEFAULT_SETTINGS) {
       const prop = key as keyof FmgcData;
       if (SubscribableUtils.isMutableSubscribable(this[prop])) {
-        this[prop].set((FmgcData.DEFAULT_SETTINGS[prop] as Subscribable<any>).get());
+        (this[prop] as MutableSubscribable<any>).set((FmgcData.DEFAULT_SETTINGS[prop] as Subscribable<any>).get());
       }
+    }
+    if (dueToDonePhase) {
+      this.fuelPenaltyPercentage.set(null);
     }
   }
 }
@@ -350,13 +397,13 @@ export class FmgcDataService implements Fmgc {
   public getGrossWeight(): number | null {
     // Value received from FQMS, or falls back to entered ZFW + entered FOB
     const zfw = this.data.zeroFuelWeight.get();
-    const fob = this.getFOB() * 1_000; // getFOB returns tons
+    const fob = this.getFOB();
 
-    if (zfw == null || fob === undefined) {
+    if (zfw == null || fob === null) {
       return null;
     }
 
-    return (zfw + fob) / 1_000;
+    return (zfw + fob * 1000) / 1_000;
   }
 
   /** in kilograms */
@@ -369,21 +416,21 @@ export class FmgcDataService implements Fmgc {
    *
    * @returns fuel on board in tonnes (i.e. 1000 x kg)
    */
-  getFOB(): number {
-    let fob = this.data.blockFuel.get() ?? 0;
+  getFOB(): number | null {
+    let fob = this.data.blockFuel.get();
     if (this.isAnEngineOn()) {
       fob =
-        SimVar.GetSimVarValue('FUEL TOTAL QUANTITY', 'gallons') *
+        SimVar.GetSimVarValue('L:A32NX_TOTAL_FUEL_VOLUME', 'gallons') *
         SimVar.GetSimVarValue('FUEL WEIGHT PER GALLON', 'kilograms');
     }
 
-    return fob / 1_000; // Needs to be returned in tonnes
+    return fob !== null ? fob / 1_000 : null; // Needs to be returned in tonnes
   }
 
   /** in knots */
   getV2Speed(): number {
-    return this.flightPlanService.has(FlightPlanIndex.Active) && this.flightPlanService.active.performanceData.v2
-      ? this.flightPlanService.active.performanceData.v2
+    return this.flightPlanService.has(FlightPlanIndex.Active)
+      ? this.flightPlanService.active.performanceData.v2.get() ?? 150
       : 150;
   }
 
@@ -395,7 +442,7 @@ export class FmgcDataService implements Fmgc {
   /** in knots */
   getManagedClimbSpeed(): number {
     if (this.flightPlanService.has(FlightPlanIndex.Active)) {
-      const dCI = ((this.flightPlanService.active.performanceData.costIndex ?? 100) / 999) ** 2;
+      const dCI = ((this.flightPlanService.active.performanceData.costIndex.get() ?? 100) / 999) ** 2;
       return 290 * (1 - dCI) + 330 * dCI;
     }
     return 250;
@@ -414,28 +461,28 @@ export class FmgcDataService implements Fmgc {
   /** in feet */
   getAccelerationAltitude(): number {
     return this.flightPlanService.has(FlightPlanIndex.Active)
-      ? (this.flightPlanService?.active.performanceData.accelerationAltitude as Feet)
+      ? (this.flightPlanService?.active.performanceData.accelerationAltitude.get() as Feet)
       : 1_500;
   }
 
   /** in feet */
   getThrustReductionAltitude(): number {
     return this.flightPlanService.has(FlightPlanIndex.Active)
-      ? (this.flightPlanService?.active.performanceData.thrustReductionAltitude as Feet)
+      ? (this.flightPlanService?.active.performanceData.thrustReductionAltitude.get() as Feet)
       : 1_500;
   }
 
   /** in feet. undefined if not set. */
   getOriginTransitionAltitude(): number | undefined {
     return this.flightPlanService.has(FlightPlanIndex.Active)
-      ? (this.flightPlanService?.active.performanceData.transitionAltitude as Feet)
+      ? (this.flightPlanService?.active.performanceData.transitionAltitude.get() as Feet)
       : undefined;
   }
 
   /** in feet. undefined if not set. */
   getDestinationTransitionLevel(): number | undefined {
     return this.flightPlanService.has(FlightPlanIndex.Active)
-      ? (this.flightPlanService?.active.performanceData.transitionLevel as Feet)
+      ? (this.flightPlanService?.active.performanceData.transitionLevel.get() as Feet)
       : undefined;
   }
 
@@ -444,9 +491,8 @@ export class FmgcDataService implements Fmgc {
    * @returns flight level in steps of 100ft (e.g. 320 instead of 32000 for FL320)
    */
   getCruiseAltitude(): number {
-    return this.flightPlanService.has(FlightPlanIndex.Active) &&
-      this.flightPlanService?.active.performanceData.cruiseFlightLevel
-      ? this.flightPlanService?.active.performanceData.cruiseFlightLevel
+    return this.flightPlanService.has(FlightPlanIndex.Active)
+      ? this.flightPlanService?.active.performanceData.cruiseFlightLevel.get() ?? 320
       : 320;
   }
 
@@ -463,7 +509,7 @@ export class FmgcDataService implements Fmgc {
 
     // FIXME need to rework the cost index based speed calculations
     /* if (this.flightPlanService.has(FlightPlanIndex.Active)) {
-      const dCI = ((this.flightPlanService.active.performanceData.costIndex ?? 100) / 999) ** 2;
+      const dCI = ((this.flightPlanService.active.performanceData.costIndex.get() ?? 100) / 999) ** 2;
       return 290 * (1 - dCI) + 330 * dCI;
     }*/
     return 310;
@@ -478,12 +524,34 @@ export class FmgcDataService implements Fmgc {
     return this.data.cruisePreSelMach.get() ?? 0.85;
   }
 
-  getClimbSpeedLimit(): SpeedLimit {
-    return { speed: 250, underAltitude: 10_000 };
+  getClimbSpeedLimit(): SpeedLimit | null {
+    if (!this.flightPlanService.has(FlightPlanIndex.Active)) {
+      return null;
+    }
+    const speedLimitSpeed = this.flightPlanService.active.performanceData.climbSpeedLimitSpeed.get();
+    const speedLimitAltitude = this.flightPlanService.active.performanceData.climbSpeedLimitAltitude.get();
+    if (speedLimitSpeed && speedLimitAltitude) {
+      return {
+        speed: speedLimitSpeed,
+        underAltitude: speedLimitAltitude,
+      };
+    }
+    return null;
   }
 
-  getDescentSpeedLimit(): SpeedLimit {
-    return { speed: 250, underAltitude: 10_000 };
+  getDescentSpeedLimit(): SpeedLimit | null {
+    if (!this.flightPlanService.has(FlightPlanIndex.Active)) {
+      return null;
+    }
+    const speedLimitSpeed = this.flightPlanService.active.performanceData.descentSpeedLimitSpeed.get();
+    const speedLimitAltitude = this.flightPlanService.active.performanceData.descentSpeedLimitAltitude.get();
+    if (speedLimitSpeed && speedLimitAltitude) {
+      return {
+        speed: speedLimitSpeed,
+        underAltitude: speedLimitAltitude,
+      };
+    }
+    return null;
   }
 
   /** in knots */
@@ -515,7 +583,7 @@ export class FmgcDataService implements Fmgc {
     }
     // TODO adapt for A380
     if (this.flightPlanService.has(FlightPlanIndex.Active)) {
-      const dCI = (this.flightPlanService.active.performanceData.costIndex ?? 100) / 999;
+      const dCI = (this.flightPlanService.active.performanceData.costIndex.get() ?? 100) / 999;
       return 288 * (1 - dCI) + 300 * dCI;
     }
     return 300;
@@ -565,8 +633,8 @@ export class FmgcDataService implements Fmgc {
     };
   }
 
-  getApproachWind(): FmcWindVector {
-    return this.data.approachWind.get() ?? { direction: 0, speed: 0 };
+  getApproachWind(): FmcWindVector | null {
+    return this.data.approachWind.get();
   }
 
   /** in hPa */
@@ -580,22 +648,26 @@ export class FmgcDataService implements Fmgc {
   }
 
   /** in tons */
-  getDestEFOB(useFob: boolean): number {
+  getDestEFOB(useFob: boolean): number | null {
     // Metric tons
     const efob = this.guidanceController?.vnavDriver?.getDestinationPrediction()?.estimatedFuelOnBoard; // in Pounds
     if (useFob && efob !== undefined) {
       return Units.poundToKilogram(efob) / 1000.0;
     }
-    return 0;
+    return null;
   }
 
   /** in tons */
-  getAltEFOB(useFOB = false): number {
+  getAltEFOB(): number | null {
     // TODO estimate alternate fuel
-    if (this.getDestEFOB(useFOB) === 0) {
-      return 0;
+
+    const destEfob = this.getDestEFOB(true);
+    const alternateFuel = this.data.alternateFuel.get();
+
+    if (destEfob === null || alternateFuel === null) {
+      return null;
     }
-    return this.getDestEFOB(useFOB) - 1.0 > 0 ? this.getDestEFOB(useFOB) - 1.0 : 0;
+    return Math.max(destEfob - alternateFuel / 1000, LOWEST_FUEL_ESTIMATE_KGS / 1000);
   }
 
   /** in feet. null if not set */
@@ -625,6 +697,11 @@ export class FmgcDataService implements Fmgc {
     return this.guidanceController?.vnavDriver.getDestinationPrediction()?.distanceFromAircraft ?? null;
   }
 
+  /** In percentage. Null if not set */
+  getPerformanceFactorPercent(): number | null {
+    return this.data.fuelPenaltyPercentage.get(); // TODO add performance factor when implemented
+  }
+
   getNavDataDateRange(): string {
     return SimVar.GetGameVarValue('FLIGHT NAVDATA DATE RANGE', 'string');
   }
@@ -634,7 +711,7 @@ export class FmgcDataService implements Fmgc {
    * @returns {boolean}
    */
   public isEngineOn(index: number): boolean {
-    return SimVar.GetSimVarValue(`L:A32NX_ENGINE_N2:${index}`, 'percent') > 20;
+    return SimVar.GetSimVarValue(`L:A32NX_ENGINE_N2:${index}`, 'number') > 20;
   }
 
   /**
@@ -645,10 +722,10 @@ export class FmgcDataService implements Fmgc {
   }
 
   /**
-   * Returns true only if all engines are running (N2 > 20 for inner engines)
+   * Returns true only if all engines are running (N2 > 20 for all engines)
    */
   isAllEngineOn(): boolean {
-    return this.isEngineOn(2) && this.isEngineOn(3);
+    return this.isEngineOn(1) && this.isEngineOn(2) && this.isEngineOn(3) && this.isEngineOn(4);
   }
 
   isOnGround() {

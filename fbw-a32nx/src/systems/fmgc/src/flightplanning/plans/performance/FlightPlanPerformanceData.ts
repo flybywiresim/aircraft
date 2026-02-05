@@ -1,698 +1,1315 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2022 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
 import { MathUtils } from '@flybywiresim/fbw-sdk';
+import { MappedSubject, MutableSubscribable, Subject, Subscribable, Subscription } from '@microsoft/msfs-sdk';
 
 export interface FlightPlanPerformanceData {
   /**
    * V1 speed; Unit: Knots; Null if not set.
    */
-  v1: number | null;
+  readonly v1: MutableSubscribable<number | null>;
 
   /**
    * Vr speed; Unit: Knots; Null if not set.
    */
-  vr: number | null;
+  readonly vr: MutableSubscribable<number | null>;
 
   /**
    * V2 speed; Unit: Knots; Null if not set.
    */
-  v2: number | null;
+  readonly v2: MutableSubscribable<number | null>;
 
   /**
    * Transition altitude from nav database; Unit: Feet; Null if not set.
    */
-  databaseTransitionAltitude: number | null;
+  readonly databaseTransitionAltitude: MutableSubscribable<number | null>;
 
   /**
    * Transition level from database; Unit: flight level (i.e. hundreds of feets); Null if not set.
    */
-  databaseTransitionLevel: number | null;
+  readonly databaseTransitionLevel: MutableSubscribable<number | null>;
 
   /**
    * Pilot entered transition altitude; Unit: Feet; Null if not set.
    */
-  pilotTransitionAltitude: number | null;
+  readonly pilotTransitionAltitude: MutableSubscribable<number | null>;
 
   /**
    * Pilot entered transition level; Unit: flight level (i.e. hundreds of feets); Null if not set.
    */
-  pilotTransitionLevel: number | null;
+  readonly pilotTransitionLevel: MutableSubscribable<number | null>;
 
   /**
    * Returns pilot entered altitude if set, nav database value otherwise; Unit: Feet; Null if not set.
    */
-  get transitionAltitude(): number | null;
+  get transitionAltitude(): Subscribable<number | null>;
 
   /**
    * Whether returned transition altitude is from nav database;
    */
-  get transitionAltitudeIsFromDatabase(): boolean;
+  get transitionAltitudeIsFromDatabase(): Subscribable<boolean>;
 
   /**
    * Transition level; Unit: flight level (i.e. hundreds of feets); Null if not set.
    */
-  get transitionLevel(): number | null;
+  get transitionLevel(): Subscribable<number | null>;
 
   /**
    * Whether returned transition level is from nav database;
    */
-  get transitionLevelIsFromDatabase(): boolean;
+  get transitionLevelIsFromDatabase(): Subscribable<boolean>;
 
   /**
    * Cost index; Unit: No unit; Null if not set.
    */
-  costIndex: number | null;
+  readonly costIndex: MutableSubscribable<number | null>;
 
   /**
    * Cruise flight level; Unit: flight level (i.e. hundreds of feets); Null if not set.
    */
-  cruiseFlightLevel: number | null;
+  readonly cruiseFlightLevel: MutableSubscribable<number | null>;
+
+  /**
+   * Cruise flight level; Unit: degrees C Null if not set.
+   */
+  readonly cruiseTemperature: MutableSubscribable<number | null>;
+
+  /**
+   * Default ground temperature; Unit: degrees C; Null if not set.
+   */
+  readonly defaultGroundTemperature: MutableSubscribable<number | null>;
+
+  /**
+   * Pilot ground temperature; Unit: degrees C; Null if not set.
+   */
+  readonly pilotGroundTemperature: MutableSubscribable<number | null>;
+
+  /**
+   * Ground temperature. Default if no pilot entry, pilot entered otherwise; Unit: degrees C; Null if not set.
+   */
+  get groundTemperature(): Subscribable<number | null>;
+
+  /**
+   * Whether ground temperature is pilot entered.
+   */
+  get groundTemperatureIsPilotEntered(): Subscribable<boolean>;
 
   /**
    * Pilot entered tropopause; Unit: Feet; Null if not set.
    */
-  pilotTropopause: number | null;
+  readonly pilotTropopause: MutableSubscribable<number | null>;
 
   /**
    * Default tropopause; Unit: Feet; Null if not set.
    */
-  defaultTropopause: number | null;
+  readonly defaultTropopause: MutableSubscribable<number | null>;
 
   /**
    * Tropopause. Default if no pilot entry, pilot entered otherwise; Unit: Feet; Null if not set.
    */
-  get tropopause(): number | null;
+  get tropopause(): Subscribable<number | null>;
 
   /**
    * Whether tropopause is pilot entered.
    */
-  get tropopauseIsPilotEntered(): boolean;
+  get tropopauseIsPilotEntered(): Subscribable<boolean>;
 
   /**
    * Pilot entered thrust reduction altitude; Unit: Feet; Null if not set.
    */
-  pilotThrustReductionAltitude: number | null;
+  readonly pilotThrustReductionAltitude: MutableSubscribable<number | null>;
 
   /**
    * Thrust reduction altitude from nav database; Unit: Feet; Null if not set.
    */
-  defaultThrustReductionAltitude: number | null;
+  readonly defaultThrustReductionAltitude: MutableSubscribable<number | null>;
 
   /**
    * Pilot entered thrust reduction altitude if set, from nav database otherwise; Unit: Feet; Null if not set.
    */
-  get thrustReductionAltitude(): number | null;
+  get thrustReductionAltitude(): Subscribable<number | null>;
 
   /**
    * Whether thrust reduction altitude is pilot entered;
    */
-  get thrustReductionAltitudeIsPilotEntered(): boolean;
+  get thrustReductionAltitudeIsPilotEntered(): Subscribable<boolean>;
 
   /**
    * Pilot entered acceleration altitude; Unit: Feet; Null if not set.
    */
-  pilotAccelerationAltitude: number | null;
+  readonly pilotAccelerationAltitude: MutableSubscribable<number | null>;
 
   /**
    * Acceleration altitude from nav database; Unit: Feet; Null if not set.
    */
-  defaultAccelerationAltitude: number | null;
+  readonly defaultAccelerationAltitude: MutableSubscribable<number | null>;
 
   /**
    * Returns pilot entered acceleration altitude if set, nav database value otherwise; Unit: Feet; Null if not set.
    */
-  get accelerationAltitude(): number | null;
+  get accelerationAltitude(): Subscribable<number | null>;
 
   /**
    * Whether acceleration altitude is pilot entered; Null if not set.
    */
-  get accelerationAltitudeIsPilotEntered(): boolean;
+  get accelerationAltitudeIsPilotEntered(): Subscribable<boolean>;
 
   /**
    * Pilot entered engine-out acceleration altitude; Unit: Feet; Null if not set.
    */
-  pilotEngineOutAccelerationAltitude: number | null;
+  readonly pilotEngineOutAccelerationAltitude: MutableSubscribable<number | null>;
 
   /**
    * Engine-out acceleration altitude from nav database; Unit: Feet; Null if not set.
    */
-  defaultEngineOutAccelerationAltitude: number | null;
+  readonly defaultEngineOutAccelerationAltitude: MutableSubscribable<number | null>;
 
   /**
    * Returns pilot entered engine-out acceleration altitude if set, nav database value otherwise; Unit: Feet; Null if not set.
    */
-  get engineOutAccelerationAltitude(): number | null;
+  get engineOutAccelerationAltitude(): Subscribable<number | null>;
 
   /**
    * Whether engine-out acceleration altitude is pilot entered; Null if not set.
    */
-  get engineOutAccelerationAltitudeIsPilotEntered(): boolean;
+  get engineOutAccelerationAltitudeIsPilotEntered(): Subscribable<boolean>;
 
   /**
    * Pilot entered missed apch thrust reduction altitude; Unit: Feet; Null if not set.
    */
-  pilotMissedThrustReductionAltitude: number | null;
+  readonly pilotMissedThrustReductionAltitude: MutableSubscribable<number | null>;
 
   /**
    * Missed apch thrust reduction altitude from nav database; Unit: Feet; Null if not set.
    */
-  defaultMissedThrustReductionAltitude: number | null;
+  readonly defaultMissedThrustReductionAltitude: MutableSubscribable<number | null>;
 
   /**
    * Returns pilot entered missed apch thrust reduction altitude if set, nav database value otherwise; Unit: Feet; Null if not set.
    */
-  get missedThrustReductionAltitude(): number | null;
+  get missedThrustReductionAltitude(): Subscribable<number | null>;
 
   /**
    * Whether missed apch thrust reduction altitude is pilot entered
    */
-  get missedThrustReductionAltitudeIsPilotEntered(): boolean;
+  get missedThrustReductionAltitudeIsPilotEntered(): Subscribable<boolean>;
 
   /**
    * Pilot entered missed apch acceleration altitude; Unit: Feet; Null if not set.
    */
-  pilotMissedAccelerationAltitude: number | null;
+  readonly pilotMissedAccelerationAltitude: MutableSubscribable<number | null>;
 
   /**
    * Missed apch acceleration altitude from nav database; Unit: Feet; Null if not set.
    */
-  defaultMissedAccelerationAltitude: number | null;
+  readonly defaultMissedAccelerationAltitude: MutableSubscribable<number | null>;
 
   /**
    * Returns pilot entered missed apch acceleration altitude of set, nav database value otherwise; Unit: Feet; Null if not set.
    */
-  get missedAccelerationAltitude(): number | null;
+  get missedAccelerationAltitude(): Subscribable<number | null>;
 
   /**
    * Whether missed apch acceleration altitude is pilot entered
    */
-  get missedAccelerationAltitudeIsPilotEntered(): boolean;
+  get missedAccelerationAltitudeIsPilotEntered(): Subscribable<boolean>;
 
   /**
    * Pilot entered missed apch engine-out acceleration altitude; Unit: Feet; Null if not set.
    */
-  pilotMissedEngineOutAccelerationAltitude: number | null;
+  readonly pilotMissedEngineOutAccelerationAltitude: MutableSubscribable<number | null>;
 
   /**
    * Missed apch engine-out acceleration altitude from nav database; Unit: Feet; Null if not set.
    */
-  defaultMissedEngineOutAccelerationAltitude: number | null;
+  readonly defaultMissedEngineOutAccelerationAltitude: MutableSubscribable<number | null>;
 
   /**
    * Returns pilot entered missed apch engine-out acceleration altitude if set, nav database value otherwise; Unit: Feet; Null if not set.
    */
-  get missedEngineOutAccelerationAltitude(): number | null;
+  get missedEngineOutAccelerationAltitude(): Subscribable<number | null>;
 
   /**
    * Whether missed apch engine-out acceleration altitude is pilot entered
    */
-  get missedEngineOutAccelerationAltitudeIsPilotEntered(): boolean;
+  get missedEngineOutAccelerationAltitudeIsPilotEntered(): Subscribable<boolean>;
 
   /**
    * The maximum speed imposed by the climb speed limit of the main flight plan or null if not set.
    */
-  climbSpeedLimitSpeed: number | null;
+  readonly climbSpeedLimitSpeed: MutableSubscribable<number | null>;
 
   /**
    * The altitude below which the climb speed limit of the main flight plan applies or null if not set.
    */
-  climbSpeedLimitAltitude: number | null;
+  readonly climbSpeedLimitAltitude: MutableSubscribable<number | null>;
 
   /**
    * Whether the climb speed limit is pilot entered.
    */
-  isClimbSpeedLimitPilotEntered: boolean;
+  readonly isClimbSpeedLimitPilotEntered: MutableSubscribable<boolean>;
 
   /**
    * The maximum speed imposed by the descent speed limit of the main flight plan or null if not set.
    */
-  descentSpeedLimitSpeed: number | null;
+  readonly descentSpeedLimitSpeed: MutableSubscribable<number | null>;
 
   /**
    * The altitude below which the descent speed limit of the main flight plan applies or null if not set.
    */
-  descentSpeedLimitAltitude: number | null;
+  readonly descentSpeedLimitAltitude: MutableSubscribable<number | null>;
 
   /**
    * Whether the descent speed limit of the main flight plan is pilot entered.
    */
-  isDescentSpeedLimitPilotEntered: boolean;
+  readonly isDescentSpeedLimitPilotEntered: MutableSubscribable<boolean>;
 
   /**
    * The maximum speed imposed by the climb speed limit of the alternate flight plan or null if not set.
    */
-  alternateClimbSpeedLimitSpeed: number | null;
+  readonly alternateClimbSpeedLimitSpeed: MutableSubscribable<number | null>;
 
   /**
    * The altitude below which the climb speed limit of the alternate flight plan applies or null if not set.
    */
-  alternateClimbSpeedLimitAltitude: number | null;
+  readonly alternateClimbSpeedLimitAltitude: MutableSubscribable<number | null>;
 
   /**
    * Whether the climb speed limit of the alternate flight plan is pilot entered.
    */
-  isAlternateClimbSpeedLimitPilotEntered: boolean;
+  readonly isAlternateClimbSpeedLimitPilotEntered: MutableSubscribable<boolean>;
 
   /**
    * The maximum speed imposed by the descent speed limit of the alternate flight plan or null if not set.
    */
-  alternateDescentSpeedLimitSpeed: number | null;
+  readonly alternateDescentSpeedLimitSpeed: MutableSubscribable<number | null>;
 
   /**
    * The altitude below which the descent speed limit of the alternate flight plan applies or null if not set.
    */
-  alternateDescentSpeedLimitAltitude: number | null;
+  readonly alternateDescentSpeedLimitAltitude: MutableSubscribable<number | null>;
 
   /**
    * Whether the descent speed limit of the alternate flight plan is pilot entered.
    */
-  isAlternateDescentSpeedLimitPilotEntered: boolean;
+  readonly isAlternateDescentSpeedLimitPilotEntered: MutableSubscribable<boolean>;
+
+  /**
+   * The zero fuel weight entered by the pilot in tonnes, or null if not set.
+   */
+  readonly zeroFuelWeight: MutableSubscribable<number | null>;
+
+  /**
+   * The zero fuel weight center of gravity entered by the pilot as a percentage, or null if not set
+   */
+  readonly zeroFuelWeightCenterOfGravity: MutableSubscribable<number | null>;
+
+  /**
+   * The block fuel entered by the pilot in tonnes, or null if not set.
+   */
+  readonly blockFuel: MutableSubscribable<number | null>;
+
+  /**
+   * The taxi fuel entered by the pilot in tonnes, or null if not set.
+   */
+  readonly pilotTaxiFuel: MutableSubscribable<number | null>;
+
+  /**
+   * The taxi fuel from the AMI database in tonnes
+   */
+  readonly defaultTaxiFuel: MutableSubscribable<number>;
+
+  /**
+   * Returns the pilot entered taxi fuel if set, the AMI taxi fuel value otherwise; Unit: tonnes; Null if not set.
+   */
+  get taxiFuel(): Subscribable<number | null>;
+
+  /**
+   * Whether taxi fuel is pilot entered.
+   */
+  get taxiFuelIsPilotEntered(): Subscribable<boolean>;
+
+  /**
+   * The route reserve fuel entered by the pilot in tonnes, or null if not set.
+   */
+  readonly pilotRouteReserveFuel: MutableSubscribable<number | null>;
+
+  /**
+   * The route reserve fuel percentage entered by the pilot as a percentage, or null if not set.
+   */
+  readonly pilotRouteReserveFuelPercentage: MutableSubscribable<number | null>;
+
+  /**
+   * The route reserve fuel percentage from the AMI database
+   */
+  readonly defaultRouteReserveFuelPercentage: MutableSubscribable<number>;
+
+  /**
+   * Returns the pilot entered route reserve fuel percentage if set, the AMI route reserve fuel percentage value otherwise
+   */
+  get routeReserveFuelPercentage(): Subscribable<number>;
+
+  /**
+   * Whether the route reserve fuel percentage is pilot entered.
+   */
+  get isRouteReserveFuelPrecentagePilotEntered(): Subscribable<boolean>;
+
+  /**
+   * The alternate fuel entered by the pilot in tonnes, or null if not set.
+   */
+  readonly pilotAlternateFuel: MutableSubscribable<number | null>;
+
+  /**
+   * The final holding fuel entered by the pilot in tonnes, or null if not set.
+   */
+  readonly pilotFinalHoldingFuel: MutableSubscribable<number | null>;
+
+  /**
+   * The final holding time entered by the pilot in minutes, or null if not set.
+   */
+  readonly pilotFinalHoldingTime: MutableSubscribable<number | null>;
+
+  /**
+   * The final holding time from the AMI database in minutes
+   */
+  readonly defaultFinalHoldingTime: MutableSubscribable<number>;
+
+  /**
+   * Returns the pilot entered final holding time in minutes if set, the AMI final holding time value otherwise
+   */
+  get finalHoldingTime(): Subscribable<number>;
+
+  /**
+   * Whether final holding time is pilot entered.
+   */
+  get isFinalHoldingTimePilotEntered(): Subscribable<boolean>;
+
+  /**
+   * The minimum fuel on board at the destination entered by the pilot in tonnes, or null if not set.
+   */
+  readonly pilotMinimumDestinationFuelOnBoard: MutableSubscribable<number | null>;
+
+  /**
+   * The trip wind value entered by the pilot in kts, or null if not set.
+   * Positive values indicate a tailwind, negative values indicate a headwind.
+   */
+  readonly pilotTripWind: MutableSubscribable<number | null>;
+
+  /**
+   * The takeoff shift entered by the pilot in metres, or null if not set.
+   */
+  readonly takeoffShift: MutableSubscribable<number | null>;
+
+  /**
+   * The takeoff flaps setting entered by the pilot, or null if not set.
+   */
+  readonly takeoffFlaps: MutableSubscribable<0 | 1 | 2 | 3 | null>;
+
+  /**
+   * The THS setting entered by the pilot, or null if not set.
+   * +ve for nose up, -ve for nose down
+   */
+  readonly trimmableHorizontalStabilizer: MutableSubscribable<number | null>;
+
+  /**
+   * The flex takeoff temperature entered by the pilot in degrees, or null if not set.
+   */
+  readonly flexTakeoffTemperature: MutableSubscribable<number | null>;
+
+  /**
+   * The preselected climb speed entered by the pilot in knots, or null if not set.
+   */
+  readonly preselectedClimbSpeed: MutableSubscribable<number | null>;
+
+  /**
+   * The preselected cruise speed entered by the pilot either in kts or as a Mach number, or null if not set.
+   */
+  readonly preselectedCruiseSpeed: MutableSubscribable<number | null>;
+
+  /**
+   * The managed descent speed entered by the pilot in knots, or null if not set.
+   */
+  readonly pilotManagedDescentSpeed: MutableSubscribable<number | null>;
+
+  /**
+   * The managed descent Mach number entered by the pilot in knots, or null if not set.
+   */
+  readonly pilotManagedDescentMach: MutableSubscribable<number | null>;
+
+  /**
+   * The QNH at the destination airport entered by the pilot in hPa or inHg, or null if not set.
+   */
+  readonly approachQnh: MutableSubscribable<number | null>;
+
+  /**
+   * The temperature at the destination airport entered by the pilot in degrees, or null if not set.
+   */
+  readonly approachTemperature: MutableSubscribable<number | null>;
+
+  /**
+   * The wind direction at the destination airport entered by the pilot in degrees magnetic, or null if not set.
+   */
+  readonly approachWindDirection: MutableSubscribable<number | null>;
+
+  /**
+   * The wind magnitude at the destination airport entered by the pilot in knots, or null if not set.
+   */
+  readonly approachWindMagnitude: MutableSubscribable<number | null>;
+
+  /**
+   * The approach speed Vapp manually overridden by the pilot in knots, or null if not set.
+   */
+  readonly pilotVapp: MutableSubscribable<number | null>;
+
+  /**
+   * The barometric minimum entered by the pilot, or null if not set.
+   */
+  readonly approachBaroMinimum: MutableSubscribable<number | null>;
+
+  /**
+   * The radio minimum entered by the pilot, or null if not set.
+   */
+  readonly approachRadioMinimum: MutableSubscribable<'NO DH' | number | null>;
+
+  /**
+   * Whether the flaps three setting is selected by the pilot for the approach
+   */
+  readonly approachFlapsThreeSelected: MutableSubscribable<boolean>;
 
   clone(): this;
+
+  destroy(): void;
+
+  hasSubscription(key: string): boolean;
+
+  pipeTo(other: FlightPlanPerformanceData, isBeforeEngineStart: boolean): void;
 }
 
-export type FlightPlanPerformanceDataProperties = Omit<FlightPlanPerformanceData, 'clone'>;
+export type FlightPlanPerformanceDataProperties = {
+  [K in keyof FlightPlanPerformanceData as FlightPlanPerformanceData[K] extends MutableSubscribable<any>
+    ? K
+    : never]: FlightPlanPerformanceData[K] extends MutableSubscribable<infer T> ? MutableSubscribable<T> : never;
+};
 
 // TODO this should remain in fbw-a32nx/ once FMS is moved to fbw-common
 
 export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData {
+  private readonly subscriptions: Map<keyof FlightPlanPerformanceDataProperties & string, Subscription> = new Map();
+
   public clone(): this {
     const cloned = new A320FlightPlanPerformanceData();
 
-    cloned.v1 = this.v1;
-    cloned.vr = this.vr;
-    cloned.v2 = this.v2;
+    cloned.v1.set(this.v1.get());
+    cloned.vr.set(this.vr.get());
+    cloned.v2.set(this.v2.get());
 
-    cloned.pilotThrustReductionAltitude = this.pilotThrustReductionAltitude;
-    cloned.defaultThrustReductionAltitude = this.defaultThrustReductionAltitude;
+    cloned.pilotThrustReductionAltitude.set(this.pilotThrustReductionAltitude.get());
+    cloned.defaultThrustReductionAltitude.set(this.defaultThrustReductionAltitude.get());
 
-    cloned.pilotAccelerationAltitude = this.pilotAccelerationAltitude;
-    cloned.defaultAccelerationAltitude = this.defaultAccelerationAltitude;
+    cloned.pilotAccelerationAltitude.set(this.pilotAccelerationAltitude.get());
+    cloned.defaultAccelerationAltitude.set(this.defaultAccelerationAltitude.get());
 
-    cloned.pilotEngineOutAccelerationAltitude = this.pilotEngineOutAccelerationAltitude;
-    cloned.defaultEngineOutAccelerationAltitude = this.defaultEngineOutAccelerationAltitude;
+    cloned.pilotEngineOutAccelerationAltitude.set(this.pilotEngineOutAccelerationAltitude.get());
+    cloned.defaultEngineOutAccelerationAltitude.set(this.defaultEngineOutAccelerationAltitude.get());
 
-    cloned.pilotMissedThrustReductionAltitude = this.pilotMissedThrustReductionAltitude;
-    cloned.defaultMissedThrustReductionAltitude = this.defaultMissedThrustReductionAltitude;
+    cloned.pilotMissedThrustReductionAltitude.set(this.pilotMissedThrustReductionAltitude.get());
+    cloned.defaultMissedThrustReductionAltitude.set(this.defaultMissedThrustReductionAltitude.get());
 
-    cloned.pilotMissedAccelerationAltitude = this.pilotMissedAccelerationAltitude;
-    cloned.defaultMissedAccelerationAltitude = this.defaultMissedAccelerationAltitude;
+    cloned.pilotMissedAccelerationAltitude.set(this.pilotMissedAccelerationAltitude.get());
+    cloned.defaultMissedAccelerationAltitude.set(this.defaultMissedAccelerationAltitude.get());
 
-    cloned.pilotMissedEngineOutAccelerationAltitude = this.pilotMissedEngineOutAccelerationAltitude;
-    cloned.defaultMissedEngineOutAccelerationAltitude = this.defaultMissedEngineOutAccelerationAltitude;
+    cloned.pilotMissedEngineOutAccelerationAltitude.set(this.pilotMissedEngineOutAccelerationAltitude.get());
+    cloned.defaultMissedEngineOutAccelerationAltitude.set(this.defaultMissedEngineOutAccelerationAltitude.get());
 
-    cloned.databaseTransitionAltitude = this.databaseTransitionAltitude;
-    cloned.pilotTransitionAltitude = this.pilotTransitionAltitude;
+    cloned.databaseTransitionAltitude.set(this.databaseTransitionAltitude.get());
+    cloned.pilotTransitionAltitude.set(this.pilotTransitionAltitude.get());
 
-    cloned.databaseTransitionLevel = this.databaseTransitionLevel;
-    cloned.pilotTransitionLevel = this.pilotTransitionLevel;
+    cloned.databaseTransitionLevel.set(this.databaseTransitionLevel.get());
+    cloned.pilotTransitionLevel.set(this.pilotTransitionLevel.get());
 
-    cloned.cruiseFlightLevel = this.cruiseFlightLevel;
-    cloned.costIndex = this.costIndex;
-    cloned.pilotTropopause = this.pilotTropopause;
-    cloned.defaultTropopause = this.defaultTropopause;
+    cloned.cruiseFlightLevel.set(this.cruiseFlightLevel.get());
+    cloned.cruiseTemperature.set(this.cruiseTemperature.get());
+    cloned.pilotGroundTemperature.set(this.pilotGroundTemperature.get());
+    cloned.defaultGroundTemperature.set(this.defaultGroundTemperature.get());
+    cloned.costIndex.set(this.costIndex.get());
+    cloned.pilotTropopause.set(this.pilotTropopause.get());
+    cloned.defaultTropopause.set(this.defaultTropopause.get());
 
-    cloned.climbSpeedLimitSpeed = this.climbSpeedLimitSpeed;
-    cloned.climbSpeedLimitAltitude = this.climbSpeedLimitAltitude;
-    cloned.isClimbSpeedLimitPilotEntered = this.isClimbSpeedLimitPilotEntered;
+    cloned.climbSpeedLimitSpeed.set(this.climbSpeedLimitSpeed.get());
+    cloned.climbSpeedLimitAltitude.set(this.climbSpeedLimitAltitude.get());
+    cloned.isClimbSpeedLimitPilotEntered.set(this.isClimbSpeedLimitPilotEntered.get());
 
-    cloned.descentSpeedLimitSpeed = this.descentSpeedLimitSpeed;
-    cloned.descentSpeedLimitAltitude = this.descentSpeedLimitAltitude;
-    cloned.isDescentSpeedLimitPilotEntered = this.isDescentSpeedLimitPilotEntered;
+    cloned.descentSpeedLimitSpeed.set(this.descentSpeedLimitSpeed.get());
+    cloned.descentSpeedLimitAltitude.set(this.descentSpeedLimitAltitude.get());
+    cloned.isDescentSpeedLimitPilotEntered.set(this.isDescentSpeedLimitPilotEntered.get());
 
-    cloned.alternateClimbSpeedLimitSpeed = this.alternateClimbSpeedLimitSpeed;
-    cloned.alternateClimbSpeedLimitAltitude = this.alternateClimbSpeedLimitAltitude;
-    cloned.isAlternateClimbSpeedLimitPilotEntered = this.isAlternateClimbSpeedLimitPilotEntered;
+    cloned.alternateClimbSpeedLimitSpeed.set(this.alternateClimbSpeedLimitSpeed.get());
+    cloned.alternateClimbSpeedLimitAltitude.set(this.alternateClimbSpeedLimitAltitude.get());
+    cloned.isAlternateClimbSpeedLimitPilotEntered.set(this.isAlternateClimbSpeedLimitPilotEntered.get());
 
-    cloned.alternateDescentSpeedLimitSpeed = this.alternateDescentSpeedLimitSpeed;
-    cloned.alternateDescentSpeedLimitAltitude = this.alternateDescentSpeedLimitAltitude;
-    cloned.isAlternateDescentSpeedLimitPilotEntered = this.isAlternateDescentSpeedLimitPilotEntered;
+    cloned.alternateDescentSpeedLimitSpeed.set(this.alternateDescentSpeedLimitSpeed.get());
+    cloned.alternateDescentSpeedLimitAltitude.set(this.alternateDescentSpeedLimitAltitude.get());
+    cloned.isAlternateDescentSpeedLimitPilotEntered.set(this.isAlternateDescentSpeedLimitPilotEntered.get());
+
+    cloned.zeroFuelWeight.set(this.zeroFuelWeight.get());
+    cloned.zeroFuelWeightCenterOfGravity.set(this.zeroFuelWeightCenterOfGravity.get());
+    cloned.blockFuel.set(this.blockFuel.get());
+    cloned.pilotTaxiFuel.set(this.pilotTaxiFuel.get());
+    cloned.defaultTaxiFuel.set(this.defaultTaxiFuel.get());
+    cloned.pilotRouteReserveFuel.set(this.pilotRouteReserveFuel.get());
+    cloned.pilotRouteReserveFuelPercentage.set(this.pilotRouteReserveFuelPercentage.get());
+    cloned.defaultRouteReserveFuelPercentage.set(this.defaultRouteReserveFuelPercentage.get());
+    cloned.pilotAlternateFuel.set(this.pilotAlternateFuel.get());
+    cloned.pilotFinalHoldingFuel.set(this.pilotFinalHoldingFuel.get());
+    cloned.pilotFinalHoldingTime.set(this.pilotFinalHoldingTime.get());
+    cloned.defaultFinalHoldingTime.set(this.defaultFinalHoldingTime.get());
+    cloned.pilotMinimumDestinationFuelOnBoard.set(this.pilotMinimumDestinationFuelOnBoard.get());
+    cloned.pilotTripWind.set(this.pilotTripWind.get());
+
+    cloned.takeoffShift.set(this.takeoffShift.get());
+    cloned.takeoffFlaps.set(this.takeoffFlaps.get());
+    cloned.trimmableHorizontalStabilizer.set(this.trimmableHorizontalStabilizer.get());
+    cloned.flexTakeoffTemperature.set(this.flexTakeoffTemperature.get());
+    cloned.preselectedClimbSpeed.set(this.preselectedClimbSpeed.get());
+    cloned.preselectedCruiseSpeed.set(this.preselectedCruiseSpeed.get());
+    cloned.pilotManagedDescentSpeed.set(this.pilotManagedDescentSpeed.get());
+    cloned.pilotManagedDescentMach.set(this.pilotManagedDescentMach.get());
+    cloned.approachQnh.set(this.approachQnh.get());
+    cloned.approachTemperature.set(this.approachTemperature.get());
+    cloned.approachWindDirection.set(this.approachWindDirection.get());
+    cloned.approachWindMagnitude.set(this.approachWindMagnitude.get());
+    cloned.pilotVapp.set(this.pilotVapp.get());
+    cloned.approachBaroMinimum.set(this.approachBaroMinimum.get());
+    cloned.approachRadioMinimum.set(this.approachRadioMinimum.get());
+    cloned.approachFlapsThreeSelected.set(this.approachFlapsThreeSelected.get());
 
     return cloned as this;
   }
 
-  /**
-   * Cruise flight level; Unit: flight level (i.e. hundreds of feets); Null if not set.
-   */
-  cruiseFlightLevel: number | null = null;
+  pipeTo(other: A320FlightPlanPerformanceData, isBeforeEngineStart: boolean): void {
+    other.pipe('cruiseFlightLevel', this.cruiseFlightLevel, other.cruiseFlightLevel);
+    other.pipe('cruiseTemperature', this.cruiseTemperature, other.cruiseTemperature);
+    other.pipe('pilotTropopause', this.pilotTropopause, other.pilotTropopause);
+    other.pipe('costIndex', this.costIndex, other.costIndex);
+    other.pipe('pilotRouteReserveFuel', this.pilotRouteReserveFuel, other.pilotRouteReserveFuel);
+    other.pipe(
+      'pilotRouteReserveFuelPercentage',
+      this.pilotRouteReserveFuelPercentage,
+      other.pilotRouteReserveFuelPercentage,
+    );
+    other.pipe('pilotFinalHoldingFuel', this.pilotFinalHoldingFuel, other.pilotFinalHoldingFuel);
+    other.pipe('pilotFinalHoldingTime', this.pilotFinalHoldingTime, other.pilotFinalHoldingTime);
+
+    if (isBeforeEngineStart) {
+      other.pipe('zeroFuelWeight', this.zeroFuelWeight, other.zeroFuelWeight);
+      other.pipe(
+        'zeroFuelWeightCenterOfGravity',
+        this.zeroFuelWeightCenterOfGravity,
+        other.zeroFuelWeightCenterOfGravity,
+      );
+      other.pipe(
+        'pilotMinimumDestinationFuelOnBoard',
+        this.pilotMinimumDestinationFuelOnBoard,
+        other.pilotMinimumDestinationFuelOnBoard,
+      );
+      other.pipe('blockFuel', this.blockFuel, other.blockFuel);
+    }
+  }
+
+  private pipe<T>(
+    key: keyof FlightPlanPerformanceDataProperties & string,
+    from: MutableSubscribable<T>,
+    to: MutableSubscribable<T>,
+  ): void {
+    // Just in case we've somehow already linked this key to something, we destory the subscription first.
+    this.subscriptions.get(key)?.destroy();
+    this.subscriptions.set(key, from.pipe(to));
+  }
+
+  public destroy(): void {
+    this.subscriptions.forEach((sub) => sub.destroy());
+    this.subscriptions.clear();
+  }
+
+  public hasSubscription(key: keyof FlightPlanPerformanceDataProperties & string): boolean {
+    return this.subscriptions.has(key);
+  }
+
+  readonly cruiseFlightLevel: Subject<number | null> = Subject.create(null);
+
+  readonly cruiseTemperature: Subject<number | null> = Subject.create(null);
+
+  readonly defaultGroundTemperature: Subject<number | null> = Subject.create(null);
+
+  readonly pilotGroundTemperature: Subject<number | null> = Subject.create(null);
+
+  readonly groundTemperature = MappedSubject.create(
+    ([pilotGroundTemperature, defaultGroundTemperature]) => pilotGroundTemperature ?? defaultGroundTemperature,
+    this.pilotGroundTemperature,
+    this.defaultGroundTemperature,
+  );
+
+  readonly groundTemperatureIsPilotEntered = MappedSubject.create(
+    ([pilotGroundTemperature]) => pilotGroundTemperature !== null,
+    this.pilotGroundTemperature,
+  );
 
   /**
    * Cost index; Unit: No unit; Null if not set.
    */
-  costIndex: number | null = null;
+  readonly costIndex: Subject<number | null> = Subject.create(null);
 
   /**
    * Tropopause altitude entered by the pilot; Unit: Feet; Null if not set.
    */
-  pilotTropopause: number | null = null;
+  readonly pilotTropopause: Subject<number | null> = Subject.create(null);
 
   /**
    * Default tropopause altitude; Unit: Feet; Null if not set.
    */
-  defaultTropopause: number | null = 36090;
+  readonly defaultTropopause: Subject<number | null> = Subject.create(36090);
 
-  get tropopause() {
-    const rawAlt = this.pilotTropopause ?? this.defaultTropopause;
-    return rawAlt !== null ? MathUtils.round(rawAlt, 10) : null;
-  }
+  readonly tropopause = MappedSubject.create(
+    ([pilotTropopause, defaultTropopause]) => {
+      const rawAlt = pilotTropopause ?? defaultTropopause;
+      return rawAlt !== null ? MathUtils.round(rawAlt, 10) : null;
+    },
+    this.pilotTropopause,
+    this.defaultTropopause,
+  );
 
-  get tropopauseIsPilotEntered() {
-    return this.pilotTropopause !== null;
-  }
+  /**
+   * Whether tropopause is pilot entered.
+   */
+  readonly tropopauseIsPilotEntered = MappedSubject.create(
+    ([pilotTropopause]) => pilotTropopause !== null,
+    this.pilotTropopause,
+  );
 
   /**
    * V1 speed; Unit: Knots; Null if not set.
    */
-  v1: number | null = null;
+  readonly v1: Subject<number | null> = Subject.create(null);
 
   /**
    * Vr speed; Unit: Knots; Null if not set.
    */
-  vr: number | null = null;
+  readonly vr: Subject<number | null> = Subject.create(null);
 
   /**
    * V2 speed; Unit: Knots; Null if not set.
    */
-  v2: number | null = null;
+  readonly v2: Subject<number | null> = Subject.create(null);
 
   // THR RED
 
   /**
    * Pilot entered thrust reduction altitude; Unit: Feet; Null if not set.
    */
-  pilotThrustReductionAltitude: number | null = null;
+  readonly pilotThrustReductionAltitude: Subject<number | null> = Subject.create(null);
 
   /**
    * Thrust reduction altitude from nav database; Unit: Feet; Null if not set.
    */
-  defaultThrustReductionAltitude: number | null = null;
+  readonly defaultThrustReductionAltitude: Subject<number | null> = Subject.create(null);
 
   /**
    * Pilot entered thrust reduction altitude if set, from nav database otherwise; Unit: Feet; Null if not set.
    */
-  get thrustReductionAltitude() {
-    const rawAlt = this.pilotThrustReductionAltitude ?? this.defaultThrustReductionAltitude;
-    return rawAlt !== null ? MathUtils.round(rawAlt, 10) : null;
-  }
+  readonly thrustReductionAltitude = MappedSubject.create(
+    ([pilotThrustReductionAltitude, defaultThrustReductionAltitude]) => {
+      const rawAlt = pilotThrustReductionAltitude ?? defaultThrustReductionAltitude;
+      return rawAlt !== null ? MathUtils.round(rawAlt, 10) : null;
+    },
+    this.pilotThrustReductionAltitude,
+    this.defaultThrustReductionAltitude,
+  );
 
   /**
    * Whether thrust reduction altitude is pilot entered;
    */
-  get thrustReductionAltitudeIsPilotEntered() {
-    return this.pilotThrustReductionAltitude !== null;
-  }
+  readonly thrustReductionAltitudeIsPilotEntered = MappedSubject.create(
+    ([pilotThrustReductionAltitude]) => pilotThrustReductionAltitude !== null,
+    this.pilotThrustReductionAltitude,
+  );
 
   // ACC
 
   /**
    * Pilot entered acceleration altitude; Unit: Feet; Null if not set.
    */
-  pilotAccelerationAltitude: number | null = null;
+  readonly pilotAccelerationAltitude: Subject<number | null> = Subject.create(null);
 
   /**
    * Acceleration altitude from nav database; Unit: Feet; Null if not set.
    */
-  defaultAccelerationAltitude: number | null = null;
+  readonly defaultAccelerationAltitude: Subject<number | null> = Subject.create(null);
 
   /**
    * Returns pilot entered acceleration altitude if set, nav database value otherwise; Unit: Feet; Null if not set.
    */
-  get accelerationAltitude() {
-    const rawAlt = this.pilotAccelerationAltitude ?? this.defaultAccelerationAltitude;
-    return rawAlt !== null ? MathUtils.round(rawAlt, 10) : null;
-  }
+  readonly accelerationAltitude = MappedSubject.create(
+    ([pilotAccelerationAltitude, defaultAccelerationAltitude]) => {
+      const rawAlt = pilotAccelerationAltitude ?? defaultAccelerationAltitude;
+      return rawAlt !== null ? MathUtils.round(rawAlt, 10) : null;
+    },
+    this.pilotAccelerationAltitude,
+    this.defaultAccelerationAltitude,
+  );
 
   /**
    * Whether acceleration altitude is pilot entered; Null if not set.
    */
-  get accelerationAltitudeIsPilotEntered() {
-    return this.pilotAccelerationAltitude !== null;
-  }
+  readonly accelerationAltitudeIsPilotEntered = MappedSubject.create(
+    ([pilotAccelerationAltitude]) => pilotAccelerationAltitude !== null,
+    this.pilotAccelerationAltitude,
+  );
 
   // EO ACC
 
   /**
    * Pilot entered engine-out acceleration altitude; Unit: Feet; Null if not set.
    */
-  pilotEngineOutAccelerationAltitude: number | null = null;
+  readonly pilotEngineOutAccelerationAltitude: Subject<number | null> = Subject.create(null);
 
   /**
    * Engine-out acceleration altitude from nav database; Unit: Feet; Null if not set.
    */
-  defaultEngineOutAccelerationAltitude: number | null = null;
+  readonly defaultEngineOutAccelerationAltitude: Subject<number | null> = Subject.create(null);
 
   /**
    * Returns pilot entered engine-out acceleration altitude if set, nav database value otherwise; Unit: Feet; Null if not set.
    */
-  get engineOutAccelerationAltitude() {
-    const rawAlt = this.pilotEngineOutAccelerationAltitude ?? this.defaultEngineOutAccelerationAltitude;
-    return rawAlt !== null ? MathUtils.round(rawAlt, 10) : null;
-  }
+  readonly engineOutAccelerationAltitude = MappedSubject.create(
+    ([pilotEngineOutAccelerationAltitude, defaultEngineOutAccelerationAltitude]) => {
+      const rawAlt = pilotEngineOutAccelerationAltitude ?? defaultEngineOutAccelerationAltitude;
+      return rawAlt !== null ? MathUtils.round(rawAlt, 10) : null;
+    },
+    this.pilotEngineOutAccelerationAltitude,
+    this.defaultEngineOutAccelerationAltitude,
+  );
 
   /**
    * Whether engine-out acceleration altitude is pilot entered; Null if not set.
    */
-  get engineOutAccelerationAltitudeIsPilotEntered() {
-    return this.pilotEngineOutAccelerationAltitude !== null;
-  }
+  readonly engineOutAccelerationAltitudeIsPilotEntered = MappedSubject.create(
+    ([pilotEngineOutAccelerationAltitude]) => pilotEngineOutAccelerationAltitude !== null,
+    this.pilotEngineOutAccelerationAltitude,
+  );
 
   // MISSED THR RED
 
   /**
    * Pilot entered missed apch thrust reduction altitude; Unit: Feet; Null if not set.
    */
-  pilotMissedThrustReductionAltitude: number | null = null;
+  readonly pilotMissedThrustReductionAltitude: Subject<number | null> = Subject.create(null);
 
   /**
    * Missed apch thrust reduction altitude from nav database; Unit: Feet; Null if not set.
    */
-  defaultMissedThrustReductionAltitude: number | null = null;
+  readonly defaultMissedThrustReductionAltitude: Subject<number | null> = Subject.create(null);
 
   /**
    * Returns pilot entered missed apch thrust reduction altitude if set, nav database value otherwise; Unit: Feet; Null if not set.
    */
-  get missedThrustReductionAltitude() {
-    const rawAlt = this.pilotMissedThrustReductionAltitude ?? this.defaultMissedThrustReductionAltitude;
-    return rawAlt !== null ? MathUtils.round(rawAlt, 10) : null;
-  }
+  readonly missedThrustReductionAltitude = MappedSubject.create(
+    ([pilotMissedThrustReductionAltitude, defaultMissedThrustReductionAltitude]) => {
+      const rawAlt = pilotMissedThrustReductionAltitude ?? defaultMissedThrustReductionAltitude;
+      return rawAlt !== null ? MathUtils.round(rawAlt, 10) : null;
+    },
+    this.pilotMissedThrustReductionAltitude,
+    this.defaultMissedThrustReductionAltitude,
+  );
 
   /**
    * Whether missed apch thrust reduction altitude is pilot entered
    */
-  get missedThrustReductionAltitudeIsPilotEntered() {
-    return this.pilotMissedThrustReductionAltitude !== null;
-  }
+  readonly missedThrustReductionAltitudeIsPilotEntered = MappedSubject.create(
+    ([pilotMissedThrustReductionAltitude]) => pilotMissedThrustReductionAltitude !== null,
+    this.pilotMissedThrustReductionAltitude,
+  );
 
   // MISSED ACC
 
   /**
    * Pilot entered missed apch acceleration altitude; Unit: Feet; Null if not set.
    */
-  pilotMissedAccelerationAltitude: number | null = null;
+  readonly pilotMissedAccelerationAltitude: Subject<number | null> = Subject.create(null);
 
   /**
    * Missed apch acceleration altitude from nav database; Unit: Feet; Null if not set.
    */
-  defaultMissedAccelerationAltitude: number | null = null;
+  readonly defaultMissedAccelerationAltitude: Subject<number | null> = Subject.create(null);
 
   /**
    * Returns pilot entered missed apch acceleration altitude of set, nav database value otherwise; Unit: Feet; Null if not set.
    */
-  get missedAccelerationAltitude() {
-    const rawAlt = this.pilotMissedAccelerationAltitude ?? this.defaultMissedAccelerationAltitude;
-    return rawAlt !== null ? MathUtils.round(rawAlt, 10) : null;
-  }
+  readonly missedAccelerationAltitude = MappedSubject.create(
+    ([pilotMissedAccelerationAltitude, defaultMissedAccelerationAltitude]) => {
+      const rawAlt = pilotMissedAccelerationAltitude ?? defaultMissedAccelerationAltitude;
+      return rawAlt !== null ? MathUtils.round(rawAlt, 10) : null;
+    },
+    this.pilotMissedAccelerationAltitude,
+    this.defaultMissedAccelerationAltitude,
+  );
 
   /**
    * Whether missed apch acceleration altitude is pilot entered
    */
-  get missedAccelerationAltitudeIsPilotEntered() {
-    return this.pilotMissedAccelerationAltitude !== null;
-  }
+  readonly missedAccelerationAltitudeIsPilotEntered = MappedSubject.create(
+    ([pilotMissedAccelerationAltitude]) => pilotMissedAccelerationAltitude !== null,
+    this.pilotMissedAccelerationAltitude,
+  );
 
   // MISSED EO ACC
 
   /**
    * Pilot entered missed apch engine-out acceleration altitude; Unit: Feet; Null if not set.
    */
-  pilotMissedEngineOutAccelerationAltitude: number | null = null;
+  readonly pilotMissedEngineOutAccelerationAltitude: Subject<number | null> = Subject.create(null);
 
   /**
    * Missed apch engine-out acceleration altitude from nav database; Unit: Feet; Null if not set.
    */
-  defaultMissedEngineOutAccelerationAltitude: number | null = null;
+  readonly defaultMissedEngineOutAccelerationAltitude: Subject<number | null> = Subject.create(null);
 
   /**
    * Returns pilot entered missed apch engine-out acceleration altitude if set, nav database value otherwise; Unit: Feet; Null if not set.
    */
-  get missedEngineOutAccelerationAltitude() {
-    const rawAlt = this.pilotMissedEngineOutAccelerationAltitude ?? this.defaultMissedEngineOutAccelerationAltitude;
-    return rawAlt !== null ? MathUtils.round(rawAlt, 10) : null;
-  }
+  readonly missedEngineOutAccelerationAltitude = MappedSubject.create(
+    ([pilotMissedEngineOutAccelerationAltitude, defaultMissedEngineOutAccelerationAltitude]) => {
+      const rawAlt = pilotMissedEngineOutAccelerationAltitude ?? defaultMissedEngineOutAccelerationAltitude;
+      return rawAlt !== null ? MathUtils.round(rawAlt, 10) : null;
+    },
+    this.pilotMissedEngineOutAccelerationAltitude,
+    this.defaultMissedEngineOutAccelerationAltitude,
+  );
 
   /**
    * Whether missed apch engine-out acceleration altitude is pilot entered
    */
-  get missedEngineOutAccelerationAltitudeIsPilotEntered() {
-    return this.pilotMissedEngineOutAccelerationAltitude !== null;
-  }
+  readonly missedEngineOutAccelerationAltitudeIsPilotEntered = MappedSubject.create(
+    ([pilotMissedEngineOutAccelerationAltitude]) => pilotMissedEngineOutAccelerationAltitude !== null,
+    this.pilotMissedEngineOutAccelerationAltitude,
+  );
 
   /**
    * Transition altitude from nav database; Unit: Feet; Null if not set.
    */
-  databaseTransitionAltitude: number | null = null;
+  readonly databaseTransitionAltitude: Subject<number | null> = Subject.create(null);
 
   /**
    * Transition level from database; Unit: flight level (i.e. hundreds of feets); Null if not set.
    */
-  pilotTransitionAltitude: number | null = null;
+  readonly pilotTransitionAltitude: Subject<number | null> = Subject.create(null);
 
   /**
    * Returns pilot entered altitude if set, nav database value otherwise; Unit: Feet; Null if not set.
    */
-  get transitionAltitude() {
-    const rawAlt = this.pilotTransitionAltitude ?? this.databaseTransitionAltitude;
-    return rawAlt !== null ? MathUtils.round(rawAlt, 10) : null;
-  }
+  readonly transitionAltitude = MappedSubject.create(
+    ([pilotTransitionAltitude, databaseTransitionAltitude]) => {
+      const rawAlt = pilotTransitionAltitude ?? databaseTransitionAltitude;
+      return rawAlt !== null ? MathUtils.round(rawAlt, 10) : null;
+    },
+    this.pilotTransitionAltitude,
+    this.databaseTransitionAltitude,
+  );
 
   /**
    * Whether returned transition altitude is from nav database;
    */
-  get transitionAltitudeIsFromDatabase() {
-    return this.pilotTransitionAltitude === null;
-  }
+  readonly transitionAltitudeIsFromDatabase = MappedSubject.create(
+    ([pilotTransitionAltitude]) => pilotTransitionAltitude === null,
+    this.pilotTransitionAltitude,
+  );
 
   /**
    * Transition level from database; Unit: flight level (i.e. hundreds of feets); Null if not set.
    */
-  databaseTransitionLevel: number | null = null;
+  readonly databaseTransitionLevel: Subject<number | null> = Subject.create(null);
 
   /**
    * Pilot entered transition level; Unit: flight level (i.e. hundreds of feets); Null if not set.
    */
-  pilotTransitionLevel: number | null = null;
+  readonly pilotTransitionLevel: Subject<number | null> = Subject.create(null);
 
   /**
    * Transition level; Unit: flight level (i.e. hundreds of feets); Null if not set.
    */
-  get transitionLevel() {
-    const rawLevel = this.pilotTransitionLevel ?? this.databaseTransitionLevel;
-    return rawLevel !== null ? MathUtils.round(rawLevel, 1) : null;
-  }
+  readonly transitionLevel = MappedSubject.create(
+    ([pilotTransitionLevel, databaseTransitionLevel]) => {
+      const rawLevel = pilotTransitionLevel ?? databaseTransitionLevel;
+      return rawLevel !== null ? MathUtils.round(rawLevel, 1) : null;
+    },
+    this.pilotTransitionLevel,
+    this.databaseTransitionLevel,
+  );
 
   /**
    * Whether returned transition level is from nav database;
    */
-  get transitionLevelIsFromDatabase() {
-    return this.pilotTransitionLevel === null;
-  }
+  readonly transitionLevelIsFromDatabase = MappedSubject.create(
+    ([pilotTransitionLevel]) => pilotTransitionLevel === null,
+    this.pilotTransitionLevel,
+  );
 
   /**
    * The maximum speed imposed by the climb speed limit of the main flight plan or null if not set.
    */
-  climbSpeedLimitSpeed: number | null = DefaultPerformanceData.ClimbSpeedLimitSpeed;
+  readonly climbSpeedLimitSpeed: Subject<number | null> = Subject.create(DefaultPerformanceData.ClimbSpeedLimitSpeed);
 
   /**
    * The altitude below which the climb speed limit of the main flight plan applies or null if not set.
    */
-  climbSpeedLimitAltitude: number | null = DefaultPerformanceData.ClimbSpeedLimitAltitude;
+  readonly climbSpeedLimitAltitude: Subject<number | null> = Subject.create(
+    DefaultPerformanceData.ClimbSpeedLimitAltitude,
+  );
 
   /**
    * Whether the climb speed limit is pilot entered.
    */
-  isClimbSpeedLimitPilotEntered: boolean = false;
+  readonly isClimbSpeedLimitPilotEntered = Subject.create(false);
 
   /**
    * The maximum speed imposed by the descent speed limit of the main flight plan or null if not set.
    */
-  descentSpeedLimitSpeed: number | null = DefaultPerformanceData.DescentSpeedLimitSpeed;
+  readonly descentSpeedLimitSpeed: Subject<number | null> = Subject.create(
+    DefaultPerformanceData.DescentSpeedLimitSpeed,
+  );
 
   /**
    * The altitude below which the descent speed limit of the main flight plan applies or null if not set.
    */
-  descentSpeedLimitAltitude: number | null = DefaultPerformanceData.DescentSpeedLimitAltitude;
+  readonly descentSpeedLimitAltitude: Subject<number | null> = Subject.create(
+    DefaultPerformanceData.DescentSpeedLimitAltitude,
+  );
 
   /**
    * Whether the descent speed limit of the main flight plan is pilot entered.
    */
-  isDescentSpeedLimitPilotEntered: boolean = false;
+  readonly isDescentSpeedLimitPilotEntered = Subject.create(false);
 
   /**
    * The maximum speed imposed by the climb speed limit of the alternate flight plan or null if not set.
    */
-  alternateClimbSpeedLimitSpeed: number | null = DefaultPerformanceData.ClimbSpeedLimitSpeed;
+  readonly alternateClimbSpeedLimitSpeed: Subject<number | null> = Subject.create(
+    DefaultPerformanceData.ClimbSpeedLimitSpeed,
+  );
 
   /**
    * The altitude below which the climb speed limit of the alternate flight plan applies or null if not set.
    */
-  alternateClimbSpeedLimitAltitude: number | null = DefaultPerformanceData.ClimbSpeedLimitAltitude;
+  readonly alternateClimbSpeedLimitAltitude: Subject<number | null> = Subject.create(
+    DefaultPerformanceData.ClimbSpeedLimitAltitude,
+  );
 
   /**
    * Whether the climb speed limit of the alternate flight plan is pilot entered.
    */
-  isAlternateClimbSpeedLimitPilotEntered: boolean = false;
+  readonly isAlternateClimbSpeedLimitPilotEntered = Subject.create(false);
 
   /**
    * The maximum speed imposed by the descent speed limit of the alternate flight plan or null if not set.
    */
-  alternateDescentSpeedLimitSpeed: number | null = DefaultPerformanceData.DescentSpeedLimitSpeed;
+  readonly alternateDescentSpeedLimitSpeed: Subject<number | null> = Subject.create(
+    DefaultPerformanceData.DescentSpeedLimitSpeed,
+  );
 
   /**
    * The altitude below which the descent speed limit of the alternate flight plan applies or null if not set.
    */
-  alternateDescentSpeedLimitAltitude: number | null = DefaultPerformanceData.DescentSpeedLimitAltitude;
+  readonly alternateDescentSpeedLimitAltitude: Subject<number | null> = Subject.create(
+    DefaultPerformanceData.DescentSpeedLimitAltitude,
+  );
 
   /**
    * Whether the descent speed limit of the alternate flight plan is pilot entered.
    */
-  isAlternateDescentSpeedLimitPilotEntered: boolean = false;
+  readonly isAlternateDescentSpeedLimitPilotEntered = Subject.create(false);
+
+  /**
+   * The zero fuel weight entered by the pilot in tonnes, or null if not set.
+   */
+  readonly zeroFuelWeight: Subject<number | null> = Subject.create(null);
+
+  /**
+   * The zero fuel weight center of gravity entered by the pilot as a percentage, or null if not set
+   */
+  readonly zeroFuelWeightCenterOfGravity: Subject<number | null> = Subject.create(null);
+
+  /**
+   * The block fuel entered by the pilot in tonnes, or null if not set.
+   */
+  readonly blockFuel: Subject<number | null> = Subject.create(null);
+
+  /**
+   * The taxi fuel entered by the pilot in tonnes, or null if not set.
+   */
+  readonly pilotTaxiFuel: Subject<number | null> = Subject.create(null);
+
+  /**
+   * The taxi fuel from the AMI database in tonnes
+   * FIXME should come from the AMI database
+   */
+  readonly defaultTaxiFuel = Subject.create(0.2);
+
+  readonly taxiFuel = MappedSubject.create(
+    ([pilotTaxiFuel, defaultTaxiFuel]) => pilotTaxiFuel ?? defaultTaxiFuel,
+    this.pilotTaxiFuel,
+    this.defaultTaxiFuel,
+  );
+
+  readonly taxiFuelIsPilotEntered = MappedSubject.create(
+    ([pilotTaxiFuel]) => pilotTaxiFuel !== null,
+    this.pilotTaxiFuel,
+  );
+
+  /**
+   * The route reserve fuel entered by the pilot in tonnes, or null if not set.
+   */
+  readonly pilotRouteReserveFuel: Subject<number | null> = Subject.create(null);
+
+  /**
+   * The route reserve percentage entered by the pilot as a percentage, or null if not set.
+   */
+  readonly pilotRouteReserveFuelPercentage: Subject<number | null> = Subject.create(null);
+
+  /**
+   * The route reserve percentage from the AMI database
+   * FIXME should come from the AMI database
+   */
+  readonly defaultRouteReserveFuelPercentage = Subject.create(5);
+
+  /**
+   * Returns the pilot entered route reserve fuel percentage if set, the AMI route reserve fuel percentage value otherwise
+   */
+  readonly routeReserveFuelPercentage = MappedSubject.create(
+    ([pilotRouteReserveFuelPercentage, defaultRouteReserveFuelPercentage]) =>
+      pilotRouteReserveFuelPercentage ?? defaultRouteReserveFuelPercentage,
+    this.pilotRouteReserveFuelPercentage,
+    this.defaultRouteReserveFuelPercentage,
+  );
+
+  /**
+   * Whether the route reserve fuel percentage is pilot entered.
+   */
+  readonly isRouteReserveFuelPrecentagePilotEntered = MappedSubject.create(
+    ([pilotRouteReserveFuelPercentage]) => pilotRouteReserveFuelPercentage !== null,
+    this.pilotRouteReserveFuelPercentage,
+  );
+
+  /**
+   * The alternate fuel entered by the pilot in tonnes, or null if not set.
+   */
+  readonly pilotAlternateFuel: Subject<number | null> = Subject.create(null);
+
+  /**
+   * The final holding fuel entered by the pilot in tonnes, or null if not set.
+   */
+  readonly pilotFinalHoldingFuel: Subject<number | null> = Subject.create(null);
+
+  /**
+   * The final holding time entered by the pilot in minutes, or null if not set.
+   */
+  readonly pilotFinalHoldingTime: Subject<number | null> = Subject.create(null);
+
+  /**
+   * The final holding time from the AMI database in minutes
+   */
+  readonly defaultFinalHoldingTime = Subject.create(30);
+
+  /**
+   * Returns the pilot entered final holding time in minutes if set, the AMI final holding time value otherwise
+   */
+  readonly finalHoldingTime = MappedSubject.create(
+    ([pilotFinalHoldingTime, defaultFinalHoldingTime]) => pilotFinalHoldingTime ?? defaultFinalHoldingTime,
+    this.pilotFinalHoldingTime,
+    this.defaultFinalHoldingTime,
+  );
+
+  /**
+   * Whether final holding time is pilot entered.
+   */
+  readonly isFinalHoldingTimePilotEntered = MappedSubject.create(
+    ([pilotFinalHoldingTime]) => pilotFinalHoldingTime !== null,
+    this.pilotFinalHoldingTime,
+  );
+
+  /**
+   * The minimum fuel on board at the destination entered by the pilot in tonnes, or null if not set.
+   */
+  readonly pilotMinimumDestinationFuelOnBoard: Subject<number | null> = Subject.create(null);
+
+  /**
+   * The trip wind value entered by the pilot in kts, or null if not set.
+   * +ve for tailwind, -ve for headwind
+   */
+  readonly pilotTripWind: Subject<number | null> = Subject.create(null);
+
+  /**
+   * The takeoff shift entered by the pilot in metres, or null if not set.
+   */
+  readonly takeoffShift: Subject<number | null> = Subject.create(null);
+
+  /**
+   * The takeoff flaps setting entered by the pilot, or null if not set.
+   */
+  readonly takeoffFlaps: Subject<0 | 1 | 2 | 3 | null> = Subject.create(null);
+
+  /**
+   * The THS setting entered by the pilot, or null if not set.
+   * +ve for nose up, -ve for nose down
+   */
+  readonly trimmableHorizontalStabilizer: Subject<number | null> = Subject.create(null);
+
+  /**
+   * The flex takeoff temperature entered by the pilot in degrees, or null if not set.
+   */
+  readonly flexTakeoffTemperature: Subject<number | null> = Subject.create(null);
+
+  /**
+   * The preselected climb speed entered by the pilot in knots, or null if not set.
+   */
+  readonly preselectedClimbSpeed: Subject<number | null> = Subject.create(null);
+
+  /**
+   * The preselected cruise speed entered by the pilot either in kts or as a Mach number, or null if not set.
+   */
+  readonly preselectedCruiseSpeed: Subject<number | null> = Subject.create(null);
+
+  /**
+   * The managed descent speed entered by the pilot in knots, or null if not set.
+   */
+  readonly pilotManagedDescentSpeed: Subject<number | null> = Subject.create(null);
+
+  /**
+   * The managed descent Mach number entered by the pilot in knots, or null if not set.
+   */
+  readonly pilotManagedDescentMach: Subject<number | null> = Subject.create(null);
+
+  /**
+   * The QNH at the destination airport entered by the pilot in hPa or inHg, or null if not set.
+   */
+  readonly approachQnh: Subject<number | null> = Subject.create(null);
+
+  /**
+   * The temperature at the destination airport entered by the pilot in degrees, or null if not set.
+   */
+  readonly approachTemperature: Subject<number | null> = Subject.create(null);
+
+  /**
+   * The wind direction at the destination airport entered by the pilot in degrees magnetic, or null if not set.
+   */
+  readonly approachWindDirection: Subject<number | null> = Subject.create(null);
+
+  /**
+   * The wind magnitude at the destination airport entered by the pilot in knots, or null if not set.
+   */
+  readonly approachWindMagnitude: Subject<number | null> = Subject.create(null);
+
+  /**
+   * The approach speed Vapp manually overridden by the pilot in knots, or null if not set.
+   */
+  readonly pilotVapp: Subject<number | null> = Subject.create(null);
+
+  /**
+   * The barometric minimum entered by the pilot, or null if not set.
+   */
+  readonly approachBaroMinimum: Subject<number | null> = Subject.create(null);
+
+  /**
+   * The radio minimum entered by the pilot or 'NO DH', or null if not set.
+   */
+  readonly approachRadioMinimum: Subject<'NO DH' | number | null> = Subject.create(null);
+
+  /**
+   * Whether the flaps three setting is selected by the pilot for the approach
+   */
+  readonly approachFlapsThreeSelected = Subject.create(false);
 
   serialize(): SerializedFlightPlanPerformanceData {
     return {
-      cruiseFlightLevel: this.cruiseFlightLevel,
-      costIndex: this.costIndex,
-      pilotTropopause: this.pilotTropopause,
-      defaultTropopause: this.defaultTropopause,
-      v1: this.v1,
-      vr: this.vr,
-      v2: this.v2,
-      pilotThrustReductionAltitude: this.pilotThrustReductionAltitude,
-      defaultThrustReductionAltitude: this.defaultThrustReductionAltitude,
-      pilotAccelerationAltitude: this.pilotAccelerationAltitude,
-      defaultAccelerationAltitude: this.defaultAccelerationAltitude,
-      pilotEngineOutAccelerationAltitude: this.pilotEngineOutAccelerationAltitude,
-      defaultEngineOutAccelerationAltitude: this.defaultEngineOutAccelerationAltitude,
-      pilotMissedThrustReductionAltitude: this.pilotMissedThrustReductionAltitude,
-      defaultMissedThrustReductionAltitude: this.defaultMissedThrustReductionAltitude,
-      pilotMissedAccelerationAltitude: this.pilotMissedAccelerationAltitude,
-      defaultMissedAccelerationAltitude: this.defaultMissedAccelerationAltitude,
-      pilotMissedEngineOutAccelerationAltitude: this.pilotMissedEngineOutAccelerationAltitude,
-      defaultMissedEngineOutAccelerationAltitude: this.defaultMissedEngineOutAccelerationAltitude,
-      databaseTransitionAltitude: this.databaseTransitionAltitude,
-      pilotTransitionAltitude: this.pilotTransitionAltitude,
-      databaseTransitionLevel: this.databaseTransitionLevel,
-      pilotTransitionLevel: this.pilotTransitionLevel,
-      climbSpeedLimitSpeed: this.climbSpeedLimitSpeed,
-      climbSpeedLimitAltitude: this.climbSpeedLimitAltitude,
-      isClimbSpeedLimitPilotEntered: this.isClimbSpeedLimitPilotEntered,
-      descentSpeedLimitSpeed: this.descentSpeedLimitSpeed,
-      descentSpeedLimitAltitude: this.descentSpeedLimitAltitude,
-      isDescentSpeedLimitPilotEntered: this.isDescentSpeedLimitPilotEntered,
-      alternateClimbSpeedLimitSpeed: this.alternateClimbSpeedLimitSpeed,
-      alternateClimbSpeedLimitAltitude: this.alternateClimbSpeedLimitAltitude,
-      isAlternateClimbSpeedLimitPilotEntered: this.isAlternateClimbSpeedLimitPilotEntered,
-      alternateDescentSpeedLimitSpeed: this.alternateDescentSpeedLimitSpeed,
-      alternateDescentSpeedLimitAltitude: this.alternateDescentSpeedLimitAltitude,
-      isAlternateDescentSpeedLimitPilotEntered: this.isAlternateDescentSpeedLimitPilotEntered,
+      cruiseFlightLevel: this.cruiseFlightLevel.get(),
+      cruiseTemperature: this.cruiseTemperature.get(),
+      defaultGroundTemperature: this.defaultGroundTemperature.get(),
+      pilotGroundTemperature: this.pilotGroundTemperature.get(),
+      costIndex: this.costIndex.get(),
+      pilotTropopause: this.pilotTropopause.get(),
+      defaultTropopause: this.defaultTropopause.get(),
+      v1: this.v1.get(),
+      vr: this.vr.get(),
+      v2: this.v2.get(),
+      pilotThrustReductionAltitude: this.pilotThrustReductionAltitude.get(),
+      defaultThrustReductionAltitude: this.defaultThrustReductionAltitude.get(),
+      pilotAccelerationAltitude: this.pilotAccelerationAltitude.get(),
+      defaultAccelerationAltitude: this.defaultAccelerationAltitude.get(),
+      pilotEngineOutAccelerationAltitude: this.pilotEngineOutAccelerationAltitude.get(),
+      defaultEngineOutAccelerationAltitude: this.defaultEngineOutAccelerationAltitude.get(),
+      pilotMissedThrustReductionAltitude: this.pilotMissedThrustReductionAltitude.get(),
+      defaultMissedThrustReductionAltitude: this.defaultMissedThrustReductionAltitude.get(),
+      pilotMissedAccelerationAltitude: this.pilotMissedAccelerationAltitude.get(),
+      defaultMissedAccelerationAltitude: this.defaultMissedAccelerationAltitude.get(),
+      pilotMissedEngineOutAccelerationAltitude: this.pilotMissedEngineOutAccelerationAltitude.get(),
+      defaultMissedEngineOutAccelerationAltitude: this.defaultMissedEngineOutAccelerationAltitude.get(),
+      databaseTransitionAltitude: this.databaseTransitionAltitude.get(),
+      pilotTransitionAltitude: this.pilotTransitionAltitude.get(),
+      databaseTransitionLevel: this.databaseTransitionLevel.get(),
+      pilotTransitionLevel: this.pilotTransitionLevel.get(),
+      climbSpeedLimitSpeed: this.climbSpeedLimitSpeed.get(),
+      climbSpeedLimitAltitude: this.climbSpeedLimitAltitude.get(),
+      isClimbSpeedLimitPilotEntered: this.isClimbSpeedLimitPilotEntered.get(),
+      descentSpeedLimitSpeed: this.descentSpeedLimitSpeed.get(),
+      descentSpeedLimitAltitude: this.descentSpeedLimitAltitude.get(),
+      isDescentSpeedLimitPilotEntered: this.isDescentSpeedLimitPilotEntered.get(),
+      alternateClimbSpeedLimitSpeed: this.alternateClimbSpeedLimitSpeed.get(),
+      alternateClimbSpeedLimitAltitude: this.alternateClimbSpeedLimitAltitude.get(),
+      isAlternateClimbSpeedLimitPilotEntered: this.isAlternateClimbSpeedLimitPilotEntered.get(),
+      alternateDescentSpeedLimitSpeed: this.alternateDescentSpeedLimitSpeed.get(),
+      alternateDescentSpeedLimitAltitude: this.alternateDescentSpeedLimitAltitude.get(),
+      isAlternateDescentSpeedLimitPilotEntered: this.isAlternateDescentSpeedLimitPilotEntered.get(),
+      zeroFuelWeight: this.zeroFuelWeight.get(),
+      zeroFuelWeightCenterOfGravity: this.zeroFuelWeightCenterOfGravity.get(),
+      blockFuel: this.blockFuel.get(),
+      pilotTaxiFuel: this.pilotTaxiFuel.get(),
+      defaultTaxiFuel: this.defaultTaxiFuel.get(),
+      pilotRouteReserveFuel: this.pilotRouteReserveFuel.get(),
+      pilotRouteReserveFuelPercentage: this.pilotRouteReserveFuelPercentage.get(),
+      defaultRouteReserveFuelPercentage: this.defaultRouteReserveFuelPercentage.get(),
+      pilotAlternateFuel: this.pilotAlternateFuel.get(),
+      pilotFinalHoldingFuel: this.pilotFinalHoldingFuel.get(),
+      pilotFinalHoldingTime: this.pilotFinalHoldingTime.get(),
+      defaultFinalHoldingTime: this.defaultFinalHoldingTime.get(),
+      pilotMinimumDestinationFuelOnBoard: this.pilotMinimumDestinationFuelOnBoard.get(),
+      pilotTripWind: this.pilotTripWind.get(),
+      takeoffShift: this.takeoffShift.get(),
+      takeoffFlaps: this.takeoffFlaps.get(),
+      trimmableHorizontalStabilizer: this.trimmableHorizontalStabilizer.get(),
+      flexTemperature: this.flexTakeoffTemperature.get(),
+      preselectedClimbSpeed: this.preselectedClimbSpeed.get(),
+      preselectedCruiseSpeed: this.preselectedCruiseSpeed.get(),
+      pilotManagedDescentSpeed: this.pilotManagedDescentSpeed.get(),
+      pilotManagedDescentMach: this.pilotManagedDescentMach.get(),
+      approachQnh: this.approachQnh.get(),
+      approachTemperature: this.approachTemperature.get(),
+      approachWindDirection: this.approachWindDirection.get(),
+      approachWindMagnitude: this.approachWindMagnitude.get(),
+      pilotVapp: this.pilotVapp.get(),
+      approachBaroMinimum: this.approachBaroMinimum.get(),
+      approachRadioMinimum: this.approachRadioMinimum.get(),
+      approachFlapsThreeSelected: this.approachFlapsThreeSelected.get(),
     };
   }
 }
 
 export interface SerializedFlightPlanPerformanceData {
   cruiseFlightLevel: number | null;
+  cruiseTemperature: number | null;
+  defaultGroundTemperature: number | null;
+  pilotGroundTemperature: number | null;
   costIndex: number | null;
   defaultTropopause: number;
   pilotTropopause: number;
@@ -742,8 +1359,41 @@ export interface SerializedFlightPlanPerformanceData {
   alternateDescentSpeedLimitSpeed: number | null;
   alternateDescentSpeedLimitAltitude: number | null;
   isAlternateDescentSpeedLimitPilotEntered: boolean;
+
+  zeroFuelWeight: number | null;
+  zeroFuelWeightCenterOfGravity: number | null;
+  blockFuel: number | null;
+  pilotTaxiFuel: number | null;
+  defaultTaxiFuel: number;
+  pilotRouteReserveFuel: number | null;
+  pilotRouteReserveFuelPercentage: number | null;
+  defaultRouteReserveFuelPercentage: number;
+  pilotAlternateFuel: number | null;
+  pilotFinalHoldingFuel: number | null;
+  pilotFinalHoldingTime: number | null;
+  defaultFinalHoldingTime: number;
+  pilotMinimumDestinationFuelOnBoard: number | null;
+  pilotTripWind: number | null;
+
+  takeoffShift: number | null;
+  takeoffFlaps: 0 | 1 | 2 | 3 | null;
+  trimmableHorizontalStabilizer: number | null;
+  flexTemperature: number | null;
+  preselectedClimbSpeed: number | null;
+  preselectedCruiseSpeed: number | null;
+  pilotManagedDescentSpeed: number | null;
+  pilotManagedDescentMach: number | null;
+  approachQnh: number | null;
+  approachTemperature: number | null;
+  approachWindDirection: number | null;
+  approachWindMagnitude: number | null;
+  pilotVapp: number | null;
+  approachBaroMinimum: number | null;
+  approachRadioMinimum: 'NO DH' | number | null;
+  approachFlapsThreeSelected: boolean;
 }
 
+// FIXME move to AMI database
 export class DefaultPerformanceData {
   static readonly ClimbSpeedLimitSpeed = 250;
 

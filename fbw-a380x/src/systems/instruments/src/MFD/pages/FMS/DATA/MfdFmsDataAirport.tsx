@@ -53,6 +53,8 @@ export class MfdFmsDataAirport extends FmsPage<MfdFmsDataAirportProps> {
 
   private readonly currentIndex = Subject.create(0);
 
+  private readonly returnButtonVisible = Subject.create(true);
+
   private currentIndexRef = FSComponent.createRef<HTMLSpanElement>();
   private totalRunwaysRef = FSComponent.createRef<HTMLSpanElement>();
 
@@ -151,33 +153,35 @@ export class MfdFmsDataAirport extends FmsPage<MfdFmsDataAirportProps> {
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.airportIcao.sub((icao: string | null) => {
-      if (icao && icao.length === 4) {
-        this.loadAirportRunways(icao);
-        this.isAirportInfoVisible.set(true);
-        this.isRunwayButtonListVisible.set(true);
-        this.isRunwayDataVisible.set(false);
-      } else {
-        this.isAirportInfoVisible.set(false);
-        this.isRunwayDataVisible.set(false);
-        this.isRunwayButtonListVisible.set(false);
-      }
-    });
-
-    this.selectedRunwayIndex.sub((index: number | null) => {
-      if (index === null) {
-        this.isRunwayButtonListVisible.set(true);
-        this.isRunwayDataVisible.set(false);
-      } else {
-        this.isRunwayButtonListVisible.set(false);
-        this.checkScrollButtons();
-        this.currentIndex.set(index + 1);
-        const runwayData = this.airportRunways.get()[index];
-        this.renderRunwayData(runwayData);
-      }
-    });
-
     this.subs.push(
+      this.airportIcao.sub((icao: string | null) => {
+        if (icao && icao.length === 4) {
+          this.loadAirportRunways(icao);
+          this.isAirportInfoVisible.set(true);
+          this.isRunwayButtonListVisible.set(true);
+          this.isRunwayDataVisible.set(false);
+        } else {
+          this.isAirportInfoVisible.set(false);
+          this.isRunwayDataVisible.set(false);
+          this.isRunwayButtonListVisible.set(false);
+        }
+      }),
+      this.selectedRunwayIndex.sub((index: number | null) => {
+        if (index === null) {
+          this.isRunwayButtonListVisible.set(true);
+          this.isRunwayDataVisible.set(false);
+        } else {
+          this.isRunwayButtonListVisible.set(false);
+          this.checkScrollButtons();
+          this.currentIndex.set(index + 1);
+          const runwayData = this.airportRunways.get()[index];
+          this.renderRunwayData(runwayData);
+        }
+      }),
+      this.selectedPageIndex.sub((index) => {
+        this.returnButtonVisible.set(index === 0);
+      }),
+
       this.props.mfd.uiService.activeUri.sub((val) => {
         if (val.extra === 'database') {
           this.selectedPageIndex.set(0);
@@ -352,6 +356,14 @@ export class MfdFmsDataAirport extends FmsPage<MfdFmsDataAirportProps> {
           </TopTabNavigator>
           <div style="flex-grow: 1;" />
           {/* fill space vertically */}
+          <div style="width: 150px;">
+            <Button
+              label="RETURN"
+              onClick={() => this.props.mfd.uiService.navigateTo('back')}
+              buttonStyle="margin-right: 5px;"
+              visible={this.returnButtonVisible}
+            />
+          </div>
         </div>
         <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
       </>

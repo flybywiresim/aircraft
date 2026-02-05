@@ -16,14 +16,16 @@ interface IconButtonProps extends ComponentProps {
   icon:
     | 'single-up'
     | 'single-down'
+    | 'single-left'
+    | 'single-right'
     | 'double-up'
     | 'double-down'
     | 'double-left'
     | 'double-right'
-    | 'single-up'
-    | 'single-down'
-    | 'single-left'
-    | 'single-right'
+    | 'flat-single-up'
+    | 'flat-single-down'
+    | 'flat-single-left'
+    | 'flat-single-right'
     | 'ecl-single-up'
     | 'ecl-single-down'
     | 'ecl-check'
@@ -106,6 +108,20 @@ export class IconButton extends DisplayComponent<IconButtonProps> {
             </g>
           </svg>
         )}
+        {this.props.icon === 'single-left' && (
+          <svg width="35" viewBox="0 0 15 15" xmlns="http://www.w3.org/2000/svg">
+            <g ref={this.svgGroupRef} fill={this.fillColor} transform="rotate(90 7.5 7.5)">
+              <polygon points="0,1 15,1 7.5,14" />
+            </g>
+          </svg>
+        )}
+        {this.props.icon === 'single-right' && (
+          <svg width="35" viewBox="0 0 15 15" xmlns="http://www.w3.org/2000/svg">
+            <g ref={this.svgGroupRef} fill={this.fillColor} transform="rotate(270 7.5 7.5)">
+              <polygon points="0,1 15,1 7.5,14" />
+            </g>
+          </svg>
+        )}
         {this.props.icon === 'double-up' && (
           <svg width="35" viewBox="0 0 35 35" xmlns="http://www.w3.org/2000/svg">
             <g ref={this.svgGroupRef} fill={this.fillColor}>
@@ -138,28 +154,28 @@ export class IconButton extends DisplayComponent<IconButtonProps> {
             </g>
           </svg>
         )}
-        {this.props.icon === 'single-up' && (
+        {this.props.icon === 'flat-single-up' && (
           <svg width="35" viewBox="0 0 35 35" xmlns="http://www.w3.org/2000/svg">
             <g ref={this.svgGroupRef} fill={this.fillColor}>
               <polygon points="0,25 17.5,7.5 35,25" />
             </g>
           </svg>
         )}
-        {this.props.icon === 'single-down' && (
+        {this.props.icon === 'flat-single-down' && (
           <svg width="35" viewBox="0 0 35 35" xmlns="http://www.w3.org/2000/svg">
             <g ref={this.svgGroupRef} fill={this.fillColor} transform="rotate(180 17.5 17.5)">
               <polygon points="0,25 17.5,7.5 35,25" />
             </g>
           </svg>
         )}
-        {this.props.icon === 'single-left' && (
+        {this.props.icon === 'flat-single-left' && (
           <svg width="35" height="35" xmlns="http://www.w3.org/2000/svg">
             <g ref={this.svgGroupRef} fill={this.fillColor} transform="rotate(270 17.5 17.5)">
               <polygon points="0,25 17.5,7.5 35,25" />
             </g>
           </svg>
         )}
-        {this.props.icon === 'single-right' && (
+        {this.props.icon === 'flat-single-right' && (
           <svg width="35" height="35" xmlns="http://www.w3.org/2000/svg">
             <g ref={this.svgGroupRef} fill={this.fillColor} transform="rotate(90 17.5 17.5)">
               <polygon points="0,25 17.5,7.5 35,25" />

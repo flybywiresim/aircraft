@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2022 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
@@ -15,7 +16,7 @@ import {
   DirectToFixTransitionGuidanceState,
   DirectToFixTransition,
 } from '@fmgc/guidance/lnav/transitions/DirectToFixTransition';
-import { PathVector } from '@fmgc/guidance/lnav/PathVector';
+import { PathVector, pathVectorLength, pathVectorPoint } from '@fmgc/guidance/lnav/PathVector';
 import { CALeg } from '@fmgc/guidance/lnav/legs/CA';
 import { isCourseReversalLeg, isHold } from '@fmgc/guidance/lnav/legs';
 import { maxBank } from '@fmgc/guidance/lnav/CommonGeometry';
@@ -24,12 +25,13 @@ import { CRLeg } from '@fmgc/guidance/lnav/legs/CR';
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
 import { TransitionPicker } from '@fmgc/guidance/lnav/TransitionPicker';
-import { distanceTo } from 'msfs-geo';
+import { bearingTo, distanceTo } from 'msfs-geo';
 import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
-import { FlightPlanElement } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { FlightPlanElement, FlightPlanLegFlags } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { ControlLaw, CompletedGuidanceParameters, LateralPathGuidance } from './ControlLaws';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
+import { BitFlags } from '@microsoft/msfs-sdk';
 
 function isGuidableCapturingPath(guidable: Guidable): boolean {
   return !(
@@ -90,9 +92,11 @@ export class Geometry {
 
     const transmitHoldEntry = !this.temp;
 
-    const ret = [];
+    const ret: PathVector[] = [];
 
-    for (const [index, leg] of this.legs.entries()) {
+    // Sort map by leg number, we now do care about the sequence. Allocates, but not too often.
+    const orderedLegs = [...this.legs.entries()].sort((a, b) => a[0] - b[0]);
+    for (const [index, leg] of orderedLegs) {
       if (
         (!missedApproach && leg.metadata.isInMissedApproach) ||
         (missedApproach && !leg.metadata.isInMissedApproach)
@@ -147,14 +151,16 @@ export class Geometry {
    * @param gs              predicted ground speed of the current leg
    * @param ppos            present position coordinates
    * @param trueTrack       present true track
+   * @param plan            the associated flight plan
    * @param activeLegIdx    current active leg index
-   * @param activeTransIdx  current active transition index
+   * @param _activeTransIdx current active transition index
    */
   recomputeWithParameters(
     tas: Knots,
     gs: Knots,
     ppos: Coordinates,
     trueTrack: DegreesTrue,
+    plan: BaseFlightPlan,
     activeLegIdx: number,
     _activeTransIdx: number,
   ) {
@@ -165,19 +171,28 @@ export class Geometry {
       console.time('geometry_recompute');
     }
 
-    for (let i = activeLegIdx ?? 0; this.legs.get(i) || this.legs.get(i + 1); i++) {
+    const fromLegIndex = (activeLegIdx ?? 0) - 1;
+    for (let i = fromLegIndex; this.legs.get(i) || this.legs.get(i + 1); i++) {
       if (!this.legs.has(i)) {
         continue;
       }
 
+      // Make sure to compute the FROM leg if it has not been computed yet. The FROM leg is only marked as computed
+      // if it was once the active leg since our geometry only computes legs including and beyond the active leg.
+      // When we activate a SEC plan, it's possible that we're putting a FROM leg into the active plan that we've never
+      // actually flown. This breaks the geometry if the active leg depends on the FROm leg having been computed before
       const leg = this.legs.get(i);
+      if (i === fromLegIndex && leg.isComputed) {
+        continue;
+      }
+
       const wasNull = leg.isNull;
 
-      this.computeLeg(i, activeLegIdx, ppos, trueTrack, tas, gs);
+      this.computeLeg(plan, i, activeLegIdx, ppos, trueTrack, tas, gs);
 
       // If a leg became null/not null, we immediately recompute it to calculate the new guidables and transitions
       if ((!wasNull && leg.isNull) || (wasNull && !leg.isNull)) {
-        this.computeLeg(i, activeLegIdx, ppos, trueTrack, tas, gs);
+        this.computeLeg(plan, i, activeLegIdx, ppos, trueTrack, tas, gs);
       }
     }
 
@@ -195,6 +210,7 @@ export class Geometry {
   }
 
   private computeLeg(
+    plan: BaseFlightPlan,
     index: number,
     activeLegIdx: number,
     ppos: Coordinates,
@@ -202,13 +218,27 @@ export class Geometry {
     tas: Knots,
     gs: Knots,
   ) {
-    const prevLeg = this.legs.get(index - 1);
+    const prevPrevLeg = this.legs.get(index - 2);
+    let prevLeg = this.legs.get(index - 1);
     const leg = this.legs.get(index);
     const nextLeg = this.legs.get(index + 1);
     const nextNextLeg = this.legs.get(index + 2);
 
+    // If we have a CI-IF-xF sequence, `prevLeg` of the TF leg should be the CI leg, not the IF leg.
+    if (isCiIfXfSequence(prevPrevLeg, prevLeg, leg)) {
+      prevLeg = prevPrevLeg;
+    }
+
     const inboundTransition = this.transitions.get(index - 1);
-    const outboundTransition = this.transitions.get(index);
+
+    // If we have a CI-IF-xF sequence,
+    // - the outbound transition of the CI leg should be the inbound transition of the TF leg, and
+    // - the outbound transition of the IF leg should be `undefined`
+    const outboundTransition = isCiIfXfSequence(leg, nextLeg, nextNextLeg)
+      ? this.transitions.get(index + 1)
+      : isCiIfXfSequence(prevLeg, leg, nextLeg)
+        ? undefined
+        : this.transitions.get(index);
 
     const legPredictedTas = Geometry.getLegPredictedTas(leg, tas);
     const legPredictedGs = Geometry.getLegPredictedGs(leg, gs);
@@ -299,19 +329,17 @@ export class Geometry {
 
     // Compute leg and outbound if previous leg isn't null (we already computed 1 leg forward the previous iteration)
     if (!(prevLeg && prevLeg.isNull)) {
+      // If we have a CI-IF-xF sequence, the CI leg's outbound transition should have CI leg and the TF leg as neighboring guidables.
       const shouldSkipNextLeg = isCiIfXfSequence(leg, nextLeg, nextNextLeg);
-      const chosenOutboundTransition = shouldSkipNextLeg
-        ? TransitionPicker.forLegs(leg, nextNextLeg)
-        : outboundTransition;
       const chosenNextLeg = shouldSkipNextLeg ? nextNextLeg : nextLeg;
 
-      leg.setNeighboringGuidables(inboundTransition ?? prevLeg, chosenOutboundTransition ?? chosenNextLeg);
+      leg.setNeighboringGuidables(inboundTransition ?? prevLeg, outboundTransition ?? chosenNextLeg);
       leg.recomputeWithParameters(activeLegIdx === index, legPredictedTas, legPredictedGs, ppos, trueTrack);
 
-      if (chosenOutboundTransition && chosenNextLeg) {
-        chosenOutboundTransition.setNeighboringGuidables(leg, chosenNextLeg);
-        chosenOutboundTransition.setNeighboringLegs(leg, chosenNextLeg);
-        chosenOutboundTransition.recomputeWithParameters(
+      if (outboundTransition && chosenNextLeg) {
+        outboundTransition.setNeighboringGuidables(leg, chosenNextLeg);
+        outboundTransition.setNeighboringLegs(leg, chosenNextLeg);
+        outboundTransition.recomputeWithParameters(
           activeLegIdx === index + 1,
           legPredictedTas,
           legPredictedGs,
@@ -320,9 +348,22 @@ export class Geometry {
         );
 
         // Since the outbound transition can have TAD, we recompute the leg again to make sure the end point is at the right place for this cycle
-        leg.setNeighboringGuidables(inboundTransition ?? prevLeg, chosenOutboundTransition);
+        leg.setNeighboringGuidables(inboundTransition ?? prevLeg, outboundTransition);
         leg.recomputeWithParameters(activeLegIdx === index, legPredictedTas, legPredictedGs, ppos, trueTrack);
       }
+    }
+
+    const element = plan.legElementAt(index);
+
+    // Only copy predictions from geometry to calculated if the leg is not using copied predictions (copied from primary to SEC)
+    if (element.calculated && !BitFlags.isAll(element.flags, FlightPlanLegFlags.CopiedWithPredictions)) {
+      element.calculated.path.length = 0;
+
+      if (inboundTransition) {
+        element.calculated.path.push(...inboundTransition.predictedPath);
+      }
+
+      element.calculated.path.push(...leg.predictedPath);
     }
   }
 
@@ -464,18 +505,18 @@ export class Geometry {
     return rad;
   }
 
-  getDistanceToGo(activeLegIdx: number, ppos: LatLongAlt): number | null {
+  getDistanceToGo(activeLegIdx: number, ppos: LatLongAlt): number | undefined {
     const activeLeg = this.legs.get(activeLegIdx);
-    if (activeLeg) {
-      return activeLeg.getDistanceToGo(ppos);
-    }
-
-    return null;
+    return activeLeg?.getDistanceToGo(ppos);
   }
 
   shouldSequenceLeg(activeLegIdx: number, ppos: LatLongAlt): boolean {
     const activeLeg = this.legs.get(activeLegIdx);
     const inboundTransition = this.transitions.get(activeLegIdx - 1);
+
+    if (!activeLeg) {
+      return false;
+    }
 
     // Restrict sequencing in cases where we are still in inbound transition. Make an exception for very short legs as the transition could be overshooting.
     if (
@@ -486,17 +527,12 @@ export class Geometry {
       return false;
     }
 
-    const dtg = activeLeg.getDistanceToGo(ppos);
-
-    if (dtg <= 0 || activeLeg.isNull) {
+    if (activeLeg.isNull) {
       return true;
     }
 
-    if (activeLeg) {
-      return activeLeg.getDistanceToGo(ppos) < 0.001;
-    }
-
-    return false;
+    const dtg = activeLeg.getDistanceToGo(ppos);
+    return dtg !== undefined && dtg < 0.001;
   }
 
   onLegSequenced(_sequencedLeg: Leg, nextLeg: Leg, followingLeg: Leg): void {
@@ -581,15 +617,25 @@ export class Geometry {
       return;
     }
 
-    flightPlanLeg.calculated = {
-      distance: 0,
-      distanceWithTransitions: 0,
-      cumulativeDistance: 0,
-      cumulativeDistanceWithTransitions: 0,
-      cumulativeDistanceToEnd: undefined,
-      cumulativeDistanceToEndWithTransitions: undefined,
-      endsInTooSteepPath: false,
-    };
+    if (!flightPlanLeg.calculated) {
+      flightPlanLeg.calculated = {
+        path: [],
+        distance: 0,
+        distanceWithTransitions: 0,
+        cumulativeDistance: 0,
+        cumulativeDistanceWithTransitions: 0,
+        cumulativeDistanceToEnd: undefined,
+        cumulativeDistanceToEndWithTransitions: undefined,
+        endsInTooSteepPath: false,
+      };
+    }
+    flightPlanLeg.calculated.distance = 0;
+    flightPlanLeg.calculated.distanceWithTransitions = 0;
+    flightPlanLeg.calculated.cumulativeDistance = 0;
+    flightPlanLeg.calculated.cumulativeDistanceWithTransitions = 0;
+    flightPlanLeg.calculated.cumulativeDistanceToEnd = undefined;
+    flightPlanLeg.calculated.cumulativeDistanceToEndWithTransitions = undefined;
+    flightPlanLeg.calculated.endsInTooSteepPath = false;
 
     if (geometryLeg) {
       geometryLeg.calculated = flightPlanLeg.calculated;
@@ -738,5 +784,83 @@ export class Geometry {
     }
 
     return [inboundLength, leg.distance, outboundLength];
+  }
+
+  computeAlongTrackDistanceToDestination(
+    activeLegIndex: number,
+    ppos: Coordinates,
+    trueTrack: number,
+  ): number | undefined {
+    const referenceLegIndex = this.chooseReferenceLegIndex(activeLegIndex);
+    const referenceLeg = this.legs.get(referenceLegIndex);
+
+    if (!referenceLeg) {
+      return undefined;
+    }
+
+    const inboundTransition = this.transitions.get(referenceLegIndex - 1);
+    const outboundTransition = this.transitions.get(referenceLegIndex);
+
+    const completeLegAlongTrackPathDtg = Geometry.completeLegAlongTrackPathDistanceToGo(
+      ppos,
+      trueTrack,
+      referenceLeg,
+      inboundTransition,
+      outboundTransition,
+    );
+
+    return Number.isFinite(referenceLeg.calculated?.cumulativeDistanceToEndWithTransitions)
+      ? completeLegAlongTrackPathDtg + referenceLeg.calculated.cumulativeDistanceToEndWithTransitions
+      : undefined;
+  }
+
+  private chooseReferenceLegIndex(activeLegIndex: number): number {
+    const activeLeg = this.legs.get(activeLegIndex);
+
+    if (!activeLeg) {
+      return activeLegIndex + 1;
+    } else if (activeLeg instanceof VMLeg || activeLeg instanceof FMLeg) {
+      return activeLegIndex + 2;
+    }
+
+    return activeLegIndex;
+  }
+
+  static getLegOrientationAtDistanceFromEnd(leg: Leg, distanceFromLegTermination: number): number | null {
+    if (!leg) {
+      return null;
+    }
+
+    const geometry = [];
+
+    if (leg.inboundGuidable.predictedPath && leg.inboundGuidable.predictedPath.length > 0) {
+      geometry.push(...leg.inboundGuidable.predictedPath);
+    }
+
+    if (leg.predictedPath && leg.predictedPath.length > 0) {
+      geometry.push(...leg.predictedPath);
+    }
+
+    if (leg.outboundGuidable.predictedPath && leg.outboundGuidable.predictedPath.length > 0) {
+      geometry.push(...leg.outboundGuidable.predictedPath);
+    }
+
+    if (geometry.length > 0) {
+      // Find right part of geometry. Start backwards
+      let distanceLeft = distanceFromLegTermination;
+      for (let i = geometry.length - 1; i >= 0; i--) {
+        const length = pathVectorLength(geometry[i]);
+
+        if (distanceLeft > length) {
+          distanceLeft -= length;
+          continue;
+        }
+
+        const symbolLocation = pathVectorPoint(geometry[i], distanceLeft);
+        const justBeforeSymbolLocation = pathVectorPoint(geometry[i], distanceLeft - 0.02);
+        return bearingTo(symbolLocation, justBeforeSymbolLocation);
+      }
+    }
+    return null;
   }
 }

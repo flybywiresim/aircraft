@@ -79,6 +79,11 @@ export const A320Failure = Object.freeze({
 
   LeftPfdDisplay: 31000,
   RightPfdDisplay: 31001,
+  LeftNdDisplay: 31002,
+  RightNdDisplay: 31003,
+  UpperEcamDisplay: 31004,
+  LowerEcamDisplay: 31005,
+  EcamControlPanel: 31006,
 
   LgciuPowerSupply1: 32000,
   LgciuPowerSupply2: 32001,
@@ -116,6 +121,7 @@ export const A320Failure = Object.freeze({
   RadioAntennaInterrupted2: 34011,
   RadioAntennaDirectCoupling1: 34020,
   RadioAntennaDirectCoupling2: 34021,
+  Egpwc: 34030,
 });
 
 export const A320FailureDefinitions: FailureDefinition[] = [
@@ -157,13 +163,13 @@ export const A320FailureDefinitions: FailureDefinition[] = [
   [24, A320Failure.AlternatingCurrent1, 'AC 1'],
   [24, A320Failure.AlternatingCurrent2, 'AC 2'],
   [24, A320Failure.AlternatingCurrentEssential, 'AC ESS'],
-  [24, A320Failure.AlternatingCurrentEssentialShed, 'AC ESS SCHED'],
+  [24, A320Failure.AlternatingCurrentEssentialShed, 'AC ESS SHED'],
   [24, A320Failure.AlternatingCurrentStaticInverter, 'AC STAT INV'],
   [24, A320Failure.AlternatingCurrentGndFltService, 'AC GND FLT SRV'],
   [24, A320Failure.DirectCurrent1, 'DC 1'],
   [24, A320Failure.DirectCurrent2, 'DC 2'],
   [24, A320Failure.DirectCurrentEssential, 'DC ESS'],
-  [24, A320Failure.DirectCurrentEssentialShed, 'DC ESS SCHED'],
+  [24, A320Failure.DirectCurrentEssentialShed, 'DC ESS SHED'],
   [24, A320Failure.DirectCurrentBattery, 'DC BAT'],
   [24, A320Failure.DirectCurrentHot1, 'DC HOT 1'],
   [24, A320Failure.DirectCurrentHot2, 'DC HOT 2'],
@@ -193,6 +199,7 @@ export const A320FailureDefinitions: FailureDefinition[] = [
 
   [31, A320Failure.LeftPfdDisplay, 'Captain PFD display'],
   [31, A320Failure.RightPfdDisplay, 'F/O PFD display'],
+  [31, A320Failure.EcamControlPanel, 'ECAM Control Panel'],
 
   [32, A320Failure.LgciuPowerSupply1, 'LGCIU 1 Power supply'],
   [32, A320Failure.LgciuPowerSupply2, 'LGCIU 2 Power supply'],
@@ -229,4 +236,6 @@ export const A320FailureDefinitions: FailureDefinition[] = [
   [34, A320Failure.RadioAntennaInterrupted2, 'RA 2 Interrupted'],
   [34, A320Failure.RadioAntennaDirectCoupling1, 'RA 1 Direct Coupling'],
   [34, A320Failure.RadioAntennaDirectCoupling2, 'RA 2 Direct Coupling'],
+
+  [34, A320Failure.Egpwc, 'EGPWC'],
 ];

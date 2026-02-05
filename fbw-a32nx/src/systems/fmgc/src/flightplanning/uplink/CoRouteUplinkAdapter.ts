@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2022 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
@@ -5,11 +6,13 @@
 
 /* eslint-disable no-await-in-loop */
 
+import { Fix, Airway } from '@flybywiresim/fbw-sdk';
+
+import { Coordinates, distanceTo } from 'msfs-geo';
+
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
-import { Fix, Airway } from '@flybywiresim/fbw-sdk';
-import { Coordinates, distanceTo } from 'msfs-geo';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import type { Fix as CoRouteFix } from '@simbridge/Coroute/Fix';
 import { FmsDataInterface } from '../interface/FmsDataInterface';
@@ -99,12 +102,19 @@ type CoRoute = {
   route: string;
   /* eslint-disable camelcase */
   alternateIcao?: string;
-  navlog: CoRouteFix[];
+  /** `navlog` is undefined when the route is DCT */
+  navlog?: CoRouteFix[];
 };
 
 export class CoRouteUplinkAdapter {
+  private static logTroubleshootingError(fms: FmsDisplayInterface, msg: any) {
+    fms.logTroubleshootingError(String(msg));
+    console.warn(msg);
+  }
+
   static async uplinkFlightPlanFromCoRoute(
     fms: FmsDataInterface & FmsDisplayInterface,
+    intoPlan: number,
     flightPlanService: FlightPlanService,
     ofp: CoRoute,
   ) {
@@ -118,7 +128,10 @@ export class CoRouteUplinkAdapter {
     try {
       await flightPlanService.setAlternate(route.altn, FlightPlanIndex.Uplink);
     } catch (e) {
-      console.error(`[CoRouteUplinkAdapter](uplinkFlightPlanFromCoRoute) Failed to set alternate: ${e}`);
+      CoRouteUplinkAdapter.logTroubleshootingError(
+        fms,
+        `[CoRouteUplinkAdapter](uplinkFlightPlanFromCoRoute) Failed to set alternate: ${e}`,
+      );
     }
 
     const plan = flightPlanService.uplink;
@@ -145,9 +158,9 @@ export class CoRouteUplinkAdapter {
 
     setInsertHeadToEndOfEnroute();
 
-    const ensureAirwaysFinalized = () => {
+    const ensureAirwaysFinalized = async () => {
       if (flightPlanService.uplink.pendingAirways) {
-        flightPlanService.uplink.pendingAirways.finalize();
+        await flightPlanService.uplink.finaliseAirwayEntry();
         flightPlanService.uplink.pendingAirways = undefined;
 
         setInsertHeadToEndOfEnroute();
@@ -211,7 +224,8 @@ export class CoRouteUplinkAdapter {
             );
             insertHead++;
           } else {
-            console.warn(
+            CoRouteUplinkAdapter.logTroubleshootingError(
+              fms,
               `[CoRouteUplinkAdapter](uplinkFlightPlanFromCoRoute) Found no fixes for "sidEnrouteTransition" chunk: ${chunk.ident}`,
             );
 
@@ -238,7 +252,8 @@ export class CoRouteUplinkAdapter {
             );
             insertHead++;
           } else {
-            console.warn(
+            CoRouteUplinkAdapter.logTroubleshootingError(
+              fms,
               `[CoRouteUplinkAdapter](uplinkFlightPlanFromCoRoute) Found no fixes for "waypoint" chunk: ${chunk.ident}`,
             );
 
@@ -279,9 +294,13 @@ export class CoRouteUplinkAdapter {
             const airways = await NavigationDatabaseService.activeDatabase.searchAirway(chunk.ident, airwaySearchFix);
 
             if (airways.length > 0) {
-              plan.pendingAirways.thenAirway(pickAirway(airways, chunk.locationHint));
+              await flightPlanService.continueAirwayEntryViaAirway(
+                pickAirway(airways, chunk.locationHint),
+                FlightPlanIndex.Uplink,
+              );
             } else {
-              console.warn(
+              CoRouteUplinkAdapter.logTroubleshootingError(
+                fms,
                 `[CoRouteUplinkAdapter](uplinkFlightPlanFromCoRoute) Found no airways at fix "${airwaySearchFix.ident}" for airway: "${chunk.ident}"`,
               );
               fms.showFmsErrorMessage(FmsErrorType.AwyWptMismatch);
@@ -303,7 +322,8 @@ export class CoRouteUplinkAdapter {
             if (!plan.pendingAirways) {
               // If we have a termination but never started an airway entry (for example if we could not find the airway in the database),
               // we add the termination fix with a disco in between
-              console.warn(
+              CoRouteUplinkAdapter.logTroubleshootingError(
+                fms,
                 `[CoRouteUplinkAdapter](uplinkFlightPlanFromCoRoute) Found no pending airways for "airwayTermination" chunk. Inserting discontinuity before ${chunk.ident}`,
               );
 
@@ -327,12 +347,13 @@ export class CoRouteUplinkAdapter {
 
             const airwayFix = pickAirwayFix(tailAirway, fixes);
             if (airwayFix) {
-              plan.pendingAirways.thenTo(airwayFix);
+              await flightPlanService.continueAirwayEntryToFix(airwayFix, false, FlightPlanIndex.Uplink);
 
-              ensureAirwaysFinalized();
+              await ensureAirwaysFinalized();
             } else {
               // Fixes with the name of the airway termination are found but they're not on that airway
-              console.warn(
+              CoRouteUplinkAdapter.logTroubleshootingError(
+                fms,
                 `[CoRouteUplinkAdapter](uplinkFlightPlanFromCoRoute) Airway termination ${chunk.ident} not found on airway ${tailAirway.ident}.`,
               );
 
@@ -355,7 +376,8 @@ export class CoRouteUplinkAdapter {
               break;
             }
           } else {
-            console.warn(
+            CoRouteUplinkAdapter.logTroubleshootingError(
+              fms,
               `[CoRouteUplinkAdapter](uplinkFlightPlanFromCoRoute) Found no fixes for "airwayTermination" chunk: ${chunk.ident}. Cancelling airway entry...`,
             );
 
@@ -375,7 +397,7 @@ export class CoRouteUplinkAdapter {
       }
     }
 
-    fms.onUplinkDone();
+    fms.onUplinkDone(intoPlan);
   }
 
   static getRouteFromOfp(ofp: CoRoute): OfpRoute {
@@ -391,7 +413,7 @@ export class CoRouteUplinkAdapter {
     const instructions: OfpRouteChunk[] = [];
 
     // `navlog` is undefined when the route is DCT
-    for (let i = 0; i < ofp.navlog?.length ?? 0; i++) {
+    for (let i = 0; ofp.navlog && i < ofp.navlog.length; i++) {
       const lastFix = ofp.navlog[i - 1];
       const fix = ofp.navlog[i];
 

@@ -1,12 +1,37 @@
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
-import { DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
+import {
+  DisplayComponent,
+  FSComponent,
+  MappedSubject,
+  Subject,
+  SubscribableMapFunctions,
+  Subscription,
+  VNode,
+} from '@microsoft/msfs-sdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { NXSystemMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
 import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { FlightPlanEvents } from '@fmgc/flightplanning/sync/FlightPlanEvents';
+import { MfdSystem } from './MfdUiService';
+import {
+  dataStatusUri,
+  fuelAndLoadPage,
+  flightPlanUriPage,
+  lateralRevisionHoldPage,
+  performancePage,
+  secIndexPageUri,
+  initPage,
+  dirToUri,
+  airwaysPage,
+  departurePage,
+  arrivalPage,
+  lateralRevisionPage,
+  verticalRevisionPage,
+  fixInfoUri,
+} from '../../shared/utils';
 
 export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPageProps> extends DisplayComponent<T> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
@@ -24,7 +49,52 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
 
   protected readonly tmpyActive = Subject.create<boolean>(false);
 
+  /** TMPY is only shown in PERF, FUEL & LOAD, INIT, SEC INDEX, WIND & FPLN + REVISION Pages (lat rev, vert rev, airways, hold, departure, arrival) */
+  private readonly shouldShowTemporaryPageUris = this.props.mfd.uiService.activeUri.map(
+    (uri) =>
+      uri.sys === MfdSystem.Fms &&
+      (uri.page === performancePage ||
+        uri.page === fuelAndLoadPage ||
+        uri.page === initPage ||
+        uri.page === flightPlanUriPage ||
+        uri.page === airwaysPage ||
+        uri.page === departurePage ||
+        uri.page === arrivalPage ||
+        uri.page === lateralRevisionPage ||
+        uri.page === lateralRevisionHoldPage ||
+        uri.page === verticalRevisionPage ||
+        uri.uri === fixInfoUri ||
+        uri.uri === secIndexPageUri ||
+        uri.uri === dirToUri),
+  );
+
+  private readonly displayTmpy = MappedSubject.create(
+    SubscribableMapFunctions.and(),
+    this.shouldShowTemporaryPageUris,
+    this.tmpyActive,
+  );
+
   protected readonly secActive = Subject.create<boolean>(false);
+
+  protected readonly eoActive = Subject.create<boolean>(false);
+
+  private readonly penaltyActive = Subject.create<boolean>(false);
+
+  /** Penalty is only displayed in DATA STATUS, FUEL & LOAD, F-PLN, HOLD, ALTERNATE & WHAT IF Pages */
+  private readonly penaltyUri = this.props.mfd.uiService.activeUri.map(
+    (uri) =>
+      uri.sys === MfdSystem.Fms &&
+      (uri.uri === dataStatusUri ||
+        uri.page === fuelAndLoadPage ||
+        uri.page === flightPlanUriPage ||
+        uri.page === lateralRevisionHoldPage),
+  );
+
+  private readonly displayPenalty = MappedSubject.create(
+    SubscribableMapFunctions.and(),
+    this.penaltyUri,
+    this.penaltyActive,
+  );
 
   protected readonly activeFlightPhase = Subject.create<FmgcFlightPhase>(FmgcFlightPhase.Preflight);
 
@@ -43,6 +113,8 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
           this.activeFlightPhase.set(val);
         }),
     );
+
+    this.subs.push(this.penaltyUri, this.displayPenalty, this.shouldShowTemporaryPageUris, this.displayTmpy);
 
     // this.mfdInViewConsumer = sub.on(this.props.mfd.uiService.captOrFo === 'CAPT' ? 'leftMfdInView' : 'rightMfdInView');
 
@@ -89,6 +161,14 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
           this.onFlightPlanChanged();
         }
       }),
+    );
+
+    this.subs.push(
+      this.props.fmcService.masterFmcChanged.sub(() => {
+        // Check if master FMC exists, re-route subjects
+        this.props.fmcService.master?.fmgc.data.engineOut.pipe(this.eoActive);
+        this.props.fmcService.master?.fmgc.data.fuelPenaltyActive.pipe(this.penaltyActive);
+      }, true),
     );
 
     this.onFlightPlanChanged();
@@ -173,16 +253,16 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
         fm?.vSpeedsForRunway.set(this.loadedFlightPlan.originRunway.ident);
       } else if (fm.vSpeedsForRunway.get() !== this.loadedFlightPlan.originRunway.ident) {
         fm.vSpeedsForRunway.set(this.loadedFlightPlan.originRunway.ident);
-        fm.v1ToBeConfirmed.set(pd?.v1 ?? null);
+        fm.v1ToBeConfirmed.set(pd?.v1.get() ?? null);
         this.loadedFlightPlan.setPerformanceData('v1', null);
-        fm.vrToBeConfirmed.set(pd?.vr ?? null);
+        fm.vrToBeConfirmed.set(pd?.vr.get() ?? null);
         this.loadedFlightPlan.setPerformanceData('vr', null);
-        fm.v2ToBeConfirmed.set(pd?.v2 ?? null);
+        fm.v2ToBeConfirmed.set(pd?.v2.get() ?? null);
         this.loadedFlightPlan.setPerformanceData('v2', null);
 
         this.props.fmcService.master?.addMessageToQueue(
           NXSystemMessages.checkToData,
-          () => this.loadedFlightPlan?.performanceData.vr !== null,
+          () => this.loadedFlightPlan?.performanceData.vr.get() !== null,
           undefined,
         );
       }
@@ -208,8 +288,10 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
       <ActivePageTitleBar
         activePage={this.activePageTitle}
         offset={Subject.create('')}
-        eoIsActive={Subject.create(false)}
-        tmpyIsActive={this.tmpyActive}
+        eoIsActive={this.eoActive}
+        tmpyIsActive={this.displayTmpy}
+        penaltyIsActive={this.displayPenalty}
+        isFmsSubsystemPage={true}
       />
     );
   }

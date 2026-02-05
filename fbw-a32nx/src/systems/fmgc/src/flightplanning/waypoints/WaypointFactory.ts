@@ -3,16 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import {
-  Airport,
-  EnrouteSubsectionCode,
-  Runway,
-  SectionCode,
-  Waypoint,
-  WaypointArea,
-  Icao,
-  AirportSubsectionCode,
-} from '@flybywiresim/fbw-sdk';
+import { EnrouteSubsectionCode, SectionCode, Waypoint, WaypointArea, Icao } from '@flybywiresim/fbw-sdk';
 import { Coordinates, distanceTo, placeBearingDistance, placeBearingIntersection } from 'msfs-geo';
 
 export namespace WaypointFactory {
@@ -52,27 +43,5 @@ export namespace WaypointFactory {
     const distanceTwo = distanceTo(locationA, two);
 
     return WaypointFactory.fromLocation(ident, distanceOne < distanceTwo ? one : two);
-  }
-
-  export function fromRunway(runway: Runway): Waypoint {
-    return {
-      ...runway,
-      sectionCode: SectionCode.Airport,
-      // FIXME should be AirportSubsectionCode.Runways
-      subSectionCode: AirportSubsectionCode.TerminalWaypoints,
-      location: runway.thresholdLocation,
-      area: WaypointArea.Terminal,
-    };
-  }
-
-  export function fromAirport(airport: Airport): Waypoint {
-    return {
-      ...airport,
-      sectionCode: SectionCode.Airport,
-      // FIXME should be AirportSubsectionCode.ReferencePoints, then we also don't need the airportIdent
-      subSectionCode: AirportSubsectionCode.TerminalWaypoints,
-      airportIdent: airport.ident,
-      area: WaypointArea.Terminal,
-    };
   }
 }

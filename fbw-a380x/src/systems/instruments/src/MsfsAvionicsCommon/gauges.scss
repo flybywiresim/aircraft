@@ -27,6 +27,12 @@
     font-size: 20px;
   }
 
+  .GaugeTextSmall {
+    stroke: $display-white;
+    fill: $display-white;
+    font-size: 12px;
+  }
+
   .GaugeIndicator {
     stroke: $display-green;
     stroke-width: 3;

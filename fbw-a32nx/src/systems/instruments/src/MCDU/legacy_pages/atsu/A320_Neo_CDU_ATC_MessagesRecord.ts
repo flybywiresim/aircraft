@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { AtsuMessageDirection, AtsuMessageSerializationFormat } from '@datalink/common';
 import { Keypad } from '../../legacy/A320_Neo_CDU_Keypad';
 import { CDUAtcMenu } from './A320_Neo_CDU_ATC_Menu';
@@ -131,7 +132,7 @@ export class CDUAtcMessagesRecord {
             mcdu.atsu.removeMessage(messages[offset + i].UniqueMessageID, false);
             CDUAtcMessagesRecord.ShowPage(mcdu, null, offset, false);
           } else {
-            CDUAtcMessage.ShowPage(mcdu, messages, offset + i, true);
+            CDUAtcMessage.ShowPage(mcdu, messages, offset + i, null);
           }
         }
       };

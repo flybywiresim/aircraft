@@ -1,4 +1,5 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// @ts-strict-ignore
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -7,9 +8,9 @@ import { ConstraintReader } from '@fmgc/guidance/vnav/ConstraintReader';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { isAltitudeConstraintMet } from '@fmgc/guidance/vnav/descent/DescentPathBuilder';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
-import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
-import { AltitudeDescriptor } from '@flybywiresim/fbw-sdk';
+import { AltitudeConstraint, AltitudeDescriptor, SpeedConstraint } from '@flybywiresim/fbw-sdk';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { AircraftConfig } from '../../../flightplanning/AircraftConfigTypes';
 
 // TODO: Merge this with VerticalCheckpoint
 export interface VerticalWaypointPrediction {
@@ -146,8 +147,9 @@ export class NavGeometryProfile extends BaseGeometryProfile {
     private flightPlanService: FlightPlanService,
     private constraintReader: ConstraintReader,
     private atmosphericConditions: AtmosphericConditions,
+    config: AircraftConfig,
   ) {
-    super();
+    super(config);
   }
 
   override get maxAltitudeConstraints(): MaxAltitudeConstraint[] {

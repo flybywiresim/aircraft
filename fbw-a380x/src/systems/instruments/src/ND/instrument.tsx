@@ -26,9 +26,12 @@ import {
   FcuBusPublisher,
   FcuSimVars,
   FmsOansSimvarPublisher,
+  LgciuBusPublisher,
+  OansControlEvents,
+  RaBusPublisher,
 } from '@flybywiresim/fbw-sdk';
 import { NDComponent } from '@flybywiresim/navigation-display';
-import { a380EfisZoomRangeSettings, A380EfisZoomRangeValue, Oanc, OansControlEvents } from '@flybywiresim/oanc';
+import { a380EfisZoomRangeSettings, A380EfisZoomRangeValue, Oanc } from '@flybywiresim/oanc';
 
 import { ContextMenu, ContextMenuElement } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/ContextMenu';
 import { MouseCursor, MouseCursorColor } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/MouseCursor';
@@ -48,10 +51,13 @@ import { FMBusPublisher } from '../MsfsAvionicsCommon/providers/FMBusPublisher';
 import { ResetPanelSimvarPublisher, ResetPanelSimvars } from '../MsfsAvionicsCommon/providers/ResetPanelPublisher';
 import { RopRowOansPublisher } from '@flybywiresim/msfs-avionics-common';
 import { SimplaneValueProvider } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
+import { AesuBusPublisher } from '../MsfsAvionicsCommon/providers/AesuBusPublisher';
+import { A380XFcuBusPublisher } from '@shared/publishers/A380XFcuBusPublisher';
+import { NDFMMessageTypes } from '@shared/FmMessages';
 
 import './style.scss';
 import './oans-style.scss';
-import { VerticalDisplayDummy } from 'instruments/src/ND/VerticalDisplay';
+import { VerticalDisplay } from 'instruments/src/ND/VerticalDisplay/VerticalDisplay';
 
 declare type MousePosition = {
   x: number;
@@ -93,6 +99,10 @@ class NDInstrument implements FsInstrument {
 
   private readonly egpwcBusPublisher: EgpwcBusPublisher;
 
+  private readonly raBusPublisher: RaBusPublisher;
+
+  private readonly lgciuBusPublisher: LgciuBusPublisher;
+
   private readonly hEventPublisher: HEventPublisher;
 
   private readonly resetPanelPublisher: ResetPanelSimvarPublisher;
@@ -100,6 +110,10 @@ class NDInstrument implements FsInstrument {
   private readonly adirsValueProvider: AdirsValueProvider<NDSimvars>;
 
   private readonly simplaneValueProvider: SimplaneValueProvider;
+
+  private readonly aesuPublisher: AesuBusPublisher;
+
+  private readonly a380xFcuBusPublisher: A380XFcuBusPublisher;
 
   private readonly clock: Clock;
 
@@ -165,8 +179,12 @@ class NDInstrument implements FsInstrument {
     this.tcasBusPublisher = new TcasBusPublisher(this.bus);
     this.dmcPublisher = new DmcPublisher(this.bus);
     this.egpwcBusPublisher = new EgpwcBusPublisher(this.bus, side);
+    this.raBusPublisher = new RaBusPublisher(this.bus);
+    this.lgciuBusPublisher = new LgciuBusPublisher(this.bus);
     this.hEventPublisher = new HEventPublisher(this.bus);
     this.resetPanelPublisher = new ResetPanelSimvarPublisher(this.bus);
+    this.aesuPublisher = new AesuBusPublisher(this.bus);
+    this.a380xFcuBusPublisher = new A380XFcuBusPublisher(this.bus);
 
     this.adirsValueProvider = new AdirsValueProvider(this.bus, this.simVarPublisher, side);
     this.simplaneValueProvider = new SimplaneValueProvider(this.bus);
@@ -186,8 +204,12 @@ class NDInstrument implements FsInstrument {
     this.backplane.addPublisher('tcas', this.tcasBusPublisher);
     this.backplane.addPublisher('dmc', this.dmcPublisher);
     this.backplane.addPublisher('egpwc', this.egpwcBusPublisher);
+    this.backplane.addPublisher('ra', this.raBusPublisher);
+    this.backplane.addPublisher('lgciu', this.lgciuBusPublisher);
     this.backplane.addPublisher('hEvent', this.hEventPublisher);
     this.backplane.addPublisher('resetPanel', this.resetPanelPublisher);
+    this.backplane.addPublisher('aesu', this.aesuPublisher);
+    this.backplane.addPublisher('a380xFcu', this.a380xFcuBusPublisher);
 
     this.backplane.addInstrument('Simplane', this.simplaneValueProvider);
     this.backplane.addInstrument('clock', this.clock);
@@ -247,6 +269,8 @@ class NDInstrument implements FsInstrument {
             terrainThresholdPaddingText={a380TerrainThresholdPadValue}
             rangeChangeMessage={a380NdRangeChange}
             modeChangeMessage={a380NdModeChange}
+            mapOptions={{ waypointBoxing: true }}
+            fmMessages={Object.values(NDFMMessageTypes)}
           />
           <ContextMenu
             ref={this.contextMenuRef}
@@ -299,7 +323,7 @@ class NDInstrument implements FsInstrument {
             visible={this.cursorVisible}
             color={this.oansShown.map((it) => (it ? MouseCursorColor.Magenta : MouseCursorColor.Yellow))}
           />
-          <VerticalDisplayDummy bus={this.bus} side={this.efisSide} />
+          <VerticalDisplay bus={this.bus} side={this.efisSide} />
         </CdsDisplayUnit>
       </div>,
       document.getElementById('ND_CONTENT'),

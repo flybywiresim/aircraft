@@ -1370,7 +1370,7 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
             && self
                 .pressure_schedule_manager
                 .as_ref()
-                .map_or(false, |manager| manager.should_open_outflow_valve())
+                .is_some_and(|manager| manager.should_open_outflow_valve())
     }
 
     fn should_close_aft_ofv(&self) -> bool {

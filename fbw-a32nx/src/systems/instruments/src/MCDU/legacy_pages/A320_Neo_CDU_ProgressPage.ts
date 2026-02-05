@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023, 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -5,6 +6,8 @@ import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { Column, FormatLine } from '../legacy/A320_Neo_CDU_Format';
 
 export class CDUProgressPage {
   static ShowPage(mcdu: LegacyFmsPageInterface) {
@@ -14,34 +17,42 @@ export class CDUProgressPage {
       CDUProgressPage.ShowPage(mcdu);
     };
     mcdu.activeSystem = 'FMGC';
-    const flightNo = mcdu.flightNumber ?? '';
-    const flMax = mcdu.getMaxFlCorrected();
+
+    const plan = mcdu.getFlightPlan(FlightPlanIndex.Active);
+
+    const flightNo = plan.flightNumber ?? '';
+    const cruiseLevel = plan.performanceData.cruiseFlightLevel.get();
+    const recMaxFl = mcdu.getMaxFlCorrected();
+    const flMaxText = recMaxFl !== null ? `{magenta}FL${recMaxFl.toString()}{end}` : `-----`;
     const flOpt =
-      mcdu._zeroFuelWeightZFWCGEntered && mcdu._blockFuelEntered && (mcdu.isAllEngineOn() || mcdu.isOnGround())
-        ? '{green}FL' + (Math.floor(flMax / 5) * 5).toString() + '{end}'
+      recMaxFl !== null &&
+      plan.performanceData.zeroFuelWeightCenterOfGravity.get() !== null &&
+      plan.performanceData.blockFuel.get() !== null &&
+      (mcdu.isAllEngineOn() || mcdu.isOnGround())
+        ? '{green}FL' + (Math.floor(recMaxFl / 5) * 5).toString() + '{end}'
         : '-----';
-    const adirsUsesGpsAsPrimary = SimVar.GetSimVarValue('L:A32NX_ADIRS_USES_GPS_AS_PRIMARY', 'Bool');
-    const gpsPrimaryStatus = adirsUsesGpsAsPrimary ? '{green}GPS PRIMARY{end}' : '';
+    const gpsPrimary = mcdu.navigation.getGpsPrimary();
+    const gpsPrimaryStatus = mcdu.navigation.getGpsPrimary() ? '{green}GPS PRIMARY{end}' : '';
     let flCrz = '-----';
     let vDevCell = '';
     switch (mcdu.flightPhaseManager.phase) {
       case FmgcFlightPhase.Preflight:
       case FmgcFlightPhase.Takeoff: {
-        if (mcdu.cruiseLevel) {
-          flCrz = 'FL' + mcdu.cruiseLevel.toFixed(0).padStart(3, '0') + '[color]cyan';
+        if (cruiseLevel) {
+          flCrz = 'FL' + cruiseLevel.toFixed(0).padStart(3, '0') + '[color]cyan';
         }
         break;
       }
       case FmgcFlightPhase.Climb: {
         const alt = Math.round(Simplane.getAutoPilotSelectedAltitudeLockValue('feet') / 100);
         const altCtn = Math.round(mcdu.constraintAlt / 100);
-        if (!mcdu.cruiseLevel && !mcdu._activeCruiseFlightLevelDefaulToFcu) {
+        if (!cruiseLevel && !mcdu._activeCruiseFlightLevelDefaulToFcu) {
           flCrz =
             'FL' +
             (altCtn && alt > altCtn ? altCtn.toFixed(0).padStart(3, '0') : alt.toFixed(0).padStart(3, '0')) +
             '[color]cyan';
         } else {
-          flCrz = 'FL' + mcdu.cruiseLevel.toFixed(0).padStart(3, '0') + '[color]cyan';
+          flCrz = 'FL' + cruiseLevel.toFixed(0).padStart(3, '0') + '[color]cyan';
         }
         break;
       }
@@ -50,8 +61,8 @@ export class CDUProgressPage {
         // We can get here by taking off without FROM/TO entered, and climbing to the FCU altitude (which will then be used as cruise altitude)
         // to enter the cruise phase. We then enter a new FROM/TO which resets the cruise altitude, but I don't know if it puts us in the CLB phase
         // or keeps us in CRZ.
-        if (mcdu.cruiseLevel) {
-          flCrz = 'FL' + mcdu.cruiseLevel.toFixed(0).padStart(3, '0') + '[color]cyan';
+        if (cruiseLevel) {
+          flCrz = 'FL' + cruiseLevel.toFixed(0).padStart(3, '0') + '[color]cyan';
         }
         break;
       }
@@ -97,7 +108,7 @@ export class CDUProgressPage {
     }
 
     mcdu.onLeftInput[0] = (value, scratchpadCallback) => {
-      if (mcdu.trySetCruiseFlCheckInput(value)) {
+      if (mcdu.trySetCruiseFlCheckInput(value, FlightPlanIndex.Active)) {
         CDUProgressPage.ShowPage(mcdu);
       } else {
         scratchpadCallback();
@@ -137,14 +148,16 @@ export class CDUProgressPage {
       });
     };
 
-    let rnpCell = '-.-';
+    let rnpCell = '{white}----{end}';
     const rnpSize = mcdu.navigation.requiredPerformance.manualRnp ? 'big' : 'small';
     const rnp = mcdu.navigation.requiredPerformance.activeRnp;
     // TODO check 2 decimal cut-off
-    if (rnp > 1) {
-      rnpCell = rnp.toFixed(1).padStart(4);
-    } else if (rnp !== undefined) {
-      rnpCell = rnp.toFixed(2);
+    if (rnp !== undefined) {
+      if (rnp > 1) {
+        rnpCell = rnp.toFixed(1).padStart(4);
+      } else {
+        rnpCell = rnp.toFixed(2);
+      }
     }
 
     mcdu.onLeftInput[5] = (input, scratchpadCallback) => {
@@ -171,23 +184,25 @@ export class CDUProgressPage {
       CDUProgressPage.ShowPage(mcdu);
     };
 
-    let anpCell = '-.-';
+    let anpCell = '{white}----{end}';
     const anp = mcdu.navigation.currentPerformance;
     // TODO check 2 decimal cut-off
-    if (anp > 1) {
-      anpCell = anp.toFixed(1).padStart(4);
-    } else if (anp !== undefined) {
-      anpCell = anp.toFixed(2);
+    if (anp !== undefined) {
+      if (anp > 1) {
+        anpCell = anp.toFixed(1).padStart(4);
+      } else {
+        anpCell = anp.toFixed(2);
+      }
     }
 
     mcdu.setTemplate([
-      ['{green}' + flightPhase.padStart(15, '\xa0') + '{end}\xa0' + flightNo.padEnd(11, '\xa0')],
+      [...FormatLine(new Column(11, flightPhase, Column.green, { alignRight: true }), new Column(13, flightNo))],
       ['\xa0' + 'CRZ\xa0', 'OPT\xa0\xa0\xa0\xa0REC MAX'],
-      [flCrz, flOpt + '\xa0\xa0\xa0\xa0' + '{magenta}FL' + flMax.toString() + '\xa0{end}'],
+      [flCrz, flOpt + '\xa0\xa0\xa0\xa0' + flMaxText + '\xa0'],
       [''],
       ['<REPORT', vDevCell],
-      [adirsUsesGpsAsPrimary ? '' : '\xa0POSITION UPDATE AT'],
-      [adirsUsesGpsAsPrimary ? '' : '{small}*{end}[\xa0\xa0\xa0\xa0][color]cyan'],
+      [gpsPrimary ? '' : '\xa0POSITION UPDATE AT'],
+      [gpsPrimary ? '' : '{small}*{end}[\xa0\xa0\xa0\xa0][color]cyan'],
       ['\xa0\xa0BRG / DIST'],
       [progBearingDist, `{small}{white}TO{end}{end}\xa0{cyan}${progWaypoint}{end}`],
       ['\xa0PREDICTIVE'],
@@ -196,7 +211,7 @@ export class CDUProgressPage {
       [
         `{cyan}{${rnpSize}}${rnpCell}NM{end}{end}`,
         `{green}{small}${anpCell}NM{end}{end}`,
-        `{green}${mcdu.navigation.accuracyHigh ? 'HIGH' : 'LOW'}{end}`,
+        `{green}${mcdu.navigation.accuracyHigh.get() ? 'HIGH' : 'LOW\xa0'}{end}`,
       ],
     ]);
 

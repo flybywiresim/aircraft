@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { EventBus, Subject, Subscribable, Subscription } from '@microsoft/msfs-sdk';
 
 import { BaseFlightPlan } from './BaseFlightPlan';
@@ -11,7 +12,7 @@ import { FlightPlanEvents } from '@fmgc/flightplanning/sync/FlightPlanEvents';
  *
  * **Note:** Add flight plan elements here as you need them reactively in MFD/ND UI.
  */
-export class ObservableFlightPlan {
+export class ObservableFlightPlan implements Subscription {
   private readonly subscriptions: Subscription[] = [];
 
   private readonly flightPlanEventsSubscriber = this.bus.getSubscriber<FlightPlanEvents>();
@@ -26,7 +27,35 @@ export class ObservableFlightPlan {
     this.initializeFromPlan(plan);
   }
 
+  public isAlive = true;
+
+  public isPaused = false;
+
+  public readonly canInitialNotify = true;
+
+  public pause(): this {
+    this.isPaused = true;
+
+    for (const sub of this.subscriptions) {
+      sub.pause();
+    }
+
+    return this;
+  }
+
+  public resume(initialNotify?: boolean): this {
+    this.isPaused = false;
+
+    for (const sub of this.subscriptions) {
+      sub.resume(initialNotify);
+    }
+
+    return this;
+  }
+
   public destroy(): void {
+    this.isAlive = false;
+
     for (const subscription of this.subscriptions) {
       subscription.destroy();
     }
@@ -82,7 +111,7 @@ export class ObservableFlightPlan {
         const aRadial = a?.radials[i];
         const bRadial = b?.radials[i];
 
-        if (aRadial !== bRadial) {
+        if (aRadial?.magneticBearing !== bRadial?.magneticBearing) {
           return false;
         }
       }
@@ -95,7 +124,7 @@ export class ObservableFlightPlan {
         const aRadius = a?.radii[i];
         const bRadius = b?.radii[i];
 
-        if (aRadius !== bRadius) {
+        if (aRadius?.radius !== bRadius?.radius) {
           return false;
         }
       }

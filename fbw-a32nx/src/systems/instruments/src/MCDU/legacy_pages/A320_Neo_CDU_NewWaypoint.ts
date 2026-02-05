@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023, 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -89,11 +90,11 @@ export class CDUNewWaypoint {
 
     // ident
     mcdu.onLeftInput[0] = (value, scratchpadCallback) => {
-      if (/^[A-Z0-9]{2,7}$/.test(value)) {
-        if (_inProgressData === undefined) {
-          _inProgressData = {};
-        }
-        _inProgressData.ident = value;
+      if (_inProgressData.ident !== undefined) {
+        mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+        scratchpadCallback();
+      } else if (/^[A-Z0-9]{2,7}$/.test(value)) {
+        _inProgressData = { ident: value };
         requestAnimationFrame(() => CDUNewWaypoint.ShowPage(mcdu, doneCallback, _inProgressData));
       } else {
         mcdu.setScratchpadMessage(NXSystemMessages.formatError);
@@ -240,7 +241,7 @@ export class CDUNewWaypoint {
 
     if (_inProgressData !== undefined) {
       mcdu.onRightInput[5] = () => {
-        let stored;
+        let stored: PilotWaypoint;
         switch (_inProgressData.type) {
           case PilotWaypointType.LatLon:
             stored = mcdu.dataManager.createLatLonWaypoint(_inProgressData.coordinates, true, _inProgressData.ident);
@@ -270,7 +271,7 @@ export class CDUNewWaypoint {
         }
         requestAnimationFrame(() => {
           if (doneCallback !== undefined) {
-            doneCallback(stored.waypoint);
+            doneCallback(stored);
           } else {
             CDUPilotsWaypoint.ShowPage(mcdu, stored.storedIndex);
           }

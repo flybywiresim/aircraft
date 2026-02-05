@@ -1,10 +1,13 @@
-use crate::simulation::{
-    InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
-    SimulatorWriter, VariableIdentifier, Write, Writer,
+use crate::{
+    shared::{ConsumePower, ElectricalBusType, ElectricalBuses},
+    simulation::{
+        InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
+        SimulatorWriter, UpdateContext, VariableIdentifier, Write, Writer,
+    },
 };
 use nalgebra::Vector3;
 use num_traits::Zero;
-use uom::si::{f64::Mass, mass::kilogram};
+use uom::si::{electric_current::ampere, f64::*, mass::kilogram};
 
 pub const FUEL_GALLONS_TO_KG: f64 = 3.039075693483925;
 
@@ -37,11 +40,28 @@ pub trait FuelPayload {
 pub trait FuelCG {
     fn center_of_gravity(&self) -> Vector3<f64>;
 }
+
+#[derive(Clone, Copy, Debug)]
+pub struct FuelPumpProperties {
+    pub powered_by: ElectricalBusType,
+    pub consumption_current_ampere: f64,
+}
+
 #[derive(Debug)]
 pub struct FuelInfo<'a> {
     pub fuel_tank_id: &'a str,
     pub position: (f64, f64, f64),
     pub total_capacity_gallons: f64,
+}
+impl FuelInfo<'_> {
+    pub fn into_fuel_tank(self, context: &mut InitContext, write: bool) -> FuelTank {
+        FuelTank::new(
+            context,
+            self.fuel_tank_id,
+            Vector3::new(self.position.0, self.position.1, self.position.2),
+            write,
+        )
+    }
 }
 
 #[derive(Debug)]
@@ -91,33 +111,38 @@ impl SimulationElement for FuelTank {
             );
         }
     }
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        visitor.visit(self);
-    }
 }
 
-pub struct FuelSystem<const N: usize> {
+pub struct FuelSystem<const N: usize, const PUMP_COUNT: usize> {
     unlimited_fuel_id: VariableIdentifier,
     unlimited_fuel: bool,
 
-    fuel_total_weight_id: VariableIdentifier,
-    fuel_total_weight: Mass,
+    total_fuel_quantity_id: VariableIdentifier,
+    total_fuel_volume_id: VariableIdentifier,
 
     fuel_tanks: [FuelTank; N],
+    fuel_pumps: [FuelPump; PUMP_COUNT],
 }
-impl<const N: usize> FuelSystem<N> {
-    pub fn new(context: &mut InitContext, fuel_tanks: [FuelTank; N]) -> Self {
+impl<const N: usize, const PUMP_COUNT: usize> FuelSystem<N, PUMP_COUNT> {
+    pub fn new(
+        context: &mut InitContext,
+        fuel_tanks: [FuelTank; N],
+        fuel_pumps: [FuelPump; PUMP_COUNT],
+    ) -> Self {
         FuelSystem {
             unlimited_fuel_id: context.get_identifier("UNLIMITED FUEL".to_owned()),
             unlimited_fuel: false,
-            fuel_total_weight_id: context.get_identifier("FUEL TOTAL QUANTITY WEIGHT".to_owned()),
-            fuel_total_weight: Mass::default(),
+            total_fuel_quantity_id: context.get_identifier("TOTAL_FUEL_QUANTITY".to_owned()),
+            total_fuel_volume_id: context.get_identifier("TOTAL_FUEL_VOLUME".to_owned()),
             fuel_tanks,
+            fuel_pumps,
         }
     }
 
     pub fn total_load(&self) -> Mass {
-        self.fuel_total_weight
+        self.fuel_tanks
+            .iter()
+            .fold(Mass::default(), |acc, x| acc + x.quantity())
     }
 
     pub fn tank_has_fuel(&self, t: usize) -> bool {
@@ -133,7 +158,7 @@ impl<const N: usize> FuelSystem<N> {
         let masses = self.fuel_tanks.iter().map(|t| t.quantity());
 
         // This section of code calculates the center of gravity (assume center of gravity/center of mass is near identical)
-        let total_mass_kg = self.fuel_total_weight.get::<kilogram>();
+        let total_mass_kg = self.total_load().get::<kilogram>();
         if total_mass_kg > 0. {
             positions
                 .zip(masses)
@@ -149,14 +174,60 @@ impl<const N: usize> FuelSystem<N> {
         self.fuel_tanks[t].quantity()
     }
 }
-impl<const N: usize> SimulationElement for FuelSystem<N> {
+impl<const N: usize, const PUMP_COUNT: usize> SimulationElement for FuelSystem<N, PUMP_COUNT> {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         accept_iterable!(self.fuel_tanks, visitor);
+        accept_iterable!(self.fuel_pumps, visitor);
         visitor.visit(self);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        let total_weight = self.total_load().get::<kilogram>();
+        writer.write(&self.total_fuel_quantity_id, total_weight);
+        writer.write(
+            &self.total_fuel_volume_id,
+            total_weight / FUEL_GALLONS_TO_KG,
+        );
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.unlimited_fuel = reader.read(&self.unlimited_fuel_id);
-        self.fuel_total_weight = reader.read(&self.fuel_total_weight_id);
+    }
+}
+
+#[derive(Debug)]
+pub struct FuelPump {
+    pump_id: VariableIdentifier,
+    properties: FuelPumpProperties,
+    available_potential: ElectricPotential,
+    running: bool,
+}
+impl FuelPump {
+    pub fn new(context: &mut InitContext, id: usize, properties: FuelPumpProperties) -> Self {
+        Self {
+            pump_id: context.get_identifier(format!("FUELSYSTEM PUMP ACTIVE:{id}")),
+            properties,
+            available_potential: ElectricPotential::default(),
+            running: false,
+        }
+    }
+}
+impl SimulationElement for FuelPump {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.running = reader.read(&self.pump_id);
+    }
+
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.available_potential = buses.potential_of(self.properties.powered_by).raw();
+    }
+
+    fn consume_power<T: ConsumePower>(&mut self, _: &UpdateContext, power: &mut T) {
+        let consumed_power = if self.running {
+            self.available_potential
+                * ElectricCurrent::new::<ampere>(self.properties.consumption_current_ampere)
+        } else {
+            Power::default()
+        };
+        power.consume_from_bus(self.properties.powered_by, consumed_power);
     }
 }

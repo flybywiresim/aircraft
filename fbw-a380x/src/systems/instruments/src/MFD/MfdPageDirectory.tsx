@@ -32,38 +32,53 @@ import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { MfdUiService } from 'instruments/src/MFD/pages/common/MfdUiService';
-import { MfdFmsDataDebug } from 'instruments/src/MFD/pages/FMS/DATA/MfdFmsDataDebug';
 import { MfdSurvControls } from 'instruments/src/MFD/pages/SURV/MfdSurvControls';
 import { MfdFmsFplnFixInfo } from './pages/FMS/F-PLN/MfdFmsFplnFixInfo';
+import { MfdFmsPositionMonitor } from './pages/FMS/POSITION/MfdFmsPositionMonitor';
 import { MfdSurvStatusSwitching } from 'instruments/src/MFD/pages/SURV/MfdSurvStatusSwitching';
 import { MfdFmsDataAirport } from 'instruments/src/MFD/pages/FMS/DATA/MfdFmsDataAirport';
+import { AtcDatalinkSystem } from './ATCCOM/AtcDatalinkSystem';
+import {
+  activeFlightPlanFuelAndLoadUri,
+  fuelAndLoadPage,
+  activeFlightPlanPageUri,
+  flightPlanUriPage,
+  activeFlightPlanHoldUri,
+  lateralRevisionHoldPage,
+  dataStatusUri,
+  performancePage,
+  initPage,
+  fixInfoUri,
+  dirToUri,
+} from './shared/utils';
 
 export function pageForUrl(
   url: string,
   bus: EventBus,
   mfd: FmsDisplayInterface & MfdDisplayInterface,
   fmcService: FmcServiceInterface,
+  atcService: AtcDatalinkSystem,
 ): VNode {
   switch (url) {
-    case 'fms/active/perf':
-    case 'fms/sec1/perf':
-    case 'fms/sec2/perf':
-    case 'fms/sec3/perf':
+    case 'fms/active/' + performancePage:
+    case 'fms/sec1/' + performancePage:
+    case 'fms/sec2/' + performancePage:
+    case 'fms/sec3/' + performancePage:
       return <MfdFmsPerf pageTitle="PERF" bus={bus} mfd={mfd} fmcService={fmcService} />;
-    case 'fms/active/init':
-    case 'fms/sec1/init':
-    case 'fms/sec2/init':
-    case 'fms/sec3/init':
+    case 'fms/active/' + initPage:
+    case 'fms/sec1/' + initPage:
+    case 'fms/sec2/' + initPage:
+    case 'fms/sec3/' + initPage:
       return <MfdFmsInit pageTitle="INIT" bus={bus} mfd={mfd} fmcService={fmcService} />;
-    case 'fms/active/fuel-load':
-    case 'fms/sec1/fuel-load':
-    case 'fms/sec2/fuel-load':
-    case 'fms/sec3/fuel-load':
+    case activeFlightPlanFuelAndLoadUri:
+    case 'fms/sec1/' + fuelAndLoadPage:
+    case 'fms/sec2/' + fuelAndLoadPage:
+    case 'fms/sec3/' + fuelAndLoadPage:
       return <MfdFmsFuelLoad pageTitle="FUEL&LOAD" bus={bus} mfd={mfd} fmcService={fmcService} />;
-    case 'fms/active/f-pln':
-    case 'fms/sec1/f-pln':
-    case 'fms/sec2/f-pln':
-    case 'fms/sec3/f-pln':
+    case activeFlightPlanPageUri:
+    case 'fms/sec1/' + flightPlanUriPage:
+    case 'fms/sec2/' + flightPlanUriPage:
+    case 'fms/sec3/' + flightPlanUriPage:
       return <MfdFmsFpln pageTitle="F-PLN" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'fms/active/f-pln-airways':
     case 'fms/sec1/f-pln-airways':
@@ -80,28 +95,28 @@ export function pageForUrl(
     case 'fms/sec2/f-pln-arrival':
     case 'fms/sec3/f-pln-arrival':
       return <MfdFmsFplnArr pageTitle="F-PLN/ARRIVAL" bus={bus} mfd={mfd} fmcService={fmcService} />;
-    case 'fms/active/f-pln-direct-to':
+    case dirToUri:
       return <MfdFmsFplnDirectTo pageTitle="F-PLN/DIRECT-TO" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'fms/active/f-pln-vert-rev':
     case 'fms/sec1/f-pln-vert-rev':
     case 'fms/sec2/f-pln-vert-rev':
     case 'fms/sec3/f-pln-vert-rev':
       return <MfdFmsFplnVertRev pageTitle="F-PLN/VERT REV" bus={bus} mfd={mfd} fmcService={fmcService} />;
-    case 'fms/active/f-pln-hold':
-    case 'fms/sec1/f-pln-hold':
-    case 'fms/sec2/f-pln-hold':
-    case 'fms/sec3/f-pln-hold':
+    case activeFlightPlanHoldUri:
+    case 'fms/sec1/' + lateralRevisionHoldPage:
+    case 'fms/sec2/' + lateralRevisionHoldPage:
+    case 'fms/sec3/' + lateralRevisionHoldPage:
       return <MfdFmsFplnHold pageTitle="F-PLN/HOLD" bus={bus} mfd={mfd} fmcService={fmcService} />;
-    case 'fms/active/f-pln-fix-info':
+    case fixInfoUri:
       return <MfdFmsFplnFixInfo pageTitle="F-PLN/FIX INFO" bus={bus} mfd={mfd} fmcService={fmcService} />;
+    case 'fms/position/monitor':
+      return <MfdFmsPositionMonitor pageTitle="MONITOR" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'fms/position/irs':
       return <MfdFmsPositionIrs pageTitle="IRS" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'fms/position/navaids':
       return <MfdFmsPositionNavaids pageTitle="NAVAIDS" bus={bus} mfd={mfd} fmcService={fmcService} />;
-    case 'fms/data/status':
+    case dataStatusUri:
       return <MfdFmsDataStatus pageTitle="STATUS" bus={bus} mfd={mfd} fmcService={fmcService} />;
-    case 'fms/data/debug':
-      return <MfdFmsDataDebug pageTitle="DEBUG" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'fms/data/airport':
       return <MfdFmsDataAirport pageTitle="AIRPORT" bus={bus} mfd={mfd} fmcService={fmcService} />;
     case 'surv/controls':
@@ -123,9 +138,9 @@ export function pageForUrl(
         <MfdAtccomMsgRecordExpand pageTitle="MSG RECORD/ALL MSG/EXPAND" bus={bus} mfd={mfd} fmcService={fmcService} />
       );
     case 'atccom/d-atis/list':
-      return <MfdAtccomDAtis pageTitle="D-ATIS/LIST" bus={bus} mfd={mfd} fmcService={fmcService} />;
+      return <MfdAtccomDAtis pageTitle="D-ATIS/LIST" bus={bus} mfd={mfd} atcService={atcService} />;
     case 'atccom/d-atis/received':
-      return <MfdAtccomDAtisReceived pageTitle="D-ATIS/RECEIVED" bus={bus} mfd={mfd} fmcService={fmcService} />;
+      return <MfdAtccomDAtisReceived pageTitle="D-ATIS/RECEIVED" bus={bus} mfd={mfd} atcService={atcService} />;
 
     default:
       return <MfdNotFound pageTitle="NOT FOUND" bus={bus} mfd={mfd} fmcService={fmcService} />;

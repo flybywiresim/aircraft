@@ -92,12 +92,14 @@
   },
   "Dispatch": {
     "Ofp": {
-      "ImportSimBriefData": "Nhập dữ liệu SimBrief",
       "TT": {
         "IncreaseFontSize": "Tăng cỡ phông chữ",
+        "NextLoadsheetSection": "Phần loadsheet tiếp theo",
+        "PreviousLoadsheetSection": "Phần loadsheet trước",
         "ReduceFontSize": "Giảm cỡ phông chữ"
       },
       "Title": "OFP",
+      "UnavailableLoadsheetSection": "Thông tin không có sẵn hoặc phần không được bật trong Simbrief.",
       "YouHaveNotYetImportedAnySimBriefData": "Bạn chưa nhập bất kỳ dữ liệu SimBrief nào."
     },
     "Overview": {
@@ -287,6 +289,7 @@
   "Performance": {
     "Data": "Dữ liệu",
     "Landing": {
+      "Airport": "Sân bay",
       "AirportIcao": "ICAO của sân bay",
       "ApproachSpeed": "Tốc độ tiếp cận",
       "ApproachSpeedUnit": "kt",
@@ -295,8 +298,10 @@
       "Clear": "Xoá",
       "DropDownNo": "Không",
       "DropDownYes": "Có",
+      "EnterManually": "Nhập thủ công",
       "FillDataFrom": "Điền dữ liệu từ",
       "FlapsConfiguration": "Cấu hình cánh tà",
+      "LandingWeight": "Trọng lượng hạ cánh",
       "Low": "Thấp",
       "MaximumManual": "Mức độ tối đa khi lái tay",
       "Medium": "Trung bình",
@@ -305,6 +310,7 @@
       "OverweightProcedure": "Thủ tục quá trọng lượng",
       "Qnh": "QNH",
       "ReverseThrust": "Lực đẩy ngược",
+      "Runway": "Đường băng",
       "RunwayAltitude": "Độ cao đường băng",
       "RunwayAltitudeUnit": "ft ASL",
       "RunwayCondition": "Điều kiện đường băng",
@@ -316,6 +322,8 @@
         "MediumPoor": "Trung bình kém (2)",
         "Poor": "Kém (1)"
       },
+      "RunwayElevation": "Độ cao đường băng",
+      "RunwayElevationUnit": "ft AMSL",
       "RunwayHeading": "Hướng của đường băng",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "Đường băng LDA",
@@ -331,10 +339,11 @@
       "UnitFt": "ft",
       "UnitMeter": "m",
       "Weight": "Trọng lượng",
+      "Wind": "Gió",
       "WindDirection": "Hướng gió",
       "WindDirectionUnit": "°",
       "WindMagnitude": "Cường độ gió",
-      "WindMagnitudeUnit": "kt"
+      "WindMagnitudeUnit": "kts"
     },
     "SYNC": "Đồng bộ hóa",
     "Takeoff": {
@@ -359,53 +368,55 @@
         "180": "180°"
       },
       "Messages": {
-        "CgOutOfLimits": "CG Outside Takeoff Envelope",
+        "CgOutOfLimits": "CG ngoài phạm vi cất cánh",
         "FlexNotPossible": "Không thể dùng Flex",
-        "HeadwindLimited": "Headwind has been reduced to {max_headwind} knots",
+        "HeadwindLimited": "Gió ngược đã được giảm xuống còn {max_headwind} nút",
         "InvalidData": "Đầu vào không hợp lệ",
         "MaximumPressureAlt": "Trên độ cao áp suất tối đa ({max_zp}ft)",
-        "MaximumRunwaySlope": "Beyond Runway Slope Limits (±2%)",
-        "MaximumTailwind": "Above Maximum Tailwind ({max_tailwind} knots)",
+        "MaximumRunwaySlope": "Vượt quá giới hạn độ dốc đường băng (±2%)",
+        "MaximumTailwind": "Vượt gió thuận tối đa ({max_tailwind} nút)",
         "MaximumTemperature": "Trên OAT tối đa ({tmax}° C)",
-        "MaximumTireSpeed": "Maximum Tire Speed Not Satisfied",
+        "MaximumTireSpeed": "Tốc độ lốp tối đa không thỏa mãn",
         "OperatingEmptyWeight": "Dưới trọng lượng rỗng hoạt động ({oew} {weight_unit})",
         "StructuralMtow": "Trên MTOW Cấu trúc ({structural_mtow} {weight_unit})",
-        "TooHeavy": "Beyond Takeoff Weight Limit - Max {mtow} {weight_unit}",
-        "TooLight": "Below Minimum Takeoff Weight",
-        "VmcgVmcaLimits": "VMCG/VMCA Limits Not Satisfied"
+        "TooHeavy": "Vượt quá giới hạn trọng lượng cất cánh - Tối đa {mtow} {weight_unit}",
+        "TooLight": "Dưới trọng lượng cất cánh tối thiểu",
+        "VmcgVmcaLimits": "Giới hạn VMCG/VMCA không thỏa mãn"
       },
-      "Packs": "Packs",
+      "Packs": "Gói điều hòa",
       "Qnh": "QNH",
-      "Runway": "Runway",
-      "RunwayBearing": "Runway Bearing",
+      "Runway": "Đường băng",
+      "RunwayBearing": "Vòng đường băng",
       "RunwayBearingUnit": "°",
-      "RunwayCondition": "Runway Condition",
+      "RunwayCondition": "Tình trạng đường băng",
       "RunwayConditions": {
-        "Contaminated100mmDrySnow": "Dry Snow - 100 mm/4\"",
-        "Contaminated10mmDrySnow": "Dry Snow - 10 mm/⅖\"",
-        "Contaminated13mmSlush": "Slush - 12.7 mm/½\"",
-        "Contaminated13mmWater": "Water - 12.7 mm/½\"",
-        "Contaminated15mmWetSnow": "Wet Snow - 15 mm/⅗\"",
-        "Contaminated30mmWetSnow": "Wet Snow - 30 mm/⅗\"",
-        "Contaminated5mmWetSnow": "Wet Snow - 5 mm/⅕\"",
-        "Contaminated6mmSlush": "Slush - 6.3 mm/¼\"",
-        "Contaminated6mmWater": "Water - 6.3 mm/¼\"",
-        "ContaminatedCompactedSnow": "Compacted Snow",
-        "Dry": "Dry",
-        "Wet": "Wet"
+        "Contaminated100mmDrySnow": "Tuyết khô - 100 mm/4\"",
+        "Contaminated10mmDrySnow": "Tuyết khô - 10 mm/⅖\"",
+        "Contaminated13mmSlush": "Bùn tuyết - 12.7 mm/½\"",
+        "Contaminated13mmWater": "Nước - 12.7 mm/½\"",
+        "Contaminated15mmWetSnow": "Tuyết ướt - 15 mm/⅗\"",
+        "Contaminated30mmWetSnow": "Tuyết ướt - 30 mm/⅗\"",
+        "Contaminated5mmWetSnow": "Tuyết ướt - 5 mm/⅕\"",
+        "Contaminated6mmSlush": "Bùn tuyết - 6.3 mm/¼\"",
+        "Contaminated6mmWater": "Nước - 6.3 mm/¼\"",
+        "ContaminatedCompactedSnow": "Tuyết bị nén",
+        "Dry": "Khô",
+        "Wet": "Ướt"
       },
-      "RunwayElevation": "Runway Elevation",
+      "RunwayElevation": "Độ cao đường băng",
       "RunwayElevationUnit": "ft",
+      "RunwayHeading": "Hướng đường băng",
+      "RunwayHeadingUnit": "°",
       "RunwayLengthUnitFt": "ft",
       "RunwayLengthUnitMeter": "m",
-      "RunwaySlope": "Runway Slope",
-      "Temperature": "Temperature",
-      "Thrust": "Thrust",
-      "Title": "Takeoff",
+      "RunwaySlope": "Độ dốc đường băng",
+      "Temperature": "Nhiệt độ",
+      "Thrust": "Độ mạnh",
+      "Title": "Cất cánh",
       "Tora": "TORA",
-      "Weight": "Takeoff Weight",
-      "Wind": "Wind",
-      "WindMagnitudeUnit": "kts or °/kts"
+      "Weight": "Trọng lượng cất cánh",
+      "Wind": "Gió",
+      "WindMagnitudeUnit": "kts hoặc °/kts"
     },
     "Title": "Hiệu suất",
     "TopOfDescent": {
@@ -556,6 +567,8 @@
       "AlignAdirs": "Căn chỉnh ADIRS ngay lập tức",
       "AutoBrightness": "Bật/Tắt độ sáng tự động",
       "Brightness": "Cài đặt độ sáng của flyPad",
+      "CabinAutoBrightness": "Bật/Tắt đèn buồng tự động",
+      "CabinLighting": "Đặt độ sáng buồng",
       "FinishBoarding": "Hoàn thành việc cho lên máy bay ngay lập tức",
       "OnScreenKeyboard": "Bật/Tắt Bàn phím trên Màn hình",
       "PauseAtTod": "Kích hoạt Tạm dừng tại điểm hạ độ cao",
@@ -567,8 +580,6 @@
     },
     "Title": "Bảng điều khiển nhanh"
   },
-  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
-  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "Giới thiệu"
@@ -585,7 +596,7 @@
       "Select": "Chọn",
       "ThrustReductionHeight": "Độ cao giảm lực đẩy (ft)",
       "Title": "Tùy chọn máy bay / Pin Programs",
-      "WeightUnit": "Đơn vị trọng lượng"
+      "WeightUnit": "Đơn vị kiểu Mỹ"
     },
     "AtsuAoc": {
       "AtisAtcSource": "Nguồn ATIS/ATC",
@@ -631,11 +642,11 @@
     "Real": "Thực",
     "Realism": {
       "AdirsAlignTime": "Thời gian căn chỉnh ADIRS",
-      "AutoStepClimb": "Automatic Step Climb",
+      "AutoStepClimb": "Leo bước tự động",
       "AutofillChecklists": "Tự đồng điền danh sách kiểm tra",
       "BoardingTime": "Thời gian lên máy bay",
       "DmcSelfTestTime": "Thời gian tự kiểm tra của DMC",
-      "EclSoftKeys": "Show Soft Keys for EWD Electronic Checklists",
+      "EclSoftKeys": "Hiển thị các phím mềm cho bảng kiểm điện tử EWD",
       "FirstOfficerAvatar": "Hiển thị Avatar Cơ Phó",
       "HomeCockpitMode": "Chế độ buồng lái tại nhà",
       "McduFocusTimeout": "Thời gian chờ MCDU chỉnh (giây)",
@@ -644,32 +655,32 @@
       "PauseAtTodDistance": "Khoảng cách dừng từ điểm hạ độ cao (nm)",
       "PilotAvatar": "Hiện thị Avatar Phi công",
       "SeparateTillerFromRudderInputs": "Tách rời Điều Khiển Bánh Mũi với Bàn Đạp",
-      "SyncEfis": "Đồng bộ hóa các điều khiển EFIS giữa cơ trưởng và cơ phó",
+      "SyncEfis": "Đồng bộ hóa bộ điều khiển EFIS giữa cơ trưởng và cơ phó",
       "Title": "Mức thực tế"
     },
     "SimOptions": {
       "Active": "Hoạt động",
       "Auto": "Tự động",
       "Both": "Đã đồng bộ hóa",
+      "CabinAutoBrightness": "Độ sáng buồng tự động",
+      "CabinManualBrightness": "Độ sáng của đèn trong buồng",
       "Calibrate": "Hiệu chỉnh",
-      "Captain": "Cơ trưởng",
-      "CockpitSeatUsedToControl": "Ghế buồng lái được sử dụng để điều khiển",
       "ConesEnabled": "Chóp nón An toàn",
-      "Copilot": "Cơ phó",
       "DefaultBarometerUnit": "Đơn vị áp kế mặc định",
       "DynamicRegistrationDecal": "Đề-can đăng ký động",
       "EnableSimBridge": "Bật kết nối Simbridge (Tự động ngừng kích hoạt sau 5 phút nếu không có kết nối thành công)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Bật kết nối máy chủ MCDU (Tự động ngừng kích hoạt sau 5 phút nếu không có kết nối thành công)",
       "ExternalMcduServerPort": "Cổng máy chủ MCDU bên ngoài",
-      "FdrEnabled": "Enable Flight Data Recorder (FDR)",
+      "FdrEnabled": "Bật Máy ghi dữ liệu chuyến bay (FDR)",
       "Hpa": "hPa",
       "Inactive": "Không hoạt động",
-      "Left": "Left",
+      "Left": "Trái",
       "LoadOnly": "Chỉ tải",
       "None": "Không",
+      "OansPerformanceMode": "Chế độ OANS nhanh (Xóa bản đồ sân bay khi không sử dụng)",
       "Off": "Tắt",
-      "PilotSeat": "Pilot Seat for Control",
-      "Right": "Right",
+      "PilotSeat": "Ghế phi công để điều khiển",
+      "Right": "Phải",
       "Save": "Lưu",
       "Side": "Side",
       "SimBridgeIp": "Địa chỉ máy chủ SimBridge",
@@ -697,6 +708,7 @@
         "SettingTitle": "Liên kết tài khoản Navigraph",
         "SubscriptionStatus": {
           "None": "Không",
+          "Standard": "Navigraph Standard",
           "Unknown": "Không xác định",
           "Unlimited": "Navigraph Unlimited"
         },
@@ -704,6 +716,7 @@
       },
       "OverrideSimBriefUserID": "Ghi đè ID SimBrief",
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Vui lòng kiểm tra xem bạn đã nhập đúng tên người dùng SimBrief hoặc ID của mình chưa.",
+      "SimbriefLoadsheetNavigationEnabled": "Điều hướng Simbrief Loadsheet",
       "TT": {
         "OverrideSimBriefUserID": "ID SimBrief để sử dụng thay cho tải khoản Navigraph đã được liên kết"
       },
@@ -735,6 +748,9 @@
       "TogaOnAxis": "TOGA trên trục"
     },
     "Title": "Cài đặt",
+    "Troubleshooting": {
+      "Title": "Xử lý sự cố"
+    },
     "Unrealistic": "Không thực tế",
     "flyPad": {
       "AutoBrightness": "Tự động điều chỉnh độ sáng",
@@ -743,7 +759,6 @@
       "Blue": "Xanh lam",
       "Brightness": "Độ sáng",
       "Dark": "Tối",
-      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "Ngôn ngữ",
       "Light": "Sáng",
       "Local": "Cục bộ",
@@ -760,8 +775,6 @@
       "UtcAndLocal": "UTC và địa phương"
     }
   },
-  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
-  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "Thg 4",
     "Aug": "Thg 8",

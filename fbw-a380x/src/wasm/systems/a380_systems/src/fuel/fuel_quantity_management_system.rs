@@ -1,10 +1,9 @@
 use std::{collections::HashMap, time::Duration};
 
 use crate::systems::simulation::SimulationElement;
-use nalgebra::Vector3;
 use serde::Deserialize;
 use systems::{
-    fuel::{self, FuelInfo, FuelSystem, FuelTank, RefuelRate},
+    fuel::{self, FuelInfo, FuelPump, FuelPumpProperties, FuelSystem, RefuelRate},
     pneumatic::EngineState,
     shared::{ElectricalBusType, ElectricalBuses},
     simulation::{
@@ -245,7 +244,7 @@ impl RefuelApplication {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        fuel_system: &mut FuelSystem<11>,
+        fuel_system: &mut FuelSystem<11, 20>,
         refuel_panel_input: &mut IntegratedRefuelPanel,
     ) {
         // Automatic Refueling
@@ -474,7 +473,7 @@ impl RefuelDriver {
         &mut self,
         delta_time: Duration,
         is_fast: bool,
-        fuel_system: &mut FuelSystem<11>,
+        fuel_system: &mut FuelSystem<11, 20>,
         refuel_panel_input: &mut IntegratedRefuelPanel,
         desired_quantities: HashMap<A380FuelTankType, Mass>,
     ) {
@@ -542,7 +541,7 @@ impl RefuelDriver {
         max_delta: Mass,
         channel: [A380FuelTankType; 11],
         desired_quantities: &HashMap<A380FuelTankType, Mass>,
-        fuel_system: &mut FuelSystem<11>,
+        fuel_system: &mut FuelSystem<11, 20>,
     ) -> bool {
         if max_delta <= Mass::default() {
             return true;
@@ -575,44 +574,44 @@ impl RefuelDriver {
 
     fn execute_instant_refuel(
         &mut self,
-        fuel_system: &mut FuelSystem<11>,
+        fuel_system: &mut FuelSystem<11, 20>,
         refuel_panel_input: &mut IntegratedRefuelPanel,
         desired_quantities: HashMap<A380FuelTankType, Mass>,
     ) {
-        for tank_type in A380FuelTankType::iterator() {
-            fuel_system.set_tank_quantity(
-                tank_type as usize,
-                *desired_quantities
-                    .get(&tank_type)
-                    .unwrap_or(&Mass::default()),
-            );
-        }
-
+        // check needs to happen first so function always runs two ticks making sure values are actually written back to the sim
         if (fuel_system.total_load() - refuel_panel_input.total_desired_fuel()).abs()
             < Mass::new::<kilogram>(1.)
         {
             refuel_panel_input.set_refuel_status(false);
+        } else {
+            for tank_type in A380FuelTankType::iterator() {
+                fuel_system.set_tank_quantity(
+                    tank_type as usize,
+                    *desired_quantities
+                        .get(&tank_type)
+                        .unwrap_or(&Mass::default()),
+                );
+            }
         }
     }
 }
 impl SimulationElement for RefuelDriver {}
 
 pub struct A380FuelQuantityManagementSystem {
-    fuel_system: FuelSystem<11>,
+    fuel_system: FuelSystem<11, 20>,
     refuel_application: RefuelApplication,
     integrated_refuel_panel: IntegratedRefuelPanel,
 }
 impl A380FuelQuantityManagementSystem {
-    pub fn new(context: &mut InitContext, fuel_tanks_info: [FuelInfo; 11]) -> Self {
-        let fuel_tanks = fuel_tanks_info.map(|f| {
-            FuelTank::new(
-                context,
-                f.fuel_tank_id,
-                Vector3::new(f.position.0, f.position.1, f.position.2),
-                true,
-            )
-        });
-        let fuel_system = FuelSystem::new(context, fuel_tanks);
+    pub fn new(
+        context: &mut InitContext,
+        fuel_tanks_info: [FuelInfo; 11],
+        fuel_pumps_info: [(usize, FuelPumpProperties); 20],
+    ) -> Self {
+        let fuel_tanks = fuel_tanks_info.map(|f| f.into_fuel_tank(context, true));
+        let fuel_pumps =
+            fuel_pumps_info.map(|(id, properties)| FuelPump::new(context, id, properties));
+        let fuel_system = FuelSystem::new(context, fuel_tanks, fuel_pumps);
 
         Self {
             // TODO: This needs to be refactored when CPIOM implementation is done
@@ -643,7 +642,7 @@ impl A380FuelQuantityManagementSystem {
         &mut self.refuel_application
     }
 
-    pub fn fuel_system(&self) -> &FuelSystem<11> {
+    pub fn fuel_system(&self) -> &FuelSystem<11, 20> {
         &self.fuel_system
     }
 }

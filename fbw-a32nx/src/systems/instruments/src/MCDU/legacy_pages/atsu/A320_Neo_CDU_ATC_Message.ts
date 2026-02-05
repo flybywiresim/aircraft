@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { AtsuMessageComStatus, AtsuMessageSerializationFormat } from '@datalink/common';
 import { CDUAtcMessageMonitoring } from './A320_Neo_CDU_ATC_MessageMonitoring';
 import { CDUAtcMessagesRecord } from './A320_Neo_CDU_ATC_MessagesRecord';
@@ -5,9 +6,9 @@ import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
 
 export class CDUAtcMessage {
   static TranslateCpdlcResponse(message) {
-    let retval;
+    let retval = '';
 
-    switch (message.Content[0].TypeId) {
+    switch (message.Content[0]?.TypeId) {
       case 'DM0':
         retval = 'WILC';
         break;
@@ -96,14 +97,14 @@ export class CDUAtcMessage {
     mcdu.onNextPage = () => {
       const nextMesssageIndex = messageIndex + 1;
       if (nextMesssageIndex < messages.length) {
-        CDUAtcMessage.ShowPage(mcdu, messages, messageList, nextMesssageIndex);
+        CDUAtcMessage.ShowPage(mcdu, messages, nextMesssageIndex, messageList);
       }
     };
 
     mcdu.onPrevPage = () => {
       const previousMesssageIndex = messageIndex - 1;
       if (previousMesssageIndex >= 0) {
-        CDUAtcMessage.ShowPage(mcdu, messages, messageList, previousMesssageIndex);
+        CDUAtcMessage.ShowPage(mcdu, messages, previousMesssageIndex, messageList);
       }
     };
 

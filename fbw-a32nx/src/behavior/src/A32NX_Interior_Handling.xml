@@ -117,7 +117,7 @@
         </OverrideTemplateParameters>
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Update">
-                <FREQUENCY>1</FREQUENCY>
+                <FREQUENCY>30</FREQUENCY>
                 <UPDATE_CODE>
                     (L:A32NX_SPOILERS_ARMED, Bool) if{
                         0 (&gt;#POSITION_TYPE#:#POSITION_VAR#)

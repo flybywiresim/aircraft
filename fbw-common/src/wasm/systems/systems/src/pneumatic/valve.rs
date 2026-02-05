@@ -676,7 +676,7 @@ mod tests {
             Velocity::new::<knot>(0.),
             Velocity::new::<knot>(0.),
             altitude,
-            altitude,
+            InternationalStandardAtmosphere::pressure_at_altitude(altitude),
             InternationalStandardAtmosphere::temperature_at_altitude(altitude),
             true,
             Acceleration::new::<foot_per_second_squared>(0.),

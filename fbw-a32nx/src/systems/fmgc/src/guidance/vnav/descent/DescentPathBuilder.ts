@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -10,8 +11,7 @@ import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vna
 import { GeometricPathBuilder } from '@fmgc/guidance/vnav/descent/GeometricPathBuilder';
 import { HeadwindProfile } from '@fmgc/guidance/vnav/wind/HeadwindProfile';
 import { TemporaryCheckpointSequence } from '@fmgc/guidance/vnav/profile/TemporaryCheckpointSequence';
-import { AltitudeDescriptor, MathUtils } from '@flybywiresim/fbw-sdk';
-import { ConstraintUtils, AltitudeConstraint } from '@fmgc/flightplanning/data/constraint';
+import { AltitudeConstraint, AltitudeDescriptor, ConstraintUtils, MathUtils } from '@flybywiresim/fbw-sdk';
 import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
 import { IdlePathBuilder } from '@fmgc/guidance/vnav/descent/IdlePathBuilder';
 import { GeometricPathPlanner, PlannedGeometricSegment } from '@fmgc/guidance/vnav/descent/GeometricPathPlanner';

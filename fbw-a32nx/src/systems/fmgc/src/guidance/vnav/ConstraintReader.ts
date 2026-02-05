@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -8,9 +9,8 @@ import {
   MaxAltitudeConstraint,
   MaxSpeedConstraint,
 } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
-import { WaypointConstraintType } from '@fmgc/flightplanning/data/constraint';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
-import { MathUtils, ApproachType, ApproachWaypointDescriptor } from '@flybywiresim/fbw-sdk';
+import { MathUtils, ApproachType, ApproachWaypointDescriptor, WaypointConstraintType } from '@flybywiresim/fbw-sdk';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 
@@ -35,7 +35,7 @@ export class ConstraintReader {
       return SimVar.GetSimVarValue('L:A32NX_FM_VNAV_DEBUG_DISTANCE_TO_END', 'nautical miles');
     }
 
-    return this.guidanceController.alongTrackDistanceToDestination;
+    return this.guidanceController.getAlongTrackDistanceToDestination();
   }
 
   // If you change this property here, make sure you also reset it properly in `reset`
@@ -86,10 +86,6 @@ export class ConstraintReader {
             waypointIndex,
             isIgnored: false,
           });
-        } else {
-          // We've already passed the waypoint
-          plan.removeCruiseStep(i);
-          SimVar.SetSimVarValue('L:A32NX_FM_VNAV_TRIGGER_STEP_DELETED', 'boolean', true);
         }
       }
 

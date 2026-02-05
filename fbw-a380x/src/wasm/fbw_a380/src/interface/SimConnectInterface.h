@@ -10,9 +10,9 @@
 #include "../ThrottleAxisMapping.h"
 #include "SimConnectData.h"
 
+#include "../model/A380FacComputer_types.h"
 #include "../model/A380PrimComputer_types.h"
 #include "../model/A380SecComputer_types.h"
-#include "../model/FacComputer_types.h"
 
 class SimConnectInterface {
  public:
@@ -288,6 +288,7 @@ class SimConnectInterface {
 
   bool setClientDataPrimDiscretes(base_prim_discrete_inputs& output);
   bool setClientDataPrimAnalog(base_prim_analog_inputs& output);
+  bool setClientDataPrimTemporaryAp(base_prim_temporary_ap_input& output);
   bool setClientDataPrimBusInput(base_prim_out_bus& output, int primIndex);
 
   base_prim_discrete_outputs& getClientDataPrimDiscretesOutput();
@@ -340,6 +341,7 @@ class SimConnectInterface {
     AUTOTHRUST_A380,
     PRIM_DISCRETE_INPUTS,
     PRIM_ANALOG_INPUTS,
+    PRIM_TEMPORARY_AP_INPUTS,
     PRIM_DISCRETE_OUTPUTS,
     PRIM_ANALOG_OUTPUTS,
     PRIM_1_BUS_OUTPUT,

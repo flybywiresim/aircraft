@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -17,7 +18,7 @@ interface AtaChapterPageProps {
 }
 
 export const AtaChapterPage = ({ chapter, failures }: AtaChapterPageProps) => {
-  const { activeFailures, changingFailures, activate, deactivate } = useFailuresOrchestrator();
+  const { activeFailures, activate, deactivate } = useFailuresOrchestrator();
   const { searchQuery } = useAppSelector((state) => state.failuresPage);
   const filteredFailures = failures.filter((failure) => failure.ata === chapter);
 
@@ -67,7 +68,6 @@ export const AtaChapterPage = ({ chapter, failures }: AtaChapterPageProps) => {
               <FailureButton
                 name={failure.name}
                 isActive={activeFailures.has(failure.identifier)}
-                isChanging={changingFailures.has(failure.identifier)}
                 highlightedTerm={getHighlightedTerm(failure.name)}
                 onClick={() => handleFailureButtonClick(failure.identifier)}
                 className={`${index && index % 4 !== 0 && 'ml-4'} ${index >= 4 && 'mt-4'} h-36`}

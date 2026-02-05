@@ -2,6 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { Coordinates } from 'msfs-geo';
+import { AltitudeConstraint } from '../../fmgc/constraint';
 
 export type EfisSide = 'L' | 'R';
 
@@ -61,87 +62,111 @@ export enum NdSymbolTypeFlags {
   Constraint = 1 << 10,
   FixInfo = 1 << 11,
   FlightPlan = 1 << 12,
-  CourseReversalLeft = 1 << 17,
-  CourseReversalRight = 1 << 18,
-  PwpDecel = 1 << 19,
-  PwpTopOfDescent = 1 << 20,
-  PwpSpeedChange = 1 << 21,
-  PwpClimbLevelOff = 1 << 22,
-  PwpDescentLevelOff = 1 << 23,
-  PwpStartOfClimb = 1 << 24,
-  PwpInterceptProfile = 1 << 25,
-  PwpTimeMarker = 1 << 26,
-  PwpCdaFlap1 = 1 << 27,
-  PwpCdaFlap2 = 1 << 28,
-  CyanColor = 1 << 29,
-  AmberColor = 1 << 30,
-  MagentaColor = 1 << 31,
+  CourseReversalLeft = 1 << 13,
+  CourseReversalRight = 1 << 14,
+  CyanColor = 1 << 15,
+  AmberColor = 1 << 16,
+  MagentaColor = 1 << 17,
+  LeftSideOnly = 1 << 18,
+  RightSideOnly = 1 << 19,
 }
 
-export interface NdSymbol {
+/** NdSymbolTypeFlags was filling up, so we had to separate the PWP flags into this enum */
+export enum NdPwpSymbolTypeFlags {
+  None = 0,
+  PwpEndOfVdMarker = 1 << 0,
+  PwpDecel = 1 << 1,
+  PwpTopOfDescent = 1 << 2,
+  PwpSpeedChange = 1 << 3,
+  PwpClimbLevelOff = 1 << 4,
+  PwpDescentLevelOff = 1 << 5,
+  PwpStartOfClimb = 1 << 6,
+  PwpInterceptProfile = 1 << 7,
+  PwpTimeMarker = 1 << 8,
+  PwpCdaFlap1 = 1 << 9,
+  PwpCdaFlap2 = 1 << 10,
+}
+
+export enum EfisRecomputingReason {
+  None,
+  RangeChange,
+  ModeChange,
+  ModeAndRangeChange,
+}
+
+export interface InternalFmsSymbol {
   databaseId: string;
   ident: string;
-  location: Coordinates;
+  location: Coordinates | null;
+  predictedAltitude?: number;
   direction?: number; // true
   length?: number; // nautical miles
   type: NdSymbolTypeFlags;
+  typePwp?: NdPwpSymbolTypeFlags; // only for PWP
   constraints?: string[];
+  altConstraint?: AltitudeConstraint;
+  isAltitudeConstraintMet?: boolean;
   radials?: number[];
   radii?: number[];
   distanceFromAirplane?: number;
 }
+
+export type NdSymbol = Omit<InternalFmsSymbol, 'predictedAltitude' | 'altConstraint' | 'isAltitudeConstraintMet'>;
+export type VdSymbol = Omit<InternalFmsSymbol, 'radials' | 'radii'>;
 
 /**
  * Possible flight plan vector groups to be transmitted to the ND.
  *
  * **NOTE:** this does not necessarily represent the current function of a transmitted flight plan. Those groups are sometimes used for other purposes than their name
  * refers to, for example the DASHED flight plan being used to transmit the non-offset path of an active flight plan with an offset applied.
+ *
+ * The value of each group is used to determine the drawing order. Low values are drawn first, high values last.
  */
 export enum EfisVectorsGroup {
   /**
    * Solid green line
    */
-  ACTIVE,
+  ACTIVE = 2,
 
   /**
    * Dashed green line
    */
-  DASHED,
+  DASHED = 3,
 
   /**
    * Dashed green line
    */
-  OFFSET,
+  OFFSET = 4,
 
   /**
    * Dashed yellow line
    */
-  TEMPORARY,
+  TEMPORARY = 5,
 
   /**
    * Dimmed white line
    */
-  SECONDARY,
+  SECONDARY = 0,
 
   /**
    * Dashed dimmed white line
    */
-  SECONDARY_DASHED,
+  SECONDARY_DASHED = 1,
 
   /**
    * Solid cyan line
    */
-  MISSED,
+  MISSED = 6,
 
   /**
    * Dashed cyan line
    */
-  ALTERNATE,
+  ALTERNATE = 7,
 
   /**
    * Continuous yellow line
    */
-  ACTIVE_EOSID,
+  ACTIVE_EOSID = 8,
 }
 
 export interface NdTraffic {

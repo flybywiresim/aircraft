@@ -1,12 +1,18 @@
-import { DisplayComponent, EventBus, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+// @ts-strict-ignore
+import { Arinc429ConsumerSubject, ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { Arinc429Values } from 'instruments/src/PFD/shared/ArincValueProvider';
 
 type LinearDeviationIndicatorProps = {
-  bus: EventBus;
+  bus: ArincEventBus;
 };
 
 export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIndicatorProps> {
+  private readonly altitude = Arinc429ConsumerSubject.create(
+    this.props.bus.getArincSubscriber<Arinc429Values>().on('altitudeAr'),
+  );
+
   private shouldShowLinearDeviation = false;
 
   private componentTransform = Subject.create('');
@@ -35,7 +41,7 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
 
     const sub = this.props.bus.getSubscriber<Arinc429Values & FmsVars>();
 
-    sub.on('altitudeAr').handle((alt) => {
+    this.altitude.sub((alt) => {
       if (!alt.isNormalOperation() || !this.shouldShowLinearDeviation) {
         this.upperLinearDeviationReadoutVisibility.set('hidden');
         this.lowerLinearDeviationReadoutVisibility.set('hidden');
@@ -88,7 +94,7 @@ export class LinearDeviationIndicator extends DisplayComponent<LinearDeviationIn
 
         this.linearDeviationDotVisibility.set('hidden');
       }
-    });
+    }, true);
 
     sub
       .on('linearDeviationActive')

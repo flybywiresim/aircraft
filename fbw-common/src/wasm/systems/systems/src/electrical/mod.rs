@@ -39,7 +39,7 @@ pub use engine_generator::{
     INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME,
 };
 pub use external_power_source::ExternalPowerSource;
-use fxhash::{FxHashMap, FxHashSet};
+use rustc_hash::{FxHashMap, FxHashSet};
 pub use static_inverter::StaticInverter;
 pub use transformer_rectifier::TransformerRectifier;
 use uom::si::{electric_potential::volt, f64::*, power::watt, velocity::knot};
@@ -610,7 +610,7 @@ impl<'a> ReceivePowerVisitor<'a> {
         ReceivePowerVisitor { electricity }
     }
 }
-impl<'a> SimulationElementVisitor for ReceivePowerVisitor<'a> {
+impl SimulationElementVisitor for ReceivePowerVisitor<'_> {
     fn visit<T: SimulationElement>(&mut self, visited: &mut T) {
         visited.receive_power(self.electricity);
     }
@@ -628,7 +628,7 @@ impl<'a> ConsumePowerVisitor<'a> {
         }
     }
 }
-impl<'a> SimulationElementVisitor for ConsumePowerVisitor<'a> {
+impl SimulationElementVisitor for ConsumePowerVisitor<'_> {
     fn visit<T: SimulationElement>(&mut self, visited: &mut T) {
         visited.consume_power(self.context, self.electricity);
     }
@@ -645,7 +645,7 @@ impl<'a> ConsumePowerInConvertersVisitor<'a> {
         }
     }
 }
-impl<'a> SimulationElementVisitor for ConsumePowerInConvertersVisitor<'a> {
+impl SimulationElementVisitor for ConsumePowerInConvertersVisitor<'_> {
     fn visit<T: SimulationElement>(&mut self, visited: &mut T) {
         visited.consume_power_in_converters(self.context, self.electricity);
     }
@@ -663,7 +663,7 @@ impl<'a> ProcessPowerConsumptionReportVisitor<'a> {
         }
     }
 }
-impl<'a> SimulationElementVisitor for ProcessPowerConsumptionReportVisitor<'a> {
+impl SimulationElementVisitor for ProcessPowerConsumptionReportVisitor<'_> {
     fn visit<T: SimulationElement>(&mut self, visited: &mut T) {
         visited.process_power_consumption_report(self.context, self.electricity);
     }

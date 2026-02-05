@@ -110,7 +110,7 @@ export const FormatTemplate = (lines: Column[][]): string[][] => lines.map((line
  * @param {...Column} columns
  * @returns {string[]}
  */
-function FormatLine(...columns: Column[]): string[] {
+export function FormatLine(...columns: Column[]): string[] {
   columns.sort((a, b) => a.anchorPos - b.anchorPos);
 
   let line = ''.padStart(24);

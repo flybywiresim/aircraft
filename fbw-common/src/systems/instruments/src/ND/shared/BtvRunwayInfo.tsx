@@ -63,15 +63,19 @@ export class BtvRunwayInfo extends DisplayComponent<{
     this.exitDistance,
   );
 
-  private btvRot = Arinc429LocalVarConsumerSubject.create(this.sub.on('btvRot'));
+  private btvRot = Arinc429LocalVarConsumerSubject.create(this.sub.on('a380x_btv_rot'));
 
   private readonly rot = this.btvRot.map((rot) =>
     rot.isNormalOperation() ? rot.value.toFixed(0).padStart(4, '\xa0') : '',
   );
 
-  private readonly turnaroundMaxRev = Arinc429LocalVarConsumerSubject.create(this.sub.on('btvTurnAroundMaxReverse'));
+  private readonly turnaroundMaxRev = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a380x_btv_turnaround_max_reverse'),
+  );
 
-  private readonly turnaroundIdleRev = Arinc429LocalVarConsumerSubject.create(this.sub.on('btvTurnAroundIdleReverse'));
+  private readonly turnaroundIdleRev = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('a380x_btv_turnaround_idle_reverse'),
+  );
 
   private distanceUnitFormatter(unit: Unit<UnitFamily.Distance>) {
     return unit === UnitType.METER ? 'M' : 'FT';

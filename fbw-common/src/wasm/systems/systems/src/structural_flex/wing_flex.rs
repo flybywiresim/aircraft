@@ -417,11 +417,7 @@ impl FlexibleConstraint {
         Self {
             springiness,
             damping,
-            negative_springiness_coeff: if let Some(coeff) = negative_springiness_coeff {
-                coeff
-            } else {
-                1.
-            },
+            negative_springiness_coeff: negative_springiness_coeff.unwrap_or(1.),
             is_linear,
             previous_length: Length::default(),
             damping_force: LowPassFilter::new(Self::DAMPING_FILTERING_TIME_CONSTANT),

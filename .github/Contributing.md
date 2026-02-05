@@ -33,7 +33,7 @@ git submodule update --init
 
 Note that you should use `run.sh` instead of `run.cmd` if you are on Linux (including WSL).
 
-To build only the A32NX or the A380X, change `build.sh` to `build_a32nx.sh` or `build_a380x.sh`. To build the A380X with 4K textures instead of maximum quality (8K), add the `-4k` flag at the end of the command.
+To build only the A32NX or the A380X, run `build.sh` with either `-r "a32nx` or `-r "a380x" `. You can then still append further `-r` args to only build selected instruments. To build the A380X with 4K textures instead of maximum quality (8K), add the `-4k` flag at the end of the command. Alternatively you can define the `USE_4K_TEXTURES=true` environment variable in a `.env` file at the root of the repo.
 
 If you are using WSL, ensure that the `Vmmem` process is not memory limited. At least `10GB` of memory is the recommended setting. This can be configured in `C:\<user>\.wslconfig`.
 
@@ -47,7 +47,7 @@ As this is an open source project, anyone is free to contribute as much or as li
 
 If you're comfortable contributing to Open Source projects on GitHub please ensure you read our expectations for issue tracking, feature proposals and pull requests.
 
-If you're looking for tools and tips to help you develop, see [Development Resources](../fbw-a32nx/docs/resources.md).
+If you're looking for tools and tips to help you develop, see [Development Resources](/fbw-a32nx/docs/resources.md).
 
 **Please avoid** adding features that are not true to life or features without providing supported documentation.
 

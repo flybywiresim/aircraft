@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../Arinc429Utils.h"
-#include "../model/FacComputer.h"
+#include "../model/A380FacComputer.h"
 #include "../utils/PulseNode.h"
 #include "../utils/SRFlipFlop.h"
 
@@ -19,7 +19,7 @@ class Fac {
 
   base_fac_analog_outputs getAnalogOutputs();
 
-  FacComputer::ExternalInputs_FacComputer_T modelInputs = {};
+  A380FacComputer::ExternalInputs_A380FacComputer_T modelInputs = {};
 
  private:
   void initSelfTests();
@@ -33,7 +33,7 @@ class Fac {
   void updateSelfTest(double deltaTime);
 
   // Model
-  FacComputer facComputer;
+  A380FacComputer facComputer;
   fac_outputs modelOutputs;
 
   // Computer Self-monitoring vars

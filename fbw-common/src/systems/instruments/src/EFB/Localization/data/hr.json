@@ -4,16 +4,16 @@
     "ChangeATISATCSourceButton": "Promijeni ATIS/ATC izvor",
     "ConnectHoppieACARS": "Poveži Hoppie ACARS",
     "NoInformationAvailableForThisFrequency": "Nema dostupnih informacija za ovu frekvenciju",
-    "SearchPlaceholder": "Search",
+    "SearchPlaceholder": "Pretraživanje",
     "SelectCorrectATISATCSource": "Ova stranica je dostupna samo ako je IVAO ili VATSIM odabran kao izvor ATIS/ATC-a u postavkama.",
     "SetActive": "Postavi kao aktivnu",
     "SetStandby": "Postavi stanje pripravnosti",
-    "ShowAll": "All",
+    "ShowAll": "Svi",
     "ShowApproach": "Approach",
     "ShowAtis": "ATIS",
     "ShowDelivery": "Delivery",
     "ShowDeparture": "Departure",
-    "ShowGround": "Ground",
+    "ShowGround": "Tlo",
     "ShowRadar": "Radar",
     "ShowTower": "Tower",
     "Standby": "Stanje pripravnosti",
@@ -24,23 +24,23 @@
     "Title": "Kontrola zračnog prometa"
   },
   "Checklists": {
-    "AreYouSureYouWantToResetAllChecklists": "Are you sure you want to reset all checklists?",
-    "AreYouSureYouWantToResetChecklists": "Are you sure you want to reset all checklists?",
+    "AreYouSureYouWantToResetAllChecklists": "Jeste li sigurni da želite resetirati sve liste provjere?",
+    "AreYouSureYouWantToResetChecklists": "Jeste li sigurni da želite resetirati sve kontrolne liste?",
     "ChecklistResetWarning": "Checklist Reset Warning",
-    "MarkChecklistAsComplete": "Mark checklist as complete",
+    "MarkChecklistAsComplete": "Označi kontrolni popis kao dovršen",
     "MarkItemAsComplete": "Označi stavku kao dovršenu",
-    "ProceedToNextChecklist": "Proceed to next checklist",
+    "ProceedToNextChecklist": "Prijeđite na sljedeću kontrolnu listu",
     "ResetAll": "Resetiraj sve",
-    "ResetChecklist": "Reset Checklist",
-    "TheLastChecklistIsComplete": "The last checklist is complete",
-    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "There are remaining autofill checklist items that have not yet been completed",
-    "Title": "Checklists"
+    "ResetChecklist": "Resetirati kontrolni popis",
+    "TheLastChecklistIsComplete": "Posljednja provjera je završena",
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "Postoje preostale stavke popisa za automatsko popunjavanje koje još nisu dovršene",
+    "Title": "Kontrolni popisi"
   },
   "Dashboard": {
     "ImportantInformation": {
       "Checklists": {
-        "NoRelevantChecklists": "No Relevant Checklists",
-        "Title": "Checklists"
+        "NoRelevantChecklists": "Nema relevantnih lista provjere",
+        "Title": "Kontrolni popisi"
       },
       "GoToPage": "Idi na stranicu",
       "Maintenance": {
@@ -78,7 +78,7 @@
       "Alternate": "Alternativni",
       "AverageWind": "Prosječni vjetar",
       "CompanyRoute": "Company Route",
-      "CostIndex": "Cost Index",
+      "CostIndex": "Troškovni indeks",
       "CruiseAlt": "Visina krstarenja",
       "ImportSimBriefData": "Uvoz SimBrief podataka",
       "NoImportDueToBoardingOrRefuel": "No import possible due to boarding or refuel in progress!",
@@ -92,12 +92,14 @@
   },
   "Dispatch": {
     "Ofp": {
-      "ImportSimBriefData": "Unesi SimBrief podatke",
       "TT": {
         "IncreaseFontSize": "Povećaj veličinu fonta",
+        "NextLoadsheetSection": "Next loadsheet section",
+        "PreviousLoadsheetSection": "Previous loadsheet section",
         "ReduceFontSize": "Smanji veličinu fonta"
       },
       "Title": "OFP",
+      "UnavailableLoadsheetSection": "Info not available or section not enabled in Simbrief.",
       "YouHaveNotYetImportedAnySimBriefData": "Još niste unijeli SimBrief podatke."
     },
     "Overview": {
@@ -114,7 +116,7 @@
       "Range": "Domet",
       "Title": "Pregled"
     },
-    "Title": "Dispatch"
+    "Title": "Otpremi"
   },
   "Failures": {
     "Comfort": {
@@ -144,7 +146,7 @@
       "RightInnerTank": "Desni unutarnji spremnik",
       "RightOuterTank": "Desni vanjski spremnik",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Refueling Duration",
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Zrakoplov Mora biti ugašen da biste promijenili vrijeme točenja goriva",
         "FillBlockFuelFromSimBrief": "Ispunite \"Block\" gorivo sa SimBrief-a"
       },
       "Title": "Gorivo",
@@ -156,7 +158,7 @@
       "Cargo": "Cargo",
       "Current": "Current",
       "DeboardConfirmationBody": "Please confirm deboarding all passengers",
-      "DeboardConfirmationCancel": "Cancel",
+      "DeboardConfirmationCancel": "Odustani",
       "DeboardConfirmationConfirm": "Deboard",
       "DeboardConfirmationTitle": "Deboard all Passengers?",
       "EstimatedDurationUnit": "minutes",
@@ -177,7 +179,7 @@
         "MaxCargo": "Max Cargo",
         "MaxGW": "Maximum GW",
         "MaxGWCG": "Maximum GW CG",
-        "MaxPassengers": "Maximum Passengers",
+        "MaxPassengers": "Maksimalni broj putnika",
         "MaxZFW": "Maximum ZFW",
         "MaxZFWCG": "Maximum ZFWCG",
         "PerPaxBagWeight": "Per Passenger Bag Weight",
@@ -287,16 +289,19 @@
   "Performance": {
     "Data": "Podaci",
     "Landing": {
+      "Airport": "Airport",
       "AirportIcao": "ICAO zračne luke",
-      "ApproachSpeed": "Approach Speed",
+      "ApproachSpeed": "Brzina pristupa",
       "ApproachSpeedUnit": "čv",
       "AutoLand": "Autoland",
       "Calculate": "Izračunaj",
       "Clear": "Čisto",
       "DropDownNo": "Ne",
       "DropDownYes": "Da",
+      "EnterManually": "Enter Manually",
       "FillDataFrom": "Ispunite podatke iz",
-      "FlapsConfiguration": "Flaps Configuration",
+      "FlapsConfiguration": "Konfiguracija zakrilaca",
+      "LandingWeight": "Landing Weight",
       "Low": "Nisko",
       "MaximumManual": "Maximum Manual",
       "Medium": "Srednje",
@@ -305,9 +310,10 @@
       "OverweightProcedure": "Postupak za prekomjernu težinu",
       "Qnh": "QNH",
       "ReverseThrust": "Reverse Thrust",
+      "Runway": "Runway",
       "RunwayAltitude": "Visina piste",
       "RunwayAltitudeUnit": "ft ASL",
-      "RunwayCondition": "Runway Condition",
+      "RunwayCondition": "Stanje piste",
       "RunwayConditions": {
         "Dry": "Dry (6)",
         "Good": "Good (5)",
@@ -316,9 +322,11 @@
         "MediumPoor": "Medium-Poor (2)",
         "Poor": "Poor (1)"
       },
+      "RunwayElevation": "Runway Elevation",
+      "RunwayElevationUnit": "ft AMSL",
       "RunwayHeading": "Smjer piste",
       "RunwayHeadingUnit": "°",
-      "RunwayLda": "Runway LDA",
+      "RunwayLda": "LDA piste",
       "RunwayLdaUnitFt": "ft",
       "RunwayLdaUnitMeter": "m",
       "RunwaySlope": "Nagib piste",
@@ -331,6 +339,7 @@
       "UnitFt": "ft",
       "UnitMeter": "m",
       "Weight": "Težina",
+      "Wind": "Wind",
       "WindDirection": "Smjer vjetra",
       "WindDirectionUnit": "°",
       "WindMagnitude": "Jačina vjetra",
@@ -396,6 +405,8 @@
       },
       "RunwayElevation": "Runway Elevation",
       "RunwayElevationUnit": "ft",
+      "RunwayHeading": "Runway Heading",
+      "RunwayHeadingUnit": "°",
       "RunwayLengthUnitFt": "ft",
       "RunwayLengthUnitMeter": "m",
       "RunwaySlope": "Runway Slope",
@@ -474,7 +485,7 @@
       "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
       "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
       "AutoLoadNight": "Night:",
-      "AutoLoadNoneSelection": "None",
+      "AutoLoadNoneSelection": "Niti jedan",
       "LoadPreset": "Load Preset",
       "LoadingPreset": "Loading Preset",
       "NewNameConfirmationDialogMsg": "Please confirm the new name for the lighting preset",
@@ -549,13 +560,15 @@
     "SimBridge": "SimBridge",
     "SimBridgeConnected": "Connected",
     "SimBridgeConnecting": "Connecting...",
-    "SimBridgeOff": "Off",
+    "SimBridgeOff": "Isključena",
     "SimBridgeOffline": "Not Available",
     "Simrate": "Simrate",
     "TT": {
       "AlignAdirs": "Instantly align ADIRS",
       "AutoBrightness": "Turn Auto Brightness On/Off",
       "Brightness": "Set flyPad brightness",
+      "CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+      "CabinLighting": "Set Cabin Lighting",
       "FinishBoarding": "Instantly finish boarding",
       "OnScreenKeyboard": "Turn OnScreen Keyboard On/Off",
       "PauseAtTod": "Arm or Disarm pause at Top of Descent",
@@ -563,12 +576,10 @@
       "Settings": "Go to flyPad Settings page",
       "SimBridge": "Control SimBridge Connection",
       "Simrate": "Increase or Decrease Simulation Rate",
-      "Sleep": "Standby"
+      "Sleep": "Stanje pripravnosti"
     },
     "Title": "Quick Controls"
   },
-  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
-  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "About"
@@ -644,18 +655,17 @@
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "PilotAvatar": "Show Pilot Avatar",
       "SeparateTillerFromRudderInputs": "Separate Tiller from Rudder Inputs",
-      "SyncEfis": "Sync EFIS and audio controls between Captain and FO",
+      "SyncEfis": "Sync EFIS and Audio Controls Between Captain and FO",
       "Title": "Realism"
     },
     "SimOptions": {
       "Active": "Aktivno",
       "Auto": "Auto",
       "Both": "Synchronized",
+      "CabinAutoBrightness": "Auto Cabin Lighting",
+      "CabinManualBrightness": "Cabin Lighting Brightness",
       "Calibrate": "Calibrate",
-      "Captain": "Captain",
-      "CockpitSeatUsedToControl": "Cockpit Seat Used To Control",
       "ConesEnabled": "Safety Cones",
-      "Copilot": "Copilot",
       "DefaultBarometerUnit": "Default Barometer Unit",
       "DynamicRegistrationDecal": "Dynamic Registration Decal",
       "EnableSimBridge": "Enable MCDU Server Connection (Auto deactivates after 5 minutes if no successful connection)",
@@ -667,6 +677,7 @@
       "Left": "Left",
       "LoadOnly": "Load Only",
       "None": "Niti jedan",
+      "OansPerformanceMode": "OANS Performance Mode (Unload Airport Map When Not Used)",
       "Off": "Isključena",
       "PilotSeat": "Pilot Seat for Control",
       "Right": "Right",
@@ -696,14 +707,16 @@
         },
         "SettingTitle": "Navigraph Account Link",
         "SubscriptionStatus": {
-          "None": "None",
+          "None": "Niti jedan",
+          "Standard": "Navigraph Standard",
           "Unknown": "Unknown",
           "Unlimited": "Navigraph Unlimited"
         },
         "Unlink": "Unlink Account"
       },
       "OverrideSimBriefUserID": "Override SimBrief User ID",
-      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Provjerite jeste li ispravno unijeli svoje SimBrief korisničko ime ili pilot ID.",
+      "SimbriefLoadsheetNavigationEnabled": "Simbrief Loadsheet Navigation",
       "TT": {
         "OverrideSimBriefUserID": "Alternative SimBrief user ID to use instead of the linked Navigraph Account"
       },
@@ -735,6 +748,9 @@
       "TogaOnAxis": "TOGA On Axis"
     },
     "Title": "Settings",
+    "Troubleshooting": {
+      "Title": "Troubleshooting"
+    },
     "Unrealistic": "Unrealistic",
     "flyPad": {
       "AutoBrightness": "Auto Brightness",
@@ -743,7 +759,6 @@
       "Blue": "Blue",
       "Brightness": "Brightness",
       "Dark": "Dark",
-      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "Language",
       "Light": "Light",
       "Local": "Local",
@@ -760,8 +775,6 @@
       "UtcAndLocal": "UTC and Local"
     }
   },
-  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
-  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "Apr",
     "Aug": "Aug",

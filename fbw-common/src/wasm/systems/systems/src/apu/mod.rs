@@ -1228,7 +1228,7 @@ mod tests {
     #[cfg(test)]
     mod apu_tests {
         use super::*;
-        use ntest::{assert_about_eq, timeout};
+        use ntest::assert_about_eq;
         use uom::si::{mass::kilogram, power::watt};
 
         const APPROXIMATE_STARTUP_TIME: u64 = 49;
@@ -1691,9 +1691,9 @@ mod tests {
         }
 
         #[rstest]
-        #[timeout(500)]
         #[case::aps3200(test_bed_aps3200())]
         #[case::pw980(test_bed_pw980())]
+        #[ntest::timeout(500)]
         fn when_apu_starting_and_master_plus_start_sw_off_then_apu_continues_starting_and_shuts_down_after_start<
             T: ApuGenerator,
             U: ApuStartMotor,
@@ -1762,9 +1762,9 @@ mod tests {
         }
 
         #[rstest]
-        #[timeout(500)]
         #[case::aps3200(test_bed_aps3200())]
         #[case::pw980(test_bed_pw980())]
+        #[ntest::timeout(500)]
         fn apu_cools_down_to_ambient_temperature_after_running<
             T: ApuGenerator,
             U: ApuStartMotor,
@@ -2363,9 +2363,9 @@ mod tests {
         }
 
         #[rstest]
-        #[timeout(500)]
         #[case::aps3200(test_bed_aps3200())]
         #[case::pw980(test_bed_pw980())]
+        #[ntest::timeout(500)]
         fn without_fuel_apu_starts_until_approximately_n_3_percent_and_then_shuts_down_with_fault<
             T: ApuGenerator,
             U: ApuStartMotor,
@@ -2391,9 +2391,9 @@ mod tests {
         }
 
         #[rstest]
-        #[timeout(500)]
         #[case::aps3200(test_bed_aps3200())]
         #[case::pw980(test_bed_pw980())]
+        #[ntest::timeout(500)]
         fn starting_apu_shuts_down_when_no_more_fuel_available<
             T: ApuGenerator,
             U: ApuStartMotor,
@@ -2418,9 +2418,9 @@ mod tests {
         }
 
         #[rstest]
-        #[timeout(500)]
         #[case::aps3200(test_bed_aps3200())]
         #[case::pw980(test_bed_pw980())]
+        #[ntest::timeout(500)]
         fn starting_apu_shuts_down_with_fault_when_starter_motor_unpowered_below_n_55<
             T: ApuGenerator,
             U: ApuStartMotor,
@@ -2519,9 +2519,9 @@ mod tests {
         }
 
         #[rstest]
-        #[timeout(500)]
         #[case::aps3200(test_bed_aps3200())]
         #[case::pw980(test_bed_pw980())]
+        #[ntest::timeout(500)]
         fn starting_apu_shutting_down_early_doesnt_decrease_egt_below_ambient<
             T: ApuGenerator,
             U: ApuStartMotor,
@@ -2568,9 +2568,9 @@ mod tests {
         }
 
         #[rstest]
-        #[timeout(500)]
         #[case::aps3200(test_bed_aps3200())]
         #[case::pw980(test_bed_pw980())]
+        #[ntest::timeout(500)]
         fn running_apu_shuts_down_when_no_more_fuel_available<
             T: ApuGenerator,
             U: ApuStartMotor,

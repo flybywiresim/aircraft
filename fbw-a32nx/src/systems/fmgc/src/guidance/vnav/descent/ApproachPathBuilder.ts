@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 //  Copyright (c) 2021 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
@@ -16,13 +17,12 @@ import {
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { ManagedSpeedType, SpeedProfile } from '@fmgc/guidance/vnav/climb/SpeedProfile';
 import { DescentStrategy, IdleDescentStrategy } from '@fmgc/guidance/vnav/descent/DescentStrategy';
-import { MathUtils } from '@flybywiresim/fbw-sdk';
+import { ConstraintUtils, MathUtils } from '@flybywiresim/fbw-sdk';
 import { TemporaryCheckpointSequence } from '@fmgc/guidance/vnav/profile/TemporaryCheckpointSequence';
 import { HeadwindProfile } from '@fmgc/guidance/vnav/wind/HeadwindProfile';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { FlightPathAngleStrategy } from '@fmgc/guidance/vnav/climb/ClimbStrategy';
 import { BisectionMethod, NonTerminationStrategy } from '@fmgc/guidance/vnav/BisectionMethod';
-import { ConstraintUtils } from '@fmgc/flightplanning/data/constraint';
 import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
 
 class FlapConfigurationProfile {
@@ -504,12 +504,15 @@ export class ApproachPathBuilder {
 
           // If we decelerated, but aren't at the constraint yet, fly level, at constant speed to the constraint
           const constantStep = this.fpaStrategy.predictToDistance(
-            altitude,
+            decelerationSequence.lastCheckpoint.altitude,
             -remainingDistanceToConstraint,
             speedConstraint.maxSpeed,
             parameters.managedDescentSpeedMach,
-            remainingFuelOnBoard - decelerationStep.fuelBurned,
-            windProfile.getHeadwindComponent(distanceFromStart, altitude),
+            decelerationSequence.lastCheckpoint.remainingFuelOnBoard,
+            windProfile.getHeadwindComponent(
+              decelerationSequence.lastCheckpoint.distanceFromStart,
+              decelerationSequence.lastCheckpoint.altitude,
+            ),
             this.configuration.setFromSpeed(speedConstraint.maxSpeed, parameters, useSpeedbrakes),
           );
 

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 export class SimVarCache {
   private simVarCache: { [key: string]: number | null };
 
@@ -48,7 +49,7 @@ export class LocalSimVar<T> {
 export class SimVarString {
   /**
    * Pack a string into numbers for use in a simvar
-   * ASCII chars from dec 32-63 can be encoded, 6-bit per char, 8 chars per simvar
+   * ASCII chars from dec 32-94 can be encoded, 6-bit per char, 8 chars per simvar
    * IMPORTANT: write the values as strings to the simvars or you will have precision errors
    * @param value
    * @param maxLength if specified enough simvars will be returned to fit this length,
@@ -58,7 +59,8 @@ export class SimVarString {
   static pack(value: string, maxLength?: number): number[] {
     let word = -1;
     const ret = [];
-    for (let i = 0; i < Math.min(maxLength, value.length); i++) {
+    const length = Math.min(maxLength ?? Infinity, value.length);
+    for (let i = 0; i < length; i++) {
       const char = i % 8;
       if (char === 0) {
         word++;

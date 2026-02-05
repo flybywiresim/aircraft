@@ -36,3 +36,9 @@ export interface DebugPointPathVector {
 }
 
 export type PathVector = LinePathVector | ArcPathVector | DebugPointPathVector;
+
+export interface VerticalPathCheckpoint {
+  distanceFromAircraft: number;
+  /** Predicted altitude */
+  altitude: number;
+}

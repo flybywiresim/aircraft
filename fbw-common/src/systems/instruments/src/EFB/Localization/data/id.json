@@ -92,12 +92,14 @@
   },
   "Dispatch": {
     "Ofp": {
-      "ImportSimBriefData": "Impor Data SimBrief",
       "TT": {
         "IncreaseFontSize": "Perbesar Ukuran Font",
+        "NextLoadsheetSection": "Next loadsheet section",
+        "PreviousLoadsheetSection": "Previous loadsheet section",
         "ReduceFontSize": "Perkecil Ukuran Font"
       },
       "Title": "OFP",
+      "UnavailableLoadsheetSection": "Info not available or section not enabled in Simbrief.",
       "YouHaveNotYetImportedAnySimBriefData": "Anda belum mengimpor data apapun dari SimBrief."
     },
     "Overview": {
@@ -287,6 +289,7 @@
   "Performance": {
     "Data": "Data",
     "Landing": {
+      "Airport": "Airport",
       "AirportIcao": "ICAO Bandara",
       "ApproachSpeed": "Kecepatan Approach",
       "ApproachSpeedUnit": "kts",
@@ -295,8 +298,10 @@
       "Clear": "Kosongkan",
       "DropDownNo": "Tidak",
       "DropDownYes": "Iya",
+      "EnterManually": "Enter Manually",
       "FillDataFrom": "Masukkan data dari",
       "FlapsConfiguration": "Konfigurasi Flaps",
+      "LandingWeight": "Landing Weight",
       "Low": "Rendah",
       "MaximumManual": "Manual Maksimum",
       "Medium": "Sedang",
@@ -305,6 +310,7 @@
       "OverweightProcedure": "Prosedur Muatan Berlebih",
       "Qnh": "QNH",
       "ReverseThrust": "Reverse Thrust",
+      "Runway": "Runway",
       "RunwayAltitude": "Ketinggian Landasan",
       "RunwayAltitudeUnit": "ft ASL",
       "RunwayCondition": "Kondisi Landasan",
@@ -316,6 +322,8 @@
         "MediumPoor": "Sedang-Buruk (2)",
         "Poor": "Buruk (1)"
       },
+      "RunwayElevation": "Runway Elevation",
+      "RunwayElevationUnit": "ft AMSL",
       "RunwayHeading": "Arah Landasan",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "LDA Landasan",
@@ -331,6 +339,7 @@
       "UnitFt": "ft",
       "UnitMeter": "m",
       "Weight": "Berat",
+      "Wind": "Wind",
       "WindDirection": "Arah Angin",
       "WindDirectionUnit": "°",
       "WindMagnitude": "Kekuatan Angin",
@@ -396,6 +405,8 @@
       },
       "RunwayElevation": "Runway Elevation",
       "RunwayElevationUnit": "ft",
+      "RunwayHeading": "Runway Heading",
+      "RunwayHeadingUnit": "°",
       "RunwayLengthUnitFt": "ft",
       "RunwayLengthUnitMeter": "m",
       "RunwaySlope": "Runway Slope",
@@ -556,6 +567,8 @@
       "AlignAdirs": "Sejajarkan ADIRS secara Instan",
       "AutoBrightness": "Menyalakan/Mematikan Kecerahan Otomatis",
       "Brightness": "Atur Kecerahan flyPad",
+      "CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
+      "CabinLighting": "Set Cabin Lighting",
       "FinishBoarding": "Selesaikan Boarding secara Instan",
       "OnScreenKeyboard": "Menyalakan/Mematikan Keyboard Dalam Layar",
       "PauseAtTod": "Arm or Disarm pause at Top of Descent",
@@ -567,8 +580,6 @@
     },
     "Title": "Kontrol Cepat"
   },
-  "QuickControls.TT.CabinAutoBrightness": "Turn Auto Cabin Lighting On/Off",
-  "QuickControls.TT.CabinLighting": "Set Cabin Lighting",
   "Settings": {
     "About": {
       "Title": "Tentang"
@@ -651,11 +662,10 @@
       "Active": "Aktif",
       "Auto": "Otomatis",
       "Both": "Tersinkron",
+      "CabinAutoBrightness": "Auto Cabin Lighting",
+      "CabinManualBrightness": "Cabin Lighting Brightness",
       "Calibrate": "Kalibrasi",
-      "Captain": "Kapten",
-      "CockpitSeatUsedToControl": "Kursi Kokpit yang Digunakan untuk Mengontrol",
       "ConesEnabled": "Safety Cones",
-      "Copilot": "Kopilot",
       "DefaultBarometerUnit": "Standar Satuan Barometer",
       "DynamicRegistrationDecal": "Nomor Registrasi Pesawat",
       "EnableSimBridge": "Aktifkan Koneksi SimBridge (Akan putus otomatis setelah 5 menit jika koneksi tidak berhasil)",
@@ -667,6 +677,7 @@
       "Left": "Left",
       "LoadOnly": "Hanya Muat Saja",
       "None": "Tidak ada",
+      "OansPerformanceMode": "OANS Performance Mode (Unload Airport Map When Not Used)",
       "Off": "Mati",
       "PilotSeat": "Pilot Seat for Control",
       "Right": "Right",
@@ -697,6 +708,7 @@
         "SettingTitle": "Navigraph Account Link",
         "SubscriptionStatus": {
           "None": "None",
+          "Standard": "Navigraph Standard",
           "Unknown": "Unknown",
           "Unlimited": "Navigraph Unlimited"
         },
@@ -704,6 +716,7 @@
       },
       "OverrideSimBriefUserID": "Override SimBrief User ID",
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
+      "SimbriefLoadsheetNavigationEnabled": "Simbrief Loadsheet Navigation",
       "TT": {
         "OverrideSimBriefUserID": "Alternative SimBrief user ID to use instead of the linked Navigraph Account"
       },
@@ -735,6 +748,9 @@
       "TogaOnAxis": "TOGA On Axis"
     },
     "Title": "Pengaturan",
+    "Troubleshooting": {
+      "Title": "Troubleshooting"
+    },
     "Unrealistic": "Tidak Realistis",
     "flyPad": {
       "AutoBrightness": "Kecerahan Otomatis",
@@ -743,7 +759,6 @@
       "Blue": "Biru",
       "Brightness": "Kecerahan",
       "Dark": "Gelap",
-      "DisablePushbackConflictWarning": "Disable pushback system conflict warning",
       "Language": "Bahasa",
       "Light": "Terang",
       "Local": "Lokal",
@@ -760,8 +775,6 @@
       "UtcAndLocal": "UTC dan Lokal"
     }
   },
-  "Settings.SimOptions.CabinAutoBrightness": "Auto Cabin Lighting",
-  "Settings.SimOptions.CabinManualBrightness": "Cabin Lighting Brightness",
   "StatusBar": {
     "Apr": "Apr",
     "Aug": "Agu",

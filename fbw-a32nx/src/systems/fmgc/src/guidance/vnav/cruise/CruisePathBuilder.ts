@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2024 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -20,6 +20,7 @@ import {
   VerticalCheckpointReason,
 } from '../profile/NavGeometryProfile';
 import { AtmosphericConditions } from '../AtmosphericConditions';
+import { VnavConfig } from '../VnavConfig';
 
 export class CruisePathBuilder {
   constructor(
@@ -62,19 +63,10 @@ export class CruisePathBuilder {
         this.addSegmentToSpeedConstraint(config, sequence, speedConstraint, speedProfile, windProfile);
       }
 
-      const { distanceFromStart, altitude, remainingFuelOnBoard } = sequence.lastCheckpoint;
+      const { distanceFromStart, altitude } = sequence.lastCheckpoint;
 
       const speed = speedProfile.getTarget(distanceFromStart, altitude, ManagedSpeedType.Cruise);
-      const headwind = windProfile.getHeadwindComponent(distanceFromStart, altitude);
-      const segmentToStep = this.computeCruiseSegment(
-        config,
-        altitude,
-        step.distanceFromStart - distanceFromStart,
-        remainingFuelOnBoard,
-        speed,
-        headwind,
-      );
-      sequence.addCheckpointFromStep(segmentToStep, VerticalCheckpointReason.AtmosphericConditions);
+      this.computeCruiseSegment(sequence, config, step.distanceFromStart, speed, windProfile);
 
       const addingStepSuccessful = this.tryAddStepFromLastCheckpoint(
         sequence,
@@ -124,22 +116,13 @@ export class CruisePathBuilder {
       sequence.addCheckpointFromStep(accelerationStep, VerticalCheckpointReason.AtmosphericConditions);
     }
 
-    if (config.vnavConfig.DEBUG_PROFILE && targetDistanceFromStart < sequence.lastCheckpoint.distanceFromStart) {
+    if (VnavConfig.DEBUG_PROFILE && targetDistanceFromStart < sequence.lastCheckpoint.distanceFromStart) {
       console.warn(
         '[FMS/VNAV] An acceleration step in the cruise took us past T/D. This is not implemented properly yet. Blame BBK',
       );
     }
 
-    const step = this.computeCruiseSegment(
-      config,
-      sequence.lastCheckpoint.altitude,
-      targetDistanceFromStart - sequence.lastCheckpoint.distanceFromStart,
-      startOfCruise.remainingFuelOnBoard,
-      speedTarget,
-      windProfile.getHeadwindComponent(sequence.lastCheckpoint.distanceFromStart, sequence.lastCheckpoint.altitude),
-    );
-
-    sequence.addCheckpointFromStep(step, VerticalCheckpointReason.AtmosphericConditions);
+    this.computeCruiseSegment(sequence, config, targetDistanceFromStart, speedTarget, windProfile);
 
     return sequence;
   }
@@ -151,23 +134,21 @@ export class CruisePathBuilder {
     speedProfile: SpeedProfile,
     windProfile: HeadwindProfile,
   ) {
-    const { distanceFromStart, altitude, remainingFuelOnBoard } = sequence.lastCheckpoint;
+    const { distanceFromStart, altitude } = sequence.lastCheckpoint;
 
     if (speedConstraint.distanceFromStart < distanceFromStart) {
       return;
     }
 
     const speed = speedProfile.getTarget(distanceFromStart, altitude, ManagedSpeedType.Cruise);
-    const segmentResult = this.computeCruiseSegment(
+    this.computeCruiseSegment(
+      sequence,
       config,
-      altitude,
-      speedConstraint.distanceFromStart - distanceFromStart,
-      remainingFuelOnBoard,
+      speedConstraint.distanceFromStart,
       speed,
-      windProfile.getHeadwindComponent(distanceFromStart, altitude),
+      windProfile,
+      VerticalCheckpointReason.SpeedConstraint,
     );
-
-    sequence.addCheckpointFromStep(segmentResult, VerticalCheckpointReason.SpeedConstraint);
   }
 
   /**
@@ -229,27 +210,58 @@ export class CruisePathBuilder {
   }
 
   private computeCruiseSegment(
+    sequence: TemporaryCheckpointSequence,
     config: AircraftConfig,
-    altitude: Feet,
-    distance: NauticalMiles,
-    remainingFuelOnBoard: number,
+    targetDistanceFromStart: NauticalMiles,
     speed: Knots,
-    headwind: WindComponent,
-  ): StepResults {
-    const { zeroFuelWeight, managedCruiseSpeedMach, tropoPause } = this.computationParametersObserver.get();
+    windProfile: HeadwindProfile,
+    reason: VerticalCheckpointReason = VerticalCheckpointReason.AtmosphericConditions,
+  ) {
+    const MaxStepDistance = 50;
 
-    return Predictions.levelFlightStep(
-      config,
-      altitude,
-      distance,
-      speed,
-      managedCruiseSpeedMach,
-      zeroFuelWeight,
-      remainingFuelOnBoard,
-      headwind.value,
-      this.atmosphericConditions.isaDeviation,
-      tropoPause,
-    );
+    const { zeroFuelWeight, managedCruiseSpeedMach, tropoPause, perfFactor } = this.computationParametersObserver.get();
+
+    // Keep track of the state here instead of adding a checkpoint for every step to reduce the number of allocations
+    const state = {
+      distanceFromStart: sequence.lastCheckpoint.distanceFromStart,
+      secondsFromPresent: sequence.lastCheckpoint.secondsFromPresent,
+      remainingFuelOnBoard: sequence.lastCheckpoint.remainingFuelOnBoard,
+    };
+
+    let numIterations = 0;
+    for (; numIterations < 1000 && state.distanceFromStart < targetDistanceFromStart; numIterations++) {
+      const headwind = windProfile.getHeadwindComponent(state.distanceFromStart, sequence.lastCheckpoint.altitude);
+
+      const step = Predictions.levelFlightStep(
+        config,
+        sequence.lastCheckpoint.altitude,
+        Math.min(targetDistanceFromStart - state.distanceFromStart, MaxStepDistance),
+        speed,
+        managedCruiseSpeedMach,
+        zeroFuelWeight,
+        state.remainingFuelOnBoard,
+        headwind.value,
+        this.atmosphericConditions.isaDeviation,
+        tropoPause,
+        perfFactor,
+      );
+
+      state.distanceFromStart += step.distanceTraveled;
+      state.secondsFromPresent += step.timeElapsed;
+      state.remainingFuelOnBoard -= step.fuelBurned;
+    }
+
+    if (numIterations > 0) {
+      sequence.push({
+        reason,
+        distanceFromStart: state.distanceFromStart,
+        altitude: sequence.lastCheckpoint.altitude,
+        secondsFromPresent: state.secondsFromPresent,
+        remainingFuelOnBoard: state.remainingFuelOnBoard,
+        speed,
+        mach: managedCruiseSpeedMach,
+      });
+    }
   }
 
   private levelAccelerationStep(
@@ -259,7 +271,7 @@ export class CruisePathBuilder {
     finalSpeed: Knots,
     headwind: WindComponent,
   ): StepResults {
-    const { zeroFuelWeight, cruiseAltitude, managedCruiseSpeedMach, tropoPause } =
+    const { zeroFuelWeight, cruiseAltitude, managedCruiseSpeedMach, tropoPause, perfFactor } =
       this.computationParametersObserver.get();
 
     const staticAirTemperature = this.atmosphericConditions.predictStaticAirTemperatureAtAltitude(cruiseAltitude);
@@ -278,6 +290,7 @@ export class CruisePathBuilder {
       headwind.value,
       this.atmosphericConditions.isaDeviation,
       tropoPause,
+      perfFactor,
     );
   }
 

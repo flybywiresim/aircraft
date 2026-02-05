@@ -27,7 +27,7 @@ use uom::si::{
     velocity::{foot_per_minute, knot, meter_per_second},
 };
 
-#[derive(Eq, PartialEq, Clone, Copy)]
+#[derive(Eq, PartialEq, Clone, Copy, Hash)]
 pub enum CpcId {
     Cpc1,
     Cpc2,
@@ -514,14 +514,14 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
         }
         self.pressure_schedule_manager
             .as_ref()
-            .map_or(false, |manager| manager.should_switch_cpc())
+            .is_some_and(|manager| manager.should_switch_cpc())
             || self.has_fault()
     }
 
     pub fn should_open_outflow_valve(&self) -> bool {
         self.pressure_schedule_manager
             .as_ref()
-            .map_or(false, |manager| manager.should_open_outflow_valve())
+            .is_some_and(|manager| manager.should_open_outflow_valve())
     }
 
     pub fn reset_cpc_switch(&mut self) {
@@ -1759,7 +1759,7 @@ mod tests {
 
         assert!(test_bed.query(|a| a.is_climb()));
 
-        test_bed.set_indicated_altitude(Length::new::<foot>(7900.));
+        test_bed.set_pressure_altitude(Length::new::<foot>(7900.));
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-210.));
         test_bed.run_with_vertical_speed();
 
@@ -1774,7 +1774,7 @@ mod tests {
 
         assert!(test_bed.query(|a| a.is_climb()));
 
-        test_bed.set_indicated_altitude(Length::new::<foot>(7900.));
+        test_bed.set_pressure_altitude(Length::new::<foot>(7900.));
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-210.));
         test_bed.run_with_delta_of(Duration::from_secs(31));
         test_bed.run_with_vertical_speed();
@@ -1790,7 +1790,7 @@ mod tests {
 
         assert!(test_bed.query(|a| a.is_climb()));
 
-        test_bed.set_indicated_altitude(Length::new::<foot>(7900.));
+        test_bed.set_pressure_altitude(Length::new::<foot>(7900.));
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(99.));
         test_bed.run_with_vertical_speed();
 
@@ -1805,7 +1805,7 @@ mod tests {
 
         assert!(test_bed.query(|a| a.is_climb()));
 
-        test_bed.set_indicated_altitude(Length::new::<foot>(7900.));
+        test_bed.set_pressure_altitude(Length::new::<foot>(7900.));
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(99.));
         test_bed.run_with_delta_of(Duration::from_secs(31));
         test_bed.run_with_vertical_speed();
@@ -1914,7 +1914,7 @@ mod tests {
     fn schedule_changes_from_abort_to_climb() {
         let mut test_bed = test_bed();
         test_bed.command(|a| a.set_true_airspeed(Velocity::new::<knot>(101.)));
-        test_bed.set_indicated_altitude(Length::new::<foot>(7900.));
+        test_bed.set_pressure_altitude(Length::new::<foot>(7900.));
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-210.));
         test_bed.run_with_vertical_speed();
         test_bed.run_with_delta_of(Duration::from_secs(31));
@@ -1933,7 +1933,7 @@ mod tests {
     fn schedule_changes_from_abort_to_ground() {
         let mut test_bed = test_bed();
         test_bed.command(|a| a.set_true_airspeed(Velocity::new::<knot>(101.)));
-        test_bed.set_indicated_altitude(Length::new::<foot>(7900.));
+        test_bed.set_pressure_altitude(Length::new::<foot>(7900.));
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-210.));
         test_bed.run_with_vertical_speed();
         test_bed.run_with_delta_of(Duration::from_secs(31));
@@ -1955,7 +1955,7 @@ mod tests {
         test_bed.run();
         assert!(test_bed.query(|a| a.is_climb()));
 
-        test_bed.set_indicated_altitude(Length::new::<foot>(7900.));
+        test_bed.set_pressure_altitude(Length::new::<foot>(7900.));
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(99.));
         test_bed.run_with_delta_of(Duration::from_secs(10));
         test_bed.run_with_vertical_speed();
@@ -2055,7 +2055,7 @@ mod tests {
     fn schedule_timer_resets_after_abort_condition_is_not_met() {
         let mut test_bed = test_bed();
         test_bed.command(|a| a.set_true_airspeed(Velocity::new::<knot>(101.)));
-        test_bed.set_indicated_altitude(Length::new::<foot>(7900.));
+        test_bed.set_pressure_altitude(Length::new::<foot>(7900.));
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-210.));
         test_bed.run_with_vertical_speed();
         test_bed.run_with_delta_of(Duration::from_secs(31));

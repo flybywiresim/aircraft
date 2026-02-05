@@ -1,91 +1,9 @@
-interface NotificationParams {
-  __Type: 'SNotificationParams';
-  buttons: NotificationButton[];
-  closePopupTitle?: string;
-  title: string;
-  description?: string;
-  contentUrl?: string;
-  style: string;
-  contentTemplate?: string;
-  contentData: string;
-  duration: number;
-}
-
-/**
- * NXPopUp utility class to create a pop-up UI element
- */
-export class NXPopUp {
-  private title = 'A32NX POPUP';
-  private id = `${this.title}_${Date.now()}`;
-
-  private params: NotificationParams = {
-    __Type: 'SNotificationParams',
-    buttons: [
-      new NotificationButton('TT:MENU.YES', 'A32NX_POP_' + this.id + '_YES'),
-      new NotificationButton('TT:MENU.NO', 'A32NX_POP_' + this.id + '_NO'),
-    ],
-    title: this.title,
-    style: 'small',
-    contentData: 'Default Message',
-    duration: 10000,
-  };
-
-  private popupListener?: ViewListener.ViewListener;
-
-  constructor() {}
-
-  _showPopUp(params: NotificationParams) {
-    try {
-      Coherent.trigger('SHOW_POP_UP', params);
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
-  /**
-   * Show popup with given or already initiated parameters
-   * @param title Title for popup - will show in menu bar
-   * @param message Popup message
-   * @param style Style/Type of popup. Valid types are small|normal|big|big-help
-   * @param callbackYes Callback function -> YES button is clicked.
-   * @param callbackNo Callback function -> NO button is clicked.
-   */
-  showPopUp(title: string, message: string, style: string, callbackYes: () => void, callbackNo: () => void) {
-    if (title) {
-      this.params.title = title;
-    }
-    if (message) {
-      this.params.contentData = message;
-    }
-    if (style) {
-      this.params.style = style;
-    }
-    if (callbackYes) {
-      const yes = typeof callbackYes === 'function' ? callbackYes : () => callbackYes;
-      Coherent.on(`A32NX_POP_${this.id}_YES`, () => {
-        Coherent.off(`A32NX_POP_${this.id}_YES`, null, null);
-        yes();
-      });
-    }
-    if (callbackNo) {
-      const no = typeof callbackNo === 'function' ? callbackNo : () => callbackNo;
-      Coherent.on(`A32NX_POP_${this.id}_NO`, () => {
-        Coherent.off(`A32NX_POP_${this.id}_NO`, null, null);
-        no();
-      });
-    }
-
-    if (!this.popupListener) {
-      this.popupListener = RegisterViewListener('JS_LISTENER_POPUP', this._showPopUp.bind(this, this.params), true);
-    } else {
-      this._showPopUp(this.params);
-    }
-  }
-}
-
+// @ts-strict-ignore
 /**
  * NXNotif utility class to create a notification event and element
  */
+
+import { NotificationButton, NotificationParams } from '@flybywiresim/fbw-sdk';
 
 export class NXNotifManager {
   private notifications = [];

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2024 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -9,6 +10,7 @@ import {
   Arinc429ConsumerSubject,
   Arinc429Register,
   MathUtils,
+  NdPwpSymbolTypeFlags,
 } from '@flybywiresim/fbw-sdk';
 
 import { NDSimvars } from '../../NDSimvarPublisher';
@@ -26,6 +28,7 @@ const LEVEL_OFF_CLIMB_PATH = new Path2D('M -42 16.2 l 19.8 -16.2 h 22.2 m -4.2 -
 const START_OF_DESCENT_PATH = new Path2D('M 0 0 h 22.2 l 19.8 16.2 m -6 0 h 6 v -6');
 const LEVEL_OFF_DESCENT_PATH = new Path2D('M -42 -16.2 l 19.8 16.2 h 22.2 m -4.2 -4.2 l 4.2 4.2 l -4.2 4.2');
 const INTERCEPT_PROFILE_PATH = new Path2D('M -38, 0 l 14, -17 v 34 l 14 -17 h10 m -5 -5 l 5 5 l -5 5');
+const END_OF_VD_PATH = new Path2D('M -15 15 v-15 h30 v15');
 
 export class PseudoWaypointLayer implements MapLayer<NdSymbol> {
   data: NdSymbol[] = [];
@@ -66,12 +69,13 @@ export class PseudoWaypointLayer implements MapLayer<NdSymbol> {
         context.rotate((rotate * Math.PI) / 180);
 
         this.paintPseudoWaypoint(false, context, 0, -dy, symbol);
-      } else {
+      } else if (symbol.location) {
         const [x, y] = mapParameters.coordinatesToXYy(symbol.location);
         const rx = x + mapWidth / 2;
         const ry = y + mapHeight / 2;
+        const rotate = symbol.direction ? mapParameters.rotation(symbol.direction) : undefined;
 
-        this.paintPseudoWaypoint(false, context, rx, ry, symbol);
+        this.paintPseudoWaypoint(false, context, rx, ry, symbol, rotate);
       }
       this.lastUpdateTime = Date.now();
     }
@@ -91,16 +95,17 @@ export class PseudoWaypointLayer implements MapLayer<NdSymbol> {
             (this.groundSpeed.value * (Date.now() - this.lastUpdateTime)) / 1000 / 60 / 60) *
           mapParameters.nmToPx;
         const rotate = MathUtils.diffAngle(this.headingWord.get().value, this.trackWord.get().value);
-        context.translate(384, 620);
+        context.translate(384, 378 + mapParameters.centerYBias);
         context.rotate((rotate * Math.PI) / 180);
 
         this.paintPseudoWaypoint(true, context, 0, -dy, symbol);
-      } else {
+      } else if (symbol.location) {
         const [x, y] = mapParameters.coordinatesToXYy(symbol.location);
         const rx = x + mapWidth / 2;
         const ry = y + mapHeight / 2;
+        const rotate = symbol.direction ? mapParameters.rotation(symbol.direction) : undefined;
 
-        this.paintPseudoWaypoint(true, context, rx, ry, symbol);
+        this.paintPseudoWaypoint(true, context, rx, ry, symbol, rotate);
       }
     }
     this.lastUpdateTime = Date.now();
@@ -112,37 +117,48 @@ export class PseudoWaypointLayer implements MapLayer<NdSymbol> {
     x: number,
     y: number,
     symbol: NdSymbol,
+    rotate?: number,
   ) {
     const color = isColorLayer ? typeFlagToColor(symbol.type) : '#000';
     context.strokeStyle = color;
 
-    if (symbol.type & NdSymbolTypeFlags.PwpStartOfClimb) {
+    if (symbol.typePwp & NdPwpSymbolTypeFlags.PwpStartOfClimb) {
       this.paintPath(context, x, y, START_OF_CLIMB_PATH);
-    } else if (symbol.type & NdSymbolTypeFlags.PwpClimbLevelOff) {
+    } else if (symbol.typePwp & NdPwpSymbolTypeFlags.PwpClimbLevelOff) {
       this.paintPath(context, x, y, LEVEL_OFF_CLIMB_PATH);
-    } else if (symbol.type & NdSymbolTypeFlags.PwpTopOfDescent) {
+    } else if (symbol.typePwp & NdPwpSymbolTypeFlags.PwpTopOfDescent) {
       this.paintPath(context, x, y, START_OF_DESCENT_PATH);
-    } else if (symbol.type & NdSymbolTypeFlags.PwpDescentLevelOff) {
+    } else if (symbol.typePwp & NdPwpSymbolTypeFlags.PwpDescentLevelOff) {
       this.paintPath(context, x, y, LEVEL_OFF_DESCENT_PATH);
-    } else if (symbol.type & NdSymbolTypeFlags.PwpInterceptProfile) {
+    } else if (symbol.typePwp & NdPwpSymbolTypeFlags.PwpInterceptProfile) {
       this.paintPath(context, x, y, INTERCEPT_PROFILE_PATH);
-    } else if (symbol.type & NdSymbolTypeFlags.PwpCdaFlap1) {
+    } else if (symbol.typePwp & NdPwpSymbolTypeFlags.PwpCdaFlap1) {
       this.paintCdaPoint(context, x, y, '1', color);
-    } else if (symbol.type & NdSymbolTypeFlags.PwpCdaFlap2) {
+    } else if (symbol.typePwp & NdPwpSymbolTypeFlags.PwpCdaFlap2) {
       this.paintCdaPoint(context, x, y, '2', color);
-    } else if (symbol.type & NdSymbolTypeFlags.PwpDecel) {
+    } else if (symbol.typePwp & NdPwpSymbolTypeFlags.PwpDecel) {
       this.paintPath(context, x, y, DECEL_PATH);
-    } else if (symbol.type & NdSymbolTypeFlags.PwpTimeMarker) {
+    } else if (symbol.typePwp & NdPwpSymbolTypeFlags.PwpTimeMarker) {
       this.paintCdaPoint(context, x, y, '', '#0f0');
-    } else if (symbol.type & NdSymbolTypeFlags.PwpSpeedChange) {
+    } else if (symbol.typePwp & NdPwpSymbolTypeFlags.PwpSpeedChange) {
       context.fillStyle = color;
       context.strokeStyle = 'none';
       this.paintSpeedChange(context, x, y);
+    } else if (
+      symbol.typePwp &&
+      symbol.typePwp & NdPwpSymbolTypeFlags.PwpEndOfVdMarker &&
+      symbol.type & NdSymbolTypeFlags.CyanColor
+    ) {
+      context.fillStyle = color;
+      this.paintPath(context, x, y, END_OF_VD_PATH, rotate);
     }
   }
 
-  private paintPath(context: CanvasRenderingContext2D, x: number, y: number, path: Path2D) {
+  private paintPath(context: CanvasRenderingContext2D, x: number, y: number, path: Path2D, rotate?: number) {
     context.translate(x, y);
+    if (rotate) {
+      context.rotate((rotate * Math.PI) / 180);
+    }
     context.beginPath();
     context.stroke(path);
     context.closePath();

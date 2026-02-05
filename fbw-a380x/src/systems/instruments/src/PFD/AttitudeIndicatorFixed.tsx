@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { getDisplayIndex } from 'instruments/src/PFD/PFD';
 import { Arinc429Word } from '@flybywiresim/fbw-sdk';
@@ -5,24 +6,30 @@ import { FlightPathDirector } from './FlightPathDirector';
 import { FlightPathVector } from './FlightPathVector';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
+import { FcdcValueProvider } from './shared/FcdcValueProvider';
 
 interface AttitudeIndicatorFixedUpperProps {
-  bus: EventBus;
+  readonly bus: EventBus;
+  readonly fcdcData: FcdcValueProvider;
 }
 
 export class AttitudeIndicatorFixedUpper extends DisplayComponent<AttitudeIndicatorFixedUpperProps> {
+  private readonly sub = this.props.bus.getSubscriber<Arinc429Values>();
+
   private roll = new Arinc429Word(0);
 
   private pitch = new Arinc429Word(0);
 
   private visibilitySub = Subject.create('hidden');
 
+  private readonly isNormalLawActive = this.props.fcdcData.fcdcDiscreteWord1.map(
+    (dw) => dw.bitValue(11) && !dw.isFailureWarning(),
+  );
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<Arinc429Values>();
-
-    sub.on('rollAr').handle((roll) => {
+    this.sub.on('rollAr').handle((roll) => {
       this.roll = roll;
       if (!this.roll.isNormalOperation()) {
         this.visibilitySub.set('hidden');
@@ -31,7 +38,7 @@ export class AttitudeIndicatorFixedUpper extends DisplayComponent<AttitudeIndica
       }
     });
 
-    sub.on('pitchAr').handle((pitch) => {
+    this.sub.on('pitchAr').handle((pitch) => {
       this.pitch = pitch;
       if (!this.pitch.isNormalOperation()) {
         this.visibilitySub.set('hidden');
@@ -44,11 +51,19 @@ export class AttitudeIndicatorFixedUpper extends DisplayComponent<AttitudeIndica
   render(): VNode {
     return (
       <g id="AttitudeUpperInfoGroup" visibility={this.visibilitySub}>
-        <g id="RollProtGroup" class="SmallStroke Green">
+        <g
+          id="RollProtGroup"
+          class="SmallStroke Green"
+          style={{ display: this.isNormalLawActive.map((nl) => (nl ? 'block' : 'none')) }}
+        >
           <path id="RollProtRight" d="m105.64 62.887 1.5716-0.8008m-1.5716-0.78293 1.5716-0.8008" />
           <path id="RollProtLeft" d="m32.064 61.303-1.5716-0.8008m1.5716 2.3845-1.5716-0.8008" />
         </g>
-        <g id="RollProtLost" style="display: none" class="NormalStroke Amber">
+        <g
+          id="RollProtLost"
+          class="NormalStroke Amber"
+          style={{ display: this.isNormalLawActive.map((nl) => (!nl ? 'block' : 'none')) }}
+        >
           <path id="RollProtLostRight" d="m107.77 60.696-1.7808 1.7818m1.7808 0-1.7808-1.7818" />
           <path id="RollProtLostLeft" d="m30.043 62.478 1.7808-1.7818m-1.7808 0 1.7808 1.7818" />
         </g>

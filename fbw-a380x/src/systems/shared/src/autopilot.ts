@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { ControlLaw } from '@fmgc/guidance/ControlLaws';
 
 enum LateralMode {
@@ -53,8 +54,44 @@ enum ArmedVerticalMode {
   TCAS = 6,
 }
 
+enum AutoThrustModeMessage {
+  None = 0,
+  ThrustLock = 1,
+  LeverToga = 2,
+  LeverClb = 3,
+  LeverMct = 4,
+  LeverAsym = 5,
+}
+
+enum AutoThrustMode {
+  NONE = 0,
+  MAN_TOGA = 1,
+  MAN_GA_SOFT = 2,
+  MAN_FLEX = 3,
+  MAN_DTO = 4,
+  MAN_MCT = 5,
+  MAN_THR = 6,
+  SPEED = 7,
+  MACH = 8,
+  THR_MCT = 9,
+  THR_CLB = 10,
+  THR_LVR = 11,
+  THR_IDLE = 12,
+  A_FLOOR = 13,
+  TOGA_LK = 14,
+}
+
 function isArmed(bitmask, armedBit: ArmedVerticalMode | ArmedLateralMode): boolean {
   return ((bitmask >> armedBit) & 1) === 1;
 }
 
-export { ControlLaw, LateralMode, ArmedLateralMode, VerticalMode, ArmedVerticalMode, isArmed };
+export {
+  ControlLaw,
+  LateralMode,
+  ArmedLateralMode,
+  VerticalMode,
+  ArmedVerticalMode,
+  AutoThrustModeMessage,
+  AutoThrustMode,
+  isArmed,
+};

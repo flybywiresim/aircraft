@@ -6,6 +6,9 @@ import { AirportSubsectionCode, SectionCode } from './SectionCode';
 export interface Runway extends BaseFix<SectionCode.Airport> {
   subSectionCode: AirportSubsectionCode.Runways;
 
+  number: number;
+  designator: RunwayDesignator;
+
   airportIdent: string;
   bearing: DegreesTrue;
   magneticBearing: DegreesMagnetic;
@@ -33,4 +36,19 @@ export enum RunwaySurfaceType {
   Hard = 1 << 1,
   Soft = 1 << 2,
   Water = 1 << 3,
+}
+
+// Maintain in sort order for FMS
+export enum RunwayDesignator {
+  None = 0,
+  Centre,
+  Left,
+  Right,
+  True,
+}
+
+export function isRunway(o: any): o is Runway {
+  return (
+    typeof o === 'object' && o.sectionCode === SectionCode.Airport && o.subSectionCode === AirportSubsectionCode.Runways
+  );
 }

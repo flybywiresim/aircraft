@@ -1,4 +1,5 @@
 const { execSync } = require('child_process');
+const fs = require('fs');
 
 const evaluate = (cmd) =>
   execSync(cmd, { shell: 'bash', stdio: ['ignore', 'pipe', 'ignore'] })
@@ -26,6 +27,20 @@ const getReleaseName = (commitHash, branch, tag) => {
   return `${branch}:${commitHash.substring(0, 8)}`;
 };
 
+const getPullRequestInfo = () => {
+  if (!process.env.GITHUB_EVENT_PATH) return null;
+
+  const event = JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8'));
+
+  if (!event.pull_request) return null;
+
+  return {
+    headSha: event.pull_request.head.sha,
+    headRef: event.pull_request.head.ref,
+    baseRef: event.pull_request.base.ref,
+  };
+};
+
 /**
  * Get the git build info.
  * @returns {GitBuildInfo | undefined} The build info derived from git, or undefined if not possible.
@@ -33,22 +48,32 @@ const getReleaseName = (commitHash, branch, tag) => {
 exports.getGitBuildInfo = () => {
   // all git commands are wrapped in a try block so the build can still succeed outside of a git repo.
   try {
-    const commitHash = process.env.GITHUB_SHA ? process.env.GITHUB_SHA : evaluate('git show-ref -s HEAD');
     let tag = '';
     try {
-      tag = evaluate('git tag -l --contains HEAD')
-        .split('\n')
-        .filter((it) => !!it)[0];
+      try {
+        if (process.env.GITHUB_REF && process.env.GITHUB_REF.startsWith('refs/tags/')) {
+          tag = process.env.GITHUB_REF.replace('refs/tags/', '');
+        }
+      } catch {
+        tag = evaluate('git tag -l --contains HEAD')
+          .split('\n')
+          .filter((it) => !!it)[0];
+      }
     } catch (e) {
       console.log('No tag', e);
     }
 
-    const isPullRequest = process.env.GITHUB_REF && process.env.GITHUB_REF.startsWith('refs/pull/');
+    const isPullRequest =
+      process.env.GITHUB_EVENT_NAME === 'pull_request' || process.env.GITHUB_EVENT_NAME === 'pull_request_target';
 
     let branch;
+    let commitHash;
     if (isPullRequest) {
-      branch = process.env.GITHUB_REF.match('^refs/pull/([0-9]+)/.*$')[1];
+      const prInfo = getPullRequestInfo();
+      commitHash = prInfo.headSha;
+      branch = prInfo.headRef;
     } else {
+      commitHash = process.env.GITHUB_SHA ? process.env.GITHUB_SHA : evaluate('git show-ref -s HEAD');
       branch = process.env.GITHUB_REF_NAME ? process.env.GITHUB_REF_NAME : evaluate('git rev-parse --abbrev-ref HEAD');
     }
 
