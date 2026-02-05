@@ -379,6 +379,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
       const sortedRunways = flightPlan.availableDestinationRunways.sort((a, b) => a.ident.localeCompare(b.ident));
       sortedRunways.forEach((rw) => {
         runways.push({
+          // TODO subscribable so we don't have to rebuild the whole list on new data
           label: `${rw.ident.substring(4).padEnd(3, ' ')} ${UnitType.METER.createNumber(rw.length).asUnit(this.lengthUnit.get()).toFixed(0).padStart(5, ' ')}${this.distanceUnitFormatter(this.lengthUnit.get())}`,
           action: async () => {
             await this.props.fmcService.master?.flightPlanService.setDestinationRunway(

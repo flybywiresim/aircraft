@@ -2557,6 +2557,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   </div>
                   <div class="mfd-label-value-container" style="padding: 15px;">
                     <span class="mfd-label mfd-spacing-right">LW</span>
+                    {/** TODO us unit */}
                     <span class="mfd-value">{this.apprLandingWeightFormatted}</span>
                     <span class="mfd-label-unit mfd-unit-trailing">T</span>
                   </div>

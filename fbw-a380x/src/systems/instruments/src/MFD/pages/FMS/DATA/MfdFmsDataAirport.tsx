@@ -114,6 +114,7 @@ export class MfdFmsDataAirport extends FmsPage<MfdFmsDataAirportProps> {
           const length = MathUtils.round(runway.length, 10).toFixed(0).padStart(5, '\xa0');
           const elevation = MathUtils.round(runway.thresholdLocation.alt, 10).toFixed(0).padStart(5, '\xa0');
 
+          // TODO US units
           return {
             label: `${runway.ident.substring(4).padEnd(3, ' ')} ${length}M ${runway.lsIdent ? 'ILS' : ''}`,
             length,
