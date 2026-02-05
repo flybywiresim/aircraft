@@ -674,9 +674,15 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       ? this.loadedAlternateFlightPlan
       : this.loadedFlightPlan;
     const wpt: NextWptInfo[] = flightPlan?.allLegs
-      .map((el, idx) => {
+      .map((el: ReadonlyFlightPlanElement, idx: number) => {
         const revWptIdx = this.props.fmcService.master?.revisedLegIndex.get();
-        if (el instanceof FlightPlanLeg && el.isXF() && revWptIdx && idx >= revWptIdx + 1) {
+        if (
+          el instanceof FlightPlanLeg &&
+          el.isXF() &&
+          revWptIdx !== null &&
+          revWptIdx !== undefined &&
+          idx >= revWptIdx + 1
+        ) {
           return { ident: el.ident, originalLegIndex: idx };
         }
         return null;

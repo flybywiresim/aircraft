@@ -37,6 +37,7 @@ import { getEtaFromUtcOrPresent } from 'instruments/src/MFD/shared/utils';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
 import { ReadonlyFlightPlanLeg } from '@fmgc/flightplanning/legs/ReadonlyFlightPlanLeg';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 
 interface MfdFmsFplnVertRevProps extends AbstractMfdPageProps {}
 
@@ -440,9 +441,11 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         }
 
         const pred =
-          this.props.fmcService?.master?.guidanceController?.vnavDriver?.mcduProfile?.waypointPredictions?.get(
-            cruiseStepLegIndices[i],
-          );
+          this.loadedFlightPlanIndex.get() < FlightPlanIndex.Uplink
+            ? this.props.fmcService?.master?.guidanceController?.vnavDriver?.mcduProfile?.waypointPredictions?.get(
+                cruiseStepLegIndices[i],
+              )
+            : undefined;
         const wptEta = getEtaFromUtcOrPresent(
           pred?.secondsFromPresent,
           this.activeFlightPhase.get() == FmgcFlightPhase.Preflight,
@@ -726,7 +729,11 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       }
 
       if (isValid) {
-        this.props.fmcService.master?.flightPlanInterface.addOrUpdateCruiseStep(legIndex, flightLevel * 100);
+        this.props.fmcService.master?.flightPlanInterface.addOrUpdateCruiseStep(
+          legIndex,
+          flightLevel * 100,
+          this.loadedFlightPlanIndex.get(),
+        );
       } else {
         if (this.selectedLegIndex !== null) {
           const leg = this.loadedFlightPlan?.maybeElementAt(this.selectedLegIndex);
@@ -738,7 +745,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
   private tryDeleteCruiseStep(lineIndex: number, previousDropdownIndex: number) {
     const legIndex = this.availableWaypointsToLegIndex[previousDropdownIndex];
-    this.props.fmcService.master?.flightPlanInterface.removeCruiseStep(legIndex);
+    this.props.fmcService.master?.flightPlanInterface.removeCruiseStep(legIndex, this.loadedFlightPlanIndex.get());
     this.stepAltsWptIndices[lineIndex].set(null);
     this.stepAltsFlightLevel[lineIndex].set(null);
     this.forceRebuildList = true;
@@ -785,7 +792,9 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   private getEstimatedGrossWeightAtIndex(legIndex: number): number | null {
     const zfw = this.loadedFlightPlan?.performanceData.zeroFuelWeight.get() ?? null;
     const pred =
-      this.props.fmcService?.master?.guidanceController?.vnavDriver?.mcduProfile?.waypointPredictions?.get(legIndex);
+      this.loadedFlightPlanIndex.get() < FlightPlanIndex.Uplink
+        ? this.props.fmcService?.master?.guidanceController?.vnavDriver?.mcduProfile?.waypointPredictions?.get(legIndex)
+        : undefined;
     return pred !== undefined && zfw !== null
       ? zfw + UnitType.KILOGRAM.convertFrom(pred.estimatedFuelOnBoard, UnitType.POUND)
       : null;
