@@ -153,7 +153,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
   private readonly onSidePositionLabel = Subject.create(this.props.mfd.uiService.captOrFo === 'CAPT' ? 'POS1' : 'POS2');
 
   private readonly monitorWaypoint =
-    this.props.fmcService.master?.fmgc.data.positionMonitorFix ?? Subject.create<Fix | null>(null);
+    this.props.fmcService.master.fmgc.data.positionMonitorFix ?? Subject.create<Fix | null>(null);
 
   // TODO implement when FM position
   private readonly position1Mode = Subject.create('');
@@ -423,12 +423,12 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                 <InputField<number>
                   dataEntryFormat={new RnpFormat()}
                   value={this.fmsRnp}
-                  onModified={(v) => this.props.fmcService.master?.navigation.setPilotRnp(v)}
+                  onModified={(v) => this.props.fmcService.master.navigation.setPilotRnp(v)}
                   enteredByPilot={this.rnpEnteredByPilot}
                   canBeCleared={Subject.create(true)}
                   containerStyle="width: 155px;"
                   alignText="center"
-                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
                   bigUnit={true}
@@ -653,7 +653,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                   enteredByPilot={this.waypointEntered}
                   canBeCleared={Subject.create(true)}
                   alignText="center"
-                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
                   containerStyle='"width:130px;'

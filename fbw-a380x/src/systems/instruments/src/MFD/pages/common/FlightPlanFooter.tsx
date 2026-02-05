@@ -29,7 +29,7 @@ export class FlightPlanFooter extends DisplayComponent<FlightPlanFooterProps> {
           <Button
             label="RETURN"
             onClick={() => {
-              this.props.fmcService.master?.resetRevisedWaypoint();
+              this.props.fmcService.master.resetRevisedWaypoint();
               this.props.mfd.uiService.navigateTo('back');
             }}
           />
@@ -41,7 +41,7 @@ export class FlightPlanFooter extends DisplayComponent<FlightPlanFooterProps> {
           <Button
             label="TMPY F-PLN"
             onClick={() => {
-              this.props.fmcService.master?.resetRevisedWaypoint();
+              this.props.fmcService.master.resetRevisedWaypoint();
               this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln`);
             }}
             buttonStyle="color: yellow"

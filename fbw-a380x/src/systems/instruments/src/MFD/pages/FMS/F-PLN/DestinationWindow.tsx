@@ -24,19 +24,19 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
 
   private onModified(newDest: string | null): void {
     if (newDest) {
-      const revWpt = this.props.fmcService.master?.revisedLegIndex.get();
+      const revWpt = this.props.fmcService.master.revisedLegIndex.get();
       if (newDest.length === 4 && revWpt) {
-        this.props.fmcService.master?.flightPlanInterface.newDest(
+        this.props.fmcService.master.flightPlanInterface.newDest(
           revWpt,
           newDest,
           this.props.fmcService.master.revisedLegPlanIndex.get() ?? undefined,
           this.props.fmcService.master.revisedLegIsAltn.get() ?? undefined,
         );
-        this.props.fmcService.master?.acInterface.updateFmsData();
+        this.props.fmcService.master.acInterface.updateFmsData();
       }
       this.props.visible.set(false);
       this.newDest.set('');
-      this.props.fmcService.master?.resetRevisedWaypoint();
+      this.props.fmcService.master.resetRevisedWaypoint();
     }
   }
 
@@ -55,8 +55,8 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
     if (this.props.fmcService.master) {
       this.subs.push(
         this.props.fmcService.master.revisedLegIndex.sub(() => {
-          if (this.props.fmcService.master?.revisedWaypoint()) {
-            this.identRef.instance.innerText = this.props.fmcService.master?.revisedWaypoint()?.ident ?? '';
+          if (this.props.fmcService.master.revisedWaypoint()) {
+            this.identRef.instance.innerText = this.props.fmcService.master.revisedWaypoint()?.ident ?? '';
           }
         }),
       );
@@ -78,7 +78,7 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
             <span class="mfd-label">
               NEW DEST FROM{' '}
               <span ref={this.identRef} class="mfd-value bigger">
-                {this.props.fmcService.master?.revisedWaypoint()?.ident ?? ''}
+                {this.props.fmcService.master.revisedWaypoint()?.ident ?? ''}
               </span>
             </span>
             <div style="align-self: center; margin-top: 50px;">
@@ -101,7 +101,7 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
               label="CANCEL"
               onClick={() => {
                 Coherent.trigger('UNFOCUS_INPUT_FIELD');
-                this.props.fmcService.master?.resetRevisedWaypoint();
+                this.props.fmcService.master.resetRevisedWaypoint();
                 this.props.visible.set(false);
               }}
             />

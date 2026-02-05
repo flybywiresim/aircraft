@@ -48,7 +48,7 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
   private readonly availableWaypointsString = ArraySubject.create<string>([]);
 
   private async onModified(idx: number | null, text: string): Promise<void> {
-    const revWptPlanIndex = this.props.fmcService.master?.revisedLegPlanIndex.get();
+    const revWptPlanIndex = this.props.fmcService.master.revisedLegPlanIndex.get();
     if (!this.props.fmcService.master || revWptPlanIndex == null) {
       return;
     }
@@ -90,7 +90,7 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
         }
       } catch (msg: unknown) {
         if (msg instanceof FmsError) {
-          this.props.fmcService.master?.showFmsErrorMessage(msg.type);
+          this.props.fmcService.master.showFmsErrorMessage(msg.type);
         }
       }
       this.props.visible.set(false);
@@ -114,7 +114,7 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
     if (this.props.fmcService.master) {
       this.subs.push(
         this.props.fmcService.master.revisedLegIndex.sub((wptIdx) => {
-          if (wptIdx && this.props.fmcService.master?.revisedWaypoint()) {
+          if (wptIdx && this.props.fmcService.master.revisedWaypoint()) {
             const fpln = this.props.fmcService.master.flightPlanInterface.get(
               this.props.fmcService.master.revisedLegPlanIndex.get() ?? FlightPlanIndex.Active,
             );
@@ -182,7 +182,7 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
               label="CANCEL"
               onClick={() => {
                 Coherent.trigger('UNFOCUS_INPUT_FIELD');
-                this.props.fmcService.master?.resetRevisedWaypoint();
+                this.props.fmcService.master.resetRevisedWaypoint();
                 this.props.visible.set(false);
               }}
             />

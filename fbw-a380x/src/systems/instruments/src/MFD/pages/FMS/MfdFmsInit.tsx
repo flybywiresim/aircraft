@@ -147,11 +147,11 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
         this.props.fmcService.master.fmgc.data.atcCallsign.sub((c) => {
           if (c) {
             this.connectToNetworks(c);
-            this.props.fmcService.master?.updateFlightNumber(c, this.loadedFlightPlanIndex.get(), () => {});
+            this.props.fmcService.master.updateFlightNumber(c, this.loadedFlightPlanIndex.get(), () => {});
           } else {
             this.disconnectFromNetworks();
           }
-          this.props.fmcService.master?.acInterface.updateFmsData();
+          this.props.fmcService.master.acInterface.updateFmsData();
         }),
       );
     }
@@ -160,7 +160,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
       this.flightPlanChangeNotifier.flightPlanChanged.sub(() => {
         if (
           this.loadedFlightPlan &&
-          this.props.fmcService.master?.flightPlanInterface.has(this.loadedFlightPlanIndex.get())
+          this.props.fmcService.master.flightPlanInterface.has(this.loadedFlightPlanIndex.get())
         ) {
           this.subs.push(
             this.loadedFlightPlan.performanceData.tropopause.pipe(this.tropopause),
@@ -267,7 +267,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     if (fromIcao && toIcao && cityPairIsDifferent) {
       // We can't use this.loadedFlightPlanIndex here because the flight plan might not exist yet
 
-      await this.props.fmcService.master?.flightPlanInterface.newCityPair(
+      await this.props.fmcService.master.flightPlanInterface.newCityPair(
         fromIcao,
         toIcao,
         this.altnIcao.get() ?? undefined,
@@ -275,7 +275,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
       );
 
       if (this.loadedFlightPlanIndex.get() === FlightPlanIndex.Active) {
-        this.props.fmcService.master?.acInterface.updateFmsData();
+        this.props.fmcService.master.acInterface.updateFmsData();
       }
     }
   }
@@ -336,7 +336,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 value={this.props.fmcService.master.fmgc.data.atcCallsign}
                 containerStyle="width: 200px; margin-right: 5px;"
                 alignText="center"
-                errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
               />
@@ -350,9 +350,9 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 label={this.cpnyFplnButtonLabel}
                 disabled={this.cpnyFplnButtonDisabled}
                 onClick={() =>
-                  this.props.fmcService.master?.fmgc.data.cpnyFplnAvailable.get()
+                  this.props.fmcService.master.fmgc.data.cpnyFplnAvailable.get()
                     ? {}
-                    : this.props.fmcService.master?.cpnyFplnRequest(this.loadedFlightPlanIndex.get())
+                    : this.props.fmcService.master.cpnyFplnRequest(this.loadedFlightPlanIndex.get())
                 }
                 buttonStyle="width: 175px;"
                 idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_fplnreq`}
@@ -373,7 +373,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 value={this.fromIcao}
                 alignText="center"
                 disabled={this.cityPairDisabled}
-                errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
               />
@@ -389,7 +389,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 value={this.toIcao}
                 alignText="center"
                 disabled={this.cityPairDisabled}
-                errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
               />
@@ -399,18 +399,18 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 dataHandlerDuringValidation={async (v) => {
                   this.altnIcao.set(v);
                   if (v) {
-                    await this.props.fmcService.master?.flightPlanInterface.setAlternate(
+                    await this.props.fmcService.master.flightPlanInterface.setAlternate(
                       v,
                       this.loadedFlightPlanIndex.get(),
                     );
-                    this.props.fmcService.master?.acInterface.updateFmsData();
+                    this.props.fmcService.master.acInterface.updateFmsData();
                   }
                 }}
                 mandatory={this.mandatoryAndActiveFpln}
                 disabled={this.altnDisabled}
                 value={this.altnIcao}
                 alignText="center"
-                errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
               />
@@ -425,7 +425,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 containerStyle="width: 200px; margin-right: 5px;"
                 alignText="center"
                 disabled={Subject.create(true)} // TODO
-                errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
               />
@@ -445,7 +445,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 value={this.altnRte}
                 containerStyle="width: 200px; margin-right: 5px;"
                 alignText="center"
-                errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
               />
@@ -461,14 +461,14 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
               <InputField<number>
                 dataEntryFormat={new FlightLevelFormat(Subject.create(0), Subject.create(maxCertifiedAlt / 100))}
                 dataHandlerDuringValidation={async (v) =>
-                  v ? this.props.fmcService.master?.acInterface.setCruiseFl(v, this.loadedFlightPlanIndex.get()) : false
+                  v ? this.props.fmcService.master.acInterface.setCruiseFl(v, this.loadedFlightPlanIndex.get()) : false
                 }
                 mandatory={this.crzFlIsMandatory}
                 disabled={this.altnDisabled}
                 canBeCleared={Subject.create(false)}
                 value={this.crzFl}
                 containerStyle="margin-right: 100px;"
-                errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
               />
@@ -478,7 +478,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
               <InputField<number, number, false>
                 dataEntryFormat={new CrzTempFormat()}
                 dataHandlerDuringValidation={async (v) => {
-                  this.props.fmcService.master?.flightPlanInterface.setPerformanceData(
+                  this.props.fmcService.master.flightPlanInterface.setPerformanceData(
                     'cruiseTemperaturePilotEntry',
                     v,
                     this.loadedFlightPlanIndex.get(),
@@ -489,7 +489,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 readonlyValue={this.cruiseTemperature}
                 containerStyle="width: 110px; justify-content: flex-end;"
                 alignText="center"
-                errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
               />
@@ -501,7 +501,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 values={this.costIndexModeLabels}
                 selectedIndex={this.costIndexMode}
                 onModified={(v) =>
-                  this.props.fmcService.master?.flightPlanInterface.setPerformanceData(
+                  this.props.fmcService.master.flightPlanInterface.setPerformanceData(
                     'costIndexMode',
                     v,
                     this.loadedFlightPlanIndex.get(),
@@ -521,7 +521,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
               <InputField<number, number, false>
                 dataEntryFormat={new TropoFormat()}
                 dataHandlerDuringValidation={async (v) =>
-                  this.props.fmcService.master?.flightPlanInterface.setPerformanceData(
+                  this.props.fmcService.master.flightPlanInterface.setPerformanceData(
                     'tropopause',
                     v,
                     this.loadedFlightPlanIndex.get(),
@@ -531,7 +531,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 readonlyValue={this.tropopause}
                 onModified={() => {}}
                 alignText="flex-end"
-                errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
               />
@@ -547,7 +547,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 <InputField<number>
                   dataEntryFormat={new CostIndexFormat()}
                   dataHandlerDuringValidation={async (v) => {
-                    this.props.fmcService.master?.flightPlanInterface?.setPerformanceData(
+                    this.props.fmcService.master.flightPlanInterface?.setPerformanceData(
                       'costIndex',
                       v,
                       this.loadedFlightPlanIndex.get(),
@@ -558,14 +558,14 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                   value={this.costIndex}
                   containerStyle="width: 70px; margin-right: 90px; justify-content: center;"
                   alignText="center"
-                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
                 />
                 <InputField<number, number, false>
                   dataEntryFormat={new TripWindFormat()}
                   dataHandlerDuringValidation={async (v) =>
-                    this.props.fmcService.master?.flightPlanInterface.setPerformanceData(
+                    this.props.fmcService.master.flightPlanInterface.setPerformanceData(
                       'pilotTripWind',
                       v,
                       this.loadedFlightPlanIndex.get(),
@@ -575,7 +575,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                   readonlyValue={this.tripWind}
                   containerStyle="width: 125px; margin-right: 80px; margin-top: 10px;"
                   alignText="center"
-                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
                 />

@@ -36,7 +36,7 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
   private readonly tmpyFplnButtonDiv = FSComponent.createRef<HTMLDivElement>();
 
   protected onNewData(): void {
-    const revWpt = this.props.fmcService.master?.revisedWaypoint();
+    const revWpt = this.props.fmcService.master.revisedWaypoint();
     if (revWpt) {
       this.revisedFixIdent.set(revWpt.ident);
     }
@@ -79,7 +79,7 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
       }, true),
     );
 
-    const revWpt = this.props.fmcService.master?.revisedWaypoint();
+    const revWpt = this.props.fmcService.master.revisedWaypoint();
     if (
       this.props.fmcService.master &&
       this.loadedFlightPlan?.pendingAirways &&
@@ -146,12 +146,12 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
               label="RETURN"
               onClick={async () => {
                 if (this.loadedFlightPlanIndex.get() >= FlightPlanIndex.FirstSecondary) {
-                  await this.props.fmcService.master?.flightPlanInterface.finaliseAirwayEntry(
+                  await this.props.fmcService.master.flightPlanInterface.finaliseAirwayEntry(
                     this.loadedFlightPlanIndex.get(),
-                    this.props.fmcService.master?.revisedLegIsAltn.get() ?? false,
+                    this.props.fmcService.master.revisedLegIsAltn.get() ?? false,
                   );
                 }
-                this.props.fmcService.master?.resetRevisedWaypoint();
+                this.props.fmcService.master.resetRevisedWaypoint();
                 this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln`);
               }}
             />
@@ -161,11 +161,11 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
               label="TMPY F-PLN"
               onClick={async () => {
                 if (this.loadedFlightPlan) {
-                  await this.props.fmcService.master?.flightPlanInterface.finaliseAirwayEntry(
+                  await this.props.fmcService.master.flightPlanInterface.finaliseAirwayEntry(
                     this.loadedFlightPlanIndex.get(),
-                    this.props.fmcService.master?.revisedLegIsAltn.get() ?? false,
+                    this.props.fmcService.master.revisedLegIsAltn.get() ?? false,
                   );
-                  this.props.fmcService.master?.resetRevisedWaypoint();
+                  this.props.fmcService.master.resetRevisedWaypoint();
                   this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln`);
                 }
               }}

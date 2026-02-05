@@ -237,9 +237,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     const destPred = this.props.fmcService?.master?.guidanceController?.vnavDriver?.getDestinationPrediction();
 
     const distanceToDestination =
-      this.props.fmcService.master?.fmgc?.guidanceController?.getAlongTrackDistanceToDestination(
-        FlightPlanIndex.Active,
-      );
+      this.props.fmcService.master.fmgc?.guidanceController?.getAlongTrackDistanceToDestination(FlightPlanIndex.Active);
     this.distanceToDest.set(distanceToDestination ?? null);
 
     if (destPred && this.props.fmcService.master && this.loadedFlightPlanIndex.get() < FlightPlanIndex.Uplink) {
@@ -324,7 +322,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           el instanceof FlightPlanLeg &&
           index <
             (this.loadedFlightPlan?.legCount ?? 0) +
-              (this.props.fmcService.master?.flightPlanInterface.get(this.loadedFlightPlanIndex.get())
+              (this.props.fmcService.master.flightPlanInterface.get(this.loadedFlightPlanIndex.get())
                 .alternateFlightPlan.legCount ?? 0)
         ) {
           if (index === 0 || el.calculated === undefined) {
@@ -393,7 +391,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             speedConstraint: null, // TODO
             speedConstraintIsRespected: true,
             efobPrediction: Units.poundToKilogram(
-              this.props.fmcService.master?.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)
+              this.props.fmcService.master.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)
                 ?.estimatedFuelOnBoard ?? 0,
             ),
             windPrediction: this.derivedFplnLegData[i].windPrediction,
@@ -615,7 +613,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
       const planCentreWpt = this.lineData[planCentreLineDataIndex];
       if (planCentreWpt && isWaypoint(planCentreWpt) && planCentreWpt.originalLegIndex !== null) {
-        this.props.fmcService.master?.updateEfisPlanCentre(
+        this.props.fmcService.master.updateEfisPlanCentre(
           this.props.mfd.uiService.captOrFo === 'CAPT' ? 'L' : 'R',
           this.loadedFlightPlanIndex.get(),
           planCentreWpt.originalLegIndex,
@@ -630,12 +628,12 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       return 0;
     }
 
-    const fmgcFlightPhase = this.props.fmcService.master?.fmgc.getFlightPhase() ?? FmgcFlightPhase.Preflight;
+    const fmgcFlightPhase = this.props.fmcService.master.fmgc.getFlightPhase() ?? FmgcFlightPhase.Preflight;
     if (fmgcFlightPhase >= FmgcFlightPhase.Takeoff) {
       const eta = (SimVar.GetGlobalVarValue('ZULU TIME', 'seconds') + seconds) * 1000;
       return eta;
     }
-    if (this.props.fmcService.master?.fmgc.data.estimatedTakeoffTime.get() !== undefined) {
+    if (this.props.fmcService.master.fmgc.data.estimatedTakeoffTime.get() !== undefined) {
       const eta = ((this.props.fmcService.master.fmgc.data.estimatedTakeoffTime.get() ?? 0) + seconds) * 1000;
       return eta;
     }
@@ -646,7 +644,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     if (!this.revisionsMenuOpened.get()) {
       const flightPlan = altnFlightPlan ? this.loadedAlternateFlightPlan : this.loadedFlightPlan;
       const leg = flightPlan?.elementAt(legIndex);
-      this.props.fmcService.master?.setRevisedWaypoint(legIndex, this.loadedFlightPlanIndex.get(), altnFlightPlan);
+      this.props.fmcService.master.setRevisedWaypoint(legIndex, this.loadedFlightPlanIndex.get(), altnFlightPlan);
 
       if (leg instanceof FlightPlanLeg) {
         let type: FplnRevisionsMenuType = FplnRevisionsMenuType.Waypoint;
@@ -670,12 +668,12 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
   }
 
   public openInsertNextWptFromWindow() {
-    const flightPlan = this.props.fmcService.master?.revisedLegIsAltn.get()
+    const flightPlan = this.props.fmcService.master.revisedLegIsAltn.get()
       ? this.loadedAlternateFlightPlan
       : this.loadedFlightPlan;
     const wpt: NextWptInfo[] = flightPlan?.allLegs
       .map((el: ReadonlyFlightPlanElement, idx: number) => {
-        const revWptIdx = this.props.fmcService.master?.revisedLegIndex.get();
+        const revWptIdx = this.props.fmcService.master.revisedLegIndex.get();
         if (
           el instanceof FlightPlanLeg &&
           el.isXF() &&
@@ -806,7 +804,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         this.loadedFlightPlan,
       )
     ) {
-      this.props.fmcService.master?.setRevisedWaypoint(
+      this.props.fmcService.master.setRevisedWaypoint(
         data.originalLegIndex,
         this.loadedFlightPlanIndex.get(),
         data.isAltnWaypoint,
@@ -829,7 +827,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         this.loadedFlightPlan,
       )
     ) {
-      this.props.fmcService.master?.setRevisedWaypoint(
+      this.props.fmcService.master.setRevisedWaypoint(
         data.originalLegIndex,
         this.loadedFlightPlanIndex.get(),
         data.isAltnWaypoint,
@@ -852,7 +850,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         this.loadedFlightPlan,
       )
     ) {
-      this.props.fmcService.master?.setRevisedWaypoint(
+      this.props.fmcService.master.setRevisedWaypoint(
         data.originalLegIndex,
         this.loadedFlightPlanIndex.get(),
         data.isAltnWaypoint,
@@ -991,7 +989,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                   <span style="display: flex; align-items: center; justify-content: center;">*</span>
                 </div>,
               )}
-              onClick={() => this.props.fmcService.master?.flightPlanInterface.temporaryDelete()}
+              onClick={() => this.props.fmcService.master.flightPlanInterface.temporaryDelete()}
               buttonStyle="color: #e68000; padding-right: 2px;"
             />
             <Button
@@ -1005,7 +1003,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                   <span style="display: flex; align-items: center; justify-content: center;">*</span>
                 </div>,
               )}
-              onClick={() => this.props.fmcService.master?.flightPlanInterface.temporaryInsert()}
+              onClick={() => this.props.fmcService.master.flightPlanInterface.temporaryInsert()}
               buttonStyle="color: #e68000; padding-right: 2px;"
             />
           </div>
@@ -1017,7 +1015,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 <Button
                   label={this.destButtonLabelNode}
                   onClick={() => {
-                    this.props.fmcService.master?.resetRevisedWaypoint();
+                    this.props.fmcService.master.resetRevisedWaypoint();
                     this.props.mfd.uiService.navigateTo(
                       `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-arrival`,
                     );
@@ -1204,12 +1202,12 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
   }
 
   public destroy(): void {
-    this.props.fmcService.master?.updateEfisPlanCentre(
+    this.props.fmcService.master.updateEfisPlanCentre(
       this.props.mfd.uiService.captOrFo === 'CAPT' ? 'L' : 'R',
       FlightPlanIndex.Active,
-      this.props.fmcService.master?.flightPlanInterface.active.activeLegIndex,
-      this.props.fmcService.master?.flightPlanInterface.active.activeLegIndex >=
-        this.props.fmcService.master?.flightPlanInterface.active.allLegs.length,
+      this.props.fmcService.master.flightPlanInterface.active.activeLegIndex,
+      this.props.fmcService.master.flightPlanInterface.active.activeLegIndex >=
+        this.props.fmcService.master.flightPlanInterface.active.allLegs.length,
     );
 
     super.destroy();

@@ -211,7 +211,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       this.transitionLevel.set(null);
     }
 
-    const activeLegIndex = this.props.fmcService.master?.flightPlanInterface.get(
+    const activeLegIndex = this.props.fmcService.master.flightPlanInterface.get(
       this.loadedFlightPlanIndex.get(),
     ).activeLegIndex;
     if (activeLegIndex) {
@@ -232,7 +232,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         this.selectedLegIndex = selectedLegIndexBeforeUpdate;
       }
 
-      const revWptIdx = this.props.fmcService.master?.revisedLegIndex.get();
+      const revWptIdx = this.props.fmcService.master.revisedLegIndex.get();
       this.selectedLegIndex = revWptIdx ?? null;
     }
 
@@ -468,7 +468,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         const estGrossWeight = this.getEstimatedGrossWeightAtIndex(cruiseStepLegIndices[i]);
         this.stepAltsAboveMaxFl[line].set(
           cruiseSteps[i].toAltitude / 100 >
-            (this.props.fmcService.master?.getRecMaxFlightLevel(estGrossWeight ?? undefined) ?? maxCertifiedAlt / 100),
+            (this.props.fmcService.master.getRecMaxFlightLevel(estGrossWeight ?? undefined) ?? maxCertifiedAlt / 100),
         );
 
         if (this.stepAltsIgnored[line].get()) {
@@ -513,11 +513,11 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     if (idx !== null) {
       const legIndex = this.availableWaypointsToLegIndex[idx];
       this.selectedLegIndex = legIndex;
-      this.props.fmcService.master?.revisedLegIndex.set(legIndex);
+      this.props.fmcService.master.revisedLegIndex.set(legIndex);
       this.updateConstraints();
     } else {
       this.selectedLegIndex = null;
-      this.props.fmcService.master?.resetRevisedWaypoint();
+      this.props.fmcService.master.resetRevisedWaypoint();
     }
   }
 
@@ -593,13 +593,13 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       this.deleteSpeedLimit();
     } else if (this.checkPerformanceDataEditCondition()) {
       if (this.speedLimitType.get() === SpeedLimitType.CLB) {
-        this.props.fmcService.master?.flightPlanInterface.setPilotEntryClimbSpeedLimitSpeed(
+        this.props.fmcService.master.flightPlanInterface.setPilotEntryClimbSpeedLimitSpeed(
           value,
           this.loadedFlightPlanIndex.get(),
           false,
         );
       } else {
-        this.props.fmcService.master?.flightPlanInterface.setPilotEntryDescentSpeedLimitSpeed(
+        this.props.fmcService.master.flightPlanInterface.setPilotEntryDescentSpeedLimitSpeed(
           value,
           this.loadedFlightPlanIndex.get(),
           false,
@@ -613,13 +613,13 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       this.deleteSpeedLimit();
     } else if (this.checkPerformanceDataEditCondition()) {
       if (this.speedLimitType.get() === SpeedLimitType.CLB) {
-        this.props.fmcService.master?.flightPlanInterface.setPilotEntryClimbSpeedLimitAltitude(
+        this.props.fmcService.master.flightPlanInterface.setPilotEntryClimbSpeedLimitAltitude(
           value,
           this.loadedFlightPlanIndex.get(),
           false,
         );
       } else {
-        this.props.fmcService.master?.flightPlanInterface.setPilotEntryDescentSpeedLimitAltitude(
+        this.props.fmcService.master.flightPlanInterface.setPilotEntryDescentSpeedLimitAltitude(
           value,
           this.loadedFlightPlanIndex.get(),
           false,
@@ -631,12 +631,9 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   private async deleteSpeedLimit() {
     if (this.checkPerformanceDataEditCondition()) {
       if (this.speedLimitType.get() === SpeedLimitType.CLB) {
-        this.props.fmcService.master?.flightPlanInterface.deleteClimbSpeedLimit(
-          this.loadedFlightPlanIndex.get(),
-          false,
-        );
+        this.props.fmcService.master.flightPlanInterface.deleteClimbSpeedLimit(this.loadedFlightPlanIndex.get(), false);
       } else {
-        this.props.fmcService.master?.flightPlanInterface.deleteDescentSpeedLimit(
+        this.props.fmcService.master.flightPlanInterface.deleteDescentSpeedLimit(
           this.loadedFlightPlanIndex.get(),
           false,
         );
@@ -723,13 +720,13 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       const estGrossWeight = this.getEstimatedGrossWeightAtIndex(legIndex);
       if (
         flightLevel >
-        (this.props.fmcService.master?.getRecMaxFlightLevel(estGrossWeight ?? undefined) ?? maxCertifiedAlt / 100)
+        (this.props.fmcService.master.getRecMaxFlightLevel(estGrossWeight ?? undefined) ?? maxCertifiedAlt / 100)
       ) {
-        this.props.fmcService.master?.addMessageToQueue(NXSystemMessages.stepAboveMaxFl, undefined, undefined);
+        this.props.fmcService.master.addMessageToQueue(NXSystemMessages.stepAboveMaxFl, undefined, undefined);
       }
 
       if (isValid) {
-        this.props.fmcService.master?.flightPlanInterface.addOrUpdateCruiseStep(
+        this.props.fmcService.master.flightPlanInterface.addOrUpdateCruiseStep(
           legIndex,
           flightLevel * 100,
           this.loadedFlightPlanIndex.get(),
@@ -745,7 +742,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
   private tryDeleteCruiseStep(lineIndex: number, previousDropdownIndex: number) {
     const legIndex = this.availableWaypointsToLegIndex[previousDropdownIndex];
-    this.props.fmcService.master?.flightPlanInterface.removeCruiseStep(legIndex, this.loadedFlightPlanIndex.get());
+    this.props.fmcService.master.flightPlanInterface.removeCruiseStep(legIndex, this.loadedFlightPlanIndex.get());
     this.stepAltsWptIndices[lineIndex].set(null);
     this.stepAltsFlightLevel[lineIndex].set(null);
     this.forceRebuildList = true;
@@ -901,7 +898,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                         alignText="center"
                         containerStyle="width: 175px;"
                         tmpyActive={this.tmpyActive}
-                        errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                        errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                         hEventConsumer={this.props.mfd.hEventConsumer}
                         interactionMode={this.props.mfd.interactionMode}
                       />
@@ -941,7 +938,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                       value={this.speedConstraintInput}
                       alignText="flex-end"
                       tmpyActive={this.tmpyActive}
-                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                      errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
                     />
@@ -983,7 +980,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                       alignText="flex-end"
                       tmpyActive={this.tmpyActive}
                       enteredByPilot={this.speedLimitPilotEntered}
-                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                      errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
                     />
@@ -996,7 +993,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                       enteredByPilot={this.speedLimitPilotEntered}
                       alignText="flex-end"
                       tmpyActive={this.tmpyActive}
-                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                      errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
                     />
@@ -1077,7 +1074,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                           value={this.altitudeConstraintInput}
                           alignText="flex-end"
                           tmpyActive={this.tmpyActive}
-                          errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                          errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                           hEventConsumer={this.props.mfd.hEventConsumer}
                           interactionMode={this.props.mfd.interactionMode}
                         />
@@ -1276,7 +1273,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                 <Button
                   label="RETURN"
                   onClick={() => {
-                    this.props.fmcService.master?.resetRevisedWaypoint();
+                    this.props.fmcService.master.resetRevisedWaypoint();
                     this.props.mfd.uiService.navigateTo('back');
                   }}
                 />
@@ -1285,7 +1282,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                 <Button
                   label="TMPY F-PLN"
                   onClick={() => {
-                    this.props.fmcService.master?.resetRevisedWaypoint();
+                    this.props.fmcService.master.resetRevisedWaypoint();
                     this.props.mfd.uiService.navigateTo(
                       `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln`,
                     );

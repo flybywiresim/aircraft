@@ -153,14 +153,14 @@ export class MfdComponent
    * Called when a flight plan uplink is in progress
    */
   onUplinkInProgress() {
-    this.props.fmcService.master?.onUplinkInProgress();
+    this.props.fmcService.master.onUplinkInProgress();
   }
 
   /**
    * Called when a flight plan uplink is done
    */
   onUplinkDone(intoPlan: FlightPlanIndex) {
-    this.props.fmcService.master?.onUplinkDone(intoPlan);
+    this.props.fmcService.master.onUplinkDone(intoPlan);
   }
 
   /**
@@ -171,7 +171,7 @@ export class MfdComponent
    * @param errorType the message to show
    */
   showFmsErrorMessage(errorType: FmsErrorType) {
-    this.props.fmcService.master?.showFmsErrorMessage(errorType);
+    this.props.fmcService.master.showFmsErrorMessage(errorType);
   }
 
   /**
@@ -210,7 +210,7 @@ export class MfdComponent
    * @param waypoint the waypoint to look for
    */
   async isWaypointInUse(waypoint: Waypoint): Promise<boolean> {
-    return this.props.fmcService.master?.isWaypointInUse(waypoint) ?? false;
+    return this.props.fmcService.master.isWaypointInUse(waypoint) ?? false;
   }
 
   public async onAfterRender(node: VNode): Promise<void> {
@@ -231,7 +231,7 @@ export class MfdComponent
         .getSubscriber<HEvent>()
         .on('hEvent')
         .handle((eventName) => {
-          this.props.fmcService.master?.acInterface.onEvent(eventName);
+          this.props.fmcService.master.acInterface.onEvent(eventName);
 
           if (eventName.startsWith(this.props.captOrFo === 'CAPT' ? 'A32NX_KCCU_L' : 'A32NX_KCCU_R')) {
             const key = eventName.substring(13);
@@ -273,7 +273,7 @@ export class MfdComponent
               case 'ND': // Move cursor to ND
                 break;
               case 'CLRINFO':
-                this.props.fmcService.master?.clearLatestFmsErrorMessage();
+                this.props.fmcService.master.clearLatestFmsErrorMessage();
                 break;
               default:
                 break;
