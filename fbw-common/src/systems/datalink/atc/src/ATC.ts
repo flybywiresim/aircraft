@@ -522,7 +522,7 @@ export class Atc {
       this.handoverInterval = null;
     }
 
-    if (this.handoverTimeout != null) {
+    if (this.handoverTimeout !== null) {
       clearTimeout(this.handoverTimeout);
       this.handoverTimeout = null;
     }
