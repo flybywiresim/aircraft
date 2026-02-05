@@ -516,25 +516,7 @@ export class Atc {
       return AtsuStatusCodes.SystemBusy;
     }
 
-    /**
-     * Cancel any existing handover interval before starting a new one.
-     *
-     * If a second HANDOVER arrives while the first interval is still polling
-     * (waiting for open messages to clear), the first interval becomes orphaned — it keeps
-     * running but its handle is lost when we overwrite this.handoverInterval.
-     *
-     * Once all messages are answered, BOTH intervals fire their setTimeout callbacks,
-     * causing repeated LOGOFF/LOGON every second. As the first interval is orphaned, it keeps running forever
-     *
-     * Example scenario:
-     *   17:48:52  EDWW→SAS688  msg 32: "EXPECT MONA5A…" (requires R response)
-     *   17:49:18  EDWW→SAS688  HANDOVER @EDGG  ← starts interval #1, does not clear as msg 32 is still open
-     *   17:52:37  EDWW→SAS688  HANDOVER @EDWW  ← overwrites handle, interval #1 orphaned
-     *   17:56:09  EDWW→SAS688  msg 4: "CONTACT BREMEN RADAR ON 123.225" (requires response)
-     *   17:57:25  SAS688→EDWW  ROGER to msg 32 -> cleared
-     *   18:00:07  SAS688→EDWW  WILCO to msg 4 -> cleared
-     *   18:00:24  LOGOFF/LOGON spam starts (orphaned interval #1 fires infinitely)
-     */
+    // Cancel any existing handover interval and timeout before starting a new one.
     if (this.handoverInterval !== null) {
       clearInterval(this.handoverInterval);
       this.handoverInterval = null;
