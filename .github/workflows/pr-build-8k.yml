@@ -9,6 +9,30 @@ on:
       - labeled
 
 jobs:
+  pr-metadata:
+    name: Upload PR metadata
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false && contains(join(github.event.pull_request.labels.*.name, ', '), 'pr-build-8k')
+    permissions:
+      contents: read
+      pull-requests: read
+      actions: write
+    steps:
+      - name: Checkout PR source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Save PR metadata
+        run: |
+          jq -n \
+            --argjson pr '${{ toJson(github.event.pull_request) }}' \
+            '$pr' > pr.json
+      - name: Upload PR metadata as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-metadata
+          path: pr.json
+          retention-days: 1
   build_a380x_8k:
     name: Build A380X (8K)
     runs-on: ubuntu-latest
@@ -78,7 +102,7 @@ jobs:
           rm -rf ./large-files/fbw-a380x/src/base/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/texture-4k/
       - name: Build A380X
         run: |
-          ./scripts/dev-env/run.sh ./scripts/build_a380x.sh --no-tty -j 4
+          ./scripts/dev-env/run.sh ./scripts/build.sh -r "a380x" --no-tty -j 4
           docker system prune -af
       - name: Remove source files
         run: |
