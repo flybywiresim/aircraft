@@ -69,10 +69,10 @@ jobs:
         with:
           persist-credentials: false
       - name: Save PR metadata
+        env:
+          PR_JSON: ${{ toJson(github.event.pull_request) }}
         run: |
-          jq -n \
-            --argjson pr '${{ toJson(github.event.pull_request) }}' \
-            '$pr' > pr.json
+          echo "$PR_JSON" > pr.json
       - name: Upload PR metadata as artifact
         uses: actions/upload-artifact@v4
         with:
