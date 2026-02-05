@@ -27,33 +27,26 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get install -y rclone
-      - name: Get PR info for triggering commit
+      - name: Download PR metadata
+        uses: actions/download-artifact@v5
+        with:
+          name: pr-metadata
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+      - name: Load PR info
         id: pr
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
-          SHA="${{ github.event.workflow_run.head_commit.id }}"
+          PR_NUMBER=$(jq -r '.number' pr.json)
+          PR_TITLE=$(jq -r '.title' pr.json)
+          PR_BODY=$(jq -r '.body // ""' pr.json)
 
-          PR_JSON=$(gh api \
-            repos/${{ github.repository }}/commits/$SHA/pulls \
-            --jq '.[0]')
-
-          if [ "$PR_JSON" = "null" ]; then
-            echo "No pull request found for commit $SHA"
-            exit 1
-          else
-            PR_NUMBER=$(echo "$PR_JSON" | jq -r '.number')
-            PR_TITLE=$(echo "$PR_JSON" | jq -r '.title')
-            PR_BODY=$(echo "$PR_JSON" | jq -r '.body // ""')
-
-            {
-              echo "number=$PR_NUMBER"
-              echo "title=$PR_TITLE"
-              echo "body<<EOF"
-              echo "$PR_BODY"
-              echo "EOF"
-            } >> "$GITHUB_OUTPUT"
-          fi
+          {
+            echo "number=$PR_NUMBER"
+            echo "title=$PR_TITLE"
+            echo "body<<EOF"
+            echo "$PR_BODY"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
       - name: Checkout trusted source
         uses: actions/checkout@v4
         with:
