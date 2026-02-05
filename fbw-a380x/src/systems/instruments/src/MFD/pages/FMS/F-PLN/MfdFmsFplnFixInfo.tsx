@@ -123,7 +123,7 @@ export class MfdFmsFplnFixInfo extends FmsPage {
                         (it) => it?.radials?.[0]?.magneticBearing ?? null,
                       )}
                       onModified={(radial) => {
-                        this.props.fmcService.master.flightPlanInterface.editFixInfoEntry(
+                        this.props.flightPlanInterface.editFixInfoEntry(
                           value,
                           (fixInfo) => {
                             if (!fixInfo.radials) {
@@ -161,7 +161,7 @@ export class MfdFmsFplnFixInfo extends FmsPage {
                         (it) => it?.radials?.[1]?.magneticBearing ?? null,
                       )}
                       onModified={(radial) => {
-                        this.props.fmcService.master.flightPlanInterface.editFixInfoEntry(
+                        this.props.flightPlanInterface.editFixInfoEntry(
                           value,
                           (fixInfo) => {
                             if (!fixInfo.radials) {
@@ -204,7 +204,7 @@ export class MfdFmsFplnFixInfo extends FmsPage {
                       disabled={this.flightPlan.fixInfos[value].map((it) => it?.fix === undefined)}
                       readonlyValue={this.flightPlan.fixInfos[value].map((it) => it?.radii?.[0]?.radius ?? null)}
                       onModified={(radius) => {
-                        this.props.fmcService.master.flightPlanInterface.editFixInfoEntry(
+                        this.props.flightPlanInterface.editFixInfoEntry(
                           value,
                           (fixInfo) => {
                             if (!fixInfo.radii) {
@@ -250,7 +250,12 @@ export class MfdFmsFplnFixInfo extends FmsPage {
         <FlightPlanFooter bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
 
         {/* end page content */}
-        <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
+        <Footer
+          bus={this.props.bus}
+          mfd={this.props.mfd}
+          fmcService={this.props.fmcService}
+          flightPlanInterface={this.props.fmcService.master.flightPlanInterface}
+        />
       </>
     );
   }

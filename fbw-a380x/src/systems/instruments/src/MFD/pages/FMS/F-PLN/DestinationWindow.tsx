@@ -6,9 +6,11 @@ import { AirportFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
+import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
 
 interface DestinationWindowProps extends ComponentProps {
   fmcService: FmcServiceInterface;
+  flightPlanInterface: FlightPlanInterface;
   mfd: FmsDisplayInterface & MfdDisplayInterface;
   visible: Subject<boolean>;
 }
@@ -26,7 +28,7 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
     if (newDest) {
       const revWpt = this.props.fmcService.master.revisedLegIndex.get();
       if (newDest.length === 4 && revWpt) {
-        this.props.fmcService.master.flightPlanInterface.newDest(
+        this.props.flightPlanInterface.newDest(
           revWpt,
           newDest,
           this.props.fmcService.master.revisedLegPlanIndex.get() ?? undefined,

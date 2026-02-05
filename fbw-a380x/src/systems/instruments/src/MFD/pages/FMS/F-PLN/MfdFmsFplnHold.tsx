@@ -95,7 +95,7 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
         turnDirection: TurnDirection.Right,
       };
 
-      await this.props.fmcService.master.flightPlanInterface.addOrEditManualHold(
+      await this.props.flightPlanInterface.addOrEditManualHold(
         revWptIdx,
         { ...desiredHold },
         desiredHold,
@@ -246,7 +246,7 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
                 const revWptIdx = this.props.fmcService.master.revisedLegIndex.get();
                 const revPlanIdx = this.props.fmcService.master.revisedLegPlanIndex.get();
                 if (revWptIdx && revPlanIdx && this.props.fmcService.master.revisedWaypoint()) {
-                  this.props.fmcService.master.flightPlanInterface.revertHoldToComputed(
+                  this.props.flightPlanInterface.revertHoldToComputed(
                     revWptIdx,
                     revPlanIdx,
                     this.props.fmcService.master.revisedLegIsAltn.get() ?? false,
@@ -286,7 +286,12 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
           </div>
         </div>
         {/* end page content */}
-        <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
+        <Footer
+          bus={this.props.bus}
+          mfd={this.props.mfd}
+          fmcService={this.props.fmcService}
+          flightPlanInterface={this.props.fmcService.master.flightPlanInterface}
+        />
       </>
     );
   }

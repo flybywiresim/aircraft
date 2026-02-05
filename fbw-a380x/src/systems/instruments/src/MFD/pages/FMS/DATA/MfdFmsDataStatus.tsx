@@ -258,7 +258,12 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
           <div style="flex-grow: 1;" />
           {/* fill space vertically */}
         </div>
-        <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
+        <Footer
+          bus={this.props.bus}
+          mfd={this.props.mfd}
+          fmcService={this.props.fmcService}
+          flightPlanInterface={this.props.fmcService.master.flightPlanInterface}
+        />
       </>
     );
   }

@@ -52,17 +52,17 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
         return {
           label: `${rw.ident.substring(4).padEnd(3, ' ')} ${rw.length.toFixed(0).padStart(5, ' ')}M ${rw.lsIdent ? 'ILS' : ''}`,
           action: async () => {
-            await this.props.fmcService.master.flightPlanInterface.setOriginRunway(
+            await this.props.flightPlanInterface.setOriginRunway(
               rw.ident,
               this.loadedFlightPlanIndex.get(),
               isAltn ?? false,
             );
-            await this.props.fmcService.master.flightPlanInterface.setDepartureProcedure(
+            await this.props.flightPlanInterface.setDepartureProcedure(
               undefined,
               this.loadedFlightPlanIndex.get(),
               isAltn ?? false,
             );
-            await this.props.fmcService.master.flightPlanInterface.setDepartureEnrouteTransition(
+            await this.props.flightPlanInterface.setDepartureEnrouteTransition(
               undefined,
               this.loadedFlightPlanIndex.get(),
               isAltn ?? false,
@@ -84,12 +84,12 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
             {
               label: 'NONE',
               action: async () => {
-                await this.props.fmcService.master.flightPlanInterface.setDepartureProcedure(
+                await this.props.flightPlanInterface.setDepartureProcedure(
                   undefined,
                   this.loadedFlightPlanIndex.get(),
                   isAltn ?? false,
                 );
-                await this.props.fmcService.master.flightPlanInterface.setDepartureEnrouteTransition(
+                await this.props.flightPlanInterface.setDepartureEnrouteTransition(
                   undefined,
                   this.loadedFlightPlanIndex.get(),
                   isAltn ?? false,
@@ -102,12 +102,12 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
             sids.push({
               label: dep.authorisationRequired ? `${dep.ident} (RNP)` : dep.ident,
               action: async () => {
-                await this.props.fmcService.master.flightPlanInterface.setDepartureProcedure(
+                await this.props.flightPlanInterface.setDepartureProcedure(
                   dep.databaseId,
                   this.loadedFlightPlanIndex.get(),
                   isAltn ?? false,
                 );
-                await this.props.fmcService.master.flightPlanInterface.setDepartureEnrouteTransition(
+                await this.props.flightPlanInterface.setDepartureEnrouteTransition(
                   undefined,
                   this.loadedFlightPlanIndex.get(),
                   isAltn ?? false,
@@ -135,7 +135,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
             {
               label: 'NONE',
               action: () =>
-                this.props.fmcService.master.flightPlanInterface.setDepartureEnrouteTransition(
+                this.props.flightPlanInterface.setDepartureEnrouteTransition(
                   undefined,
                   this.loadedFlightPlanIndex.get(),
                   isAltn ?? false,
@@ -146,7 +146,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
             trans.push({
               label: el.ident,
               action: () =>
-                this.props.fmcService.master.flightPlanInterface.setDepartureEnrouteTransition(
+                this.props.flightPlanInterface.setDepartureEnrouteTransition(
                   el.databaseId,
                   this.loadedFlightPlanIndex.get(),
                   isAltn ?? false,
@@ -358,7 +358,12 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
           </div>
         </div>
         {/* end page content */}
-        <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
+        <Footer
+          bus={this.props.bus}
+          mfd={this.props.mfd}
+          fmcService={this.props.fmcService}
+          flightPlanInterface={this.props.fmcService.master.flightPlanInterface}
+        />
       </>
     );
   }

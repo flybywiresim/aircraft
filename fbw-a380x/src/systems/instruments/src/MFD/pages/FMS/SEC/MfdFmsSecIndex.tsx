@@ -27,6 +27,7 @@ import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconBut
 import { FlightPlanFlags } from '@fmgc/flightplanning/plans/FlightPlanFlags';
 import { DateFormatting } from '@shared/DateFormatting';
 import { CpnyFplnButtonUtils } from '../../../shared/CpnyFplnButtonUtils';
+import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
 
 interface MfdFmsSecIndexProps extends AbstractMfdPageProps {}
 
@@ -195,6 +196,7 @@ export class MfdFmsSecIndex extends FmsPage<MfdFmsSecIndexProps> {
                 bus={this.props.bus}
                 mfd={this.props.mfd}
                 fmcService={this.props.fmcService}
+                flightPlanInterface={this.props.fmcService.master.flightPlanInterface}
                 flightPlanIndex={FlightPlanIndex.FirstSecondary}
               />
             </TopTabNavigatorPage>
@@ -205,6 +207,7 @@ export class MfdFmsSecIndex extends FmsPage<MfdFmsSecIndexProps> {
                 bus={this.props.bus}
                 mfd={this.props.mfd}
                 fmcService={this.props.fmcService}
+                flightPlanInterface={this.props.fmcService.master.flightPlanInterface}
                 flightPlanIndex={FlightPlanIndex.FirstSecondary + 1}
               />
             </TopTabNavigatorPage>
@@ -215,12 +218,18 @@ export class MfdFmsSecIndex extends FmsPage<MfdFmsSecIndexProps> {
                 bus={this.props.bus}
                 mfd={this.props.mfd}
                 fmcService={this.props.fmcService}
+                flightPlanInterface={this.props.fmcService.master.flightPlanInterface}
                 flightPlanIndex={FlightPlanIndex.FirstSecondary + 2}
               />
             </TopTabNavigatorPage>
           </TopTabNavigator>
         </div>
-        <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
+        <Footer
+          bus={this.props.bus}
+          mfd={this.props.mfd}
+          fmcService={this.props.fmcService}
+          flightPlanInterface={this.props.fmcService.master.flightPlanInterface}
+        />
       </>
     );
   }
@@ -231,6 +240,7 @@ interface MfdFmsSecIndexTabProps {
   readonly bus: EventBus;
   readonly mfd: FmsDisplayInterface & MfdDisplayInterface;
   readonly fmcService: FmcServiceInterface;
+  readonly flightPlanInterface: FlightPlanInterface;
   readonly flightPlanIndex: FlightPlanIndex;
 }
 
@@ -402,7 +412,7 @@ export class MfdFmsSecIndexTab extends DestroyableComponent<MfdFmsSecIndexTabPro
                 {
                   label: 'ACTIVE*',
                   action: () => {
-                    this.props.fmcService.master.flightPlanInterface.secondaryCopyFromActive(
+                    this.props.flightPlanInterface.secondaryCopyFromActive(
                       this.secIndex,
                       !this.props.fmcService.master.enginesWereStarted.get(),
                     );
@@ -411,7 +421,7 @@ export class MfdFmsSecIndexTab extends DestroyableComponent<MfdFmsSecIndexTabPro
                 {
                   label: this.secIndex === 1 ? 'SEC 2*' : 'SEC 1*',
                   action: () => {
-                    this.props.fmcService.master.flightPlanInterface.secondaryCopyFromSecondary(
+                    this.props.flightPlanInterface.secondaryCopyFromSecondary(
                       this.secIndex === 1 ? 2 : 1,
                       this.secIndex,
                       !this.props.fmcService.master.enginesWereStarted.get(),
@@ -421,7 +431,7 @@ export class MfdFmsSecIndexTab extends DestroyableComponent<MfdFmsSecIndexTabPro
                 {
                   label: this.secIndex === 3 ? 'SEC 2*' : 'SEC 3*',
                   action: () => {
-                    this.props.fmcService.master.flightPlanInterface.secondaryCopyFromSecondary(
+                    this.props.flightPlanInterface.secondaryCopyFromSecondary(
                       this.secIndex === 3 ? 2 : 3,
                       this.secIndex,
                       !this.props.fmcService.master.enginesWereStarted.get(),
@@ -498,7 +508,7 @@ export class MfdFmsSecIndexTab extends DestroyableComponent<MfdFmsSecIndexTabPro
                   </div>,
                 )}
                 disabled={this.secDoesNotExist}
-                onClick={() => this.props.fmcService.master.flightPlanInterface.secondaryDelete(this.secIndex)}
+                onClick={() => this.props.flightPlanInterface.secondaryDelete(this.secIndex)}
                 buttonStyle="padding-right: 2px;width: 160px; height: 60px;"
                 idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_sec${this.props.flightPlanIndex}index_delete`}
               />

@@ -312,11 +312,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   private readonly toDeratedThrustOptions = ArraySubject.create(['D01', 'D02', 'D03', 'D04', 'D05']);
 
   private toThrustSettingChanged(newIndex: TakeoffPowerSetting) {
-    this.props.fmcService.master.flightPlanInterface.setPerformanceData(
-      'takeoffPowerSetting',
-      newIndex,
-      FlightPlanIndex.Active,
-    );
+    this.props.flightPlanInterface.setPerformanceData('takeoffPowerSetting', newIndex, FlightPlanIndex.Active);
     this.showToThrustSettings(newIndex);
 
     if (newIndex === TakeoffPowerSetting.FLEX) {
@@ -324,7 +320,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       SimVar.SetSimVarValue(
         'L:A32NX_AIRLINER_TO_FLEX_TEMP',
         'Number',
-        this.props.fmcService.master.flightPlanInterface.active.performanceData.flexTakeoffTemperature.get() ?? 0.1,
+        this.props.flightPlanInterface.active.performanceData.flexTakeoffTemperature.get() ?? 0.1,
       );
     } else if (newIndex === TakeoffPowerSetting.DERATED) {
       // DERATED
@@ -906,13 +902,13 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                 this.crzPredStepRef.instance.style.display = 'block';
                 this.crzPredStepAheadRef.instance.style.display = 'none';
 
-                if (this.props.fmcService.master.flightPlanInterface.active) {
+                if (this.props.flightPlanInterface.active) {
                   const [approachingCruiseStep, cruiseStepLegIndex] = MfdFmsFplnVertRev.nextCruiseStep(
-                    this.props.fmcService.master.flightPlanInterface.active,
+                    this.props.flightPlanInterface.active,
                   );
                   this.crzPredWaypoint.set(
                     cruiseStepLegIndex && approachingCruiseStep
-                      ? this.props.fmcService.master.flightPlanInterface.active.legElementAt(cruiseStepLegIndex).ident
+                      ? this.props.flightPlanInterface.active.legElementAt(cruiseStepLegIndex).ident
                       : '',
                   );
                   this.crzPredAltitudeTarget.set(approachingCruiseStep ? approachingCruiseStep.toAltitude / 100 : null);
@@ -1297,7 +1293,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <InputField<number>
                       dataEntryFormat={new LengthFormat(Subject.create(1), this.originRunwayLength)}
                       dataHandlerDuringValidation={async (v) =>
-                        this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                        this.props.flightPlanInterface.setPerformanceData(
                           'takeoffShift',
                           v,
                           this.loadedFlightPlanIndex.get(),
@@ -1318,11 +1314,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <InputField<number>
                         dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                         dataHandlerDuringValidation={async (v) => {
-                          this.props.fmcService.master.flightPlanInterface.setPerformanceData(
-                            'v1',
-                            v,
-                            this.loadedFlightPlanIndex.get(),
-                          );
+                          this.props.flightPlanInterface.setPerformanceData('v1', v, this.loadedFlightPlanIndex.get());
                           SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'Knots', v);
                         }}
                         mandatory={this.mandatoryAndActiveFpln}
@@ -1361,21 +1353,21 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                           const fm = this.props.fmcService.master.fmgc.data;
                           if (fm && this.loadedFlightPlan) {
                             SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'Knots', fm.v1ToBeConfirmed.get());
-                            this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                            this.props.flightPlanInterface.setPerformanceData(
                               'v1',
                               fm.v1ToBeConfirmed.get(),
                               this.loadedFlightPlanIndex.get(),
                             );
                             fm.v1ToBeConfirmed.set(null);
                             SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'Knots', fm.vrToBeConfirmed.get());
-                            this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                            this.props.flightPlanInterface.setPerformanceData(
                               'vr',
                               fm.vrToBeConfirmed.get(),
                               this.loadedFlightPlanIndex.get(),
                             );
                             fm.vrToBeConfirmed.set(null);
                             SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'Knots', fm.v2ToBeConfirmed.get());
-                            this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                            this.props.flightPlanInterface.setPerformanceData(
                               'v2',
                               fm.v2ToBeConfirmed.get(),
                               this.loadedFlightPlanIndex.get(),
@@ -1399,11 +1391,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                         dataHandlerDuringValidation={async (v) => {
                           SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'Knots', v);
-                          this.props.fmcService.master.flightPlanInterface.setPerformanceData(
-                            'vr',
-                            v,
-                            this.loadedFlightPlanIndex.get(),
-                          );
+                          this.props.flightPlanInterface.setPerformanceData('vr', v, this.loadedFlightPlanIndex.get());
                         }}
                         mandatory={this.mandatoryAndActiveFpln}
                         inactive={this.toPageInactive}
@@ -1435,11 +1423,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                         dataHandlerDuringValidation={async (v) => {
                           SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'Knots', v);
-                          this.props.fmcService.master.flightPlanInterface.setPerformanceData(
-                            'v2',
-                            v,
-                            this.loadedFlightPlanIndex.get(),
-                          );
+                          this.props.flightPlanInterface.setPerformanceData('v2', v, this.loadedFlightPlanIndex.get());
                         }}
                         mandatory={this.mandatoryAndActiveFpln}
                         inactive={this.toPageInactive}
@@ -1474,7 +1458,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     visible={this.toDeratedDialogVisible}
                     cancelAction={() => {
                       this.toDeratedDialogVisible.set(false);
-                      this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                      this.props.flightPlanInterface.setPerformanceData(
                         'takeoffDeratedSetting',
                         this.toDeratedThrustPrevious,
                         this.loadedFlightPlanIndex.get(),
@@ -1482,7 +1466,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     }}
                     confirmAction={() => {
                       this.toDeratedDialogVisible.set(false);
-                      this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                      this.props.flightPlanInterface.setPerformanceData(
                         'takeoffDeratedSetting',
                         this.toDeratedThrustNext,
                         this.loadedFlightPlanIndex.get(),
@@ -1511,7 +1495,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         dataHandlerDuringValidation={async (v) => {
                           // Special case: 0 means no FLEX, 0.1 means FLEX TEMP of 0
                           await SimVar.SetSimVarValue('L:A32NX_AIRLINER_TO_FLEX_TEMP', 'Number', v === 0 ? 0.1 : v);
-                          this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                          this.props.flightPlanInterface.setPerformanceData(
                             'flexTakeoffTemperature',
                             v,
                             this.loadedFlightPlanIndex.get(),
@@ -1569,7 +1553,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         // Convert to FlapConf
                         if (newIndex != null) {
                           const flapConf = newIndex + 1;
-                          this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                          this.props.flightPlanInterface.setPerformanceData(
                             'takeoffFlaps',
                             flapConf,
                             this.loadedFlightPlanIndex.get(),
@@ -1594,7 +1578,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       dataEntryFormat={new PercentageFormat(Subject.create(0), Subject.create(99.9))}
                       dataHandlerDuringValidation={async (v) => {
                         if (v) {
-                          this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                          this.props.flightPlanInterface.setPerformanceData(
                             'takeoffThsFor',
                             v,
                             this.loadedFlightPlanIndex.get(),
@@ -1624,7 +1608,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             undefined,
                           );
                         }
-                        this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                        this.props.flightPlanInterface.setPerformanceData(
                           'takeoffPacks',
                           val,
                           this.loadedFlightPlanIndex.get(),
@@ -1652,7 +1636,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             undefined,
                           );
                         }
-                        this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                        this.props.flightPlanInterface.setPerformanceData(
                           'takeoffAntiIce',
                           val,
                           this.loadedFlightPlanIndex.get(),
@@ -1676,7 +1660,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <InputField<number, number, false>
                       dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
                       dataHandlerDuringValidation={async (v) => {
-                        this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                        this.props.flightPlanInterface.setPerformanceData(
                           'pilotThrustReductionAltitude',
                           v,
                           this.loadedFlightPlanIndex.get(),
@@ -1711,7 +1695,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <InputField<number, number, false>
                         dataEntryFormat={new PercentageFormat(Subject.create(40), Subject.create(110))}
                         dataHandlerDuringValidation={async (v) => {
-                          this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                          this.props.flightPlanInterface.setPerformanceData(
                             'noiseN1',
                             v,
                             this.loadedFlightPlanIndex.get(),
@@ -1737,7 +1721,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                           <Button
                             label="CANCEL<br />NOISE"
                             onClick={() => {
-                              this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                              this.props.flightPlanInterface.setPerformanceData(
                                 'noiseEnabled',
                                 false,
                                 this.loadedFlightPlanIndex.get(),
@@ -1757,7 +1741,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <InputField<number, number, false>
                       dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
                       dataHandlerDuringValidation={async (v) => {
-                        this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                        this.props.flightPlanInterface.setPerformanceData(
                           'pilotAccelerationAltitude',
                           v,
                           this.loadedFlightPlanIndex.get(),
@@ -1792,7 +1776,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <InputField<number, number, false>
                         dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                         dataHandlerDuringValidation={async (v) =>
-                          this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                          this.props.flightPlanInterface.setPerformanceData(
                             'noiseSpeed',
                             v,
                             this.loadedFlightPlanIndex.get(),
@@ -1824,7 +1808,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             disabled={Subject.create(true)}
                             label="NOISE"
                             onClick={() => {
-                              this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                              this.props.flightPlanInterface.setPerformanceData(
                                 'noiseEnabled',
                                 true,
                                 this.loadedFlightPlanIndex.get(),
@@ -1840,7 +1824,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <InputField<number>
                         dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
                         dataHandlerDuringValidation={async (v) =>
-                          this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                          this.props.flightPlanInterface.setPerformanceData(
                             'noiseEndAltitude',
                             v,
                             this.loadedFlightPlanIndex.get(),
@@ -1867,7 +1851,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <InputField<number, number, false>
                       dataEntryFormat={new AltitudeFormat(Subject.create(1), Subject.create(maxCertifiedAlt))}
                       dataHandlerDuringValidation={async (v) => {
-                        this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                        this.props.flightPlanInterface.setPerformanceData(
                           'pilotTransitionAltitude',
                           v,
                           this.loadedFlightPlanIndex.get(),
@@ -1888,7 +1872,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <InputField<number>
                       dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
                       dataHandlerDuringValidation={async (v) => {
-                        this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                        this.props.flightPlanInterface.setPerformanceData(
                           'pilotEngineOutAccelerationAltitude',
                           v,
                           this.loadedFlightPlanIndex.get(),
@@ -1930,7 +1914,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       values={this.costIndexModeLabels}
                       selectedIndex={this.costIndexMode as Subscribable<CostIndexMode>}
                       onModified={(v) =>
-                        this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                        this.props.flightPlanInterface.setPerformanceData(
                           'costIndexMode',
                           v,
                           this.loadedFlightPlanIndex.get(),
@@ -1948,7 +1932,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <InputField<number>
                       dataEntryFormat={new CostIndexFormat()}
                       dataHandlerDuringValidation={async (v) => {
-                        this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                        this.props.flightPlanInterface.setPerformanceData(
                           'costIndex',
                           v,
                           this.loadedFlightPlanIndex.get(),
@@ -1970,7 +1954,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       inactive={Subject.create(true)}
                       selectedIndex={this.climbDerated as Subscribable<ClimbDerated>}
                       onModified={(v) =>
-                        this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                        this.props.flightPlanInterface.setPerformanceData(
                           'climbDerated',
                           v,
                           this.loadedFlightPlanIndex.get(),
@@ -2116,7 +2100,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       enteredByPilot={this.thrRedAltIsPilotEntered}
                       value={this.thrRedAlt}
                       dataHandlerDuringValidation={async (v) =>
-                        this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                        this.props.flightPlanInterface.setPerformanceData(
                           'pilotThrustReductionAltitude',
                           v,
                           this.loadedFlightPlanIndex.get(),
@@ -2148,7 +2132,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <InputField<number, number, false>
                         dataEntryFormat={new PercentageFormat(Subject.create(40), Subject.create(110))}
                         dataHandlerDuringValidation={async (v) => {
-                          this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                          this.props.flightPlanInterface.setPerformanceData(
                             'noiseN1',
                             v,
                             this.loadedFlightPlanIndex.get(),
@@ -2177,7 +2161,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                           <Button
                             label="CANCEL<br />NOISE"
                             onClick={() => {
-                              this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                              this.props.flightPlanInterface.setPerformanceData(
                                 'noiseEnabled',
                                 false,
                                 this.loadedFlightPlanIndex.get(),
@@ -2204,7 +2188,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       enteredByPilot={this.accelAltIsPilotEntered}
                       value={this.accelAlt}
                       dataHandlerDuringValidation={async (v) =>
-                        this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                        this.props.flightPlanInterface.setPerformanceData(
                           'pilotAccelerationAltitude',
                           v,
                           this.loadedFlightPlanIndex.get(),
@@ -2236,7 +2220,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <InputField<number, number, false>
                         dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                         dataHandlerDuringValidation={async (v) => {
-                          this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                          this.props.flightPlanInterface.setPerformanceData(
                             'noiseSpeed',
                             v,
                             this.loadedFlightPlanIndex.get(),
@@ -2282,7 +2266,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <InputField<number, number, false>
                         dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
                         dataHandlerDuringValidation={async (v) => {
-                          this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                          this.props.flightPlanInterface.setPerformanceData(
                             'noiseEndAltitude',
                             v,
                             this.loadedFlightPlanIndex.get(),
@@ -2312,7 +2296,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                           disabled={Subject.create(true)}
                           label="NOISE"
                           onClick={() => {
-                            this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                            this.props.flightPlanInterface.setPerformanceData(
                               'noiseEnabled',
                               true,
                               this.loadedFlightPlanIndex.get(),
@@ -2331,7 +2315,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <InputField<number, number, false>
                       dataEntryFormat={new AltitudeFormat(Subject.create(1), Subject.create(maxCertifiedAlt))}
                       dataHandlerDuringValidation={async (v) => {
-                        this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                        this.props.flightPlanInterface.setPerformanceData(
                           'pilotTransitionAltitude',
                           v,
                           this.loadedFlightPlanIndex.get(),
@@ -2373,7 +2357,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       values={this.costIndexModeLabels}
                       selectedIndex={this.costIndexMode as Subscribable<CostIndexMode>}
                       onModified={(v) =>
-                        this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                        this.props.flightPlanInterface.setPerformanceData(
                           'costIndexMode',
                           v,
                           this.loadedFlightPlanIndex.get(),
@@ -2391,7 +2375,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <InputField<number>
                       dataEntryFormat={new CostIndexFormat()}
                       dataHandlerDuringValidation={async (v) => {
-                        this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                        this.props.flightPlanInterface.setPerformanceData(
                           'costIndex',
                           v,
                           this.loadedFlightPlanIndex.get(),
@@ -2628,7 +2612,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       values={this.costIndexModeLabels}
                       selectedIndex={this.costIndexMode as Subscribable<CostIndexMode>}
                       onModified={(v) =>
-                        this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                        this.props.flightPlanInterface.setPerformanceData(
                           'costIndexMode',
                           v,
                           this.loadedFlightPlanIndex.get(),
@@ -2646,7 +2630,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <InputField<number>
                       dataEntryFormat={new CostIndexFormat()}
                       dataHandlerDuringValidation={async (v) => {
-                        this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                        this.props.flightPlanInterface.setPerformanceData(
                           'costIndex',
                           v,
                           this.loadedFlightPlanIndex.get(),
@@ -2670,7 +2654,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <InputField<number, number, false>
                       dataEntryFormat={new DescentRateFormat(Subject.create(-999), Subject.create(-100))}
                       dataHandlerDuringValidation={async (v) => {
-                        this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                        this.props.flightPlanInterface.setPerformanceData(
                           'descentCabinRate',
                           v,
                           this.loadedFlightPlanIndex.get(),
@@ -2856,7 +2840,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                           <InputField<number, number, false>
                             dataEntryFormat={new WindDirectionFormat()}
                             dataHandlerDuringValidation={async (v) => {
-                              this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                              this.props.flightPlanInterface.setPerformanceData(
                                 'approachWindDirection',
                                 v,
                                 this.loadedFlightPlanIndex.get(),
@@ -2871,7 +2855,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                           <InputField<number, number, false>
                             dataEntryFormat={new WindSpeedFormat()}
                             dataHandlerDuringValidation={async (v) => {
-                              this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                              this.props.flightPlanInterface.setPerformanceData(
                                 'approachWindMagnitude',
                                 v,
                                 this.loadedFlightPlanIndex.get(),
@@ -2903,7 +2887,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         <InputField<number, number, false>
                           dataEntryFormat={new TemperatureFormat(Subject.create(-99), Subject.create(99))}
                           dataHandlerDuringValidation={async (v) => {
-                            this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                            this.props.flightPlanInterface.setPerformanceData(
                               'approachTemperature',
                               v,
                               this.loadedFlightPlanIndex.get(),
@@ -2933,7 +2917,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                               qnhMillibar = v * 33.8639;
                             }
 
-                            this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                            this.props.flightPlanInterface.setPerformanceData(
                               'approachQnh',
                               qnhMillibar,
                               this.loadedFlightPlanIndex.get(),
@@ -2957,7 +2941,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         <InputField<number, number, false>
                           dataEntryFormat={new AltitudeFormat(Subject.create(0), Subject.create(maxCertifiedAlt))}
                           dataHandlerDuringValidation={async (v) => {
-                            this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                            this.props.flightPlanInterface.setPerformanceData(
                               'approachBaroMinimum',
                               v,
                               this.loadedFlightPlanIndex.get(),
@@ -2980,7 +2964,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             <InputField<number, number, false>
                               dataEntryFormat={new RadioAltitudeFormat()}
                               dataHandlerDuringValidation={async (v) => {
-                                this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                                this.props.flightPlanInterface.setPerformanceData(
                                   'approachRadioMinimum',
                                   v,
                                   this.loadedFlightPlanIndex.get(),
@@ -3044,7 +3028,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         values={['CONF 3', 'FULL']}
                         selectedIndex={this.apprSelectedFlapsIndex}
                         onModified={(v) =>
-                          this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                          this.props.flightPlanInterface.setPerformanceData(
                             'approachFlapsThreeSelected',
                             v === 0,
                             this.loadedFlightPlanIndex.get(),
@@ -3069,7 +3053,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         <InputField<number, number, false>
                           dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                           dataHandlerDuringValidation={async (v) =>
-                            this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                            this.props.flightPlanInterface.setPerformanceData(
                               'pilotVapp',
                               v,
                               this.loadedFlightPlanIndex.get(),
@@ -3098,7 +3082,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <InputField<number, number, false>
                       dataEntryFormat={new FlightLevelFormat()}
                       dataHandlerDuringValidation={async (v) => {
-                        this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                        this.props.flightPlanInterface.setPerformanceData(
                           'pilotTransitionLevel',
                           v,
                           this.loadedFlightPlanIndex.get(),
@@ -3158,7 +3142,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <InputField<number, number, false>
                         dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
                         dataHandlerDuringValidation={async (v) => {
-                          this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                          this.props.flightPlanInterface.setPerformanceData(
                             'pilotMissedThrustReductionAltitude',
                             v,
                             this.loadedFlightPlanIndex.get(),
@@ -3182,7 +3166,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <InputField<number, number, false>
                         dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
                         dataHandlerDuringValidation={async (v) => {
-                          this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                          this.props.flightPlanInterface.setPerformanceData(
                             'pilotMissedAccelerationAltitude',
                             v,
                             this.loadedFlightPlanIndex.get(),
@@ -3204,7 +3188,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <InputField<number, number, false>
                         dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
                         dataHandlerDuringValidation={async (v) => {
-                          this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                          this.props.flightPlanInterface.setPerformanceData(
                             'pilotMissedEngineOutAccelerationAltitude',
                             v,
                             this.loadedFlightPlanIndex.get(),
@@ -3320,7 +3304,12 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             </div>
           </div>
           {/* end page content */}
-          <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
+          <Footer
+            bus={this.props.bus}
+            mfd={this.props.mfd}
+            fmcService={this.props.fmcService}
+            flightPlanInterface={this.props.fmcService.master.flightPlanInterface}
+          />
         </>
       )
     );

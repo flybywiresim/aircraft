@@ -322,8 +322,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           el instanceof FlightPlanLeg &&
           index <
             (this.loadedFlightPlan?.legCount ?? 0) +
-              (this.props.fmcService.master.flightPlanInterface.get(this.loadedFlightPlanIndex.get())
-                .alternateFlightPlan.legCount ?? 0)
+              (this.props.flightPlanInterface.get(this.loadedFlightPlanIndex.get()).alternateFlightPlan.legCount ?? 0)
         ) {
           if (index === 0 || el.calculated === undefined) {
             newEl.distanceFromLastWpt = null;
@@ -939,11 +938,13 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           />
           <DestinationWindow
             fmcService={this.props.fmcService}
+            flightPlanInterface={this.props.fmcService.master.flightPlanInterface}
             mfd={this.props.mfd}
             visible={this.newDestWindowOpened}
           />
           <InsertNextWptFromWindow
             fmcService={this.props.fmcService}
+            flightPlanInterface={this.props.fmcService.master.flightPlanInterface}
             mfd={this.props.mfd}
             availableWaypoints={this.nextWptAvailableWaypoints}
             visible={this.insertNextWptWindowOpened}
@@ -989,7 +990,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                   <span style="display: flex; align-items: center; justify-content: center;">*</span>
                 </div>,
               )}
-              onClick={() => this.props.fmcService.master.flightPlanInterface.temporaryDelete()}
+              onClick={() => this.props.flightPlanInterface.temporaryDelete()}
               buttonStyle="color: #e68000; padding-right: 2px;"
             />
             <Button
@@ -1003,7 +1004,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                   <span style="display: flex; align-items: center; justify-content: center;">*</span>
                 </div>,
               )}
-              onClick={() => this.props.fmcService.master.flightPlanInterface.temporaryInsert()}
+              onClick={() => this.props.flightPlanInterface.temporaryInsert()}
               buttonStyle="color: #e68000; padding-right: 2px;"
             />
           </div>
@@ -1196,7 +1197,12 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           </div>
           {/* end page content */}
         </div>
-        <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
+        <Footer
+          bus={this.props.bus}
+          mfd={this.props.mfd}
+          fmcService={this.props.fmcService}
+          flightPlanInterface={this.props.fmcService.master.flightPlanInterface}
+        />
       </>
     );
   }
@@ -1205,9 +1211,8 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     this.props.fmcService.master.updateEfisPlanCentre(
       this.props.mfd.uiService.captOrFo === 'CAPT' ? 'L' : 'R',
       FlightPlanIndex.Active,
-      this.props.fmcService.master.flightPlanInterface.active.activeLegIndex,
-      this.props.fmcService.master.flightPlanInterface.active.activeLegIndex >=
-        this.props.fmcService.master.flightPlanInterface.active.allLegs.length,
+      this.props.flightPlanInterface.active.activeLegIndex,
+      this.props.flightPlanInterface.active.activeLegIndex >= this.props.flightPlanInterface.active.allLegs.length,
     );
 
     super.destroy();

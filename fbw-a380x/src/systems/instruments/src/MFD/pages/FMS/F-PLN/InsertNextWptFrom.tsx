@@ -18,6 +18,7 @@ import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayIn
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { FmsError } from '@fmgc/FmsError';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
 
 export type NextWptInfo = {
   ident: string;
@@ -25,6 +26,7 @@ export type NextWptInfo = {
 };
 interface InsertNextWptFromWindowProps extends ComponentProps {
   fmcService: FmcServiceInterface;
+  flightPlanInterface: FlightPlanInterface;
   mfd: FmsDisplayInterface & MfdDisplayInterface;
   availableWaypoints: SubscribableArray<NextWptInfo>;
   visible: Subject<boolean>;
@@ -57,8 +59,8 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
       const wptInfo = this.props.availableWaypoints.get(idx);
       const revWpt = this.props.fmcService.master.revisedLegIndex.get();
       const fpln = this.props.fmcService.master.revisedLegIsAltn.get()
-        ? this.props.fmcService.master.flightPlanInterface.get(revWptPlanIndex).alternateFlightPlan
-        : this.props.fmcService.master.flightPlanInterface.get(revWptPlanIndex);
+        ? this.props.flightPlanInterface.get(revWptPlanIndex).alternateFlightPlan
+        : this.props.flightPlanInterface.get(revWptPlanIndex);
       const wptToInsert = fpln?.legElementAt(wptInfo.originalLegIndex).definition.waypoint;
       if (
         this.props.availableWaypoints.get(idx) &&
@@ -69,7 +71,7 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
       ) {
         this.selectedWaypointIndex.set(idx);
         this.props.visible.set(false);
-        await this.props.fmcService.master.flightPlanInterface.nextWaypoint(
+        await this.props.flightPlanInterface.nextWaypoint(
           revWpt,
           wptToInsert,
           this.props.fmcService.master.revisedLegPlanIndex.get() ?? undefined,
@@ -81,7 +83,7 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
         const wpt = await WaypointEntryUtils.getOrCreateWaypoint(this.props.fmcService.master, text, true, undefined);
         const revWpt = this.props.fmcService.master.revisedLegIndex.get();
         if (wpt && revWpt) {
-          await this.props.fmcService.master.flightPlanInterface.nextWaypoint(
+          await this.props.flightPlanInterface.nextWaypoint(
             revWpt,
             wpt,
             this.props.fmcService.master.revisedLegPlanIndex.get() ?? undefined,
@@ -115,7 +117,7 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
       this.subs.push(
         this.props.fmcService.master.revisedLegIndex.sub((wptIdx) => {
           if (wptIdx && this.props.fmcService.master.revisedWaypoint()) {
-            const fpln = this.props.fmcService.master.flightPlanInterface.get(
+            const fpln = this.props.flightPlanInterface.get(
               this.props.fmcService.master.revisedLegPlanIndex.get() ?? FlightPlanIndex.Active,
             );
 

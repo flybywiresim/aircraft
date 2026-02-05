@@ -65,80 +65,268 @@ export function pageForUrl(
     case 'fms/sec1/' + performancePage:
     case 'fms/sec2/' + performancePage:
     case 'fms/sec3/' + performancePage:
-      return <MfdFmsPerf pageTitle="PERF" bus={bus} mfd={mfd} fmcService={fmcService} />;
+      return (
+        <MfdFmsPerf
+          pageTitle="PERF"
+          bus={bus}
+          mfd={mfd}
+          fmcService={fmcService}
+          flightPlanInterface={fmcService.master.flightPlanInterface}
+        />
+      );
     case 'fms/active/' + initPage:
     case 'fms/sec1/' + initPage:
     case 'fms/sec2/' + initPage:
     case 'fms/sec3/' + initPage:
-      return <MfdFmsInit pageTitle="INIT" bus={bus} mfd={mfd} fmcService={fmcService} />;
+      return (
+        <MfdFmsInit
+          pageTitle="INIT"
+          bus={bus}
+          mfd={mfd}
+          fmcService={fmcService}
+          flightPlanInterface={fmcService.master.flightPlanInterface}
+        />
+      );
     case activeFlightPlanFuelAndLoadUri:
     case 'fms/sec1/' + fuelAndLoadPage:
     case 'fms/sec2/' + fuelAndLoadPage:
     case 'fms/sec3/' + fuelAndLoadPage:
-      return <MfdFmsFuelLoad pageTitle="FUEL&LOAD" bus={bus} mfd={mfd} fmcService={fmcService} />;
+      return (
+        <MfdFmsFuelLoad
+          pageTitle="FUEL&LOAD"
+          bus={bus}
+          mfd={mfd}
+          fmcService={fmcService}
+          flightPlanInterface={fmcService.master.flightPlanInterface}
+        />
+      );
     case activeFlightPlanPageUri:
     case 'fms/sec1/' + flightPlanUriPage:
     case 'fms/sec2/' + flightPlanUriPage:
     case 'fms/sec3/' + flightPlanUriPage:
-      return <MfdFmsFpln pageTitle="F-PLN" bus={bus} mfd={mfd} fmcService={fmcService} />;
+      return (
+        <MfdFmsFpln
+          pageTitle="F-PLN"
+          bus={bus}
+          mfd={mfd}
+          fmcService={fmcService}
+          flightPlanInterface={fmcService.master.flightPlanInterface}
+        />
+      );
     case 'fms/active/f-pln-airways':
     case 'fms/sec1/f-pln-airways':
     case 'fms/sec2/f-pln-airways':
     case 'fms/sec3/f-pln-airways':
-      return <MfdFmsFplnAirways pageTitle="F-PLN/AIRWAYS" bus={bus} mfd={mfd} fmcService={fmcService} />;
+      return (
+        <MfdFmsFplnAirways
+          pageTitle="F-PLN/AIRWAYS"
+          bus={bus}
+          mfd={mfd}
+          fmcService={fmcService}
+          flightPlanInterface={fmcService.master.flightPlanInterface}
+        />
+      );
     case 'fms/active/f-pln-departure':
     case 'fms/sec1/f-pln-departure':
     case 'fms/sec2/f-pln-departure':
     case 'fms/sec3/f-pln-departure':
-      return <MfdFmsFplnDep pageTitle="F-PLN/DEPARTURE" bus={bus} mfd={mfd} fmcService={fmcService} />;
+      return (
+        <MfdFmsFplnDep
+          pageTitle="F-PLN/DEPARTURE"
+          bus={bus}
+          mfd={mfd}
+          fmcService={fmcService}
+          flightPlanInterface={fmcService.master.flightPlanInterface}
+        />
+      );
     case 'fms/active/f-pln-arrival':
     case 'fms/sec1/f-pln-arrival':
     case 'fms/sec2/f-pln-arrival':
     case 'fms/sec3/f-pln-arrival':
-      return <MfdFmsFplnArr pageTitle="F-PLN/ARRIVAL" bus={bus} mfd={mfd} fmcService={fmcService} />;
+      return (
+        <MfdFmsFplnArr
+          pageTitle="F-PLN/ARRIVAL"
+          bus={bus}
+          mfd={mfd}
+          fmcService={fmcService}
+          flightPlanInterface={fmcService.master.flightPlanInterface}
+        />
+      );
     case dirToUri:
-      return <MfdFmsFplnDirectTo pageTitle="F-PLN/DIRECT-TO" bus={bus} mfd={mfd} fmcService={fmcService} />;
+      return (
+        <MfdFmsFplnDirectTo
+          pageTitle="F-PLN/DIRECT-TO"
+          bus={bus}
+          mfd={mfd}
+          fmcService={fmcService}
+          flightPlanInterface={fmcService.master.flightPlanInterface}
+        />
+      );
     case 'fms/active/f-pln-vert-rev':
     case 'fms/sec1/f-pln-vert-rev':
     case 'fms/sec2/f-pln-vert-rev':
     case 'fms/sec3/f-pln-vert-rev':
-      return <MfdFmsFplnVertRev pageTitle="F-PLN/VERT REV" bus={bus} mfd={mfd} fmcService={fmcService} />;
+      return (
+        <MfdFmsFplnVertRev
+          pageTitle="F-PLN/VERT REV"
+          bus={bus}
+          mfd={mfd}
+          fmcService={fmcService}
+          flightPlanInterface={fmcService.master.flightPlanInterface}
+        />
+      );
     case activeFlightPlanHoldUri:
     case 'fms/sec1/' + lateralRevisionHoldPage:
     case 'fms/sec2/' + lateralRevisionHoldPage:
     case 'fms/sec3/' + lateralRevisionHoldPage:
-      return <MfdFmsFplnHold pageTitle="F-PLN/HOLD" bus={bus} mfd={mfd} fmcService={fmcService} />;
+      return (
+        <MfdFmsFplnHold
+          pageTitle="F-PLN/HOLD"
+          bus={bus}
+          mfd={mfd}
+          fmcService={fmcService}
+          flightPlanInterface={fmcService.master.flightPlanInterface}
+        />
+      );
     case fixInfoUri:
-      return <MfdFmsFplnFixInfo pageTitle="F-PLN/FIX INFO" bus={bus} mfd={mfd} fmcService={fmcService} />;
+      return (
+        <MfdFmsFplnFixInfo
+          pageTitle="F-PLN/FIX INFO"
+          bus={bus}
+          mfd={mfd}
+          fmcService={fmcService}
+          flightPlanInterface={fmcService.master.flightPlanInterface}
+        />
+      );
     case 'fms/sec/index':
-      return <MfdFmsSecIndex pageTitle="SEC INDEX" bus={bus} mfd={mfd} fmcService={fmcService} />;
+      return (
+        <MfdFmsSecIndex
+          pageTitle="SEC INDEX"
+          bus={bus}
+          mfd={mfd}
+          fmcService={fmcService}
+          flightPlanInterface={fmcService.master.flightPlanInterface}
+        />
+      );
     case 'fms/position/monitor':
-      return <MfdFmsPositionMonitor pageTitle="MONITOR" bus={bus} mfd={mfd} fmcService={fmcService} />;
+      return (
+        <MfdFmsPositionMonitor
+          pageTitle="MONITOR"
+          bus={bus}
+          mfd={mfd}
+          fmcService={fmcService}
+          flightPlanInterface={fmcService.master.flightPlanInterface}
+        />
+      );
     case 'fms/position/irs':
-      return <MfdFmsPositionIrs pageTitle="IRS" bus={bus} mfd={mfd} fmcService={fmcService} />;
+      return (
+        <MfdFmsPositionIrs
+          pageTitle="IRS"
+          bus={bus}
+          mfd={mfd}
+          fmcService={fmcService}
+          flightPlanInterface={fmcService.master.flightPlanInterface}
+        />
+      );
     case 'fms/position/navaids':
-      return <MfdFmsPositionNavaids pageTitle="NAVAIDS" bus={bus} mfd={mfd} fmcService={fmcService} />;
+      return (
+        <MfdFmsPositionNavaids
+          pageTitle="NAVAIDS"
+          bus={bus}
+          mfd={mfd}
+          fmcService={fmcService}
+          flightPlanInterface={fmcService.master.flightPlanInterface}
+        />
+      );
     case dataStatusUri:
-      return <MfdFmsDataStatus pageTitle="STATUS" bus={bus} mfd={mfd} fmcService={fmcService} />;
+      return (
+        <MfdFmsDataStatus
+          pageTitle="STATUS"
+          bus={bus}
+          mfd={mfd}
+          fmcService={fmcService}
+          flightPlanInterface={fmcService.master.flightPlanInterface}
+        />
+      );
     case 'fms/data/airport':
-      return <MfdFmsDataAirport pageTitle="AIRPORT" bus={bus} mfd={mfd} fmcService={fmcService} />;
+      return (
+        <MfdFmsDataAirport
+          pageTitle="AIRPORT"
+          bus={bus}
+          mfd={mfd}
+          fmcService={fmcService}
+          flightPlanInterface={fmcService.master.flightPlanInterface}
+        />
+      );
     case 'surv/controls':
-      return <MfdSurvControls pageTitle="CONTROLS" bus={bus} mfd={mfd} fmcService={fmcService} />;
+      return (
+        <MfdSurvControls
+          pageTitle="CONTROLS"
+          bus={bus}
+          mfd={mfd}
+          fmcService={fmcService}
+          flightPlanInterface={fmcService.master.flightPlanInterface}
+        />
+      );
     case 'surv/status-switching':
-      return <MfdSurvStatusSwitching pageTitle="STATUS & SWITCHING" bus={bus} mfd={mfd} fmcService={fmcService} />;
+      return (
+        <MfdSurvStatusSwitching
+          pageTitle="STATUS & SWITCHING"
+          bus={bus}
+          mfd={mfd}
+          fmcService={fmcService}
+          flightPlanInterface={fmcService.master.flightPlanInterface}
+        />
+      );
     case 'atccom/connect':
-      return <MfdAtccomConnect pageTitle="" bus={bus} mfd={mfd} fmcService={fmcService} />;
+      return (
+        <MfdAtccomConnect
+          pageTitle=""
+          bus={bus}
+          mfd={mfd}
+          fmcService={fmcService}
+          flightPlanInterface={fmcService.master.flightPlanInterface}
+        />
+      );
     case 'atccom/msg-record':
-      return <MfdAtccomMsgRecord pageTitle="MSG RECORD" bus={bus} mfd={mfd} fmcService={fmcService} />;
+      return (
+        <MfdAtccomMsgRecord
+          pageTitle="MSG RECORD"
+          bus={bus}
+          mfd={mfd}
+          fmcService={fmcService}
+          flightPlanInterface={fmcService.master.flightPlanInterface}
+        />
+      );
     case 'atccom/msg-record/all-msg':
-      return <MfdAtccomMsgRecordAll pageTitle="MSG RECORD/ALL MSG" bus={bus} mfd={mfd} fmcService={fmcService} />;
+      return (
+        <MfdAtccomMsgRecordAll
+          pageTitle="MSG RECORD/ALL MSG"
+          bus={bus}
+          mfd={mfd}
+          fmcService={fmcService}
+          flightPlanInterface={fmcService.master.flightPlanInterface}
+        />
+      );
     case 'atccom/msg-record/monitored-msg':
       return (
-        <MfdAtccomMsgRecordMonitored pageTitle="MSG RECORD/MONITORED MSG" bus={bus} mfd={mfd} fmcService={fmcService} />
+        <MfdAtccomMsgRecordMonitored
+          pageTitle="MSG RECORD/MONITORED MSG"
+          bus={bus}
+          mfd={mfd}
+          fmcService={fmcService}
+          flightPlanInterface={fmcService.master.flightPlanInterface}
+        />
       );
     case 'atccom/msg-record/all-msg-expand':
       return (
-        <MfdAtccomMsgRecordExpand pageTitle="MSG RECORD/ALL MSG/EXPAND" bus={bus} mfd={mfd} fmcService={fmcService} />
+        <MfdAtccomMsgRecordExpand
+          pageTitle="MSG RECORD/ALL MSG/EXPAND"
+          bus={bus}
+          mfd={mfd}
+          fmcService={fmcService}
+          flightPlanInterface={fmcService.master.flightPlanInterface}
+        />
       );
     case 'atccom/d-atis/list':
       return <MfdAtccomDAtis pageTitle="D-ATIS/LIST" bus={bus} mfd={mfd} atcService={atcService} />;
@@ -146,7 +334,15 @@ export function pageForUrl(
       return <MfdAtccomDAtisReceived pageTitle="D-ATIS/RECEIVED" bus={bus} mfd={mfd} atcService={atcService} />;
 
     default:
-      return <MfdNotFound pageTitle="NOT FOUND" bus={bus} mfd={mfd} fmcService={fmcService} />;
+      return (
+        <MfdNotFound
+          pageTitle="NOT FOUND"
+          bus={bus}
+          mfd={mfd}
+          fmcService={fmcService}
+          flightPlanInterface={fmcService.master.flightPlanInterface}
+        />
+      );
   }
 }
 

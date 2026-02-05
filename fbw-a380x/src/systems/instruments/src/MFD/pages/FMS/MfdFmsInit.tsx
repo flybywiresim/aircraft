@@ -158,10 +158,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
 
     this.subs.push(
       this.flightPlanChangeNotifier.flightPlanChanged.sub(() => {
-        if (
-          this.loadedFlightPlan &&
-          this.props.fmcService.master.flightPlanInterface.has(this.loadedFlightPlanIndex.get())
-        ) {
+        if (this.loadedFlightPlan && this.props.flightPlanInterface.has(this.loadedFlightPlanIndex.get())) {
           this.subs.push(
             this.loadedFlightPlan.performanceData.tropopause.pipe(this.tropopause),
             this.loadedFlightPlan.performanceData.tropopauseIsPilotEntered.pipe(this.tropopauseIsPilotEntered),
@@ -224,7 +221,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
         A380AltitudeUtils.getIsaTemp(cruiseLevel * 100) >
         0.5
     ) {
-      this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+      this.props.flightPlanInterface.setPerformanceData(
         'cruiseTemperatureIsaTemp',
         A380AltitudeUtils.getIsaTemp(cruiseLevel * 100),
         this.loadedFlightPlanIndex.get(),
@@ -267,7 +264,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     if (fromIcao && toIcao && cityPairIsDifferent) {
       // We can't use this.loadedFlightPlanIndex here because the flight plan might not exist yet
 
-      await this.props.fmcService.master.flightPlanInterface.newCityPair(
+      await this.props.flightPlanInterface.newCityPair(
         fromIcao,
         toIcao,
         this.altnIcao.get() ?? undefined,
@@ -399,10 +396,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 dataHandlerDuringValidation={async (v) => {
                   this.altnIcao.set(v);
                   if (v) {
-                    await this.props.fmcService.master.flightPlanInterface.setAlternate(
-                      v,
-                      this.loadedFlightPlanIndex.get(),
-                    );
+                    await this.props.flightPlanInterface.setAlternate(v, this.loadedFlightPlanIndex.get());
                     this.props.fmcService.master.acInterface.updateFmsData();
                   }
                 }}
@@ -478,7 +472,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
               <InputField<number, number, false>
                 dataEntryFormat={new CrzTempFormat()}
                 dataHandlerDuringValidation={async (v) => {
-                  this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                  this.props.flightPlanInterface.setPerformanceData(
                     'cruiseTemperaturePilotEntry',
                     v,
                     this.loadedFlightPlanIndex.get(),
@@ -501,7 +495,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 values={this.costIndexModeLabels}
                 selectedIndex={this.costIndexMode}
                 onModified={(v) =>
-                  this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                  this.props.flightPlanInterface.setPerformanceData(
                     'costIndexMode',
                     v,
                     this.loadedFlightPlanIndex.get(),
@@ -521,11 +515,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
               <InputField<number, number, false>
                 dataEntryFormat={new TropoFormat()}
                 dataHandlerDuringValidation={async (v) =>
-                  this.props.fmcService.master.flightPlanInterface.setPerformanceData(
-                    'tropopause',
-                    v,
-                    this.loadedFlightPlanIndex.get(),
-                  )
+                  this.props.flightPlanInterface.setPerformanceData('tropopause', v, this.loadedFlightPlanIndex.get())
                 }
                 enteredByPilot={this.tropopauseIsPilotEntered}
                 readonlyValue={this.tropopause}
@@ -547,7 +537,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 <InputField<number>
                   dataEntryFormat={new CostIndexFormat()}
                   dataHandlerDuringValidation={async (v) => {
-                    this.props.fmcService.master.flightPlanInterface?.setPerformanceData(
+                    this.props.flightPlanInterface?.setPerformanceData(
                       'costIndex',
                       v,
                       this.loadedFlightPlanIndex.get(),
@@ -565,7 +555,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 <InputField<number, number, false>
                   dataEntryFormat={new TripWindFormat()}
                   dataHandlerDuringValidation={async (v) =>
-                    this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                    this.props.flightPlanInterface.setPerformanceData(
                       'pilotTripWind',
                       v,
                       this.loadedFlightPlanIndex.get(),
@@ -653,7 +643,12 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
             </div>
             {/* end page content */}
           </div>
-          <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
+          <Footer
+            bus={this.props.bus}
+            mfd={this.props.mfd}
+            fmcService={this.props.fmcService}
+            flightPlanInterface={this.props.fmcService.master.flightPlanInterface}
+          />
         </>
       )
     );

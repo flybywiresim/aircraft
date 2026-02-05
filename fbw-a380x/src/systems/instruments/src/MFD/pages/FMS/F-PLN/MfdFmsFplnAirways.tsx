@@ -146,7 +146,7 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
               label="RETURN"
               onClick={async () => {
                 if (this.loadedFlightPlanIndex.get() >= FlightPlanIndex.FirstSecondary) {
-                  await this.props.fmcService.master.flightPlanInterface.finaliseAirwayEntry(
+                  await this.props.flightPlanInterface.finaliseAirwayEntry(
                     this.loadedFlightPlanIndex.get(),
                     this.props.fmcService.master.revisedLegIsAltn.get() ?? false,
                   );
@@ -161,7 +161,7 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
               label="TMPY F-PLN"
               onClick={async () => {
                 if (this.loadedFlightPlan) {
-                  await this.props.fmcService.master.flightPlanInterface.finaliseAirwayEntry(
+                  await this.props.flightPlanInterface.finaliseAirwayEntry(
                     this.loadedFlightPlanIndex.get(),
                     this.props.fmcService.master.revisedLegIsAltn.get() ?? false,
                   );
@@ -174,7 +174,12 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
           </div>
         </div>
         {/* end page content */}
-        <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
+        <Footer
+          bus={this.props.bus}
+          mfd={this.props.mfd}
+          fmcService={this.props.fmcService}
+          flightPlanInterface={this.props.fmcService.master.flightPlanInterface}
+        />
       </>
     );
   }

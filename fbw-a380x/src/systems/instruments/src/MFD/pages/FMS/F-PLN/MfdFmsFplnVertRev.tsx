@@ -211,9 +211,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       this.transitionLevel.set(null);
     }
 
-    const activeLegIndex = this.props.fmcService.master.flightPlanInterface.get(
-      this.loadedFlightPlanIndex.get(),
-    ).activeLegIndex;
+    const activeLegIndex = this.props.flightPlanInterface.get(this.loadedFlightPlanIndex.get()).activeLegIndex;
     if (activeLegIndex) {
       const selectedLegIndexBeforeUpdate = this.selectedLegIndex;
       this.availableWaypointsToLegIndex = [];
@@ -593,13 +591,13 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       this.deleteSpeedLimit();
     } else if (this.checkPerformanceDataEditCondition()) {
       if (this.speedLimitType.get() === SpeedLimitType.CLB) {
-        this.props.fmcService.master.flightPlanInterface.setPilotEntryClimbSpeedLimitSpeed(
+        this.props.flightPlanInterface.setPilotEntryClimbSpeedLimitSpeed(
           value,
           this.loadedFlightPlanIndex.get(),
           false,
         );
       } else {
-        this.props.fmcService.master.flightPlanInterface.setPilotEntryDescentSpeedLimitSpeed(
+        this.props.flightPlanInterface.setPilotEntryDescentSpeedLimitSpeed(
           value,
           this.loadedFlightPlanIndex.get(),
           false,
@@ -613,13 +611,13 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       this.deleteSpeedLimit();
     } else if (this.checkPerformanceDataEditCondition()) {
       if (this.speedLimitType.get() === SpeedLimitType.CLB) {
-        this.props.fmcService.master.flightPlanInterface.setPilotEntryClimbSpeedLimitAltitude(
+        this.props.flightPlanInterface.setPilotEntryClimbSpeedLimitAltitude(
           value,
           this.loadedFlightPlanIndex.get(),
           false,
         );
       } else {
-        this.props.fmcService.master.flightPlanInterface.setPilotEntryDescentSpeedLimitAltitude(
+        this.props.flightPlanInterface.setPilotEntryDescentSpeedLimitAltitude(
           value,
           this.loadedFlightPlanIndex.get(),
           false,
@@ -631,12 +629,9 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   private async deleteSpeedLimit() {
     if (this.checkPerformanceDataEditCondition()) {
       if (this.speedLimitType.get() === SpeedLimitType.CLB) {
-        this.props.fmcService.master.flightPlanInterface.deleteClimbSpeedLimit(this.loadedFlightPlanIndex.get(), false);
+        this.props.flightPlanInterface.deleteClimbSpeedLimit(this.loadedFlightPlanIndex.get(), false);
       } else {
-        this.props.fmcService.master.flightPlanInterface.deleteDescentSpeedLimit(
-          this.loadedFlightPlanIndex.get(),
-          false,
-        );
+        this.props.flightPlanInterface.deleteDescentSpeedLimit(this.loadedFlightPlanIndex.get(), false);
       }
     }
   }
@@ -726,7 +721,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       }
 
       if (isValid) {
-        this.props.fmcService.master.flightPlanInterface.addOrUpdateCruiseStep(
+        this.props.flightPlanInterface.addOrUpdateCruiseStep(
           legIndex,
           flightLevel * 100,
           this.loadedFlightPlanIndex.get(),
@@ -742,7 +737,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
   private tryDeleteCruiseStep(lineIndex: number, previousDropdownIndex: number) {
     const legIndex = this.availableWaypointsToLegIndex[previousDropdownIndex];
-    this.props.fmcService.master.flightPlanInterface.removeCruiseStep(legIndex, this.loadedFlightPlanIndex.get());
+    this.props.flightPlanInterface.removeCruiseStep(legIndex, this.loadedFlightPlanIndex.get());
     this.stepAltsWptIndices[lineIndex].set(null);
     this.stepAltsFlightLevel[lineIndex].set(null);
     this.forceRebuildList = true;
@@ -1293,7 +1288,12 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
             </div>
           </div>
           {/* end page content */}
-          <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
+          <Footer
+            bus={this.props.bus}
+            mfd={this.props.mfd}
+            fmcService={this.props.fmcService}
+            flightPlanInterface={this.props.fmcService.master.flightPlanInterface}
+          />
         </>
       )
     );

@@ -172,12 +172,9 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
       }
     }
 
-    if (
-      this.props.fmcService.master.flightPlanInterface.get(this.loadedFlightPlanIndex.get()).alternateDestinationAirport
-    ) {
+    if (this.props.flightPlanInterface.get(this.loadedFlightPlanIndex.get()).alternateDestinationAirport) {
       this.altnIcao.set(
-        this.props.fmcService.master.flightPlanInterface.get(this.loadedFlightPlanIndex.get())
-          .alternateDestinationAirport.ident,
+        this.props.flightPlanInterface.get(this.loadedFlightPlanIndex.get()).alternateDestinationAirport.ident,
       );
       this.altnEta.set('--:--');
       this.altnEfob.set(
@@ -342,7 +339,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   new WeightFormat(Subject.create(minZfw / 1_000), Subject.create(maxZfw / 1_000), false)
                 }
                 dataHandlerDuringValidation={async (v) =>
-                  this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                  this.props.flightPlanInterface.setPerformanceData(
                     'zeroFuelWeight',
                     v,
                     this.loadedFlightPlanIndex.get(),
@@ -361,7 +358,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
               <InputField<number, number, false>
                 dataEntryFormat={new PercentageFormat(Subject.create(minZfwCg), Subject.create(maxZfwCg))}
                 dataHandlerDuringValidation={async (v) =>
-                  this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                  this.props.flightPlanInterface.setPerformanceData(
                     'zeroFuelWeightCenterOfGravity',
                     v,
                     this.loadedFlightPlanIndex.get(),
@@ -382,11 +379,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
               <InputField<number, number, false>
                 dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxBlockFuel / 1_000), false)}
                 dataHandlerDuringValidation={async (v) =>
-                  this.props.fmcService.master.flightPlanInterface.setPerformanceData(
-                    'blockFuel',
-                    v,
-                    this.loadedFlightPlanIndex.get(),
-                  )
+                  this.props.flightPlanInterface.setPerformanceData('blockFuel', v, this.loadedFlightPlanIndex.get())
                 }
                 readonlyValue={this.blockFuel}
                 mandatory={this.mandatoryAndActiveFpln}
@@ -421,11 +414,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   <InputField<number, number, false>
                     dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxTaxiFuel / 1_000), false)}
                     dataHandlerDuringValidation={async (v) =>
-                      this.props.fmcService.master.flightPlanInterface.setPerformanceData(
-                        'taxiFuel',
-                        v,
-                        this.loadedFlightPlanIndex.get(),
-                      )
+                      this.props.flightPlanInterface.setPerformanceData('taxiFuel', v, this.loadedFlightPlanIndex.get())
                     }
                     enteredByPilot={this.taxiFuelIsPilotEntered}
                     readonlyValue={this.taxiFuel}
@@ -460,7 +449,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                       )
                     }
                     dataHandlerDuringValidation={async (v) =>
-                      this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                      this.props.flightPlanInterface.setPerformanceData(
                         'pilotRouteReserveFuel',
                         v,
                         this.loadedFlightPlanIndex.get(),
@@ -480,12 +469,12 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                     disabled={this.flightPhaseAtLeastTakeoff}
                     dataEntryFormat={new PercentageFormat(Subject.create(0), Subject.create(maxRteRsvFuelPerc))}
                     dataHandlerDuringValidation={async (v) => {
-                      this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                      this.props.flightPlanInterface.setPerformanceData(
                         'pilotRouteReserveFuel',
                         null,
                         this.loadedFlightPlanIndex.get(),
                       );
-                      this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                      this.props.flightPlanInterface.setPerformanceData(
                         'routeReserveFuelPercentage',
                         v,
                         this.loadedFlightPlanIndex.get(),
@@ -506,7 +495,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   <InputField<number, number, false>
                     dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxAltnFuel / 1_000), false)}
                     dataHandlerDuringValidation={async (v) =>
-                      this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                      this.props.flightPlanInterface.setPerformanceData(
                         'pilotAlternateFuel',
                         v,
                         this.loadedFlightPlanIndex.get(),
@@ -531,12 +520,12 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   <InputField<number, number, false>
                     dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxFinalFuel / 1_000), false)}
                     dataHandlerDuringValidation={async (v) => {
-                      this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                      this.props.flightPlanInterface.setPerformanceData(
                         'pilotFinalHoldingFuel',
                         v,
                         this.loadedFlightPlanIndex.get(),
                       );
-                      this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                      this.props.flightPlanInterface.setPerformanceData(
                         'pilotFinalHoldingTime',
                         (v ?? 0) / 0.2,
                         this.loadedFlightPlanIndex.get(),
@@ -555,12 +544,12 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   <InputField<number, number, false>
                     dataEntryFormat={new TimeHHMMFormat()}
                     dataHandlerDuringValidation={async (v) => {
-                      this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                      this.props.flightPlanInterface.setPerformanceData(
                         'pilotFinalHoldingFuel',
                         (v ?? 0) * 0.2,
                         this.loadedFlightPlanIndex.get(),
                       );
-                      this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                      this.props.flightPlanInterface.setPerformanceData(
                         'pilotFinalHoldingTime',
                         v,
                         this.loadedFlightPlanIndex.get(),
@@ -583,7 +572,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                     dataEntryFormat={new PaxNbrFormat()}
                     dataHandlerDuringValidation={async (v) => {
                       if (v !== null) {
-                        this.props.fmcService.master.flightPlanInterface.setPerformanceData(
+                        this.props.flightPlanInterface.setPerformanceData(
                           'paxNumber',
                           v,
                           this.loadedFlightPlanIndex.get(),
@@ -619,7 +608,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   <InputField<number>
                     dataEntryFormat={new CostIndexFormat()}
                     dataHandlerDuringValidation={async (v) => {
-                      this.props.fmcService.master.flightPlanInterface?.setPerformanceData(
+                      this.props.flightPlanInterface?.setPerformanceData(
                         'costIndex',
                         v,
                         this.loadedFlightPlanIndex.get(),
@@ -640,7 +629,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   <InputField<number, number, false>
                     dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxJtsnGw / 1_000), false)}
                     dataHandlerDuringValidation={async (v) => {
-                      this.props.fmcService.master.flightPlanInterface?.setPerformanceData(
+                      this.props.flightPlanInterface?.setPerformanceData(
                         'jettisonGrossWeight',
                         v,
                         this.loadedFlightPlanIndex.get(),
@@ -711,7 +700,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   <InputField<number, number, false>
                     dataEntryFormat={new WeightFormat(undefined, undefined, false)}
                     dataHandlerDuringValidation={async (v) =>
-                      this.props.fmcService.master.flightPlanInterface?.setPerformanceData(
+                      this.props.flightPlanInterface?.setPerformanceData(
                         'pilotMinimumDestinationFuelOnBoard',
                         v,
                         this.loadedFlightPlanIndex.get(),
@@ -750,7 +739,12 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
 
             {/* end page content */}
           </div>
-          <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
+          <Footer
+            bus={this.props.bus}
+            mfd={this.props.mfd}
+            fmcService={this.props.fmcService}
+            flightPlanInterface={this.props.fmcService.master.flightPlanInterface}
+          />
         </>
       )
     );

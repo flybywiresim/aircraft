@@ -50,7 +50,7 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
 
   protected onNewData(): void {
     // Use active FPLN for building the list (page only works for active anyways)
-    const activeFpln = this.props.fmcService.master.flightPlanInterface.active;
+    const activeFpln = this.props.flightPlanInterface.active;
     if (activeFpln) {
       this.availableWaypointsToLegIndex = [];
       const wpt = activeFpln.allLegs
@@ -94,8 +94,8 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
   }
 
   private async onDropdownModified(idx: number, text: string): Promise<void> {
-    if (this.props.fmcService.master.flightPlanInterface.hasTemporary) {
-      await this.props.fmcService.master.flightPlanInterface.temporaryDelete();
+    if (this.props.flightPlanInterface.hasTemporary) {
+      await this.props.flightPlanInterface.temporaryDelete();
       this.props.fmcService.master.resetRevisedWaypoint();
     }
 
@@ -106,7 +106,7 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
         this.selectedWaypointIndex.set(idx);
         this.manualWptIdent = null;
         const trueTrack = ADIRS.getTrueTrack();
-        await this.props.fmcService.master.flightPlanInterface.directToLeg(
+        await this.props.flightPlanInterface.directToLeg(
           this.props.fmcService.master.navigation.getPpos() ?? { lat: 0, long: 0 },
           trueTrack?.isNormalOperation() ? trueTrack.value : 0,
           legIndex,
@@ -118,7 +118,7 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
       const wpt = await WaypointEntryUtils.getOrCreateWaypoint(this.props.fmcService.master, text, true, undefined);
       if (wpt) {
         this.manualWptIdent = wpt.ident;
-        await this.props.fmcService.master.flightPlanInterface.directToWaypoint(
+        await this.props.flightPlanInterface.directToWaypoint(
           this.props.fmcService.master.navigation.getPpos() ?? { lat: 0, long: 0 },
           SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree'),
           wpt,
@@ -239,7 +239,7 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
             <Button
               label="ERASE<br />DIR TO*"
               onClick={async () => {
-                await this.props.fmcService.master.flightPlanInterface.temporaryDelete();
+                await this.props.flightPlanInterface.temporaryDelete();
                 this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln`);
               }}
               buttonStyle="color: #e68000;"
@@ -258,7 +258,7 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
               label="INSERT<br />DIR TO*"
               onClick={async () => {
                 SimVar.SetSimVarValue('K:A32NX.FMGC_DIR_TO_TRIGGER', 'number', 0);
-                this.props.fmcService.master.flightPlanInterface.temporaryInsert();
+                this.props.flightPlanInterface.temporaryInsert();
                 this.props.fmcService.master.guidanceController?.vnavDriver?.invalidateFlightPlanProfile();
                 this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln`);
               }}
@@ -267,7 +267,12 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
           </div>
         </div>
         {/* end page content */}
-        <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
+        <Footer
+          bus={this.props.bus}
+          mfd={this.props.mfd}
+          fmcService={this.props.fmcService}
+          flightPlanInterface={this.props.fmcService.master.flightPlanInterface}
+        />
       </>
     );
   }
