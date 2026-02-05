@@ -206,12 +206,14 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
 
   clearLatestFmsErrorMessage(): void;
 
-  /** Request CPNY FPLN from SimBrief
+  /**
+   * Request CPNY FPLN from SimBrief
    * @param forPlan Flight plan to request CPNY FPLN for
    */
   cpnyFplnRequest(forPlan: FlightPlanIndex): void;
 
-  /** Insert CPNY FPLN into flight plan where request has been made from
+  /**
+   * Insert CPNY FPLN into flight plan where request has been made from
    * @param intoPlan Flight plan to insert CPNY FPLN into
    */
   insertCpnyFpln(intoPlan: FlightPlanIndex): void;
@@ -222,10 +224,24 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
    */
   canActivateOrSwapSecondary(secIndex: number): boolean;
 
-  swapActiveAndSecondaryPlan(index: number): Promise<void>;
+  /**
+   * Swap active flight plan with secondary flight plan at given index
+   * @param secIndex Index of secondary flight plan
+   */
+  swapActiveAndSecondaryPlan(secIndex: number): Promise<void>;
 
+  /**
+   *
+   * @param flightNumber Flight number to set
+   * @param forPlan which flight plan to make the change on
+   * @param callback function to call with result of the operation. Function is called with true if the flight number was successfully updated, false otherwise (e.g. format errors)
+   */
   updateFlightNumber(flightNumber: string, forPlan: FlightPlanIndex, callback: (arg0: boolean) => void): Promise<void>;
 
+  /**
+   * Compute flight level to be used for alternate flight plan
+   * @param forPlan which flight plan to make the change on
+   */
   computeAlternateCruiseLevel(forPlan: FlightPlanIndex): number | undefined;
 
   /**

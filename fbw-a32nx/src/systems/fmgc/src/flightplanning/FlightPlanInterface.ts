@@ -342,8 +342,23 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
     alternate?: boolean,
   ): Promise<void>;
 
+  /**
+   * Sets whether a fix at an index should be overflown or not.
+   *
+   * @param atIndex the index of the leg to start the pending airway entry at
+   * @param overfly Whether fix should be overflown or not.
+   * @param planIndex which flight plan to make the change on
+   * @param alternate whether to edit the plan's alternate flight plan
+   */
   setOverfly(atIndex: number, overfly: boolean, planIndex: number, alternate: boolean): Promise<void>;
 
+  /**
+   * Toggle whether a fix at an index should be overflown or not.
+   *
+   * @param atIndex the index of the leg to start the pending airway entry at
+   * @param planIndex which flight plan to make the change on
+   * @param alternate whether to edit the plan's alternate flight plan
+   */
   toggleOverfly(atIndex: number, planIndex: number, alternate: boolean): Promise<void>;
 
   setFixInfoEntry(index: 1 | 2 | 3 | 4, fixInfo: FixInfoEntry | null, planIndex: number): Promise<void>;
