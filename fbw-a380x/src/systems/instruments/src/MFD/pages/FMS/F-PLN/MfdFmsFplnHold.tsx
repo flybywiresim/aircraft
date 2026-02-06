@@ -1,4 +1,12 @@
-﻿import { FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+﻿import {
+  FSComponent,
+  MappedSubject,
+  NumberFormatter,
+  NumberUnitSubject,
+  Subject,
+  UnitType,
+  VNode,
+} from '@microsoft/msfs-sdk';
 
 import './MfdFmsFpln.scss';
 import './MfdFmsFplnHold.scss';
@@ -10,11 +18,21 @@ import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputFi
 import { HoldDistFormat, HoldTimeFormat, InboundCourseFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { RadioButtonColor, RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
 import { HoldData, HoldType } from '@fmgc/flightplanning/data/flightplan';
-import { TurnDirection } from '@flybywiresim/fbw-sdk';
+import { NXDataStore, TurnDirection } from '@flybywiresim/fbw-sdk';
 
 interface MfdFmsFplnHoldProps extends AbstractMfdPageProps {}
 
 export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
+  private readonly weightUnit = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT').map((v) =>
+    v ? UnitType.KILOGRAM : UnitType.POUND,
+  );
+  private readonly weightUnitText = this.weightUnit.map((v) => (v === UnitType.KILOGRAM ? 'T' : 'KLB'));
+
+  private readonly weightFormatter = NumberFormatter.create({
+    nanString: '---.-',
+    precision: 0.1,
+  });
+
   private readonly holdType = Subject.create<string>('MODIFIED HOLD AT');
 
   private readonly waypointIdent = Subject.create<string>('WAYPOINT');
@@ -35,7 +53,12 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
 
   private readonly lastExitUtc = Subject.create<string | null>(null);
 
-  private readonly lastExitEfob = Subject.create<string | null>(null);
+  private readonly lastExitEfob = NumberUnitSubject.create(UnitType.KILOGRAM.createNumber(NaN));
+  private readonly lastExitEfobText = MappedSubject.create(
+    ([value, weightUnit]) => this.weightFormatter(value.asUnit(weightUnit) / 1000),
+    this.lastExitEfob,
+    this.weightUnit,
+  );
 
   private readonly returnButtonDiv = FSComponent.createRef<HTMLDivElement>();
 
@@ -70,7 +93,7 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
         this.legDistance.set(hold?.distance ?? null);
 
         this.lastExitUtc.set('--:--');
-        this.lastExitEfob.set('--');
+        this.lastExitEfob.set(NaN);
       }
     }
   }
@@ -146,6 +169,8 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
     this.subs.push(this.turnSelectedIndex.sub(() => this.modifyHold()));
     this.subs.push(this.legTime.sub(() => this.modifyHold()));
     this.subs.push(this.legDistance.sub(() => this.modifyHold()));
+
+    this.subs.push(this.weightUnitText, this.lastExitEfobText);
 
     this.showTimeOrDist();
   }
@@ -227,9 +252,8 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
               <div />
               <div class="mfd-value magenta">{this.lastExitUtc}</div>
               <div class="mfd-label-value-container">
-                <span class="mfd-value magenta">{this.lastExitEfob}</span>
-                {/* TODO US unit */}
-                <span class="mfd-label-unit mfd-unit-trailing">T</span>
+                <span class="mfd-value magenta">{this.lastExitEfobText}</span>
+                <span class="mfd-label-unit mfd-unit-trailing">{this.weightUnitText}</span>
               </div>
             </div>
           </div>
