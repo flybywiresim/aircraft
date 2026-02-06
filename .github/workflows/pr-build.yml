@@ -28,10 +28,10 @@ jobs:
           ./scripts/dev-env/run.sh scripts/lint-rust.sh
   test-rust:
     name: Tests (Rust)
-    permissions:
-      contents: read
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
+    permissions:
+      contents: read
     steps:
       - name: Checkout PR source
         uses: actions/checkout@v4
@@ -69,10 +69,10 @@ jobs:
         with:
           persist-credentials: false
       - name: Save PR metadata
+        env:
+          PR_JSON: ${{ toJson(github.event.pull_request) }}
         run: |
-          jq -n \
-            --argjson pr '${{ toJson(github.event.pull_request) }}' \
-            '$pr' > pr.json
+          echo "$PR_JSON" > pr.json
       - name: Upload PR metadata as artifact
         uses: actions/upload-artifact@v4
         with:
