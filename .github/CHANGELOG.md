@@ -66,6 +66,12 @@
 1. [A32NX/FMS] Fix pilot entered managed descent mach being ignored - @BlueberryKing (BlueberryKing)
 1. [A32NX/FWS] Add `PARK BRK ON` master caution - @FozzieHi (fozzie)
 1. [A32NX/GPWS] Implement simulated GPWC in rust systems - @lukecologne (luke)
+1. [A32NX/FWC] Improve CAB PR LO DIFF PR warning logic to avoid spurious warnings - @tracernz (Mike)
+1. [A32NX/FWS] Fixed stall warning not working - @tracernz (Mike)
+1. [A380X/MFD] Add initial implementation of D-ATIS page in ATCCOM - @heclak (Heclak)
+1. [A32NX/FWS] Fixed takeoff memo not working in flight phase 9 (after landing) - @tracernz (Mike)
+1. [A380X/FUEL SYSTEM] Fixed inner tank transfer not starting in certain circumstances - @donstim (donbikes)
+1. [A32NX/FADEC] Fixed the PFD showing MAN FLX instead of MAN MCT post A/THR engagement after takeoff - @FozzieHi (Fozzie)
 1. [A380X/FWS] Add EXCESS RESIDUAL DIFF PRESS and INHIBITED BY DOORS procedures - @Jonny23787 (Jonathan)
 
 ## 0.14.0
