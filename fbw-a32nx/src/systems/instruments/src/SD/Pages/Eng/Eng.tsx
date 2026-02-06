@@ -5,7 +5,7 @@
 
 import React, { FC, useState, useEffect } from 'react';
 import { Arc, Needle } from '@instruments/common/gauges';
-import { usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
+import { usePersistentSetting, useSimVar } from '@flybywiresim/fbw-sdk';
 import { PageTitle } from '../../Common/PageTitle';
 import { EcamPage } from '../../Common/EcamPage';
 import { SvgGroup } from '../../Common/SvgGroup';
@@ -13,7 +13,7 @@ import { SvgGroup } from '../../Common/SvgGroup';
 import './Eng.scss';
 
 export const EngPage: FC = () => {
-  const [weightUnit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
+  const [useMetric] = usePersistentSetting('CONFIG_USING_METRIC_UNIT');
   const [engSelectorPosition] = useSimVar('L:XMLVAR_ENG_MODE_SEL', 'Enum');
   const [fadec1On] = useSimVar('L:A32NX_FADEC_POWERED_ENG1', 'bool');
   const [fadec2On] = useSimVar('L:A32NX_FADEC_POWERED_ENG2', 'bool');
@@ -28,7 +28,7 @@ export const EngPage: FC = () => {
         F.USED
       </text>
       <text x={300} y={97} className="FillCyan FontSmall TextCenter">
-        {parseInt(weightUnit) === 1 ? 'KG' : 'LBS'}
+        {useMetric ? 'KG' : 'LBS'}
       </text>
       <line className="Indicator" x1={350} y1={75} x2={375} y2={77} />
 
@@ -320,10 +320,9 @@ const ValveGroup = ({ x, y, engineNumber, fadecOn }: ComponentPositionProps) => 
 
 const EngineColumn = ({ x, y, engineNumber, fadecOn }: ComponentPositionProps) => {
   // Fuel used has a step of 10 when in Kilograms and 20 when in imperial pounds
-  const [weightUnit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
+  const [useMetric] = usePersistentSetting('CONFIG_USING_METRIC_UNIT');
   const [fuelUsed] = useSimVar(`L:A32NX_FUEL_USED:${engineNumber}`, 'number', 500);
-  const displayedFuelUsed =
-    parseInt(weightUnit) === 1 ? Math.round(fuelUsed / 10) * 10 : Math.round(fuelUsed / 0.4535934 / 20) * 20;
+  const displayedFuelUsed = useMetric ? Math.round(fuelUsed / 10) * 10 : Math.round(fuelUsed / 0.4535934 / 20) * 20;
 
   const [engineOilTemperature] = useSimVar(`GENERAL ENG OIL TEMPERATURE:${engineNumber}`, 'celsius', 250);
   const OIL_TEMP_LOW_TAKEOFF = 38;

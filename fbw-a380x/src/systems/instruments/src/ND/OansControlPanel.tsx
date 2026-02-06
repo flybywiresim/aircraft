@@ -18,8 +18,6 @@ import {
   Subject,
   Subscribable,
   Subscription,
-  Unit,
-  UnitFamily,
   UnitType,
   VNode,
 } from '@microsoft/msfs-sdk';
@@ -237,7 +235,9 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
   public interactionMode = Subject.create<InteractionMode>(InteractionMode.Touchscreen);
 
-  private lengthUnit = Subject.create<Unit<UnitFamily.Distance>>(UnitType.METER);
+  private readonly lengthUnit = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT').map((v) =>
+    v ? UnitType.METER : UnitType.FOOT,
+  );
 
   private showLdgShiftPanel() {
     if (this.mapDataLdgShiftPanelRef.getOrDefault() && this.mapDataMainRef.getOrDefault()) {
@@ -281,14 +281,6 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     });
 
     NXDataStore.getAndSubscribeLegacy('NAVIGRAPH_ACCESS_TOKEN', () => this.loadOansDb());
-
-    NXDataStore.getAndSubscribeLegacy(
-      'CONFIG_USING_METRIC_UNIT',
-      (key, value) => {
-        this.lengthUnit.set(value === '0' ? UnitType.FOOT : UnitType.METER);
-      },
-      '1',
-    );
 
     this.subs.push(
       this.props.isVisible.sub((it) => this.style.setValue('visibility', it ? 'inherit' : 'hidden'), true),

@@ -12,8 +12,6 @@ import {
   MappedSubject,
   Subject,
   Subscribable,
-  Unit,
-  UnitFamily,
   UnitType,
   VNode,
 } from '@microsoft/msfs-sdk';
@@ -164,7 +162,9 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
 
   private showOans = Subject.create<boolean>(false);
 
-  private lengthUnit = Subject.create<Unit<UnitFamily.Distance>>(UnitType.METER);
+  private readonly lengthUnit = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT').map((v) =>
+    v ? UnitType.METER : UnitType.FOOT,
+  );
 
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
@@ -254,9 +254,6 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
       .handle((data) => {
         if (data.side === this.props.side) {
           this.showOans.set(data.show);
-          NXDataStore.getAndSubscribeLegacy('CONFIG_USING_METRIC_UNIT', (key, value) => {
-            value === '1' ? this.lengthUnit.set(UnitType.METER) : this.lengthUnit.set(UnitType.FOOT);
-          });
         }
       });
   }

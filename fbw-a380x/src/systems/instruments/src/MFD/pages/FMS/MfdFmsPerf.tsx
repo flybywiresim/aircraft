@@ -2,17 +2,7 @@ import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Dropd
 import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
 
-import {
-  ArraySubject,
-  ClockEvents,
-  FSComponent,
-  MappedSubject,
-  Subject,
-  Unit,
-  UnitFamily,
-  UnitType,
-  VNode,
-} from '@microsoft/msfs-sdk';
+import { ArraySubject, ClockEvents, FSComponent, MappedSubject, Subject, UnitType, VNode } from '@microsoft/msfs-sdk';
 
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
@@ -568,7 +558,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private missedEngineOutAccelAltIsPilotEntered = Subject.create<boolean>(false);
 
-  private lengthUnit = Subject.create<Unit<UnitFamily.Distance>>(UnitType.METER);
+  private readonly lengthUnit = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT').map((v) =>
+    v ? UnitType.METER : UnitType.FOOT,
+  );
 
   /** in feet */
   private ldgRwyThresholdLocation = Subject.create<number | null>(null);
@@ -1089,6 +1081,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     );
 
     this.subs.push(
+      this.lengthUnit,
       this.speedConstraintReason,
       this.climbPreSelSpeedGreen,
       this.climbPreSelSpeedAmber,
@@ -1123,9 +1116,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       this.clearEoButtonVisibility,
       this.activateApprButtonVisibility,
     );
-    NXDataStore.getAndSubscribeLegacy('CONFIG_USING_METRIC_UNIT', (key, value) => {
-      value === '1' ? this.lengthUnit.set(UnitType.METER) : this.lengthUnit.set(UnitType.FOOT);
-    });
   }
 
   render(): VNode {

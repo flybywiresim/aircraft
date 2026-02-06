@@ -51,7 +51,9 @@ import { NXDataStore } from '@flybywiresim/fbw-sdk';
 interface MfdFmsFuelLoadProps extends AbstractMfdPageProps {}
 
 export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
-  private readonly weightUnit = Subject.create<Unit<UnitFamily.Weight>>(UnitType.KILOGRAM);
+  private readonly weightUnit = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT').map((v) =>
+    v ? UnitType.KILOGRAM : UnitType.POUND,
+  );
 
   private readonly weightFormatter = NumberFormatter.create({
     nanString: '---.-',
@@ -176,13 +178,6 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
   private readonly weightUnitText = this.weightUnit.map((v) => (v === UnitType.KILOGRAM ? 'T' : 'KLB'));
 
   /** @inheritdoc */
-  public override onBeforeRender(): void {
-    NXDataStore.getAndSubscribeLegacy('CONFIG_USING_METRIC_UNIT', (key, value) => {
-      value === '1' ? this.weightUnit.set(UnitType.KILOGRAM) : this.weightUnit.set(UnitType.POUND);
-    });
-  }
-
-  /** @inheritdoc */
   public override onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
@@ -255,6 +250,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
     );
 
     this.subs.push(
+      this.weightUnit,
       this.grossWeightText,
       this.fuelOnBoardText,
       this.tripFuelWeightText,

@@ -92,7 +92,9 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
 
   private readonly apprButtonScrollTo = Subject.create<number>(0);
 
-  private lengthUnit = Subject.create<Unit<UnitFamily.Distance>>(UnitType.METER);
+  private readonly lengthUnit = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT').map((v) =>
+    v ? UnitType.METER : UnitType.FOOT,
+  );
 
   protected onNewData(): void {
     if (!this.props.fmcService.master || !this.loadedFlightPlan) {
@@ -425,14 +427,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
       }, true),
     );
 
-    NXDataStore.getAndSubscribeLegacy(
-      'CONFIG_USING_METRIC_UNIT',
-      (key, value) => {
-        this.lengthUnit.set(value === '0' ? UnitType.FOOT : UnitType.METER);
-      },
-      '1',
-    );
-
+    this.subs.push(
     this.lengthUnit.sub(() => {
       if (!this.props.fmcService.master || !this.loadedFlightPlan) {
         return;
@@ -442,9 +437,12 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
       const flightPlan = isAltn ? this.loadedFlightPlan.alternateFlightPlan : this.loadedFlightPlan;
 
       if (flightPlan.destinationAirport) {
-        this.GenerateRunwayOptions(flightPlan, isAltn);
+          this.generateRunwayOptions(flightPlan, isAltn);
       }
-    }, true);
+      }, true),
+    );
+
+    this.subs.push(this.lengthUnit);
   }
 
   render(): VNode {

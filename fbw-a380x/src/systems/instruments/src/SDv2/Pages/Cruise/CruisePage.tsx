@@ -1,6 +1,6 @@
 //  Copyright (c) 2025 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
-import { ConsumerSubject, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, FSComponent, MappedSubject, VNode } from '@microsoft/msfs-sdk';
 import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
 
 import { fuelForDisplay } from '../../../Common/FuelFunctions';
@@ -19,17 +19,9 @@ export class CruisePage extends DestroyableComponent<SdPageProps> {
 
   private readonly topSvgStyle = this.props.visible.map((v) => `visibility: ${v ? 'visible' : 'hidden'}`);
 
-  private readonly usingMetric = Subject.create(true);
+  private readonly usingMetric = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT');
   private readonly weightUnit = this.usingMetric.map((v) => (v ? 'KG' : 'LB'));
   private readonly fuelFlowUnit = this.usingMetric.map((v) => (v ? 'KG/H' : 'LB/H'));
-
-  private readonly metricUnitSubscription = NXDataStore.getAndSubscribeLegacy(
-    'CONFIG_USING_METRIC_UNIT',
-    (_k, v) => {
-      this.usingMetric.set(v === '1');
-    },
-    '1',
-  );
 
   private readonly enginesFuelUsed = [
     ConsumerSubject.create(this.sub.on('engineFuelUsed_1'), 0),
@@ -63,6 +55,8 @@ export class CruisePage extends DestroyableComponent<SdPageProps> {
     super.onAfterRender(node);
 
     this.subscriptions.push(
+      this.weightUnit,
+      this.fuelFlowUnit,
       this.topSvgStyle,
       this.engineTotalFuelUsedDisplay,
       ...this.enginesFuelUsed,
@@ -73,8 +67,6 @@ export class CruisePage extends DestroyableComponent<SdPageProps> {
   }
 
   destroy(): void {
-    this.metricUnitSubscription();
-
     super.destroy();
   }
 
