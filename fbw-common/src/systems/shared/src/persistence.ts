@@ -111,7 +111,7 @@ export class NXDataStore {
     } catch (e) {
       let newValue: any;
 
-      if (rawValue === '') {
+      if (rawValue === '' || typeof NXDataStore.settingsDefaultValues[key] !== 'string') {
         // Non-existent settings return an empty string
         newValue = NXDataStore.settingsDefaultValues[key];
       } else {
@@ -121,6 +121,10 @@ export class NXDataStore {
 
       NXDataStore.setTypedSettingValue(key, newValue as NXDataStoreSettings[k]);
       parsed = newValue;
+    }
+
+    if (typeof NXDataStore.settingsDefaultValues[key] === 'boolean') {
+      return Boolean(parsed) as NXDataStoreSettings[k];
     }
 
     return parsed as NXDataStoreSettings[k];
