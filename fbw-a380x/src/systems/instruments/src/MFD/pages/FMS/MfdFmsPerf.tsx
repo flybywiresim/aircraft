@@ -2,7 +2,17 @@ import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Dropd
 import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
 
-import { ArraySubject, ClockEvents, FSComponent, MappedSubject, Subject, UnitType, VNode } from '@microsoft/msfs-sdk';
+import {
+  ArraySubject,
+  ClockEvents,
+  FSComponent,
+  MappedSubject,
+  NumberFormatter,
+  NumberUnitSubject,
+  Subject,
+  UnitType,
+  VNode,
+} from '@microsoft/msfs-sdk';
 
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
@@ -49,6 +59,16 @@ import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFpl
 interface MfdFmsPerfProps extends AbstractMfdPageProps {}
 
 export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
+  private readonly weightUnit = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT').map((v) =>
+    v ? UnitType.KILOGRAM : UnitType.POUND,
+  );
+  private readonly weightUnitText = this.weightUnit.map((v) => (v === UnitType.KILOGRAM ? 'T' : 'KLB'));
+
+  private readonly weightFormatter = NumberFormatter.create({
+    nanString: '---.-',
+    precision: 0.1,
+  });
+
   private approachPhaseConfirmationDialogVisible = Subject.create<boolean>(false);
 
   private readonly activateApprButtonVisibility = this.activeFlightPhase.map((fp) =>
@@ -536,10 +556,11 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private apprSelectedFlapsIndex = Subject.create<number | null>(1);
 
-  private apprLandingWeight = Subject.create<number | null>(null);
-
-  private readonly apprLandingWeightFormatted = this.apprLandingWeight.map((it) =>
-    it ? (it / 1000).toFixed(1) : '---.-',
+  private readonly apprLandingWeight = NumberUnitSubject.create(UnitType.KILOGRAM.createNumber(NaN));
+  private readonly apprLandingWeightFormatted = MappedSubject.create(
+    ([value, weightUnit]) => this.weightFormatter(value.asUnit(weightUnit) / 1000),
+    this.apprLandingWeight,
+    this.weightUnit,
   );
 
   private apprVerticalDeviation = Subject.create<string>('+-----');
@@ -1040,7 +1061,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
           }
 
           // Update APPR page
-          this.apprLandingWeight.set(this.props.fmcService.master?.getLandingWeight() ?? null);
+          this.apprLandingWeight.set(this.props.fmcService.master?.getLandingWeight() ?? NaN);
           const apprWind = this.props.fmcService.master?.fmgc.data.approachWind.get();
           if (apprWind && this.loadedFlightPlan?.destinationRunway) {
             const towerHeadwind = A380SpeedsUtils.getHeadwind(
@@ -1081,6 +1102,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     );
 
     this.subs.push(
+      this.weightUnitText,
       this.lengthUnit,
       this.speedConstraintReason,
       this.climbPreSelSpeedGreen,
@@ -2547,9 +2569,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   </div>
                   <div class="mfd-label-value-container" style="padding: 15px;">
                     <span class="mfd-label mfd-spacing-right">LW</span>
-                    {/** TODO us unit */}
                     <span class="mfd-value">{this.apprLandingWeightFormatted}</span>
-                    <span class="mfd-label-unit mfd-unit-trailing">T</span>
+                    <span class="mfd-label-unit mfd-unit-trailing">{this.weightUnitText}</span>
                   </div>
                 </div>
                 <div style="display: flex; flex-direction: row;">
