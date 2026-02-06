@@ -70,7 +70,7 @@
 1. [A32NX/FWS] Fixed stall warning not working - @tracernz (Mike)
 1. [A380X/MFD] Add initial implementation of D-ATIS page in ATCCOM - @heclak (Heclak)
 1. [A32NX/FWS] Fixed takeoff memo not working in flight phase 9 (after landing) - @tracernz (Mike)
-1. [A380X/MFD] Added unit conversion for lbs/ft - MikioDK (Mikio)
+1. [A380X/MFD] Added support for the US Units option - MikioDK (Mikio), @tracernz (Mike)
 
 ## 0.14.0
 
