@@ -1,7 +1,10 @@
 //  Copyright (c) 2025 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
+
+import '../../../index.scss';
+
 import { ConsumerSubject, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
-import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
+import { DestroyableComponent } from '../../../MsfsAvionicsCommon/DestroyableComponent';
 
 import { fuelForDisplay } from '../../../Common/FuelFunctions';
 import { PageTitle } from '../Generic/PageTitle';
@@ -11,7 +14,6 @@ import CruiseCond from './elements/CruiseCond';
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
 import { SDSimvars } from '../../SDSimvarPublisher';
 
-import '../../../index.scss';
 import { SdPageProps } from '../../SD';
 
 export class CruisePage extends DestroyableComponent<SdPageProps> {
