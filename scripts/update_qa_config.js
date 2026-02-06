@@ -105,6 +105,7 @@ async function main() {
 
     if (!updatedAnyTracks) {
       console.log('No existing tracks found to update.');
+      fs.appendFileSync(process.env.GITHUB_OUTPUT, `tracks-updated=${false}\n`);
       return;
     }
 
@@ -114,6 +115,7 @@ async function main() {
     fs.mkdirSync(path.dirname(outputPath), { recursive: true });
     fs.writeFileSync(outputPath, updatedConfigJson, 'utf8');
     console.log(`Updated config saved to: ${outputPath}`);
+    fs.appendFileSync(process.env.GITHUB_OUTPUT, `tracks-updated=${true}\n`);
     console.log('\nSuccessfully updated QA configuration entries');
   } catch (error) {
     console.error('Error updating QA config:', error.message);
