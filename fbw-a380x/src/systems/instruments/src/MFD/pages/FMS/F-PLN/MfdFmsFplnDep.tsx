@@ -178,7 +178,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
       const sortedRunways = flightPlan.availableOriginRunways.sort((a, b) => a.ident.localeCompare(b.ident));
       const runways: ButtonMenuItem[] = sortedRunways.map((rw) => {
         return {
-          label: `${rw.ident.substring(4).padEnd(3, ' ')} ${UnitType.METER.createNumber(rw.length).asUnit(this.lengthUnit.get()).toFixed(0).padStart(5, ' ')}${this.distanceUnitFormatter(this.lengthUnit.get())} ${rw.lsIdent ? 'ILS' : ''}`,
+          label: `${rw.ident.substring(4).padEnd(3, '\xa0')}\xa0${UnitType.METER.createNumber(rw.length).asUnit(this.lengthUnit.get()).toFixed(0).padStart(5, '\xa0')}${this.distanceUnitFormatter(this.lengthUnit.get())} ${rw.lsIdent ? 'ILS' : ''}`,
           action: async () => {
             await this.props.fmcService.master?.flightPlanService.setOriginRunway(
               rw.ident,
