@@ -428,8 +428,9 @@ export class A380OperatingSpeeds {
    * @param fPos flaps position
    * @param fmgcFlightPhase sic
    * @param v2Speed V2 speed entered in FMS
-   * @param aoa Angle of attack in degrees. Should be low pass filtered
+   * @param altitude Altitude in feet (baro)
    * @param wind wind speed
+   * @param ignoreSpoilers if true, ignores spoilers position for Vls calculation
    */
   constructor(
     m: number,

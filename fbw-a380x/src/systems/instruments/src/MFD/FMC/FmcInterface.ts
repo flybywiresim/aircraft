@@ -3,17 +3,17 @@ import { FmsDataInterface } from '@fmgc/flightplanning/interface/FmsDataInterfac
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
-import { ArraySubject, Subject } from '@microsoft/msfs-sdk';
+import { ArraySubject, Subject, Subscribable } from '@microsoft/msfs-sdk';
 import { FmsErrorMessage } from 'instruments/src/MFD/FMC/FlightManagementComputer';
 import { FmcAircraftInterface } from 'instruments/src/MFD/FMC/FmcAircraftInterface';
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { FmgcDataService } from 'instruments/src/MFD/FMC/fmgc';
 import { TypeIMessage, TypeIIMessage } from 'instruments/src/MFD/shared/NXSystemMessages';
 import { EfisSide, Fix, FMMessage, Waypoint } from '@flybywiresim/fbw-sdk';
-import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { DataManager } from '@fmgc/flightplanning/DataManager';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
 
 export enum FmcOperatingModes {
   Master,
@@ -53,7 +53,7 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
   /**
    * FlightPlanService interface
    */
-  get flightPlanService(): FlightPlanService;
+  get flightPlanInterface(): FlightPlanInterface;
 
   /**
    * FMGC data class, handles most data which didn't make it into the flight plan performance data so far
@@ -104,9 +104,14 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
   get revisedLegIsAltn(): Subject<boolean | null>;
 
   /**
-   * Returns, whether number 2&3 engines were started
+   * Returns whether number 2&3 engines were started
    */
   get enginesWereStarted(): Subject<boolean>;
+
+  /**
+   * Returns whether active flight plan exists
+   */
+  get hasActiveFlightPlan(): Subject<boolean>;
 
   /**
    * Returns currently revised waypoint as Fix
@@ -158,6 +163,11 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
   getExtraFuel(): number | null;
 
   /**
+   * Whether predicted EFOB at destination is below minimum fuel
+   */
+  get destEfobBelowMin(): Subscribable<boolean>;
+
+  /**
    * Calculates the recommended maximum flight level.
    * @param grossWeight The gross weight in kilograms. Defaults to current gross weight (if undefined).
    * @returns The recommended maxium flight level (in hundreds of feet) if gross weight is valid, else null.
@@ -195,6 +205,44 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
   isWaypointInUse(waypoint: Waypoint): Promise<boolean>;
 
   clearLatestFmsErrorMessage(): void;
+
+  /**
+   * Request CPNY FPLN from SimBrief
+   * @param forPlan Flight plan to request CPNY FPLN for
+   */
+  cpnyFplnRequest(forPlan: FlightPlanIndex): void;
+
+  /**
+   * Insert CPNY FPLN into flight plan where request has been made from
+   * @param intoPlan Flight plan to insert CPNY FPLN into
+   */
+  insertCpnyFpln(intoPlan: FlightPlanIndex): void;
+
+  /**
+   * Whether the secondary flight plan can be activated or swapped with the active flight plan
+   * @param secIndex Index of secondary flight plan
+   */
+  canActivateOrSwapSecondary(secIndex: number): boolean;
+
+  /**
+   * Swap active flight plan with secondary flight plan at given index
+   * @param secIndex Index of secondary flight plan
+   */
+  swapActiveAndSecondaryPlan(secIndex: number): Promise<void>;
+
+  /**
+   *
+   * @param flightNumber Flight number to set
+   * @param forPlan which flight plan to make the change on
+   * @param callback function to call with result of the operation. Function is called with true if the flight number was successfully updated, false otherwise (e.g. format errors)
+   */
+  updateFlightNumber(flightNumber: string, forPlan: FlightPlanIndex, callback: (arg0: boolean) => void): Promise<void>;
+
+  /**
+   * Compute flight level to be used for alternate flight plan
+   * @param forPlan which flight plan to make the change on
+   */
+  computeAlternateCruiseLevel(forPlan: FlightPlanIndex): number | undefined;
 
   /**
    * Calling this function with a message should display the message in the FMS' message area,

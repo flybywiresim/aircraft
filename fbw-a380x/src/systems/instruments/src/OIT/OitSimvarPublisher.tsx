@@ -1,6 +1,7 @@
 //  Copyright (c) 2025 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
+import { EfisSide } from '@flybywiresim/fbw-sdk';
 import { EventBus, SimVarDefinition, SimVarPublisher, SimVarValueType } from '@microsoft/msfs-sdk';
 
 export type OitSimvars = {
@@ -30,7 +31,7 @@ export type OitSimvars = {
 };
 
 export type InternalKbdKeyEvent = {
-  kbdKeyEvent: string;
+  kbdKeyEvent: [EfisSide, string];
 };
 
 /** A publisher to poll and publish nav/com simvars. */

@@ -89,6 +89,11 @@ export interface LnavConfig {
    * Whether to emit the "end of VD marker" (A380X only) as a PWP
    */
   EMIT_END_OF_VD_MARKER: boolean;
+
+  /**
+   * Number of secondary flight plans supported by the aircraft
+   */
+  NUM_SECONDARY_FLIGHT_PLANS: number;
 }
 
 export interface EngineModelParameters {

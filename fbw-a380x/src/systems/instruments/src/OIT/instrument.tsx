@@ -9,10 +9,11 @@ import {
   FsInstrument,
   FsBaseInstrument,
   ClockPublisher,
+  HEvent,
 } from '@microsoft/msfs-sdk';
 import { AdrBusPublisher, FwcBusPublisher, FailuresConsumer } from '@flybywiresim/fbw-sdk';
 import { OIT } from './OIT';
-import { OitSimvarPublisher } from './OitSimvarPublisher';
+import { InternalKbdKeyEvent, OitSimvarPublisher } from './OitSimvarPublisher';
 import { OisLaptop } from './OisLaptop';
 import { AircraftNetworkServerUnit } from './System/AircraftNetworkServerUnit';
 import { AnsuOps } from './System/AnsuOps';
@@ -78,6 +79,23 @@ class OitInstrument implements FsInstrument {
       />,
       document.getElementById('OIT_CONTENT'),
     );
+
+    this.bus
+      .getSubscriber<HEvent>()
+      .on('hEvent')
+      .handle((eventName) => {
+        if (
+          eventName.startsWith(
+            this.instrument.instrumentIndex === 1 ? 'A380X_LAPTOP_KEYBOARD_L' : 'A380X_LAPTOP_KEYBOARD_R',
+          )
+        ) {
+          const key = eventName.substring(23);
+
+          this.bus
+            .getPublisher<InternalKbdKeyEvent>()
+            .pub('kbdKeyEvent', [this.instrument.instrumentIndex === 1 ? 'L' : 'R', key]);
+        }
+      });
 
     // Remove "instrument didn't load" text
     oit?.querySelector(':scope > h1')?.remove();

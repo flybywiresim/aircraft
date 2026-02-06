@@ -23,11 +23,15 @@ import { FlightPlanFlags } from '@fmgc/flightplanning/plans/FlightPlanFlags';
 export class CDUInitPage {
   static ShowPage1(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex = FlightPlanIndex.Active) {
     if (forPlan >= FlightPlanIndex.FirstSecondary) {
-      mcdu.efisInterfaces.L.setSecRelatedPageOpen(true);
-      mcdu.efisInterfaces.R.setSecRelatedPageOpen(true);
+      mcdu.efisInterfaces.L.setSecRelatedPageOpen(
+        forPlan >= FlightPlanIndex.FirstSecondary ? forPlan - FlightPlanIndex.FirstSecondary + 1 : null,
+      );
+      mcdu.efisInterfaces.R.setSecRelatedPageOpen(
+        forPlan >= FlightPlanIndex.FirstSecondary ? forPlan - FlightPlanIndex.FirstSecondary + 1 : null,
+      );
       mcdu.onUnload = () => {
-        mcdu.efisInterfaces.L.setSecRelatedPageOpen(false);
-        mcdu.efisInterfaces.R.setSecRelatedPageOpen(false);
+        mcdu.efisInterfaces.L.setSecRelatedPageOpen(null);
+        mcdu.efisInterfaces.R.setSecRelatedPageOpen(null);
       };
     }
 
@@ -146,7 +150,7 @@ export class CDUInitPage {
         cruiseFlTempSeparator.updateAttributes(isForPrimary ? Column.amber : Column.cyan);
 
         const planCruiseLevel = plan.performanceData.cruiseFlightLevel.get();
-        const planCruiseTemp = plan.performanceData.cruiseTemperature.get();
+        const planCruiseTemp = plan.performanceData.cruiseTemperaturePilotEntry.get();
 
         //This is done so pilot enters a FL first, rather than using the computed one
         // TODO differentiate for SEC
@@ -379,11 +383,15 @@ export class CDUInitPage {
   }
   static ShowPage2(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex) {
     if (forPlan >= FlightPlanIndex.FirstSecondary) {
-      mcdu.efisInterfaces.L.setSecRelatedPageOpen(true);
-      mcdu.efisInterfaces.R.setSecRelatedPageOpen(true);
+      mcdu.efisInterfaces.L.setSecRelatedPageOpen(
+        forPlan >= FlightPlanIndex.FirstSecondary ? forPlan - FlightPlanIndex.FirstSecondary + 1 : null,
+      );
+      mcdu.efisInterfaces.R.setSecRelatedPageOpen(
+        forPlan >= FlightPlanIndex.FirstSecondary ? forPlan - FlightPlanIndex.FirstSecondary + 1 : null,
+      );
       mcdu.onUnload = () => {
-        mcdu.efisInterfaces.L.setSecRelatedPageOpen(false);
-        mcdu.efisInterfaces.R.setSecRelatedPageOpen(false);
+        mcdu.efisInterfaces.L.setSecRelatedPageOpen(null);
+        mcdu.efisInterfaces.R.setSecRelatedPageOpen(null);
       };
     }
 

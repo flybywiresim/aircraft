@@ -14,6 +14,7 @@ import { FmcIndex, FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServic
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { ResetPanelSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/ResetPanelPublisher';
+import { DummyFlightManagementComputer } from './DummyFlightManagementComputer';
 
 /*
  * Handles navigation (and potentially other aspects) for MFD pages
@@ -22,8 +23,6 @@ export class FmcService implements FmcServiceInterface {
   protected subs = [] as Subscription[];
 
   private readonly sub = this.bus.getSubscriber<MfdSimvars & ResetPanelSimvars>();
-
-  protected fmc: FmcInterface[] = [];
 
   private readonly dcEssBusPowered = ConsumerSubject.create(this.sub.on('dcBusEss'), false);
   private readonly fmcAReset = ConsumerSubject.create(this.sub.on('a380x_reset_panel_fmc_a'), false);
@@ -75,41 +74,30 @@ export class FmcService implements FmcServiceInterface {
     private readonly fmcBFailed: Subscribable<boolean>,
     private readonly fmcCFailed: Subscribable<boolean>,
   ) {
-    this.createFmc(this.mfdReference);
-
     this.fmsCaptSideFailed.sub((f) => SimVar.SetSimVarValue('L:A32NX_FMS_L_FAILED', SimVarValueType.Bool, f));
     this.fmsFoSideFailed.sub((f) => SimVar.SetSimVarValue('L:A32NX_FMS_R_FAILED', SimVarValueType.Bool, f));
   }
 
-  get master() {
-    return this.fmc.find((it) => it.operatingMode === FmcOperatingModes.Master) ?? null;
-  }
+  public readonly master: FmcInterface = new FlightManagementComputer(
+    FmcIndex.FmcA,
+    FmcOperatingModes.Master,
+    this.bus,
+    this.fmcAInop,
+    this.mfdReference,
+  );
 
-  get slave() {
-    return this.fmc.find((it) => it.operatingMode === FmcOperatingModes.Slave) ?? null;
-  }
+  public readonly slave: FmcInterface | null = null;
 
-  get standby() {
-    return this.fmc.find((it) => it.operatingMode === FmcOperatingModes.Standby) ?? null;
-  }
+  public readonly standby: FmcInterface | null = null;
 
-  createFmc(mfdReference: (FmsDisplayInterface & MfdDisplayInterface) | null): void {
-    // Only FMC-A is operative for now, this takes up enough resources already
-    // Before more FMC can be added, they have to be synced
-    this.fmc.push(
-      new FlightManagementComputer(FmcIndex.FmcA, FmcOperatingModes.Master, this.bus, this.fmcAInop, mfdReference),
-    );
+  protected fmc: FmcInterface[] = [this.master];
+  protected dummyFmc: DummyFlightManagementComputer[] = [
+    new DummyFlightManagementComputer(FmcIndex.FmcB, this.fmcBInop),
+    new DummyFlightManagementComputer(FmcIndex.FmcC, this.fmcCInop),
+  ];
 
-    this.fmc.push(
-      new FlightManagementComputer(FmcIndex.FmcB, FmcOperatingModes.Slave, this.bus, this.fmcBInop, mfdReference),
-    );
-
-    this.fmc.push(
-      new FlightManagementComputer(FmcIndex.FmcC, FmcOperatingModes.Standby, this.bus, this.fmcCInop, mfdReference),
-    );
-
-    this.masterFmcChanged.notify();
-  }
+  // FIXME as soon as we have multiple real FMCs, we need to properly implement master/slave/standby logic and not just return the first FMC for master and null for the others
+  // Example for get master(): return this.fmc.find((it) => it.operatingMode === FmcOperatingModes.Master) ?? null;
 
   has(forFmcIndex: FmcIndex) {
     return this.fmc[forFmcIndex] !== undefined;

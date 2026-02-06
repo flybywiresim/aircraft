@@ -20,11 +20,15 @@ export class CDUPerformancePage {
 
   static ShowPage(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex, _phase = undefined) {
     if (forPlan >= FlightPlanIndex.FirstSecondary) {
-      mcdu.efisInterfaces.L.setSecRelatedPageOpen(true);
-      mcdu.efisInterfaces.R.setSecRelatedPageOpen(true);
+      mcdu.efisInterfaces.L.setSecRelatedPageOpen(
+        forPlan >= FlightPlanIndex.FirstSecondary ? forPlan - FlightPlanIndex.FirstSecondary + 1 : null,
+      );
+      mcdu.efisInterfaces.R.setSecRelatedPageOpen(
+        forPlan >= FlightPlanIndex.FirstSecondary ? forPlan - FlightPlanIndex.FirstSecondary + 1 : null,
+      );
       mcdu.onUnload = () => {
-        mcdu.efisInterfaces.L.setSecRelatedPageOpen(false);
-        mcdu.efisInterfaces.R.setSecRelatedPageOpen(false);
+        mcdu.efisInterfaces.L.setSecRelatedPageOpen(null);
+        mcdu.efisInterfaces.R.setSecRelatedPageOpen(null);
       };
     }
     mcdu.activeSystem = 'FMGC';

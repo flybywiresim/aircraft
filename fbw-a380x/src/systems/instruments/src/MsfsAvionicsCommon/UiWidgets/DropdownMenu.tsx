@@ -7,6 +7,7 @@ import {
   Consumer,
   DisplayComponent,
   FSComponent,
+  MutableSubscribable,
   Subject,
   Subscribable,
   SubscribableArray,
@@ -16,10 +17,11 @@ import {
 } from '@microsoft/msfs-sdk';
 import { InputField, InteractionMode } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import { DropdownFieldFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
+import { EfisSide } from '@flybywiresim/fbw-sdk';
 
 interface DropdownMenuProps extends ComponentProps {
   values: SubscribableArray<string>;
-  selectedIndex: Subject<number | null>;
+  selectedIndex: Subscribable<number | null> | MutableSubscribable<number | null>;
   freeTextAllowed: boolean;
   idPrefix: string;
   /** If defined, this component does not update the selectedIndex prop by itself, but rather calls this method. */
@@ -31,7 +33,7 @@ interface DropdownMenuProps extends ComponentProps {
   numberOfDigitsForInputField?: number;
   tmpyActive?: Subscribable<boolean>;
   /** Only handles KCCU input for respective side, receives key name only */
-  hEventConsumer: Consumer<string>;
+  hEventConsumer: Consumer<[EfisSide, string]>;
   /** Kccu uses the HW keys, and doesn't focus input fields */
   interactionMode: Subscribable<InteractionMode>;
 }
@@ -77,7 +79,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
       this.freeTextEntered = false;
       if (this.props.onModified) {
         this.props.onModified(this.renderedDropdownOptionsIndices[i], '');
-      } else {
+      } else if (SubscribableUtils.isMutableSubscribable(this.props.selectedIndex)) {
         this.props.selectedIndex.set(this.renderedDropdownOptionsIndices[i]);
       }
       this.dropdownIsOpened.set(false);

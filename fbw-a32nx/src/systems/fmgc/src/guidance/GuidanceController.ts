@@ -95,8 +95,8 @@ export class GuidanceController {
     return this.getGeometryForFlightPlan(FlightPlanIndex.Temporary);
   }
 
-  get secondaryGeometry(): Geometry | null {
-    return this.getGeometryForFlightPlan(FlightPlanIndex.FirstSecondary);
+  secondaryGeometry(secIndex: number = 1): Geometry | null {
+    return this.getGeometryForFlightPlan(FlightPlanIndex.FirstSecondary + secIndex - 1);
   }
 
   hasGeometryForFlightPlan(index: number, alternate = false) {
@@ -395,8 +395,11 @@ export class GuidanceController {
       this.tryUpdateFlightPlanGeometry(FlightPlanIndex.Active, false);
       this.tryUpdateFlightPlanGeometry(FlightPlanIndex.Active, true);
       this.tryUpdateFlightPlanGeometry(FlightPlanIndex.Temporary, false);
-      this.tryUpdateFlightPlanGeometry(FlightPlanIndex.FirstSecondary, false);
-      this.tryUpdateFlightPlanGeometry(FlightPlanIndex.FirstSecondary, true);
+
+      for (let i = 0; i < this.acConfig.lnavConfig.NUM_SECONDARY_FLIGHT_PLANS; i++) {
+        this.tryUpdateFlightPlanGeometry(FlightPlanIndex.FirstSecondary + i, false);
+        this.tryUpdateFlightPlanGeometry(FlightPlanIndex.FirstSecondary + i, true);
+      }
 
       if (this.geometryRecomputationTimer > GEOMETRY_RECOMPUTATION_TIMER) {
         this.geometryRecomputationTimer = 0;
@@ -404,8 +407,11 @@ export class GuidanceController {
         this.tryUpdateFlightPlanGeometry(FlightPlanIndex.Active, false, true);
         this.tryUpdateFlightPlanGeometry(FlightPlanIndex.Active, true, true);
         this.tryUpdateFlightPlanGeometry(FlightPlanIndex.Temporary, false, true);
-        this.tryUpdateFlightPlanGeometry(FlightPlanIndex.FirstSecondary, false, true);
-        this.tryUpdateFlightPlanGeometry(FlightPlanIndex.FirstSecondary, true, true);
+
+        for (let i = 0; i < this.acConfig.lnavConfig.NUM_SECONDARY_FLIGHT_PLANS; i++) {
+          this.tryUpdateFlightPlanGeometry(FlightPlanIndex.FirstSecondary + i, false, true);
+          this.tryUpdateFlightPlanGeometry(FlightPlanIndex.FirstSecondary + i, true, true);
+        }
 
         if (this.activeGeometry) {
           try {

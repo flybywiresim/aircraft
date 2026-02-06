@@ -1,3 +1,4 @@
+import { EfisSide } from '@flybywiresim/fbw-sdk';
 import { EventBus, SimVarDefinition, SimVarPublisher, SimVarValueType } from '@microsoft/msfs-sdk';
 
 export type MfdSimvars = {
@@ -40,7 +41,8 @@ export type MfdSimvars = {
 };
 
 export type InternalKccuKeyEvent = {
-  kccuKeyEvent: string;
+  /** First element: Side on which KCCU was pressed, Second element: key string */
+  kccuKeyEvent: [EfisSide, string];
 };
 
 export enum MfdVars {

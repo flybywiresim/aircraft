@@ -64,7 +64,10 @@ export class EfisVectors {
 
       this.tryProcessFlightPlan(FlightPlanIndex.Active, side, true);
       this.tryProcessFlightPlan(FlightPlanIndex.Temporary, side, true);
-      this.tryProcessFlightPlan(FlightPlanIndex.FirstSecondary, side, true);
+
+      for (let i = 1; i <= this.efisInterfaces[side].numSecondaryFlightPlans; i++) {
+        this.tryProcessFlightPlan(FlightPlanIndex.FirstSecondary + i - 1, side, true);
+      }
 
       const activeFlightPlanVectors =
         this.guidanceController.activeGeometry?.getAllPathVectors(this.guidanceController.activeLegIndex) ?? [];
@@ -81,7 +84,10 @@ export class EfisVectors {
     } else {
       this.tryProcessFlightPlan(FlightPlanIndex.Active, side);
       this.tryProcessFlightPlan(FlightPlanIndex.Temporary, side);
-      this.tryProcessFlightPlan(FlightPlanIndex.FirstSecondary, side);
+
+      for (let i = 1; i <= this.efisInterfaces[side].numSecondaryFlightPlans; i++) {
+        this.tryProcessFlightPlan(FlightPlanIndex.FirstSecondary + i - 1, side);
+      }
     }
   }
 
@@ -117,7 +123,9 @@ export class EfisVectors {
         case FlightPlanIndex.FirstSecondary:
         case FlightPlanIndex.Uplink:
         default:
-          this.transmit(null, EfisVectorsGroup.SECONDARY, side);
+          if (!this.efisInterfaces[side].shouldTransmitAnySecondary()) {
+            this.transmit(null, EfisVectorsGroup.SECONDARY, side);
+          }
           break;
       }
 
@@ -178,9 +186,9 @@ export class EfisVectors {
         this.transmitFlightPlan(plan, side, EfisVectorsGroup.TEMPORARY);
         break;
       default:
-        if (this.efisInterfaces[side].shouldTransmitSecondary()) {
+        if (this.efisInterfaces[side].shouldTransmitSecondary(planIndex - FlightPlanIndex.FirstSecondary + 1)) {
           this.transmitFlightPlan(plan, side, EfisVectorsGroup.SECONDARY);
-        } else {
+        } else if (!this.efisInterfaces[side].shouldTransmitAnySecondary()) {
           this.transmit(null, EfisVectorsGroup.SECONDARY, side);
         }
         break;

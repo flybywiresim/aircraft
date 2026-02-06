@@ -33,7 +33,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     bus: EventBus,
     performanceDataInit: P,
   ): FlightPlan<P> {
-    return new FlightPlan(context, index, bus, performanceDataInit);
+    return new FlightPlan<P>(context, index, bus, performanceDataInit);
   }
 
   /**

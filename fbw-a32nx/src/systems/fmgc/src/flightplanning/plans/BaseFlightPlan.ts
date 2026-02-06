@@ -100,6 +100,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     public readonly bus: EventBus,
   ) {
     this.perfSyncPub = this.bus.getPublisher<PerformanceDataFlightPlanSyncEvents<P>>();
+    this.timeCreated = Math.floor(SimVar.GetGlobalVarValue('ZULU TIME', 'seconds'));
+    this.wasModified = false;
   }
 
   public async processSyncEvent(
@@ -238,6 +240,16 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       subscription.destroy();
     }
   }
+
+  /**
+   * Timestamp when this flight plan was created. Seconds since unix epoch.
+   */
+  public readonly timeCreated: number;
+
+  /**
+   * Whether the flight plan was modified after import or creation using a lateral or vertical flight plan revision.
+   */
+  public wasModified: boolean;
 
   get legCount() {
     return this.allLegs.length;
