@@ -366,9 +366,9 @@ impl Debug for ElectroHydrostaticBackup {
 ///   the piece movements it's connected to.
 /// - [LinearActuatorMode.PositionControl]: -> Actuator will try to use hydraulic pressure to move to a requested position, while
 ///   maintaining flow limitations.
-///     CAUTION: For actuators having only ON/OFF behaviour (gear, door ...), might be needed to require more than required
-///         position to ensure it's reached at max force. So full retract position at 0 might need to require -0.5, full extension might
-///         need to request 1.5
+///   CAUTION: For actuators having only ON/OFF behaviour (gear, door ...), might be needed to require more than required
+///   position to ensure it's reached at max force. So full retract position at 0 might need to require -0.5, full extension might
+///   need to request 1.5
 /// - [LinearActuatorMode.ClosedCircuitDamping]: -> Actuator will connect retract and extend port in closed loop. This provide a dampened
 ///   free moving mode, usable for gravity extension, or for aileron droop.
 #[derive(PartialEq, Clone, Copy)]
@@ -1116,9 +1116,10 @@ impl LinearActuator {
         let internal_actuator_pressure = if controller.should_activate_electrical_mode()
             && self.electro_hydrostatic_backup.is_some()
         {
-            self.electro_hydrostatic_backup
-                .unwrap()
-                .max_available_pressure()
+            match self.electro_hydrostatic_backup {
+                Some(ehba) => ehba.max_available_pressure(),
+                None => unreachable!(),
+            }
         } else if can_move_using_aircraft_hydraulic_pressure {
             current_input_pressure
         } else {
@@ -1272,11 +1273,11 @@ impl SimulationElement for LinearActuator {
 }
 impl Debug for LinearActuator {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if self.electro_hydrostatic_backup.is_some() {
+        if let Some(electro_hydrostatic_backup) = self.electro_hydrostatic_backup {
             write!(
                 f,
                 "Actuator => Type:EHA {:?} / {:?} / Current flow gpm{:.3}",
-                self.electro_hydrostatic_backup.unwrap(),
+                electro_hydrostatic_backup,
                 self.core_hydraulics,
                 self.signed_flow.get::<gallon_per_minute>()
             )

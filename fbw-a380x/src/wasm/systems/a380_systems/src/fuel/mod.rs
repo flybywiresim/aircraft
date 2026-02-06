@@ -318,6 +318,7 @@ impl A380Fuel {
         self.fuel_quantity_management_system.fuel_system()
     }
 
+    #[allow(dead_code)]
     fn left_outer_tank_has_fuel(&self) -> bool {
         self.fuel_system()
             .tank_has_fuel(A380FuelTankType::LeftOuter as usize)
@@ -328,46 +329,55 @@ impl A380Fuel {
             .tank_has_fuel(A380FuelTankType::FeedOne as usize)
     }
 
+    #[allow(dead_code)]
     fn left_mid_tank_has_fuel(&self) -> bool {
         self.fuel_system()
             .tank_has_fuel(A380FuelTankType::LeftMid as usize)
     }
 
+    #[allow(dead_code)]
     fn left_inner_tank_has_fuel(&self) -> bool {
         self.fuel_system()
             .tank_has_fuel(A380FuelTankType::LeftInner as usize)
     }
 
+    #[allow(dead_code)]
     fn feed_two_tank_has_fuel(&self) -> bool {
         self.fuel_system()
             .tank_has_fuel(A380FuelTankType::FeedTwo as usize)
     }
 
+    #[allow(dead_code)]
     fn feed_three_tank_has_fuel(&self) -> bool {
         self.fuel_system()
             .tank_has_fuel(A380FuelTankType::FeedThree as usize)
     }
 
+    #[allow(dead_code)]
     fn right_inner_tank_has_fuel(&self) -> bool {
         self.fuel_system()
             .tank_has_fuel(A380FuelTankType::RightInner as usize)
     }
 
+    #[allow(dead_code)]
     fn right_mid_tank_has_fuel(&self) -> bool {
         self.fuel_system()
             .tank_has_fuel(A380FuelTankType::RightMid as usize)
     }
 
-    pub fn feed_four_tank_has_fuel(&self) -> bool {
+    #[allow(dead_code)]
+    fn feed_four_tank_has_fuel(&self) -> bool {
         self.fuel_system()
             .tank_has_fuel(A380FuelTankType::FeedFour as usize)
     }
 
+    #[allow(dead_code)]
     fn right_outer_tank_has_fuel(&self) -> bool {
         self.fuel_system()
             .tank_has_fuel(A380FuelTankType::RightOuter as usize)
     }
 
+    #[allow(dead_code)]
     fn trim_tank_has_fuel(&self) -> bool {
         self.fuel_system()
             .tank_has_fuel(A380FuelTankType::Trim as usize)

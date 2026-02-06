@@ -17,7 +17,7 @@ pub(super) fn ailerons(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Er
         ExecuteOn::PostTick,
         Variable::aspect("HYD_AIL_LEFT_OUTWARD_DEFLECTION"),
         |value| {
-            -1. * hyd_deflection_to_msfs_deflection(
+            -hyd_deflection_to_msfs_deflection(
                 value,
                 MIN_ACTUAL_DEFLECTION_ANGLE,
                 MAX_ACTUAL_DEFLECTION_ANGLE,
@@ -41,7 +41,7 @@ pub(super) fn ailerons(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Er
         ExecuteOn::PostTick,
         Variable::aspect("HYD_AIL_LEFT_MIDDLE_DEFLECTION"),
         |value| {
-            -1. * hyd_deflection_to_msfs_deflection(
+            -hyd_deflection_to_msfs_deflection(
                 value,
                 MIN_ACTUAL_DEFLECTION_ANGLE,
                 MAX_ACTUAL_DEFLECTION_ANGLE,
@@ -65,7 +65,7 @@ pub(super) fn ailerons(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Er
         ExecuteOn::PostTick,
         Variable::aspect("HYD_AIL_LEFT_INWARD_DEFLECTION"),
         |value| {
-            -1. * hyd_deflection_to_msfs_deflection(
+            -hyd_deflection_to_msfs_deflection(
                 value,
                 MIN_ACTUAL_DEFLECTION_ANGLE,
                 MAX_ACTUAL_DEFLECTION_ANGLE,

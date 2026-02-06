@@ -6,12 +6,12 @@ edition = "2021"
 
 [dependencies]
 uom.workspace = true
-nalgebra = "0.33.0"
+nalgebra.workspace = true
 rustc-hash = "2.1.1"
 rand.workspace = true
-serde = { version = "1.0.215", features = ["derive"] }
-serde_with = { version = "3.11.0" }
-toml = { version = "0.9.6", default_features = false, features = ["std", "serde", "parse"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_with = { version = "3.16" }
+toml = { version = "0.9.11+spec-1.1.0", default-features = false, features = ["std", "serde", "parse"] }
 systems = { path = "../../../../../fbw-common/src/wasm/systems/systems" }
 
 [dev-dependencies]
