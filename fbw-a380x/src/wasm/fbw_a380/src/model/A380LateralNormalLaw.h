@@ -12,12 +12,6 @@ class A380LateralNormalLaw final
     boolean_T pY_not_empty;
   };
 
-  struct rtDW_TransportDelay_A380LateralNormalLaw_T {
-    real_T stack[70];
-    real_T pointer;
-    real_T timeSinceLastSample;
-  };
-
   struct D_Work_A380LateralNormalLaw_T {
     real_T Delay_DSTATE;
     real_T Delay1_DSTATE;
@@ -31,8 +25,6 @@ class A380LateralNormalLaw final
     boolean_T pU_not_empty;
     boolean_T pY_not_empty_j;
     boolean_T pY_not_empty_a;
-    rtDW_TransportDelay_A380LateralNormalLaw_T sf_TransportDelay_p;
-    rtDW_TransportDelay_A380LateralNormalLaw_T sf_TransportDelay;
     rtDW_RateLimiter_A380LateralNormalLaw_T sf_RateLimiter_go;
     rtDW_RateLimiter_A380LateralNormalLaw_T sf_RateLimiter_g;
     rtDW_RateLimiter_A380LateralNormalLaw_T sf_RateLimiter_l;
@@ -148,10 +140,10 @@ class A380LateralNormalLaw final
     real_T Limiterxi_LowerSat;
     real_T Gain5_Gain;
     real_T Switch_Threshold;
-    real_T Saturation3_UpperSat_o;
-    real_T Saturation3_LowerSat_o;
     real_T Saturation_UpperSat_a;
     real_T Saturation_LowerSat_m;
+    real_T Saturation3_UpperSat_o;
+    real_T Saturation3_LowerSat_o;
     real_T Gain1_Gain_m;
     real_T Saturation2_UpperSat_n;
     real_T Saturation2_LowerSat_p;
@@ -180,10 +172,6 @@ class A380LateralNormalLaw final
   static void A380LateralNormalLaw_RateLimiter_Reset(rtDW_RateLimiter_A380LateralNormalLaw_T *localDW);
   static void A380LateralNormalLaw_RateLimiter(real_T rtu_u, real_T rtu_up, real_T rtu_lo, const real_T *rtu_Ts, real_T
     rtu_init, real_T *rty_Y, rtDW_RateLimiter_A380LateralNormalLaw_T *localDW);
-  static void A380LateralNormalLaw_TransportDelay_Init(rtDW_TransportDelay_A380LateralNormalLaw_T *localDW);
-  static void A380LateralNormalLaw_TransportDelay_Reset(rtDW_TransportDelay_A380LateralNormalLaw_T *localDW);
-  static void A380LateralNormalLaw_TransportDelay(real_T rtu_u, const real_T *rtu_dt, boolean_T rtu_reset, real_T *rty_y,
-    rtDW_TransportDelay_A380LateralNormalLaw_T *localDW);
 };
 
 extern A380LateralNormalLaw::Parameters_A380LateralNormalLaw_T A380LateralNormalLaw_rtP;
