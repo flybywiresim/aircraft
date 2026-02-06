@@ -585,8 +585,8 @@ export class FlightManagementComputer implements FmcInterface {
       } else {
         return Math.max(
           Units.poundToKilogram(destPred.estimatedFuelOnBoard) -
-            (this.flightPlanInterface.active.performanceData.minimumDestinationFuelOnBoard.get() ?? 0),
-          LOWEST_FUEL_ESTIMATE_KGS * 1000,
+            (this.flightPlanInterface.active.performanceData.minimumDestinationFuelOnBoard.get() ?? 0) * 1000,
+          LOWEST_FUEL_ESTIMATE_KGS,
         );
       }
     }

@@ -1338,15 +1338,16 @@ export class FmcAircraftInterface {
   }
 
   /**
-   * Tries to estimate the landing weight at destination
+   * Tries to estimate the landing weight at destination.
    * Null if not available
+   * Unit: Kilograms.
    */
   tryEstimateLandingWeight(): number | null {
     const zeroFuelWeight = this.fmc.zeroFuelWeight.get();
     if (zeroFuelWeight !== null) {
       const destEfob = this.fmgc.getDestEFOB(true);
       if (destEfob !== null) {
-        return zeroFuelWeight - destEfob * 1000;
+        return (zeroFuelWeight + destEfob) * 1000;
       }
     }
     return null;

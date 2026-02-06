@@ -50,6 +50,8 @@ export class A380FlightPlanPerformanceData extends A320FlightPlanPerformanceData
     return cloned;
   }
 
+  readonly defaultTaxiFuel = Subject.create<number>(1.5);
+
   readonly cruiseTemperatureIsaTemp = Subject.create<number | null>(null);
 
   readonly cruiseTemperature = MappedSubject.create(
