@@ -53,7 +53,7 @@ export interface Arinc429Values {
   vStallWarn: Arinc429Word;
   vMax: Arinc429Word;
   vFeNext: Arinc429Word;
-  vCTrend: Arinc429Word;
+  vCTrend: number;
   vMan: Arinc429Word;
   v4: Arinc429Word;
   v3: Arinc429Word;
@@ -434,15 +434,15 @@ export class ArincValueProvider implements Instrument {
 
     subscriber.on('fac1VCTrendRaw').handle((word) => {
       if (this.facToUse === 1) {
-        publisher.pub('vCTrend', new Arinc429Word(word));
+        publisher.pub('vCTrend', word);
       } else if (this.facToUse === 0) {
-        publisher.pub('vCTrend', new Arinc429Word(0));
+        publisher.pub('vCTrend', 0);
       }
     });
 
     subscriber.on('fac2VCTrendRaw').handle((word) => {
       if (this.facToUse === 2) {
-        publisher.pub('vCTrend', new Arinc429Word(word));
+        publisher.pub('vCTrend', word);
       }
     });
 
