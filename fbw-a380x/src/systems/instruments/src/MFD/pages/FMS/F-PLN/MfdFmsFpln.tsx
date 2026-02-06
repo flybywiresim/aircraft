@@ -7,9 +7,16 @@
   MappedSubject,
   MathUtils,
   NodeReference,
+  NumberFormatter,
+  NumberUnitInterface,
+  NumberUnitSubject,
+  SimpleUnit,
   Subject,
   Subscribable,
   Subscription,
+  Unit,
+  UnitFamily,
+  UnitType,
   VNode,
 } from '@microsoft/msfs-sdk';
 
@@ -37,6 +44,7 @@ import {
   AltitudeDescriptor,
   AltitudeConstraint,
   SpeedConstraint,
+  NXDataStore,
 } from '@flybywiresim/fbw-sdk';
 import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
 import { ConditionalComponent } from '../../../../MsfsAvionicsCommon/UiWidgets/ConditionalComponent';
@@ -53,6 +61,16 @@ export interface DerivedFplnLegData {
 }
 
 export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
+  private readonly weightUnit = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT').map((v) =>
+    v ? UnitType.KILOGRAM : UnitType.POUND,
+  );
+  private readonly weightUnitText = this.weightUnit.map((v) => (v === UnitType.KILOGRAM ? 'T' : 'KLB'));
+
+  private readonly weightFormatter = NumberFormatter.create({
+    nanString: '---.-',
+    precision: 0.1,
+  });
+
   private readonly lineColor = Subject.create<FplnLineColor>(FplnLineColor.Active);
 
   private readonly spdAltEfobWindRef = FSComponent.createRef<HTMLDivElement>();
@@ -61,9 +79,12 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
   private readonly trueTrackEnabled = Subject.create<boolean>(false);
 
-  private readonly efobAndWindButtonDynamicContent = Subject.create<VNode>(<span />);
-
-  private readonly efobAndWindButtonMenuItems = Subject.create<ButtonMenuItem[]>([{ label: '', action: () => {} }]);
+  private readonly efobAndWindButtonMenuItems = Subject.create<ButtonMenuItem[]>([
+    {
+      action: () => this.displayEfobAndWind.set(!this.displayEfobAndWind.get()),
+      label: this.displayEfobAndWind.map((v) => (v ? 'SPD\xa0\xa0\xa0\xa0\xa0ALT' : 'EFOB\xa0\xa0\xa0\xa0T.WIND')),
+    },
+  ]);
 
   private readonly lineData: FplnLineDisplayData[] = [];
 
@@ -107,11 +128,8 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     this.destTime,
   );
 
-  private readonly destEfob = Subject.create<number | null>(null);
-
-  private readonly destEfobLabel = this.destEfob.map((v) =>
-    v !== null ? (Units.poundToKilogram(v) / 1_000).toFixed(1) : '---.-',
-  );
+  private readonly destEfob = NumberUnitSubject.create(UnitType.KILOGRAM.createNumber(NaN));
+  private readonly destEfobLabel = this.createWeightSubscribable(this.destEfob);
 
   private readonly destEfobNotAvailable = this.destEfob.map((efob) => efob == null);
 
@@ -151,8 +169,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
   private readonly renderedFplnLines: NodeReference<FplnLegLine>[] = [];
 
-  private readonly destButtonLabelNode = this.destButtonLabel.map((it) => <span>{it}</span>);
-
   private readonly lineColorIsTemporary = this.lineColor.map((it) => it === FplnLineColor.Temporary);
 
   private readonly preflightPhase = this.activeFlightPhase.map((phase) => phase === FmgcFlightPhase.Preflight);
@@ -178,6 +194,19 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
   private emptyFlightPlanRendered = false;
 
   private readonly destEfobAmber = Subject.create(false);
+
+  private createWeightSubscribable(
+    value: NumberUnitSubject<UnitFamily.Weight, SimpleUnit<UnitFamily.Weight>>,
+  ): MappedSubject<
+    [NumberUnitInterface<UnitFamily.Weight, SimpleUnit<UnitFamily.Weight>>, Unit<UnitFamily.Weight>],
+    string
+  > {
+    return MappedSubject.create(
+      ([value, weightUnit]) => this.weightFormatter(value.asUnit(weightUnit) / 1000),
+      value,
+      this.weightUnit,
+    );
+  }
 
   protected onNewData(): void {
     if (!this.loadedFlightPlan) {
@@ -238,9 +267,9 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     if (destPred && this.props.fmcService.master) {
       this.destEfobAmber.set(this.props.fmcService.master.fmgc.data.destEfobBelowMin.get());
       this.destTime.set(new Date(this.predictionTimestamp(destPred.secondsFromPresent)));
-      this.destEfob.set(destPred.estimatedFuelOnBoard ?? null);
+      this.destEfob.set(destPred.estimatedFuelOnBoard ?? NaN, UnitType.POUND);
     } else {
-      this.destEfob.set(null);
+      this.destEfob.set(NaN);
       this.destTime.set(null);
       this.destEfobAmber.set(false);
     }
@@ -382,7 +411,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             speedConstraintIsRespected: true,
             efobPrediction: Units.poundToKilogram(
               this.props.fmcService.master?.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)
-                ?.estimatedFuelOnBoard ?? 0,
+                ?.estimatedFuelOnBoard ?? NaN,
             ),
             windPrediction: this.derivedFplnLegData[i].windPrediction,
             trackFromLastWpt: this.derivedFplnLegData[i].trackFromLastWpt,
@@ -448,7 +477,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             hasSpeedConstraint: leg.speedConstraint !== undefined,
             speedConstraint: leg.speedConstraint ?? null,
             speedConstraintIsRespected: pred?.isSpeedConstraintMet ?? true,
-            efobPrediction: pred?.estimatedFuelOnBoard ? Units.poundToKilogram(pred?.estimatedFuelOnBoard) : 0,
+            efobPrediction: pred?.estimatedFuelOnBoard ? Units.poundToKilogram(pred?.estimatedFuelOnBoard) : NaN,
             windPrediction: this.derivedFplnLegData[i].windPrediction,
             trackFromLastWpt: this.derivedFplnLegData[i].trackFromLastWpt,
             distFromLastWpt: (this.derivedFplnLegData[i].distanceFromLastWpt ?? -reduceDistanceBy) - reduceDistanceBy,
@@ -563,6 +592,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
               }}
               flags={Subject.create(flags)}
               displayEfobAndWind={this.displayEfobAndWind}
+              weightUnit={this.weightUnit}
               trueTrack={this.trueTrackEnabled}
               globalLineColor={MappedSubject.create(
                 ([tmpy, sec]) => {
@@ -687,20 +717,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     this.onNewData();
 
     this.subs.push(
-      this.displayEfobAndWind.sub((val) => {
-        this.efobAndWindButtonDynamicContent.set(val ? this.efobWindButton() : this.spdAltButton());
-        this.efobAndWindButtonMenuItems.set([
-          {
-            action: () => this.displayEfobAndWind.set(!this.displayEfobAndWind.get()),
-            label: this.displayEfobAndWind.get()
-              ? 'SPD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ALT'
-              : 'EFOB&nbsp;&nbsp;&nbsp;&nbsp;T.WIND',
-          },
-        ]);
-      }, true),
-    );
-
-    this.subs.push(
       this.displayFplnFromLineIndex.sub((_) => {
         this.onNewData();
         this.checkScrollButtons();
@@ -752,7 +768,8 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     );
 
     this.subs.push(
-      this.destButtonLabelNode,
+      this.destEfobLabel,
+      this.weightUnitText,
       this.lineColorIsTemporary,
       this.preflightPhase,
       this.destTimeNotAvail,
@@ -769,15 +786,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     );
     this.disabledScrollDown.set(
       !this.lineData || this.displayFplnFromLineIndex.get() >= this.getLastPageAllowableIndex(),
-    );
-  }
-
-  private spdAltButton(): VNode {
-    return (
-      <div class="mfd-fms-fpln-button-speed-alt">
-        <span style="padding-left: 10px;">SPD</span>
-        <span style="margin-right: 55px;">ALT</span>
-      </div>
     );
   }
 
@@ -848,15 +856,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-vert-rev/alt`,
       );
     }
-  }
-
-  private efobWindButton(): VNode {
-    return (
-      <div class="mfd-fms-fpln-button-speed-alt">
-        <span>EFOB</span>
-        <span style="margin-left: 30px;">T.WIND</span>
-      </div>
-    );
   }
 
   private scrollToTop() {
@@ -947,10 +946,16 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             </div>
             <div ref={this.spdAltEfobWindRef} class="mfd-fms-fpln-header-speed-alt">
               <Button
-                label={this.efobAndWindButtonDynamicContent}
+                label={
+                  <div class="mfd-fms-fpln-button-speed-alt">
+                    {this.displayEfobAndWind.map((v) =>
+                      v ? 'EFOB\xa0\xa0\xa0\xa0T.WIND' : '\xa0SPD\xa0\xa0\xa0\xa0ALT\xa0\xa0\xa0',
+                    )}
+                  </div>
+                }
                 onClick={() => {}}
                 buttonStyle="margin-right: 5px; width: 260px; height: 43px;"
-                idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_efobwindbtn`}
+                idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_windbtn`}
                 menuItems={this.efobAndWindButtonMenuItems}
               />
             </div>
@@ -968,7 +973,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           <div style="flex-grow: 1" />
           <div ref={this.tmpyLineRef} class="mfd-fms-fpln-line-erase-temporary">
             <Button
-              label={Subject.create(
+              label={
                 <div style="display: flex; flex-direction: row; justify-content: space-between;">
                   <span style="text-align: center; vertical-align: center; margin-right: 10px;">
                     ERASE
@@ -976,13 +981,13 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                     TMPY
                   </span>
                   <span style="display: flex; align-items: center; justify-content: center;">*</span>
-                </div>,
-              )}
+                </div>
+              }
               onClick={() => this.props.fmcService.master?.flightPlanService.temporaryDelete()}
               buttonStyle="color: #e68000; padding-right: 2px;"
             />
             <Button
-              label={Subject.create(
+              label={
                 <div style="display: flex; flex-direction: row; justify-content: space-between;">
                   <span style="text-align: center; vertical-align: center; margin-right: 10px;">
                     INSERT
@@ -990,8 +995,8 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                     TMPY
                   </span>
                   <span style="display: flex; align-items: center; justify-content: center;">*</span>
-                </div>,
-              )}
+                </div>
+              }
               onClick={() => this.props.fmcService.master?.flightPlanService.temporaryInsert()}
               buttonStyle="color: #e68000; padding-right: 2px;"
             />
@@ -1002,7 +1007,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             <ConditionalComponent
               componentIfFalse={
                 <Button
-                  label={this.destButtonLabelNode}
+                  label={this.destButtonLabel}
                   onClick={() => {
                     this.props.fmcService.master?.resetRevisedWaypoint();
                     this.props.mfd.uiService.navigateTo(
@@ -1040,7 +1045,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 {this.destEfobLabel}
               </span>
               <span class="mfd-label-unit mfd-unit-trailing" style={{ visibility: this.destEfobUnitVisiblity }}>
-                T
+                {this.weightUnitText}
               </span>
             </div>
             <div class="mfd-label-value-container">
@@ -1268,6 +1273,7 @@ export interface FplnLegLineProps extends FplnLineCommonProps {
   data: Subscribable<FplnLineDisplayData | null>;
   flags: Subscribable<FplnLineFlags>;
   displayEfobAndWind: Subscribable<boolean>;
+  weightUnit: Subscribable<SimpleUnit<UnitFamily.Weight>>;
   trueTrack: Subscribable<boolean>;
   globalLineColor: Subscribable<FplnLineColor>;
   revisionsMenuIsOpened: Subject<boolean>;
@@ -1346,12 +1352,23 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
       }, true),
     );
 
+    const renderSpdAltEfobWind = () => {
+      const data = this.props.data.get();
+      if (data && isWaypoint(data)) {
+        this.renderSpdAltEfobWind(data);
+      }
+    };
+
+    const weightUnitSub = this.props.weightUnit.sub(renderSpdAltEfobWind, false, true);
+    this.subs.push(weightUnitSub);
     this.subs.push(
-      this.props.displayEfobAndWind.sub(() => {
-        const data = this.props.data.get();
-        if (data && isWaypoint(data)) {
-          this.renderSpdAltEfobWind(data);
+      this.props.displayEfobAndWind.sub((efob) => {
+        if (efob) {
+          weightUnitSub.resume(false);
+        } else {
+          weightUnitSub.pause();
         }
+        renderSpdAltEfobWind();
       }, true),
     );
 
@@ -1518,6 +1535,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
     }
   }
 
+  // FIXME make the leg data fields subscribable so we don't have to do heavy DOM thrashing
   private renderSpdAltEfobWind(data: FplnLineWaypointDisplayData): void {
     if (!this.speedRef.getOrDefault() || !this.altRef.getOrDefault()) {
       return;
@@ -1726,7 +1744,9 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
   private efobOrSpeed(data: FplnLineWaypointDisplayData): VNode {
     if (this.props.displayEfobAndWind.get()) {
       return data.efobPrediction && this.props.globalLineColor.get() === FplnLineColor.Active ? (
-        <span>{(data.efobPrediction / 1000).toFixed(1)}</span>
+        <span>
+          {(this.props.weightUnit.get().convertFrom(data.efobPrediction, UnitType.KILOGRAM) / 1000).toFixed(1)}
+        </span>
       ) : (
         <span>--.-</span>
       );

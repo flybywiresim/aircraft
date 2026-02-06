@@ -18,6 +18,7 @@ import {
   Subject,
   Subscribable,
   Subscription,
+  UnitType,
   VNode,
 } from '@microsoft/msfs-sdk';
 import {
@@ -233,6 +234,10 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
   public hEventConsumer = this.props.bus.getSubscriber<InternalKccuKeyEvent>().on('kccuKeyEvent');
 
   public interactionMode = Subject.create<InteractionMode>(InteractionMode.Touchscreen);
+
+  private readonly lengthUnit = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT').map((v) =>
+    v ? UnitType.METER : UnitType.FOOT,
+  );
 
   private showLdgShiftPanel() {
     if (this.mapDataLdgShiftPanelRef.getOrDefault() && this.mapDataMainRef.getOrDefault()) {
@@ -819,6 +824,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                       lda={this.runwayLda}
                       ldaIsReduced={Subject.create(false)}
                       coordinate={Subject.create('----')}
+                      lengthUnit={this.lengthUnit}
                     />
                   </div>
                   <div ref={this.mapDataBtvFallback} class="oans-cp-map-data-btv-fallback">

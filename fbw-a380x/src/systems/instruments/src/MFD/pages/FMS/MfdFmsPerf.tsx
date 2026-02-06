@@ -2,7 +2,17 @@ import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Dropd
 import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
 
-import { ArraySubject, ClockEvents, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
+import {
+  ArraySubject,
+  ClockEvents,
+  FSComponent,
+  MappedSubject,
+  NumberFormatter,
+  NumberUnitSubject,
+  Subject,
+  UnitType,
+  VNode,
+} from '@microsoft/msfs-sdk';
 
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
@@ -42,13 +52,23 @@ import {
   getApproachName,
   showReturnButtonUriExtra,
 } from '../../shared/utils';
-import { ApproachType } from '@flybywiresim/fbw-sdk';
+import { ApproachType, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
 
 interface MfdFmsPerfProps extends AbstractMfdPageProps {}
 
 export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
+  private readonly weightUnit = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT').map((v) =>
+    v ? UnitType.KILOGRAM : UnitType.POUND,
+  );
+  private readonly weightUnitText = this.weightUnit.map((v) => (v === UnitType.KILOGRAM ? 'T' : 'KLB'));
+
+  private readonly weightFormatter = NumberFormatter.create({
+    nanString: '---.-',
+    precision: 0.1,
+  });
+
   private approachPhaseConfirmationDialogVisible = Subject.create<boolean>(false);
 
   private readonly activateApprButtonVisibility = this.activeFlightPhase.map((fp) =>
@@ -536,10 +556,11 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private apprSelectedFlapsIndex = Subject.create<number | null>(1);
 
-  private apprLandingWeight = Subject.create<number | null>(null);
-
-  private readonly apprLandingWeightFormatted = this.apprLandingWeight.map((it) =>
-    it ? (it / 1000).toFixed(1) : '---.-',
+  private readonly apprLandingWeight = NumberUnitSubject.create(UnitType.KILOGRAM.createNumber(NaN));
+  private readonly apprLandingWeightFormatted = MappedSubject.create(
+    ([value, weightUnit]) => this.weightFormatter(value.asUnit(weightUnit) / 1000),
+    this.apprLandingWeight,
+    this.weightUnit,
   );
 
   private apprVerticalDeviation = Subject.create<string>('+-----');
@@ -557,6 +578,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   private missedEngineOutAccelAlt = Subject.create<number | null>(null);
 
   private missedEngineOutAccelAltIsPilotEntered = Subject.create<boolean>(false);
+
+  private readonly lengthUnit = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT').map((v) =>
+    v ? UnitType.METER : UnitType.FOOT,
+  );
 
   /** in feet */
   private ldgRwyThresholdLocation = Subject.create<number | null>(null);
@@ -1036,7 +1061,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
           }
 
           // Update APPR page
-          this.apprLandingWeight.set(this.props.fmcService.master?.getLandingWeight() ?? null);
+          this.apprLandingWeight.set(this.props.fmcService.master?.getLandingWeight() ?? NaN);
           const apprWind = this.props.fmcService.master?.fmgc.data.approachWind.get();
           if (apprWind && this.loadedFlightPlan?.destinationRunway) {
             const towerHeadwind = A380SpeedsUtils.getHeadwind(
@@ -1077,6 +1102,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     );
 
     this.subs.push(
+      this.weightUnitText,
+      this.lengthUnit,
       this.speedConstraintReason,
       this.climbPreSelSpeedGreen,
       this.climbPreSelSpeedAmber,
@@ -1170,7 +1197,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   <div class="mfd-label-value-container">
                     <span class="mfd-label mfd-spacing-right">T.O SHIFT</span>
                     <InputField<number>
-                      dataEntryFormat={new LengthFormat(Subject.create(1), this.originRunwayLength)}
+                      dataEntryFormat={new LengthFormat(Subject.create(1), this.originRunwayLength, this.lengthUnit)}
                       dataHandlerDuringValidation={async (v) =>
                         this.props.fmcService.master?.fmgc.data.takeoffShift.set(v)
                       }
@@ -1215,7 +1242,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       style="grid-row-start: span 3; display: flex; justify-content: flex-end; align-items: flex-end;"
                     >
                       <Button
-                        label={Subject.create(
+                        label={
                           <div style="display: flex; flex-direction: row; justify-content: space-between;">
                             <span style="text-align: center; vertical-align: center; margin-right: 10px;">
                               CONFIRM
@@ -1223,8 +1250,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                               T.O SPDs
                             </span>
                             <span style="display: flex; align-items: center; justify-content: center;">*</span>
-                          </div>,
-                        )}
+                          </div>
+                        }
                         onClick={() => {
                           const fm = this.props.fmcService.master?.fmgc.data;
                           if (fm && this.loadedFlightPlan) {
@@ -2543,7 +2570,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   <div class="mfd-label-value-container" style="padding: 15px;">
                     <span class="mfd-label mfd-spacing-right">LW</span>
                     <span class="mfd-value">{this.apprLandingWeightFormatted}</span>
-                    <span class="mfd-label-unit mfd-unit-trailing">T</span>
+                    <span class="mfd-label-unit mfd-unit-trailing">{this.weightUnitText}</span>
                   </div>
                 </div>
                 <div style="display: flex; flex-direction: row;">
@@ -2916,7 +2943,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
               </div>
               <div style={{ 'margin-right': '5px', visibility: this.activateApprButtonVisibility }}>
                 <Button
-                  label={Subject.create(
+                  label={
                     <div style="display: flex; flex-direction: row; justify-content: space-between;">
                       <span style="text-align: center; vertical-align: center; margin-right: 10px;">
                         ACTIVATE
@@ -2924,8 +2951,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         APPR
                       </span>
                       <span style="display: flex; align-items: center; justify-content: center;">*</span>
-                    </div>,
-                  )}
+                    </div>
+                  }
                   onClick={() => this.approachPhaseConfirmationDialogVisible.set(true)}
                   buttonStyle="color: #e68000; padding-right: 2px;"
                 />
@@ -2941,7 +2968,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
               </div>
               <div style={{ 'margin-right': '5px', visibility: this.clearEoButtonVisibility }}>
                 <Button
-                  label={Subject.create(
+                  label={
                     <div style="display: flex; flex-direction: row; justify-content: space-between;">
                       <span style="text-align: center; vertical-align: center; margin-right: 10px;">
                         CLEAR
@@ -2949,8 +2976,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         EO
                       </span>
                       <span style="display: flex; align-items: center; justify-content: center;">*</span>
-                    </div>,
-                  )}
+                    </div>
+                  }
                   onClick={() => this.clearEoConfirmationDialogVisible.set(true)}
                   buttonStyle="color: #e68000; padding-right: 2px;"
                 />

@@ -8,6 +8,7 @@ import NacelleTemperatureGauge from './NacelleTemperatureGauge';
 import OilPressureGauge from './OilPressureGauge';
 import OilQuantityGauge from './OilQuantityGauge';
 import StartValve from './StartValve';
+import { NXUnits } from '@flybywiresim/fbw-sdk';
 
 interface EngineColumnProps {
   anyEngineRunning: boolean;
@@ -58,7 +59,7 @@ const EngineColumn: FC<Position & EngineNumber & IgnitionActive & EngineColumnPr
       )}
       {fadecPowered && (
         <text x={x + 30} y={y + 92} className="Green EndAlign F29">
-          {Math.ceil(fuelFlow / 10) * 10}
+          {Math.ceil(NXUnits.kgToUser(fuelFlow) / 10) * 10}
         </text>
       )}
       {/* OIL */}

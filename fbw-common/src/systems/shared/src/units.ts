@@ -1,4 +1,4 @@
-import { NXDataStore } from '@flybywiresim/fbw-sdk';
+import { NXUnits } from '../../instruments/src/NXUnits';
 
 // SI base units
 export type Celsius = number; // derived unit
@@ -15,20 +15,12 @@ export type Gallon = number;
 
 export type InchOfMercury = number;
 
+/**
+ * @deprecated Use NXUnits and UnitType
+ */
 export class Units {
-  private static mMetricUnits: boolean;
-
   static get usingMetric(): boolean {
-    if (Units.mMetricUnits === undefined) {
-      NXDataStore.getAndSubscribeLegacy(
-        'CONFIG_USING_METRIC_UNIT',
-        (_: string, value: string | undefined) => {
-          Units.mMetricUnits = value === '1';
-        },
-        '1',
-      );
-    }
-    return Units.mMetricUnits;
+    return NXUnits.metricWeight;
   }
 
   static poundToKilogram(value: Pound): KiloGram {

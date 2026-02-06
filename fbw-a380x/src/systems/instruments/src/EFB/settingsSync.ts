@@ -6,6 +6,7 @@ import { A380X_DEFAULT_RADIO_AUTO_CALL_OUTS } from 'shared/src/AutoCallOuts';
 
 export const a380xSyncedSettings: SyncedSettingDefinition[] = [
   {
+    type: 'legacy',
     configKey: 'CONFIG_A380X_FWC_RADIO_AUTO_CALL_OUT_PINS',
     localVarName: 'L:A380X_FWC_RADIO_AUTO_CALL_OUT_PINS',
     defaultValue: A380X_DEFAULT_RADIO_AUTO_CALL_OUTS.toString(),

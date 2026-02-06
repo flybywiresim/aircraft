@@ -34,27 +34,6 @@ interface MfdFmsInitProps extends AbstractMfdPageProps {}
 export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
   private simBriefOfp: ISimbriefData | null = null;
 
-  private readonly cpnyFplnButtonLabel = this.props.fmcService.master
-    ? this.props.fmcService.master.fmgc.data.cpnyFplnAvailable.map((it) => {
-        if (!it) {
-          return (
-            <span>
-              CPNY F-PLN
-              <br />
-              REQUEST
-            </span>
-          );
-        }
-        return (
-          <span>
-            RECEIVED
-            <br />
-            CPNY F-PLN
-          </span>
-        );
-      })
-    : MappedSubject.create(() => <></>);
-
   private readonly cpnyFplnButtonMenuItems: MappedSubscribable<ButtonMenuItem[]> = this.props.fmcService.master
     ? this.props.fmcService.master.fmgc.data.cpnyFplnAvailable.map((it) =>
         it
@@ -173,7 +152,6 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     );
 
     this.subs.push(
-      this.cpnyFplnButtonLabel,
       this.cpnyFplnButtonMenuItems,
       this.cityPairDisabled,
       this.altnDisabled,
@@ -374,7 +352,13 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
               />
               <div style="flex-grow: 1" />
               <Button
-                label={this.cpnyFplnButtonLabel}
+                label={
+                  <span style="white-space: pre">
+                    {this.props.fmcService.master?.fmgc.data.cpnyFplnAvailable.map((v) =>
+                      v ? 'RECEIVED\nCPNY F-PLN' : 'CPNY F-PLN\nREQUEST',
+                    )}
+                  </span>
+                }
                 disabled={this.props.fmcService.master.fmgc.data.cpnyFplnUplinkInProgress}
                 onClick={() =>
                   this.props.fmcService.master?.fmgc.data.cpnyFplnAvailable.get() ? {} : this.cpnyFplnRequest()
