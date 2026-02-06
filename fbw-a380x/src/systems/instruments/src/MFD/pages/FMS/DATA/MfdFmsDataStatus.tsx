@@ -197,7 +197,7 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
                   </div>
                   <div style=" margin-right:55px;">
                     <Button
-                      label={Subject.create(
+                      label={
                         <div style="display: flex; flex-direction: row; justify-content: space-between; width: 100px; height: 40px;">
                           <span style="display: flex; align-items: center; justify-content: center; margin-left: 10px;">
                             SWAP
@@ -205,8 +205,8 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
                           <span style="display: flex; align-items: center; justify-content: center;">
                             &nbsp;&nbsp;*
                           </span>
-                        </div>,
-                      )}
+                        </div>
+                      }
                       onClick={() => this.isSwapConfirmVisible.set(true)}
                       buttonStyle="width: 140px; height: 62px;"
                     />
@@ -240,12 +240,12 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
                   </div>
                   <div style="flex: 1;">
                     <Button
-                      label={Subject.create(
+                      label={
                         <div style="display: flex; flex-direction: row; justify-content: space-between; width: 175px; height: 40px;">
                           <span style="display: flex; align-items: center; justify-content: center;">DELETE ALL</span>
                           <span style="display: flex; align-items: center; justify-content: center;">*</span>
-                        </div>,
-                      )}
+                        </div>
+                      }
                       onClick={() => this.props.fmcService.master?.getDataManager()?.deleteAllStoredWaypoints()}
                       disabled={this.deleteStoredElementsDisabled}
                     />

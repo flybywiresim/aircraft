@@ -1,4 +1,4 @@
-//  Copyright (c) 2024-2025 FlyByWire Simulations
+//  Copyright (c) 2024-2026 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
 import {
@@ -7,6 +7,7 @@ import {
   FSComponent,
   Subject,
   Subscribable,
+  SubscribableMapFunctions,
   SubscribableUtils,
   Subscription,
   VNode,
@@ -19,10 +20,13 @@ export type ButtonMenuItem = {
   action(): void;
 };
 
+// FIXME these should all be immutable
 export interface ButtonProps extends ComponentProps {
-  label: string | Subscribable<VNode>;
-  menuItems?: Subscribable<ButtonMenuItem[]>; // When defining menu items, idPrefix has to be set
-  showArrow?: boolean;
+  readonly label: string | VNode | Subscribable<string>;
+  // FIXME should be SubscribableArray<ButtonMenuItem>... ButtonMenu should really be a separate component...
+  readonly menuItems?: Subscribable<ButtonMenuItem[]>; // When defining menu items, idPrefix has to be set FIXME express that in the types
+  /** Whether to show an arrow after the label for buttons with menu items. Defaults to true. */
+  readonly showArrow?: boolean;
   idPrefix?: string;
   disabled?: boolean | Subscribable<boolean>;
   visible?: boolean | Subscribable<boolean>;
@@ -54,7 +58,12 @@ export class Button extends DisplayComponent<ButtonProps> {
 
   private renderedMenuItems: ButtonMenuItem[] = [];
 
-  private readonly disabled = SubscribableUtils.toSubscribable(this.props.disabled ?? Subject.create(false), true);
+  private readonly disabled: Subscribable<boolean> = SubscribableUtils.toSubscribable(
+    this.props.disabled ?? false,
+    true,
+  );
+
+  private readonly arrowColour = this.disabled.map((v) => (v ? 'grey' : 'white'));
 
   private readonly visible = SubscribableUtils.toSubscribable(this.props.visible ?? Subject.create(true), true);
 
@@ -96,17 +105,11 @@ export class Button extends DisplayComponent<ButtonProps> {
     if (this.props.highlighted === undefined) {
       this.props.highlighted = Subject.create(false);
     }
-    if (typeof this.props.label === 'string') {
-      this.props.label = Subject.create(<span>{this.props.label}</span>);
-    }
     if (this.props.menuItems && !this.props.idPrefix) {
       console.error('Button: menuItems set without idPrefix.');
     }
     if (this.props.idPrefix === undefined) {
       this.props.idPrefix = '';
-    }
-    if (this.props.showArrow === undefined) {
-      this.props.showArrow = true;
     }
     this.buttonRef.instance.addEventListener('click', this.onClickHandler);
 
@@ -206,33 +209,6 @@ export class Button extends DisplayComponent<ButtonProps> {
       );
     }
 
-    this.subs.push(
-      this.props.label?.sub((val) => {
-        while (this.buttonRef.instance.firstChild) {
-          this.buttonRef.instance.removeChild(this.buttonRef.instance.firstChild);
-        }
-
-        // If menuItems is defined, render as button with arrow on the right side
-        if (this.props.menuItems !== undefined && this.props.showArrow) {
-          const n: VNode = (
-            <div class="mfd-fms-fpln-button-dropdown">
-              <span class="mfd-fms-fpln-button-dropdown-label">{val}</span>
-              <span class="mfd-fms-fpln-button-dropdown-arrow">
-                {this.menuOpensUpwards.get() ? (
-                  <TriangleUp color={this.disabled.get() ? 'grey' : 'white'} />
-                ) : (
-                  <TriangleDown color={this.disabled.get() ? 'grey' : 'white'} />
-                )}
-              </span>
-            </div>
-          );
-          FSComponent.render(n, this.buttonRef.instance);
-        } else {
-          FSComponent.render(val, this.buttonRef.instance);
-        }
-      }, true),
-    );
-
     // Close dropdown menu if clicked outside
     document.getElementById('MFD_CONTENT')?.addEventListener('click', this.onCloseDropdownHandler);
 
@@ -311,7 +287,22 @@ export class Button extends DisplayComponent<ButtonProps> {
           ref={this.buttonRef}
           class="mfd-button"
           style={`${this.props.buttonStyle} ${this.props.menuItems && this.props.menuItems.get().length > 0 ? 'padding-right: 5px;' : ''}`}
-        />
+        >
+          {this.props.menuItems !== undefined && this.props.showArrow !== false ? (
+            <div class="mfd-fms-fpln-button-dropdown">
+              <span class="mfd-fms-fpln-button-dropdown-label">{this.props.label}</span>
+              <span class="mfd-fms-fpln-button-dropdown-arrow">
+                <TriangleUp
+                  class={{ hidden: this.menuOpensUpwards.map(SubscribableMapFunctions.not()) }}
+                  color={this.arrowColour}
+                />
+                <TriangleDown class={{ hidden: this.menuOpensUpwards }} color={this.arrowColour} />
+              </span>
+            </div>
+          ) : (
+            <span>{this.props.label}</span>
+          )}
+        </span>
         <div
           ref={this.dropdownMenuRef}
           class="mfd-dropdown-menu"

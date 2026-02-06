@@ -334,7 +334,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
               <div style="display: flex; flex: 1; justify-content: center;">
                 <Button
                   disabled={this.fuelPlanningIsDisabled}
-                  label={Subject.create(
+                  label={
                     <div style="display: flex; flex-direction: row;">
                       <span style="text-align: center; vertical-align: center; margin-right: 10px;">
                         FUEL
@@ -342,8 +342,8 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                         PLANNING
                       </span>
                       <span style="display: flex; align-items: center; justify-content: center;">*</span>
-                    </div>,
-                  )}
+                    </div>
+                  }
                   onClick={() => console.log('FUEL PLANNING')}
                   buttonStyle="padding-right: 2px;"
                 />

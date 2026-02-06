@@ -63,9 +63,12 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
   private readonly trueTrackEnabled = Subject.create<boolean>(false);
 
-  private readonly efobAndWindButtonDynamicContent = Subject.create<VNode>(<span />);
-
-  private readonly efobAndWindButtonMenuItems = Subject.create<ButtonMenuItem[]>([{ label: '', action: () => {} }]);
+  private readonly efobAndWindButtonMenuItems = Subject.create<ButtonMenuItem[]>([
+    {
+      action: () => this.displayEfobAndWind.set(!this.displayEfobAndWind.get()),
+      label: this.displayEfobAndWind.map((v) => (v ? 'SPD\xa0\xa0\xa0\xa0\xa0ALT' : 'EFOB\xa0\xa0\xa0\xa0T.WIND')),
+    },
+  ]);
 
   private readonly lineData: FplnLineDisplayData[] = [];
 
@@ -152,8 +155,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
   private readonly nextWptAvailableWaypoints = ArraySubject.create<NextWptInfo>([]);
 
   private readonly renderedFplnLines: NodeReference<FplnLegLine>[] = [];
-
-  private readonly destButtonLabelNode = this.destButtonLabel.map((it) => <span>{it}</span>);
 
   private readonly lineColorIsTemporary = this.lineColor.map((it) => it === FplnLineColor.Temporary);
 
@@ -689,20 +690,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     this.onNewData();
 
     this.subs.push(
-      this.displayEfobAndWind.sub((val) => {
-        this.efobAndWindButtonDynamicContent.set(val ? this.efobWindButton() : this.spdAltButton());
-        this.efobAndWindButtonMenuItems.set([
-          {
-            action: () => this.displayEfobAndWind.set(!this.displayEfobAndWind.get()),
-            label: this.displayEfobAndWind.get()
-              ? 'SPD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ALT'
-              : 'EFOB&nbsp;&nbsp;&nbsp;&nbsp;T.WIND',
-          },
-        ]);
-      }, true),
-    );
-
-    this.subs.push(
       this.displayFplnFromLineIndex.sub((_) => {
         this.onNewData();
         this.checkScrollButtons();
@@ -754,7 +741,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     );
 
     this.subs.push(
-      this.destButtonLabelNode,
       this.lineColorIsTemporary,
       this.preflightPhase,
       this.destTimeNotAvail,
@@ -771,15 +757,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     );
     this.disabledScrollDown.set(
       !this.lineData || this.displayFplnFromLineIndex.get() >= this.getLastPageAllowableIndex(),
-    );
-  }
-
-  private spdAltButton(): VNode {
-    return (
-      <div class="mfd-fms-fpln-button-speed-alt">
-        <span style="padding-left: 10px;">SPD</span>
-        <span style="margin-right: 55px;">ALT</span>
-      </div>
     );
   }
 
@@ -850,15 +827,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-vert-rev/alt`,
       );
     }
-  }
-
-  private efobWindButton(): VNode {
-    return (
-      <div class="mfd-fms-fpln-button-speed-alt">
-        <span>EFOB</span>
-        <span style="margin-left: 30px;">T.WIND</span>
-      </div>
-    );
   }
 
   private scrollToTop() {
@@ -949,7 +917,13 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             </div>
             <div ref={this.spdAltEfobWindRef} class="mfd-fms-fpln-header-speed-alt">
               <Button
-                label={this.efobAndWindButtonDynamicContent}
+                label={
+                  <div class="mfd-fms-fpln-button-speed-alt">
+                    {this.displayEfobAndWind.map((v) =>
+                      v ? 'EFOB\xa0\xa0\xa0\xa0T.WIND' : '\xa0SPD\xa0\xa0\xa0\xa0ALT\xa0\xa0\xa0',
+                    )}
+                  </div>
+                }
                 onClick={() => {}}
                 buttonStyle="margin-right: 5px; width: 260px; height: 43px;"
                 idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_efobwindbtn`}
@@ -970,7 +944,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           <div style="flex-grow: 1" />
           <div ref={this.tmpyLineRef} class="mfd-fms-fpln-line-erase-temporary">
             <Button
-              label={Subject.create(
+              label={
                 <div style="display: flex; flex-direction: row; justify-content: space-between;">
                   <span style="text-align: center; vertical-align: center; margin-right: 10px;">
                     ERASE
@@ -978,13 +952,13 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                     TMPY
                   </span>
                   <span style="display: flex; align-items: center; justify-content: center;">*</span>
-                </div>,
-              )}
+                </div>
+              }
               onClick={() => this.props.fmcService.master?.flightPlanService.temporaryDelete()}
               buttonStyle="color: #e68000; padding-right: 2px;"
             />
             <Button
-              label={Subject.create(
+              label={
                 <div style="display: flex; flex-direction: row; justify-content: space-between;">
                   <span style="text-align: center; vertical-align: center; margin-right: 10px;">
                     INSERT
@@ -992,8 +966,8 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                     TMPY
                   </span>
                   <span style="display: flex; align-items: center; justify-content: center;">*</span>
-                </div>,
-              )}
+                </div>
+              }
               onClick={() => this.props.fmcService.master?.flightPlanService.temporaryInsert()}
               buttonStyle="color: #e68000; padding-right: 2px;"
             />
@@ -1004,7 +978,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             <ConditionalComponent
               componentIfFalse={
                 <Button
-                  label={this.destButtonLabelNode}
+                  label={this.destButtonLabel}
                   onClick={() => {
                     this.props.fmcService.master?.resetRevisedWaypoint();
                     this.props.mfd.uiService.navigateTo(

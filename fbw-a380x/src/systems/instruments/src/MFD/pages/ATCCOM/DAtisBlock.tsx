@@ -65,8 +65,6 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
     return icao == null || icao == '----';
   });
 
-  private readonly messageStatusSpan = this.messageStatusLabel.map((s) => <>{s}</>);
-
   private readonly isAutoUpdateNotAllowed = MappedSubject.create(
     ([atisType, isIcaoEmpty]) => {
       return atisType === AtisType.Departure || isIcaoEmpty;
@@ -191,7 +189,6 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
       this.dropdownMenuVisible,
       this.combinedMenuVisible,
       this.statusButtonVisible,
-      this.messageStatusSpan,
       this.isAutoUpdateNotAllowed,
     );
   }
@@ -241,7 +238,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
           <div>
             {/* FSM Status Message Button */}
             <Button
-              label={this.messageStatusSpan}
+              label={this.messageStatusLabel}
               disabled={Subject.create(false)}
               onClick={() => {}}
               visible={this.statusButtonVisible}

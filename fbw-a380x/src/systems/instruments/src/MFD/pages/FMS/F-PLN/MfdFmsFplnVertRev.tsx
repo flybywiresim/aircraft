@@ -937,7 +937,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                       />
                     </div>
                     <Button
-                      label={Subject.create(
+                      label={
                         <div style="display: flex; flex-direction: row; justify-content: space-between;">
                           <span style="text-align: center; vertical-align: center; margin-right: 10px;">
                             DELETE
@@ -945,8 +945,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                             SPD CSTR
                           </span>
                           <span style="display: flex; align-items: center; justify-content: center;">*</span>
-                        </div>,
-                      )}
+                        </div>
+                      }
                       onClick={() => {
                         this.tryUpdateSpeedConstraint(undefined);
                       }}
@@ -985,7 +985,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                     />
 
                     <Button
-                      label={Subject.create(
+                      label={
                         <div style="display: flex; flex-direction: row; justify-content: space-between;">
                           <span style="text-align: center; vertical-align: center; margin-right: 10px;">
                             DELETE
@@ -993,8 +993,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                             SPD LIMIT
                           </span>
                           <span style="display: flex; align-items: center; justify-content: center;">*</span>
-                        </div>,
-                      )}
+                        </div>
+                      }
                       onClick={() => {
                         this.deleteSpeedLimit();
                       }}
@@ -1073,7 +1073,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                     </div>
                     <div class="mfd-vert-rev-alt-right-container">
                       <Button
-                        label={Subject.create(
+                        label={
                           <div class="fr" style="justify-content: space-between;">
                             <span style="text-align: center; vertical-align: center; margin-right: 10px;">
                               DELETE
@@ -1081,8 +1081,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                               ALT CSTR
                             </span>
                             <span style="display: flex; align-items: center; justify-content: center;">*</span>
-                          </div>,
-                        )}
+                          </div>
+                        }
                         onClick={() => {
                           this.deleteAltitudeConstraint();
                         }}

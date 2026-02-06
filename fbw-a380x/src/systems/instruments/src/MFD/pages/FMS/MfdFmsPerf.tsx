@@ -1220,7 +1220,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       style="grid-row-start: span 3; display: flex; justify-content: flex-end; align-items: flex-end;"
                     >
                       <Button
-                        label={Subject.create(
+                        label={
                           <div style="display: flex; flex-direction: row; justify-content: space-between;">
                             <span style="text-align: center; vertical-align: center; margin-right: 10px;">
                               CONFIRM
@@ -1228,8 +1228,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                               T.O SPDs
                             </span>
                             <span style="display: flex; align-items: center; justify-content: center;">*</span>
-                          </div>,
-                        )}
+                          </div>
+                        }
                         onClick={() => {
                           const fm = this.props.fmcService.master?.fmgc.data;
                           if (fm && this.loadedFlightPlan) {
@@ -2922,7 +2922,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
               </div>
               <div style={{ 'margin-right': '5px', visibility: this.activateApprButtonVisibility }}>
                 <Button
-                  label={Subject.create(
+                  label={
                     <div style="display: flex; flex-direction: row; justify-content: space-between;">
                       <span style="text-align: center; vertical-align: center; margin-right: 10px;">
                         ACTIVATE
@@ -2930,8 +2930,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         APPR
                       </span>
                       <span style="display: flex; align-items: center; justify-content: center;">*</span>
-                    </div>,
-                  )}
+                    </div>
+                  }
                   onClick={() => this.approachPhaseConfirmationDialogVisible.set(true)}
                   buttonStyle="color: #e68000; padding-right: 2px;"
                 />
@@ -2947,7 +2947,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
               </div>
               <div style={{ 'margin-right': '5px', visibility: this.clearEoButtonVisibility }}>
                 <Button
-                  label={Subject.create(
+                  label={
                     <div style="display: flex; flex-direction: row; justify-content: space-between;">
                       <span style="text-align: center; vertical-align: center; margin-right: 10px;">
                         CLEAR
@@ -2955,8 +2955,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         EO
                       </span>
                       <span style="display: flex; align-items: center; justify-content: center;">*</span>
-                    </div>,
-                  )}
+                    </div>
+                  }
                   onClick={() => this.clearEoConfirmationDialogVisible.set(true)}
                   buttonStyle="color: #e68000; padding-right: 2px;"
                 />
