@@ -61,7 +61,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
     const flightPlan = isAltn ? this.loadedFlightPlan?.alternateFlightPlan : this.loadedFlightPlan;
 
     if (flightPlan?.originAirport) {
-      this.GenerateRunwayOptions(flightPlan, isAltn);
+      this.generateRunwayOptions(flightPlan, isAltn);
 
       if (flightPlan.originRunway) {
         this.rwyIdent.set(flightPlan.originRunway.ident.substring(4));
@@ -168,7 +168,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
     }
   }
 
-  private GenerateRunwayOptions(
+  private generateRunwayOptions(
     flightPlan: FlightPlan<FlightPlanPerformanceData> | AlternateFlightPlan<FlightPlanPerformanceData>,
     isAltn: boolean | null | undefined,
   ) {
@@ -178,7 +178,6 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
       const sortedRunways = flightPlan.availableOriginRunways.sort((a, b) => a.ident.localeCompare(b.ident));
       const runways: ButtonMenuItem[] = sortedRunways.map((rw) => {
         return {
-          // TODO subscribable so we don't have to rebuild the whole list on new data
           label: `${rw.ident.substring(4).padEnd(3, ' ')} ${UnitType.METER.createNumber(rw.length).asUnit(this.lengthUnit.get()).toFixed(0).padStart(5, ' ')}${this.distanceUnitFormatter(this.lengthUnit.get())} ${rw.lsIdent ? 'ILS' : ''}`,
           action: async () => {
             await this.props.fmcService.master?.flightPlanService.setOriginRunway(
@@ -225,15 +224,15 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
     );
 
     this.subs.push(
-    this.lengthUnit.sub(() => {
-      if (!this.props.fmcService.master || !this.loadedFlightPlan) {
-        return;
-      }
-      const isAltn = this.props.fmcService.master.revisedLegIsAltn.get() ?? false;
-      const flightPlan = isAltn ? this.loadedFlightPlan.alternateFlightPlan : this.loadedFlightPlan;
-      if (flightPlan.destinationAirport) {
+      this.lengthUnit.sub(() => {
+        if (!this.props.fmcService.master || !this.loadedFlightPlan) {
+          return;
+        }
+        const isAltn = this.props.fmcService.master.revisedLegIsAltn.get() ?? false;
+        const flightPlan = isAltn ? this.loadedFlightPlan.alternateFlightPlan : this.loadedFlightPlan;
+        if (flightPlan.destinationAirport) {
           this.generateRunwayOptions(flightPlan, isAltn);
-      }
+        }
       }, true),
     );
 
