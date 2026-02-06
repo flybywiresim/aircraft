@@ -11,6 +11,7 @@ pub mod air_conditioning;
 pub mod air_starter_unit;
 pub mod airframe;
 pub mod apu;
+pub mod auto_flight;
 pub mod electrical;
 pub mod engine;
 pub mod enhanced_gpwc;

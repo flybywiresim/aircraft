@@ -14,7 +14,7 @@ use crate::{
     electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
     shared::{
         arinc429::{Arinc429Word, SignStatus},
-        MachNumber, PotentialOrigin, PowerConsumptionReport,
+        PotentialOrigin, PowerConsumptionReport,
     },
     simulation::{
         test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
@@ -120,14 +120,17 @@ impl TestAdiru {
     }
 }
 impl AirDataReferenceBus for TestAdiru {
+    fn corrected_average_static_pressure(&self) -> Arinc429Word<Pressure> {
+        Arinc429Word::new(Pressure::default(), self.adr_ssm)
+    }
     fn standard_altitude(&self) -> Arinc429Word<Length> {
         Arinc429Word::new(self.altitude, self.adr_ssm)
     }
     fn baro_corrected_altitude_1(&self) -> Arinc429Word<Length> {
         Arinc429Word::new(self.altitude, self.adr_ssm)
     }
-    fn mach(&self) -> Arinc429Word<MachNumber> {
-        Arinc429Word::new(MachNumber::default(), self.adr_ssm)
+    fn mach(&self) -> Arinc429Word<Ratio> {
+        Arinc429Word::new(Ratio::default(), self.adr_ssm)
     }
     fn computed_airspeed(&self) -> Arinc429Word<Velocity> {
         Arinc429Word::new(self.computed_airspeed, self.adr_ssm)
@@ -150,17 +153,31 @@ impl AirDataReferenceBus for TestAdiru {
     fn baro_corrected_altitude_2(&self) -> Arinc429Word<Length> {
         Arinc429Word::new(self.altitude, self.adr_ssm)
     }
-    fn baro_correction_1(&self) -> Arinc429Word<Pressure> {
-        Arinc429Word::new(Pressure::default(), self.adr_ssm)
+    fn baro_correction_1_hpa(&self) -> Arinc429Word<f64> {
+        Arinc429Word::new(Default::default(), self.adr_ssm)
     }
-    fn baro_correction_2(&self) -> Arinc429Word<Pressure> {
-        Arinc429Word::new(Pressure::default(), self.adr_ssm)
+    fn baro_correction_1_inhg(&self) -> Arinc429Word<f64> {
+        Arinc429Word::new(Default::default(), self.adr_ssm)
+    }
+    fn baro_correction_2_hpa(&self) -> Arinc429Word<f64> {
+        Arinc429Word::new(Default::default(), self.adr_ssm)
+    }
+    fn baro_correction_2_inhg(&self) -> Arinc429Word<f64> {
+        Arinc429Word::new(Default::default(), self.adr_ssm)
     }
     fn corrected_angle_of_attack(&self) -> Arinc429Word<Angle> {
         Arinc429Word::new(Angle::default(), self.adr_ssm)
     }
 }
 impl InertialReferenceBus for TestAdiru {
+    /// Label 015
+    fn wind_speed_bcd(&self) -> Arinc429Word<Velocity> {
+        Arinc429Word::new(Velocity::default(), self.ir_ssm)
+    }
+    /// Label 016
+    fn wind_dir_true_bcd(&self) -> Arinc429Word<Angle> {
+        Arinc429Word::new(Angle::default(), self.ir_ssm)
+    }
     /// Label 052
     fn pitch_angular_acc(&self) -> Arinc429Word<AngularAcceleration> {
         Arinc429Word::new(AngularAcceleration::default(), self.ir_ssm)
@@ -252,6 +269,18 @@ impl InertialReferenceBus for TestAdiru {
     /// Label 333
     fn body_normal_acc(&self) -> Arinc429Word<Ratio> {
         Arinc429Word::new(Ratio::default(), self.ir_ssm)
+    }
+    /// Label 335
+    fn track_angle_rate(&self) -> Arinc429Word<AngularVelocity> {
+        Arinc429Word::new(AngularVelocity::default(), self.ir_ssm)
+    }
+    /// Label 336
+    fn pitch_att_rate(&self) -> Arinc429Word<AngularVelocity> {
+        Arinc429Word::new(AngularVelocity::default(), self.ir_ssm)
+    }
+    /// Label 337
+    fn roll_att_rate(&self) -> Arinc429Word<AngularVelocity> {
+        Arinc429Word::new(AngularVelocity::default(), self.ir_ssm)
     }
     /// Label 361
     fn inertial_altitude(&self) -> Arinc429Word<Length> {
