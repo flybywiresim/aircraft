@@ -145,7 +145,7 @@ export class FwsCore {
 
   private readonly fwsUpdateThrottler = new UpdateThrottler(125); // has to be > 100 due to pulse nodes
 
-  private readonly simTime = RegisteredSimVar.create<number>('E:SIMULATION TIME', SimVarValueType.Seconds);
+  private readonly simTime = RegisteredSimVar.create('E:SIMULATION TIME', SimVarValueType.Seconds);
 
   private keyEventManager: KeyEventManager | undefined = undefined;
 
@@ -646,6 +646,13 @@ export class FwsCore {
     this.sub.on('fcdc_fg_discrete_word_8_2'),
   );
 
+  public readonly fcdc1LandingFctDiscreteWord = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('fcdc_landing_fct_discrete_word_1'),
+  );
+  public readonly fcdc2LandingFctDiscreteWord = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('fcdc_landing_fct_discrete_word_2'),
+  );
+
   public readonly fcdcDualFaultTripleClick = new NXLogicConfirmNode(2.3, true);
 
   public readonly rollOutFault = Subject.create(false);
@@ -1116,6 +1123,16 @@ export class FwsCore {
 
   public readonly groundSpoilerNotArmedWarning = Subject.create(false);
 
+  private readonly abnProcImpactingLdgPerfActiveSimvar = RegisteredSimVar.createBoolean(
+    `L:A32NX_FWC_${this.fwsNumber}_ABN_PROC_IMPACT_LDG_PERF`,
+  );
+  public readonly abnProcImpactingLdgPerfActive = Subject.create(false);
+
+  private readonly abnProcImpactingLdgDistActiveSimvar = RegisteredSimVar.createBoolean(
+    `L:A32NX_FWC_${this.fwsNumber}_ABN_PROC_IMPACT_LDG_DIST`,
+  );
+  public readonly abnProcImpactingLdgDistActive = Subject.create(false);
+
   /* FUEL */
 
   public readonly engine1ValueSwitch = ConsumerSubject.create(this.sub.on('fuel_valve_switch_1'), false);
@@ -1176,6 +1193,8 @@ export class FwsCore {
     this.crossFeed4ValveOpen,
   );
 
+  private readonly fmsZeroFuelWeightSimvarName = `L:A32NX_FM${this.fwsNumber}_ZERO_FUEL_WEIGHT`;
+  private readonly fmsZeroFuelWeightCgSimvarName = `L:A32NX_FM${this.fwsNumber}_ZERO_FUEL_WEIGHT_CG`;
   public readonly fmsZeroFuelWeight = Arinc429Register.empty();
   public readonly fmsZeroFuelWeightCg = Arinc429Register.empty();
 
@@ -1327,6 +1346,8 @@ export class FwsCore {
   private readonly eng1Or2RunningAndPhaseConfirmationNode = new NXLogicConfirmNode(1);
 
   private readonly eng3Or4RunningAndPhaseConfirmationNode = new NXLogicConfirmNode(1);
+
+  public readonly eng1Or2AndEng3Or4RunningAndPhase = Subject.create(false);
 
   public readonly threeYellowPumpsFailed = Subject.create(false);
 
@@ -1508,11 +1529,42 @@ export class FwsCore {
 
   private autoBrakeOffMemoInhibited = false;
 
-  public btvExitMissedPulseNode = new NXLogicPulseNode();
+  public readonly rowRopStatusWord = Arinc429Register.empty();
 
-  public readonly btvLost = Subject.create(false); // FIXME add from FCDC
+  public readonly rowLost = MappedSubject.create(
+    ([w1, w2, engRunning]) => engRunning && (w1.bitValueOr(11, false) || w2.bitValueOr(11, false)),
+    this.fcdc1LandingFctDiscreteWord,
+    this.fcdc2LandingFctDiscreteWord,
+    this.eng1Or2AndEng3Or4RunningAndPhase,
+  );
+  public readonly ropLost = MappedSubject.create(
+    ([w1, w2, engRunning]) => engRunning && (w1.bitValueOr(12, false) || w2.bitValueOr(12, false)),
+    this.fcdc1LandingFctDiscreteWord,
+    this.fcdc2LandingFctDiscreteWord,
+    this.eng1Or2AndEng3Or4RunningAndPhase,
+  );
+  public readonly btvLost = MappedSubject.create(
+    ([w1, w2, engRunning]) => engRunning && (w1.bitValueOr(13, false) || w2.bitValueOr(13, false)),
+    this.fcdc1LandingFctDiscreteWord,
+    this.fcdc2LandingFctDiscreteWord,
+    this.eng1Or2AndEng3Or4RunningAndPhase,
+  );
 
-  public readonly rowRopLost = Subject.create(false); // FIXME add from FCDC
+  public readonly oansFailedSimvar = RegisteredSimVar.createBoolean('L:A32NX_OANS_FAILED');
+  public readonly oansFailed = Subject.create(false);
+  public readonly oansPposLostSimVar = RegisteredSimVar.createBoolean('L:A32NX_ARPT_NAV_POS_LOST');
+  public readonly oansPposLost = Subject.create(false);
+  public readonly arptNavInop = MappedSubject.create(
+    ([oansFailed, pposLost]) => oansFailed || pposLost,
+    this.oansFailed,
+    this.oansPposLost,
+  );
+  public readonly arptNavFault = MappedSubject.create(
+    ([arptNavInop, ac4, dc1]) => arptNavInop && (ac4 || dc1),
+    this.arptNavInop,
+    this.ac4BusPowered,
+    this.dc1BusPowered,
+  );
 
   /* NAVIGATION */
 
@@ -1705,16 +1757,24 @@ export class FwsCore {
 
   public readonly terrSys2FaultCond = Subject.create(false);
 
+  public readonly terrSys1FailedSimvar = RegisteredSimVar.createBoolean('L:A32NX_TERR_1_FAILED');
   public readonly terrSys1Failed = Subject.create(false);
+  public readonly terrSys2FailedSimvar = RegisteredSimVar.createBoolean('L:A32NX_TERR_2_FAILED');
   public readonly terrSys2Failed = Subject.create(false);
 
   public readonly taws1FaultCond = Subject.create(false);
 
   public readonly taws2FaultCond = Subject.create(false);
 
+  public readonly taws1FailedSimvar = RegisteredSimVar.createBoolean('L:A32NX_TAWS_1_FAILED');
   public readonly taws1Failed = Subject.create(false);
+  public readonly taws2FailedSimvar = RegisteredSimVar.createBoolean('L:A32NX_TAWS_2_FAILED');
   public readonly taws2Failed = Subject.create(false);
 
+  public readonly tawsWxrSelectedSimvar = RegisteredSimVar.create<number>(
+    'L:A32NX_WXR_TAWS_SYS_SELECTED',
+    SimVarValueType.Number,
+  );
   public readonly tawsWxrSelected = Subject.create(0);
 
   /** 35 OXYGEN */
@@ -2025,6 +2085,39 @@ export class FwsCore {
     ([onGround, engRunning]) => !onGround && engRunning,
     this.aircraftOnGround,
     this.oneEngineRunning,
+  );
+
+  // Need to be placed at the end to use allEnginesFailure
+  public readonly ldgPerfAffected = MappedSubject.create(
+    ([w1, w2, flightPhase, allEnginesFailed]) =>
+      flightPhase !== 1 &&
+      flightPhase !== 10 &&
+      !allEnginesFailed &&
+      (w1.bitValueOr(21, false) ||
+        w2.bitValueOr(21, false) ||
+        w1.bitValueOr(23, false) ||
+        w2.bitValueOr(23, false) ||
+        w1.bitValueOr(25, false) ||
+        w2.bitValueOr(25, false)),
+    this.fcdc1LandingFctDiscreteWord,
+    this.fcdc2LandingFctDiscreteWord,
+    this.flightPhase,
+    this.allEnginesFailure,
+  );
+  public readonly ldgDistAffected = MappedSubject.create(
+    ([w1, w2, perfAffected, engRunning]) =>
+      (w1.bitValueOr(20, false) ||
+        w2.bitValueOr(20, false) ||
+        w1.bitValueOr(22, false) ||
+        w2.bitValueOr(22, false) ||
+        w1.bitValueOr(24, false) ||
+        w2.bitValueOr(24, false)) &&
+      !perfAffected &&
+      engRunning,
+    this.fcdc1LandingFctDiscreteWord,
+    this.fcdc2LandingFctDiscreteWord,
+    this.ldgPerfAffected,
+    this.eng1Or2AndEng3Or4RunningAndPhase,
   );
 
   /** Secondary Failures */
@@ -2428,14 +2521,13 @@ export class FwsCore {
     );
 
     this.subs.push(
+      this.abnProcImpactingLdgPerfActive.sub((s) => this.abnProcImpactingLdgPerfActiveSimvar.set(s), true),
+      this.abnProcImpactingLdgDistActive.sub((s) => this.abnProcImpactingLdgDistActiveSimvar.set(s), true),
+    );
+
+    this.subs.push(
       this.ecamStatusNormal.sub((s) => SimVar.SetSimVarValue('L:A32NX_STATUS_NORMAL', 'boolean', s), true),
-    );
-
-    this.subs.push(
       this.ecamEwdShowStsIndication.sub((s) => this.publisher.pub('fws_show_sts_indication', s, true), true),
-    );
-
-    this.subs.push(
       this.ecamEwdShowFailurePendingIndication.sub(
         (s) => this.publisher.pub('fws_show_failure_pending', s, true),
         true,
@@ -2903,6 +2995,10 @@ export class FwsCore {
     this.eng3Or4RunningAndPhaseConfirmationNode.write(
       this.engine3Running.get() || this.engine4Running.get() || !this.flightPhase12Or1112.get(),
       deltaTime,
+    );
+
+    this.eng1Or2AndEng3Or4RunningAndPhase.set(
+      this.eng1Or2RunningAndPhaseConfirmationNode.read() && this.eng3Or4RunningAndPhaseConfirmationNode.read(),
     );
 
     const greenAbnormLoPressure = gLoPressure && this.eng1Or2RunningAndPhaseConfirmationNode.read();
@@ -4175,8 +4271,8 @@ export class FwsCore {
     this.crossFeed3ValveOpen.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE OPEN:48', 'kilogram') > 0.1);
     this.crossFeed4ValveOpen.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE OPEN:49', 'kilogram') > 0.1);
 
-    this.fmsZeroFuelWeight.setFromSimVar(`L:A32NX_FM${this.fwsNumber}_ZERO_FUEL_WEIGHT`);
-    this.fmsZeroFuelWeightCg.setFromSimVar(`L:A32NX_FM${this.fwsNumber}_ZERO_FUEL_WEIGHT_CG`);
+    this.fmsZeroFuelWeight.setFromSimVar(this.fmsZeroFuelWeightSimvarName);
+    this.fmsZeroFuelWeightCg.setFromSimVar(this.fmsZeroFuelWeightCgSimvarName);
 
     this.fmsZfwOrZfwCgNotSet.set(
       this.fmsZeroFuelWeight.isNoComputedData() || this.fmsZeroFuelWeightCg.isNoComputedData(),
@@ -4565,6 +4661,21 @@ export class FwsCore {
         (fcdc1DiscreteWord4.isNormalOperation() || fcdc2DiscreteWord4.isNormalOperation()),
     );
 
+    this.abnProcImpactingLdgPerfActive.set(
+      this.activeAbnormalNonSensedKeys.has(270900001) ||
+        this.activeAbnormalNonSensedKeys.has(270900004) ||
+        this.activeAbnormalNonSensedKeys.has(270900005),
+    );
+    this.abnProcImpactingLdgDistActive.set(
+      this.activeAbnormalNonSensedKeys.has(320900001) ||
+        this.activeAbnormalNonSensedKeys.has(320900002) ||
+        this.activeAbnormalNonSensedKeys.has(320900003) ||
+        this.activeAbnormalNonSensedKeys.has(320900004) ||
+        this.activeAbnormalNonSensedKeys.has(320900005) ||
+        this.activeAbnormalNonSensedKeys.has(320900006) ||
+        this.activeAbnormalNonSensedKeys.has(990900009),
+    );
+
     // l/g gear not down
     const fwcFlightPhase = this.flightPhase.get();
     const flightPhase4567 =
@@ -4735,15 +4846,19 @@ export class FwsCore {
     // TAWS
     const taws1Powered = this.acESSBusPowered.get();
     const taws2Powered = this.ac4BusPowered.get();
-    this.terrSys1Failed.set(!!SimVar.GetSimVarValue('L:A32NX_TERR_1_FAILED', SimVarValueType.Bool));
+    this.terrSys1Failed.set(this.terrSys1FailedSimvar.get());
     this.terrSys1FaultCond.set(this.terrSys1Failed.get() && taws1Powered);
-    this.terrSys2Failed.set(!!SimVar.GetSimVarValue('L:A32NX_TERR_2_FAILED', SimVarValueType.Bool));
-    this.terrSys2FaultCond.set(this.terrSys1Failed.get() && taws2Powered);
-    this.taws1Failed.set(!!SimVar.GetSimVarValue('L:A32NX_TAWS_1_FAILED', SimVarValueType.Bool));
-    this.taws2Failed.set(!!SimVar.GetSimVarValue('L:A32NX_TAWS_2_FAILED', SimVarValueType.Bool));
+    this.terrSys2Failed.set(this.terrSys2FailedSimvar.get());
+    this.terrSys2FaultCond.set(this.terrSys2Failed.get() && taws2Powered);
+    this.taws1Failed.set(this.taws1FailedSimvar.get());
+    this.taws2Failed.set(this.taws2FailedSimvar.get());
     this.taws1FaultCond.set(this.taws1Failed.get() && taws1Powered);
     this.taws2FaultCond.set(this.taws2Failed.get() && taws2Powered);
-    this.tawsWxrSelected.set(SimVar.GetSimVarValue('L:A32NX_WXR_TAWS_SYS_SELECTED', SimVarValueType.Number));
+    this.tawsWxrSelected.set(this.tawsWxrSelectedSimvar.get());
+
+    // OANS
+    this.oansFailed.set(this.oansFailedSimvar.get());
+    this.oansPposLost.set(this.oansPposLostSimVar.get());
 
     /* 26 - FIRE */
 
@@ -5821,31 +5936,34 @@ export class FwsCore {
   }
 
   updateRowRopWarnings() {
-    const w = Arinc429Word.fromSimVarValue('L:A32NX_ROW_ROP_WORD_1');
+    this.rowRopStatusWord.setFromSimVar('L:A32NX_ROW_ROP_WORD_1');
 
     // ROW
-    this.soundManager.handleSoundCondition('runwayTooShort', w.bitValueOr(15, false));
+    this.soundManager.handleSoundCondition('runwayTooShort', this.rowRopStatusWord.bitValueOr(15, false));
 
     // ROP
     // MAX BRAKING, only for manual braking, if maximum pedal braking is not applied
     const maxBrakingSet =
       SimVar.GetSimVarValue('L:A32NX_LEFT_BRAKE_PEDAL_INPUT', 'number') > 90 ||
       SimVar.GetSimVarValue('L:A32NX_RIGHT_BRAKE_PEDAL_INPUT', 'number') > 90;
-    const maxBraking = w.bitValueOr(13, false) && !maxBrakingSet;
+    const maxBraking = this.rowRopStatusWord.bitValueOr(13, false) && !maxBrakingSet;
     this.soundManager.handleSoundCondition('brakeMaxBraking', maxBraking);
 
     // SET MAX REVERSE, if not already max. reverse set and !MAX_BRAKING
     const maxReverseSet =
       SimVar.GetSimVarValue('L:XMLVAR_Throttle1Position', 'number') < 0.1 &&
       SimVar.GetSimVarValue('L:XMLVAR_Throttle2Position', 'number') < 0.1;
-    const maxReverse = (w.bitValueOr(12, false) || w.bitValueOr(13, false)) && !maxReverseSet;
+    const maxReverse =
+      (this.rowRopStatusWord.bitValueOr(12, false) || this.rowRopStatusWord.bitValueOr(13, false)) && !maxReverseSet;
     this.soundManager.handleSoundCondition('setMaxReverse', !maxBraking && maxReverse);
 
     // At 80kt, KEEP MAX REVERSE once, if max. reversers deployed
     const ias = SimVar.GetSimVarValue('AIRSPEED INDICATED', 'knots');
     this.soundManager.handleSoundCondition(
       'keepMaxReverse',
-      ias <= 80 && ias > 4 && (w.bitValueOr(12, false) || w.bitValueOr(13, false)),
+      ias <= 80 &&
+        ias > 4 &&
+        (this.rowRopStatusWord.bitValueOr(12, false) || this.rowRopStatusWord.bitValueOr(13, false)),
     );
   }
 

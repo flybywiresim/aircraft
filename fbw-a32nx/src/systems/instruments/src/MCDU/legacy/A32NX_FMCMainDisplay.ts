@@ -23,6 +23,7 @@ import {
   NXDataStore,
   NXLogicConfirmNode,
   NXUnits,
+  Units,
   RegisteredSimVar,
   TerminalNdbNavaid,
   UpdateThrottler,
@@ -4875,7 +4876,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   public getManagedDescentSpeedMach() {
     const plan = this.getFlightPlan(FlightPlanIndex.Active);
 
-    return plan.performanceData.pilotManagedDescentSpeed.get() ?? this.managedSpeedDescendMach;
+    return plan.performanceData.pilotManagedDescentMach.get() ?? this.managedSpeedDescendMach;
   }
 
   // FIXME... ambiguous name that doesn't say if it's Vapp, GSmini, or something else
@@ -5502,10 +5503,11 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       ),
     );
     this.subscriptions.push(
-      activePlan.performanceData.approachQnh.sub(
-        (qnh) => SimVar.SetSimVarValue('L:A32NX_DESTINATION_QNH', 'Millibar', qnh ?? 0),
-        true,
-      ),
+      activePlan.performanceData.approachQnh.sub((qnh) => {
+        const qnhValue = qnh ?? 0;
+        const qnhMillibar = qnhValue < 500 ? Units.inchOfMercuryToHectopascal(qnhValue) : qnhValue;
+        SimVar.SetSimVarValue('L:A32NX_DESTINATION_QNH', 'Millibar', qnhMillibar);
+      }, true),
     );
     this.subscriptions.push(
       activePlan.performanceData.approachBaroMinimum.sub(
@@ -5622,6 +5624,10 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     if (this.fmgcDiscreteWord4.isInvalid()) {
       this.fmgcDiscreteWord4.set(this.fmgc2DiscreteWord4.get());
     }
+  }
+
+  getPerformanceFactorPercent(): number | null {
+    return null; // TODO implement with PERF FACTOR in AC STATUS page
   }
 }
 

@@ -688,8 +688,6 @@ class FlyByWireInterface {
 
   bool updateSfcc(int sfccIndex);
 
-  bool updateFadec(int fadecIndex);
-
   bool updateIls(int ilsIndex);
 
   bool updateAdirs(int adirsIndex);
