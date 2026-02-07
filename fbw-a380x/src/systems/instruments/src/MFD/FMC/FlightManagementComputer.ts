@@ -506,11 +506,9 @@ export class FlightManagementComputer implements FmcInterface {
           LOWEST_FUEL_ESTIMATE_KGS,
         );
       } else {
-        return Units.poundToKilogram(
-          Math.max(
-            destPred.estimatedFuelOnBoard - (this.fmgc.data.minimumFuelAtDestination.get() ?? 0),
-            A380AircraftConfig.vnavConfig.LOWEST_FUEL_ESTIMATE,
-          ),
+        return Math.max(
+          Units.poundToKilogram(destPred.estimatedFuelOnBoard) - (this.fmgc.data.minimumFuelAtDestination.get() ?? 0),
+          LOWEST_FUEL_ESTIMATE_KGS,
         );
       }
     }

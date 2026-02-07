@@ -501,6 +501,7 @@ export class FwsInopSys {
       // RWY OVERRUN PROT
       simVarIsActive: this.fws.ropLost,
       phase: FwsInopSysPhases.ApprLdg,
+      notActiveWhenItemActive: ['320300022'],
     },
     340300001: {
       // GPWS 1
@@ -750,7 +751,7 @@ export class FwsInopSys {
     },
     340300049: {
       // ARPT NAV
-      simVarIsActive: this.fws.arptNavLost,
+      simVarIsActive: this.fws.arptNavInop,
       phase: FwsInopSysPhases.ApprLdg,
     },
 

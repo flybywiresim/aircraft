@@ -37,7 +37,6 @@ interface SimVars {
   msfsStaticAirTemperature: number;
   msfsFlightPhase: number;
   msfsVhf3Powered: number;
-  msfsVhf3Frequency: number;
   msfsTransponderCode: number;
   msfsCompanyMessageCount: number;
   msfsAtcMessageButtonActive: boolean;
@@ -67,7 +66,6 @@ export enum SimVarSources {
   staticAirTemperature = 'L:A32NX_ADIRS_ADR_1_STATIC_AIR_TEMPERATURE',
   flightPhase = 'L:A32NX_FMGC_FLIGHT_PHASE',
   vhf3Powered = 'L:A32NX_ELEC_DC_1_BUS_IS_POWERED',
-  vhf3Frequency = 'A:COM ACTIVE FREQUENCY:3',
   transponderCode = 'TRANSPONDER CODE:1',
   companyMessageCount = 'L:A32NX_COMPANY_MSG_COUNT',
   atcMessageButtonActive = 'L:A32NX_DCDU_ATC_MSG_WAITING',
@@ -103,7 +101,6 @@ export class SimVarHandling extends SimVarPublisher<SimVars> {
     ['msfsStaticAirTemperature', { name: SimVarSources.staticAirTemperature, type: SimVarValueType.Number }],
     ['msfsFlightPhase', { name: SimVarSources.flightPhase, type: SimVarValueType.Number }],
     ['msfsVhf3Powered', { name: SimVarSources.vhf3Powered, type: SimVarValueType.Number }],
-    ['msfsVhf3Frequency', { name: SimVarSources.vhf3Frequency, type: SimVarValueType.MHz }],
     ['msfsTransponderCode', { name: SimVarSources.transponderCode, type: SimVarValueType.Number }],
     ['msfsCompanyMessageCount', { name: SimVarSources.companyMessageCount, type: SimVarValueType.Number }],
     ['msfsAtcMessageButtonActive', { name: SimVarSources.atcMessageButtonActive, type: SimVarValueType.Bool }],
@@ -137,7 +134,6 @@ export class SimVarHandling extends SimVarPublisher<SimVars> {
     super.subscribe('msfsStaticAirTemperature');
     super.subscribe('msfsFlightPhase');
     super.subscribe('msfsVhf3Powered');
-    super.subscribe('msfsVhf3Frequency');
     super.subscribe('msfsTransponderCode');
     super.subscribe('msfsCompanyMessageCount');
     super.subscribe('msfsAtcMessageButtonActive');
@@ -231,9 +227,6 @@ export class SimVarHandling extends SimVarPublisher<SimVars> {
     this.subscriber
       .on('msfsVhf3Powered')
       .handle((powered: number) => this.datalinkPublisher.pub('vhf3Powered', powered !== 0, false, false));
-    this.subscriber
-      .on('msfsVhf3Frequency')
-      .handle((frequency: number) => this.datalinkPublisher.pub('vhf3DataMode', frequency === 0, false, false));
     this.subscriber
       .on('msfsTransponderCode')
       .handle((code: number) => this.datalinkPublisher.pub('transponderCode', code, false, false));
