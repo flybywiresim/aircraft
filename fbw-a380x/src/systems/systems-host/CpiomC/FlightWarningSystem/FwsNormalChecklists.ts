@@ -124,8 +124,15 @@ export class FwsNormalChecklists {
               this.reset(this.getNormalProceduresKeysSorted().findIndex((v) => v === this.checklistId.get()));
             },
             (newState) => {
-              this.checklistState.setValue(this.checklistId.get(), newState);
               this.showChecklistRequested.set(false);
+              if (id === DEPARTURE_CHANGE_NORMAL_CHECKLIST_ID) {
+                // If departure change checklist is completed.. reset it.
+                newState.procedureCompleted = false;
+                for (let i = 0; i < newState.itemsChecked.length; i++) {
+                  newState.itemsChecked[i] = false;
+                }
+              }
+              this.checklistState.setValue(this.checklistId.get(), newState);
             },
           );
           this.activeProcedure = procGen;
@@ -224,13 +231,12 @@ export class FwsNormalChecklists {
           this.fws.manualCheckListReset.set(false);
         }
         const wasDepartureChangeShown = !this.hideDepartureChangeFlipFlop.read();
-        this.hideDepartureChangeFlipFlop.write(phase >= FwcFlightPhase.LiftOff, false);
+        this.hideDepartureChangeFlipFlop.write(
+          phase >= FwcFlightPhase.SecondEngineTakeOffPower && phase <= FwcFlightPhase.TouchDown,
+          false,
+        );
 
         if (wasDepartureChangeShown && this.hideDepartureChangeFlipFlop.read()) {
-          // IF we are at departure change by the time it goes disabled. Scroll back to checklist menu
-          if (this.checklistId.get() === DEPARTURE_CHANGE_NORMAL_CHECKLIST_ID) {
-            this.navigateToChecklist(0);
-          }
           this.setDepartureChangeHidden(true);
         }
       }, true),
@@ -252,7 +258,7 @@ export class FwsNormalChecklists {
       const proc = EcamNormalProcedures[k] as NormalProcedure;
       this.checklistState.setValue(k, {
         id: k.toString(),
-        procedureCompleted: proc.onlyActivatedByRequest ? true : false,
+        procedureCompleted: false,
         procedureActivated: true,
         itemsChecked: Array(proc.items.length).fill(false),
         itemsActive: Array(proc.items.length).fill(true),
@@ -260,7 +266,7 @@ export class FwsNormalChecklists {
       });
     });
 
-    this.checklistState.setValue(0, {
+    this.checklistState.setValue(CHECKLIST_OVERVIEW_ID, {
       id: '0',
       procedureCompleted: false,
       procedureActivated: true,
@@ -361,8 +367,13 @@ export class FwsNormalChecklists {
     if (fromId !== -1) {
       const ids = this.getNormalProceduresKeysSorted();
       this.fws.manualCheckListReset.set(fromId !== undefined);
-      // Show Departure change again if, checklist automatically reset or a manual checklist reset occurs during preflight phase.
-      if (fromId === undefined || (fromId !== undefined && this.fws.flightPhase.get() == FwcFlightPhase.ElecPwr)) {
+
+      // Show Departure change again if, checklist automatically reset or a manual checklist reset occurs on a subsequent CL.
+      if (
+        this.hideDepartureChangeFlipFlop.read() &&
+        (fromId === undefined ||
+          (fromId !== undefined && fromId < ids.findIndex((i) => i === DEPARTURE_CHANGE_NORMAL_CHECKLIST_ID)))
+      ) {
         this.hideDepartureChangeFlipFlop.write(false, true);
         this.setDepartureChangeHidden(false);
       }
@@ -373,7 +384,7 @@ export class FwsNormalChecklists {
         if (clFollowing) {
           const clStateFollowing: ChecklistState = {
             id: idFollowing.toString(),
-            procedureCompleted: procFollowing.onlyActivatedByRequest ? true : false,
+            procedureCompleted: false,
             procedureActivated: true,
             itemsChecked: [...clFollowing.itemsChecked].map((val, index) =>
               procFollowing.items[index].sensed ? val : false,
@@ -574,7 +585,7 @@ export class FwsNormalChecklists {
 
   public sensedItems: FwsNormalChecklistsDict = {
     1000001: {
-      whichItemsChecked: () => [null, null, !!this.fws.seatBelt.get(), null],
+      whichItemsChecked: () => [null, null, !!this.fws.seatBeltOn.get(), null],
     },
     1000002: {
       whichItemsChecked: () => [null, null, SimVar.GetSimVarValue('A:LIGHT BEACON', SimVarValueType.Bool)],
