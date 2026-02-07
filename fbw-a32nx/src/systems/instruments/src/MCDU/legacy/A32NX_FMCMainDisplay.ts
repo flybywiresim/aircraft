@@ -3604,8 +3604,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   /**
-   *
-   * @returns {number} Returns estimated fuel on board when arriving at the destination (in tonnes)
+   * Returns the estimated fuel on board when arriving at the destination (in tonnes), or null if it could not be computed
+   * @returns EFOB at destination
    */
   public getDestEFOB() {
     const plan = this.getFlightPlan(FlightPlanIndex.Active);
