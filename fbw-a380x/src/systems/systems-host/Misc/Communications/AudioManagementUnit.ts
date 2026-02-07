@@ -32,11 +32,11 @@ export class AudioManagementUnit implements Instrument {
   private readonly onsideRmpIndex = this.index;
   private readonly offsideRmpIndex = this.index === 2 ? 1 : 2;
 
-  private readonly onsideRmpStateLocalVar = RegisteredSimVar.create<number>(
+  private readonly onsideRmpStateLocalVar = RegisteredSimVar.create(
     `L:A380X_RMP_${this.onsideRmpIndex}_STATE`,
     SimVarValueType.Enum,
   );
-  private readonly rmp3StateLocalVar = RegisteredSimVar.create<number>(`L:A380X_RMP_3_STATE`, SimVarValueType.Enum);
+  private readonly rmp3StateLocalVar = RegisteredSimVar.create(`L:A380X_RMP_3_STATE`, SimVarValueType.Enum);
 
   private readonly mainPowerVar = 'L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED';
 

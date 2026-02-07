@@ -70,6 +70,8 @@
 1. [A32NX/FWS] Fixed stall warning not working - @tracernz (Mike)
 1. [A380X/MFD] Add initial implementation of D-ATIS page in ATCCOM - @heclak (Heclak)
 1. [A32NX/FWS] Fixed takeoff memo not working in flight phase 9 (after landing) - @tracernz (Mike)
+1. [A380X/FUEL SYSTEM] Fixed inner tank transfer not starting in certain circumstances - @donstim (donbikes)
+1. [A32NX/FADEC] Fixed the PFD showing MAN FLX instead of MAN MCT post A/THR engagement after takeoff - @FozzieHi (Fozzie)
 1. [A380X/FUEL] Add first FQMS fuel measuring implementation - @Gurgel100 (Pascal)
 
 ## 0.14.0

@@ -8,6 +8,8 @@ jobs:
   create_github_release:
     name: Create GitHub release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
       id: ${{ steps.create_release.outputs.id }}
@@ -27,6 +29,8 @@ jobs:
     name: Build and publish A32NX
     # Prevent running this on forks
     if: github.repository_owner == 'flybywiresim'
+    permissions:
+      contents: write
     needs: create_github_release
     runs-on: ubuntu-latest
     env:
@@ -69,7 +73,7 @@ jobs:
           sudo apt-get install -y rclone
       - name: Build A32NX
         run: |
-          ./scripts/dev-env/run.sh ./scripts/build_a32nx.sh --no-tty -j 4
+          ./scripts/dev-env/run.sh ./scripts/build.sh -r "a32nx" --no-tty -j 4
           docker system prune -af
       - name: Remove source files
         run: |
@@ -140,6 +144,8 @@ jobs:
     if: github.repository_owner == 'flybywiresim'
     needs: create_github_release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     env:
       FBW_PRODUCTION_BUILD: 1
       BUILD_DIR_NAME: stable-rc-a380x
@@ -204,7 +210,7 @@ jobs:
           rm -rf ./large-files/fbw-a380x/src/base/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/texture-4k/
       - name: Build A380X
         run: |
-          ./scripts/dev-env/run.sh ./scripts/build_a380x.sh --no-tty -j 4
+          ./scripts/dev-env/run.sh ./scripts/build.sh -r "a380x" --no-tty -j 4
           docker system prune -af
       - name: Remove source files
         run: |
@@ -272,6 +278,8 @@ jobs:
     if: github.repository_owner == 'flybywiresim'
     needs: create_github_release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     env:
       FBW_PRODUCTION_BUILD: 1
       PRE_RELEASE_TAG: assets/stable
@@ -335,7 +343,7 @@ jobs:
           sudo apt-get install -y rclone
       - name: Build A380X
         run: |
-          ./scripts/dev-env/run.sh ./scripts/build_a380x.sh --no-tty -j 4 -4k
+          ./scripts/dev-env/run.sh ./scripts/build.sh -r "a380x" --no-tty -j 4 -4k
           docker system prune -af
       - name: Remove source files
         run: |
