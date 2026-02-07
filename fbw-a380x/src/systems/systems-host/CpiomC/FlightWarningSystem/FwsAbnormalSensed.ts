@@ -2892,7 +2892,7 @@ export class FwsAbnormalSensed {
         this.fws.flapsJammed.get(),
         this.fws.flapsJammed.get(),
         true,
-        this.fws.flapsHandle.get() < 3,
+        !this.fws.flapLeverFull.get(),
         !this.fws.flapPositionValid.get(),
         !this.fws.flapsRetracted.get(),
         !this.fws.flapsRetracted.get(),
@@ -3453,7 +3453,7 @@ export class FwsAbnormalSensed {
       simVarIsActive: this.fws.greenYellowAbnormLoPressure,
       whichItemsToShow: () => [
         true,
-        this.fws.flapsHandle.get() <= 3, // fix me use actual flap angle
+        !this.fws.flapLeverFull.get(), // fix me use actual flap angle
         true,
         true,
         true,

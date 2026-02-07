@@ -1,6 +1,6 @@
 // Copyright (c) 2024-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
-import { ConsumerSubject } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, Subject, VNode } from '@microsoft/msfs-sdk';
 import {
   CHECKLIST_OVERVIEW_ID,
   CHECKLIST_OVERVIEW_ID_TEXT,

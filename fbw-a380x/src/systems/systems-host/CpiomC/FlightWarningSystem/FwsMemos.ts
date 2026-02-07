@@ -412,7 +412,7 @@ export class FwsMemos {
     '335000001': {
       // SEAT BELTS
       flightPhaseInhib: [2, 9, 10],
-      simVarIsActive: this.fws.seatBelt.map((v) => !!v),
+      simVarIsActive: this.fws.seatBeltOn,
       whichCodeToReturn: () => [0],
       codesToReturn: ['335000001'],
       memoInhibit: () => this.fws.toMemo.get() === 1 || this.fws.ldgMemo.get() === 1,
@@ -602,10 +602,7 @@ export class FwsMemos {
       simVarIsActive: this.fws.toMemo.map((t) => !!t),
       whichCodeToReturn: () => [
         0,
-        SimVar.GetSimVarValue('L:A32NX_NO_SMOKING_MEMO', 'bool') === 1 &&
-        SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool') === 1
-          ? 2
-          : 1,
+        this.fws.seatBeltOn.get() ? 2 : 1,
         this.fws.spoilersArmed.get() ? 4 : 3,
         this.fws.slatFlapSelectionS18F10 || this.fws.slatFlapSelectionS22F15 || this.fws.slatFlapSelectionS22F20
           ? 6
@@ -635,18 +632,10 @@ export class FwsMemos {
       simVarIsActive: this.fws.ldgMemo.map((t) => !!t),
       whichCodeToReturn: () => [
         0,
-        SimVar.GetSimVarValue('L:A32NX_NO_SMOKING_MEMO', 'bool') === 1 &&
-        SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool') === 1
-          ? 2
-          : 1,
+        this.fws.seatBeltOn.get() ? 2 : 1,
         this.fws.isAllGearDownlocked ? 4 : 3,
         this.fws.spoilersArmed.get() ? 6 : 5,
-        (!SimVar.GetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'bool') &&
-          SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum') === 4) ||
-        (SimVar.GetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'bool') &&
-          SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum') === 3)
-          ? 8
-          : 7,
+        this.fws.flapsLeverInLandingConfiguration.get() ? 8 : 7,
       ],
       codesToReturn: [
         '000002001',

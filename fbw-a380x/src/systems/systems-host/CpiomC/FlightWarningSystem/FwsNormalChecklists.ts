@@ -29,7 +29,7 @@ import {
   ProcedureType,
   SPECIAL_INDEX_DEFERRED_PAGE_CLEAR,
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/ProcedureLinesGenerator';
-import { NXLogicMemoryNode } from '@flybywiresim/fbw-sdk';
+import { NXLogicMemoryNode, RegisteredSimVar } from '@flybywiresim/fbw-sdk';
 import { FwcFlightPhase } from './FwsFlightPhases';
 
 export interface NormalEclSensedItems {
@@ -81,6 +81,15 @@ export class FwsNormalChecklists {
   /** Whether the departure change checklist should be shown on the checklist list. Set to true once airborne (flightphase 6 or greater).
    * Set to false after the automatic checklist reset or manual reset in phase 1 */
   private readonly hideDepartureChangeFlipFlop = new NXLogicMemoryNode();
+
+  private readonly beaconLightSwitch = RegisteredSimVar.createBoolean('A:LIGHT BEACON');
+
+  private readonly emergencyExitLightSwitch = RegisteredSimVar.create(
+    'L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_Position',
+    SimVarValueType.Number,
+  );
+
+  private readonly crewOxygenButtonPushed = RegisteredSimVar.createBoolean('L:PUSH_OVHD_OXYGEN_CREW');
 
   constructor(private fws: FwsCore) {
     this.subscriptions.push(
@@ -585,10 +594,10 @@ export class FwsNormalChecklists {
 
   public sensedItems: FwsNormalChecklistsDict = {
     1000001: {
-      whichItemsChecked: () => [null, null, !!this.fws.seatBeltOn.get(), null],
+      whichItemsChecked: () => [null, null, this.fws.seatBeltOn.get(), null],
     },
     1000002: {
-      whichItemsChecked: () => [null, null, SimVar.GetSimVarValue('A:LIGHT BEACON', SimVarValueType.Bool)],
+      whichItemsChecked: () => [null, null, this.beaconLightSwitch.get()],
     },
     1000003: {
       whichItemsChecked: () => [null, null, this.fws.rudderTrimPosition.get() < 0.35],
@@ -599,7 +608,7 @@ export class FwsNormalChecklists {
         null,
         null,
         false,
-        SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool') === 1,
+        this.fws.seatBeltOn.get(),
         this.fws.spoilersArmed.get(),
         this.fws.slatFlapSelectionS18F10 || this.fws.slatFlapSelectionS22F15 || this.fws.slatFlapSelectionS22F20,
         this.fws.autoBrake.get() === 6,
@@ -622,7 +631,7 @@ export class FwsNormalChecklists {
       whichItemsChecked: () => [null],
     },
     1000010: {
-      whichItemsChecked: () => [null, SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool'), null, null],
+      whichItemsChecked: () => [null, this.fws.seatBeltOn.get(), null, null],
     },
     1000011: {
       whichItemsChecked: () => [null],
@@ -630,13 +639,10 @@ export class FwsNormalChecklists {
     1000012: {
       whichItemsChecked: () => [
         false,
-        SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool'),
+        this.fws.seatBeltOn.get(),
         this.fws.isAllGearDownlocked,
         this.fws.spoilersArmed.get(),
-        (!SimVar.GetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'bool') &&
-          SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum') === 4) ||
-          (SimVar.GetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'bool') &&
-            SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'enum') === 3),
+        this.fws.flapsLeverInLandingConfiguration.get(),
       ],
     },
     1000013: {
@@ -652,8 +658,8 @@ export class FwsNormalChecklists {
     },
     1000014: {
       whichItemsChecked: () => [
-        SimVar.GetSimVarValue('L:PUSH_OVHD_OXYGEN_CREW', 'bool'),
-        SimVar.GetSimVarValue('L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_Position', 'number') === 2,
+        this.crewOxygenButtonPushed.get(),
+        this.emergencyExitLightSwitch.get() === 2,
         null,
         null,
       ],
