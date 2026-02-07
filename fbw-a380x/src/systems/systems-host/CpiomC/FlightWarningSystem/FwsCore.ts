@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2025 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -2251,7 +2251,7 @@ export class FwsCore {
         if (v) {
           this.init();
 
-          this.normalChecklists.reset(null);
+          this.normalChecklists.reset();
           this.abnormalNonSensed.reset();
           this.activeDeferredProceduresList.clear();
           this.abnormalSensed.reset();
@@ -2271,7 +2271,7 @@ export class FwsCore {
       this.shutDownFor50MinutesCheckListReset.sub((v) => {
         if (v) {
           if (!this.manualCheckListReset.get()) {
-            this.normalChecklists.reset(null);
+            this.normalChecklists.reset();
           }
           this.abnormalNonSensed.reset();
           this.abnormalSensed.reset();

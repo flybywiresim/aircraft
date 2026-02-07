@@ -1,5 +1,9 @@
-import { ConsumerSubject, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+// Copyright (c) 2024-2026 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+import { ConsumerSubject } from '@microsoft/msfs-sdk';
 import {
+  CHECKLIST_OVERVIEW_ID,
+  CHECKLIST_OVERVIEW_ID_TEXT,
   deferredProcedureIds,
   EcamNormalProcedures,
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/NormalProcedures';
@@ -33,9 +37,10 @@ export class WdNormalChecklists extends WdAbstractChecklistComponent {
   public updateChecklists() {
     this.lineData.length = 0;
 
-    const sorted = this.checklists
-      .get()
-      .filter((v) => v.id !== '0')
+    const checklists = this.checklists.get();
+
+    const sorted = checklists
+      .filter((v) => v.id !== CHECKLIST_OVERVIEW_ID_TEXT)
       .sort((a, b) => parseInt(a.id) - parseInt(b.id));
     const clState = sorted.find((v) => parseInt(v.id) === this.checklistId.get());
 
@@ -68,7 +73,7 @@ export class WdNormalChecklists extends WdAbstractChecklistComponent {
       .get()
       .every((p) => EcamDeferredProcedures[p.id]?.type === DeferredProcedureType.FOR_LANDING && p.procedureCompleted);
 
-    if (this.checklistId.get() === 0) {
+    if (this.checklistId.get() === CHECKLIST_OVERVIEW_ID) {
       // Render overview page
       this.lineData.push({
         activeProcedure: true,
@@ -79,6 +84,8 @@ export class WdNormalChecklists extends WdAbstractChecklistComponent {
         firstLine: true,
         lastLine: false,
       });
+
+      const overViewState = checklists.find((v) => v.id === CHECKLIST_OVERVIEW_ID_TEXT);
 
       sorted.forEach((state, index) => {
         if (EcamNormalProcedures[parseInt(state.id)]) {
@@ -99,6 +106,7 @@ export class WdNormalChecklists extends WdAbstractChecklistComponent {
               ? ChecklistLineStyle.CompletedChecklist
               : ChecklistLineStyle.ChecklistItem;
             checked = state.procedureCompleted ?? false;
+            display = overViewState?.itemsToShow[index] ?? false; // Ignore checklist titles without any items to show e.g. departure change if disabled
           }
 
           if (display) {
