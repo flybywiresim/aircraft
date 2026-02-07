@@ -4,7 +4,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { DescentPathBuilder } from '@fmgc/guidance/vnav/descent/DescentPathBuilder';
-import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { VerticalMode, LateralMode, isArmed, ArmedVerticalMode } from '@shared/autopilot';
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
@@ -32,9 +31,6 @@ import {
 } from '@fmgc/guidance/vnav/descent/TacticalDescentPathBuilder';
 import { DescentStrategy, DesModeStrategy, IdleDescentStrategy } from '@fmgc/guidance/vnav/descent/DescentStrategy';
 import { ApproachPathBuilder } from '@fmgc/guidance/vnav/descent/ApproachPathBuilder';
-import { WindProfileFactory } from '@fmgc/guidance/vnav/wind/WindProfileFactory';
-import { NavHeadingProfile } from '@fmgc/guidance/vnav/wind/AircraftHeadingProfile';
-import { HeadwindProfile } from '@fmgc/guidance/vnav/wind/HeadwindProfile';
 import { ProfileInterceptCalculator } from '@fmgc/guidance/vnav/descent/ProfileInterceptCalculator';
 import { BaseGeometryProfile } from '@fmgc/guidance/vnav/profile/BaseGeometryProfile';
 import { AircraftToDescentProfileRelation } from '@fmgc/guidance/vnav/descent/AircraftToProfileRelation';
@@ -44,9 +40,11 @@ import {
   isApproachCheckpoint,
   isSpeedChangePoint,
   NavGeometryProfile,
+  ProfilePhase,
   VerticalCheckpointReason,
 } from './profile/NavGeometryProfile';
 import { ClimbPathBuilder } from './climb/ClimbPathBuilder';
+import { EventBus } from '@microsoft/msfs-sdk';
 
 export class VerticalProfileManager {
   private takeoffPathBuilder: TakeoffPathBuilder;
@@ -74,13 +72,11 @@ export class VerticalProfileManager {
   expediteProfile: SelectedGeometryProfile | undefined;
 
   constructor(
+    private readonly bus: EventBus,
     private readonly flightPlanService: FlightPlanService,
-    private guidanceController: GuidanceController,
     private observer: VerticalProfileComputationParametersObserver,
     private atmosphericConditions: AtmosphericConditions,
     private constraintReader: ConstraintReader,
-    private headingProfile: NavHeadingProfile,
-    private windProfileFactory: WindProfileFactory,
     private aircraftToDescentProfileRelation: AircraftToDescentProfileRelation,
     private readonly acConfig: AircraftConfig,
   ) {
@@ -125,11 +121,8 @@ export class VerticalProfileManager {
       this.acConfig,
     );
 
-    const climbWinds = new HeadwindProfile(this.windProfileFactory.getClimbWinds(), this.headingProfile);
-    const cruiseWinds = new HeadwindProfile(this.windProfileFactory.getCruiseWinds(), this.headingProfile);
-    const descentWinds = new HeadwindProfile(this.windProfileFactory.getDescentWinds(), this.headingProfile);
-
     const mcduProfile = new NavGeometryProfile(
+      this.bus,
       this.flightPlanService,
       this.constraintReader,
       this.atmosphericConditions,
@@ -151,6 +144,7 @@ export class VerticalProfileManager {
         fuelOnBoard,
         this.getManagedMachTarget(),
         this.getVman(approachSpeed),
+        this.getProfilePhaseFromFlightPhase(flightPhase),
       );
     }
 
@@ -160,7 +154,6 @@ export class VerticalProfileManager {
         this.acConfig,
         managedClimbStrategy,
         speedProfile,
-        climbWinds,
         cruiseAltitude,
       );
     }
@@ -177,7 +170,6 @@ export class VerticalProfileManager {
         mcduProfile,
         this.getDesModeStrategy(),
         speedProfile,
-        descentWinds,
         schedule,
       );
       this.mergeMcduWithGuidanceProfile(mcduProfile, offset);
@@ -185,8 +177,6 @@ export class VerticalProfileManager {
       this.cruiseToDescentCoordinator.buildCruiseAndDescentPath(
         mcduProfile,
         speedProfile,
-        cruiseWinds,
-        descentWinds,
         managedClimbStrategy,
         stepDescentStrategy,
       );
@@ -198,6 +188,7 @@ export class VerticalProfileManager {
 
   computeDescentPath(): void {
     const descentProfile = new NavGeometryProfile(
+      this.bus,
       this.flightPlanService,
       this.constraintReader,
       this.atmosphericConditions,
@@ -211,8 +202,6 @@ export class VerticalProfileManager {
       this.constraintReader.descentSpeedConstraints,
     );
 
-    const descentWinds = new HeadwindProfile(this.windProfileFactory.getDescentWinds(), this.headingProfile);
-
     const { estimatedDestinationFuel } = this.observer.get();
     // Use INIT FUEL PRED entry as initial estimate for destination EFOB. Clamp it to avoid potentially crashing predictions entirely from erroneous pilot input.
     const fuelEstimation = Number.isFinite(estimatedDestinationFuel)
@@ -223,18 +212,11 @@ export class VerticalProfileManager {
       : 4000;
     const finalCruiseAltitude = this.cruisePathBuilder.getFinalCruiseAltitude(descentProfile.cruiseSteps);
 
-    const sequence = this.approachPathBuilder.computeApproachPath(
-      descentProfile,
-      speedProfile,
-      descentWinds,
-      fuelEstimation,
-      0,
-    );
+    const sequence = this.approachPathBuilder.computeApproachPath(descentProfile, speedProfile, fuelEstimation, 0);
     this.managedDescentPathBuilder.computeManagedDescentPath(
       sequence,
       descentProfile,
       speedProfile,
-      descentWinds,
       finalCruiseAltitude,
     );
 
@@ -246,7 +228,8 @@ export class VerticalProfileManager {
 
   computeVerticalProfileForExpediteClimb(): void {
     try {
-      const { approachSpeed, fcuAltitude, presentPosition, fuelOnBoard, managedClimbSpeedMach } = this.observer.get();
+      const { approachSpeed, fcuAltitude, presentPosition, fuelOnBoard, managedClimbSpeedMach, flightPhase } =
+        this.observer.get();
 
       // TODO: I wonder where GD speed comes from IRL. Should probably be an FMGC computation rather than FAC since it's just for predictions
       const greenDotSpeed = Simplane.getGreenDotSpeed();
@@ -255,29 +238,28 @@ export class VerticalProfileManager {
       }
 
       const selectedSpeedProfile = new ExpediteSpeedProfile(greenDotSpeed);
-      this.expediteProfile = new SelectedGeometryProfile(this.acConfig);
+      this.expediteProfile = new SelectedGeometryProfile(this.bus, this.flightPlanService.active, this.acConfig);
       const climbStrategy = new ClimbThrustClimbStrategy(this.observer, this.atmosphericConditions, this.acConfig);
-      const climbWinds = new HeadwindProfile(this.windProfileFactory.getClimbWinds(), this.headingProfile);
 
       this.expediteProfile.addPresentPositionCheckpoint(
         presentPosition,
         fuelOnBoard,
         managedClimbSpeedMach,
         this.getVman(approachSpeed),
+        this.getProfilePhaseFromFlightPhase(flightPhase),
       );
       this.climbPathBuilder.computeClimbPath(
         this.expediteProfile,
         this.acConfig,
         climbStrategy,
         selectedSpeedProfile,
-        climbWinds,
         fcuAltitude,
       );
 
       this.expediteProfile.finalizeProfile();
     } catch (e) {
       console.error(e);
-      this.expediteProfile = new SelectedGeometryProfile(this.acConfig);
+      this.expediteProfile = new SelectedGeometryProfile(this.bus, this.flightPlanService.active, this.acConfig);
     }
   }
 
@@ -285,11 +267,17 @@ export class VerticalProfileManager {
    * Build a path from the present position to the FCU altitude
    */
   computeTacticalNdProfile(): void {
-    const { fcuAltitude, cleanSpeed, presentPosition, fuelOnBoard, approachSpeed } = this.observer.get();
+    const { fcuAltitude, cleanSpeed, presentPosition, fuelOnBoard, approachSpeed, flightPhase } = this.observer.get();
 
     const ndProfile = this.fcuModes.isLatAutoControlActive()
-      ? new NavGeometryProfile(this.flightPlanService, this.constraintReader, this.atmosphericConditions, this.acConfig)
-      : new SelectedGeometryProfile(this.acConfig);
+      ? new NavGeometryProfile(
+          this.bus,
+          this.flightPlanService,
+          this.constraintReader,
+          this.atmosphericConditions,
+          this.acConfig,
+        )
+      : new SelectedGeometryProfile(this.bus, this.flightPlanService.active, this.acConfig);
 
     let speedProfile: SpeedProfile;
     if (this.fcuModes.isExpediteModeActive()) {
@@ -321,24 +309,16 @@ export class VerticalProfileManager {
       fuelOnBoard,
       this.getManagedMachTarget(),
       this.getVman(approachSpeed),
+      this.getProfilePhaseFromFlightPhase(flightPhase),
     );
 
     // Build path to FCU altitude
     if (this.fcuModes.isInTakeoffMode() || this.fcuModes.isInClimbingMode()) {
       const climbStrategy = this.getClimbStrategyForVerticalMode();
-      const climbWinds = new HeadwindProfile(this.windProfileFactory.getClimbWinds(), this.headingProfile);
 
-      this.climbPathBuilder.computeClimbPath(
-        ndProfile,
-        this.acConfig,
-        climbStrategy,
-        speedProfile,
-        climbWinds,
-        fcuAltitude,
-      );
+      this.climbPathBuilder.computeClimbPath(ndProfile, this.acConfig, climbStrategy, speedProfile, fcuAltitude);
     } else if (this.fcuModes.isInDescentMode()) {
       const descentStrategy = this.getDescentStrategyForVerticalMode();
-      const descentWinds = new HeadwindProfile(this.windProfileFactory.getDescentWinds(), this.headingProfile);
       const offset = this.computeTacticalToGuidanceProfileOffset();
       const schedule = this.getDecelerationScheduleFromDescentPath(offset);
 
@@ -346,7 +326,6 @@ export class VerticalProfileManager {
         ndProfile,
         descentStrategy,
         speedProfile,
-        descentWinds,
         fcuAltitude,
         schedule,
       );
@@ -766,6 +745,23 @@ export class VerticalProfileManager {
     }
 
     return this.flightPlanService.active?.hasTooSteepPathAhead();
+  }
+
+  private getProfilePhaseFromFlightPhase(flightPhase: FmgcFlightPhase): ProfilePhase {
+    switch (flightPhase) {
+      case FmgcFlightPhase.Takeoff:
+      case FmgcFlightPhase.Climb:
+        return ProfilePhase.Climb;
+      case FmgcFlightPhase.Cruise:
+        return ProfilePhase.Cruise;
+      case FmgcFlightPhase.Descent:
+      case FmgcFlightPhase.Approach:
+        return ProfilePhase.Descent;
+      case FmgcFlightPhase.Done:
+      case FmgcFlightPhase.GoAround:
+      default:
+        return ProfilePhase.Climb;
+    }
   }
 }
 

@@ -15,6 +15,7 @@ import { FlightPlanSegment } from '@fmgc/flightplanning/segments/FlightPlanSegme
 import { ReadonlyFlightPlanElement, ReadonlyFlightPlanLeg } from '@fmgc/flightplanning/legs/ReadonlyFlightPlanLeg';
 import { ReadonlyPendingAirways } from '@fmgc/flightplanning/plans/ReadonlyPendingAirways';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import { PropagatedWindEntry } from '../data/wind';
 
 export interface ReadonlyFlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> {
   get index(): number;
@@ -99,4 +100,6 @@ export interface ReadonlyFlightPlan<P extends FlightPlanPerformanceData = Flight
   glideslopeIntercept(): number | undefined;
 
   get performanceData(): P;
+
+  propagateWindsAt(atIndex: number, result: PropagatedWindEntry[], maxNumEntries: number): PropagatedWindEntry[];
 }

@@ -23,6 +23,8 @@ import {
   EnvironmentData,
   FlightStateData,
   PositionReportData,
+  WindUplinkMessage,
+  WindRequestMessage,
 } from '@datalink/common';
 import { FmsRouterMessages, RouterFmsMessages } from '@datalink/router';
 import { EventBus, Instrument, InstrumentBackplane, MappedSubject } from '@microsoft/msfs-sdk';
@@ -58,6 +60,11 @@ export class FmsClient implements Instrument {
 
   private weatherResponseCallbacks: ((response: [AtsuStatusCodes, WeatherMessage], requestId: number) => boolean)[] =
     [];
+
+  private windsResponseCallbacks: ((
+    response: [AtsuStatusCodes, WindUplinkMessage | null],
+    requestId: number,
+  ) => boolean)[] = [];
 
   private positionReportDataCallbacks: ((response: PositionReportData, requestId: number) => boolean)[] = [];
 
@@ -196,6 +203,15 @@ export class FmsClient implements Instrument {
         return true;
       });
     });
+    this.subscriber.on('aocWindsResponse').handle((response) => {
+      this.windsResponseCallbacks.every((callback, index) => {
+        if (callback(response.data, response.requestId)) {
+          this.windsResponseCallbacks.splice(index, 1);
+          return false;
+        }
+        return true;
+      });
+    });
   }
 
   /** @inheritdoc */
@@ -328,6 +344,22 @@ export class FmsClient implements Instrument {
         return id === requestId;
       });
       this.weatherResponseCallbacks.push((response: [AtsuStatusCodes, WeatherMessage], id: number) => {
+        if (id === requestId) resolve(response);
+        return id === requestId;
+      });
+    });
+  }
+
+  public receiveWindUplink(
+    request: WindRequestMessage,
+    sentCallback: () => void,
+  ): Promise<[AtsuStatusCodes, WindUplinkMessage | null]> {
+    return new Promise<[AtsuStatusCodes, WindUplinkMessage | null]>((resolve, _reject) => {
+      const requestId = this.requestId++;
+      this.publisher.pub('aocRequestWinds', { ...request, requestId }, true, false);
+      sentCallback();
+
+      this.windsResponseCallbacks.push((response: [AtsuStatusCodes, WindUplinkMessage | null], id: number) => {
         if (id === requestId) resolve(response);
         return id === requestId;
       });
