@@ -5,6 +5,7 @@ import {
   EventBus,
   FSComponent,
   MappedSubject,
+  Subscription,
   SimVarValueType,
   Subject,
   Subscribable,
@@ -15,6 +16,7 @@ import {
   DEFERRED_PROCEDURE_TYPE_TO_STRING,
   DeferredProcedureType,
   EcamDeferredProcedures,
+  EcamAbnormalProcedures,
   EcamInfos,
   EcamInopSys,
   EcamLimitations,
@@ -39,6 +41,8 @@ enum StatusPageSectionDisplayStatus {
 }
 export class StatusPage extends DestroyableComponent<SdPageProps> {
   private readonly sub = this.props.bus.getSubscriber<SDSimvars & FwsEvents>();
+
+  private readonly persistentSubscriptions: Subscription[] = [];
 
   private readonly availChecker = new FwsSdAvailabilityChecker(this.props.bus);
 
@@ -204,8 +208,42 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
 
   private readonly inopSysRedundHeight = this.inopSysRedundLines.map((lines) => `${lines * 30 + 3}px`);
 
+  /* CANCELLED CAUTION */
+  private readonly cancelledCaution = ConsumerSubject.create(this.sub.on('fws_cancelled_caution'), []);
+  private readonly cancelledCautionCurrentPage = MappedSubject.create(
+    ([cancelledCaution, pageToShow]) =>
+      cancelledCaution.slice(
+        pageToShow * SD_STS_LINES_PER_PAGE_USABLE,
+        (pageToShow + 1) * SD_STS_LINES_PER_PAGE_USABLE,
+      ),
+    this.cancelledCaution,
+    this.stsPageToShow,
+  );
+
+  private readonly cancelledCautionFormatString = this.cancelledCautionCurrentPage.map((cancelledCautionCurrentPage) =>
+    cancelledCautionCurrentPage
+      // eslint-disable-next-line no-control-regex
+      .map((val) => EcamAbnormalProcedures[val].title.replace(/\x1b<[1-6]m/g, '\x1b<7m'))
+      .join('\r'),
+  );
+
+  private readonly cancelledCautionLines = MappedSubject.create(
+    ([cancelledCaution]) => (cancelledCaution.length > 0 ? cancelledCaution.length : 0),
+    this.cancelledCautionCurrentPage,
+  );
+  private readonly cancelledCautionDisplay = MappedSubject.create(
+    ([lines]) => (lines > 0 ? 'flex' : 'none'),
+    this.cancelledCautionLines,
+  );
+
+  private readonly cancelledCautionHeight = this.cancelledCautionLines.map((lines) => `${lines * 30 + 3}px`);
+
   private readonly moreActive = ConsumerSubject.create(this.sub.on('moreActive'), false);
-  private readonly moreAvailable = this.inopSysRedund.map((lines) => lines.length > 0);
+  private readonly moreAvailable = MappedSubject.create(
+    ([inopSysRedund, cancelledCaution]) => inopSysRedund.length > 0 || cancelledCaution.length > 0,
+    this.inopSysRedund,
+    this.cancelledCaution,
+  );
   private readonly moreAvailableVisibility = this.moreAvailable.map((v) => (v ? 'inherit' : 'hidden'));
   private readonly moreActiveVisibility = this.moreActive.map((v) => (v ? 'inherit' : 'hidden'));
 
@@ -246,8 +284,11 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
   );
 
   private readonly morePageOverflow = MappedSubject.create(
-    ([inopSysRedund, pageToShow]) => inopSysRedund.length > (pageToShow + 1) * SD_STS_LINES_PER_PAGE_USABLE,
+    ([inopSysRedund, cancelledCaution, pageToShow]) =>
+      inopSysRedund.length > (pageToShow + 1) * SD_STS_LINES_PER_PAGE_USABLE ||
+      cancelledCaution.length > (pageToShow + 1) * SD_STS_LINES_PER_PAGE_USABLE,
     this.inopSysRedund,
+    this.cancelledCaution,
     this.stsPageToShow,
   );
   private readonly pressMoreForNextMorePageVisibility = this.morePageOverflow.map((v) => (v ? 'inherit' : 'hidden'));
@@ -282,12 +323,33 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
       this.inopSysLines,
       this.inopSysDisplay,
       this.inopSysHeight,
+      this.inopSysRedund,
+      this.inopSysRedundFormatString,
+      this.inopSysRedundLines,
+      this.inopSysRedundDisplay,
+      this.inopSysRedundHeight,
+      this.cancelledCaution,
+      this.cancelledCautionFormatString,
+      this.cancelledCautionLines,
+      this.cancelledCautionDisplay,
+      this.cancelledCautionHeight,
       this.pressStsForNextStatusPageVisibility,
     );
 
     this.subscriptions.push(
       MappedSubject.create(
-        ([pageToShow, limAll, limAppr, deferredProcedures, info, inopApp, inopAppr, moreActive, inopSysRedund]) => {
+        ([
+          pageToShow,
+          limAll,
+          limAppr,
+          deferredProcedures,
+          info,
+          inopApp,
+          inopAppr,
+          moreActive,
+          inopSysRedund,
+          cancelledCaution,
+        ]) => {
           // Calculate number of pages required and where to display "ON NEXT PAGE" messages
           // 6 lines reserved for heading and white PRESS STS... line
           if (
@@ -296,7 +358,9 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
             deferredProcedures.length === 0 &&
             info.length === 0 &&
             inopApp.length === 0 &&
-            inopAppr.length === 0
+            inopAppr.length === 0 &&
+            inopSysRedund.length === 0 &&
+            cancelledCaution.length === 0
           ) {
             this.statusNormal.set(true);
           } else {
@@ -304,9 +368,8 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
           }
 
           if (moreActive) {
-            this.stsNumberOfPagesSimvar.set(
-              inopSysRedund.length > 0 ? Math.ceil(inopSysRedund.length / SD_STS_LINES_PER_PAGE_USABLE) : 1,
-            );
+            const moreLines = Math.max(inopSysRedund.length, cancelledCaution.length);
+            this.stsNumberOfPagesSimvar.set(moreLines > 0 ? Math.ceil(moreLines / SD_STS_LINES_PER_PAGE_USABLE) : 1);
             return;
           }
 
@@ -424,7 +487,11 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
         this.inopSysApprLdg,
         this.moreActive,
         this.inopSysRedund,
+        this.cancelledCaution,
       ),
+    );
+
+    this.persistentSubscriptions.push(
       this.moreAvailable.sub((v) => {
         this.stsMoreAvailableSimvar.set(v ? 1 : 0);
       }, true),
@@ -432,6 +499,9 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
   }
 
   destroy(): void {
+    for (const s of this.persistentSubscriptions) {
+      s.destroy();
+    }
     super.destroy();
   }
 
@@ -597,6 +667,18 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
             <StatusPageSectionHeading title="INOP SYS REDUND" showSeparationLines={Subject.create(false)} />
             <svg version="1.1" xmlns="http://www.w3.org/2000/svg" style={{ height: this.inopSysRedundHeight }}>
               <FormattedFwcText x={0} y={24} message={this.inopSysRedundFormatString} />
+            </svg>
+          </div>
+          {/* CANCELLED CAUTION */}
+          <div
+            class="sd-sts-section-container"
+            style={{
+              display: this.cancelledCautionDisplay,
+            }}
+          >
+            <StatusPageSectionHeading title="CANCELLED CAUTION" showSeparationLines={Subject.create(false)} />
+            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" style={{ height: this.cancelledCautionHeight }}>
+              <FormattedFwcText x={0} y={24} message={this.cancelledCautionFormatString} />
             </svg>
           </div>
           <div style="flex-grow: 1" />
