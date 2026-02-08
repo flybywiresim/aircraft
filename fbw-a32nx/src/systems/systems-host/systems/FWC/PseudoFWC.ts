@@ -3061,10 +3061,10 @@ export class PseudoFWC {
     const phase2Pulse = this.flightPhase2PulseNode.read();
 
     const idg1DisconnectedFor1Second = this.idg1DisconnectedConfirmNode.write(this.idg1Disconnected.get(), deltaTime);
-    // TODO: Check !Low oil pressure memory && !IDG 1 oil overheat S / R* flip flop with phase 1 pulse when implemented
+    // TODO: Add low oil branches
     const idg1DisconnectWarnNext = idg1DisconnectedFor1Second && !engine1NotRunning && !phase2Pulse;
     const idg2DisconnectedFor1Second = this.idg2DisconnectedConfirmNode.write(this.idg2Disconnected.get(), deltaTime);
-    // TODO: Check !Low oil pressure memory && !IDG 2 oil overheat S / R* flip flop with phase 1 pulse when implemented
+    // TODO: Add low oil branches
     const idg2DisconnectWarnNext = idg2DisconnectedFor1Second && !engine2NotRunning && !phase2Pulse;
 
     const gen1PbOffFor5Seconds = this.gen1PbOffConfirmNode.write(this.gen1PbOff.get(), deltaTime);
@@ -3076,18 +3076,18 @@ export class PseudoFWC {
     const gen1OffWarningConfirmNode2 = this.gen1OffWarningConfirmNode2.write(!engine1NotRunning && !phase6, deltaTime);
     const gen2OffWarningConfirmNode2 = this.gen2OffWarningConfirmNode2.write(!engine2NotRunning && !phase6, deltaTime);
 
-    const gen1OffPart1 = gen1PbOffFor5Seconds && !this.idg1Disconnected.get(); // TODO: && !(Gen 1 fault memory || this.idg1Disconnected.get()) when implemented
-    const gen2OffPart1 = gen2PbOffFor5Seconds && !this.idg2Disconnected.get(); // TODO: && !(Gen 2 fault memory || this.idg2Disconnected.get()) when implemented
+    const gen1OffPart1 = gen1PbOffFor5Seconds && !this.idg1Disconnected.get(); // TODO: Check gen fault memory
+    const gen2OffPart1 = gen2PbOffFor5Seconds && !this.idg2Disconnected.get(); // TODO: Check gen fault memory
 
     // Avoids one-cycle delay in exchange for looking awful
     const gen1NotOperating =
       (gen1OffPart1 &&
         (gen1OffWarningConfirmNode2 || phase6For60Seconds || (phase6 && this.gen12NotOperating.get()))) ||
-      idg1DisconnectWarnNext; // TODO: Gen 1 fault memory || when implemented
+      idg1DisconnectWarnNext; // TODO: Check gen fault memory
     const gen2NotOperating =
       (gen2OffPart1 &&
         (gen2OffWarningConfirmNode2 || phase6For60Seconds || (phase6 && this.gen12NotOperating.get()))) ||
-      idg2DisconnectWarnNext; // TODO: Gen 2 fault memory || when implemented
+      idg2DisconnectWarnNext; // TODO: Check gen fault memory
     const gen12NotOperatingNext =
       (gen1NotOperating || !this.engine1Generator.get()) && (gen2NotOperating || !this.engine2Generator.get()); // TODO: Remove engine1Generator / engine2Generator checks when fault memory above implemented
 
