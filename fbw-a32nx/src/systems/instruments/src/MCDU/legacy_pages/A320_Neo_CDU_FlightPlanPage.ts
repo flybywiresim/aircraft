@@ -8,7 +8,7 @@ import { CDULateralRevisionPage } from './A320_Neo_CDU_LateralRevisionPage';
 import { CDUVerticalRevisionPage } from './A320_Neo_CDU_VerticalRevisionPage';
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
 import { CDUHoldAtPage } from './A320_Neo_CDU_HoldAtPage';
-import { AltitudeDescriptor, NXUnits, WaypointConstraintType } from '@flybywiresim/fbw-sdk';
+import { AltitudeDescriptor, MagVar, NXUnits, WaypointConstraintType, WaypointDescriptor } from '@flybywiresim/fbw-sdk';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FlightPlanLeg, isDiscontinuity } from '@fmgc/flightplanning/legs/FlightPlanLeg';
@@ -1301,11 +1301,11 @@ function legHasAltConstraint(leg: FlightPlanLeg): boolean {
 }
 
 function legIsRunway(leg: FlightPlanLeg): boolean {
-  return leg.definition && leg.definition.waypointDescriptor === 4;
+  return leg.definition && leg.definition.waypointDescriptor === WaypointDescriptor.Runway;
 }
 
 function legIsAirport(leg: FlightPlanLeg): boolean {
-  return leg.definition && leg.definition.waypointDescriptor === 1;
+  return leg.definition && leg.definition.waypointDescriptor === WaypointDescriptor.Airport;
 }
 
 /**
@@ -1349,13 +1349,14 @@ function formatTrack(from: FlightPlanLeg, to: { definition: { waypoint: { locati
     return '';
   }
 
-  const magVar = Facilities.getMagVar(from.definition.waypoint.location.lat, from.definition.waypoint.location.long);
+  // FIXME shouldn't it be ppos magvar?
+  const magVar = MagVar.get(from.definition.waypoint.location);
   const tr = Avionics.Utils.computeGreatCircleHeading(
     from.definition.waypoint.location,
     to.definition.waypoint.location,
   );
-  const track = A32NX_Util.trueToMagnetic(tr, magVar);
-  return `TRK${track.toFixed(0).padStart(3, '0')}\u00b0`;
+  const track = MagVar.trueToMagnetic(tr, magVar ?? 0);
+  return `TRK${track.toFixed(0).padStart(3, '0')}${magVar === null ? 'T' : '°'}`;
 }
 
 /**

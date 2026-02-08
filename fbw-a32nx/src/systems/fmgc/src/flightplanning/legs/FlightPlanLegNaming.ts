@@ -20,7 +20,10 @@ export function procedureLegIdentAndAnnotation(
         `${Math.round(procedureLeg.rho).toString().padStart(2, ' ')} ${procedureLeg.recommendedNavaid.ident.substring(0, 3)}`,
       ];
     case LegType.CF:
-      return [procedureLeg.waypoint.ident, `C${Math.round(procedureLeg.magneticCourse).toString().padStart(3, '0')}°`];
+      return [
+        procedureLeg.waypoint.ident,
+        `C${Math.round(procedureLeg.course).toString().padStart(3, '0')}${procedureLeg.magVar !== null ? '°' : 'T'}`,
+      ];
     case LegType.IF:
     case LegType.DF:
     case LegType.TF:
@@ -32,7 +35,7 @@ export function procedureLegIdentAndAnnotation(
     case LegType.VA:
       return [
         Math.round(procedureLeg.altitude1).toString().substring(0, 9),
-        `${legType === LegType.VA ? 'H' : 'C'}${Math.round(procedureLeg.magneticCourse).toString().padStart(3, '0')}°`,
+        `${legType === LegType.VA ? 'H' : 'C'}${Math.round(procedureLeg.course).toString().padStart(3, '0')}${procedureLeg.magVar !== null ? '°' : 'T'}`,
       ]; // TODO fix for VA
     case LegType.CD:
     case LegType.FC:
@@ -42,20 +45,20 @@ export function procedureLegIdentAndAnnotation(
 
       return [
         `${targetFix.ident.substring(0, 3)}/${Math.round(procedureLeg.length).toString().padStart(2, '0')}`,
-        `${legType === LegType.VD ? 'H' : 'C'}${Math.round(procedureLeg.magneticCourse).toString().padStart(3, '0')}°`,
+        `${legType === LegType.VD ? 'H' : 'C'}${Math.round(procedureLeg.course).toString().padStart(3, '0')}${procedureLeg.magVar !== null ? '°' : 'T'}`,
       ];
     }
     case LegType.CI:
     case LegType.VI:
       return [
         'INTCPT',
-        `${legType === LegType.CI ? 'C' : 'H'}${Math.round(procedureLeg.magneticCourse).toString().padStart(3, '0')}°`,
+        `${legType === LegType.CI ? 'C' : 'H'}${Math.round(procedureLeg.course).toString().padStart(3, '0')}${procedureLeg.magVar !== null ? '°' : 'T'}`,
       ]; // TODO fix for VI
     case LegType.CR:
     case LegType.VR:
       return [
         `${procedureLeg.recommendedNavaid.ident.substring(0, 3)}${Math.round(procedureLeg.theta).toString().padStart(3, '0')}`,
-        `${legType === LegType.VR ? 'H' : 'C'}${Math.round(procedureLeg.magneticCourse).toString().padStart(3, '0')}°`,
+        `${legType === LegType.VR ? 'H' : 'C'}${Math.round(procedureLeg.course).toString().padStart(3, '0')}${procedureLeg.magVar !== null ? '°' : 'T'}`,
       ]; // TODO fix for VR
     case LegType.HA:
       return [
@@ -68,7 +71,7 @@ export function procedureLegIdentAndAnnotation(
       return [
         // TODO leg before
         procedureLeg.waypoint.ident,
-        `C${Math.round(procedureLeg.magneticCourse).toString().padStart(3, '0')}°`,
+        `C${Math.round(procedureLeg.course).toString().padStart(3, '0')}${procedureLeg.magVar !== null ? '°' : 'T'}`,
       ];
     case LegType.PI:
       return ['INTCPT', `PROC ${procedureLeg.turnDirection === TurnDirection.Left ? 'L' : 'R'}`];
@@ -76,7 +79,7 @@ export function procedureLegIdentAndAnnotation(
     case LegType.VM:
       return [
         'MANUAL',
-        `${legType === LegType.FM ? 'C' : 'H'}${Math.round(procedureLeg.magneticCourse).toString().padStart(3, '0')}°`,
+        `${legType === LegType.FM ? 'C' : 'H'}${Math.round(procedureLeg.course).toString().padStart(3, '0')}${procedureLeg.magVar !== null ? '°' : 'T'}`,
       ]; // TODO fix for VM
     default:
       break;

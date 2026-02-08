@@ -17,6 +17,7 @@ import {
   Departure,
   Fix,
   LegType,
+  MagVar,
   ProcedureTransition,
   Runway,
   SpeedDescriptor,
@@ -1478,7 +1479,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     if (targetLeg.type === LegType.HA || targetLeg.type === LegType.HF || targetLeg.type === LegType.HM) {
       targetLeg.type = LegType.HM;
       targetLeg.definition.turnDirection = desiredHold.turnDirection;
-      targetLeg.definition.magneticCourse = desiredHold.inboundMagneticCourse;
+      targetLeg.definition.course = desiredHold.inboundMagneticCourse;
       targetLeg.definition.length = desiredHold.distance;
       targetLeg.definition.lengthTime = desiredHold.time;
 
@@ -1491,7 +1492,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
 
     const [insertSegment, indexInSegment] = this.segmentPositionForIndex(atIndex);
-    const manualHoldLeg = FlightPlanLeg.manualHold(insertSegment, waypoint, desiredHold);
+    const magVar = MagVar.getForFix(waypoint);
+    const manualHoldLeg = FlightPlanLeg.manualHold(insertSegment, waypoint, desiredHold, magVar);
 
     manualHoldLeg.modifiedHold = modifiedHold;
     manualHoldLeg.defaultHold = defaultHold;
@@ -2260,7 +2262,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
                 element.terminationWaypoint().location,
               );
               element.type = LegType.CF;
-              element.definition.magneticCourse = track;
+              element.definition.course =
+                element.definition.magVar !== null ? MagVar.trueToMagnetic(track, element.definition.magVar) : track;
               // Get correct ident/annotation for CF leg
               [element.ident, element.annotation] = procedureLegIdentAndAnnotation(
                 element.definition,

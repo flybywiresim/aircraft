@@ -48,4 +48,9 @@ export interface Airport extends DatabaseItem<SectionCode.Airport> {
   // These two are needed to satisfy the terminal fix interface, for use as procedure fix.
   area: WaypointArea.Terminal;
   airportIdent: string;
+
+  /**
+   * The airport magvar in degrees, or null when the airport is true referenced.
+   */
+  magVar: number | null;
 }

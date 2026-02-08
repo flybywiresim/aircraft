@@ -17,6 +17,7 @@ const fakeAirport = (icaoCode: string, ident: string, location: ElevatedCoordina
   longestRunwaySurfaceType: RunwaySurfaceType.Hard,
   area: WaypointArea.Terminal,
   airportIdent: ident,
+  magVar: 0,
 });
 
 const fakeRunway = (
@@ -59,6 +60,7 @@ const fakeRunway = (
     airportIdent: 'CYYZ',
     bearing,
     magneticBearing: bearing,
+    magVar: 0,
     gradient: 0,
     location,
     thresholdLocation: { ...location, alt: 0 },

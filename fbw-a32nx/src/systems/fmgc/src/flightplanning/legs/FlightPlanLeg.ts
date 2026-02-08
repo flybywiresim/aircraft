@@ -17,6 +17,7 @@ import {
   WaypointConstraintType,
   AltitudeConstraint,
   SpeedConstraint,
+  MagVar,
 } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from 'msfs-geo';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/legs/FlightPlanLegDefinition';
@@ -352,7 +353,20 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     this.clearSpeedConstraints();
   }
 
-  static turningPoint(segment: EnrouteSegment, location: Coordinates, magneticCourse: DegreesMagnetic): FlightPlanLeg {
+  /**
+   * Creates a turning point leg for a DIR TO or PPOS hold.
+   * @param segment The segment the leg will be inserted into.
+   * @param location The location of the turning point fix.
+   * @param course The course, in degrees, relative to magnetic north if magVar is a number, or true north if magVar is null.
+   * @param magVar The magnetic variation, in degrees, for the course if it is relative to magnetic north, or null for true north.
+   * @returns The turning point leg.
+   */
+  static turningPoint(
+    segment: EnrouteSegment,
+    location: Coordinates,
+    course: number,
+    magVar: number | null,
+  ): FlightPlanLeg {
     return new FlightPlanLeg(
       segment,
       {
@@ -360,7 +374,8 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         type: LegType.CF,
         overfly: false,
         waypoint: WaypointFactory.fromLocation('T-P', location),
-        magneticCourse,
+        course,
+        magVar,
         length: 0,
       },
       'T-P',
@@ -369,7 +384,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     );
   }
 
-  static directToTurnEnd(segment: EnrouteSegment, waypoint: Fix): FlightPlanLeg {
+  static directToTurnEnd(segment: EnrouteSegment, waypoint: Fix, magVar: number | null): FlightPlanLeg {
     return new FlightPlanLeg(
       segment,
       {
@@ -377,6 +392,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         type: LegType.DF,
         overfly: false,
         waypoint,
+        magVar,
       },
       waypoint.ident,
       '',
@@ -384,7 +400,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     );
   }
 
-  static manualHold(segment: FlightPlanSegment, waypoint: Fix, hold: HoldData): FlightPlanLeg {
+  static manualHold(segment: FlightPlanSegment, waypoint: Fix, hold: HoldData, magVar: number | null): FlightPlanLeg {
     return new FlightPlanLeg(
       segment,
       {
@@ -393,9 +409,10 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         overfly: false,
         waypoint,
         turnDirection: hold.turnDirection,
-        magneticCourse: hold.inboundMagneticCourse,
+        course: hold.inboundMagneticCourse,
         length: hold.distance,
         lengthTime: hold.time,
+        magVar,
       },
       waypoint.ident,
       '',
@@ -434,7 +451,8 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
           overfly: false,
           waypoint: runway,
           waypointDescriptor: WaypointDescriptor.Runway,
-          magneticCourse: runway?.magneticBearing,
+          course: runway?.magneticBearing,
+          magVar: airport.magVar,
         },
         runway.ident,
         procedureIdent,
@@ -450,7 +468,8 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         overfly: false,
         waypoint: airport,
         waypointDescriptor: WaypointDescriptor.Airport,
-        magneticCourse: runway?.magneticBearing,
+        course: runway?.magneticBearing,
+        magVar: airport.magVar,
       },
       airport.ident,
       procedureIdent,
@@ -464,7 +483,6 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
       : 1500;
     const bearing = runway.magneticBearing;
 
-    // TODO magvar
     const annotation = runwayLeg.ident.substring(0, 3) + Math.round(bearing).toString().padStart(3, '0');
     const ident = Math.round(altitude).toFixed(0);
 
@@ -475,8 +493,9 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         type: LegType.FA,
         overfly: false,
         waypoint: runwayLeg.terminationWaypoint(),
-        magneticCourse: bearing,
+        course: bearing,
         altitude1: altitude,
+        magVar: runway.magVar,
       },
       ident,
       annotation,
@@ -499,6 +518,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         type: LegType.IF,
         overfly: false,
         waypoint,
+        magVar: runway.magVar,
       },
       waypoint.ident,
       '',
@@ -519,6 +539,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         type,
         overfly: false,
         waypoint,
+        magVar: MagVar.getForFix(waypoint),
       },
       waypoint.ident,
       airwayIdent ?? '',
