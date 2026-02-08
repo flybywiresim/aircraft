@@ -775,6 +775,7 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   true,
   true,
   true,
+  true,
   false,
   false,
   true,

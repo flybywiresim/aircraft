@@ -209,10 +209,16 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
 
   private readonly activeLateralMode = ConsumerSubject.create(this.sub.on('fg.fma.lateralMode'), 0);
   private readonly armedLateralMode = ConsumerSubject.create(this.sub.on('fg.fma.lateralArmedBitmask'), 0);
+  private readonly areActiveVectorsTransmitted = MappedSubject.create(
+    ([path]) => path !== undefined && path !== null,
+    this.fmsLateralPath,
+  );
   private readonly shouldShowTrackLine = MappedSubject.create(
-    ([active, armed]) => TrackLine.shouldShowTrackLine(active, armed),
+    ([active, armed, areActiveVectorsTransmitted]) =>
+      TrackLine.shouldShowTrackLine(active, armed, areActiveVectorsTransmitted),
     this.activeLateralMode,
     this.armedLateralMode,
+    this.areActiveVectorsTransmitted,
   );
   private readonly activeVerticalMode = ConsumerSubject.create(this.sub.on('fg.fma.verticalMode'), 0);
   private readonly fgAltConstraint = ConsumerSubject.create(this.sub.on('fg.altitudeConstraint'), 0);
@@ -447,6 +453,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
       this.rangeOver160ArrowVisible,
       this.activeLateralMode,
       this.armedLateralMode,
+      this.areActiveVectorsTransmitted,
       this.shouldShowTrackLine,
       this.activeVerticalMode,
       this.fgAltConstraint,
