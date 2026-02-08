@@ -243,11 +243,10 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     return legType === LegType.CA || legType === LegType.FA || legType === LegType.HA || legType === LegType.VA;
   }
 
-  isCx() {
+  isFloatingCourseLeg() {
     return (
       this.definition.type === LegType.CA ||
       this.definition.type === LegType.CD ||
-      this.definition.type === LegType.CF ||
       this.definition.type === LegType.CI ||
       this.definition.type === LegType.CR
     );

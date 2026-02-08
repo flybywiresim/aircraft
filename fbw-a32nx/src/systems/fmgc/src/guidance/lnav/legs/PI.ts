@@ -6,12 +6,12 @@
 
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
-import { Geometry } from '@fmgc/guidance/Geometry';
 import {
   arcDistanceToGo,
   arcGuidance,
   courseToFixDistanceToGo,
   courseToFixGuidance,
+  getRollAnticipationDistance,
   maxBank,
 } from '@fmgc/guidance/lnav/CommonGeometry';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs';
@@ -331,7 +331,7 @@ export class PILeg extends Leg {
         return [0, 0];
     }
 
-    return [Geometry.getRollAnticipationDistance(gs, currentBank, nextBank), nextBank];
+    return [getRollAnticipationDistance(gs, currentBank, nextBank), nextBank];
   }
 
   getGuidanceParameters(ppos: Coordinates, trueTrack: number, tas: number, gs: number): GuidanceParameters {

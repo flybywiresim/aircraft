@@ -5,14 +5,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ControlLaw, LateralMode } from '@shared/autopilot';
-import {
-  Arinc429Register,
-  Constants,
-  LegType,
-  MathUtils,
-  RegisteredSimVar,
-  TurnDirection,
-} from '@flybywiresim/fbw-sdk';
+import { Arinc429Register, LegType, MathUtils, RegisteredSimVar, TurnDirection } from '@flybywiresim/fbw-sdk';
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
@@ -32,6 +25,8 @@ import { GuidanceComponent } from '../GuidanceComponent';
 import { FlightPlanLeg, isLeg } from '../../flightplanning/legs/FlightPlanLeg';
 import { FlightPlanUtils } from '@fmgc/flightplanning/FlightPlanUtils';
 import { FlightPlanIndex } from '../../flightplanning/FlightPlanManager';
+import { Subject } from '@microsoft/msfs-sdk';
+import { HpathLaw } from './HpathLaw';
 
 /**
  * Represents the current turn state of the LNAV driver
@@ -70,8 +65,6 @@ export class LnavDriver implements GuidanceComponent {
 
   private lastPhi: number;
 
-  private lastNavCaptureCondition: boolean;
-
   private isNavCaptureInhibited: boolean = false;
 
   public turnState = LnavTurnState.Normal;
@@ -82,21 +75,27 @@ export class LnavDriver implements GuidanceComponent {
 
   private listener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
 
-  private static readonly fmgc1DiscreteWord2Var = RegisteredSimVar.create<number>(
-    'L:A32NX_FMGC_1_DISCRETE_WORD_2',
-    'number',
+  private static readonly fmgc1DiscreteWord2Var = RegisteredSimVar.create('L:A32NX_FMGC_1_DISCRETE_WORD_2', 'number');
+
+  private static readonly fmgc2DiscreteWord2Var = RegisteredSimVar.create('L:A32NX_FMGC_1_DISCRETE_WORD_2', 'number');
+
+  private static readonly latitudeVar = RegisteredSimVar.create('PLANE LATITUDE', 'degree latitude');
+  private static readonly longitudeVar = RegisteredSimVar.create('PLANE LONGITUDE', 'degree longitude');
+  private static readonly trueAirspeedVar = RegisteredSimVar.create('AIRSPEED TRUE', 'knots');
+  private static readonly groundSpeedVar = RegisteredSimVar.create('GPS GROUND SPEED', 'knots');
+  private static readonly trueTrackVar = RegisteredSimVar.create('GPS GROUND TRUE TRACK', 'degree');
+  private static readonly fm1NavCaptureConditionVar = RegisteredSimVar.createBoolean(
+    'L:A32NX_FM1_NAV_CAPTURE_CONDITION',
+    'Bool',
+  );
+  private static readonly fm2NavCaptureConditionVar = RegisteredSimVar.createBoolean(
+    'L:A32NX_FM2_NAV_CAPTURE_CONDITION',
+    'Bool',
   );
 
-  private static readonly fmgc2DiscreteWord2Var = RegisteredSimVar.create<number>(
-    'L:A32NX_FMGC_1_DISCRETE_WORD_2',
-    'number',
+  private navCaptureCondition = Subject.create(
+    LnavDriver.fm1NavCaptureConditionVar.get() && LnavDriver.fm2NavCaptureConditionVar.get(),
   );
-
-  private static readonly latitudeVar = RegisteredSimVar.create<number>('PLANE LATITUDE', 'degree latitude');
-  private static readonly longitudeVar = RegisteredSimVar.create<number>('PLANE LONGITUDE', 'degree longitude');
-  private static readonly trueAirspeedVar = RegisteredSimVar.create<number>('AIRSPEED TRUE', 'knots');
-  private static readonly groundSpeedVar = RegisteredSimVar.create<number>('GPS GROUND SPEED', 'knots');
-  private static readonly trueTrackVar = RegisteredSimVar.create<number>('GPS GROUND TRUE TRACK', 'degree');
 
   constructor(
     private readonly flightPlanService: FlightPlanService,
@@ -109,6 +108,11 @@ export class LnavDriver implements GuidanceComponent {
     this.lastXTE = null;
     this.lastTAE = null;
     this.lastPhi = null;
+
+    this.navCaptureCondition.sub((v) => {
+      LnavDriver.fm1NavCaptureConditionVar.set(v);
+      LnavDriver.fm2NavCaptureConditionVar.set(v);
+    });
   }
 
   init(): void {
@@ -603,20 +607,11 @@ export class LnavDriver implements GuidanceComponent {
   }
 
   private updateNavCaptureCondition(tas: number, gs: number) {
-    this.setNavCaptureCondition(this.computeNavCaptureCondition(tas, gs));
-  }
-
-  private setNavCaptureCondition(condition: boolean) {
-    if (condition !== this.lastNavCaptureCondition) {
-      SimVar.SetSimVarValue('L:A32NX_FM1_NAV_CAPTURE_CONDITION', 'Bool', condition);
-      SimVar.SetSimVarValue('L:A32NX_FM2_NAV_CAPTURE_CONDITION', 'Bool', condition);
-
-      this.lastNavCaptureCondition = condition;
-    }
+    this.navCaptureCondition.set(this.computeNavCaptureCondition(tas, gs));
   }
 
   private canAlwaysCaptureLeg(leg: FlightPlanLeg) {
-    return leg.isVx() || (leg.isCx() && leg.type !== LegType.CF);
+    return leg.isVx() || leg.isFloatingCourseLeg();
   }
 
   private cannotCaptureLegType(el: FlightPlanLeg): boolean {
@@ -679,14 +674,4 @@ export class LnavDriver implements GuidanceComponent {
       }
     }
   }
-}
-
-class HpathLaw {
-  static readonly Tau = 3; // seconds
-  static readonly Zeta = 0.8; // 1
-  static readonly G = Constants.G * 6997.84; // kts/h
-  static readonly T = this.Tau / 3600; // hours
-  static readonly K1 = 180 / 4 / Math.PI ** 2 / this.Zeta / this.T; // 1 / h
-  static readonly K2 = this.Zeta / Math.PI / this.G / this.T; // 1 / kts
-  static readonly InterceptAngle = 45;
 }
