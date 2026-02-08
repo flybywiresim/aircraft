@@ -669,8 +669,11 @@ export class EfisSymbols<T extends number> {
     // FP legs
     for (let i = flightPlan.legCount - 1; i >= flightPlan.fromLegIndex && i >= 0; i--) {
       const isBeforeActiveLeg = i < flightPlan.activeLegIndex;
+      const isActiveLeg = i === flightPlan.activeLegIndex;
 
       const leg = flightPlan.elementAt(i);
+      const prevLeg = flightPlan.maybeElementAt(i - 1);
+      const nextLeg = flightPlan.maybeElementAt(i + 1);
 
       if (leg.isDiscontinuity === true) {
         continue;
@@ -685,18 +688,20 @@ export class EfisSymbols<T extends number> {
       }
 
       // no symbols for manual legs, except FM leg with no leg before it
-      if (
-        leg.definition.type === LegType.VM ||
-        (leg.definition.type === LegType.FM && !flightPlan.maybeElementAt(i - 1)?.isDiscontinuity)
-      ) {
+      if (leg.definition.type === LegType.VM || (leg.definition.type === LegType.FM && !prevLeg?.isDiscontinuity)) {
         continue;
       }
 
-      // if range >= 160, don't include terminal waypoints, except at enroute boundary
-      if (range >= 160) {
-        // FIXME the enroute boundary condition has been removed in fms-v2...
-        const [segment] = flightPlan.segmentPositionForIndex(i);
-        if (segment.class === SegmentClass.Departure || segment.class === SegmentClass.Arrival) {
+      // if range >= 160, don't include terminal waypoints, except at enroute and discont boundaries, and TO WPT
+      if (!isActiveLeg && range >= 160) {
+        if (
+          prevLeg &&
+          nextLeg &&
+          nextLeg.isDiscontinuity === false &&
+          prevLeg.isDiscontinuity === false &&
+          prevLeg.segment.class === leg.segment.class &&
+          (leg.segment.class === SegmentClass.Departure || leg.segment.class === SegmentClass.Arrival)
+        ) {
           continue;
         }
       }
