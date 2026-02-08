@@ -3605,14 +3605,17 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   /**
-   *
-   * @returns {number} Returns estimated fuel on board when arriving at the destination
+   * Returns the estimated fuel on board when arriving at the destination (in tonnes), or null if it could not be computed
+   * @returns EFOB at destination
    */
   public getDestEFOB() {
     const plan = this.getFlightPlan(FlightPlanIndex.Active);
     const predictions = this.getFuelPredComputation(FlightPlanIndex.Active);
 
-    return predictions.landingWeight - plan.performanceData.zeroFuelWeight.get();
+    const zfw = plan.performanceData.zeroFuelWeight.get();
+    const landingWeight = predictions.landingWeight;
+
+    return zfw !== null && landingWeight !== null ? landingWeight - zfw : null;
   }
 
   public trySetBlockFuel(s: string, forPlan: FlightPlanIndex): boolean {
