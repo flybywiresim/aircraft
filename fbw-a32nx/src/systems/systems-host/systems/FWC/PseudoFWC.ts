@@ -604,6 +604,14 @@ export class PseudoFWC {
 
   private readonly idg2DisconnectedConfirmNode = new NXLogicConfirmNode(1, true);
 
+  private readonly engine1MasterAlternatorVar = RegisteredSimVar.createBoolean('A:GENERAL ENG MASTER ALTERNATOR:1');
+
+  private readonly engine2MasterAlternatorVar = RegisteredSimVar.createBoolean('A:GENERAL ENG MASTER ALTERNATOR:2');
+
+  private readonly idg1ConnectedVar = RegisteredSimVar.createBoolean('L:A32NX_ELEC_ENG_GEN_1_IDG_IS_CONNECTED');
+
+  private readonly idg2ConnectedVar = RegisteredSimVar.createBoolean('L:A32NX_ELEC_ENG_GEN_2_IDG_IS_CONNECTED');
+
   private readonly bat1Off = Subject.create(false);
 
   private readonly bat2Off = Subject.create(false);
@@ -1772,11 +1780,11 @@ export class PseudoFWC {
     this.bat1PbOff.set(!SimVar.GetSimVarValue('L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO', 'bool'));
     this.bat2PbOff.set(!SimVar.GetSimVarValue('L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO', 'bool'));
 
-    this.gen1PbOff.set(!SimVar.GetSimVarValue('A:GENERAL ENG MASTER ALTERNATOR:1', 'bool'));
-    this.gen2PbOff.set(!SimVar.GetSimVarValue('A:GENERAL ENG MASTER ALTERNATOR:2', 'bool'));
+    this.gen1PbOff.set(!this.engine1MasterAlternatorVar.get());
+    this.gen2PbOff.set(!this.engine2MasterAlternatorVar.get());
 
-    this.idg1Disconnected.set(!SimVar.GetSimVarValue('L:A32NX_ELEC_ENG_GEN_1_IDG_IS_CONNECTED', 'bool'));
-    this.idg2Disconnected.set(!SimVar.GetSimVarValue('L:A32NX_ELEC_ENG_GEN_2_IDG_IS_CONNECTED', 'bool'));
+    this.idg1Disconnected.set(!this.idg1ConnectedVar.get());
+    this.idg2Disconnected.set(!this.idg2ConnectedVar.get());
 
     /* HYDRAULICS acquisition */
 
