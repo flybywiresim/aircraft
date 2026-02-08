@@ -26,6 +26,7 @@ import {
   VdSymbol,
   FmsData,
   NdPwpSymbolTypeFlags,
+  SectionCode,
 } from '@flybywiresim/fbw-sdk';
 
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
@@ -396,7 +397,10 @@ export class EfisSymbols<T extends number> {
     }
     if ((efisOption & EfisOption.Waypoints) > 0) {
       for (const wp of this.nearbyWaypointMonitor.getCurrentFacilities()) {
-        if (this.isWithinEditArea(wp.location, mapReferencePoint, mapOrientation, editArea)) {
+        if (
+          (range < 160 || wp.sectionCode !== SectionCode.Airport) &&
+          this.isWithinEditArea(wp.location, mapReferencePoint, mapOrientation, editArea)
+        ) {
           upsertSymbol({
             databaseId: wp.databaseId,
             ident: wp.ident,
