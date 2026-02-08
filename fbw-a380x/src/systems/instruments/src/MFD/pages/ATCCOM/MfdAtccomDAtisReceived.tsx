@@ -1,24 +1,140 @@
-import { DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+// Copyright (c) 2025-2026 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
+import { DisplayComponent, FSComponent, Subscription, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import './MfdAtccomDAtis.scss';
-import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
-import { Footer } from 'instruments/src/MFD/pages/common/Footer';
+import { AtccomMfdPageProps } from 'instruments/src/MFD/MFD';
+import { AtccomFooter } from './MfdAtccomFooter';
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
-
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
 import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
+import { AtisType } from '@datalink/common';
+import { AirportAtis } from '../../ATCCOM/AtcDatalinkSystem';
 
-interface MfdAtccomDAtisReceivedProps extends AbstractMfdPageProps {}
+interface MfdAtccomDAtisReceivedProps extends AtccomMfdPageProps {}
 
 export class MfdAtccomDAtisReceived extends DisplayComponent<MfdAtccomDAtisReceivedProps> {
+  private readonly subs = [] as Subscription[];
+
+  private readonly datalink = this.props.atcService;
+
+  private readonly atisIndex: number = Number(this.props.mfd.uiService.activeUri.get().extra);
+
+  private atisData: AirportAtis = {
+    icao: '',
+    type: AtisType.Departure,
+    requested: false,
+    autoupdate: false,
+    lastReadAtis: '',
+    status: '',
+  };
+
   protected onNewData() {}
 
-  private readonly ATISMessage =
-    'LFPG ARR DELTA -----\nLFPG ARR ATIS D\n1010Z\nEXPECT 5E 5N ILS 09L AND 5E 5N ILS 08R\nARR RWY 09L AND 08R DEP RWY 09R AND 08L\nSID 2G2H\n  TWY E CLSD BTN TWY F AND TWY TB3\n  RWY DAMP\n\nTRL 70\nWIND 030/11 KT\nWIS 3500 M\nBR\nCLD\n  BKN 600 FT\n  BKN 700 FT\nT=09 DP+07\nQNH 1013';
+  private rowsPerPage = 18;
+
+  private readonly messageArray = Subject.create<string[]>(['']);
+  private readonly message = Subject.create<string>('');
+  private readonly currentPageNumber = Subject.create<number>(1);
+  private readonly numberOfPages = Subject.create<number>(0);
+
+  private readonly previousMessageArray = Subject.create<string[]>(['']);
+  private readonly previousMessage = Subject.create<string>('');
+  private readonly previousMessageCurrentPageNumber = Subject.create<number>(1);
+  private readonly previousMessageNumberOfPages = Subject.create<number>(0);
+
+  private readonly currentAtisNavVisibility = this.numberOfPages.map((v) => (v > 1 ? 'visible' : 'hidden'));
+  private readonly prevAtisNavVisibility = this.previousMessageNumberOfPages.map((v) => (v > 1 ? 'visible' : 'hidden'));
+
+  private readonly isCurrentMsgFirstPage = this.currentPageNumber.map((v) => v === 1);
+  private readonly isCurrentMsgLastPage = this.currentPageNumber.map((v) => v === this.numberOfPages.get());
+  private readonly isPrevMsgFirstPage = this.previousMessageCurrentPageNumber.map((v) => v === 1);
+  private readonly isPrevMsgLastPage = this.previousMessageCurrentPageNumber.map(
+    (v) => v === this.previousMessageNumberOfPages.get(),
+  );
+
+  private formatAtis(messageArray: string[], page: number = 1): string {
+    return messageArray
+      .slice(this.rowsPerPage * (page - 1), this.rowsPerPage * page)
+      .join(' ')
+      .toUpperCase();
+  }
+
+  private processAtisToArray(string: string, numberOfPages: Subject<number>): string[] {
+    if (string.length === 0) return [''];
+    const charPerRow = 39;
+    const messageArray: string[] = [''];
+    const words: string[] = string.split(' ');
+    let lineIndex: number = 0;
+    words.forEach((word) => {
+      if (messageArray[lineIndex].length + word.length > charPerRow) {
+        lineIndex++;
+        messageArray.push('');
+      }
+      if (messageArray[lineIndex] != '') messageArray[lineIndex] += ' ';
+      messageArray[lineIndex] += word;
+    });
+    numberOfPages.set(Math.ceil(messageArray.length / this.rowsPerPage));
+    return messageArray;
+  }
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+
+    this.subs.push(
+      this.currentPageNumber.sub((value) => {
+        this.message.set(this.formatAtis(this.messageArray.get(), value));
+      }),
+    );
+
+    this.subs.push(
+      this.messageArray.sub((array) => {
+        this.message.set(this.formatAtis(array, this.currentPageNumber.get()));
+      }),
+    );
+
+    this.subs.push(
+      this.previousMessageCurrentPageNumber.sub((value) => {
+        this.previousMessage.set(this.formatAtis(this.previousMessageArray.get(), value));
+      }),
+    );
+
+    this.subs.push(
+      this.previousMessageArray.sub((array) => {
+        this.previousMessage.set(this.formatAtis(array, this.previousMessageCurrentPageNumber.get()));
+      }),
+    );
+
+    if (this.atisIndex != undefined) {
+      this.atisData = this.datalink.getAtisAirports()[this.atisIndex];
+    }
+
+    if (this.atisIndex != undefined) {
+      const atisReport = this.datalink.atisReports(this.atisData.icao);
+      this.messageArray.set(this.processAtisToArray(atisReport[0].Reports[0].report, this.numberOfPages));
+
+      if (atisReport[1] !== undefined) {
+        this.previousMessageArray.set(
+          this.processAtisToArray(atisReport[1].Reports[0].report, this.previousMessageNumberOfPages),
+        );
+      }
+    }
+
+    this.subs.push(
+      this.currentAtisNavVisibility,
+      this.prevAtisNavVisibility,
+      this.isCurrentMsgFirstPage,
+      this.isCurrentMsgLastPage,
+      this.isPrevMsgFirstPage,
+      this.isPrevMsgLastPage,
+    );
+  }
+
+  public destroy(): void {
+    this.subs.forEach((x) => x.destroy());
+    super.destroy();
   }
 
   render(): VNode {
@@ -36,17 +152,34 @@ export class MfdAtccomDAtisReceived extends DisplayComponent<MfdAtccomDAtisRecei
           >
             <TopTabNavigatorPage containerStyle="position:relative">
               {/* LAST */}
-              <div class="mfd-label atis-message-full">{this.ATISMessage}</div>
-              <div id="datis-nav-buttons" style="position: absolute; top:37px; right:16px;">
+              <div class="mfd-label atis-message-full">{this.message}</div>
+              <div
+                id="datis-nav-buttons"
+                style={{
+                  position: 'absolute',
+                  top: '37px',
+                  right: '16px',
+                  visibility: this.currentAtisNavVisibility,
+                }}
+              >
                 <IconButton
                   icon="double-up"
-                  onClick={() => {}}
-                  disabled={Subject.create(true)}
+                  onClick={() => {
+                    if (this.currentPageNumber.get() > 1) {
+                      this.currentPageNumber.set(this.currentPageNumber.get() - 1);
+                    }
+                  }}
+                  disabled={this.isCurrentMsgFirstPage}
                   containerStyle="width: 40px; height: 40px; padding:4px"
                 />
                 <IconButton
                   icon="double-down"
-                  onClick={() => {}}
+                  onClick={() => {
+                    if (this.currentPageNumber.get() < this.numberOfPages.get()) {
+                      this.currentPageNumber.set(this.currentPageNumber.get() + 1);
+                    }
+                  }}
+                  disabled={this.isCurrentMsgLastPage}
                   containerStyle="width: 40px; height: 40px; padding:4px"
                 />
               </div>
@@ -55,10 +188,55 @@ export class MfdAtccomDAtisReceived extends DisplayComponent<MfdAtccomDAtisRecei
                 class="mfd-label"
                 style="position:absolute; bottom:12px; right:17px; font-size:21px;"
               >
-                <span>
+                <span style={{ visibility: this.currentAtisNavVisibility }}>
                   PGE
                   <br />
-                  1/2
+                  {this.currentPageNumber}/{this.numberOfPages}
+                </span>
+              </div>
+            </TopTabNavigatorPage>
+            <TopTabNavigatorPage containerStyle="position:relative">
+              {/* PREVIOUS */}
+              <div class="mfd-label atis-message-full">{this.previousMessage}</div>
+              <div
+                id="datis-nav-buttons"
+                style={{
+                  position: 'absolute',
+                  top: '37px',
+                  right: '16px',
+                  visibility: this.prevAtisNavVisibility,
+                }}
+              >
+                <IconButton
+                  icon="double-up"
+                  onClick={() => {
+                    if (this.previousMessageCurrentPageNumber.get() > 1) {
+                      this.previousMessageCurrentPageNumber.set(this.previousMessageCurrentPageNumber.get() - 1);
+                    }
+                  }}
+                  disabled={this.isPrevMsgFirstPage}
+                  containerStyle="width: 40px; height: 40px; padding:4px"
+                />
+                <IconButton
+                  icon="double-down"
+                  onClick={() => {
+                    if (this.previousMessageCurrentPageNumber.get() < this.previousMessageNumberOfPages.get()) {
+                      this.previousMessageCurrentPageNumber.set(this.previousMessageCurrentPageNumber.get() + 1);
+                    }
+                  }}
+                  disabled={this.isPrevMsgLastPage}
+                  containerStyle="width: 40px; height: 40px; padding:4px"
+                />
+              </div>
+              <div
+                id="datis-page-number"
+                class="mfd-label"
+                style="position:absolute; bottom:12px; right:17px; font-size:21px;"
+              >
+                <span style={{ visibility: this.prevAtisNavVisibility }}>
+                  PGE
+                  <br />
+                  {this.previousMessageCurrentPageNumber}/{this.previousMessageNumberOfPages}
                 </span>
               </div>
             </TopTabNavigatorPage>
@@ -73,14 +251,14 @@ export class MfdAtccomDAtisReceived extends DisplayComponent<MfdAtccomDAtisRecei
             />
             <Button
               label="PRINT"
-              disabled={Subject.create(false)}
+              disabled={Subject.create(true)}
               onClick={() => {}}
               buttonStyle="width: 190px; height:62px"
               containerStyle="position:absolute; top:2px; right:0px"
             />
           </div>
         </div>
-        <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
+        <AtccomFooter bus={this.props.bus} mfd={this.props.mfd} atcService={this.props.atcService} />
       </>
     );
   }

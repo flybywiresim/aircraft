@@ -23,6 +23,7 @@ import {
   NXDataStore,
   NXLogicConfirmNode,
   NXUnits,
+  Units,
   RegisteredSimVar,
   TerminalNdbNavaid,
   UpdateThrottler,
@@ -3603,14 +3604,17 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   /**
-   *
-   * @returns {number} Returns estimated fuel on board when arriving at the destination
+   * Returns the estimated fuel on board when arriving at the destination (in tonnes), or null if it could not be computed
+   * @returns EFOB at destination
    */
   public getDestEFOB() {
     const plan = this.getFlightPlan(FlightPlanIndex.Active);
     const predictions = this.getFuelPredComputation(FlightPlanIndex.Active);
 
-    return predictions.landingWeight - plan.performanceData.zeroFuelWeight.get();
+    const zfw = plan.performanceData.zeroFuelWeight.get();
+    const landingWeight = predictions.landingWeight;
+
+    return zfw !== null && landingWeight !== null ? landingWeight - zfw : null;
   }
 
   public trySetBlockFuel(s: string, forPlan: FlightPlanIndex): boolean {
@@ -5502,10 +5506,11 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       ),
     );
     this.subscriptions.push(
-      activePlan.performanceData.approachQnh.sub(
-        (qnh) => SimVar.SetSimVarValue('L:A32NX_DESTINATION_QNH', 'Millibar', qnh ?? 0),
-        true,
-      ),
+      activePlan.performanceData.approachQnh.sub((qnh) => {
+        const qnhValue = qnh ?? 0;
+        const qnhMillibar = qnhValue < 500 ? Units.inchOfMercuryToHectopascal(qnhValue) : qnhValue;
+        SimVar.SetSimVarValue('L:A32NX_DESTINATION_QNH', 'Millibar', qnhMillibar);
+      }, true),
     );
     this.subscriptions.push(
       activePlan.performanceData.approachBaroMinimum.sub(
