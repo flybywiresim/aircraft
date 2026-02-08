@@ -587,6 +587,7 @@
     "AircraftOptionsPinPrograms": {
       "AccelerationHeight": "Acceleration Height (pi)",
       "EngineOutAccelerationHeight": "Engine-Out Acceleration Height (pi)",
+      "hudXwindFpvType": "Type de vecteur vitesse en mode crosswind",
       "IsisBaroUnit": "Unité Baromètre ISIS",
       "IsisMetricAltitude": "Altitude métrique ISIS",
       "LatLonExtendedFormat": "Format de waypoint dans le FMGC",

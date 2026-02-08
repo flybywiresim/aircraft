@@ -33,6 +33,7 @@
         "@flybywiresim/navigation-display": ["../../../fbw-common/src/systems/instruments/src/ND/index.ts"],
         "@flybywiresim/oanc": ["../../../fbw-common/src/systems/instruments/src/OANC/index.ts"],
         "@flybywiresim/pfd": ["../../../fbw-common/src/systems/instruments/src/PFD/index.ts"],
+        "@flybywiresim/hud": ["../../../fbw-common/src/systems/instruments/src/HUD/index.ts"],
         "@flybywiresim/rmp": ["../../../fbw-common/src/systems/instruments/src/RMP/index.ts"],
         "@fmgc/*": ["../../../fbw-a32nx/src/systems/fmgc/src/*"],
         "@instruments/common/*": ["./instruments/src/Common/*"],

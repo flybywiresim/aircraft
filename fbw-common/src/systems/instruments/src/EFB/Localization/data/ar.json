@@ -587,6 +587,7 @@
     "AircraftOptionsPinPrograms": {
       "AccelerationHeight": "ارتفاع التسارع (قدم)",
       "EngineOutAccelerationHeight": "ارتفاع التسارع بعد فشل المحرك (قدم)",
+      "hudXwindFpvType": "Crosswind FPV Type ",
       "IsisBaroUnit": "وحدة الضغط الجوي ",
       "IsisMetricAltitude": "وحدة الارتفاع بالامتار ",
       "LatLonExtendedFormat": "FMGC Lat/Lon Waypoint Format",

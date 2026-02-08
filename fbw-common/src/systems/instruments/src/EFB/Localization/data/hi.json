@@ -587,6 +587,7 @@
     "AircraftOptionsPinPrograms": {
       "AccelerationHeight": "त्वरण ऊंचाई (ft)",
       "EngineOutAccelerationHeight": "इंजन-आउट एक्सेलेरेशन हाइट (फीट)",
+      "hudXwindFpvType": "Crosswind FPV Type ",
       "IsisBaroUnit": "आईएसआईएस बारो यूनिट",
       "IsisMetricAltitude": "ISIS मीट्रिक एल्टीट्यूड",
       "LatLonExtendedFormat": "एफएमजीसी लैट/लोन वेपॉइंट फॉर्मेट",

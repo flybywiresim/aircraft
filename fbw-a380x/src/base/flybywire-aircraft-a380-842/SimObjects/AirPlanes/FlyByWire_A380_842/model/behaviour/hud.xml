@@ -1,0 +1,25 @@
+<!-- Copyright (c) 2023-2024 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
+<ModelBehaviors>
+    <Template Name="FBW_A380X_Components_HUD">
+        <DefaultTemplateParameters>
+            <BACKLIGHT_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</BACKLIGHT_POWERED>
+            <BACKLIGHT_POTENTIOMETER>84</BACKLIGHT_POTENTIOMETER>
+        </DefaultTemplateParameters>
+
+        <Component ID="CAPT_HUD_PANEL">
+            <!-- HUD knob -->
+            <UseTemplate Name="FBW_A380X_GenericEmissive">
+                <NODE_ID>KNOB_HUD_L_BRIGHTNESS</NODE_ID>
+            </UseTemplate>
+        </Component>
+
+        <Component ID="FO_HUD_PANEL">
+            <!-- HUD knob -->
+            <UseTemplate Name="FBW_A380X_GenericEmissive">
+                <NODE_ID>KNOB_HUD_R_BRIGHTNESS</NODE_ID>
+            </UseTemplate>
+        </Component>
+    </Template>
+</ModelBehaviors>

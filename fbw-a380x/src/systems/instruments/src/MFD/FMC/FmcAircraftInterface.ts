@@ -124,6 +124,27 @@ export class FmcAircraftInterface {
     this.arincEisWord2,
   ];
 
+  private readonly gradient = Subject.create<number | null>(0);
+  private readonly location = Subject.create<string | null>('');
+  private readonly direction = Subject.create<number | null>(0);
+  private readonly startLocation = Subject.create<string | null>('');
+  private readonly thresholdLocation = Subject.create<string | null>('');
+  private readonly thresholdCrossingHeight = Subject.create<number | null>(0);
+  private readonly latitude = Subject.create<number | null>(0);
+  private readonly longitude = Subject.create<number | null>(0);
+  private readonly elevation = Subject.create<number | null>(0);
+  private readonly length = Subject.create<number | null>(0);
+  private readonly width = Subject.create<number | null>(0);
+  private readonly srwyP1 = Subject.create<string | null>('');
+  private readonly srwyP2 = Subject.create<string | null>('');
+  private readonly srwyP3 = Subject.create<string | null>('');
+  private readonly srwyP4 = Subject.create<string | null>('');
+  private readonly srwyP5 = Subject.create<string | null>('');
+  private readonly srwyP6 = Subject.create<string | null>('');
+  private readonly srwyP7 = Subject.create<string | null>('');
+  private readonly srwyP8 = Subject.create<string | null>('');
+  private readonly srwyP9 = Subject.create<string | null>('');
+
   private readonly speedVs1g = Subject.create(0);
   private readonly speedVls = Subject.create(0);
   private readonly speedVmax = Subject.create(0);
@@ -337,6 +358,27 @@ export class FmcAircraftInterface {
       }, true),
       this.radioAlt,
       this.gpsPrimary,
+
+      this.gradient.sub((v) => pub.pub('gradient', v, true), true),
+      this.location.sub((v) => pub.pub('location', v, true), true),
+      this.direction.sub((v) => pub.pub('direction', v, true), true),
+      this.startLocation.sub((v) => pub.pub('startLocation', v, true), true),
+      this.thresholdLocation.sub((v) => pub.pub('thresholdLocation', v, true), true),
+      this.thresholdCrossingHeight.sub((v) => pub.pub('thresholdCrossingHeight', v, true), true),
+      this.latitude.sub((v) => pub.pub('latitude', v, true), true),
+      this.longitude.sub((v) => pub.pub('longitude', v, true), true),
+      this.elevation.sub((v) => pub.pub('elevation', v, true), true),
+      this.length.sub((v) => pub.pub('length', v, true), true),
+      this.width.sub((v) => pub.pub('width', v, true), true),
+      this.srwyP1.sub((v) => pub.pub('srwyP1', v, true), true),
+      this.srwyP2.sub((v) => pub.pub('srwyP2', v, true), true),
+      this.srwyP3.sub((v) => pub.pub('srwyP3', v, true), true),
+      this.srwyP4.sub((v) => pub.pub('srwyP4', v, true), true),
+      this.srwyP5.sub((v) => pub.pub('srwyP5', v, true), true),
+      this.srwyP6.sub((v) => pub.pub('srwyP6', v, true), true),
+      this.srwyP7.sub((v) => pub.pub('srwyP7', v, true), true),
+      this.srwyP8.sub((v) => pub.pub('srwyP8', v, true), true),
+      this.srwyP9.sub((v) => pub.pub('srwyP9', v, true), true),
     );
 
     // Check for STEP DELETED message
@@ -661,6 +703,102 @@ export class FmcAircraftInterface {
         longitude !== undefined ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData;
 
       this.arincDestinationLongitude.setBnrValue(longitude || 0, ssm, 18, 180, -180);
+    }
+
+    const activeFp = this.flightPlanService.active;
+    if (activeFp.destinationRunway !== undefined) {
+      if (runway) {
+        const endCoordinates = Avionics.Utils.bearingDistanceToCoordinates(
+          runway.bearing,
+          runway.length / 1852, //meters to NM
+          runway.startLocation.lat,
+          runway.startLocation.long,
+        );
+        const cornerCoor: LatLongAlt[] = [];
+        const centerLineCoords: LatLongAlt[] = [];
+
+        const p1 = Avionics.Utils.bearingDistanceToCoordinates(
+          runway.bearing - 90,
+          runway.width / 2 / 1852,
+          endCoordinates.lat,
+          endCoordinates.long,
+        );
+        p1.alt = runway.thresholdCrossingHeight - runway.length * 3.281 * Math.tan((runway.gradient / 180) * Math.PI); //in feet
+        cornerCoor.push(p1);
+        const p2 = Avionics.Utils.bearingDistanceToCoordinates(
+          runway.bearing + 90,
+          runway.width / 2 / 1852,
+          endCoordinates.lat,
+          endCoordinates.long,
+        );
+        p2.alt = p1.alt; //in feet
+        cornerCoor.push(p2);
+
+        const p3 = Avionics.Utils.bearingDistanceToCoordinates(
+          runway.bearing + 90,
+          runway.width / 2 / 1852,
+          runway.thresholdLocation.lat,
+          runway.thresholdLocation.long,
+        );
+        p3.alt = runway.thresholdCrossingHeight; //in feet
+        cornerCoor.push(p3);
+        const p4 = Avionics.Utils.bearingDistanceToCoordinates(
+          runway.bearing - 90,
+          runway.width / 2 / 1852, //1852: nautical miles to meters
+          runway.thresholdLocation.lat,
+          runway.thresholdLocation.long,
+        );
+        p4.alt = runway.thresholdCrossingHeight; //in feet
+        cornerCoor.push(p4);
+
+        //extended centerline   //1852: nautical miles to meters
+        const p5 = new LatLongAlt();
+        p5.lat = runway.thresholdLocation.lat;
+        p5.long = runway.thresholdLocation.long;
+        p5.alt = runway.thresholdCrossingHeight; //in feet
+        centerLineCoords.push(p5);
+
+        const p6 = Avionics.Utils.bearingDistanceToCoordinates((runway.bearing + 180) % 360, 4, p5.lat, p5.long);
+        p6.alt = runway.thresholdCrossingHeight; //in feet
+        centerLineCoords.push(p6);
+        const p7 = Avionics.Utils.bearingDistanceToCoordinates((runway.bearing + 180) % 360, 4, p6.lat, p6.long);
+        p7.alt = runway.thresholdCrossingHeight; //in feet
+        centerLineCoords.push(p7);
+        const p8 = Avionics.Utils.bearingDistanceToCoordinates((runway.bearing + 180) % 360, 4, p7.lat, p7.long);
+        p8.alt = runway.thresholdCrossingHeight; //in feet
+        centerLineCoords.push(p8);
+        const p9 = Avionics.Utils.bearingDistanceToCoordinates((runway.bearing + 180) % 360, 4, p8.lat, p8.long);
+        p9.alt = runway.thresholdCrossingHeight; //in feet
+        centerLineCoords.push(p9);
+
+        this.gradient.set(runway.gradient);
+        this.location.set(runway.location.lat.toFixed(6) + '#' + runway.location.long.toFixed(6));
+        this.direction.set((runway as any).bearing);
+        this.startLocation.set(runway.startLocation.lat.toFixed(6) + '#' + runway.startLocation.long.toFixed(6));
+        this.thresholdLocation.set(
+          runway.thresholdLocation.lat.toFixed(6) +
+            '#' +
+            runway.thresholdLocation.long.toFixed(6) +
+            '#' +
+            runway.thresholdLocation.alt.toFixed(6),
+        );
+        this.thresholdCrossingHeight.set(runway.thresholdCrossingHeight);
+        this.latitude.set((runway as any).latitude);
+        this.longitude.set((runway as any).longitude);
+        this.elevation.set(runway.thresholdCrossingHeight);
+        this.length.set(runway.length);
+        this.width.set((runway as any).width);
+        this.srwyP1.set(p1.lat.toFixed(6) + '#' + p1.long.toFixed(6) + '#' + p1.alt.toFixed(6));
+        this.srwyP2.set(p2.lat.toFixed(6) + '#' + p2.long.toFixed(6) + '#' + p2.alt.toFixed(6));
+        this.srwyP3.set(p3.lat.toFixed(6) + '#' + p3.long.toFixed(6) + '#' + p3.alt.toFixed(6));
+        this.srwyP4.set(p4.lat.toFixed(6) + '#' + p4.long.toFixed(6) + '#' + p4.alt.toFixed(6));
+
+        this.srwyP5.set(p5.lat.toFixed(6) + '#' + p5.long.toFixed(6) + '#' + p5.alt.toFixed(6));
+        this.srwyP6.set(p6.lat.toFixed(6) + '#' + p6.long.toFixed(6) + '#' + p6.alt.toFixed(6));
+        this.srwyP7.set(p7.lat.toFixed(6) + '#' + p7.long.toFixed(6) + '#' + p7.alt.toFixed(6));
+        this.srwyP8.set(p8.lat.toFixed(6) + '#' + p8.long.toFixed(6) + '#' + p8.alt.toFixed(6));
+        this.srwyP9.set(p9.lat.toFixed(6) + '#' + p9.long.toFixed(6) + '#' + p9.alt.toFixed(6));
+      }
     }
   }
 

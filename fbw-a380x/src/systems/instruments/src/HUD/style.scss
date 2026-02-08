@@ -1,0 +1,453 @@
+@import "../Common/definitions";
+@import "animations";
+
+@font-face {
+  font-family: "Ecam";
+  //noinspection CssUnknownTarget
+  src: url("/Fonts/fbw-a380x/FBW-Display-EIS-A380-HUD.ttf") format("truetype");
+  font-weight:normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "OpenBus";
+  //noinspection CssUnknownTarget
+  src: url("/Fonts/fbw-a380x/OpenBus.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+.hud-svg {
+  position: absolute;
+  width: 1280px;
+  height: 1024px;
+  background: rgba(0,0,0,0);
+  font-family: "OpenBus", monospace !important;
+}
+
+// .cwTest * {
+//   stroke: blue !important;
+// }
+.notXwind{
+  display:block;
+}
+.Xwind{
+  display:none;
+}
+.ReadoutBackgroundFill{
+  stroke: $display-green;
+  fill: #000000;
+}
+.maskFill{
+  fill: $display-cyan;
+  stroke: none;
+}
+
+.PulseGreeFill {
+  @include GenericPulsingFill($display-green, pulse-green-fill);
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
+}
+
+.PulseCyanFill {
+  @include GenericPulsingFill($display-cyan, pulse-cyan-fill);
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
+}
+
+.PulseAmber9Seconds {
+  @include GenericPulsingFill($display-amber, pulse-amber-fill);
+  animation-duration: 1s;
+  animation-iteration-count: 9;
+}
+
+.DisappearAfter10Seconds {
+  animation: Disappear 0s 10s forwards;
+}
+
+.BarAmber {
+  fill: $display-amber;
+  stroke: $display-amber;
+  stroke-width: 0.13px;
+}
+.BarRed {
+  fill: $display-red;
+  stroke: $display-red;
+  stroke-width: 0.11px;
+}
+.BarGreen {
+  fill: $display-green;
+  stroke: $display-green;
+  stroke-width: 0.11px;
+}
+.SmallStroke {
+  stroke-width: 2px;
+  stroke-linecap: round;
+}
+
+.NormalStroke {
+  stroke-width: 3px;
+  stroke-linecap: round;
+}
+
+.ThickStroke {
+  stroke-width: 5px;
+  stroke-linecap: round;
+}
+
+.HugeStroke {
+  stroke-width: 7px;
+  stroke-linecap: round;
+}
+
+.SmallOutline {
+  stroke-width: .5mm;
+  stroke: rgba(0,0,0,0) !important;
+  paint-order: markers stroke fill;
+}
+.NormalOutline {
+  stroke-width: 1mm;
+  stroke: rgba(0,0,0,0);
+  fill: none;
+  stroke-linecap: round;
+}
+.ThickOutline {
+  stroke-width: 1.5mm;
+  stroke: rgba(0,0,0,0);
+  fill: none;
+  stroke-linecap: round;
+}
+.HugeOutline {
+  stroke-width: 2mm;
+  stroke: rgba(0,0,0,0);
+  fill: none;
+  stroke-linecap: round;
+}
+
+.CornerRound {
+  stroke-linejoin: round;
+}
+
+.TextOutline {
+  paint-order: stroke fill markers;
+
+  stroke-width: 0.25mm;
+  stroke: rgba(0,0,0,0) !important;
+}
+
+.FontLargest {
+  font-size: 42px;
+}
+
+.FontLarge {
+  font-size: 35px;
+}
+
+.FontMedium {
+  font-size: 32px;
+}
+
+.FontIntermediate {
+  font-size: 33px;
+}
+
+.FontMediumSmaller {
+  font-size: 30.4px;
+}
+
+.FontSmall {
+  font-size: 30px;
+}
+
+.FontSmallest {
+  font-size: 27px;
+}
+
+.FontTinyToSmallest {
+  font-size: 25.8px;
+}
+
+.FontTiny {
+  font-size: 24px;
+}
+
+.FontTinyer {
+  font-size: 20px;
+}
+
+.FontForAnts {
+  font-size: 18px;
+}
+
+.StartAlign {
+  text-align: start;
+  text-anchor: start;
+}
+.MiddleAlign {
+  text-align: center;
+  text-anchor: middle;
+}
+.EndAlign {
+  text-align: end;
+  text-anchor: end;
+}
+
+.Magenta {
+  fill: none;
+  stroke: $display-magenta;
+}
+text.Magenta {
+  fill: $display-magenta;
+  stroke: none;
+}
+tspan.Magenta {
+  fill: $display-magenta;
+  stroke: none;
+}
+.Fill.Magenta {
+  fill: $display-magenta;
+}
+
+.Cyan {
+  fill: none;
+  stroke: $display-cyan;
+}
+.Cyan.Fill.Stroke {
+  fill: $display-cyan;
+  stroke: $display-cyan;
+}
+text.Cyan {
+  fill: $display-cyan;
+  stroke: none;
+}
+tspan.Cyan {
+  fill: $display-cyan;
+  stroke: none;
+}
+
+.None {
+  fill: none;
+  stroke: none;
+}
+
+.White {
+  fill: none;
+  stroke: $display-white;
+}
+.White.Fill {
+  fill: $display-white;
+  stroke: none;
+}
+.White.Fill.Stroke {
+  fill: $display-white;
+  stroke: $display-white;
+}
+text.White {
+  fill: $display-white;
+  stroke: none;
+}
+tspan.White {
+  fill: $display-white;
+  stroke: none;
+}
+
+.Black {
+  fill: none;
+  stroke: $display-background;
+}
+.Black.Fill {
+  fill: $display-background;
+  stroke: none;
+}
+.Black.Fill.Stroke {
+  fill: $display-background;
+  stroke: $display-background;
+}
+text.Black {
+  fill: $display-background;
+  stroke: none;
+}
+tspan.Black {
+  fill: $display-background;
+  stroke: none;
+}
+
+.Green {
+  stroke: $display-green;
+  fill: none;
+}
+.GreenFill{
+  fill: #00ff0080;
+}
+.GreenFill2{
+  fill: rgba(0, 255, 0, 0.3);
+}
+
+.GreenFill3{
+  fill: rgba(0, 255, 0, 0.75);
+  stroke: none;
+}
+.InverseGreen{
+  stroke: #000000;
+  fill: #000000;
+}
+.Green.Fill {
+  fill: $display-green;
+  stroke: none;
+}
+
+text.Green {
+  fill: $display-green;
+  // stroke: none;
+  stroke: #000000;
+}
+tspan.Green {
+  fill: $display-green;
+  stroke: none;
+}
+
+.Amber {
+  stroke: $display-amber;
+  fill: none;
+}
+text.Amber {
+  fill: $display-amber;
+  stroke: none;
+}
+tspan.Amber {
+  fill: $display-amber;
+  stroke: none;
+}
+
+.Yellow {
+  stroke: $display-yellow;
+  fill: none;
+}
+.Yellow.Fill {
+  fill: $display-yellow;
+  stroke: none;
+}
+text.Yellow {
+  fill: $display-yellow;
+  stroke: none;
+}
+tspan.Yellow {
+  fill: $display-yellow;
+  stroke: none;
+}
+
+.Red {
+  stroke: $display-red;
+  fill: none;
+}
+.Red.Fill {
+  fill: $display-red;
+  stroke: none;
+}
+text.Red {
+  fill: $display-red;
+  stroke: none;
+}
+tspan.Red {
+  fill: $display-red;
+  stroke: none;
+}
+
+.Grey {
+  stroke: $display-grey;
+  fill: none;
+}
+
+.EarthFill {
+  fill: #5D2518;
+}
+.SkyFill {
+  fill: #0073DE;
+}
+.BlackFill {
+  fill: $display-background;
+}
+
+.TapeBackground {
+  fill: $display-grey;
+  stroke: none;
+}
+
+.BackgroundFill {
+  // normal
+  fill: $display-background;
+  stroke: none;
+  fill-rule: evenodd;
+
+  // //debug
+  // fill: #ff0000a1;
+  // stroke: Cyan;
+  // fill-rule: evenodd;
+}
+
+.ModeChangedPath {
+  visibility: visible !important;
+}
+
+.HiddenElement {
+  display: none;
+}
+
+.GreenPulse {
+  animation: green-pulse 1s step-end infinite;
+  stroke: 1px !important;
+
+  @keyframes green-pulse {
+      0%, 100% {
+        fill: $display-green;
+      }
+      50% {
+          fill: hsl(120, 100%, 20%)
+      }
+  }
+}
+
+.TrimIndicatorSvg {
+  position: absolute;
+  top: 765px;
+  left: 326px;
+  width: 433px;
+  height: 252px;
+  font-family: "Ecam", monospace !important;
+}
+
+.TrimIndicatorImage {
+  position: absolute;
+  top: 765px;
+  left: 580px;
+  width: 100px;
+  height: 257px;
+}
+
+.Wind text{
+  fill: $display-green;
+  stroke: none;
+}
+.blue{
+  stroke: blue;
+  fill: #0000ff80;
+  stroke-width: 2px;
+}
+.yellow{
+  stroke: yellow;
+  fill: rgba(255, 255, 0, 0.144);
+  stroke-width: .5px;
+}
+.purple{
+  stroke: purple;
+  fill: purple;
+  stroke-width: 2px;
+}
+.red{
+  stroke: red;
+  fill: red;
+  stroke-width: 2px;
+}
+
+.DEBUG{
+  display: none;
+}

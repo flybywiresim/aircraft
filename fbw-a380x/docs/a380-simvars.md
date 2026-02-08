@@ -27,6 +27,7 @@
   - [Sound Variables](#sound-variables)
   - [Autobrakes](#autobrakes)
   - [Non-Systems Related](#non-systems-related)
+  - [Head Up Display](#HUD)
 
 ## Uncategorized
 
@@ -1271,3 +1272,42 @@
   - If ground power is avail or not
   - {number}
         - 1 - 4
+
+
+## HUD
+- `L:A380X_HUDMODE`
+  - Enum
+  - Which mode the HUD is currently in. Side independent.
+  - | Value | Description    |
+    |-------|----------------|
+    | 0     | NORMAL         |
+    | 1     | TAXI           |
+    | 2     | TAKEOFF        |
+    | 3     | ROLLOUT_OR_RTO |
+
+
+- `A32NX_HUD_L_DECLUTTER_MODE`
+  - Number
+  - Provides selected declutter mode for HUD
+    Value | Meaning
+    --- | ---
+    0 | Normal mode
+    1 | Declutter 1 mode
+    2 | Declutter 2 mode
+
+- `A32NX_HUD_L_CROSSWIND_MODE`
+  - Bool
+  - Indicates whether HUD crosswind mode is active (can be overriden by the hud cf: instruments/src/HUD/shared/hudValuesProvider )
+
+- `A32NX_HUD_R_DECLUTTER_MODE`
+  - Number
+  - Provides selected declutter mode for HUD
+    Value | Meaning
+    --- | ---
+    0 | Normal mode
+    1 | Declutter 1 mode
+    2 | Declutter 2 mode
+
+- `A32NX_HUD_R_CROSSWIND_MODE`
+  - Bool
+  - Indicates whether HUD crosswind mode is active (can be overriden by the hud cf: instruments/src/HUD/shared/hudValuesProvider )

@@ -2,7 +2,25 @@
 <!-- SPDX-License-Identifier: GPL-3.0 -->
 
 <ModelBehaviors>
+
+        <!-- HUD -->
+    <Template Name="FBW_HANDLING_Switch_Hud_Xwind_Template">
+        <DefaultTemplateParameters>
+            <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
+            <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
+        </DefaultTemplateParameters>
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Switch_Code">
+                <LEFT_SINGLE_CODE>
+                    (L:A380X_HUD_#SIDE#_CROSSWIND_MODE) ! (&gt;L:A380X_HUD_#SIDE#_CROSSWIND_MODE)
+                </LEFT_SINGLE_CODE>
+                <ANIM_CODE>(L:A380X_HUD_#SIDE#_CROSSWIND_MODE, Number) 100 *</ANIM_CODE>
+            </UseTemplate>
+        </Component>
+    </Template>
+
     <Template Name="FBW_A380X_Components_InteractiveParts">
+
         <!-- CPT OXY -->
 
         <Component ID="CPT_OXY_FWD" Node="CPT_OXY_FWD">

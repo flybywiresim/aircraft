@@ -587,6 +587,7 @@
     "AircraftOptionsPinPrograms": {
       "AccelerationHeight": "Acceleration Height (ft)",
       "EngineOutAccelerationHeight": "Engine-Out Acceleration Height (ft)",
+      "hudXwindFpvType": "Crosswind FPV Type ",
       "IsisBaroUnit": "ISIS หน่วย Baro",
       "IsisMetricAltitude": "ความสูง ISIS Metric",
       "LatLonExtendedFormat": "รูปแบบเวย์พอยท์ FMGC Lat/Lon",
