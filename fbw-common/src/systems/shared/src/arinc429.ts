@@ -25,20 +25,18 @@ export interface Arinc429WordData {
   /** Returns the value of the word if valid, else the specified default value. */
   valueOr(defaultValue: number): number;
   /** Returns the value of the word if valid, else null. */
-  valueOr(defaultValue: null): number | null;
+  valueOr(defaultValue: number | null): number | null;
   /** Returns the value of the word if valid, else undefined. */
-  valueOr(defaultValue: undefined): number | undefined;
-  valueOr(defaultValue: number | undefined | null): number | undefined | null;
+  valueOr(defaultValue: number | undefined): number | undefined;
 
   bitValue(bit: number): boolean;
 
   /** Returns the value of the bit if valid, else the specified default value. */
   bitValueOr(bit: number, defaultValue: boolean): boolean;
   /** Returns the value of the bit if valid, else null. */
-  bitValueOr(bit: number, defaultValue: null): boolean | null;
+  bitValueOr(bit: number, defaultValue: boolean | null): boolean | null;
   /** Returns the value of the bit if valid, else undefined. */
-  bitValueOr(bit: number, defaultValue: undefined): boolean | undefined;
-  bitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean | undefined | null;
+  bitValueOr(bit: number, defaultValue: boolean | undefined): boolean | undefined;
 }
 
 /** @deprecated Use {@link Arinc429Register} instead. */
@@ -97,12 +95,12 @@ export class Arinc429Word implements Arinc429WordData {
     );
   }
 
-  /** @inheritdoc */
+  /** Returns the value of the word if valid, else the specified default value. */
   public valueOr(defaultValue: number): number;
-  /** @inheritdoc */
-  public valueOr(defaultValue: undefined): number | undefined;
-  /** @inheritdoc */
-  public valueOr(defaultValue: null): number | null;
+  /** Returns the value of the word if valid, else the specified default value. */
+  public valueOr(defaultValue: number | undefined): number | undefined;
+  /** Returns the value of the word if valid, else the specified default value. */
+  public valueOr(defaultValue: number | null): number | null;
   /** Returns the value of the word if valid, else the specified default value. */
   public valueOr(defaultValue: number | undefined | null): number | undefined | null;
   public valueOr(defaultValue: number | undefined | null): number | undefined | null {
@@ -113,15 +111,15 @@ export class Arinc429Word implements Arinc429WordData {
     return ((this.value >> (bit - 1)) & 1) !== 0;
   }
 
-  /** @inheritdoc */
-  public bitValueOr(bit: number, defaultValue: boolean): boolean;
-  /** @inheritdoc */
-  public bitValueOr(bit: number, defaultValue: null): boolean | null;
-  /** @inheritdoc */
-  public bitValueOr(bit: number, defaultValue: undefined): boolean | undefined;
   /** Returns the value of the bit if valid, else the specified default value. */
-  public bitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean | typeof defaultValue;
-  public bitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean | typeof defaultValue {
+  public bitValueOr(bit: number, defaultValue: boolean): boolean;
+  /** Returns the value of the bit if valid, else the specified default value. */
+  public bitValueOr(bit: number, defaultValue: boolean | null): boolean | null;
+  /** Returns the value of the bit if valid, else the specified default value. */
+  public bitValueOr(bit: number, defaultValue: boolean | undefined): boolean | undefined;
+  /** Returns the value of the bit if valid, else the specified default value. */
+  public bitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean | undefined | null;
+  public bitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean | undefined | null {
     return this.isNormalOperation() || this.isFunctionalTest() ? ((this.value >> (bit - 1)) & 1) !== 0 : defaultValue;
   }
 
@@ -307,9 +305,9 @@ export class Arinc429OutputWord {
   /** @inheritdoc */
   public valueOr(defaultValue: number): number;
   /** @inheritdoc */
-  public valueOr(defaultValue: undefined): number | undefined;
+  public valueOr(defaultValue: number | undefined): number | undefined;
   /** @inheritdoc */
-  public valueOr(defaultValue: null): number | null;
+  public valueOr(defaultValue: number | null): number | null;
   public valueOr(defaultValue: number | undefined | null): number | undefined | null {
     return this.word.valueOr(defaultValue);
   }
@@ -321,9 +319,9 @@ export class Arinc429OutputWord {
   /** @inheritdoc */
   public bitValueOr(bit: number, defaultValue: boolean): boolean;
   /** @inheritdoc */
-  public bitValueOr(bit: number, defaultValue: null): boolean | null;
+  public bitValueOr(bit: number, defaultValue: boolean | null): boolean | null;
   /** @inheritdoc */
-  public bitValueOr(bit: number, defaultValue: undefined): boolean | undefined;
+  public bitValueOr(bit: number, defaultValue: boolean | undefined): boolean | undefined;
   public bitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean | typeof defaultValue {
     return this.word.bitValueOr(bit, defaultValue);
   }

@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-import { MathUtils, UpdateThrottler } from '@flybywiresim/fbw-sdk';
+import { Arinc429LocalVarConsumerSubject, MathUtils, UpdateThrottler } from '@flybywiresim/fbw-sdk';
 import {
   ConsumerSubject,
   EventBus,
@@ -11,6 +11,7 @@ import {
 } from '@microsoft/msfs-sdk';
 
 import { FuelSystemEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
+import { FqmsBusEvents } from '@shared/publishers/FqmsBusPublisher';
 enum ValveState {
   Closed,
   Open,
@@ -32,7 +33,7 @@ export class LegacyFuel implements Instrument {
   /** These Valves are set to true in the FLT files so we dont want to set them to false.*/
   private static VALVES_TO_SKIP = [37, 40, 50, 51];
 
-  private readonly sub = this.bus.getSubscriber<FuelSystemEvents & WeightBalanceEvents>();
+  private readonly sub = this.bus.getSubscriber<FuelSystemEvents & WeightBalanceEvents & FqmsBusEvents>();
 
   private keyEventManager?: KeyEventManager;
 
@@ -49,7 +50,7 @@ export class LegacyFuel implements Instrument {
   private readonly trimTankQty = ConsumerSubject.create(this.sub.on('fuel_tank_quantity_11'), 0);
   private readonly refuelStarted = ConsumerSubject.create(this.sub.on('fuel_refuel_started_by_user'), false);
 
-  private readonly cgPercent = ConsumerSubject.create(this.sub.on('cg_percent_gw'), 0);
+  private readonly cgPercent = Arinc429LocalVarConsumerSubject.create(this.sub.on('fqms_center_of_gravity_mac'), 0);
   private readonly aircraftWeightInLBS = ConsumerSubject.create(this.sub.on('total_weight'), 0);
 
   private readonly triggerStates = new Map<number, ConsumerSubject<boolean>>();
@@ -520,14 +521,14 @@ export class LegacyFuel implements Instrument {
         this.toggleTrigger(42);
       }
       if (
-        (this.cgPercent.get() > cgTargetStart && !this.triggerActive(43) && !this.triggerActive(34)) ||
-        (this.cgPercent.get() <= cgTargetStart - 0.1 && this.triggerActive(43))
+        (this.cgPercent.get().valueOr(0) > cgTargetStart && !this.triggerActive(43) && !this.triggerActive(34)) ||
+        (this.cgPercent.get().valueOr(Infinity) <= cgTargetStart - 0.1 && this.triggerActive(43))
       ) {
         this.toggleTrigger(43);
       }
       if (
-        (this.cgPercent.get() < cgTargetStop && !this.triggerActive(44)) ||
-        (this.cgPercent.get() >= cgTargetStop + 0.1 && this.triggerActive(44))
+        (this.cgPercent.get().valueOr(Infinity) < cgTargetStop && !this.triggerActive(44)) ||
+        (this.cgPercent.get().valueOr(0) >= cgTargetStop + 0.1 && this.triggerActive(44))
       ) {
         this.toggleTrigger(44);
       }

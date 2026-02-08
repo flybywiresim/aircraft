@@ -211,9 +211,9 @@ impl A380AvionicsDataCommunicationNetwork {
                 ("E1", 5, ElectricalBusType::DirectCurrent(1)),
                 ("E2", 6, ElectricalBusType::DirectCurrent(2)),
                 ("F1", 5, ElectricalBusType::DirectCurrentNamed("108PH")), // powered by 419PP
-                ("F2", 6, ElectricalBusType::DirectCurrentGndFltService),
+                ("F2", 6, ElectricalBusType::DirectCurrentNamed("502PP")),
                 ("F3", 5, ElectricalBusType::DirectCurrentNamed("108PH")), // powered by 419PP
-                ("F4", 6, ElectricalBusType::DirectCurrentGndFltService),
+                ("F4", 6, ElectricalBusType::DirectCurrentNamed("502PP")),
                 ("G1", 7, ElectricalBusType::DirectCurrent(1)),
                 ("G2", 6, ElectricalBusType::DirectCurrent(2)),
                 ("G3", 7, ElectricalBusType::DirectCurrent(2)),

@@ -19,7 +19,6 @@ export type BaseSDSimvars = AdirsSimVars &
     zuluTime: number;
     /** in gallons */
     grossWeightCg: number;
-    fuelTotalQuantity: number;
     /** in pounds */
     fuelWeightPerGallon: number;
     cockpitCabinTemp: number;
@@ -71,9 +70,6 @@ export class SDSimvarPublisher extends UpdatableSimVarPublisher<SDSimvars> {
     ['sdPageToShow', { name: 'L:A32NX_ECAM_SD_PAGE_TO_SHOW', type: SimVarValueType.Enum }],
     ['sdStsPageToShow', { name: 'L:A32NX_ECAM_SD_STS_PAGE_TO_SHOW', type: SimVarValueType.Enum }],
     ['zuluTime', { name: 'E:ZULU TIME', type: SimVarValueType.Seconds }],
-    ['grossWeightCg', { name: 'L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC', type: SimVarValueType.Number }],
-    ['fuelTotalQuantity', { name: 'L:A32NX_TOTAL_FUEL_VOLUME', type: SimVarValueType.GAL }],
-    ['fuelWeightPerGallon', { name: 'FUEL WEIGHT PER GALLON', type: SimVarValueType.Number }],
     ['cockpitCabinTemp', { name: 'L:A32NX_COND_CKPT_TEMP', type: SimVarValueType.Number }],
     ['fwdCargoTemp', { name: 'L:A32NX_COND_CARGO_FWD_TEMP', type: SimVarValueType.Number }],
     ['aftCargoTemp', { name: 'L:A32NX_COND_CARGO_BULK_TEMP', type: SimVarValueType.Number }],

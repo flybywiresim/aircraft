@@ -11,6 +11,7 @@ import {
 // FIXME systems should not import from instruments
 import { VdSymbol } from '../../../instruments/src/NavigationDisplay';
 
+// FIXME: this should not be shared between the aircraft but each have their own implementation
 /**
  * Transmitted from FMS
  */
