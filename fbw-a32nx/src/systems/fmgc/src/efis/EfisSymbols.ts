@@ -1,5 +1,4 @@
-// @ts-strict-ignore
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import {
@@ -26,6 +25,7 @@ import {
   VdSymbol,
   FmsData,
   NdPwpSymbolTypeFlags,
+  SectionCode,
 } from '@flybywiresim/fbw-sdk';
 
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
@@ -37,7 +37,7 @@ import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
-import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
+import { AlternateFlightPlan, AlternateOriginSegment } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
@@ -328,7 +328,7 @@ export class EfisSymbols<T extends number> {
         symbol.location = symbol.location ?? oldSymbol.location;
         symbol.type |= oldSymbol.type;
         if (oldSymbol.typePwp) {
-          symbol.typePwp |= oldSymbol.typePwp;
+          symbol.typePwp = (symbol.typePwp ?? 0) | oldSymbol.typePwp;
         }
         if (oldSymbol.radials) {
           if (symbol.radials) {
@@ -396,7 +396,10 @@ export class EfisSymbols<T extends number> {
     }
     if ((efisOption & EfisOption.Waypoints) > 0) {
       for (const wp of this.nearbyWaypointMonitor.getCurrentFacilities()) {
-        if (this.isWithinEditArea(wp.location, mapReferencePoint, mapOrientation, editArea)) {
+        if (
+          (range < 160 || wp.sectionCode !== SectionCode.Airport) &&
+          this.isWithinEditArea(wp.location, mapReferencePoint, mapOrientation, editArea)
+        ) {
           upsertSymbol({
             databaseId: wp.databaseId,
             ident: wp.ident,
@@ -429,11 +432,16 @@ export class EfisSymbols<T extends number> {
     // eslint-disable-next-line no-lone-blocks
 
     // ACTIVE
-    if (this.flightPlanService.hasActive && this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.Active)) {
+    const activeGeometry =
+      this.flightPlanService.hasActive && this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.Active)
+        ? this.guidanceController.activeGeometry
+        : undefined;
+
+    if (activeGeometry) {
       const symbols = this.getFlightPlanSymbols(
         false,
         this.flightPlanService.active,
-        this.guidanceController.activeGeometry,
+        activeGeometry,
         range,
         efisOption,
         mode,
@@ -451,15 +459,18 @@ export class EfisSymbols<T extends number> {
       }
 
       // ACTIVE ALTN
-      if (
+      const activeAltnGeoemtry =
         this.flightPlanService.active.alternateFlightPlan.legCount > 0 &&
         this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.Active) &&
         this.efisInterface.shouldTransmitAlternate(FlightPlanIndex.Active, mode === EfisNdMode.PLAN)
-      ) {
+          ? this.guidanceController.getGeometryForFlightPlan(FlightPlanIndex.Active, true)
+          : undefined;
+
+      if (activeAltnGeoemtry) {
         const symbols = this.getFlightPlanSymbols(
           true,
           this.flightPlanService.active.alternateFlightPlan,
-          this.guidanceController.getGeometryForFlightPlan(FlightPlanIndex.Active, true),
+          activeAltnGeoemtry,
           range,
           efisOption,
           mode,
@@ -478,14 +489,16 @@ export class EfisSymbols<T extends number> {
     }
 
     // TMPY
-    if (
-      this.flightPlanService.hasTemporary &&
-      this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.Temporary)
-    ) {
+    const tmpyGeometry =
+      this.flightPlanService.hasTemporary && this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.Temporary)
+        ? this.guidanceController.temporaryGeometry
+        : undefined;
+
+    if (tmpyGeometry) {
       const symbols = this.getFlightPlanSymbols(
         false,
         this.flightPlanService.temporary,
-        this.guidanceController.temporaryGeometry,
+        tmpyGeometry,
         range,
         efisOption,
         mode,
@@ -503,15 +516,18 @@ export class EfisSymbols<T extends number> {
     }
 
     // SEC
-    if (
+    const secGeometry =
       this.flightPlanService.hasSecondary(1) &&
       this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.FirstSecondary) &&
       this.efisInterface.shouldTransmitSecondary()
-    ) {
+        ? this.guidanceController.secondaryGeometry
+        : undefined;
+
+    if (secGeometry) {
       const symbols = this.getFlightPlanSymbols(
         false,
         this.flightPlanService.secondary(1),
-        this.guidanceController.secondaryGeometry,
+        secGeometry,
         range,
         efisOption,
         mode,
@@ -528,15 +544,18 @@ export class EfisSymbols<T extends number> {
       }
 
       // SEC ALTN
-      if (
+      const secAltnGeometry =
         this.flightPlanService.secondary(1).alternateFlightPlan.legCount > 0 &&
         this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.FirstSecondary) &&
         this.efisInterface.shouldTransmitAlternate(FlightPlanIndex.FirstSecondary, mode === EfisNdMode.PLAN)
-      ) {
+          ? this.guidanceController.getGeometryForFlightPlan(FlightPlanIndex.FirstSecondary, true)
+          : undefined;
+
+      if (secAltnGeometry) {
         const symbols = this.getFlightPlanSymbols(
           true,
           this.flightPlanService.secondary(1).alternateFlightPlan,
-          this.guidanceController.getGeometryForFlightPlan(FlightPlanIndex.FirstSecondary, true),
+          secAltnGeometry,
           range,
           efisOption,
           mode,
@@ -569,11 +588,15 @@ export class EfisSymbols<T extends number> {
       let direction: number | undefined = undefined;
 
       if (
+        pwp.efisPwpSymbolFlag !== undefined &&
         pwp.efisPwpSymbolFlag & NdPwpSymbolTypeFlags.PwpEndOfVdMarker &&
-        this.guidanceController.activeGeometry.legs.has(pwp.alongLegIndex)
+        this.guidanceController.activeGeometry?.legs.has(pwp.alongLegIndex)
       ) {
         const leg = this.guidanceController.activeGeometry.legs.get(pwp.alongLegIndex);
-        const orientation = Geometry.getLegOrientationAtDistanceFromEnd(leg, pwp.distanceFromLegTermination);
+        const orientation = leg
+          ? Geometry.getLegOrientationAtDistanceFromEnd(leg, pwp.distanceFromLegTermination)
+          : null;
+
         if (orientation !== null) {
           direction = orientation;
         }
@@ -635,7 +658,7 @@ export class EfisSymbols<T extends number> {
 
   private getFlightPlanSymbols(
     isAlternate: boolean,
-    flightPlan: BaseFlightPlan,
+    flightPlan: BaseFlightPlan | AlternateFlightPlan,
     geometry: Geometry,
     range: NauticalMiles,
     efisOption: EfisOption,
@@ -665,8 +688,11 @@ export class EfisSymbols<T extends number> {
     // FP legs
     for (let i = flightPlan.legCount - 1; i >= flightPlan.fromLegIndex && i >= 0; i--) {
       const isBeforeActiveLeg = i < flightPlan.activeLegIndex;
+      const isActiveLeg = i === flightPlan.activeLegIndex;
 
       const leg = flightPlan.elementAt(i);
+      const prevLeg = flightPlan.maybeElementAt(i - 1);
+      const nextLeg = flightPlan.maybeElementAt(i + 1);
 
       if (leg.isDiscontinuity === true) {
         continue;
@@ -681,18 +707,20 @@ export class EfisSymbols<T extends number> {
       }
 
       // no symbols for manual legs, except FM leg with no leg before it
-      if (
-        leg.definition.type === LegType.VM ||
-        (leg.definition.type === LegType.FM && !flightPlan.maybeElementAt(i - 1)?.isDiscontinuity)
-      ) {
+      if (leg.definition.type === LegType.VM || (leg.definition.type === LegType.FM && !prevLeg?.isDiscontinuity)) {
         continue;
       }
 
-      // if range >= 160, don't include terminal waypoints, except at enroute boundary
-      if (range >= 160) {
-        // FIXME the enroute boundary condition has been removed in fms-v2...
-        const [segment] = flightPlan.segmentPositionForIndex(i);
-        if (segment.class === SegmentClass.Departure || segment.class === SegmentClass.Arrival) {
+      // if range >= 160, don't include terminal waypoints, except at enroute and discont boundaries, and TO WPT
+      if (!isActiveLeg && range >= 160) {
+        if (
+          prevLeg &&
+          nextLeg &&
+          nextLeg.isDiscontinuity === false &&
+          prevLeg.isDiscontinuity === false &&
+          prevLeg.segment.class === leg.segment.class &&
+          (leg.segment.class === SegmentClass.Departure || leg.segment.class === SegmentClass.Arrival)
+        ) {
           continue;
         }
       }
@@ -723,7 +751,7 @@ export class EfisSymbols<T extends number> {
         databaseId = leg.terminationWaypoint()?.databaseId;
       }
 
-      if (!location) {
+      if (!location || !databaseId) {
         continue;
       }
 
@@ -791,23 +819,33 @@ export class EfisSymbols<T extends number> {
             case AltitudeDescriptor.AtAlt1:
             case AltitudeDescriptor.AtAlt1GsIntcptAlt2:
             case AltitudeDescriptor.AtAlt1AngleAlt2:
-              constraints.push(formatConstraintAlt(altConstraint.altitude1, descent));
+              if (altConstraint.altitude1 !== undefined) {
+                constraints.push(formatConstraintAlt(altConstraint.altitude1, descent));
+              }
               break;
             case AltitudeDescriptor.AtOrAboveAlt1:
             case AltitudeDescriptor.AtOrAboveAlt1GsIntcptAlt2:
             case AltitudeDescriptor.AtOrAboveAlt1AngleAlt2:
-              constraints.push(formatConstraintAlt(altConstraint.altitude1, descent, '+'));
+              if (altConstraint.altitude1 !== undefined) {
+                constraints.push(formatConstraintAlt(altConstraint.altitude1, descent, '+'));
+              }
               break;
             case AltitudeDescriptor.AtOrBelowAlt1:
             case AltitudeDescriptor.AtOrBelowAlt1AngleAlt2:
-              constraints.push(formatConstraintAlt(altConstraint.altitude1, descent, '-'));
+              if (altConstraint.altitude1 !== undefined) {
+                constraints.push(formatConstraintAlt(altConstraint.altitude1, descent, '-'));
+              }
               break;
             case AltitudeDescriptor.BetweenAlt1Alt2:
-              constraints.push(formatConstraintAlt(altConstraint.altitude1, descent, '-'));
-              constraints.push(formatConstraintAlt(altConstraint.altitude2, descent, '+'));
+              if (altConstraint.altitude1 !== undefined && altConstraint.altitude2 !== undefined) {
+                constraints.push(formatConstraintAlt(altConstraint.altitude1, descent, '-'));
+                constraints.push(formatConstraintAlt(altConstraint.altitude2, descent, '+'));
+              }
               break;
             case AltitudeDescriptor.AtOrAboveAlt2:
-              constraints.push(formatConstraintAlt(altConstraint.altitude2, descent, '+'));
+              if (altConstraint.altitude2 !== undefined) {
+                constraints.push(formatConstraintAlt(altConstraint.altitude2, descent, '+'));
+              }
               break;
             default:
               // No constraint
@@ -817,7 +855,7 @@ export class EfisSymbols<T extends number> {
 
         const speedConstraint = leg.speedConstraint;
 
-        if (speedConstraint) {
+        if (speedConstraint?.speed !== undefined) {
           constraints.push(formatConstraintSpeed(speedConstraint.speed));
         }
       }
@@ -829,12 +867,12 @@ export class EfisSymbols<T extends number> {
 
       const distanceFromAirplane =
         predictions && predictions.waypointPredictions.has(i)
-          ? predictions.waypointPredictions.get(i).distanceFromAircraft
+          ? predictions.waypointPredictions.get(i)?.distanceFromAircraft
           : undefined;
 
       const predictedAltitude =
         predictions && predictions.waypointPredictions.has(i)
-          ? predictions.waypointPredictions.get(i).altitude
+          ? predictions.waypointPredictions.get(i)?.altitude
           : undefined;
 
       ret.push({
@@ -846,7 +884,7 @@ export class EfisSymbols<T extends number> {
         altConstraint: leg.altitudeConstraint,
         isAltitudeConstraintMet:
           predictions && predictions.waypointPredictions.has(i)
-            ? predictions.waypointPredictions.get(i).isAltitudeConstraintMet
+            ? predictions.waypointPredictions.get(i)?.isAltitudeConstraintMet
             : true,
         direction,
         distanceFromAirplane,
@@ -871,7 +909,11 @@ export class EfisSymbols<T extends number> {
 
     // FP airports/runways
 
-    const airports: [Airport | undefined, Runway | undefined, FlightPlanSegment | undefined][] = [
+    const airports: [
+      Airport | undefined,
+      Runway | undefined,
+      FlightPlanSegment | AlternateOriginSegment | undefined,
+    ][] = [
       // The alternate origin airport symbol is not shown as it is the same as the primary destination
       [flightPlan.originAirport, flightPlan.originRunway, flightPlan.originSegment],
       [flightPlan.destinationAirport, flightPlan.destinationRunway, flightPlan.destinationSegment],
@@ -889,7 +931,7 @@ export class EfisSymbols<T extends number> {
       const databaseId = `A${airport.ident}${planAltnStr}${planIndexStr}${runwayIdentStr}`;
 
       const distanceFromAirplane =
-        (segment.lastLeg?.calculated?.cumulativeDistanceWithTransitions ??
+        (segment?.lastLeg?.calculated?.cumulativeDistanceWithTransitions ??
           distanceTo(this.lastPpos, airport.location)) -
         (this.guidanceController.vnavDriver.mcduProfile?.distanceToPresentPosition ?? 0);
 
@@ -1045,7 +1087,7 @@ export class EfisSymbols<T extends number> {
     }
 
     const geometry = this.guidanceController.getGeometryForFlightPlan(focusedWpFpIndex, focusedWpInAlternate);
-    const matchingGeometryLeg = geometry.legs.get(matchingLeg.isVectors() ? focusedWpIndex - 1 : focusedWpIndex);
+    const matchingGeometryLeg = geometry?.legs.get(matchingLeg.isVectors() ? focusedWpIndex - 1 : focusedWpIndex);
 
     if (!matchingGeometryLeg?.terminationWaypoint) {
       return null;

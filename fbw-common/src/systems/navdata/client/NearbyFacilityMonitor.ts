@@ -1,9 +1,11 @@
-// Copyright (c) 2025 FlyByWire Simulations
+// Copyright (c) 2025-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { Coordinates } from 'msfs-geo';
+
+import { ElevatedCoordinates } from '../shared/types/Common';
+import { SectionCode } from '../shared/types/SectionCode';
 import { VhfNavaidType, VorClass } from '../shared/types/VhfNavaid';
-import { ElevatedCoordinates } from '@flybywiresim/fbw-sdk';
 
 export enum NearbyFacilityType {
   VhfNavaid = 1 << 0,
@@ -17,6 +19,7 @@ export interface NearbyFacility {
   location: Coordinates & Partial<ElevatedCoordinates>;
   ident: string;
   databaseId: string;
+  sectionCode: SectionCode;
 }
 
 export interface NearbyVhfFacility extends NearbyFacility {
