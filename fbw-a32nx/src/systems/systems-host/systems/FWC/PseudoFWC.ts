@@ -92,6 +92,14 @@ enum FwcAuralWarning {
   CChord,
 }
 
+enum EngineState {
+  Off = 0,
+  On = 1,
+  Starting = 2,
+  Restarting = 3,
+  Shutting = 4,
+}
+
 export class PseudoFWC {
   private readonly sub = this.bus.getSubscriber<
     A32NXAdrBusEvents &
@@ -1145,9 +1153,9 @@ export class PseudoFWC {
 
   private readonly engine2Master = ConsumerSubject.create(this.sub.on('engine2Master'), 0);
 
-  private readonly engine1State = Subject.create(0);
+  private readonly engine1State = Subject.create(EngineState.Off);
 
-  private readonly engine2State = Subject.create(0);
+  private readonly engine2State = Subject.create(EngineState.Off);
 
   private readonly N1Eng1 = Subject.create(0);
 
@@ -1728,7 +1736,10 @@ export class PseudoFWC {
     this.N1IdleEng.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_IDLE_N1', 'number'));
     // FIXME move out of acquisition to logic below
     const oneEngineAboveMinPower = this.engine1AboveIdle.get() || this.engine2AboveIdle.get();
-    this.engineOnFor30Seconds.write(this.engine1State.get() === 1 || this.engine2State.get() === 1, deltaTime);
+    this.engineOnFor30Seconds.write(
+      this.engine1State.get() === EngineState.On || this.engine2State.get() === EngineState.On,
+      deltaTime,
+    );
 
     this.engine1Generator.set(SimVar.GetSimVarValue('L:A32NX_ELEC_ENG_GEN_1_POTENTIAL_NORMAL', 'bool'));
     this.engine2Generator.set(SimVar.GetSimVarValue('L:A32NX_ELEC_ENG_GEN_2_POTENTIAL_NORMAL', 'bool'));
@@ -2180,7 +2191,7 @@ export class PseudoFWC {
       !this.aircraftOnGround.get() &&
         ((this.fireButton1.get() && this.fireButton2.get()) ||
           (!this.engine1ValueSwitch.get() && !this.engine2ValueSwitch.get()) ||
-          (this.engine1State.get() === 0 && this.engine2State.get() === 0) ||
+          (this.engine1State.get() === EngineState.Off && this.engine2State.get() === EngineState.Off) ||
           (!this.engine1CoreAtOrAboveMinIdle.get() && !this.engine2CoreAtOrAboveMinIdle.get())),
     );
     this.engine1Or2Running = this.engine1CoreAtOrAboveMinIdle.get() || this.engine2CoreAtOrAboveMinIdle.get();
@@ -3056,8 +3067,8 @@ export class PseudoFWC {
     this.bat1Off.set(this.bat1PbOff.get() && (this.flightPhase6For60Seconds.read() || this.fwcFlightPhase.get() === 2));
     this.bat2Off.set(this.bat2PbOff.get() && (this.flightPhase6For60Seconds.read() || this.fwcFlightPhase.get() === 2));
 
-    const engine1NotRunning = this.engine1State.get() === 0;
-    const engine2NotRunning = this.engine2State.get() === 0;
+    const engine1NotRunning = this.engine1State.get() !== EngineState.On;
+    const engine2NotRunning = this.engine2State.get() !== EngineState.On;
     const phase2Pulse = this.flightPhase2PulseNode.read();
 
     const idg1DisconnectedFor1Second = this.idg1DisconnectedConfirmNode.write(this.idg1Disconnected.get(), deltaTime);
@@ -3410,7 +3421,7 @@ export class PseudoFWC {
           this.fireButtonAPU.get() ||
           this.apuFireTest.get() ||
           this.emergencyGeneratorOn.get() ||
-          (this.engine1State.get() === 0 && this.engine2State.get() === 0) ||
+          (this.engine1State.get() === EngineState.Off && this.engine2State.get() === EngineState.Off) ||
           (this.greenLP.get() && this.yellowLP.get()) ||
           (this.yellowLP.get() && this.blueLP.get()) ||
           (this.greenLP.get() && this.blueLP.get())),
