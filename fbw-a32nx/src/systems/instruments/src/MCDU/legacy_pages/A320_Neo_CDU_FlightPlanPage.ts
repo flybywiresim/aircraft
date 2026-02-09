@@ -291,9 +291,6 @@ export class CDUFlightPlanPage {
         isActive,
       } = waypointsAndMarkers[winI];
 
-      const wpPrev = inAlternate
-        ? targetPlan.alternateFlightPlan.maybeElementAt(fpIndex - 1)
-        : targetPlan.maybeElementAt(fpIndex - 1);
       const wpNext = inAlternate
         ? targetPlan.alternateFlightPlan.maybeElementAt(fpIndex - 1)
         : targetPlan.maybeElementAt(fpIndex + 1);
@@ -301,18 +298,24 @@ export class CDUFlightPlanPage {
 
       // Bearing/Track
       let bearingTrack = '';
-      const maybeBearingTrackTo = pwp ? targetPlan.maybeElementAt(fpIndex) : wp;
-      const bearingTrackTo = maybeBearingTrackTo ? maybeBearingTrackTo : wpNext;
       switch (rowI) {
-        case 1: {
-          const trueBearing = SimVar.GetSimVarValue('L:A32NX_EFIS_L_TO_WPT_BEARING', 'Degrees');
-          if (isActive && trueBearing !== null && trueBearing >= 0) {
-            bearingTrack = `BRG${trueBearing.toFixed(0).padStart(3, '0')}\u00b0`;
+        case 1: // bearing from the aircraft to the TO WPT, if the second line is the TO WPT
+          if (forPlan === FlightPlanIndex.Active && fpIndex === targetPlan.activeLegIndex) {
+            const toWptBearing = SimVar.GetSimVarValue(
+              mcdu.isTrueRefMode ? 'L:A32NX_EFIS_L_TO_WPT_TRUE_BEARING' : 'L:A32NX_EFIS_L_TO_WPT_BEARING',
+              'Degrees',
+            );
+            if (isFinite(toWptBearing) && toWptBearing >= 0) {
+              bearingTrack = `BRG${toWptBearing.toFixed(0).padStart(3, '0')}${mcdu.isTrueRefMode ? 'T' : '°'}`;
+            }
           }
           break;
-        }
-        case 2:
-          bearingTrack = isDiscontinuity(wpPrev) ? '' : formatTrack(wpPrev, bearingTrackTo);
+        case 2: // outbound track of leg shown on row 2
+          if (wp && !isDiscontinuity(wp) && wp.type !== LegType.HM && wp.calculated.outboundTrack !== undefined) {
+            const magVar = mcdu.isTrueRefMode ? null : wp.definition.magVar;
+            const track = MagVar.trueToMagnetic(wp.calculated.outboundTrack, magVar ?? 0);
+            bearingTrack = `TRK${track.toFixed(0).padStart(3, '0')}${magVar === null ? 'T' : '°'}`;
+          }
           break;
       }
 
@@ -1348,31 +1351,6 @@ function formatAltitudeOrLevel(mcdu: LegacyFmsPageInterface, alt: number, useTra
   }
 
   return formatAlt(alt);
-}
-
-function formatTrack(from: FlightPlanLeg, to: { definition: { waypoint: { location: LatLongData }; type: string } }) {
-  // TODO: Does this show something for non-waypoint terminated legs?
-  if (
-    !from ||
-    !from.definition ||
-    !from.definition.waypoint ||
-    !from.definition.waypoint.location ||
-    !to ||
-    !to.definition ||
-    !to.definition.waypoint ||
-    to.definition.type === 'HM'
-  ) {
-    return '';
-  }
-
-  // FIXME shouldn't it be ppos magvar?
-  const magVar = MagVar.get(from.definition.waypoint.location);
-  const tr = Avionics.Utils.computeGreatCircleHeading(
-    from.definition.waypoint.location,
-    to.definition.waypoint.location,
-  );
-  const track = MagVar.trueToMagnetic(tr, magVar ?? 0);
-  return `TRK${track.toFixed(0).padStart(3, '0')}${magVar === null ? 'T' : '°'}`;
 }
 
 /**
