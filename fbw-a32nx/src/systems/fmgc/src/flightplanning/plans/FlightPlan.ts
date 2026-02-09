@@ -4,9 +4,9 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Airport, ApproachType, Fix, isMsfs2024, LegType, MathUtils, NXDataStore } from '@flybywiresim/fbw-sdk';
+import { Airport, ApproachType, Fix, isMsfs2024, LegType, MagVar, MathUtils, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
-import { AeroMath, BitFlags, EventBus, MagVar, MutableSubscribable } from '@microsoft/msfs-sdk';
+import { AeroMath, BitFlags, EventBus, MutableSubscribable } from '@microsoft/msfs-sdk';
 import { FixInfoData, FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
 import { loadAllDepartures, loadAllRunways } from '@fmgc/flightplanning/DataLoading';
 import { Coordinates, Degrees } from 'msfs-geo';
@@ -22,7 +22,6 @@ import {
 } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { BaseFlightPlan, FlightPlanContext, SerializedFlightPlan } from './BaseFlightPlan';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
-import { A32NX_Util } from '../../../../shared/src/A32NX_Util';
 import { FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/FlightPlanQueuedOperation';
 import { FlightPlanFlags } from './FlightPlanFlags';
 
@@ -162,20 +161,22 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     }
 
     const targetLeg = this.legElementAt(targetLegIndex);
-    if (!targetLeg.isXF()) {
+    const targetLegFix = targetLeg.terminationWaypoint();
+    if (!targetLeg.isXF() || !targetLegFix) {
       throw new Error('[FPM] Cannot direct to a non-XF leg');
     }
 
-    const magVar = MagVar.get(ppos.lat, ppos.long);
-    const magneticCourse = A32NX_Util.trueToMagnetic(trueTrack, magVar);
+    const pposMagVar = MagVar.get(ppos.lat, ppos.long);
+    const course = pposMagVar === null ? trueTrack : MagVar.trueToMagnetic(trueTrack, pposMagVar);
 
-    const turningPoint = FlightPlanLeg.turningPoint(this.enrouteSegment, ppos, magneticCourse);
+    const turningPoint = FlightPlanLeg.turningPoint(this.enrouteSegment, ppos, course, pposMagVar);
     turningPoint.flags |= FlightPlanLegFlags.DirectToTurningPoint;
     if (this.index === FlightPlanIndex.Temporary) {
       turningPoint.flags |= FlightPlanLegFlags.PendingDirectToTurningPoint;
     }
 
-    const turnEnd = FlightPlanLeg.directToTurnEnd(this.enrouteSegment, targetLeg.terminationWaypoint())
+    const fixMagVar = MagVar.getForFix(targetLegFix);
+    const turnEnd = FlightPlanLeg.directToTurnEnd(this.enrouteSegment, targetLegFix, fixMagVar)
       .withDefinitionFrom(targetLeg)
       .withPilotEnteredDataFrom(targetLeg);
     // If we don't do this, the turn end will have the termination waypoint's ident which may not be the leg ident (for runway legs for example)
@@ -212,10 +213,10 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     }
 
     const magVar = MagVar.get(ppos.lat, ppos.long);
-    const magneticCourse = A32NX_Util.trueToMagnetic(trueTrack, magVar);
+    const course = magVar === null ? trueTrack : MagVar.trueToMagnetic(trueTrack, magVar);
 
-    const turningPoint = FlightPlanLeg.turningPoint(this.enrouteSegment, ppos, magneticCourse);
-    const turnEnd = FlightPlanLeg.directToTurnEnd(this.enrouteSegment, waypoint);
+    const turningPoint = FlightPlanLeg.turningPoint(this.enrouteSegment, ppos, course, magVar);
+    const turnEnd = FlightPlanLeg.directToTurnEnd(this.enrouteSegment, waypoint, MagVar.getForFix(waypoint));
 
     turningPoint.flags |= FlightPlanLegFlags.DirectToTurningPoint;
     if (this.index === FlightPlanIndex.Temporary) {

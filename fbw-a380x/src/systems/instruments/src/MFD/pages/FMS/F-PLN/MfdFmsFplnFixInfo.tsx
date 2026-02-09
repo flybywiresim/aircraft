@@ -1,6 +1,16 @@
-import { FmsPage } from '../../common/FmsPage';
-import { ObservableFlightPlan } from '@fmgc/flightplanning/plans/ObservableFlightPlan';
+import './MfdFmsFplnFixInfo.scss';
+
+import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
+import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
+import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
+
+import { Fix, MagVar } from '@flybywiresim/fbw-sdk';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { ObservableFlightPlanManager } from '@fmgc/flightplanning/ObservableFlightPlanManager';
+import { FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
+import { ObservableFlightPlan } from '@fmgc/flightplanning/plans/ObservableFlightPlan';
+import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
+import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 import {
   ComponentProps,
   DisplayComponent,
@@ -11,22 +21,12 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { A32NX_Util } from '../../../../../../shared/src/A32NX_Util';
-import { Footer } from '../../common/Footer';
-import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
-import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
-import { FixFormat, RadialFormat, RadiusFormat } from '../../common/DataEntryFormats';
-import { FmsError, FmsErrorType } from '@fmgc/FmsError';
-import { FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
-import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 
-import { ObservableFlightPlanManager } from '@fmgc/flightplanning/ObservableFlightPlanManager';
-import { FlightPlanFooter } from '../../common/FlightPlanFooter';
-
-import './MfdFmsFplnFixInfo.scss';
-import { Fix } from '@flybywiresim/fbw-sdk';
 import { hhmmFormatter } from '../../../shared/utils';
+import { FixFormat, RadialFormat, RadiusFormat } from '../../common/DataEntryFormats';
+import { FlightPlanFooter } from '../../common/FlightPlanFooter';
+import { FmsPage } from '../../common/FmsPage';
+import { Footer } from '../../common/Footer';
 
 export class MfdFmsFplnFixInfo extends FmsPage {
   private readonly flightPlanManager = new ObservableFlightPlanManager(
@@ -126,7 +126,7 @@ export class MfdFmsFplnFixInfo extends FmsPage {
                           if (radial !== null) {
                             fixInfo.radials[0] = {
                               magneticBearing: radial,
-                              trueBearing: A32NX_Util.magneticToTrue(radial, A32NX_Util.getRadialMagVar(fixInfo.fix)),
+                              trueBearing: MagVar.magneticToTrue(radial, MagVar.getForFix(fixInfo.fix) ?? 0),
                             };
                           } else {
                             delete fixInfo.radials[0];
@@ -160,7 +160,7 @@ export class MfdFmsFplnFixInfo extends FmsPage {
                           if (radial !== null) {
                             fixInfo.radials[1] = {
                               magneticBearing: radial,
-                              trueBearing: A32NX_Util.magneticToTrue(radial, A32NX_Util.getRadialMagVar(fixInfo.fix)),
+                              trueBearing: MagVar.magneticToTrue(radial, MagVar.getForFix(fixInfo.fix) ?? 0),
                             };
                           } else {
                             delete fixInfo.radials[1];
