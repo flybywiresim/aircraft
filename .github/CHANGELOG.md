@@ -74,6 +74,7 @@
 1. [A32NX/FADEC] Fixed the PFD showing MAN FLX instead of MAN MCT post A/THR engagement after takeoff - @FozzieHi (Fozzie)
 1. [FMS] Fixed incorrect course for enroute holds and direct tos - @tracernz (Mike)
 1. [FMS] Show true bearings correctly in various FMS pages on the MCDU/MFD - @tracernz (Mike)
+1. [A32NX/FMS] Fixed the BRG and TRK lines on the first two rows of the flight plan page - @tracernz (Mike)
 
 ## 0.14.0
 
