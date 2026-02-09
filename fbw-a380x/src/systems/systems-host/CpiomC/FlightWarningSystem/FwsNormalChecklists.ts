@@ -43,9 +43,79 @@ export interface FwsNormalChecklistsDict {
 export class FwsNormalChecklists {
   private static readonly DEPARTURE_CHANGE_ID_STRING = DEPARTURE_CHANGE_NORMAL_CHECKLIST_ID.toString();
 
-  private readonly pub = this.fws.bus.getPublisher<FwsEvents>();
-
-  private readonly subscriptions: Subscription[] = [];
+  public readonly sensedItems: FwsNormalChecklistsDict = {
+    1000001: {
+      whichItemsChecked: () => [null, null, this.fws.seatBeltOn.get(), null],
+    },
+    1000002: {
+      whichItemsChecked: () => [null, null, this.beaconLightSwitch.get()],
+    },
+    1000003: {
+      whichItemsChecked: () => [null, null, this.fws.rudderTrimPosition.get() < 0.35],
+    },
+    1000004: {
+      whichItemsChecked: () => [
+        null,
+        null,
+        null,
+        false,
+        this.fws.seatBeltOn.get(),
+        this.fws.spoilersArmed.get(),
+        this.fws.slatFlapSelectionS18F10 || this.fws.slatFlapSelectionS22F15 || this.fws.slatFlapSelectionS22F20,
+        this.fws.autoBrake.get() === 6,
+        this.fws.toConfigNormal.get(),
+      ],
+    },
+    1000005: {
+      whichItemsChecked: () => [null, null],
+    },
+    1000006: {
+      whichItemsChecked: () => [null, null, null, null],
+    },
+    1000007: {
+      whichItemsChecked: () => [null],
+    },
+    1000008: {
+      whichItemsChecked: () => [null],
+    },
+    1000009: {
+      whichItemsChecked: () => [null],
+    },
+    1000010: {
+      whichItemsChecked: () => [null, this.fws.seatBeltOn.get(), null, null],
+    },
+    1000011: {
+      whichItemsChecked: () => [null],
+    },
+    1000012: {
+      whichItemsChecked: () => [
+        false,
+        this.fws.seatBeltOn.get(),
+        this.fws.isAllGearDownlocked,
+        this.fws.spoilersArmed.get(),
+        this.fws.flapsLeverInLandingConfiguration.get(),
+      ],
+    },
+    1000013: {
+      whichItemsChecked: () => [
+        null,
+        !this.fws.engine1Master.get() &&
+          !this.fws.engine2Master.get() &&
+          !this.fws.engine3Master.get() &&
+          !this.fws.engine4Master.get(),
+        null,
+        this.fws.allFuelPumpsOff.get(),
+      ],
+    },
+    1000014: {
+      whichItemsChecked: () => [
+        this.crewOxygenButtonPushed.get(),
+        this.emergencyExitLightSwitch.get() === 2,
+        null,
+        null,
+      ],
+    },
+  };
 
   public readonly checklistShown = Subject.create(false);
 
@@ -61,6 +131,10 @@ export class FwsNormalChecklists {
   public readonly showFromLine = Subject.create(0);
 
   public readonly checklistState = MapSubject.create<number, ChecklistState>();
+
+  private readonly pub = this.fws.bus.getPublisher<FwsEvents>();
+
+  private readonly subscriptions: Subscription[] = [];
 
   /** ALL PHASES, TOP OF DESCENT, FOR APPROACH, FOR LANDING */
   private readonly hasDeferred = [false, false, false, false];
@@ -78,8 +152,8 @@ export class FwsNormalChecklists {
 
   private activeProcedure: ProcedureLinesGenerator | null = null;
 
-  /** Whether the departure change checklist should be shown on the checklist list. Set to true once airborne (flightphase 6 or greater).
-   * Set to false after the automatic checklist reset or manual reset in phase 1 */
+  /** Whether the departure change checklist should be shown on the checklist list. Set to true between flightphases 3 and 10.
+   * Is reset upon automatic checklist reset after flight, or, if flightcrew manually resets a subsequent checklist*/
   private readonly hideDepartureChangeFlipFlop = new NXLogicMemoryNode();
 
   private readonly beaconLightSwitch = RegisteredSimVar.createBoolean('A:LIGHT BEACON');
@@ -100,18 +174,7 @@ export class FwsNormalChecklists {
           _key: number,
           _value: ChecklistState,
         ) => {
-          const flattened: ChecklistState[] = [];
-          map.forEach((val, key) =>
-            flattened.push({
-              id: key.toString(),
-              procedureCompleted: val.procedureCompleted,
-              procedureActivated: val.procedureActivated,
-              itemsChecked: val.itemsChecked,
-              itemsActive: val.itemsActive,
-              itemsToShow: val.itemsToShow,
-            }),
-          );
-          this.pub.pub('fws_normal_checklists', flattened, true);
+          this.sendNormalCheckListsToEventBus(map);
         },
       ),
     );
@@ -300,7 +363,7 @@ export class FwsNormalChecklists {
   }
 
   selectFirst() {
-    if (this.checklistId.get() === 0) {
+    if (this.checklistId.get() === CHECKLIST_OVERVIEW_ID) {
       // Find first non-completed checklist
       const keys = this.getNormalProceduresKeysSorted();
       const firstIncompleteChecklist = keys.findIndex(
@@ -344,9 +407,9 @@ export class FwsNormalChecklists {
 
   moveDown(skipCompletedSensed = true) {
     const activeDeferredId = this.activeDeferredProcedureId.get();
-    if (this.checklistId.get() === 0) {
+    if (this.checklistId.get() === CHECKLIST_OVERVIEW_ID) {
       const shownItems = this.getNormalProceduresKeysSorted()
-        .map((_, index) => (this.checklistState.getValue(0)?.itemsToShow[index] ? index : null))
+        .map((_, index) => (this.checklistState.getValue(CHECKLIST_OVERVIEW_ID)?.itemsToShow[index] ? index : null))
         .filter((v) => v !== null);
       this.selectedLine.set(
         Math.min(
@@ -437,7 +500,7 @@ export class FwsNormalChecklists {
 
     if (approachCondition && triggerAutoDisplay && !this.showChecklistRequested.get()) {
       this.showChecklistRequested.set(true);
-      this.navigateToChecklist(0);
+      this.navigateToChecklist(CHECKLIST_OVERVIEW_ID);
     }
   }
 
@@ -446,13 +509,13 @@ export class FwsNormalChecklists {
 
     if (deferredApplicable && !this.showChecklistRequested.get()) {
       this.showChecklistRequested.set(true);
-      this.navigateToChecklist(0);
+      this.navigateToChecklist(CHECKLIST_OVERVIEW_ID);
     }
   }
 
   update() {
     if (this.fws.clPulseNode.read()) {
-      this.navigateToChecklist(0);
+      this.navigateToChecklist(CHECKLIST_OVERVIEW_ID);
       this.showChecklistRequested.set(!this.showChecklistRequested.get());
     }
 
@@ -505,14 +568,14 @@ export class FwsNormalChecklists {
     }
 
     if (this.fws.clCheckPulseNode.read()) {
-      if (this.checklistId.get() === 0) {
+      if (this.checklistId.get() === CHECKLIST_OVERVIEW_ID) {
         // Navigate to check list
         this.navigateToChecklist(this.getNormalProceduresKeysSorted()[this.selectedLine.get()]);
       } else if (
         deferredProcedureIds.includes(this.checklistId.get()) &&
         this.activeDeferredProcedureId.get() === null
       ) {
-        this.navigateToChecklist(0);
+        this.navigateToChecklist(CHECKLIST_OVERVIEW_ID);
       } else if (this.activeProcedure) {
         this.activeProcedure.checkSelected();
       }
@@ -586,83 +649,30 @@ export class FwsNormalChecklists {
       );
       if (departureChangeIdx !== -1) {
         overviewState.itemsToShow[departureChangeIdx] = !value;
+        this.checklistState.setValue(CHECKLIST_OVERVIEW_ID, overviewState);
+        // If we are hiding the departure change implicitly transmit to event bus so change is recieved in the EWD.
+        // Not required in case of showing the checklist as the change will be transmitted due to other objects being mutated due to the reset.
+        if (value) {
+          this.sendNormalCheckListsToEventBus(this.checklistState.get());
+        }
       } else {
         console.warn('Departure change checklist not found in overview checklist state');
       }
     }
   }
 
-  public sensedItems: FwsNormalChecklistsDict = {
-    1000001: {
-      whichItemsChecked: () => [null, null, this.fws.seatBeltOn.get(), null],
-    },
-    1000002: {
-      whichItemsChecked: () => [null, null, this.beaconLightSwitch.get()],
-    },
-    1000003: {
-      whichItemsChecked: () => [null, null, this.fws.rudderTrimPosition.get() < 0.35],
-    },
-    1000004: {
-      whichItemsChecked: () => [
-        null,
-        null,
-        null,
-        false,
-        this.fws.seatBeltOn.get(),
-        this.fws.spoilersArmed.get(),
-        this.fws.slatFlapSelectionS18F10 || this.fws.slatFlapSelectionS22F15 || this.fws.slatFlapSelectionS22F20,
-        this.fws.autoBrake.get() === 6,
-        this.fws.toConfigNormal.get(),
-      ],
-    },
-    1000005: {
-      whichItemsChecked: () => [null, null],
-    },
-    1000006: {
-      whichItemsChecked: () => [null, null, null, null],
-    },
-    1000007: {
-      whichItemsChecked: () => [null],
-    },
-    1000008: {
-      whichItemsChecked: () => [null],
-    },
-    1000009: {
-      whichItemsChecked: () => [null],
-    },
-    1000010: {
-      whichItemsChecked: () => [null, this.fws.seatBeltOn.get(), null, null],
-    },
-    1000011: {
-      whichItemsChecked: () => [null],
-    },
-    1000012: {
-      whichItemsChecked: () => [
-        false,
-        this.fws.seatBeltOn.get(),
-        this.fws.isAllGearDownlocked,
-        this.fws.spoilersArmed.get(),
-        this.fws.flapsLeverInLandingConfiguration.get(),
-      ],
-    },
-    1000013: {
-      whichItemsChecked: () => [
-        null,
-        !this.fws.engine1Master.get() &&
-          !this.fws.engine2Master.get() &&
-          !this.fws.engine3Master.get() &&
-          !this.fws.engine4Master.get(),
-        null,
-        this.fws.allFuelPumpsOff.get(),
-      ],
-    },
-    1000014: {
-      whichItemsChecked: () => [
-        this.crewOxygenButtonPushed.get(),
-        this.emergencyExitLightSwitch.get() === 2,
-        null,
-        null,
-      ],
-    },
-  };
+  private sendNormalCheckListsToEventBus(map: ReadonlyMap<number, ChecklistState>) {
+    const flattened: ChecklistState[] = [];
+    map.forEach((val, key) =>
+      flattened.push({
+        id: key.toString(),
+        procedureCompleted: val.procedureCompleted,
+        procedureActivated: val.procedureActivated,
+        itemsChecked: val.itemsChecked,
+        itemsActive: val.itemsActive,
+        itemsToShow: val.itemsToShow,
+      }),
+    );
+    this.pub.pub('fws_normal_checklists', flattened, true);
+  }
 }
