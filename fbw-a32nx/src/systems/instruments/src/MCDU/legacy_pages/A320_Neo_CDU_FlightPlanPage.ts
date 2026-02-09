@@ -1,20 +1,28 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023, 2025 FlyByWire Simulations
+// Copyright (c) 2021-2023, 2025-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { A32NX_Util } from '../../../../shared/src/A32NX_Util';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { CDULateralRevisionPage } from './A320_Neo_CDU_LateralRevisionPage';
 import { CDUVerticalRevisionPage } from './A320_Neo_CDU_VerticalRevisionPage';
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
 import { CDUHoldAtPage } from './A320_Neo_CDU_HoldAtPage';
-import { AltitudeDescriptor, MagVar, NXUnits, WaypointConstraintType, WaypointDescriptor } from '@flybywiresim/fbw-sdk';
+import {
+  AltitudeConstraint,
+  AltitudeDescriptor,
+  LegType,
+  MagVar,
+  NXUnits,
+  WaypointConstraintType,
+  WaypointDescriptor,
+} from '@flybywiresim/fbw-sdk';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
-import { FlightPlanLeg, isDiscontinuity } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { FlightPlanElement, FlightPlanLeg, isDiscontinuity } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { FmsFormatters } from '../legacy/FmsFormatters';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { Column, FormatLine } from '../legacy/A320_Neo_CDU_Format';
+import { PseudoWaypoint } from '@fmgc/guidance/PseudoWaypoint';
 
 const Markers = {
   FPLN_DISCONTINUITY: ['---F-PLN DISCONTINUITY--'],
@@ -91,7 +99,17 @@ export class CDUFlightPlanPage {
       title.push(new Column(16, 'SEC'));
     }
 
-    const waypointsAndMarkers = [];
+    const waypointsAndMarkers: {
+      wp?: FlightPlanElement;
+      holdResumeExit?: FlightPlanLeg;
+      pwp?: PseudoWaypoint;
+      distanceFromLastLine?: number;
+      isActive?: boolean;
+      marker?: string[];
+      fpIndex: number;
+      inAlternate?: boolean;
+      inMissedApproach?: boolean;
+    }[] = [];
     const first = Math.max(0, targetPlan.fromLegIndex);
     let destinationAirportOffset = 0;
     let alternateAirportOffset = 0;
@@ -262,11 +280,9 @@ export class CDUFlightPlanPage {
       winI = winI % waypointsAndMarkers.length;
 
       const {
-        /** @type {import('fbw-a32nx/src/systems/fmgc/src/flightplanning/legs/FlightPlanLeg').FlightPlanElement} */
         wp,
         pwp,
         marker,
-        /** @type {import('fbw-a32nx/src/systems/fmgc/src/flightplanning/legs/FlightPlanLeg').FlightPlanElement} */
         holdResumeExit,
         fpIndex,
         inAlternate,
@@ -1368,11 +1384,7 @@ function formatAlt(alt: number): string {
   return (Math.round(alt / 10) * 10).toFixed(0);
 }
 
-function formatAltConstraint(
-  mcdu: LegacyFmsPageInterface,
-  constraint: { altitudeDescriptor: AltitudeDescriptor; altitude1: number; altitude2: number },
-  useTransAlt: boolean,
-) {
+function formatAltConstraint(mcdu: LegacyFmsPageInterface, constraint: AltitudeConstraint, useTransAlt: boolean) {
   if (!constraint) {
     return '';
   }
