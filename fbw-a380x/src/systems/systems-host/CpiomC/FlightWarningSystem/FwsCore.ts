@@ -348,13 +348,18 @@ export class FwsCore {
 
   public readonly highLandingFieldElevation = Subject.create(false);
 
-  public readonly noMobileSwitchPosition = Subject.create(0);
+  private readonly noMobileSwitchRegisteredSimvar = RegisteredSimVar.create(
+    'L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position',
+    SimVarValueType.Number,
+  );
+
+  public readonly noMobileSwitchOn = Subject.create(false);
 
   public readonly predWSOn = Subject.create(false);
 
   private readonly seatBetlSignRegisteredSimvar = RegisteredSimVar.createBoolean('A:CABIN SEATBELTS ALERT SWITCH');
 
-  public readonly seatBeltOn = Subject.create(false);
+  public readonly seatBeltSwitchOn = Subject.create(false);
 
   public readonly strobeLightsOn = Subject.create(0);
 
@@ -1986,6 +1991,12 @@ export class FwsCore {
 
   public readonly ldgMemo = Subject.create(0);
 
+  public readonly toOrLdgMemoActive = MappedSubject.create(
+    ([toMemo, ldgMemo]) => toMemo > 0 || ldgMemo > 0,
+    this.toMemo,
+    this.ldgMemo,
+  );
+
   public readonly autoBrake = Subject.create(0);
 
   public readonly engSelectorPosition = Subject.create(0);
@@ -2899,9 +2910,9 @@ export class FwsCore {
     this.slatFlapsSystem1ActualPositionWord.setFromSimVar('L:A32NX_SFCC_1_SLAT_FLAP_ACTUAL_POSITION_WORD');
     this.slatFlapsSystem2ActualPositionWord.setFromSimVar('L:A32NX_SFCC_2_SLAT_FLAP_ACTUAL_POSITION_WORD');
 
-    const sfccSystemStatusWordToUse = !this.slatFlapsSystem1StatusWord.isInvalid()
-      ? this.slatFlapsSystem1StatusWord
-      : this.slatFlapsSystem2StatusWord;
+    const sfccSystemStatusWordToUse = this.slatFlapsSystem1StatusWord.isInvalid()
+      ? this.slatFlapsSystem2StatusWord
+      : this.slatFlapsSystem1StatusWord;
 
     this.flapLeverZero.set(sfccSystemStatusWordToUse.bitValueOr(17, false));
     this.flapLever1.set(sfccSystemStatusWordToUse.bitValueOr(18, false));
@@ -4274,9 +4285,9 @@ export class FwsCore {
     this.ir3UsedRight.set(attKnob === 2);
     this.compMesgCount.set(SimVar.GetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'number'));
     this.fmsSwitchingKnob.set(SimVar.GetSimVarValue('L:A32NX_FMS_SWITCHING_KNOB', 'enum'));
-    this.seatBeltOn.set(this.seatBetlSignRegisteredSimvar.get());
+    this.seatBeltSwitchOn.set(this.seatBetlSignRegisteredSimvar.get());
     this.ndXfrKnob.set(SimVar.GetSimVarValue('L:A32NX_ECAM_ND_XFR_SWITCHING_KNOB', 'enum'));
-    this.noMobileSwitchPosition.set(SimVar.GetSimVarValue('L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position', 'number'));
+    this.noMobileSwitchOn.set(this.noMobileSwitchRegisteredSimvar.get() === 0);
     this.strobeLightsOn.set(SimVar.GetSimVarValue('L:LIGHTING_STROBE_0', 'Bool'));
 
     this.voiceVhf3.set(this.rmp3ActiveMode.get() !== FrequencyMode.Data);

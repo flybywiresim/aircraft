@@ -45,7 +45,7 @@ export class FwsNormalChecklists {
 
   public readonly sensedItems: FwsNormalChecklistsDict = {
     1000001: {
-      whichItemsChecked: () => [null, null, this.fws.seatBeltOn.get(), null],
+      whichItemsChecked: () => [null, null, this.fws.seatBeltSwitchOn.get(), null],
     },
     1000002: {
       whichItemsChecked: () => [null, null, this.beaconLightSwitch.get()],
@@ -59,7 +59,7 @@ export class FwsNormalChecklists {
         null,
         null,
         false,
-        this.fws.seatBeltOn.get(),
+        this.fws.seatBeltSwitchOn.get(),
         this.fws.spoilersArmed.get(),
         this.fws.slatFlapSelectionS18F10 || this.fws.slatFlapSelectionS22F15 || this.fws.slatFlapSelectionS22F20,
         this.fws.autoBrake.get() === 6,
@@ -82,7 +82,7 @@ export class FwsNormalChecklists {
       whichItemsChecked: () => [null],
     },
     1000010: {
-      whichItemsChecked: () => [null, this.fws.seatBeltOn.get(), null, null],
+      whichItemsChecked: () => [null, this.fws.seatBeltSwitchOn.get(), null, null],
     },
     1000011: {
       whichItemsChecked: () => [null],
@@ -90,7 +90,7 @@ export class FwsNormalChecklists {
     1000012: {
       whichItemsChecked: () => [
         false,
-        this.fws.seatBeltOn.get(),
+        this.fws.seatBeltSwitchOn.get(),
         this.fws.isAllGearDownlocked,
         this.fws.spoilersArmed.get(),
         this.fws.flapsLeverInLandingConfiguration.get(),
@@ -164,6 +164,8 @@ export class FwsNormalChecklists {
   );
 
   private readonly crewOxygenButtonPushed = RegisteredSimVar.createBoolean('L:PUSH_OVHD_OXYGEN_CREW');
+
+  private withinDepartureChangeFlightPhaseInhib = true;
 
   constructor(private fws: FwsCore) {
     this.subscriptions.push(
@@ -303,10 +305,9 @@ export class FwsNormalChecklists {
           this.fws.manualCheckListReset.set(false);
         }
         const wasDepartureChangeShown = !this.hideDepartureChangeFlipFlop.read();
-        this.hideDepartureChangeFlipFlop.write(
-          phase >= FwcFlightPhase.SecondEngineTakeOffPower && phase <= FwcFlightPhase.TouchDown,
-          false,
-        );
+        this.withinDepartureChangeFlightPhaseInhib =
+          phase >= FwcFlightPhase.SecondEngineTakeOffPower && phase <= FwcFlightPhase.TouchDown;
+        this.hideDepartureChangeFlipFlop.write(this.withinDepartureChangeFlightPhaseInhib, false);
 
         if (wasDepartureChangeShown && this.hideDepartureChangeFlipFlop.read()) {
           this.setDepartureChangeHidden(true);
@@ -442,6 +443,7 @@ export class FwsNormalChecklists {
 
       // Show Departure change again if, checklist automatically reset or a manual checklist reset occurs on a subsequent CL.
       if (
+        !this.withinDepartureChangeFlightPhaseInhib &&
         this.hideDepartureChangeFlipFlop.read() &&
         (fromId === undefined ||
           (fromId !== undefined && fromId < ids.findIndex((i) => i === DEPARTURE_CHANGE_NORMAL_CHECKLIST_ID)))
@@ -484,7 +486,6 @@ export class FwsNormalChecklists {
   }
 
   private scrollToSelectedLine() {
-    console.log('Selected line changed to', this.selectedLine.get(), 'showing from line', this.showFromLine.get());
     this.showFromLine.set(Math.max(0, this.selectedLine.get() - WD_NUM_LINES + 2));
   }
 
@@ -651,7 +652,7 @@ export class FwsNormalChecklists {
         overviewState.itemsToShow[departureChangeIdx] = !value;
         this.checklistState.setValue(CHECKLIST_OVERVIEW_ID, overviewState);
         // If we are hiding the departure change implicitly transmit to event bus so change is recieved in the EWD.
-        // Not required in case of showing the checklist as the change will be transmitted due to other objects being mutated due to the reset.
+        // Not required in case of showing checklist as the change will be transmitted due to other objects being mutated due to the reset.
         if (value) {
           this.sendNormalCheckListsToEventBus(this.checklistState.get());
         }
