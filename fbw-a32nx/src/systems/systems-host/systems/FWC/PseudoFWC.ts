@@ -3125,13 +3125,16 @@ export class PseudoFWC {
 
     const gen1OffConfirmOrPhase6 = this.gen1OffWarningConfirmNode2.read() || phase6For60Seconds;
     const gen2OffConfirmOrPhase6 = this.gen2OffWarningConfirmNode2.read() || phase6For60Seconds;
-    const phase6WithOtherGenOff = (otherGenOffPart1: boolean, otherGenNotOperating: boolean): boolean =>
-      phase6 && (otherGenOffPart1 || otherGenNotOperating);
+    const phase6WithOtherGenOff = (
+      offConfirmOrPhase6: boolean,
+      otherGenOffPart1: boolean,
+      otherGenNotOperating: boolean,
+    ): boolean => offConfirmOrPhase6 || (phase6 && (otherGenOffPart1 || otherGenNotOperating));
 
     const gen1OffOut =
-      gen1OffPart1 && (gen1OffConfirmOrPhase6 || phase6WithOtherGenOff(gen2OffPart1, gen2NotOperatingBase));
+      gen1OffPart1 && phase6WithOtherGenOff(gen1OffConfirmOrPhase6, gen2OffPart1, gen2NotOperatingBase);
     const gen2OffOut =
-      gen2OffPart1 && (gen2OffConfirmOrPhase6 || phase6WithOtherGenOff(gen1OffPart1, gen1NotOperatingBase));
+      gen2OffPart1 && phase6WithOtherGenOff(gen2OffConfirmOrPhase6, gen1OffPart1, gen1NotOperatingBase);
 
     const gen1NotOperating = gen1NotOperatingBase || gen1OffOut;
     const gen2NotOperating = gen2NotOperatingBase || gen2OffOut;
@@ -3146,8 +3149,8 @@ export class PseudoFWC {
     this.gen12NotOperating.set(gen12NotOperating);
 
     // Use the fresh genNotOperating values for this cycle
-    const gen1OffPart2 = gen1OffConfirmOrPhase6 || phase6WithOtherGenOff(gen2OffPart1, gen2NotOperating);
-    const gen2OffPart2 = gen2OffConfirmOrPhase6 || phase6WithOtherGenOff(gen1OffPart1, gen1NotOperating);
+    const gen1OffPart2 = phase6WithOtherGenOff(gen1OffConfirmOrPhase6, gen2OffPart1, gen2NotOperating);
+    const gen2OffPart2 = phase6WithOtherGenOff(gen2OffConfirmOrPhase6, gen1OffPart1, gen1NotOperating);
 
     this.gen1Off.set(gen1OffPart1 && gen1OffPart2);
     this.gen2Off.set(gen2OffPart1 && gen2OffPart2);
