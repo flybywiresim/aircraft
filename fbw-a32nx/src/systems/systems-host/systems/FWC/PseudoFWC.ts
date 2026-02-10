@@ -600,9 +600,17 @@ export class PseudoFWC {
 
   private readonly gen1PbOffConfirmNode = new NXLogicConfirmNode(5, true);
 
+  private readonly gen1PbOffOut = Subject.create(false);
+
+  private readonly gen1OffOut = Subject.create(false);
+
   private readonly gen2PbOff = Subject.create(false);
 
   private readonly gen2PbOffConfirmNode = new NXLogicConfirmNode(5, true);
+
+  private readonly gen2PbOffOut = Subject.create(false);
+
+  private readonly gen2OffOut = Subject.create(false);
 
   private readonly idg1Disconnected = Subject.create(false);
 
@@ -627,6 +635,10 @@ export class PseudoFWC {
   private readonly gen1Off = Subject.create(false);
 
   private readonly gen2Off = Subject.create(false);
+
+  private readonly gen1NotOperating = Subject.create(false);
+
+  private readonly gen2NotOperating = Subject.create(false);
 
   private readonly gen12NotOperating = Subject.create(false);
 
@@ -3104,23 +3116,41 @@ export class PseudoFWC {
     const gen1OffPart1 = gen1PbOffFor5Seconds && !this.idg1Disconnected.get(); // TODO: Check gen fault memory
     const gen2OffPart1 = gen2PbOffFor5Seconds && !this.idg2Disconnected.get(); // TODO: Check gen fault memory
 
-    // Avoids one-cycle delay in exchange for looking awful
-    const gen1NotOperating =
-      (gen1OffPart1 &&
-        (this.gen1OffWarningConfirmNode2.read() || phase6For60Seconds || (phase6 && this.gen12NotOperating.get()))) ||
-      this.idg1DisconnectWarn.get(); // TODO: Check gen fault memory
-    const gen2NotOperating =
-      (gen2OffPart1 &&
-        (this.gen2OffWarningConfirmNode2.read() || phase6For60Seconds || (phase6 && this.gen12NotOperating.get()))) ||
-      this.idg2DisconnectWarn.get(); // TODO: Check gen fault memory
-    this.gen12NotOperating.set(
-      (gen1NotOperating || !this.engine1Generator.get()) && (gen2NotOperating || !this.engine2Generator.get()),
-    ); // TODO: Remove engine1Generator / engine2Generator checks when fault memory above implemented
+    const gen1NotOperatingBase =
+      !this.engine1Generator.get() || // TODO: Replace engine1Generator with fault memory
+      this.idg1DisconnectWarn.get();
+    const gen2NotOperatingBase =
+      !this.engine2Generator.get() || // TODO: Replace engine2Generator with fault memory
+      this.idg2DisconnectWarn.get();
 
+    const gen1OffOut =
+      gen1OffPart1 &&
+      (this.gen1OffWarningConfirmNode2.read() ||
+        phase6For60Seconds ||
+        (phase6 && (gen2OffPart1 || gen2NotOperatingBase)));
+    const gen2OffOut =
+      gen2OffPart1 &&
+      (this.gen2OffWarningConfirmNode2.read() ||
+        phase6For60Seconds ||
+        (phase6 && (gen1OffPart1 || gen1NotOperatingBase)));
+
+    const gen1NotOperating = gen1NotOperatingBase || gen1OffOut;
+    const gen2NotOperating = gen2NotOperatingBase || gen2OffOut;
+    const gen12NotOperating = gen1NotOperating && gen2NotOperating;
+
+    this.gen1PbOffOut.set(gen1OffPart1);
+    this.gen2PbOffOut.set(gen2OffPart1);
+    this.gen1OffOut.set(gen1OffOut);
+    this.gen2OffOut.set(gen2OffOut);
+    this.gen1NotOperating.set(gen1NotOperating);
+    this.gen2NotOperating.set(gen2NotOperating);
+    this.gen12NotOperating.set(gen12NotOperating);
+
+    // Use the fresh genNotOperating values for this cycle
     const gen1OffPart2 =
-      this.gen1OffWarningConfirmNode2.read() || phase6For60Seconds || (phase6 && this.gen12NotOperating.get());
+      this.gen1OffWarningConfirmNode2.read() || phase6For60Seconds || (phase6 && (gen2OffPart1 || gen2NotOperating));
     const gen2OffPart2 =
-      this.gen2OffWarningConfirmNode2.read() || phase6For60Seconds || (phase6 && this.gen12NotOperating.get());
+      this.gen2OffWarningConfirmNode2.read() || phase6For60Seconds || (phase6 && (gen1OffPart1 || gen1NotOperating));
 
     this.gen1Off.set(gen1OffPart1 && gen1OffPart2);
     this.gen2Off.set(gen2OffPart1 && gen2OffPart2);
