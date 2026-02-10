@@ -2892,7 +2892,7 @@ export class FwsAbnormalSensed {
         this.fws.flapsJammed.get(),
         this.fws.flapsJammed.get(),
         true,
-        !this.fws.flapLeverFull.get(),
+        this.fws.flapLeverLessThan3.get(),
         !this.fws.flapPositionValid.get(),
         !this.fws.flapsRetracted.get(),
         !this.fws.flapsRetracted.get(),

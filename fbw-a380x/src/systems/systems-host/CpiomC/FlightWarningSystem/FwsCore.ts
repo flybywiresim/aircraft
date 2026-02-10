@@ -915,7 +915,13 @@ export class FwsCore {
   public readonly flapLever3 = Subject.create(false);
   public readonly flapLeverFull = Subject.create(false);
   public readonly flapLeverLessThan2 = MappedSubject.create(
-    SubscribableMapFunctions.nand(),
+    SubscribableMapFunctions.or(),
+    this.flapLever1,
+    this.flapLeverZero,
+  );
+
+  public readonly flapLeverLessThan3 = MappedSubject.create(
+    SubscribableMapFunctions.nor(),
     this.flapLever3,
     this.flapLeverFull,
   );

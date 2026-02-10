@@ -241,7 +241,7 @@ export class FwsAbnormalNonSensed {
       limitationsAllPhases: () => ['800400001'],
       limitationsApprLdg: () => [
         this.fws.flapLever3.get() ? '270400001' : '',
-        ...(!this.fws.flapLever3.get() && !this.fws.flapLeverFull.get() ? ['220400001', '800400004'] : ''),
+        ...(this.fws.flapLeverLessThan3.get() ? ['220400001', '800400004'] : ''),
       ],
       info: () => ['220200011'],
     },
