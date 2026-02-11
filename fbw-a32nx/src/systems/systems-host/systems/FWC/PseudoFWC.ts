@@ -619,10 +619,6 @@ export class PseudoFWC {
 
   private readonly bat2Off = Subject.create(false);
 
-  private readonly gen1Off = Subject.create(false);
-
-  private readonly gen2Off = Subject.create(false);
-
   private readonly gen1NotOperating = Subject.create(false);
 
   private readonly gen2NotOperating = Subject.create(false);
@@ -3121,18 +3117,18 @@ export class PseudoFWC {
     const engine2NotRunning = this.engine2State.get() !== EngineState.On;
     const phase2Pulse = this.flightPhase2PulseNode.read();
 
-    const idg1Disconnected = this.sdac05001Word.bitValueOr(13, false);
-    const idg2Disconnected = this.sdac05010Word.bitValueOr(13, false);
+    const idg1Disconnected = this.sdac05001Word.bitValue(13);
+    const idg2Disconnected = this.sdac05010Word.bitValue(13);
 
     const idg1DisconnectedFor1Second = this.idg1DisconnectedConfirmNode.write(idg1Disconnected, deltaTime);
-    // TODO: Add low oil branches
+    // TODO: Add oil branches
     this.idg1DisconnectWarn.set(idg1DisconnectedFor1Second && !engine1NotRunning && !phase2Pulse);
     const idg2DisconnectedFor1Second = this.idg2DisconnectedConfirmNode.write(idg2Disconnected, deltaTime);
-    // TODO: Add low oil branches
+    // TODO: Add oil branches
     this.idg2DisconnectWarn.set(idg2DisconnectedFor1Second && !engine2NotRunning && !phase2Pulse);
 
-    const gen1PbOff = this.sdac05001Word.bitValueOr(19, false);
-    const gen2PbOff = this.sdac05010Word.bitValueOr(19, false);
+    const gen1PbOff = this.sdac05001Word.bitValue(19);
+    const gen2PbOff = this.sdac05010Word.bitValue(19);
 
     const gen1PbOffFor5Seconds = this.gen1PbOffConfirmNode.write(gen1PbOff, deltaTime);
     const gen2PbOffFor5Seconds = this.gen2PbOffConfirmNode.write(gen2PbOff, deltaTime);
@@ -3178,12 +3174,9 @@ export class PseudoFWC {
     this.gen2NotOperating.set(gen2NotOperating);
     this.gen12NotOperating.set(gen12NotOperating);
 
-    // Use the fresh genNotOperating values for this cycle
+    // Use fresh genNotOperating values for this cycle
     const gen1OffPart2 = phase6WithOtherGenOff(gen1OffConfirmOrPhase6, gen2OffPart1, gen2NotOperating);
     const gen2OffPart2 = phase6WithOtherGenOff(gen2OffConfirmOrPhase6, gen1OffPart1, gen1NotOperating);
-
-    this.gen1Off.set(gen1OffPart1 && gen1OffPart2);
-    this.gen2Off.set(gen2OffPart1 && gen2OffPart2);
 
     this.gen12NotOperatingPhase3Pulse.write(this.fwcFlightPhase.get() === 3 && this.gen12NotOperating.get(), deltaTime);
 
@@ -3200,10 +3193,10 @@ export class PseudoFWC {
     this.gen2OffWarning.set(gen2OffWarningPart1 && !gen2OffWarningPart2 && !gen2OffWarningPart3);
 
     const idg1DisconnectedWarningPart2 =
-      (this.flightPhase29.get() && this.gen12NotOperating.get() && this.toConfigHalfSecondTriggeredNode.read()) ||
+      (this.flightPhase29.get() && this.toConfigHalfSecondTriggeredNode.read() && this.gen12NotOperating.get()) ||
       this.gen12NotOperatingPhase3Pulse.read();
     const idg2DisconnectedWarningPart2 =
-      (this.flightPhase29.get() && this.gen12NotOperating.get() && this.toConfigHalfSecondTriggeredNode.read()) ||
+      (this.flightPhase29.get() && this.toConfigHalfSecondTriggeredNode.read() && this.gen12NotOperating.get()) ||
       this.gen12NotOperatingPhase3Pulse.read();
 
     this.idg1DisconnectedWarning.set(this.idg1DisconnectWarn.get() && !idg1DisconnectedWarningPart2);
