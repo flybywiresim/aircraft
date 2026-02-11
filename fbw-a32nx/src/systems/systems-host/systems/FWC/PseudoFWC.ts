@@ -230,6 +230,9 @@ export class PseudoFWC {
   private readonly sdac00410Word = Arinc429Register.empty();
   private readonly sdac00411Word = Arinc429Register.empty();
 
+  private readonly sdac05001Word = Arinc429Register.empty();
+  private readonly sdac05010Word = Arinc429Register.empty();
+
   /* 21 - AIR CONDITIONING AND PRESSURIZATION */
 
   private readonly acsc1DiscreteWord1 = Arinc429Register.empty();
@@ -596,15 +599,11 @@ export class PseudoFWC {
 
   private readonly bat2PbOff = Subject.create(false);
 
-  private readonly gen1PbOff = Subject.create(false);
-
   private readonly gen1PbOffConfirmNode = new NXLogicConfirmNode(5, true);
 
   private readonly gen1PbOffOut = Subject.create(false);
 
   private readonly gen1OffOut = Subject.create(false);
-
-  private readonly gen2PbOff = Subject.create(false);
 
   private readonly gen2PbOffConfirmNode = new NXLogicConfirmNode(5, true);
 
@@ -612,21 +611,9 @@ export class PseudoFWC {
 
   private readonly gen2OffOut = Subject.create(false);
 
-  private readonly idg1Disconnected = Subject.create(false);
-
   private readonly idg1DisconnectedConfirmNode = new NXLogicConfirmNode(1, true);
 
-  private readonly idg2Disconnected = Subject.create(false);
-
   private readonly idg2DisconnectedConfirmNode = new NXLogicConfirmNode(1, true);
-
-  private readonly engine1MasterAlternatorVar = RegisteredSimVar.createBoolean('A:GENERAL ENG MASTER ALTERNATOR:1');
-
-  private readonly engine2MasterAlternatorVar = RegisteredSimVar.createBoolean('A:GENERAL ENG MASTER ALTERNATOR:2');
-
-  private readonly idg1ConnectedVar = RegisteredSimVar.createBoolean('L:A32NX_ELEC_ENG_GEN_1_IDG_IS_CONNECTED');
-
-  private readonly idg2ConnectedVar = RegisteredSimVar.createBoolean('L:A32NX_ELEC_ENG_GEN_2_IDG_IS_CONNECTED');
 
   private readonly bat1Off = Subject.create(false);
 
@@ -1468,6 +1455,13 @@ export class PseudoFWC {
 
     this.toConfigMemoNormal.sub((normal) => SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool', normal));
     this.fwcFlightPhase.sub(() => this.flightPhaseEndedPulseNode.write(true, 0));
+    this.fwcFlightPhase.sub((flightPhase) => {
+      if (flightPhase === 7) {
+        this.wheel1Rpm.resume();
+      } else {
+        this.wheel1Rpm.pause();
+      }
+    }, true);
 
     this.auralCrcOutput.sub((crc) => this.soundManager.handleSoundCondition('continuousRepetitiveChime', crc), true);
 
@@ -1659,6 +1653,11 @@ export class PseudoFWC {
   private readonly ir2FaultDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_2_FAULT_WARN_DISCRETE');
   private readonly ir3FaultDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_3_FAULT_WARN_DISCRETE');
 
+  private readonly engine1MasterAlternatorVar = RegisteredSimVar.createBoolean('A:GENERAL ENG MASTER ALTERNATOR:1');
+  private readonly engine2MasterAlternatorVar = RegisteredSimVar.createBoolean('A:GENERAL ENG MASTER ALTERNATOR:2');
+  private readonly idg1ConnectedVar = RegisteredSimVar.createBoolean('L:A32NX_ELEC_ENG_GEN_1_IDG_IS_CONNECTED');
+  private readonly idg2ConnectedVar = RegisteredSimVar.createBoolean('L:A32NX_ELEC_ENG_GEN_2_IDG_IS_CONNECTED');
+
   private acquireSdac(): void {
     this.sdac00401Word.set(0);
     this.sdac00401Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
@@ -1672,6 +1671,15 @@ export class PseudoFWC {
     this.sdac00411Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
     this.sdac00411Word.setBitValue(26, this.ir3AlignDiscreteVar.get());
     this.sdac00411Word.setBitValue(28, this.ir3FaultDiscreteVar.get());
+
+    this.sdac05001Word.set(0);
+    this.sdac05001Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
+    this.sdac05001Word.setBitValue(13, !this.idg1ConnectedVar.get());
+    this.sdac05001Word.setBitValue(19, !this.engine1MasterAlternatorVar.get());
+    this.sdac05010Word.set(0);
+    this.sdac05010Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
+    this.sdac05010Word.setBitValue(13, !this.idg2ConnectedVar.get());
+    this.sdac05010Word.setBitValue(19, !this.engine2MasterAlternatorVar.get());
   }
 
   /**
@@ -1799,12 +1807,6 @@ export class PseudoFWC {
 
     this.bat1PbOff.set(!SimVar.GetSimVarValue('L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO', 'bool'));
     this.bat2PbOff.set(!SimVar.GetSimVarValue('L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO', 'bool'));
-
-    this.gen1PbOff.set(!this.engine1MasterAlternatorVar.get());
-    this.gen2PbOff.set(!this.engine2MasterAlternatorVar.get());
-
-    this.idg1Disconnected.set(!this.idg1ConnectedVar.get());
-    this.idg2Disconnected.set(!this.idg2ConnectedVar.get());
 
     /* HYDRAULICS acquisition */
 
@@ -3119,15 +3121,21 @@ export class PseudoFWC {
     const engine2NotRunning = this.engine2State.get() !== EngineState.On;
     const phase2Pulse = this.flightPhase2PulseNode.read();
 
-    const idg1DisconnectedFor1Second = this.idg1DisconnectedConfirmNode.write(this.idg1Disconnected.get(), deltaTime);
+    const idg1Disconnected = this.sdac05001Word.bitValueOr(13, false);
+    const idg2Disconnected = this.sdac05010Word.bitValueOr(13, false);
+
+    const idg1DisconnectedFor1Second = this.idg1DisconnectedConfirmNode.write(idg1Disconnected, deltaTime);
     // TODO: Add low oil branches
     this.idg1DisconnectWarn.set(idg1DisconnectedFor1Second && !engine1NotRunning && !phase2Pulse);
-    const idg2DisconnectedFor1Second = this.idg2DisconnectedConfirmNode.write(this.idg2Disconnected.get(), deltaTime);
+    const idg2DisconnectedFor1Second = this.idg2DisconnectedConfirmNode.write(idg2Disconnected, deltaTime);
     // TODO: Add low oil branches
     this.idg2DisconnectWarn.set(idg2DisconnectedFor1Second && !engine2NotRunning && !phase2Pulse);
 
-    const gen1PbOffFor5Seconds = this.gen1PbOffConfirmNode.write(this.gen1PbOff.get(), deltaTime);
-    const gen2PbOffFor5Seconds = this.gen2PbOffConfirmNode.write(this.gen2PbOff.get(), deltaTime);
+    const gen1PbOff = this.sdac05001Word.bitValueOr(19, false);
+    const gen2PbOff = this.sdac05010Word.bitValueOr(19, false);
+
+    const gen1PbOffFor5Seconds = this.gen1PbOffConfirmNode.write(gen1PbOff, deltaTime);
+    const gen2PbOffFor5Seconds = this.gen2PbOffConfirmNode.write(gen2PbOff, deltaTime);
 
     const phase6 = this.fwcFlightPhase.get() === 6;
     const phase6For60Seconds = this.flightPhase6For60Seconds.read();
@@ -3135,8 +3143,8 @@ export class PseudoFWC {
     this.gen1OffWarningConfirmNode2.write(!engine1NotRunning && !phase6, deltaTime);
     this.gen2OffWarningConfirmNode2.write(!engine2NotRunning && !phase6, deltaTime);
 
-    const gen1OffPart1 = gen1PbOffFor5Seconds && !this.idg1Disconnected.get(); // TODO: Check gen fault memory
-    const gen2OffPart1 = gen2PbOffFor5Seconds && !this.idg2Disconnected.get(); // TODO: Check gen fault memory
+    const gen1OffPart1 = gen1PbOffFor5Seconds && !idg1Disconnected; // TODO: Check gen fault memory
+    const gen2OffPart1 = gen2PbOffFor5Seconds && !idg2Disconnected; // TODO: Check gen fault memory
 
     const gen1NotOperatingBase =
       !this.engine1Generator.get() || // TODO: Replace engine1Generator with fault memory
