@@ -1,6 +1,7 @@
 use std::error::Error;
-use std::sync::LazyLock;
+use std::sync::{LazyLock, Mutex};
 
+use systems::shared::rate_limiter::RateLimiter;
 use systems_wasm::aspects::{
     EventToVariableMapping, ExecuteOn, MsfsAspectBuilder, ObjectWrite, VariablesToObject,
 };
@@ -17,6 +18,172 @@ use uom::si::{
     f64::*,
     mass::{pound, ton},
 };
+
+static RATE_LIMITER_UPPER: LazyLock<Mutex<RateLimiter<f64>>> =
+    LazyLock::new(|| Mutex::new(RateLimiter::new_symmetrical(0.1)));
+
+static RATE_LIMITER_LOWER: LazyLock<Mutex<RateLimiter<f64>>> =
+    LazyLock::new(|| Mutex::new(RateLimiter::new_symmetrical(0.1)));
+
+static RATE_LIMITER_IN_FLIGHT: LazyLock<Mutex<RateLimiter<f64>>> =
+    LazyLock::new(|| Mutex::new(RateLimiter::new_symmetrical(0.1)));
+
+const IN_FLIGHT_OFFSET: f64 = 4.5;
+
+type AxisType = Axis<f64, Binary, Clamp, Clamp>;
+type TableType = LookupTable2D<AxisType, AxisType, f64>;
+
+const LUT_SHAPE: (usize, usize) = (8, 9);
+
+const WEIGHT_BREAKPOINTS: [f64; LUT_SHAPE.0] = [48., 50., 55., 60., 65., 70., 75., 79.];
+const CG_BREAKPOINTS: [f64; LUT_SHAPE.1] = [15., 17., 20., 24., 27., 30., 32., 35., 40.];
+
+const UPPER_BOUNDARY_ACTUAL: f64 = 3.8;
+const LOWER_BOUNDARY_ACTUAL: f64 = -2.5;
+
+#[rustfmt::skip]
+const UPPER_BOUNDARY_1_PLUS_F_DATA: [f64; LUT_SHAPE.0 * LUT_SHAPE.1] = [
+    3.7, 3.2, 2.7, 2.0, 1.4, 0.9, 0.4, 0.0, -0.9,
+    4.3, 3.7, 3.2, 2.5, 1.8, 1.3, 0.9, 0.4, -0.6,
+    5.6, 5.1, 4.4, 3.7, 2.9, 2.1, 1.7, 1.1, -0.2,
+    5.5, 5.0, 4.4, 3.4, 2.9, 2.2, 1.7, 1.1, 0.1,
+    6.1, 5.5, 4.9, 3.9, 3.2, 2.4, 1.9, 1.2, 0.0,
+    6.6, 5.7, 5.1, 4.1, 3.4, 2.5, 2.1, 1.5, 0.3,
+    6.6, 6.1, 5.3, 4.3, 3.7, 2.9, 2.5, 1.7, 0.5,
+    6.6, 6.2, 5.4, 4.4, 3.6, 2.9, 2.5, 1.8, 0.6,
+];
+
+#[rustfmt::skip]
+const LOWER_BOUNDARY_1_PLUS_F_DATA: [f64; LUT_SHAPE.0 * LUT_SHAPE.1] = [
+    0.0, -0.2, -0.9, -1.3, -1.5, -1.9, -2.0, -2.5, -2.5,
+    0.5, 0.3, -0.5, -1.5, -1.9, -1.9, -1.9, -1.9, -2.2,
+    0.6, 0.5, -0.2, -1.2, -1.5, -1.7, -1.9, -2.4, -2.5,
+    0.5, 0.4, 0.2, -1.1, -1.3, -1.8, -1.9, -2.3, -2.4,
+    0.6, 0.5, 0.1, -1.2, -1.2, -1.6, -1.9, -2.5, -2.7,
+    0.5, 0.3, -1.0, -1.8, -2.0, -2.4, -2.7, -3.0, -3.4,
+    1.0, 0.6, 0.3, -1.2, -1.5, -1.9, -2.2, -2.4, -3.4,
+    1.6, 1.6, 1.1, 0.7, 0.4, -0.2, -0.5, -1.9, -2.6,
+];
+
+#[rustfmt::skip]
+const UPPER_BOUNDARY_2_DATA: [f64; LUT_SHAPE.0 * LUT_SHAPE.1] = [
+    2.1, 1.7, 1.2, 0.5, -0.1, -0.6, -0.8, -1.4, -2.4,
+    2.6, 2.3, 1.7, 0.9, 0.4, -0.1, -0.6, -1.2, -2.1,
+    2.3, 2.0, 1.7, 0.7, 0.2, -0.3, -0.6, -1.2, -2.2,
+    2.7, 2.3, 1.7, 1.0, 0.2, -0.3, -0.6, -1.2, -2.1,
+    3.5, 3.2, 2.5, 1.9, 1.1, 0.6, 0.3, -0.2, -1.5,
+    3.8, 3.2, 2.6, 2.0, 1.2, 0.7, 0.4, -0.4, -1.6,
+    5.5, 4.9, 4.1, 3.2, 2.5, 1.9, 1.4, 0.6, -0.8,
+    5.7, 5.2, 4.4, 3.6, 2.8, 2.0, 1.6, 0.8, -0.5,
+];
+
+#[rustfmt::skip]
+const LOWER_BOUNDARY_2_DATA: [f64; LUT_SHAPE.0 * LUT_SHAPE.1] = [
+    -0.9, -1.8, -2.8, -3.5, -4.0, -4.0, -4.0, -4.0, -4.0,
+    -1.1, -1.3, -2.3, -2.6, -3.8, -4.0, -4.0, -4.0, -4.0,
+    -0.8, -0.9, -1.7, -1.8, -2.3, -3.6, -4.0, -4.0, -4.0,
+    0.3, 0.2, 0.0, -0.1, -0.8, -1.5, -2.3, -2.8, -3.2,
+    0.2, 0.1, 0.0, -0.1, -0.4, -1.1, -1.9, -2.3, -2.6,
+    0.6, 0.6, 0.6, 0.5, 0.3, 0.0, -0.3, -1.4, -1.8,
+    0.6, 0.6, 0.6, 0.5, 0.2, 0.0, -0.5, -1.9, -2.4,
+    0.9, 0.6, 0.6, 0.5, 0.1, -0.3, -0.9, -2.3, -2.8,
+];
+
+#[rustfmt::skip]
+const UPPER_BOUNDARY_3_DATA: [f64; LUT_SHAPE.0 * LUT_SHAPE.1] = [
+    -0.5, -0.7, -1.1, -1.6, -1.9, -2.4, -2.6, -3.0, -3.6,
+    -0.1, -0.4, -0.7, -1.3, -1.7, -2.2, -2.4, -2.8, -3.4,
+    3.2, 2.7, 2.2, 1.2, 0.5, -0.2, -0.6, -1.2, -2.4,
+    3.2, 2.8, 2.3, 1.4, 0.7, 0.2, -0.3, -0.9, -2.1,
+    3.9, 3.5, 2.8, 1.9, 1.2, 0.6, 0.2, -0.4, -1.6,
+    3.8, 3.5, 2.8, 1.8, 1.2, 0.6, 0.2, -0.5, -1.6,
+    4.0, 3.7, 3.2, 2.2, 1.5, 0.9, 0.3, -0.3, -1.6,
+    3.8, 3.4, 2.8, 2.0, 1.4, 0.7, 0.3, -0.3, -1.6,
+];
+
+#[rustfmt::skip]
+const LOWER_BOUNDARY_3_DATA: [f64; LUT_SHAPE.0 * LUT_SHAPE.1] = [
+    -2.7, -4.0, -4.0, -4.0, -4.0, -4.0, -4.0, -4.0, -4.0,
+    -2.7, -4.0, -4.0, -4.0, -4.0, -4.0, -4.0, -4.0, -4.0,
+    -2.5, -3.0, -3.2, -3.5, -4.0, -4.0, -4.0, -4.0, -4.0,
+    -2.3, -3.2, -3.4, -3.6, -3.8, -4.0, -4.0, -4.0, -4.0,
+    -2.0, -2.8, -3.0, -3.3, -3.6, -4.0, -4.0, -4.0, -4.0,
+    -2.1, -3.0, -3.2, -3.3, -4.0, -4.0, -4.0, -4.0, -4.0,
+    -2.3, -3.0, -3.0, -3.5, -4.0, -4.0, -4.0, -4.0, -4.0,
+    -1.9, -3.0, -3.2, -3.3, -4.0, -4.0, -4.0, -4.0, -4.0,
+];
+
+const UPPER_BOUNDARY_TABLE_1_PLUS_F: LazyLock<TableType> = LazyLock::new(|| {
+    TableType::new(
+        WEIGHT_BREAKPOINTS.to_vec(),
+        Binary::default(),
+        CG_BREAKPOINTS.to_vec(),
+        Binary::default(),
+        Array2::from_shape_vec(LUT_SHAPE, UPPER_BOUNDARY_1_PLUS_F_DATA.to_vec())
+            .expect("THS Table unwrap failed"),
+    )
+    .expect("THS Table unwrap failed")
+});
+
+const LOWER_BOUNDARY_TABLE_1_PLUS_F: LazyLock<TableType> = LazyLock::new(|| {
+    TableType::new(
+        WEIGHT_BREAKPOINTS.to_vec(),
+        Binary::default(),
+        CG_BREAKPOINTS.to_vec(),
+        Binary::default(),
+        Array2::from_shape_vec(LUT_SHAPE, LOWER_BOUNDARY_1_PLUS_F_DATA.to_vec())
+            .expect("THS Table unwrap failed"),
+    )
+    .expect("THS Table unwrap failed")
+});
+
+const UPPER_BOUNDARY_TABLE_2: LazyLock<TableType> = LazyLock::new(|| {
+    TableType::new(
+        WEIGHT_BREAKPOINTS.to_vec(),
+        Binary::default(),
+        CG_BREAKPOINTS.to_vec(),
+        Binary::default(),
+        Array2::from_shape_vec(LUT_SHAPE, UPPER_BOUNDARY_2_DATA.to_vec())
+            .expect("THS Table unwrap failed"),
+    )
+    .expect("THS Table unwrap failed")
+});
+
+const LOWER_BOUNDARY_TABLE_2: LazyLock<TableType> = LazyLock::new(|| {
+    TableType::new(
+        WEIGHT_BREAKPOINTS.to_vec(),
+        Binary::default(),
+        CG_BREAKPOINTS.to_vec(),
+        Binary::default(),
+        Array2::from_shape_vec(LUT_SHAPE, LOWER_BOUNDARY_2_DATA.to_vec())
+            .expect("THS Table unwrap failed"),
+    )
+    .expect("THS Table unwrap failed")
+});
+
+const UPPER_BOUNDARY_TABLE_3: LazyLock<TableType> = LazyLock::new(|| {
+    TableType::new(
+        WEIGHT_BREAKPOINTS.to_vec(),
+        Binary::default(),
+        CG_BREAKPOINTS.to_vec(),
+        Binary::default(),
+        Array2::from_shape_vec(LUT_SHAPE, UPPER_BOUNDARY_3_DATA.to_vec())
+            .expect("THS Table unwrap failed"),
+    )
+    .expect("THS Table unwrap failed")
+});
+
+const LOWER_BOUNDARY_TABLE_3: LazyLock<TableType> = LazyLock::new(|| {
+    TableType::new(
+        WEIGHT_BREAKPOINTS.to_vec(),
+        Binary::default(),
+        CG_BREAKPOINTS.to_vec(),
+        Binary::default(),
+        Array2::from_shape_vec(LUT_SHAPE, LOWER_BOUNDARY_3_DATA.to_vec())
+            .expect("THS Table unwrap failed"),
+    )
+    .expect("THS Table unwrap failed")
+});
 
 pub(super) fn trimmable_horizontal_stabilizer(
     builder: &mut MsfsAspectBuilder,
@@ -112,53 +279,72 @@ pub(super) fn trimmable_horizontal_stabilizer(
         Variable::named("HYD_THS_DEFLECTION"),
     );
 
-    builder.map_many(
+    builder.map_many_with_delta(
         ExecuteOn::PostTick,
         vec![
             Variable::named("TOTAL WEIGHT"),
             Variable::named("CG PERCENT"),
+            Variable::aspect("HYD_FINAL_THS_DEFLECTION"),
+            Variable::named("FLAPS_HANDLE_INDEX"),
+            Variable::aircraft("SIM ON GROUND", "BOOL", 0),
         ],
-        |values| {
+        |values, delta| {
             let weight_tons = Mass::new::<pound>(values[0]).get::<ton>();
             let cg_percent = values[1];
+            let hydraulics_ths_position = values[2];
+            let flaps_handle_pos = values[3] as u32;
+            let on_ground = to_bool(values[4]);
 
-            println!("weight: {:.3}, CG: {:.3}", weight_tons, cg_percent);
+            let (mut upper_boundary_value, mut lower_boundary_value) = match flaps_handle_pos {
+                0 | 1 => (
+                    UPPER_BOUNDARY_TABLE_1_PLUS_F.lookup(weight_tons, cg_percent),
+                    LOWER_BOUNDARY_TABLE_1_PLUS_F.lookup(weight_tons, cg_percent),
+                ),
+                2 => (
+                    UPPER_BOUNDARY_TABLE_2.lookup(weight_tons, cg_percent),
+                    LOWER_BOUNDARY_TABLE_2.lookup(weight_tons, cg_percent),
+                ),
+                3 | 4..=u32::MAX => (
+                    UPPER_BOUNDARY_TABLE_3.lookup(weight_tons, cg_percent),
+                    LOWER_BOUNDARY_TABLE_3.lookup(weight_tons, cg_percent),
+                ),
+            };
 
-            TABLE.lookup(weight_tons, cg_percent)
+            upper_boundary_value = RATE_LIMITER_UPPER
+                .lock()
+                .unwrap()
+                .update(delta, upper_boundary_value);
+
+            lower_boundary_value = RATE_LIMITER_LOWER
+                .lock()
+                .unwrap()
+                .update(delta, lower_boundary_value);
+
+            let in_flight_gain = RATE_LIMITER_IN_FLIGHT
+                .lock()
+                .unwrap()
+                .update(delta, if on_ground { 0. } else { 1. });
+
+            let normalized_hydraulic_ths_position = (hydraulics_ths_position
+                - LOWER_BOUNDARY_ACTUAL)
+                / (UPPER_BOUNDARY_ACTUAL - LOWER_BOUNDARY_ACTUAL);
+
+            let on_ground_remapped_ths_position = normalized_hydraulic_ths_position
+                * (upper_boundary_value - lower_boundary_value)
+                + lower_boundary_value;
+
+            let in_flight_ths_position = hydraulics_ths_position + IN_FLIGHT_OFFSET;
+
+            in_flight_gain * in_flight_ths_position
+                + (1. - in_flight_gain) * on_ground_remapped_ths_position
         },
-        Variable::named("TEST_TABLE_LUT"),
+        Variable::aspect("HYD_REMAPPED_THS_DEFLECTION"),
     );
 
     builder.variables_to_object(Box::new(PitchTrimSimOutput { elevator_trim: 0. }));
 
     Ok(())
 }
-
-type AxisType = Axis<f64, Binary, Clamp, Clamp>;
-type TableType = LookupTable2D<AxisType, AxisType, f64>;
-
-const LUT_SHAPE: (usize, usize) = (8, 9);
-
-const WEIGHT_BREAKPOINTS: [f64; LUT_SHAPE.0] = [48., 50., 55., 60., 65., 70., 75., 79.];
-const CG_BREAKPOINTS: [f64; LUT_SHAPE.1] = [15., 17., 20., 24., 27., 30., 32., 35., 40.];
-
-const TABLE_DATA: [f64; LUT_SHAPE.0 * LUT_SHAPE.1] = [
-    3.7, 3.2, 2.7, 2.0, 1.4, 0.9, 0.4, 0.0, -0.9, 4.3, 3.7, 3.2, 2.5, 1.8, 1.3, 0.9, 0.4, -0.6,
-    5.6, 5.1, 4.4, 3.7, 2.9, 2.1, 1.7, 1.1, -0.2, 5.5, 5.0, 4.4, 3.4, 2.9, 2.2, 1.7, 1.1, 0.1, 6.1,
-    5.5, 4.9, 3.9, 3.2, 2.4, 1.9, 1.2, 0.0, 6.6, 5.7, 5.1, 4.1, 3.4, 2.5, 2.1, 1.5, 0.3, 6.6, 6.1,
-    5.3, 4.3, 3.7, 2.9, 2.5, 1.7, 0.5, 6.6, 6.2, 5.4, 4.4, 3.6, 2.9, 2.5, 1.8, 0.6,
-];
-
-const TABLE: LazyLock<TableType> = LazyLock::new(|| {
-    TableType::new(
-        WEIGHT_BREAKPOINTS.to_vec(),
-        Binary::default(),
-        CG_BREAKPOINTS.to_vec(),
-        Binary::default(),
-        Array2::from_shape_vec(LUT_SHAPE, TABLE_DATA.to_vec()).expect("THS Table unwrap failed"),
-    )
-    .expect("THS Table unwrap failed")
-});
 
 #[sim_connect::data_definition]
 struct PitchTrimSimOutput {
@@ -169,7 +355,7 @@ struct PitchTrimSimOutput {
 impl VariablesToObject for PitchTrimSimOutput {
     fn variables(&self) -> Vec<Variable> {
         vec![
-            Variable::aspect("HYD_FINAL_THS_DEFLECTION"),
+            Variable::aspect("HYD_REMAPPED_THS_DEFLECTION"),
             Variable::named("FLIGHT_CONTROLS_TRACKING_MODE"),
         ]
     }
