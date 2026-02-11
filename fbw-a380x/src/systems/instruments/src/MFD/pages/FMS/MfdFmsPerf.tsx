@@ -1129,7 +1129,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
           {/* begin page content */}
           <div class="mfd-page-container">
             <div style="margin: 5px; display: grid; grid-template-columns: 1fr 1fr 1fr; justify-content: space-between;">
-              <div class="mfd-label-value-container" style="padding: 0px 0px 0px 20px;">
+              <div class="mfd-label-value-container" style="padding: 0px 0px 0px 20px; height:37px;">
                 <span class="mfd-label mfd-spacing-right">CRZ</span>
                 <InputField<number>
                   dataEntryFormat={new FlightLevelFormat()}

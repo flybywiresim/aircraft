@@ -493,7 +493,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 disabled={this.altnDisabled}
                 canBeCleared={Subject.create(false)}
                 value={this.crzFl}
-                containerStyle="margin-right: 100px;"
+                class="mfd-init-crz-fl"
                 errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
