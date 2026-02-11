@@ -912,6 +912,8 @@ export class PseudoFWC {
 
   private readonly flightPhase126 = Subject.create(false);
 
+  private readonly flightPhase129 = Subject.create(false);
+
   private readonly flightPhase23 = Subject.create(false);
 
   private readonly flightPhase29 = Subject.create(false);
@@ -920,7 +922,7 @@ export class PseudoFWC {
 
   private readonly flightPhase345 = Subject.create(false);
 
-  private readonly flightPhase129 = Subject.create(false);
+  private readonly flightPhase567 = Subject.create(false);
 
   private readonly flightPhase67 = Subject.create(false);
 
@@ -1100,6 +1102,11 @@ export class PseudoFWC {
 
   private autoBrakeOffAuralTriggered = false;
 
+  private readonly wheel1Rpm = ConsumerSubject.create(this.sub.on('wheel1Rpm'), 0);
+
+  // TODO: Get from BSCU
+  private readonly wheel1SpeedAbove70kts = this.wheel1Rpm.map((wheel1Rpm) => wheel1Rpm * 0.118921 > 70);
+
   /* NAVIGATION */
   private readonly adr1Cas = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_adr_computed_airspeed_1'));
 
@@ -1256,6 +1263,12 @@ export class PseudoFWC {
   private readonly throttle2Position = Subject.create(0);
 
   public readonly allThrottleIdle = Subject.create(false);
+
+  private readonly eng1TLAReverse = Subject.create(false);
+
+  private readonly eng2TLAReverse = Subject.create(false);
+
+  private readonly revSetWarning = Subject.create(false);
 
   public readonly allThrottleReverse = Subject.create(false);
 
@@ -1693,10 +1706,10 @@ export class PseudoFWC {
     this.flightPhase29.set(flightPhase === 2 || flightPhase === 9);
     this.flightPhase34.set(flightPhase === 3 || flightPhase === 4);
     this.flightPhase345.set(this.flightPhase34.get() || flightPhase === 5);
+    this.flightPhase567.set(flightPhase === 5 || flightPhase === 6 || flightPhase === 7);
     this.flightPhase67.set(flightPhase === 6 || flightPhase === 7);
     this.flightPhase678.set(this.flightPhase67.get() || flightPhase === 8);
     this.flightPhase78.set(flightPhase === 7 || flightPhase === 8);
-    const flightPhase567 = flightPhase === 5 || flightPhase === 6 || flightPhase === 7;
 
     // TO Config convenience vars
     const toConfigTest = this.ecpWarningButtonStatus.get().bitValue(18);
@@ -1773,7 +1786,9 @@ export class PseudoFWC {
         this.throttle2Position.get() < 2.6 &&
         this.throttle2Position.get() > -2,
     );
-    this.allThrottleReverse.set(this.throttle1Position.get() < -4.3 && this.throttle2Position.get() < -4.3);
+    this.eng1TLAReverse.set(this.throttle1Position.get() < -4.3);
+    this.eng2TLAReverse.set(this.throttle2Position.get() < -4.3);
+    this.allThrottleReverse.set(this.eng1TLAReverse.get() && this.eng2TLAReverse.get());
 
     const masterCautionButtonLeft = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERCAUT_L', 'bool');
     const masterCautionButtonRight = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERCAUT_R', 'bool');
@@ -2227,6 +2242,13 @@ export class PseudoFWC {
     );
 
     const configMemoComputed = this.toMemo.get() || this.ldgMemo.get();
+
+    this.revSetWarning.set(
+      (this.eng1TLAReverse.get() || this.eng2TLAReverse.get()) &&
+        !this.aircraftOnGround.get() &&
+        this.flightPhase567.get() &&
+        !(this.fwcFlightPhase.get() === 7 && this.wheel1SpeedAbove70kts.get()),
+    );
 
     // DMC/IR general logic
     const dmcLeftIr1DiscreteWord = this.dmcLeftIr1DiscreteWord.get();
@@ -3028,7 +3050,7 @@ export class PseudoFWC {
       !isNormalLaw &&
         isCasAbove60 &&
         this.stallWarningRaw.get() &&
-        flightPhase567 &&
+        this.flightPhase567.get() &&
         this.radioHeight1.valueOr(Infinity) > 1500 &&
         this.radioHeight2.valueOr(Infinity) > 1500,
     );
@@ -4288,6 +4310,17 @@ export class PseudoFWC {
       memoInhibit: () => false,
       failure: 3,
       sysPage: 0,
+      side: 'LEFT',
+    },
+    7700382: {
+      // ENG REV SET
+      flightPhaseInhib: [1, 2, 3, 4, 8, 9, 10],
+      simVarIsActive: this.revSetWarning,
+      whichCodeToReturn: () => [0, 1],
+      codesToReturn: ['770038201', '770038202'],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: -1,
       side: 'LEFT',
     },
     2600010: {
