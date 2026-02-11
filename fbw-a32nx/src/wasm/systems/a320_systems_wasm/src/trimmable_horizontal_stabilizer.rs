@@ -113,72 +113,72 @@ const LOWER_BOUNDARY_3_DATA: [f64; LUT_SHAPE.0 * LUT_SHAPE.1] = [
     -1.9, -3.0, -3.2, -3.3, -4.0, -4.0, -4.0, -4.0, -4.0,
 ];
 
-const UPPER_BOUNDARY_TABLE_1_PLUS_F: LazyLock<TableType> = LazyLock::new(|| {
+static UPPER_BOUNDARY_TABLE_1_PLUS_F: LazyLock<TableType> = LazyLock::new(|| {
     TableType::new(
         WEIGHT_BREAKPOINTS.to_vec(),
-        Binary::default(),
+        Binary,
         CG_BREAKPOINTS.to_vec(),
-        Binary::default(),
+        Binary,
         Array2::from_shape_vec(LUT_SHAPE, UPPER_BOUNDARY_1_PLUS_F_DATA.to_vec())
             .expect("THS Table unwrap failed"),
     )
     .expect("THS Table unwrap failed")
 });
 
-const LOWER_BOUNDARY_TABLE_1_PLUS_F: LazyLock<TableType> = LazyLock::new(|| {
+static LOWER_BOUNDARY_TABLE_1_PLUS_F: LazyLock<TableType> = LazyLock::new(|| {
     TableType::new(
         WEIGHT_BREAKPOINTS.to_vec(),
-        Binary::default(),
+        Binary,
         CG_BREAKPOINTS.to_vec(),
-        Binary::default(),
+        Binary,
         Array2::from_shape_vec(LUT_SHAPE, LOWER_BOUNDARY_1_PLUS_F_DATA.to_vec())
             .expect("THS Table unwrap failed"),
     )
     .expect("THS Table unwrap failed")
 });
 
-const UPPER_BOUNDARY_TABLE_2: LazyLock<TableType> = LazyLock::new(|| {
+static UPPER_BOUNDARY_TABLE_2: LazyLock<TableType> = LazyLock::new(|| {
     TableType::new(
         WEIGHT_BREAKPOINTS.to_vec(),
-        Binary::default(),
+        Binary,
         CG_BREAKPOINTS.to_vec(),
-        Binary::default(),
+        Binary,
         Array2::from_shape_vec(LUT_SHAPE, UPPER_BOUNDARY_2_DATA.to_vec())
             .expect("THS Table unwrap failed"),
     )
     .expect("THS Table unwrap failed")
 });
 
-const LOWER_BOUNDARY_TABLE_2: LazyLock<TableType> = LazyLock::new(|| {
+static LOWER_BOUNDARY_TABLE_2: LazyLock<TableType> = LazyLock::new(|| {
     TableType::new(
         WEIGHT_BREAKPOINTS.to_vec(),
-        Binary::default(),
+        Binary,
         CG_BREAKPOINTS.to_vec(),
-        Binary::default(),
+        Binary,
         Array2::from_shape_vec(LUT_SHAPE, LOWER_BOUNDARY_2_DATA.to_vec())
             .expect("THS Table unwrap failed"),
     )
     .expect("THS Table unwrap failed")
 });
 
-const UPPER_BOUNDARY_TABLE_3: LazyLock<TableType> = LazyLock::new(|| {
+static UPPER_BOUNDARY_TABLE_3: LazyLock<TableType> = LazyLock::new(|| {
     TableType::new(
         WEIGHT_BREAKPOINTS.to_vec(),
-        Binary::default(),
+        Binary,
         CG_BREAKPOINTS.to_vec(),
-        Binary::default(),
+        Binary,
         Array2::from_shape_vec(LUT_SHAPE, UPPER_BOUNDARY_3_DATA.to_vec())
             .expect("THS Table unwrap failed"),
     )
     .expect("THS Table unwrap failed")
 });
 
-const LOWER_BOUNDARY_TABLE_3: LazyLock<TableType> = LazyLock::new(|| {
+static LOWER_BOUNDARY_TABLE_3: LazyLock<TableType> = LazyLock::new(|| {
     TableType::new(
         WEIGHT_BREAKPOINTS.to_vec(),
-        Binary::default(),
+        Binary,
         CG_BREAKPOINTS.to_vec(),
-        Binary::default(),
+        Binary,
         Array2::from_shape_vec(LUT_SHAPE, LOWER_BOUNDARY_3_DATA.to_vec())
             .expect("THS Table unwrap failed"),
     )
