@@ -749,7 +749,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     this.updateCruiseSteps();
   }
 
-  private handleCruiseStepFlightLevelModified(newAltitude: number | null, lineIndex: number) {
+  private handleCruiseStepAltitudeModified(newAltitude: number | null, lineIndex: number) {
     const wptIndex = this.stepAltsWptIndices[lineIndex].get();
     const oldAltitude = this.stepAltsAltitude[lineIndex].get();
 
@@ -1159,9 +1159,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                                   containerStyle="width: 150px;"
                                   alignText="center"
                                   tmpyActive={this.tmpyActive}
-                                  onModified={(newAltitude) =>
-                                    this.handleCruiseStepFlightLevelModified(newAltitude, li)
-                                  }
+                                  onModified={(newAltitude) => this.handleCruiseStepAltitudeModified(newAltitude, li)}
                                   errorHandler={(e) =>
                                     this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)
                                   }
