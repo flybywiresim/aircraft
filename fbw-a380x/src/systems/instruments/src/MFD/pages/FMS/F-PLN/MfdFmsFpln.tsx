@@ -215,6 +215,11 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
     if (this.loadedFlightPlan.destinationAirport) {
       this.destNotLoaded.set(false);
+      this.distanceToDest.set(
+        this.props.fmcService.master?.fmgc?.guidanceController?.getAlongTrackDistanceToDestination(
+          FlightPlanIndex.Active,
+        ) ?? null,
+      );
       if (this.loadedFlightPlan.destinationRunway) {
         this.destButtonLabel.set(
           `${this.loadedFlightPlan.destinationRunway.airportIdent}${this.loadedFlightPlan.destinationRunway.ident.substring(4)}`,
@@ -228,12 +233,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     }
 
     const destPred = this.props.fmcService?.master?.guidanceController?.vnavDriver?.getDestinationPrediction();
-
-    const distanceToDestination =
-      this.props.fmcService.master?.fmgc?.guidanceController?.getAlongTrackDistanceToDestination(
-        FlightPlanIndex.Active,
-      );
-    this.distanceToDest.set(distanceToDestination ?? null);
 
     if (destPred && this.props.fmcService.master) {
       this.destEfobAmber.set(this.props.fmcService.master.fmgc.data.destEfobBelowMin.get());
