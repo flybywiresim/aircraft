@@ -41,6 +41,10 @@
   font-family: "FBW-Display-EIS-A380-SlashedZero", monospace;
 }
 
+.mfd-value.white {
+  color: $display-white;
+}
+
 .mfd-value.amber {
   color: $display-amber;
 }

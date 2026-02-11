@@ -546,7 +546,12 @@ export class FlightManagementComputer implements FmcInterface {
   /** @inheritdoc */
   public getOptFlightLevel(): number | null {
     const recMax = this.getRecMaxFlightLevel();
-    return recMax !== null ? Math.floor((0.96 * recMax) / 5) * 5 : null; // FIXME remove magic
+    return recMax != null &&
+      !this.fmgc.data.engineOut.get() &&
+      (this.flightPhaseManager.phase <= FmgcFlightPhase.Cruise ||
+        this.flightPhaseManager.phase > FmgcFlightPhase.Approach)
+      ? Math.floor((0.96 * recMax) / 5) * 5
+      : null; // FIXME remove magic
   }
 
   /** @inheritdoc */

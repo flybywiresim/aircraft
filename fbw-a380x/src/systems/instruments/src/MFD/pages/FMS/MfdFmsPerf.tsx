@@ -73,11 +73,14 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private readonly crzFlIsMandatory = Subject.create(true);
 
-  private recMaxFl = Subject.create<string>('---');
+  private readonly recMaxFl = Subject.create<string>('---');
+  private readonly recMaxFlNotAvail = Subject.create<boolean>(false);
 
-  private optFl = Subject.create<string>('---');
+  private readonly optFl = Subject.create<string>('---');
+  private readonly optFlNotAvail = Subject.create<boolean>(false);
 
-  private eoMaxFl = Subject.create<string>('---');
+  private readonly eoMaxFl = Subject.create<string>('---');
+  private readonly eoMaxFlNotAvail = Subject.create<boolean>(false);
 
   private flightPhasesSelectedPageIndex = Subject.create(0);
 
@@ -316,7 +319,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   private readonly costIndexDisabled = MappedSubject.create(
     ([ciModeDisabled, ciMode]) => ciModeDisabled || ciMode === CostIndexMode.LRC,
     this.costIndexModeDisabled,
-    this.props.fmcService.master?.fmgc.data.costIndexMode,
+    this.props.fmcService.master?.fmgc.data.costIndexMode!,
   );
 
   private readonly speedConstraintSpeed = Subject.create<number | null>(null);
@@ -598,11 +601,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
     this.toSelectedDeratedIndex.set(fm.takeoffDeratedSetting.get());
 
-    if (fm.takeoffFlapsSetting.get() !== null) {
-      this.toSelectedFlapsIndex.set(fm.takeoffFlapsSetting.get() - 1);
-    } else {
-      this.toSelectedFlapsIndex.set(null);
-    }
+    const takeoffFlapSetting = fm.takeoffFlapsSetting.get();
+    this.toSelectedFlapsIndex.set(takeoffFlapSetting !== null ? takeoffFlapSetting - 1 : null);
 
     this.toSelectedPacksIndex.set(fm.takeoffPacks.get());
 
@@ -771,10 +771,13 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
           // Update REC MAX FL, OPT FL
           const recMaxFl = this.props.fmcService.master?.getRecMaxFlightLevel();
           this.recMaxFl.set(recMaxFl && Number.isFinite(recMaxFl) ? recMaxFl.toFixed(0) : '---');
+          this.recMaxFlNotAvail.set(recMaxFl === null);
           const optFl = this.props.fmcService.master?.getOptFlightLevel();
           this.optFl.set(optFl && Number.isFinite(optFl) ? optFl.toFixed(0) : '---');
+          this.optFlNotAvail.set(optFl === null);
           const eoMaxFl = this.props.fmcService.master?.getEoMaxFlightLevel();
           this.eoMaxFl.set(eoMaxFl && Number.isFinite(eoMaxFl) ? eoMaxFl.toFixed(0) : '---');
+          this.eoMaxFlNotAvail.set(eoMaxFl === null);
 
           const obs =
             this.props.fmcService.master?.guidanceController.verticalProfileComputationParametersObserver.get();
@@ -1143,19 +1146,27 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
               <div class="mfd-label-value-container" style="padding: 0px; justify-content: center;">
                 <span class="mfd-label mfd-spacing-right">OPT</span>
                 <span class="mfd-label-unit mfd-unit-leading">FL</span>
-                <span class="mfd-value">{this.optFl}</span>
+                <span class={{ 'mfd-value': true, white: this.optFlNotAvail }}>{this.optFl}</span>
               </div>
               <div class="mfd-label-value-container" style="padding: 0px 20px 0px 0px; justify-content: flex-end;">
                 <span class="mfd-label mfd-spacing-right">REC MAX</span>
                 <span class="mfd-label-unit mfd-unit-leading">FL</span>
-                <span class="mfd-value">{this.recMaxFl}</span>
+                <span class={{ 'mfd-value': true, white: this.recMaxFlNotAvail }}>{this.recMaxFl}</span>
               </div>
               <div />
               <div />
               <div class="mfd-label-value-container" style="padding: 0px 20px 0px 0px; justify-content: flex-end;">
-                <span class={{ 'mfd-label': true, 'mfd-spacing-right': true, amber: this.eoActive }}>EO MAX</span>
+                <span
+                  class={{
+                    'mfd-label': true,
+                    'mfd-spacing-right': true,
+                    amber: this.eoActive,
+                  }}
+                >
+                  EO MAX
+                </span>
                 <span class="mfd-label-unit mfd-unit-leading">FL</span>
-                <span class="mfd-value">{this.eoMaxFl}</span>
+                <span class={{ 'mfd-value': true, white: this.eoMaxFlNotAvail }}>{this.eoMaxFl}</span>
               </div>
             </div>
             <TopTabNavigator
