@@ -854,11 +854,11 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
   }
 
-  get originAirport(): Airport {
+  get originAirport(): Airport | undefined {
     return this.originSegment.originAirport;
   }
 
-  async setOriginAirport(icao: string) {
+  async setOriginAirport(icao: string | undefined) {
     await this.originSegment.setAirport(icao);
 
     await this.flushOperationQueue();
@@ -869,7 +869,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     return this.originSegment.originRunway;
   }
 
-  async setOriginRunway(runwayIdent: string) {
+  async setOriginRunway(runwayIdent: string | undefined) {
     await this.originSegment.setRunway(runwayIdent);
 
     await this.flushOperationQueue();
@@ -970,7 +970,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     this.incrementVersion();
   }
 
-  get destinationAirport(): Airport {
+  get destinationAirport(): Airport | undefined {
     return this.destinationSegment.destinationAirport;
   }
 
