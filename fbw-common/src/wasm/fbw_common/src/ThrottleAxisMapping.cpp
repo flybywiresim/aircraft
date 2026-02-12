@@ -253,11 +253,6 @@ void ThrottleAxisMapping::setCurrentValue(double value) {
     newTLA = thrustLeverAngleMapping.get(value);
   }
 
-  // ensure not in reverse when in flight
-  if (inFlight) {
-    newTLA = fmax(TLA_IDLE, newTLA);
-  }
-
   // set values
   currentValue = value;
   currentTLA = newTLA;

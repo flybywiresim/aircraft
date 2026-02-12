@@ -1,13 +1,9 @@
-// @ts-strict-ignore
-// Copyright (c) 2021-2025 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Airport } from '@flybywiresim/fbw-sdk';
 import { BaseFlightPlan, FlightPlanContext } from '@fmgc/flightplanning/plans/BaseFlightPlan';
-import { DestinationSegment } from '@fmgc/flightplanning/segments/DestinationSegment';
-import { OriginSegment } from '@fmgc/flightplanning/segments/OriginSegment';
 import { FlightPlanSegment } from '@fmgc/flightplanning/segments/FlightPlanSegment';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 
@@ -17,20 +13,12 @@ import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performanc
 export class AlternateFlightPlan<
   P extends FlightPlanPerformanceData = FlightPlanPerformanceData,
 > extends BaseFlightPlan<P> {
-  override originSegment: AlternateOriginSegment = undefined;
-
   constructor(
     context: FlightPlanContext,
     index: number,
     private mainFlightPlan: BaseFlightPlan<P>,
   ) {
     super(context, index, mainFlightPlan.bus);
-
-    this.originSegment = new AlternateOriginSegment(this, this.mainFlightPlan.destinationSegment);
-  }
-
-  get originAirport(): Airport | undefined {
-    return this.mainFlightPlan.destinationAirport;
   }
 
   get performanceData(): P {
@@ -80,33 +68,5 @@ export class AlternateFlightPlan<
       segmentIndex,
       serialized: segment.serialize(),
     });
-  }
-}
-
-export class AlternateOriginSegment extends OriginSegment {
-  constructor(
-    flightPlan: BaseFlightPlan<FlightPlanPerformanceData>,
-    private readonly mainDestinationSegment: DestinationSegment,
-  ) {
-    super(flightPlan);
-  }
-
-  override get originAirport(): Airport {
-    return this.mainDestinationSegment.destinationAirport;
-  }
-
-  clone(forPlan: AlternateFlightPlan<FlightPlanPerformanceData>, options?: number): AlternateOriginSegment {
-    // Important that we don't pass in `this.mainDestinationSegment` here, since this will be of the old plan.
-    // Instead, pass in `mainDestinationSegment` on the origin of the new plan
-    const newSegment = new AlternateOriginSegment(forPlan, forPlan.originSegment.mainDestinationSegment);
-
-    newSegment.strung = this.strung;
-    newSegment.allLegs = [
-      ...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment, options) : it)),
-    ];
-    newSegment.airport = this.airport;
-    newSegment.runway = this.runway;
-
-    return newSegment;
   }
 }
