@@ -1,0 +1,114 @@
+name: Upload PR for Installer QA
+on:
+  workflow_run:
+    workflows: ['PR Tests & Build']
+    types:
+      - completed
+
+jobs:
+  upload-pr:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    name: Upload PR for Installer QA
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+    steps:
+      - name: Maximize space
+        uses: AdityaGarg8/remove-unwanted-software@v4.1
+        with:
+          remove-android: 'true'
+          remove-dotnet: 'true'
+          remove-haskell: 'true'
+          remove-codeql: 'true'
+          remove-large-packages: 'true'
+          remove-cached-tools: 'true'
+      - name: Install dependencies
+        run: |
+          sudo apt-get install -y rclone
+      - name: Download PR metadata
+        uses: actions/download-artifact@v5
+        with:
+          name: pr-metadata
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+      - name: Load PR info
+        id: pr
+        run: |
+          PR_NUMBER=$(jq -r '.number' pr.json)
+          PR_TITLE=$(jq -r '.title' pr.json)
+          PR_BODY=$(jq -r '.body // ""' pr.json)
+
+          {
+            echo "number=$PR_NUMBER"
+            echo "title=$PR_TITLE"
+            echo "body<<EOF"
+            echo "$PR_BODY"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+      - name: Checkout trusted source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.repository.default_branch }}
+      - name: Download PR artifacts
+        uses: actions/download-artifact@v5
+        with:
+          pattern: build-modules-*
+          path: /tmp/artifacts/
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+        continue-on-error: true
+      - name: Check artifacts
+        id: artifacts
+        run: |
+            if [ -d "/tmp/artifacts" ] && [ "$(ls -A /tmp/artifacts)" ]; then
+            echo "found=true" >> $GITHUB_OUTPUT
+            else
+            echo "found=false" >> $GITHUB_OUTPUT
+            fi
+      - name: Configure rclone for Cloudflare R2
+        if: steps.artifacts.outputs.found == 'true'
+        run: |
+            mkdir -p ~/.config/rclone
+            cat > ~/.config/rclone/rclone.conf <<EOF
+            [cloudflare-r2]
+            type = s3
+            provider = Cloudflare
+            env_auth = false
+            access_key_id = ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
+            secret_access_key = ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
+            endpoint = ${{ secrets.CLOUDFLARE_R2_ENDPOINT }}
+            region = auto
+            EOF
+      - name: Upload A32NX to CloudFlare CDN (Installer)
+        if: steps.artifacts.outputs.found == 'true'
+        env:
+          CLOUDFLARE_CDN_ZONE_ID: ${{ secrets.CLOUDFLARE_CDN_ZONE_ID }}
+          CLOUDFLARE_PURGE_TOKEN: ${{ secrets.CLOUDFLARE_PURGE_TOKEN }}
+          CDN_BUCKET_DESTINATION: addons/a32nx/pr-${{ steps.pr.outputs.number }}
+        run: |
+          ./scripts/cf-cdn.sh /tmp/artifacts/build-modules-a32nx $CDN_BUCKET_DESTINATION
+      - name: Upload A380X to CloudFlare CDN (Installer)
+        if: steps.artifacts.outputs.found == 'true'
+        env:
+          CLOUDFLARE_CDN_ZONE_ID: ${{ secrets.CLOUDFLARE_CDN_ZONE_ID }}
+          CLOUDFLARE_PURGE_TOKEN: ${{ secrets.CLOUDFLARE_PURGE_TOKEN }}
+          CDN_BUCKET_DESTINATION: addons/a380x/pr-${{ steps.pr.outputs.number }}-4k
+        run: |
+          ./scripts/cf-cdn.sh /tmp/artifacts/build-modules-a380x-4k $CDN_BUCKET_DESTINATION
+      - name: Add QA config entry
+        if: steps.artifacts.outputs.found == 'true'
+        env:
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+          PR_TITLE: ${{ steps.pr.outputs.title }}
+          PR_BODY: ${{ steps.pr.outputs.body }}
+          ADDON_KEYS: a32nx-msfs2020,a32nx-msfs2024,a380x-msfs2020,a380x-msfs2024
+          TEXTURE_QUALITY: 4k
+          CLOUDFLARE_CDN_ZONE_ID: ${{ secrets.CLOUDFLARE_CDN_ZONE_ID }}
+          CLOUDFLARE_PURGE_TOKEN: ${{ secrets.CLOUDFLARE_PURGE_TOKEN }}
+          CDN_BUCKET_DESTINATION: installer/qa-config/
+        run: |
+          node ./scripts/add_qa_config.js
+          ./scripts/cf-cdn.sh ./qa-config $CDN_BUCKET_DESTINATION
