@@ -1035,9 +1035,11 @@ export class FixFormat implements DataEntryFormat<Fix, string> {
 }
 
 export class AirportFormat implements DataEntryFormat<string> {
-  public placeholder = '----';
+  public readonly placeholder = '----';
 
-  public maxDigits = 4;
+  public readonly maxDigits = 4;
+
+  constructor(private formatErrorDetail = false) {}
 
   public format(value: string) {
     if (!value) {
@@ -1049,6 +1051,15 @@ export class AirportFormat implements DataEntryFormat<string> {
   public async parse(input: string) {
     if (input === '' || input === this.placeholder) {
       return null;
+    }
+
+    if (input.length != 4) {
+      if (this.formatErrorDetail) {
+        // ATC subsystem has format error message with details
+        throw getFormattedFormatError('AAAA');
+      } else {
+        throw new A380FmsError(FmsErrorType.FormatError);
+      }
     }
 
     return input;
