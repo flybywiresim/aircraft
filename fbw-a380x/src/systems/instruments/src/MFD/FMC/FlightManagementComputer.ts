@@ -714,16 +714,10 @@ export class FlightManagementComputer implements FmcInterface {
       }
     }
 
-    plan.getFlightNumber().set(this.simBriefOfp?.callsign ?? null);
     plan.setPerformanceData(
       'paxNumber',
       this.simBriefOfp?.weights.passengerCount !== undefined ? Number(this.simBriefOfp?.weights?.passengerCount) : null,
     );
-    plan.setPerformanceData(
-      'tropopause',
-      this.simBriefOfp?.averageTropopause !== undefined ? Number(this.simBriefOfp.averageTropopause) : null,
-    );
-    plan.setPerformanceData('tropopauseIsPilotEntered', false);
 
     this.fmgc.data.cpnyFplnAvailable.set(false);
     this.fmgc.data.cpnyFplnRequestedForPlan.set(null);
@@ -1124,7 +1118,7 @@ export class FlightManagementComputer implements FmcInterface {
 
         pd.tripFuelAtPreflight.set((this.getTripFuel() ?? 0) / 1000); // in tons
 
-        this.#flightPlanService.active.setPerformanceData('taxiFuel', 0);
+        this.#flightPlanService.active.setPerformanceData('pilotTaxiFuel', 0);
         this.#flightPlanService.active.setPerformanceData('defaultTaxiFuel', 0);
         this.#flightPlanService.active.setPerformanceData('pilotRouteReserveFuel', null);
         this.#flightPlanService.active.setPerformanceData('pilotRouteReserveFuelPercentage', 0);

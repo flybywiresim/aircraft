@@ -162,10 +162,10 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
       this.flightPlanChangeNotifier.flightPlanChanged.sub(() => {
         if (this.loadedFlightPlan && this.props.flightPlanInterface.has(this.loadedFlightPlanIndex.get())) {
           this.subs.push(
-            this.loadedFlightPlan.performanceData.tropopause.pipe(this.tropopause),
+            this.loadedFlightPlan.performanceData.pilotTropopause.pipe(this.tropopause),
             this.loadedFlightPlan.performanceData.tropopauseIsPilotEntered.pipe(this.tropopauseIsPilotEntered),
             this.loadedFlightPlan.performanceData.costIndexMode!.pipe(this.costIndexMode),
-            this.flightNumber.pipe(this.loadedFlightPlan.getFlightNumber()),
+            this.loadedFlightPlan.getFlightNumber().pipe(this.flightNumber),
           );
         }
       }, true),
@@ -217,13 +217,9 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
           this.loadedFlightPlanIndex.get() === FlightPlanIndex.Temporary),
     );
     const cruiseLevel = this.loadedFlightPlan.performanceData.cruiseFlightLevel.get();
-    if (
-      cruiseLevel &&
-      this.loadedFlightPlan.performanceData.cruiseTemperatureIsaTemp?.get() &&
-      this.loadedFlightPlan.performanceData.cruiseTemperatureIsaTemp.get()! -
-        A380AltitudeUtils.getIsaTemp(cruiseLevel * 100) >
-        0.5
-    ) {
+    const cruiseTemp = this.loadedFlightPlan.performanceData.cruiseTemperature.get();
+
+    if (cruiseLevel && (!cruiseTemp || cruiseTemp - A380AltitudeUtils.getIsaTemp(cruiseLevel * 100) > 0.5)) {
       this.props.flightPlanInterface.setPerformanceData(
         'cruiseTemperatureIsaTemp',
         A380AltitudeUtils.getIsaTemp(cruiseLevel * 100),
@@ -330,10 +326,13 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
           <div class="mfd-page-container">
             <div class="mfd-fms-init-line">
               <div class="mfd-label init-input-field">FLT NBR</div>
-              <InputField<string>
+              <InputField<string, string, false>
                 dataEntryFormat={new LongAlphanumericFormat()}
+                dataHandlerDuringValidation={async (v) => {
+                  this.loadedFlightPlan?.getFlightNumber().set(v);
+                }}
                 mandatory={this.mandatoryAndActiveFpln}
-                value={this.flightNumber}
+                readonlyValue={this.flightNumber}
                 containerStyle="width: 200px; margin-right: 5px;"
                 alignText="center"
                 errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
@@ -518,7 +517,11 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
               <InputField<number, number, false>
                 dataEntryFormat={new TropoFormat()}
                 dataHandlerDuringValidation={async (v) =>
-                  this.props.flightPlanInterface.setPerformanceData('tropopause', v, this.loadedFlightPlanIndex.get())
+                  this.props.flightPlanInterface.setPerformanceData(
+                    'pilotTropopause',
+                    v,
+                    this.loadedFlightPlanIndex.get(),
+                  )
                 }
                 enteredByPilot={this.tropopauseIsPilotEntered}
                 readonlyValue={this.tropopause}
