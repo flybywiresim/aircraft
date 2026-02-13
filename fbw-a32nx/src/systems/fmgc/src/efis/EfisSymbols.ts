@@ -37,7 +37,7 @@ import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
-import { AlternateFlightPlan, AlternateOriginSegment } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
+import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
@@ -909,11 +909,7 @@ export class EfisSymbols<T extends number> {
 
     // FP airports/runways
 
-    const airports: [
-      Airport | undefined,
-      Runway | undefined,
-      FlightPlanSegment | AlternateOriginSegment | undefined,
-    ][] = [
+    const airports: [Airport | undefined, Runway | undefined, FlightPlanSegment | undefined][] = [
       // The alternate origin airport symbol is not shown as it is the same as the primary destination
       [flightPlan.originAirport, flightPlan.originRunway, flightPlan.originSegment],
       [flightPlan.destinationAirport, flightPlan.destinationRunway, flightPlan.destinationSegment],
