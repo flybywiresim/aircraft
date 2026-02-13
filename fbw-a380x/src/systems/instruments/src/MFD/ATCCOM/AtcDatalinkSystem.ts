@@ -90,7 +90,7 @@ export class AtcDatalinkSystem implements Instrument {
 
   /**
    * Creates a new instance of the ATC Datalink System
-   * @param bus The event bus
+   * @param {EventBus} bus The event bus
    */
   constructor(private readonly bus: EventBus) {
     this.messageStorage = new MessageStorage(this.sub);
@@ -229,7 +229,7 @@ export class AtcDatalinkSystem implements Instrument {
 
   /**
    * Add ATCCOM message to ATCCOM message queue
-   * @param message message object
+   * @param {ATCCOMMessage} message message object
    */
   public addMessageToQueue(message: ATCCOMMessage) {
     const msg: AtcErrorMessage = {
@@ -249,8 +249,8 @@ export class AtcDatalinkSystem implements Instrument {
   // TODO: improve icao checks
   /**
    * Initialise D-ATIS data for specified block
-   * @param index index of D-ATIS block
-   * @param icao 4-letter icao code of airport
+   * @param {number} index index of D-ATIS block
+   * @param {string} icao 4-letter icao code of airport
    */
   private initAtis(index: number, icao?: string | null): void {
     const newAtisData = {
@@ -368,7 +368,7 @@ export class AtcDatalinkSystem implements Instrument {
 
   /**
    * Check if auto update is active for a specified station
-   * @param icao 4-letter icao of D-ATIS station
+   * @param {string} icao 4-letter icao of D-ATIS station
    * @returns {boolean} true if auto update is enabled for the station
    */
   public atisAutoUpdateActive(icao: string): boolean {
