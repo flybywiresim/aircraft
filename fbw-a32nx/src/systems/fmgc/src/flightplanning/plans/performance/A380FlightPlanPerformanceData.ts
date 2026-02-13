@@ -20,6 +20,10 @@ import { MappedSubject, Subject } from '@microsoft/msfs-sdk';
 // TODO this should go to fbw-a380x/ once FMS is moved to fbw-common
 /** Uses A320FlightPlanPerformanceData and a basis and only extends attributes as necessary. */
 export class A380FlightPlanPerformanceData extends A320FlightPlanPerformanceData implements FlightPlanPerformanceData {
+  constructor(defaultTaxiFuel = 1.5) {
+    super(defaultTaxiFuel);
+  }
+
   public clone(): this {
     const cloned = new A380FlightPlanPerformanceData();
 
@@ -49,8 +53,6 @@ export class A380FlightPlanPerformanceData extends A320FlightPlanPerformanceData
 
     return cloned;
   }
-
-  readonly defaultTaxiFuel = Subject.create<number>(1.5);
 
   readonly cruiseTemperatureIsaTemp = Subject.create<number | null>(null);
 

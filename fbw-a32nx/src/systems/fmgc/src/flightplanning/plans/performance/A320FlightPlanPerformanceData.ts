@@ -17,6 +17,10 @@ import {
 export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData {
   private readonly subscriptions: Map<keyof FlightPlanPerformanceDataProperties & string, Subscription> = new Map();
 
+  constructor(defaultTaxiFuel = 0.2) {
+    this.defaultTaxiFuel.set(defaultTaxiFuel);
+  }
+
   public clone(): this {
     const cloned = new A320FlightPlanPerformanceData();
 

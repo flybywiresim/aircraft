@@ -162,7 +162,13 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
   private readonly lineColorIsTemporary = this.lineColor.map((it) => it === FplnLineColor.Temporary);
 
-  private readonly preflightPhase = this.activeFlightPhase.map((phase) => phase === FmgcFlightPhase.Preflight);
+  private readonly showInitButton = MappedSubject.create(
+    ([flightPhase, loadedFlightPlan]) =>
+      (flightPhase === FmgcFlightPhase.Preflight && loadedFlightPlan === FlightPlanIndex.Active) ||
+      loadedFlightPlan === FlightPlanIndex.Temporary,
+    this.activeFlightPhase,
+    this.loadedFlightPlanIndex,
+  );
 
   private readonly flightplanTimeHeader = this.activeFlightPhase.map((v) =>
     v === FmgcFlightPhase.Preflight || v === FmgcFlightPhase.Done ? 'TIME' : 'UTC',
@@ -764,7 +770,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     this.subs.push(
       this.destButtonLabelNode,
       this.lineColorIsTemporary,
-      this.preflightPhase,
+      this.showInitButton,
       this.destTimeNotAvailAndInActive,
       this.destEfobNotAvailableAndInActive,
       this.distanceToDestNotAvail,
@@ -1107,7 +1113,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
               }
               componentIfFalse={
                 <ConditionalComponent
-                  condition={this.preflightPhase}
+                  condition={this.showInitButton}
                   width={125}
                   componentIfTrue={
                     <Button

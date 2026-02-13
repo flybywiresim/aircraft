@@ -334,8 +334,11 @@ export class FmgcDataService implements Fmgc {
     }
     // TODO adapt for A380
     if (this.flightPlanService.has(FlightPlanIndex.Active)) {
-      const dCI = (this.flightPlanService.active.performanceData.costIndex.get() ?? 100) / 999;
-      return 288 * (1 - dCI) + 300 * dCI;
+      const ci = this.flightPlanService.active.performanceData.costIndex.get();
+      if (ci !== null) {
+        const dCI = (this.flightPlanService.active.performanceData.costIndex.get() ?? 100) / 999;
+        return Math.round(288 * (1 - dCI) + 300 * dCI);
+      }
     }
     return 300;
   }

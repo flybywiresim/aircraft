@@ -1401,7 +1401,7 @@ export class FmcAircraftInterface {
         true, // ignore VLS spoiler increase as it's only for display purposes
       );
       if (pd.pilotVapp.get() === null || pd.pilotVapp.get()! - approachSpeeds.vapp > 0.5) {
-        this.flightPlanService.active.setPerformanceData('pilotVapp', approachSpeeds.vapp);
+        this.flightPlanService.active.setPerformanceData('pilotVapp', Math.round(approachSpeeds.vapp));
       }
 
       this.fmgc.data.approachVls.set(Math.ceil(approachSpeeds.vls));

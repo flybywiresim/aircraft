@@ -197,12 +197,12 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
           this.loadedFlightPlanIndex.set(
             this.props.flightPlanInterface.hasTemporary ? FlightPlanIndex.Temporary : FlightPlanIndex.Active,
           );
-          this.secActive.set(false);
           this.tmpyActive.set(this.props.flightPlanInterface.hasTemporary ?? false);
         } else if (activeUri.page === 'init') {
           // Flight plan might not have been created yet
           this.loadedFlightPlanIndex.set(FlightPlanIndex.Active);
         }
+        this.secActive.set(false);
         break;
       case 'sec1':
         if (this.props.flightPlanInterface.hasSecondary(1)) {
@@ -211,12 +211,12 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
             FlightPlanIndex.FirstSecondary,
           ).alternateFlightPlan;
           this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary);
-          this.secActive.set(true);
           this.tmpyActive.set(false);
         } else if (activeUri.page === 'init') {
           // Flight plan might not have been created yet
           this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary);
         }
+        this.secActive.set(true);
         break;
       case 'sec2':
         if (this.props.flightPlanInterface.hasSecondary(2)) {
@@ -225,12 +225,12 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
             FlightPlanIndex.FirstSecondary + 1,
           ).alternateFlightPlan;
           this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary + 1);
-          this.secActive.set(true);
           this.tmpyActive.set(false);
         } else if (activeUri.page === 'init') {
           // Flight plan might not have been created yet
           this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary + 1);
         }
+        this.secActive.set(true);
         break;
       case 'sec3':
         if (this.props.flightPlanInterface.hasSecondary(3)) {
@@ -239,12 +239,12 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
             FlightPlanIndex.FirstSecondary + 2,
           ).alternateFlightPlan;
           this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary + 2);
-          this.secActive.set(true);
           this.tmpyActive.set(false);
         } else if (activeUri.page === 'init') {
           // Flight plan might not have been created yet
           this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary + 2);
         }
+        this.secActive.set(true);
         break;
 
       default:

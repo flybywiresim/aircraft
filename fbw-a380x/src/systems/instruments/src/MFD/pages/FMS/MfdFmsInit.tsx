@@ -47,8 +47,12 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     (it) => it === FlightPlanIndex.Active || it === FlightPlanIndex.Temporary,
   );
 
-  private readonly visibilityConsideringFlightPlanIndex = this.loadedFlightPlanIndex.map((it) =>
+  private readonly visibilityOnlyInActive = this.loadedFlightPlanIndex.map((it) =>
     it === FlightPlanIndex.Active || it === FlightPlanIndex.Temporary ? 'inherit' : 'hidden',
+  );
+
+  private readonly visibleInSec = this.loadedFlightPlanIndex.map((it) =>
+    it !== FlightPlanIndex.Active && it !== FlightPlanIndex.Temporary ? 'inherit' : 'hidden',
   );
 
   private readonly fromIcao = Subject.create<string | null>(null);
@@ -181,7 +185,8 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
       this.cpnyFplnButtonLabel,
       this.cpnyFplnButtonMenuItems,
       this.mandatoryAndActiveFpln,
-      this.visibilityConsideringFlightPlanIndex,
+      this.visibilityOnlyInActive,
+      this.visibleInSec,
       this.cityPairDisabled,
       this.altnDisabled,
       this.costIndexDisabled,
@@ -590,7 +595,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 buttonStyle="margin-right: 10px; justify-self: flex-end; width: 175px;"
               />
             </div>
-            <div style={{ visibility: this.visibilityConsideringFlightPlanIndex }}>
+            <div style={{ visibility: this.visibilityOnlyInActive }}>
               <Button
                 label="IRS"
                 onClick={() => this.props.mfd.uiService.navigateTo('fms/position/irs')}
@@ -646,6 +651,13 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                   buttonStyle="margin-right: 10px; justify-self: flex-end; width: 175px;"
                 />
               </div>
+            </div>
+            <div style={{ visibility: this.visibleInSec }}>
+              <Button
+                label="RETURN"
+                onClick={() => this.props.mfd.uiService.navigateTo('back')}
+                buttonStyle="margin-right: 5px; width:150px;"
+              />
             </div>
             {/* end page content */}
           </div>
