@@ -6,7 +6,7 @@
 
 import { Airport, ApproachType, Fix, isMsfs2024, LegType, MathUtils, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
-import { AeroMath, BitFlags, EventBus, MagVar, MutableSubscribable } from '@microsoft/msfs-sdk';
+import { AeroMath, BitFlags, EventBus, MagVar, MutableSubscribable, Subject } from '@microsoft/msfs-sdk';
 import { FixInfoData, FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
 import { loadAllDepartures, loadAllRunways } from '@fmgc/flightplanning/DataLoading';
 import { Coordinates, Degrees } from 'msfs-geo';
@@ -54,7 +54,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
   /**
    * Shown as the "flight number" in the MCDU, but it's really the callsign
    */
-  flightNumber: string | undefined = undefined;
+  flightNumber = Subject.create<string | null>(null);
 
   /**
    * Possible flags for this flight plan. See {@link FlightPlanFlags} for a list of flags.
@@ -101,7 +101,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
     newPlan.activeLegIndex = this.activeLegIndex;
 
-    newPlan.flightNumber = this.flightNumber;
+    newPlan.flightNumber.set(this.flightNumber.get());
 
     if (BitFlags.isAll(options, CopyOptions.IncludeFixInfos)) {
       newPlan.fixInfos = this.fixInfos.map((it) => it?.clone());
@@ -467,7 +467,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
   }
 
   setFlightNumber(flightNumber: string, notify = true) {
-    this.flightNumber = flightNumber;
+    this.flightNumber.set(flightNumber);
 
     if (notify) {
       this.sendEvent('flightPlan.setFlightNumber', {
@@ -711,5 +711,9 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
       this.index === FlightPlanIndex.Temporary ||
       (this.flags & FlightPlanFlags.CopiedFromActive) === FlightPlanFlags.CopiedFromActive
     );
+  }
+
+  getFlightNumber(): Subject<string | null> {
+    return this.flightNumber;
   }
 }

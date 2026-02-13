@@ -179,7 +179,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     const oldBlockFuel = this.active?.performanceData.blockFuel.get() ?? null;
     const oldTaxiFuel = this.active?.performanceData.taxiFuel.get() ?? null;
     const oldCostIndex = this.active?.performanceData.costIndex.get() ?? null;
-    const oldFlightNumber = this.active?.flightNumber;
+    const oldFlightNumber = this.active?.flightNumber.get() ?? null;
 
     const fixInfos = this.active?.fixInfos.map((it) => it?.clone()) ?? [];
 
@@ -215,7 +215,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       this.setPerformanceData('costIndex', oldCostIndex, FlightPlanIndex.Active);
     }
 
-    if (oldFlightNumber !== undefined && this.active.flightNumber === undefined) {
+    if (oldFlightNumber !== null && this.active.flightNumber.get() === null) {
       this.setFlightNumber(oldFlightNumber, FlightPlanIndex.Active);
     }
 

@@ -289,6 +289,8 @@ export class FmcAircraftInterface {
           0,
         ),
       ),
+
+      this.flightPlanService.active.getFlightNumber().pipe(this.fmgc.data.atcCallsign),
     );
 
     const pub = this.bus.getPublisher<FmsData>();

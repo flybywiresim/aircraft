@@ -124,6 +124,8 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
 
   private readonly crzTempDisabled = this.crzFl.map((it) => it === null);
 
+  private readonly flightNumber = Subject.create<string | null>(null);
+
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
@@ -163,6 +165,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
             this.loadedFlightPlan.performanceData.tropopause.pipe(this.tropopause),
             this.loadedFlightPlan.performanceData.tropopauseIsPilotEntered.pipe(this.tropopauseIsPilotEntered),
             this.loadedFlightPlan.performanceData.costIndexMode!.pipe(this.costIndexMode),
+            this.flightNumber.pipe(this.loadedFlightPlan.getFlightNumber()),
           );
         }
       }, true),
@@ -330,7 +333,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
               <InputField<string>
                 dataEntryFormat={new LongAlphanumericFormat()}
                 mandatory={this.mandatoryAndActiveFpln}
-                value={this.props.fmcService.master.fmgc.data.atcCallsign}
+                value={this.flightNumber}
                 containerStyle="width: 200px; margin-right: 5px;"
                 alignText="center"
                 errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}

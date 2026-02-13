@@ -4760,26 +4760,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
   }
 
-  /** @deprecated */
-  public get flightNumber() {
-    const plan = this.currFlightPlanService.active;
-
-    if (plan) {
-      return this.currFlightPlanService.active.flightNumber;
-    }
-
-    return undefined;
-  }
-
-  /** @deprecated */
-  public set flightNumber(flightNumber) {
-    const plan = this.currFlightPlanService.active;
-
-    if (plan) {
-      this.currFlightPlanService.setFlightNumber(flightNumber);
-    }
-  }
-
   /**
    * The maximum speed imposed by the climb speed limit in the active flight plan or null if it is not set.
    */
@@ -5463,8 +5443,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     // We invalidate because we don't want to show the old active plan predictions on the newly activated secondary plan.
     this.guidanceController?.vnavDriver?.invalidateFlightPlanProfile();
 
-    if (this.flightPlanService.hasActive && this.flightPlanService.active.flightNumber !== undefined) {
-      await this.onActiveFlightNumberChanged(this.flightPlanService.active.flightNumber);
+    const flightNumber = this.flightPlanService.active?.flightNumber.get();
+    if (this.flightPlanService.hasActive && flightNumber !== null) {
+      await this.onActiveFlightNumberChanged(flightNumber);
     }
     this.connectPerfDataToSimvars();
   }

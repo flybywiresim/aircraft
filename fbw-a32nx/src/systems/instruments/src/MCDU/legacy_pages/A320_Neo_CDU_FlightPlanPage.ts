@@ -90,7 +90,7 @@ export class CDUFlightPlanPage {
       title.push(new Column(6, 'TMPY', Column.yellow));
     }
     if (forActiveOrTemporary) {
-      title.push(new Column(20, targetPlan.flightNumber ?? '', Column.small, Column.right));
+      title.push(new Column(20, targetPlan.flightNumber.get() ?? '', Column.small, Column.right));
     } else {
       title.push(new Column(16, 'SEC'));
     }

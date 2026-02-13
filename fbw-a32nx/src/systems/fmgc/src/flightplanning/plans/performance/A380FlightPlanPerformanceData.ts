@@ -66,7 +66,7 @@ export class A380FlightPlanPerformanceData extends A320FlightPlanPerformanceData
 
   readonly alternateExists = Subject.create(false);
 
-  readonly defaultAlternateFuel = this.alternateExists.map((v) => (v ? 6.5 : null)); // FIXME Hardcoded value. Derive from FMS predictions.
+  readonly defaultAlternateFuel = this.alternateExists.map((v) => (v ? 6.5 : 0)); // FIXME Hardcoded value. Derive from FMS predictions.
 
   readonly alternateFuel = MappedSubject.create(
     ([calc, pe]) => (pe !== null ? pe : calc),

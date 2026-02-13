@@ -1011,6 +1011,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
           }
           this.destEta.set(destEta);
           this.destEfob.set(this.props.fmcService.master.fmgc.getDestEFOB(true)?.toFixed(1) ?? '---.-');
+          this.desManagedSpdTarget.set(this.props.fmcService.master.fmgc.getManagedDescentSpeed());
+          this.desManagedMachTarget.set(this.props.fmcService.master.fmgc.getManagedDescentSpeedMach());
 
           // Update DES speed table
           if (this.activeFlightPhase.get() < FmgcFlightPhase.Descent) {
@@ -1156,8 +1158,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.loadedFlightPlan.performanceData.descentCabinRate!.pipe(this.descentCabinRate),
             this.loadedFlightPlan.performanceData.preselectedClimbSpeed!.pipe(this.climbPreselectedSpeed),
             this.loadedFlightPlan.performanceData.preselectedCruiseSpeed!.pipe(this.cruisePreselectedSpeed),
-            this.loadedFlightPlan.performanceData.pilotManagedDescentSpeed!.pipe(this.desManagedSpdTarget),
-            this.loadedFlightPlan.performanceData.pilotManagedDescentMach!.pipe(this.desManagedMachTarget),
           );
         }
       }, true),
@@ -2717,8 +2717,14 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       condition={this.desPageInactive}
                       componentIfFalse={
                         <InputField<number>
-                          disabled={Subject.create(true)}
                           dataEntryFormat={new SpeedMachFormat(Subject.create(0.1), Subject.create(Mmo))}
+                          dataHandlerDuringValidation={async (v) => {
+                            this.props.flightPlanInterface.setPerformanceData(
+                              'pilotManagedDescentMach',
+                              v,
+                              this.loadedFlightPlanIndex.get(),
+                            );
+                          }}
                           inactive={this.desPageInactive}
                           value={this.desManagedMachTarget}
                           alignText="flex-end"
@@ -2739,8 +2745,14 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       condition={this.notYetInDescent}
                       componentIfTrue={
                         <InputField<number>
-                          disabled={Subject.create(true)}
                           dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
+                          dataHandlerDuringValidation={async (v) => {
+                            this.props.flightPlanInterface.setPerformanceData(
+                              'pilotManagedDescentSpeed',
+                              v,
+                              this.loadedFlightPlanIndex.get(),
+                            );
+                          }}
                           inactive={this.desPageInactive}
                           value={this.desManagedSpdTarget}
                           alignText="flex-end"

@@ -69,7 +69,7 @@ export class CDUInitPage {
     const [flightNoAction, flightNoText, flightNoColor] = new CDU_SingleValueField(
       mcdu,
       'string',
-      plan.flightNumber,
+      plan.flightNumber.get() ?? '',
       {
         emptyValue: isForPrimary ? '________[color]amber' : '{cyan}[\xa0\xa0\xa0\xa0\xa0\xa0]{end}',
         suffix: '[color]cyan',

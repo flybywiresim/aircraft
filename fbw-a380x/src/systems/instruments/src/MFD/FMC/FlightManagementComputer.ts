@@ -15,7 +15,7 @@ import {
   Subscription,
 } from '@microsoft/msfs-sdk';
 import { A380AltitudeUtils } from '@shared/OperatingAltitudes';
-import { maxBlockFuel, maxCertifiedAlt, maxZfw } from '@shared/PerformanceConstants';
+import { maxCertifiedAlt } from '@shared/PerformanceConstants';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FmcAircraftInterface } from 'instruments/src/MFD/FMC/FmcAircraftInterface';
 import { FmgcDataService, LOWEST_FUEL_ESTIMATE_KGS } from 'instruments/src/MFD/FMC/fmgc';
@@ -518,20 +518,16 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   public getTakeoffWeight(): number | null {
+    const pd = this.flightPlanInterface.active.performanceData;
     if (!this.enginesWereStarted.get() && this.flightPlanInterface.hasActive) {
       // On ground, engines off
       // TOW before engine start: TOW = ZFW + BLOCK - TAXI
-      const zfw = this.flightPlanInterface.active.performanceData.zeroFuelWeight.get() ?? maxZfw;
-      if (
-        this.flightPlanInterface.active.performanceData.zeroFuelWeight.get() &&
-        this.flightPlanInterface.active.performanceData.blockFuel.get() &&
-        this.flightPlanInterface.active.performanceData.taxiFuel.get()
-      ) {
-        return (
-          zfw +
-          (this.flightPlanInterface.active.performanceData.blockFuel.get() ?? maxBlockFuel / 1000) * 1000 -
-          (this.flightPlanInterface.active.performanceData.taxiFuel.get() ?? 0) * 1000
-        );
+
+      const zfw = pd.zeroFuelWeight.get();
+      const blockFuel = pd.blockFuel.get();
+      const taxiFuel = pd.taxiFuel.get();
+      if (zfw != null && blockFuel !== null && taxiFuel !== null) {
+        return (zfw + blockFuel - taxiFuel) * 1000;
       }
       return null;
     }
@@ -543,10 +539,7 @@ export class FlightManagementComputer implements FmcInterface {
     // Preflight, engines on
     // LW = GW - TRIP - TAXI
     // TOW after engine start: TOW = GW - TAXI
-    return (
-      SimVar.GetSimVarValue('TOTAL WEIGHT', 'kilogram') -
-      (this.#flightPlanService.active.performanceData.taxiFuel.get() ?? 0) * 1000
-    );
+    return SimVar.GetSimVarValue('TOTAL WEIGHT', 'kilogram') - (pd.taxiFuel.get() ?? 0) * 1000;
   }
 
   public getTripFuel(): number | null {
@@ -712,25 +705,25 @@ export class FlightManagementComputer implements FmcInterface {
       logTroubleshootingError(this.bus, e);
     }
 
+    const plan = this.flightPlanInterface.get(intoPlan);
+
     if (intoPlan === FlightPlanIndex.Active) {
       this.acInterface.updateFmsData();
-      this.fmgc.data.atcCallsign.set(this.simBriefOfp?.callsign ?? '----------');
-
-      this.flightPlanInterface.setPerformanceData(
-        'paxNumber',
-        Number(this.simBriefOfp?.weights?.passengerCount ?? null),
-        intoPlan,
-      );
-      this.flightPlanInterface.setPerformanceData(
-        'pilotTropopause',
-        this.simBriefOfp?.averageTropopause ? Number(this.simBriefOfp.averageTropopause) : null,
-        intoPlan,
-      );
-
       if (this.simBriefOfp?.cruiseAltitude) {
         this.acInterface.setCruiseFl(this.simBriefOfp.cruiseAltitude / 100, intoPlan);
       }
     }
+
+    plan.getFlightNumber().set(this.simBriefOfp?.callsign ?? null);
+    plan.setPerformanceData(
+      'paxNumber',
+      this.simBriefOfp?.weights.passengerCount !== undefined ? Number(this.simBriefOfp?.weights?.passengerCount) : null,
+    );
+    plan.setPerformanceData(
+      'tropopause',
+      this.simBriefOfp?.averageTropopause !== undefined ? Number(this.simBriefOfp.averageTropopause) : null,
+    );
+    plan.setPerformanceData('tropopauseIsPilotEntered', false);
 
     this.fmgc.data.cpnyFplnAvailable.set(false);
     this.fmgc.data.cpnyFplnRequestedForPlan.set(null);
@@ -835,8 +828,9 @@ export class FlightManagementComputer implements FmcInterface {
       // We invalidate because we don't want to show the old active plan predictions on the newly activated secondary plan.
       this.guidanceController?.vnavDriver?.invalidateFlightPlanProfile();
 
-      if (this.#flightPlanService.active.flightNumber !== undefined) {
-        await this.onActiveFlightNumberChanged(this.#flightPlanService.active.flightNumber);
+      const flightNumber = this.#flightPlanService.active.flightNumber.get();
+      if (flightNumber !== null) {
+        await this.onActiveFlightNumberChanged(flightNumber);
       }
 
       this.subs.push(
