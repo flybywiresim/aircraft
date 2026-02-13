@@ -166,7 +166,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
       this.flightPlanChangeNotifier.flightPlanChanged.sub(() => {
         if (this.loadedFlightPlan && this.props.flightPlanInterface.has(this.loadedFlightPlanIndex.get())) {
           this.subs.push(
-            this.loadedFlightPlan.performanceData.pilotTropopause.pipe(this.tropopause),
+            this.loadedFlightPlan.performanceData.tropopause.pipe(this.tropopause),
             this.loadedFlightPlan.performanceData.tropopauseIsPilotEntered.pipe(this.tropopauseIsPilotEntered),
             this.loadedFlightPlan.performanceData.costIndexMode!.pipe(this.costIndexMode),
             this.loadedFlightPlan.getFlightNumber().pipe(this.flightNumber),
