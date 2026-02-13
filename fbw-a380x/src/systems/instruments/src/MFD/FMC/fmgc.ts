@@ -86,17 +86,7 @@ export class FmgcData {
     (it) => it !== null,
   );
 
-  public readonly climbPreSelSpeed = Subject.create<Knots | null>(null);
-
-  public readonly cruisePreSelMach = Subject.create<number | null>(null);
-
-  public readonly cruisePreSelSpeed = Subject.create<Knots | null>(null);
-
-  public readonly descentPreSelSpeed = Subject.create<Knots | null>(null);
-
   public readonly approachVref = Subject.create<Knots | null>(null);
-
-  public readonly approachFlapConfig = Subject.create<FlapConf>(FlapConf.CONF_FULL);
 
   public readonly approachVls = Subject.create<Knots | null>(null);
 
@@ -262,7 +252,7 @@ export class FmgcDataService implements Fmgc {
 
   /** in knots */
   getManagedCruiseSpeed(): number {
-    const preSel = this.data.cruisePreSelSpeed.get();
+    const preSel = this.flightPlanService?.active.performanceData.preselectedCruiseSpeed.get();
     if (Number.isFinite(preSel) && preSel !== null) {
       return preSel;
     }
@@ -281,7 +271,7 @@ export class FmgcDataService implements Fmgc {
         const mach = AeroMath.casToMach(UnitType.MPS.convertFrom(this.getManagedCruiseSpeed(), UnitType.KNOT), pressure);
         return mach; */
     // Return static mach number for now, ECON speed calculation is not mature enough
-    return this.data.cruisePreSelMach.get() ?? 0.85;
+    return this.flightPlanService?.active.performanceData.preselectedCruiseSpeed.get() ?? 0.85;
   }
 
   getClimbSpeedLimit(): SpeedLimit | null {
@@ -317,19 +307,19 @@ export class FmgcDataService implements Fmgc {
   /** in knots */
   getPreSelectedClbSpeed(): number {
     // FIXME fmgc interface should also accept null
-    return this.data.climbPreSelSpeed.get() ?? 0;
+    return this.flightPlanService?.active.performanceData.preselectedClimbSpeed.get() ?? 0;
   }
 
   /** in knots */
   getPreSelectedCruiseSpeed(): number {
     // FIXME fmgc interface should also accept null
-    return this.data.cruisePreSelSpeed.get() ?? 0;
+    return this.flightPlanService?.active.performanceData.preselectedCruiseSpeed.get() ?? 0;
   }
 
   /** in knots */
   getPreSelectedDescentSpeed(): number {
     // FIXME fmgc interface should also accept null
-    return this.data.descentPreSelSpeed.get() ?? 0;
+    return this.flightPlanService?.active.performanceData.pilotManagedDescentSpeed.get() ?? 0;
   }
 
   getTakeoffFlapsSetting(): FlapConf | undefined {
@@ -338,8 +328,9 @@ export class FmgcDataService implements Fmgc {
 
   /** in knots */
   getManagedDescentSpeed(): number {
-    if (Number.isFinite(this.data.descentPreSelSpeed.get())) {
-      return this.data.descentPreSelSpeed.get() ?? 0;
+    const preselectedDescentSpeed = this.flightPlanService?.active.performanceData.pilotManagedDescentSpeed.get();
+    if (preselectedDescentSpeed !== null) {
+      return preselectedDescentSpeed;
     }
     // TODO adapt for A380
     if (this.flightPlanService.has(FlightPlanIndex.Active)) {

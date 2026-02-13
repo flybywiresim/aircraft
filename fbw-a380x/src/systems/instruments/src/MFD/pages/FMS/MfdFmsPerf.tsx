@@ -443,12 +443,14 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private clbNoiseTableRef = FSComponent.createRef<HTMLDivElement>();
 
+  private readonly climbPreselectedSpeed = Subject.create<number | null>(null);
+
   private readonly climbPreSelSpeedGreen = MappedSubject.create(
     ([fp, pSpeed, eo]) =>
       (fp >= FmgcFlightPhase.Climb && fp <= FmgcFlightPhase.Descent && !eo) ||
       (fp < FmgcFlightPhase.Climb && Number.isFinite(pSpeed)),
     this.activeFlightPhase,
-    this.props.fmcService.master.fmgc.data.climbPreSelSpeed ?? Subject.create(0),
+    this.climbPreselectedSpeed,
     this.eoActive,
   );
 
@@ -463,7 +465,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       (fp >= FmgcFlightPhase.Climb && fp <= FmgcFlightPhase.Descent) ||
       (fp < FmgcFlightPhase.Climb && Number.isFinite(pSpeed)),
     this.activeFlightPhase,
-    this.props.fmcService.master.fmgc.data.climbPreSelSpeed ?? Subject.create(0),
+    this.climbPreselectedSpeed,
   );
 
   public readonly climbDerated = Subject.create<ClimbDerated | null>(null);
@@ -520,13 +522,14 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private destEfob = Subject.create<string>('---.-');
 
+  private readonly cruisePreselectedSpeed = Subject.create<number | null>(null);
+
   private readonly crzPreSelManagedGreenLine1 = MappedSubject.create(
-    ([fp, pSpeed, pMach, eo]) =>
+    ([fp, pSpeed, eo]) =>
       (fp >= FmgcFlightPhase.Climb && fp <= FmgcFlightPhase.Descent && !eo) ||
-      (fp < FmgcFlightPhase.Climb && (Number.isFinite(pSpeed) || Number.isFinite(pMach))),
+      (fp < FmgcFlightPhase.Climb && pSpeed !== null),
     this.activeFlightPhase,
-    this.props.fmcService.master.fmgc.data.cruisePreSelSpeed ?? Subject.create(0),
-    this.props.fmcService.master.fmgc.data.cruisePreSelMach ?? Subject.create(0),
+    this.cruisePreselectedSpeed,
     this.eoActive,
   );
 
@@ -537,12 +540,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   );
 
   private readonly crzPreSelManagedGreenLine2 = MappedSubject.create(
-    ([fp, managed, pSpeed, pMach]) =>
-      fp < FmgcFlightPhase.Climb && managed && !Number.isFinite(pSpeed) && !Number.isFinite(pMach),
+    ([fp, managed, pSpeed]) => fp < FmgcFlightPhase.Climb && managed && pSpeed === null,
     this.activeFlightPhase,
     this.managedSpeedActive,
-    this.props.fmcService.master.fmgc.data.cruisePreSelSpeed ?? Subject.create(0),
-    this.props.fmcService.master.fmgc.data.cruisePreSelMach ?? Subject.create(0),
+    this.cruisePreselectedSpeed,
   );
 
   private readonly flightPhaseInFlight = this.activeFlightPhase.map(
@@ -552,13 +553,13 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   // DES page subjects, refs and methods
   private readonly descentCabinRate = Subject.create<number | null>(null);
 
-  private desManagedSpdTarget = Subject.create<number | null>(276);
+  private readonly desManagedSpdTarget = Subject.create<number | null>(null);
 
-  private desManagedMachTarget = Subject.create<number | null>(0.84);
+  private readonly desManagedMachTarget = Subject.create<number | null>(null);
 
-  private desPredictionsReference = Subject.create<number | null>(null);
+  private readonly desPredictionsReference = Subject.create<number | null>(null);
 
-  private desTableModeLine1 = Subject.create<string | null>('PRESEL');
+  private readonly desTableModeLine1 = Subject.create<string | null>('PRESEL');
 
   private readonly desTableModeLine1Green = MappedSubject.create(
     ([fp]) => (fp >= FmgcFlightPhase.Climb && fp <= FmgcFlightPhase.Descent) || fp < FmgcFlightPhase.Climb,
@@ -574,10 +575,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   private desTableModeLine2 = Subject.create<string | null>('MANAGED');
 
   private readonly desTableModeLine2Green = MappedSubject.create(
-    ([fp, managed, pSpeed]) => fp < FmgcFlightPhase.Climb && (managed || !Number.isFinite(pSpeed)),
+    ([fp, managed]) => fp < FmgcFlightPhase.Climb && managed,
     this.activeFlightPhase,
     this.managedSpeedActive,
-    this.props.fmcService.master.fmgc.data.descentPreSelSpeed ?? Subject.create(0),
   );
 
   private desTableSpdLine2 = Subject.create<string | null>('250');
@@ -924,10 +924,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
               this.activeFlightPhase.get() == FmgcFlightPhase.Preflight,
             );
             if (this.activeFlightPhase.get() < FmgcFlightPhase.Cruise) {
-              if (
-                this.props.fmcService.master.fmgc.data.cruisePreSelSpeed.get() ||
-                this.props.fmcService.master.fmgc.data.cruisePreSelMach.get()
-              ) {
+              const preselCruiseSpeed = this.cruisePreselectedSpeed.get();
+              if (preselCruiseSpeed !== null) {
                 this.crzTablePredLine1.set(
                   `${timePrediction}${crzPred.distanceFromPresentPosition.toFixed(0).padStart(6, ' ')}`,
                 );
@@ -1156,6 +1154,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.loadedFlightPlan.performanceData.noiseEnabled!.pipe(this.noiseEnabled),
             this.loadedFlightPlan.performanceData.climbDerated!.pipe(this.climbDerated),
             this.loadedFlightPlan.performanceData.descentCabinRate!.pipe(this.descentCabinRate),
+            this.loadedFlightPlan.performanceData.preselectedClimbSpeed!.pipe(this.climbPreselectedSpeed),
+            this.loadedFlightPlan.performanceData.preselectedCruiseSpeed!.pipe(this.cruisePreselectedSpeed),
+            this.loadedFlightPlan.performanceData.pilotManagedDescentSpeed!.pipe(this.desManagedSpdTarget),
+            this.loadedFlightPlan.performanceData.pilotManagedDescentMach!.pipe(this.desManagedMachTarget),
           );
         }
       }, true),
@@ -2022,7 +2024,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         <InputField<number>
                           dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                           inactive={this.clbPageInactive}
-                          value={this.props.fmcService.master.fmgc.data.climbPreSelSpeed}
+                          value={this.climbPreselectedSpeed}
                           alignText="flex-end"
                           errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                           hEventConsumer={this.props.mfd.hEventConsumer}
@@ -2460,7 +2462,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         <InputField<number>
                           dataEntryFormat={new SpeedMachFormat(Subject.create(0.1), Subject.create(Mmo))}
                           inactive={this.crzPageInactive}
-                          value={this.props.fmcService.master.fmgc.data.cruisePreSelMach}
+                          value={this.cruisePreselectedSpeed}
                           alignText="flex-end"
                           errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                           hEventConsumer={this.props.mfd.hEventConsumer}
@@ -2481,7 +2483,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         <InputField<number>
                           dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                           inactive={this.crzPageInactive}
-                          value={this.props.fmcService.master.fmgc.data.cruisePreSelSpeed}
+                          value={this.cruisePreselectedSpeed}
                           alignText="flex-end"
                           errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                           hEventConsumer={this.props.mfd.hEventConsumer}

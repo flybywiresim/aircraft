@@ -1140,7 +1140,7 @@ export class FlightManagementComputer implements FmcInterface {
         );
 
         /** Arm preselected speed/mach for next flight phase */
-        const climbPreSel = this.fmgc.data.climbPreSelSpeed.get();
+        const climbPreSel = plan.performanceData.preselectedClimbSpeed.get();
         if (climbPreSel) {
           this.acInterface.updatePreSelSpeedMach(climbPreSel);
         }
@@ -1151,20 +1151,20 @@ export class FlightManagementComputer implements FmcInterface {
       case FmgcFlightPhase.Climb: {
         this.destDataCheckedInCruise = false;
 
+        const plan = this.flightPlanInterface.active;
         /** Activate pre selected speed/mach */
         if (prevPhase === FmgcFlightPhase.Takeoff) {
-          const climbPreSel = this.fmgc.data.climbPreSelSpeed.get();
+          const climbPreSel = plan.performanceData.preselectedClimbSpeed.get();
           if (climbPreSel) {
             this.acInterface.activatePreSelSpeedMach(climbPreSel);
           }
         }
 
         /** Arm preselected speed/mach for next flight phase */
-        const cruisePreSel = this.fmgc.data.cruisePreSelMach.get() ?? 280;
-        const cruisePreSelMach = this.fmgc.data.cruisePreSelMach.get();
-        this.acInterface.updatePreSelSpeedMach(cruisePreSelMach ?? cruisePreSel);
+        const preselectedSpeed = plan.performanceData.preselectedCruiseSpeed.get();
+        this.acInterface.updatePreSelSpeedMach(preselectedSpeed ?? 280);
 
-        if (!this.flightPlanInterface.active.performanceData.cruiseFlightLevel.get()) {
+        if (!plan.performanceData.cruiseFlightLevel.get()) {
           this.flightPlanInterface.active.setPerformanceData(
             'cruiseFlightLevel',
             (Simplane.getAutoPilotDisplayedAltitudeLockValue('feet') ?? 0) / 100,
@@ -1182,34 +1182,17 @@ export class FlightManagementComputer implements FmcInterface {
       case FmgcFlightPhase.Cruise: {
         this.destDataCheckedInCruise = false;
         SimVar.SetSimVarValue('L:A32NX_GOAROUND_PASSED', 'bool', 0);
-
-        const cruisePreSel = this.fmgc.data.cruisePreSelSpeed.get();
-        const cruisePreSelMach = this.fmgc.data.cruisePreSelMach.get();
-        const preSelToActivate = cruisePreSelMach ?? cruisePreSel;
+        const preselectedCruiseSpeed = this.flightPlanInterface.active.performanceData.preselectedCruiseSpeed.get();
 
         /** Activate pre selected speed/mach */
-        if (prevPhase === FmgcFlightPhase.Climb && preSelToActivate) {
-          this.triggerCheckSpeedModeMessage(preSelToActivate);
-          this.acInterface.activatePreSelSpeedMach(preSelToActivate);
+        if (prevPhase === FmgcFlightPhase.Climb && preselectedCruiseSpeed) {
+          this.acInterface.activatePreSelSpeedMach(preselectedCruiseSpeed);
         }
-
-        /** Arm preselected speed/mach for next flight phase */
-        const desPreSel = this.fmgc.data.descentPreSelSpeed.get();
-        if (desPreSel) {
-          this.acInterface.updatePreSelSpeedMach(desPreSel);
-        }
-
         break;
       }
 
       case FmgcFlightPhase.Descent: {
         this.checkDestData();
-
-        /** Activate pre selected speed/mach */
-        const desPreSel = this.fmgc.data.descentPreSelSpeed.get();
-        if (prevPhase === FmgcFlightPhase.Cruise && desPreSel) {
-          this.acInterface.activatePreSelSpeedMach(desPreSel);
-        }
 
         this.triggerCheckSpeedModeMessage(null);
 
@@ -1596,10 +1579,9 @@ export class FlightManagementComputer implements FmcInterface {
     // FIXME need to add drift-down PWP to fmsv2
 
     // Delete pre-selected speeds
-    this.fmgc.data.climbPreSelSpeed.set(null);
-    this.fmgc.data.cruisePreSelSpeed.set(null);
-    this.fmgc.data.cruisePreSelMach.set(null);
-    this.fmgc.data.descentPreSelSpeed.set(null);
+    const activePlan = this.flightPlanInterface.active;
+    activePlan.performanceData.preselectedClimbSpeed.set(null);
+    activePlan.performanceData.preselectedCruiseSpeed.set(null);
 
     // Delete planned/future altitude steps
     this.flightPlanInterface.active.allLegs

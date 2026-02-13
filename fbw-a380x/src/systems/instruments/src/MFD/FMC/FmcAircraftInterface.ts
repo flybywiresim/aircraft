@@ -259,8 +259,8 @@ export class FmcAircraftInterface {
     );
 
     this.subs.push(
-      this.fmgc.data.approachFlapConfig.sub(
-        (v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', SimVarValueType.Bool, v === FlapConf.CONF_3),
+      this.flightPlanService.active.performanceData.approachFlapsThreeSelected.sub(
+        (v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', SimVarValueType.Bool, v),
         true,
       ),
     );
@@ -1371,9 +1371,10 @@ export class FmcAircraftInterface {
         Math.max(0, UnitType.POUND.convertTo(vnavPrediction.estimatedFuelOnBoard, UnitType.KILOGRAM));
     }
 
+    const pd = this.flightPlanService.active.performanceData;
     // if pilot has set approach wind in MCDU we use it, otherwise fall back to current measured wind
-    const appWindDirection = this.flightPlanService.active.performanceData.approachWindDirection.get();
-    const appWindMagnitude = this.flightPlanService.active.performanceData.approachWindMagnitude.get();
+    const appWindDirection = pd.approachWindDirection.get();
+    const appWindMagnitude = pd.approachWindMagnitude.get();
     let towerHeadwind = 0;
     if (appWindDirection !== null && appWindMagnitude !== null) {
       if (this.flightPlanService.active.destinationRunway) {
@@ -1390,17 +1391,14 @@ export class FmcAircraftInterface {
       const approachSpeeds = new A380OperatingSpeeds(
         ldgWeight,
         0,
-        this.fmgc.data.approachFlapConfig.get(),
+        pd.approachFlapsThreeSelected.get() ? FlapConf.CONF_3 : FlapConf.CONF_FULL,
         FmgcFlightPhase.Approach,
         this.fmgc.getV2Speed(),
         this.fmgc.getDestinationElevation(),
         towerHeadwind,
         true, // ignore VLS spoiler increase as it's only for display purposes
       );
-      if (
-        this.flightPlanService.active.performanceData.pilotVapp.get() === null ||
-        this.flightPlanService.active.performanceData.pilotVapp.get()! - approachSpeeds.vapp > 0.5
-      ) {
+      if (pd.pilotVapp.get() === null || pd.pilotVapp.get()! - approachSpeeds.vapp > 0.5) {
         this.flightPlanService.active.setPerformanceData('pilotVapp', approachSpeeds.vapp);
       }
 
@@ -1411,7 +1409,7 @@ export class FmcAircraftInterface {
       this.fmgc.data.approachFlapRetractionSpeed.set(Math.ceil(approachSpeeds.f3));
       this.speedVapp.set(Math.round(approachSpeeds.vapp));
     } else {
-      if (this.flightPlanService.active.performanceData.pilotVapp.get() !== null) {
+      if (pd.pilotVapp.get() !== null) {
         this.flightPlanService.active.setPerformanceData('pilotVapp', null);
       }
 
