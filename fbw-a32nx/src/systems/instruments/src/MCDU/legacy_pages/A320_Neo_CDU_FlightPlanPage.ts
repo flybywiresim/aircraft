@@ -300,6 +300,7 @@ export class CDUFlightPlanPage {
       let bearingTrack = '';
       switch (rowI) {
         case 1: // bearing from the aircraft to the TO WPT, if the second line is the TO WPT
+          // FIXME when SEC has preds linked with the active implemented, it should show BRG as well
           if (forPlan === FlightPlanIndex.Active && fpIndex === targetPlan.activeLegIndex) {
             const toWptBearing = SimVar.GetSimVarValue(
               mcdu.isTrueRefMode ? 'L:A32NX_EFIS_L_TO_WPT_TRUE_BEARING' : 'L:A32NX_EFIS_L_TO_WPT_BEARING',
@@ -311,7 +312,7 @@ export class CDUFlightPlanPage {
           }
           break;
         case 2: // outbound track of leg shown on row 2
-          if (wp && !isDiscontinuity(wp) && wp.type !== LegType.HM && wp.calculated.outboundTrack !== undefined) {
+          if (wp && !isDiscontinuity(wp) && wp.type !== LegType.HM && wp.calculated?.outboundTrack !== undefined) {
             const magVar = mcdu.isTrueRefMode ? null : wp.definition.magVar;
             const track = MagVar.trueToMagnetic(wp.calculated.outboundTrack, magVar ?? 0);
             bearingTrack = `TRK${track.toFixed(0).padStart(3, '0')}${magVar === null ? 'T' : '°'}`;
