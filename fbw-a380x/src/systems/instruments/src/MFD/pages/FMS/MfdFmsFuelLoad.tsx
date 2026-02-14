@@ -151,7 +151,11 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
   }
 
   updateDestAndAltnPredictions() {
-    if (!this.props.fmcService.master || !this.loadedFlightPlan) {
+    if (
+      !this.props.fmcService.master ||
+      !this.loadedFlightPlan ||
+      !(this.loadedFlightPlanIndex.get() === FlightPlanIndex.Active)
+    ) {
       return;
     }
 
@@ -167,7 +171,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             this.activeFlightPhase.get() == FmgcFlightPhase.Preflight,
           ),
         );
-        const destEfob = this.props.fmcService.master.fmgc.getDestEFOB(true);
+        const destEfob = this.props.fmcService.master.fmgc.getDestEFOB(true, this.loadedFlightPlanIndex.get());
         this.destEfob.set(destEfob !== null ? destEfob.toFixed(1) : '---.-');
       } else {
         this.destEta.set('--:--');
@@ -182,7 +186,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
       this.altnEta.set('--:--');
       this.altnEfob.set(
         this.loadedFlightPlanIndex.get() < FlightPlanIndex.Uplink
-          ? this.props.fmcService.master.fmgc.getAltEFOB()
+          ? this.props.fmcService.master.fmgc.getAltEFOB(this.loadedFlightPlanIndex.get())
           : null,
       );
     } else {
@@ -206,9 +210,10 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             return;
           }
 
-          this.landingWeight.set(this.props.fmcService.master.getLandingWeight());
-          this.takeoffWeight.set(this.props.fmcService.master.getTakeoffWeight());
-          const rteRsv = this.props.fmcService.master.getRouteReserveFuel();
+          const loadedfpIndex = this.loadedFlightPlanIndex.get();
+          this.landingWeight.set(this.props.fmcService.master.getLandingWeight(loadedfpIndex));
+          this.takeoffWeight.set(this.props.fmcService.master.getTakeoffWeight(loadedfpIndex));
+          const rteRsv = this.props.fmcService.master.getRouteReserveFuel(loadedfpIndex);
           this.routeReserveFuel.set(rteRsv !== null ? rteRsv / 1000 : null);
 
           if (!this.props.fmcService.master.enginesWereStarted.get()) {
@@ -217,21 +222,25 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             this.fuelOnBoard.set(null);
           } else {
             // GW only displayed after engine start. Value received from FQMS, or falls back to ZFW + FOB
-            this.grossWeight.set(this.props.fmcService.master.fmgc.getGrossWeightKg());
+            this.grossWeight.set(this.props.fmcService.master.fmgc.getGrossWeightKg(loadedfpIndex));
 
             // CG only displayed after engine start. Value received from FQMS, or falls back to value from WBBC
             const cg: number = SimVar.GetSimVarValue('L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC', 'number');
             this.centerOfGravity.set(cg);
 
             // FOB only displayed after engine start. Value received from FQMS, or falls back to FOB stored at engine start + fuel used by FADEC
-            this.fuelOnBoard.set(this.props.fmcService.master.fmgc.getFOB());
+            this.fuelOnBoard.set(this.props.fmcService.master.fmgc.getFOB(loadedfpIndex));
           }
 
-          const destPred = this.props.fmcService.master.guidanceController.vnavDriver.getDestinationPrediction();
-          const tripFuel = this.props.fmcService.master.getTripFuel();
+          const tripFuel = this.props.fmcService.master.getTripFuel(loadedfpIndex);
           this.tripFuelWeight.set(tripFuel);
-          this.tripFuelTime.set(getEtaFromUtcOrPresent(destPred?.secondsFromPresent, true));
-          this.extraFuelWeight.set(this.props.fmcService.master.getExtraFuel());
+          if (loadedfpIndex === FlightPlanIndex.Active) {
+            // TODO SEC predictions
+            const destPred = this.props.fmcService.master.guidanceController.vnavDriver.getDestinationPrediction();
+            this.tripFuelTime.set(getEtaFromUtcOrPresent(destPred?.secondsFromPresent, true));
+          }
+
+          this.extraFuelWeight.set(this.props.fmcService.master.getExtraFuel(loadedfpIndex));
           this.updateDestAndAltnPredictions();
         }),
     );

@@ -136,16 +136,16 @@ export class FmgcDataService implements Fmgc {
   constructor(private flightPlanService: FlightPlanService) {}
 
   /** in tons */
-  getZeroFuelWeight(): number {
-    const zfw = this.flightPlanService.active.performanceData.zeroFuelWeight.get() ?? minGw / 1_000;
+  getZeroFuelWeight(forPlan = FlightPlanIndex.Active): number {
+    const zfw = this.flightPlanService.get(forPlan).performanceData.zeroFuelWeight.get() ?? minGw / 1_000;
     return zfw;
   }
 
   /** in tons */
-  public getGrossWeight(): number | null {
+  public getGrossWeight(forPlan = FlightPlanIndex.Active): number | null {
     // Value received from FQMS, or falls back to entered ZFW + entered FOB
-    const zfw = this.flightPlanService.active.performanceData.zeroFuelWeight.get();
-    const fob = this.getFOB();
+    const zfw = this.flightPlanService.get(forPlan).performanceData.zeroFuelWeight.get();
+    const fob = this.getFOB(forPlan);
 
     if (zfw == null || fob === null) {
       return null;
@@ -155,8 +155,8 @@ export class FmgcDataService implements Fmgc {
   }
 
   /** in kilograms */
-  public getGrossWeightKg(): number | null {
-    const gw = this.getGrossWeight();
+  public getGrossWeightKg(forPlan = FlightPlanIndex.Active): number | null {
+    const gw = this.getGrossWeight(forPlan);
     return gw ? gw * 1_000 : null;
   }
 
@@ -164,8 +164,9 @@ export class FmgcDataService implements Fmgc {
    *
    * @returns fuel on board in tonnes (i.e. 1000 x kg)
    */
-  getFOB(): number | null {
-    let fob = this.flightPlanService.active.performanceData.blockFuel.get();
+  getFOB(forPlan = FlightPlanIndex.Active): number | null {
+    // TODO how does this work for secondary plans?
+    let fob = this.flightPlanService.get(forPlan).performanceData.blockFuel.get();
     // FIXME get from FQMS when implemented
     if (this.isAnEngineOn()) {
       fob =
@@ -408,21 +409,23 @@ export class FmgcDataService implements Fmgc {
   }
 
   /** in tons */
-  getDestEFOB(useFob: boolean): number | null {
+  getDestEFOB(useFob: boolean, forPlan = FlightPlanIndex.Active): number | null {
     // Metric tons
-    const efob = this.guidanceController?.vnavDriver?.getDestinationPrediction()?.estimatedFuelOnBoard; // in Pounds
-    if (useFob && efob !== undefined) {
-      return Units.poundToKilogram(efob) / 1000.0;
+    if (forPlan === FlightPlanIndex.Active) {
+      const efob = this.guidanceController?.vnavDriver?.getDestinationPrediction()?.estimatedFuelOnBoard; // in Pounds
+      if (useFob && efob !== undefined) {
+        return Units.poundToKilogram(efob) / 1000.0;
+      }
     }
     return null;
   }
 
   /** in tons */
-  getAltEFOB(): number | null {
+  getAltEFOB(forPlan = FlightPlanIndex.Active): number | null {
     // TODO estimate alternate fuel
 
-    const destEfob = this.getDestEFOB(true);
-    const alternateFuel = this.flightPlanService.active.performanceData.alternateFuel.get();
+    const destEfob = this.getDestEFOB(true, forPlan);
+    const alternateFuel = this.flightPlanService.get(forPlan).performanceData.alternateFuel.get();
 
     if (destEfob === null || alternateFuel === null) {
       return null;
@@ -460,10 +463,6 @@ export class FmgcDataService implements Fmgc {
   /** In percentage. Null if not set */
   getPerformanceFactorPercent(): number | null {
     return this.data.fuelPenaltyPercentage.get(); // TODO add performance factor when implemented
-  }
-
-  getNavDataDateRange(): string {
-    return SimVar.GetGameVarValue('FLIGHT NAVDATA DATE RANGE', 'string');
   }
 
   /**

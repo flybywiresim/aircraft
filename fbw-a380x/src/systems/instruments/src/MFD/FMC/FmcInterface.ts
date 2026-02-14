@@ -151,19 +151,19 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
   swapNavDatabase(): Promise<void>;
 
   /** in kilograms */
-  getLandingWeight(): number | null;
+  getLandingWeight(forPlan: FlightPlanIndex): number | null;
 
   /** in kilograms */
-  getTakeoffWeight(): number | null;
+  getTakeoffWeight(forPlan: FlightPlanIndex): number | null;
 
   /** in kilograms */
-  getTripFuel(): number | null;
+  getTripFuel(forPlan: FlightPlanIndex): number | null;
 
   /** in kilograms */
-  getExtraFuel(): number | null;
+  getExtraFuel(forPlan: FlightPlanIndex): number | null;
 
   /** in kilograms */
-  getRouteReserveFuel(tripFuel?: number | null): number | null;
+  getRouteReserveFuel(forPlan: FlightPlanIndex, tripFuel?: number | null): number | null;
 
   /**
    * Whether predicted EFOB at destination is below minimum fuel

@@ -494,10 +494,10 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   /** in kg */
-  public getLandingWeight(): number | null {
-    const tow = this.getTakeoffWeight();
+  public getLandingWeight(forPlan = FlightPlanIndex.Active): number | null {
+    const tow = this.getTakeoffWeight(forPlan);
     const gw = this.fmgc.getGrossWeightKg();
-    const tf = this.getTripFuel();
+    const tf = this.getTripFuel(forPlan);
 
     if (!this.enginesWereStarted.get()) {
       // On ground, engines off
@@ -512,14 +512,14 @@ export class FlightManagementComputer implements FmcInterface {
     if (gw) {
       // Preflight, engines on
       // LW = GW - TRIP - TAXI
-      return gw - (tf ?? 0) - (this.#flightPlanService.active.performanceData.taxiFuel.get() ?? 0) * 1000;
+      return gw - (tf ?? 0) - (this.flightPlanInterface.get(forPlan).performanceData.taxiFuel.get() ?? 0) * 1000;
     }
     return null;
   }
 
-  public getTakeoffWeight(): number | null {
-    const pd = this.flightPlanInterface.active.performanceData;
-    if (!this.enginesWereStarted.get() && this.flightPlanInterface.hasActive) {
+  public getTakeoffWeight(forPlan = FlightPlanIndex.Active): number | null {
+    const pd = this.flightPlanInterface.get(forPlan).performanceData;
+    if (!this.enginesWereStarted.get() && this.flightPlanInterface.has(forPlan)) {
       // On ground, engines off
       // TOW before engine start: TOW = ZFW + BLOCK - TAXI
 
@@ -542,37 +542,36 @@ export class FlightManagementComputer implements FmcInterface {
     return SimVar.GetSimVarValue('TOTAL WEIGHT', 'kilogram') - (pd.taxiFuel.get() ?? 0) * 1000;
   }
 
-  public getTripFuel(): number | null {
-    const destPred = this.guidanceController.vnavDriver.getDestinationPrediction();
-    if (destPred) {
-      const fob = this.fmgc.getFOB()! * 1_000;
-      const destFuelKg = Units.poundToKilogram(destPred.estimatedFuelOnBoard);
-      return fob - destFuelKg;
-    }
+  public getTripFuel(forPlan = FlightPlanIndex.Active): number | null {
+    if (forPlan == FlightPlanIndex.Active) {
+      const destPred = this.guidanceController.vnavDriver.getDestinationPrediction();
+      if (destPred) {
+        const fob = this.fmgc.getFOB()! * 1_000;
+        const destFuelKg = Units.poundToKilogram(destPred.estimatedFuelOnBoard);
+        return fob - destFuelKg;
+      }
+    } // TODO SEC predictions
     return null;
   }
 
-  public getExtraFuel(): number | null {
+  public getExtraFuel(forPlan = FlightPlanIndex.Active): number | null {
     const destPred = this.guidanceController.vnavDriver.getDestinationPrediction();
-    if (destPred) {
+    if (forPlan === FlightPlanIndex.Active && destPred) {
+      const pd = this.flightPlanInterface.get(forPlan).performanceData;
       if (this.flightPhase.get() === FmgcFlightPhase.Preflight) {
-        const trip = this.getTripFuel();
+        const trip = this.getTripFuel(forPlan);
         // EXTRA = BLOCK - TAXI - TRIP - MIN FUEL DEST - RTE RSV
         return Math.max(
-          (this.enginesWereStarted.get()
-            ? this.fmgc.getFOB()! * 1_000
-            : this.flightPlanInterface.active.performanceData.blockFuel.get() ?? 0) *
-            1000 -
-            (this.flightPlanInterface.active.performanceData.taxiFuel.get() ?? 0) * 1000 -
+          (this.enginesWereStarted.get() ? this.fmgc.getFOB()! * 1_000 : pd.blockFuel.get() ?? 0) * 1000 -
+            (pd.taxiFuel.get() ?? 0) * 1000 -
             trip! -
-            (this.flightPlanInterface.active.performanceData.minimumDestinationFuelOnBoard.get() ?? 0) * 1000 -
-            (this.getRouteReserveFuel(trip!) ?? 0),
+            (pd.minimumDestinationFuelOnBoard.get() ?? 0) * 1000 -
+            (this.getRouteReserveFuel(forPlan, trip!) ?? 0),
           LOWEST_FUEL_ESTIMATE_KGS,
         );
       } else {
         return Math.max(
-          Units.poundToKilogram(destPred.estimatedFuelOnBoard) -
-            (this.flightPlanInterface.active.performanceData.minimumDestinationFuelOnBoard.get() ?? 0) * 1000,
+          Units.poundToKilogram(destPred.estimatedFuelOnBoard) - (pd.minimumDestinationFuelOnBoard.get() ?? 0) * 1000,
           LOWEST_FUEL_ESTIMATE_KGS,
         );
       }
@@ -586,10 +585,10 @@ export class FlightManagementComputer implements FmcInterface {
    * Otherwise it is calculated based upon the route reserve fuel percentage and the trip fuel, if any.
    * @returns the route reserve fuel in kg, or null if it cannot be calculated due to missing data.
    */
-  public getRouteReserveFuel(tripFuel?: number | null): number | null {
-    const trip = tripFuel ?? this.getTripFuel();
+  public getRouteReserveFuel(forPlan = FlightPlanIndex.Active, tripFuel?: number | null): number | null {
+    const trip = tripFuel ?? this.getTripFuel(forPlan);
     if (trip !== null) {
-      const pd = this.#flightPlanService.active.performanceData;
+      const pd = this.flightPlanInterface.get(forPlan).performanceData;
       const pilotEntry = pd.pilotRouteReserveFuel.get();
       if (pilotEntry !== null) {
         return pilotEntry * 1000;

@@ -1017,7 +1017,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             );
           }
           this.destEta.set(destEta);
-          this.destEfob.set(this.props.fmcService.master.fmgc.getDestEFOB(true)?.toFixed(1) ?? '---.-');
+          this.destEfob.set(
+            this.props.fmcService.master.fmgc.getDestEFOB(true, this.loadedFlightPlanIndex.get())?.toFixed(1) ??
+              '---.-',
+          );
           const managedDescentSpeed = this.props.fmcService.master.fmgc.getManagedDescentSpeed();
           this.desManagedSpdTarget.set(managedDescentSpeed);
           const managedDescentSpeedMach = this.props.fmcService.master.fmgc.getManagedDescentSpeedMach();
@@ -1054,7 +1057,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
           }
 
           // Update APPR page
-          this.apprLandingWeight.set(this.props.fmcService.master.getLandingWeight() ?? null);
+          this.apprLandingWeight.set(
+            this.props.fmcService.master.getLandingWeight(this.loadedFlightPlanIndex.get()) ?? null,
+          );
           const apprWindDirection = this.loadedFlightPlan?.performanceData.approachWindDirection.get();
           const apprWindMagnitude = this.loadedFlightPlan?.performanceData.approachWindMagnitude.get();
           if (apprWindDirection && apprWindMagnitude && this.loadedFlightPlan?.destinationRunway) {
