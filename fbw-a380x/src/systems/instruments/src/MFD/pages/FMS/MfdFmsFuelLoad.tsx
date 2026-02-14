@@ -206,16 +206,33 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
         .on('realTime')
         .atFrequency(1)
         .handle((_t) => {
-          if (!this.props.fmcService.master) {
+          if (!this.props.fmcService.master || !this.loadedFlightPlan) {
             return;
           }
 
           const loadedfpIndex = this.loadedFlightPlanIndex.get();
+          const pd = this.loadedFlightPlan!.performanceData;
           this.landingWeight.set(this.props.fmcService.master.getLandingWeight(loadedfpIndex));
           this.takeoffWeight.set(this.props.fmcService.master.getTakeoffWeight(loadedfpIndex));
           const rteRsv = this.props.fmcService.master.getRouteReserveFuel(loadedfpIndex);
           this.routeReserveFuel.set(rteRsv !== null ? rteRsv / 1000 : null);
-
+          // Calculate RTE RSV percentage
+          if (pd.isRouteReserveFuelPercentagePilotEntered.get()) {
+            this.routeReserveFuelPercentage.set(pd.routeReserveFuelPercentage.get());
+          } else {
+            let caclulatedRteRsvPercentage: number | null = null;
+            // If route reserve is pilot entry, calculate new percentage.
+            if (pd.isRouteReserveFuelPilotEntered.get()) {
+              const trip = this.props.fmcService.master.getTripFuel(loadedfpIndex);
+              if (trip !== null) {
+                caclulatedRteRsvPercentage = ((pd.pilotRouteReserveFuel.get()! * 1000) / trip) * 100;
+              }
+            } else {
+              caclulatedRteRsvPercentage = pd.routeReserveFuelPercentage.get();
+            }
+            this.routeReserveFuelPercentage.set(caclulatedRteRsvPercentage);
+          }
+          // Calcalculate RTE RSV absolute value
           if (!this.props.fmcService.master.enginesWereStarted.get()) {
             this.grossWeight.set(null);
             this.centerOfGravity.set(null);
@@ -276,7 +293,6 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             this.loadedFlightPlan.performanceData.isRouteReserveFuelPilotEntered.pipe(
               this.routeReserveFuelIsPilotEntered,
             ),
-            this.loadedFlightPlan.performanceData.routeReserveFuelPercentage.pipe(this.routeReserveFuelPercentage),
             this.loadedFlightPlan.performanceData.isRouteReserveFuelPercentagePilotEntered.pipe(
               this.routeReserveFuelPercentageIsPilotEntered,
             ),
@@ -466,13 +482,19 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                         false,
                       )
                     }
-                    dataHandlerDuringValidation={async (v) =>
+                    dataHandlerDuringValidation={async (v) => {
                       this.props.flightPlanInterface.setPerformanceData(
                         'pilotRouteReserveFuel',
                         v,
                         this.loadedFlightPlanIndex.get(),
-                      )
-                    }
+                      );
+
+                      this.props.flightPlanInterface.setPerformanceData(
+                        'pilotRouteReserveFuelPercentage',
+                        null,
+                        this.loadedFlightPlanIndex.get(),
+                      );
+                    }}
                     enteredByPilot={this.routeReserveFuelIsPilotEntered}
                     readonlyValue={this.routeReserveFuel}
                     alignText="flex-end"
@@ -493,7 +515,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                         this.loadedFlightPlanIndex.get(),
                       );
                       this.props.flightPlanInterface.setPerformanceData(
-                        'routeReserveFuelPercentage',
+                        'pilotRouteReserveFuelPercentage',
                         v,
                         this.loadedFlightPlanIndex.get(),
                       );
