@@ -2020,27 +2020,29 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <div class="mfd-label">MACH</div>
                   </div>
                   <div class="mfd-fms-perf-speed-table-cell">
-                    <div class="mfd-label">PRED TO </div>
-                    <InputField<number, number, false>
-                      dataEntryFormat={
-                        new AltitudeOrFlightLevelFormat(
-                          this.transAlt,
-                          Subject.create(0),
-                          Subject.create(maxCertifiedAlt),
-                        )
-                      }
-                      dataHandlerDuringValidation={async (v) =>
-                        this.props.fmcService.master.fmgc.data.climbPredictionsReferencePilotEntry.set(v)
-                      }
-                      inactive={this.clbPageInactive}
-                      enteredByPilot={this.props.fmcService.master.fmgc.data.climbPredictionsReferenceIsPilotEntered}
-                      readonlyValue={this.props.fmcService.master.fmgc.data.climbPredictionsReference}
-                      containerStyle="width: 150px; margin-left: 15px;"
-                      alignText="flex-end"
-                      errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
-                      hEventConsumer={this.props.mfd.hEventConsumer}
-                      interactionMode={this.props.mfd.interactionMode}
-                    />
+                    <div style={{ visibility: this.visibilityConsideringFlightPlanIndex }}>
+                      <div class="mfd-label">PRED TO </div>
+                      <InputField<number, number, false>
+                        dataEntryFormat={
+                          new AltitudeOrFlightLevelFormat(
+                            this.transAlt,
+                            Subject.create(0),
+                            Subject.create(maxCertifiedAlt),
+                          )
+                        }
+                        dataHandlerDuringValidation={async (v) =>
+                          this.props.fmcService.master.fmgc.data.climbPredictionsReferencePilotEntry.set(v)
+                        }
+                        inactive={this.clbPageInactive}
+                        enteredByPilot={this.props.fmcService.master.fmgc.data.climbPredictionsReferenceIsPilotEntered}
+                        readonlyValue={this.props.fmcService.master.fmgc.data.climbPredictionsReference}
+                        containerStyle="width: 150px; margin-left: 15px;"
+                        alignText="flex-end"
+                        errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                        hEventConsumer={this.props.mfd.hEventConsumer}
+                        interactionMode={this.props.mfd.interactionMode}
+                      />
+                    </div>
                   </div>
                   <div class="mfd-fms-perf-speed-presel-managed-table-cell">
                     <div
@@ -2506,7 +2508,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                               this.loadedFlightPlanIndex.get(),
                             );
                           }}
-                          readonlyValue={this.cruisePreSelectedSpeedKnotsDisplay}
+                          readonlyValue={this.cruisePreSelectedMachDisplay}
                           alignText="flex-end"
                           errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                           hEventConsumer={this.props.mfd.hEventConsumer}
@@ -2534,7 +2536,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                               this.loadedFlightPlanIndex.get(),
                             );
                           }}
-                          readonlyValue={this.cruisePreSelectedMachDisplay}
+                          readonlyValue={this.cruisePreSelectedSpeedKnotsDisplay}
                           alignText="flex-end"
                           errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                           hEventConsumer={this.props.mfd.hEventConsumer}
@@ -2734,23 +2736,25 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <div class="mfd-label">SPD</div>
                   </div>
                   <div class="mfd-fms-perf-speed-table-cell">
-                    <div class="mfd-label">PRED TO </div>
-                    <InputField<number>
-                      dataEntryFormat={
-                        new AltitudeOrFlightLevelFormat(
-                          this.transFlToAlt,
-                          Subject.create(0),
-                          Subject.create(maxCertifiedAlt),
-                        )
-                      }
-                      disabled={this.notInDescent}
-                      value={this.desPredictionsReference}
-                      containerStyle="width: 150px; margin-left: 15px;"
-                      alignText="flex-end"
-                      errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
-                      hEventConsumer={this.props.mfd.hEventConsumer}
-                      interactionMode={this.props.mfd.interactionMode}
-                    />
+                    <div style={{ visibility: this.visibilityConsideringFlightPlanIndex }}>
+                      <div class="mfd-label">PRED TO </div>
+                      <InputField<number>
+                        dataEntryFormat={
+                          new AltitudeOrFlightLevelFormat(
+                            this.transFlToAlt,
+                            Subject.create(0),
+                            Subject.create(maxCertifiedAlt),
+                          )
+                        }
+                        disabled={this.notInDescent}
+                        value={this.desPredictionsReference}
+                        containerStyle="width: 150px; margin-left: 15px;"
+                        alignText="flex-end"
+                        errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                        hEventConsumer={this.props.mfd.hEventConsumer}
+                        interactionMode={this.props.mfd.interactionMode}
+                      />
+                    </div>
                   </div>
                   <div class="mfd-fms-perf-speed-presel-managed-table-cell">
                     <div

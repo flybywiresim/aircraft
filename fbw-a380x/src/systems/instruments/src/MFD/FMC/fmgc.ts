@@ -244,9 +244,9 @@ export class FmgcDataService implements Fmgc {
   }
 
   /** in knots */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getManagedCruiseSpeed(forPlan = FlightPlanIndex.Active): number {
-    const preSel = this.flightPlanService?.get(forPlan).performanceData.preselectedCruiseSpeed.get();
-    return preSel ?? 310;
+    return 310;
     // FIXME need to rework the cost index based speed calculations
     /* if (this.flightPlanService.has(FlightPlanIndex.Active)) {
       const dCI = ((this.flightPlanService.active.performanceData.costIndex.get() ?? 100) / 999) ** 2;
@@ -255,12 +255,13 @@ export class FmgcDataService implements Fmgc {
   }
 
   /** in mach */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getManagedCruiseSpeedMach(forPlan = FlightPlanIndex.Active): number {
     /* const pressure = AeroMath.isaPressure(UnitType.METER.convertFrom(this.getCruiseAltitude() * 100, UnitType.FOOT));
         const mach = AeroMath.casToMach(UnitType.MPS.convertFrom(this.getManagedCruiseSpeed(), UnitType.KNOT), pressure);
         return mach; */
     // Return static mach number for now, ECON speed calculation is not mature enough
-    return this.flightPlanService?.get(forPlan).performanceData.preselectedCruiseSpeed.get() ?? 0.85;
+    return 0.85;
   }
 
   getClimbSpeedLimit(fpIndex = FlightPlanIndex.Active): SpeedLimit | null {
