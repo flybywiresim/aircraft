@@ -716,8 +716,8 @@ dependencies = [
 
 [[package]]
 name = "msfs"
-version = "0.1.0"
-source = "git+https://github.com/flybywiresim/msfs-rs?branch=main#9bc78f1a9bbc1aceba7a0db3d087253149097341"
+version = "0.2.0"
+source = "git+https://github.com/flybywiresim/msfs-rs?branch=main#2f697b9aac9fa3c00474f901a7f7ee4218cf534b"
 dependencies = [
  "bindgen",
  "cc",
@@ -729,8 +729,8 @@ dependencies = [
 
 [[package]]
 name = "msfs_derive"
-version = "0.2.0"
-source = "git+https://github.com/flybywiresim/msfs-rs?branch=main#9bc78f1a9bbc1aceba7a0db3d087253149097341"
+version = "0.3.0"
+source = "git+https://github.com/flybywiresim/msfs-rs?branch=main#2f697b9aac9fa3c00474f901a7f7ee4218cf534b"
 dependencies = [
  "quote",
  "syn 2.0.114",
@@ -738,8 +738,8 @@ dependencies = [
 
 [[package]]
 name = "msfs_sdk"
-version = "0.1.0"
-source = "git+https://github.com/flybywiresim/msfs-rs?branch=main#9bc78f1a9bbc1aceba7a0db3d087253149097341"
+version = "0.2.0"
+source = "git+https://github.com/flybywiresim/msfs-rs?branch=main#2f697b9aac9fa3c00474f901a7f7ee4218cf534b"
 
 [[package]]
 name = "nalgebra"
