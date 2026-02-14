@@ -149,6 +149,8 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
 
   private readonly alternateExists = Subject.create(true);
   private readonly alternateFuelDisabled = this.alternateExists.map((v) => !v);
+  private readonly isActive = this.loadedFlightPlanIndex.map((it) => it === FlightPlanIndex.Active);
+  private readonly jettisonGrossWeightVisibility = this.isActive.map((isActive) => (isActive ? 'visible' : 'hidden'));
 
   protected onNewData() {
     if (!this.props.fmcService.master || !this.loadedFlightPlan) {
@@ -328,7 +330,6 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
 
             this.loadedFlightPlan.performanceData.paxNumber!.pipe(this.paxNumber),
             this.loadedFlightPlan.performanceData.costIndexMode!.pipe(this.costIndexMode),
-            this.loadedFlightPlan.performanceData.jettisonGrossWeight!.pipe(this.jettisonGrossWeight),
             this.loadedFlightPlan.performanceData.alternateExists!.pipe(this.alternateExists),
           );
         }
@@ -347,6 +348,8 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
       this.extraFuelTimeText,
       this.taxiAndRouteRsvDisabled,
       this.costIndexDisabled,
+      this.isActive,
+      this.jettisonGrossWeightVisibility,
     );
   }
 
@@ -366,17 +369,17 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             <div style="display: flex; flex-direction: row; justify-content: space-between; margin: 10px 25px 10px 25px;">
               <div class="mfd-label-value-container">
                 <span class="mfd-label mfd-spacing-right">GW</span>
-                <span class="mfd-value">{this.grossWeightText}</span>
+                <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.grossWeightText}</span>
                 <span class="mfd-label-unit mfd-unit-trailing">T</span>
               </div>
               <div class="mfd-label-value-container">
                 <span class="mfd-label mfd-spacing-right">CG</span>
-                <span class="mfd-value">{this.centerOfGravityText}</span>
+                <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.centerOfGravityText}</span>
                 <span class="mfd-label-unit mfd-unit-trailing">%</span>
               </div>
               <div class="mfd-label-value-container">
                 <span class="mfd-label mfd-spacing-right">FOB</span>
-                <span class="mfd-value">{this.fuelOnBoardText}</span>
+                <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.fuelOnBoardText}</span>
                 <span class="mfd-label-unit mfd-unit-trailing">T</span>
               </div>
             </div>
@@ -480,11 +483,11 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
 
                 <div class="mfd-label mfd-spacing-right middleGrid">TRIP</div>
                 <div class="mfd-label-value-container" style="justify-content: flex-end; margin-bottom: 20px;">
-                  <span class="mfd-value">{this.tripFuelWeightText}</span>
+                  <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.tripFuelWeightText}</span>
                   <span class="mfd-label-unit mfd-unit-trailing">T</span>
                 </div>
                 <div style="display: flex; justify-content: center; margin-bottom: 20px;">
-                  <span class="mfd-value">{this.tripFuelTime}</span>
+                  <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.tripFuelTime}</span>
                 </div>
 
                 <div class="mfd-label mfd-spacing-right middleGrid">RTE RSV</div>
@@ -567,7 +570,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   />
                 </div>
                 <div style="display: flex; justify-content: center; margin-bottom: 20px;">
-                  <span class="mfd-value">--:--</span>
+                  <span class={{ 'mfd-value': true, sec: this.secActive }}>--:--</span>
                 </div>
 
                 <div class="mfd-label mfd-spacing-right middleGrid">FINAL</div>
@@ -679,35 +682,31 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                     interactionMode={this.props.mfd.interactionMode}
                   />
                 </div>
-                <div class="mfd-label mfd-spacing-right middleGridSmall">JTSN GW</div>
-                <div style="margin-bottom: 10px;">
-                  <InputField<number, number, false>
-                    dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxJtsnGw / 1_000))}
-                    dataHandlerDuringValidation={async (v) => {
-                      this.props.flightPlanInterface?.setPerformanceData(
-                        'jettisonGrossWeight',
-                        v,
-                        this.loadedFlightPlanIndex.get(),
-                      );
-                    }}
-                    readonlyValue={this.jettisonGrossWeight}
-                    alignText="flex-end"
-                    containerStyle="width: 150px;"
-                    errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
-                    hEventConsumer={this.props.mfd.hEventConsumer}
-                    interactionMode={this.props.mfd.interactionMode}
-                  />
+                <div style={{ visibility: this.jettisonGrossWeightVisibility }}>
+                  <div class="mfd-label mfd-spacing-right middleGridSmall">JTSN GW</div>
+                  <div style="margin-bottom: 10px;">
+                    <InputField<number, number, false>
+                      dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxJtsnGw / 1_000))}
+                      disabled={Subject.create(true)}
+                      readonlyValue={this.jettisonGrossWeight}
+                      alignText="flex-end"
+                      containerStyle="width: 150px;"
+                      errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                      hEventConsumer={this.props.mfd.hEventConsumer}
+                      interactionMode={this.props.mfd.interactionMode}
+                    />
+                  </div>
                 </div>
                 <div class="mfd-label mfd-spacing-right middleGridSmall">TOW</div>
                 <div class="mfd-label-value-container" style="justify-content: center; margin-bottom: 10px;">
-                  <span class="mfd-value">
+                  <span class={{ 'mfd-value': true, sec: this.secActive }}>
                     {this.takeoffWeight.map((it) => (it ? (it / 1000).toFixed(1) : '---.-'))}
                   </span>
                   <span class="mfd-label-unit mfd-unit-trailing">T</span>
                 </div>
                 <div class="mfd-label mfd-spacing-right middleGridSmall">LW</div>
                 <div class="mfd-label-value-container" style="justify-content: center; margin-bottom: 10px;">
-                  <span class="mfd-value">
+                  <span class={{ 'mfd-value': true, sec: this.secActive }}>
                     {this.landingWeight.map((it) => (it ? (it / 1000).toFixed(1) : '---.-'))}
                   </span>
                   <span class="mfd-label-unit mfd-unit-trailing">T</span>
@@ -724,10 +723,34 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   </div>
                   <div class="mfd-label mfd-fms-fuel-load-dest-grid-top-cell">EFOB</div>
                   <div class="mfd-label mfd-fms-fuel-load-dest-grid-middle-cell">DEST</div>
-                  <div class="mfd-label bigger green mfd-fms-fuel-load-dest-grid-middle-cell">{this.destIcao}</div>
-                  <div class="mfd-label bigger green mfd-fms-fuel-load-dest-grid-middle-cell">{this.destEta}</div>
+                  <div
+                    class={{
+                      'mfd-label bigger': true,
+                      green: this.isActive,
+                      sec: this.secActive,
+                      'mfd-fms-fuel-load-dest-grid-middle-cell': true,
+                    }}
+                  >
+                    {this.destIcao}
+                  </div>
+                  <div
+                    class={{
+                      'mfd-label bigger': true,
+                      green: this.isActive,
+                      sec: this.secActive,
+                      'mfd-fms-fuel-load-dest-grid-middle-cell': true,
+                    }}
+                  >
+                    {this.destEta}
+                  </div>
                   <div class="mfd-label-value-container mfd-fms-fuel-load-dest-grid-efob-cell">
-                    <span class={{ 'mfd-value': true, amber: this.props.fmcService.master.fmgc.data.destEfobBelowMin }}>
+                    <span
+                      class={{
+                        'mfd-value': true,
+                        amber: this.props.fmcService.master.fmgc.data.destEfobBelowMin,
+                        white: this.secActive,
+                      }}
+                    >
                       {this.destEfob}
                     </span>
                     <span class="mfd-label-unit mfd-unit-trailing">T</span>
@@ -742,7 +765,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                     {this.altnEta}
                   </div>
                   <div class="mfd-label-value-container mfd-fms-fuel-load-dest-grid-efob-cell">
-                    <span class="mfd-value">{this.altnEfobText}</span>
+                    <span class={{ 'mfd-value': true, white: this.secActive }}>{this.altnEfobText}</span>
                     <span class="mfd-label-unit mfd-unit-trailing">T</span>
                   </div>
                 </div>
@@ -775,10 +798,10 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 </div>
                 <div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
                   <div class="mfd-label-value-container" style="margin-right: 20px;">
-                    <span class="mfd-value">{this.extraFuelWeightText}</span>
+                    <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.extraFuelWeightText}</span>
                     <span class="mfd-label-unit mfd-unit-trailing">T</span>
                   </div>
-                  <span class="mfd-value">{this.extraFuelTimeText}</span>
+                  <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.extraFuelTimeText}</span>
                 </div>
               </div>
             </div>

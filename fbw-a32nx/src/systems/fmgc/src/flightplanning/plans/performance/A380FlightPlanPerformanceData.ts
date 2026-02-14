@@ -36,7 +36,6 @@ export class A380FlightPlanPerformanceData extends A320FlightPlanPerformanceData
     super.assignFieldsFromOriginal(cloned);
     cloned.cruiseTemperatureIsaTemp?.set(this.cruiseTemperatureIsaTemp.get());
     cloned.paxNumber?.set(this.paxNumber.get());
-    cloned.jettisonGrossWeight?.set(this.jettisonGrossWeight.get());
     cloned.alternateExists?.set(this.alternateExists.get());
     cloned.takeoffPowerSetting?.set(this.takeoffPowerSetting.get());
     cloned.takeoffDeratedSetting?.set(this.takeoffDeratedSetting.get());
@@ -63,8 +62,6 @@ export class A380FlightPlanPerformanceData extends A320FlightPlanPerformanceData
   );
 
   readonly paxNumber = Subject.create<number | null>(null);
-
-  readonly jettisonGrossWeight = Subject.create<number | null>(null);
 
   readonly alternateExists = Subject.create(false);
 
@@ -119,7 +116,6 @@ export class A380FlightPlanPerformanceData extends A320FlightPlanPerformanceData
       ...superData,
       cruiseTemperatureIsaTemp: this.cruiseTemperatureIsaTemp.get(),
       paxNumber: this.paxNumber.get(),
-      jettisonGrossWeight: this.jettisonGrossWeight.get(),
       alternateExists: this.alternateExists.get(),
       takeoffPowerSetting: this.takeoffPowerSetting.get(),
       takeoffDeratedSetting: this.takeoffDeratedSetting.get(),

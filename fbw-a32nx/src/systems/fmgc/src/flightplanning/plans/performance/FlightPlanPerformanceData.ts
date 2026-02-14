@@ -549,11 +549,6 @@ export interface FlightPlanPerformanceData {
   readonly paxNumber?: MutableSubscribable<number | null>;
 
   /**
-   * Jettison target GW in kg, or null if not set.
-   */
-  readonly jettisonGrossWeight?: MutableSubscribable<number | null>;
-
-  /**
    * The selected power settting for takeoff (TOGA, FLEX, DERATED), or null if not set.
    * A380 specific
    */
