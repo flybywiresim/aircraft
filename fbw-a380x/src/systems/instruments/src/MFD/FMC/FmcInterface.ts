@@ -162,6 +162,9 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
   /** in kilograms */
   getExtraFuel(): number | null;
 
+  /** in kilograms */
+  getRouteReserveFuel(tripFuel?: number | null): number | null;
+
   /**
    * Whether predicted EFOB at destination is below minimum fuel
    */

@@ -554,25 +554,19 @@ export class FlightManagementComputer implements FmcInterface {
 
   public getExtraFuel(): number | null {
     const destPred = this.guidanceController.vnavDriver.getDestinationPrediction();
-    const pd = this.#flightPlanService.active.performanceData;
     if (destPred) {
       if (this.flightPhase.get() === FmgcFlightPhase.Preflight) {
+        const trip = this.getTripFuel();
         // EXTRA = BLOCK - TAXI - TRIP - MIN FUEL DEST - RTE RSV
-        const rteRsvPercentage = pd.isRouteReserveFuelPercentagePilotEntered.get()
-          ? pd.pilotRouteReserveFuelPercentage.get()!
-          : pd.defaultRouteReserveFuelPercentage.get()!;
-        const rteRsv = pd.pilotRouteReserveFuel.get()
-          ? (pd.pilotRouteReserveFuel.get() ?? 0) * 1_000
-          : ((this.getTripFuel() ?? 0) * rteRsvPercentage) / 100;
         return Math.max(
           (this.enginesWereStarted.get()
             ? this.fmgc.getFOB()! * 1_000
             : this.flightPlanInterface.active.performanceData.blockFuel.get() ?? 0) *
             1000 -
             (this.flightPlanInterface.active.performanceData.taxiFuel.get() ?? 0) * 1000 -
-            (this.getTripFuel() ?? 0) -
+            trip! -
             (this.flightPlanInterface.active.performanceData.minimumDestinationFuelOnBoard.get() ?? 0) * 1000 -
-            rteRsv,
+            (this.getRouteReserveFuel(trip!) ?? 0),
           LOWEST_FUEL_ESTIMATE_KGS,
         );
       } else {
@@ -584,6 +578,25 @@ export class FlightManagementComputer implements FmcInterface {
       }
     }
 
+    return null;
+  }
+
+  /**
+   * Returns the estimated route reserve fuel. If a pilot entry for route reserve fuel exists, it will be used.
+   * Otherwise it is calculated based upon the route reserve fuel percentage and the trip fuel, if any.
+   * @returns the route reserve fuel in kg, or null if it cannot be calculated due to missing data.
+   */
+  public getRouteReserveFuel(tripFuel?: number | null): number | null {
+    const trip = tripFuel ?? this.getTripFuel();
+    if (trip !== null) {
+      const pd = this.#flightPlanService.active.performanceData;
+      const pilotEntry = pd.pilotRouteReserveFuel.get();
+      if (pilotEntry !== null) {
+        return pilotEntry * 1000;
+      } else {
+        return pd.routeReserveFuelPercentage.get() !== null ? trip * (pd.routeReserveFuelPercentage.get() / 100) : null;
+      }
+    }
     return null;
   }
 
@@ -1118,8 +1131,7 @@ export class FlightManagementComputer implements FmcInterface {
 
         pd.tripFuelAtPreflight.set((this.getTripFuel() ?? 0) / 1000); // in tons
 
-        this.#flightPlanService.active.setPerformanceData('pilotTaxiFuel', 0);
-        this.#flightPlanService.active.setPerformanceData('defaultTaxiFuel', 0);
+        this.#flightPlanService.active.setPerformanceData('pilotTaxiFuel', null);
         this.#flightPlanService.active.setPerformanceData('pilotRouteReserveFuel', null);
         this.#flightPlanService.active.setPerformanceData('pilotRouteReserveFuelPercentage', 0);
 

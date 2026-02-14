@@ -70,18 +70,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
   private readonly routeReserveFuelPercentage = Subject.create<number | null>(null);
   private readonly routeReserveFuelPercentageIsPilotEntered = Subject.create<boolean>(false);
 
-  private readonly routeReserveFuel = MappedSubject.create(
-    ([pilotEntryReserveFuel, tripFuel, routeReservePercentage]) => {
-      return pilotEntryReserveFuel !== null
-        ? pilotEntryReserveFuel
-        : tripFuel !== null && routeReservePercentage !== null
-          ? tripFuel * routeReservePercentage
-          : null;
-    },
-    this.routeReserveFuelPilotEntry,
-    this.tripFuelWeight,
-    this.routeReserveFuelPercentage,
-  );
+  private readonly routeReserveFuel = Subject.create<number | null>(null);
 
   private readonly alternateFuel = Subject.create<number | null>(null);
   private readonly alternateFuelIsPilotEntered = Subject.create<boolean>(false);
@@ -219,6 +208,8 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
 
           this.landingWeight.set(this.props.fmcService.master.getLandingWeight());
           this.takeoffWeight.set(this.props.fmcService.master.getTakeoffWeight());
+          const rteRsv = this.props.fmcService.master.getRouteReserveFuel();
+          this.routeReserveFuel.set(rteRsv !== null ? rteRsv / 1000 : null);
 
           if (!this.props.fmcService.master.enginesWereStarted.get()) {
             this.grossWeight.set(null);
