@@ -150,14 +150,16 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
 
     if (this.props.fmcService.master) {
       this.subs.push(
-        this.props.fmcService.master.fmgc.data.atcCallsign.sub((c) => {
-          if (c) {
-            this.connectToNetworks(c);
-            this.props.fmcService.master.updateFlightNumber(c, this.loadedFlightPlanIndex.get(), () => {});
-          } else {
-            this.disconnectFromNetworks();
+        this.flightNumber.sub((c) => {
+          if (this.loadedFlightPlanIndex.get() === FlightPlanIndex.Active) {
+            if (c) {
+              this.connectToNetworks(c);
+              this.props.fmcService.master.updateFlightNumber(c, this.loadedFlightPlanIndex.get(), () => {});
+            } else {
+              this.disconnectFromNetworks();
+            }
+            this.props.fmcService.master.acInterface.updateFmsData();
           }
-          this.props.fmcService.master.acInterface.updateFmsData();
         }),
       );
     }
@@ -169,7 +171,10 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
             this.loadedFlightPlan.performanceData.tropopause.pipe(this.tropopause),
             this.loadedFlightPlan.performanceData.tropopauseIsPilotEntered.pipe(this.tropopauseIsPilotEntered),
             this.loadedFlightPlan.performanceData.costIndexMode!.pipe(this.costIndexMode),
-            this.loadedFlightPlan.getFlightNumber().pipe(this.flightNumber),
+            this.props.flightPlanInterface
+              .get(this.loadedFlightPlanIndex.get())
+              .getFlightNumber()
+              .pipe(this.flightNumber),
           );
         }
       }, true),
@@ -334,12 +339,13 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
               <InputField<string, string, false>
                 dataEntryFormat={new LongAlphanumericFormat()}
                 dataHandlerDuringValidation={async (v) => {
-                  this.loadedFlightPlan?.getFlightNumber().set(v);
+                  this.props.flightPlanInterface.get(this.loadedFlightPlanIndex.get()).getFlightNumber().set(v);
                 }}
                 mandatory={this.mandatoryAndActiveFpln}
                 readonlyValue={this.flightNumber}
                 containerStyle="width: 200px; margin-right: 5px;"
                 alignText="center"
+                canBeCleared={Subject.create(false)}
                 errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}

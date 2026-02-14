@@ -214,6 +214,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
           this.tmpyActive.set(false);
         } else if (activeUri.page === 'init') {
           // Flight plan might not have been created yet
+          this.props.flightPlanInterface.secondaryInit(1);
           this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary);
         }
         this.secActive.set(true);
@@ -228,6 +229,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
           this.tmpyActive.set(false);
         } else if (activeUri.page === 'init') {
           // Flight plan might not have been created yet
+          this.props.flightPlanInterface.secondaryInit(2);
           this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary + 1);
         }
         this.secActive.set(true);
@@ -242,6 +244,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
           this.tmpyActive.set(false);
         } else if (activeUri.page === 'init') {
           // Flight plan might not have been created yet
+          this.props.flightPlanInterface.secondaryInit(3);
           this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary + 2);
         }
         this.secActive.set(true);

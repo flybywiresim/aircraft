@@ -76,14 +76,20 @@ class MfdFmsSecIndexDataStore {
       return;
     }
 
-    this.secExists.set(true);
-
     const flightPlan = this.fmc.flightPlanInterface.secondary(this.secIndex);
+    if (flightPlan.legCount === 0) {
+      this.invalidateSecData();
+      return;
+    }
+
+    const origin = flightPlan.originAirport;
+    const destination = flightPlan.destinationAirport;
+    this.secExists.set(true);
     this.timeCreated.set(flightPlan.timeCreated);
     this.flags.set(this.fmc.flightPlanInterface.get(FlightPlanIndex.FirstSecondary + this.secIndex - 1).flags);
     this.wasModified.set(flightPlan.wasModified);
-    this.fromCity.set(flightPlan.originAirport?.ident ?? null);
-    this.toCity.set(flightPlan.destinationAirport?.ident ?? null);
+    this.fromCity.set(origin?.ident ?? null);
+    this.toCity.set(destination?.ident ?? null);
     this.routeOverviewLegs.set(
       flightPlan.allLegs
         .filter((_, index) => index < flightPlan.firstMissedApproachLegIndex) // Need this concatenation to satisfy TS
@@ -110,6 +116,16 @@ class MfdFmsSecIndexDataStore {
           return false;
         }),
     );
+  }
+
+  private invalidateSecData() {
+    this.secExists.set(false);
+    this.timeCreated.set(null);
+    this.flags.set(0);
+    this.wasModified.set(false);
+    this.fromCity.set(null);
+    this.toCity.set(null);
+    this.routeOverviewLegs.set([]);
   }
 
   constructor(

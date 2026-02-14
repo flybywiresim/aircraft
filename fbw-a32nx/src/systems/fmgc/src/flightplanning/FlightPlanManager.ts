@@ -348,7 +348,7 @@ Make sure any calls to an RPC client are \`await\`ed`,
   }
 
   private assertFlightPlanDoesntExist(index: number) {
-    if (this.plans[index]) {
+    if (this.has(index)) {
       throw new Error(`[FMS/FlightPlanManager] Tried to create existent flight plan at index #${index}`);
     }
   }

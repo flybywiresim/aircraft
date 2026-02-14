@@ -54,7 +54,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
   /**
    * Shown as the "flight number" in the MCDU, but it's really the callsign
    */
-  flightNumber = Subject.create<string | null>(null);
+  readonly flightNumber = Subject.create<string | null>(null);
 
   /**
    * Possible flags for this flight plan. See {@link FlightPlanFlags} for a list of flags.
