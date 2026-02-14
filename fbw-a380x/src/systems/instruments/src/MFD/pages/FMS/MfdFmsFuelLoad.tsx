@@ -232,7 +232,17 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             }
             this.routeReserveFuelPercentage.set(caclulatedRteRsvPercentage);
           }
-          // Calcalculate RTE RSV absolute value
+          // Calculate final fuel time.
+          if (pd.isFinalHoldingFuelPilotEntered.get()) {
+            const finalFuel = pd.pilotFinalHoldingFuel.get();
+            this.finalFuel.set(finalFuel);
+            this.finalFuelTime.set(finalFuel !== null ? finalFuel / 0.2 : null); // FIX ME this should come from predictions
+          } else {
+            const finalTime = pd.finalHoldingTime.get();
+            this.finalFuelTime.set(finalTime);
+            this.finalFuel.set(finalTime !== null ? finalTime * 0.2 : null); // FIX ME this should come from predictions
+          }
+
           if (!this.props.fmcService.master.enginesWereStarted.get()) {
             this.grossWeight.set(null);
             this.centerOfGravity.set(null);
@@ -298,9 +308,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             ),
             this.loadedFlightPlan.performanceData.alternateFuel.pipe(this.alternateFuel),
             this.loadedFlightPlan.performanceData.isAlternateFuelPilotEntered.pipe(this.alternateFuelIsPilotEntered),
-            this.loadedFlightPlan.performanceData.pilotFinalHoldingFuel.pipe(this.finalFuel),
             this.loadedFlightPlan.performanceData.isFinalHoldingFuelPilotEntered.pipe(this.finalFuelIsPilotEntered),
-            this.loadedFlightPlan.performanceData.finalHoldingTime.pipe(this.finalFuelTime),
             this.loadedFlightPlan.performanceData.isFinalHoldingTimePilotEntered.pipe(this.finalFuelTimeIsPilotEntered),
 
             this.loadedFlightPlan.performanceData.minimumDestinationFuelOnBoard.pipe(this.minimumFuelAtDestination),
@@ -365,9 +373,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             <div style="display: flex; flex-direction: row; margin-bottom: 15px; align-items: center; ">
               <div class="mfd-label mfd-spacing-right fuelLoad">ZFW</div>
               <InputField<number, number, false>
-                dataEntryFormat={
-                  new WeightFormat(Subject.create(minZfw / 1_000), Subject.create(maxZfw / 1_000), false)
-                }
+                dataEntryFormat={new WeightFormat(Subject.create(minZfw / 1_000), Subject.create(maxZfw / 1_000))}
                 dataHandlerDuringValidation={async (v) =>
                   this.props.flightPlanInterface.setPerformanceData(
                     'zeroFuelWeight',
@@ -407,7 +413,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             <div ref={this.blockLineRef} class="mfd-fms-fuel-load-block-line">
               <div class="mfd-label mfd-spacing-right fuelLoad">BLOCK</div>
               <InputField<number, number, false>
-                dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxBlockFuel / 1_000), false)}
+                dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxBlockFuel / 1_000))}
                 dataHandlerDuringValidation={async (v) =>
                   this.props.flightPlanInterface.setPerformanceData('blockFuel', v, this.loadedFlightPlanIndex.get())
                 }
@@ -442,7 +448,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 <div class="mfd-label mfd-spacing-right middleGrid">TAXI</div>
                 <div style="margin-bottom: 20px;">
                   <InputField<number, number, false>
-                    dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxTaxiFuel / 1_000), false)}
+                    dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxTaxiFuel / 1_000))}
                     dataHandlerDuringValidation={async (v) =>
                       this.props.flightPlanInterface.setPerformanceData(
                         'pilotTaxiFuel',
@@ -479,7 +485,6 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                       new WeightFormat(
                         Subject.create(AirlineModifiableInformation.EK.rsvMin / 1_000),
                         Subject.create(AirlineModifiableInformation.EK.rsvMax / 1_000),
-                        false,
                       )
                     }
                     dataHandlerDuringValidation={async (v) => {
@@ -533,7 +538,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 <div class="mfd-label mfd-spacing-right middleGrid">ALTN</div>
                 <div style="margin-bottom: 20px;">
                   <InputField<number, number, false>
-                    dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxAltnFuel / 1_000), false)}
+                    dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxAltnFuel / 1_000))}
                     dataHandlerDuringValidation={async (v) =>
                       this.props.flightPlanInterface.setPerformanceData(
                         'pilotAlternateFuel',
@@ -558,7 +563,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 <div class="mfd-label mfd-spacing-right middleGrid">FINAL</div>
                 <div style="margin-bottom: 20px;">
                   <InputField<number, number, false>
-                    dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxFinalFuel / 1_000), false)}
+                    dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxFinalFuel / 1_000))}
                     dataHandlerDuringValidation={async (v) => {
                       this.props.flightPlanInterface.setPerformanceData(
                         'pilotFinalHoldingFuel',
@@ -567,7 +572,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                       );
                       this.props.flightPlanInterface.setPerformanceData(
                         'pilotFinalHoldingTime',
-                        (v ?? 0) / 0.2,
+                        null,
                         this.loadedFlightPlanIndex.get(),
                       );
                     }}
@@ -586,7 +591,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                     dataHandlerDuringValidation={async (v) => {
                       this.props.flightPlanInterface.setPerformanceData(
                         'pilotFinalHoldingFuel',
-                        (v ?? 0) * 0.2,
+                        null,
                         this.loadedFlightPlanIndex.get(),
                       );
                       this.props.flightPlanInterface.setPerformanceData(
@@ -595,7 +600,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                         this.loadedFlightPlanIndex.get(),
                       );
                     }}
-                    enteredByPilot={this.finalFuelIsPilotEntered}
+                    enteredByPilot={this.finalFuelTimeIsPilotEntered}
                     readonlyValue={this.finalFuelTime}
                     alignText="center"
                     containerStyle="width: 120px;"
@@ -667,7 +672,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 <div class="mfd-label mfd-spacing-right middleGridSmall">JTSN GW</div>
                 <div style="margin-bottom: 10px;">
                   <InputField<number, number, false>
-                    dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxJtsnGw / 1_000), false)}
+                    dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxJtsnGw / 1_000))}
                     dataHandlerDuringValidation={async (v) => {
                       this.props.flightPlanInterface?.setPerformanceData(
                         'jettisonGrossWeight',
@@ -738,7 +743,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 </div>
                 <div style="margin-bottom: 30px; display: flex; justify-content: center;">
                   <InputField<number, number, false>
-                    dataEntryFormat={new WeightFormat(undefined, undefined, false)}
+                    dataEntryFormat={new WeightFormat(undefined, undefined)}
                     dataHandlerDuringValidation={async (v) =>
                       this.props.flightPlanInterface?.setPerformanceData(
                         'pilotMinimumDestinationFuelOnBoard',
