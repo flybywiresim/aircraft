@@ -30,7 +30,7 @@ export class NXDataStore {
     CONFIG_AUTO_SIM_ROUTE_LOAD: false,
   };
 
-  private static readonly aircraftProjectPrefix: string = 'a380x'.toUpperCase() ?? 'UNK';
+  private static readonly aircraftProjectPrefix: string = process.env.AIRCRAFT_PROJECT_PREFIX?.toUpperCase() ?? 'UNK';
 
   private static mListener: ViewListener.ViewListener;
 

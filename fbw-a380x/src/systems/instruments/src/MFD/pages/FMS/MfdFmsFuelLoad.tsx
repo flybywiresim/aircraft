@@ -59,14 +59,29 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
 
   private readonly blockFuel = Subject.create<number | null>(null);
 
+  private readonly tripFuelWeight = Subject.create<number | null>(null);
+
   private readonly taxiFuel = Subject.create<number | null>(null);
   private readonly taxiFuelIsPilotEntered = Subject.create<boolean>(false);
 
-  private readonly routeReserveFuel = Subject.create<number | null>(null);
+  private readonly routeReserveFuelPilotEntry = Subject.create<number | null>(null);
   private readonly routeReserveFuelIsPilotEntered = Subject.create<boolean>(false);
 
   private readonly routeReserveFuelPercentage = Subject.create<number | null>(null);
   private readonly routeReserveFuelPercentageIsPilotEntered = Subject.create<boolean>(false);
+
+  private readonly routeReserveFuel = MappedSubject.create(
+    ([pilotEntryReserveFuel, tripFuel, routeReservePercentage]) => {
+      return pilotEntryReserveFuel !== null
+        ? pilotEntryReserveFuel
+        : tripFuel !== null && routeReservePercentage !== null
+          ? tripFuel * routeReservePercentage
+          : null;
+    },
+    this.routeReserveFuelPilotEntry,
+    this.tripFuelWeight,
+    this.routeReserveFuelPercentage,
+  );
 
   private readonly alternateFuel = Subject.create<number | null>(null);
   private readonly alternateFuelIsPilotEntered = Subject.create<boolean>(false);
@@ -88,7 +103,6 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
     v === FmgcFlightPhase.Preflight ? 'TIME' : 'UTC',
   );
 
-  private readonly tripFuelWeight = Subject.create<number | null>(null);
   private readonly tripFuelWeightText = this.tripFuelWeight.map((it) => (it ? (it / 1000).toFixed(1) : '---.-'));
 
   private readonly tripFuelTime = Subject.create('--:--');
@@ -258,7 +272,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             this.loadedFlightPlan.performanceData.blockFuel.pipe(this.blockFuel),
             this.loadedFlightPlan.performanceData.taxiFuel.pipe(this.taxiFuel),
             this.loadedFlightPlan.performanceData.taxiFuelIsPilotEntered.pipe(this.taxiFuelIsPilotEntered),
-            this.loadedFlightPlan.performanceData.pilotRouteReserveFuel.pipe(this.routeReserveFuel),
+            this.loadedFlightPlan.performanceData.pilotRouteReserveFuel.pipe(this.routeReserveFuelPilotEntry),
             this.loadedFlightPlan.performanceData.isRouteReserveFuelPilotEntered.pipe(
               this.routeReserveFuelIsPilotEntered,
             ),
