@@ -9,6 +9,7 @@ import {
   MappedSubject,
   Subject,
   Subscribable,
+  Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
 
@@ -66,6 +67,8 @@ import {
 interface MfdFmsPerfProps extends AbstractMfdPageProps {}
 
 export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
+  private vdevSub: Subscription | null = null;
+
   private readonly flightPlanChangeNotifier = new FlightPlanChangeNotifier(this.props.bus);
 
   private readonly mandatoryAndActiveFpln = this.loadedFlightPlanIndex.map(
@@ -665,8 +668,11 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       return;
     }
 
+    const fpIndex = this.loadedFlightPlanIndex.get();
+
     this.crzFlIsMandatory.set(
-      (this.props.fmcService.master.fmgc.getFlightPhase() ?? FmgcFlightPhase.Preflight) < FmgcFlightPhase.Descent &&
+      fpIndex === FlightPlanIndex.Active &&
+        (this.props.fmcService.master.fmgc.getFlightPhase() ?? FmgcFlightPhase.Preflight) < FmgcFlightPhase.Descent &&
         this.managedSpeedActive.get(),
     );
 
@@ -693,15 +699,17 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     }
 
     this.precisionApproachSelected.set(precisionApproach);
-
-    const vDev = this.props.fmcService.master.guidanceController.vnavDriver.getLinearDeviation();
+    const vDev =
+      fpIndex === FlightPlanIndex.Active
+        ? this.props.fmcService.master.guidanceController.vnavDriver.getLinearDeviation()
+        : null;
     if (this.activeFlightPhase.get() >= FmgcFlightPhase.Descent && vDev != null) {
       this.apprVerticalDeviation.set(vDev >= 0 ? `+${vDev.toFixed(0)}FT` : `${vDev.toFixed(0)}FT`);
     } else {
       this.apprVerticalDeviation.set('+-----');
     }
 
-    const speedLimit = this.props.fmcService.master.fmgc.getClimbSpeedLimit();
+    const speedLimit = this.props.fmcService.master.fmgc.getClimbSpeedLimit(fpIndex);
     if (speedLimit) {
       this.speedConstraintSpeed.set(speedLimit.speed);
       this.speedConstraintAltitude.set(speedLimit.underAltitude);
@@ -784,6 +792,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
         .atFrequency(1)
         .handle((_t) => {
           // Update REC MAX FL, OPT FL
+          const fpIndex = this.loadedFlightPlanIndex.get();
           const recMaxFl = this.props.fmcService.master.getRecMaxFlightLevel();
           this.recMaxFl.set(recMaxFl && Number.isFinite(recMaxFl) ? recMaxFl.toFixed(0) : '---');
           const optFl = this.props.fmcService.master.getOptFlightLevel();
@@ -795,7 +804,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.props.fmcService.master.guidanceController.verticalProfileComputationParametersObserver.get();
 
           // CLB PRED TO automatic update
-          if (this.activeFlightPhase.get() === FmgcFlightPhase.Climb) {
+          if (fpIndex === FlightPlanIndex.Active && this.activeFlightPhase.get() === FmgcFlightPhase.Climb) {
             this.props.fmcService.master.fmgc.data.climbPredictionsReferenceAutomatic.set(
               this.props.fmcService.master.guidanceController.verticalProfileComputationParametersObserver.get()
                 .fcuAltitude,
@@ -807,7 +816,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
           this.managedSpeedActive.set((obs?.fcuSpeedManaged as unknown) === 1); // Should be boolean, but is number
 
           // Update CLB speed table
-          const clbSpeedLimit = this.props.fmcService.master.fmgc.getClimbSpeedLimit();
+          const clbSpeedLimit = this.props.fmcService.master.fmgc.getClimbSpeedLimit(fpIndex);
           if (this.activeFlightPhase.get() < FmgcFlightPhase.Climb) {
             this.clbTableModeLine1.set('PRESEL');
             this.clbTableSpdLine1.set(null);
@@ -818,9 +827,11 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.clbTableMachLine2.set(null);
             this.clbTablePredLine2.set('--:--   ----');
             this.clbTableModeLine3.set('ECON');
-            this.clbTableSpdLine3.set(this.props.fmcService.master.fmgc.getManagedClimbSpeed().toFixed(0) ?? null);
+            this.clbTableSpdLine3.set(
+              this.props.fmcService.master.fmgc.getManagedClimbSpeed(fpIndex).toFixed(0) ?? null,
+            );
             this.clbTableMachLine3.set(
-              `.${this.props.fmcService.master.fmgc.getManagedClimbSpeedMach().toFixed(2).split('.')[1]}`,
+              `.${this.props.fmcService.master.fmgc.getManagedClimbSpeedMach(fpIndex).toFixed(2).split('.')[1]}`,
             );
             this.clbTablePredLine3.set(null);
           } else if (this.managedSpeedActive.get()) {
@@ -832,15 +843,19 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                 `.${(SimVar.GetGameVarValue('FROM KIAS TO MACH', 'number', clbSpeedLimit.speed) as number).toFixed(2).split('.')[1]}`,
               );
               this.clbTableModeLine3.set('ECON');
-              this.clbTableSpdLine3.set(this.props.fmcService.master.fmgc.getManagedClimbSpeed().toFixed(0) ?? null);
+              this.clbTableSpdLine3.set(
+                this.props.fmcService.master.fmgc.getManagedClimbSpeed(fpIndex).toFixed(0) ?? null,
+              );
               this.clbTableMachLine3.set(
-                `.${this.props.fmcService.master.fmgc.getManagedClimbSpeedMach().toFixed(2).split('.')[1]}`,
+                `.${this.props.fmcService.master.fmgc.getManagedClimbSpeedMach(fpIndex).toFixed(2).split('.')[1]}`,
               );
               this.clbTablePredLine3.set(null);
             } else {
-              this.clbTableSpdLine1.set(this.props.fmcService.master.fmgc.getManagedClimbSpeed().toFixed(0) ?? null);
+              this.clbTableSpdLine1.set(
+                this.props.fmcService.master.fmgc.getManagedClimbSpeed(fpIndex).toFixed(0) ?? null,
+              );
               this.clbTableMachLine1.set(
-                `.${this.props.fmcService.master.fmgc.getManagedClimbSpeedMach().toFixed(2).split('.')[1]}`,
+                `.${this.props.fmcService.master.fmgc.getManagedClimbSpeedMach(fpIndex).toFixed(2).split('.')[1]}`,
               );
               this.clbTableModeLine3.set(null);
               this.clbTableSpdLine3.set(null);
@@ -867,16 +882,20 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                 `.${(SimVar.GetGameVarValue('FROM KIAS TO MACH', 'number', clbSpeedLimit.speed) as number).toFixed(2).split('.')[1]}`,
               );
             } else {
-              this.clbTableSpdLine2.set(this.props.fmcService.master.fmgc.getManagedClimbSpeed().toFixed(0) ?? null);
+              this.clbTableSpdLine2.set(
+                this.props.fmcService.master.fmgc.getManagedClimbSpeed(fpIndex).toFixed(0) ?? null,
+              );
               this.clbTableMachLine2.set(
-                `.${this.props.fmcService.master.fmgc.getManagedClimbSpeedMach().toFixed(2).split('.')[1]}`,
+                `.${this.props.fmcService.master.fmgc.getManagedClimbSpeedMach(fpIndex).toFixed(2).split('.')[1]}`,
               );
             }
             this.clbTablePredLine2.set(null);
             this.clbTableModeLine3.set('ECON');
-            this.clbTableSpdLine3.set(this.props.fmcService.master.fmgc.getManagedClimbSpeed().toFixed(0) ?? null);
+            this.clbTableSpdLine3.set(
+              this.props.fmcService.master.fmgc.getManagedClimbSpeed(fpIndex).toFixed(0) ?? null,
+            );
             this.clbTableMachLine3.set(
-              `.${this.props.fmcService.master.fmgc.getManagedClimbSpeedMach().toFixed(2).split('.')[1]}`,
+              `.${this.props.fmcService.master.fmgc.getManagedClimbSpeedMach(fpIndex).toFixed(2).split('.')[1]}`,
             );
             this.clbTablePredLine3.set(null);
           }
@@ -887,7 +906,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
           }
 
           // Update CRZ prediction
-          const crzPred = this.props.fmcService.master.guidanceController?.vnavDriver?.getPerfCrzToPrediction();
+          const crzPred =
+            fpIndex === FlightPlanIndex.Active
+              ? this.props.fmcService.master.guidanceController?.vnavDriver?.getPerfCrzToPrediction()
+              : null;
           if (
             this.crzPredStepRef.getOrDefault() &&
             this.crzPredDriftDownRef.getOrDefault() &&
@@ -965,7 +987,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.crzTableModeLine2.set('MANAGED');
             this.crzTableSpdLine2.set('---');
             this.crzTableMachLine2.set(
-              `.${this.props.fmcService.master.fmgc.getManagedCruiseSpeedMach().toFixed(2).split('.')[1]}`,
+              `.${this.props.fmcService.master.fmgc.getManagedCruiseSpeedMach(fpIndex).toFixed(2).split('.')[1]}`,
             );
             this.crzTablePredLine2.set('--:--   ----');
           } else if (this.managedSpeedActive.get()) {
@@ -974,11 +996,11 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.crzTableSpdLine1.set(
               obs && obs.fcuSpeed < 1
                 ? '---'
-                : this.props.fmcService.master.fmgc.getManagedClimbSpeed().toFixed(0) ?? null,
+                : this.props.fmcService.master.fmgc.getManagedClimbSpeed(fpIndex).toFixed(0) ?? null,
             );
             this.crzTableMachLine1.set(
               obs && obs.fcuSpeed < 1
-                ? `.${this.props.fmcService.master.fmgc.getManagedCruiseSpeedMach().toFixed(2).split('.')[1]}`
+                ? `.${this.props.fmcService.master.fmgc.getManagedCruiseSpeedMach(fpIndex).toFixed(2).split('.')[1]}`
                 : '.--',
             );
 
@@ -997,33 +1019,32 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.crzTableSpdLine2.set(
               obs && obs.fcuSpeed < 1
                 ? '---'
-                : this.props.fmcService.master.fmgc.getManagedCruiseSpeed().toFixed(0) ?? null,
+                : this.props.fmcService.master.fmgc.getManagedCruiseSpeed(fpIndex).toFixed(0) ?? null,
             );
             this.crzTableMachLine2.set(
               obs && obs.fcuSpeed < 1
-                ? `.${this.props.fmcService.master.fmgc.getManagedCruiseSpeedMach().toFixed(2).split('.')[1]}`
+                ? `.${this.props.fmcService.master.fmgc.getManagedCruiseSpeedMach(fpIndex).toFixed(2).split('.')[1]}`
                 : '.--',
             );
             this.crzTablePredLine2.set(null);
           }
 
           // Update CRZ DEST predictions
-          const destPred = this.props.fmcService.master.guidanceController?.vnavDriver?.getDestinationPrediction();
           let destEta = '--:--';
-          if (destPred?.secondsFromPresent !== undefined) {
-            destEta = getEtaUtcOrFromPresent(
-              destPred.secondsFromPresent,
-              this.activeFlightPhase.get() == FmgcFlightPhase.Preflight,
-            );
+          if (fpIndex === FlightPlanIndex.Active) {
+            const destPred = this.props.fmcService.master.guidanceController?.vnavDriver?.getDestinationPrediction();
+            if (destPred?.secondsFromPresent !== undefined) {
+              destEta = getEtaUtcOrFromPresent(
+                destPred.secondsFromPresent,
+                this.activeFlightPhase.get() == FmgcFlightPhase.Preflight,
+              );
+            }
           }
           this.destEta.set(destEta);
-          this.destEfob.set(
-            this.props.fmcService.master.fmgc.getDestEFOB(true, this.loadedFlightPlanIndex.get())?.toFixed(1) ??
-              '---.-',
-          );
-          const managedDescentSpeed = this.props.fmcService.master.fmgc.getManagedDescentSpeed();
+          this.destEfob.set(this.props.fmcService.master.fmgc.getDestEFOB(true, fpIndex)?.toFixed(1) ?? '---.-');
+          const managedDescentSpeed = this.props.fmcService.master.fmgc.getManagedDescentSpeed(fpIndex);
           this.desManagedSpdTarget.set(managedDescentSpeed);
-          const managedDescentSpeedMach = this.props.fmcService.master.fmgc.getManagedDescentSpeedMach();
+          const managedDescentSpeedMach = this.props.fmcService.master.fmgc.getManagedDescentSpeedMach(fpIndex);
           this.desManagedMachTarget.set(managedDescentSpeedMach);
 
           // Update DES speed table
@@ -1057,9 +1078,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
           }
 
           // Update APPR page
-          this.apprLandingWeight.set(
-            this.props.fmcService.master.getLandingWeight(this.loadedFlightPlanIndex.get()) ?? null,
-          );
+          this.apprLandingWeight.set(this.props.fmcService.master.getLandingWeight(fpIndex) ?? null);
           const apprWindDirection = this.loadedFlightPlan?.performanceData.approachWindDirection.get();
           const apprWindMagnitude = this.loadedFlightPlan?.performanceData.approachWindMagnitude.get();
           if (apprWindDirection && apprWindMagnitude && this.loadedFlightPlan?.destinationRunway) {
@@ -1086,92 +1105,97 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     );
 
     // Update VERT DEV on APPR page. Possible optimization to only sub during descent phase
-    this.subs.push(
-      sub
-        .on('realTime')
-        .atFrequency(0.5)
-        .handle((_t) => {
-          if (this.activeFlightPhase.get() >= FmgcFlightPhase.Descent) {
-            const vDev = this.props.fmcService.master.guidanceController.vnavDriver.getLinearDeviation();
-            if (vDev != null) {
-              this.apprVerticalDeviation.set(vDev >= 0 ? `+${vDev.toFixed(0)}FT` : `${vDev.toFixed(0)}FT`);
-            }
+    (this.vdevSub = sub
+      .on('realTime')
+      .atFrequency(0.5)
+      .handle((_t) => {
+        if (this.activeFlightPhase.get() >= FmgcFlightPhase.Descent) {
+          const vDev = this.props.fmcService.master.guidanceController.vnavDriver.getLinearDeviation();
+          if (vDev != null) {
+            this.apprVerticalDeviation.set(vDev >= 0 ? `+${vDev.toFixed(0)}FT` : `${vDev.toFixed(0)}FT`);
           }
-        }),
-    );
-
-    this.subs.push(
-      this.flightPlanChangeNotifier.flightPlanChanged.sub(() => {
-        if (this.loadedFlightPlan) {
-          this.subs.push(
-            this.loadedFlightPlan.performanceData.cruiseFlightLevel.pipe(this.crzFl),
-            this.loadedFlightPlan.performanceData.costIndex.pipe(this.costIndex),
-            this.loadedFlightPlan.performanceData.takeoffShift.pipe(this.toShift),
-            this.loadedFlightPlan.performanceData.flexTakeoffTemperature.pipe(this.toFlexTemp),
-            this.loadedFlightPlan.performanceData.v1.pipe(this.toV1),
-            this.loadedFlightPlan.performanceData.vr.pipe(this.toVR),
-            this.loadedFlightPlan.performanceData.v2.pipe(this.toV2),
-            this.loadedFlightPlan.performanceData.takeoffFlaps.pipe(this.takeoffFlaps),
-            this.loadedFlightPlan.performanceData.transitionAltitude.pipe(this.transAlt),
-            this.loadedFlightPlan.performanceData.transitionAltitudeIsFromDatabase.pipe(
-              this.transitionAltitudeIsFromDatabase,
-            ),
-            this.loadedFlightPlan.performanceData.transitionLevel.pipe(this.transFl),
-            this.loadedFlightPlan.performanceData.transitionLevelIsFromDatabase.pipe(
-              this.transitionLevelIsFromDatabase,
-            ),
-            this.loadedFlightPlan.performanceData.thrustReductionAltitude.pipe(this.thrRedAlt),
-            this.loadedFlightPlan.performanceData.thrustReductionAltitudeIsPilotEntered.pipe(
-              this.thrRedAltIsPilotEntered,
-            ),
-            this.loadedFlightPlan.performanceData.accelerationAltitude.pipe(this.accelAlt),
-            this.loadedFlightPlan.performanceData.accelerationAltitudeIsPilotEntered.pipe(this.accelAltIsPilotEntered),
-            this.loadedFlightPlan.performanceData.engineOutAccelerationAltitude.pipe(this.eoAccelAlt),
-            this.loadedFlightPlan.performanceData.engineOutAccelerationAltitudeIsPilotEntered.pipe(
-              this.eoAccelAltIsPilotEntered,
-            ),
-            this.loadedFlightPlan.performanceData.missedThrustReductionAltitude.pipe(this.missedThrRedAlt),
-            this.loadedFlightPlan.performanceData.missedThrustReductionAltitudeIsPilotEntered.pipe(
-              this.missedThrRedAltIsPilotEntered,
-            ),
-            this.loadedFlightPlan.performanceData.missedAccelerationAltitude.pipe(this.missedAccelAlt),
-            this.loadedFlightPlan.performanceData.missedAccelerationAltitudeIsPilotEntered.pipe(
-              this.missedAccelRedAltIsPilotEntered,
-            ),
-            this.loadedFlightPlan.performanceData.missedEngineOutAccelerationAltitude.pipe(
-              this.missedEngineOutAccelAlt,
-            ),
-            this.loadedFlightPlan.performanceData.missedEngineOutAccelerationAltitudeIsPilotEntered.pipe(
-              this.missedEngineOutAccelAltIsPilotEntered,
-            ),
-
-            this.loadedFlightPlan.performanceData.approachWindDirection.pipe(this.approachWindDirection),
-            this.loadedFlightPlan.performanceData.approachWindMagnitude.pipe(this.approachWindMagnitude),
-            this.loadedFlightPlan.performanceData.approachTemperature.pipe(this.approachTemperature),
-            this.loadedFlightPlan.performanceData.approachQnh.pipe(this.approachQnh),
-            this.loadedFlightPlan.performanceData.approachBaroMinimum.pipe(this.approachBaroMinimum),
-            this.loadedFlightPlan.performanceData.approachRadioMinimum.pipe(this.approachRadioMinimum),
-            this.loadedFlightPlan.performanceData.pilotVapp.pipe(this.pilotVapp),
-            this.loadedFlightPlan.performanceData.approachFlapsThreeSelected.pipe(this.apprFlaps3Selected),
-
-            this.loadedFlightPlan.performanceData.costIndexMode!.pipe(this.costIndexMode),
-            this.loadedFlightPlan.performanceData.takeoffPowerSetting!.pipe(this.takeoffPowerSetting),
-            this.loadedFlightPlan.performanceData.takeoffDeratedSetting!.pipe(this.takeoffDerated),
-            this.loadedFlightPlan.performanceData.takeoffThsFor!.pipe(this.takeoffThsFor),
-            this.loadedFlightPlan.performanceData.takeoffPacks!.pipe(this.takeoffPacks),
-            this.loadedFlightPlan.performanceData.takeoffAntiIce!.pipe(this.takeoffAntiIce),
-            this.loadedFlightPlan.performanceData.noiseEndAltitude!.pipe(this.noiseEndAltitude),
-            this.loadedFlightPlan.performanceData.noiseN1!.pipe(this.noiseN1),
-            this.loadedFlightPlan.performanceData.noiseSpeed!.pipe(this.noiseSpeed),
-            this.loadedFlightPlan.performanceData.noiseEnabled!.pipe(this.noiseEnabled),
-            this.loadedFlightPlan.performanceData.climbDerated!.pipe(this.climbDerated),
-            this.loadedFlightPlan.performanceData.descentCabinRate!.pipe(this.descentCabinRate),
-            this.loadedFlightPlan.performanceData.preselectedClimbSpeed!.pipe(this.climbPreselectedSpeed),
-            this.loadedFlightPlan.performanceData.preselectedCruiseSpeed!.pipe(this.cruisePreselectedSpeed),
-          );
         }
-      }, true),
-    );
+      }, true)),
+      this.subs.push(
+        this.flightPlanChangeNotifier.flightPlanChanged.sub(() => {
+          if (this.loadedFlightPlan) {
+            this.subs.push(
+              this.loadedFlightPlan.performanceData.cruiseFlightLevel.pipe(this.crzFl),
+              this.loadedFlightPlan.performanceData.costIndex.pipe(this.costIndex),
+              this.loadedFlightPlan.performanceData.takeoffShift.pipe(this.toShift),
+              this.loadedFlightPlan.performanceData.flexTakeoffTemperature.pipe(this.toFlexTemp),
+              this.loadedFlightPlan.performanceData.v1.pipe(this.toV1),
+              this.loadedFlightPlan.performanceData.vr.pipe(this.toVR),
+              this.loadedFlightPlan.performanceData.v2.pipe(this.toV2),
+              this.loadedFlightPlan.performanceData.takeoffFlaps.pipe(this.takeoffFlaps),
+              this.loadedFlightPlan.performanceData.transitionAltitude.pipe(this.transAlt),
+              this.loadedFlightPlan.performanceData.transitionAltitudeIsFromDatabase.pipe(
+                this.transitionAltitudeIsFromDatabase,
+              ),
+              this.loadedFlightPlan.performanceData.transitionLevel.pipe(this.transFl),
+              this.loadedFlightPlan.performanceData.transitionLevelIsFromDatabase.pipe(
+                this.transitionLevelIsFromDatabase,
+              ),
+              this.loadedFlightPlan.performanceData.thrustReductionAltitude.pipe(this.thrRedAlt),
+              this.loadedFlightPlan.performanceData.thrustReductionAltitudeIsPilotEntered.pipe(
+                this.thrRedAltIsPilotEntered,
+              ),
+              this.loadedFlightPlan.performanceData.accelerationAltitude.pipe(this.accelAlt),
+              this.loadedFlightPlan.performanceData.accelerationAltitudeIsPilotEntered.pipe(
+                this.accelAltIsPilotEntered,
+              ),
+              this.loadedFlightPlan.performanceData.engineOutAccelerationAltitude.pipe(this.eoAccelAlt),
+              this.loadedFlightPlan.performanceData.engineOutAccelerationAltitudeIsPilotEntered.pipe(
+                this.eoAccelAltIsPilotEntered,
+              ),
+              this.loadedFlightPlan.performanceData.missedThrustReductionAltitude.pipe(this.missedThrRedAlt),
+              this.loadedFlightPlan.performanceData.missedThrustReductionAltitudeIsPilotEntered.pipe(
+                this.missedThrRedAltIsPilotEntered,
+              ),
+              this.loadedFlightPlan.performanceData.missedAccelerationAltitude.pipe(this.missedAccelAlt),
+              this.loadedFlightPlan.performanceData.missedAccelerationAltitudeIsPilotEntered.pipe(
+                this.missedAccelRedAltIsPilotEntered,
+              ),
+              this.loadedFlightPlan.performanceData.missedEngineOutAccelerationAltitude.pipe(
+                this.missedEngineOutAccelAlt,
+              ),
+              this.loadedFlightPlan.performanceData.missedEngineOutAccelerationAltitudeIsPilotEntered.pipe(
+                this.missedEngineOutAccelAltIsPilotEntered,
+              ),
+
+              this.loadedFlightPlan.performanceData.approachWindDirection.pipe(this.approachWindDirection),
+              this.loadedFlightPlan.performanceData.approachWindMagnitude.pipe(this.approachWindMagnitude),
+              this.loadedFlightPlan.performanceData.approachTemperature.pipe(this.approachTemperature),
+              this.loadedFlightPlan.performanceData.approachQnh.pipe(this.approachQnh),
+              this.loadedFlightPlan.performanceData.approachBaroMinimum.pipe(this.approachBaroMinimum),
+              this.loadedFlightPlan.performanceData.approachRadioMinimum.pipe(this.approachRadioMinimum),
+              this.loadedFlightPlan.performanceData.pilotVapp.pipe(this.pilotVapp),
+              this.loadedFlightPlan.performanceData.approachFlapsThreeSelected.pipe(this.apprFlaps3Selected),
+
+              this.loadedFlightPlan.performanceData.costIndexMode!.pipe(this.costIndexMode),
+              this.loadedFlightPlan.performanceData.takeoffPowerSetting!.pipe(this.takeoffPowerSetting),
+              this.loadedFlightPlan.performanceData.takeoffDeratedSetting!.pipe(this.takeoffDerated),
+              this.loadedFlightPlan.performanceData.takeoffThsFor!.pipe(this.takeoffThsFor),
+              this.loadedFlightPlan.performanceData.takeoffPacks!.pipe(this.takeoffPacks),
+              this.loadedFlightPlan.performanceData.takeoffAntiIce!.pipe(this.takeoffAntiIce),
+              this.loadedFlightPlan.performanceData.noiseEndAltitude!.pipe(this.noiseEndAltitude),
+              this.loadedFlightPlan.performanceData.noiseN1!.pipe(this.noiseN1),
+              this.loadedFlightPlan.performanceData.noiseSpeed!.pipe(this.noiseSpeed),
+              this.loadedFlightPlan.performanceData.noiseEnabled!.pipe(this.noiseEnabled),
+              this.loadedFlightPlan.performanceData.climbDerated!.pipe(this.climbDerated),
+              this.loadedFlightPlan.performanceData.descentCabinRate!.pipe(this.descentCabinRate),
+              this.loadedFlightPlan.performanceData.preselectedClimbSpeed!.pipe(this.climbPreselectedSpeed),
+              this.loadedFlightPlan.performanceData.preselectedCruiseSpeed!.pipe(this.cruisePreselectedSpeed),
+            );
+          }
+          if (this.loadedFlightPlan && this.loadedFlightPlanIndex.get() === FlightPlanIndex.Active) {
+            this.vdevSub!.resume();
+          } else {
+            this.vdevSub!.pause();
+            this.apprVerticalDeviation.set('+-----');
+          }
+        }, true),
+      );
 
     this.subs.push(
       this.mandatoryAndActiveFpln,
@@ -1216,6 +1240,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       this.activateApprButtonVisibility,
       this.transAltIsPilotEntered,
       this.transFlIsPilotEntered,
+      this.vdevSub,
     );
   }
 

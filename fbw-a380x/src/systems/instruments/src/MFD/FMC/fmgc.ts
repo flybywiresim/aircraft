@@ -191,16 +191,18 @@ export class FmgcDataService implements Fmgc {
   }
 
   /** in knots */
-  getManagedClimbSpeed(): number {
-    if (this.flightPlanService.has(FlightPlanIndex.Active)) {
-      const dCI = ((this.flightPlanService.active.performanceData.costIndex.get() ?? 100) / 999) ** 2;
+  getManagedClimbSpeed(forPlan = FlightPlanIndex.Active): number {
+    const ci = this.flightPlanService.get(forPlan).performanceData.costIndex.get();
+    if (ci !== null) {
+      const dCI = (ci / 999) ** 2;
       return 290 * (1 - dCI) + 330 * dCI;
     }
     return 250;
   }
 
   /** in mach */
-  getManagedClimbSpeedMach(): number {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  getManagedClimbSpeedMach(forPlan = FlightPlanIndex.Active): number {
     /* // Assume FL270 as crossover point
         const pressure = AeroMath.isaPressure(UnitType.METER.convertFrom(27_000, UnitType.FOOT));
         const mach = AeroMath.casToMach(UnitType.MPS.convertFrom(this.getManagedClimbSpeed(), UnitType.KNOT), pressure);
@@ -237,50 +239,36 @@ export class FmgcDataService implements Fmgc {
       : undefined;
   }
 
-  /**
-   *
-   * @returns flight level in steps of 100ft (e.g. 320 instead of 32000 for FL320)
-   */
-  getCruiseAltitude(): number {
-    return this.flightPlanService.has(FlightPlanIndex.Active)
-      ? this.flightPlanService?.active.performanceData.cruiseFlightLevel.get() ?? 320
-      : 320;
-  }
-
   getFlightPhase(): FmgcFlightPhase {
     return SimVar.GetSimVarValue('L:A32NX_FMGC_FLIGHT_PHASE', 'Enum');
   }
 
   /** in knots */
-  getManagedCruiseSpeed(): number {
-    const preSel = this.flightPlanService?.active.performanceData.preselectedCruiseSpeed.get();
-    if (Number.isFinite(preSel) && preSel !== null) {
-      return preSel;
-    }
-
+  getManagedCruiseSpeed(forPlan = FlightPlanIndex.Active): number {
+    const preSel = this.flightPlanService?.get(forPlan).performanceData.preselectedCruiseSpeed.get();
+    return preSel ?? 310;
     // FIXME need to rework the cost index based speed calculations
     /* if (this.flightPlanService.has(FlightPlanIndex.Active)) {
       const dCI = ((this.flightPlanService.active.performanceData.costIndex.get() ?? 100) / 999) ** 2;
       return 290 * (1 - dCI) + 330 * dCI;
-    }*/
-    return 310;
+      */
   }
 
   /** in mach */
-  getManagedCruiseSpeedMach(): number {
+  getManagedCruiseSpeedMach(forPlan = FlightPlanIndex.Active): number {
     /* const pressure = AeroMath.isaPressure(UnitType.METER.convertFrom(this.getCruiseAltitude() * 100, UnitType.FOOT));
         const mach = AeroMath.casToMach(UnitType.MPS.convertFrom(this.getManagedCruiseSpeed(), UnitType.KNOT), pressure);
         return mach; */
     // Return static mach number for now, ECON speed calculation is not mature enough
-    return this.flightPlanService?.active.performanceData.preselectedCruiseSpeed.get() ?? 0.85;
+    return this.flightPlanService?.get(forPlan).performanceData.preselectedCruiseSpeed.get() ?? 0.85;
   }
 
-  getClimbSpeedLimit(): SpeedLimit | null {
-    if (!this.flightPlanService.has(FlightPlanIndex.Active)) {
+  getClimbSpeedLimit(fpIndex = FlightPlanIndex.Active): SpeedLimit | null {
+    if (!this.flightPlanService.has(fpIndex)) {
       return null;
     }
-    const speedLimitSpeed = this.flightPlanService.active.performanceData.climbSpeedLimitSpeed.get();
-    const speedLimitAltitude = this.flightPlanService.active.performanceData.climbSpeedLimitAltitude.get();
+    const speedLimitSpeed = this.flightPlanService.get(fpIndex).performanceData.climbSpeedLimitSpeed.get();
+    const speedLimitAltitude = this.flightPlanService.get(fpIndex).performanceData.climbSpeedLimitAltitude.get();
     if (speedLimitSpeed && speedLimitAltitude) {
       return {
         speed: speedLimitSpeed,
@@ -290,12 +278,12 @@ export class FmgcDataService implements Fmgc {
     return null;
   }
 
-  getDescentSpeedLimit(): SpeedLimit | null {
-    if (!this.flightPlanService.has(FlightPlanIndex.Active)) {
+  getDescentSpeedLimit(fpIndex = FlightPlanIndex.Active): SpeedLimit | null {
+    if (!this.flightPlanService.has(fpIndex)) {
       return null;
     }
-    const speedLimitSpeed = this.flightPlanService.active.performanceData.descentSpeedLimitSpeed.get();
-    const speedLimitAltitude = this.flightPlanService.active.performanceData.descentSpeedLimitAltitude.get();
+    const speedLimitSpeed = this.flightPlanService.get(fpIndex).performanceData.descentSpeedLimitSpeed.get();
+    const speedLimitAltitude = this.flightPlanService.get(fpIndex).performanceData.descentSpeedLimitAltitude.get();
     if (speedLimitSpeed && speedLimitAltitude) {
       return {
         speed: speedLimitSpeed,
@@ -317,27 +305,22 @@ export class FmgcDataService implements Fmgc {
     return this.flightPlanService?.active.performanceData.preselectedCruiseSpeed.get() ?? 0;
   }
 
-  /** in knots */
-  getPreSelectedDescentSpeed(): number {
-    // FIXME fmgc interface should also accept null
-    return this.flightPlanService?.active.performanceData.pilotManagedDescentSpeed.get() ?? 0;
-  }
-
   getTakeoffFlapsSetting(): FlapConf | undefined {
     return this.flightPlanService.active.performanceData.takeoffFlaps.get();
   }
 
   /** in knots */
-  getManagedDescentSpeed(): number {
-    const preselectedDescentSpeed = this.flightPlanService?.active.performanceData.pilotManagedDescentSpeed.get();
+  getManagedDescentSpeed(forPlan = FlightPlanIndex.Active): number {
+    const pd = this.flightPlanService.get(forPlan).performanceData;
+    const preselectedDescentSpeed = pd.pilotManagedDescentSpeed.get();
     if (preselectedDescentSpeed !== null) {
       return preselectedDescentSpeed;
     }
     // TODO adapt for A380
-    if (this.flightPlanService.has(FlightPlanIndex.Active)) {
-      const ci = this.flightPlanService.active.performanceData.costIndex.get();
+    if (this.flightPlanService.has(forPlan)) {
+      const ci = pd.costIndex.get();
       if (ci !== null) {
-        const dCI = (this.flightPlanService.active.performanceData.costIndex.get() ?? 100) / 999;
+        const dCI = ci / 999;
         return Math.round(288 * (1 - dCI) + 300 * dCI);
       }
     }
@@ -345,13 +328,13 @@ export class FmgcDataService implements Fmgc {
   }
 
   /** in mach */
-  getManagedDescentSpeedMach(): number {
+  getManagedDescentSpeedMach(forPlan = FlightPlanIndex.Active): number {
     /* // Assume FL270 as crossover point
         const pressure = AeroMath.isaPressure(UnitType.METER.convertFrom(27_000, UnitType.FOOT));
         const mach = AeroMath.casToMach(UnitType.MPS.convertFrom(this.getManagedClimbSpeed(), UnitType.KNOT), pressure);
         return mach; */
     // Return static mach number for now, ECON speed calculation is not mature enough
-    return 0.84;
+    return this.flightPlanService.get(forPlan).performanceData.pilotManagedDescentMach.get() ?? 0.84;
   }
 
   /** in knots */
