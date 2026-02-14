@@ -103,9 +103,13 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
   private readonly costIndexMode = Subject.create<CostIndexMode | null>(null);
 
   private readonly costIndexDisabled = MappedSubject.create(
-    ([flightPhase, ciMode]) => flightPhase >= FmgcFlightPhase.Descent || ciMode === CostIndexMode.LRC,
+    ([flightPhase, ciMode, fpIndex]) =>
+      ciMode == CostIndexMode.LRC ||
+      (flightPhase >= FmgcFlightPhase.Descent &&
+        this.props.flightPlanInterface.get(fpIndex).isActiveOrCopiedFromActive()),
     this.activeFlightPhase,
     this.costIndexMode,
+    this.loadedFlightPlanIndex,
   );
 
   private readonly jettisonGrossWeight = Subject.create<number | null>(null);
@@ -135,7 +139,13 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
 
   private readonly blockLineRef = FSComponent.createRef<HTMLDivElement>();
 
-  private readonly flightPhaseAtLeastTakeoff = this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff);
+  private readonly taxiAndRouteRsvDisabled = MappedSubject.create(
+    ([flightPhase, fpIndex]) =>
+      flightPhase >= FmgcFlightPhase.Takeoff &&
+      this.props.flightPlanInterface.get(fpIndex).isActiveOrCopiedFromActive(),
+    this.activeFlightPhase,
+    this.loadedFlightPlanIndex,
+  );
 
   private readonly alternateExists = Subject.create(true);
   private readonly alternateFuelDisabled = this.alternateExists.map((v) => !v);
@@ -335,7 +345,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
       this.altnEfobText,
       this.extraFuelWeightText,
       this.extraFuelTimeText,
-      this.flightPhaseAtLeastTakeoff,
+      this.taxiAndRouteRsvDisabled,
       this.costIndexDisabled,
     );
   }
@@ -458,7 +468,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                     }
                     enteredByPilot={this.taxiFuelIsPilotEntered}
                     readonlyValue={this.taxiFuel}
-                    disabled={this.flightPhaseAtLeastTakeoff}
+                    disabled={this.taxiAndRouteRsvDisabled}
                     alignText="flex-end"
                     containerStyle="width: 150px;"
                     errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
@@ -480,7 +490,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 <div class="mfd-label mfd-spacing-right middleGrid">RTE RSV</div>
                 <div style="margin-bottom: 20px;">
                   <InputField<number, number, false>
-                    disabled={this.flightPhaseAtLeastTakeoff}
+                    disabled={this.taxiAndRouteRsvDisabled}
                     dataEntryFormat={
                       new WeightFormat(
                         Subject.create(AirlineModifiableInformation.EK.rsvMin / 1_000),
@@ -511,7 +521,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 </div>
                 <div style="margin-bottom: 20px; margin-left: 5px">
                   <InputField<number, number, false>
-                    disabled={this.flightPhaseAtLeastTakeoff}
+                    disabled={this.taxiAndRouteRsvDisabled}
                     dataEntryFormat={new PercentageFormat(Subject.create(0), Subject.create(maxRteRsvFuelPerc))}
                     dataHandlerDuringValidation={async (v) => {
                       this.props.flightPlanInterface.setPerformanceData(

@@ -60,11 +60,16 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
   private readonly toIcao = Subject.create<string | null>(null);
 
   private readonly cityPairDisabled = MappedSubject.create(
-    ([fp, tmpy, fromIcao, toIcao]) => (fp > FmgcFlightPhase.Preflight && (!fromIcao || !toIcao)) || tmpy,
+    ([fp, tmpy, fromIcao, toIcao, fpIndex]) =>
+      (fp > FmgcFlightPhase.Preflight &&
+        (fromIcao || toIcao) &&
+        this.props.flightPlanInterface.get(fpIndex).isActiveOrCopiedFromActive()) ||
+      tmpy,
     this.activeFlightPhase,
     this.tmpyActive,
     this.fromIcao,
     this.toIcao,
+    this.loadedFlightPlanIndex,
   );
 
   private readonly altnIcao = Subject.create<string | null>(null);
@@ -90,12 +95,17 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
   private readonly costIndexModeLabels = ArraySubject.create(['LRC', 'ECON']);
 
   private readonly costIndexDisabled = MappedSubject.create(
-    ([toIcao, fromIcao, flightPhase, ciMode]) =>
-      !toIcao || !fromIcao || flightPhase >= FmgcFlightPhase.Descent || ciMode === CostIndexMode.LRC,
+    ([toIcao, fromIcao, flightPhase, ciMode, fpIndex]) =>
+      !toIcao ||
+      !fromIcao ||
+      ciMode === CostIndexMode.LRC ||
+      (flightPhase >= FmgcFlightPhase.Descent &&
+        this.props.flightPlanInterface.get(fpIndex).isActiveOrCopiedFromActive()),
     this.fromIcao,
     this.toIcao,
     this.activeFlightPhase,
     this.costIndexMode,
+    this.loadedFlightPlanIndex,
   );
 
   private readonly tropopause = Subject.create<number | null>(null);
