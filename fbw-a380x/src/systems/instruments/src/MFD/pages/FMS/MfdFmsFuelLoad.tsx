@@ -170,44 +170,32 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
   }
 
   updateDestAndAltnPredictions() {
-    if (
-      !this.props.fmcService.master ||
-      !this.loadedFlightPlan ||
-      !(this.loadedFlightPlanIndex.get() === FlightPlanIndex.Active)
-    ) {
+    if (!this.props.fmcService.master || !this.loadedFlightPlan) {
       return;
     }
 
+    const fpIndex = this.loadedFlightPlanIndex.get();
     if (this.loadedFlightPlan.destinationAirport) {
       this.destIcao.set(this.loadedFlightPlan.destinationAirport.ident);
-      const destPred = this.props.fmcService.master.guidanceController.vnavDriver.getDestinationPrediction();
 
-      if (this.loadedFlightPlanIndex.get() < FlightPlanIndex.Uplink) {
-        // TODO Should display ETA if EET present
-        this.destEta.set(
-          getEtaFromUtcOrPresent(
-            destPred?.secondsFromPresent,
-            this.activeFlightPhase.get() == FmgcFlightPhase.Preflight,
-          ),
-        );
-        const destEfob = this.props.fmcService.master.fmgc.getDestEFOB(true, this.loadedFlightPlanIndex.get());
-        this.destEfob.set(destEfob !== null ? destEfob.toFixed(1) : '---.-');
-      } else {
-        this.destEta.set('--:--');
-        this.destEfob.set('---.-');
-      }
+      // TODO SEC predictions
+      const destPred =
+        fpIndex === FlightPlanIndex.Active || fpIndex === FlightPlanIndex.Temporary
+          ? this.props.fmcService.master.guidanceController.vnavDriver.getDestinationPrediction()
+          : null;
+      // TODO Should display ETA if EET present
+      this.destEta.set(
+        getEtaFromUtcOrPresent(destPred?.secondsFromPresent, this.activeFlightPhase.get() == FmgcFlightPhase.Preflight),
+      );
+      const destEfob = this.props.fmcService.master.fmgc.getDestEFOB(true, this.loadedFlightPlanIndex.get());
+      this.destEfob.set(destEfob !== null ? destEfob.toFixed(1) : '---.-');
     }
 
-    if (this.props.flightPlanInterface.get(this.loadedFlightPlanIndex.get()).alternateDestinationAirport) {
-      this.altnIcao.set(
-        this.props.flightPlanInterface.get(this.loadedFlightPlanIndex.get()).alternateDestinationAirport.ident,
-      );
+    const fp = this.props.flightPlanInterface.get(this.loadedFlightPlanIndex.get());
+    if (fp.alternateDestinationAirport) {
+      this.altnIcao.set(fp.alternateDestinationAirport.ident);
       this.altnEta.set('--:--');
-      this.altnEfob.set(
-        this.loadedFlightPlanIndex.get() < FlightPlanIndex.Uplink
-          ? this.props.fmcService.master.fmgc.getAltEFOB(this.loadedFlightPlanIndex.get())
-          : null,
-      );
+      this.altnEfob.set(this.props.fmcService.master.fmgc.getAltEFOB(fpIndex));
     } else {
       this.altnIcao.set('NONE');
       this.altnEta.set('--:--');
@@ -230,6 +218,8 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
           }
 
           const loadedfpIndex = this.loadedFlightPlanIndex.get();
+          const fp = this.props.flightPlanInterface.get(loadedfpIndex);
+          this.alternateExists.set(fp.alternateDestinationAirport !== undefined);
           const pd = this.loadedFlightPlan!.performanceData;
           this.landingWeight.set(this.props.fmcService.master.getLandingWeight(loadedfpIndex));
           this.takeoffWeight.set(this.props.fmcService.master.getTakeoffWeight(loadedfpIndex));
@@ -250,16 +240,6 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
               caclulatedRteRsvPercentage = pd.routeReserveFuelPercentage.get();
             }
             this.routeReserveFuelPercentage.set(caclulatedRteRsvPercentage);
-          }
-          // Calculate final fuel time.
-          if (pd.isFinalHoldingFuelPilotEntered.get()) {
-            const finalFuel = pd.pilotFinalHoldingFuel.get();
-            this.finalFuel.set(finalFuel);
-            this.finalFuelTime.set(finalFuel !== null ? finalFuel / 0.2 : null); // FIX ME this should come from predictions
-          } else {
-            const finalTime = pd.finalHoldingTime.get();
-            this.finalFuelTime.set(finalTime);
-            this.finalFuel.set(finalTime !== null ? finalTime * 0.2 : null); // FIX ME this should come from predictions
           }
 
           if (!this.props.fmcService.master.enginesWereStarted.get()) {
@@ -327,8 +307,10 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             ),
             this.loadedFlightPlan.performanceData.alternateFuel.pipe(this.alternateFuel),
             this.loadedFlightPlan.performanceData.isAlternateFuelPilotEntered.pipe(this.alternateFuelIsPilotEntered),
+            this.loadedFlightPlan.performanceData.finalHoldingTime.pipe(this.finalFuelTime),
             this.loadedFlightPlan.performanceData.isFinalHoldingFuelPilotEntered.pipe(this.finalFuelIsPilotEntered),
             this.loadedFlightPlan.performanceData.isFinalHoldingTimePilotEntered.pipe(this.finalFuelTimeIsPilotEntered),
+            this.loadedFlightPlan.performanceData.finalHoldingFuel.pipe(this.finalFuel),
 
             this.loadedFlightPlan.performanceData.minimumDestinationFuelOnBoard.pipe(this.minimumFuelAtDestination),
             this.loadedFlightPlan.performanceData.isMinimumDestinationFuelOnBoardPilotEntered.pipe(
@@ -337,7 +319,6 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
 
             this.loadedFlightPlan.performanceData.paxNumber!.pipe(this.paxNumber),
             this.loadedFlightPlan.performanceData.costIndexMode!.pipe(this.costIndexMode),
-            this.loadedFlightPlan.performanceData.alternateExists!.pipe(this.alternateExists),
           );
         }
       }, true),
@@ -390,7 +371,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 <span class="mfd-label-unit mfd-unit-trailing">T</span>
               </div>
             </div>
-            <div style="display: flex; flex-direction: row; margin-bottom: 15px; align-items: center; ">
+            <div style="display: flex; flex-direction: row; margin-bottom: 15px; align-items: center;">
               <div class="mfd-label mfd-spacing-right fuelLoad">ZFW</div>
               <InputField<number, number, false>
                 dataEntryFormat={new WeightFormat(Subject.create(minZfw / 1_000), Subject.create(maxZfw / 1_000))}
@@ -529,7 +510,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                     interactionMode={this.props.mfd.interactionMode}
                   />
                 </div>
-                <div style="margin-bottom: 20px; margin-left: 5px">
+                <div style="margin-bottom: 20px; margin-left: 5px;">
                   <InputField<number, number, false>
                     disabled={this.taxiAndRouteRsvDisabled}
                     dataEntryFormat={new PercentageFormat(Subject.create(0), Subject.create(maxRteRsvFuelPerc))}
@@ -661,7 +642,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                     selectedIndex={this.costIndexMode}
                     idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_initCostIndexModeDropdown`}
                     freeTextAllowed={false}
-                    containerStyle="width: 175px; margin-right: 65px; "
+                    containerStyle="width: 175px; margin-right: 65px;"
                     numberOfDigitsForInputField={7}
                     alignLabels="center"
                     hEventConsumer={this.props.mfd.hEventConsumer}
@@ -689,20 +670,23 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                     interactionMode={this.props.mfd.interactionMode}
                   />
                 </div>
-                <div style={{ visibility: this.jettisonGrossWeightVisibility }}>
-                  <div class="mfd-label mfd-spacing-right middleGridSmall">JTSN GW</div>
-                  <div style="margin-bottom: 10px;">
-                    <InputField<number, number, false>
-                      dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxJtsnGw / 1_000))}
-                      disabled={Subject.create(true)}
-                      readonlyValue={this.jettisonGrossWeight}
-                      alignText="flex-end"
-                      containerStyle="width: 150px;"
-                      errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
-                      hEventConsumer={this.props.mfd.hEventConsumer}
-                      interactionMode={this.props.mfd.interactionMode}
-                    />
-                  </div>
+                <div
+                  class="mfd-label mfd-spacing-right middleGridSmall"
+                  style={{ visibility: this.jettisonGrossWeightVisibility }}
+                >
+                  JTSN GW
+                </div>
+                <div style={{ 'margin-bottom': '10px', visibility: this.jettisonGrossWeightVisibility }}>
+                  <InputField<number, number, false>
+                    dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxJtsnGw / 1_000))}
+                    disabled={Subject.create(true)}
+                    readonlyValue={this.jettisonGrossWeight}
+                    alignText="flex-end"
+                    containerStyle="width: 150px;"
+                    errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                    hEventConsumer={this.props.mfd.hEventConsumer}
+                    interactionMode={this.props.mfd.interactionMode}
+                  />
                 </div>
                 <div class="mfd-label mfd-spacing-right middleGridSmall">TOW</div>
                 <div class="mfd-label-value-container" style="justify-content: center; margin-bottom: 10px;">
@@ -732,7 +716,8 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   <div class="mfd-label mfd-fms-fuel-load-dest-grid-middle-cell">DEST</div>
                   <div
                     class={{
-                      'mfd-label bigger': true,
+                      'mfd-label': true,
+                      bigger: true,
                       green: this.mandatoryAndActiveFpln,
                       sec: this.secActive,
                       'mfd-fms-fuel-load-dest-grid-middle-cell': true,
@@ -742,7 +727,8 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   </div>
                   <div
                     class={{
-                      'mfd-label bigger': true,
+                      'mfd-label': true,
+                      bigger: true,
                       green: this.mandatoryAndActiveFpln,
                       sec: this.secActive,
                       'mfd-fms-fuel-load-dest-grid-middle-cell': true,
@@ -755,7 +741,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                       class={{
                         'mfd-value': true,
                         amber: this.destEfobAmber,
-                        white: this.secActive,
+                        sec: this.secActive,
                       }}
                     >
                       {this.destEfob}
@@ -765,14 +751,20 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   <div class="mfd-label" style="text-align: center; align-self: center;">
                     ALTN
                   </div>
-                  <div class="mfd-label bigger green" style="text-align: center; align-self: center;">
+                  <div
+                    class={{ 'mfd-label': true, bigger: true, green: this.mandatoryAndActiveFpln, sec: this.secActive }}
+                    style="text-align: center; align-self: center;"
+                  >
                     {this.altnIcao}
                   </div>
-                  <div class="mfd-label bigger green" style="text-align: center; align-self: center;">
+                  <div
+                    class={{ 'mfd-label': true, bigger: true, green: this.mandatoryAndActiveFpln, sec: this.secActive }}
+                    style="text-align: center; align-self: center;"
+                  >
                     {this.altnEta}
                   </div>
                   <div class="mfd-label-value-container mfd-fms-fuel-load-dest-grid-efob-cell">
-                    <span class={{ 'mfd-value': true, white: this.secActive }}>{this.altnEfobText}</span>
+                    <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.altnEfobText}</span>
                     <span class="mfd-label-unit mfd-unit-trailing">T</span>
                   </div>
                 </div>

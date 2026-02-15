@@ -1,5 +1,5 @@
 ﻿// @ts-strict-ignore
-// Copyright (c) 2021-2025 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -17,8 +17,11 @@ import {
 export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData {
   private readonly subscriptions: Map<keyof FlightPlanPerformanceDataProperties & string, Subscription> = new Map();
 
-  constructor(defaultTaxiFuel = 0.2) {
+  constructor(defaultTaxiFuel = 0.2, defaultAlternateFuel?: number) {
     this.defaultTaxiFuel.set(defaultTaxiFuel);
+    if (defaultAlternateFuel !== undefined) {
+      this.calculatedAlternateFuel.set(defaultAlternateFuel);
+    }
   }
 
   public clone(): this {
@@ -635,7 +638,16 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
    */
   readonly pilotAlternateFuel = Subject.create<number | null>(null);
 
-  readonly alternateFuel = this.pilotAlternateFuel.map((it) => it);
+  /**
+   * The calculated alternate fuel in tons calculated by predictions.
+   */
+  readonly calculatedAlternateFuel = Subject.create<number | null>(null);
+
+  readonly alternateFuel = MappedSubject.create(
+    ([pilotAlternateFuel, calculatedAlternateFuel]) => pilotAlternateFuel ?? calculatedAlternateFuel,
+    this.pilotAlternateFuel,
+    this.calculatedAlternateFuel,
+  );
   readonly isAlternateFuelPilotEntered = this.pilotAlternateFuel.map((it) => it !== null);
 
   /**
@@ -656,17 +668,22 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
    */
   readonly pilotFinalHoldingTime = Subject.create<number | null>(null);
 
-  /**
-   * The final holding time from the AMI database in minutes
-   */
+  /** The final holding time from the AMI database in minutes */
   readonly defaultFinalHoldingTime = Subject.create<number>(30);
+
+  /**
+   * The calculated final holding time in minutes, or null if not set.
+   */
+  readonly calculatedFinalHoldingTime = Subject.create<number | null>(null);
 
   /**
    * Returns the pilot entered final holding time in minutes if set, the AMI final holding time value otherwise
    */
   readonly finalHoldingTime = MappedSubject.create(
-    ([pilotFinalHoldingTime, defaultFinalHoldingTime]) => pilotFinalHoldingTime ?? defaultFinalHoldingTime,
+    ([pilotFinalHoldingTime, calculatedFinalHoldingTime, defaultFinalHoldingTime]) =>
+      pilotFinalHoldingTime ?? calculatedFinalHoldingTime ?? defaultFinalHoldingTime,
     this.pilotFinalHoldingTime,
+    this.calculatedFinalHoldingTime,
     this.defaultFinalHoldingTime,
   );
 
@@ -676,11 +693,36 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
   readonly isFinalHoldingTimePilotEntered = this.isFinalHoldingFuelPilotEntered.map((it) => !it);
 
   /**
+   * The calculated final holding fuel by predictions based on the final holding time.
+   */
+  readonly calculatedFinalHoldingFuel = Subject.create<number | null>(null);
+
+  readonly finalHoldingFuel = MappedSubject.create(
+    ([pilotFinalHoldingFuel, calculatedFinalHoldingFuel]) => pilotFinalHoldingFuel ?? calculatedFinalHoldingFuel,
+    this.pilotFinalHoldingFuel,
+    this.calculatedFinalHoldingFuel,
+  );
+
+  /**
    * The minimum fuel on board at the destination entered by the pilot in tonnes, or null if not set.
    */
   readonly pilotMinimumDestinationFuelOnBoard = Subject.create<number | null>(null);
 
-  readonly minimumDestinationFuelOnBoard = this.pilotMinimumDestinationFuelOnBoard.map((it) => it);
+  readonly calculatedMinimumDestinationFuelOnBoard = MappedSubject.create(
+    ([altnFuel, finalHoldingFuel]) => {
+      return altnFuel + finalHoldingFuel;
+    },
+    this.alternateFuel,
+    this.finalHoldingFuel,
+  );
+
+  readonly minimumDestinationFuelOnBoard = MappedSubject.create(
+    ([pilotEntry, calculated]) => {
+      return pilotEntry ?? calculated;
+    },
+    this.pilotMinimumDestinationFuelOnBoard,
+    this.calculatedMinimumDestinationFuelOnBoard,
+  );
 
   /**
    * Whether minimum fuel on board at the destination is pilot entered.

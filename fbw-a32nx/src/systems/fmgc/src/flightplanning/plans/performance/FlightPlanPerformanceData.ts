@@ -384,16 +384,9 @@ export interface FlightPlanPerformanceData {
   readonly pilotAlternateFuel: MutableSubscribable<number | null>;
 
   /**
-   * Whether an alternate exists.
-   * A380 specific
+   * The alternate fuel calculated by predictions in tonnes, or null if not set.
    */
-  readonly alternateExists?: MutableSubscribable<boolean>;
-
-  /**
-   * The alternate fuel calculated automatically, or null if not set.
-   * A380 specific
-   */
-  readonly defaultAlternateFuel?: Subscribable<number | null>;
+  readonly calculatedAlternateFuel: MutableSubscribable<number | null>;
 
   /**
    * Returns the pilot alternate fuel if set, the calculated value otherwise
@@ -413,6 +406,16 @@ export interface FlightPlanPerformanceData {
   readonly pilotFinalHoldingFuel: MutableSubscribable<number | null>;
 
   /**
+   * The final holding fuel calculated by predictions in tonnes, or null if not set.
+   */
+  readonly calculatedFinalHoldingFuel: MutableSubscribable<number | null>;
+
+  /**
+   * Returns the pilot entered final holding fuel if set, the calculated value otherwise
+   */
+  get finalHoldingFuel(): Subscribable<number | null>;
+
+  /**
    * Whether final holding fuel weight is pilot entered.
    */
   get isFinalHoldingFuelPilotEntered(): Subscribable<boolean>;
@@ -426,6 +429,11 @@ export interface FlightPlanPerformanceData {
    * The final holding time from the AMI database in minutes
    */
   readonly defaultFinalHoldingTime: MutableSubscribable<number>;
+
+  /**
+   * The final holding time calculated by predictions in minutes, or null if not set.
+   */
+  readonly calculatedFinalHoldingTime: MutableSubscribable<number | null>;
 
   /**
    * Returns the pilot entered final holding time in minutes if set, the AMI final holding time value otherwise
@@ -700,7 +708,6 @@ export interface SerializedFlightPlanPerformanceData {
   pilotRouteReserveFuelPercentage: number | null;
   defaultRouteReserveFuelPercentage: number;
   pilotAlternateFuel: number | null;
-  alternateExists?: boolean; // A380 specific
   pilotFinalHoldingFuel: number | null;
   pilotFinalHoldingTime: number | null;
   defaultFinalHoldingTime: number;

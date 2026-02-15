@@ -2116,16 +2116,16 @@ export class FmcAircraftInterface {
     if (destEfob !== null) {
       const minFuelAtDestination = this.flightPlanService.active.performanceData.minimumDestinationFuelOnBoard.get();
       if (minFuelAtDestination !== null) {
-        const isBelowMin = this.fmc.destEfobBelowMinInActive.get();
+        const isBelowMin = this.fmgc.data.destEfobBelowMinInActive.get();
         if (isBelowMin) {
-          this.fmc.destEfobBelowMinInActive.set(destEfob - minFuelAtDestination <= 0.3);
+          this.fmgc.data.destEfobBelowMinInActive.set(destEfob - minFuelAtDestination <= 0.3);
         } else {
-          this.fmc.destEfobBelowMinInActive.set(destEfob < minFuelAtDestination);
+          this.fmgc.data.destEfobBelowMinInActive.set(destEfob < minFuelAtDestination);
         }
         return;
       }
     }
-    this.fmc.destEfobBelowMinInActive.set(false);
+    this.fmgc.data.destEfobBelowMinInActive.set(false);
   }
 
   checkDestEfobBelowMinScratchPadMessage(deltaTime: number) {
@@ -2136,7 +2136,7 @@ export class FmcAircraftInterface {
     );
 
     this.destEfobBelowMinScratchPadMessage.set(
-      this.fmc.destEfobBelowMinInActive.get() &&
+      this.fmgc.data.destEfobBelowMinInActive.get() &&
         (flightPhase === FmgcFlightPhase.Cruise ||
           flightPhase === FmgcFlightPhase.Descent ||
           altActiveInClimbForMoreThan10Min ||
@@ -2153,6 +2153,26 @@ export class FmcAircraftInterface {
 
     if (this.fmgc.data.engineOut.get() && this.fmgc.isAllEngineOn()) {
       this.fmgc.data.engineOut.set(false);
+    }
+  }
+
+  calculateFinalAndAlternateFuel() {
+    const fp = this.flightPlanService.active;
+    const pd = fp.performanceData;
+
+    //FIX ME. All these should be derived from VNAV predictions
+    // Calculate alternate fuel
+    pd.calculatedAlternateFuel.set(fp.alternateDestinationAirport !== undefined ? 6.5 : 0);
+
+    // Calculate final fuel.
+    if (pd.isFinalHoldingFuelPilotEntered.get()) {
+      const finalFuel = pd.pilotFinalHoldingFuel.get();
+      pd.calculatedFinalHoldingTime.set(finalFuel !== null ? finalFuel / 0.2 : null);
+      pd.calculatedFinalHoldingFuel.set(null);
+    } else {
+      pd.calculatedFinalHoldingTime.set(null);
+      const finalTime = pd.finalHoldingTime.get();
+      pd.calculatedFinalHoldingFuel.set(finalTime !== null ? finalTime * 0.2 : null);
     }
   }
 }

@@ -21,7 +21,7 @@ import { MappedSubject, Subject } from '@microsoft/msfs-sdk';
 /** Uses A320FlightPlanPerformanceData and a basis and only extends attributes as necessary. */
 export class A380FlightPlanPerformanceData extends A320FlightPlanPerformanceData implements FlightPlanPerformanceData {
   constructor(defaultTaxiFuel = 1.5) {
-    super(defaultTaxiFuel);
+    super(defaultTaxiFuel, 0);
   }
 
   public clone(): this {
@@ -36,7 +36,6 @@ export class A380FlightPlanPerformanceData extends A320FlightPlanPerformanceData
     super.assignFieldsFromOriginal(cloned);
     cloned.cruiseTemperatureIsaTemp?.set(this.cruiseTemperatureIsaTemp.get());
     cloned.paxNumber?.set(this.paxNumber.get());
-    cloned.alternateExists?.set(this.alternateExists.get());
     cloned.takeoffPowerSetting?.set(this.takeoffPowerSetting.get());
     cloned.takeoffDeratedSetting?.set(this.takeoffDeratedSetting.get());
     cloned.takeoffThsFor?.set(this.takeoffThsFor.get());
@@ -62,23 +61,6 @@ export class A380FlightPlanPerformanceData extends A320FlightPlanPerformanceData
   );
 
   readonly paxNumber = Subject.create<number | null>(null);
-
-  readonly alternateExists = Subject.create(false);
-
-  readonly defaultAlternateFuel = this.alternateExists.map((v) => (v ? 6.5 : 0)); // FIXME Hardcoded value. Derive from FMS predictions.
-
-  readonly alternateFuel = MappedSubject.create(
-    ([calc, pe]) => (pe !== null ? pe : calc),
-    this.defaultAlternateFuel,
-    this.pilotAlternateFuel,
-  );
-
-  public readonly minimumFuelAtDestination = MappedSubject.create(
-    ([pe, ff, af]) => (pe === null && ff && af ? ff + af : pe),
-    this.pilotMinimumDestinationFuelOnBoard,
-    this.pilotFinalHoldingFuel,
-    this.alternateFuel,
-  );
 
   readonly takeoffPowerSetting = Subject.create<TakeoffPowerSetting>(TakeoffPowerSetting.TOGA);
 
@@ -116,7 +98,6 @@ export class A380FlightPlanPerformanceData extends A320FlightPlanPerformanceData
       ...superData,
       cruiseTemperatureIsaTemp: this.cruiseTemperatureIsaTemp.get(),
       paxNumber: this.paxNumber.get(),
-      alternateExists: this.alternateExists.get(),
       takeoffPowerSetting: this.takeoffPowerSetting.get(),
       takeoffDeratedSetting: this.takeoffDeratedSetting.get(),
       takeoffThsFor: this.takeoffThsFor.get(),

@@ -247,7 +247,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     this.distanceToDest.set(distanceToDestination ?? null);
 
     if (destPred && this.props.fmcService.master && this.loadedFlightPlanIndex.get() < FlightPlanIndex.Uplink) {
-      this.destEfobAmber.set(this.props.fmcService.master.fmgc.data.destEfobBelowMin.get());
+      this.destEfobAmber.set(this.props.fmcService.master.fmgc.data.destEfobBelowMinInActive.get());
       this.destTime.set(new Date(this.predictionTimestamp(destPred.secondsFromPresent)));
       this.destEfob.set(destPred.estimatedFuelOnBoard ?? null);
     } else {

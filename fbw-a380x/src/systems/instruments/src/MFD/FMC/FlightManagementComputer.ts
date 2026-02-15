@@ -270,24 +270,16 @@ export class FlightManagementComputer implements FmcInterface {
     this.approachWindMagnitude,
   );
 
-  private readonly minimumFuelAtDestinationPilotEntry = Subject.create<number | null>(null);
+  private readonly minimumDestinationFuel = Subject.create<number | null>(null);
   private readonly alternateFuel = Subject.create<number | null>(null);
-  private readonly pilotFinalFuelWeight = Subject.create<number | null>(null);
-  private readonly pilotFinalFuelTime = Subject.create<number | null>(null);
-  private readonly finalFuelWeight = MappedSubject.create(
-    ([weight, time]) => (weight ? weight : time ? (time * 9.3) / 60 : null),
-    this.pilotFinalFuelWeight,
-    this.pilotFinalFuelTime,
-  );
+  private readonly finalFuelWeight = Subject.create<number | null>(null);
   public readonly pilotEntryMinFuelBelowAltnPlusFinal = MappedSubject.create(
     ([minFuel, altnFuel, finalFuel]) =>
       minFuel != null && altnFuel != null && finalFuel != null && minFuel < altnFuel + finalFuel,
-    this.minimumFuelAtDestinationPilotEntry,
+    this.minimumDestinationFuel,
     this.alternateFuel,
     this.finalFuelWeight,
   );
-
-  public readonly destEfobBelowMinInActive = Subject.create(false);
 
   private destDataCheckedInCruise = false;
 
@@ -360,7 +352,6 @@ export class FlightManagementComputer implements FmcInterface {
     // When the active flight plan changes, re-pipe all related subjects
     this.subs.push(
       this.flightPlanChangeNotifier.flightPlanChanged.sub(() => this.onActiveFlightPlanChanged(), true),
-      this.finalFuelWeight,
       this.pilotEntryMinFuelBelowAltnPlusFinal,
     );
 
@@ -848,12 +839,9 @@ export class FlightManagementComputer implements FmcInterface {
         this.flightPlanInterface.active.performanceData.approachTemperature.pipe(this.approachTemperature),
         this.flightPlanInterface.active.performanceData.approachWindDirection.pipe(this.approachWindDirection),
         this.flightPlanInterface.active.performanceData.approachWindMagnitude.pipe(this.approachWindMagnitude),
-        this.flightPlanInterface.active.performanceData.minimumDestinationFuelOnBoard.pipe(
-          this.minimumFuelAtDestinationPilotEntry,
-        ),
+        this.flightPlanInterface.active.performanceData.minimumDestinationFuelOnBoard.pipe(this.minimumDestinationFuel),
         this.flightPlanInterface.active.performanceData.alternateFuel.pipe(this.alternateFuel),
-        this.flightPlanInterface.active.performanceData.pilotFinalHoldingFuel.pipe(this.pilotFinalFuelWeight),
-        this.flightPlanInterface.active.performanceData.pilotFinalHoldingTime.pipe(this.pilotFinalFuelTime),
+        this.flightPlanInterface.active.performanceData.finalHoldingFuel.pipe(this.finalFuelWeight),
       );
     }
   }
@@ -1361,6 +1349,7 @@ export class FlightManagementComputer implements FmcInterface {
         this.acInterface.updatePerformanceData();
         this.acInterface.updatePerfSpeeds();
         this.acInterface.updateWeights();
+        this.acInterface.calculateFinalAndAlternateFuel();
         this.acInterface.toSpeedsChecks();
         this.acInterface.checkForStepClimb();
         this.acInterface.checkTooSteepPath();
@@ -1385,15 +1374,6 @@ export class FlightManagementComputer implements FmcInterface {
           this.acInterface.resetDestinationPredictions();
         }
         this.acInterface.updateIlsCourse(this.navigation.getNavaidTuner().getMmrRadioTuningStatus(1));
-
-        if (
-          this.#flightPlanService.active.performanceData.alternateExists.get() !==
-          (this.flightPlanInterface.active.alternateDestinationAirport !== undefined)
-        )
-          this.#flightPlanService.active.setPerformanceData(
-            'alternateExists',
-            this.flightPlanInterface.active.alternateDestinationAirport !== undefined,
-          );
       } else {
         this.acInterface.resetDestinationPredictions();
       }

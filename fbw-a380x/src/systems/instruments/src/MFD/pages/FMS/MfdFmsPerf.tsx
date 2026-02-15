@@ -2926,7 +2926,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   >
                     {this.destAirportIdent}
                   </span>
-                  <span class={{ 'mfd-label': true, green: true, bigger: true, sec: this.secActive }}>
+                  <span
+                    class={{ 'mfd-label': true, green: this.mandatoryAndActiveFpln, bigger: true, sec: this.secActive }}
+                  >
                     {this.destEta}
                   </span>
                   <div class="mfd-label-value-container">
@@ -3233,7 +3235,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       interactionMode={this.props.mfd.interactionMode}
                     />
                   </div>
-                  <div class="mfd-label-value-container" style="padding: 15px;">
+                  <div
+                    class="mfd-label-value-container"
+                    style={{ padding: '15px', visibility: this.visibilityConsideringFlightPlanIndex }}
+                  >
                     <span class="mfd-label mfd-spacing-right">VERT DEV</span>
                     <span class="mfd-value">{this.apprVerticalDeviation}</span>
                   </div>
