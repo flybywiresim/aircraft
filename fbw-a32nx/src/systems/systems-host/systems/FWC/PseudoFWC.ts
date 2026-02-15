@@ -1039,9 +1039,9 @@ export class PseudoFWC {
 
   private readonly autoBrakeOffTextMemoryNode = new NXLogicMemoryNode(false);
 
-  private readonly autoBrakeOffTextTriggeredMonostableNode = new NXLogicTriggeredMonostableNode(9, true, true);
+  private readonly autoBrakeOffTextTriggeredMonostableNode = new NXLogicTriggeredMonostableNode(9, true);
 
-  private readonly autoBrakeOffSCTriggeredMonostableNode = new NXLogicTriggeredMonostableNode(3, true, true);
+  private readonly autoBrakeOffSCTriggeredMonostableNode = new NXLogicTriggeredMonostableNode(3, true);
 
   private readonly autoBrakeOffSC = Subject.create(false);
 
@@ -2145,7 +2145,7 @@ export class PseudoFWC {
 
     this.autoBrakeOffText.set(this.autoBrakeOffTextMemoryNode.read());
 
-    // AUTO BRAKE OFF SC
+    // AUTO BRAKE OFF SC & MC
     this.autoBrakeOffSCTriggeredMonostableNode.write(
       this.flightPhase6789.get() && this.autoBrakeOffPulseNode.read(),
       deltaTime,
