@@ -36,7 +36,7 @@ export class FmgcData {
 
   public readonly tripFuelAtPreflight = Subject.create<number | null>(null); // in tonnes
 
-  public readonly destEfobBelowMin = Subject.create(false);
+  public readonly destEfobBelowMinInActive = Subject.create(false);
 
   /**
    * For which departure runway the v speeds have been inserted

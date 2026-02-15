@@ -149,7 +149,7 @@ export class FmcAircraftInterface {
   private readonly fmsDestination = Subject.create<string | null>('');
   private readonly fmsLandingRunway = Subject.create<string | null>('');
   private readonly fmsAlternate = Subject.create<string | null>('');
-  private readonly destEfobBelowMin = this.fmgc.data.destEfobBelowMin.sub((v) => {
+  private readonly destEfobBelowMin = this.fmgc.data.destEfobBelowMinInActive.sub((v) => {
     SimVar.SetSimVarValue('L:A380X_FMS_DEST_EFOB_BELOW_MIN', SimVarValueType.Bool, v);
   }, true);
 
@@ -2116,16 +2116,16 @@ export class FmcAircraftInterface {
     if (destEfob !== null) {
       const minFuelAtDestination = this.flightPlanService.active.performanceData.minimumDestinationFuelOnBoard.get();
       if (minFuelAtDestination !== null) {
-        const isBelowMin = this.fmc.destEfobBelowMin.get();
+        const isBelowMin = this.fmc.destEfobBelowMinInActive.get();
         if (isBelowMin) {
-          this.fmc.destEfobBelowMin.set(destEfob - minFuelAtDestination <= 0.3);
+          this.fmc.destEfobBelowMinInActive.set(destEfob - minFuelAtDestination <= 0.3);
         } else {
-          this.fmc.destEfobBelowMin.set(destEfob < minFuelAtDestination);
+          this.fmc.destEfobBelowMinInActive.set(destEfob < minFuelAtDestination);
         }
         return;
       }
     }
-    this.fmc.destEfobBelowMin.set(false);
+    this.fmc.destEfobBelowMinInActive.set(false);
   }
 
   checkDestEfobBelowMinScratchPadMessage(deltaTime: number) {
@@ -2136,7 +2136,7 @@ export class FmcAircraftInterface {
     );
 
     this.destEfobBelowMinScratchPadMessage.set(
-      this.fmc.destEfobBelowMin.get() &&
+      this.fmc.destEfobBelowMinInActive.get() &&
         (flightPhase === FmgcFlightPhase.Cruise ||
           flightPhase === FmgcFlightPhase.Descent ||
           altActiveInClimbForMoreThan10Min ||

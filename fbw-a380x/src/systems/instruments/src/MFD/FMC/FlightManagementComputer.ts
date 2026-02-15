@@ -287,7 +287,7 @@ export class FlightManagementComputer implements FmcInterface {
     this.finalFuelWeight,
   );
 
-  public readonly destEfobBelowMin = Subject.create(false);
+  public readonly destEfobBelowMinInActive = Subject.create(false);
 
   private destDataCheckedInCruise = false;
 

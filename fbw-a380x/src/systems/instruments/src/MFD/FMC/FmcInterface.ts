@@ -168,7 +168,7 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
   /**
    * Whether predicted EFOB at destination is below minimum fuel
    */
-  get destEfobBelowMin(): Subscribable<boolean>;
+  get destEfobBelowMinInActive(): Subscribable<boolean>;
 
   /**
    * Calculates the recommended maximum flight level.

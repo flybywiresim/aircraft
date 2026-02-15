@@ -40,6 +40,12 @@ interface MfdFmsFuelLoadProps extends AbstractMfdPageProps {}
 export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
   private readonly flightPlanChangeNotifier = new FlightPlanChangeNotifier(this.props.bus);
 
+  private readonly destEfobAmber = MappedSubject.create(
+    ([destEfobBelowM, loadedFpIndex]) => destEfobBelowM && loadedFpIndex === FlightPlanIndex.Active,
+    this.props.fmcService.master.fmgc.data.destEfobBelowMinInActive,
+    this.loadedFlightPlanIndex,
+  );
+
   private readonly mandatoryAndActiveFpln = this.loadedFlightPlanIndex.map(
     (it) => it === FlightPlanIndex.Active || it === FlightPlanIndex.Temporary,
   );
@@ -149,8 +155,9 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
 
   private readonly alternateExists = Subject.create(true);
   private readonly alternateFuelDisabled = this.alternateExists.map((v) => !v);
-  private readonly isActive = this.loadedFlightPlanIndex.map((it) => it === FlightPlanIndex.Active);
-  private readonly jettisonGrossWeightVisibility = this.isActive.map((isActive) => (isActive ? 'visible' : 'hidden'));
+  private readonly jettisonGrossWeightVisibility = this.mandatoryAndActiveFpln.map((isActive) =>
+    isActive ? 'visible' : 'hidden',
+  );
 
   protected onNewData() {
     if (!this.props.fmcService.master || !this.loadedFlightPlan) {
@@ -348,8 +355,8 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
       this.extraFuelTimeText,
       this.taxiAndRouteRsvDisabled,
       this.costIndexDisabled,
-      this.isActive,
       this.jettisonGrossWeightVisibility,
+      this.destEfobAmber,
     );
   }
 
@@ -726,7 +733,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   <div
                     class={{
                       'mfd-label bigger': true,
-                      green: this.isActive,
+                      green: this.mandatoryAndActiveFpln,
                       sec: this.secActive,
                       'mfd-fms-fuel-load-dest-grid-middle-cell': true,
                     }}
@@ -736,7 +743,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   <div
                     class={{
                       'mfd-label bigger': true,
-                      green: this.isActive,
+                      green: this.mandatoryAndActiveFpln,
                       sec: this.secActive,
                       'mfd-fms-fuel-load-dest-grid-middle-cell': true,
                     }}
@@ -747,7 +754,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                     <span
                       class={{
                         'mfd-value': true,
-                        amber: this.props.fmcService.master.fmgc.data.destEfobBelowMin,
+                        amber: this.destEfobAmber,
                         white: this.secActive,
                       }}
                     >
