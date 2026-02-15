@@ -752,13 +752,13 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                     ALTN
                   </div>
                   <div
-                    class={{ 'mfd-label': true, bigger: true, green: this.mandatoryAndActiveFpln, sec: this.secActive }}
+                    class={{ 'mfd-label': true, bigger: true, green: this.mandatoryAndActiveFpln }}
                     style="text-align: center; align-self: center;"
                   >
                     {this.altnIcao}
                   </div>
                   <div
-                    class={{ 'mfd-label': true, bigger: true, green: this.mandatoryAndActiveFpln, sec: this.secActive }}
+                    class={{ 'mfd-label': true, bigger: true, green: this.mandatoryAndActiveFpln }}
                     style="text-align: center; align-self: center;"
                   >
                     {this.altnEta}

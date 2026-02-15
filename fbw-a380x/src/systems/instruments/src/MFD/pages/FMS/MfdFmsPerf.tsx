@@ -2678,7 +2678,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       'mfd-label': true,
                       green: this.mandatoryAndActiveFpln,
                       bigger: true,
-                      sec: this.secActive,
                     }}
                   >
                     {this.destAirportIdent}
@@ -2688,7 +2687,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       'mfd-label': true,
                       green: this.mandatoryAndActiveFpln,
                       bigger: true,
-                      sec: this.secActive,
                     }}
                   >
                     {this.destEta}
@@ -2931,14 +2929,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                 {/* fill space vertically */}
                 <div class="mfd-fms-perf-crz-dest">
                   <span class="mfd-label bigger">DEST</span>
-                  <span
-                    class={{ 'mfd-label': true, green: this.mandatoryAndActiveFpln, bigger: true, sec: this.secActive }}
-                  >
+                  <span class={{ 'mfd-label': true, green: this.mandatoryAndActiveFpln, bigger: true }}>
                     {this.destAirportIdent}
                   </span>
-                  <span
-                    class={{ 'mfd-label': true, green: this.mandatoryAndActiveFpln, bigger: true, sec: this.secActive }}
-                  >
+                  <span class={{ 'mfd-label': true, green: this.mandatoryAndActiveFpln, bigger: true }}>
                     {this.destEta}
                   </span>
                   <div class="mfd-label-value-container">
