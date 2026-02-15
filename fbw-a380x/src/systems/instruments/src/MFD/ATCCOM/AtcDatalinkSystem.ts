@@ -88,6 +88,10 @@ export class AtcDatalinkSystem implements Instrument {
     hf: DatalinkModeCode.None,
   };
 
+  /**
+   * Creates a new instance of the ATC Datalink System
+   * @param {EventBus} bus The event bus
+   */
   constructor(private readonly bus: EventBus) {
     this.messageStorage = new MessageStorage(this.sub);
 
@@ -181,6 +185,10 @@ export class AtcDatalinkSystem implements Instrument {
 
   destroy() {}
 
+  /**
+   * Add ATC error message to ATCCOM message queue
+   * @param {FmsErrorType} errorType error type
+   */
   showAtcErrorMessage(errorType: FmsErrorType) {
     switch (errorType) {
       case FmsErrorType.EntryOutOfRange:
@@ -200,6 +208,9 @@ export class AtcDatalinkSystem implements Instrument {
     }
   }
 
+  /**
+   * Clear last ATC error message from queue
+   */
   clearLatestAtcErrorMessage() {
     const arr = this.atcErrors.getArray();
     const index = arr.findIndex((val) => !val.cleared);
@@ -216,6 +227,10 @@ export class AtcDatalinkSystem implements Instrument {
     }
   }
 
+  /**
+   * Add ATCCOM message to ATCCOM message queue
+   * @param {ATCCOMMessage} message message object
+   */
   public addMessageToQueue(message: ATCCOMMessage) {
     const msg: AtcErrorMessage = {
       message: message,
@@ -232,6 +247,11 @@ export class AtcDatalinkSystem implements Instrument {
   }
 
   // TODO: improve icao checks
+  /**
+   * Initialise D-ATIS data for specified block
+   * @param {number} index index of D-ATIS block
+   * @param {string} icao 4-letter icao code of airport
+   */
   private initAtis(index: number, icao?: string | null): void {
     const newAtisData = {
       icao: '',
@@ -251,6 +271,12 @@ export class AtcDatalinkSystem implements Instrument {
     this.publisher.pub(`atcAtis_${index}`, this.atisAirports[index]);
   }
 
+  /**
+   * Handler for receiving ATC ATIS message
+   * @param {string} airport 4-letter icao code for airport
+   * @param {AtisType} type ATIS type DEP/ARR/ENR
+   * @returns {Promise<AtsuStatusCodes>} promise which returns an ATSU status code
+   */
   public async receiveAtcAtis(airport: string, type: AtisType): Promise<AtsuStatusCodes> {
     return new Promise<AtsuStatusCodes>((resolve, _reject) => {
       const requestId = this.requestId++;
@@ -262,14 +288,28 @@ export class AtcDatalinkSystem implements Instrument {
     });
   }
 
+  /**
+   * Get D-ATIS data blocks from ATC datalink system.
+   * @returns {AirportAtis[]} array of all three D-ATIS blocks.
+   */
   public getAtisAirports(): AirportAtis[] {
     return this.atisAirports;
   }
 
+  /**
+   * Replace the AirportAtis block at the specific index in the ATC datalink system
+   * @param {AirportAtis} airportData airport atis datablock
+   * @param {number} index index of D-ATIS block to set
+   */
   public setAtisAirport(airportData: AirportAtis, index: number): void {
     this.atisAirports[index] = airportData;
   }
 
+  /**
+   * Fetch all D-ATIS messages of the station
+   * @param {string} icao 4-letter icao of station to fetch reports of
+   * @returns {AtisMessage[]} array of all ATIS messages of specific station
+   */
   public atisReports(icao: string): AtisMessage[] {
     if (this.messageStorage.atisReports.has(icao)) {
       return this.messageStorage.atisReports.get(icao)!;
@@ -277,6 +317,12 @@ export class AtcDatalinkSystem implements Instrument {
     return [];
   }
 
+  // TODO: Improve error handling
+  /**
+   * Request the D-ATIS for a D-ATIS block
+   * @param {number} index index of D-ATIS block to request ATIS
+   * @returns {Promise<void>} promise
+   */
   public async requestAtis(index: number): Promise<void> {
     const airport = this.atisAirports[index];
 
@@ -311,16 +357,29 @@ export class AtcDatalinkSystem implements Instrument {
     airport.requested = false;
   }
 
+  /**
+   * Update all D-ATIS blocks
+   */
   public updateAllAtis(): void {
     for (let i = 0; i < this.atisAirports.length; i++) {
       this.requestAtis(i);
     }
   }
 
+  /**
+   * Check if auto update is active for a specified station
+   * @param {string} icao 4-letter icao of D-ATIS station
+   * @returns {boolean} true if auto update is enabled for the station
+   */
   public atisAutoUpdateActive(icao: string): boolean {
     return this.atisAutoUpdates.findIndex((airport) => icao === airport) !== -1;
   }
 
+  /**
+   * Activate auto update for a D-ATIS block
+   * @param {number} index index of D-ATIS block to activate auto update
+   * @returns {Promise<AtsuStatusCodes>} promise which returns an ATSU status code
+   */
   public async activateAtisAutoUpdate(index: number): Promise<AtsuStatusCodes> {
     const airportData = this.atisAirports[index];
     const icao = airportData.icao;
@@ -335,6 +394,11 @@ export class AtcDatalinkSystem implements Instrument {
     });
   }
 
+  /**
+   * Deactivate auto update for a D-ATIS block
+   * @param {number} index index of D-ATIS block to deactivate auto update
+   * @returns {Promise<AtsuStatusCodes>} promise which returns an ATSU status code
+   */
   public async deactivateAtisAutoUpdate(index: number): Promise<AtsuStatusCodes> {
     const airportData = this.atisAirports[index];
     const icao = airportData.icao;
@@ -348,6 +412,11 @@ export class AtcDatalinkSystem implements Instrument {
     });
   }
 
+  /**
+   * Get status of datalink subsystem
+   * @param {string} value name of datalink subsystem vhf/satcom/hf
+   * @returns {DatalinkStatusCode} status code of datalink system
+   */
   public getDatalinkStatus(value: 'vhf' | 'satcom' | 'hf'): DatalinkStatusCode {
     switch (value) {
       case 'vhf':
@@ -361,6 +430,11 @@ export class AtcDatalinkSystem implements Instrument {
     }
   }
 
+  /**
+   * Get mode of datalink subsystem
+   * @param {string} value name of datalink subsystem vhf/satcom/hf
+   * @returns {DatalinkModeCode} mode code of datalink subsystem
+   */
   public getDatalinkMode(value: 'vhf' | 'satcom' | 'hf'): DatalinkModeCode {
     switch (value) {
       case 'vhf':
