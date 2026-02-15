@@ -74,6 +74,7 @@
 1. [A32NX/FADEC] Fixed the PFD showing MAN FLX instead of MAN MCT post A/THR engagement after takeoff - @FozzieHi (fozzie)
 1. [A32NX/FWS] Add `ENG REV SET` master caution - @FozzieHi (fozzie)
 1. [FMS] Fixed an issue where the LNAV could crash after enabling the alternate flightplan - @tracernz (Mike)
+1. [A32NX/PFD] Fixed the armed `BRK MAX` FMA remaining after auto-brake activation - @FozzieHi (fozzie)
 
 ## 0.14.0
 
