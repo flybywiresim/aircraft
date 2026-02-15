@@ -816,328 +816,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
         .on('realTime')
         .atFrequency(1)
         .handle((_t) => {
-          // Update REC MAX FL, OPT FL
-          const fpIndex = this.loadedFlightPlanIndex.get();
-          if (fpIndex === FlightPlanIndex.Active || fpIndex === FlightPlanIndex.Temporary) {
-            const recMaxFl = this.props.fmcService.master.getRecMaxFlightLevel();
-            this.recMaxFl.set(recMaxFl && Number.isFinite(recMaxFl) ? recMaxFl.toFixed(0) : '---');
-            const optFl = this.props.fmcService.master.getOptFlightLevel();
-            this.optFl.set(optFl && Number.isFinite(optFl) ? optFl.toFixed(0) : '---');
-            const eoMaxFl = this.props.fmcService.master.getEoMaxFlightLevel();
-            this.eoMaxFl.set(eoMaxFl && Number.isFinite(eoMaxFl) ? eoMaxFl.toFixed(0) : '---');
-          }
-          const obs =
-            this.props.fmcService.master.guidanceController.verticalProfileComputationParametersObserver.get();
-
-          const selectedTabIndex = this.flightPhasesSelectedPageIndex.get();
-
-          if (selectedTabIndex === FlightPhaseTabIndex.Takeoff) {
-            if (this.clbNoiseTableRef.getOrDefault()) {
-              this.clbNoiseTableRef.instance.style.visibility =
-                this.activeFlightPhase.get() >= FmgcFlightPhase.Climb ? 'hidden' : 'visible';
-            }
-          } else if (selectedTabIndex === FlightPhaseTabIndex.Climb) {
-            // CLB PRED TO automatic update
-            if (fpIndex === FlightPlanIndex.Active && this.activeFlightPhase.get() === FmgcFlightPhase.Climb) {
-              this.props.fmcService.master.fmgc.data.climbPredictionsReferenceAutomatic.set(
-                this.props.fmcService.master.guidanceController.verticalProfileComputationParametersObserver.get()
-                  .fcuAltitude,
-              );
-            } else {
-              this.props.fmcService.master.fmgc.data.climbPredictionsReferenceAutomatic.set(null);
-            }
-
-            this.managedSpeedActive.set((obs?.fcuSpeedManaged as unknown) === 1); // Should be boolean, but is number
-
-            // Update CLB speed table
-            const clbSpeedLimit = this.props.fmcService.master.fmgc.getClimbSpeedLimit(fpIndex);
-            if (this.activeFlightPhase.get() < FmgcFlightPhase.Climb) {
-              this.clbTableModeLine1.set('PRESEL');
-              this.clbTableSpdLine1.set(null);
-              this.clbTableMachLine1.set(null);
-              this.clbTablePredLine1.set(null);
-              this.clbTableModeLine2.set('MANAGED');
-              this.clbTableSpdLine2.set(clbSpeedLimit?.speed.toFixed(0) ?? null);
-              this.clbTableMachLine2.set(null);
-              this.clbTablePredLine2.set('--:--   ----');
-              this.clbTableModeLine3.set('ECON');
-              this.clbTableSpdLine3.set(
-                this.props.fmcService.master.fmgc.getManagedClimbSpeed(fpIndex).toFixed(0) ?? null,
-              );
-              this.clbTableMachLine3.set(
-                `.${this.props.fmcService.master.fmgc.getManagedClimbSpeedMach(fpIndex).toFixed(2).split('.')[1]}`,
-              );
-              this.clbTablePredLine3.set(null);
-            } else if (this.managedSpeedActive.get()) {
-              this.clbTableModeLine1.set('MANAGED');
-              // TODO add speed restriction (ECON, SPD LIM, ...) in smaller font
-              if (clbSpeedLimit && SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') < clbSpeedLimit.underAltitude) {
-                this.clbTableSpdLine1.set(clbSpeedLimit.speed.toFixed(0));
-                this.clbTableMachLine1.set(
-                  `.${(SimVar.GetGameVarValue('FROM KIAS TO MACH', 'number', clbSpeedLimit.speed) as number).toFixed(2).split('.')[1]}`,
-                );
-                this.clbTableModeLine3.set('ECON');
-                this.clbTableSpdLine3.set(
-                  this.props.fmcService.master.fmgc.getManagedClimbSpeed(fpIndex).toFixed(0) ?? null,
-                );
-                this.clbTableMachLine3.set(
-                  `.${this.props.fmcService.master.fmgc.getManagedClimbSpeedMach(fpIndex).toFixed(2).split('.')[1]}`,
-                );
-                this.clbTablePredLine3.set(null);
-              } else {
-                this.clbTableSpdLine1.set(
-                  this.props.fmcService.master.fmgc.getManagedClimbSpeed(fpIndex).toFixed(0) ?? null,
-                );
-                this.clbTableMachLine1.set(
-                  `.${this.props.fmcService.master.fmgc.getManagedClimbSpeedMach(fpIndex).toFixed(2).split('.')[1]}`,
-                );
-                this.clbTableModeLine3.set(null);
-                this.clbTableSpdLine3.set(null);
-                this.clbTableMachLine3.set(null);
-                this.clbTablePredLine3.set(null);
-              }
-              // TODO add predictions
-              this.clbTablePredLine1.set(null);
-              this.clbTableModeLine2.set(null);
-              this.clbTableSpdLine2.set(null);
-              this.clbTableMachLine2.set(null);
-              this.clbTablePredLine2.set(null);
-            } else {
-              this.clbTableModeLine1.set('SELECTED');
-              this.clbTableSpdLine1.set(obs && obs.fcuSpeed >= 1 ? obs?.fcuSpeed.toFixed(0) ?? null : null);
-              this.clbTableMachLine1.set(obs && obs.fcuSpeed < 1 ? `.${obs.fcuSpeed.toFixed(2).split('.')[1]}` : null);
-              this.clbTablePredLine1.set(null);
-
-              this.clbTableModeLine2.set('MANAGED');
-              // TODO add speed restriction (ECON, SPD LIM, ...) in smaller font
-              if (clbSpeedLimit && SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') < clbSpeedLimit.underAltitude) {
-                this.clbTableSpdLine2.set(clbSpeedLimit.speed.toFixed(0));
-                this.clbTableMachLine2.set(
-                  `.${(SimVar.GetGameVarValue('FROM KIAS TO MACH', 'number', clbSpeedLimit.speed) as number).toFixed(2).split('.')[1]}`,
-                );
-              } else {
-                this.clbTableSpdLine2.set(
-                  this.props.fmcService.master.fmgc.getManagedClimbSpeed(fpIndex).toFixed(0) ?? null,
-                );
-                this.clbTableMachLine2.set(
-                  `.${this.props.fmcService.master.fmgc.getManagedClimbSpeedMach(fpIndex).toFixed(2).split('.')[1]}`,
-                );
-              }
-              this.clbTablePredLine2.set(null);
-              this.clbTableModeLine3.set('ECON');
-              this.clbTableSpdLine3.set(
-                this.props.fmcService.master.fmgc.getManagedClimbSpeed(fpIndex).toFixed(0) ?? null,
-              );
-              this.clbTableMachLine3.set(
-                `.${this.props.fmcService.master.fmgc.getManagedClimbSpeedMach(fpIndex).toFixed(2).split('.')[1]}`,
-              );
-              this.clbTablePredLine3.set(null);
-            }
-          } else if (selectedTabIndex === FlightPhaseTabIndex.Cruise) {
-            // Update CRZ prediction
-            const crzPred =
-              fpIndex === FlightPlanIndex.Active
-                ? this.props.fmcService.master.guidanceController?.vnavDriver?.getPerfCrzToPrediction()
-                : null;
-            if (
-              this.crzPredStepRef.getOrDefault() &&
-              this.crzPredDriftDownRef.getOrDefault() &&
-              this.crzPredTdRef.getOrDefault() &&
-              this.crzPredStepAheadRef.getOrDefault()
-            ) {
-              if (crzPred?.reason !== undefined && crzPred.reason === VerticalCheckpointReason.TopOfDescent) {
-                this.crzPredStepRef.instance.style.display = 'none';
-                this.crzPredDriftDownRef.instance.style.display = 'none';
-                this.crzPredTdRef.instance.style.display = 'block';
-                this.crzPredStepAheadRef.instance.style.display = 'none';
-              } else {
-                this.crzPredTdRef.instance.style.display = 'none';
-                this.crzPredDriftDownRef.instance.style.display = 'none';
-                if (crzPred?.distanceFromPresentPosition !== undefined && crzPred.distanceFromPresentPosition < 20) {
-                  this.crzPredStepRef.instance.style.display = 'none';
-                  this.crzPredStepAheadRef.instance.style.display = 'block';
-                } else {
-                  this.crzPredStepRef.instance.style.display = 'block';
-                  this.crzPredStepAheadRef.instance.style.display = 'none';
-
-                  if (this.props.flightPlanInterface.active) {
-                    const [approachingCruiseStep, cruiseStepLegIndex] = MfdFmsFplnVertRev.nextCruiseStep(
-                      this.props.flightPlanInterface.active,
-                    );
-                    this.crzPredWaypoint.set(
-                      cruiseStepLegIndex && approachingCruiseStep
-                        ? this.props.flightPlanInterface.active.legElementAt(cruiseStepLegIndex).ident
-                        : '',
-                    );
-                    this.crzPredAltitudeTarget.set(
-                      approachingCruiseStep ? approachingCruiseStep.toAltitude / 100 : null,
-                    );
-                    this.crzTablePredLine1.set(null);
-                  }
-                }
-              }
-            }
-
-            if (Number.isFinite(crzPred?.secondsFromPresent) && crzPred?.distanceFromPresentPosition !== undefined) {
-              const timePrediction = getEtaUtcOrFromPresent(
-                crzPred.distanceFromPresentPosition < 0 ? null : crzPred.secondsFromPresent,
-                this.activeFlightPhase.get() == FmgcFlightPhase.Preflight,
-              );
-              if (this.activeFlightPhase.get() < FmgcFlightPhase.Cruise) {
-                const preselCruiseSpeed = this.cruisePreselectedSpeed.get();
-                if (preselCruiseSpeed !== null) {
-                  this.crzTablePredLine1.set(
-                    `${timePrediction}${crzPred.distanceFromPresentPosition.toFixed(0).padStart(6, ' ')}`,
-                  );
-                  this.crzTablePredLine2.set('');
-                } else {
-                  // Managed
-                  this.crzTablePredLine1.set('');
-                  this.crzTablePredLine2.set(
-                    `${timePrediction}${crzPred.distanceFromPresentPosition.toFixed(0).padStart(6, ' ')}`,
-                  );
-                }
-              } else {
-                this.crzTablePredLine1.set(
-                  `${timePrediction}${crzPred.distanceFromPresentPosition.toFixed(0).padStart(6, ' ')}`,
-                );
-                this.crzTablePredLine2.set('');
-              }
-            }
-
-            // Update CRZ speed table
-            this.crzTableModeLine3.set(null);
-            this.crzTableSpdLine3.set(null);
-            this.crzTableMachLine3.set(null);
-            this.crzTablePredLine3.set(null);
-
-            if (this.activeFlightPhase.get() < FmgcFlightPhase.Cruise) {
-              this.crzTableModeLine1.set('PRESEL');
-              this.crzTableSpdLine1.set(null);
-              this.crzTableMachLine1.set(null);
-              this.crzTableModeLine2.set('MANAGED');
-              this.crzTableSpdLine2.set('---');
-              this.crzTableMachLine2.set(
-                `.${this.props.fmcService.master.fmgc.getManagedCruiseSpeedMach(fpIndex).toFixed(2).split('.')[1]}`,
-              );
-              this.crzTablePredLine2.set('--:--   ----');
-            } else if (this.managedSpeedActive.get()) {
-              this.crzTableModeLine1.set('MANAGED');
-              // TODO add speed restriction (ECON, SPD LIM, ...) in smaller font
-              this.crzTableSpdLine1.set(
-                obs && obs.fcuSpeed < 1
-                  ? '---'
-                  : this.props.fmcService.master.fmgc.getManagedClimbSpeed(fpIndex).toFixed(0) ?? null,
-              );
-              this.crzTableMachLine1.set(
-                obs && obs.fcuSpeed < 1
-                  ? `.${this.props.fmcService.master.fmgc.getManagedCruiseSpeedMach(fpIndex).toFixed(2).split('.')[1]}`
-                  : '.--',
-              );
-
-              // TODO add predictions
-              this.crzTableModeLine2.set(null);
-              this.crzTableSpdLine2.set(null);
-              this.crzTableMachLine2.set(null);
-              this.crzTablePredLine2.set(null);
-            } else {
-              this.crzTableModeLine1.set('SELECTED');
-              this.crzTableSpdLine1.set(obs && obs.fcuSpeed < 1 ? '---' : obs?.fcuSpeed.toFixed(0) ?? null);
-              this.crzTableMachLine1.set(obs && obs.fcuSpeed < 1 ? `.${obs.fcuSpeed.toFixed(2).split('.')[1]}` : null);
-
-              this.crzTableModeLine2.set('MANAGED');
-              // TODO add speed restriction (ECON, SPD LIM, ...) in smaller font
-              this.crzTableSpdLine2.set(
-                obs && obs.fcuSpeed < 1
-                  ? '---'
-                  : this.props.fmcService.master.fmgc.getManagedCruiseSpeed(fpIndex).toFixed(0) ?? null,
-              );
-              this.crzTableMachLine2.set(
-                obs && obs.fcuSpeed < 1
-                  ? `.${this.props.fmcService.master.fmgc.getManagedCruiseSpeedMach(fpIndex).toFixed(2).split('.')[1]}`
-                  : '.--',
-              );
-              this.crzTablePredLine2.set(null);
-            }
-          }
-
-          if (
-            fpIndex === FlightPlanIndex.Active &&
-            (selectedTabIndex === FlightPhaseTabIndex.Cruise || selectedTabIndex === FlightPhaseTabIndex.Descent)
-          ) {
-            let destEta = '--:--';
-            const destPred = this.props.fmcService.master.guidanceController?.vnavDriver?.getDestinationPrediction();
-            if (destPred?.secondsFromPresent !== undefined) {
-              destEta = getEtaUtcOrFromPresent(
-                destPred.secondsFromPresent,
-                this.activeFlightPhase.get() == FmgcFlightPhase.Preflight,
-              );
-            }
-            this.destEta.set(destEta);
-            this.destEfob.set(this.props.fmcService.master.fmgc.getDestEFOB(true, fpIndex)?.toFixed(1) ?? '---.-');
-          }
-
-          if (selectedTabIndex === FlightPhaseTabIndex.Descent) {
-            const managedDescentSpeed = this.props.fmcService.master.fmgc.getManagedDescentSpeed(fpIndex);
-            this.desManagedSpdTarget.set(managedDescentSpeed);
-            const managedDescentSpeedMach = this.props.fmcService.master.fmgc.getManagedDescentSpeedMach(fpIndex);
-            this.desManagedMachTarget.set(managedDescentSpeedMach);
-
-            // Update DES speed table
-            if (this.activeFlightPhase.get() < FmgcFlightPhase.Descent) {
-              this.desTableModeLine1.set('MANAGED');
-              this.desTableSpdLine1.set(null);
-              this.desTableMachLine1.set(null);
-              this.desTablePredLine1.set('--:--  ----');
-              this.desTableModeLine2.set(null);
-              this.desTableSpdLine2.set(null);
-              this.desTableMachLine2.set(null);
-              this.desTablePredLine2.set(null);
-            } else if (this.managedSpeedActive.get()) {
-              this.desTableModeLine1.set('MANAGED');
-              this.desTableSpdLine1.set(managedDescentSpeed?.toString());
-              this.desTableMachLine1.set(`.${managedDescentSpeedMach.toFixed(2).split('.')[1]}`);
-              this.desTablePredLine1.set('--:--  ----');
-              this.desTableModeLine2.set(null);
-              this.desTableSpdLine2.set(null);
-              this.desTableMachLine2.set(null);
-              this.desTablePredLine2.set(null);
-            } else {
-              this.desTableModeLine1.set('SELECTED');
-              this.desTableSpdLine1.set(obs && obs.fcuSpeed >= 1 ? obs?.fcuSpeed.toFixed(0) ?? null : null);
-              this.desTableMachLine1.set(obs && obs.fcuSpeed < 1 ? `.${obs.fcuSpeed.toFixed(2).split('.')[1]}` : null);
-              this.desTablePredLine1.set('--:--  ----');
-              this.desTableModeLine2.set('MANAGED');
-              this.desTableSpdLine2.set(managedDescentSpeed?.toString());
-              this.desTableMachLine2.set(`.${managedDescentSpeedMach.toFixed(2).split('.')[1]}`);
-              this.desTablePredLine2.set(null);
-            }
-          }
-
-          if (selectedTabIndex === FlightPhaseTabIndex.Approach) {
-            // Update APPR page
-            this.apprLandingWeight.set(this.props.fmcService.master.getLandingWeight(fpIndex) ?? null);
-            const apprWindDirection = this.loadedFlightPlan?.performanceData.approachWindDirection.get();
-            const apprWindMagnitude = this.loadedFlightPlan?.performanceData.approachWindMagnitude.get();
-            if (apprWindDirection && apprWindMagnitude && this.loadedFlightPlan?.destinationRunway) {
-              const towerHeadwind = A380SpeedsUtils.getHeadwind(
-                apprWindMagnitude,
-                apprWindDirection,
-                this.loadedFlightPlan.destinationRunway.magneticBearing,
-              );
-              this.towerHeadwind.set(towerHeadwind);
-
-              const towerCrosswind = A380SpeedsUtils.getHeadwind(
-                apprWindMagnitude,
-                apprWindDirection,
-                this.loadedFlightPlan.destinationRunway.magneticBearing + 90,
-              );
-              this.apprCrosswind.set(Math.abs(towerCrosswind).toFixed(0).padStart(3, '0'));
-            } else {
-              this.towerHeadwind.set(null);
-              this.apprCrosswind.set('---');
-            }
-          }
+          this.drawPage();
         }),
       this.windDirectionLabel,
       this.windSpeedDisplay,
@@ -1281,6 +960,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       this.transFlIsPilotEntered,
       this.vdevSub,
       this.destEfobAmber,
+      this.flightPhasesSelectedPageIndex.sub((val) => this.drawPage(val)),
     );
   }
 
@@ -1288,6 +968,318 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     this.flightPlanChangeNotifier.destroy();
 
     super.destroy();
+  }
+
+  private drawPage(tab?: FlightPhaseTabIndex) {
+    // Update REC MAX FL, OPT FL
+    const fpIndex = this.loadedFlightPlanIndex.get();
+    if (fpIndex === FlightPlanIndex.Active || fpIndex === FlightPlanIndex.Temporary) {
+      const recMaxFl = this.props.fmcService.master.getRecMaxFlightLevel();
+      this.recMaxFl.set(recMaxFl && Number.isFinite(recMaxFl) ? recMaxFl.toFixed(0) : '---');
+      const optFl = this.props.fmcService.master.getOptFlightLevel();
+      this.optFl.set(optFl && Number.isFinite(optFl) ? optFl.toFixed(0) : '---');
+      const eoMaxFl = this.props.fmcService.master.getEoMaxFlightLevel();
+      this.eoMaxFl.set(eoMaxFl && Number.isFinite(eoMaxFl) ? eoMaxFl.toFixed(0) : '---');
+    }
+    const obs = this.props.fmcService.master.guidanceController.verticalProfileComputationParametersObserver.get();
+
+    const selectedTabIndex = tab ?? this.flightPhasesSelectedPageIndex.get();
+
+    if (selectedTabIndex === FlightPhaseTabIndex.Takeoff) {
+      if (this.clbNoiseTableRef.getOrDefault()) {
+        this.clbNoiseTableRef.instance.style.visibility =
+          this.activeFlightPhase.get() >= FmgcFlightPhase.Climb ? 'hidden' : 'visible';
+      }
+    } else if (selectedTabIndex === FlightPhaseTabIndex.Climb) {
+      // CLB PRED TO automatic update
+      if (fpIndex === FlightPlanIndex.Active && this.activeFlightPhase.get() === FmgcFlightPhase.Climb) {
+        this.props.fmcService.master.fmgc.data.climbPredictionsReferenceAutomatic.set(
+          this.props.fmcService.master.guidanceController.verticalProfileComputationParametersObserver.get()
+            .fcuAltitude,
+        );
+      } else {
+        this.props.fmcService.master.fmgc.data.climbPredictionsReferenceAutomatic.set(null);
+      }
+
+      this.managedSpeedActive.set((obs?.fcuSpeedManaged as unknown) === 1); // Should be boolean, but is number
+
+      // Update CLB speed table
+      const clbSpeedLimit = this.props.fmcService.master.fmgc.getClimbSpeedLimit(fpIndex);
+      if (this.activeFlightPhase.get() < FmgcFlightPhase.Climb) {
+        this.clbTableModeLine1.set('PRESEL');
+        this.clbTableSpdLine1.set(null);
+        this.clbTableMachLine1.set(null);
+        this.clbTablePredLine1.set(null);
+        this.clbTableModeLine2.set('MANAGED');
+        this.clbTableSpdLine2.set(clbSpeedLimit?.speed.toFixed(0) ?? null);
+        this.clbTableMachLine2.set(null);
+        this.clbTablePredLine2.set('--:--   ----');
+        this.clbTableModeLine3.set('ECON');
+        this.clbTableSpdLine3.set(this.props.fmcService.master.fmgc.getManagedClimbSpeed(fpIndex).toFixed(0) ?? null);
+        this.clbTableMachLine3.set(
+          `.${this.props.fmcService.master.fmgc.getManagedClimbSpeedMach(fpIndex).toFixed(2).split('.')[1]}`,
+        );
+        this.clbTablePredLine3.set(null);
+      } else if (this.managedSpeedActive.get()) {
+        this.clbTableModeLine1.set('MANAGED');
+        // TODO add speed restriction (ECON, SPD LIM, ...) in smaller font
+        if (clbSpeedLimit && SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') < clbSpeedLimit.underAltitude) {
+          this.clbTableSpdLine1.set(clbSpeedLimit.speed.toFixed(0));
+          this.clbTableMachLine1.set(
+            `.${(SimVar.GetGameVarValue('FROM KIAS TO MACH', 'number', clbSpeedLimit.speed) as number).toFixed(2).split('.')[1]}`,
+          );
+          this.clbTableModeLine3.set('ECON');
+          this.clbTableSpdLine3.set(this.props.fmcService.master.fmgc.getManagedClimbSpeed(fpIndex).toFixed(0) ?? null);
+          this.clbTableMachLine3.set(
+            `.${this.props.fmcService.master.fmgc.getManagedClimbSpeedMach(fpIndex).toFixed(2).split('.')[1]}`,
+          );
+          this.clbTablePredLine3.set(null);
+        } else {
+          this.clbTableSpdLine1.set(this.props.fmcService.master.fmgc.getManagedClimbSpeed(fpIndex).toFixed(0) ?? null);
+          this.clbTableMachLine1.set(
+            `.${this.props.fmcService.master.fmgc.getManagedClimbSpeedMach(fpIndex).toFixed(2).split('.')[1]}`,
+          );
+          this.clbTableModeLine3.set(null);
+          this.clbTableSpdLine3.set(null);
+          this.clbTableMachLine3.set(null);
+          this.clbTablePredLine3.set(null);
+        }
+        // TODO add predictions
+        this.clbTablePredLine1.set(null);
+        this.clbTableModeLine2.set(null);
+        this.clbTableSpdLine2.set(null);
+        this.clbTableMachLine2.set(null);
+        this.clbTablePredLine2.set(null);
+      } else {
+        this.clbTableModeLine1.set('SELECTED');
+        this.clbTableSpdLine1.set(obs && obs.fcuSpeed >= 1 ? obs?.fcuSpeed.toFixed(0) ?? null : null);
+        this.clbTableMachLine1.set(obs && obs.fcuSpeed < 1 ? `.${obs.fcuSpeed.toFixed(2).split('.')[1]}` : null);
+        this.clbTablePredLine1.set(null);
+
+        this.clbTableModeLine2.set('MANAGED');
+        // TODO add speed restriction (ECON, SPD LIM, ...) in smaller font
+        if (clbSpeedLimit && SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') < clbSpeedLimit.underAltitude) {
+          this.clbTableSpdLine2.set(clbSpeedLimit.speed.toFixed(0));
+          this.clbTableMachLine2.set(
+            `.${(SimVar.GetGameVarValue('FROM KIAS TO MACH', 'number', clbSpeedLimit.speed) as number).toFixed(2).split('.')[1]}`,
+          );
+        } else {
+          this.clbTableSpdLine2.set(this.props.fmcService.master.fmgc.getManagedClimbSpeed(fpIndex).toFixed(0) ?? null);
+          this.clbTableMachLine2.set(
+            `.${this.props.fmcService.master.fmgc.getManagedClimbSpeedMach(fpIndex).toFixed(2).split('.')[1]}`,
+          );
+        }
+        this.clbTablePredLine2.set(null);
+        this.clbTableModeLine3.set('ECON');
+        this.clbTableSpdLine3.set(this.props.fmcService.master.fmgc.getManagedClimbSpeed(fpIndex).toFixed(0) ?? null);
+        this.clbTableMachLine3.set(
+          `.${this.props.fmcService.master.fmgc.getManagedClimbSpeedMach(fpIndex).toFixed(2).split('.')[1]}`,
+        );
+        this.clbTablePredLine3.set(null);
+      }
+    } else if (selectedTabIndex === FlightPhaseTabIndex.Cruise) {
+      // Update CRZ prediction
+      const crzPred =
+        fpIndex === FlightPlanIndex.Active
+          ? this.props.fmcService.master.guidanceController?.vnavDriver?.getPerfCrzToPrediction()
+          : null;
+      if (
+        this.crzPredStepRef.getOrDefault() &&
+        this.crzPredDriftDownRef.getOrDefault() &&
+        this.crzPredTdRef.getOrDefault() &&
+        this.crzPredStepAheadRef.getOrDefault()
+      ) {
+        if (crzPred?.reason !== undefined && crzPred.reason === VerticalCheckpointReason.TopOfDescent) {
+          this.crzPredStepRef.instance.style.display = 'none';
+          this.crzPredDriftDownRef.instance.style.display = 'none';
+          this.crzPredTdRef.instance.style.display = 'block';
+          this.crzPredStepAheadRef.instance.style.display = 'none';
+        } else {
+          this.crzPredTdRef.instance.style.display = 'none';
+          this.crzPredDriftDownRef.instance.style.display = 'none';
+          if (crzPred?.distanceFromPresentPosition !== undefined && crzPred.distanceFromPresentPosition < 20) {
+            this.crzPredStepRef.instance.style.display = 'none';
+            this.crzPredStepAheadRef.instance.style.display = 'block';
+          } else {
+            this.crzPredStepRef.instance.style.display = 'block';
+            this.crzPredStepAheadRef.instance.style.display = 'none';
+
+            if (this.props.flightPlanInterface.active) {
+              const [approachingCruiseStep, cruiseStepLegIndex] = MfdFmsFplnVertRev.nextCruiseStep(
+                this.props.flightPlanInterface.active,
+              );
+              this.crzPredWaypoint.set(
+                cruiseStepLegIndex && approachingCruiseStep
+                  ? this.props.flightPlanInterface.active.legElementAt(cruiseStepLegIndex).ident
+                  : '',
+              );
+              this.crzPredAltitudeTarget.set(approachingCruiseStep ? approachingCruiseStep.toAltitude / 100 : null);
+              this.crzTablePredLine1.set(null);
+            }
+          }
+        }
+      }
+
+      if (Number.isFinite(crzPred?.secondsFromPresent) && crzPred?.distanceFromPresentPosition !== undefined) {
+        const timePrediction = getEtaUtcOrFromPresent(
+          crzPred.distanceFromPresentPosition < 0 ? null : crzPred.secondsFromPresent,
+          this.activeFlightPhase.get() == FmgcFlightPhase.Preflight,
+        );
+        if (this.activeFlightPhase.get() < FmgcFlightPhase.Cruise) {
+          const preselCruiseSpeed = this.cruisePreselectedSpeed.get();
+          if (preselCruiseSpeed !== null) {
+            this.crzTablePredLine1.set(
+              `${timePrediction}${crzPred.distanceFromPresentPosition.toFixed(0).padStart(6, ' ')}`,
+            );
+            this.crzTablePredLine2.set('');
+          } else {
+            // Managed
+            this.crzTablePredLine1.set('');
+            this.crzTablePredLine2.set(
+              `${timePrediction}${crzPred.distanceFromPresentPosition.toFixed(0).padStart(6, ' ')}`,
+            );
+          }
+        } else {
+          this.crzTablePredLine1.set(
+            `${timePrediction}${crzPred.distanceFromPresentPosition.toFixed(0).padStart(6, ' ')}`,
+          );
+          this.crzTablePredLine2.set('');
+        }
+      }
+
+      // Update CRZ speed table
+      this.crzTableModeLine3.set(null);
+      this.crzTableSpdLine3.set(null);
+      this.crzTableMachLine3.set(null);
+      this.crzTablePredLine3.set(null);
+
+      if (this.activeFlightPhase.get() < FmgcFlightPhase.Cruise) {
+        this.crzTableModeLine1.set('PRESEL');
+        this.crzTableSpdLine1.set(null);
+        this.crzTableMachLine1.set(null);
+        this.crzTableModeLine2.set('MANAGED');
+        this.crzTableSpdLine2.set('---');
+        this.crzTableMachLine2.set(
+          `.${this.props.fmcService.master.fmgc.getManagedCruiseSpeedMach(fpIndex).toFixed(2).split('.')[1]}`,
+        );
+        this.crzTablePredLine2.set('--:--   ----');
+      } else if (this.managedSpeedActive.get()) {
+        this.crzTableModeLine1.set('MANAGED');
+        // TODO add speed restriction (ECON, SPD LIM, ...) in smaller font
+        this.crzTableSpdLine1.set(
+          obs && obs.fcuSpeed < 1
+            ? '---'
+            : this.props.fmcService.master.fmgc.getManagedClimbSpeed(fpIndex).toFixed(0) ?? null,
+        );
+        this.crzTableMachLine1.set(
+          obs && obs.fcuSpeed < 1
+            ? `.${this.props.fmcService.master.fmgc.getManagedCruiseSpeedMach(fpIndex).toFixed(2).split('.')[1]}`
+            : '.--',
+        );
+
+        // TODO add predictions
+        this.crzTableModeLine2.set(null);
+        this.crzTableSpdLine2.set(null);
+        this.crzTableMachLine2.set(null);
+        this.crzTablePredLine2.set(null);
+      } else {
+        this.crzTableModeLine1.set('SELECTED');
+        this.crzTableSpdLine1.set(obs && obs.fcuSpeed < 1 ? '---' : obs?.fcuSpeed.toFixed(0) ?? null);
+        this.crzTableMachLine1.set(obs && obs.fcuSpeed < 1 ? `.${obs.fcuSpeed.toFixed(2).split('.')[1]}` : null);
+
+        this.crzTableModeLine2.set('MANAGED');
+        // TODO add speed restriction (ECON, SPD LIM, ...) in smaller font
+        this.crzTableSpdLine2.set(
+          obs && obs.fcuSpeed < 1
+            ? '---'
+            : this.props.fmcService.master.fmgc.getManagedCruiseSpeed(fpIndex).toFixed(0) ?? null,
+        );
+        this.crzTableMachLine2.set(
+          obs && obs.fcuSpeed < 1
+            ? `.${this.props.fmcService.master.fmgc.getManagedCruiseSpeedMach(fpIndex).toFixed(2).split('.')[1]}`
+            : '.--',
+        );
+        this.crzTablePredLine2.set(null);
+      }
+    }
+
+    if (
+      fpIndex === FlightPlanIndex.Active &&
+      (selectedTabIndex === FlightPhaseTabIndex.Cruise || selectedTabIndex === FlightPhaseTabIndex.Descent)
+    ) {
+      let destEta = '--:--';
+      const destPred = this.props.fmcService.master.guidanceController?.vnavDriver?.getDestinationPrediction();
+      if (destPred?.secondsFromPresent !== undefined) {
+        destEta = getEtaUtcOrFromPresent(
+          destPred.secondsFromPresent,
+          this.activeFlightPhase.get() == FmgcFlightPhase.Preflight,
+        );
+      }
+      this.destEta.set(destEta);
+      this.destEfob.set(this.props.fmcService.master.fmgc.getDestEFOB(true, fpIndex)?.toFixed(1) ?? '---.-');
+    }
+
+    if (selectedTabIndex === FlightPhaseTabIndex.Descent) {
+      const managedDescentSpeed = this.props.fmcService.master.fmgc.getManagedDescentSpeed(fpIndex);
+      this.desManagedSpdTarget.set(managedDescentSpeed);
+      const managedDescentSpeedMach = this.props.fmcService.master.fmgc.getManagedDescentSpeedMach(fpIndex);
+      this.desManagedMachTarget.set(managedDescentSpeedMach);
+
+      // Update DES speed table
+      if (this.activeFlightPhase.get() < FmgcFlightPhase.Descent) {
+        this.desTableModeLine1.set('MANAGED');
+        this.desTableSpdLine1.set(null);
+        this.desTableMachLine1.set(null);
+        this.desTablePredLine1.set('--:--  ----');
+        this.desTableModeLine2.set(null);
+        this.desTableSpdLine2.set(null);
+        this.desTableMachLine2.set(null);
+        this.desTablePredLine2.set(null);
+      } else if (this.managedSpeedActive.get()) {
+        this.desTableModeLine1.set('MANAGED');
+        this.desTableSpdLine1.set(managedDescentSpeed?.toString());
+        this.desTableMachLine1.set(`.${managedDescentSpeedMach.toFixed(2).split('.')[1]}`);
+        this.desTablePredLine1.set('--:--  ----');
+        this.desTableModeLine2.set(null);
+        this.desTableSpdLine2.set(null);
+        this.desTableMachLine2.set(null);
+        this.desTablePredLine2.set(null);
+      } else {
+        this.desTableModeLine1.set('SELECTED');
+        this.desTableSpdLine1.set(obs && obs.fcuSpeed >= 1 ? obs?.fcuSpeed.toFixed(0) ?? null : null);
+        this.desTableMachLine1.set(obs && obs.fcuSpeed < 1 ? `.${obs.fcuSpeed.toFixed(2).split('.')[1]}` : null);
+        this.desTablePredLine1.set('--:--  ----');
+        this.desTableModeLine2.set('MANAGED');
+        this.desTableSpdLine2.set(managedDescentSpeed?.toString());
+        this.desTableMachLine2.set(`.${managedDescentSpeedMach.toFixed(2).split('.')[1]}`);
+        this.desTablePredLine2.set(null);
+      }
+    }
+
+    if (selectedTabIndex === FlightPhaseTabIndex.Approach) {
+      // Update APPR page
+      this.apprLandingWeight.set(this.props.fmcService.master.getLandingWeight(fpIndex) ?? null);
+      const apprWindDirection = this.loadedFlightPlan?.performanceData.approachWindDirection.get();
+      const apprWindMagnitude = this.loadedFlightPlan?.performanceData.approachWindMagnitude.get();
+      if (apprWindDirection && apprWindMagnitude && this.loadedFlightPlan?.destinationRunway) {
+        const towerHeadwind = A380SpeedsUtils.getHeadwind(
+          apprWindMagnitude,
+          apprWindDirection,
+          this.loadedFlightPlan.destinationRunway.magneticBearing,
+        );
+        this.towerHeadwind.set(towerHeadwind);
+
+        const towerCrosswind = A380SpeedsUtils.getHeadwind(
+          apprWindMagnitude,
+          apprWindDirection,
+          this.loadedFlightPlan.destinationRunway.magneticBearing + 90,
+        );
+        this.apprCrosswind.set(Math.abs(towerCrosswind).toFixed(0).padStart(3, '0'));
+      } else {
+        this.towerHeadwind.set(null);
+        this.apprCrosswind.set('---');
+      }
+    }
   }
 
   render(): VNode {
@@ -1356,7 +1348,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             <TopTabNavigator
               pageTitles={Subject.create(['T.O', 'CLB', 'CRZ', 'DES', 'APPR', 'GA'])}
               selectedPageIndex={this.flightPhasesSelectedPageIndex}
-              pageChangeCallback={(val) => this.flightPhasesSelectedPageIndex.set(val)}
+              pageChangeCallback={(val) => {
+                this.flightPhasesSelectedPageIndex.set(val);
+              }}
               selectedTabTextColor="white"
               highlightedTab={this.highlightedTab}
             >
@@ -2112,17 +2106,17 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       }
                       componentIfFalse={
                         <div class="mfd-label-value-container">
-                          <span class="mfd-value">{this.clbTableSpdLine1}</span>
+                          <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.clbTableSpdLine1}</span>
                           <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                         </div>
                       }
                     />
                   </div>
                   <div class="mfd-fms-perf-speed-table-cell">
-                    <span class="mfd-value">{this.clbTableMachLine1}</span>
+                    <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.clbTableMachLine1}</span>
                   </div>
                   <div class="mfd-fms-perf-speed-table-cell">
-                    <span class="mfd-value">{this.clbTablePredLine1}</span>
+                    <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.clbTablePredLine1}</span>
                   </div>
                   <div class="mfd-fms-perf-speed-presel-managed-table-cell">
                     <div
@@ -2136,15 +2130,15 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   </div>
                   <div class="mfd-fms-perf-speed-table-cell">
                     <div class="mfd-label-value-container">
-                      <span class="mfd-value">{this.clbTableSpdLine2}</span>
+                      <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.clbTableSpdLine2}</span>
                       <span class="mfd-label-unit mfd-unit-trailing">{this.clbTableSpdLine2Unit}</span>
                     </div>
                   </div>
                   <div class="mfd-fms-perf-speed-table-cell">
-                    <span class="mfd-value">{this.clbTableMachLine2}</span>
+                    <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.clbTableMachLine2}</span>
                   </div>
                   <div class="mfd-fms-perf-speed-table-cell">
-                    <span class="mfd-value">{this.clbTablePredLine2}</span>
+                    <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.clbTablePredLine2}</span>
                   </div>
                   <div
                     class="mfd-fms-perf-speed-table-cell br"
@@ -2154,12 +2148,12 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   </div>
                   <div class="mfd-fms-perf-speed-table-cell" style="padding: 5px 15px 5px 15px;">
                     <div class="mfd-label-value-container">
-                      <span class="mfd-value">{this.clbTableSpdLine3}</span>
+                      <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.clbTableSpdLine3}</span>
                       <span class="mfd-label-unit mfd-unit-trailing">{this.clbTableSpdLine3Unit}</span>
                     </div>
                   </div>
                   <div class="mfd-fms-perf-speed-table-cell" style="padding: 5px 15px 5px 15px;">
-                    <span class="mfd-value">{this.clbTableMachLine3}</span>
+                    <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.clbTableMachLine3}</span>
                   </div>
                   <div class="mfd-fms-perf-speed-table-cell" style="padding: 5px 15px 5px 15px;" />
                   <div style="border-right: 1px solid lightgrey; height: 40px;" />
@@ -2334,13 +2328,13 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       style="grid-row-start: span 3; display: flex; justify-content: flex-start; align-items: center;"
                     >
                       <div class="mfd-label-value-container">
-                        <span class="mfd-value">{this.speedConstraintSpeed}</span>
+                        <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.speedConstraintSpeed}</span>
                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                       </div>
-                      <span class="mfd-value">/</span>
+                      <span class={{ 'mfd-value': true, sec: this.secActive }}>/</span>
                       <div class="mfd-label-value-container">
                         <span class="mfd-label-unit mfd-unit-leading">FL</span>
-                        <span class="mfd-value">{this.speedConstraintReason}</span>
+                        <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.speedConstraintReason}</span>
                       </div>
                     </div>
                     <div ref={this.clbNoiseEndInputRef}>
@@ -2420,7 +2414,11 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       componentIfFalse={
                         <Button
                           label="SPD CSTR"
-                          onClick={() => this.props.mfd.uiService.navigateTo('fms/active/f-pln-vert-rev/spd')}
+                          onClick={() =>
+                            this.props.mfd.uiService.navigateTo(
+                              `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-vert-rev/spd`,
+                            )
+                          }
                         >
                           SPD CSTR
                         </Button>
@@ -2486,7 +2484,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <div ref={this.crzPredStepRef}>
                       <div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
                         <div class="mfd-label mfd-spacing-right">AT</div>
-                        <div class="mfd-value bigger">{this.crzPredWaypoint}</div>
+                        <div class={{ 'mfd-value': true, sec: this.secActive, bigger: true }}>
+                          {this.crzPredWaypoint}
+                        </div>
                       </div>
                       <div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
                         <div class="mfd-label mfd-spacing-right">STEP TO</div>
@@ -2517,7 +2517,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         <div class="mfd-label mfd-spacing-right">TO</div>
                         <div class="mfd-label-value-container">
                           <span class="mfd-label-unit mfd-unit-leading">FL</span>
-                          <span class="mfd-value bigger">{this.crzPredAltitudeTarget}</span>
+                          <span class={{ 'mfd-value': true, sec: this.secActive, bigger: true }}>
+                            {this.crzPredAltitudeTarget}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -2585,14 +2587,14 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       }
                       componentIfFalse={
                         <div class="mfd-label-value-container">
-                          <span class="mfd-value">{this.crzTableSpdLine1}</span>
+                          <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.crzTableSpdLine1}</span>
                           <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                         </div>
                       }
                     />
                   </div>
                   <div class="mfd-fms-perf-speed-table-cell">
-                    <span class="mfd-value">{this.crzTablePredLine1}</span>
+                    <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.crzTablePredLine1}</span>
                     <span class="mfd-label-unit mfd-unit-trailing">{this.crzTablePredLine1Unit}</span>
                   </div>
                   <div class="mfd-fms-perf-speed-presel-managed-table-cell">
@@ -2606,16 +2608,16 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     </div>
                   </div>
                   <div class="mfd-fms-perf-speed-table-cell">
-                    <span class="mfd-value">{this.crzTableMachLine2}</span>
+                    <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.crzTableMachLine2}</span>
                   </div>
                   <div class="mfd-fms-perf-speed-table-cell">
                     <div class="mfd-label-value-container">
-                      <span class="mfd-value">{this.crzTableSpdLine2}</span>
+                      <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.crzTableSpdLine2}</span>
                       <span class="mfd-label-unit mfd-unit-trailing">{this.crzTableSpdLine2Unit}</span>
                     </div>
                   </div>
                   <div class="mfd-fms-perf-speed-table-cell">
-                    <span class="mfd-value">{this.crzTablePredLine2}</span>
+                    <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.crzTablePredLine2}</span>
                     <span class="mfd-label-unit mfd-unit-trailing">{this.crzTablePredLine2Unit}</span>
                   </div>
                   <div
@@ -2625,11 +2627,11 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <div class="mfd-label">{this.crzTableModeLine3}</div>
                   </div>
                   <div class="mfd-fms-perf-speed-table-cell" style="padding: 5px 15px 5px 15px;">
-                    <span class="mfd-value">{this.crzTableMachLine3}</span>
+                    <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.crzTableMachLine3}</span>
                   </div>
                   <div class="mfd-fms-perf-speed-table-cell" style="padding: 5px 15px 5px 15px;">
                     <div class="mfd-label-value-container">
-                      <span class="mfd-value">{this.crzTableSpdLine3}</span>
+                      <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.crzTableSpdLine3}</span>
                       <span class="mfd-label-unit mfd-unit-trailing">{this.crzTableSpdLine3Unit}</span>
                     </div>
                   </div>
@@ -2641,11 +2643,11 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <div class="mfd-label">LRC</div>
                   </div>
                   <div class="mfd-fms-perf-speed-table-cell" style="border-bottom: none; padding: 5px;">
-                    <span class="mfd-value">.84</span>
+                    <span class={{ 'mfd-value': true, sec: this.secActive }}>.84</span>
                   </div>
                   <div class="mfd-fms-perf-speed-table-cell" style="border-bottom: none; padding: 5px;">
                     <div class="mfd-label-value-container">
-                      <span class="mfd-value">---</span>
+                      <span class={{ 'mfd-value': true, sec: this.secActive }}>---</span>
                       <span class="mfd-label-unit mfd-unit-trailing"> </span>
                     </div>
                   </div>
@@ -2657,11 +2659,11 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <div class="mfd-label">MAX TURB</div>
                   </div>
                   <div class="mfd-fms-perf-speed-table-cell" style="border-bottom: none; padding: 5px;">
-                    <span class="mfd-value">.85</span>
+                    <span class={{ 'mfd-value': true, sec: this.secActive }}>.85</span>
                   </div>
                   <div class="mfd-fms-perf-speed-table-cell" style="border-bottom: none; padding: 5px;">
                     <div class="mfd-label-value-container">
-                      <span class="mfd-value">---</span>
+                      <span class={{ 'mfd-value': true, sec: this.secActive }}>---</span>
                       <span class="mfd-label-unit mfd-unit-trailing"> </span>
                     </div>
                   </div>
@@ -2707,13 +2709,21 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <Button
                       disabled={Subject.create(true)}
                       label="CMS"
-                      onClick={() => this.props.mfd.uiService.navigateTo('fms/active/f-pln-vert-rev/cms')}
+                      onClick={() =>
+                        this.props.mfd.uiService.navigateTo(
+                          `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-vert-rev/cms`,
+                        )
+                      }
                       buttonStyle="margin-right: 10px;"
                     />
                     <Button
                       disabled={Subject.create(false)}
                       label="STEP ALTs"
-                      onClick={() => this.props.mfd.uiService.navigateTo('fms/active/f-pln-vert-rev/step-alts')}
+                      onClick={() =>
+                        this.props.mfd.uiService.navigateTo(
+                          `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-vert-rev/step-alts`,
+                        )
+                      }
                     />
                   </div>
                 </div>
@@ -2884,7 +2894,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     />
                   </div>
                   <div class="mfd-fms-perf-speed-table-cell">
-                    <span class="mfd-value">--:-- ----</span>
+                    <span class={{ 'mfd-value': true, sec: this.secActive }}>--:-- ----</span>
                   </div>
                   <div class="mfd-fms-perf-speed-presel-managed-table-cell">
                     <div
@@ -2897,16 +2907,16 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     </div>
                   </div>
                   <div class="mfd-fms-perf-speed-table-cell">
-                    <span class="mfd-value">{this.desTableMachLine2}</span>
+                    <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.desTableMachLine2}</span>
                   </div>
                   <div class="mfd-fms-perf-speed-table-cell">
                     <div class="mfd-label-value-container">
-                      <span class="mfd-value">{this.desTableSpdLine2}</span>
+                      <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.desTableSpdLine2}</span>
                       <span class="mfd-label-unit mfd-unit-trailing">{this.desTableSpdLine2Unit}</span>
                     </div>
                   </div>
                   <div class="mfd-fms-perf-speed-table-cell">
-                    <span class="mfd-value">{this.desTablePredLine2}</span>
+                    <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.desTablePredLine2}</span>
                     <span class="mfd-label-unit mfd-unit-trailing">{this.desTablePredLine2Unit}</span>
                   </div>
                   <div
@@ -2946,7 +2956,11 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   <div style="display: flex; flex-direction: row;">
                     <Button
                       label="SPD CSTR"
-                      onClick={() => this.props.mfd.uiService.navigateTo('fms/active/f-pln-vert-rev/spd')}
+                      onClick={() =>
+                        this.props.mfd.uiService.navigateTo(
+                          `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-vert-rev/spd`,
+                        )
+                      }
                     />
                   </div>
                 </div>
@@ -3351,7 +3365,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   <span class="mfd-label mfd-spacing-right" style="width: 150px; text-align: right;">
                     TRANS
                   </span>
-                  <span class="mfd-value">{FmgcData.fmcFormatValue(this.transAlt)}</span>
+                  <span class={{ 'mfd-value': true, sec: this.secActive }}>
+                    {FmgcData.fmcFormatValue(this.transAlt)}
+                  </span>
                   <span class="mfd-label-unit mfd-unit-trailing">FT</span>
                 </div>
               </TopTabNavigatorPage>

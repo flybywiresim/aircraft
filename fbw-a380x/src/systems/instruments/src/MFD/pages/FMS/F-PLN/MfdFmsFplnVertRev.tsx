@@ -1118,7 +1118,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                     <div class="mfd-fms-fpln-labeled-box-label" style="margin-left: 15px;">
                       <span class="mfd-label mfd-spacing-right">STEP ALTS FROM CRZ</span>
                       <span class="mfd-label-unit mfd-unit-leading">FL</span>
-                      <span class="mfd-value">{this.crzFlFormatted}</span>
+                      <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.crzFlFormatted}</span>
                     </div>
                     <div style="width: 100%">
                       <div style="display: grid; grid-template-columns: 35% 25% 20% 20%; grid-auto-rows: 60px;">
@@ -1199,12 +1199,17 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                               }}
                             >
                               <div style={{ visibility: this.stepAltsLineVisibility[li] }}>
-                                <span class="mfd-value">{this.stepAltsDistancesFormatted[li]}</span>
+                                <span class={{ 'mfd-value': true, sec: this.secActive }}>
+                                  {this.stepAltsDistancesFormatted[li]}
+                                </span>
                                 <span class="mfd-label-unit mfd-unit-trailing">NM</span>
                               </div>
                             </div>
                             <div class="fr aic jcc" style={{ display: this.stepAltsNoMessageDisplay[li] }}>
-                              <span class="mfd-value" style={{ visibility: this.stepAltsLineVisibility[li] }}>
+                              <span
+                                class={{ 'mfd-value': true, sec: this.secActive }}
+                                style={{ visibility: this.stepAltsLineVisibility[li] }}
+                              >
                                 {this.stepAltsTimes[li]}
                               </span>
                             </div>
@@ -1252,7 +1257,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                           TO
                         </span>
                         <span class="mfd-label-unit mfd-unit-leading">FL</span>
-                        <span class="mfd-value">---</span>
+                        <span class={{ 'mfd-value': true, sec: this.secActive }}>---</span>
                       </div>
                       <div class="mfd-label" style="margin-top: 60px; margin-bottom: 30px;">
                         NO OPTIMUM STEP FOUND

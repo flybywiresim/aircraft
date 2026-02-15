@@ -11,6 +11,7 @@ import { HoldDistFormat, HoldTimeFormat, InboundCourseFormat } from 'instruments
 import { RadioButtonColor, RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
 import { HoldData, HoldType } from '@fmgc/flightplanning/data/flightplan';
 import { TurnDirection } from '@flybywiresim/fbw-sdk';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 
 interface MfdFmsFplnHoldProps extends AbstractMfdPageProps {}
 
@@ -43,6 +44,10 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
 
   private readonly radioButtonColor = this.tmpyActive.map((it) =>
     it ? RadioButtonColor.Yellow : RadioButtonColor.Cyan,
+  );
+
+  private readonly isActiveOrTmpy = this.loadedFlightPlanIndex.map(
+    (idx) => idx === FlightPlanIndex.Active || idx === FlightPlanIndex.Temporary,
   );
 
   protected onNewData(): void {
@@ -134,6 +139,7 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
           this.tmpyInsertButtonDiv.instance.style.visibility = v ? 'visible' : 'hidden';
         }
       }, true),
+      this.isActiveOrTmpy,
     );
 
     this.subs.push(
@@ -159,7 +165,8 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
         <div class="fr">
           <div class="mfd-fms-fpln-labeled-box-container" style="flex-grow: 1;">
             <span class="mfd-label mfd-spacing-right mfd-fms-fpln-labeled-box-label">
-              {this.holdType} <span class="mfd-label green bigger">{this.waypointIdent}</span>
+              {this.holdType}{' '}
+              <span class={{ 'mfd-label': true, green: this.isActiveOrTmpy, bigger: true }}>{this.waypointIdent}</span>
             </span>
             <span class="mfd-label" style="margin-top: 50px; margin-bottom: 20px;">
               INBOUND CRS
@@ -226,9 +233,9 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
               </div>
               <div class="mfd-label">EFOB</div>
               <div />
-              <div class="mfd-value magenta">{this.lastExitUtc}</div>
+              <div class={{ 'mfd-value': true, magenta: this.isActiveOrTmpy }}>{this.lastExitUtc}</div>
               <div class="mfd-label-value-container">
-                <span class="mfd-value magenta">{this.lastExitEfob}</span>
+                <span class={{ 'mfd-value': true, magenta: this.isActiveOrTmpy }}>{this.lastExitEfob}</span>
                 <span class="mfd-label-unit mfd-unit-trailing">T</span>
               </div>
             </div>
