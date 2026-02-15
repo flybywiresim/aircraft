@@ -92,6 +92,8 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
 
   private autobrakeMode = Subject.create(0);
 
+  private autobrakeActive = Subject.create(false);
+
   private preselActive = MappedSubject.create(
     ([machPresel, spdPresel]) => machPresel.isNormalOperation() || spdPresel.isNormalOperation(),
     this.machPreselVal,
@@ -121,12 +123,13 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
   private BC3MessageActive = MappedSubject.create(([BC3Message]) => BC3Message[0] !== null, this.BC3Message);
 
   private A3Message = MappedSubject.create(
-    ([fcuAtsFmaDiscreteWord, ecu1MaintenanceWord6, ecu2MaintenanceWord6, autobrakeMode]) =>
-      getA3Message(fcuAtsFmaDiscreteWord, ecu1MaintenanceWord6, ecu2MaintenanceWord6, autobrakeMode),
+    ([fcuAtsFmaDiscreteWord, ecu1MaintenanceWord6, ecu2MaintenanceWord6, autobrakeMode, autobrakeActive]) =>
+      getA3Message(fcuAtsFmaDiscreteWord, ecu1MaintenanceWord6, ecu2MaintenanceWord6, autobrakeMode, autobrakeActive),
     this.fcuAtsFmaDiscreteWord,
     this.ecu1MaintenanceWord6,
     this.ecu2MaintenanceWord6,
     this.autobrakeMode,
+    this.autobrakeActive,
     this.preselActive,
   );
 
@@ -238,6 +241,7 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
     sub.on('checkSpeedMode').handle(this.checkSpeedMode.set.bind(this.checkSpeedMode));
 
     sub.on('autoBrakeMode').handle(this.autobrakeMode.set.bind(this.autobrakeMode));
+    sub.on('autoBrakeActive').handle(this.autobrakeActive.set.bind(this.autobrakeActive));
 
     sub.on('fcuAtsFmaDiscreteWord').handle((word) => {
       this.fcuAtsFmaDiscreteWord.setWord(word.rawWord);
@@ -703,6 +707,7 @@ const getA3Message = (
   ecu1MaintenanceWord6: Arinc429Register,
   ecu2MaintenanceWord6: Arinc429Register,
   autobrakeMode: number,
+  autobrakeActive: boolean,
 ) => {
   const clbDemand = fcuAtsFmaDiscreteWord.bitValueOr(22, false);
   const mctDemand = fcuAtsFmaDiscreteWord.bitValueOr(23, false);
@@ -731,7 +736,7 @@ const getA3Message = (
   } else if (assymThrust) {
     text = 'LVR ASYM';
     className = 'Amber';
-  } else if (autobrakeMode === 3) {
+  } else if (autobrakeMode === 3 && !autobrakeActive) {
     text = 'BRK MAX';
     className = 'FontMediumSmaller MiddleAlign Cyan';
   } else {
