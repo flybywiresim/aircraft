@@ -94,12 +94,6 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
 
   private autobrakeActive = Subject.create(false);
 
-  private preselActive = MappedSubject.create(
-    ([machPresel, spdPresel]) => machPresel.isNormalOperation() || spdPresel.isNormalOperation(),
-    this.machPreselVal,
-    this.speedPreselVal,
-  );
-
   private BC3Message = MappedSubject.create(
     ([isAttExcessive, fmgcDiscreteWord7, setHoldSpeed, fcdcDiscreteWord1, fwcFlightPhase, tdReached, checkSpeedMode]) =>
       getBC3Message(
@@ -130,7 +124,6 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
     this.ecu2MaintenanceWord6,
     this.autobrakeMode,
     this.autobrakeActive,
-    this.preselActive,
   );
 
   private A3MessageActive = MappedSubject.create(([A3Message]) => A3Message[0] !== null, this.A3Message);
