@@ -635,9 +635,9 @@ export class PseudoFWC {
 
   private readonly idg2DisconnectedWarning = Subject.create(false);
 
-  private readonly gen1OffWarningConfirmNode2 = new NXLogicConfirmNode(60, true);
+  private readonly engine1RunningAndNotPhase6 = new NXLogicConfirmNode(60, true);
 
-  private readonly gen2OffWarningConfirmNode2 = new NXLogicConfirmNode(60, true);
+  private readonly engine2RunningAndNotPhase6 = new NXLogicConfirmNode(60, true);
 
   private readonly gen1OffWarning = Subject.create(false);
 
@@ -3136,8 +3136,8 @@ export class PseudoFWC {
     const phase6 = this.fwcFlightPhase.get() === 6;
     const phase6For60Seconds = this.flightPhase6For60Seconds.read();
 
-    this.gen1OffWarningConfirmNode2.write(!engine1NotRunning && !phase6, deltaTime);
-    this.gen2OffWarningConfirmNode2.write(!engine2NotRunning && !phase6, deltaTime);
+    this.engine1RunningAndNotPhase6.write(!engine1NotRunning && !phase6, deltaTime);
+    this.engine2RunningAndNotPhase6.write(!engine2NotRunning && !phase6, deltaTime);
 
     const gen1OffPart1 = gen1PbOffFor5Seconds && !idg1Disconnected; // TODO: Check gen fault memory
     const gen2OffPart1 = gen2PbOffFor5Seconds && !idg2Disconnected; // TODO: Check gen fault memory
@@ -3149,8 +3149,8 @@ export class PseudoFWC {
       !this.engine2Generator.get() || // TODO: Replace engine2Generator with fault memory
       this.idg2DisconnectWarn.get();
 
-    const gen1OffConfirmOrPhase6 = this.gen1OffWarningConfirmNode2.read() || phase6For60Seconds;
-    const gen2OffConfirmOrPhase6 = this.gen2OffWarningConfirmNode2.read() || phase6For60Seconds;
+    const gen1OffConfirmOrPhase6 = this.engine1RunningAndNotPhase6.read() || phase6For60Seconds;
+    const gen2OffConfirmOrPhase6 = this.engine2RunningAndNotPhase6.read() || phase6For60Seconds;
     const phase6WithOtherGenOff = (
       offConfirmOrPhase6: boolean,
       otherGenOffPart1: boolean,
@@ -3185,9 +3185,8 @@ export class PseudoFWC {
     const gen1OffWarningPart3 =
       this.gen12NotOperating.get() && this.toConfigHalfSecondTriggeredNode.read() && this.flightPhase29.get();
     const gen2OffWarningPart1 = gen2OffPart1 && gen2OffPart2;
-    const gen2OffWarningPart2 = this.gen12NotOperatingPhase3Pulse.read();
-    const gen2OffWarningPart3 =
-      this.gen12NotOperating.get() && this.toConfigHalfSecondTriggeredNode.read() && this.flightPhase29.get();
+    const gen2OffWarningPart2 = gen1OffWarningPart2;
+    const gen2OffWarningPart3 = gen1OffWarningPart3;
 
     this.gen1OffWarning.set(gen1OffWarningPart1 && !gen1OffWarningPart2 && !gen1OffWarningPart3);
     this.gen2OffWarning.set(gen2OffWarningPart1 && !gen2OffWarningPart2 && !gen2OffWarningPart3);
@@ -3195,9 +3194,7 @@ export class PseudoFWC {
     const idg1DisconnectedWarningPart2 =
       (this.flightPhase29.get() && this.toConfigHalfSecondTriggeredNode.read() && this.gen12NotOperating.get()) ||
       this.gen12NotOperatingPhase3Pulse.read();
-    const idg2DisconnectedWarningPart2 =
-      (this.flightPhase29.get() && this.toConfigHalfSecondTriggeredNode.read() && this.gen12NotOperating.get()) ||
-      this.gen12NotOperatingPhase3Pulse.read();
+    const idg2DisconnectedWarningPart2 = idg1DisconnectedWarningPart2;
 
     this.idg1DisconnectedWarning.set(this.idg1DisconnectWarn.get() && !idg1DisconnectedWarningPart2);
     this.idg2DisconnectedWarning.set(this.idg2DisconnectWarn.get() && !idg2DisconnectedWarningPart2);
