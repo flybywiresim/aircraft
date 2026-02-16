@@ -539,25 +539,25 @@ export class FwsCore {
 
   public readonly cabinDoorOpen = Subject.create(false);
 
-  private readonly door1LOpen = RegisteredSimVar.createBoolean('Interactive point open:0');
+  private readonly door1LOpen = RegisteredSimVar.createBoolean('INTERACTIVE POINT open:0');
 
-  private readonly door1ROpen = RegisteredSimVar.createBoolean('Interactive point open:1');
+  private readonly door1ROpen = RegisteredSimVar.createBoolean('INTERACTIVE POINT open:1');
 
-  private readonly door2LOpen = RegisteredSimVar.createBoolean('Interactive point open:2');
+  private readonly door2LOpen = RegisteredSimVar.createBoolean('INTERACTIVE POINT open:2');
 
-  private readonly door2ROpen = RegisteredSimVar.createBoolean('Interactive point open:3');
+  private readonly door2ROpen = RegisteredSimVar.createBoolean('INTERACTIVE POINT open:3');
 
-  private readonly door3LOpen = RegisteredSimVar.createBoolean('Interactive point open:4');
+  private readonly door3LOpen = RegisteredSimVar.createBoolean('INTERACTIVE POINT open:4');
 
-  private readonly door3ROpen = RegisteredSimVar.createBoolean('Interactive point open:5');
+  private readonly door3ROpen = RegisteredSimVar.createBoolean('INTERACTIVE POINT open:5');
 
-  private readonly door4LOpen = RegisteredSimVar.createBoolean('Interactive point open:6');
+  private readonly door4LOpen = RegisteredSimVar.createBoolean('INTERACTIVE POINT open:6');
 
-  private readonly door4ROpen = RegisteredSimVar.createBoolean('Interactive point open:7');
+  private readonly door4ROpen = RegisteredSimVar.createBoolean('INTERACTIVE POINT open:7');
 
-  private readonly door5LOpen = RegisteredSimVar.createBoolean('Interactive point open:8');
+  private readonly door5LOpen = RegisteredSimVar.createBoolean('INTERACTIVE POINT open:8');
 
-  private readonly door5ROpen = RegisteredSimVar.createBoolean('Interactive point open:9');
+  private readonly door5ROpen = RegisteredSimVar.createBoolean('INTERACTIVE POINT open:9');
 
   public readonly allOutflowValvesOpen = Subject.create(false);
 
