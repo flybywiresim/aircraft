@@ -1475,6 +1475,46 @@ export class PseudoFWC {
   private readonly oneHundredMtrigNode = new NXLogicTriggeredMonostableNode(5);
   private readonly oneHundredAudio = Subject.create(false);
 
+  private fiftyThresholdPreviousCycle = false;
+  private fiftyMtrigPreviousCycle = false;
+  private readonly fiftyMtrigNode = new NXLogicTriggeredMonostableNode(2);
+  private readonly fiftyAudio = Subject.create(false);
+
+  private fortyThresholdPreviousCycle = false;
+  private fortyMtrigPreviousCycle = false;
+  private readonly fortyMtrigNode = new NXLogicTriggeredMonostableNode(2);
+  private readonly fortyAudio = Subject.create(false);
+
+  private thirtyThresholdPreviousCycle = false;
+  private thirtyMtrigPreviousCycle = false;
+  private readonly thirtyMtrigNode = new NXLogicTriggeredMonostableNode(2);
+  private readonly thirtyAudio = Subject.create(false);
+
+  private twentyThresholdPreviousCycle = false;
+  private twentyMtrigPreviousCycle = false;
+  private readonly twentyMtrigNode = new NXLogicTriggeredMonostableNode(2);
+  private readonly twentyAudio = Subject.create(false);
+
+  private twentyRetardActivePreviousCycle = false;
+  private twentyRetardActiveMtrigPreviousCycle = false;
+  private readonly twentyRetardActiveMtrigNode = new NXLogicTriggeredMonostableNode(2);
+  private readonly twentyRetardAudio = Subject.create(false);
+
+  private tenRetardActivePreviousCycle = false;
+  private tenRetardActiveMtrigPreviousCycle = false;
+  private readonly tenRetardActiveMtrigNode = new NXLogicTriggeredMonostableNode(2);
+  private readonly tenRetardAudio = Subject.create(false);
+
+  private tenThresholdPreviousCycle = false;
+  private tenMtrigPreviousCycle = false;
+  private readonly tenMtrigNode = new NXLogicTriggeredMonostableNode(2);
+  private readonly tenAudio = Subject.create(false);
+
+  private fiveMtrigPreviousCycle = false;
+  private fiveAudioActiveInPreviousCycle = false;
+  private readonly fiveMtrigNode = new NXLogicTriggeredMonostableNode(2);
+  private readonly fiveAudio = Subject.create(false);
+
   constructor(
     private readonly bus: EventBus,
     private readonly instrument: BaseInstrument,
@@ -1660,6 +1700,46 @@ export class PseudoFWC {
       if (v) {
         this.soundManager.enqueueSound('alt_100');
       }
+    });
+    this.fiftyAudio.sub((v) => {
+      if (v) {
+        this.soundManager.enqueueSound('alt_50');
+      }
+    });
+    this.fortyAudio.sub((v) => {
+      if (v) {
+        this.soundManager.enqueueSound('alt_40');
+      }
+    });
+    this.thirtyAudio.sub((v) => {
+      if (v) {
+        this.soundManager.enqueueSound('alt_30');
+      }
+      this.twentyAudio.sub((v) => {
+        if (v) {
+          this.soundManager.enqueueSound('alt_20');
+        }
+      });
+
+      this.twentyRetardAudio.sub((v) => {
+        if (v) {
+          this.soundManager.enqueueSound('alt_20');
+          this.soundManager.enqueueSound('new_retard');
+        }
+      });
+
+      this.tenAudio.sub((v) => {
+        if (v) {
+          this.soundManager.enqueueSound('alt_10');
+        }
+      });
+
+      this.tenRetardAudio.sub((v) => {
+        if (v) {
+          this.soundManager.enqueueSound('alt_10');
+          this.soundManager.enqueueSound('new_retard');
+        }
+      });
     });
   }
 
@@ -1911,6 +1991,107 @@ export class PseudoFWC {
     this.oneHundredAudio.set(oneHundredAudio);
     this.oneHundredThresholdPreviousCycle = oneHundredFeetTreshold;
     this.oneHundredMtrigPreviousCycle = this.oneHundredMtrigNode.write(oneHundredAudio, deltaTime);
+
+    // 50
+    const fiftyTresholdAndPinProgrammed =
+      A32NXRadioAutoCallOutFlags.Fifty & this.autoCallOutPins && height <= 53 && height >= 50;
+    const fiftyAudio =
+      !this.fortyAudio.get() &&
+      fiftyTresholdAndPinProgrammed &&
+      !this.fiftyThresholdPreviousCycle &&
+      !this.fiftyMtrigPreviousCycle;
+    this.fiftyAudio.set(fiftyAudio);
+    this.fiftyThresholdPreviousCycle = fiftyTresholdAndPinProgrammed;
+    this.fiftyMtrigPreviousCycle = this.fiftyMtrigNode.write(fiftyAudio, deltaTime);
+    // 40
+    const fourtyThresholdAndPinProgrammed =
+      A32NXRadioAutoCallOutFlags.Forty & this.autoCallOutPins && height <= 42 && height >= 40;
+    const fortyAudio =
+      !this.thirtyAudio.get() &&
+      fourtyThresholdAndPinProgrammed &&
+      !this.fortyThresholdPreviousCycle &&
+      !this.fortyMtrigPreviousCycle;
+    this.fortyAudio.set(fortyAudio);
+    this.fortyThresholdPreviousCycle = fourtyThresholdAndPinProgrammed;
+    this.fortyMtrigPreviousCycle = this.fortyMtrigNode.write(fortyAudio, deltaTime);
+    // 30
+    const thirtyThresholdAndPinProgrammed =
+      A32NXRadioAutoCallOutFlags.Thirty & this.autoCallOutPins && height <= 32 && height >= 30;
+    const thirtyAudio =
+      thirtyThresholdAndPinProgrammed &&
+      !this.twentyAudio.get() &&
+      !this.thirtyThresholdPreviousCycle &&
+      !this.thirtyMtrigPreviousCycle;
+    this.thirtyAudio.set(thirtyAudio);
+    this.thirtyThresholdPreviousCycle = thirtyThresholdAndPinProgrammed;
+    this.thirtyMtrigPreviousCycle = this.thirtyMtrigNode.write(thirtyAudio, deltaTime);
+    // 20 no retard
+    const twentyThreshold = height <= 22 && height >= 20;
+    const twentyThresholdAndPinProgrammed = A32NXRadioAutoCallOutFlags.Twenty & this.autoCallOutPins && twentyThreshold;
+    const fm2DiscreteWord4 = this.fmgc2DiscreteWord4.get();
+    const ap1Engaged = fm2DiscreteWord4.bitValue(12);
+    const fm1LandActive = fm2DiscreteWord4.bitValue(13);
+    const ap2Engaged = fm2DiscreteWord4.bitValue(14);
+    const fm2LadnActive = fm2DiscreteWord4.bitValue(15);
+    const athrActive = this.atsDiscreteWord.bitValue(13);
+
+    const oneApActiveAndinLand = (ap1Engaged && fm1LandActive) || (ap2Engaged && fm2LadnActive);
+
+    const twentyAudio =
+      twentyThresholdAndPinProgrammed &&
+      !this.twentyThresholdPreviousCycle &&
+      !this.twentyAudio.get() &&
+      oneApActiveAndinLand &&
+      athrActive &&
+      !this.twentyMtrigPreviousCycle;
+    this.twentyAudio.set(twentyAudio);
+    this.twentyThresholdPreviousCycle = twentyThresholdAndPinProgrammed;
+    this.twentyMtrigPreviousCycle = this.twentyMtrigNode.write(twentyAudio, deltaTime);
+
+    // TLA logic for retard
+    const tlaEng1 = this.throttle1Position.get();
+    const tlaEng2 = this.throttle2Position.get();
+    const tlaIdle =
+
+    // 20 retard
+    const goAround =
+      (this.throttle1Position.get() > 43.3 || this.throttle2Position.get() > 43.3) && this.fwcFlightPhase.get() === 8;
+    const noAutoland = !oneApActiveAndinLand;
+    const noAutolandAndAthr = noAutoland && athrActive;
+    const noAutolandAndAthrOrNoAthr = noAutolandAndAthr || !athrActive;
+    const twentyRetard =
+      !goAround && twentyThreshold && noAutolandAndAthrOrNoAthr && !this.twentyRetardActiveMtrigPreviousCycle;
+    const playRetardAudio = !this.twentyRetardActivePreviousCycle && twentyRetard;
+    this.twentyRetardAudio.set(playRetardAudio);
+    this.twentyRetardActivePreviousCycle = playRetardAudio;
+    this.twentyRetardActiveMtrigPreviousCycle = this.twentyRetardActiveMtrigNode.write(playRetardAudio, deltaTime);
+    // 10 no retard
+    const tenThreshold = height <= 12 && height >= 10;
+    const tenThresholdAndPinProgrammed = A32NXRadioAutoCallOutFlags.Ten & this.autoCallOutPins && tenThreshold;
+    this.tenAudio.set(
+      tenThresholdAndPinProgrammed &&
+        !this.tenThresholdPreviousCycle &&
+        !this.fiveAudio.get() &&
+        !this.retardInhibit.get() &&
+        noAutolandAndAthrOrNoAthr &&
+        !this.tenMtrigPreviousCycle,
+    );
+    this.tenThresholdPreviousCycle = tenThresholdAndPinProgrammed;
+    this.tenMtrigPreviousCycle = this.tenMtrigNode.write(this.tenAudio.get(), deltaTime);
+    // 10 retard
+    const tenRetard = !goAround && !noAutolandAndAthr && tenThreshold && !this.tenRetardActiveMtrigPreviousCycle;
+    const playTenRetardAudio = !this.tenRetardActivePreviousCycle && tenRetard;
+    this.tenRetardAudio.set(playTenRetardAudio);
+    this.tenRetardActivePreviousCycle = playTenRetardAudio;
+    this.tenRetardActiveMtrigPreviousCycle = this.tenRetardActiveMtrigNode.write(playTenRetardAudio, deltaTime);
+    // 5
+    const fiveThresholdAndPinProgrammed =
+      A32NXRadioAutoCallOutFlags.Five & this.autoCallOutPins && height <= 7 && height >= 5;
+    const fiveAudio =
+      fiveThresholdAndPinProgrammed && !this.fiveAudioActiveInPreviousCycle && !this.fiveMtrigPreviousCycle && !this.;
+    this.fiveAudio.set(fiveAudio);
+    this.fiveMtrigPreviousCycle = this.fiveMtrigNode.write(fiveAudio, deltaTime);
+    this.fiveAudioActiveInPreviousCycle = fiveAudio;
   }
 
   /**
