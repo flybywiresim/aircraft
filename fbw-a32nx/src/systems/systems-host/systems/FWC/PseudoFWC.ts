@@ -28,6 +28,7 @@ import {
   Arinc429SignStatusMatrix,
   Arinc429Word,
   NXDataStore,
+  NxHysterisNode,
   NXLogicClockNode,
   NXLogicConfirmNode,
   NXLogicMemoryNode,
@@ -45,6 +46,7 @@ import { A32NXFcuBusEvents } from '../../../shared/src/publishers/A32NXFcuBusPub
 import { FwsSoundManager } from 'systems-host/systems/FWC/FwsSoundManager';
 import { PseudoFwcSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
 import { A32NXEcpBusEvents } from '@shared/publishers/A32NXEcpBusPublisher';
+import { A32NX_DEFAULT_RADIO_AUTO_CALL_OUTS, A32NXRadioAutoCallOutFlags } from '@shared/AutoCallOuts';
 
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));
@@ -1395,8 +1397,46 @@ export class PseudoFWC {
   );
 
   /* SETTINGS */
-
   private readonly configPortableDevices = Subject.create(false);
+
+  /** Radio Altimeter callouts */
+
+  /**
+   * The radio altimeter value used for the automatic callouts. Null if no RA is availble.
+   */
+  private readonly noFlightPhaseInhibit: number[] = [];
+
+  private radioAltimeterCallOutHeight: number | null = null;
+
+  private autoCallOutPins = A32NX_DEFAULT_RADIO_AUTO_CALL_OUTS;
+
+  private twoThousandFiveHundredActive = false;
+
+  private readonly twoThousandFiveHundredHystherisis = new NxHysterisNode(3000, 2500);
+
+  private twoThousandFiveHundredThresholdInPreviousCycle = false;
+
+  private readonly twoThousandFiveHundredHasPlayedMemoryNode = new NXLogicMemoryNode(true);
+
+  private readonly twoThousandFiveHundredAudio = Subject.create(false);
+
+  private readonly twentyFiveHundredAudio = Subject.create(false);
+
+  private readonly twoThousandHystherisis = new NxHysterisNode(2400, 2000);
+
+  private twoThousandThresholdInPreviousCycle = false;
+
+  private readonly twoThousandHasPlayedMemoryNode = new NXLogicMemoryNode(true);
+
+  private readonly twoThousandAudio = Subject.create(false);
+
+  private readonly oneThousandHystherisis = new NxHysterisNode(1100, 1000);
+
+  private oneThousandThresholdInPreviousCycle = false;
+
+  private readonly oneThousandHasPlayedMemoryNode = new NXLogicMemoryNode(true);
+
+  private readonly oneThousandAudio = Subject.create(false);
 
   constructor(
     private readonly bus: EventBus,
@@ -1532,6 +1572,17 @@ export class PseudoFWC {
         console.log('PseudoFWC shut down.');
       }
     });
+
+    // Radio altimeter callouts
+    NXDataStore.getAndSubscribeLegacy(
+      'CONFIG_A32NX_FWC_RADIO_AUTO_CALL_OUT_PINS',
+      (k, v) => k === 'CONFIG_A32NX_FWC_RADIO_AUTO_CALL_OUT_PINS' && (this.autoCallOutPins = Number(v)),
+      A32NX_DEFAULT_RADIO_AUTO_CALL_OUTS.toString(),
+    );
+    this.twentyFiveHundredAudio.sub(() => this.soundManager.enqueueSound('alt_2500'), true);
+    this.twoThousandFiveHundredAudio.sub(() => this.soundManager.enqueueSound('alt_2500'), true);
+    this.twoThousandAudio.sub(() => this.soundManager.enqueueSound('alt_2000'), true);
+    this.oneThousandAudio.sub(() => this.soundManager.enqueueSound('alt_1000'), true);
   }
 
   private registerKeyEvents() {
@@ -1669,6 +1720,76 @@ export class PseudoFWC {
     this.sdac05010Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
     this.sdac05010Word.setBitValue(13, !this.idg2ConnectedVar.get());
     this.sdac05010Word.setBitValue(19, !this.engine2MasterAlternatorVar.get());
+  }
+
+  private radioAltimeterCallOutLogic() {
+    const height = this.radioAltimeterCallOutHeight ?? 0;
+
+    // 2500
+    const twentyFiveHundredPin = A32NXRadioAutoCallOutFlags.TwentyFiveHundred & this.autoCallOutPins;
+    const twoThousandFiveHundredPin = A32NXRadioAutoCallOutFlags.TwoThousandFiveHundred & this.autoCallOutPins;
+    const twentyFiveOrTwoThousandFiveHundredPin = twentyFiveHundredPin || twoThousandFiveHundredPin;
+    const twoThousandFiveHundredFeetTreshold =
+      twentyFiveOrTwoThousandFiveHundredPin && height <= 2530 && height >= 2500;
+    const twoThousandFiveHundredHysteresis = twentyFiveOrTwoThousandFiveHundredPin
+      ? this.twoThousandFiveHundredHystherisis.write(height)
+      : false;
+
+    const twoThousandFiveHundredActivePreviously = this.twoThousandFiveHundredActive;
+    const twoThousandFiveHundredMemory = this.twoThousandFiveHundredHasPlayedMemoryNode.write(
+      twoThousandFiveHundredActivePreviously,
+      !twoThousandFiveHundredHysteresis,
+    );
+
+    const twoThousandFiveHundredActiveCurrent =
+      this.twoThousandFiveHundredThresholdInPreviousCycle &&
+      twoThousandFiveHundredFeetTreshold &&
+      !twoThousandFiveHundredMemory;
+    this.twoThousandFiveHundredThresholdInPreviousCycle = twoThousandFiveHundredFeetTreshold;
+
+    this.twoThousandFiveHundredActive = twoThousandFiveHundredActiveCurrent;
+    this.twentyFiveHundredAudio.set(twentyFiveHundredPin && twoThousandFiveHundredActiveCurrent);
+    this.twoThousandFiveHundredAudio.set(twoThousandFiveHundredPin && twoThousandFiveHundredActiveCurrent);
+
+    // 2000
+    const twoThousandFeetPin = A32NXRadioAutoCallOutFlags.TwoThousand & this.autoCallOutPins;
+    const twoThousandFeetTreshold = twoThousandFeetPin && height <= 2030 && height >= 2000;
+    const twoThousandFeetHysteresis = twoThousandFeetPin ? this.twoThousandHystherisis.write(height) : false;
+    const twoThousandFeetActivePreviously = this.twoThousandAudio.get();
+    const twoThousandFeetMemory = this.twoThousandHasPlayedMemoryNode.write(
+      twoThousandFeetActivePreviously,
+      !twoThousandFeetHysteresis,
+    );
+    this.twoThousandAudio.set(
+      twoThousandFeetTreshold &&
+        this.twoThousandThresholdInPreviousCycle &&
+        !twoThousandFeetMemory &&
+        twoThousandFeetHysteresis,
+    );
+    this.twoThousandThresholdInPreviousCycle = twoThousandFeetTreshold;
+
+    // 1000
+    const oneThousandFeetPin = A32NXRadioAutoCallOutFlags.OneThousand & this.autoCallOutPins;
+    const oneThousandFeetTreshold = oneThousandFeetPin && height <= 1030 && height >= 1000;
+    const oneThousandFeetHysteresis = oneThousandFeetPin ? this.oneThousandHystherisis.write(height) : false;
+    const oneThousandFeetActivePreviously = this.oneThousandAudio.get();
+    const oneThousandFeetMemory = this.oneThousandHasPlayedMemoryNode.write(
+      oneThousandFeetActivePreviously,
+      !oneThousandFeetHysteresis,
+    );
+    this.oneThousandAudio.set(
+      this.oneThousandThresholdInPreviousCycle &&
+        oneThousandFeetTreshold &&
+        !oneThousandFeetMemory &&
+        oneThousandFeetHysteresis,
+    );
+    this.oneThousandThresholdInPreviousCycle = oneThousandFeetTreshold;
+
+    /*
+    const oneThousandFeetTreshold = height >= 1020 && height <= 1000;
+    const fiveHundredFeetTreshold = height >= 513 && height <= 500;
+    const fourHoundredFeetTreshold = height >= 410 && height <= 400;
+*/
   }
 
   /**
@@ -1881,9 +2002,18 @@ export class PseudoFWC {
     // ra validity
     const eitherRaInvalid = this.radioHeight1.isFailureWarning() || this.radioHeight2.isFailureWarning();
     const bothRaInvalid = this.radioHeight1.isFailureWarning() && this.radioHeight2.isFailureWarning();
-    const bothRaInvalidOrNcd =
-      (this.radioHeight1.isNoComputedData() || this.radioHeight1.isFailureWarning()) &&
-      (this.radioHeight2.isNoComputedData() || this.radioHeight2.isFailureWarning());
+    const ra1InvalidOrNcd = this.radioHeight1.isFailureWarning() || this.radioHeight1.isNoComputedData();
+    const ra2InvalidOrNcd = this.radioHeight2.isFailureWarning() || this.radioHeight2.isNoComputedData();
+    const bothRaInvalidOrNcd = ra1InvalidOrNcd && ra2InvalidOrNcd;
+    if (!ra1InvalidOrNcd) {
+      this.radioAltimeterCallOutHeight = this.radioHeight1.value;
+    } else if (!ra2InvalidOrNcd) {
+      this.radioAltimeterCallOutHeight = this.radioHeight2.value;
+    } else {
+      this.radioAltimeterCallOutHeight = null;
+    }
+
+    this.radioAltimeterCallOutLogic();
 
     // on ground logic
     const lgciu1Disagree = xor(leftCompressedHardwireLgciu1, this.lgciu1DiscreteWord2.bitValue(13));
