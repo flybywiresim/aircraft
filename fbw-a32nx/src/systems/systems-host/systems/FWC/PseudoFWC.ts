@@ -1438,6 +1438,43 @@ export class PseudoFWC {
 
   private readonly oneThousandAudio = Subject.create(false);
 
+  private fiveHundredThresholdInPreviousCycle = false;
+
+  private fiveHundredMtrigPreviousCycle = false;
+
+  private readonly fiveHundredMtrigNode = new NXLogicTriggeredMonostableNode(11);
+
+  private readonly fiveHundredAudio = Subject.create(false);
+
+  private fourHundredThresholdPreviousCycle = false;
+
+  private fourHundredMtrigPreviousCycle = false;
+
+  private readonly fourHundredMtrigNode = new NXLogicTriggeredMonostableNode(5);
+
+  private readonly fourHundredAudio = Subject.create(false);
+
+  private threeHundredThresholdPreviousCycle = false;
+
+  private threeHundredMtrigPreviousCycle = false;
+
+  private readonly threeHundredMtrigNode = new NXLogicTriggeredMonostableNode(5);
+
+  private readonly threeHundredAudio = Subject.create(false);
+
+  private twoHundredThresholdPreviousCycle = false;
+
+  private twoHundredMtrigPreviousCycle = false;
+
+  private readonly twoHundredMtrigNode = new NXLogicTriggeredMonostableNode(5);
+
+  private readonly twoHundredAudio = Subject.create(false);
+
+  private oneHundredThresholdPreviousCycle = false;
+  private oneHundredMtrigPreviousCycle = false;
+  private readonly oneHundredMtrigNode = new NXLogicTriggeredMonostableNode(5);
+  private readonly oneHundredAudio = Subject.create(false);
+
   constructor(
     private readonly bus: EventBus,
     private readonly instrument: BaseInstrument,
@@ -1579,10 +1616,51 @@ export class PseudoFWC {
       (k, v) => k === 'CONFIG_A32NX_FWC_RADIO_AUTO_CALL_OUT_PINS' && (this.autoCallOutPins = Number(v)),
       A32NX_DEFAULT_RADIO_AUTO_CALL_OUTS.toString(),
     );
-    this.twentyFiveHundredAudio.sub(() => this.soundManager.enqueueSound('alt_2500'), true);
-    this.twoThousandFiveHundredAudio.sub(() => this.soundManager.enqueueSound('alt_2500'), true);
-    this.twoThousandAudio.sub(() => this.soundManager.enqueueSound('alt_2000'), true);
-    this.oneThousandAudio.sub(() => this.soundManager.enqueueSound('alt_1000'), true);
+    this.twentyFiveHundredAudio.sub((v) => {
+      if (v) {
+        this.soundManager.enqueueSound('alt_2500');
+      }
+    });
+    this.twoThousandFiveHundredAudio.sub((v) => {
+      if (v) {
+        this.soundManager.enqueueSound('alt_2500');
+      }
+    });
+    this.twoThousandAudio.sub((v) => {
+      if (v) {
+        this.soundManager.enqueueSound('alt_2000');
+      }
+    });
+    this.oneThousandAudio.sub((v) => {
+      if (v) {
+        this.soundManager.enqueueSound('alt_1000');
+      }
+    });
+    this.fiveHundredAudio.sub((v) => {
+      if (v) {
+        this.soundManager.enqueueSound('alt_500');
+      }
+    });
+    this.fourHundredAudio.sub((v) => {
+      if (v) {
+        this.soundManager.enqueueSound('alt_400');
+      }
+    });
+    this.threeHundredAudio.sub((v) => {
+      if (v) {
+        this.soundManager.enqueueSound('alt_300');
+      }
+    });
+    this.twoHundredAudio.sub((v) => {
+      if (v) {
+        this.soundManager.enqueueSound('alt_200');
+      }
+    });
+    this.oneHundredAudio.sub((v) => {
+      if (v) {
+        this.soundManager.enqueueSound('alt_100');
+      }
+    });
   }
 
   private registerKeyEvents() {
@@ -1722,7 +1800,10 @@ export class PseudoFWC {
     this.sdac05010Word.setBitValue(19, !this.engine2MasterAlternatorVar.get());
   }
 
-  private radioAltimeterCallOutLogic() {
+  private radioAltimeterCallOutLogic(deltaTime: number): void {
+    if (!this.startupCompleted.get()) {
+      return;
+    }
     const height = this.radioAltimeterCallOutHeight ?? 0;
 
     // 2500
@@ -1785,11 +1866,51 @@ export class PseudoFWC {
     );
     this.oneThousandThresholdInPreviousCycle = oneThousandFeetTreshold;
 
-    /*
-    const oneThousandFeetTreshold = height >= 1020 && height <= 1000;
-    const fiveHundredFeetTreshold = height >= 513 && height <= 500;
-    const fourHoundredFeetTreshold = height >= 410 && height <= 400;
-*/
+    // 500
+    const fiveHundredFeetTreshold =
+      A32NXRadioAutoCallOutFlags.FiveHundred & this.autoCallOutPins && height <= 530 && height >= 500;
+    const fiveHundredAudio =
+      fiveHundredFeetTreshold && !this.fiveHundredThresholdInPreviousCycle && !this.fiveHundredMtrigPreviousCycle;
+    this.fiveHundredAudio.set(fiveHundredAudio);
+    this.fiveHundredThresholdInPreviousCycle = fiveHundredFeetTreshold;
+    this.fiveHundredMtrigPreviousCycle = this.fiveHundredMtrigNode.write(fiveHundredAudio, deltaTime);
+
+    // 400
+    const fourHundredFeetTreshold =
+      A32NXRadioAutoCallOutFlags.FourHundred & this.autoCallOutPins && height <= 410 && height >= 400;
+
+    const fourHundredAudio =
+      fourHundredFeetTreshold && !this.fourHundredThresholdPreviousCycle && !this.fourHundredMtrigPreviousCycle;
+    this.fourHundredAudio.set(fourHundredAudio);
+    this.fourHundredThresholdPreviousCycle = fourHundredFeetTreshold;
+    this.fourHundredMtrigPreviousCycle = this.fourHundredMtrigNode.write(fourHundredAudio, deltaTime);
+
+    // 300
+    const threeHundredFeetTreshold =
+      A32NXRadioAutoCallOutFlags.ThreeHundred & this.autoCallOutPins && height <= 310 && height >= 300;
+    const threeHundredAudio =
+      threeHundredFeetTreshold && !this.threeHundredThresholdPreviousCycle && !this.threeHundredMtrigPreviousCycle;
+    this.threeHundredAudio.set(threeHundredAudio);
+    this.threeHundredThresholdPreviousCycle = threeHundredFeetTreshold;
+    this.threeHundredMtrigPreviousCycle = this.threeHundredMtrigNode.write(threeHundredAudio, deltaTime);
+
+    // 200
+    const twoHundredFeetTreshold =
+      A32NXRadioAutoCallOutFlags.TwoHundred & this.autoCallOutPins && height <= 210 && height >= 200;
+    const twoHundredAudio =
+      twoHundredFeetTreshold && !this.twoHundredThresholdPreviousCycle && !this.twoHundredMtrigPreviousCycle;
+    this.twoHundredAudio.set(twoHundredAudio);
+    this.twoHundredThresholdPreviousCycle = twoHundredFeetTreshold;
+    this.twoHundredMtrigPreviousCycle = this.twoHundredMtrigNode.write(twoHundredAudio, deltaTime);
+
+    // 100
+    const oneHundredFeetTreshold =
+      A32NXRadioAutoCallOutFlags.OneHundred & this.autoCallOutPins && height <= 110 && height >= 100;
+    const oneHundredAudio =
+      oneHundredFeetTreshold && !this.oneHundredThresholdPreviousCycle && !this.oneHundredMtrigPreviousCycle;
+    this.oneHundredAudio.set(oneHundredAudio);
+    this.oneHundredThresholdPreviousCycle = oneHundredFeetTreshold;
+    this.oneHundredMtrigPreviousCycle = this.oneHundredMtrigNode.write(oneHundredAudio, deltaTime);
   }
 
   /**
@@ -2013,7 +2134,7 @@ export class PseudoFWC {
       this.radioAltimeterCallOutHeight = null;
     }
 
-    this.radioAltimeterCallOutLogic();
+    this.radioAltimeterCallOutLogic(deltaTime);
 
     // on ground logic
     const lgciu1Disagree = xor(leftCompressedHardwireLgciu1, this.lgciu1DiscreteWord2.bitValue(13));
