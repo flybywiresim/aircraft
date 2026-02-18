@@ -528,10 +528,7 @@ class SpeedTrendArrow extends DisplayComponent<{
 }> {
   private readonly sub = this.props.bus.getArincSubscriber<Arinc429Values & ClockEvents>();
 
-  private vCTrendWord = Arinc429LocalVarConsumerSubject.create(
-    this.sub.on('vCTrend'),
-    Arinc429Register.empty().rawWord,
-  );
+  private vCTrendWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('vCTrend').atFrequency(10));
 
   private vCTrendInvalid = this.vCTrendWord.map((input) => {
     return input.isFailureWarning() || input.isNoComputedData();
