@@ -1951,6 +1951,7 @@ impl InertialReference {
         self.extreme_latitude = !((-60. + hysteresis_sign * 0.5) <= latitude
             && (latitude <= (73. - hysteresis_sign * 0.5)
                 || (latitude <= (82. - hysteresis_sign * 0.5)
+                    && latitude >= 0.
                     && (longitude <= (-120. - hysteresis_sign * 2.5)
                         || longitude >= (-90. + hysteresis_sign * 2.5)))))
     }

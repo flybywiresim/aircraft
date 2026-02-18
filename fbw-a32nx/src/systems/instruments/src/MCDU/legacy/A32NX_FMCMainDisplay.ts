@@ -29,6 +29,7 @@ import {
   UpdateThrottler,
   VhfNavaid,
   Waypoint,
+  MagVar,
 } from '@flybywiresim/fbw-sdk';
 import { A32NX_Util } from '../../../../shared/src/A32NX_Util';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
@@ -3604,14 +3605,17 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   /**
-   *
-   * @returns {number} Returns estimated fuel on board when arriving at the destination
+   * Returns the estimated fuel on board when arriving at the destination (in tonnes), or null if it could not be computed
+   * @returns EFOB at destination
    */
   public getDestEFOB() {
     const plan = this.getFlightPlan(FlightPlanIndex.Active);
     const predictions = this.getFuelPredComputation(FlightPlanIndex.Active);
 
-    return predictions.landingWeight - plan.performanceData.zeroFuelWeight.get();
+    const zfw = plan.performanceData.zeroFuelWeight.get();
+    const landingWeight = predictions.landingWeight;
+
+    return zfw !== null && landingWeight !== null ? landingWeight - zfw : null;
   }
 
   public trySetBlockFuel(s: string, forPlan: FlightPlanIndex): boolean {
@@ -4385,9 +4389,11 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
 
     const planeLl = new LatLong(latitude.value, longitude.value);
+    const magVar = MagVar.get(planeLl);
     this._progBrgDist.distance = Avionics.Utils.computeGreatCircleDistance(planeLl, this._progBrgDist.coordinates);
-    this._progBrgDist.bearing = A32NX_Util.trueToMagnetic(
+    this._progBrgDist.bearing = MagVar.trueToMagnetic(
       Avionics.Utils.computeGreatCircleHeading(planeLl, this._progBrgDist.coordinates),
+      magVar ?? 0,
     );
   }
 
@@ -4919,8 +4925,10 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       return { direction: 0, speed: 0 };
     }
 
-    const magVar = Facilities.getMagVar(destination.location.lat, destination.location.long);
-    const trueHeading = A32NX_Util.magneticToTrue(activePlan.performanceData.approachWindDirection.get(), magVar);
+    const trueHeading = MagVar.magneticToTrue(
+      activePlan.performanceData.approachWindDirection.get(),
+      destination.magVar ?? 0,
+    );
 
     return { direction: trueHeading, speed: activePlan.performanceData.approachWindMagnitude.get() };
   }
