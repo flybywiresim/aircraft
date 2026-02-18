@@ -1451,13 +1451,6 @@ export class PseudoFWC {
 
     this.toConfigMemoNormal.sub((normal) => SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool', normal));
     this.fwcFlightPhase.sub(() => this.flightPhaseEndedPulseNode.write(true, 0));
-    this.fwcFlightPhase.sub((flightPhase) => {
-      if (flightPhase === 7) {
-        this.wheel1Rpm.resume();
-      } else {
-        this.wheel1Rpm.pause();
-      }
-    }, true);
 
     this.auralCrcOutput.sub((crc) => this.soundManager.handleSoundCondition('continuousRepetitiveChime', crc), true);
 
