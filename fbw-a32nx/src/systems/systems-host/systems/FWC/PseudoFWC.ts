@@ -2126,7 +2126,7 @@ export class PseudoFWC {
     const lowEnergyInhibition = false;
 
     this.lowEnergyWarningActive.set(
-      flightPhase567 &&
+      this.flightPhase567.get() &&
         (this.lowEnergyMtrig1.read() || lowEnergyDetected) &&
         !this.lowEnergyMtrig2.read() &&
         !lowEnergyInhibition,
