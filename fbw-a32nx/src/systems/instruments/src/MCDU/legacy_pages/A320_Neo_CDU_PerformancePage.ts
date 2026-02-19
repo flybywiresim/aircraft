@@ -9,7 +9,6 @@ import { CDUStepAltsPage } from './A320_Neo_CDU_StepAltsPage';
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
-import { FmsFormatters } from '../legacy/FmsFormatters';
 import { FlightPlanIndex } from '../../../../fmgc/src/flightplanning/FlightPlanManager';
 import { BitFlags } from '@microsoft/msfs-sdk';
 import { FlightPlanFlags } from '@fmgc/flightplanning/plans/FlightPlanFlags';
@@ -1551,8 +1550,7 @@ export class CDUPerformancePage {
       }
 
       if (Number.isFinite(toPrediction.secondsFromPresent)) {
-        const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
-        toTimeCell = FmsFormatters.secondsToUTC(utcTime + toPrediction.secondsFromPresent) + '[color]green';
+        toTimeCell = mcdu.getTimePrediction(toPrediction.secondsFromPresent, forPlan) + '[color]green';
       }
 
       // Check if we have a downstream cruise step

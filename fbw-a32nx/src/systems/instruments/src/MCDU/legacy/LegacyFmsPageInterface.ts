@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2025 FlyByWire Simulations
+// Copyright (c) 2025-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';

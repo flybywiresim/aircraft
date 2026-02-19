@@ -4,9 +4,9 @@
 import { DateTimeFormatter } from '@microsoft/msfs-sdk';
 
 export class FmsFormatters {
-  private static hhmmssFormatter = DateTimeFormatter.create('{hh}:{mm}:{ss}');
+  private static hhmmssFormatter = DateTimeFormatter.create('{HH}:{mm}:{ss}');
 
-  private static hhmmFormatter = DateTimeFormatter.create('{hh}{mm}');
+  private static hhmmFormatter = DateTimeFormatter.create('{HH}{mm}');
 
   public static secondsTohhmm(seconds: number) {
     const h = Math.floor(seconds / 3600);
