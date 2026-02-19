@@ -147,7 +147,9 @@ export const A320Fuel: React.FC<FuelProps> = ({
   }, [simbriefDataLoaded, simbriefPlanRamp, totalTarget, refuelStartedByUser]);
 
   const gsxRefuelActive = () =>
-    gsxRefuelState === GsxServiceStates.REQUESTED || gsxRefuelState === GsxServiceStates.ACTIVE;
+    gsxRefuelState === GsxServiceStates.REQUESTED ||
+    gsxRefuelState === GsxServiceStates.ACTIVE ||
+    gsxRefuelState === GsxServiceStates.COMPLETING;
 
   const gsxRefuelCallable = () => gsxRefuelState === GsxServiceStates.CALLABLE;
 
