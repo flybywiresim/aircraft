@@ -26,6 +26,8 @@ export interface GsxSimVarEvents {
   gsx_departure_state: number;
   /** GSX GPU Service - 4 => requested, 5 => active */
   gsx_gpu_state: number;
+  /** GSX GPU Connected - true => non-zero*/
+  gsx_gpu_connected: number;
   /** GSX Boarding Cargo loaded 0-100% */
   gsx_boarding_cargo_percent: number;
   /** GSX Deboarding Cargo loaded 0-100% */
@@ -47,6 +49,7 @@ export class GsxSimVarPublisher extends SimVarPublisher<GsxSimVarEvents> {
     ['gsx_deboarding_state', { name: 'L:FSDT_GSX_DEBOARDING_STATE', type: SimVarValueType.Number }],
     ['gsx_departure_state', { name: 'L:FSDT_GSX_DEPARTURE_STATE', type: SimVarValueType.Number }],
     ['gsx_gpu_state', { name: 'L:FSDT_GSX_GPU_STATE', type: SimVarValueType.Number }],
+    ['gsx_gpu_connected', { name: 'L:FSDT_GSX_GPU_CONNECTED', type: SimVarValueType.Number }],
     ['gsx_boarding_cargo_percent', { name: 'L:FSDT_GSX_BOARDING_CARGO_PERCENT', type: SimVarValueType.Number }],
     ['gsx_deboarding_cargo_percent', { name: 'L:FSDT_GSX_DEBOARDING_CARGO_PERCENT', type: SimVarValueType.Number }],
     ['gsx_refuel_state', { name: 'L:FSDT_GSX_REFUELING_STATE', type: SimVarValueType.Number }],

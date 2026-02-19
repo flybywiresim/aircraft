@@ -68,7 +68,7 @@ abstract class GsxSync implements Instrument {
   protected readonly stateBoard = ConsumerSubject.create(null, 1);
   protected readonly stateDeboard = ConsumerSubject.create(null, 1);
   protected readonly stateDeparture = ConsumerSubject.create(null, 1);
-  protected readonly stateGpu = ConsumerSubject.create(null, 1);
+  protected readonly stateGpu = ConsumerSubject.create(null, 0);
   protected isRefuelActive = false;
   protected isDefuel = false;
   protected readonly fuelTimer = new DebounceTimer();
@@ -107,7 +107,7 @@ abstract class GsxSync implements Instrument {
     this.stateBoard.setConsumer(this.sub.on('gsx_boarding_state'));
     this.stateDeboard.setConsumer(this.sub.on('gsx_deboarding_state'));
     this.stateDeparture.setConsumer(this.sub.on('gsx_departure_state'));
-    this.stateGpu.setConsumer(this.sub.on('gsx_gpu_state'));
+    this.stateGpu.setConsumer(this.sub.on('gsx_gpu_connected'));
     this.fuelHose.setConsumer(this.sub.on('gsx_fuelhose_connected'));
     this.refuelStartedByUser.setConsumer(this.sub.on('a32nx_refuel_started_by_user'));
     this.cargoDoorTarget.setConsumer(this.sub.on(`msfs_interactive_point_goal_${this.getCargoDoorIndex()}`));
@@ -266,7 +266,7 @@ abstract class GsxSync implements Instrument {
       } else if (
         jetwayState >= GsxServiceStates.CALLABLE &&
         jetwayState <= GsxServiceStates.BYPASSED &&
-        gpuState !== GsxServiceStates.ACTIVE
+        gpuState !== GsxStates.CONNECTED
       ) {
         action = PowerAction.DISCONNECT;
       }
@@ -274,7 +274,7 @@ abstract class GsxSync implements Instrument {
     } else if (
       //jetway or gpu connected
       (jetwayState >= GsxServiceStates.REQUESTED ||
-        gpuState === GsxServiceStates.ACTIVE ||
+        gpuState === GsxStates.CONNECTED ||
         deboardState === GsxServiceStates.ACTIVE) &&
       departureState < GsxServiceStates.REQUESTED
     ) {
