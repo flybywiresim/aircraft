@@ -7,7 +7,7 @@
 
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { GuidanceParameters, LateralPathGuidance } from '@fmgc/guidance/ControlLaws';
-import { AltitudeDescriptor, TurnDirection, MathUtils, Fix } from '@flybywiresim/fbw-sdk';
+import { AltitudeDescriptor, TurnDirection, MathUtils, Fix, MagVar } from '@flybywiresim/fbw-sdk';
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { SegmentType } from '@fmgc/wtsdk';
 import {
@@ -91,7 +91,7 @@ abstract class HXLeg extends XFLeg {
   }
 
   get inboundLegCourse(): DegreesTrue {
-    return this.metadata.flightPlanLegDefinition.magneticCourse;
+    return MagVar.getLegTrueCourse(this.metadata.flightPlanLegDefinition);
   }
 
   get outboundLegCourse(): DegreesTrue {
