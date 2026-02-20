@@ -218,6 +218,8 @@ export class PseudoFWC {
   private navMode = false;
 
   /* SDAC */
+  private readonly sdac00100Word = Arinc429Register.empty();
+
   private readonly sdac00401Word = Arinc429Register.empty();
   private readonly sdac00410Word = Arinc429Register.empty();
   private readonly sdac00411Word = Arinc429Register.empty();
@@ -848,6 +850,8 @@ export class PseudoFWC {
 
   private readonly flightPhase129 = Subject.create(false);
 
+  private readonly flightPhase12910 = Subject.create(false);
+
   private readonly flightPhase23 = Subject.create(false);
 
   private readonly flightPhase34 = Subject.create(false);
@@ -1327,6 +1331,24 @@ export class PseudoFWC {
 
   private readonly tcasSensitivity = Subject.create(0);
 
+  private readonly tcasControlPanelPosition = Subject.create(0);
+
+  private readonly tcasStbyConfirmNode = new NXLogicConfirmNode(3, true);
+
+  private readonly tcasControlPanelStbyConfirmNode = new NXLogicConfirmNode(3, true);
+
+  private readonly tcasStby = Subject.create(false);
+
+  private readonly tcasStbyWarning = Subject.create(false);
+
+  private readonly tcasStbyMemoGreen = Subject.create(false);
+
+  private readonly tcasStbyMemoAmber = Subject.create(false);
+
+  private readonly xpdrStbyConfirmNode = new NXLogicConfirmNode(3, true);
+
+  private readonly xpdrStbyWarning = Subject.create(false);
+
   private readonly toConfigMemoNormal = Subject.create(false);
 
   private readonly wingAntiIce = Subject.create(false);
@@ -1587,7 +1609,15 @@ export class PseudoFWC {
   private readonly ir2FaultDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_2_FAULT_WARN_DISCRETE');
   private readonly ir3FaultDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_3_FAULT_WARN_DISCRETE');
 
+  private readonly xpdr1Status = RegisteredSimVar.create('A:TRANSPONDER STATE:1', SimVarValueType.Number);
+  private readonly xpdr2Status = RegisteredSimVar.create('A:TRANSPONDER STATE:2', SimVarValueType.Number);
+
   private acquireSdac(): void {
+    this.sdac00100Word.set(0);
+    this.sdac00100Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
+    this.sdac00100Word.setBitValue(24, this.xpdr1Status.get() === 0 || this.xpdr1Status.get() === 1);
+    this.sdac00100Word.setBitValue(25, this.xpdr2Status.get() === 0 || this.xpdr2Status.get() === 1);
+
     this.sdac00401Word.set(0);
     this.sdac00401Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
     this.sdac00401Word.setBitValue(26, this.ir1AlignDiscreteVar.get());
@@ -1628,6 +1658,7 @@ export class PseudoFWC {
     // flight phase convenience vars
     this.flightPhase126.set(flightPhase === 1 || flightPhase === 2 || flightPhase === 6);
     this.flightPhase129.set(flightPhase === 1 || flightPhase === 2 || flightPhase === 9);
+    this.flightPhase12910.set(this.flightPhase129.get() || flightPhase === 10);
     this.flightPhase23.set(flightPhase === 2 || flightPhase === 3);
     this.flightPhase34.set(flightPhase === 3 || flightPhase === 4);
     this.flightPhase345.set(this.flightPhase34.get() || flightPhase === 5);
@@ -2493,6 +2524,7 @@ export class PseudoFWC {
     );
     this.tcasFault.set(SimVar.GetSimVarValue('L:A32NX_TCAS_FAULT', 'bool'));
     this.tcasSensitivity.set(SimVar.GetSimVarValue('L:A32NX_TCAS_SENSITIVITY', 'Enum'));
+    this.tcasControlPanelPosition.set(SimVar.GetSimVarValue('L:A32NX_SWITCH_TCAS_Position', 'number'));
     this.wingAntiIce.set(SimVar.GetSimVarValue('L:A32NX_PNEU_WING_ANTI_ICE_SYSTEM_SELECTED', 'bool'));
     this.voiceVhf3.set(SimVar.GetSimVarValue('A:COM ACTIVE FREQUENCY:3', 'number'));
 
@@ -3113,6 +3145,23 @@ export class PseudoFWC {
         !this.ir2NotAlignedPulse.read() &&
         !this.ir3NotAlignedPulse.read() &&
         flightPhase !== 1,
+    );
+
+    // TODO: Check XPDR Fault below
+    this.tcasStby.set(this.tcasSensitivity.get() === 1);
+    this.tcasStbyConfirmNode.write(this.tcasStby.get(), deltaTime);
+    this.tcasControlPanelStbyConfirmNode.write(
+      this.tcasControlPanelPosition.get() === 0 && !this.tcasFault.get(),
+      deltaTime,
+    );
+
+    this.tcasStbyWarning.set(this.fwcFlightPhase.get() === 6 && this.tcasControlPanelStbyConfirmNode.read());
+    this.tcasStbyMemoGreen.set(this.fwcFlightPhase.get() !== 6 && this.tcasStbyConfirmNode.read());
+    this.tcasStbyMemoAmber.set(this.fwcFlightPhase.get() === 6 && this.tcasStbyConfirmNode.read());
+
+    this.xpdrStbyWarning.set(
+      this.xpdrStbyConfirmNode.write(this.sdac00100Word.bitValue(24) && this.sdac00100Word.bitValue(25), deltaTime) &&
+        !this.flightPhase12910.get(),
     );
 
     // ALT ALERT
@@ -4065,6 +4114,17 @@ export class PseudoFWC {
       sysPage: -1,
       side: 'LEFT',
       cancel: false,
+    },
+    3400880: {
+      // ATC/XPDR STBY
+      flightPhaseInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
+      simVarIsActive: this.xpdrStbyWarning,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['340088001'],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: -1,
+      side: 'LEFT',
     },
     7700027: {
       // DUAL ENGINE FAILURE
@@ -5152,9 +5212,9 @@ export class PseudoFWC {
       side: 'LEFT',
     },
     3400507: {
-      // NAV TCAS STBY (in flight)
+      // NAV TCAS STBY
       flightPhaseInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
-      simVarIsActive: this.tcasSensitivity.map((v) => v === 1),
+      simVarIsActive: this.tcasStbyWarning,
       whichCodeToReturn: () => [0],
       codesToReturn: ['340050701'],
       memoInhibit: () => false,
@@ -5857,13 +5917,9 @@ export class PseudoFWC {
       side: 'RIGHT',
     },
     '0000320': {
-      // TCAS STBY
+      // TCAS STBY Green
       flightPhaseInhib: [],
-      simVarIsActive: MappedSubject.create(
-        ([tcasSensitivity, fwcFlightPhase]) => tcasSensitivity === 1 && fwcFlightPhase !== 6,
-        this.tcasSensitivity,
-        this.fwcFlightPhase,
-      ),
+      simVarIsActive: this.tcasStbyMemoGreen,
       whichCodeToReturn: () => [0],
       codesToReturn: ['000032001'],
       memoInhibit: () => false,
@@ -5872,13 +5928,9 @@ export class PseudoFWC {
       side: 'RIGHT',
     },
     '0000325': {
-      // TCAS STBY in flight
+      // TCAS STBY Amber
       flightPhaseInhib: [],
-      simVarIsActive: MappedSubject.create(
-        ([tcasSensitivity, fwcFlightPhase]) => tcasSensitivity === 1 && fwcFlightPhase === 6,
-        this.tcasSensitivity,
-        this.fwcFlightPhase,
-      ),
+      simVarIsActive: this.tcasStbyMemoAmber,
       whichCodeToReturn: () => [0],
       codesToReturn: ['000032501'],
       memoInhibit: () => false,
