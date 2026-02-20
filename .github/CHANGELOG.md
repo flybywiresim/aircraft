@@ -73,6 +73,11 @@
 1. [A380X/FUEL SYSTEM] Fixed inner tank transfer not starting in certain circumstances - @donstim (donbikes)
 1. [A32NX/FADEC] Fixed the PFD showing MAN FLX instead of MAN MCT post A/THR engagement after takeoff - @FozzieHi (fozzie)
 1. [A32NX/FWS] Add `ENG REV SET` master caution - @FozzieHi (fozzie)
+1. [FMS] Fixed an issue where the LNAV could crash after enabling the alternate flightplan - @tracernz (Mike)
+1. [A380X/FWS] Add EXCESS RESIDUAL DIFF PRESS and INHIBITED BY DOORS procedures - @Jonny23787 (Jonathan)
+1. [FMS] Fixed incorrect course for enroute holds and direct tos - @tracernz (Mike)
+1. [FMS] Show true bearings correctly in various FMS pages on the MCDU/MFD - @tracernz (Mike)
+1. [A380X/FWS] Improve various ABN SENSED procedure accuracy - @Jonny23787 (Jonathan)
 1. [A32NX/FWS] Add `IDG 1(2) DISCONNECTED` and `GEN 1(2) OFF` master cautions - @FozzieHi (fozzie)
 
 ## 0.14.0

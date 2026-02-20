@@ -3,7 +3,7 @@
 import { ClockEvents, FSComponent, SimVarValueType, Subject, VNode } from '@microsoft/msfs-sdk';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { FmsPage } from '../../common/FmsPage';
-import { Arinc429Register, coordinateToString, Fix, RegisteredSimVar } from '@flybywiresim/fbw-sdk';
+import { Arinc429Register, coordinateToString, Fix, MagVar, RegisteredSimVar } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Footer } from '../../common/Footer';
 import { FixFormat, RnpFormat } from '../../common/DataEntryFormats';
@@ -18,7 +18,6 @@ import {
 } from 'instruments/src/MFD/shared/utils';
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
-import { A32NX_Util } from '@shared/A32NX_Util';
 import { MfdFmsPositionNavaids } from './MfdFmsPositionNavaids';
 
 interface MfdFmsPositionMonitorPageProps extends AbstractMfdPageProps {}
@@ -328,8 +327,9 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
     if (waypoint && fmCoordinates) {
       const distanceToWaypointNm = distanceTo(fmCoordinates, waypoint.location);
       this.distanceToWaypoint.set(distanceToWaypointNm);
+      const magVar = MagVar.get(fmCoordinates);
       this.bearingToWaypoint.set(
-        A32NX_Util.trueToMagnetic(Avionics.Utils.computeGreatCircleHeading(fmCoordinates, waypoint.location)),
+        MagVar.trueToMagnetic(Avionics.Utils.computeGreatCircleHeading(fmCoordinates, waypoint.location), magVar ?? 0),
       );
     } else {
       this.distanceToWaypoint.set(null);
