@@ -28,6 +28,7 @@ use uom::si::{
 };
 use uom::ConstZero;
 
+/// The Air Data Reference runtime associated with an ADIRS equipped with Air Data Modules (ADM), like on the A320.
 pub struct AdmAirDataReferenceRuntime {
     /// If non-Duration::ZERO, the remaining time the runtime needs to initialize itself. Otherwise
     /// the self-check has been completed.
