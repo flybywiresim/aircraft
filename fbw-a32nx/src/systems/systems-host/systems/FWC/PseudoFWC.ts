@@ -106,7 +106,7 @@ export class PseudoFWC {
 
   private readonly fwsUpdateThrottler = new UpdateThrottler(125); // has to be > 100 due to pulse nodes
 
-  private readonly simTime = RegisteredSimVar.create<number>('E:SIMULATION TIME', SimVarValueType.Seconds);
+  private readonly simTime = RegisteredSimVar.create('E:SIMULATION TIME', SimVarValueType.Seconds);
 
   private keyEventManager: KeyEventManager;
 
@@ -846,13 +846,15 @@ export class PseudoFWC {
 
   private readonly flightPhase126 = Subject.create(false);
 
+  private readonly flightPhase129 = Subject.create(false);
+
   private readonly flightPhase23 = Subject.create(false);
 
   private readonly flightPhase34 = Subject.create(false);
 
   private readonly flightPhase345 = Subject.create(false);
 
-  private readonly flightPhase129 = Subject.create(false);
+  private readonly flightPhase567 = Subject.create(false);
 
   private readonly flightPhase67 = Subject.create(false);
 
@@ -1028,6 +1030,11 @@ export class PseudoFWC {
 
   private autoBrakeOffAuralTriggered = false;
 
+  private readonly wheel1Rpm = ConsumerSubject.create(this.sub.on('wheel1Rpm'), 0);
+
+  // TODO: Get from BSCU
+  private readonly wheel1SpeedAbove70kts = this.wheel1Rpm.map((wheel1Rpm) => wheel1Rpm * 0.118921 > 70);
+
   /* NAVIGATION */
   private readonly adr1Cas = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_adr_computed_airspeed_1'));
 
@@ -1184,6 +1191,12 @@ export class PseudoFWC {
   private readonly throttle2Position = Subject.create(0);
 
   public readonly allThrottleIdle = Subject.create(false);
+
+  private readonly eng1TLAReverse = Subject.create(false);
+
+  private readonly eng2TLAReverse = Subject.create(false);
+
+  private readonly revSetWarning = Subject.create(false);
 
   public readonly allThrottleReverse = Subject.create(false);
 
@@ -1567,30 +1580,12 @@ export class PseudoFWC {
     this.ecpEmergencyCancelLevel = warningButtons.bitValue(17) || this.ecpEmergencyCancelButtonHardwired.get();
   }
 
-  private readonly ir1AlignDiscreteVar = RegisteredSimVar.createBoolean(
-    'L:A32NX_ADIRS_IR_1_ALIGN_DISCRETE',
-    SimVarValueType.Bool,
-  );
-  private readonly ir2AlignDiscreteVar = RegisteredSimVar.createBoolean(
-    'L:A32NX_ADIRS_IR_2_ALIGN_DISCRETE',
-    SimVarValueType.Bool,
-  );
-  private readonly ir3AlignDiscreteVar = RegisteredSimVar.createBoolean(
-    'L:A32NX_ADIRS_IR_3_ALIGN_DISCRETE',
-    SimVarValueType.Bool,
-  );
-  private readonly ir1FaultDiscreteVar = RegisteredSimVar.createBoolean(
-    'L:A32NX_ADIRS_IR_1_FAULT_WARN_DISCRETE',
-    SimVarValueType.Bool,
-  );
-  private readonly ir2FaultDiscreteVar = RegisteredSimVar.createBoolean(
-    'L:A32NX_ADIRS_IR_2_FAULT_WARN_DISCRETE',
-    SimVarValueType.Bool,
-  );
-  private readonly ir3FaultDiscreteVar = RegisteredSimVar.createBoolean(
-    'L:A32NX_ADIRS_IR_3_FAULT_WARN_DISCRETE',
-    SimVarValueType.Bool,
-  );
+  private readonly ir1AlignDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_1_ALIGN_DISCRETE');
+  private readonly ir2AlignDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_2_ALIGN_DISCRETE');
+  private readonly ir3AlignDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_3_ALIGN_DISCRETE');
+  private readonly ir1FaultDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_1_FAULT_WARN_DISCRETE');
+  private readonly ir2FaultDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_2_FAULT_WARN_DISCRETE');
+  private readonly ir3FaultDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_3_FAULT_WARN_DISCRETE');
 
   private acquireSdac(): void {
     this.sdac00401Word.set(0);
@@ -1636,10 +1631,10 @@ export class PseudoFWC {
     this.flightPhase23.set(flightPhase === 2 || flightPhase === 3);
     this.flightPhase34.set(flightPhase === 3 || flightPhase === 4);
     this.flightPhase345.set(this.flightPhase34.get() || flightPhase === 5);
+    this.flightPhase567.set(flightPhase === 5 || flightPhase === 6 || flightPhase === 7);
     this.flightPhase67.set(flightPhase === 6 || flightPhase === 7);
     this.flightPhase678.set(this.flightPhase67.get() || flightPhase === 8);
     this.flightPhase78.set(flightPhase === 7 || flightPhase === 8);
-    const flightPhase567 = flightPhase === 5 || flightPhase === 6 || flightPhase === 7;
 
     // TO Config convenience vars
     const toConfigTest = this.ecpWarningButtonStatus.get().bitValue(18);
@@ -1713,7 +1708,9 @@ export class PseudoFWC {
         this.throttle2Position.get() < 2.6 &&
         this.throttle2Position.get() > -2,
     );
-    this.allThrottleReverse.set(this.throttle1Position.get() < -4.3 && this.throttle2Position.get() < -4.3);
+    this.eng1TLAReverse.set(this.throttle1Position.get() < -4.3);
+    this.eng2TLAReverse.set(this.throttle2Position.get() < -4.3);
+    this.allThrottleReverse.set(this.eng1TLAReverse.get() && this.eng2TLAReverse.get());
 
     const masterCautionButtonLeft = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERCAUT_L', 'bool');
     const masterCautionButtonRight = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERCAUT_R', 'bool');
@@ -2161,6 +2158,13 @@ export class PseudoFWC {
     );
 
     const configMemoComputed = this.toMemo.get() || this.ldgMemo.get();
+
+    this.revSetWarning.set(
+      (this.eng1TLAReverse.get() || this.eng2TLAReverse.get()) &&
+        !this.aircraftOnGround.get() &&
+        this.flightPhase567.get() &&
+        !(this.fwcFlightPhase.get() === 7 && this.wheel1SpeedAbove70kts.get()),
+    );
 
     // DMC/IR general logic
     const dmcLeftIr1DiscreteWord = this.dmcLeftIr1DiscreteWord.get();
@@ -2962,7 +2966,7 @@ export class PseudoFWC {
       !isNormalLaw &&
         isCasAbove60 &&
         this.stallWarningRaw.get() &&
-        flightPhase567 &&
+        this.flightPhase567.get() &&
         this.radioHeight1.valueOr(Infinity) > 1500 &&
         this.radioHeight2.valueOr(Infinity) > 1500,
     );
@@ -4094,6 +4098,17 @@ export class PseudoFWC {
       memoInhibit: () => false,
       failure: 3,
       sysPage: 0,
+      side: 'LEFT',
+    },
+    7700382: {
+      // ENG REV SET
+      flightPhaseInhib: [1, 2, 3, 4, 8, 9, 10],
+      simVarIsActive: this.revSetWarning,
+      whichCodeToReturn: () => [0, 1],
+      codesToReturn: ['770038201', '770038202'],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: -1,
       side: 'LEFT',
     },
     2600010: {

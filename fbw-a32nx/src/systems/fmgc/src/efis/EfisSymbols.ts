@@ -26,6 +26,7 @@ import {
   VdSymbol,
   FmsData,
   NdPwpSymbolTypeFlags,
+  MagVar,
 } from '@flybywiresim/fbw-sdk';
 
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
@@ -767,7 +768,7 @@ export class EfisSymbols<T extends number> {
         } else {
           type |= NdSymbolTypeFlags.CourseReversalRight;
         }
-        direction = leg.definition.magneticCourse; // TODO true
+        direction = MagVar.getLegTrueCourse(leg.definition);
       } else if (flightPlan.index >= FlightPlanIndex.FirstSecondary) {
         type |= NdSymbolTypeFlags.SecondaryFlightPlan;
       }

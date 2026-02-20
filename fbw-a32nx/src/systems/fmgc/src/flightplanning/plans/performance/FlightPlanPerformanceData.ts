@@ -1,10 +1,10 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2022 2026 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { MutableSubscribable, Subscribable } from '@microsoft/msfs-sdk';
+import { MutableSubscribable, Subject, Subscribable } from '@microsoft/msfs-sdk';
 
 export interface FlightPlanPerformanceData {
   /**
@@ -547,6 +547,11 @@ export interface FlightPlanPerformanceData {
    */
   readonly approachFlapsThreeSelected: MutableSubscribable<boolean>;
 
+  /** Estimated takeoff time timestamp, in unix epoch milliseconds */
+  readonly estimatedTakeoffTime: Subject<number | null>;
+
+  readonly estimatedTakeoffTimeExpired: Subject<boolean | null>;
+
   // ----------------------------------------------
   // A380 specific
   // ----------------------------------------------
@@ -730,7 +735,8 @@ export interface SerializedFlightPlanPerformanceData {
   approachBaroMinimum: number | null;
   approachRadioMinimum: 'NO DH' | number | null;
   approachFlapsThreeSelected: boolean;
-
+  estimatedTakeoffTime: number | null;
+  estimatedTakeoffTimeExpired: boolean | null;
   // A380 specific
   paxNumber?: number | null;
   jettisonGrossWeight?: number | null;
