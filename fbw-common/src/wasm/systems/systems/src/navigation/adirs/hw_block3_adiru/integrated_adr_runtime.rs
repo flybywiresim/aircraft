@@ -31,6 +31,7 @@ use uom::si::{
 };
 use uom::ConstZero;
 
+/// The Air Data Reference runtime associated with an ADIRS equipped with integrated probes, like on the A380.
 pub struct IntegratedAirDataReferenceRuntime {
     /// If non-Duration::ZERO, the remaining time the runtime needs to initialize itself. Otherwise
     /// the self-check has been completed.
