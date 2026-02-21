@@ -260,3 +260,30 @@ export class NXLogicPulseNode {
     return this.output;
   }
 }
+
+/**
+ * The following class represents a hysterisis node.
+ * Outputs true when the input value is equal to or above the upper threshold, and false when it is equal to or below the lower threshold.
+ * If the input value is between the two thresholds, it outputs the same as the previous output.
+ */
+export class NxHysterisNode {
+  private output: boolean;
+
+  constructor(
+    private upperTreshold: number,
+    private lowerThreshold: number,
+  ) {}
+
+  write(value: number): boolean {
+    if (!this.output && value >= this.upperTreshold) {
+      this.output = true;
+    } else if (this.output && value <= this.lowerThreshold) {
+      this.output = false;
+    }
+    return this.output;
+  }
+
+  read(): boolean {
+    return this.output;
+  }
+}

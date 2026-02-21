@@ -1745,7 +1745,7 @@ export class PseudoFWC {
       this.twentyRetardAudio.sub((v) => {
         if (v) {
           this.soundManager.enqueueSound('alt_20');
-          this.soundManager.enqueueSound('new_retard');
+          this.soundManager.enqueueSound('retard');
         }
       });
 
@@ -1758,7 +1758,13 @@ export class PseudoFWC {
       this.tenRetardAudio.sub((v) => {
         if (v) {
           this.soundManager.enqueueSound('alt_10');
-          this.soundManager.enqueueSound('new_retard');
+          this.soundManager.enqueueSound('retard');
+        }
+      });
+
+      this.fiveAudio.sub((v) => {
+        if (v) {
+          this.soundManager.enqueueSound('alt_5');
         }
       });
     });
@@ -2094,7 +2100,7 @@ export class PseudoFWC {
         twentyThresholdAndPinProgrammed && !this.autoCalloutInhibit,
         deltaTime,
       ) &&
-      !this.twentyAudio.get() &&
+      !this.tenAudio.get() &&
       oneApActiveAndinLand &&
       athrActive &&
       !this.twentyMtrigPreviousCycle;
@@ -2110,7 +2116,10 @@ export class PseudoFWC {
     const noAutolandAndAthr = noAutoland && athrActive;
     const noAutolandAndAthrOrNoAthr = noAutolandAndAthr || !athrActive;
     const twentyRetard =
-      !goAround && twentyThreshold && noAutolandAndAthrOrNoAthr && !this.twentyRetardActiveMtrigPreviousCycle;
+      (!goAround || !this.autoCalloutInhibit) &&
+      twentyThresholdAndPinProgrammed &&
+      noAutolandAndAthrOrNoAthr &&
+      !this.twentyRetardActiveMtrigPreviousCycle;
     const playRetardAudio = !this.twentyRetardActivePreviousCycle && twentyRetard;
     this.twentyRetardAudio.set(playRetardAudio);
     this.twentyRetardActivePreviousCycle = playRetardAudio;
@@ -2130,7 +2139,12 @@ export class PseudoFWC {
     );
     this.tenMtrigPreviousCycle = this.tenMtrigNode.write(this.tenAudio.get(), deltaTime);
     // 10 retard
-    const tenRetard = !goAround && !noAutolandAndAthr && tenThreshold && !this.tenRetardActiveMtrigPreviousCycle;
+    const tenRetard =
+      (!goAround || this.autoCalloutInhibit) &&
+      oneApActiveAndinLand &&
+      athrActive &&
+      tenThreshold &&
+      !this.tenRetardActiveMtrigPreviousCycle;
     const playTenRetardAudio = !this.tenRetardActivePreviousCycle && tenRetard;
     this.tenRetardAudio.set(playTenRetardAudio);
     this.tenRetardActivePreviousCycle = playTenRetardAudio;
@@ -2138,10 +2152,10 @@ export class PseudoFWC {
     // 5
     const fiveThresholdAndPinProgrammed =
       A32NXRadioAutoCallOutFlags.Five & this.autoCallOutPins && height <= 7 && height >= 5;
-    const fivePulse =
-      !this.fiveAudioPulseNode.write(fiveThresholdAndPinProgrammed && !this.autoCalloutInhibit, deltaTime) &&
-      !this.fiveMtrigPreviousCycle &&
-      !this.retardInhibit;
+    const fivePulse = !this.fiveAudioPulseNode.write(
+      fiveThresholdAndPinProgrammed && !this.autoCalloutInhibit && !this.fiveMtrigPreviousCycle && !this.retardInhibit,
+      deltaTime,
+    );
     this.fiveMtrigPreviousCycle = this.fiveMtrigNode.write(fivePulse, deltaTime);
     this.fiveAudioPulseNode.write(fivePulse, deltaTime);
     this.fiveAudio.set(fivePulse);
