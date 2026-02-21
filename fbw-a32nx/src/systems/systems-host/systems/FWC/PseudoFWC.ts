@@ -92,6 +92,15 @@ enum FwcAuralWarning {
   CChord,
 }
 
+enum TransponderState {
+  Off = 0,
+  Standby = 1,
+  Test = 2,
+  On = 3,
+  Alt = 4,
+  Ground = 5,
+}
+
 export class PseudoFWC {
   private readonly sub = this.bus.getSubscriber<
     A32NXAdrBusEvents &
@@ -1615,8 +1624,18 @@ export class PseudoFWC {
   private acquireSdac(): void {
     this.sdac00100Word.set(0);
     this.sdac00100Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
-    this.sdac00100Word.setBitValue(24, this.xpdr1Status.get() === 0 || this.xpdr1Status.get() === 1);
-    this.sdac00100Word.setBitValue(25, this.xpdr2Status.get() === 0 || this.xpdr2Status.get() === 1);
+    this.sdac00100Word.setBitValue(
+      24,
+      this.xpdr1Status.get() === TransponderState.Off ||
+        this.xpdr1Status.get() === TransponderState.Standby ||
+        this.xpdr1Status.get() === TransponderState.Test,
+    );
+    this.sdac00100Word.setBitValue(
+      25,
+      this.xpdr2Status.get() === TransponderState.Off ||
+        this.xpdr2Status.get() === TransponderState.Standby ||
+        this.xpdr2Status.get() === TransponderState.Test,
+    );
 
     this.sdac00401Word.set(0);
     this.sdac00401Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
