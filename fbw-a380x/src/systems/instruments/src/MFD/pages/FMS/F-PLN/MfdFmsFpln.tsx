@@ -1162,6 +1162,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 },
                 {
                   label: 'FIX INFO',
+                  disabled: this.secActive,
                   action: () => this.props.mfd.uiService.navigateTo(fixInfoUri),
                 },
                 {
