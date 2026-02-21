@@ -27,6 +27,7 @@ import {
   Arinc429RegisterSubject,
   Arinc429SignStatusMatrix,
   Arinc429Word,
+  Arinc429WordData,
   NXDataStore,
   NxHysterisNode,
   NXLogicClockNode,
@@ -1401,20 +1402,26 @@ export class PseudoFWC {
 
   /** Radio Altimeter callouts */
 
-  /**
-   * The radio altimeter value used for the automatic callouts. Null if no RA is availble.
-   */
   private readonly noFlightPhaseInhibit: number[] = [];
 
+  private autoCalloutInhibit = false;
+
+  /**
+   * The radio altimeter value used for the automatic callouts. Null if no RA is available.
+   */
   private radioAltimeterCallOutHeight: number | null = null;
 
   private autoCallOutPins = A32NX_DEFAULT_RADIO_AUTO_CALL_OUTS;
 
-  private twoThousandFiveHundredActive = false;
+  private twoThousandFiveHundredActivePrev = false;
+
+  private readonly twoThousandFiveHundredWithinRangeConfNode = new NXLogicConfirmNode(0.2, true);
 
   private readonly twoThousandFiveHundredHystherisis = new NxHysterisNode(3000, 2500);
 
-  private twoThousandFiveHundredThresholdInPreviousCycle = false;
+  private readonly twoThousandFiveHundredHystherisisPulseNode = new NXLogicPulseNode(false);
+
+  private readonly twoThousandFiveHundredAudioPulseNode = new NXLogicPulseNode(false);
 
   private readonly twoThousandFiveHundredHasPlayedMemoryNode = new NXLogicMemoryNode(true);
 
@@ -1422,23 +1429,35 @@ export class PseudoFWC {
 
   private readonly twentyFiveHundredAudio = Subject.create(false);
 
+  private twoThousandActivePrev = false;
+
+  private readonly twoThousandWithinRangeConfNode = new NXLogicConfirmNode(0.2, true);
+
   private readonly twoThousandHystherisis = new NxHysterisNode(2400, 2000);
 
-  private twoThousandThresholdInPreviousCycle = false;
+  private readonly twoThousandHystherisisPulseNode = new NXLogicPulseNode(false);
 
   private readonly twoThousandHasPlayedMemoryNode = new NXLogicMemoryNode(true);
 
   private readonly twoThousandAudio = Subject.create(false);
 
+  private readonly twoThousandAudioPulseNode = new NXLogicPulseNode(false);
+
+  private oneThousandActivePrev = false;
+
+  private readonly oneThousandWithinRangeConfNode = new NXLogicConfirmNode(0.2, true);
+
   private readonly oneThousandHystherisis = new NxHysterisNode(1100, 1000);
 
-  private oneThousandThresholdInPreviousCycle = false;
+  private readonly oneThousandHystherisisPulseNode = new NXLogicPulseNode(false);
 
   private readonly oneThousandHasPlayedMemoryNode = new NXLogicMemoryNode(true);
 
   private readonly oneThousandAudio = Subject.create(false);
 
-  private fiveHundredThresholdInPreviousCycle = false;
+  private readonly oneThousandAudioPulseNode = new NXLogicPulseNode(false);
+
+  private readonly fiveHundredWithinRangeConfNode = new NXLogicConfirmNode(0.2, true);
 
   private fiveHundredMtrigPreviousCycle = false;
 
@@ -1475,22 +1494,22 @@ export class PseudoFWC {
   private readonly oneHundredMtrigNode = new NXLogicTriggeredMonostableNode(5);
   private readonly oneHundredAudio = Subject.create(false);
 
-  private fiftyThresholdPreviousCycle = false;
   private fiftyMtrigPreviousCycle = false;
+  private readonly fiftyThresholdAndNoAudioInhibitPulseNode = new NXLogicPulseNode();
   private readonly fiftyMtrigNode = new NXLogicTriggeredMonostableNode(2);
   private readonly fiftyAudio = Subject.create(false);
 
-  private fortyThresholdPreviousCycle = false;
+  private readonly fortyThresholdAndNoAudioInhibitPulseNode = new NXLogicPulseNode();
   private fortyMtrigPreviousCycle = false;
   private readonly fortyMtrigNode = new NXLogicTriggeredMonostableNode(2);
   private readonly fortyAudio = Subject.create(false);
 
-  private thirtyThresholdPreviousCycle = false;
+  private readonly thirtyThresholdAndNoAudioInhibitPulseNode = new NXLogicPulseNode();
   private thirtyMtrigPreviousCycle = false;
   private readonly thirtyMtrigNode = new NXLogicTriggeredMonostableNode(2);
   private readonly thirtyAudio = Subject.create(false);
 
-  private twentyThresholdPreviousCycle = false;
+  private readonly twentyThresholdAndNoAudioInhibitPulseNode = new NXLogicPulseNode();
   private twentyMtrigPreviousCycle = false;
   private readonly twentyMtrigNode = new NXLogicTriggeredMonostableNode(2);
   private readonly twentyAudio = Subject.create(false);
@@ -1505,15 +1524,17 @@ export class PseudoFWC {
   private readonly tenRetardActiveMtrigNode = new NXLogicTriggeredMonostableNode(2);
   private readonly tenRetardAudio = Subject.create(false);
 
-  private tenThresholdPreviousCycle = false;
+  private readonly tenThresholdAndNoAudioInhibitPulseNode = new NXLogicPulseNode();
   private tenMtrigPreviousCycle = false;
   private readonly tenMtrigNode = new NXLogicTriggeredMonostableNode(2);
   private readonly tenAudio = Subject.create(false);
 
   private fiveMtrigPreviousCycle = false;
-  private fiveAudioActiveInPreviousCycle = false;
+  private readonly fiveAudioPulseNode = new NXLogicPulseNode();
   private readonly fiveMtrigNode = new NXLogicTriggeredMonostableNode(2);
   private readonly fiveAudio = Subject.create(false);
+
+  private readonly retardInhibit = false; // TODO
 
   constructor(
     private readonly bus: EventBus,
@@ -1880,7 +1901,15 @@ export class PseudoFWC {
     this.sdac05010Word.setBitValue(19, !this.engine2MasterAlternatorVar.get());
   }
 
-  private radioAltimeterCallOutLogic(deltaTime: number): void {
+  private radioAltimeterCallOutLogic(
+    deltaTime: number,
+    flightPhase: number,
+    tla1: number,
+    tla2: number,
+    atsDiscreteWord: Arinc429Register,
+    fm1DiscreteWord4: Arinc429WordData,
+    fm2DiscreteWord4: Arinc429WordData,
+  ): void {
     if (!this.startupCompleted.get()) {
       return;
     }
@@ -1890,69 +1919,78 @@ export class PseudoFWC {
     const twentyFiveHundredPin = A32NXRadioAutoCallOutFlags.TwentyFiveHundred & this.autoCallOutPins;
     const twoThousandFiveHundredPin = A32NXRadioAutoCallOutFlags.TwoThousandFiveHundred & this.autoCallOutPins;
     const twentyFiveOrTwoThousandFiveHundredPin = twentyFiveHundredPin || twoThousandFiveHundredPin;
-    const twoThousandFiveHundredFeetTreshold =
-      twentyFiveOrTwoThousandFiveHundredPin && height <= 2530 && height >= 2500;
+    const twoThousandFiveHundredFeetTreshold = this.twoThousandFiveHundredWithinRangeConfNode.write(
+      twentyFiveOrTwoThousandFiveHundredPin && height <= 2530 && height >= 2500,
+      deltaTime,
+    );
     const twoThousandFiveHundredHysteresis = twentyFiveOrTwoThousandFiveHundredPin
       ? this.twoThousandFiveHundredHystherisis.write(height)
       : false;
 
-    const twoThousandFiveHundredActivePreviously = this.twoThousandFiveHundredActive;
+    const twoThousandFiveHundredActivePreviously = this.twoThousandFiveHundredActivePrev;
     const twoThousandFiveHundredMemory = this.twoThousandFiveHundredHasPlayedMemoryNode.write(
       twoThousandFiveHundredActivePreviously,
-      !twoThousandFiveHundredHysteresis,
+      this.twoThousandFiveHundredHystherisisPulseNode.write(twoThousandFiveHundredHysteresis, deltaTime),
     );
 
-    const twoThousandFiveHundredActiveCurrent =
-      this.twoThousandFiveHundredThresholdInPreviousCycle &&
+    const twoThousandFiveHundredActive =
       twoThousandFiveHundredFeetTreshold &&
-      !twoThousandFiveHundredMemory;
-    this.twoThousandFiveHundredThresholdInPreviousCycle = twoThousandFiveHundredFeetTreshold;
+      twoThousandFiveHundredHysteresis &&
+      !twoThousandFiveHundredMemory &&
+      !this.autoCalloutInhibit;
 
-    this.twoThousandFiveHundredActive = twoThousandFiveHundredActiveCurrent;
-    this.twentyFiveHundredAudio.set(twentyFiveHundredPin && twoThousandFiveHundredActiveCurrent);
-    this.twoThousandFiveHundredAudio.set(twoThousandFiveHundredPin && twoThousandFiveHundredActiveCurrent);
+    this.twoThousandFiveHundredActivePrev = this.twoThousandFiveHundredAudioPulseNode.write(
+      twoThousandFiveHundredActive,
+      deltaTime,
+    );
+    this.twentyFiveHundredAudio.set(twentyFiveHundredPin && twoThousandFiveHundredActive);
+    this.twoThousandFiveHundredAudio.set(twoThousandFiveHundredPin && twoThousandFiveHundredActive);
 
     // 2000
     const twoThousandFeetPin = A32NXRadioAutoCallOutFlags.TwoThousand & this.autoCallOutPins;
-    const twoThousandFeetTreshold = twoThousandFeetPin && height <= 2030 && height >= 2000;
+    const twoThousandFeetTreshold = this.twoThousandWithinRangeConfNode.write(
+      twoThousandFeetPin && height <= 2030 && height >= 2000,
+      deltaTime,
+    );
     const twoThousandFeetHysteresis = twoThousandFeetPin ? this.twoThousandHystherisis.write(height) : false;
-    const twoThousandFeetActivePreviously = this.twoThousandAudio.get();
+    const twoThousandFeetActivePreviously = this.twoThousandActivePrev;
     const twoThousandFeetMemory = this.twoThousandHasPlayedMemoryNode.write(
       twoThousandFeetActivePreviously,
-      !twoThousandFeetHysteresis,
+      this.twoThousandHystherisisPulseNode.write(twoThousandFeetHysteresis, deltaTime),
     );
-    this.twoThousandAudio.set(
-      twoThousandFeetTreshold &&
-        this.twoThousandThresholdInPreviousCycle &&
-        !twoThousandFeetMemory &&
-        twoThousandFeetHysteresis,
-    );
-    this.twoThousandThresholdInPreviousCycle = twoThousandFeetTreshold;
+    const twoThousandAudio =
+      twoThousandFeetTreshold && twoThousandFeetHysteresis && !twoThousandFeetMemory && !this.autoCalloutInhibit;
+    this.twoThousandAudio.set(twoThousandAudio);
+    this.twoThousandActivePrev = this.twoThousandAudioPulseNode.write(twoThousandAudio, deltaTime);
 
     // 1000
     const oneThousandFeetPin = A32NXRadioAutoCallOutFlags.OneThousand & this.autoCallOutPins;
-    const oneThousandFeetTreshold = oneThousandFeetPin && height <= 1030 && height >= 1000;
+    const oneThousandFeetTreshold = this.oneThousandWithinRangeConfNode.write(
+      oneThousandFeetPin && height <= 1030 && height >= 1000,
+      deltaTime,
+    );
     const oneThousandFeetHysteresis = oneThousandFeetPin ? this.oneThousandHystherisis.write(height) : false;
-    const oneThousandFeetActivePreviously = this.oneThousandAudio.get();
+    const oneThousandFeetActivePreviously = this.oneThousandActivePrev;
     const oneThousandFeetMemory = this.oneThousandHasPlayedMemoryNode.write(
       oneThousandFeetActivePreviously,
-      !oneThousandFeetHysteresis,
+      this.oneThousandHystherisisPulseNode.write(oneThousandFeetHysteresis, deltaTime),
     );
-    this.oneThousandAudio.set(
-      this.oneThousandThresholdInPreviousCycle &&
-        oneThousandFeetTreshold &&
-        !oneThousandFeetMemory &&
-        oneThousandFeetHysteresis,
-    );
-    this.oneThousandThresholdInPreviousCycle = oneThousandFeetTreshold;
+    const oneThousandAudio =
+      oneThousandFeetTreshold && oneThousandFeetHysteresis && !oneThousandFeetMemory && !this.autoCalloutInhibit;
+    this.oneThousandAudio.set(oneThousandAudio);
+    this.oneThousandActivePrev = this.oneThousandAudioPulseNode.write(oneThousandAudio, deltaTime);
 
     // 500
-    const fiveHundredFeetTreshold =
-      A32NXRadioAutoCallOutFlags.FiveHundred & this.autoCallOutPins && height <= 530 && height >= 500;
+    const fiveHundredFeetThreshold = this.fiveHundredWithinRangeConfNode.write(
+      height <= 530 && height >= 500,
+      deltaTime,
+    );
     const fiveHundredAudio =
-      fiveHundredFeetTreshold && !this.fiveHundredThresholdInPreviousCycle && !this.fiveHundredMtrigPreviousCycle;
+      fiveHundredFeetThreshold &&
+      this.autoCallOutPins & A32NXRadioAutoCallOutFlags.FiveHundred &&
+      !this.fiveHundredMtrigPreviousCycle &&
+      !this.autoCalloutInhibit;
     this.fiveHundredAudio.set(fiveHundredAudio);
-    this.fiveHundredThresholdInPreviousCycle = fiveHundredFeetTreshold;
     this.fiveHundredMtrigPreviousCycle = this.fiveHundredMtrigNode.write(fiveHundredAudio, deltaTime);
 
     // 400
@@ -1960,7 +1998,10 @@ export class PseudoFWC {
       A32NXRadioAutoCallOutFlags.FourHundred & this.autoCallOutPins && height <= 410 && height >= 400;
 
     const fourHundredAudio =
-      fourHundredFeetTreshold && !this.fourHundredThresholdPreviousCycle && !this.fourHundredMtrigPreviousCycle;
+      fourHundredFeetTreshold &&
+      !this.fourHundredThresholdPreviousCycle && // Could be pulse node
+      !this.fourHundredMtrigPreviousCycle &&
+      !this.autoCalloutInhibit;
     this.fourHundredAudio.set(fourHundredAudio);
     this.fourHundredThresholdPreviousCycle = fourHundredFeetTreshold;
     this.fourHundredMtrigPreviousCycle = this.fourHundredMtrigNode.write(fourHundredAudio, deltaTime);
@@ -1969,7 +2010,10 @@ export class PseudoFWC {
     const threeHundredFeetTreshold =
       A32NXRadioAutoCallOutFlags.ThreeHundred & this.autoCallOutPins && height <= 310 && height >= 300;
     const threeHundredAudio =
-      threeHundredFeetTreshold && !this.threeHundredThresholdPreviousCycle && !this.threeHundredMtrigPreviousCycle;
+      threeHundredFeetTreshold &&
+      !this.threeHundredThresholdPreviousCycle &&
+      !this.threeHundredMtrigPreviousCycle &&
+      !this.autoCalloutInhibit;
     this.threeHundredAudio.set(threeHundredAudio);
     this.threeHundredThresholdPreviousCycle = threeHundredFeetTreshold;
     this.threeHundredMtrigPreviousCycle = this.threeHundredMtrigNode.write(threeHundredAudio, deltaTime);
@@ -1978,7 +2022,10 @@ export class PseudoFWC {
     const twoHundredFeetTreshold =
       A32NXRadioAutoCallOutFlags.TwoHundred & this.autoCallOutPins && height <= 210 && height >= 200;
     const twoHundredAudio =
-      twoHundredFeetTreshold && !this.twoHundredThresholdPreviousCycle && !this.twoHundredMtrigPreviousCycle;
+      twoHundredFeetTreshold &&
+      !this.twoHundredThresholdPreviousCycle &&
+      !this.twoHundredMtrigPreviousCycle &&
+      !this.autoCalloutInhibit;
     this.twoHundredAudio.set(twoHundredAudio);
     this.twoHundredThresholdPreviousCycle = twoHundredFeetTreshold;
     this.twoHundredMtrigPreviousCycle = this.twoHundredMtrigNode.write(twoHundredAudio, deltaTime);
@@ -1987,7 +2034,10 @@ export class PseudoFWC {
     const oneHundredFeetTreshold =
       A32NXRadioAutoCallOutFlags.OneHundred & this.autoCallOutPins && height <= 110 && height >= 100;
     const oneHundredAudio =
-      oneHundredFeetTreshold && !this.oneHundredThresholdPreviousCycle && !this.oneHundredMtrigPreviousCycle;
+      oneHundredFeetTreshold &&
+      !this.oneHundredThresholdPreviousCycle &&
+      !this.oneHundredMtrigPreviousCycle &&
+      !this.autoCalloutInhibit;
     this.oneHundredAudio.set(oneHundredAudio);
     this.oneHundredThresholdPreviousCycle = oneHundredFeetTreshold;
     this.oneHundredMtrigPreviousCycle = this.oneHundredMtrigNode.write(oneHundredAudio, deltaTime);
@@ -1997,65 +2047,65 @@ export class PseudoFWC {
       A32NXRadioAutoCallOutFlags.Fifty & this.autoCallOutPins && height <= 53 && height >= 50;
     const fiftyAudio =
       !this.fortyAudio.get() &&
-      fiftyTresholdAndPinProgrammed &&
-      !this.fiftyThresholdPreviousCycle &&
+      this.fiftyThresholdAndNoAudioInhibitPulseNode.write(
+        fiftyTresholdAndPinProgrammed && !this.autoCalloutInhibit,
+        deltaTime,
+      ) &&
       !this.fiftyMtrigPreviousCycle;
     this.fiftyAudio.set(fiftyAudio);
-    this.fiftyThresholdPreviousCycle = fiftyTresholdAndPinProgrammed;
     this.fiftyMtrigPreviousCycle = this.fiftyMtrigNode.write(fiftyAudio, deltaTime);
     // 40
     const fourtyThresholdAndPinProgrammed =
       A32NXRadioAutoCallOutFlags.Forty & this.autoCallOutPins && height <= 42 && height >= 40;
     const fortyAudio =
       !this.thirtyAudio.get() &&
-      fourtyThresholdAndPinProgrammed &&
-      !this.fortyThresholdPreviousCycle &&
+      this.fortyThresholdAndNoAudioInhibitPulseNode.write(
+        fourtyThresholdAndPinProgrammed && !this.autoCalloutInhibit,
+        deltaTime,
+      ) &&
       !this.fortyMtrigPreviousCycle;
     this.fortyAudio.set(fortyAudio);
-    this.fortyThresholdPreviousCycle = fourtyThresholdAndPinProgrammed;
     this.fortyMtrigPreviousCycle = this.fortyMtrigNode.write(fortyAudio, deltaTime);
     // 30
     const thirtyThresholdAndPinProgrammed =
       A32NXRadioAutoCallOutFlags.Thirty & this.autoCallOutPins && height <= 32 && height >= 30;
     const thirtyAudio =
-      thirtyThresholdAndPinProgrammed &&
       !this.twentyAudio.get() &&
-      !this.thirtyThresholdPreviousCycle &&
+      this.thirtyThresholdAndNoAudioInhibitPulseNode.write(
+        thirtyThresholdAndPinProgrammed && !this.autoCalloutInhibit,
+        deltaTime,
+      ) &&
       !this.thirtyMtrigPreviousCycle;
     this.thirtyAudio.set(thirtyAudio);
-    this.thirtyThresholdPreviousCycle = thirtyThresholdAndPinProgrammed;
     this.thirtyMtrigPreviousCycle = this.thirtyMtrigNode.write(thirtyAudio, deltaTime);
     // 20 no retard
     const twentyThreshold = height <= 22 && height >= 20;
     const twentyThresholdAndPinProgrammed = A32NXRadioAutoCallOutFlags.Twenty & this.autoCallOutPins && twentyThreshold;
-    const fm2DiscreteWord4 = this.fmgc2DiscreteWord4.get();
-    const ap1Engaged = fm2DiscreteWord4.bitValue(12);
-    const fm1LandActive = fm2DiscreteWord4.bitValue(13);
-    const ap2Engaged = fm2DiscreteWord4.bitValue(14);
-    const fm2LadnActive = fm2DiscreteWord4.bitValue(15);
-    const athrActive = this.atsDiscreteWord.bitValue(13);
+    const ap1Engaged = fm1DiscreteWord4.bitValue(12);
+    const fm1LandActive = fm1DiscreteWord4.bitValue(13);
+    const ap2Engaged = fm2DiscreteWord4.bitValue(12);
+    const fm2LandActive = fm2DiscreteWord4.bitValue(13);
+    const athrActive = atsDiscreteWord.bitValue(13);
 
-    const oneApActiveAndinLand = (ap1Engaged && fm1LandActive) || (ap2Engaged && fm2LadnActive);
+    const oneApActiveAndinLand = (ap1Engaged && fm1LandActive) || (ap2Engaged && fm2LandActive);
 
     const twentyAudio =
-      twentyThresholdAndPinProgrammed &&
-      !this.twentyThresholdPreviousCycle &&
+      this.twentyThresholdAndNoAudioInhibitPulseNode.write(
+        twentyThresholdAndPinProgrammed && !this.autoCalloutInhibit,
+        deltaTime,
+      ) &&
       !this.twentyAudio.get() &&
       oneApActiveAndinLand &&
       athrActive &&
       !this.twentyMtrigPreviousCycle;
     this.twentyAudio.set(twentyAudio);
-    this.twentyThresholdPreviousCycle = twentyThresholdAndPinProgrammed;
     this.twentyMtrigPreviousCycle = this.twentyMtrigNode.write(twentyAudio, deltaTime);
 
     // TLA logic for retard
-    const tlaEng1 = this.throttle1Position.get();
-    const tlaEng2 = this.throttle2Position.get();
-    const tlaIdle =
+    const tlaIdle = false;
 
     // 20 retard
-    const goAround =
-      (this.throttle1Position.get() > 43.3 || this.throttle2Position.get() > 43.3) && this.fwcFlightPhase.get() === 8;
+    const goAround = (tla1 > 43.3 || tla2 > 43.3) && flightPhase === 8;
     const noAutoland = !oneApActiveAndinLand;
     const noAutolandAndAthr = noAutoland && athrActive;
     const noAutolandAndAthrOrNoAthr = noAutolandAndAthr || !athrActive;
@@ -2069,14 +2119,15 @@ export class PseudoFWC {
     const tenThreshold = height <= 12 && height >= 10;
     const tenThresholdAndPinProgrammed = A32NXRadioAutoCallOutFlags.Ten & this.autoCallOutPins && tenThreshold;
     this.tenAudio.set(
-      tenThresholdAndPinProgrammed &&
-        !this.tenThresholdPreviousCycle &&
+      this.tenThresholdAndNoAudioInhibitPulseNode.write(
+        tenThresholdAndPinProgrammed && !this.autoCalloutInhibit,
+        deltaTime,
+      ) &&
         !this.fiveAudio.get() &&
-        !this.retardInhibit.get() &&
+        !this.retardInhibit &&
         noAutolandAndAthrOrNoAthr &&
         !this.tenMtrigPreviousCycle,
     );
-    this.tenThresholdPreviousCycle = tenThresholdAndPinProgrammed;
     this.tenMtrigPreviousCycle = this.tenMtrigNode.write(this.tenAudio.get(), deltaTime);
     // 10 retard
     const tenRetard = !goAround && !noAutolandAndAthr && tenThreshold && !this.tenRetardActiveMtrigPreviousCycle;
@@ -2087,11 +2138,13 @@ export class PseudoFWC {
     // 5
     const fiveThresholdAndPinProgrammed =
       A32NXRadioAutoCallOutFlags.Five & this.autoCallOutPins && height <= 7 && height >= 5;
-    const fiveAudio =
-      fiveThresholdAndPinProgrammed && !this.fiveAudioActiveInPreviousCycle && !this.fiveMtrigPreviousCycle && !this.;
-    this.fiveAudio.set(fiveAudio);
-    this.fiveMtrigPreviousCycle = this.fiveMtrigNode.write(fiveAudio, deltaTime);
-    this.fiveAudioActiveInPreviousCycle = fiveAudio;
+    const fivePulse =
+      !this.fiveAudioPulseNode.write(fiveThresholdAndPinProgrammed && !this.autoCalloutInhibit, deltaTime) &&
+      !this.fiveMtrigPreviousCycle &&
+      !this.retardInhibit;
+    this.fiveMtrigPreviousCycle = this.fiveMtrigNode.write(fivePulse, deltaTime);
+    this.fiveAudioPulseNode.write(fivePulse, deltaTime);
+    this.fiveAudio.set(fivePulse);
   }
 
   /**
@@ -2192,23 +2245,22 @@ export class PseudoFWC {
     this.engSelectorPosition.set(SimVar.GetSimVarValue('L:XMLVAR_ENG_MODE_SEL', 'Enum'));
     this.eng1AntiIce.set(SimVar.GetSimVarValue('ENG ANTI ICE:1', 'bool'));
     this.eng2AntiIce.set(SimVar.GetSimVarValue('ENG ANTI ICE:2', 'bool'));
-    this.throttle1Position.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:1', 'number'));
-    this.throttle2Position.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:2', 'number'));
+    const tla1 = SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:1', 'number');
+    const tla2 = SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:2', 'number');
+    this.throttle1Position.set(tla1);
+    this.throttle2Position.set(tla2);
     this.autoThrustStatus.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_STATUS', 'enum'));
     this.atsDiscreteWord.setFromSimVar('L:A32NX_FCU_ATS_DISCRETE_WORD');
     this.ecu1MaintenanceWord6.setFromSimVar('L:A32NX_ECU_1_MAINTENANCE_WORD_6');
     this.ecu2MaintenanceWord6.setFromSimVar('L:A32NX_ECU_2_MAINTENANCE_WORD_6');
     this.autothrustLeverWarningFlex.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_FLEX', 'bool'));
     this.autothrustLeverWarningToga.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA', 'bool'));
-    this.allThrottleIdle.set(
-      this.throttle1Position.get() < 2.6 &&
-        this.throttle1Position.get() > -2 &&
-        this.throttle2Position.get() < 2.6 &&
-        this.throttle2Position.get() > -2,
-    );
-    this.eng1TLAReverse.set(this.throttle1Position.get() < -4.3);
-    this.eng2TLAReverse.set(this.throttle2Position.get() < -4.3);
-    this.allThrottleReverse.set(this.eng1TLAReverse.get() && this.eng2TLAReverse.get());
+    this.allThrottleIdle.set(tla1 < 2.6 && tla1 > -2 && tla2 < 2.6 && tla2 > -2);
+    const tla1Reverse = tla1 < -4.3;
+    const tla2Reverse = tla2 < -4.3;
+    this.eng1TLAReverse.set(tla1Reverse);
+    this.eng2TLAReverse.set(tla2Reverse);
+    this.allThrottleReverse.set(tla1Reverse && tla2Reverse);
 
     const masterCautionButtonLeft = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERCAUT_L', 'bool');
     const masterCautionButtonRight = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERCAUT_R', 'bool');
@@ -2315,7 +2367,15 @@ export class PseudoFWC {
       this.radioAltimeterCallOutHeight = null;
     }
 
-    this.radioAltimeterCallOutLogic(deltaTime);
+    this.radioAltimeterCallOutLogic(
+      deltaTime,
+      flightPhase,
+      tla1,
+      tla2,
+      this.atsDiscreteWord,
+      this.fmgc1DiscreteWord4.get(),
+      this.fmgc2DiscreteWord4.get(),
+    );
 
     // on ground logic
     const lgciu1Disagree = xor(leftCompressedHardwireLgciu1, this.lgciu1DiscreteWord2.bitValue(13));
