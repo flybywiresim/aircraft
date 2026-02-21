@@ -79,6 +79,8 @@
 1. [FMS] Show true bearings correctly in various FMS pages on the MCDU/MFD - @tracernz (Mike)
 1. [A380X/FWS] Improve various ABN SENSED procedure accuracy - @Jonny23787 (Jonathan)
 1. [A32NX/FMS] Add pilot entry ETT (Estimated Takeoff Time) functionality  - @BravoMike99 (bruno_pt99)
+1. [A32NX/FWS] Update `TCAS STBY` master caution to reflect switch position instead of actual TCAS status - @FozzieHi (fozzie)
+1. [A32NX/FWS] Add `ATC/XPDR STBY` master caution - @FozzieHi (fozzie)
 
 ## 0.14.0
 
