@@ -714,7 +714,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
 
   readonly calculatedMinimumDestinationFuelOnBoard = MappedSubject.create(
     ([altnFuel, finalHoldingFuel]) => {
-      return altnFuel + finalHoldingFuel;
+      return altnFuel !== null && finalHoldingFuel !== null ? altnFuel + finalHoldingFuel : null;
     },
     this.alternateFuel,
     this.finalHoldingFuel,
@@ -825,7 +825,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
 
   readonly estimatedTakeoffTime = Subject.create<number | null>(null);
 
-  readonly estimatedTakeoffTimeExpired = Subject.create<boolean>(false);
+  readonly estimatedTakeoffTimeExpired = Subject.create<boolean | null>(false);
 
   serialize(): SerializedFlightPlanPerformanceData {
     return {

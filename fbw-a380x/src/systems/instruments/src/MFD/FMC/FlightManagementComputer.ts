@@ -939,10 +939,10 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   private checkDestination(oldDestination: string) {
-    const newDestination = this.#flightPlanService.active.destinationAirport.ident;
+    const newDestination = this.#flightPlanService.active.destinationAirport?.ident;
 
     // Enabling alternate or new DEST should sequence out of the GO AROUND phase
-    if (newDestination !== oldDestination) {
+    if (newDestination && newDestination !== oldDestination) {
       this.flightPhaseManager.handleNewDestinationAirportEntered();
     }
   }
