@@ -1,13 +1,11 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2023 2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
-import { FmgcFlightPhase } from '@shared/flightphase';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
-import { FmsFormatters } from '../legacy/FmsFormatters';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { VerticalWaypointPrediction } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
@@ -32,8 +30,6 @@ export class CDUStepAltsPage {
       .filter((it) => it.isDiscontinuity === false)
       .filter((it) => it.cruiseStep !== undefined);
 
-    const isFlying =
-      mcdu.flightPhaseManager.phase >= FmgcFlightPhase.Takeoff && mcdu.flightPhaseManager.phase < FmgcFlightPhase.Done;
     const transitionAltitude = plan.performanceData.transitionAltitude.get();
 
     const predictions =
@@ -43,18 +39,20 @@ export class CDUStepAltsPage {
         ? mcdu.guidanceController.vnavDriver.mcduProfile.waypointPredictions
         : null;
 
+    const fpIndex = isActivePlan ? FlightPlanIndex.Active : FlightPlanIndex.FirstSecondary;
+
     mcdu.setTemplate([
       [
         `${!isActivePlan ? 'SEC ' : ''}STEP ALTS {small}FROM{end} {green}FL${plan.performanceData.cruiseFlightLevel.get() ?? ''}{end}`,
       ],
       ['\xa0ALT\xa0/\xa0WPT', 'DIST\xa0TIME'],
-      CDUStepAltsPage.formatStepClimbLine(mcdu, legsWithSteps, 0, predictions, isFlying, transitionAltitude),
+      CDUStepAltsPage.formatStepClimbLine(mcdu, legsWithSteps, 0, predictions, transitionAltitude, fpIndex),
       [''],
-      CDUStepAltsPage.formatStepClimbLine(mcdu, legsWithSteps, 1, predictions, isFlying, transitionAltitude),
+      CDUStepAltsPage.formatStepClimbLine(mcdu, legsWithSteps, 1, predictions, transitionAltitude, fpIndex),
       [''],
-      CDUStepAltsPage.formatStepClimbLine(mcdu, legsWithSteps, 2, predictions, isFlying, transitionAltitude),
+      CDUStepAltsPage.formatStepClimbLine(mcdu, legsWithSteps, 2, predictions, transitionAltitude, fpIndex),
       [''],
-      CDUStepAltsPage.formatStepClimbLine(mcdu, legsWithSteps, 3, predictions, isFlying, transitionAltitude),
+      CDUStepAltsPage.formatStepClimbLine(mcdu, legsWithSteps, 3, predictions, transitionAltitude, fpIndex),
       [''],
       CDUStepAltsPage.formatOptStepLine(legsWithSteps),
       [''],
@@ -112,8 +110,8 @@ export class CDUStepAltsPage {
     legsWithSteps: FlightPlanLeg[],
     index: number,
     predictions: Map<number, VerticalWaypointPrediction>,
-    isFlying: boolean,
     transitionAltitude: number,
+    forPlan: FlightPlanIndex,
   ) {
     if (!legsWithSteps || index > legsWithSteps.length) {
       return [''];
@@ -144,11 +142,7 @@ export class CDUStepAltsPage {
             lastColumn = 'STEP\xa0AHEAD[s-text]';
           } else {
             const distanceCell = '{green}' + Math.round(distanceFromAircraft).toFixed(0) + '{end}';
-
-            const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
-            const timeCell = isFlying
-              ? `{green}${FmsFormatters.secondsToUTC(utcTime + secondsFromPresent)}[s-text]{end}`
-              : `{green}${FmsFormatters.secondsTohhmm(secondsFromPresent)}[s-text]{end}`;
+            const timeCell = `{green}${mcdu.getTimePrediction(secondsFromPresent, forPlan)}[s-text]{end}`;
 
             lastColumn = distanceCell + '\xa0' + timeCell;
           }
