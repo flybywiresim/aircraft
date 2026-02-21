@@ -116,6 +116,8 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
     cloned.approachBaroMinimum.set(this.approachBaroMinimum.get());
     cloned.approachRadioMinimum.set(this.approachRadioMinimum.get());
     cloned.approachFlapsThreeSelected.set(this.approachFlapsThreeSelected.get());
+    cloned.estimatedTakeoffTime.set(this.estimatedTakeoffTime.get());
+    cloned.estimatedTakeoffTimeExpired.set(this.estimatedTakeoffTimeExpired.get());
 
     return cloned;
   }
@@ -147,6 +149,8 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
         other.pilotMinimumDestinationFuelOnBoard,
       );
       other.pipe('blockFuel', this.blockFuel, other.blockFuel);
+      other.pipe('estimatedTakeoffTime', this.estimatedTakeoffTime, other.estimatedTakeoffTime);
+      other.pipe('estimatedTakeoffTimeExpired', this.estimatedTakeoffTimeExpired, other.estimatedTakeoffTimeExpired);
     }
   }
 
@@ -819,6 +823,10 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
    */
   readonly approachFlapsThreeSelected = Subject.create<boolean>(false);
 
+  readonly estimatedTakeoffTime = Subject.create<number | null>(null);
+
+  readonly estimatedTakeoffTimeExpired = Subject.create<boolean>(false);
+
   serialize(): SerializedFlightPlanPerformanceData {
     return {
       cruiseFlightLevel: this.cruiseFlightLevel.get(),
@@ -889,6 +897,8 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
       approachBaroMinimum: this.approachBaroMinimum.get(),
       approachRadioMinimum: this.approachRadioMinimum.get(),
       approachFlapsThreeSelected: this.approachFlapsThreeSelected.get(),
+      estimatedTakeoffTime: this.estimatedTakeoffTime.get(),
+      estimatedTakeoffTimeExpired: this.estimatedTakeoffTimeExpired.get(),
     };
   }
 }
