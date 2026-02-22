@@ -3391,6 +3391,7 @@ export class FwsCore {
     if (rclHeld3sPulse || (irsAlignPulse && this.flightPhase1Or2.get())) {
       if (this.cancelledCautions.size > 0) {
         this.cancelledCautions.clear();
+        this.cancelledCautionMemoKey.set('');
       }
     }
 
@@ -5429,17 +5430,15 @@ export class FwsCore {
         this.abnormalSensed.clearActiveProcedure();
       } else {
         const index = this.presentedFailures.indexOf(clearKey);
-        if (index === -1) {
-          return;
+        if (index !== -1) {
+          this.presentedFailures.splice(index, 1);
+          const clearedState = this.presentedAbnormalProceduresList.getValue(clearKey);
+          if (clearedState) {
+            this.clearedAbnormalProceduresList.setValue(clearKey, clearedState);
+            this.presentedAbnormalProceduresList.delete(clearKey);
+          }
+          this.recallFailures = this.allCurrentFailures.filter((item) => !this.presentedFailures.includes(item));
         }
-
-        this.presentedFailures.splice(index, 1);
-        const clearedState = this.presentedAbnormalProceduresList.getValue(clearKey);
-        if (clearedState) {
-          this.clearedAbnormalProceduresList.setValue(clearKey, clearedState);
-          this.presentedAbnormalProceduresList.delete(clearKey);
-        }
-        this.recallFailures = this.allCurrentFailures.filter((item) => !this.presentedFailures.includes(item));
       }
       this.emergencyCancelClearCautionKey = null;
     }
