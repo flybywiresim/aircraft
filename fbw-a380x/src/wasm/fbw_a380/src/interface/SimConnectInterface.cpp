@@ -844,7 +844,6 @@ bool SimConnectInterface::prepareSimOutputSimConnectDataDefinitions() {
 }
 
 bool SimConnectInterface::prepareClientDataDefinitions() {
-  // Accumulate HRESULT calls as a boolean success state.
   struct HresultAccumulator {
     bool success = true;
 
