@@ -5318,11 +5318,8 @@ export class FwsCore {
     }
 
     // Emergency audio cancel (EAC)
-    if (!this.ecpEmergencyCancelLevel.get()) {
-      this.emergencyCancelReady = true;
-      this.emergencyCancelUsed = false;
-    }
-    if (this.emergencyCancelInputBuffer.read() && this.emergencyCancelReady) {
+    const emergencyCancelInput = this.emergencyCancelInputBuffer.read();
+    if (emergencyCancelInput && this.emergencyCancelReady) {
       const currentSound = this.soundManager.getCurrentSoundPlaying();
       const soundToKeys: Record<string, string[]> = {
         continuousRepetitiveChime: this.auralCrcKeys,
@@ -5366,6 +5363,10 @@ export class FwsCore {
         }
       }
       this.emergencyCancelReady = false;
+    }
+    if (!this.ecpEmergencyCancelLevel.get() && !emergencyCancelInput) {
+      this.emergencyCancelReady = true;
+      this.emergencyCancelUsed = false;
     }
 
     /* T.O. CONFIG CHECK */
