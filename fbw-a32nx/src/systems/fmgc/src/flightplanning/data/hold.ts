@@ -8,7 +8,7 @@ export class HoldUtils {
       case LegType.HF:
       case LegType.HM:
         return {
-          inboundMagneticCourse: defintion.magneticCourse,
+          inboundMagneticCourse: defintion.course,
           turnDirection: defintion.turnDirection,
           distance: defintion.length,
           time: defintion.lengthTime,

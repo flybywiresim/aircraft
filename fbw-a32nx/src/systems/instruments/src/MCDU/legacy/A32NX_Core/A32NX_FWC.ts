@@ -1,6 +1,5 @@
 // @ts-strict-ignore
 import {
-  Arinc429Register,
   Arinc429Word,
   NXLogicConfirmNode,
   NXLogicMemoryNode,
@@ -9,13 +8,8 @@ import {
 
 // FIXME move to PseudoFWC
 export class A32NX_FWC {
-  // momentary
-  private toConfigTest = false; // WTOCT
-
   // persistent
   private flightPhase = null;
-  private ldgMemo = null;
-  private toMemo = null;
 
   // ESDL 1. 0. 60
   private gndMemo = new NXLogicConfirmNode(1); // outptuts ZGND
@@ -46,34 +40,8 @@ export class A32NX_FWC {
   private phase5Memo = new NXLogicTriggeredMonostableNode(120); // MTRIG 01
   private phase67Memo = new NXLogicTriggeredMonostableNode(180); // MTRIG 02
 
-  // ESDL 1. 0.180
-  private memoTo_conf01 = new NXLogicConfirmNode(120, true); // CONF 01
-  private memoTo_memo = new NXLogicMemoryNode(false);
-
-  // ESDL 1. 0.190
-  private memoLdgMemo_conf01 = new NXLogicConfirmNode(1, true); // CONF 01
-  private memoLdgMemo_inhibit = new NXLogicMemoryNode(false);
-  private memoLdgMemo_conf02 = new NXLogicConfirmNode(10, true); // CONF 01
-  private memoLdgMemo_below2000ft = new NXLogicMemoryNode(true);
-
-  // ESDL 1. 0.310
-  private memoToInhibit_conf01 = new NXLogicConfirmNode(3, true); // CONF 01
-
-  // ESDL 1. 0.320
-  private memoLdgInhibit_conf01 = new NXLogicConfirmNode(3, true); // CONF 01
-
-  private readonly ecpWarningButtonStatus = Arinc429Register.empty();
-
   update(_deltaTime, _core) {
     this._updateFlightPhase(_deltaTime);
-    this._updateButtons(_deltaTime);
-    this._updateTakeoffMemo(_deltaTime);
-    this._updateLandingMemo(_deltaTime);
-  }
-
-  _updateButtons(_deltaTime) {
-    this.ecpWarningButtonStatus.setFromSimVar('L:A32NX_ECP_WARNING_SWITCH_WORD');
-    this.toConfigTest = this.ecpWarningButtonStatus.bitValue(18);
   }
 
   _updateFlightPhase(_deltaTime) {
@@ -225,63 +193,5 @@ export class A32NX_FWC {
     // update flight phase
     this.flightPhase = flightPhase;
     SimVar.SetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum', this.flightPhase || 0);
-  }
-
-  _updateTakeoffMemo(_deltaTime) {
-    /// FWC ESLD 1.0.180
-    const setFlightPhaseMemo = this.flightPhase === 2 && this.toConfigTest;
-    const resetFlightPhaseMemo =
-      this.flightPhase === 10 || this.flightPhase === 3 || this.flightPhase === 1 || this.flightPhase === 6;
-    const flightPhaseMemo = this.memoTo_memo.write(setFlightPhaseMemo, resetFlightPhaseMemo);
-
-    const eng1NotRunning = SimVar.GetSimVarValue('ENG N1 RPM:1', 'Percent') < 15;
-    const eng2NotRunning = SimVar.GetSimVarValue('ENG N1 RPM:2', 'Percent') < 15;
-    const toTimerElapsed = this.memoTo_conf01.write(!eng1NotRunning && !eng2NotRunning, _deltaTime);
-
-    this.toMemo = flightPhaseMemo || (this.flightPhase === 2 && toTimerElapsed);
-    SimVar.SetSimVarValue('L:A32NX_FWC_TOMEMO', 'Bool', this.toMemo);
-  }
-
-  _updateLandingMemo(_deltaTime) {
-    const radioHeight1 = Arinc429Word.fromSimVarValue('L:A32NX_RA_1_RADIO_ALTITUDE');
-    const radioHeight2 = Arinc429Word.fromSimVarValue('L:A32NX_RA_2_RADIO_ALTITUDE');
-    const radioHeight1Invalid = radioHeight1.isFailureWarning() || radioHeight1.isNoComputedData();
-    const radioHeight2Invalid = radioHeight2.isFailureWarning() || radioHeight2.isNoComputedData();
-    const gearDownlocked = SimVar.GetSimVarValue('GEAR TOTAL PCT EXTENDED', 'percent') > 0.95;
-
-    // FWC ESLD 1.0.190
-    const setBelow2000ft =
-      (radioHeight1.value < 2000 && !radioHeight1Invalid) || (radioHeight2.value < 2000 && !radioHeight2Invalid);
-    const resetBelow2000ft =
-      (radioHeight1.value > 2200 || radioHeight1Invalid) && (radioHeight2.value > 2200 || radioHeight2Invalid);
-    const memo2 = this.memoLdgMemo_below2000ft.write(setBelow2000ft, resetBelow2000ft);
-
-    const setInhibitMemo = this.memoLdgMemo_conf01.write(
-      resetBelow2000ft && !radioHeight1Invalid && !radioHeight2Invalid,
-      _deltaTime,
-    );
-    const resetInhibitMemo = !(this.flightPhase === 7 || this.flightPhase === 8 || this.flightPhase === 6);
-    const memo1 = this.memoLdgMemo_inhibit.write(setInhibitMemo, resetInhibitMemo);
-
-    const showInApproach = memo1 && memo2 && this.flightPhase === 6;
-
-    const invalidRadioMemo = this.memoLdgMemo_conf02.write(
-      radioHeight1Invalid && radioHeight2Invalid && gearDownlocked && this.flightPhase === 6,
-      _deltaTime,
-    );
-
-    this.ldgMemo = showInApproach || invalidRadioMemo || this.flightPhase === 8 || this.flightPhase === 7;
-    SimVar.SetSimVarValue('L:A32NX_FWC_LDGMEMO', 'Bool', this.ldgMemo);
-  }
-
-  hasAltitudeConstraint() {
-    // FIXME SUSSY code reading an LVar that's never written
-    if (
-      Simplane.getAutoPilotAltitudeManaged() &&
-      SimVar.GetSimVarValue('L:AP_CURRENT_TARGET_ALTITUDE_IS_CONSTRAINT', 'number') != 0
-    ) {
-      return false;
-    }
-    return true;
   }
 }
