@@ -11,7 +11,13 @@ import {
   SimVarValueType,
   Wait,
 } from '@microsoft/msfs-sdk';
-import { GroundSupportEvents, GsxSimVarEvents, MsfsFlightModelEvents, NXDataStore } from '@flybywiresim/fbw-sdk';
+import {
+  GroundSupportEvents,
+  GsxSimVarEvents,
+  MsfsFlightModelEvents,
+  GPUControlEvents,
+  NXDataStore,
+} from '@flybywiresim/fbw-sdk';
 
 export enum GsxStates {
   FALSE = 0,
@@ -21,6 +27,7 @@ export enum GsxStates {
 }
 
 export enum GsxServiceStates {
+  UNKNOWN = 0, //service state is unknown (i.e. GSX not started / initialized)
   CALLABLE = 1, //service can be called
   UNVAILABLE = 2, //service is not available
   BYPASSED = 3, //service has been bypassed
@@ -47,13 +54,6 @@ enum DoorTarget {
   OPEN = 1,
 }
 
-enum PowerAction {
-  NOOP = -1,
-  DISCONNECT = 0,
-  CONNECT = 1,
-}
-
-const DELAY_CARGO_CLOSE = 60000;
 const DELAY_REFUEL_RESTART = 2000;
 const DELAY_RATE_RESTORE = DELAY_REFUEL_RESTART + 1000;
 const DELAY_FUEL_START = 500;
@@ -62,13 +62,16 @@ const DEFUEL_DIFF_TARGET_A380 = 2500;
 
 abstract class GsxSync implements Instrument {
   protected readonly sub = this.bus.getSubscriber<GroundSupportEvents & GsxSimVarEvents & MsfsFlightModelEvents>();
+  protected readonly pub = this.bus.getPublisher<GPUControlEvents>();
   protected readonly extPowerAvailStates = new Map<number, ConsumerSubject<boolean>>();
   protected readonly couatlStarted = ConsumerSubject.create(null, 0);
-  protected readonly stateJetway = ConsumerSubject.create(null, 1);
+  protected readonly stateJetway = ConsumerSubject.create(null, 0);
   protected readonly stateBoard = ConsumerSubject.create(null, 1);
   protected readonly stateDeboard = ConsumerSubject.create(null, 1);
   protected readonly stateDeparture = ConsumerSubject.create(null, 1);
-  protected readonly stateGpu = ConsumerSubject.create(null, 0);
+  protected readonly gpuConnection = ConsumerSubject.create(null, 0);
+  protected lastJetwayState = 0;
+  protected lastGpuConnection = 0;
   protected isRefuelActive = false;
   protected isDefuel = false;
   protected readonly fuelTimer = new DebounceTimer();
@@ -107,7 +110,7 @@ abstract class GsxSync implements Instrument {
     this.stateBoard.setConsumer(this.sub.on('gsx_boarding_state'));
     this.stateDeboard.setConsumer(this.sub.on('gsx_deboarding_state'));
     this.stateDeparture.setConsumer(this.sub.on('gsx_departure_state'));
-    this.stateGpu.setConsumer(this.sub.on('gsx_gpu_connected'));
+    this.gpuConnection.setConsumer(this.sub.on('gsx_gpu_connected'));
     this.fuelHose.setConsumer(this.sub.on('gsx_fuelhose_connected'));
     this.refuelStartedByUser.setConsumer(this.sub.on('a32nx_refuel_started_by_user'));
     this.cargoDoorTarget.setConsumer(this.sub.on(`msfs_interactive_point_goal_${this.getCargoDoorIndex()}`));
@@ -116,8 +119,8 @@ abstract class GsxSync implements Instrument {
     this.attachedLoader1.setConsumer(this.sub.on('gsx_aircraft_loader_1_attached'));
     this.attachedLoader2.setConsumer(this.sub.on('gsx_aircraft_loader_2_attached'));
 
-    this.stateBoard.sub(this.onBoardingCompleted.bind(this));
-    this.stateDeboard.sub(this.onBoardingCompleted.bind(this));
+    this.stateBoard.sub(this.onLoadingCompleted.bind(this));
+    this.stateDeboard.sub(this.onLoadingCompleted.bind(this));
     this.stateDeparture.sub(this.onPushbackActive.bind(this));
 
     this.toggleCargo1.sub(this.onToggleCargo.bind(this));
@@ -128,15 +131,26 @@ abstract class GsxSync implements Instrument {
     this.fuelHose.sub(this.onFuelHoseConnected.bind(this));
     this.refuelStartedByUser.sub(this.onRefuelStartedByUser.bind(this));
 
-    this.stateJetway.sub(this.evaluateGsxPowerSource.bind(this));
-    this.stateGpu.sub(this.evaluateGsxPowerSource.bind(this));
-    this.stateDeparture.sub(this.evaluateGsxPowerSource.bind(this));
+    this.stateJetway.sub(this.onJetwayChange.bind(this));
+    this.gpuConnection.sub(this.onGpuConnected.bind(this));
+    this.stateDeparture.sub(this.onDepartureChange.bind(this));
+    this.stateDeboard.sub(this.onDeboardChange.bind(this));
   }
 
   public onUpdate(): void {
     if (this.initialIngameFrame) {
-      this.onCouatlStarted(SimVar.GetSimVarValueFast('L:FSDT_GSX_COUATL_STARTED', SimVarValueType.Number));
+      NXDataStore.subscribeLegacy(SyncServices.POWER, (key, value) => this.onSyncSettingChanged(key, value));
       this.initialIngameFrame = false;
+    }
+  }
+
+  protected onSyncSettingChanged(key: string, value: string): void {
+    if (key === SyncServices.POWER) {
+      if (value === '1') {
+        this.pub.pub('msfs_power_sync_state', false);
+      } else {
+        this.pub.pub('msfs_power_sync_state', true);
+      }
     }
   }
 
@@ -159,7 +173,16 @@ abstract class GsxSync implements Instrument {
   protected onCouatlStarted(state: number): void {
     if (state === GsxStates.TRUE) {
       //gsx-ism: we don't want gsx progressive fuel when the aircraft progressively refuels
-      SimVar.SetSimVarValue('L:FSDT_GSX_SET_PROGRESS_REFUEL', SimVarValueType.Number, -1);
+      if (this.isSyncEnabled(SyncServices.FUEL) == true) {
+        SimVar.SetSimVarValue('L:FSDT_GSX_SET_PROGRESS_REFUEL', SimVarValueType.Number, -1);
+      }
+
+      //disable sync to msfs
+      if (this.isSyncEnabled(SyncServices.POWER) == true) {
+        this.pub.pub('msfs_power_sync_state', false);
+      }
+    } else {
+      this.pub.pub('msfs_power_sync_state', true);
     }
   }
 
@@ -174,9 +197,7 @@ abstract class GsxSync implements Instrument {
   protected abstract setDesiredFuel(desiredFuel: number): void;
 
   protected onFuelHoseConnected(hose: number): void {
-    if (!this.isSyncEnabled(SyncServices.FUEL)) {
-      return;
-    }
+    if (this.isSyncEnabled(SyncServices.FUEL) == false) return;
 
     //start De/Refuel when Hose is connected
     if (hose === GsxStates.CONNECTED && !this.refuelStartedByUser.get() && !this.isRefuelActive) {
@@ -210,9 +231,7 @@ abstract class GsxSync implements Instrument {
   }
 
   protected onRefuelStartedByUser(refuel: boolean): void {
-    if (!this.isSyncEnabled(SyncServices.FUEL)) {
-      return;
-    }
+    if (this.isSyncEnabled(SyncServices.FUEL) == false) return;
 
     //defuel has finished - instant refuel to desired to get the truck triggered to leave
     if (!refuel && this.fuelHose.get() === GsxStates.CONNECTED && this.isDefuel) {
@@ -236,55 +255,68 @@ abstract class GsxSync implements Instrument {
     }
   }
 
-  protected evaluateGsxPowerSource(): void {
-    if (!this.isSyncEnabled(SyncServices.POWER)) {
-      return;
-    }
-
-    const extAvail = this.isExtPowerAvail();
-    const jetwayState = this.stateJetway.get();
-    const gpuState = this.stateGpu.get();
-    const boardState = this.stateBoard.get();
-    const deboardState = this.stateDeboard.get();
-    const departureState = this.stateDeparture.get();
-    let action = PowerAction.NOOP;
-
-    // external is available (as of internal State) - check if disconnect is needed
-    if (extAvail) {
-      // pushback was requested (when boarding not running)
-      if (
-        boardState !== GsxServiceStates.REQUESTED &&
-        boardState !== GsxServiceStates.ACTIVE &&
-        boardState !== GsxServiceStates.COMPLETING &&
-        departureState >= GsxServiceStates.REQUESTED
-      ) {
-        action = PowerAction.DISCONNECT;
-        // pushback is active (if it wasn't catched before)
-      } else if (departureState === GsxServiceStates.ACTIVE) {
-        action = PowerAction.DISCONNECT;
-        // jetway and gpu both not connected
-      } else if (
-        jetwayState >= GsxServiceStates.CALLABLE &&
-        jetwayState <= GsxServiceStates.BYPASSED &&
-        gpuState !== GsxStates.CONNECTED
-      ) {
-        action = PowerAction.DISCONNECT;
-      }
-      // external is not available - check if connect is needed
-    } else if (
-      //jetway or gpu connected
-      (jetwayState >= GsxServiceStates.REQUESTED ||
-        gpuState === GsxStates.CONNECTED ||
-        deboardState === GsxServiceStates.ACTIVE) &&
-      departureState < GsxServiceStates.REQUESTED
+  protected onJetwayChange(state: number): void {
+    if (
+      this.isSyncEnabled(SyncServices.POWER) == true &&
+      this.lastJetwayState !== state &&
+      state > GsxServiceStates.UNKNOWN &&
+      this.couatlStarted.get() === GsxStates.TRUE
     ) {
-      action = PowerAction.CONNECT;
+      //sync Power to Jetway Connectionn (as of GSX)
+      if (state === GsxServiceStates.ACTIVE && !this.isExtPowerAvail()) {
+        this.setExtPower(true);
+      } else if (
+        state !== GsxServiceStates.ACTIVE &&
+        this.isExtPowerAvail() &&
+        this.gpuConnection.get() === GsxStates.DISCONNECTED
+      ) {
+        this.setExtPower(false);
+      }
     }
 
-    if (action == PowerAction.CONNECT) {
-      this.setExtPower(true);
-    } else if (action == PowerAction.DISCONNECT) {
+    this.lastJetwayState = state;
+  }
+
+  protected onGpuConnected(state: number): void {
+    if (
+      this.isSyncEnabled(SyncServices.POWER) == true &&
+      this.lastGpuConnection !== state &&
+      this.couatlStarted.get() === GsxStates.TRUE
+    ) {
+      //sync Power to GSX GPU Connectionn
+      if (state === GsxStates.CONNECTED && !this.isExtPowerAvail()) {
+        this.setExtPower(true);
+      } else if (
+        state === GsxStates.DISCONNECTED &&
+        this.isExtPowerAvail() &&
+        this.stateJetway.get() !== GsxServiceStates.ACTIVE
+      ) {
+        this.setExtPower(false);
+      }
+    }
+    this.lastGpuConnection = state;
+  }
+
+  protected onDepartureChange(state: number): void {
+    if (this.isSyncEnabled(SyncServices.POWER) == false) return;
+
+    //remove Power when Pushback is requested or gets active
+    if ((state === GsxServiceStates.REQUESTED || state === GsxServiceStates.ACTIVE) && this.isExtPowerAvail()) {
       this.setExtPower(false);
+    }
+  }
+
+  protected onDeboardChange(state: number): void {
+    if (this.isSyncEnabled(SyncServices.POWER) == false) return;
+
+    //set Power when Deboard is active and jetway state is not valid (gsx-ism on arrival or User didn't request GSX GPU or set Power via FlyPad)
+    if (
+      state === GsxServiceStates.ACTIVE &&
+      this.stateJetway.get() !== GsxServiceStates.UNVAILABLE &&
+      this.stateJetway.get() === GsxServiceStates.ACTIVE &&
+      !this.isExtPowerAvail()
+    ) {
+      this.setExtPower(true);
     }
   }
 
@@ -296,19 +328,22 @@ abstract class GsxSync implements Instrument {
     return state;
   }
 
-  protected abstract setOvhdPushBtn(index: number, state: boolean): void;
+  protected abstract isPowerConnected(): boolean;
 
   protected setExtPower(connect: boolean): void {
-    for (let index = 1; index <= this.numberOfGPUs; index++) {
-      SimVar.SetSimVarValue(`L:A32NX_EXT_PWR_AVAIL:${index}`, SimVarValueType.Bool, connect);
-      if (!connect) {
-        this.setOvhdPushBtn(index, connect);
-      }
+    if (connect && !this.isExtPowerAvail()) {
+      this.pub.pub('set_ext_power', true);
+    } else if (!this.isPowerConnected() && this.isExtPowerAvail()) {
+      this.pub.pub('set_ext_power', false);
     }
   }
 
   protected isCargoOpen(): boolean {
     return this.cargoDoorTarget.get() !== DoorTarget.CLOSED;
+  }
+
+  protected isLoaderAttached(): boolean {
+    return this.attachedLoader1.get() === GsxStates.CONNECTED || this.attachedLoader2.get() === GsxStates.CONNECTED;
   }
 
   protected abstract getCargoDoorIndex(): number;
@@ -320,9 +355,9 @@ abstract class GsxSync implements Instrument {
     SimVar.SetSimVarValue(`A:INTERACTIVE POINT GOAL:${index}`, SimVarValueType.PercentOver100, goal);
   }
 
-  protected onBoardingCompleted(state: number): void {
-    //just to be safe, check again when boarding was completed
-    if (state === GsxServiceStates.COMPLETED && this.isCargoOpen()) {
+  protected onLoadingCompleted(state: number): void {
+    //check if doors can be closed when boarding/deboarding was completed
+    if (state === GsxServiceStates.COMPLETED && this.isCargoOpen() && !this.isLoaderAttached()) {
       this.setCargoDoor(DoorTarget.CLOSED, this.getCargoDoorIndex());
     }
   }
@@ -360,6 +395,10 @@ export class GsxSyncA32NX extends GsxSync {
     super(bus, 1, DEFUEL_DIFF_TARGET_A320);
   }
 
+  protected override initSubscriptions(): void {
+    super.initSubscriptions();
+  }
+
   protected getFob(): number {
     return SimVar.GetSimVarValueFast('L:A32NX_TOTAL_FUEL_QUANTITY', SimVarValueType.Number);
   }
@@ -373,10 +412,8 @@ export class GsxSyncA32NX extends GsxSync {
     SimVar.SetSimVarValue('L:A32NX_FUEL_RIGHT_MAIN_DESIRED', SimVarValueType.Number, desiredFuel);
   }
 
-  protected setOvhdPushBtn(index: number, state: boolean): void {
-    if (index === 1) {
-      SimVar.SetSimVarValue(`L:A32NX_OVHD_ELEC_EXT_PWR_PB_IS_ON`, SimVarValueType.Bool, state);
-    }
+  protected isPowerConnected(): boolean {
+    return SimVar.GetSimVarValue(`L:A32NX_OVHD_ELEC_EXT_PWR_PB_IS_ON`, SimVarValueType.Bool) == true;
   }
 
   protected getCargoDoorIndex(): number {
@@ -401,8 +438,13 @@ export class GsxSyncA380X extends GsxSync {
     SimVar.SetSimVarValue('L:A32NX_FUEL_DESIRED', 'kilograms', desiredFuel);
   }
 
-  protected setOvhdPushBtn(index: number, state: boolean): void {
-    SimVar.SetSimVarValue(`L:A32NX_OVHD_ELEC_EXT_PWR_${index}_PB_IS_ON`, SimVarValueType.Bool, state);
+  protected isPowerConnected(): boolean {
+    for (let index = 1; index <= this.numberOfGPUs; index++) {
+      if (SimVar.GetSimVarValue(`L:A32NX_OVHD_ELEC_EXT_PWR_${index}_PB_IS_ON`, SimVarValueType.Bool) == true) {
+        return true;
+      }
+    }
+    return false;
   }
 
   protected getCargoDoorIndex(): number {

@@ -123,8 +123,20 @@ export const globalSyncedSettings: SyncedSettingDefinition[] = [
     defaultValue: '0',
   },
   {
+    configKey: 'GSX_FUEL_SYNC',
+    localVarName: 'L:A32NX_GSX_FUEL_SYNC_ENABLED',
+    localVarUnit: 'bool',
+    defaultValue: '0',
+  },
+  {
     configKey: 'GSX_PAYLOAD_SYNC',
     localVarName: 'L:A32NX_GSX_PAYLOAD_SYNC_ENABLED',
+    localVarUnit: 'bool',
+    defaultValue: '0',
+  },
+  {
+    configKey: 'GSX_POWER_SYNC',
+    localVarName: 'L:A32NX_GSX_POWER_SYNC_ENABLED',
     localVarUnit: 'bool',
     defaultValue: '0',
   },

@@ -36,6 +36,8 @@ export class GPUManagement implements Instrument {
 
   private readonly ExtPowerAvailStates = new Map<number, ConsumerSubject<boolean>>();
 
+  private readonly msfsSyncEnabled = ConsumerSubject.create(this.sub.on('msfs_power_sync_state'), true);
+
   // state 2 is cockpit, state 3 is external
   private readonly isIngame = MappedSubject.create(
     ([gameState, cameraState]) => gameState === GameState.ingame && (cameraState === 2 || cameraState === 3),
@@ -63,11 +65,17 @@ export class GPUManagement implements Instrument {
   public init(): void {
     Wait.awaitSubscribable(this.isIngame, (state) => state, true).then(() => {
       this.sub.on('gpu_toggle').handle(this.toggleGPU.bind(this));
-      this.gpuHookedUp.sub((v) => this.setEXTpower(v));
+      this.sub.on('set_ext_power').handle(this.onExtPowerEvent.bind(this));
+      this.gpuHookedUp.sub((v) => {
+        if (this.msfsSyncEnabled.get() === true) this.setEXTpower(v);
+      });
       this.groundVelocity.sub((v) => {
         // disable ext power when aircraft starts moving
         if (v > 0.3 && this.anyGPUAvail()) {
-          this.toggleGPU();
+          this.setEXTpower(false);
+          if (this.gpuHookedUp.get()) {
+            this.toggleMSFSGpu();
+          }
         }
       });
       this.initialIngameFrame = true;
@@ -87,18 +95,26 @@ export class GPUManagement implements Instrument {
 
   private toggleGPU(): void {
     if (!this.anyGPUAvail()) {
-      if (this.anyMSFSGPUAvail()) {
+      if (this.anyMSFSGPUAvail() || this.msfsSyncEnabled.get() === false) {
         // if msfs ground power is avail we are at a powered stand
         this.setEXTpower(true);
       } else {
         this.toggleMSFSGpu(); // if msfs ground power is not avail we call for gpu cart
       }
     } else {
-      if (this.gpuHookedUp.get()) {
+      if (this.gpuHookedUp.get() && this.msfsSyncEnabled.get() === true) {
         this.toggleMSFSGpu();
       } else {
         this.setEXTpower(false);
       }
+    }
+  }
+
+  private onExtPowerEvent(state: boolean): void {
+    if (!this.anyGPUAvail() && state) {
+      this.setEXTpower(true);
+    } else if (this.anyGPUAvail() && !state) {
+      this.setEXTpower(false);
     }
   }
 
@@ -140,4 +156,6 @@ export class GPUManagement implements Instrument {
 export interface GPUControlEvents {
   /** event to toggle the GPU*/
   gpu_toggle: unknown;
+  set_ext_power: boolean;
+  msfs_power_sync_state: boolean;
 }
