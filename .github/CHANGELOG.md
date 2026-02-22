@@ -71,7 +71,14 @@
 1. [A380X/MFD] Add initial implementation of D-ATIS page in ATCCOM - @heclak (Heclak)
 1. [A32NX/FWS] Fixed takeoff memo not working in flight phase 9 (after landing) - @tracernz (Mike)
 1. [A380X/FUEL SYSTEM] Fixed inner tank transfer not starting in certain circumstances - @donstim (donbikes)
-1. [A32NX/FADEC] Fixed the PFD showing MAN FLX instead of MAN MCT post A/THR engagement after takeoff - @FozzieHi (Fozzie)
+1. [A32NX/FADEC] Fixed the PFD showing MAN FLX instead of MAN MCT post A/THR engagement after takeoff - @FozzieHi (fozzie)
+1. [A32NX/FWS] Add `ENG REV SET` master caution - @FozzieHi (fozzie)
+1. [FMS] Fixed an issue where the LNAV could crash after enabling the alternate flightplan - @tracernz (Mike)
+1. [A380X/FWS] Add EXCESS RESIDUAL DIFF PRESS and INHIBITED BY DOORS procedures - @Jonny23787 (Jonathan)
+1. [FMS] Fixed incorrect course for enroute holds and direct tos - @tracernz (Mike)
+1. [FMS] Show true bearings correctly in various FMS pages on the MCDU/MFD - @tracernz (Mike)
+1. [A380X/FWS] Improve various ABN SENSED procedure accuracy - @Jonny23787 (Jonathan)
+1. [A32NX/FMS] Add pilot entry ETT (Estimated Takeoff Time) functionality  - @BravoMike99 (bruno_pt99)
 1. [A380X/FLIGHT MODEL] Improve pitch and roll response  - @donstim (donbikes)
 
 ## 0.14.0

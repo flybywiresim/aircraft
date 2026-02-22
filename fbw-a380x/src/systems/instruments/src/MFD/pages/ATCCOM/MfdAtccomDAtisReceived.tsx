@@ -55,6 +55,12 @@ export class MfdAtccomDAtisReceived extends DisplayComponent<MfdAtccomDAtisRecei
     (v) => v === this.previousMessageNumberOfPages.get(),
   );
 
+  /**
+   * Get section of D-ATIS message to display on current page
+   * @param {string[]} messageArray atis message
+   * @param {number} page current page number
+   * @returns {string} D-ATIS string to show on current page
+   */
   private formatAtis(messageArray: string[], page: number = 1): string {
     return messageArray
       .slice(this.rowsPerPage * (page - 1), this.rowsPerPage * page)
@@ -62,6 +68,13 @@ export class MfdAtccomDAtisReceived extends DisplayComponent<MfdAtccomDAtisRecei
       .toUpperCase();
   }
 
+  /**
+   * Process raw D-ATIS message into lines and
+   * calculate number of pages required to display full message
+   * @param {string} string unformatted D-ATIS message
+   * @param {Subject<number>} numberOfPages ref to Subject to update the number of pages
+   * @returns {string[]} D-ATIS message formatted as a string array
+   */
   private processAtisToArray(string: string, numberOfPages: Subject<number>): string[] {
     if (string.length === 0) return [''];
     const charPerRow = 39;
