@@ -1926,7 +1926,7 @@ export class PseudoFWC {
     const twoThousandFiveHundredPin = A32NXRadioAutoCallOutFlags.TwoThousandFiveHundred & this.autoCallOutPins;
     const twentyFiveOrTwoThousandFiveHundredPin = twentyFiveHundredPin || twoThousandFiveHundredPin;
     const twoThousandFiveHundredFeetTreshold = this.twoThousandFiveHundredWithinRangeConfNode.write(
-      twentyFiveOrTwoThousandFiveHundredPin && height <= 2530 && height >= 2500,
+      twentyFiveOrTwoThousandFiveHundredPin && height < 2530 && height >= 2500,
       deltaTime,
     );
     const twoThousandFiveHundredHysteresis = twentyFiveOrTwoThousandFiveHundredPin
@@ -1955,7 +1955,7 @@ export class PseudoFWC {
     // 2000
     const twoThousandFeetPin = A32NXRadioAutoCallOutFlags.TwoThousand & this.autoCallOutPins;
     const twoThousandFeetTreshold = this.twoThousandWithinRangeConfNode.write(
-      twoThousandFeetPin && height <= 2030 && height >= 2000,
+      twoThousandFeetPin && height < 2030 && height >= 2000,
       deltaTime,
     );
     const twoThousandFeetHysteresis = twoThousandFeetPin ? this.twoThousandHystherisis.write(height) : false;
@@ -1972,7 +1972,7 @@ export class PseudoFWC {
     // 1000
     const oneThousandFeetPin = A32NXRadioAutoCallOutFlags.OneThousand & this.autoCallOutPins;
     const oneThousandFeetTreshold = this.oneThousandWithinRangeConfNode.write(
-      oneThousandFeetPin && height <= 1030 && height >= 1000,
+      oneThousandFeetPin && height < 1030 && height >= 1000,
       deltaTime,
     );
     const oneThousandFeetHysteresis = oneThousandFeetPin ? this.oneThousandHystherisis.write(height) : false;
@@ -1988,7 +1988,7 @@ export class PseudoFWC {
 
     // 500
     const fiveHundredFeetThreshold = this.fiveHundredWithinRangeConfNode.write(
-      height <= 530 && height >= 500,
+      height < 530 && height >= 500,
       deltaTime,
     );
     const fiveHundredAudio =
@@ -2001,7 +2001,7 @@ export class PseudoFWC {
 
     // 400
     const fourHundredFeetTreshold =
-      A32NXRadioAutoCallOutFlags.FourHundred & this.autoCallOutPins && height <= 410 && height >= 400;
+      A32NXRadioAutoCallOutFlags.FourHundred & this.autoCallOutPins && height < 410 && height >= 400;
 
     const fourHundredAudio =
       fourHundredFeetTreshold &&
@@ -2014,7 +2014,7 @@ export class PseudoFWC {
 
     // 300
     const threeHundredFeetTreshold =
-      A32NXRadioAutoCallOutFlags.ThreeHundred & this.autoCallOutPins && height <= 310 && height >= 300;
+      A32NXRadioAutoCallOutFlags.ThreeHundred & this.autoCallOutPins && height < 310 && height >= 300;
     const threeHundredAudio =
       threeHundredFeetTreshold &&
       !this.threeHundredThresholdPreviousCycle &&
@@ -2026,7 +2026,7 @@ export class PseudoFWC {
 
     // 200
     const twoHundredFeetTreshold =
-      A32NXRadioAutoCallOutFlags.TwoHundred & this.autoCallOutPins && height <= 210 && height >= 200;
+      A32NXRadioAutoCallOutFlags.TwoHundred & this.autoCallOutPins && height < 210 && height >= 200;
     const twoHundredAudio =
       twoHundredFeetTreshold &&
       !this.twoHundredThresholdPreviousCycle &&
@@ -2038,7 +2038,7 @@ export class PseudoFWC {
 
     // 100
     const oneHundredFeetTreshold =
-      A32NXRadioAutoCallOutFlags.OneHundred & this.autoCallOutPins && height <= 110 && height >= 100;
+      A32NXRadioAutoCallOutFlags.OneHundred & this.autoCallOutPins && height < 110 && height >= 100;
     const oneHundredAudio =
       oneHundredFeetTreshold &&
       !this.oneHundredThresholdPreviousCycle &&
@@ -2050,7 +2050,7 @@ export class PseudoFWC {
 
     // 50
     const fiftyTresholdAndPinProgrammed =
-      A32NXRadioAutoCallOutFlags.Fifty & this.autoCallOutPins && height <= 53 && height >= 50;
+      A32NXRadioAutoCallOutFlags.Fifty & this.autoCallOutPins && height < 53 && height >= 50;
     const fiftyAudio =
       !this.fortyAudio.get() &&
       this.fiftyThresholdAndNoAudioInhibitPulseNode.write(
@@ -2062,7 +2062,7 @@ export class PseudoFWC {
     this.fiftyMtrigPreviousCycle = this.fiftyMtrigNode.write(fiftyAudio, deltaTime);
     // 40
     const fourtyThresholdAndPinProgrammed =
-      A32NXRadioAutoCallOutFlags.Forty & this.autoCallOutPins && height <= 42 && height >= 40;
+      A32NXRadioAutoCallOutFlags.Forty & this.autoCallOutPins && height < 42 && height >= 40;
     const fortyAudio =
       !this.thirtyAudio.get() &&
       this.fortyThresholdAndNoAudioInhibitPulseNode.write(
@@ -2074,7 +2074,7 @@ export class PseudoFWC {
     this.fortyMtrigPreviousCycle = this.fortyMtrigNode.write(fortyAudio, deltaTime);
     // 30
     const thirtyThresholdAndPinProgrammed =
-      A32NXRadioAutoCallOutFlags.Thirty & this.autoCallOutPins && height <= 32 && height >= 30;
+      A32NXRadioAutoCallOutFlags.Thirty & this.autoCallOutPins && height < 32 && height >= 30;
     const thirtyAudio =
       !this.twentyAudio.get() &&
       this.thirtyThresholdAndNoAudioInhibitPulseNode.write(
@@ -2085,7 +2085,7 @@ export class PseudoFWC {
     this.thirtyAudio.set(thirtyAudio);
     this.thirtyMtrigPreviousCycle = this.thirtyMtrigNode.write(thirtyAudio, deltaTime);
     // 20 no retard
-    const twentyThreshold = height <= 22 && height >= 20;
+    const twentyThreshold = height < 22 && height >= 20;
     const twentyThresholdAndPinProgrammed = A32NXRadioAutoCallOutFlags.Twenty & this.autoCallOutPins && twentyThreshold;
     const ap1Engaged = fm1DiscreteWord4.bitValue(12);
     const fm1LandActive = fm1DiscreteWord4.bitValue(13);
@@ -2125,7 +2125,7 @@ export class PseudoFWC {
     this.twentyRetardActivePreviousCycle = playRetardAudio;
     this.twentyRetardActiveMtrigPreviousCycle = this.twentyRetardActiveMtrigNode.write(playRetardAudio, deltaTime);
     // 10 no retard
-    const tenThreshold = height <= 12 && height >= 10;
+    const tenThreshold = height < 12 && height >= 10;
     const tenThresholdAndPinProgrammed = A32NXRadioAutoCallOutFlags.Ten & this.autoCallOutPins && tenThreshold;
     this.tenAudio.set(
       this.tenThresholdAndNoAudioInhibitPulseNode.write(
@@ -2151,8 +2151,8 @@ export class PseudoFWC {
     this.tenRetardActiveMtrigPreviousCycle = this.tenRetardActiveMtrigNode.write(playTenRetardAudio, deltaTime);
     // 5
     const fiveThresholdAndPinProgrammed =
-      A32NXRadioAutoCallOutFlags.Five & this.autoCallOutPins && height <= 7 && height >= 5;
-    const fivePulse = !this.fiveAudioPulseNode.write(
+      A32NXRadioAutoCallOutFlags.Five & this.autoCallOutPins && height < 6 && height >= 5;
+    const fivePulse = this.fiveAudioPulseNode.write(
       fiveThresholdAndPinProgrammed && !this.autoCalloutInhibit && !this.fiveMtrigPreviousCycle && !this.retardInhibit,
       deltaTime,
     );
