@@ -321,8 +321,6 @@ export class FwsCore {
 
   private wasEcpEmergencyCancelLevel = false;
 
-  private lastAuralVolume = FwsAuralVolume.Full;
-
   public readonly stallWarning = Subject.create(false);
 
   public readonly masterCautionOutput = MappedSubject.create(
@@ -2829,12 +2827,6 @@ export class FwsCore {
     this.soundManager.setManualAudioInhibition(this.ecpEmergencyCancelLevel.get());
     if (this.ecpEmergencyCancelLevel.get() !== this.wasEcpEmergencyCancelLevel) {
       this.cancelledCautionMemoKey.set('');
-      if (this.ecpEmergencyCancelLevel.get()) {
-        this.lastAuralVolume = SimVar.GetSimVarValue('L:A32NX_FWS_AUDIO_VOLUME', SimVarValueType.Enum);
-        this.soundManager.setVolume(FwsAuralVolume.Silent);
-      } else {
-        this.soundManager.setVolume(this.lastAuralVolume);
-      }
       this.wasEcpEmergencyCancelLevel = this.ecpEmergencyCancelLevel.get();
     }
 
