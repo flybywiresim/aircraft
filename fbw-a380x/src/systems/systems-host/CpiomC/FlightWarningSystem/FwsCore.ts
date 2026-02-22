@@ -315,6 +315,8 @@ export class FwsCore {
 
   private emergencyCancelReady = true;
 
+  private emergencyCancelUsed = false;
+
   private emergencyCancelClearCautionKey: string | null = null;
 
   public readonly ecpEmergencyCancelLevel = Subject.create(false);
@@ -5315,11 +5317,10 @@ export class FwsCore {
       this.auralCrcActive.set(this.nonCancellableWarningCount > 0);
     }
 
-    let emergencyCancelCautionUsed = false;
-
     // Emergency audio cancel (EAC)
     if (!this.ecpEmergencyCancelLevel.get()) {
       this.emergencyCancelReady = true;
+      this.emergencyCancelUsed = false;
     }
     if (this.emergencyCancelInputBuffer.read() && this.emergencyCancelReady) {
       const currentSound = this.soundManager.getCurrentSoundPlaying();
@@ -5341,7 +5342,7 @@ export class FwsCore {
           }
           this.cancelledCautionMemoKey.set(cancelKey);
           this.emergencyCancelClearCautionKey = cancelKey;
-          emergencyCancelCautionUsed = true;
+          this.emergencyCancelUsed = true;
         } else {
           this.emergencyCancelledWarnings.add(cancelKey);
         }
@@ -5360,7 +5361,7 @@ export class FwsCore {
             this.cancelledCautions.add(cautionKey);
             this.cancelledCautionMemoKey.set(cautionKey);
             this.emergencyCancelClearCautionKey = cautionKey;
-            emergencyCancelCautionUsed = true;
+            this.emergencyCancelUsed = true;
           }
         }
       }
@@ -5471,7 +5472,6 @@ export class FwsCore {
     let failureSystemCount = 0;
     let activeWarningCount = 0;
     let activeCautionCount = 0;
-    let emergencyCancelHoldUsed = false;
     const activeWarningKeys: string[] = [];
     const auralCrcKeys: string[] = [];
     const auralScKeys: string[] = [];
@@ -5554,8 +5554,7 @@ export class FwsCore {
 
       if (
         this.ecpEmergencyCancelLevel.get() &&
-        !emergencyCancelCautionUsed &&
-        !emergencyCancelHoldUsed &&
+        !this.emergencyCancelUsed &&
         isActive &&
         newWarning &&
         value.failure === 2 &&
@@ -5564,7 +5563,7 @@ export class FwsCore {
         // TODO: Add cancelled caution ordering when we implement an ordering system within  priority 2 groups
         this.cancelledCautions.add(key);
         this.cancelledCautionMemoKey.set(key);
-        emergencyCancelHoldUsed = true;
+        this.emergencyCancelUsed = true;
       }
 
       const isCancelledCaution = value.failure === 2 && this.cancelledCautions.has(key);
