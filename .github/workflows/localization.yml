@@ -9,6 +9,9 @@ jobs:
   localization-update:
     runs-on: ubuntu-latest
     if: github.repository_owner == 'flybywiresim'
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - name: Checkout Branch
         uses: actions/checkout@v3
@@ -32,8 +35,8 @@ jobs:
           branch: localazy-update # Specify branch that this action uses.
           title: 'build: update FlyByWire localization'
           body: >
-            This PR automatically downloads and updates the approved changes from Localazy translations for 
-            the flyPadOS3 and the locPak files for persisting these changes in the repo. 
+            This PR automatically downloads and updates the approved changes from Localazy translations for
+            the flyPadOS3 and the locPak files for persisting these changes in the repo.
             Changes will be collected in this PR and this PR needs to be manually merged to master eventually.
             Ask on Discord #localisation if you have questions about this.
           labels: |

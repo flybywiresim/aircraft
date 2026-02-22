@@ -106,7 +106,7 @@ export class PseudoFWC {
 
   private readonly fwsUpdateThrottler = new UpdateThrottler(125); // has to be > 100 due to pulse nodes
 
-  private readonly simTime = RegisteredSimVar.create<number>('E:SIMULATION TIME', SimVarValueType.Seconds);
+  private readonly simTime = RegisteredSimVar.create('E:SIMULATION TIME', SimVarValueType.Seconds);
 
   private keyEventManager: KeyEventManager;
 
@@ -268,6 +268,7 @@ export class PseudoFWC {
 
   private readonly excessResidualPr = Subject.create(false);
 
+  private readonly lowDiffPressConfirm = new NXLogicConfirmNode(10, true);
   private readonly lowDiffPress = Subject.create(false);
 
   private readonly acsc1Lane1Fault = Subject.create(false);
@@ -855,13 +856,15 @@ export class PseudoFWC {
 
   private readonly flightPhase126 = Subject.create(false);
 
+  private readonly flightPhase129 = Subject.create(false);
+
   private readonly flightPhase23 = Subject.create(false);
 
   private readonly flightPhase34 = Subject.create(false);
 
   private readonly flightPhase345 = Subject.create(false);
 
-  private readonly flightPhase129 = Subject.create(false);
+  private readonly flightPhase567 = Subject.create(false);
 
   private readonly flightPhase67 = Subject.create(false);
 
@@ -1037,6 +1040,11 @@ export class PseudoFWC {
 
   private autoBrakeOffAuralTriggered = false;
 
+  private readonly wheel1Rpm = ConsumerSubject.create(this.sub.on('wheel1Rpm'), 0);
+
+  // TODO: Get from BSCU
+  private readonly wheel1SpeedAbove70kts = this.wheel1Rpm.map((wheel1Rpm) => wheel1Rpm * 0.118921 > 70);
+
   /* NAVIGATION */
   private readonly adr1Cas = Arinc429LocalVarConsumerSubject.create(this.sub.on('a32nx_adr_computed_airspeed_1'));
 
@@ -1166,9 +1174,15 @@ export class PseudoFWC {
 
   private readonly fac1Failed = Subject.create(0);
 
-  private readonly toMemo = Subject.create(0);
+  private readonly toMemo = Subject.create(false);
+  private readonly toMemoFlipFlop = new NXLogicMemoryNode(false);
+  private readonly toMemoConf = new NXLogicConfirmNode(120, true);
 
-  private readonly ldgMemo = Subject.create(0);
+  private readonly ldgMemo = Subject.create(false);
+  private readonly ldgMemoConf1 = new NXLogicConfirmNode(1, true);
+  private readonly ldgMemoConf2 = new NXLogicConfirmNode(10, true);
+  private readonly ldgMemoFlipFlop1 = new NXLogicMemoryNode(false);
+  private readonly ldgMemoFlipFlop2 = new NXLogicMemoryNode(true);
 
   private readonly autoBrake = Subject.create(0);
 
@@ -1187,6 +1201,12 @@ export class PseudoFWC {
   private readonly throttle2Position = Subject.create(0);
 
   public readonly allThrottleIdle = Subject.create(false);
+
+  private readonly eng1TLAReverse = Subject.create(false);
+
+  private readonly eng2TLAReverse = Subject.create(false);
+
+  private readonly revSetWarning = Subject.create(false);
 
   public readonly allThrottleReverse = Subject.create(false);
 
@@ -1322,6 +1342,12 @@ export class PseudoFWC {
   private readonly wingAntiIce = Subject.create(false);
 
   private readonly voiceVhf3 = Subject.create(0);
+
+  private readonly excessCabAlt = MappedSubject.create(
+    ([aircraftOnGround, excessPressure]) => !aircraftOnGround && excessPressure,
+    this.aircraftOnGround,
+    this.excessPressure,
+  );
 
   /* SETTINGS */
 
@@ -1570,30 +1596,12 @@ export class PseudoFWC {
     this.ecpEmergencyCancelLevel = warningButtons.bitValue(17) || this.ecpEmergencyCancelButtonHardwired.get();
   }
 
-  private readonly ir1AlignDiscreteVar = RegisteredSimVar.createBoolean(
-    'L:A32NX_ADIRS_IR_1_ALIGN_DISCRETE',
-    SimVarValueType.Bool,
-  );
-  private readonly ir2AlignDiscreteVar = RegisteredSimVar.createBoolean(
-    'L:A32NX_ADIRS_IR_2_ALIGN_DISCRETE',
-    SimVarValueType.Bool,
-  );
-  private readonly ir3AlignDiscreteVar = RegisteredSimVar.createBoolean(
-    'L:A32NX_ADIRS_IR_3_ALIGN_DISCRETE',
-    SimVarValueType.Bool,
-  );
-  private readonly ir1FaultDiscreteVar = RegisteredSimVar.createBoolean(
-    'L:A32NX_ADIRS_IR_1_FAULT_WARN_DISCRETE',
-    SimVarValueType.Bool,
-  );
-  private readonly ir2FaultDiscreteVar = RegisteredSimVar.createBoolean(
-    'L:A32NX_ADIRS_IR_2_FAULT_WARN_DISCRETE',
-    SimVarValueType.Bool,
-  );
-  private readonly ir3FaultDiscreteVar = RegisteredSimVar.createBoolean(
-    'L:A32NX_ADIRS_IR_3_FAULT_WARN_DISCRETE',
-    SimVarValueType.Bool,
-  );
+  private readonly ir1AlignDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_1_ALIGN_DISCRETE');
+  private readonly ir2AlignDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_2_ALIGN_DISCRETE');
+  private readonly ir3AlignDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_3_ALIGN_DISCRETE');
+  private readonly ir1FaultDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_1_FAULT_WARN_DISCRETE');
+  private readonly ir2FaultDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_2_FAULT_WARN_DISCRETE');
+  private readonly ir3FaultDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_3_FAULT_WARN_DISCRETE');
 
   private acquireSdac(): void {
     this.sdac00401Word.set(0);
@@ -1651,10 +1659,10 @@ export class PseudoFWC {
     this.flightPhase23.set(flightPhase === 2 || flightPhase === 3);
     this.flightPhase34.set(flightPhase === 3 || flightPhase === 4);
     this.flightPhase345.set(this.flightPhase34.get() || flightPhase === 5);
+    this.flightPhase567.set(flightPhase === 5 || flightPhase === 6 || flightPhase === 7);
     this.flightPhase67.set(flightPhase === 6 || flightPhase === 7);
     this.flightPhase678.set(this.flightPhase67.get() || flightPhase === 8);
     this.flightPhase78.set(flightPhase === 7 || flightPhase === 8);
-    const flightPhase567 = flightPhase === 5 || flightPhase === 6 || flightPhase === 7;
 
     // TO Config convenience vars
     const toConfigTest = this.ecpWarningButtonStatus.get().bitValue(18);
@@ -1707,11 +1715,7 @@ export class PseudoFWC {
 
     this.fac1Failed.set(SimVar.GetSimVarValue('L:A32NX_FBW_FAC_FAILED:1', 'boost psi'));
 
-    this.toMemo.set(SimVar.GetSimVarValue('L:A32NX_FWC_TOMEMO', 'bool'));
-
     this.autoBrake.set(SimVar.GetSimVarValue('L:A32NX_AUTOBRAKES_ARMED_MODE', 'enum'));
-
-    this.ldgMemo.set(SimVar.GetSimVarValue('L:A32NX_FWC_LDGMEMO', 'bool'));
 
     this.fuel.set(SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:9', 'percent'));
     this.usrStartRefueling.set(SimVar.GetSimVarValue('L:A32NX_REFUEL_STARTED_BY_USR', 'bool'));
@@ -1732,7 +1736,9 @@ export class PseudoFWC {
         this.throttle2Position.get() < 2.6 &&
         this.throttle2Position.get() > -2,
     );
-    this.allThrottleReverse.set(this.throttle1Position.get() < -4.3 && this.throttle2Position.get() < -4.3);
+    this.eng1TLAReverse.set(this.throttle1Position.get() < -4.3);
+    this.eng2TLAReverse.set(this.throttle2Position.get() < -4.3);
+    this.allThrottleReverse.set(this.eng1TLAReverse.get() && this.eng2TLAReverse.get());
 
     const masterCautionButtonLeft = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERCAUT_L', 'bool');
     const masterCautionButtonRight = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERCAUT_R', 'bool');
@@ -1780,6 +1786,7 @@ export class PseudoFWC {
     const adr3MaxCas = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_MAX_AIRSPEED');
     const adr1Discrete1 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_DISCRETE_WORD_1');
     const adr2Discrete1 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_2_DISCRETE_WORD_1');
+    const adr3Discrete1 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_DISCRETE_WORD_1');
 
     /* LANDING GEAR AND LIGHTS acquisition */
 
@@ -1824,6 +1831,13 @@ export class PseudoFWC {
       mainGearDownlocked &&
       (this.lgciu1DiscreteWord1.bitValueOr(25, false) || this.lgciu2DiscreteWord1.bitValueOr(25, false));
 
+    // ra validity
+    const eitherRaInvalid = this.radioHeight1.isFailureWarning() || this.radioHeight2.isFailureWarning();
+    const bothRaInvalid = this.radioHeight1.isFailureWarning() && this.radioHeight2.isFailureWarning();
+    const bothRaInvalidOrNcd =
+      (this.radioHeight1.isNoComputedData() || this.radioHeight1.isFailureWarning()) &&
+      (this.radioHeight2.isNoComputedData() || this.radioHeight2.isFailureWarning());
+
     // on ground logic
     const lgciu1Disagree = xor(leftCompressedHardwireLgciu1, this.lgciu1DiscreteWord2.bitValue(13));
     this.lgciu1OnGroundDisagreeConf.write(lgciu1Disagree, deltaTime);
@@ -1848,7 +1862,6 @@ export class PseudoFWC {
       leftCompressedHardwireLgciu2 &&
       this.lgciu2DiscreteWord2.bitValue(13);
 
-    // TODO some renaming
     this.ignoreRaOnGroundTrigger.write(
       this.radioHeight1.isNoComputedData() && this.radioHeight2.isNoComputedData() && !lgciuOnGroundDisagree,
       deltaTime,
@@ -1873,11 +1886,10 @@ export class PseudoFWC {
       ra1OnGround,
       ra2OnGround,
     );
-    const raInvalid = this.radioHeight1.isFailureWarning() || this.radioHeight2.isFailureWarning();
     this.onGroundImmediate =
       (onGroundA && this.ignoreRaOnGroundTrigger.read()) ||
-      (onGroundCount > 2 && !raInvalid) ||
-      (onGroundCount > 1 && raInvalid);
+      (onGroundCount > 2 && !eitherRaInvalid) ||
+      (onGroundCount > 1 && eitherRaInvalid);
     this.aircraftOnGround.set(this.onGroundConf.write(this.onGroundImmediate, deltaTime));
 
     // AP OFF Voluntary
@@ -2143,6 +2155,45 @@ export class PseudoFWC {
     );
     this.engine1Or2Running = this.engine1CoreAtOrAboveMinIdle.get() || this.engine2CoreAtOrAboveMinIdle.get();
 
+    // Memo
+    this.toMemoFlipFlop.write(
+      (flightPhase === 2 || flightPhase === 9) && toConfigTest,
+      flightPhase === 1 || flightPhase === 3 || flightPhase === 6 || flightPhase === 10,
+    );
+    this.toMemoConf.write(this.engine1Or2Running, deltaTime);
+    this.toMemo.set(this.toMemoFlipFlop.read() || (this.toMemoConf.read() && flightPhase === 2));
+
+    const bothRaAbove2200OrInvalid = this.radioHeight1.valueOr(2500) > 2200 && this.radioHeight2.valueOr(2500) > 2200;
+    this.ldgMemoConf1.write(!bothRaInvalidOrNcd && bothRaAbove2200OrInvalid, deltaTime);
+    this.ldgMemoConf2.write(
+      this.radioHeight1.isInvalid() &&
+        this.radioHeight2.isInvalid() &&
+        this.isAllGearDownlocked &&
+        !(adr1Discrete1.bitValue(12) || adr2Discrete1.bitValue(12) || adr3Discrete1.bitValue(12)) &&
+        flightPhase === 6,
+      deltaTime,
+    );
+    this.ldgMemoFlipFlop1.write(this.ldgMemoConf1.read(), !this.flightPhase678.get());
+    this.ldgMemoFlipFlop2.write(
+      this.radioHeight1.valueOr(2500) < 2000 || this.radioHeight2.valueOr(2500) < 2000,
+      bothRaAbove2200OrInvalid,
+    );
+    this.ldgMemo.set(
+      (this.ldgMemoFlipFlop1.read() && this.ldgMemoFlipFlop2.read() && flightPhase === 6) ||
+        this.ldgMemoConf2.read() ||
+        flightPhase === 7 ||
+        flightPhase === 8,
+    );
+
+    const configMemoComputed = this.toMemo.get() || this.ldgMemo.get();
+
+    this.revSetWarning.set(
+      (this.eng1TLAReverse.get() || this.eng2TLAReverse.get()) &&
+        !this.aircraftOnGround.get() &&
+        this.flightPhase567.get() &&
+        !(this.fwcFlightPhase.get() === 7 && this.wheel1SpeedAbove70kts.get()),
+    );
+
     // DMC/IR general logic
     const dmcLeftIr1DiscreteWord = this.dmcLeftIr1DiscreteWord.get();
     this.ir1InAttAlign.set(
@@ -2183,7 +2234,6 @@ export class PseudoFWC {
       dmcLeftSelectedIrDiscreteWord.bitValue(29) && !dmcLeftSelectedIrDiscreteWord.isNoComputedData();
     const rightInAlignSubmode =
       dmcRightSelectedIrDiscreteWord.bitValue(29) && !dmcRightSelectedIrDiscreteWord.isNoComputedData();
-    const configMemoComputed = this.toMemo.get() || this.ldgMemo.get();
     this.irsInAlignMemo1.set(
       (this.oneIrsInAlign || leftInAlignSubmode || rightInAlignSubmode) &&
         (flightPhase === 1 || flightPhase === 2) &&
@@ -2218,7 +2268,6 @@ export class PseudoFWC {
       !(adr1Discrete1.isNormalOperation() || adr1Discrete1.isFunctionalTest()) ||
       !(adr2Discrete1.isNormalOperation() || adr2Discrete1.isFunctionalTest())
     ) {
-      const adr3Discrete1 = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_DISCRETE_WORD_1');
       overspeedWarning ||= adr3Discrete1.bitValueOr(9, false);
     }
     overspeedWarning ||= adr1Discrete1.bitValueOr(9, false) || adr2Discrete1.bitValueOr(9, false);
@@ -2375,7 +2424,12 @@ export class PseudoFWC {
       this.excessResidualPrConfirm.write(this.enginesOffAndOnGroundSignal.read() && residualPressureSignal, deltaTime),
     );
 
-    this.lowDiffPress.set(activeCpc.bitValueOr(15, false));
+    this.lowDiffPress.set(
+      this.lowDiffPressConfirm.write(
+        this.cpc1DiscreteWord.bitValue(15) || this.cpc2DiscreteWord.bitValue(15),
+        deltaTime,
+      ),
+    );
 
     this.pressurizationAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO', 'bool'));
 
@@ -2911,10 +2965,6 @@ export class PseudoFWC {
       !this.eng1Or2TakeoffPower.get() &&
       below750Ra &&
       gearNotDownlocked;
-    const bothRaInvalid = this.radioHeight1.isFailureWarning() && this.radioHeight2.isFailureWarning();
-    const bothRaInvalidOrNcd =
-      (this.radioHeight1.isNoComputedData || this.radioHeight1.isFailureWarning()) &&
-      (this.radioHeight2.isNoComputedData() || this.radioHeight2.isFailureWarning());
     const flapsApprCondition =
       ((this.flapsSuperiorToPositionD.get() && !this.flapsSuperiorToPositionF.get() && bothRaInvalid) ||
         (this.flapsSuperiorToPositionF.get() && bothRaInvalidOrNcd)) &&
@@ -2944,7 +2994,7 @@ export class PseudoFWC {
       !isNormalLaw &&
         isCasAbove60 &&
         this.stallWarningRaw.get() &&
-        flightPhase567 &&
+        this.flightPhase567.get() &&
         this.radioHeight1.valueOr(Infinity) > 1500 &&
         this.radioHeight2.valueOr(Infinity) > 1500,
     );
@@ -4133,6 +4183,17 @@ export class PseudoFWC {
       sysPage: 0,
       side: 'LEFT',
     },
+    7700382: {
+      // ENG REV SET
+      flightPhaseInhib: [1, 2, 3, 4, 8, 9, 10],
+      simVarIsActive: this.revSetWarning,
+      whichCodeToReturn: () => [0, 1],
+      codesToReturn: ['770038201', '770038202'],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: -1,
+      side: 'LEFT',
+    },
     2600010: {
       // ENG 1 FIRE
       flightPhaseInhib: [],
@@ -4593,11 +4654,7 @@ export class PseudoFWC {
     2131221: {
       // EXCESS CAB ALT
       flightPhaseInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
-      simVarIsActive: MappedSubject.create(
-        ([aircraftOnGround, excessPressure]) => !aircraftOnGround && excessPressure,
-        this.aircraftOnGround,
-        this.excessPressure,
-      ),
+      simVarIsActive: this.excessCabAlt,
       // TODO no separate slats indication
       whichCodeToReturn: () => [
         0,
@@ -4690,7 +4747,7 @@ export class PseudoFWC {
       // LO DIFF PR
       flightPhaseInhib: [2, 3, 4, 5, 7, 8, 9, 10],
       simVarIsActive: this.lowDiffPress,
-      whichCodeToReturn: () => [0, 1, 2],
+      whichCodeToReturn: () => [0, 1, this.excessCabAlt.get() ? null : 2],
       codesToReturn: ['213123101', '213123102', '213123103'],
       memoInhibit: () => false,
       failure: 2,
@@ -5407,8 +5464,8 @@ export class PseudoFWC {
   ewdMessageMemos: EWDMessageDict = {
     '0000010': {
       // T.O MEMO
-      flightPhaseInhib: [1, 3, 6, 10],
-      simVarIsActive: this.toMemo.map((t) => !!t),
+      flightPhaseInhib: [],
+      simVarIsActive: this.toMemo,
       whichCodeToReturn: () => [
         this.autoBrake.get() === 3 ? 1 : 0,
         SimVar.GetSimVarValue('L:A32NX_NO_SMOKING_MEMO', 'bool') === 1 &&
@@ -5441,8 +5498,8 @@ export class PseudoFWC {
     },
     '0000020': {
       // LANDING MEMO
-      flightPhaseInhib: [1, 2, 3, 4, 5, 9, 10],
-      simVarIsActive: this.ldgMemo.map((t) => !!t),
+      flightPhaseInhib: [],
+      simVarIsActive: this.ldgMemo,
       whichCodeToReturn: () => [
         this.isAllGearDownlocked ? 1 : 0,
         SimVar.GetSimVarValue('L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position', 'enum') !== 2 &&
@@ -5498,7 +5555,7 @@ export class PseudoFWC {
 
       whichCodeToReturn: () => [0],
       codesToReturn: ['000005001'],
-      memoInhibit: () => this.toMemo.get() === 1 || this.ldgMemo.get() === 1,
+      memoInhibit: () => this.toMemo.get() || this.ldgMemo.get(),
       failure: 0,
       sysPage: -1,
       side: 'LEFT',
@@ -5542,7 +5599,7 @@ export class PseudoFWC {
         }
       },
       codesToReturn: [],
-      memoInhibit: () => false,
+      memoInhibit: () => this.toMemo.get() || this.ldgMemo.get(),
       failure: 0,
       sysPage: -1,
       side: 'LEFT',
@@ -5588,7 +5645,7 @@ export class PseudoFWC {
         }
       },
       codesToReturn: [],
-      memoInhibit: () => false,
+      memoInhibit: () => this.toMemo.get() || this.ldgMemo.get(),
       failure: 0,
       sysPage: -1,
       side: 'LEFT',
@@ -5621,7 +5678,7 @@ export class PseudoFWC {
         }
       },
       codesToReturn: [],
-      memoInhibit: () => false,
+      memoInhibit: () => this.toMemo.get() || this.ldgMemo.get(),
       failure: 0,
       sysPage: -1,
       side: 'LEFT',
@@ -5632,7 +5689,7 @@ export class PseudoFWC {
       simVarIsActive: this.spoilersArmed,
       whichCodeToReturn: () => [0],
       codesToReturn: ['000005501'],
-      memoInhibit: () => this.toMemo.get() === 1 || this.ldgMemo.get() === 1,
+      memoInhibit: () => this.toMemo.get() || this.ldgMemo.get(),
       failure: 0,
       sysPage: -1,
       side: 'LEFT',
@@ -5643,7 +5700,7 @@ export class PseudoFWC {
       simVarIsActive: this.seatBelt.map((v) => !!v),
       whichCodeToReturn: () => [0],
       codesToReturn: ['000008001'],
-      memoInhibit: () => this.toMemo.get() === 1 || this.ldgMemo.get() === 1,
+      memoInhibit: () => this.toMemo.get() || this.ldgMemo.get(),
       failure: 0,
       sysPage: -1,
       side: 'LEFT',
@@ -5658,7 +5715,7 @@ export class PseudoFWC {
       ),
       whichCodeToReturn: () => [0],
       codesToReturn: ['000009001'],
-      memoInhibit: () => this.toMemo.get() === 1 || this.ldgMemo.get() === 1,
+      memoInhibit: () => this.toMemo.get() || this.ldgMemo.get(),
       failure: 0,
       sysPage: -1,
       side: 'LEFT',
@@ -5673,7 +5730,7 @@ export class PseudoFWC {
       ),
       whichCodeToReturn: () => [0],
       codesToReturn: ['000009501'],
-      memoInhibit: () => this.toMemo.get() === 1 || this.ldgMemo.get() === 1,
+      memoInhibit: () => this.toMemo.get() || this.ldgMemo.get(),
       failure: 0,
       sysPage: -1,
       side: 'LEFT',
@@ -5688,7 +5745,7 @@ export class PseudoFWC {
       ),
       whichCodeToReturn: () => [0],
       codesToReturn: ['000010001'],
-      memoInhibit: () => this.toMemo.get() === 1 || this.ldgMemo.get() === 1,
+      memoInhibit: () => this.toMemo.get() || this.ldgMemo.get(),
       failure: 0,
       sysPage: -1,
       side: 'LEFT',
@@ -5703,7 +5760,7 @@ export class PseudoFWC {
       ),
       whichCodeToReturn: () => [0],
       codesToReturn: ['000010501'], // config memo
-      memoInhibit: () => this.toMemo.get() === 1 || this.ldgMemo.get() === 1,
+      memoInhibit: () => this.toMemo.get() || this.ldgMemo.get(),
       failure: 0,
       sysPage: -1,
       side: 'LEFT',
@@ -5714,7 +5771,7 @@ export class PseudoFWC {
       simVarIsActive: this.gpwsFlapMode.map((v) => !!v),
       whichCodeToReturn: () => [0],
       codesToReturn: ['000030501'], // Not inhibited
-      memoInhibit: () => this.toMemo.get() === 1 || this.ldgMemo.get() === 1,
+      memoInhibit: () => this.toMemo.get() || this.ldgMemo.get(),
       failure: 0,
       sysPage: -1,
       side: 'LEFT',

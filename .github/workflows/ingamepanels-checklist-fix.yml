@@ -17,6 +17,8 @@ jobs:
     if: github.repository_owner == 'flybywiresim'
     name: 'Build InGamePanels Checklist Fix'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     env:
       FBW_PRODUCTION_BUILD: 1
       MASTER_ZIP_NAME: ingamepanels-checklist-fix-master.zip
@@ -35,9 +37,12 @@ jobs:
           echo SENTRY_DSN=${{ secrets.SENTRY_DSN }} >> .env
           echo BUILD_DIR_NAME=${{ env.BUILD_DIR_NAME }} >> .env
           echo LOCALAZY_READ_KEY=${{ secrets.LOCALAZY_READ_KEY }} >> .env
-      - name: Build In-Game Panels Checklist Fix
+      - name: Install dependencies
         run: |
           ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
+          sudo apt-get install -y rclone
+      - name: Build In-Game Panels Checklist Fix
+        run: |
           ./scripts/dev-env/run.sh ./scripts/build_ingamepanels_checklist_fix.sh --no-tty -j 4
       - name: Build ZIP files
         run: |
@@ -48,9 +53,23 @@ jobs:
           cd ./fbw-ingamepanels-checklist-fix/out/
           zip -r ../../${{ env.BUILD_DIR_NAME }}/${{ env.MASTER_ZIP_NAME }} ./flybywire-ingamepanels-checklist-fix/
           cd ../../
-      - name: Upload to CloudFlare CDN
+      - name: Configure rclone for Cloudflare R2
+        run: |
+            mkdir -p ~/.config/rclone
+            cat > ~/.config/rclone/rclone.conf <<EOF
+            [cloudflare-r2]
+            type = s3
+            provider = Cloudflare
+            env_auth = false
+            access_key_id = ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
+            secret_access_key = ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
+            endpoint = ${{ secrets.CLOUDFLARE_R2_ENDPOINT }}
+            region = auto
+            EOF
+      - name: Upload to CloudFlare CDN (Installer)
         env:
-          CLOUDFLARE_BUCKET_PASSWORD: ${{ secrets.CLOUDFLARE_BUCKET_PASSWORD }}
+          CLOUDFLARE_CDN_ZONE_ID: ${{ secrets.CLOUDFLARE_CDN_ZONE_ID }}
+          CLOUDFLARE_PURGE_TOKEN: ${{ secrets.CLOUDFLARE_PURGE_TOKEN }}
           CDN_BUCKET_DESTINATION: addons/ingamepanels-checklist-fix/master
         run: |
-          ./scripts/cf-cdn.sh $CDN_BUCKET_DESTINATION ./fbw-ingamepanels-checklist-fix/out/build-modules
+          ./scripts/cf-cdn.sh ./fbw-ingamepanels-checklist-fix/out/build-modules $CDN_BUCKET_DESTINATION

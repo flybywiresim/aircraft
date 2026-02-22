@@ -10,23 +10,22 @@ import { arcDistanceToGo, arcGuidance } from '@fmgc/guidance/lnav/CommonGeometry
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import { DmeArcTransition } from '@fmgc/guidance/lnav/transitions/DmeArcTransition';
-import { Fix, isMsfs2024, MathUtils, TurnDirection, VhfNavaid } from '@flybywiresim/fbw-sdk';
+import { Fix, isMsfs2024, MagVar, MathUtils, TurnDirection, VhfNavaid } from '@flybywiresim/fbw-sdk';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { bearingTo, distanceTo, placeBearingDistance } from 'msfs-geo';
 import { PathCaptureTransition } from '@fmgc/guidance/lnav/transitions/PathCaptureTransition';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 import { PathVector, PathVectorType } from '../PathVector';
-import { A32NX_Util } from '@shared/A32NX_Util';
 
 export class AFLeg extends XFLeg {
   predictedPath: PathVector[] = [];
 
   private readonly boundaryRadialTrue = this.recommendedNavaid.trueReferenced
     ? this.boundaryRadial
-    : A32NX_Util.magneticToTrue(this.boundaryRadial, this.recommendedNavaid.stationDeclination);
+    : MagVar.magneticToTrue(this.boundaryRadial, this.recommendedNavaid.stationDeclination);
   private readonly terminationRadialTrue = this.recommendedNavaid.trueReferenced
     ? this.theta
-    : A32NX_Util.magneticToTrue(this.theta, this.recommendedNavaid.stationDeclination);
+    : MagVar.magneticToTrue(this.theta, this.recommendedNavaid.stationDeclination);
 
   public readonly centre =
     isMsfs2024() && this.recommendedNavaid.dmeLocation
