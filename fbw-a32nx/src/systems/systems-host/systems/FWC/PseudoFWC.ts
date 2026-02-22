@@ -1538,7 +1538,7 @@ export class PseudoFWC {
   private readonly ecpEmergencyCancelPulseDownTrigger = new NXLogicTriggeredMonostableNode(0.5, true);
   private ecpEmergencyCancelPulseUp = false;
   private ecpEmergencyCancelPulseDown = false;
-  private ecpEmergencyCancelLevel = false;
+  private ecpEmergencyCancelLevel = Subject.create(false);
   private wasEcpEmergencyCancelLevel = false;
   private emergencyCancelReady = true;
   private lastAuralVolume = FwsAuralVolume.Full;
@@ -1593,7 +1593,7 @@ export class PseudoFWC {
           this.ecpEmergencyCancelWirePulseDown.write(this.ecpEmergencyCancelButtonHardwired.get(), deltaTime),
         deltaTime,
       ) && !warningButtons.isFailureWarning();
-    this.ecpEmergencyCancelLevel = warningButtons.bitValue(17) || this.ecpEmergencyCancelButtonHardwired.get();
+    this.ecpEmergencyCancelLevel.set(warningButtons.bitValue(17) || this.ecpEmergencyCancelButtonHardwired.get());
   }
 
   private readonly ir1AlignDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_1_ALIGN_DISCRETE');
@@ -1633,15 +1633,15 @@ export class PseudoFWC {
     this.processEcpButtons(deltaTime);
 
     // Manual audio inhibition (MAI)
-    this.soundManager.setManualAudioInhibition(this.ecpEmergencyCancelLevel);
-    if (this.ecpEmergencyCancelLevel !== this.wasEcpEmergencyCancelLevel) {
-      if (this.ecpEmergencyCancelLevel) {
+    this.soundManager.setManualAudioInhibition(this.ecpEmergencyCancelLevel.get());
+    if (this.ecpEmergencyCancelLevel.get() !== this.wasEcpEmergencyCancelLevel) {
+      if (this.ecpEmergencyCancelLevel.get()) {
         this.lastAuralVolume = SimVar.GetSimVarValue('L:A32NX_FWS_AUDIO_VOLUME', SimVarValueType.Enum);
         this.soundManager.setVolume(FwsAuralVolume.Silent);
       } else {
         this.soundManager.setVolume(this.lastAuralVolume);
       }
-      this.wasEcpEmergencyCancelLevel = this.ecpEmergencyCancelLevel;
+      this.wasEcpEmergencyCancelLevel = this.ecpEmergencyCancelLevel.get();
     }
 
     // Play sounds
@@ -3278,7 +3278,7 @@ export class PseudoFWC {
     if (this.ecpEmergencyCancelPulseDown) {
       this.emergencyCancelReady = true;
     }
-    if (this.ecpEmergencyCancelLevel && this.emergencyCancelReady) {
+    if (this.ecpEmergencyCancelLevel.get() && this.emergencyCancelReady) {
       // Get the highest priority signal from the sound manager
       const currentSound = this.soundManager.getCurrentSoundPlaying();
       const soundToKeys: Record<string, string[]> = {
@@ -3566,6 +3566,7 @@ export class PseudoFWC {
     }
 
     const failLeft = tempFailureArrayLeft.length > 0;
+    const specialLinesLeft = ['315100001'];
 
     const mesgFailOrderLeft: string[] = [];
     const mesgFailOrderRight: string[] = [];
@@ -3590,10 +3591,6 @@ export class PseudoFWC {
     this.failuresRight.length = 0;
     this.failuresRight.push(...failureKeysRight);
 
-    if (tempFailureArrayLeft.length > 0) {
-      this.ewdMessageLinesLeft.forEach((l, i) => l.set(orderedFailureArrayLeft[i]));
-    }
-
     for (const [, value] of Object.entries(this.ewdMessageMemos)) {
       if (
         value.simVarIsActive.get() &&
@@ -3611,7 +3608,10 @@ export class PseudoFWC {
           });
         }
 
-        if (value.side === 'LEFT' && !failLeft) {
+        if (
+          value.side === 'LEFT' &&
+          (!failLeft || value.codesToReturn.some((code) => specialLinesLeft.includes(code)))
+        ) {
           tempMemoArrayLeft = tempMemoArrayLeft.concat(newCode);
         }
         if (value.side === 'RIGHT') {
@@ -3636,12 +3636,24 @@ export class PseudoFWC {
       }
     }
 
-    const orderedMemoArrayLeft = this.mapOrder(tempMemoArrayLeft, mesgOrderLeft);
+    let orderedMemoArrayLeft: string[] = this.mapOrder(tempMemoArrayLeft, mesgOrderLeft);
     let orderedMemoArrayRight: string[] = this.mapOrder(tempMemoArrayRight, mesgOrderRight);
 
-    if (!failLeft) {
-      this.ewdMessageLinesLeft.forEach((l, i) => l.set(orderedMemoArrayLeft[i]));
+    const filteredMemoLeft = orderedMemoArrayLeft.filter((e) => !specialLinesLeft.includes(e));
+    const specLinesInMemoLeft = orderedMemoArrayLeft.filter((e) => specialLinesLeft.includes(e));
 
+    if (orderedFailureArrayLeft.length > 0) {
+      // Left side failures need to be inserted below special lines.
+      if (specLinesInMemoLeft.length > 0) {
+        orderedMemoArrayLeft = [...specLinesInMemoLeft, ...orderedFailureArrayLeft, ...filteredMemoLeft];
+      } else {
+        orderedMemoArrayLeft = [...orderedFailureArrayLeft, ...orderedMemoArrayLeft];
+      }
+    } else if (specLinesInMemoLeft.length > 0) {
+      orderedMemoArrayLeft = [...specLinesInMemoLeft, ...filteredMemoLeft];
+    }
+
+    if (!failLeft) {
       if (orderedFailureArrayRight.length === 0) {
         this.requestMasterCautionFromFaults = false;
         if (this.nonCancellableWarningCount === 0) {
@@ -3678,6 +3690,7 @@ export class PseudoFWC {
       }
     }
 
+    this.ewdMessageLinesLeft.forEach((l, i) => l.set(orderedMemoArrayLeft[i]));
     this.ewdMessageLinesRight.forEach((l, i) => l.set(orderedMemoArrayRight[i]));
 
     const chimeRequested =
@@ -5852,6 +5865,17 @@ export class PseudoFWC {
       failure: 0,
       sysPage: -1,
       side: 'RIGHT',
+    },
+    '3151000': {
+      // EMERGENCY CANCEL ON
+      flightPhaseInhib: [],
+      simVarIsActive: this.ecpEmergencyCancelLevel,
+      whichCodeToReturn: () => [0],
+      codesToReturn: ['315100001'],
+      memoInhibit: () => false,
+      failure: 0,
+      sysPage: -1,
+      side: 'LEFT',
     },
     // 32 LANDING GEAR
     320000001: {
