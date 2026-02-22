@@ -22,6 +22,13 @@ export interface NearbyFacility {
   sectionCode: SectionCode;
 }
 
+export interface NearbyAirportFacility extends NearbyFacility {
+  /**
+   * The airport magvar in degrees, or null when the airport is true referenced.
+   */
+  magVar: number | null;
+}
+
 export interface NearbyVhfFacility extends NearbyFacility {
   type: NearbyFacilityType.VhfNavaid;
   vhfType: VhfNavaidType;
@@ -30,6 +37,10 @@ export interface NearbyVhfFacility extends NearbyFacility {
 
 export function isNearbyVhfFacility(o: NearbyFacility): o is NearbyVhfFacility {
   return o.type === NearbyFacilityType.VhfNavaid;
+}
+
+export function isNearbyAirportFacility(o: NearbyFacility): o is NearbyAirportFacility {
+  return o.type === NearbyFacilityType.Airport;
 }
 
 export type NearbyFacilityMonitorAddedCallback = (facility: Readonly<NearbyFacility>) => void;
