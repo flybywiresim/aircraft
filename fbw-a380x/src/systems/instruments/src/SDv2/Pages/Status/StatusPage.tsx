@@ -237,6 +237,11 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
   );
 
   private readonly cancelledCautionHeight = this.cancelledCautionLines.map((lines) => `${lines * 30 + 3}px`);
+  private readonly cancelledCautionHasGap = MappedSubject.create(
+    ([cancelledCautionLines, inopSysRedundLines]) => cancelledCautionLines > 0 && inopSysRedundLines > 0,
+    this.cancelledCautionLines,
+    this.inopSysRedundLines,
+  );
 
   private readonly moreActive = ConsumerSubject.create(this.sub.on('moreActive'), false);
   private readonly moreAvailable = MappedSubject.create(
@@ -333,6 +338,7 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
       this.cancelledCautionLines,
       this.cancelledCautionDisplay,
       this.cancelledCautionHeight,
+      this.cancelledCautionHasGap,
       this.pressStsForNextStatusPageVisibility,
     );
 
@@ -671,7 +677,10 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
           </div>
           {/* CANCELLED CAUTION */}
           <div
-            class="sd-sts-section-container"
+            class={{
+              'sd-sts-section-container': true,
+              'sd-sts-more-section-gap': this.cancelledCautionHasGap,
+            }}
             style={{
               display: this.cancelledCautionDisplay,
             }}
