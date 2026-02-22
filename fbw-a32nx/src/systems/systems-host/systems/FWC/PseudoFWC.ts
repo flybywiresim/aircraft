@@ -3643,7 +3643,7 @@ export class PseudoFWC {
     const specLinesInMemoLeft = orderedMemoArrayLeft.filter((e) => specialLinesLeft.includes(e));
 
     if (orderedFailureArrayLeft.length > 0) {
-      // Left side failures need to be inserted below special lines.
+      // Left side failures need to be inserted below special lines (currently just EMERGENCY CANCEL ON)
       if (specLinesInMemoLeft.length > 0) {
         orderedMemoArrayLeft = [...specLinesInMemoLeft, ...orderedFailureArrayLeft, ...filteredMemoLeft];
       } else {
