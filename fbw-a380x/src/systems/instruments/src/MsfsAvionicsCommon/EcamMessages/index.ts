@@ -116,6 +116,8 @@ export const EcamMemos: { [n: string]: string } = {
   '310000001': '\x1b<4mMEMO NOT AVAIL',
   '314000001': '\x1b<6mT.O INHIBIT',
   '314000002': '\x1b<6mLDG INHIBIT',
+  '315100001': '\x1b<7mEMERGENCY CANCEL ON',
+  '315100002': '\x1b<7mCANCELLED CAUTION :',
   '317000001': '\x1b<3mCLOCK INT',
   '320000001': '\x1b<4mAUTO BRK OFF',
   '320000002': '\x1b<3mPARK BRK ON',

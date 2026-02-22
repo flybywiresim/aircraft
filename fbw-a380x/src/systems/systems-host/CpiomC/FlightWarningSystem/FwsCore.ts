@@ -232,6 +232,7 @@ export class FwsCore {
   private readonly alertsImpactingLdgPerfKeys = Subject.create<string[]>([]);
   private readonly inopSysRedundLossKeys = Subject.create<string[]>([]);
   private readonly cancelledCautionKeys = Subject.create<string[]>([]);
+  public readonly cancelledCautionMemoKey = Subject.create('');
 
   // Input buffering
   public readonly toConfigInputBuffer = new NXLogicMemoryNode(false);
@@ -316,7 +317,7 @@ export class FwsCore {
 
   private emergencyCancelClearCautionKey: string | null = null;
 
-  private ecpEmergencyCancelLevel = false;
+  public readonly ecpEmergencyCancelLevel = Subject.create(false);
 
   private wasEcpEmergencyCancelLevel = false;
 
@@ -2647,10 +2648,19 @@ export class FwsCore {
 
   mapOrder(array: string[], order: string[]): string[] {
     array.sort((a, b) => {
-      if (order.indexOf(a) > order.indexOf(b)) {
+      const orderA = order.indexOf(a);
+      const orderB = order.indexOf(b);
+      const normalizedOrderA = orderA === -1 ? Number.POSITIVE_INFINITY : orderA;
+      const normalizedOrderB = orderB === -1 ? Number.POSITIVE_INFINITY : orderB;
+
+      if (normalizedOrderA > normalizedOrderB) {
         return 1;
       }
-      return -1;
+      if (normalizedOrderA < normalizedOrderB) {
+        return -1;
+      }
+
+      return 0;
     });
     return array;
   }
@@ -2756,7 +2766,7 @@ export class FwsCore {
     if (emergencyCancelButton) {
       this.emergencyCancelInputBuffer.write(true, false);
     }
-    this.ecpEmergencyCancelLevel = emergencyCancelButton;
+    this.ecpEmergencyCancelLevel.set(emergencyCancelButton);
 
     // C/L buttons
     if (SimVar.GetSimVarValue('L:A32NX_BTN_CL', 'bool')) {
@@ -2816,15 +2826,16 @@ export class FwsCore {
     this.flightPhases.update(deltaTime);
 
     // Manual audio inhibition (MAI)
-    this.soundManager.setManualAudioInhibition(this.ecpEmergencyCancelLevel);
-    if (this.ecpEmergencyCancelLevel !== this.wasEcpEmergencyCancelLevel) {
-      if (this.ecpEmergencyCancelLevel) {
+    this.soundManager.setManualAudioInhibition(this.ecpEmergencyCancelLevel.get());
+    if (this.ecpEmergencyCancelLevel.get() !== this.wasEcpEmergencyCancelLevel) {
+      this.cancelledCautionMemoKey.set('');
+      if (this.ecpEmergencyCancelLevel.get()) {
         this.lastAuralVolume = SimVar.GetSimVarValue('L:A32NX_FWS_AUDIO_VOLUME', SimVarValueType.Enum);
         this.soundManager.setVolume(FwsAuralVolume.Silent);
       } else {
         this.soundManager.setVolume(this.lastAuralVolume);
       }
-      this.wasEcpEmergencyCancelLevel = this.ecpEmergencyCancelLevel;
+      this.wasEcpEmergencyCancelLevel = this.ecpEmergencyCancelLevel.get();
     }
 
     // Play sounds
@@ -5315,7 +5326,7 @@ export class FwsCore {
     let emergencyCancelCautionUsed = false;
 
     // Emergency audio cancel (EAC)
-    if (!this.ecpEmergencyCancelLevel) {
+    if (!this.ecpEmergencyCancelLevel.get()) {
       this.emergencyCancelReady = true;
     }
     if (this.emergencyCancelInputBuffer.read() && this.emergencyCancelReady) {
@@ -5336,6 +5347,7 @@ export class FwsCore {
           if (!this.cancelledCautions.has(cancelKey)) {
             this.cancelledCautions.add(cancelKey);
           }
+          this.cancelledCautionMemoKey.set(cancelKey);
           this.emergencyCancelClearCautionKey = cancelKey;
           emergencyCancelCautionUsed = true;
         } else {
@@ -5354,6 +5366,7 @@ export class FwsCore {
           );
           if (cautionKey) {
             this.cancelledCautions.add(cautionKey);
+            this.cancelledCautionMemoKey.set(cautionKey);
             this.emergencyCancelClearCautionKey = cautionKey;
             emergencyCancelCautionUsed = true;
           }
@@ -5548,7 +5561,7 @@ export class FwsCore {
       const isActive = itemIsActiveConsideringFaultSuppression(value, key, 0.6);
 
       if (
-        this.ecpEmergencyCancelLevel &&
+        this.ecpEmergencyCancelLevel.get() &&
         !emergencyCancelCautionUsed &&
         !emergencyCancelHoldUsed &&
         isActive &&
@@ -5558,6 +5571,7 @@ export class FwsCore {
       ) {
         // TODO: Add cancelled caution ordering when we implement an ordering system within  priority 2 groups
         this.cancelledCautions.add(key);
+        this.cancelledCautionMemoKey.set(key);
         emergencyCancelHoldUsed = true;
       }
 
@@ -5878,6 +5892,30 @@ export class FwsCore {
     this.presentedFailures.length = 0;
     this.presentedFailures.push(...failureKeys);
 
+    // Resolve dynamic codes for CANCELLED CAUTION memos
+    const resolveMemoCodesToReturn = (
+      memoCodeSelection: Array<number | string | null>,
+      memoCodesToReturn: string[],
+    ): string[] => {
+      const resolvedCodes: string[] = [];
+      for (const code of memoCodeSelection) {
+        if (code === null) {
+          continue;
+        }
+
+        if (typeof code === 'string') {
+          resolvedCodes.push(code);
+          continue;
+        }
+
+        if (typeof code === 'number' && memoCodesToReturn[code] !== undefined) {
+          resolvedCodes.push(memoCodesToReturn[code]);
+        }
+      }
+
+      return resolvedCodes;
+    };
+
     // MEMOs (except T.O and LDG)
     for (const [, value] of Object.entries(this.memos.ewdMemos)) {
       if (
@@ -5885,12 +5923,7 @@ export class FwsCore {
         !value.memoInhibit() &&
         !value.flightPhaseInhib.some((e) => e === flightPhase)
       ) {
-        const newCode: string[] = [];
-
-        const codeIndex = value.whichCodeToReturn().filter((e) => e !== null);
-        codeIndex.forEach((e: number) => {
-          newCode.push(value.codesToReturn[e]);
-        });
+        const newCode = resolveMemoCodesToReturn(value.whichCodeToReturn(), value.codesToReturn);
         const tempArrayRight = tempMemoArrayRight.filter((e) => !value.codesToReturn.includes(e));
         tempMemoArrayRight = tempArrayRight.concat(newCode);
       }
@@ -5903,12 +5936,7 @@ export class FwsCore {
         !value.memoInhibit() &&
         !value.flightPhaseInhib.some((e) => e === flightPhase)
       ) {
-        const newCode: string[] = [];
-
-        const codeIndex = value.whichCodeToReturn().filter((e) => e !== null);
-        codeIndex.forEach((e: number) => {
-          newCode.push(value.codesToReturn[e]);
-        });
+        const newCode = resolveMemoCodesToReturn(value.whichCodeToReturn(), value.codesToReturn);
 
         tempMemoArrayLeft = tempMemoArrayLeft.concat(newCode);
       }
@@ -6257,14 +6285,16 @@ export class FwsCore {
     }
     // Highest importance: priority 0
     switch (message.trim().substring(0, 3)) {
-      case '\x1b<6':
+      case '\x1b<7':
         return 0;
-      case '\x1b<2':
+      case '\x1b<6':
         return 1;
-      case '\x1b<4':
+      case '\x1b<2':
         return 2;
-      case '\x1b<3':
+      case '\x1b<4':
         return 3;
+      case '\x1b<3':
+        return 4;
       default:
         return 10;
     }
