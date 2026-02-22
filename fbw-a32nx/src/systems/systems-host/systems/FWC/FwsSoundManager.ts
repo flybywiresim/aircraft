@@ -255,6 +255,10 @@ export class FwsSoundManager {
 
   private manualAudioInhibition = false;
 
+  private requestedVolume = FwsAuralVolume.Full;
+
+  private appliedVolume: FwsAuralVolume | null = null;
+
   constructor(
     private bus: EventBus,
     private startupCompleted: Subscribable<boolean>,
@@ -278,7 +282,11 @@ export class FwsSoundManager {
 
   /** Inhibit starting any new broadcasts (MAI). */
   setManualAudioInhibition(inhibit: boolean) {
+    if (this.manualAudioInhibition === inhibit) {
+      return;
+    }
     this.manualAudioInhibition = inhibit;
+    this.applyVolume();
   }
 
   /** Add sound to queue. Don't add if already playing */
@@ -330,7 +338,17 @@ export class FwsSoundManager {
 
   /** This only has an effect on sounds defining WwiseRTPC behavior/var for volume */
   setVolume(volume: FwsAuralVolume) {
-    SimVar.SetSimVarValue('L:A32NX_FWS_AUDIO_VOLUME', SimVarValueType.Enum, volume);
+    this.requestedVolume = volume;
+    this.applyVolume();
+  }
+
+  private applyVolume() {
+    const effectiveVolume = this.manualAudioInhibition ? FwsAuralVolume.Silent : this.requestedVolume;
+    if (this.appliedVolume !== null && effectiveVolume === this.appliedVolume) {
+      return;
+    }
+    SimVar.SetSimVarValue('L:A32NX_FWS_AUDIO_VOLUME', SimVarValueType.Enum, effectiveVolume);
+    this.appliedVolume = effectiveVolume;
   }
 
   /** Play now, not to be called from the outside */
@@ -381,6 +399,9 @@ export class FwsSoundManager {
 
     // See if single chimes are left
     if (this.singleChimesPending) {
+      if (this.manualAudioInhibition) {
+        return null;
+      }
       this.playSound('singleChime');
       this.singleChimesPending--;
       return 'singleChime';
