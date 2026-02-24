@@ -1087,6 +1087,7 @@ pub enum GsxState {
     Requested,
     Performing,
     Completed,
+    Completing,
 }
 impl From<f64> for GsxState {
     fn from(value: f64) -> Self {
@@ -1098,6 +1099,7 @@ impl From<f64> for GsxState {
             4 => GsxState::Requested,
             5 => GsxState::Performing,
             6 => GsxState::Completed,
+            7 => GsxState::Completing,
             i => panic!("Cannot convert from {} to GsxState.", i),
         }
     }
@@ -1248,7 +1250,10 @@ impl GsxDriver {
         boarding_sounds.play_sound_pax_boarding(self.boarding_state() == GsxState::Performing);
         boarding_sounds.play_sound_pax_deboarding(self.deboarding_state() == GsxState::Performing);
         boarding_sounds.play_sound_pax_ambience(self.has_pax(passenger_deck));
-        boarding_sounds.play_sound_pax_complete(self.boarding_state() == GsxState::Completed)
+        boarding_sounds.play_sound_pax_complete(
+            self.boarding_state() == GsxState::Completed
+                || self.boarding_state() == GsxState::Completing,
+        )
     }
 
     fn update_boarding<const P: usize, const G: usize, const C: usize>(
@@ -1257,14 +1262,10 @@ impl GsxDriver {
         cargo_deck: &mut CargoDeck<C>,
     ) {
         match self.boarding_state() {
-            GsxState::None
-            | GsxState::Available
-            | GsxState::NotAvailable
-            | GsxState::Bypassed
-            | GsxState::Requested => {
+            GsxState::None | GsxState::NotAvailable | GsxState::Bypassed | GsxState::Requested => {
                 self.performing_board = false;
             }
-            GsxState::Completed => {
+            GsxState::Available | GsxState::Completed | GsxState::Completing => {
                 if self.performing_board {
                     passenger_deck.spawn_all_pax();
                     cargo_deck.spawn_all_cargo();
@@ -1285,7 +1286,7 @@ impl GsxDriver {
         cargo_deck: &mut CargoDeck<C>,
     ) {
         match self.deboarding_state() {
-            GsxState::None | GsxState::Available | GsxState::NotAvailable | GsxState::Bypassed => {
+            GsxState::None | GsxState::NotAvailable | GsxState::Bypassed => {
                 self.deboarding_total = 0;
                 self.performing_deboard = false;
             }
@@ -1296,7 +1297,7 @@ impl GsxDriver {
                 self.deboarding_total = passenger_deck.total_pax_num();
                 self.performing_deboard = false;
             }
-            GsxState::Completed => {
+            GsxState::Available | GsxState::Completed | GsxState::Completing => {
                 if self.performing_deboard {
                     passenger_deck.spawn_all_pax();
                     cargo_deck.spawn_all_cargo();

@@ -101,7 +101,12 @@ export const FlightWidget = () => {
     dispatch(setSimbriefDataPending(true));
 
     const gsxInProgress =
-      (gsxDeBoardingState >= 4 && gsxDeBoardingState < 6) || (gsxBoardingState >= 4 && gsxBoardingState < 6);
+      gsxDeBoardingState == 4 ||
+      gsxDeBoardingState == 5 ||
+      gsxDeBoardingState == 7 ||
+      gsxBoardingState == 4 ||
+      gsxBoardingState == 5 ||
+      gsxBoardingState == 7;
     const generalBoardingInProgress = gsxPayloadSyncEnabled ? gsxInProgress : boardingStarted;
 
     if (generalBoardingInProgress || refuelStartedByUser) {

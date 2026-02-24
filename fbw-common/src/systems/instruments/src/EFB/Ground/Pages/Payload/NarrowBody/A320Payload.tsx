@@ -160,7 +160,12 @@ export const A320Payload: React.FC<PayloadProps> = ({
   const [gsxBoardingState] = useSimVar('L:FSDT_GSX_BOARDING_STATE', 'Number', 227);
   const [gsxDeBoardingState] = useSimVar('L:FSDT_GSX_DEBOARDING_STATE', 'Number', 229);
   const gsxInProgress = () =>
-    (gsxDeBoardingState >= 4 && gsxDeBoardingState < 6) || (gsxBoardingState >= 4 && gsxBoardingState < 6);
+    gsxDeBoardingState == 4 ||
+    gsxDeBoardingState == 5 ||
+    gsxDeBoardingState == 7 ||
+    gsxBoardingState == 4 ||
+    gsxBoardingState == 5 ||
+    gsxBoardingState == 7;
   const gsxStates = {
     AVAILABLE: 1,
     NOT_AVAILABLE: 2,
@@ -168,6 +173,7 @@ export const A320Payload: React.FC<PayloadProps> = ({
     REQUESTED: 4,
     PERFORMING: 5,
     COMPLETED: 6,
+    COMPLETING: 7,
   };
 
   const dispatch = useAppDispatch();
