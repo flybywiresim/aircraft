@@ -132,8 +132,8 @@ The StepType also defines if the step is executed in normal mode, expedited mode
             <Action>1 (>L:STROBE_0_AUTO) 0 (>K:STROBES_ON)</Action>
         </Step>
         <Step Name="Nav &amp; Logo Lt On" Type="STEP" Delay="1000">
-            <Condition>(A:LIGHT LOGO, Bool) (A:LIGHT NAV, Bool) &amp;&amp;</Condition>
-            <Action>1 (>K:2:LOGO_LIGHTS_SET) 1 (>K:2:NAV_LIGHTS_SET)</Action>
+            <Condition>(B:A32NX_OVH_LIGHTS_NAV_LOGO_SW) 0 &gt;</Condition>
+            <Action>(&gt;B:A32NX_OVH_LIGHTS_NAV_LOGO_SW_SYS_1)</Action>
         </Step>
         <Step Name="SEAT BELTS On" Type="STEP" Delay="1000">
             <Condition>(A:CABIN SEATBELTS ALERT SWITCH:1, BOOL)</Condition>
@@ -238,8 +238,8 @@ The StepType also defines if the step is executed in normal mode, expedited mode
             <Action>0 (&gt;L:STROBE_0_AUTO) 0 (&gt;K:STROBES_OFF)</Action>
         </Step>
         <Step Name="Nav &amp; Logo Lt Off" Type="STEP" Delay="500">
-            <Condition>(A:LIGHT LOGO, Bool) ! (A:LIGHT NAV, Bool) ! &amp;&amp;</Condition>
-            <Action>0 (&gt;K:2:LOGO_LIGHTS_SET) 0 (&gt;K:2:NAV_LIGHTS_SET)</Action>
+            <Condition>(B:A32NX_OVH_LIGHTS_NAV_LOGO_SW) 0 ==</Condition>
+            <Action>(&gt;B:A32NX_OVH_LIGHTS_NAV_LOGO_SW_OFF)</Action>
         </Step>
         <Step Name="Crew Oxy Off" Type="STEP" Delay="1000">
             <Condition>(L:PUSH_OVHD_OXYGEN_CREW) 1 ==</Condition>
