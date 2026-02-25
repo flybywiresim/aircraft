@@ -46,7 +46,7 @@
         },
         {
           "item": "FUEL QUANTITY",
-          "result": "_____ KG/LB"
+          "result": "_____ KG/LB, BALANCED"
         },
         {
           "item": "SEAT BELTS",
@@ -189,13 +189,36 @@
       ]
     },
     {
+      // departureChangeChecklistA32NX ====================================
+      "name": "<<DEPARTURE CHANGE>>",
+      "flightphase": 2,
+      "items": [
+        {
+          "item": "RWY & SID",
+          "result": "_____"
+        },
+        {
+          "item": "FLAPS SETTING",
+          "action": "CONF _____ (BOTH)"
+        },
+        {
+          "item": "T.O SPEEDS & THRUST",
+          "result": "_____ (BOTH)"
+        },
+        {
+          "item": "FCU ALT",
+          "result": "SET"
+        }
+      ]
+    },
+    {
       // lineUpChecklistA32NX ====================================
       "name": "LINE-UP",
       "flightphase": 2,
       "items": [
         {
           "item": "T.O. RWY",
-          "result": "_____(BOTH)"
+          "result": "_____ (BOTH)"
         },
         {
           "item": "TCAS",
