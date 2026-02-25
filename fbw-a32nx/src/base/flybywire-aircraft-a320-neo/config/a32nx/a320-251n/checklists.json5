@@ -190,7 +190,7 @@
     },
     {
       // departureChangeChecklistA32NX ====================================
-      "name": "<<DEPARTURE CHANGE>>",
+      "name": "<< DEPARTURE CHANGE >>",
       "flightphase": 2,
       "items": [
         {
@@ -199,7 +199,7 @@
         },
         {
           "item": "FLAPS SETTING",
-          "action": "CONF _____ (BOTH)"
+          "result": "CONF _____ (BOTH)"
         },
         {
           "item": "T.O SPEEDS & THRUST",
@@ -207,7 +207,8 @@
         },
         {
           "item": "FCU ALT",
-          "result": "SET"
+          "action": "_____",
+          "result": "_____ SET"
         }
       ]
     },
