@@ -19,12 +19,13 @@ import { DropdownFieldFormat } from 'instruments/src/MFD/pages/common/DataEntryF
 
 interface DropdownMenuProps extends ComponentProps {
   values: SubscribableArray<string>;
-  selectedIndex: Subject<number | null>;
+  selectedIndex: Subject<number | null> | Subject<number>;
   freeTextAllowed: boolean;
   idPrefix: string;
   /** If defined, this component does not update the selectedIndex prop by itself, but rather calls this method. */
   onModified?: (newSelectedIndex: number | null, freeTextEntry: string) => void;
   inactive?: Subscribable<boolean>;
+  disabled?: Subscribable<boolean>;
   containerStyle?: string;
   alignLabels?: 'flex-start' | 'center' | 'flex-end' | Subscribable<'flex-start' | 'center' | 'flex-end'>;
   /** Defined by the width of the component */
@@ -59,6 +60,10 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
 
   private readonly inputFieldValue = Subject.create<string | null>('');
 
+  private readonly dropdownArrowFill = (this.props.disabled ?? Subject.create(false)).map((isDisabled) =>
+    isDisabled ? 'gray' : 'white',
+  );
+
   private freeTextEntered = false;
 
   private readonly renderedDropdownOptions = ArraySubject.create<string>();
@@ -73,7 +78,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
   );
 
   private onClick(i: number) {
-    if (!this.props.inactive?.get()) {
+    if (!this.props.inactive?.get() && !this.props.disabled?.get()) {
       this.freeTextEntered = false;
       if (this.props.onModified) {
         this.props.onModified(this.renderedDropdownOptionsIndices[i], '');
@@ -86,7 +91,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
   }
 
   private onFieldSubmit(text: string) {
-    if (this.props.onModified && !this.props.inactive?.get()) {
+    if (this.props.onModified && !this.props.inactive?.get() && !this.props.disabled?.get()) {
       // selected index of -1 marks free text entry
       if (this.props.freeTextAllowed) {
         this.props.onModified(-1, text);
@@ -216,13 +221,28 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
           this.dropdownArrowRef.getOrDefault()?.classList.remove('inactive');
         }
       }, true),
+      this.dropdownArrowFill,
     );
-
+    if (this.props.disabled) {
+      this.subs.push(
+        this.props.disabled?.sub((val) => {
+          if (!this.props.inactive?.get()) {
+            if (val) {
+              this.dropdownSelectorRef.getOrDefault()?.classList.add('disabled');
+              this.dropdownArrowRef.getOrDefault()?.classList.add('disabled');
+            } else {
+              this.dropdownSelectorRef.getOrDefault()?.classList.remove('disabled');
+              this.dropdownArrowRef.getOrDefault()?.classList.remove('disabled');
+            }
+          }
+        }, true),
+      );
+    }
     // TODO add KCCU events
   }
 
   private onOpenCloseClick() {
-    if (!this.props.inactive?.get()) {
+    if (!this.props.inactive?.get() && !this.props.disabled?.get()) {
       this.dropdownIsOpened.set(!this.dropdownIsOpened.get());
     }
   }
@@ -283,19 +303,21 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
               value={this.inputFieldValue}
               containerStyle="border: 2px inset transparent"
               alignText={this.props.alignLabels}
-              canOverflow={this.props.freeTextAllowed}
+              freeText={this.props.freeTextAllowed}
               onModified={(text) => this.onFieldSubmit(text ?? '')}
               onInput={(text) => this.onFieldChanged(text)}
               inactive={this.props.inactive}
+              disabled={this.props.disabled}
               handleFocusBlurExternally
               tmpyActive={this.props.tmpyActive}
               hEventConsumer={this.props.hEventConsumer}
               interactionMode={this.props.interactionMode}
+              errorHandler={() => {}}
             />
           </div>
           <div ref={this.dropdownArrowRef} class="mfd-dropdown-arrow">
             <svg height="15" width="15">
-              <polygon points="0,0 15,0 7.5,15" style="fill: white" />
+              <polygon points="0,0 15,0 7.5,15" style={{ fill: this.dropdownArrowFill }} />
             </svg>
           </div>
         </div>

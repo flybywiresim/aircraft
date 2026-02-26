@@ -15,7 +15,8 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 import { DataEntryFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { FmsError, FmsErrorType } from '@fmgc/FmsError';
+import { A380FmsError } from '../../MFD/shared/A380FmsError';
+import { FmsError } from '@fmgc/FmsError';
 
 export enum InteractionMode {
   Touchscreen,
@@ -34,7 +35,7 @@ interface InputFieldProps<T, U = T, S = T extends U ? true : false> extends Comp
   canBeCleared?: Subscribable<boolean>;
   /** Value will be displayed in smaller font, if not entered by pilot (i.e. computed) */
   enteredByPilot?: Subscribable<boolean>;
-  canOverflow?: boolean;
+  freeText?: boolean;
   modifyValue?: S;
   /** If defined, this component does not update the value prop, but rather calls this method. */
   onModified?: (newValue: U | null) => void | Promise<unknown>;
@@ -46,7 +47,7 @@ interface InputFieldProps<T, U = T, S = T extends U ? true : false> extends Comp
    * @returns whether validation was successful. If nothing is returned, success is assumed
    */
   dataHandlerDuringValidation?: (newValue: U | null, oldValue?: T | null) => Promise<boolean | void>;
-  errorHandler?: (errorType: FmsErrorType) => void;
+  errorHandler: (error: A380FmsError) => void;
   handleFocusBlurExternally?: boolean;
   containerStyle?: string;
   alignText?: 'flex-start' | 'center' | 'flex-end' | Subscribable<'flex-start' | 'center' | 'flex-end'>;
@@ -84,6 +85,8 @@ export class InputField<
   U = T,
   S extends U extends T ? boolean : false = U extends T ? true : false,
 > extends DisplayComponent<ConditionalInputFieldProps<T, U, S>> {
+  private static readonly MAX_CHARACTERS_FREE_TEXT = 24;
+
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
   private readonly subs = [] as Subscription[];
 
@@ -120,6 +123,10 @@ export class InputField<
     true,
   );
 
+  private readonly canOverFlow = this.props.freeText || this.props.dataEntryFormat.maxOverflowDigits !== undefined;
+
+  private isOverFlow = false;
+
   private onNewValue() {
     // Don't update if field is being edited
     if (this.isFocused.get() || this.isValidating.get()) {
@@ -131,7 +138,7 @@ export class InputField<
       this.modifiedFieldValue.set(null);
     }
     if (this.readValue.get() !== null) {
-      if (this.props.canOverflow) {
+      if (this.canOverFlow) {
         // If item was overflowing, check whether overflow is still needed
         this.overflow((this.readValue.get()?.toString().length ?? 0) > this.props.dataEntryFormat.maxDigits);
       }
@@ -160,8 +167,13 @@ export class InputField<
       }
     } else {
       // Else, render modifiedFieldValue
-      const numDigits = this.props.dataEntryFormat.maxDigits;
-      if ((this.modifiedFieldValue.get()?.length ?? 0) < numDigits || !this.isFocused.get() || this.props.canOverflow) {
+      const numDigits = this.canOverFlow
+        ? this.props.freeText
+          ? InputField.MAX_CHARACTERS_FREE_TEXT
+          : this.props.dataEntryFormat.maxDigits + this.props.dataEntryFormat.maxOverflowDigits!
+        : this.props.dataEntryFormat.maxDigits;
+
+      if ((this.modifiedFieldValue.get()?.length ?? 0) < numDigits || !this.isFocused.get()) {
         this.textInputRef.instance.innerText = this.modifiedFieldValue.get() ?? '';
         this.caretRef.instance.innerText = '';
       } else {
@@ -173,7 +185,7 @@ export class InputField<
 
   // Called when the input field changes
   private onInput() {
-    if (this.props.canOverflow && this.modifiedFieldValue.get()?.length === this.props.dataEntryFormat.maxDigits) {
+    if (this.canOverFlow && this.modifiedFieldValue.get()?.length === this.props.dataEntryFormat.maxDigits) {
       this.overflow(true);
     }
 
@@ -187,14 +199,20 @@ export class InputField<
       if (overflow) {
         this.topRef.instance.classList.add('overflow');
         this.containerRef.instance.classList.add('overflow');
-
-        const remainingWidth = 768 - 50 - this.containerRef.instance.getBoundingClientRect().left;
-        this.containerRef.instance.style.width = `${remainingWidth}px`; // TODO extend to right edge
+        this.containerRef.instance.style.width = InputField.calculateWidthForDigits(
+          this.props.freeText
+            ? InputField.MAX_CHARACTERS_FREE_TEXT
+            : this.props.dataEntryFormat.maxOverflowDigits! +
+                this.props.dataEntryFormat.maxDigits +
+                (this.props.dataEntryFormat.unit?.length ?? 0) +
+                1, // Always a space for one extra character is displayed
+        );
+        this.isOverFlow = true;
       } else {
         this.topRef.instance.classList.remove('overflow');
-        this.topRef.instance.classList.remove('overflow');
-
+        this.containerRef.instance.classList.remove('overflow');
         this.containerRef.instance.style.width = '';
+        this.isOverFlow = false;
 
         if (this.props.containerStyle) {
           this.containerRef.instance.setAttribute('style', this.props.containerStyle);
@@ -259,7 +277,15 @@ export class InputField<
       this.spanningDivRef.instance.style.justifyContent = 'flex-start';
     }
 
-    if ((this.modifiedFieldValue.get()?.length ?? 0) < this.props.dataEntryFormat.maxDigits || this.props.canOverflow) {
+    const modifiedFieldValueLength = this.modifiedFieldValue.get()?.length ?? 0;
+    if (
+      modifiedFieldValueLength < this.props.dataEntryFormat.maxDigits ||
+      (this.canOverFlow &&
+        modifiedFieldValueLength <
+          (this.props.freeText
+            ? InputField.MAX_CHARACTERS_FREE_TEXT
+            : this.props.dataEntryFormat.maxOverflowDigits! + this.props.dataEntryFormat.maxDigits))
+    ) {
       this.modifiedFieldValue.set(`${this.modifiedFieldValue.get()}${key}`);
       this.caretRef.instance.style.display = 'inline';
     }
@@ -324,6 +350,10 @@ export class InputField<
         } else {
           await this.validateAndUpdate(this.modifiedFieldValue.get() ?? '');
         }
+
+        if (this.isOverFlow) {
+          this.overflow(false);
+        }
       }
 
       // Restore mandatory class for correct coloring of dot (e.g. non-placeholders)
@@ -353,55 +383,60 @@ export class InputField<
     this.isValidating.set(true);
 
     let newValue = null;
+    let updateWasSuccessful = true;
     try {
       newValue = await this.props.dataEntryFormat.parse(input);
     } catch (msg: unknown) {
+      updateWasSuccessful = false;
       if (msg instanceof FmsError && this.props.errorHandler) {
-        this.props.errorHandler(msg.type);
-        newValue = null;
+        this.props.errorHandler(msg);
+        newValue = this.readValue.get();
       }
-    }
-
-    let updateWasSuccessful = true;
-    const artificialWaitingTime = new Promise((resolve) => setTimeout(resolve, 500));
-    if (this.props.dataHandlerDuringValidation) {
-      try {
-        const realWaitingTime = this.props.dataHandlerDuringValidation(newValue, this.readValue.get());
-        const [validation] = await Promise.all([realWaitingTime, artificialWaitingTime]);
-
-        if (validation === false) {
-          updateWasSuccessful = false;
-        }
-      } catch {
-        updateWasSuccessful = false;
-        await artificialWaitingTime;
-      }
-    } else {
-      await artificialWaitingTime;
     }
 
     if (updateWasSuccessful) {
-      if (this.props.onModified) {
+      const artificialWaitingTime = new Promise((resolve) => setTimeout(resolve, 500));
+      if (this.props.dataHandlerDuringValidation) {
         try {
-          await this.props.onModified(newValue);
-        } catch (msg: unknown) {
-          if (msg instanceof FmsError && this.props.errorHandler) {
-            this.props.errorHandler(msg.type);
-          }
-        }
-      } else if ('value' in this.props && SubscribableUtils.isMutableSubscribable(this.props.value)) {
-        // If we have `value` in props, we know U extends T
+          const realWaitingTime = this.props.dataHandlerDuringValidation(newValue, this.readValue.get());
+          const [validation] = await Promise.all([realWaitingTime, artificialWaitingTime]);
 
-        this.props.value.set(newValue as T);
-      } else if (!this.props.dataHandlerDuringValidation) {
-        console.error(
-          'InputField: this.props.value not of type Subject, and no onModified handler or dataHandlerDuringValidation was defined',
-        );
+          if (validation === false) {
+            updateWasSuccessful = false;
+          }
+        } catch {
+          updateWasSuccessful = false;
+          await artificialWaitingTime;
+        }
+      } else {
+        await artificialWaitingTime;
+      }
+
+      if (updateWasSuccessful) {
+        if (this.props.onModified) {
+          try {
+            await this.props.onModified(newValue);
+          } catch (msg: unknown) {
+            if (msg instanceof FmsError && this.props.errorHandler) {
+              this.props.errorHandler(msg);
+            }
+            updateWasSuccessful = false;
+          }
+        } else if ('value' in this.props && SubscribableUtils.isMutableSubscribable(this.props.value)) {
+          // If we have `value` in props, we know U extends T
+
+          this.props.value.set(newValue as T);
+        } else if (!this.props.dataHandlerDuringValidation) {
+          console.error(
+            'InputField: this.props.value not of type Subject, and no onModified handler or dataHandlerDuringValidation was defined',
+          );
+        }
       }
     }
 
     this.modifiedFieldValue.set(null);
     this.isValidating.set(false);
+    return updateWasSuccessful;
   }
 
   private onFocusTextInput() {
@@ -435,15 +470,13 @@ export class InputField<
     if (this.props.handleFocusBlurExternally === undefined) {
       this.props.handleFocusBlurExternally = false;
     }
-    if (this.props.canOverflow === undefined) {
-      this.props.canOverflow = false;
-    }
     if (this.props.tmpyActive === undefined) {
       this.props.tmpyActive = Subject.create(false);
     }
 
-    // Aspect ratio for font: 2:3 WxH
-    this.spanningDivRef.instance.style.minWidth = `${Math.round((this.props.dataEntryFormat.maxDigits * 27.0) / 1.5)}px`;
+    this.spanningDivRef.instance.style.minWidth = InputField.calculateWidthForDigits(
+      this.props.dataEntryFormat.maxDigits,
+    );
 
     // Hide caret
     this.caretRef.instance.style.display = 'none';
@@ -616,6 +649,11 @@ export class InputField<
                 }
             }));
         } */
+  }
+
+  private static calculateWidthForDigits(digits: number): string {
+    // Aspect ratio for font: 2:3 WxH
+    return `${Math.round((digits * 27.0) / 1.5)}px`;
   }
 
   destroy(): void {

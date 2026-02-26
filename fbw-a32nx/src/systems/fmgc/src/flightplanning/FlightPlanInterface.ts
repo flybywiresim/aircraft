@@ -92,10 +92,10 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
   /**
    * Sets the alternate destination in the flight plan.
    *
-   * @param altnIcao  ICAo of the ALTN airport
+   * @param altnIcao  Icao of the ALTN airport. If undefined, alternate is deleted.
    * @param planIndex which flight plan (excluding temporary) to make the change on
    */
-  setAlternate(altnIcao: string, planIndex: number): Promise<void>;
+  setAlternate(altnIcao: string | undefined, planIndex: number): Promise<void>;
 
   /**
    * Sets the origin runway in the flight plan. Creates a temporary flight plan if target is active.

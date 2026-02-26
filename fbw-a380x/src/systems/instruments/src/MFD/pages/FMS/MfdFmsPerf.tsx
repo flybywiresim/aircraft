@@ -73,11 +73,14 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private readonly crzFlIsMandatory = Subject.create(true);
 
-  private recMaxFl = Subject.create<string>('---');
+  private readonly recMaxFl = Subject.create<string>('---');
+  private readonly recMaxFlNotAvail = Subject.create<boolean>(false);
 
-  private optFl = Subject.create<string>('---');
+  private readonly optFl = Subject.create<string>('---');
+  private readonly optFlNotAvail = Subject.create<boolean>(false);
 
-  private eoMaxFl = Subject.create<string>('---');
+  private readonly eoMaxFl = Subject.create<string>('---');
+  private readonly eoMaxFlNotAvail = Subject.create<boolean>(false);
 
   private flightPhasesSelectedPageIndex = Subject.create(0);
 
@@ -154,7 +157,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   private readonly notInDescent = this.activeFlightPhase.map((it) => it !== FmgcFlightPhase.Descent);
 
   // TO page subjects, refs and methods
-  private originRunwayIdent = Subject.create<string>('');
+  private originRunwayIdent = Subject.create<string>('---');
 
   private toShift = Subject.create<number | null>(null);
 
@@ -225,7 +228,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private originRunwayLength = Subject.create<number>(4000);
 
-  private toSelectedFlapsIndex = Subject.create<number | null>(0);
+  private toSelectedFlapsIndex = Subject.create<number | null>(null);
 
   private toSelectedPacksIndex = Subject.create<number | null>(1);
 
@@ -308,10 +311,15 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   ]);
 
   private readonly costIndexModeLabels = ArraySubject.create(['LRC', 'ECON']);
-  private readonly costIndexDisabled = MappedSubject.create(
-    ([flightPhase, ciMode]) => flightPhase >= FmgcFlightPhase.Descent || ciMode === CostIndexMode.LRC,
+  private readonly costIndexModeDisabled = MappedSubject.create(
+    ([flightPhase]) => flightPhase >= FmgcFlightPhase.Descent,
     this.activeFlightPhase,
-    this.props.fmcService.master?.fmgc.data.costIndexMode ?? Subject.create(CostIndexMode.ECON),
+  );
+
+  private readonly costIndexDisabled = MappedSubject.create(
+    ([ciModeDisabled, ciMode]) => ciModeDisabled || ciMode === CostIndexMode.LRC,
+    this.costIndexModeDisabled,
+    this.props.fmcService.master?.fmgc.data.costIndexMode!,
   );
 
   private readonly speedConstraintSpeed = Subject.create<number | null>(null);
@@ -593,11 +601,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
     this.toSelectedDeratedIndex.set(fm.takeoffDeratedSetting.get());
 
-    if (fm.takeoffFlapsSetting !== undefined && fm.takeoffFlapsSetting.get() !== null) {
-      this.toSelectedFlapsIndex.set(fm.takeoffFlapsSetting.get() - 1);
-    } else {
-      this.toSelectedFlapsIndex.set(null);
-    }
+    const takeoffFlapSetting = fm.takeoffFlapsSetting.get();
+    this.toSelectedFlapsIndex.set(takeoffFlapSetting !== null ? takeoffFlapSetting - 1 : null);
 
     this.toSelectedPacksIndex.set(fm.takeoffPacks.get());
 
@@ -745,6 +750,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       this.eoActive.sub((v) => {
         this.costIndexModeLabels.set(v ? ['EO-LRC', 'EO-ECON'] : ['LRC', 'ECON']);
       }, true),
+      this.costIndexModeDisabled,
     );
 
     this.subs.push(
@@ -753,7 +759,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
         if (v != null) {
           const flapConf = v + 1;
           this.props.fmcService.master?.fmgc.data.takeoffFlapsSetting.set(flapConf);
-          this.props.fmcService.master?.acInterface.setTakeoffFlaps(flapConf);
         }
       }),
     );
@@ -766,10 +771,13 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
           // Update REC MAX FL, OPT FL
           const recMaxFl = this.props.fmcService.master?.getRecMaxFlightLevel();
           this.recMaxFl.set(recMaxFl && Number.isFinite(recMaxFl) ? recMaxFl.toFixed(0) : '---');
+          this.recMaxFlNotAvail.set(recMaxFl === null);
           const optFl = this.props.fmcService.master?.getOptFlightLevel();
           this.optFl.set(optFl && Number.isFinite(optFl) ? optFl.toFixed(0) : '---');
+          this.optFlNotAvail.set(optFl === null);
           const eoMaxFl = this.props.fmcService.master?.getEoMaxFlightLevel();
           this.eoMaxFl.set(eoMaxFl && Number.isFinite(eoMaxFl) ? eoMaxFl.toFixed(0) : '---');
+          this.eoMaxFlNotAvail.set(eoMaxFl === null);
 
           const obs =
             this.props.fmcService.master?.guidanceController.verticalProfileComputationParametersObserver.get();
@@ -1121,7 +1129,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
           {/* begin page content */}
           <div class="mfd-page-container">
             <div style="margin: 5px; display: grid; grid-template-columns: 1fr 1fr 1fr; justify-content: space-between;">
-              <div class="mfd-label-value-container" style="padding: 0px 0px 0px 20px;">
+              <div class="mfd-label-value-container" style="padding: 0px 0px 0px 20px; height:37px;">
                 <span class="mfd-label mfd-spacing-right">CRZ</span>
                 <InputField<number>
                   dataEntryFormat={new FlightLevelFormat()}
@@ -1130,7 +1138,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   }
                   mandatory={this.crzFlIsMandatory}
                   value={this.crzFl}
-                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
                 />
@@ -1138,19 +1146,27 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
               <div class="mfd-label-value-container" style="padding: 0px; justify-content: center;">
                 <span class="mfd-label mfd-spacing-right">OPT</span>
                 <span class="mfd-label-unit mfd-unit-leading">FL</span>
-                <span class="mfd-value">{this.optFl}</span>
+                <span class={{ 'mfd-value': true, white: this.optFlNotAvail }}>{this.optFl}</span>
               </div>
               <div class="mfd-label-value-container" style="padding: 0px 20px 0px 0px; justify-content: flex-end;">
                 <span class="mfd-label mfd-spacing-right">REC MAX</span>
                 <span class="mfd-label-unit mfd-unit-leading">FL</span>
-                <span class="mfd-value">{this.recMaxFl}</span>
+                <span class={{ 'mfd-value': true, white: this.recMaxFlNotAvail }}>{this.recMaxFl}</span>
               </div>
               <div />
               <div />
               <div class="mfd-label-value-container" style="padding: 0px 20px 0px 0px; justify-content: flex-end;">
-                <span class={{ 'mfd-label': true, 'mfd-spacing-right': true, amber: this.eoActive }}>EO MAX</span>
+                <span
+                  class={{
+                    'mfd-label': true,
+                    'mfd-spacing-right': true,
+                    amber: this.eoActive,
+                  }}
+                >
+                  EO MAX
+                </span>
                 <span class="mfd-label-unit mfd-unit-leading">FL</span>
-                <span class="mfd-value">{this.eoMaxFl}</span>
+                <span class={{ 'mfd-value': true, white: this.eoMaxFlNotAvail }}>{this.eoMaxFl}</span>
               </div>
             </div>
             <TopTabNavigator
@@ -1177,7 +1193,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       mandatory={Subject.create(false)}
                       inactive={this.toPageInactive}
                       value={this.toShift}
-                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
                     />
@@ -1197,7 +1213,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         inactive={this.toPageInactive}
                         value={this.toV1}
                         alignText="flex-end"
-                        errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                        errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                         hEventConsumer={this.props.mfd.hEventConsumer}
                         interactionMode={this.props.mfd.interactionMode}
                       />
@@ -1261,7 +1277,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         inactive={this.toPageInactive}
                         value={this.toVR}
                         alignText="flex-end"
-                        errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                        errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                         hEventConsumer={this.props.mfd.hEventConsumer}
                         interactionMode={this.props.mfd.interactionMode}
                       />
@@ -1293,7 +1309,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         inactive={this.toPageInactive}
                         value={this.toV2}
                         alignText="flex-end"
-                        errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                        errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                         hEventConsumer={this.props.mfd.hEventConsumer}
                         interactionMode={this.props.mfd.interactionMode}
                       />
@@ -1356,7 +1372,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         mandatory={Subject.create(false)}
                         inactive={this.toPageInactive}
                         value={this.toFlexTemp}
-                        errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                        errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                         hEventConsumer={this.props.mfd.hEventConsumer}
                         interactionMode={this.props.mfd.interactionMode}
                       />
@@ -1424,7 +1440,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       inactive={this.toPageInactive}
                       value={this.props.fmcService.master.fmgc.data.takeoffThsFor}
                       alignText="flex-end"
-                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
                     />
@@ -1494,7 +1510,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       value={this.thrRedAlt}
                       containerStyle="width: 150px;"
                       alignText="flex-end"
-                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
                     />
@@ -1522,7 +1538,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         value={this.props.fmcService.master.fmgc.data.noiseN1}
                         containerStyle="width: 110px;"
                         alignText="flex-end"
-                        errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                        errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                         hEventConsumer={this.props.mfd.hEventConsumer}
                         interactionMode={this.props.mfd.interactionMode}
                       />
@@ -1562,7 +1578,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       value={this.accelAlt}
                       containerStyle="width: 150px;"
                       alignText="flex-end"
-                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
                     />
@@ -1590,7 +1606,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         value={this.props.fmcService.master.fmgc.data.noiseSpeed}
                         containerStyle="width: 110px;"
                         alignText="flex-end"
-                        errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                        errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                         hEventConsumer={this.props.mfd.hEventConsumer}
                         interactionMode={this.props.mfd.interactionMode}
                       />
@@ -1631,7 +1647,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         value={this.noiseEndAlt}
                         containerStyle="width: 150px;"
                         alignText="flex-end"
-                        errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                        errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                         hEventConsumer={this.props.mfd.hEventConsumer}
                         interactionMode={this.props.mfd.interactionMode}
                       />
@@ -1656,7 +1672,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       value={this.transAlt}
                       containerStyle="width: 150px;"
                       alignText="flex-end"
-                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
                     />
@@ -1674,7 +1690,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       value={this.eoAccelAlt}
                       containerStyle="width: 150px;"
                       alignText="flex-end"
-                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
                     />
@@ -1702,6 +1718,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                 <div style="display: flex; justify-content: space-between;">
                   <div class="mfd-label-value-container" style="margin-bottom: 15px;">
                     <DropdownMenu
+                      disabled={this.costIndexModeDisabled}
                       values={this.costIndexModeLabels}
                       selectedIndex={this.props.fmcService.master.fmgc.data.costIndexMode}
                       idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_clbCostIndexModeDropdown`}
@@ -1723,7 +1740,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       value={this.costIndex}
                       containerStyle="width: 75px;"
                       alignText="center"
-                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
                     />
@@ -1773,7 +1790,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       readonlyValue={this.props.fmcService.master.fmgc.data.climbPredictionsReference}
                       containerStyle="width: 150px; margin-left: 15px;"
                       alignText="flex-end"
-                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
                     />
@@ -1800,7 +1817,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                           inactive={this.clbPageInactive}
                           value={this.props.fmcService.master.fmgc.data.climbPreSelSpeed}
                           alignText="flex-end"
-                          errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                          errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                           hEventConsumer={this.props.mfd.hEventConsumer}
                           interactionMode={this.props.mfd.interactionMode}
                         />
@@ -1881,7 +1898,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       }
                       containerStyle="width: 150px;"
                       alignText="flex-end"
-                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
                     />
@@ -1909,7 +1926,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         value={this.props.fmcService.master.fmgc.data.noiseN1}
                         containerStyle="width: 110px;"
                         alignText="flex-end"
-                        errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                        errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                         hEventConsumer={this.props.mfd.hEventConsumer}
                         interactionMode={this.props.mfd.interactionMode}
                       />
@@ -1955,7 +1972,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       }
                       containerStyle="width: 150px;"
                       alignText="flex-end"
-                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
                     />
@@ -1983,7 +2000,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         value={this.props.fmcService.master.fmgc.data.noiseSpeed}
                         containerStyle="width: 110px;"
                         alignText="flex-end"
-                        errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                        errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                         hEventConsumer={this.props.mfd.hEventConsumer}
                         interactionMode={this.props.mfd.interactionMode}
                       />
@@ -2023,7 +2040,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         value={this.noiseEndAlt}
                         containerStyle="width: 150px;"
                         alignText="flex-end"
-                        errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                        errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                         hEventConsumer={this.props.mfd.hEventConsumer}
                         interactionMode={this.props.mfd.interactionMode}
                       />
@@ -2066,7 +2083,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       value={this.transAlt}
                       containerStyle="width: 150px;"
                       alignText="flex-end"
-                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
                     />
@@ -2094,6 +2111,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                 <div style="display: flex; justify-content: space-between;">
                   <div class="mfd-label-value-container">
                     <DropdownMenu
+                      disabled={this.costIndexModeDisabled}
                       values={this.costIndexModeLabels}
                       selectedIndex={this.props.fmcService.master.fmgc.data.costIndexMode}
                       idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_crzCostIndexModeDropdown`}
@@ -2115,7 +2133,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       value={this.costIndex}
                       containerStyle="width: 75px;"
                       alignText="center"
-                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
                     />
@@ -2193,7 +2211,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                           inactive={this.crzPageInactive}
                           value={this.props.fmcService.master.fmgc.data.cruisePreSelMach}
                           alignText="flex-end"
-                          errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                          errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                           hEventConsumer={this.props.mfd.hEventConsumer}
                           interactionMode={this.props.mfd.interactionMode}
                         />
@@ -2215,7 +2233,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                           inactive={this.crzPageInactive}
                           value={this.props.fmcService.master.fmgc.data.cruisePreSelSpeed}
                           alignText="flex-end"
-                          errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                          errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                           hEventConsumer={this.props.mfd.hEventConsumer}
                           interactionMode={this.props.mfd.interactionMode}
                         />
@@ -2341,6 +2359,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                 <div style="display: flex; justify-content: space-between;">
                   <div class="mfd-label-value-container">
                     <DropdownMenu
+                      disabled={this.costIndexModeDisabled}
                       values={this.costIndexModeLabels}
                       selectedIndex={this.props.fmcService.master.fmgc.data.costIndexMode}
                       idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_desCostIndexModeDropdown`}
@@ -2363,7 +2382,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       value={this.costIndex}
                       containerStyle="width: 75px;"
                       alignText="center"
-                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
                     />
@@ -2377,7 +2396,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       value={this.props.fmcService.master.fmgc.data.descentCabinRate}
                       containerStyle="width: 175px;"
                       alignText="flex-end"
-                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
                     />
@@ -2408,7 +2427,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       value={this.desPredictionsReference}
                       containerStyle="width: 150px; margin-left: 15px;"
                       alignText="flex-end"
-                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
                     />
@@ -2435,7 +2454,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                           inactive={this.desPageInactive}
                           value={this.desManagedMachTarget}
                           alignText="flex-end"
-                          errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                          errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                           hEventConsumer={this.props.mfd.hEventConsumer}
                           interactionMode={this.props.mfd.interactionMode}
                         />
@@ -2458,7 +2477,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                           inactive={this.desPageInactive}
                           value={this.desManagedSpdTarget}
                           alignText="flex-end"
-                          errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                          errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                           hEventConsumer={this.props.mfd.hEventConsumer}
                           interactionMode={this.props.mfd.interactionMode}
                         />
@@ -2558,7 +2577,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             mandatory={Subject.create(false)}
                             value={this.props.fmcService.master?.fmgc.data.approachWindDirection}
                             alignText="center"
-                            errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                            errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                             hEventConsumer={this.props.mfd.hEventConsumer}
                             interactionMode={this.props.mfd.interactionMode}
                           />
@@ -2568,7 +2587,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             value={this.props.fmcService.master.fmgc.data.approachWindSpeed}
                             containerStyle="margin-left: 10px;"
                             alignText="center"
-                            errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                            errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                             hEventConsumer={this.props.mfd.hEventConsumer}
                             interactionMode={this.props.mfd.interactionMode}
                           />
@@ -2594,7 +2613,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                           value={this.props.fmcService.master.fmgc.data.approachTemperature}
                           containerStyle="width: 125px;"
                           alignText="flex-end"
-                          errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                          errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                           hEventConsumer={this.props.mfd.hEventConsumer}
                           interactionMode={this.props.mfd.interactionMode}
                         />
@@ -2614,7 +2633,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                           value={this.props.fmcService.master.fmgc.data.approachQnh}
                           containerStyle="width: 125px;"
                           alignText="flex-end"
-                          errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                          errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                           hEventConsumer={this.props.mfd.hEventConsumer}
                           interactionMode={this.props.mfd.interactionMode}
                         />
@@ -2633,7 +2652,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                           value={this.props.fmcService.master.fmgc.data.approachBaroMinimum}
                           containerStyle="width: 150px;"
                           alignText="flex-end"
-                          errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                          errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                           hEventConsumer={this.props.mfd.hEventConsumer}
                           interactionMode={this.props.mfd.interactionMode}
                         />
@@ -2656,7 +2675,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                               value={this.props.fmcService.master.fmgc.data.approachRadioMinimum}
                               containerStyle="width: 150px;"
                               alignText="flex-end"
-                              errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                              errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                               hEventConsumer={this.props.mfd.hEventConsumer}
                               interactionMode={this.props.mfd.interactionMode}
                             />
@@ -2732,7 +2751,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                           mandatory={Subject.create(false)}
                           value={this.props.fmcService.master.fmgc.data.approachSpeed}
                           alignText="flex-end"
-                          errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                          errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                           hEventConsumer={this.props.mfd.hEventConsumer}
                           interactionMode={this.props.mfd.interactionMode}
                         />
@@ -2761,7 +2780,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       value={this.transFl}
                       containerStyle="width: 110px;"
                       alignText="flex-start"
-                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
                     />
@@ -2817,7 +2836,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         value={this.missedThrRedAlt}
                         containerStyle="width: 150px;"
                         alignText="flex-end"
-                        errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                        errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                         hEventConsumer={this.props.mfd.hEventConsumer}
                         interactionMode={this.props.mfd.interactionMode}
                       />
@@ -2838,7 +2857,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         value={this.missedAccelAlt}
                         containerStyle="width: 150px;"
                         alignText="flex-end"
-                        errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                        errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                         hEventConsumer={this.props.mfd.hEventConsumer}
                         interactionMode={this.props.mfd.interactionMode}
                       />
@@ -2857,7 +2876,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         value={this.missedEngineOutAccelAlt}
                         containerStyle="width: 150px;"
                         alignText="flex-end"
-                        errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                        errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
                         hEventConsumer={this.props.mfd.hEventConsumer}
                         interactionMode={this.props.mfd.interactionMode}
                       />
