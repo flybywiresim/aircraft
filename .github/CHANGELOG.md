@@ -79,6 +79,7 @@
 1. [FMS] Show true bearings correctly in various FMS pages on the MCDU/MFD - @tracernz (Mike)
 1. [A380X/FWS] Improve various ABN SENSED procedure accuracy - @Jonny23787 (Jonathan)
 1. [A32NX/FMS] Add pilot entry ETT (Estimated Takeoff Time) functionality  - @BravoMike99 (bruno_pt99)
+1. [A380X/FWS] Fixed overspeed VFE blue and selectable - @matze-tech (matze2346)
 
 ## 0.14.0
 
