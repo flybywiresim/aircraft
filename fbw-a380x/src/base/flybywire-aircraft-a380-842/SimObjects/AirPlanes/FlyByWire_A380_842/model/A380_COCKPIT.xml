@@ -1952,7 +1952,7 @@
                         }
                     </CODE_POS_0>
                     <CODE_POS_1>
-                    <!-- In the auto position, the seat belt signs come on when engines are running and either slats are extended or main gear is downlocked -->
+                    <!-- In the auto position, the seatbelt signs come on when engines are running and either slats are extended or main gear is downlocked -->
                     <!-- TODO: Move logic to responsible system -->
                         (L:A32NX_ENGINE_N1:1) 10 &gt;
                         (L:A32NX_ENGINE_N1:2) 10 &gt; or
