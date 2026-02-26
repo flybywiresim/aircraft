@@ -65,6 +65,16 @@ pub enum FailureType {
     RadioAntennaInterrupted(usize),
     RadioAntennaDirectCoupling(usize),
     EnhancedGroundProximityWarningSystemComputer,
+    Adr(usize),
+    Ir(usize),
+    Adm(usize),
+    Mfp(usize),
+    IspLeft(usize),
+    IspRight(usize),
+    Ssa(usize),
+    PitotBlockage(usize),
+    StaticBlockage(usize),
+    AoaProbeStuck(usize),
 }
 
 pub struct Failure {
