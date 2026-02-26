@@ -10,7 +10,9 @@ import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performanc
 /**
  * An alternate flight plan shares its origin with the destination of a regular flight plan
  */
-export class AlternateFlightPlan<P extends FlightPlanPerformanceData> extends BaseFlightPlan<P> {
+export class AlternateFlightPlan<
+  P extends FlightPlanPerformanceData = FlightPlanPerformanceData,
+> extends BaseFlightPlan<P> {
   constructor(
     context: FlightPlanContext,
     index: number,

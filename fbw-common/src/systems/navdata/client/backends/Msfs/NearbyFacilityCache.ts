@@ -17,6 +17,7 @@ import {
   JSAirportRequestFlags,
 } from './FsTypes';
 import { MsfsMapping } from './Mapping';
+import { SectionCode } from '../../../shared/types/SectionCode';
 import { MagVar } from '../../../../shared/src/MagVar';
 
 interface PendingRequest {
@@ -202,6 +203,20 @@ export class NearbyFacilityCache {
       return;
     }
 
+    let sectionCode: SectionCode;
+    switch (msfsFac.icao[0]) {
+      default:
+      case 'W':
+      case 'N':
+        if (msfsFac.icao[3] === ' ') {
+          sectionCode = SectionCode.Enroute;
+          break;
+        }
+      // fallthrough
+      case 'A':
+        sectionCode = SectionCode.Airport;
+    }
+
     if (this.pendingRequests.has(msfsFac.icao)) {
       const nearbyFac: NearbyFacility = {
         databaseId: msfsFac.icao,
@@ -211,6 +226,7 @@ export class NearbyFacilityCache {
             ? { lat: msfsFac.lat, long: msfsFac.lon, alt: msfsFac.altitude / 0.3048 }
             : { lat: msfsFac.lat, long: msfsFac.lon },
         ident: msfsFac.icaoStruct ? msfsFac.icaoStruct.ident : msfsFac.icao.substring(7).trim(),
+        sectionCode,
       };
 
       this.addNewFacility(nearbyFac);
@@ -244,6 +260,7 @@ export class NearbyFacilityCache {
 
     if (this.pendingRequests.has(vor.icao)) {
       const fac: NearbyVhfFacility = {
+        sectionCode: SectionCode.Navaid,
         databaseId: vor.icao,
         type: NearbyFacilityType.VhfNavaid,
         location: vor.dme ? { lat: vor.dme.lat, long: vor.dme.lon, alt: vor.dme.alt } : { lat: vor.lat, long: vor.lon },
