@@ -77,9 +77,12 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
   private readonly toIcao = Subject.create<string | null>(null);
 
   private readonly cityPairDisabled = MappedSubject.create(
-    ([fp, tmpy]) => fp > FmgcFlightPhase.Preflight || tmpy,
+    ([fp, tmpy, fromIcao, toIcao]) =>
+      (fp > FmgcFlightPhase.Preflight && (fromIcao !== null || toIcao !== null)) || tmpy,
     this.activeFlightPhase,
     this.tmpyActive,
+    this.fromIcao,
+    this.toIcao,
   );
 
   private readonly altnIcao = Subject.create<string | null>(null);
