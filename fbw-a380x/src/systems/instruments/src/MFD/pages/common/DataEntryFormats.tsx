@@ -1039,7 +1039,7 @@ export class AirportFormat implements DataEntryFormat<string> {
 
   public readonly maxDigits = 4;
 
-  constructor(private formatErrorDetail = false) {}
+  constructor() {}
 
   public format(value: string) {
     if (!value) {
@@ -1054,12 +1054,7 @@ export class AirportFormat implements DataEntryFormat<string> {
     }
 
     if (input.length != 4) {
-      if (this.formatErrorDetail) {
-        // ATC subsystem has format error message with details
-        throw getFormattedFormatError('AAAA');
-      } else {
-        throw new A380FmsError(FmsErrorType.FormatError);
-      }
+      throw getFormattedFormatError('AAAA');
     }
 
     return input;

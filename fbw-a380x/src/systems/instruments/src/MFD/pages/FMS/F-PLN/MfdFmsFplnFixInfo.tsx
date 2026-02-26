@@ -87,7 +87,7 @@ export class MfdFmsFplnFixInfo extends FmsPage {
                       new FixInfoEntry(fix, [], []),
                     );
                   }}
-                  errorHandler={(msg) => this.props.mfd.showFmsErrorMessage(msg)}
+                  errorHandler={(msg) => this.props.mfd.showFmsErrorMessage(msg.type)}
                   dataEntryFormat={new FixFormat()}
                   tmpyActive={this.flightPlanManager.temporaryPlanExists}
                   hEventConsumer={this.props.mfd.hEventConsumer}
@@ -135,7 +135,7 @@ export class MfdFmsFplnFixInfo extends FmsPage {
                           return fixInfo;
                         });
                       }}
-                      errorHandler={(msg) => this.props.mfd.showFmsErrorMessage(msg)}
+                      errorHandler={(msg) => this.props.mfd.showFmsErrorMessage(msg.type)}
                       dataEntryFormat={new RadialFormat()}
                       tmpyActive={this.flightPlanManager.temporaryPlanExists}
                       hEventConsumer={this.props.mfd.hEventConsumer}
@@ -169,7 +169,7 @@ export class MfdFmsFplnFixInfo extends FmsPage {
                           return fixInfo;
                         });
                       }}
-                      errorHandler={(msg) => this.props.mfd.showFmsErrorMessage(msg)}
+                      errorHandler={(msg) => this.props.mfd.showFmsErrorMessage(msg.type)}
                       dataEntryFormat={new RadialFormat()}
                       tmpyActive={this.flightPlanManager.temporaryPlanExists}
                       hEventConsumer={this.props.mfd.hEventConsumer}
@@ -205,7 +205,7 @@ export class MfdFmsFplnFixInfo extends FmsPage {
                           return fixInfo;
                         });
                       }}
-                      errorHandler={(msg) => this.props.mfd.showFmsErrorMessage(msg)}
+                      errorHandler={(msg) => this.props.mfd.showFmsErrorMessage(msg.type)}
                       dataEntryFormat={new RadiusFormat()}
                       tmpyActive={this.flightPlanManager.temporaryPlanExists}
                       hEventConsumer={this.props.mfd.hEventConsumer}

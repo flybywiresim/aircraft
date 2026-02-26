@@ -228,7 +228,7 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
             alignText="center"
             class="yellow-when-disabled"
             disabled={this.viaFieldDisabled}
-            errorHandler={(e) => this.props.fmc.showFmsErrorMessage(e)}
+            errorHandler={(e) => this.props.fmc.showFmsErrorMessage(e.type)}
             hEventConsumer={this.props.mfd.hEventConsumer}
             interactionMode={this.props.mfd.interactionMode}
           />
@@ -296,7 +296,7 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
             alignText="center"
             class="yellow-when-disabled"
             disabled={this.toFieldDisabled}
-            errorHandler={(e) => this.props.fmc.showFmsErrorMessage(e)}
+            errorHandler={(e) => this.props.fmc.showFmsErrorMessage(e.type)}
             hEventConsumer={this.props.mfd.hEventConsumer}
             interactionMode={this.props.mfd.interactionMode}
           />

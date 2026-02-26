@@ -220,7 +220,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
       <div class="mfd-atccom-datis-block">
         <div class="mfd-atccom-datis-block-header-row">
           <InputField<string>
-            dataEntryFormat={new AirportFormat(true)}
+            dataEntryFormat={new AirportFormat()}
             mandatory={Subject.create(false)}
             value={this.atisIcao}
             containerStyle="width: 106px; margin-left: 5px; position: absolute; top: 12px; height:40px"
