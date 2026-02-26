@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2025 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { GuidanceComponent } from '@fmgc/guidance/GuidanceComponent';
@@ -110,13 +110,19 @@ export class PseudoWaypoints implements GuidanceComponent {
 
   private recompute() {
     const geometry = this.guidanceController.activeGeometry;
-    const wptCount = this.flightPlanService.active.firstMissedApproachLegIndex;
 
     const navGeometryProfile = this.guidanceController.vnavDriver.mcduProfile;
-    if (!geometry || geometry.legs.size < 1 || !navGeometryProfile?.isReadyToDisplay) {
+    if (
+      !geometry ||
+      geometry.legs.size < 1 ||
+      !navGeometryProfile?.isReadyToDisplay ||
+      !this.flightPlanService.hasActive
+    ) {
       this.pseudoWaypoints.length = 0;
       return;
     }
+
+    const wptCount = this.flightPlanService.active.firstMissedApproachLegIndex;
 
     const ndPseudoWaypointCandidates = this.guidanceController.vnavDriver.ndProfile?.isReadyToDisplay
       ? this.guidanceController.vnavDriver.ndProfile.checkpoints.filter(isCheckpointForNdPwp)

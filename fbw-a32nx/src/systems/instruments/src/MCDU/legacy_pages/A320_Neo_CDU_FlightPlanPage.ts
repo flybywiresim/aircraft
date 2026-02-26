@@ -2,18 +2,26 @@
 // Copyright (c) 2021-2023, 2025-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { A32NX_Util } from '../../../../shared/src/A32NX_Util';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { CDULateralRevisionPage } from './A320_Neo_CDU_LateralRevisionPage';
 import { CDUVerticalRevisionPage } from './A320_Neo_CDU_VerticalRevisionPage';
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
 import { CDUHoldAtPage } from './A320_Neo_CDU_HoldAtPage';
-import { AltitudeDescriptor, MagVar, NXUnits, WaypointConstraintType, WaypointDescriptor } from '@flybywiresim/fbw-sdk';
+import {
+  AltitudeConstraint,
+  AltitudeDescriptor,
+  LegType,
+  MagVar,
+  NXUnits,
+  WaypointConstraintType,
+  WaypointDescriptor,
+} from '@flybywiresim/fbw-sdk';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
-import { FlightPlanLeg, isDiscontinuity, isLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { FlightPlanElement, FlightPlanLeg, isDiscontinuity, isLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { Column, FormatLine } from '../legacy/A320_Neo_CDU_Format';
+import { PseudoWaypoint } from '@fmgc/guidance/PseudoWaypoint';
 
 const Markers = {
   FPLN_DISCONTINUITY: ['---F-PLN DISCONTINUITY--'],
@@ -87,7 +95,17 @@ export class CDUFlightPlanPage {
       title.push(new Column(16, 'SEC'));
     }
 
-    const waypointsAndMarkers = [];
+    const waypointsAndMarkers: {
+      wp?: FlightPlanElement;
+      holdResumeExit?: FlightPlanLeg;
+      pwp?: PseudoWaypoint;
+      distanceFromLastLine?: number;
+      isActive?: boolean;
+      marker?: string[];
+      fpIndex: number;
+      inAlternate?: boolean;
+      inMissedApproach?: boolean;
+    }[] = [];
     const first = Math.max(0, targetPlan.fromLegIndex);
     let destinationAirportOffset = 0;
     let alternateAirportOffset = 0;
@@ -258,11 +276,9 @@ export class CDUFlightPlanPage {
       winI = winI % waypointsAndMarkers.length;
 
       const {
-        /** @type {import('fbw-a32nx/src/systems/fmgc/src/flightplanning/legs/FlightPlanLeg').FlightPlanElement} */
         wp,
         pwp,
         marker,
-        /** @type {import('fbw-a32nx/src/systems/fmgc/src/flightplanning/legs/FlightPlanLeg').FlightPlanElement} */
         holdResumeExit,
         fpIndex,
         inAlternate,
@@ -271,9 +287,6 @@ export class CDUFlightPlanPage {
         isActive,
       } = waypointsAndMarkers[winI];
 
-      const wpPrev = inAlternate
-        ? targetPlan.alternateFlightPlan.maybeElementAt(fpIndex - 1)
-        : targetPlan.maybeElementAt(fpIndex - 1);
       const wpNext = inAlternate
         ? targetPlan.alternateFlightPlan.maybeElementAt(fpIndex - 1)
         : targetPlan.maybeElementAt(fpIndex + 1);
@@ -281,18 +294,25 @@ export class CDUFlightPlanPage {
 
       // Bearing/Track
       let bearingTrack = '';
-      const maybeBearingTrackTo = pwp ? targetPlan.maybeElementAt(fpIndex) : wp;
-      const bearingTrackTo = maybeBearingTrackTo ? maybeBearingTrackTo : wpNext;
       switch (rowI) {
-        case 1: {
-          const trueBearing = SimVar.GetSimVarValue('L:A32NX_EFIS_L_TO_WPT_BEARING', 'Degrees');
-          if (isActive && trueBearing !== null && trueBearing >= 0) {
-            bearingTrack = `BRG${trueBearing.toFixed(0).padStart(3, '0')}\u00b0`;
+        case 1: // bearing from the aircraft to the TO WPT, if the second line is the TO WPT
+          // FIXME when SEC has preds linked with the active implemented, it should show BRG as well
+          if (forPlan === FlightPlanIndex.Active && fpIndex === targetPlan.activeLegIndex) {
+            const toWptBearing = SimVar.GetSimVarValue(
+              mcdu.isTrueRefMode ? 'L:A32NX_EFIS_L_TO_WPT_TRUE_BEARING' : 'L:A32NX_EFIS_L_TO_WPT_BEARING',
+              'Degrees',
+            );
+            if (isFinite(toWptBearing) && toWptBearing >= 0) {
+              bearingTrack = `BRG${toWptBearing.toFixed(0).padStart(3, '0')}${mcdu.isTrueRefMode ? 'T' : '°'}`;
+            }
           }
           break;
-        }
-        case 2:
-          bearingTrack = isDiscontinuity(wpPrev) ? '' : formatTrack(wpPrev, bearingTrackTo);
+        case 2: // outbound track of leg shown on row 2
+          if (wp && !isDiscontinuity(wp) && wp.type !== LegType.HM && wp.calculated?.outboundTrack !== undefined) {
+            const magVar = mcdu.isTrueRefMode ? null : wp.definition.magVar;
+            const track = MagVar.trueToMagnetic(wp.calculated.outboundTrack, magVar ?? 0);
+            bearingTrack = `TRK${track.toFixed(0).padStart(3, '0')}${magVar === null ? 'T' : '°'}`;
+          }
           break;
       }
 
@@ -1330,31 +1350,6 @@ function formatAltitudeOrLevel(mcdu: LegacyFmsPageInterface, alt: number, useTra
   return formatAlt(alt);
 }
 
-function formatTrack(from: FlightPlanLeg, to: { definition: { waypoint: { location: LatLongData }; type: string } }) {
-  // TODO: Does this show something for non-waypoint terminated legs?
-  if (
-    !from ||
-    !from.definition ||
-    !from.definition.waypoint ||
-    !from.definition.waypoint.location ||
-    !to ||
-    !to.definition ||
-    !to.definition.waypoint ||
-    to.definition.type === 'HM'
-  ) {
-    return '';
-  }
-
-  // FIXME shouldn't it be ppos magvar?
-  const magVar = MagVar.get(from.definition.waypoint.location);
-  const tr = Avionics.Utils.computeGreatCircleHeading(
-    from.definition.waypoint.location,
-    to.definition.waypoint.location,
-  );
-  const track = MagVar.trueToMagnetic(tr, magVar ?? 0);
-  return `TRK${track.toFixed(0).padStart(3, '0')}${magVar === null ? 'T' : '°'}`;
-}
-
 /**
  * Formats a numberical altitude to a string to be displayed in the altitude column. Does not format FLs, use {@link formatAltitudeOrLevel} for this purpose
  * @param alt The altitude to format
@@ -1364,11 +1359,7 @@ function formatAlt(alt: number): string {
   return (Math.round(alt / 10) * 10).toFixed(0);
 }
 
-function formatAltConstraint(
-  mcdu: LegacyFmsPageInterface,
-  constraint: { altitudeDescriptor: AltitudeDescriptor; altitude1: number; altitude2: number },
-  useTransAlt: boolean,
-) {
+function formatAltConstraint(mcdu: LegacyFmsPageInterface, constraint: AltitudeConstraint, useTransAlt: boolean) {
   if (!constraint) {
     return '';
   }

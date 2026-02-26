@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -554,10 +554,10 @@ export class Geometry {
   }
 
   /**
-   * Calculate leg distances and cumulative distances for all flight plan legs
+   * Updates the Calculated data like leg distances and cumulative distances for all flight plan legs.
    * @param plan the flight plan
    */
-  updateDistances(plan: BaseFlightPlan, fromIndex: number, toIndex: number): void {
+  updateCalculatedData(plan: BaseFlightPlan, fromIndex: number, toIndex: number): void {
     let cumulativeDistance = 0;
     let cumulativeDistanceWithTransitions = 0;
 
@@ -569,7 +569,7 @@ export class Geometry {
       const geometryLeg = this.legs.get(i);
 
       if (i === fromIndex || i === plan.firstMissedApproachLegIndex) {
-        this.initializeCalculatedDistances(flightPlanLeg, geometryLeg);
+        this.initializeCalculatedData(flightPlanLeg, geometryLeg);
       } else if (flightPlanLeg.isDiscontinuity === true) {
         const directDistance = this.computeDistanceInDiscontinuity(i);
 
@@ -594,7 +594,7 @@ export class Geometry {
         cumulativeDistanceWithTransitions += distanceWithTransitions;
 
         if (!flightPlanLeg.calculated) {
-          this.initializeCalculatedDistances(flightPlanLeg, geometryLeg);
+          this.initializeCalculatedData(flightPlanLeg, geometryLeg);
         }
 
         flightPlanLeg.calculated.distance = distance;
@@ -603,6 +603,7 @@ export class Geometry {
         flightPlanLeg.calculated.cumulativeDistanceWithTransitions = cumulativeDistanceWithTransitions;
         flightPlanLeg.calculated.cumulativeDistanceToEnd = undefined;
         flightPlanLeg.calculated.cumulativeDistanceToEndWithTransitions = undefined;
+        flightPlanLeg.calculated.outboundTrack = geometryLeg.outboundCourse;
 
         geometryLeg.calculated = flightPlanLeg.calculated;
       }
@@ -612,7 +613,7 @@ export class Geometry {
     this.reflowDistancesToEnd(plan, cumulativeDistance, cumulativeDistanceWithTransitions, fromIndex, toIndex);
   }
 
-  private initializeCalculatedDistances(flightPlanLeg: FlightPlanElement, geometryLeg: Leg) {
+  private initializeCalculatedData(flightPlanLeg: FlightPlanElement, geometryLeg: Leg) {
     if (flightPlanLeg.isDiscontinuity === true) {
       return;
     }
@@ -627,6 +628,7 @@ export class Geometry {
         cumulativeDistanceToEnd: undefined,
         cumulativeDistanceToEndWithTransitions: undefined,
         endsInTooSteepPath: false,
+        outboundTrack: undefined,
       };
     }
     flightPlanLeg.calculated.distance = 0;
