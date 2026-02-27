@@ -2156,23 +2156,28 @@ export class FmcAircraftInterface {
     }
   }
 
-  calculateFinalAndAlternateFuel() {
-    const fp = this.flightPlanService.active;
-    const pd = fp.performanceData;
-
-    //FIX ME. All these should be derived from VNAV predictions
-    // Calculate alternate fuel
-    pd.calculatedAlternateFuel.set(fp.alternateDestinationAirport !== undefined ? 6.5 : 0);
-
-    // Calculate final fuel.
-    if (pd.isFinalHoldingFuelPilotEntered.get()) {
-      const finalFuel = pd.pilotFinalHoldingFuel.get();
-      pd.calculatedFinalHoldingTime.set(finalFuel !== null ? finalFuel / 0.2 : null);
-      pd.calculatedFinalHoldingFuel.set(null);
-    } else {
-      pd.calculatedFinalHoldingTime.set(null);
-      const finalTime = pd.finalHoldingTime.get();
-      pd.calculatedFinalHoldingFuel.set(finalTime !== null ? finalTime * 0.2 : null);
+  calculateFinalAndAlternateFuel(fpIndex = FlightPlanIndex.Active) {
+    const fpExists = this.flightPlanService.has(fpIndex);
+    if (fpExists) {
+      const fp = this.flightPlanService.get(fpIndex);
+      const pd = fp.performanceData;
+      const hasAlternate = fp.alternateDestinationAirport !== undefined;
+      //FIX ME. All these should be derived from VNAV predictions
+      // Calculate alternate fuel
+      pd.calculatedAlternateFuel.set(hasAlternate ? 6.5 : 0);
+      if (!hasAlternate) {
+        pd.pilotAlternateFuel.set(null);
+      }
+      // Calculate final fuel.
+      if (pd.isFinalHoldingFuelPilotEntered.get()) {
+        const finalFuel = pd.pilotFinalHoldingFuel.get();
+        pd.calculatedFinalHoldingTime.set(finalFuel !== null ? finalFuel / 0.2 : null);
+        pd.calculatedFinalHoldingFuel.set(null);
+      } else {
+        pd.calculatedFinalHoldingTime.set(null);
+        const finalTime = pd.finalHoldingTime.get();
+        pd.calculatedFinalHoldingFuel.set(finalTime !== null ? finalTime * 0.2 : null);
+      }
     }
   }
 }

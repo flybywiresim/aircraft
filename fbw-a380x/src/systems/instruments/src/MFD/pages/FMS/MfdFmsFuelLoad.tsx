@@ -218,6 +218,8 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
           }
 
           const loadedfpIndex = this.loadedFlightPlanIndex.get();
+          // FIXME: Move to main update loop once calculated by the predictions
+          this.props.fmcService.master.acInterface.calculateFinalAndAlternateFuel(loadedfpIndex);
           const fp = this.props.flightPlanInterface.get(loadedfpIndex);
           this.alternateExists.set(fp.alternateDestinationAirport !== undefined);
           const pd = this.loadedFlightPlan!.performanceData;

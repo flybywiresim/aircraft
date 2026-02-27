@@ -739,7 +739,6 @@ export interface SerializedFlightPlanPerformanceData {
   estimatedTakeoffTimeExpired: boolean | null;
   // A380 specific
   paxNumber?: number | null;
-  jettisonGrossWeight?: number | null;
   takeoffPowerSetting?: TakeoffPowerSetting | null;
   takeoffDeratedSetting?: TakeoffDerated | null;
   takeoffThsFor?: number | null;

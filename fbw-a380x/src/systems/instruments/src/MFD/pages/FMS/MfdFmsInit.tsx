@@ -292,6 +292,8 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
 
       if (this.loadedFlightPlanIndex.get() === FlightPlanIndex.Active) {
         this.props.fmcService.master.acInterface.updateFmsData();
+        // Update once as the new flight plan has been created as we need these for MIN DEST EFOB in active.
+        this.props.fmcService.master.acInterface.calculateFinalAndAlternateFuel(this.loadedFlightPlanIndex.get());
       }
     }
   }

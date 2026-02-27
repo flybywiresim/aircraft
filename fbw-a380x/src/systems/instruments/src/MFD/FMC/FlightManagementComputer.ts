@@ -1350,7 +1350,6 @@ export class FlightManagementComputer implements FmcInterface {
         this.acInterface.updatePerformanceData();
         this.acInterface.updatePerfSpeeds();
         this.acInterface.updateWeights();
-        this.acInterface.calculateFinalAndAlternateFuel();
         this.acInterface.toSpeedsChecks();
         this.acInterface.checkForStepClimb();
         this.acInterface.checkTooSteepPath();
