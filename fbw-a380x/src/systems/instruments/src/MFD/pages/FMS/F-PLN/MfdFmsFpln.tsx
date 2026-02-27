@@ -122,19 +122,20 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     this.loadedFlightPlanIndex,
   );
 
-  private readonly destEfobUnitVisiblity = this.destEfobNotAvailableAndInActive.map((v) => (v ? 'hidden' : 'visible'));
+  private readonly destEfobUnitVisiblity = this.destEfob.map((v) => (v == null ? 'hidden' : 'visible'));
 
   private readonly distanceToDest = Subject.create<number | null>(null);
 
   private readonly distanceToDestLabel = this.distanceToDest.map((v) => (v !== null ? v.toFixed(0) : '----'));
 
-  private readonly distanceToDestNotAvail = MappedSubject.create(
-    ([tmpy, distance]) => !tmpy && distance == null,
+  private readonly distanceToDestNotAvailInActive = MappedSubject.create(
+    ([tmpy, distance, fpIndex]) => !tmpy && distance == null && fpIndex === FlightPlanIndex.Active,
     this.tmpyActive,
     this.distanceToDest,
+    this.loadedFlightPlanIndex,
   );
 
-  private readonly distanceToDestUnitVisibility = this.distanceToDestNotAvail.map((v) => (v ? 'hidden' : 'visible'));
+  private readonly distanceToDestUnitVisibility = this.distanceToDest.map((v) => (v == null ? 'hidden' : 'visible'));
 
   private readonly displayFplnFromLineIndex = Subject.create<number>(0);
 
@@ -192,6 +193,8 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
   private readonly destEfobAmber = Subject.create(false);
 
+  private readonly isActiveFlightPlan = this.loadedFlightPlanIndex.map((idx) => idx === FlightPlanIndex.Active);
+
   protected onNewData(): void {
     if (!this.loadedFlightPlan) {
       return;
@@ -225,28 +228,35 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     this.lastRenderedActiveLegIndex = this.loadedFlightPlan.activeLegIndex ?? null;
     this.lastRenderedFpVersion = this.loadedFlightPlan.version ?? null;
     this.lastRenderedDisplayLineIndex = this.displayFplnFromLineIndex.get();
+    const hasDestination = this.loadedFlightPlan.destinationAirport !== undefined;
 
-    if (this.loadedFlightPlan.destinationAirport) {
+    if (hasDestination) {
       this.destNotLoaded.set(false);
       if (this.loadedFlightPlan.destinationRunway) {
         this.destButtonLabel.set(
           `${this.loadedFlightPlan.destinationRunway.airportIdent}${this.loadedFlightPlan.destinationRunway.ident.substring(4)}`,
         );
       } else {
-        this.destButtonLabel.set(this.loadedFlightPlan.destinationAirport.ident);
+        this.destButtonLabel.set(this.loadedFlightPlan.destinationAirport!.ident);
       }
     } else {
       this.destNotLoaded.set(true);
       this.destButtonLabel.set('------');
     }
+    const loadedFpIndex = this.loadedFlightPlanIndex.get();
 
-    const destPred = this.props.fmcService?.master?.guidanceController?.vnavDriver?.getDestinationPrediction();
+    // TODO SEC predictions
+    const destPred =
+      loadedFpIndex === FlightPlanIndex.Active
+        ? this.props.fmcService?.master?.guidanceController?.vnavDriver?.getDestinationPrediction()
+        : null;
 
-    const distanceToDestination =
-      this.props.fmcService.master.fmgc?.guidanceController?.getAlongTrackDistanceToDestination(FlightPlanIndex.Active);
+    const distanceToDestination = hasDestination
+      ? this.props.fmcService.master.fmgc?.guidanceController?.getAlongTrackDistanceToDestination(loadedFpIndex)
+      : undefined;
     this.distanceToDest.set(distanceToDestination ?? null);
 
-    if (destPred && this.props.fmcService.master && this.loadedFlightPlanIndex.get() < FlightPlanIndex.Uplink) {
+    if (destPred) {
       this.destEfobAmber.set(this.props.fmcService.master.fmgc.data.destEfobBelowMinInActive.get());
       this.destTime.set(new Date(this.predictionTimestamp(destPred.secondsFromPresent)));
       this.destEfob.set(destPred.estimatedFuelOnBoard ?? null);
@@ -773,8 +783,15 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       this.showInitButton,
       this.destTimeNotAvailAndInActive,
       this.destEfobNotAvailableAndInActive,
-      this.distanceToDestNotAvail,
+      this.destEfobUnitVisiblity,
+      this.distanceToDestNotAvailInActive,
       this.distanceToDestUnitVisibility,
+      this.isActiveFlightPlan,
+      this.activeFlightPhase,
+      this.flightplanTimeHeader,
+      this.destTimeLabel,
+      this.destEfobLabel,
+      this.distanceToDestLabel,
     );
   }
 
@@ -1031,7 +1048,10 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 />
               }
               componentIfTrue={
-                <span class="mfd-label mfd-fms-green-text" style={'width:150px; margin-right:5 px'}>
+                <span
+                  class={{ 'mfd-label': true, 'mfd-fms-green-text': this.isActiveFlightPlan }}
+                  style={'width:150px; margin-right:5 px'}
+                >
                   --------
                 </span>
               }
@@ -1066,7 +1086,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 class={{
                   'mfd-label': true,
                   'mfd-fms-yellow-text': this.lineColorIsTemporary,
-                  'mfd-fms-green-text': this.distanceToDestNotAvail,
+                  'mfd-fms-green-text': this.distanceToDestNotAvailInActive,
                 }}
               >
                 {this.distanceToDestLabel}
