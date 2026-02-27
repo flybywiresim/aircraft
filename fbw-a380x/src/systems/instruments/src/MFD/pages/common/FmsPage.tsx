@@ -198,7 +198,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
             this.props.flightPlanInterface.hasTemporary ? FlightPlanIndex.Temporary : FlightPlanIndex.Active,
           );
           this.tmpyActive.set(this.props.flightPlanInterface.hasTemporary ?? false);
-        } else if (activeUri.page === 'init') {
+        } else if (activeUri.page === initPage) {
           // Flight plan might not have been created yet
           this.loadedFlightPlanIndex.set(FlightPlanIndex.Active);
         }
@@ -212,7 +212,8 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
           ).alternateFlightPlan;
           this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary);
           this.tmpyActive.set(false);
-        } else if (activeUri.page === 'init') {
+        } else if (activeUri.page === initPage) {
+          // TODO this should also handle fpln page case but we don't support operations from PPOS yet.
           // Flight plan might not have been created yet
           this.props.flightPlanInterface.secondaryInit(1);
           this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary);
@@ -227,7 +228,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
           ).alternateFlightPlan;
           this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary + 1);
           this.tmpyActive.set(false);
-        } else if (activeUri.page === 'init') {
+        } else if (activeUri.page === initPage) {
           // Flight plan might not have been created yet
           this.props.flightPlanInterface.secondaryInit(2);
           this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary + 1);
@@ -242,7 +243,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
           ).alternateFlightPlan;
           this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary + 2);
           this.tmpyActive.set(false);
-        } else if (activeUri.page === 'init') {
+        } else if (activeUri.page === initPage) {
           // Flight plan might not have been created yet
           this.props.flightPlanInterface.secondaryInit(3);
           this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary + 2);

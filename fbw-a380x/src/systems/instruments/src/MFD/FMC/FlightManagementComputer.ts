@@ -577,14 +577,15 @@ export class FlightManagementComputer implements FmcInterface {
    * @returns the route reserve fuel in kg, or null if it cannot be calculated due to missing data.
    */
   public getRouteReserveFuel(forPlan = FlightPlanIndex.Active, tripFuel?: number | null): number | null {
-    const trip = tripFuel ?? this.getTripFuel(forPlan);
-    if (trip !== null) {
-      const pd = this.flightPlanInterface.get(forPlan).performanceData;
-      const pilotEntry = pd.pilotRouteReserveFuel.get();
-      if (pilotEntry !== null) {
-        return pilotEntry * 1000;
-      } else {
-        return pd.routeReserveFuelPercentage.get() !== null ? trip * (pd.routeReserveFuelPercentage.get() / 100) : null;
+    const pd = this.flightPlanInterface.get(forPlan).performanceData;
+    const pilotEntry = pd.pilotRouteReserveFuel.get();
+    if (pilotEntry !== null) {
+      return pilotEntry * 1000;
+    } else {
+      const trip = tripFuel ?? this.getTripFuel(forPlan);
+      if (trip !== null) {
+        const rteReservePercentage = pd.routeReserveFuelPercentage.get();
+        return rteReservePercentage !== null ? trip * (rteReservePercentage / 100) : null;
       }
     }
     return null;
