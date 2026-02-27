@@ -78,8 +78,7 @@
 1. [FMS] Fixed incorrect course for enroute holds and direct tos - @tracernz (Mike)
 1. [FMS] Show true bearings correctly in various FMS pages on the MCDU/MFD - @tracernz (Mike)
 1. [A380X/FWS] Improve various ABN SENSED procedure accuracy - @Jonny23787 (Jonathan)
-1. [A32NX/FMS] Add pilot entry ETT (Estimated Takeoff Time) functionality  - @BravoMike99 
-(bruno_pt99)
+1. [A32NX/FMS] Add pilot entry ETT (Estimated Takeoff Time) functionality  - @BravoMike99 (bruno_pt99)
 1. [A380X/RMP] Fixed interphone volume knob light not illuminating when selected on - @matze-tech (matze2346)
 
 ## 0.14.0
