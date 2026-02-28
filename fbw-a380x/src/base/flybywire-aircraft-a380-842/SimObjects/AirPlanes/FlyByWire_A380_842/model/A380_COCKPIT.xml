@@ -4277,40 +4277,21 @@
                                 <TOOLTIPID>%((L:A32NX_RCDR_GROUND_CONTROL_ON, Bool))%{if}Set Ground
                                     Control to AUTO%{else}Turn ON Ground Control%{end}</TOOLTIPID>
                             </UseTemplate>
-                            <UseTemplate Name="FBW_Push_Held">
-                                <NODE_ID>PUSH_OVHD_RCDR_ERASE</NODE_ID>
-                                <TOOLTIPID>Erase CVR</TOOLTIPID>
-                            </UseTemplate>
-                            <UseTemplate Name="FBW_Push_Held">
-                                <NODE_ID>PUSH_OVHD_RCDR_TEST</NODE_ID>
-                                <PART_ID>PUSH_OVHD_RCDR_TEST</PART_ID>
-                                <HOLD_SIMVAR>L:A32NX_RCDR_TEST</HOLD_SIMVAR>
-                                <TOOLTIPID>Test CVR</TOOLTIPID>
-                            </UseTemplate>
                         </Component>
 
                         <Component ID="REMOTEGNDCTRL">
-                            <UseTemplate Name="FBW_CVR_Ground_Control_Pushbutton">
+                            <UseTemplate Name="FBW_Push_Toggle">
                                 <NODE_ID>PUSH_OVHD_REMO_GNDCTL</NODE_ID>
-                                <PART_ID>PUSH_OVHD_RCDR_GNDCTL</PART_ID>
+                                <TOGGLE_SIMVAR>L:A380X_REMOTE_CB_CTRL</TOGGLE_SIMVAR>
+                                <DOWN_CODE>(L:A380X_REMOTE_CB_CTRL, Bool)</DOWN_CODE>
                                 <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                                <SEQ2_CODE>(L:A32NX_RCDR_GROUND_CONTROL_ON, Bool)</SEQ2_CODE>
+                                <SEQ2_CODE>(L:A380X_REMOTE_CB_CTRL, Bool)</SEQ2_CODE>
                                 <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
                                 <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                                 <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                                 <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                                <TOOLTIPID>%((L:A32NX_RCDR_GROUND_CONTROL_ON, Bool))%{if}Set Ground
-                                    Control to AUTO%{else}Turn ON Ground Control%{end}</TOOLTIPID>
-                            </UseTemplate>
-                            <UseTemplate Name="FBW_Push_Held">
-                                <NODE_ID>PUSH_OVHD_RCDR_ERASE</NODE_ID>
-                                <TOOLTIPID>Erase CVR</TOOLTIPID>
-                            </UseTemplate>
-                            <UseTemplate Name="FBW_Push_Held">
-                                <NODE_ID>PUSH_OVHD_RCDR_TEST</NODE_ID>
-                                <PART_ID>PUSH_OVHD_RCDR_TEST</PART_ID>
-                                <HOLD_SIMVAR>L:A32NX_RCDR_TEST</HOLD_SIMVAR>
-                                <TOOLTIPID>Test CVR</TOOLTIPID>
+                                <TOOLTIPID>%((L:A380X_REMOTE_CB_CTRL, Bool))%{if}Turn off the remote
+                                    C/B Controller%{else}Turn ON the remote C/B Controller%{end}</TOOLTIPID>
                             </UseTemplate>
                         </Component>
 
