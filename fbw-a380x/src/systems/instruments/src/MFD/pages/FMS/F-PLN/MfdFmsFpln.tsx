@@ -730,7 +730,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       this.displayFplnFromLineIndex.sub((_) => {
         this.onNewData();
         this.checkScrollButtons();
-      }),
+      }, true),
     );
 
     this.subs.push(
