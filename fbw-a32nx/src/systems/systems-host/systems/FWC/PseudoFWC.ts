@@ -614,11 +614,31 @@ export class PseudoFWC {
 
   private readonly gen1FaultWarning = Subject.create(false);
 
+  private readonly gen1CycleMemoryNode = new NXLogicMemoryNode(false);
+
   private readonly gen1PbOffConfirmNode = new NXLogicConfirmNode(5, true);
+
+  private readonly gen1PbNotOffPulseNode = new NXLogicPulseNode(true);
 
   private readonly gen1PbOffOut = Subject.create(false);
 
   private readonly gen1OffOut = Subject.create(false);
+
+  private readonly gen2Inop = Subject.create(false);
+
+  private readonly gen2FaultMemory = new NXLogicMemoryNode(false);
+
+  private readonly engine2OnFor15s = new NXLogicConfirmNode(15, true);
+
+  private readonly gen2LineContactorOffAndEngineRunningConfirmNode = new NXLogicConfirmNode(5.5, true);
+
+  private readonly gen2LineContactorNotOffFor2s = new NXLogicConfirmNode(2, true);
+
+  private readonly gen2FaultWarning = Subject.create(false);
+
+  private readonly gen2CycleMemoryNode = new NXLogicMemoryNode(false);
+
+  private readonly gen2PbNotOffPulseNode = new NXLogicPulseNode(true);
 
   private readonly gen2PbOffConfirmNode = new NXLogicConfirmNode(5, true);
 
@@ -3146,15 +3166,27 @@ export class PseudoFWC {
     const gen2PbOff = this.sdac05010Word.bitValue(19);
 
     this.engine1OnFor15s.write(this.engine1N2Sup.get() && this.engine1Master.get(), deltaTime);
+    this.engine2OnFor15s.write(this.engine2N2Sup.get() && this.engine2Master.get(), deltaTime);
 
     const gen1LineContactorOff = this.sdac00201Word.bitValue(14);
+    const gen2LineContactorOff = this.sdac00210Word.bitValue(14);
+
+    this.gen1Inop.set(this.engine1OnFor15s.read() && gen1LineContactorOff);
+    this.gen2Inop.set(this.engine2OnFor15s.read() && gen2LineContactorOff);
 
     this.gen1FaultMemory.write(
       this.gen1LineContactorOffAndEngineRunningConfirmNode.write(
-        !(idg1Disconnected || gen1PbOff) && this.engine1OnFor15s.read() && gen1LineContactorOff,
+        !(idg1Disconnected || gen1PbOff) && this.gen1Inop.get(),
         deltaTime,
       ),
       this.gen1LineContactorNotOffFor2s.write(!gen1LineContactorOff, deltaTime) || this.flightPhase110.get(), // TODO: Check ELEC EMER and SMOKE
+    );
+    this.gen2FaultMemory.write(
+      this.gen2LineContactorOffAndEngineRunningConfirmNode.write(
+        !(idg2Disconnected || gen2PbOff) && this.gen2Inop.get(),
+        deltaTime,
+      ),
+      this.gen2LineContactorNotOffFor2s.write(!gen2LineContactorOff, deltaTime) || this.flightPhase110.get(), // TODO: Check ELEC EMER and SMOKE
     );
 
     const gen1PbOffFor5Seconds = this.gen1PbOffConfirmNode.write(gen1PbOff, deltaTime);
@@ -3167,12 +3199,10 @@ export class PseudoFWC {
     this.engine2RunningAndNotPhase6.write(!engine2NotRunning && !phase6, deltaTime);
 
     const gen1OffPart1 = gen1PbOffFor5Seconds && !(this.gen1FaultMemory.read() || idg1Disconnected);
-    const gen2OffPart1 = gen2PbOffFor5Seconds && !idg2Disconnected; // TODO: Check gen fault memory
+    const gen2OffPart1 = gen2PbOffFor5Seconds && !(this.gen2FaultMemory.read() || idg2Disconnected);
 
     const gen1NotOperatingBase = this.gen1FaultMemory.read() || this.idg1DisconnectWarn.get();
-    const gen2NotOperatingBase =
-      !this.engine2Generator.get() || // TODO: Replace engine2Generator with fault memory
-      this.idg2DisconnectWarn.get();
+    const gen2NotOperatingBase = this.gen2FaultMemory.read() || this.idg2DisconnectWarn.get();
 
     const gen1OffConfirmOrPhase6 = this.engine1RunningAndNotPhase6.read() || phase6For60Seconds;
     const gen2OffConfirmOrPhase6 = this.engine2RunningAndNotPhase6.read() || phase6For60Seconds;
@@ -3201,12 +3231,23 @@ export class PseudoFWC {
 
     this.gen12NotOperatingPhase3Pulse.write(this.fwcFlightPhase.get() === 3 && this.gen12NotOperating.get(), deltaTime);
 
-    this.gen1FaultWarning.set(
-      this.gen1FaultMemory.read() &&
-        !(
-          this.gen12NotOperatingPhase3Pulse.read() ||
-          (gen12NotOperating && this.flightPhase29.get() && this.toConfigHalfSecondTriggeredNode.read())
-        ),
+    const gen1FaultPart2 =
+      this.gen12NotOperatingPhase3Pulse.read() ||
+      (gen12NotOperating && this.flightPhase29.get() && this.toConfigHalfSecondTriggeredNode.read());
+    const gen2FaultPart2 = gen1FaultPart2;
+
+    this.gen1FaultWarning.set(this.gen1FaultMemory.read() && !gen1FaultPart2);
+    this.gen1PbNotOffPulseNode.write(!gen1PbOff, deltaTime);
+    this.gen1CycleMemoryNode.write(
+      this.gen1FaultMemory.read() && this.gen1PbNotOffPulseNode.read(),
+      !this.gen1FaultMemory.read() || this.flightPhase110.get(),
+    );
+
+    this.gen2FaultWarning.set(this.gen2FaultMemory.read() && !gen2FaultPart2);
+    this.gen2PbNotOffPulseNode.write(!gen2PbOff, deltaTime);
+    this.gen2CycleMemoryNode.write(
+      this.gen2FaultMemory.read() && this.gen2PbNotOffPulseNode.read(),
+      !this.gen2FaultMemory.read() || this.flightPhase110.get(),
     );
 
     // Use fresh genNotOperating values for this cycle
@@ -4104,24 +4145,34 @@ export class PseudoFWC {
       // GEN 1 FAULT
       flightPhaseInhib: [1, 4, 5, 7, 8, 10],
       simVarIsActive: this.gen1FaultWarning,
-      whichCodeToReturn: () => [0, 1, 2, 3],
+      whichCodeToReturn: () => [
+        0,
+        !this.gen1CycleMemoryNode.read() ? 1 : null,
+        !this.sdac05001Word.bitValue(19) ? 2 : null,
+        !this.sdac05001Word.bitValue(19) ? 3 : null,
+      ],
       codesToReturn: ['240000101', '240000102', '240000103', '240000104'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: 3,
       side: 'LEFT',
     },
-    // 2400002: {
-    //   // GEN 2 FAULT
-    //   flightPhaseInhib: [1, 4, 5, 7, 8, 10],
-    //   simVarIsActive: this.gen2FaultWarning,
-    //   whichCodeToReturn: () => [0, 1, 2, 3],
-    //   codesToReturn: ['240000201', '240000202', '240000203', '240000204'],
-    //   memoInhibit: () => false,
-    //   failure: 2,
-    //   sysPage: 3,
-    //   side: 'LEFT',
-    // },
+    2400002: {
+      // GEN 2 FAULT
+      flightPhaseInhib: [1, 4, 5, 7, 8, 10],
+      simVarIsActive: this.gen2FaultWarning,
+      whichCodeToReturn: () => [
+        0,
+        !this.gen2CycleMemoryNode.read() ? 1 : null,
+        !this.sdac05010Word.bitValue(19) ? 2 : null,
+        !this.sdac05010Word.bitValue(19) ? 3 : null,
+      ],
+      codesToReturn: ['240000201', '240000202', '240000203', '240000204'],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: 3,
+      side: 'LEFT',
+    },
     2400060: {
       // GEN 1 OFF
       flightPhaseInhib: [1, 4, 5, 7, 8, 10],
