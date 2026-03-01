@@ -187,17 +187,16 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
 
   protected onFlightPlanChanged() {
     const activeUri = this.props.mfd.uiService.activeUri.get();
+    const hasTmpy = this.props.flightPlanInterface.hasTemporary;
     switch (activeUri.category) {
       case 'active':
-        if (this.props.flightPlanInterface.hasActive || this.props.flightPlanInterface.hasTemporary) {
+        if (this.props.flightPlanInterface.hasActive || hasTmpy) {
           this.loadedFlightPlan = this.props.flightPlanInterface.activeOrTemporary ?? null;
           this.loadedAlternateFlightPlan = this.props.flightPlanInterface.get(
-            this.props.flightPlanInterface.hasTemporary ? FlightPlanIndex.Temporary : FlightPlanIndex.Active,
+            hasTmpy ? FlightPlanIndex.Temporary : FlightPlanIndex.Active,
           ).alternateFlightPlan;
-          this.loadedFlightPlanIndex.set(
-            this.props.flightPlanInterface.hasTemporary ? FlightPlanIndex.Temporary : FlightPlanIndex.Active,
-          );
-          this.tmpyActive.set(this.props.flightPlanInterface.hasTemporary ?? false);
+          this.loadedFlightPlanIndex.set(hasTmpy ? FlightPlanIndex.Temporary : FlightPlanIndex.Active);
+          this.tmpyActive.set(hasTmpy ?? false);
         } else if (activeUri.page === initPage) {
           // Flight plan might not have been created yet
           this.loadedFlightPlanIndex.set(FlightPlanIndex.Active);
@@ -213,10 +212,12 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
           this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary);
           this.tmpyActive.set(false);
         } else if (activeUri.page === initPage) {
-          // TODO this should also handle fpln page case but we don't support operations from PPOS yet.
-          // Flight plan might not have been created yet
-          this.props.flightPlanInterface.secondaryInit(1);
           this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary);
+        } else {
+          // If sec has been deleted, navigate to equivelant active page and load the active or tmpy.
+          this.loadedFlightPlanIndex.set(hasTmpy ? FlightPlanIndex.Temporary : FlightPlanIndex.Active);
+          this.props.mfd.uiService.navigateTo(activeUri.uri.replace('sec1', 'active'));
+          return;
         }
         this.secActive.set(true);
         break;
@@ -229,9 +230,11 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
           this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary + 1);
           this.tmpyActive.set(false);
         } else if (activeUri.page === initPage) {
-          // Flight plan might not have been created yet
-          this.props.flightPlanInterface.secondaryInit(2);
           this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary + 1);
+        } else {
+          this.loadedFlightPlanIndex.set(hasTmpy ? FlightPlanIndex.Temporary : FlightPlanIndex.Active);
+          this.props.mfd.uiService.navigateTo(activeUri.uri.replace('sec2', 'active'));
+          return;
         }
         this.secActive.set(true);
         break;
@@ -244,20 +247,21 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
           this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary + 2);
           this.tmpyActive.set(false);
         } else if (activeUri.page === initPage) {
-          // Flight plan might not have been created yet
-          this.props.flightPlanInterface.secondaryInit(3);
           this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary + 2);
+        } else {
+          this.loadedFlightPlanIndex.set(hasTmpy ? FlightPlanIndex.Temporary : FlightPlanIndex.Active);
+          this.props.mfd.uiService.navigateTo(activeUri.uri.replace('sec3', 'active'));
+          return;
         }
         this.secActive.set(true);
         break;
 
       default:
-        if (this.props.flightPlanInterface.hasActive || this.props.flightPlanInterface.hasTemporary) {
+        if (this.props.flightPlanInterface.hasActive || hasTmpy) {
           this.loadedFlightPlan = this.props.flightPlanInterface.activeOrTemporary ?? null;
           this.loadedAlternateFlightPlan =
-            this.props.flightPlanInterface.get(
-              this.props.flightPlanInterface.hasTemporary ? FlightPlanIndex.Temporary : FlightPlanIndex.Active,
-            ).alternateFlightPlan ?? null;
+            this.props.flightPlanInterface.get(hasTmpy ? FlightPlanIndex.Temporary : FlightPlanIndex.Active)
+              .alternateFlightPlan ?? null;
         }
         break;
     }

@@ -500,7 +500,10 @@ export class MfdFmsSecIndexTab extends DestroyableComponent<MfdFmsSecIndexTabPro
             />
             <Button
               label={'INIT'}
-              onClick={() => this.props.mfd.uiService.navigateTo(`${this.uriPrefix}/init`)}
+              onClick={() => {
+                this.props.flightPlanInterface.secondaryInit(this.secIndex);
+                this.props.mfd.uiService.navigateTo(`${this.uriPrefix}/init`);
+              }}
               buttonStyle="width: 160px; margin-top: 5px;"
               idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_sec${this.props.flightPlanIndex}index_init`}
             />
