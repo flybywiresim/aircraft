@@ -608,7 +608,7 @@ export class PseudoFWC {
 
   private readonly engine1OnFor15s = new NXLogicConfirmNode(15, true);
 
-  private readonly gen1LineContactorOffAndEngineRunningConfirmNode = new NXLogicConfirmNode(5.5, true);
+  private readonly gen1FaultSetConfirmNode = new NXLogicConfirmNode(5.5, true);
 
   private readonly gen1LineContactorNotOffFor2s = new NXLogicConfirmNode(2, true);
 
@@ -630,7 +630,7 @@ export class PseudoFWC {
 
   private readonly engine2OnFor15s = new NXLogicConfirmNode(15, true);
 
-  private readonly gen2LineContactorOffAndEngineRunningConfirmNode = new NXLogicConfirmNode(5.5, true);
+  private readonly gen2FaultSetConfirmNode = new NXLogicConfirmNode(5.5, true);
 
   private readonly gen2LineContactorNotOffFor2s = new NXLogicConfirmNode(2, true);
 
@@ -3176,17 +3176,11 @@ export class PseudoFWC {
     this.gen2Inop.set(this.engine2OnFor15s.read() && gen2LineContactorOff);
 
     this.gen1FaultMemory.write(
-      this.gen1LineContactorOffAndEngineRunningConfirmNode.write(
-        !(idg1Disconnected || gen1PbOff) && this.gen1Inop.get(),
-        deltaTime,
-      ),
+      this.gen1FaultSetConfirmNode.write(!(idg1Disconnected || gen1PbOff) && this.gen1Inop.get(), deltaTime),
       this.gen1LineContactorNotOffFor2s.write(!gen1LineContactorOff, deltaTime) || this.flightPhase110.get(), // TODO: Check ELEC EMER and SMOKE
     );
     this.gen2FaultMemory.write(
-      this.gen2LineContactorOffAndEngineRunningConfirmNode.write(
-        !(idg2Disconnected || gen2PbOff) && this.gen2Inop.get(),
-        deltaTime,
-      ),
+      this.gen2FaultSetConfirmNode.write(!(idg2Disconnected || gen2PbOff) && this.gen2Inop.get(), deltaTime),
       this.gen2LineContactorNotOffFor2s.write(!gen2LineContactorOff, deltaTime) || this.flightPhase110.get(), // TODO: Check ELEC EMER and SMOKE
     );
 
