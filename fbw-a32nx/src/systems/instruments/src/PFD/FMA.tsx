@@ -92,7 +92,7 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus; isAttExcessive: 
 
   private autobrakeMode = Subject.create(0);
 
-  private autobrakeActive = Subject.create(false);
+  private readonly autobrakeActive = Subject.create(false);
 
   private BC3Message = MappedSubject.create(
     ([isAttExcessive, fmgcDiscreteWord7, setHoldSpeed, fcdcDiscreteWord1, fwcFlightPhase, tdReached, checkSpeedMode]) =>
