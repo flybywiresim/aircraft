@@ -13,10 +13,10 @@
 }
 
 :root {
-  --main-display-colour: hsl(36, 100%, 45%);
-  --main-display-colour-inactive: hsl(53, 82%, 0%);
+  --main-display-colour: hsl(72, 96%, 45%);
+  --main-display-colour-inactive: hsl(270, 33%, 1%);
   --main-background-opacity: 0;
-  --main-text-shadow-colour: rgba(207, 110, 0, 0);
+  --main-text-shadow-colour: #b4e20500;
 
   // text-shadow places the shadow in the wrong position, seems to be a coherent bug,
   // so this remains commented out for now.
@@ -51,15 +51,15 @@ text.Inactive {
 
 text.Value {
   font-family: Digital;
-  font-size: 110px;
+  font-size: 117px;
   text-anchor: start;
   fill: var(--main-display-colour);
-  letter-spacing: 0px;
+  letter-spacing: -12px;
 }
 
 line {
   stroke: var(--main-display-colour);
-  stroke-width: 7;
+  stroke-width: 8;
 }
 
 circle {
