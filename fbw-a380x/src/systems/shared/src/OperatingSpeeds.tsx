@@ -424,6 +424,7 @@ export class A380OperatingSpeeds {
   /**
    * Computes Vs, Vls, Vapp, F, S and GD
    * @param m mass: gross weight in kg
+   * @param cg gross weight cg in % MAC
    * @param calibratedAirSpeed CAS in kt
    * @param fPos flaps position
    * @param fmgcFlightPhase sic
@@ -433,6 +434,7 @@ export class A380OperatingSpeeds {
    */
   constructor(
     m: number,
+    cg: number,
     calibratedAirSpeed: number,
     fPos: number,
     fmgcFlightPhase: FmgcFlightPhase,
@@ -441,8 +443,6 @@ export class A380OperatingSpeeds {
     wind: Knots = 0,
     ignoreSpoilers = false,
   ) {
-    const cg = SimVar.GetSimVarValue('L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC', 'number');
-
     if (fPos === 0) {
       this.vls = SpeedsLookupTables.VLS_CONF_0.get(altitude, m);
       this.vmax = getVmo();
@@ -591,37 +591,18 @@ export class A380SpeedsUtils {
    * Get Vs1g for the given config
    *
    * @param {number} mass mass of the aircraft in kg
+   * @param {number} cg cg % MAC of the aircraft
    * @param {number} conf 0 - CONF 1, 1 - CONF 1, 2 - CONF 1+F, 3 - CONF 2, 4 - CONF 3, 5 - CONF FULL.
    * @param {boolean} takeof if VS1g should be calculated for takeoff
    */
-  static getVs1g(mass: number, conf: number, takeoff: boolean): Knots {
+  static getVs1g(mass: number, cg: number, conf: number, takeoff: boolean): Knots {
     // FIXME rough, dirty hack
     if (takeoff === true) {
-      return (
-        SpeedsLookupTables.getApproachVls(
-          conf,
-          SimVar.GetSimVarValue('L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC', 'number'),
-          mass,
-        ) / 1.15
-      );
+      return SpeedsLookupTables.getApproachVls(conf, cg, mass) / 1.15;
     }
     if (conf === 5) {
-      return Math.max(
-        SpeedsLookupTables.getApproachVls(
-          conf,
-          SimVar.GetSimVarValue('L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC', 'number'),
-          mass,
-        ) / 1.18,
-        Vmcl,
-      );
+      return Math.max(SpeedsLookupTables.getApproachVls(conf, cg, mass) / 1.18, Vmcl);
     }
-    return Math.max(
-      SpeedsLookupTables.getApproachVls(
-        conf,
-        SimVar.GetSimVarValue('L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC', 'number'),
-        mass,
-      ) / 1.23,
-      Vmcl,
-    );
+    return Math.max(SpeedsLookupTables.getApproachVls(conf, cg, mass) / 1.23, Vmcl);
   }
 }

@@ -51,6 +51,8 @@ export class Atc {
 
   private handoverInterval: number = null;
 
+  private handoverTimeout: number = null;
+
   private handoverOngoing = false;
 
   private currentAtc = '';
@@ -514,15 +516,28 @@ export class Atc {
       return AtsuStatusCodes.SystemBusy;
     }
 
+    // Cancel any existing handover interval and timeout before starting a new one.
+    if (this.handoverInterval !== null) {
+      clearInterval(this.handoverInterval);
+      this.handoverInterval = null;
+    }
+
+    if (this.handoverTimeout !== null) {
+      clearTimeout(this.handoverTimeout);
+      this.handoverTimeout = null;
+    }
+
     return new Promise((resolve, _reject) => {
       // add an interval to check if all messages are answered or sent to ATC
       this.handoverInterval = window.setInterval(() => {
         if (!this.mailboxBus.openMessagesForStation(this.currentAtc)) {
-          clearInterval(this.handoverInterval);
-          this.handoverInterval = null;
+          if (this.handoverInterval !== null) {
+            clearInterval(this.handoverInterval);
+            this.handoverInterval = null;
+          }
 
           // add a timer to ensure that the last transmission is already received to avoid ATC software warnings
-          setTimeout(() => {
+          this.handoverTimeout = window.setTimeout(() => {
             if (this.currentAtc !== '') {
               this.logoffWithoutReset().then((code) => {
                 if (code !== AtsuStatusCodes.Ok) {
