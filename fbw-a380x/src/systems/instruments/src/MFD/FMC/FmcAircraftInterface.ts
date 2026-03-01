@@ -703,32 +703,25 @@ export class FmcAircraftInterface {
   }
 
   updateFmsData() {
-    const hasActivePlan = this.flightPlanService.hasActive;
-    const activeFlightPlan = this.flightPlanService.active;
+    const activeFlightPlan = this.flightPlanService.hasActive ? this.flightPlanService.active : null;
 
-    this.fmsOrigin.set(
-      hasActivePlan && activeFlightPlan?.originAirport?.ident ? activeFlightPlan.originAirport.ident : null,
-    );
+    this.fmsOrigin.set(activeFlightPlan?.originAirport?.ident ? activeFlightPlan.originAirport.ident : null);
 
-    this.fmsDepartureRunway.set(
-      hasActivePlan && activeFlightPlan?.originRunway?.ident ? activeFlightPlan.originRunway.ident : null,
-    );
+    this.fmsDepartureRunway.set(activeFlightPlan?.originRunway?.ident ? activeFlightPlan.originRunway.ident : null);
 
     this.fmsDestination.set(
-      hasActivePlan && activeFlightPlan?.destinationAirport?.ident ? activeFlightPlan.destinationAirport.ident : null,
+      activeFlightPlan?.destinationAirport?.ident ? activeFlightPlan.destinationAirport.ident : null,
     );
 
     this.fmsLandingRunway.set(
-      hasActivePlan && activeFlightPlan?.destinationRunway?.ident ? activeFlightPlan.destinationRunway.ident : null,
+      activeFlightPlan?.destinationRunway?.ident ? activeFlightPlan.destinationRunway.ident : null,
     );
 
     this.fmsAlternate.set(
-      hasActivePlan && activeFlightPlan?.alternateDestinationAirport?.ident
-        ? activeFlightPlan.alternateDestinationAirport.ident
-        : null,
+      activeFlightPlan?.alternateDestinationAirport?.ident ? activeFlightPlan.alternateDestinationAirport.ident : null,
     );
 
-    this.fmgc.data.atcCallsign.set(hasActivePlan && activeFlightPlan ? activeFlightPlan.flightNumber.get() : null);
+    this.fmgc.data.atcCallsign.set(activeFlightPlan?.flightNumber?.get() ?? null);
   }
 
   activatePreSelSpeedMach(preSel: number) {

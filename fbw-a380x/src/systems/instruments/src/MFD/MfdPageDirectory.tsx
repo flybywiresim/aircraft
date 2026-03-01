@@ -50,6 +50,7 @@ import {
   initPage,
   fixInfoUri,
   dirToUri,
+  secIndexPageUri,
 } from './shared/utils';
 import { MfdFmsSecIndex } from './pages/FMS/SEC/MfdFmsSecIndex';
 
@@ -198,7 +199,7 @@ export function pageForUrl(
           flightPlanInterface={fmcService.master.flightPlanInterface}
         />
       );
-    case 'fms/sec/index':
+    case secIndexPageUri:
       return (
         <MfdFmsSecIndex
           pageTitle="SEC INDEX"

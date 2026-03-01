@@ -170,7 +170,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
       }, true),
     );
 
-    this.onFlightPlanChanged();
+    this.onFlightPlanChanged(false);
     this.onNewDataChecks();
     this.onNewData();
     this.newDataIntervalId = setInterval(() => this.checkIfNewData(), 500);
@@ -185,7 +185,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
     }
   }
 
-  protected onFlightPlanChanged() {
+  protected onFlightPlanChanged(dueToEvent = true) {
     const activeUri = this.props.mfd.uiService.activeUri.get();
     const hasTmpy = this.props.flightPlanInterface.hasTemporary;
     switch (activeUri.category) {
@@ -212,8 +212,10 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
           this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary);
           this.tmpyActive.set(false);
         } else if (activeUri.page === initPage) {
+          this.loadedFlightPlan = null;
+          this.loadedAlternateFlightPlan = null;
           this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary);
-        } else {
+        } else if (dueToEvent) {
           // If sec has been deleted, navigate to equivelant active page and load the active or tmpy.
           this.loadedFlightPlanIndex.set(hasTmpy ? FlightPlanIndex.Temporary : FlightPlanIndex.Active);
           this.props.mfd.uiService.navigateTo(activeUri.uri.replace('sec1', 'active'));
@@ -230,8 +232,10 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
           this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary + 1);
           this.tmpyActive.set(false);
         } else if (activeUri.page === initPage) {
+          this.loadedFlightPlan = null;
+          this.loadedAlternateFlightPlan = null;
           this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary + 1);
-        } else {
+        } else if (dueToEvent) {
           this.loadedFlightPlanIndex.set(hasTmpy ? FlightPlanIndex.Temporary : FlightPlanIndex.Active);
           this.props.mfd.uiService.navigateTo(activeUri.uri.replace('sec2', 'active'));
           return;
@@ -247,8 +251,10 @@ export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPagePr
           this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary + 2);
           this.tmpyActive.set(false);
         } else if (activeUri.page === initPage) {
+          this.loadedFlightPlan = null;
+          this.loadedAlternateFlightPlan = null;
           this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary + 2);
-        } else {
+        } else if (dueToEvent) {
           this.loadedFlightPlanIndex.set(hasTmpy ? FlightPlanIndex.Temporary : FlightPlanIndex.Active);
           this.props.mfd.uiService.navigateTo(activeUri.uri.replace('sec3', 'active'));
           return;
