@@ -248,7 +248,7 @@ export class FmgcDataService implements Fmgc {
   getFOB(forPlan = FlightPlanIndex.Active): number | null {
     // TODO how does this work for secondary plans?
     const usefqms = this.isAnEngineOn();
-    let fob = usefqms
+    const fob = usefqms
       ? this.fqmsFob.get().valueOr(null)
       : this.flightPlanService.get(forPlan).performanceData.blockFuel.get();
     return fob !== null ? fob : null;

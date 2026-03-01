@@ -1475,15 +1475,6 @@ export class FmcAircraftInterface {
     }
 
     SimVar.SetSimVarValue('L:A32NX_FM_GROSS_WEIGHT', 'Number', gw ?? 0);
-
-    if (this.fmc.enginesWereStarted.get() && this.flightPhase.get() !== FmgcFlightPhase.Done) {
-      if (
-        this.fmc.flightPlanInterface.active.performanceData.blockFuel.get() !== null &&
-        this.fmc.flightPlanInterface.active.performanceData.blockFuel.get()! - this.fmc.fmgc.getFOB()! > 0.1
-      ) {
-        this.fmc.flightPlanInterface.active.setPerformanceData('blockFuel', this.fmc.fmgc.getFOB()!);
-      }
-    }
   }
 
   /**
