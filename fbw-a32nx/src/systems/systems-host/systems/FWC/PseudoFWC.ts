@@ -1618,23 +1618,26 @@ export class PseudoFWC {
   private readonly ir2FaultDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_2_FAULT_WARN_DISCRETE');
   private readonly ir3FaultDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_3_FAULT_WARN_DISCRETE');
 
-  private readonly xpdr1Status = RegisteredSimVar.create('A:TRANSPONDER STATE:1', SimVarValueType.Number);
-  private readonly xpdr2Status = RegisteredSimVar.create('A:TRANSPONDER STATE:2', SimVarValueType.Number);
+  private readonly xpdr1StatusVar = RegisteredSimVar.create('A:TRANSPONDER STATE:1', SimVarValueType.Number);
+  private readonly xpdr2StatusVar = RegisteredSimVar.create('A:TRANSPONDER STATE:2', SimVarValueType.Number);
 
   private acquireSdac(): void {
+    const xpdr1Status = this.xpdr1StatusVar.get();
+    const xpdr2Status = this.xpdr2StatusVar.get();
+
     this.sdac00100Word.set(0);
     this.sdac00100Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
     this.sdac00100Word.setBitValue(
       24,
-      this.xpdr1Status.get() === TransponderState.Off ||
-        this.xpdr1Status.get() === TransponderState.Standby ||
-        this.xpdr1Status.get() === TransponderState.Test,
+      xpdr1Status === TransponderState.Off ||
+        xpdr1Status === TransponderState.Standby ||
+        xpdr1Status === TransponderState.Test,
     );
     this.sdac00100Word.setBitValue(
       25,
-      this.xpdr2Status.get() === TransponderState.Off ||
-        this.xpdr2Status.get() === TransponderState.Standby ||
-        this.xpdr2Status.get() === TransponderState.Test,
+      xpdr2Status === TransponderState.Off ||
+        xpdr2Status === TransponderState.Standby ||
+        xpdr2Status === TransponderState.Test,
     );
 
     this.sdac00401Word.set(0);
