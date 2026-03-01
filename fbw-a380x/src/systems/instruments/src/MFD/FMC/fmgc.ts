@@ -207,8 +207,8 @@ export class FmgcDataService implements Fmgc {
 
   /** in tons */
   public getGrossWeight(forPlan = FlightPlanIndex.Active): number | null {
-    // Value received from FQMS, or falls back to entered ZFW + entered FOB
-
+    // Value received from FQMS, or falls back to entered ZFW + entered FOB.
+    // TODO how does this work for secondary plans?
     const fqmsGw = this.fqmsGw.get();
     if (fqmsGw.isNormalOperation()) {
       return fqmsGw.value / 1_000;
@@ -246,12 +246,10 @@ export class FmgcDataService implements Fmgc {
    * @returns fuel on board in tonnes (i.e. 1000 x kg)
    */
   getFOB(forPlan = FlightPlanIndex.Active): number | null {
-    // TODO how does this work for secondary plans?
     const usefqms = this.isAnEngineOn();
-    const fob = usefqms
+    return usefqms
       ? this.fqmsFob.get().valueOr(null)
       : this.flightPlanService.get(forPlan).performanceData.blockFuel.get();
-    return fob !== null ? fob : null;
   }
 
   /** in knots */
