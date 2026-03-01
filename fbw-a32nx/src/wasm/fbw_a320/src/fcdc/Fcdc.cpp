@@ -389,14 +389,14 @@ void Fcdc::computeActiveSystemLaws() {
 }
 
 void Fcdc::computeSidestickPriorityLights(double deltaTime) {
-  bool leftSidestickDisabledRoll;
-  bool rightSidestickDisabledRoll;
-  bool leftSidestickDisabledPitch;
-  bool rightSidestickDisabledPitch;
-  bool leftSidestickPriorityLockedRoll;
-  bool rightSidestickPriorityLockedRoll;
-  bool leftSidestickPriorityLockedPitch;
-  bool rightSidestickPriorityLockedPitch;
+  bool leftSidestickDisabledRoll = false;
+  bool rightSidestickDisabledRoll = false;
+  bool leftSidestickDisabledPitch = false;
+  bool rightSidestickDisabledPitch = false;
+  bool leftSidestickPriorityLockedRoll = false;
+  bool rightSidestickPriorityLockedRoll = false;
+  bool leftSidestickPriorityLockedPitch = false;
+  bool rightSidestickPriorityLockedPitch = false;
 
   // Compute if a sidestick has lost priority (per computer). Use the computer that is engaged in the respective axis.
   if (elac1EngagedInRoll) {
