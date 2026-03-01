@@ -638,9 +638,9 @@ export class PseudoFWC {
 
   private readonly gen2CycleMemoryNode = new NXLogicMemoryNode(false);
 
-  private readonly gen2PbNotOffPulseNode = new NXLogicPulseNode(true);
-
   private readonly gen2PbOffConfirmNode = new NXLogicConfirmNode(5, true);
+
+  private readonly gen2PbNotOffPulseNode = new NXLogicPulseNode(true);
 
   private readonly gen2PbOffOut = Subject.create(false);
 
