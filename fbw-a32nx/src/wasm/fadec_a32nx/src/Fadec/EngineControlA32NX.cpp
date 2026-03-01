@@ -890,12 +890,13 @@ void EngineControl_A32NX::updateFuel(double deltaTimeSeconds) {
     double fuelBurn2            = 0;
     double apuBurn1             = 0;
     double apuBurn2             = 0;
+    double apuFuelConsumption   = 0;
 
     //--------------------------------------------
     // Left Engine and Wing routine
     if (fuelLeftPre > 0) {
       // Cycle Fuel Burn for Engine 1
-      if (aircraftDevelopmentStateVar != 2) {
+      if (aircraftDevelopmentStateVar != 2 && msfsHandlerPtr->getPauseState() == 0) {
         fuelFlowRateChange   = (engine1FF - engine1PreFF) / deltaTimeHours;
         previousFuelFlowRate = engine1PreFF;
         fuelBurn1            = (fuelFlowRateChange * pow(deltaTimeHours, 2) / 2) + (previousFuelFlowRate * deltaTimeHours);  // KG
@@ -913,7 +914,7 @@ void EngineControl_A32NX::updateFuel(double deltaTimeSeconds) {
     // Right Engine and Wing routine
     if (fuelRightPre > 0) {
       // Cycle Fuel Burn for Engine 2
-      if (aircraftDevelopmentStateVar != 2) {
+      if (aircraftDevelopmentStateVar != 2 && msfsHandlerPtr->getPauseState() == 0) {
         fuelFlowRateChange   = (engine2FF - engine2PreFF) / deltaTimeHours;
         previousFuelFlowRate = engine2PreFF;
         fuelBurn2            = (fuelFlowRateChange * pow(deltaTimeHours, 2) / 2) + (previousFuelFlowRate * deltaTimeHours);  // KG
@@ -928,11 +929,8 @@ void EngineControl_A32NX::updateFuel(double deltaTimeSeconds) {
     }
 
     /// apu fuel consumption for this frame in pounds
-    double apuFuelConsumption = simData.simVarsDataPtr->data().apuFuelConsumption * weightLbsPerGallon * deltaTimeHours;
-
-    // check if APU is actually running instead of just the ASU which doesn't consume fuel
-    if (apuNpercent <= 0.0) {
-      apuFuelConsumption = 0.0;
+    if (aircraftDevelopmentStateVar != 2 && msfsHandlerPtr->getPauseState() == 0 || apuNpercent <= 0.0) {
+      apuFuelConsumption = simData.simVarsDataPtr->data().apuFuelConsumption * weightLbsPerGallon * deltaTimeHours;
     }
 
     apuBurn1 = apuFuelConsumption;
@@ -1052,8 +1050,8 @@ void EngineControl_A32NX::updateThrustLimits(double                  simulationT
   profilerUpdateThrustLimits.start();
 #endif
 
-  const double flexTemp      = simData.airlinerToFlexTemp->get();
-  const double pressAltitude = simData.simVarsDataPtr->data().pressureAltitude;
+  const double flexTemp        = simData.airlinerToFlexTemp->get();
+  const double pressAltitude   = simData.simVarsDataPtr->data().pressureAltitude;
   const double thrustLimitType = simData.thrustLimitType->get();
 
   if (!isTransitionActive && thrustLimitType != 3 /* FLEX */) {
@@ -1073,10 +1071,10 @@ void EngineControl_A32NX::updateThrustLimits(double                  simulationT
   to = ThrustLimits_A32NX::limitN1(0, (std::min)(16600.0, pressAltitude), ambientTemperature, ambientPressure, 0, packs, nai, wai);
   ga = ThrustLimits_A32NX::limitN1(1, (std::min)(16600.0, pressAltitude), ambientTemperature, ambientPressure, 0, packs, nai, wai);
   if (latchedFlexTemperature > 0) {
-    flex_to =
-        ThrustLimits_A32NX::limitN1(0, (std::min)(16600.0, pressAltitude), ambientTemperature, ambientPressure, latchedFlexTemperature, packs, nai, wai);
-    flex_ga =
-        ThrustLimits_A32NX::limitN1(1, (std::min)(16600.0, pressAltitude), ambientTemperature, ambientPressure, latchedFlexTemperature, packs, nai, wai);
+    flex_to = ThrustLimits_A32NX::limitN1(0, (std::min)(16600.0, pressAltitude), ambientTemperature, ambientPressure,
+                                          latchedFlexTemperature, packs, nai, wai);
+    flex_ga = ThrustLimits_A32NX::limitN1(1, (std::min)(16600.0, pressAltitude), ambientTemperature, ambientPressure,
+                                          latchedFlexTemperature, packs, nai, wai);
   }
   clb = ThrustLimits_A32NX::limitN1(2, pressAltitude, ambientTemperature, ambientPressure, 0, packs, nai, wai);
   mct = ThrustLimits_A32NX::limitN1(3, pressAltitude, ambientTemperature, ambientPressure, 0, packs, nai, wai);

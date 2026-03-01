@@ -4,7 +4,7 @@
 
 import { EventBus } from '@microsoft/msfs-sdk';
 
-import { Fix, NXDataStore, Waypoint } from '@flybywiresim/fbw-sdk';
+import { Fix, MagVar, NXDataStore, Waypoint } from '@flybywiresim/fbw-sdk';
 
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
@@ -385,8 +385,8 @@ export class DataManager {
     stored = false,
     ident?: string,
   ): PbxWaypoint {
-    const bearing1 = A32NX_Util.magneticToTrue(magneticBearing1, A32NX_Util.getRadialMagVar(place1));
-    const bearing2 = A32NX_Util.magneticToTrue(magneticBearing2, A32NX_Util.getRadialMagVar(place2));
+    const bearing1 = MagVar.magneticToTrue(magneticBearing1, MagVar.getForFix(place1) ?? 0);
+    const bearing2 = MagVar.magneticToTrue(magneticBearing2, MagVar.getForFix(place2) ?? 0);
 
     const coordinates = A32NX_Util.greatCircleIntersection(place1.location, bearing1, place2.location, bearing2);
     const index = stored ? this.generateStoredWaypointIndex() : -1;
@@ -428,7 +428,7 @@ export class DataManager {
     stored = false,
     ident?: string,
   ): PbdWaypoint {
-    const bearing = A32NX_Util.magneticToTrue(magneticBearing, A32NX_Util.getRadialMagVar(origin));
+    const bearing = MagVar.magneticToTrue(magneticBearing, MagVar.getForFix(origin) ?? 0);
 
     const coordinates = Avionics.Utils.bearingDistanceToCoordinates(
       bearing,
