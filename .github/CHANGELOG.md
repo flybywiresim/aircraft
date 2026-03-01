@@ -82,6 +82,8 @@
 1. [A32NX/FWS] Add `IDG 1(2) DISCONNECTED` and `GEN 1(2) OFF` master cautions - @FozzieHi (fozzie)
 1. [A380X/FWS] Fixed overspeed VFE blue and selectable - @matze-tech (matze2346)
 1. [A380X/FUEL] Add first FQMS fuel measuring implementation - @Gurgel100 (Pascal)
+1. [FUEL] Fix fuel getting consumed when in Active Pause or Pause at T/D - @Maximilian-Reuter (\_chaoz_)
+
 
 ## 0.14.0
 
