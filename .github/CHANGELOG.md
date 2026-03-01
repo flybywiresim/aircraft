@@ -81,6 +81,7 @@
 1. [A32NX/FMS] Add pilot entry ETT (Estimated Takeoff Time) functionality  - @BravoMike99 (bruno_pt99)
 1. [A32NX/FWS] Add `IDG 1(2) DISCONNECTED` and `GEN 1(2) OFF` master cautions - @FozzieHi (fozzie)
 1. [A380X/FWS] Fixed overspeed VFE blue and selectable - @matze-tech (matze2346)
+1. [A380X/FUEL] Add first FQMS fuel measuring implementation - @Gurgel100 (Pascal)
 
 ## 0.14.0
 
