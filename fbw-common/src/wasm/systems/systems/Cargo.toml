@@ -10,10 +10,10 @@ rand.workspace = true
 rand_distr = "0.5.1"
 num-derive = "0.4.2"
 num-traits = "0.2.19"
-nalgebra = "0.33.0"
+nalgebra.workspace = true
 bounded-vec-deque = "0.1.1"
 rustc-hash = "2.1.1"
-bitflags = "2.9.1"
+bitflags = "2.10"
 
 [dev-dependencies]
 ntest.workspace = true

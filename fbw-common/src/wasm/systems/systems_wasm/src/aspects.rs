@@ -557,9 +557,10 @@ pub fn min(accumulator: f64, item: f64) -> f64 {
     accumulator.min(item)
 }
 
-#[derive(PartialEq, Eq)]
+#[derive(Default, PartialEq, Eq)]
 pub enum ObjectWrite {
     Ignore,
+    #[default]
     ToSim,
 }
 impl ObjectWrite {
@@ -569,11 +570,6 @@ impl ObjectWrite {
         } else {
             Self::Ignore
         }
-    }
-}
-impl Default for ObjectWrite {
-    fn default() -> Self {
-        Self::ToSim
     }
 }
 
