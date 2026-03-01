@@ -598,10 +598,6 @@ export class PseudoFWC {
 
   private readonly dc2BusPowered = ConsumerSubject.create(this.sub.on('a32nx_elec_dc_2_bus_is_powered'), false);
 
-  private readonly bat1PbOff = Subject.create(false);
-
-  private readonly bat2PbOff = Subject.create(false);
-
   private readonly gen1Inop = Subject.create(false);
 
   private readonly gen1FaultMemory = new NXLogicMemoryNode(false);
@@ -1666,6 +1662,8 @@ export class PseudoFWC {
     this.ecpEmergencyCancelLevel = warningButtons.bitValue(17) || this.ecpEmergencyCancelButtonHardwired.get();
   }
 
+  private readonly bat1PbAutoVar = RegisteredSimVar.createBoolean('L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO');
+  private readonly bat2PbAutoVar = RegisteredSimVar.createBoolean('L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO');
   private readonly elecContactor9XU1Var = RegisteredSimVar.createBoolean('L:A32NX_ELEC_CONTACTOR_9XU1_IS_CLOSED');
   private readonly elecContactor9XU2Var = RegisteredSimVar.createBoolean('L:A32NX_ELEC_CONTACTOR_9XU2_IS_CLOSED');
 
@@ -1685,9 +1683,11 @@ export class PseudoFWC {
     this.sdac00201Word.set(0);
     this.sdac00201Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
     this.sdac00201Word.setBitValue(14, !this.elecContactor9XU1Var.get());
+    this.sdac00201Word.setBitValue(24, !this.bat1PbAutoVar.get());
     this.sdac00210Word.set(0);
     this.sdac00210Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
     this.sdac00210Word.setBitValue(14, !this.elecContactor9XU2Var.get());
+    this.sdac00210Word.setBitValue(24, !this.bat2PbAutoVar.get());
 
     this.sdac00401Word.set(0);
     this.sdac00401Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
@@ -1835,13 +1835,7 @@ export class PseudoFWC {
     const masterWarningButtonLeft = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_L', 'bool');
     const masterWarningButtonRight = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_R', 'bool');
 
-    /* ELEC acquisition */
-
-    this.bat1PbOff.set(!SimVar.GetSimVarValue('L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO', 'bool'));
-    this.bat2PbOff.set(!SimVar.GetSimVarValue('L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO', 'bool'));
-
     /* HYDRAULICS acquisition */
-
     this.blueElecPumpPBAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMPB_PB_IS_AUTO', 'bool'));
     this.blueLP.set(SimVar.GetSimVarValue('L:A32NX_HYD_BLUE_EDPUMP_LOW_PRESS', 'bool'));
     this.blueRvrLow.set(SimVar.GetSimVarValue('L:A32NX_HYD_BLUE_RESERVOIR_LEVEL_IS_LOW', 'bool'));
@@ -3146,8 +3140,12 @@ export class PseudoFWC {
     );
 
     /* ELECTRICAL */
-    this.bat1Off.set(this.bat1PbOff.get() && (this.flightPhase6For60Seconds.read() || this.fwcFlightPhase.get() === 2));
-    this.bat2Off.set(this.bat2PbOff.get() && (this.flightPhase6For60Seconds.read() || this.fwcFlightPhase.get() === 2));
+    this.bat1Off.set(
+      this.sdac00201Word.bitValue(24) && (this.flightPhase6For60Seconds.read() || this.fwcFlightPhase.get() === 2),
+    );
+    this.bat2Off.set(
+      this.sdac00210Word.bitValue(24) && (this.flightPhase6For60Seconds.read() || this.fwcFlightPhase.get() === 2),
+    );
 
     const engine1NotRunning = this.engine1State.get() !== EngineState.On;
     const engine2NotRunning = this.engine2State.get() !== EngineState.On;
