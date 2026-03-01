@@ -4113,7 +4113,7 @@ export class PseudoFWC {
     // 24 - ELECTRICAL
     2400600: {
       // BAT 1 OFF
-      flightPhaseInhib: [1, 3, 4, 5, 7, 8, 9, 10],
+      flightPhaseInhib: [1, 3, 4, 5, 7, 8, 10],
       simVarIsActive: this.bat1Off,
       whichCodeToReturn: () => [0],
       codesToReturn: ['240060001'],
@@ -4124,7 +4124,7 @@ export class PseudoFWC {
     },
     2400610: {
       // BAT 2 OFF
-      flightPhaseInhib: [1, 3, 4, 5, 7, 8, 9, 10],
+      flightPhaseInhib: [1, 3, 4, 5, 7, 8, 10],
       simVarIsActive: this.bat2Off,
       whichCodeToReturn: () => [0],
       codesToReturn: ['240061001'],
