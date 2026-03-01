@@ -142,8 +142,7 @@ export class FlightManagementComputer implements FmcInterface {
   private lastFlightPlanVersion: number | null = null;
 
   private readonly flightPlanChangeNotifier = new FlightPlanChangeNotifier(this.bus);
-
-  #fmgc = new FmgcDataService(this.flightPlanInterface);
+  #fmgc = new FmgcDataService(this.bus, this.flightPlanInterface);
 
   get fmgc() {
     return this.#fmgc;
@@ -427,7 +426,7 @@ export class FlightManagementComputer implements FmcInterface {
 
   destroy() {
     this.flightPlanChangeNotifier.destroy();
-
+    this.#fmgc.destroy();
     for (const s of this.subs) {
       s.destroy();
     }
@@ -525,12 +524,13 @@ export class FlightManagementComputer implements FmcInterface {
     if (this.fmgc.getFlightPhase() >= FmgcFlightPhase.Takeoff) {
       // In flight
       // TOW: TOW = GW
-      return SimVar.GetSimVarValue('TOTAL WEIGHT', 'kilogram');
+      return this.fmgc.getGrossWeightKg();
     }
     // Preflight, engines on
     // LW = GW - TRIP - TAXI
     // TOW after engine start: TOW = GW - TAXI
-    return SimVar.GetSimVarValue('TOTAL WEIGHT', 'kilogram') - (pd.taxiFuel.get() ?? 0) * 1000;
+    const gw = this.fmgc.getGrossWeightKg();
+    return gw ? gw - (pd.taxiFuel.get() ?? 0) * 1000 : null;
   }
 
   public getTripFuel(forPlan = FlightPlanIndex.Active): number | null {

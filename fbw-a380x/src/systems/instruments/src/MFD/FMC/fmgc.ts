@@ -9,12 +9,60 @@ import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FmcWindVector, FmcWinds } from '@fmgc/guidance/vnav/wind/types';
-import { MappedSubject, MutableSubscribable, Subject, Subscribable, SubscribableUtils } from '@microsoft/msfs-sdk';
+import {
+  EventBus,
+  MappedSubject,
+  MutableSubscribable,
+  Subject,
+  Subscribable,
+  SubscribableUtils,
+  Subscription,
+} from '@microsoft/msfs-sdk';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
-import { Arinc429Word, Fix, Runway, Units } from '@flybywiresim/fbw-sdk';
+import { Arinc429LocalVarConsumerSubject, Arinc429Word, Fix, Runway, Units } from '@flybywiresim/fbw-sdk';
 import { Feet } from 'msfs-geo';
 import { minGw } from '@shared/PerformanceConstants';
 import { A380AircraftConfig } from '@fmgc/flightplanning/A380AircraftConfig';
+import { FqmsBusEvents } from '@shared/publishers/FqmsBusPublisher';
+
+export enum TakeoffPowerSetting {
+  TOGA = 0,
+  FLEX = 1,
+  DERATED = 2,
+}
+
+export enum TakeoffDerated {
+  D01 = 0,
+  D02 = 1,
+  D03 = 2,
+  D04 = 3,
+  D05 = 4,
+}
+
+export enum TakeoffPacks {
+  OFF_APU = 0,
+  ON = 1,
+}
+
+export enum TakeoffAntiIce {
+  OFF = 0,
+  ENG_ONLY = 1,
+  ENG_WINGS = 2,
+}
+
+export enum CostIndexMode {
+  LRC = 0,
+  ECON = 1,
+}
+
+export enum ClimbDerated {
+  NONE = 0,
+  D01 = 1,
+  D02 = 2,
+  D03 = 3,
+  D04 = 4,
+  D05 = 5,
+}
 
 export const LOWEST_FUEL_ESTIMATE_KGS = Units.poundToKilogram(A380AircraftConfig.vnavConfig.LOWEST_FUEL_ESTIMATE);
 
@@ -130,10 +178,26 @@ export class FmgcData {
  */
 export class FmgcDataService implements Fmgc {
   public data = new FmgcData();
+  private subs: Subscription[] = [];
 
   public guidanceController: GuidanceController | undefined = undefined;
 
-  constructor(private flightPlanService: FlightPlanService) {}
+  private readonly sub = this.bus.getSubscriber<FqmsBusEvents>();
+
+  private readonly fqmsFob = Arinc429LocalVarConsumerSubject.create(this.sub.on('fqms_total_fuel_on_board'));
+  private readonly fqmsGw = Arinc429LocalVarConsumerSubject.create(this.sub.on('fqms_gross_weight'));
+  private readonly fqmsGwCg = Arinc429LocalVarConsumerSubject.create(this.sub.on('fqms_center_of_gravity_mac'));
+
+  constructor(
+    private readonly bus: EventBus,
+    private flightPlanService: FlightPlanService,
+  ) {
+    this.subs.push(this.fqmsFob, this.fqmsGw, this.fqmsGwCg);
+  }
+
+  public destroy() {
+    this.subs.forEach((s) => s.destroy());
+  }
 
   /** in tons */
   getZeroFuelWeight(forPlan = FlightPlanIndex.Active): number {
@@ -144,6 +208,11 @@ export class FmgcDataService implements Fmgc {
   /** in tons */
   public getGrossWeight(forPlan = FlightPlanIndex.Active): number | null {
     // Value received from FQMS, or falls back to entered ZFW + entered FOB
+
+    const fqmsGw = this.fqmsGw.get();
+    if (fqmsGw.isNormalOperation()) {
+      return fqmsGw.value / 1_000;
+    }
     const zfw = this.flightPlanService.get(forPlan).performanceData.zeroFuelWeight.get();
     const fob = this.getFOB(forPlan);
 
@@ -161,20 +230,27 @@ export class FmgcDataService implements Fmgc {
   }
 
   /**
+   * The center of gravity is calculated by the FQMS.
+   * If it is not available then the value computed by the WBBC is returned.
+   * If neither the FQMS nor the WBBC provide any value then `null` is returned.
+   *
+   * @returns the gross weight center of gravity in %
+   */
+  public getGrossWeightCg(): number | null {
+    // Value received from FQMS, or falls back to value from WBBC (TODO)
+    return this.fqmsGwCg.get().valueOr(null);
+  }
+
+  /**
    *
    * @returns fuel on board in tonnes (i.e. 1000 x kg)
    */
   getFOB(forPlan = FlightPlanIndex.Active): number | null {
     // TODO how does this work for secondary plans?
-    let fob = this.flightPlanService.get(forPlan).performanceData.blockFuel.get();
-    // FIXME get from FQMS when implemented
-    if (this.isAnEngineOn()) {
-      fob =
-        (SimVar.GetSimVarValue('L:A32NX_TOTAL_FUEL_VOLUME', 'gallons') *
-          SimVar.GetSimVarValue('FUEL WEIGHT PER GALLON', 'kilograms')) /
-        1_000;
-    }
-
+    const usefqms = this.isAnEngineOn();
+    let fob = usefqms
+      ? this.fqmsFob.get().valueOr(null)
+      : this.flightPlanService.get(forPlan).performanceData.blockFuel.get();
     return fob !== null ? fob : null;
   }
 
