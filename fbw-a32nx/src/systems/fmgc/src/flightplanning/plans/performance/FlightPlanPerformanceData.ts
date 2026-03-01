@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2022 2026 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -497,6 +497,11 @@ export interface FlightPlanPerformanceData {
    */
   readonly alternateWind: Subject<WindVector | null>;
 
+  /** Estimated takeoff time timestamp, in unix epoch milliseconds */
+  readonly estimatedTakeoffTime: Subject<number | null>;
+
+  readonly estimatedTakeoffTimeExpired: Subject<boolean | null>;
+
   clone(): this;
 
   destroy(): void;
@@ -603,6 +608,8 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
     cloned.approachBaroMinimum.set(this.approachBaroMinimum.get());
     cloned.approachRadioMinimum.set(this.approachRadioMinimum.get());
     cloned.approachFlapsThreeSelected.set(this.approachFlapsThreeSelected.get());
+    cloned.estimatedTakeoffTime.set(this.estimatedTakeoffTime.get());
+    cloned.estimatedTakeoffTimeExpired.set(this.estimatedTakeoffTimeExpired.get());
 
     cloned.climbWindEntries.set(
       this.climbWindEntries.get().map(({ vector, ...rest }) => ({
@@ -636,6 +643,8 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
     );
     other.pipe('pilotFinalHoldingFuel', this.pilotFinalHoldingFuel, other.pilotFinalHoldingFuel);
     other.pipe('pilotFinalHoldingTime', this.pilotFinalHoldingTime, other.pilotFinalHoldingTime);
+    other.pipe('estimatedTakeoffTime', this.estimatedTakeoffTime, other.estimatedTakeoffTime);
+    other.pipe('estimatedTakeoffTimeExpired', this.estimatedTakeoffTimeExpired, other.estimatedTakeoffTimeExpired);
 
     if (isBeforeEngineStart) {
       other.pipe('zeroFuelWeight', this.zeroFuelWeight, other.zeroFuelWeight);
@@ -1279,6 +1288,16 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
    */
   readonly alternateWind: Subject<WindVector | null> = Subject.create(null);
 
+  /**
+   * Estimated takeoff time timestamp, in unix epoch milliseconds
+   */
+  readonly estimatedTakeoffTime = Subject.create<number | null>(null);
+
+  /**
+   * Indicates whether the estimated takeoff time has expired.
+   */
+  readonly estimatedTakeoffTimeExpired = Subject.create<boolean | null>(null);
+
   serialize(): SerializedFlightPlanPerformanceData {
     return {
       cruiseFlightLevel: this.cruiseFlightLevel.get(),
@@ -1349,10 +1368,11 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
       approachBaroMinimum: this.approachBaroMinimum.get(),
       approachRadioMinimum: this.approachRadioMinimum.get(),
       approachFlapsThreeSelected: this.approachFlapsThreeSelected.get(),
-
       climbWindEntries: this.climbWindEntries.get(),
       descentWindEntries: this.descentWindEntries.get(),
       alternateWind: this.alternateWind.get(),
+      estimatedTakeoffTime: this.estimatedTakeoffTime.get(),
+      estimatedTakeoffTimeExpired: this.estimatedTakeoffTimeExpired.get(),
     };
   }
 }
@@ -1447,6 +1467,9 @@ export interface SerializedFlightPlanPerformanceData {
   climbWindEntries: FlightPlanWindEntry[];
   descentWindEntries: FlightPlanWindEntry[];
   alternateWind: WindVector | null;
+
+  estimatedTakeoffTime: number | null;
+  estimatedTakeoffTimeExpired: boolean | null;
 }
 
 // FIXME move to AMI database

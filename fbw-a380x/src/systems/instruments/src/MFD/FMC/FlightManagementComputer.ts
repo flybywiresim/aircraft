@@ -127,7 +127,7 @@ export class FlightManagementComputer implements FmcInterface {
 
   private lastFlightPlanVersion: number | null = null;
 
-  #fmgc = new FmgcDataService(this.flightPlanService);
+  #fmgc = new FmgcDataService(this.bus, this.flightPlanService);
 
   get fmgc() {
     return this.#fmgc;
@@ -381,6 +381,7 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   destroy() {
+    this.#fmgc.destroy();
     for (const s of this.subs) {
       s.destroy();
     }
@@ -474,12 +475,13 @@ export class FlightManagementComputer implements FmcInterface {
     if (this.fmgc.getFlightPhase() >= FmgcFlightPhase.Takeoff) {
       // In flight
       // TOW: TOW = GW
-      return SimVar.GetSimVarValue('TOTAL WEIGHT', 'kilogram');
+      return this.fmgc.getGrossWeightKg();
     }
     // Preflight, engines on
     // LW = GW - TRIP - TAXI
     // TOW after engine start: TOW = GW - TAXI
-    return SimVar.GetSimVarValue('TOTAL WEIGHT', 'kilogram') - (this.fmgc.data.taxiFuel.get() ?? 0);
+    const gw = this.fmgc.getGrossWeightKg();
+    return gw ? gw - (this.fmgc.data.taxiFuel.get() ?? 0) : null;
   }
 
   public getTripFuel(): number | null {

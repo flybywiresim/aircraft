@@ -1538,7 +1538,7 @@ mod tests {
     impl PackFlowValveState for TestPneumatic {
         fn pack_flow_valve_is_open(&self, fcv_id: usize) -> bool {
             let id = A380AirConditioning::fcv_to_pack_id(fcv_id);
-            if fcv_id % 2 == 0 {
+            if fcv_id.is_multiple_of(2) {
                 self.packs[id].right_pack_flow_valve_is_open()
             } else {
                 self.packs[id].left_pack_flow_valve_is_open()
@@ -1546,7 +1546,7 @@ mod tests {
         }
         fn pack_flow_valve_air_flow(&self, fcv_id: usize) -> MassRate {
             let id = A380AirConditioning::fcv_to_pack_id(fcv_id);
-            if fcv_id % 2 == 0 {
+            if fcv_id.is_multiple_of(2) {
                 self.packs[id].right_pack_flow_valve_air_flow()
             } else {
                 self.packs[id].left_pack_flow_valve_air_flow()
@@ -1554,7 +1554,7 @@ mod tests {
         }
         fn pack_flow_valve_inlet_pressure(&self, fcv_id: usize) -> Option<Pressure> {
             let id = A380AirConditioning::fcv_to_pack_id(fcv_id);
-            if fcv_id % 2 == 0 {
+            if fcv_id.is_multiple_of(2) {
                 self.packs[id].right_pack_flow_valve_inlet_pressure()
             } else {
                 self.packs[id].left_pack_flow_valve_inlet_pressure()

@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023, 2025 FlyByWire Simulations
+// Copyright (c) 2021-2023, 2025-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { A32NX_Util } from '../../../../shared/src/A32NX_Util';
@@ -8,11 +8,17 @@ import { CDULateralRevisionPage } from './A320_Neo_CDU_LateralRevisionPage';
 import { CDUVerticalRevisionPage } from './A320_Neo_CDU_VerticalRevisionPage';
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
 import { CDUHoldAtPage } from './A320_Neo_CDU_HoldAtPage';
-import { AltitudeDescriptor, MathUtils, NXUnits, WaypointConstraintType } from '@flybywiresim/fbw-sdk';
+import {
+  AltitudeDescriptor,
+  MagVar,
+  MathUtils,
+  NXUnits,
+  WaypointConstraintType,
+  WaypointDescriptor,
+} from '@flybywiresim/fbw-sdk';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
-import { FlightPlanLeg, isDiscontinuity } from '@fmgc/flightplanning/legs/FlightPlanLeg';
-import { FmsFormatters } from '../legacy/FmsFormatters';
+import { FlightPlanLeg, isDiscontinuity, isLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { Column, FormatLine } from '../legacy/A320_Neo_CDU_Format';
 import { formatWindPredictionMagnitude, formatWindPredictionDirection } from '@fmgc/flightplanning/data/wind';
@@ -79,9 +85,6 @@ export class CDUFlightPlanPage {
         CDUFlightPlanPage.ShowPage(mcdu, offset, isPageB, forPlan);
       }
     }, mcdu.PageTimeout.Medium);
-
-    const flightPhase = mcdu.flightPhaseManager.phase;
-    const isFlying = flightPhase >= FmgcFlightPhase.Takeoff && flightPhase != FmgcFlightPhase.Done;
 
     let showFrom = false;
 
@@ -349,16 +352,18 @@ export class CDUFlightPlanPage {
         // Time/EFOB
         let timeCell: string = isPageB ? Efob.NoPrediction : Time.NoPrediction;
         let timeColor = 'white';
+
+        const isEttValid =
+          targetPlan.performanceData.estimatedTakeoffTime.get() !== null &&
+          !targetPlan.performanceData.estimatedTakeoffTimeExpired.get();
+
         if (!isPageB && verticalWaypoint && Number.isFinite(verticalWaypoint.secondsFromPresent)) {
-          const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
+          timeCell = `${isFromLeg ? '{big}' : '{small}'}${mcdu.getTimePrediction(
+            verticalWaypoint.secondsFromPresent,
+            forPlan,
+          )}{end}`;
 
-          timeCell = `${isFromLeg ? '{big}' : '{small}'}${
-            isFlying
-              ? FmsFormatters.secondsToUTC(utcTime + verticalWaypoint.secondsFromPresent)
-              : FmsFormatters.secondsTohhmm(verticalWaypoint.secondsFromPresent)
-          }{end}`;
-
-          timeColor = color;
+          timeColor = isFromLeg && isEttValid ? 'magenta' : color;
         } else if (isPageB && verticalWaypoint && Number.isFinite(verticalWaypoint.estimatedFuelOnBoard)) {
           timeCell = `${isFromLeg ? '{big}' : '{small}'}${NXUnits.poundsToUser(
             verticalWaypoint.estimatedFuelOnBoard / 1000,
@@ -368,8 +373,8 @@ export class CDUFlightPlanPage {
 
           timeColor = color;
         } else if (!isPageB && !inAlternate && fpIndex === targetPlan.originLegIndex) {
-          timeCell = '{big}0000{end}';
-          timeColor = color;
+          timeCell = `{big}${mcdu.getTimePrediction(0, forPlan)}{end}`;
+          timeColor = isEttValid ? 'magenta' : color;
         }
 
         // Fix Header
@@ -719,12 +724,9 @@ export class CDUFlightPlanPage {
           }
         } else {
           if (!shouldHidePredictions && Number.isFinite(pwp.flightPlanInfo.secondsFromPresent)) {
-            const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
             timeColor = color;
 
-            timeCell = isFlying
-              ? `${FmsFormatters.secondsToUTC(utcTime + pwp.flightPlanInfo.secondsFromPresent)}[s-text]`
-              : `${FmsFormatters.secondsTohhmm(pwp.flightPlanInfo.secondsFromPresent)}[s-text]`;
+            timeCell = `${mcdu.getTimePrediction(pwp.flightPlanInfo.secondsFromPresent, forPlan)}[s-text]`;
           }
         }
 
@@ -1071,16 +1073,16 @@ export class CDUFlightPlanPage {
 
           const timeRemaining = fmsGeometryProfile.getTimeToDestination();
           if (Number.isFinite(timeRemaining)) {
-            const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
-
-            destTimeCell = isFlying
-              ? FmsFormatters.secondsToUTC(utcTime + timeRemaining)
-              : FmsFormatters.secondsTohhmm(timeRemaining);
+            destTimeCell = mcdu.getTimePrediction(timeRemaining, forPlan);
           }
         }
       }
 
-      destText[0] = ['\xa0DEST', 'DIST\xa0\xa0EFOB', isFlying ? '\xa0UTC{sp}{sp}{sp}{sp}' : 'TIME{sp}{sp}{sp}{sp}'];
+      destText[0] = [
+        '\xa0DEST',
+        'DIST\xa0\xa0EFOB',
+        `${mcdu.getTimePredictionHeader(forPlan).padStart(4, '\xa0')}{sp}{sp}{sp}{sp}`,
+      ];
       destText[1] = [
         destCell,
         `{small}${destDistCell.padStart(4, '\xa0')}\xa0${destEFOBCell.padStart(5, '\xa0')}{end}`,
@@ -1099,17 +1101,19 @@ export class CDUFlightPlanPage {
         5,
         () => mcdu.getDelaySwitchPage(),
         () => {
-          CDUVerticalRevisionPage.ShowPage(
-            mcdu,
-            targetPlan.destinationLeg,
-            targetPlan.destinationLegIndex,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            forPlan,
-            false,
-          );
+          if (isLeg(targetPlan.destinationLeg)) {
+            CDUVerticalRevisionPage.ShowPage(
+              mcdu,
+              targetPlan.destinationLeg,
+              targetPlan.destinationLegIndex,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              forPlan,
+              false,
+            );
+          }
         },
       );
     }
@@ -1169,7 +1173,9 @@ export class CDUFlightPlanPage {
 
     mcdu.setArrows(allowScroll, allowScroll, true, true);
     scrollText[0][1] = isPageB ? '{sp}{sp}{sp}T.WIND{sp}' : 'SPD/ALT{sp}{sp}{sp}';
-    scrollText[0][2] = isPageB ? '{sp}EFOB{sp}{sp}{sp}' : isFlying ? '\xa0UTC{sp}{sp}{sp}{sp}' : 'TIME{sp}{sp}{sp}{sp}';
+    scrollText[0][2] = isPageB
+      ? '{sp}EFOB{sp}{sp}{sp}'
+      : `${mcdu.getTimePredictionHeader(forPlan).padStart(4, '\xa0')}{sp}{sp}{sp}{sp}`;
 
     if (!showFrom) {
       fromHeader.update('');
@@ -1435,11 +1441,11 @@ function legHasAltConstraint(leg: FlightPlanLeg): boolean {
 }
 
 function legIsRunway(leg: FlightPlanLeg): boolean {
-  return leg.definition && leg.definition.waypointDescriptor === 4;
+  return leg.definition && leg.definition.waypointDescriptor === WaypointDescriptor.Runway;
 }
 
 function legIsAirport(leg: FlightPlanLeg): boolean {
-  return leg.definition && leg.definition.waypointDescriptor === 1;
+  return leg.definition && leg.definition.waypointDescriptor === WaypointDescriptor.Airport;
 }
 
 /**
@@ -1483,13 +1489,14 @@ function formatTrack(from: FlightPlanLeg, to: { definition: { waypoint: { locati
     return '';
   }
 
-  const magVar = Facilities.getMagVar(from.definition.waypoint.location.lat, from.definition.waypoint.location.long);
+  // FIXME shouldn't it be ppos magvar?
+  const magVar = MagVar.get(from.definition.waypoint.location);
   const tr = Avionics.Utils.computeGreatCircleHeading(
     from.definition.waypoint.location,
     to.definition.waypoint.location,
   );
-  const track = A32NX_Util.trueToMagnetic(tr, magVar);
-  return `TRK${track.toFixed(0).padStart(3, '0')}\u00b0`;
+  const track = MagVar.trueToMagnetic(tr, magVar ?? 0);
+  return `TRK${track.toFixed(0).padStart(3, '0')}${magVar === null ? 'T' : '°'}`;
 }
 
 /**
