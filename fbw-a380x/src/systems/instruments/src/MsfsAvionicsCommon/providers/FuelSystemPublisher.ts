@@ -39,11 +39,6 @@ export interface BaseFuelSystemEvents {
   fuel_refuel_started_by_user: boolean;
   /** Desired fuel target for fuelling in kilograms */
   fuel_desired_by_user: number;
-  /** Fuel on board in kilograms */
-  fuel_on_board: number;
-
-  /** The CG percent of the GW */
-  cg_percent_gw: number;
 }
 
 type IndexedTopics =
@@ -112,14 +107,6 @@ export class FuelSystemPublisher extends SimVarPublisher<FuelSystemEvents> {
           type: SimVarValueType.Number,
         },
       ],
-      [
-        'fuel_on_board',
-        {
-          name: 'L:A32NX_TOTAL_FUEL_QUANTITY',
-          type: SimVarValueType.Number,
-        },
-      ],
-      ['cg_percent_gw', { name: 'L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC', type: SimVarValueType.Number, indexed: false }],
     ];
 
     super(new Map(simvars), bus, pacer);
