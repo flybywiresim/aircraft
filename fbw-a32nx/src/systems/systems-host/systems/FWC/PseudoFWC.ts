@@ -230,6 +230,8 @@ export class PseudoFWC {
   private readonly sdac00410Word = Arinc429Register.empty();
   private readonly sdac00411Word = Arinc429Register.empty();
 
+  private readonly sdac00511Word = Arinc429Register.empty();
+
   private readonly sdac05001Word = Arinc429Register.empty();
   private readonly sdac05010Word = Arinc429Register.empty();
 
@@ -936,6 +938,8 @@ export class PseudoFWC {
 
   private readonly flightPhase7PulseNode = new NXLogicPulseNode();
 
+  private readonly flightPhase9PulseNode = new NXLogicPulseNode();
+
   private readonly flightPhase6For60Seconds = new NXLogicConfirmNode(60, true);
 
   private readonly flightPhaseEndedPulseNode = new NXLogicPulseNode();
@@ -1061,6 +1065,10 @@ export class PseudoFWC {
   private readonly lgciu2OnGroundAgreeConf = new NXLogicConfirmNode(0.5, true);
 
   private readonly lgciu2OnGroundDisagreeMem = new NXLogicMemoryNode(true);
+
+  private readonly yellowAccuLoPr = Subject.create(false);
+
+  private readonly yellowAccuLoPrWarning = Subject.create(false);
 
   private readonly ra1OnGroundMem = new NXLogicMemoryNode(true);
 
@@ -1635,17 +1643,22 @@ export class PseudoFWC {
     this.ecpEmergencyCancelLevel = warningButtons.bitValue(17) || this.ecpEmergencyCancelButtonHardwired.get();
   }
 
+  private readonly engine1MasterAlternatorVar = RegisteredSimVar.createBoolean('A:GENERAL ENG MASTER ALTERNATOR:1');
+  private readonly engine2MasterAlternatorVar = RegisteredSimVar.createBoolean('A:GENERAL ENG MASTER ALTERNATOR:2');
+  private readonly idg1ConnectedVar = RegisteredSimVar.createBoolean('L:A32NX_ELEC_ENG_GEN_1_IDG_IS_CONNECTED');
+  private readonly idg2ConnectedVar = RegisteredSimVar.createBoolean('L:A32NX_ELEC_ENG_GEN_2_IDG_IS_CONNECTED');
+
+  private readonly brakeAccuPressVar = RegisteredSimVar.create(
+    'L:A32NX_HYD_BRAKE_ALTN_ACC_PRESS',
+    SimVarValueType.Number,
+  );
+
   private readonly ir1AlignDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_1_ALIGN_DISCRETE');
   private readonly ir2AlignDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_2_ALIGN_DISCRETE');
   private readonly ir3AlignDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_3_ALIGN_DISCRETE');
   private readonly ir1FaultDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_1_FAULT_WARN_DISCRETE');
   private readonly ir2FaultDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_2_FAULT_WARN_DISCRETE');
   private readonly ir3FaultDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_3_FAULT_WARN_DISCRETE');
-
-  private readonly engine1MasterAlternatorVar = RegisteredSimVar.createBoolean('A:GENERAL ENG MASTER ALTERNATOR:1');
-  private readonly engine2MasterAlternatorVar = RegisteredSimVar.createBoolean('A:GENERAL ENG MASTER ALTERNATOR:2');
-  private readonly idg1ConnectedVar = RegisteredSimVar.createBoolean('L:A32NX_ELEC_ENG_GEN_1_IDG_IS_CONNECTED');
-  private readonly idg2ConnectedVar = RegisteredSimVar.createBoolean('L:A32NX_ELEC_ENG_GEN_2_IDG_IS_CONNECTED');
 
   private acquireSdac(): void {
     this.sdac00401Word.set(0);
@@ -1660,6 +1673,10 @@ export class PseudoFWC {
     this.sdac00411Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
     this.sdac00411Word.setBitValue(26, this.ir3AlignDiscreteVar.get());
     this.sdac00411Word.setBitValue(28, this.ir3FaultDiscreteVar.get());
+
+    this.sdac00511Word.set(0);
+    this.sdac00511Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
+    this.sdac00511Word.setBitValue(22, this.brakeAccuPressVar.get() < 1650);
 
     this.sdac05001Word.set(0);
     this.sdac05001Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
@@ -1695,6 +1712,7 @@ export class PseudoFWC {
     this.flightPhase2PulseNode.write(flightPhase === 2, deltaTime);
     this.flightPhase3PulseNode.write(flightPhase === 3, deltaTime);
     this.flightPhase7PulseNode.write(flightPhase === 7, deltaTime);
+    this.flightPhase9PulseNode.write(flightPhase === 9, deltaTime);
     this.flightPhase6For60Seconds.write(flightPhase === 6, deltaTime);
     // flight phase convenience vars
     this.flightPhase126.set(flightPhase === 1 || flightPhase === 2 || flightPhase === 6);
@@ -1863,6 +1881,11 @@ export class PseudoFWC {
     const parkBrakeFor2Seconds = this.parkBrakeOnConfirm.write(this.parkBrake.get(), deltaTime);
     this.parkBrakeOnWarning.set(
       parkBrakeFor2Seconds && this.flightPhase678.get() && !this.flightPhase7PulseNode.read(),
+    );
+
+    this.yellowAccuLoPr.set(this.sdac00511Word.bitValue(22));
+    this.yellowAccuLoPrWarning.set(
+      this.yellowAccuLoPr.get() && this.dcESSBusPowered.get() && !this.flightPhase9PulseNode.read(), // TODO: Check PARK BRK + Y LO PR
     );
 
     const leftCompressedHardwireLgciu1 =
@@ -5308,6 +5331,21 @@ export class PseudoFWC {
       ),
       whichCodeToReturn: () => [0, 1, !SimVar.GetSimVarValue('L:A32NX_GPWS_SYS_OFF', 'Bool') ? 2 : null],
       codesToReturn: ['320019501', '320019502', '320019503'],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: 9,
+      side: 'LEFT',
+    },
+    3243085: {
+      // BRAKES Y ACCU LO PR
+      flightPhaseInhib: [3, 4, 5, 7, 8],
+      simVarIsActive: this.yellowAccuLoPrWarning,
+      whichCodeToReturn: () => [
+        0,
+        this.fwcFlightPhase.get() === 9 ? 1 : null,
+        this.fwcFlightPhase.get() === 9 ? 2 : null,
+      ],
+      codesToReturn: ['324308501', '324308502', '324308503'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: 9,
