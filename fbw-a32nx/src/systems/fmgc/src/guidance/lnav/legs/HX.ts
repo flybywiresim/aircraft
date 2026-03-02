@@ -8,13 +8,13 @@
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { GuidanceParameters, LateralPathGuidance } from '@fmgc/guidance/ControlLaws';
 import { AltitudeDescriptor, TurnDirection, MathUtils, Fix, MagVar } from '@flybywiresim/fbw-sdk';
-import { Geometry } from '@fmgc/guidance/Geometry';
 import { SegmentType } from '@fmgc/wtsdk';
 import {
   arcDistanceToGo,
   arcGuidance,
   courseToFixDistanceToGo,
   courseToFixGuidance,
+  getRollAnticipationDistance,
   maxBank,
   reciprocal,
 } from '@fmgc/guidance/lnav/CommonGeometry';
@@ -347,12 +347,12 @@ abstract class HXLeg extends XFLeg {
         params = courseToFixGuidance(ppos, trueTrack, this.inboundLegCourse, this.fix.location);
         dtg = courseToFixDistanceToGo(ppos, this.inboundLegCourse, this.fix.location);
         nextPhi = sweepAngle > 0 ? maxBank(tas, true) : -maxBank(tas, true);
-        rad = Geometry.getRollAnticipationDistance(gs, params.phiCommand, nextPhi);
+        rad = getRollAnticipationDistance(gs, params.phiCommand, nextPhi);
         break;
       case HxLegGuidanceState.Arc1:
         params = arcGuidance(ppos, trueTrack, this.fix.location, arcCentreFix1, sweepAngle);
         dtg = arcDistanceToGo(ppos, this.fix.location, arcCentreFix1, sweepAngle);
-        rad = Geometry.getRollAnticipationDistance(gs, params.phiCommand, nextPhi);
+        rad = getRollAnticipationDistance(gs, params.phiCommand, nextPhi);
         if (legLength <= rad) {
           nextPhi = params.phiCommand;
         }
@@ -361,12 +361,12 @@ abstract class HXLeg extends XFLeg {
         params = courseToFixGuidance(ppos, trueTrack, this.outboundLegCourse, fixB);
         dtg = courseToFixDistanceToGo(ppos, this.outboundLegCourse, fixB);
         nextPhi = sweepAngle > 0 ? maxBank(tas, true) : -maxBank(tas, true);
-        rad = Geometry.getRollAnticipationDistance(gs, params.phiCommand, nextPhi);
+        rad = getRollAnticipationDistance(gs, params.phiCommand, nextPhi);
         break;
       case HxLegGuidanceState.Arc2:
         params = arcGuidance(ppos, trueTrack, fixB, arcCentreFix2, sweepAngle);
         dtg = arcDistanceToGo(ppos, fixB, arcCentreFix2, sweepAngle);
-        rad = Geometry.getRollAnticipationDistance(gs, params.phiCommand, nextPhi);
+        rad = getRollAnticipationDistance(gs, params.phiCommand, nextPhi);
         if (legLength <= rad) {
           nextPhi = params.phiCommand;
         }
@@ -455,7 +455,7 @@ export class HMLeg extends HXLeg {
           break;
         case HxLegGuidanceState.Outbound: {
           const nextPhi = sweepAngle > 0 ? maxBank(tas, true) : -maxBank(tas, true);
-          const rad = Geometry.getRollAnticipationDistance(tas, 0, nextPhi);
+          const rad = getRollAnticipationDistance(tas, 0, nextPhi);
           this.immExitLength = Math.min(legLength, rad + courseToFixDistanceToGo(ppos, this.inboundLegCourse, fixA));
           break;
         }
