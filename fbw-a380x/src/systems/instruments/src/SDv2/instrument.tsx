@@ -12,6 +12,7 @@ import { SDSimvarPublisher } from './SDSimvarPublisher';
 import { AdirsValueProvider } from 'instruments/src/MsfsAvionicsCommon/AdirsValueProvider';
 import { SimplaneValueProvider } from 'instruments/src/MsfsAvionicsCommon/providers/SimplaneValueProvider';
 import { A380XFcuBusPublisher } from '@shared/publishers/A380XFcuBusPublisher';
+import { FqmsBusPublisher } from '@shared/publishers/FqmsBusPublisher';
 
 class SdInstrument implements FsInstrument {
   private readonly bus = new ArincEventBus();
@@ -32,6 +33,8 @@ class SdInstrument implements FsInstrument {
 
   private readonly fcuBusPublisher = new A380XFcuBusPublisher(this.bus);
 
+  private readonly fqmsPublisher = new FqmsBusPublisher(this.bus);
+
   private readonly failuresConsumer = new FailuresConsumer();
 
   constructor(public readonly instrument: BaseInstrument) {
@@ -42,6 +45,7 @@ class SdInstrument implements FsInstrument {
     this.backplane.addPublisher('sdSimVars', this.simVarPublisher);
     this.backplane.addPublisher('fmsData', this.fmsDataPublisher);
     this.backplane.addPublisher('fcuBus', this.fcuBusPublisher);
+    this.backplane.addPublisher('fqms', this.fqmsPublisher);
     this.backplane.addInstrument('simplane', this.simplaneValueProvider);
 
     this.doInit();
