@@ -287,6 +287,8 @@ pub(super) fn trimmable_horizontal_stabilizer(
             Variable::aspect("HYD_FINAL_THS_DEFLECTION"),
             Variable::named("FLAPS_HANDLE_INDEX"),
             Variable::aircraft("SIM ON GROUND", "BOOL", 0),
+            Variable::named("THS_FUDGING_GROUND_TO_FLIGHT_TRANSITION_RATE"),
+            Variable::named("THS_FUDGING_FLIGHT_TO_GROUND_TRANSITION_RATE"),
         ],
         |values, delta| {
             let weight_tons = Mass::new::<pound>(values[0]).get::<ton>();
@@ -320,10 +322,11 @@ pub(super) fn trimmable_horizontal_stabilizer(
                 .unwrap()
                 .update(delta, lower_boundary_value);
 
-            let in_flight_gain = RATE_LIMITER_IN_FLIGHT
-                .lock()
-                .unwrap()
-                .update(delta, if on_ground { 0. } else { 1. });
+            let mut in_flight_rate_lim = RATE_LIMITER_IN_FLIGHT.lock().unwrap();
+
+            in_flight_rate_lim.set_max_rate(values[5].abs(), -values[6].abs());
+
+            let in_flight_gain = in_flight_rate_lim.update(delta, if on_ground { 0. } else { 1. });
 
             let normalized_hydraulic_ths_position = (hydraulics_ths_position
                 - LOWER_BOUNDARY_ACTUAL)
@@ -338,7 +341,7 @@ pub(super) fn trimmable_horizontal_stabilizer(
             in_flight_gain * in_flight_ths_position
                 + (1. - in_flight_gain) * on_ground_remapped_ths_position
         },
-        Variable::aspect("HYD_REMAPPED_THS_DEFLECTION"),
+        Variable::named("HYD_REMAPPED_THS_DEFLECTION"),
     );
 
     builder.variables_to_object(Box::new(PitchTrimSimOutput { elevator_trim: 0. }));
@@ -355,7 +358,7 @@ struct PitchTrimSimOutput {
 impl VariablesToObject for PitchTrimSimOutput {
     fn variables(&self) -> Vec<Variable> {
         vec![
-            Variable::aspect("HYD_REMAPPED_THS_DEFLECTION"),
+            Variable::named("HYD_REMAPPED_THS_DEFLECTION"),
             Variable::named("FLIGHT_CONTROLS_TRACKING_MODE"),
         ]
     }
