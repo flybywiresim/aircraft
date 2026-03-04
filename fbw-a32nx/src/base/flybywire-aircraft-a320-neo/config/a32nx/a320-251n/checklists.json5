@@ -195,20 +195,22 @@
       "items": [
         {
           "item": "RWY & SID",
-          "result": "_____"
+          "result": "RWY __, ____",
         },
         {
           "item": "FLAPS SETTING",
-          "result": "CONF _____ (BOTH)"
+          "action": "CONF ____ (BOTH)",
+          "result": "CONF ____",
         },
         {
           "item": "T.O SPEEDS & THRUST",
-          "result": "_____ (BOTH)"
+          "action": "V1 __, VR __, V2 __, FLEX __/TOGA (BOTH)",
+          "result": "V1 __, VR __, V2 __, FLEX __/TOGA",
         },
         {
           "item": "FCU ALT",
-          "action": "_____",
-          "result": "_____ SET"
+          "action": "____",
+          "result": "____ SET"
         }
       ]
     },
