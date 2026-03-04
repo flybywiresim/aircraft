@@ -83,6 +83,7 @@
 1. [A380X/FWS] Fixed overspeed VFE blue and selectable - @matze-tech (matze2346)
 1. [A380X/FUEL] Add first FQMS fuel measuring implementation - @Gurgel100 (Pascal)
 1. [FUEL] Fix fuel getting consumed when in Active Pause or Pause at T/D - @Maximilian-Reuter (\_chaoz_)
+1. [A380X/OVHD] Corrected auto seat belt logic - @FlyByTim (FlyByTim)
 
 
 ## 0.14.0
