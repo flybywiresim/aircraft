@@ -1638,6 +1638,12 @@ export class PseudoFWC {
         }
       });
 
+      this.radioCallouts.retardAudio.sub((v) => {
+        if (v) {
+          this.soundManager.enqueueSound('retard');
+        }
+      });
+
       this.radioCallouts.fiveAudio.sub((v) => {
         if (v) {
           this.soundManager.enqueueSound('alt_5');
@@ -1852,6 +1858,8 @@ export class PseudoFWC {
 
     this.engine1State.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_STATE:1', 'Enum'));
     this.engine2State.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_STATE:2', 'Enum'));
+    const engine1NotRunning = this.engine1State.get() !== EngineState.On;
+    const engine2NotRunning = this.engine2State.get() !== EngineState.On;
     this.N1Eng1.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N1:1', 'number'));
     this.N1Eng2.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N1:2', 'number'));
     this.N2Eng1.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:1', 'number'));
@@ -2073,6 +2081,10 @@ export class PseudoFWC {
       onGround,
       engine1MasterOn,
       engine2MasterOn,
+      engine1NotRunning,
+      engine2NotRunning,
+      tla1Reverse,
+      tla2Reverse,
     );
 
     // AP OFF Voluntary
@@ -3231,9 +3243,6 @@ export class PseudoFWC {
     /* ELECTRICAL */
     this.bat1Off.set(this.bat1PbOff.get() && (this.flightPhase6For60Seconds.read() || this.fwcFlightPhase.get() === 2));
     this.bat2Off.set(this.bat2PbOff.get() && (this.flightPhase6For60Seconds.read() || this.fwcFlightPhase.get() === 2));
-
-    const engine1NotRunning = this.engine1State.get() !== EngineState.On;
-    const engine2NotRunning = this.engine2State.get() !== EngineState.On;
     const phase2Pulse = this.flightPhase2PulseNode.read();
 
     const idg1Disconnected = this.sdac05001Word.bitValue(13);

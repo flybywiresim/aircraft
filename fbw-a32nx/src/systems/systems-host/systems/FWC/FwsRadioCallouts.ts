@@ -138,6 +138,11 @@ export class FwsRadioCallouts {
   private readonly tenMtrigNode = new NXLogicTriggeredMonostableNode(2);
   public readonly tenAudio = Subject.create(false);
 
+  private readonly retardPulseNode = new NXLogicPulseNode();
+  private readonly altInferiorTo10FeetConfNode = new NXLogicConfirmNode(0.1);
+  private readonly altInferiorTo20FeetConfNode = new NXLogicConfirmNode(0.1);
+  public readonly retardAudio = Subject.create(false);
+
   private fiveMtrigPreviousCycle = false;
   private readonly fiveAudioPulseNode = new NXLogicPulseNode();
   private readonly fiveMtrigNode = new NXLogicTriggeredMonostableNode(2);
@@ -163,6 +168,10 @@ export class FwsRadioCallouts {
     onGround: boolean,
     engine1MasterOn: boolean,
     engine2MasterOn: boolean,
+    engine1NotRunning: boolean,
+    engine2NotRunning: boolean,
+    tla1Reverse: boolean,
+    tla2Reverse: boolean,
   ) {
     this.computeInhbits(
       deltaTime,
@@ -176,13 +185,17 @@ export class FwsRadioCallouts {
     );
     this.autoCalloutLogic(
       deltaTime,
-      height ?? 0,
+      height,
       flightPhase,
       tla1,
       tla2,
       atsDiscreteWord,
       fm1DiscreteWord4,
       fm2DiscreteWord4,
+      engine1NotRunning,
+      engine2NotRunning,
+      tla1Reverse,
+      tla2Reverse,
     );
   }
 
@@ -206,15 +219,21 @@ export class FwsRadioCallouts {
 
   private autoCalloutLogic(
     deltaTime: number,
-    height: number,
+    raValue: number | null,
     flightPhase: number,
     tla1: number,
     tla2: number,
     atsDiscreteWord: Arinc429Register,
     fm1DiscreteWord4: Arinc429WordData,
     fm2DiscreteWord4: Arinc429WordData,
+    engine1NotRunning: boolean,
+    engine2NotRunning: boolean,
+    tla1Reverse: boolean,
+    tla2Reverse: boolean,
   ): void {
     // 2500
+    const raValid = raValue !== null;
+    const height = raValue ?? 0;
     const twentyFiveHundredPin = (A32NXRadioAutoCallOutFlags.TwentyFiveHundred & this.autoCallOutPins) > 0;
     const twoThousandFiveHundredPin = (A32NXRadioAutoCallOutFlags.TwoThousandFiveHundred & this.autoCallOutPins) > 0;
     const twentyFiveOrTwoThousandFiveHundredPin = twentyFiveHundredPin || twoThousandFiveHundredPin;
@@ -391,30 +410,25 @@ export class FwsRadioCallouts {
     this.thirtyMtrigPreviousCycle = this.thirtyMtrigNode.write(thirtyAudio, deltaTime);
     // 20 no retard
     const twentyThreshold = height < 22 && height >= 20;
-    const twentyThresholdAndPinProgrammed =
-      (A32NXRadioAutoCallOutFlags.Twenty & this.autoCallOutPins) != 0 && twentyThreshold;
+    const twentyPinProgrammed = (A32NXRadioAutoCallOutFlags.Twenty & this.autoCallOutPins) != 0;
+    const twentyThresholdAndPinProgrammed = twentyPinProgrammed && twentyThreshold;
     const ap1Engaged = fm1DiscreteWord4.bitValue(12);
     const fm1LandActive = fm1DiscreteWord4.bitValue(13);
     const ap2Engaged = fm2DiscreteWord4.bitValue(12);
     const fm2LandActive = fm2DiscreteWord4.bitValue(13);
     const athrActive = atsDiscreteWord.bitValue(13);
-
     const oneApActiveAndinLand = (ap1Engaged && fm1LandActive) || (ap2Engaged && fm2LandActive);
-
+    const oneApActiveAndAthr = oneApActiveAndinLand && athrActive;
     const twentyAudio =
       this.twentyThresholdAndNoAudioInhibitPulseNode.write(
         twentyThresholdAndPinProgrammed && !this.autoCalloutInhibit,
         deltaTime,
       ) &&
       !this.tenAudio.get() &&
-      oneApActiveAndinLand &&
-      athrActive &&
+      oneApActiveAndAthr &&
       !this.twentyMtrigPreviousCycle;
     this.twentyAudio.set(twentyAudio);
     this.twentyMtrigPreviousCycle = this.twentyMtrigNode.write(twentyAudio, deltaTime);
-
-    // TLA logic for retard
-    const tlaIdle = false;
 
     // 20 retard
     const goAround = tla1 > 43.3 || tla2 > 43.3;
@@ -433,7 +447,8 @@ export class FwsRadioCallouts {
     this.twentyRetardActiveMtrigPreviousCycle = this.twentyRetardActiveMtrigNode.write(playRetardAudio, deltaTime);
     // 10 no retard
     const tenThreshold = height < 12 && height >= 10;
-    const tenThresholdAndPinProgrammed = (A32NXRadioAutoCallOutFlags.Ten & this.autoCallOutPins) != 0 && tenThreshold;
+    const tenPinProgrammed = (A32NXRadioAutoCallOutFlags.Ten & this.autoCallOutPins) != 0;
+    const tenThresholdAndPinProgrammed = tenPinProgrammed && tenThreshold;
     this.tenAudio.set(
       this.tenThresholdAndNoAudioInhibitPulseNode.write(
         tenThresholdAndPinProgrammed && !this.autoCalloutInhibit,
@@ -456,6 +471,41 @@ export class FwsRadioCallouts {
     this.tenRetardAudio.set(playTenRetardAudio);
     this.tenRetardActivePreviousCycle = playTenRetardAudio;
     this.tenRetardActiveMtrigPreviousCycle = this.tenRetardActiveMtrigNode.write(playTenRetardAudio, deltaTime);
+
+    // TLA logic for retard
+    const eng1TlaIdleRetard = tla1 < 2.6 && tla1 >= -4.3;
+    const eng1RunningAndTlaIdleAndEng2NotRunning = eng1TlaIdleRetard && !engine1NotRunning && engine2NotRunning;
+
+    const eng2TlaIdleRetard = tla2 < 2.6 && tla2 >= -4.3;
+    const eng2RunningAndTlaIdleAndEng1NotRunning = eng2TlaIdleRetard && !engine2NotRunning && engine1NotRunning;
+
+    const bothEnginesRunningAndIdle =
+      eng1TlaIdleRetard && eng2TlaIdleRetard && !engine1NotRunning && !engine2NotRunning;
+
+    const tlaIdle =
+      eng1RunningAndTlaIdleAndEng2NotRunning ||
+      eng2RunningAndTlaIdleAndEng1NotRunning ||
+      bothEnginesRunningAndIdle ||
+      tla1Reverse ||
+      tla2Reverse; // TODO toga inhibition
+
+    const raBelow10Feet = this.altInferiorTo10FeetConfNode.write(raValid && height <= 12 && height > -5, deltaTime);
+    const raBelow20Feet = this.altInferiorTo20FeetConfNode.write(raValid && height <= 22 && height > -5, deltaTime);
+    const flightPhase67Or8 = flightPhase === 6 || flightPhase === 7 || flightPhase === 8;
+
+    this.retardInhibit =
+      flightPhase67Or8 &&
+      ((raBelow10Feet && oneApActiveAndAthr) || (raBelow20Feet && noAutolandAndAthrOrNoAthr && !tlaIdle));
+
+    const twentyNotPinProgrammedAndNoAutoland = !twentyPinProgrammed && twentyThreshold && noAutolandAndAthrOrNoAthr;
+    const tenNotPinProgrammedAndAutoland = !tenPinProgrammed && tenThreshold && oneApActiveAndAthr;
+
+    this.retardAudio.set(
+      !retardInhibitOrGoAround &&
+        (this.retardInhibit ||
+          this.retardPulseNode.write(twentyNotPinProgrammedAndNoAutoland || tenNotPinProgrammedAndAutoland, deltaTime)),
+    );
+
     // 5
     const fiveThresholdAndPinProgrammed =
       (A32NXRadioAutoCallOutFlags.Five & this.autoCallOutPins) != 0 && height < 6 && height >= 5;
