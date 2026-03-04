@@ -71,11 +71,11 @@ export class NXLogicConfirmNode {
 
   timer: number;
 
-  previousInput: any;
+  previousInput: boolean | null;
 
-  previousOutput: any;
+  previousOutput: boolean | null;
 
-  constructor(t, risingEdge = true) {
+  constructor(t: number, risingEdge = true) {
     this.t = t;
     this.risingEdge = risingEdge;
     this.timer = 0;
@@ -83,7 +83,7 @@ export class NXLogicConfirmNode {
     this.previousOutput = null;
   }
 
-  write(value, deltaTime) {
+  write(value: boolean, deltaTime: number) {
     if (this.previousInput === null && SimVar.GetSimVarValue('L:A32NX_FWC_SKIP_STARTUP', 'Bool')) {
       this.previousInput = value;
       this.previousOutput = value;
@@ -153,7 +153,7 @@ export class NXLogicMemoryNode {
     this.value = false;
   }
 
-  write(set, reset) {
+  write(set: boolean, reset: boolean) {
     if (set && reset) {
       this.value = this.setStar;
     } else if (set && !this.value) {

@@ -26,7 +26,7 @@ import { NDSimvarPublisher, NDSimvars } from './NDSimvarPublisher';
 import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
 import { FmsDataPublisher } from '../MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { FmsSymbolsPublisher } from './FmsSymbolsPublisher';
-import { VorBusPublisher } from '../MsfsAvionicsCommon/providers/VorBusPublisher';
+import { VorBusPublisher } from '../../../shared/src/publishers/VorBusPublisher';
 import { TcasBusPublisher } from '../MsfsAvionicsCommon/providers/TcasBusPublisher';
 import { FGDataPublisher } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
 import { NDControlEvents } from './NDControlEvents';
