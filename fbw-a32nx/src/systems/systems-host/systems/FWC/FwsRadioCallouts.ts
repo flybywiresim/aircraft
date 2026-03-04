@@ -482,7 +482,7 @@ export class FwsRadioCallouts {
     const bothEnginesRunningAndIdle =
       eng1TlaIdleRetard && eng2TlaIdleRetard && !engine1NotRunning && !engine2NotRunning;
 
-    const tlaIdle =
+    const tlaNotInIdle =
       eng1RunningAndTlaIdleAndEng2NotRunning ||
       eng2RunningAndTlaIdleAndEng1NotRunning ||
       bothEnginesRunningAndIdle ||
@@ -494,17 +494,19 @@ export class FwsRadioCallouts {
     const flightPhase67Or8 = flightPhase === 6 || flightPhase === 7 || flightPhase === 8;
 
     this.retardInhibit =
+      !tlaNotInIdle &&
       flightPhase67Or8 &&
-      ((raBelow10Feet && oneApActiveAndAthr) || (raBelow20Feet && noAutolandAndAthrOrNoAthr && !tlaIdle));
+      ((raBelow10Feet && oneApActiveAndAthr) || (raBelow20Feet && noAutolandAndAthrOrNoAthr));
 
     const twentyNotPinProgrammedAndNoAutoland = !twentyPinProgrammed && twentyThreshold && noAutolandAndAthrOrNoAthr;
     const tenNotPinProgrammedAndAutoland = !tenPinProgrammed && tenThreshold && oneApActiveAndAthr;
 
-    this.retardAudio.set(
-      !retardInhibitOrGoAround &&
-        (this.retardInhibit ||
-          this.retardPulseNode.write(twentyNotPinProgrammedAndNoAutoland || tenNotPinProgrammedAndAutoland, deltaTime)),
+    const retardPulse = this.retardPulseNode.write(
+      twentyNotPinProgrammedAndNoAutoland || tenNotPinProgrammedAndAutoland,
+      deltaTime,
     );
+    const retardAudio = !retardInhibitOrGoAround && (this.retardInhibit || retardPulse);
+    this.retardAudio.set(retardAudio);
 
     // 5
     const fiveThresholdAndPinProgrammed =

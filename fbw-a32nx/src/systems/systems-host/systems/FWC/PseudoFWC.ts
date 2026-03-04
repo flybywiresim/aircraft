@@ -1640,7 +1640,7 @@ export class PseudoFWC {
 
       this.radioCallouts.retardAudio.sub((v) => {
         if (v) {
-          this.soundManager.enqueueSound('retard');
+          this.soundManager.enqueueSound('retard_periodic');
         }
       });
 
