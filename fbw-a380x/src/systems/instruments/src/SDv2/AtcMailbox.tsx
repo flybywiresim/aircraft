@@ -4,6 +4,7 @@
 import { DisplayComponent, EventBus, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { Button } from '../MsfsAvionicsCommon/UiWidgets/Button';
 import { MouseCursor } from '../MsfsAvionicsCommon/UiWidgets/MouseCursor';
+import { AtsuMailboxMessages, CpdlcMessage, DclMessage } from '@datalink/common';
 
 import './style.scss';
 
@@ -22,10 +23,19 @@ export class AtcMailbox extends DisplayComponent<AtcMailboxProps> {
 
   private onMouseMoveHandler = this.onMouseMove.bind(this);
 
+  private readonly subs = this.props.bus.getSubscriber<AtsuMailboxMessages>();
+
+  private mailboxText = Subject.create<string>('');
+
+  private handleIncomingMessages(cpdlcMessages: CpdlcMessage[]): void {}
+
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
     this.topRef.instance.addEventListener('mousemove', this.onMouseMoveHandler);
+
+    this.subs.on('cpdlcMessages').handle((messages: CpdlcMessage[]) => console.log(messages));
+    this.subs.on('dclMessages').handle((messages: DclMessage[]) => console.log(messages));
   }
 
   destroy(): void {
