@@ -1,4 +1,4 @@
-import { FSComponent, VNode } from '@microsoft/msfs-sdk';
+import { ArraySubject, FSComponent, VNode } from '@microsoft/msfs-sdk';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { RequestClimb } from 'instruments/src/MFD/pages/ATCCOM/Messages/Vertical/RequestClimb';
 import { RequestDescend } from 'instruments/src/MFD/pages/ATCCOM/Messages/Vertical/RequestDescend';
@@ -14,9 +14,16 @@ export interface MessageVisualizationProps extends AbstractMfdPageProps {
   // y?: number;
   mode: string;
   index: number;
-  messageElements: { id: string; message: string | undefined; readyToSend: boolean }[];
+  // messageElements: { id: string; message: string | undefined; readyToSend: boolean }[];
+  messageElements: ArraySubject<MessageFrame>;
   onDelete: () => void;
 }
+
+export type MessageFrame = {
+  id: number;
+  message: object | undefined;
+  readyToSend: boolean;
+};
 
 export const MessageTable: {
   [id: string]: {
@@ -24,7 +31,8 @@ export const MessageTable: {
       props: any,
       mode: string,
       index: number,
-      messageElements: { id: string; message: undefined; readyToSend: boolean }[],
+      // messageElements: { id: string; message: undefined; readyToSend: boolean }[],
+      messageElements: ArraySubject<MessageFrame>,
       onDelete: any,
     ) => VNode;
     blacklisting: string[];
