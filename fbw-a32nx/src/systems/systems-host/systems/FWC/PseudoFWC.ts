@@ -191,7 +191,7 @@ export class PseudoFWC {
 
   private nonCancellableWarningCount = 0;
 
-  private readonly stallWarning = Subject.create(false);
+  public readonly stallWarning = Subject.create(false);
 
   private readonly masterWarningOutput = MappedSubject.create(
     SubscribableMapFunctions.or(),
@@ -895,7 +895,7 @@ export class PseudoFWC {
 
   /* 31 - FWS */
 
-  private readonly fwcFlightPhase = Subject.create(-1);
+  public readonly fwcFlightPhase = Subject.create(-1);
 
   private readonly flightPhase126 = Subject.create(false);
 
@@ -1006,7 +1006,7 @@ export class PseudoFWC {
 
   /* LANDING GEAR AND LIGHTS */
 
-  private readonly aircraftOnGround = Subject.create(false);
+  public readonly aircraftOnGround = Subject.create(false);
 
   private readonly antiSkidOffPhase2Confirm = new NXLogicConfirmNode(60);
 
@@ -1153,13 +1153,16 @@ export class PseudoFWC {
 
   /** ENGINE AND THROTTLE */
 
-  private readonly engine1Master = ConsumerSubject.create(this.sub.on('engine1Master'), false);
+  public readonly engine1Master = ConsumerSubject.create(this.sub.on('engine1Master'), false);
 
-  private readonly engine2Master = ConsumerSubject.create(this.sub.on('engine2Master'), false);
+  public readonly engine2Master = ConsumerSubject.create(this.sub.on('engine2Master'), false);
 
   private readonly engine1State = Subject.create(EngineState.Off);
 
   private readonly engine2State = Subject.create(EngineState.Off);
+
+  public readonly engine1NotRunning = Subject.create(false);
+  public readonly engine2NotRunning = Subject.create(false);
 
   private readonly N1Eng1 = Subject.create(0);
 
@@ -1217,9 +1220,9 @@ export class PseudoFWC {
   /** @deprecated use radioHeight vars */
   private readonly radioAlt = Subject.create(0);
 
-  private readonly radioHeight1 = Arinc429Register.empty();
+  public readonly radioHeight1 = Arinc429Register.empty();
 
-  private readonly radioHeight2 = Arinc429Register.empty();
+  public readonly radioHeight2 = Arinc429Register.empty();
 
   private readonly fac1Failed = Subject.create(0);
 
@@ -1245,15 +1248,15 @@ export class PseudoFWC {
 
   private readonly eng2AntiIce = Subject.create(false);
 
-  private readonly throttle1Position = Subject.create(0);
+  public readonly throttle1Position = Subject.create(0);
 
-  private readonly throttle2Position = Subject.create(0);
+  public readonly throttle2Position = Subject.create(0);
 
   public readonly allThrottleIdle = Subject.create(false);
 
-  private readonly eng1TLAReverse = Subject.create(false);
+  public readonly eng1TLAReverse = Subject.create(false);
 
-  private readonly eng2TLAReverse = Subject.create(false);
+  public readonly eng2TLAReverse = Subject.create(false);
 
   private readonly revSetWarning = Subject.create(false);
 
@@ -1265,7 +1268,7 @@ export class PseudoFWC {
 
   private readonly autoThrustStatus = Subject.create(0);
 
-  private readonly atsDiscreteWord = Arinc429Register.empty();
+  public readonly atsDiscreteWord = Arinc429Register.empty();
 
   private readonly ecu1MaintenanceWord6 = Arinc429Register.empty();
 
@@ -1560,7 +1563,7 @@ export class PseudoFWC {
     });
     this.radioCallouts.twoThousandFiveHundredAudio.sub((v) => {
       if (v) {
-        this.soundManager.enqueueSound('alt_2500');
+        this.soundManager.enqueueSound('alt_2500b');
       }
     });
     this.radioCallouts.twoThousandAudio.sub((v) => {
@@ -1639,9 +1642,7 @@ export class PseudoFWC {
       });
 
       this.radioCallouts.retardAudio.sub((v) => {
-        if (v) {
-          this.soundManager.enqueueSound('retard_periodic');
-        }
+        this.soundManager.handleSoundCondition('retard_periodic', v);
       });
 
       this.radioCallouts.fiveAudio.sub((v) => {
@@ -1850,9 +1851,6 @@ export class PseudoFWC {
     // RA acquisition
     const radioHeight1 = this.radioHeight1.setFromSimVar('L:A32NX_RA_1_RADIO_ALTITUDE');
     const radioHeight2 = this.radioHeight2.setFromSimVar('L:A32NX_RA_2_RADIO_ALTITUDE');
-    // Auto Flight acquisition
-    const fmgc2DiscreteWord4 = this.fmgc2DiscreteWord4.get();
-    const fmgc1DiscreteWord4 = this.fmgc1DiscreteWord4.get();
 
     /* ENGINE AND THROTTLE acquisition */
 
@@ -1860,6 +1858,8 @@ export class PseudoFWC {
     this.engine2State.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_STATE:2', 'Enum'));
     const engine1NotRunning = this.engine1State.get() !== EngineState.On;
     const engine2NotRunning = this.engine2State.get() !== EngineState.On;
+    this.engine1NotRunning.set(engine1NotRunning);
+    this.engine2NotRunning.set(engine2NotRunning);
     this.N1Eng1.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N1:1', 'number'));
     this.N1Eng2.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N1:2', 'number'));
     this.N2Eng1.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:1', 'number'));
@@ -2053,40 +2053,7 @@ export class PseudoFWC {
       (onGroundCount > 1 && eitherRaInvalid);
     const onGround = this.onGroundConf.write(this.onGroundImmediate, deltaTime);
     this.aircraftOnGround.set(onGround);
-
-    // Radio altimeter callouts
-    let validRadioHeight = null;
-    if (!ra1InvalidOrNcd) {
-      validRadioHeight = radioHeight1.value;
-    } else if (!ra2InvalidOrNcd) {
-      validRadioHeight = radioHeight2.value;
-    } else {
-      validRadioHeight = null;
-    }
-
-    const engine1MasterOn = this.engine1Master.get();
-    const engine2MasterOn = this.engine2Master.get();
-    const stallWarning = this.stallWarning.get();
-    this.radioCallouts.update(
-      deltaTime,
-      validRadioHeight,
-      flightPhase,
-      tla1,
-      tla2,
-      this.atsDiscreteWord,
-      fmgc1DiscreteWord4,
-      fmgc2DiscreteWord4,
-      stallWarning,
-      false, // TODO SPEED,
-      onGround,
-      engine1MasterOn,
-      engine2MasterOn,
-      engine1NotRunning,
-      engine2NotRunning,
-      tla1Reverse,
-      tla2Reverse,
-    );
-
+    this.radioCallouts.update(deltaTime);
     // AP OFF Voluntary
     const anyApEngaged: boolean =
       SimVar.GetSimVarValue('L:A32NX_FMGC_1_AP_ENGAGED', SimVarValueType.Bool) ||
@@ -2103,7 +2070,7 @@ export class PseudoFWC {
 
     // If there is any warning currently active, with a higher priority that the AP OFF cavalry charge.
     // This will inhibit cancellation of the AP OFF warning using the master warn button.
-    const higherPriorityWarningActive = stallWarning || this.overspeedWarning.get();
+    const higherPriorityWarningActive = this.stallWarning.get() || this.overspeedWarning.get();
     const instinctiveDiscOrMwCancel =
       this.apOffVoluntaryPulse3.read() ||
       ((masterWarningButtonLeft || masterWarningButtonRight) && !higherPriorityWarningActive);
@@ -2171,12 +2138,14 @@ export class PseudoFWC {
     this.apOffInvoluntaryText.set(this.apOffInvoluntaryMemory1.read());
 
     // AP/FD capability change
+    const fmgc2DiscreteWord4 = this.fmgc2DiscreteWord4.get();
+    const fmgc1DiscreteWord4 = this.fmgc1DiscreteWord4.get();
 
-    const fmgc1NotLand3FailOperationalCapacity = !this.fmgc1DiscreteWord4.get().bitValueOr(25, true);
-    const fmgc1NotLand3FailPassiveCapacity = !this.fmgc1DiscreteWord4.get().bitValueOr(24, true);
-    const fmgc1NotLand2Capacity = !this.fmgc1DiscreteWord4.get().bitValueOr(23, true);
+    const fmgc1NotLand3FailOperationalCapacity = !fmgc1DiscreteWord4.bitValueOr(25, true);
+    const fmgc1NotLand3FailPassiveCapacity = !fmgc1DiscreteWord4.bitValueOr(24, true);
+    const fmgc1NotLand2Capacity = !fmgc1DiscreteWord4.bitValueOr(23, true);
     const fmgc1NotLandArmedOrEngaged = !(
-      this.fmgc1DiscreteWord4.get().bitValueOr(14, true) || this.fmgc1DiscreteWord3.get().bitValueOr(20, true)
+      fmgc1DiscreteWord4.bitValueOr(14, true) || this.fmgc1DiscreteWord3.get().bitValueOr(20, true)
     );
 
     this.fmgc1CapabilityChangeMtrig1.write(fmgc1NotLand3FailOperationalCapacity, deltaTime);
@@ -3169,7 +3138,9 @@ export class PseudoFWC {
     this.lgNotDownNoCancel.set((below750Condition || flapsApprCondition) && !lgNotDownResetPulse);
     const n1Eng1 = this.N1Eng1.get();
     const n1Eng2 = this.N1Eng2.get();
-    const apprN1 = (n1Eng1 < 75 && n1Eng2 < 75) || (n1Eng1 < 97 && n1Eng2 < 97 && !engine1MasterOn && !engine2MasterOn);
+    const apprN1 =
+      (n1Eng1 < 75 && n1Eng2 < 75) ||
+      (n1Eng1 < 97 && n1Eng2 < 97 && !this.engine1Master.get() && !this.engine2Master.get());
     this.lgNotDown.set(gearNotDownlocked && !altInhibit && !this.eng1Or2TakeoffPower.get() && apprN1 && below750Ra);
     // goes to discrete out (RMP02B) and out word 126-11/25
     const redArrow =
