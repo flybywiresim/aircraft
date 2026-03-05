@@ -1,22 +1,25 @@
-import { DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { ArraySubject, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import './MfdAtccomRequest.scss';
-import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
-import { Footer } from 'instruments/src/MFD/pages/common/Footer';
+import { AtccomMfdPageProps } from 'instruments/src/MFD/MFD';
+import { AtccomFooter } from './MfdAtccomFooter';
 
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { RequestMenuButton } from 'instruments/src/MFD/pages/common/RequestMenuButton';
 import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
 import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
-import { MaxRequestElements, MessageTable } from 'instruments/src/MFD/pages/ATCCOM/Messages/Registry';
+import { MaxRequestElements, MessageFrame, MessageTable } from 'instruments/src/MFD/pages/ATCCOM/Messages/Registry';
+import { DclMessage } from '@datalink/common';
 
-interface MfdAtccomRequestProps extends AbstractMfdPageProps {}
+interface MfdAtccomRequestProps extends AtccomMfdPageProps {}
 
 export class MfdAtccomRequest extends DisplayComponent<MfdAtccomRequestProps> {
   private dropdownMenuRef = FSComponent.createRef<DropdownMenu>();
 
   private elements: { id: string; message: undefined; readyToSend: boolean }[] = [];
   private FanMode: string = 'A';
+
+  private messageElements = ArraySubject.create<MessageFrame>();
 
   protected onNewData() {}
 
@@ -54,6 +57,29 @@ export class MfdAtccomRequest extends DisplayComponent<MfdAtccomRequestProps> {
     }
   }
 
+  private createDclMessage(data) {
+    const formattedMessage = new DclMessage();
+    formattedMessage.Callsign = data.callsign;
+    formattedMessage.Origin = data.from;
+    formattedMessage.Destination = data.to;
+    formattedMessage.AcType = 'A388';
+    formattedMessage.Atis = data.atis;
+    formattedMessage.Gate = data.gate;
+    formattedMessage.Freetext = data.freetext.filter((n) => n);
+    formattedMessage.Station = data.station;
+
+    return formattedMessage;
+  }
+
+  private transferToMailbox(): void {
+    console.log(this.messageElements.getArray());
+    // check for DCL message
+    if (this.elements[0].id == 'RequestDepartureClearance') {
+      // register dcl message
+      this.props.atcService.registerMessages([this.createDclMessage(this.messageElements.getArray()[0].message)]);
+    }
+  }
+
   // Convert this to use a subscription when elements is changed
   private renderElements(): void {
     FSComponent.remove(document.getElementById('request-frame-0'));
@@ -69,7 +95,7 @@ export class MfdAtccomRequest extends DisplayComponent<MfdAtccomRequestProps> {
           document.getElementById('atccom-request-body'),
         );
         FSComponent.render(
-          MessageTable[element.id].visualization(this.props, this.FanMode, index, this.elements, () =>
+          MessageTable[element.id].visualization(this.props, this.FanMode, index, this.messageElements, () =>
             this.elementDelete(index),
           ),
           document.getElementById(`request-frame-${index}`),
@@ -209,7 +235,7 @@ export class MfdAtccomRequest extends DisplayComponent<MfdAtccomRequestProps> {
               <Button
                 label="XFR<br /> TO MAILBOX"
                 disabled={Subject.create(false)}
-                onClick={() => {}}
+                onClick={() => this.transferToMailbox()}
                 buttonStyle="width: 190px; height:64px;"
               />
             </div>
@@ -231,7 +257,7 @@ export class MfdAtccomRequest extends DisplayComponent<MfdAtccomRequestProps> {
         >
           <span>NOT YET IMPLEMENTED</span>
         </div> */}
-        <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
+        <AtccomFooter bus={this.props.bus} mfd={this.props.mfd} atcService={this.props.atcService} />
       </>
     );
   }
