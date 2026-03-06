@@ -198,7 +198,6 @@ export class FwsAutoCallouts {
   private readonly hundredAboveDhMtrig = new NXLogicTriggeredMonostableNode(3);
   private readonly hundredAboveDhMemoryNode = new NXLogicMemoryNode(true);
 
-  private hundredAboveGenerated = false;
   public readonly HundredAboveAudio = Subject.create(false);
   private readonly fmDh = Arinc429Register.empty();
   private readonly fm1DhRegisteredSimVar = RegisteredSimVar.create('L:A32NX_FM1_DECISION_HEIGHT', SimVarValueType.Enum);
@@ -207,7 +206,6 @@ export class FwsAutoCallouts {
   private autoCalloutDhInbit = false;
   private dhGenerated = false;
 
-  private minimumGenerated = false;
   private readonly minimumMdaMtrigNode = new NXLogicTriggeredMonostableNode(3);
   private readonly minimumMdaMemoryNode = new NXLogicMemoryNode(true);
   private readonly dhMinimumConfNode = new NXLogicConfirmNode(0.1);
@@ -285,10 +283,10 @@ export class FwsAutoCallouts {
       deltaTime,
     );
     const hundredAboveMdaMemory = this.hundredAboveMdaMemoryNode.write(
-      this.hundredAboveGenerated, // TODO should check if the audio has played but will suffice for now
+      this.fws.hundredAboveGenerated,
       !hundredAboveRequestedByDmcMtrig,
     );
-    const hundredAboveMda = !this.autoCalloutMdaInhibit && !hundredAboveMdaMemory && hundredAboveRequestedByDmcMtrig; // TODO check pin program
+    const hundredAboveMda = !this.autoCalloutMdaInhibit && !hundredAboveMdaMemory && hundredAboveRequestedByDmcMtrig;
     // DH
     const dhValue = this.fmDh.valueOr(0);
     const dhLessThan90Feet = dhValue < 90;
@@ -298,19 +296,17 @@ export class FwsAutoCallouts {
       (dhLessThan90Feet && dhAndRaFirstComparison) || (!dhLessThan90Feet && dhAndRaSecondComparison);
     const dhHundredAboveDhConf = this.HundredAboveDhConfNode.write(dhHundredAbovePreRequisite, deltaTime);
     const hundredAboveDhMtrig = this.hundredAboveDhMtrig.write(dhHundredAboveDhConf, deltaTime);
-    const hundredAboveDhMemory = this.hundredAboveDhMemoryNode.write(this.hundredAboveGenerated, !hundredAboveDhMtrig);
-    const hundredAboveDh = !hundredAboveDhMemory && hundredAboveDhMtrig && !this.autoCalloutDhInbit; // TODO check pin program
-
-    this.hundredAboveGenerated = hundredAboveMda || hundredAboveDh;
-    this.HundredAboveAudio.set(this.hundredAboveGenerated);
+    const hundredAboveDhMemory = this.hundredAboveDhMemoryNode.write(
+      this.fws.hundredAboveGenerated,
+      !hundredAboveDhMtrig,
+    );
+    const hundredAboveDh = !hundredAboveDhMemory && hundredAboveDhMtrig && !this.autoCalloutDhInbit;
+    this.HundredAboveAudio.set(hundredAboveMda || hundredAboveDh);
     /// Minimums
     // MDA
     const minimumRequestedByDmc = this.dmcDiscreteWord270.bitValueOr(21, false);
     const minimumRequestedByDmcMtrig = this.minimumMdaMtrigNode.write(minimumRequestedByDmc, deltaTime);
-    const minimumMdaMemory = this.minimumMdaMemoryNode.write(
-      this.minimumGenerated, // TODO should check if the audio has played but will suffice for now
-      !minimumRequestedByDmcMtrig,
-    );
+    const minimumMdaMemory = this.minimumMdaMemoryNode.write(this.fws.minimumGenerated, !minimumRequestedByDmcMtrig);
     const minimumMda = !this.autoCalloutMdaInhibit && !minimumMdaMemory && minimumRequestedByDmcMtrig;
 
     // DH
@@ -320,17 +316,16 @@ export class FwsAutoCallouts {
       (dhLessThan90Feet && dhAndRaMinimumFirstComparison) || (!dhLessThan90Feet && dhAndRaMinimumSecondComparison);
     const dhMinimumConf = this.dhMinimumConfNode.write(dhMinimumPreRequisite, deltaTime);
     const dhMinimumMtrig = this.dhMinimumMtrigNode.write(dhMinimumConf, deltaTime);
-    const minimumDhMemory = this.minimumDhMemoryNode.write(this.minimumGenerated, !dhMinimumMtrig);
+    const minimumDhMemory = this.minimumDhMemoryNode.write(this.fws.minimumGenerated, !dhMinimumMtrig);
     const minimumDh = !minimumDhMemory && dhMinimumMtrig && !this.autoCalloutDhInbit;
 
     const minimum = minimumMda || minimumDh;
-    this.dhGenerated = this.minimumGenerated || hundredAboveDh || minimum;
-    this.minimumGenerated = minimum;
+    this.dhGenerated = this.fws.minimumGenerated || hundredAboveDh || minimum;
     this.minimumAudio.set(minimum);
   }
 
   private computeThresholds(height: number | null, deltaTime: number) {
-    this.radioHeightIncreasing = this.radioHeightSlopeNode.write(height ?? 0) > 0;
+    this.radioHeightIncreasing = this.radioHeightSlopeNode.write(height ?? 0, deltaTime) > 0;
     this.fourHoundredFeetTreshold = height !== null && height < 410 && height >= 400;
     this.threeHundredFeetTreshold = height !== null && height < 310 && height >= 300;
     this.twoHundredFeetTreshold = height !== null && height < 210 && height >= 200;

@@ -1,9 +1,12 @@
-// @ts-strict-ignore
-// Copyright (c) 2021-2024 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
 import { EventBus, SimVarValueType, Subscribable } from '@microsoft/msfs-sdk';
+import { PseudoFWC } from './PseudoFWC';
+
+const MINIMUM_LOCAL_VAR = 'A32NX_FWS_AUDIO_MINIMUMS';
+const HUNDRED_ABOVE_LOCAL_VAR = 'A32NX_FWS_AUDIO_100_ABOVE';
 
 export interface FwsSoundManagerControlEvents {
   enqueueSound: string;
@@ -129,13 +132,13 @@ export const FwsAuralsList: Record<string, FwsAural> = {
   },
   // Altitude callouts
   minimums: {
-    localVarName: 'A32NX_FWS_AUDIO_MINIMUMS',
+    localVarName: MINIMUM_LOCAL_VAR,
     length: 0.67,
     priority: 2,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   hundred_above: {
-    localVarName: 'A32NX_FWS_AUDIO_100_ABOVE',
+    localVarName: HUNDRED_ABOVE_LOCAL_VAR,
     length: 0.72,
     priority: 2,
     type: FwsAuralWarningType.SyntheticVoice,
@@ -260,6 +263,7 @@ export class FwsSoundManager {
   constructor(
     private bus: EventBus,
     private startupCompleted: Subscribable<boolean>,
+    private fws: PseudoFWC,
   ) {
     // Stop all sounds
     Object.values(FwsAuralsList).forEach((a) => {
@@ -336,9 +340,16 @@ export class FwsSoundManager {
     if (!sound) {
       return;
     }
+    const localVar = sound.localVarName;
 
-    if (sound.localVarName) {
-      SimVar.SetSimVarValue(`L:${sound.localVarName}`, SimVarValueType.Bool, true);
+    if (localVar) {
+      if (localVar === HUNDRED_ABOVE_LOCAL_VAR) {
+        this.fws.hundredAboveGenerated = true;
+      } else if (localVar === MINIMUM_LOCAL_VAR) {
+        this.fws.minimumGenerated = true;
+      }
+
+      SimVar.SetSimVarValue(`L:${localVar}`, SimVarValueType.Bool, true);
     } else if (sound.wwiseEventName) {
       Coherent.call('PLAY_INSTRUMENT_SOUND', sound.wwiseEventName);
     }
@@ -346,24 +357,25 @@ export class FwsSoundManager {
     console.log(`Playing sound ${soundKey}`);
 
     this.currentSoundPlaying = soundKey;
-    this.currentSoundPlayTimeRemaining = sound.continuous ? Infinity : sound.length;
+    this.currentSoundPlayTimeRemaining = sound.continuous ? Infinity : sound.length!;
     this.soundQueue.delete(soundKey);
   }
   /** Find most important sound from soundQueue and play */
   private selectAndPlayMostImportantSound(): keyof typeof FwsAuralsList | null {
     if (!this.startupCompleted.get()) {
-      return;
+      return null;
     }
 
     // Logic for scheduling new sounds: Take sound from soundQueue of most important type
     // (SyntheticVoice > AuralWarning > SingleChime) with highest priority, and play it
+    // TODO SyntheticVoice should not be interrupted by SC/CRC
     let selectedSoundKey: keyof typeof FwsAuralsList | null = null;
     const selectedSound = selectedSoundKey !== null ? FwsAuralsList[selectedSoundKey] : null;
     this.soundQueue.forEach((sk) => {
       const s = FwsAuralsList[sk];
       if (
         selectedSoundKey === null ||
-        s.type > selectedSound?.type ||
+        s.type > selectedSound!.type ||
         (s.type === selectedSound?.type && s.priority > selectedSound?.priority)
       ) {
         selectedSoundKey = sk;
@@ -407,18 +419,13 @@ export class FwsSoundManager {
       let rescheduleSound: keyof typeof FwsAuralsList | null = null;
       this.soundQueue.forEach((sk) => {
         const s = FwsAuralsList[sk];
-        if (
-          s &&
-          this.currentSoundPlaying &&
-          FwsAuralsList[this.currentSoundPlaying]?.continuous &&
-          s.type > FwsAuralsList[this.currentSoundPlaying].type
-        ) {
+        if (s && currentSound && currentSound.continuous && s.type > currentSound.type) {
           shouldInterrupt = true;
         }
       });
 
       if (shouldInterrupt) {
-        if (this.currentSoundPlaying && FwsAuralsList[this.currentSoundPlaying]?.continuous) {
+        if (this.currentSoundPlaying && currentSound!.continuous) {
           rescheduleSound = this.currentSoundPlaying;
           this.stopCurrentSound();
           if (rescheduleSound) {

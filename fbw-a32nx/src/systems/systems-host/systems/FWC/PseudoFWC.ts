@@ -124,7 +124,7 @@ export class PseudoFWC {
 
   private readonly startupCompleted = Subject.create(false);
 
-  public readonly soundManager = new FwsSoundManager(this.bus, this.startupCompleted);
+  public readonly soundManager = new FwsSoundManager(this.bus, this.startupCompleted, this);
 
   /** Time to inhibit master warnings and cautions during startup in ms */
   private static readonly FWC_STARTUP_TIME = 5000;
@@ -1412,7 +1412,11 @@ export class PseudoFWC {
 
   private readonly noFlightPhaseInhibit: number[] = [];
 
-  private readonly radioCallouts: FwsAutoCallouts;
+  private readonly autoCallouts: FwsAutoCallouts;
+
+  public minimumGenerated = false;
+
+  public hundredAboveGenerated = false;
 
   constructor(
     private readonly bus: EventBus,
@@ -1441,7 +1445,7 @@ export class PseudoFWC {
     );
 
     SimVar.SetSimVarValue('L:A32NX_STATUS_LEFT_LINE_8', 'string', '000000001');
-    this.radioCallouts = new FwsAutoCallouts(this);
+    this.autoCallouts = new FwsAutoCallouts(this);
   }
 
   init(): void {
@@ -1553,83 +1557,89 @@ export class PseudoFWC {
     // Radio altimeter callouts
     NXDataStore.getAndSubscribeLegacy(
       'CONFIG_A32NX_FWC_RADIO_AUTO_CALL_OUT_PINS',
-      (k, v) => k === 'CONFIG_A32NX_FWC_RADIO_AUTO_CALL_OUT_PINS' && (this.radioCallouts.autoCallOutPins = Number(v)),
+      (k, v) => k === 'CONFIG_A32NX_FWC_RADIO_AUTO_CALL_OUT_PINS' && (this.autoCallouts.autoCallOutPins = Number(v)),
       A32NX_DEFAULT_RADIO_AUTO_CALL_OUTS.toString(),
     );
-    this.radioCallouts.twoThousandFiveHundredAudio.sub((v) => {
+    this.autoCallouts.twoThousandFiveHundredAudio.sub((v) => {
       this.soundManager.handleSoundCondition('alt_2500', v);
     });
-    this.radioCallouts.twentyFiveHundredAudio.sub((v) => {
+    this.autoCallouts.twentyFiveHundredAudio.sub((v) => {
       this.soundManager.handleSoundCondition('alt_2500b', v);
     });
-    this.radioCallouts.twoThousandAudio.sub((v) => {
+    this.autoCallouts.twoThousandAudio.sub((v) => {
       this.soundManager.handleSoundCondition('alt_2000', v);
     });
-    this.radioCallouts.oneThousandAudio.sub((v) => {
+    this.autoCallouts.oneThousandAudio.sub((v) => {
       this.soundManager.handleSoundCondition('alt_1000', v);
     });
-    this.radioCallouts.fiveHundredAudio.sub((v) => {
+    this.autoCallouts.fiveHundredAudio.sub((v) => {
       this.soundManager.handleSoundCondition('alt_500', v);
     });
-    this.radioCallouts.fourHundredAudio.sub((v) => {
+    this.autoCallouts.fourHundredAudio.sub((v) => {
       this.soundManager.handleSoundCondition('alt_400', v);
     });
-    this.radioCallouts.threeHundredAudio.sub((v) => {
+    this.autoCallouts.threeHundredAudio.sub((v) => {
       this.soundManager.handleSoundCondition('alt_300', v);
     });
-    this.radioCallouts.twoHundredAudio.sub((v) => {
+    this.autoCallouts.twoHundredAudio.sub((v) => {
       this.soundManager.handleSoundCondition('alt_200', v);
     });
-    this.radioCallouts.oneHundredAudio.sub((v) => {
+    this.autoCallouts.oneHundredAudio.sub((v) => {
       this.soundManager.handleSoundCondition('alt_100', v);
     });
-    this.radioCallouts.fiftyAudio.sub((v) => {
+    this.autoCallouts.fiftyAudio.sub((v) => {
       this.soundManager.handleSoundCondition('alt_50', v);
     });
-    this.radioCallouts.fortyAudio.sub((v) => {
+    this.autoCallouts.fortyAudio.sub((v) => {
       this.soundManager.handleSoundCondition('alt_40', v);
     });
-    this.radioCallouts.thirtyAudio.sub((v) => {
+    this.autoCallouts.thirtyAudio.sub((v) => {
       this.soundManager.handleSoundCondition('alt_30', v);
     });
-    this.radioCallouts.twentyAudio.sub((v) => {
+    this.autoCallouts.twentyAudio.sub((v) => {
       this.soundManager.handleSoundCondition('alt_20', v);
     });
 
-    this.radioCallouts.twentyRetardAudio.sub((v) => {
+    this.autoCallouts.twentyRetardAudio.sub((v) => {
       if (v) {
         this.soundManager.enqueueSound('alt_20');
         this.soundManager.enqueueSound('retard');
       }
     });
 
-    this.radioCallouts.tenAudio.sub((v) => {
+    this.autoCallouts.tenAudio.sub((v) => {
       console.log('tenAudio:', v);
       this.soundManager.handleSoundCondition('alt_10', v);
     });
 
-    this.radioCallouts.tenRetardAudio.sub((v) => {
+    this.autoCallouts.tenRetardAudio.sub((v) => {
       if (v) {
         this.soundManager.enqueueSound('alt_10');
         this.soundManager.enqueueSound('retard');
       }
     });
 
-    this.radioCallouts.retardAudio.sub((v) => {
+    this.autoCallouts.retardAudio.sub((v) => {
       console.log('retardAudio:', v);
       this.soundManager.handleSoundCondition('retard_continuous', v);
     });
 
-    this.radioCallouts.fiveAudio.sub((v) => {
+    this.autoCallouts.fiveAudio.sub((v) => {
       console.log('fiveAudio:', v);
       this.soundManager.handleSoundCondition('alt_5', v);
     });
 
-    this.radioCallouts.HundredAboveAudio.sub((v) => {
+    this.autoCallouts.HundredAboveAudio.sub((v) => {
+      if (!v) {
+        this.hundredAboveGenerated = false;
+      }
       this.soundManager.handleSoundCondition('hundred_above', v); // TODO confirmation time
     });
 
-    this.radioCallouts.minimumAudio.sub((v) => {
+    this.autoCallouts.minimumAudio.sub((v) => {
+      if (!v) {
+        this.minimumGenerated = false;
+      }
       this.soundManager.handleSoundCondition('minimums', v); // TODO confirmation time
     });
   }
@@ -2034,7 +2044,7 @@ export class PseudoFWC {
       (onGroundCount > 1 && eitherRaInvalid);
     const onGround = this.onGroundConf.write(this.onGroundImmediate, deltaTime);
     this.aircraftOnGround.set(onGround);
-    this.radioCallouts.update(deltaTime);
+    this.autoCallouts.update(deltaTime);
     // AP OFF Voluntary
     const anyApEngaged: boolean =
       SimVar.GetSimVarValue('L:A32NX_FMGC_1_AP_ENGAGED', SimVarValueType.Bool) ||

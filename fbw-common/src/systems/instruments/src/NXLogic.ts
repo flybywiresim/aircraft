@@ -296,8 +296,8 @@ export class NxSlopeNode {
     this.previousValue = initialValue;
   }
 
-  write(input: number): number {
-    this.output = input - this.previousValue;
+  write(input: number, deltaTime: number): number {
+    this.output = (input - this.previousValue) / (deltaTime / 1000);
     this.previousValue = input;
     return this.output;
   }
