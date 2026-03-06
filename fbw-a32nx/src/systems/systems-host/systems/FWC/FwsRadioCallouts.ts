@@ -12,7 +12,7 @@ import { Subject } from '@microsoft/msfs-sdk';
 import { A32NX_DEFAULT_RADIO_AUTO_CALL_OUTS, A32NXRadioAutoCallOutFlags } from '@shared/AutoCallOuts';
 import { PseudoFWC } from './PseudoFWC';
 
-export class FwsRadioCallouts {
+export class FwsRadioAltimeterAutoCallouts {
   /** Radio Altimeter callouts */
 
   private readonly noFlightPhaseInhibit: number[] = [];
@@ -164,7 +164,7 @@ export class FwsRadioCallouts {
   private readonly fiveMtrigNode = new NXLogicTriggeredMonostableNode(2);
   public readonly fiveAudio = Subject.create(false);
 
-  private retardInhibit = false; // TODO
+  private retardInhibit = false;
 
   private newRetardInhibit = false;
 
@@ -232,7 +232,7 @@ export class FwsRadioCallouts {
   }
 
   private computeThresholds(height: number | null, deltaTime: number) {
-    this.radioHeightIncreasing = this.radioHeightSlopeNode.write(deltaTime, height ?? 0) > 0;
+    this.radioHeightIncreasing = this.radioHeightSlopeNode.write(height ?? 0) > 0;
     this.fourHoundredFeetTreshold = height !== null && height < 410 && height >= 400;
     this.threeHundredFeetTreshold = height !== null && height < 310 && height >= 300;
     this.twoHundredFeetTreshold = height !== null && height < 210 && height >= 200;
@@ -504,7 +504,7 @@ export class FwsRadioCallouts {
 
     // 20 retard
     const goAround = tla1 > 43.3 || tla2 > 43.3;
-    const retardInhibitOrGoAround = this.retardInhibit || goAround;
+    const retardInhibitOrToga = this.newRetardInhibit || goAround;
     const noAutoland = !oneApActiveAndinLand;
     const noAutolandAndAthr = noAutoland && athrActive;
     const noAutolandAndAthrOrNoAthr = noAutolandAndAthr || !athrActive;
@@ -575,8 +575,7 @@ export class FwsRadioCallouts {
       deltaTime,
     );
     const retardAudio =
-      !(retardInhibitOrGoAround || this.radioHeightNotDecreasingConfirmNode.read()) &&
-      (this.retardInhibit || retardPulse);
+      !(retardInhibitOrToga || this.radioHeightNotDecreasingConfirmNode.read()) && (this.retardInhibit || retardPulse);
     this.retardAudio.set(retardAudio);
 
     // 5

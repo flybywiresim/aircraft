@@ -141,104 +141,99 @@ export const FwsAuralsList: Record<string, FwsAural> = {
     type: FwsAuralWarningType.SyntheticVoice,
   },
   retard: {
-    wwiseEventName: 'new_retard',
+    localVarName: 'A32NX_FWS_AUDIO_RETARD',
     length: 0.72,
     priority: 2,
     type: FwsAuralWarningType.SyntheticVoice,
-  },
-  retard_periodic: {
-    wwiseEventName: 'new_retard',
-    length: 0.72,
     periodicWithPause: 0.2,
-    priority: 2,
-    type: FwsAuralWarningType.SyntheticVoice,
+    continuous: true,
   },
   alt_2500: {
-    wwiseEventName: 'new_2500',
+    localVarName: 'A32NX_FWS_AUDIO_2500',
     length: 1.1,
     priority: 2,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_2500b: {
-    wwiseEventName: 'new_2_500',
+    localVarName: 'A32NX_FWS_AUDIO_2500B',
     length: 1.047,
     priority: 2,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_2000: {
-    wwiseEventName: 'new_2000',
+    localVarName: 'A32NX_FWS_AUDIO_2000',
     length: 0.72,
     priority: 2,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_1000: {
-    wwiseEventName: 'new_1000',
+    localVarName: 'A32NX_FWS_AUDIO_1000',
     length: 0.9,
     priority: 2,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_500: {
-    wwiseEventName: 'new_500',
+    localVarName: 'A32NX_FWS_AUDIO_500',
     length: 0.6,
     priority: 2,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_400: {
-    wwiseEventName: 'new_400',
+    localVarName: 'A32NX_FWS_AUDIO_400',
     length: 0.6,
     priority: 2,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_300: {
-    wwiseEventName: 'new_300',
+    localVarName: 'A32NX_FWS_AUDIO_300',
     length: 0.6,
     priority: 2,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_200: {
-    wwiseEventName: 'new_200',
+    localVarName: 'A32NX_FWS_AUDIO_200',
     length: 0.6,
     priority: 2,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_100: {
-    wwiseEventName: 'new_100',
+    localVarName: 'A32NX_FWS_AUDIO_100',
     length: 0.6,
     priority: 2,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_50: {
-    wwiseEventName: 'new_50',
+    localVarName: 'A32NX_FWS_AUDIO_50',
     length: 0.4,
     priority: 2,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_40: {
-    wwiseEventName: 'new_40',
+    localVarName: 'A32NX_FWS_AUDIO_40',
     length: 0.4,
     priority: 2,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_30: {
-    wwiseEventName: 'new_30',
+    localVarName: 'A32NX_FWS_AUDIO_30',
     length: 0.4,
     priority: 2,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_20: {
-    wwiseEventName: 'new_20',
+    localVarName: 'A32NX_FWS_AUDIO_20',
     length: 0.4,
     priority: 2,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_10: {
-    wwiseEventName: 'new_10',
+    localVarName: 'A32NX_FWS_AUDIO_10',
     length: 0.3,
     priority: 2,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_5: {
-    wwiseEventName: 'new_5',
+    localVarName: 'A32NX_FWS_AUDIO_5',
     length: 0.3,
     priority: 2,
     type: FwsAuralWarningType.SyntheticVoice,
@@ -254,12 +249,8 @@ export class FwsSoundManager {
 
   private currentSoundPlaying: keyof typeof FwsAuralsList | null = null;
 
-  private soundOnRepeatCooldown: keyof typeof FwsAuralsList | null = null;
-
   /** in seconds */
   private currentSoundPlayTimeRemaining = 0;
-
-  private timeTillNextSoundCanBePlayed = 0;
 
   constructor(
     private bus: EventBus,
@@ -303,8 +294,6 @@ export class FwsSoundManager {
       this.stopCurrentSound();
     }
     this.soundQueue.delete(soundKey);
-    this.soundOnRepeatCooldown = null;
-    this.timeTillNextSoundCanBePlayed = 0;
   }
 
   private stopCurrentSound() {
@@ -349,12 +338,14 @@ export class FwsSoundManager {
       Coherent.call('PLAY_INSTRUMENT_SOUND', sound.wwiseEventName);
     }
 
+    console.log(`Playing sound ${soundKey}`);
+
     this.currentSoundPlaying = soundKey;
     this.currentSoundPlayTimeRemaining = sound.continuous ? Infinity : sound.length;
     this.soundQueue.delete(soundKey);
   }
   /** Find most important sound from soundQueue and play */
-  private selectAndPlayMostImportantSound(deltaTime: number): keyof typeof FwsAuralsList | null {
+  private selectAndPlayMostImportantSound(): keyof typeof FwsAuralsList | null {
     if (!this.startupCompleted.get()) {
       return;
     }
@@ -362,22 +353,19 @@ export class FwsSoundManager {
     // Logic for scheduling new sounds: Take sound from soundQueue of most important type
     // (SyntheticVoice > AuralWarning > SingleChime) with highest priority, and play it
     let selectedSoundKey: keyof typeof FwsAuralsList | null = null;
+    const selectedSound = selectedSoundKey !== null ? FwsAuralsList[selectedSoundKey] : null;
     this.soundQueue.forEach((sk) => {
       const s = FwsAuralsList[sk];
       if (
         selectedSoundKey === null ||
-        s.type > FwsAuralsList[selectedSoundKey].type ||
-        (s.type === FwsAuralsList[selectedSoundKey].type && s.priority > FwsAuralsList[selectedSoundKey].priority)
+        s.type > selectedSound?.type ||
+        (s.type === selectedSound?.type && s.priority > selectedSound?.priority)
       ) {
         selectedSoundKey = sk;
       }
     });
 
     if (selectedSoundKey) {
-      if (selectedSoundKey === this.soundOnRepeatCooldown && this.timeTillNextSoundCanBePlayed > 0) {
-        this.timeTillNextSoundCanBePlayed -= deltaTime / 1_000;
-        return null;
-      }
       this.playSound(selectedSoundKey);
       return selectedSoundKey;
     }
@@ -402,19 +390,11 @@ export class FwsSoundManager {
         this.currentSoundPlayTimeRemaining -= deltaTime / 1_000;
       } else {
         // Sound finishes in this cycle
-        const currentSoundKey = this.currentSoundPlaying;
         if (currentSound?.localVarName) {
           SimVar.SetSimVarValue(`L:${currentSound.localVarName}`, SimVarValueType.Bool, false);
         }
         this.currentSoundPlaying = null;
         this.currentSoundPlayTimeRemaining = 0;
-        if (currentSound?.continuous && currentSound.periodicWithPause !== undefined) {
-          this.soundOnRepeatCooldown = currentSoundKey;
-          this.timeTillNextSoundCanBePlayed = currentSound.periodicWithPause;
-        } else {
-          this.soundOnRepeatCooldown = null;
-          this.timeTillNextSoundCanBePlayed = 0;
-        }
       }
 
       // Interrupt if sound with higher category is present in queue and current sound is continuous
@@ -443,7 +423,7 @@ export class FwsSoundManager {
       }
     } else {
       // Play next sound
-      this.selectAndPlayMostImportantSound(deltaTime);
+      this.selectAndPlayMostImportantSound();
     }
   }
 }

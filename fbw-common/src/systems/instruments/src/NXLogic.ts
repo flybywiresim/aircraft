@@ -290,19 +290,15 @@ export class NxHysterisNode {
 
 export class NxSlopeNode {
   private previousValue: number;
-  private previousTime: number;
   private output = 0;
 
   constructor(initialValue = 0) {
     this.previousValue = initialValue;
-    this.previousTime = 0;
   }
 
-  write(deltaTime: number, input: number): number {
-    const derivative = (input - this.previousValue) / (deltaTime - this.previousTime);
+  write(input: number): number {
+    this.output = input - this.previousValue;
     this.previousValue = input;
-    this.previousTime = deltaTime;
-    this.output = derivative;
     return this.output;
   }
 
