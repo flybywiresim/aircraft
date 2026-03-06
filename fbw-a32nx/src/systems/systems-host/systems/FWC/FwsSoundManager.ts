@@ -135,7 +135,7 @@ export const FwsAuralsList: Record<string, FwsAural> = {
     type: FwsAuralWarningType.SyntheticVoice,
   },
   hundred_above: {
-    wwiseEventName: 'aural_100above',
+    localVarName: 'A32NX_FWS_AUDIO_100_ABOVE',
     length: 0.72,
     priority: 2,
     type: FwsAuralWarningType.SyntheticVoice,

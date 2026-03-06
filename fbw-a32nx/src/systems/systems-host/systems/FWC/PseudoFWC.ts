@@ -47,7 +47,7 @@ import { PseudoFwcSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/P
 import { A32NXEcpBusEvents } from '@shared/publishers/A32NXEcpBusPublisher';
 import { A32NX_DEFAULT_RADIO_AUTO_CALL_OUTS } from '@shared/AutoCallOuts';
 import { VorSimVars } from '@shared/publishers/VorBusPublisher';
-import { FwsRadioAltimeterAutoCallouts } from './FwsRadioCallouts';
+import { FwsAutoCallouts } from './FwsAutoCallouts';
 
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));
@@ -1412,7 +1412,7 @@ export class PseudoFWC {
 
   private readonly noFlightPhaseInhibit: number[] = [];
 
-  private readonly radioCallouts: FwsRadioAltimeterAutoCallouts;
+  private readonly radioCallouts: FwsAutoCallouts;
 
   constructor(
     private readonly bus: EventBus,
@@ -1441,7 +1441,7 @@ export class PseudoFWC {
     );
 
     SimVar.SetSimVarValue('L:A32NX_STATUS_LEFT_LINE_8', 'string', '000000001');
-    this.radioCallouts = new FwsRadioAltimeterAutoCallouts(this);
+    this.radioCallouts = new FwsAutoCallouts(this);
   }
 
   init(): void {
@@ -1623,6 +1623,10 @@ export class PseudoFWC {
     this.radioCallouts.fiveAudio.sub((v) => {
       console.log('fiveAudio:', v);
       this.soundManager.handleSoundCondition('alt_5', v);
+    });
+
+    this.radioCallouts.HundredAboveAudio.sub((v) => {
+      this.soundManager.handleSoundCondition('hundred_above', v); // TODO confirmation time
     });
   }
 

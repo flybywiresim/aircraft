@@ -81,6 +81,10 @@ export class PseudoDmc implements Instrument {
   /** SDI 11 */
   private readonly dmcPitchAngleWord324Backup = Arinc429RegisterSubject.createEmpty();
 
+  private readonly fmMinimumConsumer = Arinc429LocalVarConsumerSubject.create(null);
+
+  private readonly dmcDiscreteWord270 = Arinc429RegisterSubject.createEmpty();
+
   private readonly outputWords = [
     this.dmcDiscreteWord271,
     this.dmcDiscreteWord313Backup,
@@ -89,6 +93,7 @@ export class PseudoDmc implements Instrument {
     this.dmcAltitude,
     this.dmcPitchAngleWord324Onside,
     this.dmcPitchAngleWord324Backup,
+    this.dmcDiscreteWord270,
   ];
 
   /** Not valid until init is called! */
@@ -150,6 +155,22 @@ export class PseudoDmc implements Instrument {
         },
         true,
         true,
+      ),
+      MappedSubject.create(
+        ([fmMda, altitude]) => {
+          const mdaInvalid = fmMda.isInvalid();
+          const altInvalid = altitude.isInvalid();
+          this.dmcDiscreteWord270.setBitValue(
+            20,
+            !mdaInvalid && !altInvalid && Math.round(altitude.value - fmMda.value) === 100,
+          );
+          this.dmcDiscreteWord270.setBitValue(
+            21,
+            mdaInvalid || altInvalid ? false : Math.round(altitude.value - fmMda.value) === 0,
+          );
+        },
+        this.dmcAltitude,
+        this.fmMinimumConsumer,
       ),
     ];
 
@@ -216,6 +237,12 @@ export class PseudoDmc implements Instrument {
       true,
     );
 
+    this.dmcDiscreteWord270.sub((word) => {
+      word.writeToSimVar(
+        this.isRightSide ? 'L:A32NX_DMC_DISCRETE_WORD_270_RIGHT' : 'L:A32NX_DMC_DISCRETE_WORD_270_LEFT',
+      );
+    });
+
     this.mainElecSupply.setConsumer(
       this.sub.on(this.isRightSide ? 'a32nx_elec_ac_2_bus_is_powered' : 'a32nx_elec_ac_ess_bus_is_powered'),
     );
@@ -230,6 +257,7 @@ export class PseudoDmc implements Instrument {
 
     this.irDiscreteWordOnside.setConsumer(this.sub.on(this.isRightSide ? 'ir_maint_word_2' : 'ir_maint_word_1'));
     this.irPitchAngleWordOnside.setConsumer(this.sub.on(this.isRightSide ? 'ir_pitch_2' : 'ir_pitch_1'));
+    this.fmMinimumConsumer.setConsumer(this.sub.on('fmMdaRaw'));
   }
 
   /** @inheritdoc */

@@ -2363,6 +2363,10 @@
         <Range LowerBound="1"/>
         </Sound>
 
+        <Sound WwiseData="true" WwiseEvent="aural_100above" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_100_ABOVE">
+         <Range LowerBound="1"/>
+         </Sound>
+
 
     </SimVarSounds>
 
@@ -2378,7 +2382,7 @@
         <Sound WwiseData="true" WwiseEvent="fwdgalley" NodeName="SOUND_SPEAKER_LEFT" />
         <Sound WwiseData="true" WwiseEvent="cpdlc_ring" NodeName="SOUND_SPEAKER_LEFT" />
         <Sound WwiseData="true" WwiseEvent="aural_minimumnew" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_MINIMUM"/>
-        <Sound WwiseData="true" WwiseEvent="aural_100above" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_100ABOVE"/>
+
         <Sound WwiseData="true" WwiseEvent="aural_speed" NodeName="SOUND_SPEAKER_LEFT" />
         <Sound WwiseData="true" WwiseEvent="aural_bank_bank" NodeName="SOUND_SPEAKER_LEFT" />
         <Sound WwiseData="true" WwiseEvent="aural_pitch" NodeName="SOUND_SPEAKER_LEFT" />
