@@ -79,6 +79,10 @@
 1. [FMS] Show true bearings correctly in various FMS pages on the MCDU/MFD - @tracernz (Mike)
 1. [A380X/FWS] Improve various ABN SENSED procedure accuracy - @Jonny23787 (Jonathan)
 1. [A32NX/FMS] Add pilot entry ETT (Estimated Takeoff Time) functionality  - @BravoMike99 (bruno_pt99)
+2. 1. [A32NX/FWS] Add `IDG 1(2) DISCONNECTED` and `GEN 1(2) OFF` master cautions - @FozzieHi (fozzie)
+1. [A380X/FWS] Fixed overspeed VFE blue and selectable - @matze-tech (matze2346)
+1. [A380X/FUEL] Add first FQMS fuel measuring implementation - @Gurgel100 (Pascal)
+1. [FUEL] Fix fuel getting consumed when in Active Pause or Pause at T/D - @Maximilian-Reuter (\_chaoz_)
 1. [A380X/FLIGHT MODEL] Improve pitch and roll response  - @donstim (donbikes)
 
 ## 0.14.0
