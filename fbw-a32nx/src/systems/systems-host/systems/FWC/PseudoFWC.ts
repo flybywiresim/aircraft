@@ -1617,7 +1617,7 @@ export class PseudoFWC {
 
     this.radioCallouts.retardAudio.sub((v) => {
       console.log('retardAudio:', v);
-      this.soundManager.handleSoundCondition('retard', v);
+      this.soundManager.handleSoundCondition('retard_continuous', v);
     });
 
     this.radioCallouts.fiveAudio.sub((v) => {

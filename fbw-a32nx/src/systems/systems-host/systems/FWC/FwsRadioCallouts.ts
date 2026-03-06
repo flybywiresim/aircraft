@@ -7,8 +7,9 @@ import {
   Arinc429WordData,
   Arinc429Register,
   NxSlopeNode,
+  RegisteredSimVar,
 } from '@flybywiresim/fbw-sdk';
-import { Subject } from '@microsoft/msfs-sdk';
+import { SimVarValueType, Subject } from '@microsoft/msfs-sdk';
 import { A32NX_DEFAULT_RADIO_AUTO_CALL_OUTS, A32NXRadioAutoCallOutFlags } from '@shared/AutoCallOuts';
 import { PseudoFWC } from './PseudoFWC';
 
@@ -180,6 +181,21 @@ export class FwsRadioAltimeterAutoCallouts {
   private gpwsInhibition = false;
   private tcasAural = false;
 
+  private readonly fmMda = Arinc429Register.empty();
+  private readonly fm1MdaRegisteredSimVar = RegisteredSimVar.create(
+    'L:A32NX_FM1_MINIMUM_DESCENT_ALTITUDE',
+    SimVarValueType.Enum,
+  );
+  private readonly fm2MdaRegisteredSimVar = RegisteredSimVar.create(
+    'L:A32NX_FM2_MINIMUM_DESCENT_ALTITUDE',
+    SimVarValueType.Enum,
+  );
+  private readonly fmDh = Arinc429Register.empty();
+  private readonly fm1DhRegisteredSimVar = RegisteredSimVar.create('L:A32NX_FM1_DECISION_HEIGHT', SimVarValueType.Enum);
+  private readonly fm2DhRegisteredSimVar = RegisteredSimVar.create('L:A32NX_FM2_DECISION_HEIGHT', SimVarValueType.Enum);
+  private autoCalloutMdaInhibit = false;
+  private autoCalloutDhInbit = false;
+
   constructor(private readonly fws: PseudoFWC) {}
 
   public update(deltaTime: number) {
@@ -201,6 +217,15 @@ export class FwsRadioAltimeterAutoCallouts {
     const atsDiscreteWord = this.fws.atsDiscreteWord;
     const fm1DiscreteWord4 = this.fws.fmgc1DiscreteWord4.get();
     const fm2DiscreteWord4 = this.fws.fmgc2DiscreteWord4.get();
+    // Minimums aquisition.
+    this.fmMda.set(this.fm1MdaRegisteredSimVar.get());
+    if (this.fmMda.isInvalid()) {
+      this.fmMda.set(this.fm2MdaRegisteredSimVar.get());
+    }
+    this.fmDh.set(this.fm1DhRegisteredSimVar.get());
+    if (this.fmDh.isInvalid()) {
+      this.fmDh.set(this.fm2DhRegisteredSimVar.get());
+    }
 
     this.computeThresholds(height, deltaTime);
 
@@ -271,6 +296,10 @@ export class FwsRadioAltimeterAutoCallouts {
     const onGroundAndNotPhase8 = onGround && flightPhase !== 8;
     this.newRetardInhibit =
       raInvalidOrLowSpeedWarningOrFlex || (onGroundAndNotPhase8 && engine1MasterOn && engine2MasterOn);
+
+    this.autoCalloutMdaInhibit = speedWarning || stallWarning || this.gpwsInhibition || this.tcasAural;
+
+    this.autoCalloutDhInbit = height === null || this.autoCalloutInhibit || this.fmDh.valueOr(0) <= 3;
   }
 
   private autoCalloutLogic(

@@ -145,6 +145,11 @@ export const FwsAuralsList: Record<string, FwsAural> = {
     length: 0.72,
     priority: 2,
     type: FwsAuralWarningType.SyntheticVoice,
+  },
+  retard_continuous: {
+    localVarName: 'A32NX_FWS_AUDIO_RETARD',
+    priority: 2,
+    type: FwsAuralWarningType.SyntheticVoice,
     periodicWithPause: 0.2,
     continuous: true,
   },
