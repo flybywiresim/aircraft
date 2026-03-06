@@ -4,7 +4,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { MutableSubscribable, Subject, Subscribable } from '@microsoft/msfs-sdk';
+import { MutableSubscribable, Subscribable } from '@microsoft/msfs-sdk';
 
 export interface FlightPlanPerformanceData {
   /**
@@ -91,27 +91,28 @@ export interface FlightPlanPerformanceData {
   /**
    * Whether cruise temperature is pilot entered.
    */
-  get cruiseTemperatureIsPilotEntered(): Subscribable<boolean>;
+  get isCruiseTemperaturePilotEntered(): Subscribable<boolean>;
 
   /**
-   * Default ground temperature; Unit: degrees C; Null if not set.
+   * Default ground temperature; Unit: degrees C; Null if not set. A32NX specific
    */
-  readonly defaultGroundTemperature: MutableSubscribable<number | null>;
+  readonly defaultGroundTemperature?: MutableSubscribable<number | null>;
 
   /**
-   * Pilot ground temperature; Unit: degrees C; Null if not set.
+   * Pilot ground temperature; Unit: degrees C; Null if not set. A32NX specific
    */
-  readonly pilotGroundTemperature: MutableSubscribable<number | null>;
+  readonly pilotGroundTemperature?: MutableSubscribable<number | null>;
 
   /**
-   * Ground temperature. Default if no pilot entry, pilot entered otherwise; Unit: degrees C; Null if not set.
+   * Ground temperature. Default if no pilot entry, pilot entered otherwise; Unit: degrees C; Null if not set. A32NX specific
    */
-  get groundTemperature(): Subscribable<number | null>;
+  readonly groundTemperature?: Subscribable<number | null>;
 
   /**
-   * Whether ground temperature is pilot entered.
+   * Whether ground temperature is pilot entered. A32NX specific
+
    */
-  get groundTemperatureIsPilotEntered(): Subscribable<boolean>;
+  readonly groundTemperatureIsPilotEntered?: Subscribable<boolean>;
 
   /**
    * Pilot entered tropopause; Unit: Feet; Null if not set.
@@ -390,13 +391,11 @@ export interface FlightPlanPerformanceData {
 
   /**
    * Returns the pilot alternate fuel if set, the calculated value otherwise
-   * A380 specific
    */
   get alternateFuel(): Subscribable<number | null>;
 
   /**
    * Whether alternate fuel is pilot entered.
-   * A380 specific
    */
   get isAlternateFuelPilotEntered(): Subscribable<boolean>;
 
@@ -548,9 +547,9 @@ export interface FlightPlanPerformanceData {
   readonly approachFlapsThreeSelected: MutableSubscribable<boolean>;
 
   /** Estimated takeoff time timestamp, in unix epoch milliseconds */
-  readonly estimatedTakeoffTime: Subject<number | null>;
+  readonly estimatedTakeoffTime: MutableSubscribable<number | null>;
 
-  readonly estimatedTakeoffTimeExpired: Subject<boolean | null>;
+  readonly estimatedTakeoffTimeExpired: MutableSubscribable<boolean | null>;
 
   // ----------------------------------------------
   // A380 specific
@@ -652,8 +651,8 @@ export interface SerializedFlightPlanPerformanceData {
   cruiseFlightLevel: number | null;
   cruiseTemperaturePilotEntry: number | null;
   cruiseTemperatureIsaTemp?: number | null; // A380 specific
-  defaultGroundTemperature: number | null;
-  pilotGroundTemperature: number | null;
+  defaultGroundTemperature?: number | null; // A32NX specific
+  pilotGroundTemperature?: number | null; // A32NX specific
   costIndex: number | null;
   defaultTropopause: number;
   pilotTropopause: number | null;

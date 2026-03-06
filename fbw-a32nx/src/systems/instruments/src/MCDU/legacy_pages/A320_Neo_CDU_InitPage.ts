@@ -302,13 +302,13 @@ export class CDUInitPage {
 
     const groundTemp = new Column(23, '---°', Column.right);
 
-    const planGroundTemp = plan.performanceData.groundTemperature.get();
+    const planGroundTemp = plan.performanceData.groundTemperature!.get();
 
     if (planGroundTemp !== null) {
       groundTemp.update(
         CDUInitPage.formatTemperature(planGroundTemp),
         Column.cyan,
-        plan.performanceData.groundTemperatureIsPilotEntered.get() ? Column.big : Column.small,
+        plan.performanceData.groundTemperatureIsPilotEntered!.get() ? Column.big : Column.small,
       );
     }
 

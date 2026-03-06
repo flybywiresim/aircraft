@@ -155,13 +155,13 @@ export class FlightManagementComputer implements FmcInterface {
       'L',
       this.flightPlanInterface,
       A380X_NUM_LEGS_ON_FPLN_PAGE,
-      A380AircraftConfig.lnavConfig.NUM_SECONDARY_FLIGHT_PLANS,
+      A380AircraftConfig.fpmConfig.NUM_SECONDARY_FLIGHT_PLANS,
     ),
     R: new EfisInterface(
       'R',
       this.flightPlanInterface,
       A380X_NUM_LEGS_ON_FPLN_PAGE,
-      A380AircraftConfig.lnavConfig.NUM_SECONDARY_FLIGHT_PLANS,
+      A380AircraftConfig.fpmConfig.NUM_SECONDARY_FLIGHT_PLANS,
     ),
   };
 

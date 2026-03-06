@@ -122,7 +122,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
     active.performanceData.pipeTo(sec.performanceData, isBeforeEngineStart);
 
-    sec.flags &= 0;
+    sec.flags = 0;
     sec.flags |= FlightPlanFlags.CopiedFromActive;
   }
 

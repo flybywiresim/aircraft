@@ -407,7 +407,7 @@ export class GuidanceController {
       this.tryUpdateFlightPlanGeometry(FlightPlanIndex.Active, true);
       this.tryUpdateFlightPlanGeometry(FlightPlanIndex.Temporary, false);
 
-      for (let i = 0; i < this.acConfig.lnavConfig.NUM_SECONDARY_FLIGHT_PLANS; i++) {
+      for (let i = 0; i < this.acConfig.fpmConfig.NUM_SECONDARY_FLIGHT_PLANS; i++) {
         this.tryUpdateFlightPlanGeometry(FlightPlanIndex.FirstSecondary + i, false);
         this.tryUpdateFlightPlanGeometry(FlightPlanIndex.FirstSecondary + i, true);
       }
@@ -419,7 +419,7 @@ export class GuidanceController {
         this.tryUpdateFlightPlanGeometry(FlightPlanIndex.Active, true, true);
         this.tryUpdateFlightPlanGeometry(FlightPlanIndex.Temporary, false, true);
 
-        for (let i = 0; i < this.acConfig.lnavConfig.NUM_SECONDARY_FLIGHT_PLANS; i++) {
+        for (let i = 0; i < this.acConfig.fpmConfig.NUM_SECONDARY_FLIGHT_PLANS; i++) {
           this.tryUpdateFlightPlanGeometry(FlightPlanIndex.FirstSecondary + i, false, true);
           this.tryUpdateFlightPlanGeometry(FlightPlanIndex.FirstSecondary + i, true, true);
         }

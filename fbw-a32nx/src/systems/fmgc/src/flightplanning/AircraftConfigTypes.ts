@@ -1,8 +1,9 @@
-// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
 import { FlapConf } from '@fmgc/guidance/vnav/common';
+import { FpmConfig } from './FpmConfig';
 
 export enum VnavDescentMode {
   NORMAL,
@@ -16,6 +17,7 @@ export interface AircraftConfig {
   engineModelParameters: EngineModelParameters;
   flightModelParameters: FlightModelParameters;
   fmSymbolConfig: FMSymbolsConfig;
+  fpmConfig: FpmConfig;
 }
 
 export interface VnavConfig {
@@ -89,11 +91,6 @@ export interface LnavConfig {
    * Whether to emit the "end of VD marker" (A380X only) as a PWP
    */
   EMIT_END_OF_VD_MARKER: boolean;
-
-  /**
-   * Number of secondary flight plans supported by the aircraft
-   */
-  NUM_SECONDARY_FLIGHT_PLANS: number;
 }
 
 export interface EngineModelParameters {

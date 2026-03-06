@@ -296,7 +296,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
         this.props.flightPlanInterface.get(fpIndex).getFlightNumber().pipe(this.flightNumber),
         this.loadedFlightPlan!.performanceData.pilotTripWind.pipe(this.tripWind),
         this.loadedFlightPlan!.performanceData.cruiseTemperature.pipe(this.cruiseTemperature),
-        this.loadedFlightPlan!.performanceData.cruiseTemperatureIsPilotEntered.pipe(
+        this.loadedFlightPlan!.performanceData.isCruiseTemperaturePilotEntered.pipe(
           this.cruiseTemperatureIsPilotEntered,
         ),
         this.loadedFlightPlan!.performanceData.cruiseFlightLevel.pipe(this.crzFl),

@@ -17,11 +17,8 @@ import {
 export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData {
   private readonly subscriptions: Map<keyof FlightPlanPerformanceDataProperties & string, Subscription> = new Map();
 
-  constructor(defaultTaxiFuel = 0.2, defaultAlternateFuel?: number) {
+  constructor(defaultTaxiFuel = 0.2) {
     this.defaultTaxiFuel.set(defaultTaxiFuel);
-    if (defaultAlternateFuel !== undefined) {
-      this.calculatedAlternateFuel.set(defaultAlternateFuel);
-    }
   }
 
   public clone(): this {
@@ -179,7 +176,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
 
   readonly cruiseTemperature = this.cruiseTemperaturePilotEntry.map((it) => it);
 
-  readonly cruiseTemperatureIsPilotEntered = this.cruiseTemperaturePilotEntry.map((it) => it !== null);
+  readonly isCruiseTemperaturePilotEntered = this.cruiseTemperaturePilotEntry.map((it) => it !== null);
 
   readonly defaultGroundTemperature = Subject.create<number | null>(null);
 

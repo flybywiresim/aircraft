@@ -12,13 +12,13 @@ import {
   VnavDescentMode,
 } from '@fmgc/flightplanning/AircraftConfigTypes';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
+import { FpmConfigs } from './FpmConfig';
 
 const lnavConfig: LnavConfig = {
   DEFAULT_MIN_PREDICTED_TAS: 160,
   TURN_RADIUS_FACTOR: 1.0,
   NUM_COMPUTED_TRANSITIONS_AFTER_ACTIVE: -1,
   EMIT_END_OF_VD_MARKER: false,
-  NUM_SECONDARY_FLIGHT_PLANS: 1,
 };
 
 const vnavConfig: VnavConfig = {
@@ -152,4 +152,5 @@ export const A320AircraftConfig: AircraftConfig = {
   engineModelParameters: engineModelParams,
   flightModelParameters: flightModelParams,
   fmSymbolConfig: fmsSymbolConfig,
+  fpmConfig: FpmConfigs.A320_HONEYWELL_H3,
 };

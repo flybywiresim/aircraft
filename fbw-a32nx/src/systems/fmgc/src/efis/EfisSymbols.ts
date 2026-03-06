@@ -215,12 +215,10 @@ export class EfisSymbols<T extends number> {
     const tempFPVersionChanged = this.lastFpVersions[FlightPlanIndex.Temporary] !== tempFpVersion;
     let secFPVersionChanged = false;
     for (let i = 0; i < this.efisInterface.numSecondaryFlightPlans; i++) {
-      secFPVersionChanged =
-        secFPVersionChanged ||
-        this.lastFpVersions[FlightPlanIndex.FirstSecondary + i] !==
-          (this.flightPlanService.has(FlightPlanIndex.FirstSecondary + i)
-            ? this.flightPlanService.secondary(i + 1).version
-            : -1);
+      const secVersion = this.flightPlanService.has(FlightPlanIndex.FirstSecondary + i)
+        ? this.flightPlanService.secondary(i + 1).version
+        : -1;
+      secFPVersionChanged ||= this.lastFpVersions[FlightPlanIndex.FirstSecondary + i] !== secVersion;
     }
 
     const fpChanged = activeFPVersionChanged || tempFPVersionChanged || secFPVersionChanged;

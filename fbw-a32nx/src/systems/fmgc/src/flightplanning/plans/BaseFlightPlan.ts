@@ -243,7 +243,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   }
 
   /**
-   * Timestamp when this flight plan was created. Seconds since unix epoch.
+   * Timestamp when this flight plan was created. Miliseconds since unix epoch.
    */
   public readonly timeCreated: number;
 
