@@ -1628,6 +1628,10 @@ export class PseudoFWC {
     this.radioCallouts.HundredAboveAudio.sub((v) => {
       this.soundManager.handleSoundCondition('hundred_above', v); // TODO confirmation time
     });
+
+    this.radioCallouts.minimumAudio.sub((v) => {
+      this.soundManager.handleSoundCondition('minimums', v); // TODO confirmation time
+    });
   }
 
   private registerKeyEvents() {

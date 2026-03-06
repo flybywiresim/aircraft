@@ -181,6 +181,7 @@ export class FwsAutoCallouts {
   private gpwsInhibition = false;
   private tcasAural = false;
 
+  private autoCalloutMdaInhibit = false;
   private dmcDiscreteWord270: Arinc429Register = Arinc429Register.empty();
   private readonly dmcLDiscreteWord270 = RegisteredSimVar.create(
     'L:A32NX_DMC_DISCRETE_WORD_270_LEFT',
@@ -194,17 +195,25 @@ export class FwsAutoCallouts {
   private readonly hundredAboveMdaMemoryNode = new NXLogicMemoryNode(true);
 
   private readonly HundredAboveDhConfNode = new NXLogicConfirmNode(0.1);
-  private readonly hundredAboveDhMtric = new NXLogicTriggeredMonostableNode(3);
+  private readonly hundredAboveDhMtrig = new NXLogicTriggeredMonostableNode(3);
   private readonly hundredAboveDhMemoryNode = new NXLogicMemoryNode(true);
 
   private hundredAboveGenerated = false;
-  public HundredAboveAudio = Subject.create(false);
+  public readonly HundredAboveAudio = Subject.create(false);
   private readonly fmDh = Arinc429Register.empty();
   private readonly fm1DhRegisteredSimVar = RegisteredSimVar.create('L:A32NX_FM1_DECISION_HEIGHT', SimVarValueType.Enum);
   private readonly fm2DhRegisteredSimVar = RegisteredSimVar.create('L:A32NX_FM2_DECISION_HEIGHT', SimVarValueType.Enum);
-  private autoCalloutMdaInhibit = false;
+
   private autoCalloutDhInbit = false;
   private dhGenerated = false;
+
+  private minimumGenerated = false;
+  private readonly minimumMdaMtrigNode = new NXLogicTriggeredMonostableNode(3);
+  private readonly minimumMdaMemoryNode = new NXLogicMemoryNode(true);
+  private readonly dhMinimumConfNode = new NXLogicConfirmNode(0.1);
+  private readonly dhMinimumMtrigNode = new NXLogicTriggeredMonostableNode(3);
+  private readonly minimumDhMemoryNode = new NXLogicMemoryNode(true);
+  public readonly minimumAudio = Subject.create(false);
 
   constructor(private readonly fws: PseudoFWC) {}
 
@@ -251,7 +260,7 @@ export class FwsAutoCallouts {
 
     this.computeThresholds(height, deltaTime);
 
-    this.autoCalloutLogic(
+    this.radioAltimeterCalloutLogic(
       deltaTime,
       height,
       flightPhase,
@@ -276,7 +285,7 @@ export class FwsAutoCallouts {
       deltaTime,
     );
     const hundredAboveMdaMemory = this.hundredAboveMdaMemoryNode.write(
-      this.hundredAboveGenerated,
+      this.hundredAboveGenerated, // TODO should check if the audio has played but will suffice for now
       !hundredAboveRequestedByDmcMtrig,
     );
     const hundredAboveMda = !this.autoCalloutMdaInhibit && !hundredAboveMdaMemory && hundredAboveRequestedByDmcMtrig; // TODO check pin program
@@ -288,13 +297,36 @@ export class FwsAutoCallouts {
     const dhHundredAbovePreRequisite =
       (dhLessThan90Feet && dhAndRaFirstComparison) || (!dhLessThan90Feet && dhAndRaSecondComparison);
     const dhHundredAboveDhConf = this.HundredAboveDhConfNode.write(dhHundredAbovePreRequisite, deltaTime);
-    const hundredAboveDhMtrig = this.hundredAboveDhMtric.write(dhHundredAboveDhConf, deltaTime);
+    const hundredAboveDhMtrig = this.hundredAboveDhMtrig.write(dhHundredAboveDhConf, deltaTime);
     const hundredAboveDhMemory = this.hundredAboveDhMemoryNode.write(this.hundredAboveGenerated, !hundredAboveDhMtrig);
     const hundredAboveDh = !hundredAboveDhMemory && hundredAboveDhMtrig && !this.autoCalloutDhInbit; // TODO check pin program
 
     this.hundredAboveGenerated = hundredAboveMda || hundredAboveDh;
     this.HundredAboveAudio.set(this.hundredAboveGenerated);
     /// Minimums
+    // MDA
+    const minimumRequestedByDmc = this.dmcDiscreteWord270.bitValueOr(21, false);
+    const minimumRequestedByDmcMtrig = this.minimumMdaMtrigNode.write(minimumRequestedByDmc, deltaTime);
+    const minimumMdaMemory = this.minimumMdaMemoryNode.write(
+      this.minimumGenerated, // TODO should check if the audio has played but will suffice for now
+      !minimumRequestedByDmcMtrig,
+    );
+    const minimumMda = !this.autoCalloutMdaInhibit && !minimumMdaMemory && minimumRequestedByDmcMtrig;
+
+    // DH
+    const dhAndRaMinimumFirstComparison = height !== null && height < 5 + dhValue;
+    const dhAndRaMinimumSecondComparison = height !== null && height < 15 + dhValue;
+    const dhMinimumPreRequisite =
+      (dhLessThan90Feet && dhAndRaMinimumFirstComparison) || (!dhLessThan90Feet && dhAndRaMinimumSecondComparison);
+    const dhMinimumConf = this.dhMinimumConfNode.write(dhMinimumPreRequisite, deltaTime);
+    const dhMinimumMtrig = this.dhMinimumMtrigNode.write(dhMinimumConf, deltaTime);
+    const minimumDhMemory = this.minimumDhMemoryNode.write(this.minimumGenerated, !dhMinimumMtrig);
+    const minimumDh = !minimumDhMemory && dhMinimumMtrig && !this.autoCalloutDhInbit;
+
+    const minimum = minimumMda || minimumDh;
+    this.dhGenerated = this.minimumGenerated || hundredAboveDh || minimum;
+    this.minimumGenerated = minimum;
+    this.minimumAudio.set(minimum);
   }
 
   private computeThresholds(height: number | null, deltaTime: number) {
@@ -343,7 +375,7 @@ export class FwsAutoCallouts {
     this.autoCalloutDhInbit = height === null || this.autoCalloutInhibit || this.fmDh.valueOr(0) <= 3;
   }
 
-  private autoCalloutLogic(
+  private radioAltimeterCalloutLogic(
     deltaTime: number,
     raValue: number | null,
     flightPhase: number,

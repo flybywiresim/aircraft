@@ -129,7 +129,7 @@ export const FwsAuralsList: Record<string, FwsAural> = {
   },
   // Altitude callouts
   minimums: {
-    wwiseEventName: 'aural_minimumnew',
+    localVarName: 'A32NX_FWS_AUDIO_MINIMUMS',
     length: 0.67,
     priority: 2,
     type: FwsAuralWarningType.SyntheticVoice,
