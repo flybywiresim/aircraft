@@ -247,9 +247,14 @@ export class FmgcDataService implements Fmgc {
    */
   getFOB(forPlan = FlightPlanIndex.Active): number | null {
     const usefqms = this.isAnEngineOn();
-    return usefqms
-      ? this.fqmsFob.get().valueOr(null)
-      : this.flightPlanService.get(forPlan).performanceData.blockFuel.get();
+    let fob: number | null = null;
+    if (usefqms) {
+      const fqmsFob = this.fqmsFob.get().valueOr(null);
+      fob = fqmsFob !== null ? fqmsFob / 1000 : null;
+    } else {
+      fob = this.flightPlanService.get(forPlan).performanceData.blockFuel.get();
+    }
+    return fob;
   }
 
   /** in knots */
