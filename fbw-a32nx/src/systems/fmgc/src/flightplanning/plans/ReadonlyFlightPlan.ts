@@ -20,7 +20,7 @@ export interface ReadonlyFlightPlan<P extends FlightPlanPerformanceData = Flight
   get index(): number;
 
   /**
-   * The time at which the flightplan was created in miliseconds since epoch. Undefined if no valid creation time is available.
+   * The time at which the flightplan was created in miliseconds since epoch. Undefined if no valid creation time is available or for alternate flightplans.
    */
   timeCreated?: number;
 

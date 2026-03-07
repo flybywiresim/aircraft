@@ -114,7 +114,9 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     this.flightPlanManager.copy(
       FlightPlanIndex.Active,
       FlightPlanIndex.FirstSecondary + (index - 1),
-      // CopyOptions.CopyPredictions,
+      CopyOptions.Default, // CopyOptions.CopyPredictions
+      true,
+      FlightPlanFlags.CopiedFromActive,
     );
 
     const active = this.active;
@@ -167,9 +169,6 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
   async activeAndSecondarySwap(secIndex: number, isBeforeEngineStart: boolean): Promise<void> {
     this.persistActivePerfDataAcrossModification(isBeforeEngineStart, () => {
       this.flightPlanManager.swap(FlightPlanIndex.FirstSecondary + secIndex - 1, FlightPlanIndex.Active);
-      const sec = this.secondary(secIndex);
-      sec.flags &= 0;
-      sec.flags |= FlightPlanFlags.SwappedWithActive;
     });
   }
 
@@ -292,10 +291,14 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       throw new Error('[FMS/FPS] Cannot insert uplink flight plan if none exists');
     }
 
-    this.flightPlanManager.copy(FlightPlanIndex.Uplink, intoPlan);
+    this.flightPlanManager.copy(
+      FlightPlanIndex.Uplink,
+      intoPlan,
+      CopyOptions.Default,
+      true,
+      FlightPlanFlags.CompanyFlightPlan,
+    );
     this.flightPlanManager.delete(FlightPlanIndex.Uplink);
-
-    this.flightPlanManager.get(intoPlan).flags |= FlightPlanFlags.CompanyFlightPlan;
 
     if (this.hasTemporary) {
       this.flightPlanManager.delete(FlightPlanIndex.Temporary);
@@ -348,16 +351,16 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     if (this.flightPlanManager.has(planIndex)) {
       this.flightPlanManager.delete(planIndex);
     }
-    this.flightPlanManager.create(planIndex);
+    this.flightPlanManager.create(planIndex, true, FlightPlanFlags.ManualCreation);
 
-    await this.flightPlanManager.get(planIndex).setOriginAirport(fromIcao);
-    await this.flightPlanManager.get(planIndex).setDestinationAirport(toIcao);
+    const plan = this.flightPlanManager.get(planIndex);
+
+    await plan.setOriginAirport(fromIcao);
+    await plan.setDestinationAirport(toIcao);
 
     if (altnIcao) {
-      await this.flightPlanManager.get(planIndex).setAlternateDestinationAirport(altnIcao);
+      await plan.setAlternateDestinationAirport(altnIcao);
     }
-
-    this.flightPlanManager.get(planIndex).flags |= FlightPlanFlags.ManualCreation;
 
     // Support code for TELEX API, should move somewhere else
     NXDataStore.setLegacy('PLAN_ORIGIN', fromIcao);

@@ -27,6 +27,7 @@ import { CopyOptions } from '@fmgc/flightplanning/plans/CloningOptions';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { FlightPlanUtils } from './FlightPlanUtils';
 import { FlightPlanBatch, FlightPlanBatchUtils } from '@fmgc/flightplanning/plans/FlightPlanBatch';
+import { FlightPlanFlags } from './plans/FlightPlanFlags';
 
 export enum FlightPlanIndex {
   Active,
@@ -198,7 +199,7 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
     this.plans[index] = flightPlan;
   }
 
-  create(index: number, notify = true) {
+  create(index: number, notify = true, flags?: FlightPlanFlags) {
     this.assertFlightPlanDoesntExist(index);
 
     this.plans[index] = FlightPlan.empty(
@@ -208,6 +209,9 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
       this.performanceDataInit.clone(),
       this.time.get(),
     );
+    if (flags !== undefined) {
+      this.plans[index].flags |= flags;
+    }
 
     if (notify) {
       this.sendEvent('flightPlanManager.create', { syncClientID: this.syncClientID, planIndex: index });
@@ -262,10 +266,14 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
     }
   }
 
-  copy(from: number, to: number, options = CopyOptions.Default, notify = true) {
+  copy(from: number, to: number, options = CopyOptions.Default, notify = true, flags?: FlightPlanFlags) {
     this.assertFlightPlanExists(from);
 
     const newPlan = this.get(from).clone(to, options, this.time.get());
+
+    if (flags !== undefined) {
+      newPlan.flags |= flags;
+    }
 
     if (this.has(to)) {
       const old = this.get(to);
@@ -292,6 +300,12 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
     const time = this.time.get();
     const planA = this.get(a).clone(b, undefined, time);
     const planB = this.get(b).clone(a, undefined, time);
+
+    const isSwappedWithActive = b === FlightPlanIndex.Active;
+    if (isSwappedWithActive) {
+      planB.flags &= 0;
+      planB.flags |= FlightPlanFlags.SwappedWithActive;
+    }
 
     this.delete(a, false);
     this.delete(b, false);

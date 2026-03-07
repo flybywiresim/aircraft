@@ -519,10 +519,12 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         'defaultEngineOutAccelerationAltitude',
         referenceAltitude + parseInt(NXDataStore.getLegacy('CONFIG_ENG_OUT_ACCEL_ALT', '1500')),
       );
-      plan.setPerformanceData(
-        'defaultGroundTemperature',
-        Math.round(AeroMath.isaTemperature(referenceAltitude * 0.3048)),
-      );
+      if (plan.performanceData.defaultGroundTemperature !== undefined) {
+        plan.setPerformanceData(
+          'defaultGroundTemperature',
+          Math.round(AeroMath.isaTemperature(referenceAltitude * 0.3048)),
+        );
+      }
     } else {
       plan.setPerformanceData('defaultThrustReductionAltitude', null);
       plan.setPerformanceData('defaultAccelerationAltitude', null);
