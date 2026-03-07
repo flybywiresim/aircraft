@@ -1,5 +1,4 @@
-// @ts-strict-ignore
-// Copyright (c) 2021-2025 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -69,13 +68,13 @@ interface EWDItem {
   /** aural warning, defaults to simVarIsActive and SC for level 2 or CRC for level 3 if not provided */
   auralWarning?: Subscribable<FwcAuralWarning>;
   /** Can be a code directly, or an array of indices in `codesToReturn`, with no meaning no code. */
-  whichCodeToReturn: () => (number | null)[] | string;
-  codesToReturn: string[];
+  whichCodeToReturn?: () => (number | null)[] | string;
+  codesToReturn?: string[];
   // FIXME remove... this is not an actual thing
   memoInhibit?: () => boolean;
-  failure: number;
-  sysPage: number;
-  side: string;
+  failure?: number;
+  sysPage?: number;
+  side?: string;
   /** Cancel flag for level 3 warning audio (only emergency cancel can cancel if false), defaults to true. */
   cancel?: boolean;
   /** The monitor confirm time in seconds. Defaults to 0.3 s. */
@@ -93,6 +92,8 @@ enum FwcAuralWarning {
   CavalryCharge,
   TripleClick,
   CChord,
+  HundredAbove,
+  Minimum,
 }
 
 enum EngineState {
@@ -120,7 +121,7 @@ export class PseudoFWC {
 
   private readonly simTime = RegisteredSimVar.create('E:SIMULATION TIME', SimVarValueType.Seconds);
 
-  private keyEventManager: KeyEventManager;
+  private keyEventManager?: KeyEventManager;
 
   private readonly startupCompleted = Subject.create(false);
 
@@ -163,6 +164,8 @@ export class PseudoFWC {
   private readonly failuresLeft: string[] = [];
 
   private readonly failuresRight: string[] = [];
+
+  private readonly specialCodes: string[] = [];
 
   private recallFailures: string[] = [];
 
@@ -1414,6 +1417,14 @@ export class PseudoFWC {
 
   private readonly autoCallouts: FwsAutoCallouts;
 
+  private readonly hundredAbove = Subject.create(false);
+
+  private readonly minimum = Subject.create(false);
+
+  private readonly hundredAboveAural = Subject.create(false);
+
+  private readonly minimumAural = Subject.create(false);
+
   public minimumGenerated = false;
 
   public hundredAboveGenerated = false;
@@ -1446,6 +1457,8 @@ export class PseudoFWC {
 
     SimVar.SetSimVarValue('L:A32NX_STATUS_LEFT_LINE_8', 'string', '000000001');
     this.autoCallouts = new FwsAutoCallouts(this);
+    this.autoCallouts.hundredAbove.pipe(this.hundredAbove);
+    this.autoCallouts.minimum.pipe(this.minimum);
   }
 
   init(): void {
@@ -1629,30 +1642,39 @@ export class PseudoFWC {
       this.soundManager.handleSoundCondition('alt_5', v);
     });
 
-    this.autoCallouts.HundredAboveAudio.sub((v) => {
+    this.hundredAboveAural.sub((v) => {
+      console.log('hundredAboveAural:', v);
       if (!v) {
         this.hundredAboveGenerated = false;
       }
       this.soundManager.handleSoundCondition('hundred_above', v); // TODO confirmation time
     });
 
-    this.autoCallouts.minimumAudio.sub((v) => {
+    this.minimumAural.sub((v) => {
+      console.log('minimumAural:', v);
       if (!v) {
         this.minimumGenerated = false;
       }
       this.soundManager.handleSoundCondition('minimums', v); // TODO confirmation time
     });
+
+    this.minimum.sub((v) => {
+      console.log('minimum:', v);
+    });
+    this.hundredAbove.sub((v) => {
+      console.log('hundredAbove:', v);
+    });
   }
 
   private registerKeyEvents() {
-    this.keyEventManager.interceptKey('A32NX.AUTO_THROTTLE_DISCONNECT', true);
-    this.keyEventManager.interceptKey('A32NX.FCU_AP_DISCONNECT_PUSH', true);
-    this.keyEventManager.interceptKey('A32NX.AUTOPILOT_DISENGAGE', false); // internal event, for FWS only
-    this.keyEventManager.interceptKey('AUTOPILOT_OFF', true);
-    this.keyEventManager.interceptKey('AUTO_THROTTLE_ARM', true);
+    this.keyEventManager!.interceptKey('A32NX.AUTO_THROTTLE_DISCONNECT', true);
+    this.keyEventManager!.interceptKey('A32NX.FCU_AP_DISCONNECT_PUSH', true);
+    this.keyEventManager!.interceptKey('A32NX.AUTOPILOT_DISENGAGE', false); // internal event, for FWS only
+    this.keyEventManager!.interceptKey('AUTOPILOT_OFF', true);
+    this.keyEventManager!.interceptKey('AUTO_THROTTLE_ARM', true);
   }
 
-  mapOrder(array, order): [] {
+  mapOrder(array: string[], order: string[]): string[] {
     array.sort((a, b) => {
       if (order.indexOf(a) > order.indexOf(b)) {
         return 1;
@@ -3556,7 +3578,7 @@ export class PseudoFWC {
 
     if (this.ecpRecallPulseUp) {
       if (this.recallFailures.length > 0) {
-        this.failuresLeft.push(this.recallFailures.shift());
+        this.failuresLeft.push(this.recallFailures.shift()!);
       }
     }
 
@@ -3598,6 +3620,9 @@ export class PseudoFWC {
     const auralScKeys: string[] = [];
     const auralCavchargeKeys: string[] = [];
     const auralCChordKeys: string[] = [];
+    const specialCodeKeys: string[] = this.specialCodes;
+    let minimumActive = false;
+    let hundredAboveActive = false;
 
     // Update failuresLeft list in case failure has been resolved
     for (const [key, value] of Object.entries(this.ewdMessageFailures)) {
@@ -3617,12 +3642,14 @@ export class PseudoFWC {
     for (const [key, value] of Object.entries(this.ewdMessageFailures)) {
       // new warning?
       const newWarning =
+        (value.side === undefined && !this.specialCodes.includes(key)) ||
         (value.side === 'LEFT' && !this.failuresLeft.includes(key) && !recallFailureKeys.includes(key)) ||
         (value.side === 'RIGHT' && !this.failuresRight.includes(key));
 
       if (newWarning && value.flightPhaseInhib.some((e) => e === flightPhase)) {
         continue;
       }
+      const auralWarning = value.auralWarning?.get();
 
       if (
         value.simVarIsActive.get() &&
@@ -3630,7 +3657,9 @@ export class PseudoFWC {
         simTime >= (this.ewdFailureActivationTime.get(key) ?? 0) + (value.monitorConfirmTime ?? 0.3)
       ) {
         if (newWarning) {
-          if (value.side === 'LEFT') {
+          if (value.side === undefined) {
+            specialCodeKeys.push(key);
+          } else if (value.side === 'LEFT') {
             failureKeysLeft.push(key);
           } else {
             failureKeysRight.push(key);
@@ -3642,8 +3671,14 @@ export class PseudoFWC {
           if (value.failure === 2) {
             this.requestMasterCautionFromFaults = true;
           }
-          if (value.auralWarning?.get() === FwcAuralWarning.CChord) {
+          if (auralWarning === FwcAuralWarning.CChord) {
             this.cChordActive.set(true);
+          }
+          if (auralWarning === FwcAuralWarning.HundredAbove) {
+            hundredAboveActive = true;
+          }
+          if (auralWarning === FwcAuralWarning.Minimum) {
+            minimumActive = true;
           }
         }
 
@@ -3652,13 +3687,13 @@ export class PseudoFWC {
         }
 
         // if the warning is the same as the aural
-        if (value.auralWarning === undefined && value.failure === 3) {
+        if (auralWarning === undefined && value.failure === 3) {
           if (newWarning) {
             this.auralCrcActive.set(true);
           }
           auralCrcKeys.push(key);
         }
-        if (value.auralWarning === undefined && value.failure === 2) {
+        if (auralWarning === undefined && value.failure === 2) {
           if (newWarning) {
             this.auralSingleChimePending = true;
           }
@@ -3671,17 +3706,21 @@ export class PseudoFWC {
 
         const newCode: string[] = [];
         if (!recallFailureKeys.includes(key)) {
-          const codeToReturn = value.whichCodeToReturn();
-          if (typeof codeToReturn === 'string') {
-            newCode.push(codeToReturn);
-          } else {
-            const codeIndex = codeToReturn.filter((e) => e !== null);
-            codeIndex.forEach((e: number) => {
-              newCode.push(value.codesToReturn[e]);
-            });
+          const codeToReturn = value.whichCodeToReturn !== undefined ? value.whichCodeToReturn() : undefined;
+          if (codeToReturn !== undefined) {
+            if (typeof codeToReturn === 'string') {
+              newCode.push(codeToReturn);
+            } else {
+              if (value.codesToReturn !== undefined) {
+                const codeIndex = codeToReturn.filter((e) => e !== null);
+                codeIndex.forEach((e: number) => {
+                  newCode.push(value.codesToReturn![e]);
+                });
+              }
+            }
           }
 
-          if (value.sysPage > -1) {
+          if (value.sysPage !== undefined && value.sysPage > -1) {
             if (value.side === 'LEFT') {
               leftFailureSystemCount++;
             } else {
@@ -3689,44 +3728,55 @@ export class PseudoFWC {
             }
           }
         }
-        if (value.side === 'LEFT') {
-          tempFailureArrayLeft = tempFailureArrayLeft.concat(newCode);
-        } else {
-          tempFailureArrayRight = tempFailureArrayRight.concat(newCode);
+        if (value.side !== undefined) {
+          if (value.side === 'LEFT') {
+            tempFailureArrayLeft = tempFailureArrayLeft.concat(newCode);
+          } else {
+            tempFailureArrayRight = tempFailureArrayRight.concat(newCode);
+          }
         }
 
-        if (value.sysPage > -1) {
+        if (value.sysPage !== undefined && value.sysPage > -1) {
           SimVar.SetSimVarValue('L:A32NX_ECAM_SFAIL', 'number', value.sysPage);
         }
       }
 
-      if (value.auralWarning?.get() === FwcAuralWarning.Crc) {
+      if (auralWarning === FwcAuralWarning.Crc) {
         if (!this.auralCrcKeys.includes(key)) {
           this.auralCrcActive.set(true);
         }
         auralCrcKeys.push(key);
       }
 
-      if (value.auralWarning?.get() === FwcAuralWarning.SingleChime) {
+      if (auralWarning === FwcAuralWarning.SingleChime) {
         if (!this.auralScKeys.includes(key)) {
           this.auralSingleChimePending = true;
         }
         auralScKeys.push(key);
       }
 
-      if (value.auralWarning?.get() === FwcAuralWarning.CavalryCharge) {
+      if (auralWarning === FwcAuralWarning.CavalryCharge) {
         auralCavchargeKeys.push(key);
       }
 
-      if (newWarning && value.auralWarning?.get() === FwcAuralWarning.TripleClick) {
+      if (newWarning && auralWarning === FwcAuralWarning.TripleClick) {
         this.soundManager.enqueueSound('pause0p8s');
         this.soundManager.enqueueSound('tripleClick');
       }
 
-      if (value.auralWarning?.get() === FwcAuralWarning.CChord) {
+      if (auralWarning === FwcAuralWarning.CChord) {
         auralCChordKeys.push(key);
       }
+      if (auralWarning === FwcAuralWarning.HundredAbove) {
+        hundredAboveActive = true;
+      }
+      if (auralWarning === FwcAuralWarning.Minimum) {
+        minimumActive = true;
+      }
     }
+
+    this.hundredAboveAural.set(hundredAboveActive);
+    this.minimumAural.set(minimumActive);
 
     this.auralCrcKeys = auralCrcKeys;
     this.auralScKeys = auralScKeys;
@@ -3751,10 +3801,12 @@ export class PseudoFWC {
     const mesgFailOrderRight: string[] = [];
 
     for (const [, value] of Object.entries(this.ewdMessageFailures)) {
-      if (value.side === 'LEFT') {
-        mesgFailOrderLeft.push(...value.codesToReturn);
-      } else {
-        mesgFailOrderRight.push(...value.codesToReturn);
+      if (value.codesToReturn) {
+        if (value.side === 'LEFT') {
+          mesgFailOrderLeft.push(...value.codesToReturn);
+        } else {
+          mesgFailOrderRight.push(...value.codesToReturn);
+        }
       }
     }
 
@@ -3770,6 +3822,9 @@ export class PseudoFWC {
     this.failuresRight.length = 0;
     this.failuresRight.push(...failureKeysRight);
 
+    this.specialCodes.length = 0;
+    this.specialCodes.push(...specialCodeKeys);
+
     if (tempFailureArrayLeft.length > 0) {
       this.ewdMessageLinesLeft.forEach((l, i) => l.set(orderedFailureArrayLeft[i]));
     }
@@ -3781,25 +3836,29 @@ export class PseudoFWC {
         !value.flightPhaseInhib.some((e) => e === flightPhase)
       ) {
         const newCode: string[] = [];
-        const codeToReturn = value.whichCodeToReturn();
-        if (typeof codeToReturn === 'string') {
-          newCode.push(codeToReturn);
-        } else {
-          const codeIndex = codeToReturn.filter((e) => e !== null);
-          codeIndex.forEach((e: number) => {
-            newCode.push(value.codesToReturn[e]);
-          });
+        const codeToReturn = value.whichCodeToReturn !== undefined ? value.whichCodeToReturn() : undefined;
+        if (codeToReturn !== undefined) {
+          if (typeof codeToReturn === 'string') {
+            newCode.push(codeToReturn);
+          } else {
+            if (value.codesToReturn !== undefined) {
+              const codeIndex = codeToReturn.filter((e) => e !== null);
+              codeIndex.forEach((e: number) => {
+                newCode.push(value.codesToReturn![e]);
+              });
+            }
+          }
         }
 
         if (value.side === 'LEFT' && !failLeft) {
           tempMemoArrayLeft = tempMemoArrayLeft.concat(newCode);
         }
-        if (value.side === 'RIGHT') {
-          const tempArrayRight = tempMemoArrayRight.filter((e) => !value.codesToReturn.includes(e));
+        if (value.side === 'RIGHT' && value.codesToReturn !== undefined) {
+          const tempArrayRight = tempMemoArrayRight.filter((e) => !value.codesToReturn!.includes(e));
           tempMemoArrayRight = tempArrayRight.concat(newCode);
         }
 
-        if (value.sysPage > -1) {
+        if (value.sysPage !== undefined && value.sysPage > -1) {
           SimVar.SetSimVarValue('L:A32NX_ECAM_SFAIL', 'number', value.sysPage);
         }
       }
@@ -3809,10 +3868,12 @@ export class PseudoFWC {
     const mesgOrderRight: string[] = [];
 
     for (const [, value] of Object.entries(this.ewdMessageMemos)) {
-      if (value.side === 'LEFT') {
-        mesgOrderLeft.push(...value.codesToReturn);
-      } else {
-        mesgOrderRight.push(...value.codesToReturn);
+      if (value.codesToReturn) {
+        if (value.side === 'LEFT') {
+          mesgOrderLeft.push(...value.codesToReturn);
+        } else {
+          mesgOrderRight.push(...value.codesToReturn);
+        }
       }
     }
 
@@ -4023,7 +4084,7 @@ export class PseudoFWC {
     },
     2200050: {
       // Altitude Alert
-      flightPhaseInhib: [],
+      flightPhaseInhib: this.noFlightPhaseInhibit,
       simVarIsActive: this.altAlertCChord,
       auralWarning: this.altAlertCChord.map((active) => (active ? FwcAuralWarning.CChord : FwcAuralWarning.None)),
       whichCodeToReturn: () => [null],
@@ -4033,6 +4094,18 @@ export class PseudoFWC {
       // monitor implementation.
       sysPage: -1,
       side: 'LEFT',
+    },
+    2200060: {
+      // Hundred Above
+      flightPhaseInhib: this.noFlightPhaseInhibit,
+      simVarIsActive: this.hundredAbove,
+      auralWarning: this.hundredAbove.map((active) => (active ? FwcAuralWarning.HundredAbove : FwcAuralWarning.None)),
+    },
+    2200070: {
+      // Minimum
+      flightPhaseInhib: this.noFlightPhaseInhibit,
+      simVarIsActive: this.minimum,
+      auralWarning: this.minimum.map((active) => (active ? FwcAuralWarning.Minimum : FwcAuralWarning.None)),
     },
     2200175: {
       // AP/FD Mode Reversion

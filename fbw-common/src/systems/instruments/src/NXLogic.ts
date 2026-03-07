@@ -121,7 +121,7 @@ export class NXLogicConfirmNode {
   }
 
   read() {
-    return this.previousOutput;
+    return this.previousOutput ?? false;
   }
 }
 
