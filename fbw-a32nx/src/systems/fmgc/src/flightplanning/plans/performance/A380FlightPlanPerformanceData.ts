@@ -158,6 +158,10 @@ export class A380FlightPlanPerformanceData implements FlightPlanPerformanceData 
       this.pipe('paxNumber', this.paxNumber, other.paxNumber);
     }
 
+    if (other.costIndexMode) {
+      this.pipe('costIndexMode', this.costIndexMode, other.costIndexMode);
+    }
+
     if (isBeforeEngineStart) {
       this.pipe('zeroFuelWeight', this.zeroFuelWeight, other.zeroFuelWeight);
       this.pipe(

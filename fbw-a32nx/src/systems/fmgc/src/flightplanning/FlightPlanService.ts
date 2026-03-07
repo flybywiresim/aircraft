@@ -114,9 +114,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     this.flightPlanManager.copy(
       FlightPlanIndex.Active,
       FlightPlanIndex.FirstSecondary + (index - 1),
-      CopyOptions.Default, // CopyOptions.CopyPredictions
-      true,
-      FlightPlanFlags.CopiedFromActive,
+      // CopyOptions.CopyPredictions,
     );
 
     const active = this.active;
@@ -291,13 +289,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       throw new Error('[FMS/FPS] Cannot insert uplink flight plan if none exists');
     }
 
-    this.flightPlanManager.copy(
-      FlightPlanIndex.Uplink,
-      intoPlan,
-      CopyOptions.Default,
-      true,
-      FlightPlanFlags.CompanyFlightPlan,
-    );
+    this.flightPlanManager.copy(FlightPlanIndex.Uplink, intoPlan);
     this.flightPlanManager.delete(FlightPlanIndex.Uplink);
 
     if (this.hasTemporary) {

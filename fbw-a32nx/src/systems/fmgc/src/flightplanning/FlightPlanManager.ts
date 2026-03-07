@@ -266,13 +266,18 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
     }
   }
 
-  copy(from: number, to: number, options = CopyOptions.Default, notify = true, flags?: FlightPlanFlags) {
+  copy(from: number, to: number, options = CopyOptions.Default, notify = true) {
     this.assertFlightPlanExists(from);
 
-    const newPlan = this.get(from).clone(to, options, this.time.get());
+    const fromPlan = this.get(from);
+    const newPlan = fromPlan.clone(to, options, this.time.get());
 
-    if (flags !== undefined) {
-      newPlan.flags |= flags;
+    if (from === FlightPlanIndex.Uplink) {
+      newPlan.flags |= FlightPlanFlags.CompanyFlightPlan;
+    } else if (from === FlightPlanIndex.Active) {
+      newPlan.flags |= FlightPlanFlags.CopiedFromActive;
+    } else if (from >= FlightPlanIndex.FirstSecondary && to >= FlightPlanIndex.FirstSecondary) {
+      newPlan.flags = fromPlan.flags;
     }
 
     if (this.has(to)) {
