@@ -5,7 +5,7 @@
 
 import { Airport, ApproachType, Fix, isMsfs2024, LegType, MagVar, MathUtils, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
-import { AeroMath, BitFlags, EventBus, MutableSubscribable } from '@microsoft/msfs-sdk';
+import { AeroMath, BitFlags, EventBus, MutableSubscribable, Vec2Math } from '@microsoft/msfs-sdk';
 import { FixInfoData, FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
 import { Coordinates, Degrees } from 'msfs-geo';
 import { FlightPlanLeg, FlightPlanLegFlags, isLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
@@ -746,7 +746,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     const originElevation = this.originAirport?.location.alt ?? 0;
     const altitudeOrGround = altitude <= originElevation + 400 ? originElevation : altitude;
 
-    if (entry?.altitude <= originElevation + 400) {
+    if (entry !== null && entry.altitude <= originElevation + 400) {
       entry.altitude = originElevation;
     }
 
@@ -776,7 +776,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     const destinationElevation = this.destinationAirport?.location.alt ?? 0;
     const altitudeOrGround = altitude <= destinationElevation + 400 ? destinationElevation : altitude;
 
-    if (entry?.altitude <= destinationElevation + 400) {
+    if (entry !== null && entry.altitude <= destinationElevation + 400) {
       entry.altitude = destinationElevation;
 
       if (shouldUpdateTwrWind) {
@@ -787,7 +787,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
         this.setPerformanceData(
           'approachWindDirection',
-          A32NX_Util.trueToMagnetic(Vec2Math.theta(entry.vector) * MathUtils.RADIANS_TO_DEGREES, destinationMagVar),
+          MagVar.trueToMagnetic(Vec2Math.theta(entry.vector) * MathUtils.RADIANS_TO_DEGREES, destinationMagVar),
         );
         this.setPerformanceData('approachWindMagnitude', Vec2Math.abs(entry.vector));
       }
