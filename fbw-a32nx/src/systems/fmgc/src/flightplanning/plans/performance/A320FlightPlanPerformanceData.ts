@@ -60,8 +60,12 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
 
     cloned.cruiseFlightLevel.set(this.cruiseFlightLevel.get());
     cloned.cruiseTemperaturePilotEntry.set(this.cruiseTemperaturePilotEntry.get());
-    cloned.pilotGroundTemperature.set(this.pilotGroundTemperature.get());
-    cloned.defaultGroundTemperature.set(this.defaultGroundTemperature.get());
+    if (cloned.pilotGroundTemperature) {
+      cloned.pilotGroundTemperature.set(this.pilotGroundTemperature.get());
+    }
+    if (cloned.defaultGroundTemperature) {
+      cloned.defaultGroundTemperature.set(this.defaultGroundTemperature.get());
+    }
     cloned.costIndex.set(this.costIndex.get());
     cloned.pilotTropopause.set(this.pilotTropopause.get());
     cloned.defaultTropopause.set(this.defaultTropopause.get());
