@@ -503,7 +503,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     );
   }
 
-  static manualHold(segment: FlightPlanSegment, waypoint: Fix, hold: HoldData): FlightPlanLeg {
+  static manualHold(segment: FlightPlanSegment, waypoint: Fix, hold: HoldData, magVar: number | null): FlightPlanLeg {
     return new FlightPlanLeg(
       segment,
       {
@@ -658,6 +658,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
   ): FlightPlanLeg {
     const ident = formatAbeamPointIdent(referenceFix.ident);
     const waypoint = WaypointFactory.abeamFromFix(ident, location, referenceFix);
+    const magVar = MagVar.get(location.lat, location.long);
 
     const leg = new FlightPlanLeg(
       segment,
@@ -666,7 +667,8 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         type: alongLeg.type,
         overfly: false,
         waypoint,
-        magneticCourse: alongLeg.definition.magneticCourse,
+        course: alongLeg.definition.course,
+        magVar,
       },
       ident,
       '',
