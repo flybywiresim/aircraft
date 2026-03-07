@@ -19,7 +19,10 @@ import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performanc
 export interface ReadonlyFlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> {
   get index(): number;
 
-  get timeCreated(): number;
+  /**
+   * The time at which the flightplan was created in miliseconds since epoch. Undefined if no valid creation time is available.
+   */
+  timeCreated?: number;
 
   get wasModified(): boolean;
 

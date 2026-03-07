@@ -25,9 +25,9 @@ import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { ReadonlyFlightPlanLeg } from '@fmgc/flightplanning/legs/ReadonlyFlightPlanLeg';
 import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
 import { FlightPlanFlags } from '@fmgc/flightplanning/plans/FlightPlanFlags';
-import { DateFormatting } from '@shared/DateFormatting';
 import { CpnyFplnButtonUtils } from '../../../shared/CpnyFplnButtonUtils';
 import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
+import { DateTimeFormatters } from '@flybywiresim/fbw-sdk';
 
 interface MfdFmsSecIndexProps extends AbstractMfdPageProps {}
 
@@ -85,7 +85,7 @@ class MfdFmsSecIndexDataStore {
     const origin = flightPlan.originAirport;
     const destination = flightPlan.destinationAirport;
     this.secExists.set(true);
-    this.timeCreated.set(flightPlan.timeCreated);
+    this.timeCreated.set(flightPlan.timeCreated ?? null);
     this.flags.set(this.fmc.flightPlanInterface.get(FlightPlanIndex.FirstSecondary + this.secIndex - 1).flags);
     this.wasModified.set(flightPlan.wasModified);
     this.fromCity.set(origin?.ident ?? null);
@@ -302,7 +302,7 @@ export class MfdFmsSecIndexTab extends DestroyableComponent<MfdFmsSecIndexTabPro
         creationSource = ` (ATC F-PLN${wasModified ? '-MODIFIED' : ''})`;
       }
       if (exists && timeCreated) {
-        return `CREATED\xa0\xa0${DateFormatting.secondsToHHmmssString(timeCreated).substring(0, 5)}${creationSource}`;
+        return `CREATED\xa0\xa0${DateTimeFormatters.milisecondsTohhmm(timeCreated)}${creationSource}`;
       }
       return '';
     },

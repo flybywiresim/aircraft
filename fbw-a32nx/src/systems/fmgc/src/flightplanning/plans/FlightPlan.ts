@@ -29,8 +29,9 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     index: number,
     bus: EventBus,
     performanceDataInit: P,
+    time?: number,
   ): FlightPlan<P> {
-    return new FlightPlan<P>(context, index, bus, performanceDataInit);
+    return new FlightPlan<P>(context, index, bus, performanceDataInit, time);
   }
 
   /**
@@ -58,8 +59,8 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
    */
   flags: number = FlightPlanFlags.None;
 
-  constructor(context: FlightPlanContext, index: number, bus: EventBus, performanceDataInit: P) {
-    super(context, index, bus);
+  constructor(context: FlightPlanContext, index: number, bus: EventBus, performanceDataInit: P, time?: number) {
+    super(context, index, bus, time);
     this.performanceData = performanceDataInit;
   }
 
@@ -70,8 +71,8 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     this.alternateFlightPlan.destroy();
   }
 
-  clone(newIndex: number, options: number = CopyOptions.Default): FlightPlan<P> {
-    const newPlan = FlightPlan.empty(this.context, newIndex, this.bus, this.performanceData.clone());
+  clone(newIndex: number, options: number = CopyOptions.Default, time?: number): FlightPlan<P> {
+    const newPlan = FlightPlan.empty(this.context, newIndex, this.bus, this.performanceData.clone(), time);
 
     newPlan.version = this.version;
     newPlan.originSegment = this.originSegment.clone(newPlan, options);
@@ -579,8 +580,9 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     serialized: SerializedFlightPlan,
     bus: EventBus,
     performanceDataInit: P,
+    time?: number,
   ): Promise<FlightPlan<P>> {
-    const newPlan = FlightPlan.empty<P>(context, index, bus, performanceDataInit);
+    const newPlan = FlightPlan.empty<P>(context, index, bus, performanceDataInit, time);
 
     // TODO init performance data
 
