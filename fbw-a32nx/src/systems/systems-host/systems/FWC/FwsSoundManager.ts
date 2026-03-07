@@ -370,13 +370,12 @@ export class FwsSoundManager {
     // (SyntheticVoice > AuralWarning > SingleChime) with highest priority, and play it
     // TODO SyntheticVoice should not be interrupted by SC/CRC
     let selectedSoundKey: keyof typeof FwsAuralsList | null = null;
-    const selectedSound = selectedSoundKey !== null ? FwsAuralsList[selectedSoundKey] : null;
     this.soundQueue.forEach((sk) => {
       const s = FwsAuralsList[sk];
       if (
         selectedSoundKey === null ||
-        s.type > selectedSound!.type ||
-        (s.type === selectedSound?.type && s.priority > selectedSound?.priority)
+        s.type > FwsAuralsList[selectedSoundKey].type ||
+        (s.type === FwsAuralsList[selectedSoundKey].type && s.priority > FwsAuralsList[selectedSoundKey].priority)
       ) {
         selectedSoundKey = sk;
       }

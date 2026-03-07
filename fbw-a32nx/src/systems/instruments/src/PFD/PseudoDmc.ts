@@ -81,8 +81,7 @@ export class PseudoDmc implements Instrument {
   /** SDI 11 */
   private readonly dmcPitchAngleWord324Backup = Arinc429RegisterSubject.createEmpty();
 
-  private readonly fmMinimumConsumer = Arinc429LocalVarConsumerSubject.create(null);
-
+  private readonly fmMda = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmMdaRaw'), 0);
   private readonly dmcDiscreteWord270 = Arinc429RegisterSubject.createEmpty();
 
   private readonly outputWords = [
@@ -162,15 +161,13 @@ export class PseudoDmc implements Instrument {
           const altInvalid = altitude.isInvalid();
           this.dmcDiscreteWord270.setBitValue(
             20,
-            !mdaInvalid && !altInvalid && Math.round(altitude.value - fmMda.value) === 100,
+            mdaInvalid || altInvalid ? false : altitude.value - fmMda.value <= 100,
           );
-          this.dmcDiscreteWord270.setBitValue(
-            21,
-            mdaInvalid || altInvalid ? false : Math.round(altitude.value - fmMda.value) === 0,
-          );
+          this.dmcDiscreteWord270.setBitValue(21, mdaInvalid || altInvalid ? false : altitude.value < fmMda.value);
+          this.dmcDiscreteWord270.setSsm(Arinc429SignStatusMatrix.NormalOperation);
         },
-        this.dmcAltitude,
-        this.fmMinimumConsumer,
+        this.fmMda,
+        this.altitude,
       ),
     ];
 
@@ -257,7 +254,6 @@ export class PseudoDmc implements Instrument {
 
     this.irDiscreteWordOnside.setConsumer(this.sub.on(this.isRightSide ? 'ir_maint_word_2' : 'ir_maint_word_1'));
     this.irPitchAngleWordOnside.setConsumer(this.sub.on(this.isRightSide ? 'ir_pitch_2' : 'ir_pitch_1'));
-    this.fmMinimumConsumer.setConsumer(this.sub.on('fmMdaRaw'));
   }
 
   /** @inheritdoc */
