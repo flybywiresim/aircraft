@@ -553,7 +553,7 @@ export class FlightManagementComputer implements FmcInterface {
         const trip = this.getTripFuel(forPlan);
         // EXTRA = BLOCK - TAXI - TRIP - MIN FUEL DEST - RTE RSV
         return Math.max(
-          (this.enginesWereStarted.get() ? this.fmgc.getFOB()! * 1_000 : pd.blockFuel.get() ?? 0) * 1000 -
+          (this.enginesWereStarted.get() ? this.fmgc.getFOB()! : pd.blockFuel.get() ?? 0) * 1000 -
             (pd.taxiFuel.get() ?? 0) * 1000 -
             trip! -
             (pd.minimumDestinationFuelOnBoard.get() ?? 0) * 1000 -
