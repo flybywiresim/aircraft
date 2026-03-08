@@ -315,6 +315,7 @@ export class FwsSoundManager {
       SimVar.SetSimVarValue(`L:${currentSound.localVarName}`, SimVarValueType.Bool, false);
       this.currentSoundPlaying = null;
       this.currentSoundPlayTimeRemaining = 0;
+      this.setFwsAudioOutputs(currentSound.localVarName, false);
     }
   }
 
@@ -343,18 +344,11 @@ export class FwsSoundManager {
     const localVar = sound.localVarName;
 
     if (localVar) {
-      if (localVar === HUNDRED_ABOVE_LOCAL_VAR) {
-        this.fws.hundredAboveGenerated = true;
-      } else if (localVar === MINIMUM_LOCAL_VAR) {
-        this.fws.minimumGenerated = true;
-      }
-
       SimVar.SetSimVarValue(`L:${localVar}`, SimVarValueType.Bool, true);
+      this.setFwsAudioOutputs(localVar, true);
     } else if (sound.wwiseEventName) {
       Coherent.call('PLAY_INSTRUMENT_SOUND', sound.wwiseEventName);
     }
-
-    console.log(`Playing sound ${soundKey}`);
 
     this.currentSoundPlaying = soundKey;
     this.currentSoundPlayTimeRemaining = sound.continuous ? Infinity : sound.length!;
@@ -408,6 +402,7 @@ export class FwsSoundManager {
         // Sound finishes in this cycle
         if (currentSound?.localVarName) {
           SimVar.SetSimVarValue(`L:${currentSound.localVarName}`, SimVarValueType.Bool, false);
+          this.setFwsAudioOutputs(currentSound.localVarName, false);
         }
         this.currentSoundPlaying = null;
         this.currentSoundPlayTimeRemaining = 0;
@@ -435,6 +430,14 @@ export class FwsSoundManager {
     } else {
       // Play next sound
       this.selectAndPlayMostImportantSound();
+    }
+  }
+
+  private setFwsAudioOutputs(localVarName: string, value: boolean) {
+    if (localVarName === HUNDRED_ABOVE_LOCAL_VAR) {
+      this.fws.hundredAboveGenerated = value;
+    } else if (localVarName === MINIMUM_LOCAL_VAR) {
+      this.fws.minimumGenerated = value;
     }
   }
 }
