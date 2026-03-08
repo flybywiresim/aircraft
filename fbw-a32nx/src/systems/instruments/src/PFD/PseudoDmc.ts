@@ -161,7 +161,7 @@ export class PseudoDmc implements Instrument {
           const altInvalid = altitude.isInvalid();
           this.dmcDiscreteWord270.setBitValue(
             20,
-            mdaInvalid || altInvalid ? false : altitude.value - fmMda.value <= 100,
+            mdaInvalid || altInvalid ? false : altitude.value - fmMda.value <= 100, //FIXME Confirm if it should it latch or be set directly?
           );
           this.dmcDiscreteWord270.setBitValue(21, mdaInvalid || altInvalid ? false : altitude.value < fmMda.value);
           this.dmcDiscreteWord270.setSsm(Arinc429SignStatusMatrix.NormalOperation);
