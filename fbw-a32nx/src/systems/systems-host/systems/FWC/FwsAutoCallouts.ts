@@ -299,7 +299,8 @@ export class FwsAutoCallouts {
       !hundredAboveDhMtrig,
     );
     const hundredAboveDh = !hundredAboveDhMemory && hundredAboveDhMtrig && !this.autoCalloutDhInbit;
-    this.hundredAbove.set(hundredAboveMda || hundredAboveDh);
+    const hundredAbove = hundredAboveMda || hundredAboveDh;
+    this.hundredAbove.set(hundredAbove);
     /// Minimums
     // MDA
     const minimumDmc = this.dmcDiscreteWord270.bitValueOr(21, false);
@@ -318,7 +319,7 @@ export class FwsAutoCallouts {
     const minimumDh = !minimumDhMemory && dhMinimumMtrig && !this.autoCalloutDhInbit;
 
     const minimum = minimumMda || minimumDh;
-    this.dhGenerated = this.fws.minimumGenerated || hundredAboveDh || minimum;
+    this.dhGenerated = this.fws.minimumGenerated || this.fws.hundredAboveGenerated || hundredAbove || minimum;
     this.minimum.set(minimum);
   }
 
