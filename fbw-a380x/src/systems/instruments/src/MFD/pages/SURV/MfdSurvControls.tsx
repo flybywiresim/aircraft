@@ -38,8 +38,6 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
   private readonly subs = [] as Subscription[];
 
-  private readonly eoActive = Subject.create<boolean>(false);
-
   private readonly sub = this.props.bus.getSubscriber<MfdSimvars & MfdSurvEvents>();
 
   private readonly xpdrFailed = Subject.create<boolean>(false);
@@ -199,9 +197,6 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
       this.tawsTerrFailed,
       this.tawsGpwsFailed,
       this.allTawsFailed,
-      this.props.fmcService.masterFmcChanged.sub(() =>
-        this.props.fmcService.master?.fmgc.data.engineOut.pipe(this.eoActive),
-      ),
     );
   }
 
@@ -269,12 +264,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
   render(): VNode {
     return (
       <>
-        <ActivePageTitleBar
-          activePage={Subject.create('CONTROLS')}
-          offset={Subject.create('')}
-          eoIsActive={this.eoActive}
-          tmpyIsActive={Subject.create(false)}
-        />
+        <ActivePageTitleBar activePage={Subject.create('CONTROLS')} offset={Subject.create('')} />
         {/* begin page content */}
         <div class="mfd-page-container">
           <div class="mfd-surv-controls-first-section">

@@ -3,7 +3,15 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { EfisSide, EfisNdMode, ApproachUtils, SimVarString, ApproachType, LegType } from '@flybywiresim/fbw-sdk';
+import {
+  EfisSide,
+  EfisNdMode,
+  ApproachUtils,
+  SimVarString,
+  ApproachType,
+  LegType,
+  MagVar,
+} from '@flybywiresim/fbw-sdk';
 
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { PseudoWaypoint } from '@fmgc/guidance/PseudoWaypoint';
@@ -73,6 +81,7 @@ export interface Fmgc {
   getDestEFOB(useFob: boolean): number | null; // Metric tons
   getDepartureElevation(): Feet | null;
   getDestinationElevation(): Feet;
+  getPerformanceFactorPercent(): number | null;
 }
 
 export class GuidanceController {
@@ -267,8 +276,11 @@ export class GuidanceController {
           : activeLeg.getPathEndPoint();
       const ppos = this.lnavDriver.ppos;
       const efisTrueBearing = termination ? Avionics.Utils.computeGreatCircleHeading(ppos, termination) : -1;
+      const magVar = MagVar.get(ppos);
       const efisBearing = termination
-        ? A32NX_Util.trueToMagnetic(efisTrueBearing, Facilities.getMagVar(ppos.lat, ppos.long))
+        ? magVar !== null
+          ? MagVar.trueToMagnetic(efisTrueBearing, magVar)
+          : efisTrueBearing
         : -1;
 
       // Don't compute distance and ETA for XM legs

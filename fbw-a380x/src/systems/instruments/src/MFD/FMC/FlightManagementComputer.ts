@@ -18,7 +18,7 @@ import { A380AltitudeUtils } from '@shared/OperatingAltitudes';
 import { maxBlockFuel, maxCertifiedAlt, maxZfw } from '@shared/PerformanceConstants';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FmcAircraftInterface } from 'instruments/src/MFD/FMC/FmcAircraftInterface';
-import { FmgcDataService } from 'instruments/src/MFD/FMC/fmgc';
+import { FmgcDataService, LOWEST_FUEL_ESTIMATE_KGS } from 'instruments/src/MFD/FMC/fmgc';
 import { FmcInterface, FmcOperatingModes } from 'instruments/src/MFD/FMC/FmcInterface';
 import {
   a380EfisRangeSettings,
@@ -127,7 +127,7 @@ export class FlightManagementComputer implements FmcInterface {
 
   private lastFlightPlanVersion: number | null = null;
 
-  #fmgc = new FmgcDataService(this.flightPlanService);
+  #fmgc = new FmgcDataService(this.bus, this.flightPlanService);
 
   get fmgc() {
     return this.#fmgc;
@@ -380,6 +380,7 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   destroy() {
+    this.#fmgc.destroy();
     for (const s of this.subs) {
       s.destroy();
     }
@@ -473,12 +474,13 @@ export class FlightManagementComputer implements FmcInterface {
     if (this.fmgc.getFlightPhase() >= FmgcFlightPhase.Takeoff) {
       // In flight
       // TOW: TOW = GW
-      return SimVar.GetSimVarValue('TOTAL WEIGHT', 'kilogram');
+      return this.fmgc.getGrossWeightKg();
     }
     // Preflight, engines on
     // LW = GW - TRIP - TAXI
     // TOW after engine start: TOW = GW - TAXI
-    return SimVar.GetSimVarValue('TOTAL WEIGHT', 'kilogram') - (this.fmgc.data.taxiFuel.get() ?? 0);
+    const gw = this.fmgc.getGrossWeightKg();
+    return gw ? gw - (this.fmgc.data.taxiFuel.get() ?? 0) : null;
   }
 
   public getTripFuel(): number | null {
@@ -496,16 +498,18 @@ export class FlightManagementComputer implements FmcInterface {
     if (destPred) {
       if (this.flightPhase.get() === FmgcFlightPhase.Preflight) {
         // EXTRA = BLOCK - TAXI - TRIP - MIN FUEL DEST - RTE RSV
-        return (
+        return Math.max(
           (this.enginesWereStarted.get() ? this.fmgc.getFOB()! * 1_000 : this.fmgc.data.blockFuel.get() ?? 0) -
-          (this.fmgc.data.taxiFuel.get() ?? 0) -
-          (this.getTripFuel() ?? 0) -
-          (this.fmgc.data.minimumFuelAtDestination.get() ?? 0) -
-          (this.fmgc.data.routeReserveFuelWeight.get() ?? 0)
+            (this.fmgc.data.taxiFuel.get() ?? 0) -
+            (this.getTripFuel() ?? 0) -
+            (this.fmgc.data.minimumFuelAtDestination.get() ?? 0) -
+            (this.fmgc.data.routeReserveFuelWeight.get() ?? 0),
+          LOWEST_FUEL_ESTIMATE_KGS,
         );
       } else {
-        return (
-          Units.poundToKilogram(destPred.estimatedFuelOnBoard) - (this.fmgc.data.minimumFuelAtDestination.get() ?? 0)
+        return Math.max(
+          Units.poundToKilogram(destPred.estimatedFuelOnBoard) - (this.fmgc.data.minimumFuelAtDestination.get() ?? 0),
+          LOWEST_FUEL_ESTIMATE_KGS,
         );
       }
     }
@@ -526,12 +530,14 @@ export class FlightManagementComputer implements FmcInterface {
 
   /** @inheritdoc */
   public getOptFlightLevel(): number | null {
-    return Math.floor((0.96 * (this.getRecMaxFlightLevel() ?? maxCertifiedAlt / 100)) / 5) * 5; // FIXME remove magic
+    const recMax = this.getRecMaxFlightLevel();
+    return recMax !== null ? Math.floor((0.96 * recMax) / 5) * 5 : null; // FIXME remove magic
   }
 
   /** @inheritdoc */
   public getEoMaxFlightLevel(): number | null {
-    return Math.floor((0.8 * (this.getRecMaxFlightLevel() ?? maxCertifiedAlt / 100)) / 5) * 5; // FIXME remove magic
+    const recMax = this.getRecMaxFlightLevel();
+    return recMax !== null ? Math.floor((0.8 * recMax) / 5) * 5 : null; // FIXME remove magic
   }
 
   private initSimVars() {
@@ -917,7 +923,7 @@ export class FlightManagementComputer implements FmcInterface {
         this.flightPlanService
           .reset()
           .then(() => {
-            this.fmgc.data.reset();
+            this.fmgc.data.reset(true);
             this.initSimVars();
             this.deleteAllStoredWaypoints();
             this.clearLatestFmsErrorMessage();

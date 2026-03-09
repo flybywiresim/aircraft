@@ -31,7 +31,6 @@ use electrical::{
     APU_START_MOTOR_BUS_TYPE,
 };
 use fire_and_smoke_protection::A380FireAndSmokeProtection;
-use fuel::FuelLevel;
 use hydraulic::{autobrakes::A380AutobrakePanel, A380Hydraulic, A380HydraulicOverheadPanel};
 use icing::Icing;
 use navigation::{A380AirDataInertialReferenceSystemBuilder, A380RadioAltimeters};
@@ -194,7 +193,7 @@ impl Aircraft for A380 {
                 && !(self.electrical_overhead.external_power_is_on(1)
                     && self.electrical_overhead.external_power_is_available(1)),
             self.pneumatic.apu_bleed_air_valve(),
-            self.fuel.feed_one_tank_has_fuel(),
+            self.fuel.feed_four_tank_has_fuel(),
         );
 
         self.electrical.update(
@@ -334,7 +333,8 @@ impl Aircraft for A380 {
         self.icing_simulation.update(context);
 
         self.egpwc.update(&self.adirs, self.lgcius.lgciu1());
-        self.fuel.update(context);
+        self.fuel
+            .update(context, &self.adcn, A380Airframe::get_loadsheet());
 
         self.engine_reverser_control[0].update(
             &self.engine_2,

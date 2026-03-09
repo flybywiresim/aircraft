@@ -358,6 +358,10 @@ void FlyByWireInterface::setupLocalVariables() {
   idFwcFlightPhase = std::make_unique<LocalVariable>("A32NX_FWC_FLIGHT_PHASE");
   idFwsDiscreteWord126[0] = std::make_unique<LocalVariable>("A32NX_FWC_1_DISCRETE_WORD_126");
   idFwsDiscreteWord126[1] = std::make_unique<LocalVariable>("A32NX_FWC_2_DISCRETE_WORD_126");
+  idFwsAbnProcImpactingLdgPerfActive[0] = std::make_unique<LocalVariable>("A32NX_FWC_1_ABN_PROC_IMPACT_LDG_PERF");
+  idFwsAbnProcImpactingLdgPerfActive[1] = std::make_unique<LocalVariable>("A32NX_FWC_2_ABN_PROC_IMPACT_LDG_PERF");
+  idFwsAbnProcImpactingLdgDistActive[0] = std::make_unique<LocalVariable>("A32NX_FWC_1_ABN_PROC_IMPACT_LDG_DIST");
+  idFwsAbnProcImpactingLdgDistActive[1] = std::make_unique<LocalVariable>("A32NX_FWC_2_ABN_PROC_IMPACT_LDG_DIST");
 
   // register L variables for electrical system
   idElecApuGenContactorClosed[0] = std::make_unique<LocalVariable>("A32NX_ELEC_CONTACTOR_990XS1_IS_CLOSED");
@@ -397,6 +401,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idFmTargetVerticalSpeed = std::make_unique<LocalVariable>("A32NX_FG_TARGET_VERTICAL_SPEED");
   idFmRnavAppSelected = std::make_unique<LocalVariable>("A32NX_FG_RNAV_APP_SELECTED");
   idFmFinalCanEngage = std::make_unique<LocalVariable>("A32NX_FG_FINAL_CAN_ENGAGE");
+  idFmNavCaptureCondition = std::make_unique<LocalVariable>("A32NX_FM1_NAV_CAPTURE_CONDITION");
 
   idTcasFault = std::make_unique<LocalVariable>("A32NX_TCAS_FAULT");
   idTcasMode = std::make_unique<LocalVariable>("A32NX_TCAS_MODE");
@@ -407,6 +412,9 @@ void FlyByWireInterface::setupLocalVariables() {
   idTcasTargetGreenMax = std::make_unique<LocalVariable>("A32NX_TCAS_VSPEED_GREEN:2");
   idTcasTargetRedMin = std::make_unique<LocalVariable>("A32NX_TCAS_VSPEED_RED:1");
   idTcasTargetRedMax = std::make_unique<LocalVariable>("A32NX_TCAS_VSPEED_RED:2");
+
+  idOansFailed = std::make_unique<LocalVariable>("A32NX_OANS_FAILED");
+  idOansPposLost = std::make_unique<LocalVariable>("A32NX_ARPT_NAV_POS_LOST");
 
   idFcuTrkFpaModeActive = std::make_unique<LocalVariable>("A32NX_TRK_FPA_MODE_ACTIVE");
   idFcuNorthRefTrue = std::make_unique<LocalVariable>("A32NX_PUSH_TRUE_REF");
@@ -468,6 +476,8 @@ void FlyByWireInterface::setupLocalVariables() {
   idBrakePedalLeftPos = std::make_unique<LocalVariable>("A32NX_LEFT_BRAKE_PEDAL_INPUT");
   idBrakePedalRightPos = std::make_unique<LocalVariable>("A32NX_RIGHT_BRAKE_PEDAL_INPUT");
   idAutobrakeArmedMode = std::make_unique<LocalVariable>("A32NX_AUTOBRAKES_ARMED_MODE");
+  idAutobrakeActive = std::make_unique<LocalVariable>("A32NX_AUTOBRAKES_ACTIVE");
+  idBtvState = std::make_unique<LocalVariable>("A32NX_BTV_STATE");
   idAutobrakeDecelLight = std::make_unique<LocalVariable>("A32NX_AUTOBRAKES_DECEL_LIGHT");
   idFlapsHandlePercent = std::make_unique<LocalVariable>("A32NX_FLAPS_HANDLE_PERCENT");
   idFlapsHandleIndex = std::make_unique<LocalVariable>("A32NX_FLAPS_HANDLE_INDEX");
@@ -497,9 +507,9 @@ void FlyByWireInterface::setupLocalVariables() {
 
   idWingAntiIce = std::make_unique<LocalVariable>("A32NX_PNEU_WING_ANTI_ICE_SYSTEM_ON");
 
-  idFmGrossWeight = std::make_unique<LocalVariable>("A32NX_FM_GROSS_WEIGHT");
+  idFmGrossWeight = std::make_unique<LocalVariable>("A32NX_FQMS_GROSS_WEIGHT");
 
-  idCgPercentMac = std::make_unique<LocalVariable>("A32NX_AIRFRAME_GW_CG_PERCENT_MAC");
+  idCgPercentMac = std::make_unique<LocalVariable>("A32NX_FQMS_CENTER_OF_GRAVITY_MAC");
 
   for (int i = 0; i < 3; i++) {
     std::string idString = std::to_string(i + 1);
@@ -575,6 +585,7 @@ void FlyByWireInterface::setupLocalVariables() {
     idFcdcDiscreteWord5[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_5");
     idFcdcFgDiscreteWord4[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_FG_DISCRETE_WORD_4");
     idFcdcFgDiscreteWord8[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_FG_DISCRETE_WORD_8");
+    idFcdcLandingFctDiscreteWord[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_LANDING_FCT_DISCRETE_WORD");
     idFcdcCaptRollCommand[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_CAPT_ROLL_COMMAND");
     idFcdcFoRollCommand[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_FO_ROLL_COMMAND");
     idFcdcCaptPitchCommand[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_CAPT_PITCH_COMMAND");
@@ -600,6 +611,8 @@ void FlyByWireInterface::setupLocalVariables() {
     idFcdcPriorityCaptRed[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_PRIORITY_LIGHT_CAPT_RED_ON");
     idFcdcPriorityFoGreen[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_PRIORITY_LIGHT_FO_GREEN_ON");
     idFcdcPriorityFoRed[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_PRIORITY_LIGHT_FO_RED_ON");
+
+    idBtvLost = std::make_unique<LocalVariable>("A32NX_BTV_LOST");
   }
 
   for (int i = 0; i < 3; i++) {
@@ -767,6 +780,8 @@ void FlyByWireInterface::setupLocalVariables() {
   idElecDcEssBusPowered = std::make_unique<LocalVariable>("A32NX_ELEC_108PH_BUS_IS_POWERED");
   idElecDcEhaBusPowered = std::make_unique<LocalVariable>("A32NX_ELEC_247PP_BUS_IS_POWERED");
   idElecDc1BusPowered = std::make_unique<LocalVariable>("A32NX_ELEC_DC_1_BUS_IS_POWERED");
+  idElecDc2BusPowered = std::make_unique<LocalVariable>("A32NX_ELEC_DC_2_BUS_IS_POWERED");
+  idElecAc2BusPowered = std::make_unique<LocalVariable>("A32NX_ELEC_AC_2_BUS_IS_POWERED");
   idRatContactorClosed = std::make_unique<LocalVariable>("A32NX_ELEC_CONTACTOR_5XE_IS_CLOSED");
   idRatPosition = std::make_unique<LocalVariable>("A32NX_RAT_STOW_POSITION");
 
@@ -1762,6 +1777,7 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
     fcdcs[fcdcIndex].discreteInputs.spoilersArmed = spoilersHandler->getIsArmed() ? true : false;
     fcdcs[fcdcIndex].discreteInputs.btvExitMissed = idBtvExitMissed->get();
     fcdcs[fcdcIndex].discreteInputs.fmaModeReversion = idFmaModeReversion->get();
+    fcdcs[fcdcIndex].discreteInputs.simData = simData;
     fcdcs[fcdcIndex].discreteInputs.autopilotStateMachineOutput = autopilotStateMachineOutput;
     fcdcs[fcdcIndex].discreteInputs.autoThrustOutput = autoThrustOutput;
     fcdcs[fcdcIndex].discreteInputs.otherFcdcHealthy = fcdcsDiscreteOutputs[fcdcIndex == 0 ? 1 : 0].fcdcValid;
@@ -1778,7 +1794,20 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
     fcdcs[fcdcIndex].discreteInputs.nwsCommunicationAvailable =
         !failuresConsumer.isActive(Failures::Rollout);  // FIXME when steering control system implemented
     fcdcs[fcdcIndex].discreteInputs.fcuNorthRefTrue = idFcuNorthRefTrue->get() == 1;
-    fcdcs[fcdcIndex].discreteInputs.simData = simData;
+    fcdcs[fcdcIndex].discreteInputs.yellowHydraulicAvailable = idHydYellowPressurised->get();
+    fcdcs[fcdcIndex].discreteInputs.greenHydraulicAvailable = idHydGreenPressurised->get();
+    fcdcs[fcdcIndex].discreteInputs.abnProcImpactingLdgPerfActive =
+        idFwsAbnProcImpactingLdgPerfActive[0]->get() || idFwsAbnProcImpactingLdgPerfActive[1]->get();
+    fcdcs[fcdcIndex].discreteInputs.abnProcImpactingLdgDistActive =
+        idFwsAbnProcImpactingLdgDistActive[0]->get() || idFwsAbnProcImpactingLdgDistActive[1]->get();
+    fcdcs[fcdcIndex].discreteInputs.oansFailed = idOansFailed->get();
+    fcdcs[fcdcIndex].discreteInputs.oansPposLost = idOansPposLost->get();
+    fcdcs[fcdcIndex].discreteInputs.dcEssFailed = !idElecDcEssBusPowered->get();
+    fcdcs[fcdcIndex].discreteInputs.dc2Failed = !idElecDc2BusPowered->get();
+    fcdcs[fcdcIndex].discreteInputs.ac2Failed = !idElecAc2BusPowered->get();
+    fcdcs[fcdcIndex].discreteInputs.autoBrakeActive = idAutobrakeActive->get() == 1;
+    fcdcs[fcdcIndex].discreteInputs.autoBrakeMode = idAutobrakeArmedMode->get();
+    fcdcs[fcdcIndex].discreteInputs.btvState = idBtvState->get();
 
     // FIXME no speed_brake_lever_command_deg in prim out bus (where to get it from?)
     fcdcs[fcdcIndex].analogInputs.spoilersLeverPos = spoilersHandler->getHandlePosition();
@@ -1801,12 +1830,16 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
 
     if (afdxCommAvailable) {
       fcdcs[fcdcIndex].busInputs.raBusOutputs[i] = raBusOutputs[i];
+      fcdcs[fcdcIndex].busInputs.irBusOutputs[i] = irBusOutputs[i];
+      fcdcs[fcdcIndex].busInputs.adrBusOutputs[i] = adrBusOutputs[i];
     }
   }
 
   for (int i = 0; i < 2; i++) {
     if (afdxCommAvailable) {
       fcdcs[fcdcIndex].busInputs.fwsDiscreteWord126[i] = Arinc429Utils::fromSimVar(idFwsDiscreteWord126[i]->get());
+      fcdcs[fcdcIndex].busInputs.sfccBusOutputs[i] = sfccBusOutputs[i];
+      fcdcs[fcdcIndex].busInputs.lgciuBusOutputs[i] = lgciuBusOutputs[i];
     }
   }
 
@@ -1822,10 +1855,11 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
   idFcdcDiscreteWord5[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].efcsStatus5.toSimVar());
   idFcdcFgDiscreteWord4[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].primFgDiscreteWord4.toSimVar());
   idFcdcFgDiscreteWord8[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].primFgDiscreteWord8.toSimVar());
+  idFcdcLandingFctDiscreteWord[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].landingFctDiscreteWord.toSimVar());
 
   idFcdcHealthy[fcdcIndex]->set(fcdcsDiscreteOutputs[fcdcIndex].fcdcValid ? 1 : 0);
-  idFcdcHealthy[fcdcIndex]->set(fcdcsDiscreteOutputs[fcdcIndex].fcdcValid ? 1 : 0);
   idAutopilotAutolandWarning->set(fcdcsDiscreteOutputs[fcdcIndex].autolandWarning ? 1 : 0);
+  idBtvLost->set(fcdcsDiscreteOutputs[0].btvLost || fcdcsDiscreteOutputs[1].btvLost ? 1 : 0);
 
   return true;
 }
@@ -2133,6 +2167,8 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     }
   }
 
+  bool pulsedCaptureCondition = captureConditionPulseNode.update(idFmNavCaptureCondition->get());
+
   // update state machine ---------------------------------------------------------------------------------------------
   if (autopilotStateMachineEnabled) {
     // time -----------------------------------------------------------------------------------------------------------
@@ -2200,7 +2236,7 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
         facsDiscreteOutputs[0].fac_healthy ? facsBusOutputs[0].v_ls_kn.Data : facsBusOutputs[1].v_ls_kn.Data;
     autopilotStateMachineInput.in.data.VMAX_kn =
         facsDiscreteOutputs[0].fac_healthy ? facsBusOutputs[0].v_max_kn.Data : facsBusOutputs[1].v_max_kn.Data;
-    autopilotStateMachineInput.in.data.is_flight_plan_available = idFmLateralPlanAvail->get();
+    autopilotStateMachineInput.in.data.is_flight_plan_available = idFmLateralPlanAvail->get() && !pulsedCaptureCondition;
     autopilotStateMachineInput.in.data.altitude_constraint_ft = idFmgcAltitudeConstraint->get();
     autopilotStateMachineInput.in.data.thrust_reduction_altitude = fmThrustReductionAltitude->valueOr(0);
     autopilotStateMachineInput.in.data.thrust_reduction_altitude_go_around = fmThrustReductionAltitudeGoAround->valueOr(0);
@@ -2582,15 +2618,14 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
   fmgcBBusOutputs.delta_r_cmd_deg.Data = autopilotLawsOutput.autopilot.Beta_c_deg;
   fmgcBBusOutputs.delta_q_cmd_deg.SSM = Arinc429SignStatus::NormalOperation;
   fmgcBBusOutputs.delta_q_cmd_deg.Data = autopilotLawsOutput.autopilot.Theta_c_deg;
-  fmgcBBusOutputs.fm_weight_lbs.SSM =
-      idFmGrossWeight->get() == 0 ? Arinc429SignStatus::NoComputedData : Arinc429SignStatus::NormalOperation;
-  fmgcBBusOutputs.fm_weight_lbs.Data = idFmGrossWeight->get() * 2205;
-  fmgcBBusOutputs.fm_cg_percent.SSM = Arinc429SignStatus::NormalOperation;
-  fmgcBBusOutputs.fm_cg_percent.Data = idCgPercentMac->get() / 100;
+  fmgcBBusOutputs.fm_weight_lbs = Arinc429Utils::fromSimVar(idFmGrossWeight->get());
+  fmgcBBusOutputs.fm_weight_lbs.Data *= 2205;
+  fmgcBBusOutputs.fm_cg_percent = Arinc429Utils::fromSimVar(idCgPercentMac->get());
+  fmgcBBusOutputs.fm_cg_percent.Data /= 100;
   fmgcBBusOutputs.fac_weight_lbs.SSM = Arinc429SignStatus::NormalOperation;
   fmgcBBusOutputs.fac_weight_lbs.Data = simData.total_weight_kg * 2.20462262;
-  fmgcBBusOutputs.fac_cg_percent.SSM = Arinc429SignStatus::NormalOperation;
-  fmgcBBusOutputs.fac_cg_percent.Data = idCgPercentMac->get() / 100;
+  fmgcBBusOutputs.fac_cg_percent = Arinc429Utils::fromSimVar(idCgPercentMac->get());
+  fmgcBBusOutputs.fac_cg_percent.Data /= 100;
   fmgcBBusOutputs.n1_left_percent.SSM = Arinc429SignStatus::NormalOperation;
   fmgcBBusOutputs.n1_left_percent.Data = simData.engine_N1_1_percent;
   fmgcBBusOutputs.n1_right_percent.SSM = Arinc429SignStatus::NormalOperation;

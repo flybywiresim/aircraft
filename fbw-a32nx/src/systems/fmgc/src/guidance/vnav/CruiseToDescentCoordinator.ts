@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -34,7 +34,10 @@ export class CruiseToDescentCoordinator {
 
     // Use INIT FUEL PRED entry as initial estimate for destination EFOB. Clamp it to avoid unrealistic entries from erroneous pilot input.
     this.lastEstimatedFuelAtDestination = Number.isFinite(estimatedDestinationFuel)
-      ? Math.min(Math.max(estimatedDestinationFuel, 0), this.acConfig.vnavConfig.MAXIMUM_FUEL_ESTIMATE)
+      ? Math.min(
+          Math.max(estimatedDestinationFuel, this.acConfig.vnavConfig.LOWEST_FUEL_ESTIMATE),
+          this.acConfig.vnavConfig.MAXIMUM_FUEL_ESTIMATE,
+        )
       : 4000;
     this.lastEstimatedTimeAtDestination = 0;
   }

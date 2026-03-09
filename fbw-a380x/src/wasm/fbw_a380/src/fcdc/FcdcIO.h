@@ -21,6 +21,8 @@ struct FcdcBus {
   Arinc429DiscreteWord primFgDiscreteWord4;
 
   Arinc429DiscreteWord primFgDiscreteWord8;
+
+  Arinc429DiscreteWord landingFctDiscreteWord;
 };
 
 struct FcdcDiscreteInputs {
@@ -49,6 +51,24 @@ struct FcdcDiscreteInputs {
 
   bool fcuNorthRefTrue;
 
+  bool yellowHydraulicAvailable;
+
+  bool greenHydraulicAvailable;
+
+  bool abnProcImpactingLdgPerfActive;
+  bool abnProcImpactingLdgDistActive;
+
+  bool oansFailed;
+  bool oansPposLost;
+
+  bool dcEssFailed;
+  bool dc2Failed;
+  bool ac2Failed;
+
+  bool autoBrakeActive;
+  int autoBrakeMode;
+  int btvState;
+
   /* FIXME use proper bus messages */
   ap_raw_laws_input autopilotStateMachineOutput;
   athr_output autoThrustOutput;
@@ -64,6 +84,10 @@ struct FcdcBusInputs {
   base_sec_out_bus secs[3];
   base_ra_bus raBusOutputs[3];
   base_arinc_429 fwsDiscreteWord126[2];
+  base_ir_bus irBusOutputs[3];
+  base_adr_bus adrBusOutputs[3];
+  base_sfcc_bus sfccBusOutputs[2];
+  base_lgciu_bus lgciuBusOutputs[2];
 };
 
 struct FcdcDiscreteOutputs {
@@ -78,4 +102,8 @@ struct FcdcDiscreteOutputs {
   bool foGreenPriorityLightOn;
 
   bool autolandWarning;
+
+  // This is architecturally not accurate, in the real thing this is done inside the PRIMs.
+  // However, as BTV is implemented in Rust and the BTV INOP status is checked here, this would be good place to put it.
+  bool btvLost;
 };

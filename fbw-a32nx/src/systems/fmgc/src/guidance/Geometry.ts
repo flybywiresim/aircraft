@@ -19,7 +19,7 @@ import {
 import { PathVector, pathVectorLength, pathVectorPoint } from '@fmgc/guidance/lnav/PathVector';
 import { CALeg } from '@fmgc/guidance/lnav/legs/CA';
 import { isCourseReversalLeg, isHold } from '@fmgc/guidance/lnav/legs';
-import { maxBank } from '@fmgc/guidance/lnav/CommonGeometry';
+import { getRollAnticipationDistance, maxBank } from '@fmgc/guidance/lnav/CommonGeometry';
 import { CILeg } from '@fmgc/guidance/lnav/legs/CI';
 import { CRLeg } from '@fmgc/guidance/lnav/legs/CR';
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
@@ -490,19 +490,7 @@ export class Geometry {
 
     // TODO consider case where RAD > transition distance
 
-    return Geometry.getRollAnticipationDistance(gs, phiNominalFrom, phiNominalTo);
-  }
-
-  static getRollAnticipationDistance(gs: Knots, bankA: Degrees, bankB: Degrees): NauticalMiles {
-    // calculate delta phi
-    const deltaPhi = Math.abs(bankA - bankB);
-
-    // calculate RAD
-    const maxRollRate = 5; // deg / s, TODO picked off the wind
-    const k2 = 0.0038;
-    const rad = ((gs / 3600) * (Math.sqrt(1 + (2 * k2 * 9.81 * deltaPhi) / maxRollRate) - 1)) / (k2 * 9.81);
-
-    return rad;
+    return getRollAnticipationDistance(gs, phiNominalFrom, phiNominalTo);
   }
 
   getDistanceToGo(activeLegIdx: number, ppos: LatLongAlt): number | undefined {

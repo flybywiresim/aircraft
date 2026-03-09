@@ -80,7 +80,7 @@ class TopTabElement extends DisplayComponent<TopTabElementProps> {
           ref={this.textRef}
           class={`mfd-top-tab-navigator-bar-element-label${this.props.isSelected ? ' active' : ''}`}
           // eslint-disable-next-line max-len
-          style={`font-size: ${Math.floor(this.props.height * 0.55)}px;`}
+          style={`font-size: ${Math.round(this.props.height * 0.66)}px;`}
         >
           {this.props.title}
         </span>

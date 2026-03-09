@@ -9,12 +9,22 @@ import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FmcWindVector, FmcWinds } from '@fmgc/guidance/vnav/wind/types';
-import { MappedSubject, MutableSubscribable, Subject, Subscribable, SubscribableUtils } from '@microsoft/msfs-sdk';
+import {
+  EventBus,
+  MappedSubject,
+  MutableSubscribable,
+  Subject,
+  Subscribable,
+  SubscribableUtils,
+  Subscription,
+} from '@microsoft/msfs-sdk';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
-import { Arinc429Word, Fix, Runway, Units } from '@flybywiresim/fbw-sdk';
+import { Arinc429LocalVarConsumerSubject, Arinc429Word, Fix, Runway, Units } from '@flybywiresim/fbw-sdk';
 import { Feet } from 'msfs-geo';
 import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
 import { minGw } from '@shared/PerformanceConstants';
+import { A380AircraftConfig } from '@fmgc/flightplanning/A380AircraftConfig';
+import { FqmsBusEvents } from '@shared/publishers/FqmsBusPublisher';
 
 export enum TakeoffPowerSetting {
   TOGA = 0,
@@ -54,6 +64,8 @@ export enum ClimbDerated {
   D04 = 4,
   D05 = 5,
 }
+
+export const LOWEST_FUEL_ESTIMATE_KGS = Units.poundToKilogram(A380AircraftConfig.vnavConfig.LOWEST_FUEL_ESTIMATE);
 
 /**
  * Temporary place for data which is found nowhere else. Not associated to flight plans right now, which should be the case for some of these values
@@ -349,14 +361,27 @@ export class FmgcData {
   /** Indicates OEI situation */
   public readonly engineOut = Subject.create(false);
 
+  /** Fuel Penalty Factor in percentage between none and 999. Reset at done phase
+   */
+  public readonly fuelPenaltyPercentage = Subject.create<number>(null);
+
+  public readonly fuelPenaltyActive = this.fuelPenaltyPercentage.map((v) => v !== null && v > 0);
+
   private static readonly DEFAULT_SETTINGS = new FmgcData();
 
-  public reset(): void {
+  /**
+   *
+   * @param dueToDonePhase indicates wheter to reset all fmgs data or only data which is wiped at DONE phase
+   */
+  public reset(dueToDonePhase?: boolean): void {
     for (const key in FmgcData.DEFAULT_SETTINGS) {
       const prop = key as keyof FmgcData;
       if (SubscribableUtils.isMutableSubscribable(this[prop])) {
         (this[prop] as MutableSubscribable<any>).set((FmgcData.DEFAULT_SETTINGS[prop] as Subscribable<any>).get());
       }
+    }
+    if (dueToDonePhase) {
+      this.fuelPenaltyPercentage.set(null);
     }
   }
 }
@@ -366,10 +391,26 @@ export class FmgcData {
  */
 export class FmgcDataService implements Fmgc {
   public data = new FmgcData();
+  private subs: Subscription[] = [];
 
   public guidanceController: GuidanceController | undefined = undefined;
 
-  constructor(private flightPlanService: FlightPlanService) {}
+  private readonly sub = this.bus.getSubscriber<FqmsBusEvents>();
+
+  private readonly fqmsFob = Arinc429LocalVarConsumerSubject.create(this.sub.on('fqms_total_fuel_on_board'));
+  private readonly fqmsGw = Arinc429LocalVarConsumerSubject.create(this.sub.on('fqms_gross_weight'));
+  private readonly fqmsGwCg = Arinc429LocalVarConsumerSubject.create(this.sub.on('fqms_center_of_gravity_mac'));
+
+  constructor(
+    private readonly bus: EventBus,
+    private flightPlanService: FlightPlanService,
+  ) {
+    this.subs.push(this.fqmsFob, this.fqmsGw, this.fqmsGwCg);
+  }
+
+  public destroy() {
+    this.subs.forEach((s) => s.destroy());
+  }
 
   /** in tons */
   getZeroFuelWeight(): number {
@@ -380,14 +421,18 @@ export class FmgcDataService implements Fmgc {
   /** in tons */
   public getGrossWeight(): number | null {
     // Value received from FQMS, or falls back to entered ZFW + entered FOB
-    const zfw = this.data.zeroFuelWeight.get();
-    const fob = this.getFOB();
+    if (this.fqmsGw.get().isNormalOperation()) {
+      return this.fqmsGw.get().value / 1000;
+    } else {
+      const zfw = this.data.zeroFuelWeight.get();
+      const fob = this.getFOB();
 
-    if (zfw == null || fob === null) {
-      return null;
+      if (zfw == null || fob === null) {
+        return null;
+      }
+
+      return (zfw + fob * 1000) / 1_000;
     }
-
-    return (zfw + fob * 1000) / 1_000;
   }
 
   /** in kilograms */
@@ -397,15 +442,25 @@ export class FmgcDataService implements Fmgc {
   }
 
   /**
+   * The center of gravity is calculated by the FQMS.
+   * If it is not available then the value computed by the WBBC is returned.
+   * If neither the FQMS nor the WBBC provide any value then `null` is returned.
+   *
+   * @returns the gross weight center of gravity in %
+   */
+  public getGrossWeightCg(): number | null {
+    // Value received from FQMS, or falls back to value from WBBC (TODO)
+    return this.fqmsGwCg.get().valueOr(null);
+  }
+
+  /**
    *
    * @returns fuel on board in tonnes (i.e. 1000 x kg)
    */
   getFOB(): number | null {
     let fob = this.data.blockFuel.get();
-    if (this.isAnEngineOn()) {
-      fob =
-        SimVar.GetSimVarValue('L:A32NX_TOTAL_FUEL_VOLUME', 'gallons') *
-        SimVar.GetSimVarValue('FUEL WEIGHT PER GALLON', 'kilograms');
+    if (this.isAnEngineOn() && this.fqmsFob.get().isNormalOperation()) {
+      fob = this.fqmsFob.get().value;
     }
 
     return fob !== null ? fob / 1_000 : null; // Needs to be returned in tonnes
@@ -651,7 +706,7 @@ export class FmgcDataService implements Fmgc {
     if (destEfob === null || alternateFuel === null) {
       return null;
     }
-    return destEfob - alternateFuel / 1000;
+    return Math.max(destEfob - alternateFuel / 1000, LOWEST_FUEL_ESTIMATE_KGS / 1000);
   }
 
   /** in feet. null if not set */
@@ -679,6 +734,11 @@ export class FmgcDataService implements Fmgc {
   /** in nautical miles. null if not set */
   getDistanceToDestination(): number | null {
     return this.guidanceController?.vnavDriver.getDestinationPrediction()?.distanceFromAircraft ?? null;
+  }
+
+  /** In percentage. Null if not set */
+  getPerformanceFactorPercent(): number | null {
+    return this.data.fuelPenaltyPercentage.get(); // TODO add performance factor when implemented
   }
 
   getNavDataDateRange(): string {

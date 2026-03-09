@@ -44,6 +44,11 @@ export interface VnavConfig {
   MAXIMUM_FUEL_ESTIMATE: number;
 
   /**
+   * Lowest fuel estimate which can be calculated by VNAV
+   */
+  LOWEST_FUEL_ESTIMATE: number;
+
+  /**
    * Label used for pseudo-waypoints that mark where the aircraft crosses
    * climb/descent speed limit altitudes.
    * Configurable since different Airbus aircraft use different labels (e.g. A320 vs A380).

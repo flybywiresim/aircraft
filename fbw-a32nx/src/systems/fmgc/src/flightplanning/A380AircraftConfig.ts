@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -26,6 +26,7 @@ const vnavConfig: VnavConfig = {
   VNAV_USE_LATCHED_DESCENT_MODE: false,
   IDLE_N1_MARGIN: 3,
   MAXIMUM_FUEL_ESTIMATE: 250_000,
+  LOWEST_FUEL_ESTIMATE: -77161.8, // tbc
   LIM_PSEUDO_WPT_LABEL: '(SPDLIM)',
   VMO: 340,
   MMO: 0.89,
