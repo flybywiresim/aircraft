@@ -336,12 +336,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
     if (fpIndex === FlightPlanIndex.Active) {
       if (newIndex === TakeoffPowerSetting.FLEX) {
+        const flex = this.props.flightPlanInterface.active.performanceData.flexTakeoffTemperature.get();
         // FLEX
-        SimVar.SetSimVarValue(
-          'L:A32NX_AIRLINER_TO_FLEX_TEMP',
-          'Number',
-          this.props.flightPlanInterface.active.performanceData.flexTakeoffTemperature.get() ?? 0.1,
-        );
+        SimVar.SetSimVarValue('L:A32NX_AIRLINER_TO_FLEX_TEMP', 'Number', flex === 0 ? 0.1 : flex ?? 0);
       } else if (newIndex === TakeoffPowerSetting.DERATED) {
         // DERATED
         SimVar.SetSimVarValue('L:A32NX_AIRLINER_TO_FLEX_TEMP', 'Number', 0); // 0 meaning no FLEX
@@ -1575,7 +1572,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             await SimVar.SetSimVarValue(
                               'L:A32NX_AIRLINER_TO_FLEX_TEMP',
                               'Number',
-                              v === null || v === 0 ? 0.1 : v,
+                              v === 0 ? 0.1 : v ?? 0,
                             );
                           }
                           this.props.flightPlanInterface.setPerformanceData(
