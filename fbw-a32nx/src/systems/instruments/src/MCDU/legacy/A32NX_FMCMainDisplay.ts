@@ -2061,7 +2061,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   public setCruiseFlightLevelAndTemperature(input: string, forPlan: FlightPlanIndex): boolean {
     if (input === Keypad.clrValue) {
-      this.currFlightPlanService.setPerformanceData('cruiseTemperature', null, forPlan);
+      this.currFlightPlanService.setPerformanceData('cruiseTemperaturePilotEntry', null, forPlan);
       return true;
     }
     const flString = input.split('/')[0].replace('FL', '');
@@ -2095,7 +2095,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           temp = -temp;
         }
         if (temp > -270 && temp < 100) {
-          this.currFlightPlanService.setPerformanceData('cruiseTemperature', temp, forPlan);
+          this.currFlightPlanService.setPerformanceData('cruiseTemperaturePilotEntry', temp, forPlan);
           return true;
         } else {
           this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
@@ -3509,7 +3509,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   private onUpdateCruiseLevel(newCruiseLevel: number, forPlan: number) {
-    this.currFlightPlanService.setPerformanceData('cruiseTemperature', null, forPlan);
+    this.currFlightPlanService.setPerformanceData('cruiseTemperaturePilotEntry', null, forPlan);
 
     if (forPlan === FlightPlanIndex.Active) {
       this.updateConstraints();
