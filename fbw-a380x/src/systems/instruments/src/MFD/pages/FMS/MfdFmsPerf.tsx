@@ -330,22 +330,25 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   private readonly toDeratedThrustOptions = ArraySubject.create(['D01', 'D02', 'D03', 'D04', 'D05']);
 
   private toThrustSettingChanged(newIndex: TakeoffPowerSetting) {
-    this.props.flightPlanInterface.setPerformanceData('takeoffPowerSetting', newIndex, FlightPlanIndex.Active);
+    const fpIndex = this.loadedFlightPlanIndex.get();
+    this.props.flightPlanInterface.setPerformanceData('takeoffPowerSetting', newIndex, fpIndex);
     this.showToThrustSettings(newIndex);
 
-    if (newIndex === TakeoffPowerSetting.FLEX) {
-      // FLEX
-      SimVar.SetSimVarValue(
-        'L:A32NX_AIRLINER_TO_FLEX_TEMP',
-        'Number',
-        this.props.flightPlanInterface.active.performanceData.flexTakeoffTemperature.get() ?? 0.1,
-      );
-    } else if (newIndex === TakeoffPowerSetting.DERATED) {
-      // DERATED
-      SimVar.SetSimVarValue('L:A32NX_AIRLINER_TO_FLEX_TEMP', 'Number', 0); // 0 meaning no FLEX
-    } else {
-      // TOGA
-      SimVar.SetSimVarValue('L:A32NX_AIRLINER_TO_FLEX_TEMP', 'Number', 0); // 0 meaning no FLEX
+    if (fpIndex === FlightPlanIndex.Active) {
+      if (newIndex === TakeoffPowerSetting.FLEX) {
+        // FLEX
+        SimVar.SetSimVarValue(
+          'L:A32NX_AIRLINER_TO_FLEX_TEMP',
+          'Number',
+          this.props.flightPlanInterface.active.performanceData.flexTakeoffTemperature.get() ?? 0.1,
+        );
+      } else if (newIndex === TakeoffPowerSetting.DERATED) {
+        // DERATED
+        SimVar.SetSimVarValue('L:A32NX_AIRLINER_TO_FLEX_TEMP', 'Number', 0); // 0 meaning no FLEX
+      } else {
+        // TOGA
+        SimVar.SetSimVarValue('L:A32NX_AIRLINER_TO_FLEX_TEMP', 'Number', 0); // 0 meaning no FLEX
+      }
     }
   }
 
@@ -1566,8 +1569,15 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <InputField<number>
                         dataEntryFormat={new TemperatureFormat(Subject.create(0), Subject.create(99))}
                         dataHandlerDuringValidation={async (v) => {
+                          const loadedFplnIndex = this.loadedFlightPlanIndex.get();
                           // Special case: 0 means no FLEX, 0.1 means FLEX TEMP of 0
-                          await SimVar.SetSimVarValue('L:A32NX_AIRLINER_TO_FLEX_TEMP', 'Number', v === 0 ? 0.1 : v);
+                          if (loadedFplnIndex === FlightPlanIndex.Active) {
+                            await SimVar.SetSimVarValue(
+                              'L:A32NX_AIRLINER_TO_FLEX_TEMP',
+                              'Number',
+                              v === null || v === 0 ? 0.1 : v,
+                            );
+                          }
                           this.props.flightPlanInterface.setPerformanceData(
                             'flexTakeoffTemperature',
                             v,
@@ -2098,6 +2108,13 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                           dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                           inactive={this.clbPageInactive}
                           value={this.climbPreselectedSpeed}
+                          dataHandlerDuringValidation={(v) =>
+                            this.props.flightPlanInterface.setPerformanceData(
+                              'preselectedClimbSpeed',
+                              v,
+                              this.loadedFlightPlanIndex.get(),
+                            )
+                          }
                           alignText="flex-end"
                           errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                           hEventConsumer={this.props.mfd.hEventConsumer}

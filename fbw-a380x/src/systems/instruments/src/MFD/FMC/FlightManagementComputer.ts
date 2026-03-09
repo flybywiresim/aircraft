@@ -797,6 +797,8 @@ export class FlightManagementComputer implements FmcInterface {
 
     if (phase === FmgcFlightPhase.Preflight || phase === FmgcFlightPhase.Done) {
       this.addMessageToQueue(NXSystemMessages.checkToData);
+      const flex = this.#flightPlanService.active?.performanceData.flexTakeoffTemperature.get();
+      SimVar.SetSimVarValue('L:A32NX_AIRLINER_TO_FLEX_TEMP', 'Number', flex ?? 0.1);
     }
 
     if (zfwDiff !== null && zfwDiff > 5 && zfwCgDiff !== null && zfwCgDiff > 0.5) {
@@ -1150,7 +1152,7 @@ export class FlightManagementComputer implements FmcInterface {
 
         /** Arm preselected speed/mach for next flight phase */
         const preselectedSpeed = plan.performanceData.preselectedCruiseSpeed.get();
-        this.acInterface.updatePreSelSpeedMach(preselectedSpeed ?? 280);
+        this.acInterface.updatePreSelSpeedMach(preselectedSpeed);
 
         if (!plan.performanceData.cruiseFlightLevel.get()) {
           this.flightPlanInterface.active.setPerformanceData(
