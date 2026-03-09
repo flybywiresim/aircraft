@@ -48,7 +48,10 @@ export class MfdFmsFplnDuplicateNames extends DisplayComponent<MfdFmsFplnDuplica
 
   private displayFromWaypointIndex = Subject.create<number>(0);
 
-  private callback: <T extends DatabaseItem<any>>(wpt: T | undefined) => void = () => {};
+  /** A function to resolve the currently pending dedpulication request, or undefined if no request is pending. */
+  private pendingResolve?: (value: unknown | PromiseLike<unknown>) => void;
+  /** A function to reject the currently pending dedpulication request, or undefined if no request is pending. */
+  private pendingReject?: (reason?: any) => void;
 
   private disabledScrollDown = MappedSubject.create(
     ([options, fromIndex]) => !(options.length > fromIndex + 10),
@@ -152,19 +155,25 @@ export class MfdFmsFplnDuplicateNames extends DisplayComponent<MfdFmsFplnDuplica
   }
 
   private itemClickedHandler(i: number) {
-    this.callback(this.duplicateOptions.get()[i].fixData);
+    this.pendingResolve?.(this.duplicateOptions.get()[i].fixData);
+    this.pendingResolve = undefined;
+    this.pendingReject = undefined;
     this.props.visible.set(false);
   }
 
   // Entry point after opening this dialog
-  public deduplicateFacilities<T extends DatabaseItem<any>>(
-    items: T[],
-    callback: (wpt: T | PromiseLike<T | undefined> | undefined) => void,
-  ): void {
-    this.callback<T> = callback;
-    this.loadIdent(items);
+  public deduplicateFacilities<T extends DatabaseItem<any>>(items: T[]): Promise<T> {
+    if (this.pendingReject !== undefined) {
+      this.pendingReject('A new request overrode this one!');
+    }
 
-    this.props.visible.set(true);
+    return new Promise((resolve, reject) => {
+      this.pendingResolve = resolve as any;
+      this.pendingReject = reject;
+
+      this.loadIdent(items);
+      this.props.visible.set(true);
+    });
   }
 
   public destroy(): void {
@@ -190,7 +199,7 @@ export class MfdFmsFplnDuplicateNames extends DisplayComponent<MfdFmsFplnDuplica
             activePage={Subject.create('DUPLICATE NAMES')}
             offset={Subject.create('')}
             eoIsActive={this.eoActive}
-            tmpyIsActive={Subject.create(false)}
+            isFmsSubsystemPage={true}
           />
           {/* begin page content */}
           <div class="mfd-fms-fpln-duplicate-table" style="margin-top: 100px;">
@@ -234,7 +243,9 @@ export class MfdFmsFplnDuplicateNames extends DisplayComponent<MfdFmsFplnDuplica
                 ref={this.returnButtonRef}
                 label="RETURN"
                 onClick={() => {
-                  this.callback(undefined);
+                  this.pendingResolve?.(undefined);
+                  this.pendingResolve = undefined;
+                  this.pendingReject = undefined;
                   this.props.visible.set(false);
                 }}
               />

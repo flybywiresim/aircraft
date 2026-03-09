@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-//  Copyright (c) 2023 FlyByWire Simulations
+//  Copyright (c) 2023-2026 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
@@ -227,10 +227,18 @@ export class VnavDriver implements GuidanceComponent {
   }
 
   isLatAutoControlArmedWithIntercept(): boolean {
-    const { fcuArmedLateralMode } = this.computationParametersObserver.get();
+    const { fcuArmedLateralMode, fcuLateralMode } = this.computationParametersObserver.get();
 
-    // FIXME: Figure out if intercept exists
-    return isArmed(fcuArmedLateralMode, ArmedLateralMode.NAV);
+    // FIXME actually compute intercept. At the moment, we never compute an intercept,
+    // so an intercept won't exist as long as a selected mode is active.
+    // Importantly, this condition is true on the ground (as it should be) since no lateral mode will be engaged there
+    const interceptExists =
+      fcuLateralMode !== LateralMode.HDG &&
+      fcuLateralMode !== LateralMode.TRACK &&
+      fcuLateralMode !== LateralMode.GA_TRACK &&
+      fcuLateralMode !== LateralMode.RWY_TRACK;
+
+    return isArmed(fcuArmedLateralMode, ArmedLateralMode.NAV) && interceptExists;
   }
 
   isSelectedVerticalModeActive(): boolean {
@@ -494,12 +502,13 @@ export class VnavDriver implements GuidanceComponent {
 
     for (let i = 1; i < this.profileManager.ndProfile.checkpoints.length - 1; i++) {
       const checkpoint = this.profileManager.ndProfile.checkpoints[i];
+      const prevCheckpoint = this.profileManager.ndProfile.checkpoints[i - 1];
 
       if (checkpoint.distanceFromStart < distanceToPresentPosition) {
         continue;
       } else if (
-        checkpoint.reason === VerticalCheckpointReason.TopOfClimb ||
-        checkpoint.reason === VerticalCheckpointReason.TopOfDescent
+        prevCheckpoint.reason === VerticalCheckpointReason.TopOfClimb ||
+        prevCheckpoint.reason === VerticalCheckpointReason.TopOfDescent
       ) {
         // At T/C, T/D, we expect to see a speed change the the respective ECON speed, but this is not indicated to the pilots
         return null;
@@ -511,11 +520,11 @@ export class VnavDriver implements GuidanceComponent {
             checkpoint.speed,
             this.atmosphericConditions.computeCasFromMach(checkpoint.altitude, checkpoint.mach),
           ) -
-            Math.max(this.profileManager.ndProfile.checkpoints[i - 1].speed, speedTarget) >
+            Math.max(prevCheckpoint.speed, speedTarget) >
           1
         ) {
           // Candiate for a climb speed change
-          return this.profileManager.ndProfile.checkpoints[i - 1].distanceFromStart;
+          return prevCheckpoint.distanceFromStart;
         }
       } else if (
         isSpeedChangePoint(checkpoint) &&
@@ -542,6 +551,7 @@ export class VnavDriver implements GuidanceComponent {
 
     // Invalidate MCDU profile, so the FPLAN page shows blank predictions
     this.profileManager.mcduProfile?.invalidate();
+    this.guidanceController.pseudoWaypoints.acceptVerticalProfile();
   }
 
   // Only used to check whether T/D PWP should be displayed despite not being in lat auto control

@@ -184,6 +184,7 @@ export class A320_Neo_CDU_MainDisplay
     AOCFreeText: 76,
     StepAltsPage: 77,
     ATCDepartReq: 78,
+    RTAPage: 79,
   };
 
   private mcduServerClient?: McduServerClient;
@@ -1302,8 +1303,8 @@ export class A320_Neo_CDU_MainDisplay
       case AtsuStatusCodes.CallsignInUse:
         this.atsuScratchpad.setMessage(NXFictionalMessages.fltNbrInUse);
         break;
-      case AtsuStatusCodes.NoHoppieConnection:
-        this.atsuScratchpad.setMessage(NXFictionalMessages.noHoppieConnection);
+      case AtsuStatusCodes.NoAcarsConnection:
+        this.atsuScratchpad.setMessage(NXFictionalMessages.noAcarsConnection);
         break;
       case AtsuStatusCodes.ComFailed:
         this.atsuScratchpad.setMessage(NXSystemMessages.comUnavailable);

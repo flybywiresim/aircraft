@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -133,6 +133,7 @@ export class VerticalProfileManager {
       this.flightPlanService,
       this.constraintReader,
       this.atmosphericConditions,
+      this.acConfig,
     );
 
     const speedProfile = new McduSpeedProfile(
@@ -200,6 +201,7 @@ export class VerticalProfileManager {
       this.flightPlanService,
       this.constraintReader,
       this.atmosphericConditions,
+      this.acConfig,
     );
 
     const speedProfile = new McduSpeedProfile(
@@ -214,7 +216,10 @@ export class VerticalProfileManager {
     const { estimatedDestinationFuel } = this.observer.get();
     // Use INIT FUEL PRED entry as initial estimate for destination EFOB. Clamp it to avoid potentially crashing predictions entirely from erroneous pilot input.
     const fuelEstimation = Number.isFinite(estimatedDestinationFuel)
-      ? Math.min(Math.max(estimatedDestinationFuel, 0), this.acConfig.vnavConfig.MAXIMUM_FUEL_ESTIMATE)
+      ? Math.min(
+          Math.max(estimatedDestinationFuel, this.acConfig.vnavConfig.LOWEST_FUEL_ESTIMATE),
+          this.acConfig.vnavConfig.MAXIMUM_FUEL_ESTIMATE,
+        )
       : 4000;
     const finalCruiseAltitude = this.cruisePathBuilder.getFinalCruiseAltitude(descentProfile.cruiseSteps);
 
@@ -250,7 +255,7 @@ export class VerticalProfileManager {
       }
 
       const selectedSpeedProfile = new ExpediteSpeedProfile(greenDotSpeed);
-      this.expediteProfile = new SelectedGeometryProfile();
+      this.expediteProfile = new SelectedGeometryProfile(this.acConfig);
       const climbStrategy = new ClimbThrustClimbStrategy(this.observer, this.atmosphericConditions, this.acConfig);
       const climbWinds = new HeadwindProfile(this.windProfileFactory.getClimbWinds(), this.headingProfile);
 
@@ -272,7 +277,7 @@ export class VerticalProfileManager {
       this.expediteProfile.finalizeProfile();
     } catch (e) {
       console.error(e);
-      this.expediteProfile = new SelectedGeometryProfile();
+      this.expediteProfile = new SelectedGeometryProfile(this.acConfig);
     }
   }
 
@@ -283,8 +288,8 @@ export class VerticalProfileManager {
     const { fcuAltitude, cleanSpeed, presentPosition, fuelOnBoard, approachSpeed } = this.observer.get();
 
     const ndProfile = this.fcuModes.isLatAutoControlActive()
-      ? new NavGeometryProfile(this.flightPlanService, this.constraintReader, this.atmosphericConditions)
-      : new SelectedGeometryProfile();
+      ? new NavGeometryProfile(this.flightPlanService, this.constraintReader, this.atmosphericConditions, this.acConfig)
+      : new SelectedGeometryProfile(this.acConfig);
 
     let speedProfile: SpeedProfile;
     if (this.fcuModes.isExpediteModeActive()) {

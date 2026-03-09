@@ -132,7 +132,7 @@ export class CDUAtcMessagesRecord {
             mcdu.atsu.removeMessage(messages[offset + i].UniqueMessageID, false);
             CDUAtcMessagesRecord.ShowPage(mcdu, null, offset, false);
           } else {
-            CDUAtcMessage.ShowPage(mcdu, messages, offset + i, true);
+            CDUAtcMessage.ShowPage(mcdu, messages, offset + i, null);
           }
         }
       };

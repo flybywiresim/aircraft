@@ -5,9 +5,16 @@
 /* eslint-disable max-len */
 import React from 'react';
 
-import { usePersistentProperty, SENTRY_CONSENT_KEY, SentryConsentState, isMsfs2024 } from '@flybywiresim/fbw-sdk';
+import {
+  usePersistentProperty,
+  SENTRY_CONSENT_KEY,
+  SentryConsentState,
+  isMsfs2024,
+  usePersistentSetting,
+  NXDataStoreSettings,
+  useSimVar,
+} from '@flybywiresim/fbw-sdk';
 
-import { Hoppie } from '@flybywiresim/api-client';
 import { toast } from 'react-toastify';
 import { t } from '../../Localization/translation';
 import { useModals, PromptModal } from '../../UtilComponents/Modals/Modals';
@@ -15,7 +22,7 @@ import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ButtonType, SettingItem, SettingsPage } from '../Settings';
-import { HoppieConnector } from '../../../../../datalink/router/src';
+import { AcarsConnector, AcarsClient } from '../../../../../datalink/router/src';
 
 export const AtsuAocPage = () => {
   const [atisSource, setAtisSource] = usePersistentProperty('CONFIG_ATIS_SRC', 'FAA');
@@ -23,25 +30,27 @@ export const AtsuAocPage = () => {
   const [tafSource, setTafSource] = usePersistentProperty('CONFIG_TAF_SRC', isMsfs2024() ? 'MSFS' : 'NOAA');
   const [telexEnabled, setTelexEnabled] = usePersistentProperty('CONFIG_ONLINE_FEATURES_STATUS', 'DISABLED');
 
-  const [hoppieEnabled, setHoppieEnabled] = usePersistentProperty('CONFIG_HOPPIE_ENABLED', 'DISABLED');
   const [hoppieUserId, setHoppieUserId] = usePersistentProperty('CONFIG_HOPPIE_USERID');
+  const [saiLogonKey, setSaiLogonKey] = usePersistentProperty('CONFIG_SAI_LOGON_KEY');
+
+  const [acarsProvider, setAcarsProvider] = usePersistentSetting('ACARS_PROVIDER');
+  const [acarsState] = useSimVar('L:A32NX_ACARS_ACTIVE', 'boolean', 1000);
 
   const [sentryEnabled, setSentryEnabled] = usePersistentProperty(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
 
-  const getHoppieResponse = (value: string): Promise<any> =>
+  const getAcarsResponse = (value: string): Promise<any> =>
     new Promise((resolve, reject) => {
       if (!value || value === '') {
         resolve(value);
       }
 
       const body = {
-        logon: value,
         from: 'FBWA32NX',
         to: 'SERVER',
         type: 'ping',
         packet: '',
       };
-      return Hoppie.sendRequest(body).then((resp) => {
+      return AcarsClient.getData(body).then((resp) => {
         if (resp.response === 'error {invalid logon code}') {
           reject(new Error(`Error: Unknown user ID: ${resp.response}`));
         } else {
@@ -50,27 +59,33 @@ export const AtsuAocPage = () => {
       });
     });
 
-  const handleHoppieUsernameInput = (value: string) => {
-    getHoppieResponse(value)
+  const formatAcarsMessage = (messageKey: string) =>
+    t(messageKey).replace(
+      '{acarsid}',
+      acarsProvider === 'SAI' ? t('Settings.AtsuAoc.SAIApiKey') : t('Settings.AtsuAoc.HoppieUserId'),
+    );
+
+  const handleAcarsUsernameInput = (value: string) => {
+    getAcarsResponse(value)
       .then((response) => {
         if (!value) {
-          toast.success(`${t('Settings.AtsuAoc.YourHoppieIdHasBeenRemoved')} ${response}`);
+          toast.success(`${formatAcarsMessage('Settings.AtsuAoc.YourAcarsIdHasBeenRemoved')} ${response}`);
           return;
         }
-        toast.success(`${t('Settings.AtsuAoc.YourHoppieIdHasBeenValidated')} ${response}`);
+        toast.success(`${formatAcarsMessage('Settings.AtsuAoc.YourAcarsIdHasBeenValidated')} ${response}`);
+        AcarsConnector.activateAcars();
       })
-      .catch((_error) => {
-        toast.error(t('Settings.AtsuAoc.ThereWasAnErrorEncounteredWhenValidatingYourHoppieID'));
+      .catch(() => {
+        toast.error(formatAcarsMessage('Settings.AtsuAoc.ThereWasAnErrorEncounteredWhenValidatingYourAcarsId'));
       });
   };
 
-  const handleHoppieEnabled = (toggleValue: boolean) => {
-    if (toggleValue) {
-      setHoppieEnabled('ENABLED');
-      HoppieConnector.activateHoppie();
+  const handleAcarsProviderChange = (provider: NXDataStoreSettings['ACARS_PROVIDER']) => {
+    setAcarsProvider(provider);
+    if (provider == 'NONE') {
+      AcarsConnector.deactivateAcars();
     } else {
-      setHoppieEnabled('DISABLED');
-      HoppieConnector.deactivateHoppie();
+      AcarsConnector.activateAcars();
     }
   };
 
@@ -95,6 +110,13 @@ export const AtsuAocPage = () => {
   if (!isMsfs2024()) {
     tafSourceButtons = tafSourceButtons.slice(1);
   }
+
+  const acarsProviderButtons = [
+    { name: t('Settings.AtsuAoc.AcarsProviderNone'), setting: 'NONE' },
+    { name: t('Settings.AtsuAoc.AcarsProviderHoppie'), setting: 'HOPPIE' },
+    { name: t('Settings.AtsuAoc.AcarsProviderBatc'), setting: 'BATC' },
+    { name: t('Settings.AtsuAoc.AcarsProviderSai'), setting: 'SAI' },
+  ] as const;
 
   const { showModal } = useModals();
 
@@ -131,7 +153,7 @@ export const AtsuAocPage = () => {
 
   function handleWeatherSource(source: string, type: string) {
     if (type !== 'TAF') {
-      HoppieConnector.deactivateHoppie();
+      AcarsConnector.deactivateAcars();
     }
 
     if (type === 'ATIS') {
@@ -143,7 +165,7 @@ export const AtsuAocPage = () => {
     }
 
     if (type !== 'TAF') {
-      HoppieConnector.activateHoppie();
+      AcarsConnector.activateAcars();
     }
   }
 
@@ -162,7 +184,6 @@ export const AtsuAocPage = () => {
           ))}
         </SelectGroup>
       </SettingItem>
-
       <SettingItem name={t('Settings.AtsuAoc.MetarSource')}>
         <SelectGroup>
           {metarSourceButtons.map((button) => (
@@ -176,7 +197,6 @@ export const AtsuAocPage = () => {
           ))}
         </SelectGroup>
       </SettingItem>
-
       <SettingItem name={t('Settings.AtsuAoc.TafSource')}>
         <SelectGroup>
           {tafSourceButtons.map((button) => (
@@ -190,30 +210,63 @@ export const AtsuAocPage = () => {
           ))}
         </SelectGroup>
       </SettingItem>
-
       <SettingItem name={t('Settings.AtsuAoc.ErrorReporting')}>
         <Toggle
           value={sentryEnabled === SentryConsentState.Given}
           onToggle={(toggleValue) => handleSentryToggle(toggleValue)}
         />
       </SettingItem>
-
       <SettingItem name={t('Settings.AtsuAoc.Telex')}>
         <Toggle value={telexEnabled === 'ENABLED'} onToggle={(toggleValue) => handleTelexToggle(toggleValue)} />
       </SettingItem>
 
-      <SettingItem name={t('Settings.AtsuAoc.HoppieEnabled')}>
-        <Toggle value={hoppieEnabled === 'ENABLED'} onToggle={(toggleValue) => handleHoppieEnabled(toggleValue)} />
+      <SettingItem name={t('Settings.AtsuAoc.HoppieProvider')}>
+        <div className="flex items-center">
+          {acarsProvider !== 'NONE' && (
+            <span className="mr-6 flex items-center">
+              {acarsState ? t('Settings.AtsuAoc.AcarsConnected') : t('Settings.AtsuAoc.WaitingForConnection')}
+              <span
+                className={`ml-2 inline-block h-4 w-4 rounded-full ${acarsState ? 'bg-green-600' : 'bg-orange-600'}`}
+              />
+            </span>
+          )}
+          <SelectGroup>
+            {acarsProviderButtons.map((button) => (
+              <SelectItem
+                key={button.setting}
+                onSelect={() => handleAcarsProviderChange(button.setting)}
+                selected={acarsProvider === button.setting}
+              >
+                {button.name}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        </div>
       </SettingItem>
-
-      <SettingItem name={t('Settings.AtsuAoc.HoppieUserId')}>
-        <SimpleInput
-          className="w-30 text-center"
-          value={hoppieUserId}
-          onBlur={(value) => handleHoppieUsernameInput(value.replace(/\s/g, ''))}
-          onChange={(value) => setHoppieUserId(value)}
-        />
-      </SettingItem>
+      {(acarsProvider === 'HOPPIE' || acarsProvider === 'SAI') && (
+        <SettingItem name={acarsProvider === 'SAI' ? 'SAI API Key' : t('Settings.AtsuAoc.HoppieUserId')}>
+          <SimpleInput
+            className="w-30 text-center"
+            value={acarsProvider === 'SAI' ? saiLogonKey : hoppieUserId}
+            onBlur={(value) => {
+              const trimmed = value.replace(/\s/g, '');
+              if (acarsProvider === 'SAI') {
+                setSaiLogonKey(trimmed);
+              } else {
+                setHoppieUserId(trimmed);
+              }
+              handleAcarsUsernameInput(trimmed);
+            }}
+            onChange={(value) => {
+              if (acarsProvider === 'SAI') {
+                setSaiLogonKey(value);
+              } else {
+                setHoppieUserId(value);
+              }
+            }}
+          />
+        </SettingItem>
+      )}
     </SettingsPage>
   );
 };

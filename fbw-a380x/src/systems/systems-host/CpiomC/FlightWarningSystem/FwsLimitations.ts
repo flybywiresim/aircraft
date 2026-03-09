@@ -73,6 +73,16 @@ export class FwsLimitations {
       simVarIsActive: this.fws.allFlapSysFault,
       phase: FwsLimitationsPhases.ApprLdg,
     },
+    800400002: {
+      // LDG DIST AFFECTED
+      simVarIsActive: this.fws.ldgDistAffected,
+      phase: FwsLimitationsPhases.ApprLdg,
+    },
+    800400003: {
+      // LDG PERF AFFECTED
+      simVarIsActive: this.fws.ldgPerfAffected,
+      phase: FwsLimitationsPhases.ApprLdg,
+    },
   };
 
   public destroy(): void {
