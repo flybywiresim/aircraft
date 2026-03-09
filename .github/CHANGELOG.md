@@ -47,7 +47,7 @@
 1. [ATSU] Fix certain aerodromes ATIS letter not being retrieved correctly - @clc0609 (Coby)
 1. [A380X/FUEL SYSTEM] Fuel system update - @donstim (donbikes) & @Maximilian-Reuter (\_chaoz_)
 1. [FMS] Fix incorrect sign on glideslope angle (FS2020 only) - @tracernz (Mike)
-1. [A32NX/OVHD] Update battery button annunciators to be bright regardless of BRT/DIM switch position - @BravoMike99 (bruno_pt99)
+1. [A32NX/OVHD] Update battery OFF light to be bright regardless of BRT/DIM switch position - @BravoMike99 (bruno_pt99)
 1. [A380X] Fix aircraft resting on nose in aircraft selection window in 2024 - @heclak (Heclak)
 1. [FMS] Fixed pseudo waypoints symbols being offset after a direct to - @BlueberryKing (BlueberryKing)
 1. [A32NX/SFCC] Added implementation of slat baulk and slat alpha lock functions in SFCC - @Eagle941 (Joe)
@@ -83,6 +83,7 @@
 1. [A380X/FWS] Fixed overspeed VFE blue and selectable - @matze-tech (matze2346)
 1. [A380X/FUEL] Add first FQMS fuel measuring implementation - @Gurgel100 (Pascal)
 1. [FUEL] Fix fuel getting consumed when in Active Pause or Pause at T/D - @Maximilian-Reuter (\_chaoz_)
+1. [A380X/PFD] Add "APPR 1" on LS button press if no capability computed by systems - @BravoMike99 (bruno_pt99)
 
 
 ## 0.14.0
