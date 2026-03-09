@@ -1733,7 +1733,9 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps & { readonly fcdcData: 
 
       this.text1Sub.set(text1);
       this.text2Sub.set(text2);
-      this.modeChangedPathRef.instance.setAttribute('d', modeChangedPath!);
+      if (this.isShown) {
+        this.modeChangedPathRef.instance.setAttribute('d', modeChangedPath);
+      }
     } else if (!this.isShown) {
       this.displayModeChangedPath(true);
     }
