@@ -37,8 +37,6 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     private config = FpmConfigs.A320_HONEYWELL_H3,
     master = false,
   ) {
-    // FIXME once we properly use flight plan sync across different FMC/FMS instances, remove this condition.
-    // At the moment, it prohibits non-master instances to keep flight plans and react to sync messages to improve performance.
     this.flightPlanManager = new FlightPlanManager<P>(
       this,
       this.bus,
