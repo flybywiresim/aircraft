@@ -279,7 +279,11 @@ export class FmsClient implements Instrument {
     this.printMessage(message.serialize(AtsuMessageSerializationFormat.Printer));
   }
 
-  public printMessage(message: string): void {
+  // TODO ugly but needed as atsumessage cannot be transfered via the event bus properly
+  public printMessage(message: string | AtsuMessage): void {
+    if (message instanceof AtsuMessage) {
+      message = message.serialize(AtsuMessageSerializationFormat.Printer);
+    }
     this.fms.printPage(message.split('\n'));
   }
 

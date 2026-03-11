@@ -42,6 +42,7 @@ import {
   WIND_MAGNITUDE_AND_DIR_REGEX,
   WIND_MAGNITUDE_ONLY_REGEX,
 } from '../Data/Utils';
+import { BeyondATCConnector, SayIntentionsConnector } from '../../../../../datalink/router/src';
 
 interface LabelProps {
   className?: string;
@@ -240,8 +241,29 @@ export const TakeoffWidget = () => {
 
     let parsedMetar: MetarParserType | undefined = undefined;
 
-    // Comes from the sim rather than the FBW API
-    if (metarSource === 'MSFS') {
+    // Use BeyondATC local API
+    if (metarSource === 'BEYONDATC') {
+      try {
+        const response = await BeyondATCConnector.getMetar(icao);
+        if (!response.metar) {
+          throw new Error('BEYONDATC METAR NOT AVAILABLE');
+        }
+        parsedMetar = parseMetar(response.metar);
+      } catch (err) {
+        toast.error(err.message);
+      }
+    } else if (metarSource === 'SAI') {
+      try {
+        const response = await SayIntentionsConnector.getMetar(icao);
+        if (!response.metar) {
+          throw new Error('SAI METAR NOT AVAILABLE');
+        }
+        parsedMetar = parseMetar(response.metar);
+      } catch (err) {
+        toast.error(err.message);
+      }
+    } else if (metarSource === 'MSFS') {
+      // Comes from the sim rather than the FBW API
       let metar: MsfsMetar;
       try {
         metar = await Coherent.call('GET_METAR_BY_IDENT', icao);

@@ -26,13 +26,27 @@ import { AcarsClient } from './AcarsClient';
 export class AcarsConnector {
   private static flightNumber: string = '';
 
+  private static activationInterval?: ReturnType<typeof setInterval>;
+
+  private static connectionAttemptCounter = 0;
+
+  private static readonly MAX_CONNECTION_ATTEMPTS = 60; // 60 * 5s = 5 min
+
   public static fansMode: FansMode = FansMode.FansNone;
 
-  public static async activateAcars() {
-    SimVar.SetSimVarValue('L:A32NX_ACARS_ACTIVE', 'number', 0);
+  private static stopActivation(): void {
+    if (AcarsConnector.activationInterval !== undefined) {
+      clearInterval(AcarsConnector.activationInterval);
+      AcarsConnector.activationInterval = undefined;
+    }
+    AcarsConnector.connectionAttemptCounter = 0;
+  }
 
-    if (NXDataStore.getSetting('ACARS_PROVIDER').get() === 'NONE') {
-      console.log('CPDLC deactivated in EFB');
+  private static attemptActivation(): void {
+    if (AcarsConnector.connectionAttemptCounter++ >= AcarsConnector.MAX_CONNECTION_ATTEMPTS) {
+      console.log('Could not connect to ACARS after 5 minutes, giving up');
+      AcarsConnector.stopActivation();
+      NXDataStore.getSetting('ACARS_PROVIDER').set('NONE');
       return;
     }
 
@@ -43,36 +57,39 @@ export class AcarsConnector {
       packet: '',
     };
 
-    const maxRetryDuration = 5 * 60 * 1000;
-    const retryInterval = 5000;
-    const startTime = Date.now();
-
-    const attemptConnection = async (): Promise<void> => {
-      try {
-        // TODO SayIntentions allows ping without valid logon so we cannot fully verify here, awaiting reply of developers
-        const resp = await AcarsClient.getData(body);
+    AcarsClient.getData(body)
+      .then((resp) => {
         if (resp.response !== 'error {invalid logon code}') {
           SimVar.SetSimVarValue('L:A32NX_ACARS_ACTIVE', 'number', 1);
           console.log('Activated ACARS-ID');
         } else {
           console.log('Invalid ACARS-ID set');
         }
-      } catch (e) {
-        const elapsed = Date.now() - startTime;
-        if (elapsed < maxRetryDuration) {
-          console.log(`Could not connect to ACARS, retrying in ${retryInterval / 1000}s...`, e);
-          await new Promise((resolve) => setTimeout(resolve, retryInterval));
-          return attemptConnection();
-        } else {
-          console.log(`Could not connect to ACARS after 5 minutes, giving up`, e);
-        }
-      }
-    };
+        AcarsConnector.stopActivation();
+      })
+      .catch((e) => {
+        console.log(
+          `Could not connect to ACARS, retrying... (${AcarsConnector.connectionAttemptCounter}/${AcarsConnector.MAX_CONNECTION_ATTEMPTS})`,
+          e,
+        );
+      });
+  }
 
-    await attemptConnection();
+  public static activateAcars(): void {
+    AcarsConnector.stopActivation();
+    SimVar.SetSimVarValue('L:A32NX_ACARS_ACTIVE', 'number', 0);
+
+    if (NXDataStore.getSetting('ACARS_PROVIDER').get() === 'NONE') {
+      console.log('CPDLC deactivated in EFB');
+      return;
+    }
+
+    AcarsConnector.attemptActivation();
+    AcarsConnector.activationInterval = setInterval(() => AcarsConnector.attemptActivation(), 5_000);
   }
 
   public static deactivateAcars(): void {
+    AcarsConnector.stopActivation();
     SimVar.SetSimVarValue('L:A32NX_ACARS_ACTIVE', 'number', 0);
   }
 

@@ -26,6 +26,7 @@ import {
 } from '../../Store/features/dashboard';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
+import { BeyondATCConnector, SayIntentionsConnector } from '../../../../../datalink/router/src';
 
 const MetarParserTypeProp: MetarParserType = {
   raw_text: '',
@@ -124,6 +125,43 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
     if (icao.length !== 4 || !/^[a-z]{4}$/i.test(icao)) {
       setErrorMetar(t('Dashboard.ImportantInformation.Weather.NoIcaoProvided'));
       dispatch(setMetar(MetarParserTypeProp));
+      return Promise.resolve();
+    }
+
+    // Use BeyondATC local API
+    if (source === 'BEYONDATC') {
+      try {
+        const result = await BeyondATCConnector.getMetar(icao);
+        if (!result.metar) {
+          setErrorMetar('BEYONDATC METAR NOT AVAILABLE');
+          dispatch(setMetar(MetarParserTypeProp));
+          return Promise.resolve();
+        }
+        const metarParse = parseMetar(result.metar);
+        dispatch(setMetar(metarParse));
+      } catch (err) {
+        console.log(`Error while retrieving METAR from BeyondATC: ${err}`);
+        setErrorMetar('BEYONDATC METAR NOT AVAILABLE');
+        dispatch(setMetar(MetarParserTypeProp));
+      }
+      return Promise.resolve();
+    }
+
+    if (source === 'SAI') {
+      try {
+        const result = await SayIntentionsConnector.getMetar(icao);
+        if (!result.metar) {
+          setErrorMetar('SAI METAR NOT AVAILABLE');
+          dispatch(setMetar(MetarParserTypeProp));
+          return Promise.resolve();
+        }
+        const metarParse = parseMetar(result.metar);
+        dispatch(setMetar(metarParse));
+      } catch (err) {
+        console.log(`Error while retrieving METAR from SayIntentions.AI: ${err}`);
+        setErrorMetar('SAI METAR NOT AVAILABLE');
+        dispatch(setMetar(MetarParserTypeProp));
+      }
       return Promise.resolve();
     }
 
