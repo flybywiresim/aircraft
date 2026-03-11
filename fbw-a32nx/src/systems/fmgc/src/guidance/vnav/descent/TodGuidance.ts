@@ -8,7 +8,9 @@ import { AircraftToDescentProfileRelation } from '@fmgc/guidance/vnav/descent/Ai
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
 import { LateralMode } from '@shared/autopilot';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { LocalSimVar, NXDataStore, PopUpDialog } from '@flybywiresim/fbw-sdk';
+import { TodPauseOverlayControlEvents, TodPauseOverlayState } from '@shared/TodPauseOverlayEvents';
+import { LocalSimVar, NXDataStore } from '@flybywiresim/fbw-sdk';
+import { EventBus, Publisher } from '@microsoft/msfs-sdk';
 
 const TIMEOUT = 10_000;
 
@@ -27,7 +29,12 @@ export class TodGuidance {
 
   private cooldown: number;
 
+  private readonly todPauseOverlayPublisher: Publisher<TodPauseOverlayControlEvents>;
+
+  private todPauseOverlayState: TodPauseOverlayState;
+
   constructor(
+    bus: EventBus,
     private aircraftToDescentProfileRelation: AircraftToDescentProfileRelation,
     private observer: VerticalProfileComputationParametersObserver,
     private atmosphericConditions: AtmosphericConditions,
@@ -37,6 +44,12 @@ export class TodGuidance {
     this.tdReached = false;
     this.tdPaused = false;
     this.tdPauseEnabled = false;
+    this.todPauseOverlayState = {
+      visible: false,
+      title: '',
+      message: '',
+    };
+    this.todPauseOverlayPublisher = bus.getPublisher<TodPauseOverlayControlEvents>();
     this.tdArmed = new LocalSimVar('L:A32NX_PAUSE_AT_TOD_ARMED', 'bool');
 
     NXDataStore.getAndSubscribeLegacy(
@@ -65,14 +78,26 @@ export class TodGuidance {
     );
   }
 
+  private setTodPauseOverlayState(state: TodPauseOverlayState) {
+    if (
+      this.todPauseOverlayState.visible === state.visible &&
+      this.todPauseOverlayState.title === state.title &&
+      this.todPauseOverlayState.message === state.message
+    ) {
+      return;
+    }
+
+    this.todPauseOverlayState = state;
+    this.todPauseOverlayPublisher.pub('tod_pause_overlay', state, true, false);
+  }
+
   showPausePopup(title: string, message: string) {
     this.cooldown = TIMEOUT;
-    SimVar.SetSimVarValue('K:PAUSE_SET', 'number', 1);
-    let popup = new PopUpDialog();
-    popup.showInformation(title, message, 'small', () => {
-      SimVar.SetSimVarValue('K:PAUSE_SET', 'number', 0);
-      this.cooldown = TIMEOUT;
-      popup = null;
+    //SimVar.SetSimVarValue('K:PAUSE_SET', 'number', 1);
+    this.setTodPauseOverlayState({
+      visible: true,
+      title,
+      message,
     });
   }
 
@@ -101,7 +126,7 @@ export class TodGuidance {
         this.tdPaused = true;
         this.showPausePopup(
           'TOP OF DESCENT',
-          `Paused before the calculated top of descent. System Time was ${new Date().toLocaleTimeString()}.`,
+          `Paused before the calculated top of descent. System Time was ${new Date().toLocaleTimeString()}. Press "P" or toggle Active Pause from the toolbar to resume the simulation.`,
         );
         // Check A/P mode reversion
       } else if (
@@ -117,7 +142,7 @@ export class TodGuidance {
         if (this.apEngaged && !apActive) {
           this.showPausePopup(
             'AP PROTECTION',
-            `Autopilot or lateral guidance disengaged before the calculated top of descent. System Time was ${new Date().toLocaleTimeString()}.`,
+            `Autopilot or lateral guidance disengaged before the calculated top of descent. System Time was ${new Date().toLocaleTimeString()}. Press "P" or toggle Active Pause from the toolbar to resume the simulation.`,
           );
         }
 
@@ -134,6 +159,11 @@ export class TodGuidance {
     ) {
       this.tdPaused = false;
       this.apEngaged = false;
+      this.setTodPauseOverlayState({
+        visible: false,
+        title: '',
+        message: '',
+      });
     }
     // Iterate backoff timer
     if (this.cooldown > 0) {
