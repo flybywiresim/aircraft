@@ -1,5 +1,4 @@
 use crate::{
-    accept_iterable,
     enhanced_gpwc::navigation_display::NavigationDisplay,
     shared::{
         arinc429::{Arinc429Word, SignStatus},

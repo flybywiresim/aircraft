@@ -32,6 +32,10 @@ enum ActiveCommunicationInterface {
   SATCOM,
 }
 
+export interface VhfRadioInterface {
+  isDataModeActive(): boolean;
+}
+
 export class Router {
   private readonly digitalInputs: DigitalInputs;
 
@@ -54,6 +58,8 @@ export class Router {
   private poweredUp: boolean = false;
 
   private lastUpdateTime: number = -1;
+
+  private vhfRadios: VhfRadioInterface;
 
   private removeTransmissionTimeout(timeout: number): void {
     const index = this.transmissionSimulationTimeouts.findIndex((value) => value === timeout);
@@ -99,11 +105,13 @@ export class Router {
     private readonly bus: EventBus,
     synchronizedAtc: boolean,
     synchronizedAoc: boolean,
+    vhfRadios: VhfRadioInterface,
   ) {
     AcarsConnector.activateAcars();
 
-    this.digitalInputs = new DigitalInputs(this.bus, synchronizedAtc, synchronizedAoc);
+    this.digitalInputs = new DigitalInputs(this.bus, synchronizedAtc, synchronizedAoc, vhfRadios);
     this.digitalOutputs = new DigitalOutputs(this.bus, synchronizedAtc, synchronizedAoc);
+    this.vhfRadios = vhfRadios;
 
     this.digitalInputs.addDataCallback('connect', (callsign: string) => Router.connect(callsign));
     this.digitalInputs.addDataCallback('disconnect', () => Router.disconnect());
@@ -152,6 +160,8 @@ export class Router {
 
   public update(): void {
     const currentTimestamp = new Date().getTime();
+
+    this.digitalInputs.setVhf3Datamode(this.vhfRadios.isDataModeActive());
 
     // update the communication interface states
     this.vdl.vhf3.updateDatalinkStates(this.digitalInputs.Vhf3Powered, this.digitalInputs.Vhf3DataMode);

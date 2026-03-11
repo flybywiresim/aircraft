@@ -77,6 +77,7 @@ import { FwsInopSys, FwsInopSysPhases } from './FwsInopSys';
 import { FwsInformation } from './FwsInformation';
 import { FwsLimitations, FwsLimitationsPhases } from './FwsLimitations';
 import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
+import { FqmsBusEvents } from '@shared/publishers/FqmsBusPublisher';
 import {
   OisDebugDataEvents,
   DebugDataTableRow,
@@ -128,6 +129,7 @@ export class FwsCore {
   public readonly sub = this.bus.getSubscriber<
     PseudoFwcSimvars &
       FcdcSimvars &
+      FqmsBusEvents &
       FGVars &
       FmsMessageVars &
       FuelSystemEvents &
@@ -145,7 +147,7 @@ export class FwsCore {
 
   private readonly fwsUpdateThrottler = new UpdateThrottler(125); // has to be > 100 due to pulse nodes
 
-  private readonly simTime = RegisteredSimVar.create<number>('E:SIMULATION TIME', SimVarValueType.Seconds);
+  private readonly simTime = RegisteredSimVar.create('E:SIMULATION TIME', SimVarValueType.Seconds);
 
   private keyEventManager: KeyEventManager | undefined = undefined;
 
@@ -530,6 +532,34 @@ export class FwsCore {
   public readonly excessDiffPressure = Subject.create(false);
 
   public readonly diffPressure = Arinc429Register.empty();
+
+  public readonly excessResidualDiffPressure = Subject.create(false);
+
+  public readonly phase10For90sConfirm = new NXLogicConfirmNode(90);
+
+  public readonly inhibitedByDoors = Subject.create(false);
+
+  public readonly cabinDoorOpen = Subject.create(false);
+
+  private readonly interactivePointZeroOpen = RegisteredSimVar.createBoolean('INTERACTIVE POINT OPEN:0');
+
+  private readonly interactivePointOneOpen = RegisteredSimVar.createBoolean('INTERACTIVE POINT OPEN:1');
+
+  private readonly interactivePointTwoOpen = RegisteredSimVar.createBoolean('INTERACTIVE POINT OPEN:2');
+
+  private readonly interactivePointThreeOpen = RegisteredSimVar.createBoolean('INTERACTIVE POINT OPEN:3');
+
+  private readonly interactivePointFourOpen = RegisteredSimVar.createBoolean('INTERACTIVE POINT OPEN:4');
+
+  private readonly interactivePointFiveOpen = RegisteredSimVar.createBoolean('INTERACTIVE POINT OPEN:5');
+
+  private readonly interactivePointSixOpen = RegisteredSimVar.createBoolean('INTERACTIVE POINT OPEN:6');
+
+  private readonly interactivePointSevenOpen = RegisteredSimVar.createBoolean('INTERACTIVE POINT OPEN:7');
+
+  private readonly interactivePointEightOpen = RegisteredSimVar.createBoolean('INTERACTIVE POINT OPEN:8');
+
+  private readonly interactivePointNineOpen = RegisteredSimVar.createBoolean('INTERACTIVE POINT OPEN:9');
 
   public readonly allOutflowValvesOpen = Subject.create(false);
 
@@ -1193,15 +1223,17 @@ export class FwsCore {
     this.crossFeed4ValveOpen,
   );
 
-  private readonly fmsZeroFuelWeightSimvarName = `L:A32NX_FM${this.fwsNumber}_ZERO_FUEL_WEIGHT`;
-  private readonly fmsZeroFuelWeightCgSimvarName = `L:A32NX_FM${this.fwsNumber}_ZERO_FUEL_WEIGHT_CG`;
-  public readonly fmsZeroFuelWeight = Arinc429Register.empty();
-  public readonly fmsZeroFuelWeightCg = Arinc429Register.empty();
+  private readonly fuelOnBoard = Arinc429LocalVarConsumerSubject.create(this.sub.on('fqms_total_fuel_on_board'));
 
-  public readonly fmsZfwOrZfwCgNotSet = Subject.create(false);
+  private readonly fqmsGrossWeightCgPercent = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('fqms_center_of_gravity_mac'),
+  );
 
-  // TODO signals should come from FQMS
-  private readonly fuelOnBoard = ConsumerSubject.create(this.sub.on('fuel_on_board').whenChangedBy(100), 0);
+  private readonly fqmsStatusWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('fqms_status_word'));
+
+  public readonly fqmsZfwOrZfwCgNotSet = this.fqmsStatusWord.map((w) => w.bitValueOr(12, false));
+
+  public readonly fqmsZfwOrZfwCgDisagree = this.fqmsStatusWord.map((w) => w.bitValueOr(13, false));
 
   private readonly refuelPanel = ConsumerSubject.create(this.sub.on('msfs_interactive_point_open_18'), 0);
 
@@ -1216,7 +1248,7 @@ export class FwsCore {
   );
 
   private readonly isRefuelFuelTarget = MappedSubject.create(
-    ([fuelOnBoard, targetFuel]) => fuelOnBoard <= targetFuel,
+    ([fuelOnBoard, targetFuel]) => fuelOnBoard.isNormalOperation() && fuelOnBoard.value <= targetFuel,
     this.fuelOnBoard,
     this.fuelingTarget,
   );
@@ -1920,7 +1952,9 @@ export class FwsCore {
 
   public readonly fwdCargoTempRegulatorOff = Subject.create(false);
 
-  public readonly fuelOnBoardBetween55And95T = this.fuelOnBoard.map((v) => v >= 55000 && v <= 95000);
+  public readonly fuelOnBoardBetween55And95T = this.fuelOnBoard.map(
+    (v) => v.isNormalOperation() && v.value >= 55000 && v.value <= 95000,
+  );
 
   public readonly eng1StartOrCrank = Subject.create(false);
   public readonly eng1PrimaryAbnormalParams = Subject.create(false);
@@ -2305,9 +2339,12 @@ export class FwsCore {
       this.masterCautionOutput,
       this.masterWarningOutput,
       this.fuelOnBoard,
+      this.fqmsGrossWeightCgPercent,
+      this.fqmsStatusWord,
+      this.fqmsZfwOrZfwCgNotSet,
+      this.fqmsZfwOrZfwCgDisagree,
       this.fuelingInitiated,
       this.fuelingTarget,
-      this.refuelPanelOpen,
       this.allFeedTankPumpsOff,
       this.allFeedTankPumpsOn,
       this.allCrossFeedValvesOpen,
@@ -2716,18 +2753,6 @@ export class FwsCore {
     // Enforce cycle time for the logic computation (otherwise pulse nodes would be broken)
     if (deltaTime === -1 || _deltaTime === 0) {
       return;
-    }
-
-    if (
-      !this.fuelingInitiated.get() ||
-      !this.eng1ShutDown.get() ||
-      !this.eng2ShutDown.get() ||
-      !this.eng3ShutDown.get() ||
-      !this.eng4ShutDown.get()
-    ) {
-      this.fuelOnBoard.pause();
-    } else {
-      this.fuelOnBoard.resume();
     }
 
     if (!this.aircraftOnGround.get()) {
@@ -4108,6 +4133,30 @@ export class FwsCore {
       this.cabinAltitude.setSsm(Arinc429SignStatusMatrix.FailureWarning);
       this.cabinAltitudeTarget.setSsm(Arinc429SignStatusMatrix.FailureWarning);
     }
+    const diffPressureAbovePoint072 = this.diffPressure.valueOr(0) > 0.072;
+    this.phase10For90sConfirm.write(this.flightPhase.get() >= 10, deltaTime);
+
+    this.excessResidualDiffPressure.set(
+      diffPressureAbovePoint072 && ((this.aircraftOnGround.get() && engNotRunning) || this.phase10For90sConfirm.read()),
+    );
+
+    this.cabinDoorOpen.set(
+      this.main1LOpen.get() ||
+        this.main2LOpen.get() ||
+        this.main2ROpen.get() ||
+        this.main3LOpen.get() ||
+        this.main3ROpen.get() ||
+        this.main4LOpen.get() ||
+        this.main4ROpen.get() ||
+        this.main5LOpen.get() ||
+        this.main5ROpen.get(),
+    );
+
+    this.inhibitedByDoors.set(
+      this.cabinDoorOpen.get() &&
+        (this.throttle2Position.get() >= 45 || (this.throttle2Position.get() >= 35 && flexThrustLimit)),
+    );
+
     this.allOutflowValvesOpen.set(
       this.outflowValve1OpenAmount.valueOr(0) > 99 &&
         this.outflowValve2OpenAmount.valueOr(0) > 99 &&
@@ -4270,13 +4319,6 @@ export class FwsCore {
     this.crossFeed2ValveOpen.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE OPEN:47', 'kilogram') > 0.1);
     this.crossFeed3ValveOpen.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE OPEN:48', 'kilogram') > 0.1);
     this.crossFeed4ValveOpen.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE OPEN:49', 'kilogram') > 0.1);
-
-    this.fmsZeroFuelWeight.setFromSimVar(this.fmsZeroFuelWeightSimvarName);
-    this.fmsZeroFuelWeightCg.setFromSimVar(this.fmsZeroFuelWeightCgSimvarName);
-
-    this.fmsZfwOrZfwCgNotSet.set(
-      this.fmsZeroFuelWeight.isNoComputedData() || this.fmsZeroFuelWeightCg.isNoComputedData(),
-    );
 
     this.allEngineSwitchOff.set(
       !this.engine1ValueSwitch.get() &&
@@ -4510,7 +4552,6 @@ export class FwsCore {
 
     // pitch trim not takeoff
     const stabPos = SimVar.GetSimVarValue('ELEVATOR TRIM POSITION', 'degree');
-    const cgPercent = SimVar.GetSimVarValue('L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC', 'number');
 
     // A320neo config
     const pitchConfig = !PitchTrimUtils.pitchTrimInGreenBand(stabPos);
@@ -4533,8 +4574,9 @@ export class FwsCore {
       !fm1PitchTrim.isNormalOperation() && fm2PitchTrim.isNormalOperation() ? fm2PitchTrim : fm1PitchTrim;
     this.trimDisagreeMcduStabConf.write(
       fmPitchTrim.isNormalOperation() &&
-        (!PitchTrimUtils.pitchTrimInCyanBand(cgPercent, stabPos) ||
-          !(Math.abs(fmPitchTrim.valueOr(0) - cgPercent) < 1)),
+        this.fqmsGrossWeightCgPercent.get().isNormalOperation() &&
+        (!PitchTrimUtils.pitchTrimInCyanBand(this.fqmsGrossWeightCgPercent.get().value, stabPos) ||
+          !(Math.abs(fmPitchTrim.valueOr(0) - this.fqmsGrossWeightCgPercent.get().value) < 1)),
       deltaTime,
     );
     this.pitchTrimMcduCgDisagree.set(
@@ -5030,16 +5072,16 @@ export class FwsCore {
         SimVar.GetSimVarValue('L:FO_SLIDING_WINDOW', 'number') === 1,
     );
 
-    this.main1LOpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:0', 'percent') > 0);
-    this.main1ROpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:1', 'percent') > 0);
-    this.main2LOpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:2', 'percent') > 0);
-    this.main2ROpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:3', 'percent') > 0);
-    this.main3LOpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:4', 'percent') > 0);
-    this.main3ROpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:5', 'percent') > 0);
-    this.main4LOpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:6', 'percent') > 0);
-    this.main4ROpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:7', 'percent') > 0);
-    this.main5LOpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:8', 'percent') > 0);
-    this.main5ROpen.set(SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:9', 'percent') > 0);
+    this.main1LOpen.set(this.interactivePointZeroOpen.get());
+    this.main1ROpen.set(this.interactivePointOneOpen.get());
+    this.main2LOpen.set(this.interactivePointTwoOpen.get());
+    this.main2ROpen.set(this.interactivePointThreeOpen.get());
+    this.main3LOpen.set(this.interactivePointFourOpen.get());
+    this.main3ROpen.set(this.interactivePointFiveOpen.get());
+    this.main4LOpen.set(this.interactivePointSixOpen.get());
+    this.main4ROpen.set(this.interactivePointSevenOpen.get());
+    this.main5LOpen.set(this.interactivePointEightOpen.get());
+    this.main5ROpen.set(this.interactivePointNineOpen.get());
 
     /* CABIN READY */
 

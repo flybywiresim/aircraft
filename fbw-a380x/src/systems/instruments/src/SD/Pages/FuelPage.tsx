@@ -39,50 +39,54 @@ export const FuelPage = () => {
   const [engine3Valve] = useSimVar('FUELSYSTEM VALVE OPEN:3', 'Percent over 100', 1000);
   const [engine4Valve] = useSimVar('FUELSYSTEM VALVE OPEN:4', 'Percent over 100', 1000);
 
+  // Fuel pump states
+  const fqmsLeftPumpStates = useArinc429Var('L:A32NX_FQMS_LEFT_FUEL_PUMP_RUNNING_WORD', 1000);
+  const fqmsRightPumpStates = useArinc429Var('L:A32NX_FQMS_RIGHT_FUEL_PUMP_RUNNING_WORD', 1000);
+
   // Feed pumps
-  const [feed1Pump1Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:1', 'Bool', 1000);
+  const feed1Pump1Active = fqmsLeftPumpStates.bitValueOr(12, false);
   const [isFeed1Pump1SwitchOff, setIsFeed1Pump1SwitchOff] = useState(false); // circuit 2
-  const [feed1Pump2Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:2', 'Bool', 1000);
+  const feed1Pump2Active = fqmsLeftPumpStates.bitValueOr(13, false);
   const [isFeed1Pump2SwitchOff, setIsFeed1Pump2SwitchOff] = useState(false); // circuit 3
-  const [feed2Pump1Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:3', 'Bool', 1000);
+  const feed2Pump1Active = fqmsLeftPumpStates.bitValueOr(14, false);
   const [isFeed2Pump1SwitchOff, setIsFeed2Pump1SwitchOff] = useState(false); // circuit 64
-  const [feed2Pump2Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:4', 'Bool', 1000);
+  const feed2Pump2Active = fqmsLeftPumpStates.bitValueOr(15, false);
   const [isFeed2Pump2SwitchOff, setIsFeed2Pump2SwitchOff] = useState(false); // circuit 65
-  const [feed3Pump1Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:5', 'Bool', 1000);
+  const feed3Pump1Active = fqmsRightPumpStates.bitValueOr(12, false);
   const [isFeed3Pump1SwitchOff, setIsFeed3Pump1SwitchOff] = useState(false); // circuit 66
-  const [feed3Pump2Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:6', 'Bool', 1000);
+  const feed3Pump2Active = fqmsRightPumpStates.bitValueOr(13, false);
   const [isFeed3Pump2SwitchOff, setIsFeed3Pump2SwitchOff] = useState(false); // circuit 67
-  const [feed4Pump1Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:7', 'Bool', 1000);
+  const feed4Pump1Active = fqmsRightPumpStates.bitValueOr(14, false);
   const [isFeed4Pump1SwitchOff, setIsFeed4Pump1SwitchOff] = useState(false); // circuit 68
-  const [feed4Pump2Active] = useSimVar('FUELSYSTEM PUMP ACTIVE:8', 'Bool', 1000);
+  const feed4Pump2Active = fqmsRightPumpStates.bitValueOr(15, false);
   const [isFeed4Pump2SwitchOff, setIsFeed4Pump2SwitchOff] = useState(false); // circuit 69
 
   // Transfer pumps
-  const [isLeftOuterTankPumpActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:9', 'Bool', 1000);
+  const isLeftOuterTankPumpActive = fqmsLeftPumpStates.bitValueOr(16, false);
   const [isLeftOuterTankPumpSwitchOff, setIsLeftOuterTankPumpSwitchOff] = useState(false); // circuit 70
-  const [isLeftMidTankPumpFwdActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:10', 'Bool', 1000);
+  const isLeftMidTankPumpFwdActive = fqmsLeftPumpStates.bitValueOr(17, false);
   const [isLeftMidTankPumpFwdSwitchOff, setIsLeftMidTankPumpFwdSwitchOff] = useState(false); // circuit 71
-  const [isLeftMidTankPumpAftActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:11', 'Bool', 1000);
+  const isLeftMidTankPumpAftActive = fqmsLeftPumpStates.bitValueOr(18, false);
   const [isLeftMidTankPumpAftSwitchOff, setIsLeftMidTankPumpAftSwitchOff] = useState(false); // circuit 72
-  const [isLeftInnerTankPumpFwdActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:12', 'Bool', 1000);
+  const isLeftInnerTankPumpFwdActive = fqmsLeftPumpStates.bitValueOr(19, false);
   const [isLeftInnerTankPumpFwdSwitchOff, setIsLeftInnerTankPumpFwdSwitchOff] = useState(false); // circuit 73
-  const [isRightInnerTankPumpFwdActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:13', 'Bool', 1000);
+  const isRightInnerTankPumpFwdActive = fqmsRightPumpStates.bitValueOr(19, false);
   const [isRightInnerTankPumpFwdSwitchOff, setIsRightInnerTankPumpFwdSwitchOff] = useState(false); // circuit 78
-  const [isRightOuterTankPumpActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:14', 'Bool', 1000);
+  const isRightOuterTankPumpActive = fqmsRightPumpStates.bitValueOr(16, false);
   const [isRightOuterTankPumpSwitchOff, setIsRightOuterTankPumpSwitchOff] = useState(false); // circuit 75
-  const [isRightMidTankPumpFwdActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:15', 'Bool', 1000);
+  const isRightMidTankPumpFwdActive = fqmsRightPumpStates.bitValueOr(17, false);
   const [isRightMidTankPumpFwdSwitchOff, setIsRightMidTankPumpFwdSwitchOff] = useState(false); // circuit 76
-  const [isRightMidTankPumpAftActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:16', 'Bool', 1000);
+  const isRightMidTankPumpAftActive = fqmsRightPumpStates.bitValueOr(18, false);
   const [isRightMidTankPumpAftSwitchOff, setIsRightMidTankPumpAftSwitchOff] = useState(false); // circuit 77
-  const [isLeftInnerTankPumpAftActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:17', 'Bool', 1000);
+  const isLeftInnerTankPumpAftActive = fqmsLeftPumpStates.bitValueOr(20, false);
   const [isLeftInnerTankPumpAftSwitchOff, setIsLeftInnerTankPumpAftSwitchOff] = useState(false); // circuit 74
-  const [isRightInnerTankPumpAftActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:18', 'Bool', 1000);
+  const isRightInnerTankPumpAftActive = fqmsRightPumpStates.bitValueOr(20, false);
   const [isRightInnerTankPumpAftSwitchOff, setIsRightInnerTankPumpAftSwitchOff] = useState(false); // circuit 79
 
   // Trim tank pumps
-  const [isLeftTrimTankPumpActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:19', 'Bool', 1000);
+  const isLeftTrimTankPumpActive = fqmsLeftPumpStates.bitValueOr(21, false);
   const [isLeftTrimTankPumpSwitchOff, setIsLeftTrimTankPumpSwitchOff] = useState(false); // circuit 80
-  const [isRightTrimTankPumpActive] = useSimVar('FUELSYSTEM PUMP ACTIVE:20', 'Bool', 1000);
+  const isRightTrimTankPumpActive = fqmsRightPumpStates.bitValueOr(21, false);
   const [isRightTrimTankPumpSwitchOff, setIsRightTrimTankPumpSwitchOff] = useState(false); // circuit 81
 
   useInterval(
@@ -718,17 +722,67 @@ export const FuelPage = () => {
     isCollectorCell1NotFull || isCollectorCell2NotFull || isCollectorCell3NotFull || isCollectorCell4NotFull;
 
   // Tanks
-  const [leftOuterTankWeight] = useSimVar('FUELSYSTEM TANK WEIGHT:1', 'kg');
-  const [feed1TankWeight] = useSimVar('FUELSYSTEM TANK WEIGHT:2', 'kg');
-  const [leftMidTankWeight] = useSimVar('FUELSYSTEM TANK WEIGHT:3', 'kg');
-  const [leftInnerTankWeight] = useSimVar('FUELSYSTEM TANK WEIGHT:4', 'kg');
-  const [feed2TankWeight] = useSimVar('FUELSYSTEM TANK WEIGHT:5', 'kg');
-  const [feed3TankWeight] = useSimVar('FUELSYSTEM TANK WEIGHT:6', 'kg');
-  const [rightInnerTankWeight] = useSimVar('FUELSYSTEM TANK WEIGHT:7', 'kg');
-  const [rightMidTankWeight] = useSimVar('FUELSYSTEM TANK WEIGHT:8', 'kg');
-  const [feed4TankWeight] = useSimVar('FUELSYSTEM TANK WEIGHT:9', 'kg');
-  const [rightOuterTankWeight] = useSimVar('FUELSYSTEM TANK WEIGHT:10', 'kg');
-  const [trimTankWeight] = useSimVar('FUELSYSTEM TANK WEIGHT:11', 'kg');
+  // We prioritize the values published by the FQMS and take the values provided by the FQDCs as a backup
+  // TODO: when we take the FQDC values show degraded indication (strike through)
+  const fqmsLeftOuterTankWeight = useArinc429Var('L:A32NX_FQMS_LEFT_OUTER_TANK_QUANTITY', 1000);
+  const fqmsFeed1TankWeight = useArinc429Var('L:A32NX_FQMS_FEED_1_TANK_QUANTITY', 1000);
+  const fqmsLeftMidTankWeight = useArinc429Var('L:A32NX_FQMS_LEFT_MID_TANK_QUANTITY', 1000);
+  const fqmsLeftInnerTankWeight = useArinc429Var('L:A32NX_FQMS_LEFT_INNER_TANK_QUANTITY', 1000);
+  const fqmsFeed2TankWeight = useArinc429Var('L:A32NX_FQMS_FEED_2_TANK_QUANTITY', 1000);
+  const fqmsFeed3TankWeight = useArinc429Var('L:A32NX_FQMS_FEED_3_TANK_QUANTITY', 1000);
+  const fqmsRightInnerTankWeight = useArinc429Var('L:A32NX_FQMS_RIGHT_INNER_TANK_QUANTITY', 1000);
+  const fqmsRightMidTankWeight = useArinc429Var('L:A32NX_FQMS_RIGHT_MID_TANK_QUANTITY', 1000);
+  const fqmsFeed4TankWeight = useArinc429Var('L:A32NX_FQMS_FEED_4_TANK_QUANTITY', 1000);
+  const fqmsRightOuterTankWeight = useArinc429Var('L:A32NX_FQMS_RIGHT_OUTER_TANK_QUANTITY', 1000);
+  const fqmsTrimTankWeight = useArinc429Var('L:A32NX_FQMS_TRIM_TANK_QUANTITY', 1000);
+
+  const fqdc1LeftOuterTankWeight = useArinc429Var('L:A32NX_FQDC_1_LEFT_OUTER_TANK_QUANTITY', 1000);
+  const fqdc1Feed1TankWeight = useArinc429Var('L:A32NX_FQDC_1_FEED_1_TANK_QUANTITY', 1000);
+  const fqdc1LeftMidTankWeight = useArinc429Var('L:A32NX_FQDC_1_LEFT_MID_TANK_QUANTITY', 1000);
+  const fqdc1LeftInnerTankWeight = useArinc429Var('L:A32NX_FQDC_1_LEFT_INNER_TANK_QUANTITY', 1000);
+  const fqdc1Feed2TankWeight = useArinc429Var('L:A32NX_FQDC_1_FEED_2_TANK_QUANTITY', 1000);
+  const fqdc1Feed3TankWeight = useArinc429Var('L:A32NX_FQDC_1_FEED_3_TANK_QUANTITY', 1000);
+  const fqdc1RightInnerTankWeight = useArinc429Var('L:A32NX_FQDC_1_RIGHT_INNER_TANK_QUANTITY', 1000);
+  const fqdc1RightMidTankWeight = useArinc429Var('L:A32NX_FQDC_1_RIGHT_MID_TANK_QUANTITY', 1000);
+  const fqdc1Feed4TankWeight = useArinc429Var('L:A32NX_FQDC_1_FEED_4_TANK_QUANTITY', 1000);
+  const fqdc1RightOuterTankWeight = useArinc429Var('L:A32NX_FQDC_1_RIGHT_OUTER_TANK_QUANTITY', 1000);
+  const fqdc1TrimTankWeight = useArinc429Var('L:A32NX_FQDC_1_TRIM_TANK_QUANTITY', 1000);
+
+  const fqdc2LeftOuterTankWeight = useArinc429Var('L:A32NX_FQDC_2_LEFT_OUTER_TANK_QUANTITY', 1000);
+  const fqdc2Feed1TankWeight = useArinc429Var('L:A32NX_FQDC_2_FEED_1_TANK_QUANTITY', 1000);
+  const fqdc2LeftMidTankWeight = useArinc429Var('L:A32NX_FQDC_2_LEFT_MID_TANK_QUANTITY', 1000);
+  const fqdc2LeftInnerTankWeight = useArinc429Var('L:A32NX_FQDC_2_LEFT_INNER_TANK_QUANTITY', 1000);
+  const fqdc2Feed2TankWeight = useArinc429Var('L:A32NX_FQDC_2_FEED_2_TANK_QUANTITY', 1000);
+  const fqdc2Feed3TankWeight = useArinc429Var('L:A32NX_FQDC_2_FEED_3_TANK_QUANTITY', 1000);
+  const fqdc2RightInnerTankWeight = useArinc429Var('L:A32NX_FQDC_2_RIGHT_INNER_TANK_QUANTITY', 1000);
+  const fqdc2RightMidTankWeight = useArinc429Var('L:A32NX_FQDC_2_RIGHT_MID_TANK_QUANTITY', 1000);
+  const fqdc2Feed4TankWeight = useArinc429Var('L:A32NX_FQDC_2_FEED_4_TANK_QUANTITY', 1000);
+  const fqdc2RightOuterTankWeight = useArinc429Var('L:A32NX_FQDC_2_RIGHT_OUTER_TANK_QUANTITY', 1000);
+  const fqdc2TrimTankWeight = useArinc429Var('L:A32NX_FQDC_2_TRIM_TANK_QUANTITY', 1000);
+
+  const leftOuterTankWeight = fqmsLeftOuterTankWeight.valueOr(
+    fqdc1LeftOuterTankWeight.valueOr(fqdc2LeftOuterTankWeight.valueOr(null)),
+  );
+  const feed1TankWeight = fqmsFeed1TankWeight.valueOr(fqdc1Feed1TankWeight.valueOr(fqdc2Feed1TankWeight.valueOr(null)));
+  const leftMidTankWeight = fqmsLeftMidTankWeight.valueOr(
+    fqdc1LeftMidTankWeight.valueOr(fqdc2LeftMidTankWeight.valueOr(null)),
+  );
+  const leftInnerTankWeight = fqmsLeftInnerTankWeight.valueOr(
+    fqdc1LeftInnerTankWeight.valueOr(fqdc2LeftInnerTankWeight.valueOr(null)),
+  );
+  const feed2TankWeight = fqmsFeed2TankWeight.valueOr(fqdc1Feed2TankWeight.valueOr(fqdc2Feed2TankWeight.valueOr(null)));
+  const feed3TankWeight = fqmsFeed3TankWeight.valueOr(fqdc1Feed3TankWeight.valueOr(fqdc2Feed3TankWeight.valueOr(null)));
+  const rightInnerTankWeight = fqmsRightInnerTankWeight.valueOr(
+    fqdc1RightInnerTankWeight.valueOr(fqdc2RightInnerTankWeight.valueOr(null)),
+  );
+  const rightMidTankWeight = fqmsRightMidTankWeight.valueOr(
+    fqdc1RightMidTankWeight.valueOr(fqdc2RightMidTankWeight.valueOr(null)),
+  );
+  const feed4TankWeight = fqmsFeed4TankWeight.valueOr(fqdc1Feed4TankWeight.valueOr(fqdc2Feed4TankWeight.valueOr(null)));
+  const rightOuterTankWeight = fqmsRightOuterTankWeight.valueOr(
+    fqdc1RightOuterTankWeight.valueOr(fqdc2RightOuterTankWeight.valueOr(null)),
+  );
+  const trimTankWeight = fqmsTrimTankWeight.valueOr(fqdc1TrimTankWeight.valueOr(fqdc2TrimTankWeight.valueOr(null)));
 
   return (
     <>
@@ -836,7 +890,7 @@ export const FuelPage = () => {
         x={154}
         y={300}
         quantity={feed1TankWeight}
-        hasFault={feed1TankWeight < FEED_TANK_LOW_LEVEL_THRESHOLD_KG}
+        hasFault={feed1TankWeight === null || feed1TankWeight < FEED_TANK_LOW_LEVEL_THRESHOLD_KG}
       />
       {(showMore || isAnyCollectorCellNotFull) && (
         // FEED TANK 1 collector cell (inop.)
@@ -877,7 +931,7 @@ export const FuelPage = () => {
         x={322}
         y={288}
         quantity={feed2TankWeight}
-        hasFault={feed2TankWeight < FEED_TANK_LOW_LEVEL_THRESHOLD_KG}
+        hasFault={feed2TankWeight === null || feed2TankWeight < FEED_TANK_LOW_LEVEL_THRESHOLD_KG}
       />
       {(showMore || isAnyCollectorCellNotFull) && (
         // FEED TANK 2 collector cell (inop.)
@@ -913,7 +967,7 @@ export const FuelPage = () => {
         x={528}
         y={288}
         quantity={feed3TankWeight}
-        hasFault={feed3TankWeight < FEED_TANK_LOW_LEVEL_THRESHOLD_KG}
+        hasFault={feed3TankWeight === null || feed3TankWeight < FEED_TANK_LOW_LEVEL_THRESHOLD_KG}
       />
       {(showMore || isAnyCollectorCellNotFull) && (
         // FEED TANK 3 collector cell (inop.)
@@ -954,7 +1008,7 @@ export const FuelPage = () => {
         x={696}
         y={300}
         quantity={feed4TankWeight}
-        hasFault={feed4TankWeight < FEED_TANK_LOW_LEVEL_THRESHOLD_KG}
+        hasFault={feed4TankWeight === null || feed4TankWeight < FEED_TANK_LOW_LEVEL_THRESHOLD_KG}
       />
       {(showMore || isAnyCollectorCellNotFull) && (
         // FEED TANK 4 collector cell (inop.)
@@ -1581,16 +1635,21 @@ const Engine: FC<EngineProps> = ({ x, y, index }) => {
 
 interface TankQuantityProps extends Position {
   smallFont?: boolean;
-  quantity: number;
+  quantity: number | null;
   hasFault?: boolean;
 }
 
 const TankQuantity: FC<TankQuantityProps> = ({ x, y, smallFont = false, quantity, hasFault }) => {
-  const displayQuantity = Math.floor(quantity / 20) * 20;
+  const displayText = quantity !== null ? Math.floor(quantity / 20) * 20 : 'XX\xa0';
 
   return (
-    <text x={x} y={y} className={`${hasFault ? 'Amber' : 'Green'} ${smallFont ? 'T3' : 'T4'}`} textAnchor="end">
-      {displayQuantity}
+    <text
+      x={x}
+      y={y}
+      className={`${hasFault || quantity === null ? 'Amber' : 'Green'} ${smallFont ? 'T3' : 'T4'}`}
+      textAnchor="end"
+    >
+      {displayText}
     </text>
   );
 };

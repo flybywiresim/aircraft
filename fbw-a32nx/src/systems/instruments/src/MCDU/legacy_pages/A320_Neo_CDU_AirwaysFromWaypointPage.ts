@@ -39,9 +39,7 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
 
     const rows = [['----'], [''], [''], [''], ['']];
     const subRows = [['VIA', ''], [''], [''], [''], ['']];
-    const allRows = lastIndex
-      ? A320_Neo_CDU_AirwaysFromWaypointPage._GetAllRows(fpIsTmpy ? mcdu.flightPlanService.temporary : targetPlan)
-      : [];
+    const allRows = lastIndex ? A320_Neo_CDU_AirwaysFromWaypointPage._GetAllRows(targetPlan) : [];
 
     let rowBottomLine = ['<RETURN'];
     mcdu.onLeftInput[5] = () => {
@@ -54,11 +52,9 @@ export class A320_Neo_CDU_AirwaysFromWaypointPage {
       rowBottomLine = ['<RETURN', 'INSERT*[color]cyan'];
 
       mcdu.onRightInput[5] = async () => {
-        mcdu.insertTemporaryFlightPlan(() => {
-          mcdu.updateConstraints();
+        await mcdu.flightPlanService.finaliseAirwayEntry(forPlan, inAlternate);
 
-          CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
-        });
+        CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
       };
     } else if (fpIsTmpy && targetPlan.pendingAirways && targetPlan.pendingAirways.elements.length > 0) {
       rowBottomLine = ['{ERASE[color]amber', 'INSERT*[color]amber'];

@@ -9,13 +9,22 @@ import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FmcWindVector, FmcWinds } from '@fmgc/guidance/vnav/wind/types';
-import { MappedSubject, MutableSubscribable, Subject, Subscribable, SubscribableUtils } from '@microsoft/msfs-sdk';
+import {
+  EventBus,
+  MappedSubject,
+  MutableSubscribable,
+  Subject,
+  Subscribable,
+  SubscribableUtils,
+  Subscription,
+} from '@microsoft/msfs-sdk';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
-import { Arinc429Word, Fix, Runway, Units } from '@flybywiresim/fbw-sdk';
+import { Arinc429LocalVarConsumerSubject, Arinc429Word, Fix, Runway, Units } from '@flybywiresim/fbw-sdk';
 import { Feet } from 'msfs-geo';
 import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
 import { minGw } from '@shared/PerformanceConstants';
 import { A380AircraftConfig } from '@fmgc/flightplanning/A380AircraftConfig';
+import { FqmsBusEvents } from '@shared/publishers/FqmsBusPublisher';
 
 export enum TakeoffPowerSetting {
   TOGA = 0,
@@ -382,10 +391,26 @@ export class FmgcData {
  */
 export class FmgcDataService implements Fmgc {
   public data = new FmgcData();
+  private subs: Subscription[] = [];
 
   public guidanceController: GuidanceController | undefined = undefined;
 
-  constructor(private flightPlanService: FlightPlanService) {}
+  private readonly sub = this.bus.getSubscriber<FqmsBusEvents>();
+
+  private readonly fqmsFob = Arinc429LocalVarConsumerSubject.create(this.sub.on('fqms_total_fuel_on_board'));
+  private readonly fqmsGw = Arinc429LocalVarConsumerSubject.create(this.sub.on('fqms_gross_weight'));
+  private readonly fqmsGwCg = Arinc429LocalVarConsumerSubject.create(this.sub.on('fqms_center_of_gravity_mac'));
+
+  constructor(
+    private readonly bus: EventBus,
+    private flightPlanService: FlightPlanService,
+  ) {
+    this.subs.push(this.fqmsFob, this.fqmsGw, this.fqmsGwCg);
+  }
+
+  public destroy() {
+    this.subs.forEach((s) => s.destroy());
+  }
 
   /** in tons */
   getZeroFuelWeight(): number {
@@ -396,14 +421,18 @@ export class FmgcDataService implements Fmgc {
   /** in tons */
   public getGrossWeight(): number | null {
     // Value received from FQMS, or falls back to entered ZFW + entered FOB
-    const zfw = this.data.zeroFuelWeight.get();
-    const fob = this.getFOB();
+    if (this.fqmsGw.get().isNormalOperation()) {
+      return this.fqmsGw.get().value / 1000;
+    } else {
+      const zfw = this.data.zeroFuelWeight.get();
+      const fob = this.getFOB();
 
-    if (zfw == null || fob === null) {
-      return null;
+      if (zfw == null || fob === null) {
+        return null;
+      }
+
+      return (zfw + fob * 1000) / 1_000;
     }
-
-    return (zfw + fob * 1000) / 1_000;
   }
 
   /** in kilograms */
@@ -413,15 +442,25 @@ export class FmgcDataService implements Fmgc {
   }
 
   /**
+   * The center of gravity is calculated by the FQMS.
+   * If it is not available then the value computed by the WBBC is returned.
+   * If neither the FQMS nor the WBBC provide any value then `null` is returned.
+   *
+   * @returns the gross weight center of gravity in %
+   */
+  public getGrossWeightCg(): number | null {
+    // Value received from FQMS, or falls back to value from WBBC (TODO)
+    return this.fqmsGwCg.get().valueOr(null);
+  }
+
+  /**
    *
    * @returns fuel on board in tonnes (i.e. 1000 x kg)
    */
   getFOB(): number | null {
     let fob = this.data.blockFuel.get();
-    if (this.isAnEngineOn()) {
-      fob =
-        SimVar.GetSimVarValue('L:A32NX_TOTAL_FUEL_VOLUME', 'gallons') *
-        SimVar.GetSimVarValue('FUEL WEIGHT PER GALLON', 'kilograms');
+    if (this.isAnEngineOn() && this.fqmsFob.get().isNormalOperation()) {
+      fob = this.fqmsFob.get().value;
     }
 
     return fob !== null ? fob / 1_000 : null; // Needs to be returned in tonnes
