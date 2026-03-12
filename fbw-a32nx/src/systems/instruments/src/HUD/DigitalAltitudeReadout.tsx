@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
-  ConsumerSubject,
   DisplayComponent,
   FSComponent,
   MappedSubject,
@@ -14,11 +13,16 @@ import {
   HEvent,
   ClockEvents,
 } from '@microsoft/msfs-sdk';
-import { ArincEventBus, Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
+import {
+  ArincEventBus,
+  Arinc429RegisterSubject,
+  Arinc429ConsumerSubject,
+  Arinc429LocalVarConsumerSubject,
+} from '@flybywiresim/fbw-sdk';
 
-import { SimplaneBaroMode, SimplaneValues } from 'instruments/src/HUD/shared/SimplaneValueProvider';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HUDSimvars } from './shared/HUDSimvarPublisher';
+import { A32NXFwcBusEvents } from '../../../shared/src/publishers/A32NXFwcBusPublisher';
 
 const TensDigits = (value: number) => {
   let text: string;
@@ -72,9 +76,28 @@ interface DigitalAltitudeReadoutProps {
 export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeReadoutProps> {
   private readonly mda = Arinc429RegisterSubject.createEmpty();
 
-  private readonly altitude = Arinc429RegisterSubject.createEmpty();
+  private readonly altitude = Arinc429ConsumerSubject.create(
+    this.props.bus.getArincSubscriber<Arinc429Values>().on('altitudeAr'),
+  );
 
-  private readonly baroMode = ConsumerSubject.create<SimplaneBaroMode>(null, 'QNH');
+  private readonly fwcWord126 = Arinc429LocalVarConsumerSubject.create(
+    this.props.bus.getSubscriber<A32NXFwcBusEvents>().on('a32nx_fwc_discrete_word_126_1'),
+  );
+
+  private readonly flashingOrPulsing = MappedSubject.create(
+    ([fwcWord126]) => fwcWord126.bitValueOr(27, false),
+    this.fwcWord126,
+  );
+
+  private readonly pulsing = MappedSubject.create(
+    ([fwcWord126]) => fwcWord126.bitValueOr(27, false) && !fwcWord126.bitValueOr(26, false),
+    this.fwcWord126,
+  );
+
+  private readonly flashing = MappedSubject.create(
+    ([fwcWord126]) => fwcWord126.bitValueOr(27, false) && fwcWord126.bitValueOr(26, false),
+    this.fwcWord126,
+  );
 
   private isNegativeSub = Subject.create('hidden');
 
@@ -104,7 +127,7 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values & ClockEvents & SimplaneValues>();
+    const sub = this.props.bus.getSubscriber<HUDSimvars & HEvent & Arinc429Values & ClockEvents>();
 
     this.altitude.sub((altitude) => {
       const isNegative = altitude.value < 0;
@@ -148,10 +171,6 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
     });
 
     sub.on('fmMdaRaw').handle(this.mda.setWord.bind(this.mda));
-    // FIXME once the ADR has the proper baro alt implementation this will need filtered altitude with source selection
-    sub.on('baroCorrectedAltitude').handle(this.altitude.setWord.bind(this.altitude));
-
-    this.baroMode.setConsumer(sub.on('baroMode'));
   }
 
   render(): VNode {

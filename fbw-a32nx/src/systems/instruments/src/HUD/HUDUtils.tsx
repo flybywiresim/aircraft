@@ -72,6 +72,10 @@ export class LagFilter {
     }
     return 0;
   }
+
+  public previousOutput(): number {
+    return this.PreviousOutput;
+  }
 }
 
 export class RateLimiter {
