@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2025 FlyByWire Simulations
+// Copyright (c) 2023-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import {
@@ -9,7 +9,6 @@ import {
   SimVarValueType,
   Subject,
   Subscription,
-  UnitType,
 } from '@microsoft/msfs-sdk';
 import {
   Arinc429LocalVarConsumerSubject,
@@ -115,7 +114,7 @@ export class FmcAircraftInterface {
   private readonly speedVls = Subject.create(0);
   private readonly speedVmax = Subject.create(0);
   private readonly speedVfeNext = Subject.create(0);
-  private readonly speedVapp = Subject.create(0);
+  private readonly speedVapp = Subject.create<number | null>(null);
   private readonly speedShortTermManaged = Subject.create(0);
 
   private readonly tdReached = this.bus
@@ -250,7 +249,9 @@ export class FmcAircraftInterface {
     this.subs.push(this.speedVls.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VLS', 'number', v), true));
     this.subs.push(this.speedVmax.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VMAX', 'number', v), true));
     this.subs.push(this.speedVfeNext.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VFEN', 'number', v), true));
-    this.subs.push(this.speedVapp.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VAPP', 'number', v), true));
+    this.subs.push(
+      this.fmgc.data.approachVapp.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VAPP', 'number', v ?? 0), true),
+    );
     this.subs.push(
       this.speedShortTermManaged.sub(
         (v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_SHORT_TERM_PFD', 'number', v),
@@ -259,7 +260,7 @@ export class FmcAircraftInterface {
     );
 
     this.subs.push(
-      this.flightPlanService.active.performanceData.approachFlapsThreeSelected.sub(
+      this.fmc.approachFlapsThreeSelected.sub(
         (v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', SimVarValueType.Bool, v),
         true,
       ),
@@ -1328,38 +1329,17 @@ export class FmcAircraftInterface {
   }
 
   /**
-   * Tries to estimate the landing weight at destination.
-   * Null if not available
-   * Unit: Kilograms.
-   */
-  tryEstimateLandingWeight(): number | null {
-    const zeroFuelWeight = this.fmc.zeroFuelWeight.get();
-    if (zeroFuelWeight !== null) {
-      const destEfob = this.fmgc.getDestEFOB(true);
-      if (destEfob !== null) {
-        return (zeroFuelWeight + destEfob) * 1000;
-      }
-    }
-    return null;
-  }
-
-  /**
    * Updates performance speeds such as GD, F, S, Vls and approach speeds. Write to SimVars
    */
   updatePerfSpeeds() {
     /** in kg */
-    const estLdgWeight = this.tryEstimateLandingWeight();
+    const estLdgWeight = this.fmc.getLandingWeight(FlightPlanIndex.Active);
     let ldgWeight = estLdgWeight;
     const grossWeight = this.fmc.fmgc.getGrossWeightKg() ?? maxZfw + (this.fmc.fmgc.getFOB() ?? 0) * 1_000;
     const grossWeightCG = this.fmc.fmgc.getGrossWeightCg() ?? 35;
-    const vnavPrediction = this.fmc.guidanceController?.vnavDriver?.getDestinationPrediction();
     // Actual weight is used during approach phase (FCOM bulletin 46/2), and we also assume during go-around
     if (this.flightPhase.get() >= FmgcFlightPhase.Approach || estLdgWeight === null) {
       ldgWeight = grossWeight;
-    } else if (vnavPrediction && Number.isFinite(vnavPrediction.estimatedFuelOnBoard)) {
-      ldgWeight =
-        (this.fmc.zeroFuelWeight.get() ?? maxZfw) +
-        Math.max(0, UnitType.POUND.convertTo(vnavPrediction.estimatedFuelOnBoard, UnitType.KILOGRAM));
     }
 
     const pd = this.flightPlanService.active.performanceData;
@@ -1392,27 +1372,19 @@ export class FmcAircraftInterface {
         towerHeadwind,
         true, // ignore VLS spoiler increase as it's only for display purposes
       );
-      if (pd.pilotVapp.get() === null || pd.pilotVapp.get()! - approachSpeeds.vapp > 0.5) {
-        this.flightPlanService.active.setPerformanceData('pilotVapp', Math.round(approachSpeeds.vapp));
-      }
-
       this.fmgc.data.approachVls.set(Math.ceil(approachSpeeds.vls));
       this.fmgc.data.approachVref.set(Math.ceil(approachSpeeds.vref));
       this.fmgc.data.approachGreenDotSpeed.set(Math.ceil(approachSpeeds.gd));
       this.fmgc.data.approachSlatRetractionSpeed.set(Math.ceil(approachSpeeds.s));
       this.fmgc.data.approachFlapRetractionSpeed.set(Math.ceil(approachSpeeds.f3));
-      this.speedVapp.set(Math.round(approachSpeeds.vapp));
+      this.fmgc.data.approachVapp.set(pd.pilotVapp.get() ?? Math.round(approachSpeeds.vapp));
     } else {
-      if (pd.pilotVapp.get() !== null) {
-        this.flightPlanService.active.setPerformanceData('pilotVapp', null);
-      }
-
       this.fmgc.data.approachVls.set(null);
       this.fmgc.data.approachVref.set(null);
       this.fmgc.data.approachGreenDotSpeed.set(null);
       this.fmgc.data.approachSlatRetractionSpeed.set(null);
       this.fmgc.data.approachFlapRetractionSpeed.set(null);
-      this.speedVapp.set(0);
+      this.fmgc.data.approachVapp.set(null);
     }
     // Retrieve altitude from ADRs
     const alt = this.fmc.navigation.getPressureAltitude();

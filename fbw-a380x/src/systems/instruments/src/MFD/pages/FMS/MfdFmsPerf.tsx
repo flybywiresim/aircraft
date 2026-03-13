@@ -78,6 +78,8 @@ enum FlightPhaseTabIndex {
 export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   private vdevSub: Subscription | null = null;
 
+  private flightPlanPerfSubs: Subscription[] = [];
+
   private readonly flightPlanChangeNotifier = new FlightPlanChangeNotifier(this.props.bus);
 
   private readonly destEfobAmber = MappedSubject.create(
@@ -246,6 +248,12 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   private readonly toVR = Subject.create<number | null>(null);
 
   private readonly toV2 = Subject.create<number | null>(null);
+
+  private readonly toGreenDotSpeed = Subject.create<number | null>(null);
+
+  private readonly toFlapRetractionSpeed = Subject.create<number | null>(null);
+
+  private readonly toSlatRetractionSpeed = Subject.create<number | null>(null);
 
   private readonly takeoffFlaps = Subject.create<number | null>(null);
   private readonly toSelectedFlapsIndex = this.takeoffFlaps.map((flaps) =>
@@ -662,7 +670,19 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private readonly approachRadioMinimum = Subject.create<number | null>(null);
 
-  private readonly pilotVapp = Subject.create<number | null>(null);
+  private readonly approachVapp = Subject.create<number | null>(null);
+
+  private readonly approachVappPilotEntry = Subject.create<boolean>(false);
+
+  private readonly approachGreenDotSpeed = Subject.create<number | null>(null);
+
+  private readonly approachSlatRetractionSpeed = Subject.create<number | null>(null);
+
+  private readonly approachFlapRetractionSpeed = Subject.create<number | null>(null);
+
+  private readonly approachVls = Subject.create<number | null>(null);
+
+  private readonly approachVref = Subject.create<number | null>(null);
 
   private readonly apprVerticalDeviation = Subject.create<string>('+-----');
 
@@ -837,7 +857,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       this.subs.push(
         this.flightPlanChangeNotifier.flightPlanChanged.sub(() => {
           if (this.loadedFlightPlan) {
-            this.subs.push(
+            this.flightPlanPerfSubs.forEach((sub) => sub.destroy());
+            this.flightPlanPerfSubs = [];
+            this.flightPlanPerfSubs.push(
               this.loadedFlightPlan.performanceData.cruiseFlightLevel.pipe(this.crzFl),
               this.loadedFlightPlan.performanceData.costIndex.pipe(this.costIndex),
               this.loadedFlightPlan.performanceData.takeoffShift.pipe(this.toShift),
@@ -887,9 +909,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
               this.loadedFlightPlan.performanceData.approachQnh.pipe(this.approachQnh),
               this.loadedFlightPlan.performanceData.approachBaroMinimum.pipe(this.approachBaroMinimum),
               this.loadedFlightPlan.performanceData.approachRadioMinimum.pipe(this.approachRadioMinimum),
-              this.loadedFlightPlan.performanceData.pilotVapp.pipe(this.pilotVapp),
               this.loadedFlightPlan.performanceData.approachFlapsThreeSelected.pipe(this.apprFlaps3Selected),
-
               this.loadedFlightPlan.performanceData.costIndexMode!.pipe(this.costIndexMode),
               this.loadedFlightPlan.performanceData.takeoffPowerSetting!.pipe(this.takeoffPowerSetting),
               this.loadedFlightPlan.performanceData.takeoffDeratedSetting!.pipe(this.takeoffDerated),
@@ -965,6 +985,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   }
 
   public destroy(): void {
+    this.flightPlanPerfSubs.forEach((sub) => sub.destroy());
+
     this.flightPlanChangeNotifier.destroy();
 
     super.destroy();
@@ -982,10 +1004,15 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       this.eoMaxFl.set(eoMaxFl && Number.isFinite(eoMaxFl) ? eoMaxFl.toFixed(0) : '---');
     }
     const obs = this.props.fmcService.master.guidanceController.verticalProfileComputationParametersObserver.get();
+    this.managedSpeedActive.set((obs?.fcuSpeedManaged as unknown) === 1); // Should be boolean, but is number
 
     const selectedTabIndex = tab ?? this.flightPhasesSelectedPageIndex.get();
 
     if (selectedTabIndex === FlightPhaseTabIndex.Takeoff) {
+      this.toFlapRetractionSpeed.set(this.props.fmcService.master.getFlapRetractionSpeed(fpIndex) ?? null);
+      this.toSlatRetractionSpeed.set(this.props.fmcService.master.getSlatRetractionSpeed(fpIndex) ?? null);
+      this.toGreenDotSpeed.set(this.props.fmcService.master.getGreenDotSpeed(fpIndex) ?? null);
+
       if (this.clbNoiseTableRef.getOrDefault()) {
         this.clbNoiseTableRef.instance.style.visibility =
           this.activeFlightPhase.get() >= FmgcFlightPhase.Climb ? 'hidden' : 'visible';
@@ -1000,9 +1027,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       } else {
         this.props.fmcService.master.fmgc.data.climbPredictionsReferenceAutomatic.set(null);
       }
-
-      this.managedSpeedActive.set((obs?.fcuSpeedManaged as unknown) === 1); // Should be boolean, but is number
-
       // Update CLB speed table
       const clbSpeedLimit = this.props.fmcService.master.fmgc.getClimbSpeedLimit(fpIndex);
       if (this.activeFlightPhase.get() < FmgcFlightPhase.Climb) {
@@ -1256,9 +1280,25 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       }
     }
 
+    const updateApproachRetrationAndGreenDotSpeeds =
+      selectedTabIndex === FlightPhaseTabIndex.Approach || selectedTabIndex === FlightPhaseTabIndex.GoAround;
+    if (updateApproachRetrationAndGreenDotSpeeds) {
+      this.approachFlapRetractionSpeed.set(
+        this.props.fmcService.master.getApproachFlapRetractionSpeed(fpIndex) ?? null,
+      );
+      this.approachSlatRetractionSpeed.set(
+        this.props.fmcService.master.getApproachSlatRetractionSpeed(fpIndex) ?? null,
+      );
+      this.approachGreenDotSpeed.set(this.props.fmcService.master.getApproachGreenDotSpeed(fpIndex) ?? null);
+    }
     if (selectedTabIndex === FlightPhaseTabIndex.Approach) {
       // Update APPR page
+      this.approachVappPilotEntry.set(this.loadedFlightPlan?.performanceData.pilotVapp.get() !== null);
       this.apprLandingWeight.set(this.props.fmcService.master.getLandingWeight(fpIndex) ?? null);
+      this.approachVapp.set(this.props.fmcService.master.getApproachVapp(fpIndex) ?? null);
+
+      this.approachVls.set(this.props.fmcService.master.getApproachVls(fpIndex) ?? null);
+      this.approachVref.set(this.props.fmcService.master.getApproachVref(fpIndex) ?? null);
       const apprWindDirection = this.loadedFlightPlan?.performanceData.approachWindDirection.get();
       const apprWindMagnitude = this.loadedFlightPlan?.performanceData.approachWindMagnitude.get();
       if (apprWindDirection && apprWindMagnitude && this.loadedFlightPlan?.destinationRunway) {
@@ -1454,7 +1494,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <div ref={this.flapSpeedsRef[0]} class="mfd-label-value-container">
                       <span class="mfd-label mfd-spacing-right">F</span>
                       <span class={{ 'mfd-value': true, sec: this.secActive }}>
-                        {FmgcData.fmcFormatValue(this.props.fmcService.master.fmgc.data.flapRetractionSpeed)}
+                        {FmgcData.fmcFormatValue(this.toFlapRetractionSpeed)}
                       </span>
                       <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                     </div>
@@ -1486,7 +1526,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <div ref={this.flapSpeedsRef[1]} class="mfd-label-value-container">
                       <span class="mfd-label mfd-spacing-right">S</span>
                       <span class={{ 'mfd-value': true, sec: this.secActive }}>
-                        {FmgcData.fmcFormatValue(this.props.fmcService.master.fmgc.data.slatRetractionSpeed)}
+                        {FmgcData.fmcFormatValue(this.toSlatRetractionSpeed)}
                       </span>
                       <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                     </div>
@@ -1522,7 +1562,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         </svg>
                       </span>
                       <span class={{ 'mfd-value': true, sec: this.secActive }}>
-                        {FmgcData.fmcFormatValue(this.props.fmcService.master.fmgc.data.greenDotSpeed)}
+                        {FmgcData.fmcFormatValue(this.toGreenDotSpeed)}
                       </span>
                       <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                     </div>
@@ -3153,21 +3193,21 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                           </svg>
                         </span>
                         <span class={{ 'mfd-value': true, sec: this.secActive }}>
-                          {FmgcData.fmcFormatValue(this.props.fmcService.master.fmgc.data.approachGreenDotSpeed)}
+                          {FmgcData.fmcFormatValue(this.approachGreenDotSpeed)}
                         </span>
                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                       </div>
                       <div class="mfd-label-value-container">
                         <span class="mfd-label mfd-spacing-right mfd-fms-perf-appr-flap-speeds">S</span>
                         <span class={{ 'mfd-value': true, sec: this.secActive }}>
-                          {FmgcData.fmcFormatValue(this.props.fmcService.master.fmgc.data.approachSlatRetractionSpeed)}
+                          {FmgcData.fmcFormatValue(this.approachSlatRetractionSpeed)}
                         </span>
                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                       </div>
                       <div class="mfd-label-value-container">
                         <span class="mfd-label mfd-spacing-right mfd-fms-perf-appr-flap-speeds">F</span>
                         <span class={{ 'mfd-value': true, sec: this.secActive }}>
-                          {FmgcData.fmcFormatValue(this.props.fmcService.master.fmgc.data.approachFlapRetractionSpeed)}
+                          {FmgcData.fmcFormatValue(this.approachFlapRetractionSpeed)}
                         </span>
                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                       </div>
@@ -3176,9 +3216,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         style={{ paddingTop: '15px', visibility: this.visibilityConsideringFlightPlanIndex }}
                       >
                         <span class="mfd-label mfd-spacing-right mfd-fms-perf-appr-flap-speeds">VREF</span>
-                        <span class="mfd-value">
-                          {FmgcData.fmcFormatValue(this.props.fmcService.master.fmgc.data.approachVref)}
-                        </span>
+                        <span class="mfd-value">{FmgcData.fmcFormatValue(this.approachVref)}</span>
                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                       </div>
                     </div>
@@ -3199,7 +3237,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       <div class="mfd-label-value-container" style="margin-top: 10px;">
                         <span class="mfd-label mfd-spacing-right">VLS</span>
                         <span class={{ 'mfd-value': true, sec: this.secActive }}>
-                          {FmgcData.fmcFormatValue(this.props.fmcService.master.fmgc.data.approachVls)}
+                          {FmgcData.fmcFormatValue(this.approachVls)}
                         </span>
                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                       </div>
@@ -3218,7 +3256,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                               this.loadedFlightPlanIndex.get(),
                             )
                           }
-                          readonlyValue={this.pilotVapp}
+                          readonlyValue={this.approachVapp}
+                          enteredByPilot={this.approachVappPilotEntry}
                           alignText="flex-end"
                           errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                           hEventConsumer={this.props.mfd.hEventConsumer}
@@ -3272,14 +3311,14 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   <div class="mfd-label-value-container">
                     <span class="mfd-label mfd-spacing-right">F</span>
                     <span class={{ 'mfd-value': true, sec: this.secActive }}>
-                      {FmgcData.fmcFormatValue(this.props.fmcService.master.fmgc.data.approachFlapRetractionSpeed)}
+                      {FmgcData.fmcFormatValue(this.approachFlapRetractionSpeed)}
                     </span>
                     <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                   </div>
                   <div class="mfd-label-value-container">
                     <span class="mfd-label mfd-spacing-right">S</span>
                     <span class={{ 'mfd-value': true, sec: this.secActive }}>
-                      {FmgcData.fmcFormatValue(this.props.fmcService.master.fmgc.data.approachSlatRetractionSpeed)}
+                      {FmgcData.fmcFormatValue(this.approachSlatRetractionSpeed)}
                     </span>
                     <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                   </div>
@@ -3290,7 +3329,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       </svg>
                     </span>
                     <span class={{ 'mfd-value': true, sec: this.secActive }}>
-                      {FmgcData.fmcFormatValue(this.props.fmcService.master.fmgc.data.approachGreenDotSpeed)}
+                      {FmgcData.fmcFormatValue(this.approachGreenDotSpeed)}
                     </span>
                     <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                   </div>

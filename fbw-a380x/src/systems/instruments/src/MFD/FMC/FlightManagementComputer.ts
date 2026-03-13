@@ -89,6 +89,8 @@ export const A380X_NUM_LEGS_ON_FPLN_PAGE = 9;
 export class FlightManagementComputer implements FmcInterface {
   protected readonly subs = [] as Subscription[];
 
+  private pipeSubs: Subscription[] = [];
+
   // TODO change after tracers PR
   private readonly healythSimvar = RegisteredSimVar.createBoolean(
     `L:A32NX_FMC_${this.instance === FmcIndex.FmcA ? 'A' : this.instance === FmcIndex.FmcB ? 'B' : 'C'}_IS_HEALTHY`,
@@ -280,6 +282,8 @@ export class FlightManagementComputer implements FmcInterface {
     this.finalFuelWeight,
   );
 
+  public readonly approachFlapsThreeSelected = Subject.create(false);
+
   private destDataCheckedInCruise = false;
 
   private simBriefOfp: ISimbriefData | null = null;
@@ -428,6 +432,9 @@ export class FlightManagementComputer implements FmcInterface {
     this.flightPlanChangeNotifier.destroy();
     this.#fmgc.destroy();
     for (const s of this.subs) {
+      s.destroy();
+    }
+    for (const s of this.pipeSubs) {
       s.destroy();
     }
   }
@@ -612,6 +619,76 @@ export class FlightManagementComputer implements FmcInterface {
   public getEoMaxFlightLevel(): number | null {
     const recMax = this.getRecMaxFlightLevel();
     return recMax !== null ? Math.floor((0.8 * recMax) / 5) * 5 : null; // FIXME remove magic
+  }
+
+  /** @inheritdoc */
+  getFlapRetractionSpeed(forPlan: FlightPlanIndex): number | null {
+    if (forPlan === FlightPlanIndex.Active || forPlan === FlightPlanIndex.Temporary) {
+      return this.fmgc.data.flapRetractionSpeed.get();
+    }
+    return null; // TODO secondary flight plans
+  }
+
+  /** @inheritdoc */
+  getSlatRetractionSpeed(forPlan: FlightPlanIndex): number | null {
+    if (forPlan === FlightPlanIndex.Active || forPlan === FlightPlanIndex.Temporary) {
+      return this.fmgc.data.slatRetractionSpeed.get();
+    }
+    return null; // TODO secondary flight plans
+  }
+
+  /** @inheritdoc */
+  getGreenDotSpeed(forPlan: FlightPlanIndex): number | null {
+    if (forPlan === FlightPlanIndex.Active || forPlan === FlightPlanIndex.Temporary) {
+      return this.fmgc.data.greenDotSpeed.get();
+    }
+    return null; // TODO secondary flight plans
+  }
+
+  /** @inheritdoc */
+  getApproachFlapRetractionSpeed(forPlan: FlightPlanIndex): number | null {
+    if (forPlan === FlightPlanIndex.Active || forPlan === FlightPlanIndex.Temporary) {
+      return this.fmgc.data.approachFlapRetractionSpeed.get();
+    }
+    return null; // TODO secondary flight plans
+  }
+
+  /** @inheritdoc */
+  getApproachSlatRetractionSpeed(forPlan: FlightPlanIndex): number | null {
+    if (forPlan === FlightPlanIndex.Active || forPlan === FlightPlanIndex.Temporary) {
+      return this.fmgc.data.approachSlatRetractionSpeed.get();
+    }
+    return null; // TODO secondary flight plans
+  }
+
+  getApproachGreenDotSpeed(forPlan: FlightPlanIndex): number | null {
+    if (forPlan === FlightPlanIndex.Active || forPlan === FlightPlanIndex.Temporary) {
+      return this.fmgc.data.approachGreenDotSpeed.get();
+    }
+    return null; // TODO secondary flight plans
+  }
+
+  /** @inheritdoc */
+  getApproachVls(forPlan: FlightPlanIndex): number | null {
+    if (forPlan === FlightPlanIndex.Active || forPlan === FlightPlanIndex.Temporary) {
+      return this.fmgc.data.approachVls.get();
+    }
+    return null; // TODO secondary flight plans
+  }
+
+  /** @inheritdoc */
+  getApproachVapp(forPlan: FlightPlanIndex): number | null {
+    if (forPlan === FlightPlanIndex.Active || forPlan === FlightPlanIndex.Temporary) {
+      return this.#fmgc.data.approachVapp.get();
+    }
+    return null; // TODO secondary flight plans
+  }
+
+  getApproachVref(forPlan: FlightPlanIndex): number | null {
+    if (forPlan === FlightPlanIndex.Active || forPlan === FlightPlanIndex.Temporary) {
+      return this.#fmgc.data.approachVref.get();
+    }
+    return null; // TODO secondary flight plans
   }
 
   private initSimVars() {
@@ -833,7 +910,12 @@ export class FlightManagementComputer implements FmcInterface {
         await this.onActiveFlightNumberChanged(flightNumber);
       }
 
-      this.subs.push(
+      this.pipeSubs.forEach((s) => s.destroy());
+      this.pipeSubs = [];
+      this.pipeSubs.push(
+        this.flightPlanInterface.active.performanceData.approachFlapsThreeSelected.pipe(
+          this.approachFlapsThreeSelected,
+        ),
         this.flightPlanInterface.active.performanceData.zeroFuelWeight.pipe(this.zeroFuelWeight),
         this.flightPlanInterface.active.performanceData.zeroFuelWeightCenterOfGravity.pipe(
           this.zeroFuelWeightCenterOfGravity,

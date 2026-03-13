@@ -1,4 +1,12 @@
-import { ArraySubject, ClockEvents, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
+import {
+  ArraySubject,
+  ClockEvents,
+  FSComponent,
+  MappedSubject,
+  Subject,
+  Subscription,
+  VNode,
+} from '@microsoft/msfs-sdk';
 
 import './MfdFmsFuelLoad.scss';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
@@ -39,6 +47,8 @@ interface MfdFmsFuelLoadProps extends AbstractMfdPageProps {}
 
 export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
   private readonly flightPlanChangeNotifier = new FlightPlanChangeNotifier(this.props.bus);
+
+  private flightPlanPerfSubs: Subscription[] = [];
 
   private readonly destEfobAmber = MappedSubject.create(
     ([destEfobBelowM, loadedFpIndex]) => destEfobBelowM && loadedFpIndex === FlightPlanIndex.Active,
@@ -291,7 +301,9 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
     this.subs.push(
       this.flightPlanChangeNotifier.flightPlanChanged.sub(() => {
         if (this.loadedFlightPlan) {
-          this.subs.push(
+          this.flightPlanPerfSubs.forEach((sub) => sub.destroy());
+          this.flightPlanPerfSubs = [];
+          this.flightPlanPerfSubs.push(
             this.loadedFlightPlan.performanceData.zeroFuelWeight.pipe(this.zeroFuelWeight),
             this.loadedFlightPlan.performanceData.zeroFuelWeightCenterOfGravity.pipe(
               this.zeroFuelWeightCenterOfGravity,
@@ -343,6 +355,8 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
   }
 
   public destroy(): void {
+    this.flightPlanPerfSubs.forEach((sub) => sub.destroy());
+
     this.flightPlanChangeNotifier.destroy();
 
     super.destroy();

@@ -289,6 +289,8 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     const hasfp = this.loadedFlightPlan !== null && this.props.flightPlanInterface.has(fpIndex);
     this.noFlightPlan.set(!hasfp);
     if (hasfp) {
+      this.pipeSubs.forEach((s) => s.destroy());
+      this.pipeSubs = [];
       this.pipeSubs.push(
         this.loadedFlightPlan!.performanceData.tropopause.pipe(this.tropopause),
         this.loadedFlightPlan!.performanceData.tropopauseIsPilotEntered.pipe(this.tropopauseIsPilotEntered),

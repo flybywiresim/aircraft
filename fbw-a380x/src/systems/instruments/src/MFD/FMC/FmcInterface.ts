@@ -178,6 +178,32 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
   /** as flight level */
   getEoMaxFlightLevel(): number | null;
 
+  /** in knots */
+  getSlatRetractionSpeed(forPlan: FlightPlanIndex): number | null;
+
+  /** in knots */
+  getFlapRetractionSpeed(forPlan: FlightPlanIndex): number | null;
+
+  /** in knots */
+  getGreenDotSpeed(forPlan: FlightPlanIndex): number | null;
+
+  /** in knots */
+  getApproachGreenDotSpeed(forPlan: FlightPlanIndex): number | null;
+
+  /** in knots */
+  getApproachFlapRetractionSpeed(forPlan: FlightPlanIndex): number | null;
+
+  /** in knots */
+  getApproachSlatRetractionSpeed(forPlan: FlightPlanIndex): number | null;
+  /** in knots */
+  getApproachVls(forPlan: FlightPlanIndex): number | null;
+
+  /** in knots */
+  getApproachVapp(forPlan: FlightPlanIndex): number | null;
+
+  /** in knots */
+  getApproachVref(forPlan: FlightPlanIndex): number | null;
+
   /**
    * Add message to fmgc message queue
    * @param _message MessageObject

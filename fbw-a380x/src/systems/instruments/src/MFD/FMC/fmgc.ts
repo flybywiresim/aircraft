@@ -118,6 +118,8 @@ export class FmgcData {
 
   public readonly approachFlapRetractionSpeed = Subject.create<Knots | null>(null);
 
+  public readonly approachVapp = Subject.create<Knots | null>(null);
+
   /** in feet. null if not set. */
   public readonly climbPredictionsReferencePilotEntry = Subject.create<number | null>(null);
 
@@ -419,7 +421,7 @@ export class FmgcDataService implements Fmgc {
 
   /** in knots */
   getApproachSpeed(): number {
-    return this.flightPlanService.active.performanceData.pilotVapp.get() ?? 0;
+    return this.data.approachVapp.get() ?? 0;
   }
 
   /** F speed in knots based on estimated landing weight, or 0 if it cannot be computed */
