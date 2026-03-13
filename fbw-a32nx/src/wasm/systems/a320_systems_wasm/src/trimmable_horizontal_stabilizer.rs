@@ -26,7 +26,7 @@ static RATE_LIMITER_LOWER: LazyLock<Mutex<RateLimiter<f64>>> =
     LazyLock::new(|| Mutex::new(RateLimiter::new_symmetrical(0.1)));
 
 static RATE_LIMITER_IN_FLIGHT: LazyLock<Mutex<RateLimiter<f64>>> =
-    LazyLock::new(|| Mutex::new(RateLimiter::new_symmetrical(0.1)));
+    LazyLock::new(|| Mutex::new(RateLimiter::new_symmetrical(0.3)));
 
 type AxisType = Axis<f64, Binary, Clamp, Clamp>;
 type TableType = LookupTable2D<AxisType, AxisType, f64>;
@@ -301,8 +301,6 @@ pub(super) fn trimmable_horizontal_stabilizer(
             Variable::named("FLAPS_HANDLE_INDEX"),
             Variable::aircraft("SIM ON GROUND", "BOOL", 0),
             Variable::aircraft("AIRSPEED INDICATED", "KNOTS", 0),
-            Variable::named("THS_FUDGING_GROUND_TO_FLIGHT_TRANSITION_RATE"),
-            Variable::named("THS_FUDGING_FLIGHT_TO_GROUND_TRANSITION_RATE"),
         ],
         |values, delta| {
             let weight_tons = Mass::new::<pound>(values[0]).get::<ton>();
@@ -337,11 +335,10 @@ pub(super) fn trimmable_horizontal_stabilizer(
                 .unwrap()
                 .update(delta, lower_boundary_value);
 
-            let mut in_flight_rate_lim = RATE_LIMITER_IN_FLIGHT.lock().unwrap();
-
-            in_flight_rate_lim.set_max_rate(values[6].abs(), -values[7].abs());
-
-            let in_flight_gain = in_flight_rate_lim.update(delta, if on_ground { 0. } else { 1. });
+            let in_flight_gain = RATE_LIMITER_IN_FLIGHT
+                .lock()
+                .unwrap()
+                .update(delta, if on_ground { 0. } else { 1. });
 
             let normalized_hydraulic_ths_position = (hydraulics_ths_position
                 - LOWER_BOUNDARY_ACTUAL)
