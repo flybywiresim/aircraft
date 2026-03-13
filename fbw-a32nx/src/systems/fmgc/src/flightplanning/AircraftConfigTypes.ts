@@ -1,8 +1,9 @@
-// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
 import { FlapConf } from '@fmgc/guidance/vnav/common';
+import { FpmConfig } from './FpmConfig';
 
 export enum VnavDescentMode {
   NORMAL,
@@ -16,6 +17,7 @@ export interface AircraftConfig {
   engineModelParameters: EngineModelParameters;
   flightModelParameters: FlightModelParameters;
   fmSymbolConfig: FMSymbolsConfig;
+  fpmConfig: FpmConfig;
 }
 
 export interface VnavConfig {

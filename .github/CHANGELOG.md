@@ -83,7 +83,8 @@
 1. [A380X/FWS] Fixed overspeed VFE blue and selectable - @matze-tech (matze2346)
 1. [A380X/FUEL] Add first FQMS fuel measuring implementation - @Gurgel100 (Pascal)
 1. [FUEL] Fix fuel getting consumed when in Active Pause or Pause at T/D - @Maximilian-Reuter (\_chaoz_)
-
+1. [A380X/FMS] Add secondary flight plans to A380X - @flogross89 (floridude), @BravoMike99 (bruno_pt99)
+1. [A380X/FMS] Allow edition of vnav descent speed - @BravoMike99 (bruno_pt99)
 
 ## 0.14.0
 

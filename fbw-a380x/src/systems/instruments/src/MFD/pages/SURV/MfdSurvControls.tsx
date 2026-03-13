@@ -211,7 +211,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
 
   private xpdrStatusChanged() {
     const state = this.xpdrState.get();
-    const isOnGround = this.props.fmcService.master?.fmgc.isOnGround();
+    const isOnGround = this.props.fmcService.master.fmgc.isOnGround();
 
     this.xpdrStatusSelectedIndex.set(
       state === TransponderState.ModeA || state === TransponderState.ModeC || state === TransponderState.ModeS ? 0 : 1,
@@ -283,7 +283,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
                   }
                   value={this.squawkCode}
                   containerStyle="width: 100px; margin-bottom: 5px;"
-                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
                   alignText={'center'}
@@ -488,7 +488,12 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
           </div>
         </div>
         {/* end page content */}
-        <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
+        <Footer
+          bus={this.props.bus}
+          mfd={this.props.mfd}
+          fmcService={this.props.fmcService}
+          flightPlanInterface={this.props.fmcService.master.flightPlanInterface}
+        />
       </>
     );
   }

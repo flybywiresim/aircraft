@@ -63,7 +63,7 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
       this.navDatabase.set(navSerial);
     });
 
-    const storedElements = this.props.fmcService.master?.getDataManager()?.numberOfStoredElements();
+    const storedElements = this.props.fmcService.master.getDataManager()?.numberOfStoredElements();
     if (storedElements) {
       this.storedWaypoints.set(storedElements.waypoints.toFixed(0).padStart(2, '0'));
       this.storedRoutes.set(storedElements.routes.toFixed(0).padStart(2, '0'));
@@ -151,12 +151,12 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
                 <span class={'mfd-label bigger'}>FUEL PENALTY&nbsp;</span>
                 <InputField<number>
                   dataEntryFormat={new FuelPenaltyPercentFormat()}
-                  value={this.props.fmcService.master?.fmgc.data.fuelPenaltyPercentage!}
-                  enteredByPilot={this.props.fmcService.master?.fmgc.data.fuelPenaltyActive!}
+                  value={this.props.fmcService.master.fmgc.data.fuelPenaltyPercentage!}
+                  enteredByPilot={this.props.fmcService.master.fmgc.data.fuelPenaltyActive!}
                   canBeCleared={Subject.create(true)}
                   containerStyle="width: 155px;"
                   alignText="center"
-                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
                 />
@@ -172,7 +172,7 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
                       this.isSwapConfirmVisible.set(false);
                     }}
                     confirmAction={() => {
-                      this.props.fmcService.master?.swapNavDatabase();
+                      this.props.fmcService.master.swapNavDatabase();
                       this.isSwapConfirmVisible.set(false);
                     }}
                     contentContainerStyle="width: 325px; height: 165px; transform: translateX(-50%);"
@@ -246,7 +246,7 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
                           <span style="display: flex; align-items: center; justify-content: center;">*</span>
                         </div>,
                       )}
-                      onClick={() => this.props.fmcService.master?.getDataManager()?.deleteAllStoredWaypoints()}
+                      onClick={() => this.props.fmcService.master.getDataManager()?.deleteAllStoredWaypoints()}
                       disabled={this.deleteStoredElementsDisabled}
                     />
                   </div>
@@ -258,7 +258,12 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
           <div style="flex-grow: 1;" />
           {/* fill space vertically */}
         </div>
-        <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
+        <Footer
+          bus={this.props.bus}
+          mfd={this.props.mfd}
+          fmcService={this.props.fmcService}
+          flightPlanInterface={this.props.fmcService.master.flightPlanInterface}
+        />
       </>
     );
   }

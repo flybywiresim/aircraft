@@ -78,7 +78,7 @@ export class MfdFmsFplnDuplicateNames extends DisplayComponent<MfdFmsFplnDuplica
     );
     this.subs.push(
       this.props.fmcService.masterFmcChanged.sub(() =>
-        this.props.fmcService.master?.fmgc.data.engineOut.pipe(this.eoActive),
+        this.props.fmcService.master.fmgc.data.engineOut.pipe(this.eoActive),
       ),
     );
 

@@ -286,7 +286,7 @@ export class FlightLevelFormat extends SubscriptionCollector implements DataEntr
   }
 }
 
-export const RADIO_ALTITUDE_NODH_VALUE = -2;
+export const RADIO_ALTITUDE_NODH_VALUE = 0;
 export class RadioAltitudeFormat extends SubscriptionCollector implements DataEntryFormat<number> {
   public placeholder = '-----';
 
@@ -441,7 +441,7 @@ export class WeightFormat extends SubscriptionCollector implements DataEntryForm
     if (value === null || value === undefined) {
       return [this.placeholder, null, 'T'] as FieldFormatTuple;
     }
-    return [(value / 1000).toFixed(1), null, 'T'] as FieldFormatTuple;
+    return [value.toFixed(1), null, 'T'] as FieldFormatTuple;
   }
 
   public async parse(input: string) {
@@ -449,7 +449,7 @@ export class WeightFormat extends SubscriptionCollector implements DataEntryForm
       return null;
     }
 
-    const nbr = Number(input) * 1000;
+    const nbr = Number(input);
     if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
     }

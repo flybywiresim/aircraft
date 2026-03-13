@@ -75,7 +75,12 @@ export class MfdAtccomMsgRecordExpand extends DisplayComponent<MfdAtccomMsgRecor
         >
           <span>NOT YET IMPLEMENTED</span>
         </div>
-        <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
+        <Footer
+          bus={this.props.bus}
+          mfd={this.props.mfd}
+          fmcService={this.props.fmcService}
+          flightPlanInterface={this.props.fmcService.master.flightPlanInterface}
+        />
       </>
     );
   }

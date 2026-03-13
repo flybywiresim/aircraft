@@ -6,7 +6,6 @@ import {
   A320EfisNdRangeValue,
   a320EfisRangeSettings,
   Airport,
-  Arinc429LocalVarOutputWord,
   Arinc429Register,
   Arinc429SignStatusMatrix,
   Arinc429Word,
@@ -15,6 +14,7 @@ import {
   EfisSide,
   EnrouteNdbNavaid,
   Fix,
+  FmArinc429OutputWord,
   IlsNavaid,
   isMsfs2024,
   ISimbriefData,
@@ -66,10 +66,8 @@ import { FmsFormatters } from './FmsFormatters';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
 import { FlightPhaseManager } from '@fmgc/flightphase';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
-import {
-  A320FlightPlanPerformanceData,
-  DefaultPerformanceData,
-} from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import { DefaultPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import { A320FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/A320FlightPlanPerformanceData';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { initComponents, updateComponents } from '@fmgc/components';
@@ -2063,7 +2061,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   public setCruiseFlightLevelAndTemperature(input: string, forPlan: FlightPlanIndex): boolean {
     if (input === Keypad.clrValue) {
-      this.currFlightPlanService.setPerformanceData('cruiseTemperature', null, forPlan);
+      this.currFlightPlanService.setPerformanceData('cruiseTemperaturePilotEntry', null, forPlan);
       return true;
     }
     const flString = input.split('/')[0].replace('FL', '');
@@ -2097,7 +2095,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           temp = -temp;
         }
         if (temp > -270 && temp < 100) {
-          this.currFlightPlanService.setPerformanceData('cruiseTemperature', temp, forPlan);
+          this.currFlightPlanService.setPerformanceData('cruiseTemperaturePilotEntry', temp, forPlan);
           return true;
         } else {
           this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
@@ -3511,7 +3509,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   private onUpdateCruiseLevel(newCruiseLevel: number, forPlan: number) {
-    this.currFlightPlanService.setPerformanceData('cruiseTemperature', null, forPlan);
+    this.currFlightPlanService.setPerformanceData('cruiseTemperaturePilotEntry', null, forPlan);
 
     if (forPlan === FlightPlanIndex.Active) {
       this.updateConstraints();
@@ -4775,26 +4773,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
   }
 
-  /** @deprecated */
-  public get flightNumber() {
-    const plan = this.currFlightPlanService.active;
-
-    if (plan) {
-      return this.currFlightPlanService.active.flightNumber;
-    }
-
-    return undefined;
-  }
-
-  /** @deprecated */
-  public set flightNumber(flightNumber) {
-    const plan = this.currFlightPlanService.active;
-
-    if (plan) {
-      this.currFlightPlanService.setFlightNumber(flightNumber);
-    }
-  }
-
   /**
    * The maximum speed imposed by the climb speed limit in the active flight plan or null if it is not set.
    */
@@ -5489,8 +5467,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     // We invalidate because we don't want to show the old active plan predictions on the newly activated secondary plan.
     this.guidanceController?.vnavDriver?.invalidateFlightPlanProfile();
 
-    if (this.flightPlanService.hasActive && this.flightPlanService.active.flightNumber !== undefined) {
-      await this.onActiveFlightNumberChanged(this.flightPlanService.active.flightNumber);
+    const flightNumber = this.flightPlanService.active?.flightNumber.get();
+    if (this.flightPlanService.hasActive && flightNumber !== null) {
+      await this.onActiveFlightNumberChanged(flightNumber);
     }
     this.connectPerfDataToSimvars();
   }
@@ -5794,20 +5773,5 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     if (forPlan === FlightPlanIndex.Active) {
       this.ettCheckSub.pause();
     }
-  }
-}
-
-/** Writes FM output words for both FMS. */
-class FmArinc429OutputWord extends Arinc429LocalVarOutputWord {
-  private readonly localVars = [`L:A32NX_FM1_${this.name}`, `L:A32NX_FM2_${this.name}`];
-
-  override async writeToSimVarIfDirty() {
-    if (this.isDirty) {
-      this.isDirty = false;
-      return Promise.all(
-        this.localVars.map((localVar) => Arinc429Word.toSimVarValue(localVar, this.word.value, this.word.ssm)),
-      );
-    }
-    return Promise.resolve();
   }
 }

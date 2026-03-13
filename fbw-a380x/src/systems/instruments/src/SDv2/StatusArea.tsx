@@ -15,6 +15,7 @@ import {
 
 import './style.scss';
 import '../index.scss';
+import { DateFormatting } from '@shared/DateFormatting';
 import { Arinc429LocalVarConsumerSubject, NXDataStore, NXUnits } from '@flybywiresim/fbw-sdk';
 import { SDSimvars } from './SDSimvarPublisher';
 import { A380XFcuBusEvents } from '@shared/publishers/A380XFcuBusPublisher';
@@ -25,13 +26,6 @@ export interface PermanentDataProps {
 }
 
 const getValuePrefix = (value: number) => (value >= 0 ? '+' : '');
-
-const getCurrentHHMMSS = (seconds: number) => {
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const secondsLeft = Math.floor(seconds - hours * 3600 - minutes * 60).toFixed(0);
-  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secondsLeft.toString().padStart(2, '0')}`;
-};
 
 export class PermanentData extends DisplayComponent<PermanentDataProps> {
   private readonly subscriptions: Subscription[] = [];
@@ -92,8 +86,10 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
 
   private readonly zuluTime = ConsumerSubject.create(this.sub.on('zuluTime'), 0);
 
-  private readonly timeHHMM = this.zuluTime.map((seconds) => getCurrentHHMMSS(seconds).substring(0, 6));
-  private readonly timeSS = this.zuluTime.map((seconds) => getCurrentHHMMSS(seconds).substring(6));
+  private readonly timeHHMM = this.zuluTime.map((seconds) =>
+    DateFormatting.secondsToHHmmssString(seconds).substring(0, 6),
+  );
+  private readonly timeSS = this.zuluTime.map((seconds) => DateFormatting.secondsToHHmmssString(seconds).substring(6));
 
   // This call to NXUnits ensures that metricWeightVal is set early on
   private readonly userWeight = Subject.create<'KG' | 'LBS'>(NXUnits.userWeightUnit());

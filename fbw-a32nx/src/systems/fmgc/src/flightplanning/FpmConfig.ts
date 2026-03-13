@@ -39,6 +39,11 @@ export interface FpmConfig {
    * that does not have a taxi fuel value entered, is performed
    */
   PERSIST_TAXI_FUEL_ON_SEC_SWAP: boolean;
+
+  /**
+   * Number of secondary flight plans supported by the aircraft
+   */
+  NUM_SECONDARY_FLIGHT_PLANS: number;
 }
 
 export class FpmConfigs {
@@ -53,6 +58,7 @@ export class FpmConfigs {
     CHECK_VIA_COMPATIBILITY: true,
     DIR_TO_ABEAM_POINT_IS_TO_WPT: true,
     PERSIST_TAXI_FUEL_ON_SEC_SWAP: true,
+    NUM_SECONDARY_FLIGHT_PLANS: 3,
   };
 
   static A320_HONEYWELL_H3: FpmConfig = {
@@ -66,5 +72,6 @@ export class FpmConfigs {
     CHECK_VIA_COMPATIBILITY: false,
     DIR_TO_ABEAM_POINT_IS_TO_WPT: false,
     PERSIST_TAXI_FUEL_ON_SEC_SWAP: false,
+    NUM_SECONDARY_FLIGHT_PLANS: 1,
   };
 }
