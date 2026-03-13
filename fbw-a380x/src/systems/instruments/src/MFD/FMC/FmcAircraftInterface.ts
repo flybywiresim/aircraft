@@ -1031,7 +1031,7 @@ export class FmcAircraftInterface {
               this.fmgc.data.approachVls.get() ?? Infinity + (engineOut ? 15 : 25),
               Math.max(
                 SimVar.GetSimVarValue('L:A32NX_GOAROUND_INIT_SPEED', 'number'),
-                this.flightPlanService.active.performanceData.pilotVapp.get() ?? 0,
+                this.fmgc.data.approachVapp.get() ?? 0,
               ),
               this.speedVmax.get() - 5,
             );
@@ -1125,20 +1125,18 @@ export class FmcAircraftInterface {
       case 1:
         return this.fmgc.data.slatRetractionSpeed.get();
       case 3:
-        return this.flightPlanService.active.performanceData.approachFlapsThreeSelected.get()
-          ? this.flightPlanService.active.performanceData.pilotVapp.get()
+        return this.fmc.approachFlapsThreeSelected.get()
+          ? this.fmgc.data.approachVapp.get()
           : this.fmgc.data.flapRetractionSpeed.get();
       case 4:
-        return this.flightPlanService.active.performanceData.pilotVapp.get();
+        return this.fmgc.data.approachVapp.get();
       default:
         return this.fmgc.data.flapRetractionSpeed.get();
     }
   }
 
   getVAppGsMini() {
-    let vAppTarget =
-      this.flightPlanService.active.performanceData.pilotVapp.get() ??
-      SimVar.GetSimVarValue('L:A32NX_SPEEDS_F', 'number');
+    let vAppTarget = this.fmgc.data.approachVapp.get() ?? SimVar.GetSimVarValue('L:A32NX_SPEEDS_F', 'number');
     let towerHeadwind = 0;
     const appWind = {
       direction: this.flightPlanService.active.performanceData.approachWindDirection.get() ?? 0,
