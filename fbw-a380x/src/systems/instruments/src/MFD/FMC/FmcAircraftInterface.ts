@@ -1377,7 +1377,7 @@ export class FmcAircraftInterface {
       this.fmgc.data.approachGreenDotSpeed.set(Math.ceil(approachSpeeds.gd));
       this.fmgc.data.approachSlatRetractionSpeed.set(Math.ceil(approachSpeeds.s));
       this.fmgc.data.approachFlapRetractionSpeed.set(Math.ceil(approachSpeeds.f3));
-      this.fmgc.data.approachVapp.set(pd.pilotVapp.get() ?? Math.round(approachSpeeds.vapp));
+      this.fmgc.data.approachVapp.set(pd.pilotVapp.get() ?? Math.ceil(approachSpeeds.vapp));
     } else {
       this.fmgc.data.approachVls.set(null);
       this.fmgc.data.approachVref.set(null);
