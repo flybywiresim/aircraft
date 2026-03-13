@@ -12,7 +12,7 @@ use systems::shared::to_bool;
 use msfs::sim_connect;
 use msfs::{sim_connect::SimConnect, sim_connect::SIMCONNECT_OBJECT_ID_USER};
 
-use lookup_tables::{Axis, Binary, Clamp, LookupTable2D};
+use lookup_tables::{Axis, Binary, Clamp, Linear, LookupTable1D, LookupTable2D};
 use ndarray::Array2;
 use uom::si::{
     f64::*,
@@ -28,10 +28,23 @@ static RATE_LIMITER_LOWER: LazyLock<Mutex<RateLimiter<f64>>> =
 static RATE_LIMITER_IN_FLIGHT: LazyLock<Mutex<RateLimiter<f64>>> =
     LazyLock::new(|| Mutex::new(RateLimiter::new_symmetrical(0.1)));
 
-const IN_FLIGHT_OFFSET: f64 = 4.5;
-
 type AxisType = Axis<f64, Binary, Clamp, Clamp>;
 type TableType = LookupTable2D<AxisType, AxisType, f64>;
+
+const IN_FLIGHT_OFFSET_BREAKPOINTS: [f64; 4] = [150., 200., 350., 400.];
+const IN_FLIGHT_OFFSET_DATA: [f64; 4] = [4.5, 4.5, 1., 1.];
+
+type AxisType1D = Axis<f64, Linear, Clamp, Clamp>;
+type TableType1D = LookupTable1D<AxisType1D, f64>;
+
+static IN_FLIGHT_OFFSET_TABLE: LazyLock<TableType1D> = LazyLock::new(|| {
+    TableType1D::new(
+        IN_FLIGHT_OFFSET_BREAKPOINTS.to_vec(),
+        Linear,
+        IN_FLIGHT_OFFSET_DATA.to_vec(),
+    )
+    .expect("THS Table unwrap failed")
+});
 
 const LUT_SHAPE: (usize, usize) = (8, 9);
 
@@ -287,6 +300,7 @@ pub(super) fn trimmable_horizontal_stabilizer(
             Variable::aspect("HYD_FINAL_THS_DEFLECTION"),
             Variable::named("FLAPS_HANDLE_INDEX"),
             Variable::aircraft("SIM ON GROUND", "BOOL", 0),
+            Variable::aircraft("AIRSPEED INDICATED", "KNOTS", 0),
             Variable::named("THS_FUDGING_GROUND_TO_FLIGHT_TRANSITION_RATE"),
             Variable::named("THS_FUDGING_FLIGHT_TO_GROUND_TRANSITION_RATE"),
         ],
@@ -296,6 +310,7 @@ pub(super) fn trimmable_horizontal_stabilizer(
             let hydraulics_ths_position = values[2];
             let flaps_handle_pos = values[3] as u32;
             let on_ground = to_bool(values[4]);
+            let cas = values[5];
 
             let (mut upper_boundary_value, mut lower_boundary_value) = match flaps_handle_pos {
                 0 | 1 => (
@@ -324,7 +339,7 @@ pub(super) fn trimmable_horizontal_stabilizer(
 
             let mut in_flight_rate_lim = RATE_LIMITER_IN_FLIGHT.lock().unwrap();
 
-            in_flight_rate_lim.set_max_rate(values[5].abs(), -values[6].abs());
+            in_flight_rate_lim.set_max_rate(values[6].abs(), -values[7].abs());
 
             let in_flight_gain = in_flight_rate_lim.update(delta, if on_ground { 0. } else { 1. });
 
@@ -336,7 +351,9 @@ pub(super) fn trimmable_horizontal_stabilizer(
                 * (upper_boundary_value - lower_boundary_value)
                 + lower_boundary_value;
 
-            let in_flight_ths_position = hydraulics_ths_position + IN_FLIGHT_OFFSET;
+            let in_flight_offset = IN_FLIGHT_OFFSET_TABLE.lookup(cas);
+
+            let in_flight_ths_position = hydraulics_ths_position + in_flight_offset;
 
             in_flight_gain * in_flight_ths_position
                 + (1. - in_flight_gain) * on_ground_remapped_ths_position
