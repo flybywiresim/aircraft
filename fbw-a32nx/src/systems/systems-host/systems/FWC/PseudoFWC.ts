@@ -1659,6 +1659,7 @@ export class PseudoFWC {
 
   // TODO: Check actual parking brake position
   private readonly parkBrakeLeverVar = RegisteredSimVar.createBoolean('L:A32NX_PARK_BRAKE_LEVER_POS');
+  private readonly antiSkidOnVar = RegisteredSimVar.createBoolean('A:ANTISKID BRAKES ACTIVE');
 
   private readonly ir1AlignDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_1_ALIGN_DISCRETE');
   private readonly ir2AlignDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_2_ALIGN_DISCRETE');
@@ -1681,6 +1682,7 @@ export class PseudoFWC {
     this.sdac00200Word.set(0);
     this.sdac00200Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
     this.sdac00200Word.setBitValue(22, this.parkBrakeLeverVar.get());
+    this.sdac00200Word.setBitValue(23, !this.antiSkidOnVar.get());
 
     this.sdac00401Word.set(0);
     this.sdac00401Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
@@ -1892,12 +1894,11 @@ export class PseudoFWC {
     this.lgciu2DiscreteWord2.setFromSimVar('L:A32NX_LGCIU_2_DISCRETE_WORD_2');
     this.nwSteeringDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool'));
 
-    const antiSkidActive = SimVar.GetSimVarValue('ANTISKID BRAKES ACTIVE', 'bool');
     // TODO: Check !NORM+ALTN BRK FAULT when implemented
     const acBusOff = !this.ac1BusPowered.get() || !this.ac2BusPowered.get();
     const phase2For60Seconds = this.antiSkidOffPhase2Confirm.write(this.fwcFlightPhase.get() === 2, deltaTime);
     const phase2For60SecondsPulse = this.antiSkidOffPhase2Pulse.write(phase2For60Seconds, deltaTime);
-    this.antiSkidOffWarning.set(!antiSkidActive && !acBusOff && !phase2For60SecondsPulse);
+    this.antiSkidOffWarning.set(this.sdac00200Word.bitValue(23) && !acBusOff && !phase2For60SecondsPulse);
 
     this.parkBrakeMemo.set(this.sdac00200Word.bitValue(22) && this.flightPhase12910.get());
 
