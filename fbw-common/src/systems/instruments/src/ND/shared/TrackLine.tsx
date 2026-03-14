@@ -73,7 +73,7 @@ export class TrackLine extends DisplayComponent<TrackLineProps> {
   );
 
   private readonly areActiveVectorsTransmitted = ConsumerSubject.create(this.sub.on('vectorsActive'), []).map(
-    (vectors) => vectors !== null,
+    (vectors) => vectors !== undefined && vectors !== null,
   );
 
   onAfterRender(node: VNode) {
