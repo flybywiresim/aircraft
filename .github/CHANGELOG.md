@@ -83,7 +83,7 @@
 1. [A380X/FWS] Fixed overspeed VFE blue and selectable - @matze-tech (matze2346)
 1. [A380X/FUEL] Add first FQMS fuel measuring implementation - @Gurgel100 (Pascal)
 1. [FUEL] Fix fuel getting consumed when in Active Pause or Pause at T/D - @Maximilian-Reuter (\_chaoz_)
-1. [A32NX/FWS] Add `BRK Y ACCU LO PR` master caution - @FozzieHi (fozzie)
+1. [A32NX/FWS] Add `BRK Y ACCU LO PR` and `PARK BRK LO PR` master cautions - @FozzieHi (fozzie)
 
 ## 0.14.0
 
