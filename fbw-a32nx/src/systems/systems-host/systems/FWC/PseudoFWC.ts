@@ -1893,7 +1893,7 @@ export class PseudoFWC {
     this.nwSteeringDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool'));
 
     const antiSkidActive = SimVar.GetSimVarValue('ANTISKID BRAKES ACTIVE', 'bool');
-    // TODO: Check !NORM+ALTN BRK FAULT when implemented, plus change all of this to use SDAC discretes
+    // TODO: Check !NORM+ALTN BRK FAULT when implemented
     const acBusOff = !this.ac1BusPowered.get() || !this.ac2BusPowered.get();
     const phase2For60Seconds = this.antiSkidOffPhase2Confirm.write(this.fwcFlightPhase.get() === 2, deltaTime);
     const phase2For60SecondsPulse = this.antiSkidOffPhase2Pulse.write(phase2For60Seconds, deltaTime);
