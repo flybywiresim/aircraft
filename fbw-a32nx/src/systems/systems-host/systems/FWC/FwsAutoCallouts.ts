@@ -1,3 +1,5 @@
+// Copyright (c) 2026 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
 import {
   NXLogicConfirmNode,
   NxHysterisNode,
@@ -356,7 +358,7 @@ export class FwsAutoCallouts {
       deltaTime,
     );
     const takeoffAndGroundDetection = this.heightLessThan3Feet || this.radioHeightIncreasing;
-    this.radioHeightCallOutInhibition1 = takeoffAndGroundDetection || this.dhGenerated; // TODO check for GPWS warning
+    this.radioHeightCallOutInhibition1 = takeoffAndGroundDetection || this.dhGenerated; // TODO check for GPWS
     this.radioHeightCallOutInhibition2 = takeoffAndGroundDetection || this.dhGenerated;
     this.radioHeightCallOutInhibition3 = this.heightLessThan3Feet || radioHeightNotDecreasing || this.dhGenerated;
   }

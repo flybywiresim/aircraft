@@ -1621,7 +1621,6 @@ export class PseudoFWC {
     });
 
     this.autoCallouts.tenAudio.sub((v) => {
-      console.log('tenAudio:', v);
       this.soundManager.handleSoundCondition('alt_10', v);
     });
 
@@ -1633,36 +1632,25 @@ export class PseudoFWC {
     });
 
     this.autoCallouts.retardAudio.sub((v) => {
-      console.log('retardAudio:', v);
       this.soundManager.handleSoundCondition('retard_continuous', v);
     });
 
     this.autoCallouts.fiveAudio.sub((v) => {
-      console.log('fiveAudio:', v);
       this.soundManager.handleSoundCondition('alt_5', v);
     });
 
     this.hundredAboveAural.sub((v) => {
-      console.log('hundredAboveAural:', v);
       if (!v) {
         this.hundredAboveGenerated = false;
       }
-      this.soundManager.handleSoundCondition('hundred_above', v); // TODO confirmation time
+      this.soundManager.handleSoundCondition('hundred_above', v);
     });
 
     this.minimumAural.sub((v) => {
-      console.log('minimumAural:', v);
       if (!v) {
         this.minimumGenerated = false;
       }
-      this.soundManager.handleSoundCondition('minimums', v); // TODO confirmation time
-    });
-
-    this.minimum.sub((v) => {
-      console.log('minimum:', v);
-    });
-    this.hundredAbove.sub((v) => {
-      console.log('hundredAbove:', v);
+      this.soundManager.handleSoundCondition('minimums', v);
     });
   }
 
