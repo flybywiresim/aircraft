@@ -42,7 +42,7 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
 
   private readonly availChecker = new FwsSdAvailabilityChecker(this.props.bus);
 
-  private readonly topSvgDisplay = this.props.visible.map((v) => (v ? 'inline' : 'none'));
+  private readonly topSvgDisplay = this.props.visible.map((v) => (v ? 'flex' : 'none'));
 
   private readonly stsPageToShow = ConsumerSubject.create(this.sub.on('sdStsPageToShow'), 0);
 
