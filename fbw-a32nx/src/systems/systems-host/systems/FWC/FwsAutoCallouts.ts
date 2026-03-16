@@ -665,7 +665,7 @@ export class FwsAutoCallouts {
     const bothEnginesRunningAndIdle =
       eng1TlaIdleRetard && eng2TlaIdleRetard && !engine1NotRunning && !engine2NotRunning;
 
-    const tlaNotInIdle =
+    const tlaInIdle =
       eng1RunningAndTlaIdleAndEng2NotRunning ||
       eng2RunningAndTlaIdleAndEng1NotRunning ||
       bothEnginesRunningAndIdle ||
@@ -677,7 +677,7 @@ export class FwsAutoCallouts {
     const flightPhase67Or8 = flightPhase === 6 || flightPhase === 7 || flightPhase === 8;
 
     this.retardInhibit =
-      !tlaNotInIdle &&
+      !tlaInIdle &&
       flightPhase67Or8 &&
       ((raBelow10Feet && oneApActiveAndAthr) || (raBelow20Feet && noAutolandAndAthrOrNoAthr));
 
