@@ -84,7 +84,8 @@
 1. [A380X/FUEL] Add first FQMS fuel measuring implementation - @Gurgel100 (Pascal)
 1. [FUEL] Fix fuel getting consumed when in Active Pause or Pause at T/D - @Maximilian-Reuter (\_chaoz_)
 1. [A380X/RMP] Fixed interphone volume knob light not illuminating when selected on - @matze-tech (matze2346)1.
-1. [A380X/OVHD] Corrected auto seat belt logic - @FlyByTim (FlyByTim)
+1. [A380X/OVHD] Fixed auto seat belt logic - @FlyByTim (FlyByTim)
+1. [A380X/FWS] Fixed seat belt/ground spoiler inhibition logic - @FlyByTim (FlyByTim)
 
 
 ## 0.14.0
