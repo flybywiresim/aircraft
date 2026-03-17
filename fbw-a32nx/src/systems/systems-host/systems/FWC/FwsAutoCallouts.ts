@@ -181,8 +181,21 @@ export class FwsAutoCallouts {
   private radioHeightCallOutInhibition1 = false;
   private radioHeightCallOutInhibition2 = false;
   private radioHeightCallOutInhibition3 = false;
+
+  private readonly gpwsWarningLightOn = RegisteredSimVar.createBoolean(
+    'L:A32NX_GPWS_WARNING_LIGHT_ON',
+    SimVarValueType.Bool,
+  );
+  private readonly gpwsAlertLightOn = RegisteredSimVar.createBoolean(
+    'L:A32NX_GPWS_ALERT_LIGHT_ON',
+    SimVarValueType.Bool,
+  );
+  private readonly gpwsMtrig = new NXLogicTriggeredMonostableNode(2);
   private gpwsInhibition = false;
+
   private tcasAural = false;
+  // TODO
+  private readonly tcasAuralMtrigNode = new NXLogicTriggeredMonostableNode(5, false);
 
   private autoCalloutMdaInhibit = false;
   private dmcDiscreteWord270: Arinc429Register = Arinc429Register.empty();
@@ -195,11 +208,11 @@ export class FwsAutoCallouts {
     SimVarValueType.Enum,
   );
   private readonly hundredAboveMdaMtrig = new NXLogicTriggeredMonostableNode(3);
-  private readonly hundredAboveMdaMemoryNode = new NXLogicMemoryNode(true);
+  private readonly hundredAboveMdaMemoryNode = new NXLogicMemoryNode(false);
 
   private readonly HundredAboveDhConfNode = new NXLogicConfirmNode(0.1);
   private readonly hundredAboveDhMtrig = new NXLogicTriggeredMonostableNode(3);
-  private readonly hundredAboveDhMemoryNode = new NXLogicMemoryNode(true);
+  private readonly hundredAboveDhMemoryNode = new NXLogicMemoryNode(false);
 
   public readonly hundredAbove = Subject.create(false);
   private readonly fmDh = Arinc429Register.empty();
@@ -224,7 +237,7 @@ export class FwsAutoCallouts {
       ? this.fws.radioHeight2.valueOr(null)
       : this.fws.radioHeight1.value;
     const stallWarning = this.fws.stallWarning.get();
-    const speedWarning = false;
+    const speedWarning = false; // TODO
     const onGround = this.fws.aircraftOnGround.get();
     const engine1MasterOn = this.fws.engine1Master.get();
     const engine2MasterOn = this.fws.engine2Master.get();
@@ -358,7 +371,7 @@ export class FwsAutoCallouts {
       deltaTime,
     );
     const takeoffAndGroundDetection = this.heightLessThan3Feet || this.radioHeightIncreasing;
-    this.radioHeightCallOutInhibition1 = takeoffAndGroundDetection || this.dhGenerated; // TODO check for GPWS
+    this.radioHeightCallOutInhibition1 = takeoffAndGroundDetection || this.dhGenerated || this.gpwsInhibition;
     this.radioHeightCallOutInhibition2 = takeoffAndGroundDetection || this.dhGenerated;
     this.radioHeightCallOutInhibition3 = this.heightLessThan3Feet || radioHeightNotDecreasing || this.dhGenerated;
   }
@@ -373,14 +386,16 @@ export class FwsAutoCallouts {
     engine1MasterOn: boolean,
     engine2MasterOn: boolean,
   ) {
+    const gpwsWarning = this.gpwsWarningLightOn.get();
+    const gpwsAlert = this.gpwsAlertLightOn.get();
+    this.gpwsInhibition = gpwsWarning || gpwsAlert || this.gpwsMtrig.write(gpwsWarning || gpwsAlert, deltaTime);
     const raInvalidOrLowSpeedWarningOrFlex = height === null || stallWarning || speedWarning; // TODO some missing
     this.autoCalloutInhibit = raInvalidOrLowSpeedWarningOrFlex || (onGround && engine1MasterOn && engine2MasterOn);
     const onGroundAndNotPhase8 = onGround && flightPhase !== 8;
     this.newRetardInhibit =
       raInvalidOrLowSpeedWarningOrFlex || (onGroundAndNotPhase8 && engine1MasterOn && engine2MasterOn);
-
+    this.tcasAural = this.tcasAuralMtrigNode.write(false, deltaTime); // TODO
     this.autoCalloutMdaInhibit = speedWarning || stallWarning || this.gpwsInhibition || this.tcasAural;
-
     this.autoCalloutDhInbit = height === null || this.autoCalloutInhibit || this.fmDh.valueOr(0) <= 3;
   }
 

@@ -4460,14 +4460,6 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
     - Boolean
     - Indicates whether the GPWS LDG FLAP 3 pushbutton is ON
 
-- A32NX_GPWS_GROUND_STATE
-    - Boolean
-    - Indicates whether the GPWS is in ground vs airborne mode
-
-- A32NX_GPWS_APPROACH_STATE
-    - Boolean
-    - Indicates whether the GPWS is in Approach vs Takeoff mode
-
 ## ROW / ROP / OANS (ATA 34)
 
 - A32NX_ROW_ROP_WORD_1
