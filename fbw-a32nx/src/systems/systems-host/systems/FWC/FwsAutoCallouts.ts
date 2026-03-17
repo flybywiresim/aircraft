@@ -388,7 +388,8 @@ export class FwsAutoCallouts {
   ) {
     const gpwsWarning = this.gpwsWarningLightOn.get();
     const gpwsAlert = this.gpwsAlertLightOn.get();
-    this.gpwsInhibition = gpwsWarning || gpwsAlert || this.gpwsMtrig.write(gpwsWarning || gpwsAlert, deltaTime);
+    const gpwsMtrig = this.gpwsMtrig.write(gpwsWarning || gpwsAlert, deltaTime);
+    this.gpwsInhibition = gpwsWarning || gpwsAlert || gpwsMtrig;
     const raInvalidOrLowSpeedWarningOrFlex = height === null || stallWarning || speedWarning; // TODO some missing
     this.autoCalloutInhibit = raInvalidOrLowSpeedWarningOrFlex || (onGround && engine1MasterOn && engine2MasterOn);
     const onGroundAndNotPhase8 = onGround && flightPhase !== 8;
