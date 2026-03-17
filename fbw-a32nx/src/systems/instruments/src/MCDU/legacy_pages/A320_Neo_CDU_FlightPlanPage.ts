@@ -818,8 +818,8 @@ export class CDUFlightPlanPage {
     );
 
     mcdu.onUnload = () => {
-      CDUFlightPlanPage.updatePlanCentre(mcdu, waypointsAndMarkers, 0, FlightPlanIndex.Active, 'L');
-      CDUFlightPlanPage.updatePlanCentre(mcdu, waypointsAndMarkers, 0, FlightPlanIndex.Active, 'R');
+      CDUFlightPlanPage.updatePlanCentre(mcdu, waypointsAndMarkers, offset, FlightPlanIndex.Active, 'L');
+      CDUFlightPlanPage.updatePlanCentre(mcdu, waypointsAndMarkers, offset, FlightPlanIndex.Active, 'R');
 
       mcdu.efisInterfaces.L.setSecRelatedPageOpen(false);
       mcdu.efisInterfaces.R.setSecRelatedPageOpen(false);
