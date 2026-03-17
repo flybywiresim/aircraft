@@ -27,9 +27,6 @@ export const StatusArea = () => {
   const [airDataSwitch] = useSimVar('L:A32NX_AIR_DATA_SWITCHING_KNOB', 'enum', 200);
   const [attHdgSwitch] = useSimVar('L:A32NX_ATT_HDG_SWITCHING_KNOB', 'enum', 200);
 
-  const [eng1Running] = useSimVar('ENG COMBUSTION:1', 'bool', 1000);
-  const [eng2Running] = useSimVar('ENG COMBUSTION:2', 'bool', 1000);
-
   const [isaVisible, setIsaVisible] = useState(false);
 
   const [airDataReferenceSource, setAirDataSource] = useState(1);
@@ -106,7 +103,7 @@ export const StatusArea = () => {
     const payloadWeight = getPayloadWeight(payloadCount);
     const gw = Math.round(NXUnits.kgToUser(emptyWeight + fuelWeight + payloadWeight));
 
-    if (eng1Running || (eng2Running && gw != null)) {
+    if (gw != null) {
       // Lower EICAS displays GW in increments of 100
       setGwDisplayedValue((Math.floor(gw / 100) * 100).toString());
     } else {
@@ -172,33 +169,17 @@ export const StatusArea = () => {
           </Text>
 
           {/* Gross weight */}
-          {(eng1Running || eng2Running) && (
-            <>
-              <Text title x={445} y={63} alignEnd>
-                GW
-              </Text>
-              <Text value x={512} y={63}>
-                {gwDisplayedValue}
-              </Text>
-              <Text unit x={562} y={61} alignStart>
-                {gwDisplayedUnit}
-              </Text>
-            </>
-          )}
-
-          {!eng1Running && !eng2Running && (
-            <>
-              <Text title x={445} y={63} alignEnd>
-                GW
-              </Text>
-              <Text unit x={512} y={63}>
-                {gwDisplayedValue}
-              </Text>
-              <Text unit x={562} y={61} alignStart>
-                {gwDisplayedUnit}
-              </Text>
-            </>
-          )}
+          <>
+            <Text title x={445} y={63} alignEnd>
+              GW
+            </Text>
+            <Text value x={512} y={63}>
+              {gwDisplayedValue}
+            </Text>
+            <Text unit x={562} y={61} alignStart>
+              {gwDisplayedUnit}
+            </Text>
+          </>
 
           {/* ISA */}
           {isaVisible && (
