@@ -1863,3 +1863,4 @@
 1. [EFB] Restructured APIs and made Navigraph Auth a reusable component - @MicahBCode (Mischa Binder)
 1. [ECAM] Added F units to CRZ and COND pages for Cabin temps. Currently tied to kg/lbs option in EFB -Patrick Macken  (@PatM on Discord)
 1. [A32NX/FCU] Fixed bug where the FCU selected altitude would immediately switch to 1000s on selecting the 1000ft inteval knob - @elliot747 (Elliot)
+1. [Sounds] Fixed boarding complete and welcome onboard announcements playing simultaneously by adding a delay between them - @Ditoo29 (dito29 on Discord)
