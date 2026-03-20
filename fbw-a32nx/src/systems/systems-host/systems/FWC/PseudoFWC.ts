@@ -937,11 +937,17 @@ export class PseudoFWC {
 
   private readonly toConfigNormalConf = new NXLogicConfirmNode(0.3, false);
 
-  private readonly flightPhase2PulseNode = new NXLogicPulseNode();
+  public readonly flightPhase2PulseNode = new NXLogicPulseNode();
 
-  private readonly flightPhase3PulseNode = new NXLogicPulseNode();
+  public readonly flightPhase3PulseNode = new NXLogicPulseNode();
 
-  private readonly flightPhase7PulseNode = new NXLogicPulseNode();
+  public readonly flightPhase4PulseNode = new NXLogicPulseNode();
+
+  public readonly flightPhase8PulseNode = new NXLogicPulseNode();
+
+  public readonly flightPhase7PulseNode = new NXLogicPulseNode();
+
+  public readonly flightPhase9PulseNode = new NXLogicPulseNode();
 
   private readonly flightPhase6For60Seconds = new NXLogicConfirmNode(60, true);
 
@@ -1814,7 +1820,11 @@ export class PseudoFWC {
     const flightPhase = this.fwcFlightPhase.get();
     this.flightPhase2PulseNode.write(flightPhase === 2, deltaTime);
     this.flightPhase3PulseNode.write(flightPhase === 3, deltaTime);
+    this.flightPhase4PulseNode.write(flightPhase === 4, deltaTime);
     this.flightPhase7PulseNode.write(flightPhase === 7, deltaTime);
+    this.flightPhase8PulseNode.write(flightPhase === 8, deltaTime);
+    this.flightPhase9PulseNode.write(flightPhase === 9, deltaTime);
+
     this.flightPhase6For60Seconds.write(flightPhase === 6, deltaTime);
     // flight phase convenience vars
     this.flightPhase126.set(flightPhase === 1 || flightPhase === 2 || flightPhase === 6);

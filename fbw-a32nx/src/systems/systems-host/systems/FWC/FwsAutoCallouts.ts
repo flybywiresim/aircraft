@@ -157,14 +157,18 @@ export class FwsAutoCallouts {
   private readonly altInferiorTo20FeetConfNode = new NXLogicConfirmNode(0.1);
   public readonly retardAudio = Subject.create(false);
 
+  private readonly togaRetardInhibitMemoryNode = new NXLogicMemoryNode(true);
+  private readonly phase6Or7StartedPulseNode = new NXLogicPulseNode(false);
+
   private fiveFeetTreshold = false;
   private fiveMtrigPreviousCycle = false;
   private readonly fiveAudioPulseNode = new NXLogicPulseNode();
   private readonly fiveMtrigNode = new NXLogicTriggeredMonostableNode(2);
   public readonly fiveAudio = Subject.create(false);
 
-  private retardInhibit = false;
+  private thrLeverNotIdleRetardAudio = false; // TODO
 
+  private retardInhibit = false;
   private newRetardInhibit = false;
 
   private readonly radioHeightSlopeNode = new NxSlopeNode();
@@ -681,19 +685,35 @@ export class FwsAutoCallouts {
     const bothEnginesRunningAndIdle =
       eng1TlaIdleRetard && eng2TlaIdleRetard && !engine1NotRunning && !engine2NotRunning;
 
-    const tlaInIdle =
+    const bothEnginesTlaIdle = eng1TlaIdleRetard && eng2TlaIdleRetard;
+    const phase6Or7StartedPulse = this.phase6Or7StartedPulseNode.write(
+      flightPhase === 6 || flightPhase === 7,
+      deltaTime,
+    );
+
+    const retardToga = this.togaRetardInhibitMemoryNode.write(
+      (bothEnginesTlaIdle && flightPhase === 8) || (this.fws.flightPhase8PulseNode.read() && !phase6Or7StartedPulse),
+      this.fws.flightPhase2PulseNode.read() ||
+        this.fws.flightPhase3PulseNode.read() ||
+        this.fws.flightPhase4PulseNode.read() ||
+        this.fws.flightPhase7PulseNode.read() ||
+        this.fws.flightPhase9PulseNode.read() ||
+        this.thrLeverNotIdleRetardAudio,
+    );
+
+    const retardIdleOrToga =
       eng1RunningAndTlaIdleAndEng2NotRunning ||
       eng2RunningAndTlaIdleAndEng1NotRunning ||
       bothEnginesRunningAndIdle ||
       tla1Reverse ||
-      tla2Reverse; // TODO toga inhibition
-
+      tla2Reverse ||
+      retardToga;
     const raBelow10Feet = this.altInferiorTo10FeetConfNode.write(this.heightLessThan10Feet, deltaTime);
     const raBelow20Feet = this.altInferiorTo20FeetConfNode.write(this.heightLessThan20Feet, deltaTime);
     const flightPhase67Or8 = flightPhase === 6 || flightPhase === 7 || flightPhase === 8;
 
     this.retardInhibit =
-      !tlaInIdle &&
+      !retardIdleOrToga &&
       flightPhase67Or8 &&
       ((raBelow10Feet && oneApActiveAndAthr) || (raBelow20Feet && noAutolandAndAthrOrNoAthr));
 
@@ -705,7 +725,9 @@ export class FwsAutoCallouts {
       deltaTime,
     );
     const retardAudio =
-      !(retardInhibitOrToga || this.radioHeightNotDecreasingConfirmNode.read()) && (this.retardInhibit || retardPulse); // TODO ROW/ROP, THR LVR NOT IDLE
+      !this.thrLeverNotIdleRetardAudio &&
+      !(retardInhibitOrToga || this.radioHeightNotDecreasingConfirmNode.read()) &&
+      (this.retardInhibit || retardPulse); // TODO ROW/ROP
     this.retardAudio.set(retardAudio);
 
     // 5
