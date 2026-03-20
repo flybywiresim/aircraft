@@ -169,7 +169,7 @@ export class FwsAutoCallouts {
   private thrLeverNotIdleRetardAudio = false; // TODO
 
   private retardInhibit = false;
-  private newRetardInhibit = false;
+  private generalRetardInhibit = false;
 
   private readonly radioHeightSlopeNode = new NxSlopeNode();
 
@@ -397,7 +397,7 @@ export class FwsAutoCallouts {
     const raInvalidOrLowSpeedWarningOrFlex = height === null || stallWarning || speedWarning; // TODO some missing
     this.autoCalloutInhibit = raInvalidOrLowSpeedWarningOrFlex || (onGround && engine1MasterOn && engine2MasterOn);
     const onGroundAndNotPhase8 = onGround && flightPhase !== 8;
-    this.newRetardInhibit =
+    this.generalRetardInhibit =
       raInvalidOrLowSpeedWarningOrFlex || (onGroundAndNotPhase8 && engine1MasterOn && engine2MasterOn);
     this.tcasAural = this.tcasAuralMtrigNode.write(false, deltaTime); // TODO
     this.autoCalloutMdaInhibit = speedWarning || stallWarning || this.gpwsInhibition || this.tcasAural;
@@ -635,7 +635,7 @@ export class FwsAutoCallouts {
 
     // 20 retard
     const goAround = tla1 > 43.3 || tla2 > 43.3; // TODO some missing, will suffice for now.
-    const retardInhibitOrToga = this.newRetardInhibit || goAround;
+    const retardInhibitOrToga = this.generalRetardInhibit || goAround;
     const noAutoland = !oneApActiveAndinLand;
     const noAutolandAndAthr = noAutoland && athrActive;
     const noAutolandAndAthrOrNoAthr = noAutolandAndAthr || !athrActive;
