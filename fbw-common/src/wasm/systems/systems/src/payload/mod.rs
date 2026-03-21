@@ -664,23 +664,33 @@ pub struct BoardingSounds {
     pax_deboard_id: VariableIdentifier,
     pax_complete_id: VariableIdentifier,
     pax_ambience_id: VariableIdentifier,
+    pax_welcome_id: VariableIdentifier,
 
     pax_boarding: bool,
     pax_deboarding: bool,
     pax_complete: bool,
     pax_ambience: bool,
+    pax_welcome: bool,
+
+    welcome_timer: Duration,
 }
 impl BoardingSounds {
+    // Set a timer for 10 seconds between "Boarding Completed" and "Welcome Onboard"
+    const BOARDING_COMPLETE_WELCOME_DELAY: Duration = Duration::from_secs(10);
+
     pub fn new(context: &mut InitContext) -> Self {
         BoardingSounds {
             pax_board_id: context.get_identifier("SOUND_PAX_BOARDING".to_owned()),
             pax_deboard_id: context.get_identifier("SOUND_PAX_DEBOARDING".to_owned()),
             pax_complete_id: context.get_identifier("SOUND_BOARDING_COMPLETE".to_owned()),
             pax_ambience_id: context.get_identifier("SOUND_PAX_AMBIENCE".to_owned()),
+            pax_welcome_id: context.get_identifier("SOUND_WELCOME_ONBOARD".to_owned()),
             pax_boarding: false,
             pax_deboarding: false,
             pax_complete: false,
             pax_ambience: false,
+            pax_welcome: false,
+            welcome_timer: Duration::ZERO,
         }
     }
 
@@ -709,11 +719,25 @@ impl BoardingSounds {
     }
 
     pub fn play_sound_pax_complete(&mut self, playing: bool) {
+        if playing && !self.pax_complete {
+            self.welcome_timer = Duration::from_millis(1);
+            self.pax_welcome = false;
+        }
         self.pax_complete = playing;
     }
 
     pub fn play_sound_pax_ambience(&mut self, playing: bool) {
         self.pax_ambience = playing;
+    }
+
+    pub fn update_welcome(&mut self, delta: Duration) {
+        if self.welcome_timer > Duration::ZERO && !self.pax_welcome {
+            self.welcome_timer += delta;
+            if self.welcome_timer >= Self::BOARDING_COMPLETE_WELCOME_DELAY {
+                self.pax_welcome = true;
+                self.welcome_timer = Duration::ZERO;
+            }
+        }
     }
 
     pub fn stop_boarding_sounds(&mut self) {
@@ -728,6 +752,7 @@ impl SimulationElement for BoardingSounds {
         writer.write(&self.pax_deboard_id, self.pax_deboarding);
         writer.write(&self.pax_complete_id, self.pax_complete);
         writer.write(&self.pax_ambience_id, self.pax_ambience);
+        writer.write(&self.pax_welcome_id, self.pax_welcome);
     }
 }
 
@@ -962,6 +987,7 @@ impl<const P: usize, const G: usize, const C: usize> PayloadManager<P, G, C> {
             if !self.is_boarding_allowed() {
                 self.reset_time();
                 self.stop_boarding_sounds();
+                self.boarding_sounds.update_welcome(delta_time);
                 return;
             }
             let ms_delay = if self.board_rate() == BoardingRate::Instant {
@@ -979,6 +1005,7 @@ impl<const P: usize, const G: usize, const C: usize> PayloadManager<P, G, C> {
                 self.update_cargo_tick();
             }
             self.update_boarding_sounds();
+            self.boarding_sounds.update_welcome(delta_time);
             if self.is_fully_loaded() {
                 self.emit_stop_boarding();
             }
@@ -989,7 +1016,8 @@ impl<const P: usize, const G: usize, const C: usize> PayloadManager<P, G, C> {
                 &mut self.passenger_deck,
                 &mut self.cargo_deck,
                 &mut self.boarding_sounds,
-            )
+            );
+            self.boarding_sounds.update_welcome(delta_time);
         }
     }
 }
