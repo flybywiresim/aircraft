@@ -235,6 +235,10 @@ export class CDUAvailableArrivalsPage {
                 await mcdu.flightPlanService.setApproach(approachOrRunway.databaseId, forPlan, inAlternate);
                 await CDUAvailableArrivalsPage.tryAutoSetApproachVia(mcdu, forPlan, inAlternate);
 
+                const updatedPlan = inAlternate ? mcdu.getAlternateFlightPlan(forPlan) : mcdu.getFlightPlan(forPlan);
+                mcdu.efisInterfaces['L'].setPlanCentre(updatedPlan.index, updatedPlan.destinationLegIndex, inAlternate);
+                mcdu.efisInterfaces['R'].setPlanCentre(updatedPlan.index, updatedPlan.destinationLegIndex, inAlternate);
+
                 CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
               } catch (e) {
                 console.error(e);
@@ -391,6 +395,18 @@ export class CDUAvailableArrivalsPage {
 
                   await mcdu.flightPlanService.setArrival(starDatabaseId, forPlan, inAlternate);
 
+                  const updatedPlan = inAlternate ? mcdu.getAlternateFlightPlan(forPlan) : mcdu.getFlightPlan(forPlan);
+                  mcdu.efisInterfaces['L'].setPlanCentre(
+                    updatedPlan.index,
+                    updatedPlan.destinationLegIndex,
+                    inAlternate,
+                  );
+                  mcdu.efisInterfaces['R'].setPlanCentre(
+                    updatedPlan.index,
+                    updatedPlan.destinationLegIndex,
+                    inAlternate,
+                  );
+
                   if (await CDUAvailableArrivalsPage.tryAutoSetApproachVia(mcdu, forPlan, inAlternate)) {
                     CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
                   } else {
@@ -510,6 +526,9 @@ export class CDUAvailableArrivalsPage {
         mcdu.insertTemporaryFlightPlan(() => {
           mcdu.updateTowerHeadwind();
           mcdu.updateConstraints();
+          const insertedPlan = inAlternate ? mcdu.getAlternateFlightPlan(forPlan) : mcdu.getFlightPlan(forPlan);
+          mcdu.efisInterfaces['L'].setPlanCentre(insertedPlan.index, insertedPlan.destinationLegIndex, inAlternate);
+          mcdu.efisInterfaces['R'].setPlanCentre(insertedPlan.index, insertedPlan.destinationLegIndex, inAlternate);
           CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
         });
       };
