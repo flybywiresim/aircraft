@@ -349,7 +349,7 @@ export class FwsSoundManager {
       return;
     }
 
-    if (this.soundQueue.size === 0 && this.soundToRepeatDelay !== null && this.soundToRepeat !== null) {
+    if (this.soundToRepeatDelay !== null && this.soundToRepeat !== null) {
       this.soundToRepeatDelay -= deltaTime / 1_000;
       if (this.soundToRepeatDelay <= 0) {
         this.soundQueue.add(this.soundToRepeat);
