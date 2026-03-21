@@ -503,19 +503,19 @@ export class CDUAvailableArrivalsPage {
       bottomLine = ['{ERASE[color]amber', 'INSERT*[color]amber'];
       mcdu.onLeftInput[5] = async () => {
         mcdu.eraseTemporaryFlightPlan(() => {
-          CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
+          CDUFlightPlanPage.ShowPage(mcdu, 0, false, forPlan);
         });
       };
       mcdu.onRightInput[5] = async () => {
         mcdu.insertTemporaryFlightPlan(() => {
           mcdu.updateTowerHeadwind();
           mcdu.updateConstraints();
-          CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
+          CDUFlightPlanPage.ShowPage(mcdu, 0, false, forPlan);
         });
       };
     } else {
       mcdu.onLeftInput[5] = () => {
-        CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
+        CDUFlightPlanPage.ShowPage(mcdu, 0, false, forPlan);
       };
     }
     let up = false;
