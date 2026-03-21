@@ -89,6 +89,8 @@
 1. [A32NX/FWS] Add `GEN 1(2) FAULT` master caution - @FozzieHi (fozzie)
 1. [A32NX/FWS] Update `TCAS STBY` master caution to reflect switch position instead of actual TCAS status - @FozzieHi (fozzie)
 1. [A32NX/FWS] Add `ATC/XPDR STBY` master caution - @FozzieHi (fozzie)
+1. [A380X/OVHD] Fixed auto seat belt logic - @FlyByTim (FlyByTim)
+1. [A380X/FWS] Fixed seat belt/ground spoiler inhibition logic - @FlyByTim (FlyByTim)
 
 ## 0.14.0
 
