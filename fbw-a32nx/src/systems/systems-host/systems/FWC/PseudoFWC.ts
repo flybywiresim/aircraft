@@ -236,10 +236,12 @@ export class PseudoFWC {
 
   /* SDAC */
   private readonly sdac00100Word = Arinc429Register.empty();
-
+  private readonly sdac00200Word = Arinc429Register.empty();
   private readonly sdac00401Word = Arinc429Register.empty();
   private readonly sdac00410Word = Arinc429Register.empty();
   private readonly sdac00411Word = Arinc429Register.empty();
+
+  private readonly sdac00511Word = Arinc429Register.empty();
 
   private readonly sdac05001Word = Arinc429Register.empty();
   private readonly sdac05010Word = Arinc429Register.empty();
@@ -762,6 +764,14 @@ export class PseudoFWC {
 
   private readonly slatConfigWarning = Subject.create(false);
 
+  private readonly flightPhase3ParkBrakeOnPulseNode = new NXLogicPulseNode(true);
+
+  private readonly configParkBrakeOnMemoryNode = new NXLogicMemoryNode(true);
+
+  private readonly configParkBrakeOnAural = Subject.create(false);
+
+  private readonly configParkBrakeOnWarning = Subject.create(false);
+
   private readonly speedbrakesNotTo = Subject.create(false);
 
   private readonly speedbrakesConfigSr = new NXLogicMemoryNode(true);
@@ -949,6 +959,8 @@ export class PseudoFWC {
 
   private readonly flightPhase7PulseNode = new NXLogicPulseNode();
 
+  private readonly flightPhase9PulseNode = new NXLogicPulseNode();
+
   private readonly flightPhase6For60Seconds = new NXLogicConfirmNode(60, true);
 
   private readonly flightPhaseEndedPulseNode = new NXLogicPulseNode();
@@ -1023,9 +1035,11 @@ export class PseudoFWC {
 
   private readonly antiSkidOffWarning = Subject.create(false);
 
+  private readonly parkBrakeMemo = Subject.create(false);
+
   private readonly parkBrakeOnConfirm = new NXLogicConfirmNode(2);
 
-  private readonly parkBrakeOnWarning = Subject.create(false);
+  private readonly brakesParkBrakeOnWarning = Subject.create(false);
 
   private readonly brakeFan = Subject.create(false);
 
@@ -1051,8 +1065,6 @@ export class PseudoFWC {
 
   private readonly nwSteeringDisc = Subject.create(false);
 
-  private readonly parkBrake = Subject.create(false);
-
   private readonly lgNotDown = Subject.create(false);
 
   private readonly lgNotDownNoCancel = Subject.create(false);
@@ -1074,6 +1086,12 @@ export class PseudoFWC {
   private readonly lgciu2OnGroundAgreeConf = new NXLogicConfirmNode(0.5, true);
 
   private readonly lgciu2OnGroundDisagreeMem = new NXLogicMemoryNode(true);
+
+  private readonly yellowAccuLoPr = Subject.create(false);
+
+  private readonly yellowAccuLoPrWarning = Subject.create(false);
+
+  private readonly parkBrakeLowPrWarning = Subject.create(false);
 
   private readonly ra1OnGroundMem = new NXLogicMemoryNode(true);
 
@@ -1668,6 +1686,9 @@ export class PseudoFWC {
 
   private readonly xpdr1StatusVar = RegisteredSimVar.create('A:TRANSPONDER STATE:1', SimVarValueType.Number);
   private readonly xpdr2StatusVar = RegisteredSimVar.create('A:TRANSPONDER STATE:2', SimVarValueType.Number);
+  // TODO: Check actual parking brake position
+  private readonly parkBrakeLeverVar = RegisteredSimVar.createBoolean('L:A32NX_PARK_BRAKE_LEVER_POS');
+  private readonly antiSkidOnVar = RegisteredSimVar.createBoolean('A:ANTISKID BRAKES ACTIVE');
 
   private readonly ir1AlignDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_1_ALIGN_DISCRETE');
   private readonly ir2AlignDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_2_ALIGN_DISCRETE');
@@ -1675,6 +1696,11 @@ export class PseudoFWC {
   private readonly ir1FaultDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_1_FAULT_WARN_DISCRETE');
   private readonly ir2FaultDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_2_FAULT_WARN_DISCRETE');
   private readonly ir3FaultDiscreteVar = RegisteredSimVar.createBoolean('L:A32NX_ADIRS_IR_3_FAULT_WARN_DISCRETE');
+
+  private readonly brakeAccuPressVar = RegisteredSimVar.create(
+    'L:A32NX_HYD_BRAKE_ALTN_ACC_PRESS',
+    SimVarValueType.Number,
+  );
 
   private readonly engine1MasterAlternatorVar = RegisteredSimVar.createBoolean('A:GENERAL ENG MASTER ALTERNATOR:1');
   private readonly engine2MasterAlternatorVar = RegisteredSimVar.createBoolean('A:GENERAL ENG MASTER ALTERNATOR:2');
@@ -1700,6 +1726,11 @@ export class PseudoFWC {
         xpdr2Status === TransponderState.Test,
     );
 
+    this.sdac00200Word.set(0);
+    this.sdac00200Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
+    this.sdac00200Word.setBitValue(22, this.parkBrakeLeverVar.get());
+    this.sdac00200Word.setBitValue(23, !this.antiSkidOnVar.get());
+
     this.sdac00401Word.set(0);
     this.sdac00401Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
     this.sdac00401Word.setBitValue(26, this.ir1AlignDiscreteVar.get());
@@ -1712,6 +1743,10 @@ export class PseudoFWC {
     this.sdac00411Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
     this.sdac00411Word.setBitValue(26, this.ir3AlignDiscreteVar.get());
     this.sdac00411Word.setBitValue(28, this.ir3FaultDiscreteVar.get());
+
+    this.sdac00511Word.set(0);
+    this.sdac00511Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
+    this.sdac00511Word.setBitValue(22, this.brakeAccuPressVar.get() < 1650);
 
     this.sdac05001Word.set(0);
     this.sdac05001Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
@@ -1747,6 +1782,7 @@ export class PseudoFWC {
     this.flightPhase2PulseNode.write(flightPhase === 2, deltaTime);
     this.flightPhase3PulseNode.write(flightPhase === 3, deltaTime);
     this.flightPhase7PulseNode.write(flightPhase === 7, deltaTime);
+    this.flightPhase9PulseNode.write(flightPhase === 9, deltaTime);
     this.flightPhase6For60Seconds.write(flightPhase === 6, deltaTime);
     // flight phase convenience vars
     this.flightPhase126.set(flightPhase === 1 || flightPhase === 2 || flightPhase === 6);
@@ -1903,19 +1939,34 @@ export class PseudoFWC {
     this.lgciu2DiscreteWord1.setFromSimVar('L:A32NX_LGCIU_2_DISCRETE_WORD_1');
     this.lgciu1DiscreteWord2.setFromSimVar('L:A32NX_LGCIU_1_DISCRETE_WORD_2');
     this.lgciu2DiscreteWord2.setFromSimVar('L:A32NX_LGCIU_2_DISCRETE_WORD_2');
-    this.parkBrake.set(SimVar.GetSimVarValue('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool'));
     this.nwSteeringDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool'));
 
-    const antiSkidActive = SimVar.GetSimVarValue('ANTISKID BRAKES ACTIVE', 'bool');
-    // TODO: Check !NORM+ALTN BRK FAULT when implemented, plus change all of this to use SDAC discretes
+    // TODO: Check !NORM+ALTN BRK FAULT when implemented
     const acBusOff = !this.ac1BusPowered.get() || !this.ac2BusPowered.get();
     const phase2For60Seconds = this.antiSkidOffPhase2Confirm.write(this.fwcFlightPhase.get() === 2, deltaTime);
     const phase2For60SecondsPulse = this.antiSkidOffPhase2Pulse.write(phase2For60Seconds, deltaTime);
-    this.antiSkidOffWarning.set(!antiSkidActive && !acBusOff && !phase2For60SecondsPulse);
+    this.antiSkidOffWarning.set(this.sdac00200Word.bitValue(23) && !acBusOff && !phase2For60SecondsPulse);
 
-    const parkBrakeFor2Seconds = this.parkBrakeOnConfirm.write(this.parkBrake.get(), deltaTime);
-    this.parkBrakeOnWarning.set(
+    this.parkBrakeMemo.set(this.sdac00200Word.bitValue(22) && this.flightPhase12910.get());
+
+    const parkBrakeFor2Seconds = this.parkBrakeOnConfirm.write(this.sdac00200Word.bitValue(22), deltaTime);
+    this.brakesParkBrakeOnWarning.set(
       parkBrakeFor2Seconds && this.flightPhase678.get() && !this.flightPhase7PulseNode.read(),
+    );
+
+    this.yellowAccuLoPr.set(this.sdac00511Word.bitValue(22));
+    this.yellowAccuLoPrWarning.set(
+      this.yellowAccuLoPr.get() &&
+        !(this.sdac00200Word.bitValue(22) && !yellowSysPressurised) &&
+        this.dcESSBusPowered.get() &&
+        !this.flightPhase9PulseNode.read(),
+    );
+    this.parkBrakeLowPrWarning.set(
+      this.dcESSBusPowered.get() &&
+        !yellowSysPressurised &&
+        this.sdac00511Word.bitValue(22) &&
+        this.sdac00200Word.bitValue(22) &&
+        !this.flightPhase9PulseNode.read(),
     );
 
     const leftCompressedHardwireLgciu1 =
@@ -2849,6 +2900,17 @@ export class PseudoFWC {
     );
     this.slatConfigWarning.set(
       (this.toConfigTestHeldMin1s5Pulse.get() && this.slatsNotTo.get()) || this.slatConfigSr.read(),
+    );
+
+    const phase3ParkBrakeOn = this.fwcFlightPhase.get() === 3 && this.sdac00200Word.bitValue(22);
+    this.configParkBrakeOnMemoryNode.write(
+      phase3ParkBrakeOn,
+      !this.sdac00200Word.bitValue(22) || this.fwcFlightPhase.get() === 5,
+    );
+    this.configParkBrakeOnAural.set(phase3ParkBrakeOn);
+    this.configParkBrakeOnWarning.set(
+      !this.flightPhase3ParkBrakeOnPulseNode.write(phase3ParkBrakeOn, deltaTime) &&
+        this.configParkBrakeOnMemoryNode.read(),
     );
 
     const speedbrakesNotInToPos = fcdc1DiscreteWord4.bitValueOr(28, false) || fcdc2DiscreteWord4.bitValueOr(28, false);
@@ -4410,8 +4472,8 @@ export class PseudoFWC {
         (this.throttle1Position.get() !== 0 || this.throttle2Position.get() !== 0) && this.aircraftOnGround.get()
           ? 2
           : null,
-        !this.parkBrake.get() && this.aircraftOnGround.get() ? 3 : null,
-        !this.parkBrake.get() && this.aircraftOnGround.get() ? 4 : null,
+        !this.sdac00200Word.bitValue(22) && this.aircraftOnGround.get() ? 3 : null,
+        !this.sdac00200Word.bitValue(22) && this.aircraftOnGround.get() ? 4 : null,
         this.aircraftOnGround.get() ? 5 : null,
         this.aircraftOnGround.get() ? 6 : null,
         !this.engine1ValueSwitch.get() ? null : 7,
@@ -4466,8 +4528,8 @@ export class PseudoFWC {
         (this.throttle1Position.get() !== 0 || this.throttle2Position.get() !== 0) && this.aircraftOnGround.get()
           ? 2
           : null,
-        !this.parkBrake.get() && this.aircraftOnGround.get() ? 3 : null,
-        !this.parkBrake.get() && this.aircraftOnGround.get() ? 4 : null,
+        !this.sdac00200Word.bitValue(22) && this.aircraftOnGround.get() ? 3 : null,
+        !this.sdac00200Word.bitValue(22) && this.aircraftOnGround.get() ? 4 : null,
         this.aircraftOnGround.get() ? 5 : null,
         this.aircraftOnGround.get() ? 6 : null,
         !this.engine2ValueSwitch.get() ? null : 7,
@@ -4840,12 +4902,8 @@ export class PseudoFWC {
     3200050: {
       // CONFIG PARK BRK ON
       flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10],
-      simVarIsActive: MappedSubject.create(
-        ([fwcFlightPhase, parkBrake]) => fwcFlightPhase === 3 && parkBrake,
-        this.fwcFlightPhase,
-        this.parkBrake,
-      ),
-      // TODO no separate slats indication
+      auralWarning: this.configParkBrakeOnAural.map((on) => (on ? FwcAuralWarning.Crc : FwcAuralWarning.None)),
+      simVarIsActive: this.configParkBrakeOnWarning,
       whichCodeToReturn: () => [0],
       codesToReturn: ['320005001'],
       memoInhibit: () => false,
@@ -5308,12 +5366,27 @@ export class PseudoFWC {
     3200081: {
       // BRAKES PARK BRK ON
       flightPhaseInhib: [1, 2, 3, 4, 5, 8, 9, 10],
-      simVarIsActive: this.parkBrakeOnWarning,
+      simVarIsActive: this.brakesParkBrakeOnWarning,
       whichCodeToReturn: () => [0, 1],
       codesToReturn: ['320008101', '320008102'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: -1,
+      side: 'LEFT',
+    },
+    3200087: {
+      // PARK BRK LO PR
+      flightPhaseInhib: [3, 4, 5, 6, 7, 8],
+      simVarIsActive: this.parkBrakeLowPrWarning,
+      whichCodeToReturn: () => [
+        0,
+        this.fwcFlightPhase.get() === 9 ? 1 : null,
+        this.fwcFlightPhase.get() === 9 ? 2 : null,
+      ],
+      codesToReturn: ['320008701', '320008702', '320008703'],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: 9,
       side: 'LEFT',
     },
     3200150: {
@@ -5390,6 +5463,21 @@ export class PseudoFWC {
       ),
       whichCodeToReturn: () => [0, 1, !SimVar.GetSimVarValue('L:A32NX_GPWS_SYS_OFF', 'Bool') ? 2 : null],
       codesToReturn: ['320019501', '320019502', '320019503'],
+      memoInhibit: () => false,
+      failure: 2,
+      sysPage: 9,
+      side: 'LEFT',
+    },
+    3243085: {
+      // BRAKES Y ACCU LO PR
+      flightPhaseInhib: [3, 4, 5, 7, 8],
+      simVarIsActive: this.yellowAccuLoPrWarning,
+      whichCodeToReturn: () => [
+        0,
+        this.fwcFlightPhase.get() === 9 ? 1 : null,
+        this.fwcFlightPhase.get() === 9 ? 2 : null,
+      ],
+      codesToReturn: ['324308501', '324308502', '324308503'],
       memoInhibit: () => false,
       failure: 2,
       sysPage: 9,
@@ -6046,8 +6134,8 @@ export class PseudoFWC {
     },
     '0000200': {
       // PARK BRK
-      flightPhaseInhib: [3, 4, 5, 6, 7, 8],
-      simVarIsActive: this.parkBrake,
+      flightPhaseInhib: [],
+      simVarIsActive: this.parkBrakeMemo,
       whichCodeToReturn: () => [0],
       codesToReturn: ['000020001'],
       memoInhibit: () => false,
