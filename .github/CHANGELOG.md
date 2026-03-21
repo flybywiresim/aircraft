@@ -86,6 +86,7 @@
 1. [A380X/RMP] Fixed interphone volume knob light not illuminating when selected on - @matze-tech (matze2346)
 1. [A32NX/PFD] Fixed the armed `BRK MAX` FMA remaining after auto-brake activation - @FozzieHi (fozzie)
 1. [A32NX/FWS] Add `BRK Y ACCU LO PR` and `PARK BRK LO PR` master cautions - @FozzieHi (fozzie)
+1. [A32NX/FWS] Add `GEN 1(2) FAULT` master caution - @FozzieHi (fozzie)
 
 ## 0.14.0
 
