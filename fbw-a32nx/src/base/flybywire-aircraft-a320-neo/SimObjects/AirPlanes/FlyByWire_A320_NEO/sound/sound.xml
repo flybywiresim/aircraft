@@ -2313,6 +2313,61 @@
             <Range LowerBound="0.5" />
         </Sound>
 
+         <!-- FWS callouts ====================================================================================-->
+        <Sound WwiseData="true" WwiseEvent="new_5" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_5" Continuous="false">
+       <Range LowerBound="1"/>
+       </Sound>
+        <Sound WwiseData="true" WwiseEvent="new_10" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_10" Continuous="false">
+            <Range LowerBound="1"/>
+        </Sound>
+        <Sound WwiseData="true" WwiseEvent="new_20" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_20" Continuous="false">
+            <Range LowerBound="1"/>
+        </Sound>
+        <Sound WwiseData="true" WwiseEvent="new_30" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_30" Continuous="false">
+        <Range LowerBound="1"/>
+        </Sound>
+        <Sound WwiseData="true" WwiseEvent="new_40" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_40" Continuous="false">
+        <Range LowerBound="1"/>
+        </Sound>
+        <Sound WwiseData="true" WwiseEvent="new_50" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_50" Continuous="false">
+        <Range LowerBound="1"/>
+        </Sound>
+        <Sound WwiseData="true" WwiseEvent="new_100" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_100" Continuous="false">
+        <Range LowerBound="1"/>
+        </Sound>
+        <Sound WwiseData="true" WwiseEvent="new_200" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_200" Continuous="false">
+        <Range LowerBound="1"/>
+        </Sound>
+        <Sound WwiseData="true" WwiseEvent="new_300" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_300" Continuous="false">
+        <Range LowerBound="1"/>
+        </Sound>
+        <Sound WwiseData="true" WwiseEvent="new_400" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_400" Continuous="false">
+        <Range LowerBound="1"/>
+        </Sound>
+        <Sound WwiseData="true" WwiseEvent="new_500" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_500" Continuous="false">
+        <Range LowerBound="1"/>
+        </Sound>
+        <Sound WwiseData="true" WwiseEvent="new_1000" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_1000" Continuous="false">
+        <Range LowerBound="1"/>
+        </Sound>
+        <Sound WwiseData="true" WwiseEvent="new_2000" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_2000" Continuous="false">
+        <Range LowerBound="1"/>
+        </Sound>
+        <Sound WwiseData="true" WwiseEvent="new_2500" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_2500" Continuous="false">
+        <Range LowerBound="1"/>
+        </Sound>
+        <Sound WwiseData="true" WwiseEvent="new_2_500" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_2500B" Continuous="false">
+        <Range LowerBound="1"/>
+        </Sound>
+        <Sound WwiseData="true" WwiseEvent="new_retard" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_RETARD" Continuous="true">
+        <Range LowerBound="1"/>
+        </Sound>
+        <Sound WwiseData="true" WwiseEvent="aural_100above" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_100_ABOVE">
+         <Range LowerBound="1"/>
+         </Sound>
+                 <Sound WwiseData="true" WwiseEvent="aural_minimumnew" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_MINIMUMS">
+                    <Range LowerBound="1"/>
+         </Sound>
     </SimVarSounds>
 
     <!-- AvionicSounds ========================================================================================== -->
@@ -2326,26 +2381,6 @@
         <Sound WwiseEvent="3click" WwiseData="true" NodeName="PEDALS_LEFT" Continuous="false" />
         <Sound WwiseData="true" WwiseEvent="fwdgalley" NodeName="SOUND_SPEAKER_LEFT" />
         <Sound WwiseData="true" WwiseEvent="cpdlc_ring" NodeName="SOUND_SPEAKER_LEFT" />
-
-        <!-- FWS callouts ====================================================================================-->
-        <Sound WwiseData="true" WwiseEvent="new_5" NodeName="SOUND_SPEAKER_LEFT" />
-        <Sound WwiseData="true" WwiseEvent="new_10" NodeName="SOUND_SPEAKER_LEFT" />
-        <Sound WwiseData="true" WwiseEvent="new_20" NodeName="SOUND_SPEAKER_LEFT" />
-        <Sound WwiseData="true" WwiseEvent="new_30" NodeName="SOUND_SPEAKER_LEFT" />
-        <Sound WwiseData="true" WwiseEvent="new_40" NodeName="SOUND_SPEAKER_LEFT" />
-        <Sound WwiseData="true" WwiseEvent="new_50" NodeName="SOUND_SPEAKER_LEFT" />
-        <Sound WwiseData="true" WwiseEvent="new_100" NodeName="SOUND_SPEAKER_LEFT" />
-        <Sound WwiseData="true" WwiseEvent="new_200" NodeName="SOUND_SPEAKER_LEFT" />
-        <Sound WwiseData="true" WwiseEvent="new_300" NodeName="SOUND_SPEAKER_LEFT" />
-        <Sound WwiseData="true" WwiseEvent="new_400" NodeName="SOUND_SPEAKER_LEFT" />
-        <Sound WwiseData="true" WwiseEvent="new_500" NodeName="SOUND_SPEAKER_LEFT" />
-        <Sound WwiseData="true" WwiseEvent="new_1000" NodeName="SOUND_SPEAKER_LEFT" />
-        <Sound WwiseData="true" WwiseEvent="new_2000" NodeName="SOUND_SPEAKER_LEFT" />
-        <Sound WwiseData="true" WwiseEvent="new_2500" NodeName="SOUND_SPEAKER_LEFT" />
-        <Sound WwiseData="true" WwiseEvent="new_2_500" NodeName="SOUND_SPEAKER_LEFT" />
-        <Sound WwiseData="true" WwiseEvent="new_retard" NodeName="SOUND_SPEAKER_LEFT" />
-        <Sound WwiseData="true" WwiseEvent="aural_minimumnew" NodeName="SOUND_SPEAKER_LEFT" />
-        <Sound WwiseData="true" WwiseEvent="aural_100above" NodeName="SOUND_SPEAKER_LEFT" />
 
         <Sound WwiseData="true" WwiseEvent="aural_speed" NodeName="SOUND_SPEAKER_LEFT" />
         <Sound WwiseData="true" WwiseEvent="aural_bank_bank" NodeName="SOUND_SPEAKER_LEFT" />

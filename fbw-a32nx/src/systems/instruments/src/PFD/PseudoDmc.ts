@@ -81,6 +81,9 @@ export class PseudoDmc implements Instrument {
   /** SDI 11 */
   private readonly dmcPitchAngleWord324Backup = Arinc429RegisterSubject.createEmpty();
 
+  private readonly fmMda = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmMdaRaw'), 0);
+  private readonly dmcDiscreteWord270 = Arinc429RegisterSubject.createEmpty();
+
   private readonly outputWords = [
     this.dmcDiscreteWord271,
     this.dmcDiscreteWord313Backup,
@@ -89,6 +92,7 @@ export class PseudoDmc implements Instrument {
     this.dmcAltitude,
     this.dmcPitchAngleWord324Onside,
     this.dmcPitchAngleWord324Backup,
+    this.dmcDiscreteWord270,
   ];
 
   /** Not valid until init is called! */
@@ -150,6 +154,20 @@ export class PseudoDmc implements Instrument {
         },
         true,
         true,
+      ),
+      MappedSubject.create(
+        ([fmMda, altitude]) => {
+          const mdaInvalid = fmMda.isInvalid();
+          const altInvalid = altitude.isInvalid();
+          this.dmcDiscreteWord270.setBitValue(
+            20,
+            mdaInvalid || altInvalid ? false : altitude.value - fmMda.value <= 100, //FIXME Confirm if it should it latch or be set directly?
+          );
+          this.dmcDiscreteWord270.setBitValue(21, mdaInvalid || altInvalid ? false : altitude.value < fmMda.value);
+          this.dmcDiscreteWord270.setSsm(Arinc429SignStatusMatrix.NormalOperation);
+        },
+        this.fmMda,
+        this.altitude,
       ),
     ];
 
@@ -215,6 +233,12 @@ export class PseudoDmc implements Instrument {
         ),
       true,
     );
+
+    this.dmcDiscreteWord270.sub((word) => {
+      word.writeToSimVar(
+        this.isRightSide ? 'L:A32NX_DMC_DISCRETE_WORD_270_RIGHT' : 'L:A32NX_DMC_DISCRETE_WORD_270_LEFT',
+      );
+    });
 
     this.mainElecSupply.setConsumer(
       this.sub.on(this.isRightSide ? 'a32nx_elec_ac_2_bus_is_powered' : 'a32nx_elec_ac_ess_bus_is_powered'),

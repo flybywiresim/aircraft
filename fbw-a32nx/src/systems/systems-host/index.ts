@@ -24,6 +24,7 @@ import { Ecp } from './systems/ECP/Ecp';
 import { A32NXOverheadDiscretePublisher } from '../shared/src/publishers/A32NXOverheadDiscretePublisher';
 import { A32NXEcpBusPublisher } from '../shared/src/publishers/A32NXEcpBusPublisher';
 import { FakeDmc } from './systems/ECP/FakeDmc';
+import { VorBusPublisher } from '@shared/publishers/VorBusPublisher';
 
 class SystemsHost extends BaseInstrument {
   private readonly bus = new EventBus();
@@ -73,6 +74,7 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('PseudoFwcPublisher', this.pseudoFwcPublisher);
     this.backplane.addPublisher('OverheadPublisher', new A32NXOverheadDiscretePublisher(this.bus));
     this.backplane.addPublisher('A32NXEcpBusPublisher', new A32NXEcpBusPublisher(this.bus));
+    this.backplane.addPublisher('VorBusPublisher', new VorBusPublisher(this.bus));
 
     this.pseudoFwc.init();
     let lastUpdateTime: number;

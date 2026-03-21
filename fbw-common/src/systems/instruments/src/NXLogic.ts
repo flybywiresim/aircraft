@@ -71,11 +71,11 @@ export class NXLogicConfirmNode {
 
   timer: number;
 
-  previousInput: any;
+  previousInput: boolean | null;
 
-  previousOutput: any;
+  previousOutput: boolean | null;
 
-  constructor(t, risingEdge = true) {
+  constructor(t: number, risingEdge = true) {
     this.t = t;
     this.risingEdge = risingEdge;
     this.timer = 0;
@@ -83,7 +83,7 @@ export class NXLogicConfirmNode {
     this.previousOutput = null;
   }
 
-  write(value, deltaTime) {
+  write(value: boolean, deltaTime: number) {
     if (this.previousInput === null && SimVar.GetSimVarValue('L:A32NX_FWC_SKIP_STARTUP', 'Bool')) {
       this.previousInput = value;
       this.previousOutput = value;
@@ -121,7 +121,7 @@ export class NXLogicConfirmNode {
   }
 
   read() {
-    return this.previousOutput;
+    return this.previousOutput ?? false;
   }
 }
 
@@ -153,7 +153,7 @@ export class NXLogicMemoryNode {
     this.value = false;
   }
 
-  write(set, reset) {
+  write(set: boolean, reset: boolean) {
     if (set && reset) {
       this.value = this.setStar;
     } else if (set && !this.value) {
@@ -257,6 +257,52 @@ export class NXLogicPulseNode {
   }
 
   read(): boolean {
+    return this.output;
+  }
+}
+
+/**
+ * The following class represents a hysterisis node.
+ * Outputs true when the input value is equal to or above the upper threshold, and false when it is equal to or below the lower threshold.
+ * If the input value is between the two thresholds, it outputs the same as the previous output.
+ */
+export class NxHysterisNode {
+  private output: boolean;
+
+  constructor(
+    private upperTreshold: number,
+    private lowerThreshold: number,
+  ) {}
+
+  write(value: number): boolean {
+    if (!this.output && value >= this.upperTreshold) {
+      this.output = true;
+    } else if (this.output && value <= this.lowerThreshold) {
+      this.output = false;
+    }
+    return this.output;
+  }
+
+  read(): boolean {
+    return this.output;
+  }
+}
+
+export class NxSlopeNode {
+  private previousValue: number;
+  private output = 0;
+
+  constructor(initialValue = 0) {
+    this.previousValue = initialValue;
+  }
+
+  write(input: number, deltaTime: number): number {
+    this.output = (input - this.previousValue) / (deltaTime / 1000);
+    this.previousValue = input;
+    return this.output;
+  }
+
+  read(): number {
     return this.output;
   }
 }

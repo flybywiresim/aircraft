@@ -91,6 +91,7 @@
 1. [A32NX/FWS] Add `ATC/XPDR STBY` master caution - @FozzieHi (fozzie)
 1. [A380X/OVHD] Fixed auto seat belt logic - @FlyByTim (FlyByTim)
 1. [A380X/FWS] Fixed seat belt/ground spoiler inhibition logic - @FlyByTim (FlyByTim)
+1. [A32NX/FWS] Improve radio altimeter & minimums callouts logic - @BravoMike99 (bruno_pt99)
 
 ## 0.14.0
 
