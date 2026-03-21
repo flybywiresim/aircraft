@@ -87,6 +87,8 @@
 1. [A32NX/PFD] Fixed the armed `BRK MAX` FMA remaining after auto-brake activation - @FozzieHi (fozzie)
 1. [A32NX/FWS] Add `BRK Y ACCU LO PR` and `PARK BRK LO PR` master cautions - @FozzieHi (fozzie)
 1. [A32NX/FWS] Add `GEN 1(2) FAULT` master caution - @FozzieHi (fozzie)
+1. [A32NX/FWS] Update `TCAS STBY` master caution to reflect switch position instead of actual TCAS status - @FozzieHi (fozzie)
+1. [A32NX/FWS] Add `ATC/XPDR STBY` master caution - @FozzieHi (fozzie)
 
 ## 0.14.0
 
