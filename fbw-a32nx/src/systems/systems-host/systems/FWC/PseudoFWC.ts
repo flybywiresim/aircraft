@@ -940,7 +940,7 @@ export class PseudoFWC {
   private readonly flightPhase129 = Subject.create(false);
 
   private readonly flightPhase110 = Subject.create(false);
-  
+
   private readonly flightPhase12910 = Subject.create(false);
 
   private readonly flightPhase23 = Subject.create(false);
