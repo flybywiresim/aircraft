@@ -85,6 +85,7 @@
 1. [FUEL] Fix fuel getting consumed when in Active Pause or Pause at T/D - @Maximilian-Reuter (\_chaoz_)
 1. [A380X/RMP] Fixed interphone volume knob light not illuminating when selected on - @matze-tech (matze2346)
 1. [A32NX/PFD] Fixed the armed `BRK MAX` FMA remaining after auto-brake activation - @FozzieHi (fozzie)
+1. [A32NX/FWS] Add `BRK Y ACCU LO PR` and `PARK BRK LO PR` master cautions - @FozzieHi (fozzie)
 
 ## 0.14.0
 
