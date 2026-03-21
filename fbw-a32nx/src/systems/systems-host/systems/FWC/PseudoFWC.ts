@@ -1530,7 +1530,7 @@ export class PseudoFWC {
     this.auralCrcOutput.sub((crc) => this.soundManager.handleSoundCondition('continuousRepetitiveChime', crc), true);
 
     this.cavalryChargeActive.sub(
-      (cavcharge) => this.soundManager.handleSoundCondition('cavalryChargeCont', cavcharge),
+      (cavcharge) => this.soundManager.handleSoundCondition('cavalryCharge', cavcharge),
       true,
     );
 
@@ -2105,9 +2105,7 @@ export class PseudoFWC {
     this.apOffVoluntaryMtrig7.write(apOffConfirmedAndCancel, deltaTime);
 
     // If a cavalry charge is currently being emitted by the sound manager.
-    const cavChargeEmitted =
-      this.soundManager.getCurrentSoundPlaying() == 'cavalryChargeCont' ||
-      this.soundManager.getCurrentSoundPlaying() == 'cavalryChargeOnce';
+    const cavChargeEmitted = this.soundManager.getCurrentSoundPlaying() == 'cavalryCharge';
     this.apOffVoluntaryMtrig3.write(cavChargeEmitted, deltaTime);
     this.apOffVoluntaryPulse2.write(this.apOffVoluntaryMtrig3.read(), deltaTime);
 
