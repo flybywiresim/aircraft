@@ -3918,6 +3918,15 @@ In the variables below, {number} should be replaced with one item in the set: { 
       0.0 | neutral
       1.0 | full up
 
+- A32NX_HYD_THS_DEFLECTION
+    - Number
+    - Provides the final trimmable horizontal stabilizer physical position in degrees
+      Value | Meaning
+      --- | ---
+      -4.0 | full nose down
+      0.0 | neutral
+      13.5 | full nose up
+
 - A32NX_HYD_THS_TRIM_MANUAL_OVERRIDE
     - Boolean
     - Feedback signal from the trim actuator system. True if pilot is moving or holding trim wheel

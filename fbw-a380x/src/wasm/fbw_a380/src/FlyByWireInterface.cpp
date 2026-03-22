@@ -776,6 +776,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idRightElevatorOutwardPosition = std::make_unique<LocalVariable>("A32NX_HYD_ELEVATOR_RIGHT_OUTWARD_DEFLECTION");
   idUpperRudderPosition = std::make_unique<LocalVariable>("A32NX_HYD_UPPER_RUDDER_DEFLECTION");
   idLowerRudderPosition = std::make_unique<LocalVariable>("A32NX_HYD_LOWER_RUDDER_DEFLECTION");
+  idThsPosition = std::make_unique<LocalVariable>("A32NX_HYD_THS_DEFLECTION");
 
   idElecDcEssBusPowered = std::make_unique<LocalVariable>("A32NX_ELEC_108PH_BUS_IS_POWERED");
   idElecDcEhaBusPowered = std::make_unique<LocalVariable>("A32NX_ELEC_247PP_BUS_IS_POWERED");
@@ -1348,7 +1349,7 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
     elevator2Position = idLeftElevatorInwardPosition->get();
     elevator3Position = idRightElevatorOutwardPosition->get();
 
-    thsPosition = -simData.eta_trim_deg;
+    thsPosition = -idThsPosition->get();
 
     rudder1Position = idUpperRudderPosition->get();
     rudder2Position = idLowerRudderPosition->get();
@@ -1388,7 +1389,7 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
     elevator2Position = idRightElevatorInwardPosition->get();
     elevator3Position = 0;
 
-    thsPosition = -simData.eta_trim_deg;
+    thsPosition = -idThsPosition->get();
 
     rudder1Position = idLowerRudderPosition->get();
     rudder2Position = 0;
@@ -1596,7 +1597,7 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
     elevator2Position = idLeftElevatorInwardPosition->get();
     elevator3Position = idRightElevatorOutwardPosition->get();
 
-    thsPosition = -simData.eta_trim_deg;
+    thsPosition = -idThsPosition->get();
 
     rudder1Position = idLowerRudderPosition->get();
     rudder2Position = idUpperRudderPosition->get();
@@ -1634,7 +1635,7 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
     elevator2Position = idRightElevatorInwardPosition->get();
     elevator3Position = 0;
 
-    thsPosition = -simData.eta_trim_deg;
+    thsPosition = -idThsPosition->get();
 
     rudder1Position = idLowerRudderPosition->get();
     rudder2Position = 0;

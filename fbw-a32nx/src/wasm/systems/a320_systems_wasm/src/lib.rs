@@ -374,6 +374,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("ROTATION VELOCITY BODY Y", "degree per second", 0)?
     .provides_aircraft_variable("ROTATION VELOCITY BODY Z", "degree per second", 0)?
     .provides_aircraft_variable("TOTAL WEIGHT", "Pounds", 0)?
+    .provides_aircraft_variable("CG PERCENT", "Percent", 0)?
     .provides_aircraft_variable("TOTAL WEIGHT YAW MOI", "Slugs feet squared", 0)?
     .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 1)?
     .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 2)?
