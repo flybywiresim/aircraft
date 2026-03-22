@@ -291,13 +291,19 @@ export class FwsSystemDisplayLogic {
 
   private checkStsPage = (deltaTime: number) => {
     const isStatusPageEmpty = this.fws.ecamStatusNormal.get();
+    const isStatusMorePageAvailable = this.stsMoreAvailableSimvar.get() === 1;
+
+    if (!isStatusMorePageAvailable && this.sdMoreShownSimvar.get() !== 0) {
+      this.sdMoreShownSimvar.set(0);
+      this.stsPageToShowSimvar.set(0);
+    }
 
     if (this.currentPage.get() !== SdPages.Status) {
       this.stsPressedTimer.set(STS_DISPLAY_TIMER_DURATION);
       return;
     }
 
-    if (isStatusPageEmpty) {
+    if (isStatusPageEmpty && !isStatusMorePageAvailable) {
       if (this.stsPressedTimer.get() > 0) {
         const prev = this.stsPressedTimer.get();
         this.stsPressedTimer.set(prev - deltaTime / 1000);

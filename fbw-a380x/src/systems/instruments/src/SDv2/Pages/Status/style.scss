@@ -69,6 +69,10 @@
   padding: 0px 15px 0px 15px;
 }
 
+.sd-sts-more-section-gap {
+  margin-top: 30px;
+}
+
 .sd-sts-section-heading-group {
   display: flex;
   flex-direction: row;
@@ -97,6 +101,12 @@
 
 .sd-sts-section-heading.underline {
   text-decoration: underline;
+}
+
+.WhiteLine {
+  stroke: $display-white !important;
+  stroke-width: 2;
+  fill: none;
 }
 
 .sd-sts-section-divided-area-heading {

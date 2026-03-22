@@ -3022,6 +3022,7 @@ export class FwsAbnormalSensed {
       failure: 2,
       sysPage: SdPages.None,
       inopSysAllPhases: () => [],
+      cancel: false,
     },
     271800070: {
       // LOAD ANALYSIS REQUIRED

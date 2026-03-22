@@ -10,7 +10,7 @@ import {
 } from '@microsoft/msfs-sdk';
 import { FormattedFwcText } from 'instruments/src/EWD/elements/FormattedFwcText';
 import { EwdSimvars } from 'instruments/src/EWD/shared/EwdSimvarPublisher';
-import { EcamMemos } from '../../MsfsAvionicsCommon/EcamMessages';
+import { EcamAbnormalProcedures, EcamMemos } from '../../MsfsAvionicsCommon/EcamMessages';
 
 interface WdMemosProps {
   bus: EventBus;
@@ -18,6 +18,8 @@ interface WdMemosProps {
 }
 
 const padEWDCode = (code: number) => code.toString().padStart(9, '0');
+const EMERGENCY_CANCEL_MEMO = '315100001';
+const CANCELLED_CAUTION_MEMO = '315100002';
 
 export class WdMemos extends DisplayComponent<WdMemosProps> {
   private readonly sub = this.props.bus.getSubscriber<ClockEvents & EwdSimvars>();
@@ -38,17 +40,48 @@ export class WdMemos extends DisplayComponent<WdMemosProps> {
 
   private readonly memosRightFormatString = Subject.create('');
 
+  private readonly emergencyCancelMemoActive = Subject.create(false);
+  private readonly memosDividedAreaClass = this.emergencyCancelMemoActive.map(
+    (active) => `MemosDividedArea${active ? ' EmergencyCancelFullWidth' : ''}`,
+  );
+
+  private resolveMemoMessage(code: number): string | undefined {
+    const codeString = padEWDCode(code);
+    const memo = EcamMemos[codeString];
+    if (memo) {
+      return memo;
+    }
+
+    const abnormalTitle = EcamAbnormalProcedures[codeString]?.title;
+    if (abnormalTitle) {
+      // eslint-disable-next-line no-control-regex
+      return abnormalTitle.replace(/\x1b<[1-6]m/g, '\x1b<7m');
+    }
+
+    return undefined;
+  }
+
   private update() {
+    const leftMemoCodes = this.memosLeft
+      .map((v) => v.get())
+      .filter((v): v is number => !!v)
+      .map((code) => padEWDCode(code));
+
+    this.emergencyCancelMemoActive.set(
+      leftMemoCodes.includes(EMERGENCY_CANCEL_MEMO) || leftMemoCodes.includes(CANCELLED_CAUTION_MEMO),
+    );
+
     this.memosLeftFormatString.set(
-      this.memosLeft
-        .filter((v) => !!v.get())
-        .map((val) => EcamMemos[padEWDCode(val.get())])
+      leftMemoCodes
+        .map((code) => this.resolveMemoMessage(Number(code)))
+        .filter((memo): memo is string => !!memo)
         .join('\r'),
     );
     this.memosRightFormatString.set(
       this.memosRight
         .filter((v) => !!v.get())
-        .map((val) => EcamMemos[padEWDCode(val.get())])
+        .map((val) => this.resolveMemoMessage(val.get()))
+        .filter((memo): memo is string => !!memo)
         .join('\r'),
     );
 
@@ -72,7 +105,7 @@ export class WdMemos extends DisplayComponent<WdMemosProps> {
     return (
       <>
         <div class="MemosContainer" style={{ display: this.props.visible.map((it) => (it ? 'flex' : 'none')) }}>
-          <div class="MemosDividedArea">
+          <div class={this.memosDividedAreaClass}>
             <div class="MemosLeft">
               <svg ref={this.memosLeftSvgRef} version="1.1" xmlns="http://www.w3.org/2000/svg">
                 <FormattedFwcText x={0} y={24} message={this.memosLeftFormatString} />
