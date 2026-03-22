@@ -41,7 +41,7 @@ export class FwsMemos {
     },
     271000001: {
       // GND SPLRs ARMED
-      flightPhaseInhib: [2, 9, 10],
+      flightPhaseInhib: [9, 10],
       simVarIsActive: this.fws.spoilersArmed,
       whichCodeToReturn: () => [0],
       codesToReturn: ['271000001'],
@@ -411,7 +411,7 @@ export class FwsMemos {
     },
     '335000001': {
       // SEAT BELTS
-      flightPhaseInhib: [2, 9, 10],
+      flightPhaseInhib: [9, 10],
       simVarIsActive: this.fws.seatBelt.map((v) => !!v),
       whichCodeToReturn: () => [0],
       codesToReturn: ['335000001'],
