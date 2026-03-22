@@ -1,4 +1,7 @@
 // @ts-strict-ignore
+// Copyright (c) 2026 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 import {
   AtsuStatusCodes,
   AtsuTimestamp,
@@ -12,6 +15,7 @@ import { CDUAtcFlightReq } from '../A320_Neo_CDU_ATC_FlightReq';
 import { CDUAtcTextFansA } from '../FansA/A320_Neo_CDU_ATC_Text';
 import { NXSystemMessages } from '../../../messages/NXSystemMessages';
 import { LegacyAtsuPageInterface } from '../../../legacy/LegacyAtsuPageInterface';
+import { setKeyNotActiveLskActions } from '../AtsuDatalinkPageUtils';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 
 export class CDUAtcLatRequestFansA {
@@ -91,6 +95,7 @@ export class CDUAtcLatRequestFansA {
 
   static ShowPage1(mcdu: LegacyAtsuPageInterface, data = CDUAtcLatRequestFansA.CreateDataBlock()) {
     mcdu.clearDisplay();
+    mcdu.page.Current = mcdu.page.ATCLatRequest;
 
     let weatherDeviation = '{cyan}[  ]{end}';
     if (data.weatherDeviation) {
@@ -305,6 +310,7 @@ export class CDUAtcLatRequestFansA {
 
   static ShowPage2(mcdu: LegacyAtsuPageInterface, data = CDUAtcLatRequestFansA.CreateDataBlock()) {
     mcdu.clearDisplay();
+    mcdu.page.Current = mcdu.page.ATCLatRequest;
 
     let offsetDistance = '[  ]';
     let offsetStartPoint = '[     ]';
@@ -478,5 +484,6 @@ export class CDUAtcLatRequestFansA {
     mcdu.onNextPage = () => {
       CDUAtcLatRequestFansA.ShowPage1(mcdu, data);
     };
+    setKeyNotActiveLskActions(mcdu);
   }
 }

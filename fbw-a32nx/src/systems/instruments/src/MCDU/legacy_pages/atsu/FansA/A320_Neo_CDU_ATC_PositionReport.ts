@@ -1,4 +1,7 @@
 // @ts-strict-ignore
+// Copyright (c) 2026 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 import {
   AtsuStatusCodes,
   coordinateToString,
@@ -12,6 +15,7 @@ import { CDUAtcReports } from '../FansA/A320_Neo_CDU_ATC_Reports';
 import { CDUAtcTextFansA } from '../FansA/A320_Neo_CDU_ATC_Text';
 import { NXSystemMessages } from '../../../messages/NXSystemMessages';
 import { LegacyAtsuPageInterface } from '../../../legacy/LegacyAtsuPageInterface';
+import { setKeyNotActiveLskActions } from '../AtsuDatalinkPageUtils';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/WaypointEntryUtils';
 
 export class CDUAtcPositionReport {
@@ -1157,5 +1161,6 @@ export class CDUAtcPositionReport {
     mcdu.onNextPage = () => {
       CDUAtcPositionReport.ShowPage1(mcdu, requestMessage, data);
     };
+    setKeyNotActiveLskActions(mcdu);
   }
 }

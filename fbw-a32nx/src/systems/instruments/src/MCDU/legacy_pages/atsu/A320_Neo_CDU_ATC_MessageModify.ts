@@ -1,4 +1,7 @@
 // @ts-strict-ignore
+// Copyright (c) 2026 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 import {
   AtsuStatusCodes,
   CpdlcMessageContentType,
@@ -13,6 +16,7 @@ import { CDUAtcTextFansA } from './FansA/A320_Neo_CDU_ATC_Text';
 import { CDUAtcTextFansB } from './FansB/A320_Neo_CDU_ATC_Text';
 import { CDUAtcMessageModifyUM131 } from './MessageModify/A320_Neo_CDU_ATC_MessageModifyUM131';
 import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
+import { setKeyNotActiveLskActions } from './AtsuDatalinkPageUtils';
 
 const ModifyLookupTable = {
   UM132: [
@@ -615,5 +619,6 @@ export class CDUAtcMessageModify {
         CDUAtcMenu.ShowPage(mcdu);
       }
     };
+    setKeyNotActiveLskActions(mcdu);
   }
 }
