@@ -1261,9 +1261,15 @@ export class PseudoFWC {
 
   // FIXME ECU should provide this in a discrete word, and calculate based on f(OAT)
   // this is absolute min at low temperatures
-  private readonly engine1N2Sup = MappedSubject.create(([n2]) => n2 >= (100 * 10630) / 16645, this.N2Eng1);
+  private readonly engine1CoreAtOrAboveMinIdle = MappedSubject.create(
+    ([n2]) => n2 >= (100 * 10630) / 16645,
+    this.N2Eng1,
+  );
 
-  private readonly engine2N2Sup = MappedSubject.create(([n2]) => n2 >= (100 * 10630) / 16645, this.N2Eng2);
+  private readonly engine2CoreAtOrAboveMinIdle = MappedSubject.create(
+    ([n2]) => n2 >= (100 * 10630) / 16645,
+    this.N2Eng2,
+  );
 
   private engine1Or2Running = false;
 
@@ -1504,9 +1510,9 @@ export class PseudoFWC {
 
   private readonly minimumAural = Subject.create(false);
 
-  public minimumGenerated = false;
+  public minimumEmitted = false;
 
-  public hundredAboveGenerated = false;
+  public hundredAboveEmitted = false;
 
   constructor(
     private readonly bus: EventBus,
@@ -1720,14 +1726,14 @@ export class PseudoFWC {
 
     this.hundredAboveAural.sub((v) => {
       if (!v) {
-        this.hundredAboveGenerated = false;
+        this.hundredAboveEmitted = false;
       }
       this.soundManager.handleSoundCondition('hundred_above', v);
     });
 
     this.minimumAural.sub((v) => {
       if (!v) {
-        this.minimumGenerated = false;
+        this.minimumEmitted = false;
       }
       this.soundManager.handleSoundCondition('minimums', v);
     });
@@ -2461,9 +2467,9 @@ export class PseudoFWC {
         ((this.fireButton1.get() && this.fireButton2.get()) ||
           (!this.engine1ValueSwitch.get() && !this.engine2ValueSwitch.get()) ||
           (this.engine1State.get() === EngineState.Off && this.engine2State.get() === EngineState.Off) ||
-          (!this.engine1N2Sup.get() && !this.engine2N2Sup.get())),
+          (!this.engine1CoreAtOrAboveMinIdle.get() && !this.engine2CoreAtOrAboveMinIdle.get())),
     );
-    this.engine1Or2Running = this.engine1N2Sup.get() || this.engine2N2Sup.get();
+    this.engine1Or2Running = this.engine1CoreAtOrAboveMinIdle.get() || this.engine2CoreAtOrAboveMinIdle.get();
 
     // Memo
     this.toMemoFlipFlop.write(
@@ -2727,7 +2733,7 @@ export class PseudoFWC {
     const manExcessAltitude = SimVar.GetSimVarValue('L:A32NX_PRESS_MAN_EXCESSIVE_CABIN_ALTITUDE', 'bool');
     this.excessPressure.set(activeCpc.bitValueOr(14, false) || manExcessAltitude);
 
-    const eng1And2NotRunning = !this.engine1N2Sup.get() && !this.engine2N2Sup.get();
+    const eng1And2NotRunning = !this.engine1CoreAtOrAboveMinIdle.get() && !this.engine2CoreAtOrAboveMinIdle.get();
     this.enginesOffAndOnGroundSignal.write(onGround && eng1And2NotRunning, deltaTime);
     const residualPressureSignal = SimVar.GetSimVarValue('L:A32NX_PRESS_EXCESS_RESIDUAL_PR', 'bool');
     this.excessResidualPr.set(
@@ -3393,8 +3399,8 @@ export class PseudoFWC {
     const gen1PbOff = this.sdac05001Word.bitValue(19);
     const gen2PbOff = this.sdac05010Word.bitValue(19);
 
-    this.engine1OnFor15s.write(this.engine1N2Sup.get() && this.engine1Master.get(), deltaTime);
-    this.engine2OnFor15s.write(this.engine2N2Sup.get() && this.engine2Master.get(), deltaTime);
+    this.engine1OnFor15s.write(this.engine1CoreAtOrAboveMinIdle.get() && this.engine1Master.get(), deltaTime);
+    this.engine2OnFor15s.write(this.engine2CoreAtOrAboveMinIdle.get() && this.engine2Master.get(), deltaTime);
 
     const gen1LineContactorOff = this.sdac00201Word.bitValue(14);
     const gen2LineContactorOff = this.sdac00210Word.bitValue(14);

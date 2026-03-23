@@ -435,9 +435,9 @@ export class FwsSoundManager {
 
   private setFwsAudioOutputs(localVarName: string, value: boolean) {
     if (localVarName === HUNDRED_ABOVE_LOCAL_VAR) {
-      this.fws.hundredAboveGenerated = value;
+      this.fws.hundredAboveEmitted = value;
     } else if (localVarName === MINIMUM_LOCAL_VAR) {
-      this.fws.minimumGenerated = value;
+      this.fws.minimumEmitted = value;
     }
   }
 }
