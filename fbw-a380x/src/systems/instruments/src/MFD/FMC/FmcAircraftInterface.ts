@@ -129,7 +129,7 @@ export class FmcAircraftInterface {
   private readonly speedVmax = Subject.create(0);
   private readonly speedVfeNext = Subject.create(0);
   private readonly speedVapp = Subject.create(0);
-  private readonly speedShortTermManaged = Subject.create(0);
+  private readonly speedShortTermManaged = Subject.create<number | null>(null);
 
   private readonly tdReached = this.bus
     .getSubscriber<FmsMessageVars>()
@@ -227,6 +227,25 @@ export class FmcAircraftInterface {
     });
 
   private readonly lateralMode = RegisteredSimVar.create('L:A32NX_FMA_LATERAL_MODE', SimVarValueType.Number);
+  private readonly sfccSlatFlapSystemStatusWord = Arinc429Register.empty();
+  private readonly sfcc1SlatFlapSystemStatusWord = RegisteredSimVar.create<number>(
+    'L:A32NX_SFCC_1_SLAT_FLAP_SYSTEM_STATUS_WORD',
+    SimVarValueType.Enum,
+  );
+  private readonly sfcc2SlatFlapSystemStatusWord = RegisteredSimVar.create<number>(
+    'L:A32NX_SFCC_2_SLAT_FLAP_SYSTEM_STATUS_WORD',
+    SimVarValueType.Enum,
+  );
+  private readonly speedsManagedAthrVar = RegisteredSimVar.create<number>(
+    'L:A32NX_SPEEDS_MANAGED_ATHR',
+    SimVarValueType.Knots,
+  );
+  private readonly speedsManagedPfdVar = RegisteredSimVar.create<number>(
+    'L:A32NX_SPEEDS_MANAGED_PFD',
+    SimVarValueType.Knots,
+  );
+  private readonly speedsManagedAthr = Subject.create<number | null>(null);
+  private readonly speedsManagedPfd = Subject.create<number | null>(null);
 
   constructor(
     private bus: EventBus,
@@ -262,7 +281,7 @@ export class FmcAircraftInterface {
     this.subs.push(this.speedVapp.sub((v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_VAPP', 'number', v), true));
     this.subs.push(
       this.speedShortTermManaged.sub(
-        (v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_SHORT_TERM_PFD', 'number', v),
+        (v) => SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_SHORT_TERM_PFD', 'number', v ?? 0),
         true,
       ),
     );
@@ -350,6 +369,9 @@ export class FmcAircraftInterface {
           }
         }),
     );
+
+    this.subs.push(this.speedsManagedAthr.sub((v) => this.speedsManagedAthrVar.set(v ?? 0), true));
+    this.subs.push(this.speedsManagedPfd.sub((v) => this.speedsManagedPfdVar.set(v ?? 0), true));
   }
 
   thrustReductionAccelerationChecks() {
@@ -1018,8 +1040,8 @@ export class FmcAircraftInterface {
         }
         case FmgcFlightPhase.Descent: {
           // We fetch this data from VNAV
-          vPfd = SimVar.GetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'knots');
-          this.managedSpeedTarget = SimVar.GetSimVarValue('L:A32NX_SPEEDS_MANAGED_ATHR', 'knots');
+          vPfd = this.speedsManagedPfdVar.get();
+          this.managedSpeedTarget = this.speedsManagedAthrVar.get();
 
           // Whether to use Mach or not should be based on the original managed speed, not whatever VNAV uses under the hood to vary it.
           // Also, VNAV already does the conversion from Mach if necessary
@@ -1031,9 +1053,7 @@ export class FmcAircraftInterface {
         }
         case FmgcFlightPhase.Approach: {
           // the displayed target is Vapp (with GSmini)
-          // the guidance target is lower limited by FAC manouvering speeds (O, S, F) unless in landing config
-          // constraints are not considered
-          const speed = this.getAppManagedSpeed();
+          const speed = this.fmgc.data.approachSpeed.get();
           vPfd = this.getVAppGsMini() ?? speed;
 
           this.managedSpeedTarget = Math.max(speed ?? 0, vPfd);
@@ -1087,15 +1107,14 @@ export class FmcAircraftInterface {
       }
     }
 
-    if (!Vtap) {
-      // Overspeed protection
+    if (!Vtap && this.managedSpeedTarget) {
+      // Overspeed protection and limiting characteristic speed protection
       const vMax = this.speedVmax.get();
-      const greenDot = this.fmgc.data.greenDotSpeed.get();
-      const vMin = SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Number') === 0 && greenDot ? greenDot : 0;
-      Vtap = Math.min(Math.max(this.managedSpeedTarget ?? Vmo - 5, vMin), vMax - 5);
+      const vMin = takeoffGoAround ? null : this.getLimitingCharacteristicSpeed();
+      Vtap = Math.min(Math.max(this.managedSpeedTarget ?? Vmo - 5, vMin ?? 0), vMax - 5);
     }
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'knots', vPfd);
-    SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_ATHR', 'knots', Vtap);
+    this.speedsManagedPfd.set(vPfd);
+    this.speedsManagedAthr.set(Vtap);
 
     const ismanaged = this.isAirspeedManaged();
 
@@ -1132,6 +1151,13 @@ export class FmcAircraftInterface {
     return Math.abs(speed - speed2) > 2;
   }
 
+  public invalidateManagedSpeed() {
+    this.speedsManagedPfd.set(null);
+    this.speedsManagedAthr.set(null);
+    this.speedShortTermManaged.set(null);
+    this.managedSpeedTarget = null;
+  }
+
   getAppManagedSpeed() {
     switch (SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Number')) {
       case 0:
@@ -1161,6 +1187,31 @@ export class FmcAircraftInterface {
       vAppTarget = A380SpeedsUtils.getVtargetGSMini(vAppTarget, A380SpeedsUtils.getHeadWindDiff(towerHeadwind));
     }
     return vAppTarget;
+  }
+
+  /**
+   * Gets the limiting characteristic based on the current flap lever position.
+   * @returns the limiting charateristic speed in knots, or null if no speed can be calculated.
+   */
+  private getLimitingCharacteristicSpeed(): number | null {
+    this.sfccSlatFlapSystemStatusWord.set(this.sfcc1SlatFlapSystemStatusWord.get());
+    if (this.sfccSlatFlapSystemStatusWord.isInvalid()) {
+      this.sfccSlatFlapSystemStatusWord.set(this.sfcc2SlatFlapSystemStatusWord.get());
+    }
+    const cleanConfig = this.sfccSlatFlapSystemStatusWord.bitValueOr(17, false);
+    const conf1 = this.sfccSlatFlapSystemStatusWord.bitValueOr(18, false);
+    const conf2 = this.sfccSlatFlapSystemStatusWord.bitValueOr(19, false);
+    const conf3 = this.sfccSlatFlapSystemStatusWord.bitValueOr(20, false);
+    const confFull = this.sfccSlatFlapSystemStatusWord.bitValueOr(21, false);
+
+    if (cleanConfig) {
+      return this.fmgc.data.greenDotSpeed.get();
+    } else if (conf1) {
+      return this.fmgc.data.slatRetractionSpeed.get();
+    } else if (conf2 || conf3 || confFull) {
+      return this.fmgc.data.flapRetractionSpeed.get();
+    }
+    return null;
   }
 
   private speedLimitExceeded = false;

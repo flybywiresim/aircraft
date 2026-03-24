@@ -1290,6 +1290,7 @@ export class FlightManagementComputer implements FmcInterface {
       this.wasReset = true;
       await this.flightPlanService.reset();
       this.fmgc.data.reset();
+      this.acInterface.invalidateManagedSpeed();
       this.initSimVars();
       this.deleteAllStoredWaypoints();
       this.clearLatestFmsErrorMessage();
