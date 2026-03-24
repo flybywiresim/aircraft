@@ -8,7 +8,6 @@ import {
   NXLogicTriggeredMonostableNode,
   Arinc429WordData,
   Arinc429Register,
-  NxSlopeNode,
   RegisteredSimVar,
 } from '@flybywiresim/fbw-sdk';
 import { SimVarValueType, Subject } from '@microsoft/msfs-sdk';
@@ -171,11 +170,8 @@ export class FwsAutoCallouts {
   private inhibitCalloutDueToRetard = false;
   private generalRetardInhibit = false;
 
-  private readonly heightSlopeNode = new NxSlopeNode();
   private readonly heightNotDecreasingConfirmNode = new NXLogicConfirmNode(0.3, false);
-  private heightIncreasing = false;
-  private heightLessThan3Feet = false;
-
+  private previousHeight: number | null = null;
   private heightAbove410Feet = false;
   private heightAbove50Feet = false;
   private anyHeightThresholdBelow400Met = false;
@@ -342,7 +338,6 @@ export class FwsAutoCallouts {
   }
 
   private computeThresholds(height: number | null, deltaTime: number) {
-    this.heightIncreasing = this.heightSlopeNode.write(height ?? 0, deltaTime) > 0;
     this.fourHoundredFeetTreshold = height !== null && height < 410 && height >= 400;
     this.threeHundredFeetTreshold = height !== null && height < 310 && height >= 300;
     this.twoHundredFeetTreshold = height !== null && height < 210 && height >= 200;
@@ -355,7 +350,6 @@ export class FwsAutoCallouts {
     this.tenFeetTreshold = height !== null && height < 12 && height >= 10;
     this.heightLessThan10Feet = height !== null && height <= 12 && height > -5;
     this.fiveFeetTreshold = height !== null && height < 7 && height >= 5;
-    this.heightLessThan3Feet = height !== null && height < 3;
     this.heightAbove410Feet = height !== null && height >= 410;
     this.heightAbove50Feet = height !== null && height > 50;
     this.anyHeightThresholdBelow400Met =
@@ -369,11 +363,14 @@ export class FwsAutoCallouts {
       this.twentyFeetTreshold ||
       this.tenFeetTreshold ||
       this.fiveFeetTreshold;
-    const radioHeightNotDecreasing = this.heightNotDecreasingConfirmNode.write(this.heightIncreasing, deltaTime);
-    const climbingOrOnGround = this.heightLessThan3Feet || this.heightIncreasing;
+    const heightIncreased = height !== null && this.previousHeight !== null && height > this.previousHeight;
+    const heightLessThan3Feet = height !== null && height < 3;
+    const radioHeightNotDecreasing = this.heightNotDecreasingConfirmNode.write(heightIncreased, deltaTime);
+    const climbingOrOnGround = heightLessThan3Feet || heightIncreased;
     this.heightCallOutInhibition1 = climbingOrOnGround || this.minimumGenerated || this.gpwsActive;
     this.heightCallOutInhibition2 = climbingOrOnGround || this.minimumGenerated;
-    this.heightCallOutInhibition3 = this.heightLessThan3Feet || radioHeightNotDecreasing || this.minimumGenerated;
+    this.heightCallOutInhibition3 = heightLessThan3Feet || radioHeightNotDecreasing || this.minimumGenerated;
+    this.previousHeight = height;
   }
 
   private computeInhbits(

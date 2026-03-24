@@ -287,22 +287,3 @@ export class NxHysterisNode {
     return this.output;
   }
 }
-
-export class NxSlopeNode {
-  private previousValue: number;
-  private output = 0;
-
-  constructor(initialValue = 0) {
-    this.previousValue = initialValue;
-  }
-
-  write(input: number, deltaTime: number): number {
-    this.output = (input - this.previousValue) / (deltaTime / 1000);
-    this.previousValue = input;
-    return this.output;
-  }
-
-  read(): number {
-    return this.output;
-  }
-}
