@@ -264,7 +264,7 @@ export class FwsSoundManager {
     sub.on('dequeueSound').handle((s) => this.dequeueSound(s));
   }
 
-  /** Get the current emitted or sound which is to be repeated, for example for the AP OFF logic computation. */
+  /** Get the current emitted sound or the sound which is about to be repeated, for example for the AP OFF logic computation. */
   getCurrentSoundPlaying() {
     return this.currentSoundPlaying ?? this.soundToRepeat;
   }
