@@ -262,6 +262,10 @@ void FlyByWireInterface::loadConfiguration() {
     auto axis = std::make_shared<ThrottleAxisMapping>(i);
     // load configuration from file
     axis->loadFromFile();
+    // disable reversers for engine 1 and 4
+    if (i == 1 || i == 4) {
+      axis->setHasReverser(false);
+    }
     // store axis
     throttleAxis.emplace_back(axis);
   }
