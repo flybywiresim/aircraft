@@ -264,9 +264,9 @@ export class FwsSoundManager {
     sub.on('dequeueSound').handle((s) => this.dequeueSound(s));
   }
 
-  /** Get the current emitted sound, for example for the AP OFF logic computation. */
+  /** Get the current emitted or sound which is to be repeated, for example for the AP OFF logic computation. */
   getCurrentSoundPlaying() {
-    return this.currentSoundPlaying;
+    return this.currentSoundPlaying ?? this.soundToRepeat;
   }
 
   /** Add sound to queue. Don't add if already playing */
@@ -339,7 +339,7 @@ export class FwsSoundManager {
     }
     this.currentSoundPlaying = soundKey;
     this.currentSoundPlayTimeRemaining = sound.continuous ? Infinity : sound.length;
-    this.soundToRepeat = null;
+    this.soundToRepeat = sound.periodicWithPause ? soundKey : null;
     this.soundToRepeatDelay = sound.periodicWithPause ?? null;
     this.soundQueue.delete(soundKey);
   }
@@ -400,7 +400,6 @@ export class FwsSoundManager {
         if (sound.localVarName) {
           SimVar.SetSimVarValue(`L:${sound.localVarName}`, SimVarValueType.Bool, false);
         }
-        this.soundToRepeat = sound.periodicWithPause ? this.currentSoundPlaying : null;
         this.currentSoundPlaying = null;
         this.currentSoundPlayTimeRemaining = 0;
       }
