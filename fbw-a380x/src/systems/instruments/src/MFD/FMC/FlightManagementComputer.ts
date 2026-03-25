@@ -1039,6 +1039,8 @@ export class FlightManagementComputer implements FmcInterface {
             SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:4', 'number') > 20,
         );
 
+        this.acInterface.sfccAquisition();
+        this.acInterface.fgAquisition();
         this.acInterface.updateThrustReductionAcceleration();
         this.acInterface.updateTransitionAltitudeLevel();
         this.acInterface.updatePerformanceData();

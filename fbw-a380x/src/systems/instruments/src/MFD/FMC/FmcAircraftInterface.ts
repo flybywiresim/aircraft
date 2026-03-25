@@ -149,10 +149,12 @@ export class FmcAircraftInterface {
     this.bus.getSubscriber<FlightPhaseManagerEvents>().on('fmgc_flight_phase'),
     FmgcFlightPhase.Preflight,
   );
+
   private readonly fmaVerticalMode = ConsumerSubject.create(
     this.bus.getSubscriber<FGVars>().on('fg.fma.verticalMode'),
     0,
   );
+  private activeVerticalMode = VerticalMode.NONE;
 
   private readonly altActiveInClimbForMoreThan10Min = new NXLogicConfirmNode(600);
 
@@ -226,7 +228,9 @@ export class FmcAircraftInterface {
       }
     });
 
-  private readonly lateralMode = RegisteredSimVar.create('L:A32NX_FMA_LATERAL_MODE', SimVarValueType.Number);
+  private readonly lateralMode = RegisteredSimVar.create('L:A32NX_FMA_LATERAL_MODE', SimVarValueType.Enum);
+  /** The current flap lever position between 0 and 4 (full) */
+  private flapLeverPosition = 0;
   private readonly sfccSlatFlapSystemStatusWord = Arinc429Register.empty();
   private readonly sfcc1SlatFlapSystemStatusWord = RegisteredSimVar.create<number>(
     'L:A32NX_SFCC_1_SLAT_FLAP_SYSTEM_STATUS_WORD',
@@ -940,13 +944,13 @@ export class FmcAircraftInterface {
     let isMach = false;
     let takeoffGoAround = false;
 
+    const phase = this.flightPhase.get();
     this.updateHoldingSpeed();
     this.fmc.clearCheckSpeedModeMessage();
 
     if (SimVar.GetSimVarValue('L:A32NX_FMA_EXPEDITE_MODE', 'number') === 1) {
-      const verticalMode = this.fmaVerticalMode.get();
-      if (verticalMode === VerticalMode.OP_CLB) {
-        switch (SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Number')) {
+      if (this.activeVerticalMode === VerticalMode.OP_CLB) {
+        switch (this.flapLeverPosition) {
           case 0: {
             this.managedSpeedTarget = this.fmgc.data.greenDotSpeed.get();
             break;
@@ -959,9 +963,9 @@ export class FmcAircraftInterface {
             this.managedSpeedTarget = this.fmgc.data.flapRetractionSpeed.get();
           }
         }
-      } else if (verticalMode === VerticalMode.OP_DES) {
+      } else if (this.activeVerticalMode === VerticalMode.OP_DES) {
         this.managedSpeedTarget =
-          SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Number') === 0
+          this.flapLeverPosition === 0
             ? Math.min(340, SimVar.GetGameVarValue('FROM MACH TO KIAS', 'number', 0.8))
             : this.speedVmax.get() - 10;
       }
@@ -981,7 +985,7 @@ export class FmcAircraftInterface {
       const engineOut = !this.fmgc.isAllEngineOn();
 
       const v2 = activePerformanceData.v2.get();
-      switch (this.flightPhase.get()) {
+      switch (phase) {
         case FmgcFlightPhase.Preflight: {
           if (v2) {
             vPfd = v2;
@@ -1013,9 +1017,11 @@ export class FmcAircraftInterface {
 
           // EO handling. Ignore speed constraints or limits.
           if (!this.fmgc.isAllEngineOn()) {
-            const verticalMode = this.fmaVerticalMode.get();
             const greenDotSpeed = this.fmgc.data.greenDotSpeed.get();
-            if ((verticalMode === VerticalMode.OP_CLB || verticalMode === VerticalMode.CLB) && greenDotSpeed) {
+            if (
+              (this.activeVerticalMode === VerticalMode.OP_CLB || this.activeVerticalMode === VerticalMode.CLB) &&
+              greenDotSpeed
+            ) {
               // New speed target is GDOT (EO-GDOT), but it ramps down by 1kt per second
               const casWord = ADIRS.getCalibratedAirspeed();
               const cas = casWord && casWord.isNormalOperation() ? casWord.value : null;
@@ -1060,7 +1066,7 @@ export class FmcAircraftInterface {
           break;
         }
         case FmgcFlightPhase.GoAround: {
-          if (this.fmaVerticalMode.get() === VerticalMode.SRS_GA) {
+          if (this.activeVerticalMode === VerticalMode.SRS_GA) {
             const speed = Math.min(
               this.fmgc.data.approachVls.get() ?? Infinity + (engineOut ? 15 : 25),
               Math.max(
@@ -1110,7 +1116,15 @@ export class FmcAircraftInterface {
     if (!Vtap && this.managedSpeedTarget) {
       // Overspeed protection and limiting characteristic speed protection
       const vMax = this.speedVmax.get();
-      const vMin = takeoffGoAround ? null : this.getLimitingCharacteristicSpeed();
+      const vMin = takeoffGoAround
+        ? null
+        : this.getLimitingCharacteristicSpeed(
+            phase === FmgcFlightPhase.Approach ||
+              this.activeVerticalMode === VerticalMode.GS_CPT ||
+              this.activeVerticalMode === VerticalMode.GS_TRACK ||
+              this.activeVerticalMode === VerticalMode.ROLL_OUT ||
+              this.activeVerticalMode === VerticalMode.LAND,
+          );
       Vtap = Math.min(Math.max(this.managedSpeedTarget ?? Vmo - 5, vMin ?? 0), vMax - 5);
     }
     this.speedsManagedPfd.set(vPfd);
@@ -1124,12 +1138,11 @@ export class FmcAircraftInterface {
 
     //short term managed speed
     let shortTermManagedSpeed = 0;
-    const phase = this.flightPhase.get();
     if (phase != FmgcFlightPhase.Preflight) {
       if (this.managedSpeedTarget) {
         if (ismanaged) {
           const shortTermActiveInmanaged =
-            !takeoffGoAround && phase != FmgcFlightPhase.Cruise && this.fmaVerticalMode.get() != VerticalMode.DES;
+            !takeoffGoAround && phase != FmgcFlightPhase.Cruise && this.activeVerticalMode != VerticalMode.DES;
           if (shortTermActiveInmanaged && this.isSpeedDifferenceGreaterThan2Kt(vPfd, Vtap)) {
             shortTermManagedSpeed = Vtap;
           }
@@ -1159,7 +1172,7 @@ export class FmcAircraftInterface {
   }
 
   getAppManagedSpeed() {
-    switch (SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Number')) {
+    switch (this.flapLeverPosition) {
       case 0:
         return this.fmgc.data.greenDotSpeed.get();
       case 1:
@@ -1191,27 +1204,30 @@ export class FmcAircraftInterface {
 
   /**
    * Gets the limiting characteristic based on the current flap lever position.
+   * @param approach. If true, F speed is not considered a limiting speed when flap lever is 3 and CONF3 is selected on the FMS.
    * @returns the limiting charateristic speed in knots, or null if no speed can be calculated.
    */
-  private getLimitingCharacteristicSpeed(): number | null {
-    this.sfccSlatFlapSystemStatusWord.set(this.sfcc1SlatFlapSystemStatusWord.get());
-    if (this.sfccSlatFlapSystemStatusWord.isInvalid()) {
-      this.sfccSlatFlapSystemStatusWord.set(this.sfcc2SlatFlapSystemStatusWord.get());
+  private getLimitingCharacteristicSpeed(approach: boolean): number | null {
+    let limitingSpeed: number | null = null;
+    switch (this.flapLeverPosition) {
+      case 0:
+        limitingSpeed = this.fmgc.data.greenDotSpeed.get();
+        break;
+      case 1:
+        limitingSpeed = this.fmgc.data.slatRetractionSpeed.get();
+        break;
+      case 2:
+        limitingSpeed = this.fmgc.data.flapRetractionSpeed.get();
+        break;
+      case 3:
+        limitingSpeed =
+          !approach || this.fmgc.data.approachFlapConfig.get() !== FlapConf.CONF_3
+            ? this.fmgc.data.flapRetractionSpeed.get()
+            : null;
+        break;
     }
-    const cleanConfig = this.sfccSlatFlapSystemStatusWord.bitValueOr(17, false);
-    const conf1 = this.sfccSlatFlapSystemStatusWord.bitValueOr(18, false);
-    const conf2 = this.sfccSlatFlapSystemStatusWord.bitValueOr(19, false);
-    const conf3 = this.sfccSlatFlapSystemStatusWord.bitValueOr(20, false);
-    const confFull = this.sfccSlatFlapSystemStatusWord.bitValueOr(21, false);
 
-    if (cleanConfig) {
-      return this.fmgc.data.greenDotSpeed.get();
-    } else if (conf1) {
-      return this.fmgc.data.slatRetractionSpeed.get();
-    } else if (conf2 || conf3 || confFull) {
-      return this.fmgc.data.flapRetractionSpeed.get();
-    }
-    return null;
+    return limitingSpeed;
   }
 
   private speedLimitExceeded = false;
@@ -1761,11 +1777,9 @@ export class FmcAircraftInterface {
       return;
     }
 
-    const activeVerticalMode = this.fmaVerticalMode.get();
-
     if (
-      (activeVerticalMode >= VerticalMode.ALT_CPT && activeVerticalMode <= VerticalMode.FPA) ||
-      (activeVerticalMode >= VerticalMode.ALT_CST_CPT && activeVerticalMode <= VerticalMode.DES)
+      (this.activeVerticalMode >= VerticalMode.ALT_CPT && this.activeVerticalMode <= VerticalMode.FPA) ||
+      (this.activeVerticalMode >= VerticalMode.ALT_CST_CPT && this.activeVerticalMode <= VerticalMode.DES)
     ) {
       const fcuFl = (Simplane.getAutoPilotDisplayedAltitudeLockValue() ?? 0) / 100;
 
@@ -2167,7 +2181,7 @@ export class FmcAircraftInterface {
   checkDestEfobBelowMinScratchPadMessage(deltaTime: number) {
     const flightPhase = this.flightPhase.get();
     const altActiveInClimbForMoreThan10Min: boolean = this.altActiveInClimbForMoreThan10Min.write(
-      flightPhase === FmgcFlightPhase.Climb && this.fmaVerticalMode.get() == VerticalMode.ALT,
+      flightPhase === FmgcFlightPhase.Climb && this.activeVerticalMode == VerticalMode.ALT,
       deltaTime,
     );
 
@@ -2190,6 +2204,39 @@ export class FmcAircraftInterface {
     if (this.fmgc.data.engineOut.get() && this.fmgc.isAllEngineOn()) {
       this.fmgc.data.engineOut.set(false);
     }
+  }
+
+  /**
+   * Acquires SFCC data related to flap lever position
+   */
+  sfccAquisition() {
+    this.sfccSlatFlapSystemStatusWord.set(this.sfcc1SlatFlapSystemStatusWord.get());
+    if (this.sfccSlatFlapSystemStatusWord.isInvalid()) {
+      this.sfccSlatFlapSystemStatusWord.set(this.sfcc2SlatFlapSystemStatusWord.get());
+    }
+    const conf1 = this.sfccSlatFlapSystemStatusWord.bitValueOr(18, false);
+    const conf2 = this.sfccSlatFlapSystemStatusWord.bitValueOr(19, false);
+    const conf3 = this.sfccSlatFlapSystemStatusWord.bitValueOr(20, false);
+    const confFull = this.sfccSlatFlapSystemStatusWord.bitValueOr(21, false);
+
+    if (conf1) {
+      this.flapLeverPosition = 1;
+    } else if (conf2) {
+      this.flapLeverPosition = 2;
+    } else if (conf3) {
+      this.flapLeverPosition = 3;
+    } else if (confFull) {
+      this.flapLeverPosition = 4;
+    } else {
+      this.flapLeverPosition = 0;
+    }
+  }
+
+  /**
+   * Acquires FG data such as the active guidance modes.
+   */
+  fgAquisition() {
+    this.activeVerticalMode = this.fmaVerticalMode.get();
   }
 }
 
