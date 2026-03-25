@@ -1,7 +1,11 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-const EWDMessages = {
+const EWDGroups = {
+  ELEC$3: '\x1b<4m\x1b4mELEC\x1bm',
+};
+
+const EWDMessageDefinitions: Record<string, string | { text: string; group?: string }> = {
   '000000001': '              \x1b<3mNORMAL',
   '000001001': '\x1b<3m\x1b4mT.O\x1bm AUTO BRK\x1b<5m.....MAX',
   '000001002': '\x1b<3m\x1b4mT.O\x1bm AUTO BRK MAX',
@@ -218,16 +222,16 @@ const EWDMessages = {
   '221070002': '\x1b<5m -TOW AND T.O DATA.CHECK',
   '221071001': '\x1b<4m\x1b4mT.O\x1bm V1/VR/V2 DISAGREE',
   '221072001': '\x1b<4m\x1b4mT.O\x1bm SPEEDS NOT INSERTED',
-  '240000101': '\x1b<4m\x1b4mELEC\x1bm GEN 1 FAULT',
+  '240000101': { group: 'ELEC$3', text: ' GEN 1 FAULT' },
   '240000102': '\x1b<5m -GEN 1......OFF THEN ON',
   '240000103': '\x1b<7m   .IF UNSUCCESSFUL :',
   '240000104': '\x1b<5m -GEN 1..............OFF',
-  '240000201': '\x1b<4m\x1b4mELEC\x1bm GEN 2 FAULT',
+  '240000201': { group: 'ELEC$3', text: ' GEN 2 FAULT' },
   '240000202': '\x1b<5m -GEN 2......OFF THEN ON',
   '240000203': '\x1b<7m   .IF UNSUCCESSFUL :',
   '240000204': '\x1b<5m -GEN 2..............OFF',
-  '240006001': '\x1b<4m\x1b4mELEC\x1bm GEN 1 OFF',
-  '240007001': '\x1b<4m\x1b4mELEC\x1bm GEN 2 OFF',
+  '240006001': { group: 'ELEC$3', text: ' GEN 1 OFF' },
+  '240007001': { group: 'ELEC$3', text: ' GEN 2 OFF' },
   '240040001': '\x1b<4m\x1b4mELEC\x1bm IDG 1 DISCONNECTED',
   '240040501': '\x1b<4m\x1b4mELEC\x1bm IDG 2 DISCONNECTED',
   '240060001': '\x1b<4m\x1b4mELEC\x1bm BAT 1 OFF',
@@ -483,5 +487,55 @@ const EWDMessages = {
   '770064702': '\x1b<5m -THR LEVERS.....MCT/FLX',
   '770064703': '\x1b<5m -THR LEVERS.....TO/GA',
 };
+
+const getEwdMessageDefinition = (code: string): { group?: string; text: string } | undefined => {
+  const message = EWDMessageDefinitions[code];
+
+  if (message === undefined) {
+    return undefined;
+  }
+
+  return typeof message === 'string' ? { text: message } : message;
+};
+
+// eslint-disable-next-line no-control-regex
+const getVisibleTextWidth = (text: string) => text.replace(/\x1b[^m]*m/g, '').length;
+// eslint-disable-next-line no-control-regex
+const getLeadingColorControl = (text: string) => text.match(/\x1b<\dm/)?.[0] ?? '';
+
+export const formatEwdMessages = (codes: string[]): string[] => {
+  let previousGroup: string | undefined;
+
+  return codes.map((code) => {
+    const message = getEwdMessageDefinition(code);
+
+    if (message === undefined) {
+      previousGroup = undefined;
+      return '';
+    }
+
+    if (message.group === undefined) {
+      return message.text;
+    }
+
+    const prefix =
+      previousGroup === message.group
+        ? `${getLeadingColorControl(EWDGroups[message.group])}${' '.repeat(getVisibleTextWidth(EWDGroups[message.group]))}`
+        : EWDGroups[message.group];
+
+    previousGroup = message.group;
+
+    return `${prefix}${message.text}`;
+  });
+};
+
+const EWDMessages: Record<string, string> = {};
+
+for (const [code, message] of Object.entries(EWDMessageDefinitions)) {
+  const definition = typeof message === 'string' ? { text: message } : message;
+  const prefix = definition.group === undefined ? '' : EWDGroups[definition.group];
+
+  EWDMessages[code] = `${prefix}${definition.text}`;
+}
 
 export default EWDMessages;
