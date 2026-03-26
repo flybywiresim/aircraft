@@ -130,7 +130,7 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
       const metarParse = parseMetar(rawMetar);
       dispatch(setMetar(metarParse));
     } catch (err) {
-      setErrorMetar(mapMetarErrorToDisplayMessage(err, t));
+      setErrorMetar(mapMetarErrorToDisplayMessage(err));
 
       dispatch(setMetar(MetarParserTypeProp));
     }

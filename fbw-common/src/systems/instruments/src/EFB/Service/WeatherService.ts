@@ -5,10 +5,9 @@ import { Metar as FbwApiMetar } from '@flybywiresim/api-client';
 import { ConfigWeatherMap } from '@flybywiresim/fbw-sdk';
 import { Metar as MsfsMetar } from '@microsoft/msfs-sdk';
 import { BeyondATCConnector, SayIntentionsConnector } from '../../../../datalink/router/src';
+import { t } from '../Localization/translation';
 
-type TranslationFn = (key: string) => string;
-
-export const mapMetarErrorToDisplayMessage = (error: unknown, t: TranslationFn): string => {
+export const mapMetarErrorToDisplayMessage = (error: unknown): string => {
   const errorMessage = `${error}`.replace(/^Error: /, '');
 
   if (errorMessage.startsWith('Unexpected') || errorMessage.startsWith('Invalid')) {
