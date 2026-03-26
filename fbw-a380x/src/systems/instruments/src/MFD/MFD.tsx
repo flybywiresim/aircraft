@@ -46,6 +46,7 @@ export interface AbstractMfdPageProps extends ComponentProps {
   bus: EventBus;
   mfd: FmsDisplayInterface & MfdDisplayInterface;
   fmcService: FmcServiceInterface;
+  test: number;
 }
 
 export interface AtccomMfdPageProps extends ComponentProps {

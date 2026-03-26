@@ -99,17 +99,21 @@
 .mfd-footer {
   display: flex;
   border-top: 2px solid $display-mfd-darker-grey;
-  padding: 5px;
+  padding: 1px;
 }
 
 .mfd-footer-message-area {
-  display: flex;
+  display: inline-block;
   justify-content: center;
   align-items: center;
   margin-left: 15px;
   font-size: 26px;
   color: $display-background;
   font-family: "FBW-Display-EIS-A380-SlashedZero", monospace;
+}
+
+.mfd-footer-message-area-line {
+  width: fit-content;
 }
 
 .fr {
