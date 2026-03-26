@@ -407,6 +407,10 @@ export class FmsClient implements Instrument {
     });
   }
 
+  public hasActiveAtc(): boolean {
+    return this.atcStationStatus.current !== '';
+  }
+
   public currentStation(): string {
     return this.atcStationStatus.current;
   }
