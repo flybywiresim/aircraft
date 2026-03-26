@@ -122,14 +122,8 @@ export class FmsClient implements Instrument {
     this.subscriber.on('atcMessageModify').handle((message) => (this.modificationMessage = message));
     this.subscriber.on('atcPrintMessage').handle((message) => this.printMessage(message));
     this.subscriber.on('aocPrintMessage').handle((message) => this.printMessage(message));
-    this.subscriber.on('atcActiveAtisAutoUpdates').handle((airports) => {
-      console.log('FMSClient: received atisAutoUpdates', airports);
-      this.atisAutoUpdates = airports;
-    });
-    this.subscriber.on('atcPrintAtisReportsPrint').handle((active) => {
-      console.log('FMSClient: received atisReportsPrintActive', active);
-      this.atisReportsPrintActive = active;
-    });
+    this.subscriber.on('atcActiveAtisAutoUpdates').handle((airports) => (this.atisAutoUpdates = airports));
+    this.subscriber.on('atcPrintAtisReportsPrint').handle((active) => (this.atisReportsPrintActive = active));
     this.subscriber.on('atcStationStatus').handle((status) => (this.atcStationStatus = status));
     this.subscriber.on('atcMaxUplinkDelay').handle((delay) => (this.maxUplinkDelay = delay));
     this.subscriber
