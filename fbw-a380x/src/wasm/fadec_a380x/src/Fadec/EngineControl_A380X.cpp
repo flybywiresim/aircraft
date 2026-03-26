@@ -866,7 +866,7 @@ void EngineControl_A380X::updateFuel(double deltaTimeSeconds) {
       // Engines fuel burn routine
       if (*fuelExtraQty[i] > 0) {
         // Cycle Fuel Burn
-        if (aircraftDevelopmentStateVar != 2) {
+        if (aircraftDevelopmentStateVar != 2 && msfsHandlerPtr->getPauseState() == 0) {
           fuelFlowRateChange   = (*engineFF[i] - *enginePreFF[i]) / deltaTimeHours;
           previousFuelFlowRate = *enginePreFF[i];
           *fuelBurn[i]         = std::min((fuelFlowRateChange * std::pow(deltaTimeHours, 2) / 2) + (previousFuelFlowRate * deltaTimeHours),
@@ -953,8 +953,8 @@ void EngineControl_A380X::updateThrustLimits(double simulationTime,
   profilerUpdateThrustLimits.start();
 #endif
 
-  const double flexTemp      = simData.airlinerToFlexTemp->get();
-  const double pressAltitude = simData.simVarsDataPtr->data().pressureAltitude;
+  const double flexTemp        = simData.airlinerToFlexTemp->get();
+  const double pressAltitude   = simData.simVarsDataPtr->data().pressureAltitude;
   const double thrustLimitType = simData.thrustLimitType->get();
 
   if (!isTransitionActive && thrustLimitType != 3 /* FLEX */) {

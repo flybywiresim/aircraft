@@ -1,10 +1,14 @@
 // @ts-strict-ignore
+// Copyright (c) 2026 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 import { CpdlcMessage, CpdlcMessagesDownlink, FansMode } from '@datalink/common';
 import { Keypad } from '../../legacy/A320_Neo_CDU_Keypad';
 import { CDUAtcDepartReq } from './A320_Neo_CDU_ATC_DepartReq';
 import { CDUAtcMenu } from './A320_Neo_CDU_ATC_Menu';
 import { CDUAtcTextFansA } from './FansA/A320_Neo_CDU_ATC_Text';
 import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
+import { setKeyNotActiveLskActions } from './AtsuDatalinkPageUtils';
 
 export class CDUAtcClearanceReq {
   static CreateDataBlock() {
@@ -111,5 +115,6 @@ export class CDUAtcClearanceReq {
         CDUAtcClearanceReq.ShowPage(mcdu, title);
       }
     };
+    setKeyNotActiveLskActions(mcdu);
   }
 }
