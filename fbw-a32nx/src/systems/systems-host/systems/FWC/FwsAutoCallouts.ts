@@ -12,7 +12,7 @@ import {
 } from '@flybywiresim/fbw-sdk';
 import { SimVarValueType, Subject } from '@microsoft/msfs-sdk';
 import { A32NX_DEFAULT_RADIO_AUTO_CALL_OUTS, A32NXRadioAutoCallOutFlags } from '@shared/AutoCallOuts';
-import { PseudoFWC } from './PseudoFWC';
+import { DEFAULT_MONITOR_TIME, PseudoFWC } from './PseudoFWC';
 
 export class FwsAutoCallouts {
   private autoCalloutInhibit = false;
@@ -212,8 +212,9 @@ export class FwsAutoCallouts {
   private readonly HundredAboveDhConfNode = new NXLogicConfirmNode(0.1);
   private readonly hundredAboveDhMtrig = new NXLogicTriggeredMonostableNode(3);
   private readonly hundredAboveDhMemoryNode = new NXLogicMemoryNode(false);
+  private readonly hundredAboveAudioConf = new NXLogicConfirmNode(DEFAULT_MONITOR_TIME, true);
 
-  public readonly hundredAbove = Subject.create(false);
+  public readonly hundredAboveAudio = Subject.create(false);
   private readonly fmDh = Arinc429Register.empty();
   private readonly fm1DhRegisteredSimVar = RegisteredSimVar.create('L:A32NX_FM1_DECISION_HEIGHT', SimVarValueType.Enum);
   private readonly fm2DhRegisteredSimVar = RegisteredSimVar.create('L:A32NX_FM2_DECISION_HEIGHT', SimVarValueType.Enum);
@@ -226,15 +227,18 @@ export class FwsAutoCallouts {
   private readonly dhMinimumConfNode = new NXLogicConfirmNode(0.1);
   private readonly dhMinimumMtrigNode = new NXLogicTriggeredMonostableNode(3);
   private readonly minimumDhMemoryNode = new NXLogicMemoryNode(true);
-  public readonly minimum = Subject.create(false);
+  private readonly minimumAudioConf = new NXLogicConfirmNode(DEFAULT_MONITOR_TIME, true);
+  public readonly minimumAudio = Subject.create(false);
 
   constructor(private readonly fws: PseudoFWC) {}
 
   public update(deltaTime: number) {
     const flightPhase = this.fws.fwcFlightPhase.get();
     const height = this.fws.radioHeight1.isInvalid()
-      ? this.fws.radioHeight2.valueOr(null)
-      : this.fws.radioHeight1.value;
+      ? this.fws.radioHeight2.isInvalid()
+        ? null
+        : Math.trunc(this.fws.radioHeight2.value)
+      : Math.trunc(this.fws.radioHeight1.value);
     const stallWarning = this.fws.stallWarning.get();
     const speedWarning = false; // TODO
     const onGround = this.fws.aircraftOnGround.get();
@@ -314,7 +318,7 @@ export class FwsAutoCallouts {
     );
     const hundredAboveDh = !hundredAboveDhMemory && hundredAboveDhMtrig && !this.minimumnInhibit;
     const hundredAbove = hundredAboveMda || hundredAboveDh;
-    this.hundredAbove.set(hundredAbove);
+    this.hundredAboveAudio.set(this.hundredAboveAudioConf.write(hundredAbove, deltaTime));
     /// Minimums
     // MDA
     const minimumDmc = this.dmcDiscreteWord270.bitValueOr(21, false);
@@ -334,7 +338,7 @@ export class FwsAutoCallouts {
 
     const minimum = minimumMda || minimumDh;
     this.minimumGenerated = this.fws.minimumEmitted || this.fws.hundredAboveEmitted || hundredAbove || minimum;
-    this.minimum.set(minimum);
+    this.minimumAudio.set(this.minimumAudioConf.write(minimum, deltaTime));
   }
 
   private computeThresholds(height: number | null, deltaTime: number) {

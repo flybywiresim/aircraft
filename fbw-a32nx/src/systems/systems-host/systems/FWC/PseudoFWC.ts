@@ -48,6 +48,8 @@ import { A32NX_DEFAULT_RADIO_AUTO_CALL_OUTS } from '@shared/AutoCallOuts';
 import { VorSimVars } from '@shared/publishers/VorBusPublisher';
 import { FwsAutoCallouts } from './FwsAutoCallouts';
 
+export const DEFAULT_MONITOR_TIME = 0.3;
+
 export function xor(a: boolean, b: boolean): boolean {
   return !!((a ? 1 : 0) ^ (b ? 1 : 0));
 }
@@ -1502,14 +1504,6 @@ export class PseudoFWC {
 
   private readonly autoCallouts: FwsAutoCallouts;
 
-  private readonly hundredAbove = Subject.create(false);
-
-  private readonly minimum = Subject.create(false);
-
-  private readonly hundredAboveAural = Subject.create(false);
-
-  private readonly minimumAural = Subject.create(false);
-
   public minimumEmitted = false;
 
   public hundredAboveEmitted = false;
@@ -1542,8 +1536,6 @@ export class PseudoFWC {
 
     SimVar.SetSimVarValue('L:A32NX_STATUS_LEFT_LINE_8', 'string', '000000001');
     this.autoCallouts = new FwsAutoCallouts(this);
-    this.autoCallouts.hundredAbove.pipe(this.hundredAbove);
-    this.autoCallouts.minimum.pipe(this.minimum);
   }
 
   init(): void {
@@ -1724,14 +1716,14 @@ export class PseudoFWC {
       this.soundManager.handleSoundCondition('alt_5', v);
     });
 
-    this.hundredAboveAural.sub((v) => {
+    this.autoCallouts.hundredAboveAudio.sub((v) => {
       if (!v) {
         this.hundredAboveEmitted = false;
       }
       this.soundManager.handleSoundCondition('hundred_above', v);
     });
 
-    this.minimumAural.sub((v) => {
+    this.autoCallouts.minimumAudio.sub((v) => {
       if (!v) {
         this.minimumEmitted = false;
       }
@@ -3824,10 +3816,6 @@ export class PseudoFWC {
     const auralScKeys: string[] = [];
     const auralCavchargeKeys: string[] = [];
     const auralCChordKeys: string[] = [];
-    const specialCodeKeys: string[] = this.specialCodes;
-    let minimumActive = false;
-    let hundredAboveActive = false;
-
     // Update failuresLeft list in case failure has been resolved
     for (const [key, value] of Object.entries(this.ewdMessageFailures)) {
       if (!value.simVarIsActive.get()) {
@@ -3858,11 +3846,11 @@ export class PseudoFWC {
       if (
         value.simVarIsActive.get() &&
         // consider monitor input confirm time (0.3 sec by default)
-        simTime >= (this.ewdFailureActivationTime.get(key) ?? 0) + (value.monitorConfirmTime ?? 0.3)
+        simTime >= (this.ewdFailureActivationTime.get(key) ?? 0) + (value.monitorConfirmTime ?? DEFAULT_MONITOR_TIME)
       ) {
         if (newWarning) {
           if (value.side === undefined) {
-            specialCodeKeys.push(key);
+            //TODO do nothing for now
           } else if (value.side === 'LEFT') {
             failureKeysLeft.push(key);
           } else {
@@ -3877,12 +3865,6 @@ export class PseudoFWC {
           }
           if (auralWarning === FwcAuralWarning.CChord) {
             this.cChordActive.set(true);
-          }
-          if (auralWarning === FwcAuralWarning.HundredAbove) {
-            hundredAboveActive = true;
-          }
-          if (auralWarning === FwcAuralWarning.Minimum) {
-            minimumActive = true;
           }
         }
 
@@ -3971,16 +3953,7 @@ export class PseudoFWC {
       if (auralWarning === FwcAuralWarning.CChord) {
         auralCChordKeys.push(key);
       }
-      if (auralWarning === FwcAuralWarning.HundredAbove) {
-        hundredAboveActive = true;
-      }
-      if (auralWarning === FwcAuralWarning.Minimum) {
-        minimumActive = true;
-      }
     }
-
-    this.hundredAboveAural.set(hundredAboveActive);
-    this.minimumAural.set(minimumActive);
 
     this.auralCrcKeys = auralCrcKeys;
     this.auralScKeys = auralScKeys;
@@ -4025,10 +3998,6 @@ export class PseudoFWC {
 
     this.failuresRight.length = 0;
     this.failuresRight.push(...failureKeysRight);
-
-    this.specialCodes.length = 0;
-    this.specialCodes.push(...specialCodeKeys);
-
     if (tempFailureArrayLeft.length > 0) {
       this.ewdMessageLinesLeft.forEach((l, i) => l.set(orderedFailureArrayLeft[i]));
     }
@@ -4298,18 +4267,6 @@ export class PseudoFWC {
       // monitor implementation.
       sysPage: -1,
       side: 'LEFT',
-    },
-    2200060: {
-      // Hundred Above
-      flightPhaseInhib: this.noFlightPhaseInhibit,
-      simVarIsActive: this.hundredAbove,
-      auralWarning: this.hundredAbove.map((active) => (active ? FwcAuralWarning.HundredAbove : FwcAuralWarning.None)),
-    },
-    2200070: {
-      // Minimum
-      flightPhaseInhib: this.noFlightPhaseInhibit,
-      simVarIsActive: this.minimum,
-      auralWarning: this.minimum.map((active) => (active ? FwcAuralWarning.Minimum : FwcAuralWarning.None)),
     },
     2200175: {
       // AP/FD Mode Reversion

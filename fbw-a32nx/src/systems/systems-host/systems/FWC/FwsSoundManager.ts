@@ -148,7 +148,7 @@ export const FwsAuralsList: Record<string, FwsAural> = {
     priority: 2,
     type: FwsAuralWarningType.SyntheticVoice,
     periodicWithPause: 0.2,
-    continuous: true,
+    length: 0.72,
   },
   alt_2500: {
     localVarName: 'A32NX_FWS_AUDIO_2500',
@@ -157,7 +157,7 @@ export const FwsAuralsList: Record<string, FwsAural> = {
     type: FwsAuralWarningType.SyntheticVoice,
   },
   alt_2500b: {
-    localVarName: 'A32NX_FWS_AUDIO_2500B',
+    localVarName: 'A32NX_FWS_AUDIO_25_00',
     length: 1.047,
     priority: 2,
     type: FwsAuralWarningType.SyntheticVoice,
