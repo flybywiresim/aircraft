@@ -80,7 +80,6 @@ export class AcarsConnector {
     SimVar.SetSimVarValue('L:A32NX_ACARS_ACTIVE', 'number', 0);
 
     if (NXDataStore.getSetting('ACARS_PROVIDER').get() === 'NONE') {
-      console.log('CPDLC deactivated in EFB');
       return;
     }
 

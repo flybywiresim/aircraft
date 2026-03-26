@@ -1,22 +1,12 @@
-//  Copyright (c) 2022 FlyByWire Simulations
+//  Copyright (c) 2026 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
 import { AtsuStatusCodes, WeatherMessage, AtisMessage } from '../../../common/src';
 
-/**
- * Connector for BeyondATC local API
- * Provides METAR and D-ATIS data from BeyondATC running on localhost
- */
 export class BeyondATCConnector {
   private static readonly METAR_BASE_URL = 'http://localhost:57698/acars/metar';
   private static readonly ATIS_BASE_URL = 'http://localhost:57698/acars/atis';
 
-  /**
-   * Fetches METAR data from BeyondATC local API
-   * @param icao - The ICAO code of the airport
-   * @param message - The WeatherMessage to populate with the METAR data
-   * @returns AtsuStatusCodes indicating success or failure
-   */
   public static async receiveMetar(icao: string, message: WeatherMessage): Promise<AtsuStatusCodes> {
     const url = `${BeyondATCConnector.METAR_BASE_URL}/${icao.toUpperCase()}`;
 

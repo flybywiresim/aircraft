@@ -13,7 +13,6 @@ import {
   usePersistentSetting,
   NXDataStoreSettings,
   useSimVar,
-  PopUpDialog,
 } from '@flybywiresim/fbw-sdk';
 
 import { toast } from 'react-toastify';

@@ -68,7 +68,7 @@ export class NXApiConnector {
     }
 
     if (source === 'SAI') {
-      return SayIntentionsConnector.receiveAtis(icao, message);
+      return SayIntentionsConnector.receiveAtis(icao, type, message);
     }
 
     await Atis.get(icao, ConfigWeatherMap[source])

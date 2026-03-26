@@ -62,24 +62,6 @@ export class SayIntentionsConnector {
     return metar && metar.length > 0 ? metar : undefined;
   }
 
-  private static selectAtis(airport: SayIntentionsAirport | undefined, type: AtisType): string | undefined {
-    if (!airport) return undefined;
-
-    const arrivalAtis = airport.arrival_atis ?? undefined;
-    const departureAtis = airport.departure_atis ?? undefined;
-    const combined = airport.atis_cpdlc ?? airport.atis;
-
-    if (type === AtisType.Arrival) {
-      return arrivalAtis ?? combined ?? departureAtis ?? undefined;
-    }
-
-    if (type === AtisType.Departure) {
-      return departureAtis ?? combined ?? arrivalAtis ?? undefined;
-    }
-
-    return combined ?? arrivalAtis ?? departureAtis ?? undefined;
-  }
-
   public static async receiveMetar(icao: string, message: WeatherMessage): Promise<AtsuStatusCodes> {
     try {
       const airport = await SayIntentionsConnector.fetchAirport(icao);
@@ -97,7 +79,7 @@ export class SayIntentionsConnector {
   public static async receiveAtis(icao: string, message: AtisMessage): Promise<AtsuStatusCodes> {
     try {
       const airport = await SayIntentionsConnector.fetchAirport(icao);
-      const atis = SayIntentionsConnector.selectAtis(airport, type);
+      const atis = airport.atis_cpdlc ?? airport.atis;
 
       message.Reports.push({ airport: icao, report: atis ?? 'SAI D-ATIS NOT AVAILABLE' });
     } catch (error) {
@@ -118,10 +100,10 @@ export class SayIntentionsConnector {
     }
   }
 
-  public static async getAtis(icao: string, type: AtisType): Promise<{ atis: string | undefined }> {
+  public static async getAtis(icao: string): Promise<{ atis: string | undefined }> {
     try {
       const airport = await SayIntentionsConnector.fetchAirport(icao);
-      return { atis: SayIntentionsConnector.selectAtis(airport, type) };
+      return { atis: airport.atis_cpdlc ?? airport.atis };
     } catch (error) {
       console.error(`SayIntentionsConnector: Failed to fetch ATIS for ${icao}:`, error);
       return { atis: undefined };
