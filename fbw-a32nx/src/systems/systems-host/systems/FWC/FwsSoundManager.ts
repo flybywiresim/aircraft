@@ -55,18 +55,12 @@ export const FwsAuralsList: Record<string, FwsAural> = {
     type: FwsAuralWarningType.SingleChime,
     continuous: false,
   },
-  cavalryChargeOnce: {
+  cavalryCharge: {
     localVarName: 'A32NX_FWC_CAVALRY_CHARGE',
     length: 0.9,
     priority: 4,
     type: FwsAuralWarningType.AuralWarning,
-    continuous: false,
-  },
-  cavalryChargeCont: {
-    localVarName: 'A32NX_FWC_CAVALRY_CHARGE',
-    priority: 4,
-    type: FwsAuralWarningType.AuralWarning,
-    continuous: true,
+    periodicWithPause: 3,
   },
   tripleClick: {
     wwiseEventName: '3click',
@@ -259,6 +253,9 @@ export class FwsSoundManager {
 
   /** in seconds */
   private currentSoundPlayTimeRemaining = 0;
+  /** in seconds */
+  private soundToRepeatDelay: number | null = null;
+  private soundToRepeat: keyof typeof FwsAuralsList | null = null;
 
   constructor(
     private bus: EventBus,
@@ -277,9 +274,9 @@ export class FwsSoundManager {
     sub.on('dequeueSound').handle((s) => this.dequeueSound(s));
   }
 
-  /** Get the current emitted sound, for example for the AP OFF logic computation. */
+  /** Get the current emitted sound or the sound which is about to be repeated, for example for the AP OFF logic computation. */
   getCurrentSoundPlaying() {
-    return this.currentSoundPlaying;
+    return this.currentSoundPlaying ?? this.soundToRepeat;
   }
 
   /** Add sound to queue. Don't add if already playing */
@@ -303,6 +300,10 @@ export class FwsSoundManager {
       this.stopCurrentSound();
     }
     this.soundQueue.delete(soundKey);
+    if (soundKey === this.soundToRepeat) {
+      this.soundToRepeatDelay = null;
+      this.soundToRepeat = null;
+    }
   }
 
   private stopCurrentSound() {
@@ -352,12 +353,23 @@ export class FwsSoundManager {
 
     this.currentSoundPlaying = soundKey;
     this.currentSoundPlayTimeRemaining = sound.continuous ? Infinity : sound.length!;
+    this.soundToRepeat = sound.periodicWithPause ? soundKey : null;
+    this.soundToRepeatDelay = sound.periodicWithPause ?? null;
     this.soundQueue.delete(soundKey);
   }
   /** Find most important sound from soundQueue and play */
-  private selectAndPlayMostImportantSound(): keyof typeof FwsAuralsList | null {
+  private selectAndPlayMostImportantSound(deltaTime: number): keyof typeof FwsAuralsList | null {
     if (!this.startupCompleted.get()) {
       return null;
+    }
+
+    if (this.soundToRepeatDelay !== null && this.soundToRepeat !== null) {
+      this.soundToRepeatDelay -= deltaTime / 1_000;
+      if (this.soundToRepeatDelay <= 0) {
+        this.soundQueue.add(this.soundToRepeat);
+        this.soundToRepeatDelay = null;
+        this.soundToRepeat = null;
+      }
     }
 
     // Logic for scheduling new sounds: Take sound from soundQueue of most important type
@@ -429,7 +441,7 @@ export class FwsSoundManager {
       }
     } else {
       // Play next sound
-      this.selectAndPlayMostImportantSound();
+      this.selectAndPlayMostImportantSound(deltaTime);
     }
   }
 
