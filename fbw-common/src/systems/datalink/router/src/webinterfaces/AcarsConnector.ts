@@ -26,7 +26,7 @@ import { AcarsClient } from './AcarsClient';
 export class AcarsConnector {
   private static flightNumber: string = '';
 
-  private static activationInterval?: ReturnType<typeof setInterval>;
+  private static activationInterval?: NodeJS.Timeout;
 
   private static connectionAttemptCounter = 0;
 
