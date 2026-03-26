@@ -1,17 +1,8 @@
-import {
-  ConsumerSubject,
-  DisplayComponent,
-  EventBus,
-  VNode,
-  FSComponent,
-  Subject,
-  EventSubscriber,
-} from '@microsoft/msfs-sdk';
+import { ConsumerSubject, DisplayComponent, EventBus, VNode, FSComponent } from '@microsoft/msfs-sdk';
 import { TodPauseOverlayControlEvents, TodPauseOverlayState } from '@shared/TodPauseOverlayEvents';
 
 import './style.scss';
 import './Theme.css';
-import { PopupSimvarPublisher, PopupSimvars } from './PopupSimvarPublisher';
 
 export interface PopupProps {
   bus: EventBus;
@@ -108,9 +99,9 @@ export class PopupComponent extends DisplayComponent<PopupProps> {
         id="resume"
         ref={this.panelRef}
         class="absolute inset-0 z-50 flex hidden items-center justify-center"
-        style={{ backgroundColor: 'rgb(0, 0, 0)' }}
+        /*  style={{ backgroundColor: 'rgb(0, 0, 0)' }} */
       >
-        <div class=" mx-6 w-full max-w-3xl rounded-xl bg-theme-body px-10 py-8 text-center">
+        <div class=" mx-6  w-full  rounded-xl bg-theme-body px-10 py-8 text-center">
           <h1 class="text-4xl font-bold">{this.todPauseOverlayState.map((state) => state.title)}</h1>
           <p class="mb-8 text-xl leading-relaxed text-theme-text">
             {this.todPauseOverlayState.map((state) => state.message)}

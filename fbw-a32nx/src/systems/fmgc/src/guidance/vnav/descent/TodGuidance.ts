@@ -9,7 +9,7 @@ import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vna
 import { LateralMode } from '@shared/autopilot';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { TodPauseOverlayControlEvents, TodPauseOverlayState } from '@shared/TodPauseOverlayEvents';
-import { LocalSimVar, NXDataStore } from '@flybywiresim/fbw-sdk';
+import { NXDataStore, RegisteredSimVar } from '@flybywiresim/fbw-sdk';
 import { EventBus, Publisher } from '@microsoft/msfs-sdk';
 
 const TIMEOUT = 10_000;
@@ -19,7 +19,7 @@ export class TodGuidance {
 
   private tdPaused: boolean;
 
-  private tdArmed: LocalSimVar<boolean>;
+  private readonly tdArmed = RegisteredSimVar.createBoolean('L:A32NX_PAUSE_AT_TOD_ARMED');
 
   private pauseAtTodDistance: number;
 
@@ -31,7 +31,8 @@ export class TodGuidance {
 
   private readonly todPauseOverlayPublisher: Publisher<TodPauseOverlayControlEvents>;
 
-  private todPauseOverlayState: TodPauseOverlayState;
+  private readonly apActive = RegisteredSimVar.createBoolean('L:A32NX_AUTOPILOT_ACTIVE');
+  private readonly fmaLateralMode = RegisteredSimVar.create('L:A32NX_FMA_LATERAL_MODE', 'Enum');
 
   constructor(
     bus: EventBus,
@@ -44,13 +45,7 @@ export class TodGuidance {
     this.tdReached = false;
     this.tdPaused = false;
     this.tdPauseEnabled = false;
-    this.todPauseOverlayState = {
-      visible: false,
-      title: '',
-      message: '',
-    };
     this.todPauseOverlayPublisher = bus.getPublisher<TodPauseOverlayControlEvents>();
-    this.tdArmed = new LocalSimVar('L:A32NX_PAUSE_AT_TOD_ARMED', 'bool');
 
     NXDataStore.getAndSubscribeLegacy(
       'PAUSE_AT_TOD_DISTANCE',
@@ -79,7 +74,7 @@ export class TodGuidance {
   }
 
   private setTodPauseOverlayState(state: TodPauseOverlayState) {
-    if (
+    /*     if (
       this.todPauseOverlayState.visible === state.visible &&
       this.todPauseOverlayState.title === state.title &&
       this.todPauseOverlayState.message === state.message
@@ -87,13 +82,12 @@ export class TodGuidance {
       return;
     }
 
-    this.todPauseOverlayState = state;
+    this.todPauseOverlayState = state; */
     this.todPauseOverlayPublisher.pub('tod_pause_overlay', state, true, false);
   }
 
   showPausePopup(title: string, message: string) {
     this.cooldown = TIMEOUT;
-    //SimVar.SetSimVarValue('K:PAUSE_SET', 'number', 1);
     this.setTodPauseOverlayState({
       visible: true,
       title,
@@ -110,14 +104,14 @@ export class TodGuidance {
 
   updateTdPause(deltaTime: number) {
     // Only armed if all conditions met
-    this.tdArmed.setVar(
+    this.tdArmed.set(
       this.cooldown <= 0 &&
         !this.tdPaused &&
         this.observer.get().flightPhase >= FmgcFlightPhase.Climb &&
         this.observer.get().flightPhase <= FmgcFlightPhase.Cruise,
     );
 
-    if (this.tdArmed.getVar()) {
+    if (this.tdArmed.get()) {
       // Check T/D pause first
       if (
         (this.aircraftToDescentProfileRelation.distanceToTopOfDescent() ?? Number.POSITIVE_INFINITY) <
@@ -135,9 +129,7 @@ export class TodGuidance {
           ? this.atmosphericConditions.currentAltitude > this.observer.get().originTransitionAltitude
           : false
       ) {
-        const apActive =
-          SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_ACTIVE', 'boolean') &&
-          SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_MODE', 'Enum') === LateralMode.NAV;
+        const apActive = this.apActive.get() && this.fmaLateralMode.get() === LateralMode.NAV;
 
         if (this.apEngaged && !apActive) {
           this.showPausePopup(
