@@ -94,7 +94,7 @@ export class SayIntentionsConnector {
     return AtsuStatusCodes.Ok;
   }
 
-  public static async receiveAtis(icao: string, type: AtisType, message: AtisMessage): Promise<AtsuStatusCodes> {
+  public static async receiveAtis(icao: string, message: AtisMessage): Promise<AtsuStatusCodes> {
     try {
       const airport = await SayIntentionsConnector.fetchAirport(icao);
       const atis = SayIntentionsConnector.selectAtis(airport, type);

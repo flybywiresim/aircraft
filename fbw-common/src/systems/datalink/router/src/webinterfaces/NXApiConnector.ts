@@ -64,11 +64,11 @@ export class NXApiConnector {
     message: AtisMessage,
   ): Promise<AtsuStatusCodes> {
     if (source === 'BEYONDATC') {
-      return BeyondATCConnector.receiveAtis(icao, type, message);
+      return BeyondATCConnector.receiveAtis(icao, message);
     }
 
     if (source === 'SAI') {
-      return SayIntentionsConnector.receiveAtis(icao, type, message);
+      return SayIntentionsConnector.receiveAtis(icao, message);
     }
 
     await Atis.get(icao, ConfigWeatherMap[source])
