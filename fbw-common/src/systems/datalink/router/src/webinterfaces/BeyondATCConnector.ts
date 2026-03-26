@@ -4,26 +4,6 @@
 import { AtsuStatusCodes, WeatherMessage, AtisMessage, AtisType } from '../../../common/src';
 
 /**
- * Response structure from BeyondATC METAR API
- */
-interface BeyondATCMetarResponse {
-  metar?: string;
-  raw?: string;
-  error?: string;
-}
-
-/**
- * Response structure from BeyondATC ATIS API
- */
-interface BeyondATCAtisResponse {
-  atis?: string;
-  combined?: string;
-  arr?: string;
-  dep?: string;
-  error?: string;
-}
-
-/**
  * Connector for BeyondATC local API
  * Provides METAR and D-ATIS data from BeyondATC running on localhost
  */
@@ -42,15 +22,9 @@ export class BeyondATCConnector {
     const url = `${BeyondATCConnector.METAR_BASE_URL}/${icao.toUpperCase()}`;
 
     try {
-      //  const controller = new AbortController();
-      //const timeoutId = setTimeout(() => controller.abort(), BeyondATCConnector.TIMEOUT_MS);
-
       const response = await fetch(url, {
         method: 'GET',
-        //  signal: controller.signal,
       });
-
-      // clearTimeout(timeoutId);
 
       if (!response.ok) {
         message.Reports.push({ airport: icao, report: 'BEYONDATC METAR NOT AVAILABLE' });
@@ -84,15 +58,9 @@ export class BeyondATCConnector {
     const url = `${BeyondATCConnector.ATIS_BASE_URL}/${icao.toUpperCase()}`;
 
     try {
-      //  const controller = new AbortController();
-      //  const timeoutId = setTimeout(() => controller.abort(), BeyondATCConnector.TIMEOUT_MS);
-
       const response = await fetch(url, {
         method: 'GET',
-        //  signal: controller.signal,
       });
-
-      // clearTimeout(timeoutId);
 
       if (!response.ok) {
         message.Reports.push({ airport: icao, report: 'BEYONDATC D-ATIS NOT AVAILABLE' });
@@ -101,15 +69,6 @@ export class BeyondATCConnector {
 
       const atis: string = await response.text();
 
-      // Select appropriate ATIS based on type
-      /*    if (type === AtisType.Arrival) {
-        atis = data.arr || data.combined || data.atis;
-      } else if (type === AtisType.Departure) {
-        atis = data.dep || data.combined || data.atis;
-      } else if (type === AtisType.Enroute) {
-        atis = data.combined || data.atis || data.arr;
-      }
- */
       if (!atis || atis === '') {
         message.Reports.push({ airport: icao, report: 'BEYONDATC D-ATIS NOT AVAILABLE' });
       } else {
@@ -134,14 +93,9 @@ export class BeyondATCConnector {
     const url = `${BeyondATCConnector.METAR_BASE_URL}/${icao.toUpperCase()}`;
 
     try {
-      //  const controller = new AbortController();
-      //  const timeoutId = setTimeout(() => controller.abort(), BeyondATCConnector.TIMEOUT_MS);
       const response = await fetch(url, {
         method: 'GET',
-        //  signal: controller.signal,
       });
-
-      // clearTimeout(timeoutId);
 
       if (!response.ok) {
         return { metar: undefined };
@@ -165,15 +119,9 @@ export class BeyondATCConnector {
     const url = `${BeyondATCConnector.ATIS_BASE_URL}/${icao.toUpperCase()}`;
 
     try {
-      //const controller = new AbortController();
-      // const timeoutId = setTimeout(() => controller.abort(), BeyondATCConnector.TIMEOUT_MS);
-
       const response = await fetch(url, {
         method: 'GET',
-        //    signal: controller.signal,
       });
-
-      //   clearTimeout(timeoutId);
 
       if (!response.ok) {
         return { atis: undefined };

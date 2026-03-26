@@ -96,6 +96,8 @@ export const AtsuAocPage = () => {
 
     if (provider == 'NONE') {
       AcarsConnector.deactivateAcars();
+      setMetarSource('MSFS');
+      setAtisSource('FAA');
     } else {
       AcarsConnector.activateAcars();
     }

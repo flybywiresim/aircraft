@@ -28,6 +28,86 @@ export class NXApiConnector {
 
   private static updateCounter: number = 0;
 
+  private static async receiveMetarFromSource(
+    icao: string,
+    source: string,
+    message: WeatherMessage,
+  ): Promise<AtsuStatusCodes> {
+    if (source === 'BEYONDATC') {
+      return BeyondATCConnector.receiveMetar(icao, message);
+    }
+
+    if (source === 'SAI') {
+      return SayIntentionsConnector.receiveMetar(icao, message);
+    }
+
+    return Metar.get(icao, ConfigWeatherMap[source])
+      .then((data) => {
+        let metar = data.metar;
+        if (!metar || metar === undefined || metar === '') {
+          metar = 'NO METAR AVAILABLE';
+        }
+
+        message.Reports.push({ airport: icao, report: metar });
+        return AtsuStatusCodes.Ok;
+      })
+      .catch(() => {
+        message.Reports.push({ airport: icao, report: 'NO METAR AVAILABLE' });
+        return AtsuStatusCodes.Ok;
+      });
+  }
+
+  private static async receiveAtisFromSource(
+    icao: string,
+    source: string,
+    type: AtisType,
+    message: AtisMessage,
+  ): Promise<AtsuStatusCodes> {
+    if (source === 'BEYONDATC') {
+      return BeyondATCConnector.receiveAtis(icao, type, message);
+    }
+
+    if (source === 'SAI') {
+      return SayIntentionsConnector.receiveAtis(icao, type, message);
+    }
+
+    await Atis.get(icao, ConfigWeatherMap[source])
+      .then((data) => {
+        let atis = undefined;
+
+        if (type === AtisType.Arrival) {
+          if ('arr' in data) {
+            atis = data.arr;
+          } else {
+            atis = data.combined;
+          }
+        } else if (type === AtisType.Departure) {
+          if ('dep' in data) {
+            atis = data.dep;
+          } else {
+            atis = data.combined;
+          }
+        } else if (type === AtisType.Enroute) {
+          if ('combined' in data) {
+            atis = data.combined;
+          } else if ('arr' in data) {
+            atis = data.arr;
+          }
+        }
+
+        if (!atis || atis === undefined) {
+          atis = 'D-ATIS NOT AVAILABLE';
+        }
+
+        message.Reports.push({ airport: icao, report: atis });
+      })
+      .catch(() => {
+        message.Reports.push({ airport: icao, report: 'D-ATIS NOT AVAILABLE' });
+      });
+
+    return AtsuStatusCodes.Ok;
+  }
+
   private static createAircraftStatus(): AircraftStatus | undefined {
     const lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
     const long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
@@ -120,29 +200,7 @@ export class NXApiConnector {
   public static async receiveMetar(icao: string, message: WeatherMessage): Promise<AtsuStatusCodes> {
     const storedMetarSrc = NXDataStore.getLegacy('CONFIG_METAR_SRC', 'MSFS');
 
-    // Use BeyondATC connector for local API
-    if (storedMetarSrc === 'BEYONDATC') {
-      return BeyondATCConnector.receiveMetar(icao, message);
-    }
-
-    if (storedMetarSrc === 'SAI') {
-      return SayIntentionsConnector.receiveMetar(icao, message);
-    }
-
-    return Metar.get(icao, ConfigWeatherMap[storedMetarSrc])
-      .then((data) => {
-        let metar = data.metar;
-        if (!metar || metar === undefined || metar === '') {
-          metar = 'NO METAR AVAILABLE';
-        }
-
-        message.Reports.push({ airport: icao, report: metar });
-        return AtsuStatusCodes.Ok;
-      })
-      .catch(() => {
-        message.Reports.push({ airport: icao, report: 'NO METAR AVAILABLE' });
-        return AtsuStatusCodes.Ok;
-      });
+    return NXApiConnector.receiveMetarFromSource(icao, storedMetarSrc, message);
   }
 
   public static async receiveTaf(icao: string, message: WeatherMessage): Promise<AtsuStatusCodes> {
@@ -167,50 +225,7 @@ export class NXApiConnector {
   public static async receiveAtis(icao: string, type: AtisType, message: AtisMessage): Promise<AtsuStatusCodes> {
     const storedAtisSrc = NXDataStore.getLegacy('CONFIG_ATIS_SRC', 'FAA');
 
-    // Use BeyondATC connector for local API
-    if (storedAtisSrc === 'BEYONDATC') {
-      return BeyondATCConnector.receiveAtis(icao, type, message);
-    }
-
-    if (storedAtisSrc === 'SAI') {
-      return SayIntentionsConnector.receiveAtis(icao, type, message);
-    }
-
-    await Atis.get(icao, ConfigWeatherMap[storedAtisSrc])
-      .then((data) => {
-        let atis = undefined;
-
-        if (type === AtisType.Arrival) {
-          if ('arr' in data) {
-            atis = data.arr;
-          } else {
-            atis = data.combined;
-          }
-        } else if (type === AtisType.Departure) {
-          if ('dep' in data) {
-            atis = data.dep;
-          } else {
-            atis = data.combined;
-          }
-        } else if (type === AtisType.Enroute) {
-          if ('combined' in data) {
-            atis = data.combined;
-          } else if ('arr' in data) {
-            atis = data.arr;
-          }
-        }
-
-        if (!atis || atis === undefined) {
-          atis = 'D-ATIS NOT AVAILABLE';
-        }
-
-        message.Reports.push({ airport: icao, report: atis });
-      })
-      .catch(() => {
-        message.Reports.push({ airport: icao, report: 'D-ATIS NOT AVAILABLE' });
-      });
-
-    return AtsuStatusCodes.Ok;
+    return NXApiConnector.receiveAtisFromSource(icao, storedAtisSrc, type, message);
   }
 
   public static async poll(): Promise<[AtsuStatusCodes, AtsuMessage[]]> {

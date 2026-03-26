@@ -3,15 +3,12 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { FC, useContext, useEffect, useState } from 'react';
-import { Metar as FbwApiMetar } from '@flybywiresim/api-client';
-import { Metar as MsfsMetar } from '@microsoft/msfs-sdk';
 import {
   Units,
   MetarParserType,
   useSimVar,
   usePersistentProperty,
   parseMetar,
-  ConfigWeatherMap,
   LandingFlapsConfig,
   LandingRunwayConditions,
   MathUtils,
@@ -27,7 +24,7 @@ import { SelectInput } from '../../UtilComponents/Form/SelectInput/SelectInput';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
 import { clearLandingValues, initialState, setLandingValues } from '../../Store/features/performance';
 import { AircraftContext } from '../../AircraftContext';
-import { BeyondATCConnector, SayIntentionsConnector } from '../../../../../datalink/router/src';
+import { fetchRawMetarBySource } from '../../Service/WeatherService';
 import {
   isValidIcao,
   isWindMagnitudeAndDirection,
@@ -178,49 +175,11 @@ export const LandingWidget = () => {
 
     let parsedMetar: MetarParserType | undefined = undefined;
 
-    // Use BeyondATC local API
-    if (metarSource === 'BEYONDATC') {
-      try {
-        const response = await BeyondATCConnector.getMetar(icao);
-        if (!response.metar) {
-          throw new Error('BEYONDATC METAR NOT AVAILABLE');
-        }
-        parsedMetar = parseMetar(response.metar);
-      } catch (err) {
-        toast.error(err.message);
-      }
-    } else if (metarSource === 'SAI') {
-      try {
-        const response = await SayIntentionsConnector.getMetar(icao);
-        if (!response.metar) {
-          throw new Error('SAI METAR NOT AVAILABLE');
-        }
-        parsedMetar = parseMetar(response.metar);
-      } catch (err) {
-        toast.error(err.message);
-      }
-    } else if (metarSource === 'MSFS') {
-      // Comes from the sim rather than the FBW API
-      let metar: MsfsMetar;
-      try {
-        metar = await Coherent.call('GET_METAR_BY_IDENT', icao);
-        if (metar.icao !== icao.toUpperCase()) {
-          throw new Error('No METAR available');
-        }
-        parsedMetar = parseMetar(metar.metarString);
-      } catch (err) {
-        toast.error(err.message);
-      }
-    } else {
-      try {
-        const response = await FbwApiMetar.get(icao, ConfigWeatherMap[metarSource]);
-        if (!response.metar) {
-          throw new Error('No METAR available');
-        }
-        parsedMetar = parseMetar(response.metar);
-      } catch (err) {
-        toast.error(err.message);
-      }
+    try {
+      const rawMetar = await fetchRawMetarBySource(icao, metarSource);
+      parsedMetar = parseMetar(rawMetar);
+    } catch (err) {
+      toast.error(err.message);
     }
 
     if (parsedMetar === undefined) {
