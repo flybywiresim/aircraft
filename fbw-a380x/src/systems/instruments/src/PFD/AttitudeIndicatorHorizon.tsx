@@ -346,11 +346,19 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: EventBus }> {
 
   private takeoffTimer: number | null = null;
   private goAroundTimer: number | null = null;
+  private simTime: number = 0;
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
     const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & ClockEvents>();
+
+    sub
+      .on('simTime')
+      .atFrequency(1)
+      .handle((simTime) => {
+        this.simTime = simTime;
+      });
 
     sub.on('chosenRa').handle((ra) => {
       this.tailStrikeConditions.altitude = ra;
@@ -380,8 +388,8 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: EventBus }> {
         this.tailStrikeConditions.approachPhase = fp === 5;
         this.tailStrikeConditions.goAroundPhase = fp === 6;
         if (fp === 6) {
-          if (this.goAroundTimer === null) {
-            this.goAroundTimer = setTimeout(() => {
+          if (this.goAroundTimer === null && this.tailStrikeConditions.altitude.value < 400) {
+            this.goAroundTimer = this.simTime(() => {
               this.goAroundTimer = null;
             }, 4000) as unknown as number;
           }
@@ -477,9 +485,7 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: EventBus }> {
           this.tailStrikeConditions.tla4 >= 35) &&
           this.tailStrikeConditions.leftGearCompressed &&
           this.tailStrikeConditions.rightGearCompressed) ||
-        (this.tailStrikeConditions.approachPhase &&
-          this.tailStrikeConditions.altitude.value < 400 &&
-          this.tailStrikeConditions.speed > 50) ||
+        (this.tailStrikeConditions.approachPhase && this.tailStrikeConditions.altitude.value < 400) ||
         this.goAroundTimer !== null ||
         this.takeoffTimer !== null
       ) {
