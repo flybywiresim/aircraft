@@ -4274,8 +4274,7 @@
                                 <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                                 <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                                 <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                                <TOOLTIPID>%((L:A32NX_RCDR_GROUND_CONTROL_ON, Bool))%{if}Set Ground
-                                    Control to AUTO%{else}Turn ON Ground Control%{end}</TOOLTIPID>
+                                <TOOLTIPID>%((L:A32NX_RCDR_GROUND_CONTROL_ON, Bool))%{if}TT:A380X.TOOLTIPS.RCDR_AUTO%{else}TT:A380X.TOOLTIPS.RCDR_ON%{end}</TOOLTIPID>
                             </UseTemplate>
                         </Component>
 
@@ -4290,8 +4289,7 @@
                                 <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                                 <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                                 <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                                <TOOLTIPID>%((L:A380X_REMOTE_CB_CTRL, Bool))%{if}Turn off the remote
-                                    C/B Controller%{else}Turn ON the remote C/B Controller%{end}</TOOLTIPID>
+                                <TOOLTIPID>%((L:A380X_REMOTE_CB_CTRL, Bool))%{if}TT:A380X.TOOLTIPS.REMOTE_CB_CTRL_OFF%{else}TT:A380X.TOOLTIPS.REMOTE_CB_CTRL_ON%{end}</TOOLTIPID>
                             </UseTemplate>
                         </Component>
 
