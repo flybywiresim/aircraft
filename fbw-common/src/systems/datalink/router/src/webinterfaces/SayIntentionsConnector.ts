@@ -79,7 +79,7 @@ export class SayIntentionsConnector {
   public static async receiveAtis(icao: string, message: AtisMessage): Promise<AtsuStatusCodes> {
     try {
       const airport = await SayIntentionsConnector.fetchAirport(icao);
-      const atis = airport.atis_cpdlc ?? airport.atis;
+      const atis = airport?.atis_cpdlc ?? airport?.atis;
 
       message.Reports.push({ airport: icao, report: atis ?? 'SAI D-ATIS NOT AVAILABLE' });
     } catch (error) {
