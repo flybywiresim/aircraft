@@ -1628,7 +1628,7 @@ export class PseudoFWC {
   private readonly ecpClearWirePulse = new NXLogicPulseNode(true);
   private readonly ecpClearPulseTrigger = new NXLogicTriggeredMonostableNode(0.5, true);
   private ecpClearPulseUp = false;
-  private ecpClearPulseHandled = false;
+  private ecpClearPulseUpHandled = false;
   private readonly ecpRecallBusPulseUp = new NXLogicPulseNode(true);
   private readonly ecpRecallWirePulseUp = new NXLogicPulseNode(true);
   private readonly ecpRecallBusPulseDown = new NXLogicPulseNode(false);
@@ -3651,10 +3651,10 @@ export class PseudoFWC {
 
     /* CLEAR AND RECALL */
     if (!this.ecpClearPulseUp) {
-      this.ecpClearPulseHandled = false;
+      this.ecpClearPulseUpHandled = false;
     }
 
-    if (this.ecpClearPulseUp && !this.ecpClearPulseHandled) {
+    if (this.ecpClearPulseUp && !this.ecpClearPulseUpHandled) {
       const clearableFailures = this.failuresLeft.map((key) => {
         const value = this.ewdMessageFailures[key];
         const codeToReturn = value.whichCodeToReturn();
@@ -3678,7 +3678,7 @@ export class PseudoFWC {
       }
 
       this.recallFailures = this.allCurrentFailures.filter((item) => !this.failuresLeft.includes(item));
-      this.ecpClearPulseHandled = true;
+      this.ecpClearPulseUpHandled = true;
     }
 
     if (this.ecpRecallPulseUp) {
