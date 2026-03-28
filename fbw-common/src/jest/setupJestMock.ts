@@ -83,3 +83,12 @@ global.RunwayDesignator = {
   RUNWAY_DESIGNATOR_A: 5,
   RUNWAY_DESIGNATOR_B: 6,
 };
+
+// Mock window.InputBar for isMsfs2024() detection (MSFS 2020)
+Object.defineProperty(window, 'InputBar', {
+  value: {
+    MENU_BUTTON_A: 'KEY_MENU_A', // MSFS 2020 value
+  },
+  writable: true,
+  configurable: true,
+});

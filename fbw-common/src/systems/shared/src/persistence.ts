@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { MutableSubscribable, Subject } from '@microsoft/msfs-sdk';
-import { ConfigWeatherMap, isMsfs2024 } from '@flybywiresim/fbw-sdk';
+import { ConfigWeatherMap } from './config';
+import { isMsfs2024 } from './MsfsDetect';
 
 export type DataStoreSettingKey = keyof NXDataStoreSettings & string;
 type DataStoreSettingValue = string | number | boolean;
