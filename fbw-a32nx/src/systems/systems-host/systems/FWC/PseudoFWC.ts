@@ -3665,16 +3665,21 @@ export class PseudoFWC {
         return { key, group: getEwdMessageGroup(code), order: EwdMessageCodeOrder.get(code) ?? Infinity };
       });
 
-      const targetGroup = clearableFailures.sort((a, b) => a.order - b.order)[0]?.group;
-      if (targetGroup !== undefined) {
-        const clearedFailureKeys = clearableFailures
-          .filter((item) => item.group === targetGroup)
-          .map((item) => item.key);
+      let targetGroup: string | undefined;
+      let bestOrder = Infinity;
 
+      for (const failure of clearableFailures) {
+        if (failure.group !== undefined && failure.order < bestOrder) {
+          bestOrder = failure.order;
+          targetGroup = failure.group;
+        }
+      }
+
+      if (targetGroup !== undefined) {
         this.failuresLeft.splice(
           0,
           this.failuresLeft.length,
-          ...this.failuresLeft.filter((item) => !clearedFailureKeys.includes(item)),
+          ...clearableFailures.filter((item) => item.group !== targetGroup).map((item) => item.key),
         );
       }
 
