@@ -1636,6 +1636,7 @@ export class PseudoFWC {
   private readonly ecpRecallPulseUpTrigger = new NXLogicTriggeredMonostableNode(0.5, true);
   private readonly ecpRecallPulseDownTrigger = new NXLogicTriggeredMonostableNode(0.5, true);
   private ecpRecallPulseUp = false;
+  private ecpRecallPulseUpHandled = false;
   private ecpRecallPulseDown = false;
   private ecpRecallLevel = false;
   private readonly ecpStatusBusPulseUp = new NXLogicPulseNode(true);
@@ -3681,27 +3682,16 @@ export class PseudoFWC {
       this.ecpClearPulseUpHandled = true;
     }
 
-    if (this.ecpRecallPulseUp) {
+    if (!this.ecpRecallPulseUp) {
+      this.ecpRecallPulseUpHandled = false;
+    }
+
+    if (this.ecpRecallPulseUp && !this.ecpRecallPulseUpHandled) {
       if (this.recallFailures.length > 0) {
-        const recallableFailures = this.recallFailures.map((key) => {
-          const value = this.ewdMessageFailures[key];
-          const codeToReturn = value.whichCodeToReturn();
-          const code =
-            typeof codeToReturn === 'string' ? codeToReturn : value.codesToReturn[codeToReturn.find((e) => e !== null)];
-
-          return { key, group: getEwdMessageGroup(code), order: EwdMessageCodeOrder.get(code) ?? Infinity };
-        });
-
-        const targetGroup = recallableFailures.sort((a, b) => a.order - b.order)[0]?.group;
-        if (targetGroup !== undefined) {
-          const recalledFailureKeys = recallableFailures
-            .filter((item) => item.group === targetGroup)
-            .map((item) => item.key);
-
-          this.failuresLeft.push(...recalledFailureKeys);
-          this.recallFailures = this.recallFailures.filter((item) => !recalledFailureKeys.includes(item));
-        }
+        this.failuresLeft.push(...this.recallFailures.splice(0));
       }
+
+      this.ecpRecallPulseUpHandled = true;
     }
 
     // Output logic
