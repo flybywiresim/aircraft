@@ -41,12 +41,6 @@ const DisplayUnitToDCBus: { [k in OitDisplayUnitID]: (DcElectricalBus | AcElectr
   [OitDisplayUnitID.FoOit]: [AcElectricalBus.AcEss, DcElectricalBus.DcEssInFlight, DcElectricalBus.Dc1],
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const DisplayUnitToPotentiometer: { [k in OitDisplayUnitID]: number } = {
-  [OitDisplayUnitID.CaptOit]: 78,
-  [OitDisplayUnitID.FoOit]: 79,
-};
-
 interface DisplayUnitProps {
   readonly bus: EventBus;
   readonly displayUnitId: OitDisplayUnitID;
@@ -214,7 +208,7 @@ export class OitDisplayUnit extends DisplayComponent<DisplayUnitProps & Componen
       this.setTimer(0.25 + Math.random() * 0.2);
     } else if (this.state.get() === DisplayUnitState.Bootup && this.brightness.get() !== 0 && this.powered.get()) {
       this.state.set(DisplayUnitState.Selftest);
-      this.setTimer(parseInt(NXDataStore.get('CONFIG_SELF_TEST_TIME', '15')));
+      this.setTimer(parseInt(NXDataStore.getLegacy('CONFIG_SELF_TEST_TIME', '15')));
     } else if (
       (this.state.get() === DisplayUnitState.Selftest || this.state.get() === DisplayUnitState.Bootup) &&
       (this.brightness.get() === 0 || !this.powered.get())

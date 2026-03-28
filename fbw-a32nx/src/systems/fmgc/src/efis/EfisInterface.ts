@@ -79,10 +79,6 @@ export class EfisInterface {
   }
 
   shouldTransmitMissed(planIndex: FlightPlanIndex, isPlanMode: boolean): boolean {
-    if (planIndex === FlightPlanIndex.FirstSecondary) {
-      return this.isSecRelatedPageOpen;
-    }
-
     const plan = this.flightPlanService.get(planIndex);
     if (!plan) {
       return false;
@@ -110,10 +106,6 @@ export class EfisInterface {
   }
 
   shouldTransmitAlternate(planIndex: FlightPlanIndex, isPlanMode: boolean): boolean {
-    if (planIndex === FlightPlanIndex.FirstSecondary) {
-      return this.isSecRelatedPageOpen;
-    }
-
     const plan = this.flightPlanService.get(planIndex);
     if (!plan || !plan.alternateFlightPlan) {
       return false;
@@ -137,10 +129,6 @@ export class EfisInterface {
   }
 
   shouldTransmitAlternateMissed(planIndex: FlightPlanIndex, isPlanMode: boolean): boolean {
-    if (planIndex === FlightPlanIndex.FirstSecondary) {
-      return this.isSecRelatedPageOpen;
-    }
-
     const plan = this.flightPlanService.get(planIndex);
     if (!plan || !plan.alternateFlightPlan) {
       return false;

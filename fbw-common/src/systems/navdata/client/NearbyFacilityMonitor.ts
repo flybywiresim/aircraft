@@ -19,6 +19,13 @@ export interface NearbyFacility {
   databaseId: string;
 }
 
+export interface NearbyAirportFacility extends NearbyFacility {
+  /**
+   * The airport magvar in degrees, or null when the airport is true referenced.
+   */
+  magVar: number | null;
+}
+
 export interface NearbyVhfFacility extends NearbyFacility {
   type: NearbyFacilityType.VhfNavaid;
   vhfType: VhfNavaidType;
@@ -29,6 +36,10 @@ export function isNearbyVhfFacility(o: NearbyFacility): o is NearbyVhfFacility {
   return o.type === NearbyFacilityType.VhfNavaid;
 }
 
+export function isNearbyAirportFacility(o: NearbyFacility): o is NearbyAirportFacility {
+  return o.type === NearbyFacilityType.Airport;
+}
+
 export type NearbyFacilityMonitorAddedCallback = (facility: Readonly<NearbyFacility>) => void;
 export type NearbyFacilityMonitorRemovedCallback = (facility: string) => void;
 
@@ -37,7 +48,7 @@ export interface NearbyFacilityMonitor {
    * Set the centre location for the search area, in degrees of latitude and longitude.
    * No searching will be performed until the location is valid.
    */
-  setLocation(lat: number, lon: number): void;
+  setLocation(lat: number | undefined, lon: number | undefined): void;
   /** Set the search radius in nautical miles. Defaults to 250 NM. */
   setRadius(radius: number): void;
   /** Set the maximum result count. Defaults to 100. */

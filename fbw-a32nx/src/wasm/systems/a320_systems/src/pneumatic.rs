@@ -84,14 +84,9 @@ struct FanAirValveSignal {
     target_open_amount: Ratio,
 }
 
-struct PackFlowValveSignal {
-    target_open_amount: Ratio,
-}
-
 valve_signal_implementation!(PressureRegulatingValveSignal);
 valve_signal_implementation!(EngineStarterValveSignal);
 valve_signal_implementation!(FanAirValveSignal);
-valve_signal_implementation!(PackFlowValveSignal);
 
 pub struct A320Pneumatic {
     physics_updater: MaxStepLoop,

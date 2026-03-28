@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { MathUtils } from '@flybywiresim/fbw-sdk';
-import { Position } from '@turf/turf';
+import { Position } from 'geojson';
 import { clampAngle } from 'msfs-geo';
 
 export function fractionalPointAlongLine(

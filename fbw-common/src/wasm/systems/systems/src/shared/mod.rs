@@ -7,7 +7,6 @@ use crate::{
 
 use arinc429::Arinc429Word;
 use nalgebra::Vector3;
-use ntest::MaxDifference;
 use num_derive::FromPrimitive;
 use std::{cell::Ref, fmt::Display, time::Duration};
 use uom::si::{
@@ -24,6 +23,8 @@ use uom::si::{
 
 pub mod low_pass_filter;
 pub mod pid;
+// The module `test` isn't marked #[cfg(test)] to allow usage in other crates.
+pub mod test;
 pub mod update_iterator;
 
 mod random;
@@ -32,7 +33,10 @@ pub use random::*;
 pub mod arinc429;
 pub mod arinc825;
 pub mod can_bus;
+pub mod derivative;
+pub mod logic_nodes;
 pub mod power_supply_relay;
+pub mod rate_limiter;
 
 pub trait ReservoirAirPressure {
     fn green_reservoir_pressure(&self) -> Pressure;
@@ -119,6 +123,7 @@ pub trait LgciuGearExtension {
     fn main_up_and_locked(&self) -> bool;
     fn nose_down_and_locked(&self) -> bool;
     fn nose_up_and_locked(&self) -> bool;
+    fn left_down_and_locked(&self) -> bool;
 }
 
 pub trait LgciuDoorPosition {
@@ -422,7 +427,7 @@ impl Display for ElectricalBusType {
 /// of electrical buses.
 pub trait ElectricalBuses {
     /// Returns the potential which is fed to the given bus type.
-    fn potential_of(&self, bus_type: ElectricalBusType) -> Ref<Potential>;
+    fn potential_of(&'_ self, bus_type: ElectricalBusType) -> Ref<'_, Potential>;
 
     /// Returns whether the given bus type is powered.
     fn is_powered(&self, bus_type: ElectricalBusType) -> bool;
@@ -469,7 +474,7 @@ pub trait PowerConsumptionReport {
 /// Trait through which elements can consume power from the aircraft's electrical system.
 pub trait ConsumePower: PowerConsumptionReport {
     /// Returns the input potential of the given element.
-    fn input_of(&self, element: &impl ElectricalElement) -> Ref<Potential>;
+    fn input_of(&'_ self, element: &impl ElectricalElement) -> Ref<'_, Potential>;
 
     /// Consumes the given amount of power from the potential provided to the element.
     fn consume_from_input(&mut self, element: &impl ElectricalElement, power: Power);
@@ -623,6 +628,20 @@ impl DelayedFalseLogicGate {
             expression_result: false,
             false_duration: delay,
         }
+    }
+
+    pub fn starting_as(mut self, state: bool) -> Self {
+        self.set_output(state);
+        self
+    }
+
+    fn set_output(&mut self, state: bool) {
+        self.expression_result = state;
+        self.false_duration = if !state {
+            self.delay
+        } else {
+            Duration::from_millis(0)
+        };
     }
 
     pub fn update(&mut self, context: &UpdateContext, expression_result: bool) {
@@ -860,12 +879,6 @@ impl From<f64> for MachNumber {
 impl From<MachNumber> for f64 {
     fn from(value: MachNumber) -> Self {
         value.0
-    }
-}
-
-impl MaxDifference for MachNumber {
-    fn max_diff(self, other: Self) -> f64 {
-        (f64::from(self) - f64::from(other)).abs()
     }
 }
 
@@ -1149,6 +1162,12 @@ impl<D: uom::si::Dimension + ?Sized, U: uom::si::Units<f64> + ?Sized> Clamp
             self = max;
         }
         self
+    }
+}
+
+impl Clamp for f64 {
+    fn clamp(self, min: Self, max: Self) -> Self {
+        self.clamp(min, max)
     }
 }
 
@@ -2122,7 +2141,7 @@ mod local_acceleration_at_plane_coordinate {
 
 #[cfg(test)]
 mod mach_number_tests {
-    use ntest::assert_about_eq;
+    use ntest::{assert_about_eq, MaxDifference};
     use uom::si::{
         length::foot,
         quantities::{Length, Velocity},
@@ -2130,6 +2149,12 @@ mod mach_number_tests {
     };
 
     use crate::shared::{InternationalStandardAtmosphere, MachNumber};
+
+    impl MaxDifference for MachNumber {
+        fn max_diff(self, other: Self) -> f64 {
+            (f64::from(self) - f64::from(other)).abs()
+        }
+    }
 
     // All of the test values are obtained from
     // - https://aerotoolbox.com/airspeed-conversions/

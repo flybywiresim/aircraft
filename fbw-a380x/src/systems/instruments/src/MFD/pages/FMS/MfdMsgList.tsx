@@ -77,9 +77,10 @@ export class MfdMsgList extends DisplayComponent<MfdMsgListProps> {
     );
 
     this.subs.push(
-      this.props.fmcService.masterFmcChanged.sub(() =>
-        this.props.fmcService.master?.fmgc.data.engineOut.pipe(this.eoActive),
-      ),
+      this.props.fmcService.masterFmcChanged.sub(() => {
+        // FIXME the previous pipe leaks...
+        this.props.fmcService.master?.fmgc.data.engineOut.pipe(this.eoActive);
+      }),
     );
   }
 
@@ -98,7 +99,7 @@ export class MfdMsgList extends DisplayComponent<MfdMsgListProps> {
             activePage={Subject.create('MESSAGE LIST')}
             offset={Subject.create('')}
             eoIsActive={this.eoActive}
-            tmpyIsActive={Subject.create(false)}
+            isFmsSubsystemPage={true}
           />
           {/* begin page content */}
           <div class="mfd-page-container">

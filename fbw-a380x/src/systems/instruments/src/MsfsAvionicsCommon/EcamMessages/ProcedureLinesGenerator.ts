@@ -21,9 +21,11 @@ import {
   TimedChecklistCondition,
   WdLineData,
   AbstractChecklistItem,
+  WdSpecialLine,
+  WD_LINE_CHARACTERS,
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { EcamNormalProcedures } from 'instruments/src/MsfsAvionicsCommon/EcamMessages/NormalProcedures';
-import { ChecklistState } from 'instruments/src/MsfsAvionicsCommon/providers/FwsEwdPublisher';
+import { ChecklistState } from 'instruments/src/MsfsAvionicsCommon/providers/FwsPublisher';
 
 export enum ProcedureType {
   Normal,
@@ -91,6 +93,7 @@ export class ProcedureLinesGenerator {
     ChecklistLineStyle.SeparationLine,
     ChecklistLineStyle.SubHeadline,
     ChecklistLineStyle.CenteredSubHeadline,
+    ChecklistLineStyle.Red,
   ];
 
   static conditionalActiveItems(
@@ -295,7 +298,7 @@ export class ProcedureLinesGenerator {
           // Force 'active' status update
           ProcedureLinesGenerator.conditionalActiveItems(this.procedure, clState.itemsChecked, clState.itemsActive);
         }
-        this.moveDown(false);
+        this.moveDown();
       }
     } else if (this.sii === SPECIAL_INDEX_CLEAR) {
       this.procedureClearedOrResetCallback?.(clState);
@@ -347,7 +350,7 @@ export class ProcedureLinesGenerator {
         ? selectableAndNotChecked[0] - 1
         : this.checklistState.itemsChecked.length - 1,
     );
-    this.moveDown(false);
+    this.moveDown();
   }
 
   private selectableItems(skipCompletedSensed: boolean) {
@@ -383,7 +386,7 @@ export class ProcedureLinesGenerator {
       this.type === ProcedureType.Abnormal ||
       this.type === ProcedureType.Deferred ||
       this.type === ProcedureType.FwsFailedFallback;
-    const isAbnormal = this.type === ProcedureType.Abnormal;
+    const isAbnormal = this.type === ProcedureType.Abnormal || this.type === ProcedureType.FwsFailedFallback;
     const isAbnormalNotSensed =
       this.type === ProcedureType.Abnormal && EcamAbnormalProcedures[this.procedureId]?.sensed === false;
     const isDeferred = this.type === ProcedureType.Deferred;
@@ -412,7 +415,7 @@ export class ProcedureLinesGenerator {
       });
     }
 
-    if (!isAbnormal || this.procedureIsActive.get()) {
+    if (!isAbnormal || this.procedureIsActive.get() || this.type === ProcedureType.FwsFailedFallback) {
       if (this.recommendation) {
         lineData.push({
           abnormalProcedure: isAbnormalOrDeferred,
@@ -482,12 +485,13 @@ export class ProcedureLinesGenerator {
           activeProcedure: this.procedureIsActive.get(),
           sensed: isCondition ? true : item.sensed,
           checked: this.checklistState.itemsChecked[itemIndex],
-          text: text.substring(0, 39),
+          text: text.substring(0, WD_LINE_CHARACTERS - 1),
           style: clStyle,
           firstLine: (!this.procedureIsActive.get() && isAbnormal) || this.type === ProcedureType.FwsFailedFallback,
           lastLine: (!this.procedureIsActive.get() && isAbnormal) || this.type === ProcedureType.FwsFailedFallback,
           originalItemIndex: !isCondition || (isCondition && item.sensed) ? itemIndex : undefined, // FIXME It should be possible to scroll to non sensed conditions
           inactive: inactive,
+          specialLine: clStyle === ChecklistLineStyle.Empty ? WdSpecialLine.Empty : undefined,
         });
 
         if (isCondition && !item.sensed) {
@@ -509,7 +513,7 @@ export class ProcedureLinesGenerator {
         }
       });
 
-      if (isAbnormal) {
+      if (isAbnormal && this.type !== ProcedureType.FwsFailedFallback) {
         lineData.push({
           abnormalProcedure: isAbnormalOrDeferred,
           activeProcedure: this.procedureIsActive.get(),
@@ -570,7 +574,7 @@ export class ProcedureLinesGenerator {
           });
         }
       }
-    } else if (this.items.length > 0 && this.type !== ProcedureType.FwsFailedFallback) {
+    } else if (this.items.length > 0) {
       // Only three dots for following procedures
       lineData.push({
         abnormalProcedure: isAbnormalOrDeferred,
@@ -616,8 +620,11 @@ export class ProcedureLinesGenerator {
       if (isTimedCheckListAction(item)) {
         text += this.getTimedItemLineText(item, checklistState, itemIndex) ?? '';
       }
-      // Pad to 39 characters max
-      const paddingNeeded = Math.max(0, 39 - (item.labelNotCompleted.length + text.length + (item.level ?? 0) * 1 + 2));
+      // Pad to 40 characters max
+      const paddingNeeded = Math.max(
+        0,
+        WD_LINE_CHARACTERS - 1 - (item.labelNotCompleted.length + text.length + (item.level ?? 0) * 1 + 2),
+      );
 
       text += ` ${'.'.repeat(paddingNeeded)}${item.labelNotCompleted}`;
     }
@@ -643,7 +650,7 @@ export class ProcedureLinesGenerator {
 
       const appendText = ' :';
       text +=
-        itemComplete || timedText === null
+        itemComplete || (isTimedItem && timedText === null)
           ? `.AS ${item.name.substring(0, 2) === 'IF' ? item.name.substring(2) : item.name} ${timedText ?? appendText}`
           : `.IF ${item.name.substring(0, 2) === 'IF' ? item.name.substring(2) : item.name} ${timedText ?? appendText}`;
     }

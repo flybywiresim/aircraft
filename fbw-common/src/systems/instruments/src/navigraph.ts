@@ -15,8 +15,8 @@ initializeApp({
 
 export const navigraphAuth = getAuth({
   storage: {
-    getItem: (key) => NXDataStore.get(key),
-    setItem: (key, value) => NXDataStore.set(key, value),
+    getItem: (key) => NXDataStore.getLegacy(key),
+    setItem: (key, value) => NXDataStore.setLegacy(key, value),
   },
   keys: {
     accessToken: 'NAVIGRAPH_ACCESS_TOKEN',

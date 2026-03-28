@@ -34,7 +34,12 @@ class EngineControl_A32NX {
   FadecSimData_A32NX simData{};
 
   // ATC ID for the aircraft used to load and store the fuel levels
-  std::string atcId{};
+  std::string atcId = "A32NX";
+
+  // Whether we have already loaded the fuel configuration from the config file
+  bool hasLoadedFuelConfig = false;
+
+  bool fadecInitialized = false;
 
   // Fuel configuration for loading and storing fuel levels
   FuelConfiguration_A32NX fuelConfiguration{};
@@ -52,7 +57,7 @@ class EngineControl_A32NX {
   static constexpr double TRANSITION_WAIT_TIME = 10;
 
   // values that need previous state
-  double prevFlexTemperature       = 0.0;
+  double latchedFlexTemperature    = 0.0;
   double prevThrustLimitType       = 0.0;
   double prevEngineMasterPos[2]    = {0, 0};
   bool   prevEngineStarterState[2] = {false, false};
@@ -98,6 +103,7 @@ class EngineControl_A32NX {
   SimpleProfiler profilerUpdateFuel{"Fadec::EngineControl_A32NX::updateFuel()", 100};
   SimpleProfiler profilerUpdateThrustLimits{"Fadec::EngineControl_A32NX::updateThrustLimits()", 100};
   SimpleProfiler profilerUpdateOil{"Fadec::EngineControl_A32NX::updateOil()", 100};
+  SimpleProfiler profilerEnsureFadecIsInitialized{"Fadec::EngineControl_A32NX::ensureFadecIsInitialized()", 100};
 #endif
 
   // ===========================================================================
@@ -127,10 +133,20 @@ class EngineControl_A32NX {
 
  private:
   /**
+   * @brief Initializes the required data for the engine simulation if it has not been initialized
+   */
+  void loadFuelConfigIfPossible();
+
+  /**
    * @brief Initialize the FADEC and Fuel model
-   * This is done after we have retrieved the ATC ID so we can load the fuel levels
    */
   void initializeEngineControlData();
+
+  /**
+   * @brief Initializes the fuel tanks based on a default config or the saved state of this livery
+   * This method may be called multiple times during initialization
+   */
+  void initializeFuelTanks(FLOAT64 timeStamp, UINT64 tickCounter);
 
   /**
    * @brief Generates a random engine imbalance.

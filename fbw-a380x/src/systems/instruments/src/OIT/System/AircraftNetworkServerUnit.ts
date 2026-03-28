@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
+  ClockEvents,
   ConsumerSubject,
   EventBus,
   Instrument,
   SimVarValueType,
   Subject,
-  Subscribable,
   Subscription,
 } from '@microsoft/msfs-sdk';
 import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
@@ -23,7 +23,7 @@ type AnsuType = 'nss-avncs' | 'flt-ops';
 export class AircraftNetworkServerUnit implements Instrument {
   protected readonly subscriptions: Subscription[] = [];
 
-  protected readonly sub = this.bus.getSubscriber<ResetPanelSimvars & OitSimvars>();
+  protected readonly sub = this.bus.getSubscriber<ResetPanelSimvars & OitSimvars & ClockEvents>();
 
   protected readonly failureKey =
     this.type === 'flt-ops' && this.index === 1
@@ -35,7 +35,6 @@ export class AircraftNetworkServerUnit implements Instrument {
   protected readonly powered = Subject.create(false);
 
   protected readonly _isHealthy = Subject.create(false);
-  public readonly isHealthy = this._isHealthy as Subscribable<boolean>;
   protected readonly isHealthySimVar = `L:A32NX_${this.type === 'nss-avncs' ? 'NSS' : 'FLTOPS'}_ANSU_${this.index.toFixed(0)}_IS_HEALTHY`;
 
   protected readonly nssMasterOff = ConsumerSubject.create(this.sub.on('nssMasterOff'), false);
@@ -48,10 +47,10 @@ export class AircraftNetworkServerUnit implements Instrument {
   public readonly sci = new SecureCommunicationInterface(this.bus);
 
   constructor(
-    private readonly bus: EventBus,
-    private readonly index: AnsuIndex, // use only one ANSU index per type for now
-    private readonly type: AnsuType,
-    private readonly failuresConsumer: FailuresConsumer,
+    protected readonly bus: EventBus,
+    protected readonly index: AnsuIndex, // use only one ANSU index per type for now
+    protected readonly type: AnsuType,
+    protected readonly failuresConsumer: FailuresConsumer,
   ) {}
 
   /** @inheritdoc */
@@ -59,7 +58,7 @@ export class AircraftNetworkServerUnit implements Instrument {
     this.failuresConsumer.register(this.failureKey);
 
     this.subscriptions.push(
-      this._isHealthy.sub((v) => SimVar.SetSimVarValue(this.isHealthySimVar, SimVarValueType.Bool, v)),
+      this._isHealthy.sub((v) => SimVar.SetSimVarValue(this.isHealthySimVar, SimVarValueType.Bool, v), true),
     );
   }
 
@@ -89,11 +88,8 @@ export class AircraftNetworkServerUnit implements Instrument {
 
     this._isHealthy.set(!failed && this.powered.get() && !this.resetPbStatus.get() && !this.nssMasterOff.get());
 
-    if (this.resetPbStatus.get()) {
-      this.reset();
-    }
-
     if (!this._isHealthy.get()) {
+      this.reset();
       return;
     }
   }

@@ -1,8 +1,8 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { Position } from '@turf/turf';
-import { bearingTo, Coordinates, distanceTo } from 'msfs-geo';
+import { Position } from 'geojson';
+import { bearingTo, Coordinates, distanceTo, placeBearingDistance } from 'msfs-geo';
 import { MathUtils } from '../shared/src/MathUtils';
 
 export class OansMapProjection {
@@ -25,5 +25,26 @@ export class OansMapProjection {
     out[1] = xNm * nmToMeters;
 
     return out;
+  }
+
+  /**
+   * Reverse transform: airport local coordinates (x east, y north) back to global WGS84 coordinates.
+   *
+   * @param airportPos Airport reference coordinates (origin of local system)
+   * @param local Airport local coordinates [x_east_m, y_north_m]
+   * @param out Output argument: Write global coordinates here
+   */
+  public static airportToGlobalCoordinates(airportPos: Coordinates, local: Position): Coordinates {
+    const nmToMeters = 1852;
+
+    // Inverse of packing in globalToAirportCoordinates
+    const yNm = local[0] / nmToMeters; // east component in NM
+    const xNm = local[1] / nmToMeters; // north component in NM
+
+    const distanceNm = Math.hypot(xNm, yNm);
+    let bearingDeg = Math.atan2(yNm, xNm) * MathUtils.RADIANS_TO_DEGREES; // from North, clockwise
+    if (bearingDeg < 0) bearingDeg += 360;
+
+    return placeBearingDistance(airportPos, bearingDeg, distanceNm);
   }
 }

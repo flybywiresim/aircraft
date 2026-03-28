@@ -41,6 +41,7 @@ pub mod command_sensor_unit;
 pub mod electrical_generator;
 pub mod electrical_pump_physics;
 pub mod flap_slat;
+pub mod hydraulic_motor;
 pub mod landing_gear;
 pub mod linear_actuator;
 pub mod nose_steering;
@@ -1220,12 +1221,12 @@ impl HydraulicCircuit {
             if self.auxiliary_section.is_some()
                 && self.pump_section_routed_to_auxiliary_section[pump_index]
             {
-                self.auxiliary_section
-                    .as_mut()
-                    .unwrap()
-                    .update_upstream_delta_vol(std::slice::from_ref(
-                        &self.pump_sections_check_valves[pump_index],
-                    ));
+                match &mut self.auxiliary_section {
+                    Some(auxiliary_section) => auxiliary_section.update_upstream_delta_vol(
+                        std::slice::from_ref(&self.pump_sections_check_valves[pump_index]),
+                    ),
+                    None => unreachable!(),
+                };
             } else {
                 self.system_section
                     .update_upstream_delta_vol(std::slice::from_ref(
@@ -1279,7 +1280,10 @@ impl HydraulicCircuit {
                 if self.auxiliary_section.is_some()
                     && self.pump_section_routed_to_auxiliary_section[pump_section_idx]
                 {
-                    self.auxiliary_section.as_mut().unwrap()
+                    match &mut self.auxiliary_section {
+                        Some(auxiliary_section) => auxiliary_section,
+                        None => unreachable!(),
+                    }
                 } else {
                     &self.system_section
                 },
@@ -1451,8 +1455,8 @@ impl HydraulicCircuit {
     }
 
     pub fn auxiliary_section(&self) -> &impl SectionPressure {
-        if self.auxiliary_section.is_some() {
-            self.auxiliary_section.as_ref().unwrap()
+        if let Some(auxiliary_section) = &self.auxiliary_section {
+            auxiliary_section
         } else {
             &self.system_section
         }

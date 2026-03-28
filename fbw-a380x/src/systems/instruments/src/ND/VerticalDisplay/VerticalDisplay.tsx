@@ -1,4 +1,7 @@
-﻿import {
+﻿// Copyright (c) 2025-2026 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+import {
   Arinc429LocalVarConsumerSubject,
   ArincEventBus,
   EfisNdMode,
@@ -29,7 +32,8 @@ import { FmsSymbolsData } from 'instruments/src/ND/FmsSymbolsPublisher';
 import { NDControlEvents } from 'instruments/src/ND/NDControlEvents';
 import { VerticalDisplayCanvasMap } from 'instruments/src/ND/VerticalDisplay/VerticalDisplayCanvasMap';
 import { VerticalMode } from '@shared/autopilot';
-import { GenericFcuEvents, GenericTawsEvents, TrackLine } from '@flybywiresim/navigation-display';
+import { A380XFcuBusEvents } from '@shared/publishers/A380XFcuBusPublisher';
+import { GenericFcuEvents, GenericTawsEvents } from '@flybywiresim/navigation-display';
 import { AesuBusEvents } from 'instruments/src/MsfsAvionicsCommon/providers/AesuBusPublisher';
 import { FGVars } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
 import { MfdSurvEvents } from 'instruments/src/MsfsAvionicsCommon/providers/MfdSurvPublisher';
@@ -50,17 +54,18 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
   private readonly subscriptions: Subscription[] = [];
 
   private readonly sub = this.props.bus.getArincSubscriber<
-    GenericFcuEvents &
-      GenericTawsEvents &
-      NDSimvars &
-      SimplaneValues &
-      FmsSymbolsData &
-      NDControlEvents &
+    AesuBusEvents &
+      A380XFcuBusEvents &
       ClockEvents &
-      AesuBusEvents &
-      FGVars &
       FcuSimVars &
-      MfdSurvEvents
+      FGVars &
+      FmsSymbolsData &
+      GenericFcuEvents &
+      GenericTawsEvents &
+      MfdSurvEvents &
+      NDControlEvents &
+      NDSimvars &
+      SimplaneValues
   >();
 
   private readonly labelSvgRef = FSComponent.createRef<SVGElement>();
@@ -129,7 +134,9 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
 
   private readonly lineColor = this.vdAvailable.map((a) => (a ? 'white' : 'red'));
 
-  private readonly baroMode = ConsumerSubject.create(this.sub.on('baroMode'), 'STD');
+  private readonly fcuEisDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on(this.props.side === 'L' ? 'a380x_fcu_eis_discrete_word_2_left' : 'a380x_fcu_eis_discrete_word_2_right'),
+  );
 
   private readonly baroCorrectedAltitude = Arinc429LocalVarConsumerSubject.create(
     this.sub.on('baroCorrectedAltitude'),
@@ -205,11 +212,11 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
 
   private readonly activeLateralMode = ConsumerSubject.create(this.sub.on('fg.fma.lateralMode'), 0);
   private readonly armedLateralMode = ConsumerSubject.create(this.sub.on('fg.fma.lateralArmedBitmask'), 0);
-  private readonly shouldShowTrackLine = MappedSubject.create(
-    ([active, armed]) => TrackLine.shouldShowTrackLine(active, armed),
-    this.activeLateralMode,
-    this.armedLateralMode,
+  private readonly areActiveVectorsTransmitted = MappedSubject.create(
+    ([path]) => path !== undefined && path !== null,
+    this.fmsLateralPath,
   );
+  private readonly shouldShowTrackLine = this.areActiveVectorsTransmitted.map((transmitted) => !transmitted);
   private readonly activeVerticalMode = ConsumerSubject.create(this.sub.on('fg.fma.verticalMode'), 0);
   private readonly fgAltConstraint = ConsumerSubject.create(this.sub.on('fg.altitudeConstraint'), 0);
   private readonly selectedAltitude = ConsumerSubject.create(this.sub.on('selectedAltitude'), 0);
@@ -230,9 +237,9 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
     this.fgAltConstraint,
   );
   private readonly targetAltitudeFormatted = MappedSubject.create(
-    ([alt, baroMode]) => (baroMode === 'STD' ? `FL ${Math.floor(alt / 100).toFixed(0)}` : alt.toFixed(0)),
+    ([alt, fcuDw]) => (fcuDw.bitValueOr(28, false) ? `FL ${Math.floor(alt / 100).toFixed(0)}` : alt.toFixed(0)),
     this.targetAltitude,
-    this.baroMode,
+    this.fcuEisDiscreteWord2,
   );
 
   private readonly targetAltitudeTextVisibility = MappedSubject.create(
@@ -288,23 +295,23 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
   );
   private readonly altitudeTapeText = Array.from(Array(8), (_, index) =>
     MappedSubject.create(
-      ([vdRange, verticalRange, baroMode]) => {
+      ([vdRange, verticalRange, fcuDw]) => {
         const dashAlt = VerticalDisplay.altitudeTapeAlt(index, vdRange, verticalRange);
         const altitudePerDash = VerticalDisplay.altitudeTapeAlt(1, vdRange, [0, 0]);
         if (dashAlt % (altitudePerDash * 2) == 0) {
-          return baroMode === 'STD' ? Math.floor(dashAlt / 100).toFixed(0) : dashAlt.toFixed(0);
+          return fcuDw.bitValueOr(28, false) ? Math.floor(dashAlt / 100).toFixed(0) : dashAlt.toFixed(0);
         } else {
           return '';
         }
       },
       this.vdRange,
       this.verticalRange,
-      this.baroMode,
+      this.fcuEisDiscreteWord2,
     ),
   );
   private readonly altitudeFlTextVisible = MappedSubject.create(
-    ([baroMode, vdAvailable]) => (baroMode === 'STD' && vdAvailable ? 'visible' : 'hidden'),
-    this.baroMode,
+    ([fcuDw, vdAvailable]) => (fcuDw.bitValueOr(28, false) && vdAvailable ? 'visible' : 'hidden'),
+    this.fcuEisDiscreteWord2,
     this.vdAvailable,
   );
 
@@ -431,7 +438,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
       this.vdAvailable,
       this.vdDataVisibility,
       this.lineColor,
-      this.baroMode,
+      this.fcuEisDiscreteWord2,
       this.baroCorrectedAltitude,
       this.verticalRange,
       this.planeSymbolY,
@@ -443,6 +450,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
       this.rangeOver160ArrowVisible,
       this.activeLateralMode,
       this.armedLateralMode,
+      this.areActiveVectorsTransmitted,
       this.shouldShowTrackLine,
       this.activeVerticalMode,
       this.fgAltConstraint,

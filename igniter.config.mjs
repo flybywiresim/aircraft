@@ -94,7 +94,7 @@ export default new TaskOfTasks('all', [
                     [
                         'fbw-common/src/wasm/terronnd',
                         'fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/terronnd.wasm',
-                        'fbw-common/src/wasm/terronnd/out/terronnd.wasm',
+                        'fbw-common/src/wasm/terronnd/out/terronnd_A32NX.wasm',
                     ],
                 ),
                 new ExecTask('cpp-wasm-cmake', 'npm run build:cpp-wasm-cmake', [
@@ -217,7 +217,7 @@ export default new TaskOfTasks('all', [
                     ['npm run build-a380x:terronnd'],
                     [
                         'fbw-common/src/wasm/terronnd',
-                        'fbw-common/src/wasm/terronnd/out/terronnd.wasm',
+                        'fbw-common/src/wasm/terronnd/out/terronnd_A380X.wasm',
                         'fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/terronnd.wasm',
                     ],
                 ),

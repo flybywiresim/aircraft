@@ -98,7 +98,7 @@ export const StatusArea = () => {
   };
 
   useUpdate((_deltaTime) => {
-    const fuelWeight = SimVar.GetSimVarValue('FUEL TOTAL QUANTITY WEIGHT', 'kg');
+    const fuelWeight = SimVar.GetSimVarValue('L:A32NX_TOTAL_FUEL_QUANTITY', 'number');
     const emptyWeight = SimVar.GetSimVarValue('EMPTY WEIGHT', 'kg');
     const payloadCount = SimVar.GetSimVarValue('PAYLOAD STATION COUNT', 'number');
 

@@ -549,8 +549,14 @@ export class CDUAvailableArrivalsPage {
       down = true;
     }
     mcdu.setArrows(up, down, true, true);
+
+    const titleCell =
+      forPlan >= FlightPlanIndex.FirstSecondary
+        ? `SEC ARRIVAL {small}TO{end} ${airport.ident}{sp}{sp}{sp}{sp}{sp}`
+        : `ARRIVAL {small}TO{end} {green}${airport.ident}{end}{sp}`;
+
     mcdu.setTemplate([
-      ['ARRIVAL {small}TO{end} {green}' + airport.ident + '{sp}{end}'],
+      [titleCell],
       ['{sp}APPR', 'STAR{sp}', '{sp}VIA'],
       [
         `{${selectedApproachCellColor}}${selectedApproachCell.padEnd(10)}{end}{${selectedViasCellColor}}${selectedViasCell}{end}`,
@@ -686,8 +692,11 @@ export class CDUAvailableArrivalsPage {
       CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
     };
 
+    const titleCell =
+      forPlan >= FlightPlanIndex.FirstSecondary ? 'SEC APPROACH VIAS\xa0\xa0\xa0\xa0\xa0\xa0\xa0' : 'APPROACH VIAS\xa0';
+
     mcdu.setTemplate([
-      ['APPROACH VIAS'],
+      [titleCell],
       ['{sp}APPR', 'STAR{sp}', '{sp}VIA'],
       [
         `{${selectedApproachCellColor}}${selectedApproachCell.padEnd(10)}{end}{${selectedViasCellColor}}${selectedViasCell}{end}`,

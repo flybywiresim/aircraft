@@ -182,9 +182,14 @@ export const globalSyncedSettings: SyncedSettingDefinition[] = [
 ];
 
 function syncSetting(definition: SyncedSettingDefinition) {
-  NXDataStore.getAndSubscribe(
+  NXDataStore.getAndSubscribeLegacy(
     definition.configKey,
     (prop, value) => {
+      if (value === undefined) {
+        console.warn(`(syncSetting) Did not sync setting ${definition.configKey} because the value was undefined`);
+        return;
+      }
+
       SimVar.SetSimVarValue(
         definition.localVarName,
         definition.localVarUnit ?? 'number',

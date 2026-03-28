@@ -125,15 +125,69 @@ export const EcamAbnormalSensedAta313233: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [],
   },
-  314800002: {
-    title: '\x1b<4m\x1b4mCDS\x1bm FWS 1+2 & CPIOM FAULT',
-    sensed: true,
-    items: [],
-  },
   314800003: {
-    title: '\x1b<4m\x1b4mCDS\x1bm FWS 1+2 & FCDC 1+2 FAULT',
+    title: '\x1b<4m\x1b4mFWS\x1bm FWS 1+2 & FCDC 1+2 FAULT',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'ECAM SD',
+        labelNotCompleted: 'MONITOR',
+        sensed: true,
+      },
+      {
+        name: 'OVHD PNL',
+        labelNotCompleted: 'MONITOR',
+        sensed: true,
+      },
+      {
+        name: 'FUNCTIONS NOT AVAIL:',
+        sensed: true,
+        style: ChecklistLineStyle.White,
+        level: 2,
+      },
+      {
+        name: 'F/CTL INDICATIONS',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+        level: 2,
+      },
+      {
+        name: 'ECAM WARNINGS & CAUTIONS',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+        level: 2,
+      },
+      {
+        name: 'ABN PROCEDURES',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+        level: 2,
+      },
+      {
+        name: 'LIMITATIONS & STATUS',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+        level: 2,
+      },
+      {
+        name: 'ALTITUDE ALERT',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+        level: 2,
+      },
+      {
+        name: 'AUTO CALLOUT',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+        level: 2,
+      },
+      {
+        name: 'NORM C/L & MEMO',
+        sensed: true,
+        style: ChecklistLineStyle.Amber,
+        level: 2,
+      },
+    ],
   },
   314800004: {
     title: '\x1b<4m\x1b4mFWS\x1bm FWS 1+2 FAULT',

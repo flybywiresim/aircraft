@@ -80,7 +80,7 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
       timer.current = null;
     } else if (state === DisplayUnitState.Off && potentiometer !== 0 && electricityState !== 0 && !props.failed) {
       setState(DisplayUnitState.Selftest);
-      timer.current = parseInt(NXDataStore.get('CONFIG_SELF_TEST_TIME', '15'));
+      timer.current = parseInt(NXDataStore.getLegacy('CONFIG_SELF_TEST_TIME', '15'));
     } else if (state === DisplayUnitState.Selftest && (potentiometer === 0 || electricityState === 0)) {
       setState(DisplayUnitState.Off);
       timer.current = null;

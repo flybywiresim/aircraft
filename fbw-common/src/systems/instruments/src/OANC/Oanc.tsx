@@ -1,8 +1,8 @@
-// @ts-strict-ignore
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import {
+  ArrayUtils,
   ComponentProps,
   ConsumerSubject,
   DebounceTimer,
@@ -18,45 +18,45 @@ import {
   VNode,
   Wait,
 } from '@microsoft/msfs-sdk';
+
 import {
+  AmdbFeature,
   AmdbFeatureCollection,
   AmdbFeatureTypeStrings,
   AmdbProjection,
   AmdbProperties,
+  Arinc429LocalVarConsumerSubject,
+  EfisNdMode,
+  EfisSide,
+  FcuSimVars,
   FeatureType,
   FeatureTypeString,
-  MathUtils,
-  PolygonalStructureType,
-  EfisNdMode,
-  MapParameters,
-  EfisSide,
   FmsOansData,
-  FcuSimVars,
   GenericAdirsEvents,
-  Arinc429LocalVarConsumerSubject,
+  MapParameters,
+  MathUtils,
+  OansControlEvents,
   OansFmsDataStore,
   OansMapProjection,
+  PolygonalStructureType,
 } from '@flybywiresim/fbw-sdk';
+
 import {
   bbox,
   bboxPolygon,
   booleanPointInPolygon,
   centroid,
-  Feature,
   featureCollection,
-  FeatureCollection,
-  Geometry,
-  LineString,
-  Point,
-  Polygon,
-  Position,
+  polygon,
+  simplify,
+  union,
 } from '@turf/turf';
+import { Feature, FeatureCollection, Geometry, LineString, Point, Polygon, MultiPolygon, Position } from 'geojson';
 import { bearingTo, clampAngle, Coordinates, distanceTo, placeBearingDistance } from 'msfs-geo';
 
-import { OansControlEvents } from './OansControlEventPublisher';
 import { reciprocal } from '@fmgc/guidance/lnav/CommonGeometry';
 import { OansBrakeToVacateSelection } from './OansBrakeToVacateSelection';
-import { STYLE_DATA } from './style-data';
+import { LAYER_SPECIFICATIONS } from './style-data';
 import { OancMovingModeOverlay, OancStaticModeOverlay } from './OancMovingModeOverlay';
 import { OancAircraftIcon } from './OancAircraftIcon';
 import { OancLabelManager } from './OancLabelManager';
@@ -96,14 +96,6 @@ export const a380EfisZoomRangeSettings: A380EfisZoomRangeValue[] = [0.2, 0.5, 1,
 
 const DEFAULT_SCALE_NM = 0.539957;
 
-const LAYER_VISIBILITY_RULES = [
-  [true, true, true, true, false, false, true, true],
-  [true, true, true, true, false, false, false, true],
-  [false, true, false, false, true, true, false, true],
-  [false, true, false, false, true, true, false, true],
-  [false, true, false, false, true, true, false, true],
-];
-
 export const LABEL_VISIBILITY_RULES = [true, true, true, true, true];
 
 export enum LabelStyle {
@@ -130,7 +122,7 @@ export interface Label {
   style: LabelStyle;
   position: Position;
   rotation: number | undefined;
-  associatedFeature?: Feature<Geometry, AmdbProperties>;
+  associatedFeature?: AmdbFeature;
 }
 
 export interface ContextMenuItemData {
@@ -169,15 +161,9 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     FSComponent.createRef<HTMLCanvasElement>(),
     FSComponent.createRef<HTMLCanvasElement>(),
     FSComponent.createRef<HTMLCanvasElement>(),
-    FSComponent.createRef<HTMLCanvasElement>(),
-    FSComponent.createRef<HTMLCanvasElement>(),
-    FSComponent.createRef<HTMLCanvasElement>(),
   ];
 
   private readonly layerCanvasScaleContainerRefs = [
-    FSComponent.createRef<HTMLCanvasElement>(),
-    FSComponent.createRef<HTMLCanvasElement>(),
-    FSComponent.createRef<HTMLCanvasElement>(),
     FSComponent.createRef<HTMLCanvasElement>(),
     FSComponent.createRef<HTMLCanvasElement>(),
     FSComponent.createRef<HTMLCanvasElement>(),
@@ -189,9 +175,9 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
   public data: AmdbFeatureCollection | undefined;
 
-  private arpCoordinates = Subject.create<Coordinates | undefined>(undefined);
+  private arpCoordinates = Subject.create<Coordinates | null>(null);
 
-  private canvasCenterCoordinates: Coordinates | undefined;
+  private canvasCenterCoordinates: Coordinates | null = null;
 
   private readonly dataAirportName = Subject.create('');
 
@@ -220,11 +206,8 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     featureCollection([]), // Layer 0: TAXIWAY BG + TAXIWAY SHOULDER
     featureCollection([]), // Layer 1: APRON + STAND BG + BUILDINGS (terminal only)
     featureCollection([]), // Layer 2: RUNWAY (with markings)
-    featureCollection([]), // Layer 3: RUNWAY (without markings)
+    featureCollection([]), // Layer 3: TAXIWAY GUIDANCE LINES (unscaled width)
     featureCollection([]), // Layer 4: TAXIWAY GUIDANCE LINES (scaled width), HOLD SHORT LINES
-    featureCollection([]), // Layer 5: TAXIWAY GUIDANCE LINES (unscaled width)
-    featureCollection([]), // Layer 6: STAND GUIDANCE LINES (scaled width)
-    featureCollection([]), // Layer 7: DYNAMIC BTV CONTENT (BTV PATH, STOP LINES)
   ];
 
   public readonly amdbClient = new NavigraphAmdbClient();
@@ -281,16 +264,14 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
   // TODO: Should be using GPS position interpolated with IRS velocity data
   private readonly pposLatWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('latitude'));
-
   private readonly pposLongWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('longitude'));
+  private readonly trueHeadingWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('trueHeadingRaw'));
 
   public readonly ppos = MappedSubject.create(
     ([latWord, longWord]) => ({ lat: latWord.value, long: longWord.value }) as Coordinates,
     this.pposLatWord,
     this.pposLongWord,
   );
-
-  private readonly trueHeadingWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('trueHeadingRaw'));
 
   public referencePos: Coordinates = { lat: 0, long: 0 };
 
@@ -302,7 +283,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
   private readonly airportBearing = Subject.create(0);
 
-  public readonly projectedPpos = MappedSubject.create<[Coordinates, Coordinates | undefined], Position>(
+  public readonly projectedPpos = MappedSubject.create<[Coordinates, Coordinates | null], Position>(
     ([ppos, arpCoordinates], previous?: Position | undefined) => {
       if (arpCoordinates) {
         return OansMapProjection.globalToAirportCoordinates(arpCoordinates, ppos, [0, 0]);
@@ -348,7 +329,8 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     this.labelManager,
     this.aircraftOnGround,
     this.projectedPpos,
-    this.layerCanvasRefs[7],
+    this.arpCoordinates,
+    this.layerCanvasRefs[this.layerCanvasRefs.length - 1],
     this.canvasCentreX,
     this.canvasCentreY,
     this.zoomLevelIndex,
@@ -505,6 +487,14 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
         flag: foundSymbols.flag,
       });
     });
+    this.sub
+      .on('oans_remove_btv_data')
+      .whenChanged()
+      .handle((removeBtvData) => {
+        if (removeBtvData) {
+          this.btvUtils.clearSelection();
+        }
+      });
 
     this.fmsDataStore.origin.sub(() => this.updateLabelClasses());
     this.fmsDataStore.departureRunway.sub(() => this.updateLabelClasses());
@@ -583,6 +573,10 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       this.modeAnimationOffsetX,
       this.modeAnimationOffsetY,
     );
+
+    this.pposNotAvailable.sub((notAvailable) => {
+      SimVar.SetSimVarValue('L:A32NX_ARPT_NAV_POS_LOST', SimVarValueType.Bool, notAvailable);
+    }, true);
   }
 
   private handleLabelFilter() {
@@ -626,7 +620,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     this.clearMap();
     this.clearData();
 
-    this.arpCoordinates.set(undefined);
+    this.arpCoordinates.set(null);
     this.data = undefined;
     this.aircraftWithinAirport.set(false);
 
@@ -655,10 +649,10 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       return;
     }
 
-    const includeFeatureTypes: FeatureType[] = Object.values(STYLE_DATA).reduce(
+    const includeFeatureTypes: FeatureType[] = Object.values(LAYER_SPECIFICATIONS).reduce(
       (acc, it) => [
         ...acc,
-        ...it.reduce(
+        ...it.styleRules.reduce(
           (acc, it) => [
             ...acc,
             ...(it?.dontFetchFromAmdb || it.forFeatureTypes === undefined ? [] : it.forFeatureTypes),
@@ -684,32 +678,29 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       AmdbProjection.Epsg4326,
     );
 
-    const features = Object.values(data).reduce(
-      (acc, it) => {
-        const features = it.features.map((f) => {
-          // FeatureCollection
-          if (f.properties.idthr || f.properties.idrwy) {
-            const nf = Object.assign({}, f);
-            if (nf.properties.idthr && nf.properties.idthr.replace(/[^0-9]/g, '').length < 2) {
-              nf.properties.idthr = `0${nf.properties.idthr}`;
-            }
-
-            if (nf.properties.idrwy) {
-              nf.properties.idrwy = nf.properties.idrwy
-                .split('.')
-                .map((qfu) => (qfu.replace(/[^0-9]/g, '').length < 2 ? `0${qfu}` : qfu))
-                .join('.');
-            }
-
-            return nf;
+    const features = Object.values(data).reduce((acc, it) => {
+      const features = it.features.map((f) => {
+        // FeatureCollection
+        if (f.properties.idthr || f.properties.idrwy) {
+          const nf = Object.assign({}, f);
+          if (nf.properties.idthr && nf.properties.idthr.replace(/[^0-9]/g, '').length < 2) {
+            nf.properties.idthr = `0${nf.properties.idthr}`;
           }
-          return f;
-        });
 
-        return [...acc, ...features];
-      },
-      [] as Feature<Geometry, AmdbProperties>[],
-    );
+          if (nf.properties.idrwy) {
+            nf.properties.idrwy = nf.properties.idrwy
+              .split('.')
+              .map((qfu) => (qfu.replace(/[^0-9]/g, '').length < 2 ? `0${qfu}` : qfu))
+              .join('.');
+          }
+
+          return nf;
+        }
+        return f;
+      });
+
+      return [...acc, ...features];
+    }, [] as AmdbFeature[]);
     const airportMap: AmdbFeatureCollection = featureCollection(features);
 
     const wgs84ReferencePoint = wgs84ArpDat.aerodromereferencepoint?.features[0];
@@ -786,6 +777,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
       return placeBearingDistance(arpCoordinates, reciprocal(angleToCanvasCentre), nmDistanceToCanvasCentre);
     }
+    return null;
   }
 
   private createLabelElement(label: Label): HTMLDivElement {
@@ -823,34 +815,93 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     return element;
   }
 
-  private sortDataIntoLayers(data: FeatureCollection<Geometry, AmdbProperties>) {
+  private sortDataIntoLayers(data: AmdbFeatureCollection) {
     for (let i = 0; i < this.layerFeatures.length; i++) {
       const layer = this.layerFeatures[i];
+      const layerSpec = LAYER_SPECIFICATIONS[i];
 
-      const layerFeatureTypes = STYLE_DATA[i].reduce(
-        (acc, rule) => [...acc, ...(rule.forFeatureTypes !== undefined ? rule.forFeatureTypes : [])],
-        [] as FeatureType[],
-      );
-      const layerPolygonStructureTypes = STYLE_DATA[i].reduce(
-        (acc, rule) => [...acc, ...(rule.forPolygonStructureTypes ?? [])],
-        [] as PolygonalStructureType[],
-      );
-      const layerData = data.features.filter((it) => {
-        if (it.properties.feattype === FeatureType.VerticalPolygonalStructure) {
-          return (
-            layerFeatureTypes.includes(FeatureType.VerticalPolygonalStructure) &&
-            it.properties.plysttyp &&
-            layerPolygonStructureTypes.includes(it.properties.plysttyp)
+      if (layerSpec.styleRules.length === 0) {
+        continue;
+      }
+
+      const featuresByStyleRule: AmdbFeature[][] = [];
+
+      for (const styleRule of layerSpec.styleRules) {
+        const matchingFeatures = data.features.filter(
+          (it) =>
+            (styleRule.forFeatureTypes === undefined || styleRule.forFeatureTypes.includes(it.properties.feattype)) &&
+            (it.properties.plysttyp === undefined ||
+              it.properties.feattype !== FeatureType.VerticalPolygonalStructure ||
+              styleRule.forPolygonStructureTypes === undefined ||
+              styleRule.forPolygonStructureTypes.includes(it.properties.plysttyp)),
+        );
+
+        unionFeatures: if (styleRule.unionBy !== undefined) {
+          const featuresAreAllPolygons = matchingFeatures.every(
+            (it) => it.geometry.type === 'Polygon' || it.geometry.type === 'MultiPolygon',
           );
-        }
-        return layerFeatureTypes.includes(it.properties.feattype);
-      });
 
-      layer.features.push(...layerData);
+          if (!featuresAreAllPolygons) {
+            console.warn(
+              '[Oanc](sortDataIntoLayers) Style rule had unionBy declared but not all filtered features were (multi)polygons. Not unioning them.',
+            );
+            break unionFeatures;
+          }
+
+          const finalFeatures: AmdbFeature<Polygon | MultiPolygon>[] = [];
+          const groups = new Map<AmdbProperties[keyof AmdbProperties], AmdbFeature<Polygon | MultiPolygon>[]>();
+
+          for (const feature of matchingFeatures) {
+            const key = styleRule.unionBy !== 'all' ? feature.properties[styleRule.unionBy] : 'all';
+            let existingGroup = groups.get(key);
+
+            if (existingGroup === undefined) {
+              existingGroup = [];
+              groups.set(key, existingGroup);
+            }
+
+            if (styleRule.simplify !== undefined) {
+              existingGroup.push(
+                simplify(feature, { tolerance: styleRule.simplify }) as AmdbFeature<Polygon | MultiPolygon>,
+              );
+            } else {
+              existingGroup.push(feature as AmdbFeature<Polygon | MultiPolygon>);
+            }
+          }
+
+          const unionedGroups = Array.from(groups.values()).map((it) =>
+            it.length > 1 ? union(featureCollection(it), { properties: it[0].properties }) : it[0],
+          );
+
+          for (const unionedGroup of unionedGroups) {
+            if (unionedGroup === null) {
+              continue;
+            }
+
+            switch (unionedGroup.geometry.type) {
+              case 'Polygon':
+                finalFeatures.push(unionedGroup);
+                break;
+              case 'MultiPolygon':
+                for (const polygonCoordinates of unionedGroup.geometry.coordinates) {
+                  const polygonFeature = polygon(polygonCoordinates, unionedGroup.properties);
+
+                  finalFeatures.push(polygonFeature);
+                }
+            }
+          }
+
+          featuresByStyleRule.push(finalFeatures);
+        } else {
+          featuresByStyleRule.push(matchingFeatures);
+        }
+      }
+
+      layer.features.push(...ArrayUtils.flat(featuresByStyleRule));
     }
   }
 
-  private generateAllLabels(data: FeatureCollection<Geometry, AmdbProperties>) {
+  private generateAllLabels(data: AmdbFeatureCollection) {
     for (const feature of data.features) {
       if (!LABEL_FEATURE_TYPES.includes(feature.properties.feattype)) {
         continue;
@@ -1103,6 +1154,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     }
 
     this.aircraftOnGround.set(
+      // FIXME use an enum...
       ![6, 7, 8, 9].includes(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', SimVarValueType.Number)),
     );
 
@@ -1146,7 +1198,6 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
         this.positionVisible.set(false);
       }
 
-      this.props.bus.getPublisher<FmsOansData>().pub('oansAirportLocalCoordinates', this.projectedPpos.get(), true);
       this.btvUtils.updateRwyAheadAdvisory(
         this.ppos.get(),
         arpCoordinates,
@@ -1209,15 +1260,17 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
     // Transform layers
     for (let i = 0; i < this.layerCanvasRefs.length; i++) {
+      const layerSpec = LAYER_SPECIFICATIONS[i];
+
       const canvas = this.layerCanvasRefs[i].instance;
       const canvasScaleContainer = this.layerCanvasScaleContainerRefs[i].instance;
 
       const scale = this.getZoomLevelInverseScale();
 
-      const translateX = -(this.canvasWidth.get() / 2) + OANC_RENDER_WIDTH / 2;
-      const translateY = -(this.canvasHeight.get() / 2) + OANC_RENDER_HEIGHT / 2;
+      const translateX = -((this.canvasWidth.get() * layerSpec.renderScale) / 2) + OANC_RENDER_WIDTH / 2;
+      const translateY = -((this.canvasHeight.get() * layerSpec.renderScale) / 2) + OANC_RENDER_HEIGHT / 2;
 
-      canvas.style.transform = `translate(${-offsetX}px, ${offsetY}px) rotate(${rotate}deg)`;
+      canvas.style.transform = `translate(${-offsetX}px, ${offsetY}px) scale(${1 / layerSpec.renderScale}) rotate(${rotate}deg)`;
 
       canvasScaleContainer.style.left = `${translateX}px`;
       canvasScaleContainer.style.top = `${translateY}px`;
@@ -1226,7 +1279,11 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       const context = canvas.getContext('2d');
       if (context) {
         context.resetTransform();
-        context.translate(this.canvasCentreX.get(), this.canvasCentreY.get());
+        context.translate(
+          this.canvasCentreX.get() * layerSpec.renderScale,
+          this.canvasCentreY.get() * layerSpec.renderScale,
+        );
+        context.scale(layerSpec.renderScale, layerSpec.renderScale);
       }
     }
 
@@ -1398,10 +1455,8 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
   }
 
   private handleLayerVisibilities() {
-    const rule = LAYER_VISIBILITY_RULES[this.zoomLevelIndex.get()];
-
     for (let i = 0; i < this.layerCanvasScaleContainerRefs.length; i++) {
-      const shouldBeVisible = rule[i];
+      const shouldBeVisible = LAYER_SPECIFICATIONS[i].zoomLevelVisibilities[this.zoomLevelIndex.get()];
 
       const layerContainer = this.layerCanvasScaleContainerRefs[i].instance;
 
@@ -1613,54 +1668,15 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
             style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
           >
             <div ref={this.panContainerRef[0]} style="position: absolute;">
-              <div
-                ref={this.layerCanvasScaleContainerRefs[0]}
-                style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
-              >
-                <canvas ref={this.layerCanvasRefs[0]} width={this.canvasWidth} height={this.canvasHeight} />
-              </div>
-              <div
-                ref={this.layerCanvasScaleContainerRefs[1]}
-                style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
-              >
-                <canvas ref={this.layerCanvasRefs[1]} width={this.canvasWidth} height={this.canvasHeight} />
-              </div>
-              <div
-                ref={this.layerCanvasScaleContainerRefs[2]}
-                style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
-              >
-                <canvas ref={this.layerCanvasRefs[2]} width={this.canvasWidth} height={this.canvasHeight} />
-              </div>
-              <div
-                ref={this.layerCanvasScaleContainerRefs[3]}
-                style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
-              >
-                <canvas ref={this.layerCanvasRefs[3]} width={this.canvasWidth} height={this.canvasHeight} />
-              </div>
-              <div
-                ref={this.layerCanvasScaleContainerRefs[4]}
-                style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
-              >
-                <canvas ref={this.layerCanvasRefs[4]} width={this.canvasWidth} height={this.canvasHeight} />
-              </div>
-              <div
-                ref={this.layerCanvasScaleContainerRefs[5]}
-                style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
-              >
-                <canvas ref={this.layerCanvasRefs[5]} width={this.canvasWidth} height={this.canvasHeight} />
-              </div>
-              <div
-                ref={this.layerCanvasScaleContainerRefs[6]}
-                style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
-              >
-                <canvas ref={this.layerCanvasRefs[6]} width={this.canvasWidth} height={this.canvasHeight} />
-              </div>
-              <div
-                ref={this.layerCanvasScaleContainerRefs[7]}
-                style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
-              >
-                <canvas ref={this.layerCanvasRefs[7]} width={this.canvasWidth} height={this.canvasHeight} />
-              </div>
+              {this.layerCanvasScaleContainerRefs.map((ref, index) => (
+                <div ref={ref} style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}>
+                  <canvas
+                    ref={this.layerCanvasRefs[index]}
+                    width={this.canvasWidth.map((it) => it * LAYER_SPECIFICATIONS[index].renderScale)}
+                    height={this.canvasHeight.map((it) => it * LAYER_SPECIFICATIONS[index].renderScale)}
+                  />
+                </div>
+              ))}
             </div>
           </div>
 
@@ -1781,7 +1797,7 @@ function renderFeaturesToCanvas(
   startIndex: number,
   endIndex: number,
 ) {
-  const styleRules = STYLE_DATA[layer];
+  const layerSpec = LAYER_SPECIFICATIONS[layer];
 
   for (let i = startIndex; i < Math.min(endIndex, data.features.length); i++) {
     const feature = data.features[i];
@@ -1789,7 +1805,7 @@ function renderFeaturesToCanvas(
 
     let doFill = false;
 
-    const matchingRule = styleRules.find((it) => {
+    const matchingRule = layerSpec.styleRules.find((it) => {
       if (feature.properties.feattype === FeatureType.VerticalPolygonalStructure) {
         return (
           it.forFeatureTypes?.includes(feature.properties.feattype) &&
@@ -1835,6 +1851,7 @@ function renderFeaturesToCanvas(
       pathIdCache.set(feature, id);
     }
 
+    const usePathCache = matchingRule.unionBy === undefined;
     const cachedPaths = pathCache.get(id);
 
     switch (feature.geometry.type) {
@@ -1842,7 +1859,7 @@ function renderFeaturesToCanvas(
         const outline = feature.geometry as LineString;
 
         let path: Path2D;
-        if (cachedPaths) {
+        if (usePathCache && cachedPaths) {
           // eslint-disable-next-line prefer-destructuring
           path = cachedPaths[0];
         } else {
@@ -1872,7 +1889,7 @@ function renderFeaturesToCanvas(
         const polygon = feature.geometry as Polygon;
 
         let paths: Path2D[] = [];
-        if (cachedPaths) {
+        if (usePathCache && cachedPaths) {
           paths = cachedPaths;
         } else {
           for (const outline of polygon.coordinates) {
@@ -1881,8 +1898,12 @@ function renderFeaturesToCanvas(
             toCachePath.moveTo(outline[0][0], outline[0][1] * -1);
 
             for (let i = 1; i < outline.length; i++) {
-              const point = outline[i];
-              toCachePath.lineTo(point[0], point[1] * -1);
+              if (i === outline.length - 1) {
+                toCachePath.closePath();
+              } else {
+                const point = outline[i];
+                toCachePath.lineTo(point[0], point[1] * -1);
+              }
             }
 
             paths.push(toCachePath);

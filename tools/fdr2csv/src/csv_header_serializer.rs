@@ -46,7 +46,7 @@ impl CsvHeaderSerializer {
     }
 }
 
-impl<'a> ser::Serializer for &'a mut CsvHeaderSerializer {
+impl ser::Serializer for &mut CsvHeaderSerializer {
     // The output type produced by this `Serializer` during successful
     // serialization. Most serializers that produce text or binary output should
     // set `Ok = ()` and serialize into an `io::Write` or buffer contained
@@ -230,7 +230,7 @@ impl<'a> ser::Serializer for &'a mut CsvHeaderSerializer {
 //
 // This impl is SerializeSeq so these methods are called after `serialize_seq`
 // is called on the Serializer.
-impl<'a> ser::SerializeSeq for &'a mut CsvHeaderSerializer {
+impl ser::SerializeSeq for &mut CsvHeaderSerializer {
     // Must match the `Ok` type of the serializer.
     type Ok = ();
     // Must match the `Error` type of the serializer.
@@ -250,7 +250,7 @@ impl<'a> ser::SerializeSeq for &'a mut CsvHeaderSerializer {
     }
 }
 
-impl<'a> ser::SerializeTuple for &'a mut CsvHeaderSerializer {
+impl ser::SerializeTuple for &mut CsvHeaderSerializer {
     type Ok = ();
     type Error = Error;
 
@@ -266,7 +266,7 @@ impl<'a> ser::SerializeTuple for &'a mut CsvHeaderSerializer {
     }
 }
 
-impl<'a> ser::SerializeTupleStruct for &'a mut CsvHeaderSerializer {
+impl ser::SerializeTupleStruct for &mut CsvHeaderSerializer {
     type Ok = ();
     type Error = Error;
 
@@ -282,7 +282,7 @@ impl<'a> ser::SerializeTupleStruct for &'a mut CsvHeaderSerializer {
     }
 }
 
-impl<'a> ser::SerializeTupleVariant for &'a mut CsvHeaderSerializer {
+impl ser::SerializeTupleVariant for &mut CsvHeaderSerializer {
     type Ok = ();
     type Error = Error;
 
@@ -298,7 +298,7 @@ impl<'a> ser::SerializeTupleVariant for &'a mut CsvHeaderSerializer {
     }
 }
 
-impl<'a> ser::SerializeMap for &'a mut CsvHeaderSerializer {
+impl ser::SerializeMap for &mut CsvHeaderSerializer {
     type Ok = ();
     type Error = Error;
 
@@ -322,7 +322,7 @@ impl<'a> ser::SerializeMap for &'a mut CsvHeaderSerializer {
 }
 
 // Here we add the struct field name handling
-impl<'a> ser::SerializeStruct for &'a mut CsvHeaderSerializer {
+impl ser::SerializeStruct for &mut CsvHeaderSerializer {
     type Ok = ();
     type Error = Error;
 
@@ -347,7 +347,7 @@ impl<'a> ser::SerializeStruct for &'a mut CsvHeaderSerializer {
     }
 }
 
-impl<'a> ser::SerializeStructVariant for &'a mut CsvHeaderSerializer {
+impl ser::SerializeStructVariant for &mut CsvHeaderSerializer {
     type Ok = ();
     type Error = Error;
 

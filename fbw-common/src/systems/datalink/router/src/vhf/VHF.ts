@@ -1586,7 +1586,7 @@ export class Vhf {
   }
 
   private async updateUsedVoiceFrequencies(): Promise<void> {
-    const storedAtisSrc = NXDataStore.get('CONFIG_ATIS_SRC', 'FAA').toLowerCase();
+    const storedAtisSrc = NXDataStore.getLegacy('CONFIG_ATIS_SRC', 'FAA').toLowerCase();
     this.frequencyOverlap = Array(DatalinkProviders.ProviderCount).fill(0);
 
     if (storedAtisSrc === 'vatsim' || storedAtisSrc === 'ivao') {
@@ -1659,7 +1659,7 @@ export class Vhf {
       this.datalinkMode = DatalinkModeCode.None;
     } else {
       this.datalinkStatus = DatalinkStatusCode.DlkAvail;
-      if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1) {
+      if (SimVar.GetSimVarValue('L:A32NX_ACARS_ACTIVE', 'number') === 1) {
         this.datalinkMode = DatalinkModeCode.AtcAoc;
       }
       this.datalinkMode = DatalinkModeCode.Aoc;

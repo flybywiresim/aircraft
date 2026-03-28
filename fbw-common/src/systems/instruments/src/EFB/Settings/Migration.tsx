@@ -7,7 +7,7 @@ type SimVarProp = { name: string; defaultValue: string };
 type migrationSet = [oldSimvar: SimVarProp, newSimvar: string];
 
 const migrateSetting = (oldSimvar: SimVarProp, newSimvar: string) => {
-  NXDataStore.set(newSimvar, NXDataStore.get(oldSimvar.name, oldSimvar.defaultValue));
+  NXDataStore.setLegacy(newSimvar, NXDataStore.getLegacy(oldSimvar.name, oldSimvar.defaultValue));
 };
 
 // Object is set so that a list of simvars will be migrated when the migrated flag is false.
@@ -23,11 +23,11 @@ const settingsToMigrate: Map<string, migrationSet[]> = new Map([
 
 export function migrateSettings() {
   settingsToMigrate.forEach((migrations, migrationCheck) => {
-    if (NXDataStore.get(migrationCheck, 'false') === 'false') {
+    if (NXDataStore.getLegacy(migrationCheck, 'false') === 'false') {
       migrations.forEach((value) => {
         migrateSetting(value[0], value[1]);
       });
-      NXDataStore.set(migrationCheck, 'true');
+      NXDataStore.setLegacy(migrationCheck, 'true');
     }
   });
 }

@@ -74,6 +74,8 @@ render(
         },
         autoCalloutsPage: AutomaticCallOutsPage,
       },
+      hashFile: '/Data/a380x_hashes.json',
+      hashSeed: 380,
     }}
   >
     <EfbWrapper failures={A380FailureDefinitions} aircraftSetup={aircraftEfbSetup} eventBus={new EventBus()} />

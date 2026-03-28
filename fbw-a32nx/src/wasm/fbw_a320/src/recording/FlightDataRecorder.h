@@ -14,7 +14,7 @@
 class FlightDataRecorder {
  public:
   // IMPORTANT: this constant needs to increased with every interface change
-  const uint64_t INTERFACE_VERSION = 3200004;
+  const uint64_t INTERFACE_VERSION = 3200005;
 
   const uint32_t NUMBER_OF_ELAC_TO_WRITE = 2;
   const uint32_t NUMBER_OF_SEC_TO_WRITE = 3;

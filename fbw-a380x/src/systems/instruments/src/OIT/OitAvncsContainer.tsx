@@ -78,6 +78,11 @@ export abstract class OitAvncsContainer extends DisplayComponent<OitAvncsContain
       this.uiService.activeUri.sub((uri) => {
         this.activeUriChanged(uri);
       }),
+      this.ansuPowered.sub((powered) => {
+        if (!powered) {
+          this.uiService.navigateTo('nss-avncs');
+        }
+      }),
       this.ansuPowered,
       this.hideContent,
       this.hideContainer,
@@ -88,10 +93,12 @@ export abstract class OitAvncsContainer extends DisplayComponent<OitAvncsContain
 
   private activeUriChanged(uri: OitUriInformation) {
     if (
-      uri.uri.match(/nss-avncs\/company-com\/\S*/gm) &&
-      this.renderedUri.get()?.uri.match(/nss-avncs\/company-com/gm)
+      (uri.uri.match(/nss-avncs\/company-com\/\S*/gm) &&
+        this.renderedUri.get()?.uri.match(/nss-avncs\/company-com/gm)) ||
+      (uri.uri.match(/nss-avncs\/a380x-systems\/\S*/gm) &&
+        this.renderedUri.get()?.uri.match(/nss-avncs\/a380x-systems/gm))
     ) {
-      // Handle special case for company-com, where the sub-navigation is handled by the OitAvncsCompanyCom component and we're already on the right page.
+      // Handle special case for company-com, where the sub-navigation is handled by the component with their own navigator and we're already on the right parent page.
       return;
     }
 

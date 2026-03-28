@@ -18,14 +18,14 @@ pub(super) fn rudder(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Erro
     builder.map(
         ExecuteOn::PostTick,
         Variable::aspect("HYD_UPPER_RUD_DEFLECTION"),
-        |value| (value * 2. - 1.),
+        |value| value * 2. - 1.,
         Variable::named("HYD_UPPER_RUDDER_DEFLECTION"),
     );
 
     builder.map(
         ExecuteOn::PostTick,
         Variable::aspect("HYD_LOWER_RUD_DEFLECTION"),
-        |value| (value * 2. - 1.),
+        |value| value * 2. - 1.,
         Variable::named("HYD_LOWER_RUDDER_DEFLECTION"),
     );
 

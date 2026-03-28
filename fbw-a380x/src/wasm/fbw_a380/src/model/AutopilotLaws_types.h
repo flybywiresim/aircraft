@@ -106,6 +106,8 @@ struct ap_data
   boolean_T is_engine_operative_4;
   boolean_T altimeter_setting_changed;
   real_T total_weight_kg;
+  boolean_T gear_is_extended;
+  boolean_T land_capability;
 };
 
 #endif
@@ -193,6 +195,8 @@ struct ap_raw_data
   real_T altimeter_setting_left_mbar;
   real_T altimeter_setting_right_mbar;
   real_T total_weight_kg;
+  boolean_T gear_is_extended;
+  boolean_T land_capability;
 };
 
 #endif
