@@ -18,7 +18,7 @@ import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { ISimbriefData, logTroubleshootingError, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/uplink/SimBriefUplinkAdapter';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { NXFictionalMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
+import { NXFictionalMessages, NXSystemMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
 import { A380AltitudeUtils } from '@shared/OperatingAltitudes';
 import { AtsuStatusCodes } from '@datalink/common';
 import { FmsRouterMessages } from '@datalink/router';
@@ -34,26 +34,41 @@ interface MfdFmsInitProps extends AbstractMfdPageProps {}
 export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
   private simBriefOfp: ISimbriefData | null = null;
 
-  private readonly cpnyFplnButtonLabel = this.props.fmcService.master
-    ? this.props.fmcService.master.fmgc.data.cpnyFplnAvailable.map((it) => {
-        if (!it) {
-          return (
-            <span>
-              CPNY F-PLN
-              <br />
-              REQUEST
-            </span>
-          );
-        }
+  private readonly cpnyFplnButtonLabel = MappedSubject.create(
+    ([fplnAvailable, uplinkInProgress]) => {
+      if (uplinkInProgress) {
         return (
           <span>
-            RECEIVED
+            REQUEST
             <br />
-            CPNY F-PLN
+            PENDING...
           </span>
         );
-      })
-    : MappedSubject.create(() => <></>);
+      }
+      if (!fplnAvailable) {
+        return (
+          <span>
+            CPNY F-PLN
+            <br />
+            REQUEST
+          </span>
+        );
+      }
+      return (
+        <span>
+          RECEIVED
+          <br />
+          CPNY F-PLN
+        </span>
+      );
+    },
+    this.props.fmcService.master
+      ? this.props.fmcService.master.fmgc.data.cpnyFplnAvailable
+      : Subject.create<boolean | null>(null),
+    this.props.fmcService.master
+      ? this.props.fmcService.master.fmgc.data.cpnyFplnUplinkInProgress
+      : Subject.create<boolean | null>(null),
+  );
 
   private readonly cpnyFplnButtonMenuItems: MappedSubscribable<ButtonMenuItem[]> = this.props.fmcService.master
     ? this.props.fmcService.master.fmgc.data.cpnyFplnAvailable.map((it) =>
@@ -248,7 +263,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     this.simBriefOfp = await SimBriefUplinkAdapter.downloadOfpForUserID(navigraphUsername, overrideSimBriefUserID);
 
     try {
-      SimBriefUplinkAdapter.uplinkFlightPlanFromSimbrief(
+      await SimBriefUplinkAdapter.uplinkFlightPlanFromSimbrief(
         this.props.fmcService.master,
         this.props.fmcService.master.flightPlanService,
         FlightPlanIndex.Active,
@@ -258,6 +273,8 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     } catch (e) {
       console.error(e);
       logTroubleshootingError(this.props.bus, e);
+      this.props.fmcService.master.addMessageToQueue(NXSystemMessages.receivedCpnyFplnNotValid, undefined, undefined);
+      this.props.fmcService.master.onUplinkDone(FlightPlanIndex.Active, false);
     }
   }
 
