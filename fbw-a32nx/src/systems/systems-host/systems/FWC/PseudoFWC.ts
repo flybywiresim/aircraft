@@ -1624,9 +1624,7 @@ export class PseudoFWC {
   }
 
   private readonly ecpClear1Pulse = new NXLogicPulseNode(true);
-
   private readonly ecpClear2Pulse = new NXLogicPulseNode(true);
-
   private readonly ecpClearWirePulse = new NXLogicPulseNode(true);
   private readonly ecpClearPulseTrigger = new NXLogicTriggeredMonostableNode(0.5, true);
   private ecpClearPulseUp = false;
