@@ -289,7 +289,7 @@ const EwdMessages = new Map<string, { group?: string; text: string }>([
   ['320019501', { group: 'L/G$4', text: ' LGCIU 1+2 FAULT' }],
   ['320019502', { text: '\x1b<5m -L/G........GRVTY EXTN' }],
   ['320019503', { text: '\x1b<5m -GPWS SYS...........OFF' }],
-  ['320001001', { group: 'BRAKES$1', text: ' BRAKES HOT' }],
+  ['320001001', { group: 'BRAKES$1', text: ' HOT' }],
   ['320001002', { text: '\x1b<7m   .IF PERF PERMITS :' }],
   ['320001003', { text: '\x1b<5m -PARK BRK:PREFER CHOCKS' }],
   ['320001004', { text: '\x1b<5m MAX SPEED.......250/.60' }],
