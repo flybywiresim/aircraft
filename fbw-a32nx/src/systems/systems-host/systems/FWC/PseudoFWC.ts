@@ -1618,13 +1618,15 @@ export class PseudoFWC {
     this.keyEventManager.interceptKey('AUTO_THROTTLE_ARM', true);
   }
 
-  mapOrder(array, order): [] {
-    array.sort((a, b) => order.indexOf(a) - order.indexOf(b));
+  mapOrder(array): [] {
+    array.sort((a, b) => (EwdMessageCodeOrder.get(a) ?? Infinity) - (EwdMessageCodeOrder.get(b) ?? Infinity));
     return array;
   }
 
   private readonly ecpClear1Pulse = new NXLogicPulseNode(true);
+
   private readonly ecpClear2Pulse = new NXLogicPulseNode(true);
+
   private readonly ecpClearWirePulse = new NXLogicPulseNode(true);
   private readonly ecpClearPulseTrigger = new NXLogicTriggeredMonostableNode(0.5, true);
   private ecpClearPulseUp = false;
@@ -3663,7 +3665,7 @@ export class PseudoFWC {
         const code =
           typeof codeToReturn === 'string' ? codeToReturn : value.codesToReturn[codeToReturn.find((e) => e !== null)];
 
-        return { key, group: getEwdMessageGroup(code), order: EwdMessageCodeOrder.indexOf(code) };
+        return { key, group: getEwdMessageGroup(code), order: EwdMessageCodeOrder.get(code) ?? Infinity };
       });
 
       const targetGroup = clearableFailures.sort((a, b) => a.order - b.order)[0]?.group;
@@ -3691,7 +3693,7 @@ export class PseudoFWC {
           const code =
             typeof codeToReturn === 'string' ? codeToReturn : value.codesToReturn[codeToReturn.find((e) => e !== null)];
 
-          return { key, group: getEwdMessageGroup(code), order: EwdMessageCodeOrder.indexOf(code) };
+          return { key, group: getEwdMessageGroup(code), order: EwdMessageCodeOrder.get(code) ?? Infinity };
         });
 
         const targetGroup = recallableFailures.sort((a, b) => a.order - b.order)[0]?.group;
@@ -3892,8 +3894,8 @@ export class PseudoFWC {
     }
 
     const failLeft = tempFailureArrayLeft.length > 0;
-    const orderedFailureArrayLeft = this.mapOrder(tempFailureArrayLeft, EwdMessageCodeOrder);
-    const orderedFailureArrayRight = this.mapOrder(tempFailureArrayRight, EwdMessageCodeOrder);
+    const orderedFailureArrayLeft = this.mapOrder(tempFailureArrayLeft);
+    const orderedFailureArrayRight = this.mapOrder(tempFailureArrayRight);
 
     this.allCurrentFailures.length = 0;
     this.allCurrentFailures.push(...allFailureKeys);
@@ -3939,8 +3941,8 @@ export class PseudoFWC {
       }
     }
 
-    const orderedMemoArrayLeft = this.mapOrder(tempMemoArrayLeft, EwdMessageCodeOrder);
-    let orderedMemoArrayRight: string[] = this.mapOrder(tempMemoArrayRight, EwdMessageCodeOrder);
+    const orderedMemoArrayLeft = this.mapOrder(tempMemoArrayLeft);
+    let orderedMemoArrayRight: string[] = this.mapOrder(tempMemoArrayRight);
 
     if (!failLeft) {
       this.ewdMessageLinesLeft.forEach((l, i) => l.set(orderedMemoArrayLeft[i]));
@@ -3962,10 +3964,7 @@ export class PseudoFWC {
     }
 
     if (orderedFailureArrayRight.length > 0) {
-      orderedMemoArrayRight = this.mapOrder(
-        [...orderedMemoArrayRight, ...orderedFailureArrayRight],
-        EwdMessageCodeOrder,
-      );
+      orderedMemoArrayRight = this.mapOrder([...orderedMemoArrayRight, ...orderedFailureArrayRight]);
     }
 
     this.ewdMessageLinesRight.forEach((l, i) => l.set(orderedMemoArrayRight[i]));

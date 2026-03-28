@@ -538,7 +538,7 @@ const EwdMessages = new Map<string, { group?: string; text: string }>([
   ['000068001', { text: '\x1b<3mADIRS SWTG' }],
 ]);
 
-export const EwdMessageCodeOrder = [...EwdMessages.keys()];
+export const EwdMessageCodeOrder = new Map([...EwdMessages.keys()].map((code, index) => [code, index]));
 
 export const getEwdMessageGroup = (code: string): string | undefined => EwdMessages.get(code)?.group;
 
