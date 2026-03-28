@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ClockEvents, EventBus, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
-import { formatEwdMessages } from '@instruments/common/EWDMessages';
+import { formatEwdMessages } from '@shared/EwdMessages';
 import { EwdSimvars } from './shared/EwdSimvarPublisher';
 import { FormattedFwcText } from './FormattedFwcText';
 

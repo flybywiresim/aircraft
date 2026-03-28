@@ -2,7 +2,7 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { formatEwdMessages } from '@instruments/common/EWDMessages';
+import { formatEwdMessages } from '@shared/EwdMessages';
 import { useSimVar } from '@flybywiresim/fbw-sdk';
 import React from 'react';
 import FormattedFwcText from './FormattedFwcText';
