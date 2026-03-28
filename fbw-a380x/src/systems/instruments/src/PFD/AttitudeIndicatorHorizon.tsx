@@ -1,6 +1,7 @@
 // @ts-strict-ignore
 import {
   ClockEvents,
+  DebounceTimer,
   DisplayComponent,
   EventBus,
   FSComponent,
@@ -344,21 +345,17 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: EventBus }> {
     goAroundPhase: false,
   };
 
-  private takeoffTimer: number | null = null;
-  private goAroundTimer: number | null = null;
-  private simTime: number = 0;
+  private takeoffTimer: boolean = false;
+  private goAroundTimer: boolean = false;
+  private takeoffDebounceTimer = new DebounceTimer();
+  private goAroundDebounceTimer = new DebounceTimer();
+  private static readonly TAKEOFF_TIMER = 3_000;
+  private static readonly GA_TIMER = 4_000;
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
     const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & ClockEvents>();
-
-    sub
-      .on('simTime')
-      .atFrequency(1)
-      .handle((simTime) => {
-        this.simTime = simTime;
-      });
 
     sub.on('chosenRa').handle((ra) => {
       this.tailStrikeConditions.altitude = ra;
@@ -388,15 +385,17 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: EventBus }> {
         this.tailStrikeConditions.approachPhase = fp === 5;
         this.tailStrikeConditions.goAroundPhase = fp === 6;
         if (fp === 6) {
-          if (this.goAroundTimer === null && this.tailStrikeConditions.altitude.value < 400) {
-            this.goAroundTimer = this.simTime(() => {
-              this.goAroundTimer = null;
-            }, 4000) as unknown as number;
+          if (!this.goAroundTimer && this.tailStrikeConditions.altitude.value < 400) {
+            this.goAroundDebounceTimer.schedule(() => {
+              this.goAroundTimer = false;
+              this.needsUpdate = true;
+            }, TailstrikeIndicator.GA_TIMER);
+            this.goAroundTimer = true;
           }
         } else {
-          if (this.goAroundTimer !== null) {
-            clearTimeout(this.goAroundTimer);
-            this.goAroundTimer = null;
+          if (this.goAroundTimer) {
+            this.goAroundDebounceTimer.clear();
+            this.goAroundTimer = false;
           }
         }
         this.needsUpdate = true;
@@ -404,15 +403,17 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: EventBus }> {
 
     const handleGearCompression = () => {
       if (!this.tailStrikeConditions.leftGearCompressed && !this.tailStrikeConditions.rightGearCompressed) {
-        if (this.takeoffTimer === null) {
-          this.takeoffTimer = setTimeout(() => {
-            this.takeoffTimer = null;
-          }, 3000) as unknown as number;
+        if (!this.takeoffTimer) {
+          this.takeoffDebounceTimer.schedule(() => {
+            this.takeoffTimer = false;
+            this.needsUpdate = true;
+          }, TailstrikeIndicator.TAKEOFF_TIMER);
+          this.takeoffTimer = true;
         }
       } else {
-        if (this.takeoffTimer !== null) {
-          clearTimeout(this.takeoffTimer);
-          this.takeoffTimer = null;
+        if (this.takeoffTimer) {
+          this.takeoffDebounceTimer.clear();
+          this.takeoffTimer = false;
         }
       }
       this.needsUpdate = true;
@@ -486,8 +487,8 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: EventBus }> {
           this.tailStrikeConditions.leftGearCompressed &&
           this.tailStrikeConditions.rightGearCompressed) ||
         (this.tailStrikeConditions.approachPhase && this.tailStrikeConditions.altitude.value < 400) ||
-        this.goAroundTimer !== null ||
-        this.takeoffTimer !== null
+        this.goAroundTimer ||
+        this.takeoffTimer
       ) {
         this.tailStrike.instance.style.display = 'inline';
       } else {
