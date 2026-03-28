@@ -69,7 +69,6 @@ export const LandingWidget = () => {
 
   const [totalWeight] = useSimVar('TOTAL WEIGHT', 'Pounds', 1000);
   const [autoFillSource, setAutoFillSource] = useState<'METAR' | 'OFP'>('OFP');
-  const [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
 
   const { usingMetric } = Units;
 
@@ -176,7 +175,7 @@ export const LandingWidget = () => {
     let parsedMetar: MetarParserType | undefined = undefined;
 
     try {
-      const rawMetar = await fetchRawMetarBySource(icao, metarSource);
+      const rawMetar = await fetchRawMetarBySource(icao);
       parsedMetar = parseMetar(rawMetar);
     } catch (err) {
       toast.error(err.message);

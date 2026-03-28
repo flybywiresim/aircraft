@@ -103,7 +103,7 @@ export class SayIntentionsConnector {
   public static async getAtis(icao: string): Promise<{ atis: string | undefined }> {
     try {
       const airport = await SayIntentionsConnector.fetchAirport(icao);
-      return { atis: airport.atis_cpdlc ?? airport.atis };
+      return { atis: airport?.atis_cpdlc ?? 'SAI D-ATIS NOT AVAILABLE' };
     } catch (error) {
       console.error(`SayIntentionsConnector: Failed to fetch ATIS for ${icao}:`, error);
       return { atis: undefined };

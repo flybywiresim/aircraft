@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Metar as FbwApiMetar } from '@flybywiresim/api-client';
-import { ConfigWeatherMap } from '@flybywiresim/fbw-sdk';
+import { ConfigWeatherMap, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { Metar as MsfsMetar } from '@microsoft/msfs-sdk';
 import { BeyondATCConnector, SayIntentionsConnector } from '../../../../datalink/router/src';
 import { t } from '../Localization/translation';
@@ -21,8 +21,9 @@ export const mapMetarErrorToDisplayMessage = (error: unknown): string => {
   return errorMessage;
 };
 
-export const fetchRawMetarBySource = async (icao: string, source: string): Promise<string> => {
-  if (source === 'BEYONDATC') {
+export const fetchRawMetarBySource = async (icao: string): Promise<string> => {
+  const source = NXDataStore.getSetting('CONFIG_METAR_SRC').get();
+  if (source === ConfigWeatherMap.BEYONDATC) {
     const response = await BeyondATCConnector.getMetar(icao);
     if (!response.metar) {
       throw new Error('BEYONDATC METAR NOT AVAILABLE');
@@ -31,7 +32,7 @@ export const fetchRawMetarBySource = async (icao: string, source: string): Promi
     return response.metar;
   }
 
-  if (source === 'SAI') {
+  if (source === ConfigWeatherMap.SAI) {
     const response = await SayIntentionsConnector.getMetar(icao);
     if (!response.metar) {
       throw new Error('SAI METAR NOT AVAILABLE');
@@ -40,7 +41,7 @@ export const fetchRawMetarBySource = async (icao: string, source: string): Promi
     return response.metar;
   }
 
-  if (source === 'MSFS') {
+  if (source === ConfigWeatherMap.MSFS) {
     const metar = await Coherent.call('GET_METAR_BY_IDENT', icao);
     const msfsMetar = metar as MsfsMetar;
 
@@ -51,10 +52,14 @@ export const fetchRawMetarBySource = async (icao: string, source: string): Promi
     return msfsMetar.metarString;
   }
 
-  const response = await FbwApiMetar.get(icao, ConfigWeatherMap[source]);
-  if (!response.metar) {
-    throw new Error('No METAR available');
+  if (source in ConfigWeatherMap) {
+    const response = await FbwApiMetar.get(icao, source);
+    if (!response.metar) {
+      throw new Error('No METAR available');
+    }
+
+    return response.metar;
   }
 
-  return response.metar;
+  throw new Error(`No METAR provider available for ${source}`);
 };

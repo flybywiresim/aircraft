@@ -80,10 +80,8 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
   const [baroType] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'AUTO');
   const dispatch = useAppDispatch();
   const [simbriefIcaoAtLoading, setSimbriefIcaoAtLoading] = useState(simbriefIcao);
-  const [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
   const [metarError, setErrorMetar] = useState('');
   const [usingColoredMetar] = usePersistentNumberProperty('EFB_USING_COLOREDMETAR', 1);
-  const source = metarSource;
 
   const getBaroTypeForAirport = (icao: string) =>
     ['K', 'C', 'M', 'P', 'RJ', 'RO', 'TI', 'TJ'].some((r) => icao.toUpperCase().startsWith(r)) ? 'IN HG' : 'HPA';
@@ -112,13 +110,13 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
     }
 
     if (icao.length > 0) {
-      getMetar(icao, source);
+      getMetar(icao);
     } else if (icao.length === 0) {
-      getMetar(simbriefIcao, source);
+      getMetar(simbriefIcao);
     }
   };
 
-  async function getMetar(icao: string, source: string): Promise<void> {
+  async function getMetar(icao: string): Promise<void> {
     if (icao.length !== 4 || !/^[a-z]{4}$/i.test(icao)) {
       setErrorMetar(t('Dashboard.ImportantInformation.Weather.NoIcaoProvided'));
       dispatch(setMetar(MetarParserTypeProp));
@@ -126,7 +124,7 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
     }
 
     try {
-      const rawMetar = await fetchRawMetarBySource(icao, source);
+      const rawMetar = await fetchRawMetarBySource(icao);
       const metarParse = parseMetar(rawMetar);
       dispatch(setMetar(metarParse));
     } catch (err) {
@@ -145,12 +143,12 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
     if (simbriefIcao !== simbriefIcaoAtLoading) {
       dispatch(setUserDepartureIcao(''));
       dispatch(setUserDestinationIcao(''));
-      getMetar(simbriefIcao, source);
+      getMetar(simbriefIcao);
       setSimbriefIcaoAtLoading(simbriefIcao);
     } else {
-      getMetar(userIcao || simbriefIcao, source);
+      getMetar(userIcao || simbriefIcao);
     }
-  }, [simbriefIcao, userIcao, source]);
+  }, [simbriefIcao, userIcao]);
 
   useInterval(() => {
     handleIcao(userIcao ?? simbriefIcao);

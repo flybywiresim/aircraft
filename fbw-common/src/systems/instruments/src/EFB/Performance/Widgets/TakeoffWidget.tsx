@@ -15,6 +15,7 @@ import {
   TakeoffAntiIceSetting,
   LineupAngle,
   MathUtils,
+  usePersistentSetting,
 } from '@flybywiresim/fbw-sdk';
 import { toast } from 'react-toastify';
 import { Calculator, CloudArrowDown, Trash } from 'react-bootstrap-icons';
@@ -59,7 +60,6 @@ export const TakeoffWidget = () => {
   const calculators = useContext(AircraftContext).performanceCalculators;
 
   const [autoFillSource, setAutoFillSource] = useState<'METAR' | 'OFP'>('OFP');
-  const [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
 
   const { usingMetric: usingMetricPinProg } = Units;
 
@@ -239,7 +239,7 @@ export const TakeoffWidget = () => {
     let parsedMetar: MetarParserType | undefined = undefined;
 
     try {
-      const rawMetar = await fetchRawMetarBySource(icao, metarSource);
+      const rawMetar = await fetchRawMetarBySource(icao);
       parsedMetar = parseMetar(rawMetar);
     } catch (err) {
       toast.error(err.message);

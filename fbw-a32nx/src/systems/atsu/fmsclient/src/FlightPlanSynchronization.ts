@@ -72,7 +72,7 @@ export class FlightPlanSynchronization {
   private static findDestinationWaypoint(flightPlan: ReadonlyFlightPlan): Waypoint {
     return {
       // FIXME everything, but would destinationAirport be enough?
-      ident: flightPlan.destinationAirport.ident ?? '',
+      ident: flightPlan.destinationAirport?.ident ?? '',
       altitude: 0,
       utc: -1,
     };

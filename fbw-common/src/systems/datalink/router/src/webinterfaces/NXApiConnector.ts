@@ -30,18 +30,18 @@ export class NXApiConnector {
 
   private static async receiveMetarFromSource(
     icao: string,
-    source: string,
+    source: ConfigWeatherMap,
     message: WeatherMessage,
   ): Promise<AtsuStatusCodes> {
-    if (source === 'BEYONDATC') {
+    if (source === ConfigWeatherMap.BEYONDATC) {
       return BeyondATCConnector.receiveMetar(icao, message);
     }
 
-    if (source === 'SAI') {
+    if (source === ConfigWeatherMap.SAI) {
       return SayIntentionsConnector.receiveMetar(icao, message);
     }
 
-    return Metar.get(icao, ConfigWeatherMap[source])
+    return Metar.get(icao, source)
       .then((data) => {
         let metar = data.metar;
         if (!metar || metar === undefined || metar === '') {
@@ -71,7 +71,7 @@ export class NXApiConnector {
       return SayIntentionsConnector.receiveAtis(icao, message);
     }
 
-    await Atis.get(icao, ConfigWeatherMap[source])
+    await Atis.get(icao, source)
       .then((data) => {
         let atis = undefined;
 
@@ -198,15 +198,14 @@ export class NXApiConnector {
   }
 
   public static async receiveMetar(icao: string, message: WeatherMessage): Promise<AtsuStatusCodes> {
-    const storedMetarSrc = NXDataStore.getLegacy('CONFIG_METAR_SRC', 'MSFS');
+    const storedMetarSrc = NXDataStore.getSetting('CONFIG_METAR_SRC');
 
-    return NXApiConnector.receiveMetarFromSource(icao, storedMetarSrc, message);
+    return NXApiConnector.receiveMetarFromSource(icao, storedMetarSrc.get(), message);
   }
 
   public static async receiveTaf(icao: string, message: WeatherMessage): Promise<AtsuStatusCodes> {
-    const storedTafSrc = NXDataStore.getLegacy('CONFIG_TAF_SRC', isMsfs2024() ? 'MSFS' : 'NOAA');
-
-    return Taf.get(icao, ConfigWeatherMap[storedTafSrc])
+    const storedTafSrc = NXDataStore.getSetting('CONFIG_TAF_SRC');
+    return Taf.get(icao, storedTafSrc.get())
       .then((data) => {
         let taf = data.taf;
         if (!taf || taf === undefined || taf === '') {
@@ -223,9 +222,9 @@ export class NXApiConnector {
   }
 
   public static async receiveAtis(icao: string, type: AtisType, message: AtisMessage): Promise<AtsuStatusCodes> {
-    const storedAtisSrc = NXDataStore.getLegacy('CONFIG_ATIS_SRC', 'FAA');
+    const storedAtisSrc = NXDataStore.getSetting('CONFIG_ATIS_SRC');
 
-    return NXApiConnector.receiveAtisFromSource(icao, storedAtisSrc, type, message);
+    return NXApiConnector.receiveAtisFromSource(icao, storedAtisSrc.get(), type, message);
   }
 
   public static async poll(): Promise<[AtsuStatusCodes, AtsuMessage[]]> {
