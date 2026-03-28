@@ -26,29 +26,28 @@ import { AcarsClient } from './AcarsClient';
 export class AcarsConnector {
   private static flightNumber: string = '';
 
-  private static activationInterval?: NodeJS.Timeout;
-
   private static connectionAttemptCounter = 0;
 
   private static readonly MAX_CONNECTION_ATTEMPTS = 60; // 60 * 5s = 5 min
 
+  private static readonly RETRY_DELAY_MS = 5_000;
+
+  private static connected = false;
+
+  private static activationRequested = false;
+
+  private static activationLoopRunning = false;
+
   public static fansMode: FansMode = FansMode.FansNone;
 
   private static stopActivation(): void {
-    if (AcarsConnector.activationInterval !== undefined) {
-      clearInterval(AcarsConnector.activationInterval);
-      AcarsConnector.activationInterval = undefined;
-    }
+    AcarsConnector.activationRequested = false;
     AcarsConnector.connectionAttemptCounter = 0;
+    AcarsConnector.connected = false;
   }
 
-  private static attemptActivation(): void {
-    if (AcarsConnector.connectionAttemptCounter++ >= AcarsConnector.MAX_CONNECTION_ATTEMPTS) {
-      console.log('Could not connect to ACARS after 5 minutes, giving up');
-      AcarsConnector.stopActivation();
-      NXDataStore.getSetting('ACARS_PROVIDER').set('NONE');
-      return;
-    }
+  private static async attemptActivation(): Promise<void> {
+    AcarsConnector.connectionAttemptCounter += 1;
 
     const body = {
       from: 'FBWA32NX',
@@ -57,22 +56,59 @@ export class AcarsConnector {
       packet: '',
     };
 
-    AcarsClient.getData(body)
-      .then((resp) => {
-        if (resp.response !== 'error {invalid logon code}') {
-          SimVar.SetSimVarValue('L:A32NX_ACARS_ACTIVE', 'number', 1);
-          console.log('Activated ACARS-ID');
-        } else {
-          console.log('Invalid ACARS-ID set');
+    try {
+      const resp = await AcarsClient.getData(body);
+      if (resp.response !== 'error {invalid logon code}') {
+        SimVar.SetSimVarValue('L:A32NX_ACARS_ACTIVE', 'number', 1);
+        console.log('Activated ACARS-ID');
+        AcarsConnector.connected = true;
+        return;
+      }
+
+      console.log('Invalid ACARS-ID set');
+      AcarsConnector.activationRequested = false;
+    } catch (e) {
+      console.log(
+        `Could not connect to ACARS, retrying... (${AcarsConnector.connectionAttemptCounter}/${AcarsConnector.MAX_CONNECTION_ATTEMPTS})`,
+        e,
+      );
+    }
+  }
+
+  private static async runActivationLoop(): Promise<void> {
+    if (AcarsConnector.activationLoopRunning) {
+      return;
+    }
+
+    AcarsConnector.activationLoopRunning = true;
+
+    try {
+      while (
+        AcarsConnector.activationRequested &&
+        !AcarsConnector.connected &&
+        AcarsConnector.connectionAttemptCounter < AcarsConnector.MAX_CONNECTION_ATTEMPTS
+      ) {
+        await AcarsConnector.attemptActivation();
+
+        if (!AcarsConnector.activationRequested || AcarsConnector.connected) {
+          break;
         }
+
+        await new Promise((resolve) => setTimeout(resolve, AcarsConnector.RETRY_DELAY_MS));
+      }
+
+      if (
+        AcarsConnector.activationRequested &&
+        !AcarsConnector.connected &&
+        AcarsConnector.connectionAttemptCounter >= AcarsConnector.MAX_CONNECTION_ATTEMPTS
+      ) {
+        console.log('Could not connect to ACARS after 5 minutes, giving up');
+        NXDataStore.getSetting('ACARS_PROVIDER').set('NONE');
         AcarsConnector.stopActivation();
-      })
-      .catch((e) => {
-        console.log(
-          `Could not connect to ACARS, retrying... (${AcarsConnector.connectionAttemptCounter}/${AcarsConnector.MAX_CONNECTION_ATTEMPTS})`,
-          e,
-        );
-      });
+      }
+    } finally {
+      AcarsConnector.activationLoopRunning = false;
+    }
   }
 
   public static activateAcars(): void {
@@ -83,8 +119,8 @@ export class AcarsConnector {
       return;
     }
 
-    AcarsConnector.attemptActivation();
-    AcarsConnector.activationInterval = setInterval(() => AcarsConnector.attemptActivation(), 5_000);
+    AcarsConnector.activationRequested = true;
+    void AcarsConnector.runActivationLoop();
   }
 
   public static deactivateAcars(): void {
@@ -109,6 +145,8 @@ export class AcarsConnector {
 
   public static disconnect(): AtsuStatusCodes {
     AcarsConnector.flightNumber = '';
+    AcarsConnector.activationRequested = false;
+    AcarsConnector.connected = false;
     return AtsuStatusCodes.Ok;
   }
 

@@ -15,7 +15,6 @@ import {
   TakeoffAntiIceSetting,
   LineupAngle,
   MathUtils,
-  usePersistentSetting,
 } from '@flybywiresim/fbw-sdk';
 import { toast } from 'react-toastify';
 import { Calculator, CloudArrowDown, Trash } from 'react-bootstrap-icons';

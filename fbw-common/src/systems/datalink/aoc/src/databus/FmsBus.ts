@@ -1,7 +1,7 @@
 //  Copyright (c) 2023 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { AtsuStatusCodes, AtisType, AtsuMessage, FreetextMessage, WeatherMessage } from '../../../common/src';
+import { AtsuStatusCodes, AtisType, FreetextMessage, WeatherMessage } from '../../../common/src';
 
 export interface AocFmsMessages {
   aocResetData: boolean;

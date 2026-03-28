@@ -6,7 +6,6 @@ import {
   FansMode,
   AtisMessage,
   AtisType,
-  AtsuMessage,
   CpdlcMessage,
   DclMessage,
   OclMessage,

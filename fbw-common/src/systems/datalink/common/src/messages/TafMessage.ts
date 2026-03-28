@@ -1,7 +1,7 @@
 //  Copyright (c) 2021 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { isMsfs2024, NXDataStore } from '@flybywiresim/fbw-sdk';
+import { NXDataStore } from '@flybywiresim/fbw-sdk';
 import { AtsuMessageType } from './AtsuMessage';
 import { WeatherMessage } from './WeatherMessage';
 

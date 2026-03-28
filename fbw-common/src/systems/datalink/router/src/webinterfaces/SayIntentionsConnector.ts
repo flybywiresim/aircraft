@@ -2,7 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
-import { AtsuStatusCodes, WeatherMessage, AtisMessage, AtisType } from '../../../common/src';
+import { AtsuStatusCodes, WeatherMessage, AtisMessage } from '../../../common/src';
 
 interface SayIntentionsAirport {
   metar?: string;
