@@ -36,6 +36,7 @@ import {
   RegisteredSimVar,
   UpdateThrottler,
 } from '@flybywiresim/fbw-sdk';
+import { EwdMessageCodeOrder, getEwdMessageGroup } from '../../../shared/src/EwdMessages';
 import { VerticalMode } from '@shared/autopilot';
 import { FuelSystemEvents } from '../../../instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
 import { A32NXAdrBusEvents } from '../../../shared/src/publishers/A32NXAdrBusPublisher';
@@ -1618,12 +1619,7 @@ export class PseudoFWC {
   }
 
   mapOrder(array, order): [] {
-    array.sort((a, b) => {
-      if (order.indexOf(a) > order.indexOf(b)) {
-        return 1;
-      }
-      return -1;
-    });
+    array.sort((a, b) => order.indexOf(a) - order.indexOf(b));
     return array;
   }
 
@@ -1632,6 +1628,7 @@ export class PseudoFWC {
   private readonly ecpClearWirePulse = new NXLogicPulseNode(true);
   private readonly ecpClearPulseTrigger = new NXLogicTriggeredMonostableNode(0.5, true);
   private ecpClearPulseUp = false;
+  private ecpClearPulseHandled = false;
   private readonly ecpRecallBusPulseUp = new NXLogicPulseNode(true);
   private readonly ecpRecallWirePulseUp = new NXLogicPulseNode(true);
   private readonly ecpRecallBusPulseDown = new NXLogicPulseNode(false);
@@ -3655,15 +3652,57 @@ export class PseudoFWC {
     this.toConfigOrPhase3.set(!(this.flightPhase3PulseNode.read() || this.toConfigHalfSecondTriggeredNode.read()));
 
     /* CLEAR AND RECALL */
-    if (this.ecpClearPulseUp) {
-      // delete the first failure
-      this.failuresLeft.splice(0, 1);
+    if (!this.ecpClearPulseUp) {
+      this.ecpClearPulseHandled = false;
+    }
+
+    if (this.ecpClearPulseUp && !this.ecpClearPulseHandled) {
+      const clearableFailures = this.failuresLeft.map((key) => {
+        const value = this.ewdMessageFailures[key];
+        const codeToReturn = value.whichCodeToReturn();
+        const code =
+          typeof codeToReturn === 'string' ? codeToReturn : value.codesToReturn[codeToReturn.find((e) => e !== null)];
+
+        return { key, group: getEwdMessageGroup(code), order: EwdMessageCodeOrder.indexOf(code) };
+      });
+
+      const targetGroup = clearableFailures.sort((a, b) => a.order - b.order)[0]?.group;
+      if (targetGroup !== undefined) {
+        const clearedFailureKeys = clearableFailures
+          .filter((item) => item.group === targetGroup)
+          .map((item) => item.key);
+
+        this.failuresLeft.splice(
+          0,
+          this.failuresLeft.length,
+          ...this.failuresLeft.filter((item) => !clearedFailureKeys.includes(item)),
+        );
+      }
+
       this.recallFailures = this.allCurrentFailures.filter((item) => !this.failuresLeft.includes(item));
+      this.ecpClearPulseHandled = true;
     }
 
     if (this.ecpRecallPulseUp) {
       if (this.recallFailures.length > 0) {
-        this.failuresLeft.push(this.recallFailures.shift());
+        const recallableFailures = this.recallFailures.map((key) => {
+          const value = this.ewdMessageFailures[key];
+          const codeToReturn = value.whichCodeToReturn();
+          const code =
+            typeof codeToReturn === 'string' ? codeToReturn : value.codesToReturn[codeToReturn.find((e) => e !== null)];
+
+          return { key, group: getEwdMessageGroup(code), order: EwdMessageCodeOrder.indexOf(code) };
+        });
+
+        const targetGroup = recallableFailures.sort((a, b) => a.order - b.order)[0]?.group;
+        if (targetGroup !== undefined) {
+          const recalledFailureKeys = recallableFailures
+            .filter((item) => item.group === targetGroup)
+            .map((item) => item.key);
+
+          this.failuresLeft.push(...recalledFailureKeys);
+          this.recallFailures = this.recallFailures.filter((item) => !recalledFailureKeys.includes(item));
+        }
       }
     }
 
@@ -3853,20 +3892,8 @@ export class PseudoFWC {
     }
 
     const failLeft = tempFailureArrayLeft.length > 0;
-
-    const mesgFailOrderLeft: string[] = [];
-    const mesgFailOrderRight: string[] = [];
-
-    for (const [, value] of Object.entries(this.ewdMessageFailures)) {
-      if (value.side === 'LEFT') {
-        mesgFailOrderLeft.push(...value.codesToReturn);
-      } else {
-        mesgFailOrderRight.push(...value.codesToReturn);
-      }
-    }
-
-    const orderedFailureArrayLeft = this.mapOrder(tempFailureArrayLeft, mesgFailOrderLeft);
-    const orderedFailureArrayRight = this.mapOrder(tempFailureArrayRight, mesgFailOrderRight);
+    const orderedFailureArrayLeft = this.mapOrder(tempFailureArrayLeft, EwdMessageCodeOrder);
+    const orderedFailureArrayRight = this.mapOrder(tempFailureArrayRight, EwdMessageCodeOrder);
 
     this.allCurrentFailures.length = 0;
     this.allCurrentFailures.push(...allFailureKeys);
@@ -3912,19 +3939,8 @@ export class PseudoFWC {
       }
     }
 
-    const mesgOrderLeft: string[] = [];
-    const mesgOrderRight: string[] = [];
-
-    for (const [, value] of Object.entries(this.ewdMessageMemos)) {
-      if (value.side === 'LEFT') {
-        mesgOrderLeft.push(...value.codesToReturn);
-      } else {
-        mesgOrderRight.push(...value.codesToReturn);
-      }
-    }
-
-    const orderedMemoArrayLeft = this.mapOrder(tempMemoArrayLeft, mesgOrderLeft);
-    let orderedMemoArrayRight: string[] = this.mapOrder(tempMemoArrayRight, mesgOrderRight);
+    const orderedMemoArrayLeft = this.mapOrder(tempMemoArrayLeft, EwdMessageCodeOrder);
+    let orderedMemoArrayRight: string[] = this.mapOrder(tempMemoArrayRight, EwdMessageCodeOrder);
 
     if (!failLeft) {
       this.ewdMessageLinesLeft.forEach((l, i) => l.set(orderedMemoArrayLeft[i]));
@@ -3951,10 +3967,12 @@ export class PseudoFWC {
       const specialLines = ['000014001', '000015001', '000035001', '000036001', '220001501', '220002101'];
       const filteredMemo = orderedMemoArrayRight.filter((e) => !specialLines.includes(e));
       const specLinesInMemo = orderedMemoArrayRight.filter((e) => specialLines.includes(e));
+      const orderedRightSideCodes = this.mapOrder([...filteredMemo, ...orderedFailureArrayRight], EwdMessageCodeOrder);
+
       if (specLinesInMemo.length > 0) {
-        orderedMemoArrayRight = [...specLinesInMemo, ...orderedFailureArrayRight, ...filteredMemo];
+        orderedMemoArrayRight = [...specLinesInMemo, ...orderedRightSideCodes];
       } else {
-        orderedMemoArrayRight = [...orderedFailureArrayRight, ...orderedMemoArrayRight];
+        orderedMemoArrayRight = orderedRightSideCodes;
       }
     }
 
