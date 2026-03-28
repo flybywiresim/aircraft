@@ -97,6 +97,7 @@
 1. [A380X/FWS] Fix SD page flicker when using ALL button - @matze-tech (matze2346)
 1. [A380X/RMP] Fix light bleed on RMP audio knobs - @heclak (Heclak)
 1. [A32NX/EFB] Added Departure Change Checklist to EFB - @FlyByTim (FlyByTim)
+1. [A380X/MFD] Added IMMEDIATE EXIT/RESUME HOLD button to the F-PLN page - @BravoMike99 (bruno_pt99)
 
 ## 0.14.0
 

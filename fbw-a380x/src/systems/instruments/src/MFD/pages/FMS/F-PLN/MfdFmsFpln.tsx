@@ -1,8 +1,12 @@
-﻿import {
+﻿// Copyright (c) 2024-2026 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.
+import {
   ArraySubject,
   ClockEvents,
   ComponentProps,
   DisplayComponent,
+  EventBus,
   FSComponent,
   MappedSubject,
   MathUtils,
@@ -43,6 +47,7 @@ import { ConditionalComponent } from '../../../../MsfsAvionicsCommon/UiWidgets/C
 import { InternalKccuKeyEvent } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { dirToUri, fixInfoUri } from '../../../shared/utils';
+import { FlightPlanOperationEvents } from '@fmgc/events/FlightPlanOperationEvents';
 
 interface MfdFmsFplnProps extends AbstractMfdPageProps {}
 
@@ -262,6 +267,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           isAltnWaypoint: false,
           isMissedAppchWaypoint: false,
           distFromLastWpt: null,
+          holdSpeed: null,
         });
 
         this.lineData.push({
@@ -406,9 +412,16 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
               this.loadedFlightPlan.departureEnrouteTransitionSegment.legCount;
 
           if (leg.type === LegType.HM) {
-            // Insert special HM line, TODO
+            // Active leg or next and hold decel reached
+            const type =
+              i === this.loadedFlightPlan.activeLegIndex ||
+              (i === this.loadedFlightPlan.activeLegIndex + 1 &&
+                this.props.fmcService.master?.acInterface.getHoldDecelReached())
+                ? FplnLineType.HoldActive
+                : FplnLineType.Hold;
+            const loadedFpIndex = this.loadedFlightPlanIndex.get();
             const holdData: FplnLineHoldDisplayData = {
-              type: FplnLineType.Hold,
+              type,
               originalLegIndex: i,
               isPseudoWaypoint: false,
               isAltnWaypoint: isAltn,
@@ -417,7 +430,8 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 : i >= this.loadedFlightPlan.firstMissedApproachLegIndex,
               ident: leg.definition.turnDirection === TurnDirection.Left ? 'HOLD L' : 'HOLD R',
               distFromLastWpt: leg.definition.length ?? null,
-              holdSpeed: 123,
+              holdSpeed: this.props.fmcService.master?.acInterface.getLegHoldingSpeed(i, loadedFpIndex) ?? null,
+              immExit: this.loadedFlightPlan.legElementAt(i).holdImmExit,
             };
             this.lineData.push(holdData);
           }
@@ -535,11 +549,9 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         }
         if (this.loadedFlightPlan && drawIndex === this.loadedFlightPlan.activeLegIndex) {
           flags |= FplnLineFlags.IsActiveLeg;
-        }
-        if (this.loadedFlightPlan && drawIndex === this.loadedFlightPlan.activeLegIndex - 1) {
+        } else if (this.loadedFlightPlan && drawIndex === this.loadedFlightPlan.activeLegIndex - 1) {
           flags |= FplnLineFlags.BeforeActiveLeg;
         }
-
         // No nested attributes, so that's OK
         const clonedLineData = { ...this.lineData[drawIndex] };
         this.renderedLineData[lineIndex].set(clonedLineData);
@@ -552,6 +564,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           const lineRef: NodeReference<FplnLegLine> = FSComponent.createRef<FplnLegLine>();
           const node: VNode = (
             <FplnLegLine
+              bus={this.props.bus}
               data={this.renderedLineData[lineIndex]}
               ref={lineRef}
               previousRow={Subject.create(previousRow)}
@@ -1189,6 +1202,7 @@ enum FplnLineType {
   Waypoint,
   Special,
   Hold,
+  HoldActive,
 }
 
 interface FplnLineTypeDiscriminator {
@@ -1238,8 +1252,9 @@ interface FplnLineHoldDisplayData extends FplnLineTypeDiscriminator {
   isAltnWaypoint: boolean;
   isMissedAppchWaypoint: boolean;
   ident: string;
-  holdSpeed?: number;
+  holdSpeed: number | null;
   distFromLastWpt: number | null;
+  immExit?: boolean;
 }
 
 type FplnLineDisplayData = FplnLineWaypointDisplayData | FplnLineSpecialDisplayData | FplnLineHoldDisplayData;
@@ -1253,7 +1268,11 @@ function isSpecial(object: FplnLineDisplayData): object is FplnLineSpecialDispla
 }
 
 function isHold(object: FplnLineDisplayData): object is FplnLineHoldDisplayData {
-  return object?.type === FplnLineType.Hold;
+  return object?.type === FplnLineType.Hold || isHoldActive(object);
+}
+
+function isHoldActive(object: FplnLineDisplayData): object is FplnLineHoldDisplayData {
+  return object?.type === FplnLineType.HoldActive;
 }
 
 type lineConstraintsCallbacks = {
@@ -1264,6 +1283,7 @@ type lineConstraintsCallbacks = {
 };
 
 export interface FplnLegLineProps extends FplnLineCommonProps {
+  bus: EventBus;
   previousRow: Subscribable<FplnLineDisplayData | null>;
   data: Subscribable<FplnLineDisplayData | null>;
   flags: Subscribable<FplnLineFlags>;
@@ -1304,10 +1324,15 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
   private readonly identRef = FSComponent.createRef<HTMLDivElement | HTMLSpanElement>();
 
   private readonly timeRef = FSComponent.createRef<HTMLDivElement>();
+  /** Only used for displaying HOLD SPD text */
+  private readonly timeAnnotationText = Subject.create('');
+  private readonly timeClickable = Subject.create(true);
 
   private readonly speedRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly speedClickable = Subject.create(true);
 
   private readonly altRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly altClickable = Subject.create(true);
 
   private readonly connectorRef = FSComponent.createRef<HTMLDivElement>();
 
@@ -1488,6 +1513,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
       const delimiter = data.label.length > 13 ? '- - - - -' : '- - - - - - ';
       this.identRef.instance.innerHTML = `${delimiter}<span style="margin: 0px 15px 0px 15px;">${data.label}</span>${delimiter}`;
     } else if (data && isHold(data) && this.identRef.getOrDefault() && this.timeRef.getOrDefault()) {
+      this.timeClickable.set(false);
       if (this.currentlyRenderedType !== FplnLineType.Waypoint) {
         while (this.topRef.instance.firstChild) {
           this.topRef.instance.removeChild(this.topRef.instance.firstChild);
@@ -1501,13 +1527,24 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
       }
 
       this.identRef.instance.innerText = data.ident;
-      this.timeRef.instance.innerText = 'SPD';
+      if (data.holdSpeed !== null) {
+        this.timeAnnotationText.set('SPD');
+        this.timeRef.instance.innerText = data.holdSpeed.toFixed(0);
+      }
 
       if (this.connectorRef.getOrDefault()) {
         while (this.connectorRef.instance.firstChild) {
           this.connectorRef.instance.removeChild(this.connectorRef.instance.firstChild);
         }
         FSComponent.render(FplnLineConnectorHold(this.lineColor.get()), this.connectorRef.instance);
+      }
+
+      if (isHoldActive(data)) {
+        while (this.speedRef.instance.firstChild) {
+          this.speedRef.instance.parentElement?.removeEventListener('click', this.props.callbacks.speed);
+          this.speedRef.instance.removeChild(this.speedRef.instance.firstChild);
+        }
+        FSComponent.render(this.renderHoldExitLine(data), this.speedRef.instance);
       }
 
       if (this.trackRef.getOrDefault() && this.distRef.getOrDefault() && this.fpaRef.getOrDefault()) {
@@ -1540,18 +1577,16 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
       this.altRef.instance.style.paddingRight = '20px';
       this.altRef.instance.parentElement?.addEventListener('click', this.props.callbacks.wind);
       this.speedRef.instance.style.paddingLeft = '10px';
-      if (this.speedRef.instance.parentElement) {
-        this.speedRef.instance.parentElement.className = 'mfd-fms-fpln-label-small';
-      }
+      this.speedClickable.set(false);
+      this.altClickable.set(true);
     } else {
       this.altRef.instance.style.alignSelf = '';
       this.altRef.instance.style.paddingRight = '';
       this.altRef.instance.parentElement?.addEventListener('click', this.props.callbacks.altitude);
       this.speedRef.instance.style.paddingLeft = '';
       this.speedRef.instance.parentElement?.addEventListener('click', this.props.callbacks.speed);
-      if (this.speedRef.instance.parentElement) {
-        this.speedRef.instance.parentElement.className = 'mfd-fms-fpln-label-small-clickable';
-      }
+      this.speedClickable.set(true);
+      this.altClickable.set(true);
     }
   }
 
@@ -1776,6 +1811,30 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
     return FplnLineConnectorNormal(this.lineColor.get(), lastLineOrBeforeSpecial);
   }
 
+  private renderHoldExitLine(data: FplnLineHoldDisplayData): VNode {
+    return (
+      <Button
+        label={Subject.create(
+          <div style="display: flex; flex-direction: row; justify-content: space-between;">
+            <span style="text-align: center; vertical-align: center; margin-right: 10px;">
+              {data.immExit ? 'RESUME' : 'IMMEDIATE'}
+              <br />
+              {data.immExit ? 'HOLD' : 'EXIT'}
+            </span>
+            <span style="display: flex; align-items: center; justify-content: center;">*</span>
+          </div>,
+        )}
+        onClick={() => {
+          console.log('Hold exit button clicked, immExit:', data.immExit);
+          this.props.bus
+            .getPublisher<FlightPlanOperationEvents>()
+            .pub('hold_immediate_exit', { index: data.originalLegIndex!, exit: !data.immExit! });
+        }}
+        buttonStyle="color: #e68000; padding-right: 2px; width:200px;"
+      />
+    );
+  }
+
   renderWaypointLine(): VNode {
     return (
       <div
@@ -1794,16 +1853,20 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
           )}
           <div ref={this.identRef} class="mfd-fms-fpln-line-ident" />
         </div>
-        <div class="mfd-fms-fpln-label-small-clickable" style="width: 11.5%;">
+        <div class={{ 'mfd-fms-fpln-label-small': true, clickable: this.timeClickable }} style="width: 11.5%;">
           {!(FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine)) && (
-            <div class="mfd-fms-fpln-leg-upper-row" />
+            <div class="mfd-fms-fpln-line-annotation">{this.timeAnnotationText}</div>
           )}
           <div ref={this.timeRef} class="mfd-fms-fpln-leg-lower-row" />
         </div>
         <div
-          class="mfd-fms-fpln-label-small-clickable"
+          class={{ 'mfd-fms-fpln-label-small': true, clickable: this.speedClickable }}
           style="width: 15%; align-items: flex-start; padding-left: 40px;"
-          onclick={() => this.props.callbacks.speed()}
+          onclick={() => {
+            if (this.speedClickable.get()) {
+              this.props.callbacks.speed();
+            }
+          }}
         >
           {!(FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine)) && (
             <div class="mfd-fms-fpln-leg-upper-row" />
@@ -1811,9 +1874,13 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
           <div ref={this.speedRef} class="mfd-fms-fpln-leg-lower-row" />
         </div>
         <div
-          class="mfd-fms-fpln-label-small-clickable"
+          class={{ 'mfd-fms-fpln-label-small': true, clickable: this.altClickable }}
           style="width: 21%; align-items: flex-start; padding-left: 20px;"
-          onclick={() => this.props.callbacks.altitude()}
+          onclick={() => {
+            if (this.altClickable.get()) {
+              this.props.callbacks.altitude();
+            }
+          }}
         >
           {!(FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine)) && (
             <div class="mfd-fms-fpln-leg-upper-row" />
@@ -1869,7 +1936,10 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
       this.currentlyRenderedLine = this.renderSpecialLine(data);
     }
     if (data && isHold(data)) {
-      this.currentlyRenderedType = FplnLineType.Hold;
+      this.currentlyRenderedType = isHoldActive(data) ? FplnLineType.HoldActive : FplnLineType.Hold;
+      this.speedClickable.set(false);
+      this.altClickable.set(false);
+      this.timeClickable.set(false);
       this.currentlyRenderedLine = this.renderWaypointLine();
     }
 
