@@ -91,6 +91,7 @@ export class FakeDmc implements Instrument {
   public onUpdate(): void {
     this.sdPage = SimVar.GetSimVarValue('L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX', SimVarValueType.Enum);
     const ecamSFail = SimVar.GetSimVarValue('L:A32NX_ECAM_SFAIL', SimVarValueType.Enum);
+    const leftFailureDisplayed = SimVar.GetSimVarValue('L:A32NX_EWD_LEFT_FAILURE_ACTIVE', SimVarValueType.Bool);
 
     this.outputWord.setBitValue(12, this.sdPage === SdPages.Eng);
     this.outputWord.setBitValue(13, this.sdPage === SdPages.Bleed);
@@ -104,7 +105,7 @@ export class FakeDmc implements Instrument {
     this.outputWord.setBitValue(21, this.sdPage === SdPages.Fctl);
     this.outputWord.setBitValue(22, this.sdPage === SdPages.Wheel);
     this.outputWord.setBitValue(26, this.sdPage === SdPages.Status);
-    this.outputWord.setBitValue(27, ecamSFail >= 0); // CLR
+    this.outputWord.setBitValue(27, ecamSFail >= 0 || leftFailureDisplayed); // CLR
     this.outputWord.setBitValue(28, this.sdPage === SdPages.None); // DmcEcpLightStatus.AutomaticStatusSystems
     this.outputWord.setBitValue(29, true); // DmcEcpLightStatus.ManualStatusSystemsAdvisory || DmcEcpLightStatus.AutomaticStatusSystems
 

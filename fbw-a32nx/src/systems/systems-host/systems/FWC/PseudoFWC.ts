@@ -3888,6 +3888,8 @@ export class PseudoFWC {
     const orderedFailureArrayLeft = this.mapOrder(tempFailureArrayLeft);
     const orderedFailureArrayRight = this.mapOrder(tempFailureArrayRight);
 
+    SimVar.SetSimVarValue('L:A32NX_EWD_LEFT_FAILURE_ACTIVE', 'bool', failLeft);
+
     this.allCurrentFailures.length = 0;
     this.allCurrentFailures.push(...allFailureKeys);
 
