@@ -55,7 +55,7 @@ const EWDGroups: Record<string, string> = {
 };
 
 // In priority order
-const EWDMessageDefinitions = new Map<string, { group?: string; text: string }>([
+const EwdMessages = new Map<string, { group?: string; text: string }>([
   ['220000501', { group: 'AUTO FLT$1', text: ' AP OFF' }],
   ['270005201', { group: 'F/CTL$1', text: ' FLAP LVR NOT ZERO' }],
   ['340021001', { group: 'OVER SPEED$1', text: '' }],
@@ -538,9 +538,9 @@ const EWDMessageDefinitions = new Map<string, { group?: string; text: string }>(
   ['000068001', { text: '\x1b<3mADIRS SWTG' }],
 ]);
 
-export const EwdMessageCodeOrder = [...EWDMessageDefinitions.keys()];
+export const EwdMessageCodeOrder = [...EwdMessages.keys()];
 
-export const getEwdMessageGroup = (code: string): string | undefined => EWDMessageDefinitions.get(code)?.group;
+export const getEwdMessageGroup = (code: string): string | undefined => EwdMessages.get(code)?.group;
 
 // eslint-disable-next-line no-control-regex
 const getVisibleTextWidth = (text: string) => text.replace(/\x1b[^m]*m/g, '').length;
@@ -551,7 +551,7 @@ export const formatEwdMessages = (codes: string[]): string[] => {
   let previousGroup: string | undefined;
 
   return codes.map((code) => {
-    const message = EWDMessageDefinitions.get(code);
+    const message = EwdMessages.get(code);
 
     if (message === undefined) {
       previousGroup = undefined;

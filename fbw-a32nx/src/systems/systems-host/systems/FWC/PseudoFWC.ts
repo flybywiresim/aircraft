@@ -3962,18 +3962,10 @@ export class PseudoFWC {
     }
 
     if (orderedFailureArrayRight.length > 0) {
-      // Right side failures need to be inserted between special lines
-      // and the rest of the memo
-      const specialLines = ['000014001', '000015001', '000035001', '000036001', '220001501', '220002101'];
-      const filteredMemo = orderedMemoArrayRight.filter((e) => !specialLines.includes(e));
-      const specLinesInMemo = orderedMemoArrayRight.filter((e) => specialLines.includes(e));
-      const orderedRightSideCodes = this.mapOrder([...filteredMemo, ...orderedFailureArrayRight], EwdMessageCodeOrder);
-
-      if (specLinesInMemo.length > 0) {
-        orderedMemoArrayRight = [...specLinesInMemo, ...orderedRightSideCodes];
-      } else {
-        orderedMemoArrayRight = orderedRightSideCodes;
-      }
+      orderedMemoArrayRight = this.mapOrder(
+        [...orderedMemoArrayRight, ...orderedFailureArrayRight],
+        EwdMessageCodeOrder,
+      );
     }
 
     this.ewdMessageLinesRight.forEach((l, i) => l.set(orderedMemoArrayRight[i]));
