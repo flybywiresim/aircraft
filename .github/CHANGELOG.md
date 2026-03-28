@@ -96,6 +96,7 @@
 1. [A32NX/FWS] Fixed AP OFF audio playing more than 3 times - @BravoMike99 (bruno_pt99)
 1. [A380X/FWS] Fix SD page flicker when using ALL button - @matze-tech (matze2346)
 1. [A380X/RMP] Fix light bleed on RMP audio knobs - @heclak (Heclak)
+1. [A380X/FWS] Add non normal config overspeed warning - @matze-tech (matze2346)
 
 ## 0.14.0
 
