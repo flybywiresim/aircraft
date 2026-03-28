@@ -6,7 +6,6 @@ import {
   ClockEvents,
   ComponentProps,
   DisplayComponent,
-  EventBus,
   FSComponent,
   MappedSubject,
   MathUtils,
@@ -268,6 +267,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           isMissedAppchWaypoint: false,
           distFromLastWpt: null,
           holdSpeed: null,
+          immExit: false,
         });
 
         this.lineData.push({
@@ -564,7 +564,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           const lineRef: NodeReference<FplnLegLine> = FSComponent.createRef<FplnLegLine>();
           const node: VNode = (
             <FplnLegLine
-              bus={this.props.bus}
               data={this.renderedLineData[lineIndex]}
               ref={lineRef}
               previousRow={Subject.create(previousRow)}
@@ -596,6 +595,9 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 altitude: () => this.goToAltitudeConstraint(drawIndex),
                 rta: () => this.goToTimeConstraint(drawIndex),
                 wind: () => {},
+                onImmediateExitHold: () => {
+                  this.onImmediateExit(drawIndex);
+                },
               }}
             />
           );
@@ -860,6 +862,25 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       this.props.mfd.uiService.navigateTo(
         `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-vert-rev/alt`,
       );
+    }
+  }
+
+  private onImmediateExit(lineDataIndex: number) {
+    const data = this.lineData[lineDataIndex];
+    if (isHold(data) && data.originalLegIndex !== null) {
+      if (data.originalLegIndex !== this.loadedFlightPlan?.activeLegIndex) {
+        // Decel has been sequenced but leg not sequenced yet, delete it.
+        this.props.fmcService.master?.flightPlanService.deleteElementAt(
+          data.originalLegIndex,
+          false,
+          this.loadedFlightPlanIndex.get(),
+          false,
+        );
+      } else {
+        this.props.bus
+          .getPublisher<FlightPlanOperationEvents>()
+          .pub('hold_immediate_exit', { index: data.originalLegIndex, exit: !data.immExit });
+      }
     }
   }
 
@@ -1254,7 +1275,7 @@ interface FplnLineHoldDisplayData extends FplnLineTypeDiscriminator {
   ident: string;
   holdSpeed: number | null;
   distFromLastWpt: number | null;
-  immExit?: boolean;
+  immExit: boolean;
 }
 
 type FplnLineDisplayData = FplnLineWaypointDisplayData | FplnLineSpecialDisplayData | FplnLineHoldDisplayData;
@@ -1280,10 +1301,10 @@ type lineConstraintsCallbacks = {
   rta: () => void;
   altitude: () => void;
   wind: () => void;
+  onImmediateExitHold?: () => void;
 };
 
 export interface FplnLegLineProps extends FplnLineCommonProps {
-  bus: EventBus;
   previousRow: Subscribable<FplnLineDisplayData | null>;
   data: Subscribable<FplnLineDisplayData | null>;
   flags: Subscribable<FplnLineFlags>;
@@ -1825,10 +1846,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
           </div>,
         )}
         onClick={() => {
-          console.log('Hold exit button clicked, immExit:', data.immExit);
-          this.props.bus
-            .getPublisher<FlightPlanOperationEvents>()
-            .pub('hold_immediate_exit', { index: data.originalLegIndex!, exit: !data.immExit! });
+          this.props.callbacks.onImmediateExitHold!();
         }}
         buttonStyle="color: #e68000; padding-right: 2px; width:200px;"
       />
