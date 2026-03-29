@@ -3685,7 +3685,7 @@ export class PseudoFWC {
 
         for (const item of clearableFailures) {
           if (item.group === targetGroup) {
-            const activationTime = this.ewdFailureActivationTime.get(item.key as keyof EWDMessageDict);
+            const activationTime = this.ewdFailureActivationTime.get(item.key);
 
             if (activationTime === undefined || simTime < activationTime + PseudoFWC.CLR_MIN_ACTIVE_TIME) {
               canClearTargetGroup = false;
