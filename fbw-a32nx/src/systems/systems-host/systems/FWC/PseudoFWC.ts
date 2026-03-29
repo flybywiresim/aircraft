@@ -3680,19 +3680,24 @@ export class PseudoFWC {
       }
 
       if (targetGroup !== undefined) {
-        const targetFailures = clearableFailures.filter((item) => item.group === targetGroup);
-        const canClearTargetGroup = targetFailures.every((item) => {
-          const activationTime = this.ewdFailureActivationTime.get(item.key as keyof EWDMessageDict);
+        const remainingFailures: string[] = [];
+        let canClearTargetGroup = true;
 
-          return activationTime !== undefined && simTime >= activationTime + PseudoFWC.CLR_MIN_ACTIVE_TIME;
-        });
+        for (const item of clearableFailures) {
+          if (item.group === targetGroup) {
+            const activationTime = this.ewdFailureActivationTime.get(item.key as keyof EWDMessageDict);
+
+            if (activationTime === undefined || simTime < activationTime + PseudoFWC.CLR_MIN_ACTIVE_TIME) {
+              canClearTargetGroup = false;
+              break;
+            }
+          } else {
+            remainingFailures.push(item.key);
+          }
+        }
 
         if (canClearTargetGroup) {
-          this.failuresLeft.splice(
-            0,
-            this.failuresLeft.length,
-            ...clearableFailures.filter((item) => item.group !== targetGroup).map((item) => item.key),
-          );
+          this.failuresLeft.splice(0, this.failuresLeft.length, ...remainingFailures);
 
           this.recallFailures = this.allCurrentFailures.filter((item) => !this.failuresLeft.includes(item));
         }
