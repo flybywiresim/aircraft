@@ -138,6 +138,8 @@ export class PseudoFWC {
   /** Time to inhibit SCs after one is trigger in ms */
   private static readonly AURAL_SC_INHIBIT_TIME = 2000;
 
+  private static readonly CLR_MIN_ACTIVE_TIME = 2;
+
   private static readonly EWD_MESSAGE_LINES = 7;
 
   private static readonly ewdMessageSimVarsLeft = Array.from(
@@ -3650,6 +3652,8 @@ export class PseudoFWC {
 
     this.toConfigOrPhase3.set(!(this.flightPhase3PulseNode.read() || this.toConfigHalfSecondTriggeredNode.read()));
 
+    const simTime = this.simTime.get();
+
     /* CLEAR AND RECALL */
     if (!this.ecpClearPulseUp) {
       this.ecpClearPulseUpHandled = false;
@@ -3676,14 +3680,24 @@ export class PseudoFWC {
       }
 
       if (targetGroup !== undefined) {
-        this.failuresLeft.splice(
-          0,
-          this.failuresLeft.length,
-          ...clearableFailures.filter((item) => item.group !== targetGroup).map((item) => item.key),
-        );
+        const targetFailures = clearableFailures.filter((item) => item.group === targetGroup);
+        const canClearTargetGroup = targetFailures.every((item) => {
+          const activationTime = this.ewdFailureActivationTime.get(item.key as keyof EWDMessageDict);
+
+          return activationTime !== undefined && simTime >= activationTime + PseudoFWC.CLR_MIN_ACTIVE_TIME;
+        });
+
+        if (canClearTargetGroup) {
+          this.failuresLeft.splice(
+            0,
+            this.failuresLeft.length,
+            ...clearableFailures.filter((item) => item.group !== targetGroup).map((item) => item.key),
+          );
+
+          this.recallFailures = this.allCurrentFailures.filter((item) => !this.failuresLeft.includes(item));
+        }
       }
 
-      this.recallFailures = this.allCurrentFailures.filter((item) => !this.failuresLeft.includes(item));
       this.ecpClearPulseUpHandled = true;
     }
 
@@ -3749,8 +3763,6 @@ export class PseudoFWC {
     this.recallFailures.length = 0;
     this.recallFailures.push(...recallFailureKeys);
     this.nonCancellableWarningCount = 0;
-
-    const simTime = this.simTime.get();
 
     // Failures first
     for (const [key, value] of Object.entries(this.ewdMessageFailures)) {
