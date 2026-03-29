@@ -138,6 +138,7 @@ export class PseudoFWC {
   /** Time to inhibit SCs after one is trigger in ms */
   private static readonly AURAL_SC_INHIBIT_TIME = 2000;
 
+  /** Time the failure needs to be active to be able to CLR it in seconds */
   private static readonly CLR_MIN_ACTIVE_TIME = 2;
 
   private static readonly EWD_MESSAGE_LINES = 7;
