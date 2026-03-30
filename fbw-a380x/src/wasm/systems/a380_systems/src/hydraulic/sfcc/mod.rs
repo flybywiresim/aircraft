@@ -1,7 +1,7 @@
 use crate::systems::shared::arinc429::{Arinc429Word, SignStatus};
 use systems::accept_iterable;
 use systems::hydraulic::command_sensor_unit::{CSUMonitor, CSU};
-use systems::hydraulic::flap_slat::ValveBlock;
+use systems::hydraulic::flap_slat::ValveBlockController;
 use systems::shared::{AdirsMeasurementOutputs, PositionPickoffUnit};
 
 use systems::simulation::{
@@ -447,11 +447,11 @@ impl SlatFlapComplex {
         self.sfcc[1].update(context, adirs, flaps_feedback, slats_feedback);
     }
 
-    pub fn flap_pcu(&self, idx: usize) -> &impl ValveBlock {
+    pub fn flap_pcu(&self, idx: usize) -> &impl ValveBlockController {
         &self.sfcc[idx].flaps_channel
     }
 
-    pub fn slat_pcu(&self, idx: usize) -> &impl ValveBlock {
+    pub fn slat_pcu(&self, idx: usize) -> &impl ValveBlockController {
         &self.sfcc[idx].slats_channel
     }
 }
