@@ -5,7 +5,7 @@ use ntest::assert_about_eq;
 use std::{panic::Location, time::Duration};
 use systems::{
     electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
-    hydraulic::flap_slat::{ChannelCommand, SolenoidStatus},
+    hydraulic::flap_slat::SolenoidStatus,
     shared::PotentialOrigin,
     simulation::{
         test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
@@ -14,6 +14,13 @@ use systems::{
 };
 
 use uom::si::{angular_velocity::degree_per_second, pressure::psi, velocity::knot};
+
+// TODO: Remove when valve block simulation is fully integrated
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum ChannelCommand {
+    Extend,
+    Retract,
+}
 
 struct SlatFlapGear {
     current_angle: Angle,
@@ -598,11 +605,29 @@ impl A320FlapsTestBed {
     }
 
     fn get_flap_command(&self, idx: usize) -> Option<ChannelCommand> {
-        self.query(|a| a.slat_flap_complex.flap_pcu(idx).get_command_status())
+        self.query(|a| {
+            let sfcc = a.slat_flap_complex.flap_pcu(idx);
+            if sfcc.get_extend_status() == SolenoidStatus::Energised {
+                Some(ChannelCommand::Extend)
+            } else if sfcc.get_retract_status() == SolenoidStatus::Energised {
+                Some(ChannelCommand::Retract)
+            } else {
+                None
+            }
+        })
     }
 
     fn get_slat_command(&self, idx: usize) -> Option<ChannelCommand> {
-        self.query(|a| a.slat_flap_complex.slat_pcu(idx).get_command_status())
+        self.query(|a| {
+            let sfcc = a.slat_flap_complex.slat_pcu(idx);
+            if sfcc.get_extend_status() == SolenoidStatus::Energised {
+                Some(ChannelCommand::Extend)
+            } else if sfcc.get_retract_status() == SolenoidStatus::Energised {
+                Some(ChannelCommand::Retract)
+            } else {
+                None
+            }
+        })
     }
 
     fn get_slat_alpha_lock_baulk_function_active(&self, idx: usize) -> bool {

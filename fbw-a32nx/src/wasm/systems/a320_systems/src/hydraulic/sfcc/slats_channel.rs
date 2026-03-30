@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use crate::systems::shared::arinc429::{Arinc429Word, SignStatus};
 use systems::hydraulic::command_sensor_unit::{CSUMonitor, CSU};
-use systems::hydraulic::flap_slat::{ChannelCommand, SolenoidStatus, ValveBlock};
+use systems::hydraulic::flap_slat::{SolenoidStatus, ValveBlockController};
 use systems::shared::{
     AdirsMeasurementOutputs, DelayedFalseLogicGate, ElectricalBusType, ElectricalBuses,
     LgciuWeightOnWheels, PositionPickoffUnit,
@@ -324,7 +324,7 @@ impl SlatsChannel {
 // When the POB (Pressure OFF Brake) solenoid is energised, then the hydraulic motors are allowed to move.
 // When the POB solenoid is de-energised (due to SFCC command or no SFCC power), then the hydraulic motors
 // are held in position and can't move.
-impl ValveBlock for SlatsChannel {
+impl ValveBlockController for SlatsChannel {
     fn get_pob_status(&self) -> SolenoidStatus {
         if !self.is_powered_delayed.output() {
             return SolenoidStatus::DeEnergised;
@@ -340,9 +340,9 @@ impl ValveBlock for SlatsChannel {
         }
     }
 
-    fn get_command_status(&self) -> Option<ChannelCommand> {
+    fn get_retract_status(&self) -> SolenoidStatus {
         if !self.is_powered_delayed.output() {
-            return None;
+            return SolenoidStatus::DeEnergised;
         }
 
         let demanded_angle = self.get_demanded_angle();
@@ -351,12 +351,28 @@ impl ValveBlock for SlatsChannel {
             demanded_angle,
             feedback_angle,
         );
-        if in_target_position {
-            None
-        } else if demanded_angle > feedback_angle {
-            Some(ChannelCommand::Extend)
+        if feedback_angle > demanded_angle && !in_target_position {
+            SolenoidStatus::Energised
         } else {
-            Some(ChannelCommand::Retract)
+            SolenoidStatus::DeEnergised
+        }
+    }
+
+    fn get_extend_status(&self) -> SolenoidStatus {
+        if !self.is_powered_delayed.output() {
+            return SolenoidStatus::DeEnergised;
+        }
+
+        let demanded_angle = self.get_demanded_angle();
+        let feedback_angle = self.get_feedback_angle();
+        let in_target_position = SlatFlapControlComputerMisc::in_positioning_threshold_range(
+            demanded_angle,
+            feedback_angle,
+        );
+        if feedback_angle < demanded_angle && !in_target_position {
+            SolenoidStatus::Energised
+        } else {
+            SolenoidStatus::DeEnergised
         }
     }
 }

@@ -3,7 +3,7 @@ use std::time::Duration;
 use crate::systems::shared::arinc429::{Arinc429Word, SignStatus};
 use systems::accept_iterable;
 use systems::hydraulic::command_sensor_unit::CSU;
-use systems::hydraulic::flap_slat::ValveBlock;
+use systems::hydraulic::flap_slat::ValveBlockController;
 use systems::shared::{
     AdirsMeasurementOutputs, ConsumePower, DelayedFalseLogicGate, ElectricalBusType,
     ElectricalBuses, LgciuWeightOnWheels, PositionPickoffUnit,
@@ -313,11 +313,11 @@ impl SlatFlapComplex {
         self.sfcc[1].update(context, flaps_feedback, slats_feedback, adirs, lgciu2);
     }
 
-    pub fn flap_pcu(&self, idx: usize) -> &impl ValveBlock {
+    pub fn flap_pcu(&self, idx: usize) -> &impl ValveBlockController {
         &self.sfcc[idx].flaps_channel
     }
 
-    pub fn slat_pcu(&self, idx: usize) -> &impl ValveBlock {
+    pub fn slat_pcu(&self, idx: usize) -> &impl ValveBlockController {
         &self.sfcc[idx].slats_channel
     }
 }
