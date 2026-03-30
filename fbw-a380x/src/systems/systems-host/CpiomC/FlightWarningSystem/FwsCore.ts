@@ -3756,12 +3756,8 @@ export class FwsCore {
     overspeedWarning ||= adr1Discrete1.bitValueOr(9, false) || adr2Discrete1.bitValueOr(9, false);
     const isOverspeed = (limit: number) => this.computedAirSpeedToNearest2.get() > limit + 4;
     const isOverMach = (limit: number) => this.machSelectedFromAdr.get() > limit + 0.006;
-    this.overspeedVmo.set(
-      !this.isAllGearDownlocked && this.flapsIndex.get() === 0 && (isOverspeed(Vmo) || isOverMach(Mmo)),
-    );
-    this.overspeedVle.set(
-      this.isAllGearDownlocked && this.flapsIndex.get() === 0 && (isOverspeed(Vle) || isOverMach(Mle)),
-    );
+    this.overspeedVmo.set(!this.isAllGearDownlocked && (isOverspeed(Vmo) || isOverMach(Mmo)));
+    this.overspeedVle.set(this.isAllGearDownlocked && (isOverspeed(Vle) || isOverMach(Mle)));
     // Non-normal flap configuration overspeed monitoring based on actual surface limits
     const sfcc1Aw = this.slatFlapsSystem1ActualPositionWord;
     const sfcc2Aw = this.slatFlapsSystem2ActualPositionWord;
