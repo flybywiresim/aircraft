@@ -340,9 +340,9 @@ export class FlightManagementComputer implements FmcInterface {
 
         this.fmgc.data.cpnyFplnAvailable.sub((v) => {
           if (v) {
-            this.addMessageToQueue(NXSystemMessages.comFplnRecievedPendingInsertion);
+            this.addMessageToQueue(NXSystemMessages.comFplnReceivedPendingInsertion);
           } else {
-            this.removeMessageFromQueue(NXSystemMessages.comFplnRecievedPendingInsertion.text);
+            this.removeMessageFromQueue(NXSystemMessages.comFplnReceivedPendingInsertion.text);
           }
         }),
         this.destDataEntered,
@@ -614,9 +614,9 @@ export class FlightManagementComputer implements FmcInterface {
   /**
    * Called when a flight plan uplink is done
    */
-  onUplinkDone() {
+  onUplinkDone(intoPlan: FlightPlanIndex, fltPlnReceived: boolean) {
     this.fmgc.data.cpnyFplnUplinkInProgress.set(false);
-    this.fmgc.data.cpnyFplnAvailable.set(true);
+    this.fmgc.data.cpnyFplnAvailable.set(fltPlnReceived);
   }
 
   /**
