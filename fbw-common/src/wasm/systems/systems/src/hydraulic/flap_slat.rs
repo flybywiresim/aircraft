@@ -51,20 +51,15 @@ impl fmt::Display for SecondarySurfaceType {
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
-pub enum ChannelCommand {
-    Extend,
-    Retract,
-}
-
-#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum SolenoidStatus {
     Energised,
     DeEnergised,
 }
 
-pub trait ValveBlock {
+pub trait ValveBlockController {
     fn get_pob_status(&self) -> SolenoidStatus;
-    fn get_command_status(&self) -> Option<ChannelCommand>;
+    fn get_retract_status(&self) -> SolenoidStatus;
+    fn get_extend_status(&self) -> SolenoidStatus;
 }
 
 pub struct SecondarySurface {
@@ -231,20 +226,20 @@ impl FlapSlatAssembly {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        sfcc_1_request: &impl ValveBlock,
-        sfcc_2_request: &impl ValveBlock,
+        sfcc_1: &impl ValveBlockController,
+        sfcc_2: &impl ValveBlockController,
         left_pressure: &impl SectionPressure,
         right_pressure: &impl SectionPressure,
     ) {
         self.update_current_max_speed(
             context,
-            sfcc_1_request,
-            sfcc_2_request,
+            sfcc_1,
+            sfcc_2,
             left_pressure.pressure_downstream_priority_valve(),
             right_pressure.pressure_downstream_priority_valve(),
         );
 
-        self.update_speed_and_position(context, sfcc_1_request, sfcc_2_request);
+        self.update_speed_and_position(context, sfcc_1, sfcc_2);
 
         self.update_motors_speed(
             context,
@@ -262,28 +257,31 @@ impl FlapSlatAssembly {
     fn update_speed_and_position(
         &mut self,
         context: &UpdateContext,
-        sfcc_1_request: &impl ValveBlock,
-        sfcc_2_request: &impl ValveBlock,
+        sfcc_1: &impl ValveBlockController,
+        sfcc_2: &impl ValveBlockController,
     ) {
         let max_speed = self.max_speed().get::<radian_per_second>();
         let time_delta = context.delta_as_secs_f64();
 
-        let sfcc_1_pob = sfcc_1_request.get_pob_status();
-        let sfcc_2_pob = sfcc_2_request.get_pob_status();
+        let sfcc_1_pob = sfcc_1.get_pob_status();
+        let sfcc_2_pob = sfcc_2.get_pob_status();
 
         let pob_de_energised =
             sfcc_1_pob == SolenoidStatus::DeEnergised && sfcc_2_pob == SolenoidStatus::DeEnergised;
 
-        let sfcc_1_request = sfcc_1_request.get_command_status();
-        let sfcc_2_request = sfcc_2_request.get_command_status();
+        let sfcc_1_extend = sfcc_1.get_extend_status();
+        let sfcc_1_retract = sfcc_1.get_retract_status();
 
-        // NOTE: opposite requests are not modelled yet. Opposite requests aren't expected
+        let sfcc_2_extend = sfcc_2.get_extend_status();
+        let sfcc_2_retract = sfcc_2.get_retract_status();
+
+        // NOTE: opposite commands between SFCCs are not modelled yet. Opposite requests aren't expected
         // in the current code.
-        let extend_request = sfcc_1_request == Some(ChannelCommand::Extend)
-            || sfcc_2_request == Some(ChannelCommand::Extend);
+        let extend_request = sfcc_1_extend == SolenoidStatus::Energised
+            || sfcc_2_extend == SolenoidStatus::Energised;
 
-        let retract_request = sfcc_1_request == Some(ChannelCommand::Retract)
-            || sfcc_2_request == Some(ChannelCommand::Retract);
+        let retract_request = sfcc_1_retract == SolenoidStatus::Energised
+            || sfcc_2_retract == SolenoidStatus::Energised;
 
         let arm_position_delta = if !context.aircraft_preset_quick_mode() {
             Angle::new::<radian>(max_speed * time_delta)
@@ -332,8 +330,8 @@ impl FlapSlatAssembly {
     fn update_current_max_speed(
         &mut self,
         context: &UpdateContext,
-        sfcc_1_request: &impl ValveBlock,
-        sfcc_2_request: &impl ValveBlock,
+        sfcc_1_request: &impl ValveBlockController,
+        sfcc_2_request: &impl ValveBlockController,
         left_pressure: Pressure,
         right_pressure: Pressure,
     ) {
@@ -665,7 +663,7 @@ mod tests {
             position > (target_position - tolerance) && position < (target_position + tolerance)
         }
     }
-    impl ValveBlock for TestSFCC {
+    impl ValveBlockController for TestSFCC {
         fn get_pob_status(&self) -> SolenoidStatus {
             let Some(demanded_angle) = self.motor_angle_request else {
                 return SolenoidStatus::DeEnergised;
@@ -679,19 +677,27 @@ mod tests {
             }
         }
 
-        fn get_command_status(&self) -> Option<ChannelCommand> {
-            let requested_position = self.motor_angle_request?;
+        fn get_retract_status(&self) -> SolenoidStatus {
+            let demanded_angle = self.motor_angle_request.unwrap_or(self.position_feedback);
             let feedback_angle = self.position_feedback;
-
-            let flaps_in_target_position =
-                Self::in_positioning_threshold_range(requested_position, feedback_angle);
-
-            if flaps_in_target_position {
-                None
-            } else if requested_position > feedback_angle {
-                Some(ChannelCommand::Extend)
+            let in_target_position =
+                Self::in_positioning_threshold_range(demanded_angle, feedback_angle);
+            if feedback_angle > demanded_angle && !in_target_position {
+                SolenoidStatus::Energised
             } else {
-                Some(ChannelCommand::Retract)
+                SolenoidStatus::DeEnergised
+            }
+        }
+
+        fn get_extend_status(&self) -> SolenoidStatus {
+            let demanded_angle = self.motor_angle_request.unwrap_or(self.position_feedback);
+            let feedback_angle = self.position_feedback;
+            let in_target_position =
+                Self::in_positioning_threshold_range(demanded_angle, feedback_angle);
+            if feedback_angle < demanded_angle && !in_target_position {
+                SolenoidStatus::Energised
+            } else {
+                SolenoidStatus::DeEnergised
             }
         }
     }
