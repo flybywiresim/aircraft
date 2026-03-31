@@ -26,6 +26,7 @@ import {
   VdSymbol,
   FmsData,
   NdPwpSymbolTypeFlags,
+  MagVar,
 } from '@flybywiresim/fbw-sdk';
 
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
@@ -408,8 +409,8 @@ export class EfisSymbols<T extends number> {
     }
 
     const formatConstraintAlt = (alt: number, descent: boolean, prefix: string = '') => {
-      const transAlt = this.flightPlanService.active?.performanceData.transitionAltitude;
-      const transFl = this.flightPlanService.active?.performanceData.transitionLevel;
+      const transAlt = this.flightPlanService.active?.performanceData.transitionAltitude.get();
+      const transFl = this.flightPlanService.active?.performanceData.transitionLevel.get();
 
       if (descent) {
         const fl = Math.round(alt / 100);
@@ -738,7 +739,7 @@ export class EfisSymbols<T extends number> {
       const isCourseReversal =
         leg.type === LegType.HA || leg.type === LegType.HF || leg.type === LegType.HM || leg.type === LegType.PI;
 
-      if (i === flightPlan.activeLegIndex && !isAlternate) {
+      if (i === flightPlan.activeLegIndex && !isAlternate && flightPlan.index === FlightPlanIndex.Active) {
         type |= NdSymbolTypeFlags.ActiveLegTermination;
       } else if (
         isCourseReversal &&
@@ -751,7 +752,7 @@ export class EfisSymbols<T extends number> {
         } else {
           type |= NdSymbolTypeFlags.CourseReversalRight;
         }
-        direction = leg.definition.magneticCourse; // TODO true
+        direction = MagVar.getLegTrueCourse(leg.definition);
       }
 
       if (i >= flightPlan.firstMissedApproachLegIndex && !transmitMissed) {
@@ -766,7 +767,8 @@ export class EfisSymbols<T extends number> {
         altConstraint &&
         shouldShowConstraintCircleInPhase(flightPhase, leg) &&
         !isAlternate &&
-        !leg.isXA()
+        !leg.isXA() &&
+        flightPlan.index === FlightPlanIndex.Active // Don't show constraint circles for SEC
       ) {
         if (!isSelectedVerticalModeActive) {
           type |= NdSymbolTypeFlags.Constraint;

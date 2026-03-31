@@ -26,9 +26,12 @@ import {
   FcuBusPublisher,
   FcuSimVars,
   FmsOansSimvarPublisher,
+  LgciuBusPublisher,
+  OansControlEvents,
+  RaBusPublisher,
 } from '@flybywiresim/fbw-sdk';
 import { NDComponent } from '@flybywiresim/navigation-display';
-import { a380EfisZoomRangeSettings, A380EfisZoomRangeValue, Oanc, OansControlEvents } from '@flybywiresim/oanc';
+import { a380EfisZoomRangeSettings, A380EfisZoomRangeValue, Oanc } from '@flybywiresim/oanc';
 
 import { ContextMenu, ContextMenuElement } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/ContextMenu';
 import { MouseCursor, MouseCursorColor } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/MouseCursor';
@@ -95,6 +98,10 @@ class NDInstrument implements FsInstrument {
   private readonly dmcPublisher: DmcPublisher;
 
   private readonly egpwcBusPublisher: EgpwcBusPublisher;
+
+  private readonly raBusPublisher: RaBusPublisher;
+
+  private readonly lgciuBusPublisher: LgciuBusPublisher;
 
   private readonly hEventPublisher: HEventPublisher;
 
@@ -172,6 +179,8 @@ class NDInstrument implements FsInstrument {
     this.tcasBusPublisher = new TcasBusPublisher(this.bus);
     this.dmcPublisher = new DmcPublisher(this.bus);
     this.egpwcBusPublisher = new EgpwcBusPublisher(this.bus, side);
+    this.raBusPublisher = new RaBusPublisher(this.bus);
+    this.lgciuBusPublisher = new LgciuBusPublisher(this.bus);
     this.hEventPublisher = new HEventPublisher(this.bus);
     this.resetPanelPublisher = new ResetPanelSimvarPublisher(this.bus);
     this.aesuPublisher = new AesuBusPublisher(this.bus);
@@ -195,6 +204,8 @@ class NDInstrument implements FsInstrument {
     this.backplane.addPublisher('tcas', this.tcasBusPublisher);
     this.backplane.addPublisher('dmc', this.dmcPublisher);
     this.backplane.addPublisher('egpwc', this.egpwcBusPublisher);
+    this.backplane.addPublisher('ra', this.raBusPublisher);
+    this.backplane.addPublisher('lgciu', this.lgciuBusPublisher);
     this.backplane.addPublisher('hEvent', this.hEventPublisher);
     this.backplane.addPublisher('resetPanel', this.resetPanelPublisher);
     this.backplane.addPublisher('aesu', this.aesuPublisher);

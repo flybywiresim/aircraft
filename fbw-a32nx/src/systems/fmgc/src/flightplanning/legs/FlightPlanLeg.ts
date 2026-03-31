@@ -13,9 +13,11 @@ import {
   ProcedureLeg,
   Runway,
   WaypointDescriptor,
+  PathVector,
   WaypointConstraintType,
   AltitudeConstraint,
   SpeedConstraint,
+  MagVar,
 } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from 'msfs-geo';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/legs/FlightPlanLegDefinition';
@@ -25,14 +27,18 @@ import { FlightPlanSegment } from '@fmgc/flightplanning/segments/FlightPlanSegme
 import { EnrouteSegment } from '@fmgc/flightplanning/segments/EnrouteSegment';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
+import { BitFlags } from '@microsoft/msfs-sdk';
 import { HoldUtils } from '@fmgc/flightplanning/data/hold';
 import { OriginSegment } from '@fmgc/flightplanning/segments/OriginSegment';
 import { ReadonlyFlightPlanLeg } from '@fmgc/flightplanning/legs/ReadonlyFlightPlanLeg';
+import { v4 } from 'uuid';
+import { CopyOptions } from '@fmgc/flightplanning/plans/CloningOptions';
 
 /**
  * A serialized flight plan leg, to be sent across FMSes
  */
 export interface SerializedFlightPlanLeg {
+  uuid: string;
   ident: string;
   flags: number;
   annotation: string;
@@ -45,15 +51,19 @@ export interface SerializedFlightPlanLeg {
   cruiseStep: CruiseStepEntry | undefined;
   pilotEnteredAltitudeConstraint: AltitudeConstraint | undefined;
   pilotEnteredSpeedConstraint: SpeedConstraint | undefined;
+  calculated: LegCalculations;
 }
 
 export enum FlightPlanLegFlags {
   DirectToTurningPoint = 1 << 0,
   PendingDirectToTurningPoint = 1 << 1,
   Origin = 1 << 2,
+  CopiedWithPredictions = 1 << 3,
 }
 
 export interface LegCalculations {
+  path: PathVector[];
+
   /** The leg's total distance in nautical miles, not cut short by ingress/egress turn radii. */
   distance: number;
   /** The cumulative distance in nautical miles up to this point in the flight plan. */
@@ -74,6 +84,8 @@ export interface LegCalculations {
  * A leg in a flight plan. Not to be confused with a geometry leg or a procedure leg
  */
 export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
+  uuid = v4();
+
   type: LegType;
 
   flags = 0;
@@ -112,6 +124,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
 
   serialize(): SerializedFlightPlanLeg {
     return {
+      uuid: this.uuid,
       ident: this.ident,
       flags: this.flags,
       annotation: this.annotation,
@@ -128,16 +141,27 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
       pilotEnteredSpeedConstraint: this.pilotEnteredSpeedConstraint
         ? JSON.parse(JSON.stringify(this.pilotEnteredSpeedConstraint))
         : undefined,
+      calculated: this.calculated ? JSON.parse(JSON.stringify(this.calculated)) : undefined,
     };
   }
 
-  clone(forSegment: FlightPlanSegment): FlightPlanLeg {
-    return FlightPlanLeg.deserialize(this.serialize(), forSegment);
+  clone(forSegment: FlightPlanSegment, options?: number): FlightPlanLeg {
+    const leg = FlightPlanLeg.deserialize(this.serialize(), forSegment);
+
+    if (BitFlags.isAll(options, CopyOptions.CopyPredictions)) {
+      leg.flags |= FlightPlanLegFlags.CopiedWithPredictions;
+    } else if (leg.calculated) {
+      // Do not show TOO STEEP PATHs on secondary
+      leg.calculated.endsInTooSteepPath = false;
+    }
+
+    return leg;
   }
 
   static deserialize(serialized: SerializedFlightPlanLeg, segment: FlightPlanSegment): FlightPlanLeg {
     const leg = FlightPlanLeg.fromProcedureLeg(segment, serialized.definition, serialized.definition.procedureIdent);
 
+    leg.uuid = serialized.uuid;
     leg.ident = serialized.ident;
     leg.flags = serialized.flags;
     leg.annotation = serialized.annotation;
@@ -148,6 +172,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     leg.cruiseStep = serialized.cruiseStep;
     leg.pilotEnteredAltitudeConstraint = serialized.pilotEnteredAltitudeConstraint;
     leg.pilotEnteredSpeedConstraint = serialized.pilotEnteredSpeedConstraint;
+    leg.calculated = serialized.calculated;
 
     return leg;
   }
@@ -217,6 +242,25 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     const legType = this.definition.type;
 
     return legType === LegType.CA || legType === LegType.FA || legType === LegType.HA || legType === LegType.VA;
+  }
+
+  isFloatingCourseLeg() {
+    return (
+      this.definition.type === LegType.CA ||
+      this.definition.type === LegType.CD ||
+      this.definition.type === LegType.CI ||
+      this.definition.type === LegType.CR
+    );
+  }
+
+  isVx() {
+    return (
+      this.definition.type === LegType.VA ||
+      this.definition.type === LegType.VD ||
+      this.definition.type === LegType.VI ||
+      this.definition.type === LegType.VM ||
+      this.definition.type === LegType.VR
+    );
   }
 
   isVectors() {
@@ -328,7 +372,20 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     this.clearSpeedConstraints();
   }
 
-  static turningPoint(segment: EnrouteSegment, location: Coordinates, magneticCourse: DegreesMagnetic): FlightPlanLeg {
+  /**
+   * Creates a turning point leg for a DIR TO or PPOS hold.
+   * @param segment The segment the leg will be inserted into.
+   * @param location The location of the turning point fix.
+   * @param course The course, in degrees, relative to magnetic north if magVar is a number, or true north if magVar is null.
+   * @param magVar The magnetic variation, in degrees, for the course if it is relative to magnetic north, or null for true north.
+   * @returns The turning point leg.
+   */
+  static turningPoint(
+    segment: EnrouteSegment,
+    location: Coordinates,
+    course: number,
+    magVar: number | null,
+  ): FlightPlanLeg {
     return new FlightPlanLeg(
       segment,
       {
@@ -336,7 +393,9 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         type: LegType.CF,
         overfly: false,
         waypoint: WaypointFactory.fromLocation('T-P', location),
-        magneticCourse,
+        course,
+        magVar,
+        length: 0,
       },
       'T-P',
       '',
@@ -344,7 +403,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     );
   }
 
-  static directToTurnEnd(segment: EnrouteSegment, waypoint: Fix): FlightPlanLeg {
+  static directToTurnEnd(segment: EnrouteSegment, waypoint: Fix, magVar: number | null): FlightPlanLeg {
     return new FlightPlanLeg(
       segment,
       {
@@ -352,6 +411,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         type: LegType.DF,
         overfly: false,
         waypoint,
+        magVar,
       },
       waypoint.ident,
       '',
@@ -359,7 +419,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     );
   }
 
-  static manualHold(segment: FlightPlanSegment, waypoint: Fix, hold: HoldData): FlightPlanLeg {
+  static manualHold(segment: FlightPlanSegment, waypoint: Fix, hold: HoldData, magVar: number | null): FlightPlanLeg {
     return new FlightPlanLeg(
       segment,
       {
@@ -368,9 +428,10 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         overfly: false,
         waypoint,
         turnDirection: hold.turnDirection,
-        magneticCourse: hold.inboundMagneticCourse,
+        course: hold.inboundMagneticCourse,
         length: hold.distance,
         lengthTime: hold.time,
+        magVar,
       },
       waypoint.ident,
       '',
@@ -409,7 +470,8 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
           overfly: false,
           waypoint: runway,
           waypointDescriptor: WaypointDescriptor.Runway,
-          magneticCourse: runway?.magneticBearing,
+          course: runway?.magneticBearing,
+          magVar: airport.magVar,
         },
         runway.ident,
         procedureIdent,
@@ -425,7 +487,8 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         overfly: false,
         waypoint: airport,
         waypointDescriptor: WaypointDescriptor.Airport,
-        magneticCourse: runway?.magneticBearing,
+        course: runway?.magneticBearing,
+        magVar: airport.magVar,
       },
       airport.ident,
       procedureIdent,
@@ -439,7 +502,6 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
       : 1500;
     const bearing = runway.magneticBearing;
 
-    // TODO magvar
     const annotation = runwayLeg.ident.substring(0, 3) + Math.round(bearing).toString().padStart(3, '0');
     const ident = Math.round(altitude).toFixed(0);
 
@@ -450,8 +512,9 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         type: LegType.FA,
         overfly: false,
         waypoint: runwayLeg.terminationWaypoint(),
-        magneticCourse: bearing,
+        course: bearing,
         altitude1: altitude,
+        magVar: runway.magVar,
       },
       ident,
       annotation,
@@ -474,6 +537,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         type: LegType.IF,
         overfly: false,
         waypoint,
+        magVar: runway.magVar,
       },
       waypoint.ident,
       '',
@@ -494,6 +558,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         type,
         overfly: false,
         waypoint,
+        magVar: MagVar.getForFix(waypoint),
       },
       waypoint.ident,
       airwayIdent ?? '',

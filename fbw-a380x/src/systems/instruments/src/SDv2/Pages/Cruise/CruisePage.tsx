@@ -17,11 +17,11 @@ import { SdPageProps } from '../../SD';
 export class CruisePage extends DestroyableComponent<SdPageProps> {
   private readonly sub = this.props.bus.getSubscriber<SDSimvars>();
 
-  private readonly topSvgStyle = this.props.visible.map((v) => `visibility: ${v ? 'visible' : 'hidden'}`);
+  private readonly topSvgDisplay = this.props.visible.map((v) => (v ? 'inline' : 'none'));
 
   private readonly usingMetric = Subject.create(true);
 
-  private readonly metricUnitSubscription = NXDataStore.getAndSubscribe(
+  private readonly metricUnitSubscription = NXDataStore.getAndSubscribeLegacy(
     'CONFIG_USING_METRIC_UNIT',
     (_k, v) => {
       this.usingMetric.set(v === '1');
@@ -61,7 +61,7 @@ export class CruisePage extends DestroyableComponent<SdPageProps> {
     super.onAfterRender(node);
 
     this.subscriptions.push(
-      this.topSvgStyle,
+      this.topSvgDisplay,
       this.engineTotalFuelUsedDisplay,
       ...this.enginesFuelUsed,
       ...this.enginesFuelFlow,
@@ -83,7 +83,7 @@ export class CruisePage extends DestroyableComponent<SdPageProps> {
         xmlns="http://www.w3.org/2000/svg"
         xmlnsXlink="http://www.w3.org/1999/xlink"
         viewBox="0 0 768 1024"
-        style={this.topSvgStyle}
+        style={{ display: this.topSvgDisplay }}
       >
         <PageTitle x={6} y={29}>
           CRUISE

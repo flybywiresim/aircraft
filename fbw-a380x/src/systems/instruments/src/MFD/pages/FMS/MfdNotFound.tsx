@@ -30,7 +30,6 @@ export class MfdNotFound extends DisplayComponent<MfdNotFoundProps> {
           activePage={Subject.create('ERROR 404 NOT FOUND')}
           offset={Subject.create('')}
           eoIsActive={Subject.create(false)}
-          tmpyIsActive={Subject.create(false)}
         />
         {/* begin page content */}
         <div class="mfd-page-container" />

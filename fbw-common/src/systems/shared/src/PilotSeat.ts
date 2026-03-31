@@ -45,7 +45,7 @@ export class PilotSeatManager implements Instrument {
   constructor(private readonly flightDeckBounds: FlightDeckBounds) {}
 
   public init(): void {
-    NXDataStore.getAndSubscribe(
+    NXDataStore.getAndSubscribeLegacy(
       'CONFIG_PILOT_SEAT',
       (_, config: PilotSeatConfig) => (this.configSeat = config),
       DefaultPilotSeatConfig,

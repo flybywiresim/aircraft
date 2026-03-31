@@ -58,12 +58,12 @@
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Anim_Code">
                 <ANIM_CODE>
-                    (#POSITION_TYPE#:#POSITION_VAR#) 1 &lt; 100 *
+                    (#POSITION_TYPE#:#POSITION_VAR#) 1 min -1 * 1 + 100 *
                 </ANIM_CODE>
-                <ANIM_NAME>#ANIM_NAME_REVERSE_LOCK#</ANIM_NAME>
+                <ANIM_NAME>#ANIM_NAME_REVERSER_LEVER#</ANIM_NAME>
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_AnimTriggers_2SoundEvents">
-                <ANIM_NAME>#ANIM_NAME_REVERSE_LOCK#</ANIM_NAME>
+                <ANIM_NAME>#ANIM_NAME_REVERSER_LEVER#</ANIM_NAME>
                 <WWISE_EVENT_1>detent</WWISE_EVENT_1>
                 <WWISE_EVENT_2>detent</WWISE_EVENT_2>
             </UseTemplate>

@@ -120,11 +120,13 @@ impl SlatFlapControlComputer {
                 FlapsConf::Conf1F
             }
             (CSU::Conf0 | CSU::Conf1, CSU::Conf1)
-                if context.indicated_airspeed().get::<knot>()
+                // If we're not already in Conf0, then we've oversped Conf1 instead of explicitly moving the flaps handle
+                if self.flaps_conf == FlapsConf::Conf0
+                    && (context.indicated_airspeed().get::<knot>()
                     > Self::CRUISE_BAULK_AIRSPEED_THRESHOLD_KNOTS
                     // FIXME use ADRs
                     || context.pressure_altitude().get::<foot>()
-                        > Self::CRUISE_BAULK_ALTITUDE_THRESHOLD_FEET =>
+                        > Self::CRUISE_BAULK_ALTITUDE_THRESHOLD_FEET) =>
             {
                 FlapsConf::Conf0
             }
@@ -287,7 +289,10 @@ impl SlatFlapControlComputer {
         word.set_bit(23, false);
         word.set_bit(24, self.alpha_speed_lock_active);
         word.set_bit(25, self.cruise_baulk_active);
-        word.set_bit(26, self.flaps_conf == FlapsConf::Conf1);
+        word.set_bit(
+            26,
+            self.flaps_conf == FlapsConf::Conf1 || self.cruise_baulk_active,
+        );
         word.set_bit(27, false);
         word.set_bit(28, true);
         word.set_bit(29, true);
@@ -300,30 +305,34 @@ impl SlatFlapControlComputer {
         let slats_fppu_angle = self.slats_channel.get_feedback_angle();
         let mut word = Arinc429Word::new(0, SignStatus::NormalOperation);
 
+        // NOTE: This arinc word is an adaptation of label 047 in the A320 SFCC
+        // to A380 FLAPS/SLATS FPPU positions. In the future this can be improved,
+        // but it requires changes to all the readers.
+
         word.set_bit(11, true);
         // Slats retracted
         word.set_bit(
             12,
-            slats_fppu_angle > Angle::new::<degree>(-5.0)
-                && slats_fppu_angle < Angle::new::<degree>(6.2),
+            slats_fppu_angle > Angle::new::<degree>(-16.304)
+                && slats_fppu_angle <= Angle::new::<degree>(9.580),
         );
-        // Slats >= 19°
+        // Slats >= 20°
         word.set_bit(
             13,
-            slats_fppu_angle > Angle::new::<degree>(234.7)
-                && slats_fppu_angle < Angle::new::<degree>(337.),
+            slats_fppu_angle >= Angle::new::<degree>(276.900)
+                && slats_fppu_angle <= Angle::new::<degree>(343.695),
         );
-        // Slats >= 22°
+        // Slats >= 23°
         word.set_bit(
             14,
-            slats_fppu_angle > Angle::new::<degree>(272.2)
-                && slats_fppu_angle < Angle::new::<degree>(337.),
+            slats_fppu_angle >= Angle::new::<degree>(317.810)
+                && slats_fppu_angle <= Angle::new::<degree>(343.695),
         );
         // Slats extended 23°
         word.set_bit(
             15,
-            slats_fppu_angle > Angle::new::<degree>(280.)
-                && slats_fppu_angle < Angle::new::<degree>(337.),
+            slats_fppu_angle >= Angle::new::<degree>(317.810)
+                && slats_fppu_angle <= Angle::new::<degree>(343.695),
         );
         word.set_bit(16, false);
         word.set_bit(17, false);
@@ -331,32 +340,32 @@ impl SlatFlapControlComputer {
         // Flaps retracted
         word.set_bit(
             19,
-            flaps_fppu_angle > Angle::new::<degree>(-5.0)
-                && flaps_fppu_angle < Angle::new::<degree>(2.5),
+            flaps_fppu_angle > Angle::new::<degree>(-10.504)
+                && flaps_fppu_angle <= Angle::new::<degree>(10.063),
         );
-        // Flaps >= 7°
+        // Flaps >= 8°
         word.set_bit(
             20,
-            flaps_fppu_angle > Angle::new::<degree>(102.1)
-                && flaps_fppu_angle < Angle::new::<degree>(254.),
+            flaps_fppu_angle >= Angle::new::<degree>(208.033)
+                && flaps_fppu_angle <= Angle::new::<degree>(349.495),
         );
-        // Flaps >= 16°
+        // Flaps >= 17°
         word.set_bit(
             21,
-            flaps_fppu_angle > Angle::new::<degree>(150.0)
-                && flaps_fppu_angle < Angle::new::<degree>(254.),
+            flaps_fppu_angle >= Angle::new::<degree>(251.633)
+                && flaps_fppu_angle <= Angle::new::<degree>(349.495),
         );
-        // Flaps >= 25°
+        // Flaps >= 26°
         word.set_bit(
             22,
-            flaps_fppu_angle > Angle::new::<degree>(189.8)
-                && flaps_fppu_angle < Angle::new::<degree>(254.),
+            flaps_fppu_angle >= Angle::new::<degree>(289.943)
+                && flaps_fppu_angle <= Angle::new::<degree>(349.495),
         );
-        // Flaps extended 32°
+        // Flaps extended 33°
         word.set_bit(
             23,
-            flaps_fppu_angle > Angle::new::<degree>(218.)
-                && flaps_fppu_angle < Angle::new::<degree>(254.),
+            flaps_fppu_angle >= Angle::new::<degree>(331.343)
+                && flaps_fppu_angle <= Angle::new::<degree>(349.495),
         );
         word.set_bit(24, false);
         word.set_bit(25, false);
@@ -584,14 +593,14 @@ mod tests {
 
                 flap_gear: SlatFlapGear::new(
                     context,
-                    AngularVelocity::new::<degree_per_second>(7.5),
-                    Angle::new::<degree>(251.97),
+                    AngularVelocity::new::<degree_per_second>(11.5),
+                    Angle::new::<degree>(338.99),
                     "FLAPS",
                 ),
                 slat_gear: SlatFlapGear::new(
                     context,
-                    AngularVelocity::new::<degree_per_second>(7.5),
-                    Angle::new::<degree>(334.16),
+                    AngularVelocity::new::<degree_per_second>(11.5),
+                    Angle::new::<degree>(327.39),
                     "SLATS",
                 ),
 
@@ -853,6 +862,7 @@ mod tests {
                 feedback_angle,
             )
         }
+
         fn test_flap_conf(
             &mut self,
             handle_pos: u8,
@@ -1232,19 +1242,19 @@ mod tests {
 
         test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
 
-        test_bed.test_flap_conf(1, 108.28, 247.27, FlapsConf::Conf1F, angle_delta);
+        test_bed.test_flap_conf(1, 215.68, 286.48, FlapsConf::Conf1F, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(2).run_one_tick();
 
-        test_bed.test_flap_conf(2, 154.65, 247.27, FlapsConf::Conf2, angle_delta);
+        test_bed.test_flap_conf(2, 259.28, 286.48, FlapsConf::Conf2, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
 
-        test_bed.test_flap_conf(3, 194.03, 284.65, FlapsConf::Conf3, angle_delta);
+        test_bed.test_flap_conf(3, 297.59, 327.39, FlapsConf::Conf3, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
 
-        test_bed.test_flap_conf(4, 218.91, 284.65, FlapsConf::ConfFull, angle_delta);
+        test_bed.test_flap_conf(4, 338.99, 327.39, FlapsConf::ConfFull, angle_delta);
     }
 
     // Tests flaps configuration and angles for regular
@@ -1262,19 +1272,19 @@ mod tests {
 
         test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
 
-        test_bed.test_flap_conf(1, 0., 247.27, FlapsConf::Conf1, angle_delta);
+        test_bed.test_flap_conf(1, 0., 286.48, FlapsConf::Conf1, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(2).run_one_tick();
 
-        test_bed.test_flap_conf(2, 154.65, 247.27, FlapsConf::Conf2, angle_delta);
+        test_bed.test_flap_conf(2, 259.28, 286.48, FlapsConf::Conf2, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
 
-        test_bed.test_flap_conf(3, 154.65, 284.65, FlapsConf::Conf2S, angle_delta);
+        test_bed.test_flap_conf(3, 259.28, 327.39, FlapsConf::Conf2S, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
 
-        test_bed.test_flap_conf(4, 194.03, 284.65, FlapsConf::Conf3, angle_delta);
+        test_bed.test_flap_conf(4, 297.59, 327.39, FlapsConf::Conf3, angle_delta);
     }
 
     //Tests regular transition 2->1 below and above 212 knots
@@ -1343,19 +1353,19 @@ mod tests {
 
         test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
 
-        test_bed.test_flap_conf(4, 218.91, 284.65, FlapsConf::ConfFull, angle_delta);
+        test_bed.test_flap_conf(4, 338.99, 327.39, FlapsConf::ConfFull, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
 
-        test_bed.test_flap_conf(3, 194.03, 284.65, FlapsConf::Conf3, angle_delta);
+        test_bed.test_flap_conf(3, 297.59, 327.39, FlapsConf::Conf3, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(2).run_one_tick();
 
-        test_bed.test_flap_conf(2, 154.65, 247.27, FlapsConf::Conf2, angle_delta);
+        test_bed.test_flap_conf(2, 259.28, 286.48, FlapsConf::Conf2, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
 
-        test_bed.test_flap_conf(1, 108.28, 247.27, FlapsConf::Conf1F, angle_delta);
+        test_bed.test_flap_conf(1, 215.68, 286.48, FlapsConf::Conf1F, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
 
@@ -1375,19 +1385,19 @@ mod tests {
 
         test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
 
-        test_bed.test_flap_conf(4, 218.91, 284.65, FlapsConf::ConfFull, angle_delta);
+        test_bed.test_flap_conf(4, 338.99, 327.39, FlapsConf::ConfFull, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
 
-        test_bed.test_flap_conf(3, 194.03, 284.65, FlapsConf::Conf3, angle_delta);
+        test_bed.test_flap_conf(3, 297.59, 327.39, FlapsConf::Conf3, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(2).run_one_tick();
 
-        test_bed.test_flap_conf(2, 154.65, 247.27, FlapsConf::Conf2, angle_delta);
+        test_bed.test_flap_conf(2, 259.28, 286.48, FlapsConf::Conf2, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
 
-        test_bed.test_flap_conf(1, 0., 247.27, FlapsConf::Conf1, angle_delta);
+        test_bed.test_flap_conf(1, 0., 286.48, FlapsConf::Conf1, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
 
@@ -2039,6 +2049,27 @@ mod tests {
         assert_eq!(test_bed.get_flaps_conf(1), FlapsConf::Conf0);
         assert!(test_bed.read_slat_flap_system_status_word(1).get_bit(25));
         assert!(test_bed.read_slat_flap_system_status_word(2).get_bit(25));
+    }
+
+    #[test]
+    fn config_test_no_cruise_baulk_when_overspeed_conf1() {
+        let mut test_bed = test_bed_with()
+            .set_green_hyd_pressure()
+            .set_indicated_airspeed(220.)
+            .set_on_ground(false)
+            .set_flaps_handle_position(1)
+            .run_one_tick();
+
+        test_bed = test_bed
+            .set_indicated_airspeed(270.)
+            .run_waiting_for(Duration::from_secs(20));
+
+        assert_eq!(test_bed.get_flaps_conf(0), FlapsConf::Conf1);
+        assert_eq!(test_bed.get_flaps_conf(1), FlapsConf::Conf1);
+        assert!(!test_bed.read_slat_flap_system_status_word(1).get_bit(25));
+        assert!(!test_bed.read_slat_flap_system_status_word(2).get_bit(25));
+        assert!(test_bed.read_slat_flap_system_status_word(1).get_bit(26));
+        assert!(test_bed.read_slat_flap_system_status_word(2).get_bit(26));
     }
 
     #[test]

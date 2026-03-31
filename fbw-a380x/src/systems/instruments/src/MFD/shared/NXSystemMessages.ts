@@ -60,6 +60,20 @@ export class TypeIIMessage extends McduMessage {
   }
 }
 
+export class ATCCOMMessage extends McduMessage {
+  constructor(text: string, isAmber = false, replace = '') {
+    super(text, isAmber, replace);
+  }
+
+  /**
+   * Only returning a "copy" of the object to ensure thread safety when trying to edit the original message
+   * t {string} replaces defined elements, see this.replace
+   */
+  getModifiedMessage(t: string): ATCCOMMessage {
+    return new ATCCOMMessage(t ? this.text.replace(this.replace, `${t}`) : this.text, this.isAmber, this.replace);
+  }
+}
+
 /**
  NXSystemMessages only holds real messages
  */
@@ -69,7 +83,7 @@ export const NXSystemMessages = {
   checkMinFuelAtDest: new TypeIIMessage('CHECK MIN FUEL AT DEST'),
   checkSpeedMode: new TypeIIMessage('CHECK SPD MODE'),
   checkToData: new TypeIIMessage('CHECK T.O. DATA', true),
-  comFplnRecievedPendingInsertion: new TypeIIMessage('COMPANY F-PLN RECEIVED WAITING FOR INSERTION', false),
+  comFplnReceivedPendingInsertion: new TypeIIMessage('COMPANY F-PLN RECEIVED WAITING FOR INSERTION', false),
   comDatalinkNotAvail: new TypeIMessage('COM DATALINK NOT AVAIL'),
   cstrDelUpToWpt: new TypeIIMessage('CONSTRAINTS BEFORE WWWWW : DELETED', false, 'WWWWW'),
   costIndexInUse: new TypeIMessage('COST INDEX-NNN IN USE', false, 'NNN'),
@@ -85,7 +99,9 @@ export const NXSystemMessages = {
   newThrRedAlt: new TypeIIMessage('NEW THR RED ALT: HHHHH', false, 'HHHHH'),
   noIntersectionFound: new TypeIMessage('NO INTERSECTION FOUND'),
   notAllowed: new TypeIMessage('NOT ALLOWED'),
+  notAllowedInNav: new TypeIMessage('NOT ALLOWED IN NAV'),
   notInDatabase: new TypeIMessage('NOT IN DATABASE'),
+  receivedCpnyFplnNotValid: new TypeIIMessage('RECEIVED COMPANY F-PLN NOT VALID', false),
   rwyLsDisagree: new TypeIIMessage('RUNWAY / LS DISAGREE', true),
   setHoldSpeed: new TypeIIMessage('SET HOLD SPD'),
   tdReached: new TypeIIMessage('T/D REACHED'),
@@ -124,7 +140,7 @@ export const NXFictionalMessages = {
   noWptInfos: new TypeIMessage('NO WAYPOINT INFOS'),
   emptyMessage: new TypeIMessage(''),
   reloadPlaneApply: new TypeIIMessage('RELOAD A/C TO APPLY', true),
-  noHoppieConnection: new TypeIMessage('NO HOPPIE CONNECTION'),
+  noAcarsConnection: new TypeIMessage('NO ACARS CONNECTION'),
   unknownAtsuMessage: new TypeIMessage('UNKNOWN ATSU MESSAGE'),
   reverseProxy: new TypeIMessage('REVERSE PROXY ERROR'),
   simBriefNoUser: new TypeIMessage('NO SIMBRIEF PILOT ID PROVIDED'),
@@ -133,3 +149,33 @@ export const NXFictionalMessages = {
 export function isTypeIIMessage(message: McduMessage): message is TypeIIMessage {
   return message instanceof TypeIIMessage;
 }
+
+export const ATCCOMMessages = {
+  cancelAutoUpdateFirst: new ATCCOMMessage('CANCEL AUTO UPDATE FIRST'),
+  comDatalinkNotAvail: new ATCCOMMessage('COM DATALINK NOT AVAIL'),
+  datisGroundMsg: new ATCCOMMessage('D-ATIS GROUND MSG'),
+  datisNoReply: new ATCCOMMessage('D-ATIS NO REPLY'),
+  datisReceived: new ATCCOMMessage('D-ATIS RECEIVED'),
+  datisSendFailed: new ATCCOMMessage('D-ATIS SEND FAILED'),
+  datisUpdated: new ATCCOMMessage('D-ATIS UPDATED - READ AGAIN'),
+  datisUsedOffside: new ATCCOMMessage('D-ATIS USED OFFSIDE'),
+  entryOutOfRange: new ATCCOMMessage('ENTRY OUT OF RANGE'),
+  formatError: new ATCCOMMessage('FORMAT ERROR'),
+  identicalDatisRequest: new ATCCOMMessage('IDENTICAL D-ATIS REQUEST'),
+  lastMsgElement: new ATCCOMMessage('LAST MSG ELEMENT'),
+  mailboxFull: new ATCCOMMessage('MAILBOX FULL - SEND OR CANCEL SOME MSG'),
+  msgAbortedActiveAtcDisconnected: new ATCCOMMessage('MSG ABORTED - ACTIVE ATC DISCONNECTED'),
+  msgAbortedNotSupportedByCurrentATC: new ATCCOMMessage('MSG ABORTED - NOT SUPPORTED BY CURRENT ATC'),
+  msgRecordLost: new ATCCOMMessage('MSG RECORD LOST'),
+  msgRecordUsedOffside: new ATCCOMMessage('MSG RECORD USED OFFSIDE'),
+  newDatisGroundMsg: new ATCCOMMessage('NEW D-ATIS GROUND MSG - READ AGAIN'),
+  noSysData: new ATCCOMMessage('NO SYS DATA'),
+  notifNotAvailAcftPosNotAvail: new ATCCOMMessage('NOTIFICATION NOT AVAIL - ACFT POSITION NOT AVAIL'),
+  notifNotAvailChckFltNbr: new ATCCOMMessage('NOTIFICATION NOT AVAIL - CHECK FLT NBR IN FMS INIT PAGE'),
+  notifNotAvailChckFromTo: new ATCCOMMessage('NOTIFICATION NOT AVAIL - CHECK FROM/TO IN FMS INIT PAGE'),
+  notifNotAvailWithThisAtcCtr: new ATCCOMMessage('NOTIFICATION NOT AVAIL - WITH THIS ATC CENTER'),
+  pleaseWaitUpdateInProgress: new ATCCOMMessage('PLEASE WAIT: UPDATE IN PROGRESS'),
+  printerNotAvail: new ATCCOMMessage('PRINTER NOT AVAIL'),
+  printing: new ATCCOMMessage('PRINTING'),
+  sendingMaydayWillSwitchAdscToEmergency: new ATCCOMMessage('SENDING MAYDAY WILL SWITCH ADS-C TO EMERGENCY'),
+};

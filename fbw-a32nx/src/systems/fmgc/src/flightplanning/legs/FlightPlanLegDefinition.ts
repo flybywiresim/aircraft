@@ -123,11 +123,12 @@ export interface FlightPlanLegDefinition {
   turnDirection?: TurnDirection;
 
   /**
-   * Specifies the outbound magnetic course associated with the termination of this leg
-   * For AF legs this is the boundary radial
-   * For CF legs this is the course to the specified fix
+   * Specifies the outbound course associated with the termination of this leg.
+   * For AF legs this is the boundary radial.
+   * For CF legs this is the course to the specified fix.
+   * When the magvar field has a value of null, this is a true north referenced course instead.
    */
-  magneticCourse?: DegreesMagnetic;
+  course?: number;
 
   /**
    * Specifies the descent vertical angle (negative) referenced to the terminating fix
@@ -144,4 +145,9 @@ export interface FlightPlanLegDefinition {
    * General waypoint type
    */
   waypointDescriptor?: WaypointDescriptor;
+
+  /**
+   * The procedure design magvar for this leg in degrees, or null if it is a true north referenced leg.
+   */
+  magVar: number | null;
 }

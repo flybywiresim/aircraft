@@ -1,0 +1,74 @@
+@import "../../../../MsfsAvionicsCommon/definitions";
+
+
+.mfd-pos-top-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-left: 86px;
+    margin-bottom: 4px;
+}
+
+
+.mfd-pos-monitor-line {
+    border: 1px outset $display-light-grey;
+    height: 1px;
+    margin-left: 5px;
+    margin-bottom: 8px;
+  }
+
+
+  .mfd-pos-monitor-line.big {
+    width: 97%;
+  }
+
+  .mfd-pos-monitor-line.short {
+    width: 445px;
+  }
+
+  .mfd-pos-monitor-frozen-pos-time-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: fixed;
+    left: 496px;
+    top: 632px;
+  }
+
+  .mfd-pos-monitor-deviation-container {
+    margin-top: 27px;
+    margin-left: 19px;
+}
+
+.mfd-pos-monitor-irs-deviation-line {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding-bottom: 7px;
+}
+
+.mfd-pos-monitor-irs-deviation-title {
+   padding-right: 64px;
+}
+
+.mfd-pos-monitor-fm-pos-line {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-right: 20px;
+  margin-left:   9px;
+}
+
+.mfd-label-value-container.pos-monitor-table-lateral-spacing {
+  margin-left:  10px;
+
+}
+
+.mfd-label-value-container.pos-monitor-table-vertical-spacing {
+  padding-bottom: 6px;
+}
+
+.rnp-container {
+  margin-right: 92px;
+  margin-top: 7px;
+}

@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2025 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -13,17 +13,25 @@ import {
 } from '@flybywiresim/fbw-sdk';
 import { FlightPlanSegment } from '@fmgc/flightplanning/segments/FlightPlanSegment';
 import { ReadonlyFlightPlanElement, ReadonlyFlightPlanLeg } from '@fmgc/flightplanning/legs/ReadonlyFlightPlanLeg';
+import { ReadonlyPendingAirways } from '@fmgc/flightplanning/plans/ReadonlyPendingAirways';
+import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 
-export interface ReadonlyFlightPlan {
+export interface ReadonlyFlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> {
   get index(): number;
 
   get legCount(): number;
+
+  get enrouteLegCount(): number;
 
   get lastIndex(): number;
 
   get firstMissedApproachLegIndex(): number;
 
   get firstApproachLegIndex(): number;
+
+  get firstEnrouteLegIndex(): number;
+
+  get lastEnrouteLegIndex(): number;
 
   get activeLegIndex(): number;
 
@@ -52,6 +60,10 @@ export interface ReadonlyFlightPlan {
   legElementAt(index: number): ReadonlyFlightPlanLeg;
 
   maybeElementAt(index: number): ReadonlyFlightPlanElement | undefined;
+
+  get allLegs(): readonly ReadonlyFlightPlanElement[];
+
+  get pendingAirways(): ReadonlyPendingAirways | undefined;
 
   get originAirport(): Airport | undefined;
 
@@ -86,5 +98,5 @@ export interface ReadonlyFlightPlan {
 
   glideslopeIntercept(): number | undefined;
 
-  allLegs: readonly ReadonlyFlightPlanElement[];
+  get performanceData(): P;
 }

@@ -41,6 +41,8 @@ import {
 import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
 import { ConditionalComponent } from '../../../../MsfsAvionicsCommon/UiWidgets/ConditionalComponent';
 import { InternalKccuKeyEvent } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
+import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { dirToUri, fixInfoUri } from '../../../shared/utils';
 
 interface MfdFmsFplnProps extends AbstractMfdPageProps {}
 
@@ -108,14 +110,10 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
   private readonly destEfob = Subject.create<number | null>(null);
 
   private readonly destEfobLabel = this.destEfob.map((v) =>
-    v !== null ? Math.max(0, Units.poundToKilogram(v) / 1_000).toFixed(1) : '---.-',
+    v !== null ? (Units.poundToKilogram(v) / 1_000).toFixed(1) : '---.-',
   );
 
-  private readonly destEfobNotAvailable = MappedSubject.create(
-    ([tmpy, efob]) => !tmpy && efob == null,
-    this.tmpyActive,
-    this.destEfob,
-  );
+  private readonly destEfobNotAvailable = this.destEfob.map((efob) => efob == null);
 
   private readonly destEfobUnitVisiblity = this.destEfobNotAvailable.map((v) => (v ? 'hidden' : 'visible'));
 
@@ -232,7 +230,9 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     const destPred = this.props.fmcService?.master?.guidanceController?.vnavDriver?.getDestinationPrediction();
 
     const distanceToDestination =
-      this.props.fmcService.master?.fmgc?.guidanceController?.alongTrackDistanceToDestination;
+      this.props.fmcService.master?.fmgc?.guidanceController?.getAlongTrackDistanceToDestination(
+        FlightPlanIndex.Active,
+      );
     this.distanceToDest.set(distanceToDestination ?? null);
 
     if (destPred && this.props.fmcService.master) {
@@ -371,7 +371,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             overfly: false,
             annotation: pwp.mcduHeader ?? '',
             etaOrSecondsFromPresent: this.predictionTimestamp(pwp.flightPlanInfo?.secondsFromPresent ?? 0),
-            transitionAltitude: this.loadedFlightPlan.performanceData.transitionAltitude,
+            transitionAltitude: this.loadedFlightPlan.performanceData.transitionAltitude.get(),
             altitudePrediction: pwp.flightPlanInfo?.altitude ?? null,
             hasAltitudeConstraint: false, // TODO
             altitudeConstraint: null, // TODO
@@ -394,8 +394,8 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         }
 
         if (leg instanceof FlightPlanLeg) {
-          const transAlt = this.loadedFlightPlan.performanceData.transitionAltitude;
-          const transLevel = this.loadedFlightPlan.performanceData.transitionLevel;
+          const transAlt = this.loadedFlightPlan.performanceData.transitionAltitude.get();
+          const transLevel = this.loadedFlightPlan.performanceData.transitionLevel.get();
           const transLevelAsAlt = transLevel !== null && transLevel !== undefined ? transLevel * 100 : null;
           const useTransLevel =
             i >=
@@ -1125,10 +1125,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 },
                 {
                   label: 'FIX INFO',
-                  action: () =>
-                    this.props.mfd.uiService.navigateTo(
-                      `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-fix-info`,
-                    ),
+                  action: () => this.props.mfd.uiService.navigateTo(fixInfoUri),
                 },
                 {
                   label: 'LL CROSSING',
@@ -1155,11 +1152,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             />
             <Button
               label="DIR TO"
-              onClick={() =>
-                this.props.mfd.uiService.navigateTo(
-                  `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-direct-to`,
-                )
-              }
+              onClick={() => this.props.mfd.uiService.navigateTo(dirToUri)}
               buttonStyle="margin-right: 5px;"
             />
           </div>
