@@ -5691,7 +5691,7 @@ export class PseudoFWC {
         this.dc2BusPowered,
         this.dcESSBusPowered,
       ),
-      whichCodeToReturn: () => [0, 1, !SimVar.GetSimVarValue('L:A32NX_GPWS_SYS_OFF', 'Bool') ? 2 : null],
+      whichCodeToReturn: () => [0, 1, 2],
       codesToReturn: ['320019501', '320019502', '320019503'],
       memoInhibit: () => false,
       failure: 2,
