@@ -5664,7 +5664,7 @@ export class PseudoFWC {
       // LGCIU 1 FAULT
       flightPhaseInhib: [3, 4, 5, 7, 8],
       simVarIsActive: this.lgciu1FaultWarning,
-      whichCodeToReturn: () => [0, !SimVar.GetSimVarValue('L:A32NX_GPWS_SYS_OFF', 'Bool') ? 1 : null],
+      whichCodeToReturn: () => [0, 1],
       codesToReturn: ['320018001', '320018002'],
       memoInhibit: () => false,
       failure: 1,
