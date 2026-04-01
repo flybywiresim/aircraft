@@ -1109,8 +1109,6 @@ export class PseudoFWC {
 
   private readonly nwSteeringDisc = Subject.create(false);
 
-  private readonly parkBrake = Subject.create(false);
-
   private readonly mainLgDownlocked = Subject.create(false);
 
   private readonly lgDownlocked = Subject.create(false);
@@ -2008,7 +2006,6 @@ export class PseudoFWC {
     this.lgciu2DiscreteWord3.setFromSimVar('L:A32NX_LGCIU_2_DISCRETE_WORD_3');
     this.lgciu1DiscreteWord4.setFromSimVar('L:A32NX_LGCIU_1_DISCRETE_WORD_4');
     this.lgciu2DiscreteWord4.setFromSimVar('L:A32NX_LGCIU_2_DISCRETE_WORD_4');
-    this.parkBrake.set(SimVar.GetSimVarValue('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool'));
     this.nwSteeringDisc.set(SimVar.GetSimVarValue('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool'));
 
     // TODO: Check !NORM+ALTN BRK FAULT when implemented
