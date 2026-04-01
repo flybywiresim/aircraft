@@ -12,6 +12,12 @@ export class MessageStorage {
 
   public atcMonitoredMessages: CpdlcMessage[] = [];
 
+  /**
+   * Resynchronize a received ATC message with the message buffer.
+   * Updates an existing message if the same messageID is found.
+   * If no message found, a new message is inserted at the front of the message buffer.
+   * @param {CpdlcMessage} message incoming CPDLC message
+   */
   private resynchronizeAtcMessage(message: CpdlcMessage): void {
     const index = this.atcMessagesBuffer.findIndex((entry) => entry.UniqueMessageID === message.UniqueMessageID);
     if (index !== -1) {
@@ -21,6 +27,12 @@ export class MessageStorage {
     }
   }
 
+  /**
+   * Deletes a message from the given queue based on its uid.
+   * @param {number} uid uid of the message to be deleted.
+   * @param {T[]} queue the queue to search for the message
+   * @returns {boolean} true if message is found and deleted
+   */
   private deleteMessageFromQueue<T extends AtsuMessage>(uid: number, queue: T[]): boolean {
     const index = queue.findIndex((entry) => entry.UniqueMessageID === uid);
     if (index !== -1) {
@@ -60,6 +72,9 @@ export class MessageStorage {
     this.subscriber.on('atcDeleteMessage').handle((uid) => this.deleteMessageFromQueue(uid, this.atcMessagesBuffer));
   }
 
+  /**
+   * Wipes all existing ATIS reports.
+   */
   public resetAtcData(): void {
     this.atisReports = new Map();
   }

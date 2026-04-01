@@ -12,6 +12,7 @@ export * from './extras';
 export * from './FbwAircraftSentryClient';
 export * from './FmMessages';
 export * from './GenericDataListenerSync';
+export * from './MagVar';
 export * from './MathUtils';
 export * from './MsfsDetect';
 export * from './ObjectUtils';

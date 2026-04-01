@@ -127,7 +127,7 @@ export class FlightManagementComputer implements FmcInterface {
 
   private lastFlightPlanVersion: number | null = null;
 
-  #fmgc = new FmgcDataService(this.flightPlanService);
+  #fmgc = new FmgcDataService(this.bus, this.flightPlanService);
 
   get fmgc() {
     return this.#fmgc;
@@ -340,9 +340,9 @@ export class FlightManagementComputer implements FmcInterface {
 
         this.fmgc.data.cpnyFplnAvailable.sub((v) => {
           if (v) {
-            this.addMessageToQueue(NXSystemMessages.comFplnRecievedPendingInsertion);
+            this.addMessageToQueue(NXSystemMessages.comFplnReceivedPendingInsertion);
           } else {
-            this.removeMessageFromQueue(NXSystemMessages.comFplnRecievedPendingInsertion.text);
+            this.removeMessageFromQueue(NXSystemMessages.comFplnReceivedPendingInsertion.text);
           }
         }),
         this.destDataEntered,
@@ -380,6 +380,7 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   destroy() {
+    this.#fmgc.destroy();
     for (const s of this.subs) {
       s.destroy();
     }
@@ -473,12 +474,13 @@ export class FlightManagementComputer implements FmcInterface {
     if (this.fmgc.getFlightPhase() >= FmgcFlightPhase.Takeoff) {
       // In flight
       // TOW: TOW = GW
-      return SimVar.GetSimVarValue('TOTAL WEIGHT', 'kilogram');
+      return this.fmgc.getGrossWeightKg();
     }
     // Preflight, engines on
     // LW = GW - TRIP - TAXI
     // TOW after engine start: TOW = GW - TAXI
-    return SimVar.GetSimVarValue('TOTAL WEIGHT', 'kilogram') - (this.fmgc.data.taxiFuel.get() ?? 0);
+    const gw = this.fmgc.getGrossWeightKg();
+    return gw ? gw - (this.fmgc.data.taxiFuel.get() ?? 0) : null;
   }
 
   public getTripFuel(): number | null {
@@ -612,9 +614,9 @@ export class FlightManagementComputer implements FmcInterface {
   /**
    * Called when a flight plan uplink is done
    */
-  onUplinkDone() {
+  onUplinkDone(intoPlan: FlightPlanIndex, fltPlnReceived: boolean) {
     this.fmgc.data.cpnyFplnUplinkInProgress.set(false);
-    this.fmgc.data.cpnyFplnAvailable.set(true);
+    this.fmgc.data.cpnyFplnAvailable.set(fltPlnReceived);
   }
 
   /**

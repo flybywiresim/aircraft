@@ -14,6 +14,6 @@ a320_systems = { path = "../a320_systems" }
 uom.workspace = true
 rand.workspace = true
 num-derive = "0.4.2"
-num-traits = "0.2.14"
+num-traits = "0.2.19"
 plotlib = "0.5.1"
 rustplotlib = "0.0.4"

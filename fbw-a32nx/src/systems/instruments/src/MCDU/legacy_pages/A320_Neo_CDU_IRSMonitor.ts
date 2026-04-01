@@ -6,20 +6,11 @@ import { Arinc429Register, RegisteredSimVar } from '@flybywiresim/fbw-sdk';
 import { SimVarValueType } from '@microsoft/msfs-sdk';
 
 export class CDUIRSMonitor {
-  private static ir1MaintenanceWordVar = RegisteredSimVar.create<number>(
-    'L:A32NX_ADIRS_IR_1_MAINT_WORD',
-    SimVarValueType.Enum,
-  );
+  private static ir1MaintenanceWordVar = RegisteredSimVar.create('L:A32NX_ADIRS_IR_1_MAINT_WORD', SimVarValueType.Enum);
   private static ir1MaintenanceWord = Arinc429Register.empty();
-  private static ir2MaintenanceWordVar = RegisteredSimVar.create<number>(
-    'L:A32NX_ADIRS_IR_2_MAINT_WORD',
-    SimVarValueType.Enum,
-  );
+  private static ir2MaintenanceWordVar = RegisteredSimVar.create('L:A32NX_ADIRS_IR_2_MAINT_WORD', SimVarValueType.Enum);
   private static ir2MaintenanceWord = Arinc429Register.empty();
-  private static ir3MaintenanceWordVar = RegisteredSimVar.create<number>(
-    'L:A32NX_ADIRS_IR_3_MAINT_WORD',
-    SimVarValueType.Enum,
-  );
+  private static ir3MaintenanceWordVar = RegisteredSimVar.create('L:A32NX_ADIRS_IR_3_MAINT_WORD', SimVarValueType.Enum);
   private static ir3MaintenanceWord = Arinc429Register.empty();
 
   static ShowPage(mcdu: LegacyFmsPageInterface) {

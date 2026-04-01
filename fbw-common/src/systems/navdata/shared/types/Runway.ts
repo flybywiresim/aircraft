@@ -1,4 +1,4 @@
-import { Coordinates, Degrees, DegreesMagnetic, DegreesTrue, Feet, Metres } from 'msfs-geo';
+import { Coordinates, Degrees, DegreesTrue, Feet, Metres } from 'msfs-geo';
 import { LsCategory, ElevatedCoordinates } from './Common';
 import { BaseFix } from './BaseFix';
 import { AirportSubsectionCode, SectionCode } from './SectionCode';
@@ -11,7 +11,8 @@ export interface Runway extends BaseFix<SectionCode.Airport> {
 
   airportIdent: string;
   bearing: DegreesTrue;
-  magneticBearing: DegreesMagnetic;
+  /** The magnetic bearing of the runway in degrees, or true bearing if it is true-referenced. */
+  magneticBearing: number;
   /**
    * slope of the runway, negative for downhill
    */
@@ -29,6 +30,10 @@ export interface Runway extends BaseFix<SectionCode.Airport> {
   lsIdent: string;
   lsCategory?: LsCategory;
   surfaceType?: RunwaySurfaceType;
+  /**
+   * The airport magvar in degrees, or null when the runway is true referenced.
+   */
+  magVar: number | null;
 }
 
 export enum RunwaySurfaceType {

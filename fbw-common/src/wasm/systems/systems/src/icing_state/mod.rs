@@ -98,8 +98,7 @@ impl IcingState {
 
     fn icing_rate_normalized(context: &UpdateContext) -> Ratio {
         let raw_icing_ratio = if Self::is_in_icing_conditions(context) {
-            (-1. * ((context.ambient_temperature().get::<degree_celsius>()
-                - Self::MAX_ICING_TEMP_C)
+            (-((context.ambient_temperature().get::<degree_celsius>() - Self::MAX_ICING_TEMP_C)
                 .powi(2))
                 / (2. * Self::MAX_ICING_TEMP_STANDARD_DEVIATION_C.powi(2)))
             .exp()

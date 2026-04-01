@@ -1,9 +1,7 @@
-// @ts-strict-ignore
 import { NXSystemMessages } from '../messages/NXSystemMessages';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { A32NX_Util } from '../../../../shared/src/A32NX_Util';
-import { Airport, NearbyFacility, NXUnits } from '@flybywiresim/fbw-sdk';
+import { Airport, isNearbyAirportFacility, MagVar, NearbyAirportFacility, NXUnits } from '@flybywiresim/fbw-sdk';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { bearingTo, distanceTo } from 'msfs-geo';
 import { Predictions } from '@fmgc/guidance/vnav/Predictions';
@@ -12,7 +10,7 @@ import { A320AircraftConfig } from '@fmgc/flightplanning/A320AircraftConfig';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 
 interface AirportRow {
-  airport?: Airport | NearbyFacility;
+  airport?: Airport | NearbyAirportFacility;
 
   /** Bearing to the airport in degrees from true north. */
   bearing?: number;
@@ -33,7 +31,7 @@ export class CDUAirportsMonitor {
   /** Effective wind for each airport (entered by pilot), in knots, +ve = tailwind. */
   private static readonly effectiveWinds = new Map<string, number>();
   private static pilotAirport = this.airportRows[CDUAirportsMonitor.NUM_AIRPORTS];
-  private static magVar = 0;
+  private static magVar: number | null = 0;
 
   static ShowPage(mcdu: LegacyFmsPageInterface, frozen = false, showEfob = false, isRefresh = false) {
     mcdu.page.Current = mcdu.page.AirportsMonitor;
@@ -66,8 +64,8 @@ export class CDUAirportsMonitor {
       ['', '', ''],
     ];
 
-    const ppos = mcdu.navigation.getPpos();
-    if (ppos === null) {
+    const ppos = mcdu.navigation?.getPpos();
+    if (!ppos) {
       mcdu.setTemplate(template);
       if (!isRefresh) {
         mcdu.setScratchpadMessage(NXSystemMessages.acPositionInvalid);
@@ -82,8 +80,9 @@ export class CDUAirportsMonitor {
       newAirports.sort((a, b) => a.distance - b.distance);
       newAirports.length = CDUAirportsMonitor.NUM_AIRPORTS;
       for (let i = 0; i < this.NUM_AIRPORTS; i++) {
-        if (newAirports[i]) {
-          this.airportRows[i].airport = newAirports[i];
+        const newAirport = newAirports[i];
+        if (newAirport && isNearbyAirportFacility(newAirport)) {
+          this.airportRows[i].airport = newAirport;
         } else {
           this.airportRows[i].airport = undefined;
         }
@@ -106,9 +105,10 @@ export class CDUAirportsMonitor {
         if (this.airportRows[i].airport) {
           // effective wind entry
           mcdu.onRightInput[i] = (value) => {
-            if (value === Keypad.clrValue) {
-              this.effectiveWinds.delete(this.airportRows[i].airport.ident);
-            } else {
+            const airport = this.airportRows[i].airport;
+            if (value === Keypad.clrValue && airport) {
+              this.effectiveWinds.delete(airport.ident);
+            } else if (airport) {
               const match = value.match(/^(T|TL|\+|-|H|HD)?(\d{1,3})$/);
               if (match !== null) {
                 const magnitude = parseInt(match[2]);
@@ -126,7 +126,7 @@ export class CDUAirportsMonitor {
                     break;
                 }
 
-                this.effectiveWinds.set(this.airportRows[i].airport.ident, sign * magnitude);
+                this.effectiveWinds.set(airport.ident, sign * magnitude);
               } else {
                 mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                 return;
@@ -189,7 +189,7 @@ export class CDUAirportsMonitor {
   }
 
   private static updatePredictions(mcdu: LegacyFmsPageInterface) {
-    const ppos = mcdu.navigation.getPpos();
+    const ppos = mcdu.navigation?.getPpos();
     const zfwLb = UnitType.POUND.convertFrom(mcdu.zeroFuelWeight ?? 0, UnitType.TONNE);
     const fobT = mcdu.getFOB(FlightPlanIndex.Active);
     const fobLb = UnitType.POUND.convertFrom(fobT ?? 0, UnitType.TONNE);
@@ -199,7 +199,7 @@ export class CDUAirportsMonitor {
     const doCruisePreds =
       mcdu.flightPhaseManager.phase === FmgcFlightPhase.Cruise &&
       cruiseLevel !== null &&
-      isFinite(mcdu.zeroFuelWeight) &&
+      isFinite(mcdu.zeroFuelWeight ?? NaN) &&
       fobT !== undefined &&
       zfwLb > 0 &&
       sat !== null;
@@ -233,7 +233,7 @@ export class CDUAirportsMonitor {
             fobLb,
             -(this.effectiveWinds.get(rowData.airport.ident) ?? 0),
             isaDev,
-            mcdu.tropo,
+            mcdu.tropo ?? 36089,
           );
 
           const cruiseBurn = UnitType.TONNE.convertFrom(cruisePerf.fuelBurned, UnitType.POUND);
@@ -251,10 +251,10 @@ export class CDUAirportsMonitor {
       }
     }
 
-    this.magVar = ppos ? Facilities.getMagVar(ppos.lat, ppos.long) : 0;
+    this.magVar = ppos ? MagVar.get(ppos) : 0;
   }
 
-  private static renderAirportRow(template: string[][], index: number, showEfob: boolean, showTrueBearing: boolean) {
+  private static renderAirportRow(template: string[][], index: number, showEfob: boolean, trueNorthActive: boolean) {
     const rowData = this.airportRows[index];
     const templateIndex = 2 + 2 * index;
     const isPilotAirport = index === CDUAirportsMonitor.NUM_AIRPORTS;
@@ -276,13 +276,17 @@ export class CDUAirportsMonitor {
       template[templateIndex][2] +=
         `{green}${rowData.efob !== undefined ? NXUnits.kgToUser(rowData.efob).toFixed(1).padStart(4, '\xa0') : '\xa0\xa0\xa0\xa0'}{end}\xa0\xa0${index === 0 ? '{small}{white}[KTS]{end}{end}' : '\xa0\xa0\xa0\xa0\xa0'}{cyan}${formattedWind}{end}`;
     } else {
+      const isTrueNorthAirport = rowData.airport?.magVar === null;
+      const magVar = this.magVar;
+      const showTrueBearing = trueNorthActive || isTrueNorthAirport || magVar === null;
+
       const bearing =
         rowData.bearing !== undefined && !showTrueBearing
-          ? A32NX_Util.trueToMagnetic(rowData.bearing, this.magVar)
+          ? MagVar.trueToMagnetic(rowData.bearing, magVar)
           : rowData.bearing;
 
       template[templateIndex][2] +=
-        `{green}${bearing !== undefined ? bearing.toFixed(0).padStart(3, '0') + (showTrueBearing ? 'T' : '°') : '\xa0\xa0\xa0\xa0'}\xa0\xa0${rowData.distance !== undefined ? Math.min(rowData.distance, 9999).toFixed(0).padStart(4) : '\xa0\xa0\xa0\xa0'}\xa0\xa0${rowData.eta !== undefined ? rowData.eta.getUTCHours().toString().padStart(2, '0') : '\xa0\xa0'}${rowData.eta !== undefined ? rowData.eta.getUTCMinutes().toString().padStart(2, '0') : '\xa0\xa0'}{end}`;
+        `{green}${bearing !== undefined ? bearing.toFixed(0).padStart(3, '0') + (trueNorthActive ? 'T' : '°') : '\xa0\xa0\xa0\xa0'}\xa0\xa0${rowData.distance !== undefined ? Math.min(rowData.distance, 9999).toFixed(0).padStart(4) : '\xa0\xa0\xa0\xa0'}\xa0\xa0${rowData.eta !== undefined ? rowData.eta.getUTCHours().toString().padStart(2, '0') : '\xa0\xa0'}${rowData.eta !== undefined ? rowData.eta.getUTCMinutes().toString().padStart(2, '0') : '\xa0\xa0'}{end}`;
     }
   }
 }

@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2025 FlyByWire Simulations
+// Copyright (c) 2025-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
@@ -218,7 +218,10 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   setV2Speed(speed: number, forPlan: FlightPlanIndex): void;
   activateSecondaryPlan(index: number): Promise<void>;
   swapActiveAndSecondaryPlan(index: number): Promise<void>;
+  setEstimatedTakeoffTime(text: string, forPlan: FlightPlanIndex): void;
   computeAlternateCruiseLevel(forPlan: FlightPlanIndex): number | undefined;
+  getTimePrediction(secondsFromPresent: number, forPlan: FlightPlanIndex): string;
+  getTimePredictionHeader(forPlan: FlightPlanIndex): string;
 
   flightPlanService: FlightPlanService;
   navigationDatabase: NavigationDatabase;

@@ -61,13 +61,14 @@ impl VariableIdentifier {
     }
 }
 
-#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd)]
+#[derive(Debug, Default, Clone, Copy, Hash, PartialEq, Eq, PartialOrd)]
 pub enum StartState {
     Hangar,
     Apron,
     Taxi,
     Runway,
     Climb,
+    #[default]
     Cruise,
     Approach,
     Final,
@@ -102,12 +103,6 @@ impl From<StartState> for f64 {
             StartState::Approach => 7.,
             StartState::Final => 8.,
         }
-    }
-}
-
-impl Default for StartState {
-    fn default() -> Self {
-        Self::Cruise
     }
 }
 
