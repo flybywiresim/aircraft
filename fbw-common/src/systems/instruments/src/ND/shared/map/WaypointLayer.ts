@@ -98,12 +98,12 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
   }
 
   private paintSymbolConstraints(context: CanvasRenderingContext2D, x: number, y: number, symbol: NdSymbol) {
-    context.fillStyle = '#ff94ff';
+    context.fillStyle = '#dc78da';
 
     for (let i = 0; i < symbol.constraints.length; i++) {
       const line = symbol.constraints[i];
 
-      PaintUtils.paintText(true, context, x + 15, y + 35 + 18 * i, line, '#ff94ff');
+      PaintUtils.paintText(true, context, x + 15, y + 35 + 18 * i, line, '#c87fda');
     }
   }
 
@@ -114,7 +114,7 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
     y: number,
     symbol: NdSymbol,
   ) {
-    const mainColor = symbol.type & NdSymbolTypeFlags.FlightPlan ? '#fff' : '#ff94ff';
+    const mainColor = symbol.type & NdSymbolTypeFlags.FlightPlan ? '#e5dfd6' : '#dc78da';
 
     this.paintAirportShape(context, x, y, isColorLayer ? mainColor : '#000', isColorLayer ? 1.75 : 3.25);
 
@@ -133,9 +133,9 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
     let mainColor = '#000';
     if (isColorLayer) {
       if (symbol.type & NdSymbolTypeFlags.Tuned) {
-        mainColor = '#0ff';
+        mainColor = '#17e9f2';
       } else {
-        mainColor = '#ff94ff';
+        mainColor = '#dc78da';
       }
     }
 
@@ -161,11 +161,11 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
     y: number,
     symbol: NdSymbol,
   ) {
-    this.paintWaypointShape(context, x, y, isColorLayer ? '#ff94ff' : '#000', isColorLayer ? 1.75 : 3.25);
+    this.paintWaypointShape(context, x, y, isColorLayer ? '#dc78da' : '#000', isColorLayer ? 1.75 : 3.25);
 
     context.font = '21px Ecam';
 
-    PaintUtils.paintText(isColorLayer, context, x + 15, y + 17, symbol.ident, '#ff94ff');
+    PaintUtils.paintText(isColorLayer, context, x + 15, y + 17, symbol.ident, '#dc78da');
   }
 
   private paintWaypointBox(context: CanvasRenderingContext2D, x: number, y: number, symbol: NdSymbol) {
@@ -174,7 +174,7 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
 
     const TEXT_LENGTH = Math.max(110, symbol.ident.length * 13.5);
     if (px > x - 7 && px < x + 13 + TEXT_LENGTH && py > y - 10 && py < y + 22) {
-      context.strokeStyle = '#0ff';
+      context.strokeStyle = '#17e9f2';
       context.lineWidth = 1.75;
       context.strokeRect(x - 7, y - 10, 10 + 13 + TEXT_LENGTH, 29);
     }
@@ -188,7 +188,7 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
     symbol: NdSymbol,
     mapParameters: MapParameters,
   ) {
-    const mainColor = symbol.type & NdSymbolTypeFlags.ActiveLegTermination ? '#fff' : '#0f0';
+    const mainColor = symbol.type & NdSymbolTypeFlags.ActiveLegTermination ? '#e5dfd6' : '#64da1d';
 
     this.paintWaypointShape(context, x, y, isColorLayer ? mainColor : '#000', isColorLayer ? 1.75 : 3.25);
 
@@ -211,7 +211,7 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
     const left = symbol.type & NdSymbolTypeFlags.CourseReversalLeft;
     const arcEnd = left ? -42 : 42;
     const rotation = mapParameters.rotation(symbol.direction);
-    context.strokeStyle = '#fff';
+    context.strokeStyle = '#e5dfd6';
     context.lineWidth = 1.75;
     context.translate(x, y);
     context.rotate(rotation * MathUtils.DEGREES_TO_RADIANS);

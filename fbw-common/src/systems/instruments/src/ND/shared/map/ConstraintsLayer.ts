@@ -52,11 +52,11 @@ export class ConstraintsLayer implements MapLayer<NdSymbol> {
   ) {
     if (isColorLayer) {
       if (symbol.type & NdSymbolTypeFlags.MagentaColor) {
-        context.strokeStyle = '#ff94ff';
+        context.strokeStyle = '#dc78da';
       } else if (symbol.type & NdSymbolTypeFlags.AmberColor) {
-        context.strokeStyle = '#e68000';
+        context.strokeStyle = '#eb880c';
       } else {
-        context.strokeStyle = '#fff';
+        context.strokeStyle = '#e5dfd6';
       }
     } else {
       context.strokeStyle = '#000';

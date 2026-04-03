@@ -56,19 +56,19 @@ export class TrafficLayer implements MapLayer<NdTraffic> {
     switch (intruder.intrusionLevel) {
       case TaRaIntrusion.TRAFFIC:
         // paint intruder symbol
-        color = '#fff';
+        color = '#e5dfd6';
         this.paintNormalIntruder(context, x, y, isColorLayer ? color : '#040405', isColorLayer ? 1.6 : 3.5);
         break;
       case TaRaIntrusion.PROXIMITY:
-        color = '#fff';
+        color = '#e5dfd6';
         this.paintProximityIntruder(context, x, y, isColorLayer ? color : '#040405', isColorLayer ? 1.6 : 3.5);
         break;
       case TaRaIntrusion.TA:
-        color = '#e38c56';
+        color = '#eb880c';
         this.paintTaIntruder(context, x, y, isColorLayer ? color : '#040405', isColorLayer ? 1.6 : 3.5);
         break;
       case TaRaIntrusion.RA:
-        color = '#ff0000';
+        color = '#c21d1a';
         this.paintRaIntruder(context, x, y, isColorLayer ? color : '#040405', isColorLayer ? 1.6 : 3.5);
         break;
       default:

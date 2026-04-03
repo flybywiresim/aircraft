@@ -464,31 +464,31 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
   private drawVector(context: CanvasRenderingContext2D, vector: PathVector, group: EfisVectorsGroup) {
     switch (group) {
       case EfisVectorsGroup.ACTIVE:
-        context.strokeStyle = '#0f0';
+        context.strokeStyle = '#5bea06';
         context.setLineDash(NO_DASHES);
         break;
       case EfisVectorsGroup.DASHED:
-        context.strokeStyle = '#0f0';
+        context.strokeStyle = '#5bea06';
         context.setLineDash(DASHES);
         break;
       case EfisVectorsGroup.TEMPORARY:
-        context.strokeStyle = '#ffff00';
+        context.strokeStyle = '#ffd200';
         context.setLineDash(DASHES);
         break;
       case EfisVectorsGroup.MISSED:
-        context.strokeStyle = '#00ffff';
+        context.strokeStyle = '#17e9f2';
         context.setLineDash(NO_DASHES);
         break;
       case EfisVectorsGroup.ALTERNATE:
-        context.strokeStyle = '#00ffff';
+        context.strokeStyle = '#17e9f2';
         context.setLineDash(DASHES);
         break;
       case EfisVectorsGroup.SECONDARY:
-        context.strokeStyle = '#ffffff';
+        context.strokeStyle = '#e5dfd6';
         context.setLineDash(NO_DASHES);
         break;
       default:
-        context.strokeStyle = '#f00';
+        context.strokeStyle = '#c21d1a';
         context.setLineDash(NO_DASHES);
         break;
     }
