@@ -3,17 +3,14 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { FC, useEffect, useState } from 'react';
-import { Metar as FbwApiMetar } from '@flybywiresim/api-client';
 import { Droplet, Speedometer2, ThermometerHalf, Wind } from 'react-bootstrap-icons';
 import {
-  ConfigWeatherMap,
   MetarParserType,
   parseMetar,
   useInterval,
   usePersistentNumberProperty,
   usePersistentProperty,
 } from '@flybywiresim/fbw-sdk';
-import { Metar as MsfsMetar } from '@microsoft/msfs-sdk';
 import { t } from '../../Localization/translation';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ColoredMetar } from './ColorMetar';
@@ -26,6 +23,7 @@ import {
 } from '../../Store/features/dashboard';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
+import { fetchRawMetarBySource, mapMetarErrorToDisplayMessage } from '../../Service/WeatherService';
 
 const MetarParserTypeProp: MetarParserType = {
   raw_text: '',
@@ -82,10 +80,8 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
   const [baroType] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'AUTO');
   const dispatch = useAppDispatch();
   const [simbriefIcaoAtLoading, setSimbriefIcaoAtLoading] = useState(simbriefIcao);
-  const [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
   const [metarError, setErrorMetar] = useState('');
   const [usingColoredMetar] = usePersistentNumberProperty('EFB_USING_COLOREDMETAR', 1);
-  const source = metarSource;
 
   const getBaroTypeForAirport = (icao: string) =>
     ['K', 'C', 'M', 'P', 'RJ', 'RO', 'TI', 'TJ'].some((r) => icao.toUpperCase().startsWith(r)) ? 'IN HG' : 'HPA';
@@ -114,86 +110,30 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
     }
 
     if (icao.length > 0) {
-      getMetar(icao, source);
+      getMetar(icao);
     } else if (icao.length === 0) {
-      getMetar(simbriefIcao, source);
+      getMetar(simbriefIcao);
     }
   };
 
-  async function getMetar(icao: string, source: string): Promise<void> {
+  async function getMetar(icao: string): Promise<void> {
     if (icao.length !== 4 || !/^[a-z]{4}$/i.test(icao)) {
       setErrorMetar(t('Dashboard.ImportantInformation.Weather.NoIcaoProvided'));
       dispatch(setMetar(MetarParserTypeProp));
       return Promise.resolve();
     }
 
-    // Comes from the sim rather than the FBW API
-    if (source === 'MSFS') {
-      let metar: MsfsMetar;
-      // Catch parsing error separately
-      try {
-        metar = await Coherent.call('GET_METAR_BY_IDENT', icao);
-        if (metar.icao !== icao.toUpperCase()) {
-          throw new Error('No METAR available');
-        }
-      } catch (err) {
-        console.log(`Error while retrieving Metar: ${err}`);
-        setErrorMetar(`${err.toString()}`);
-        dispatch(setMetar(MetarParserTypeProp));
-      }
-      try {
-        const metarParse = parseMetar(metar.metarString);
-        dispatch(setMetar(metarParse));
-      } catch (err) {
-        console.log(`Error while parsing Metar ("${metar.metarString}"): ${err}`);
-        setErrorMetar(
-          `${t('Dashboard.ImportantInformation.Weather.MetarParsingError')}: ${err
-            .toString()
-            .replace(/^Error: /, '')
-            .toUpperCase()}`,
-        );
-        dispatch(setMetar(MetarParserTypeProp));
-      }
-      return Promise.resolve();
+    try {
+      const rawMetar = await fetchRawMetarBySource(icao);
+      const metarParse = parseMetar(rawMetar);
+      dispatch(setMetar(metarParse));
+    } catch (err) {
+      setErrorMetar(mapMetarErrorToDisplayMessage(err));
+
+      dispatch(setMetar(MetarParserTypeProp));
     }
 
-    return (
-      FbwApiMetar.get(icao, ConfigWeatherMap[source])
-        .then((result) => {
-          // For METAR source Microsoft result.metar is undefined without throwing an error.
-          // For the other METAR sources an error is thrown (Request failed with status code 404)
-          // and caught in the catch clause.
-          if (!result.metar) {
-            setErrorMetar(t('Dashboard.ImportantInformation.Weather.IcaoInvalid'));
-            dispatch(setMetar(MetarParserTypeProp));
-            return;
-          }
-          // Catch parsing error separately
-          try {
-            const metarParse = parseMetar(result.metar);
-            dispatch(setMetar(metarParse));
-          } catch (err) {
-            console.log(`Error while parsing Metar ("${result.metar}"): ${err}`);
-            setErrorMetar(
-              `${t('Dashboard.ImportantInformation.Weather.MetarParsingError')}: ${err
-                .toString()
-                .replace(/^Error: /, '')
-                .toUpperCase()}`,
-            );
-            dispatch(setMetar(MetarParserTypeProp));
-          }
-        })
-        // catch retrieving metar errors
-        .catch((err) => {
-          console.log(`Error while retrieving Metar: ${err}`);
-          if (err.toString().match(/^Error:/)) {
-            setErrorMetar(t('Dashboard.ImportantInformation.Weather.IcaoInvalid'));
-          } else {
-            setErrorMetar(`${err.toString().replace(/^Error: /, '')}`);
-          }
-          dispatch(setMetar(MetarParserTypeProp));
-        })
-    );
+    return Promise.resolve();
   }
 
   useEffect(() => {
@@ -203,12 +143,12 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
     if (simbriefIcao !== simbriefIcaoAtLoading) {
       dispatch(setUserDepartureIcao(''));
       dispatch(setUserDestinationIcao(''));
-      getMetar(simbriefIcao, source);
+      getMetar(simbriefIcao);
       setSimbriefIcaoAtLoading(simbriefIcao);
     } else {
-      getMetar(userIcao || simbriefIcao, source);
+      getMetar(userIcao || simbriefIcao);
     }
-  }, [simbriefIcao, userIcao, source]);
+  }, [simbriefIcao, userIcao]);
 
   useInterval(() => {
     handleIcao(userIcao ?? simbriefIcao);

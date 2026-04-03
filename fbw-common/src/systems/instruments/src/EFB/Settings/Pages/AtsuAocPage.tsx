@@ -13,6 +13,7 @@ import {
   usePersistentSetting,
   NXDataStoreSettings,
   useSimVar,
+  ConfigWeatherMap,
 } from '@flybywiresim/fbw-sdk';
 
 import { toast } from 'react-toastify';
@@ -21,14 +22,15 @@ import { useModals, PromptModal } from '../../UtilComponents/Modals/Modals';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
-import { ButtonType, SettingItem, SettingsPage } from '../Settings';
+import { SettingItem, SettingsPage } from '../Settings';
 import { AcarsConnector, AcarsClient } from '../../../../../datalink/router/src';
 
 export const AtsuAocPage = () => {
-  const [atisSource, setAtisSource] = usePersistentProperty('CONFIG_ATIS_SRC', 'FAA');
-  const [metarSource, setMetarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
-  const [tafSource, setTafSource] = usePersistentProperty('CONFIG_TAF_SRC', isMsfs2024() ? 'MSFS' : 'NOAA');
-  const [telexEnabled, setTelexEnabled] = usePersistentProperty('CONFIG_ONLINE_FEATURES_STATUS', 'DISABLED');
+  const [atisSource, setAtisSource] = usePersistentSetting('CONFIG_ATIS_SRC');
+  const [metarSource, setMetarSource] = usePersistentSetting('CONFIG_METAR_SRC');
+  const [tafSource, setTafSource] = usePersistentSetting('CONFIG_TAF_SRC');
+
+  const [telexEnabled, setTelexEnabled] = usePersistentProperty('CONFIG_ONLINE_FEATURES_STATUS');
 
   const [hoppieUserId, setHoppieUserId] = usePersistentProperty('CONFIG_HOPPIE_USERID');
   const [saiLogonKey, setSaiLogonKey] = usePersistentProperty('CONFIG_SAI_LOGON_KEY');
@@ -82,30 +84,47 @@ export const AtsuAocPage = () => {
 
   const handleAcarsProviderChange = (provider: NXDataStoreSettings['ACARS_PROVIDER']) => {
     setAcarsProvider(provider);
+    if (provider === 'SAI') {
+      setAtisSource(ConfigWeatherMap.SAI);
+      setMetarSource(ConfigWeatherMap.SAI);
+    } else if (provider === 'BATC') {
+      setAtisSource(ConfigWeatherMap.BEYONDATC);
+      setMetarSource(ConfigWeatherMap.BEYONDATC);
+    } else {
+      setAtisSource(ConfigWeatherMap.FAA);
+      setMetarSource(ConfigWeatherMap.MSFS);
+    }
+
     if (provider == 'NONE') {
       AcarsConnector.deactivateAcars();
+      setMetarSource(ConfigWeatherMap.MSFS);
+      setAtisSource(ConfigWeatherMap.FAA);
     } else {
       AcarsConnector.activateAcars();
     }
   };
 
-  const atisSourceButtons: ButtonType[] = [
-    { name: 'FAA (US)', setting: 'FAA' },
-    { name: 'PilotEdge', setting: 'PILOTEDGE' },
-    { name: 'IVAO', setting: 'IVAO' },
-    { name: 'VATSIM', setting: 'VATSIM' },
+  const atisSourceButtons = [
+    { name: 'FAA (US)', setting: ConfigWeatherMap.FAA },
+    { name: 'PilotEdge', setting: ConfigWeatherMap.PILOTEDGE },
+    { name: 'IVAO', setting: ConfigWeatherMap.IVAO },
+    { name: 'VATSIM', setting: ConfigWeatherMap.VATSIM },
+    { name: 'BeyondATC', setting: ConfigWeatherMap.BEYONDATC },
+    { name: 'SayIntentions.AI', setting: ConfigWeatherMap.SAI },
   ];
 
-  const metarSourceButtons: ButtonType[] = [
-    { name: 'MSFS', setting: 'MSFS' },
-    { name: 'NOAA', setting: 'NOAA' },
-    { name: 'PilotEdge', setting: 'PILOTEDGE' },
-    { name: 'VATSIM', setting: 'VATSIM' },
+  const metarSourceButtons = [
+    { name: 'MSFS', setting: ConfigWeatherMap.MSFS },
+    { name: 'NOAA', setting: ConfigWeatherMap.NOAA },
+    { name: 'PilotEdge', setting: ConfigWeatherMap.PILOTEDGE },
+    { name: 'VATSIM', setting: ConfigWeatherMap.VATSIM },
+    { name: 'BeyondATC', setting: ConfigWeatherMap.BEYONDATC },
+    { name: 'SayIntentions.AI', setting: ConfigWeatherMap.SAI },
   ];
 
-  let tafSourceButtons: ButtonType[] = [
-    { name: 'MSFS', setting: 'MSFS' },
-    { name: 'NOAA', setting: 'NOAA' },
+  let tafSourceButtons = [
+    { name: 'MSFS', setting: ConfigWeatherMap.MSFS },
+    { name: 'NOAA', setting: ConfigWeatherMap.NOAA },
   ];
   if (!isMsfs2024()) {
     tafSourceButtons = tafSourceButtons.slice(1);
@@ -151,7 +170,7 @@ export const AtsuAocPage = () => {
     }
   };
 
-  function handleWeatherSource(source: string, type: string) {
+  function handleWeatherSource(source: ConfigWeatherMap, type: string) {
     if (type !== 'TAF') {
       AcarsConnector.deactivateAcars();
     }
@@ -171,55 +190,6 @@ export const AtsuAocPage = () => {
 
   return (
     <SettingsPage name={t('Settings.AtsuAoc.Title')}>
-      <SettingItem name={t('Settings.AtsuAoc.AtisAtcSource')}>
-        <SelectGroup>
-          {atisSourceButtons.map((button) => (
-            <SelectItem
-              key={button.setting}
-              onSelect={() => handleWeatherSource(button.setting, 'ATIS')}
-              selected={atisSource === button.setting}
-            >
-              {button.name}
-            </SelectItem>
-          ))}
-        </SelectGroup>
-      </SettingItem>
-      <SettingItem name={t('Settings.AtsuAoc.MetarSource')}>
-        <SelectGroup>
-          {metarSourceButtons.map((button) => (
-            <SelectItem
-              key={button.setting}
-              onSelect={() => handleWeatherSource(button.setting, 'METAR')}
-              selected={metarSource === button.setting}
-            >
-              {button.name}
-            </SelectItem>
-          ))}
-        </SelectGroup>
-      </SettingItem>
-      <SettingItem name={t('Settings.AtsuAoc.TafSource')}>
-        <SelectGroup>
-          {tafSourceButtons.map((button) => (
-            <SelectItem
-              key={button.setting}
-              onSelect={() => handleWeatherSource(button.setting, 'TAF')}
-              selected={tafSource === button.setting}
-            >
-              {button.name}
-            </SelectItem>
-          ))}
-        </SelectGroup>
-      </SettingItem>
-      <SettingItem name={t('Settings.AtsuAoc.ErrorReporting')}>
-        <Toggle
-          value={sentryEnabled === SentryConsentState.Given}
-          onToggle={(toggleValue) => handleSentryToggle(toggleValue)}
-        />
-      </SettingItem>
-      <SettingItem name={t('Settings.AtsuAoc.Telex')}>
-        <Toggle value={telexEnabled === 'ENABLED'} onToggle={(toggleValue) => handleTelexToggle(toggleValue)} />
-      </SettingItem>
-
       <SettingItem name={t('Settings.AtsuAoc.HoppieProvider')}>
         <div className="flex items-center">
           {acarsProvider !== 'NONE' && (
@@ -267,6 +237,66 @@ export const AtsuAocPage = () => {
           />
         </SettingItem>
       )}
+      <SettingItem name={t('Settings.AtsuAoc.AtisAtcSource')}>
+        <SelectGroup>
+          {atisSourceButtons
+            .filter(
+              (button) =>
+                !(button.setting === 'SAI' && acarsProvider !== 'SAI') &&
+                !(button.setting === 'BEYONDATC' && acarsProvider !== 'BATC'),
+            )
+            .map((button) => (
+              <SelectItem
+                key={button.setting}
+                onSelect={() => handleWeatherSource(button.setting, 'ATIS')}
+                selected={atisSource === button.setting}
+              >
+                {button.name}
+              </SelectItem>
+            ))}
+        </SelectGroup>
+      </SettingItem>
+      <SettingItem name={t('Settings.AtsuAoc.MetarSource')}>
+        <SelectGroup>
+          {metarSourceButtons
+            .filter(
+              (button) =>
+                !(button.setting === 'SAI' && acarsProvider !== 'SAI') &&
+                !(button.setting === 'BEYONDATC' && acarsProvider !== 'BATC'),
+            )
+            .map((button) => (
+              <SelectItem
+                key={button.setting}
+                onSelect={() => handleWeatherSource(button.setting, 'METAR')}
+                selected={metarSource === button.setting}
+              >
+                {button.name}
+              </SelectItem>
+            ))}
+        </SelectGroup>
+      </SettingItem>
+      <SettingItem name={t('Settings.AtsuAoc.TafSource')}>
+        <SelectGroup>
+          {tafSourceButtons.map((button) => (
+            <SelectItem
+              key={button.setting}
+              onSelect={() => handleWeatherSource(button.setting, 'TAF')}
+              selected={tafSource === button.setting}
+            >
+              {button.name}
+            </SelectItem>
+          ))}
+        </SelectGroup>
+      </SettingItem>
+      <SettingItem name={t('Settings.AtsuAoc.ErrorReporting')}>
+        <Toggle
+          value={sentryEnabled === SentryConsentState.Given}
+          onToggle={(toggleValue) => handleSentryToggle(toggleValue)}
+        />
+      </SettingItem>
+      <SettingItem name={t('Settings.AtsuAoc.Telex')}>
+        <Toggle value={telexEnabled === 'ENABLED'} onToggle={(toggleValue) => handleTelexToggle(toggleValue)} />
+      </SettingItem>
     </SettingsPage>
   );
 };

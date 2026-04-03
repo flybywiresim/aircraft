@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { MutableSubscribable, Subject } from '@microsoft/msfs-sdk';
+import { ConfigWeatherMap } from './config';
+import { isMsfs2024 } from './MsfsDetect';
 
 export type DataStoreSettingKey = keyof NXDataStoreSettings & string;
 type DataStoreSettingValue = string | number | boolean;
@@ -16,6 +18,10 @@ export interface NXDataStoreSettings {
   CONFIG_AUTO_SIM_ROUTE_LOAD: boolean;
 
   ACARS_PROVIDER: 'NONE' | 'HOPPIE' | 'BATC' | 'SAI';
+
+  CONFIG_METAR_SRC: ConfigWeatherMap;
+  CONFIG_ATIS_SRC: ConfigWeatherMap;
+  CONFIG_TAF_SRC: ConfigWeatherMap;
 }
 
 export type LegacyDataStoreSettingKey<k extends string> = k & (k extends keyof NXDataStoreSettings ? never : k);
@@ -28,6 +34,9 @@ export class NXDataStore {
     EFB_UI_THEME: 'blue',
     CONFIG_AUTO_SIM_ROUTE_LOAD: false,
     ACARS_PROVIDER: 'NONE',
+    CONFIG_METAR_SRC: ConfigWeatherMap.MSFS,
+    CONFIG_ATIS_SRC: ConfigWeatherMap.MSFS,
+    CONFIG_TAF_SRC: isMsfs2024() ? ConfigWeatherMap.NOAA : ConfigWeatherMap.MSFS,
   };
 
   private static readonly aircraftProjectPrefix: string = process.env.AIRCRAFT_PROJECT_PREFIX?.toUpperCase() ?? 'UNK';
