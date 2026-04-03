@@ -155,8 +155,8 @@ export class MfdComponent
   /**
    * Called when a flight plan uplink is done
    */
-  onUplinkDone(intoPlan: FlightPlanIndex) {
-    this.props.fmcService.master?.onUplinkDone(intoPlan);
+  onUplinkDone(intoPlan: FlightPlanIndex, fltPlnReceived: boolean) {
+    this.props.fmcService.master?.onUplinkDone(intoPlan, fltPlnReceived);
   }
 
   /**
