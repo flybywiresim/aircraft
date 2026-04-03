@@ -234,11 +234,7 @@ export class FwsAutoCallouts {
 
   public update(deltaTime: number) {
     const flightPhase = this.fws.fwcFlightPhase.get();
-    const height = this.fws.radioHeight1.isInvalid()
-      ? this.fws.radioHeight2.isInvalid()
-        ? null
-        : Math.trunc(this.fws.radioHeight2.value)
-      : Math.trunc(this.fws.radioHeight1.value);
+    const height = this.fws.radioHeight1.isInvalid() ? this.fws.radioHeight2.valueOr(null) : null;
     const stallWarning = this.fws.stallWarning.get();
     const speedWarning = false; // TODO
     const onGround = this.fws.aircraftOnGround.get();

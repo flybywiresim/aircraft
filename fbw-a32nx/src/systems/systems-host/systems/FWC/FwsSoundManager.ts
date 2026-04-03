@@ -147,8 +147,7 @@ export const FwsAuralsList: Record<string, FwsAural> = {
     localVarName: 'A32NX_FWS_AUDIO_RETARD',
     priority: 2,
     type: FwsAuralWarningType.SyntheticVoice,
-    periodicWithPause: 0.2,
-    length: 0.72,
+    continuous: true,
   },
   alt_2500: {
     localVarName: 'A32NX_FWS_AUDIO_2500',
