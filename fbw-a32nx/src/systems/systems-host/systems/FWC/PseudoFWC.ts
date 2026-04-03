@@ -45,7 +45,6 @@ import { FwsSoundManager } from 'systems-host/systems/FWC/FwsSoundManager';
 import { PseudoFwcSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
 import { A32NXEcpBusEvents } from '@shared/publishers/A32NXEcpBusPublisher';
 import { A32NX_DEFAULT_RADIO_AUTO_CALL_OUTS } from '@shared/AutoCallOuts';
-import { VorSimVars } from '@shared/publishers/VorBusPublisher';
 import { FwsAutoCallouts } from './FwsAutoCallouts';
 
 export const DEFAULT_MONITOR_TIME = 0.3;
@@ -124,8 +123,7 @@ export class PseudoFWC {
       A32NXFcuBusEvents &
       KeyEvents &
       PseudoFwcSimvars &
-      StallWarningEvents &
-      VorSimVars
+      StallWarningEvents
   >();
 
   private readonly fwsUpdateThrottler = new UpdateThrottler(125); // has to be > 100 due to pulse nodes
@@ -1521,9 +1519,12 @@ export class PseudoFWC {
     this.excessPressure,
   );
 
-  public readonly glideSlopeDeviation = ConsumerSubject.create(this.sub.on('glideSlopeDeviation'), 0);
+  public readonly glideSlopeDeviation = RegisteredSimVar.create(
+    'L:A32NX_RADIO_RECEIVER_GS_DEVIATION',
+    SimVarValueType.Number,
+  );
 
-  public readonly glideSlopeValid = ConsumerSubject.create(this.sub.on('glideSlopeValid'), false);
+  public readonly glideSlopeValid = RegisteredSimVar.createBoolean('L:A32NX_RADIO_RECEIVER_GS_IS_VALID');
 
   /* SETTINGS */
   private readonly configPortableDevices = Subject.create(false);
