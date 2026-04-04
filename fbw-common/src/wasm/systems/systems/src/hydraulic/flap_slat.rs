@@ -11,7 +11,7 @@ use crate::simulation::{
 
 use uom::si::{
     angle::{degree, radian},
-    angular_velocity::{radian_per_second, revolution_per_minute},
+    angular_velocity::radian_per_second,
     f64::*,
     pressure::psi,
     ratio::{percent, ratio},
@@ -231,6 +231,9 @@ impl FlapSlatAssembly {
         left_pressure: &impl SectionPressure,
         right_pressure: &impl SectionPressure,
     ) {
+        // INPUT self.full_pressure_max_speed
+        // INPUT self.circuit_target_pressure
+        // OUTPUT self.current_max_speed
         self.update_current_max_speed(
             context,
             sfcc_1,
@@ -239,18 +242,43 @@ impl FlapSlatAssembly {
             right_pressure.pressure_downstream_priority_valve(),
         );
 
+        // INPUT self.current_max_speed
+        // OUTPUT self.surface_control_arm_position
+        // OUTPUT self.speed
         self.update_speed_and_position(context, sfcc_1, sfcc_2);
 
+        // INPUT self.speed
+        // INPUT self.gearbox_ratio
+        // INPUT self.surface_gear_ratio
+        // OUTPUT self.left_motor
+        // OUTPUT self.right_motor
         self.update_motors_speed(
             context,
             left_pressure.pressure_downstream_priority_valve(),
             right_pressure.pressure_downstream_priority_valve(),
         );
 
+        // OUTPUT self.left_motor
+        // OUTPUT self.right_motor
         self.update_motors_flow(context);
 
+        // INPUT self.synchro_gear_breakpoints
+        // INPUT self.final_surface_angle_carac
+        // INPUT self.max_synchro_gear_position
+        // INPUT self.surface_control_arm_position
+        // INPUT self.surface_to_synchro_gear_ratio
+        // OUTPUT self.left_position
+        // OUTPUT self.right_position
         self.update_position_ratios();
 
+        // INPUT self.synchro_gear_breakpoints
+        // INPUT self.final_surface_angle_carac
+        // INPUT self.surface_control_arm_position
+        // INPUT self.surface_to_synchro_gear_ratio
+        // INPUT self.left_position
+        // INPUT self.right_position
+        // OUTPUT self.left_surfaces
+        // OUTPUT self.right_surfaces
         self.update_surface_variables();
     }
 
@@ -260,14 +288,11 @@ impl FlapSlatAssembly {
         sfcc_1: &impl ValveBlockController,
         sfcc_2: &impl ValveBlockController,
     ) {
-        let max_speed = self.max_speed().get::<radian_per_second>();
+        let max_speed = self.current_max_speed.output();
         let time_delta = context.delta_as_secs_f64();
 
         let sfcc_1_pob = sfcc_1.get_pob_status();
         let sfcc_2_pob = sfcc_2.get_pob_status();
-
-        let pob_de_energised =
-            sfcc_1_pob == SolenoidStatus::DeEnergised && sfcc_2_pob == SolenoidStatus::DeEnergised;
 
         let sfcc_1_extend = sfcc_1.get_extend_status();
         let sfcc_1_retract = sfcc_1.get_retract_status();
@@ -283,60 +308,51 @@ impl FlapSlatAssembly {
         let retract_request = sfcc_1_retract == SolenoidStatus::Energised
             || sfcc_2_retract == SolenoidStatus::Energised;
 
-        let arm_position_delta = if !context.aircraft_preset_quick_mode() {
-            Angle::new::<radian>(max_speed * time_delta)
-        } else {
-            // This is for the Aircraft Presets to expedite the setting of a preset.
-            Angle::new::<radian>(max_speed * 2.)
-        };
-
-        if extend_request {
-            self.surface_control_arm_position += arm_position_delta;
-            self.speed = self.max_speed();
+        self.speed = if extend_request {
+            max_speed
         } else if retract_request {
-            self.surface_control_arm_position -= arm_position_delta;
-            self.speed = -self.max_speed();
+            -max_speed
         } else {
             // The positioning precision is 0.18 deg. It's important that the motors slow
             // down enough that there is a movement of less than 0.18 deg between frames
             // otherwise the flaps/slats will start oscillating.
-            let minimum_speed = self.max_speed() * 0.18; // Low speed drive is 18% of high speed drive.
+            let minimum_speed = max_speed * 0.18; // Low speed drive is 18% of high speed drive.
             let new_speed = self.speed * Self::DECEL_FACTOR_WHEN_APROACHING_POSITION;
+            let pob_de_energised = sfcc_1_pob == SolenoidStatus::DeEnergised
+                && sfcc_2_pob == SolenoidStatus::DeEnergised;
 
-            self.speed = if pob_de_energised {
+            if pob_de_energised {
                 AngularVelocity::ZERO
             } else if new_speed.abs() < minimum_speed {
                 self.speed
             } else {
                 new_speed
-            };
+            }
+        };
 
-            self.surface_control_arm_position +=
-                Angle::new::<radian>(self.speed.get::<radian_per_second>() * time_delta);
-        }
+        self.surface_control_arm_position += if !context.aircraft_preset_quick_mode() {
+            Angle::new::<radian>(self.speed.get::<radian_per_second>() * time_delta)
+        } else {
+            // This is for the Aircraft Presets to expedite the setting of a preset.
+            Angle::new::<radian>(self.speed.get::<radian_per_second>() * 2.)
+        };
 
-        let limited_surface_control_arm_position = self.surface_control_arm_position;
         let max_surface_angle = self.synchro_angle_to_surface_angle(self.max_synchro_gear_position);
-
         self.surface_control_arm_position = self
             .surface_control_arm_position
             .clamp(Angle::ZERO, max_surface_angle);
-
-        if limited_surface_control_arm_position != self.surface_control_arm_position {
-            self.speed = AngularVelocity::ZERO;
-        }
     }
 
     fn update_current_max_speed(
         &mut self,
         context: &UpdateContext,
-        sfcc_1_request: &impl ValveBlockController,
-        sfcc_2_request: &impl ValveBlockController,
+        sfcc_1: &impl ValveBlockController,
+        sfcc_2: &impl ValveBlockController,
         left_pressure: Pressure,
         right_pressure: Pressure,
     ) {
-        let sfcc_1_active = sfcc_1_request.get_pob_status() == SolenoidStatus::Energised;
-        let sfcc_2_active = sfcc_2_request.get_pob_status() == SolenoidStatus::Energised;
+        let sfcc_1_active = sfcc_1.get_pob_status() == SolenoidStatus::Energised;
+        let sfcc_2_active = sfcc_2.get_pob_status() == SolenoidStatus::Energised;
 
         // Final pressures are the current pressure or 0 if corresponding sfcc is offline
         // This simulates a motor not responding to a failed or offline sfcc
@@ -354,18 +370,12 @@ impl FlapSlatAssembly {
 
         let new_theoretical_max_speed_left_side = AngularVelocity::new::<radian_per_second>(
             0.5 * self.full_pressure_max_speed.get::<radian_per_second>()
-                * Self::max_speed_factor_from_pressure(
-                    final_left_pressure,
-                    self.circuit_target_pressure,
-                ),
+                * self.max_speed_factor_from_pressure(final_left_pressure),
         );
 
         let new_theoretical_max_speed_right_side = AngularVelocity::new::<radian_per_second>(
             0.5 * self.full_pressure_max_speed.get::<radian_per_second>()
-                * Self::max_speed_factor_from_pressure(
-                    final_right_pressure,
-                    self.circuit_target_pressure,
-                ),
+                * self.max_speed_factor_from_pressure(final_right_pressure),
         );
 
         let new_theoretical_max_speed =
@@ -382,16 +392,13 @@ impl FlapSlatAssembly {
         }
     }
 
-    fn max_speed_factor_from_pressure(
-        current_pressure: Pressure,
-        circuit_target_pressure: Pressure,
-    ) -> f64 {
-        let press_corrected =
-            current_pressure.get::<psi>() - Self::BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI;
-        if current_pressure > Pressure::new::<psi>(Self::BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI) {
-            (0.0004 * press_corrected.powi(2)
-                / (circuit_target_pressure.get::<psi>()
-                    - Self::BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI))
+    fn max_speed_factor_from_pressure(&self, current_pressure: Pressure) -> f64 {
+        let min_pressure = Pressure::new::<psi>(Self::BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI);
+        let press_corrected = current_pressure - min_pressure;
+        if current_pressure > min_pressure {
+            (0.0004 * press_corrected * press_corrected
+                / (self.circuit_target_pressure - min_pressure))
+                .get::<psi>()
                 .clamp(0., 1.)
         } else {
             0.
@@ -404,7 +411,7 @@ impl FlapSlatAssembly {
         left_pressure: Pressure,
         right_pressure: Pressure,
     ) {
-        let torque_shaft_speed = AngularVelocity::new::<radian_per_second>(
+        let shaft_speed = AngularVelocity::new::<radian_per_second>(
             self.speed.get::<radian_per_second>() * self.surface_gear_ratio.get::<ratio>(),
         );
 
@@ -432,23 +439,13 @@ impl FlapSlatAssembly {
             right_torque_ratio = right_torque / total_motor_torque;
         }
 
-        self.left_motor.update_speed(
-            context,
-            AngularVelocity::new::<radian_per_second>(
-                torque_shaft_speed.get::<radian_per_second>()
-                    * left_torque_ratio.get::<ratio>()
-                    * self.gearbox_ratio.get::<ratio>(),
-            ),
-        );
+        let left_motor_speed =
+            shaft_speed * left_torque_ratio.get::<ratio>() * self.gearbox_ratio.get::<ratio>();
+        self.left_motor.update_speed(context, left_motor_speed);
 
-        self.right_motor.update_speed(
-            context,
-            AngularVelocity::new::<radian_per_second>(
-                torque_shaft_speed.get::<radian_per_second>()
-                    * right_torque_ratio.get::<ratio>()
-                    * self.gearbox_ratio.get::<ratio>(),
-            ),
-        );
+        let right_motor_speed =
+            shaft_speed * right_torque_ratio.get::<ratio>() * self.gearbox_ratio.get::<ratio>();
+        self.right_motor.update_speed(context, right_motor_speed);
     }
 
     fn update_motors_flow(&mut self, context: &UpdateContext) {
@@ -457,29 +454,24 @@ impl FlapSlatAssembly {
     }
 
     fn update_position_ratios(&mut self) {
-        self.left_position = Ratio::new::<ratio>(
-            interpolation(
-                &self.synchro_gear_breakpoints,
-                &self.final_surface_angle_carac,
-                self.position_feedback().get::<degree>(),
-            ) / interpolation(
-                &self.synchro_gear_breakpoints,
-                &self.final_surface_angle_carac,
-                self.max_synchro_gear_position.get::<degree>(),
-            ),
-        );
+        let max_position = Angle::new::<degree>(interpolation(
+            &self.synchro_gear_breakpoints,
+            &self.final_surface_angle_carac,
+            self.max_synchro_gear_position.get::<degree>(),
+        ));
+
+        self.left_position = self.surface_angle() / max_position;
 
         // TODO update when left and right are simulated separatly
         self.right_position = self.left_position;
     }
 
     fn update_surface_variables(&mut self) {
-        let surface_position = self.flap_surface_angle();
-
+        // TODO update when left and right are simulated separatly
         self.left_surfaces
-            .update(self.left_position, surface_position);
+            .update(self.left_position, self.surface_angle());
         self.right_surfaces
-            .update(self.right_position, surface_position);
+            .update(self.right_position, self.surface_angle());
     }
 
     pub fn position_feedback(&self) -> Angle {
@@ -494,20 +486,8 @@ impl FlapSlatAssembly {
         &mut self.right_motor
     }
 
-    pub fn left_motor_rpm(&self) -> f64 {
-        self.left_motor.speed().get::<revolution_per_minute>()
-    }
-
-    pub fn right_motor_rpm(&self) -> f64 {
-        self.right_motor.speed().get::<revolution_per_minute>()
-    }
-
-    pub fn max_speed(&self) -> AngularVelocity {
-        self.current_max_speed.output()
-    }
-
     /// Gets flap surface angle from current Feedback Position Pickup Unit (FPPU) position
-    fn flap_surface_angle(&self) -> Angle {
+    fn surface_angle(&self) -> Angle {
         Angle::new::<degree>(interpolation(
             &self.synchro_gear_breakpoints,
             &self.final_surface_angle_carac,
@@ -591,6 +571,7 @@ mod tests {
     use super::*;
 
     use std::time::Duration;
+    use uom::si::angular_velocity::revolution_per_minute;
     use uom::si::volume::cubic_inch;
     use uom::si::volume_rate::gallon_per_minute;
     use uom::si::{angle::degree, pressure::psi};
@@ -799,7 +780,7 @@ mod tests {
         }
 
         fn flaps_angle(&self) -> Angle {
-            self.query(|a| a.flaps_slats.flap_surface_angle())
+            self.query(|a| a.flaps_slats.surface_angle())
         }
 
         fn left_motor_speed(&self) -> AngularVelocity {
