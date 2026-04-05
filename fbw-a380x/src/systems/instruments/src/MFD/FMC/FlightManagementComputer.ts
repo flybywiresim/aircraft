@@ -814,9 +814,9 @@ export class FlightManagementComputer implements FmcInterface {
   /**
    * Called when a flight plan uplink is done
    */
-  onUplinkDone() {
+  onUplinkDone(fltPlnReceived: boolean) {
     this.fmgc.data.cpnyFplnUplinkInProgress.set(false);
-    this.fmgc.data.cpnyFplnAvailable.set(true);
+    this.fmgc.data.cpnyFplnAvailable.set(fltPlnReceived);
   }
 
   canActivateOrSwapSecondary(secIndex: number): boolean {
