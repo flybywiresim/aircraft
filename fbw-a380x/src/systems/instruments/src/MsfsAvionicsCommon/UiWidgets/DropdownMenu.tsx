@@ -239,21 +239,6 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
         }
       }, true),
     );
-    if (this.props.disabled) {
-      this.subs.push(
-        this.props.disabled?.sub((val) => {
-          if (!this.props.inactive?.get()) {
-            if (val) {
-              this.dropdownSelectorRef.getOrDefault()?.classList.add('disabled');
-              this.dropdownArrowRef.getOrDefault()?.classList.add('disabled');
-            } else {
-              this.dropdownSelectorRef.getOrDefault()?.classList.remove('disabled');
-              this.dropdownArrowRef.getOrDefault()?.classList.remove('disabled');
-            }
-          }
-        }, true),
-      );
-    }
     // TODO add KCCU events
   }
 
