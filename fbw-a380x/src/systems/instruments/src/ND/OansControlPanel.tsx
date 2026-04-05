@@ -754,6 +754,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                             mandatory={Subject.create(false)}
                             hEventConsumer={this.hEventConsumer}
                             interactionMode={this.interactionMode}
+                            errorHandler={() => {}}
                           />
                           <span class="mfd-label mfd-spacing-right bigger" style="justify-self: flex-end">
                             END SHIFT
@@ -764,6 +765,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                             mandatory={Subject.create(false)}
                             hEventConsumer={this.hEventConsumer}
                             interactionMode={this.interactionMode}
+                            errorHandler={() => {}}
                           />
                         </div>
                         <div class="oans-cp-map-data-ldg-shift-return-button">
@@ -857,6 +859,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                           inactive={this.fmsLandingRunwayNotSelectedInFallback}
                           hEventConsumer={this.hEventConsumer}
                           interactionMode={this.interactionMode}
+                          errorHandler={() => {}}
                         />
                       </div>
                     </div>
