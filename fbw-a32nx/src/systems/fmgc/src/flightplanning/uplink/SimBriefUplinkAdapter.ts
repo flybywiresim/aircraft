@@ -493,7 +493,7 @@ export class SimBriefUplinkAdapter {
       }
     }
 
-    fms.onUplinkDone(intoPlan, true);
+    fms.onUplinkDone(true, intoPlan);
   }
 
   static async downloadOfpForUserID(username?: string, userID?: string): Promise<ISimbriefData> {

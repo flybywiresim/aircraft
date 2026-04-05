@@ -768,13 +768,21 @@ export class FlightManagementComputer implements FmcInterface {
 
     try {
       this.fmgc.data.cpnyFplnRequestedForPlan.set(intoPlan);
-      SimBriefUplinkAdapter.uplinkFlightPlanFromSimbrief(this, this.#flightPlanService, intoPlan, this.simBriefOfp, {
-        doUplinkProcedures: false,
-      });
+      await SimBriefUplinkAdapter.uplinkFlightPlanFromSimbrief(
+        this,
+        this.#flightPlanService,
+        intoPlan,
+        this.simBriefOfp,
+        {
+          doUplinkProcedures: false,
+        },
+      );
     } catch (e) {
       this.fmgc.data.cpnyFplnRequestedForPlan.set(null);
       console.error(e);
       logTroubleshootingError(this.bus, e);
+      this.addMessageToQueue(NXSystemMessages.receivedCpnyFplnNotValid, undefined, undefined);
+      this.onUplinkDone(false);
     }
   }
 

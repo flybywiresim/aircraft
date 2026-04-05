@@ -25,24 +25,37 @@ export class CpnyFplnButtonUtils {
 
   public static cpnyFplnButtonLabel(fmc: FmcInterface | null) {
     return fmc
-      ? MappedSubject.create(([avail]) => {
-          if (!avail) {
-            return (
-              <span>
-                CPNY F-PLN
-                <br />
-                REQUEST
-              </span>
-            );
-          }
-          return (
-            <span>
-              RECEIVED
-              <br />
-              CPNY F-PLN
-            </span>
-          );
-        }, fmc.fmgc.data.cpnyFplnAvailable)
+      ? MappedSubject.create(
+          ([avail, uplinkInProgress]) => {
+            if (uplinkInProgress) {
+              return (
+                <span>
+                  REQUEST
+                  <br />
+                  PENDING...
+                </span>
+              );
+            } else if (!avail) {
+              return (
+                <span>
+                  CPNY F-PLN
+                  <br />
+                  REQUEST
+                </span>
+              );
+            } else {
+              return (
+                <span>
+                  RECEIVED
+                  <br />
+                  CPNY F-PLN
+                </span>
+              );
+            }
+          },
+          fmc.fmgc.data.cpnyFplnAvailable,
+          fmc.fmgc.data.cpnyFplnUplinkInProgress,
+        )
       : MappedSubject.create(() => <></>);
   }
 
