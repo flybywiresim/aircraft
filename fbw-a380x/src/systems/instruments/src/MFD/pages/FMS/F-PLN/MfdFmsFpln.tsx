@@ -229,13 +229,13 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     this.lastRenderedFpVersion = this.loadedFlightPlan.version ?? null;
     this.lastRenderedDisplayLineIndex = this.displayFplnFromLineIndex.get();
     const hasDestination = this.loadedFlightPlan.destinationAirport !== undefined;
+    const loadedFpIndex = this.loadedFlightPlanIndex.get();
 
     if (hasDestination) {
       this.destNotLoaded.set(false);
       this.distanceToDest.set(
-        this.props.fmcService.master?.fmgc?.guidanceController?.getAlongTrackDistanceToDestination(
-          FlightPlanIndex.Active,
-        ) ?? null,
+        this.props.fmcService.master?.fmgc?.guidanceController?.getAlongTrackDistanceToDestination(loadedFpIndex) ??
+          null,
       );
       if (this.loadedFlightPlan.destinationRunway) {
         this.destButtonLabel.set(
@@ -248,19 +248,12 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       this.destNotLoaded.set(true);
       this.destButtonLabel.set('------');
     }
-    const loadedFpIndex = this.loadedFlightPlanIndex.get();
 
     // TODO SEC predictions
     const destPred =
       loadedFpIndex === FlightPlanIndex.Active
         ? this.props.fmcService?.master?.guidanceController?.vnavDriver?.getDestinationPrediction()
         : null;
-
-    const distanceToDestination = hasDestination
-      ? this.props.fmcService.master.fmgc?.guidanceController?.getAlongTrackDistanceToDestination(loadedFpIndex)
-      : undefined;
-    this.distanceToDest.set(distanceToDestination ?? null);
-
     if (destPred) {
       this.destEfobAmber.set(this.props.fmcService.master.fmgc.data.destEfobBelowMinInActive.get());
       this.destTime.set(new Date(this.predictionTimestamp(destPred.secondsFromPresent)));
