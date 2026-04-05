@@ -126,7 +126,7 @@ export class PseudoFWC {
       StallWarningEvents
   >();
 
-  private readonly fwsUpdateThrottler = new UpdateThrottler(125); // has to be > 100 due to pulse nodes
+  private readonly fwsUpdateThrottler = new UpdateThrottler(240); // has to be > 100 due to pulse nodes
 
   private readonly simTime = RegisteredSimVar.create('E:SIMULATION TIME', SimVarValueType.Seconds);
 

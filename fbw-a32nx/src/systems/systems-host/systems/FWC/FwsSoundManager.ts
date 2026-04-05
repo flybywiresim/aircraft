@@ -57,7 +57,7 @@ export const FwsAuralsList: Record<string, FwsAural> = {
   },
   cavalryCharge: {
     localVarName: 'A32NX_FWC_CAVALRY_CHARGE',
-    length: 0.9,
+    length: 1,
     priority: 4,
     type: FwsAuralWarningType.AuralWarning,
     periodicWithPause: 3,
@@ -144,6 +144,7 @@ export const FwsAuralsList: Record<string, FwsAural> = {
     type: FwsAuralWarningType.SyntheticVoice,
   },
   retard_continuous: {
+    // TODO we should use repeat with delay here but the sample has silences built in so it doesn't work quite well
     localVarName: 'A32NX_FWS_AUDIO_RETARD',
     priority: 2,
     type: FwsAuralWarningType.SyntheticVoice,
