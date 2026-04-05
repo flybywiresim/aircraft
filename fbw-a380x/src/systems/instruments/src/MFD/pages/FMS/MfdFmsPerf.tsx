@@ -1,3 +1,5 @@
+// Copyright (c) 2024-2026 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
 import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
 import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
@@ -28,7 +30,6 @@ import {
   LengthFormat,
   PercentageFormat,
   QnhFormat,
-  RADIO_ALTITUDE_NODH_VALUE,
   RadioAltitudeFormat,
   SpeedKnotsFormat,
   SpeedMachFormat,
@@ -420,6 +421,15 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     this.costIndexMode,
     this.loadedFlightPlanIndex,
   );
+
+  private readonly costIndexModeDisabled = MappedSubject.create(
+    ([flightPhase, fpIndex]) =>
+      this.props.flightPlanInterface.get(fpIndex).isActiveOrCopiedFromActive() &&
+      flightPhase >= FmgcFlightPhase.Descent,
+    this.activeFlightPhase,
+    this.loadedFlightPlanIndex,
+  );
+
   private readonly speedConstraintSpeed = Subject.create<number | null>(null);
 
   private readonly speedConstraintAltitude = Subject.create<number | null>(null);
@@ -985,6 +995,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       this.vdevSub,
       this.destEfobAmber,
       this.flightPhasesSelectedPageIndex.sub((val) => this.drawPage(val)),
+      this.costIndexDisabled,
+      this.costIndexDisabled,
     );
   }
 
@@ -1384,7 +1396,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   visibility: this.visibilityConsideringFlightPlanIndex,
                 }}
               >
-                <span class={{ 'mfd-label': true, 'mfd-spacing-right': true, amber: this.eoActive }}>EO MAX</span>
+                <span class={{ 'mfd-label': true, 'mfd-spacing-right': true, amber: this.eoActive }}>&nbsp;EO MAX</span>
                 <span class="mfd-label-unit mfd-unit-leading">FL</span>
                 <span class={{ 'mfd-value': true, white: this.eoMaxFlNotAvail }}>{this.eoMaxFl}</span>
               </div>

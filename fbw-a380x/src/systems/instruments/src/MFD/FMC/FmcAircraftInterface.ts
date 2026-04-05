@@ -290,9 +290,6 @@ export class FmcAircraftInterface {
           0,
         ),
       ),
-      this.fmgc.data.takeoffFlapsSetting.sub((v) => {
-        this.setTakeoffFlaps(v);
-      }),
     );
 
     const pub = this.bus.getPublisher<FmsData>();

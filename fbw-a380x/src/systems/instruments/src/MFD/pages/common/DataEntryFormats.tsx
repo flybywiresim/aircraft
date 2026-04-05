@@ -519,11 +519,7 @@ export class WeightFormat extends SubscriptionCollector implements DataEntryForm
     if (nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
     } else {
-      throw getFormattedEntryOutOfRangeError(
-        (this.minValue / 1000).toFixed(1),
-        (this.maxValue / 1000).toFixed(1),
-        this.unit,
-      );
+      throw getFormattedEntryOutOfRangeError(this.minValue.toFixed(1), this.maxValue.toFixed(1), this.unit);
     }
   }
 
@@ -1214,9 +1210,9 @@ export class TimeHHMMFormat implements DataEntryFormat<number> {
 
   private readonly requiredFormat = 'HHMM';
 
-  private minValue = 0;
+  private readonly minValue = 0;
 
-  private maxValue = 90;
+  private readonly maxValue = 90;
 
   public format(value: number) {
     if (!value) {
@@ -1243,8 +1239,9 @@ export class TimeHHMMFormat implements DataEntryFormat<number> {
     if (replacedInput.length > 2) {
       hours = Number(replacedInput.slice(0, -2));
     }
+
     if (minutes < 0 || minutes > 59 || hours < 0 || hours > 23) {
-      return null;
+      throw new A380FmsError(FmsErrorType.EntryOutOfRange);
     }
 
     const nbr = minutes + hours * 60;

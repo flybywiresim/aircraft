@@ -366,7 +366,7 @@ export class FlightManagementComputer implements FmcInterface {
       }, true),
       this.enginesWereStarted.sub((val) => {
         if (val) {
-          this.setCi0AndLrcIfFlightplanHasnoCi();
+          this.setCi0AndLrcIfActiveFlightplanHasnoCi();
         }
       }),
       this.legacyFmsIsHealthy.sub((v) => {
@@ -384,15 +384,21 @@ export class FlightManagementComputer implements FmcInterface {
 
       this.fmgc.data.cpnyFplnAvailable.sub((v) => {
         if (v) {
-          this.addMessageToQueue(NXSystemMessages.comFplnRecievedPendingInsertion);
+          this.addMessageToQueue(NXSystemMessages.comFplnReceivedPendingInsertion);
         } else {
-          this.removeMessageFromQueue(NXSystemMessages.comFplnRecievedPendingInsertion.text);
+          this.removeMessageFromQueue(NXSystemMessages.comFplnReceivedPendingInsertion.text);
         }
       }),
       this.destDataEntered,
       this.destDataEntered.sub((v) => {
         if (v) {
           this.removeMessageFromQueue(NXSystemMessages.enterDestData.text);
+        }
+      }),
+      this.fmcInop.sub((value) => this.healythSimvar.set(!value), true),
+      this.zeroFuelWeight.sub((zfw) => {
+        if (zfw !== null) {
+          this.setCi0AndLrcIfActiveFlightplanHasnoCi();
         }
       }),
     );
@@ -1458,9 +1464,7 @@ export class FlightManagementComputer implements FmcInterface {
         this.acInterface.checkDestEfobBelowMinScratchPadMessage(throttledDt);
         this.acInterface.checkEngineOut(throttledDt);
         const toFlaps = this.fmgc.getTakeoffFlapsSetting();
-        if (toFlaps) {
-          this.acInterface.setTakeoffFlaps(toFlaps);
-        }
+        this.acInterface.setTakeoffFlaps(toFlaps ?? null);
 
         const thsFor = this.flightPlanInterface.active.performanceData.takeoffThsFor.get();
         if (thsFor) {
@@ -1728,15 +1732,14 @@ export class FlightManagementComputer implements FmcInterface {
     }
   }
 
-  private setCi0AndLrcIfFlightplanHasnoCi(): void {
-    if (
-      this.flightPlanService.hasActive &&
-      this.flightPlanService.active.destinationAirport &&
-      !Number.isFinite(this.flightPlanService.active.performanceData.costIndex.get())
-    ) {
-      this.flightPlanService.active.setPerformanceData('costIndex', 0);
-      this.fmgc.data.costIndexMode.set(CostIndexMode.LRC);
-      this.addMessageToQueue(NXSystemMessages.lrcInUse);
+  private setCi0AndLrcIfActiveFlightplanHasnoCi(): void {
+    if (this.flightPlanInterface.hasActive && this.flightPlanInterface.active.destinationAirport !== undefined) {
+      const pd = this.flightPlanInterface.active.performanceData;
+      if (pd.costIndex.get() === null) {
+        pd.costIndex.set(0);
+        pd.costIndexMode.set(CostIndexMode.LRC);
+        this.addMessageToQueue(NXSystemMessages.lrcInUse);
+      }
     }
   }
 }

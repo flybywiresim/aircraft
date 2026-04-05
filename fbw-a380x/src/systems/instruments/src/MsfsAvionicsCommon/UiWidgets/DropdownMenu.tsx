@@ -329,7 +329,6 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
               hEventConsumer={this.props.hEventConsumer}
               interactionMode={this.props.interactionMode}
               errorHandler={() => {}}
-              disabled={this.props.disabled}
             />
           </div>
           <div ref={this.dropdownArrowRef} class="mfd-dropdown-arrow">

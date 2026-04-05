@@ -110,18 +110,22 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
 
   private readonly costIndexModeLabels = ArraySubject.create(['LRC', 'ECON']);
 
-  private readonly costIndexDisabled = MappedSubject.create(
-    ([toIcao, fromIcao, flightPhase, ciMode, fpIndex]) =>
+  private readonly costIndexModeDisabled = MappedSubject.create(
+    ([toIcao, fromIcao, flightPhase, fpIndex]) =>
       !toIcao ||
       !fromIcao ||
-      ciMode === CostIndexMode.LRC ||
       (flightPhase >= FmgcFlightPhase.Descent &&
         this.props.flightPlanInterface.get(fpIndex).isActiveOrCopiedFromActive()),
     this.fromIcao,
     this.toIcao,
     this.activeFlightPhase,
-    this.costIndexMode,
     this.loadedFlightPlanIndex,
+  );
+
+  private readonly costIndexDisabled = MappedSubject.create(
+    ([ciModeDisabled, ciMode]) => ciModeDisabled || ciMode === CostIndexMode.LRC,
+    this.costIndexModeDisabled,
+    this.costIndexMode,
   );
 
   private readonly tropopause = Subject.create<number | null>(null);
@@ -216,28 +220,6 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
       this.costIndexModeDisabled,
     );
   }
-
-  private invalidateDataFields() {
-    if (!this.creationInProgress) {
-      this.toIcao.set(null);
-      this.fromIcao.set(null);
-    }
-    this.altnIcao.set(null);
-    this.flightNumber.set(null);
-    this.cpnyRte.set(null);
-    this.altnRte.set(null);
-    this.tropopause.set(null);
-    this.tropopauseIsPilotEntered.set(false);
-    this.tripWind.set(null);
-    this.crzFl.set(null);
-    this.cruiseTemperature.set(null);
-    this.cruiseTemperatureIsPilotEntered.set(false);
-    this.costIndex.set(null);
-    this.costIndexMode.set(CostIndexMode.ECON);
-    this.pipeSubs.forEach((s) => s.destroy());
-    this.pipeSubs = [];
-  }
-
   private invalidateDataFields() {
     if (!this.creationInProgress) {
       this.toIcao.set(null);
@@ -600,7 +582,6 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 alignLabels="center"
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
-                disabled={this.noFlightPlan}
               />
               <div class="mfd-label init-input-field" style="width: auto;">
                 TROPO

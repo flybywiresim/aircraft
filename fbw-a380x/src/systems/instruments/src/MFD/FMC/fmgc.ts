@@ -134,6 +134,8 @@ export class FmgcData {
     (it) => it !== null,
   );
 
+  public readonly approachVapp = Subject.create<Knots | null>(null);
+
   public readonly approachVref = Subject.create<Knots | null>(null);
 
   public readonly approachVls = Subject.create<Knots | null>(null);

@@ -1,3 +1,5 @@
+// Copyright (c) 2024-2026 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
 import {
   ArraySubject,
   ClockEvents,
@@ -26,6 +28,7 @@ import {
   maxBlockFuel,
   maxFinalFuel,
   maxJtsnGw,
+  maxMinDestFuel,
   maxRteRsvFuelPerc,
   maxTaxiFuel,
   maxZfw,
@@ -46,6 +49,8 @@ import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 interface MfdFmsFuelLoadProps extends AbstractMfdPageProps {}
 
 export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
+  private static readonly MAX_MIN_FUEL_DEST_TONS = Subject.create(maxMinDestFuel / 1000);
+
   private readonly flightPlanChangeNotifier = new FlightPlanChangeNotifier(this.props.bus);
 
   private flightPlanPerfSubs: Subscription[] = [];
@@ -118,16 +123,6 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
 
   private readonly costIndexMode = Subject.create<CostIndexMode | null>(null);
 
-  private readonly costIndexDisabled = MappedSubject.create(
-    ([flightPhase, ciMode, fpIndex]) =>
-      ciMode == CostIndexMode.LRC ||
-      (flightPhase >= FmgcFlightPhase.Descent &&
-        this.props.flightPlanInterface.get(fpIndex).isActiveOrCopiedFromActive()),
-    this.activeFlightPhase,
-    this.costIndexMode,
-    this.loadedFlightPlanIndex,
-  );
-
   private readonly jettisonGrossWeight = Subject.create<number | null>(null);
 
   private readonly takeoffWeight = Subject.create<number | null>(null);
@@ -179,6 +174,12 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
     this.activeFlightPhase,
     this.destIcao,
     this.loadedFlightPlanIndex,
+  );
+
+  private readonly costIndexDisabled = MappedSubject.create(
+    ([ciModeDisabled, ciMode]) => ciModeDisabled || ciMode === CostIndexMode.LRC,
+    this.costIndexModeDisabled,
+    this.costIndexMode,
   );
 
   protected onNewData() {
@@ -407,13 +408,13 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
               <div class="mfd-label mfd-spacing-right fuelLoad">ZFW</div>
               <InputField<number, number, false>
                 dataEntryFormat={new WeightFormat(Subject.create(minZfw / 1_000), Subject.create(maxZfw / 1_000))}
-                dataHandlerDuringValidation={async (v) =>
+                dataHandlerDuringValidation={async (v) => {
                   this.props.flightPlanInterface.setPerformanceData(
                     'zeroFuelWeight',
                     v,
                     this.loadedFlightPlanIndex.get(),
-                  )
-                }
+                  );
+                }}
                 readonlyValue={this.zeroFuelWeight}
                 mandatory={this.mandatoryAndActiveFpln}
                 canBeCleared={Subject.create(false)}
@@ -808,7 +809,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 </div>
                 <div style="margin-bottom: 30px; display: flex; justify-content: center;">
                   <InputField<number, number, false>
-                    dataEntryFormat={new WeightFormat(undefined, undefined)}
+                    dataEntryFormat={new WeightFormat(undefined, MfdFmsFuelLoad.MAX_MIN_FUEL_DEST_TONS)}
                     dataHandlerDuringValidation={async (v) =>
                       this.props.flightPlanInterface?.setPerformanceData(
                         'pilotMinimumDestinationFuelOnBoard',
