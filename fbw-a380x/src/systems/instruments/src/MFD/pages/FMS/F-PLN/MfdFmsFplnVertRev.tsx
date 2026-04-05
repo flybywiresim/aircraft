@@ -465,7 +465,10 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         const estGrossWeight = this.getEstimatedGrossWeightAtIndex(cruiseStepLegIndices[i]);
         this.stepAltsAboveMaxFl[line].set(
           cruiseSteps[i].toAltitude >
-            (this.props.fmcService.master.getRecMaxAltitude(estGrossWeight ?? undefined) ?? maxCertifiedAlt),
+            (this.props.fmcService.master.getRecMaxAltitude(
+              this.loadedFlightPlanIndex.get(),
+              estGrossWeight ?? undefined,
+            ) ?? maxCertifiedAlt),
         );
 
         if (this.stepAltsIgnored[line].get()) {
@@ -710,7 +713,9 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         .map((l) => (l.isDiscontinuity === false && l.cruiseStep ? l.cruiseStep : null))
         .filter((it) => it !== null);
       const isValid = MfdFmsFplnVertRev.checkStepInsertionRules(crzFl, cruiseSteps, legIndex, altitude);
-      if (altitude > (this.props.fmcService.master.getRecMaxAltitude() ?? maxCertifiedAlt)) {
+      if (
+        altitude > (this.props.fmcService.master.getRecMaxAltitude(this.loadedFlightPlanIndex.get()) ?? maxCertifiedAlt)
+      ) {
         this.props.fmcService.master?.addMessageToQueue(NXSystemMessages.stepAboveMaxFl, undefined, undefined);
       }
 

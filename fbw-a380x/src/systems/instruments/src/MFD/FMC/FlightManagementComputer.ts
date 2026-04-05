@@ -610,7 +610,10 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   /** @inheritdoc */
-  public getRecMaxAltitude(grossWeight?: number): number | null {
+  public getRecMaxAltitude(forplan = FlightPlanIndex.Active, grossWeight?: number): number | null {
+    if (forplan !== FlightPlanIndex.Active && forplan !== FlightPlanIndex.Temporary) {
+      return null;
+    }
     const gw = grossWeight ?? this.fmgc.getGrossWeightKg();
     if (!gw) {
       return null;
@@ -621,18 +624,15 @@ export class FlightManagementComputer implements FmcInterface {
   }
 
   /** @inheritdoc */
-  public getRecMaxFlightLevel(grossWeight?: number): number | null {
-    const recMax = this.getRecMaxAltitude(grossWeight);
+  public getRecMaxFlightLevel(forplan = FlightPlanIndex.Active, grossWeight?: number): number | null {
+    const recMax = this.getRecMaxAltitude(forplan, grossWeight);
     return recMax !== null ? recMax / 100 : null;
   }
 
   /** @inheritdoc */
   public getOptFlightLevel(): number | null {
     const recMax = this.getRecMaxFlightLevel();
-    return recMax != null &&
-      !this.fmgc.data.engineOut.get() &&
-      (this.flightPhaseManager.phase <= FmgcFlightPhase.Cruise ||
-        this.flightPhaseManager.phase > FmgcFlightPhase.Approach)
+    return recMax != null && !this.fmgc.data.engineOut.get() && this.flightPhaseManager.phase <= FmgcFlightPhase.Cruise
       ? Math.floor((0.96 * recMax) / 5) * 5
       : null; // FIXME remove magic
   }

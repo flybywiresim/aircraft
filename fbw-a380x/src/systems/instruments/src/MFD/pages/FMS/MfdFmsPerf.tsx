@@ -1009,7 +1009,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   }
 
   private drawPage(tab?: FlightPhaseTabIndex) {
-    // Update REC MAX FL, OPT FL
+    // Update REC MAX FL, OPT FL. Only for active and temporary flightplan.
     const fpIndex = this.loadedFlightPlanIndex.get();
     if (fpIndex === FlightPlanIndex.Active || fpIndex === FlightPlanIndex.Temporary) {
       const recMaxFl = this.props.fmcService.master.getRecMaxFlightLevel();

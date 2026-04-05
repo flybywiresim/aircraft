@@ -1725,9 +1725,7 @@ export class FmcAircraftInterface {
     if (!this.flightPlanService.has(intoPlan)) {
       return false;
     }
-
     const plan = this.flightPlanService.get(intoPlan);
-
     if (!Number.isFinite(fl)) {
       this.fmc.addMessageToQueue(NXSystemMessages.formatError, undefined, undefined);
       return false;
@@ -1748,16 +1746,13 @@ export class FmcAircraftInterface {
         return false;
       }
     }
-
     plan.setPerformanceData('cruiseFlightLevel', fl);
-
+    if (fl > (this.fmc.getRecMaxFlightLevel(intoPlan) ?? Infinity)) {
+      this.fmc.addMessageToQueue(NXSystemMessages.crzFlAboveMaxFL, undefined, undefined);
+    }
     if (intoPlan === FlightPlanIndex.Active) {
-      if (fl > (this.fmc.getRecMaxFlightLevel() ?? Infinity)) {
-        this.fmc.addMessageToQueue(NXSystemMessages.crzFlAboveMaxFL, undefined, undefined);
-      }
       this.onUpdateCruiseLevel(fl);
     }
-
     return true;
   }
 
