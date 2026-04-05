@@ -589,9 +589,6 @@ export class CDUFlightPlanPage {
             () => mcdu.getDelaySwitchPage(),
             (value, scratchpadCallback) => {
               if (value === '') {
-                mcdu.returnPageCallback = () => {
-                  CDUFlightPlanPage.ShowDestinationPage(mcdu, forPlan);
-                };
                 CDULateralRevisionPage.ShowPage(mcdu, wp, fpIndex, forPlan, inAlternate);
                 mcdu.efisInterfaces.L.setPlanCentre(targetPlan.index, fpIndex, inAlternate);
                 mcdu.efisInterfaces.R.setPlanCentre(targetPlan.index, fpIndex, inAlternate);
