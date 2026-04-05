@@ -1722,20 +1722,22 @@ export class FmcAircraftInterface {
    * @returns input passed checks
    */
   private trySetCruiseFl(fl: number, intoPlan: FlightPlanIndex = FlightPlanIndex.Active): boolean {
-    if (!this.flightPlanService.hasActive) {
+    if (!this.flightPlanService.has(intoPlan)) {
       return false;
     }
 
-    if (intoPlan === FlightPlanIndex.Active) {
-      if (!Number.isFinite(fl)) {
-        this.fmc.addMessageToQueue(NXSystemMessages.formatError, undefined, undefined);
-        return false;
-      }
-      const flBelowMinOrMax = fl <= 0 || fl > maxCertifiedAlt / 100;
-      if (flBelowMinOrMax) {
-        this.fmc.addMessageToQueue(NXSystemMessages.entryOutOfRange, undefined, undefined);
-        return false;
-      }
+    const plan = this.flightPlanService.get(intoPlan);
+
+    if (!Number.isFinite(fl)) {
+      this.fmc.addMessageToQueue(NXSystemMessages.formatError, undefined, undefined);
+      return false;
+    }
+    const flBelowMinOrMax = fl <= 0 || fl > maxCertifiedAlt / 100;
+    if (flBelowMinOrMax) {
+      this.fmc.addMessageToQueue(NXSystemMessages.entryOutOfRange, undefined, undefined);
+      return false;
+    }
+    if (plan.isActiveOrCopiedFromActive()) {
       const phase = this.flightPhase.get();
       const selFl = Math.floor(Math.max(0, Simplane.getAutoPilotDisplayedAltitudeLockValue('feet') ?? 0) / 100);
       if (
@@ -1747,11 +1749,14 @@ export class FmcAircraftInterface {
       }
     }
 
-    this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', fl);
-    if (fl > (this.fmc.getRecMaxFlightLevel() ?? Infinity)) {
-      this.fmc.addMessageToQueue(NXSystemMessages.crzFlAboveMaxFL, undefined, undefined);
+    plan.setPerformanceData('cruiseFlightLevel', fl);
+
+    if (intoPlan === FlightPlanIndex.Active) {
+      if (fl > (this.fmc.getRecMaxFlightLevel() ?? Infinity)) {
+        this.fmc.addMessageToQueue(NXSystemMessages.crzFlAboveMaxFL, undefined, undefined);
+      }
+      this.onUpdateCruiseLevel(fl);
     }
-    this.onUpdateCruiseLevel(fl);
 
     return true;
   }
