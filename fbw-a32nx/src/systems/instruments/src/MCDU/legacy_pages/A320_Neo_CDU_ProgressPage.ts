@@ -20,7 +20,7 @@ export class CDUProgressPage {
 
     const plan = mcdu.getFlightPlan(FlightPlanIndex.Active);
 
-    const flightNo = plan.flightNumber ?? '';
+    const flightNo = plan.flightNumber.get() ?? '';
     const cruiseLevel = plan.performanceData.cruiseFlightLevel.get();
     const recMaxFl = mcdu.getMaxFlCorrected();
     const flMaxText = recMaxFl !== null ? `{magenta}FL${recMaxFl.toString()}{end}` : `-----`;

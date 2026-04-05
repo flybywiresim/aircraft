@@ -224,7 +224,7 @@ export class MfdFmsDataAirport extends FmsPage<MfdFmsDataAirportProps> {
                       canBeCleared={Subject.create(false)}
                       value={this.airportIcao}
                       alignText="center"
-                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e.type, e.details)}
+                      errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
                       containerStyle="position: relative; right: 60px;"
@@ -365,7 +365,12 @@ export class MfdFmsDataAirport extends FmsPage<MfdFmsDataAirportProps> {
             />
           </div>
         </div>
-        <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
+        <Footer
+          bus={this.props.bus}
+          mfd={this.props.mfd}
+          fmcService={this.props.fmcService}
+          flightPlanInterface={this.props.fmcService.master.flightPlanInterface}
+        />
       </>
     );
   }

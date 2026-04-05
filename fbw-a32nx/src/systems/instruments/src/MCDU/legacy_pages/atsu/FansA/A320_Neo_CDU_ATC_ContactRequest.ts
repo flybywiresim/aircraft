@@ -1,10 +1,14 @@
 // @ts-strict-ignore
+// Copyright (c) 2026 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 import { AtsuStatusCodes, CpdlcMessage, CpdlcMessagesDownlink, InputValidation } from '@datalink/common';
 import { Keypad } from '../../../legacy/A320_Neo_CDU_Keypad';
 import { CDUAtcFlightReq } from '../A320_Neo_CDU_ATC_FlightReq';
 import { CDUAtcTextFansA } from '../FansA/A320_Neo_CDU_ATC_Text';
 import { NXSystemMessages } from '../../../messages/NXSystemMessages';
 import { LegacyAtsuPageInterface } from '../../../legacy/LegacyAtsuPageInterface';
+import { setKeyNotActiveLskActions } from '../AtsuDatalinkPageUtils';
 
 export class CDUAtcContactRequest {
   static CreateDataBlock(): any {
@@ -41,6 +45,7 @@ export class CDUAtcContactRequest {
 
   static ShowPage(mcdu: LegacyAtsuPageInterface, data = CDUAtcContactRequest.CreateDataBlock()) {
     mcdu.clearDisplay();
+    mcdu.page.Current = mcdu.page.ATCContactRequest;
 
     let requestContact = '{cyan}{{end}REQ VOICE CONTACT';
     if (data.altitude) {
@@ -148,5 +153,6 @@ export class CDUAtcContactRequest {
         }
       }
     };
+    setKeyNotActiveLskActions(mcdu);
   }
 }

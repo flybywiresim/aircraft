@@ -6,7 +6,7 @@
 import { describe, beforeEach, it, expect, vi } from 'vitest';
 import { setupTestDatabase } from '@fmgc/flightplanning/test/Database';
 import { FlightPlanManager } from './FlightPlanManager';
-import { A320FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import { A320FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/A320FlightPlanPerformanceData';
 import {
   FlightPlanBatchChangeEvent,
   FlightPlanEvents,
