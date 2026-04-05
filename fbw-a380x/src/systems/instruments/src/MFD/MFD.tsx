@@ -34,7 +34,6 @@ import { MfdFmsPageNotAvail } from 'instruments/src/MFD/pages/FMS/MfdFmsPageNotA
 import './pages/common/style.scss';
 import { InteractionMode } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import { AtcDatalinkSystem } from './ATCCOM/AtcDatalinkSystem';
-import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
 
 export const getDisplayIndex = () => {
@@ -161,8 +160,8 @@ export class MfdComponent
   /**
    * Called when a flight plan uplink is done
    */
-  onUplinkDone(intoPlan: FlightPlanIndex, fltPlnReceived: boolean) {
-    this.props.fmcService.master.onUplinkDone(intoPlan, fltPlnReceived);
+  onUplinkDone(fltPlnReceived: boolean) {
+    this.props.fmcService.master.onUplinkDone(fltPlnReceived);
   }
 
   /**
