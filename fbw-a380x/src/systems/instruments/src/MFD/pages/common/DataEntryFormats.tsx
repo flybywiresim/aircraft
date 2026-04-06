@@ -377,6 +377,7 @@ export class RadioAltitudeFormat extends SubscriptionCollector implements DataEn
     if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
     }
+    //FIXME: Confirm entry out of range and format error messages.
     if (nbr > this.maxValue || nbr < this.minValue) {
       throw new FmsError(FmsErrorType.EntryOutOfRange);
     } else {

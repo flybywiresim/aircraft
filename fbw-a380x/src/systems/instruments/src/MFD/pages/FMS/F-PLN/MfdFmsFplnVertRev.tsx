@@ -713,8 +713,13 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         .map((l) => (l.isDiscontinuity === false && l.cruiseStep ? l.cruiseStep : null))
         .filter((it) => it !== null);
       const isValid = MfdFmsFplnVertRev.checkStepInsertionRules(crzFl, cruiseSteps, legIndex, altitude);
+      const estGrossWeight = this.getEstimatedGrossWeightAtIndex(legIndex);
       if (
-        altitude > (this.props.fmcService.master.getRecMaxAltitude(this.loadedFlightPlanIndex.get()) ?? maxCertifiedAlt)
+        altitude >
+        (this.props.fmcService.master.getRecMaxAltitude(
+          this.loadedFlightPlanIndex.get(),
+          estGrossWeight ?? undefined,
+        ) ?? maxCertifiedAlt)
       ) {
         this.props.fmcService.master?.addMessageToQueue(NXSystemMessages.stepAboveMaxFl, undefined, undefined);
       }
