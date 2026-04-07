@@ -81,6 +81,7 @@ export class FmcAircraftInterface {
   public readonly arincFlightNumber2 = new FmArinc429OutputWord('FLIGHT_NUMBER_2');
   public readonly arincFlightNumber3 = new FmArinc429OutputWord('FLIGHT_NUMBER_3');
   public readonly arincFlightNumber4 = new FmArinc429OutputWord('FLIGHT_NUMBER_4');
+  public readonly arincFlightNumber5 = new FmArinc429OutputWord('FLIGHT_NUMBER_5');
 
   /** These arinc words will be automatically written to the bus, and automatically set to 0/NCD when the FMS resets */
   public arincBusOutputs = [
@@ -108,13 +109,13 @@ export class FmcAircraftInterface {
     this.arincFlightNumber2,
     this.arincFlightNumber3,
     this.arincFlightNumber4,
+    this.arincFlightNumber5,
   ];
 
   private readonly speedVs1g = Subject.create(0);
   private readonly speedVls = Subject.create(0);
   private readonly speedVmax = Subject.create(0);
   private readonly speedVfeNext = Subject.create(0);
-  private readonly speedVapp = Subject.create<number | null>(null);
   private readonly speedShortTermManaged = Subject.create(0);
 
   private readonly tdReached = this.bus

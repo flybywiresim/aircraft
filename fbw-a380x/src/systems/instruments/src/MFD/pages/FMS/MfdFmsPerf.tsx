@@ -1014,10 +1014,13 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     if (fpIndex === FlightPlanIndex.Active || fpIndex === FlightPlanIndex.Temporary) {
       const recMaxFl = this.props.fmcService.master.getRecMaxFlightLevel();
       this.recMaxFl.set(recMaxFl && Number.isFinite(recMaxFl) ? recMaxFl.toFixed(0) : '---');
+      this.recMaxFlNotAvail.set(recMaxFl === null);
       const optFl = this.props.fmcService.master.getOptFlightLevel();
       this.optFl.set(optFl && Number.isFinite(optFl) ? optFl.toFixed(0) : '---');
+      this.optFlNotAvail.set(optFl === null);
       const eoMaxFl = this.props.fmcService.master.getEoMaxFlightLevel();
       this.eoMaxFl.set(eoMaxFl && Number.isFinite(eoMaxFl) ? eoMaxFl.toFixed(0) : '---');
+      this.eoMaxFlNotAvail.set(eoMaxFl === null);
     }
     const obs = this.props.fmcService.master.guidanceController.verticalProfileComputationParametersObserver.get();
     this.managedSpeedActive.set((obs?.fcuSpeedManaged as unknown) === 1); // Should be boolean, but is number

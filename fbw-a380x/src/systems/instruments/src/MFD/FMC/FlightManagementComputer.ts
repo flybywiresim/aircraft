@@ -955,11 +955,6 @@ export class FlightManagementComputer implements FmcInterface {
     forPlan: FlightPlanIndex,
     callback = EmptyCallback.Boolean,
   ): Promise<void> {
-    if (flightNumber.length > 7) {
-      this.addMessageToQueue(NXSystemMessages.formatError);
-      return callback(false);
-    }
-
     await this.#flightPlanService.setFlightNumber(flightNumber, forPlan);
 
     if (forPlan === FlightPlanIndex.Active) {
@@ -989,7 +984,12 @@ export class FlightManagementComputer implements FmcInterface {
       Arinc429SignStatusMatrix.NormalOperation,
     );
     this.acInterface.arincFlightNumber4.setIso5Value(
-      flightNumber.substring(6, 7),
+      flightNumber.substring(6, 8),
+      Arinc429SignStatusMatrix.NormalOperation,
+    );
+
+    this.acInterface.arincFlightNumber5.setIso5Value(
+      flightNumber.substring(9, 10),
       Arinc429SignStatusMatrix.NormalOperation,
     );
 

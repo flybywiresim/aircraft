@@ -192,7 +192,7 @@ export class AltitudeOrFlightLevelFormat extends SubscriptionCollector implement
     if (value === null || value === undefined) {
       return [this.placeholder, null, 'FT'] as FieldFormatTuple;
     }
-    if (this.transAlt !== null && value >= this.transAlt) {
+    if (this.transAlt !== null && value > this.transAlt) {
       return [(value / 100).toFixed(0).toString().padStart(3, '0'), 'FL', null] as FieldFormatTuple;
     }
     return [value.toFixed(0).toString(), null, 'FT'] as FieldFormatTuple;
@@ -1148,9 +1148,9 @@ export class WaypointFormat implements DataEntryFormat<string> {
 }
 
 export class LongAlphanumericFormat implements DataEntryFormat<string> {
-  public placeholder = '----------';
+  public readonly placeholder = '----------';
 
-  public maxDigits = 10;
+  public readonly maxDigits = 10;
 
   public format(value: string) {
     if (!value) {

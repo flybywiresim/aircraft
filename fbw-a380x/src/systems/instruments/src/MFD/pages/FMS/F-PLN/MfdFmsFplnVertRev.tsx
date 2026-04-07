@@ -1,3 +1,6 @@
+// Copyright (c) 2024-2026 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
 
 import {
@@ -24,7 +27,7 @@ import {
   TimeHHMMSSFormat,
 } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
-import { maxCertifiedAlt, Vmo } from '@shared/PerformanceConstants';
+import { Vmo } from '@shared/PerformanceConstants';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { RadioButtonColor, RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
 import { AltitudeDescriptor, WaypointConstraintType } from '@flybywiresim/fbw-sdk';
@@ -163,6 +166,9 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   private forceRebuildList = false;
 
   private readonly stepAltsLineVisibility = Array.from(Array(5), () => Subject.create<'visible' | 'hidden'>('hidden'));
+  private readonly stepLinesPredictionsVisibility = Array.from(Array(5), () =>
+    Subject.create<'visible' | 'hidden'>('hidden'),
+  );
   private readonly stepAltsWptIndices = Array.from(Array(5), () => Subject.create<number | null>(null));
   private readonly stepAltsAltitude = Array.from(Array(5), () => Subject.create<number | null>(null));
   private readonly stepAltsDistances = Array.from(Array(5), () => Subject.create<number | null>(null));
@@ -407,6 +413,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
       for (let i = 0; i < 5; i++) {
         this.stepAltsLineVisibility[i].set('hidden');
+        this.stepLinesPredictionsVisibility[i].set('hidden');
       }
 
       if (this.stepAltsNumberOfCruiseSteps.get() !== cruiseSteps.length) {
@@ -427,7 +434,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
             this.stepAltsAltitude[line].set(null);
             this.forceRebuildList = false;
           }
-
+          this.stepLinesPredictionsVisibility[line].set('hidden');
           this.stepAltsLineVisibility[line].set('visible');
           this.stepAltsDistances[line].set(null);
           this.stepAltsTimes[line].set('--:--');
@@ -448,27 +455,31 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
           this.activeFlightPhase.get() == FmgcFlightPhase.Preflight,
         );
         const wptIndex = this.availableWaypointsToLegIndex.indexOf(cruiseStepLegIndices[i]);
+        const step = cruiseSteps[i];
 
         this.stepAltsLineVisibility[line].set('visible');
         this.stepAltsWptIndices[line].set(wptIndex !== -1 ? wptIndex : null);
-        this.stepAltsAltitude[line].set(cruiseSteps[i].toAltitude);
+        this.stepAltsAltitude[line].set(step.toAltitude);
+        this.stepLinesPredictionsVisibility[line].set(
+          wptIndex !== -1 && step.toAltitude !== null ? 'visible' : 'hidden',
+        );
 
         if (pred) {
-          this.stepAltsDistances[line].set(pred.distanceFromAircraft - cruiseSteps[i].distanceBeforeTermination);
+          this.stepAltsDistances[line].set(pred.distanceFromAircraft - step.distanceBeforeTermination);
           this.stepAltsTimes[line].set(wptEta);
         } else {
           this.stepAltsDistances[line].set(null);
           this.stepAltsTimes[line].set('--:--');
         }
-        this.stepAltsIgnored[line].set(cruiseSteps[i].isIgnored);
+        this.stepAltsIgnored[line].set(step.isIgnored);
 
         const estGrossWeight = this.getEstimatedGrossWeightAtIndex(cruiseStepLegIndices[i]);
         this.stepAltsAboveMaxFl[line].set(
-          cruiseSteps[i].toAltitude >
-            (this.props.fmcService.master.getRecMaxAltitude(
-              this.loadedFlightPlanIndex.get(),
-              estGrossWeight ?? undefined,
-            ) ?? maxCertifiedAlt),
+          estGrossWeight !== null
+            ? step.toAltitude >
+                (this.props.fmcService.master.getRecMaxAltitude(this.loadedFlightPlanIndex.get(), estGrossWeight) ??
+                  Infinity)
+            : false,
         );
 
         if (this.stepAltsIgnored[line].get()) {
@@ -715,11 +726,9 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       const isValid = MfdFmsFplnVertRev.checkStepInsertionRules(crzFl, cruiseSteps, legIndex, altitude);
       const estGrossWeight = this.getEstimatedGrossWeightAtIndex(legIndex);
       if (
+        estGrossWeight !== null &&
         altitude >
-        (this.props.fmcService.master.getRecMaxAltitude(
-          this.loadedFlightPlanIndex.get(),
-          estGrossWeight ?? undefined,
-        ) ?? maxCertifiedAlt)
+          (this.props.fmcService.master.getRecMaxAltitude(this.loadedFlightPlanIndex.get(), estGrossWeight) ?? Infinity)
       ) {
         this.props.fmcService.master?.addMessageToQueue(NXSystemMessages.stepAboveMaxFl, undefined, undefined);
       }
@@ -788,7 +797,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         ? this.props.fmcService?.master?.guidanceController?.vnavDriver?.mcduProfile?.waypointPredictions?.get(legIndex)
         : undefined;
     return pred !== undefined && zfw !== null
-      ? zfw + UnitType.KILOGRAM.convertFrom(pred.estimatedFuelOnBoard, UnitType.POUND)
+      ? zfw * 1000 + UnitType.KILOGRAM.convertFrom(pred.estimatedFuelOnBoard, UnitType.POUND)
       : null;
   }
 
@@ -1116,9 +1125,11 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                 <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;">
                   <div class="mfd-fms-fpln-labeled-box-container" style="width: 100%;">
                     <div class="mfd-fms-fpln-labeled-box-label" style="margin-left: 15px;">
-                      <span class="mfd-label mfd-spacing-right">STEP ALTS FROM CRZ</span>
+                      <span class="mfd-label mfd-spacing-right">STEP ALTs FROM CRZ</span>
                       <span class="mfd-label-unit mfd-unit-leading">FL</span>
-                      <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.crzFlFormatted}</span>
+                      <span class={{ 'mfd-value': true, sec: this.secActive, tmpy: this.tmpyActive }}>
+                        {this.crzFlFormatted}
+                      </span>
                     </div>
                     <div style="width: 100%">
                       <div style="display: grid; grid-template-columns: 35% 25% 20% 20%; grid-auto-rows: 60px;">
@@ -1199,8 +1210,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                                 'justify-content': 'flex-end',
                               }}
                             >
-                              <div style={{ visibility: this.stepAltsLineVisibility[li] }}>
-                                <span class={{ 'mfd-value': true, sec: this.secActive }}>
+                              <div style={{ visibility: this.stepLinesPredictionsVisibility[li] }}>
+                                <span class={{ 'mfd-value': true, sec: this.secActive, tmpy: this.tmpyActive }}>
                                   {this.stepAltsDistancesFormatted[li]}
                                 </span>
                                 <span class="mfd-label-unit mfd-unit-trailing">NM</span>
@@ -1208,8 +1219,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                             </div>
                             <div class="fr aic jcc" style={{ display: this.stepAltsNoMessageDisplay[li] }}>
                               <span
-                                class={{ 'mfd-value': true, sec: this.secActive }}
-                                style={{ visibility: this.stepAltsLineVisibility[li] }}
+                                class={{ 'mfd-value': true, sec: this.secActive, tmpy: this.tmpyActive }}
+                                style={{ visibility: this.stepLinesPredictionsVisibility[li] }}
                               >
                                 {this.stepAltsTimes[li]}
                               </span>
@@ -1218,7 +1229,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                         ))}
                       </div>
                       <div style="flex-grow: 1" />
-                      <div clasS="fr jcc" style="flex: 1;">
+                      <div class="fr jcc" style="flex: 1;">
                         <span class="mfd-label biggest amber" style={{ visibility: this.stepNotAllowedAtVisibility }}>
                           {this.stepNotAllowedAt}
                         </span>
