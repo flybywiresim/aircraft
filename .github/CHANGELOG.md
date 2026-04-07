@@ -99,6 +99,9 @@
 1. [A32NX/EFB] Added Departure Change Checklist to EFB - @FlyByTim (FlyByTim)
 1. [A380X/MFD] Fix CPNY F-PLN REQUEST button disabled when airport ICAO not found in failed Simbrief import - @heclak (Heclak)
 1. [A380X/RMP] Fix FO RMP integrated lights not working - @heclak (Heclak)
+1. [A32NX/FWS] Add `GEAR NOT DOWNLOCKED` master warning - @FozzieHi (fozzie)
+1. [A380X/FMS] Add secondary flight plans to A380X - @flogross89 (floridude), @BravoMike99 (bruno_pt99)
+1. [A380X/FMS] Allow edition of vnav descent speed - @BravoMike99 (bruno_pt99)
 
 ## 0.14.0
 

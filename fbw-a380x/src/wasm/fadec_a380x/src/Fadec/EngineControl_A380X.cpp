@@ -957,7 +957,11 @@ void EngineControl_A380X::updateThrustLimits(double simulationTime,
   const double pressAltitude   = simData.simVarsDataPtr->data().pressureAltitude;
   const double thrustLimitType = simData.thrustLimitType->get();
 
-  if (!isTransitionActive && thrustLimitType != 3 /* FLEX */) {
+  // Only latch flex temp if flex was not selected or flex is selected but TLAs are not in flx setting
+  if (!isTransitionActive && (thrustLimitType != 3 || (thrustLimitType == 3 &&
+    (simData.engineTla[E1]->get() != 35.0 || simData.engineTla[E2]->get() != 35.0 || simData.engineTla[E3]->get() != 35.0 || simData.engineTla[E4]->get() != 35.0))
+  )
+  ) {
     latchedFlexTemperature = flexTemp;
   }
 
