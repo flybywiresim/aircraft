@@ -367,11 +367,15 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
       // Prepare sequencing of pseudo waypoints
       const pseudoWptMap = new Map<number, PseudoWaypoint>();
-      // Insert pseudo waypoints from guidance controller
-      this.props.fmcService?.master?.guidanceController?.pseudoWaypoints?.pseudoWaypoints?.forEach((wpt) =>
-        pseudoWptMap.set(wpt.alongLegIndex, wpt),
-      );
-
+      const fpIndex = this.loadedFlightPlanIndex.get();
+      const isActiveOrTmpy = fpIndex === FlightPlanIndex.Active;
+      if (isActiveOrTmpy) {
+        //TODO SEC predictions
+        // Insert pseudo waypoints from guidance controller
+        this.props.fmcService?.master?.guidanceController?.pseudoWaypoints?.pseudoWaypoints?.forEach((wpt) =>
+          pseudoWptMap.set(wpt.alongLegIndex, wpt),
+        );
+      }
       lastDistanceFromStart = 0;
 
       for (let i = 0; i < jointFlightPlan.length; i++) {
@@ -403,10 +407,12 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             hasSpeedConstraint: (pwp.mcduIdent ?? pwp.ident) === '(SPDLIM)',
             speedConstraint: null, // TODO
             speedConstraintIsRespected: true,
-            efobPrediction: Units.poundToKilogram(
-              this.props.fmcService.master.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)
-                ?.estimatedFuelOnBoard ?? 0,
-            ),
+            efobPrediction: isActiveOrTmpy
+              ? Units.poundToKilogram(
+                  this.props.fmcService.master.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)
+                    ?.estimatedFuelOnBoard ?? 0,
+                )
+              : 0,
             windPrediction: this.derivedFplnLegData[i].windPrediction,
             trackFromLastWpt: this.derivedFplnLegData[i].trackFromLastWpt,
             distFromLastWpt: reduceDistanceBy,
@@ -442,8 +448,9 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
           const annotation = leg.type === LegType.HF || leg.type === LegType.HA ? 'HOLD L' : leg.annotation;
 
-          const pred =
-            this.props.fmcService?.master?.guidanceController?.vnavDriver?.mcduProfile?.waypointPredictions?.get(i);
+          const pred = isActiveOrTmpy
+            ? this.props.fmcService?.master?.guidanceController?.vnavDriver?.mcduProfile?.waypointPredictions?.get(i)
+            : null;
 
           const data: FplnLineWaypointDisplayData = {
             type: FplnLineType.Waypoint,
