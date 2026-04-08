@@ -1,6 +1,7 @@
 // @ts-strict-ignore
 import {
   ClockEvents,
+  DebounceTimer,
   DisplayComponent,
   EventBus,
   FSComponent,
@@ -343,7 +344,15 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: EventBus }> {
     leftGearCompressed: true,
     rightGearCompressed: true,
     approachPhase: false,
+    goAroundPhase: false,
   };
+
+  private takeoffTimer: boolean = false;
+  private goAroundTimer: boolean = false;
+  private takeoffDebounceTimer = new DebounceTimer();
+  private goAroundDebounceTimer = new DebounceTimer();
+  private static readonly TAKEOFF_TIMER = 3_000;
+  private static readonly GA_TIMER = 4_000;
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -376,9 +385,57 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: EventBus }> {
       .whenChanged()
       .handle((fp) => {
         this.tailStrikeConditions.approachPhase = fp === 5;
+        this.tailStrikeConditions.goAroundPhase = fp === 6;
+        if (fp === 6) {
+          if (!this.goAroundTimer && this.tailStrikeConditions.altitude.value < 400) {
+            this.goAroundDebounceTimer.schedule(() => {
+              this.goAroundTimer = false;
+              this.needsUpdate = true;
+            }, TailstrikeIndicator.GA_TIMER);
+            this.goAroundTimer = true;
+          }
+        } else {
+          if (this.goAroundTimer) {
+            this.goAroundDebounceTimer.clear();
+            this.goAroundTimer = false;
+          }
+        }
         this.needsUpdate = true;
       });
 
+    const handleGearCompression = () => {
+      if (!this.tailStrikeConditions.leftGearCompressed && !this.tailStrikeConditions.rightGearCompressed) {
+        if (!this.takeoffTimer) {
+          this.takeoffDebounceTimer.schedule(() => {
+            this.takeoffTimer = false;
+            this.needsUpdate = true;
+          }, TailstrikeIndicator.TAKEOFF_TIMER);
+          this.takeoffTimer = true;
+        }
+      } else {
+        if (this.takeoffTimer) {
+          this.takeoffDebounceTimer.clear();
+          this.takeoffTimer = false;
+        }
+      }
+      this.needsUpdate = true;
+    };
+
+    sub
+      .on('leftMainGearCompressed')
+      .whenChanged()
+      .handle((lg) => {
+        this.tailStrikeConditions.leftGearCompressed = lg;
+        handleGearCompression();
+      });
+
+    sub
+      .on('rightMainGearCompressed')
+      .whenChanged()
+      .handle((rg) => {
+        this.tailStrikeConditions.rightGearCompressed = rg;
+        handleGearCompression();
+      });
     sub
       .on('tla1')
       .whenChanged()
@@ -424,7 +481,6 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: EventBus }> {
     if (this.needsUpdate) {
       this.needsUpdate = false;
 
-      // FIX ME indicatior should disappear 3 seconds after takeoff and 4 seconds after go aroud initaition. Use better logic without FM flight phase?
       if (
         ((this.tailStrikeConditions.tla1 >= 35 ||
           this.tailStrikeConditions.tla2 >= 35 ||
@@ -432,9 +488,9 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: EventBus }> {
           this.tailStrikeConditions.tla4 >= 35) &&
           this.tailStrikeConditions.leftGearCompressed &&
           this.tailStrikeConditions.rightGearCompressed) ||
-        (this.tailStrikeConditions.approachPhase &&
-          this.tailStrikeConditions.altitude.value < 400 &&
-          this.tailStrikeConditions.speed > 50)
+        (this.tailStrikeConditions.approachPhase && this.tailStrikeConditions.altitude.value < 400) ||
+        this.goAroundTimer ||
+        this.takeoffTimer
       ) {
         this.tailStrike.instance.style.display = 'inline';
       } else {

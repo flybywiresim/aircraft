@@ -102,6 +102,7 @@
 1. [A32NX/FWS] Add `GEAR NOT DOWNLOCKED` master warning - @FozzieHi (fozzie)
 1. [A380X/FMS] Add secondary flight plans to A380X - @flogross89 (floridude), @BravoMike99 (bruno_pt99)
 1. [A380X/FMS] Allow edition of vnav descent speed - @BravoMike99 (bruno_pt99)
+1. [A380X/PFD] Improve visiblity of tailstrike pitch limit indicator - @Jonny23787 (Jonathan)
 
 ## 0.14.0
 
