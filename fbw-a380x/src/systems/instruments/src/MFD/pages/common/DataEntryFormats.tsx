@@ -182,16 +182,12 @@ export class AltitudeOrFlightLevelFormat extends SubscriptionCollector implement
     this.subscriptions.push(maxValue.sub((val) => (this.maxValue = val), true));
 
     if (transAlt !== null) {
-      transAlt.sub((val) => {
-        console.log('TransAlt raw updated:', val);
-      });
       this.subscriptions.push(
         MappedSubject.create(
           ([val, isFl]) => (val !== null ? (isFl ? val * 100 : val) : null),
           transAlt,
           isTransAltFlightLevel,
         ).sub((val) => {
-          console.log('TransAlt updated:', val);
           this.transAlt = val;
           this.reFormatTrigger.notify();
         }),

@@ -824,10 +824,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
     const sub = this.props.bus.getSubscriber<ClockEvents & MfdSimvars>();
 
-    this.transAlt.sub((val) => {
-      console.log('Transition altitude changed to', val);
-    });
-
     // If extra parameter for activeUri is given, navigate to flight phase sub-page
     if (this.props.mfd.uiService.activeUri.get().extra) {
       switch (this.props.mfd.uiService.activeUri.get().extra) {

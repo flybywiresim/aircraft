@@ -287,9 +287,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
     // Load speed constraints
     const selectedIndex = this.selectedPageIndex.get();
-    console.log('Updating constraints, selected page index is', selectedIndex);
     if (selectedIndex === SelectedPage.SPD) {
-      console.log('Selected idx is spd');
       const speedLimitType =
         leg.constraintType === WaypointConstraintType.DES ||
         (this.activeFlightPhase.get() > FmgcFlightPhase.Cruise &&
