@@ -801,7 +801,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     this.approachQnh.set(pd?.approachQnh.get() ?? null);
     this.approachBaroMinimum.set(pd?.approachBaroMinimum.get() ?? null);
     const apprRadioMin = pd?.approachRadioMinimum.get();
-    this.approachRadioMinimum.set(typeof apprRadioMin === 'number' || apprRadioMin === null ? apprRadioMin : null);
+    this.approachRadioMinimum.set(typeof apprRadioMin === 'number' ? apprRadioMin : null);
     this.apprFlaps3Selected.set(pd?.approachFlapsThreeSelected.get() ?? false);
     this.costIndexMode.set(pd?.costIndexMode ? pd.costIndexMode.get() : null);
     this.takeoffPowerSetting.set(pd?.takeoffPowerSetting ? pd.takeoffPowerSetting.get() : null);
