@@ -79,7 +79,7 @@ export class Footer extends DisplayComponent<AbstractMfdPageProps> {
           label={this.buttonText}
           onClick={() => {
             if (this.messageToBeCleared.get()) {
-              this.props.fmcService.master?.clearLatestFmsErrorMessage();
+              this.props.fmcService.master.clearLatestFmsErrorMessage();
             } else {
               this.props.mfd.openMessageList();
             }

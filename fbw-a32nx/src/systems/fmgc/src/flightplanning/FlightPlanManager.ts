@@ -5,7 +5,15 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
-import { EventBus, Publisher, SubEvent, Subject, Subscription } from '@microsoft/msfs-sdk';
+import {
+  ClockEvents,
+  ConsumerSubject,
+  EventBus,
+  Publisher,
+  SubEvent,
+  Subject,
+  Subscription,
+} from '@microsoft/msfs-sdk';
 import {
   FlightPlanBatchChangeEvent,
   FlightPlanEditSyncEvent,
@@ -19,6 +27,7 @@ import { CopyOptions } from '@fmgc/flightplanning/plans/CloningOptions';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { FlightPlanUtils } from './FlightPlanUtils';
 import { FlightPlanBatch, FlightPlanBatchUtils } from '@fmgc/flightplanning/plans/FlightPlanBatch';
+import { FlightPlanFlags } from './plans/FlightPlanFlags';
 
 export enum FlightPlanIndex {
   Active,
@@ -52,6 +61,8 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
     this.subs.forEach((sub) => sub.destroy());
   }
 
+  private readonly time = ConsumerSubject.create(null, 0);
+
   constructor(
     private readonly context: FlightPlanContext,
     private readonly bus: EventBus,
@@ -59,7 +70,9 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
     private readonly syncClientID: number,
     private readonly master: boolean,
   ) {
-    const sub = bus.getSubscriber<FlightPlanEvents>();
+    const sub = bus.getSubscriber<FlightPlanEvents & ClockEvents>();
+
+    this.subs.push(this.time.setConsumer(sub.on('simTime').atFrequency(1)));
 
     this.subs.push(
       sub.on('flightPlanManager.syncRequest').handle(() => {
@@ -93,6 +106,7 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
               serialisedPlan,
               this.bus,
               this.performanceDataInit.clone(),
+              this.time.get(),
             );
 
             this.set(intIndex, newPlan);
@@ -185,10 +199,19 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
     this.plans[index] = flightPlan;
   }
 
-  create(index: number, notify = true) {
+  create(index: number, notify = true, flags?: FlightPlanFlags) {
     this.assertFlightPlanDoesntExist(index);
 
-    this.plans[index] = FlightPlan.empty(this.context, index, this.bus, this.performanceDataInit.clone());
+    this.plans[index] = FlightPlan.empty(
+      this.context,
+      index,
+      this.bus,
+      this.performanceDataInit.clone(),
+      this.time.get(),
+    );
+    if (flags !== undefined) {
+      this.plans[index].flags |= flags;
+    }
 
     if (notify) {
       this.sendEvent('flightPlanManager.create', { syncClientID: this.syncClientID, planIndex: index });
@@ -246,7 +269,16 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
   copy(from: number, to: number, options = CopyOptions.Default, notify = true) {
     this.assertFlightPlanExists(from);
 
-    const newPlan = this.get(from).clone(to, options);
+    const fromPlan = this.get(from);
+    const newPlan = fromPlan.clone(to, options, this.time.get());
+
+    if (from === FlightPlanIndex.Uplink) {
+      newPlan.flags |= FlightPlanFlags.CompanyFlightPlan;
+    } else if (from === FlightPlanIndex.Active) {
+      newPlan.flags |= FlightPlanFlags.CopiedFromActive;
+    } else if (from >= FlightPlanIndex.FirstSecondary && to >= FlightPlanIndex.FirstSecondary) {
+      newPlan.flags = fromPlan.flags;
+    }
 
     if (this.has(to)) {
       const old = this.get(to);
@@ -270,8 +302,15 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
     this.assertFlightPlanExists(b);
 
     // Clone the plans, so we can give them a new index
-    const planA = this.get(a).clone(b);
-    const planB = this.get(b).clone(a);
+    const time = this.time.get();
+    const planA = this.get(a).clone(b, undefined, time);
+    const planB = this.get(b).clone(a, undefined, time);
+
+    const isSwappedWithActive = b === FlightPlanIndex.Active;
+    if (isSwappedWithActive) {
+      planB.flags &= 0;
+      planB.flags |= FlightPlanFlags.SwappedWithActive;
+    }
 
     this.delete(a, false);
     this.delete(b, false);
@@ -348,7 +387,7 @@ Make sure any calls to an RPC client are \`await\`ed`,
   }
 
   private assertFlightPlanDoesntExist(index: number) {
-    if (this.plans[index]) {
+    if (this.has(index)) {
       throw new Error(`[FMS/FlightPlanManager] Tried to create existent flight plan at index #${index}`);
     }
   }

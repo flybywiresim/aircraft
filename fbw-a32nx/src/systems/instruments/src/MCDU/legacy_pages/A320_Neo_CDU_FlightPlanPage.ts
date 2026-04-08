@@ -58,8 +58,12 @@ export class CDUFlightPlanPage {
     };
     mcdu.activeSystem = 'FMGC';
 
-    mcdu.efisInterfaces.L.setSecRelatedPageOpen(forPlan >= FlightPlanIndex.FirstSecondary);
-    mcdu.efisInterfaces.R.setSecRelatedPageOpen(forPlan >= FlightPlanIndex.FirstSecondary);
+    mcdu.efisInterfaces.L.setSecRelatedPageOpen(
+      forPlan >= FlightPlanIndex.FirstSecondary ? forPlan - FlightPlanIndex.FirstSecondary + 1 : null,
+    );
+    mcdu.efisInterfaces.R.setSecRelatedPageOpen(
+      forPlan >= FlightPlanIndex.FirstSecondary ? forPlan - FlightPlanIndex.FirstSecondary + 1 : null,
+    );
 
     // regular update due to showing dynamic data on this page
     mcdu.SelfPtr = setTimeout(() => {
@@ -82,7 +86,7 @@ export class CDUFlightPlanPage {
       title.push(new Column(6, 'TMPY', Column.yellow));
     }
     if (forActiveOrTemporary) {
-      title.push(new Column(20, targetPlan.flightNumber ?? '', Column.small, Column.right));
+      title.push(new Column(20, targetPlan.flightNumber.get() ?? '', Column.small, Column.right));
     } else {
       title.push(new Column(16, 'SEC'));
     }
@@ -821,8 +825,8 @@ export class CDUFlightPlanPage {
       CDUFlightPlanPage.updatePlanCentre(mcdu, waypointsAndMarkers, 0, FlightPlanIndex.Active, 'L');
       CDUFlightPlanPage.updatePlanCentre(mcdu, waypointsAndMarkers, 0, FlightPlanIndex.Active, 'R');
 
-      mcdu.efisInterfaces.L.setSecRelatedPageOpen(false);
-      mcdu.efisInterfaces.R.setSecRelatedPageOpen(false);
+      mcdu.efisInterfaces.L.setSecRelatedPageOpen(null);
+      mcdu.efisInterfaces.R.setSecRelatedPageOpen(null);
 
       mcdu.efisInterfaces.L.setShownFplnLegs(false, false, false);
       mcdu.efisInterfaces.R.setShownFplnLegs(false, false, false);
