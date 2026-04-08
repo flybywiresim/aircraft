@@ -84,6 +84,14 @@ interface EWDMessageDict {
   [key: string]: EWDItem;
 }
 
+interface EWDFailureTimingState {
+  wasActive: boolean;
+  activeForSeconds: number;
+  displayEligible: boolean;
+  displayedForSeconds: number;
+  clearEligible: boolean;
+}
+
 enum FwcAuralWarning {
   None,
   SingleChime,
@@ -124,8 +132,6 @@ export class PseudoFWC {
 
   private readonly fwsUpdateThrottler = new UpdateThrottler(125); // has to be > 100 due to pulse nodes
 
-  private readonly simTime = RegisteredSimVar.create('E:SIMULATION TIME', SimVarValueType.Seconds);
-
   private keyEventManager: KeyEventManager;
 
   private readonly startupCompleted = Subject.create(false);
@@ -138,8 +144,11 @@ export class PseudoFWC {
   /** Time to inhibit SCs after one is trigger in ms */
   private static readonly AURAL_SC_INHIBIT_TIME = 2000;
 
-  /** Time the failure needs to be active to be able to CLR it in seconds */
-  private static readonly CLR_MIN_ACTIVE_TIME = 2;
+  /** Default monitor confirm time in seconds */
+  private static readonly DEFAULT_MONITOR_CONFIRM_TIME = 0.3;
+
+  /** Time the failure needs to be displayed to be able to CLR it in seconds */
+  private static readonly CLR_MIN_DISPLAYED_TIME = 2;
 
   private static readonly EWD_MESSAGE_LINES = 7;
 
@@ -1484,9 +1493,15 @@ export class PseudoFWC {
     for (const [key, item] of Object.entries(this.ewdMessageFailures)) {
       item.simVarIsActive.sub((v) => {
         if (v) {
-          this.ewdFailureActivationTime.set(key, this.simTime.get());
+          this.ewdFailureTiming.set(key, {
+            wasActive: false,
+            activeForSeconds: 0,
+            displayEligible: false,
+            displayedForSeconds: 0,
+            clearEligible: false,
+          });
         } else {
-          this.ewdFailureActivationTime.delete(key);
+          this.ewdFailureTiming.delete(key);
         }
       }, true);
     }
@@ -3653,7 +3668,7 @@ export class PseudoFWC {
 
     this.toConfigOrPhase3.set(!(this.flightPhase3PulseNode.read() || this.toConfigHalfSecondTriggeredNode.read()));
 
-    const simTime = this.simTime.get();
+    this.updateEwdFailureTimers(deltaTime);
 
     /* CLEAR AND RECALL */
     if (!this.ecpClearPulseUp) {
@@ -3686,9 +3701,9 @@ export class PseudoFWC {
 
         for (const item of clearableFailures) {
           if (item.group === targetGroup) {
-            const activationTime = this.ewdFailureActivationTime.get(item.key);
+            const timing = this.ewdFailureTiming.get(item.key);
 
-            if (activationTime === undefined || simTime < activationTime + PseudoFWC.CLR_MIN_ACTIVE_TIME) {
+            if (timing === undefined || !timing.clearEligible) {
               canClearTargetGroup = false;
               break;
             }
@@ -3784,7 +3799,7 @@ export class PseudoFWC {
       if (
         value.simVarIsActive.get() &&
         // consider monitor input confirm time (0.3 sec by default)
-        simTime >= (this.ewdFailureActivationTime.get(key) ?? 0) + (value.monitorConfirmTime ?? 0.3)
+        this.ewdFailureTiming.get(key)?.displayEligible
       ) {
         if (newWarning) {
           if (value.side === 'LEFT') {
@@ -4030,7 +4045,44 @@ export class PseudoFWC {
     );
   }
 
-  private readonly ewdFailureActivationTime = new Map<keyof EWDMessageDict, number>();
+  private updateEwdFailureTimers(deltaTime: number): void {
+    const deltaTimeSeconds = deltaTime / 1000;
+
+    for (const [key, timing] of this.ewdFailureTiming) {
+      const item = this.ewdMessageFailures[key];
+
+      const isActive = item.simVarIsActive.get();
+
+      if (!isActive) {
+        this.ewdFailureTiming.delete(key);
+        continue;
+      }
+
+      if (!timing.wasActive) {
+        timing.wasActive = true;
+        timing.activeForSeconds = 0;
+        timing.displayEligible = (item.monitorConfirmTime ?? PseudoFWC.DEFAULT_MONITOR_CONFIRM_TIME) === 0;
+        timing.displayedForSeconds = 0;
+        timing.clearEligible = false;
+        continue;
+      }
+
+      timing.activeForSeconds += deltaTimeSeconds;
+
+      if (!timing.displayEligible) {
+        if (timing.activeForSeconds >= (item.monitorConfirmTime ?? PseudoFWC.DEFAULT_MONITOR_CONFIRM_TIME)) {
+          timing.displayEligible = true;
+          timing.displayedForSeconds = 0;
+        }
+        continue;
+      }
+
+      timing.displayedForSeconds += deltaTimeSeconds;
+      timing.clearEligible = timing.displayedForSeconds >= PseudoFWC.CLR_MIN_DISPLAYED_TIME;
+    }
+  }
+
+  private readonly ewdFailureTiming = new Map<string, EWDFailureTimingState>();
 
   ewdMessageFailures: EWDMessageDict = {
     // 22 - AUTOFLIGHT
