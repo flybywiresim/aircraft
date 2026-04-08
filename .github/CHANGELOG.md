@@ -103,6 +103,7 @@
 1. [A380X/FMS] Add secondary flight plans to A380X - @flogross89 (floridude), @BravoMike99 (bruno_pt99)
 1. [A380X/FMS] Allow edition of vnav descent speed - @BravoMike99 (bruno_pt99)
 1. [A380X/MFD] Add details to "FORMAT ERROR" and "ENTRY OUT OF RANGE" messages - @BravoMike99 (bruno_pt99)
+1. [A380X/MFD] Fixed GA THR RED, ACCEL & EO not respecting arrival transition altitude - @BravoMike99 (bruno_pt99)
 
 ## 0.14.0
 
