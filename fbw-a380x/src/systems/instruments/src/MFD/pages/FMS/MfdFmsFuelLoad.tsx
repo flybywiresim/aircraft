@@ -1,14 +1,6 @@
 // Copyright (c) 2024-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
-import {
-  ArraySubject,
-  ClockEvents,
-  FSComponent,
-  MappedSubject,
-  Subject,
-  Subscription,
-  VNode,
-} from '@microsoft/msfs-sdk';
+import { ArraySubject, ClockEvents, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import './MfdFmsFuelLoad.scss';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
@@ -52,8 +44,6 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
   private static readonly MAX_MIN_FUEL_DEST_TONS = Subject.create(maxMinDestFuel / 1000);
 
   private readonly flightPlanChangeNotifier = new FlightPlanChangeNotifier(this.props.bus);
-
-  private flightPlanPerfSubs: Subscription[] = [];
 
   private readonly destEfobAmber = MappedSubject.create(
     ([destEfobBelowM, loadedFpIndex]) => destEfobBelowM && loadedFpIndex === FlightPlanIndex.Active,
@@ -187,9 +177,34 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
       return;
     }
 
+    this.loadFlightPlanPerformanceData();
+
     this.costIndex.set(this.loadedFlightPlan.performanceData.costIndex.get());
 
     this.updateDestAndAltnPredictions();
+  }
+
+  private loadFlightPlanPerformanceData(): void {
+    const pd = this.loadedFlightPlan?.performanceData;
+
+    this.zeroFuelWeight.set(pd?.zeroFuelWeight.get() ?? null);
+    this.zeroFuelWeightCenterOfGravity.set(pd?.zeroFuelWeightCenterOfGravity.get() ?? null);
+    this.blockFuel.set(pd?.blockFuel.get() ?? null);
+    this.taxiFuel.set(pd?.taxiFuel.get() ?? null);
+    this.taxiFuelIsPilotEntered.set(pd?.taxiFuelIsPilotEntered.get() ?? false);
+    this.routeReserveFuelPilotEntry.set(pd?.pilotRouteReserveFuel.get() ?? null);
+    this.routeReserveFuelIsPilotEntered.set(pd?.isRouteReserveFuelPilotEntered.get() ?? false);
+    this.routeReserveFuelPercentageIsPilotEntered.set(pd?.isRouteReserveFuelPercentagePilotEntered.get() ?? false);
+    this.alternateFuel.set(pd?.alternateFuel.get() ?? null);
+    this.alternateFuelIsPilotEntered.set(pd?.isAlternateFuelPilotEntered.get() ?? false);
+    this.finalFuelTime.set(pd?.finalHoldingTime.get() ?? null);
+    this.finalFuelIsPilotEntered.set(pd?.isFinalHoldingFuelPilotEntered.get() ?? false);
+    this.finalFuelTimeIsPilotEntered.set(pd?.isFinalHoldingTimePilotEntered.get() ?? false);
+    this.finalFuel.set(pd?.finalHoldingFuel.get() ?? null);
+    this.minimumFuelAtDestination.set(pd?.minimumDestinationFuelOnBoard.get() ?? null);
+    this.minimumFuelAtDestinationIsPilotEntered.set(pd?.isMinimumDestinationFuelOnBoardPilotEntered.get() ?? false);
+    this.paxNumber.set(pd?.paxNumber ? pd.paxNumber.get() : null);
+    this.costIndexMode.set(pd?.costIndexMode ? pd.costIndexMode.get() : null);
   }
 
   updateDestAndAltnPredictions() {
@@ -243,6 +258,8 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
           if (!this.props.fmcService.master || !this.loadedFlightPlan) {
             return;
           }
+
+          this.loadFlightPlanPerformanceData();
 
           const loadedfpIndex = this.loadedFlightPlanIndex.get();
           // FIXME: Move to main update loop once calculated by the predictions
@@ -317,40 +334,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
 
     this.subs.push(
       this.flightPlanChangeNotifier.flightPlanChanged.sub(() => {
-        if (this.loadedFlightPlan) {
-          this.flightPlanPerfSubs.forEach((sub) => sub.destroy());
-          this.flightPlanPerfSubs = [];
-          this.flightPlanPerfSubs.push(
-            this.loadedFlightPlan.performanceData.zeroFuelWeight.pipe(this.zeroFuelWeight),
-            this.loadedFlightPlan.performanceData.zeroFuelWeightCenterOfGravity.pipe(
-              this.zeroFuelWeightCenterOfGravity,
-            ),
-            this.loadedFlightPlan.performanceData.blockFuel.pipe(this.blockFuel),
-            this.loadedFlightPlan.performanceData.taxiFuel.pipe(this.taxiFuel),
-            this.loadedFlightPlan.performanceData.taxiFuelIsPilotEntered.pipe(this.taxiFuelIsPilotEntered),
-            this.loadedFlightPlan.performanceData.pilotRouteReserveFuel.pipe(this.routeReserveFuelPilotEntry),
-            this.loadedFlightPlan.performanceData.isRouteReserveFuelPilotEntered.pipe(
-              this.routeReserveFuelIsPilotEntered,
-            ),
-            this.loadedFlightPlan.performanceData.isRouteReserveFuelPercentagePilotEntered.pipe(
-              this.routeReserveFuelPercentageIsPilotEntered,
-            ),
-            this.loadedFlightPlan.performanceData.alternateFuel.pipe(this.alternateFuel),
-            this.loadedFlightPlan.performanceData.isAlternateFuelPilotEntered.pipe(this.alternateFuelIsPilotEntered),
-            this.loadedFlightPlan.performanceData.finalHoldingTime.pipe(this.finalFuelTime),
-            this.loadedFlightPlan.performanceData.isFinalHoldingFuelPilotEntered.pipe(this.finalFuelIsPilotEntered),
-            this.loadedFlightPlan.performanceData.isFinalHoldingTimePilotEntered.pipe(this.finalFuelTimeIsPilotEntered),
-            this.loadedFlightPlan.performanceData.finalHoldingFuel.pipe(this.finalFuel),
-
-            this.loadedFlightPlan.performanceData.minimumDestinationFuelOnBoard.pipe(this.minimumFuelAtDestination),
-            this.loadedFlightPlan.performanceData.isMinimumDestinationFuelOnBoardPilotEntered.pipe(
-              this.minimumFuelAtDestinationIsPilotEntered,
-            ),
-
-            this.loadedFlightPlan.performanceData.paxNumber!.pipe(this.paxNumber),
-            this.loadedFlightPlan.performanceData.costIndexMode!.pipe(this.costIndexMode),
-          );
-        }
+        this.loadFlightPlanPerformanceData();
       }, true),
     );
 
@@ -373,8 +357,6 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
   }
 
   public destroy(): void {
-    this.flightPlanPerfSubs.forEach((sub) => sub.destroy());
-
     this.flightPlanChangeNotifier.destroy();
 
     super.destroy();

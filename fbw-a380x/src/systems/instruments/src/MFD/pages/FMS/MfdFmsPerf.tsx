@@ -79,8 +79,6 @@ enum FlightPhaseTabIndex {
 export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   private vdevSub: Subscription | null = null;
 
-  private flightPlanPerfSubs: Subscription[] = [];
-
   private readonly flightPlanChangeNotifier = new FlightPlanChangeNotifier(this.props.bus);
 
   private readonly destEfobAmber = MappedSubject.create(
@@ -144,6 +142,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   /** in feet */
   private readonly transAlt = Subject.create<number | null>(null);
+
   private readonly transitionAltitudeIsFromDatabase = Subject.create<boolean>(false);
   private readonly transAltIsPilotEntered = this.transitionAltitudeIsFromDatabase.map((it) => !it);
 
@@ -705,7 +704,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   private readonly missedThrRedAltIsPilotEntered = Subject.create<boolean>(false);
 
   private readonly missedAccelAlt = Subject.create<number | null>(null);
-  private readonly missedAccelRedAltIsPilotEntered = Subject.create<boolean>(false);
+  private readonly missedAccelAltIsPilotEntered = Subject.create<boolean>(false);
 
   private readonly missedEngineOutAccelAlt = Subject.create<number | null>(null);
   private readonly missedEngineOutAccelAltIsPilotEntered = Subject.create<boolean>(false);
@@ -767,10 +766,67 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     }
   }
 
+  private loadFlightPlanPerformanceData(): void {
+    const pd = this.loadedFlightPlan?.performanceData;
+    this.crzFl.set(pd?.cruiseFlightLevel.get() ?? null);
+    this.costIndex.set(pd?.costIndex.get() ?? null);
+    this.toShift.set(pd?.takeoffShift.get() ?? null);
+    this.toFlexTemp.set(pd?.flexTakeoffTemperature.get() ?? null);
+    this.toV1.set(pd?.v1.get() ?? null);
+    this.toVR.set(pd?.vr.get() ?? null);
+    this.toV2.set(pd?.v2.get() ?? null);
+    this.takeoffFlaps.set(pd?.takeoffFlaps.get() ?? null);
+    this.transAlt.set(pd?.transitionAltitude.get() ?? null);
+    this.transitionAltitudeIsFromDatabase.set(pd?.transitionAltitudeIsFromDatabase.get() ?? false);
+    this.transFl.set(pd?.transitionLevel.get() ?? null);
+    this.transitionLevelIsFromDatabase.set(pd?.transitionLevelIsFromDatabase.get() ?? false);
+    this.thrRedAlt.set(pd?.thrustReductionAltitude.get() ?? null);
+    this.thrRedAltIsPilotEntered.set(pd?.thrustReductionAltitudeIsPilotEntered.get() ?? false);
+    this.accelAlt.set(pd?.accelerationAltitude.get() ?? null);
+    this.accelAltIsPilotEntered.set(pd?.accelerationAltitudeIsPilotEntered.get() ?? false);
+    this.eoAccelAlt.set(pd?.engineOutAccelerationAltitude.get() ?? null);
+    this.eoAccelAltIsPilotEntered.set(pd?.engineOutAccelerationAltitudeIsPilotEntered.get() ?? false);
+    this.missedThrRedAlt.set(pd?.missedThrustReductionAltitude.get() ?? null);
+    this.missedThrRedAltIsPilotEntered.set(pd?.missedThrustReductionAltitudeIsPilotEntered.get() ?? false);
+    this.missedAccelAlt.set(pd?.missedAccelerationAltitude.get() ?? null);
+    this.missedAccelAltIsPilotEntered.set(pd?.missedAccelerationAltitudeIsPilotEntered.get() ?? false);
+    this.missedEngineOutAccelAlt.set(pd?.missedEngineOutAccelerationAltitude.get() ?? null);
+    this.missedEngineOutAccelAltIsPilotEntered.set(
+      pd?.missedEngineOutAccelerationAltitudeIsPilotEntered.get() ?? false,
+    );
+
+    this.approachWindDirection.set(pd?.approachWindDirection.get() ?? null);
+    this.approachWindMagnitude.set(pd?.approachWindMagnitude.get() ?? null);
+    this.approachTemperature.set(pd?.approachTemperature.get() ?? null);
+    this.approachQnh.set(pd?.approachQnh.get() ?? null);
+    this.approachBaroMinimum.set(pd?.approachBaroMinimum.get() ?? null);
+    const apprRadioMin = pd?.approachRadioMinimum.get();
+    this.approachRadioMinimum.set(typeof apprRadioMin === 'number' || apprRadioMin === null ? apprRadioMin : null);
+    this.apprFlaps3Selected.set(pd?.approachFlapsThreeSelected.get() ?? false);
+    this.costIndexMode.set(pd?.costIndexMode ? pd.costIndexMode.get() : null);
+    this.takeoffPowerSetting.set(pd?.takeoffPowerSetting ? pd.takeoffPowerSetting.get() : null);
+    this.takeoffDerated.set(pd?.takeoffDeratedSetting ? pd.takeoffDeratedSetting.get() : null);
+    this.takeoffThsFor.set(pd?.takeoffThsFor ? pd.takeoffThsFor.get() : null);
+    this.takeoffPacks.set(pd?.takeoffPacks ? pd.takeoffPacks.get() : null);
+    this.takeoffAntiIce.set(pd?.takeoffAntiIce ? pd.takeoffAntiIce.get() : null);
+    this.noiseEndAltitude.set(pd?.noiseEndAltitude ? pd.noiseEndAltitude.get() : null);
+    this.noiseN1.set(pd?.noiseN1 ? pd.noiseN1.get() : null);
+    this.noiseSpeed.set(pd?.noiseSpeed ? pd.noiseSpeed.get() : null);
+    this.noiseEnabled.set(pd?.noiseEnabled?.get() ?? false);
+    this.climbDerated.set(pd?.climbDerated ? pd.climbDerated.get() : null);
+    this.descentCabinRate.set(pd?.descentCabinRate ? pd.descentCabinRate.get() : null);
+    this.climbPreselectedSpeed.set(pd?.preselectedClimbSpeed ? pd.preselectedClimbSpeed.get() : null);
+    this.cruisePreselectedSpeed.set(pd?.preselectedCruiseSpeed ? pd.preselectedCruiseSpeed.get() : null);
+  }
+
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
     const sub = this.props.bus.getSubscriber<ClockEvents & MfdSimvars>();
+
+    this.transAlt.sub((val) => {
+      console.log('Transition altitude changed to', val);
+    });
 
     // If extra parameter for activeUri is given, navigate to flight phase sub-page
     if (this.props.mfd.uiService.activeUri.get().extra) {
@@ -870,76 +926,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       }, true)),
       this.subs.push(
         this.flightPlanChangeNotifier.flightPlanChanged.sub(() => {
-          if (this.loadedFlightPlan) {
-            this.flightPlanPerfSubs.forEach((sub) => sub.destroy());
-            this.flightPlanPerfSubs = [];
-            this.flightPlanPerfSubs.push(
-              this.loadedFlightPlan.performanceData.cruiseFlightLevel.pipe(this.crzFl),
-              this.loadedFlightPlan.performanceData.costIndex.pipe(this.costIndex),
-              this.loadedFlightPlan.performanceData.takeoffShift.pipe(this.toShift),
-              this.loadedFlightPlan.performanceData.flexTakeoffTemperature.pipe(this.toFlexTemp),
-              this.loadedFlightPlan.performanceData.v1.pipe(this.toV1),
-              this.loadedFlightPlan.performanceData.vr.pipe(this.toVR),
-              this.loadedFlightPlan.performanceData.v2.pipe(this.toV2),
-              this.loadedFlightPlan.performanceData.takeoffFlaps.pipe(this.takeoffFlaps),
-              this.loadedFlightPlan.performanceData.transitionAltitude.pipe(this.transAlt),
-              this.loadedFlightPlan.performanceData.transitionAltitudeIsFromDatabase.pipe(
-                this.transitionAltitudeIsFromDatabase,
-              ),
-              this.loadedFlightPlan.performanceData.transitionLevel.pipe(this.transFl),
-              this.loadedFlightPlan.performanceData.transitionLevelIsFromDatabase.pipe(
-                this.transitionLevelIsFromDatabase,
-              ),
-              this.loadedFlightPlan.performanceData.thrustReductionAltitude.pipe(this.thrRedAlt),
-              this.loadedFlightPlan.performanceData.thrustReductionAltitudeIsPilotEntered.pipe(
-                this.thrRedAltIsPilotEntered,
-              ),
-              this.loadedFlightPlan.performanceData.accelerationAltitude.pipe(this.accelAlt),
-              this.loadedFlightPlan.performanceData.accelerationAltitudeIsPilotEntered.pipe(
-                this.accelAltIsPilotEntered,
-              ),
-              this.loadedFlightPlan.performanceData.engineOutAccelerationAltitude.pipe(this.eoAccelAlt),
-              this.loadedFlightPlan.performanceData.engineOutAccelerationAltitudeIsPilotEntered.pipe(
-                this.eoAccelAltIsPilotEntered,
-              ),
-              this.loadedFlightPlan.performanceData.missedThrustReductionAltitude.pipe(this.missedThrRedAlt),
-              this.loadedFlightPlan.performanceData.missedThrustReductionAltitudeIsPilotEntered.pipe(
-                this.missedThrRedAltIsPilotEntered,
-              ),
-              this.loadedFlightPlan.performanceData.missedAccelerationAltitude.pipe(this.missedAccelAlt),
-              this.loadedFlightPlan.performanceData.missedAccelerationAltitudeIsPilotEntered.pipe(
-                this.missedAccelRedAltIsPilotEntered,
-              ),
-              this.loadedFlightPlan.performanceData.missedEngineOutAccelerationAltitude.pipe(
-                this.missedEngineOutAccelAlt,
-              ),
-              this.loadedFlightPlan.performanceData.missedEngineOutAccelerationAltitudeIsPilotEntered.pipe(
-                this.missedEngineOutAccelAltIsPilotEntered,
-              ),
-
-              this.loadedFlightPlan.performanceData.approachWindDirection.pipe(this.approachWindDirection),
-              this.loadedFlightPlan.performanceData.approachWindMagnitude.pipe(this.approachWindMagnitude),
-              this.loadedFlightPlan.performanceData.approachTemperature.pipe(this.approachTemperature),
-              this.loadedFlightPlan.performanceData.approachQnh.pipe(this.approachQnh),
-              this.loadedFlightPlan.performanceData.approachBaroMinimum.pipe(this.approachBaroMinimum),
-              this.loadedFlightPlan.performanceData.approachRadioMinimum.pipe(this.approachRadioMinimum),
-              this.loadedFlightPlan.performanceData.approachFlapsThreeSelected.pipe(this.apprFlaps3Selected),
-              this.loadedFlightPlan.performanceData.costIndexMode!.pipe(this.costIndexMode),
-              this.loadedFlightPlan.performanceData.takeoffPowerSetting!.pipe(this.takeoffPowerSetting),
-              this.loadedFlightPlan.performanceData.takeoffDeratedSetting!.pipe(this.takeoffDerated),
-              this.loadedFlightPlan.performanceData.takeoffThsFor!.pipe(this.takeoffThsFor),
-              this.loadedFlightPlan.performanceData.takeoffPacks!.pipe(this.takeoffPacks),
-              this.loadedFlightPlan.performanceData.takeoffAntiIce!.pipe(this.takeoffAntiIce),
-              this.loadedFlightPlan.performanceData.noiseEndAltitude!.pipe(this.noiseEndAltitude),
-              this.loadedFlightPlan.performanceData.noiseN1!.pipe(this.noiseN1),
-              this.loadedFlightPlan.performanceData.noiseSpeed!.pipe(this.noiseSpeed),
-              this.loadedFlightPlan.performanceData.noiseEnabled!.pipe(this.noiseEnabled),
-              this.loadedFlightPlan.performanceData.climbDerated!.pipe(this.climbDerated),
-              this.loadedFlightPlan.performanceData.descentCabinRate!.pipe(this.descentCabinRate),
-              this.loadedFlightPlan.performanceData.preselectedClimbSpeed!.pipe(this.climbPreselectedSpeed),
-              this.loadedFlightPlan.performanceData.preselectedCruiseSpeed!.pipe(this.cruisePreselectedSpeed),
-            );
-          }
           if (this.loadedFlightPlan && this.loadedFlightPlanIndex.get() === FlightPlanIndex.Active) {
             this.vdevSub!.resume();
           } else {
@@ -1001,14 +987,14 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   }
 
   public destroy(): void {
-    this.flightPlanPerfSubs.forEach((sub) => sub.destroy());
-
     this.flightPlanChangeNotifier.destroy();
 
     super.destroy();
   }
 
   private drawPage(tab?: FlightPhaseTabIndex) {
+    this.loadFlightPlanPerformanceData();
+
     // Update REC MAX FL, OPT FL. Only for active and temporary flightplan.
     const fpIndex = this.loadedFlightPlanIndex.get();
     if (fpIndex === FlightPlanIndex.Active || fpIndex === FlightPlanIndex.Temporary) {
@@ -2124,13 +2110,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <div style={{ visibility: this.visibilityConsideringFlightPlanIndex }}>
                       <div class="mfd-label">PRED TO </div>
                       <InputField<number, number, false>
-                        dataEntryFormat={
-                          new AltitudeOrFlightLevelFormat(
-                            this.transAlt,
-                            Subject.create(0),
-                            Subject.create(maxCertifiedAlt),
-                          )
-                        }
+                        dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
                         dataHandlerDuringValidation={async (v) =>
                           this.props.fmcService.master.fmgc.data.climbPredictionsReferencePilotEntry.set(v)
                         }
@@ -2882,13 +2862,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     <div style={{ visibility: this.visibilityConsideringFlightPlanIndex }}>
                       <div class="mfd-label">PRED TO </div>
                       <InputField<number>
-                        dataEntryFormat={
-                          new AltitudeOrFlightLevelFormat(
-                            this.transFlToAlt,
-                            Subject.create(0),
-                            Subject.create(maxCertifiedAlt),
-                          )
-                        }
+                        dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transFl, Subject.create(true))}
                         disabled={this.notInDescent}
                         value={this.desPredictionsReference}
                         containerStyle="width: 150px; margin-left: 15px;"
@@ -3363,7 +3337,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     </div>
                     <div style="margin-bottom: 15px;">
                       <InputField<number, number, false>
-                        dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
+                        dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transFlToAlt)}
                         dataHandlerDuringValidation={async (v) => {
                           this.props.flightPlanInterface.setPerformanceData(
                             'pilotMissedThrustReductionAltitude',
@@ -3387,7 +3361,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     </div>
                     <div style="margin-bottom: 15px;">
                       <InputField<number, number, false>
-                        dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
+                        dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transFlToAlt)}
                         dataHandlerDuringValidation={async (v) => {
                           this.props.flightPlanInterface.setPerformanceData(
                             'pilotMissedAccelerationAltitude',
@@ -3395,7 +3369,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             this.loadedFlightPlanIndex.get(),
                           );
                         }}
-                        enteredByPilot={this.missedAccelRedAltIsPilotEntered}
+                        enteredByPilot={this.missedAccelAltIsPilotEntered}
                         readonlyValue={this.missedAccelAlt}
                         containerStyle="width: 150px;"
                         alignText="flex-end"
@@ -3409,7 +3383,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     </div>
                     <div style="margin-bottom: 15px;">
                       <InputField<number, number, false>
-                        dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
+                        dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transFlToAlt)}
                         dataHandlerDuringValidation={async (v) => {
                           this.props.flightPlanInterface.setPerformanceData(
                             'pilotMissedEngineOutAccelerationAltitude',
@@ -3435,7 +3409,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     TRANS
                   </span>
                   <span class={{ 'mfd-value': true, sec: this.secActive }}>
-                    {FmgcData.fmcFormatValue(this.transAlt)}
+                    {FmgcData.fmcFormatValue(this.transFlToAlt)}
                   </span>
                   <span class="mfd-label-unit mfd-unit-trailing">FT</span>
                 </div>

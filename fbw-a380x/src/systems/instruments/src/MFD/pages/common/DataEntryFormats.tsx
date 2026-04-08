@@ -1,6 +1,6 @@
 //  Copyright (c) 2024-2025-2026 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
-import { Subject, Subscribable, Subscription } from '@microsoft/msfs-sdk';
+import { MappedSubject, Subject, Subscribable, Subscription } from '@microsoft/msfs-sdk';
 import { Fix } from '@flybywiresim/fbw-sdk';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 import { Mmo, maxCertifiedAlt } from '@shared/PerformanceConstants';
@@ -173,6 +173,7 @@ export class AltitudeOrFlightLevelFormat extends SubscriptionCollector implement
 
   constructor(
     transAlt: Subscribable<number | null> | null = null,
+    private readonly isTransAltFlightLevel: Subscribable<boolean> = Subject.create(false),
     minValue: Subscribable<number> = Subject.create(0),
     maxValue: Subscribable<number> = Subject.create(maxCertifiedAlt),
   ) {
@@ -182,9 +183,19 @@ export class AltitudeOrFlightLevelFormat extends SubscriptionCollector implement
 
     if (transAlt !== null) {
       transAlt.sub((val) => {
-        this.transAlt = val;
-        this.reFormatTrigger.notify();
+        console.log('TransAlt raw updated:', val);
       });
+      this.subscriptions.push(
+        MappedSubject.create(
+          ([val, isFl]) => (val !== null ? (isFl ? val * 100 : val) : null),
+          transAlt,
+          isTransAltFlightLevel,
+        ).sub((val) => {
+          console.log('TransAlt updated:', val);
+          this.transAlt = val;
+          this.reFormatTrigger.notify();
+        }),
+      );
     }
   }
 
@@ -192,8 +203,13 @@ export class AltitudeOrFlightLevelFormat extends SubscriptionCollector implement
     if (value === null || value === undefined) {
       return [this.placeholder, null, 'FT'] as FieldFormatTuple;
     }
-    if (this.transAlt !== null && value > this.transAlt) {
-      return [(value / 100).toFixed(0).toString().padStart(3, '0'), 'FL', null] as FieldFormatTuple;
+    if (this.transAlt !== null) {
+      if (
+        (!this.isTransAltFlightLevel.get() && value > this.transAlt) ||
+        (this.isTransAltFlightLevel.get() && value >= this.transAlt)
+      ) {
+        return [(value / 100).toFixed(0).toString().padStart(3, '0'), 'FL', null] as FieldFormatTuple;
+      }
     }
     return [value.toFixed(0).toString(), null, 'FT'] as FieldFormatTuple;
   }

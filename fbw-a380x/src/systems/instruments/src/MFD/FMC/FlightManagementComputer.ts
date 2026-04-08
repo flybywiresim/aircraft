@@ -89,8 +89,6 @@ export const A380X_NUM_LEGS_ON_FPLN_PAGE = 9;
 export class FlightManagementComputer implements FmcInterface {
   protected readonly subs = [] as Subscription[];
 
-  private pipeSubs: Subscription[] = [];
-
   // TODO change after tracers PR
   private readonly healythSimvar = RegisteredSimVar.createBoolean(
     `L:A32NX_FMC_${this.instance === FmcIndex.FmcA ? 'A' : this.instance === FmcIndex.FmcB ? 'B' : 'C'}_IS_HEALTHY`,
@@ -443,9 +441,6 @@ export class FlightManagementComputer implements FmcInterface {
     this.flightPlanChangeNotifier.destroy();
     this.#fmgc.destroy();
     for (const s of this.subs) {
-      s.destroy();
-    }
-    for (const s of this.pipeSubs) {
       s.destroy();
     }
   }
@@ -928,26 +923,8 @@ export class FlightManagementComputer implements FmcInterface {
       if (flightNumber !== null) {
         await this.onActiveFlightNumberChanged(flightNumber);
       }
-
-      this.pipeSubs.forEach((s) => s.destroy());
-      this.pipeSubs = [];
-      this.pipeSubs.push(
-        this.flightPlanInterface.active.performanceData.approachFlapsThreeSelected.pipe(
-          this.approachFlapsThreeSelected,
-        ),
-        this.flightPlanInterface.active.performanceData.zeroFuelWeight.pipe(this.zeroFuelWeight),
-        this.flightPlanInterface.active.performanceData.zeroFuelWeightCenterOfGravity.pipe(
-          this.zeroFuelWeightCenterOfGravity,
-        ),
-        this.flightPlanInterface.active.performanceData.approachQnh.pipe(this.approachQnh),
-        this.flightPlanInterface.active.performanceData.approachTemperature.pipe(this.approachTemperature),
-        this.flightPlanInterface.active.performanceData.approachWindDirection.pipe(this.approachWindDirection),
-        this.flightPlanInterface.active.performanceData.approachWindMagnitude.pipe(this.approachWindMagnitude),
-        this.flightPlanInterface.active.performanceData.minimumDestinationFuelOnBoard.pipe(this.minimumDestinationFuel),
-        this.flightPlanInterface.active.performanceData.alternateFuel.pipe(this.alternateFuel),
-        this.flightPlanInterface.active.performanceData.finalHoldingFuel.pipe(this.finalFuelWeight),
-      );
     }
+    this.loadActiveFlightPlanFuelAndApproachData();
   }
 
   public async updateFlightNumber(
@@ -1441,6 +1418,7 @@ export class FlightManagementComputer implements FmcInterface {
 
     if (throttledDt !== -1) {
       this.navigation.update(throttledDt);
+      this.loadActiveFlightPlanFuelAndApproachData();
       if (this.flightPlanInterface.hasActive) {
         const flightPhase = this.flightPhase.get();
         this.enginesWereStarted.set(
@@ -1741,5 +1719,19 @@ export class FlightManagementComputer implements FmcInterface {
         this.addMessageToQueue(NXSystemMessages.lrcInUse);
       }
     }
+  }
+
+  private loadActiveFlightPlanFuelAndApproachData(): void {
+    const pd = this.flightPlanInterface.hasActive ? this.flightPlanInterface.active?.performanceData : null;
+    this.approachFlapsThreeSelected.set(pd?.approachFlapsThreeSelected.get() ?? false);
+    this.zeroFuelWeight.set(pd?.zeroFuelWeight.get() ?? null);
+    this.zeroFuelWeightCenterOfGravity.set(pd?.zeroFuelWeightCenterOfGravity.get() ?? null);
+    this.approachQnh.set(pd?.approachQnh.get() ?? null);
+    this.approachTemperature.set(pd?.approachTemperature.get() ?? null);
+    this.approachWindDirection.set(pd?.approachWindDirection.get() ?? null);
+    this.approachWindMagnitude.set(pd?.approachWindMagnitude.get() ?? null);
+    this.minimumDestinationFuel.set(pd?.minimumDestinationFuelOnBoard.get() ?? null);
+    this.alternateFuel.set(pd?.alternateFuel.get() ?? null);
+    this.finalFuelWeight.set(pd?.finalHoldingFuel.get() ?? null);
   }
 }

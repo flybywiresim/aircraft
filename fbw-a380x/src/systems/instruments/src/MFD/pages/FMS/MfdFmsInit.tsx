@@ -1,15 +1,7 @@
 // Copyright (c) 2024-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
-import {
-  ArraySubject,
-  FSComponent,
-  MappedSubject,
-  MappedSubscribable,
-  Subject,
-  Subscription,
-  VNode,
-} from '@microsoft/msfs-sdk';
+import { ArraySubject, FSComponent, MappedSubject, MappedSubscribable, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
@@ -160,8 +152,6 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
 
   private readonly flightNumber = Subject.create<string | null>(null);
 
-  private pipeSubs: Subscription[] = [];
-
   /** FIXME workaround as newCity pair deletes the flightplan and we don't want to show ---- on the FROM/TO pair */
   private creationInProgress = false;
 
@@ -237,14 +227,33 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     this.cruiseTemperatureIsPilotEntered.set(false);
     this.costIndex.set(null);
     this.costIndexMode.set(CostIndexMode.ECON);
-    this.pipeSubs.forEach((s) => s.destroy());
-    this.pipeSubs = [];
+  }
+
+  private loadFlightPlanPerformanceData(): void {
+    const fp = this.loadedFlightPlan;
+
+    const fpIndex = this.loadedFlightPlanIndex.get();
+    const pd = fp?.performanceData;
+
+    this.tropopause.set(pd?.tropopause.get() ?? null);
+    this.tropopauseIsPilotEntered.set(pd?.tropopauseIsPilotEntered.get() ?? false);
+    this.costIndexMode.set(pd?.costIndexMode?.get() ?? CostIndexMode.ECON);
+    this.flightNumber.set(
+      this.loadedFlightPlan !== null ? this.props.flightPlanInterface.get(fpIndex).getFlightNumber().get() : null,
+    );
+    this.tripWind.set(pd?.pilotTripWind.get() ?? null);
+    this.cruiseTemperature.set(pd?.cruiseTemperature.get() ?? null);
+    this.cruiseTemperatureIsPilotEntered.set(pd?.isCruiseTemperaturePilotEntered.get() ?? false);
+    this.crzFl.set(pd?.cruiseFlightLevel.get() ?? null);
+    this.costIndex.set(pd?.costIndex.get() ?? null);
   }
 
   protected onNewData() {
     if (!this.props.fmcService.master || !this.loadedFlightPlan) {
       return;
     }
+
+    this.loadFlightPlanPerformanceData();
 
     // Update internal subjects for display purposes or input fields
     if (this.loadedFlightPlan.originAirport) {
@@ -296,21 +305,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     const hasfp = this.loadedFlightPlan !== null && this.props.flightPlanInterface.has(fpIndex);
     this.noFlightPlan.set(!hasfp);
     if (hasfp) {
-      this.pipeSubs.forEach((s) => s.destroy());
-      this.pipeSubs = [];
-      this.pipeSubs.push(
-        this.loadedFlightPlan!.performanceData.tropopause.pipe(this.tropopause),
-        this.loadedFlightPlan!.performanceData.tropopauseIsPilotEntered.pipe(this.tropopauseIsPilotEntered),
-        this.loadedFlightPlan!.performanceData.costIndexMode!.pipe(this.costIndexMode),
-        this.props.flightPlanInterface.get(fpIndex).getFlightNumber().pipe(this.flightNumber),
-        this.loadedFlightPlan!.performanceData.pilotTripWind.pipe(this.tripWind),
-        this.loadedFlightPlan!.performanceData.cruiseTemperature.pipe(this.cruiseTemperature),
-        this.loadedFlightPlan!.performanceData.isCruiseTemperaturePilotEntered.pipe(
-          this.cruiseTemperatureIsPilotEntered,
-        ),
-        this.loadedFlightPlan!.performanceData.cruiseFlightLevel.pipe(this.crzFl),
-        this.loadedFlightPlan!.performanceData.costIndex.pipe(this.costIndex),
-      );
+      this.loadFlightPlanPerformanceData();
     } else {
       this.invalidateDataFields();
     }
@@ -378,7 +373,6 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
 
   public destroy(): void {
     this.flightPlanChangeNotifier.destroy();
-    this.pipeSubs.forEach((s) => s.destroy());
 
     super.destroy();
   }

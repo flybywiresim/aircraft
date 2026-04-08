@@ -10,6 +10,7 @@ import {
   MappedSubject,
   Subject,
   SubscribableMapFunctions,
+  Subscription,
   UnitType,
   VNode,
 } from '@microsoft/msfs-sdk';
@@ -48,8 +49,16 @@ enum SpeedLimitType {
   DES,
 }
 
+enum SelectedPage {
+  RTA = 0,
+  SPD = 1,
+  CMS = 2,
+  ALT = 3,
+  STEP_ALTS = 4,
+}
+
 export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
-  private readonly selectedPageIndex = Subject.create(0);
+  private readonly selectedPageIndex = Subject.create(SelectedPage.RTA);
 
   private readonly availableWaypoints = ArraySubject.create<string>([]);
 
@@ -113,6 +122,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
   private readonly speedLimitTransition = Subject.create<number | null>(null);
 
+  private readonly isSpeedLimitTransitionFL = Subject.create(false);
+
   private readonly speedLimitText = this.speedLimitType.map(
     (v) => `${v === SpeedLimitType.CLB ? 'CLB' : 'DES'} SPD LIMIT`,
   );
@@ -137,6 +148,10 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
   private readonly altitudeClbDesConstraintVisibility = Subject.create('hidden');
 
+  private readonly altConstraintTransitionAltitude = Subject.create<number | null>(null);
+
+  private readonly altConstraintTransitionIsFlightLevel = Subject.create<boolean>(false);
+
   /** 0: CLB, 1: DES */
   private readonly selectedAltitudeConstraintOption = Subject.create<number | null>(null);
 
@@ -155,6 +170,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   private readonly altWindowUnitTrailing = Subject.create<string>('');
 
   // STEP ALTs page
+  /** Paused when not in STEP ALts page */
+  private stepsAltsClockSub?: Subscription;
   private readonly crzFl = Subject.create<number | null>(null);
   private readonly crzFlFormatted = FmgcData.fmcFormatValue(this.crzFl);
 
@@ -202,19 +219,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   protected onNewData(): void {
     const pd = this.loadedFlightPlan?.performanceData;
 
-    const ta = pd?.transitionAltitude.get();
-    if (ta) {
-      this.transitionAltitude.set(ta);
-    } else {
-      this.transitionAltitude.set(null);
-    }
-
-    const tl = pd?.transitionLevel.get();
-    if (tl) {
-      this.transitionLevel.set(tl * 100);
-    } else {
-      this.transitionLevel.set(null);
-    }
+    this.transitionAltitude.set(pd?.transitionAltitude.get() ?? null);
+    this.transitionLevel.set(pd?.transitionLevel.get() ?? null);
 
     const activeLegIndex = this.props.flightPlanInterface.get(this.loadedFlightPlanIndex.get()).activeLegIndex;
     if (activeLegIndex) {
@@ -280,127 +286,154 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     this.altConstraintDisabled.set(false);
 
     // Load speed constraints
-
-    this.speedLimitType.set(
-      leg.constraintType === WaypointConstraintType.DES ||
+    const selectedIndex = this.selectedPageIndex.get();
+    console.log('Updating constraints, selected page index is', selectedIndex);
+    if (selectedIndex === SelectedPage.SPD) {
+      console.log('Selected idx is spd');
+      const speedLimitType =
+        leg.constraintType === WaypointConstraintType.DES ||
         (this.activeFlightPhase.get() > FmgcFlightPhase.Cruise &&
           this.activeFlightPhase.get() < FmgcFlightPhase.GoAround)
-        ? SpeedLimitType.DES
-        : SpeedLimitType.CLB,
-    );
+          ? SpeedLimitType.DES
+          : SpeedLimitType.CLB;
+      this.speedLimitType.set(speedLimitType);
 
-    // TODO handle alternate?
-    const climbSpeedLimit = this.speedLimitType.get() === SpeedLimitType.CLB;
-
-    const speedLimitSpeed = climbSpeedLimit
-      ? this.loadedFlightPlan.performanceData.climbSpeedLimitSpeed.get()
-      : this.loadedFlightPlan.performanceData.descentSpeedLimitSpeed.get();
-
-    const speedLimitAltitude = climbSpeedLimit
-      ? this.loadedFlightPlan.performanceData.climbSpeedLimitAltitude.get()
-      : this.loadedFlightPlan.performanceData.descentSpeedLimitAltitude.get();
-
-    this.speedLimitSpeed.set(speedLimitSpeed);
-    this.speedLimitAltitude.set(speedLimitAltitude);
-    this.speedLimitPilotEntered.set(
-      climbSpeedLimit
-        ? this.loadedFlightPlan.performanceData.isClimbSpeedLimitPilotEntered.get()
-        : this.loadedFlightPlan.performanceData.isDescentSpeedLimitPilotEntered.get(),
-    );
-    this.speedLimitTransition.set(
-      climbSpeedLimit
-        ? this.loadedFlightPlan.performanceData.transitionAltitude.get()
-        : this.loadedFlightPlan.performanceData.transitionLevel.get(),
-    );
-
-    this.speedConstraintInput.set(leg.speedConstraint?.speed ?? null);
-    this.constraintType.set(
-      leg.constraintType === WaypointConstraintType.CLB
-        ? 'CLB'
-        : leg.constraintType === WaypointConstraintType.DES
-          ? 'DES'
-          : '',
-    );
-    this.spdConstraintTypeRadioSelected.set(
-      leg.constraintType === WaypointConstraintType.CLB
-        ? 0
-        : leg.constraintType === WaypointConstraintType.DES
-          ? 1
-          : null,
-    );
-    this.altConstraintTypeRadioSelected.set(
-      leg.constraintType === WaypointConstraintType.CLB
-        ? 0
-        : leg.constraintType === WaypointConstraintType.DES
-          ? 1
-          : null,
-    );
-    this.altitudeClbDesConstraintVisibility.set(
-      leg.constraintType === WaypointConstraintType.Unknown ? 'visible' : 'hidden',
-    );
-
-    this.cannotDeleteAltConstraint.set(
-      !leg.altitudeConstraint || leg.altitudeConstraint?.altitudeDescriptor === AltitudeDescriptor.None,
-    );
-    this.cannotDeleteSpeedConstraint.set(!leg.speedConstraint || !leg.speedConstraint?.speed);
-
-    // Load altitude constraints
-    // FIXME missing a lot of cases here
-    switch (leg.altitudeConstraint?.altitudeDescriptor) {
-      case AltitudeDescriptor.AtAlt1:
-        this.selectedAltitudeConstraintOption.set(0);
-        break;
-      case AltitudeDescriptor.AtOrAboveAlt1:
-        this.selectedAltitudeConstraintOption.set(1);
-        break;
-      case AltitudeDescriptor.AtOrBelowAlt1:
-        this.selectedAltitudeConstraintOption.set(2);
-        break;
-      default:
-        this.selectedAltitudeConstraintOption.set(null);
-        break;
-    }
-    this.altitudeConstraintInput.set(leg.altitudeConstraint?.altitude1 ?? null);
-
-    const ac = leg.altitudeConstraint;
-    if (
-      ac &&
-      ac.altitudeDescriptor === AltitudeDescriptor.BetweenAlt1Alt2 &&
-      ac.altitude1 !== undefined &&
-      ac.altitude2 !== undefined
-    ) {
-      // ALT window, alt 1 is the higher altitude, displayed 2nd in the box
-      const transAlt =
-        leg.constraintType === WaypointConstraintType.DES ? this.transitionLevel.get() : this.transitionAltitude.get();
-
-      // FIXME check format when only the higher altitude is above TA/TL
-      const alt1IsFl = transAlt !== null && ac.altitude1 > transAlt;
-      const alt2IsFl = transAlt !== null && ac.altitude2 > transAlt;
-      this.altWindowUnitLeading.set(alt1IsFl && !alt2IsFl ? 'FT' : '');
-      this.altWindowUnitTrailing.set(alt1IsFl ? 'FL' : 'FT');
-      this.altWindowUnitValue.set(
-        `${(alt2IsFl ? ac.altitude2 / 100 : ac.altitude2).toFixed(0).padStart(3, '0')}-${(alt1IsFl ? ac.altitude1 / 100 : ac.altitude1).toFixed(0).padStart(3, '0')}`,
+      this.isSpeedLimitTransitionFL.set(speedLimitType === SpeedLimitType.DES);
+      this.speedLimitTransition.set(
+        speedLimitType === SpeedLimitType.CLB ? this.transitionAltitude.get() : this.transitionLevel.get(),
       );
 
-      this.altWindowLabelRef.instance.style.visibility = 'visible';
-      this.altWindowValueRef.instance.style.visibility = 'visible';
-    } else {
-      if (ac?.altitudeDescriptor === AltitudeDescriptor.BetweenAlt1Alt2) {
-        console.error(
-          'BetweenAlt1Alt2 constraint with either altitude1 or altitude2 undefined!',
-          leg.ident,
-          leg.definition.procedureIdent,
-          ac?.altitude1,
-          ac?.altitude2,
-        );
+      // TODO handle alternate?
+      const climbSpeedLimit = speedLimitType === SpeedLimitType.CLB;
+
+      const speedLimitSpeed = climbSpeedLimit
+        ? this.loadedFlightPlan.performanceData.climbSpeedLimitSpeed.get()
+        : this.loadedFlightPlan.performanceData.descentSpeedLimitSpeed.get();
+
+      const speedLimitAltitude = climbSpeedLimit
+        ? this.loadedFlightPlan.performanceData.climbSpeedLimitAltitude.get()
+        : this.loadedFlightPlan.performanceData.descentSpeedLimitAltitude.get();
+
+      this.speedLimitSpeed.set(speedLimitSpeed);
+      this.speedLimitAltitude.set(speedLimitAltitude);
+      this.speedLimitPilotEntered.set(
+        climbSpeedLimit
+          ? this.loadedFlightPlan.performanceData.isClimbSpeedLimitPilotEntered.get()
+          : this.loadedFlightPlan.performanceData.isDescentSpeedLimitPilotEntered.get(),
+      );
+
+      this.speedConstraintInput.set(leg.speedConstraint?.speed ?? null);
+      this.constraintType.set(
+        leg.constraintType === WaypointConstraintType.CLB
+          ? 'CLB'
+          : leg.constraintType === WaypointConstraintType.DES
+            ? 'DES'
+            : '',
+      );
+      this.spdConstraintTypeRadioSelected.set(
+        leg.constraintType === WaypointConstraintType.CLB
+          ? 0
+          : leg.constraintType === WaypointConstraintType.DES
+            ? 1
+            : null,
+      );
+    } else if (selectedIndex === SelectedPage.ALT) {
+      this.altConstraintTypeRadioSelected.set(
+        leg.constraintType === WaypointConstraintType.CLB
+          ? 0
+          : leg.constraintType === WaypointConstraintType.DES
+            ? 1
+            : null,
+      );
+      this.altitudeClbDesConstraintVisibility.set(
+        leg.constraintType === WaypointConstraintType.Unknown ? 'visible' : 'hidden',
+      );
+
+      this.cannotDeleteAltConstraint.set(
+        !leg.altitudeConstraint || leg.altitudeConstraint?.altitudeDescriptor === AltitudeDescriptor.None,
+      );
+      this.cannotDeleteSpeedConstraint.set(!leg.speedConstraint || !leg.speedConstraint?.speed);
+
+      // Load altitude constraints
+      // FIXME missing a lot of cases here
+      switch (leg.altitudeConstraint?.altitudeDescriptor) {
+        case AltitudeDescriptor.AtAlt1:
+          this.selectedAltitudeConstraintOption.set(0);
+          break;
+        case AltitudeDescriptor.AtOrAboveAlt1:
+          this.selectedAltitudeConstraintOption.set(1);
+          break;
+        case AltitudeDescriptor.AtOrBelowAlt1:
+          this.selectedAltitudeConstraintOption.set(2);
+          break;
+        default:
+          this.selectedAltitudeConstraintOption.set(null);
+          break;
       }
-      this.altWindowLabelRef.instance.style.visibility = 'hidden';
-      this.altWindowValueRef.instance.style.visibility = 'hidden';
+      this.altitudeConstraintInput.set(leg.altitudeConstraint?.altitude1 ?? null);
+
+      const ac = leg.altitudeConstraint;
+      if (ac) {
+        const transAltIsFlightLevel = leg.constraintType === WaypointConstraintType.DES;
+        const transAlt = transAltIsFlightLevel ? this.transitionLevel.get() : this.transitionAltitude.get();
+        this.altConstraintTransitionAltitude.set(transAlt);
+
+        this.altConstraintTransitionIsFlightLevel.set(transAltIsFlightLevel);
+        if (
+          ac.altitudeDescriptor === AltitudeDescriptor.BetweenAlt1Alt2 &&
+          ac.altitude1 !== undefined &&
+          ac.altitude2 !== undefined
+        ) {
+          // ALT window, alt 1 is the higher altitude, displayed 2nd in the box
+          const transAltFeet = transAlt !== null ? (transAltIsFlightLevel ? transAlt * 100 : transAlt) : null;
+
+          // FIXME check format when only the higher altitude is above TA/TL
+          const alt1IsFl = this.isAltitudeConstraintFlightLevel(ac.altitude1, transAltFeet, leg);
+          const alt2IsFl = this.isAltitudeConstraintFlightLevel(ac.altitude2, transAltFeet, leg);
+          this.altWindowUnitLeading.set(alt1IsFl && !alt2IsFl ? 'FT' : '');
+          this.altWindowUnitTrailing.set(alt1IsFl ? 'FL' : 'FT');
+          this.altWindowUnitValue.set(
+            `${(alt2IsFl ? ac.altitude2 / 100 : ac.altitude2).toFixed(0).padStart(3, '0')}-${(alt1IsFl ? ac.altitude1 / 100 : ac.altitude1).toFixed(0).padStart(3, '0')}`,
+          );
+
+          this.altWindowLabelRef.instance.style.visibility = 'visible';
+          this.altWindowValueRef.instance.style.visibility = 'visible';
+        } else {
+          if (ac?.altitudeDescriptor === AltitudeDescriptor.BetweenAlt1Alt2) {
+            console.error(
+              'BetweenAlt1Alt2 constraint with either altitude1 or altitude2 undefined!',
+              leg.ident,
+              leg.definition.procedureIdent,
+              ac?.altitude1,
+              ac?.altitude2,
+            );
+          }
+          this.altWindowLabelRef.instance.style.visibility = 'hidden';
+          this.altWindowValueRef.instance.style.visibility = 'hidden';
+        }
+      }
     }
   }
 
+  private isAltitudeConstraintFlightLevel(
+    altitude: number,
+    transitionAltitude: number | null,
+    leg: ReadonlyFlightPlanLeg,
+  ): boolean {
+    if (transitionAltitude === null) {
+      return false;
+    }
+    if (leg.constraintType === WaypointConstraintType.DES) {
+      return altitude >= transitionAltitude;
+    }
+    if (leg.constraintType === WaypointConstraintType.CLB) {
+      return altitude > transitionAltitude;
+    }
+    return false;
+  }
+
   private updateCruiseSteps() {
-    if (this.loadedFlightPlan) {
+    if (this.loadedFlightPlan && this.selectedPageIndex.get() === SelectedPage.STEP_ALTS) {
       const activeLegIndex = this.loadedFlightPlan.activeLegIndex;
       const cruiseSteps = this.loadedFlightPlan.allLegs
         .map((l, index) =>
@@ -807,19 +840,19 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     // If extra parameter for activeUri is given, navigate to flight phase sub-page
     switch (this.props.mfd.uiService.activeUri.get().extra) {
       case 'rta':
-        this.selectedPageIndex.set(0);
+        this.selectedPageIndex.set(SelectedPage.RTA);
         break;
       case 'spd':
-        this.selectedPageIndex.set(1);
+        this.selectedPageIndex.set(SelectedPage.SPD);
         break;
       case 'cms':
-        this.selectedPageIndex.set(2);
+        this.selectedPageIndex.set(SelectedPage.CMS);
         break;
       case 'alt':
-        this.selectedPageIndex.set(3);
+        this.selectedPageIndex.set(SelectedPage.ALT);
         break;
       case 'step-alts':
-        this.selectedPageIndex.set(4);
+        this.selectedPageIndex.set(SelectedPage.STEP_ALTS);
         break;
 
       default:
@@ -852,13 +885,11 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       }),
     );
 
-    this.subs.push(
-      this.props.bus
-        .getSubscriber<ClockEvents>()
-        .on('realTime')
-        .atFrequency(0.5)
-        .handle(() => this.updateCruiseSteps()),
-    );
+    this.stepsAltsClockSub = this.props.bus
+      .getSubscriber<ClockEvents>()
+      .on('realTime')
+      .atFrequency(0.5)
+      .handle(() => this.updateCruiseSteps());
 
     this.subs.push(
       this.tmpyColor,
@@ -873,6 +904,22 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       this.spdConstraintTypeRadioSelected.sub(() => this.tryUpdateSpeedConstraint()),
       this.altConstraintTypeRadioSelected.sub(() => this.tryUpdateAltitudeConstraint()),
     );
+
+    this.subs.push(
+      this.selectedPageIndex.sub((val) => {
+        if (val === SelectedPage.STEP_ALTS) {
+          this.stepsAltsClockSub?.resume();
+        } else {
+          this.stepsAltsClockSub?.pause();
+        }
+        this.onNewData();
+      }, true),
+    );
+  }
+
+  public destroy(): void {
+    super.destroy();
+    this.stepsAltsClockSub?.destroy();
   }
 
   render(): VNode {
@@ -886,7 +933,9 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
             <TopTabNavigator
               pageTitles={Subject.create(['RTA', 'SPD', 'CMS', 'ALT', 'STEP ALTs'])}
               selectedPageIndex={this.selectedPageIndex}
-              pageChangeCallback={(val) => this.selectedPageIndex.set(val)}
+              pageChangeCallback={(val) => {
+                this.selectedPageIndex.set(val);
+              }}
               selectedTabTextColor="white"
             >
               <TopTabNavigatorPage>
@@ -990,7 +1039,9 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                     />
                     <span class="mfd-label bigger">AT OR BELOW</span>
                     <InputField<number>
-                      dataEntryFormat={new AltitudeOrFlightLevelFormat(this.speedLimitTransition)}
+                      dataEntryFormat={
+                        new AltitudeOrFlightLevelFormat(this.speedLimitTransition, this.isSpeedLimitTransitionFL)
+                      }
                       dataHandlerDuringValidation={(val) => this.tryUpdateSpeedLimitAltitude(val)}
                       mandatory={Subject.create(false)}
                       value={this.speedLimitAltitude}
@@ -1071,7 +1122,12 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                     <div class="mfd-vert-rev-alt-cstr-sel">
                       <div class={{ invisible: this.selectedAltitudeConstraintInvisible }}>
                         <InputField<number>
-                          dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transitionAltitude)}
+                          dataEntryFormat={
+                            new AltitudeOrFlightLevelFormat(
+                              this.altConstraintTransitionAltitude,
+                              this.altConstraintTransitionIsFlightLevel,
+                            )
+                          }
                           dataHandlerDuringValidation={(val) => this.tryUpdateAltitudeConstraint(val ?? undefined)}
                           mandatory={Subject.create(false)}
                           disabled={this.altConstraintDisabled}
