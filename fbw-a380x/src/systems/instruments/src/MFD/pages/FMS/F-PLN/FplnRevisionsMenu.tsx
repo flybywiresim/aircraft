@@ -52,6 +52,7 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
         isFromLeg ||
         !isLegTerminatingAtDatabaseFix,
       onPressed: () => {
+        //FIXME This should navigate to DIR TO page instead.
         const ppos = fpln.props.fmcService.master?.navigation.getPpos();
         if (ppos) {
           fpln.props.fmcService.master?.flightPlanInterface.directToLeg(
