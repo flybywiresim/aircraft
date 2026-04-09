@@ -987,27 +987,25 @@ impl<const P: usize, const G: usize, const C: usize> PayloadManager<P, G, C> {
             if !self.is_boarding_allowed() {
                 self.reset_time();
                 self.stop_boarding_sounds();
-                self.boarding_sounds.update_welcome(delta_time);
-                return;
-            }
-            let ms_delay = if self.board_rate() == BoardingRate::Instant {
-                0
-            } else if self.board_rate() == BoardingRate::Fast {
-                self.fast_rate.into()
             } else {
-                self.real_rate.into()
-            };
-            self.update_time(delta_time);
+                let ms_delay = if self.board_rate() == BoardingRate::Instant {
+                    0
+                } else if self.board_rate() == BoardingRate::Fast {
+                    self.fast_rate.into()
+                } else {
+                    self.real_rate.into()
+                };
+                self.update_time(delta_time);
 
-            if self.time().as_millis() > ms_delay {
-                self.reset_time();
-                self.update_pax_tick();
-                self.update_cargo_tick();
-            }
-            self.update_boarding_sounds();
-            self.boarding_sounds.update_welcome(delta_time);
-            if self.is_fully_loaded() {
-                self.emit_stop_boarding();
+                if self.time().as_millis() > ms_delay {
+                    self.reset_time();
+                    self.update_pax_tick();
+                    self.update_cargo_tick();
+                }
+                self.update_boarding_sounds();
+                if self.is_fully_loaded() {
+                    self.emit_stop_boarding();
+                }
             }
         } else {
             self.emit_stop_boarding();
@@ -1017,8 +1015,9 @@ impl<const P: usize, const G: usize, const C: usize> PayloadManager<P, G, C> {
                 &mut self.cargo_deck,
                 &mut self.boarding_sounds,
             );
-            self.boarding_sounds.update_welcome(delta_time);
         }
+
+        self.boarding_sounds.update_welcome(delta_time);
     }
 }
 impl<const P: usize, const G: usize, const C: usize> SimulationElement for PayloadManager<P, G, C> {
