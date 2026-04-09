@@ -903,7 +903,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     if (isHold(data) && data.originalLegIndex !== null) {
       if (data.originalLegIndex !== this.loadedFlightPlan?.activeLegIndex) {
         // Decel has been sequenced but leg not sequenced yet, delete it.
-        this.props.fmcService.master?.flightPlanService.deleteElementAt(
+        this.props.fmcService.master?.flightPlanInterface.deleteElementAt(
           data.originalLegIndex,
           false,
           this.loadedFlightPlanIndex.get(),
