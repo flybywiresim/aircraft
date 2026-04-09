@@ -4,8 +4,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
-import { arcLength, pointOnArc, pointOnCourseToFix } from '@fmgc/guidance/lnav/CommonGeometry';
-import { bearingTo, distanceTo } from 'msfs-geo';
+import { arcLength, getIntermediatePoint, pointOnArc } from '@fmgc/guidance/lnav/CommonGeometry';
+import { distanceTo } from 'msfs-geo';
 
 export enum PathVectorType {
   Line,
@@ -61,11 +61,15 @@ export function pathVectorLength(vector: PathVector) {
 export function pathVectorValid(vector: PathVector) {
   switch (vector.type) {
     case PathVectorType.Line:
-      return !!(vector.startPoint?.lat && vector.endPoint?.lat);
+      return Number.isFinite(vector.startPoint?.lat) && Number.isFinite(vector.endPoint?.lat);
     case PathVectorType.Arc:
-      return !!(vector.endPoint?.lat && vector.centrePoint?.lat && vector.sweepAngle);
+      return (
+        Number.isFinite(vector.endPoint?.lat) &&
+        Number.isFinite(vector.centrePoint?.lat) &&
+        Number.isFinite(vector.sweepAngle)
+      );
     case PathVectorType.DebugPoint:
-      return !!vector.startPoint?.lat;
+      return Number.isFinite(vector.startPoint?.lat);
     default:
       return true;
   }
@@ -73,7 +77,7 @@ export function pathVectorValid(vector: PathVector) {
 
 export function pathVectorPoint(vector: PathVector, distanceFromEnd: NauticalMiles): Coordinates | undefined {
   if (vector.type === PathVectorType.Line) {
-    return pointOnCourseToFix(distanceFromEnd, bearingTo(vector.startPoint, vector.endPoint), vector.endPoint);
+    return getIntermediatePoint(vector.endPoint, vector.startPoint, distanceFromEnd / pathVectorLength(vector));
   }
 
   if (vector.type === PathVectorType.Arc) {

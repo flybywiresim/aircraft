@@ -145,9 +145,9 @@ fn main() -> Result<(), std::io::Error> {
             csv_header_serializer::to_string(&a380::FdrData::default(), args.delimiter)
         }
     }
-    .map_err(|_| std::io::Error::new(ErrorKind::Other, "Failed to generate header."))?;
+    .map_err(|_| std::io::Error::other("Failed to generate header."))?;
 
-    buf_writer.write(header.as_bytes())?;
+    buf_writer.write_all(header.as_bytes())?;
 
     // Create the CSV writer, and serialize the file.
     let mut writer = WriterBuilder::new()

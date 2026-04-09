@@ -655,4 +655,11 @@ export class MathUtils {
   public static pointDistance(x1: number, y1: number, x2: number, y2: number): number {
     return Math.hypot(x2 - x1, y2 - y1);
   }
+
+  /**
+   * Returns a random valid JS 32-bit signed integer
+   */
+  public static randomInt32(): number {
+    return Math.floor(Math.random() * 4294967296) - 2147483648;
+  }
 }

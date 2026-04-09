@@ -1,4 +1,4 @@
-//  Copyright (c) 2024-2025 FlyByWire Simulations
+//  Copyright (c) 2024-2026 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
 import {
@@ -7,6 +7,7 @@ import {
   Consumer,
   DisplayComponent,
   FSComponent,
+  MutableSubscribable,
   Subject,
   Subscribable,
   SubscribableArray,
@@ -16,22 +17,24 @@ import {
 } from '@microsoft/msfs-sdk';
 import { InputField, InteractionMode } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import { DropdownFieldFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
+import { EfisSide } from '@flybywiresim/fbw-sdk';
 
 interface DropdownMenuProps extends ComponentProps {
   values: SubscribableArray<string>;
-  selectedIndex: Subject<number | null>;
+  selectedIndex: Subscribable<number | null> | MutableSubscribable<number | null>;
   freeTextAllowed: boolean;
   idPrefix: string;
   /** If defined, this component does not update the selectedIndex prop by itself, but rather calls this method. */
   onModified?: (newSelectedIndex: number | null, freeTextEntry: string) => void;
   inactive?: Subscribable<boolean>;
+  disabled?: Subscribable<boolean>;
   containerStyle?: string;
   alignLabels?: 'flex-start' | 'center' | 'flex-end' | Subscribable<'flex-start' | 'center' | 'flex-end'>;
   /** Defined by the width of the component */
   numberOfDigitsForInputField?: number;
   tmpyActive?: Subscribable<boolean>;
   /** Only handles KCCU input for respective side, receives key name only */
-  hEventConsumer: Consumer<string>;
+  hEventConsumer: Consumer<[EfisSide, string]>;
   /** Kccu uses the HW keys, and doesn't focus input fields */
   interactionMode: Subscribable<InteractionMode>;
 }
@@ -59,6 +62,10 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
 
   private readonly inputFieldValue = Subject.create<string | null>('');
 
+  private readonly dropdownArrowFill = (this.props.disabled ?? Subject.create(false)).map((isDisabled) =>
+    isDisabled ? 'gray' : 'white',
+  );
+
   private freeTextEntered = false;
 
   private readonly renderedDropdownOptions = ArraySubject.create<string>();
@@ -73,11 +80,11 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
   );
 
   private onClick(i: number) {
-    if (!this.props.inactive?.get()) {
+    if (!this.props.inactive?.get() && !this.props.disabled?.get()) {
       this.freeTextEntered = false;
       if (this.props.onModified) {
         this.props.onModified(this.renderedDropdownOptionsIndices[i], '');
-      } else {
+      } else if (SubscribableUtils.isMutableSubscribable(this.props.selectedIndex)) {
         this.props.selectedIndex.set(this.renderedDropdownOptionsIndices[i]);
       }
       this.dropdownIsOpened.set(false);
@@ -86,7 +93,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
   }
 
   private onFieldSubmit(text: string) {
-    if (this.props.onModified && !this.props.inactive?.get()) {
+    if (this.props.onModified && !this.props.inactive?.get() && !this.props.disabled?.get()) {
       // selected index of -1 marks free text entry
       if (this.props.freeTextAllowed) {
         this.props.onModified(-1, text);
@@ -126,6 +133,9 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
     }
     if (this.props.tmpyActive === undefined) {
       this.props.tmpyActive = Subject.create(false);
+    }
+    if (this.props.disabled === undefined) {
+      this.props.disabled = Subject.create(false);
     }
 
     this.subs.push(
@@ -216,13 +226,25 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
           this.dropdownArrowRef.getOrDefault()?.classList.remove('inactive');
         }
       }, true),
+      this.props.disabled.sub((val) => {
+        if (!this.props.inactive?.get()) {
+          if (val) {
+            this.dropdownSelectorRef.getOrDefault()?.classList.add('disabled');
+            this.dropdownArrowRef.getOrDefault()?.classList.add('disabled');
+          } else {
+            this.dropdownSelectorRef.getOrDefault()?.classList.remove('disabled');
+            this.dropdownArrowRef.getOrDefault()?.classList.remove('disabled');
+          }
+        }
+      }, true),
+      this.dropdownArrowFill,
     );
 
     // TODO add KCCU events
   }
 
   private onOpenCloseClick() {
-    if (!this.props.inactive?.get()) {
+    if (!this.props.inactive?.get() && !this.props.disabled?.get()) {
       this.dropdownIsOpened.set(!this.dropdownIsOpened.get());
     }
   }
@@ -291,11 +313,12 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
               tmpyActive={this.props.tmpyActive}
               hEventConsumer={this.props.hEventConsumer}
               interactionMode={this.props.interactionMode}
+              disabled={this.props.disabled}
             />
           </div>
           <div ref={this.dropdownArrowRef} class="mfd-dropdown-arrow">
             <svg height="15" width="15">
-              <polygon points="0,0 15,0 7.5,15" style="fill: white" />
+              <polygon points="0,0 15,0 7.5,15" style={{ fill: this.dropdownArrowFill }} />
             </svg>
           </div>
         </div>

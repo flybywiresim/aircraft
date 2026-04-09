@@ -33,12 +33,7 @@ export class MfdAtccomConnect extends DisplayComponent<MfdAtccomConnectProps> {
   render(): VNode {
     return (
       <>
-        <ActivePageTitleBar
-          activePage={Subject.create('CONNECT')}
-          offset={Subject.create('')}
-          eoIsActive={Subject.create(false)}
-          tmpyIsActive={Subject.create(false)}
-        />
+        <ActivePageTitleBar activePage={Subject.create('CONNECT')} offset={Subject.create('')} />
         {/* begin page content */}
         <div class="mfd-page-container">
           <div class="mfd-atccom-connect-row">
@@ -171,7 +166,12 @@ export class MfdAtccomConnect extends DisplayComponent<MfdAtccomConnectProps> {
         >
           <span>NOT YET IMPLEMENTED</span>
         </div>
-        <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
+        <Footer
+          bus={this.props.bus}
+          mfd={this.props.mfd}
+          fmcService={this.props.fmcService}
+          flightPlanInterface={this.props.fmcService.master.flightPlanInterface}
+        />
       </>
     );
   }

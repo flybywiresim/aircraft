@@ -56,16 +56,6 @@ class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
     ClockEvents & Arinc429Values & PFDSimvars & FwcDataEvents & SfccEvents
   >();
 
-  private targetClass = Subject.create('');
-
-  private targetText = Subject.create('');
-
-  private readonly targetVisible = Subject.create('hidden');
-
-  private readonly slatExtensionVisible = Subject.create('hidden');
-
-  private readonly flapExtensionVisible = Subject.create('hidden');
-
   // FIXME don't use commanded position from just one spoiler + figure out whether it's averaged, or max-ed
   private readonly spoilersCommandedPosition = ConsumerSubject.create(
     this.sub.on('spoilersCommanded').whenChanged(),
@@ -83,16 +73,6 @@ class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
   private readonly speedBrakesStillExtended = Subject.create(false);
 
   private readonly speedBrakesPosDisagree = Subject.create(false);
-
-  private slatIndexClass = Subject.create('');
-
-  private flapIndexClass = Subject.create('');
-
-  private targetBoxVisible = Subject.create('hidden');
-
-  private slatsTargetPos = Subject.create(0);
-
-  private flapsTargetPos = Subject.create(0);
 
   private slatsPath = Subject.create('');
 
@@ -114,22 +94,6 @@ class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private readonly slatsDataValid = Subject.create(true);
 
-  private configClean: boolean = false;
-
-  private config1: boolean = false;
-
-  private config2: boolean = false;
-
-  private config3: boolean = false;
-
-  private configFull: boolean = false;
-
-  private flaps1AutoRetract: boolean = false;
-
-  private slatsOut: boolean = false;
-
-  private flapsOut: boolean = false;
-
   private readonly slatFlapStatusWord = Arinc429LocalVarConsumerSubject.create(
     this.sub.on('slat_flap_system_status_word_1'),
     Arinc429Register.empty().rawWord,
@@ -145,17 +109,173 @@ class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
     Arinc429Register.empty().rawWord,
   );
 
+  private readonly configClean = MappedSubject.create(([word]) => word.bitValueOr(17, false), this.slatFlapStatusWord);
+
+  private readonly config1 = MappedSubject.create(([word]) => word.bitValueOr(18, false), this.slatFlapStatusWord);
+
+  private readonly config2 = MappedSubject.create(([word]) => word.bitValueOr(19, false), this.slatFlapStatusWord);
+
+  private readonly config3 = MappedSubject.create(([word]) => word.bitValueOr(20, false), this.slatFlapStatusWord);
+
+  private readonly configFull = MappedSubject.create(([word]) => word.bitValueOr(21, false), this.slatFlapStatusWord);
+
+  private readonly flaps1AutoRetract = MappedSubject.create(
+    ([word]) => word.bitValueOr(26, false),
+    this.slatFlapStatusWord,
+  );
+
+  private readonly slatsOut = MappedSubject.create(([word]) => word.valueOr(0) > 6.1, this.slatPositionWord);
+
+  private readonly flapsOut = MappedSubject.create(([word]) => word.valueOr(0) > 5.0, this.flapPositionWord);
+
+  private targetText = MappedSubject.create(
+    ([configClean, config1, config2, config3, configFull, flaps1AutoRetract]) => {
+      if (configClean) {
+        return '0';
+      } else if (config1 && flaps1AutoRetract) {
+        return '1';
+      } else if (config1) {
+        return '1+F';
+      } else if (config2) {
+        return '2';
+      } else if (config3) {
+        return '3';
+      } else if (configFull) {
+        return 'FULL';
+      } else {
+        return '';
+      }
+    },
+    this.configClean,
+    this.config1,
+    this.config2,
+    this.config3,
+    this.configFull,
+    this.flaps1AutoRetract,
+  );
+
+  private readonly slatsTargetPos = MappedSubject.create(
+    ([configClean, config1, config2, config3, configFull, slatPositionWord]) => {
+      const slats = slatPositionWord.valueOr(0);
+      if (configClean && slats > 6.1) {
+        return 0;
+      } else if ((config1 || config2) && (slats < 276 || slats > 296)) {
+        return 1;
+      } else if ((config3 || configFull) && (slats < 317 || slats > 337)) {
+        return 2;
+      } else {
+        return null;
+      }
+    },
+    this.configClean,
+    this.config1,
+    this.config2,
+    this.config3,
+    this.configFull,
+    this.slatPositionWord,
+  );
+
+  private readonly flapsTargetPos = MappedSubject.create(
+    ([configClean, config1, config2, config3, configFull, flaps1AutoRetract, flapPositionWord, flapsOut]) => {
+      const flaps = flapPositionWord.valueOr(0);
+
+      if ((configClean || (config1 && flaps1AutoRetract)) && flapsOut) {
+        return 0;
+      } else if (config1 && !flaps1AutoRetract && (flaps < 210 || flaps > 220)) {
+        return 1;
+      } else if (config2 && (flaps < 254 || flaps > 264)) {
+        return 2;
+      } else if (config3 && (flaps < 292 || flaps > 302)) {
+        return 3;
+      } else if (configFull && (flaps < 333 || flaps > 343)) {
+        return 4;
+      } else {
+        return null;
+      }
+    },
+    this.configClean,
+    this.config1,
+    this.config2,
+    this.config3,
+    this.configFull,
+    this.flaps1AutoRetract,
+    this.flapPositionWord,
+    this.flapsOut,
+  );
+
+  private readonly targetVisible = MappedSubject.create(
+    ([slatsOut, flapsOut, configClean]) => (slatsOut || flapsOut || !configClean ? 'visible' : 'hidden'),
+    this.slatsOut,
+    this.flapsOut,
+    this.configClean,
+  );
+
+  private readonly slatExtensionVisible = MappedSubject.create(
+    ([slatsOut, flapsOut, configClean, flapsDataValid]) =>
+      (slatsOut || flapsOut || !configClean) && flapsDataValid ? 'visible' : 'hidden',
+    this.slatsOut,
+    this.flapsOut,
+    this.configClean,
+    this.slatsDataValid,
+  );
+
+  private readonly flapExtensionVisible = MappedSubject.create(
+    ([slatsOut, flapsOut, configClean, slatsDataValid]) =>
+      (slatsOut || flapsOut || !configClean) && slatsDataValid ? 'visible' : 'hidden',
+    this.slatsOut,
+    this.flapsOut,
+    this.configClean,
+    this.flapsDataValid,
+  );
+
+  private readonly inMotion = MappedSubject.create(
+    ([flapsTargetPos, slatsTargetPos]) => flapsTargetPos !== null || slatsTargetPos !== null,
+    this.flapsTargetPos,
+    this.slatsTargetPos,
+  );
+
+  private readonly targetClass = this.inMotion.map((inMotion) =>
+    inMotion ? 'FontMedium Cyan MiddleAlign' : 'FontMedium Green MiddleAlign',
+  );
+
+  private readonly targetBoxVisible = this.inMotion.map((inMotion) => (inMotion ? 'visible' : 'hidden'));
+
+  private readonly slatIndexClass = MappedSubject.create(
+    ([slatsFault, slatsOut, flapsOut, configClean]) => {
+      if (slatsFault) {
+        return 'NormalStroke Amber CornerRound';
+      } else if (slatsOut || flapsOut || !configClean) {
+        return 'NormalStroke Green CornerRound';
+      } else {
+        return 'NormalStroke White CornerRound';
+      }
+    },
+    this.slatsFault,
+    this.slatsOut,
+    this.flapsOut,
+    this.configClean,
+  );
+
+  private readonly flapIndexClass = MappedSubject.create(
+    ([flapsFault, slatsOut, flapsOut, configClean]) => {
+      if (flapsFault) {
+        return 'NormalStroke Amber CornerRound';
+      } else if (slatsOut || flapsOut || !configClean) {
+        return 'NormalStroke Green CornerRound';
+      } else {
+        return 'NormalStroke White CornerRound';
+      }
+    },
+    this.flapsFault,
+    this.slatsOut,
+    this.flapsOut,
+    this.configClean,
+  );
+
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
     this.slatFlapStatusWord.sub((s) => {
-      this.configClean = s.bitValue(17);
-      this.config1 = s.bitValue(18);
-      this.config2 = s.bitValue(19);
-      this.config3 = s.bitValue(20);
-      this.configFull = s.bitValue(21);
-      this.flaps1AutoRetract = s.bitValue(26);
-
       this.flapReliefEngaged.set(s.bitValue(22));
       this.alphaLockEngaged.set(s.bitValue(24));
 
@@ -164,28 +284,10 @@ class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
 
       this.slatsDataValid.set(s.bitValue(28));
       this.flapsDataValid.set(s.bitValue(29));
-
-      if (this.configClean) {
-        this.targetText.set('0');
-      } else if (this.config1 && this.flaps1AutoRetract) {
-        this.targetText.set('1');
-      } else if (this.config1) {
-        this.targetText.set('1+F');
-      } else if (this.config2) {
-        this.targetText.set('2');
-      } else if (this.config3) {
-        this.targetText.set('3');
-      } else if (this.configFull) {
-        this.targetText.set('FULL');
-      } else {
-        this.targetText.set('');
-      }
     }, true);
 
     this.slatPositionWord.sub((s) => {
       const slats = s.valueOr(0);
-
-      this.slatsOut = slats > 6.1;
 
       // Slats and flaps should align with future implementation; do not change
       const xFactor = -0.43;
@@ -195,14 +297,14 @@ class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
       let synchroOffset = 0;
       let positionFactor = 0;
       let positionOffset = 0;
-      if (slats >= 0 && slats < 247.1) {
+      if (slats >= 0 && slats < 286.584) {
         synchroOffset = 0;
-        positionFactor = 0.57;
+        positionFactor = 0.491985;
         positionOffset = 0;
-      } else if (slats >= 247.1 && slats < 355) {
-        synchroOffset = 20.02;
-        positionFactor = 3.7;
-        positionOffset = 11.5;
+      } else if (slats >= 286.584 && slats < 355) {
+        synchroOffset = 13.22;
+        positionFactor = 3.41585;
+        positionOffset = -22.69;
       }
 
       const value = (slats * synchroFactor - synchroOffset) * positionFactor + positionOffset;
@@ -210,23 +312,10 @@ class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
       const y = yFactor * value + 195.3;
       this.slatsPath.set(`M ${x},${y} a 0.2 0.2 0 0 1 -1.3 -1.9 l 1.4 -0.7 z`);
       this.slatsLinePath.set(`M 15.2 195.4 L ${x},${y}`);
-
-      if (this.configClean && slats > 6.1) {
-        this.slatsTargetPos.set(0);
-      } else if ((this.config1 || this.config2) && (slats < 234.92 || slats > 259.62)) {
-        this.slatsTargetPos.set(1);
-      } else if ((this.config3 || this.configFull) && (slats < 272.3 || slats > 297.0)) {
-        this.slatsTargetPos.set(2);
-      } else {
-        this.slatsTargetPos.set(null);
-      }
     }, true);
 
     this.flapPositionWord.sub((s) => {
       const flaps = s.valueOr(0);
-      const flapDetctThrshld = 5.0;
-
-      this.flapsOut = flaps > flapDetctThrshld;
 
       // Slats and flaps should align with future implementation; do not change
       const xFactor = 0.87;
@@ -237,22 +326,22 @@ class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
       let synchroOffset = 0;
       let positionFactor = 0;
       let positionOffset = 0;
-      if (flaps >= 0 && flaps < 108.2) {
+      if (flaps >= 0 && flaps < 214.927) {
         synchroOffset = 0;
-        positionFactor = 0.37;
-        positionOffset = 5.82;
-      } else if (flaps >= 108.2 && flaps < 154.5) {
+        positionFactor = 0.18575;
+        positionOffset = 2.8942;
+      } else if (flaps >= 214.927 && flaps < 259.019) {
         synchroOffset = 7.92;
-        positionFactor = 0.85;
-        positionOffset = 8.7;
-      } else if (flaps >= 154.5 && flaps < 194.0) {
+        positionFactor = 0.90853;
+        positionOffset = -12.768;
+      } else if (flaps >= 259.019 && flaps < 297.523) {
         synchroOffset = 18.11;
-        positionFactor = 1.0;
-        positionOffset = 17.4;
-      } else if (flaps >= 194.0 && flaps < 355) {
+        positionFactor = 1.0295;
+        positionOffset = -6.2983;
+      } else if (flaps >= 297.523 && flaps < 355) {
         synchroOffset = 26.8;
-        positionFactor = 1.55;
-        positionOffset = 26.1;
+        positionFactor = 0.9315;
+        positionOffset = 4.8816;
       }
 
       const value = Math.max(
@@ -263,51 +352,7 @@ class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
       const y = yFactor * value + 193.1;
       this.flapsPath.set(`M${x},${y} v 2.6 h 3.9 z`);
       this.flapsLinePath.set(`M 31.8 193.1 L ${x},${y}`);
-
-      if ((this.configClean || this.flaps1AutoRetract) && flaps > flapDetctThrshld) {
-        this.flapsTargetPos.set(0);
-      } else if (this.config1 && !this.flaps1AutoRetract && (flaps < 103.7 || flaps > 112.8)) {
-        this.flapsTargetPos.set(1);
-      } else if (this.config2 && (flaps < 150.1 || flaps > 159.2)) {
-        this.flapsTargetPos.set(2);
-      } else if (this.config3 && (flaps < 189.5 || flaps > 198.6)) {
-        this.flapsTargetPos.set(3);
-      } else if (this.configFull && (flaps < 214.3 || flaps > 223.4)) {
-        this.flapsTargetPos.set(4);
-      } else {
-        this.flapsTargetPos.set(null);
-      }
     }, true);
-
-    this.sub.on('realTime').handle((_t) => {
-      const inMotion = this.flapsTargetPos.get() !== null || this.slatsTargetPos.get() !== null;
-      this.targetVisible.set(this.slatsOut || this.flapsOut || !this.configClean ? 'visible' : 'hidden');
-      this.flapExtensionVisible.set(
-        (this.slatsOut || this.flapsOut || !this.configClean) && this.flapsDataValid.get() ? 'visible' : 'hidden',
-      );
-      this.slatExtensionVisible.set(
-        (this.slatsOut || this.flapsOut || !this.configClean) && this.flapsDataValid.get() ? 'visible' : 'hidden',
-      );
-
-      if (this.slatsFault.get()) {
-        this.slatIndexClass.set('NormalStroke Amber CornerRound');
-      } else if (this.slatsOut || this.flapsOut || !this.configClean) {
-        this.slatIndexClass.set('NormalStroke Green CornerRound');
-      } else {
-        this.slatIndexClass.set('NormalStroke White CornerRound');
-      }
-
-      if (this.flapsFault.get()) {
-        this.flapIndexClass.set('NormalStroke Amber CornerRound');
-      } else if (this.slatsOut || this.flapsOut || !this.configClean) {
-        this.flapIndexClass.set('NormalStroke Green CornerRound');
-      } else {
-        this.flapIndexClass.set('NormalStroke White CornerRound');
-      }
-
-      this.targetClass.set(inMotion ? 'FontMedium Cyan MiddleAlign' : 'FontMedium Green MiddleAlign');
-      this.targetBoxVisible.set(inMotion ? 'visible' : 'hidden');
-    });
   }
 
   spoilersLogFn(x: number) {

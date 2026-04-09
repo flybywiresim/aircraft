@@ -9,6 +9,7 @@ export type PseudoFwcSimvars = {
   engine2Master: number;
   engine3Master: number;
   engine4Master: number;
+  wheel1Rpm: number;
   fmgc1DiscreteWord1: number;
   fmgc2DiscreteWord1: number;
   fmgc1DiscreteWord3: number;
@@ -23,6 +24,7 @@ export class PseudoFwcSimvarPublisher extends SimVarPublisher<PseudoFwcSimvars> 
     ['engine2Master', { name: 'A:FUELSYSTEM VALVE SWITCH:2', type: SimVarValueType.Bool }],
     ['engine3Master', { name: 'A:FUELSYSTEM VALVE SWITCH:3', type: SimVarValueType.Bool }],
     ['engine4Master', { name: 'A:FUELSYSTEM VALVE SWITCH:4', type: SimVarValueType.Bool }],
+    ['wheel1Rpm', { name: 'A:WHEEL RPM:1', type: SimVarValueType.Number }],
     ['fmgc1DiscreteWord1', { name: 'L:A32NX_FMGC_1_DISCRETE_WORD_1', type: SimVarValueType.Number }],
     ['fmgc2DiscreteWord1', { name: 'L:A32NX_FMGC_2_DISCRETE_WORD_1', type: SimVarValueType.Number }],
     ['fmgc1DiscreteWord3', { name: 'L:A32NX_FMGC_1_DISCRETE_WORD_3', type: SimVarValueType.Number }],

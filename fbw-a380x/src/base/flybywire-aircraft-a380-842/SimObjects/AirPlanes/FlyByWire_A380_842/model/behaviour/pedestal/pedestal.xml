@@ -36,6 +36,7 @@
             <UseTemplate Name="FBW_ENGINE_Lever_Throttle_Template">
                 <NODE_ID>LEVER_THROTTLE_2</NODE_ID>
                 <ANIM_NAME>throttle_lever_2</ANIM_NAME>
+                <ANIM_NAME_REVERSER_LEVER>LEVER_THROTTLE_2_REVERSE</ANIM_NAME_REVERSER_LEVER>
                 <ID>2</ID>
                 <DRAG_SPEED>-10</DRAG_SPEED>
                 <POSITION_TYPE>L</POSITION_TYPE>
@@ -47,6 +48,7 @@
             <UseTemplate Name="FBW_ENGINE_Lever_Throttle_Template">
                 <NODE_ID>LEVER_THROTTLE_3</NODE_ID>
                 <ANIM_NAME>throttle_lever_3</ANIM_NAME>
+                <ANIM_NAME_REVERSER_LEVER>LEVER_THROTTLE_3_REVERSE</ANIM_NAME_REVERSER_LEVER>
                 <ID>3</ID>
                 <DRAG_SPEED>-10</DRAG_SPEED>
                 <POSITION_TYPE>L</POSITION_TYPE>

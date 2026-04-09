@@ -1127,7 +1127,7 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
     ],
   },
   213800004: {
-    title: '\x1b<4m\x1b4mCAB PRESS\x1bm EXCESS RESIDUAL DIFF PRESS',
+    title: '\x1b<2m\x1b4mCAB PRESS\x1bm EXCESS RESIDUAL DIFF PRESS',
     sensed: true,
     items: [
       {
@@ -1142,7 +1142,7 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'CABIN CREW',
-        sensed: true,
+        sensed: false,
         labelNotCompleted: 'ALERT',
       },
       {
@@ -1152,7 +1152,7 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
       },
       {
         name: 'RESIDUAL DIFF PRESS',
-        sensed: true,
+        sensed: false,
         labelNotCompleted: 'CHECK',
         level: 1,
       },
@@ -1721,12 +1721,12 @@ export const EcamAbnormalSensedAta212223: { [n: number]: AbnormalProcedure } = {
     sensed: true,
     items: [
       {
-        name: 'ALL THR LEVERS', // When all ENG operative
+        name: 'ALL THR LEVERS',
         sensed: true,
         labelNotCompleted: 'CLB',
       },
       {
-        name: 'THR LEVERS', // In case of ENG out
+        name: 'THR LEVERS',
         sensed: true,
         labelNotCompleted: 'MCT',
       },
