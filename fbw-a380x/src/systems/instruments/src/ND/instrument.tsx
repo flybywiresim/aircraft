@@ -8,6 +8,7 @@ import {
   FsBaseInstrument,
   FSComponent,
   FsInstrument,
+  HEvent,
   HEventPublisher,
   InstrumentBackplane,
   MappedSubject,
@@ -58,6 +59,7 @@ import { NDFMMessageTypes } from '@shared/FmMessages';
 import './style.scss';
 import './oans-style.scss';
 import { VerticalDisplay } from 'instruments/src/ND/VerticalDisplay/VerticalDisplay';
+import { InternalKccuKeyEvent } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 
 declare type MousePosition = {
   x: number;
@@ -269,7 +271,7 @@ class NDInstrument implements FsInstrument {
             terrainThresholdPaddingText={a380TerrainThresholdPadValue}
             rangeChangeMessage={a380NdRangeChange}
             modeChangeMessage={a380NdModeChange}
-            mapOptions={{ waypointBoxing: true }}
+            mapOptions={{ waypointBoxing: true, secondaryFlightPlanWaypointsInWhite: true }}
             fmMessages={Object.values(NDFMMessageTypes)}
           />
           <ContextMenu
@@ -355,7 +357,7 @@ class NDInstrument implements FsInstrument {
       });
     }
 
-    const sub = this.bus.getSubscriber<FcuSimVars & OansControlEvents & ResetPanelSimvars>();
+    const sub = this.bus.getSubscriber<FcuSimVars & OansControlEvents & ResetPanelSimvars & HEvent>();
 
     this.oansNotAvailable.setConsumer(sub.on('oans_not_avail'));
 
@@ -380,6 +382,14 @@ class NDInstrument implements FsInstrument {
         this.eraseCrossIndex.set(symbols.cross);
         this.eraseFlagIndex.set(symbols.flag);
         this.oansContextMenuItems.set(this.getOansContextMenu(symbols.cross !== null, symbols.flag !== null));
+      }
+    });
+
+    sub.on('hEvent').handle((eventName) => {
+      if (eventName.startsWith(this.efisSide === 'L' ? 'A32NX_KCCU_L' : 'A32NX_KCCU_R')) {
+        const key = eventName.substring(13);
+
+        this.bus.getPublisher<InternalKccuKeyEvent>().pub('kccuKeyEvent', [this.efisSide, key]);
       }
     });
   }

@@ -241,6 +241,10 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
     return this.callFunctionViaRpc('secondaryCopyFromActive', index, isBeforeEngineStart);
   }
 
+  secondaryCopyFromSecondary(from: number, to: number, isBeforeEngineStart: boolean): Promise<void> {
+    return this.callFunctionViaRpc('secondaryCopyFromSecondary', from, to, isBeforeEngineStart);
+  }
+
   secondaryDelete(index: number): Promise<void> {
     return this.callFunctionViaRpc('secondaryDelete', index);
   }
@@ -462,6 +466,14 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
     alternate?: boolean,
   ): Promise<void> {
     return this.callFunctionViaRpc('editLegDefinition', atIndex, changes, planIndex, alternate);
+  }
+
+  setOverfly(atIndex: number, overfly: boolean, planIndex: number, alternate: boolean): Promise<void> {
+    return this.callFunctionViaRpc('setOverfly', atIndex, overfly, planIndex, alternate);
+  }
+
+  toggleOverfly(atIndex: number, planIndex: number, alternate: boolean): Promise<void> {
+    return this.callFunctionViaRpc('toggleOverfly', atIndex, planIndex, alternate);
   }
 
   setFixInfoEntry(index: 1 | 2 | 3 | 4, fixInfo: FixInfoEntry | null, planIndex: number): Promise<void> {
