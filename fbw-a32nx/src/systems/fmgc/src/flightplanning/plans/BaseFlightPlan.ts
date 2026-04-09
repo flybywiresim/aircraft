@@ -622,7 +622,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   }
 
   get destinationLeg() {
-    return this.elementAt(this.destinationLegIndex);
+    const destinationLegIndex = this.destinationLegIndex;
+    return destinationLegIndex !== null ? this.elementAt(destinationLegIndex) : undefined;
   }
 
   get destinationLegIndex() {
@@ -638,7 +639,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       }
     }
 
-    return -1;
+    return null;
   }
 
   get endsAtRunway() {

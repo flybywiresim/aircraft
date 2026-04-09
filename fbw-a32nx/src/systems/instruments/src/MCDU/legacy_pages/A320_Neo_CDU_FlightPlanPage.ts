@@ -968,23 +968,25 @@ export class CDUFlightPlanPage {
         `{small}${destTimeCell}{end}{sp}{sp}{sp}{sp}`,
       ];
 
-      addLskAt(
-        5,
-        () => mcdu.getDelaySwitchPage(),
-        () => {
-          CDULateralRevisionPage.ShowPage(mcdu, targetPlan.destinationLeg, targetPlan.destinationLegIndex, forPlan);
-        },
-      );
+      const destLegIndex = targetPlan.destinationLegIndex;
+      const destLeg = targetPlan.destinationLeg;
+      if (destLegIndex !== null && destLeg && isLeg(destLeg)) {
+        addLskAt(
+          5,
+          () => mcdu.getDelaySwitchPage(),
+          () => {
+            CDULateralRevisionPage.ShowPage(mcdu, destLeg, destLegIndex, forPlan);
+          },
+        );
 
-      addRskAt(
-        5,
-        () => mcdu.getDelaySwitchPage(),
-        () => {
-          if (isLeg(targetPlan.destinationLeg)) {
+        addRskAt(
+          5,
+          () => mcdu.getDelaySwitchPage(),
+          () => {
             CDUVerticalRevisionPage.ShowPage(
               mcdu,
-              targetPlan.destinationLeg,
-              targetPlan.destinationLegIndex,
+              destLeg,
+              destLegIndex,
               undefined,
               undefined,
               undefined,
@@ -992,9 +994,9 @@ export class CDUFlightPlanPage {
               forPlan,
               false,
             );
-          }
-        },
-      );
+          },
+        );
+      }
     }
 
     // scrollText pad to 10 rows
