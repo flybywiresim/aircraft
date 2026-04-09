@@ -102,6 +102,7 @@
 1. [A32NX/FWS] Add `GEAR NOT DOWNLOCKED` master warning - @FozzieHi (fozzie)
 1. [A380X/FMS] Add secondary flight plans to A380X - @flogross89 (floridude), @BravoMike99 (bruno_pt99)
 1. [A380X/FMS] Allow edition of vnav descent speed - @BravoMike99 (bruno_pt99)
+1. [A32NX/MCDU] Fix ND reset to the departure airport when selecting the destination for approach - @Ditoo29 (dito29)
 
 ## 0.14.0
 
@@ -1881,4 +1882,3 @@
 1. [EFB] Restructured APIs and made Navigraph Auth a reusable component - @MicahBCode (Mischa Binder)
 1. [ECAM] Added F units to CRZ and COND pages for Cabin temps. Currently tied to kg/lbs option in EFB -Patrick Macken  (@PatM on Discord)
 1. [A32NX/FCU] Fixed bug where the FCU selected altitude would immediately switch to 1000s on selecting the 1000ft inteval knob - @elliot747 (Elliot)
-1. [A32NX/MCDU] Fixed bug where the ND resets to the departure airport when selecting the destination for approach entry - @Ditoo29 (dito29 on discord)
