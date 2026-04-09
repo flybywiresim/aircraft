@@ -9,7 +9,7 @@ import { Fix, MathUtils, WaypointDescriptor } from '@flybywiresim/fbw-sdk';
 import { SegmentType } from '@fmgc/wtsdk';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
-import { courseToFixDistanceToGo, fixToFixGuidance, getIntermediatePoint } from '@fmgc/guidance/lnav/CommonGeometry';
+import { courseToFixDistanceToGo, fixToFixGuidance } from '@fmgc/guidance/lnav/CommonGeometry';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { bearingTo, distanceTo } from 'msfs-geo';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
@@ -86,14 +86,6 @@ export class TFLeg extends XFLeg {
     }
 
     this.isComputed = true;
-  }
-
-  getPseudoWaypointLocation(distanceBeforeTerminator: NauticalMiles): Coordinates | undefined {
-    return getIntermediatePoint(
-      this.getPathStartPoint(),
-      this.getPathEndPoint(),
-      (this.distance - distanceBeforeTerminator) / this.distance,
-    );
   }
 
   getGuidanceParameters(ppos: Coordinates, trueTrack: Degrees): GuidanceParameters | null {

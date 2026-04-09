@@ -292,14 +292,6 @@
   - Bool
   - Set to true in a non-cold and dark flight phase to skip the initial memorization step
 
-- A32NX_FWC_TOMEMO
-    - Bool
-    - True when the FWC decides that the takeoff memo should be shown
-
-- A32NX_FWC_LDGMEMO
-    - Bool
-    - True when the FWC decides that the landing memo should be shown
-
 - A32NX_FWC_INHIBOVRD
     - Bool
     - True when the FWC decides that flight phase inhibits should be overridden (and ignored)
@@ -3934,7 +3926,8 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Percent
     - Trim wheel position in percent
 
-## Fuel ATA 28
+## Fuel (ATA 28)
+
 - A32NX_TOTAL_FUEL_QUANTITY
   - Number in kilogramm
   - The total physical quantity of fuel in the tanks
@@ -4170,6 +4163,7 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
       | 13  | LH gear shock absorber compressed (Don't treat GND PWR connected as on ground)      |
       | 14  | RH gear shock absorber compressed (Don't treat GND PWR connected as on ground)      |
       | 15  | LH & RH gear downlocked                                                             |
+      | 29  | Control fault                                                                       |
 
 
 - A32NX_LGCIU_{number}_DISCRETE_WORD_3
@@ -4201,6 +4195,7 @@ Use the `A32NXEcpBusPublisher` and `A32NXEcpBusEvents` for these in A32NX code.
       | 22  | LH flap attachment sensor valid     |
       | 25  | RH flap attachment failure detected |
       | 26  | RH flap attachment sensor valid     |
+      | 29  | SYS fault                           |
 
 - A32NX_LGCIU_{number}_{gear}_GEAR_COMPRESSED
     - Indicates if the shock absorber is compressed (not fully extended)

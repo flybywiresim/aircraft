@@ -153,39 +153,35 @@ export class MfdFmsDataAirport extends FmsPage<MfdFmsDataAirportProps> {
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.airportIcao.sub((icao: string | null) => {
-      if (icao && icao.length === 4) {
-        this.loadAirportRunways(icao);
-        this.isAirportInfoVisible.set(true);
-        this.isRunwayButtonListVisible.set(true);
-        this.isRunwayDataVisible.set(false);
-      } else {
-        this.isAirportInfoVisible.set(false);
-        this.isRunwayDataVisible.set(false);
-        this.isRunwayButtonListVisible.set(false);
-      }
-    });
-
-    this.selectedRunwayIndex.sub((index: number | null) => {
-      if (index === null) {
-        this.isRunwayButtonListVisible.set(true);
-        this.isRunwayDataVisible.set(false);
-      } else {
-        this.isRunwayButtonListVisible.set(false);
-        this.checkScrollButtons();
-        this.currentIndex.set(index + 1);
-        const runwayData = this.airportRunways.get()[index];
-        this.renderRunwayData(runwayData);
-      }
-    });
-
     this.subs.push(
+      this.airportIcao.sub((icao: string | null) => {
+        if (icao && icao.length === 4) {
+          this.loadAirportRunways(icao);
+          this.isAirportInfoVisible.set(true);
+          this.isRunwayButtonListVisible.set(true);
+          this.isRunwayDataVisible.set(false);
+        } else {
+          this.isAirportInfoVisible.set(false);
+          this.isRunwayDataVisible.set(false);
+          this.isRunwayButtonListVisible.set(false);
+        }
+      }),
+      this.selectedRunwayIndex.sub((index: number | null) => {
+        if (index === null) {
+          this.isRunwayButtonListVisible.set(true);
+          this.isRunwayDataVisible.set(false);
+        } else {
+          this.isRunwayButtonListVisible.set(false);
+          this.checkScrollButtons();
+          this.currentIndex.set(index + 1);
+          const runwayData = this.airportRunways.get()[index];
+          this.renderRunwayData(runwayData);
+        }
+      }),
       this.selectedPageIndex.sub((index) => {
         this.returnButtonVisible.set(index === 0);
       }),
-    );
 
-    this.subs.push(
       this.props.mfd.uiService.activeUri.sub((val) => {
         if (val.extra === 'database') {
           this.selectedPageIndex.set(0);
@@ -228,7 +224,7 @@ export class MfdFmsDataAirport extends FmsPage<MfdFmsDataAirportProps> {
                       canBeCleared={Subject.create(false)}
                       value={this.airportIcao}
                       alignText="center"
-                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                      errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
                       containerStyle="position: relative; right: 60px;"
@@ -369,7 +365,12 @@ export class MfdFmsDataAirport extends FmsPage<MfdFmsDataAirportProps> {
             />
           </div>
         </div>
-        <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
+        <Footer
+          bus={this.props.bus}
+          mfd={this.props.mfd}
+          fmcService={this.props.fmcService}
+          flightPlanInterface={this.props.fmcService.master.flightPlanInterface}
+        />
       </>
     );
   }

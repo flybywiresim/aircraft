@@ -13,12 +13,7 @@ export class MfdAtccomMsgRecordExpand extends DisplayComponent<MfdAtccomMsgRecor
   render(): VNode {
     return (
       <>
-        <ActivePageTitleBar
-          activePage={Subject.create('MSG RECORD/ALL MSG/EXPAND')}
-          offset={Subject.create('')}
-          eoIsActive={Subject.create(false)}
-          tmpyIsActive={Subject.create(false)}
-        />
+        <ActivePageTitleBar activePage={Subject.create('MSG RECORD/ALL MSG/EXPAND')} offset={Subject.create('')} />
         {/* begin page content */}
         <div class="mfd-page-container">
           <div style="display:flex; flex: 1 1 auto; width:100%">
@@ -80,7 +75,12 @@ export class MfdAtccomMsgRecordExpand extends DisplayComponent<MfdAtccomMsgRecor
         >
           <span>NOT YET IMPLEMENTED</span>
         </div>
-        <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
+        <Footer
+          bus={this.props.bus}
+          mfd={this.props.mfd}
+          fmcService={this.props.fmcService}
+          flightPlanInterface={this.props.fmcService.master.flightPlanInterface}
+        />
       </>
     );
   }

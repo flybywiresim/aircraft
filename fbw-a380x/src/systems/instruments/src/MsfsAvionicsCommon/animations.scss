@@ -1,0 +1,9 @@
+@mixin GenericPulsingFill($color, $name) {
+  @keyframes #{$name} {
+    0% {fill: scale-color($color, $lightness: -30%);}
+    50% {fill: scale-color($color, $lightness: -30%);}
+    51% {fill: scale-color($color, $lightness: 30%);}
+    100% {fill: scale-color($color, $lightness: 30%);}
+  }
+  animation-name: $name;
+}

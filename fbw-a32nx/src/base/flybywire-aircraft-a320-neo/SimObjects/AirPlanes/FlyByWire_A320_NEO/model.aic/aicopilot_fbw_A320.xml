@@ -1,0 +1,8 @@
+<!--  This attachment file is overriden by FS2Crew to attach their objects to the plane. Do not use
+for anything else!  -->
+<ModelInfo>
+    <LODS>
+        <LOD minSize="0.0" ModelFile="empty.gltf" />
+    </LODS>
+    <Behaviors/>
+</ModelInfo>

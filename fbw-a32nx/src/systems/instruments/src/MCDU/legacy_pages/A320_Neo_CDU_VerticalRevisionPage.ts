@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2023 2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -13,6 +13,9 @@ import { AltitudeDescriptor, WaypointConstraintType } from '@flybywiresim/fbw-sd
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { CDUInitPage } from './A320_Neo_CDU_InitPage';
+import { CduRtaPage } from './CDU_RTA_Page';
+import { VerticalWaypointPrediction } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
+import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 
 export class CDUVerticalRevisionPage {
   /**
@@ -25,12 +28,12 @@ export class CDUVerticalRevisionPage {
    */
   static ShowPage(
     mcdu: LegacyFmsPageInterface,
-    waypoint,
-    wpIndex,
-    verticalWaypoint,
-    confirmSpeed = undefined,
-    confirmAlt = undefined,
-    confirmCode = undefined,
+    waypoint: FlightPlanLeg,
+    wpIndex: number,
+    verticalWaypoint: VerticalWaypointPrediction,
+    confirmSpeed?: number,
+    confirmAlt?: number,
+    confirmCode?: AltitudeDescriptor,
     forPlan = FlightPlanIndex.Active,
     inAlternate = false,
   ) {
@@ -196,12 +199,16 @@ export class CDUVerticalRevisionPage {
       }
     }
 
+    // Disable RTA if ETT insertion not possible as nothing else is simulated for the time being
+    const allowRta =
+      !mainTargetPlan.isActiveOrCopiedFromActive() || mcdu.flightPhaseManager.phase === FmgcFlightPhase.Preflight;
+
     mcdu.setTemplate([
       ['VERT REV {small}AT{end}{green} ' + waypointIdent + '{end}'],
       [],
       [''],
       [speedLimitTitle, ''],
-      [speedLimitCell, 'RTA>[color]inop'],
+      [speedLimitCell, `${allowRta ? '' : '{inop}'}RTA>`],
       [l3Title, r3Title],
       [l3Cell, r3Cell],
       [l4Title, r4Title],
@@ -322,7 +329,11 @@ export class CDUVerticalRevisionPage {
         inAlternate,
       );
     }; // SPD LIM
-    mcdu.onRightInput[1] = () => {}; // RTA
+    mcdu.onRightInput[1] = () => {
+      if (allowRta) {
+        CduRtaPage.ShowPage(mcdu, waypoint, wpIndex, verticalWaypoint, forPlan);
+      }
+    }; // RTA
     mcdu.onLeftInput[2] = async (value, scratchpadCallback) => {
       if (value === Keypad.clrValue) {
         await mcdu.flightPlanService.setPilotEnteredSpeedConstraintAt(
@@ -732,7 +743,12 @@ export class CDUVerticalRevisionPage {
       speed = parseInt(matchResult[2]);
     }
 
-    const code = matchResult[4] === undefined ? '@' : matchResult[4] === '-' ? '-' : '+';
+    const code =
+      matchResult[4] === undefined
+        ? AltitudeDescriptor.AtAlt1
+        : matchResult[4] === '-'
+          ? AltitudeDescriptor.AtOrAboveAlt1
+          : AltitudeDescriptor.AtOrBelowAlt1;
 
     if (matchResult[8] !== undefined) {
       alt = parseInt(matchResult[8]) * 100;
