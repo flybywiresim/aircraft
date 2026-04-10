@@ -16,6 +16,7 @@ import {
 } from '@microsoft/msfs-sdk';
 import { DataEntryFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
+import { EfisSide } from '@flybywiresim/fbw-sdk';
 
 export enum InteractionMode {
   Touchscreen,
@@ -53,7 +54,7 @@ interface InputFieldProps<T, U = T, S = T extends U ? true : false> extends Comp
   /** Whether the temporary flight plan is active and should color this field yellow */
   tmpyActive?: Subscribable<boolean>;
   /** Only handles KCCU input for respective side, receives key name only */
-  hEventConsumer: Consumer<string>;
+  hEventConsumer: Consumer<[EfisSide, string]>;
   /** Kccu uses the HW keys, and doesn't focus input fields */
   interactionMode: Subscribable<InteractionMode>;
 
@@ -560,27 +561,27 @@ export class InputField<
       // Un-select the text
       this.textInputRef.instance.classList.remove('valueSelected');
 
-      if (key.match(/^[a-zA-Z0-9]{1}$/)) {
-        this.handleKeyInput(key);
+      if (key[1].match(/^[a-zA-Z0-9]{1}$/)) {
+        this.handleKeyInput(key[1]);
       }
 
-      if (key === 'ENT') {
+      if (key[1] === 'ENT') {
         this.handleEnter();
       }
 
-      if (key === 'SP') {
+      if (key[1] === 'SP') {
         this.handleKeyInput(' ');
       }
 
-      if (key === 'SLASH') {
+      if (key[1] === 'SLASH') {
         this.handleKeyInput('/');
       }
 
-      if (key === 'DOT') {
+      if (key[1] === 'DOT') {
         this.handleKeyInput('.');
       }
 
-      if (key === 'PLUSMINUS') {
+      if (key[1] === 'PLUSMINUS') {
         const val = this.modifiedFieldValue.get();
         if (val && val.substring(0, 1) === '+') {
           this.modifiedFieldValue.set(`-${val.substring(1)}`);
@@ -591,17 +592,17 @@ export class InputField<
         }
       }
 
-      if (key === 'BACKSPACE') {
+      if (key[1] === 'BACKSPACE') {
         this.handleBackspace();
       }
 
-      if (key === 'ESC' || key === 'ESC2') {
+      if (key[1] === 'ESC' || key[1] === 'ESC2') {
         const [formatted] = this.props.dataEntryFormat.format(this.readValue.get());
         this.modifiedFieldValue.set(formatted);
         this.handleEnter();
       }
 
-      if (key === 'UP' || key === 'RIGHT' || key === 'DOWN' || key === 'LEFT') {
+      if (key[1] === 'UP' || key[1] === 'RIGHT' || key[1] === 'DOWN' || key[1] === 'LEFT') {
         // Unsupported atm
       }
     });

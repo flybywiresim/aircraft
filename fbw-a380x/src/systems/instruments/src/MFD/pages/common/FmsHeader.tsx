@@ -76,11 +76,11 @@ export class FmsHeader extends AbstractHeader {
             isActive={this.secIndexIsSelected}
             label="SEC INDEX"
             menuItems={[
-              { label: 'SEC 1', action: () => this.props.uiService.navigateTo('fms/sec1/init'), disabled: true },
-              { label: 'SEC 2', action: () => this.props.uiService.navigateTo('fms/sec2/init'), disabled: true },
-              { label: 'SEC 3', action: () => this.props.uiService.navigateTo('fms/sec3/init'), disabled: true },
+              { label: 'SEC 1', action: () => this.props.uiService.navigateTo('fms/sec/index/1') },
+              { label: 'SEC 2', action: () => this.props.uiService.navigateTo('fms/sec/index/2') },
+              { label: 'SEC 3', action: () => this.props.uiService.navigateTo('fms/sec/index/3') },
             ]}
-            idPrefix={`${this.props.uiService.captOrFo}_MFD_pageSelectorSsecIndex`}
+            idPrefix={`${this.props.uiService.captOrFo}_MFD_pageSelectorSecIndex`}
             containerStyle="flex: 1"
           />
           <PageSelectorDropdownMenu

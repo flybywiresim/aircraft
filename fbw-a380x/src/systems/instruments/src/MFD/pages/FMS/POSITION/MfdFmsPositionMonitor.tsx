@@ -3,7 +3,7 @@
 import { ClockEvents, FSComponent, SimVarValueType, Subject, VNode } from '@microsoft/msfs-sdk';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { FmsPage } from '../../common/FmsPage';
-import { Arinc429Register, coordinateToString, Fix, RegisteredSimVar } from '@flybywiresim/fbw-sdk';
+import { Arinc429Register, coordinateToString, Fix, MagVar, RegisteredSimVar } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Footer } from '../../common/Footer';
 import { FixFormat, RnpFormat } from '../../common/DataEntryFormats';
@@ -18,7 +18,6 @@ import {
 } from 'instruments/src/MFD/shared/utils';
 import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
-import { A32NX_Util } from '@shared/A32NX_Util';
 import { MfdFmsPositionNavaids } from './MfdFmsPositionNavaids';
 
 interface MfdFmsPositionMonitorPageProps extends AbstractMfdPageProps {}
@@ -153,7 +152,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
   private readonly onSidePositionLabel = Subject.create(this.props.mfd.uiService.captOrFo === 'CAPT' ? 'POS1' : 'POS2');
 
   private readonly monitorWaypoint =
-    this.props.fmcService.master?.fmgc.data.positionMonitorFix ?? Subject.create<Fix | null>(null);
+    this.props.fmcService.master.fmgc.data.positionMonitorFix ?? Subject.create<Fix | null>(null);
 
   // TODO implement when FM position
   private readonly position1Mode = Subject.create('');
@@ -328,8 +327,9 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
     if (waypoint && fmCoordinates) {
       const distanceToWaypointNm = distanceTo(fmCoordinates, waypoint.location);
       this.distanceToWaypoint.set(distanceToWaypointNm);
+      const magVar = MagVar.get(fmCoordinates);
       this.bearingToWaypoint.set(
-        A32NX_Util.trueToMagnetic(Avionics.Utils.computeGreatCircleHeading(fmCoordinates, waypoint.location)),
+        MagVar.trueToMagnetic(Avionics.Utils.computeGreatCircleHeading(fmCoordinates, waypoint.location), magVar ?? 0),
       );
     } else {
       this.distanceToWaypoint.set(null);
@@ -423,12 +423,12 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                 <InputField<number>
                   dataEntryFormat={new RnpFormat()}
                   value={this.fmsRnp}
-                  onModified={(v) => this.props.fmcService.master?.navigation.setPilotRnp(v)}
+                  onModified={(v) => this.props.fmcService.master.navigation.setPilotRnp(v)}
                   enteredByPilot={this.rnpEnteredByPilot}
                   canBeCleared={Subject.create(true)}
                   containerStyle="width: 155px;"
                   alignText="center"
-                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
                   bigUnit={true}
@@ -653,7 +653,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
                   enteredByPilot={this.waypointEntered}
                   canBeCleared={Subject.create(true)}
                   alignText="center"
-                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
                   containerStyle='"width:130px;'
@@ -710,7 +710,12 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
               />
             </div>
           </div>
-          <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
+          <Footer
+            bus={this.props.bus}
+            mfd={this.props.mfd}
+            fmcService={this.props.fmcService}
+            flightPlanInterface={this.props.fmcService.master.flightPlanInterface}
+          />
         </div>
       </>
     );

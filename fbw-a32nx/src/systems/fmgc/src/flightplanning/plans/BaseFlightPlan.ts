@@ -17,6 +17,7 @@ import {
   Departure,
   Fix,
   LegType,
+  MagVar,
   ProcedureTransition,
   Runway,
   SpeedDescriptor,
@@ -98,8 +99,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     protected readonly context: FlightPlanContext,
     public readonly index: number,
     public readonly bus: EventBus,
+    public readonly timeCreated?: number,
   ) {
     this.perfSyncPub = this.bus.getPublisher<PerformanceDataFlightPlanSyncEvents<P>>();
+    this.wasModified = false;
   }
 
   public async processSyncEvent(
@@ -238,6 +241,11 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       subscription.destroy();
     }
   }
+
+  /**
+   * Whether the flight plan was modified after import or creation using a lateral or vertical flight plan revision.
+   */
+  public wasModified: boolean;
 
   get legCount() {
     return this.allLegs.length;
@@ -853,11 +861,11 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
   }
 
-  get originAirport(): Airport {
+  get originAirport(): Airport | undefined {
     return this.originSegment.originAirport;
   }
 
-  async setOriginAirport(icao: string) {
+  async setOriginAirport(icao: string | undefined) {
     await this.originSegment.setAirport(icao);
 
     await this.flushOperationQueue();
@@ -868,7 +876,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     return this.originSegment.originRunway;
   }
 
-  async setOriginRunway(runwayIdent: string) {
+  async setOriginRunway(runwayIdent: string | undefined) {
     await this.originSegment.setRunway(runwayIdent);
 
     await this.flushOperationQueue();
@@ -969,7 +977,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     this.incrementVersion();
   }
 
-  get destinationAirport(): Airport {
+  get destinationAirport(): Airport | undefined {
     return this.destinationSegment.destinationAirport;
   }
 
@@ -1478,7 +1486,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     if (targetLeg.type === LegType.HA || targetLeg.type === LegType.HF || targetLeg.type === LegType.HM) {
       targetLeg.type = LegType.HM;
       targetLeg.definition.turnDirection = desiredHold.turnDirection;
-      targetLeg.definition.magneticCourse = desiredHold.inboundMagneticCourse;
+      targetLeg.definition.course = desiredHold.inboundMagneticCourse;
       targetLeg.definition.length = desiredHold.distance;
       targetLeg.definition.lengthTime = desiredHold.time;
 
@@ -1491,7 +1499,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
 
     const [insertSegment, indexInSegment] = this.segmentPositionForIndex(atIndex);
-    const manualHoldLeg = FlightPlanLeg.manualHold(insertSegment, waypoint, desiredHold);
+    const magVar = MagVar.getForFix(waypoint);
+    const manualHoldLeg = FlightPlanLeg.manualHold(insertSegment, waypoint, desiredHold, magVar);
 
     manualHoldLeg.modifiedHold = modifiedHold;
     manualHoldLeg.defaultHold = defaultHold;
@@ -2260,7 +2269,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
                 element.terminationWaypoint().location,
               );
               element.type = LegType.CF;
-              element.definition.magneticCourse = track;
+              element.definition.course =
+                element.definition.magVar !== null ? MagVar.trueToMagnetic(track, element.definition.magVar) : track;
               // Get correct ident/annotation for CF leg
               [element.ident, element.annotation] = procedureLegIdentAndAnnotation(
                 element.definition,

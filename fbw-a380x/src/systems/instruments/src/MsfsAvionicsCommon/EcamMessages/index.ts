@@ -610,6 +610,7 @@ export enum ChecklistLineStyle {
   Green = 'Green',
   Amber = 'Amber',
   White = 'White',
+  Red = 'Red',
   Headline = 'Headline',
   SubHeadline = 'SubHeadline',
   CenteredSubHeadline = 'CenteredSubHeadline',

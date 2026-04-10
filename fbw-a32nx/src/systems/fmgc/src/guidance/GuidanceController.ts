@@ -3,7 +3,15 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { EfisSide, EfisNdMode, ApproachUtils, SimVarString, ApproachType, LegType } from '@flybywiresim/fbw-sdk';
+import {
+  EfisSide,
+  EfisNdMode,
+  ApproachUtils,
+  SimVarString,
+  ApproachType,
+  LegType,
+  MagVar,
+} from '@flybywiresim/fbw-sdk';
 
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { PseudoWaypoint } from '@fmgc/guidance/PseudoWaypoint';
@@ -95,8 +103,8 @@ export class GuidanceController {
     return this.getGeometryForFlightPlan(FlightPlanIndex.Temporary);
   }
 
-  get secondaryGeometry(): Geometry | null {
-    return this.getGeometryForFlightPlan(FlightPlanIndex.FirstSecondary);
+  secondaryGeometry(secIndex: number = 1): Geometry | null {
+    return this.getGeometryForFlightPlan(FlightPlanIndex.FirstSecondary + secIndex - 1);
   }
 
   hasGeometryForFlightPlan(index: number, alternate = false) {
@@ -268,8 +276,11 @@ export class GuidanceController {
           : activeLeg.getPathEndPoint();
       const ppos = this.lnavDriver.ppos;
       const efisTrueBearing = termination ? Avionics.Utils.computeGreatCircleHeading(ppos, termination) : -1;
+      const magVar = MagVar.get(ppos);
       const efisBearing = termination
-        ? A32NX_Util.trueToMagnetic(efisTrueBearing, Facilities.getMagVar(ppos.lat, ppos.long))
+        ? magVar !== null
+          ? MagVar.trueToMagnetic(efisTrueBearing, magVar)
+          : efisTrueBearing
         : -1;
 
       // Don't compute distance and ETA for XM legs
@@ -395,8 +406,11 @@ export class GuidanceController {
       this.tryUpdateFlightPlanGeometry(FlightPlanIndex.Active, false);
       this.tryUpdateFlightPlanGeometry(FlightPlanIndex.Active, true);
       this.tryUpdateFlightPlanGeometry(FlightPlanIndex.Temporary, false);
-      this.tryUpdateFlightPlanGeometry(FlightPlanIndex.FirstSecondary, false);
-      this.tryUpdateFlightPlanGeometry(FlightPlanIndex.FirstSecondary, true);
+
+      for (let i = 0; i < this.acConfig.fpmConfig.NUM_SECONDARY_FLIGHT_PLANS; i++) {
+        this.tryUpdateFlightPlanGeometry(FlightPlanIndex.FirstSecondary + i, false);
+        this.tryUpdateFlightPlanGeometry(FlightPlanIndex.FirstSecondary + i, true);
+      }
 
       if (this.geometryRecomputationTimer > GEOMETRY_RECOMPUTATION_TIMER) {
         this.geometryRecomputationTimer = 0;
@@ -404,8 +418,11 @@ export class GuidanceController {
         this.tryUpdateFlightPlanGeometry(FlightPlanIndex.Active, false, true);
         this.tryUpdateFlightPlanGeometry(FlightPlanIndex.Active, true, true);
         this.tryUpdateFlightPlanGeometry(FlightPlanIndex.Temporary, false, true);
-        this.tryUpdateFlightPlanGeometry(FlightPlanIndex.FirstSecondary, false, true);
-        this.tryUpdateFlightPlanGeometry(FlightPlanIndex.FirstSecondary, true, true);
+
+        for (let i = 0; i < this.acConfig.fpmConfig.NUM_SECONDARY_FLIGHT_PLANS; i++) {
+          this.tryUpdateFlightPlanGeometry(FlightPlanIndex.FirstSecondary + i, false, true);
+          this.tryUpdateFlightPlanGeometry(FlightPlanIndex.FirstSecondary + i, true, true);
+        }
 
         if (this.activeGeometry) {
           try {

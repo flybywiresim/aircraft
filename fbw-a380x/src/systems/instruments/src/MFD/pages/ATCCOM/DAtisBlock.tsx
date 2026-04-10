@@ -75,6 +75,11 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
     this.isIcaoEmpty,
   );
 
+  /**
+   * Truncates a D-ATIS message to match the max display length on of the D-ATIS block
+   * @param {string} string raw D-ATIS string to be truncated
+   * @returns {string} truncated D-ATIS string
+   */
   private truncateAtis(string: string): string {
     if (string.length === 0) return '';
     const messageArray: string[] = ['', '', '', '', ''];
@@ -118,6 +123,10 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
 
   private readonly statusButtonVisible = this.messageStatusLabel.map((status) => status != null && status.length !== 0);
 
+  /**
+   * Fetch ATIS data from datalink to update datablock
+   * @param {string} airportIcao icao of D-ATIS to fetch
+   */
   private updateAtisData(airportIcao: string): void {
     const atisReport: AtisMessage = this.datalink.atisReports(airportIcao)[0];
     if (atisReport === undefined) return;
@@ -132,6 +141,10 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
     }
   }
 
+  /**
+   * Request ATC datalink to toggle auto update of a D-ATIS station
+   * @param {string} icao 4-letter icao of D-ATIS station to toggle auto update
+   */
   public toggleAtisAutoUpdate(icao: string): void {
     if (this.datalink.atisAutoUpdateActive(icao)) {
       // could check FCOM if some error handling could be added

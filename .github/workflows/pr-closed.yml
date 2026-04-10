@@ -9,7 +9,6 @@ jobs:
     name: Cancel other workflows
     runs-on: ubuntu-latest
     permissions:
-      contents: read
       actions: write
     steps:
       - name: Cancel PR build
@@ -26,6 +25,8 @@ jobs:
   remove-from-qa-config:
     name: Remove PR from QA Config
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout trusted source
         uses: actions/checkout@v4
@@ -47,6 +48,8 @@ jobs:
             endpoint = ${{ secrets.CLOUDFLARE_R2_ENDPOINT }}
             region = auto
             EOF
+      - name: Lock QA config
+        run: ./scripts/acquire_lock.sh installer/qa-config/.lock
       - name: Remove QA config entries
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -67,3 +70,6 @@ jobs:
           rclone delete cloudflare-r2:$R2_BUCKET/$CDN_BUCKET_DESTINATION_A32NX || true
           rclone delete cloudflare-r2:$R2_BUCKET/$CDN_BUCKET_DESTINATION_A380X_4K || true
           rclone delete cloudflare-r2:$R2_BUCKET/$CDN_BUCKET_DESTINATION_A380X_8K || true
+      - name: Release QA config lock
+        if: always()
+        run: ./scripts/release_lock.sh installer/qa-config/.lock
