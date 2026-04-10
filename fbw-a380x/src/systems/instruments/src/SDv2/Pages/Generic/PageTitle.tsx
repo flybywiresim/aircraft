@@ -1,4 +1,4 @@
-import { DisplayComponent, FSComponent } from '@microsoft/msfs-sdk';
+import { DisplayComponent, FSComponent, Subscribable } from '@microsoft/msfs-sdk';
 
 export interface PageTitleProps {
   readonly x: number;
@@ -18,7 +18,7 @@ export class PageTitle extends DisplayComponent<PageTitleProps> {
 export interface MoreLabelProps {
   readonly x: number;
   readonly y: number;
-  readonly moreActive: boolean;
+  readonly moreActive: Subscribable<boolean>;
 }
 
 export class MoreLabel extends DisplayComponent<MoreLabelProps> {
@@ -28,14 +28,14 @@ export class MoreLabel extends DisplayComponent<MoreLabelProps> {
         <text
           x={this.props.x - 27}
           y={this.props.y}
-          className={`F24 White LS-8 ${this.props.moreActive ? 'Hide' : ''}`}
+          class={{ F24: true, White: true, 'LS-8': true, Hide: this.props.moreActive }}
         >
           ...
         </text>
         <text
           x={this.props.x - (this.props.moreActive ? 15 : 0)}
           y={this.props.y}
-          class={`F26 White ${this.props.moreActive ? 'TextUnderline' : ''}`}
+          class={{ F26: true, White: true, TextUnderline: this.props.moreActive }}
         >
           MORE
         </text>

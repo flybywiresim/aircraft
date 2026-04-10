@@ -38,8 +38,6 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
   private readonly subs = [] as Subscription[];
 
-  private readonly eoActive = Subject.create<boolean>(false);
-
   private readonly sub = this.props.bus.getSubscriber<MfdSimvars & MfdSurvEvents>();
 
   private readonly xpdrFailed = Subject.create<boolean>(false);
@@ -199,9 +197,6 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
       this.tawsTerrFailed,
       this.tawsGpwsFailed,
       this.allTawsFailed,
-      this.props.fmcService.masterFmcChanged.sub(() =>
-        this.props.fmcService.master?.fmgc.data.engineOut.pipe(this.eoActive),
-      ),
     );
   }
 
@@ -216,7 +211,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
 
   private xpdrStatusChanged() {
     const state = this.xpdrState.get();
-    const isOnGround = this.props.fmcService.master?.fmgc.isOnGround();
+    const isOnGround = this.props.fmcService.master.fmgc.isOnGround();
 
     this.xpdrStatusSelectedIndex.set(
       state === TransponderState.ModeA || state === TransponderState.ModeC || state === TransponderState.ModeS ? 0 : 1,
@@ -269,12 +264,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
   render(): VNode {
     return (
       <>
-        <ActivePageTitleBar
-          activePage={Subject.create('CONTROLS')}
-          offset={Subject.create('')}
-          eoIsActive={this.eoActive}
-          tmpyIsActive={Subject.create(false)}
-        />
+        <ActivePageTitleBar activePage={Subject.create('CONTROLS')} offset={Subject.create('')} />
         {/* begin page content */}
         <div class="mfd-page-container">
           <div class="mfd-surv-controls-first-section">
@@ -293,7 +283,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
                   }
                   value={this.squawkCode}
                   containerStyle="width: 100px; margin-bottom: 5px;"
-                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
                   alignText={'center'}
@@ -498,7 +488,12 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
           </div>
         </div>
         {/* end page content */}
-        <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
+        <Footer
+          bus={this.props.bus}
+          mfd={this.props.mfd}
+          fmcService={this.props.fmcService}
+          flightPlanInterface={this.props.fmcService.master.flightPlanInterface}
+        />
       </>
     );
   }

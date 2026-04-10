@@ -37,12 +37,12 @@
   padding: 3px 10px 3px 7px;
 }
 
-.mfd-title-bar-title-label {
+.mfd-title-bar-text {
   color: #222222;
-  font-size: 28px;
+  font-size: 30px;
 }
 
-.mfd-title-bar-eo-section {
+.mfd-title-bar-section {
   display: flex;
   width: 70px;
   background-color: $display-dark-grey;
@@ -51,28 +51,29 @@
   align-items: center;
 }
 
-.mfd-title-bar-eo-label {
-  background-color: $display-amber;
-  color: #222222;
-  font-size: 26px;
-  padding: 2px;
+.mfd-title-bar-section.eo {
+  width: 70px;
 }
 
-.mfd-title-bar-tmpy-section {
-  display: flex;
+.mfd-title-bar-section.tmpy {
   width: 100px;
-  background-color: $display-dark-grey;
-  margin-left: 2px;
-  justify-content: center;
-  align-items: center;
 }
 
-.mfd-title-bar-tmpy-label {
-  background-color: $display-yellow;
-  color: #222222;
-  font-size: 26px;
+.mfd-title-bar-text.label {
   padding: 2px;
 }
+
+.mfd-title-bar-text.yellow {
+  background-color: $display-yellow;
+}
+.mfd-title-bar-text.white {
+  background-color: $display-white;
+}
+
+.mfd-title-bar-text.amber {
+  background-color: $display-amber;
+}
+
 
 .mfd-header-sys-select-row {
   display: flex;
@@ -114,6 +115,10 @@
 .fr {
   display: flex;
   flex-direction: row;
+}
+
+.fr.space-between {
+  justify-content: space-between;
 }
 
 .grow {

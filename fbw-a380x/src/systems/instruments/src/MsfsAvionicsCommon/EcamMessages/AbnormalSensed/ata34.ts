@@ -304,7 +304,7 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
   340800015: {
     title: '\x1b<4m\x1b4mNAV\x1bm ARPT NAV FAULT',
     sensed: true,
-    items: [], // not implemented
+    items: [],
   },
   340800016: {
     title: '\x1b<4m\x1b4mNAV\x1bm CAPT AND F/O ALT DISAGREE',
@@ -778,6 +778,11 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
     items: [], // not implemented
   },
   // SURVEILLANCE
+  341800015: {
+    title: '\x1b<4m\x1b4mSURV\x1bm ROW/ROP LOST',
+    sensed: true,
+    items: [],
+  },
   341800016: {
     title: '\x1b<4m\x1b4mSURV\x1bm TCAS 1 FAULT',
     sensed: true,

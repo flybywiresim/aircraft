@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { GuidanceComponent } from '@fmgc/guidance/GuidanceComponent';
@@ -256,13 +256,10 @@ export class PseudoWaypoints implements GuidanceComponent {
         break;
       case PseudoWaypointSequencingAction.APPROACH_PHASE_AUTO_ENGAGE: {
         const apLateralMode = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_MODE', 'Number');
-        const agl = Simplane.getAltitudeAboveGround();
-
         if (
-          agl < 9500 &&
-          (apLateralMode === LateralMode.NAV ||
-            apLateralMode === LateralMode.LOC_CPT ||
-            apLateralMode === LateralMode.LOC_TRACK)
+          apLateralMode === LateralMode.NAV ||
+          apLateralMode === LateralMode.LOC_CPT ||
+          apLateralMode === LateralMode.LOC_TRACK
         ) {
           // Request APPROACH phase engagement for 5 seconds
           SimVar.SetSimVarValue('L:A32NX_FM_ENABLE_APPROACH_PHASE', 'Bool', true).then(() => [
@@ -317,32 +314,23 @@ export class PseudoWaypoints implements GuidanceComponent {
         );
         const totalLegPathLength = inboundTransLength + legPartLength + outboundTransLength;
 
-        const distanceFromEndOfLeg = distanceFromEnd - accumulator;
+        const distanceFromEndOfLeg = Math.min(distanceFromEnd - accumulator, totalLegPathLength);
 
         let lla: Coordinates | undefined;
-        if (distanceFromEndOfLeg > totalLegPathLength) {
-          // PWP in disco
-          if (VnavConfig.DEBUG_PROFILE) {
-            console.log(
-              `[FMS/PWP] Placed PWP '${debugString}' in discontinuity before leg #${i} (${distanceFromEndOfLeg.toFixed(2)}nm before end)`,
-            );
-          }
-
-          lla = geometryLeg.getPseudoWaypointLocation(distanceFromEndOfLeg);
-        } else if (distanceFromEndOfLeg < outboundTransLength) {
+        if (distanceFromEndOfLeg < outboundTransLength) {
           // Point is in outbound transition segment
-          const distanceBeforeTerminator = distanceFromEndOfLeg;
+          const distanceBeforeTerminator = outboundTransLength + distanceFromEndOfLeg;
 
           if (VnavConfig.DEBUG_PROFILE) {
             console.log(
-              `[FMS/PWP] Placed PWP '${debugString}' on leg #${i} outbound segment (${distanceFromEndOfLeg.toFixed(2)}nm before end)`,
+              `[FMS/PWP] Placed PWP '${debugString}' on leg #${i} outbound segment (${distanceBeforeTerminator.toFixed(2)}nm before end)`,
             );
           }
 
           lla = outboundTrans.getPseudoWaypointLocation(distanceBeforeTerminator);
         } else if (
           distanceFromEndOfLeg >= outboundTransLength &&
-          distanceFromEndOfLeg < outboundTransLength + legPartLength
+          distanceFromEndOfLeg <= outboundTransLength + legPartLength
         ) {
           // Point is in leg segment
           const distanceBeforeTerminator = distanceFromEndOfLeg - outboundTransLength;
@@ -355,7 +343,7 @@ export class PseudoWaypoints implements GuidanceComponent {
 
           lla = geometryLeg.getPseudoWaypointLocation(distanceBeforeTerminator);
         } else {
-          // Point is in inbound transition segment
+          // Point is in inbound transition segment or in the discontinuity before this leg
           const distanceBeforeTerminator = distanceFromEndOfLeg - outboundTransLength - legPartLength;
 
           if (VnavConfig.DEBUG_PROFILE) {

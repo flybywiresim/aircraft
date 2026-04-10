@@ -14,6 +14,8 @@ import { FwcPublisher, RopRowOansPublisher, SecPublisher, TawsPublisher } from '
 import { FwsPfdSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FwsPfdPublisher';
 import { FcdcSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FcdcPublisher';
 import { SfccSimVarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/SfccPublisher';
+import { FGDataPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FGDataPublisher';
+import { FqmsBusPublisher } from '@shared/publishers/FqmsBusPublisher';
 
 import './style.scss';
 
@@ -54,6 +56,10 @@ class A380X_PFD extends BaseInstrument {
 
   private readonly sfccPublisher = new SfccSimVarPublisher(this.bus);
 
+  private readonly fgDataPublisher = new FGDataPublisher(this.bus);
+
+  private readonly fqmsPublisher = new FqmsBusPublisher(this.bus);
+
   constructor() {
     super();
 
@@ -77,6 +83,8 @@ class A380X_PFD extends BaseInstrument {
     this.backplane.addPublisher('FcuBusPublisher', this.fcuBusPublisher);
     this.backplane.addPublisher('FcdcPublisher', this.fcdcPublisher);
     this.backplane.addPublisher('SfccPublisher', this.sfccPublisher);
+    this.backplane.addPublisher('FgDataPublisher', this.fgDataPublisher);
+    this.backplane.addPublisher('FqmsPublisher', this.fqmsPublisher);
   }
 
   get templateID(): string {

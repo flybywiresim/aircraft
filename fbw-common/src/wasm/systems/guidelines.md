@@ -24,7 +24,7 @@ When reading and writing `uom` types using `SimulatorReader` and `SimulatorWrite
 
 ## HashMap and HashSet
 
-Prefer using `fxhash::{FxHashMap, FxHashSet}` over using `std::collections::{HashMap, HashSet}`.
+Prefer using `rustc_hash::{FxHashMap, FxHashSet}` over using `std::collections::{HashMap, HashSet}`.
 
 **Rationale**: These use a significantly faster hasher.
 

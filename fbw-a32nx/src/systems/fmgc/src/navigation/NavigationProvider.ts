@@ -1,4 +1,4 @@
-// Copyright (c) 2023 FlyByWire Simulations
+// Copyright (c) 2023-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { SelectedNavaid } from '@fmgc/navigation/Navigation';
@@ -16,8 +16,8 @@ export interface NavigationProvider {
   getBaroCorrectedAltitude(): number | null;
 
   /**
-   * Gets the current estimated position error
-   * @returns epe, or Infinity if no position
+   * Gets the estimated position error.
+   * @returns Estimated position error in nautical miles, or Infinity if no position.
    */
   getEpe(): number;
 
@@ -55,4 +55,28 @@ export interface NavigationProvider {
    * @param cdu The CDU to get navaids for, defaults to 1.
    */
   getSelectedNavaids(cdu?: 1 | 2): SelectedNavaid[];
+
+  /**
+   * Gets the active RNP considering priority order.
+   * @returns RNP in nautical miles, or undefined if none.
+   */
+  getActiveRnp(): number | undefined;
+
+  /**
+   * Gets if the FMS position accuracy is high
+   * @returns true if the position accuracy is high or false if low
+   */
+  isAccuracyHigh(): boolean;
+
+  /**
+   * Updates the required navigation performance of the FMS
+   * @param rnp number The RNP value to set or null to clear a previous pilot input
+   */
+  setPilotRnp(rnp: number | null): void;
+
+  /**
+   * Gets if a pilot RNP entry was performed
+   * @returns true if a pilot RNP entry was performed or false if not
+   */
+  isPilotRnp(): boolean;
 }

@@ -136,26 +136,31 @@ impl A320Fuel {
             .tank_has_fuel(A320FuelTankType::LeftInner.into())
     }
 
+    #[allow(dead_code)]
     fn center_tank_has_fuel(&self) -> bool {
         self.fuel_system
             .tank_has_fuel(A320FuelTankType::Center.into())
     }
 
+    #[allow(dead_code)]
     fn left_inner_tank_has_fuel(&self) -> bool {
         self.fuel_system
             .tank_has_fuel(A320FuelTankType::LeftInner.into())
     }
 
+    #[allow(dead_code)]
     fn left_outer_tank_has_fuel(&self) -> bool {
         self.fuel_system
             .tank_has_fuel(A320FuelTankType::LeftOuter.into())
     }
 
+    #[allow(dead_code)]
     fn right_inner_tank_has_fuel(&self) -> bool {
         self.fuel_system
             .tank_has_fuel(A320FuelTankType::RightInner.into())
     }
 
+    #[allow(dead_code)]
     fn right_outer_tank_has_fuel(&self) -> bool {
         self.fuel_system
             .tank_has_fuel(A320FuelTankType::RightOuter.into())

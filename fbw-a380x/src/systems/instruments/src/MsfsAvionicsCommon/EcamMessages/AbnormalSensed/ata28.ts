@@ -754,9 +754,15 @@ export const EcamAbnormalSensedAta28: { [n: number]: AbnormalProcedure } = {
     items: [],
   },
   281800101: {
-    title: '\x1b<4m\x1b4mFUEL\x1bm ZFW OR ZFCG FMS DISAGREE',
+    title: '\x1b<4m\x1b4mFUEL\x1bm ZFW OR ZFWCG FMS DISAGREE',
     sensed: true,
-    items: [],
+    items: [
+      {
+        name: 'FMS ZFW OR ZFWCG VALUES',
+        sensed: false,
+        labelNotCompleted: 'REENTER',
+      },
+    ],
   },
   281800102: {
     title: '\x1b<4m\x1b4mFUEL\x1bm FEED TKs 1+2 LEVEL LO',
