@@ -2041,10 +2041,19 @@ export class PseudoFWC {
     const leftCompressedHardwireLgciu2 =
       this.dc2BusPowered.get() && SimVar.GetSimVarValue('L:A32NX_LGCIU_2_LEFT_GEAR_COMPRESSED', 'bool') > 0;
 
-    const lgciu1Or2DiscreteWord1Invalid = this.lgciu1DiscreteWord1.isInvalid() || this.lgciu2DiscreteWord1.isInvalid();
-    const lgciu1Or2DiscreteWord2Invalid = this.lgciu1DiscreteWord2.isInvalid() || this.lgciu2DiscreteWord2.isInvalid();
-    const lgciu1Or2DiscreteWord3Invalid = this.lgciu1DiscreteWord3.isInvalid() || this.lgciu2DiscreteWord3.isInvalid();
-    const lgciu1Or2DiscreteWord4Invalid = this.lgciu1DiscreteWord4.isInvalid() || this.lgciu2DiscreteWord4.isInvalid();
+    const lgciu1DiscreteWord1Invalid = this.lgciu1DiscreteWord1.isInvalid();
+    const lgciu2DiscreteWord1Invalid = this.lgciu2DiscreteWord1.isInvalid();
+
+    const lgciu1DiscreteWord2Invalid = this.lgciu1DiscreteWord2.isInvalid();
+    const lgciu2DiscreteWord2Invalid = this.lgciu2DiscreteWord2.isInvalid();
+
+    const lgciu1DiscreteWord3Invalid = this.lgciu1DiscreteWord3.isInvalid();
+    const lgciu2DiscreteWord3Invalid = this.lgciu2DiscreteWord3.isInvalid();
+
+    const lgciu1DiscreteWord4Invalid = this.lgciu1DiscreteWord4.isInvalid();
+    const lgciu2DiscreteWord4Invalid = this.lgciu2DiscreteWord4.isInvalid();
+
+    const lgciu1Or2DiscreteWord1Invalid = lgciu1DiscreteWord1Invalid || lgciu2DiscreteWord1Invalid;
 
     const lgciu1LhGearDownlock = this.lgciu1DiscreteWord1.bitValueOr(23, false);
     const lgciu2LhGearDownlock = this.lgciu2DiscreteWord1.bitValueOr(23, false);
@@ -3183,18 +3192,18 @@ export class PseudoFWC {
     this.lgciu1Fault.set(
       this.lgciu1DiscreteWord4.bitValueOr(29, false) ||
         this.lgciu1DiscreteWord2.bitValueOr(29, false) ||
-        (lgciu1Or2DiscreteWord1Invalid &&
-          lgciu1Or2DiscreteWord2Invalid &&
-          lgciu1Or2DiscreteWord3Invalid &&
-          lgciu1Or2DiscreteWord4Invalid),
+        (lgciu1DiscreteWord1Invalid &&
+          lgciu1DiscreteWord2Invalid &&
+          lgciu1DiscreteWord3Invalid &&
+          lgciu1DiscreteWord4Invalid),
     );
     this.lgciu2Fault.set(
       this.lgciu2DiscreteWord4.bitValueOr(29, false) ||
         this.lgciu2DiscreteWord2.bitValueOr(29, false) ||
-        (lgciu1Or2DiscreteWord1Invalid &&
-          lgciu1Or2DiscreteWord2Invalid &&
-          lgciu1Or2DiscreteWord3Invalid &&
-          lgciu1Or2DiscreteWord4Invalid),
+        (lgciu2DiscreteWord1Invalid &&
+          lgciu2DiscreteWord2Invalid &&
+          lgciu2DiscreteWord3Invalid &&
+          lgciu2DiscreteWord4Invalid),
     );
     this.lgciu12Fault.set(this.lgciu1Fault.get() && this.lgciu2Fault.get());
 
