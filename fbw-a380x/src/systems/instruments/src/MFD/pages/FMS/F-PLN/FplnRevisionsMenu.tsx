@@ -1,3 +1,5 @@
+// Copyright (c) 2024-2026 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
 import { TurnDirection, WaypointDescriptor } from '@flybywiresim/fbw-sdk';
 import { HoldType } from '@fmgc/flightplanning/data/flightplan';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
@@ -39,16 +41,18 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
 
   return [
     {
-      name: 'FROM P.POS DIR TO',
+      name: planIndex >= FlightPlanIndex.FirstSecondary ? '\xa0' : 'FROM P.POS DIR TO',
       disabled:
         altnFlightPlan ||
         legIndex >= (fpln.loadedFlightPlan?.firstMissedApproachLegIndex ?? Infinity) ||
         planIndex === FlightPlanIndex.Temporary ||
         planIndex >= FlightPlanIndex.FirstSecondary ||
-        [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type) ||
+        type === FplnRevisionsMenuType.Discontinuity ||
+        type === FplnRevisionsMenuType.TooSteepPath ||
         isFromLeg ||
         !isLegTerminatingAtDatabaseFix,
       onPressed: () => {
+        //FIXME This should navigate to DIR TO page instead.
         const ppos = fpln.props.fmcService.master?.navigation.getPpos();
         if (ppos) {
           fpln.props.fmcService.master?.flightPlanInterface.directToLeg(
@@ -66,16 +70,16 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
     },
     {
       name: 'INSERT NEXT WPT',
-      disabled: false, // always enabled?
+      disabled: revisedLeg?.isDiscontinuity === false && revisedLeg.isVectors(),
       onPressed: () => fpln.openInsertNextWptFromWindow(),
     },
     {
       name: 'DELETE *',
       disabled:
-        [FplnRevisionsMenuType.Runway || FplnRevisionsMenuType.TooSteepPath].includes(type) ||
+        type === FplnRevisionsMenuType.Runway ||
+        type === FplnRevisionsMenuType.TooSteepPath ||
         (revisedLeg?.isDiscontinuity && previousLeg?.isDiscontinuity === false && previousLeg?.isVectors()) ||
-        isFromLeg || // TODO allow in HDG/TRK
-        planIndex === FlightPlanIndex.Temporary,
+        isFromLeg, // TODO allow in HDG/TRK
       onPressed: () => {
         fpln.props.fmcService.master?.flightPlanInterface.deleteElementAt(legIndex, false, planIndex, altnFlightPlan);
       },
@@ -101,8 +105,9 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
     {
       name: 'HOLD',
       disabled:
-        [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type) ||
-        isFromLeg ||
+        type === FplnRevisionsMenuType.Discontinuity ||
+        type === FplnRevisionsMenuType.TooSteepPath ||
+        isFromLeg || // TODO should be allowed at FROM but we don't support PPOS holds yet.
         !isLegTerminatingAtDatabaseFix,
       onPressed: async () => {
         if (revisedLeg && revisedLeg.isDiscontinuity === false && !revisedLeg.isHX()) {
@@ -144,9 +149,9 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
     {
       name: 'AIRWAYS',
       disabled:
-        [
-          FplnRevisionsMenuType.Runway || FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath,
-        ].includes(type) ||
+        type === FplnRevisionsMenuType.Runway ||
+        type === FplnRevisionsMenuType.Discontinuity ||
+        type === FplnRevisionsMenuType.TooSteepPath ||
         isFromLeg ||
         !isLegTerminatingAtDatabaseFix ||
         revisedLeg.definition.waypointDescriptor === WaypointDescriptor.Airport ||
@@ -159,14 +164,16 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
     {
       name:
         !altnFlightPlan &&
-        ![FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type) &&
+        type !== FplnRevisionsMenuType.Discontinuity &&
+        type !== FplnRevisionsMenuType.TooSteepPath &&
         revisedLeg?.isDiscontinuity === false &&
         revisedLeg.definition.overfly
           ? 'DELETE OVERFLY *'
           : 'OVERFLY *',
       disabled:
         altnFlightPlan ||
-        [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type) ||
+        type === FplnRevisionsMenuType.Discontinuity ||
+        type === FplnRevisionsMenuType.TooSteepPath ||
         isFromLeg ||
         !isLegTerminatingAtDatabaseFix,
       onPressed: () =>
@@ -192,7 +199,8 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
       disabled:
         altnFlightPlan ||
         !isLegTerminatingAtDatabaseFix ||
-        [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
+        type === FplnRevisionsMenuType.Discontinuity ||
+        type === FplnRevisionsMenuType.TooSteepPath,
       onPressed: () =>
         fpln.props.mfd.uiService.navigateTo(
           `fms/${fpln.props.mfd.uiService.activeUri.get().category}/f-pln-vert-rev/alt`,
@@ -203,7 +211,8 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
       disabled:
         true ||
         altnFlightPlan ||
-        [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
+        type === FplnRevisionsMenuType.Discontinuity ||
+        type === FplnRevisionsMenuType.TooSteepPath,
       onPressed: () =>
         fpln.props.mfd.uiService.navigateTo(
           `fms/${fpln.props.mfd.uiService.activeUri.get().category}/f-pln-vert-rev/cms`,
@@ -214,7 +223,8 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
       disabled:
         altnFlightPlan ||
         !isLegTerminatingAtDatabaseFix ||
-        [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
+        type === FplnRevisionsMenuType.Discontinuity ||
+        type === FplnRevisionsMenuType.TooSteepPath,
       onPressed: () =>
         fpln.props.mfd.uiService.navigateTo(
           `fms/${fpln.props.mfd.uiService.activeUri.get().category}/f-pln-vert-rev/step-alts`,
