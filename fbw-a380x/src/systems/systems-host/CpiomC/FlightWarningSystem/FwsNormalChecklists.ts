@@ -200,7 +200,7 @@ export class FwsNormalChecklists {
             (newState) => {
               this.showChecklistRequested.set(false);
               if (id === DEPARTURE_CHANGE_NORMAL_CHECKLIST_ID) {
-                // If departure change checklist is completed.. reset it.
+                // If departure change checklist is completed.. reset it so all items are unchecked and title is blue.
                 newState.procedureCompleted = false;
                 for (let i = 0; i < newState.itemsChecked.length; i++) {
                   newState.itemsChecked[i] = false;
@@ -441,7 +441,7 @@ export class FwsNormalChecklists {
       const ids = this.getNormalProceduresKeysSorted();
       this.fws.manualCheckListReset.set(fromId !== undefined);
 
-      // Show Departure change again if, checklist automatically reset or a manual checklist reset occurs on a subsequent CL.
+      // Show Departure change again if, checklist automatically reset or a manual checklist reset occurs on a previous CL.
       if (
         !this.withinDepartureChangeFlightPhaseInhib &&
         this.hideDepartureChangeFlipFlop.read() &&
@@ -651,7 +651,7 @@ export class FwsNormalChecklists {
       if (departureChangeIdx !== -1) {
         overviewState.itemsToShow[departureChangeIdx] = !value;
         this.checklistState.setValue(CHECKLIST_OVERVIEW_ID, overviewState);
-        // If we are hiding the departure change implicitly transmit to event bus so change is recieved in the EWD.
+        // If we are hiding the departure change implicitly transmit to event bus so change is received in the EWD.
         // Not required in case of showing checklist as the change will be transmitted due to other objects being mutated due to the reset.
         if (value) {
           this.sendNormalCheckListsToEventBus(this.checklistState.get());
