@@ -39,6 +39,7 @@ export const EcamAbnormalSensedAta80Rest: { [n: number]: AbnormalProcedure } = {
       { name: 'MAX FL : 230/MEA-MORA', sensed: false, level: 1 },
       { name: 'CABIN ALT MODE', labelNotCompleted: 'MAN', sensed: true, level: 1 },
       { name: 'CABIN ALT TRGT', labelNotCompleted: 'AS RQRD', sensed: false, level: 1 },
+      { ...CABIN_ALT_TARGET_TABLE_WINDOW_CRACKED },
       { name: 'L WINDOW/WINDSHIELD AFFECTED', condition: true, sensed: false, level: 1 },
       { name: 'AICU 1', labelNotCompleted: 'PULL', sensed: true, level: 2 },
       { name: 'R WINDOW/WINDSHIELD AFFECTED', condition: true, sensed: false, level: 1 },
