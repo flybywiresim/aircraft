@@ -431,14 +431,15 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           const firstMissedApproachLegIndex = this.loadedAlternateFlightPlan?.firstMissedApproachLegIndex ?? 0;
           const isHM = leg.type === LegType.HM;
           if (isHM) {
+            const loadedFpIndex = this.loadedFlightPlanIndex.get();
             // Active leg or next and hold decel reached
             const type =
-              i === this.loadedFlightPlan.activeLegIndex ||
-              (i === this.loadedFlightPlan.activeLegIndex + 1 &&
-                this.props.fmcService.master?.acInterface.getHoldDecelReached())
+              loadedFpIndex === FlightPlanIndex.Active &&
+              (i === this.loadedFlightPlan.activeLegIndex ||
+                (i === this.loadedFlightPlan.activeLegIndex + 1 &&
+                  this.props.fmcService.master?.acInterface.getHoldDecelReached()))
                 ? FplnLineType.HoldHmActive
                 : FplnLineType.HoldHm;
-            const loadedFpIndex = this.loadedFlightPlanIndex.get();
             const holdData: FplnLineHoldDisplayData = {
               type: type,
               originalLegIndex: i,
