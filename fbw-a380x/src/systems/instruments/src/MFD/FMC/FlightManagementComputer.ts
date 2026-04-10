@@ -364,7 +364,7 @@ export class FlightManagementComputer implements FmcInterface {
       }, true),
       this.enginesWereStarted.sub((val) => {
         if (val) {
-          this.setCi0AndLrcIfActiveFlightplanHasnoCi();
+          this.setCi0AndLrcIfActiveFlightplanHasNoCi();
         }
       }),
       this.legacyFmsIsHealthy.sub((v) => {
@@ -396,7 +396,7 @@ export class FlightManagementComputer implements FmcInterface {
       this.fmcInop.sub((value) => this.healythSimvar.set(!value), true),
       this.zeroFuelWeight.sub((zfw) => {
         if (zfw !== null) {
-          this.setCi0AndLrcIfActiveFlightplanHasnoCi();
+          this.setCi0AndLrcIfActiveFlightplanHasNoCi();
         }
       }),
     );
@@ -1710,7 +1710,7 @@ export class FlightManagementComputer implements FmcInterface {
     }
   }
 
-  private setCi0AndLrcIfActiveFlightplanHasnoCi(): void {
+  private setCi0AndLrcIfActiveFlightplanHasNoCi(): void {
     if (this.flightPlanInterface.hasActive && this.flightPlanInterface.active.destinationAirport !== undefined) {
       const pd = this.flightPlanInterface.active.performanceData;
       if (pd.costIndex.get() === null) {
