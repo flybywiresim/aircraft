@@ -377,6 +377,14 @@
                     <FAILURE>#RMP_MAIN_ELEC#</FAILURE>
                 </UseTemplate>
             </Component>
+
+            <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                <NODE_ID>RMP_#RMP_ID#_SEQ1</NODE_ID>
+                <POTENTIOMETER>#RMP_INTEG_POT#</POTENTIOMETER>
+                <EMISSIVE_CODE>1</EMISSIVE_CODE>
+                <FAILURE>#RMP_INTEG_ELEC#</FAILURE>
+            </UseTemplate>
+
         </Component>
 
         <Component ID="SCREEN_RMP_#RMP_ID#">
@@ -392,14 +400,6 @@
             </UseTemplate>
         </Component>
 
-        <Component ID="RMP_INTEG">
-            <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
-                <NODE_ID>RMP_#RMP_ID#_SEQ1</NODE_ID>
-                <POTENTIOMETER>#RMP_INTEG_POT#</POTENTIOMETER>
-                <EMISSIVE_CODE>1</EMISSIVE_CODE>
-                <FAILURE>#RMP_INTEG_ELEC#</FAILURE>
-            </UseTemplate>
-        </Component>
     </Template>
 
     <Template Name="FBW_A380X_RMP_Button">
@@ -595,6 +595,7 @@
             <USE_SIMVAR_FOR_BUTTON_ANIM>False</USE_SIMVAR_FOR_BUTTON_ANIM>
             <ANIM_CODE_SWITCH>(B:#INPUT_EVENT_ID_SOURCE#_#RX_IE_NAME#) 100 *</ANIM_CODE_SWITCH>
             <KNOB_ANIM_CODE>(B:#INPUT_EVENT_ID_SOURCE#_#IE_NAME#)</KNOB_ANIM_CODE>
+            <EMISSIVE_CODE>#SEQ1_EMISSIVE_CODE#</EMISSIVE_CODE>
         </UseTemplate>
         <!-- SEQ1 is the emissive for the light in the centre of the knob when it's being listened to -->
         <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">

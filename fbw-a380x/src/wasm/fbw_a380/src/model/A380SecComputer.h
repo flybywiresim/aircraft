@@ -949,9 +949,10 @@ class A380SecComputer final
     real_T Saturation3_LowerSat;
     real_T Saturation4_UpperSat;
     real_T Saturation4_LowerSat;
+    real_T Gain1_Gain;
     real_T Constant_Value_a;
     real32_T Gain_Gain_e0;
-    real32_T Gain1_Gain;
+    real32_T Gain1_Gain_a;
     real32_T Gain2_Gain;
     real32_T Gain3_Gain_o;
     real32_T Gain4_Gain;
