@@ -102,6 +102,8 @@
 1. [A32NX/FWS] Add `GEAR NOT DOWNLOCKED` master warning - @FozzieHi (fozzie)
 1. [A380X/FMS] Add secondary flight plans to A380X - @flogross89 (floridude), @BravoMike99 (bruno_pt99)
 1. [A380X/FMS] Allow edition of vnav descent speed - @BravoMike99 (bruno_pt99)
+1. [A32NX/MCDU] Fix ND reset to the departure airport when selecting the destination for approach - @Ditoo29 (dito29)
+1. [A380X/FMS] Allow "INSERT NEXT WPT" revision at the flightplan origin - @BravoMike99 (bruno_pt99)
 1. [A380X/MFD] Add details to "FORMAT ERROR" and "ENTRY OUT OF RANGE" messages - @BravoMike99 (bruno_pt99)
 1. [A380X/MFD] Fixed GA THR RED, ACCEL & EO not respecting arrival transition altitude - @BravoMike99 (bruno_pt99)
 

@@ -37,7 +37,11 @@ const Time = Object.freeze({
 });
 
 export class CDUFlightPlanPage {
-  static ShowPage(mcdu: LegacyFmsPageInterface, offset = 0, forPlan = 0) {
+  static ShowDestinationPage(mcdu: LegacyFmsPageInterface, forPlan = 0) {
+    CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan, true);
+  }
+
+  static ShowPage(mcdu: LegacyFmsPageInterface, offset = 0, forPlan = 0, focusDestinationOnOpen = false) {
     // INIT
     function addLskAt(index, delay, callback) {
       mcdu.leftInputDelay[index] = typeof delay === 'function' ? delay : () => delay;
@@ -54,7 +58,7 @@ export class CDUFlightPlanPage {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.FlightPlanPage;
     mcdu.returnPageCallback = () => {
-      CDUFlightPlanPage.ShowPage(mcdu, offset, forPlan);
+      CDUFlightPlanPage.ShowPage(mcdu, offset, forPlan, focusDestinationOnOpen);
     };
     mcdu.activeSystem = 'FMGC';
 
@@ -68,7 +72,7 @@ export class CDUFlightPlanPage {
     // regular update due to showing dynamic data on this page
     mcdu.SelfPtr = setTimeout(() => {
       if (mcdu.page.Current === mcdu.page.FlightPlanPage) {
-        CDUFlightPlanPage.ShowPage(mcdu, offset, forPlan);
+        CDUFlightPlanPage.ShowPage(mcdu, offset, forPlan, focusDestinationOnOpen);
       }
     }, mcdu.PageTimeout.Medium);
 
@@ -231,6 +235,10 @@ export class CDUFlightPlanPage {
       }
     } else if (targetPlan.legCount > 0) {
       waypointsAndMarkers.push({ marker: Markers.NO_ALTN_FPLN, fpIndex: targetPlan.legCount + 1, inAlternate: true });
+    }
+
+    if (focusDestinationOnOpen) {
+      offset = destinationAirportOffset;
     }
 
     const tocIndex = waypointsAndMarkers.findIndex(({ pwp }) => pwp && pwp.ident === '(T/C)');
@@ -582,6 +590,8 @@ export class CDUFlightPlanPage {
             (value, scratchpadCallback) => {
               if (value === '') {
                 CDULateralRevisionPage.ShowPage(mcdu, wp, fpIndex, forPlan, inAlternate);
+                mcdu.efisInterfaces.L.setPlanCentre(targetPlan.index, fpIndex, inAlternate);
+                mcdu.efisInterfaces.R.setPlanCentre(targetPlan.index, fpIndex, inAlternate);
               } else if (value.length > 0) {
                 mcdu.insertWaypoint(
                   value,
@@ -972,7 +982,12 @@ export class CDUFlightPlanPage {
         5,
         () => mcdu.getDelaySwitchPage(),
         () => {
+          mcdu.returnPageCallback = () => {
+            CDUFlightPlanPage.ShowDestinationPage(mcdu, forPlan);
+          };
           CDULateralRevisionPage.ShowPage(mcdu, targetPlan.destinationLeg, targetPlan.destinationLegIndex, forPlan);
+          mcdu.efisInterfaces.L.setPlanCentre(targetPlan.index, targetPlan.destinationLegIndex, false);
+          mcdu.efisInterfaces.R.setPlanCentre(targetPlan.index, targetPlan.destinationLegIndex, false);
         },
       );
 
