@@ -861,7 +861,7 @@ export class FmcAircraftInterface {
 
     if (holdSpeedTarget !== this.holdSpeedTarget) {
       this.holdSpeedTarget = holdSpeedTarget;
-      SimVar.SetSimVarValue('L:A32NX_FM_HOLD_SPEED', 'number', this.holdSpeedTarget);
+      SimVar.SetSimVarValue('L:A32NX_FM_HOLD_SPEED', 'number', this.holdSpeedTarget ?? 0);
     }
 
     if (enableHoldSpeedWarning && this.holdSpeedTarget !== null && cas - this.holdSpeedTarget > 5) {
