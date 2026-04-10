@@ -234,6 +234,7 @@ export class CDUAvailableArrivalsPage {
               try {
                 await mcdu.flightPlanService.setApproach(approachOrRunway.databaseId, forPlan, inAlternate);
                 await CDUAvailableArrivalsPage.tryAutoSetApproachVia(mcdu, forPlan, inAlternate);
+                CDUAvailableArrivalsPage.focusPlanEndOnNd(mcdu, forPlan, inAlternate);
 
                 CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
               } catch (e) {
@@ -273,6 +274,7 @@ export class CDUAvailableArrivalsPage {
               try {
                 await mcdu.flightPlanService.setApproach(undefined, forPlan, inAlternate);
                 await mcdu.flightPlanService.setDestinationRunway(approachOrRunway.ident, forPlan, inAlternate);
+                CDUAvailableArrivalsPage.focusPlanEndOnNd(mcdu, forPlan, inAlternate);
 
                 CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
               } catch (e) {
@@ -338,6 +340,7 @@ export class CDUAvailableArrivalsPage {
             mcdu.onLeftInput[i + 2] = async () => {
               try {
                 await mcdu.flightPlanService.setArrival(null, forPlan, inAlternate);
+                CDUAvailableArrivalsPage.focusPlanEndOnNd(mcdu, forPlan, inAlternate);
                 if (await CDUAvailableArrivalsPage.tryAutoSetApproachVia(mcdu, forPlan, inAlternate)) {
                   CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
                 } else {
@@ -390,6 +393,7 @@ export class CDUAvailableArrivalsPage {
                   }
 
                   await mcdu.flightPlanService.setArrival(starDatabaseId, forPlan, inAlternate);
+                  CDUAvailableArrivalsPage.focusPlanEndOnNd(mcdu, forPlan, inAlternate);
 
                   if (await CDUAvailableArrivalsPage.tryAutoSetApproachVia(mcdu, forPlan, inAlternate)) {
                     CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
@@ -510,7 +514,7 @@ export class CDUAvailableArrivalsPage {
         mcdu.insertTemporaryFlightPlan(() => {
           mcdu.updateTowerHeadwind();
           mcdu.updateConstraints();
-          CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
+          CDUFlightPlanPage.ShowDestinationPage(mcdu, forPlan);
         });
       };
     } else {
@@ -667,6 +671,7 @@ export class CDUAvailableArrivalsPage {
           if (!isSelected) {
             try {
               await mcdu.flightPlanService.setApproachVia(via.databaseId, forPlan, inAlternate);
+              CDUAvailableArrivalsPage.focusPlanEndOnNd(mcdu, forPlan, inAlternate);
 
               CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
             } catch (e) {
@@ -819,5 +824,24 @@ export class CDUAvailableArrivalsPage {
       }
     }
     return false;
+  }
+
+  private static focusPlanEndOnNd(
+    mcdu: LegacyFmsPageInterface,
+    forPlan = FlightPlanIndex.Active,
+    inAlternate = false,
+  ): void {
+    const parentPlan = mcdu.getFlightPlan(forPlan);
+
+    if (!parentPlan) {
+      return;
+    }
+
+    const focusedPlan = inAlternate ? parentPlan.alternateFlightPlan : parentPlan;
+    const focusLegIndex =
+      focusedPlan.destinationLegIndex >= 0 ? focusedPlan.destinationLegIndex : Math.max(focusedPlan.legCount - 1, 0);
+
+    mcdu.efisInterfaces.L.setPlanCentre(parentPlan.index, focusLegIndex, inAlternate);
+    mcdu.efisInterfaces.R.setPlanCentre(parentPlan.index, focusLegIndex, inAlternate);
   }
 }
