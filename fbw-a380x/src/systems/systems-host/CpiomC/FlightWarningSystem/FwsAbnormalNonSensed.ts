@@ -323,12 +323,12 @@ export class FwsAbnormalNonSensed {
       failure: 1,
       auralWarning: Subject.create(FwcAuralWarning.None),
       sysPage: SdPages.None,
-      limitationsAllPhases: () => ['210400002'],
-      limitationsPfd: () => ['210400002'],
+      limitationsAllPhases: (checked) => (checked[4] ? ['210400002'] : []),
+      limitationsPfd: (checked) => (checked[4] ? ['210400002'] : []),
       inopSysAllPhases: () => [
-        this.fws.aicuResetSwitch1.get() && this.fws.aicuResetSwitch2.get() ? '300000002' : '',
-        ...(this.fws.aicuResetSwitch1.get() ? ['300000004', '300000005', '300000006'] : ''),
-        ...(this.fws.aicuResetSwitch2.get() ? ['300000007', '300000008', '300000009'] : ''),
+        this.fws.aicuResetSwitch1.get() && this.fws.aicuResetSwitch2.get() ? '300300001' : '',
+        ...(this.fws.aicuResetSwitch1.get() ? ['300300002', '300300003', '300300004'] : ''),
+        ...(this.fws.aicuResetSwitch2.get() ? ['300300005', '300300006', '300300007'] : ''),
       ],
     },
     990900003: {
@@ -342,10 +342,34 @@ export class FwsAbnormalNonSensed {
       auralWarning: Subject.create(FwcAuralWarning.None),
       sysPage: SdPages.None,
       inopSysAllPhases: () => [
-        this.fws.aicuResetSwitch1.get() && this.fws.aicuResetSwitch2.get() ? '300000002' : '',
-        ...(this.fws.aicuResetSwitch1.get() ? ['300000004', '300000005', '300000006'] : ''),
-        ...(this.fws.aicuResetSwitch2.get() ? ['300000007', '300000008', '300000009'] : ''),
+        this.fws.aicuResetSwitch1.get() && this.fws.aicuResetSwitch2.get() ? '300300001' : '',
+        ...(this.fws.aicuResetSwitch1.get() ? ['300300002', '300300003', '300300004'] : ''),
+        ...(this.fws.aicuResetSwitch2.get() ? ['300300005', '300300006', '300300007'] : ''),
       ],
+    },
+    990900004: {
+      // DITCHING
+      flightPhaseInhib: [],
+      simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(990900004)),
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [true, true, true, true, true, true, true, true, true, true, true, true],
+      whichItemsChecked: () => [
+        false,
+        false,
+        false,
+        false,
+        this.fws.jettisonArm.get(),
+        this.fws.jettisonActive.get(),
+        this.fws.tawsGpwsOff.get(),
+        this.fws.tawsTerrOff.get(),
+        !!this.fws.seatBelt.get(),
+        this.fws.emerExitLights.get(),
+        this.fws.commercial.get(),
+        false,
+      ],
+      failure: 1,
+      auralWarning: Subject.create(FwcAuralWarning.None),
+      sysPage: SdPages.None,
     },
     990900005: {
       // EMER DESCENT
@@ -416,6 +440,30 @@ export class FwsAbnormalNonSensed {
       auralWarning: Subject.create(FwcAuralWarning.None),
       sysPage: SdPages.None,
     },
+    990900007: {
+      // FORCED LANDING
+      flightPhaseInhib: [],
+      simVarIsActive: this.fws.activeAbnormalNonSensedKeys.map((set) => set.has(990900007)),
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [true, true, true, true, true, true, true, true, true, true, true, true],
+      whichItemsChecked: () => [
+        false,
+        false,
+        false,
+        false,
+        this.fws.jettisonArm.get(),
+        this.fws.jettisonActive.get(),
+        this.fws.tawsGpwsOff.get(),
+        this.fws.tawsTerrOff.get(),
+        !!this.fws.seatBelt.get(),
+        this.fws.emerExitLights.get(),
+        this.fws.commercial.get(),
+        false,
+      ],
+      failure: 1,
+      auralWarning: Subject.create(FwcAuralWarning.None),
+      sysPage: SdPages.None,
+    },
     990900008: {
       // OIS FAULT
       flightPhaseInhib: [],
@@ -458,6 +506,18 @@ export class FwsAbnormalNonSensed {
       auralWarning: Subject.create(FwcAuralWarning.None),
       sysPage: SdPages.None,
       limitationsApprLdg: () => ['800400002'],
+    },
+  };
+
+  public ewdDeferredProcs: EwdAbnormalDict = {
+    800700001: {
+      flightPhaseInhib: [],
+      simVarIsActive: Subject.create(true),
+      notActiveWhenItemActive: [],
+      whichItemsToShow: () => [true],
+      whichItemsChecked: () => [!this.fws.manCabinAltMode.get()],
+      failure: 0,
+      sysPage: SdPages.None,
     },
   };
 }

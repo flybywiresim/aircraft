@@ -976,7 +976,7 @@ export const EcamAbnormalSensedAta34: { [n: number]: AbnormalProcedure } = {
       { name: 'ATT HDG SWTG', labelNotCompleted: 'AS RQRD', sensed: false },
       { name: 'IR MODE SEL (AFFECTED)', labelNotCompleted: 'ATT', sensed: false },
       { name: 'SPEED, HDG & FL : KEEP CONST FOR 30S', sensed: false },
-      { name: 'FMS POSITION / IRS PAGE', labelNotCompleted: 'SELECT', sensed: false },
+      { name: 'FMS POSITION / IRS PAGE', labelNotCompleted: 'SELECT', sensed: false }, // sensed?
       { name: 'HDG', labelNotCompleted: 'ENTER', sensed: false },
     ],
   },

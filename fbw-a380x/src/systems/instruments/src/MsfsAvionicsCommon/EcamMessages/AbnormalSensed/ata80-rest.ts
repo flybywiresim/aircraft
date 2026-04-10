@@ -1,7 +1,12 @@
 ﻿// Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { AbnormalProcedure, ChecklistLineStyle } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import {
+  AbnormalProcedure,
+  ChecklistLineStyle,
+  DeferredProcedure,
+  DeferredProcedureType,
+} from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 
 // Convention for IDs:
 // First two digits: ATA chapter
@@ -34,10 +39,10 @@ export const EcamAbnormalSensedAta80Rest: { [n: number]: AbnormalProcedure } = {
       { name: 'MAX FL : 230/MEA-MORA', sensed: false, level: 1 },
       { name: 'CABIN ALT MODE', labelNotCompleted: 'MAN', sensed: true, level: 1 },
       { name: 'CABIN ALT TRGT', labelNotCompleted: 'AS RQRD', sensed: false, level: 1 },
-      { name: 'L WINDOW/WINDSHIELD AFFECTED', condition: true, sensed: false },
-      { name: 'AICU 1', labelNotCompleted: 'PULL', sensed: true, level: 1 },
-      { name: 'R WINDOW/WINDSHIELD AFFECTED', condition: true, sensed: false },
-      { name: 'AICU 2', labelNotCompleted: 'PULL', sensed: true, level: 1 },
+      { name: 'L WINDOW/WINDSHIELD AFFECTED', condition: true, sensed: false, level: 1 },
+      { name: 'AICU 1', labelNotCompleted: 'PULL', sensed: true, level: 2 },
+      { name: 'R WINDOW/WINDSHIELD AFFECTED', condition: true, sensed: false, level: 1 },
+      { name: 'AICU 2', labelNotCompleted: 'PULL', sensed: true, level: 2 },
     ],
   },
   990900003: {
@@ -45,9 +50,9 @@ export const EcamAbnormalSensedAta80Rest: { [n: number]: AbnormalProcedure } = {
     sensed: false,
     items: [
       { name: 'L WINDOW/WINDSHIELD AFFECTED', condition: true, sensed: false },
-      { name: 'AICU 1', labelNotCompleted: 'PULL', sensed: true },
+      { name: 'AICU 1', labelNotCompleted: 'PULL', sensed: true, level: 1 },
       { name: 'R WINDOW/WINDSHIELD AFFECTED', condition: true, sensed: false },
-      { name: 'AICU 2', labelNotCompleted: 'PULL', sensed: true },
+      { name: 'AICU 2', labelNotCompleted: 'PULL', sensed: true, level: 1 },
     ],
   },
   990900004: {
@@ -200,14 +205,14 @@ export const EcamAbnormalSensedAta80Rest: { [n: number]: AbnormalProcedure } = {
       { name: 'AFFECTED SIDE LAPTOP', labelNotCompleted: 'UNSTOW & VERIFY', sensed: false },
       { name: 'LAPTOP NOT AFFECTED', condition: true, sensed: false },
       { name: 'OIT (AFFECTED)', labelNotCompleted: 'OFF 5 S THEN ON', sensed: false, level: 1 },
-      { name: 'NOT SUCCESSFULL AFTER 4 MIN', condition: true, sensed: false },
-      { name: 'USE LAPTOP AS RQRD', sensed: false, level: 1 },
+      { name: 'NOT SUCCESSFUL AFTER 4 MIN', condition: true, sensed: false, level: 1 },
+      { name: 'USE LAPTOP AS RQRD', sensed: false, level: 2 },
       { name: 'LAPTOP AFFECTED', condition: true, sensed: false },
       { name: 'LAPTOP (AFFECTED)', labelNotCompleted: 'OFF', sensed: false, level: 1 },
-      { name: 'AFTER 30 S', condition: true, sensed: false },
-      { name: 'LAPTOP (AFFECTED)', labelNotCompleted: 'ON', sensed: false, level: 1 },
-      { name: 'NOT SUCCESSFUL AFTER 5 MIN', condition: true, sensed: false },
-      { name: 'USE BACKUP AS RQRD', sensed: false, level: 1 },
+      { name: 'AFTER 30 S', condition: true, sensed: false, level: 1 },
+      { name: 'LAPTOP (AFFECTED)', labelNotCompleted: 'ON', sensed: false, level: 2 },
+      { name: 'NOT SUCCESSFUL AFTER 5 MIN', condition: true, sensed: false, level: 2 },
+      { name: 'USE BACKUP AS RQRD', sensed: false, level: 3 },
     ],
   },
   990900009: {
@@ -216,19 +221,11 @@ export const EcamAbnormalSensedAta80Rest: { [n: number]: AbnormalProcedure } = {
     items: [
       { name: 'JETTISON PROC', labelNotCompleted: 'CONSIDER', sensed: false },
       { name: 'LDG DIST AFFECTED', sensed: false },
-      {
-        name: 'FOR APPROACH :',
-        style: ChecklistLineStyle.CenteredSubHeadline,
-        sensed: true,
-      },
+      { name: 'FOR APPROACH :', style: ChecklistLineStyle.CenteredSubHeadline, sensed: true },
       { name: 'PACK 1+2', labelNotCompleted: 'OFF OR ON APU BLEED', sensed: true },
       { name: 'IF LDG CONF 3:USE CONF 1 FOR GO AROUND', sensed: false },
       { name: 'SPEED AT RUNWAY THRESHOLD : VLS', sensed: false },
-      {
-        name: 'FOR LANDING :',
-        style: ChecklistLineStyle.CenteredSubHeadline,
-        sensed: true,
-      },
+      { name: 'FOR LANDING :', style: ChecklistLineStyle.CenteredSubHeadline, sensed: true },
       { name: 'USE MAX REVERSE ASAP', sensed: false },
       { name: 'APPLY BRAKES AS NECESSARY', sensed: false },
     ],
@@ -242,5 +239,19 @@ export const EcamAbnormalSensedAta80Rest: { [n: number]: AbnormalProcedure } = {
     title: '\x1b<4m\x1b4mMISC\x1bm VOLCANIC ASH ENCOUNTER (WIP)',
     sensed: false,
     items: [], // TODO
+  },
+};
+
+export const EcamDeferredProcAta80: { [n: number]: DeferredProcedure } = {
+  800700001: {
+    fromAbnormalProcs: ['990900002'],
+    type: DeferredProcedureType.AT_TOP_OF_DESCENT,
+    items: [
+      {
+        name: 'CABIN ALT MODE',
+        labelNotCompleted: 'AUTO',
+        sensed: true,
+      },
+    ],
   },
 };

@@ -1255,6 +1255,10 @@ export class FwsCore {
     this.isRefuelFuelTarget,
   );
 
+  public readonly jettisonArm = Subject.create(false);
+
+  public readonly jettisonActive = Subject.create(false);
+
   /* HYDRAULICS */
 
   public readonly ratDeployed = Subject.create(0);
@@ -4169,6 +4173,9 @@ export class FwsCore {
         !this.engine4ValueSwitch.get(),
     );
     this.allFuelPumpsOff.set(this.allFeedTankPumpsOff.get() && this.allEngineSwitchOff.get());
+
+    this.jettisonArm.set(SimVar.GetSimVarValue('L:A380X_OVHD_FUEL_JETTISON_ARM_PB_IS_ON', 'bool'));
+    this.jettisonActive.set(SimVar.GetSimVarValue('L:A380X_OVHD_FUEL_JETTISON_ACTIVE_PB_IS_ON', 'bool'));
 
     /* F/CTL */
     const fcdc1DiscreteWord1 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_1_DISCRETE_WORD_1');
