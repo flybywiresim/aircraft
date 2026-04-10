@@ -359,7 +359,7 @@ export class FwsCore {
 
   public readonly predWSOn = Subject.create(false);
 
-  private readonly seatBetlSignRegisteredSimvar = RegisteredSimVar.createBoolean('A:CABIN SEATBELTS ALERT SWITCH');
+  private readonly seatBeltSignRegisteredSimvar = RegisteredSimVar.createBoolean('A:CABIN SEATBELTS ALERT SWITCH');
 
   public readonly seatBeltSwitchOn = Subject.create(false);
 
@@ -4344,7 +4344,7 @@ export class FwsCore {
     this.ir3UsedRight.set(attKnob === 2);
     this.compMesgCount.set(SimVar.GetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'number'));
     this.fmsSwitchingKnob.set(SimVar.GetSimVarValue('L:A32NX_FMS_SWITCHING_KNOB', 'enum'));
-    this.seatBeltSwitchOn.set(this.seatBetlSignRegisteredSimvar.get());
+    this.seatBeltSwitchOn.set(this.seatBeltSignRegisteredSimvar.get());
     this.ndXfrKnob.set(SimVar.GetSimVarValue('L:A32NX_ECAM_ND_XFR_SWITCHING_KNOB', 'enum'));
     this.noMobileSwitchOn.set(this.noMobileSwitchRegisteredSimvar.get() === 0);
     this.strobeLightsOn.set(SimVar.GetSimVarValue('L:LIGHTING_STROBE_0', 'Bool'));
