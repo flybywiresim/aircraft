@@ -208,7 +208,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
   /**
    * Determines whether this leg is a fix-terminating leg (AF, CF, IF, DF, RF, TF, HF)
    */
-  isXF() {
+  isXF(): boolean {
     const legType = this.definition.type;
 
     return (
@@ -244,6 +244,25 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     const legType = this.definition.type;
 
     return legType === LegType.CA || legType === LegType.FA || legType === LegType.HA || legType === LegType.VA;
+  }
+
+  isFloatingCourseLeg() {
+    return (
+      this.definition.type === LegType.CA ||
+      this.definition.type === LegType.CD ||
+      this.definition.type === LegType.CI ||
+      this.definition.type === LegType.CR
+    );
+  }
+
+  isVx() {
+    return (
+      this.definition.type === LegType.VA ||
+      this.definition.type === LegType.VD ||
+      this.definition.type === LegType.VI ||
+      this.definition.type === LegType.VM ||
+      this.definition.type === LegType.VR
+    );
   }
 
   isVectors() {

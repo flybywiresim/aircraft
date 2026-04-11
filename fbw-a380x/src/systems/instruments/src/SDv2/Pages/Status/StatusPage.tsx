@@ -42,7 +42,7 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
 
   private readonly availChecker = new FwsSdAvailabilityChecker(this.props.bus);
 
-  private readonly topSvgVisibility = this.props.visible.map((v) => (v ? 'visible' : 'hidden'));
+  private readonly topSvgDisplay = this.props.visible.map((v) => (v ? 'flex' : 'none'));
 
   private readonly stsPageToShow = ConsumerSubject.create(this.sub.on('sdStsPageToShow'), 0);
 
@@ -256,7 +256,7 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
     super.onAfterRender(node);
 
     this.subscriptions.push(
-      this.topSvgVisibility,
+      this.topSvgDisplay,
       this.limitationsAllPhases,
       this.limitationsApprLdg,
       this.limitationsLeftFormatString,
@@ -437,7 +437,7 @@ export class StatusPage extends DestroyableComponent<SdPageProps> {
 
   render() {
     return (
-      <div id="sts" class="sd-sts-top-div" style={{ visibility: this.topSvgVisibility }}>
+      <div id="sts" class="sd-sts-top-div" style={{ display: this.topSvgDisplay }}>
         <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" height="45">
           <PageTitle x={6} y={29}>
             STATUS

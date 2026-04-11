@@ -33,7 +33,7 @@ export class MfdMsgList extends DisplayComponent<MfdMsgListProps> {
 
   // Yeah, it's expensive, but rn I won't find a better way
   private renderMessageList() {
-    const arr = this.props.fmcService.master?.fmsErrors.getArray();
+    const arr = this.props.fmcService.master.fmsErrors.getArray();
 
     if (arr && arr.length > 5) {
       console.warn('More than 5 FMS messages, truncating.');
@@ -79,7 +79,7 @@ export class MfdMsgList extends DisplayComponent<MfdMsgListProps> {
     this.subs.push(
       this.props.fmcService.masterFmcChanged.sub(() => {
         // FIXME the previous pipe leaks...
-        this.props.fmcService.master?.fmgc.data.engineOut.pipe(this.eoActive);
+        this.props.fmcService.master.fmgc.data.engineOut.pipe(this.eoActive);
       }),
     );
   }

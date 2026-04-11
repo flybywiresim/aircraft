@@ -23,6 +23,7 @@
 #include "sec/Sec.h"
 
 #include "utils/HysteresisNode.h"
+#include "utils/PulseNode.h"
 
 class FlyByWireInterface {
  public:
@@ -150,6 +151,8 @@ class FlyByWireInterface {
 
   RadioReceiver radioReceiver;
 
+  PulseNode captureConditionPulseNode = PulseNode(true);
+
   bool wasFcuInitialized = false;
   double simulationTimeReady = 0.0;
   std::unique_ptr<LocalVariable> idIsReady;
@@ -240,6 +243,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFmTargetVerticalSpeed;
   std::unique_ptr<LocalVariable> idFmRnavAppSelected;
   std::unique_ptr<LocalVariable> idFmFinalCanEngage;
+  std::unique_ptr<LocalVariable> idFmNavCaptureCondition;
 
   std::unique_ptr<LocalVariable> idFwcFlightPhase;
   std::unique_ptr<LocalVariable> idFwsDiscreteWord126[2];
