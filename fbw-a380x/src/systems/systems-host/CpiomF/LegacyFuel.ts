@@ -256,6 +256,8 @@ export class LegacyFuel implements Instrument {
       }
       if (
         (Math.abs(this.feed1TankQty.get() - this.feed4TankQty.get()) < 2 &&
+          this.feed1TankQty.get() < 6765 &&
+          this.feed4TankQty.get() < 6765 &&
           !this.triggerActive(5) &&
           (this.innerAndMidTransfersActiveForFeedTank.get(1) || this.innerAndMidTransfersActiveForFeedTank.get(4))) ||
         (Math.abs(this.feed1TankQty.get() - this.feed4TankQty.get()) >= 3 && this.triggerActive(5))
@@ -264,6 +266,8 @@ export class LegacyFuel implements Instrument {
       }
       if (
         (Math.abs(this.feed2TankQty.get() - this.feed3TankQty.get()) < 2 &&
+          ((!this.triggerActive(13) && this.feed2TankQty.get() < 7186 && this.feed3TankQty.get() < 7186) ||
+            (this.triggerActive(13) && this.feed2TankQty.get() < 6765 && this.feed3TankQty.get() < 6765)) &&
           !this.triggerActive(6) &&
           (this.innerAndMidTransfersActiveForFeedTank.get(2) || this.innerAndMidTransfersActiveForFeedTank.get(3))) ||
         (Math.abs(this.feed2TankQty.get() - this.feed3TankQty.get()) >= 3 && this.triggerActive(6))
