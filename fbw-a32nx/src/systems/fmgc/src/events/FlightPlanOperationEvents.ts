@@ -2,5 +2,5 @@
 import { FlightPlanIndex } from '../flightplanning/FlightPlanManager';
 export interface FlightPlanOperationEvents {
   /** Event triggered when immediate exit is selected on the MCDU/MFD */
-  hold_immediate_exit: { index: FlightPlanIndex; exit: boolean };
+  fbw_fms_set_hold_immediate_exit: { index: FlightPlanIndex; exit: boolean };
 }

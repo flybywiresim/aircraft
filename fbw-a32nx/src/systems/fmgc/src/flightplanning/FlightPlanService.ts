@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2025 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -457,13 +457,14 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     insertDiscontinuity: boolean = false,
     planIndex = FlightPlanIndex.Active,
     alternate = false,
+    forceNoTmpy = false,
   ): Promise<boolean> {
     if (!this.config.ALLOW_REVISIONS_ON_TMPY && planIndex === FlightPlanIndex.Temporary) {
       throw new Error('[FMS/FPS] Cannot delete element in temporary flight plan');
     }
 
     let finalIndex: number = planIndex;
-    if (this.config.TMPY_ON_DELETE_WAYPOINT) {
+    if (!forceNoTmpy && this.config.TMPY_ON_DELETE_WAYPOINT) {
       finalIndex = this.prepareDestructiveModification(planIndex);
     }
 

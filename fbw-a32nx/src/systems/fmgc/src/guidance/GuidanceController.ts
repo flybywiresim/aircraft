@@ -334,7 +334,7 @@ export class GuidanceController {
     this.approachIdentSize = this.symbolConfig.showRnpArLabel ? 14 : 9;
     this.bus
       .getSubscriber<FlightPlanOperationEvents>()
-      .on('hold_immediate_exit')
+      .on('fbw_fms_set_hold_immediate_exit')
       .handle((immExit) => {
         this.holdImmediateExit(immExit.index, immExit.exit);
       });

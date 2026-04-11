@@ -185,7 +185,8 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
    * @param insertDiscontinuity whether to insert a discontinuity at the deleted element's position
    * @param planIndex which flight plan to make the change on
    * @param alternate whether to edit the plan's alternate flight plan
-   *
+   * @param forceNoTmpy whether to force not creating a temporary flight plan even if the config states otherwise.
+   * Used for deleting holds after sequencing on the 380x.
    * @returns `true` if the element could be removed, `false` if removal is not allowed
    */
   deleteElementAt(
@@ -193,6 +194,7 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
     insertDiscontinuity?: boolean,
     planIndex?: number,
     alternate?: boolean,
+    forceNoTmpy?: boolean,
   ): Promise<boolean>;
 
   /**
