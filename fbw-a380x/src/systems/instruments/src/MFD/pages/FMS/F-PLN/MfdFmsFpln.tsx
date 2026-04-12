@@ -574,10 +574,10 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         if (nextIsSpecial) {
           flags |= FplnLineFlags.BeforeSpecial;
         }
-        if (lineData.originalLegIndex !== null && this.loadedFlightPlan) {
-          if (lineData.originalLegIndex === this.loadedFlightPlan.activeLegIndex) {
+        if (this.loadedFlightPlan) {
+          if (drawIndex === this.loadedFlightPlan.activeLegIndex || lineData.type === FplnLineType.HoldHmActive) {
             flags |= FplnLineFlags.IsActiveLeg;
-          } else if (lineData.originalLegIndex === this.loadedFlightPlan.activeLegIndex - 1) {
+          } else if (drawIndex === this.loadedFlightPlan.activeLegIndex - 1) {
             flags |= FplnLineFlags.BeforeActiveLeg;
           }
         }

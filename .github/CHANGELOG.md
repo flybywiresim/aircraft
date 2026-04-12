@@ -105,7 +105,6 @@
 1. [A32NX/MCDU] Fix ND reset to the departure airport when selecting the destination for approach - @Ditoo29 (dito29)
 1. [A380X/FMS] Allow "INSERT NEXT WPT" revision at the flightplan origin - @BravoMike99 (bruno_pt99)
 1. [A380X/MFD] Added IMMEDIATE EXIT/RESUME HOLD button to the F-PLN page - @BravoMike99 (bruno_pt99)
-1. [A380X/MFD] Fixed pseudo waypoint appearing as white on the F-PLN page if at the top of the page - @BravoMike99 (bruno_pt99)
 
 ## 0.14.0
 
