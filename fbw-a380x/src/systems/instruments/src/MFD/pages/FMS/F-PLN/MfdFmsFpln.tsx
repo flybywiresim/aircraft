@@ -165,8 +165,8 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
   private readonly showInitButton = MappedSubject.create(
     ([flightPhase, loadedFlightPlan]) =>
-      (flightPhase === FmgcFlightPhase.Preflight && loadedFlightPlan === FlightPlanIndex.Active) ||
-      loadedFlightPlan === FlightPlanIndex.Temporary,
+      flightPhase === FmgcFlightPhase.Preflight &&
+      (loadedFlightPlan === FlightPlanIndex.Active || loadedFlightPlan === FlightPlanIndex.Temporary),
     this.activeFlightPhase,
     this.loadedFlightPlanIndex,
   );
@@ -686,25 +686,19 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     const flightPlan = this.props.fmcService.master.revisedLegIsAltn.get()
       ? this.loadedAlternateFlightPlan
       : this.loadedFlightPlan;
-    const wpt: NextWptInfo[] = flightPlan?.allLegs
-      .map((el: ReadonlyFlightPlanElement, idx: number) => {
-        const revWptIdx = this.props.fmcService.master.revisedLegIndex.get();
-        if (
-          el instanceof FlightPlanLeg &&
-          el.isXF() &&
-          revWptIdx !== null &&
-          revWptIdx !== undefined &&
-          idx >= revWptIdx + 1
-        ) {
-          return { ident: el.ident, originalLegIndex: idx };
-        }
-        return null;
-      })
-      .filter((el) => el !== null) as NextWptInfo[];
+    const revWptIndex = this.props.fmcService.master.revisedLegIndex.get();
+    if (revWptIndex !== null) {
+      const wpt: NextWptInfo[] = flightPlan?.allLegs
+        .map((el: ReadonlyFlightPlanElement, idx: number) => {
+          if (el instanceof FlightPlanLeg && el.isXF() && idx >= revWptIndex + 1) {
+            return { ident: el.ident, originalLegIndex: idx };
+          }
+          return null;
+        })
+        .filter((el) => el !== null) as NextWptInfo[];
 
-    if (wpt) {
-      this.nextWptAvailableWaypoints.set(wpt);
       this.insertNextWptWindowOpened.set(true);
+      this.nextWptAvailableWaypoints.set(wpt);
     }
   }
 
