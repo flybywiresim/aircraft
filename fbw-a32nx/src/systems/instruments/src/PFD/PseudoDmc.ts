@@ -1,5 +1,4 @@
-// @ts-strict-ignore
-// Copyright (c) 2024 FlyByWire Simulations
+// Copyright (c) 2024-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import {
@@ -83,7 +82,8 @@ export class PseudoDmc implements Instrument {
 
   private readonly fmMda = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmMdaRaw'), 0);
   private readonly dmcDiscreteWord270 = Arinc429RegisterSubject.createEmpty();
-
+  private readonly fmDh = Arinc429LocalVarConsumerSubject.create(this.sub.on('fmDhRaw'), 0);
+  private readonly dmcDhMinimum = Arinc429RegisterSubject.createEmpty();
   private readonly outputWords = [
     this.dmcDiscreteWord271,
     this.dmcDiscreteWord313Backup,
@@ -93,6 +93,7 @@ export class PseudoDmc implements Instrument {
     this.dmcPitchAngleWord324Onside,
     this.dmcPitchAngleWord324Backup,
     this.dmcDiscreteWord270,
+    this.dmcDhMinimum,
   ];
 
   /** Not valid until init is called! */
@@ -169,6 +170,13 @@ export class PseudoDmc implements Instrument {
         this.fmMda,
         this.altitude,
       ),
+      this.fmDh.sub(
+        (v) => {
+          this.dmcDhMinimum.setWord(v.rawWord);
+        },
+        true,
+        true,
+      ),
     ];
 
     this._isAcPowered.sub((isPowered) => {
@@ -238,6 +246,10 @@ export class PseudoDmc implements Instrument {
       word.writeToSimVar(
         this.isRightSide ? 'L:A32NX_DMC_DISCRETE_WORD_270_RIGHT' : 'L:A32NX_DMC_DISCRETE_WORD_270_LEFT',
       );
+    });
+
+    this.dmcDhMinimum.sub((word) => {
+      word.writeToSimVar(this.isRightSide ? 'L:A32NX_DMC_DH_RIGHT' : 'L:A32NX_DMC_DH_LEFT');
     });
 
     this.mainElecSupply.setConsumer(

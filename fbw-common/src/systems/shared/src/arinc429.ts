@@ -278,12 +278,12 @@ export class Arinc429Register implements Arinc429WordData {
  * Optimized to only write when the value changes more than some quantization.
  */
 export class Arinc429OutputWord {
-  protected word: Arinc429Word;
+  protected word: Arinc429Register;
 
   protected isDirty: boolean = true;
 
   public constructor(rawValue = 0) {
-    this.word = new Arinc429Word(rawValue);
+    this.word = Arinc429Register.empty().set(rawValue);
   }
 
   public setRawValue(value: number) {
@@ -309,7 +309,7 @@ export class Arinc429OutputWord {
   /** @inheritdoc */
   public valueOr(defaultValue: number | null): number | null;
   public valueOr(defaultValue: number | undefined | null): number | undefined | null {
-    return this.word.valueOr(defaultValue);
+    return this.word.valueOr(defaultValue ?? 0);
   }
 
   public bitValue(bit: number): boolean {
@@ -323,7 +323,7 @@ export class Arinc429OutputWord {
   /** @inheritdoc */
   public bitValueOr(bit: number, defaultValue: boolean | undefined): boolean | undefined;
   public bitValueOr(bit: number, defaultValue: boolean | undefined | null): boolean | typeof defaultValue {
-    return this.word.bitValueOr(bit, defaultValue);
+    return this.word.bitValueOr(bit, defaultValue ?? false);
   }
 
   public setBnrValue(

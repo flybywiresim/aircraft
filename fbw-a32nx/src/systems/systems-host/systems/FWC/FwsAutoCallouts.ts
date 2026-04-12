@@ -215,11 +215,11 @@ export class FwsAutoCallouts {
   private readonly hundredAboveDhMemoryNode = new NXLogicMemoryNode(false);
 
   public readonly hundredAboveAudio = Subject.create(false);
-  private fmDhToUse: Arinc429Register = Arinc429Register.empty();
-  private readonly fm1Dh: Arinc429Register = Arinc429Register.empty();
-  private readonly fm1DhRegisteredSimVar = RegisteredSimVar.create('L:A32NX_FM1_DECISION_HEIGHT', SimVarValueType.Enum);
-  private readonly fm2Dh: Arinc429Register = Arinc429Register.empty();
-  private readonly fm2DhRegisteredSimVar = RegisteredSimVar.create('L:A32NX_FM2_DECISION_HEIGHT', SimVarValueType.Enum);
+  private dmcDhToUse: Arinc429Register = Arinc429Register.empty();
+  private readonly dmcLDh: Arinc429Register = Arinc429Register.empty();
+  private readonly leftDmcDhVar = RegisteredSimVar.create('L:A32NX_DMC_DH_LEFT', SimVarValueType.Enum);
+  private readonly dmcRDh: Arinc429Register = Arinc429Register.empty();
+  private readonly rightDmcDVar = RegisteredSimVar.create('L:A32NX_DMC_DH_RIGHT', SimVarValueType.Enum);
 
   private dhInhibit = false;
   private minimumGenerated = false;
@@ -254,13 +254,13 @@ export class FwsAutoCallouts {
     const fm2DiscreteWord4 = this.fws.fmgc2DiscreteWord4.get();
     this.dmcLDiscreteWord270.set(this.dmcLDiscreteWord270Var.get());
     this.dmcRDiscreteWord270.set(this.dmcRDiscreteWord270Var.get());
-    this.fm1Dh.set(this.fm1DhRegisteredSimVar.get());
-    this.fm2Dh.set(this.fm2DhRegisteredSimVar.get());
+    this.dmcLDh.set(this.leftDmcDhVar.get());
+    this.dmcRDh.set(this.rightDmcDVar.get());
     // DH selection. Use DH 2 if 1 invalid or if both valid and DH 2 > DH1.
-    if (this.fm1Dh.isInvalid() || this.fm2Dh.valueOr(0) > this.fm1Dh.valueOr(0)) {
-      this.fmDhToUse = this.fm2Dh;
+    if (this.dmcLDh.isInvalid() || this.dmcRDh.valueOr(0) > this.dmcLDh.valueOr(0)) {
+      this.dmcDhToUse = this.dmcRDh;
     } else {
-      this.fmDhToUse = this.fm1Dh;
+      this.dmcDhToUse = this.dmcLDh;
     }
 
     this.computeInhbits(
@@ -306,7 +306,7 @@ export class FwsAutoCallouts {
     );
     const hundredAboveMda = !this.mdaInhibit && !hundredAboveMdaMemory && hundredAboveDmcMtrig;
     // DH
-    const dhValue = this.fmDhToUse.valueOr(0);
+    const dhValue = this.dmcDhToUse.valueOr(0);
     const dhLessThan90Feet = dhValue < 90;
     const dhAndRaFirstComparison = height !== null && height <= 105 + dhValue;
     const dhAndRaSecondComparison = height !== null && height <= 115 + dhValue;
@@ -400,7 +400,7 @@ export class FwsAutoCallouts {
       raInvalidOrLowSpeedWarningOrFlex || (onGroundAndNotPhase8 && engine1MasterOn && engine2MasterOn);
     this.tcasAudio = this.tcasAudioMrtrigNode.write(false, deltaTime); // TODO
     this.mdaInhibit = speedWarning || stallWarning || this.gpwsActive || this.tcasAudio;
-    this.dhInhibit = height === null || this.autoCalloutInhibit || this.fmDhToUse.valueOr(0) <= 3;
+    this.dhInhibit = height === null || this.autoCalloutInhibit || this.dmcDhToUse.valueOr(0) <= 3;
   }
 
   private radioAltimeterCalloutLogic(
