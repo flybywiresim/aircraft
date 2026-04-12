@@ -364,7 +364,7 @@ export class FwsAbnormalNonSensed {
         false,
         false,
         this.fws.flightLevel.get() < 200,
-        this.fws.apuStartSwitch.get() === 1 || this.fws.apuAvail.get(),
+        this.fws.apuStartSwitch.get() || this.fws.apuAvail.get(),
         this.fws.apuAvail.get(),
         false,
         false,

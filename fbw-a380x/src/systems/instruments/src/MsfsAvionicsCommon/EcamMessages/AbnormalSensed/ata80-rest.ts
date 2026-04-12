@@ -1,7 +1,11 @@
 ﻿// Copyright (c) 2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { AbnormalProcedure, ChecklistLineStyle } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import {
+  AbnormalProcedure,
+  ChecklistLineStyle,
+  FMS_PRED_UNRELIABLE_CHECKLIST_ITEM,
+} from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
 
 // Convention for IDs:
 // First two digits: ATA chapter
@@ -41,12 +45,7 @@ export const EcamAbnormalSensedAta80Rest: { [n: number]: AbnormalProcedure } = {
       { name: 'FLAPS', sensed: true, labelNotCompleted: 'AT LEAST CONF 1', level: 2 },
       { name: 'L/G LEVER', sensed: true, labelNotCompleted: 'DOWN', level: 2 },
       { name: 'FUEL CONSUMPT INCRSD', sensed: false, level: 1 },
-      {
-        name: 'FMS PRED UNRELIABLE WITHOUT ACCURATE FMS FUEL PENALTY INSERTION',
-        sensed: false,
-        style: ChecklistLineStyle.Green,
-        level: 1,
-      },
+      { ...FMS_PRED_UNRELIABLE_CHECKLIST_ITEM, level: 1 },
       { name: 'DURING FURTHER DESCENT : MAINTAIN MAX DIFF PRESS 1 PSI', sensed: false, level: 1 },
       { name: 'EVAC', sensed: false, labelNotCompleted: 'PREPARE', level: 1 },
     ],
