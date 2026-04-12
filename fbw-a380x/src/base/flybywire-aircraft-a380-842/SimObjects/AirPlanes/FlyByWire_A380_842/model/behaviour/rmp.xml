@@ -377,6 +377,14 @@
                     <FAILURE>#RMP_MAIN_ELEC#</FAILURE>
                 </UseTemplate>
             </Component>
+
+            <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                <NODE_ID>RMP_#RMP_ID#_SEQ1</NODE_ID>
+                <POTENTIOMETER>#RMP_INTEG_POT#</POTENTIOMETER>
+                <EMISSIVE_CODE>1</EMISSIVE_CODE>
+                <FAILURE>#RMP_INTEG_ELEC#</FAILURE>
+            </UseTemplate>
+
         </Component>
 
         <Component ID="SCREEN_RMP_#RMP_ID#">
@@ -392,14 +400,6 @@
             </UseTemplate>
         </Component>
 
-        <Component ID="RMP_INTEG">
-            <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
-                <NODE_ID>RMP_#RMP_ID#_SEQ1</NODE_ID>
-                <POTENTIOMETER>#RMP_INTEG_POT#</POTENTIOMETER>
-                <EMISSIVE_CODE>1</EMISSIVE_CODE>
-                <FAILURE>#RMP_INTEG_ELEC#</FAILURE>
-            </UseTemplate>
-        </Component>
     </Template>
 
     <Template Name="FBW_A380X_RMP_Button">

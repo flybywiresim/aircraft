@@ -251,6 +251,7 @@ class FadecSimData_A380X {
   NamedVariablePtr wingAntiIce;
 
   NamedVariablePtr fadecQuickMode;  // 0 or 1
+  NamedVariablePtr engineTla[4];
 
   // ===============================================================================================
 
@@ -443,6 +444,10 @@ class FadecSimData_A380X {
 
     fadecQuickMode = dm->make_named_var("A32NX_AIRCRAFT_PRESET_QUICK_MODE", UNITS.Number, AUTO_READ);
     fadecQuickMode->set(0);
+    engineTla[E1] = dm->make_named_var("A32NX_AUTOTHRUST_TLA:1", UNITS.Number, AUTO_READ);
+    engineTla[E2] = dm->make_named_var("A32NX_AUTOTHRUST_TLA:2", UNITS.Number, AUTO_READ);
+    engineTla[E3] = dm->make_named_var("A32NX_AUTOTHRUST_TLA:3", UNITS.Number, AUTO_READ);
+    engineTla[E4] = dm->make_named_var("A32NX_AUTOTHRUST_TLA:4", UNITS.Number, AUTO_READ);
 
     // reset LVars to 0
     engineEgt[E1]->setAndWriteToSim(0);

@@ -99,8 +99,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     protected readonly context: FlightPlanContext,
     public readonly index: number,
     public readonly bus: EventBus,
+    public readonly timeCreated?: number,
   ) {
     this.perfSyncPub = this.bus.getPublisher<PerformanceDataFlightPlanSyncEvents<P>>();
+    this.wasModified = false;
   }
 
   public async processSyncEvent(
@@ -239,6 +241,11 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       subscription.destroy();
     }
   }
+
+  /**
+   * Whether the flight plan was modified after import or creation using a lateral or vertical flight plan revision.
+   */
+  public wasModified: boolean;
 
   get legCount() {
     return this.allLegs.length;

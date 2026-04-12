@@ -1,3 +1,6 @@
+// Copyright (c) 2024-2026 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 import {
   ArraySubject,
   ComponentProps,
@@ -18,6 +21,7 @@ import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayIn
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { FmsError } from '@fmgc/FmsError';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
 
 export type NextWptInfo = {
   ident: string;
@@ -25,6 +29,7 @@ export type NextWptInfo = {
 };
 interface InsertNextWptFromWindowProps extends ComponentProps {
   fmcService: FmcServiceInterface;
+  flightPlanInterface: FlightPlanInterface;
   mfd: FmsDisplayInterface & MfdDisplayInterface;
   availableWaypoints: SubscribableArray<NextWptInfo>;
   visible: Subject<boolean>;
@@ -35,20 +40,18 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
   private readonly subs = [] as Subscription[];
 
-  private readonly topRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly display = Subject.create('none');
 
-  private readonly identRef = FSComponent.createRef<HTMLSpanElement>();
+  private readonly waypointIdent = Subject.create<string>('');
 
-  private readonly coordinatesRef = FSComponent.createRef<HTMLSpanElement>();
-
-  private readonly nextWpt = Subject.create<string>('');
+  private readonly coordinates = Subject.create<string>('');
 
   private readonly selectedWaypointIndex = Subject.create<number | null>(null);
 
   private readonly availableWaypointsString = ArraySubject.create<string>([]);
 
   private async onModified(idx: number | null, text: string): Promise<void> {
-    const revWptPlanIndex = this.props.fmcService.master?.revisedLegPlanIndex.get();
+    const revWptPlanIndex = this.props.fmcService.master.revisedLegPlanIndex.get();
     if (!this.props.fmcService.master || revWptPlanIndex == null) {
       return;
     }
@@ -57,19 +60,19 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
       const wptInfo = this.props.availableWaypoints.get(idx);
       const revWpt = this.props.fmcService.master.revisedLegIndex.get();
       const fpln = this.props.fmcService.master.revisedLegIsAltn.get()
-        ? this.props.fmcService.master.flightPlanService.get(revWptPlanIndex).alternateFlightPlan
-        : this.props.fmcService.master.flightPlanService.get(revWptPlanIndex);
+        ? this.props.flightPlanInterface.get(revWptPlanIndex).alternateFlightPlan
+        : this.props.flightPlanInterface.get(revWptPlanIndex);
       const wptToInsert = fpln?.legElementAt(wptInfo.originalLegIndex).definition.waypoint;
       if (
+        revWpt !== null &&
         this.props.availableWaypoints.get(idx) &&
         fpln?.hasElement(wptInfo.originalLegIndex) &&
         fpln.elementAt(wptInfo.originalLegIndex).isDiscontinuity === false &&
-        wptToInsert &&
-        revWpt
+        wptToInsert
       ) {
         this.selectedWaypointIndex.set(idx);
         this.props.visible.set(false);
-        await this.props.fmcService.master.flightPlanService.nextWaypoint(
+        await this.props.flightPlanInterface.nextWaypoint(
           revWpt,
           wptToInsert,
           this.props.fmcService.master.revisedLegPlanIndex.get() ?? undefined,
@@ -80,8 +83,8 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
       try {
         const wpt = await WaypointEntryUtils.getOrCreateWaypoint(this.props.fmcService.master, text, true, undefined);
         const revWpt = this.props.fmcService.master.revisedLegIndex.get();
-        if (wpt && revWpt) {
-          await this.props.fmcService.master.flightPlanService.nextWaypoint(
+        if (wpt && revWpt !== null) {
+          await this.props.flightPlanInterface.nextWaypoint(
             revWpt,
             wpt,
             this.props.fmcService.master.revisedLegPlanIndex.get() ?? undefined,
@@ -90,7 +93,7 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
         }
       } catch (msg: unknown) {
         if (msg instanceof FmsError) {
-          this.props.fmcService.master?.showFmsErrorMessage(msg.type);
+          this.props.fmcService.master.showFmsErrorMessage(msg.type);
         }
       }
       this.props.visible.set(false);
@@ -103,33 +106,26 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
 
     this.subs.push(
       this.props.visible.sub((val) => {
-        if (this.topRef.getOrDefault()) {
-          this.topRef.instance.style.display = val ? 'block' : 'none';
-          this.selectedWaypointIndex.set(null);
-          this.nextWpt.set('');
-        }
+        this.display.set(val ? 'block' : 'none');
+        this.selectedWaypointIndex.set(null);
       }, true),
     );
 
     if (this.props.fmcService.master) {
       this.subs.push(
         this.props.fmcService.master.revisedLegIndex.sub((wptIdx) => {
-          if (wptIdx && this.props.fmcService.master?.revisedWaypoint()) {
-            const fpln = this.props.fmcService.master.flightPlanService.get(
+          if (wptIdx !== null && this.props.fmcService.master.revisedWaypoint()) {
+            const fpln = this.props.flightPlanInterface.get(
               this.props.fmcService.master.revisedLegPlanIndex.get() ?? FlightPlanIndex.Active,
             );
 
-            if (
-              fpln.elementAt(wptIdx)?.isDiscontinuity === false &&
-              this.identRef.getOrDefault() &&
-              this.coordinatesRef.getOrDefault()
-            ) {
+            if (fpln.elementAt(wptIdx)?.isDiscontinuity === false) {
               const wpt = fpln.legElementAt(wptIdx);
-              this.identRef.instance.innerText = wpt.ident;
+              this.waypointIdent.set(wpt.ident);
               this.selectedWaypointIndex.set(null);
 
               if (wpt.definition.waypoint) {
-                this.coordinatesRef.instance.innerText = coordinateToString(wpt.definition.waypoint.location, false);
+                this.coordinates.set(coordinateToString(wpt.definition.waypoint.location, false));
               }
             }
           }
@@ -153,14 +149,14 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
 
   render(): VNode {
     return (
-      <div ref={this.topRef} style="position: relative;">
+      <div style={{ position: 'relative', display: this.display }}>
         <div class="mfd-dialog mfd-fms-insert-next-wpt-box" style={`${this.props.contentContainerStyle ?? ''}`}>
           <div class="mfd-fms-insert-next-wpt-box-inner">
             <span class="mfd-label">
-              INSERT NEXT WPT FROM <span ref={this.identRef} class="mfd-value bigger" />
+              INSERT NEXT WPT FROM <span class="mfd-value bigger">{this.waypointIdent}</span>
             </span>
             <span style="margin-left: 50px; margin-top: 10px;">
-              <span ref={this.coordinatesRef} class="mfd-value bigger" />
+              <span class="mfd-value bigger">{this.coordinates}</span>
             </span>
             <div style="margin-left: 50px; margin-top: 10px;">
               <DropdownMenu
@@ -182,7 +178,7 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
               label="CANCEL"
               onClick={() => {
                 Coherent.trigger('UNFOCUS_INPUT_FIELD');
-                this.props.fmcService.master?.resetRevisedWaypoint();
+                this.props.fmcService.master.resetRevisedWaypoint();
                 this.props.visible.set(false);
               }}
             />

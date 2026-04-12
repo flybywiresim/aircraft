@@ -18,7 +18,7 @@ export interface FmsDisplayInterface {
    * @param intoPlan the index of the flight plan into which the uplink was done
    * @param fltPlnReceived true if the flight plan was received successfully
    */
-  onUplinkDone(intoPlan: number, fltPlnReceived: boolean): void;
+  onUplinkDone(fltPlnReceived: boolean, intoPlan?: number): void;
 
   /**
    * Calling this function with a message should display 1the message in the FMS' message area,
