@@ -773,7 +773,7 @@ export class VerticalProfileManager {
       return false;
     }
 
-    const lastLegIndexBeforeDiscontinuity = this.flightPlanService.active?.getLastLegindexBeforeDiscontinuity();
+    const lastLegIndexBeforeDiscontinuity = this.flightPlanService.active?.getLastLegIndexBeforeDiscontinuity();
     if (lastLegIndexBeforeDiscontinuity !== undefined && lastLegIndexBeforeDiscontinuity !== null) {
       const vnavPrediction = this.mcduProfile?.waypointPredictions.get(lastLegIndexBeforeDiscontinuity);
       if (vnavPrediction) {
