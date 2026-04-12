@@ -173,6 +173,7 @@ export class PseudoFWC {
   );
 
   private readonly ewdLeftFailureActive = Subject.create(false);
+  private readonly activeFailureSysPage = Subject.create(-1);
 
   // Input buffering
   public readonly apDiscInputBuffer = new NXLogicMemoryNode(false);
@@ -1524,6 +1525,10 @@ export class PseudoFWC {
 
     this.ewdLeftFailureActive.sub((v) => {
       SimVar.SetSimVarValue('L:A32NX_EWD_LEFT_FAILURE_ACTIVE', 'bool', v);
+    }, true);
+
+    this.activeFailureSysPage.sub((sysPage) => {
+      SimVar.SetSimVarValue('L:A32NX_ECAM_SFAIL', 'number', sysPage);
     }, true);
 
     SimVar.SetSimVarValue('L:A32NX_STATUS_LEFT_LINE_8', 'string', '000000001');
@@ -3971,7 +3976,7 @@ export class PseudoFWC {
       }
     }
 
-    SimVar.SetSimVarValue('L:A32NX_ECAM_SFAIL', 'number', activeFailureSysPage);
+    this.activeFailureSysPage.set(activeFailureSysPage);
 
     const orderedMemoArrayLeft = this.mapOrder(tempMemoArrayLeft);
     let orderedMemoArrayRight: string[] = this.mapOrder(tempMemoArrayRight);
