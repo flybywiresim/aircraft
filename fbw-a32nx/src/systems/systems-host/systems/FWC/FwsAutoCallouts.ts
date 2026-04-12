@@ -12,7 +12,7 @@ import {
 } from '@flybywiresim/fbw-sdk';
 import { SimVarValueType, Subject } from '@microsoft/msfs-sdk';
 import { A32NX_DEFAULT_RADIO_AUTO_CALL_OUTS, A32NXRadioAutoCallOutFlags } from '@shared/AutoCallOuts';
-import { DEFAULT_MONITOR_TIME, PseudoFWC } from './PseudoFWC';
+import { PseudoFWC } from './PseudoFWC';
 
 export class FwsAutoCallouts {
   private autoCalloutInhibit = false;
@@ -225,10 +225,10 @@ export class FwsAutoCallouts {
   private minimumGenerated = false;
 
   private readonly minimumMdaMtrigNode = new NXLogicTriggeredMonostableNode(3);
-  private readonly minimumMdaMemoryNode = new NXLogicMemoryNode(true);
+  private readonly minimumMdaMemoryNode = new NXLogicMemoryNode(false);
   private readonly dhMinimumConfNode = new NXLogicConfirmNode(0.1);
   private readonly dhMinimumMtrigNode = new NXLogicTriggeredMonostableNode(3);
-  private readonly minimumDhMemoryNode = new NXLogicMemoryNode(true);
+  private readonly minimumDhMemoryNode = new NXLogicMemoryNode(false);
   public readonly minimumAudio = Subject.create(false);
 
   constructor(private readonly fws: PseudoFWC) {}
