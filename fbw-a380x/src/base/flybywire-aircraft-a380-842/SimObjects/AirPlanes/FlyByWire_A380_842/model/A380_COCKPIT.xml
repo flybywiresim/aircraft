@@ -3461,20 +3461,10 @@
                         <UseTemplate Name="FBW_Covered_Push_Toggle">
                             <NODE_ID>PUSH_DOOR_LCKG_SYS</NODE_ID>
                             <LOCK_NODE_ID>LOCK_DOOR_LCKG_SYS</LOCK_NODE_ID>
-                            <LEFT_SINGLE_CODE>
-                                (L:A32NX_OXYGEN_TMR_RESET, Bool) ! (&gt;L:A32NX_OXYGEN_TMR_RESET,
-                                Bool)
-                                (L:A32NX_OXYGEN_MASKS_DEPLOYED, Bool) !
-                                (&gt;L:A32NX_OXYGEN_MASKS_DEPLOYED, Bool)
-                                0 (&gt;L:A32NX_OXYGEN_PASSENGER_LIGHT_ON)
-                            </LEFT_SINGLE_CODE>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                            <SEQ1_CODE>(L:A32NX_OXYGEN_TMR_RESET_FAULT, Bool)</SEQ1_CODE>
-                            <SEQ2_CODE>(L:A32NX_OXYGEN_TMR_RESET, Bool)</SEQ2_CODE>
                             <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                             <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                             <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                            <TOOLTIPID>Reset oxygen timer</TOOLTIPID>
                         </UseTemplate>
 
                         <!-- Data Loading Selector-->
@@ -4450,9 +4440,7 @@
                 <Component ID="Overhead_Back_Panel">
 
                     <!-- "GREEN PUMP A" -->
-                    <UseTemplate Name="FBW_Anim_Interactions">
-                        <ANIM_TYPE>KORRY_PROTECTED</ANIM_TYPE>
-                        <ANIM_TEMPLATE>FBW_Covered_Push_Toggle</ANIM_TEMPLATE>
+                    <UseTemplate Name="FBW_Covered_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_HYD_GPUMPA</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_HYD_GPUMPA</LOCK_NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_EPUMPGA_ON_PB_IS_AUTO</TOGGLE_SIMVAR>
@@ -4468,9 +4456,7 @@
                     </UseTemplate>
 
                     <!-- "GREEN PUMP B" -->
-                    <UseTemplate Name="FBW_Anim_Interactions">
-                        <ANIM_TYPE>KORRY_PROTECTED</ANIM_TYPE>
-                        <ANIM_TEMPLATE>FBW_Covered_Push_Toggle</ANIM_TEMPLATE>
+                    <UseTemplate Name="FBW_Covered_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_HYD_GPUMPB</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_HYD_GPUMPB</LOCK_NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_EPUMPGB_ON_PB_IS_AUTO</TOGGLE_SIMVAR>
@@ -4486,9 +4472,7 @@
                     </UseTemplate>
 
                     <!-- "YELLOW PUMP A" -->
-                    <UseTemplate Name="FBW_Anim_Interactions">
-                        <ANIM_TYPE>KORRY_PROTECTED</ANIM_TYPE>
-                        <ANIM_TEMPLATE>FBW_Covered_Push_Toggle</ANIM_TEMPLATE>
+                    <UseTemplate Name="FBW_Covered_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_HYD_YPUMPA</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_HYD_YPUMPA</LOCK_NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_EPUMPYA_ON_PB_IS_AUTO</TOGGLE_SIMVAR>
@@ -4504,9 +4488,7 @@
                     </UseTemplate>
 
                     <!-- "YELLOW PUMP B" -->
-                    <UseTemplate Name="FBW_Anim_Interactions">
-                        <ANIM_TYPE>KORRY_PROTECTED</ANIM_TYPE>
-                        <ANIM_TEMPLATE>FBW_Covered_Push_Toggle</ANIM_TEMPLATE>
+                    <UseTemplate Name="FBW_Covered_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_HYD_YPUMPB</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_HYD_YPUMPB</LOCK_NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_EPUMPYB_ON_PB_IS_AUTO</TOGGLE_SIMVAR>
@@ -4524,9 +4506,7 @@
                     <!-- "HYD " -->
 
                     <!-- Green A -->
-                    <UseTemplate Name="FBW_Anim_Interactions">
-                        <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
-                        <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
+                    <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_HYD_G_A</NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_EPUMPGA_OFF_PB_IS_AUTO</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
@@ -4540,9 +4520,7 @@
                     </UseTemplate>
 
                     <!-- Green B -->
-                    <UseTemplate Name="FBW_Anim_Interactions">
-                        <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
-                        <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
+                    <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_HYD_G_B</NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_EPUMPGB_OFF_PB_IS_AUTO</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
@@ -4556,9 +4534,7 @@
                     </UseTemplate>
 
                     <!-- Yellow A -->
-                    <UseTemplate Name="FBW_Anim_Interactions">
-                        <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
-                        <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
+                    <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_HYD_Y_A</NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_EPUMPYA_OFF_PB_IS_AUTO</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
@@ -4572,9 +4548,7 @@
                     </UseTemplate>
 
                     <!-- Yellow B -->
-                    <UseTemplate Name="FBW_Anim_Interactions">
-                        <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
-                        <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
+                    <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_HYD_Y_B</NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_EPUMPYB_OFF_PB_IS_AUTO</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
