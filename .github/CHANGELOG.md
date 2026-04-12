@@ -104,6 +104,7 @@
 1. [A380X/FMS] Allow edition of vnav descent speed - @BravoMike99 (bruno_pt99)
 1. [A32NX/MCDU] Fix ND reset to the departure airport when selecting the destination for approach - @Ditoo29 (dito29)
 1. [A380X/FMS] Allow "INSERT NEXT WPT" revision at the flightplan origin - @BravoMike99 (bruno_pt99)
+1. [A32NX/FMS] Fixed the BRG and TRK lines on the first two rows of the flight plan page - @tracernz (Mike)
 1. [A380X/OVHD] Fix GND CTL Pushbutton activating REMOTE C/B CTL - @BravoMike99 (bruno_pt99)
 
 ## 0.14.0
