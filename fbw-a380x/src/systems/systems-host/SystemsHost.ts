@@ -61,6 +61,7 @@ import { AutoThsTrimmer } from 'systems-host/PseudoPRIM/AutoThsTrimmer';
 import { EfisTawsBridge } from 'systems-host/Misc/EfisTawsBridge';
 import { FmsSymbolsPublisher } from 'instruments/src/ND/FmsSymbolsPublisher';
 import { FmsMessagePublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FmsMessagePublisher';
+import { FqmsBusPublisher } from '@shared/publishers/FqmsBusPublisher';
 
 class SystemsHost extends BaseInstrument {
   private readonly bus = new ArincEventBus();
@@ -120,6 +121,8 @@ class SystemsHost extends BaseInstrument {
   private readonly weightAndBalancePublisher = new WeightBalanceSimvarPublisher(this.bus);
 
   private readonly fuelSystemPublisher = new FuelSystemPublisher(this.bus);
+
+  private readonly fqmsPublisher = new FqmsBusPublisher(this.bus);
 
   private readonly stallWarningPublisher = new StallWarningPublisher(this.bus, 0.9);
 
@@ -210,6 +213,7 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('BtvPublisher', this.btvPublisher);
     this.backplane.addPublisher('Weightpublisher', this.weightAndBalancePublisher);
     this.backplane.addPublisher('FuelPublisher', this.fuelSystemPublisher);
+    this.backplane.addPublisher('fqmsPublisher', this.fqmsPublisher);
     this.backplane.addPublisher('StallWarning', this.stallWarningPublisher);
     this.backplane.addPublisher('PseudoFwc', this.pseudoFwcPublisher);
     this.backplane.addPublisher('Fcdc', this.fcdcPublisher);

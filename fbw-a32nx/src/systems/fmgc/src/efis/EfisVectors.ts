@@ -1,10 +1,15 @@
-// @ts-strict-ignore
-// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { EfisNdMode, EfisSide, EfisVectorsGroup, GenericDataListenerSync } from '@flybywiresim/fbw-sdk';
+import {
+  EfisNdMode,
+  EfisSide,
+  EfisVectorsGroup,
+  GenericDataListenerSync,
+  RegisteredSimVar,
+} from '@flybywiresim/fbw-sdk';
 
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { PathVector, pathVectorLength, pathVectorValid } from '@fmgc/guidance/lnav/PathVector';
@@ -14,7 +19,7 @@ import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { ConsumerValue, EventBus } from '@microsoft/msfs-sdk';
+import { ConsumerValue, EventBus, SimVarValueType } from '@microsoft/msfs-sdk';
 import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 import { FlightPlanUtils } from '@fmgc/flightplanning/FlightPlanUtils';
 
@@ -30,6 +35,13 @@ export class EfisVectors {
   private readonly flightPhase = ConsumerValue.create(
     this.bus.getSubscriber<FlightPhaseManagerEvents>().on('fmgc_flight_phase'),
     FmgcFlightPhase.Preflight,
+  );
+
+  private readonly lateralArmedMode = RegisteredSimVar.create('L:A32NX_FMA_LATERAL_ARMED', SimVarValueType.Enum);
+
+  private readonly lateralActiveMode = RegisteredSimVar.create<LateralMode>(
+    'L:A32NX_FMA_LATERAL_MODE',
+    SimVarValueType.Enum,
   );
 
   constructor(
@@ -64,7 +76,10 @@ export class EfisVectors {
 
       this.tryProcessFlightPlan(FlightPlanIndex.Active, side, true);
       this.tryProcessFlightPlan(FlightPlanIndex.Temporary, side, true);
-      this.tryProcessFlightPlan(FlightPlanIndex.FirstSecondary, side, true);
+
+      for (let i = 1; i <= this.efisInterfaces[side].numSecondaryFlightPlans; i++) {
+        this.tryProcessFlightPlan(FlightPlanIndex.FirstSecondary + i - 1, side, true);
+      }
 
       const activeFlightPlanVectors =
         this.guidanceController.activeGeometry?.getAllPathVectors(this.guidanceController.activeLegIndex) ?? [];
@@ -81,7 +96,10 @@ export class EfisVectors {
     } else {
       this.tryProcessFlightPlan(FlightPlanIndex.Active, side);
       this.tryProcessFlightPlan(FlightPlanIndex.Temporary, side);
-      this.tryProcessFlightPlan(FlightPlanIndex.FirstSecondary, side);
+
+      for (let i = 1; i <= this.efisInterfaces[side].numSecondaryFlightPlans; i++) {
+        this.tryProcessFlightPlan(FlightPlanIndex.FirstSecondary + i - 1, side);
+      }
     }
   }
 
@@ -117,7 +135,9 @@ export class EfisVectors {
         case FlightPlanIndex.FirstSecondary:
         case FlightPlanIndex.Uplink:
         default:
-          this.transmit(null, EfisVectorsGroup.SECONDARY, side);
+          if (!this.efisInterfaces[side].shouldTransmitAnySecondary()) {
+            this.transmit(null, EfisVectorsGroup.SECONDARY, side);
+          }
           break;
       }
 
@@ -134,24 +154,28 @@ export class EfisVectors {
 
     switch (planIndex) {
       case FlightPlanIndex.Active: {
-        const engagedLateralMode = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_MODE', 'Number') as LateralMode;
-        const armedLateralMode = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_ARMED', 'Enum');
-        const navArmed = isArmed(armedLateralMode, ArmedLateralMode.NAV);
+        const engagedLateralMode = this.lateralActiveMode.get();
         const flightPhase = this.flightPhase.get();
 
-        // FIXME implement
-        const doesPreNavEngagePathExist = engagedLateralMode !== LateralMode.GA_TRACK;
-
-        const transmitActive =
-          // In preflight phase, the flight plan line is solid even when NAV is not armed
-          flightPhase === FmgcFlightPhase.Preflight ||
-          engagedLateralMode === LateralMode.NAV ||
-          engagedLateralMode === LateralMode.LOC_CPT ||
-          engagedLateralMode === LateralMode.LOC_TRACK ||
-          engagedLateralMode === LateralMode.LAND ||
-          engagedLateralMode === LateralMode.FLARE ||
-          engagedLateralMode === LateralMode.ROLL_OUT ||
-          (navArmed && doesPreNavEngagePathExist);
+        const transmitActive = (() => {
+          switch (flightPhase) {
+            // In preflight phase active vectors are always transmitted.
+            case FmgcFlightPhase.Preflight:
+              return true;
+            case FmgcFlightPhase.Takeoff:
+              return (
+                engagedLateralMode === LateralMode.NAV || isArmed(this.lateralArmedMode.get(), ArmedLateralMode.NAV)
+              );
+            default:
+              return (
+                engagedLateralMode !== LateralMode.NONE &&
+                engagedLateralMode !== LateralMode.HDG &&
+                engagedLateralMode !== LateralMode.TRACK &&
+                engagedLateralMode !== LateralMode.GA_TRACK &&
+                engagedLateralMode !== LateralMode.RWY_TRACK
+              );
+          }
+        })();
 
         if (transmitActive) {
           this.transmitFlightPlan(
@@ -178,9 +202,9 @@ export class EfisVectors {
         this.transmitFlightPlan(plan, side, EfisVectorsGroup.TEMPORARY);
         break;
       default:
-        if (this.efisInterfaces[side].shouldTransmitSecondary()) {
+        if (this.efisInterfaces[side].shouldTransmitSecondary(planIndex - FlightPlanIndex.FirstSecondary + 1)) {
           this.transmitFlightPlan(plan, side, EfisVectorsGroup.SECONDARY);
-        } else {
+        } else if (!this.efisInterfaces[side].shouldTransmitAnySecondary()) {
           this.transmit(null, EfisVectorsGroup.SECONDARY, side);
         }
         break;
@@ -274,7 +298,7 @@ export class EfisVectors {
     }
   }
 
-  private transmit(vectors: PathVector[], vectorsGroup: EfisVectorsGroup, side: EfisSide): void {
+  private transmit(vectors: PathVector[] | null, vectorsGroup: EfisVectorsGroup, side: EfisSide): void {
     this.syncer.sendEvent(`A32NX_EFIS_VECTORS_${side}_${EfisVectorsGroup[vectorsGroup]}`, vectors);
   }
 }

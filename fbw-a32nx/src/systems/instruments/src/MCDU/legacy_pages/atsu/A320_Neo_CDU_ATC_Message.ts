@@ -1,8 +1,12 @@
 // @ts-strict-ignore
+// Copyright (c) 2026 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 import { AtsuMessageComStatus, AtsuMessageSerializationFormat } from '@datalink/common';
 import { CDUAtcMessageMonitoring } from './A320_Neo_CDU_ATC_MessageMonitoring';
 import { CDUAtcMessagesRecord } from './A320_Neo_CDU_ATC_MessagesRecord';
 import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
+import { setKeyNotActiveLskActions } from './AtsuDatalinkPageUtils';
 
 export class CDUAtcMessage {
   static TranslateCpdlcResponse(message) {
@@ -122,5 +126,6 @@ export class CDUAtcMessage {
     mcdu.onRightInput[5] = () => {
       mcdu.atsu.printMessage(message);
     };
+    setKeyNotActiveLskActions(mcdu);
   }
 }
