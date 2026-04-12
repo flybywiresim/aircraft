@@ -1,7 +1,7 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-const EWDGroups: Record<string, string> = {
+const EwdGroups: Record<string, string> = {
   'AUTO FLT$1': '\x1b<2m\x1b4mAUTO FLT\x1bm',
   'F/CTL$1': '\x1b<2m\x1b4mF/CTL\x1bm',
   'OVER SPEED$1': '\x1b<2m\x1b4mOVER SPEED\x1bm',
@@ -570,8 +570,8 @@ export const formatEwdMessages = (codes: string[]): string[] => {
 
     const prefix =
       previousGroup === message.group
-        ? `${getLeadingColorControl(EWDGroups[message.group])}${' '.repeat(getVisibleTextWidth(EWDGroups[message.group]))}`
-        : EWDGroups[message.group];
+        ? `${getLeadingColorControl(EwdGroups[message.group])}${' '.repeat(getVisibleTextWidth(EwdGroups[message.group]))}`
+        : EwdGroups[message.group];
 
     previousGroup = message.group;
 
