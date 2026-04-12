@@ -212,7 +212,6 @@ export class FwsAutoCallouts {
   private readonly HundredAboveDhConfNode = new NXLogicConfirmNode(0.1);
   private readonly hundredAboveDhMtrig = new NXLogicTriggeredMonostableNode(3);
   private readonly hundredAboveDhMemoryNode = new NXLogicMemoryNode(false);
-  private readonly hundredAboveAudioConf = new NXLogicConfirmNode(DEFAULT_MONITOR_TIME, true);
 
   public readonly hundredAboveAudio = Subject.create(false);
   private readonly fmDh = Arinc429Register.empty();
@@ -227,7 +226,6 @@ export class FwsAutoCallouts {
   private readonly dhMinimumConfNode = new NXLogicConfirmNode(0.1);
   private readonly dhMinimumMtrigNode = new NXLogicTriggeredMonostableNode(3);
   private readonly minimumDhMemoryNode = new NXLogicMemoryNode(true);
-  private readonly minimumAudioConf = new NXLogicConfirmNode(DEFAULT_MONITOR_TIME, true);
   public readonly minimumAudio = Subject.create(false);
 
   constructor(private readonly fws: PseudoFWC) {}
@@ -316,7 +314,7 @@ export class FwsAutoCallouts {
     );
     const hundredAboveDh = !hundredAboveDhMemory && hundredAboveDhMtrig && !this.minimumnInhibit;
     const hundredAbove = hundredAboveMda || hundredAboveDh;
-    this.hundredAboveAudio.set(this.hundredAboveAudioConf.write(hundredAbove, deltaTime));
+    this.hundredAboveAudio.set(hundredAbove);
     /// Minimums
     // MDA
     const minimumDmc = this.dmcDiscreteWord270.bitValueOr(21, false);
@@ -336,7 +334,7 @@ export class FwsAutoCallouts {
 
     const minimum = minimumMda || minimumDh;
     this.minimumGenerated = this.fws.minimumEmitted || this.fws.hundredAboveEmitted || hundredAbove || minimum;
-    this.minimumAudio.set(this.minimumAudioConf.write(minimum, deltaTime));
+    this.minimumAudio.set(minimum);
   }
 
   private computeThresholds(height: number | null, deltaTime: number) {
