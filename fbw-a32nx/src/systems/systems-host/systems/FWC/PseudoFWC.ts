@@ -170,6 +170,8 @@ export class PseudoFWC {
     Subject.create(''),
   );
 
+  private readonly ewdLeftFailureActive = Subject.create(false);
+
   // Input buffering
   public readonly apDiscInputBuffer = new NXLogicMemoryNode(false);
 
@@ -1517,6 +1519,10 @@ export class PseudoFWC {
         SimVar.SetSimVarValue(PseudoFWC.ewdMessageSimVarsRight[i], 'string', l ?? '');
       }),
     );
+
+    this.ewdLeftFailureActive.sub((v) => {
+      SimVar.SetSimVarValue('L:A32NX_EWD_LEFT_FAILURE_ACTIVE', 'bool', v);
+    }, true);
 
     SimVar.SetSimVarValue('L:A32NX_STATUS_LEFT_LINE_8', 'string', '000000001');
   }
@@ -3920,8 +3926,7 @@ export class PseudoFWC {
     const failLeft = tempFailureArrayLeft.length > 0;
     const orderedFailureArrayLeft = this.mapOrder(tempFailureArrayLeft);
     const orderedFailureArrayRight = this.mapOrder(tempFailureArrayRight);
-
-    SimVar.SetSimVarValue('L:A32NX_EWD_LEFT_FAILURE_ACTIVE', 'bool', failLeft);
+    this.ewdLeftFailureActive.set(failLeft);
 
     this.allCurrentFailures.length = 0;
     this.allCurrentFailures.push(...allFailureKeys);
