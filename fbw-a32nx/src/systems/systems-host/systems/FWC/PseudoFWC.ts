@@ -5725,7 +5725,7 @@ export class PseudoFWC {
       codesToReturn: ['320014001', '320014002', '320014003', '320014004', '320014005'],
       memoInhibit: () => false,
       failure: 3,
-      sysPage: 9,
+      sysPage: EcamSysPage.WHEEL,
       side: 'LEFT',
     },
     3200150: {

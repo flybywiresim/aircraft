@@ -64,6 +64,7 @@ export default new TaskOfTasks('all', [
                 ]),
                 new ExecTask('systems-host', 'npm run build-a32nx:systems-host', [
                     'fbw-a32nx/src/systems/systems-host',
+                    'fbw-a32nx/src/systems/shared/src',
                     'fbw-common/src/systems/datalink',
                     'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/SystemsHost',
                 ]),
