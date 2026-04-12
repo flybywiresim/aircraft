@@ -494,8 +494,14 @@ export class FwsInopSys {
     },
     320300022: {
       // ROW/ROP
-      simVarIsActive: this.fws.rowRopLost,
+      simVarIsActive: this.fws.rowLost,
       phase: FwsInopSysPhases.ApprLdg,
+    },
+    320300025: {
+      // RWY OVERRUN PROT
+      simVarIsActive: this.fws.ropLost,
+      phase: FwsInopSysPhases.ApprLdg,
+      notActiveWhenItemActive: ['320300022'],
     },
     340300001: {
       // GPWS 1
@@ -742,6 +748,11 @@ export class FwsInopSys {
       // TAWS SYS 1+2
       simVarIsActive: MappedSubject.create(SubscribableMapFunctions.and(), this.fws.taws1Failed, this.fws.taws2Failed),
       phase: FwsInopSysPhases.AllPhases,
+    },
+    340300049: {
+      // ARPT NAV
+      simVarIsActive: this.fws.arptNavInop,
+      phase: FwsInopSysPhases.ApprLdg,
     },
 
     700300001: {

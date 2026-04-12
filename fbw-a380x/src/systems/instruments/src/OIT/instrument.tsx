@@ -9,14 +9,16 @@ import {
   FsInstrument,
   FsBaseInstrument,
   ClockPublisher,
+  HEvent,
 } from '@microsoft/msfs-sdk';
 import { AdrBusPublisher, FwcBusPublisher, FailuresConsumer } from '@flybywiresim/fbw-sdk';
 import { OIT } from './OIT';
-import { OitSimvarPublisher } from './OitSimvarPublisher';
+import { InternalKbdKeyEvent, OitSimvarPublisher } from './OitSimvarPublisher';
 import { OisLaptop } from './OisLaptop';
 import { AircraftNetworkServerUnit } from './System/AircraftNetworkServerUnit';
 import { AnsuOps } from './System/AnsuOps';
 import { ResetPanelSimvarPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/ResetPanelPublisher';
+import { FqmsBusPublisher } from '@shared/publishers/FqmsBusPublisher';
 
 class OitInstrument implements FsInstrument {
   private readonly bus = new EventBus();
@@ -30,6 +32,8 @@ class OitInstrument implements FsInstrument {
   private readonly adrPublisher = new AdrBusPublisher(this.bus);
 
   private readonly fwcPublisher = new FwcBusPublisher(this.bus);
+
+  private readonly fqmsPublisher = new FqmsBusPublisher(this.bus);
 
   private readonly resetPanelPublisher = new ResetPanelSimvarPublisher(this.bus);
 
@@ -54,6 +58,7 @@ class OitInstrument implements FsInstrument {
     this.backplane.addPublisher('oitSimvar', this.oitSimvarPublisher);
     this.backplane.addPublisher('adr', this.adrPublisher);
     this.backplane.addPublisher('fwc', this.fwcPublisher);
+    this.backplane.addPublisher('fqms', this.fqmsPublisher);
     this.backplane.addPublisher('resetPanel', this.resetPanelPublisher);
     this.backplane.addInstrument('Laptop', this.laptop);
     this.backplane.addInstrument('nssAnsu', this.avncsAnsu, true);
@@ -78,6 +83,23 @@ class OitInstrument implements FsInstrument {
       />,
       document.getElementById('OIT_CONTENT'),
     );
+
+    this.bus
+      .getSubscriber<HEvent>()
+      .on('hEvent')
+      .handle((eventName) => {
+        if (
+          eventName.startsWith(
+            this.instrument.instrumentIndex === 1 ? 'A380X_LAPTOP_KEYBOARD_L' : 'A380X_LAPTOP_KEYBOARD_R',
+          )
+        ) {
+          const key = eventName.substring(23);
+
+          this.bus
+            .getPublisher<InternalKbdKeyEvent>()
+            .pub('kbdKeyEvent', [this.instrument.instrumentIndex === 1 ? 'L' : 'R', key]);
+        }
+      });
 
     // Remove "instrument didn't load" text
     oit?.querySelector(':scope > h1')?.remove();

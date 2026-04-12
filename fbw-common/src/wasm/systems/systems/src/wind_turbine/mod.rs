@@ -212,7 +212,7 @@ impl WindTurbine {
 
     fn update_friction_torque(&mut self, resistant_torque: Torque) {
         let friction_torque = if self.is_low_speed() {
-            Torque::new::<newton_meter>(self.speed().get::<radian_per_second>() * -1.)
+            Torque::new::<newton_meter>(-self.speed().get::<radian_per_second>())
         } else {
             Torque::new::<newton_meter>(
                 self.speed().get::<radian_per_second>() * -self.dynamic_friction_coefficient,

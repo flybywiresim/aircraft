@@ -17,7 +17,7 @@ pub(super) fn ailerons(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Er
         ExecuteOn::PostTick,
         Variable::aspect("HYD_AIL_LEFT_OUTWARD_DEFLECTION"),
         |value| {
-            -1. * hyd_deflection_to_msfs_deflection(
+            -hyd_deflection_to_msfs_deflection(
                 value,
                 MIN_ACTUAL_DEFLECTION_ANGLE,
                 MAX_ACTUAL_DEFLECTION_ANGLE,
@@ -41,7 +41,7 @@ pub(super) fn ailerons(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Er
         ExecuteOn::PostTick,
         Variable::aspect("HYD_AIL_LEFT_MIDDLE_DEFLECTION"),
         |value| {
-            -1. * hyd_deflection_to_msfs_deflection(
+            -hyd_deflection_to_msfs_deflection(
                 value,
                 MIN_ACTUAL_DEFLECTION_ANGLE,
                 MAX_ACTUAL_DEFLECTION_ANGLE,
@@ -65,7 +65,7 @@ pub(super) fn ailerons(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Er
         ExecuteOn::PostTick,
         Variable::aspect("HYD_AIL_LEFT_INWARD_DEFLECTION"),
         |value| {
-            -1. * hyd_deflection_to_msfs_deflection(
+            -hyd_deflection_to_msfs_deflection(
                 value,
                 MIN_ACTUAL_DEFLECTION_ANGLE,
                 MAX_ACTUAL_DEFLECTION_ANGLE,
@@ -92,12 +92,12 @@ pub(super) fn ailerons(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Er
     builder.map_many(
         ExecuteOn::PostTick,
         vec![
-            Variable::aspect("HYD_AIL_LEFT_OUTWARD_DEFLECTION"),
-            Variable::aspect("HYD_AIL_LEFT_MIDDLE_DEFLECTION"),
-            Variable::aspect("HYD_AIL_LEFT_INWARD_DEFLECTION"),
-            Variable::aspect("HYD_AIL_RIGHT_OUTWARD_DEFLECTION"),
-            Variable::aspect("HYD_AIL_RIGHT_MIDDLE_DEFLECTION"),
-            Variable::aspect("HYD_AIL_RIGHT_INWARD_DEFLECTION"),
+            Variable::named("HYD_AILERON_LEFT_OUTWARD_DEFLECTION"),
+            Variable::named("HYD_AILERON_LEFT_MIDDLE_DEFLECTION"),
+            Variable::named("HYD_AILERON_LEFT_INWARD_DEFLECTION"),
+            Variable::named("HYD_AILERON_RIGHT_OUTWARD_DEFLECTION"),
+            Variable::named("HYD_AILERON_RIGHT_MIDDLE_DEFLECTION"),
+            Variable::named("HYD_AILERON_RIGHT_INWARD_DEFLECTION"),
             Variable::aspect("HYD_ELEV_LEFT_DEFLECTION"),
             Variable::aspect("HYD_ELEV_RIGHT_DEFLECTION"),
             Variable::named("HYD_SPOILERS_LEFT_DEFLECTION"),
@@ -110,9 +110,9 @@ pub(super) fn ailerons(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Er
 
             let elevator_roll_component = ELEVATOR_ROLL_COEFF * (values[7] - values[6]);
             let aileron_roll_asymetry = AILERON_ROLL_COEFF
-                * ((values[3] + values[4] + values[5]) - (values[0] + values[1] + values[2]))
-                / 3.;
-            let spoiler_roll_asymetry = SPOILER_ROLL_COEFF * (values[8] - values[9]);
+                * ((values[3] + values[4] + values[5]) + (values[0] + values[1] + values[2]))
+                / 6.;
+            let spoiler_roll_asymetry = SPOILER_ROLL_COEFF * (values[9] - values[8]);
 
             aileron_roll_asymetry + spoiler_roll_asymetry + elevator_roll_component
         },

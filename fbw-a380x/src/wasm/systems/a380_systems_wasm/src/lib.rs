@@ -71,9 +71,10 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
         (ElectricalBusType::DirectCurrentHot(4), 15),
         (ElectricalBusType::DirectCurrentGndFltService, 17),
     ])?
-    .with_auxiliary_power_unit(Variable::named("OVHD_APU_START_PB_IS_AVAILABLE"), 8, 7)?
+    .with_auxiliary_power_unit(Variable::named("OVHD_APU_START_PB_IS_AVAILABLE"), 8, 21)?
     .with_engine_anti_ice(4)?
     .with_wing_anti_ice()?
+    .with_fuel_pumps(1..=21)?
     .with_failures([
         (21_000, FailureType::RapidDecompression),
         (21_001, FailureType::CabinFan(1)),
@@ -456,7 +457,6 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 10)?
     .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 11)?
     .provides_aircraft_variable("FUELSYSTEM LINE FUEL FLOW", "gallons per hour", 141)?
-    .provides_aircraft_variable_range("FUELSYSTEM PUMP ACTIVE", "Bool", 1..21)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 0)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 1)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 2)?

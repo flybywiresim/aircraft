@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
+  AdcPublisher,
   Clock,
   ClockEvents,
   EventBus,
@@ -39,6 +40,8 @@ class SystemsHost extends BaseInstrument {
 
   private readonly fuelSystemPublisher = new FuelSystemPublisher(this.bus);
 
+  private readonly adcPublisher = new AdcPublisher(this.bus);
+  // stall warning publisher depends on adc publisher
   private readonly stallWarningPublisher = new StallWarningPublisher(this.bus, 0.9);
 
   private readonly adrBusPublisher = new A32NXAdrBusPublisher(this.bus);
@@ -61,6 +64,7 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('HEvent', this.hEventPublisher);
     this.backplane.addPublisher('FuelSystem', this.fuelSystemPublisher);
     this.backplane.addPublisher('PowerPublisher', this.powerSupply);
+    this.backplane.addPublisher('Adc', this.adcPublisher);
     this.backplane.addPublisher('stallWarning', this.stallWarningPublisher);
     this.backplane.addPublisher('AdrBus', this.adrBusPublisher);
     this.backplane.addPublisher('DmcBus', this.dmcBusPublisher);

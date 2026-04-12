@@ -5,34 +5,47 @@
   justify-content: flex-end;
   align-items: center;
   margin-right: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 22px;
+}
+
+.mfd-data-status-pse-label.no-margin {
+  margin-bottom: 0px;
 }
 
 .mfd-data-status-pse-value {
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 22px;
+}
+
+.mfd-data-status-pse-value.no-margin {
+  margin-bottom: 0px;
 }
 
 .mfd-data-status-airframe-label {
-  width: 100%;
+  width: 99%;
   display: flex;
   justify-content: center;
   align-items: center;
   margin-top: 20px;
-  margin-bottom: 40px;
+  margin-bottom: 200px;
 }
 
-.mfd-data-status-first-section {
-  width: 100%;
+.mfd-data-status-performance-row {
+  border: 1px solid $display-light-grey;
+  padding: 10px;
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
-  align-items: flex-start;
-  padding-bottom: 15px;
-  border-bottom: 2px solid $display-light-grey;
+  align-items: center;
 }
+
+.mfd-data-status-first-section-divider {
+  width: 100%;
+  border: 1px outset $display-light-grey;
+ height: 1px;
+}
+
 
 .mfd-data-status-second-section {
   width: 100%;
@@ -51,5 +64,5 @@
   flex-direction: column;
   justify-content: space-between;
   align-items: flex-start;
-  padding-top: 25px;
+  padding-top: 15px;
 }

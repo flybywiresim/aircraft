@@ -20,12 +20,7 @@ export class MfdAtccomMsgRecordMonitored extends DisplayComponent<MfdAtccomMsgRe
   render(): VNode {
     return (
       <>
-        <ActivePageTitleBar
-          activePage={Subject.create('MSG RECORD/MONITORED MSG')}
-          offset={Subject.create('')}
-          eoIsActive={Subject.create(false)}
-          tmpyIsActive={Subject.create(false)}
-        />
+        <ActivePageTitleBar activePage={Subject.create('MSG RECORD/MONITORED MSG')} offset={Subject.create('')} />
         {/* begin page content */}
         <div class="mfd-page-container">
           <div style="display:flex; flex: 1 1 auto; width:100%">
@@ -72,7 +67,12 @@ export class MfdAtccomMsgRecordMonitored extends DisplayComponent<MfdAtccomMsgRe
         >
           <span>NOT YET IMPLEMENTED</span>
         </div>
-        <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
+        <Footer
+          bus={this.props.bus}
+          mfd={this.props.mfd}
+          fmcService={this.props.fmcService}
+          flightPlanInterface={this.props.fmcService.master.flightPlanInterface}
+        />
       </>
     );
   }
