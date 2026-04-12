@@ -72,8 +72,10 @@ interface EWDItem {
   // FIXME remove... this is not an actual thing
   memoInhibit?: () => boolean;
   failure: number;
+  /** The lower ECAM system page to callup, memos cannot call up any system page */
   sysPage: number;
-  side: string;
+  /** The side of the display to show the message on  */
+  side: 'LEFT' | 'RIGHT';
   /** Cancel flag for level 3 warning audio (only emergency cancel can cancel if false), defaults to true. */
   cancel?: boolean;
   /** The monitor confirm time in seconds. Defaults to 0.3 s. */
@@ -3772,8 +3774,7 @@ export class PseudoFWC {
     let recallFailureKeys: string[] = this.recallFailures;
     let tempFailureArrayRight: string[] = [];
     const failureKeysRight: string[] = this.failuresRight;
-    let leftFailureSystemCount = 0;
-    let rightFailureSystemCount = 0;
+    const failureSysPageItems: { order: number; sysPage: number }[] = [];
     const auralCrcKeys: string[] = [];
     const auralScKeys: string[] = [];
     const auralCavchargeKeys: string[] = [];
@@ -3860,21 +3861,14 @@ export class PseudoFWC {
           }
 
           if (value.sysPage > -1) {
-            if (value.side === 'LEFT') {
-              leftFailureSystemCount++;
-            } else {
-              rightFailureSystemCount++;
-            }
+            const order = EwdMessageCodeOrder.get(newCode[0]) ?? Infinity;
+            failureSysPageItems.push({ order, sysPage: value.sysPage });
           }
         }
         if (value.side === 'LEFT') {
           tempFailureArrayLeft = tempFailureArrayLeft.concat(newCode);
         } else {
           tempFailureArrayRight = tempFailureArrayRight.concat(newCode);
-        }
-
-        if (value.sysPage > -1) {
-          SimVar.SetSimVarValue('L:A32NX_ECAM_SFAIL', 'number', value.sysPage);
         }
       }
 
@@ -3965,12 +3959,19 @@ export class PseudoFWC {
           const tempArrayRight = tempMemoArrayRight.filter((e) => !value.codesToReturn.includes(e));
           tempMemoArrayRight = tempArrayRight.concat(newCode);
         }
-
-        if (value.sysPage > -1) {
-          SimVar.SetSimVarValue('L:A32NX_ECAM_SFAIL', 'number', value.sysPage);
-        }
       }
     }
+
+    let activeFailureSysPage = -1;
+    let activeFailureSysPageOrder = Infinity;
+    for (const sysPageItem of failureSysPageItems) {
+      if (sysPageItem.order < activeFailureSysPageOrder) {
+        activeFailureSysPageOrder = sysPageItem.order;
+        activeFailureSysPage = sysPageItem.sysPage;
+      }
+    }
+
+    SimVar.SetSimVarValue('L:A32NX_ECAM_SFAIL', 'number', activeFailureSysPage);
 
     const orderedMemoArrayLeft = this.mapOrder(tempMemoArrayLeft);
     let orderedMemoArrayRight: string[] = this.mapOrder(tempMemoArrayRight);
@@ -3989,10 +3990,6 @@ export class PseudoFWC {
     this.masterCaution.set(this.requestMasterCautionFromFaults || this.requestMasterCautionFromABrkOff);
 
     this.masterWarning.set(this.requestMasterWarningFromFaults);
-
-    if (leftFailureSystemCount + rightFailureSystemCount === 0) {
-      SimVar.SetSimVarValue('L:A32NX_ECAM_SFAIL', 'number', -1);
-    }
 
     if (orderedFailureArrayRight.length > 0) {
       orderedMemoArrayRight = this.mapOrder([...orderedMemoArrayRight, ...orderedFailureArrayRight]);
