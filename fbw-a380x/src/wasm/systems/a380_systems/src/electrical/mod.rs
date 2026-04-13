@@ -3218,6 +3218,10 @@ mod a380_electrical_circuit_tests {
         fn output_within_normal_parameters(&self) -> bool {
             self.is_available
         }
+
+        fn n_above_powered_threshold(&self) -> bool {
+            self.is_available
+        }
     }
     impl ProvidePotential for TestApuGenerator {
         fn potential(&self) -> ElectricPotential {

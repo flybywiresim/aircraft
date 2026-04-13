@@ -1860,9 +1860,10 @@ mod a320_electrical_circuit_tests {
     }
 
     #[test]
-    fn when_apu_generator_faulted_apu_gen_push_button_has_fault() {
+    fn when_apu_generator_faulted_apu_gen_line_contactor_opens_and_push_button_has_fault() {
         let mut test_bed = test_bed_with().running_apu().and().failed_apu_gen().run();
 
+        assert!(test_bed.apu_gen_line_contactor_is_open());
         assert!(test_bed.apu_gen_has_fault());
     }
 
@@ -1876,6 +1877,40 @@ mod a320_electrical_circuit_tests {
             .apu_gen_off()
             .run();
 
+        assert!(!test_bed.apu_gen_has_fault());
+    }
+
+    #[test]
+    fn when_apu_generator_faulted_and_external_power_takes_over_apu_gen_push_button_does_not_have_fault(
+    ) {
+        let mut test_bed = test_bed_with()
+            .connected_external_power()
+            .and()
+            .ext_pwr_on()
+            .and()
+            .running_apu()
+            .and()
+            .failed_apu_gen()
+            .run();
+
+        assert!(test_bed.apu_gen_line_contactor_is_open());
+        assert!(test_bed.ext_pwr_contactor_is_closed());
+        assert!(!test_bed.apu_gen_has_fault());
+    }
+
+    #[test]
+    fn when_apu_generator_faulted_and_both_engine_generators_take_over_apu_gen_push_button_does_not_have_fault(
+    ) {
+        let mut test_bed = test_bed_with()
+            .running_engines()
+            .and()
+            .running_apu()
+            .and()
+            .failed_apu_gen()
+            .run();
+
+        assert!(test_bed.apu_gen_line_contactor_is_open());
+        assert!(test_bed.both_engine_gen_contactors_are_closed());
         assert!(!test_bed.apu_gen_has_fault());
     }
 
@@ -2927,6 +2962,27 @@ mod a320_electrical_circuit_tests {
 
         fn apu_gen_has_fault(&mut self) -> bool {
             self.read_by_name("OVHD_ELEC_APU_GEN_PB_HAS_FAULT")
+        }
+
+        fn apu_gen_line_contactor_is_open(&mut self) -> bool {
+            !ReadByName::<A320ElectricalTestBed, bool>::read_by_name(
+                self,
+                "ELEC_CONTACTOR_3XS_IS_CLOSED",
+            )
+        }
+
+        fn ext_pwr_contactor_is_closed(&mut self) -> bool {
+            self.read_by_name("ELEC_CONTACTOR_3XG_IS_CLOSED")
+        }
+
+        fn both_engine_gen_contactors_are_closed(&mut self) -> bool {
+            ReadByName::<A320ElectricalTestBed, bool>::read_by_name(
+                self,
+                "ELEC_CONTACTOR_9XU1_IS_CLOSED",
+            ) && ReadByName::<A320ElectricalTestBed, bool>::read_by_name(
+                self,
+                "ELEC_CONTACTOR_9XU2_IS_CLOSED",
+            )
         }
 
         fn rat_and_emer_gen_has_fault(&mut self) -> bool {
