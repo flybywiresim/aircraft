@@ -215,7 +215,7 @@ impl Aircraft for A380 {
         );
 
         self.electrical_overhead
-            .update_after_electrical(&self.electrical, electricity, &self.apu);
+            .update_after_electrical(&self.electrical, electricity);
         self.emergency_electrical_overhead
             .update_after_electrical(context, &self.electrical);
         self.payload.update(context);

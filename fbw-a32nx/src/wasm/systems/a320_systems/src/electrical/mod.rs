@@ -201,6 +201,18 @@ impl A320Electrical {
         self.alternating_current.gen_contactor_open(number)
     }
 
+    fn apu_gen_contactor_open(&self) -> bool {
+        self.alternating_current.apu_gen_contactor_open()
+    }
+
+    fn ext_pwr_contactor_closed(&self) -> bool {
+        self.alternating_current.ext_pwr_contactor_closed()
+    }
+
+    fn both_engine_gen_contactors_closed(&self) -> bool {
+        self.alternating_current.both_engine_gen_contactors_closed()
+    }
+
     pub fn in_emergency_elec(&self) -> bool {
         self.emergency_elec.is_active()
     }
@@ -292,8 +304,14 @@ impl A320ElectricalOverheadPanel {
                 gen.set_fault(electrical.gen_contactor_open(index + 1) && gen.is_on());
             });
 
-        self.apu_gen
-            .set_fault(self.apu_gen.is_on() && apu.generator(1).has_fault());
+        // TODO: Move this to an eventual EGIU implementation
+        self.apu_gen.set_fault(
+            self.apu_gen.is_on()
+                && apu.generator(1).n_above_powered_threshold()
+                && electrical.apu_gen_contactor_open()
+                && !electrical.ext_pwr_contactor_closed()
+                && !electrical.both_engine_gen_contactors_closed(),
+        );
     }
 
     fn generator_is_on(&self, number: usize) -> bool {
@@ -2185,8 +2203,8 @@ mod a320_electrical_circuit_tests {
             self.is_available && !self.has_fault
         }
 
-        fn has_fault(&self) -> bool {
-            self.has_fault
+        fn n_above_powered_threshold(&self) -> bool {
+            self.is_available
         }
     }
     impl ProvidePotential for TestApuGenerator {

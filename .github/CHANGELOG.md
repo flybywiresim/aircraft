@@ -108,7 +108,7 @@
 1. [A380X/OVHD] Fix GND CTL Pushbutton activating REMOTE C/B CTL - @BravoMike99 (bruno_pt99)
 1. [A380X/MODEL] Unlink CKPT DOOR LCKG SYS and OXYGEN RESET buttons - @Jonny23787 (Jonathan)
 1. [A380X/MODEL] Match animation speed of GND HYD buttons to other overhead buttons - @Jonny23787 (Jonathan)
-1. [FWS] Add `APU GEN <A(B) for A380> FAULT` master cautions and fault lights - @FozzieHi (fozzie)
+1. [A32NX/FWS] Add `ELEC APU GEN FAULT` master caution and fault light - @FozzieHi (fozzie)
 
 ## 0.14.0
 
