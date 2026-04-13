@@ -365,29 +365,13 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: EventBus }> {
     });
 
     sub
-      .on('leftMainGearCompressed')
-      .whenChanged()
-      .handle((lg) => {
-        this.tailStrikeConditions.leftGearCompressed = lg;
-        this.needsUpdate = true;
-      });
-
-    sub
-      .on('rightMainGearCompressed')
-      .whenChanged()
-      .handle((rg) => {
-        this.tailStrikeConditions.rightGearCompressed = rg;
-        this.needsUpdate = true;
-      });
-
-    sub
       .on('fmgcFlightPhase')
       .whenChanged()
       .handle((fp) => {
         this.tailStrikeConditions.approachPhase = fp === 5;
         this.tailStrikeConditions.goAroundPhase = fp === 6;
         if (fp === 6) {
-          if (!this.goAroundTimer && this.tailStrikeConditions.altitude.value < 400) {
+          if (!this.goAroundTimer) {
             this.goAroundDebounceTimer.schedule(() => {
               this.goAroundTimer = false;
               this.needsUpdate = true;
@@ -467,10 +451,10 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: EventBus }> {
       });
 
     sub
-      .on('speedAr')
+      .on('gs')
       .whenChanged()
-      .handle((speed) => {
-        this.tailStrikeConditions.speed = speed.value;
+      .handle((groundSpeed) => {
+        this.tailStrikeConditions.speed = groundSpeed.value;
         this.needsUpdate = true;
       });
 
@@ -486,9 +470,10 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: EventBus }> {
           this.tailStrikeConditions.tla2 >= 35 ||
           this.tailStrikeConditions.tla3 >= 35 ||
           this.tailStrikeConditions.tla4 >= 35) &&
-          this.tailStrikeConditions.leftGearCompressed &&
-          this.tailStrikeConditions.rightGearCompressed) ||
-        (this.tailStrikeConditions.approachPhase && this.tailStrikeConditions.altitude.value < 400) ||
+          (this.tailStrikeConditions.leftGearCompressed || this.tailStrikeConditions.rightGearCompressed)) ||
+        (this.tailStrikeConditions.approachPhase &&
+          this.tailStrikeConditions.altitude.value < 400 &&
+          this.tailStrikeConditions.speed > 50) ||
         this.goAroundTimer ||
         this.takeoffTimer
       ) {
