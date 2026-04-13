@@ -411,6 +411,7 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: EventBus }> {
       .handle((lg) => {
         this.tailStrikeConditions.leftGearCompressed = lg;
         handleGearCompression();
+        this.needsUpdate = true;
       });
 
     sub
@@ -419,6 +420,7 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: EventBus }> {
       .handle((rg) => {
         this.tailStrikeConditions.rightGearCompressed = rg;
         handleGearCompression();
+        this.needsUpdate = true;
       });
     sub
       .on('tla1')
