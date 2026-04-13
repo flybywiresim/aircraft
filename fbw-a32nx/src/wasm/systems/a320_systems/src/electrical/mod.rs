@@ -1863,7 +1863,7 @@ mod a320_electrical_circuit_tests {
     fn when_apu_generator_faulted_apu_gen_line_contactor_opens_and_push_button_has_fault() {
         let mut test_bed = test_bed_with().running_apu().and().failed_apu_gen().run();
 
-        assert!(test_bed.apu_gen_line_contactor_is_open());
+        assert!(test_bed.apu_gen_contactor_is_open());
         assert!(test_bed.apu_gen_has_fault());
     }
 
@@ -1893,7 +1893,7 @@ mod a320_electrical_circuit_tests {
             .failed_apu_gen()
             .run();
 
-        assert!(test_bed.apu_gen_line_contactor_is_open());
+        assert!(test_bed.apu_gen_contactor_is_open());
         assert!(test_bed.ext_pwr_contactor_is_closed());
         assert!(!test_bed.apu_gen_has_fault());
     }
@@ -1909,7 +1909,7 @@ mod a320_electrical_circuit_tests {
             .failed_apu_gen()
             .run();
 
-        assert!(test_bed.apu_gen_line_contactor_is_open());
+        assert!(test_bed.apu_gen_contactor_is_open());
         assert!(test_bed.both_engine_gen_contactors_are_closed());
         assert!(!test_bed.apu_gen_has_fault());
     }
@@ -2964,7 +2964,7 @@ mod a320_electrical_circuit_tests {
             self.read_by_name("OVHD_ELEC_APU_GEN_PB_HAS_FAULT")
         }
 
-        fn apu_gen_line_contactor_is_open(&mut self) -> bool {
+        fn apu_gen_contactor_is_open(&mut self) -> bool {
             !ReadByName::<A320ElectricalTestBed, bool>::read_by_name(
                 self,
                 "ELEC_CONTACTOR_3XS_IS_CLOSED",
