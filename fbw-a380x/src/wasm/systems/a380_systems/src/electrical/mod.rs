@@ -17,6 +17,7 @@ use systems::electrical::{Battery, BatteryChargeRectifierUnit};
 use std::time::Duration;
 use systems::{
     accept_iterable,
+    apu::ApuGenerator,
     electrical::{
         AlternatingCurrentElectricalSystem, BatteryPushButtons, ElectricalElement, Electricity,
         EmergencyElectrical, EmergencyGenerator, EngineGeneratorPushButtons, ExternalPowerSource,
@@ -371,6 +372,7 @@ impl A380ElectricalOverheadPanel {
         &mut self,
         electrical: &A380Electrical,
         electricity: &Electricity,
+        apu: &impl AuxiliaryPowerUnitElectrical,
     ) {
         self.ac_ess_feed
             .set_fault(!electrical.ac_emer_bus_is_powered(electricity));
@@ -385,6 +387,13 @@ impl A380ElectricalOverheadPanel {
         self.idgs.iter_mut().enumerate().for_each(|(index, drive)| {
             drive.set_disconnected(!electrical.gen_drive_connected(index + 1))
         });
+
+        self.apu_gens
+            .iter_mut()
+            .enumerate()
+            .for_each(|(index, gen)| {
+                gen.set_fault(gen.is_on() && apu.generator(index + 1).has_fault());
+            });
     }
 
     pub fn external_power_is_available(&self, number: usize) -> bool {
@@ -2962,6 +2971,32 @@ mod a380_electrical_circuit_tests {
         assert!(!test_bed.gen_has_fault(gen_number));
     }
 
+    #[rstest]
+    #[case(1)]
+    #[case(2)]
+    fn when_apu_generator_faulted_apu_gen_push_button_has_fault(#[case] gen_number: usize) {
+        let mut test_bed = test_bed_with().running_apu().and().failed_apu_gen(gen_number).run();
+
+        assert!(test_bed.apu_gen_has_fault(gen_number));
+    }
+
+    #[rstest]
+    #[case(1)]
+    #[case(2)]
+    fn when_apu_generator_faulted_and_apu_gen_push_button_off_does_not_have_fault(
+        #[case] gen_number: usize,
+    ) {
+        let mut test_bed = test_bed_with()
+            .running_apu()
+            .and()
+            .failed_apu_gen(gen_number)
+            .and()
+            .apu_gen_off(gen_number)
+            .run();
+
+        assert!(!test_bed.apu_gen_has_fault(gen_number));
+    }
+
     #[test]
     fn when_apu_start_with_battery_off_start_contactors_remain_open_and_motor_unpowered() {
         let mut test_bed = test_bed_with()
@@ -3154,6 +3189,10 @@ mod a380_electrical_circuit_tests {
             self.is_available = available;
         }
 
+        fn fail_generator(&mut self, number: usize) {
+            self.generators[number - 1].set_fault(true);
+        }
+
         fn command_closing_of_start_contactors(&mut self) {
             self.should_close_start_contactor = true;
         }
@@ -3198,6 +3237,7 @@ mod a380_electrical_circuit_tests {
         identifier: ElectricalElementIdentifier,
         number: usize,
         is_available: bool,
+        has_fault: bool,
     }
     impl TestApuGenerator {
         fn new(context: &mut InitContext, number: usize) -> Self {
@@ -3205,23 +3245,32 @@ mod a380_electrical_circuit_tests {
                 identifier: context.next_electrical_identifier(),
                 is_available: false,
                 number,
+                has_fault: false,
             }
         }
 
         fn set_available(&mut self, available: bool) {
             self.is_available = available;
         }
+
+        fn set_fault(&mut self, has_fault: bool) {
+            self.has_fault = has_fault;
+        }
     }
     impl ApuGenerator for TestApuGenerator {
         fn update(&mut self, _n: Ratio, _is_emergency_shutdown: bool) {}
 
         fn output_within_normal_parameters(&self) -> bool {
-            self.is_available
+            self.is_available && !self.has_fault
+        }
+
+        fn has_fault(&self) -> bool {
+            self.has_fault
         }
     }
     impl ProvidePotential for TestApuGenerator {
         fn potential(&self) -> ElectricPotential {
-            if self.is_available {
+            if self.output_within_normal_parameters() {
                 ElectricPotential::new::<volt>(115.)
             } else {
                 ElectricPotential::default()
@@ -3229,12 +3278,12 @@ mod a380_electrical_circuit_tests {
         }
 
         fn potential_normal(&self) -> bool {
-            self.is_available
+            self.output_within_normal_parameters()
         }
     }
     impl ProvideFrequency for TestApuGenerator {
         fn frequency(&self) -> Frequency {
-            if self.is_available {
+            if self.output_within_normal_parameters() {
                 Frequency::new::<hertz>(400.)
             } else {
                 Frequency::default()
@@ -3242,12 +3291,12 @@ mod a380_electrical_circuit_tests {
         }
 
         fn frequency_normal(&self) -> bool {
-            self.is_available
+            self.output_within_normal_parameters()
         }
     }
     impl ElectricitySource for TestApuGenerator {
         fn output_potential(&self) -> Potential {
-            if self.is_available {
+            if self.output_within_normal_parameters() {
                 Potential::new(
                     PotentialOrigin::ApuGenerator(self.number),
                     ElectricPotential::new::<volt>(115.),
@@ -3518,6 +3567,10 @@ mod a380_electrical_circuit_tests {
             self.apu.set_available(true);
         }
 
+        fn failed_apu_gen(&mut self, number: usize) {
+            self.apu.fail_generator(number);
+        }
+
         fn set_apu_master_sw_pb_on(&mut self) {
             self.apu_overhead.set_apu_master_sw_pb_on();
         }
@@ -3625,7 +3678,7 @@ mod a380_electrical_circuit_tests {
                 &TestAdirs::new(context.indicated_airspeed()),
             );
             self.overhead
-                .update_after_electrical(&self.elec, electricity);
+                .update_after_electrical(&self.elec, electricity, &self.apu);
             self.emergency_overhead
                 .update_after_electrical(context, &self.elec);
         }
@@ -3788,6 +3841,11 @@ mod a380_electrical_circuit_tests {
 
         fn apu_gen_off(mut self, number: usize) -> Self {
             self.write_by_name(&format!("OVHD_ELEC_APU_GEN_{number}_PB_IS_ON"), false);
+            self
+        }
+
+        fn failed_apu_gen(mut self, number: usize) -> Self {
+            self.command(|a| a.failed_apu_gen(number));
             self
         }
 
@@ -3994,6 +4052,10 @@ mod a380_electrical_circuit_tests {
 
         fn gen_has_fault(&mut self, number: usize) -> bool {
             self.read_by_name(&format!("OVHD_ELEC_ENG_GEN_{}_PB_HAS_FAULT", number))
+        }
+
+        fn apu_gen_has_fault(&mut self, number: usize) -> bool {
+            self.read_by_name(&format!("OVHD_ELEC_APU_GEN_{}_PB_HAS_FAULT", number))
         }
 
         fn rat_and_emer_gen_has_fault(&mut self) -> bool {

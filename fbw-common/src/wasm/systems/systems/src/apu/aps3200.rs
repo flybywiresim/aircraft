@@ -16,7 +16,9 @@ use crate::{
         calculate_towards_target_temperature, random_number, ConsumePower, ControllerSignal,
         ElectricalBusType, ElectricalBuses, PotentialOrigin, PowerConsumptionReport,
     },
-    simulation::{InitContext, SimulationElement, SimulatorWriter, UpdateContext},
+    simulation::{
+        InitContext, SimulationElement, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
+    },
 };
 
 use super::{ApuConstants, ApuGenerator, ApuStartMotor, Turbine, TurbineSignal, TurbineState};
@@ -582,6 +584,7 @@ fn calculate_towards_ambient_egt(
 pub struct Aps3200ApuGenerator {
     number: usize,
     identifier: ElectricalElementIdentifier,
+    fault_id: VariableIdentifier,
     n: Ratio,
     writer: ElectricalStateWriter,
     output_frequency: Frequency,
@@ -597,6 +600,7 @@ impl Aps3200ApuGenerator {
         Aps3200ApuGenerator {
             number,
             identifier: context.next_electrical_identifier(),
+            fault_id: context.get_identifier(format!("ELEC_APU_GEN_{}_FAULT", number)),
             n: Ratio::new::<percent>(0.),
             writer: ElectricalStateWriter::new(context, &format!("APU_GEN_{}", number)),
             output_potential: ElectricPotential::new::<volt>(0.),
@@ -653,6 +657,12 @@ impl Aps3200ApuGenerator {
             && !self.is_emergency_shutdown
             && self.n.get::<percent>() >= Aps3200ApuGenerator::APU_GEN_POWERED_N
     }
+
+    fn fault_is_active(&self) -> bool {
+        !self.is_emergency_shutdown
+            && self.n.get::<percent>() >= Aps3200ApuGenerator::APU_GEN_POWERED_N
+            && (!self.potential_normal() || !self.frequency_normal())
+    }
 }
 impl ApuGenerator for Aps3200ApuGenerator {
     fn update(&mut self, n: Ratio, is_emergency_shutdown: bool) {
@@ -668,6 +678,10 @@ impl ApuGenerator for Aps3200ApuGenerator {
     /// disconnect of the generator.
     fn output_within_normal_parameters(&self) -> bool {
         self.should_provide_output() && self.potential_normal() && self.frequency_normal()
+    }
+
+    fn has_fault(&self) -> bool {
+        self.fault_is_active()
     }
 }
 provide_potential!(Aps3200ApuGenerator, (110.0..=120.0));
@@ -705,6 +719,7 @@ impl SimulationElement for Aps3200ApuGenerator {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.fault_id, self.fault_is_active());
         self.writer.write_alternating_with_load(self, writer);
     }
 
@@ -804,8 +819,9 @@ mod apu_generator_tests {
 
     use crate::{
         apu::tests::{test_bed, test_bed_with},
+        failures::FailureType,
         shared,
-        simulation::test::{ElementCtorFn, SimulationTestBed, TestAircraft, TestBed},
+        simulation::test::{ElementCtorFn, ReadByName, SimulationTestBed, TestAircraft, TestBed},
     };
 
     use super::*;
@@ -992,11 +1008,23 @@ mod apu_generator_tests {
     }
 
     #[test]
+    fn when_apu_generator_failed_fault_output_is_true() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(apu_generator));
+        test_bed.fail(FailureType::ApuGenerator(1));
+
+        update_above_threshold(&mut test_bed);
+
+        let has_fault: bool = test_bed.read_by_name("ELEC_APU_GEN_1_FAULT");
+        assert!(has_fault);
+    }
+
+    #[test]
     fn writes_its_state() {
         let mut test_bed = SimulationTestBed::from(ElementCtorFn(apu_generator));
 
         test_bed.run();
 
+        assert!(test_bed.contains_variable_with_name("ELEC_APU_GEN_1_FAULT"));
         assert!(test_bed.contains_variable_with_name("ELEC_APU_GEN_1_POTENTIAL"));
         assert!(test_bed.contains_variable_with_name("ELEC_APU_GEN_1_POTENTIAL_NORMAL"));
         assert!(test_bed.contains_variable_with_name("ELEC_APU_GEN_1_FREQUENCY"));
