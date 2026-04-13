@@ -98,6 +98,8 @@ jobs:
           CDN_BUCKET_DESTINATION: addons/a380x/pr-${{ steps.pr.outputs.number }}-4k
         run: |
           ./scripts/cf-cdn.sh /tmp/artifacts/build-modules-a380x-4k $CDN_BUCKET_DESTINATION
+      - name: Lock QA config
+        run: ./scripts/acquire_lock.sh installer/qa-config/.lock
       - name: Add QA config entry
         if: steps.artifacts.outputs.found == 'true'
         env:
@@ -112,3 +114,6 @@ jobs:
         run: |
           node ./scripts/add_qa_config.js
           ./scripts/cf-cdn.sh ./qa-config $CDN_BUCKET_DESTINATION
+      - name: Release QA config lock
+        if: always()
+        run: ./scripts/release_lock.sh installer/qa-config/.lock

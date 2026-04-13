@@ -7,9 +7,9 @@
 import { FlightPlanIndex, FlightPlanManager } from '@fmgc/flightplanning/FlightPlanManager';
 import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
 import { FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/legs/FlightPlanLeg';
-import { Airway, AltitudeConstraint, Fix, MathUtils, NXDataStore, Waypoint } from '@flybywiresim/fbw-sdk';
+import { Airway, AltitudeConstraint, Fix, MagVar, MathUtils, NXDataStore, Waypoint } from '@flybywiresim/fbw-sdk';
 import { Coordinates, Degrees } from 'msfs-geo';
-import { BitFlags, EventBus } from '@microsoft/msfs-sdk';
+import { BitFlags, EventBus, SimVarValueType } from '@microsoft/msfs-sdk';
 import { FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/legs/FlightPlanLegDefinition';
@@ -120,7 +120,24 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
     active.performanceData.pipeTo(sec.performanceData, isBeforeEngineStart);
 
+    sec.flags = 0;
     sec.flags |= FlightPlanFlags.CopiedFromActive;
+  }
+
+  async secondaryCopyFromSecondary(from: number, to: number, isBeforeEngineStart: boolean) {
+    // TODO copy predictions
+    // We don't copy predictions for now because we don't have the computation of predictions for the secondary flight plan
+    // To keep things consistent, we don't show predictions anywhere and we don't want to show any computed turn radii
+    this.flightPlanManager.copy(
+      FlightPlanIndex.FirstSecondary + (from - 1),
+      FlightPlanIndex.FirstSecondary + (to - 1),
+      // CopyOptions.CopyPredictions,
+    );
+
+    const fromFpln = this.secondary(from);
+    const toFpln = this.secondary(to);
+
+    fromFpln.performanceData.pipeTo(toFpln.performanceData, isBeforeEngineStart);
   }
 
   async secondaryDelete(index: number) {
@@ -157,7 +174,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     const oldBlockFuel = this.active?.performanceData.blockFuel.get() ?? null;
     const oldTaxiFuel = this.active?.performanceData.taxiFuel.get() ?? null;
     const oldCostIndex = this.active?.performanceData.costIndex.get() ?? null;
-    const oldFlightNumber = this.active?.flightNumber;
+    const oldFlightNumber = this.active?.flightNumber.get() ?? null;
 
     const fixInfos = this.active?.fixInfos.map((it) => it?.clone()) ?? [];
 
@@ -193,7 +210,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       this.setPerformanceData('costIndex', oldCostIndex, FlightPlanIndex.Active);
     }
 
-    if (oldFlightNumber !== undefined && this.active.flightNumber === undefined) {
+    if (oldFlightNumber !== null && this.active.flightNumber.get() === null) {
       this.setFlightNumber(oldFlightNumber, FlightPlanIndex.Active);
     }
 
@@ -228,12 +245,18 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
         (tmpyFromLeg.flags &= ~FlightPlanLegFlags.PendingDirectToTurningPoint),
       );
 
-      const magneticCourse: number = SimVar.GetSimVarValue('GPS GROUND MAGNETIC TRACK', 'Degrees');
-      const lat: number = SimVar.GetSimVarValue('PLANE LATITUDE', 'Degrees');
-      const long: number = SimVar.GetSimVarValue('PLANE LONGITUDE', 'Degrees');
+      const lat: number = SimVar.GetSimVarValue('PLANE LATITUDE', SimVarValueType.Degree);
+      const long: number = SimVar.GetSimVarValue('PLANE LONGITUDE', SimVarValueType.Degree);
+
+      const magVar = MagVar.get(lat, long);
+      const course = SimVar.GetSimVarValue(
+        magVar !== null ? 'GPS GROUND MAGNETIC TRACK' : 'GPS GROUND TRUE TRACK',
+        SimVarValueType.Degree,
+      );
 
       temporaryPlan.editLegDefinition(temporaryPlan.activeLegIndex - 1, {
-        magneticCourse,
+        course,
+        magVar,
         waypoint: {
           ...tmpyFromLeg.definition.waypoint,
           location: {
@@ -244,6 +267,8 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
         } as Waypoint, // Needed to avoid type error with ElevatedCoordinates on Airport.
       });
     }
+
+    temporaryPlan.wasModified = true;
 
     this.flightPlanManager.copy(FlightPlanIndex.Temporary, FlightPlanIndex.Active, CopyOptions.IncludeFixInfos);
     this.flightPlanManager.delete(FlightPlanIndex.Temporary);
@@ -299,6 +324,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
       finalIndex = FlightPlanIndex.Temporary;
     }
+    this.flightPlanManager.get(finalIndex).wasModified = true;
 
     return finalIndex;
   }
@@ -315,13 +341,15 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     if (this.flightPlanManager.has(planIndex)) {
       this.flightPlanManager.delete(planIndex);
     }
-    this.flightPlanManager.create(planIndex);
+    this.flightPlanManager.create(planIndex, true, FlightPlanFlags.ManualCreation);
 
-    await this.flightPlanManager.get(planIndex).setOriginAirport(fromIcao);
-    await this.flightPlanManager.get(planIndex).setDestinationAirport(toIcao);
+    const plan = this.flightPlanManager.get(planIndex);
+
+    await plan.setOriginAirport(fromIcao);
+    await plan.setDestinationAirport(toIcao);
 
     if (altnIcao) {
-      await this.flightPlanManager.get(planIndex).setAlternateDestinationAirport(altnIcao);
+      await plan.setAlternateDestinationAirport(altnIcao);
     }
 
     // Support code for TELEX API, should move somewhere else
@@ -335,6 +363,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     }
 
     const plan = this.flightPlanManager.get(planIndex);
+    plan.wasModified = true;
 
     if (altnIcao === undefined) {
       return plan.deleteAlternateFlightPlan();
@@ -722,6 +751,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       true,
     );
 
+    plan.wasModified = true;
     plan.incrementVersion();
   }
 
@@ -742,6 +772,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       true,
     );
 
+    plan.wasModified = true;
     plan.incrementVersion();
   }
 
@@ -757,6 +788,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       true,
     );
 
+    plan.wasModified = true;
     plan.incrementVersion();
   }
 
@@ -777,6 +809,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       true,
     );
 
+    plan.wasModified = true;
     plan.incrementVersion();
   }
 
@@ -797,6 +830,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       true,
     );
 
+    plan.wasModified = true;
     plan.incrementVersion();
   }
 
@@ -812,6 +846,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       true,
     );
 
+    plan.wasModified = true;
     plan.incrementVersion();
   }
 

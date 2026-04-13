@@ -427,7 +427,7 @@ impl Display for ElectricalBusType {
 /// of electrical buses.
 pub trait ElectricalBuses {
     /// Returns the potential which is fed to the given bus type.
-    fn potential_of(&self, bus_type: ElectricalBusType) -> Ref<Potential>;
+    fn potential_of(&'_ self, bus_type: ElectricalBusType) -> Ref<'_, Potential>;
 
     /// Returns whether the given bus type is powered.
     fn is_powered(&self, bus_type: ElectricalBusType) -> bool;
@@ -474,7 +474,7 @@ pub trait PowerConsumptionReport {
 /// Trait through which elements can consume power from the aircraft's electrical system.
 pub trait ConsumePower: PowerConsumptionReport {
     /// Returns the input potential of the given element.
-    fn input_of(&self, element: &impl ElectricalElement) -> Ref<Potential>;
+    fn input_of(&'_ self, element: &impl ElectricalElement) -> Ref<'_, Potential>;
 
     /// Consumes the given amount of power from the potential provided to the element.
     fn consume_from_input(&mut self, element: &impl ElectricalElement, power: Power);

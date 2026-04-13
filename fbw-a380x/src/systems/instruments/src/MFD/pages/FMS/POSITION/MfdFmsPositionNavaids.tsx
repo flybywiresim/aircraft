@@ -163,7 +163,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
     this.lsCourseEnteredByPilot.set(mmr.courseManual);
 
     this.deselectedNavaids.forEach((v, i) => {
-      if (this.props.fmcService.master?.navaidTuner.deselectedNavaids[i]) {
+      if (this.props.fmcService.master.navaidTuner.deselectedNavaids[i]) {
         // FIXME pass full navaid objects to deselected navaids so we can get the ident.
         // Taking it from the databaseId is not safe but all we can do for now.
         v.set(this.props.fmcService.master.navaidTuner.deselectedNavaids[i].substring(7).trim());
@@ -172,7 +172,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
       }
     });
 
-    const selectedNavaids = this.props.fmcService.master?.navigation.getSelectedNavaids();
+    const selectedNavaids = this.props.fmcService.master.navigation.getSelectedNavaids();
 
     if (selectedNavaids) {
       for (const [i, navaid] of selectedNavaids.entries()) {
@@ -233,18 +233,18 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
 
   private async handleVorIdent(index: 1 | 2, ident: string | null) {
     if (ident === null || ident === '') {
-      const vor = this.props.fmcService.master?.navaidTuner.getVorRadioTuningStatus(index);
+      const vor = this.props.fmcService.master.navaidTuner.getVorRadioTuningStatus(index);
       if (MfdFmsPositionNavaids.isNavRadioIdentManual(vor)) {
-        this.props.fmcService.master?.navaidTuner.setManualVor(index, null);
+        this.props.fmcService.master.navaidTuner.setManualVor(index, null);
       } else {
-        this.props.fmcService.master?.addMessageToQueue(NXSystemMessages.notAllowed, undefined, undefined);
+        this.props.fmcService.master.addMessageToQueue(NXSystemMessages.notAllowed, undefined, undefined);
       }
     } else {
       const navaid = await this.parseNavaid(ident, true);
 
       if (navaid && navaid.subSectionCode === NavaidSubsectionCode.VhfNavaid) {
         if (
-          this.props.fmcService.master?.navaidTuner.deselectedNavaids.find(
+          this.props.fmcService.master.navaidTuner.deselectedNavaids.find(
             (databaseId) => databaseId === navaid.databaseId,
           )
         ) {
@@ -254,7 +254,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
             undefined,
           );
         } else {
-          this.props.fmcService.master?.navaidTuner.setManualVor(index, navaid);
+          this.props.fmcService.master.navaidTuner.setManualVor(index, navaid);
         }
       }
     }
@@ -263,35 +263,35 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
 
   private async handleVorFreq(index: 1 | 2, freq: number | null) {
     if (freq === null) {
-      const vor = this.props.fmcService.master?.navaidTuner.getVorRadioTuningStatus(index);
+      const vor = this.props.fmcService.master.navaidTuner.getVorRadioTuningStatus(index);
       if (MfdFmsPositionNavaids.isNavRadioFreqManual(vor)) {
-        this.props.fmcService.master?.navaidTuner.setManualVor(index, null);
+        this.props.fmcService.master.navaidTuner.setManualVor(index, null);
       } else {
-        this.props.fmcService.master?.addMessageToQueue(NXSystemMessages.notAllowed, undefined, undefined);
+        this.props.fmcService.master.addMessageToQueue(NXSystemMessages.notAllowed, undefined, undefined);
       }
     } else {
-      this.props.fmcService.master?.navaidTuner.setManualVor(index, freq);
+      this.props.fmcService.master.navaidTuner.setManualVor(index, freq);
     }
     this.onNewData();
   }
 
   private async handleIlsIdent(ident: string | null) {
-    if (this.props.fmcService.master?.navaidTuner.isMmrTuningLocked()) {
+    if (this.props.fmcService.master.navaidTuner.isMmrTuningLocked()) {
       this.props.fmcService.master.addMessageToQueue(NXSystemMessages.notAllowed, undefined, undefined);
     }
 
     if (ident === null || ident === '') {
-      const mmr = this.props.fmcService.master?.navaidTuner.getMmrRadioTuningStatus(1);
+      const mmr = this.props.fmcService.master.navaidTuner.getMmrRadioTuningStatus(1);
       if (MfdFmsPositionNavaids.isNavRadioIdentManual(mmr)) {
-        this.props.fmcService.master?.navaidTuner.setManualIls(null);
+        this.props.fmcService.master.navaidTuner.setManualIls(null);
       } else {
-        this.props.fmcService.master?.addMessageToQueue(NXSystemMessages.notAllowed, undefined, undefined);
+        this.props.fmcService.master.addMessageToQueue(NXSystemMessages.notAllowed, undefined, undefined);
       }
     } else {
       const ils = await NavigationDatabaseService.activeDatabase.backendDatabase.getILSs([ident]);
       const deduplicatedIls = await this.props.mfd.deduplicateFacilities(ils);
       if (deduplicatedIls) {
-        await this.props.fmcService.master?.navaidTuner.setManualIls(deduplicatedIls);
+        await this.props.fmcService.master.navaidTuner.setManualIls(deduplicatedIls);
       }
     }
     this.onNewData();
@@ -299,14 +299,14 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
 
   private async handleIlsFreq(freq: number | null) {
     if (freq === null) {
-      const ils = this.props.fmcService.master?.navaidTuner.getMmrRadioTuningStatus(1);
+      const ils = this.props.fmcService.master.navaidTuner.getMmrRadioTuningStatus(1);
       if (MfdFmsPositionNavaids.isNavRadioFreqManual(ils)) {
-        this.props.fmcService.master?.navaidTuner.setManualIls(null);
+        this.props.fmcService.master.navaidTuner.setManualIls(null);
       } else {
-        this.props.fmcService.master?.addMessageToQueue(NXSystemMessages.notAllowed, undefined, undefined);
+        this.props.fmcService.master.addMessageToQueue(NXSystemMessages.notAllowed, undefined, undefined);
       }
     } else {
-      this.props.fmcService.master?.navaidTuner.setManualIls(freq);
+      this.props.fmcService.master.navaidTuner.setManualIls(freq);
     }
     this.onNewData();
   }
@@ -315,12 +315,12 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
     if (nV) {
       const navaid = await this.parseNavaid(nV);
       if (navaid) {
-        this.props.fmcService.master?.navaidTuner.deselectNavaid(navaid.databaseId);
+        this.props.fmcService.master.navaidTuner.deselectNavaid(navaid.databaseId);
       }
     } else if (oV) {
       const navaid = await this.parseNavaid(oV);
       if (navaid) {
-        this.props.fmcService.master?.navaidTuner.reselectNavaid(navaid.databaseId);
+        this.props.fmcService.master.navaidTuner.reselectNavaid(navaid.databaseId);
       }
     }
     this.onNewData();
@@ -379,7 +379,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                       value={this.vor1Ident}
                       containerStyle="width: 125px;"
                       alignText="center"
-                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                      errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
                     />
@@ -393,7 +393,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                       value={this.vor1Freq}
                       containerStyle="width: 125px;"
                       alignText="center"
-                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                      errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
                     />
@@ -402,13 +402,13 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                     <InputField<number>
                       dataEntryFormat={new InboundCourseFormat()}
                       dataHandlerDuringValidation={async (v) => {
-                        this.props.fmcService.master?.navaidTuner.setVorCourse(1, v || null);
+                        this.props.fmcService.master.navaidTuner.setVorCourse(1, v || null);
                       }}
                       mandatory={Subject.create(false)}
                       value={this.vor1Course}
                       containerStyle="width: 125px;"
                       alignText="center"
-                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                      errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
                     />
@@ -435,7 +435,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                       value={this.vor2Ident}
                       containerStyle="width: 125px;"
                       alignText="center"
-                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                      errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
                     />
@@ -449,7 +449,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                       value={this.vor2Freq}
                       containerStyle="width: 125px;"
                       alignText="center"
-                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                      errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
                     />
@@ -458,13 +458,13 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                     <InputField<number>
                       dataEntryFormat={new InboundCourseFormat()}
                       dataHandlerDuringValidation={async (v) => {
-                        this.props.fmcService.master?.navaidTuner.setVorCourse(2, v || null);
+                        this.props.fmcService.master.navaidTuner.setVorCourse(2, v || null);
                       }}
                       mandatory={Subject.create(false)}
                       value={this.vor2Course}
                       containerStyle="width: 125px;"
                       alignText="center"
-                      errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                      errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                       hEventConsumer={this.props.mfd.hEventConsumer}
                       interactionMode={this.props.mfd.interactionMode}
                     />
@@ -553,7 +553,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                     dataHandlerDuringValidation={this.deselectionHandler.bind(this)}
                     value={this.deselectedNavaids[0]}
                     alignText="center"
-                    errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                    errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                     hEventConsumer={this.props.mfd.hEventConsumer}
                     interactionMode={this.props.mfd.interactionMode}
                   />
@@ -565,7 +565,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                     value={this.deselectedNavaids[1]}
                     alignText="center"
                     disabled={this.deselectedNavaidIsEmpty[0]}
-                    errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                    errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                     hEventConsumer={this.props.mfd.hEventConsumer}
                     interactionMode={this.props.mfd.interactionMode}
                   />
@@ -577,7 +577,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                     value={this.deselectedNavaids[2]}
                     alignText="center"
                     disabled={this.deselectedNavaidIsEmpty[1]}
-                    errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                    errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                     hEventConsumer={this.props.mfd.hEventConsumer}
                     interactionMode={this.props.mfd.interactionMode}
                   />
@@ -591,7 +591,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                     value={this.deselectedNavaids[3]}
                     alignText="center"
                     disabled={this.deselectedNavaidIsEmpty[2]}
-                    errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                    errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                     hEventConsumer={this.props.mfd.hEventConsumer}
                     interactionMode={this.props.mfd.interactionMode}
                   />
@@ -603,7 +603,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                     value={this.deselectedNavaids[4]}
                     alignText="center"
                     disabled={this.deselectedNavaidIsEmpty[3]}
-                    errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                    errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                     hEventConsumer={this.props.mfd.hEventConsumer}
                     interactionMode={this.props.mfd.interactionMode}
                   />
@@ -615,7 +615,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                     value={this.deselectedNavaids[5]}
                     alignText="center"
                     disabled={this.deselectedNavaidIsEmpty[4]}
-                    errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                    errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                     hEventConsumer={this.props.mfd.hEventConsumer}
                     interactionMode={this.props.mfd.interactionMode}
                   />
@@ -643,7 +643,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                   value={this.lsIdent}
                   containerStyle="width: 125px;"
                   alignText="center"
-                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
                 />
@@ -657,7 +657,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                   value={this.lsFreq}
                   containerStyle="width: 125px;"
                   alignText="center"
-                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
                 />
@@ -666,7 +666,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                 <InputField<number>
                   dataEntryFormat={new LsCourseFormat()}
                   dataHandlerDuringValidation={async (v) => {
-                    this.props.fmcService.master?.navaidTuner.setIlsCourse(
+                    this.props.fmcService.master.navaidTuner.setIlsCourse(
                       v !== null ? Math.abs(v) : null,
                       v && v < 0 ? true : false,
                     );
@@ -676,7 +676,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                   value={this.lsCourse}
                   containerStyle="width: 125px;"
                   alignText="center"
-                  errorHandler={(e) => this.props.fmcService.master?.showFmsErrorMessage(e)}
+                  errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                   hEventConsumer={this.props.mfd.hEventConsumer}
                   interactionMode={this.props.mfd.interactionMode}
                 />
@@ -722,7 +722,12 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
             />
           </div>
         </div>
-        <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
+        <Footer
+          bus={this.props.bus}
+          mfd={this.props.mfd}
+          fmcService={this.props.fmcService}
+          flightPlanInterface={this.props.fmcService.master.flightPlanInterface}
+        />
       </>
     );
   }

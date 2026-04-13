@@ -24,7 +24,6 @@ class A380LateralDirectLaw final
     real_T RateLimiterVariableTs1_lo;
     real_T RateLimiterVariableTs_up;
     real_T RateLimiterVariableTs1_up;
-    real_T Constant_Value;
     real_T Gain1_Gain;
     real_T Gain2_Gain;
   };
@@ -34,8 +33,7 @@ class A380LateralDirectLaw final
   A380LateralDirectLaw(A380LateralDirectLaw &&) = delete;
   A380LateralDirectLaw& operator= (A380LateralDirectLaw &&) = delete;
   void step(const real_T *rtu_In_time_dt, const real_T *rtu_In_delta_xi_pos, const real_T *rtu_In_delta_zeta_pos, real_T
-            *rty_Out_xi_inboard_deg, real_T *rty_Out_xi_midboard_deg, real_T *rty_Out_xi_outboard_deg, real_T
-            *rty_Out_xi_spoiler_deg, real_T *rty_Out_zeta_upper_deg, real_T *rty_Out_zeta_lower_deg);
+            *rty_Out_xi_deg, real_T *rty_Out_zeta_deg);
   void reset();
   A380LateralDirectLaw();
   ~A380LateralDirectLaw();

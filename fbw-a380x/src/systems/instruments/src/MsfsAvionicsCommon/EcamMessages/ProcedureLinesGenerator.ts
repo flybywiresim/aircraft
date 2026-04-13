@@ -93,6 +93,7 @@ export class ProcedureLinesGenerator {
     ChecklistLineStyle.SeparationLine,
     ChecklistLineStyle.SubHeadline,
     ChecklistLineStyle.CenteredSubHeadline,
+    ChecklistLineStyle.Red,
   ];
 
   static conditionalActiveItems(

@@ -10,14 +10,14 @@ import CruisePressure from './elements/CruisePressure';
 import CruiseCond from './elements/CruiseCond';
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
 import { SDSimvars } from '../../SDSimvarPublisher';
+import { SdPageProps } from '../../SD';
 
 import '../../../index.scss';
-import { SdPageProps } from '../../SD';
 
 export class CruisePage extends DestroyableComponent<SdPageProps> {
   private readonly sub = this.props.bus.getSubscriber<SDSimvars>();
 
-  private readonly topSvgStyle = this.props.visible.map((v) => `visibility: ${v ? 'visible' : 'hidden'}`);
+  private readonly topSvgDisplay = this.props.visible.map((v) => (v ? 'inline' : 'none'));
 
   private readonly usingMetric = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT');
   private readonly weightUnit = this.usingMetric.map((v) => (v ? 'KG' : 'LB'));
@@ -57,7 +57,7 @@ export class CruisePage extends DestroyableComponent<SdPageProps> {
     this.subscriptions.push(
       this.weightUnit,
       this.fuelFlowUnit,
-      this.topSvgStyle,
+      this.topSvgDisplay,
       this.engineTotalFuelUsedDisplay,
       ...this.enginesFuelUsed,
       ...this.enginesFuelFlow,
@@ -77,7 +77,7 @@ export class CruisePage extends DestroyableComponent<SdPageProps> {
         xmlns="http://www.w3.org/2000/svg"
         xmlnsXlink="http://www.w3.org/1999/xlink"
         viewBox="0 0 768 1024"
-        style={this.topSvgStyle}
+        style={{ display: this.topSvgDisplay }}
       >
         <PageTitle x={6} y={29}>
           CRUISE

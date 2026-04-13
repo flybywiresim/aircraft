@@ -9,15 +9,15 @@
   VNode,
 } from '@microsoft/msfs-sdk';
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
-
-import './MfdFmsFpln.scss';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { Button, ButtonMenuItem } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
-import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
+import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
+
+import './MfdFmsFpln.scss';
 
 interface MfdFmsFplnDepProps extends AbstractMfdPageProps {}
 
@@ -57,8 +57,9 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
   );
 
   protected onNewData(): void {
-    const isAltn = this.props.fmcService.master?.revisedLegIsAltn.get();
-    const flightPlan = isAltn ? this.loadedFlightPlan?.alternateFlightPlan : this.loadedFlightPlan;
+    const isAltn = this.props.fmcService.master.revisedLegIsAltn.get();
+    const flightPlan =
+      isAltn && this.loadedAlternateFlightPlan ? this.loadedAlternateFlightPlan : this.loadedFlightPlan;
 
     if (flightPlan?.originAirport) {
       this.generateRunwayOptions(flightPlan, isAltn);
@@ -75,12 +76,12 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
             {
               label: 'NONE',
               action: async () => {
-                await this.props.fmcService.master?.flightPlanService.setDepartureProcedure(
+                await this.props.flightPlanInterface.setDepartureProcedure(
                   undefined,
                   this.loadedFlightPlanIndex.get(),
                   isAltn ?? false,
                 );
-                await this.props.fmcService.master?.flightPlanService.setDepartureEnrouteTransition(
+                await this.props.flightPlanInterface.setDepartureEnrouteTransition(
                   undefined,
                   this.loadedFlightPlanIndex.get(),
                   isAltn ?? false,
@@ -93,12 +94,12 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
             sids.push({
               label: dep.authorisationRequired ? `${dep.ident} (RNP)` : dep.ident,
               action: async () => {
-                await this.props.fmcService.master?.flightPlanService.setDepartureProcedure(
+                await this.props.flightPlanInterface.setDepartureProcedure(
                   dep.databaseId,
                   this.loadedFlightPlanIndex.get(),
                   isAltn ?? false,
                 );
-                await this.props.fmcService.master?.flightPlanService.setDepartureEnrouteTransition(
+                await this.props.flightPlanInterface.setDepartureEnrouteTransition(
                   undefined,
                   this.loadedFlightPlanIndex.get(),
                   isAltn ?? false,
@@ -126,7 +127,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
             {
               label: 'NONE',
               action: () =>
-                this.props.fmcService.master?.flightPlanService.setDepartureEnrouteTransition(
+                this.props.flightPlanInterface.setDepartureEnrouteTransition(
                   undefined,
                   this.loadedFlightPlanIndex.get(),
                   isAltn ?? false,
@@ -137,7 +138,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
             trans.push({
               label: el.ident,
               action: () =>
-                this.props.fmcService.master?.flightPlanService.setDepartureEnrouteTransition(
+                this.props.flightPlanInterface.setDepartureEnrouteTransition(
                   el.databaseId,
                   this.loadedFlightPlanIndex.get(),
                   isAltn ?? false,
@@ -169,7 +170,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
   }
 
   private generateRunwayOptions(
-    flightPlan: FlightPlan<FlightPlanPerformanceData> | AlternateFlightPlan<FlightPlanPerformanceData>,
+    flightPlan: ReadonlyFlightPlan<FlightPlanPerformanceData> | AlternateFlightPlan<FlightPlanPerformanceData>,
     isAltn: boolean | null | undefined,
   ) {
     if (flightPlan.originAirport) {
@@ -180,17 +181,17 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
         return {
           label: `${rw.ident.substring(4).padEnd(3, '\xa0')}\xa0${UnitType.METER.createNumber(rw.length).asUnit(this.lengthUnit.get()).toFixed(0).padStart(5, '\xa0')}${this.distanceUnitFormatter(this.lengthUnit.get())} ${rw.lsIdent ? 'ILS' : ''}`,
           action: async () => {
-            await this.props.fmcService.master?.flightPlanService.setOriginRunway(
+            await this.props.flightPlanInterface.setOriginRunway(
               rw.ident,
               this.loadedFlightPlanIndex.get(),
               isAltn ?? false,
             );
-            await this.props.fmcService.master?.flightPlanService.setDepartureProcedure(
+            await this.props.flightPlanInterface.setDepartureProcedure(
               undefined,
               this.loadedFlightPlanIndex.get(),
               isAltn ?? false,
             );
-            await this.props.fmcService.master?.flightPlanService.setDepartureEnrouteTransition(
+            await this.props.flightPlanInterface.setDepartureEnrouteTransition(
               undefined,
               this.loadedFlightPlanIndex.get(),
               isAltn ?? false,
@@ -229,7 +230,8 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
           return;
         }
         const isAltn = this.props.fmcService.master.revisedLegIsAltn.get() ?? false;
-        const flightPlan = isAltn ? this.loadedFlightPlan.alternateFlightPlan : this.loadedFlightPlan;
+        const flightPlan =
+          isAltn && this.loadedAlternateFlightPlan ? this.loadedAlternateFlightPlan : this.loadedFlightPlan;
         if (flightPlan.destinationAirport) {
           this.generateRunwayOptions(flightPlan, isAltn);
         }
@@ -392,7 +394,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
             <Button
               label="RETURN"
               onClick={() => {
-                this.props.fmcService.master?.resetRevisedWaypoint();
+                this.props.fmcService.master.resetRevisedWaypoint();
                 this.props.mfd.uiService.navigateTo('back');
               }}
             />
@@ -401,7 +403,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
             <Button
               label="TMPY F-PLN"
               onClick={() => {
-                this.props.fmcService.master?.resetRevisedWaypoint();
+                this.props.fmcService.master.resetRevisedWaypoint();
                 this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln`);
               }}
               buttonStyle="color: yellow"
@@ -409,7 +411,12 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
           </div>
         </div>
         {/* end page content */}
-        <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
+        <Footer
+          bus={this.props.bus}
+          mfd={this.props.mfd}
+          fmcService={this.props.fmcService}
+          flightPlanInterface={this.props.fmcService.master.flightPlanInterface}
+        />
       </>
     );
   }
