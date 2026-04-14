@@ -457,14 +457,13 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     insertDiscontinuity: boolean = false,
     planIndex = FlightPlanIndex.Active,
     alternate = false,
-    forceNoTmpy = false,
   ): Promise<boolean> {
     if (!this.config.ALLOW_REVISIONS_ON_TMPY && planIndex === FlightPlanIndex.Temporary) {
       throw new Error('[FMS/FPS] Cannot delete element in temporary flight plan');
     }
 
     let finalIndex: number = planIndex;
-    if (!forceNoTmpy && this.config.TMPY_ON_DELETE_WAYPOINT) {
+    if (this.config.TMPY_ON_DELETE_WAYPOINT) {
       finalIndex = this.prepareDestructiveModification(planIndex);
     }
 

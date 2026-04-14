@@ -289,6 +289,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           distFromLastWpt: null,
           holdSpeed: null,
           immExit: false,
+          decelSequenced: false,
         });
 
         this.lineData.push({
@@ -432,16 +433,8 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           const isHM = leg.type === LegType.HM;
           if (isHM) {
             const loadedFpIndex = this.loadedFlightPlanIndex.get();
-            // Active leg or next and hold decel reached
-            const type =
-              loadedFpIndex === FlightPlanIndex.Active &&
-              (i === this.loadedFlightPlan.activeLegIndex ||
-                (i === this.loadedFlightPlan.activeLegIndex + 1 &&
-                  this.props.fmcService.master?.acInterface.getHoldDecelReached()))
-                ? FplnLineType.HoldHmActive
-                : FplnLineType.HoldHm;
             const holdData: FplnLineHoldDisplayData = {
-              type: type,
+              type: FplnLineType.HoldHm,
               originalLegIndex: i,
               isPseudoWaypoint: false,
               isAltnWaypoint: isAltn,
@@ -452,6 +445,11 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
               distFromLastWpt: leg.definition.length ?? null,
               holdSpeed: this.props.fmcService.master?.acInterface.getLegHoldingSpeed(i, loadedFpIndex) ?? null,
               immExit: this.loadedFlightPlan.legElementAt(i).holdImmExit,
+              decelSequenced:
+                loadedFpIndex === FlightPlanIndex.Active &&
+                i === this.loadedFlightPlan.activeLegIndex + 1 &&
+                this.props.fmcService.master?.acInterface.getHoldDecelReached(),
+              isActiveLeg: loadedFpIndex === FlightPlanIndex.Active && i === this.loadedFlightPlan.activeLegIndex,
             };
             this.lineData.push(holdData);
           }
@@ -575,7 +573,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           flags |= FplnLineFlags.BeforeSpecial;
         }
         if (this.loadedFlightPlan) {
-          if (drawIndex === this.loadedFlightPlan.activeLegIndex || lineData.type === FplnLineType.HoldHmActive) {
+          if (drawIndex === this.loadedFlightPlan.activeLegIndex || (isHold(lineData) && lineData.isActiveLeg)) {
             flags |= FplnLineFlags.IsActiveLeg;
           } else if (drawIndex === this.loadedFlightPlan.activeLegIndex - 1) {
             flags |= FplnLineFlags.BeforeActiveLeg;
@@ -903,20 +901,19 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
   private onImmediateExit(lineDataIndex: number) {
     const data = this.lineData[lineDataIndex];
-    if (isHmHoldActive(data) && data.originalLegIndex !== null) {
-      if (data.originalLegIndex !== this.loadedFlightPlan?.activeLegIndex) {
+    if (isHold(data) && data.originalLegIndex !== null) {
+      if (data.decelSequenced) {
         // Decel has been sequenced but leg not sequenced yet, delete it.
         this.props.fmcService.master?.flightPlanInterface.deleteElementAt(
           data.originalLegIndex,
           false,
           this.loadedFlightPlanIndex.get(),
           false,
-          true,
         );
-      } else {
+      } else if (data.isActiveLeg) {
         this.props.bus
           .getPublisher<FlightPlanOperationEvents>()
-          .pub('fbw_fms_set_hold_immediate_exit', { index: data.originalLegIndex, exit: !data.immExit });
+          .pub('fms_set_hold_immediate_exit', { index: data.originalLegIndex, exit: !data.immExit }, true, false);
       }
     }
   }
@@ -1309,7 +1306,6 @@ enum FplnLineType {
   Waypoint,
   Special,
   HoldHm,
-  HoldHmActive,
 }
 
 interface FplnLineTypeDiscriminator {
@@ -1362,6 +1358,8 @@ interface FplnLineHoldDisplayData extends FplnLineTypeDiscriminator {
   holdSpeed: number | null;
   distFromLastWpt: number | null;
   immExit: boolean;
+  decelSequenced: boolean;
+  isActiveLeg?: boolean;
 }
 
 type FplnLineDisplayData = FplnLineWaypointDisplayData | FplnLineSpecialDisplayData | FplnLineHoldDisplayData;
@@ -1375,11 +1373,7 @@ function isSpecial(object: FplnLineDisplayData): object is FplnLineSpecialDispla
 }
 
 function isHold(object: FplnLineDisplayData): object is FplnLineHoldDisplayData {
-  return object?.type === FplnLineType.HoldHm || isHmHoldActive(object);
-}
-
-function isHmHoldActive(object: FplnLineDisplayData): object is FplnLineHoldDisplayData {
-  return object?.type === FplnLineType.HoldHmActive;
+  return object?.type === FplnLineType.HoldHm;
 }
 
 type lineConstraintsCallbacks = {
@@ -1681,7 +1675,8 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
         FSComponent.render(FplnLineConnectorHold(this.lineColor.get()), this.connectorRef.instance);
       }
 
-      if (isHmHoldActive(data)) {
+      // If decel has been sequenced or this is the active leg, show the hold exit line.
+      if (isHold(data) && (data.decelSequenced || data.isActiveLeg)) {
         FSComponent.render(this.renderHoldExitLine(data), this.speedRef.instance);
       }
 
