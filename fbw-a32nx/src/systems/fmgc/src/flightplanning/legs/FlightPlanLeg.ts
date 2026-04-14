@@ -78,6 +78,8 @@ export interface LegCalculations {
   cumulativeDistanceToEndWithTransitions: number;
   /** Whether the leg terminates in a vertical discontinuity */
   endsInTooSteepPath: boolean;
+  /** The outbound track of the leg (at it's termination), in degrees, relative to true north. */
+  outboundTrack?: number;
 }
 
 /**
