@@ -391,28 +391,23 @@ export class LengthFormat extends SubscriptionCollector implements DataEntryForm
 
   private maxValue = Number.POSITIVE_INFINITY;
 
-  public unitFamily?: Subscribable<Unit<UnitFamily.Distance>> = Subject.create(UnitType.METER);
-
   constructor(
     minValue: Subscribable<number> = Subject.create(0),
     maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY),
-    unitFamily?: Subscribable<Unit<UnitFamily.Distance>>,
+    public readonly unitFamily: Subscribable<Unit<UnitFamily.Distance>> = Subject.create(UnitType.METER),
   ) {
     super();
     this.subscriptions.push(minValue.sub((val) => (this.minValue = val), true));
     this.subscriptions.push(maxValue.sub((val) => (this.maxValue = val), true));
-    this.unitFamily = unitFamily;
   }
 
   public format(value: number) {
-    const unit = this.unitFamily ? distanceUnitFormatter(this.unitFamily.get()) : 'M';
+    const unit = distanceUnitFormatter(this.unitFamily.get());
     if (value === null || value === undefined) {
       return [this.placeholder, null, unit] as FieldFormatTuple;
     }
 
-    if (this.unitFamily) {
-      value = this.unitFamily.get().convertFrom(value, UnitType.METER);
-    }
+    value = this.unitFamily.get().convertFrom(value, UnitType.METER);
 
     return [value.toString(), null, unit] as FieldFormatTuple;
   }
@@ -422,10 +417,7 @@ export class LengthFormat extends SubscriptionCollector implements DataEntryForm
       return null;
     }
 
-    let nbr = Number(input);
-    if (this.unitFamily) {
-      nbr = this.unitFamily.get().convertTo(nbr, UnitType.METER);
-    }
+    const nbr = this.unitFamily.get().convertTo(Number(input), UnitType.METER);
     if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
     }
@@ -461,14 +453,12 @@ export class WeightFormat extends SubscriptionCollector implements DataEntryForm
   }
 
   public format(value: number) {
-    const unit = this.unitFamily ? weightUnitFormatter(this.unitFamily.get()) : 'T';
+    const unit = weightUnitFormatter(this.unitFamily.get());
     if (value === null || value === undefined) {
       return [this.placeholder, null, unit] as FieldFormatTuple;
     }
 
-    if (this.unitFamily) {
-      value = this.unitFamily.get().convertFrom(value, UnitType.KILOGRAM);
-    }
+    value = this.unitFamily.get().convertFrom(value, UnitType.KILOGRAM);
 
     return [(value / 1000).toFixed(1), null, unit] as FieldFormatTuple;
   }
@@ -478,10 +468,7 @@ export class WeightFormat extends SubscriptionCollector implements DataEntryForm
       return null;
     }
 
-    let convertedInput = Number(input);
-    if (this.unitFamily) {
-      convertedInput = this.unitFamily.get().convertTo(convertedInput, UnitType.KILOGRAM);
-    }
+    const convertedInput = this.unitFamily.get().convertTo(Number(input), UnitType.KILOGRAM);
 
     const nbr = convertedInput * 1000;
     if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
