@@ -85,16 +85,16 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
   private readonly fuelOnBoard = NumberUnitSubject.create(UnitType.KILOGRAM.createNumber(NaN));
   private readonly fuelOnBoardText = this.createWeightSubscribable(this.fuelOnBoard);
 
-  /** Zero Fuel Weight in kg, or NaN if no value. */
-  private readonly zeroFuelWeight = Subject.create(NaN);
+  /** Zero Fuel Weight in kg, or null if no value. */
+  private readonly zeroFuelWeight = Subject.create<number | null>(null);
 
   private readonly zeroFuelWeightCenterOfGravity = Subject.create<number | null>(null);
 
-  /** Block fuel weight in kg, or NaN if no value. */
-  private readonly blockFuel = Subject.create(NaN);
+  /** Block fuel weight in kg, or null if no value. */
+  private readonly blockFuel = Subject.create<number | null>(null);
 
-  /** Taxi fuel weight in kg, or NaN if no value. */
-  private readonly taxiFuel = Subject.create(NaN);
+  /** Taxi fuel weight in kg, or null if no value. */
+  private readonly taxiFuel = Subject.create<number | null>(null);
   private readonly taxiFuelIsPilotEntered = Subject.create<boolean>(false);
 
   private readonly routeReserveFuelIsPilotEntered = Subject.create<boolean>(false);
@@ -102,12 +102,12 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
   private readonly routeReserveFuelPercentage = Subject.create<number | null>(null);
   private readonly routeReserveFuelPercentageIsPilotEntered = Subject.create<boolean>(false);
 
-  private readonly routeReserveFuel = Subject.create(NaN);
+  private readonly routeReserveFuel = Subject.create<number | null>(null);
 
-  private readonly alternateFuel = Subject.create(NaN);
+  private readonly alternateFuel = Subject.create<number | null>(null);
   private readonly alternateFuelIsPilotEntered = Subject.create<boolean>(false);
 
-  private readonly finalFuel = Subject.create(NaN);
+  private readonly finalFuel = Subject.create<number | null>(null);
   private readonly finalFuelIsPilotEntered = Subject.create<boolean>(false);
 
   private readonly finalFuelTime = Subject.create<number | null>(null);
@@ -115,7 +115,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
 
   private readonly paxNumber = Subject.create<number | null>(null);
 
-  private readonly minimumFuelAtDestination = Subject.create(NaN);
+  private readonly minimumFuelAtDestination = Subject.create<number | null>(null);
   private readonly minimumFuelAtDestinationIsPilotEntered = Subject.create<boolean>(false);
 
   private readonly fuelPlanningIsDisabled = Subject.create<boolean>(true);
@@ -147,7 +147,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
   private readonly takeoffWeight = NumberUnitSubject.create(UnitType.KILOGRAM.createNumber(NaN));
   private readonly takeoffWeightText = this.createWeightSubscribable(this.takeoffWeight);
 
-  private readonly jettisonGrossWeight = Subject.create(NaN);
+  private readonly jettisonGrossWeight = Subject.create(null);
 
   private readonly landingWeight = NumberUnitSubject.create(UnitType.KILOGRAM.createNumber(NaN));
   private readonly landingWeightText = this.createWeightSubscribable(this.landingWeight);
@@ -280,7 +280,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             UnitType.KILOGRAM,
           );
           const rteRsv = this.props.fmcService.master.getRouteReserveFuel(loadedfpIndex);
-          this.routeReserveFuel.set(rteRsv ?? NaN);
+          this.routeReserveFuel.set(rteRsv);
           // Calculate RTE RSV percentage
           if (pd.isRouteReserveFuelPercentagePilotEntered.get()) {
             this.routeReserveFuelPercentage.set(pd.routeReserveFuelPercentage.get());
@@ -362,8 +362,8 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             this.loadedFlightPlan.performanceData.zeroFuelWeightCenterOfGravity.pipe(
               this.zeroFuelWeightCenterOfGravity,
             ),
-            this.loadedFlightPlan.performanceData.blockFuel.pipe(this.blockFuel, (v) => (v === null ? NaN : v * 1000)),
-            this.loadedFlightPlan.performanceData.taxiFuel.pipe(this.taxiFuel, (v) => (v === null ? NaN : v * 1000)),
+            this.loadedFlightPlan.performanceData.blockFuel.pipe(this.blockFuel, (v) => (v === null ? null : v * 1000)),
+            this.loadedFlightPlan.performanceData.taxiFuel.pipe(this.taxiFuel, (v) => (v === null ? null : v * 1000)),
             this.loadedFlightPlan.performanceData.taxiFuelIsPilotEntered.pipe(this.taxiFuelIsPilotEntered),
             this.loadedFlightPlan.performanceData.isRouteReserveFuelPilotEntered.pipe(
               this.routeReserveFuelIsPilotEntered,
@@ -372,19 +372,19 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
               this.routeReserveFuelPercentageIsPilotEntered,
             ),
             this.loadedFlightPlan.performanceData.alternateFuel.pipe(this.alternateFuel, (v) =>
-              v === null ? NaN : v * 1000,
+              v === null ? null : v * 1000,
             ),
             this.loadedFlightPlan.performanceData.isAlternateFuelPilotEntered.pipe(this.alternateFuelIsPilotEntered),
             this.loadedFlightPlan.performanceData.finalHoldingTime.pipe(this.finalFuelTime),
             this.loadedFlightPlan.performanceData.isFinalHoldingFuelPilotEntered.pipe(this.finalFuelIsPilotEntered),
             this.loadedFlightPlan.performanceData.isFinalHoldingTimePilotEntered.pipe(this.finalFuelTimeIsPilotEntered),
             this.loadedFlightPlan.performanceData.finalHoldingFuel.pipe(this.finalFuel, (v) =>
-              v === null ? NaN : v * 1000,
+              v === null ? null : v * 1000,
             ),
 
             this.loadedFlightPlan.performanceData.minimumDestinationFuelOnBoard.pipe(
               this.minimumFuelAtDestination,
-              (v) => (v === null ? NaN : v * 1000),
+              (v) => (v === null ? null : v * 1000),
             ),
             this.loadedFlightPlan.performanceData.isMinimumDestinationFuelOnBoardPilotEntered.pipe(
               this.minimumFuelAtDestinationIsPilotEntered,
