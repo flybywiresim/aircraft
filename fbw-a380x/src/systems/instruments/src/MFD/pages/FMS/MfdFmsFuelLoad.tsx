@@ -777,12 +777,12 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 <div class="mfd-label mfd-spacing-right middleGridSmall">TOW</div>
                 <div class="mfd-label-value-container" style="justify-content: center; margin-bottom: 10px;">
                   <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.takeoffWeightText}</span>
-                  <span class="mfd-label-unit mfd-unit-trailing">this.weightUnitText</span>
+                  <span class="mfd-label-unit mfd-unit-trailing">{this.weightUnitText}</span>
                 </div>
                 <div class="mfd-label mfd-spacing-right middleGridSmall">LW</div>
                 <div class="mfd-label-value-container" style="justify-content: center; margin-bottom: 10px;">
                   <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.landingWeightText}</span>
-                  <span class="mfd-label-unit mfd-unit-trailing">this.weightUnitText</span>
+                  <span class="mfd-label-unit mfd-unit-trailing">{this.weightUnitText}</span>
                 </div>
               </div>
             </div>
