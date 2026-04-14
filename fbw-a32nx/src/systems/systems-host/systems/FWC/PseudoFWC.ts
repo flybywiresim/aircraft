@@ -1781,6 +1781,7 @@ export class PseudoFWC {
     SimVarValueType.Number,
   );
 
+  // TODO: Get from EGIU
   private readonly apuAvailVar = RegisteredSimVar.createBoolean('L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE');
 
   private readonly engine1MasterAlternatorVar = RegisteredSimVar.createBoolean('A:GENERAL ENG MASTER ALTERNATOR:1');
@@ -1788,7 +1789,8 @@ export class PseudoFWC {
   private readonly idg1ConnectedVar = RegisteredSimVar.createBoolean('L:A32NX_ELEC_ENG_GEN_1_IDG_IS_CONNECTED');
   private readonly idg2ConnectedVar = RegisteredSimVar.createBoolean('L:A32NX_ELEC_ENG_GEN_2_IDG_IS_CONNECTED');
 
-  private readonly apuGenPbFaultVar = RegisteredSimVar.createBoolean('L:A32NX_OVHD_ELEC_APU_GEN_PB_HAS_FAULT');
+  // TODO: Get from EGIU
+  private readonly apuGenFaultVar = RegisteredSimVar.createBoolean('L:A32NX_OVHD_ELEC_APU_GEN_PB_HAS_FAULT');
   private readonly apuGenSwitchVar = RegisteredSimVar.createBoolean('A:APU GENERATOR SWITCH:1');
 
   private acquireSdac(): void {
@@ -1854,7 +1856,7 @@ export class PseudoFWC {
     this.sdac05010Word.setBitValue(13, !this.idg2ConnectedVar.get());
     this.sdac05010Word.setBitValue(19, !this.engine2MasterAlternatorVar.get());
 
-    this.sdac05201Word.setBitValue(12, this.apuGenPbFaultVar.get());
+    this.sdac05201Word.setBitValue(12, this.apuGenFaultVar.get());
     this.sdac05201Word.setBitValue(14, !this.apuGenSwitchVar.get());
   }
 

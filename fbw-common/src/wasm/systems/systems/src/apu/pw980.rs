@@ -893,10 +893,6 @@ impl ApuGenerator for Pw980ApuGenerator {
     fn output_within_normal_parameters(&self) -> bool {
         self.should_provide_output() && self.potential_normal() && self.frequency_normal()
     }
-
-    fn n_above_powered_threshold(&self) -> bool {
-        self.n.get::<percent>() >= Pw980ApuGenerator::APU_GEN_POWERED_N
-    }
 }
 provide_potential!(Pw980ApuGenerator, (110.0..=120.0));
 provide_frequency!(Pw980ApuGenerator, (390.0..=410.0));

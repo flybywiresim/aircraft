@@ -669,10 +669,6 @@ impl ApuGenerator for Aps3200ApuGenerator {
     fn output_within_normal_parameters(&self) -> bool {
         self.should_provide_output() && self.potential_normal() && self.frequency_normal()
     }
-
-    fn n_above_powered_threshold(&self) -> bool {
-        self.n.get::<percent>() >= Aps3200ApuGenerator::APU_GEN_POWERED_N
-    }
 }
 provide_potential!(Aps3200ApuGenerator, (110.0..=120.0));
 provide_frequency!(Aps3200ApuGenerator, (390.0..=410.0));

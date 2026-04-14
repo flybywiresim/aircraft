@@ -309,7 +309,6 @@ pub trait ApuGenerator:
 {
     fn update(&mut self, n: Ratio, is_emergency_shutdown: bool);
     fn output_within_normal_parameters(&self) -> bool;
-    fn n_above_powered_threshold(&self) -> bool;
 }
 
 pub trait ApuConstants {
