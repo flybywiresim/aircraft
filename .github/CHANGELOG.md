@@ -36,7 +36,7 @@
 1. [A32NX/FMS] Adjusted TRANS ALT allowed entry range - @Jonny23787 (Jonathan)
 1. [A32NX/FMS] Fix "NOT ALLOWED IN NAV" when sequencing TO waypoint while in LOC mode - @BravoMike99 (bruno_pt99)
 1. [A380X/SD] Improve STS page: Add deferred procedures, page switching, MORE page, improve performance - @flogross89 (floridude)
-1. [A32NX/FMS] Adjusted position of flight phase and flight number on PROG page  - @Jonny23787 (Jonathan)
+1. [A32NX/FMS] Adjusted position of flight phase and flight number on PROG page - @Jonny23787 (Jonathan)
 1. [A32NX/A380X] Properly handle `PARKING_BRAKE_ON` and `PARKING_BRAKE_OFF` key events - @tracernz (Mike)
 1. [A380X/PFD] Increase PFD trim wheel rotation speed - @lukecologne (luke)
 1. [A380X/FWS] Add FCTL and OVERSPEED abnormal sensed procedures - @Jonny23787 (Jonathan)
@@ -105,6 +105,11 @@
 1. [A32NX/MCDU] Fix ND reset to the departure airport when selecting the destination for approach - @Ditoo29 (dito29)
 1. [A380X/FMS] Allow "INSERT NEXT WPT" revision at the flightplan origin - @BravoMike99 (bruno_pt99)
 1. [A32NX/FMS] Fixed the BRG and TRK lines on the first two rows of the flight plan page - @tracernz (Mike)
+1. [A380X/OVHD] Fix GND CTL Pushbutton activating REMOTE C/B CTL - @BravoMike99 (bruno_pt99)
+1. [A380X/MODEL] Unlink CKPT DOOR LCKG SYS and OXYGEN RESET buttons - @Jonny23787 (Jonathan)
+1. [A380X/MODEL] Match animation speed of GND HYD buttons to other overhead buttons - @Jonny23787 (Jonathan)
+1. [A32NX/FMS] Improve accuracy of WIND/TEMP page layout - @BlueberryKing (BlueberryKing)
+1. [A32NX/FMS] Fully incorporate WIND page entries into performance predictions - @BlueberryKing (BlueberryKing)
 1. [A32NX/MCDU] Fix NEW DEST not available in LAT REV on first flightplan waypoint - @BravoMike99 (bruno_pt99)
 
 ## 0.14.0
