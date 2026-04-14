@@ -436,6 +436,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     );
 
     this.subs.push(
+      this.lengthUnit,
       this.setPlanModeConsumer,
       this.setPlanModeDisplay,
       this.oansResetPulled,

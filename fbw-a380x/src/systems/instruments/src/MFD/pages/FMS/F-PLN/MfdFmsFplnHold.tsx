@@ -177,7 +177,7 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
     this.subs.push(this.legTime.sub(() => this.modifyHold()));
     this.subs.push(this.legDistance.sub(() => this.modifyHold()));
 
-    this.subs.push(this.weightUnitText, this.lastExitEfobText);
+    this.subs.push(this.weightUnit, this.weightUnitText, this.lastExitEfobText);
 
     this.showTimeOrDist();
   }

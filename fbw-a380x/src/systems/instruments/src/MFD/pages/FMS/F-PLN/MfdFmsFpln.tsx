@@ -789,6 +789,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
     this.subs.push(
       this.destEfobLabel,
+      this.weightUnit,
       this.weightUnitText,
       this.lineColorIsTemporary,
       this.showInitButton,

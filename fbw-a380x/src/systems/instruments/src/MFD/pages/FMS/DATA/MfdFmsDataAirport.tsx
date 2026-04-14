@@ -69,9 +69,12 @@ export class MfdFmsDataAirport extends FmsPage<MfdFmsDataAirportProps> {
   private renderRunwayButtons(): void {
     this.runwayButtonListRef.instance.innerHTML = '';
     this.airportRunways.get().forEach((runway, index) => {
+      const label = this.useMetric.map((v) => MfdFmsDataAirport.formatRunwayLabel(runway, v, false));
+      this.subs.push(label);
+
       FSComponent.render(
         <Button
-          label={this.useMetric.map((v) => MfdFmsDataAirport.formatRunwayLabel(runway, v, false))}
+          label={label}
           onClick={() => this.selectedRunwayIndex.set(index)}
           buttonStyle="width: 220px; margin-bottom: 5px; margin-top: 5px; height: 40px; margin-left: 10px;"
         />,
