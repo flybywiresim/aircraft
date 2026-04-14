@@ -451,7 +451,10 @@ mod a320_electrical {
 
 #[cfg(test)]
 mod a320_electrical_circuit_tests {
-    use super::{alternating_current::A320AcEssFeedContactors, *};
+    use super::{
+        alternating_current::{A320AcEssFeedContactors, APU_GENERATOR_STABILIZATION_TIME},
+        *,
+    };
     use rstest::rstest;
     use std::{cell::Ref, time::Duration};
     use systems::{
@@ -1894,7 +1897,7 @@ mod a320_electrical_circuit_tests {
         assert!(!test_bed.apu_gen_has_fault());
 
         test_bed = test_bed.then_continue_with().apu_gen_on().run_waiting_for(
-            INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME - Duration::from_millis(1),
+            APU_GENERATOR_STABILIZATION_TIME - Duration::from_millis(1),
         );
 
         assert!(test_bed.apu_gen_contactor_is_open());

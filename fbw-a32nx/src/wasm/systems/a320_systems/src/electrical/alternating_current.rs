@@ -8,7 +8,7 @@ use systems::{
     electrical::{
         AlternatingCurrentElectricalSystem, Contactor, ElectricalBus, ElectricalElement,
         Electricity, EmergencyGenerator, ExternalPowerSource, IntegratedDriveGenerator,
-        TransformerRectifier, INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME,
+        TransformerRectifier,
     },
     engine::Engine,
     shared::{
@@ -18,6 +18,8 @@ use systems::{
     simulation::{InitContext, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
 use uom::si::{f64::*, power::kilowatt};
+
+pub(super) const APU_GENERATOR_STABILIZATION_TIME: Duration = Duration::from_millis(150);
 
 pub(super) struct A320AlternatingCurrentElectrical {
     main_power_sources: A320MainPowerSources,
@@ -406,7 +408,7 @@ impl A320MainPowerSources {
             bus_tie_2_contactor: Contactor::new(context, "11XU2"),
             apu_gen_contactor: Contactor::new(context, "3XS"),
             apu_gen_contactor_delay_logic_gate: DelayedTrueLogicGate::new(
-                INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME,
+                APU_GENERATOR_STABILIZATION_TIME,
             )
             .starting_as(true),
             ext_pwr_contactor: Contactor::new(context, "3XG"),

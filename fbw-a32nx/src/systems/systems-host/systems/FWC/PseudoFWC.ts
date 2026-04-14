@@ -1856,6 +1856,8 @@ export class PseudoFWC {
     this.sdac05010Word.setBitValue(13, !this.idg2ConnectedVar.get());
     this.sdac05010Word.setBitValue(19, !this.engine2MasterAlternatorVar.get());
 
+    this.sdac05201Word.set(0);
+    this.sdac05201Word.setSsm(Arinc429SignStatusMatrix.NormalOperation);
     this.sdac05201Word.setBitValue(12, this.apuGenFaultVar.get());
     this.sdac05201Word.setBitValue(14, !this.apuGenSwitchVar.get());
   }
