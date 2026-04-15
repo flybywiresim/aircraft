@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2025 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -3070,8 +3070,13 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
   getLastLegIndexBeforeDiscontinuity(): number | null {
     for (let i = this.activeLegIndex; i < this.allLegs.length; i++) {
       const nextLeg = this.maybeElementAt(i + 1);
-      // Handle case of end of flightplan or discont
-      if (!nextLeg || nextLeg.isDiscontinuity) {
+      // Handle case of end of flightplan or discontinuity outside of a manual leg.
+      if (
+        isLeg(this.activeLeg) &&
+        this.activeLeg.type !== LegType.FM &&
+        this.activeLeg.type !== LegType.VM &&
+        (!nextLeg || nextLeg.isDiscontinuity)
+      ) {
         return i;
       }
     }
