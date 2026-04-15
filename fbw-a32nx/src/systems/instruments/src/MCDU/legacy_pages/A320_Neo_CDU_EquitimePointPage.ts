@@ -107,22 +107,21 @@ export class CDUEquitimePointPage {
           if (value === Keypad.clrValue) {
             etpService.setPilotEnteredWindToReferenceFix1(undefined);
           } else {
-            const wind = CDUWindPage.ParseWind(value);
+            const wind = CDUWindPage.parseWindVector(mcdu, value);
             if (!wind) {
               mcdu.setScratchpadMessage(NXSystemMessages.formatError);
               scratchpadCallback();
               return;
             }
 
-            etpService.setPilotEnteredWindToReferenceFix1(
-              Vec2Math.setFromPolar(wind.speed, wind.direction * MathUtils.DEGREES_TO_RADIANS, Vec2Math.create()),
-            );
+            etpService.setPilotEnteredWindToReferenceFix1(wind);
           }
 
           CDUEquitimePointPage.ShowPage(mcdu);
           await etpService.resetAndRecompute();
           CDUEquitimePointPage.ShowPage(mcdu);
         } catch (err) {
+          console.error(err);
           mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
           scratchpadCallback();
         }
@@ -169,22 +168,21 @@ export class CDUEquitimePointPage {
           if (value === Keypad.clrValue) {
             etpService.setPilotEnteredWindToReferenceFix2(undefined);
           } else {
-            const wind = CDUWindPage.ParseWind(value);
+            const wind = CDUWindPage.parseWindVector(mcdu, value);
             if (!wind) {
               mcdu.setScratchpadMessage(NXSystemMessages.formatError);
               scratchpadCallback();
               return;
             }
 
-            etpService.setPilotEnteredWindToReferenceFix2(
-              Vec2Math.setFromPolar(wind.speed, wind.direction * MathUtils.DEGREES_TO_RADIANS, Vec2Math.create()),
-            );
+            etpService.setPilotEnteredWindToReferenceFix2(wind);
           }
 
           CDUEquitimePointPage.ShowPage(mcdu);
           await etpService.resetAndRecompute();
           CDUEquitimePointPage.ShowPage(mcdu);
         } catch (err) {
+          console.error(err);
           mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
           scratchpadCallback();
         }
@@ -273,6 +271,7 @@ export class CDUEquitimePointPage {
         await etpService.resetAndRecompute();
         CDUEquitimePointPage.ShowPage(mcdu);
       } catch (err) {
+        console.error(err);
         mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
         scratchpadCallback();
       }
@@ -291,6 +290,7 @@ export class CDUEquitimePointPage {
         await etpService.resetAndRecompute();
         CDUEquitimePointPage.ShowPage(mcdu);
       } catch (err) {
+        console.error(err);
         mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
         scratchpadCallback();
       }

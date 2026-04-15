@@ -8,6 +8,8 @@ import { FlightPhaseManagerEvents } from './flightphase/FlightPhaseManager';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { GuidanceController } from './guidance/GuidanceController';
 import { NavigationProvider } from './navigation/NavigationProvider';
+import { WindMeasurement } from './guidance/vnav/wind/WindObserver';
+import { WindUtils } from './guidance/vnav/wind/WindUtils';
 
 export interface EquitimePointInterface {
   etpTimeToRef1: number;
@@ -23,6 +25,10 @@ export class EquitimePoint {
   private static readonly DefaultWind = Vec2Math.create();
 
   private static readonly AbsoluteToleranceSeconds = 10;
+
+  private static readonly WindVectorCache = Vec2Math.create();
+
+  private static readonly WindMeasurementCache: WindMeasurement = { altitude: NaN, vector: Vec2Math.create() };
 
   private geometry: Geometry | undefined = undefined;
 
@@ -79,12 +85,13 @@ export class EquitimePoint {
       return undefined;
     }
 
+    const cruiseAltitude = cruiseLevel * 100;
     const managedCruiseCas = Math.min(
       AeroMath.casToTasIsa(
         UnitType.KNOT.convertTo(managedCruiseSpeed, UnitType.MPS),
-        UnitType.FOOT.convertTo(cruiseLevel * 100, UnitType.METER),
+        UnitType.FOOT.convertTo(cruiseAltitude, UnitType.METER),
       ),
-      AeroMath.machToTasIsa(managedCruiseSpeedMach, UnitType.FOOT.convertTo(cruiseLevel * 100, UnitType.METER)),
+      AeroMath.machToTasIsa(managedCruiseSpeedMach, UnitType.FOOT.convertTo(cruiseAltitude, UnitType.METER)),
     );
 
     const cas =
@@ -92,13 +99,14 @@ export class EquitimePoint {
     const tas = UnitType.MPS.convertTo(
       AeroMath.casToTasIsa(
         UnitType.KNOT.convertTo(cas, UnitType.MPS),
-        UnitType.FOOT.convertTo(cruiseLevel * 100, UnitType.METER),
+        UnitType.FOOT.convertTo(cruiseAltitude, UnitType.METER),
       ),
       UnitType.KNOT,
     );
 
-    // TODO
-    const pposWind = EquitimePoint.DefaultWind;
+    const pposWind =
+      predictions.winds.getCurrentWindMeasurement(EquitimePoint.WindMeasurementCache)?.vector ??
+      EquitimePoint.DefaultWind;
 
     // Time to reference waypoints is only computed in cruise phase
     if (this.flightPhase.get() === FmgcFlightPhase.Cruise) {
@@ -129,8 +137,9 @@ export class EquitimePoint {
 
       const [etpLla, _] = this.result.etp;
 
-      // TODO
-      const windAtEtp = EquitimePoint.DefaultWind;
+      const windAtEtp =
+        predictions.winds.getCruiseWind(etpAlongTrackDistanceGuess, 0, cruiseAltitude, EquitimePoint.WindVectorCache) ??
+        EquitimePoint.DefaultWind;
 
       this.result.etpTimeToRef1 = EquitimePoint.timeTo(etpLla, ref1.location, windAtEtp, this.windToReferenceFix1, tas);
       this.result.etpTimeToRef2 = EquitimePoint.timeTo(etpLla, ref2.location, windAtEtp, this.windToReferenceFix2, tas);
@@ -364,10 +373,8 @@ export class EquitimePoint {
     const distance = distanceTo(from, to);
     const bearing = bearingTo(from, to);
 
-    const fromTailwindComponent =
-      -Vec2Math.abs(fromWind) * Math.cos(bearing * MathUtils.DEGREES_TO_RADIANS - Vec2Math.theta(fromWind));
-    const toTailwindComponent =
-      -Vec2Math.abs(toWind) * Math.cos(bearing * MathUtils.DEGREES_TO_RADIANS - Vec2Math.theta(toWind));
+    const fromTailwindComponent = WindUtils.computeTailwindComponent(fromWind, bearing);
+    const toTailwindComponent = WindUtils.computeTailwindComponent(toWind, bearing);
 
     if (fromTailwindComponent === toTailwindComponent) {
       return distance / (tas + fromTailwindComponent);
