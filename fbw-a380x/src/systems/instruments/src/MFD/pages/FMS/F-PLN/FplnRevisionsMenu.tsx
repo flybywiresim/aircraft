@@ -55,11 +55,12 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
         //FIXME This should navigate to DIR TO page instead.
         const ppos = fpln.props.fmcService.master?.navigation.getPpos();
         if (ppos) {
-          fpln.props.fmcService.master?.flightPlanInterface.directToLeg(
+          fpln.props.fmcService.master?.flightPlanInterface.directTo(
             ppos,
             SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree'),
-            legIndex,
-            true,
+            {
+              flightPlanLegIndex: legIndex,
+            },
             planIndex,
           );
           fpln.props.mfd.uiService.navigateTo(
