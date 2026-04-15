@@ -1,14 +1,18 @@
 // @ts-strict-ignore
+// Copyright (c) 2026 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 //import { UplinkMessageStateMachine } from '@datalink/atc';
 import { AtsuMessageDirection, AtsuMessageSerializationFormat } from '@datalink/common';
 import { CDUAtcMenu } from './A320_Neo_CDU_ATC_Menu';
 import { CDUAtcMessage } from './A320_Neo_CDU_ATC_Message';
 import { LegacyAtsuPageInterface } from '../../legacy/LegacyAtsuPageInterface';
+import { setKeyNotActiveLskActions } from './AtsuDatalinkPageUtils';
 
 export class CDUAtcMessageMonitoring {
   static TranslateCpdlcResponse(response) {
     if (response) {
-      switch (response.Content[0].TypeId) {
+      switch (response.Content[0]?.TypeId) {
         case 'DM0':
           return 'WILC';
         case 'UM0':
@@ -171,5 +175,7 @@ export class CDUAtcMessageMonitoring {
         CDUAtcMessageMonitoring.ShowPage(mcdu);
       }
     };
+
+    setKeyNotActiveLskActions(mcdu);
   }
 }

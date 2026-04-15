@@ -1,4 +1,8 @@
+// Copyright (c) 2026 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 import { LegacyAtsuPageInterface } from '../../../legacy/LegacyAtsuPageInterface';
+import { setKeyNotActiveLskActions } from '../AtsuDatalinkPageUtils';
 import { CDUAtcMenu } from '../A320_Neo_CDU_ATC_Menu';
 
 export class CDUAtcEmergencyFansB {
@@ -28,5 +32,6 @@ export class CDUAtcEmergencyFansB {
     mcdu.onLeftInput[5] = () => {
       CDUAtcMenu.ShowPage(mcdu);
     };
+    setKeyNotActiveLskActions(mcdu);
   }
 }

@@ -4,9 +4,9 @@
 import { ArraySubject, EventBus } from '@microsoft/msfs-sdk';
 import { along, length } from '@turf/turf';
 import { LineString, Point, Position } from 'geojson';
-import { Label, LabelStyle, Oanc, OansControlEvents } from './';
+import { Label, LabelStyle, Oanc } from './';
 import { OancLabelManager } from './OancLabelManager';
-import { AmdbFeature, FeatureType } from '@flybywiresim/fbw-sdk';
+import { AmdbFeature, FeatureType, OansControlEvents } from '@flybywiresim/fbw-sdk';
 
 const MAX_SYMBOL_DIST_NEIGHBORHOOD_SEARCH = 20;
 const TAXIWAY_SYMBOL_SPACING = 250;

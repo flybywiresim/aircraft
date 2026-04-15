@@ -12,6 +12,8 @@ import {
   FreetextMessage,
   SimVarSources,
   WeatherMessage,
+  WindRequestMessage,
+  WindUplinkMessage,
 } from '../../common/src';
 import { AocFmsMessages } from './databus/FmsBus';
 
@@ -28,6 +30,11 @@ export class DigitalOutputs {
 
   private weatherResponseCallbacks: ((requestId: number, response: [AtsuStatusCodes, WeatherMessage]) => boolean)[] =
     [];
+
+  private windRequestCallbacks: ((
+    requestId: number,
+    response: [AtsuStatusCodes, WindUplinkMessage | null],
+  ) => boolean)[] = [];
 
   constructor(
     private readonly bus: EventBus,
@@ -60,6 +67,16 @@ export class DigitalOutputs {
       this.weatherResponseCallbacks.every((callback, index) => {
         if (callback(response.requestId, response.response)) {
           this.weatherResponseCallbacks.splice(index, 1);
+          return false;
+        }
+        return true;
+      });
+    });
+
+    this.subscriber.on('routerReceivedWinds').handle((response) => {
+      this.windRequestCallbacks.every((callback, index) => {
+        if (callback(response.requestId, response.response)) {
+          this.windRequestCallbacks.splice(index, 1);
           return false;
         }
         return true;
@@ -153,5 +170,23 @@ export class DigitalOutputs {
 
   public setCompanyMessageCount(count: number): void {
     SimVar.SetSimVarValue(SimVarSources.companyMessageCount, 'number', count);
+  }
+
+  public requestWinds(
+    request: WindRequestMessage,
+    sentCallback: () => void,
+  ): Promise<[AtsuStatusCodes, WindUplinkMessage | null]> {
+    return new Promise<[AtsuStatusCodes, WindUplinkMessage | null]>((resolve, _reject) => {
+      const requestId = this.requestId++;
+      this.publisher.pub('routerRequestWinds', { ...request, requestId }, this.synchronizedRouter, false);
+      this.requestSentCallbacks.push((id: number) => {
+        if (id === requestId) sentCallback();
+        return id === requestId;
+      });
+      this.windRequestCallbacks.push((id, response) => {
+        if (id === requestId) resolve(response);
+        return requestId === id;
+      });
+    });
   }
 }

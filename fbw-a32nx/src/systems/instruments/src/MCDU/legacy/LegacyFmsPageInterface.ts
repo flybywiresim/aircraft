@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2025 FlyByWire Simulations
+// Copyright (c) 2025-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
@@ -28,6 +28,7 @@ import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { DataManager } from '@fmgc/flightplanning/DataManager';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { FuelPredictions } from '@fmgc/flightplanning/fuel/FuelPredictions';
+import { WindEntry } from '@fmgc/flightplanning/data/wind';
 
 export type LskCallback = (
   /** The scratchpad content when the LSK was pressed. */
@@ -116,7 +117,7 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
     callback?: typeof EmptyCallback.Boolean,
     bypassTmpy?: boolean,
   ): void;
-  navModeEngaged(): boolean;
+  isNavModeEngaged(): boolean;
   isFlying(): boolean;
   trySetZeroFuelWeightZFWCG(s: string, forPlan: FlightPlanIndex): boolean;
   /** @deprecated use getGrossWeight */
@@ -218,7 +219,12 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   setV2Speed(speed: number, forPlan: FlightPlanIndex): void;
   activateSecondaryPlan(index: number): Promise<void>;
   swapActiveAndSecondaryPlan(index: number): Promise<void>;
+  setEstimatedTakeoffTime(text: string, forPlan: FlightPlanIndex): void;
   computeAlternateCruiseLevel(forPlan: FlightPlanIndex): number | undefined;
+  uplinkWinds(forPlan: FlightPlanIndex, sentCallback?: () => void): Promise<void>;
+  getHistoryWinds(cruiseLevel: number | null): Readonly<WindEntry>[] | undefined;
+  getTimePrediction(secondsFromPresent: number, forPlan: FlightPlanIndex): string;
+  getTimePredictionHeader(forPlan: FlightPlanIndex): string;
 
   flightPlanService: FlightPlanService;
   navigationDatabase: NavigationDatabase;
@@ -275,13 +281,6 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   progBearing: number;
   progDistance: number;
   progWaypointIdent: string | undefined;
-  /** Mess.. replace with wind manager. */
-  winds: {
-    climb: any[];
-    cruise: any[];
-    des: any[];
-    alternate: any | null;
-  };
   isTrueRefMode: boolean;
 }
 

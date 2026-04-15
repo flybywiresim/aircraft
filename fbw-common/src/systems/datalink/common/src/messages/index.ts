@@ -13,3 +13,4 @@ export * from './MetarMessage';
 export * from './OclMessage';
 export * from './TafMessage';
 export * from './WeatherMessage';
+export * from './WindUplinkMessage';

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Subscription } from '@microsoft/msfs-sdk';
+import { MappedSubject, SubscribableMapFunctions, Subscription } from '@microsoft/msfs-sdk';
 import { EcamInfos } from '../../../instruments/src/MsfsAvionicsCommon/EcamMessages';
 import { FwsCore, FwsSuppressableItem } from 'systems-host/CpiomC/FlightWarningSystem/FwsCore';
 
@@ -33,6 +33,31 @@ export class FwsInformation {
     220200010: {
       // APPR 1 ONLY
       simVarIsActive: this.fws.land2Inop,
+    },
+    270200003: {
+      // F/CTL BKUP CTL ACTIVE
+      simVarIsActive: MappedSubject.create(
+        SubscribableMapFunctions.and(),
+        this.fws.directLawCondition,
+        this.fws.allPrimFailed,
+        this.fws.allSecFaultCondition,
+      ),
+    },
+    270200004: {
+      // AUDIOS NOT AVAIL : WINDHSHEAR, SPEED SPEED
+      simVarIsActive: this.fws.fcdc12FaultCondition,
+    },
+    270200005: {
+      // F/CTL INDICATIONS LOST
+      simVarIsActive: this.fws.fcdc12FaultCondition,
+    },
+    340200002: {
+      // ALTN LAW : PROT LOST
+      simVarIsActive: this.fws.altnLawCondition,
+    },
+    340200004: {
+      // DIRECT LAW : PROT LOST
+      simVarIsActive: this.fws.directLawCondition,
     },
   };
 

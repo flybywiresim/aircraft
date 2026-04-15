@@ -30,7 +30,6 @@ export interface PFDSimvars {
   fd1Active: boolean;
   fd2Active: boolean;
   athrStatus: number;
-  athrModeMessage: number;
   machPreselVal: number;
   speedPreselVal: number;
   mda: number;
@@ -199,7 +198,6 @@ export enum PFDVars {
   fd1Active = 'AUTOPILOT FLIGHT DIRECTOR ACTIVE:1',
   fd2Active = 'AUTOPILOT FLIGHT DIRECTOR ACTIVE:2',
   athrStatus = 'L:A32NX_AUTOTHRUST_STATUS',
-  athrModeMessage = 'L:A32NX_AUTOTHRUST_MODE_MESSAGE',
   machPreselVal = 'L:A32NX_MachPreselVal',
   speedPreselVal = 'L:A32NX_SpeedPreselVal',
   mda = 'L:AIRLINER_MINIMUM_DESCENT_ALTITUDE',
@@ -326,7 +324,6 @@ export enum PFDVars {
   lgciuDiscreteWord1Raw = 'L:A32NX_LGCIU_1_DISCRETE_WORD_1',
   slatPosLeft = 'L:A32NX_LEFT_SLATS_ANGLE',
   trimPosition = 'ELEVATOR TRIM POSITION',
-  cgPercent = 'L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC',
   spoilersCommanded = 'L:A32NX_LEFT_SPOILER_1_COMMANDED_POSITION',
   spoilersArmed = 'L:A32NX_SPOILERS_ARMED',
   fcuLeftVelocityVectorOn = 'L:A380X_EFIS_L_VV_BUTTON_IS_ON',
@@ -368,7 +365,6 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['fd1Active', { name: PFDVars.fd1Active, type: SimVarValueType.Bool }],
     ['fd2Active', { name: PFDVars.fd2Active, type: SimVarValueType.Bool }],
     ['athrStatus', { name: PFDVars.athrStatus, type: SimVarValueType.Number }],
-    ['athrModeMessage', { name: PFDVars.athrModeMessage, type: SimVarValueType.Number }],
     ['machPreselVal', { name: PFDVars.machPreselVal, type: SimVarValueType.Number }],
     ['speedPreselVal', { name: PFDVars.speedPreselVal, type: SimVarValueType.Knots }],
     ['mda', { name: PFDVars.mda, type: SimVarValueType.Feet }],
@@ -495,7 +491,6 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['lgciuDiscreteWord1Raw', { name: PFDVars.lgciuDiscreteWord1Raw, type: SimVarValueType.Number }],
     ['slatPosLeft', { name: PFDVars.slatPosLeft, type: SimVarValueType.Number }],
     ['trimPosition', { name: PFDVars.trimPosition, type: SimVarValueType.Number }],
-    ['cgPercent', { name: PFDVars.cgPercent, type: SimVarValueType.Number }],
     ['spoilersCommanded', { name: PFDVars.spoilersCommanded, type: SimVarValueType.Number }],
     ['spoilersArmed', { name: PFDVars.spoilersArmed, type: SimVarValueType.Bool }],
     ['fcuLeftVelocityVectorOn', { name: PFDVars.fcuLeftVelocityVectorOn, type: SimVarValueType.Bool }],

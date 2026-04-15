@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2024 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -12,6 +12,7 @@ import {
   VnavDescentMode,
 } from '@fmgc/flightplanning/AircraftConfigTypes';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
+import { FpmConfigs } from './FpmConfig';
 
 const lnavConfig: LnavConfig = {
   DEFAULT_MIN_PREDICTED_TAS: 160,
@@ -26,6 +27,7 @@ const vnavConfig: VnavConfig = {
   VNAV_USE_LATCHED_DESCENT_MODE: false,
   IDLE_N1_MARGIN: 2,
   MAXIMUM_FUEL_ESTIMATE: 40000,
+  LOWEST_FUEL_ESTIMATE: -77161.8, // -35 tons
   LIM_PSEUDO_WPT_LABEL: '(LIM)',
   VMO: 350,
   MMO: 0.82,
@@ -150,4 +152,5 @@ export const A320AircraftConfig: AircraftConfig = {
   engineModelParameters: engineModelParams,
   flightModelParameters: flightModelParams,
   fmSymbolConfig: fmsSymbolConfig,
+  fpmConfig: FpmConfigs.A320_HONEYWELL_H3,
 };

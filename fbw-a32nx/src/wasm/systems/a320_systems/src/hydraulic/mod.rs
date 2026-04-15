@@ -2230,8 +2230,14 @@ impl A320Hydraulic {
             engine2,
         );
 
-        self.slats_flaps_complex
-            .update(context, &self.flap_system, &self.slat_system, adirs);
+        self.slats_flaps_complex.update(
+            context,
+            &self.flap_system,
+            &self.slat_system,
+            adirs,
+            lgciu1,
+            lgciu2,
+        );
 
         self.flap_system.update(
             context,
@@ -2261,8 +2267,14 @@ impl A320Hydraulic {
             self.yellow_circuit.system_section(),
         );
 
-        self.slats_flaps_complex
-            .update(context, &self.flap_system, &self.slat_system, adirs);
+        self.slats_flaps_complex.update(
+            context,
+            &self.flap_system,
+            &self.slat_system,
+            adirs,
+            lgciu1,
+            lgciu2,
+        );
 
         self.rudder_mechanical_assembly.update(
             context,
@@ -4009,9 +4021,7 @@ impl A320HydraulicBrakeSteerComputerUnit {
 
     fn brakes_hot(&self) -> bool {
         self.brake_temperatures.iter().any(|t| {
-            t.map_or(false, |t| {
-                t.get::<degree_celsius>() >= Self::BRAKES_HOT_THRESHOLD_CELSIUS
-            })
+            t.is_some_and(|t| t.get::<degree_celsius>() >= Self::BRAKES_HOT_THRESHOLD_CELSIUS)
         })
     }
 }

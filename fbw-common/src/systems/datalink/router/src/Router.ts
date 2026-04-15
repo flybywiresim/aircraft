@@ -17,19 +17,26 @@ import {
   TafMessage,
   WeatherMessage,
   FreetextMessage,
+  WindUplinkMessage,
+  WindRequestMessage,
 } from '../../common/src';
 import { MsfsConnector } from './msfs/MsfsConnector';
 import { Vdl } from './vhf/VDL';
-import { HoppieConnector } from './webinterfaces/HoppieConnector';
+import { AcarsConnector } from './webinterfaces/AcarsConnector';
 import { NXApiConnector } from './webinterfaces/NXApiConnector';
 import { DigitalInputs } from './DigitalInputs';
 import { DigitalOutputs } from './DigitalOutputs';
+import { SimBriefConnector } from './webinterfaces/SimBriefConnector';
 
 enum ActiveCommunicationInterface {
   None,
   VHF,
   HF,
   SATCOM,
+}
+
+export interface VhfRadioInterface {
+  isDataModeActive(): boolean;
 }
 
 export class Router {
@@ -54,6 +61,8 @@ export class Router {
   private poweredUp: boolean = false;
 
   private lastUpdateTime: number = -1;
+
+  private vhfRadios: VhfRadioInterface;
 
   private removeTransmissionTimeout(timeout: number): void {
     const index = this.transmissionSimulationTimeouts.findIndex((value) => value === timeout);
@@ -99,11 +108,13 @@ export class Router {
     private readonly bus: EventBus,
     synchronizedAtc: boolean,
     synchronizedAoc: boolean,
+    vhfRadios: VhfRadioInterface,
   ) {
-    HoppieConnector.activateHoppie();
+    AcarsConnector.activateAcars();
 
-    this.digitalInputs = new DigitalInputs(this.bus, synchronizedAtc, synchronizedAoc);
+    this.digitalInputs = new DigitalInputs(this.bus, synchronizedAtc, synchronizedAoc, vhfRadios);
     this.digitalOutputs = new DigitalOutputs(this.bus, synchronizedAtc, synchronizedAoc);
+    this.vhfRadios = vhfRadios;
 
     this.digitalInputs.addDataCallback('connect', (callsign: string) => Router.connect(callsign));
     this.digitalInputs.addDataCallback('disconnect', () => Router.disconnect());
@@ -127,6 +138,9 @@ export class Router {
     );
     this.digitalInputs.addDataCallback('requestWeather', async (icaos, metar, requestSent) =>
       this.receiveWeather(metar, icaos, requestSent),
+    );
+    this.digitalInputs.addDataCallback('requestWinds', (request, requestSent) =>
+      this.receiveWinds(request, requestSent),
     );
   }
 
@@ -152,6 +166,8 @@ export class Router {
 
   public update(): void {
     const currentTimestamp = new Date().getTime();
+
+    this.digitalInputs.setVhf3Datamode(this.vhfRadios.isDataModeActive());
 
     // update the communication interface states
     this.vdl.vhf3.updateDatalinkStates(this.digitalInputs.Vhf3Powered, this.digitalInputs.Vhf3DataMode);
@@ -181,8 +197,8 @@ export class Router {
       hf: DatalinkModeCode.None,
     });
 
-    if (HoppieConnector.pollInterval() <= this.waitedTimeHoppie) {
-      HoppieConnector.poll().then((retval) => {
+    if (AcarsConnector.pollInterval() <= this.waitedTimeHoppie) {
+      AcarsConnector.poll().then((retval) => {
         if (retval[0] === AtsuStatusCodes.Ok) {
           // delete all data in the first call (Hoppie stores old data)
           if (!this.firstPollHoppie && this.poweredUp) {
@@ -215,8 +231,8 @@ export class Router {
       if (code === AtsuStatusCodes.TelexDisabled) code = AtsuStatusCodes.Ok;
 
       if (code === AtsuStatusCodes.Ok) {
-        return HoppieConnector.connect(flightNo).then((code) => {
-          if (code === AtsuStatusCodes.NoHoppieConnection) code = AtsuStatusCodes.Ok;
+        return AcarsConnector.connect(flightNo).then((code) => {
+          if (code === AtsuStatusCodes.NoAcarsConnection) code = AtsuStatusCodes.Ok;
           return code;
         });
       }
@@ -229,8 +245,8 @@ export class Router {
     let retvalNXApi = await NXApiConnector.disconnect();
     if (retvalNXApi === AtsuStatusCodes.TelexDisabled) retvalNXApi = AtsuStatusCodes.Ok;
 
-    let retvalHoppie = HoppieConnector.disconnect();
-    if (retvalHoppie === AtsuStatusCodes.NoHoppieConnection) retvalHoppie = AtsuStatusCodes.Ok;
+    let retvalHoppie = AcarsConnector.disconnect();
+    if (retvalHoppie === AtsuStatusCodes.NoAcarsConnection) retvalHoppie = AtsuStatusCodes.Ok;
 
     if (retvalNXApi !== AtsuStatusCodes.Ok) return retvalNXApi;
     return retvalHoppie;
@@ -336,7 +352,7 @@ export class Router {
   }
 
   private async isStationAvailable(callsign: string): Promise<AtsuStatusCodes> {
-    return HoppieConnector.isStationAvailable(callsign);
+    return AcarsConnector.isStationAvailable(callsign);
   }
 
   private async sendMessage(message: AtsuMessage, force: boolean): Promise<AtsuStatusCodes> {
@@ -355,12 +371,12 @@ export class Router {
           if (message.Network === AtsuMessageNetwork.FBW) {
             NXApiConnector.sendTelexMessage(message).then((code) => resolve(code));
           } else {
-            HoppieConnector.sendTelexMessage(message, force).then((code) => resolve(code));
+            AcarsConnector.sendTelexMessage(message, force).then((code) => resolve(code));
           }
         } else if (message.Type === AtsuMessageType.DCL) {
-          HoppieConnector.sendTelexMessage(message, force).then((code) => resolve(code));
+          AcarsConnector.sendTelexMessage(message, force).then((code) => resolve(code));
         } else if (message.Type < AtsuMessageType.ATC) {
-          HoppieConnector.sendCpdlcMessage(message as CpdlcMessage, force).then((code) => resolve(code));
+          AcarsConnector.sendCpdlcMessage(message as CpdlcMessage, force).then((code) => resolve(code));
         } else {
           resolve(AtsuStatusCodes.UnknownMessage);
         }
@@ -386,5 +402,18 @@ export class Router {
       return DatalinkStatusCode.DlkNotAvail;
     }
     return DatalinkStatusCode.NotInstalled;
+  }
+
+  private async receiveWinds(
+    request: WindRequestMessage,
+    requestSent: () => void,
+  ): Promise<[AtsuStatusCodes, WindUplinkMessage | null]> {
+    if (this.communicationInterface === ActiveCommunicationInterface.None || !this.poweredUp) {
+      return [AtsuStatusCodes.ComFailed, null];
+    }
+
+    requestSent();
+
+    return SimBriefConnector.receiveSimBriefWinds(this.bus, request);
   }
 }

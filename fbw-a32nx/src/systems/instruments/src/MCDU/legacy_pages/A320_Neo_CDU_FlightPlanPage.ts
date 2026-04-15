@@ -1,20 +1,29 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023, 2025 FlyByWire Simulations
+// Copyright (c) 2021-2023, 2025-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { A32NX_Util } from '../../../../shared/src/A32NX_Util';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { CDULateralRevisionPage } from './A320_Neo_CDU_LateralRevisionPage';
 import { CDUVerticalRevisionPage } from './A320_Neo_CDU_VerticalRevisionPage';
 import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessages';
 import { CDUHoldAtPage } from './A320_Neo_CDU_HoldAtPage';
-import { AltitudeDescriptor, NXUnits, WaypointConstraintType } from '@flybywiresim/fbw-sdk';
+import {
+  AltitudeDescriptor,
+  MathUtils,
+  AltitudeConstraint,
+  LegType,
+  MagVar,
+  NXUnits,
+  WaypointConstraintType,
+  WaypointDescriptor,
+} from '@flybywiresim/fbw-sdk';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
-import { FlightPlanLeg, isDiscontinuity } from '@fmgc/flightplanning/legs/FlightPlanLeg';
-import { FmsFormatters } from '../legacy/FmsFormatters';
+import { FlightPlanElement, FlightPlanLeg, isDiscontinuity, isLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { Column, FormatLine } from '../legacy/A320_Neo_CDU_Format';
+import { formatWindPredictionMagnitude, formatWindPredictionDirection } from '@fmgc/flightplanning/data/wind';
+import { PseudoWaypoint } from '@fmgc/guidance/PseudoWaypoint';
 
 const Markers = {
   FPLN_DISCONTINUITY: ['---F-PLN DISCONTINUITY--'],
@@ -25,8 +34,8 @@ const Markers = {
 };
 
 const Altitude = Object.freeze({
-  Empty: '\xa0\xa0\xa0\xa0\xa0',
-  NoPrediction: '-----',
+  Empty: '\xa0\xa0\xa0\xa0\xa0\xa0',
+  NoPrediction: '\xa0-----',
 });
 const Speed = Object.freeze({
   Empty: '\xa0\xa0\xa0',
@@ -36,9 +45,29 @@ const Time = Object.freeze({
   Empty: '\xa0\xa0\xa0\xa0',
   NoPrediction: '----',
 });
+const Efob = Object.freeze({
+  Empty: '\xa0\xa0\xa0\xa0',
+  NoPrediction: '\xa0---.-',
+});
+const Wind = Object.freeze({
+  EmptyTrueDegrees: '\xa0\xa0\xa0\xa0',
+  EmptyTrueMagnitude: '\xa0\xa0\xa0',
+  NoTrueDegreesPrediction: '---°',
+  NoMagnitudePrediction: '---',
+});
 
 export class CDUFlightPlanPage {
-  static ShowPage(mcdu: LegacyFmsPageInterface, offset = 0, forPlan = 0) {
+  static ShowDestinationPage(mcdu: LegacyFmsPageInterface, isPageB = false, forPlan = 0) {
+    CDUFlightPlanPage.ShowPage(mcdu, 0, isPageB, forPlan, true);
+  }
+
+  static ShowPage(
+    mcdu: LegacyFmsPageInterface,
+    offset = 0,
+    isPageB = false,
+    forPlan = 0,
+    focusDestinationOnOpen = false,
+  ) {
     // INIT
     function addLskAt(index, delay, callback) {
       mcdu.leftInputDelay[index] = typeof delay === 'function' ? delay : () => delay;
@@ -55,22 +84,23 @@ export class CDUFlightPlanPage {
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.FlightPlanPage;
     mcdu.returnPageCallback = () => {
-      CDUFlightPlanPage.ShowPage(mcdu, offset, forPlan);
+      CDUFlightPlanPage.ShowPage(mcdu, offset, isPageB, forPlan, focusDestinationOnOpen);
     };
     mcdu.activeSystem = 'FMGC';
 
-    mcdu.efisInterfaces.L.setSecRelatedPageOpen(forPlan >= FlightPlanIndex.FirstSecondary);
-    mcdu.efisInterfaces.R.setSecRelatedPageOpen(forPlan >= FlightPlanIndex.FirstSecondary);
+    mcdu.efisInterfaces.L.setSecRelatedPageOpen(
+      forPlan >= FlightPlanIndex.FirstSecondary ? forPlan - FlightPlanIndex.FirstSecondary + 1 : null,
+    );
+    mcdu.efisInterfaces.R.setSecRelatedPageOpen(
+      forPlan >= FlightPlanIndex.FirstSecondary ? forPlan - FlightPlanIndex.FirstSecondary + 1 : null,
+    );
 
     // regular update due to showing dynamic data on this page
     mcdu.SelfPtr = setTimeout(() => {
       if (mcdu.page.Current === mcdu.page.FlightPlanPage) {
-        CDUFlightPlanPage.ShowPage(mcdu, offset, forPlan);
+        CDUFlightPlanPage.ShowPage(mcdu, offset, isPageB, forPlan, focusDestinationOnOpen);
       }
     }, mcdu.PageTimeout.Medium);
-
-    const flightPhase = mcdu.flightPhaseManager.phase;
-    const isFlying = flightPhase >= FmgcFlightPhase.Takeoff && flightPhase != FmgcFlightPhase.Done;
 
     let showFrom = false;
 
@@ -86,12 +116,22 @@ export class CDUFlightPlanPage {
       title.push(new Column(6, 'TMPY', Column.yellow));
     }
     if (forActiveOrTemporary) {
-      title.push(new Column(20, targetPlan.flightNumber ?? '', Column.small, Column.right));
+      title.push(new Column(20, targetPlan.flightNumber.get() ?? '', Column.small, Column.right));
     } else {
       title.push(new Column(16, 'SEC'));
     }
 
-    const waypointsAndMarkers = [];
+    const waypointsAndMarkers: {
+      wp?: FlightPlanElement;
+      holdResumeExit?: FlightPlanLeg;
+      pwp?: PseudoWaypoint;
+      distanceFromLastLine?: number;
+      isActive?: boolean;
+      marker?: string[];
+      fpIndex: number;
+      inAlternate?: boolean;
+      inMissedApproach?: boolean;
+    }[] = [];
     const first = Math.max(0, targetPlan.fromLegIndex);
     let destinationAirportOffset = 0;
     let alternateAirportOffset = 0;
@@ -233,6 +273,10 @@ export class CDUFlightPlanPage {
       waypointsAndMarkers.push({ marker: Markers.NO_ALTN_FPLN, fpIndex: targetPlan.legCount + 1, inAlternate: true });
     }
 
+    if (focusDestinationOnOpen) {
+      offset = destinationAirportOffset;
+    }
+
     const tocIndex = waypointsAndMarkers.findIndex(({ pwp }) => pwp && pwp.ident === '(T/C)');
 
     // Render F-PLAN Display
@@ -262,11 +306,9 @@ export class CDUFlightPlanPage {
       winI = winI % waypointsAndMarkers.length;
 
       const {
-        /** @type {import('fbw-a32nx/src/systems/fmgc/src/flightplanning/legs/FlightPlanLeg').FlightPlanElement} */
         wp,
         pwp,
         marker,
-        /** @type {import('fbw-a32nx/src/systems/fmgc/src/flightplanning/legs/FlightPlanLeg').FlightPlanElement} */
         holdResumeExit,
         fpIndex,
         inAlternate,
@@ -275,9 +317,6 @@ export class CDUFlightPlanPage {
         isActive,
       } = waypointsAndMarkers[winI];
 
-      const wpPrev = inAlternate
-        ? targetPlan.alternateFlightPlan.maybeElementAt(fpIndex - 1)
-        : targetPlan.maybeElementAt(fpIndex - 1);
       const wpNext = inAlternate
         ? targetPlan.alternateFlightPlan.maybeElementAt(fpIndex - 1)
         : targetPlan.maybeElementAt(fpIndex + 1);
@@ -285,18 +324,25 @@ export class CDUFlightPlanPage {
 
       // Bearing/Track
       let bearingTrack = '';
-      const maybeBearingTrackTo = pwp ? targetPlan.maybeElementAt(fpIndex) : wp;
-      const bearingTrackTo = maybeBearingTrackTo ? maybeBearingTrackTo : wpNext;
       switch (rowI) {
-        case 1: {
-          const trueBearing = SimVar.GetSimVarValue('L:A32NX_EFIS_L_TO_WPT_BEARING', 'Degrees');
-          if (isActive && trueBearing !== null && trueBearing >= 0) {
-            bearingTrack = `BRG${trueBearing.toFixed(0).padStart(3, '0')}\u00b0`;
+        case 1: // bearing from the aircraft to the TO WPT, if the second line is the TO WPT
+          // FIXME when SEC has preds linked with the active implemented, it should show BRG as well
+          if (forPlan === FlightPlanIndex.Active && fpIndex === targetPlan.activeLegIndex) {
+            const toWptBearing = SimVar.GetSimVarValue(
+              mcdu.isTrueRefMode ? 'L:A32NX_EFIS_L_TO_WPT_TRUE_BEARING' : 'L:A32NX_EFIS_L_TO_WPT_BEARING',
+              'Degrees',
+            );
+            if (isFinite(toWptBearing) && toWptBearing >= 0) {
+              bearingTrack = `BRG${toWptBearing.toFixed(0).padStart(3, '0')}${mcdu.isTrueRefMode ? 'T' : '°'}`;
+            }
           }
           break;
-        }
-        case 2:
-          bearingTrack = isDiscontinuity(wpPrev) ? '' : formatTrack(wpPrev, bearingTrackTo);
+        case 2: // outbound track of leg shown on row 2
+          if (wp && !isDiscontinuity(wp) && wp.type !== LegType.HM && wp.calculated?.outboundTrack !== undefined) {
+            const magVar = mcdu.isTrueRefMode ? null : wp.definition.magVar;
+            const track = MagVar.trueToMagnetic(wp.calculated.outboundTrack, magVar ?? 0);
+            bearingTrack = `TRK${track.toFixed(0).padStart(3, '0')}${magVar === null ? 'T' : '°'}`;
+          }
           break;
       }
 
@@ -335,22 +381,32 @@ export class CDUFlightPlanPage {
           verticalWaypoint = vnavPredictionsMapByWaypoint.get(fpIndex);
         }
 
-        // Time
-        let timeCell: string = Time.NoPrediction;
+        // Time/EFOB
+        let timeCell: string = isPageB ? Efob.NoPrediction : Time.NoPrediction;
         let timeColor = 'white';
-        if (verticalWaypoint && isFinite(verticalWaypoint.secondsFromPresent)) {
-          const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
 
-          timeCell = `${isFromLeg ? '{big}' : '{small}'}${
-            isFlying
-              ? FmsFormatters.secondsToUTC(utcTime + verticalWaypoint.secondsFromPresent)
-              : FmsFormatters.secondsTohhmm(verticalWaypoint.secondsFromPresent)
-          }{end}`;
+        const isEttValid =
+          targetPlan.performanceData.estimatedTakeoffTime.get() !== null &&
+          !targetPlan.performanceData.estimatedTakeoffTimeExpired.get();
+
+        if (!isPageB && verticalWaypoint && Number.isFinite(verticalWaypoint.secondsFromPresent)) {
+          timeCell = `${isFromLeg ? '{big}' : '{small}'}${mcdu.getTimePrediction(
+            verticalWaypoint.secondsFromPresent,
+            forPlan,
+          )}{end}`;
+
+          timeColor = isFromLeg && isEttValid ? 'magenta' : color;
+        } else if (isPageB && verticalWaypoint && Number.isFinite(verticalWaypoint.estimatedFuelOnBoard)) {
+          timeCell = `${isFromLeg ? '{big}' : '{small}'}${NXUnits.poundsToUser(
+            verticalWaypoint.estimatedFuelOnBoard / 1000,
+          )
+            .toFixed(1)
+            .padStart(4, '\xa0')}{end}`;
 
           timeColor = color;
-        } else if (!inAlternate && fpIndex === targetPlan.originLegIndex) {
-          timeCell = '{big}0000{end}';
-          timeColor = color;
+        } else if (!isPageB && !inAlternate && fpIndex === targetPlan.originLegIndex) {
+          timeCell = `{big}${mcdu.getTimePrediction(0, forPlan)}{end}`;
+          timeColor = isEttValid ? 'magenta' : color;
         }
 
         // Fix Header
@@ -378,30 +434,52 @@ export class CDUFlightPlanPage {
         let spdColor = 'white';
 
         // Should show empty speed prediction for waypoint after hold
-        let speedConstraint: string = wp.type === 'HM' ? Speed.Empty : Speed.NoPrediction;
+        let speedConstraint: string = isPageB
+          ? Wind.NoTrueDegreesPrediction
+          : wp.type === 'HM'
+            ? Speed.Empty
+            : Speed.NoPrediction;
         let speedPrefix = '';
 
-        if (targetPlan.index !== FlightPlanIndex.Temporary && wp.type !== 'HM') {
-          if (!inAlternate && fpIndex === targetPlan.originLegIndex) {
-            speedConstraint = Number.isFinite(targetPlan.performanceData.v1.get())
-              ? `{big}${Math.round(targetPlan.performanceData.v1.get())}{end}`
-              : Speed.NoPrediction;
-            spdColor = Number.isFinite(targetPlan.performanceData.v1.get()) ? color : 'white';
-          } else if (isFromLeg) {
-            speedConstraint = Speed.Empty;
-          } else if (verticalWaypoint && verticalWaypoint.speed) {
-            speedConstraint = `{small}${verticalWaypoint.speed < 1 ? formatMachNumber(verticalWaypoint.speed) : Math.round(verticalWaypoint.speed)}{end}`;
+        if (targetPlan.index !== FlightPlanIndex.Temporary) {
+          if (isPageB) {
+            speedConstraint = Wind.NoTrueDegreesPrediction;
 
-            if (verticalWaypoint.speedConstraint) {
-              speedPrefix = `${verticalWaypoint.isSpeedConstraintMet ? '{magenta}' : '{amber}'}*{end}`;
+            const windDirection = mcdu.navigation?.getWindDirection();
+
+            if (isFromLeg && windDirection !== null) {
+              speedConstraint = `${MathUtils.normalise360(windDirection).toFixed(0).padStart(3, '0')}°`;
+              spdColor = color;
+            } else if (verticalWaypoint?.windPrediction !== undefined) {
+              speedConstraint = isFromLeg
+                ? formatWindPredictionDirection(verticalWaypoint?.windPrediction)
+                : `{small}${formatWindPredictionDirection(verticalWaypoint?.windPrediction)}{end}`;
+              spdColor = color;
             }
-            spdColor = color;
-          } else if (wp.hasPilotEnteredSpeedConstraint()) {
-            speedConstraint = Math.round(wp.pilotEnteredSpeedConstraint.speed).toString();
-            spdColor = 'magenta';
-          } else if (wp.hasDatabaseSpeedConstraint()) {
-            speedConstraint = `{small}${Math.round(wp.definition.speed)}{end}`;
-            spdColor = 'magenta';
+          } else if (wp.type !== 'HM') {
+            if (!inAlternate && fpIndex === targetPlan.originLegIndex) {
+              speedConstraint = Number.isFinite(targetPlan.performanceData.v1.get())
+                ? `{big}${Math.round(targetPlan.performanceData.v1.get())}{end}`
+                : Speed.NoPrediction;
+              spdColor = Number.isFinite(targetPlan.performanceData.v1.get()) ? color : 'white';
+            } else if (isFromLeg) {
+              speedConstraint = Speed.Empty;
+            } else {
+              if (verticalWaypoint && verticalWaypoint.speed) {
+                speedConstraint = `{small}${verticalWaypoint.speed < 1 ? formatMachNumber(verticalWaypoint.speed) : Math.round(verticalWaypoint.speed)}{end}`;
+
+                if (verticalWaypoint.speedConstraint) {
+                  speedPrefix = `${verticalWaypoint.isSpeedConstraintMet ? '{magenta}' : '{amber}'}*{end}`;
+                }
+                spdColor = color;
+              } else if (wp.hasPilotEnteredSpeedConstraint()) {
+                speedConstraint = Math.round(wp.pilotEnteredSpeedConstraint.speed).toString();
+                spdColor = 'magenta';
+              } else if (wp.hasDatabaseSpeedConstraint()) {
+                speedConstraint = `{small}${Math.round(wp.definition.speed)}{end}`;
+                spdColor = 'magenta';
+              }
+            }
           }
         }
 
@@ -412,20 +490,34 @@ export class CDUFlightPlanPage {
         let altitudeConstraint: string = Altitude.NoPrediction;
         let altSize = 'big';
         if (targetPlan.index !== FlightPlanIndex.Temporary) {
-          if (verticalWaypoint && verticalWaypoint.altitude) {
+          if (isPageB) {
+            altitudeConstraint = Wind.NoMagnitudePrediction;
+
+            const windSpeed = mcdu.navigation?.getWindSpeed();
+
+            if (isFromLeg && windSpeed !== null) {
+              altitudeConstraint = Math.round(Math.abs(windSpeed)).toFixed(0).padStart(3, '0');
+              altColor = color;
+            } else if (verticalWaypoint?.windPrediction !== undefined) {
+              altitudeConstraint = formatWindPredictionMagnitude(verticalWaypoint.windPrediction);
+              altColor = color;
+              altSize = isFromLeg ? 'big' : 'small';
+            }
+          } else if (verticalWaypoint && verticalWaypoint.altitude) {
             // Just show prediction
-            let altPrefix = '';
+            let altPrefix = '\xa0';
             if (hasAltConstraint && !isFromLeg) {
               altPrefix = `{big}${verticalWaypoint.isAltitudeConstraintMet ? '{magenta}*{end}' : '{amber}*{end}'}{end}`;
             }
 
-            altitudeConstraint =
-              altPrefix +
-              formatAltitudeOrLevel(mcdu, verticalWaypoint.altitude, useTransitionAltitude).padStart(5, '\xa0');
+            altitudeConstraint = `${altPrefix}${formatAltitudeOrLevel(mcdu, verticalWaypoint.altitude, useTransitionAltitude).padStart(5, '\xa0')}`;
             altColor = color;
             altSize = isFromLeg ? 'big' : 'small';
           } else if (hasAltConstraint) {
-            altitudeConstraint = formatAltConstraint(mcdu, wp.altitudeConstraint, useTransitionAltitude);
+            altitudeConstraint = formatAltConstraint(mcdu, wp.altitudeConstraint, useTransitionAltitude).padStart(
+              6,
+              '\xa0',
+            );
             altColor = 'magenta';
             altSize = wp.hasPilotEnteredAltitudeConstraint() ? 'big' : 'small';
           } else if (inAlternate && fpIndex === targetPlan.alternateFlightPlan.destinationLegIndex) {
@@ -434,7 +526,9 @@ export class CDUFlightPlanPage {
               targetPlan.alternateFlightPlan.destinationRunway &&
               Number.isFinite(targetPlan.alternateFlightPlan.destinationRunway.thresholdCrossingHeight)
             ) {
-              altitudeConstraint = formatAlt(targetPlan.alternateFlightPlan.destinationRunway.thresholdCrossingHeight);
+              altitudeConstraint = formatAlt(
+                targetPlan.alternateFlightPlan.destinationRunway.thresholdCrossingHeight,
+              ).padStart(6, '\xa0');
               altColor = color;
               altSize = 'small';
             } else if (
@@ -442,7 +536,10 @@ export class CDUFlightPlanPage {
               targetPlan.alternateFlightPlan.destinationAirport &&
               Number.isFinite(targetPlan.alternateFlightPlan.destinationAirport.location.alt)
             ) {
-              altitudeConstraint = formatAlt(targetPlan.alternateFlightPlan.destinationAirport.location.alt);
+              altitudeConstraint = formatAlt(targetPlan.alternateFlightPlan.destinationAirport.location.alt).padStart(
+                6,
+                '\xa0',
+              );
               altColor = color;
               altSize = 'small';
             }
@@ -452,14 +549,19 @@ export class CDUFlightPlanPage {
               targetPlan.alternateFlightPlan.originRunway &&
               Number.isFinite(targetPlan.alternateFlightPlan.originRunway.thresholdLocation.alt)
             ) {
-              altitudeConstraint = formatAlt(targetPlan.alternateFlightPlan.originRunway.thresholdLocation.alt);
+              altitudeConstraint = formatAlt(
+                targetPlan.alternateFlightPlan.originRunway.thresholdLocation.alt,
+              ).padStart(6, '\xa0');
               altColor = color;
             } else if (
               legIsAirport(wp) &&
               targetPlan.alternateFlightPlan.originAirport &&
               Number.isFinite(targetPlan.alternateFlightPlan.originAirport.location.alt)
             ) {
-              altitudeConstraint = formatAlt(targetPlan.alternateFlightPlan.originAirport.location.alt);
+              altitudeConstraint = formatAlt(targetPlan.alternateFlightPlan.originAirport.location.alt).padStart(
+                6,
+                '\xa0',
+              );
               altColor = color;
             }
           } else if (!inAlternate && fpIndex === targetPlan.destinationLegIndex) {
@@ -468,7 +570,7 @@ export class CDUFlightPlanPage {
               targetPlan.destinationRunway &&
               Number.isFinite(targetPlan.destinationRunway.thresholdCrossingHeight)
             ) {
-              altitudeConstraint = formatAlt(targetPlan.destinationRunway.thresholdCrossingHeight);
+              altitudeConstraint = formatAlt(targetPlan.destinationRunway.thresholdCrossingHeight).padStart(6, '\xa0');
               altColor = color;
               altSize = 'small';
             } else if (
@@ -476,7 +578,7 @@ export class CDUFlightPlanPage {
               targetPlan.destinationAirport &&
               Number.isFinite(targetPlan.destinationAirport.location.alt)
             ) {
-              altitudeConstraint = formatAlt(targetPlan.destinationAirport.location.alt);
+              altitudeConstraint = formatAlt(targetPlan.destinationAirport.location.alt).padStart(6, '\xa0');
               altColor = color;
               altSize = 'small';
             }
@@ -486,14 +588,14 @@ export class CDUFlightPlanPage {
               targetPlan.originRunway &&
               Number.isFinite(targetPlan.originRunway.thresholdLocation.alt)
             ) {
-              altitudeConstraint = formatAlt(targetPlan.originRunway.thresholdLocation.alt);
+              altitudeConstraint = formatAlt(targetPlan.originRunway.thresholdLocation.alt).padStart(6, '\xa0');
               altColor = color;
             } else if (
               legIsAirport(wp) &&
               targetPlan.originAirport &&
               Number.isFinite(targetPlan.originAirport.location.alt)
             ) {
-              altitudeConstraint = formatAlt(targetPlan.originAirport.location.alt);
+              altitudeConstraint = formatAlt(targetPlan.originAirport.location.alt).padStart(6, '\xa0');
               altColor = color;
             }
           }
@@ -546,11 +648,11 @@ export class CDUFlightPlanPage {
                   CDULateralRevisionPage.ShowPage(mcdu, wp, fpIndex, forPlan, inAlternate);
                   break;
                 case Keypad.clrValue:
-                  CDUFlightPlanPage.clearElement(mcdu, fpIndex, offset, forPlan, inAlternate, scratchpadCallback);
+                  CDUFlightPlanPage.clearElement(mcdu, fpIndex, forPlan, inAlternate, scratchpadCallback);
                   break;
                 case Keypad.ovfyValue:
                   mcdu.toggleWaypointOverfly(fpIndex, forPlan, inAlternate, () => {
-                    CDUFlightPlanPage.ShowPage(mcdu, offset, forPlan);
+                    CDUFlightPlanPage.ShowPage(mcdu, offset, isPageB, forPlan);
                   });
                   break;
                 default:
@@ -565,7 +667,7 @@ export class CDUFlightPlanPage {
                         if (!success) {
                           scratchpadCallback();
                         }
-                        CDUFlightPlanPage.ShowPage(mcdu, offset, forPlan);
+                        CDUFlightPlanPage.ShowPage(mcdu, offset, isPageB, forPlan);
                       },
                       !mcdu.flightPlanService.hasTemporary,
                     );
@@ -581,6 +683,8 @@ export class CDUFlightPlanPage {
             (value, scratchpadCallback) => {
               if (value === '') {
                 CDULateralRevisionPage.ShowPage(mcdu, wp, fpIndex, forPlan, inAlternate);
+                mcdu.efisInterfaces.L.setPlanCentre(targetPlan.index, fpIndex, inAlternate);
+                mcdu.efisInterfaces.R.setPlanCentre(targetPlan.index, fpIndex, inAlternate);
               } else if (value.length > 0) {
                 mcdu.insertWaypoint(
                   value,
@@ -592,7 +696,7 @@ export class CDUFlightPlanPage {
                     if (!success) {
                       scratchpadCallback();
                     }
-                    CDUFlightPlanPage.ShowPage(mcdu, offset, forPlan);
+                    CDUFlightPlanPage.ShowPage(mcdu, offset, isPageB, forPlan);
                   },
                   true,
                 );
@@ -644,26 +748,54 @@ export class CDUFlightPlanPage {
 
         let timeCell: string = Time.NoPrediction;
         let timeColor = 'white';
-        if (!shouldHidePredictions && Number.isFinite(pwp.flightPlanInfo.secondsFromPresent)) {
-          const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
-          timeColor = color;
+        if (isPageB) {
+          if (!shouldHidePredictions && Number.isFinite(pwp.flightPlanInfo.estimatedFuelOnBoard)) {
+            timeCell = `{small}${NXUnits.poundsToUser(pwp.flightPlanInfo.estimatedFuelOnBoard / 1000)
+              .toFixed(1)
+              .padStart(4, '\xa0')}{end}`;
 
-          timeCell = isFlying
-            ? `${FmsFormatters.secondsToUTC(utcTime + pwp.flightPlanInfo.secondsFromPresent)}[s-text]`
-            : `${FmsFormatters.secondsTohhmm(pwp.flightPlanInfo.secondsFromPresent)}[s-text]`;
+            timeColor = color;
+          }
+        } else {
+          if (!shouldHidePredictions && Number.isFinite(pwp.flightPlanInfo.secondsFromPresent)) {
+            timeColor = color;
+
+            timeCell = `${mcdu.getTimePrediction(pwp.flightPlanInfo.secondsFromPresent, forPlan)}[s-text]`;
+          }
         }
 
         let speed: string = Speed.NoPrediction;
         let spdColor = 'white';
-        if (!shouldHidePredictions && Number.isFinite(pwp.flightPlanInfo.speed)) {
-          speed = `{small}${pwp.flightPlanInfo.speed < 1 ? formatMachNumber(pwp.flightPlanInfo.speed) : Math.round(pwp.flightPlanInfo.speed).toFixed(0)}{end}`;
-          spdColor = color;
+
+        if (isPageB) {
+          speed = Wind.NoTrueDegreesPrediction;
+
+          if (!shouldHidePredictions && pwp.flightPlanInfo?.windPrediction !== undefined) {
+            speed = `{small}${formatWindPredictionDirection(pwp.flightPlanInfo.windPrediction)}{end}`;
+            spdColor = color;
+          }
+        } else {
+          if (!shouldHidePredictions && Number.isFinite(pwp.flightPlanInfo.speed)) {
+            speed = `{small}${pwp.flightPlanInfo.speed < 1 ? formatMachNumber(pwp.flightPlanInfo.speed) : Math.round(pwp.flightPlanInfo.speed).toFixed(0)}{end}`;
+            spdColor = color;
+          }
         }
 
         let altitudeConstraint: string = Altitude.NoPrediction;
         let altColor = 'white';
-        if (!shouldHidePredictions && Number.isFinite(pwp.flightPlanInfo.altitude)) {
-          altitudeConstraint = formatAltitudeOrLevel(mcdu, pwp.flightPlanInfo.altitude, useTransitionAltitude);
+
+        if (isPageB) {
+          altitudeConstraint = Wind.NoMagnitudePrediction;
+
+          if (!shouldHidePredictions && pwp.flightPlanInfo?.windPrediction !== undefined) {
+            altitudeConstraint = formatWindPredictionMagnitude(pwp.flightPlanInfo.windPrediction);
+            altColor = color;
+          }
+        } else if (!shouldHidePredictions && Number.isFinite(pwp.flightPlanInfo.altitude)) {
+          altitudeConstraint = formatAltitudeOrLevel(mcdu, pwp.flightPlanInfo.altitude, useTransitionAltitude).padStart(
+            6,
+            '\xa0',
+          );
           altColor = color;
         }
 
@@ -690,6 +822,7 @@ export class CDUFlightPlanPage {
           fixAnnotation: `{${color}}${pwp.mcduHeader || ''}{end}`,
           bearingTrack,
           isOverfly: false,
+          pwp,
         };
 
         addLskAt(
@@ -708,7 +841,7 @@ export class CDUFlightPlanPage {
         addLskAt(rowI, 0, (value, scratchpadCallback) => {
           if (value === Keypad.clrValue) {
             if (marker === Markers.FPLN_DISCONTINUITY) {
-              CDUFlightPlanPage.clearElement(mcdu, fpIndex, offset, forPlan, inAlternate, scratchpadCallback);
+              CDUFlightPlanPage.clearElement(mcdu, fpIndex, forPlan, inAlternate, scratchpadCallback);
             } else {
               mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
               scratchpadCallback();
@@ -740,7 +873,7 @@ export class CDUFlightPlanPage {
               if (!success) {
                 scratchpadCallback();
               }
-              CDUFlightPlanPage.ShowPage(mcdu, offset, forPlan);
+              CDUFlightPlanPage.ShowPage(mcdu, offset, isPageB, forPlan);
             },
             !mcdu.flightPlanService.hasTemporary,
           );
@@ -768,7 +901,7 @@ export class CDUFlightPlanPage {
 
         addLskAt(rowI, 0, (value, scratchpadCallback) => {
           if (value === Keypad.clrValue) {
-            CDUFlightPlanPage.clearElement(mcdu, fpIndex, offset, forPlan, inAlternate, scratchpadCallback);
+            CDUFlightPlanPage.clearElement(mcdu, fpIndex, forPlan, inAlternate, scratchpadCallback);
             return;
           }
 
@@ -781,10 +914,10 @@ export class CDUFlightPlanPage {
           if (isActive) {
             mcdu.fmgcMesssagesListener.triggerToAllSubscribers('A32NX_IMM_EXIT', fpIndex, immExit);
             setTimeout(() => {
-              CDUFlightPlanPage.ShowPage(mcdu, offset, forPlan);
+              CDUFlightPlanPage.ShowPage(mcdu, offset, isPageB, forPlan);
             }, 500);
           } else if (decelReached) {
-            CDUFlightPlanPage.clearElement(mcdu, fpIndex, offset, forPlan, inAlternate, scratchpadCallback);
+            CDUFlightPlanPage.clearElement(mcdu, fpIndex, forPlan, inAlternate, scratchpadCallback);
             return;
           }
           scratchpadCallback();
@@ -827,8 +960,8 @@ export class CDUFlightPlanPage {
       CDUFlightPlanPage.updatePlanCentre(mcdu, waypointsAndMarkers, 0, FlightPlanIndex.Active, 'L');
       CDUFlightPlanPage.updatePlanCentre(mcdu, waypointsAndMarkers, 0, FlightPlanIndex.Active, 'R');
 
-      mcdu.efisInterfaces.L.setSecRelatedPageOpen(false);
-      mcdu.efisInterfaces.R.setSecRelatedPageOpen(false);
+      mcdu.efisInterfaces.L.setSecRelatedPageOpen(null);
+      mcdu.efisInterfaces.R.setSecRelatedPageOpen(null);
 
       mcdu.efisInterfaces.L.setShownFplnLegs(false, false, false);
       mcdu.efisInterfaces.R.setShownFplnLegs(false, false, false);
@@ -849,10 +982,13 @@ export class CDUFlightPlanPage {
         altColor: cAltColor,
         speedConstraint: cSpd,
         altitudeConstraint: cAlt,
+        timeCell: cTime,
         ident: cIdent,
+        pwp: cPwp,
       } = scrollWindow[rowI];
       let spdRpt = false;
       let altRpt = false;
+      let timeRpt = false;
       let showFix = true;
       let showDist = true;
       let showNm = false;
@@ -862,34 +998,51 @@ export class CDUFlightPlanPage {
         scrollText[rowI * 2] = [
           '',
           `{amber}${immExit ? 'IMM\xa0\xa0' : ''}${resumeHold ? 'RESUME\xa0' : ''}{end}`,
-          'HOLD\xa0\xa0\xa0\xa0',
+          isPageB ? '' : 'HOLD\xa0\xa0\xa0\xa0',
         ];
         scrollText[rowI * 2 + 1] = [
           `{${color}}HOLD ${turnDirection}{end}`,
           `{amber}${immExit ? 'EXIT*' : ''}${resumeHold ? 'HOLD*' : ''}{end}`,
-          `\xa0{${color}}{small}{white}SPD{end}\xa0${holdSpeed}{end}{end}`,
+          isPageB ? '' : `\xa0{${color}}{small}{white}SPD{end}\xa0${holdSpeed}{end}{end}`,
         ];
       } else if (!cMarker) {
         // Waypoint
         if (rowI > 0) {
           const {
             marker: pMarker,
-            pwp: pPwp,
             holdResumeExit: pHold,
             speedConstraint: pSpd,
             altitudeConstraint: pAlt,
+            timeCell: pTime,
           } = scrollWindow[rowI - 1];
-          if (!pMarker && !pPwp && !pHold) {
+          if (!pMarker && !pHold) {
             firstWp = Math.min(firstWp, rowI);
             if (rowI === firstWp) {
               showNm = true;
             }
-            if (cSpd !== Speed.NoPrediction && cSpdColor !== 'magenta' && cSpd === pSpd) {
+
+            if (
+              (!cPwp || isPageB) &&
+              cSpd !== Speed.NoPrediction &&
+              cSpd !== Wind.NoTrueDegreesPrediction &&
+              cSpdColor !== 'magenta' &&
+              cSpd === pSpd
+            ) {
               spdRpt = true;
             }
 
-            if (cAlt !== Altitude.NoPrediction && cAltColor !== 'magenta' && cAlt === pAlt) {
+            if (
+              (!cPwp || isPageB) &&
+              cAlt !== Altitude.NoPrediction &&
+              cAlt !== Wind.NoMagnitudePrediction &&
+              cAltColor !== 'magenta' &&
+              cAlt === pAlt
+            ) {
               altRpt = true;
+            }
+
+            if (!cPwp && isPageB && cTime === pTime && cTime !== Efob.NoPrediction && cTime !== Time.NoPrediction) {
+              timeRpt = true;
             }
             // If previous row is a marker, clear all headers unless it's a speed limit
           } else if (!pHold) {
@@ -899,7 +1052,7 @@ export class CDUFlightPlanPage {
         }
 
         scrollText[rowI * 2] = renderFixHeader(scrollWindow[rowI], showNm, showDist, showFix);
-        scrollText[rowI * 2 + 1] = renderFixContent(scrollWindow[rowI], spdRpt, altRpt);
+        scrollText[rowI * 2 + 1] = renderFixContent(scrollWindow[rowI], spdRpt, altRpt, timeRpt, isPageB);
 
         // Marker
       } else {
@@ -917,12 +1070,12 @@ export class CDUFlightPlanPage {
 
       addLskAt(5, 0, async () => {
         mcdu.eraseTemporaryFlightPlan(() => {
-          CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
+          CDUFlightPlanPage.ShowPage(mcdu, 0, isPageB, forPlan);
         });
       });
       addRskAt(5, 0, async () => {
         mcdu.insertTemporaryFlightPlan(() => {
-          CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
+          CDUFlightPlanPage.ShowPage(mcdu, 0, isPageB, forPlan);
         });
       });
     } else {
@@ -954,16 +1107,16 @@ export class CDUFlightPlanPage {
 
           const timeRemaining = fmsGeometryProfile.getTimeToDestination();
           if (Number.isFinite(timeRemaining)) {
-            const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
-
-            destTimeCell = isFlying
-              ? FmsFormatters.secondsToUTC(utcTime + timeRemaining)
-              : FmsFormatters.secondsTohhmm(timeRemaining);
+            destTimeCell = mcdu.getTimePrediction(timeRemaining, forPlan);
           }
         }
       }
 
-      destText[0] = ['\xa0DEST', 'DIST\xa0\xa0EFOB', isFlying ? '\xa0UTC{sp}{sp}{sp}{sp}' : 'TIME{sp}{sp}{sp}{sp}'];
+      destText[0] = [
+        '\xa0DEST',
+        'DIST\xa0\xa0EFOB',
+        `${mcdu.getTimePredictionHeader(forPlan).padStart(4, '\xa0')}{sp}{sp}{sp}{sp}`,
+      ];
       destText[1] = [
         destCell,
         `{small}${destDistCell.padStart(4, '\xa0')}\xa0${destEFOBCell.padStart(5, '\xa0')}{end}`,
@@ -974,7 +1127,12 @@ export class CDUFlightPlanPage {
         5,
         () => mcdu.getDelaySwitchPage(),
         () => {
+          mcdu.returnPageCallback = () => {
+            CDUFlightPlanPage.ShowDestinationPage(mcdu, isPageB, forPlan);
+          };
           CDULateralRevisionPage.ShowPage(mcdu, targetPlan.destinationLeg, targetPlan.destinationLegIndex, forPlan);
+          mcdu.efisInterfaces.L.setPlanCentre(targetPlan.index, targetPlan.destinationLegIndex, false);
+          mcdu.efisInterfaces.R.setPlanCentre(targetPlan.index, targetPlan.destinationLegIndex, false);
         },
       );
 
@@ -982,17 +1140,19 @@ export class CDUFlightPlanPage {
         5,
         () => mcdu.getDelaySwitchPage(),
         () => {
-          CDUVerticalRevisionPage.ShowPage(
-            mcdu,
-            targetPlan.destinationLeg,
-            targetPlan.destinationLegIndex,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            forPlan,
-            false,
-          );
+          if (isLeg(targetPlan.destinationLeg)) {
+            CDUVerticalRevisionPage.ShowPage(
+              mcdu,
+              targetPlan.destinationLeg,
+              targetPlan.destinationLegIndex,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              forPlan,
+              false,
+            );
+          }
         },
       );
     }
@@ -1022,7 +1182,7 @@ export class CDUFlightPlanPage {
         } else {
           offset = destinationAirportOffset;
         }
-        CDUFlightPlanPage.ShowPage(mcdu, offset, forPlan);
+        CDUFlightPlanPage.ShowPage(mcdu, offset, isPageB, forPlan);
       };
       mcdu.onDown = () => {
         // on page down decrement the page offset.
@@ -1033,7 +1193,7 @@ export class CDUFlightPlanPage {
           // else go to the bottom
           offset = waypointsAndMarkers.length - 1;
         }
-        CDUFlightPlanPage.ShowPage(mcdu, offset, forPlan);
+        CDUFlightPlanPage.ShowPage(mcdu, offset, isPageB, forPlan);
       };
       mcdu.onUp = () => {
         if (offset < waypointsAndMarkers.length - 1) {
@@ -1043,12 +1203,18 @@ export class CDUFlightPlanPage {
           // else go on top
           offset = 0;
         }
-        CDUFlightPlanPage.ShowPage(mcdu, offset, forPlan);
+        CDUFlightPlanPage.ShowPage(mcdu, offset, isPageB, forPlan);
       };
     }
+
+    mcdu.onNextPage = () => CDUFlightPlanPage.ShowPage(mcdu, offset, !isPageB, forPlan);
+    mcdu.onPrevPage = () => CDUFlightPlanPage.ShowPage(mcdu, offset, !isPageB, forPlan);
+
     mcdu.setArrows(allowScroll, allowScroll, true, true);
-    scrollText[0][1] = 'SPD/ALT\xa0\xa0\xa0';
-    scrollText[0][2] = isFlying ? '\xa0UTC{sp}{sp}{sp}{sp}' : 'TIME{sp}{sp}{sp}{sp}';
+    scrollText[0][1] = isPageB ? '{sp}{sp}{sp}T.WIND{sp}' : 'SPD/ALT{sp}{sp}{sp}';
+    scrollText[0][2] = isPageB
+      ? '{sp}EFOB{sp}{sp}{sp}'
+      : `${mcdu.getTimePredictionHeader(forPlan).padStart(4, '\xa0')}{sp}{sp}{sp}{sp}`;
 
     if (!showFrom) {
       fromHeader.update('');
@@ -1060,7 +1226,6 @@ export class CDUFlightPlanPage {
   static async clearElement(
     mcdu: LegacyFmsPageInterface,
     fpIndex: number,
-    offset: number,
     forPlan: number,
     forAlternate: boolean,
     scratchpadCallback: () => void,
@@ -1096,7 +1261,7 @@ export class CDUFlightPlanPage {
       scratchpadCallback();
     }
 
-    CDUFlightPlanPage.ShowPage(mcdu, offset, forPlan);
+    mcdu.returnPageCallback();
   }
 
   static ensureCanClearElement(
@@ -1122,7 +1287,7 @@ export class CDUFlightPlanPage {
     if (forPlan === FlightPlanIndex.Active && !forAlternate && fpIndex <= mcdu.flightPlanService.activeLegIndex) {
       // 22-72-00:67
       // Stop clearing TO or FROM waypoints when NAV is engaged
-      if (mcdu.navModeEngaged()) {
+      if (mcdu.isNavModeEngaged()) {
         mcdu.setScratchpadMessage(NXSystemMessages.notAllowedInNav);
         scratchpadCallback();
         return false;
@@ -1225,6 +1390,8 @@ function renderFixContent(
   },
   spdRepeat = false,
   altRepeat = false,
+  timeRepeat = false,
+  isPageB = false,
 ) {
   const {
     ident,
@@ -1239,17 +1406,29 @@ function renderFixContent(
     timeColor,
   } = rowObj;
 
+  const spdRepeatStr = isPageB ? '\xa0"\xa0\xa0' : '\xa0"\xa0';
+  const altRepeatSr = isPageB ? '\xa0"\xa0' : '\xa0\xa0\xa0"\xa0\xa0';
+  const slashStr = isPageB && altRepeat ? '\xa0' : '/';
+
   return [
     `${ident}${isOverfly ? Keypad.ovfyValue : ''}[color]${color}`,
-    `{${spdColor}}${spdRepeat ? '\xa0"\xa0' : speedConstraint}{end}{${altColor}}{${altSize}}/${altRepeat ? '\xa0\xa0\xa0"\xa0\xa0' : altitudeConstraint.padStart(6, '\xa0')}{end}{end}`,
-    `${timeCell}{sp}{sp}{sp}{sp}[color]${timeColor}`,
+    `{${spdColor}}${spdRepeat ? spdRepeatStr : speedConstraint}{end}{${altColor}}{${altSize}}${slashStr}${altRepeat ? altRepeatSr : altitudeConstraint}{end}{end}`,
+    `${timeRepeat ? '"\xa0' : timeCell}${isPageB ? '{sp}{sp}' : '{sp}{sp}{sp}{sp}'}[color]${timeColor}`,
   ];
 }
 
-function emptyFplnPage(forPlan) {
+function emptyFplnPage(forPlan: FlightPlanIndex, isPageB = false) {
   return [
-    ['', 'SPD/ALT{sp}{sp}{sp}', 'TIME{sp}{sp}{sp}{sp}'],
-    [`PPOS[color]${forPlan === 0 ? 'green' : 'white'}`, '{sp}{sp}{sp}/ -----', '----{sp}{sp}{sp}{sp}'],
+    [
+      '',
+      isPageB ? '{sp}{sp}{sp}T.WIND{sp}' : 'SPD/ALT{sp}{sp}{sp}',
+      isPageB ? '{sp}EFOB{sp}{sp}{sp}' : 'TIME{sp}{sp}{sp}{sp}',
+    ],
+    [
+      `PPOS[color]${forPlan === FlightPlanIndex.Active ? 'green' : 'white'}`,
+      '{sp}{sp}{sp}/ -----',
+      '----{sp}{sp}{sp}{sp}',
+    ],
     [''],
     ['---F-PLN DISCONTINUITY---'],
     [''],
@@ -1301,11 +1480,11 @@ function legHasAltConstraint(leg: FlightPlanLeg): boolean {
 }
 
 function legIsRunway(leg: FlightPlanLeg): boolean {
-  return leg.definition && leg.definition.waypointDescriptor === 4;
+  return leg.definition && leg.definition.waypointDescriptor === WaypointDescriptor.Runway;
 }
 
 function legIsAirport(leg: FlightPlanLeg): boolean {
-  return leg.definition && leg.definition.waypointDescriptor === 1;
+  return leg.definition && leg.definition.waypointDescriptor === WaypointDescriptor.Airport;
 }
 
 /**
@@ -1334,30 +1513,6 @@ function formatAltitudeOrLevel(mcdu: LegacyFmsPageInterface, alt: number, useTra
   return formatAlt(alt);
 }
 
-function formatTrack(from: FlightPlanLeg, to: { definition: { waypoint: { location: LatLongData }; type: string } }) {
-  // TODO: Does this show something for non-waypoint terminated legs?
-  if (
-    !from ||
-    !from.definition ||
-    !from.definition.waypoint ||
-    !from.definition.waypoint.location ||
-    !to ||
-    !to.definition ||
-    !to.definition.waypoint ||
-    to.definition.type === 'HM'
-  ) {
-    return '';
-  }
-
-  const magVar = Facilities.getMagVar(from.definition.waypoint.location.lat, from.definition.waypoint.location.long);
-  const tr = Avionics.Utils.computeGreatCircleHeading(
-    from.definition.waypoint.location,
-    to.definition.waypoint.location,
-  );
-  const track = A32NX_Util.trueToMagnetic(tr, magVar);
-  return `TRK${track.toFixed(0).padStart(3, '0')}\u00b0`;
-}
-
 /**
  * Formats a numberical altitude to a string to be displayed in the altitude column. Does not format FLs, use {@link formatAltitudeOrLevel} for this purpose
  * @param alt The altitude to format
@@ -1367,11 +1522,7 @@ function formatAlt(alt: number): string {
   return (Math.round(alt / 10) * 10).toFixed(0);
 }
 
-function formatAltConstraint(
-  mcdu: LegacyFmsPageInterface,
-  constraint: { altitudeDescriptor: AltitudeDescriptor; altitude1: number; altitude2: number },
-  useTransAlt: boolean,
-) {
+function formatAltConstraint(mcdu: LegacyFmsPageInterface, constraint: AltitudeConstraint, useTransAlt: boolean) {
   if (!constraint) {
     return '';
   }

@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -19,7 +19,7 @@ import {
 import { PathVector, pathVectorLength, pathVectorPoint } from '@fmgc/guidance/lnav/PathVector';
 import { CALeg } from '@fmgc/guidance/lnav/legs/CA';
 import { isCourseReversalLeg, isHold } from '@fmgc/guidance/lnav/legs';
-import { maxBank } from '@fmgc/guidance/lnav/CommonGeometry';
+import { getRollAnticipationDistance, maxBank } from '@fmgc/guidance/lnav/CommonGeometry';
 import { CILeg } from '@fmgc/guidance/lnav/legs/CI';
 import { CRLeg } from '@fmgc/guidance/lnav/legs/CR';
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
@@ -490,19 +490,7 @@ export class Geometry {
 
     // TODO consider case where RAD > transition distance
 
-    return Geometry.getRollAnticipationDistance(gs, phiNominalFrom, phiNominalTo);
-  }
-
-  static getRollAnticipationDistance(gs: Knots, bankA: Degrees, bankB: Degrees): NauticalMiles {
-    // calculate delta phi
-    const deltaPhi = Math.abs(bankA - bankB);
-
-    // calculate RAD
-    const maxRollRate = 5; // deg / s, TODO picked off the wind
-    const k2 = 0.0038;
-    const rad = ((gs / 3600) * (Math.sqrt(1 + (2 * k2 * 9.81 * deltaPhi) / maxRollRate) - 1)) / (k2 * 9.81);
-
-    return rad;
+    return getRollAnticipationDistance(gs, phiNominalFrom, phiNominalTo);
   }
 
   getDistanceToGo(activeLegIdx: number, ppos: LatLongAlt): number | undefined {
@@ -554,12 +542,13 @@ export class Geometry {
   }
 
   /**
-   * Calculate leg distances and cumulative distances for all flight plan legs
+   * Updates the Calculated data like leg distances and cumulative distances for all flight plan legs.
    * @param plan the flight plan
    */
-  updateDistances(plan: BaseFlightPlan, fromIndex: number, toIndex: number): void {
+  updateCalculatedData(plan: BaseFlightPlan, fromIndex: number, toIndex: number): void {
     let cumulativeDistance = 0;
     let cumulativeDistanceWithTransitions = 0;
+    let lastCoordinates: Coordinates | undefined = undefined;
 
     const flightPlanLegs = plan.allLegs;
 
@@ -568,8 +557,12 @@ export class Geometry {
       const flightPlanLeg = flightPlanLegs[i];
       const geometryLeg = this.legs.get(i);
 
-      if (i === fromIndex || i === plan.firstMissedApproachLegIndex) {
-        this.initializeCalculatedDistances(flightPlanLeg, geometryLeg);
+      if (i === fromIndex) {
+        this.initializeCalculatedData(flightPlanLeg, geometryLeg);
+
+        if (geometryLeg?.terminationCoordinates) {
+          lastCoordinates = geometryLeg.terminationCoordinates;
+        }
       } else if (flightPlanLeg.isDiscontinuity === true) {
         const directDistance = this.computeDistanceInDiscontinuity(i);
 
@@ -594,7 +587,7 @@ export class Geometry {
         cumulativeDistanceWithTransitions += distanceWithTransitions;
 
         if (!flightPlanLeg.calculated) {
-          this.initializeCalculatedDistances(flightPlanLeg, geometryLeg);
+          this.initializeCalculatedData(flightPlanLeg, geometryLeg);
         }
 
         flightPlanLeg.calculated.distance = distance;
@@ -603,6 +596,15 @@ export class Geometry {
         flightPlanLeg.calculated.cumulativeDistanceWithTransitions = cumulativeDistanceWithTransitions;
         flightPlanLeg.calculated.cumulativeDistanceToEnd = undefined;
         flightPlanLeg.calculated.cumulativeDistanceToEndWithTransitions = undefined;
+        flightPlanLeg.calculated.outboundTrack = geometryLeg.outboundCourse;
+
+        if (geometryLeg.terminationCoordinates) {
+          if (lastCoordinates) {
+            flightPlanLeg.calculated.trueTrack = bearingTo(lastCoordinates, geometryLeg.terminationCoordinates);
+          }
+
+          lastCoordinates = geometryLeg.terminationCoordinates;
+        }
 
         geometryLeg.calculated = flightPlanLeg.calculated;
       }
@@ -612,7 +614,7 @@ export class Geometry {
     this.reflowDistancesToEnd(plan, cumulativeDistance, cumulativeDistanceWithTransitions, fromIndex, toIndex);
   }
 
-  private initializeCalculatedDistances(flightPlanLeg: FlightPlanElement, geometryLeg: Leg) {
+  private initializeCalculatedData(flightPlanLeg: FlightPlanElement, geometryLeg: Leg) {
     if (flightPlanLeg.isDiscontinuity === true) {
       return;
     }
@@ -627,6 +629,7 @@ export class Geometry {
         cumulativeDistanceToEnd: undefined,
         cumulativeDistanceToEndWithTransitions: undefined,
         endsInTooSteepPath: false,
+        outboundTrack: undefined,
       };
     }
     flightPlanLeg.calculated.distance = 0;

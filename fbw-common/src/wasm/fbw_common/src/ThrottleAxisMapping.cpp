@@ -66,6 +66,10 @@ void ThrottleAxisMapping::setOnGround() {
   }
 }
 
+void ThrottleAxisMapping::setHasReverser(bool value) {
+  hasReverser = value;
+}
+
 double ThrottleAxisMapping::getValue() {
   return currentValue;
 }
@@ -253,8 +257,7 @@ void ThrottleAxisMapping::setCurrentValue(double value) {
     newTLA = thrustLeverAngleMapping.get(value);
   }
 
-  // ensure not in reverse when in flight
-  if (inFlight) {
+  if (!hasReverser) {
     newTLA = fmax(TLA_IDLE, newTLA);
   }
 

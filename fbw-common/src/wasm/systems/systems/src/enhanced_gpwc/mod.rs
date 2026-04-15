@@ -1,5 +1,4 @@
 use crate::{
-    accept_iterable,
     enhanced_gpwc::navigation_display::NavigationDisplay,
     shared::{
         arinc429::{Arinc429Word, SignStatus},
@@ -331,6 +330,10 @@ mod tests {
 
         fn nose_up_and_locked(&self) -> bool {
             !self.gear_down
+        }
+
+        fn left_down_and_locked(&self) -> bool {
+            self.gear_down
         }
     }
 
