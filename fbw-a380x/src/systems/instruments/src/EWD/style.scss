@@ -467,6 +467,10 @@ text, tspan, span {
   color: $display-white;
 }
 
+.EclLine.Red {
+  color: $display-red;
+}
+
 .EclLine.Selected {
   border: 3px solid $display-cyan;
   border-right: 3px solid transparent;

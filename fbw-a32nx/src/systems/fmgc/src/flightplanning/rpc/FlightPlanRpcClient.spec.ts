@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, it, vi } from 'vitest';
 import { FlightPlanRemoteClientRpcEvents, FlightPlanRpcClient } from '@fmgc/flightplanning/rpc/FlightPlanRpcClient';
 import { testEventBus } from '@fmgc/flightplanning/test/TestEventBus';
-import { A320FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import { A320FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/A320FlightPlanPerformanceData';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { FlightPlanServerRpcEvents } from '@fmgc/flightplanning/rpc/FlightPlanRpcServer';
 
