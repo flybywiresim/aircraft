@@ -41,9 +41,8 @@ import { XFLeg } from './lnav/legs/XF';
 import { VMLeg } from './lnav/legs/VM';
 import { ConsumerValue, EventBus } from '@microsoft/msfs-sdk';
 import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
-import { A32NX_Util } from '../../../shared/src/A32NX_Util';
 import { FlightPlanLegFlags, isLeg } from '../flightplanning/legs/FlightPlanLeg';
-import { distanceTo } from 'msfs-geo';
+import { AbeamPointUtils } from '../flightplanning/AbeamPointUtils';
 
 // How often the (milliseconds)
 const GEOMETRY_RECOMPUTATION_TIMER = 5_000;
@@ -556,52 +555,17 @@ export class GuidanceController {
       // Insert abeam points in reverse order to make sure the leg index stays correct if we have
       // multiple abeam points on the same leg
       // TODO make this more robust
-      for (let i = plan.abeamPointRequests.length - 1; i >= 0; i--) {
-        const request = plan.abeamPointRequests[i];
-        const res = plan.locateAbeamPoint(geometry, request.referenceFix, request.endLeg);
+      while (plan.abeamPointRequests.length > 0) {
+        const request = plan.abeamPointRequests.pop();
 
-        if (res === undefined) {
-          console.log(
-            `[FMS/FPM] Not creating abeam point for ${request.referenceFix.ident} because no suitable location was found`,
-          );
-          continue;
+        const res = AbeamPointUtils.locateAbeamPoint(request.referenceFix, plan, geometry, request.endLegIndex);
+
+        if (res !== undefined) {
+          const [legIndex, location] = res;
+
+          plan.insertAbeamPoint(legIndex, location, request.referenceFix);
         }
-
-        const [legIndex, location] = res;
-
-        const prevLeg = plan.maybeElementAt(legIndex - 1);
-        const refLeg = plan.maybeElementAt(legIndex);
-
-        if (isLeg(refLeg)) {
-          const termination = refLeg.terminationWaypoint();
-
-          if (termination !== null) {
-            if (distanceTo(location, termination.location) <= 1) {
-              console.log(
-                `[FMS/FPM] Not creating abeam point for ${request.referenceFix.ident} because it is too close to ${refLeg.ident}`,
-              );
-              continue;
-            }
-          }
-        }
-
-        if (isLeg(prevLeg)) {
-          const termination = prevLeg.terminationWaypoint();
-
-          if (termination !== null) {
-            if (distanceTo(location, termination.location) <= 1) {
-              console.log(
-                `[FMS/FPM] Not creating abeam point for ${request.referenceFix.ident} because it is too close to ${prevLeg.ident}`,
-              );
-              continue;
-            }
-          }
-        }
-
-        plan.insertAbeamPoint(legIndex, location, request.referenceFix);
       }
-
-      plan.abeamPointRequests.length = 0;
     }
   }
 

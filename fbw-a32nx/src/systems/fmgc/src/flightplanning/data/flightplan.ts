@@ -77,5 +77,5 @@ export interface StepData {
 
 export type AbeamPointRequest = {
   referenceFix: Readonly<Fix>;
-  endLeg?: number;
+  endLegIndex?: number;
 };

@@ -51,6 +51,7 @@ import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 import { NavigationDatabaseService } from '../flightplanning/NavigationDatabaseService';
 import { NavGeometryProfile } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { FlightPlanSegment } from '../flightplanning/segments/FlightPlanSegment';
+import { AbeamPointUtils } from '../flightplanning/AbeamPointUtils';
 
 /**
  * A map edit area in nautical miles, [ahead, behind, beside].
@@ -947,7 +948,7 @@ export class EfisSymbols<T extends number> {
         let radials = fixInfo.radials?.map((it) => it.trueBearing);
 
         if (fixInfo.abeam !== undefined) {
-          const result = flightPlan.locateAbeamPoint(geometry, fixInfo.fix);
+          const result = AbeamPointUtils.locateAbeamPoint(fixInfo.fix, flightPlan, geometry);
 
           if (result !== undefined) {
             fixInfo.abeam.lat = result[1].lat;
