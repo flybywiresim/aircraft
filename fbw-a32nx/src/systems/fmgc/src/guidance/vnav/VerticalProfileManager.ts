@@ -763,26 +763,6 @@ export class VerticalProfileManager {
         return ProfilePhase.Climb;
     }
   }
-
-  shouldShowLatDiscontinuityAhead(): boolean {
-    if (!this.fcuModes.isInNavMode()) {
-      return false;
-    }
-
-    const lastLegIndexBeforeDiscontinuity = this.flightPlanService.active?.getLastLegIndexBeforeDiscontinuity();
-    if (lastLegIndexBeforeDiscontinuity !== undefined && lastLegIndexBeforeDiscontinuity !== null) {
-      const vnavPrediction = this.mcduProfile?.waypointPredictions.get(lastLegIndexBeforeDiscontinuity);
-      if (vnavPrediction) {
-        return vnavPrediction.secondsFromPresent < 30;
-      } else {
-        // Fallback to the TO WPT ETA in case VNAV predictions are not available, e.g. missed approach
-        if (lastLegIndexBeforeDiscontinuity === this.flightPlanService.active.activeLegIndex) {
-          return (this.guidanceController.getActiveLegSecondsToGo() ?? Infinity) < 30;
-        }
-      }
-    }
-    return false;
-  }
 }
 
 class FcuModeObserver {
@@ -878,9 +858,5 @@ class FcuModeObserver {
     const { fcuVerticalMode } = this.observer.get();
 
     return this.VERT_SELECTED_MODES.includes(fcuVerticalMode);
-  }
-
-  public isInNavMode(): boolean {
-    return this.observer.get().fcuLateralMode === LateralMode.NAV;
   }
 }

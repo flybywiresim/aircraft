@@ -605,7 +605,22 @@ export class VnavDriver implements GuidanceComponent {
   }
 
   shouldShowLatDiscontinuityAhead(): boolean {
-    return this.profileManager.shouldShowLatDiscontinuityAhead();
+    if (this.computationParametersObserver.get().fcuLateralMode !== LateralMode.NAV) {
+      return false;
+    }
+    const lastLegIndexBeforeDiscontinuity = this.flightPlanService.active?.getLastLegIndexBeforeDiscontinuity();
+    if (lastLegIndexBeforeDiscontinuity !== undefined && lastLegIndexBeforeDiscontinuity !== null) {
+      const vnavPrediction = this.mcduProfile?.waypointPredictions.get(lastLegIndexBeforeDiscontinuity);
+      if (vnavPrediction) {
+        return vnavPrediction.secondsFromPresent < 30;
+      } else {
+        // Fallback to the TO WPT ETA in case VNAV predictions are not available, e.g. missed approach
+        if (lastLegIndexBeforeDiscontinuity === this.flightPlanService.active.activeLegIndex) {
+          return (this.guidanceController.getActiveLegSecondsToGo() ?? Infinity) < 30;
+        }
+      }
+    }
+    return false;
   }
 
   shouldShowTooSteepPathAhead(): boolean {
