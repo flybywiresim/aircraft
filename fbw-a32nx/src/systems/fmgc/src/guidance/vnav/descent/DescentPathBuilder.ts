@@ -9,7 +9,6 @@ import { SpeedProfile } from '@fmgc/guidance/vnav/climb/SpeedProfile';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
 import { GeometricPathBuilder } from '@fmgc/guidance/vnav/descent/GeometricPathBuilder';
-import { HeadwindProfile } from '@fmgc/guidance/vnav/wind/HeadwindProfile';
 import { TemporaryCheckpointSequence } from '@fmgc/guidance/vnav/profile/TemporaryCheckpointSequence';
 import { AltitudeConstraint, AltitudeDescriptor, ConstraintUtils, MathUtils } from '@flybywiresim/fbw-sdk';
 import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
@@ -40,7 +39,6 @@ export class DescentPathBuilder {
     sequence: TemporaryCheckpointSequence,
     profile: BaseGeometryProfile,
     speedProfile: SpeedProfile,
-    windProfile: HeadwindProfile,
     cruiseAltitude: Feet,
     toDistance: NauticalMiles = -Infinity,
   ) {
@@ -51,10 +49,10 @@ export class DescentPathBuilder {
     const idleSequence = new TemporaryCheckpointSequence(decelPoint);
 
     this.idlePathBuilder.buildIdlePath(
+      profile,
       idleSequence,
       profile.descentSpeedConstraints,
       speedProfile,
-      windProfile,
       cruiseAltitude,
       toDistance,
     );
@@ -98,20 +96,14 @@ export class DescentPathBuilder {
 
         // Execute
         geometricSequence.reset(geometricSequence.at(0));
-        this.geometricPathBuilder.executeGeometricSegments(
-          geometricSequence,
-          geometricSegments,
-          profile,
-          speedProfile,
-          windProfile,
-        );
+        this.geometricPathBuilder.executeGeometricSegments(geometricSequence, geometricSegments, profile, speedProfile);
 
         idleSequence.reset(geometricSequence.lastCheckpoint);
         this.idlePathBuilder.buildIdlePath(
+          profile,
           idleSequence,
           profile.descentSpeedConstraints,
           speedProfile,
-          windProfile,
           cruiseAltitude,
           toDistance,
         );

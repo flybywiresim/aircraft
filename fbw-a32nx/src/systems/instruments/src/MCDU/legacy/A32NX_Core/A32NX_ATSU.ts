@@ -47,6 +47,7 @@ const lbsToKg = (value) => {
 
 /**
  * Fetch SimBrief OFP data and store on FMCMainDisplay object
+ * FIXME consolidate with fbw-common/src/systems/shared/src/simbrief/simbriefParser.ts
  */
 export const getSimBriefOfp = (
   // TODO fix this type

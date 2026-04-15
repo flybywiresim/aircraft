@@ -18,6 +18,7 @@ import { ReadonlyPendingAirways } from '@fmgc/flightplanning/plans/ReadonlyPendi
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { Coordinates } from 'msfs-geo';
 import { Geometry } from '../../guidance/Geometry';
+import { PropagatedWindEntry } from '../data/wind';
 
 export interface ReadonlyFlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> {
   get index(): number;
@@ -123,6 +124,8 @@ export interface ReadonlyFlightPlan<P extends FlightPlanPerformanceData = Flight
   glideslopeIntercept(): number | undefined;
 
   get performanceData(): P;
+
+  propagateWindsAt(atIndex: number, result: PropagatedWindEntry[], maxNumEntries: number): PropagatedWindEntry[];
 
   locateAbeamPoint(geometry: Geometry, referenceFix: Fix, endLeg: number): [number, Coordinates] | undefined;
 }

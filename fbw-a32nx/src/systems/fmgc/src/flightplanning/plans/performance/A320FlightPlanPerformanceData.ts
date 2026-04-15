@@ -1,17 +1,17 @@
-﻿// @ts-strict-ignore
-// Copyright (c) 2021-2026 FlyByWire Simulations
+﻿// Copyright (c) 2021-2026 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
 import { MathUtils } from '@flybywiresim/fbw-sdk';
-import { MappedSubject, MutableSubscribable, Subject, Subscription } from '@microsoft/msfs-sdk';
+import { MappedSubject, MutableSubscribable, Subject, Subscription, Vec2Math } from '@microsoft/msfs-sdk';
 import {
   DefaultPerformanceData,
   FlightPlanPerformanceData,
   FlightPlanPerformanceDataProperties,
   SerializedFlightPlanPerformanceData,
 } from './FlightPlanPerformanceData';
+import { FlightPlanWindEntry, WindVector } from '../../data/wind';
 
 // TODO this should remain in fbw-a32nx/ once FMS is moved to fbw-common
 export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData {
@@ -113,12 +113,29 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
     cloned.approachTemperature.set(this.approachTemperature.get());
     cloned.approachWindDirection.set(this.approachWindDirection.get());
     cloned.approachWindMagnitude.set(this.approachWindMagnitude.get());
+    cloned.isApproachWindPilotEntered.set(this.isApproachWindPilotEntered.get());
     cloned.pilotVapp.set(this.pilotVapp.get());
     cloned.approachBaroMinimum.set(this.approachBaroMinimum.get());
     cloned.approachRadioMinimum.set(this.approachRadioMinimum.get());
     cloned.approachFlapsThreeSelected.set(this.approachFlapsThreeSelected.get());
     cloned.estimatedTakeoffTime.set(this.estimatedTakeoffTime.get());
     cloned.estimatedTakeoffTimeExpired.set(this.estimatedTakeoffTimeExpired.get());
+
+    cloned.climbWindEntries.set(
+      this.climbWindEntries.get().map(({ vector, ...rest }) => ({
+        vector: Vec2Math.copy(vector, Vec2Math.create()),
+        ...rest,
+      })),
+    );
+    cloned.descentWindEntries.set(
+      this.descentWindEntries.get().map(({ vector, ...rest }) => ({
+        vector: Vec2Math.copy(vector, Vec2Math.create()),
+        ...rest,
+      })),
+    );
+
+    const alternateWind = this.alternateWind.get();
+    cloned.alternateWind.set(alternateWind !== null ? Vec2Math.copy(alternateWind, Vec2Math.create()) : null);
 
     return cloned;
   }
@@ -805,6 +822,12 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
   readonly approachWindMagnitude = Subject.create<number | null>(null);
 
   /**
+   * Whether the wind magnitude and direction were entered by the pilot, false if no entry has been made or if the wind
+   * has been automatically transferred from a descent wind entry at ground level
+   */
+  readonly isApproachWindPilotEntered = Subject.create<boolean>(false);
+
+  /**
    * The approach speed Vapp manually overridden by the pilot in knots, or null if not set.
    */
   readonly pilotVapp = Subject.create<number | null>(null);
@@ -823,6 +846,21 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
    * Whether the flaps three setting is selected by the pilot for the approach
    */
   readonly approachFlapsThreeSelected = Subject.create<boolean>(false);
+
+  /**
+   * The wind entries for the climb segment entered by the pilot
+   */
+  readonly climbWindEntries = Subject.create<FlightPlanWindEntry[]>([]);
+
+  /**
+   * The wind entries for the descent segment entered by the pilot
+   */
+  readonly descentWindEntries = Subject.create<FlightPlanWindEntry[]>([]);
+
+  /**
+   * The average wind vector for the alternate flight plan, or null if not set.
+   */
+  readonly alternateWind = Subject.create<WindVector | null>(null);
 
   readonly estimatedTakeoffTime = Subject.create<number | null>(null);
 
@@ -894,10 +932,14 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
       approachTemperature: this.approachTemperature.get(),
       approachWindDirection: this.approachWindDirection.get(),
       approachWindMagnitude: this.approachWindMagnitude.get(),
+      isApproachWindPilotEntered: this.isApproachWindPilotEntered.get(),
       pilotVapp: this.pilotVapp.get(),
       approachBaroMinimum: this.approachBaroMinimum.get(),
       approachRadioMinimum: this.approachRadioMinimum.get(),
       approachFlapsThreeSelected: this.approachFlapsThreeSelected.get(),
+      climbWindEntries: this.climbWindEntries.get(),
+      descentWindEntries: this.descentWindEntries.get(),
+      alternateWind: this.alternateWind.get(),
       estimatedTakeoffTime: this.estimatedTakeoffTime.get(),
       estimatedTakeoffTimeExpired: this.estimatedTakeoffTimeExpired.get(),
     };

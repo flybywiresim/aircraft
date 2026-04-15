@@ -137,6 +137,10 @@
       "A380X.TOOLTIPS.OIT_SIDE_NSS_FLTOPS": "OIT side set to FLT OPS (charts, performance calc., OFP)",
       "A380X.TOOLTIPS.OIT_LAPTOP_POWER_ON": "Laptop used for OIT FLT OPS is switched on",
       "A380X.TOOLTIPS.OIT_LAPTOP_POWER_OFF": "Laptop used for OIT FLT OPS is switched off",
+      "A380X.TOOLTIPS.REMOTE_CB_CTRL_ON": "Turn ON the remote C/B Controller",
+      "A380X.TOOLTIPS.REMOTE_CB_CTRL_OFF": "Turn OFF the remote C/B Controller",
+      "A380X.TOOLTIPS.RCDR_AUTO": "Set the recorders to AUTO",
+      "A380X.TOOLTIPS.RCDR_ON": "Manually set the recorders to ON",
 
       "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "Adjust selected heading to the left (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
       "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "Adjust selected heading to the right  (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)"

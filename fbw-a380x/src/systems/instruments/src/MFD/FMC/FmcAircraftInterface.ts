@@ -1138,17 +1138,15 @@ export class FmcAircraftInterface {
   getVAppGsMini() {
     let vAppTarget = this.fmgc.data.approachVapp.get() ?? SimVar.GetSimVarValue('L:A32NX_SPEEDS_F', 'number');
     let towerHeadwind = 0;
-    const appWind = {
-      direction: this.flightPlanService.active.performanceData.approachWindDirection.get() ?? 0,
-      speed: this.flightPlanService.active.performanceData.approachWindMagnitude.get() ?? 0,
-    };
+    const appWindDirection = this.flightPlanService.active.performanceData.approachWindDirection.get() ?? 0;
+    const appWindSpeed = this.flightPlanService.active.performanceData.approachWindMagnitude.get() ?? 0;
+
     const destRwy = this.fmgc.getDestinationRunway();
-    if (appWind !== null) {
-      if (destRwy) {
-        towerHeadwind = A380SpeedsUtils.getHeadwind(appWind.speed, appWind.direction, destRwy.magneticBearing);
-      }
-      vAppTarget = A380SpeedsUtils.getVtargetGSMini(vAppTarget, A380SpeedsUtils.getHeadWindDiff(towerHeadwind));
+    if (destRwy) {
+      towerHeadwind = A380SpeedsUtils.getHeadwind(appWindSpeed, appWindDirection, destRwy.magneticBearing);
     }
+    vAppTarget = A380SpeedsUtils.getVtargetGSMini(vAppTarget, A380SpeedsUtils.getHeadWindDiff(towerHeadwind));
+
     return vAppTarget;
   }
 

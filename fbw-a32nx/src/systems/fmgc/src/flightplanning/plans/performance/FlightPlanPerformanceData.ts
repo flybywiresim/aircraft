@@ -1,10 +1,10 @@
-// @ts-strict-ignore
 // Copyright (c) 2021-2022 2026 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
 import { MutableSubscribable, Subscribable } from '@microsoft/msfs-sdk';
+import { FlightPlanWindEntry, WindVector } from '../../data/wind';
 
 export interface FlightPlanPerformanceData {
   /**
@@ -527,6 +527,12 @@ export interface FlightPlanPerformanceData {
   readonly approachWindMagnitude: MutableSubscribable<number | null>;
 
   /**
+   * Whether the wind magnitude and direction were entered by the pilot, false if no entry has been made or if the wind
+   * has been automatically transferred from a descent wind entry at ground level
+   */
+  readonly isApproachWindPilotEntered: MutableSubscribable<boolean>;
+
+  /**
    * The approach speed Vapp manually overridden by the pilot in knots, or null if not set.
    */
   readonly pilotVapp: MutableSubscribable<number | null>;
@@ -545,6 +551,21 @@ export interface FlightPlanPerformanceData {
    * Whether the flaps three setting is selected by the pilot for the approach
    */
   readonly approachFlapsThreeSelected: MutableSubscribable<boolean>;
+
+  /**
+   * The wind entries for the climb segment entered by the pilot
+   */
+  readonly climbWindEntries: MutableSubscribable<FlightPlanWindEntry[]>;
+
+  /**
+   * The wind entries for the descent segment entered by the pilot
+   */
+  readonly descentWindEntries: MutableSubscribable<FlightPlanWindEntry[]>;
+
+  /**
+   * The average wind vector for the alternate flight plan, or null if not set.
+   */
+  readonly alternateWind: MutableSubscribable<WindVector | null>;
 
   /** Estimated takeoff time timestamp, in unix epoch milliseconds */
   readonly estimatedTakeoffTime: MutableSubscribable<number | null>;
@@ -730,10 +751,16 @@ export interface SerializedFlightPlanPerformanceData {
   approachTemperature: number | null;
   approachWindDirection: number | null;
   approachWindMagnitude: number | null;
+  isApproachWindPilotEntered: boolean;
   pilotVapp: number | null;
   approachBaroMinimum: number | null;
   approachRadioMinimum: 'NO DH' | number | null;
   approachFlapsThreeSelected: boolean;
+
+  climbWindEntries: FlightPlanWindEntry[];
+  descentWindEntries: FlightPlanWindEntry[];
+  alternateWind: WindVector | null;
+
   estimatedTakeoffTime: number | null;
   estimatedTakeoffTimeExpired: boolean | null;
   // A380 specific

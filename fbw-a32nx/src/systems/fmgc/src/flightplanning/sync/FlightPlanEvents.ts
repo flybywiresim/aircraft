@@ -14,6 +14,7 @@ import {
 import { SerializedFlightPlanSegment } from '@fmgc/flightplanning/segments/FlightPlanSegment';
 import { FlightPlanBatch } from '@fmgc/flightplanning/plans/FlightPlanBatch';
 import { PendingAirwayEntry } from '@fmgc/flightplanning/plans/ReadonlyPendingAirways';
+import { WindEntry } from '../data/wind';
 
 export interface FlightPlanSyncEvent {
   syncClientID: number;
@@ -92,6 +93,11 @@ export interface FlightPlanPendingAirwaysEditEvent extends FlightPlanEditSyncEve
   elements: PendingAirwayEntry[];
 }
 
+export interface FlightPlanCruiseWindsEditEvent extends FlightPlanEditSyncEvent {
+  atIndex: number;
+  newCruiseWinds: WindEntry[];
+}
+
 export type PerformanceDataFlightPlanSyncEvents<P extends FlightPlanPerformanceData> = {
   [k in keyof FlightPlanPerformanceDataProperties as `flightPlan.setPerformanceData.${k & string}`]: PerformanceDataSetEvent<
     P[k]
@@ -123,6 +129,7 @@ export interface FlightPlanEvents {
   'flightPlan.requestFixInfoAbeamPoint': FlightPlanRequestFixInfoAbeamEvent;
   'flightPlan.setFlightNumber': FlightPlanFlightNumberEditEvent;
   'flightPlan.pendingAirwaysEdit': FlightPlanPendingAirwaysEditEvent;
+  'flightPlan.setCruiseWinds': FlightPlanCruiseWindsEditEvent;
 }
 
 /**

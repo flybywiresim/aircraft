@@ -124,12 +124,7 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
 
     const shortApproachName = procedure ? ApproachUtils.shortApproachName(procedure) : '';
 
-    if (
-      airport &&
-      approachLegs.length === 0 &&
-      this.flightPlan.destinationAirport &&
-      this.flightPlan.destinationSegment.destinationRunway
-    ) {
+    if (airport && runway && approachLegs.length === 0) {
       const cf = FlightPlanLeg.destinationExtendedCenterline(this, runway);
 
       legs.push(cf);
