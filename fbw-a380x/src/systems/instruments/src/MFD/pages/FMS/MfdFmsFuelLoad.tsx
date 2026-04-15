@@ -230,7 +230,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
       );
       const destEfob = this.props.fmcService.master.fmgc.getDestEFOB(true, this.loadedFlightPlanIndex.get());
       if (destEfob !== null) {
-        this.destEfob.set(destEfob, UnitType.KILOGRAM);
+        this.destEfob.set(destEfob * 1000, UnitType.KILOGRAM);
       } else {
         this.destEfob.set(NaN);
       }
@@ -357,7 +357,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
 
           this.flightPlanPerfSubs.push(
             this.loadedFlightPlan.performanceData.zeroFuelWeight.pipe(this.zeroFuelWeight, (v) =>
-              v === null ? NaN : v * 1000,
+              v === null ? null : v * 1000,
             ),
             this.loadedFlightPlan.performanceData.zeroFuelWeightCenterOfGravity.pipe(
               this.zeroFuelWeightCenterOfGravity,
