@@ -1262,7 +1262,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
         );
       }
       this.destEta.set(destEta);
-      this.destEfob.set(this.props.fmcService.master.fmgc.getDestEFOB(true, fpIndex)?.toFixed(1) ?? '---.-');
+      const destEfob = this.props.fmcService.master.fmgc.getDestEFOB(true, fpIndex);
+      this.destEfob.set(destEfob === null ? NaN : destEfob * 1000);
     }
 
     if (selectedTabIndex === FlightPhaseTabIndex.Descent) {
@@ -2775,9 +2776,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         amber: this.destEfobAmber,
                       }}
                     >
-                      {this.destEfob}
+                      {this.destEfobFormatted}
                     </span>
-                    <span class="mfd-label-unit mfd-unit-trailing">T</span>
+                    <span class="mfd-label-unit mfd-unit-trailing">{this.weightUnitText}</span>
                   </div>
                   <div style="display: flex; flex-direction: row;">
                     <Button
@@ -3019,9 +3020,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         amber: this.destEfobAmber,
                       }}
                     >
-                      {this.destEfob}
+                      {this.destEfobFormatted}
                     </span>
-                    <span class="mfd-label-unit mfd-unit-trailing">T</span>
+                    <span class="mfd-label-unit mfd-unit-trailing">{this.weightUnitText}</span>
                   </div>
                   <div style="display: flex; flex-direction: row;">
                     <Button
