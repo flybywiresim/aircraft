@@ -27,6 +27,7 @@ export interface NearbyAirportFacility extends NearbyFacility {
    * The airport magvar in degrees, or null when the airport is true referenced.
    */
   magVar: number | null;
+  sectionCode: SectionCode.Airport;
 }
 
 export interface NearbyVhfFacility extends NearbyFacility {

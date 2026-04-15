@@ -241,6 +241,7 @@ export class NearbyFacilityCache {
 
     if (this.pendingRequests.has(msfsFac.icao)) {
       const nearbyFac: NearbyAirportFacility = {
+        sectionCode: SectionCode.Airport,
         databaseId: msfsFac.icao,
         type: NearbyFacilityType.Airport,
         location: { lat: msfsFac.lat, long: msfsFac.lon, alt: msfsFac.altitude / 0.3048 },
