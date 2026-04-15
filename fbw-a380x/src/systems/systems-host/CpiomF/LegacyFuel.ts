@@ -163,6 +163,10 @@ export class LegacyFuel implements Instrument {
       if (!this.triggerActive(8)) this.toggleTrigger(8);
       if (!this.triggerActive(9)) this.toggleTrigger(9);
       if (!this.triggerActive(10)) this.toggleTrigger(10);
+      // set all inner and mid transfer states to false since there is no fuel in those tanks to transfer
+      for (let i = 1; i < 5; i++) {
+        this.innerAndMidTransfersActiveForFeedTank.set(i, false);
+      }
     } else if (this.rightInnerTankQty.get() >= 0.1 || this.leftInnerTankQty.get() >= 0.1) {
       // inner tanks arent empty
 
@@ -263,6 +267,10 @@ export class LegacyFuel implements Instrument {
         (Math.abs(this.feed1TankQty.get() - this.feed4TankQty.get()) >= 3 && this.triggerActive(5))
       ) {
         this.toggleTrigger(5);
+        if (!this.triggerActive(5)) {
+          this.innerAndMidTransfersActiveForFeedTank.set(1, true);
+          this.innerAndMidTransfersActiveForFeedTank.set(4, true);
+        }
       }
       if (
         (Math.abs(this.feed2TankQty.get() - this.feed3TankQty.get()) < 2 &&
@@ -273,6 +281,10 @@ export class LegacyFuel implements Instrument {
         (Math.abs(this.feed2TankQty.get() - this.feed3TankQty.get()) >= 3 && this.triggerActive(6))
       ) {
         this.toggleTrigger(6);
+        if (!this.triggerActive(6)) {
+          this.innerAndMidTransfersActiveForFeedTank.set(2, true);
+          this.innerAndMidTransfersActiveForFeedTank.set(3, true);
+        }
       }
       if (
         (this.feed1TankQty.get() > 6765 && !this.triggerActive(7)) ||
@@ -357,6 +369,10 @@ export class LegacyFuel implements Instrument {
           this.triggerActive(18))
       ) {
         this.toggleTrigger(18);
+        if (!this.triggerActive(18)) {
+          this.innerAndMidTransfersActiveForFeedTank.set(1, true);
+          this.innerAndMidTransfersActiveForFeedTank.set(3, true);
+        }
       }
       if (
         (this.feed1TankQty.get() < 6765 &&
@@ -371,6 +387,10 @@ export class LegacyFuel implements Instrument {
           this.triggerActive(19))
       ) {
         this.toggleTrigger(19);
+        if (!this.triggerActive(19)) {
+          this.innerAndMidTransfersActiveForFeedTank.set(1, true);
+          this.innerAndMidTransfersActiveForFeedTank.set(2, true);
+        }
       }
       if (
         (this.feed2TankQty.get() < 6765 &&
@@ -385,6 +405,10 @@ export class LegacyFuel implements Instrument {
           this.triggerActive(20))
       ) {
         this.toggleTrigger(20);
+        if (!this.triggerActive(20)) {
+          this.innerAndMidTransfersActiveForFeedTank.set(2, true);
+          this.innerAndMidTransfersActiveForFeedTank.set(4, true);
+        }
       }
       if (
         (this.feed3TankQty.get() < 6765 &&
@@ -399,6 +423,10 @@ export class LegacyFuel implements Instrument {
           this.triggerActive(21))
       ) {
         this.toggleTrigger(21);
+        if (!this.triggerActive(21)) {
+          this.innerAndMidTransfersActiveForFeedTank.set(3, true);
+          this.innerAndMidTransfersActiveForFeedTank.set(4, true);
+        }
       }
       if (
         (this.feed1TankQty.get() < 1974 && !this.triggerActive(24) && !this.triggerActive(34)) ||
@@ -435,6 +463,10 @@ export class LegacyFuel implements Instrument {
         (Math.abs(this.feed1TankQty.get() - this.feed3TankQty.get()) >= 3 && this.triggerActive(28))
       ) {
         this.toggleTrigger(28);
+        if (!this.triggerActive(28)) {
+          this.trimTransfersActiveForFeedTank.set(1, true);
+          this.trimTransfersActiveForFeedTank.set(3, true);
+        }
       }
       if (
         (Math.abs(this.feed1TankQty.get() - this.feed2TankQty.get()) < 2 &&
@@ -443,6 +475,10 @@ export class LegacyFuel implements Instrument {
         (Math.abs(this.feed1TankQty.get() - this.feed2TankQty.get()) >= 3 && this.triggerActive(29))
       ) {
         this.toggleTrigger(29);
+        if (!this.triggerActive(29)) {
+          this.trimTransfersActiveForFeedTank.set(1, true);
+          this.trimTransfersActiveForFeedTank.set(2, true);
+        }
       }
       if (
         (Math.abs(this.feed2TankQty.get() - this.feed4TankQty.get()) < 2 &&
@@ -451,6 +487,10 @@ export class LegacyFuel implements Instrument {
         (Math.abs(this.feed2TankQty.get() - this.feed4TankQty.get()) >= 3 && this.triggerActive(30))
       ) {
         this.toggleTrigger(30);
+        if (!this.triggerActive(30)) {
+          this.trimTransfersActiveForFeedTank.set(2, true);
+          this.trimTransfersActiveForFeedTank.set(4, true);
+        }
       }
       if (
         (Math.abs(this.feed3TankQty.get() - this.feed4TankQty.get()) < 2 &&
@@ -459,6 +499,10 @@ export class LegacyFuel implements Instrument {
         (Math.abs(this.feed3TankQty.get() - this.feed4TankQty.get()) >= 3 && this.triggerActive(31))
       ) {
         this.toggleTrigger(31);
+        if (!this.triggerActive(31)) {
+          this.trimTransfersActiveForFeedTank.set(3, true);
+          this.trimTransfersActiveForFeedTank.set(4, true);
+        }
       }
       if (
         (Math.abs(this.feed1TankQty.get() - this.feed4TankQty.get()) < 2 &&
@@ -467,6 +511,10 @@ export class LegacyFuel implements Instrument {
         (Math.abs(this.feed1TankQty.get() - this.feed4TankQty.get()) >= 3 && this.triggerActive(32))
       ) {
         this.toggleTrigger(32);
+        if (!this.triggerActive(32)) {
+          this.trimTransfersActiveForFeedTank.set(1, true);
+          this.trimTransfersActiveForFeedTank.set(4, true);
+        }
       }
       if (
         (Math.abs(this.feed2TankQty.get() - this.feed3TankQty.get()) < 2 &&
@@ -475,6 +523,10 @@ export class LegacyFuel implements Instrument {
         (Math.abs(this.feed2TankQty.get() - this.feed3TankQty.get()) >= 3 && this.triggerActive(33))
       ) {
         this.toggleTrigger(33);
+        if (!this.triggerActive(33)) {
+          this.trimTransfersActiveForFeedTank.set(2, true);
+          this.trimTransfersActiveForFeedTank.set(3, true);
+        }
       }
       if (
         (this.feed1TankQty.get() < 1316 && !this.triggerActive(35)) ||
