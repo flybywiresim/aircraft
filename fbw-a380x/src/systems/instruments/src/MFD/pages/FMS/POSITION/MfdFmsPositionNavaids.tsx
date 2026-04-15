@@ -490,7 +490,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                       showArrow
                       menuItems={Subject.create([{ label: 'DATA NAVAID', action: () => {} }])}
                       idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_dataNavaid`}
-                      disabled={Subject.create(true)}
+                      disabled={true}
                       buttonStyle="min-width: 107px;"
                     />
                   </div>
@@ -505,7 +505,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                       showArrow
                       menuItems={Subject.create([{ label: 'DATA NAVAID', action: () => {} }])}
                       idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_dataNavaid`}
-                      disabled={Subject.create(true)}
+                      disabled={true}
                       buttonStyle="min-width: 107px;"
                     />
                   </div>
@@ -520,7 +520,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                       showArrow
                       menuItems={Subject.create([{ label: 'DATA NAVAID', action: () => {} }])}
                       idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_dataNavaid`}
-                      disabled={Subject.create(true)}
+                      disabled={true}
                       buttonStyle="min-width: 107px;"
                     />
                   </div>
@@ -703,7 +703,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                     <span style="display: flex; align-items: center; justify-content: center;">*</span>
                   </div>
                 }
-                disabled={Subject.create(true)}
+                disabled={true}
                 onClick={() => {
                   this.deselectGlide();
                 }}

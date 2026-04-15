@@ -270,7 +270,7 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
               label="DATABASE"
               onClick={() => console.warn('DATABASE HOLD NOT IMPLEMENTED')}
               buttonStyle="padding: 20px; margin: 5px;"
-              disabled={Subject.create(true)}
+              disabled={true}
             />
             <Button
               label="COMPUTED"

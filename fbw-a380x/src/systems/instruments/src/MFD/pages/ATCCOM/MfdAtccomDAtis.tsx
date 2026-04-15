@@ -51,14 +51,13 @@ export class MfdAtccomDAtis extends DisplayComponent<MfdAtccomDAtisProps> {
           <div class="mfd-atccom-datis-footer">
             <Button
               label="PRINT<br/>ALL"
-              disabled={Subject.create(true)}
+              disabled={true}
               onClick={() => {}}
               buttonStyle="width: 190px;"
               containerStyle="position:absolute; top: 3px; right:190px"
             />
             <Button
               label="UPDATE<br/>ALL"
-              disabled={Subject.create(false)}
               onClick={() => {
                 this.props.atcService.updateAllAtis();
               }}

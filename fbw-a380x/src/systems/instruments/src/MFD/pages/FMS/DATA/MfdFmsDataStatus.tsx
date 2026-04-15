@@ -139,12 +139,7 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
                   {`${AirlineModifiableInformation.EK.perfFactor >= 0 ? '+' : '-'}${AirlineModifiableInformation.EK.perfFactor.toFixed(1)}`}
                 </span>
                 <div style="display: flex; justify-content: center;">
-                  <Button
-                    label="MODIFY"
-                    onClick={() => {}}
-                    disabled={Subject.create(true)}
-                    buttonStyle="width: 125px;"
-                  />
+                  <Button label="MODIFY" onClick={() => {}} disabled={true} buttonStyle="width: 125px;" />
                 </div>
               </div>
               <div class="mfd-data-status-performance-row" style="width:380px; margin-bottom: 10px;">

@@ -560,7 +560,12 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private readonly destEta = Subject.create<string>('--:--');
 
-  private readonly destEfob = Subject.create<string>('---.-');
+  private readonly destEfob = NumberUnitSubject.create(UnitType.KILOGRAM.createNumber(NaN));
+  private readonly destEfobFormatted = MappedSubject.create(
+    ([value, weightUnit]) => this.weightFormatter(value.asUnit(weightUnit) / 1000),
+    this.destEfob,
+    this.weightUnit,
+  );
 
   private readonly cruisePreselectedSpeed = Subject.create<number | null>(null);
 
@@ -1948,7 +1953,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         condition={this.toPageInactive}
                         componentIfFalse={
                           <Button
-                            disabled={Subject.create(true)}
+                            disabled={true}
                             label="NOISE"
                             onClick={() => {
                               this.props.flightPlanInterface.setPerformanceData(
@@ -2039,7 +2044,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       componentIfFalse={
                         <Button
                           label="CPNY T.O<br />REQUEST"
-                          disabled={Subject.create(true)}
+                          disabled={true}
                           onClick={() => console.log('CPNY T.O REQUEST')}
                           buttonStyle="padding-left: 30px; padding-right: 30px"
                         />
@@ -2445,7 +2450,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       condition={this.toPageInactive}
                       componentIfFalse={
                         <Button
-                          disabled={Subject.create(true)}
+                          disabled={true}
                           label="NOISE"
                           onClick={() => {
                             this.props.flightPlanInterface.setPerformanceData(
@@ -2782,7 +2787,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   </div>
                   <div style="display: flex; flex-direction: row;">
                     <Button
-                      disabled={Subject.create(true)}
+                      disabled={true}
                       label="CMS"
                       onClick={() =>
                         this.props.mfd.uiService.navigateTo(
@@ -2792,7 +2797,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       buttonStyle="margin-right: 10px;"
                     />
                     <Button
-                      disabled={Subject.create(false)}
                       label="STEP ALTs"
                       onClick={() =>
                         this.props.mfd.uiService.navigateTo(

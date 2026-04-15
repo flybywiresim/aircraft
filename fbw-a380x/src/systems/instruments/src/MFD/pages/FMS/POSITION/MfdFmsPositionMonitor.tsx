@@ -620,7 +620,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
           <div class="fr space-between">
             <Button
               label="POSITION <br /> UPDATE"
-              disabled={Subject.create(true)}
+              disabled={true}
               onClick={() => {}}
               buttonStyle="width: 138px; height:59px; margin-top:18px;"
             />
@@ -699,7 +699,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
               />
               <Button
                 label="GNSS"
-                disabled={Subject.create(true)}
+                disabled={true}
                 onClick={() => this.props.mfd.uiService.navigateTo('fms/position/gnss')}
                 buttonStyle="margin-right: 5px; width:133px; height:43px;"
               />

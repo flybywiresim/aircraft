@@ -252,7 +252,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
             {/* FSM Status Message Button */}
             <Button
               label={this.messageStatusLabel}
-              disabled={Subject.create(false)}
+              disabled={false}
               onClick={() => {}}
               visible={this.statusButtonVisible}
               highlighted={Subject.create(true)}
@@ -261,7 +261,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
             />
             <Button
               label="UPDATE<br/>OR PRINT"
-              disabled={Subject.create(false)}
+              disabled={false}
               onClick={() => {}}
               visible={this.combinedMenuVisible}
               buttonStyle="width: 159px; padding-left: 5px; padding-top: 3px; padding-bottom: 3px;"
@@ -315,7 +315,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
         <div>
           <Button
             label=">>>"
-            disabled={Subject.create(false)}
+            disabled={false}
             visible={this.readMoreVisible}
             onClick={() => {
               this.props.data.lastReadAtis = this.atisCode.get();
