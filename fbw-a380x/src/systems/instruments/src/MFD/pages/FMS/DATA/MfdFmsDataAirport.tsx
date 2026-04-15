@@ -1,6 +1,14 @@
 // Copyright (c) 2024-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
-import { FSComponent, Subject, UnitType, VNode } from '@microsoft/msfs-sdk';
+import {
+  FSComponent,
+  MappedSubject,
+  NumberFormatter,
+  NumberUnitSubject,
+  Subject,
+  UnitType,
+  VNode,
+} from '@microsoft/msfs-sdk';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 
@@ -31,6 +39,11 @@ interface SimplifiedRunway {
 
 export class MfdFmsDataAirport extends FmsPage<MfdFmsDataAirportProps> {
   private readonly useMetric = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT');
+  private readonly lengthUnitText = this.useMetric.map((v) => (v ? 'M' : 'FT'));
+  private readonly lengthFormatter = NumberFormatter.create({
+    nanString: '-----',
+    precision: 1,
+  });
 
   private readonly selectedPageIndex = Subject.create<number>(0);
   private readonly runwayButtonListRef = FSComponent.createRef<HTMLDivElement>();
@@ -44,7 +57,12 @@ export class MfdFmsDataAirport extends FmsPage<MfdFmsDataAirportProps> {
   private readonly runwayIdent = Subject.create<string | null>(null);
   private readonly runwayCoords = Subject.create<string | null>(null);
   private readonly runwayElevation = Subject.create<string | null>(null);
-  private readonly runwayLength = Subject.create<number | null>(null);
+  private readonly runwayLength = NumberUnitSubject.create(UnitType.METER.createNumber(NaN));
+  private readonly runwayLengthFormatted = MappedSubject.create(
+    ([value, useMetric]) => this.lengthFormatter(value.asUnit(useMetric ? UnitType.METER : UnitType.FOOT)),
+    this.runwayLength,
+    this.useMetric,
+  );
   private readonly runwayCourse = Subject.create<string | null>(null);
   private readonly runwayLsIdent = Subject.create<string | undefined>(undefined);
 
@@ -76,7 +94,7 @@ export class MfdFmsDataAirport extends FmsPage<MfdFmsDataAirportProps> {
         <Button
           label={label}
           onClick={() => this.selectedRunwayIndex.set(index)}
-          buttonStyle="width: 220px; margin-bottom: 5px; margin-top: 5px; height: 40px; margin-left: 10px;"
+          buttonStyle="width: 220px; margin-bottom: 5px; margin-top: 5px; height: 40px; margin-left: 10px; white-space: nowrap"
         />,
         this.runwayButtonListRef.instance,
       );
@@ -95,7 +113,7 @@ export class MfdFmsDataAirport extends FmsPage<MfdFmsDataAirportProps> {
     this.runwayIdent.set(runwayData.designation.padEnd(3));
     this.runwayCoords.set(runwayData.coords);
     this.runwayElevation.set(runwayData.elevation);
-    this.runwayLength.set(runwayData.length);
+    this.runwayLength.set(runwayData.length ?? NaN);
     this.runwayCourse.set(runwayData.course);
     this.runwayLsIdent.set(runwayData.lsIdent);
 
@@ -192,6 +210,8 @@ export class MfdFmsDataAirport extends FmsPage<MfdFmsDataAirportProps> {
           this.selectedPageIndex.set(1);
         }
       }, true),
+      this.lengthUnitText,
+      this.runwayLengthFormatted,
     );
   }
 
@@ -316,8 +336,8 @@ export class MfdFmsDataAirport extends FmsPage<MfdFmsDataAirportProps> {
                           style="min-width: 120px;"
                         >
                           <div>
-                            <span class="mfd-value bigger"> {this.runwayLength}</span>
-                            <span class="mfd-label-unit mfd-unit-trailing">{'M'}</span>
+                            <span class="mfd-value bigger"> {this.runwayLengthFormatted}</span>
+                            <span class="mfd-label-unit mfd-unit-trailing">{this.lengthUnitText}</span>
                           </div>
                           <div class="mfd-label mfd-data-airport-runway-field-course">
                             <span class="mfd-value bigger">{this.runwayCourse}</span>
