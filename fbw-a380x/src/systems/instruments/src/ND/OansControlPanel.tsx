@@ -810,13 +810,13 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                   <div ref={this.mapDataMainRef} class="oans-cp-map-data-main">
                     <div class="oans-cp-map-data-main-2">
                       <Button
-                        label={this.crossExistsForEntity.map((e) => (e ? <>DEL CROSS</> : <>ADD CROSS</>))}
+                        label={this.crossExistsForEntity.map((e) => (e ? 'DEL CROSS' : 'ADD CROSS'))}
                         onClick={() => this.handleCrossButton()}
                         buttonStyle="flex: 1"
                         disabled={this.entityIsNotSelected}
                       />
                       <Button
-                        label={this.flagExistsForEntity.map((e) => (e ? <>DEL FLAG</> : <>ADD FLAG</>))}
+                        label={this.flagExistsForEntity.map((e) => (e ? 'DEL FLAG' : 'ADD FLAG'))}
                         onClick={() => this.handleFlagButton()}
                         buttonStyle="flex: 1; margin-left: 10px; margin-right: 10px"
                         disabled={this.entityIsNotSelected}
@@ -830,9 +830,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                     </div>
                     <div class="oans-cp-map-data-main-center">
                       <Button
-                        label={this.selectedEntityString.map((s) => (
-                          <>`CENTER MAP ON ${s}`</>
-                        ))}
+                        label={this.selectedEntityString.map((s) => `CENTER MAP ON ${s}`)}
                         onClick={() => {
                           if (this.selectedEntityPosition) {
                             this.props.bus
@@ -991,7 +989,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                   </div>
                   <div class="oans-cp-arpt-sel-fms">
                     <Button
-                      label={this.fmsDataStore.origin.map((it) => (it ? <>{it}</> : <>ORIGIN</>))}
+                      label={this.fmsDataStore.origin.map((it) => it ?? 'ORIGIN')}
                       onClick={() => {
                         const airport = this.fmsDataStore.origin.get();
                         if (airport) {
@@ -1002,7 +1000,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                       buttonStyle="width: 100px;"
                     />
                     <Button
-                      label={this.fmsDataStore.destination.map((it) => (it ? <>{it}</> : <>DEST</>))}
+                      label={this.fmsDataStore.destination.map((it) => it ?? 'DEST')}
                       onClick={() => {
                         const airport = this.fmsDataStore.destination.get();
                         if (airport) {
@@ -1013,7 +1011,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                       buttonStyle="width: 100px;"
                     />
                     <Button
-                      label={this.fmsDataStore.alternate.map((it) => (it ? <>{it}</> : <>ALTN</>))}
+                      label={this.fmsDataStore.alternate.map((it) => it ?? 'ALTN')}
                       onClick={() => {
                         const airport = this.fmsDataStore.alternate.get();
                         if (airport) {
