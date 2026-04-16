@@ -108,9 +108,10 @@
 1. [A380X/OVHD] Fix GND CTL Pushbutton activating REMOTE C/B CTL - @BravoMike99 (bruno_pt99)
 1. [A380X/MODEL] Unlink CKPT DOOR LCKG SYS and OXYGEN RESET buttons - @Jonny23787 (Jonathan)
 1. [A380X/MODEL] Match animation speed of GND HYD buttons to other overhead buttons - @Jonny23787 (Jonathan)
-2. [A32NX/FMS] Improve accuracy of WIND/TEMP page layout - @BlueberryKing (BlueberryKing)
-3. [A32NX/FMS] Fully incorporate WIND page entries into performance predictions - @BlueberryKing (BlueberryKing)
-4. [A380X/MFD] Added support for the US Units option - MikioDK (Mikio), @tracernz (Mike)
+1. [A32NX/FMS] Improve accuracy of WIND/TEMP page layout - @BlueberryKing (BlueberryKing)
+1. [A32NX/FMS] Fully incorporate WIND page entries into performance predictions - @BlueberryKing (BlueberryKing)
+1. [A32NX/FMS] Implement `ONLY SPD ENTRY ALLOWED` message - @BlueberryKing (BlueberryKing)
+1. [A380X/MFD] Added support for the US Units option - MikioDK (Mikio), @tracernz (Mike)
 
 ## 0.14.0
 
