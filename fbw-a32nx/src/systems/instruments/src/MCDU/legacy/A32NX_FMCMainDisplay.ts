@@ -3687,24 +3687,31 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       return true;
     }
 
-    const SPD_REGEX = /\d{1,3}/;
-    if (s.match(SPD_REGEX) === null) {
+    const MACH_OR_SPD_REGEX = /^(\.\d{1,2}|\d{1,3})$/;
+    if (s.match(MACH_OR_SPD_REGEX) === null) {
       this.setScratchpadMessage(NXSystemMessages.formatError);
       return false;
     }
 
-    const spd = parseInt(s);
-    if (!Number.isFinite(spd)) {
+    const v = parseFloat(s);
+    if (!Number.isFinite(v)) {
       this.setScratchpadMessage(NXSystemMessages.formatError);
       return false;
     }
 
+    if (v > 0 && v < 1) {
+      this.setScratchpadMessage(NXSystemMessages.onlySpdEntryAllowed);
+      return false;
+    }
+
+    const spd = Math.round(v);
     if (spd < 100 || spd > 350) {
       this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
       return false;
     }
 
     this.flightPlanService.setPerformanceData('preselectedClimbSpeed', spd, forPlan);
+
     if (isNextPhase) {
       this.updatePreSelSpeedMach(spd);
     }
