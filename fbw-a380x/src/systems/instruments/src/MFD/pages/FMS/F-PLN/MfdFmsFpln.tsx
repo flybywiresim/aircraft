@@ -430,17 +430,17 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           const transLevelAsAlt = transLevel !== null && transLevel !== undefined ? transLevel * 100 : null;
           const useTransLevel = i >= this.loadedFlightPlan.lastEnrouteLegIndex;
           const firstMissedApproachLegIndex = this.loadedAlternateFlightPlan?.firstMissedApproachLegIndex ?? 0;
+          const isMissedApproachWaypoint = isAltn
+            ? i >= firstMissedApproachLegIndex
+            : i >= this.loadedFlightPlan.firstMissedApproachLegIndex;
           const isHM = leg.type === LegType.HM;
           if (isHM) {
             const loadedFpIndex = this.loadedFlightPlanIndex.get();
             const holdData: FplnLineHoldDisplayData = {
               type: FplnLineType.HoldHm,
               originalLegIndex: i,
-              isPseudoWaypoint: false,
               isAltnWaypoint: isAltn,
-              isMissedAppchWaypoint: isAltn
-                ? i >= firstMissedApproachLegIndex
-                : i >= this.loadedFlightPlan.firstMissedApproachLegIndex,
+              isMissedAppchWaypoint: isMissedApproachWaypoint,
               ident: leg.definition.turnDirection === TurnDirection.Left ? 'HOLD L' : 'HOLD R',
               distFromLastWpt: leg.definition.length ?? null,
               holdSpeed: this.props.fmcService.master?.acInterface.getLegHoldingSpeed(i, loadedFpIndex) ?? null,
@@ -471,9 +471,8 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             originalLegIndex: isAltn ? i - this.loadedFlightPlan.legCount : i,
             isPseudoWaypoint: false,
             isAltnWaypoint: isAltn,
-            isMissedAppchWaypoint: isAltn
-              ? i >= firstMissedApproachLegIndex
-              : i >= this.loadedFlightPlan.firstMissedApproachLegIndex,
+            isActiveHold: isHM && i === this.loadedFlightPlan.activeLegIndex,
+            isMissedAppchWaypoint: isMissedApproachWaypoint,
             ident: leg.ident,
             overfly: leg.definition.overfly,
             annotation: annotation,
@@ -573,7 +572,11 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
           flags |= FplnLineFlags.BeforeSpecial;
         }
         if (this.loadedFlightPlan) {
-          if (drawIndex === this.loadedFlightPlan.activeLegIndex || (isHold(lineData) && lineData.isActiveLeg)) {
+          if (
+            drawIndex === this.loadedFlightPlan.activeLegIndex ||
+            (isWaypoint(lineData) && lineData.isActiveHold) || // When we are flying a HM, both the HOLD leg and the hold fix are displayed as white.
+            (isHold(lineData) && lineData.isActiveLeg)
+          ) {
             flags |= FplnLineFlags.IsActiveLeg;
           } else if (drawIndex === this.loadedFlightPlan.activeLegIndex - 1) {
             flags |= FplnLineFlags.BeforeActiveLeg;
@@ -1328,6 +1331,7 @@ export interface FplnLineWaypointDisplayData extends FplnLineTypeDiscriminator {
   isPseudoWaypoint: boolean;
   isAltnWaypoint: boolean;
   isMissedAppchWaypoint: boolean;
+  isActiveHold?: boolean;
   ident: string;
   overfly: boolean;
   annotation: string;
@@ -1351,7 +1355,6 @@ export interface FplnLineWaypointDisplayData extends FplnLineTypeDiscriminator {
 
 interface FplnLineHoldDisplayData extends FplnLineTypeDiscriminator {
   // type: FplnLineType.Hold;
-  isPseudoWaypoint: boolean;
   isAltnWaypoint: boolean;
   isMissedAppchWaypoint: boolean;
   ident: string;
