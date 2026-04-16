@@ -1,4 +1,3 @@
-// import { usePersistentProperty } from '@instruments/common/persistence';
 import { useSimVar } from '@instruments/common/simVars';
 import { EngineNumber, IgnitionActive, Position } from '@instruments/common/types';
 import React, { FC } from 'react';
@@ -12,6 +11,7 @@ import { NXUnits } from '@flybywiresim/fbw-sdk';
 
 interface EngineColumnProps {
   anyEngineRunning: boolean;
+  useMetric: boolean;
 }
 
 const EngineColumn: FC<Position & EngineNumber & IgnitionActive & EngineColumnProps> = ({
