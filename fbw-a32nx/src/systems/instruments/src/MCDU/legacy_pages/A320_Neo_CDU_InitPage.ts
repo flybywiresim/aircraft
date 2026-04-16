@@ -47,9 +47,6 @@ export class CDUInitPage {
 
     const haveFlightPlan = plan.originAirport && plan.destinationAirport;
 
-    const allowWindsOnSecondary = false; // TODO
-    const shouldEnableWindOption = allowWindsOnSecondary || forPlan !== FlightPlanIndex.FirstSecondary;
-
     const coRoute = new Column(
       0,
       haveFlightPlan ? '' : isForPrimary ? '__________' : '[\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0]',
@@ -281,13 +278,13 @@ export class CDUInitPage {
               .catch((error) => {
                 console.error(error);
                 mcdu.logTroubleshootingError(error);
-                mcdu.setScratchpadMessage(NXSystemMessages.invalidFplnUplink);
+                mcdu.addMessageToQueue(NXSystemMessages.invalidFplnUplink);
               });
           })
           .catch((error) => {
             console.error(error);
             mcdu.logTroubleshootingError(error);
-            mcdu.setScratchpadMessage(NXSystemMessages.invalidFplnUplink);
+            mcdu.addMessageToQueue(NXSystemMessages.invalidFplnUplink);
           });
       }
     };
@@ -351,7 +348,7 @@ export class CDUInitPage {
         [new Column(0, 'FLT NBR')],
         [new Column(0, flightNoText, flightNoColor), new Column(23, alignOption || '', Column.right)],
         [],
-        [new Column(23, shouldEnableWindOption ? 'WIND/TEMP>' : '', Column.right)],
+        [new Column(23, 'WIND/TEMP>', Column.right)],
         [new Column(0, 'COST INDEX'), new Column(23, 'TROPO', Column.right)],
         [new Column(0, costIndexText, costIndexColor), tropo],
         [new Column(0, 'CRZ FL/TEMP'), new Column(23, 'GND TEMP', Column.right)],
@@ -359,14 +356,19 @@ export class CDUInitPage {
       ]),
     );
 
-    if (shouldEnableWindOption) {
-      mcdu.onRightInput[3] = () => {
-        CDUWindPage.Return = () => {
-          CDUInitPage.ShowPage1(mcdu, forPlan);
-        };
-        CDUWindPage.ShowPage(mcdu);
+    mcdu.onRightInput[3] = (_, scratchpadCallback) => {
+      if (mcdu.flightPlanService.hasTemporary) {
+        mcdu.setScratchpadMessage(NXSystemMessages.temporaryFplnExists);
+        scratchpadCallback();
+        return;
+      }
+
+      CDUWindPage.Return = () => {
+        CDUInitPage.ShowPage1(mcdu, forPlan);
       };
-    }
+
+      CDUWindPage.ShowPage(mcdu, forPlan);
+    };
 
     mcdu.onUp = () => {};
   }
@@ -559,7 +561,7 @@ export class CDUInitPage {
     const tripWindDirCell = new Column(19, '--');
     const tripWindAvgCell = new Column(21, '---');
 
-    if (plan.originAirport && plan.destinationAirport) {
+    if (plan.originAirport && plan.destinationAirport && !plan.hasWindEntries()) {
       const isTripWindPilotEntered = plan.performanceData.pilotTripWind.get() !== null;
 
       tripWindDirCell.update(
