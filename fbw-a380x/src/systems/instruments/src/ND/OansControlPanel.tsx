@@ -4,30 +4,20 @@
 import './oans-style.scss';
 import './OansControlPanel.scss';
 
-import {
-  ArraySubject,
-  ClockEvents,
-  ComponentProps,
-  ConsumerSubject,
-  DisplayComponent,
-  EventBus,
-  FSComponent,
-  MapSubject,
-  MappedSubject,
-  SimVarValueType,
-  Subject,
-  Subscribable,
-  Subscription,
-  UnitType,
-  VNode,
-} from '@microsoft/msfs-sdk';
-import {
-  ControlPanelAirportSearchMode,
-  ControlPanelMapDataSearchMode,
-  ControlPanelStore,
-  ControlPanelUtils,
-  NavigraphAmdbClient,
-} from '@flybywiresim/oanc';
+import { Feature, Geometry, LineString, Point, Position } from 'geojson';
+import { LengthFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
+import { InternalKccuKeyEvent } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
+import { ResetPanelSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/ResetPanelPublisher';
+import { AdirsSimVars } from 'instruments/src/MsfsAvionicsCommon/SimVarTypes';
+import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
+import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
+import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
+import { InputField, InteractionMode } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
+import { RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
+import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
+import { NDSimvars } from 'instruments/src/ND/NDSimvarPublisher';
+import { Coordinates, distanceTo } from 'msfs-geo';
+
 import {
   AmdbAirportSearchResult,
   AmdbProperties,
@@ -45,23 +35,36 @@ import {
   OansFmsDataStore,
   RegisteredSimVar,
 } from '@flybywiresim/fbw-sdk';
-
-import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
-import { OansRunwayInfoBox } from './OANSRunwayInfoBox';
-import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
-import { RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
-import { InputField, InteractionMode } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
-import { LengthFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconButton';
-import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
-import { Coordinates, distanceTo } from 'msfs-geo';
-import { AdirsSimVars } from 'instruments/src/MsfsAvionicsCommon/SimVarTypes';
-import { InternalKccuKeyEvent } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
-import { NDSimvars } from 'instruments/src/ND/NDSimvarPublisher';
-import { Feature, Geometry, LineString, Point, Position } from 'geojson';
+import {
+  ControlPanelAirportSearchMode,
+  ControlPanelMapDataSearchMode,
+  ControlPanelStore,
+  ControlPanelUtils,
+  NavigraphAmdbClient,
+} from '@flybywiresim/oanc';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
-import { ResetPanelSimvars } from 'instruments/src/MsfsAvionicsCommon/providers/ResetPanelPublisher';
+import {
+  ArraySubject,
+  ClockEvents,
+  ComponentProps,
+  ConsumerSubject,
+  DisplayComponent,
+  EventBus,
+  FSComponent,
+  MappedSubject,
+  MapSubject,
+  NumberFormatter,
+  NumberUnitSubject,
+  SimVarValueType,
+  Subject,
+  Subscribable,
+  Subscription,
+  UnitType,
+  VNode,
+} from '@microsoft/msfs-sdk';
+
+import { OansRunwayInfoBox } from './OANSRunwayInfoBox';
 
 export interface OansProps extends ComponentProps {
   bus: EventBus;
@@ -105,6 +108,17 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
   private readonly oansFailed = MappedSubject.create(([reset]) => reset, this.oansResetPulled);
 
   private amdbClient = new NavigraphAmdbClient();
+
+  private readonly lengthUnit = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT').map((v) =>
+    v ? UnitType.METER : UnitType.FOOT,
+  );
+
+  private readonly lengthUnitText = this.lengthUnit.map((v) => (v === UnitType.FOOT ? 'FT' : 'M'));
+
+  private readonly lengthFormatter = NumberFormatter.create({
+    nanString: '',
+    precision: 1,
+  });
 
   private readonly oansMenuRef = FSComponent.createRef<HTMLDivElement>();
 
@@ -195,9 +209,21 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
   private readonly fmsDataStore = new OansFmsDataStore(this.props.bus);
 
-  private readonly runwayTora = Subject.create<string | null>(null);
+  private readonly runwayTora = NumberUnitSubject.create(UnitType.METER.createNumber(NaN));
 
-  private readonly runwayLda = Subject.create<string | null>(null);
+  private readonly runwayLda = NumberUnitSubject.create(UnitType.METER.createNumber(NaN));
+
+  private readonly runwayLdaText = MappedSubject.create(
+    ([lda, unit]) => this.lengthFormatter(lda.asUnit(unit)),
+    this.runwayLda,
+    this.lengthUnit,
+  );
+
+  private readonly runwayToraText = MappedSubject.create(
+    ([tora, unit]) => this.lengthFormatter(tora.asUnit(unit)),
+    this.runwayTora,
+    this.lengthUnit,
+  );
 
   private readonly standCoordinateString = Subject.create<string>('');
 
@@ -234,10 +260,6 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
   public hEventConsumer = this.props.bus.getSubscriber<InternalKccuKeyEvent>().on('kccuKeyEvent');
 
   public interactionMode = Subject.create<InteractionMode>(InteractionMode.Touchscreen);
-
-  private readonly lengthUnit = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT').map((v) =>
-    v ? UnitType.METER : UnitType.FOOT,
-  );
 
   private showLdgShiftPanel() {
     if (this.mapDataLdgShiftPanelRef.getOrDefault() && this.mapDataMainRef.getOrDefault()) {
@@ -336,8 +358,8 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
       MappedSubject.create(
         async ([arpt, ropsRwy, lda, oansRwy]) => {
           if (oansRwy || (arpt && ropsRwy)) {
-            this.runwayLda.set((lda ?? 0).toFixed(0));
-            this.runwayTora.set((lda ?? 0).toFixed(0));
+            this.runwayLda.set(lda ?? NaN);
+            this.runwayTora.set(lda ?? NaN);
           } else {
             this.clearRunwayInfo();
           }
@@ -414,13 +436,13 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
           }
 
           if (idx !== -1 && this.selectedEntityType.get() === ControlPanelMapDataSearchMode.Runway) {
-            this.runwayLda.set(this.mapDataFeatures[idx].properties.lda?.toFixed(0) ?? '');
-            this.runwayTora.set(this.mapDataFeatures[idx].properties.tora?.toFixed(0) ?? '');
+            this.runwayLda.set(this.mapDataFeatures[idx].properties.lda ?? NaN);
+            this.runwayTora.set(this.mapDataFeatures[idx].properties.tora ?? NaN);
           }
         } else if (this.oansAvailable.get()) {
           this.selectedEntityString.set('');
-          this.runwayLda.set('');
-          this.runwayTora.set('');
+          this.runwayLda.set(NaN);
+          this.runwayTora.set(NaN);
         }
       }, true),
     );
@@ -437,6 +459,9 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
     this.subs.push(
       this.lengthUnit,
+      this.lengthUnitText,
+      this.runwayLdaText,
+      this.runwayToraText,
       this.setPlanModeConsumer,
       this.setPlanModeDisplay,
       this.oansResetPulled,
@@ -678,8 +703,8 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
   private clearRunwayInfo() {
     this.selectedEntityIndex.set(null);
     this.selectedEntityString.set(null);
-    this.runwayLda.set(null);
-    this.runwayTora.set(null);
+    this.runwayLda.set(NaN);
+    this.runwayTora.set(NaN);
   }
 
   destroy(): void {
@@ -821,11 +846,11 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                     <OansRunwayInfoBox
                       rwyOrStand={this.selectedEntityType}
                       selectedEntity={this.selectedEntityString}
-                      tora={this.runwayTora}
-                      lda={this.runwayLda}
+                      tora={this.runwayToraText}
+                      lda={this.runwayLdaText}
                       ldaIsReduced={Subject.create(false)}
                       coordinate={Subject.create('----')}
-                      lengthUnit={this.lengthUnit}
+                      lengthUnit={this.lengthUnitText}
                     />
                   </div>
                   <div ref={this.mapDataBtvFallback} class="oans-cp-map-data-btv-fallback">
@@ -842,8 +867,8 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                         RUNWAY LENGTH
                       </div>
                       <span class="mfd-value smaller">
-                        {this.runwayLda}
-                        <span style="color: rgb(33, 33, 255)">M</span>
+                        {this.runwayLdaText}
+                        <span style="color: rgb(33, 33, 255)">{this.lengthUnitText}</span>
                       </span>
                     </div>
                     <div
