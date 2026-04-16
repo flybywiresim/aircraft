@@ -16,25 +16,25 @@ import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageT
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { FlightPlanEvents } from '@fmgc/flightplanning/sync/FlightPlanEvents';
 import { MfdSystem } from './MfdUiService';
-import {
-  dataStatusUri,
-  fuelAndLoadPage,
-  flightPlanUriPage,
-  lateralRevisionHoldPage,
-  performancePage,
-  secIndexPageUri,
-  initPage,
-  dirToUri,
-  airwaysPage,
-  departurePage,
-  arrivalPage,
-  lateralRevisionPage,
-  verticalRevisionPage,
-  fixInfoUri,
-} from '../../shared/utils';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import {
+  airwaysPage,
+  arrivalPage,
+  dataStatusUri,
+  departurePage,
+  dirToUri,
+  fixInfoUri,
+  flightPlanUriPage,
+  fuelAndLoadPage,
+  initPage,
+  lateralRevisionHoldPage,
+  lateralRevisionPage,
+  performancePage,
+  secIndexPageUri,
+  verticalRevisionPage,
+} from '../../MfdPageDirectory';
 
 export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPageProps> extends DisplayComponent<T> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.

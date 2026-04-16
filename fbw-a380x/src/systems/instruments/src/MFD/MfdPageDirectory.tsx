@@ -38,21 +38,31 @@ import { MfdFmsPositionMonitor } from './pages/FMS/POSITION/MfdFmsPositionMonito
 import { MfdSurvStatusSwitching } from 'instruments/src/MFD/pages/SURV/MfdSurvStatusSwitching';
 import { MfdFmsDataAirport } from 'instruments/src/MFD/pages/FMS/DATA/MfdFmsDataAirport';
 import { AtcDatalinkSystem } from './ATCCOM/AtcDatalinkSystem';
-import {
-  activeFlightPlanFuelAndLoadUri,
-  fuelAndLoadPage,
-  activeFlightPlanPageUri,
-  flightPlanUriPage,
-  activeFlightPlanHoldUri,
-  lateralRevisionHoldPage,
-  dataStatusUri,
-  performancePage,
-  initPage,
-  fixInfoUri,
-  dirToUri,
-  secIndexPageUri,
-} from './shared/utils';
 import { MfdFmsSecIndex } from './pages/FMS/SEC/MfdFmsSecIndex';
+import { MfdFmsWindPage } from './pages/FMS/MfdFmsWindPage';
+
+export const fmsActivePagePrefix = 'fms/active/';
+export const fmsSec1PagePrefix = 'fms/sec1/';
+export const fmsSec2PagePrefix = 'fms/sec2/';
+export const fmsSec3PagePrefix = 'fms/sec3/';
+export const flightPlanUriPage = 'f-pln';
+export const lateralRevisionHoldPage = 'f-pln-hold';
+export const dataStatusUri = 'fms/data/status';
+export const fuelAndLoadPage = 'fuel-load';
+export const performancePage = 'perf';
+export const initPage = 'init';
+export const verticalRevisionPage = 'f-pln-vert-rev';
+export const lateralRevisionPage = 'f-pln-lat-rev';
+export const departurePage = 'f-pln-departure';
+export const arrivalPage = 'f-pln-arrival';
+export const airwaysPage = 'f-pln-airways';
+export const secIndexPageUri = 'fms/sec/index';
+export const activeFlightPlanPageUri = fmsActivePagePrefix + flightPlanUriPage;
+export const activeFlightPlanFuelAndLoadUri = fmsActivePagePrefix + fuelAndLoadPage;
+export const activeFlightPlanHoldUri = fmsActivePagePrefix + lateralRevisionHoldPage;
+export const fixInfoUri = fmsActivePagePrefix + 'f-pln-fix-info';
+export const dirToUri = fmsActivePagePrefix + 'f-pln-direct-to';
+export const windPage = 'wind';
 
 export function pageForUrl(
   url: string,
@@ -62,10 +72,10 @@ export function pageForUrl(
   atcService: AtcDatalinkSystem,
 ): VNode {
   switch (url) {
-    case 'fms/active/' + performancePage:
-    case 'fms/sec1/' + performancePage:
-    case 'fms/sec2/' + performancePage:
-    case 'fms/sec3/' + performancePage:
+    case fmsActivePagePrefix + performancePage:
+    case fmsSec1PagePrefix + performancePage:
+    case fmsSec2PagePrefix + performancePage:
+    case fmsSec3PagePrefix + performancePage:
       return (
         <MfdFmsPerf
           pageTitle="PERF"
@@ -75,10 +85,10 @@ export function pageForUrl(
           flightPlanInterface={fmcService.master.flightPlanInterface}
         />
       );
-    case 'fms/active/' + initPage:
-    case 'fms/sec1/' + initPage:
-    case 'fms/sec2/' + initPage:
-    case 'fms/sec3/' + initPage:
+    case fmsActivePagePrefix + initPage:
+    case fmsSec1PagePrefix + initPage:
+    case fmsSec2PagePrefix + initPage:
+    case fmsSec3PagePrefix + initPage:
       return (
         <MfdFmsInit
           pageTitle="INIT"
@@ -88,10 +98,23 @@ export function pageForUrl(
           flightPlanInterface={fmcService.master.flightPlanInterface}
         />
       );
+    case fmsActivePagePrefix + windPage:
+    case fmsSec1PagePrefix + windPage:
+    case fmsSec2PagePrefix + windPage:
+      return (
+        <MfdFmsWindPage
+          pageTitle="WIND"
+          bus={bus}
+          mfd={mfd}
+          fmcService={fmcService}
+          flightPlanInterface={fmcService.master.flightPlanInterface}
+        />
+      );
+    case fmsActivePagePrefix + fuelAndLoadPage:
     case activeFlightPlanFuelAndLoadUri:
-    case 'fms/sec1/' + fuelAndLoadPage:
-    case 'fms/sec2/' + fuelAndLoadPage:
-    case 'fms/sec3/' + fuelAndLoadPage:
+    case fmsSec1PagePrefix + fuelAndLoadPage:
+    case fmsSec2PagePrefix + fuelAndLoadPage:
+    case fmsSec3PagePrefix + fuelAndLoadPage:
       return (
         <MfdFmsFuelLoad
           pageTitle="FUEL&LOAD"
@@ -102,9 +125,9 @@ export function pageForUrl(
         />
       );
     case activeFlightPlanPageUri:
-    case 'fms/sec1/' + flightPlanUriPage:
-    case 'fms/sec2/' + flightPlanUriPage:
-    case 'fms/sec3/' + flightPlanUriPage:
+    case fmsSec1PagePrefix + flightPlanUriPage:
+    case fmsSec2PagePrefix + flightPlanUriPage:
+    case fmsSec3PagePrefix + flightPlanUriPage:
       return (
         <MfdFmsFpln
           pageTitle="F-PLN"
@@ -114,10 +137,10 @@ export function pageForUrl(
           flightPlanInterface={fmcService.master.flightPlanInterface}
         />
       );
-    case 'fms/active/f-pln-airways':
-    case 'fms/sec1/f-pln-airways':
-    case 'fms/sec2/f-pln-airways':
-    case 'fms/sec3/f-pln-airways':
+    case fmsActivePagePrefix + airwaysPage:
+    case fmsSec1PagePrefix + airwaysPage:
+    case fmsSec2PagePrefix + airwaysPage:
+    case fmsSec3PagePrefix + airwaysPage:
       return (
         <MfdFmsFplnAirways
           pageTitle="F-PLN/AIRWAYS"
@@ -127,10 +150,10 @@ export function pageForUrl(
           flightPlanInterface={fmcService.master.flightPlanInterface}
         />
       );
-    case 'fms/active/f-pln-departure':
-    case 'fms/sec1/f-pln-departure':
-    case 'fms/sec2/f-pln-departure':
-    case 'fms/sec3/f-pln-departure':
+    case fmsActivePagePrefix + departurePage:
+    case fmsSec1PagePrefix + departurePage:
+    case fmsSec2PagePrefix + departurePage:
+    case fmsSec3PagePrefix + departurePage:
       return (
         <MfdFmsFplnDep
           pageTitle="F-PLN/DEPARTURE"
@@ -140,10 +163,10 @@ export function pageForUrl(
           flightPlanInterface={fmcService.master.flightPlanInterface}
         />
       );
-    case 'fms/active/f-pln-arrival':
-    case 'fms/sec1/f-pln-arrival':
-    case 'fms/sec2/f-pln-arrival':
-    case 'fms/sec3/f-pln-arrival':
+    case fmsActivePagePrefix + arrivalPage:
+    case fmsSec1PagePrefix + arrivalPage:
+    case fmsSec2PagePrefix + arrivalPage:
+    case fmsSec3PagePrefix + arrivalPage:
       return (
         <MfdFmsFplnArr
           pageTitle="F-PLN/ARRIVAL"
@@ -163,10 +186,10 @@ export function pageForUrl(
           flightPlanInterface={fmcService.master.flightPlanInterface}
         />
       );
-    case 'fms/active/f-pln-vert-rev':
-    case 'fms/sec1/f-pln-vert-rev':
-    case 'fms/sec2/f-pln-vert-rev':
-    case 'fms/sec3/f-pln-vert-rev':
+    case fmsActivePagePrefix + verticalRevisionPage:
+    case fmsSec1PagePrefix + verticalRevisionPage:
+    case fmsSec2PagePrefix + verticalRevisionPage:
+    case fmsSec3PagePrefix + verticalRevisionPage:
       return (
         <MfdFmsFplnVertRev
           pageTitle="F-PLN/VERT REV"
@@ -177,9 +200,9 @@ export function pageForUrl(
         />
       );
     case activeFlightPlanHoldUri:
-    case 'fms/sec1/' + lateralRevisionHoldPage:
-    case 'fms/sec2/' + lateralRevisionHoldPage:
-    case 'fms/sec3/' + lateralRevisionHoldPage:
+    case fmsSec1PagePrefix + lateralRevisionHoldPage:
+    case fmsSec2PagePrefix + lateralRevisionHoldPage:
+    case fmsSec3PagePrefix + lateralRevisionHoldPage:
       return (
         <MfdFmsFplnHold
           pageTitle="F-PLN/HOLD"
