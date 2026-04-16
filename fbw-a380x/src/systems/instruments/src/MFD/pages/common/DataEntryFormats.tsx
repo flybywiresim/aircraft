@@ -383,9 +383,7 @@ export class TropoFormat implements DataEntryFormat<number> {
 }
 
 export class LengthFormat extends SubscriptionCollector implements DataEntryFormat<number> {
-  public placeholder = '----';
-
-  public maxDigits = 4;
+  public placeholder = '-'.repeat(this.maxDigits);
 
   private minValue = 0;
 
@@ -395,6 +393,7 @@ export class LengthFormat extends SubscriptionCollector implements DataEntryForm
     minValue: Subscribable<number> = Subject.create(0),
     maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY),
     public readonly unitFamily: Subscribable<Unit<UnitFamily.Distance>> = Subject.create(UnitType.METER),
+    public readonly maxDigits = 4,
   ) {
     super();
     this.subscriptions.push(minValue.sub((val) => (this.minValue = val), true));
@@ -409,7 +408,7 @@ export class LengthFormat extends SubscriptionCollector implements DataEntryForm
 
     value = this.unitFamily.get().convertFrom(value, UnitType.METER);
 
-    return [value.toString(), null, unit] as FieldFormatTuple;
+    return [value.toFixed(0), null, unit] as FieldFormatTuple;
   }
 
   public async parse(input: string) {

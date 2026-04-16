@@ -878,7 +878,9 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
                       </div>
                       <div>
                         <InputField<number, number, false>
-                          dataEntryFormat={new LengthFormat(Subject.create(0), Subject.create(4000))}
+                          dataEntryFormat={
+                            new LengthFormat(Subject.create(0), Subject.create(4000), this.lengthUnit, 5)
+                          }
                           dataHandlerDuringValidation={async (val) =>
                             this.props.bus.getPublisher<FmsOansData>().pub('oansManualStoppingDistance', val, true)
                           }
