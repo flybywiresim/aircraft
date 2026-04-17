@@ -138,13 +138,13 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
   private readonly destEfobLabel = this.createWeightSubscribable(this.destEfob);
 
   private readonly destEfobNotAvailableAndInActive = MappedSubject.create(
-    ([tmpy, efob, fpIndex]) => !tmpy && efob == null && fpIndex === FlightPlanIndex.Active,
+    ([tmpy, efob, fpIndex]) => !tmpy && isNaN(efob.number) && fpIndex === FlightPlanIndex.Active,
     this.tmpyActive,
     this.destEfob,
     this.loadedFlightPlanIndex,
   );
 
-  private readonly destEfobUnitVisiblity = this.destEfob.map((v) => (v == null ? 'hidden' : 'visible'));
+  private readonly destEfobUnitVisiblity = this.destEfob.map((v) => (isNaN(v.number) ? 'hidden' : 'visible'));
 
   private readonly distanceToDest = Subject.create<number | null>(null);
 
@@ -398,9 +398,9 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       // Prepare sequencing of pseudo waypoints
       const pseudoWptMap = new Map<number, PseudoWaypoint>();
       const fpIndex = this.loadedFlightPlanIndex.get();
-      const isActiveOrTmpy = fpIndex === FlightPlanIndex.Active;
-      if (isActiveOrTmpy) {
-        //TODO SEC predictions
+      //TODO SEC or TMPY predictions
+      const isActive = fpIndex === FlightPlanIndex.Active;
+      if (isActive) {
         // Insert pseudo waypoints from guidance controller
         this.props.fmcService?.master?.guidanceController?.pseudoWaypoints?.pseudoWaypoints?.forEach((wpt) =>
           pseudoWptMap.set(wpt.alongLegIndex, wpt),
@@ -437,7 +437,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             hasSpeedConstraint: (pwp.mcduIdent ?? pwp.ident) === '(SPDLIM)',
             speedConstraint: null, // TODO
             speedConstraintIsRespected: true,
-            efobPrediction: isActiveOrTmpy
+            efobPrediction: isActive
               ? Units.poundToKilogram(
                   this.props.fmcService.master.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)
                     ?.estimatedFuelOnBoard ?? NaN,
@@ -478,7 +478,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
           const annotation = leg.type === LegType.HF || leg.type === LegType.HA ? 'HOLD L' : leg.annotation;
 
-          const pred = isActiveOrTmpy
+          const pred = isActive
             ? this.props.fmcService?.master?.guidanceController?.vnavDriver?.mcduProfile?.waypointPredictions?.get(i)
             : null;
 

@@ -68,24 +68,21 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
   private readonly toIcao = Subject.create<string | null>(null);
 
   private readonly cityPairDisabled = MappedSubject.create(
-    ([fp, tmpy, fromIcao, toIcao, fpIndex]) =>
-      (fp > FmgcFlightPhase.Preflight &&
-        (fromIcao || toIcao) &&
-        this.props.flightPlanInterface.get(fpIndex).isActiveOrCopiedFromActive()) ||
+    ([fp, tmpy, fpIndex]) =>
+      (fp > FmgcFlightPhase.Preflight && this.props.flightPlanInterface.get(fpIndex).isActiveOrCopiedFromActive()) ||
       tmpy,
     this.activeFlightPhase,
     this.tmpyActive,
-    this.fromIcao,
-    this.toIcao,
     this.loadedFlightPlanIndex,
   );
 
   private readonly altnIcao = Subject.create<string | null>(null);
 
   private readonly altnDisabled = MappedSubject.create(
-    ([toIcao, fromIcao]) => !toIcao || !fromIcao,
+    ([toIcao, fromIcao, tmpy]) => tmpy || !toIcao || !fromIcao,
     this.fromIcao,
     this.toIcao,
+    this.tmpyActive,
   );
 
   private readonly cpnyRte = Subject.create<string | null>(null); // FIXME not found

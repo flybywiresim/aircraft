@@ -485,14 +485,15 @@ export class LengthFormat extends SubscriptionCollector implements DataEntryForm
       return null;
     }
 
-    const nbr = this.unitFamily.get().convertTo(Number(input), UnitType.METER);
+    const unitFamily = this.unitFamily.get();
+    const nbr = unitFamily.convertTo(Number(input), UnitType.METER);
     if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
     }
     if (nbr > this.maxValue || nbr < this.minValue) {
       throw new A380FmsError(FmsErrorType.EntryOutOfRange);
     } else {
-      throw getFormattedFormatError(this.requiredFormat, this.unit);
+      throw getFormattedFormatError(this.requiredFormat, distanceUnitFormatter(unitFamily));
     }
   }
 
@@ -504,9 +505,7 @@ export class LengthFormat extends SubscriptionCollector implements DataEntryForm
 export class WeightFormat extends SubscriptionCollector implements DataEntryFormat<number> {
   public readonly placeholder = '---.-';
 
-  public readonly unit = 'T';
-
-  public maxDigits = 5;
+  public readonly maxDigits = 5;
 
   private readonly requiredFormat = 'XXX.X';
 
@@ -540,17 +539,22 @@ export class WeightFormat extends SubscriptionCollector implements DataEntryForm
       return null;
     }
 
-    const convertedInput = this.unitFamily.get().convertTo(Number(input), UnitType.KILOGRAM);
+    const unitFamily = this.unitFamily.get();
+    const displayUnit = weightUnitFormatter(unitFamily);
+    const convertedInput = unitFamily.convertTo(Number(input), UnitType.KILOGRAM);
 
     const nbr = convertedInput * 1000;
-    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
-      return nbr;
+    if (Number.isNaN(nbr)) {
+      throw getFormattedFormatError(this.requiredFormat, displayUnit);
     }
-
     if (nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
     } else {
-      throw getFormattedEntryOutOfRangeError(this.minValue.toFixed(1), this.maxValue.toFixed(1), this.unit);
+      throw getFormattedEntryOutOfRangeError(
+        (unitFamily.convertFrom(this.minValue, UnitType.KILOGRAM) / 1000).toFixed(1),
+        (unitFamily.convertFrom(this.maxValue, UnitType.KILOGRAM) / 1000).toFixed(1),
+        displayUnit,
+      );
     }
   }
 

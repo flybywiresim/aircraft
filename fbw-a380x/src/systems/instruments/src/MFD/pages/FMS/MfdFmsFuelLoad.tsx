@@ -1,3 +1,5 @@
+// Copyright (c) 2024-2026 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
 import {
   ArraySubject,
   ClockEvents,
@@ -8,7 +10,6 @@ import {
   NumberUnitSubject,
   SimpleUnit,
   Subject,
-  Subscription,
   Unit,
   UnitFamily,
   UnitType,
@@ -66,7 +67,6 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
 
   private readonly grossWeight = NumberUnitSubject.create(UnitType.KILOGRAM.createNumber(NaN));
   private readonly grossWeightText = this.createWeightSubscribable(this.grossWeight);
-  private static readonly MAX_MIN_FUEL_DEST_TONS = Subject.create(maxMinDestFuel / 1000);
 
   private readonly flightPlanChangeNotifier = new FlightPlanChangeNotifier(this.props.bus);
 
@@ -98,6 +98,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
   private readonly taxiFuel = Subject.create<number | null>(null);
   private readonly taxiFuelIsPilotEntered = Subject.create<boolean>(false);
 
+  private readonly routeReserveFuelPilotEntry = Subject.create<number | null>(null);
   private readonly routeReserveFuelIsPilotEntered = Subject.create<boolean>(false);
 
   private readonly routeReserveFuelPercentage = Subject.create<number | null>(null);
@@ -208,78 +209,8 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
   );
 
   protected onNewData() {
-    if (!this.props.fmcService.master || !this.loadedFlightPlan) {
-      return;
-    }
-
-    this.loadFlightPlanPerformanceData();
-
-    this.costIndex.set(this.loadedFlightPlan.performanceData.costIndex.get());
-
-    this.updateDestAndAltnPredictions();
+    // no op
   }
-
-  private loadFlightPlanPerformanceData(): void {
-    const pd = this.loadedFlightPlan?.performanceData;
-
-    this.zeroFuelWeight.set(pd?.zeroFuelWeight.get() ?? null);
-    this.zeroFuelWeightCenterOfGravity.set(pd?.zeroFuelWeightCenterOfGravity.get() ?? null);
-    this.blockFuel.set(pd?.blockFuel.get() ?? null);
-    this.taxiFuel.set(pd?.taxiFuel.get() ?? null);
-    this.taxiFuelIsPilotEntered.set(pd?.taxiFuelIsPilotEntered.get() ?? false);
-    this.routeReserveFuelPilotEntry.set(pd?.pilotRouteReserveFuel.get() ?? null);
-    this.routeReserveFuelIsPilotEntered.set(pd?.isRouteReserveFuelPilotEntered.get() ?? false);
-    this.routeReserveFuelPercentageIsPilotEntered.set(pd?.isRouteReserveFuelPercentagePilotEntered.get() ?? false);
-    this.alternateFuel.set(pd?.alternateFuel.get() ?? null);
-    this.alternateFuelIsPilotEntered.set(pd?.isAlternateFuelPilotEntered.get() ?? false);
-    this.finalFuelTime.set(pd?.finalHoldingTime.get() ?? null);
-    this.finalFuelIsPilotEntered.set(pd?.isFinalHoldingFuelPilotEntered.get() ?? false);
-    this.finalFuelTimeIsPilotEntered.set(pd?.isFinalHoldingTimePilotEntered.get() ?? false);
-    this.finalFuel.set(pd?.finalHoldingFuel.get() ?? null);
-    this.minimumFuelAtDestination.set(pd?.minimumDestinationFuelOnBoard.get() ?? null);
-    this.minimumFuelAtDestinationIsPilotEntered.set(pd?.isMinimumDestinationFuelOnBoardPilotEntered.get() ?? false);
-    this.paxNumber.set(pd?.paxNumber ? pd.paxNumber.get() : null);
-    this.costIndexMode.set(pd?.costIndexMode ? pd.costIndexMode.get() : null);
-  }
-
-  updateDestAndAltnPredictions() {
-    if (!this.props.fmcService.master || !this.loadedFlightPlan) {
-      return;
-    }
-
-    const fpIndex = this.loadedFlightPlanIndex.get();
-    if (this.loadedFlightPlan.destinationAirport) {
-      this.destIcao.set(this.loadedFlightPlan.destinationAirport.ident);
-
-      // TODO SEC predictions
-      const destPred =
-        fpIndex === FlightPlanIndex.Active || fpIndex === FlightPlanIndex.Temporary
-          ? this.props.fmcService.master.guidanceController.vnavDriver.getDestinationPrediction()
-          : null;
-      // TODO Should display ETA if EET present
-      this.destEta.set(
-        getEtaFromUtcOrPresent(destPred?.secondsFromPresent, this.activeFlightPhase.get() == FmgcFlightPhase.Preflight),
-      );
-      const destEfob = this.props.fmcService.master.fmgc.getDestEFOB(true, this.loadedFlightPlanIndex.get());
-      if (destEfob !== null) {
-        this.destEfob.set(destEfob * 1000, UnitType.KILOGRAM);
-      } else {
-        this.destEfob.set(NaN);
-      }
-    }
-
-    const fp = this.props.flightPlanInterface.get(this.loadedFlightPlanIndex.get());
-    if (fp.alternateDestinationAirport) {
-      this.altnIcao.set(fp.alternateDestinationAirport.ident);
-      this.altnEta.set('--:--');
-      this.altnEfob.set(this.props.fmcService.master.fmgc.getAltEFOB(fpIndex) ?? NaN, UnitType.KILOGRAM);
-    } else {
-      this.altnIcao.set('NONE');
-      this.altnEta.set('--:--');
-      this.altnEfob.set(NaN);
-    }
-  }
-
   private readonly weightUnitText = this.weightUnit.map((v) => (v === UnitType.KILOGRAM ? 'T' : 'KLB'));
 
   /** @inheritdoc */
@@ -419,6 +350,98 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
     super.destroy();
   }
 
+  private loadFlightPlanPerformanceData(): void {
+    const pd = this.loadedFlightPlan?.performanceData;
+
+    const pdZfw = pd?.zeroFuelWeight.get();
+    if (pdZfw !== undefined && pdZfw !== null) {
+      this.zeroFuelWeight.set(pdZfw * 1000);
+    } else {
+      this.zeroFuelWeight.set(null);
+    }
+    this.zeroFuelWeightCenterOfGravity.set(pd?.zeroFuelWeightCenterOfGravity.get() ?? null);
+
+    const pdBlockFuel = pd?.blockFuel.get();
+    if (pdBlockFuel !== undefined && pdBlockFuel !== null) {
+      this.blockFuel.set(pdBlockFuel * 1000);
+    } else {
+      this.blockFuel.set(null);
+    }
+    const pdTaxiFuel = pd?.taxiFuel.get();
+    if (pdTaxiFuel !== undefined && pdTaxiFuel !== null) {
+      this.taxiFuel.set(pdTaxiFuel * 1000);
+    } else {
+      this.taxiFuel.set(null);
+    }
+    this.taxiFuelIsPilotEntered.set(pd?.taxiFuelIsPilotEntered.get() ?? false);
+    const pdRouteReserveFuel = pd?.pilotRouteReserveFuel.get();
+    if (pdRouteReserveFuel !== undefined && pdRouteReserveFuel !== null) {
+      this.routeReserveFuelPilotEntry.set(pdRouteReserveFuel * 1000);
+    } else {
+      this.routeReserveFuelPilotEntry.set(null);
+    }
+    this.routeReserveFuelIsPilotEntered.set(pd?.isRouteReserveFuelPilotEntered.get() ?? false);
+    this.routeReserveFuelPercentageIsPilotEntered.set(pd?.isRouteReserveFuelPercentagePilotEntered.get() ?? false);
+    const pdAlternateFuel = pd?.alternateFuel.get();
+    if (pdAlternateFuel !== undefined && pdAlternateFuel !== null) {
+      this.alternateFuel.set(pdAlternateFuel * 1000);
+    } else {
+      this.alternateFuel.set(null);
+    }
+    this.alternateFuelIsPilotEntered.set(pd?.isAlternateFuelPilotEntered.get() ?? false);
+    this.finalFuelTime.set(pd?.finalHoldingTime.get() ?? null);
+    this.finalFuelIsPilotEntered.set(pd?.isFinalHoldingFuelPilotEntered.get() ?? false);
+    this.finalFuelTimeIsPilotEntered.set(pd?.isFinalHoldingTimePilotEntered.get() ?? false);
+    const pdFinalFuel = pd?.finalHoldingFuel.get();
+    if (pdFinalFuel !== undefined && pdFinalFuel !== null) {
+      this.finalFuel.set(pdFinalFuel * 1000);
+    } else {
+      this.finalFuel.set(null);
+    }
+    const pdMinDestFuel = pd?.minimumDestinationFuelOnBoard.get();
+    if (pdMinDestFuel !== undefined && pdMinDestFuel !== null) {
+      this.minimumFuelAtDestination.set(pdMinDestFuel * 1000);
+    } else {
+      this.minimumFuelAtDestination.set(null);
+    }
+    this.minimumFuelAtDestinationIsPilotEntered.set(pd?.isMinimumDestinationFuelOnBoardPilotEntered.get() ?? false);
+    this.paxNumber.set(pd?.paxNumber ? pd.paxNumber.get() : null);
+    this.costIndexMode.set(pd?.costIndexMode ? pd.costIndexMode.get() : null);
+    this.costIndex.set(pd?.costIndex ? pd.costIndex.get() : null);
+  }
+
+  updateDestAndAltnPredictions() {
+    const hasFp = this.loadedFlightPlan !== null;
+    const fpIndex = hasFp ? this.loadedFlightPlanIndex.get() : null;
+    this.destIcao.set(this.loadedFlightPlan?.destinationAirport?.ident ?? null);
+
+    // TODO SEC predictions
+    const destPred =
+      hasFp && (fpIndex === FlightPlanIndex.Active || fpIndex === FlightPlanIndex.Temporary)
+        ? this.props.fmcService.master.guidanceController.vnavDriver.getDestinationPrediction()
+        : null;
+    // TODO Should display ETA if EET present
+    this.destEta.set(
+      getEtaFromUtcOrPresent(destPred?.secondsFromPresent, this.activeFlightPhase.get() == FmgcFlightPhase.Preflight),
+    );
+    const destEfob = hasFp ? this.props.fmcService.master.fmgc.getDestEFOB(true, fpIndex!) : null;
+    if (destEfob !== null) {
+      this.destEfob.set(destEfob * 1000, UnitType.KILOGRAM);
+    } else {
+      this.destEfob.set(NaN);
+    }
+
+    const fp = hasFp ? this.props.flightPlanInterface.get(fpIndex!) : null;
+    this.altnIcao.set(fp?.alternateDestinationAirport?.ident ?? 'NONE');
+    this.altnEta.set('--:--');
+    if (fp) {
+      this.altnEfob.set(this.props.fmcService.master.fmgc.getAltEFOB(fpIndex!) ?? NaN, UnitType.KILOGRAM);
+    } else {
+      this.altnEfob.set(NaN);
+    }
+    this.altnEfob.set(hasFp ? this.props.fmcService.master.fmgc.getAltEFOB(fpIndex!) ?? NaN : NaN, UnitType.KILOGRAM);
+  }
+
   render(): VNode {
     return (
       this.props.fmcService.master && (
@@ -447,7 +470,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
               <div class="mfd-label mfd-spacing-right fuelLoad">ZFW</div>
               <InputField<number, number, false>
                 dataEntryFormat={new WeightFormat(Subject.create(minZfw), Subject.create(maxZfw), this.weightUnit)}
-                dataHandlerDuringValidation={async (v) =>
+                dataHandlerDuringValidation={async (v) => {
                   this.props.flightPlanInterface.setPerformanceData(
                     'zeroFuelWeight',
                     v !== null ? v / 1000 : null, // FIXME the perf plan should be in kg
@@ -849,7 +872,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 </div>
                 <div style="margin-bottom: 30px; display: flex; justify-content: center;">
                   <InputField<number, number, false>
-                    dataEntryFormat={new WeightFormat(undefined, MfdFmsFuelLoad.MAX_MIN_FUEL_DEST_TONS, this.weightUnit)}
+                    dataEntryFormat={new WeightFormat(undefined, Subject.create(maxMinDestFuel), this.weightUnit)}
                     dataHandlerDuringValidation={async (v) =>
                       this.props.flightPlanInterface?.setPerformanceData(
                         'pilotMinimumDestinationFuelOnBoard',

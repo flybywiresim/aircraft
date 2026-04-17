@@ -331,7 +331,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private readonly toFlexTemp = Subject.create<number | null>(null);
 
-  private readonly originRunwayLength = Subject.create<number>(4000);
+  private readonly takeoffShiftDisabled = Subject.create(false);
+
+  private readonly takeoffShiftMaxValueMeters = Subject.create<number>(Infinity);
 
   private readonly takeoffPowerSetting = Subject.create<TakeoffPowerSetting | null>(null);
 
@@ -569,7 +571,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private crzTablePredLine3 = Subject.create<string | null>(null);
 
-  private destAirportIdent = Subject.create<string>('');
+  private readonly destAirportIdent = Subject.create<string>('');
 
   private readonly destEta = Subject.create<string>('--:--');
 
@@ -748,23 +750,19 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
     this.crzFlIsMandatory.set(
       fpIndex === FlightPlanIndex.Active &&
-        (this.props.fmcService.master.fmgc.getFlightPhase() ?? FmgcFlightPhase.Preflight) < FmgcFlightPhase.Descent &&
-        this.managedSpeedActive.get(),
+        (this.props.fmcService.master.fmgc.getFlightPhase() ?? FmgcFlightPhase.Preflight) < FmgcFlightPhase.Descent,
     );
 
     this.showNoiseFields(pd.noiseEnabled!.get());
 
-    if (this.loadedFlightPlan.originRunway) {
-      this.originRunwayIdent.set(this.loadedFlightPlan.originRunway.ident.substring(4).padEnd(4, ' '));
-      this.originRunwayLength.set(this.loadedFlightPlan.originRunway.length ?? 4000);
-    }
+    this.takeoffShiftDisabled.set(this.loadedFlightPlan.originRunway === undefined);
+    this.originRunwayIdent.set(this.loadedFlightPlan.originRunway?.ident.substring(4).padEnd(4, ' ') ?? '---');
+    this.takeoffShiftMaxValueMeters.set(this.loadedFlightPlan.originRunway?.length ?? Infinity);
 
     // V-speeds to be confirmed due to rwy change?
     this.shouldShowConfirmVSpeeds();
 
-    if (this.loadedFlightPlan.destinationAirport) {
-      this.destAirportIdent.set(this.loadedFlightPlan.destinationAirport.ident);
-    }
+    this.destAirportIdent.set(this.loadedFlightPlan.destinationAirport?.ident ?? '');
 
     let precisionApproach = false;
     if (this.loadedFlightPlan.approach) {
@@ -1434,7 +1432,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   <div class="mfd-label-value-container">
                     <span class="mfd-label mfd-spacing-right">T.O SHIFT</span>
                     <InputField<number>
-                      dataEntryFormat={new LengthFormat(Subject.create(1), this.originRunwayLength, this.lengthUnit)}
+                      dataEntryFormat={
+                        new LengthFormat(Subject.create(1), this.takeoffShiftMaxValueMeters, this.lengthUnit)
+                      }
                       dataHandlerDuringValidation={async (v) =>
                         this.props.flightPlanInterface.setPerformanceData(
                           'takeoffShift',
@@ -1442,6 +1442,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                           this.loadedFlightPlanIndex.get(),
                         )
                       }
+                      disabled={this.takeoffShiftDisabled}
                       inactive={this.toPageInactive}
                       value={this.toShift}
                       errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
