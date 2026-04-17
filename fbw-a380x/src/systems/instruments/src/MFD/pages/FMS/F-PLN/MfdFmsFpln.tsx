@@ -471,7 +471,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             originalLegIndex: isAltn ? i - this.loadedFlightPlan.legCount : i,
             isPseudoWaypoint: false,
             isAltnWaypoint: isAltn,
-            isActiveHold: isHM && i === this.loadedFlightPlan.activeLegIndex,
+            isActiveHoldFix: isHM && i === this.loadedFlightPlan.activeLegIndex,
             isMissedAppchWaypoint: isMissedApproachWaypoint,
             ident: leg.ident,
             overfly: leg.definition.overfly,
@@ -574,7 +574,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         if (this.loadedFlightPlan) {
           if (
             drawIndex === this.loadedFlightPlan.activeLegIndex ||
-            (isWaypoint(lineData) && lineData.isActiveHold) || // When we are flying a HM, both the HOLD leg and the hold fix are displayed as white.
+            (isWaypoint(lineData) && lineData.isActiveHoldFix) || // When we are flying a HM, both the HOLD leg and the hold fix are displayed as white.
             (isHold(lineData) && lineData.isActiveLeg)
           ) {
             flags |= FplnLineFlags.IsActiveLeg;
@@ -1331,7 +1331,7 @@ export interface FplnLineWaypointDisplayData extends FplnLineTypeDiscriminator {
   isPseudoWaypoint: boolean;
   isAltnWaypoint: boolean;
   isMissedAppchWaypoint: boolean;
-  isActiveHold?: boolean;
+  isActiveHoldFix?: boolean;
   ident: string;
   overfly: boolean;
   annotation: string;
