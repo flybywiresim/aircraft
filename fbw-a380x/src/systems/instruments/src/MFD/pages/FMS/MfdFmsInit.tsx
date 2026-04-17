@@ -202,7 +202,6 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     );
 
     this.subs.push(
-      this.cpnyFplnButtonLabel,
       this.cpnyFplnButtonMenuItems,
       this.mandatoryAndActiveFpln,
       this.visibilityOnlyInActive,
@@ -490,7 +489,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 interactionMode={this.props.mfd.interactionMode}
               />
               <Button
-                disabled={Subject.create(true)}
+                disabled={true}
                 label="RTE SEL"
                 onClick={() => console.log('RTE SEL')}
                 buttonStyle="margin-right: 10px; width: 200px;"
@@ -643,14 +642,14 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 />
               </div>
               <Button
-                disabled={Subject.create(true)}
+                disabled={true}
                 label="WIND"
                 onClick={() => console.log('WIND')}
                 buttonStyle="margin-right: 10px; margin-top: 52px;"
               />
               <div style="flex-grow: 1" />
               <Button
-                disabled={Subject.create(true)}
+                disabled={true}
                 label="CPNY WIND<br />REQUEST"
                 onClick={() => console.log('CPNY WIND REQUEST')}
                 buttonStyle="margin-right: 10px; justify-self: flex-end; width: 175px;"
@@ -674,7 +673,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                   buttonStyle="width: 160px; margin-left: 150px; margin-bottom: 10px;"
                 />
                 <Button
-                  disabled={Subject.create(true)}
+                  disabled={true}
                   label="RTE SUMMARY"
                   onClick={() => this.props.mfd.uiService.navigateTo('fms/data/route')}
                   buttonStyle="margin-left: 50px; margin-bottom: 10px;"
@@ -706,7 +705,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 />
                 <div style="flex-grow: 1" />
                 <Button
-                  disabled={Subject.create(true)}
+                  disabled={true}
                   label="CPNY T.O.<br />REQUEST"
                   onClick={() => console.log('CPNY T.O. REQUEST')}
                   buttonStyle="margin-right: 10px; justify-self: flex-end; width: 175px;"

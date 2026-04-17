@@ -110,6 +110,8 @@
 1. [A380X/MODEL] Match animation speed of GND HYD buttons to other overhead buttons - @Jonny23787 (Jonathan)
 1. [A32NX/FMS] Improve accuracy of WIND/TEMP page layout - @BlueberryKing (BlueberryKing)
 1. [A32NX/FMS] Fully incorporate WIND page entries into performance predictions - @BlueberryKing (BlueberryKing)
+1. [A32NX/FMS] Implement `ONLY SPD ENTRY ALLOWED` message - @BlueberryKing (BlueberryKing)
+1. [A380X/MFD] Added support for the US Units option - MikioDK (Mikio), @tracernz (Mike)
 1. [A380X/Fuel] Only try to equalize feedtanks when each is below transfer limit - @Maximilian-Reuter (\_chaoz_)
 
 ## 0.14.0

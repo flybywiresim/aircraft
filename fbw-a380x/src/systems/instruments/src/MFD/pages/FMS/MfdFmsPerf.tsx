@@ -7,9 +7,12 @@ import {
   ClockEvents,
   FSComponent,
   MappedSubject,
+  NumberFormatter,
+  NumberUnitSubject,
   Subject,
   Subscribable,
   Subscription,
+  UnitType,
   VNode,
 } from '@microsoft/msfs-sdk';
 
@@ -28,7 +31,6 @@ import {
   LengthFormat,
   PercentageFormat,
   QnhFormat,
-  RADIO_ALTITUDE_NODH_VALUE,
   RadioAltitudeFormat,
   SpeedKnotsFormat,
   SpeedMachFormat,
@@ -51,7 +53,7 @@ import {
   getApproachName,
   showReturnButtonUriExtra,
 } from '../../shared/utils';
-import { ApproachType } from '@flybywiresim/fbw-sdk';
+import { ApproachType, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { FlightPlanChangeNotifier } from '@fmgc/flightplanning/sync/FlightPlanChangeNotifier';
@@ -76,6 +78,16 @@ enum FlightPhaseTabIndex {
 }
 
 export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
+  private readonly weightUnit = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT').map((v) =>
+    v ? UnitType.KILOGRAM : UnitType.POUND,
+  );
+  private readonly weightUnitText = this.weightUnit.map((v) => (v === UnitType.KILOGRAM ? 'T' : 'KLB'));
+
+  private readonly weightFormatter = NumberFormatter.create({
+    nanString: '---.-',
+    precision: 0.1,
+  });
+
   private vdevSub: Subscription | null = null;
 
   private flightPlanPerfSubs: Subscription[] = [];
@@ -548,7 +560,12 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private readonly destEta = Subject.create<string>('--:--');
 
-  private readonly destEfob = Subject.create<string>('---.-');
+  private readonly destEfob = NumberUnitSubject.create(UnitType.KILOGRAM.createNumber(NaN));
+  private readonly destEfobFormatted = MappedSubject.create(
+    ([value, weightUnit]) => this.weightFormatter(value.asUnit(weightUnit) / 1000),
+    this.destEfob,
+    this.weightUnit,
+  );
 
   private readonly cruisePreselectedSpeed = Subject.create<number | null>(null);
 
@@ -652,10 +669,11 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
   private readonly apprFlaps3Selected = Subject.create<boolean>(false);
   private readonly apprSelectedFlapsIndex = this.apprFlaps3Selected.map((isFlaps3) => (isFlaps3 ? 0 : 1));
 
-  private readonly apprLandingWeight = Subject.create<number | null>(null);
-
-  private readonly apprLandingWeightFormatted = this.apprLandingWeight.map((it) =>
-    it ? (it / 1000).toFixed(1) : '---.-',
+  private readonly apprLandingWeight = NumberUnitSubject.create(UnitType.KILOGRAM.createNumber(NaN));
+  private readonly apprLandingWeightFormatted = MappedSubject.create(
+    ([value, weightUnit]) => this.weightFormatter(value.asUnit(weightUnit) / 1000),
+    this.apprLandingWeight,
+    this.weightUnit,
   );
 
   private readonly approachWindDirection = Subject.create<number | null>(null);
@@ -696,6 +714,13 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
   private readonly missedEngineOutAccelAlt = Subject.create<number | null>(null);
   private readonly missedEngineOutAccelAltIsPilotEntered = Subject.create<boolean>(false);
+
+  private readonly lengthUnit = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT').map((v) =>
+    v ? UnitType.METER : UnitType.FOOT,
+  );
+
+  /** in feet */
+  private ldgRwyThresholdLocation = Subject.create<number | null>(null);
 
   // GA page subjects, refs and methods
 
@@ -936,6 +961,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
       );
 
     this.subs.push(
+      this.weightUnitText,
+      this.lengthUnit,
       this.mandatoryAndActiveFpln,
       this.visibilityConsideringFlightPlanIndex,
       this.speedConstraintReason,
@@ -1240,7 +1267,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
         );
       }
       this.destEta.set(destEta);
-      this.destEfob.set(this.props.fmcService.master.fmgc.getDestEFOB(true, fpIndex)?.toFixed(1) ?? '---.-');
+      const destEfob = this.props.fmcService.master.fmgc.getDestEFOB(true, fpIndex);
+      this.destEfob.set(destEfob === null ? NaN : destEfob * 1000);
     }
 
     if (selectedTabIndex === FlightPhaseTabIndex.Descent) {
@@ -1294,7 +1322,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     if (selectedTabIndex === FlightPhaseTabIndex.Approach) {
       // Update APPR page
       this.approachVappPilotEntry.set(this.loadedFlightPlan?.performanceData.pilotVapp.get() !== null);
-      this.apprLandingWeight.set(this.props.fmcService.master.getLandingWeight(fpIndex) ?? null);
+      this.apprLandingWeight.set(this.props.fmcService.master.getLandingWeight(fpIndex) ?? NaN);
       this.approachVapp.set(this.props.fmcService.master.getApproachVapp(fpIndex) ?? null);
 
       this.approachVls.set(this.props.fmcService.master.getApproachVls(fpIndex) ?? null);
@@ -1404,7 +1432,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   <div class="mfd-label-value-container">
                     <span class="mfd-label mfd-spacing-right">T.O SHIFT</span>
                     <InputField<number>
-                      dataEntryFormat={new LengthFormat(Subject.create(1), this.originRunwayLength)}
+                      dataEntryFormat={new LengthFormat(Subject.create(1), this.originRunwayLength, this.lengthUnit)}
                       dataHandlerDuringValidation={async (v) =>
                         this.props.flightPlanInterface.setPerformanceData(
                           'takeoffShift',
@@ -1452,7 +1480,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       style="grid-row-start: span 3; display: flex; justify-content: flex-end; align-items: flex-end;"
                     >
                       <Button
-                        label={Subject.create(
+                        label={
                           <div style="display: flex; flex-direction: row; justify-content: space-between;">
                             <span style="text-align: center; vertical-align: center; margin-right: 10px;">
                               CONFIRM
@@ -1460,8 +1488,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                               T.O SPDs
                             </span>
                             <span style="display: flex; align-items: center; justify-content: center;">*</span>
-                          </div>,
-                        )}
+                          </div>
+                        }
                         onClick={() => {
                           const fm = this.props.fmcService.master.fmgc.data;
                           if (fm && this.loadedFlightPlan) {
@@ -1925,7 +1953,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         condition={this.toPageInactive}
                         componentIfFalse={
                           <Button
-                            disabled={Subject.create(true)}
+                            disabled={true}
                             label="NOISE"
                             onClick={() => {
                               this.props.flightPlanInterface.setPerformanceData(
@@ -2016,7 +2044,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       componentIfFalse={
                         <Button
                           label="CPNY T.O<br />REQUEST"
-                          disabled={Subject.create(true)}
+                          disabled={true}
                           onClick={() => console.log('CPNY T.O REQUEST')}
                           buttonStyle="padding-left: 30px; padding-right: 30px"
                         />
@@ -2422,7 +2450,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       condition={this.toPageInactive}
                       componentIfFalse={
                         <Button
-                          disabled={Subject.create(true)}
+                          disabled={true}
                           label="NOISE"
                           onClick={() => {
                             this.props.flightPlanInterface.setPerformanceData(
@@ -2753,13 +2781,13 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         amber: this.destEfobAmber,
                       }}
                     >
-                      {this.destEfob}
+                      {this.destEfobFormatted}
                     </span>
-                    <span class="mfd-label-unit mfd-unit-trailing">T</span>
+                    <span class="mfd-label-unit mfd-unit-trailing">{this.weightUnitText}</span>
                   </div>
                   <div style="display: flex; flex-direction: row;">
                     <Button
-                      disabled={Subject.create(true)}
+                      disabled={true}
                       label="CMS"
                       onClick={() =>
                         this.props.mfd.uiService.navigateTo(
@@ -2769,7 +2797,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                       buttonStyle="margin-right: 10px;"
                     />
                     <Button
-                      disabled={Subject.create(false)}
                       label="STEP ALTs"
                       onClick={() =>
                         this.props.mfd.uiService.navigateTo(
@@ -2997,9 +3024,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         amber: this.destEfobAmber,
                       }}
                     >
-                      {this.destEfob}
+                      {this.destEfobFormatted}
                     </span>
-                    <span class="mfd-label-unit mfd-unit-trailing">T</span>
+                    <span class="mfd-label-unit mfd-unit-trailing">{this.weightUnitText}</span>
                   </div>
                   <div style="display: flex; flex-direction: row;">
                     <Button
@@ -3026,7 +3053,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                   <div class="mfd-label-value-container" style="padding: 15px;">
                     <span class="mfd-label mfd-spacing-right">LW</span>
                     <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.apprLandingWeightFormatted}</span>
-                    <span class="mfd-label-unit mfd-unit-trailing">T</span>
+                    <span class="mfd-label-unit mfd-unit-trailing">{this.weightUnitText}</span>
                   </div>
                 </div>
                 <div style="display: flex; flex-direction: row;">
@@ -3460,7 +3487,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
               </div>
               <div style={{ 'margin-right': '5px', visibility: this.activateApprButtonVisibility }}>
                 <Button
-                  label={Subject.create(
+                  label={
                     <div style="display: flex; flex-direction: row; justify-content: space-between;">
                       <span style="text-align: center; vertical-align: center; margin-right: 10px;">
                         ACTIVATE
@@ -3468,8 +3495,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         APPR
                       </span>
                       <span style="display: flex; align-items: center; justify-content: center;">*</span>
-                    </div>,
-                  )}
+                    </div>
+                  }
                   onClick={() => this.approachPhaseConfirmationDialogVisible.set(true)}
                   buttonStyle="color: #e68000; padding-right: 2px;"
                 />
@@ -3489,7 +3516,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
               </div>
               <div style={{ 'margin-right': '5px', visibility: this.clearEoButtonVisibility }}>
                 <Button
-                  label={Subject.create(
+                  label={
                     <div style="display: flex; flex-direction: row; justify-content: space-between;">
                       <span style="text-align: center; vertical-align: center; margin-right: 10px;">
                         CLEAR
@@ -3497,8 +3524,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         EO
                       </span>
                       <span style="display: flex; align-items: center; justify-content: center;">*</span>
-                    </div>,
-                  )}
+                    </div>
+                  }
                   onClick={() => this.clearEoConfirmationDialogVisible.set(true)}
                   buttonStyle="color: #e68000; padding-right: 2px;"
                 />

@@ -8,7 +8,6 @@ import {
   EventBus,
   FSComponent,
   MappedSubject,
-  Subject,
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
@@ -92,15 +91,7 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
   private readonly timeSS = this.zuluTime.map((seconds) => DateFormatting.secondsToHHmmssString(seconds).substring(6));
 
   // This call to NXUnits ensures that metricWeightVal is set early on
-  private readonly userWeight = Subject.create<'KG' | 'LBS'>(NXUnits.userWeightUnit());
-
-  private readonly configMetricUnitsSub = NXDataStore.getAndSubscribeLegacy(
-    'CONFIG_USING_METRIC_UNIT',
-    (_, value) => {
-      this.userWeight.set(value === '1' ? 'KG' : 'LBS');
-    },
-    '1',
-  );
+  private readonly userWeight = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT').map((v) => (v ? 'KG' : 'LBS'));
 
   private readonly fqmsFuelQuantity = Arinc429LocalVarConsumerSubject.create(this.sub.on('fqms_total_fuel_on_board'));
   private readonly fuelWeightText = MappedSubject.create(
@@ -146,6 +137,7 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
     super.onAfterRender(node);
 
     this.subscriptions.push(
+      this.userWeight,
       this.sat,
       this.tat,
       this.zp,
@@ -176,8 +168,6 @@ export class PermanentData extends DisplayComponent<PermanentDataProps> {
   }
 
   destroy(): void {
-    this.configMetricUnitsSub();
-
     for (const s of this.subscriptions) {
       s.destroy();
     }
