@@ -1,4 +1,12 @@
-﻿import { FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+﻿import {
+  FSComponent,
+  MappedSubject,
+  NumberFormatter,
+  NumberUnitSubject,
+  Subject,
+  UnitType,
+  VNode,
+} from '@microsoft/msfs-sdk';
 
 import './MfdFmsFpln.scss';
 import './MfdFmsFplnHold.scss';
@@ -10,12 +18,22 @@ import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputFi
 import { HoldDistFormat, HoldTimeFormat, InboundCourseFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { RadioButtonColor, RadioButtonGroup } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
 import { HoldData, HoldType } from '@fmgc/flightplanning/data/flightplan';
-import { TurnDirection } from '@flybywiresim/fbw-sdk';
+import { NXDataStore, TurnDirection } from '@flybywiresim/fbw-sdk';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 
 interface MfdFmsFplnHoldProps extends AbstractMfdPageProps {}
 
 export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
+  private readonly weightUnit = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT').map((v) =>
+    v ? UnitType.KILOGRAM : UnitType.POUND,
+  );
+  private readonly weightUnitText = this.weightUnit.map((v) => (v === UnitType.KILOGRAM ? 'T' : 'KLB'));
+
+  private readonly weightFormatter = NumberFormatter.create({
+    nanString: '---.-',
+    precision: 0.1,
+  });
+
   private readonly holdType = Subject.create<string>('MODIFIED HOLD AT');
 
   private readonly waypointIdent = Subject.create<string>('WAYPOINT');
@@ -36,7 +54,12 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
 
   private readonly lastExitUtc = Subject.create<string | null>(null);
 
-  private readonly lastExitEfob = Subject.create<string | null>(null);
+  private readonly lastExitEfob = NumberUnitSubject.create(UnitType.KILOGRAM.createNumber(NaN));
+  private readonly lastExitEfobText = MappedSubject.create(
+    ([value, weightUnit]) => this.weightFormatter(value.asUnit(weightUnit) / 1000),
+    this.lastExitEfob,
+    this.weightUnit,
+  );
 
   private readonly returnButtonDiv = FSComponent.createRef<HTMLDivElement>();
 
@@ -75,7 +98,7 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
         this.legDistance.set(hold?.distance ?? null);
 
         this.lastExitUtc.set('--:--');
-        this.lastExitEfob.set('--');
+        this.lastExitEfob.set(NaN);
       }
     }
   }
@@ -154,6 +177,8 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
     this.subs.push(this.legTime.sub(() => this.modifyHold()));
     this.subs.push(this.legDistance.sub(() => this.modifyHold()));
 
+    this.subs.push(this.weightUnit, this.weightUnitText, this.lastExitEfobText);
+
     this.showTimeOrDist();
   }
 
@@ -176,7 +201,7 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
                 value={this.inboundCourse}
                 dataEntryFormat={new InboundCourseFormat()}
                 tmpyActive={this.tmpyActive}
-                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
               />
@@ -208,7 +233,7 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
                     dataEntryFormat={new HoldTimeFormat()}
                     value={this.legTime}
                     tmpyActive={this.tmpyActive}
-                    errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                    errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                     hEventConsumer={this.props.mfd.hEventConsumer}
                     interactionMode={this.props.mfd.interactionMode}
                   />
@@ -218,7 +243,7 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
                     dataEntryFormat={new HoldDistFormat()}
                     value={this.legDistance}
                     tmpyActive={this.tmpyActive}
-                    errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                    errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                     hEventConsumer={this.props.mfd.hEventConsumer}
                     interactionMode={this.props.mfd.interactionMode}
                   />
@@ -235,8 +260,8 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
               <div />
               <div class={{ 'mfd-value': true, magenta: this.isActiveOrTmpy }}>{this.lastExitUtc}</div>
               <div class="mfd-label-value-container">
-                <span class={{ 'mfd-value': true, magenta: this.isActiveOrTmpy }}>{this.lastExitEfob}</span>
-                <span class="mfd-label-unit mfd-unit-trailing">T</span>
+                <span class={{ 'mfd-value': true, magenta: this.isActiveOrTmpy }}>{this.lastExitEfobText}</span>
+                <span class="mfd-label-unit mfd-unit-trailing">{this.weightUnitText}</span>
               </div>
             </div>
           </div>
@@ -245,7 +270,7 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
               label="DATABASE"
               onClick={() => console.warn('DATABASE HOLD NOT IMPLEMENTED')}
               buttonStyle="padding: 20px; margin: 5px;"
-              disabled={Subject.create(true)}
+              disabled={true}
             />
             <Button
               label="COMPUTED"
