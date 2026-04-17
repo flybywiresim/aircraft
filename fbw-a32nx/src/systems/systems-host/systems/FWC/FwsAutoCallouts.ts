@@ -256,8 +256,8 @@ export class FwsAutoCallouts {
     this.dmcRDiscreteWord270.set(this.dmcRDiscreteWord270Var.get());
     this.dmcLDh.set(this.leftDmcDhVar.get());
     this.dmcRDh.set(this.rightDmcDVar.get());
-    // DH selection. Use DH 2 if 1 invalid or if both valid and DH 2 > DH1.
-    if (this.dmcLDh.isInvalid() || this.dmcRDh.valueOr(0) > this.dmcLDh.valueOr(0)) {
+    // DH selection. Use DH 2 if 1 invalid or if both valid and DH 1> DH2.
+    if (this.dmcLDh.isInvalid() || this.dmcLDh.valueOr(0) > this.dmcRDh.valueOr(0)) {
       this.dmcDhToUse = this.dmcRDh;
     } else {
       this.dmcDhToUse = this.dmcLDh;

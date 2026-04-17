@@ -160,37 +160,12 @@ export class PseudoDmc implements Instrument {
         ([fmMda, altitude]) => {
           const mdaInvalid = fmMda.isInvalid();
           const altInvalid = altitude.isInvalid();
-          let ssm: Arinc429SignStatusMatrix;
-          // Set the more restricive SSM between minimum and altitude.
-          if (
-            fmMda.ssm === Arinc429SignStatusMatrix.FailureWarning ||
-            altitude.ssm === Arinc429SignStatusMatrix.FailureWarning
-          ) {
-            ssm = Arinc429SignStatusMatrix.FailureWarning;
-          } else if (
-            fmMda.ssm === Arinc429SignStatusMatrix.NoComputedData ||
-            altitude.ssm === Arinc429SignStatusMatrix.NoComputedData
-          ) {
-            ssm = Arinc429SignStatusMatrix.NoComputedData;
-          } else if (
-            fmMda.ssm === Arinc429SignStatusMatrix.FunctionalTest ||
-            altitude.ssm === Arinc429SignStatusMatrix.FunctionalTest
-          ) {
-            ssm = Arinc429SignStatusMatrix.FunctionalTest;
-          } else {
-            ssm = Arinc429SignStatusMatrix.NormalOperation;
-          }
           this.dmcDiscreteWord270.setBitValue(
             20,
             mdaInvalid || altInvalid ? false : altitude.value - fmMda.value <= 100, //FIXME Confirm if it should it latch or be set directly?
           );
-          this.dmcDiscreteWord270.setBitValue(
-            21,
-            ssm === Arinc429SignStatusMatrix.FailureWarning || ssm === Arinc429SignStatusMatrix.NoComputedData
-              ? false
-              : altitude.value < fmMda.value,
-          );
-          this.dmcDiscreteWord270.setSsm(ssm);
+          this.dmcDiscreteWord270.setBitValue(21, altInvalid || mdaInvalid ? false : altitude.value < fmMda.value);
+          this.dmcDiscreteWord270.setSsm(Arinc429SignStatusMatrix.NormalOperation);
         },
         this.fmMda,
         this.altitude,
