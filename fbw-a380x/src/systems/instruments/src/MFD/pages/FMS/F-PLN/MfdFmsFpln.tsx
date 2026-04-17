@@ -138,13 +138,13 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
   private readonly destEfobLabel = this.createWeightSubscribable(this.destEfob);
 
   private readonly destEfobNotAvailableAndInActive = MappedSubject.create(
-    ([tmpy, efob, fpIndex]) => !tmpy && efob == null && fpIndex === FlightPlanIndex.Active,
+    ([tmpy, efob, fpIndex]) => !tmpy && isNaN(efob.number) && fpIndex === FlightPlanIndex.Active,
     this.tmpyActive,
     this.destEfob,
     this.loadedFlightPlanIndex,
   );
 
-  private readonly destEfobUnitVisiblity = this.destEfob.map((v) => (v == null ? 'hidden' : 'visible'));
+  private readonly destEfobUnitVisiblity = this.destEfob.map((v) => (isNaN(v.number) ? 'hidden' : 'visible'));
 
   private readonly distanceToDest = Subject.create<number | null>(null);
 
@@ -262,9 +262,14 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     this.lastRenderedFpVersion = this.loadedFlightPlan.version ?? null;
     this.lastRenderedDisplayLineIndex = this.displayFplnFromLineIndex.get();
     const hasDestination = this.loadedFlightPlan.destinationAirport !== undefined;
+    const loadedFpIndex = this.loadedFlightPlanIndex.get();
 
     if (hasDestination) {
       this.destNotLoaded.set(false);
+      this.distanceToDest.set(
+        this.props.fmcService.master?.fmgc?.guidanceController?.getAlongTrackDistanceToDestination(loadedFpIndex) ??
+          null,
+      );
       if (this.loadedFlightPlan.destinationRunway) {
         this.destButtonLabel.set(
           `${this.loadedFlightPlan.destinationRunway.airportIdent}${this.loadedFlightPlan.destinationRunway.ident.substring(4)}`,
@@ -276,19 +281,12 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       this.destNotLoaded.set(true);
       this.destButtonLabel.set('------');
     }
-    const loadedFpIndex = this.loadedFlightPlanIndex.get();
 
     // TODO SEC predictions
     const destPred =
       loadedFpIndex === FlightPlanIndex.Active
         ? this.props.fmcService?.master?.guidanceController?.vnavDriver?.getDestinationPrediction()
         : null;
-
-    const distanceToDestination = hasDestination
-      ? this.props.fmcService.master.fmgc?.guidanceController?.getAlongTrackDistanceToDestination(loadedFpIndex)
-      : undefined;
-    this.distanceToDest.set(distanceToDestination ?? null);
-
     if (destPred) {
       this.destEfobAmber.set(this.props.fmcService.master.fmgc.data.destEfobBelowMinInActive.get());
       this.destTime.set(new Date(this.predictionTimestamp(destPred.secondsFromPresent)));
@@ -399,11 +397,15 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
       // Prepare sequencing of pseudo waypoints
       const pseudoWptMap = new Map<number, PseudoWaypoint>();
-      // Insert pseudo waypoints from guidance controller
-      this.props.fmcService?.master?.guidanceController?.pseudoWaypoints?.pseudoWaypoints?.forEach((wpt) =>
-        pseudoWptMap.set(wpt.alongLegIndex, wpt),
-      );
-
+      const fpIndex = this.loadedFlightPlanIndex.get();
+      //TODO SEC or TMPY predictions
+      const isActive = fpIndex === FlightPlanIndex.Active;
+      if (isActive) {
+        // Insert pseudo waypoints from guidance controller
+        this.props.fmcService?.master?.guidanceController?.pseudoWaypoints?.pseudoWaypoints?.forEach((wpt) =>
+          pseudoWptMap.set(wpt.alongLegIndex, wpt),
+        );
+      }
       lastDistanceFromStart = 0;
 
       for (let i = 0; i < jointFlightPlan.length; i++) {
@@ -435,10 +437,12 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             hasSpeedConstraint: (pwp.mcduIdent ?? pwp.ident) === '(SPDLIM)',
             speedConstraint: null, // TODO
             speedConstraintIsRespected: true,
-            efobPrediction: Units.poundToKilogram(
-              this.props.fmcService.master.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)
-                ?.estimatedFuelOnBoard ?? NaN,
-            ),
+            efobPrediction: isActive
+              ? Units.poundToKilogram(
+                  this.props.fmcService.master.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)
+                    ?.estimatedFuelOnBoard ?? NaN,
+                )
+              : NaN,
             windPrediction: pwp.flightPlanInfo?.windPrediction ?? null,
             trackFromLastWpt: this.derivedFplnLegData[i].trackFromLastWpt,
             distFromLastWpt: reduceDistanceBy,
@@ -474,8 +478,9 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
           const annotation = leg.type === LegType.HF || leg.type === LegType.HA ? 'HOLD L' : leg.annotation;
 
-          const pred =
-            this.props.fmcService?.master?.guidanceController?.vnavDriver?.mcduProfile?.waypointPredictions?.get(i);
+          const pred = isActive
+            ? this.props.fmcService?.master?.guidanceController?.vnavDriver?.mcduProfile?.waypointPredictions?.get(i)
+            : null;
 
           const data: FplnLineWaypointDisplayData = {
             type: FplnLineType.Waypoint,
@@ -1195,7 +1200,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                     ),
                 },
                 {
-                  label: 'TIME MARKER',
+                  label: 'TIME',
                   disabled: true,
                   action: () =>
                     this.props.mfd.uiService.navigateTo(

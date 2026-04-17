@@ -188,14 +188,15 @@ export class AtcDatalinkSystem implements Instrument {
   /**
    * Add ATC error message to ATCCOM message queue
    * @param {FmsErrorType} errorType error type
+   * @param {string} details optional details to add to error message which are shown on the second line. For format error and entry out of range cases
    */
-  showAtcErrorMessage(errorType: FmsErrorType) {
+  showAtcErrorMessage(errorType: FmsErrorType, details?: string) {
     switch (errorType) {
       case FmsErrorType.EntryOutOfRange:
-        this.addMessageToQueue(NXSystemMessages.entryOutOfRange);
+        this.addMessageToQueue(NXSystemMessages.entryOutOfRange, details);
         break;
       case FmsErrorType.FormatError:
-        this.addMessageToQueue(NXSystemMessages.formatError);
+        this.addMessageToQueue(NXSystemMessages.formatError, details);
         break;
       case FmsErrorType.NotInDatabase:
         this.addMessageToQueue(NXSystemMessages.notInDatabase);
@@ -230,11 +231,12 @@ export class AtcDatalinkSystem implements Instrument {
   /**
    * Add ATCCOM message to ATCCOM message queue
    * @param {ATCCOMMessage} message message object
+   * @param {string} details optional details to add to message which are shown on the second line
    */
-  public addMessageToQueue(message: ATCCOMMessage) {
+  public addMessageToQueue(message: ATCCOMMessage, details?: string) {
     const msg: AtcErrorMessage = {
       message: message,
-      messageText: message.text,
+      messageText: details ? message.text.concat('\n', details) : message.text,
       backgroundColor: message.isAmber ? 'amber' : 'white',
       cleared: false,
     };

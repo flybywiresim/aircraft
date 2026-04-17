@@ -117,8 +117,6 @@ export class FmgcData {
 
   public readonly approachFlapRetractionSpeed = Subject.create<Knots | null>(null);
 
-  public readonly approachVapp = Subject.create<Knots | null>(null);
-
   /** in feet. null if not set. */
   public readonly climbPredictionsReferencePilotEntry = Subject.create<number | null>(null);
 
@@ -134,6 +132,8 @@ export class FmgcData {
   public readonly climbPredictionsReferenceIsPilotEntered = this.climbPredictionsReferencePilotEntry.map(
     (it) => it !== null,
   );
+
+  public readonly approachVapp = Subject.create<Knots | null>(null);
 
   public readonly approachVref = Subject.create<Knots | null>(null);
 
