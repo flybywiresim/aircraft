@@ -20,8 +20,8 @@ export class CruisePage extends DestroyableComponent<SdPageProps> {
   private readonly topSvgDisplay = this.props.visible.map((v) => (v ? 'inline' : 'none'));
 
   private readonly usingMetric = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT');
-  private readonly weightUnit = this.usingMetric.map((v) => (v ? 'KG' : 'LB'));
-  private readonly fuelFlowUnit = this.usingMetric.map((v) => (v ? 'KG/H' : 'LB/H'));
+  private readonly weightUnit = this.usingMetric.map((v) => (v ? 'KG' : 'LBS'));
+  private readonly fuelFlowUnit = this.usingMetric.map((v) => (v ? 'KG/H' : 'LBS/H'));
 
   private readonly enginesFuelUsed = [
     ConsumerSubject.create(this.sub.on('engineFuelUsed_1'), 0),
