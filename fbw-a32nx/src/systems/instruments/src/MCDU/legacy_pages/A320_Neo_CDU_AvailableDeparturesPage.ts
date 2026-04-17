@@ -297,19 +297,19 @@ export class CDUAvailableDeparturesPage {
     if (editingTmpy) {
       mcdu.onLeftInput[5] = () => {
         mcdu.eraseTemporaryFlightPlan(() => {
-          CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
+          CDUFlightPlanPage.ShowPage(mcdu, 0, false, forPlan);
         });
       };
       mcdu.onRightInput[5] = () => {
         mcdu.insertTemporaryFlightPlan(() => {
           mcdu.updateConstraints();
           mcdu.onToRwyChanged();
-          CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
+          CDUFlightPlanPage.ShowPage(mcdu, 0, false, forPlan);
         });
       };
     } else {
       mcdu.onLeftInput[5] = () => {
-        CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
+        CDUFlightPlanPage.ShowPage(mcdu, 0, false, forPlan);
       };
     }
 

@@ -1,6 +1,6 @@
 //  Copyright (c) 2024-2025-2026 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
-import { MappedSubject, Subject, Subscribable, Subscription } from '@microsoft/msfs-sdk';
+import { MappedSubject, Subject, Subscribable, Subscription, Unit, UnitFamily, UnitType } from '@microsoft/msfs-sdk';
 import { Fix } from '@flybywiresim/fbw-sdk';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 import { Mmo, maxCertifiedAlt } from '@shared/PerformanceConstants';
@@ -41,8 +41,18 @@ export interface DataEntryFormat<T, U = T> {
    * If modified or notify()ed, triggers format() in the input field (i.e. when dependencies to value have changed)
    */
   reFormatTrigger?: Subscribable<boolean>;
+
+  unitFamily?: Subscribable<Unit<UnitFamily>>;
   destroy?: () => void;
 }
+
+const distanceUnitFormatter = (unit: Unit<UnitFamily.Distance>) => {
+  return unit === UnitType.METER ? 'M' : 'FT';
+};
+
+const weightUnitFormatter = (unit: Unit<UnitFamily.Weight>) => {
+  return unit === UnitType.KILOGRAM ? 'T' : 'KLB';
+};
 
 class SubscriptionCollector {
   protected readonly subscriptions: Subscription[] = [];
@@ -440,11 +450,7 @@ export class TropoFormat implements DataEntryFormat<number> {
 }
 
 export class LengthFormat extends SubscriptionCollector implements DataEntryFormat<number> {
-  public readonly placeholder = '----';
-
-  public readonly unit = 'M';
-
-  public maxDigits = 4;
+  public readonly placeholder = '-'.repeat(this.maxDigits);
 
   private readonly requiredFormat = 'XXXX';
 
@@ -455,6 +461,8 @@ export class LengthFormat extends SubscriptionCollector implements DataEntryForm
   constructor(
     minValue: Subscribable<number> = Subject.create(0),
     maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY),
+    public readonly unitFamily: Subscribable<Unit<UnitFamily.Distance>> = Subject.create(UnitType.METER),
+    public readonly maxDigits = 4,
   ) {
     super();
     this.subscriptions.push(minValue.sub((val) => (this.minValue = val), true));
@@ -462,10 +470,14 @@ export class LengthFormat extends SubscriptionCollector implements DataEntryForm
   }
 
   public format(value: number) {
+    const unit = distanceUnitFormatter(this.unitFamily.get());
     if (value === null || value === undefined) {
-      return [this.placeholder, null, this.unit] as FieldFormatTuple;
+      return [this.placeholder, null, unit] as FieldFormatTuple;
     }
-    return [value.toString(), null, this.unit] as FieldFormatTuple;
+
+    value = this.unitFamily.get().convertFrom(value, UnitType.METER);
+
+    return [value.toFixed(0), null, unit] as FieldFormatTuple;
   }
 
   public async parse(input: string) {
@@ -473,7 +485,7 @@ export class LengthFormat extends SubscriptionCollector implements DataEntryForm
       return null;
     }
 
-    const nbr = Number(input);
+    const nbr = this.unitFamily.get().convertTo(Number(input), UnitType.METER);
     if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
       return nbr;
     }
@@ -505,6 +517,7 @@ export class WeightFormat extends SubscriptionCollector implements DataEntryForm
   constructor(
     minValue: Subscribable<number> = Subject.create(0),
     maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY),
+    public readonly unitFamily: Subscribable<Unit<UnitFamily.Weight>> = Subject.create(UnitType.KILOGRAM),
   ) {
     super();
     this.subscriptions.push(minValue.sub((val) => (this.minValue = val), true));
@@ -512,10 +525,14 @@ export class WeightFormat extends SubscriptionCollector implements DataEntryForm
   }
 
   public format(value: number) {
+    const unit = weightUnitFormatter(this.unitFamily.get());
     if (value === null || value === undefined) {
-      return [this.placeholder, null, this.unit] as FieldFormatTuple;
+      return [this.placeholder, null, unit] as FieldFormatTuple;
     }
-    return [value.toFixed(1), null, this.unit] as FieldFormatTuple;
+
+    value = this.unitFamily.get().convertFrom(value, UnitType.KILOGRAM);
+
+    return [(value / 1000).toFixed(1), null, unit] as FieldFormatTuple;
   }
 
   public async parse(input: string) {
@@ -523,10 +540,11 @@ export class WeightFormat extends SubscriptionCollector implements DataEntryForm
       return null;
     }
 
-    const nbr = Number(input);
+    const convertedInput = this.unitFamily.get().convertTo(Number(input), UnitType.KILOGRAM);
 
-    if (Number.isNaN(nbr)) {
-      throw getFormattedFormatError(this.requiredFormat, this.unit);
+    const nbr = convertedInput * 1000;
+    if (!Number.isNaN(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
+      return nbr;
     }
 
     if (nbr <= this.maxValue && nbr >= this.minValue) {

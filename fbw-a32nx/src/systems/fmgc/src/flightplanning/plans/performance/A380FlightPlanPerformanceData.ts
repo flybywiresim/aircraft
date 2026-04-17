@@ -17,6 +17,7 @@ import {
   TakeoffPacks,
   TakeoffPowerSetting,
 } from './FlightPlanPerformanceData';
+import { FlightPlanWindEntry, WindVector } from '../../data/wind';
 
 // TODO this should go to fbw-a380x/ once FMS is moved to fbw-common
 export class A380FlightPlanPerformanceData implements FlightPlanPerformanceData {
@@ -113,6 +114,7 @@ export class A380FlightPlanPerformanceData implements FlightPlanPerformanceData 
     cloned.approachTemperature.set(this.approachTemperature.get());
     cloned.approachWindDirection.set(this.approachWindDirection.get());
     cloned.approachWindMagnitude.set(this.approachWindMagnitude.get());
+    cloned.isApproachWindPilotEntered.set(this.isApproachWindPilotEntered.get());
     cloned.pilotVapp.set(this.pilotVapp.get());
     cloned.approachBaroMinimum.set(this.approachBaroMinimum.get());
     cloned.approachRadioMinimum.set(this.approachRadioMinimum.get());
@@ -821,6 +823,12 @@ export class A380FlightPlanPerformanceData implements FlightPlanPerformanceData 
   readonly approachWindMagnitude = Subject.create<number | null>(null);
 
   /**
+   * Whether the wind magnitude and direction were entered by the pilot, false if no entry has been made or if the wind
+   * has been automatically transferred from a descent wind entry at ground level
+   */
+  readonly isApproachWindPilotEntered = Subject.create<boolean>(false);
+
+  /**
    * The approach speed Vapp manually overridden by the pilot in knots, or null if not set.
    */
   readonly pilotVapp = Subject.create<number | null>(null);
@@ -869,6 +877,21 @@ export class A380FlightPlanPerformanceData implements FlightPlanPerformanceData 
   readonly climbDerated = Subject.create<ClimbDerated | null>(ClimbDerated.NONE);
 
   readonly descentCabinRate = Subject.create<number | null>(-350);
+
+  /**
+   * The wind entries for the climb segment entered by the pilot
+   */
+  readonly climbWindEntries = Subject.create<FlightPlanWindEntry[]>([]);
+
+  /**
+   * The wind entries for the descent segment entered by the pilot
+   */
+  readonly descentWindEntries = Subject.create<FlightPlanWindEntry[]>([]);
+
+  /**
+   * The average wind vector for the alternate flight plan, or null if not set.
+   */
+  readonly alternateWind = Subject.create<WindVector | null>(null);
 
   serialize(): SerializedFlightPlanPerformanceData {
     return {
@@ -935,6 +958,7 @@ export class A380FlightPlanPerformanceData implements FlightPlanPerformanceData 
       approachTemperature: this.approachTemperature.get(),
       approachWindDirection: this.approachWindDirection.get(),
       approachWindMagnitude: this.approachWindMagnitude.get(),
+      isApproachWindPilotEntered: this.isApproachWindPilotEntered.get(),
       pilotVapp: this.pilotVapp.get(),
       approachBaroMinimum: this.approachBaroMinimum.get(),
       approachRadioMinimum: this.approachRadioMinimum.get(),
@@ -954,6 +978,9 @@ export class A380FlightPlanPerformanceData implements FlightPlanPerformanceData 
       costIndexMode: this.costIndexMode.get(),
       climbDerated: this.climbDerated.get(),
       descentCabinRate: this.descentCabinRate.get(),
+      climbWindEntries: this.climbWindEntries.get(),
+      descentWindEntries: this.descentWindEntries.get(),
+      alternateWind: this.alternateWind.get(),
     };
   }
 }
