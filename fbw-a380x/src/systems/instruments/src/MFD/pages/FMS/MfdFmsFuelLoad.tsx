@@ -98,9 +98,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
   private readonly taxiFuel = Subject.create<number | null>(null);
   private readonly taxiFuelIsPilotEntered = Subject.create<boolean>(false);
 
-  private readonly routeReserveFuelPilotEntry = Subject.create<number | null>(null);
   private readonly routeReserveFuelIsPilotEntered = Subject.create<boolean>(false);
-
   private readonly routeReserveFuelPercentage = Subject.create<number | null>(null);
   private readonly routeReserveFuelPercentageIsPilotEntered = Subject.create<boolean>(false);
 
@@ -374,12 +372,6 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
       this.taxiFuel.set(null);
     }
     this.taxiFuelIsPilotEntered.set(pd?.taxiFuelIsPilotEntered.get() ?? false);
-    const pdRouteReserveFuel = pd?.pilotRouteReserveFuel.get();
-    if (pdRouteReserveFuel !== undefined && pdRouteReserveFuel !== null) {
-      this.routeReserveFuelPilotEntry.set(pdRouteReserveFuel * 1000);
-    } else {
-      this.routeReserveFuelPilotEntry.set(null);
-    }
     this.routeReserveFuelIsPilotEntered.set(pd?.isRouteReserveFuelPilotEntered.get() ?? false);
     this.routeReserveFuelPercentageIsPilotEntered.set(pd?.isRouteReserveFuelPercentagePilotEntered.get() ?? false);
     const pdAlternateFuel = pd?.alternateFuel.get();
