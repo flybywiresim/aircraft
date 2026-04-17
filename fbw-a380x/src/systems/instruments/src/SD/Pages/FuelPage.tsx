@@ -1046,7 +1046,7 @@ export const FuelPage = () => {
         {allEngFuelFlowDisplayed}
       </text>
       <text x={68} y={644} className="Cyan T2">
-        {NXUnits.userWeightUnit}/MIN
+        {NXUnits.userWeightUnit()}/MIN
       </text>
 
       <image
