@@ -1,10 +1,18 @@
+// Copyright (c) 2024-2026 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
 import {
   ArraySubject,
   ClockEvents,
   FSComponent,
   MappedSubject,
+  NumberFormatter,
+  NumberUnitInterface,
+  NumberUnitSubject,
+  SimpleUnit,
   Subject,
-  Subscription,
+  Unit,
+  UnitFamily,
+  UnitType,
   VNode,
 } from '@microsoft/msfs-sdk';
 
@@ -26,6 +34,7 @@ import {
   maxBlockFuel,
   maxFinalFuel,
   maxJtsnGw,
+  maxMinDestFuel,
   maxRteRsvFuelPerc,
   maxTaxiFuel,
   maxZfw,
@@ -39,16 +48,27 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
 import { getEtaFromUtcOrPresent, hhmmFormatter } from '../../shared/utils';
 import { DropdownMenu } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/DropdownMenu';
-import { FlightPlanChangeNotifier } from '@fmgc/flightplanning/sync/FlightPlanChangeNotifier';
-import { CostIndexMode } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
+import { CostIndexMode } from '../../FMC/fmgc';
+import { NXDataStore } from '@flybywiresim/fbw-sdk';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
+import { FlightPlanChangeNotifier } from '@fmgc/flightplanning/sync/FlightPlanChangeNotifier';
 
 interface MfdFmsFuelLoadProps extends AbstractMfdPageProps {}
 
 export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
-  private readonly flightPlanChangeNotifier = new FlightPlanChangeNotifier(this.props.bus);
+  private readonly weightUnit = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT').map((v) =>
+    v ? UnitType.KILOGRAM : UnitType.POUND,
+  );
 
-  private flightPlanPerfSubs: Subscription[] = [];
+  private readonly weightFormatter = NumberFormatter.create({
+    nanString: '---.-',
+    precision: 0.1,
+  });
+
+  private readonly grossWeight = NumberUnitSubject.create(UnitType.KILOGRAM.createNumber(NaN));
+  private readonly grossWeightText = this.createWeightSubscribable(this.grossWeight);
+
+  private readonly flightPlanChangeNotifier = new FlightPlanChangeNotifier(this.props.bus);
 
   private readonly destEfobAmber = MappedSubject.create(
     ([destEfobBelowM, loadedFpIndex]) => destEfobBelowM && loadedFpIndex === FlightPlanIndex.Active,
@@ -60,29 +80,25 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
     (it) => it === FlightPlanIndex.Active || it === FlightPlanIndex.Temporary,
   );
 
-  private readonly grossWeight = Subject.create<number | null>(null);
-  private readonly grossWeightText = this.grossWeight.map((it) => (it ? (it / 1000).toFixed(1) : '---.-'));
-
   private readonly centerOfGravity = Subject.create<number | null>(null);
   private readonly centerOfGravityText = this.centerOfGravity.map((it) => (it ? it.toFixed(1) : '--.-'));
 
-  private readonly fuelOnBoard = Subject.create<number | null>(null);
-  private readonly fuelOnBoardText = this.fuelOnBoard.map((it) => (it ? it.toFixed(1) : '---.-'));
+  private readonly fuelOnBoard = NumberUnitSubject.create(UnitType.KILOGRAM.createNumber(NaN));
+  private readonly fuelOnBoardText = this.createWeightSubscribable(this.fuelOnBoard);
 
+  /** Zero Fuel Weight in kg, or null if no value. */
   private readonly zeroFuelWeight = Subject.create<number | null>(null);
 
   private readonly zeroFuelWeightCenterOfGravity = Subject.create<number | null>(null);
 
+  /** Block fuel weight in kg, or null if no value. */
   private readonly blockFuel = Subject.create<number | null>(null);
 
-  private readonly tripFuelWeight = Subject.create<number | null>(null);
-
+  /** Taxi fuel weight in kg, or null if no value. */
   private readonly taxiFuel = Subject.create<number | null>(null);
   private readonly taxiFuelIsPilotEntered = Subject.create<boolean>(false);
 
-  private readonly routeReserveFuelPilotEntry = Subject.create<number | null>(null);
   private readonly routeReserveFuelIsPilotEntered = Subject.create<boolean>(false);
-
   private readonly routeReserveFuelPercentage = Subject.create<number | null>(null);
   private readonly routeReserveFuelPercentageIsPilotEntered = Subject.create<boolean>(false);
 
@@ -107,8 +123,8 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
   private readonly destinationAlternateTimeHeader = this.activeFlightPhase.map((v) =>
     v === FmgcFlightPhase.Preflight ? 'TIME' : 'UTC',
   );
-
-  private readonly tripFuelWeightText = this.tripFuelWeight.map((it) => (it ? (it / 1000).toFixed(1) : '---.-'));
+  private readonly tripFuelWeight = NumberUnitSubject.create(UnitType.KILOGRAM.createNumber(NaN));
+  private readonly tripFuelWeightText = this.createWeightSubscribable(this.tripFuelWeight);
 
   private readonly tripFuelTime = Subject.create('--:--');
 
@@ -118,37 +134,29 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
 
   private readonly costIndexMode = Subject.create<CostIndexMode | null>(null);
 
-  private readonly costIndexDisabled = MappedSubject.create(
-    ([flightPhase, ciMode, fpIndex]) =>
-      ciMode == CostIndexMode.LRC ||
-      (flightPhase >= FmgcFlightPhase.Descent &&
-        this.props.flightPlanInterface.get(fpIndex).isActiveOrCopiedFromActive()),
-    this.activeFlightPhase,
-    this.costIndexMode,
-    this.loadedFlightPlanIndex,
-  );
+  private readonly jettisonGrossWeight = Subject.create(null);
+  private readonly takeoffWeight = NumberUnitSubject.create(UnitType.KILOGRAM.createNumber(NaN));
+  private readonly takeoffWeightText = this.createWeightSubscribable(this.takeoffWeight);
+  private readonly landingWeight = NumberUnitSubject.create(UnitType.KILOGRAM.createNumber(NaN));
+  private readonly landingWeightText = this.createWeightSubscribable(this.landingWeight);
 
-  private readonly jettisonGrossWeight = Subject.create<number | null>(null);
+  private readonly destIcao = Subject.create<string | null>(null);
 
-  private readonly takeoffWeight = Subject.create<number | null>(null);
-
-  private readonly landingWeight = Subject.create<number | null>(null);
-
-  private readonly destIcao = Subject.create<string>('----');
+  private readonly destIcaoDisplay = this.destIcao.map((v) => (v ? v : 'NONE'));
 
   private readonly destEta = Subject.create<string>('--:--');
-
-  private readonly destEfob = Subject.create<string>('---.-');
+  private readonly destEfob = NumberUnitSubject.create(UnitType.KILOGRAM.createNumber(NaN));
+  private readonly destEfobText = this.createWeightSubscribable(this.destEfob);
 
   private readonly altnIcao = Subject.create<string>('----');
 
   private readonly altnEta = Subject.create<string>('--:--');
 
-  private readonly altnEfob = Subject.create<number | null>(null);
-  private readonly altnEfobText = this.altnEfob.map((it) => (it ? it.toFixed(1) : '---.-'));
+  private readonly altnEfob = NumberUnitSubject.create(UnitType.KILOGRAM.createNumber(NaN));
+  private readonly altnEfobText = this.createWeightSubscribable(this.altnEfob);
 
-  private readonly extraFuelWeight = Subject.create<number | null>(null);
-  private readonly extraFuelWeightText = this.extraFuelWeight.map((it) => (it ? (it / 1000).toFixed(1) : '---.-'));
+  private readonly extraFuelWeight = NumberUnitSubject.create(UnitType.KILOGRAM.createNumber(NaN));
+  private readonly extraFuelWeightText = this.createWeightSubscribable(this.extraFuelWeight);
 
   private readonly extraFuelTime = Subject.create<number | null>(null);
   private readonly extraFuelTimeText = this.extraFuelTime.map((it) => hhmmFormatter(it ?? NaN));
@@ -169,51 +177,42 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
     isActive ? 'visible' : 'hidden',
   );
 
+  private createWeightSubscribable(
+    value: NumberUnitSubject<UnitFamily.Weight, SimpleUnit<UnitFamily.Weight>>,
+  ): MappedSubject<
+    [NumberUnitInterface<UnitFamily.Weight, SimpleUnit<UnitFamily.Weight>>, Unit<UnitFamily.Weight>],
+    string
+  > {
+    return MappedSubject.create(
+      ([value, weightUnit]) => this.weightFormatter(value.asUnit(weightUnit) / 1000),
+      value,
+      this.weightUnit,
+    );
+  }
+
+  private readonly costIndexModeDisabled = MappedSubject.create(
+    ([flightPhase, dest, fpIndex]) =>
+      (this.props.flightPlanInterface.get(fpIndex).isActiveOrCopiedFromActive() &&
+        flightPhase >= FmgcFlightPhase.Descent) ||
+      !dest,
+    this.activeFlightPhase,
+    this.destIcao,
+    this.loadedFlightPlanIndex,
+  );
+
+  private readonly costIndexDisabled = MappedSubject.create(
+    ([ciModeDisabled, ciMode]) => ciModeDisabled || ciMode === CostIndexMode.LRC,
+    this.costIndexModeDisabled,
+    this.costIndexMode,
+  );
+
   protected onNewData() {
-    if (!this.props.fmcService.master || !this.loadedFlightPlan) {
-      return;
-    }
-
-    this.costIndex.set(this.loadedFlightPlan.performanceData.costIndex.get());
-
-    this.updateDestAndAltnPredictions();
+    // no op
   }
+  private readonly weightUnitText = this.weightUnit.map((v) => (v === UnitType.KILOGRAM ? 'T' : 'KLB'));
 
-  updateDestAndAltnPredictions() {
-    if (!this.props.fmcService.master || !this.loadedFlightPlan) {
-      return;
-    }
-
-    const fpIndex = this.loadedFlightPlanIndex.get();
-    if (this.loadedFlightPlan.destinationAirport) {
-      this.destIcao.set(this.loadedFlightPlan.destinationAirport.ident);
-
-      // TODO SEC predictions
-      const destPred =
-        fpIndex === FlightPlanIndex.Active || fpIndex === FlightPlanIndex.Temporary
-          ? this.props.fmcService.master.guidanceController.vnavDriver.getDestinationPrediction()
-          : null;
-      // TODO Should display ETA if EET present
-      this.destEta.set(
-        getEtaFromUtcOrPresent(destPred?.secondsFromPresent, this.activeFlightPhase.get() == FmgcFlightPhase.Preflight),
-      );
-      const destEfob = this.props.fmcService.master.fmgc.getDestEFOB(true, this.loadedFlightPlanIndex.get());
-      this.destEfob.set(destEfob !== null ? destEfob.toFixed(1) : '---.-');
-    }
-
-    const fp = this.props.flightPlanInterface.get(this.loadedFlightPlanIndex.get());
-    if (fp.alternateDestinationAirport) {
-      this.altnIcao.set(fp.alternateDestinationAirport.ident);
-      this.altnEta.set('--:--');
-      this.altnEfob.set(this.props.fmcService.master.fmgc.getAltEFOB(fpIndex));
-    } else {
-      this.altnIcao.set('NONE');
-      this.altnEta.set('--:--');
-      this.altnEfob.set(null);
-    }
-  }
-
-  public onAfterRender(node: VNode): void {
+  /** @inheritdoc */
+  public override onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
     const sub = this.props.bus.getSubscriber<ClockEvents & MfdSimvars>();
@@ -227,16 +226,24 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             return;
           }
 
+          this.loadFlightPlanPerformanceData();
+
           const loadedfpIndex = this.loadedFlightPlanIndex.get();
           // FIXME: Move to main update loop once calculated by the predictions
           this.props.fmcService.master.acInterface.calculateFinalAndAlternateFuel(loadedfpIndex);
           const fp = this.props.flightPlanInterface.get(loadedfpIndex);
           this.alternateExists.set(fp.alternateDestinationAirport !== undefined);
           const pd = this.loadedFlightPlan!.performanceData;
-          this.landingWeight.set(this.props.fmcService.master.getLandingWeight(loadedfpIndex));
-          this.takeoffWeight.set(this.props.fmcService.master.getTakeoffWeight(loadedfpIndex));
+          this.landingWeight.set(
+            this.props.fmcService.master.getLandingWeight(loadedfpIndex) ?? NaN,
+            UnitType.KILOGRAM,
+          );
+          this.takeoffWeight.set(
+            this.props.fmcService.master.getTakeoffWeight(loadedfpIndex) ?? NaN,
+            UnitType.KILOGRAM,
+          );
           const rteRsv = this.props.fmcService.master.getRouteReserveFuel(loadedfpIndex);
-          this.routeReserveFuel.set(rteRsv !== null ? rteRsv / 1000 : null);
+          this.routeReserveFuel.set(rteRsv);
           // Calculate RTE RSV percentage
           if (pd.isRouteReserveFuelPercentagePilotEntered.get()) {
             this.routeReserveFuelPercentage.set(pd.routeReserveFuelPercentage.get());
@@ -255,29 +262,36 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
           }
 
           if (!this.props.fmcService.master.enginesWereStarted.get()) {
-            this.grossWeight.set(null);
+            this.grossWeight.set(NaN);
             this.centerOfGravity.set(null);
-            this.fuelOnBoard.set(null);
+            this.fuelOnBoard.set(NaN);
           } else {
             // GW only displayed after engine start. Value received from FQMS, or falls back to ZFW + FOB
-            this.grossWeight.set(this.props.fmcService.master.fmgc.getGrossWeightKg(loadedfpIndex));
+            this.grossWeight.set(
+              this.props.fmcService.master.fmgc.getGrossWeightKg(loadedfpIndex) ?? NaN,
+              UnitType.KILOGRAM,
+            );
 
             // CG only displayed after engine start. Value received from FQMS, or falls back to value from WBBC
             this.centerOfGravity.set(this.props.fmcService.master.fmgc.getGrossWeightCg());
 
             // FOB only displayed after engine start. Value received from FQMS, or falls back to FOB stored at engine start + fuel used by FADEC
-            this.fuelOnBoard.set(this.props.fmcService.master.fmgc.getFOB(loadedfpIndex));
+            this.fuelOnBoard.set(
+              (this.props.fmcService.master.fmgc.getFOB(loadedfpIndex) ?? NaN) * 1000,
+              UnitType.KILOGRAM,
+            );
           }
 
-          const tripFuel = this.props.fmcService.master.getTripFuel(loadedfpIndex);
+          const tripFuel = this.props.fmcService.master.getTripFuel(loadedfpIndex) ?? NaN;
           this.tripFuelWeight.set(tripFuel);
+
           if (loadedfpIndex === FlightPlanIndex.Active) {
             // TODO SEC predictions
             const destPred = this.props.fmcService.master.guidanceController.vnavDriver.getDestinationPrediction();
             this.tripFuelTime.set(getEtaFromUtcOrPresent(destPred?.secondsFromPresent, true));
           }
 
-          this.extraFuelWeight.set(this.props.fmcService.master.getExtraFuel(loadedfpIndex));
+          this.extraFuelWeight.set(this.props.fmcService.master.getExtraFuel(loadedfpIndex) ?? NaN);
           this.updateDestAndAltnPredictions();
         }),
     );
@@ -300,46 +314,19 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
 
     this.subs.push(
       this.flightPlanChangeNotifier.flightPlanChanged.sub(() => {
-        if (this.loadedFlightPlan) {
-          this.flightPlanPerfSubs.forEach((sub) => sub.destroy());
-          this.flightPlanPerfSubs = [];
-          this.flightPlanPerfSubs.push(
-            this.loadedFlightPlan.performanceData.zeroFuelWeight.pipe(this.zeroFuelWeight),
-            this.loadedFlightPlan.performanceData.zeroFuelWeightCenterOfGravity.pipe(
-              this.zeroFuelWeightCenterOfGravity,
-            ),
-            this.loadedFlightPlan.performanceData.blockFuel.pipe(this.blockFuel),
-            this.loadedFlightPlan.performanceData.taxiFuel.pipe(this.taxiFuel),
-            this.loadedFlightPlan.performanceData.taxiFuelIsPilotEntered.pipe(this.taxiFuelIsPilotEntered),
-            this.loadedFlightPlan.performanceData.pilotRouteReserveFuel.pipe(this.routeReserveFuelPilotEntry),
-            this.loadedFlightPlan.performanceData.isRouteReserveFuelPilotEntered.pipe(
-              this.routeReserveFuelIsPilotEntered,
-            ),
-            this.loadedFlightPlan.performanceData.isRouteReserveFuelPercentagePilotEntered.pipe(
-              this.routeReserveFuelPercentageIsPilotEntered,
-            ),
-            this.loadedFlightPlan.performanceData.alternateFuel.pipe(this.alternateFuel),
-            this.loadedFlightPlan.performanceData.isAlternateFuelPilotEntered.pipe(this.alternateFuelIsPilotEntered),
-            this.loadedFlightPlan.performanceData.finalHoldingTime.pipe(this.finalFuelTime),
-            this.loadedFlightPlan.performanceData.isFinalHoldingFuelPilotEntered.pipe(this.finalFuelIsPilotEntered),
-            this.loadedFlightPlan.performanceData.isFinalHoldingTimePilotEntered.pipe(this.finalFuelTimeIsPilotEntered),
-            this.loadedFlightPlan.performanceData.finalHoldingFuel.pipe(this.finalFuel),
-
-            this.loadedFlightPlan.performanceData.minimumDestinationFuelOnBoard.pipe(this.minimumFuelAtDestination),
-            this.loadedFlightPlan.performanceData.isMinimumDestinationFuelOnBoardPilotEntered.pipe(
-              this.minimumFuelAtDestinationIsPilotEntered,
-            ),
-
-            this.loadedFlightPlan.performanceData.paxNumber!.pipe(this.paxNumber),
-            this.loadedFlightPlan.performanceData.costIndexMode!.pipe(this.costIndexMode),
-          );
-        }
+        this.loadFlightPlanPerformanceData();
       }, true),
     );
 
     this.subs.push(
+      this.weightUnit,
       this.mandatoryAndActiveFpln,
       this.grossWeightText,
+      this.fuelOnBoardText,
+      this.tripFuelWeightText,
+      this.takeoffWeightText,
+      this.landingWeightText,
+      this.destEfobText,
       this.centerOfGravityText,
       this.fuelOnBoardText,
       this.destinationAlternateTimeHeader,
@@ -349,17 +336,102 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
       this.extraFuelTimeText,
       this.taxiAndRouteRsvDisabled,
       this.costIndexDisabled,
+      this.costIndexModeDisabled,
       this.jettisonGrossWeightVisibility,
       this.destEfobAmber,
     );
   }
 
   public destroy(): void {
-    this.flightPlanPerfSubs.forEach((sub) => sub.destroy());
-
     this.flightPlanChangeNotifier.destroy();
 
     super.destroy();
+  }
+
+  private loadFlightPlanPerformanceData(): void {
+    const pd = this.loadedFlightPlan?.performanceData;
+
+    const pdZfw = pd?.zeroFuelWeight.get();
+    if (pdZfw !== undefined && pdZfw !== null) {
+      this.zeroFuelWeight.set(pdZfw * 1000);
+    } else {
+      this.zeroFuelWeight.set(null);
+    }
+    this.zeroFuelWeightCenterOfGravity.set(pd?.zeroFuelWeightCenterOfGravity.get() ?? null);
+
+    const pdBlockFuel = pd?.blockFuel.get();
+    if (pdBlockFuel !== undefined && pdBlockFuel !== null) {
+      this.blockFuel.set(pdBlockFuel * 1000);
+    } else {
+      this.blockFuel.set(null);
+    }
+    const pdTaxiFuel = pd?.taxiFuel.get();
+    if (pdTaxiFuel !== undefined && pdTaxiFuel !== null) {
+      this.taxiFuel.set(pdTaxiFuel * 1000);
+    } else {
+      this.taxiFuel.set(null);
+    }
+    this.taxiFuelIsPilotEntered.set(pd?.taxiFuelIsPilotEntered.get() ?? false);
+    this.routeReserveFuelIsPilotEntered.set(pd?.isRouteReserveFuelPilotEntered.get() ?? false);
+    this.routeReserveFuelPercentageIsPilotEntered.set(pd?.isRouteReserveFuelPercentagePilotEntered.get() ?? false);
+    const pdAlternateFuel = pd?.alternateFuel.get();
+    if (pdAlternateFuel !== undefined && pdAlternateFuel !== null) {
+      this.alternateFuel.set(pdAlternateFuel * 1000);
+    } else {
+      this.alternateFuel.set(null);
+    }
+    this.alternateFuelIsPilotEntered.set(pd?.isAlternateFuelPilotEntered.get() ?? false);
+    this.finalFuelTime.set(pd?.finalHoldingTime.get() ?? null);
+    this.finalFuelIsPilotEntered.set(pd?.isFinalHoldingFuelPilotEntered.get() ?? false);
+    this.finalFuelTimeIsPilotEntered.set(pd?.isFinalHoldingTimePilotEntered.get() ?? false);
+    const pdFinalFuel = pd?.finalHoldingFuel.get();
+    if (pdFinalFuel !== undefined && pdFinalFuel !== null) {
+      this.finalFuel.set(pdFinalFuel * 1000);
+    } else {
+      this.finalFuel.set(null);
+    }
+    const pdMinDestFuel = pd?.minimumDestinationFuelOnBoard.get();
+    if (pdMinDestFuel !== undefined && pdMinDestFuel !== null) {
+      this.minimumFuelAtDestination.set(pdMinDestFuel * 1000);
+    } else {
+      this.minimumFuelAtDestination.set(null);
+    }
+    this.minimumFuelAtDestinationIsPilotEntered.set(pd?.isMinimumDestinationFuelOnBoardPilotEntered.get() ?? false);
+    this.paxNumber.set(pd?.paxNumber ? pd.paxNumber.get() : null);
+    this.costIndexMode.set(pd?.costIndexMode ? pd.costIndexMode.get() : null);
+    this.costIndex.set(pd?.costIndex ? pd.costIndex.get() : null);
+  }
+
+  updateDestAndAltnPredictions() {
+    const hasFp = this.loadedFlightPlan !== null;
+    const fpIndex = hasFp ? this.loadedFlightPlanIndex.get() : null;
+    this.destIcao.set(this.loadedFlightPlan?.destinationAirport?.ident ?? null);
+
+    // TODO SEC predictions
+    const destPred =
+      hasFp && (fpIndex === FlightPlanIndex.Active || fpIndex === FlightPlanIndex.Temporary)
+        ? this.props.fmcService.master.guidanceController.vnavDriver.getDestinationPrediction()
+        : null;
+    // TODO Should display ETA if EET present
+    this.destEta.set(
+      getEtaFromUtcOrPresent(destPred?.secondsFromPresent, this.activeFlightPhase.get() == FmgcFlightPhase.Preflight),
+    );
+    const destEfob = hasFp ? this.props.fmcService.master.fmgc.getDestEFOB(true, fpIndex!) : null;
+    if (destEfob !== null) {
+      this.destEfob.set(destEfob * 1000, UnitType.KILOGRAM);
+    } else {
+      this.destEfob.set(NaN);
+    }
+
+    const fp = hasFp ? this.props.flightPlanInterface.get(fpIndex!) : null;
+    this.altnIcao.set(fp?.alternateDestinationAirport?.ident ?? 'NONE');
+    this.altnEta.set('--:--');
+    if (fp) {
+      this.altnEfob.set(this.props.fmcService.master.fmgc.getAltEFOB(fpIndex!) ?? NaN, UnitType.KILOGRAM);
+    } else {
+      this.altnEfob.set(NaN);
+    }
+    this.altnEfob.set(hasFp ? this.props.fmcService.master.fmgc.getAltEFOB(fpIndex!) ?? NaN : NaN, UnitType.KILOGRAM);
   }
 
   render(): VNode {
@@ -373,7 +445,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
               <div class="mfd-label-value-container">
                 <span class="mfd-label mfd-spacing-right">GW</span>
                 <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.grossWeightText}</span>
-                <span class="mfd-label-unit mfd-unit-trailing">T</span>
+                <span class="mfd-label-unit mfd-unit-trailing">{this.weightUnitText}</span>
               </div>
               <div class="mfd-label-value-container">
                 <span class="mfd-label mfd-spacing-right">CG</span>
@@ -383,26 +455,26 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
               <div class="mfd-label-value-container">
                 <span class="mfd-label mfd-spacing-right">FOB</span>
                 <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.fuelOnBoardText}</span>
-                <span class="mfd-label-unit mfd-unit-trailing">T</span>
+                <span class="mfd-label-unit mfd-unit-trailing">{this.weightUnitText}</span>
               </div>
             </div>
             <div style="display: flex; flex-direction: row; margin-bottom: 15px; align-items: center;">
               <div class="mfd-label mfd-spacing-right fuelLoad">ZFW</div>
               <InputField<number, number, false>
-                dataEntryFormat={new WeightFormat(Subject.create(minZfw / 1_000), Subject.create(maxZfw / 1_000))}
-                dataHandlerDuringValidation={async (v) =>
+                dataEntryFormat={new WeightFormat(Subject.create(minZfw), Subject.create(maxZfw), this.weightUnit)}
+                dataHandlerDuringValidation={async (v) => {
                   this.props.flightPlanInterface.setPerformanceData(
                     'zeroFuelWeight',
-                    v,
+                    v !== null ? v / 1000 : null, // FIXME the perf plan should be in kg
                     this.loadedFlightPlanIndex.get(),
-                  )
-                }
+                  );
+                }}
                 readonlyValue={this.zeroFuelWeight}
                 mandatory={this.mandatoryAndActiveFpln}
                 canBeCleared={Subject.create(false)}
                 alignText="flex-end"
                 containerStyle="width: 150px;"
-                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
               />
@@ -421,7 +493,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 canBeCleared={Subject.create(false)}
                 alignText="center"
                 containerStyle="width: 125px;"
-                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
               />
@@ -429,22 +501,26 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
             <div ref={this.blockLineRef} class="mfd-fms-fuel-load-block-line">
               <div class="mfd-label mfd-spacing-right fuelLoad">BLOCK</div>
               <InputField<number, number, false>
-                dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxBlockFuel / 1_000))}
+                dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxBlockFuel), this.weightUnit)}
                 dataHandlerDuringValidation={async (v) =>
-                  this.props.flightPlanInterface.setPerformanceData('blockFuel', v, this.loadedFlightPlanIndex.get())
+                  this.props.flightPlanInterface.setPerformanceData(
+                    'blockFuel',
+                    v !== null ? v / 1000 : null,
+                    this.loadedFlightPlanIndex.get(),
+                  )
                 }
                 readonlyValue={this.blockFuel}
                 mandatory={this.mandatoryAndActiveFpln}
                 alignText="flex-end"
                 containerStyle="width: 150px;"
-                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
               />
               <div style="display: flex; flex: 1; justify-content: center;">
                 <Button
                   disabled={this.fuelPlanningIsDisabled}
-                  label={Subject.create(
+                  label={
                     <div style="display: flex; flex-direction: row;">
                       <span style="text-align: center; vertical-align: center; margin-right: 10px;">
                         FUEL
@@ -452,8 +528,8 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                         PLANNING
                       </span>
                       <span style="display: flex; align-items: center; justify-content: center;">*</span>
-                    </div>,
-                  )}
+                    </div>
+                  }
                   onClick={() => console.log('FUEL PLANNING')}
                   buttonStyle="padding-right: 2px;"
                 />
@@ -464,11 +540,11 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 <div class="mfd-label mfd-spacing-right middleGrid">TAXI</div>
                 <div style="margin-bottom: 20px;">
                   <InputField<number, number, false>
-                    dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxTaxiFuel / 1_000))}
+                    dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxTaxiFuel), this.weightUnit)}
                     dataHandlerDuringValidation={async (v) =>
                       this.props.flightPlanInterface.setPerformanceData(
                         'pilotTaxiFuel',
-                        v,
+                        v !== null ? v / 1000 : null, // FIXME the perf plan should be in kg
                         this.loadedFlightPlanIndex.get(),
                       )
                     }
@@ -477,7 +553,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                     disabled={this.taxiAndRouteRsvDisabled}
                     alignText="flex-end"
                     containerStyle="width: 150px;"
-                    errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                    errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                     hEventConsumer={this.props.mfd.hEventConsumer}
                     interactionMode={this.props.mfd.interactionMode}
                   />
@@ -487,7 +563,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 <div class="mfd-label mfd-spacing-right middleGrid">TRIP</div>
                 <div class="mfd-label-value-container" style="justify-content: flex-end; margin-bottom: 20px;">
                   <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.tripFuelWeightText}</span>
-                  <span class="mfd-label-unit mfd-unit-trailing">T</span>
+                  <span class="mfd-label-unit mfd-unit-trailing">{this.weightUnitText}</span>
                 </div>
                 <div style="display: flex; justify-content: center; margin-bottom: 20px;">
                   <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.tripFuelTime}</span>
@@ -499,14 +575,15 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                     disabled={this.taxiAndRouteRsvDisabled}
                     dataEntryFormat={
                       new WeightFormat(
-                        Subject.create(AirlineModifiableInformation.EK.rsvMin / 1_000),
-                        Subject.create(AirlineModifiableInformation.EK.rsvMax / 1_000),
+                        Subject.create(AirlineModifiableInformation.EK.rsvMin),
+                        Subject.create(AirlineModifiableInformation.EK.rsvMax),
+                        this.weightUnit,
                       )
                     }
                     dataHandlerDuringValidation={async (v) => {
                       this.props.flightPlanInterface.setPerformanceData(
                         'pilotRouteReserveFuel',
-                        v,
+                        v !== null ? v / 1000 : null, // FIXME the perf plan should be in kg
                         this.loadedFlightPlanIndex.get(),
                       );
 
@@ -520,7 +597,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                     readonlyValue={this.routeReserveFuel}
                     alignText="flex-end"
                     containerStyle="width: 150px;"
-                    errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                    errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                     hEventConsumer={this.props.mfd.hEventConsumer}
                     interactionMode={this.props.mfd.interactionMode}
                   />
@@ -545,7 +622,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                     readonlyValue={this.routeReserveFuelPercentage}
                     alignText="center"
                     containerStyle="width: 120px;"
-                    errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                    errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                     hEventConsumer={this.props.mfd.hEventConsumer}
                     interactionMode={this.props.mfd.interactionMode}
                   />
@@ -554,11 +631,11 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 <div class="mfd-label mfd-spacing-right middleGrid">ALTN</div>
                 <div style="margin-bottom: 20px;">
                   <InputField<number, number, false>
-                    dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxAltnFuel / 1_000))}
+                    dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxAltnFuel), this.weightUnit)}
                     dataHandlerDuringValidation={async (v) =>
                       this.props.flightPlanInterface.setPerformanceData(
                         'pilotAlternateFuel',
-                        v,
+                        v !== null ? v / 1000 : null, // FIXME the perf plan should be in kg
                         this.loadedFlightPlanIndex.get(),
                       )
                     }
@@ -567,7 +644,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                     readonlyValue={this.alternateFuel}
                     alignText="flex-end"
                     containerStyle="width: 150px;"
-                    errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                    errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                     hEventConsumer={this.props.mfd.hEventConsumer}
                     interactionMode={this.props.mfd.interactionMode}
                   />
@@ -579,11 +656,11 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 <div class="mfd-label mfd-spacing-right middleGrid">FINAL</div>
                 <div style="margin-bottom: 20px;">
                   <InputField<number, number, false>
-                    dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxFinalFuel / 1_000))}
+                    dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxFinalFuel), this.weightUnit)}
                     dataHandlerDuringValidation={async (v) => {
                       this.props.flightPlanInterface.setPerformanceData(
                         'pilotFinalHoldingFuel',
-                        v,
+                        v !== null ? v / 1000 : null, // FIXME the perf plan should be in kg
                         this.loadedFlightPlanIndex.get(),
                       );
                       this.props.flightPlanInterface.setPerformanceData(
@@ -596,7 +673,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                     readonlyValue={this.finalFuel}
                     alignText="flex-end"
                     containerStyle="width: 150px;"
-                    errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                    errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                     hEventConsumer={this.props.mfd.hEventConsumer}
                     interactionMode={this.props.mfd.interactionMode}
                   />
@@ -620,7 +697,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                     readonlyValue={this.finalFuelTime}
                     alignText="center"
                     containerStyle="width: 120px;"
-                    errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                    errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                     hEventConsumer={this.props.mfd.hEventConsumer}
                     interactionMode={this.props.mfd.interactionMode}
                   />
@@ -645,7 +722,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                     mandatory={this.mandatoryAndActiveFpln}
                     alignText="center"
                     containerStyle="width: 75px;"
-                    errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                    errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                     hEventConsumer={this.props.mfd.hEventConsumer}
                     interactionMode={this.props.mfd.interactionMode}
                   />
@@ -653,6 +730,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 <div class="mfd-label mfd-spacing-right middleGridSmall">MODE</div>
                 <div style="margin-bottom: 10px;">
                   <DropdownMenu
+                    disabled={this.costIndexModeDisabled}
                     values={this.costIndexModeLabels}
                     selectedIndex={this.costIndexMode}
                     idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_initCostIndexModeDropdown`}
@@ -680,7 +758,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                     disabled={this.costIndexDisabled}
                     alignText="center"
                     containerStyle="width: 75px;"
-                    errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                    errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                     hEventConsumer={this.props.mfd.hEventConsumer}
                     interactionMode={this.props.mfd.interactionMode}
                   />
@@ -693,29 +771,25 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 </div>
                 <div style={{ 'margin-bottom': '10px', visibility: this.jettisonGrossWeightVisibility }}>
                   <InputField<number, number, false>
-                    dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxJtsnGw / 1_000))}
+                    dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxJtsnGw), this.weightUnit)}
                     disabled={Subject.create(true)}
                     readonlyValue={this.jettisonGrossWeight}
                     alignText="flex-end"
                     containerStyle="width: 150px;"
-                    errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                    errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                     hEventConsumer={this.props.mfd.hEventConsumer}
                     interactionMode={this.props.mfd.interactionMode}
                   />
                 </div>
                 <div class="mfd-label mfd-spacing-right middleGridSmall">TOW</div>
                 <div class="mfd-label-value-container" style="justify-content: center; margin-bottom: 10px;">
-                  <span class={{ 'mfd-value': true, sec: this.secActive }}>
-                    {this.takeoffWeight.map((it) => (it ? (it / 1000).toFixed(1) : '---.-'))}
-                  </span>
-                  <span class="mfd-label-unit mfd-unit-trailing">T</span>
+                  <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.takeoffWeightText}</span>
+                  <span class="mfd-label-unit mfd-unit-trailing">{this.weightUnitText}</span>
                 </div>
                 <div class="mfd-label mfd-spacing-right middleGridSmall">LW</div>
                 <div class="mfd-label-value-container" style="justify-content: center; margin-bottom: 10px;">
-                  <span class={{ 'mfd-value': true, sec: this.secActive }}>
-                    {this.landingWeight.map((it) => (it ? (it / 1000).toFixed(1) : '---.-'))}
-                  </span>
-                  <span class="mfd-label-unit mfd-unit-trailing">T</span>
+                  <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.landingWeightText}</span>
+                  <span class="mfd-label-unit mfd-unit-trailing">{this.weightUnitText}</span>
                 </div>
               </div>
             </div>
@@ -738,7 +812,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                       'mfd-fms-fuel-load-dest-grid-middle-cell': true,
                     }}
                   >
-                    {this.destIcao}
+                    {this.destIcaoDisplay}
                   </div>
                   <div
                     class={{
@@ -759,9 +833,9 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                         sec: this.secActive,
                       }}
                     >
-                      {this.destEfob}
+                      {this.destEfobText}
                     </span>
-                    <span class="mfd-label-unit mfd-unit-trailing">T</span>
+                    <span class="mfd-label-unit mfd-unit-trailing">{this.weightUnitText}</span>
                   </div>
                   <div class="mfd-label" style="text-align: center; align-self: center;">
                     ALTN
@@ -780,7 +854,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                   </div>
                   <div class="mfd-label-value-container mfd-fms-fuel-load-dest-grid-efob-cell">
                     <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.altnEfobText}</span>
-                    <span class="mfd-label-unit mfd-unit-trailing">T</span>
+                    <span class="mfd-label-unit mfd-unit-trailing">{this.weightUnitText}</span>
                   </div>
                 </div>
               </div>
@@ -790,7 +864,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 </div>
                 <div style="margin-bottom: 30px; display: flex; justify-content: center;">
                   <InputField<number, number, false>
-                    dataEntryFormat={new WeightFormat(undefined, undefined)}
+                    dataEntryFormat={new WeightFormat(undefined, Subject.create(maxMinDestFuel), this.weightUnit)}
                     dataHandlerDuringValidation={async (v) =>
                       this.props.flightPlanInterface?.setPerformanceData(
                         'pilotMinimumDestinationFuelOnBoard',
@@ -802,7 +876,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                     readonlyValue={this.minimumFuelAtDestination}
                     alignText="flex-end"
                     containerStyle="width: 150px;"
-                    errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
+                    errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e.type, e.details)}
                     hEventConsumer={this.props.mfd.hEventConsumer}
                     interactionMode={this.props.mfd.interactionMode}
                   />
@@ -813,7 +887,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 <div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
                   <div class="mfd-label-value-container" style="margin-right: 20px;">
                     <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.extraFuelWeightText}</span>
-                    <span class="mfd-label-unit mfd-unit-trailing">T</span>
+                    <span class="mfd-label-unit mfd-unit-trailing">{this.weightUnitText}</span>
                   </div>
                   <span class={{ 'mfd-value': true, sec: this.secActive }}>{this.extraFuelTimeText}</span>
                 </div>

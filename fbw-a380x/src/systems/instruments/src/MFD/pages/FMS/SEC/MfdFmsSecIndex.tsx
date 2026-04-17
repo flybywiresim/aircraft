@@ -486,7 +486,7 @@ export class MfdFmsSecIndexTab extends DestroyableComponent<MfdFmsSecIndexTabPro
             />
             <Button
               label={'WIND'}
-              disabled={Subject.create(true)}
+              disabled={true}
               onClick={() => this.props.mfd.uiService.navigateTo(`${this.uriPrefix}/wind`)}
               buttonStyle="width: 160px; margin-top: 5px;"
               idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_sec${this.props.flightPlanIndex}index_wind`}
@@ -511,7 +511,7 @@ export class MfdFmsSecIndexTab extends DestroyableComponent<MfdFmsSecIndexTabPro
             />
             <Button
               label={'WHAT IF'}
-              disabled={Subject.create(true)}
+              disabled={true}
               onClick={() => this.props.mfd.uiService.navigateTo(`${this.uriPrefix}/what-if`)}
               buttonStyle="width: 160px; margin-top: 5px;"
               idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_sec${this.props.flightPlanIndex}index_what-if`}
@@ -522,12 +522,12 @@ export class MfdFmsSecIndexTab extends DestroyableComponent<MfdFmsSecIndexTabPro
           <div class="mfd-sec-index-table-left">
             <div class="mfd-sec-index-table-lower-button-grid">
               <Button
-                label={Subject.create(
+                label={
                   <div style="display: flex; flex-direction: row; justify-content: space-between;">
                     <span style="text-align: center; vertical-align: center; margin-right: 10px;">DELETE</span>
                     <span style="display: flex; align-items: center; justify-content: center;">*</span>
-                  </div>,
-                )}
+                  </div>
+                }
                 disabled={this.secDoesNotExist}
                 onClick={() => this.props.flightPlanInterface.secondaryDelete(this.secIndex)}
                 buttonStyle="padding-right: 2px;width: 160px; height: 60px;"
@@ -556,7 +556,7 @@ export class MfdFmsSecIndexTab extends DestroyableComponent<MfdFmsSecIndexTabPro
                 }}
               >
                 <Button
-                  label={Subject.create(
+                  label={
                     <div style="display: flex; flex-direction: row; justify-content: space-between;">
                       <span style="text-align: center; vertical-align: center; margin-right: 10px;">
                         SWAP
@@ -564,8 +564,8 @@ export class MfdFmsSecIndexTab extends DestroyableComponent<MfdFmsSecIndexTabPro
                         ACTIVE
                       </span>
                       <span style="display: flex; align-items: center; justify-content: center;">*</span>
-                    </div>,
-                  )}
+                    </div>
+                  }
                   onClick={() => this.props.fmcService.master.swapActiveAndSecondaryPlan(this.secIndex)}
                   buttonStyle="color: #e68000; padding-right: 2px; width: 160px; height: 60px;"
                   idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_sec${this.props.flightPlanIndex}index_swap-active`}
@@ -576,7 +576,7 @@ export class MfdFmsSecIndexTab extends DestroyableComponent<MfdFmsSecIndexTabPro
               <div style="display: flex; justify-content: flex-end; align-items: center;">
                 <Button
                   label={'XFR TO MAILBOX'}
-                  disabled={Subject.create(true)}
+                  disabled={true}
                   onClick={() => {}}
                   buttonStyle="width: 160px; height: 60px; margin-top: 30px;"
                   idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_sec${this.props.flightPlanIndex}index_xfr-to-mailbox`}
@@ -588,13 +588,13 @@ export class MfdFmsSecIndexTab extends DestroyableComponent<MfdFmsSecIndexTabPro
             <div style="flex-grow: 1" />
             <div style="justify-content: flex-end; align-self: center; margin-bottom: 15px; margin-top: 75px;">
               <Button
-                label={Subject.create(
+                label={
                   <div style="display: flex; flex-direction: row; justify-content: space-between;">
                     <span style="text-align: center; vertical-align: center; margin-right: 10px;">PRINT</span>
                     <span style="display: flex; align-items: center; justify-content: center;">*</span>
-                  </div>,
-                )}
-                disabled={Subject.create(true)}
+                  </div>
+                }
+                disabled={true}
                 onClick={() => {}}
                 buttonStyle="padding-right: 2px; width: 160px; height: 60px; margin-top: 30px;"
                 idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_sec${this.props.flightPlanIndex}index_print`}

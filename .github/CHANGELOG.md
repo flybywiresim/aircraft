@@ -111,6 +111,11 @@
 1. [A32NX/FMS] Improve accuracy of WIND/TEMP page layout - @BlueberryKing (BlueberryKing)
 1. [A32NX/FMS] Fully incorporate WIND page entries into performance predictions - @BlueberryKing (BlueberryKing)
 1. [A32NX/FMS] Implement `ONLY SPD ENTRY ALLOWED` message - @BlueberryKing (BlueberryKing)
+1. [A380X/MFD] Added support for the US Units option - MikioDK (Mikio), @tracernz (Mike)
+1. [A380X/MFD] Add details to "FORMAT ERROR" and "ENTRY OUT OF RANGE" messages - @BravoMike99 (bruno_pt99)
+1. [A380X/MFD] Fixed GA THR RED, ACCEL & EO not respecting arrival transition altitude - @BravoMike99 (bruno_pt99)
+1. [A380X/Fuel] Only try to equalize feedtanks when each is below transfer limit - @Maximilian-Reuter (\_chaoz_)
+1. [A380X/MFD] Added IMMEDIATE EXIT/RESUME HOLD button to the F-PLN page - @BravoMike99 (bruno_pt99)
 1. [FMS] Add lateral discontinuity ahead fms message - @BravoMike99 (bruno_pt99)
 
 ## 0.14.0

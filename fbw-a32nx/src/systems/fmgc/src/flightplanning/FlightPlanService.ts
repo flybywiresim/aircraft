@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2025 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -358,7 +358,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     NXDataStore.setLegacy('PLAN_DESTINATION', toIcao);
   }
 
-  async setAlternate(altnIcao: string, planIndex = FlightPlanIndex.Active) {
+  async setAlternate(altnIcao: string | undefined, planIndex = FlightPlanIndex.Active) {
     if (planIndex === FlightPlanIndex.Temporary) {
       throw new Error('[FMS/FPM] Cannot set alternate on temporary flight plan');
     }
