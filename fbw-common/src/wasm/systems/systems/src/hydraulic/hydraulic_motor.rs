@@ -65,7 +65,7 @@ impl FlapSlatHydraulicMotor {
     pub fn update_flow(&mut self, context: &UpdateContext) {
         self.current_flow = VolumeRate::new::<gallon_per_minute>(
             Self::FLOW_CORRECTION_FACTOR
-                * self.speed().get::<revolution_per_minute>().abs()
+                * self.get_speed().get::<revolution_per_minute>().abs()
                 * self.displacement.get::<cubic_inch>()
                 / 231.,
         );
@@ -92,7 +92,7 @@ impl FlapSlatHydraulicMotor {
         self.total_volume_returned_to_reservoir = Volume::new::<gallon>(0.);
     }
 
-    pub fn speed(&self) -> AngularVelocity {
+    pub fn get_speed(&self) -> AngularVelocity {
         self.speed.output()
     }
 
