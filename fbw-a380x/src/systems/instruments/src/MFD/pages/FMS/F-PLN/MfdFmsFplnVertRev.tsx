@@ -281,12 +281,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     leg: ReadonlyFlightPlanLeg,
     flightPlan: ReadonlyFlightPlan,
   ): boolean {
-    // Check conditions: No constraints for airports, FROM waypoint, GA legs, pseudo waypoints
-    return (
-      isConstraintRevisionAllowed(leg) &&
-      legIndex >= flightPlan.activeLegIndex &&
-      legIndex < flightPlan.firstMissedApproachLegIndex
-    );
+    return isConstraintRevisionAllowed(leg) && legIndex >= flightPlan.activeLegIndex;
   }
 
   private updateConstraints() {
@@ -327,8 +322,12 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     // Load speed constraints
     const selectedIndex = this.selectedPageIndex.get();
     if (selectedIndex === SelectedPage.SPD) {
+      const constraintType =
+        plan && selectedLegIdx !== null && leg?.constraintType === WaypointConstraintType.Unknown
+          ? plan.autoConstraintTypeForLegIndex(selectedLegIdx)
+          : leg?.constraintType ?? WaypointConstraintType.Unknown;
       const speedLimitType =
-        leg?.constraintType === WaypointConstraintType.DES ||
+        constraintType === WaypointConstraintType.DES ||
         (this.props.fmcService.master.flightPlanInterface
           .get(this.loadedFlightPlanIndex.get())
           .isActiveOrCopiedFromActive() &&
@@ -376,29 +375,25 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
       this.speedConstraintInput.set(leg?.speedConstraint?.speed ?? null);
       this.constraintType.set(
-        leg?.constraintType === WaypointConstraintType.CLB
+        constraintType === WaypointConstraintType.CLB
           ? 'CLB'
-          : leg?.constraintType === WaypointConstraintType.DES
+          : constraintType === WaypointConstraintType.DES
             ? 'DES'
             : '',
       );
       this.spdConstraintTypeRadioSelected.set(
-        leg?.constraintType === WaypointConstraintType.CLB
-          ? 0
-          : leg?.constraintType === WaypointConstraintType.DES
-            ? 1
-            : null,
+        constraintType === WaypointConstraintType.CLB ? 0 : constraintType === WaypointConstraintType.DES ? 1 : null,
       );
     } else if (selectedIndex === SelectedPage.ALT) {
+      const constraintType =
+        plan && selectedLegIdx !== null && leg?.constraintType === WaypointConstraintType.Unknown
+          ? plan.autoConstraintTypeForLegIndex(selectedLegIdx)
+          : leg?.constraintType ?? WaypointConstraintType.Unknown;
       this.altConstraintTypeRadioSelected.set(
-        leg?.constraintType === WaypointConstraintType.CLB
-          ? 0
-          : leg?.constraintType === WaypointConstraintType.DES
-            ? 1
-            : null,
+        constraintType === WaypointConstraintType.CLB ? 0 : constraintType === WaypointConstraintType.DES ? 1 : null,
       );
       this.altitudeClbDesConstraintVisibility.set(
-        leg?.constraintType === WaypointConstraintType.Unknown ? 'visible' : 'hidden',
+        constraintType === WaypointConstraintType.Unknown ? 'visible' : 'hidden',
       );
 
       this.cannotDeleteAltConstraint.set(

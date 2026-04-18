@@ -26,7 +26,7 @@ Status legend:
 | ✅ | fms/\*/f-pln-duplicate-names | 1 | not scrollable |
 | ✅ | fms/\*/f-pln-cpny-f-pln-req | 1 | Just SimBrief download right now |
 | ✅ | fms/\*/f-pln-hold | 2 | last exit predictions, database holds |
-| ✅ | fms/\*/f-pln-vert-rev | 2 | RTA (except ETT), CMS, STEP ALTs OPT |
+| ✅ | fms/\*/f-pln-vert-rev | 2 | RTA (except ETT), CMS, STEP ALTs OPT, ALT CSTR ERROR |
 | 🟥 | fms/\*/f-pln-rte-sel | 3 | tbd |
 | 🟥 | fms/\*/f-pln-offset | 3 | tbd |
 | ✅ | fms/\*/f-pln-fix-info | 3 | intecept predictions, abeam, insert as waypoint |
