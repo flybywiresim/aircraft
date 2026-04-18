@@ -161,7 +161,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
   private readonly altConstraintTransitionIsFlightLevel = Subject.create<boolean>(false);
 
-  /** 0: CLB, 1: DES */
+  /** 0: AT, 1: AT OR ABOVE 2: AT OR BELOW */
   private readonly selectedAltitudeConstraintOption = Subject.create<number | null>(null);
 
   private readonly selectedAltitudeConstraintDisabled = this.altConstraintDisabled.map((it) => Array(3).fill(it));
@@ -377,12 +377,17 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       // FIXME missing a lot of cases here
       switch (leg.altitudeConstraint?.altitudeDescriptor) {
         case AltitudeDescriptor.AtAlt1:
+        case AltitudeDescriptor.AtAlt1GsIntcptAlt2:
+        case AltitudeDescriptor.AtAlt1AngleAlt2:
           this.selectedAltitudeConstraintOption.set(0);
           break;
         case AltitudeDescriptor.AtOrAboveAlt1:
+        case AltitudeDescriptor.AtOrAboveAlt1GsIntcptAlt2:
+        case AltitudeDescriptor.AtOrAboveAlt1AngleAlt2:
           this.selectedAltitudeConstraintOption.set(1);
           break;
         case AltitudeDescriptor.AtOrBelowAlt1:
+        case AltitudeDescriptor.AtOrBelowAlt1AngleAlt2:
           this.selectedAltitudeConstraintOption.set(2);
           break;
         default:
@@ -948,11 +953,6 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     );
 
     this.subs.push(
-      this.spdConstraintTypeRadioSelected.sub(() => this.tryUpdateSpeedConstraint()),
-      this.altConstraintTypeRadioSelected.sub(() => this.tryUpdateAltitudeConstraint()),
-    );
-
-    this.subs.push(
       this.selectedPageIndex.sub((val) => {
         if (val === SelectedPage.STEP_ALTS) {
           this.stepsAltsClockSub?.resume();
@@ -1051,6 +1051,9 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                         selectedIndex={this.spdConstraintTypeRadioSelected}
                         values={['CLB CSTR', 'DES CSTR']}
                         color={Subject.create(RadioButtonColor.Amber)}
+                        onModified={() => {
+                          this.tryUpdateSpeedConstraint();
+                        }}
                       />
                     </div>
                     <Button
@@ -1220,6 +1223,9 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                           selectedIndex={this.altConstraintTypeRadioSelected}
                           values={['CLB CSTR', 'DES CSTR']}
                           color={Subject.create(RadioButtonColor.Amber)}
+                          onModified={() => {
+                            this.tryUpdateAltitudeConstraint();
+                          }}
                         />
                       </div>
                     </div>
