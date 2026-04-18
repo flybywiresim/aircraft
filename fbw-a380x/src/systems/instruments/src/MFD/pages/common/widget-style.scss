@@ -41,6 +41,10 @@
   font-family: "FBW-Display-EIS-A380-SlashedZero", monospace;
 }
 
+.mfd-value.white {
+  color: $display-white;
+}
+
 .mfd-value.amber {
   color: $display-amber;
 }
@@ -149,6 +153,10 @@
 
 .mfd-dropdown-outer:hover {
   border-color: $display-cyan;
+}
+
+.mfd-dropdown-outer.disabled:hover {
+  border-color: $display-light-grey;
 }
 
 .mfd-dropdown-inner {

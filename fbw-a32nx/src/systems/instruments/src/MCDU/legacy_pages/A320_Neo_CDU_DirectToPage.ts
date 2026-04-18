@@ -14,6 +14,8 @@ import { Wait } from '@microsoft/msfs-sdk';
 
 export class CDUDirectToPage {
   static ShowPage(mcdu: LegacyFmsPageInterface, directWaypoint?: Fix, wptsListIndex = 0) {
+    const plan = mcdu.flightPlanService.active;
+
     mcdu.clearDisplay();
     mcdu.page.Current = mcdu.page.DirectToPage;
     mcdu.returnPageCallback = () => {
@@ -105,8 +107,6 @@ export class CDUDirectToPage {
     mcdu.onRightInput[4] = () => {
       mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
     };
-
-    const plan = mcdu.flightPlanService.active;
 
     let i = 0;
     let cellIter = 0;
