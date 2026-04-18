@@ -1639,6 +1639,7 @@ export class FlightManagementComputer implements FmcInterface {
     const activePlan = this.flightPlanInterface.active;
     activePlan.performanceData.preselectedClimbSpeed.set(null);
     activePlan.performanceData.preselectedCruiseSpeed.set(null);
+    let stepDeleted = false;
 
     // Delete planned/future altitude steps
     this.flightPlanInterface.active.allLegs
@@ -1649,8 +1650,13 @@ export class FlightManagementComputer implements FmcInterface {
       .forEach((l) => {
         if (l.isDiscontinuity === false) {
           l.cruiseStep = undefined;
+          stepDeleted = true;
         }
       });
+
+    if (stepDeleted) {
+      this.addMessageToQueue(NXSystemMessages.stepDeleted);
+    }
 
     // Delete time constraints
     // no-op
@@ -1661,6 +1667,10 @@ export class FlightManagementComputer implements FmcInterface {
 
   public exitEngineOut() {
     // Restore long-term guidance targets
+  }
+
+  public engineOutActive(): boolean {
+    return this.fmgc.data.engineOut.get();
   }
 
   async swapNavDatabase(): Promise<void> {

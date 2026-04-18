@@ -57,6 +57,15 @@ enum SelectedPage {
   STEP_ALTS = 4,
 }
 
+enum StepDisabledReason {
+  EO = 'STEP ALTs NOT ALLOWED IN EO',
+  Des = 'STEP ALTs NOT ALLOWED IN DES',
+  Appr = 'STEP ALTs NOT ALLOWED IN APPR',
+  GA = 'STEP ALTs NOT ALLOWED IN GA',
+  Done = 'STEP ALTs NOT ALLOWED IN DONE',
+  CrzFL = 'STEP ALTs NOT ALLOWED: NO CRZ FL',
+}
+
 export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   private readonly selectedPageIndex = Subject.create(SelectedPage.RTA);
 
@@ -172,6 +181,18 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   // STEP ALTs page
   /** Paused when not in STEP ALts page */
   private stepsAltsClockSub?: Subscription;
+
+  private readonly stepPageDisabled = Subject.create<StepDisabledReason | null>(null);
+  private readonly stepPageDisabledMessageDisplay = this.stepPageDisabled.map((reason) =>
+    reason ? 'inherit' : 'none',
+  );
+  private readonly stepAltsPageDisplay = this.stepPageDisabled.map((reason) => (reason ? 'none' : 'block'));
+  private readonly fillPageDisplay = MappedSubject.create(
+    ([page, stepAltDisabled]) => (page === SelectedPage.STEP_ALTS && !stepAltDisabled ? 'inherit' : 'none'),
+    this.selectedPageIndex,
+    this.stepPageDisabled,
+  );
+
   private readonly crzFl = Subject.create<number | null>(null);
   private readonly crzFlFormatted = FmgcData.fmcFormatValue(this.crzFl);
 
@@ -432,94 +453,122 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
   private updateCruiseSteps() {
     if (this.loadedFlightPlan && this.selectedPageIndex.get() === SelectedPage.STEP_ALTS) {
-      const activeLegIndex = this.loadedFlightPlan.activeLegIndex;
-      const cruiseSteps = this.loadedFlightPlan.allLegs
-        .map((l, index) =>
-          l.isDiscontinuity === false && index >= activeLegIndex && l.cruiseStep ? l.cruiseStep : null,
-        )
-        .filter((it) => it !== null);
-      const cruiseStepLegIndices = this.loadedFlightPlan.allLegs
-        .map((l, index) => (l.isDiscontinuity === false && index >= activeLegIndex && l.cruiseStep ? index : null))
-        .filter((it) => it !== null);
+      const stepDisabledReason = this.checkStepAltsAccessPrerequisites();
+      this.stepPageDisabled.set(stepDisabledReason ?? null);
+      if (stepDisabledReason === undefined) {
+        const activeLegIndex = this.loadedFlightPlan.activeLegIndex;
+        const cruiseSteps = this.loadedFlightPlan.allLegs
+          .map((l, index) =>
+            l.isDiscontinuity === false && index >= activeLegIndex && l.cruiseStep ? l.cruiseStep : null,
+          )
+          .filter((it) => it !== null);
+        const cruiseStepLegIndices = this.loadedFlightPlan.allLegs
+          .map((l, index) => (l.isDiscontinuity === false && index >= activeLegIndex && l.cruiseStep ? index : null))
+          .filter((it) => it !== null);
 
-      for (let i = 0; i < 5; i++) {
-        this.stepAltsLineVisibility[i].set('hidden');
-        this.stepLinesPredictionsVisibility[i].set('hidden');
-      }
+        for (let i = 0; i < 5; i++) {
+          this.stepAltsLineVisibility[i].set('hidden');
+          this.stepLinesPredictionsVisibility[i].set('hidden');
+        }
 
-      if (this.stepAltsNumberOfCruiseSteps.get() !== cruiseSteps.length) {
-        this.forceRebuildList = true;
-      }
+        if (this.stepAltsNumberOfCruiseSteps.get() !== cruiseSteps.length) {
+          this.forceRebuildList = true;
+        }
 
-      this.stepAltsNumberOfCruiseSteps.set(cruiseSteps.length);
-      this.stepAltsScrollUpDisabled.set(this.stepAltsStartAtStepIndex.get() === 0);
-      this.stepAltsScrollDownDisabled.set(cruiseSteps.length - this.stepAltsStartAtStepIndex.get() <= 4);
+        this.stepAltsNumberOfCruiseSteps.set(cruiseSteps.length);
+        this.stepAltsScrollUpDisabled.set(this.stepAltsStartAtStepIndex.get() === 0);
+        this.stepAltsScrollDownDisabled.set(cruiseSteps.length - this.stepAltsStartAtStepIndex.get() <= 4);
 
-      for (let i = this.stepAltsStartAtStepIndex.get(); i < this.stepAltsStartAtStepIndex.get() + 5; i++) {
-        const line = i - this.stepAltsStartAtStepIndex.get();
+        for (let i = this.stepAltsStartAtStepIndex.get(); i < this.stepAltsStartAtStepIndex.get() + 5; i++) {
+          const line = i - this.stepAltsStartAtStepIndex.get();
 
-        if (!(i in cruiseSteps)) {
-          if (this.forceRebuildList) {
-            this.stepAltsWptIndices[line].set(null);
-            this.stepAltsWptIndices[line].notify();
-            this.stepAltsAltitude[line].set(null);
-            this.forceRebuildList = false;
+          if (!(i in cruiseSteps)) {
+            if (this.forceRebuildList) {
+              this.stepAltsWptIndices[line].set(null);
+              this.stepAltsWptIndices[line].notify();
+              this.stepAltsAltitude[line].set(null);
+              this.forceRebuildList = false;
+            }
+            this.stepLinesPredictionsVisibility[line].set('hidden');
+            this.stepAltsLineVisibility[line].set('visible');
+            this.stepAltsDistances[line].set(null);
+            this.stepAltsTimes[line].set('--:--');
+            this.stepAltsIgnored[line].set(false);
+            this.stepAltsAboveMaxFl[line].set(false);
+
+            break;
           }
-          this.stepLinesPredictionsVisibility[line].set('hidden');
+
+          const pred =
+            this.loadedFlightPlanIndex.get() < FlightPlanIndex.Uplink
+              ? this.props.fmcService?.master?.guidanceController?.vnavDriver?.mcduProfile?.waypointPredictions?.get(
+                  cruiseStepLegIndices[i],
+                )
+              : undefined;
+          const wptEta = getEtaFromUtcOrPresent(
+            pred?.secondsFromPresent,
+            this.activeFlightPhase.get() == FmgcFlightPhase.Preflight,
+          );
+          const wptIndex = this.availableWaypointsToLegIndex.indexOf(cruiseStepLegIndices[i]);
+          const step = cruiseSteps[i];
+
           this.stepAltsLineVisibility[line].set('visible');
-          this.stepAltsDistances[line].set(null);
-          this.stepAltsTimes[line].set('--:--');
-          this.stepAltsIgnored[line].set(false);
-          this.stepAltsAboveMaxFl[line].set(false);
+          this.stepAltsWptIndices[line].set(wptIndex !== -1 ? wptIndex : null);
+          this.stepAltsAltitude[line].set(step.toAltitude);
+          this.stepLinesPredictionsVisibility[line].set(
+            wptIndex !== -1 && step.toAltitude !== null ? 'visible' : 'hidden',
+          );
 
-          break;
+          if (pred) {
+            this.stepAltsDistances[line].set(pred.distanceFromAircraft - step.distanceBeforeTermination);
+            this.stepAltsTimes[line].set(wptEta);
+          } else {
+            this.stepAltsDistances[line].set(null);
+            this.stepAltsTimes[line].set('--:--');
+          }
+          this.stepAltsIgnored[line].set(step.isIgnored);
+
+          const estGrossWeight = this.getEstimatedGrossWeightAtIndex(cruiseStepLegIndices[i]);
+          this.stepAltsAboveMaxFl[line].set(
+            estGrossWeight !== null
+              ? step.toAltitude >
+                  (this.props.fmcService.master.getRecMaxAltitude(this.loadedFlightPlanIndex.get(), estGrossWeight) ??
+                    Infinity)
+              : false,
+          );
+
+          if (this.stepAltsIgnored[line].get()) {
+            this.stepAltsMessage[line].set('IGNORED');
+          } else if (this.stepAltsAboveMaxFl[line].get()) {
+            this.stepAltsMessage[line].set('ABOVE MAX FL');
+          } else {
+            this.stepAltsMessage[line].set('');
+          }
         }
+      }
+    }
+  }
 
-        const pred =
-          this.loadedFlightPlanIndex.get() < FlightPlanIndex.Uplink
-            ? this.props.fmcService?.master?.guidanceController?.vnavDriver?.mcduProfile?.waypointPredictions?.get(
-                cruiseStepLegIndices[i],
-              )
-            : undefined;
-        const wptEta = getEtaFromUtcOrPresent(
-          pred?.secondsFromPresent,
-          this.activeFlightPhase.get() == FmgcFlightPhase.Preflight,
-        );
-        const wptIndex = this.availableWaypointsToLegIndex.indexOf(cruiseStepLegIndices[i]);
-        const step = cruiseSteps[i];
-
-        this.stepAltsLineVisibility[line].set('visible');
-        this.stepAltsWptIndices[line].set(wptIndex !== -1 ? wptIndex : null);
-        this.stepAltsAltitude[line].set(step.toAltitude);
-        this.stepLinesPredictionsVisibility[line].set(
-          wptIndex !== -1 && step.toAltitude !== null ? 'visible' : 'hidden',
-        );
-
-        if (pred) {
-          this.stepAltsDistances[line].set(pred.distanceFromAircraft - step.distanceBeforeTermination);
-          this.stepAltsTimes[line].set(wptEta);
-        } else {
-          this.stepAltsDistances[line].set(null);
-          this.stepAltsTimes[line].set('--:--');
-        }
-        this.stepAltsIgnored[line].set(step.isIgnored);
-
-        const estGrossWeight = this.getEstimatedGrossWeightAtIndex(cruiseStepLegIndices[i]);
-        this.stepAltsAboveMaxFl[line].set(
-          estGrossWeight !== null
-            ? step.toAltitude >
-                (this.props.fmcService.master.getRecMaxAltitude(this.loadedFlightPlanIndex.get(), estGrossWeight) ??
-                  Infinity)
-            : false,
-        );
-
-        if (this.stepAltsIgnored[line].get()) {
-          this.stepAltsMessage[line].set('IGNORED');
-        } else if (this.stepAltsAboveMaxFl[line].get()) {
-          this.stepAltsMessage[line].set('ABOVE MAX FL');
-        } else {
-          this.stepAltsMessage[line].set('');
-        }
+  /**
+   * Checks if step altitude modification is allowed based on flight phase, engine out status and whether a cruise flight level is set.
+   * @returns the reason why the step altitude modification is not allowed, or undefined if it is allowed.
+   */
+  private checkStepAltsAccessPrerequisites(): StepDisabledReason | undefined {
+    if (this.props.fmcService.master.engineOutActive()) {
+      return StepDisabledReason.EO;
+    } else {
+      const fp = this.props.flightPlanInterface.get(this.loadedFlightPlanIndex.get());
+      const phase = fp.isActiveOrCopiedFromActive() ? this.activeFlightPhase.get() : null;
+      if (phase === FmgcFlightPhase.Descent) {
+        return StepDisabledReason.Des;
+      } else if (phase === FmgcFlightPhase.Approach) {
+        return StepDisabledReason.Appr;
+      } else if (phase === FmgcFlightPhase.GoAround) {
+        return StepDisabledReason.GA;
+      } else if (phase === FmgcFlightPhase.Done) {
+        return StepDisabledReason.Done;
+      } else if (fp.performanceData.cruiseFlightLevel.get() === null) {
+        return StepDisabledReason.CrzFL;
       }
     }
   }
@@ -886,7 +935,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     this.stepsAltsClockSub = this.props.bus
       .getSubscriber<ClockEvents>()
       .on('realTime')
-      .atFrequency(0.5)
+      .atFrequency(1)
       .handle(() => this.updateCruiseSteps());
 
     this.subs.push(
@@ -912,6 +961,9 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         }
         this.onNewData();
       }, true),
+      this.stepPageDisabledMessageDisplay,
+      this.stepAltsPageDisplay,
+      this.fillPageDisplay,
     );
   }
 
@@ -1176,7 +1228,18 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
               </TopTabNavigatorPage>
               <TopTabNavigatorPage>
                 {/* STEP ALTs */}
-                <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                <div class="mfd-page-container" style={{ display: this.stepPageDisabledMessageDisplay }}>
+                  <div class="mfd-amber-error-message">{this.stepPageDisabled}</div>
+                </div>
+                <div
+                  style={{
+                    flex: '1',
+                    display: this.stepAltsPageDisplay,
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                >
                   <div class="mfd-fms-fpln-labeled-box-container" style="width: 100%;">
                     <div class="mfd-fms-fpln-labeled-box-label" style="margin-left: 15px;">
                       <span class="mfd-label mfd-spacing-right">STEP ALTs FROM CRZ</span>
@@ -1333,7 +1396,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                 </div>
               </TopTabNavigatorPage>
             </TopTabNavigator>
-            <div style="flex-grow: 1;" />
+            <div style={{ 'flex-grow': '1', display: this.fillPageDisplay }} />
             <div style="display: flex; flex-direction: row; justify-content: space-between;">
               <div ref={this.returnButtonDiv} style="display: flex; justify-content: flex-end; padding: 2px;">
                 <Button
