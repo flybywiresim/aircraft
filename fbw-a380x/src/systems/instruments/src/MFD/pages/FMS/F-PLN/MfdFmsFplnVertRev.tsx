@@ -58,12 +58,12 @@ enum SelectedPage {
 }
 
 enum StepDisabledReason {
-  EO = 'STEP ALTs NOT ALLOWED IN EO',
-  Des = 'STEP ALTs NOT ALLOWED IN DES',
-  Appr = 'STEP ALTs NOT ALLOWED IN APPR',
-  GA = 'STEP ALTs NOT ALLOWED IN GA',
+  EngineOut = 'STEP ALTs NOT ALLOWED IN EO',
+  Descent = 'STEP ALTs NOT ALLOWED IN DES',
+  Approach = 'STEP ALTs NOT ALLOWED IN APPR',
+  GoAround = 'STEP ALTs NOT ALLOWED IN GA',
   Done = 'STEP ALTs NOT ALLOWED IN DONE',
-  CrzFL = 'STEP ALTs NOT ALLOWED: NO CRZ FL',
+  NoCruiseLevel = 'STEP ALTs NOT ALLOWED: NO CRZ FL',
 }
 
 export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
@@ -596,20 +596,20 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
    */
   private checkStepAltsAccessPrerequisites(): StepDisabledReason | undefined {
     if (this.props.fmcService.master.engineOutActive()) {
-      return StepDisabledReason.EO;
+      return StepDisabledReason.EngineOut;
     } else {
       const fp = this.props.flightPlanInterface.get(this.loadedFlightPlanIndex.get());
       const phase = fp.isActiveOrCopiedFromActive() ? this.activeFlightPhase.get() : null;
       if (phase === FmgcFlightPhase.Descent) {
-        return StepDisabledReason.Des;
+        return StepDisabledReason.Descent;
       } else if (phase === FmgcFlightPhase.Approach) {
-        return StepDisabledReason.Appr;
+        return StepDisabledReason.Approach;
       } else if (phase === FmgcFlightPhase.GoAround) {
-        return StepDisabledReason.GA;
+        return StepDisabledReason.GoAround;
       } else if (phase === FmgcFlightPhase.Done) {
         return StepDisabledReason.Done;
       } else if (fp.performanceData.cruiseFlightLevel.get() === null) {
-        return StepDisabledReason.CrzFL;
+        return StepDisabledReason.NoCruiseLevel;
       }
     }
   }
