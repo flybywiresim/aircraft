@@ -36,7 +36,7 @@ import { IconButton } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/IconBut
 import { FmgcData } from 'instruments/src/MFD/FMC/fmgc';
 import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
 import { NXSystemMessages } from 'instruments/src/MFD/shared/NXSystemMessages';
-import { getEtaFromUtcOrPresent } from 'instruments/src/MFD/shared/utils';
+import { getEtaFromUtcOrPresent, isConstraintRevisionAllowed } from 'instruments/src/MFD/shared/utils';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPlan';
 import { ReadonlyFlightPlanLeg } from '@fmgc/flightplanning/legs/ReadonlyFlightPlanLeg';
@@ -68,30 +68,20 @@ enum StepDisabledReason {
 
 export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   private readonly selectedPageIndex = Subject.create(SelectedPage.RTA);
-
   private readonly availableWaypoints = ArraySubject.create<string>([]);
+  private initialLoadReviseWaypointIndex = true;
 
   private availableWaypointsToLegIndex: number[] = [];
-
-  /** Don't modify this directly, use selectedLegIndex for conversion to/from leg indices */
-  private readonly dropdownMenuSelectedWaypointIndex = Subject.create<number | null>(null);
-
-  get selectedLegIndex() {
-    const dropdownIndex = this.dropdownMenuSelectedWaypointIndex.get();
-    return dropdownIndex !== null && dropdownIndex in this.availableWaypointsToLegIndex
-      ? this.availableWaypointsToLegIndex[dropdownIndex]
-      : null;
-  }
-
-  set selectedLegIndex(legIndex: number | null) {
-    if (legIndex === null) {
-      this.dropdownMenuSelectedWaypointIndex.set(null);
-      return;
+  private readonly selectedLegIndex = Subject.create<number | null>(null);
+  private readonly selectedLegIsAlternate = Subject.create<boolean | null>(null);
+  private readonly dropdownMenuSelectedWaypointIndex = this.selectedLegIndex.map((si) => {
+    if (si === null) {
+      return null;
+    } else {
+      const idx = this.availableWaypointsToLegIndex.findIndex((i) => i === si);
+      return idx !== -1 ? idx : null;
     }
-
-    const dropdownIndex = this.availableWaypointsToLegIndex.indexOf(legIndex);
-    this.dropdownMenuSelectedWaypointIndex.set(dropdownIndex !== -1 ? dropdownIndex : null);
-  }
+  });
 
   private readonly returnButtonDiv = FSComponent.createRef<HTMLDivElement>();
 
@@ -243,15 +233,26 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     this.transitionAltitude.set(pd?.transitionAltitude.get() ?? null);
     this.transitionLevel.set(pd?.transitionLevel.get() ?? null);
 
-    const activeLegIndex = this.props.flightPlanInterface.get(this.loadedFlightPlanIndex.get()).activeLegIndex;
-    if (activeLegIndex) {
-      const selectedLegIndexBeforeUpdate = this.selectedLegIndex;
+    // Do not update till a flightplan has been fully loaded.
+    const fpLoaded = this.selectedLegIsAlternate.get() !== null;
+    if (!fpLoaded) {
+      return;
+    }
+
+    const plan = this.selectedLegIsAlternate.get() ? this.loadedAlternateFlightPlan : this.loadedFlightPlan;
+    const activeLegIndex = plan?.activeLegIndex;
+    let indexToSelect: number | null = null;
+    if (activeLegIndex !== undefined) {
       this.availableWaypointsToLegIndex = [];
-      const wpt = this.loadedFlightPlan?.allLegs
-        .slice(activeLegIndex)
+      const legs = plan?.allLegs;
+      const wpt = legs
+        ?.slice(activeLegIndex)
         .map((el, idx) => {
           if (el instanceof FlightPlanLeg && el.isXF()) {
             this.availableWaypointsToLegIndex.push(idx + activeLegIndex);
+            if (indexToSelect === null) {
+              indexToSelect = idx + activeLegIndex;
+            }
             return el.ident;
           }
           return null;
@@ -259,11 +260,14 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         .filter((el) => el !== null) as string[] | undefined;
       if (wpt) {
         this.availableWaypoints.set(wpt);
-        this.selectedLegIndex = selectedLegIndexBeforeUpdate;
       }
 
-      const revWptIdx = this.props.fmcService.master.revisedLegIndex.get();
-      this.selectedLegIndex = revWptIdx ?? null;
+      if (this.initialLoadReviseWaypointIndex) {
+        this.selectedLegIndex.set(this.props.fmcService.master.revisedLegIndex.get() ?? indexToSelect);
+        this.initialLoadReviseWaypointIndex = false;
+      } else if (this.selectedLegIndex.get() === null) {
+        this.selectedLegIndex.set(indexToSelect);
+      }
     }
 
     this.crzFl.set(pd?.cruiseFlightLevel.get() ?? null);
@@ -279,26 +283,40 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   ): boolean {
     // Check conditions: No constraints for airports, FROM waypoint, GA legs, pseudo waypoints
     return (
-      !leg.isRunway() && legIndex >= flightPlan.activeLegIndex && legIndex < flightPlan.firstMissedApproachLegIndex
+      isConstraintRevisionAllowed(leg) &&
+      legIndex >= flightPlan.activeLegIndex &&
+      legIndex < flightPlan.firstMissedApproachLegIndex
     );
   }
 
   private updateConstraints() {
-    if (!this.props.fmcService.master || !this.loadedFlightPlan || this.selectedLegIndex === null) {
+    if (!this.props.fmcService.master || this.selectedLegIsAlternate.get() === null) {
       return;
     }
 
-    const leg = this.loadedFlightPlan.legElementAt(this.selectedLegIndex);
-    const previousElement = this.loadedFlightPlan.maybeElementAt(this.selectedLegIndex - 1);
-    const isPartOfTooSteepPathSegment =
-      leg.calculated?.endsInTooSteepPath ||
-      (previousElement?.isDiscontinuity === false && previousElement.calculated?.endsInTooSteepPath);
+    const plan = this.selectedLegIsAlternate.get() ? this.loadedAlternateFlightPlan : this.loadedFlightPlan;
+    const selectedLegIdx = this.selectedLegIndex.get();
+    const leg = selectedLegIdx !== null ? plan?.legElementAt(selectedLegIdx) : null;
+    const previousElement = selectedLegIdx !== null ? plan?.maybeElementAt(selectedLegIdx - 1) : null;
+    const isPartOfTooSteepPathSegment = leg
+      ? leg.calculated?.endsInTooSteepPath ||
+        (previousElement?.isDiscontinuity === false && previousElement.calculated?.endsInTooSteepPath)
+      : null;
 
-    if (!MfdFmsFplnVertRev.isEligibleForVerticalRevision(this.selectedLegIndex, leg, this.loadedFlightPlan)) {
+    if (
+      plan &&
+      leg &&
+      selectedLegIdx !== null &&
+      !MfdFmsFplnVertRev.isEligibleForVerticalRevision(selectedLegIdx, leg, plan)
+    ) {
       this.speedMessageArea.set(`SPD CSTR NOT ALLOWED AT ${leg.ident}`);
       this.spdConstraintDisabled.set(true);
+      this.spdConstraintTypeRadioSelected.set(null);
+      this.speedConstraintInput.set(null);
       this.altitudeMessageArea.set(`ALT CSTR NOT ALLOWED AT ${leg.ident}`);
       this.altConstraintDisabled.set(true);
+      this.altitudeConstraintInput.set(null);
+      this.selectedAltitudeConstraintOption.set(null);
       return;
     }
     this.speedMessageArea.set('');
@@ -310,8 +328,11 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     const selectedIndex = this.selectedPageIndex.get();
     if (selectedIndex === SelectedPage.SPD) {
       const speedLimitType =
-        leg.constraintType === WaypointConstraintType.DES ||
-        (this.activeFlightPhase.get() > FmgcFlightPhase.Cruise &&
+        leg?.constraintType === WaypointConstraintType.DES ||
+        (this.props.fmcService.master.flightPlanInterface
+          .get(this.loadedFlightPlanIndex.get())
+          .isActiveOrCopiedFromActive() &&
+          this.activeFlightPhase.get() > FmgcFlightPhase.Cruise &&
           this.activeFlightPhase.get() < FmgcFlightPhase.GoAround)
           ? SpeedLimitType.DES
           : SpeedLimitType.CLB;
@@ -322,60 +343,71 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         speedLimitType === SpeedLimitType.CLB ? this.transitionAltitude.get() : this.transitionLevel.get(),
       );
 
-      // TODO handle alternate?
       const climbSpeedLimit = speedLimitType === SpeedLimitType.CLB;
+      const isAlternate = this.selectedLegIsAlternate.get();
 
       const speedLimitSpeed = climbSpeedLimit
-        ? this.loadedFlightPlan.performanceData.climbSpeedLimitSpeed.get()
-        : this.loadedFlightPlan.performanceData.descentSpeedLimitSpeed.get();
+        ? isAlternate
+          ? plan?.performanceData.alternateClimbSpeedLimitSpeed.get()
+          : plan?.performanceData.climbSpeedLimitSpeed.get()
+        : isAlternate
+          ? plan?.performanceData.alternateDescentSpeedLimitSpeed.get()
+          : plan?.performanceData.descentSpeedLimitSpeed.get();
 
       const speedLimitAltitude = climbSpeedLimit
-        ? this.loadedFlightPlan.performanceData.climbSpeedLimitAltitude.get()
-        : this.loadedFlightPlan.performanceData.descentSpeedLimitAltitude.get();
+        ? isAlternate
+          ? plan?.performanceData.alternateClimbSpeedLimitAltitude.get()
+          : plan?.performanceData.climbSpeedLimitAltitude.get()
+        : isAlternate
+          ? plan?.performanceData.alternateDescentSpeedLimitAltitude.get()
+          : plan?.performanceData.descentSpeedLimitAltitude.get();
 
-      this.speedLimitSpeed.set(speedLimitSpeed);
-      this.speedLimitAltitude.set(speedLimitAltitude);
+      this.speedLimitSpeed.set(speedLimitSpeed ?? null);
+      this.speedLimitAltitude.set(speedLimitAltitude ?? null);
       this.speedLimitPilotEntered.set(
         climbSpeedLimit
-          ? this.loadedFlightPlan.performanceData.isClimbSpeedLimitPilotEntered.get()
-          : this.loadedFlightPlan.performanceData.isDescentSpeedLimitPilotEntered.get(),
+          ? isAlternate
+            ? plan?.performanceData.isAlternateClimbSpeedLimitPilotEntered.get() ?? false
+            : plan?.performanceData.isClimbSpeedLimitPilotEntered.get() ?? false
+          : isAlternate
+            ? plan?.performanceData.isAlternateDescentSpeedLimitPilotEntered.get() ?? false
+            : plan?.performanceData.isDescentSpeedLimitPilotEntered.get() ?? false,
       );
 
-      this.speedConstraintInput.set(leg.speedConstraint?.speed ?? null);
+      this.speedConstraintInput.set(leg?.speedConstraint?.speed ?? null);
       this.constraintType.set(
-        leg.constraintType === WaypointConstraintType.CLB
+        leg?.constraintType === WaypointConstraintType.CLB
           ? 'CLB'
-          : leg.constraintType === WaypointConstraintType.DES
+          : leg?.constraintType === WaypointConstraintType.DES
             ? 'DES'
             : '',
       );
       this.spdConstraintTypeRadioSelected.set(
-        leg.constraintType === WaypointConstraintType.CLB
+        leg?.constraintType === WaypointConstraintType.CLB
           ? 0
-          : leg.constraintType === WaypointConstraintType.DES
+          : leg?.constraintType === WaypointConstraintType.DES
             ? 1
             : null,
       );
     } else if (selectedIndex === SelectedPage.ALT) {
       this.altConstraintTypeRadioSelected.set(
-        leg.constraintType === WaypointConstraintType.CLB
+        leg?.constraintType === WaypointConstraintType.CLB
           ? 0
-          : leg.constraintType === WaypointConstraintType.DES
+          : leg?.constraintType === WaypointConstraintType.DES
             ? 1
             : null,
       );
       this.altitudeClbDesConstraintVisibility.set(
-        leg.constraintType === WaypointConstraintType.Unknown ? 'visible' : 'hidden',
+        leg?.constraintType === WaypointConstraintType.Unknown ? 'visible' : 'hidden',
       );
 
       this.cannotDeleteAltConstraint.set(
-        !leg.altitudeConstraint || leg.altitudeConstraint?.altitudeDescriptor === AltitudeDescriptor.None,
+        !leg?.altitudeConstraint || leg.altitudeConstraint?.altitudeDescriptor === AltitudeDescriptor.None,
       );
-      this.cannotDeleteSpeedConstraint.set(!leg.speedConstraint || !leg.speedConstraint?.speed);
+      this.cannotDeleteSpeedConstraint.set(!leg?.speedConstraint || !leg?.speedConstraint?.speed);
 
       // Load altitude constraints
-      // FIXME missing a lot of cases here
-      switch (leg.altitudeConstraint?.altitudeDescriptor) {
+      switch (leg?.altitudeConstraint?.altitudeDescriptor) {
         case AltitudeDescriptor.AtAlt1:
         case AltitudeDescriptor.AtAlt1GsIntcptAlt2:
         case AltitudeDescriptor.AtAlt1AngleAlt2:
@@ -394,9 +426,9 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
           this.selectedAltitudeConstraintOption.set(null);
           break;
       }
-      this.altitudeConstraintInput.set(leg.altitudeConstraint?.altitude1 ?? null);
+      this.altitudeConstraintInput.set(leg?.altitudeConstraint?.altitude1 ?? null);
 
-      const ac = leg.altitudeConstraint;
+      const ac = leg?.altitudeConstraint;
       if (ac) {
         const transAltIsFlightLevel = leg.constraintType === WaypointConstraintType.DES;
         const transAlt = transAltIsFlightLevel ? this.transitionLevel.get() : this.transitionAltitude.get();
@@ -457,7 +489,11 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   }
 
   private updateCruiseSteps() {
-    if (this.loadedFlightPlan && this.selectedPageIndex.get() === SelectedPage.STEP_ALTS) {
+    if (
+      this.loadedFlightPlan &&
+      this.selectedPageIndex.get() === SelectedPage.STEP_ALTS &&
+      !this.selectedLegIsAlternate.get()
+    ) {
       const stepDisabledReason = this.checkStepAltsAccessPrerequisites();
       this.stepPageDisabled.set(stepDisabledReason ?? null);
       if (stepDisabledReason === undefined) {
@@ -602,29 +638,29 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   }
 
   private checkLegModificationAllowed(): boolean {
-    return this.props.fmcService.master !== null && this.selectedLegIndex !== null && this.loadedFlightPlan !== null;
+    return (
+      this.props.fmcService.master !== null && this.selectedLegIndex.get() !== null && this.loadedFlightPlan !== null
+    );
   }
 
   private async onWptDropdownModified(idx: number | null): Promise<void> {
     if (idx !== null) {
       const legIndex = this.availableWaypointsToLegIndex[idx];
-      this.selectedLegIndex = legIndex;
-      this.props.fmcService.master.revisedLegIndex.set(legIndex);
+      this.selectedLegIndex.set(legIndex);
       this.updateConstraints();
     } else {
-      this.selectedLegIndex = null;
-      this.props.fmcService.master.resetRevisedWaypoint();
+      this.selectedLegIndex.set(null);
     }
   }
 
   private async tryUpdateSpeedConstraint(newSpeed?: number) {
     if (this.checkLegModificationAllowed() && this.spdConstraintTypeRadioSelected.get() !== null) {
       this.props.fmcService.master!.flightPlanInterface.setPilotEnteredSpeedConstraintAt(
-        this.selectedLegIndex!,
+        this.selectedLegIndex.get()!,
         this.spdConstraintTypeRadioSelected.get() === 1,
         newSpeed,
         this.loadedFlightPlanIndex.get(),
-        false,
+        this.selectedLegIsAlternate.get() ?? false,
       );
     }
   }
@@ -659,11 +695,11 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       }
 
       this.props.fmcService.master!.flightPlanInterface.setPilotEnteredAltitudeConstraintAt(
-        this.selectedLegIndex!,
+        this.selectedLegIndex.get()!,
         this.altConstraintTypeRadioSelected.get() === 1,
         { altitude1: alt, altitudeDescriptor: option },
         this.loadedFlightPlanIndex.get(),
-        false,
+        this.selectedLegIsAlternate.get() ?? false,
       );
     }
   }
@@ -671,11 +707,11 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   private deleteAltitudeConstraint() {
     if (this.checkLegModificationAllowed()) {
       this.props.fmcService.master!.flightPlanInterface.setPilotEnteredAltitudeConstraintAt(
-        this.selectedLegIndex!,
+        this.selectedLegIndex.get()!,
         this.altConstraintTypeRadioSelected.get() === 1,
         undefined,
         this.loadedFlightPlanIndex.get(),
-        false,
+        this.selectedLegIsAlternate.get() ?? false,
       );
     }
   }
@@ -692,13 +728,13 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         this.props.flightPlanInterface.setPilotEntryClimbSpeedLimitSpeed(
           value,
           this.loadedFlightPlanIndex.get(),
-          false,
+          this.selectedLegIsAlternate.get() ?? false,
         );
       } else {
         this.props.flightPlanInterface.setPilotEntryDescentSpeedLimitSpeed(
           value,
           this.loadedFlightPlanIndex.get(),
-          false,
+          this.selectedLegIsAlternate.get() ?? false,
         );
       }
     }
@@ -712,13 +748,13 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         this.props.flightPlanInterface.setPilotEntryClimbSpeedLimitAltitude(
           value,
           this.loadedFlightPlanIndex.get(),
-          false,
+          this.selectedLegIsAlternate.get() ?? false,
         );
       } else {
         this.props.flightPlanInterface.setPilotEntryDescentSpeedLimitAltitude(
           value,
           this.loadedFlightPlanIndex.get(),
-          false,
+          this.selectedLegIsAlternate.get() ?? false,
         );
       }
     }
@@ -727,9 +763,15 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
   private async deleteSpeedLimit() {
     if (this.checkPerformanceDataEditCondition()) {
       if (this.speedLimitType.get() === SpeedLimitType.CLB) {
-        this.props.flightPlanInterface.deleteClimbSpeedLimit(this.loadedFlightPlanIndex.get(), false);
+        this.props.flightPlanInterface.deleteClimbSpeedLimit(
+          this.loadedFlightPlanIndex.get(),
+          this.selectedLegIsAlternate.get() ?? false,
+        );
       } else {
-        this.props.flightPlanInterface.deleteDescentSpeedLimit(this.loadedFlightPlanIndex.get(), false);
+        this.props.flightPlanInterface.deleteDescentSpeedLimit(
+          this.loadedFlightPlanIndex.get(),
+          this.selectedLegIsAlternate.get() ?? false,
+        );
       }
     }
   }
@@ -821,8 +863,9 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
       if (isValid) {
         this.props.flightPlanInterface.addOrUpdateCruiseStep(legIndex, altitude, this.loadedFlightPlanIndex.get());
       } else {
-        if (this.selectedLegIndex !== null) {
-          const leg = this.loadedFlightPlan?.maybeElementAt(this.selectedLegIndex);
+        const selectedLegIndex = this.selectedLegIndex.get();
+        if (selectedLegIndex !== null) {
+          const leg = this.loadedFlightPlan?.maybeElementAt(selectedLegIndex);
           this.stepNotAllowedAt.set(leg?.isDiscontinuity === false ? `STEP NOT ALLOWED AT ${leg.ident}` : '');
         }
       }
@@ -892,18 +935,24 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     // If extra parameter for activeUri is given, navigate to flight phase sub-page
     switch (this.props.mfd.uiService.activeUri.get().extra) {
       case 'rta':
+        this.initialLoadReviseWaypointIndex = false;
         this.selectedPageIndex.set(SelectedPage.RTA);
         break;
       case 'spd':
+        this.selectedLegIsAlternate.set(this.props.fmcService.master.revisedLegIsAltn.get());
+        this.initialLoadReviseWaypointIndex = true;
         this.selectedPageIndex.set(SelectedPage.SPD);
         break;
       case 'cms':
         this.selectedPageIndex.set(SelectedPage.CMS);
         break;
       case 'alt':
+        this.selectedLegIsAlternate.set(this.props.fmcService.master.revisedLegIsAltn.get());
+        this.initialLoadReviseWaypointIndex = true;
         this.selectedPageIndex.set(SelectedPage.ALT);
         break;
       case 'step-alts':
+        this.initialLoadReviseWaypointIndex = false;
         this.selectedPageIndex.set(SelectedPage.STEP_ALTS);
         break;
 
@@ -940,7 +989,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     this.stepsAltsClockSub = this.props.bus
       .getSubscriber<ClockEvents>()
       .on('realTime')
-      .atFrequency(1)
+      .atFrequency(0.5)
       .handle(() => this.updateCruiseSteps());
 
     this.subs.push(
@@ -954,6 +1003,12 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
     this.subs.push(
       this.selectedPageIndex.sub((val) => {
+        if (val === SelectedPage.STEP_ALTS || val === SelectedPage.RTA || val === SelectedPage.CMS) {
+          this.selectedLegIsAlternate.set(false);
+        } else if (val === SelectedPage.SPD || val === SelectedPage.ALT) {
+          this.selectedLegIsAlternate.set(this.props.fmcService.master.revisedLegIsAltn.get());
+        }
+
         if (val === SelectedPage.STEP_ALTS) {
           this.stepsAltsClockSub?.resume();
         } else {

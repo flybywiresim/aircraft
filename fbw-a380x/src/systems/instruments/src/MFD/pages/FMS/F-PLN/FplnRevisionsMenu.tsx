@@ -8,7 +8,7 @@ import { MfdFmsFpln } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFpln';
 import { ContextMenuElement } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/ContextMenu';
 import { BitFlags } from '@microsoft/msfs-sdk';
 import { FlightPlanLegFlags } from '@fmgc/flightplanning/legs/FlightPlanLeg';
-import { lateralRevisionHoldPage } from '../../../shared/utils';
+import { isConstraintRevisionAllowed, lateralRevisionHoldPage } from '../../../shared/utils';
 
 export enum FplnRevisionsMenuType {
   Waypoint,
@@ -197,10 +197,10 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
     {
       name: 'CONSTRAINTS',
       disabled:
-        altnFlightPlan ||
-        !isLegTerminatingAtDatabaseFix ||
+        revisedLeg === undefined ||
         type === FplnRevisionsMenuType.Discontinuity ||
-        type === FplnRevisionsMenuType.TooSteepPath,
+        type === FplnRevisionsMenuType.TooSteepPath ||
+        !isConstraintRevisionAllowed(revisedLeg),
       onPressed: () =>
         fpln.props.mfd.uiService.navigateTo(
           `fms/${fpln.props.mfd.uiService.activeUri.get().category}/f-pln-vert-rev/alt`,
