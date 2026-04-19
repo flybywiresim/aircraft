@@ -4036,11 +4036,11 @@ Use the `A32NXDisplayManagementPublisher` for these in A32NX code.
   - Arinc429Word<Degrees>
 
 - `L:A32NX_DMC_DH_LEFT`
-  - Right DMC copy of the FM radio minimum
+  - Left DMC copy of the FM radio minimum
   - Arinc429Word<Feet>
 
 - `L:A32NX_DMC_DH_RIGHT`
-  - Left DMC copy of the FM radio minimum
+  - Right DMC copy of the FM radio minimum
   - Arinc429Word<Feet>
 
 - `L:A32NX_DMC_DISCRETE_WORD_270_LEFT`

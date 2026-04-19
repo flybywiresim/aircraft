@@ -69,9 +69,9 @@ interface EWDMessageItem {
   /** warning is active */
   simVarIsActive: Subscribable<boolean>;
   /** Can be a code directly, or an array of indices in `codesToReturn`, with no meaning no code. */
-  whichCodeToReturn?: () => (number | null)[] | string;
-  codesToReturn?: string[];
-  // FIXME remove... this is not an actual thing
+  whichCodeToReturn: () => (number | null)[] | string;
+  codesToReturn: string[];
+  /** FIXME remove... this is not an actual thing */
   memoInhibit?: () => boolean;
   /** The side of the display to show the message on  */
   side: 'LEFT' | 'RIGHT';
@@ -1553,14 +1553,9 @@ export class PseudoFWC {
   /* SETTINGS */
   private readonly configPortableDevices = Subject.create(false);
 
-  /** Radio Altimeter callouts */
-
-  private readonly noFlightPhaseInhibit: number[] = [];
-
+  /** RA & Minimums callouts */
   private readonly autoCallouts: FwsAutoCallouts;
-
   public minimumEmitted = false;
-
   public hundredAboveEmitted = false;
 
   constructor(
@@ -1808,7 +1803,7 @@ export class PseudoFWC {
     this.keyEventManager!.interceptKey('AUTO_THROTTLE_ARM', true);
   }
 
-  mapOrder(array): [] {
+  mapOrder(array: string[]): string[] {
     array.sort((a, b) => (EwdMessageCodeOrder.get(a) ?? Infinity) - (EwdMessageCodeOrder.get(b) ?? Infinity));
     return array;
   }
@@ -2011,8 +2006,6 @@ export class PseudoFWC {
     this.flightPhase4PulseNode.write(flightPhase === 4, deltaTime);
     this.flightPhase7PulseNode.write(flightPhase === 7, deltaTime);
     this.flightPhase8PulseNode.write(flightPhase === 8, deltaTime);
-    this.flightPhase9PulseNode.write(flightPhase === 9, deltaTime);
-
     this.flightPhase9PulseNode.write(flightPhase === 9, deltaTime);
     this.flightPhase6For60Seconds.write(flightPhase === 6, deltaTime);
     // flight phase convenience vars
@@ -3946,19 +3939,29 @@ export class PseudoFWC {
       const clearableFailures = this.failuresLeft.map((key) => {
         const value = this.ewdMessageFailures[key];
         const codeToReturn = value.whichCodeToReturn();
-        const code =
-          typeof codeToReturn === 'string' ? codeToReturn : value.codesToReturn[codeToReturn.find((e) => e !== null)];
-
-        return { key, group: getEwdMessageGroup(code), order: EwdMessageCodeOrder.get(code) ?? Infinity };
+        let code: string | null = null;
+        if (typeof codeToReturn === 'string') {
+          code = codeToReturn;
+        } else {
+          const found = codeToReturn.find((e) => e !== null);
+          if (found === undefined) {
+            console.warn('No valid return code found for failure ' + key);
+          }
+        }
+        if (code !== null) {
+          return { key, group: getEwdMessageGroup(code), order: EwdMessageCodeOrder.get(code) ?? Infinity };
+        }
       });
 
       let targetGroup: string | undefined;
       let bestOrder = Infinity;
 
       for (const failure of clearableFailures) {
-        if (failure.group !== undefined && failure.order < bestOrder) {
-          bestOrder = failure.order;
-          targetGroup = failure.group;
+        if (failure !== undefined) {
+          if (failure.group !== undefined && failure.order < bestOrder) {
+            bestOrder = failure.order;
+            targetGroup = failure.group;
+          }
         }
       }
 
@@ -3967,15 +3970,17 @@ export class PseudoFWC {
         let canClearTargetGroup = true;
 
         for (const item of clearableFailures) {
-          if (item.group === targetGroup) {
-            const timing = this.ewdFailureTiming.get(item.key);
+          if (item !== undefined) {
+            if (item.group === targetGroup) {
+              const timing = this.ewdFailureTiming.get(item.key);
 
-            if (timing === undefined || !timing.clearEligible) {
-              canClearTargetGroup = false;
-              break;
+              if (timing === undefined || !timing.clearEligible) {
+                canClearTargetGroup = false;
+                break;
+              }
+            } else {
+              remainingFailures.push(item.key);
             }
-          } else {
-            remainingFailures.push(item.key);
           }
         }
 
@@ -4473,7 +4478,7 @@ export class PseudoFWC {
     },
     2200050: {
       // Altitude Alert
-      flightPhaseInhib: this.noFlightPhaseInhibit,
+      flightPhaseInhib: [],
       simVarIsActive: this.altAlertCChord,
       auralWarning: this.altAlertCChord.map((active) => (active ? FwcAuralWarning.CChord : FwcAuralWarning.None)),
       whichCodeToReturn: () => [null],
