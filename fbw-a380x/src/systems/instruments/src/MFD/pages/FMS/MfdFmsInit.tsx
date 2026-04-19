@@ -120,12 +120,14 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
   private readonly tropopause = Subject.create<number | null>(null);
   private readonly tropopauseIsPilotEntered = Subject.create<boolean>(false);
 
+  private readonly fpHasWindEntries = Subject.create(false);
   private readonly tripWind = Subject.create<number | null>(null);
 
   private readonly tripWindDisabled = MappedSubject.create(
-    ([toIcao, fromIcao]) => !toIcao || !fromIcao,
+    ([toIcao, fromIcao, fpHasWindEntries]) => !toIcao || !fromIcao || fpHasWindEntries,
     this.fromIcao,
     this.toIcao,
+    this.fpHasWindEntries,
   );
 
   private readonly cpnyRteMandatory = MappedSubject.create(
@@ -237,7 +239,15 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     this.flightNumber.set(
       this.loadedFlightPlan !== null ? this.props.flightPlanInterface.get(fpIndex).getFlightNumber().get() : null,
     );
-    this.tripWind.set(pd?.pilotTripWind.get() ?? null);
+    const hasWind = this.props.flightPlanInterface.has(fpIndex)
+      ? this.props.flightPlanInterface.get(fpIndex).hasWindEntries()
+      : false;
+    this.fpHasWindEntries.set(hasWind);
+    if (hasWind) {
+      this.tripWind.set(null);
+    } else {
+      this.tripWind.set(pd?.pilotTripWind.get() ?? null);
+    }
     this.cruiseTemperature.set(pd?.cruiseTemperature.get() ?? null);
     this.cruiseTemperatureIsPilotEntered.set(pd?.isCruiseTemperaturePilotEntered.get() ?? false);
     this.crzFl.set(pd?.cruiseFlightLevel.get() ?? null);
@@ -640,9 +650,12 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                 />
               </div>
               <Button
-                disabled={true}
                 label="WIND"
-                onClick={() => console.log('WIND')}
+                onClick={() =>
+                  this.props.mfd.uiService.navigateTo(
+                    `fms/${this.props.mfd.uiService.activeUri.get().category}/wind/${showReturnButtonUriExtra}`,
+                  )
+                }
                 buttonStyle="margin-right: 10px; margin-top: 52px;"
               />
               <div style="flex-grow: 1" />

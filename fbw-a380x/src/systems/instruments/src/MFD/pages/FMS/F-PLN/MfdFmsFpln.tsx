@@ -58,9 +58,9 @@ import {
   TailwindComponent,
   WindVector,
 } from '@fmgc/flightplanning/data/wind';
-import { dirToUri, fixInfoUri } from '../../../shared/utils';
 import { ReadonlyFlightPlanElement } from '@fmgc/flightplanning/legs/ReadonlyFlightPlanLeg';
 import { FlightPlanOperationEvents } from '@fmgc/events/FlightPlanOperationEvents';
+import { dirToUri, fixInfoUri, showReturnButtonUriExtra } from '../../../shared/utils';
 
 interface MfdFmsFplnProps extends AbstractMfdPageProps {}
 
@@ -658,7 +658,9 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 speed: () => this.goToSpeedConstraint(drawIndex),
                 altitude: () => this.goToAltitudeConstraint(drawIndex),
                 rta: () => this.goToTimeConstraint(drawIndex),
-                wind: () => {},
+                wind: () => {
+                  this.gotoWindPage(drawIndex);
+                },
                 onImmediateExitHold: () => {
                   this.onImmediateExit(drawIndex);
                 },
@@ -912,6 +914,18 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
       this.props.mfd.uiService.navigateTo(
         `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-vert-rev/alt`,
       );
+    }
+  }
+
+  private gotoWindPage(lineDataIndex: number) {
+    const data = this.lineData[lineDataIndex];
+    if (isWaypoint(data) && !data.isAltnWaypoint && data.originalLegIndex !== null) {
+      const wpt = this.loadedFlightPlan?.legElementAt(data.originalLegIndex);
+      if (wpt) {
+        this.props.mfd.uiService.navigateTo(
+          `fms/${this.props.mfd.uiService.activeUri.get().category}/wind/${showReturnButtonUriExtra}/${data.originalLegIndex}`,
+        );
+      }
     }
   }
 

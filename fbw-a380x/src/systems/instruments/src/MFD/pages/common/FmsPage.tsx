@@ -20,21 +20,21 @@ import { ReadonlyFlightPlan } from '@fmgc/flightplanning/plans/ReadonlyFlightPla
 import { AlternateFlightPlan } from '@fmgc/flightplanning/plans/AlternateFlightPlan';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import {
-  airwaysPage,
-  arrivalPage,
-  dataStatusUri,
-  departurePage,
-  dirToUri,
-  fixInfoUri,
-  flightPlanUriPage,
+  performancePage,
   fuelAndLoadPage,
   initPage,
-  lateralRevisionHoldPage,
+  flightPlanUriPage,
+  airwaysPage,
+  departurePage,
+  arrivalPage,
   lateralRevisionPage,
-  performancePage,
-  secIndexPageUri,
+  lateralRevisionHoldPage,
   verticalRevisionPage,
-} from '../../MfdPageDirectory';
+  fixInfoUri,
+  secIndexPageUri,
+  dirToUri,
+  dataStatusUri,
+} from '../../shared/utils';
 
 export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPageProps> extends DisplayComponent<T> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.

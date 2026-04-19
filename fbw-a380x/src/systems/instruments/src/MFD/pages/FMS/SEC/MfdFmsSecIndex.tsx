@@ -28,6 +28,7 @@ import { FlightPlanFlags } from '@fmgc/flightplanning/plans/FlightPlanFlags';
 import { CpnyFplnButtonUtils } from '../../../shared/CpnyFplnButtonUtils';
 import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
 import { DateTimeFormatters } from '@flybywiresim/fbw-sdk';
+import { showReturnButtonUriExtra } from '../../../shared/utils';
 
 interface MfdFmsSecIndexProps extends AbstractMfdPageProps {}
 
@@ -486,8 +487,7 @@ export class MfdFmsSecIndexTab extends DestroyableComponent<MfdFmsSecIndexTabPro
             />
             <Button
               label={'WIND'}
-              disabled={true}
-              onClick={() => this.props.mfd.uiService.navigateTo(`${this.uriPrefix}/wind`)}
+              onClick={() => this.props.mfd.uiService.navigateTo(`${this.uriPrefix}/wind/${showReturnButtonUriExtra}`)}
               buttonStyle="width: 160px; margin-top: 5px;"
               idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_sec${this.props.flightPlanIndex}index_wind`}
             />

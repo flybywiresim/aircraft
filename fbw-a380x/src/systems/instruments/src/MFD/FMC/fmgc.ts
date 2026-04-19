@@ -73,6 +73,8 @@ export class FmgcData {
     return sub.map((it) => (it !== null ? it.toFixed(0) : '-'.repeat(numberDashes)));
   }
 
+  public readonly flightPhase = Subject.create(FmgcFlightPhase.Preflight);
+
   public readonly cpnyFplnAvailable = Subject.create(false);
 
   public readonly cpnyFplnRequestedForPlan = Subject.create<FlightPlanIndex | null>(null);
@@ -320,7 +322,7 @@ export class FmgcDataService implements Fmgc {
   }
 
   getFlightPhase(): FmgcFlightPhase {
-    return SimVar.GetSimVarValue('L:A32NX_FMGC_FLIGHT_PHASE', 'Enum');
+    return this.data.flightPhase.get();
   }
 
   /** in knots */

@@ -1170,6 +1170,7 @@ export class FlightManagementComputer implements FmcInterface {
   onFlightPhaseChanged(prevPhase: FmgcFlightPhase, nextPhase: FmgcFlightPhase) {
     this.acInterface.updateConstraints();
     this.acInterface.updateManagedSpeed();
+    this.fmgc.data.flightPhase.set(nextPhase);
 
     SimVar.SetSimVarValue('L:A32NX_CABIN_READY', 'Bool', 0);
     this.isReset.set(false);

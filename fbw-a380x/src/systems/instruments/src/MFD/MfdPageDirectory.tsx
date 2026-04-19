@@ -1,4 +1,27 @@
 import { EventBus, FSComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import {
+  fmsActivePagePrefix,
+  fmsSec1PagePrefix,
+  fmsSec2PagePrefix,
+  fmsSec3PagePrefix,
+  flightPlanUriPage,
+  lateralRevisionHoldPage,
+  dataStatusUri,
+  fuelAndLoadPage,
+  performancePage,
+  initPage,
+  verticalRevisionPage,
+  departurePage,
+  arrivalPage,
+  airwaysPage,
+  secIndexPageUri,
+  windPage,
+  activeFlightPlanPageUri,
+  activeFlightPlanFuelAndLoadUri,
+  activeFlightPlanHoldUri,
+  fixInfoUri,
+  dirToUri,
+} from './shared/utils';
 
 // Page imports
 import { MfdFmsDataStatus } from 'instruments/src/MFD/pages/FMS/DATA/MfdFmsDataStatus';
@@ -40,29 +63,6 @@ import { MfdFmsDataAirport } from 'instruments/src/MFD/pages/FMS/DATA/MfdFmsData
 import { AtcDatalinkSystem } from './ATCCOM/AtcDatalinkSystem';
 import { MfdFmsSecIndex } from './pages/FMS/SEC/MfdFmsSecIndex';
 import { MfdFmsWindPage } from './pages/FMS/MfdFmsWindPage';
-
-export const fmsActivePagePrefix = 'fms/active/';
-export const fmsSec1PagePrefix = 'fms/sec1/';
-export const fmsSec2PagePrefix = 'fms/sec2/';
-export const fmsSec3PagePrefix = 'fms/sec3/';
-export const flightPlanUriPage = 'f-pln';
-export const lateralRevisionHoldPage = 'f-pln-hold';
-export const dataStatusUri = 'fms/data/status';
-export const fuelAndLoadPage = 'fuel-load';
-export const performancePage = 'perf';
-export const initPage = 'init';
-export const verticalRevisionPage = 'f-pln-vert-rev';
-export const lateralRevisionPage = 'f-pln-lat-rev';
-export const departurePage = 'f-pln-departure';
-export const arrivalPage = 'f-pln-arrival';
-export const airwaysPage = 'f-pln-airways';
-export const secIndexPageUri = 'fms/sec/index';
-export const activeFlightPlanPageUri = fmsActivePagePrefix + flightPlanUriPage;
-export const activeFlightPlanFuelAndLoadUri = fmsActivePagePrefix + fuelAndLoadPage;
-export const activeFlightPlanHoldUri = fmsActivePagePrefix + lateralRevisionHoldPage;
-export const fixInfoUri = fmsActivePagePrefix + 'f-pln-fix-info';
-export const dirToUri = fmsActivePagePrefix + 'f-pln-direct-to';
-export const windPage = 'wind';
 
 export function pageForUrl(
   url: string,

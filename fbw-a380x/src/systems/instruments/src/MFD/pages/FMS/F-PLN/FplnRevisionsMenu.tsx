@@ -7,7 +7,7 @@ import { MfdFmsFpln } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFpln';
 import { ContextMenuElement } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/ContextMenu';
 import { BitFlags } from '@microsoft/msfs-sdk';
 import { FlightPlanLegFlags } from '@fmgc/flightplanning/legs/FlightPlanLeg';
-import { lateralRevisionHoldPage } from '../../../MfdPageDirectory';
+import { lateralRevisionHoldPage, showReturnButtonUriExtra } from '../../../shared/utils';
 
 export enum FplnRevisionsMenuType {
   Waypoint,
@@ -241,7 +241,7 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
           return;
         }
         fpln.props.mfd.uiService.navigateTo(
-          `fms/${fpln.props.mfd.uiService.activeUri.get().category}/wind/` + legIndex,
+          `fms/${fpln.props.mfd.uiService.activeUri.get().category}/wind/${showReturnButtonUriExtra}/${legIndex}`,
         );
       },
     },
