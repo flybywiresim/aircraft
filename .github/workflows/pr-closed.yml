@@ -53,7 +53,7 @@ jobs:
       - name: Remove QA config entries
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
-          ADDON_KEYS: a32nx-msfs2020,a32nx-msfs2024,a380x-msfs2020,a380x-msfs2024
+          ADDON_KEYS: a32nx-msfs2024,a380x-msfs2024
           CLOUDFLARE_CDN_ZONE_ID: ${{ secrets.CLOUDFLARE_CDN_ZONE_ID }}
           CLOUDFLARE_PURGE_TOKEN: ${{ secrets.CLOUDFLARE_PURGE_TOKEN }}
           CDN_BUCKET_DESTINATION: installer/qa-config
@@ -63,9 +63,9 @@ jobs:
       - name: Remove PR files from CloudFlare CDN
         env:
           R2_BUCKET: flybywiresim
-          CDN_BUCKET_DESTINATION_A32NX: addons/a32nx/pr-${{ github.event.pull_request.number }}
-          CDN_BUCKET_DESTINATION_A380X_4K: addons/a380x/pr-${{ github.event.pull_request.number }}-4k
-          CDN_BUCKET_DESTINATION_A380X_8K: addons/a380x/pr-${{ github.event.pull_request.number }}-8k
+          CDN_BUCKET_DESTINATION_A32NX: addons/msfs2024/a32nx/pr-${{ github.event.pull_request.number }}
+          CDN_BUCKET_DESTINATION_A380X_4K: addons/msfs2024/a380x/pr-${{ github.event.pull_request.number }}-4k
+          CDN_BUCKET_DESTINATION_A380X_8K: addons/msfs2024/a380x/pr-${{ github.event.pull_request.number }}-8k
         run: |
           rclone delete cloudflare-r2:$R2_BUCKET/$CDN_BUCKET_DESTINATION_A32NX || true
           rclone delete cloudflare-r2:$R2_BUCKET/$CDN_BUCKET_DESTINATION_A380X_4K || true
