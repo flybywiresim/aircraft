@@ -14,6 +14,7 @@ import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { DataManager } from '@fmgc/flightplanning/DataManager';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
+import { WindEntry } from '@fmgc/flightplanning/data/wind';
 
 export enum FmcOperatingModes {
   Master,
@@ -300,6 +301,19 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
   removeNdFmMessage(message: FMMessage, side: EfisSide): void;
 
   clearCheckSpeedModeMessage(): void;
+
+  /**
+   * Gets the history winds stored in the FMC.
+   * @param cruiseFlightLevel The cruise flight level to interpolate the winds against, if any.
+   * @returns An array of wind entries.
+   */
+  getHistoryWinds(cruiseFlightLevel: number | null): Readonly<WindEntry[]>;
+
+  /**
+   * Inserts the history winds into the flight plan cruise winds.
+   * @returns true if the insertion was succesful. False if it failed due to TMPY or wrong flight phase.
+   */
+  insertHistoryWinds(): boolean;
 
   reset(): void;
 

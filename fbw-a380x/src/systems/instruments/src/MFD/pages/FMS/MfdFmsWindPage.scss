@@ -1,4 +1,4 @@
-@import "../../../MsfsAvionicsCommon/definitions";
+@import "../../../MsfsAvionicsCommon/definitions.scss";
 
 .mfd-fms-wind-page-container {
   margin-left: 130px;
@@ -23,4 +23,10 @@
   padding-left: 53px;
   padding-right: 76px;
   padding-top: 16px;
+}
+
+.history-wind-button-container {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
 }

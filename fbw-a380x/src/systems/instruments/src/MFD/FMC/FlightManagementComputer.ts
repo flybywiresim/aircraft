@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2025 FlyByWire Simulations
+// Copyright (c) 2023-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
@@ -13,6 +13,7 @@ import {
   Subject,
   Subscribable,
   Subscription,
+  Vec2Math,
 } from '@microsoft/msfs-sdk';
 import { A380AltitudeUtils } from '@shared/OperatingAltitudes';
 import { maxCertifiedAlt } from '@shared/PerformanceConstants';
@@ -70,6 +71,8 @@ import { MsfsFlightPlanSync } from '@fmgc/flightplanning/MsfsFlightPlanSync';
 import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/uplink/SimBriefUplinkAdapter';
 import { FlightPlanChangeNotifier } from '@fmgc/flightplanning/sync/FlightPlanChangeNotifier';
 import { FlightPlanUtils } from '@fmgc/flightplanning/FlightPlanUtils';
+import { HistoryWind } from '@fmgc/wind/HistoryWind';
+import { FlightPlanWindEntry, FlightPlanWindEntryFlags, WindEntry } from '@fmgc/flightplanning/data/wind';
 
 export interface FmsErrorMessage {
   message: McduMessage;
@@ -192,6 +195,8 @@ export class FlightManagementComputer implements FmcInterface {
 
   // TODO remove this cyclic dependency, isWaypointInUse should be moved to DataInterface
   private dataManager: DataManager | null = null;
+
+  private historyWinds: HistoryWind;
 
   private readonly sub = this.bus.getSubscriber<FlightPhaseManagerEvents & MfdUIData>();
 
@@ -345,6 +350,7 @@ export class FlightManagementComputer implements FmcInterface {
     this.flightPhaseManager.init();
     this.#guidanceController.init();
     this.fmgc.guidanceController = this.#guidanceController;
+    this.historyWinds = new HistoryWind(this.bus);
 
     this.initSimVars();
 
@@ -1709,6 +1715,31 @@ export class FlightManagementComputer implements FmcInterface {
     if (this.ndMessageFlags[side] !== old) {
       SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_ND_FM_MESSAGE_FLAGS`, 'number', this.ndMessageFlags[side]);
     }
+  }
+
+  public getHistoryWinds(cruiseFlightLevel: number | null): Readonly<WindEntry[]> {
+    return this.historyWinds.getRecordedWinds(cruiseFlightLevel);
+  }
+
+  public insertHistoryWinds(): boolean {
+    if (
+      this.flightPhase.get() !== FmgcFlightPhase.Preflight &&
+      !this.flightPlanInterface.hasTemporary &&
+      this.flightPlanInterface.hasActive
+    ) {
+      const historyWinds = this.historyWinds.getRecordedWinds(null);
+      const fp = this.flightPlanInterface.active;
+      const entries: FlightPlanWindEntry[] = historyWinds.map((entry) => {
+        return {
+          altitude: entry.altitude,
+          vector: Vec2Math.copy(entry.vector, Vec2Math.create()),
+          flags: FlightPlanWindEntryFlags.InsertedFromHistory,
+        };
+      });
+      fp.performanceData.climbWindEntries.set(entries);
+      return true;
+    }
+    return false;
   }
 
   private setCi0AndLrcIfActiveFlightplanHasNoCi(): void {

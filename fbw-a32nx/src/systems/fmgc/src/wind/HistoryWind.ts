@@ -1,3 +1,5 @@
+// Copyright (c) 2026 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
 import { ConsumerSubject, EventBus, Vec2Math } from '@microsoft/msfs-sdk';
 import { NavigationEvents } from '../navigation/Navigation';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
