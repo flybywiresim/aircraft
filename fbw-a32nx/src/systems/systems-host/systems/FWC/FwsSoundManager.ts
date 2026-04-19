@@ -423,7 +423,6 @@ export class FwsSoundManager {
       // Interrupt if sound with higher category is present in queue and current sound is continuous
       let shouldInterrupt = false;
       let rescheduleSound: keyof typeof FwsAuralsList | null = null;
-      const currentSound = this.currentSoundPlaying ? FwsAuralsList[this.currentSoundPlaying] : undefined;
       if (currentSound?.continuous) {
         this.soundQueue.forEach((sk) => {
           const s = FwsAuralsList[sk];
