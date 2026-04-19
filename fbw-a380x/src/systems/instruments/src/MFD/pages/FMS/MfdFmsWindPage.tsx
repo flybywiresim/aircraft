@@ -1,5 +1,5 @@
 // Copyright (c) 2024-2026 FlyByWire Simulations
-//
+// SPDX-License-Identifier: GPL-3.0
 import { ComponentProps, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { AbstractMfdPageProps } from '../../MFD';
 import { FmsPage } from '../common/FmsPage';
@@ -14,7 +14,6 @@ import './MfdFmsWindPage.scss';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { formatWindMagnitude, formatWindTrueDegrees } from '@fmgc/flightplanning/data/wind';
 
-// SPDX-License-Identifier: GPL-3.0
 interface MfdFmsWindProps extends AbstractMfdPageProps {}
 
 enum WindPageMenu {
@@ -50,10 +49,10 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
     Subject.create<number | null>(null),
   );
   private readonly historyWindDirections = Array.from({ length: MfdFmsWindPage.NUM_HISTORY_WIND_ENTRIES }, () =>
-    Subject.create<string | null>(null),
+    Subject.create<string>('---'),
   );
   private readonly historyWindSpeeds = Array.from({ length: MfdFmsWindPage.NUM_HISTORY_WIND_ENTRIES }, () =>
-    Subject.create<string | null>(null),
+    Subject.create<string>('/---'),
   );
   private readonly isHistoryWindCruiseFlightLevel = Array.from(
     { length: MfdFmsWindPage.NUM_HISTORY_WIND_ENTRIES },
@@ -69,6 +68,10 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
     v.map((isCruise) => (isCruise ? 'CRZ' : '\xa0'.repeat(3))),
   );
   private readonly historyWindsUnitVisiblity = this.historyWindUnitsVisible.map((sub) =>
+    sub.map((v) => (v ? 'visible' : 'hidden')),
+  );
+
+  private readonly historyWindEntryVisibility = this.historyWindValidEntry.map((sub) =>
     sub.map((v) => (v ? 'visible' : 'hidden')),
   );
 
@@ -105,7 +108,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
         if (windEntry) {
           this.historyWindFlightLevels[i].set(windEntry.altitude / 100);
           const windVector = windEntry.vector;
-          this.historyWindSpeeds[i].set(windVector ? formatWindMagnitude(windVector) : '---');
+          this.historyWindSpeeds[i].set(windVector ? `/${formatWindMagnitude(windVector)}` : '/---');
           this.historyWindDirections[i].set(windVector ? formatWindTrueDegrees(windVector, false) : '---');
           this.historyWindUnitsVisible[i].set(windVector !== null);
           this.historyWindValidEntry[i].set(true);
@@ -163,6 +166,7 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
       }),
       ...this.historyWindFlightLevelLabel,
       ...this.historyWindsUnitVisiblity,
+      ...this.historyWindEntryVisibility,
     );
   }
 
@@ -225,9 +229,6 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
 
   private setWindHeaderBasedOnMenu() {
     switch (this.selectedPageMenu) {
-      case WindPageMenu.History:
-        this.displayedWindHeader.set('HIS WIND');
-        break;
       case WindPageMenu.Climb:
         this.displayedWindHeader.set('CLB WIND');
         break;
@@ -237,6 +238,8 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
       case WindPageMenu.Descent:
         this.displayedWindHeader.set('DES WIND');
         break;
+      default:
+        this.displayedWindHeader.set('');
     }
   }
 
@@ -264,25 +267,27 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                 <MfdFmsWindPageTableHeader />
                 {MfdFmsWindPage.HISTORY_WIND_ENTRIES_ARRAY.map((value) => (
                   <div class="mfd-fms-wind-page-table-row">
-                    <div class="mfd-fms-wind-history-fl-entry">
-                      <span class="mfd-label">{this.historyWindFlightLevelLabel[value]}</span>
-                      <div class="mfd-label-value-container">
-                        <span class="mfd-label unit">FL</span>
-                        <span class="mfd-label green">{this.historyWindFlightLevels[value]}</span>
+                    <div style={{ visibility: this.historyWindEntryVisibility[value] }}>
+                      <div class="mfd-fms-wind-history-fl-entry">
+                        <span class="mfd-label">{this.historyWindFlightLevelLabel[value]}</span>
+                        <div class="mfd-label-value-container">
+                          <span class="mfd-label unit">FL</span>
+                          <span class="mfd-label green">{this.historyWindFlightLevels[value]}</span>
+                        </div>
                       </div>
-                    </div>
-                    <div class="mfd-fms-wind-history-wind-entry">
-                      <div class="mfd-label-value-container">
-                        <span class="mfd-label green">{this.historyWindDirections[value]}</span>
-                        <span class="mfd-label unit" style={{ visibility: this.historyWindsUnitVisiblity[value] }}>
-                          °
-                        </span>
-                      </div>
-                      <div class="mfd-label-value-container">
-                        <span class="mfd-label green">/{this.historyWindSpeeds[value]}</span>
-                        <span class="mfd-label unit" style={{ visibility: this.historyWindsUnitVisiblity[value] }}>
-                          KT
-                        </span>
+                      <div class="mfd-fms-wind-history-wind-entry">
+                        <div class="mfd-label-value-container">
+                          <span class="mfd-label green">{this.historyWindDirections[value]}</span>
+                          <span class="mfd-label unit" style={{ visibility: this.historyWindsUnitVisiblity[value] }}>
+                            °
+                          </span>
+                        </div>
+                        <div class="mfd-label-value-container">
+                          <span class="mfd-label green">/{this.historyWindSpeeds[value]}</span>
+                          <span class="mfd-label unit" style={{ visibility: this.historyWindsUnitVisiblity[value] }}>
+                            KT
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>

@@ -48,7 +48,7 @@ export class FmsHeader extends AbstractHeader {
               { label: 'F-PLN', action: () => this.props.uiService.navigateTo('fms/active/f-pln') },
               { label: 'PERF', action: () => this.props.uiService.navigateTo('fms/active/perf') },
               { label: 'FUEL&LOAD', action: () => this.props.uiService.navigateTo('fms/active/fuel-load') },
-              { label: 'WIND', action: () => this.props.uiService.navigateTo('fms/active/wind'), disabled: true },
+              { label: 'WIND', action: () => this.props.uiService.navigateTo('fms/active/wind') },
               { label: 'INIT', action: () => this.props.uiService.navigateTo('fms/active/init') },
             ]}
             idPrefix={`${this.props.uiService.captOrFo}_MFD_pageSelectorActive`}

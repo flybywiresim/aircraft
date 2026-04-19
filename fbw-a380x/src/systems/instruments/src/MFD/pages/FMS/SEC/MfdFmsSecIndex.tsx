@@ -488,6 +488,7 @@ export class MfdFmsSecIndexTab extends DestroyableComponent<MfdFmsSecIndexTabPro
             <Button
               label={'WIND'}
               onClick={() => this.props.mfd.uiService.navigateTo(`${this.uriPrefix}/wind/${showReturnButtonUriExtra}`)}
+              disabled={this.secDoesNotExist}
               buttonStyle="width: 160px; margin-top: 5px;"
               idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_sec${this.props.flightPlanIndex}index_wind`}
             />
