@@ -4582,7 +4582,7 @@ export class PseudoFWC {
       codesToReturn: ['240000401', '240000402', '240000403', '240000404'],
       memoInhibit: () => false,
       failure: 2,
-      sysPage: 3,
+      sysPage: EcamSysPage.ELEC,
       side: 'LEFT',
     },
     2400060: {
