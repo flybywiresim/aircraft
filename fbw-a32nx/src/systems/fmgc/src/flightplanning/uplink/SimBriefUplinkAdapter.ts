@@ -16,7 +16,6 @@ import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDataba
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performance/FlightPlanPerformanceData';
 import { FmsErrorType } from '@fmgc/FmsError';
-// FIXME rogue import from EFB
 import { FmsDataInterface } from '../interface/FmsDataInterface';
 
 const SIMBRIEF_API_URL = 'https://www.simbrief.com/api/xml.fetcher.php?json=1';
@@ -493,15 +492,17 @@ export class SimBriefUplinkAdapter {
       }
     }
 
-    fms.onUplinkDone(intoPlan, true);
+    fms.onUplinkDone(true, intoPlan);
   }
 
-  static async downloadOfpForUserID(username: string, userID?: string): Promise<ISimbriefData> {
+  static async downloadOfpForUserID(username?: string, userID?: string): Promise<ISimbriefData> {
     let url = `${SIMBRIEF_API_URL}`;
     if (userID) {
       url += `&userid=${userID}`;
-    } else {
+    } else if (username) {
       url += `&username=${username}`;
+    } else {
+      throw new Error('SimBriefUplinkAdapter.downloadOfpForUserID: Either username or userID must be provided');
     }
 
     try {

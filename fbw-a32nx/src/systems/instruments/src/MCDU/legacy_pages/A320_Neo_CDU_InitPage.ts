@@ -23,11 +23,15 @@ import { FlightPlanFlags } from '@fmgc/flightplanning/plans/FlightPlanFlags';
 export class CDUInitPage {
   static ShowPage1(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex = FlightPlanIndex.Active) {
     if (forPlan >= FlightPlanIndex.FirstSecondary) {
-      mcdu.efisInterfaces.L.setSecRelatedPageOpen(true);
-      mcdu.efisInterfaces.R.setSecRelatedPageOpen(true);
+      mcdu.efisInterfaces.L.setSecRelatedPageOpen(
+        forPlan >= FlightPlanIndex.FirstSecondary ? forPlan - FlightPlanIndex.FirstSecondary + 1 : null,
+      );
+      mcdu.efisInterfaces.R.setSecRelatedPageOpen(
+        forPlan >= FlightPlanIndex.FirstSecondary ? forPlan - FlightPlanIndex.FirstSecondary + 1 : null,
+      );
       mcdu.onUnload = () => {
-        mcdu.efisInterfaces.L.setSecRelatedPageOpen(false);
-        mcdu.efisInterfaces.R.setSecRelatedPageOpen(false);
+        mcdu.efisInterfaces.L.setSecRelatedPageOpen(null);
+        mcdu.efisInterfaces.R.setSecRelatedPageOpen(null);
       };
     }
 
@@ -42,9 +46,6 @@ export class CDUInitPage {
     const plan = mcdu.getFlightPlan(forPlan);
 
     const haveFlightPlan = plan.originAirport && plan.destinationAirport;
-
-    const allowWindsOnSecondary = false; // TODO
-    const shouldEnableWindOption = allowWindsOnSecondary || forPlan !== FlightPlanIndex.FirstSecondary;
 
     const coRoute = new Column(
       0,
@@ -65,7 +66,7 @@ export class CDUInitPage {
     const [flightNoAction, flightNoText, flightNoColor] = new CDU_SingleValueField(
       mcdu,
       'string',
-      plan.flightNumber,
+      plan.flightNumber.get() ?? '',
       {
         emptyValue: isForPrimary ? '________[color]amber' : '{cyan}[\xa0\xa0\xa0\xa0\xa0\xa0]{end}',
         suffix: '[color]cyan',
@@ -146,7 +147,7 @@ export class CDUInitPage {
         cruiseFlTempSeparator.updateAttributes(isForPrimary ? Column.amber : Column.cyan);
 
         const planCruiseLevel = plan.performanceData.cruiseFlightLevel.get();
-        const planCruiseTemp = plan.performanceData.cruiseTemperature.get();
+        const planCruiseTemp = plan.performanceData.cruiseTemperaturePilotEntry.get();
 
         //This is done so pilot enters a FL first, rather than using the computed one
         // TODO differentiate for SEC
@@ -277,13 +278,13 @@ export class CDUInitPage {
               .catch((error) => {
                 console.error(error);
                 mcdu.logTroubleshootingError(error);
-                mcdu.setScratchpadMessage(NXSystemMessages.invalidFplnUplink);
+                mcdu.addMessageToQueue(NXSystemMessages.invalidFplnUplink);
               });
           })
           .catch((error) => {
             console.error(error);
             mcdu.logTroubleshootingError(error);
-            mcdu.setScratchpadMessage(NXSystemMessages.invalidFplnUplink);
+            mcdu.addMessageToQueue(NXSystemMessages.invalidFplnUplink);
           });
       }
     };
@@ -298,13 +299,13 @@ export class CDUInitPage {
 
     const groundTemp = new Column(23, '---°', Column.right);
 
-    const planGroundTemp = plan.performanceData.groundTemperature.get();
+    const planGroundTemp = plan.performanceData.groundTemperature!.get();
 
     if (planGroundTemp !== null) {
       groundTemp.update(
         CDUInitPage.formatTemperature(planGroundTemp),
         Column.cyan,
-        plan.performanceData.groundTemperatureIsPilotEntered.get() ? Column.big : Column.small,
+        plan.performanceData.groundTemperatureIsPilotEntered!.get() ? Column.big : Column.small,
       );
     }
 
@@ -347,7 +348,7 @@ export class CDUInitPage {
         [new Column(0, 'FLT NBR')],
         [new Column(0, flightNoText, flightNoColor), new Column(23, alignOption || '', Column.right)],
         [],
-        [new Column(23, shouldEnableWindOption ? 'WIND/TEMP>' : '', Column.right)],
+        [new Column(23, 'WIND/TEMP>', Column.right)],
         [new Column(0, 'COST INDEX'), new Column(23, 'TROPO', Column.right)],
         [new Column(0, costIndexText, costIndexColor), tropo],
         [new Column(0, 'CRZ FL/TEMP'), new Column(23, 'GND TEMP', Column.right)],
@@ -355,14 +356,19 @@ export class CDUInitPage {
       ]),
     );
 
-    if (shouldEnableWindOption) {
-      mcdu.onRightInput[3] = () => {
-        CDUWindPage.Return = () => {
-          CDUInitPage.ShowPage1(mcdu, forPlan);
-        };
-        CDUWindPage.ShowPage(mcdu);
+    mcdu.onRightInput[3] = (_, scratchpadCallback) => {
+      if (mcdu.flightPlanService.hasTemporary) {
+        mcdu.setScratchpadMessage(NXSystemMessages.temporaryFplnExists);
+        scratchpadCallback();
+        return;
+      }
+
+      CDUWindPage.Return = () => {
+        CDUInitPage.ShowPage1(mcdu, forPlan);
       };
-    }
+
+      CDUWindPage.ShowPage(mcdu, forPlan);
+    };
 
     mcdu.onUp = () => {};
   }
@@ -379,11 +385,15 @@ export class CDUInitPage {
   }
   static ShowPage2(mcdu: LegacyFmsPageInterface, forPlan: FlightPlanIndex) {
     if (forPlan >= FlightPlanIndex.FirstSecondary) {
-      mcdu.efisInterfaces.L.setSecRelatedPageOpen(true);
-      mcdu.efisInterfaces.R.setSecRelatedPageOpen(true);
+      mcdu.efisInterfaces.L.setSecRelatedPageOpen(
+        forPlan >= FlightPlanIndex.FirstSecondary ? forPlan - FlightPlanIndex.FirstSecondary + 1 : null,
+      );
+      mcdu.efisInterfaces.R.setSecRelatedPageOpen(
+        forPlan >= FlightPlanIndex.FirstSecondary ? forPlan - FlightPlanIndex.FirstSecondary + 1 : null,
+      );
       mcdu.onUnload = () => {
-        mcdu.efisInterfaces.L.setSecRelatedPageOpen(false);
-        mcdu.efisInterfaces.R.setSecRelatedPageOpen(false);
+        mcdu.efisInterfaces.L.setSecRelatedPageOpen(null);
+        mcdu.efisInterfaces.R.setSecRelatedPageOpen(null);
       };
     }
 
@@ -551,7 +561,7 @@ export class CDUInitPage {
     const tripWindDirCell = new Column(19, '--');
     const tripWindAvgCell = new Column(21, '---');
 
-    if (plan.originAirport && plan.destinationAirport) {
+    if (plan.originAirport && plan.destinationAirport && !plan.hasWindEntries()) {
       const isTripWindPilotEntered = plan.performanceData.pilotTripWind.get() !== null;
 
       tripWindDirCell.update(

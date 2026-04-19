@@ -397,7 +397,7 @@ export class CoRouteUplinkAdapter {
       }
     }
 
-    fms.onUplinkDone(intoPlan, true);
+    fms.onUplinkDone(true, intoPlan);
   }
 
   static getRouteFromOfp(ofp: CoRoute): OfpRoute {

@@ -11,14 +11,6 @@ export class AtccomFooter extends DisplayComponent<AtccomMfdPageProps> {
 
   private readonly buttonRef = FSComponent.createRef<Button>();
 
-  private readonly buttonText = Subject.create<VNode>(
-    <span>
-      CLEAR
-      <br />
-      INFO
-    </span>,
-  );
-
   private readonly messageRef = FSComponent.createRef<HTMLSpanElement>();
 
   private readonly messageToBeCleared = Subject.create<boolean>(false);
@@ -65,7 +57,13 @@ export class AtccomFooter extends DisplayComponent<AtccomMfdPageProps> {
         <Button
           ref={this.buttonRef}
           buttonStyle="width: 100px;"
-          label={this.buttonText}
+          label={
+            <span>
+              CLEAR
+              <br />
+              INFO
+            </span>
+          }
           onClick={() => {
             if (this.messageToBeCleared.get()) {
               this.props.atcService.clearLatestAtcErrorMessage();
