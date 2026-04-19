@@ -3946,6 +3946,8 @@ export class PseudoFWC {
           const found = codeToReturn.find((e) => e !== null);
           if (found === undefined) {
             console.warn('No valid return code found for failure ' + key);
+          } else {
+            code = value.codesToReturn[found];
           }
         }
         if (code !== null) {
