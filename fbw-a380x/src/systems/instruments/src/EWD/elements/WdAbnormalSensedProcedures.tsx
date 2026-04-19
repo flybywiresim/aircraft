@@ -8,6 +8,8 @@ import {
 
 import { WdAbstractChecklistComponent } from 'instruments/src/EWD/elements/WdAbstractChecklistComponent';
 import {
+  ChecklistLineStyle,
+  EcamMemos,
   EcamAbnormalProcedures,
   EcamAbnormalSensedProcedures,
   isChecklistAction,
@@ -17,10 +19,16 @@ import {
 import { ChecklistState } from 'instruments/src/MsfsAvionicsCommon/providers/FwsPublisher';
 import { Arinc429LocalVarConsumerSubject } from '@flybywiresim/fbw-sdk';
 
+const EMERGENCY_CANCEL_ON_MEMO = '315100001';
+const CANCELLED_CAUTION_MEMO = '315100002';
+
 export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
   private readonly procedures = ConsumerSubject.create(this.sub.on('fws_abn_sensed_procedures'), []);
 
   private readonly activeProcedureId = ConsumerSubject.create(this.sub.on('fws_active_procedure'), '0');
+  private readonly memoLeftLines = Array.from(Array(10), (_, idx) =>
+    ConsumerSubject.create(this.sub.on(`memo_left_${idx + 1}`).whenChanged(), 0),
+  );
 
   private readonly fcdc1DiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_1_1'));
   private readonly fcdc2DiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_1_2'));
@@ -57,6 +65,7 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
     this.lastProcUpdate = Date.now();
 
     if (!this.props.fwsAvail || this.props.fwsAvail.get()) {
+      this.addEmergencyCancelTopLines();
       this.procedures.get().forEach((procState, index) => {
         const procGen = new ProcedureLinesGenerator(
           procState.id,
@@ -127,6 +136,7 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
     this.subscriptions.push(
       this.procedures.sub(() => this.updateChecklists(), true),
       this.activeProcedureId.sub(() => this.updateChecklists(), true),
+      ...this.memoLeftLines.map((line) => line.sub(() => this.updateChecklists(), true)),
       this.fcdc12Failed.sub(() => this.updateChecklists(), true),
       this.fcdc1DiscreteWord1,
       this.fcdc2DiscreteWord1,
@@ -138,6 +148,7 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
       this.onGround1,
       this.onGround2,
       this.onGround,
+      ...this.memoLeftLines,
     );
 
     if (this.props.cpiomAvailChecker) {
@@ -214,5 +225,57 @@ export class WdAbnormalSensedProcedures extends WdAbstractChecklistComponent {
         }
       }
     }
+  }
+
+  private addEmergencyCancelTopLines(): void {
+    const leftMemoCodes = this.memoLeftLines
+      .map((line) => line.get())
+      .filter((code): code is number => !!code)
+      .map((code) => code.toString().padStart(9, '0'));
+
+    if (leftMemoCodes.includes(CANCELLED_CAUTION_MEMO)) {
+      this.lineData.push(this.createTopLine(EcamMemos[CANCELLED_CAUTION_MEMO] ?? ''));
+
+      const cancelledCautionMemoIndex = leftMemoCodes.indexOf(CANCELLED_CAUTION_MEMO);
+      const cancelledCautionCode = leftMemoCodes[cancelledCautionMemoIndex + 1];
+      const cancelledCautionText = cancelledCautionCode ? this.resolveMemoMessage(cancelledCautionCode) : undefined;
+      if (cancelledCautionText) {
+        this.lineData.push(this.createTopLine(cancelledCautionText));
+      }
+
+      return;
+    }
+
+    if (leftMemoCodes.includes(EMERGENCY_CANCEL_ON_MEMO)) {
+      this.lineData.push(this.createTopLine(EcamMemos[EMERGENCY_CANCEL_ON_MEMO] ?? ''));
+    }
+  }
+
+  private resolveMemoMessage(codeString: string): string | undefined {
+    const memo = EcamMemos[codeString];
+    if (memo) {
+      return memo;
+    }
+
+    const abnormalTitle = EcamAbnormalProcedures[codeString]?.title;
+    if (abnormalTitle) {
+      // eslint-disable-next-line no-control-regex
+      return abnormalTitle.replace(/\x1b<[1-6]m/g, '\x1b<7m');
+    }
+
+    return undefined;
+  }
+
+  private createTopLine(text: string) {
+    return {
+      activeProcedure: false,
+      sensed: true,
+      checked: false,
+      text,
+      style: ChecklistLineStyle.Headline,
+      firstLine: true,
+      lastLine: true,
+      abnormalProcedure: true,
+    };
   }
 }

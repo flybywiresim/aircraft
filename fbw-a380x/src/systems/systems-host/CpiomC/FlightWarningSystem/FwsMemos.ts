@@ -16,7 +16,7 @@ interface EwdMemoItem {
   flightPhaseInhib: number[];
   /** warning is active */
   simVarIsActive: MappedSubscribable<boolean> | Subscribable<boolean>;
-  whichCodeToReturn: () => any[];
+  whichCodeToReturn: () => Array<number | string | null>;
   codesToReturn: string[];
   memoInhibit: () => boolean;
   leftSide?: boolean;
@@ -659,6 +659,23 @@ export class FwsMemos {
         '000002010',
         '000002011',
       ],
+      memoInhibit: () => false,
+      leftSide: true,
+    },
+    '3151000': {
+      // EMERGENCY CANCEL ON
+      flightPhaseInhib: [],
+      simVarIsActive: this.fws.ecpEmergencyCancelLevel,
+      whichCodeToReturn: () => {
+        const cancelledCautionKey = this.fws.cancelledCautionMemoKey.get();
+
+        if (cancelledCautionKey) {
+          return [1, cancelledCautionKey];
+        }
+
+        return [0];
+      },
+      codesToReturn: ['315100001', '315100002'],
       memoInhibit: () => false,
       leftSide: true,
     },

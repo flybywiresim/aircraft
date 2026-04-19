@@ -27,6 +27,7 @@ const EWDMessages = {
   '000002010': '    \x1b<3mFLAPS FULL',
   '000002011': '    \x1b<3mFLAPS\x1b<5m.....CONF 3',
   '000002012': '    \x1b<3mFLAPS CONF 3',
+  '315100001': '\x1b<7mEMERGENCY CANCEL ON',
   '320000001': '\x1b<4mAUTO BRK OFF',
   '000002201': '\x1b<3mAUTO BRK LO',
   '000002202': '\x1b<3mAUTO BRK MED',

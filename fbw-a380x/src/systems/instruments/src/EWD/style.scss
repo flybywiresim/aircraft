@@ -350,6 +350,14 @@ text, tspan, span {
   padding-bottom: 4px;
 }
 
+.MemosDividedArea.EmergencyCancelFullWidth .MemosLeft {
+  border-right: none;
+}
+
+.MemosDividedArea.EmergencyCancelFullWidth .MemosRight {
+  display: none;
+}
+
 .MemosLeft {
   display: flex;
   flex-direction: column;
