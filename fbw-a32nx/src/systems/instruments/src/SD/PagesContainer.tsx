@@ -18,23 +18,7 @@ import { WheelPage } from './Pages/Wheel/Wheel';
 import { FctlPage } from './Pages/Fctl/Fctl';
 import { StatusPage } from './Pages/Status/Status';
 import { CrzPage } from './Pages/Crz/Crz';
-
-enum SdPages {
-  None = -1,
-  Eng = 0,
-  Bleed = 1,
-  Press = 2,
-  Elec = 3,
-  Hyd = 4,
-  Fuel = 5,
-  Apu = 6,
-  Cond = 7,
-  Door = 8,
-  Wheel = 9,
-  Fctl = 10,
-  Crz = 11,
-  Status = 12,
-}
+import { SdPages } from '@shared/SdPages';
 
 const CRZ_CONDITION_TIMER_DURATION = 60;
 const ENG_CONDITION_TIMER_DURATION = 10;
@@ -44,15 +28,15 @@ const STS_DISPLAY_TIMER_DURATION = 3;
 const ECAM_LIGHT_DELAY_ALL = 200;
 
 export const PagesContainer = () => {
-  const [currentPage, setCurrentPage] = useState(SdPages.Door);
-  const [prevFailPage, setPrevFailPage] = useState(SdPages.Eng);
+  const [currentPage, setCurrentPage] = useState(SdPages.DOOR);
+  const [prevFailPage, setPrevFailPage] = useState(SdPages.ENG);
   const [ecamCycleInterval, setEcamCycleInterval] = useState(-1);
   const [ecamButtonLightDelayTimer, setEcamButtonLightDelayTimer] = useState(Number.MIN_SAFE_INTEGER);
   const [failPage] = useSimVar('L:A32NX_ECAM_SFAIL', 'Enum', 300);
 
   const [prevEcamAllButtonState, setPrevEcamAllButtonState] = useState(false);
 
-  const [pageWhenUnselected, setPageWhenUnselected] = useState(SdPages.Door);
+  const [pageWhenUnselected, setPageWhenUnselected] = useState(SdPages.DOOR);
 
   const [ecamAllButtonPushed] = useSimVar('L:A32NX_ECP_DISCRETE_OUT_ALL', 'Bool', 20);
   const [fwcFlightPhase] = useSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'Enum', 500);
@@ -82,7 +66,7 @@ export const PagesContainer = () => {
       } else if (mainEngineStarterOffTimer >= 0) {
         setMainEngineStarterOffTimer((prev) => prev - deltaTime / 1000);
       }
-      setPageWhenUnselected(SdPages.Eng);
+      setPageWhenUnselected(SdPages.ENG);
     }
   };
 
@@ -96,26 +80,26 @@ export const PagesContainer = () => {
       } else if (apuRpm.value > 95) {
         setApuAboveThresholdTimer((prev) => prev - deltaTime / 1000);
       }
-      setPageWhenUnselected(SdPages.Apu);
+      setPageWhenUnselected(SdPages.APU);
     }
   };
 
   const checkStsPage = (deltaTime) => {
     const isStatusPageEmpty = normalStatusLine === 1;
 
-    if (currentPage !== SdPages.Status) {
+    if (currentPage !== SdPages.STS) {
       return;
     }
 
     if (isStatusPageEmpty) {
       if (stsPressedTimer > 0) {
         setStsPressedTimer((prev) => prev - deltaTime / 1000);
-        setPageWhenUnselected(SdPages.Status);
+        setPageWhenUnselected(SdPages.STS);
       } else {
         SimVar.SetSimVarValue('L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX', 'number', stsPrevPage);
       }
     } else {
-      setPageWhenUnselected(SdPages.Status);
+      setPageWhenUnselected(SdPages.STS);
       setStsPressedTimer(STS_DISPLAY_TIMER_DURATION);
     }
   };
@@ -132,14 +116,14 @@ export const PagesContainer = () => {
     if (ecamAllButtonPushed && !prevEcamAllButtonState) {
       // button press
       setCurrentPage((prev) => {
-        prev = page === SdPages.None ? SdPages.Eng : prev + 1;
+        prev = page === SdPages.NONE ? SdPages.ENG : prev + 1;
         setEcamButtonLightDelayTimer(ECAM_LIGHT_DELAY_ALL);
         return prev % 11;
       });
       setEcamCycleInterval(
         setInterval(() => {
           setCurrentPage((prev) => {
-            prev = Math.min(prev + 1, SdPages.Fctl);
+            prev = Math.min(prev + 1, SdPages.FCTL);
             setEcamButtonLightDelayTimer(ECAM_LIGHT_DELAY_ALL);
             return prev;
           });
@@ -149,7 +133,7 @@ export const PagesContainer = () => {
       // button release
       clearInterval(ecamCycleInterval);
     } else if (!ecamAllButtonPushed) {
-      if (currentPage !== SdPages.Status) {
+      if (currentPage !== SdPages.STS) {
         setStsPrevPage(currentPage);
       }
       const newPage = page;
@@ -164,7 +148,7 @@ export const PagesContainer = () => {
         case 10:
         case 1:
           setCrzCondTimer(CRZ_CONDITION_TIMER_DURATION);
-          setPageWhenUnselected(SdPages.Door);
+          setPageWhenUnselected(SdPages.DOOR);
           // TODO: Emergency Generator Test displays ELEC
           // Needs system implementation (see A320_NEO_INTERIOR Component ID EMER_ELEC_PWR [LVar: L:A32NX_EMERELECPWR_GEN_TEST])
           checkApuPage(deltaTime);
@@ -177,13 +161,13 @@ export const PagesContainer = () => {
           const controlsMoved =
             Math.abs(sidestickPosX) > 0.05 || Math.abs(sidestickPosY) > 0.05 || Math.abs(rudderPos) > 0.2;
 
-          setPageWhenUnselected(SdPages.Wheel);
+          setPageWhenUnselected(SdPages.WHEEL);
           // When controls are moved > threshold, show FCTL page for 20s
           if (controlsMoved) {
-            setPageWhenUnselected(SdPages.Fctl);
+            setPageWhenUnselected(SdPages.FCTL);
             setEcamFCTLTimer(FCTL_CONDITION_TIMER_DURATION);
           } else if (ecamFCTLTimer >= 0) {
-            setPageWhenUnselected(SdPages.Fctl);
+            setPageWhenUnselected(SdPages.FCTL);
             setEcamFCTLTimer((prev) => prev - deltaTime / 1000);
           }
           checkApuPage(deltaTime);
@@ -193,7 +177,7 @@ export const PagesContainer = () => {
         case 3:
         case 4:
         case 5:
-          setPageWhenUnselected(SdPages.Eng);
+          setPageWhenUnselected(SdPages.ENG);
           break;
         case 6:
         case 7:
@@ -212,7 +196,7 @@ export const PagesContainer = () => {
             SimVar.GetSimVarValue('L:A32NX_SPOILERS_HANDLE_POSITION', 'percent') !== 0;
 
           if (isGearExtended && baroCorrectedAltitude1.value < 16000) {
-            setPageWhenUnselected(SdPages.Wheel);
+            setPageWhenUnselected(SdPages.WHEEL);
             checkApuPage(deltaTime);
             checkEnginePage(deltaTime);
             break;
@@ -221,14 +205,14 @@ export const PagesContainer = () => {
 
           if (spoilerOrFlapsDeployed || ToPowerSet) {
             if (crzCondTimer <= 0) {
-              setPageWhenUnselected(SdPages.Crz);
+              setPageWhenUnselected(SdPages.CRZ);
               checkApuPage(deltaTime);
               checkEnginePage(deltaTime);
             } else {
               setCrzCondTimer((prev) => prev - deltaTime / 1000);
             }
           } else if (!spoilerOrFlapsDeployed && !ToPowerSet) {
-            setPageWhenUnselected(SdPages.Crz);
+            setPageWhenUnselected(SdPages.CRZ);
             checkApuPage(deltaTime);
             checkEnginePage(deltaTime);
           }
@@ -236,21 +220,21 @@ export const PagesContainer = () => {
         }
         default:
           // Sometimes happens when loading in, in which case we have to initialise pageNameWhenUnselected here.
-          setPageWhenUnselected(SdPages.Door);
+          setPageWhenUnselected(SdPages.DOOR);
           break;
       }
 
-      if (newPage === SdPages.Status && currentPage !== newPage) {
+      if (newPage === SdPages.STS && currentPage !== newPage) {
         setStsPressedTimer(STS_DISPLAY_TIMER_DURATION);
       }
       checkStsPage(deltaTime);
 
-      if (failPage !== SdPages.None) {
+      if (failPage !== SdPages.NONE) {
         setPageWhenUnselected(failPage);
 
         // Disable user selected page when new failure detected
         if (prevFailPage !== failPage) {
-          setPage(SdPages.None);
+          setPage(SdPages.NONE);
         }
       }
 
