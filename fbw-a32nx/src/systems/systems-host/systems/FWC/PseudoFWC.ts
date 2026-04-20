@@ -3789,6 +3789,18 @@ export class PseudoFWC {
       SimVar.SetSimVarValue('L:A32NX_CABIN_READY', 'bool', 1);
     }
 
+    /* MASTER CAUT/WARN BUTTONS */
+    if (this.masterCautionCancelPulseUp) {
+      this.auralSingleChimePending = false;
+      this.requestMasterCautionFromFaults = false;
+      this.requestMasterCautionFromABrkOff = false;
+    }
+    if (this.masterWarningCancelPulseUp && this.nonCancellableWarningCount === 0) {
+      this.requestMasterWarningFromFaults = false;
+      this.auralCrcActive.set(false);
+      this.cChordActive.set(false);
+    }
+
     /* T.O. CONFIG CHECK */
     // TODO Note that fuel tank low pressure and gravity feed warnings are not included
     const systemStatus =
@@ -4146,18 +4158,6 @@ export class PseudoFWC {
     }
     if (activeMasterWarningFailureCount === 0 && this.nonCancellableWarningCount === 0) {
       this.requestMasterWarningFromFaults = false;
-    }
-
-    /* MASTER CAUT/WARN BUTTONS */
-    if (this.masterCautionCancelPulseUp) {
-      this.auralSingleChimePending = false;
-      this.requestMasterCautionFromFaults = false;
-      this.requestMasterCautionFromABrkOff = false;
-    }
-    if (this.masterWarningCancelPulseUp && this.nonCancellableWarningCount === 0) {
-      this.requestMasterWarningFromFaults = false;
-      this.auralCrcActive.set(false);
-      this.cChordActive.set(false);
     }
 
     this.masterCaution.set(this.requestMasterCautionFromFaults || this.requestMasterCautionFromABrkOff);
