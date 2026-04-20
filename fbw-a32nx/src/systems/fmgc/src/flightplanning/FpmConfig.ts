@@ -45,6 +45,9 @@ export interface FpmConfig {
    */
   NUM_SECONDARY_FLIGHT_PLANS: number;
 
+  /** Whether to load default wind entries when the wind history is empty */
+  LOAD_EMPTY_HISTORY_WIND: boolean;
+
   /** The number of different flight levels for which cruise wind entries may be made */
   NUM_CRUISE_WIND_LEVELS: number;
 
@@ -71,6 +74,7 @@ export class FpmConfigs {
     NUM_CRUISE_WIND_LEVELS: 4,
     NUM_CLIMB_WIND_LEVELS: 5,
     NUM_DESCENT_WIND_LEVELS: 5,
+    LOAD_EMPTY_HISTORY_WIND: true,
   };
 
   static A320_HONEYWELL_H3: FpmConfig = {
@@ -89,5 +93,6 @@ export class FpmConfigs {
     NUM_CLIMB_WIND_LEVELS: 5,
     // Normally 5, 10 with the 4D RTA option
     NUM_DESCENT_WIND_LEVELS: 10,
+    LOAD_EMPTY_HISTORY_WIND: false,
   };
 }

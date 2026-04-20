@@ -1,9 +1,10 @@
 @import "../../../MsfsAvionicsCommon/definitions.scss";
 
 .mfd-fms-wind-page-container {
-  margin-left: 130px;
-  margin-top: 35px;
+  margin-left: 92px;
+  margin-top: 26px;
 }
+
 .mfd-fms-wind-page-title-container {
   display: flex;
   flex-direction: row;
@@ -13,20 +14,38 @@
 .mfd-fms-wind-page-table-row {
   display: flex;
   flex-direction: row;
-  height: 67px;
-  width: 495px;
+  width: 522px;
   border: 1px solid $display-grey;
 }
 
 .mfd-fms-wind-page-table-row.header {
   justify-content: space-between;
-  padding-left: 53px;
-  padding-right: 76px;
+  padding-left: 93px;
+  padding-right: 78px;
   padding-top: 16px;
+  height: 65px;
+}
+
+.mfd-fms-wind-page-table-row.entry.first {
+  height: 95px;
+}
+
+.mfd-fms-wind-page-table-row.entry {
+  height: 85px;
 }
 
 .history-wind-button-container {
   display: flex;
   flex-direction: row;
   align-items: flex-end;
+}
+
+.mfd-fms-wind-history-fl-entry {
+  display: flex;
+  flex-direction: row;
+}
+
+.mfd-fms-wind-history-wind-entry {
+  display: flex;
+  flex-direction: row;
 }

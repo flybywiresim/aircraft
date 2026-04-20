@@ -10,6 +10,10 @@ export interface FlightPlanWindEntry extends WindEntry {
   flags: number;
 }
 
+export interface HistoryWindEntry extends WindEntry {
+  isEmpty?: boolean;
+}
+
 export type WindVector = Float64Array;
 export type TailwindComponent = number;
 

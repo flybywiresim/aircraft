@@ -72,7 +72,7 @@ import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/uplink/SimBriefUplin
 import { FlightPlanChangeNotifier } from '@fmgc/flightplanning/sync/FlightPlanChangeNotifier';
 import { FlightPlanUtils } from '@fmgc/flightplanning/FlightPlanUtils';
 import { HistoryWind } from '@fmgc/wind/HistoryWind';
-import { FlightPlanWindEntry, FlightPlanWindEntryFlags, WindEntry } from '@fmgc/flightplanning/data/wind';
+import { FlightPlanWindEntry, FlightPlanWindEntryFlags, HistoryWindEntry } from '@fmgc/flightplanning/data/wind';
 
 export interface FmsErrorMessage {
   message: McduMessage;
@@ -350,7 +350,7 @@ export class FlightManagementComputer implements FmcInterface {
     this.flightPhaseManager.init();
     this.#guidanceController.init();
     this.fmgc.guidanceController = this.#guidanceController;
-    this.historyWinds = new HistoryWind(this.bus);
+    this.historyWinds = new HistoryWind(this.bus, FpmConfigs.A380.LOAD_EMPTY_HISTORY_WIND);
 
     this.initSimVars();
 
@@ -1717,8 +1717,8 @@ export class FlightManagementComputer implements FmcInterface {
     }
   }
 
-  public getHistoryWinds(cruiseFlightLevel: number | null): Readonly<WindEntry[]> {
-    return this.historyWinds.getRecordedWinds(cruiseFlightLevel);
+  public getHistoryWinds(cruiseFlightLevel: number | null): Readonly<HistoryWindEntry>[] {
+    return this.historyWinds.getRecordedWinds(cruiseFlightLevel, false);
   }
 
   public insertHistoryWinds(): boolean {
@@ -1727,17 +1727,19 @@ export class FlightManagementComputer implements FmcInterface {
       !this.flightPlanInterface.hasTemporary &&
       this.flightPlanInterface.hasActive
     ) {
-      const historyWinds = this.historyWinds.getRecordedWinds(null);
       const fp = this.flightPlanInterface.active;
-      const entries: FlightPlanWindEntry[] = historyWinds.map((entry) => {
-        return {
-          altitude: entry.altitude,
-          vector: Vec2Math.copy(entry.vector, Vec2Math.create()),
-          flags: FlightPlanWindEntryFlags.InsertedFromHistory,
-        };
-      });
-      fp.performanceData.climbWindEntries.set(entries);
-      return true;
+      const historyWinds = this.historyWinds.getRecordedWinds(fp.performanceData.cruiseFlightLevel.get(), false);
+      if (historyWinds.some((entry) => entry.isEmpty === false)) {
+        const entries: FlightPlanWindEntry[] = historyWinds.map((entry) => {
+          return {
+            altitude: entry.altitude,
+            vector: Vec2Math.copy(entry.vector, Vec2Math.create()),
+            flags: FlightPlanWindEntryFlags.InsertedFromHistory,
+          };
+        });
+        fp.performanceData.climbWindEntries.set(entries);
+        return true;
+      }
     }
     return false;
   }

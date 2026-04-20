@@ -44,9 +44,9 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
     { length: MfdFmsWindPage.NUM_HISTORY_WIND_ENTRIES },
     (_, i) => i,
   );
-  private readonly inPreFlightPhase = Subject.create(false);
+
   private readonly historyWindFlightLevels = Array.from({ length: MfdFmsWindPage.NUM_HISTORY_WIND_ENTRIES }, () =>
-    Subject.create<number | null>(null),
+    Subject.create<string | null>(null),
   );
   private readonly historyWindDirections = Array.from({ length: MfdFmsWindPage.NUM_HISTORY_WIND_ENTRIES }, () =>
     Subject.create<string>('---'),
@@ -75,6 +75,8 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
     sub.map((v) => (v ? 'visible' : 'hidden')),
   );
 
+  private readonly historyWindButtonVisible = Subject.create(false);
+
   // Climb Wind
 
   // Cruise Wind
@@ -100,17 +102,18 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
     this.temporaryExists.set(loadedFlightPlanIndex === FlightPlanIndex.Temporary);
     // History wind methods
     if (this.selectedPageMenu === WindPageMenu.History) {
-      this.inPreFlightPhase.set(this.props.fmcService.master.fmgc.data.flightPhase.get() === FmgcFlightPhase.Preflight);
       const cruiseFlightLevel = fp?.performanceData.cruiseFlightLevel.get() ?? null;
       const historyWinds = this.props.fmcService.master.getHistoryWinds(cruiseFlightLevel);
+      let hasNonEmptyWind = false;
       for (let i = 0; i < MfdFmsWindPage.NUM_HISTORY_WIND_ENTRIES; i++) {
         const windEntry = historyWinds[i];
         if (windEntry) {
-          this.historyWindFlightLevels[i].set(windEntry.altitude / 100);
+          hasNonEmptyWind = hasNonEmptyWind || !windEntry.isEmpty;
+          this.historyWindFlightLevels[i].set((windEntry.altitude / 100).toFixed(0).padStart(3, '0'));
           const windVector = windEntry.vector;
-          this.historyWindSpeeds[i].set(windVector ? `/${formatWindMagnitude(windVector)}` : '/---');
-          this.historyWindDirections[i].set(windVector ? formatWindTrueDegrees(windVector, false) : '---');
-          this.historyWindUnitsVisible[i].set(windVector !== null);
+          this.historyWindSpeeds[i].set(windEntry.isEmpty ? '\xa0---' : `/${formatWindMagnitude(windVector)}`);
+          this.historyWindDirections[i].set(windEntry.isEmpty ? '---' : formatWindTrueDegrees(windVector, false));
+          this.historyWindUnitsVisible[i].set(!windEntry.isEmpty);
           this.historyWindValidEntry[i].set(true);
           this.isHistoryWindCruiseFlightLevel[i].set(
             cruiseFlightLevel !== null && windEntry.altitude == cruiseFlightLevel * 100,
@@ -119,9 +122,12 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
           this.historyWindValidEntry[i].set(false);
         }
       }
-      this.wasSecPreviouslyActive =
-        this.loadedFlightPlanIndex.get() >= FlightPlanIndex.FirstSecondary ? true : this.wasSecPreviouslyActive;
+      this.historyWindButtonVisible.set(
+        !hasNonEmptyWind || this.props.fmcService.master.fmgc.data.flightPhase.get() === FmgcFlightPhase.Preflight,
+      );
     }
+    this.wasSecPreviouslyActive =
+      this.loadedFlightPlanIndex.get() >= FlightPlanIndex.FirstSecondary ? true : this.wasSecPreviouslyActive;
   }
 
   destroy() {
@@ -266,28 +272,28 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
                 </div>
                 <MfdFmsWindPageTableHeader />
                 {MfdFmsWindPage.HISTORY_WIND_ENTRIES_ARRAY.map((value) => (
-                  <div class="mfd-fms-wind-page-table-row">
-                    <div style={{ visibility: this.historyWindEntryVisibility[value] }}>
+                  <div class={{ 'mfd-fms-wind-page-table-row': true, entry: true, first: value === 0 }}>
+                    <div
+                      style={{
+                        visibility: this.historyWindEntryVisibility[value],
+                        display: 'flex',
+                        'flex-direction': 'row',
+                      }}
+                    >
                       <div class="mfd-fms-wind-history-fl-entry">
-                        <span class="mfd-label">{this.historyWindFlightLevelLabel[value]}</span>
-                        <div class="mfd-label-value-container">
-                          <span class="mfd-label unit">FL</span>
-                          <span class="mfd-label green">{this.historyWindFlightLevels[value]}</span>
-                        </div>
+                        <span class="mfd-label bigger">{this.historyWindFlightLevelLabel[value]}</span>
+                        <span class="mfd-label-unit bigger">FL</span>
+                        <span class="mfd-label green bigger">{this.historyWindFlightLevels[value]}</span>
                       </div>
                       <div class="mfd-fms-wind-history-wind-entry">
-                        <div class="mfd-label-value-container">
-                          <span class="mfd-label green">{this.historyWindDirections[value]}</span>
-                          <span class="mfd-label unit" style={{ visibility: this.historyWindsUnitVisiblity[value] }}>
-                            °
-                          </span>
-                        </div>
-                        <div class="mfd-label-value-container">
-                          <span class="mfd-label green">/{this.historyWindSpeeds[value]}</span>
-                          <span class="mfd-label unit" style={{ visibility: this.historyWindsUnitVisiblity[value] }}>
-                            KT
-                          </span>
-                        </div>
+                        <span class="mfd-label green">{this.historyWindDirections[value]}</span>
+                        <span class="mfd-label unit" style={{ visibility: this.historyWindsUnitVisiblity[value] }}>
+                          °
+                        </span>
+                        <span class="mfd-label green">{this.historyWindSpeeds[value]}</span>
+                        <span class="mfd-label unit" style={{ visibility: this.historyWindsUnitVisiblity[value] }}>
+                          KT
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -296,8 +302,8 @@ export class MfdFmsWindPage extends FmsPage<MfdFmsWindProps> {
               <div class="history-wind-button-container">
                 <Button
                   label={'INSERT\n HISTORY WIND*'}
-                  onClick={this.insertHistoryWind}
-                  visible={this.inPreFlightPhase}
+                  onClick={this.insertHistoryWind.bind(this)}
+                  visible={this.historyWindButtonVisible}
                 />
               </div>
             </TopTabNavigatorPage>

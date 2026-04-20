@@ -14,7 +14,7 @@ import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { DataManager } from '@fmgc/flightplanning/DataManager';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
-import { WindEntry } from '@fmgc/flightplanning/data/wind';
+import { HistoryWindEntry } from '@fmgc/flightplanning/data/wind';
 
 export enum FmcOperatingModes {
   Master,
@@ -307,7 +307,7 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
    * @param cruiseFlightLevel The cruise flight level to interpolate the winds against, if any.
    * @returns An array of wind entries.
    */
-  getHistoryWinds(cruiseFlightLevel: number | null): Readonly<WindEntry[]>;
+  getHistoryWinds(cruiseFlightLevel: number | null): Readonly<HistoryWindEntry>[];
 
   /**
    * Inserts the history winds into the flight plan cruise winds.

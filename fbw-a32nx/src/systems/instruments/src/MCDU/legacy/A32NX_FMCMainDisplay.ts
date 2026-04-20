@@ -406,7 +406,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.efisInterfaces.R,
       a320EfisRangeSettings,
     );
-    this.historyWinds = new HistoryWind(this.bus);
+    this.historyWinds = new HistoryWind(this.bus, FpmConfigs.A320_HONEYWELL_H3.LOAD_EMPTY_HISTORY_WIND);
 
     initComponents(this.bus, this.navigation, this.guidanceController, this.flightPlanService);
 
