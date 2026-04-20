@@ -216,6 +216,18 @@ export class PseudoFWC {
 
   private readonly masterCaution = Subject.create(false);
 
+  private readonly masterWarningPbLeftPulseNode = new NXLogicPulseNode(true);
+
+  private readonly masterWarningPbRightPulseNode = new NXLogicPulseNode(true);
+
+  private readonly masterCautionPbLeftPulseNode = new NXLogicPulseNode(true);
+
+  private readonly masterCautionPbRightPulseNode = new NXLogicPulseNode(true);
+
+  private masterWarningCancelPulseUp = false;
+
+  private masterCautionCancelPulseUp = false;
+
   private readonly fireActive = Subject.create(false);
 
   private nonCancellableWarningCount = 0;
@@ -1986,6 +1998,12 @@ export class PseudoFWC {
     const masterCautionButtonRight = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERCAUT_R', 'bool');
     const masterWarningButtonLeft = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_L', 'bool');
     const masterWarningButtonRight = SimVar.GetSimVarValue('L:PUSH_AUTOPILOT_MASTERAWARN_R', 'bool');
+    const masterWarningPbLeftPulse = this.masterWarningPbLeftPulseNode.write(masterWarningButtonLeft, deltaTime);
+    const masterWarningPbRightPulse = this.masterWarningPbRightPulseNode.write(masterWarningButtonRight, deltaTime);
+    this.masterWarningCancelPulseUp = masterWarningPbLeftPulse || masterWarningPbRightPulse;
+    const masterCautionPbLeftPulse = this.masterCautionPbLeftPulseNode.write(masterCautionButtonLeft, deltaTime);
+    const masterCautionPbRightPulse = this.masterCautionPbRightPulseNode.write(masterCautionButtonRight, deltaTime);
+    this.masterCautionCancelPulseUp = masterCautionPbLeftPulse || masterCautionPbRightPulse;
 
     /* HYDRAULICS acquisition */
     this.blueElecPumpPBAuto.set(SimVar.GetSimVarValue('L:A32NX_OVHD_HYD_EPUMPB_PB_IS_AUTO', 'bool'));
@@ -3771,18 +3789,6 @@ export class PseudoFWC {
       SimVar.SetSimVarValue('L:A32NX_CABIN_READY', 'bool', 1);
     }
 
-    /* MASTER CAUT/WARN BUTTONS */
-    if (masterCautionButtonLeft || masterCautionButtonRight) {
-      this.auralSingleChimePending = false;
-      this.requestMasterCautionFromFaults = false;
-      this.requestMasterCautionFromABrkOff = false;
-    }
-    if ((masterWarningButtonLeft || masterWarningButtonRight) && this.nonCancellableWarningCount === 0) {
-      this.requestMasterWarningFromFaults = this.nonCancellableWarningCount > 0;
-      this.auralCrcActive.set(this.nonCancellableWarningCount > 0);
-      this.cChordActive.set(this.nonCancellableWarningCount > 0);
-    }
-
     /* T.O. CONFIG CHECK */
     // TODO Note that fuel tank low pressure and gravity feed warnings are not included
     const systemStatus =
@@ -3915,20 +3921,23 @@ export class PseudoFWC {
     let tempMemoArrayRight: string[] = [];
     const allFailureKeys: string[] = [];
     let tempFailureArrayLeft: string[] = [];
-    let failureKeysLeft: string[] = this.failuresLeft;
-    let recallFailureKeys: string[] = this.recallFailures;
+    let failureKeysLeft: string[] = [...this.failuresLeft];
+    let recallFailureKeys: string[] = [...this.recallFailures];
     let tempFailureArrayRight: string[] = [];
-    const failureKeysRight: string[] = this.failuresRight;
+    let failureKeysRight: string[] = [...this.failuresRight];
     const failureSysPageItems: { order: number; sysPage: EcamSysPage }[] = [];
     const auralCrcKeys: string[] = [];
     const auralScKeys: string[] = [];
     const auralCavchargeKeys: string[] = [];
     const auralCChordKeys: string[] = [];
+    let activeMasterWarningFailureCount = 0;
+    let activeMasterCautionFailureCount = 0;
 
-    // Update failuresLeft list in case failure has been resolved
+    // Update failure lists in case failures have been resolved
     for (const [key, value] of Object.entries(this.ewdMessageFailures)) {
       if (!value.simVarIsActive.get()) {
         failureKeysLeft = failureKeysLeft.filter((e) => e !== key);
+        failureKeysRight = failureKeysRight.filter((e) => e !== key);
         recallFailureKeys = recallFailureKeys.filter((e) => e !== key);
       }
     }
@@ -3953,6 +3962,13 @@ export class PseudoFWC {
         // consider monitor input confirm time (0.3 sec by default)
         this.ewdFailureTiming.get(key)?.displayEligible
       ) {
+        if (value.failure === 3) {
+          activeMasterWarningFailureCount++;
+        }
+        if (value.failure === 2) {
+          activeMasterCautionFailureCount++;
+        }
+
         if (newWarning) {
           if (value.side === 'LEFT') {
             failureKeysLeft.push(key);
@@ -4123,13 +4139,25 @@ export class PseudoFWC {
 
     if (!failLeft) {
       this.ewdMessageLinesLeft.forEach((l, i) => l.set(orderedMemoArrayLeft[i]));
+    }
 
-      if (orderedFailureArrayRight.length === 0) {
-        this.requestMasterCautionFromFaults = false;
-        if (this.nonCancellableWarningCount === 0) {
-          this.requestMasterWarningFromFaults = false;
-        }
-      }
+    if (activeMasterCautionFailureCount === 0) {
+      this.requestMasterCautionFromFaults = false;
+    }
+    if (activeMasterWarningFailureCount === 0 && this.nonCancellableWarningCount === 0) {
+      this.requestMasterWarningFromFaults = false;
+    }
+
+    /* MASTER CAUT/WARN BUTTONS */
+    if (this.masterCautionCancelPulseUp) {
+      this.auralSingleChimePending = false;
+      this.requestMasterCautionFromFaults = false;
+      this.requestMasterCautionFromABrkOff = false;
+    }
+    if (this.masterWarningCancelPulseUp && this.nonCancellableWarningCount === 0) {
+      this.requestMasterWarningFromFaults = false;
+      this.auralCrcActive.set(false);
+      this.cChordActive.set(false);
     }
 
     this.masterCaution.set(this.requestMasterCautionFromFaults || this.requestMasterCautionFromABrkOff);
@@ -4276,8 +4304,6 @@ export class PseudoFWC {
       whichCodeToReturn: () => [null],
       codesToReturn: [],
       memoInhibit: () => false,
-      // This should only emit the cavalry charge, but not activate the master warn.
-      // So, list it as failure level 0 (I don't think this has any other effect).
       failure: 0,
       sysPage: EcamSysPage.NONE,
       side: 'RIGHT',
@@ -5973,7 +5999,7 @@ export class PseudoFWC {
       whichCodeToReturn: () => [0],
       codesToReturn: ['290031001'],
       memoInhibit: () => false,
-      failure: 2,
+      failure: 0,
       sysPage: EcamSysPage.HYD,
       side: 'RIGHT',
     },
@@ -5993,7 +6019,7 @@ export class PseudoFWC {
       whichCodeToReturn: () => [0],
       codesToReturn: ['290031201'],
       memoInhibit: () => false,
-      failure: 2,
+      failure: 0,
       sysPage: EcamSysPage.HYD,
       side: 'RIGHT',
     },
