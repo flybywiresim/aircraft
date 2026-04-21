@@ -2359,6 +2359,7 @@
         <Sound WwiseData="true" WwiseEvent="new_2_500" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_25_00" Continuous="false">
             <Range LowerBound="1"/>
         </Sound>
+        <!-- TODO this should be Continuous false once the silence is removed from the sample -->
         <Sound WwiseData="true" WwiseEvent="new_retard" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_RETARD" Continuous="true">
             <Range LowerBound="1"/>
         </Sound>

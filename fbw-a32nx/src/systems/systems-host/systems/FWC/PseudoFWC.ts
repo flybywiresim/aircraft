@@ -143,16 +143,11 @@ export class PseudoFWC {
       StallWarningEvents
   >();
 
+  private readonly fwsSoundUpdateThrottler = new UpdateThrottler(100);
+
   private readonly fwsUpdateThrottler = new UpdateThrottler(240); // has to be > 100 due to pulse nodes
 
   private keyEventManager?: KeyEventManager;
-
-  private readonly startupCompleted = Subject.create(false);
-
-  public readonly soundManager = new FwsSoundManager(this.bus, this.startupCompleted, this);
-
-  /** Time to inhibit master warnings and cautions during startup in ms */
-  private static readonly FWC_STARTUP_TIME = 5000;
 
   /** Time to inhibit SCs after one is trigger in ms */
   private static readonly AURAL_SC_INHIBIT_TIME = 2000;
@@ -190,7 +185,6 @@ export class PseudoFWC {
   public readonly apDiscInputBuffer = new NXLogicMemoryNode(false);
 
   /* PSEUDO FWC VARIABLES */
-  private readonly startupTimer = new DebounceTimer();
 
   private readonly allCurrentFailures: string[] = [];
 
@@ -1560,7 +1554,8 @@ export class PseudoFWC {
 
   constructor(
     private readonly bus: EventBus,
-    private readonly instrument: BaseInstrument,
+    private readonly soundManager: FwsSoundManager,
+    private readonly startupCompleted: Subscribable<boolean>,
   ) {
     for (const [key, item] of Object.entries(this.ewdMessageFailures)) {
       item.simVarIsActive.sub((v) => {
@@ -1694,19 +1689,6 @@ export class PseudoFWC {
       () => (this.auralSingleChimePending = false),
       PseudoFWC.AURAL_SC_INHIBIT_TIME,
     );
-
-    this.acESSBusPowered.sub((v) => {
-      if (v) {
-        this.startupTimer.schedule(() => {
-          this.startupCompleted.set(true);
-          console.log('PseudoFWC startup completed.');
-        }, PseudoFWC.FWC_STARTUP_TIME);
-      } else {
-        this.startupTimer.clear();
-        this.startupCompleted.set(false);
-        console.log('PseudoFWC shut down.');
-      }
-    });
 
     // Radio altimeter callouts
     NXDataStore.getAndSubscribeLegacy(
@@ -1983,17 +1965,7 @@ export class PseudoFWC {
   /**
    * Periodic update
    */
-  update(_deltaTime: number) {
-    const deltaTime = this.fwsUpdateThrottler.canUpdate(_deltaTime);
-
-    // Enforce cycle time for the logic computation (otherwise pulse nodes would be broken)
-    if (deltaTime === -1 || _deltaTime === 0) {
-      return;
-    }
-
-    // Play sounds
-    this.soundManager.onUpdate(deltaTime);
-
+  update(deltaTime: number) {
     // Inputs update
     this.processEcpButtons(deltaTime);
 

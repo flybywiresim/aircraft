@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EventBus, SimVarValueType, Subscribable } from '@microsoft/msfs-sdk';
-import { PseudoFWC } from './PseudoFWC';
 
 const MINIMUM_LOCAL_VAR = 'A32NX_FWS_AUDIO_MINIMUMS';
 const HUNDRED_ABOVE_LOCAL_VAR = 'A32NX_FWS_AUDIO_100_ABOVE';
@@ -139,16 +138,18 @@ export const FwsAuralsList: Record<string, FwsAural> = {
   },
   retard: {
     localVarName: 'A32NX_FWS_AUDIO_RETARD',
-    length: 0.72,
+    length: 1.0, // Add a bit of silence before new retard can play
     priority: 2,
+    continuous: false,
     type: FwsAuralWarningType.SyntheticVoice,
   },
   retard_continuous: {
-    // TODO we should use repeat with delay here but the sample has silences built in so it doesn't work quite well
     localVarName: 'A32NX_FWS_AUDIO_RETARD',
     priority: 2,
+    length: 0.72,
     type: FwsAuralWarningType.SyntheticVoice,
-    continuous: true,
+    continuous: false,
+    periodicWithPause: 0.5,
   },
   alt_2500: {
     localVarName: 'A32NX_FWS_AUDIO_2500',
@@ -257,10 +258,12 @@ export class FwsSoundManager {
   private soundToRepeatDelay: number | null = null;
   private soundToRepeat: keyof typeof FwsAuralsList | null = null;
 
+  public hundredAboveEmitted = false;
+  public minimumEmitted = false;
+
   constructor(
     private bus: EventBus,
     private startupCompleted: Subscribable<boolean>,
-    private fws: PseudoFWC,
   ) {
     // Stop all sounds
     Object.values(FwsAuralsList).forEach((a) => {
@@ -452,9 +455,9 @@ export class FwsSoundManager {
 
   private setFwsAudioOutputs(localVarName: string, value: boolean) {
     if (localVarName === HUNDRED_ABOVE_LOCAL_VAR) {
-      this.fws.hundredAboveEmitted = value;
+      this.hundredAboveEmitted = value;
     } else if (localVarName === MINIMUM_LOCAL_VAR) {
-      this.fws.minimumEmitted = value;
+      this.minimumEmitted = value;
     }
   }
 }
