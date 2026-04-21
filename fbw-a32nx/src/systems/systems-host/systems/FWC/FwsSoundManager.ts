@@ -138,7 +138,7 @@ export const FwsAuralsList: Record<string, FwsAural> = {
   },
   retard: {
     localVarName: 'A32NX_FWS_AUDIO_RETARD',
-    length: 1.0, // Add a bit of silence before new retard can play
+    length: 1.1, // Add a bit of silence before new retard can play
     priority: 2,
     continuous: false,
     type: FwsAuralWarningType.SyntheticVoice,
@@ -149,7 +149,7 @@ export const FwsAuralsList: Record<string, FwsAural> = {
     length: 0.72,
     type: FwsAuralWarningType.SyntheticVoice,
     continuous: false,
-    periodicWithPause: 0.5,
+    periodicWithPause: 0.4,
   },
   alt_2500: {
     localVarName: 'A32NX_FWS_AUDIO_2500',
