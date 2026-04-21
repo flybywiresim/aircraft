@@ -420,6 +420,10 @@ impl<T: Aircraft> Simulation<T> {
     /// #     fn get(&mut self, name: String) -> VariableIdentifier {
     /// #         Default::default()
     /// #     }
+    /// #
+    /// #     fn get_unprefixed(&mut self, _: String) -> VariableIdentifier {
+    /// #         VariableIdentifier::default()
+    /// #     }
     /// # }
     /// let mut registry = MyVariableRegistry::new();
     /// let mut simulation = Simulation::new(Default::default(), MyAircraft::new, &mut registry);
