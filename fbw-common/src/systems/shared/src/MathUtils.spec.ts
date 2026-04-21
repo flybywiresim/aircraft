@@ -51,6 +51,20 @@ describe('MathUtils.floor', () => {
   });
 });
 
+describe('MathUtils.trunc', () => {
+  it('correctly truncates toward zero', () => {
+    expect(MathUtils.trunc(1.005, 2)).toBeCloseTo(0);
+    expect(MathUtils.trunc(-1.005, 1)).toBeCloseTo(-1);
+    expect(MathUtils.trunc(1.005, 1)).toBeCloseTo(1);
+    expect(MathUtils.trunc(-1.005, 2)).toBeCloseTo(0);
+    expect(MathUtils.trunc(-39.8, 40)).toBeCloseTo(0);
+    expect(MathUtils.trunc(39.8, 40)).toBeCloseTo(0);
+    expect(MathUtils.trunc(-40.1, 40)).toBeCloseTo(-40);
+    expect(MathUtils.trunc(40.1, 40)).toBeCloseTo(40);
+    expect(MathUtils.floor(1.5, 0)).toBe(NaN);
+  });
+});
+
 describe('MathUtils.angleAdd', () => {
   it('correctly adds two angles', () => {
     expect(MathUtils.angleAdd(270, 90)).toBeCloseTo(360, 4);

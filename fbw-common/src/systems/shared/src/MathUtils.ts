@@ -580,6 +580,16 @@ export class MathUtils {
   }
 
   /**
+   * Truncate number toward zero with a specified quantum.
+   * @param value The number to truncate.
+   * @param quantum The quantum to truncate to, defaults to 1.
+   * @returns The truncated number.
+   */
+  public static trunc(value: number, quantum = 1): number {
+    return Math.trunc(value / quantum) * quantum;
+  }
+
+  /**
    * Bilinear interpolation on a table
    * @param table
    * @param i Value on row axis
