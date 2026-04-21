@@ -574,7 +574,7 @@ impl VariableRegistry for MsfsVariableRegistry {
         }
     }
 
-    fn get_without_prefix(&mut self, name: String) -> VariableIdentifier {
+    fn get_unprefixed(&mut self, name: String) -> VariableIdentifier {
         match self.name_to_identifier.get(&name) {
             Some(identifier) => *identifier,
             // By the time this function is called, only named variables are to be created.
