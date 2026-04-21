@@ -4489,15 +4489,15 @@ export class PseudoFWC {
     const overflowGroupTitleCodes = ewdLeftLayout.overflow
       ? ewdLeftLayout.hiddenItemTitleGroups.map((group) => getEwdGroupTitleCode(group))
       : [];
+    const rightSideLines = [...orderedMemoArrayRight, ...orderedFailureArrayRight];
+    const rightSideSpecialLines = rightSideLines
+      .filter((code) => isEwdSpecialLineCode(code))
+      .sort(compareEwdMessageCodes);
+    const rightSideSecondaryFailures = rightSideLines
+      .filter((code) => isEwdSecondaryFailureCode(code))
+      .sort(compareEwdMessageCodes);
 
-    if (overflowGroupTitleCodes.length > 0) {
-      const rightSideSpecialLines = [...orderedMemoArrayRight, ...orderedFailureArrayRight]
-        .filter((code) => isEwdSpecialLineCode(code))
-        .sort(compareEwdMessageCodes);
-      const rightSideSecondaryFailures = [...orderedMemoArrayRight, ...orderedFailureArrayRight]
-        .filter((code) => isEwdSecondaryFailureCode(code))
-        .sort(compareEwdMessageCodes);
-
+    if (overflowGroupTitleCodes.length > 0 || rightSideSecondaryFailures.length > 0) {
       orderedMemoArrayRight = [
         ...rightSideSpecialLines,
         ...overflowGroupTitleCodes,
