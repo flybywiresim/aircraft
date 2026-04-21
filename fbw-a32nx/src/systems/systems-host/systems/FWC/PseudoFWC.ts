@@ -246,6 +246,7 @@ export class PseudoFWC {
   );
 
   private readonly ewdLowerLeftOverflow = Subject.create(false);
+  private currentEwdLeftLayout = buildEwdLayout([], PseudoFWC.EWD_MESSAGE_LINES);
 
   private readonly ewdLeftFailureActive = Subject.create(false);
   private readonly activeFailureSysPage = Subject.create<EcamSysPage>(EcamSysPage.NONE);
@@ -1903,16 +1904,6 @@ export class PseudoFWC {
     });
   }
 
-  private getLeftFailureLayout(failureKeys: string[]): EwdLayout {
-    const entries: EwdOrderedFailureLine[] = [];
-
-    for (const failureKey of failureKeys) {
-      entries.push(...this.getEwdFailureLayoutEntries(failureKey));
-    }
-
-    return buildEwdLayout(entries, PseudoFWC.EWD_MESSAGE_LINES);
-  }
-
   private getFailureGroup(failureKey: string): string | undefined {
     const codes = this.getEwdMessageCodes(this.ewdMessageFailures[failureKey]);
 
@@ -1965,7 +1956,7 @@ export class PseudoFWC {
   }
 
   private clearEwdFailure(): void {
-    const layout = this.getLeftFailureLayout(this.failuresLeft);
+    const layout = this.currentEwdLeftLayout;
 
     if (layout.overflow) {
       if (layout.visibleItemKeys.length === 1) {
@@ -4456,6 +4447,7 @@ export class PseudoFWC {
     const failLeft = ewdLeftLayout.orderedEntries.length > 0;
     const orderedFailureArrayLeft = ewdLeftLayout.displayedEntries.map((entry) => entry.code);
     const orderedFailureArrayRight = tempFailureArrayRight.sort(compareEwdMessageCodes);
+    this.currentEwdLeftLayout = ewdLeftLayout;
     this.ewdLeftFailureActive.set(failLeft);
     this.ewdLowerLeftOverflow.set(ewdLeftLayout.overflow);
 
