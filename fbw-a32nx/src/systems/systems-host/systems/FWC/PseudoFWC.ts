@@ -141,16 +141,18 @@ const getUniqueOrderedValues = <T>(values: T[]): T[] => {
 const compareEwdMessageCodes = (a: string, b: string): number =>
   EwdMessageCodeOrder.get(a)! - EwdMessageCodeOrder.get(b)!;
 
+const EMPTY_EWD_LAYOUT: EwdLayout = {
+  orderedEntries: [],
+  displayedEntries: [],
+  overflow: false,
+  visibleGroups: [],
+  visibleItemKeys: [],
+  hiddenItemTitleGroups: [],
+};
+
 const buildEwdLayout = (entries: EwdOrderedFailureLine[], displayedLineCount: number): EwdLayout => {
   if (entries.length === 0) {
-    return {
-      orderedEntries: [],
-      displayedEntries: [],
-      overflow: false,
-      visibleGroups: [],
-      visibleItemKeys: [],
-      hiddenItemTitleGroups: [],
-    };
+    return EMPTY_EWD_LAYOUT;
   }
 
   const orderedEntries = [...entries].sort((a, b) => a.codeOrder - b.codeOrder);
@@ -256,7 +258,7 @@ export class PseudoFWC {
   );
 
   private readonly ewdLowerLeftOverflow = Subject.create(false);
-  private currentEwdLeftLayout = buildEwdLayout([], PseudoFWC.EWD_MESSAGE_LINES);
+  private currentEwdLeftLayout = EMPTY_EWD_LAYOUT;
 
   private readonly ewdLeftFailureActive = Subject.create(false);
   private readonly activeFailureSysPage = Subject.create<EcamSysPage>(EcamSysPage.NONE);
