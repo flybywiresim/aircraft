@@ -58,8 +58,25 @@ const EwdGroups: Record<string, string> = {
 };
 /* eslint-enable prettier/prettier */
 
+// Titles without underscores
+const getGroupTitleText = (group: string): string => EwdGroups[group].split('\x1b4m').join('');
+
+// Generate our own codes for the group titles (displayed on the right side of the EWD if the left side is overflowing)
+export const EwdGroupTitles = new Map<string, { code: string; text: string }>(
+  Object.keys(EwdGroups).map((group, index) => [
+    group,
+    {
+      code: `9${(index + 1).toString().padStart(8, '0')}`,
+      text: getGroupTitleText(group),
+    },
+  ]),
+);
+
 // In priority order
-const EwdMessages = new Map<string, { group?: string; text: string }>([
+const EwdMessages = new Map<
+  string,
+  { group?: string; text: string; specialLine?: boolean; secondaryFailure?: boolean }
+>([
   ['220000501', { group: 'AUTO FLT$1', text: ' AP OFF' }],
   ['270005201', { group: 'F/CTL$1', text: ' FLAP LVR NOT ZERO' }],
   ['340021001', { group: 'OVER SPEED$1', text: '' }],
@@ -496,15 +513,15 @@ const EwdMessages = new Map<string, { group?: string; text: string }>([
   ['000010001', { text: '\x1b<3mSTROBE LT OFF' }],
   ['000010501', { text: '\x1b<3mOUTR TK FUEL XFRD' }],
   ['000030501', { text: '\x1b<3mGPWS FLAP MODE OFF' }],
-  ['000014001', { text: '\x1b<6mT.O INHIBIT' }],
-  ['000015001', { text: '\x1b<6mLDG INHIBIT' }],
-  ['000035001', { text: '\x1b<2mLAND ASAP' }],
-  ['000036001', { text: '\x1b<4mLAND ASAP' }],
-  ['220001501', { text: '\x1b<2mAP OFF' }],
-  ['220002101', { text: '\x1b<4mA/THR OFF' }],
-  ['320000001', { text: '\x1b<4mAUTO BRK OFF' }],
-  ['290031001', { text: '\x1b<4m*HYD' }],
-  ['290031201', { text: '\x1b<4m*HYD' }],
+  ['000014001', { text: '\x1b<6mT.O INHIBIT', specialLine: true }],
+  ['000015001', { text: '\x1b<6mLDG INHIBIT', specialLine: true }],
+  ['000035001', { text: '\x1b<2mLAND ASAP', specialLine: true }],
+  ['000036001', { text: '\x1b<4mLAND ASAP', specialLine: true }],
+  ['220001501', { text: '\x1b<2mAP OFF', specialLine: true }],
+  ['220002101', { text: '\x1b<4mA/THR OFF', specialLine: true }],
+  ['320000001', { text: '\x1b<4mAUTO BRK OFF', specialLine: true }],
+  ['290031001', { text: '\x1b<4m*HYD', secondaryFailure: true }],
+  ['290031201', { text: '\x1b<4m*HYD', secondaryFailure: true }],
   ['000006001', { text: '\x1b<3mSPEED BRK' }],
   ['000006002', { text: '\x1b<4mSPEED BRK' }],
   ['000020001', { text: '\x1b<3mPARK BRK' }],
@@ -541,9 +558,17 @@ const EwdMessages = new Map<string, { group?: string; text: string }>([
   ['000068001', { text: '\x1b<3mADIRS SWTG' }],
 ]);
 
+EwdGroupTitles.forEach(({ code, text }) => EwdMessages.set(code, { text }));
+
 export const EwdMessageCodeOrder = new Map([...EwdMessages.keys()].map((code, index) => [code, index]));
 
 export const getEwdMessageGroup = (code: string): string | undefined => EwdMessages.get(code)?.group;
+
+export const getEwdGroupTitleCode = (group: string): string => EwdGroupTitles.get(group)!.code;
+
+export const isEwdSpecialLineCode = (code: string): boolean => EwdMessages.get(code)?.specialLine === true;
+
+export const isEwdSecondaryFailureCode = (code: string): boolean => EwdMessages.get(code)?.secondaryFailure === true;
 
 // eslint-disable-next-line no-control-regex
 const getVisibleTextWidth = (text: string) => text.replace(/\x1b[^m]*m/g, '').length;
