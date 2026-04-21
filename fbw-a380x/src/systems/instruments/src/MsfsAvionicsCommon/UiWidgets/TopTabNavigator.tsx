@@ -17,6 +17,7 @@ interface TopTabElementProps extends ComponentProps {
   isHighlighted: boolean;
   height: number; // height of tab bar element
   slantedEdgeAngle: number; // in degrees
+  smallFont: boolean;
   onClick: () => void;
 }
 
@@ -80,7 +81,7 @@ class TopTabElement extends DisplayComponent<TopTabElementProps> {
           ref={this.textRef}
           class={`mfd-top-tab-navigator-bar-element-label${this.props.isSelected ? ' active' : ''}`}
           // eslint-disable-next-line max-len
-          style={`font-size: ${Math.round(this.props.height * 0.66)}px;`}
+          style={`font-size: ${this.props.smallFont ? Math.round(this.props.height * 0.58) : Math.round(this.props.height * 0.66)}px;`}
         >
           {this.props.title}
         </span>
@@ -219,6 +220,7 @@ export class TopTabNavigator extends DisplayComponent<TopTabNavigatorProps> {
           selectedTextColor={this.props.selectedTabTextColor || 'white'}
           onClick={() => this.onPageChange(index)}
           isHighlighted={this.props.highlightedTab ? this.props.highlightedTab?.get() === index : false}
+          smallFont={this.pageTitles.get().length > 2}
         />,
         this.navigatorBarRef.instance,
       );
@@ -267,6 +269,7 @@ export class TopTabNavigator extends DisplayComponent<TopTabNavigatorProps> {
               selectedTextColor={this.props.selectedTabTextColor || 'white'}
               onClick={() => this.onPageChange(index)}
               isHighlighted={false}
+              smallFont={this.pageTitles.get().length > 2}
             />
           ))}
           <div
