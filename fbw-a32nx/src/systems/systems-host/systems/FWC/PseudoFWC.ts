@@ -147,12 +147,11 @@ const buildEwdLayout = (entries: EwdOrderedFailureLine[], displayedLineCount: nu
   const visibleGroups = getUniqueOrderedValues(
     displayedEntries.filter((entry) => entry.isItemTitle).map((entry) => entry.group!),
   );
-  const visibleGroupSet = new Set(visibleGroups);
   const visibleItemKeys = displayedEntries.filter((entry) => entry.isItemTitle).map((entry) => entry.failureKey);
   const hiddenItemTitleGroups = getUniqueOrderedValues(
     orderedEntries
       .slice(displayedLineCount)
-      .filter((entry) => entry.isItemTitle && !visibleGroupSet.has(entry.group!))
+      .filter((entry) => entry.isItemTitle && !new Set(visibleGroups).has(entry.group!))
       .map((entry) => entry.group!),
   );
 
@@ -1914,7 +1913,7 @@ export class PseudoFWC {
     this.recallFailures = this.allCurrentFailures.filter((item) => !this.failuresLeft.includes(item));
   }
 
-  private clearFailureGroup(targetGroup: string): boolean {
+  private clearFailureGroup(targetGroup: string): void {
     const remainingFailures: string[] = [];
     let canClearTargetGroup = true;
 
@@ -1932,27 +1931,11 @@ export class PseudoFWC {
     }
 
     if (!canClearTargetGroup) {
-      return false;
+      return;
     }
 
     this.failuresLeft.splice(0, this.failuresLeft.length, ...remainingFailures);
     this.updateRecallFailuresFromDisplayedFailures();
-
-    return true;
-  }
-
-  private clearSingleFailure(failureKey: string): boolean {
-    const timing = this.ewdFailureTiming.get(failureKey);
-
-    if (timing === undefined || !timing.clearEligible) {
-      return false;
-    }
-
-    this.failuresLeft.splice(0, this.failuresLeft.length, ...this.failuresLeft.filter((key) => key !== failureKey));
-    this.ewdProcedureLinesCleared.delete(failureKey);
-    this.updateRecallFailuresFromDisplayedFailures();
-
-    return true;
   }
 
   private clearEwdFailure(): void {
@@ -1980,7 +1963,13 @@ export class PseudoFWC {
         );
 
         if (firstClearableVisibleItem !== undefined) {
-          this.clearSingleFailure(firstClearableVisibleItem);
+          this.failuresLeft.splice(
+            0,
+            this.failuresLeft.length,
+            ...this.failuresLeft.filter((key) => key !== firstClearableVisibleItem),
+          );
+          this.ewdProcedureLinesCleared.delete(firstClearableVisibleItem);
+          this.updateRecallFailuresFromDisplayedFailures();
         }
 
         return;
