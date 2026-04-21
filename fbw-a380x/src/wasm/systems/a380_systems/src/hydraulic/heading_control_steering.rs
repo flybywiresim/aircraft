@@ -166,16 +166,17 @@ impl HeadingControlFunction {
     }
 
     fn heading_refresh_is_valid(&self) -> bool {
-        if self.new_heading.is_none() || self.previous_heading.is_none() {
-            false
-        } else {
-            let new_angle_degree = self.new_heading.unwrap().get::<degree>();
+        match (self.new_heading, self.previous_heading) {
+            (Some(new_heading), Some(previous_heading)) => {
+                let new_angle_degree = new_heading.get::<degree>();
 
-            let angle_diff = (self.normalize_angle(new_angle_degree)
-                - self.normalize_angle(self.previous_heading.unwrap().get::<degree>()))
-            .abs();
+                let angle_diff = (self.normalize_angle(new_angle_degree)
+                    - self.normalize_angle(previous_heading.get::<degree>()))
+                .abs();
 
-            angle_diff < Self::MAX_ALLOWED_ANGLE_BETWEEN_FRAMES_DEGREES
+                angle_diff < Self::MAX_ALLOWED_ANGLE_BETWEEN_FRAMES_DEGREES
+            }
+            _ => false,
         }
     }
 

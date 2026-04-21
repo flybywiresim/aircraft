@@ -1,6 +1,6 @@
 Include.addScript("/JS/dataStorage.js");
 
-// TODO use the ts version in src/shared
+// FIXME delete. Last user is fbw-a32nx\src\base\flybywire-aircraft-a320-neo\html_ui\Pages\VLivery\Liveries\A32NX_Registration\Registration.js
 class NXDataStore {
     /* private */ static get listener() {
         if (NXDataStore._listener === undefined) {

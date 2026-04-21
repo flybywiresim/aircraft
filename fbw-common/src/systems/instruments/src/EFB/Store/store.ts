@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -21,6 +22,7 @@ import tooltipReducer from './features/tooltip';
 import pushbackReducer from './features/pushback';
 import payloadReducer from './features/payload';
 import configReducer from './features/config';
+import fileHashReducer from './features/fileHashes';
 import temperatureCorrectionCalculatorReducer from './features/temperatureCorrectionCalculator';
 
 export type RootState = ReturnType<typeof combinedReducer>;
@@ -44,6 +46,7 @@ const combinedReducer = combineReducers({
   pushback: pushbackReducer,
   payload: payloadReducer,
   config: configReducer,
+  fileHashes: fileHashReducer,
   temperatureCorrectionCalculator: temperatureCorrectionCalculatorReducer,
 });
 

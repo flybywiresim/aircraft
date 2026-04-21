@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
@@ -34,7 +35,9 @@ export enum AtsuMessageComStatus {
 }
 
 export enum AtsuMessageSerializationFormat {
+  // FIXME CDU?
   FmsDisplay,
+  // FIXME CDU?
   FmsDisplayMonitored,
   Mailbox,
   Printer,

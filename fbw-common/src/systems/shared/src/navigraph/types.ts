@@ -2,6 +2,7 @@ import { Chart } from 'navigraph/charts';
 
 export enum NavigraphSubscriptionStatus {
   None,
+  Standard,
   Unlimited,
   Unknown,
 }

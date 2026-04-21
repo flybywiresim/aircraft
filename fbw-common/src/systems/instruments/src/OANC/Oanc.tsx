@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
+  ArrayUtils,
   ComponentProps,
   ConsumerSubject,
   DebounceTimer,
@@ -17,51 +18,54 @@ import {
   VNode,
   Wait,
 } from '@microsoft/msfs-sdk';
+
 import {
+  AmdbFeature,
   AmdbFeatureCollection,
   AmdbFeatureTypeStrings,
   AmdbProjection,
   AmdbProperties,
+  Arinc429LocalVarConsumerSubject,
+  EfisNdMode,
+  EfisSide,
+  FcuSimVars,
   FeatureType,
   FeatureTypeString,
-  MathUtils,
-  PolygonalStructureType,
-  EfisNdMode,
-  MapParameters,
-  EfisSide,
   FmsOansData,
-  FcuSimVars,
   GenericAdirsEvents,
-  Arinc429LocalVarConsumerSubject,
+  MapParameters,
+  MathUtils,
+  OansControlEvents,
+  OansFmsDataStore,
+  OansMapProjection,
+  PolygonalStructureType,
 } from '@flybywiresim/fbw-sdk';
+
 import {
-  BBox,
   bbox,
   bboxPolygon,
   booleanPointInPolygon,
   centroid,
-  Feature,
   featureCollection,
-  FeatureCollection,
-  Geometry,
-  LineString,
-  Point,
-  Polygon,
-  Position,
+  polygon,
+  simplify,
+  union,
 } from '@turf/turf';
+import { Feature, FeatureCollection, Geometry, LineString, Point, Polygon, MultiPolygon, Position } from 'geojson';
 import { bearingTo, clampAngle, Coordinates, distanceTo, placeBearingDistance } from 'msfs-geo';
 
-import { OansControlEvents } from './OansControlEventPublisher';
 import { reciprocal } from '@fmgc/guidance/lnav/CommonGeometry';
-import { FmsDataStore } from './OancControlPanelUtils';
 import { OansBrakeToVacateSelection } from './OansBrakeToVacateSelection';
-import { STYLE_DATA } from './style-data';
+import { LAYER_SPECIFICATIONS } from './style-data';
 import { OancMovingModeOverlay, OancStaticModeOverlay } from './OancMovingModeOverlay';
 import { OancAircraftIcon } from './OancAircraftIcon';
 import { OancLabelManager } from './OancLabelManager';
 import { OancPositionComputer } from './OancPositionComputer';
+import { OancMarkerManager } from './OancMarkerManager';
+import { ResetPanelSimvars } from './ResetPanelPublisher';
 import { NavigraphAmdbClient } from './api/NavigraphAmdbClient';
-import { globalToAirportCoordinates, pointAngle, pointDistance } from './OancMapUtils';
+import { pointAngle } from './OancMapUtils';
+import { LubberLine } from '../ND/pages/arc/LubberLine';
 
 export const OANC_RENDER_WIDTH = 768;
 export const OANC_RENDER_HEIGHT = 768;
@@ -92,14 +96,6 @@ export const a380EfisZoomRangeSettings: A380EfisZoomRangeValue[] = [0.2, 0.5, 1,
 
 const DEFAULT_SCALE_NM = 0.539957;
 
-const LAYER_VISIBILITY_RULES = [
-  [true, true, true, true, false, false, true, true],
-  [true, true, true, true, false, false, false, true],
-  [false, true, false, false, true, true, false, true],
-  [false, true, false, false, true, true, false, true],
-  [false, true, false, false, true, true, false, true],
-];
-
 export const LABEL_VISIBILITY_RULES = [true, true, true, true, true];
 
 export enum LabelStyle {
@@ -117,6 +113,8 @@ export enum LabelStyle {
   BtvStopLineAmber = 'btv-stop-line-amber',
   BtvStopLineRed = 'btv-stop-line-red',
   BtvStopLineGreen = 'btv-stop-line-green',
+  CrossSymbol = 'cross-symbol',
+  FlagSymbol = 'flag-symbol',
 }
 
 export interface Label {
@@ -124,7 +122,7 @@ export interface Label {
   style: LabelStyle;
   position: Position;
   rotation: number | undefined;
-  associatedFeature: Feature<Geometry, AmdbProperties>;
+  associatedFeature?: AmdbFeature;
 }
 
 export interface ContextMenuItemData {
@@ -163,15 +161,9 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     FSComponent.createRef<HTMLCanvasElement>(),
     FSComponent.createRef<HTMLCanvasElement>(),
     FSComponent.createRef<HTMLCanvasElement>(),
-    FSComponent.createRef<HTMLCanvasElement>(),
-    FSComponent.createRef<HTMLCanvasElement>(),
-    FSComponent.createRef<HTMLCanvasElement>(),
   ];
 
   private readonly layerCanvasScaleContainerRefs = [
-    FSComponent.createRef<HTMLCanvasElement>(),
-    FSComponent.createRef<HTMLCanvasElement>(),
-    FSComponent.createRef<HTMLCanvasElement>(),
     FSComponent.createRef<HTMLCanvasElement>(),
     FSComponent.createRef<HTMLCanvasElement>(),
     FSComponent.createRef<HTMLCanvasElement>(),
@@ -183,11 +175,9 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
   public data: AmdbFeatureCollection | undefined;
 
-  private dataBbox: BBox | undefined;
+  private arpCoordinates = Subject.create<Coordinates | null>(null);
 
-  private arpCoordinates: Subject<Coordinates | undefined> = Subject.create(undefined);
-
-  private canvasCenterCoordinates: Coordinates | undefined;
+  private canvasCenterCoordinates: Coordinates | null = null;
 
   private readonly dataAirportName = Subject.create('');
 
@@ -207,22 +197,24 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     this.dataAirportIata,
   );
 
+  private readonly resetPulled = ConsumerSubject.create(
+    this.props.bus.getSubscriber<ResetPanelSimvars>().on('a380x_reset_panel_arpt_nav'),
+    false,
+  );
+
   private layerFeatures: FeatureCollection<Geometry, AmdbProperties>[] = [
     featureCollection([]), // Layer 0: TAXIWAY BG + TAXIWAY SHOULDER
     featureCollection([]), // Layer 1: APRON + STAND BG + BUILDINGS (terminal only)
     featureCollection([]), // Layer 2: RUNWAY (with markings)
-    featureCollection([]), // Layer 3: RUNWAY (without markings)
+    featureCollection([]), // Layer 3: TAXIWAY GUIDANCE LINES (unscaled width)
     featureCollection([]), // Layer 4: TAXIWAY GUIDANCE LINES (scaled width), HOLD SHORT LINES
-    featureCollection([]), // Layer 5: TAXIWAY GUIDANCE LINES (unscaled width)
-    featureCollection([]), // Layer 6: STAND GUIDANCE LINES (scaled width)
-    featureCollection([]), // Layer 7: DYNAMIC CONTENT (BTV PATH, STOP LINES)
   ];
 
-  public amdbClient = new NavigraphAmdbClient();
+  public readonly amdbClient = new NavigraphAmdbClient();
 
-  private labelManager = new OancLabelManager<T>(this);
+  private readonly labelManager = new OancLabelManager<T>(this);
 
-  private positionComputer = new OancPositionComputer<T>(this);
+  private readonly positionComputer = new OancPositionComputer<T>(this);
 
   public dataLoading = false;
 
@@ -272,8 +264,8 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
   // TODO: Should be using GPS position interpolated with IRS velocity data
   private readonly pposLatWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('latitude'));
-
   private readonly pposLongWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('longitude'));
+  private readonly trueHeadingWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('trueHeadingRaw'));
 
   public readonly ppos = MappedSubject.create(
     ([latWord, longWord]) => ({ lat: latWord.value, long: longWord.value }) as Coordinates,
@@ -281,23 +273,23 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     this.pposLongWord,
   );
 
-  private readonly trueHeadingWord = Arinc429LocalVarConsumerSubject.create(this.sub.on('trueHeadingRaw'));
-
   public referencePos: Coordinates = { lat: 0, long: 0 };
 
   public readonly aircraftWithinAirport = Subject.create(false);
 
   private readonly airportWithinRange = Subject.create(false);
 
+  private readonly airportTooFarAwayAndInArcNavMode = Subject.create(false);
+
   private readonly airportBearing = Subject.create(0);
 
-  public readonly projectedPpos = MappedSubject.create(
-    ([ppos, arpCoordinates], previous: Position) => {
+  public readonly projectedPpos = MappedSubject.create<[Coordinates, Coordinates | null], Position>(
+    ([ppos, arpCoordinates], previous?: Position | undefined) => {
       if (arpCoordinates) {
-        return globalToAirportCoordinates(arpCoordinates, ppos, [0, 0]);
+        return OansMapProjection.globalToAirportCoordinates(arpCoordinates, ppos, [0, 0]);
       }
 
-      return previous;
+      return previous ?? [0, 0];
     },
     this.ppos,
     this.arpCoordinates,
@@ -317,7 +309,10 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
   public readonly arpReferencedMapParams = new MapParameters();
 
-  private readonly oansVisible = ConsumerSubject.create<boolean>(null, false);
+  private readonly oansVisible = ConsumerSubject.create<{ side: EfisSide; show: boolean }>(null, {
+    side: this.props.side,
+    show: false,
+  });
 
   private readonly efisNDModeSub = ConsumerSubject.create<EfisNdMode>(null, EfisNdMode.PLAN);
 
@@ -327,19 +322,22 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
   private readonly ndModeSwitchDelayDebouncer = new DebounceTimer();
 
-  private readonly fmsDataStore = new FmsDataStore(this.props.bus);
+  private readonly fmsDataStore = new OansFmsDataStore(this.props.bus);
 
   private readonly btvUtils = new OansBrakeToVacateSelection<T>(
     this.props.bus,
     this.labelManager,
     this.aircraftOnGround,
     this.projectedPpos,
-    this.layerCanvasRefs[7],
+    this.arpCoordinates,
+    this.layerCanvasRefs[this.layerCanvasRefs.length - 1],
     this.canvasCentreX,
     this.canvasCentreY,
     this.zoomLevelIndex,
     this.getZoomLevelInverseScale.bind(this),
   );
+
+  private readonly markerManager = new OancMarkerManager<T>(this, this.labelManager, this.props.bus);
 
   private readonly airportNotInActiveFpln = MappedSubject.create(
     ([ndMode, arpt, origin, dest, altn]) => ndMode !== EfisNdMode.ARC && ![origin, dest, altn].includes(arpt),
@@ -405,6 +403,8 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     this.pleaseWaitFlagVisible,
   );
 
+  private readonly oansPerformanceModeHide = Subject.create(false);
+
   public getZoomLevelInverseScale() {
     const multiplier = this.overlayNDModeSub.get() === EfisNdMode.ROSE_NAV ? 0.5 : 1;
 
@@ -418,8 +418,8 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     this.labelContainerRef.instance.addEventListener('mousemove', this.handleCursorPanMove.bind(this));
     this.labelContainerRef.instance.addEventListener('mouseup', this.handleCursorPanStop.bind(this));
 
-    this.oansVisible.setConsumer(this.sub.on('ndShowOans'));
-    this.oansNotAvailable.setConsumer(this.sub.on('oansNotAvail'));
+    this.oansVisible.setConsumer(this.sub.on('nd_show_oans'));
+    this.oansNotAvailable.setConsumer(this.sub.on('oans_not_avail'));
     this.efisNDModeSub.setConsumer(this.sub.on('ndMode'));
 
     this.efisNDModeSub.sub((mode) => {
@@ -431,11 +431,69 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
     this.efisOansRangeSub.sub((range) => this.zoomLevelIndex.set(range), true);
 
+    this.airportTooFarAwayAndInArcNavMode.sub((v) =>
+      this.props.bus.getPublisher<OansControlEvents>().pub('oans_show_set_plan_mode', v, true),
+    );
+
     this.sub
-      .on('oansDisplayAirport')
+      .on('oans_display_airport')
       .whenChanged()
       .handle((airport) => {
-        this.loadAirportMap(airport);
+        if (this.oansPerformanceModeHide.get()) {
+          this.dataAirportIcao.set(airport);
+        } else {
+          this.loadAirportMap(airport);
+        }
+      });
+
+    this.sub
+      .on('oans_performance_mode_hide')
+      .whenChanged()
+      .handle((perfHide) => {
+        if (this.props.side === perfHide.side) {
+          this.oansPerformanceModeHide.set(perfHide.hide);
+        }
+      });
+
+    this.oansPerformanceModeHide.sub((hide) => {
+      if (hide) {
+        this.unloadAirportMap(true);
+      } else if (this.dataAirportIcao.get()) {
+        this.loadAirportMap(this.dataAirportIcao.get(), true);
+      }
+    });
+
+    this.sub.on('oans_center_on_acft').handle(() => this.centerOnAcft());
+    this.sub.on('oans_center_map_on').handle((coords) => this.centerMapOn(coords));
+    this.sub.on('oans_add_cross_at_feature').handle((f) => this.markerManager.addCrossAtFeature(f.id, f.feattype));
+    this.sub.on('oans_add_flag_at_feature').handle((f) => this.markerManager.addFlagAtFeature(f.id, f.feattype));
+    this.sub
+      .on('oans_remove_cross_at_feature')
+      .handle((f) => this.markerManager.removeCrossAtFeature(f.id, f.feattype));
+    this.sub.on('oans_remove_flag_at_feature').handle((f) => this.markerManager.removeFlagAtFeature(f.id, f.feattype));
+    this.sub
+      .on('oans_add_cross_at_cursor')
+      .handle(([x, y]) => this.markerManager.addCross(this.unprojectPoint([x, y])));
+    this.sub.on('oans_add_flag_at_cursor').handle(([x, y]) => this.markerManager.addFlag(this.unprojectPoint([x, y])));
+    this.sub.on('oans_erase_all_crosses').handle(() => this.markerManager.eraseAllCrosses());
+    this.sub.on('oans_erase_all_flags').handle(() => this.markerManager.eraseAllFlags());
+    this.sub.on('oans_erase_cross_id').handle((id) => this.markerManager.removeCross(id));
+    this.sub.on('oans_erase_flag_id').handle((id) => this.markerManager.removeFlag(id));
+    this.sub.on('oans_query_symbols_at_cursor').handle((data) => {
+      const foundSymbols = this.markerManager.findSymbolAtCursor(this.unprojectPoint(data.cursorPosition));
+      this.props.bus.getPublisher<OansControlEvents>().pub('oans_answer_symbols_at_cursor', {
+        side: data.side,
+        cross: foundSymbols.cross,
+        flag: foundSymbols.flag,
+      });
+    });
+    this.sub
+      .on('oans_remove_btv_data')
+      .whenChanged()
+      .handle((removeBtvData) => {
+        if (removeBtvData) {
+          this.btvUtils.clearSelection();
+        }
       });
 
     this.fmsDataStore.origin.sub(() => this.updateLabelClasses());
@@ -447,7 +505,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       this.updateLabelClasses();
     });
 
-    this.labelManager.visibleLabels.sub((index, type, item) => {
+    this.labelManager.visibleLabels.sub((_index, type, item) => {
       switch (type) {
         case SubscribableArrayEventType.Added: {
           if (Array.isArray(item)) {
@@ -469,8 +527,10 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
           if (Array.isArray(item)) {
             for (const label of item as Label[]) {
               const element = this.labelManager.visibleLabelElements.get(label);
-              this.labelContainerRef.instance.removeChild(element);
-              this.labelManager.visibleLabelElements.delete(label);
+              if (element) {
+                this.labelContainerRef.instance.removeChild(element);
+                this.labelManager.visibleLabelElements.delete(label);
+              }
             }
           } else {
             const element = this.labelManager.visibleLabelElements.get(item as Label);
@@ -492,11 +552,16 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       this.panContainerRef[0].instance.style.transform = `translate(${x}px, ${y}px)`;
       this.panContainerRef[1].instance.style.transform = `translate(${x}px, ${y}px)`;
 
+      const depRwy = this.fmsDataStore.departureRunway.get();
+      const ldgRwy = this.fmsDataStore.landingRunway.get();
+      const btvRwy = this.btvUtils.btvRunway.get();
+      const btvExit = this.btvUtils.btvExit.get();
+
       this.labelManager.reflowLabels(
-        this.fmsDataStore.departureRunway.get(),
-        this.fmsDataStore.landingRunway.get(),
-        this.btvUtils.btvRunway.get(),
-        this.btvUtils.btvExit.get(),
+        depRwy !== null ? depRwy : undefined,
+        ldgRwy !== null ? ldgRwy : undefined,
+        btvRwy !== null ? btvRwy : undefined,
+        btvExit !== null ? btvExit : undefined,
       );
     });
 
@@ -508,6 +573,10 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       this.modeAnimationOffsetX,
       this.modeAnimationOffsetY,
     );
+
+    this.pposNotAvailable.sub((notAvailable) => {
+      SimVar.SetSimVarValue('L:A32NX_ARPT_NAV_POS_LOST', SimVarValueType.Bool, notAvailable);
+    }, true);
   }
 
   private handleLabelFilter() {
@@ -542,21 +611,56 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     setTimeout(() => (this.labelManager.showLabels = true), ZOOM_TRANSITION_TIME_MS + 200);
   }
 
-  public async loadAirportMap(icao: string) {
-    this.dataLoading = true;
+  public unloadAirportMap(performanceModeUnload: boolean = false) {
+    if (!performanceModeUnload) {
+      this.btvUtils.clearSelection();
+    }
+    this.markerManager.eraseAllCrosses();
+    this.markerManager.eraseAllFlags();
+    this.clearMap();
+    this.clearData();
 
+    this.arpCoordinates.set(null);
+    this.data = undefined;
+    this.aircraftWithinAirport.set(false);
+
+    this.btvUtils.transmitRwyAheadAdvisory(false, '', true);
+  }
+
+  /**
+   *
+   * @param icao four letter ICAO code of airport to load
+   * @returns
+   */
+  public async loadAirportMap(icao: string, performanceModeUnload: boolean = false) {
+    this.dataLoading = true;
     this.airportLoading.set(true);
 
-    this.clearData();
-    this.clearMap();
-    this.btvUtils.clearSelection();
+    this.unloadAirportMap(performanceModeUnload);
 
-    const includeFeatureTypes: FeatureType[] = Object.values(STYLE_DATA).reduce(
+    if (!icao) {
+      this.dataLoading = false;
+      this.airportLoading.set(false);
+
+      this.dataAirportName.set('');
+      this.dataAirportIcao.set('');
+      this.dataAirportIata.set('');
+
+      return;
+    }
+
+    const includeFeatureTypes: FeatureType[] = Object.values(LAYER_SPECIFICATIONS).reduce(
       (acc, it) => [
         ...acc,
-        ...it.reduce((acc, it) => [...acc, ...(it?.dontFetchFromAmdb ? [] : it.forFeatureTypes)], []),
+        ...it.styleRules.reduce(
+          (acc, it) => [
+            ...acc,
+            ...(it?.dontFetchFromAmdb || it.forFeatureTypes === undefined ? [] : it.forFeatureTypes),
+          ],
+          [] as FeatureType[],
+        ),
       ],
-      [],
+      [] as FeatureType[],
     );
     const includeLayers = includeFeatureTypes.map((it) => AmdbFeatureTypeStrings[it]);
 
@@ -574,35 +678,32 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       AmdbProjection.Epsg4326,
     );
 
-    const features = Object.values(data).reduce(
-      (acc, it) => {
-        const features = it.features.map((f) => {
-          // FeatureCollection
-          if (f.properties.idthr || f.properties.idrwy) {
-            const nf = Object.assign({}, f);
-            if (nf.properties.idthr && nf.properties.idthr.replace(/[^0-9]/g, '').length < 2) {
-              nf.properties.idthr = `0${nf.properties.idthr}`;
-            }
-
-            if (nf.properties.idrwy) {
-              nf.properties.idrwy = nf.properties.idrwy
-                .split('.')
-                .map((qfu) => (qfu.replace(/[^0-9]/g, '').length < 2 ? `0${qfu}` : qfu))
-                .join('.');
-            }
-
-            return nf;
+    const features = Object.values(data).reduce((acc, it) => {
+      const features = it.features.map((f) => {
+        // FeatureCollection
+        if (f.properties.idthr || f.properties.idrwy) {
+          const nf = Object.assign({}, f);
+          if (nf.properties.idthr && nf.properties.idthr.replace(/[^0-9]/g, '').length < 2) {
+            nf.properties.idthr = `0${nf.properties.idthr}`;
           }
-          return f;
-        });
 
-        return [...acc, ...features];
-      },
-      [] as Feature<Geometry, AmdbProperties>[],
-    );
+          if (nf.properties.idrwy) {
+            nf.properties.idrwy = nf.properties.idrwy
+              .split('.')
+              .map((qfu) => (qfu.replace(/[^0-9]/g, '').length < 2 ? `0${qfu}` : qfu))
+              .join('.');
+          }
+
+          return nf;
+        }
+        return f;
+      });
+
+      return [...acc, ...features];
+    }, [] as AmdbFeature[]);
     const airportMap: AmdbFeatureCollection = featureCollection(features);
 
-    const wgs84ReferencePoint = wgs84ArpDat.aerodromereferencepoint.features[0];
+    const wgs84ReferencePoint = wgs84ArpDat.aerodromereferencepoint?.features[0];
 
     if (!wgs84ReferencePoint) {
       console.error('[OANC](loadAirportMap) Invalid airport data - aerodrome reference point not found');
@@ -623,9 +724,11 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
     this.data = airportMap;
 
-    this.dataAirportName.set(wgs84ReferencePoint.properties.name);
-    this.dataAirportIcao.set(icao);
-    this.dataAirportIata.set(wgs84ReferencePoint.properties.iata);
+    if (wgs84ReferencePoint) {
+      this.dataAirportName.set(wgs84ReferencePoint?.properties?.name ?? '');
+      this.dataAirportIcao.set(icao);
+      this.dataAirportIata.set(wgs84ReferencePoint?.properties?.iata ?? '');
+    }
 
     // Figure out the boundaries of the map data
     const dataBbox = bbox(airportMap);
@@ -653,23 +756,28 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
   }
 
   private calculateCanvasCenterCoordinates() {
-    const pxDistanceToCanvasCentre = pointDistance(
-      this.canvasWidth.get() / 2,
-      this.canvasHeight.get() / 2,
-      this.canvasCentreX.get(),
-      this.canvasCentreY.get(),
-    );
-    const nmDistanceToCanvasCentre = UnitType.NMILE.convertFrom(pxDistanceToCanvasCentre / 1_000, UnitType.KILOMETER);
-    const angleToCanvasCentre = clampAngle(
-      pointAngle(
+    const arpCoordinates = this.arpCoordinates.get();
+
+    if (arpCoordinates) {
+      const pxDistanceToCanvasCentre = MathUtils.pointDistance(
         this.canvasWidth.get() / 2,
         this.canvasHeight.get() / 2,
         this.canvasCentreX.get(),
         this.canvasCentreY.get(),
-      ) + 90,
-    );
+      );
+      const nmDistanceToCanvasCentre = UnitType.NMILE.convertFrom(pxDistanceToCanvasCentre / 1_000, UnitType.KILOMETER);
+      const angleToCanvasCentre = clampAngle(
+        pointAngle(
+          this.canvasWidth.get() / 2,
+          this.canvasHeight.get() / 2,
+          this.canvasCentreX.get(),
+          this.canvasCentreY.get(),
+        ) + 90,
+      );
 
-    return placeBearingDistance(this.arpCoordinates.get(), reciprocal(angleToCanvasCentre), nmDistanceToCanvasCentre);
+      return placeBearingDistance(arpCoordinates, reciprocal(angleToCanvasCentre), nmDistanceToCanvasCentre);
+    }
+    return null;
   }
 
   private createLabelElement(label: Label): HTMLDivElement {
@@ -681,55 +789,119 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
     if (label.style === LabelStyle.RunwayEnd) {
       element.addEventListener('click', () => {
-        const thresholdFeature = this.data.features.filter(
+        const thresholdFeature = this.data?.features.filter(
           (it) => it.properties.feattype === FeatureType.RunwayThreshold && it.properties?.idthr === label.text,
         );
-        this.btvUtils.selectRunwayFromOans(
-          `${this.dataAirportIcao.get()}${label.text}`,
-          label.associatedFeature,
-          thresholdFeature[0],
-        );
+        if (thresholdFeature && label.associatedFeature) {
+          this.btvUtils.selectRunwayFromOans(
+            `${this.dataAirportIcao.get()}${label.text}`,
+            label.associatedFeature,
+            thresholdFeature[0],
+          );
+        }
       });
     }
     if (
       label.style === LabelStyle.ExitLine &&
-      label.associatedFeature.properties.feattype === FeatureType.RunwayExitLine
+      label.associatedFeature?.properties.feattype === FeatureType.RunwayExitLine
     ) {
       element.addEventListener('click', () => {
-        this.btvUtils.selectExitFromOans(label.text, label.associatedFeature);
+        if (label.associatedFeature) {
+          this.btvUtils.selectExitFromOans(label.text, label.associatedFeature);
+        }
       });
     }
 
     return element;
   }
 
-  private sortDataIntoLayers(data: FeatureCollection<Geometry, AmdbProperties>) {
+  private sortDataIntoLayers(data: AmdbFeatureCollection) {
     for (let i = 0; i < this.layerFeatures.length; i++) {
       const layer = this.layerFeatures[i];
+      const layerSpec = LAYER_SPECIFICATIONS[i];
 
-      const layerFeatureTypes = STYLE_DATA[i].reduce(
-        (acc, rule) => [...acc, ...rule.forFeatureTypes],
-        [] as FeatureType[],
-      );
-      const layerPolygonStructureTypes = STYLE_DATA[i].reduce(
-        (acc, rule) => [...acc, ...(rule.forPolygonStructureTypes ?? [])],
-        [] as PolygonalStructureType[],
-      );
-      const layerData = data.features.filter((it) => {
-        if (it.properties.feattype === FeatureType.VerticalPolygonalStructure) {
-          return (
-            layerFeatureTypes.includes(FeatureType.VerticalPolygonalStructure) &&
-            layerPolygonStructureTypes.includes(it.properties.plysttyp)
+      if (layerSpec.styleRules.length === 0) {
+        continue;
+      }
+
+      const featuresByStyleRule: AmdbFeature[][] = [];
+
+      for (const styleRule of layerSpec.styleRules) {
+        const matchingFeatures = data.features.filter(
+          (it) =>
+            (styleRule.forFeatureTypes === undefined || styleRule.forFeatureTypes.includes(it.properties.feattype)) &&
+            (it.properties.plysttyp === undefined ||
+              it.properties.feattype !== FeatureType.VerticalPolygonalStructure ||
+              styleRule.forPolygonStructureTypes === undefined ||
+              styleRule.forPolygonStructureTypes.includes(it.properties.plysttyp)),
+        );
+
+        unionFeatures: if (styleRule.unionBy !== undefined) {
+          const featuresAreAllPolygons = matchingFeatures.every(
+            (it) => it.geometry.type === 'Polygon' || it.geometry.type === 'MultiPolygon',
           );
-        }
-        return layerFeatureTypes.includes(it.properties.feattype);
-      });
 
-      layer.features.push(...layerData);
+          if (!featuresAreAllPolygons) {
+            console.warn(
+              '[Oanc](sortDataIntoLayers) Style rule had unionBy declared but not all filtered features were (multi)polygons. Not unioning them.',
+            );
+            break unionFeatures;
+          }
+
+          const finalFeatures: AmdbFeature<Polygon | MultiPolygon>[] = [];
+          const groups = new Map<AmdbProperties[keyof AmdbProperties], AmdbFeature<Polygon | MultiPolygon>[]>();
+
+          for (const feature of matchingFeatures) {
+            const key = styleRule.unionBy !== 'all' ? feature.properties[styleRule.unionBy] : 'all';
+            let existingGroup = groups.get(key);
+
+            if (existingGroup === undefined) {
+              existingGroup = [];
+              groups.set(key, existingGroup);
+            }
+
+            if (styleRule.simplify !== undefined) {
+              existingGroup.push(
+                simplify(feature, { tolerance: styleRule.simplify }) as AmdbFeature<Polygon | MultiPolygon>,
+              );
+            } else {
+              existingGroup.push(feature as AmdbFeature<Polygon | MultiPolygon>);
+            }
+          }
+
+          const unionedGroups = Array.from(groups.values()).map((it) =>
+            it.length > 1 ? union(featureCollection(it), { properties: it[0].properties }) : it[0],
+          );
+
+          for (const unionedGroup of unionedGroups) {
+            if (unionedGroup === null) {
+              continue;
+            }
+
+            switch (unionedGroup.geometry.type) {
+              case 'Polygon':
+                finalFeatures.push(unionedGroup);
+                break;
+              case 'MultiPolygon':
+                for (const polygonCoordinates of unionedGroup.geometry.coordinates) {
+                  const polygonFeature = polygon(polygonCoordinates, unionedGroup.properties);
+
+                  finalFeatures.push(polygonFeature);
+                }
+            }
+          }
+
+          featuresByStyleRule.push(finalFeatures);
+        } else {
+          featuresByStyleRule.push(matchingFeatures);
+        }
+      }
+
+      layer.features.push(...ArrayUtils.flat(featuresByStyleRule));
     }
   }
 
-  private generateAllLabels(data: FeatureCollection<Geometry, AmdbProperties>) {
+  private generateAllLabels(data: AmdbFeatureCollection) {
     for (const feature of data.features) {
       if (!LABEL_FEATURE_TYPES.includes(feature.properties.feattype)) {
         continue;
@@ -743,12 +915,13 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       // Only include "VerticalPolygonObject" features whose "plysttyp" property has what we want
       if (
         feature.properties.feattype === FeatureType.VerticalPolygonalStructure &&
+        feature.properties.plysttyp &&
         !LABEL_POLYGON_STRUCTURE_TYPES.includes(feature.properties.plysttyp)
       ) {
         continue;
       }
 
-      let labelPosition: Position;
+      let labelPosition: Position = [0, 0];
       switch (feature.geometry.type) {
         case 'Point': {
           const point = feature.geometry as Point;
@@ -805,9 +978,11 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
         const isFmsOrigin = this.dataAirportIcao.get() === this.fmsDataStore.origin.get();
         const isFmsDestination = this.dataAirportIcao.get() === this.fmsDataStore.origin.get();
+        const depRwy = this.fmsDataStore.departureRunway.get()?.substring(4);
+        const ldgRwy = this.fmsDataStore.landingRunway.get()?.substring(4);
         const isSelectedRunway =
-          (isFmsOrigin && designators.includes(this.fmsDataStore.departureRunway.get()?.substring(4))) ||
-          (isFmsDestination && designators.includes(this.fmsDataStore.landingRunway.get()?.substring(4)));
+          (isFmsOrigin && depRwy && designators.includes(depRwy)) ||
+          (isFmsDestination && ldgRwy && designators.includes(ldgRwy));
 
         const label1: Label = {
           text: designators[0],
@@ -926,14 +1101,19 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
           const existing = this.labelManager.labels.filter((it) => it.text === text);
 
           const shortestDistance = existing.reduce((shortestDistance, label) => {
-            const distance = pointDistance(label.position[0], label.position[1], labelPosition[0], labelPosition[1]);
+            const distance = MathUtils.pointDistance(
+              label.position[0],
+              label.position[1],
+              labelPosition[0],
+              labelPosition[1],
+            );
 
             return distance > shortestDistance ? distance : shortestDistance;
           }, Number.MAX_SAFE_INTEGER);
 
           if (
             (feature.properties.feattype === FeatureType.ParkingStandLocation &&
-              existing.some((it) => feature.properties.termref === it.associatedFeature.properties.termref)) ||
+              existing.some((it) => feature.properties.termref === it.associatedFeature?.properties.termref)) ||
             shortestDistance < 50
           ) {
             continue;
@@ -965,42 +1145,50 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     const deltaTime = (now - this.lastTime) / 1_000;
     this.lastTime = now;
 
-    if (!this.data || this.dataLoading) return;
+    if (this.data && this.resetPulled.get()) {
+      this.unloadAirportMap(true);
+    }
+
+    if (!this.data || this.dataLoading || this.resetPulled.get()) {
+      return;
+    }
 
     this.aircraftOnGround.set(
+      // FIXME use an enum...
       ![6, 7, 8, 9].includes(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', SimVarValueType.Number)),
     );
 
-    // This will always be false without ppos, otherwise it will be updated below
-    let airportTooFarAwayAndInArcMode = false;
-
-    if (!this.pposNotAvailable.get()) {
+    const arpCoordinates = this.arpCoordinates.get();
+    if (!this.pposNotAvailable.get() && arpCoordinates) {
       this.aircraftWithinAirport.set(booleanPointInPolygon(this.projectedPpos.get(), bboxPolygon(bbox(this.data))));
 
-      const distToArpt = this.arpCoordinates.get() ? distanceTo(this.ppos.get(), this.arpCoordinates.get()) : 9999;
+      const distToArpt = this.arpCoordinates.get() ? distanceTo(this.ppos.get(), arpCoordinates) : 9999;
 
       // If in ARC mode and airport more than 30nm away, apply a hack to not create a huge canvas (only shift airport a little bit out of view with a static offset)
-      airportTooFarAwayAndInArcMode = this.usingPposAsReference.get() && distToArpt > 30;
+      this.airportTooFarAwayAndInArcNavMode.set(
+        !this.pposNotAvailable.get() && this.usingPposAsReference.get() && distToArpt > 30,
+      );
 
       if (this.arpCoordinates.get()) {
         this.airportWithinRange.set(distToArpt < this.props.zoomValues[this.zoomLevelIndex.get()] + 3); // Add 3nm for airport dimension, FIXME better estimation
-        this.airportBearing.set(bearingTo(this.ppos.get(), this.arpCoordinates.get()));
+        this.airportBearing.set(bearingTo(this.ppos.get(), arpCoordinates));
       } else {
         this.airportWithinRange.set(true);
         this.airportBearing.set(0);
       }
     } else {
+      this.airportTooFarAwayAndInArcNavMode.set(false);
       this.aircraftWithinAirport.set(false);
       this.airportWithinRange.set(true);
     }
 
-    if (this.usingPposAsReference.get() || !this.arpCoordinates.get()) {
+    if (this.usingPposAsReference.get() || !arpCoordinates) {
       this.referencePos = this.ppos.get();
     } else {
-      this.referencePos = this.arpCoordinates.get();
+      this.referencePos = arpCoordinates;
     }
 
-    if (!this.pposNotAvailable.get()) {
+    if (!this.pposNotAvailable.get() && arpCoordinates) {
       const position = this.positionComputer.computePosition();
 
       if (position) {
@@ -1010,10 +1198,9 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
         this.positionVisible.set(false);
       }
 
-      this.props.bus.getPublisher<FmsOansData>().pub('oansAirportLocalCoordinates', this.projectedPpos.get(), true);
       this.btvUtils.updateRwyAheadAdvisory(
         this.ppos.get(),
-        this.arpCoordinates.get(),
+        arpCoordinates,
         this.trueHeadingWord.get().value,
         this.layerFeatures[2],
       );
@@ -1022,7 +1209,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     }
 
     // If OANS is not visible on this side (i.e. range selector is not on ZOOM), don't continue here to save runtime
-    if (!this.oansVisible.get()) {
+    if (this.oansVisible.get().side === this.props.side && !this.oansVisible.get().show) {
       return;
     }
 
@@ -1051,11 +1238,15 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
     const mapCurrentHeading = this.interpolatedMapHeading.get();
 
-    this.canvasCentreReferencedMapParams.compute(this.canvasCenterCoordinates, 0, 0.539957, 1_000, mapCurrentHeading);
-    this.arpReferencedMapParams.compute(this.arpCoordinates.get(), 0, 0.539957, 1_000, mapCurrentHeading);
+    if (this.canvasCenterCoordinates) {
+      this.canvasCentreReferencedMapParams.compute(this.canvasCenterCoordinates, 0, 0.539957, 1_000, mapCurrentHeading);
+    }
+    if (arpCoordinates) {
+      this.arpReferencedMapParams.compute(arpCoordinates, 0, 0.539957, 1_000, mapCurrentHeading);
+    }
 
     let [offsetX, offsetY]: [number, number] = [0, 0];
-    if (airportTooFarAwayAndInArcMode) {
+    if (this.airportTooFarAwayAndInArcNavMode.get()) {
       const shiftBy = 5 * Math.max(this.canvasWidth.get(), this.canvasHeight.get());
       [offsetX, offsetY] = [shiftBy, shiftBy];
     } else {
@@ -1069,25 +1260,31 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
     // Transform layers
     for (let i = 0; i < this.layerCanvasRefs.length; i++) {
+      const layerSpec = LAYER_SPECIFICATIONS[i];
+
       const canvas = this.layerCanvasRefs[i].instance;
       const canvasScaleContainer = this.layerCanvasScaleContainerRefs[i].instance;
 
       const scale = this.getZoomLevelInverseScale();
 
-      const translateX = -(this.canvasWidth.get() / 2) + OANC_RENDER_WIDTH / 2;
-      const translateY = -(this.canvasHeight.get() / 2) + OANC_RENDER_HEIGHT / 2;
+      const translateX = -((this.canvasWidth.get() * layerSpec.renderScale) / 2) + OANC_RENDER_WIDTH / 2;
+      const translateY = -((this.canvasHeight.get() * layerSpec.renderScale) / 2) + OANC_RENDER_HEIGHT / 2;
 
-      canvas.style.transform = `translate(${-offsetX}px, ${offsetY}px) rotate(${rotate}deg)`;
+      canvas.style.transform = `translate(${-offsetX}px, ${offsetY}px) scale(${1 / layerSpec.renderScale}) rotate(${rotate}deg)`;
 
       canvasScaleContainer.style.left = `${translateX}px`;
       canvasScaleContainer.style.top = `${translateY}px`;
       canvasScaleContainer.style.transform = `scale(${scale})`;
 
       const context = canvas.getContext('2d');
-
-      context.resetTransform();
-
-      context.translate(this.canvasCentreX.get(), this.canvasCentreY.get());
+      if (context) {
+        context.resetTransform();
+        context.translate(
+          this.canvasCentreX.get() * layerSpec.renderScale,
+          this.canvasCentreY.get() * layerSpec.renderScale,
+        );
+        context.scale(layerSpec.renderScale, layerSpec.renderScale);
+      }
     }
 
     // Transform airplane
@@ -1110,20 +1307,24 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
 
       this.airportLoading.set(false);
 
-      this.labelManager.reflowLabels(
-        this.fmsDataStore.departureRunway.get(),
-        this.fmsDataStore.landingRunway.get(),
-        this.btvUtils.btvRunway.get(),
-        this.btvUtils.btvExit.get(),
-      );
+      const depRwy = this.fmsDataStore.departureRunway.get();
+      const ldgRwy = this.fmsDataStore.landingRunway.get();
+      const btvRwy = this.btvUtils.btvRunway.get();
+      const btvExit = this.btvUtils.btvExit.get();
 
+      this.labelManager.reflowLabels(
+        depRwy !== null ? depRwy : undefined,
+        ldgRwy !== null ? ldgRwy : undefined,
+        btvRwy !== null ? btvRwy : undefined,
+        btvExit !== null ? btvExit : undefined,
+      );
       return;
     }
 
     const layerFeatures = this.layerFeatures[this.lastLayerDrawnIndex];
     const layerCanvas = this.layerCanvasRefs[this.lastLayerDrawnIndex].instance.getContext('2d');
 
-    if (this.lastFeatureDrawnIndex < layerFeatures.features.length) {
+    if (this.lastFeatureDrawnIndex < layerFeatures.features.length && layerCanvas) {
       renderFeaturesToCanvas(
         this.lastLayerDrawnIndex,
         layerCanvas,
@@ -1140,12 +1341,14 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
   }
 
   private updateLabelClasses() {
+    const btvRwy = this.btvUtils.btvRunway.get();
+    const btvExit = this.btvUtils.btvExit.get();
     this.labelManager.updateLabelClasses(
       this.fmsDataStore,
       this.dataAirportIcao.get() === this.fmsDataStore.origin.get(),
       this.dataAirportIcao.get() === this.fmsDataStore.destination.get(),
-      this.btvUtils.btvRunway.get(),
-      this.btvUtils.btvExit.get(),
+      btvRwy !== null ? btvRwy : undefined,
+      btvExit !== null ? btvExit : undefined,
     );
   }
 
@@ -1155,6 +1358,8 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     }
 
     this.labelManager.clearLabels();
+    this.markerManager.eraseAllFlags();
+    this.markerManager.eraseAllCrosses();
   }
 
   private clearMap(): void {
@@ -1166,8 +1371,16 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
       const cw = this.canvasWidth.get();
       const ch = this.canvasHeight.get();
 
-      ctx.clearRect(0, 0, cw, ch);
+      if (ctx) {
+        ctx.clearRect(0, 0, cw, ch);
+      }
     }
+
+    this.canvasWidth.set(0);
+    this.canvasHeight.set(0);
+
+    this.canvasCentreX.set(0);
+    this.canvasCentreY.set(0);
 
     this.panOffsetX.set(0);
     this.panOffsetY.set(0);
@@ -1242,10 +1455,8 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
   }
 
   private handleLayerVisibilities() {
-    const rule = LAYER_VISIBILITY_RULES[this.zoomLevelIndex.get()];
-
     for (let i = 0; i < this.layerCanvasScaleContainerRefs.length; i++) {
-      const shouldBeVisible = rule[i];
+      const shouldBeVisible = LAYER_SPECIFICATIONS[i].zoomLevelVisibilities[this.zoomLevelIndex.get()];
 
       const layerContainer = this.layerCanvasScaleContainerRefs[i].instance;
 
@@ -1336,6 +1547,70 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     return [labelScreenX, labelScreenY];
   }
 
+  public unprojectPoint(screenCoordinates: [number, number]): Position {
+    let [labelScreenX, labelScreenY] = screenCoordinates;
+
+    // Undo animation offsets
+    labelScreenX -= this.modeAnimationOffsetX.get() + OANC_RENDER_WIDTH / 2 + this.panOffsetX.get();
+    labelScreenY -= this.modeAnimationOffsetY.get() + OANC_RENDER_HEIGHT / 2 + this.panOffsetY.get();
+
+    const zoomLevelScale = this.getZoomLevelInverseScale();
+    const [offsetX, offsetY] = this.arpReferencedMapParams.coordinatesToXYy(this.referencePos);
+
+    // Undo scaling offsets
+    const scaledOffsetX = offsetX * zoomLevelScale;
+    const scaledOffsetY = -1 * (offsetY * zoomLevelScale);
+    labelScreenX += scaledOffsetX;
+    labelScreenY -= scaledOffsetY;
+
+    // Reverse rotation
+    const mapCurrentHeading = this.interpolatedMapHeading.get();
+    const rotate = -mapCurrentHeading; // Original rotation
+    const reverseRotate = -rotate; // Undo rotation
+
+    const hypotenuse = Math.sqrt(labelScreenX ** 2 + labelScreenY ** 2);
+    const angle = clampAngle(Math.atan2(-labelScreenY, labelScreenX) * MathUtils.RADIANS_TO_DEGREES);
+
+    const originalX = hypotenuse * Math.cos((angle - reverseRotate) * MathUtils.DEGREES_TO_RADIANS);
+    const originalY = hypotenuse * Math.sin((angle - reverseRotate) * MathUtils.DEGREES_TO_RADIANS);
+
+    // Scale back the original position
+    const labelX = originalX / zoomLevelScale;
+    const labelY = originalY / zoomLevelScale;
+
+    return [labelX, labelY];
+  }
+
+  public offsetToPoint(coordinates: Position): [number, number] {
+    const projected = this.projectPoint(coordinates);
+    const xOffset = -(projected[0] - this.panOffsetX.get() - OANC_RENDER_WIDTH / 2 - this.modeAnimationOffsetX.get());
+    const yOffset = -(projected[1] - this.panOffsetY.get() - OANC_RENDER_HEIGHT / 2 - this.modeAnimationOffsetY.get());
+
+    return [xOffset, yOffset];
+  }
+
+  async centerOnAcft() {
+    await this.enablePanningTransitions();
+    this.panOffsetX.set(0);
+    this.panOffsetY.set(0);
+    await Wait.awaitDelay(ZOOM_TRANSITION_TIME_MS);
+    await this.disablePanningTransitions();
+  }
+
+  /**
+   * Centers map on point supplied in parameters
+   * @param x X position in local coordinate system
+   * @param y Y position in local coordinate system
+   */
+  async centerMapOn(pos: Position) {
+    const xy = this.offsetToPoint(pos);
+    await this.enablePanningTransitions();
+    this.panOffsetX.set(xy[0]);
+    this.panOffsetY.set(xy[1]);
+    await Wait.awaitDelay(ZOOM_TRANSITION_TIME_MS);
+    await this.disablePanningTransitions();
+  }
+
   render(): VNode | null {
     return (
       <>
@@ -1393,61 +1668,15 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
             style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
           >
             <div ref={this.panContainerRef[0]} style="position: absolute;">
-              <div
-                ref={this.layerCanvasScaleContainerRefs[0]}
-                style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
-              >
-                <canvas ref={this.layerCanvasRefs[0]} width={this.canvasWidth} height={this.canvasHeight} />
-              </div>
-              <div
-                ref={this.layerCanvasScaleContainerRefs[1]}
-                style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
-              >
-                <canvas ref={this.layerCanvasRefs[1]} width={this.canvasWidth} height={this.canvasHeight} />
-              </div>
-              <div
-                ref={this.layerCanvasScaleContainerRefs[2]}
-                style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
-              >
-                <canvas ref={this.layerCanvasRefs[2]} width={this.canvasWidth} height={this.canvasHeight} />
-              </div>
-              <div
-                ref={this.layerCanvasScaleContainerRefs[3]}
-                style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
-              >
-                <canvas ref={this.layerCanvasRefs[3]} width={this.canvasWidth} height={this.canvasHeight} />
-              </div>
-              <div
-                ref={this.layerCanvasScaleContainerRefs[4]}
-                style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
-              >
-                <canvas ref={this.layerCanvasRefs[4]} width={this.canvasWidth} height={this.canvasHeight} />
-              </div>
-              <div
-                ref={this.layerCanvasScaleContainerRefs[5]}
-                style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
-              >
-                <canvas ref={this.layerCanvasRefs[5]} width={this.canvasWidth} height={this.canvasHeight} />
-              </div>
-              <div
-                ref={this.layerCanvasScaleContainerRefs[6]}
-                style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
-              >
-                <canvas ref={this.layerCanvasRefs[6]} width={this.canvasWidth} height={this.canvasHeight} />
-              </div>
-              <div
-                ref={this.layerCanvasScaleContainerRefs[7]}
-                style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}
-              >
-                <canvas ref={this.layerCanvasRefs[7]} width={this.canvasWidth} height={this.canvasHeight} />
-              </div>
-
-              <OancAircraftIcon
-                isVisible={this.showAircraft}
-                x={this.aircraftX}
-                y={this.aircraftY}
-                rotation={this.aircraftRotation}
-              />
+              {this.layerCanvasScaleContainerRefs.map((ref, index) => (
+                <div ref={ref} style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}>
+                  <canvas
+                    ref={this.layerCanvasRefs[index]}
+                    width={this.canvasWidth.map((it) => it * LAYER_SPECIFICATIONS[index].renderScale)}
+                    height={this.canvasHeight.map((it) => it * LAYER_SPECIFICATIONS[index].renderScale)}
+                  />
+                </div>
+              ))}
             </div>
           </div>
 
@@ -1456,20 +1685,59 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
             style={`position: absolute; width: ${OANC_RENDER_WIDTH}px; height: ${OANC_RENDER_HEIGHT}px; pointer-events: auto;`}
           />
 
+          <OancStaticModeOverlay
+            bus={this.props.bus}
+            oansRange={this.zoomLevelIndex.map((it) => this.props.zoomValues[it])}
+            ndMode={this.overlayNDModeSub}
+            rotation={this.interpolatedMapHeading}
+            isMapPanned={this.isMapPanned}
+            airportWithinRange={this.airportWithinRange}
+            airportBearing={this.airportBearing}
+            airportIcao={this.dataAirportIcao}
+          />
+
           <div
             ref={this.animationContainerRef[1]}
             style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear; pointer-events: none;`}
           >
-            <div ref={this.panContainerRef[1]} style="position: absolute;">
-              <OancMovingModeOverlay
+            <OancMovingModeOverlay
+              bus={this.props.bus}
+              oansRange={this.zoomLevelIndex.map((it) => this.props.zoomValues[it])}
+              ndMode={this.overlayNDModeSub}
+              rotation={this.interpolatedMapHeading}
+              isMapPanned={this.isMapPanned}
+              airportWithinRange={this.airportWithinRange}
+              airportBearing={this.airportBearing}
+              airportIcao={this.dataAirportIcao}
+            />
+
+            <svg
+              class="nd-svg nd-top-layer"
+              viewBox="0 0 768 768"
+              style={this.efisNDModeSub.map(
+                (mode) =>
+                  `transform: translateY(${mode === EfisNdMode.ARC ? -236 : 0}px); pointer-events: none; z-index: 99;`,
+              )}
+            >
+              <LubberLine
                 bus={this.props.bus}
-                oansRange={this.zoomLevelIndex.map((it) => this.props.zoomValues[it])}
-                ndMode={this.overlayNDModeSub}
-                rotation={this.interpolatedMapHeading}
-                isMapPanned={this.isMapPanned}
-                airportWithinRange={this.airportWithinRange}
-                airportBearing={this.airportBearing}
-                airportIcao={this.dataAirportIcao}
+                visible={MappedSubject.create(
+                  ([ac, mode]) => ac && mode !== EfisNdMode.PLAN,
+                  this.showAircraft,
+                  this.efisNDModeSub,
+                )}
+                rotation={Subject.create(0)}
+                ndMode={this.efisNDModeSub}
+                colorClass="Magenta"
+              />
+            </svg>
+
+            <div ref={this.panContainerRef[1]} style="position: absolute;">
+              <OancAircraftIcon
+                isVisible={this.showAircraft}
+                x={this.aircraftX}
+                y={this.aircraftY}
+                rotation={this.aircraftRotation}
               />
             </div>
           </div>
@@ -1513,17 +1781,6 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
               ACTIVE F/PLN
             </span>
           </div>
-
-          <OancStaticModeOverlay
-            bus={this.props.bus}
-            oansRange={this.zoomLevelIndex.map((it) => this.props.zoomValues[it])}
-            ndMode={this.overlayNDModeSub}
-            rotation={this.interpolatedMapHeading}
-            isMapPanned={this.isMapPanned}
-            airportWithinRange={this.airportWithinRange}
-            airportBearing={this.airportBearing}
-            airportIcao={this.dataAirportIcao}
-          />
         </div>
       </>
     );
@@ -1540,7 +1797,7 @@ function renderFeaturesToCanvas(
   startIndex: number,
   endIndex: number,
 ) {
-  const styleRules = STYLE_DATA[layer];
+  const layerSpec = LAYER_SPECIFICATIONS[layer];
 
   for (let i = startIndex; i < Math.min(endIndex, data.features.length); i++) {
     const feature = data.features[i];
@@ -1548,15 +1805,16 @@ function renderFeaturesToCanvas(
 
     let doFill = false;
 
-    const matchingRule = styleRules.find((it) => {
+    const matchingRule = layerSpec.styleRules.find((it) => {
       if (feature.properties.feattype === FeatureType.VerticalPolygonalStructure) {
         return (
-          it.forFeatureTypes.includes(feature.properties.feattype) &&
-          it.forPolygonStructureTypes.includes(feature.properties.plysttyp)
+          it.forFeatureTypes?.includes(feature.properties.feattype) &&
+          feature.properties.plysttyp &&
+          it.forPolygonStructureTypes?.includes(feature.properties.plysttyp)
         );
       }
 
-      return it.forFeatureTypes.includes(feature.properties.feattype);
+      return it.forFeatureTypes?.includes(feature.properties.feattype);
     });
 
     if (!matchingRule) {
@@ -1593,6 +1851,7 @@ function renderFeaturesToCanvas(
       pathIdCache.set(feature, id);
     }
 
+    const usePathCache = matchingRule.unionBy === undefined;
     const cachedPaths = pathCache.get(id);
 
     switch (feature.geometry.type) {
@@ -1600,7 +1859,7 @@ function renderFeaturesToCanvas(
         const outline = feature.geometry as LineString;
 
         let path: Path2D;
-        if (cachedPaths) {
+        if (usePathCache && cachedPaths) {
           // eslint-disable-next-line prefer-destructuring
           path = cachedPaths[0];
         } else {
@@ -1630,7 +1889,7 @@ function renderFeaturesToCanvas(
         const polygon = feature.geometry as Polygon;
 
         let paths: Path2D[] = [];
-        if (cachedPaths) {
+        if (usePathCache && cachedPaths) {
           paths = cachedPaths;
         } else {
           for (const outline of polygon.coordinates) {
@@ -1639,8 +1898,12 @@ function renderFeaturesToCanvas(
             toCachePath.moveTo(outline[0][0], outline[0][1] * -1);
 
             for (let i = 1; i < outline.length; i++) {
-              const point = outline[i];
-              toCachePath.lineTo(point[0], point[1] * -1);
+              if (i === outline.length - 1) {
+                toCachePath.closePath();
+              } else {
+                const point = outline[i];
+                toCachePath.lineTo(point[0], point[1] * -1);
+              }
             }
 
             paths.push(toCachePath);

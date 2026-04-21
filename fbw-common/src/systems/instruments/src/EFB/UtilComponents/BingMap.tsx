@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -38,10 +39,10 @@ export const BingMap: React.FC<BingMapProps> = ({
       mapRef.current.setBingId(mapId);
       mapRef.current.setVisible(true);
 
-      const lla = new LatLongAlt(centerLla.lat, centerLla.long);
+      const ll = new LatLong(centerLla.lat, centerLla.long);
       const radius = range * RANGE_CONSTANT;
 
-      mapRef.current.setParams({ lla, radius });
+      mapRef.current.setParams({ lla: ll, radius });
 
       console.log(
         `[ReactBingMap (${mapId})] NetBingMap initialized and configured with config id # ${mapRef.current.m_configId} out of ${mapRef.current.m_configs.length} configs`,
@@ -51,10 +52,10 @@ export const BingMap: React.FC<BingMapProps> = ({
 
   useEffect(() => {
     if (mapRef.current) {
-      const lla = new LatLongAlt(centerLla.lat, centerLla.long);
+      const ll = new LatLong(centerLla.lat, centerLla.long);
       const radius = range * RANGE_CONSTANT;
 
-      mapRef.current.setParams({ lla, radius });
+      mapRef.current.setParams({ lla: ll, radius });
     }
   }, [range, centerLla]);
 

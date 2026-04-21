@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 //  Copyright (c) 2024 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
@@ -41,6 +42,7 @@ interface PinProgramOptions {
 interface RealismOptions {
   mcduKeyboard: boolean;
   pauseOnTod: boolean;
+  autoStepClimb: boolean;
   pilotAvatars: boolean;
   eclSoftKeys: boolean;
 }
@@ -52,6 +54,7 @@ interface SimOptions {
   registrationDecal: boolean;
   wheelChocks: boolean;
   cabinLighting: boolean;
+  oansPerformanceMode: boolean;
 }
 
 interface ThrottleOptions {
@@ -63,6 +66,10 @@ interface AircraftEfbContext {
   performanceCalculators: PerformanceCalculators;
   pushbackPage: PushbackPage;
   settingsPages: SettingsPages;
+  /** File containing critical file hashes to be checked for integrity. */
+  hashFile?: string;
+  /** Seed for the cyrb53 hashes. Defaults to 0. */
+  hashSeed?: number;
 }
 
 export const AircraftContext = createContext<AircraftEfbContext>({
@@ -92,6 +99,7 @@ export const AircraftContext = createContext<AircraftEfbContext>({
     realism: {
       mcduKeyboard: false,
       pauseOnTod: false,
+      autoStepClimb: false,
       pilotAvatars: false,
       eclSoftKeys: false,
     },
@@ -102,6 +110,7 @@ export const AircraftContext = createContext<AircraftEfbContext>({
       registrationDecal: false,
       wheelChocks: false,
       cabinLighting: false,
+      oansPerformanceMode: false,
     },
     throttle: {
       numberOfAircraftThrottles: 0,

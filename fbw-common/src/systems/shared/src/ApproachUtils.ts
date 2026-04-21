@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -46,7 +47,7 @@ export class ApproachUtils {
     }
 
     const runway = appr.runway;
-    const suffix = appr.designator ? `${runway.length > 2 ? '' : '-'}${appr.designator}` : '';
+    const suffix = appr.designator ? `-${appr.designator}` : '';
 
     return `${appr.type.replace('RNAV', 'RNV')}${runway}${suffix}`;
   }
@@ -54,7 +55,7 @@ export class ApproachUtils {
   public static shortApproachName: {
     /**
      * Format an approach name in short format (max 7 chars)
-     * @param approach An msfs-navdata approach object
+     * @param approach An approach object
      * @returns An approach name in short format (e.g. RNV23LY)
      */
     (approach: Approach): string;
@@ -71,7 +72,7 @@ export class ApproachUtils {
   public static longApproachName: {
     /*
      * Format an approach name in long format (max 9 chars)
-     * @param approach an msfs-navdata approach object
+     * @param approach an approach object
      * @returns An approach name in long format (e.g. RNAV23L-Y)
      */
     (approach: Approach): string;

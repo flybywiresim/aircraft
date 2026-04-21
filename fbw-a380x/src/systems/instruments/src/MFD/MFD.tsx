@@ -1,4 +1,5 @@
-import 'instruments/src/MFD/pages/common/style.scss';
+//  Copyright (c) 2024-2025 FlyByWire Simulations
+//  SPDX-License-Identifier: GPL-3.0
 
 import {
   ClockEvents,
@@ -12,21 +13,28 @@ import {
   MappedSubject,
   Subject,
   Subscribable,
+  Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { DatabaseItem, Waypoint } from '@flybywiresim/fbw-sdk';
+import { DatabaseItem, EfisSide, Waypoint } from '@flybywiresim/fbw-sdk';
 
-import { MouseCursor } from 'instruments/src/MFD/pages/common/MouseCursor';
+import { MouseCursor } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/MouseCursor';
 
 import { MfdMsgList } from 'instruments/src/MFD/pages/FMS/MfdMsgList';
 import { ActiveUriInformation, MfdUiService } from 'instruments/src/MFD/pages/common/MfdUiService';
 import { MfdFmsFplnDuplicateNames } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnDuplicateNames';
 import { headerForSystem, pageForUrl } from 'instruments/src/MFD/MfdPageDirectory';
-import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterface';
+import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { FmsErrorType } from '@fmgc/FmsError';
 import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
 import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
 import { InternalKccuKeyEvent, MfdSimvars } from './shared/MFDSimvarPublisher';
+import { MfdFmsPageNotAvail } from 'instruments/src/MFD/pages/FMS/MfdFmsPageNotAvail';
+
+import './pages/common/style.scss';
+import { InteractionMode } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
+import { AtcDatalinkSystem } from './ATCCOM/AtcDatalinkSystem';
+import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
 
 export const getDisplayIndex = () => {
   const url = document.getElementsByTagName('a380x-mfd')[0].getAttribute('url');
@@ -36,34 +44,47 @@ export const getDisplayIndex = () => {
 export interface AbstractMfdPageProps extends ComponentProps {
   pageTitle?: string;
   bus: EventBus;
-  mfd: DisplayInterface & MfdDisplayInterface;
+  mfd: FmsDisplayInterface & MfdDisplayInterface;
   fmcService: FmcServiceInterface;
+  flightPlanInterface: FlightPlanInterface;
+}
+
+export interface AtccomMfdPageProps extends ComponentProps {
+  pageTitle?: string;
+  bus: EventBus;
+  mfd: MfdDisplayInterface;
+  atcService: AtcDatalinkSystem;
 }
 
 interface MfdComponentProps extends ComponentProps {
   bus: EventBus;
   fmcService: FmcServiceInterface;
+  atcService: AtcDatalinkSystem;
   captOrFo: 'CAPT' | 'FO';
 }
 
 // TODO integrate in fmgc's DisplayInterface
 export interface MfdDisplayInterface {
+  side: EfisSide;
+
   get uiService(): MfdUiService;
 
-  hEventConsumer: Consumer<string>;
+  hEventConsumer: Consumer<[EfisSide, string]>;
 
   interactionMode: Subscribable<InteractionMode>;
 
   openMessageList(): void;
 }
 
-export enum InteractionMode {
-  Touchscreen,
-  Kccu,
-}
+export class MfdComponent
+  extends DisplayComponent<MfdComponentProps>
+  implements FmsDisplayInterface, MfdDisplayInterface
+{
+  private readonly subs: Subscription[] = [];
 
-export class MfdComponent extends DisplayComponent<MfdComponentProps> implements DisplayInterface, MfdDisplayInterface {
   private readonly sub = this.props.bus.getSubscriber<ClockEvents & MfdSimvars>();
+
+  side: EfisSide = this.props.captOrFo === 'CAPT' ? 'L' : 'R';
 
   #uiService = new MfdUiService(this.props.captOrFo, this.props.bus);
 
@@ -71,17 +92,15 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
     return this.#uiService;
   }
 
-  public hEventConsumer = this.props.bus.getSubscriber<InternalKccuKeyEvent>().on('kccuKeyEvent');
+  public readonly hEventConsumer = this.props.bus.getSubscriber<InternalKccuKeyEvent>().on('kccuKeyEvent');
 
-  public interactionMode = Subject.create<InteractionMode>(InteractionMode.Touchscreen);
+  public readonly interactionMode = Subject.create<InteractionMode>(InteractionMode.Touchscreen);
 
   private readonly fmsDataKnob = ConsumerSubject.create(this.sub.on('fmsDataKnob').whenChanged(), 0);
 
   private readonly fmcAIsHealthy = ConsumerSubject.create(this.sub.on('fmcAIsHealthy').whenChanged(), true);
 
   private readonly fmcBIsHealthy = ConsumerSubject.create(this.sub.on('fmcBIsHealthy').whenChanged(), true);
-
-  private readonly fmcCIsHealthy = ConsumerSubject.create(this.sub.on('fmcCIsHealthy').whenChanged(), true);
 
   private readonly activeFmsSource = MappedSubject.create(
     ([knob, a, b]) => {
@@ -104,23 +123,23 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
     this.fmcBIsHealthy,
   );
 
-  private mouseCursorRef = FSComponent.createRef<MouseCursor>();
+  private readonly mouseCursorRef = FSComponent.createRef<MouseCursor>();
 
-  private topRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly topRef = FSComponent.createRef<HTMLDivElement>();
 
-  private activePageRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly activePageRef = FSComponent.createRef<HTMLDivElement>();
 
   private activePage: VNode | null = null;
 
-  private activeHeaderRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly activeHeaderRef = FSComponent.createRef<HTMLDivElement>();
 
   private activeHeader: VNode | null = null;
 
-  private messageListOpened = Subject.create<boolean>(false);
+  private readonly messageListOpened = Subject.create<boolean>(false);
 
-  private duplicateNamesOpened = Subject.create<boolean>(false);
+  private readonly duplicateNamesOpened = Subject.create<boolean>(false);
 
-  private duplicateNamesRef = FSComponent.createRef<MfdFmsFplnDuplicateNames>();
+  private readonly duplicateNamesRef = FSComponent.createRef<MfdFmsFplnDuplicateNames>();
 
   // Necessary to enable mouse interaction
   get isInteractive(): boolean {
@@ -135,14 +154,14 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
    * Called when a flight plan uplink is in progress
    */
   onUplinkInProgress() {
-    this.props.fmcService.master?.onUplinkInProgress();
+    this.props.fmcService.master.onUplinkInProgress();
   }
 
   /**
    * Called when a flight plan uplink is done
    */
-  onUplinkDone() {
-    this.props.fmcService.master?.onUplinkDone();
+  onUplinkDone(fltPlnReceived: boolean) {
+    this.props.fmcService.master.onUplinkDone(fltPlnReceived);
   }
 
   /**
@@ -153,7 +172,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
    * @param errorType the message to show
    */
   showFmsErrorMessage(errorType: FmsErrorType) {
-    this.props.fmcService.master?.showFmsErrorMessage(errorType);
+    this.props.fmcService.master.showFmsErrorMessage(errorType);
   }
 
   /**
@@ -164,12 +183,11 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
    * @param items the items to de-duplicate
    *
    * @returns the chosen item
+   * @throws If another request came in over top of this one.
    */
   async deduplicateFacilities<T extends DatabaseItem<any>>(items: T[]): Promise<T | undefined> {
     if (items.length > 1) {
-      return new Promise((resolve) => {
-        this.duplicateNamesRef.instance.deduplicateFacilities(items, resolve);
-      });
+      return this.duplicateNamesRef.instance.deduplicateFacilities(items);
     }
     return items[0];
   }
@@ -193,7 +211,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
    * @param waypoint the waypoint to look for
    */
   async isWaypointInUse(waypoint: Waypoint): Promise<boolean> {
-    return this.props.fmcService.master?.isWaypointInUse(waypoint) ?? false;
+    return this.props.fmcService.master.isWaypointInUse(waypoint) ?? false;
   }
 
   public async onAfterRender(node: VNode): Promise<void> {
@@ -201,69 +219,79 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
     const isCaptainSide = this.props.captOrFo === 'CAPT';
 
-    this.props.bus
-      .getSubscriber<MfdSimvars>()
-      .on(isCaptainSide ? 'kccuOnL' : 'kccuOnR')
-      .whenChanged()
-      .handle((it) => this.interactionMode.set(it ? InteractionMode.Kccu : InteractionMode.Touchscreen));
+    this.subs.push(
+      this.props.bus
+        .getSubscriber<MfdSimvars>()
+        .on(isCaptainSide ? 'kccuOnL' : 'kccuOnR')
+        .whenChanged()
+        .handle((it) => this.interactionMode.set(it ? InteractionMode.Kccu : InteractionMode.Touchscreen)),
+    );
 
-    this.props.bus
-      .getSubscriber<HEvent>()
-      .on('hEvent')
-      .handle((eventName) => {
-        this.props.fmcService.master?.acInterface.onEvent(eventName);
+    this.subs.push(
+      this.props.bus
+        .getSubscriber<HEvent>()
+        .on('hEvent')
+        .handle((eventName) => {
+          this.props.fmcService.master.acInterface.onEvent(eventName);
 
-        if (eventName.startsWith(this.props.captOrFo === 'CAPT' ? 'A32NX_KCCU_L' : 'A32NX_KCCU_R')) {
-          const key = eventName.substring(13);
+          if (eventName.startsWith(this.props.captOrFo === 'CAPT' ? 'A32NX_KCCU_L' : 'A32NX_KCCU_R')) {
+            const key = eventName.substring(13);
 
-          this.props.bus.getPublisher<InternalKccuKeyEvent>().pub('kccuKeyEvent', key, false);
+            this.props.bus
+              .getPublisher<InternalKccuKeyEvent>()
+              .pub('kccuKeyEvent', [this.props.captOrFo === 'CAPT' ? 'L' : 'R', key]);
 
-          switch (key) {
-            case 'DIR':
-              this.uiService.navigateTo('fms/active/f-pln-direct-to');
-              break;
-            case 'PERF':
-              this.uiService.navigateTo('fms/active/perf');
-              break;
-            case 'INIT':
-              this.uiService.navigateTo('fms/active/init');
-              break;
-            case 'NAVAID':
-              this.uiService.navigateTo('fms/position/navaids');
-              break;
-            case 'MAILBOX': // Move cursor to SD mail box
-              break;
-            case 'FPLN':
-              this.uiService.navigateTo('fms/active/f-pln/top');
-              break;
-            case 'DEST':
-              this.uiService.navigateTo('fms/active/f-pln/dest');
-              break;
-            case 'SECINDEX':
-              this.uiService.navigateTo('fms/sec/index');
-              break;
-            case 'SURV':
-              this.uiService.navigateTo('surv/controls');
-              break;
-            case 'ATCCOM':
-              this.uiService.navigateTo('atccom/connect');
-              break;
-            case 'ND': // Move cursor to ND
-              break;
-            case 'CLRINFO':
-              this.props.fmcService.master?.clearLatestFmsErrorMessage();
-              break;
-            default:
-              break;
+            switch (key) {
+              case 'DIR':
+                this.uiService.navigateTo('fms/active/f-pln-direct-to');
+                break;
+              case 'PERF':
+                this.uiService.navigateTo('fms/active/perf');
+                break;
+              case 'INIT':
+                this.uiService.navigateTo('fms/active/init');
+                break;
+              case 'NAVAID':
+                this.uiService.navigateTo('fms/position/navaids');
+                break;
+              case 'MAILBOX': // Move cursor to SD mail box
+                break;
+              case 'FPLN':
+                this.uiService.navigateTo('fms/active/f-pln/top');
+                break;
+              case 'DEST':
+                this.uiService.navigateTo('fms/active/f-pln/dest');
+                break;
+              case 'SECINDEX':
+                this.uiService.navigateTo('fms/sec/index');
+                break;
+              case 'SURV':
+                this.uiService.navigateTo('surv/controls');
+                break;
+              case 'ATCCOM':
+                this.uiService.navigateTo('atccom/connect');
+                break;
+              case 'ND': // Move cursor to ND
+                break;
+              case 'CLRINFO':
+                this.props.fmcService.master.clearLatestFmsErrorMessage();
+                break;
+              default:
+                break;
+            }
           }
-        }
-      });
+        }),
+    );
 
-    this.uiService.activeUri.sub((uri) => {
-      this.activeUriChanged(uri);
-    });
+    this.subs.push(
+      this.uiService.activeUri.sub((uri) => {
+        this.activeUriChanged(uri);
+      }),
+    );
 
     this.topRef.instance.addEventListener('mousemove', this.onMouseMoveHandler);
+
+    this.subs.push(this.fmsDataKnob, this.fmcAIsHealthy, this.fmcBIsHealthy, this.activeFmsSource);
   }
 
   private onMouseMove(ev: MouseEvent) {
@@ -314,9 +342,16 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         this.props.bus,
         this,
         this.props.fmcService,
+        this.props.atcService,
       );
     } else {
-      this.activePage = pageForUrl(`${uri.sys}/${uri.category}`, this.props.bus, this, this.props.fmcService);
+      this.activePage = pageForUrl(
+        `${uri.sys}/${uri.category}`,
+        this.props.bus,
+        this,
+        this.props.fmcService,
+        this.props.atcService,
+      );
     }
 
     FSComponent.render(this.activeHeader, this.activeHeaderRef.getOrDefault());
@@ -329,8 +364,28 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
     // Will be called if the FMC providing all the data has changed.
   }
 
+  public logTroubleshootingError(msg: any) {
+    this.props.bus.pub('troubleshooting_log_error', String(msg), true, false);
+  }
+
   destroy(): void {
     this.topRef.getOrDefault()?.removeEventListener('mousemove', this.onMouseMoveHandler);
+    this.mouseCursorRef.getOrDefault()?.destroy();
+    this.duplicateNamesRef.getOrDefault()?.destroy();
+
+    for (const s of this.subs) {
+      s.destroy();
+    }
+
+    this.mouseCursorRef.instance.destroy();
+    this.duplicateNamesRef.instance.destroy();
+
+    if (this.activeHeader && this.activeHeader.instance instanceof DisplayComponent) {
+      this.activeHeader.instance.destroy();
+    }
+    if (this.activePage && this.activePage.instance instanceof DisplayComponent) {
+      this.activePage.instance.destroy();
+    }
 
     super.destroy();
   }
@@ -343,6 +398,12 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
       >
         <div class="mfd-main" ref={this.topRef}>
           <div ref={this.activeHeaderRef} />
+          <MfdFmsPageNotAvail
+            bus={this.props.bus}
+            fmcService={this.props.fmcService}
+            captOrFo={this.props.captOrFo}
+            requestedSystem={this.uiService.activeUri.map((uri) => uri.sys)}
+          />
           <MfdMsgList visible={this.messageListOpened} bus={this.props.bus} fmcService={this.props.fmcService} />
           <MfdFmsFplnDuplicateNames
             ref={this.duplicateNamesRef}

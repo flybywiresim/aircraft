@@ -1,5 +1,7 @@
 @import "../MsfsAvionicsCommon/definitions";
+@import "../MsfsAvionicsCommon/animations";
 @import "../MsfsAvionicsCommon/gauges";
+@import "../MFD/pages/common/widget-style.scss"; // Re-use MFD widget style
 
 @mixin Blink10SecondsFill($color) {
     @keyframes pulsing {
@@ -290,6 +292,43 @@ text, tspan, span {
   height: 40px;
 }
 
+.FailurePendingBox {
+  display: inline;
+  position: relative;
+  left: 40px;
+  top: 4px;
+  border: 2px outset $display-white;
+  font-size: 24px;
+  padding: 2px;
+}
+
+.StsBox {
+  display: inline;
+  position: relative;
+  left: 150px;
+  top: 4px;
+  border: 2px outset $display-white;
+  font-size: 24px;
+  padding: 2px;
+}
+
+.AdvBox {
+  display: inline;
+  position: relative;
+  left: 360px;
+  top: 4px;
+  border: 2px outset $display-white;
+  font-size: 24px;
+  padding: 2px;
+}
+
+.WdNotAvailArea {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+}
+
 .MemosContainer {
   display: flex;
   flex-direction: column;
@@ -357,7 +396,7 @@ text, tspan, span {
 .WarningsColumn {
   display: flex;
   flex-direction: column;
-  padding: 12px 0px 12px 0px;
+  padding: 12px 0px 15px 0px;
   height: 100%;
   flex: 1;
 }
@@ -366,7 +405,6 @@ text, tspan, span {
   display: flex;
   flex-direction: row;
   flex: 1;
-  padding: 4px 0px 4px 0px;
   margin-left: 10px;
   align-items: center;
   border: 3px solid transparent;
@@ -389,20 +427,48 @@ text, tspan, span {
   color: $display-white;
 }
 
+.EclLine.Inactive {
+  color: $display-grey !important;
+}
+
 .EclLine.ChecklistCompleted {
   color: $display-grey !important;
 }
 
+.EclLine.DeferredProcedure {
+  color: $display-amber;
+}
+
+.EclLine.CompletedDeferredProcedure {
+  color: $display-white;
+}
+
+.EclLine.Underline {
+  text-decoration: underline;
+}
+
+.EclLine.Centered {
+  justify-content: center;
+}
+
 .EclLine.Green {
-  color: $display-green !important;
+  color: $display-green;
 }
 
 .EclLine.Cyan {
-  color: $display-cyan !important;
+  color: $display-cyan;
 }
 
 .EclLine.Amber {
-  color: $display-amber !important;
+  color: $display-amber;
+}
+
+.EclLine.White {
+  color: $display-white;
+}
+
+.EclLine.Red {
+  color: $display-red;
 }
 
 .EclLine.Selected {
@@ -411,42 +477,67 @@ text, tspan, span {
 }
 
 .EclLine.Headline {
-  color: $display-white !important;
+  color: $display-white;
   text-decoration: underline;
+}
+
+.EclLine.ChecklistCondition {
+  color: $display-white;
+}
+
+.EclLine.OmissionDots {
+  color: $display-white;
+}
+
+.EclLine.LandAnsa {
+  color: $display-amber;
+  justify-content: flex-end;
+}
+
+.EclLine.LandAsap {
+  color: $display-red;
+  justify-content: flex-end;
 }
 
 .EclLineCheckboxArea {
   text-align: center;
   justify-content: center;
   align-items: center;
-  padding-top: 2px;
-  width: 32px;
+  width: 24px;
   font-size: 26px;
-  color: $display-cyan;
+  margin-right: 20px;
 }
 
 .EclLineCheckboxArea.Checked {
   color: $display-green;
 }
 
-.EclLineCheckboxArea.AbnormalItem {
-  color: $display-cyan;
-}
 
 .EclLineCheckboxArea.AbnormalItem.Checked {
   color: $display-white;
 }
 
+.EclLineCheckboxArea.ChecklistCondition {
+  color: $display-white;
+}
+
+.EclLineCheckboxArea.AbnormalItem.Inactive {
+  color: $display-grey !important;
+}
+
 .EclLineText {
-  margin: 0px 10px 0px 10px;
   font-size: 26px;
+}
+
+.EclLineText.smaller {
+  font-size: 24px;
 }
 
 .EclSeparationLine {
   flex: 1;
   border-bottom: 2px solid $display-white;
-  padding-top: 16px;
-  margin-bottom: 16px;
+  padding-top: 14px;
+  margin-bottom: 14px;
   align-self: center;
   justify-self: center;
   margin-right: 10px;
@@ -455,8 +546,17 @@ text, tspan, span {
 .EclLineContainer {
   height: 34px;
   display: flex;
+  visibility: visible;
   flex-direction: row;
   flex: 1;
+}
+
+.EclLineContainer.smaller {
+  height: 30px;
+}
+
+.EclLineContainer.invisible {
+  visibility: hidden;
 }
 
 .EclLineEndMarker {
@@ -482,8 +582,14 @@ text, tspan, span {
 
 .EclSoftKeys {
   position: absolute;
-  top: 965px;
+  top: 855px;
   right: 3px;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
+}
+
+.PulseAmberInfinite {
+  @include GenericPulsingFill($display-amber, pulse-amber-fill);
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
 }

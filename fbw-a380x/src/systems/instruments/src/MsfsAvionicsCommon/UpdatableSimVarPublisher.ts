@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { SimVarDefinition, SimVarPublisher } from '@microsoft/msfs-sdk';
 
 export class UpdatableSimVarPublisher<T> extends SimVarPublisher<T> {

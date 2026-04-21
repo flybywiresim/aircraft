@@ -1,6 +1,6 @@
 # Common UI elements for the MFD
 
-This directory contains common user interface elements for building the A380's MFD.
+This directory contains common user interface elements for building the A380X's UI components within the CDS or OIT.
 
 ## Status and description of components
 
@@ -23,12 +23,12 @@ Status legend:
 | ✅ | AtccomHeader | Header (system selector + page navigator) for ATCCOM system |
 | ✅ | SurvHeader | Header (system selector + page navigator) for SURV system |
 | ✅ | FcuBkupHeader | Header (system selector + page navigator) for FCU BKUP system |
-| 🟨 | IconButton | Button consisting of just an icon (e.g. F-PLN up/down) |
+| ✅ | IconButton | Button consisting of just an icon (e.g. F-PLN up/down) |
 | ✅ | MouseCursor | Custom mouse cursor for MFD |
 | ✅ | InputField | Text/number input field |
 | ✅ | PageSelectorDropdownMenu | Page selector buttons incl. dropdown menu |
 | ✅ | RadioButtonGroup | Generic radio buttons |
-| 🟥 | SurvButton | Button for SURV page, activating/deactivating systems |
+| ✅ | SurvButton | Button for SURV page, activating/deactivating systems |
 | ✅ | TopTabNavigator | Cycle through sub-pages using top tabs (found on e.g. ACTIVE/PERF) |
 
 ## Known issues / improvements

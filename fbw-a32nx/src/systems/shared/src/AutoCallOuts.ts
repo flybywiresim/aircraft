@@ -1,6 +1,3 @@
-// Note there is a copy of these flags in `fbw-a32nx\src\base\flybywire-aircraft-a320-neo\html_ui\Pages\A32NX_Core\A32NX_GPWS.js` for legacy JS.
-// Please keep that up to date if making any changes here.
-
 /** Bit flags for the radio auto call outs (for CONFIG_A32NX_FWC_RADIO_AUTO_CALL_OUT_PINS). */
 export enum A32NXRadioAutoCallOutFlags {
   TwoThousandFiveHundred = 1 << 0,

@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2025 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -77,6 +77,19 @@ export class AdirsValueProvider<T extends AdirsSimVars> {
           name: `L:A32NX_ADIRS_IR_${inertialSource}_TRUE_TRACK`,
           type: SimVarValueType.Number,
         });
+        this.varProvider.updateSimVarSource('groundSpeed', {
+          name: `L:A32NX_ADIRS_IR_${inertialSource}_GROUND_SPEED`,
+          type: SimVarValueType.Number,
+        });
+        this.varProvider.updateSimVarSource('windSpeed', {
+          name: `L:A32NX_ADIRS_IR_${inertialSource}_WIND_SPEED_BNR`,
+          type: SimVarValueType.Number,
+        });
+
+        this.varProvider.updateSimVarSource('windDirection', {
+          name: `L:A32NX_ADIRS_IR_${inertialSource}_WIND_DIRECTION_BNR`,
+          type: SimVarValueType.Number,
+        });
       });
 
     sub
@@ -92,12 +105,20 @@ export class AdirsValueProvider<T extends AdirsSimVars> {
           name: `L:A32NX_ADIRS_ADR_${airSource}_BAROMETRIC_VERTICAL_SPEED`,
           type: SimVarValueType.Number,
         });
+        this.varProvider.updateSimVarSource('pressureAltitude', {
+          name: `L:A32NX_ADIRS_ADR_${airSource}_ALTITUDE`,
+          type: SimVarValueType.Number,
+        });
         this.varProvider.updateSimVarSource('baroCorrectedAltitude', {
           name: `L:A32NX_ADIRS_ADR_${airSource}_BARO_CORRECTED_ALTITUDE_${displayIndex}`,
           type: SimVarValueType.Number,
         });
         this.varProvider.updateSimVarSource('mach', {
           name: `L:A32NX_ADIRS_ADR_${airSource}_MACH`,
+          type: SimVarValueType.Number,
+        });
+        this.varProvider.updateSimVarSource('trueAirSpeed', {
+          name: `L:A32NX_ADIRS_ADR_${airSource}_TRUE_AIRSPEED`,
           type: SimVarValueType.Number,
         });
       });

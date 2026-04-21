@@ -1,10 +1,11 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { initializeApp, Scope } from 'navigraph/app';
 import { getAuth } from 'navigraph/auth';
 import { getChartsAPI } from 'navigraph/charts';
-import { NXDataStore } from '@flybywiresim/fbw-sdk';
+import { NXDataStore } from '../../shared/src/persistence';
 
 initializeApp({
   clientId: process.env.CLIENT_ID,
@@ -14,8 +15,8 @@ initializeApp({
 
 export const navigraphAuth = getAuth({
   storage: {
-    getItem: (key) => NXDataStore.get(key),
-    setItem: (key, value) => NXDataStore.set(key, value),
+    getItem: (key) => NXDataStore.getLegacy(key),
+    setItem: (key, value) => NXDataStore.setLegacy(key, value),
   },
   keys: {
     accessToken: 'NAVIGRAPH_ACCESS_TOKEN',

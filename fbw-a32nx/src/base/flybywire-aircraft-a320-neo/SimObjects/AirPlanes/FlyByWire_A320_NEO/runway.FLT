@@ -8,7 +8,9 @@ ZVelBodyAxis=0
 SimOnGround=True
 
 [Avionics.0]
-Comm1Active=122.800
+; Do not set Comm1Active as it overwrites the ATC tower frequency the sim sets
+; during the pre-flight IFR clearance flow.
+; Comm1Active=122.800
 Comm1Standby=124.225
 Comm2Active=121.500
 Comm2Standby=136.525
@@ -284,6 +286,8 @@ A32NX_GEAR_RIGHT_POSITION = 100
 A32NX_GEAR_LEVER_POSITION_REQUEST = 1
 A32NX_GPWS_GROUND_STATE=1
 A32NX_GPWS_APPROACH_STATE=0
+A32NX_ENGINE_N2:1=70
+A32NX_ENGINE_N2:2=70
 
 [Gauges.0]
 KollsmanSetting=29.921342849731445313

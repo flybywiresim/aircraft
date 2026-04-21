@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2024 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -11,10 +12,11 @@ import {
   MappedSubject,
   Subject,
   Subscribable,
+  UnitType,
   VNode,
 } from '@microsoft/msfs-sdk';
 
-import { GenericAdirsEvents } from '@flybywiresim/fbw-sdk';
+import { FMMessage, GenericAdirsEvents, NXDataStore, OansControlEvents } from '@flybywiresim/fbw-sdk';
 
 import { clampAngle } from 'msfs-geo';
 import { BtvRunwayInfo } from './shared/BtvRunwayInfo';
@@ -47,14 +49,14 @@ import { TrackLine } from './shared/TrackLine';
 import { TrackBug } from './shared/TrackBug';
 import { GenericFcuEvents } from './types/GenericFcuEvents';
 import { ArincEventBus } from '../../../shared/src/ArincEventBus';
-import { EfisNdMode, EfisSide } from '../NavigationDisplay';
+import { EfisNdMode, EfisRecomputingReason, EfisSide } from '../NavigationDisplay';
 import { Arinc429RegisterSubject } from '../../../shared/src/Arinc429RegisterSubject';
 import { Arinc429ConsumerSubject } from '../../../shared/src/Arinc429ConsumerSubject';
 import { FmsOansData } from '../../../shared/src/publishers/OansBtv/FmsOansPublisher';
 import { MathUtils } from '../../../shared/src/MathUtils';
 import { SimVarString } from '../../../shared/src/simvar';
 import { GenericDisplayManagementEvents } from './types/GenericDisplayManagementEvents';
-import { OansControlEvents } from '../OANC';
+import { MapOptions } from './types/MapOptions';
 
 const PAGE_GENERATION_BASE_DELAY = 500;
 const PAGE_GENERATION_RANDOM_DELAY = 70;
@@ -72,6 +74,14 @@ export interface NDProps<T extends number> {
   rangeValues: T[];
 
   terrainThresholdPaddingText: string;
+
+  rangeChangeMessage: string;
+
+  modeChangeMessage: string;
+
+  mapOptions?: Partial<MapOptions>;
+
+  fmMessages: FMMessage[];
 }
 
 export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> {
@@ -152,6 +162,10 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
 
   private showOans = Subject.create<boolean>(false);
 
+  private readonly lengthUnit = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT').map((v) =>
+    v ? UnitType.METER : UnitType.FOOT,
+  );
+
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
 
@@ -222,12 +236,26 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
 
     this.mapRecomputing.sub((recomputing) => {
       this.props.bus.getPublisher<NDControlEvents>().pub('set_map_recomputing', recomputing);
+
+      let reason = EfisRecomputingReason.None;
+      if (this.pageChangeInProgress.get() && this.rangeChangeInProgress.get()) {
+        reason = EfisRecomputingReason.ModeAndRangeChange;
+      } else if (this.pageChangeInProgress.get()) {
+        reason = EfisRecomputingReason.ModeChange;
+      } else if (this.rangeChangeInProgress.get()) {
+        reason = EfisRecomputingReason.RangeChange;
+      }
+      this.props.bus.getPublisher<NDControlEvents>().pub('set_map_recomputing_reason', reason);
     });
 
     sub
-      .on('ndShowOans')
+      .on('nd_show_oans')
       .whenChanged()
-      .handle((show) => this.showOans.set(show));
+      .handle((data) => {
+        if (data.side === this.props.side) {
+          this.showOans.set(data.show);
+        }
+      });
   }
 
   // eslint-disable-next-line arrow-body-style
@@ -352,17 +380,19 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
             <svg class="nd-svg" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
               <WindIndicator bus={this.props.bus} />
               <SpeedIndicator bus={this.props.bus} />
+              <Chrono bus={this.props.bus} />
+              <TopMessages bus={this.props.bus} ndMode={this.currentPageMode} showOans={this.showOans} />
             </svg>
           </div>
           <div style={{ display: this.currentPageMode.map((it) => (it === EfisNdMode.PLAN ? 'block' : 'none')) }}>
             <svg class="nd-svg" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
-              <BtvRunwayInfo bus={this.props.bus} />
+              <BtvRunwayInfo bus={this.props.bus} lengthUnit={this.lengthUnit} />
               <SpeedIndicator bus={this.props.bus} />
             </svg>
           </div>
           <svg class="nd-svg nd-top-layer" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
             <TcasWxrMessages bus={this.props.bus} mode={this.currentPageMode} />
-            <FmMessages bus={this.props.bus} mode={this.currentPageMode} />
+            <FmMessages bus={this.props.bus} mode={this.currentPageMode} fmMessages={this.props.fmMessages} />
             <RwyAheadAdvisory bus={this.props.bus} />
           </svg>
         </div>
@@ -431,7 +461,7 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
               bus={this.props.bus}
               isNormalOperation={this.pposLatWord.map((it) => it.isNormalOperation())}
             />
-            <TopMessages bus={this.props.bus} ndMode={this.currentPageMode} />
+            <TopMessages bus={this.props.bus} ndMode={this.currentPageMode} showOans={this.showOans} />
 
             {false && <LnavStatus />}
             {true && <VnavStatus />}
@@ -449,8 +479,8 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
               HDG
             </Flag>
 
-            <Flag visible={this.rangeChangeInProgress} x={384} y={320} class="Green FontIntermediate">
-              RANGE CHANGE
+            <Flag visible={this.rangeChangeInProgress} x={384} y={320} class="Green FontIntermediate mode-range-change">
+              {this.props.rangeChangeMessage}
             </Flag>
             <Flag
               visible={MappedSubject.create(
@@ -460,9 +490,9 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
               )}
               x={384}
               y={320}
-              class="Green FontIntermediate"
+              class="Green mode-range-change"
             >
-              MODE CHANGE
+              {this.props.modeChangeMessage}
             </Flag>
 
             <TerrainMapThresholds bus={this.props.bus} paddingText={this.props.terrainThresholdPaddingText} />
@@ -472,7 +502,12 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
           </svg>
 
           {/* ND Raster map - middle layer */}
-          <CanvasMap bus={this.props.bus} x={Subject.create(384)} y={Subject.create(384)} />
+          <CanvasMap
+            bus={this.props.bus}
+            x={Subject.create(384)}
+            y={Subject.create(384)}
+            options={this.props.mapOptions}
+          />
 
           {/* ND Vector graphics - top layer */}
           <svg class="nd-svg nd-top-layer" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
@@ -481,7 +516,7 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
             <Chrono bus={this.props.bus} />
 
             <TcasWxrMessages bus={this.props.bus} mode={this.currentPageMode} />
-            <FmMessages bus={this.props.bus} mode={this.currentPageMode} />
+            <FmMessages bus={this.props.bus} mode={this.currentPageMode} fmMessages={this.props.fmMessages} />
             <CrossTrackError
               bus={this.props.bus}
               currentPageMode={this.currentPageMode}
@@ -648,7 +683,11 @@ class GridTrack extends DisplayComponent<GridTrackProps> {
   }
 }
 
-class TopMessages extends DisplayComponent<{ bus: EventBus; ndMode: Subscribable<EfisNdMode> }> {
+class TopMessages extends DisplayComponent<{
+  bus: EventBus;
+  ndMode: Subscribable<EfisNdMode>;
+  showOans: Subscribable<boolean>;
+}> {
   private readonly sub = this.props.bus.getSubscriber<
     ClockEvents & GenericDisplayManagementEvents & NDSimvars & GenericFmsEvents & FmsOansData
   >();
@@ -712,6 +751,8 @@ class TopMessages extends DisplayComponent<{ bus: EventBus; ndMode: Subscribable
 
   private readonly trueFlagBoxed = MappedSubject.create(([apprMsg]) => apprMsg.length === 0, this.approachMessageValue);
 
+  private readonly showApproachMessages = this.props.showOans.map((oans) => !oans);
+
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
 
@@ -738,7 +779,7 @@ class TopMessages extends DisplayComponent<{ bus: EventBus; ndMode: Subscribable
         this.btvMessageValue.set(value);
       });
 
-    this.sub.on('simTime').whenChangedBy(100).handle(this.refreshToWptIdent.bind(this));
+    this.sub.on('simTime').whenChangedBy(100).handle(this.refreshApproachMessage.bind(this));
 
     this.sub.on('trueTrackRaw').handle((v) => this.trueTrackWord.setWord(v));
 
@@ -752,7 +793,7 @@ class TopMessages extends DisplayComponent<{ bus: EventBus; ndMode: Subscribable
       .handle((v) => this.trueRefActive.set(!!v));
   }
 
-  private refreshToWptIdent(): void {
+  private refreshApproachMessage(): void {
     if (this.needApprMessageUpdate) {
       const ident = SimVarString.unpack([this.apprMessage0, this.apprMessage1]);
 
@@ -764,9 +805,10 @@ class TopMessages extends DisplayComponent<{ bus: EventBus; ndMode: Subscribable
   render(): VNode | null {
     return (
       <>
-        <Layer x={384} y={28}>
-          {/* TODO verify */}
-          <text class="Green FontIntermediate MiddleAlign">{this.approachMessageValue}</text>
+        <Layer x={384} y={25} visible={this.showApproachMessages}>
+          <text class="Green FontIntermediate MiddleAlign" style="white-space: pre">
+            {this.approachMessageValue}
+          </text>
         </Layer>
         <Layer
           x={384}
@@ -968,7 +1010,7 @@ class ToWaypointIndicator extends DisplayComponent<ToWaypointIndicatorProps> {
     return (
       <Layer x={690} y={25} visible={this.visibleSub}>
         {/* This is always visible */}
-        <text x={-13} y={0} class="White FontIntermediate EndAlign">
+        <text class="White FontIntermediate EndAlign WaypointIndicator" transform="translate(-13, 0)">
           {this.toWptIdentValue}
         </text>
 

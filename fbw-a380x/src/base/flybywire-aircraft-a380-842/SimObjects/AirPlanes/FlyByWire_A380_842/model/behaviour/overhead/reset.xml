@@ -1,0 +1,17 @@
+<!-- Copyright (c) 2024 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
+<ModelBehaviors>
+    <Template Name="FBW_Airbus_RESET_PANEL_BUTTON">
+    <Parameters Type="Default">
+        <NODE_ID>CB_#NAME#</NODE_ID>
+        <DISABLE_SEQ1 />
+        <DISABLE_SEQ2 />
+        <ROUND />
+    </Parameters>
+
+    <UseTemplate Name="FBW_Push_Toggle">
+        <TOGGLE_SIMVAR>L:A32NX_RESET_PANEL_#NAME#</TOGGLE_SIMVAR>
+    </UseTemplate>
+    </Template>
+</ModelBehaviors>

@@ -1,7 +1,8 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// @ts-strict-ignore
+// Copyright (c) 2021-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { FMMessage, FMMessageTriggers } from '@flybywiresim/fbw-sdk';
+import { FMMessage } from '@flybywiresim/fbw-sdk';
 
 import { RwyLsMismatchLeft, RwyLsMismatchRight } from '@fmgc/components/fms-messages/RwyLsMismatch';
 import {
@@ -22,6 +23,12 @@ import { FmgcComponent } from '../FmgcComponent';
 import { GpsPrimary } from './GpsPrimary';
 import { GpsPrimaryLost } from './GpsPrimaryLost';
 import { MapPartlyDisplayedLeft, MapPartlyDisplayedRight } from './MapPartlyDisplayed';
+import { Navigation } from '@fmgc/navigation/Navigation';
+import { GuidanceController } from '@fmgc/guidance/GuidanceController';
+import { TooSteepPathAhead } from '@fmgc/components/fms-messages/TooSteepPathAhead';
+import { EventBus } from '@microsoft/msfs-sdk';
+import { FMMessageTriggers } from './FmMessages';
+import { ClockIsTakeoffTime } from './ClockIsTakeoffTime';
 
 /**
  * This class manages Type II messages sent from the FMGC.
@@ -38,16 +45,15 @@ import { MapPartlyDisplayedLeft, MapPartlyDisplayedRight } from './MapPartlyDisp
 export class FmsMessages implements FmgcComponent {
   private listener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
 
-  private baseInstrument: BaseInstrument;
-
   private ndMessageFlags: Record<'L' | 'R', number> = {
     L: 0,
     R: 0,
   };
 
   private messageSelectors: FMMessageSelector[] = [
-    new GpsPrimary(),
-    new GpsPrimaryLost(),
+    new ClockIsTakeoffTime(),
+    new GpsPrimary(this.bus),
+    new GpsPrimaryLost(this.bus),
     new MapPartlyDisplayedLeft(),
     new MapPartlyDisplayedRight(),
     new TurnAreaExceedanceLeft(),
@@ -62,15 +68,16 @@ export class FmsMessages implements FmgcComponent {
     new RwyLsMismatchRight(),
     new TdReached(),
     new StepAhead(),
-    new StepDeleted(),
+    new StepDeleted(this.bus),
+    new TooSteepPathAhead(),
   ];
 
-  init(baseInstrument: BaseInstrument, flightPlanService: FlightPlanService): void {
-    this.baseInstrument = baseInstrument;
+  constructor(private readonly bus: EventBus) {}
 
+  init(navigation: Navigation, guidanceController: GuidanceController, flightPlanService: FlightPlanService): void {
     for (const selector of this.messageSelectors) {
       if (selector.init) {
-        selector.init(this.baseInstrument, flightPlanService);
+        selector.init(navigation, guidanceController, flightPlanService);
       }
     }
   }
@@ -209,7 +216,7 @@ export interface FMMessageSelector {
 
   efisSide?: 'L' | 'R';
 
-  init?(baseInstrument: BaseInstrument, flightPlanService: FlightPlanService): void;
+  init?(navigation: Navigation, guidanceController: GuidanceController, flightPlanService: FlightPlanService): void;
 
   /**
    * Optionally triggers a message when there isn't any other system or Redux update triggering it.

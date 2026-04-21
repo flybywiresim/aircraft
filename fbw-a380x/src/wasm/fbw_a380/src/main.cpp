@@ -1,4 +1,5 @@
 #include <MSFS/MSFS.h>
+#include <MSFS/MSFS_CommBus.h>
 
 #include "FlyByWireInterface.h"
 #include "main.h"
@@ -21,6 +22,7 @@ __attribute__((export_name("fbw_gauge_callback"))) extern "C" bool fbw_gauge_cal
     case PANEL_SERVICE_PRE_KILL: {
       // disconnect sim connect
       flyByWireInterface.disconnect();
+      fsCommBusUnregisterAll();
     } break;
   }
 

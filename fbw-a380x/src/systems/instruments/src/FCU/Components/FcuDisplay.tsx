@@ -22,7 +22,7 @@ export class FcuDisplay extends DisplayComponent<FcuDisplayProps> {
           <div id="Electricity" state={this.props.isHidden.map((v) => (v ? 'off' : 'on'))}>
             <div id="LargeScreen">
               <Speed />
-              <Heading />
+              <Heading bus={this.props.bus} />
 
               <div id="AltVS">
                 <Altitude bus={this.props.bus} />
@@ -30,8 +30,8 @@ export class FcuDisplay extends DisplayComponent<FcuDisplayProps> {
               </div>
             </div>
 
-            <Baro bus={this.props.bus} />
-            {/* FIXME need a second baro for FO side */}
+            <Baro bus={this.props.bus} index={1} />
+            <Baro bus={this.props.bus} index={2} />
 
             <NdData bus={this.props.bus} index={1} />
             <NdData bus={this.props.bus} index={2} />

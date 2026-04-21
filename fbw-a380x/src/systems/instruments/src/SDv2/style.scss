@@ -1,0 +1,158 @@
+// Copyright (c) 2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
+@import "../MsfsAvionicsCommon/definitions.scss";
+@import "../MFD/pages/common/widget-style.scss"; // Re-use MFD widget style
+
+@font-face {
+  font-family: "Ecam";
+  //noinspection CssUnknownTarget
+  src: url("/Fonts/fbw-a380x/FBW-Display-EIS-A380.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "FBW-Display-EIS-A380-SlashedZero";
+  //noinspection CssUnknownTarget
+  src: url("/Fonts/fbw-a380x/FBW-Display-EIS-A380-SlashedZero.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.sd-content-area-blocker {
+  display: flex;
+  height: 665px;
+  width: 768px;
+  position: absolute;
+  top: 0px;
+  background-color: $display-background;
+  z-index: -1;
+}
+
+.sd-perm-info-area-layout {
+  display: flex;
+  flex-direction: row;
+  height: 103px;
+  width: 768px;
+  position: absolute;
+  top: 665px;
+  border-top: 4px solid $display-white;
+  border-bottom: 4px solid $display-white;
+}
+
+.sd-perm-info-area-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.sd-perm-info-area-weightcol {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 30% 55% 15%;
+  justify-content: center;
+  align-items: center;
+  padding-left: 15px;
+  padding-right: 10px;
+}
+
+.sd-perm-info-area-col.BR {
+  border-right: 4px solid $display-white;
+}
+
+.sd-perm-info-area-cell {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+.sd-perm-info-area-sub3cell {
+  flex: 1;
+  text-align: center;
+  letter-spacing: 1px;
+  font-size: 25px;
+}
+
+div.StartAlign,
+span.StartAlign {
+  text-align: left;
+}
+
+div.EndAlign,
+span.EndAlign {
+  text-align: right;
+  padding-right: 5px;
+}
+
+div.White,
+span.White {
+  color: $display-white;
+}
+
+div.Cyan,
+span.Cyan {
+  color: $display-cyan;
+}
+
+div.Green,
+span.Green {
+  color: $display-green;
+}
+
+div.Amber,
+span.Amber {
+  color: $display-amber;
+}
+
+.atc-mailbox-top-layout {
+  display: grid;
+  grid-template-columns: 13% auto 18%;
+  height: 256px;
+  width: 768px;
+  position: absolute;
+  top: 768px;
+}
+
+.atc-mailbox-left-layout {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  border-right: 2px solid $display-white;
+}
+
+.atc-mailbox-center-layout {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.atc-mailbox-right-layout {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-left: 2px solid $display-white;
+}
+
+.atc-mailbox-center-bottom {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+}
+
+.atc-mailbox-center-top {
+  display: flex;
+  flex: 8;
+  border-bottom: 2px solid white;
+}
+
+.atc-mailbox-cb-1 {
+  flex: 1;
+  border-right: 2px solid white;
+}
+
+.atc-mailbox-cb-2 {
+  flex: 1;
+}

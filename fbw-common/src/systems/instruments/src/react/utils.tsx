@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import React from 'react';
 
 export type LayerProps = { x?: number; y?: number; id?: string; className?: string; visibility?: string };

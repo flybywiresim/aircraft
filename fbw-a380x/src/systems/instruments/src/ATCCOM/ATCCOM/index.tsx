@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import React, { FC, useEffect, useRef, useState } from 'react';
 import { useHistory, useRouteMatch } from 'react-router-dom';
 import { Button } from '../Components/Button';

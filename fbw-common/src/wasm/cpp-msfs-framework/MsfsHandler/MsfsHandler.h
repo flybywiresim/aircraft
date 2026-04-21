@@ -61,6 +61,11 @@ class MsfsHandler {
   bool isInitialized = false;
 
   /**
+   * Flag to indicate if the simconnect connection is established.
+   */
+  bool simConnectInitialized = false;
+
+  /**
    * This struct is used to define the data definition for the base sim data.
    */
   struct BaseSimData {
@@ -208,6 +213,11 @@ class MsfsHandler {
    * @return the current tick counter
    */
   [[nodiscard]] UINT64 getTickCounter() const { return tickCounter; }
+
+  /**
+   * @return the current pause state
+   */
+  [[nodiscard]] UINT64 getPauseState() const { return a32nxPauseDetected->getAsInt64(); }
 };
 
 #endif  // FLYBYWIRE_MSFSHANDLER_H

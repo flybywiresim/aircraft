@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2022 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
@@ -38,6 +39,7 @@ import {
 import { PILeg } from '@fmgc/guidance/lnav/legs/PI';
 import { isCourseReversalLeg } from '@fmgc/guidance/lnav/legs';
 import { CDLeg } from '@fmgc/guidance/lnav/legs/CD';
+import { FCLeg } from '@fmgc/guidance/lnav/legs/FC';
 import { FDLeg } from '@fmgc/guidance/lnav/legs/FD';
 import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
 import { FALeg } from '@fmgc/guidance/lnav/legs/FA';
@@ -46,9 +48,9 @@ import { CFLeg } from '../legs/CF';
 import { CRLeg } from '../legs/CR';
 import { RFLeg } from '../legs/RF';
 
-export type PrevLeg = AFLeg | CALeg | CDLeg | CRLeg | FALeg | FDLeg | HALeg | HFLeg | HMLeg | RFLeg;
+export type PrevLeg = AFLeg | CALeg | CDLeg | CRLeg | FALeg | FCLeg | FDLeg | HALeg | HFLeg | HMLeg | RFLeg;
 export type ReversionLeg = CFLeg | CILeg | DFLeg | TFLeg;
-export type NextLeg = AFLeg | CFLeg | FDLeg | FALeg | FMLeg | TFLeg;
+export type NextLeg = AFLeg | CFLeg | FCLeg | FDLeg | FALeg | FMLeg | TFLeg;
 type NextReversionLeg = PILeg;
 
 const cos = (input: Degrees) => Math.cos(input * (Math.PI / 180));

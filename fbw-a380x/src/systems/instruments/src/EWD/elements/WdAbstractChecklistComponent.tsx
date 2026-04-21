@@ -10,28 +10,36 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 import { EwdSimvars } from 'instruments/src/EWD/shared/EwdSimvarPublisher';
-import { FwsEwdEvents } from '../../MsfsAvionicsCommon/providers/FwsEwdPublisher';
+import { FcdcSimvars } from '../../MsfsAvionicsCommon/providers/FcdcPublisher';
+import { FwsEvents } from '../../MsfsAvionicsCommon/providers/FwsPublisher';
 import {
   ChecklistLineStyle,
   WD_NUM_LINES,
   WdLineData,
   WdSpecialLine,
 } from 'instruments/src/MsfsAvionicsCommon/EcamMessages';
+import { DestroyableComponent } from 'instruments/src/MsfsAvionicsCommon/DestroyableComponent';
 import { FormattedFwcText } from 'instruments/src/EWD/elements/FormattedFwcText';
-import { EclSoftKeys } from 'instruments/src/EWD/elements/EclClickspots';
+import { EclSoftKeys } from 'instruments/src/EWD/elements/EclSoftKeys';
+import { AdrBusEvents, CpiomData, IrBusEvents } from '@flybywiresim/fbw-sdk';
+import { CpiomEwdAvailabilityChecker } from '../EWD';
 
 interface WdAbstractChecklistComponentProps {
   bus: EventBus;
   visible: Subscribable<boolean>;
   abnormal: boolean;
+  fwsAvail?: Subscribable<boolean>;
+  cpiomAvailChecker?: CpiomEwdAvailabilityChecker;
 }
 
-export class WdAbstractChecklistComponent extends DisplayComponent<WdAbstractChecklistComponentProps> {
-  protected readonly sub = this.props.bus.getSubscriber<ClockEvents & EwdSimvars & FwsEwdEvents>();
+export class WdAbstractChecklistComponent extends DestroyableComponent<WdAbstractChecklistComponentProps> {
+  protected readonly sub = this.props.bus.getSubscriber<
+    AdrBusEvents & ClockEvents & CpiomData & EwdSimvars & FcdcSimvars & FwsEvents & IrBusEvents
+  >();
 
   protected readonly lineData: WdLineData[] = [];
 
-  protected readonly activeLine = ConsumerSubject.create(this.sub.on('fws_active_line'), 0);
+  protected readonly activeLine = ConsumerSubject.create(this.sub.on('fws_active_item'), 0);
 
   protected readonly showFromLine = ConsumerSubject.create(this.sub.on('fws_show_from_line'), 0);
   protected readonly totalLines = Subject.create(0);
@@ -60,14 +68,21 @@ export class WdAbstractChecklistComponent extends DisplayComponent<WdAbstractChe
   );
   private readonly lineSelected = Array.from(Array(WD_NUM_LINES), () => Subject.create<boolean>(false));
 
-  public updateChecklists() {
+  public updateChecklists(notifyIndexes?: number[]) {
     let lineIdx = 0;
     this.totalLines.set(this.lineData.length);
 
     this.lineData.forEach((ld, index) => {
       if (index >= this.showFromLine.get() && lineIdx < WD_NUM_LINES) {
+        if (notifyIndexes && notifyIndexes.findIndex((i) => i === index) !== -1) {
+          this.lineDataSubject[lineIdx].notify();
+        }
         this.lineDataSubject[lineIdx].set(ld);
-        this.lineSelected[lineIdx].set(index === this.activeLine.get());
+        this.lineSelected[lineIdx].set(
+          ld.originalItemIndex !== undefined && ld.activeProcedure
+            ? ld.originalItemIndex === this.activeLine.get()
+            : false,
+        );
         lineIdx++;
       }
     });
@@ -96,7 +111,7 @@ export class WdAbstractChecklistComponent extends DisplayComponent<WdAbstractChe
     this.showFromLine.sub(() => this.updateChecklists());
   }
 
-  // 17 lines
+  // 18 lines
   render() {
     return (
       <div class="ProceduresContainer" style={{ display: this.props.visible.map((it) => (it ? 'flex' : 'none')) }}>
@@ -110,14 +125,10 @@ export class WdAbstractChecklistComponent extends DisplayComponent<WdAbstractChe
         </div>
         <div class="WarningsColumn">
           {Array.from(Array(WD_NUM_LINES), () => '').map((_, index) => (
-            <EclLine
-              data={this.lineDataSubject[index]}
-              selected={this.lineSelected[index]}
-              abnormal={this.props.abnormal}
-            />
+            <EclLine data={this.lineDataSubject[index]} selected={this.lineSelected[index]} />
           ))}
         </div>
-        <EclSoftKeys bus={this.props.bus} />
+        <EclSoftKeys />
       </div>
     );
   }
@@ -126,7 +137,6 @@ export class WdAbstractChecklistComponent extends DisplayComponent<WdAbstractChe
 interface EclLineProps {
   data: Subscribable<WdLineData>;
   selected: Subscribable<boolean>;
-  abnormal: boolean;
 }
 
 export class EclLine extends DisplayComponent<EclLineProps> {
@@ -140,17 +150,34 @@ export class EclLine extends DisplayComponent<EclLineProps> {
             ChecklistItem: this.props.data.map(
               (d) => !d.abnormalProcedure && d.style === ChecklistLineStyle.ChecklistItem,
             ),
-            AbnormalItem: this.props.data.map(
-              (d) => d.abnormalProcedure === true && d.style === ChecklistLineStyle.ChecklistItem,
-            ),
+            Inactive: this.props.data.map((d) => d.inactive === true),
+            AbnormalItem: this.props.data.map((d) => d.abnormalProcedure === true),
             Headline: this.props.data.map((d) =>
-              [ChecklistLineStyle.Headline, ChecklistLineStyle.SubHeadline].includes(d.style),
+              [
+                ChecklistLineStyle.Headline,
+                ChecklistLineStyle.SubHeadline,
+                ChecklistLineStyle.CenteredSubHeadline,
+              ].includes(d.style),
             ),
+            Underline: this.props.data.map(
+              (d) => d.style === ChecklistLineStyle.CenteredSubHeadline || d.style === ChecklistLineStyle.SubHeadline,
+            ),
+            Centered: this.props.data.map((d) => d.style === ChecklistLineStyle.CenteredSubHeadline),
             Checked: this.props.data.map((d) => d.checked),
             ChecklistCompleted: this.props.data.map((d) => d.style === ChecklistLineStyle.CompletedChecklist),
+            DeferredProcedure: this.props.data.map((d) => d.style === ChecklistLineStyle.DeferredProcedure),
+            CompletedDeferredProcedure: this.props.data.map(
+              (d) => d.style === ChecklistLineStyle.CompletedDeferredProcedure,
+            ),
+            ChecklistCondition: this.props.data.map((d) => d.style === ChecklistLineStyle.ChecklistCondition),
             Green: this.props.data.map((d) => d.style === ChecklistLineStyle.Green),
             Cyan: this.props.data.map((d) => d.style === ChecklistLineStyle.Cyan),
             Amber: this.props.data.map((d) => d.style === ChecklistLineStyle.Amber),
+            White: this.props.data.map((d) => d.style === ChecklistLineStyle.White),
+            Red: this.props.data.map((d) => d.style === ChecklistLineStyle.Red),
+            OmissionDots: this.props.data.map((d) => d.style === ChecklistLineStyle.OmissionDots),
+            LandAnsa: this.props.data.map((d) => d.style === ChecklistLineStyle.LandAnsa),
+            LandAsap: this.props.data.map((d) => d.style === ChecklistLineStyle.LandAsap),
           }}
           style={{
             display: this.props.data.map((d) => (d.style === ChecklistLineStyle.SeparationLine ? 'none' : 'flex')),
@@ -159,11 +186,17 @@ export class EclLine extends DisplayComponent<EclLineProps> {
           <div
             class={{
               EclLineCheckboxArea: true,
-              AbnormalItem: this.props.data.map(
-                (d) => d.abnormalProcedure === true && d.style === ChecklistLineStyle.ChecklistItem,
-              ),
+              AbnormalItem: this.props.data.map((d) => d.abnormalProcedure === true),
+              ChecklistCondition: this.props.data.map((d) => d.style === ChecklistLineStyle.ChecklistCondition),
+              Inactive: this.props.data.map((d) => d.inactive === true),
               Checked: this.props.data.map((d) => d.checked),
-              HiddenElement: this.props.data.map((d) => d.style === ChecklistLineStyle.Headline),
+              HiddenElement: this.props.data.map(
+                (d) =>
+                  d.style === ChecklistLineStyle.Headline ||
+                  d.style === ChecklistLineStyle.OmissionDots ||
+                  d.style === ChecklistLineStyle.LandAnsa ||
+                  d.style === ChecklistLineStyle.LandAsap,
+              ),
               Invisible: this.props.data.map(
                 (d) => d.sensed || (d.firstLine && d.lastLine) || d.specialLine === WdSpecialLine.Empty,
               ),
@@ -179,12 +212,12 @@ export class EclLine extends DisplayComponent<EclLineProps> {
               ),
             }}
           >
-            {this.props.data.map((d) => d.text)}
+            {this.props.data.map((d) => d.text.substring(0, 39))}
           </span>
           <svg
             version="1.1"
             xmlns="http://www.w3.org/2000/svg"
-            width="600"
+            width="680"
             height="33"
             style={{
               display: this.props.data.map((d) =>

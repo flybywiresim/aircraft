@@ -5,16 +5,18 @@ authors = ["FlyByWire Simulations"]
 edition = "2021"
 
 [dependencies]
-uom = "0.36.0"
-nalgebra = "0.33.0"
-ntest = "0.9.3"
-fxhash = "0.2.1"
-rand = "0.8.0"
-serde = { version = "1.0.215", features = ["derive"] }
-serde_with = { version = "3.11.0", features = ["std"] }
-toml = { version = "0.8.19", features = ["parse"] }
+bitflags = "2.9.1"
+uom.workspace = true
+nalgebra.workspace = true
+rustc-hash = "2.1.1"
+rand.workspace = true
+serde = { version = "1.0", features = ["derive"] }
+serde_with = { version = "3.16" }
+toml = { version = "0.9.11+spec-1.1.0", default-features = false, features = ["std", "serde", "parse"] }
 systems = { path = "../../../../../fbw-common/src/wasm/systems/systems" }
+enum-map = "2.7"
 
 [dev-dependencies]
-rstest = "0.12.0"
-rand_pcg = "0.3.1"
+ntest.workspace = true
+rstest.workspace = true
+rand_pcg = "0.9.0"

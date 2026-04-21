@@ -50,6 +50,7 @@ render(
         realism: {
           mcduKeyboard: true,
           pauseOnTod: true,
+          autoStepClimb: false,
           pilotAvatars: true,
           eclSoftKeys: false,
         },
@@ -60,6 +61,7 @@ render(
           registrationDecal: true,
           wheelChocks: true,
           cabinLighting: false,
+          oansPerformanceMode: false,
         },
         throttle: {
           numberOfAircraftThrottles: 2,
@@ -71,6 +73,8 @@ render(
         },
         autoCalloutsPage: AutomaticCallOutsPage,
       },
+      hashFile: '/Data/a32nx_hashes.json',
+      hashSeed: 320,
     }}
   >
     <EfbWrapper failures={A320FailureDefinitions} aircraftSetup={aircraftEfbSetup} eventBus={new EventBus()} />

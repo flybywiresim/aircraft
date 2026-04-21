@@ -1,8 +1,9 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useSimVar, useArinc429Var, Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { HydraulicsProvider, useHydraulics } from '../../Common/HydraulicsProvider';
 import { HydraulicIndicator } from '../../Common/HydraulicIndicator';
@@ -11,6 +12,7 @@ import { SvgGroup } from '../../Common/SvgGroup';
 import { Spoilers } from '../../Common/Spoilers';
 
 import '../../Common/CommonStyles.scss';
+import '../../Common/animations.scss';
 
 const roundTemperature = (rawTemp: number): number => Math.min(995, Math.max(0, Math.round(rawTemp / 5) * 5));
 
@@ -232,18 +234,44 @@ const AutoBrake = ({ x, y }: ComponentPositionProps) => {
   const available = eng1 === 1 && eng2 === 1;
 
   const [autoBrakeLevel] = useSimVar('L:A32NX_AUTOBRAKES_ARMED_MODE', 'Number', maxStaleness);
+  const [autoBrakeActive] = useSimVar('L:A32NX_AUTOBRAKES_ACTIVE', 'boolean', maxStaleness);
 
-  return autoBrakeLevel !== 0 ? (
-    <SvgGroup x={x} y={y}>
-      <text className={`Large ${available ? 'Green' : 'Amber'}`}>AUTO BRK</text>
+  const [wasAutoBrakeActive, setAutoBrakeWasActive] = useState(!!autoBrakeActive);
+  const [isAutoBrakeBlinking, setAutoBrakeIsBlinking] = useState(false);
 
-      <SvgGroup x={40} y={32}>
-        {autoBrakeLevel === 1 ? <AutoBrakeLevel text="LO" available={available} /> : null}
-        {autoBrakeLevel === 2 ? <AutoBrakeLevel text="MED" available={available} /> : null}
-        {autoBrakeLevel === 3 ? <AutoBrakeLevel text="MAX" available={available} /> : null}
+  const shouldAutoBrakeBlink = !autoBrakeActive && autoBrakeLevel === 0 && (isAutoBrakeBlinking || wasAutoBrakeActive);
+
+  if (shouldAutoBrakeBlink !== isAutoBrakeBlinking) {
+    setAutoBrakeIsBlinking(shouldAutoBrakeBlink);
+  }
+
+  if (!!autoBrakeActive !== wasAutoBrakeActive) {
+    setAutoBrakeWasActive(!!autoBrakeActive);
+  }
+
+  if (autoBrakeLevel !== 0) {
+    return (
+      <SvgGroup x={x} y={y}>
+        <text className={`Large ${available ? 'Green' : 'Amber'}`}>AUTO BRK</text>
+
+        <SvgGroup x={40} y={32}>
+          {autoBrakeLevel === 1 ? <AutoBrakeLevel text="LO" available={available} /> : null}
+          {autoBrakeLevel === 2 ? <AutoBrakeLevel text="MED" available={available} /> : null}
+          {autoBrakeLevel === 3 ? <AutoBrakeLevel text="MAX" available={available} /> : null}
+        </SvgGroup>
       </SvgGroup>
-    </SvgGroup>
-  ) : null;
+    );
+  }
+
+  if (isAutoBrakeBlinking) {
+    return (
+      <SvgGroup x={x} y={y}>
+        <text className="Large Green Transparent Blink10Seconds">AUTO BRK</text>
+      </SvgGroup>
+    );
+  }
+
+  return null;
 };
 
 interface AutoBrakeLevelProps {

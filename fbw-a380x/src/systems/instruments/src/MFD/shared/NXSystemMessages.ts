@@ -60,56 +60,64 @@ export class TypeIIMessage extends McduMessage {
   }
 }
 
+export class ATCCOMMessage extends McduMessage {
+  constructor(text: string, isAmber = false, replace = '') {
+    super(text, isAmber, replace);
+  }
+
+  /**
+   * Only returning a "copy" of the object to ensure thread safety when trying to edit the original message
+   * t {string} replaces defined elements, see this.replace
+   */
+  getModifiedMessage(t: string): ATCCOMMessage {
+    return new ATCCOMMessage(t ? this.text.replace(this.replace, `${t}`) : this.text, this.isAmber, this.replace);
+  }
+}
+
 /**
  NXSystemMessages only holds real messages
  */
 export const NXSystemMessages = {
-  aocActFplnUplink: new TypeIIMessage('AOC ACT F-PLN UPLINK'),
-  arptTypeAlreadyInUse: new TypeIMessage('ARPT/TYPE ALREADY USED'),
-  awyWptMismatch: new TypeIMessage('AWY/WPT MISMATCH'),
-  cancelAtisUpdate: new TypeIMessage('CANCEL UPDATE BEFORE'),
-  checkMinDestFob: new TypeIIMessage('CHECK MIN DEST FOB'),
+  awyWptDisagree: new TypeIMessage('AIRWAY / WPT DISAGREE'),
+  crzFlAboveMaxFL: new TypeIIMessage('CRZ FL ABOVE MAX FL', false),
+  cancelAtisUpdate: new TypeIMessage('CANCEL AUTO UPDATE FIRST'),
+  checkMinFuelAtDest: new TypeIIMessage('CHECK MIN FUEL AT DEST'),
   checkSpeedMode: new TypeIIMessage('CHECK SPD MODE'),
-  checkToData: new TypeIIMessage('CHECK TAKE OFF DATA', true),
-  comUnavailable: new TypeIMessage('COM UNAVAILABLE'),
+  checkToData: new TypeIIMessage('CHECK T.O. DATA', true),
+  checkZfw: new TypeIIMessage('CHECK ZFW', true),
+  comFplnReceivedPendingInsertion: new TypeIIMessage('COMPANY F-PLN RECEIVED\nWAITING FOR INSERTION', false),
+  comDatalinkNotAvail: new TypeIMessage('COM DATALINK NOT AVAIL'),
   cstrDelUpToWpt: new TypeIIMessage('CONSTRAINTS BEFORE WWWWW : DELETED', false, 'WWWWW'),
   databaseCodingError: new TypeIIMessage('DATABASE CODING ERROR'),
-  dcduFileFull: new TypeIMessage('DCDU FILE FULL'),
   destEfobBelowMin: new TypeIIMessage('DEST EFOB BELOW MIN', true),
   enterDestData: new TypeIIMessage('ENTER DEST DATA', true),
   entryOutOfRange: new TypeIMessage('ENTRY OUT OF RANGE'),
-  mandatoryFields: new TypeIMessage('ENTER MANDATORY FIELDS'),
   formatError: new TypeIMessage('FORMAT ERROR'),
   fplnElementRetained: new TypeIMessage('F-PLN ELEMENT RETAINED'),
-  initializeWeightOrCg: new TypeIIMessage('INITIALIZE WEIGHT/CG', true),
-  keyNotActive: new TypeIMessage('KEY NOT ACTIVE'),
-  latLonAbreviated: new TypeIMessage('LAT/LON DISPL ABREVIATED'),
-  listOf99InUse: new TypeIMessage('LIST OF 99 IN USE'),
-  newAccAlt: new TypeIIMessage('NEW ACC ALT-HHHH', false, 'HHHH'),
-  newAtisReceived: new TypeIMessage('NEW ATIS: READ AGAIN'),
-  newCrzAlt: new TypeIIMessage('NEW CRZ ALT - HHHHH', false, 'HHHHH'),
-  newThrRedAlt: new TypeIIMessage('NEW THR RED ALT-HHHH', false, 'HHHH'),
-  noAtc: new TypeIMessage('NO ACTIVE ATC'),
-  noAtisReceived: new TypeIMessage('NO ATIS REPORT RECEIVED'),
+  initializeZfwOrZfwCg: new TypeIIMessage('INITIALIZE ZFW / ZFWCG', true),
+  newAccAlt: new TypeIIMessage('NEW ACCEL ALT: HHHHH', false, 'HHHHH'),
+  newCrzAlt: new TypeIIMessage('NEW CRZ ALT: HHHHH', false, 'HHHHH'),
+  newThrRedAlt: new TypeIIMessage('NEW THR RED ALT: HHHHH', false, 'HHHHH'),
   noIntersectionFound: new TypeIMessage('NO INTERSECTION FOUND'),
-  noPreviousAtis: new TypeIMessage('NO PREVIOUS ATIS STORED'),
   notAllowed: new TypeIMessage('NOT ALLOWED'),
   notAllowedInNav: new TypeIMessage('NOT ALLOWED IN NAV'),
   notInDatabase: new TypeIMessage('NOT IN DATABASE'),
-  rwyLsMismatch: new TypeIIMessage('RWY/LS MISMATCH', true),
-  selectDesiredSystem: new TypeIMessage('SELECT DESIRED SYSTEM'),
+  receivedCpnyFplnNotValid: new TypeIIMessage('RECEIVED COMPANY F-PLN NOT VALID', false),
+  rwyLsDisagree: new TypeIIMessage('RUNWAY / LS DISAGREE', true),
   setHoldSpeed: new TypeIIMessage('SET HOLD SPD'),
   tdReached: new TypeIIMessage('T/D REACHED'),
-  spdLimExceeded: new TypeIIMessage('SPD LIM EXCEEDED', true),
-  systemBusy: new TypeIMessage('SYSTEM BUSY-TRY LATER'),
-  toSpeedTooLow: new TypeIIMessage('TO SPEEDS TOO LOW', true),
-  uplinkInsertInProg: new TypeIIMessage('UPLINK INSERT IN PROG'),
+  spdLimExceeded: new TypeIIMessage('SPD LIMIT EXCEEDED', true),
+  toSpeedTooLow: new TypeIIMessage('T.O SPEED TOO LOW - CHECK TOW & T.O DATA', true),
   vToDisagree: new TypeIIMessage('V1/VR/V2 DISAGREE', true),
-  waitForSystemResponse: new TypeIMessage('WAIT FOR SYSTEM RESPONSE'),
   xxxIsDeselected: new TypeIMessage('XXXX IS DESELECTED', false, 'XXXX'),
   stepAboveMaxFl: new TypeIIMessage('STEP ABOVE MAX FL'),
   stepAhead: new TypeIIMessage('STEP AHEAD'),
   stepDeleted: new TypeIIMessage('STEP DELETED'),
+  tooSteepPathAhead: new TypeIIMessage('TOO STEEP PATH AHEAD'),
+  navprimary: new TypeIIMessage('NAV PRIMARY'),
+  navprimaryLost: new TypeIIMessage('NAV PRIMARY LOST', true),
+  sqwkCodeNotValid: new TypeIMessage('SQWK CODE NOT VALID'),
+  lrcInUse: new TypeIMessage('LRC MODE IN USE'),
 };
 
 export const NXFictionalMessages = {
@@ -135,8 +143,42 @@ export const NXFictionalMessages = {
   noWptInfos: new TypeIMessage('NO WAYPOINT INFOS'),
   emptyMessage: new TypeIMessage(''),
   reloadPlaneApply: new TypeIIMessage('RELOAD A/C TO APPLY', true),
-  noHoppieConnection: new TypeIMessage('NO HOPPIE CONNECTION'),
+  noAcarsConnection: new TypeIMessage('NO ACARS CONNECTION'),
   unknownAtsuMessage: new TypeIMessage('UNKNOWN ATSU MESSAGE'),
   reverseProxy: new TypeIMessage('REVERSE PROXY ERROR'),
   simBriefNoUser: new TypeIMessage('NO SIMBRIEF PILOT ID PROVIDED'),
+};
+
+export function isTypeIIMessage(message: McduMessage): message is TypeIIMessage {
+  return message instanceof TypeIIMessage;
+}
+
+export const ATCCOMMessages = {
+  cancelAutoUpdateFirst: new ATCCOMMessage('CANCEL AUTO UPDATE FIRST'),
+  comDatalinkNotAvail: new ATCCOMMessage('COM DATALINK NOT AVAIL'),
+  datisGroundMsg: new ATCCOMMessage('D-ATIS GROUND MSG'),
+  datisNoReply: new ATCCOMMessage('D-ATIS NO REPLY'),
+  datisReceived: new ATCCOMMessage('D-ATIS RECEIVED'),
+  datisSendFailed: new ATCCOMMessage('D-ATIS SEND FAILED'),
+  datisUpdated: new ATCCOMMessage('D-ATIS UPDATED - READ AGAIN'),
+  datisUsedOffside: new ATCCOMMessage('D-ATIS USED OFFSIDE'),
+  entryOutOfRange: new ATCCOMMessage('ENTRY OUT OF RANGE'),
+  formatError: new ATCCOMMessage('FORMAT ERROR'),
+  identicalDatisRequest: new ATCCOMMessage('IDENTICAL D-ATIS REQUEST'),
+  lastMsgElement: new ATCCOMMessage('LAST MSG ELEMENT'),
+  mailboxFull: new ATCCOMMessage('MAILBOX FULL - SEND OR CANCEL SOME MSG'),
+  msgAbortedActiveAtcDisconnected: new ATCCOMMessage('MSG ABORTED - ACTIVE ATC DISCONNECTED'),
+  msgAbortedNotSupportedByCurrentATC: new ATCCOMMessage('MSG ABORTED - NOT SUPPORTED BY CURRENT ATC'),
+  msgRecordLost: new ATCCOMMessage('MSG RECORD LOST'),
+  msgRecordUsedOffside: new ATCCOMMessage('MSG RECORD USED OFFSIDE'),
+  newDatisGroundMsg: new ATCCOMMessage('NEW D-ATIS GROUND MSG - READ AGAIN'),
+  noSysData: new ATCCOMMessage('NO SYS DATA'),
+  notifNotAvailAcftPosNotAvail: new ATCCOMMessage('NOTIFICATION NOT AVAIL - ACFT POSITION NOT AVAIL'),
+  notifNotAvailChckFltNbr: new ATCCOMMessage('NOTIFICATION NOT AVAIL - CHECK FLT NBR IN FMS INIT PAGE'),
+  notifNotAvailChckFromTo: new ATCCOMMessage('NOTIFICATION NOT AVAIL - CHECK FROM/TO IN FMS INIT PAGE'),
+  notifNotAvailWithThisAtcCtr: new ATCCOMMessage('NOTIFICATION NOT AVAIL - WITH THIS ATC CENTER'),
+  pleaseWaitUpdateInProgress: new ATCCOMMessage('PLEASE WAIT: UPDATE IN PROGRESS'),
+  printerNotAvail: new ATCCOMMessage('PRINTER NOT AVAIL'),
+  printing: new ATCCOMMessage('PRINTING'),
+  sendingMaydayWillSwitchAdscToEmergency: new ATCCOMMessage('SENDING MAYDAY WILL SWITCH ADS-C TO EMERGENCY'),
 };

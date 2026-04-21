@@ -30,35 +30,35 @@ const BleedHotAir: FC<BleedHotAirProps> = ({ x, y, hotAir, _sdacDatum }) => {
     ),
   );
 
-  const xoffset = 66;
+  const xoffset = 68;
 
   return (
-    <g id={`HotAir-${hotAir}`}>
+    <g id={`HotAir-${hotAir}`} style={{ transform: `translate3d(${x}px, ${y}px, 0px)` }}>
       <path
-        className={`${anyPackValveOpen ? 'Green' : 'Amber'} Line`}
-        d={`M${x},${y} l ${hotAir === 2 ? '-' : ''}${xoffset},0 l 0,-30`}
+        className={`${anyPackValveOpen ? 'Green' : 'Amber'} Line NoFill`}
+        d={`M0,0 l ${hotAir === 2 ? '-' : ''}${xoffset},0 l 0,-26`}
       />
       <path
         className={`${hotAirValveOpen && anyPackValveOpen ? 'Green' : 'Amber'} Line`}
-        d={`M${hotAir === 1 ? x + xoffset : x - xoffset},${y - 68} l 0,-24`}
+        d={`M${hotAir === 1 ? xoffset : -xoffset},${-66} l 0,-22`}
       />
       <Triangle
-        x={hotAir === 1 ? x + xoffset : x - xoffset}
-        y={y - 108}
+        x={hotAir === 1 ? xoffset : -xoffset}
+        y={-108}
         colour={hotAirValveOpen && anyPackValveOpen ? 'Green' : 'Amber'}
         fill={0}
         orientation={0}
-        scale={1.2}
+        scale={1.3}
       />
       <Valve
-        x={hotAir === 1 ? x + xoffset : x - xoffset}
-        y={y - 49}
-        radius={19}
-        css={`SW2 ${hotAirValveOpen && anyPackValveOpen ? 'Green' : 'Amber'}`}
+        x={hotAir === 1 ? xoffset : -xoffset}
+        y={-46}
+        radius={19.5}
+        css={`SW2 ${hotAirValveOpen && anyPackValveOpen ? 'Green' : 'Amber'} NoFill`}
         position={hotAirValveOpen ? 'V' : 'H'}
         sdacDatum
       />
-      <text x={hotAir === 1 ? x + xoffset + 37 : x - xoffset - 37} y={y - 43} className="White F23 MiddleAlign">
+      <text x={hotAir === 1 ? xoffset + 37 : -xoffset - 33} y={-43} className="White F22 MiddleAlign">
         {hotAir}
       </text>
     </g>

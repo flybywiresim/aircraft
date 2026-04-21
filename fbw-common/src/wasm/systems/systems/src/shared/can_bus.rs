@@ -71,7 +71,7 @@ impl<const N: usize> CanBus<N> {
                 // search the next sendable message
                 for x in 0..N {
                     let idx = (self.next_transmitting_system + x) % N;
-                    let message = self.transmission_buffers[idx].get(0);
+                    let message = self.transmission_buffers[idx].front();
                     if message.is_some() {
                         // reset the received flags to release the bus for the next transmission
                         self.message_received_by_systems

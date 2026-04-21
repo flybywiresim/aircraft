@@ -1,9 +1,10 @@
+// @ts-strict-ignore
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { FC } from 'react';
 
-import { Route, Switch } from 'react-router';
+import { Route, Switch, useHistory } from 'react-router';
 import { Link } from 'react-router-dom';
 
 import { ArrowLeft, ChevronRight } from 'react-bootstrap-icons';
@@ -77,25 +78,38 @@ type SettingsPageProps = {
   backRoute?: string;
 };
 
-export const SettingsPage: FC<SettingsPageProps> = ({ name, backRoute, children }) => (
-  <div>
-    <Link to={backRoute ?? '/settings'} className="mb-4 inline-block">
-      <div className="flex flex-row items-center space-x-3 transition duration-100 hover:text-theme-highlight">
-        <ArrowLeft size={30} />
-        <h1 className="font-bold text-current">
-          {t('Settings.Title')}
-          {' - '}
-          {name}
-        </h1>
+export const SettingsPage: FC<SettingsPageProps> = ({ name, backRoute, children }) => {
+  const history = useHistory();
+
+  return (
+    <div>
+      <Link
+        to={backRoute ?? '/settings'}
+        onClick={(e) => {
+          if (!backRoute && history.length > 1) {
+            e.preventDefault();
+            history.goBack();
+          }
+        }}
+        className="mb-4 inline-block"
+      >
+        <div className="flex flex-row items-center space-x-3 transition duration-100 hover:text-theme-highlight">
+          <ArrowLeft size={30} />
+          <h1 className="font-bold text-current">
+            {t('Settings.Title')}
+            {' - '}
+            {name}
+          </h1>
+        </div>
+      </Link>
+      <div className="h-content-section-reduced w-full rounded-lg border-2 border-theme-accent px-6 py-2">
+        <ScrollableContainer height={53} innerClassName="h-full">
+          <div className="h-full divide-y-2 divide-theme-accent">{children}</div>
+        </ScrollableContainer>
       </div>
-    </Link>
-    <div className="h-content-section-reduced w-full rounded-lg border-2 border-theme-accent px-6 py-2">
-      <ScrollableContainer height={54} innerClassName="h-full">
-        <div className="h-full divide-y-2 divide-theme-accent">{children}</div>
-      </ScrollableContainer>
     </div>
-  </div>
-);
+  );
+};
 
 export const FullscreenSettingsPage: FC<SettingsPageProps> = ({ name, children }) => (
   <div>

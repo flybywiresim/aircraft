@@ -398,22 +398,22 @@ class Polynomial_A380X {
    */
   static double oilTemperature(double thermalEnergy, double previousOilTemp, double maxOilTemperature, double deltaTime) {
     // Initialize the steady temperature and the decay constant
-    double k = 0.001;
+    double k = 0.0001;
 
     // Calculate the change in temperature due to the energy
-    double dt = thermalEnergy * deltaTime * 0.002;
+    double dt = thermalEnergy * deltaTime * 0.02;
 
     // Calculate the steady temperature based on the maximum oil temperature, the decay constant, and the previous oil temperature
     double t_steady = ((maxOilTemperature * k * deltaTime) + previousOilTemp) / (1 + (k * deltaTime));
 
     // Calculate the oil temperature based on the steady temperature and the change in temperature
     double oilTemp_out;
-    if (t_steady - dt >= maxOilTemperature) {
+    if (t_steady + dt >= maxOilTemperature) {
       oilTemp_out = maxOilTemperature;
-    } else if (t_steady - dt >= maxOilTemperature - 10) {
-      oilTemp_out = (t_steady - dt) * 0.999997;
+    } else if (t_steady + dt >= maxOilTemperature - 10) {
+      oilTemp_out = (t_steady + dt) * 0.999997;
     } else {
-      oilTemp_out = (t_steady - dt);
+      oilTemp_out = (t_steady + dt);
     }
 
     // Return the calculated oil temperature
@@ -428,7 +428,7 @@ class Polynomial_A380X {
    * @return The calculated Oil Gulping percentage.
    */
   static double oilGulpPct(double thrust) {
-    const double oilGulpCoefficients[3] = {20.1968848, -1.2270302e-4, 1.78442e-8};
+    const double oilGulpCoefficients[3] = {20.1968848, -1.2270302e-6, 1.78442e-10};
     const double oilGulpPercentage =
         oilGulpCoefficients[0] + (oilGulpCoefficients[1] * thrust) + (oilGulpCoefficients[2] * (std::pow)(thrust, 2));
     return oilGulpPercentage / 100;

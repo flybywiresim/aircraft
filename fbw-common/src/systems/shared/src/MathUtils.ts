@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2022-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -289,7 +290,7 @@ export class MathUtils {
     return (
       1479.1 *
       Math.sqrt(
-        ((pressure / 1013) * ((1 + (1 / (oat / 288.15)) * (tas / 1479.1) ** 2) ** 3.5 - 1) + 1) ** (1 / 3.5) - 1,
+        ((pressure / 1013.25) * ((1 + (1 / (oat / 288.15)) * (tas / 1479.1) ** 2) ** 3.5 - 1) + 1) ** (1 / 3.5) - 1,
       )
     );
   }
@@ -306,7 +307,7 @@ export class MathUtils {
       1479.1 *
       Math.sqrt(
         (oat / 288.15) *
-          (((1 / (pressure / 1013)) * ((1 + 0.2 * (kcas / 661.4786) ** 2) ** 3.5 - 1) + 1) ** (1 / 3.5) - 1),
+          (((1 / (pressure / 1013.25)) * ((1 + 0.2 * (kcas / 661.4786) ** 2) ** 3.5 - 1) + 1) ** (1 / 3.5) - 1),
       )
     );
   }
@@ -314,12 +315,14 @@ export class MathUtils {
   /**
    * Convert Mach to Calibrated Air Speed
    * @param mach Mach
-   * @param oat Kelvin
    * @param pressure current pressure hpa
    * @returns Calibrated Air Speed
    */
-  public static convertMachToKCas(mach: number, oat: number, pressure: number): number {
-    return MathUtils.convertTasToKCas(MathUtils.convertMachToKTas(mach, oat), oat, pressure);
+  public static convertMachToKCas(mach: number, pressure: number): number {
+    // Formula from Jet Transport Performance Methods 2009.
+    return (
+      1479.1 * Math.sqrt(Math.pow((pressure / 1013.25) * (Math.pow(0.2 * mach * mach + 1, 3.5) - 1) + 1, 1 / 3.5) - 1)
+    );
   }
 
   /**
@@ -552,6 +555,10 @@ export class MathUtils {
     return Math.round(value / quantum) * quantum;
   }
 
+  public static interpolate(x: number, x0: number, x1: number, y0: number, y1: number): number {
+    return (y0 * (x1 - x) + y1 * (x - x0)) / (x1 - x0);
+  }
+
   /**
    * Round a number up to a specified quantum.
    * @param value The number to round.
@@ -570,10 +577,6 @@ export class MathUtils {
    */
   public static floor(value: number, quantum = 1): number {
     return Math.floor(value / quantum) * quantum;
-  }
-
-  static interpolate(x: number, x0: number, x1: number, y0: number, y1: number): number {
-    return (y0 * (x1 - x) + y1 * (x - x0)) / (x1 - x0);
   }
 
   /**
@@ -614,5 +617,69 @@ export class MathUtils {
       r1 === r2 ? table[r1][c2] : MathUtils.interpolate(i, table[r1][0], table[r2][0], table[r1][c2], table[r2][c2]);
 
     return MathUtils.interpolate(j, table[0][c1], table[0][c2], interpolatedRowAtC1, interpolatedRowAtC2);
+  }
+
+  /**
+   * Checks whether two numbers are within a certain epsilon of each other.
+   * @param a
+   * @param b
+   * @param epsilon the absolute tolerance
+   * @returns true if the numbers are within epsilon of each other
+   */
+  public static isAboutEqual(a: number, b: number, epsilon = 1e-4): boolean {
+    return Math.abs(a - b) < epsilon;
+  }
+
+  /**
+   * Checks whether a number is positive and within a certain epsilon of zero.
+   * @param num
+   * @param epsilon the absolute tolerance
+   * @returns true if the number is positive and within epsilon of zero
+   */
+  public static isCloseToPositive(num: number, epsilon = 1e-4): boolean {
+    return num > -Math.abs(epsilon);
+  }
+
+  /**
+   * Checks whether a number is negative and within a certain epsilon of zero.
+   * @param num
+   * @param epsilon the absolute tolerance
+   * @returns true if the number is negative and within epsilon of zero
+   */
+  public static isCloseToNegative(num: number, epsilon = 1e-4): boolean {
+    return this.isCloseToPositive(-num, epsilon);
+  }
+
+  /**
+   * Checks whether a > b or a is within a certain epsilon of b.
+   * @param a
+   * @param b
+   * @param epsilon the absolute tolerance
+   * @returns true if the number is greater than or within epsilon of the other
+   */
+  public static isCloseToGreaterThan(a: number, b: number, epsilon = 1e-4): boolean {
+    return this.isCloseToPositive(a - b, epsilon);
+  }
+
+  /**
+   * Checks whether a < b or a is within a certain epsilon of b.
+   * @param a
+   * @param b
+   * @param epsilon the absolute tolerance
+   * @returns true if the number is less than or within epsilon of the other
+   */
+  public static isCloseToLessThan(a: number, b: number, epsilon = 1e-4): boolean {
+    return this.isCloseToNegative(a - b, epsilon);
+  }
+
+  public static pointDistance(x1: number, y1: number, x2: number, y2: number): number {
+    return Math.hypot(x2 - x1, y2 - y1);
+  }
+
+  /**
+   * Returns a random valid JS 32-bit signed integer
+   */
+  public static randomInt32(): number {
+    return Math.floor(Math.random() * 4294967296) - 2147483648;
   }
 }

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 /**
  * Lowest selectable Speed Table
  * calls function(gross weight (1000 lb)) which returns CAS, automatically compensates for cg.
@@ -7,10 +8,11 @@
 // TODO: Weight interpolation is different for the two CG extremes, one formula might be too inaccurate.
 
 import { Feet, Knots } from 'msfs-geo';
-import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { Mmo, VfeF1, VfeF1F, VfeF2, VfeF3, VfeFF, Vmcl, Vmo } from '@shared/PerformanceConstants';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { LerpLookupTable } from '@microsoft/msfs-sdk';
+import { ADIRS } from 'instruments/src/MFD/shared/Adirs';
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 
 export enum ApproachConf {
   CONF_1 = 1,
@@ -348,11 +350,12 @@ const vmcg = [
  * Vfe for Flaps/Slats
  */
 const vfeFS = [
+  Vmo,
+  VfeF1, // Config 1
   VfeF1F, // Config 1 + F
   VfeF2, // Config 2
   VfeF3, // Config 3
   VfeFF, // Config Full
-  VfeF1, // Config 1
 ];
 
 /**
@@ -387,44 +390,14 @@ function getdiffAngle(a: number, b: number): number {
 }
 
 /**
- * Get next flaps index for vfeFS table
- * @returns vfeFS table index
- * @private
- */
-function getVfeNIdx(fi: number): number {
-  switch (fi) {
-    case 0:
-      return 4;
-    case 5:
-      return 1;
-    default:
-      return fi;
-  }
-}
-
-/**
- * Convert degrees Celsius into Kelvin
- * @param T degrees Celsius
- * @returns degrees Kelvin
- */
-function convertCtoK(T: number): number {
-  return T + 273.15;
-}
-
-/**
  * Get correct Vmax for Vmo and Mmo in knots
  * @returns Min(Vmo, Mmo)
  * @private
  */
 function getVmo() {
-  return Math.min(
-    Vmo,
-    MathUtils.convertMachToKCas(
-      Mmo,
-      convertCtoK(Simplane.getAmbientTemperature()),
-      SimVar.GetSimVarValue('AMBIENT PRESSURE', 'millibar'),
-    ),
-  );
+  const adrPressure = ADIRS.getCorrectedAverageStaticPressure();
+  const ambientPressure = adrPressure !== undefined ? adrPressure.valueOr(1013.25) : 1013.25;
+  return Math.min(Vmo, MathUtils.convertMachToKCas(Mmo, ambientPressure));
 }
 
 export class A380OperatingSpeeds {
@@ -451,40 +424,46 @@ export class A380OperatingSpeeds {
   /**
    * Computes Vs, Vls, Vapp, F, S and GD
    * @param m mass: gross weight in kg
+   * @param cg gross weight cg in % MAC
    * @param calibratedAirSpeed CAS in kt
    * @param fPos flaps position
    * @param fmgcFlightPhase sic
    * @param v2Speed V2 speed entered in FMS
-   * @param aoa Angle of attack in degrees. Should be low pass filtered
+   * @param altitude Altitude in feet (baro)
    * @param wind wind speed
+   * @param ignoreSpoilers if true, ignores spoilers position for Vls calculation
    */
   constructor(
     m: number,
+    cg: number,
     calibratedAirSpeed: number,
     fPos: number,
     fmgcFlightPhase: FmgcFlightPhase,
     v2Speed: number,
     altitude: Feet,
     wind: Knots = 0,
+    ignoreSpoilers = false,
   ) {
-    const cg = SimVar.GetSimVarValue('CG PERCENT', 'percent');
-
     if (fPos === 0) {
       this.vls = SpeedsLookupTables.VLS_CONF_0.get(altitude, m);
+      this.vmax = getVmo();
+      this.vfeN = vfeFS[1];
     } else if (fPos === 1 && calibratedAirSpeed > 212) {
       this.vls = SpeedsLookupTables.getApproachVls(ApproachConf.CONF_1, cg, m);
+      this.vmax = vfeFS[1];
+      this.vfeN = vfeFS[2];
     } else {
       this.vls = SpeedsLookupTables.getApproachVls(fPos + 1, cg, m);
+      this.vmax = vfeFS[fPos + 1];
+      this.vfeN = fPos === 4 ? 0 : vfeFS[fPos + 2];
     }
-    this.vapp = this.vls + addWindComponent(wind);
-    this.vref = this.vls = SpeedsLookupTables.getApproachVls(ApproachConf.CONF_FULL, cg, m);
+    this.vapp = this.vls + addWindComponent(Math.round(wind / 3));
+    this.vref = SpeedsLookupTables.getApproachVls(ApproachConf.CONF_FULL, cg, m);
 
     this.gd = SpeedsLookupTables.GREEN_DOT.get(altitude, m);
-    this.vmax = fPos === 0 ? getVmo() : vfeFS[fPos - 1];
-    this.vfeN = fPos === 4 ? 0 : vfeFS[getVfeNIdx(fPos)];
 
     this.vs1g = this.vls / 1.23;
-    this.vls = Math.max(1.23 * this.vs1g, Vmcl);
+    this.vls = Math.max(this.vls, Vmcl);
     if (fmgcFlightPhase <= FmgcFlightPhase.Takeoff) {
       this.vls = Math.max(1.15 * this.vs1g, 1.05 * Math.min(v2Speed, Vmcl));
     } else if (fPos === 1 && calibratedAirSpeed > 212) {
@@ -495,7 +474,7 @@ export class A380OperatingSpeeds {
     const spoilers = SimVar.GetSimVarValue('L:A32NX_LEFT_SPOILER_1_COMMANDED_POSITION', 'number');
     const maxSpoilerExtension = [20, 20, 12, 9, 8, 6];
     const spoilerVlsIncrease = [25, 25, 7, 10, 10, 8];
-    if (spoilers > 0) {
+    if (spoilers > 0 && !ignoreSpoilers) {
       let conf = fPos + 1;
       switch (fPos) {
         case 1:
@@ -613,23 +592,18 @@ export class A380SpeedsUtils {
    * Get Vs1g for the given config
    *
    * @param {number} mass mass of the aircraft in kg
+   * @param {number} cg cg % MAC of the aircraft
    * @param {number} conf 0 - CONF 1, 1 - CONF 1, 2 - CONF 1+F, 3 - CONF 2, 4 - CONF 3, 5 - CONF FULL.
    * @param {boolean} takeof if VS1g should be calculated for takeoff
    */
-  static getVs1g(mass: number, conf: number, takeoff: boolean): Knots {
+  static getVs1g(mass: number, cg: number, conf: number, takeoff: boolean): Knots {
     // FIXME rough, dirty hack
     if (takeoff === true) {
-      return SpeedsLookupTables.getApproachVls(conf, SimVar.GetSimVarValue('CG PERCENT', 'percent'), mass) / 1.15;
+      return SpeedsLookupTables.getApproachVls(conf, cg, mass) / 1.15;
     }
     if (conf === 5) {
-      return Math.max(
-        SpeedsLookupTables.getApproachVls(conf, SimVar.GetSimVarValue('CG PERCENT', 'percent'), mass) / 1.18,
-        Vmcl,
-      );
+      return Math.max(SpeedsLookupTables.getApproachVls(conf, cg, mass) / 1.18, Vmcl);
     }
-    return Math.max(
-      SpeedsLookupTables.getApproachVls(conf, SimVar.GetSimVarValue('CG PERCENT', 'percent'), mass) / 1.23,
-      Vmcl,
-    );
+    return Math.max(SpeedsLookupTables.getApproachVls(conf, cg, mass) / 1.23, Vmcl);
   }
 }

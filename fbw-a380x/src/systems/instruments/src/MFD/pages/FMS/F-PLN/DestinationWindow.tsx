@@ -1,42 +1,44 @@
 import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
 import '../../common/style.scss';
-import { Button } from 'instruments/src/MFD/pages/common/Button';
-import { InputField } from 'instruments/src/MFD/pages/common/InputField';
+import { Button } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/Button';
+import { InputField } from 'instruments/src/MsfsAvionicsCommon/UiWidgets/InputField';
 import { AirportFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { DisplayInterface } from '@fmgc/flightplanning/interface/DisplayInterface';
+import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
+import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
 
 interface DestinationWindowProps extends ComponentProps {
   fmcService: FmcServiceInterface;
-  mfd: DisplayInterface & MfdDisplayInterface;
+  flightPlanInterface: FlightPlanInterface;
+  mfd: FmsDisplayInterface & MfdDisplayInterface;
   visible: Subject<boolean>;
 }
 export class DestinationWindow extends DisplayComponent<DestinationWindowProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
-  private subs = [] as Subscription[];
+  private readonly subs = [] as Subscription[];
 
-  private topRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly topRef = FSComponent.createRef<HTMLDivElement>();
 
-  private identRef = FSComponent.createRef<HTMLSpanElement>();
+  private readonly identRef = FSComponent.createRef<HTMLSpanElement>();
 
-  private newDest = Subject.create<string | null>(null);
+  private readonly newDest = Subject.create<string | null>(null);
 
   private onModified(newDest: string | null): void {
     if (newDest) {
-      const revWpt = this.props.fmcService.master?.revisedWaypointIndex.get();
+      const revWpt = this.props.fmcService.master.revisedLegIndex.get();
       if (newDest.length === 4 && revWpt) {
-        this.props.fmcService.master?.flightPlanService.newDest(
+        this.props.flightPlanInterface.newDest(
           revWpt,
           newDest,
-          this.props.fmcService.master.revisedWaypointPlanIndex.get() ?? undefined,
-          this.props.fmcService.master.revisedWaypointIsAltn.get() ?? undefined,
+          this.props.fmcService.master.revisedLegPlanIndex.get() ?? undefined,
+          this.props.fmcService.master.revisedLegIsAltn.get() ?? undefined,
         );
-        this.props.fmcService.master?.acInterface.updateOansAirports();
+        this.props.fmcService.master.acInterface.updateFmsData();
       }
       this.props.visible.set(false);
       this.newDest.set('');
-      this.props.fmcService.master?.resetRevisedWaypoint();
+      this.props.fmcService.master.resetRevisedWaypoint();
     }
   }
 
@@ -54,9 +56,9 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
 
     if (this.props.fmcService.master) {
       this.subs.push(
-        this.props.fmcService.master.revisedWaypointIndex.sub(() => {
-          if (this.props.fmcService.master?.revisedWaypoint()) {
-            this.identRef.instance.innerText = this.props.fmcService.master?.revisedWaypoint()?.ident ?? '';
+        this.props.fmcService.master.revisedLegIndex.sub(() => {
+          if (this.props.fmcService.master.revisedWaypoint()) {
+            this.identRef.instance.innerText = this.props.fmcService.master.revisedWaypoint()?.ident ?? '';
           }
         }),
       );
@@ -78,7 +80,7 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
             <span class="mfd-label">
               NEW DEST FROM{' '}
               <span ref={this.identRef} class="mfd-value bigger">
-                {this.props.fmcService.master?.revisedWaypoint()?.ident ?? ''}
+                {this.props.fmcService.master.revisedWaypoint()?.ident ?? ''}
               </span>
             </span>
             <div style="align-self: center; margin-top: 50px;">
@@ -90,7 +92,7 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
                 inactive={Subject.create(false)}
                 value={this.newDest}
                 alignText="center"
-                errorHandler={(e) => this.props.mfd.showFmsErrorMessage(e)}
+                errorHandler={(e) => this.props.mfd.showFmsErrorMessage(e.type)}
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
               />
@@ -101,7 +103,7 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
               label="CANCEL"
               onClick={() => {
                 Coherent.trigger('UNFOCUS_INPUT_FIELD');
-                this.props.fmcService.master?.resetRevisedWaypoint();
+                this.props.fmcService.master.resetRevisedWaypoint();
                 this.props.visible.set(false);
               }}
             />

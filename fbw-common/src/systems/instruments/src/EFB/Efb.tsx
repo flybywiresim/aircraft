@@ -1,4 +1,5 @@
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// @ts-strict-ignore
+// Copyright (c) 2023-2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useContext, useEffect, useState } from 'react';
@@ -15,6 +16,7 @@ import {
   usePersistentProperty,
   useSimVar,
   ChecklistProvider,
+  usePersistentSetting,
 } from '@flybywiresim/fbw-sdk';
 
 import { Provider } from 'react-redux';
@@ -26,6 +28,7 @@ import { distanceTo } from 'msfs-geo';
 import { ErrorBoundary } from 'react-error-boundary';
 import { MemoryRouter as Router } from 'react-router';
 import {
+  AircraftContext,
   globalSyncedSettings,
   migrateSettings,
   setAirframeInfo,
@@ -54,6 +57,11 @@ import { setFlightPlanProgress } from './Store/features/flightProgress';
 import { Checklists, setAutomaticItemStates } from './Checklists/Checklists';
 import { setAircraftChecklists, addTrackingChecklists } from './Store/features/checklists';
 import { FlyPadPage } from './Settings/Pages/FlyPadPage';
+import { NavigraphAuthProvider } from '../react/navigraph';
+import { EventBus } from '@microsoft/msfs-sdk';
+import { TroubleshootingContextProvider } from './TroubleshootingContext';
+import { checkFileHashes } from './Utils/fileHashes';
+import { setFileHashMismatches } from './Store/features/fileHashes';
 
 // './Assets/Efb.scss' is imported by the aircraft EFB instrument the wraps this file
 import './Assets/Theme.css';
@@ -61,8 +69,6 @@ import './Assets/Slider.scss';
 
 import 'react-toastify/dist/ReactToastify.css';
 import './toast.css';
-import { NavigraphAuthProvider } from '../react/navigraph';
-import { EventBus } from '@microsoft/msfs-sdk';
 
 export interface EfbWrapperProps {
   failures: FailureDefinition[]; // TODO: Move failure definition into VFS
@@ -77,7 +83,7 @@ export const EfbWrapper: React.FC<EfbWrapperProps> = ({ failures, aircraftSetup,
     const nanoid = customAlphabet(ALPHABET, SESSION_ID_LENGTH);
     const generatedSessionID = nanoid();
 
-    NXDataStore.set('A32NX_SENTRY_SESSION_ID', generatedSessionID);
+    NXDataStore.setLegacy('A32NX_SENTRY_SESSION_ID', generatedSessionID);
   };
   const [aircraftChecklists, setAircraftChecklists] = useState<ChecklistJsonDefinition[]>([]);
 
@@ -215,14 +221,21 @@ export const Efb: React.FC<EfbProps> = ({ aircraftChecklistsProp }) => {
     (state) => state.simbrief.data,
   );
 
-  const [theme] = usePersistentProperty('EFB_UI_THEME', 'blue');
+  const [theme] = usePersistentSetting('EFB_UI_THEME');
 
   const { showModal } = useModals();
 
   const history = useHistory();
 
+  const { hashFile, hashSeed } = useContext(AircraftContext);
+
   useEffect(() => {
     document.documentElement.classList.add(`theme-${theme}`, 'animationsEnabled');
+
+    // Check the critical file hashes and store the result for later use
+    if (hashFile) {
+      checkFileHashes(hashFile, hashSeed).then((mismatches) => dispatch(setFileHashMismatches(mismatches)));
+    }
   }, []);
 
   useEffect(() => {
@@ -523,16 +536,18 @@ export const EfbInstrument: React.FC<EfbInstrumentProps> = ({ failures, aircraft
   const [err, setErr] = useState(false);
 
   return (
-    <FailuresOrchestratorProvider failures={failures}>
-      <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => setErr(false)} resetKeys={[err]}>
-        <Router>
-          <ModalProvider>
-            <EventBusContextProvider eventBus={eventBus}>
-              <Efb aircraftChecklistsProp={aircraftChecklists} />
-            </EventBusContextProvider>
-          </ModalProvider>
-        </Router>
-      </ErrorBoundary>
-    </FailuresOrchestratorProvider>
+    <TroubleshootingContextProvider eventBus={eventBus}>
+      <FailuresOrchestratorProvider failures={failures}>
+        <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => setErr(false)} resetKeys={[err]}>
+          <Router>
+            <ModalProvider>
+              <EventBusContextProvider eventBus={eventBus}>
+                <Efb aircraftChecklistsProp={aircraftChecklists} />
+              </EventBusContextProvider>
+            </ModalProvider>
+          </Router>
+        </ErrorBoundary>
+      </FailuresOrchestratorProvider>
+    </TroubleshootingContextProvider>
   );
 };

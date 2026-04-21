@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import React, { FC } from 'react';
 import { AtsuStatusCodes } from '@atsu/AtsuStatusCodes';
 import { FansMode } from '@atsu/com/FutureAirNavigationSystem';

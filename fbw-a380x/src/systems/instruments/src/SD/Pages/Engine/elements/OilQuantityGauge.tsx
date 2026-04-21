@@ -14,7 +14,7 @@ const OilQuantityGauge: FC<OilQuantityGaugeProps> = ({ x, y, engine, active, val
   const startAngle = -90;
   const endAngle = 90;
   const min = 0;
-  const max = 19.3; // TODO maximum should be 18.3 but values as high as 19.0 are appearing in current model
+  const max = 18.3;
 
   return (
     <g id={`OilQuantityGauge-${engine}`}>

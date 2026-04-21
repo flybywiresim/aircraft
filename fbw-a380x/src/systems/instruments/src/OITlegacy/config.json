@@ -1,0 +1,15 @@
+{
+  "index": "./index.tsx",
+  "name": "OITlegacy",
+  "isInteractive": true,
+  "dimensions": {
+    "width": 1313,
+    "height": 860
+  },
+  "additionalImports": [
+    "/Pages/VCockpit/Instruments/Shared/Map/MapInstrument.html"
+  ],
+  "extraDeps": [
+    "/fbw-common/src/systems/instruments/src/EFB"
+  ]
+}

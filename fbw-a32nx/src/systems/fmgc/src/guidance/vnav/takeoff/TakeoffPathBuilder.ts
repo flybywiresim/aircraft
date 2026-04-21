@@ -1,4 +1,5 @@
-// Copyright (c) 2021-2024 FlyByWire Simulations
+// @ts-strict-ignore
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -8,7 +9,7 @@ import { Common, FlapConf } from '@fmgc/guidance/vnav/common';
 import { EngineModel } from '@fmgc/guidance/vnav/EngineModel';
 import { Predictions } from '@fmgc/guidance/vnav/Predictions';
 import { BaseGeometryProfile } from '@fmgc/guidance/vnav/profile/BaseGeometryProfile';
-import { VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
+import { ProfilePhase, VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
 
 export class TakeoffPathBuilder {
@@ -34,6 +35,7 @@ export class TakeoffPathBuilder {
       remainingFuelOnBoard: fuelOnBoard,
       speed: v2Speed + 10,
       mach: managedClimbSpeedMach,
+      profilePhase: ProfilePhase.Climb,
     });
   }
 
@@ -71,13 +73,13 @@ export class TakeoffPathBuilder {
       correctedN1,
       zeroFuelWeight,
       profile.lastCheckpoint.remainingFuelOnBoard,
-      0,
+      -profile.winds.getClimbTailwind(profile.lastCheckpoint.distanceFromStart, midwayAltitude),
       this.atmosphericConditions.isaDeviation,
       tropoPause,
+      perfFactor,
       false,
       takeoffFlapsSetting,
       false,
-      perfFactor,
     );
 
     profile.checkpoints.push({
@@ -88,6 +90,7 @@ export class TakeoffPathBuilder {
       remainingFuelOnBoard: profile.lastCheckpoint.remainingFuelOnBoard - fuelBurned,
       speed,
       mach: managedClimbSpeedMach,
+      profilePhase: ProfilePhase.Climb,
     });
   }
 
@@ -117,13 +120,13 @@ export class TakeoffPathBuilder {
       predictedN1,
       zeroFuelWeight,
       lastCheckpoint.remainingFuelOnBoard,
-      0,
+      -profile.winds.getClimbTailwind(profile.lastCheckpoint.distanceFromStart, midwayAltitude),
       this.atmosphericConditions.isaDeviation,
       tropoPause,
+      perfFactor,
       false,
       FlapConf.CLEAN,
       false,
-      perfFactor,
     );
 
     profile.checkpoints.push({
@@ -134,6 +137,7 @@ export class TakeoffPathBuilder {
       remainingFuelOnBoard: lastCheckpoint.remainingFuelOnBoard - fuelBurned,
       speed,
       mach: managedClimbSpeedMach,
+      profilePhase: ProfilePhase.Climb,
     });
   }
 }

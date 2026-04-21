@@ -7,7 +7,7 @@ indent_style = space
 insert_final_newline = false
 tab_width = 4
 
-[*.{js,jsx,ts,tsx}]
+[*.{js,jsx,mjs,ts,tsx}]
 indent_size = 2
 insert_final_newline = true
 tab_width = 2

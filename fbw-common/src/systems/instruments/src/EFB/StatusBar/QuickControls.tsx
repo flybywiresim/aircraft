@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
@@ -176,7 +177,7 @@ export const QuickControlsPane = ({
 
   const [brightnessSetting, setBrightnessSetting] = usePersistentNumberProperty('EFB_BRIGHTNESS', 0);
   const [brightness] = useSimVar('L:A32NX_EFB_BRIGHTNESS', 'number', 500);
-  const [usingAutobrightness, setUsingAutobrightness] = usePersistentNumberProperty('EFB_USING_AUTOBRIGHTNESS', 0);
+  const [usingAutobrightness, setUsingAutobrightness] = usePersistentNumberProperty('EFB_USING_AUTOBRIGHTNESS', 1);
   const [cabinAutoBrightness] = useSimVar('L:A32NX_CABIN_AUTOBRIGHTNESS', 'number', 500);
   const [cabinManualBrightness, setCabinManualBrightness] = usePersistentNumberProperty('CABIN_MANUAL_BRIGHTNESS', 0);
   const [usingCabinAutobrightness, setUsingCabinAutobrightness] = usePersistentNumberProperty(
@@ -513,7 +514,12 @@ export const QuickControls = () => {
   return (
     <>
       <TooltipWrapper text={t('StatusBar.TT.QuickControls')}>
-        <div onClick={() => setShowQuickControlsPane((old) => !old)}>
+        <div
+          onClick={(ev) => {
+            ev.stopPropagation();
+            setShowQuickControlsPane((old) => !old);
+          }}
+        >
           <Gear size={26} />
         </div>
       </TooltipWrapper>

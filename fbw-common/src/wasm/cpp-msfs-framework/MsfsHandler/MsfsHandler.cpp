@@ -21,13 +21,15 @@ void MsfsHandler::registerModule(Module* pModule) {
 
 bool MsfsHandler::initialize() {
   // Initialize SimConnect
-  bool result;
-  result = SUCCEEDED(SimConnect_Open(&hSimConnect, simConnectName.c_str(), nullptr, 0, 0, 0));
-  if (!result) {
+
+  simConnectInitialized = SimConnect_Open(&hSimConnect, simConnectName.c_str(), nullptr, 0, 0, 0) == S_OK;
+  if (!simConnectInitialized) {
     LOG_ERROR(simConnectName + ": Failed to initialize SimConnect");
     return false;
   }
   LOG_INFO(simConnectName + ": Initialized SimConnect");
+
+  bool result;
 
   // Initialize data manager
   result = dataManager.initialize(hSimConnect);
@@ -190,5 +192,10 @@ bool MsfsHandler::shutdown() {
   modules.clear();
   unregister_key_event_handler_EX1(reinterpret_cast<GAUGE_KEY_EVENT_HANDLER_EX1>(keyEventHandlerEx1), nullptr);
   unregister_all_named_vars();
+  if (simConnectInitialized) {
+    SimConnect_Close(hSimConnect);
+    simConnectInitialized = false;
+    hSimConnect           = 0;
+  }
   return result;
 }

@@ -128,6 +128,68 @@ struct base_fcu_knob_inputs
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_fcu_efis_panel_inputs_
+#define DEFINED_TYPEDEF_FOR_base_fcu_efis_panel_inputs_
+
+struct base_fcu_efis_panel_inputs
+{
+  efis_range_selection efis_range;
+  efis_mode_selection efis_mode;
+  efis_navaid_selection efis_navaid_1;
+  efis_navaid_selection efis_navaid_2;
+  boolean_T baro_is_inhg;
+  base_fcu_knob_inputs baro_knob;
+  boolean_T fd_button_pushed;
+  boolean_T ls_button_pushed;
+  boolean_T cstr_button_pushed;
+  boolean_T wpt_button_pushed;
+  boolean_T vord_button_pushed;
+  boolean_T ndb_button_pushed;
+  boolean_T arpt_button_pushed;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_fcu_afs_panel_inputs_
+#define DEFINED_TYPEDEF_FOR_base_fcu_afs_panel_inputs_
+
+struct base_fcu_afs_panel_inputs
+{
+  boolean_T loc_button_pressed;
+  boolean_T exped_button_pressed;
+  boolean_T appr_button_pressed;
+  boolean_T spd_mach_button_pressed;
+  boolean_T trk_fpa_button_pressed;
+  boolean_T metric_alt_button_pressed;
+  base_fcu_knob_inputs spd_knob;
+  base_fcu_knob_inputs hdg_trk_knob;
+  base_fcu_knob_inputs alt_knob;
+  boolean_T alt_increment_1000;
+  base_fcu_knob_inputs vs_fpa_knob;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_fcu_discrete_inputs_
+#define DEFINED_TYPEDEF_FOR_base_fcu_discrete_inputs_
+
+struct base_fcu_discrete_inputs
+{
+  boolean_T ap_1_engaged;
+  boolean_T fd_1_engaged;
+  boolean_T athr_1_engaged;
+  boolean_T ap_2_engaged;
+  boolean_T fd_2_engaged;
+  boolean_T athr_2_engaged;
+  boolean_T lights_test;
+  boolean_T pin_prog_qfe_avail;
+  base_fcu_efis_panel_inputs capt_efis_inputs;
+  base_fcu_efis_panel_inputs fo_efis_inputs;
+  base_fcu_afs_panel_inputs afs_inputs;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_arinc_429_
 #define DEFINED_TYPEDEF_FOR_base_arinc_429_
 
@@ -219,68 +281,6 @@ struct base_sim_data
   boolean_T tracking_mode_on_override;
   boolean_T tailstrike_protection_on;
   boolean_T computer_running;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_fcu_efis_panel_inputs_
-#define DEFINED_TYPEDEF_FOR_base_fcu_efis_panel_inputs_
-
-struct base_fcu_efis_panel_inputs
-{
-  efis_range_selection efis_range;
-  efis_mode_selection efis_mode;
-  efis_navaid_selection efis_navaid_1;
-  efis_navaid_selection efis_navaid_2;
-  boolean_T baro_is_inhg;
-  base_fcu_knob_inputs baro_knob;
-  boolean_T fd_button_pushed;
-  boolean_T ls_button_pushed;
-  boolean_T cstr_button_pushed;
-  boolean_T wpt_button_pushed;
-  boolean_T vord_button_pushed;
-  boolean_T ndb_button_pushed;
-  boolean_T arpt_button_pushed;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_fcu_afs_panel_inputs_
-#define DEFINED_TYPEDEF_FOR_base_fcu_afs_panel_inputs_
-
-struct base_fcu_afs_panel_inputs
-{
-  boolean_T loc_button_pressed;
-  boolean_T exped_button_pressed;
-  boolean_T appr_button_pressed;
-  boolean_T spd_mach_button_pressed;
-  boolean_T trk_fpa_button_pressed;
-  boolean_T metric_alt_button_pressed;
-  base_fcu_knob_inputs spd_knob;
-  base_fcu_knob_inputs hdg_trk_knob;
-  base_fcu_knob_inputs alt_knob;
-  boolean_T alt_increment_1000;
-  base_fcu_knob_inputs vs_fpa_knob;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_fcu_discrete_inputs_
-#define DEFINED_TYPEDEF_FOR_base_fcu_discrete_inputs_
-
-struct base_fcu_discrete_inputs
-{
-  boolean_T ap_1_engaged;
-  boolean_T fd_1_engaged;
-  boolean_T athr_1_engaged;
-  boolean_T ap_2_engaged;
-  boolean_T fd_2_engaged;
-  boolean_T athr_2_engaged;
-  boolean_T lights_test;
-  boolean_T pin_prog_qfe_avail;
-  base_fcu_efis_panel_inputs capt_efis_inputs;
-  base_fcu_efis_panel_inputs fo_efis_inputs;
-  base_fcu_afs_panel_inputs afs_inputs;
 };
 
 #endif

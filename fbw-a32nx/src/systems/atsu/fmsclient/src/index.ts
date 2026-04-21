@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 //  Copyright (c) 2023 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
@@ -22,23 +23,30 @@ import {
   EnvironmentData,
   FlightStateData,
   PositionReportData,
+  WindUplinkMessage,
+  WindRequestMessage,
 } from '@datalink/common';
 import { FmsRouterMessages, RouterFmsMessages } from '@datalink/router';
-import { EventBus, EventSubscriber, Publisher } from '@microsoft/msfs-sdk';
+import { EventBus, Instrument, InstrumentBackplane, MappedSubject } from '@microsoft/msfs-sdk';
 import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
 import { FlightPlanSynchronization } from './FlightPlanSynchronization';
 import { MessageStorage } from './MessageStorage';
+import { A32NXFmBusEvents, A32NXFmBusPublisher } from '@shared/publishers/A32NXFmBusPublisher';
+import { Arinc429LocalVarConsumerSubject, Arinc429Register } from '@flybywiresim/fbw-sdk';
 
-export class FmsClient {
-  private readonly bus: EventBus;
+export class FmsClient implements Instrument {
+  private readonly bus = new EventBus();
+  private readonly backplane = new InstrumentBackplane();
 
   private readonly messageStorage: MessageStorage;
 
   private readonly flightPlan: FlightPlanSynchronization;
 
-  private readonly publisher: Publisher<FmsAtcMessages & FmsAocMessages & FmsRouterMessages>;
+  private readonly publisher = this.bus.getPublisher<FmsAtcMessages & FmsAocMessages & FmsRouterMessages>();
 
-  private readonly subscriber: EventSubscriber<AtcFmsMessages & AocFmsMessages & RouterFmsMessages & FmsRouterMessages>;
+  private readonly subscriber = this.bus.getSubscriber<
+    A32NXFmBusEvents & AtcFmsMessages & AocFmsMessages & RouterFmsMessages & FmsRouterMessages
+  >();
 
   private requestId: number = 0;
 
@@ -52,6 +60,11 @@ export class FmsClient {
 
   private weatherResponseCallbacks: ((response: [AtsuStatusCodes, WeatherMessage], requestId: number) => boolean)[] =
     [];
+
+  private windsResponseCallbacks: ((
+    response: [AtsuStatusCodes, WindUplinkMessage | null],
+    requestId: number,
+  ) => boolean)[] = [];
 
   private positionReportDataCallbacks: ((response: PositionReportData, requestId: number) => boolean)[] = [];
 
@@ -75,8 +88,6 @@ export class FmsClient {
 
   private automaticPositionReportIsActive: boolean = false;
 
-  private fms: any = null;
-
   private datalinkStatus: { vhf: DatalinkStatusCode; satellite: DatalinkStatusCode; hf: DatalinkStatusCode } = {
     vhf: DatalinkStatusCode.NotInstalled,
     satellite: DatalinkStatusCode.NotInstalled,
@@ -89,43 +100,28 @@ export class FmsClient {
     hf: DatalinkModeCode.None,
   };
 
-  constructor(fms: any, flightPlanManager: FlightPlanInterface) {
-    this.bus = new EventBus();
-    this.publisher = this.bus.getPublisher<FmsAtcMessages & FmsAocMessages & FmsRouterMessages>();
-    this.subscriber = this.bus.getSubscriber<AtcFmsMessages & AocFmsMessages & RouterFmsMessages & FmsRouterMessages>();
+  private readonly fmsFlightNumber = MappedSubject.create(
+    (words) => Arinc429Register.assembleIso5Value(false, ...words),
+    Arinc429LocalVarConsumerSubject.create(this.subscriber.on('a32nx_fm_flight_number_1_1')),
+    Arinc429LocalVarConsumerSubject.create(this.subscriber.on('a32nx_fm_flight_number_2_1')),
+    Arinc429LocalVarConsumerSubject.create(this.subscriber.on('a32nx_fm_flight_number_3_1')),
+    Arinc429LocalVarConsumerSubject.create(this.subscriber.on('a32nx_fm_flight_number_4_1')),
+  );
 
-    this.fms = fms;
+  // FIXME should not take any of these parameters, as the ATSU is a separate system
+  // that can only communicate with the FMS and MCDU via ARINC429.
+  constructor(
+    private readonly fms: any,
+    flightPlanManager: FlightPlanInterface,
+  ) {
     this.flightPlan = new FlightPlanSynchronization(this.bus, flightPlanManager);
     this.messageStorage = new MessageStorage(this.subscriber);
 
+    this.backplane.addPublisher('FmBus', new A32NXFmBusPublisher(this.bus));
+
     // register the system control handlers
-    this.subscriber.on('aocResetData').handle(() => this.messageStorage.resetAocData());
-    this.subscriber.on('atcResetData').handle(() => {
-      this.messageStorage.resetAtcData();
-      this.atisAutoUpdates = [];
-      this.atisReportsPrintActive = false;
-      this.automaticPositionReportIsActive = false;
-
-      this.atcStationStatus = {
-        current: '',
-        next: '',
-        notificationTime: 0,
-        mode: FansMode.FansNone,
-        logonInProgress: false,
-      };
-
-      this.datalinkStatus = {
-        vhf: DatalinkStatusCode.NotInstalled,
-        satellite: DatalinkStatusCode.NotInstalled,
-        hf: DatalinkStatusCode.NotInstalled,
-      };
-
-      this.datalinkMode = {
-        vhf: DatalinkModeCode.None,
-        satellite: DatalinkModeCode.None,
-        hf: DatalinkModeCode.None,
-      };
-    });
+    this.subscriber.on('aocResetData').handle(this.onAocReset.bind(this));
+    this.subscriber.on('atcResetData').handle(this.onAtcReset.bind(this));
 
     // register the streaming handlers
     this.subscriber.on('atcSystemStatus').handle((status) => this.fms.addNewAtsuMessage(status));
@@ -207,6 +203,66 @@ export class FmsClient {
         return true;
       });
     });
+    this.subscriber.on('aocWindsResponse').handle((response) => {
+      this.windsResponseCallbacks.every((callback, index) => {
+        if (callback(response.data, response.requestId)) {
+          this.windsResponseCallbacks.splice(index, 1);
+          return false;
+        }
+        return true;
+      });
+    });
+  }
+
+  /** @inheritdoc */
+  public init(): void {
+    this.backplane.init();
+  }
+
+  /** @inheritdoc */
+  public onUpdate(): void {
+    this.backplane.onUpdate();
+  }
+
+  /** Handles FMS reset (completion of flight, nav DB swap, etc.) */
+  public onFmsReset(): void {
+    this.resetAtisAutoUpdate();
+    this.onAocReset();
+    this.onAtcReset();
+  }
+
+  private onAocReset(): void {
+    this.messageStorage.resetAocData();
+  }
+
+  private onAtcReset(): void {
+    this.messageStorage.resetAtcData();
+    this.atisAutoUpdates = [];
+    this.atisReportsPrintActive = false;
+    this.automaticPositionReportIsActive = false;
+
+    // FIXME don't allocate a new object
+    this.atcStationStatus = {
+      current: '',
+      next: '',
+      notificationTime: 0,
+      mode: FansMode.FansNone,
+      logonInProgress: false,
+    };
+
+    // FIXME don't allocate a new object
+    this.datalinkStatus = {
+      vhf: DatalinkStatusCode.NotInstalled,
+      satellite: DatalinkStatusCode.NotInstalled,
+      hf: DatalinkStatusCode.NotInstalled,
+    };
+
+    // FIXME don't allocate a new object
+    this.datalinkMode = {
+      vhf: DatalinkModeCode.None,
+      satellite: DatalinkModeCode.None,
+      hf: DatalinkModeCode.None,
+    };
   }
 
   public maxUplinkDelay: number = -1;
@@ -294,6 +350,22 @@ export class FmsClient {
     });
   }
 
+  public receiveWindUplink(
+    request: WindRequestMessage,
+    sentCallback: () => void,
+  ): Promise<[AtsuStatusCodes, WindUplinkMessage | null]> {
+    return new Promise<[AtsuStatusCodes, WindUplinkMessage | null]>((resolve, _reject) => {
+      const requestId = this.requestId++;
+      this.publisher.pub('aocRequestWinds', { ...request, requestId }, true, false);
+      sentCallback();
+
+      this.windsResponseCallbacks.push((response: [AtsuStatusCodes, WindUplinkMessage | null], id: number) => {
+        if (id === requestId) resolve(response);
+        return id === requestId;
+      });
+    });
+  }
+
   public registerMessages(messages: AtsuMessage[]): void {
     if (messages[0].Type === AtsuMessageType.CPDLC) {
       this.publisher.pub('atcRegisterCpdlcMessages', messages as CpdlcMessage[], true, false);
@@ -358,6 +430,10 @@ export class FmsClient {
     });
   }
 
+  public hasActiveAtc(): boolean {
+    return this.atcStationStatus.current !== '';
+  }
+
   public currentStation(): string {
     return this.atcStationStatus.current;
   }
@@ -375,7 +451,7 @@ export class FmsClient {
   }
 
   public flightNumber(): string {
-    return SimVar.GetSimVarValue('ATC FLIGHT NUMBER', 'string');
+    return this.fmsFlightNumber.get();
   }
 
   public logonInProgress(): boolean {

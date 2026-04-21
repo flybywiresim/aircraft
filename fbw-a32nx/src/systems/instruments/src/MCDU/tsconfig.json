@@ -1,0 +1,7 @@
+  {
+    "extends": "../../tsconfig.json",
+
+    "compilerOptions": {
+      "moduleResolution": "node" /* Enables compatibility with MSFS SDK bare global imports */,
+    }
+  }

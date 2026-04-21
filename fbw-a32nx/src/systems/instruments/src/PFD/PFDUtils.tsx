@@ -32,13 +32,13 @@ export class LagFilter {
 
   private PreviousOutput: number;
 
-  private TimeConstant: number;
+  private CornerFrequency: number;
 
-  constructor(timeConstant: number) {
+  constructor(cornerFrequency: number) {
     this.PreviousInput = 0;
     this.PreviousOutput = 0;
 
-    this.TimeConstant = timeConstant;
+    this.CornerFrequency = cornerFrequency;
   }
 
   reset() {
@@ -55,7 +55,7 @@ export class LagFilter {
   step(input: number, deltaTime: number): number {
     const filteredInput = !Number.isNaN(input) ? input : 0;
 
-    const scaledDeltaTime = deltaTime * this.TimeConstant;
+    const scaledDeltaTime = deltaTime * this.CornerFrequency;
     const sum0 = scaledDeltaTime + 2;
 
     const output =
@@ -69,6 +69,10 @@ export class LagFilter {
       return output;
     }
     return 0;
+  }
+
+  public previousOutput(): number {
+    return this.PreviousOutput;
   }
 }
 

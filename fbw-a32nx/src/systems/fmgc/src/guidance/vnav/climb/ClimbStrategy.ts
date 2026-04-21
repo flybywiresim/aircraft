@@ -1,11 +1,13 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
-import { DEFAULT_AIRCRAFT_CONTROL_SURFACE_CONFIG, DescentStrategy } from '@fmgc/guidance/vnav/descent/DescentStrategy';
-import { WindComponent } from '@fmgc/guidance/vnav/wind';
-import { AircraftConfiguration as AircraftCtlSurfcConfiguration } from '@fmgc/guidance/vnav/descent/ApproachPathBuilder';
+import { DescentStrategy } from '@fmgc/guidance/vnav/descent/DescentStrategy';
+import {
+  AircraftConfiguration as AircraftCtlSurfcConfiguration,
+  DEFAULT_AIRCRAFT_CONTROL_SURFACE_CONFIG,
+} from '@fmgc/guidance/vnav/descent/ApproachPathBuilder';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { UnitType } from '@microsoft/msfs-sdk';
 import { AircraftConfig, EngineModelParameters } from '@fmgc/flightplanning/AircraftConfigTypes';
@@ -30,7 +32,7 @@ export interface ClimbStrategy {
     speed: Knots,
     mach: Mach,
     fuelOnBoard: number,
-    headwindComponent: WindComponent,
+    headwindComponent: number,
     config?: AircraftCtlSurfcConfiguration,
   ): StepResults;
 
@@ -40,7 +42,7 @@ export interface ClimbStrategy {
     speed: Knots,
     mach: Mach,
     fuelOnBoard: number,
-    headwindComponent: WindComponent,
+    headwindComponent: number,
     config?: AircraftCtlSurfcConfiguration,
   ): StepResults;
 
@@ -50,7 +52,7 @@ export interface ClimbStrategy {
     initialSpeed: Knots,
     mach: Mach,
     fuelOnBoard: number,
-    headwindComponent: WindComponent,
+    headwindComponent: number,
     config?: AircraftCtlSurfcConfiguration,
   ): StepResults;
 }
@@ -69,7 +71,7 @@ export class VerticalSpeedStrategy implements ClimbStrategy, DescentStrategy {
     speed: Knots,
     mach: Mach,
     fuelOnBoard: number,
-    headwindComponent: WindComponent,
+    headwindComponent: number,
     config: AircraftCtlSurfcConfiguration = DEFAULT_AIRCRAFT_CONTROL_SURFACE_CONFIG,
   ): StepResults {
     const { zeroFuelWeight, perfFactor, tropoPause } = this.observer.get();
@@ -84,12 +86,12 @@ export class VerticalSpeedStrategy implements ClimbStrategy, DescentStrategy {
       zeroFuelWeight,
       fuelOnBoard,
       this.atmosphericConditions.isaDeviation,
-      headwindComponent.value,
+      headwindComponent,
       tropoPause,
+      perfFactor,
       config.gearExtended,
       config.flapConfig,
       config.gearExtended,
-      perfFactor,
     );
   }
 
@@ -99,7 +101,7 @@ export class VerticalSpeedStrategy implements ClimbStrategy, DescentStrategy {
     speed: Knots,
     mach: Mach,
     fuelOnBoard: number,
-    headwindComponent: WindComponent,
+    headwindComponent: number,
     config: AircraftCtlSurfcConfiguration = DEFAULT_AIRCRAFT_CONTROL_SURFACE_CONFIG,
   ): StepResults {
     const { zeroFuelWeight, perfFactor, tropoPause } = this.observer.get();
@@ -114,12 +116,12 @@ export class VerticalSpeedStrategy implements ClimbStrategy, DescentStrategy {
       zeroFuelWeight,
       fuelOnBoard,
       this.atmosphericConditions.isaDeviation,
-      headwindComponent.value,
+      headwindComponent,
       tropoPause,
+      perfFactor,
       config.speedbrakesExtended,
       config.flapConfig,
       config.gearExtended,
-      perfFactor,
     );
   }
 
@@ -129,7 +131,7 @@ export class VerticalSpeedStrategy implements ClimbStrategy, DescentStrategy {
     initialSpeed: Knots,
     mach: Mach,
     fuelOnBoard: number,
-    headwindComponent: WindComponent,
+    headwindComponent: number,
     config: AircraftCtlSurfcConfiguration = DEFAULT_AIRCRAFT_CONTROL_SURFACE_CONFIG,
   ): StepResults {
     const { zeroFuelWeight, perfFactor, tropoPause } = this.observer.get();
@@ -160,13 +162,13 @@ export class VerticalSpeedStrategy implements ClimbStrategy, DescentStrategy {
       n1,
       zeroFuelWeight,
       fuelOnBoard,
-      headwindComponent.value,
+      headwindComponent,
       this.atmosphericConditions.isaDeviation,
       tropoPause,
+      perfFactor,
       config.speedbrakesExtended,
       config.flapConfig,
       config.gearExtended,
-      perfFactor,
     );
   }
 }
@@ -185,7 +187,7 @@ export class FlightPathAngleStrategy implements ClimbStrategy, DescentStrategy {
     initialSpeed: Knots,
     mach: Mach,
     fuelOnBoard: number,
-    headwindComponent: WindComponent,
+    headwindComponent: number,
     config: AircraftCtlSurfcConfiguration = DEFAULT_AIRCRAFT_CONTROL_SURFACE_CONFIG,
   ): StepResults {
     const { zeroFuelWeight, perfFactor, tropoPause } = this.observer.get();
@@ -203,12 +205,12 @@ export class FlightPathAngleStrategy implements ClimbStrategy, DescentStrategy {
       zeroFuelWeight,
       fuelOnBoard,
       this.atmosphericConditions.isaDeviation,
-      headwindComponent.value,
+      headwindComponent,
       tropoPause,
+      perfFactor,
       config.gearExtended,
       config.flapConfig,
       config.speedbrakesExtended,
-      perfFactor,
     );
   }
 
@@ -218,7 +220,7 @@ export class FlightPathAngleStrategy implements ClimbStrategy, DescentStrategy {
     speed: Knots,
     mach: Mach,
     fuelOnBoard: number,
-    headwindComponent: WindComponent,
+    headwindComponent: number,
     config: AircraftCtlSurfcConfiguration = DEFAULT_AIRCRAFT_CONTROL_SURFACE_CONFIG,
   ): StepResults {
     const { zeroFuelWeight, perfFactor, tropoPause } = this.observer.get();
@@ -237,12 +239,12 @@ export class FlightPathAngleStrategy implements ClimbStrategy, DescentStrategy {
       zeroFuelWeight,
       fuelOnBoard,
       this.atmosphericConditions.isaDeviation,
-      headwindComponent.value,
+      headwindComponent,
       tropoPause,
+      perfFactor,
       config.gearExtended,
       config.flapConfig,
       config.speedbrakesExtended,
-      perfFactor,
     );
   }
 
@@ -256,7 +258,7 @@ export class FlightPathAngleStrategy implements ClimbStrategy, DescentStrategy {
     initialSpeed: Knots,
     mach: Mach,
     fuelOnBoard: number,
-    headwindComponent: WindComponent,
+    headwindComponent: number,
     config: AircraftCtlSurfcConfiguration = DEFAULT_AIRCRAFT_CONTROL_SURFACE_CONFIG,
   ): StepResults {
     const { zeroFuelWeight, perfFactor, tropoPause } = this.observer.get();
@@ -287,14 +289,13 @@ export class FlightPathAngleStrategy implements ClimbStrategy, DescentStrategy {
       predictedN1,
       zeroFuelWeight,
       fuelOnBoard,
-      headwindComponent.value,
+      headwindComponent,
       this.atmosphericConditions.isaDeviation,
       tropoPause,
+      perfFactor,
       config.gearExtended,
       config.flapConfig,
       config.speedbrakesExtended,
-      0,
-      perfFactor,
     );
   }
 }
@@ -312,7 +313,7 @@ export class ClimbThrustClimbStrategy implements ClimbStrategy {
     speed: Knots,
     mach: Mach,
     fuelOnBoard: number,
-    headwindComponent: WindComponent,
+    headwindComponent: number,
     config: AircraftCtlSurfcConfiguration = DEFAULT_AIRCRAFT_CONTROL_SURFACE_CONFIG,
   ): StepResults {
     const { zeroFuelWeight, tropoPause, perfFactor } = this.observer.get();
@@ -330,13 +331,13 @@ export class ClimbThrustClimbStrategy implements ClimbStrategy {
       ),
       zeroFuelWeight,
       fuelOnBoard,
-      headwindComponent.value,
+      headwindComponent,
       this.atmosphericConditions.isaDeviation,
       tropoPause,
+      perfFactor,
       config.speedbrakesExtended,
       config.flapConfig,
-      config.speedbrakesExtended,
-      perfFactor,
+      config.gearExtended,
     );
   }
 
@@ -346,7 +347,7 @@ export class ClimbThrustClimbStrategy implements ClimbStrategy {
     speed: Knots,
     mach: Mach,
     fuelOnBoard: number,
-    headwindComponent: WindComponent,
+    headwindComponent: number,
     config: AircraftCtlSurfcConfiguration = DEFAULT_AIRCRAFT_CONTROL_SURFACE_CONFIG,
   ): StepResults {
     const { zeroFuelWeight, tropoPause, perfFactor } = this.observer.get();
@@ -360,13 +361,13 @@ export class ClimbThrustClimbStrategy implements ClimbStrategy {
       getClimbThrustCorrectedN1Limit(this.acConfig.engineModelParameters, this.atmosphericConditions, initialAltitude),
       zeroFuelWeight,
       fuelOnBoard,
-      headwindComponent.value,
+      headwindComponent,
       this.atmosphericConditions.isaDeviation,
       tropoPause,
+      perfFactor,
       config.speedbrakesExtended,
       config.flapConfig,
       config.gearExtended,
-      perfFactor,
     );
   }
 
@@ -376,7 +377,7 @@ export class ClimbThrustClimbStrategy implements ClimbStrategy {
     initialSpeed: Knots,
     mach: Mach,
     fuelOnBoard: number,
-    headwindComponent: WindComponent,
+    headwindComponent: number,
     config: AircraftCtlSurfcConfiguration = DEFAULT_AIRCRAFT_CONTROL_SURFACE_CONFIG,
   ): StepResults {
     const { zeroFuelWeight, perfFactor, tropoPause } = this.observer.get();
@@ -390,13 +391,13 @@ export class ClimbThrustClimbStrategy implements ClimbStrategy {
       getClimbThrustCorrectedN1Limit(this.acConfig.engineModelParameters, this.atmosphericConditions, initialAltitude),
       zeroFuelWeight,
       fuelOnBoard,
-      headwindComponent.value,
+      headwindComponent,
       this.atmosphericConditions.isaDeviation,
       tropoPause,
+      perfFactor,
       config.speedbrakesExtended,
       config.flapConfig,
       config.gearExtended,
-      perfFactor,
     );
   }
 }

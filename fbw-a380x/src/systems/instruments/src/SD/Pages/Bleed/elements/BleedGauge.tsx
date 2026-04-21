@@ -12,28 +12,45 @@ interface BleedGaugeProps {
 }
 
 const BleedGauge: FC<BleedGaugeProps> = ({ x, y, engine, sdacDatum, packValveOpen, packFlowRate }) => {
-  const radius = 39;
+  const radius = 41;
   const startAngle = -90;
   const endAngle = 90;
   const min = 0;
   const max = 1;
 
   return (
-    <g id={`BleedGauge-${engine}`}>
+    <g id={`BleedGauge-${engine}`} style={{ transform: `translate3d(${x}px, ${y}px, 0px)` }}>
+      {/* Flow control valve */}
+      <Valve
+        x={0}
+        y={0}
+        radius={19.5}
+        css={`
+          ${packValveOpen ? 'Green' : 'Amber'} Line NoFill
+        `}
+        position={packValveOpen ? 'V' : 'H'}
+        sdacDatum={sdacDatum}
+      />
+
+      <path
+        className={`${packValveOpen ? 'Green' : 'Amber'} Line NoFill`}
+        d={`M-1,-51 l 0,-13 l ${engine % 2 === 0 ? '-' : ''}69, 0`}
+      />
+
       {/* Pack inlet flow */}
       <GaugeComponent
-        x={x}
-        y={y}
+        x={0}
+        y={0}
         radius={radius}
         startAngle={startAngle}
         endAngle={endAngle}
         visible
-        className="GaugeComponent Gauge"
+        className="White SW2 NoFill"
       >
         <GaugeMarkerComponent
           value={0}
-          x={x}
-          y={y}
+          x={0}
+          y={0}
           min={min}
           max={max}
           radius={radius}
@@ -44,8 +61,8 @@ const BleedGauge: FC<BleedGaugeProps> = ({ x, y, engine, sdacDatum, packValveOpe
         />
         <GaugeMarkerComponent
           value={0.5}
-          x={x}
-          y={y}
+          x={0}
+          y={0}
           min={min}
           max={max}
           radius={radius}
@@ -56,8 +73,8 @@ const BleedGauge: FC<BleedGaugeProps> = ({ x, y, engine, sdacDatum, packValveOpe
         />
         <GaugeMarkerComponent
           value={1}
-          x={x}
-          y={y}
+          x={0}
+          y={0}
           min={min}
           max={max}
           radius={radius}
@@ -70,8 +87,8 @@ const BleedGauge: FC<BleedGaugeProps> = ({ x, y, engine, sdacDatum, packValveOpe
           <GaugeMarkerComponent
             // value={packInletFlowPercentage < 80 ? 80 : packInletFlowPercentage}
             value={packFlowRate}
-            x={x}
-            y={y}
+            x={0}
+            y={0}
             min={min}
             max={max}
             radius={radius}
@@ -79,28 +96,12 @@ const BleedGauge: FC<BleedGaugeProps> = ({ x, y, engine, sdacDatum, packValveOpe
             endAngle={endAngle}
             className="GaugeIndicator Gauge LineRound"
             indicator
-            multiplierOuter={1.1}
+            halfIndicator
+            multiplierInner={0.47}
+            multiplierOuter={1.15}
           />
         )}
       </GaugeComponent>
-
-      {/* Flow control valve */}
-      <Valve x={x} y={y} radius={19} css="BackgroundFill Background" position="H" sdacDatum={sdacDatum} />
-      <Valve
-        x={x}
-        y={y}
-        radius={19}
-        css={`
-          ${packValveOpen ? 'Green' : 'Amber'} Line
-        `}
-        position={packValveOpen ? 'V' : 'H'}
-        sdacDatum={sdacDatum}
-      />
-
-      <path
-        className={`${packValveOpen ? 'Green' : 'Amber'} Line`}
-        d={`M${x},${y - 49} l 0,-12 l ${engine % 2 === 0 ? '-' : ''}67, 0`}
-      />
     </g>
   );
 };

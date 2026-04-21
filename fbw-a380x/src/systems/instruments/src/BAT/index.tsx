@@ -16,7 +16,7 @@ const BatRoot = () => {
   }
 
   // mapping of knob (lvar) values to battery numbers to allow easy lvar and model values
-  const batteryMap = [4, 3, 0, 1, 2]; // ESS, APU, OFF, BAT1, BAT2
+  const batteryMap = [3, 4, 0, 1, 2]; // ESS, APU, OFF, BAT1, BAT2
 
   return (
     <svg className={`bat-svg${selectedBattery == 2 ? ' off' : ''}`} viewBox="0 0 200 100">

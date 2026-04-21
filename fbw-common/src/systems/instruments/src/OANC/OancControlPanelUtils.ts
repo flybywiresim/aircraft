@@ -1,13 +1,20 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { ArraySubject, ConsumerSubject, DmsFormatter2, EventBus, Subject, UnitType } from '@microsoft/msfs-sdk';
-import { AmdbAirportSearchResult, FmsOansData } from '@flybywiresim/fbw-sdk';
+import { ArraySubject, DmsFormatter2, Subject, UnitType } from '@microsoft/msfs-sdk';
+import { AmdbAirportSearchResult, AmdbProperties } from '@flybywiresim/fbw-sdk';
 
 export enum ControlPanelAirportSearchMode {
   Icao,
   Iata,
   City,
+}
+
+export enum ControlPanelMapDataSearchMode {
+  Runway,
+  Taxiway,
+  Stand,
+  Other,
 }
 
 export class ControlPanelUtils {
@@ -33,6 +40,26 @@ export class ControlPanelUtils {
     }
     return prop;
   }
+
+  static getMapDataSearchModeProp(mode: ControlPanelMapDataSearchMode): keyof AmdbProperties {
+    let prop: keyof AmdbProperties;
+    switch (mode) {
+      default:
+      case ControlPanelMapDataSearchMode.Runway:
+        prop = 'idthr';
+        break;
+      case ControlPanelMapDataSearchMode.Taxiway:
+        prop = 'idlin';
+        break;
+      case ControlPanelMapDataSearchMode.Stand:
+        prop = 'idstd';
+        break;
+      case ControlPanelMapDataSearchMode.Other:
+        prop = 'ident';
+        break;
+    }
+    return prop;
+  }
 }
 
 export class ControlPanelStore {
@@ -48,30 +75,13 @@ export class ControlPanelStore {
 
   public readonly airportSearchSelectedAirportIndex = Subject.create<number | null>(null);
 
+  public readonly mapDataSearchMode = Subject.create<number | null>(ControlPanelMapDataSearchMode.Runway);
+
+  public readonly mapDataSearchData = ArraySubject.create<string>();
+
   public readonly selectedAirport = Subject.create<AmdbAirportSearchResult | null>(null);
 
   public readonly loadedAirport = Subject.create<AmdbAirportSearchResult | null>(null);
 
   public readonly isAirportSelectionPending = Subject.create(false);
-}
-
-export class FmsDataStore {
-  constructor(private bus: EventBus) {
-    const sub = this.bus.getSubscriber<FmsOansData>();
-    this.origin.setConsumer(sub.on('fmsOrigin'));
-    this.destination.setConsumer(sub.on('fmsDestination'));
-    this.alternate.setConsumer(sub.on('fmsAlternate'));
-    this.departureRunway.setConsumer(sub.on('fmsDepartureRunway'));
-    this.landingRunway.setConsumer(sub.on('fmsLandingRunway'));
-  }
-
-  public readonly origin = ConsumerSubject.create<string | null>(null, null);
-
-  public readonly destination = ConsumerSubject.create<string | null>(null, null);
-
-  public readonly alternate = ConsumerSubject.create<string | null>(null, null);
-
-  public readonly departureRunway = ConsumerSubject.create<string | null>(null, null);
-
-  public readonly landingRunway = ConsumerSubject.create<string | null>(null, null);
 }

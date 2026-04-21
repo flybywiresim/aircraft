@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import React, { FC } from 'react';
 import { MessageElement } from '../../Elements/MessageElement';
 import { MessageVisualizationProps } from '../Registry';

@@ -55,6 +55,10 @@ pub(super) struct A380DirectCurrentElectrical {
     ess_in_flight_sply2: DelayedFalseLogicGate,
     ess_in_flight_contactor: Contactor,
     dc_ess_subbus: ElectricalBus,
+    ess_refuel_bus_contactors: [Contactor; 2],
+    ess_fuel_buses: [ElectricalBus; 2],
+    refuel_on_bat_contactors: [Contactor; 2],
+    refuel_on_bat_bus: ElectricalBus,
 }
 impl A380DirectCurrentElectrical {
     pub fn new(context: &mut InitContext) -> Self {
@@ -91,19 +95,16 @@ impl A380DirectCurrentElectrical {
             tr_1: BatteryChargeRectifierUnit::new(
                 context,
                 1,
-                ElectricalBusType::DirectCurrent(1),
                 ElectricalBusType::DirectCurrentHot(1),
             ),
             tr_2: BatteryChargeRectifierUnit::new(
                 context,
                 2,
-                ElectricalBusType::DirectCurrent(2),
                 ElectricalBusType::DirectCurrentHot(2),
             ),
             tr_ess: BatteryChargeRectifierUnit::new(
                 context,
                 3,
-                ElectricalBusType::DirectCurrentEssential,
                 ElectricalBusType::DirectCurrentHot(3),
             ),
             tr_1_contactor: Contactor::new(context, "990PU1"),
@@ -128,6 +129,19 @@ impl A380DirectCurrentElectrical {
             dc_ess_subbus: ElectricalBus::new(
                 context,
                 ElectricalBusType::DirectCurrentNamed("108PH"),
+            ),
+
+            // 20PR + 21PR (using two contactors as the current electrical model doesn't support switches)
+            ess_refuel_bus_contactors: [1, 2]
+                .map(|i| Contactor::new(context, &format!("20PR.{i}"))),
+            ess_fuel_buses: ["501PP", "503PP"]
+                .map(|name| ElectricalBus::new(context, ElectricalBusType::Sub(name))),
+            // 21PR + 1000PR3 (using two contactors as the current electrical model doesn't support switches)
+            refuel_on_bat_contactors: [1, 2]
+                .map(|i| Contactor::new(context, &format!("1000PR3.{i}"))),
+            refuel_on_bat_bus: ElectricalBus::new(
+                context,
+                ElectricalBusType::DirectCurrentNamed("502PP"),
             ),
         }
     }
@@ -160,7 +174,7 @@ impl A380DirectCurrentElectrical {
                 &self.battery_2,
                 &mut self.tr_2_contactor,
                 &self.dc_bus_2,
-                !ac_state.tr_2_powered_by_ac_bus(),
+                ac_state.ground_servicing_active(),
             ),
             (
                 &mut self.tr_ess,
@@ -214,7 +228,7 @@ impl A380DirectCurrentElectrical {
             && !self.tr_1.battery_nearly_empty()
             && !ac_state.any_non_essential_bus_powered(electricity)
             || rat.should_deploy();
-        self.tr_1.update(electricity, should_close_elc, false);
+        self.tr_1.update(should_close_elc);
         self.battery_1_contactor
             .close_when(self.tr_1.should_close_battery_connector());
         self.battery_1_emergency_contactor
@@ -226,20 +240,27 @@ impl A380DirectCurrentElectrical {
         electricity.flow(&self.battery_1_emergency_contactor, &self.dc_ess_bus);
 
         electricity.supplied_by(&self.battery_2);
-        self.tr_2.update(electricity, false, false);
+        self.tr_2.update(false);
         self.battery_2_contactor
             .close_when(self.tr_2.should_close_battery_connector());
         electricity.flow(&self.battery_2_contactor, &self.battery_2);
         electricity.flow(&self.hot_bus_2, &self.battery_2);
         electricity.flow(&self.battery_2_contactor, &self.dc_bus_2);
 
+        // TODO: should not close when battery failed (signal from BCRU)
+        // TODO: complete logic
+        let should_close_ess_bat_lc = overhead.bat_is_auto(1)
+            && overhead.bat_is_auto(3)
+            && !self.tr_ess.battery_nearly_empty()
+            && !ac_state.any_non_essential_bus_powered(electricity)
+            || rat.should_deploy();
         let emergency_config = !electricity.is_powered(&self.dc_bus_1)
             && emergency_config.is_active()
             || rat.should_deploy();
         electricity.supplied_by(&self.battery_ess);
-        self.tr_ess.update(electricity, false, emergency_config);
+        self.tr_ess.update(emergency_config);
         self.battery_ess_contactor
-            .close_when(self.tr_ess.should_close_battery_connector());
+            .close_when(self.tr_ess.should_close_battery_connector() || should_close_ess_bat_lc);
         electricity.flow(&self.battery_ess_contactor, &self.battery_ess);
         electricity.flow(&self.hot_bus_ess, &self.battery_ess);
         electricity.flow(&self.battery_ess_contactor, &self.dc_ess_bus);
@@ -287,11 +308,13 @@ impl A380DirectCurrentElectrical {
         electricity.flow(&self.dc_bus_2_to_dc_eha_contactor, &self.dc_eha_bus);
         electricity.flow(&self.inter_bus_line_ess_contactor, &self.dc_eha_bus);
 
-        self.tr_2_to_dc_gnd_flt_service_bus_contactor.close_when(
-            electricity.is_powered(&self.tr_2) && !electricity.is_powered(&self.dc_bus_2),
-        );
+        self.tr_2_to_dc_gnd_flt_service_bus_contactor
+            .close_when(self.tr_2.should_close_ground_service_line_contactor());
         self.dc_bus_2_to_dc_gnd_flt_service_bus_contactor
-            .close_when(electricity.is_powered(&self.dc_bus_2));
+            .close_when(
+                electricity.is_powered(&self.dc_bus_2)
+                    && self.tr_2_to_dc_gnd_flt_service_bus_contactor.is_open(),
+            );
         electricity.flow(&self.tr_2, &self.tr_2_to_dc_gnd_flt_service_bus_contactor);
         electricity.flow(
             &self.dc_bus_2,
@@ -330,6 +353,27 @@ impl A380DirectCurrentElectrical {
         electricity.flow(&self.dc_ess_bus, &self.ess_in_flight_contactor);
         // 108PH is powered by 111PH which is powered by DC ESS through the ESS IN FLIGHT contactor
         electricity.flow(&self.ess_in_flight_contactor, &self.dc_ess_subbus);
+
+        // TODO: implement refuel on bat switching
+        let mut refuel_on_bat = false;
+        for (ess, dc2) in self
+            .ess_refuel_bus_contactors
+            .iter_mut()
+            .zip(&mut self.refuel_on_bat_contactors)
+        {
+            ess.close_when(refuel_on_bat);
+            dc2.close_when(refuel_on_bat);
+            refuel_on_bat = !refuel_on_bat;
+
+            for bus in &self.ess_fuel_buses {
+                electricity.flow(ess, bus);
+            }
+            electricity.flow(dc2, &self.refuel_on_bat_bus);
+        }
+        electricity.flow(&self.hot_bus_ess, &self.ess_refuel_bus_contactors[0]);
+        electricity.flow(&self.dc_ess_bus, &self.ess_refuel_bus_contactors[1]);
+        electricity.flow(&self.hot_bus_2, &self.refuel_on_bat_contactors[0]);
+        electricity.flow(&self.dc_bus_2, &self.refuel_on_bat_contactors[1]);
     }
 
     #[cfg(test)]

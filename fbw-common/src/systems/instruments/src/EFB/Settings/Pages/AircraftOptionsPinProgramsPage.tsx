@@ -1,7 +1,8 @@
+// @ts-strict-ignore
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { usePersistentNumberProperty, usePersistentProperty } from '@flybywiresim/fbw-sdk';
+import { usePersistentNumberProperty, usePersistentProperty, usePersistentSetting } from '@flybywiresim/fbw-sdk';
 import React, { useContext, useState } from 'react';
 import { Link, Route, Switch } from 'react-router-dom';
 import { PageLink, TabRoutes, pathify } from '../../Utils/routing';
@@ -29,8 +30,8 @@ export const AircraftOptionsPinProgramsPage = () => {
   const [accelerationOutHeight, setAccelerationOutHeight] = usePersistentProperty('CONFIG_ENG_OUT_ACCEL_ALT', '1500');
   const [accelerationOutHeightSetting, setAccelerationOutHeightSetting] = useState(accelerationOutHeight);
 
-  const [usingMetric, setUsingMetric] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
-  const [paxSigns, setPaxSigns] = usePersistentProperty('CONFIG_USING_PORTABLE_DEVICES', '0');
+  const [usingMetric, setUsingMetric] = usePersistentSetting('CONFIG_USING_METRIC_UNIT');
+  const [paxSigns, setPaxSigns] = usePersistentProperty('CONFIG_USING_PORTABLE_DEVICES', '1');
   const [isisBaro, setIsisBaro] = usePersistentProperty('ISIS_BARO_UNIT_INHG', '0');
   const [isisMetricAltitude, setIsisMetricAltitude] = usePersistentNumberProperty('ISIS_METRIC_ALTITUDE', 0);
   const [vhfSpacing, setVhfSpacing] = usePersistentProperty('RMP_VHF_SPACING_25KHZ', '0');
@@ -70,11 +71,6 @@ export const AircraftOptionsPinProgramsPage = () => {
   const paxSignsButtons: ButtonType[] = [
     { name: 'No Smoking', setting: '0' },
     { name: 'No Portable Device', setting: '1' },
-  ];
-
-  const weightUnitButtons: ButtonType[] = [
-    { name: 'kg', setting: '1' },
-    { name: 'lbs', setting: '0' },
   ];
 
   const isisBaroButtons: ButtonType[] = [
@@ -193,17 +189,7 @@ export const AircraftOptionsPinProgramsPage = () => {
           )}
 
           <SettingItem name={t('Settings.AircraftOptionsPinPrograms.WeightUnit')}>
-            <SelectGroup>
-              {weightUnitButtons.map((button) => (
-                <SelectItem
-                  key={button.name}
-                  onSelect={() => setUsingMetric(button.setting)}
-                  selected={usingMetric === button.setting}
-                >
-                  {button.name}
-                </SelectItem>
-              ))}
-            </SelectGroup>
+            <Toggle value={!usingMetric} onToggle={(value) => setUsingMetric(!value)} />
           </SettingItem>
           {aircraftContext.settingsPages.pinProgram.satcom && (
             <SettingItem name={t('Settings.AircraftOptionsPinPrograms.Satcom')}>

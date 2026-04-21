@@ -1,9 +1,8 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
-/* eslint-disable no-underscore-dangle */
-import { TcasComponent } from '../lib/TcasComponent';
 import { RaSound } from '../lib/TcasConstants';
 
 // TODO: Turn into abstract SoundManager singleton for all .ts components
@@ -19,31 +18,14 @@ class PeriodicSound {
   }
 }
 
-export class TcasSoundManager implements TcasComponent {
-  private static _instance?: TcasSoundManager;
+export class TcasSoundManager {
+  private periodicList: PeriodicSound[] = [];
 
-  public static get instance(): TcasSoundManager {
-    if (!this._instance) {
-      this._instance = new TcasSoundManager();
-    }
-    return this._instance;
-  }
+  private soundQueue: RaSound[] = [];
 
-  private periodicList: PeriodicSound[];
+  private playingSound: RaSound | null = null;
 
-  private soundQueue: RaSound[];
-
-  private playingSound: RaSound | null;
-
-  private playingSoundRemaining: number;
-
-  constructor() {
-    this.periodicList = [];
-    this.soundQueue = [];
-
-    this.playingSound = null;
-    this.playingSoundRemaining = NaN;
-  }
+  private playingSoundRemaining: number = NaN;
 
   init(): void {
     // do nothing

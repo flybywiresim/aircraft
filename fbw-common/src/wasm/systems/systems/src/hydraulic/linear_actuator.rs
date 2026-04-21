@@ -185,7 +185,8 @@ impl LowPressureAccumulator {
         Self {
             pressure: LowPassFilter::<Pressure>::new_with_init_value(
                 Self::PRESSURE_TIME_CONSTANT,
-                Pressure::new::<psi>(init_pressure_psi.max(0.).min(
+                Pressure::new::<psi>(init_pressure_psi.clamp(
+                    0.,
                     Self::MAX_ACCUMULATOR_PRESSURE_PSI
                         - Self::MAX_ACCUMULATOR_PRESSURE_THRESHOLD_FOR_REFILL_FLOW_PSI,
                 )),
@@ -360,16 +361,16 @@ impl Debug for ElectroHydrostaticBackup {
 /// the following functional modes:
 ///
 /// - [LinearActuatorMode.ClosedValves]: Turns actuator in a high constant spring/damper system simulating a closed actuator
-/// only constrained by its own fluid compressibility.
+///   only constrained by its own fluid compressibility.
 /// - [ActiveDamping.LinearActuatorMode]: Actuator use internal valves to provide a force resisting to its own movements, dampening
-/// the piece movements it's connected to.
+///   the piece movements it's connected to.
 /// - [LinearActuatorMode.PositionControl]: -> Actuator will try to use hydraulic pressure to move to a requested position, while
-/// maintaining flow limitations.
-///     CAUTION: For actuators having only ON/OFF behaviour (gear, door ...), might be needed to require more than required
-///         position to ensure it's reached at max force. So full retract position at 0 might need to require -0.5, full extension might
-///         need to request 1.5
+///   maintaining flow limitations.
+///   CAUTION: For actuators having only ON/OFF behaviour (gear, door ...), might be needed to require more than required
+///   position to ensure it's reached at max force. So full retract position at 0 might need to require -0.5, full extension might
+///   need to request 1.5
 /// - [LinearActuatorMode.ClosedCircuitDamping]: -> Actuator will connect retract and extend port in closed loop. This provide a dampened
-/// free moving mode, usable for gravity extension, or for aileron droop.
+///   free moving mode, usable for gravity extension, or for aileron droop.
 #[derive(PartialEq, Clone, Copy)]
 struct CoreHydraulicForce {
     dev_gains_tuning_enable_id: VariableIdentifier,
@@ -1115,9 +1116,10 @@ impl LinearActuator {
         let internal_actuator_pressure = if controller.should_activate_electrical_mode()
             && self.electro_hydrostatic_backup.is_some()
         {
-            self.electro_hydrostatic_backup
-                .unwrap()
-                .max_available_pressure()
+            match self.electro_hydrostatic_backup {
+                Some(ehba) => ehba.max_available_pressure(),
+                None => unreachable!(),
+            }
         } else if can_move_using_aircraft_hydraulic_pressure {
             current_input_pressure
         } else {
@@ -1198,7 +1200,7 @@ impl LinearActuator {
 
     fn eha_backup_is_active(&self) -> bool {
         self.electro_hydrostatic_backup
-            .map_or(false, |eha| eha.is_electrical_mode_active())
+            .is_some_and(|eha| eha.is_electrical_mode_active())
     }
 
     pub fn set_position_target(&mut self, target_position: Ratio) {
@@ -1271,11 +1273,11 @@ impl SimulationElement for LinearActuator {
 }
 impl Debug for LinearActuator {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if self.electro_hydrostatic_backup.is_some() {
+        if let Some(electro_hydrostatic_backup) = self.electro_hydrostatic_backup {
             write!(
                 f,
                 "Actuator => Type:EHA {:?} / {:?} / Current flow gpm{:.3}",
-                self.electro_hydrostatic_backup.unwrap(),
+                electro_hydrostatic_backup,
                 self.core_hydraulics,
                 self.signed_flow.get::<gallon_per_minute>()
             )

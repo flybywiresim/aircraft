@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 //  Copyright (c) 2021 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
@@ -6,6 +7,7 @@ import { FlapConf } from '@fmgc/guidance/vnav/common';
 import {
   DescentAltitudeConstraint,
   NavGeometryProfile,
+  ProfilePhase,
   VerticalCheckpoint,
   VerticalCheckpointReason,
 } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
@@ -16,14 +18,13 @@ import {
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { ManagedSpeedType, SpeedProfile } from '@fmgc/guidance/vnav/climb/SpeedProfile';
 import { DescentStrategy, IdleDescentStrategy } from '@fmgc/guidance/vnav/descent/DescentStrategy';
-import { MathUtils } from '@flybywiresim/fbw-sdk';
+import { ConstraintUtils, MathUtils } from '@flybywiresim/fbw-sdk';
 import { TemporaryCheckpointSequence } from '@fmgc/guidance/vnav/profile/TemporaryCheckpointSequence';
-import { HeadwindProfile } from '@fmgc/guidance/vnav/wind/HeadwindProfile';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { FlightPathAngleStrategy } from '@fmgc/guidance/vnav/climb/ClimbStrategy';
 import { BisectionMethod, NonTerminationStrategy } from '@fmgc/guidance/vnav/BisectionMethod';
-import { ConstraintUtils } from '@fmgc/flightplanning/data/constraint';
 import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
+import { BaseGeometryProfile } from '../profile/BaseGeometryProfile';
 
 class FlapConfigurationProfile {
   static getBySpeed(speed: Knots, parameters: VerticalProfileComputationParameters): FlapConf {
@@ -100,13 +101,43 @@ export interface AircraftConfiguration {
   gearExtended: boolean;
 }
 
-export class AircraftConfigurationProfile {
-  static getBySpeed(speed: Knots, parameters: VerticalProfileComputationParameters): AircraftConfiguration {
-    return {
-      flapConfig: FlapConfigurationProfile.getBySpeed(speed, parameters),
-      speedbrakesExtended: false,
-      gearExtended: speed < parameters.flapRetractionSpeed,
-    };
+export const DEFAULT_AIRCRAFT_CONTROL_SURFACE_CONFIG: Readonly<AircraftConfiguration> = {
+  flapConfig: FlapConf.CLEAN,
+  speedbrakesExtended: false,
+  gearExtended: false,
+};
+
+/**
+ * Use this class to generate `AircraftConfiguration` objects. This reuses the same object to avoid unnecessary allocations.
+ * If multiple configurations are generated from the same register, they will be the same object. Use multiple registers
+ * if you need different configurations at the same time.
+ *
+ * @example
+ * const parameters = new VerticalProfileComputationParametersObserver().get();
+ * const register = new AircraftConfigurationRegister();
+ *
+ * // Appropriate configuration to fly at 250 kts
+ * const config = register.setFromSpeed(250, parameters);
+ *
+ * // Appropriate configuration to fly at 200 kts
+ * const config2 = register.setFromSpeed(200, parameters);
+ *
+ * // These configurations are now the *same*
+ * assert(config === config2);
+ */
+export class AircraftConfigurationRegister {
+  private readonly config: AircraftConfiguration = { ...DEFAULT_AIRCRAFT_CONTROL_SURFACE_CONFIG };
+
+  setFromSpeed(speed: Knots, parameters: VerticalProfileComputationParameters, useSpeedbrakes = false) {
+    this.config.flapConfig = FlapConfigurationProfile.getBySpeed(speed, parameters);
+    this.config.speedbrakesExtended = useSpeedbrakes;
+    this.config.gearExtended = speed < parameters.flapRetractionSpeed;
+
+    return this.config;
+  }
+
+  get(): Readonly<AircraftConfiguration> {
+    return this.config;
   }
 }
 
@@ -114,6 +145,10 @@ export class ApproachPathBuilder {
   private idleStrategy: DescentStrategy;
 
   private fpaStrategy: FlightPathAngleStrategy;
+
+  private readonly configuration = new AircraftConfigurationRegister();
+
+  private static readonly DISTANCE_EPSILON = 1e-4;
 
   constructor(
     private observer: VerticalProfileComputationParametersObserver,
@@ -127,7 +162,6 @@ export class ApproachPathBuilder {
   computeApproachPath(
     profile: NavGeometryProfile,
     speedProfile: SpeedProfile,
-    windProfile: HeadwindProfile,
     estimatedFuelOnBoardAtDestination: number,
     estimatedSecondsFromPresentAtDestination: number,
   ): TemporaryCheckpointSequence {
@@ -147,6 +181,7 @@ export class ApproachPathBuilder {
       remainingFuelOnBoard: estimatedFuelOnBoardAtDestination,
       secondsFromPresent: estimatedSecondsFromPresentAtDestination,
       mach: managedDescentSpeedMach,
+      profilePhase: ProfilePhase.Descent,
     });
 
     const distanceToOneThousandAgl =
@@ -154,23 +189,28 @@ export class ApproachPathBuilder {
 
     // Build final segment
     this.fpaStrategy.flightPathAngle = profile.finalDescentAngle;
+
     const finalApproachStep = this.fpaStrategy.predictToDistance(
       finalAltitude,
       distanceToOneThousandAgl,
       approachSpeed,
       managedDescentSpeedMach,
       estimatedFuelOnBoardAtDestination,
-      windProfile.getHeadwindComponent(profile.getDistanceFromStart(0), finalAltitude),
-      AircraftConfigurationProfile.getBySpeed(approachSpeed, this.observer.get()),
+      -profile.winds.getDescentTailwind(profile.getDistanceFromStart(0), finalAltitude),
+      this.configuration.setFromSpeed(approachSpeed, this.observer.get()),
     );
 
-    sequence.addCheckpointFromStep(finalApproachStep, VerticalCheckpointReason.AtmosphericConditions);
+    sequence.addCheckpointFromStep(
+      finalApproachStep,
+      VerticalCheckpointReason.AtmosphericConditions,
+      ProfilePhase.Descent,
+    );
 
     // Build path to FAF by flying the descent angle but decelerating
     const fafStep = this.buildDecelerationPath(
+      profile,
       sequence.lastCheckpoint,
       speedProfile,
-      windProfile,
       profile.getDistanceFromStart(profile.fafDistanceToEnd),
     );
     sequence.push(...fafStep.get());
@@ -178,7 +218,7 @@ export class ApproachPathBuilder {
     //
     this.fpaStrategy.flightPathAngle = 0;
     for (const altitudeConstraint of approachConstraints) {
-      this.handleAltitudeConstraint(sequence, speedProfile, windProfile, altitudeConstraint);
+      this.handleAltitudeConstraint(profile, sequence, speedProfile, altitudeConstraint);
 
       // If you're at or above your descent speed (taking speed limit into account, place the decel point)
       const speedTarget = speedProfile.getTarget(
@@ -195,7 +235,7 @@ export class ApproachPathBuilder {
     }
 
     const speedTarget = speedProfile.getTarget(
-      sequence.lastCheckpoint.distanceFromStart - 1e-4,
+      sequence.lastCheckpoint.distanceFromStart - ApproachPathBuilder.DISTANCE_EPSILON,
       sequence.lastCheckpoint.altitude,
       ManagedSpeedType.Descent,
     );
@@ -203,9 +243,9 @@ export class ApproachPathBuilder {
     if (speedTarget - sequence.lastCheckpoint.speed > 0.1) {
       // We use -Infinty because we just want to decelerate to the descent speed without and constraint on distance
       const decelerationToDescentSpeed = this.buildDecelerationPath(
+        profile,
         sequence.lastCheckpoint,
         speedProfile,
-        windProfile,
         -Infinity,
       );
       sequence.push(...decelerationToDescentSpeed.get());
@@ -220,9 +260,9 @@ export class ApproachPathBuilder {
   }
 
   private handleAltitudeConstraint(
+    profile: BaseGeometryProfile,
     sequence: TemporaryCheckpointSequence,
     speedProfile: SpeedProfile,
-    windProfile: HeadwindProfile,
     constraint: DescentAltitudeConstraint,
   ) {
     // We compose this segment of three segments:
@@ -255,14 +295,18 @@ export class ApproachPathBuilder {
     let secondDecelerationSequence: TemporaryCheckpointSequence = null;
 
     // `decelerationSegmentDistance` should be positive
-    const tryDecelDistance = (decelerationSegmentDistance: NauticalMiles): NauticalMiles => {
+    const tryDecelDistance = (
+      decelerationSegmentDistance: NauticalMiles,
+      useSpeedbrakes: boolean = false,
+    ): NauticalMiles => {
       const currentDecelerationAttempt = new TemporaryCheckpointSequence(sequence.lastCheckpoint);
 
       decelerationSequence = this.buildDecelerationPath(
+        profile,
         sequence.lastCheckpoint,
         speedProfile,
-        windProfile,
         distanceFromStart - decelerationSegmentDistance,
+        useSpeedbrakes,
       );
       currentDecelerationAttempt.push(...decelerationSequence.get());
 
@@ -272,10 +316,14 @@ export class ApproachPathBuilder {
         decelerationSequence.lastCheckpoint.speed,
         managedDescentSpeedMach,
         decelerationSequence.lastCheckpoint.remainingFuelOnBoard,
-        windProfile.getHeadwindComponent(distanceFromStart - decelerationSegmentDistance, minimumAltitude),
-        AircraftConfigurationProfile.getBySpeed(decelerationSequence.lastCheckpoint.speed, this.observer.get()),
+        -profile.winds.getDescentTailwind(distanceFromStart - decelerationSegmentDistance, minimumAltitude),
+        this.configuration.setFromSpeed(decelerationSequence.lastCheckpoint.speed, this.observer.get(), useSpeedbrakes),
       );
-      currentDecelerationAttempt.addCheckpointFromStep(descentSegment, VerticalCheckpointReason.AltitudeConstraint);
+      currentDecelerationAttempt.addCheckpointFromStep(
+        descentSegment,
+        VerticalCheckpointReason.AltitudeConstraint,
+        ProfilePhase.Descent,
+      );
 
       if (VnavConfig.DEBUG_PROFILE && descentSegment.distanceTraveled > 0) {
         throw new Error('[FMS/VNAV] Descent segment should have a negative distance traveled');
@@ -288,10 +336,11 @@ export class ApproachPathBuilder {
 
       // If we have not reached the altitude constraint yet, because we started "ascending" (descending backwards) too early, we continue to decelerate until we reach the constraint
       secondDecelerationSequence = this.buildDecelerationPath(
+        profile,
         currentDecelerationAttempt.lastCheckpoint,
         speedProfile,
-        windProfile,
         constraint.distanceFromStart,
+        useSpeedbrakes,
       );
 
       return distanceTraveled - desiredDistanceToCover;
@@ -305,6 +354,47 @@ export class ApproachPathBuilder {
     );
     tryDecelDistance(solution);
 
+    // Total distance is deceleration distance (`solution`) + descent distance (`-descentSegment.distanceTraveled`)
+    const distanceTraveled = solution + -descentSegment.distanceTraveled;
+    const finalError = distanceTraveled - desiredDistanceToCover;
+
+    // Even without decelerating and only descending, we cannot make the constraint
+    if (MathUtils.isCloseToNegative(solution) && !MathUtils.isCloseToNegative(finalError)) {
+      // Try with speedbrakes
+      const solutionWithSpeedbrakes = BisectionMethod.findZero(
+        (distance) => tryDecelDistance(distance, true),
+        [0, desiredDistanceToCover],
+        [-0.1, 0.1],
+        NonTerminationStrategy.NegativeErrorResult,
+      );
+      tryDecelDistance(solutionWithSpeedbrakes, true);
+
+      const distanceTraveledWithSpeedbrakes = solutionWithSpeedbrakes + -descentSegment.distanceTraveled;
+      const finalErrorWithSpeedbrakes = distanceTraveledWithSpeedbrakes - desiredDistanceToCover;
+
+      if (
+        MathUtils.isCloseToNegative(solutionWithSpeedbrakes) &&
+        !MathUtils.isCloseToNegative(finalErrorWithSpeedbrakes)
+      ) {
+        // Insert TOO STEEP PATH
+        const scaling = desiredDistanceToCover / -descentSegment.distanceTraveled;
+        this.scaleStepBasedOnLastCheckpoint(sequence.lastCheckpoint, descentSegment, scaling);
+        sequence.addCheckpointFromStep(
+          descentSegment,
+          VerticalCheckpointReason.GeometricPathTooSteep,
+          ProfilePhase.Descent,
+        );
+        sequence.copyLastCheckpoint({
+          reason: VerticalCheckpointReason.AltitudeConstraint,
+          altitude: minimumAltitude,
+        });
+
+        constraint.leg.calculated.endsInTooSteepPath = true;
+
+        return;
+      }
+    }
+
     sequence.push(...decelerationSequence.get());
 
     const speedTarget = speedProfile.getTarget(
@@ -317,7 +407,7 @@ export class ApproachPathBuilder {
       speedTarget - decelerationSequence.lastCheckpoint.speed > 1 ||
       decelerationSequence.lastCheckpoint.speed < cleanSpeed
     ) {
-      sequence.addCheckpointFromStep(descentSegment, VerticalCheckpointReason.AltitudeConstraint);
+      sequence.addCheckpointFromStep(descentSegment, VerticalCheckpointReason.AltitudeConstraint, ProfilePhase.Descent);
       sequence.push(...secondDecelerationSequence.get());
     }
   }
@@ -333,17 +423,19 @@ export class ApproachPathBuilder {
   /**
    * This builds a level deceleration path, bringing out flaps as needed, and obeying speed constraints.
    * This relies on `this.fpaStrategy` to have the correct descent angle coded.
+   * @param profile
    * @param lastCheckpoint
    * @param speedProfile
-   * @param windProfile
    * @param targetDistanceFromStart
+   * @param useSpeedbrakes
    * @returns
    */
   private buildDecelerationPath(
+    profile: BaseGeometryProfile,
     lastCheckpoint: VerticalCheckpoint,
     speedProfile: SpeedProfile,
-    windProfile: HeadwindProfile,
     targetDistanceFromStart: NauticalMiles,
+    useSpeedbrakes = false,
   ): TemporaryCheckpointSequence {
     const decelerationSequence = new TemporaryCheckpointSequence(lastCheckpoint);
 
@@ -353,12 +445,14 @@ export class ApproachPathBuilder {
 
     const isDoneDeclerating = () =>
       decelerationSequence.lastCheckpoint.reason === VerticalCheckpointReason.Decel ||
-      decelerationSequence.lastCheckpoint.distanceFromStart - targetDistanceFromStart <= 1e-4; // We really only want to prevent floating point errors here
+      MathUtils.isCloseToLessThan(decelerationSequence.lastCheckpoint.distanceFromStart, targetDistanceFromStart); // We really only want to prevent floating point errors here
 
     for (let i = 0; i < 10 && !isDoneDeclerating(); i++) {
       const { distanceFromStart, altitude, speed, remainingFuelOnBoard } = decelerationSequence.lastCheckpoint;
 
-      const speedConstraint = speedProfile.getMaxDescentSpeedConstraint(distanceFromStart - 1e-4);
+      const speedConstraint = speedProfile.getMaxDescentSpeedConstraint(
+        distanceFromStart - ApproachPathBuilder.DISTANCE_EPSILON,
+      );
       const flapTargetSpeed = FlapConfigurationProfile.findNextExtensionSpeed(speed, parameters);
 
       // This is the managed descent speed, or the speed limit speed.
@@ -381,15 +475,15 @@ export class ApproachPathBuilder {
         const remainingDistance =
           Math.max(speedConstraint.distanceFromStart, targetDistanceFromStart) - distanceFromStart;
 
-        // Decelerate to constraint
+        // Decelerate to constraints
         const decelerationStep = this.fpaStrategy.predictToSpeed(
           altitude,
           Math.max(speedConstraint.maxSpeed, speed), // If constraint speed is less than the current speed, don't try to decelerate to it (because we'll end up going the wrong way)
           speed,
           parameters.managedDescentSpeedMach,
           remainingFuelOnBoard,
-          windProfile.getHeadwindComponent(distanceFromStart, altitude),
-          AircraftConfigurationProfile.getBySpeed(speed, parameters),
+          -profile.winds.getDescentTailwind(distanceFromStart, altitude),
+          this.configuration.setFromSpeed(speed, parameters, useSpeedbrakes),
         );
 
         if (decelerationStep.error !== undefined || decelerationStep.distanceTraveled > 0) {
@@ -404,11 +498,15 @@ export class ApproachPathBuilder {
 
         lastAccelerationCheckpointIndex = decelerationSequence.length;
 
-        if (decelerationStep.distanceTraveled < 1e-4) {
+        if (MathUtils.isCloseToNegative(decelerationStep.distanceTraveled)) {
           // We tried to declerate, but it took us beyond targetDistanceFromStart, so we scale down the step
           const scaling = Math.min(1, remainingDistance / decelerationStep.distanceTraveled);
           this.scaleStepBasedOnLastCheckpoint(decelerationSequence.lastCheckpoint, decelerationStep, scaling);
-          decelerationSequence.addCheckpointFromStep(decelerationStep, VerticalCheckpointReason.AtmosphericConditions);
+          decelerationSequence.addCheckpointFromStep(
+            decelerationStep,
+            VerticalCheckpointReason.AtmosphericConditions,
+            ProfilePhase.Descent,
+          );
         }
 
         const remainingDistanceToConstraint =
@@ -423,21 +521,29 @@ export class ApproachPathBuilder {
           }
 
           // If we decelerated, but aren't at the constraint yet, fly level, at constant speed to the constraint
+          const headwind = -profile.winds.getDescentTailwind(
+            decelerationSequence.lastCheckpoint.distanceFromStart,
+            decelerationSequence.lastCheckpoint.altitude,
+          );
           const constantStep = this.fpaStrategy.predictToDistance(
-            altitude,
+            decelerationSequence.lastCheckpoint.altitude,
             -remainingDistanceToConstraint,
             speedConstraint.maxSpeed,
             parameters.managedDescentSpeedMach,
-            remainingFuelOnBoard - decelerationStep.fuelBurned,
-            windProfile.getHeadwindComponent(distanceFromStart, altitude),
-            AircraftConfigurationProfile.getBySpeed(speedConstraint.maxSpeed, parameters),
+            decelerationSequence.lastCheckpoint.remainingFuelOnBoard,
+            headwind,
+            this.configuration.setFromSpeed(speedConstraint.maxSpeed, parameters, useSpeedbrakes),
           );
 
           if (constantStep.distanceTraveled > 0) {
             throw new Error('[FMS/VNAV] Descent step distance should not be positive');
           }
 
-          decelerationSequence.addCheckpointFromStep(constantStep, VerticalCheckpointReason.SpeedConstraint);
+          decelerationSequence.addCheckpointFromStep(
+            constantStep,
+            VerticalCheckpointReason.SpeedConstraint,
+            ProfilePhase.Descent,
+          );
         } else {
           decelerationSequence.copyLastCheckpoint({ reason: VerticalCheckpointReason.SpeedConstraint });
         }
@@ -447,7 +553,7 @@ export class ApproachPathBuilder {
 
         // We don't care about any speed constraint limitations here, because that's what the if block above is for.
         const targetSpeed = Math.min(flapTargetSpeed, limitingSpeed);
-        const config = AircraftConfigurationProfile.getBySpeed(speed, parameters);
+        const config = this.configuration.setFromSpeed(speed, parameters, useSpeedbrakes);
 
         const decelerationStep = this.fpaStrategy.predictToSpeed(
           altitude,
@@ -455,7 +561,7 @@ export class ApproachPathBuilder {
           speed,
           parameters.managedDescentSpeedMach,
           remainingFuelOnBoard,
-          windProfile.getHeadwindComponent(distanceFromStart, altitude),
+          -profile.winds.getDescentTailwind(distanceFromStart, altitude),
           config,
         );
 
@@ -474,7 +580,11 @@ export class ApproachPathBuilder {
         if (decelerationStep.distanceTraveled < remainingDistance) {
           const scaling = Math.min(1, remainingDistance / decelerationStep.distanceTraveled);
           this.scaleStepBasedOnLastCheckpoint(decelerationSequence.lastCheckpoint, decelerationStep, scaling);
-          decelerationSequence.addCheckpointFromStep(decelerationStep, VerticalCheckpointReason.AtmosphericConditions);
+          decelerationSequence.addCheckpointFromStep(
+            decelerationStep,
+            VerticalCheckpointReason.AtmosphericConditions,
+            ProfilePhase.Descent,
+          );
 
           return decelerationSequence;
         }
@@ -483,12 +593,21 @@ export class ApproachPathBuilder {
           decelerationStep,
           FlapConfigurationProfile.getFlapCheckpointReasonByFlapConf(config.flapConfig),
           FlapConfigurationProfile.getApproachPhaseTargetSpeed(config.flapConfig, parameters),
+          ProfilePhase.Descent,
         );
       }
     }
 
     if (!isDoneDeclerating()) {
-      const config = AircraftConfigurationProfile.getBySpeed(decelerationSequence.lastCheckpoint.speed, parameters);
+      const config = this.configuration.setFromSpeed(
+        decelerationSequence.lastCheckpoint.speed,
+        parameters,
+        useSpeedbrakes,
+      );
+      const headwind = -profile.winds.getDescentTailwind(
+        decelerationSequence.lastCheckpoint.distanceFromStart,
+        decelerationSequence.lastCheckpoint.altitude,
+      );
 
       // Fly constant speed instead
       const constantSpeedStep = this.fpaStrategy.predictToDistance(
@@ -497,10 +616,7 @@ export class ApproachPathBuilder {
         decelerationSequence.lastCheckpoint.speed,
         parameters.managedDescentSpeedMach,
         decelerationSequence.lastCheckpoint.remainingFuelOnBoard,
-        windProfile.getHeadwindComponent(
-          decelerationSequence.lastCheckpoint.distanceFromStart,
-          decelerationSequence.lastCheckpoint.altitude,
-        ),
+        headwind,
         config,
       );
 
@@ -508,6 +624,7 @@ export class ApproachPathBuilder {
         constantSpeedStep,
         FlapConfigurationProfile.getFlapCheckpointReasonByFlapConf(config.flapConfig),
         FlapConfigurationProfile.getApproachPhaseTargetSpeed(config.flapConfig, parameters),
+        ProfilePhase.Descent,
       );
     }
 

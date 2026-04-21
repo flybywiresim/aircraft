@@ -1,8 +1,9 @@
-// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
 import { FlapConf } from '@fmgc/guidance/vnav/common';
+import { FpmConfig } from './FpmConfig';
 
 export enum VnavDescentMode {
   NORMAL,
@@ -16,6 +17,7 @@ export interface AircraftConfig {
   engineModelParameters: EngineModelParameters;
   flightModelParameters: FlightModelParameters;
   fmSymbolConfig: FMSymbolsConfig;
+  fpmConfig: FpmConfig;
 }
 
 export interface VnavConfig {
@@ -28,27 +30,6 @@ export interface VnavConfig {
    * Whether to emit CDA flap1/2 pseudo-waypoints (only if VNAV_DESCENT_MODE is CDA)
    */
   VNAV_EMIT_CDA_FLAP_PWP: boolean;
-
-  /**
-   * Whether to pring debug information and errors during the VNAV computation.
-   */
-  DEBUG_PROFILE: boolean;
-
-  /**
-   * Whether to print guidance debug information on the ND
-   */
-  DEBUG_GUIDANCE: boolean;
-
-  /**
-   * Whether to use debug simvars (VNAV_DEBUG_*) to determine aircraft position and state.
-   * This is useful for testing VNAV without having to fly the aircraft. This lets you put the aircraft some distance before destination at a given altitude and speed.
-   * The following simvars can be used:
-   * - A32NX_FM_VNAV_DEBUG_POINT: Indicates the distance from start (NM) at which to draw a debug pseudowaypoint on the ND
-   * - A32NX_FM_VNAV_DEBUG_ALTITUDE: Indicates the indicated altitude (ft) VNAV uses for predictions
-   * - A32NX_FM_VNAV_DEBUG_SPEED: Indicates the indicated airspeed (kts) VNAV uses for predictions
-   * - A32NX_FM_VNAV_DEBUG_DISTANCE_TO_END: Indicates the distance (NM) to end VNAV uses for predictions
-   */
-  ALLOW_DEBUG_PARAMETER_INJECTION: boolean;
 
   VNAV_USE_LATCHED_DESCENT_MODE: boolean;
 
@@ -63,6 +44,28 @@ export interface VnavConfig {
    * This value is in lbs.
    */
   MAXIMUM_FUEL_ESTIMATE: number;
+
+  /**
+   * Lowest fuel estimate which can be calculated by VNAV
+   */
+  LOWEST_FUEL_ESTIMATE: number;
+
+  /**
+   * Label used for pseudo-waypoints that mark where the aircraft crosses
+   * climb/descent speed limit altitudes.
+   * Configurable since different Airbus aircraft use different labels (e.g. A320 vs A380).
+   */
+  LIM_PSEUDO_WPT_LABEL: '(LIM)' | '(SPDLIM)';
+
+  /**
+   * The maximum operating speed in knots
+   */
+  VMO: number;
+
+  /**
+   * The maximum operating Mach number
+   */
+  MMO: number;
 }
 
 /** Only covers aircraft specific configs, no debug switches */
@@ -83,6 +86,11 @@ export interface LnavConfig {
    * The number of transitions to compute after the active leg (-1: no limit, compute all transitions)
    */
   NUM_COMPUTED_TRANSITIONS_AFTER_ACTIVE: number;
+
+  /**
+   * Whether to emit the "end of VD marker" (A380X only) as a PWP
+   */
+  EMIT_END_OF_VD_MARKER: boolean;
 }
 
 export interface EngineModelParameters {
@@ -186,4 +194,7 @@ export interface FlightModelParameters {
 
 export interface FMSymbolsConfig {
   publishDepartureIdent: boolean;
+
+  /** whether to show RNP label on ND for RNP AR approaches */
+  showRnpArLabel: boolean;
 }

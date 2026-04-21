@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 //  Copyright (c) 2021 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
@@ -1436,11 +1437,12 @@ export class Vhf {
   public datalinkMode: DatalinkModeCode = DatalinkModeCode.None;
 
   private updatePresentPosition() {
+    // FIXME read ARINC data from appropriate system
     this.presentPosition.Latitude = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
     this.presentPosition.Longitude = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
     this.presentPosition.Altitude = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet');
     this.presentPosition.AltitudeAboveGround = SimVar.GetSimVarValue('PLANE ALT ABOVE GROUND', 'feet');
-    this.presentPosition.PressureAltitude = SimVar.GetSimVarValue('INDICATED ALTITUDE:3', 'feet');
+    this.presentPosition.PressureAltitude = SimVar.GetSimVarValue('INDICATED ALTITUDE:4', 'feet');
   }
 
   // calculates the freespace path loss for a certain distance
@@ -1584,7 +1586,7 @@ export class Vhf {
   }
 
   private async updateUsedVoiceFrequencies(): Promise<void> {
-    const storedAtisSrc = NXDataStore.get('CONFIG_ATIS_SRC', 'FAA').toLowerCase();
+    const storedAtisSrc = NXDataStore.getLegacy('CONFIG_ATIS_SRC', 'FAA').toLowerCase();
     this.frequencyOverlap = Array(DatalinkProviders.ProviderCount).fill(0);
 
     if (storedAtisSrc === 'vatsim' || storedAtisSrc === 'ivao') {
@@ -1657,7 +1659,7 @@ export class Vhf {
       this.datalinkMode = DatalinkModeCode.None;
     } else {
       this.datalinkStatus = DatalinkStatusCode.DlkAvail;
-      if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1) {
+      if (SimVar.GetSimVarValue('L:A32NX_ACARS_ACTIVE', 'number') === 1) {
         this.datalinkMode = DatalinkModeCode.AtcAoc;
       }
       this.datalinkMode = DatalinkModeCode.Aoc;

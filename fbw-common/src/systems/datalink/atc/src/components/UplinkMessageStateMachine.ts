@@ -27,7 +27,7 @@ export class UplinkMessageStateMachine {
     }
   }
 
-  public static update(atc: Atc, message: CpdlcMessage, uiEvent: boolean, positive: boolean): void {
+  public static update(atc: Atc, message: CpdlcMessage, uiEvent: boolean, positive = false): void {
     if (positive) {
       if (message.MessageMonitoring === CpdlcMessageMonitoringState.Required) {
         message.MessageMonitoring = CpdlcMessageMonitoringState.Monitoring;

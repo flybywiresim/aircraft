@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2022 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
@@ -11,7 +12,6 @@ import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { GuidanceParameters, LateralPathGuidance } from '@fmgc/guidance/ControlLaws';
 import { ControlLaw } from '@shared/autopilot';
-import { Geometry } from '@fmgc/guidance/Geometry';
 import { CFLeg } from '@fmgc/guidance/lnav/legs/CF';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { AFLeg } from '@fmgc/guidance/lnav/legs/AF';
@@ -22,6 +22,7 @@ import {
   arcGuidance,
   courseToFixDistanceToGo,
   courseToFixGuidance,
+  getRollAnticipationDistance,
   maxBank,
   reciprocal,
 } from '../CommonGeometry';
@@ -190,7 +191,7 @@ export class HoldEntryTransition extends Transition {
       default:
     }
 
-    const rad = Geometry.getRollAnticipationDistance(tas, (params as LateralPathGuidance).phiCommand, bankNext);
+    const rad = getRollAnticipationDistance(tas, (params as LateralPathGuidance).phiCommand, bankNext);
     if (rad > 0 && dtg <= rad) {
       (params as LateralPathGuidance).phiCommand = bankNext;
     }
@@ -251,7 +252,7 @@ export class HoldEntryTransition extends Transition {
       default:
     }
 
-    const rad = Geometry.getRollAnticipationDistance(tas, (params as LateralPathGuidance).phiCommand, bankNext);
+    const rad = getRollAnticipationDistance(tas, (params as LateralPathGuidance).phiCommand, bankNext);
     if (rad > 0 && dtg <= rad) {
       (params as LateralPathGuidance).phiCommand = bankNext;
     }

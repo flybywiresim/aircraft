@@ -24,8 +24,10 @@ The following aircraft configurations are currently simulated or targeted:
  Model       A320-251N
  Engine      CFM LEAP 1A-26
  APU         APS3200
- FMS         Honeywell Release H3
+ FMS         Honeywell Release H4
  FWC Std.    H2F13
+ EFIS        EIS2 S18
+ LGCIU Std.  4D
  RA          Honeywell ALA-52B
  TAWS        Honeywell EGPWS
  ACAS        Honeywell TPA-100B
@@ -67,7 +69,7 @@ Our [known issues](https://docs.flybywiresim.com/aircraft/support/known-issues/)
 
 ### What liveries are available?
 
-Liveries for the A32NX can be found on [Flightsim.to](https://flightsim.to/c/liveries/flybywire-a32nx/). 
+Liveries for the A32NX can be found on [Flightsim.to](https://flightsim.to/c/liveries/flybywire-a32nx/).
 
 Liveries for the A380X can be found on [Flightsim.to](https://flightsim.to/liveries/flybywire-a380x/).
 

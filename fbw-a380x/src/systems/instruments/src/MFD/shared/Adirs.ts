@@ -31,33 +31,50 @@ export class ADIRS {
     );
   }
 
+  /** in degrees */
   static getLatitude() {
     return ADIRS.getFromAnyAdiru('IR', 'LATITUDE');
   }
 
+  /** in degrees */
   static getLongitude() {
     return ADIRS.getFromAnyAdiru('IR', 'LONGITUDE');
   }
 
+  /** in degrees */
   static getTrueTrack() {
     return ADIRS.getFromAnyAdiru('IR', 'TRUE_TRACK');
   }
 
+  /** in knots */
   static getTrueAirspeed() {
     return ADIRS.getFromAnyAdiru('ADR', 'TRUE_AIRSPEED');
   }
 
+  /** in knots */
   static getCalibratedAirspeed() {
     return ADIRS.getFromAnyAdiru('ADR', 'COMPUTED_AIRSPEED');
   }
 
+  /** in knots */
   static getGroundSpeed() {
     return ADIRS.getFromAnyAdiru('IR', 'GROUND_SPEED');
   }
 
   // FIXME there should be baro corrected altitude 1 (capt) and 2 (f/o)
+  /** in feet */
   static getBaroCorrectedAltitude() {
     return ADIRS.getFromAnyAdiru('ADR', 'ALTITUDE');
+  }
+
+  /** in degrees celsius */
+  static getStaticAirTemperature() {
+    return ADIRS.getFromAnyAdiru('ADR', 'STATIC_AIR_TEMPERATURE');
+  }
+
+  /** in hPa */
+  static getCorrectedAverageStaticPressure() {
+    return ADIRS.getFromAnyAdiru('ADR', 'CORRECTED_AVERAGE_STATIC_PRESSURE');
   }
 
   /**

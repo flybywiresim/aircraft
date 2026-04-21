@@ -1,3 +1,4 @@
+import { EfisSide } from '@flybywiresim/fbw-sdk';
 import { EventBus, SimVarDefinition, SimVarPublisher, SimVarValueType } from '@microsoft/msfs-sdk';
 
 export type MfdSimvars = {
@@ -30,10 +31,18 @@ export type MfdSimvars = {
   fmcAIsHealthy: boolean;
   fmcBIsHealthy: boolean;
   fmcCIsHealthy: boolean;
+  fmsCaptFailed: boolean;
+  fmsFoFailed: boolean;
+  wxrTawsSysSelected: number;
+  terr1Failed: boolean;
+  terr2Failed: boolean;
+  gpws1Failed: boolean;
+  gpws2Failed: boolean;
 };
 
 export type InternalKccuKeyEvent = {
-  kccuKeyEvent: string;
+  /** First element: Side on which KCCU was pressed, Second element: key string */
+  kccuKeyEvent: [EfisSide, string];
 };
 
 export enum MfdVars {
@@ -66,6 +75,13 @@ export enum MfdVars {
   fmcAIsHealthy = 'L:A32NX_FMC_A_IS_HEALTHY',
   fmcBIsHealthy = 'L:A32NX_FMC_B_IS_HEALTHY',
   fmcCIsHealthy = 'L:A32NX_FMC_C_IS_HEALTHY',
+  fmsCaptFailed = 'L:A32NX_FMS_L_FAILED',
+  fmsFoFailed = 'L:A32NX_FMS_R_FAILED',
+  wxrTawsSysSelected = 'L:A32NX_WXR_TAWS_SYS_SELECTED',
+  terr1Failed = 'L:A32NX_TERR_1_FAILED',
+  terr2Failed = 'L:A32NX_TERR_2_FAILED',
+  gpws1Failed = 'L:A32NX_GPWS_1_FAILED',
+  gpws2Failed = 'L:A32NX_GPWS_2_FAILED',
 }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -99,6 +115,13 @@ export class MfdSimvarPublisher extends SimVarPublisher<MfdSimvars> {
     ['fmcAIsHealthy', { name: MfdVars.fmcAIsHealthy, type: SimVarValueType.Bool }],
     ['fmcBIsHealthy', { name: MfdVars.fmcBIsHealthy, type: SimVarValueType.Bool }],
     ['fmcCIsHealthy', { name: MfdVars.fmcCIsHealthy, type: SimVarValueType.Bool }],
+    ['fmsCaptFailed', { name: MfdVars.fmsCaptFailed, type: SimVarValueType.Bool }],
+    ['fmsFoFailed', { name: MfdVars.fmsFoFailed, type: SimVarValueType.Bool }],
+    ['wxrTawsSysSelected', { name: MfdVars.wxrTawsSysSelected, type: SimVarValueType.Number }],
+    ['terr1Failed', { name: MfdVars.terr1Failed, type: SimVarValueType.Bool }],
+    ['terr2Failed', { name: MfdVars.terr2Failed, type: SimVarValueType.Bool }],
+    ['gpws1Failed', { name: MfdVars.gpws1Failed, type: SimVarValueType.Bool }],
+    ['gpws2Failed', { name: MfdVars.gpws2Failed, type: SimVarValueType.Bool }],
   ]);
 
   public constructor(bus: EventBus) {

@@ -13,9 +13,9 @@ Status legend:
 ### FMS
 
 | Status      | URI | Sprint/Prio | Missing functionality |
-| ------------- | ------------- | ------------- | ------------- |
+| ------------- | ------------- | ------------- | ---------- |
 | ✅ | fms/\*/init | 1 | CPNY WIND REQUEST, RTE SEL, ALTN RTE SEL, CPNY T.O REQUEST |
-| ✅ | fms/\*/fuel-load | 1 | RTE RSV, correct fuel calculation, FUEL PLANNING |
+| ✅ | fms/\*/fuel-load | 1 | correct fuel calculation, FUEL PLANNING |
 | ✅ | fms/\*/perf | 1 | OPT FL, REC MAX, EO behavior, display of type of speed restriction (when MANAGED), PRED TO |
 |  |  |  |  |
 | ✅ | fms/\*/f-pln | 1 | F-PLN INFO button, exit of hold not possible via button |
@@ -29,7 +29,7 @@ Status legend:
 | ✅ | fms/\*/f-pln-vert-rev | 2 | RTA (except ETT), CMS, STEP ALTs, setting whether CLB/DES cstr |
 | 🟥 | fms/\*/f-pln-rte-sel | 3 | tbd |
 | 🟥 | fms/\*/f-pln-offset | 3 | tbd |
-| 🟥 | fms/\*/f-pln-fix-info | 3 | tbd |
+| ✅ | fms/\*/f-pln-fix-info | 3 | intecept predictions, abeam, insert as waypoint |
 | 🟥 | fms/\*/f-pln-alternate | 3 | tbd |
 | 🟥 | fms/\*/f-pln-closest-airports | 3 | tbd |
 | 🟥 | fms/\*/f-pln-cpny-wind-data-req | 4 | tbd |
@@ -41,14 +41,15 @@ Status legend:
 |  |  |  |  |
 | ✅ | fms/position/irs | 1 | data sources inconsistent |
 | ✅ | fms/position/navaids | 2 | deselect glide, ADF input fields, radio nav mode/position, selected navaids table |
-| 🟥 | fms/position/monitor | 3 | tbd |
-| 🟥 | fms/position/gps | 3 | tbd |
+| ✅ | fms/position/monitor | 3 |  UPDATE AT, FM calculated position info, Independent fixes across both MFDs |
+| 🟥 | fms/position/gnss | 3 | tbd |
 | 🟥 | fms/position/report | 4 | tbd |
+| 🟥 | fms/position/time | 4 | tbd |
 |  |  |  |  |
 | 🟥 | fms/sec/index | 4 | tbd |
 |  |  |  |  |
-| ✅ | fms/data/status | 2 | FMS P/N page, swap DB, idle/perf factors  |
-| 🟥 | fms/data/airport | 2 | tbd |
+| ✅ | fms/data/status | 2 | FMS P/N page, swap DB, idle/perf factors |
+| ✅ | fms/data/airport | 2 | pilot stored runways missing |
 | 🟥 | fms/data/navaid | 2 | tbd |
 | 🟥 | fms/data/waypoint | 2 | tbd |
 | 🟥 | fms/data/printer | 4 | tbd |
@@ -64,16 +65,18 @@ Use React-based implementation for now, hence no dev. effort needed here.
 
 | Status      | URI | Sprint/Prio |
 | ------------- | ------------- | ------------- |
-| 🟥 | atccom/connect/notification | 6 |
-| 🟥 | atccom/connect/connection-status | 6 |
+| 2️⃣ | atccom/connect | 6 |
 | 🟥 | atccom/connect/max-uplink-delay | 6 |
 | 🟥 | atccom/request | 6 |
 | 🟥 | atccom/report-modify/position | 6 |
 | 🟥 | atccom/report-modify/modify | 6 |
 | 🟥 | atccom/report-modify/other-reports | 6 |
-| 🟥 | atccom/msg-record | 6 |
-| 🟥 | atccom/atis | 6 |
-| 🟥 | atccom/atis/list | 6 |
+| 2️⃣ | atccom/msg-record | 6 |
+| 2️⃣ | atccom/msg-record/all-msg | 6 |
+| 2️⃣ | atccom/msg-record/monitored-msg | 6 |
+| 2️⃣ | atccom/msg-record/all-msg-expand | 6 |
+| ✅ | atccom/d-atis/list | 6 |
+| ✅ | atccom/d-atis/received | 6 |
 | 🟥 | atccom/emer | 6 |
 
 ### SURV

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // Copyright (c) 2021-2022 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
@@ -71,6 +72,7 @@ export class IFLeg extends XFLeg {
   }
 
   getDistanceToGo(_ppos: Coordinates): NauticalMiles | undefined {
+    // IF legs do not auto sequence and have no geoemtry
     return undefined;
   }
 

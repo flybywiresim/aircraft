@@ -142,9 +142,9 @@ class SimConnectInterface {
     AP_VS_HOLD,
     AP_ATT_HOLD,
     AP_MACH_HOLD,
-    KOHLSMANN_SET,
-    KOHLSMANN_INC,
-    KOHLSMANN_DEC,
+    KOHLSMAN_SET,
+    KOHLSMAN_INC,
+    KOHLSMAN_DEC,
     BAROMETRIC_STD_PRESSURE,
     BAROMETRIC,
     AUTO_THROTTLE_ARM,
@@ -254,7 +254,7 @@ class SimConnectInterface {
 
   bool sendData(SimOutputAltimeter output);
 
-  bool sendData(SimOutputAltimeter output, bool altimeter3);
+  bool sendData(SimOutputAltimeter output, int altimeterIndex);
 
   bool sendEvent(Events eventId);
 
@@ -352,6 +352,8 @@ class SimConnectInterface {
   bool isSimInAnyPause();
   bool isSimInActivePause();
   bool isSimInPause();
+
+  bool wasLastBaroInputRightSide() const { return lastBaroInputWasRightSide; }
 
  private:
   enum ClientData {
@@ -473,6 +475,8 @@ class SimConnectInterface {
   double rudderRightAxis = -1;
 
   std::unique_ptr<LocalVariable> idSyncFoEfisEnabled;
+
+  bool lastBaroInputWasRightSide = false;
 
   bool prepareSimDataSimConnectDataDefinitions();
 

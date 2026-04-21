@@ -1,16 +1,23 @@
-// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Approach, Runway, ApproachUtils, LegType, areDatabaseItemsEqual } from '@flybywiresim/fbw-sdk';
+import {
+  Approach,
+  Runway,
+  ApproachUtils,
+  LegType,
+  areDatabaseItemsEqual,
+  WaypointConstraintType,
+} from '@flybywiresim/fbw-sdk';
 import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
-import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/BaseFlightPlan';
+import { BaseFlightPlan } from '@fmgc/flightplanning/plans/BaseFlightPlan';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { ProcedureSegment } from '@fmgc/flightplanning/segments/ProcedureSegment';
-import { WaypointConstraintType } from '@fmgc/flightplanning/data/constraint';
 import { RestringOptions } from '../plans/RestringOptions';
 import { NavigationDatabaseService } from '../NavigationDatabaseService';
+import { FlightPlanQueuedOperation } from '@fmgc/flightplanning/plans/FlightPlanQueuedOperation';
 
 export class ApproachSegment extends ProcedureSegment<Approach> {
   class = SegmentClass.Arrival;
@@ -30,6 +37,8 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
 
     if (databaseId === undefined) {
       this.approach = undefined;
+
+      this.flightPlan.availableApproachVias.length = 0;
 
       if (!skipUpdateLegs) {
         await this.flightPlan.approachViaSegment.setProcedure(undefined);
@@ -81,7 +90,7 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
 
     if (procedureRunwayIdent) {
       // TODO temporary workaround for bug in msfs backend
-      await this.flightPlan.destinationSegment.setDestinationRunway(procedureRunwayIdent, true);
+      await this.flightPlan.destinationSegment.setRunway(procedureRunwayIdent, true);
     }
 
     const mappedMissedApproachLegs = matchingProcedure.missedLegs.map((leg) =>
@@ -115,11 +124,7 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
 
     const shortApproachName = procedure ? ApproachUtils.shortApproachName(procedure) : '';
 
-    if (
-      approachLegs.length === 0 &&
-      this.flightPlan.destinationAirport &&
-      this.flightPlan.destinationSegment.destinationRunway
-    ) {
+    if (airport && runway && approachLegs.length === 0) {
       const cf = FlightPlanLeg.destinationExtendedCenterline(this, runway);
 
       legs.push(cf);
@@ -128,7 +133,12 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
       const firstApproachLeg = approachLegs[0];
 
       // Add an IF at the start if first leg of the approach is an FX
-      if (firstApproachLeg && firstApproachLeg.isDiscontinuity === false && firstApproachLeg.isFX()) {
+      if (
+        firstApproachLeg &&
+        firstApproachLeg.isDiscontinuity === false &&
+        firstApproachLeg.isFX() &&
+        firstApproachLeg.definition.waypoint
+      ) {
         const newLeg = FlightPlanLeg.fromEnrouteFix(this, firstApproachLeg.definition.waypoint, undefined, LegType.IF);
 
         legs.push(newLeg);
@@ -138,7 +148,7 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
       const lastLegIsRunway =
         lastLeg && lastLeg.isDiscontinuity === false && areDatabaseItemsEqual(lastLeg.terminationWaypoint(), runway);
 
-      if (lastLegIsRunway) {
+      if (airport && lastLegIsRunway) {
         legs.push(...approachLegs.slice(0, approachLegs.length - 1));
 
         const runway = this.findRunwayFromRunwayLeg(lastLeg);
@@ -164,11 +174,13 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
     );
   }
 
-  clone(forPlan: BaseFlightPlan): ApproachSegment {
+  clone(forPlan: BaseFlightPlan, options?: number): ApproachSegment {
     const newSegment = new ApproachSegment(forPlan);
 
     newSegment.strung = this.strung;
-    newSegment.allLegs = [...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment) : it))];
+    newSegment.allLegs = [
+      ...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment, options) : it)),
+    ];
     newSegment.approach = this.approach;
 
     return newSegment;

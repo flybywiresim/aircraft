@@ -27,6 +27,7 @@ module.exports = {
     {
       files: [
         '.eslintrc.js',
+        'vitest.config.mjs',
         'scripts/**/*.js',
         '**/mach.config.js',
         '**/rollup.config.js',
@@ -39,14 +40,6 @@ module.exports = {
       rules: {
         '@typescript-eslint/no-var-requires': 'off',
       },
-    },
-    {
-      files: ['fbw-common/src/jest/**/*.js'],
-      env: {
-        node: true,
-      },
-      plugins: ['jest'],
-      extends: ['plugin:jest/recommended'],
     },
   ],
   settings: {

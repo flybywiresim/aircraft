@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import {
   EventBus,
   IndexedEventType,
@@ -10,6 +11,10 @@ import {
 interface MsfsMiscBaseEvents {
   /** Gets the speed relative to the earths surface in knots */
   msfs_ground_velocity: number;
+  /** Ground truth latitude. Don't use this for navigation, use ADIRS instead. */
+  msfs_latitude: number;
+  /** Ground truth longitude. Don't use this for navigation, use ADIRS instead. */
+  msfs_longitude: number;
 }
 
 type IndexedTopics = null;
@@ -36,6 +41,8 @@ export class MsfsMiscPublisher extends SimVarPublisher<MsfsMiscEvents> {
   public constructor(bus: EventBus, pacer?: PublishPacer<MsfsMiscEvents>) {
     const simvars = new Map<keyof MsfsMiscEvents, SimVarPublisherEntry<any>>([
       ['msfs_ground_velocity', { name: `GROUND VELOCITY`, type: SimVarValueType.Knots }],
+      ['msfs_latitude', { name: `PLANE LATITUDE`, type: SimVarValueType.Degree }],
+      ['msfs_longitude', { name: `PLANE LONGITUDE`, type: SimVarValueType.Degree }],
     ]);
 
     super(simvars, bus, pacer);

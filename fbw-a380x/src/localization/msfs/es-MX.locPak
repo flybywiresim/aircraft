@@ -2,16 +2,6 @@
   "LocalisationPackage": {
     "Language": "en-US",
     "Strings": {
-      "A380X.COCKPIT.TOOLTIPS.AUTOBRAKE_2": "Set auto brake to 2",
-      "A380X.COCKPIT.TOOLTIPS.AUTOBRAKE_3": "Set auto brake to 3",
-      "A380X.COCKPIT.TOOLTIPS.AUTOBRAKE_BTV": "Set auto brake to brake-to-vacate (BTV)",
-      "A380X.COCKPIT.TOOLTIPS.AUTOBRAKE_DISARM": "Set auto brake to DISARM",
-      "A380X.COCKPIT.TOOLTIPS.AUTOBRAKE_HI": "Set auto brake to HI",
-      "A380X.COCKPIT.TOOLTIPS.AUTOBRAKE_LO": "Set auto brake to LO",
-      "A380X.COCKPIT.TOOLTIPS.AUTOBRAKE_RTO": "Arm rejected take-off autobrake (RTO)",
-      "A380X.COCKPIT.TOOLTIPS.AUTOBRAKE_TOOLTIP": "Auto brake selector",
-      "A380X.COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "Adjust selected heading to the left (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
-      "A380X.COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "Adjust selected heading to the right (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
       "A380X.LOADING.TIPS.A380_001": "The FlyByWire A380X is a collaboration between hundreds of individual contributors.",
       "A380X.LOADING.TIPS.A380_002": "Development of the FlyByWire A380X first started in October 2020.",
       "A380X.LOADING.TIPS.A380_003": "FlyByWire is named after the fly-by-wire controls first introduced in the Airbus A320.",
@@ -21,8 +11,20 @@
       "A380X.LOADING.TIPS.A380_007": "The volume of all three decks (including the cargo hold) is 1,570 m3. This is enough space for 35 million ping-pong balls.",
       "A380X.LOADING.TIPS.A380_008": "The maximum design load on the 6-wheel body gear is 260 tonnes - equivalent to 200 VW Golfs",
       "A380X.LOADING.TIPS.A380_009": "The engine's 116 inch (2.95 m) diameter fan blades suck in over one and a quarter tons of air every second",
+      "A380X.TOOLTIPS.AUTOBRAKE_2": "Set auto brake to 2",
+      "A380X.TOOLTIPS.AUTOBRAKE_3": "Set auto brake to 3",
+      "A380X.TOOLTIPS.AUTOBRAKE_BTV": "Set auto brake to brake-to-vacate (BTV)",
+      "A380X.TOOLTIPS.AUTOBRAKE_DISARM": "Set auto brake to DISARM",
+      "A380X.TOOLTIPS.AUTOBRAKE_HI": "Set auto brake to HI",
+      "A380X.TOOLTIPS.AUTOBRAKE_LO": "Set auto brake to LO",
+      "A380X.TOOLTIPS.AUTOBRAKE_RTO": "Arm rejected take-off autobrake (RTO)",
+      "A380X.TOOLTIPS.AUTOBRAKE_TOOLTIP": "Auto brake selector",
+      "A380X.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "Adjust selected heading to the left (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "A380X.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "Adjust selected heading to the right (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
       "A380X.TOOLTIPS.BAT_SELECTOR_ACTION": "Select the battery voltage to display",
       "A380X.TOOLTIPS.BAT_SELECTOR_TITLE": "Battery Voltage Selector",
+      "A380X.TOOLTIPS.DOORS_ARM_DISARM": "Arm or disarm slides for passenger door",
+      "A380X.TOOLTIPS.DOORS_OPEN_CLOSE": "Open or close passenger door",
       "A380X.TOOLTIPS.RMP_ADK_ACTION": "Activate/dial line %d",
       "A380X.TOOLTIPS.RMP_ADK_TITLE": "Activation/Dialing Key %d",
       "A380X.TOOLTIPS.RMP_BLANK2_ACTION": "N/A",
@@ -118,9 +120,7 @@
       "AIRCRAFT.DESCRIPTION": "The world's largest passenger airliner, the Airbus A380, is a double deck wide-body aircraft manufactured by Airbus, with the first production model delivered to Singapore Airlines on 15 October 2007.</br></br>Considered to be an engineering milestone, the A3XX, later designated the A380, drew inspiration from earlier large aircraft studies, with the aim of surpassing the venerable Boeing 747 series of wide-body aircraft in fuel economy, operational efficiency and customer satisfaction. .</br></br>Assembled at the Final Assembly Line in Toulouse, France, each A380 is made up of over four million individual parts sourced from over 1500 companies in 30 countries. Certified to carry up to 853 passengers in an all-economy class configuration, or 525 passengers in a typical three-class configuration, the A380 is powered by four Engine Alliance GP7200 or Rolls-Royce Trent 900 turbofan engines.</br></br>A total of 254 airframes were delivered before the end of production in 2021.",
       "AIRCRAFT.UI_MANUFACTURER": "FlyByWire Simulations",
       "AIRCRAFT.UI_MODEL": "A380X (A380-842 RR)",
-      "AIRCRAFT.UI_VARIATION": "FlyByWire A380X House Livery",
-      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "Adjust selected heading to the left (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
-      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "Adjust selected heading to the right  (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)"
+      "AIRCRAFT.UI_VARIATION": "FlyByWire A380X House Livery"
     }
   }
 }

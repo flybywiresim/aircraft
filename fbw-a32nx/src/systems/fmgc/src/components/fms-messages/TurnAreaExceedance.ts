@@ -1,13 +1,15 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// @ts-strict-ignore
+// Copyright (c) 2021-2025 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { FMMessage, FMMessageTypes, Trigger } from '@flybywiresim/fbw-sdk';
+import { FMMessage, Trigger } from '@flybywiresim/fbw-sdk';
 
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { PILeg } from '@fmgc/guidance/lnav/legs/PI';
 import { Navigation } from '@fmgc/navigation/Navigation';
 import { FMMessageSelector, FMMessageUpdate } from './FmsMessages';
+import { FMMessageTypes } from './FmMessages';
 
 abstract class TurnAreaExceedance implements FMMessageSelector {
   message: FMMessage = FMMessageTypes.TurnAreaExceedance;
@@ -18,13 +20,13 @@ abstract class TurnAreaExceedance implements FMMessageSelector {
 
   private trigFalling = new Trigger(true);
 
-  private guidanceController: GuidanceController;
+  private guidanceController?: GuidanceController;
 
-  private navigation: Navigation;
+  private navigation?: Navigation;
 
-  init(baseInstrument: BaseInstrument): void {
-    this.guidanceController = baseInstrument.guidanceController;
-    this.navigation = baseInstrument.navigation;
+  init(navigation: Navigation, guidanceController: GuidanceController): void {
+    this.guidanceController = guidanceController;
+    this.navigation = navigation;
   }
 
   process(deltaTime: number): FMMessageUpdate {

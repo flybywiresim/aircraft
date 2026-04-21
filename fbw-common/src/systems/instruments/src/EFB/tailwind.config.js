@@ -58,6 +58,7 @@ module.exports = {
         'theme-unselected': 'var(--color-unselected)',
         'theme-secondary': 'var(--color-secondary)',
         'theme-statusbar': 'var(--color-statusbar)',
+        'theme-statusbar-mismatch': 'var(--color-statusbar-mismatch)',
         'theme-accent': 'var(--color-accent)',
         cyan: {
           DEFAULT: '#00E0FE',

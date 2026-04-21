@@ -1,0 +1,43 @@
+
+@import "../MsfsAvionicsCommon/definitions.scss";
+
+@font-face {
+  font-family: "OIT";
+  //noinspection CssUnknownTarget
+  src: url("/Fonts/fbw-a380x/EFB/Inter-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.AnsuFailed {
+  position: absolute;
+  left: 0%;
+  top: 0%;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background-color: $display-background;
+}
+
+.AnsuFailedText {
+  font-size: 32px;
+  fill: $display-amber;
+  visibility: visible !important;
+  text-anchor: middle;
+  font-family: "OIT";
+}
+
+.SelfTest {
+  display: block;
+  position: absolute;
+  left: 0%;
+  top: 0%;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background-color: $display-background;
+}
+
+.SelfTest.Hidden {
+  display: none;
+}

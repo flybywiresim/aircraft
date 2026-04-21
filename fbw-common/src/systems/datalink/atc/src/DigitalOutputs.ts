@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { EventBus, EventSubscriber, Publisher } from '@microsoft/msfs-sdk';
 import { Arinc429Register, Arinc429SignStatusMatrix } from '@flybywiresim/fbw-sdk';
 import {

@@ -1,4 +1,5 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// @ts-strict-ignore
+// Copyright (c) 2021-2025 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -12,7 +13,13 @@ import {
   Subscribable,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { ArincEventBus, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
+import {
+  ArincEventBus,
+  Arinc429Word,
+  Arinc429WordData,
+  Arinc429Register,
+  Arinc429LocalVarConsumerSubject,
+} from '@flybywiresim/fbw-sdk';
 
 import { FgBus } from 'instruments/src/PFD/shared/FgBusProvider';
 import { FcuBus } from 'instruments/src/PFD/shared/FcuBusProvider';
@@ -1279,88 +1286,46 @@ class SpeedMargins extends DisplayComponent<{ bus: ArincEventBus }> {
 }
 
 export class MachNumber extends DisplayComponent<{ bus: ArincEventBus }> {
-  private machTextSub = Subject.create('');
+  private readonly sub = this.props.bus.getArincSubscriber<PFDSimvars>();
+
+  private readonly machTextSub = Subject.create('');
 
   private readonly machFlagVisible = Subject.create(false);
 
   private machHysteresis = false;
 
-  private onGround = false;
+  private readonly mach = Arinc429LocalVarConsumerSubject.create(this.sub.on('mach'), Arinc429Register.empty().rawWord);
 
-  private mach = new Arinc429Word(0);
+  private readonly machPermille = this.mach.map((w) =>
+    w.isNormalOperation() || w.isFunctionalTest() ? Math.round(w.value * 1000) : 0,
+  );
 
-  private fcuEisDiscreteWord2 = new Arinc429Word(0);
-
-  private leftMainGearCompressed = true;
-
-  private rightMainGearCompressed = true;
-
-  private handleMachDisplay() {
-    if (this.mach.value > 0.5) {
+  private handleMachDisplay(mach: Arinc429WordData) {
+    if (mach.value > 0.5) {
       this.machHysteresis = true;
-    } else if (this.mach.value < 0.45) {
+    } else if (mach.value < 0.45) {
       this.machHysteresis = false;
     }
 
-    const stdBaro = this.fcuEisDiscreteWord2.bitValueOr(28, false) || this.fcuEisDiscreteWord2.isFailureWarning();
-    const lsDisplay = this.fcuEisDiscreteWord2.bitValueOr(22, false) || this.fcuEisDiscreteWord2.isFailureWarning();
-
-    const hideMachDisplay =
-      (!this.machHysteresis && this.mach.isNormalOperation()) ||
-      (!this.mach.isNormalOperation() && (this.onGround || stdBaro)) ||
-      lsDisplay;
+    const hideMachDisplay = !this.machHysteresis && !mach.isFailureWarning();
 
     if (hideMachDisplay) {
       this.machFlagVisible.set(false);
       this.machTextSub.set('');
-    } else if (!this.mach.isNormalOperation()) {
+    } else if (mach.isFailureWarning()) {
       this.machFlagVisible.set(true);
       this.machTextSub.set('');
     } else {
       this.machFlagVisible.set(false);
-      const machPermille = Math.round(this.mach.value * 1000);
-      this.machTextSub.set(`.${machPermille}`);
+      this.machTextSub.set(`.${this.machPermille.get()}`);
     }
   }
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-
-    const sub = this.props.bus.getArincSubscriber<Arinc429Values & PFDSimvars & FcuBus>();
-
-    sub
-      .on('machAr')
-      .withArinc429Precision(3)
-      .handle((mach) => {
-        this.mach = mach;
-        this.handleMachDisplay();
-      });
-
-    sub
-      .on('leftMainGearCompressed')
-      .whenChanged()
-      .handle((g) => {
-        this.leftMainGearCompressed = g;
-        this.onGround = this.rightMainGearCompressed || g;
-        this.handleMachDisplay();
-      });
-
-    sub
-      .on('rightMainGearCompressed')
-      .whenChanged()
-      .handle((g) => {
-        this.rightMainGearCompressed = g;
-        this.onGround = this.leftMainGearCompressed || g;
-        this.handleMachDisplay();
-      });
-
-    sub
-      .on('fcuEisDiscreteWord2')
-      .whenChanged()
-      .handle((word) => {
-        this.fcuEisDiscreteWord2 = word;
-        this.handleMachDisplay();
-      });
+    this.mach.sub((v) => {
+      this.handleMachDisplay(v);
+    }, true);
   }
 
   render(): VNode {

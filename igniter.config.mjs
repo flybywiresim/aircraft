@@ -10,7 +10,29 @@ export default new TaskOfTasks('all', [
         new TaskOfTasks(
             'preparation',
             [
-                new ExecTask('copy-base-files', 'npm run build-a32nx:copy-base-files'),
+                new TaskOfTasks(
+                    'ci-build',
+                    [
+                        new ExecTask('copy-base-files', [
+                            'npm run build-a32nx:link-base-files',
+                            'npm run unchunkLargeFiles fbw-a32nx',
+                            'npm run build-a32nx:link-large-files',
+                        ]),
+                    ],
+                    false,
+                ),
+                new TaskOfTasks(
+                    'local-build',
+                    [
+                        new ExecTask('copy-base-files', [
+                            'npm run build-a32nx:copy-base-files',
+                            'npm run unchunkLargeFiles fbw-a32nx',
+                            'npm run build-a32nx:copy-large-files',
+                            'npm run chunkLargeFiles fbw-a32nx',
+                        ]),
+                    ],
+                    false,
+                ),
                 new TaskOfTasks(
                     'localization',
                     [
@@ -35,49 +57,17 @@ export default new TaskOfTasks('all', [
                     'fbw-a32nx/src/behavior',
                     'fbw-a32nx/out/flybywire-aircraft-a320-neo/ModelBehaviorDefs/A32NX/generated',
                 ]),
-
-                new TaskOfTasks('atsu', [
-                    new ExecTask('common', 'npm run build-a32nx:atsu-common', [
-                        'fbw-a32nx/src/systems/atsu/common',
-                        'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/atsu/common.js',
-                    ]),
-                    new ExecTask('fmsclient', 'npm run build-a32nx:atsu-fms-client', [
-                        'fbw-a32nx/src/systems/atsu/common',
-                        'fbw-a32nx/src/systems/atsu/fmsclient',
-                        'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/atsu/fmsclient.js',
-                    ]),
-                ]),
                 new ExecTask('extras-host', 'npm run build-a32nx:extras-host', [
                     'fbw-a32nx/src/systems/extras-host',
                     'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/ExtrasHost',
                     'fbw-common/src/systems/shared/src/extras',
                 ]),
-                new ExecTask('failures', 'npm run build-a32nx:failures', [
-                    'fbw-a32nx/src/systems/failures',
-                    'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/failures/failures.js',
-                ]),
-                new ExecTask('fmgc', 'npm run build-a32nx:fmgc', [
-                    'fbw-a32nx/src/systems/fmgc',
-                    'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/fmgc',
-                ]),
-                new ExecTask('sentry-client', 'npm run build-a32nx:sentry-client', [
-                    'fbw-a32nx/src/systems/sentry-client',
-                    'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/sentry-client',
-                ]),
-                new ExecTask('simbridge-client', 'npm run build-a32nx:simbridge-client', [
-                    'fbw-a32nx/src/systems/simbridge-client',
-                    'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/simbridge-client',
-                ]),
                 new ExecTask('systems-host', 'npm run build-a32nx:systems-host', [
                     'fbw-a32nx/src/systems/systems-host',
+                    'fbw-a32nx/src/systems/shared/src',
                     'fbw-common/src/systems/datalink',
                     'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/SystemsHost',
                 ]),
-                new ExecTask('tcas', 'npm run build-a32nx:tcas', [
-                    'fbw-a32nx/src/systems/tcas',
-                    'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/tcas',
-                ]),
-
                 new TaskOfTasks('instruments', getA320InstrumentsIgniterTasks(), true),
             ],
             true,
@@ -105,7 +95,7 @@ export default new TaskOfTasks('all', [
                     [
                         'fbw-common/src/wasm/terronnd',
                         'fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/terronnd.wasm',
-                        'fbw-common/src/wasm/terronnd/out/terronnd.wasm',
+                        'fbw-common/src/wasm/terronnd/out/terronnd_A32NX.wasm',
                     ],
                 ),
                 new ExecTask('cpp-wasm-cmake', 'npm run build:cpp-wasm-cmake', [
@@ -138,7 +128,7 @@ export default new TaskOfTasks('all', [
                     [
                         new ExecTask('copy-base-files (8K)', [
                             'npm run build-a380x:link-base-files',
-                            'npm run unchunkLargeFiles',
+                            'npm run unchunkLargeFiles fbw-a380x',
                             'npm run build-a380x:link-large-files',
                             'npm run build-a380x:link-large-files-texture-8k',
                             // temporary until folder exists
@@ -146,7 +136,7 @@ export default new TaskOfTasks('all', [
                         ]),
                         new ExecTask('copy-base-files (4K)', [
                             'npm run build-a380x:link-base-files',
-                            'npm run unchunkLargeFiles',
+                            'npm run unchunkLargeFiles fbw-a380x',
                             'npm run build-a380x:link-large-files',
                             'npm run build-a380x:link-large-files-texture-4k',
                             // temporary until folder exists
@@ -160,19 +150,19 @@ export default new TaskOfTasks('all', [
                     [
                         new ExecTask('copy-base-files (8K)', [
                             'npm run build-a380x:copy-base-files',
-                            'npm run unchunkLargeFiles',
+                            'npm run unchunkLargeFiles fbw-a380x',
                             'npm run build-a380x:copy-large-files',
                             'npm run build-a380x:copy-large-files-texture-8k',
-                            'npm run chunkLargeFiles',
+                            'npm run chunkLargeFiles fbw-a380x',
                             // temporary until folder exists
                             'mkdir -p fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/',
                         ]),
                         new ExecTask('copy-base-files (4K)', [
                             'npm run build-a380x:copy-base-files',
-                            'npm run unchunkLargeFiles',
+                            'npm run unchunkLargeFiles fbw-a380x',
                             'npm run build-a380x:copy-large-files',
                             'npm run build-a380x:copy-large-files-texture-4k',
-                            'npm run chunkLargeFiles',
+                            'npm run chunkLargeFiles fbw-a380x',
                             // temporary until folder exists
                             'mkdir -p fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/',
                         ]),
@@ -228,7 +218,7 @@ export default new TaskOfTasks('all', [
                     ['npm run build-a380x:terronnd'],
                     [
                         'fbw-common/src/wasm/terronnd',
-                        'fbw-common/src/wasm/terronnd/out/terronnd.wasm',
+                        'fbw-common/src/wasm/terronnd/out/terronnd_A380X.wasm',
                         'fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/terronnd.wasm',
                     ],
                 ),

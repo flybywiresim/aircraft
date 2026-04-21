@@ -18,6 +18,18 @@ enum class fmgc_flight_phase
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_fmgc_approach_type_
+#define DEFINED_TYPEDEF_FOR_fmgc_approach_type_
+
+enum class fmgc_approach_type
+  : int32_T {
+  None = 0,
+  ILS,
+  RNAV
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_tcas_submode_
 #define DEFINED_TYPEDEF_FOR_tcas_submode_
 
@@ -54,16 +66,6 @@ enum class SignStatusMatrix
   NoComputedData,
   FunctionalTest,
   NormalOperation
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_fmgc_approach_type_
-#define DEFINED_TYPEDEF_FOR_fmgc_approach_type_
-
-enum class fmgc_approach_type
-  : int32_T {
-  None = 0
 };
 
 #endif
@@ -321,7 +323,8 @@ struct base_fac_bus
 struct base_adr_bus
 {
   base_arinc_429 altitude_standard_ft;
-  base_arinc_429 altitude_corrected_ft;
+  base_arinc_429 altitude_corrected_1_ft;
+  base_arinc_429 altitude_corrected_2_ft;
   base_arinc_429 mach;
   base_arinc_429 airspeed_computed_kn;
   base_arinc_429 airspeed_true_kn;
@@ -507,7 +510,8 @@ struct base_fmgc_logic_outputs
   boolean_T all_ir_valid;
   base_adr_bus adr_computation_data;
   base_ir_bus ir_computation_data;
-  real_T ra_computation_data_ft;
+  base_arinc_429 altitude_indicated_ft;
+  base_ra_bus ra_computation_data;
   boolean_T dual_ra_failure;
   boolean_T both_ra_valid;
   boolean_T fac_lg_data_failure;
@@ -654,6 +658,8 @@ struct base_fmgc_ap_fd_logic_outputs
   boolean_T any_ap_fd_engaged;
   boolean_T any_lateral_mode_engaged;
   boolean_T any_longitudinal_mode_engaged;
+  boolean_T lateral_mode_reset;
+  boolean_T longitudinal_mode_reset;
   boolean_T hdg_trk_preset_available;
   boolean_T alt_soft_mode_active;
   boolean_T fd_auto_disengage;
@@ -796,6 +802,7 @@ struct base_fmgc_discrete_outputs
   boolean_T fcu_own_fail;
   boolean_T fmgc_healthy;
   boolean_T ils_test_inhibit;
+  boolean_T stick_rudder_lock;
 };
 
 #endif

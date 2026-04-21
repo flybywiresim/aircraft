@@ -1,8 +1,7 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { FeatureType } from '@flybywiresim/fbw-sdk';
-import { FmsDataStore } from './OancControlPanelUtils';
+import { FeatureType, OansFmsDataStore } from '@flybywiresim/fbw-sdk';
 import { Label, LabelStyle } from './Oanc';
 
 export interface BaseOancLabelFilter {
@@ -11,7 +10,7 @@ export interface BaseOancLabelFilter {
 
 export interface RunwayBtvSelectionLabelFilter extends BaseOancLabelFilter {
   type: 'runwayBtvSelection';
-  runwayIdent: string;
+  runwayIdent: string | null;
   showAdjacent: boolean;
 }
 
@@ -60,6 +59,8 @@ export function filterLabel(
       LabelStyle.BtvStopLineAmber,
       LabelStyle.BtvStopLineRed,
       LabelStyle.BtvStopLineGreen,
+      LabelStyle.CrossSymbol,
+      LabelStyle.FlagSymbol,
     ].includes(label.style)
   ) {
     return true;
@@ -87,11 +88,11 @@ export function filterLabel(
 
 export function labelStyle(
   label: Label,
-  fmsDataStore: FmsDataStore,
+  fmsDataStore: OansFmsDataStore,
   isFmsOrigin: boolean,
   isFmsDestination: boolean,
-  btvSelectedRunway: string,
-  btvSelectedExit: string,
+  btvSelectedRunway?: string,
+  btvSelectedExit?: string,
 ): LabelStyle {
   if (label.style === LabelStyle.RunwayEnd || label.style === LabelStyle.BtvSelectedRunwayEnd) {
     return btvSelectedRunway?.substring(4) === label.text ? LabelStyle.BtvSelectedRunwayEnd : LabelStyle.RunwayEnd;

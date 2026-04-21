@@ -47,6 +47,7 @@ render(
         realism: {
           mcduKeyboard: false,
           pauseOnTod: true,
+          autoStepClimb: true,
           pilotAvatars: false,
           eclSoftKeys: true,
         },
@@ -57,6 +58,7 @@ render(
           registrationDecal: false, // TODO FIXME: Enable when dynamic registration decal is completed
           wheelChocks: false,
           cabinLighting: true,
+          oansPerformanceMode: true,
         },
         throttle: {
           numberOfAircraftThrottles: 4,
@@ -72,6 +74,8 @@ render(
         },
         autoCalloutsPage: AutomaticCallOutsPage,
       },
+      hashFile: '/Data/a380x_hashes.json',
+      hashSeed: 380,
     }}
   >
     <EfbWrapper failures={A380FailureDefinitions} aircraftSetup={aircraftEfbSetup} eventBus={new EventBus()} />

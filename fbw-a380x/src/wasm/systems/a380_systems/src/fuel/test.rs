@@ -5,17 +5,22 @@ use systems::{electrical::Electricity, fuel::RefuelRate, simulation::test::ReadB
 use uom::si::mass::kilogram;
 
 use super::*;
-use crate::systems::simulation::{
-    test::{SimulationTestBed, TestBed, WriteByName},
-    Aircraft, SimulationElement, SimulationElementVisitor,
+use crate::{
+    airframe::A380Airframe,
+    systems::simulation::{
+        test::{SimulationTestBed, TestBed, WriteByName},
+        Aircraft, SimulationElement, SimulationElementVisitor,
+    },
 };
 struct FuelTestAircraft {
+    acdn: A380AvionicsDataCommunicationNetwork,
     fuel: A380Fuel,
 }
 
 impl FuelTestAircraft {
     fn new(context: &mut InitContext) -> Self {
         Self {
+            acdn: A380AvionicsDataCommunicationNetwork::new(context),
             fuel: A380Fuel::new(context),
         }
     }
@@ -35,11 +40,14 @@ impl Aircraft for FuelTestAircraft {
         context: &UpdateContext,
         _electricity: &mut Electricity,
     ) {
-        self.fuel.update(context);
+        self.acdn.update();
+        self.fuel
+            .update(context, &self.acdn, A380Airframe::get_loadsheet());
     }
 }
 impl SimulationElement for FuelTestAircraft {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.acdn.accept(visitor);
         self.fuel.accept(visitor);
 
         visitor.visit(self);
@@ -48,7 +56,6 @@ impl SimulationElement for FuelTestAircraft {
 
 const MINUTES_TO_SECONDS: u64 = 60;
 const FUEL_GALLONS_TO_KG: f64 = 3.039075693483925;
-const LBS_TO_KG: f64 = 0.4535934;
 
 struct FuelTestBed {
     test_bed: SimulationTestBed<FuelTestAircraft>,
@@ -91,7 +98,6 @@ impl FuelTestBed {
         self.write_by_name("FUEL_TANK_QUANTITY_9", 300. / FUEL_GALLONS_TO_KG);
         self.write_by_name("FUEL_TANK_QUANTITY_10", 300. / FUEL_GALLONS_TO_KG);
         self.write_by_name("FUEL_TANK_QUANTITY_11", 300. / FUEL_GALLONS_TO_KG);
-        self.write_by_name("FUEL TOTAL QUANTITY WEIGHT", 3300. / LBS_TO_KG);
 
         self
     }
@@ -108,7 +114,6 @@ impl FuelTestBed {
         self.write_by_name("FUEL_TANK_QUANTITY_9", 1500. / FUEL_GALLONS_TO_KG);
         self.write_by_name("FUEL_TANK_QUANTITY_10", 1500. / FUEL_GALLONS_TO_KG);
         self.write_by_name("FUEL_TANK_QUANTITY_11", 1500. / FUEL_GALLONS_TO_KG);
-        self.write_by_name("FUEL TOTAL QUANTITY WEIGHT", 33500. / LBS_TO_KG);
 
         self
     }
@@ -347,7 +352,6 @@ fn init() {
     assert!(test_bed.contains_variable_with_name("FUEL_TANK_QUANTITY_9"));
     assert!(test_bed.contains_variable_with_name("FUEL_TANK_QUANTITY_10"));
     assert!(test_bed.contains_variable_with_name("FUEL_TANK_QUANTITY_11"));
-    assert!(test_bed.contains_variable_with_name("FUEL TOTAL QUANTITY WEIGHT"));
 }
 
 #[test]

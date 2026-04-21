@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Coordinates } from 'msfs-geo';
 
 export class MapParameters {
